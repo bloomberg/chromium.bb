@@ -16,6 +16,7 @@
 #include "base/strings/string_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "build/build_config.h"
+#include "components/network_session_configurator/common/network_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
 #include "content/public/common/content_switches.h"

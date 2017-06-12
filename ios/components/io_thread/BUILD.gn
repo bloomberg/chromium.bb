@@ -8,7 +8,7 @@ component("io_thread") {
   deps = [
     "//base",
     "//components/net_log",
-    "//components/network_session_configurator",
+    "//components/network_session_configurator/browser",
     "//components/prefs",
     "//components/proxy_config",
     "//components/proxy_config/ios",

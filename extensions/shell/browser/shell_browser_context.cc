@@ -8,6 +8,7 @@
 
 #include "base/command_line.h"
 #include "components/guest_view/browser/guest_view_manager.h"
+#include "components/network_session_configurator/common/network_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/browser/extension_protocols.h"

@@ -106,6 +106,7 @@ source_set("browser") {
     # isn't needed. crbug.com/541577
     "//components/metrics:ui",
     "//components/network_hints/browser",
+    "//components/network_session_configurator/common",
     "//components/prefs",
     "//components/proxy_config",
     "//content",

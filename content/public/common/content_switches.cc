@@ -572,9 +572,6 @@ const char kGpuSandboxFailuresFatal[]       = "gpu-sandbox-failures-fatal";
 // Causes the GPU process to display a dialog on launch.
 const char kGpuStartupDialog[]              = "gpu-startup-dialog";
 
-// Ignores certificate-related errors.
-const char kIgnoreCertificateErrors[]       = "ignore-certificate-errors";
-
 // Don't allow content to arbitrarily append to the back/forward list.
 // The page must prcoess a user gesture before an entry can be added.
 const char kHistoryEntryRequiresUserGesture[] =
@@ -836,10 +833,6 @@ const char kStartFullscreen[] = "start-fullscreen";
 // that needs to access the provided statistics.
 const char kStatsCollectionController[] =
     "enable-stats-collection-bindings";
-
-// Allows for forcing socket connections to http/https to use fixed ports.
-const char kTestingFixedHttpPort[]          = "testing-fixed-http-port";
-const char kTestingFixedHttpsPort[]         = "testing-fixed-https-port";
 
 // Type of the current test harness ("browser" or "ui").
 const char kTestType[]                      = "test-type";

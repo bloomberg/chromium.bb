@@ -227,9 +227,6 @@ const char kDisableExtensionsFileAccessCheck[] =
 const char kDisableExtensionsHttpThrottling[] =
     "disable-extensions-http-throttling";
 
-// Disables the HTTP/2 protocol.
-const char kDisableHttp2[] = "disable-http2";
-
 // Disable the behavior that the second click on a launcher item (the click when
 // the item is already active) minimizes the item.
 const char kDisableMinimizeOnSecondLauncherItemClick[] =
@@ -260,9 +257,6 @@ const char kDisablePromptOnRepost[]         = "disable-prompt-on-repost";
 
 // Enable background mode for the Push API.
 const char kDisablePushApiBackgroundMode[] = "disable-push-api-background-mode";
-
-// Disables the QUIC protocol.
-const char kDisableQuic[] = "disable-quic";
 
 // Disables showing the search geolocation disclosure UI. Used for perf testing.
 const char kDisableSearchGeolocationDisclosure[] =
@@ -405,9 +399,6 @@ const char kEnableProfiling[]               = "enable-profiling";
 // Enable background mode for the Push API.
 const char kEnablePushApiBackgroundMode[] = "enable-push-api-background-mode";
 
-// Enables the QUIC protocol.  This is a temporary testing flag.
-const char kEnableQuic[] = "enable-quic";
-
 // Enable settings in a separate browser window per profile
 // (see SettingsWindowEnabled() below).
 const char kEnableSettingsWindow[]           = "enable-settings-window";
@@ -432,10 +423,6 @@ const char kEnableTabAudioMuting[]  = "enable-tab-audio-muting";
 // Enables fanciful thumbnail processing. Used with NTP for
 // instant-extended-api, where thumbnails are generally smaller.
 const char kEnableThumbnailRetargeting[]   = "enable-thumbnail-retargeting";
-
-// Enables Alternate-Protocol when the port is user controlled (> 1024).
-const char kEnableUserAlternateProtocolPorts[] =
-    "enable-user-controlled-alternate-protocol-ports";
 
 // Enables Web Notification custom layouts.
 const char kEnableWebNotificationCustomLayouts[] =
@@ -645,9 +632,6 @@ const char kNoSupervisedUserAcknowledgmentCheck[]  =
 // Launches URL in new browser window.
 const char kOpenInNewWindow[]               = "new-window";
 
-// Specifies a comma separated list of host-port pairs to force use of QUIC on.
-const char kOriginToForceQuicOn[] = "origin-to-force-quic-on";
-
 // The time that a new chrome process which is delegating to an already running
 // chrome process started. (See ProcessSingleton for more details.)
 const char kOriginalProcessStartTime[]      = "original-process-start-time";
@@ -736,15 +720,6 @@ const char kProxyBypassList[]               = "proxy-bypass-list";
 // Uses the pac script at the given URL
 const char kProxyPacUrl[]                   = "proxy-pac-url";
 
-// Specifies a comma separated list of QUIC connection options to send to
-// the server.
-const char kQuicConnectionOptions[] = "quic-connection-options";
-
-// Specifies the maximum length for a QUIC packet.
-const char kQuicMaxPacketLength[] = "quic-max-packet-length";
-
-// Specifies the version of QUIC to use.
-const char kQuicVersion[] = "quic-version";
 // Porvides a list of addresses to discover DevTools remote debugging targets.
 // The format is <host>:<port>,...,<host>:port.
 const char kRemoteDebuggingTargets[] = "remote-debugging-targets";

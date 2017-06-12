@@ -53,7 +53,7 @@
 #include "components/data_use_measurement/core/data_use_ascriber.h"
 #include "components/metrics/metrics_service.h"
 #include "components/net_log/chrome_net_log.h"
-#include "components/network_session_configurator/network_session_configurator.h"
+#include "components/network_session_configurator/browser/network_session_configurator.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -243,16 +243,6 @@ std::unique_ptr<net::HostResolver> CreateGlobalHostResolver(
   remapped_resolver->SetRulesFromString(
       command_line.GetSwitchValueASCII(switches::kHostResolverRules));
   return std::move(remapped_resolver);
-}
-
-int GetSwitchValueAsInt(const base::CommandLine& command_line,
-                        const std::string& switch_name) {
-  int value;
-  if (!base::StringToInt(command_line.GetSwitchValueASCII(switch_name),
-                         &value)) {
-    return 0;
-  }
-  return value;
 }
 
 // This function is for forwarding metrics usage pref changes to the metrics
@@ -944,81 +934,11 @@ void IOThread::ConfigureParamsFromFieldTrialsAndCommandLine(
   quic_user_agent_id.push_back(' ');
   quic_user_agent_id.append(content::BuildOSCpuInfo());
 
-  bool is_quic_force_disabled = !is_quic_allowed_by_policy ||
-                                command_line.HasSwitch(switches::kDisableQuic);
-  bool is_quic_force_enabled = command_line.HasSwitch(switches::kEnableQuic);
+  network_session_configurator::ParseCommandLineAndFieldTrials(
+      command_line, !is_quic_allowed_by_policy, quic_user_agent_id, params);
 
-  network_session_configurator::ParseFieldTrials(is_quic_force_disabled,
-                                                 is_quic_force_enabled,
-                                                 quic_user_agent_id, params);
-
-  // Command line flags override field trials.
   if (command_line.HasSwitch(switches::kIgnoreUrlFetcherCertRequests))
     net::URLFetcher::SetIgnoreCertificateRequests(true);
-
-  if (command_line.HasSwitch(switches::kDisableHttp2))
-    params->enable_http2 = false;
-
-  if (params->enable_quic) {
-    if (command_line.HasSwitch(switches::kQuicConnectionOptions)) {
-      params->quic_connection_options =
-          net::ParseQuicConnectionOptions(
-              command_line.GetSwitchValueASCII(
-                  switches::kQuicConnectionOptions));
-    }
-
-    if (command_line.HasSwitch(switches::kQuicMaxPacketLength)) {
-      unsigned value;
-      if (base::StringToUint(
-              command_line.GetSwitchValueASCII(switches::kQuicMaxPacketLength),
-              &value)) {
-        params->quic_max_packet_length = value;
-      }
-    }
-
-    if (command_line.HasSwitch(switches::kQuicVersion)) {
-      net::QuicVersion version = network_session_configurator::ParseQuicVersion(
-          command_line.GetSwitchValueASCII(switches::kQuicVersion));
-      if (version != net::QUIC_VERSION_UNSUPPORTED) {
-        net::QuicVersionVector supported_versions;
-        supported_versions.push_back(version);
-        params->quic_supported_versions = supported_versions;
-      }
-    }
-
-    if (command_line.HasSwitch(switches::kOriginToForceQuicOn)) {
-      std::string origins =
-          command_line.GetSwitchValueASCII(switches::kOriginToForceQuicOn);
-      for (const std::string& host_port : base::SplitString(
-               origins, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
-        if (host_port == "*")
-          params->origins_to_force_quic_on.insert(net::HostPortPair());
-        net::HostPortPair quic_origin =
-            net::HostPortPair::FromString(host_port);
-        if (!quic_origin.IsEmpty())
-          params->origins_to_force_quic_on.insert(quic_origin);
-      }
-    }
-  }
-
-  // Parameters only controlled by command line.
-  if (command_line.HasSwitch(switches::kEnableUserAlternateProtocolPorts)) {
-    params->enable_user_alternate_protocol_ports = true;
-  }
-  if (command_line.HasSwitch(switches::kIgnoreCertificateErrors)) {
-    params->ignore_certificate_errors = true;
-  }
-  UMA_HISTOGRAM_BOOLEAN(
-      "Net.Certificate.IgnoreErrors",
-      command_line.HasSwitch(switches::kIgnoreCertificateErrors));
-  if (command_line.HasSwitch(switches::kTestingFixedHttpPort)) {
-    params->testing_fixed_http_port =
-        GetSwitchValueAsInt(command_line, switches::kTestingFixedHttpPort);
-  }
-  if (command_line.HasSwitch(switches::kTestingFixedHttpsPort)) {
-    params->testing_fixed_https_port =
-        GetSwitchValueAsInt(command_line, switches::kTestingFixedHttpsPort);
-  }
 
   params->http_09_on_non_default_ports_enabled =
       http_09_on_non_default_ports_enabled;

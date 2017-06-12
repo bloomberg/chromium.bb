@@ -22,6 +22,7 @@
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "build/build_config.h"
+#include "components/network_session_configurator/common/network_switches.h"
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/service_manager/service_manager_context.h"
@@ -303,13 +304,10 @@ bool UtilityProcessHostImpl::StartProcess() {
     static const char* const kSwitchNames[] = {
       switches::kEnableNetworkService,
       switches::kHostResolverRules,
-      switches::kIgnoreCertificateErrors,
       switches::kLogNetLog,
       switches::kNoSandbox,
       switches::kProfilerTiming,
       switches::kProxyServer,
-      switches::kTestingFixedHttpPort,
-      switches::kTestingFixedHttpsPort,
 #if defined(OS_MACOSX)
       switches::kEnableSandboxLogging,
 #endif
@@ -318,6 +316,9 @@ bool UtilityProcessHostImpl::StartProcess() {
     };
     cmd_line->CopySwitchesFrom(browser_command_line, kSwitchNames,
                                arraysize(kSwitchNames));
+
+    network_session_configurator::CopyNetworkSwitches(browser_command_line,
+                                                      cmd_line.get());
 
     if (has_cmd_prefix) {
       // Launch the utility child process with some prefix

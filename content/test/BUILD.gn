@@ -755,6 +755,7 @@ test("content_browsertests") {
     "//components/discardable_memory/client",
     "//components/discardable_memory/common",
     "//components/discardable_memory/service",
+    "//components/network_session_configurator/common",
     "//components/payments/mojom:mojom_payment_app",
     "//content:resources",
     "//content/app:both_for_content_tests",

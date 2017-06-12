@@ -27,6 +27,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/cloud_devices/common/cloud_devices_switches.h"
+#include "components/network_session_configurator/common/network_switches.h"
 #include "components/version_info/version_info.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"

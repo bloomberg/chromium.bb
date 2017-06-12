@@ -198,6 +198,7 @@ static_library("common") {
     "//components/metrics:net",
     "//components/nacl/common:process_type",
     "//components/nacl/common:switches",
+    "//components/network_session_configurator/common",
     "//components/ntp_tiles",
     "//components/offline_pages/core:switches",
     "//components/omnibox/common",

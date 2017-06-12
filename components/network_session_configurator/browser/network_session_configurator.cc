@@ -2,24 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/network_session_configurator/network_session_configurator.h"
+#include "components/network_session_configurator/browser/network_session_configurator.h"
 
 #include <map>
 #include <unordered_set>
 
+#include "base/command_line.h"
 #include "base/metrics/field_trial.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
-#include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
+#include "components/network_session_configurator/common/network_switches.h"
 #include "components/variations/variations_associated_data.h"
-#include "components/version_info/version_info.h"
 #include "net/http/http_stream_factory.h"
 #include "net/quic/chromium/quic_utils_chromium.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/spdy/core/spdy_protocol.h"
-#include "net/url_request/url_fetcher.h"
 
 namespace {
 
@@ -36,6 +36,19 @@ const char kQuicFieldTrialHttpsEnabledGroupName[] = "HttpsEnabled";
 // Field trial for HTTP/2.
 const char kHttp2FieldTrialName[] = "HTTP2";
 const char kHttp2FieldTrialDisablePrefix[] = "Disable";
+
+// Gets the value of the specified command line switch, as an integer. If unable
+// to convert it to an int (It's not an int, or the switch is not present)
+// returns 0.
+int GetSwitchValueAsInt(const base::CommandLine& command_line,
+                        const std::string& switch_name) {
+  int value;
+  if (!base::StringToInt(command_line.GetSwitchValueASCII(switch_name),
+                         &value)) {
+    return 0;
+  }
+  return value;
+}
 
 // Returns the value associated with |key| in |params| or "" if the
 // key is not present in the map.
@@ -103,8 +116,7 @@ bool ShouldEnableQuic(base::StringPiece quic_trial_group,
   return quic_trial_group.starts_with(kQuicFieldTrialEnabledGroupName) ||
          quic_trial_group.starts_with(kQuicFieldTrialHttpsEnabledGroupName) ||
          base::LowerCaseEqualsASCII(
-             GetVariationParam(quic_trial_params, "enable_quic"),
-             "true");
+             GetVariationParam(quic_trial_params, "enable_quic"), "true");
 }
 
 bool ShouldMarkQuicBrokenWhenNetworkBlackholes(
@@ -214,9 +226,7 @@ bool ShouldQuicMigrateSessionsEarly(
 bool ShouldQuicAllowServerMigration(
     const VariationParameters& quic_trial_params) {
   return base::LowerCaseEqualsASCII(
-      GetVariationParam(quic_trial_params,
-                        "allow_server_migration"),
-      "true");
+      GetVariationParam(quic_trial_params, "allow_server_migration"), "true");
 }
 
 size_t GetQuicMaxPacketLength(const VariationParameters& quic_trial_params) {
@@ -246,9 +256,9 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
                          bool is_quic_force_enabled,
                          const std::string& quic_user_agent_id,
                          net::HttpNetworkSession::Params* params) {
-  params->enable_quic = ShouldEnableQuic(
-      quic_trial_group, quic_trial_params, is_quic_force_disabled,
-      is_quic_force_enabled);
+  params->enable_quic =
+      ShouldEnableQuic(quic_trial_group, quic_trial_params,
+                       is_quic_force_disabled, is_quic_force_enabled);
   params->mark_quic_broken_when_network_blackholes =
       ShouldMarkQuicBrokenWhenNetworkBlackholes(quic_trial_params);
 
@@ -284,8 +294,7 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
     }
     params->quic_race_cert_verification =
         ShouldQuicRaceCertVerification(quic_trial_params);
-    params->quic_do_not_fragment =
-        ShouldQuicDoNotFragment(quic_trial_params);
+    params->quic_do_not_fragment = ShouldQuicDoNotFragment(quic_trial_params);
     params->quic_estimate_initial_rtt =
         ShouldQuicEstimateInitialRtt(quic_trial_params);
     params->quic_migrate_sessions_on_network_change =
@@ -327,10 +336,13 @@ net::QuicVersion ParseQuicVersion(const std::string& quic_version) {
   return net::QUIC_VERSION_UNSUPPORTED;
 }
 
-void ParseFieldTrials(bool is_quic_force_disabled,
-                      bool is_quic_force_enabled,
-                      const std::string& quic_user_agent_id,
-                      net::HttpNetworkSession::Params* params) {
+void ParseCommandLineAndFieldTrials(const base::CommandLine& command_line,
+                                    bool is_quic_force_disabled,
+                                    const std::string& quic_user_agent_id,
+                                    net::HttpNetworkSession::Params* params) {
+  is_quic_force_disabled |= command_line.HasSwitch(switches::kDisableQuic);
+  bool is_quic_force_enabled = command_line.HasSwitch(switches::kEnableQuic);
+
   std::string quic_trial_group =
       base::FieldTrialList::FindFullName(kQuicFieldTrialName);
   VariationParameters quic_trial_params;
@@ -351,6 +363,69 @@ void ParseFieldTrials(bool is_quic_force_disabled,
   const std::string tfo_trial_group =
       base::FieldTrialList::FindFullName(kTCPFastOpenFieldTrialName);
   ConfigureTCPFastOpenParams(tfo_trial_group, params);
+
+  // Command line flags override field trials.
+  if (command_line.HasSwitch(switches::kDisableHttp2))
+    params->enable_http2 = false;
+
+  if (params->enable_quic) {
+    if (command_line.HasSwitch(switches::kQuicConnectionOptions)) {
+      params->quic_connection_options = net::ParseQuicConnectionOptions(
+          command_line.GetSwitchValueASCII(switches::kQuicConnectionOptions));
+    }
+
+    if (command_line.HasSwitch(switches::kQuicMaxPacketLength)) {
+      unsigned value;
+      if (base::StringToUint(
+              command_line.GetSwitchValueASCII(switches::kQuicMaxPacketLength),
+              &value)) {
+        params->quic_max_packet_length = value;
+      }
+    }
+
+    if (command_line.HasSwitch(switches::kQuicVersion)) {
+      net::QuicVersion version = network_session_configurator::ParseQuicVersion(
+          command_line.GetSwitchValueASCII(switches::kQuicVersion));
+      if (version != net::QUIC_VERSION_UNSUPPORTED) {
+        net::QuicVersionVector supported_versions;
+        supported_versions.push_back(version);
+        params->quic_supported_versions = supported_versions;
+      }
+    }
+
+    if (command_line.HasSwitch(switches::kOriginToForceQuicOn)) {
+      std::string origins =
+          command_line.GetSwitchValueASCII(switches::kOriginToForceQuicOn);
+      for (const std::string& host_port : base::SplitString(
+               origins, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+        if (host_port == "*")
+          params->origins_to_force_quic_on.insert(net::HostPortPair());
+        net::HostPortPair quic_origin =
+            net::HostPortPair::FromString(host_port);
+        if (!quic_origin.IsEmpty())
+          params->origins_to_force_quic_on.insert(quic_origin);
+      }
+    }
+  }
+
+  // Parameters only controlled by command line.
+  if (command_line.HasSwitch(switches::kEnableUserAlternateProtocolPorts)) {
+    params->enable_user_alternate_protocol_ports = true;
+  }
+  if (command_line.HasSwitch(switches::kIgnoreCertificateErrors)) {
+    params->ignore_certificate_errors = true;
+  }
+  UMA_HISTOGRAM_BOOLEAN(
+      "Net.Certificate.IgnoreErrors",
+      command_line.HasSwitch(switches::kIgnoreCertificateErrors));
+  if (command_line.HasSwitch(switches::kTestingFixedHttpPort)) {
+    params->testing_fixed_http_port =
+        GetSwitchValueAsInt(command_line, switches::kTestingFixedHttpPort);
+  }
+  if (command_line.HasSwitch(switches::kTestingFixedHttpsPort)) {
+    params->testing_fixed_https_port =
+        GetSwitchValueAsInt(command_line, switches::kTestingFixedHttpsPort);
+  }
 }
 
 }  // namespace network_session_configurator
