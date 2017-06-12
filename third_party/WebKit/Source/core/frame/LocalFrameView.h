@@ -490,8 +490,8 @@ class CORE_EXPORT LocalFrameView final
   }  // Whether or not we are actually visible.
   void SetParentVisible(bool) override;
   void SetSelfVisible(bool v) { self_visible_ = v; }
-  void Attach() override;
-  void Detach() override;
+  void AttachToLayout() override;
+  void DetachFromLayout() override;
   bool IsAttached() const override { return is_attached_; }
   using PluginSet = HeapHashSet<Member<PluginView>>;
   const PluginSet& Plugins() const { return plugins_; }

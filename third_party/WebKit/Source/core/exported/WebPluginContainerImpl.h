@@ -73,8 +73,8 @@ class CORE_EXPORT WebPluginContainerImpl final : public WebPluginContainerBase {
   ~WebPluginContainerImpl() override;
 
   // PluginView methods
-  void Attach() override;
-  void Detach() override;
+  void AttachToLayout() override;
+  void DetachFromLayout() override;
   bool IsAttached() const override { return is_attached_; }
   void SetParentVisible(bool) override;
   WebLayer* PlatformLayer() const override;

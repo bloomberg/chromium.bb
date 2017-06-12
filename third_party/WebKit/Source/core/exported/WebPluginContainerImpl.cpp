@@ -110,13 +110,13 @@ namespace blink {
 
 // Public methods --------------------------------------------------------------
 
-void WebPluginContainerImpl::Attach() {
+void WebPluginContainerImpl::AttachToLayout() {
   DCHECK(!is_attached_);
   is_attached_ = true;
   SetParentVisible(true);
 }
 
-void WebPluginContainerImpl::Detach() {
+void WebPluginContainerImpl::DetachFromLayout() {
   DCHECK(is_attached_);
   SetParentVisible(false);
   is_attached_ = false;

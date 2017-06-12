@@ -33,7 +33,7 @@ LocalFrameView* RemoteFrameView::ParentFrameView() const {
   return nullptr;
 }
 
-void RemoteFrameView::Attach() {
+void RemoteFrameView::AttachToLayout() {
   DCHECK(!is_attached_);
   is_attached_ = true;
   if (ParentFrameView()->IsVisible())
@@ -41,7 +41,7 @@ void RemoteFrameView::Attach() {
   FrameRectsChanged();
 }
 
-void RemoteFrameView::Detach() {
+void RemoteFrameView::DetachFromLayout() {
   DCHECK(is_attached_);
   SetParentVisible(false);
   is_attached_ = false;
