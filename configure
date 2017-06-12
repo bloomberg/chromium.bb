@@ -531,6 +531,7 @@ post_process_cmdline() {
     enabled dpcm_intra && enable_feature ext_tx
     enabled chroma_sub8x8 && enable_feature cb4x4
     enabled compound_singleref && enable_feature ext_inter
+    enabled new_multisymbol && enable_feature ec_adapt
 
     if ! enabled delta_q && enabled ext_delta_q; then
       log_echo "ext_delta_q requires delta_q, so disabling ext_delta_q"
