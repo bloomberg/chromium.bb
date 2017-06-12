@@ -478,6 +478,8 @@ H264Parser::Result H264Parser::AdvanceToNextNALU(H264NALU* nalu) {
   if (!LocateNALU(&nalu_size_with_start_code, &start_code_size)) {
     DVLOG(4) << "Could not find next NALU, bytes left in stream: "
              << bytes_left_;
+    stream_ = nullptr;
+    bytes_left_ = 0;
     return kEOStream;
   }
 
@@ -486,8 +488,11 @@ H264Parser::Result H264Parser::AdvanceToNextNALU(H264NALU* nalu) {
   DVLOG(4) << "NALU found: size=" << nalu_size_with_start_code;
 
   // Initialize bit reader at the start of found NALU.
-  if (!br_.Initialize(nalu->data, nalu->size))
+  if (!br_.Initialize(nalu->data, nalu->size)) {
+    stream_ = nullptr;
+    bytes_left_ = 0;
     return kEOStream;
+  }
 
   // Move parser state to after this NALU, so next time AdvanceToNextNALU
   // is called, we will effectively be skipping it;
