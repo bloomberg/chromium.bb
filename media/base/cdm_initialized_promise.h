@@ -21,8 +21,8 @@ class ContentDecryptionModule;
 // then passes to |cdm_created_cb|.
 class MEDIA_EXPORT CdmInitializedPromise : public SimpleCdmPromise {
  public:
-  CdmInitializedPromise(const CdmCreatedCB& cdm_created_cb,
-                        const scoped_refptr<ContentDecryptionModule>& cdm);
+  CdmInitializedPromise(CdmCreatedCB cdm_created_cb,
+                        scoped_refptr<ContentDecryptionModule> cdm);
   ~CdmInitializedPromise() override;
 
   // SimpleCdmPromise implementation.
