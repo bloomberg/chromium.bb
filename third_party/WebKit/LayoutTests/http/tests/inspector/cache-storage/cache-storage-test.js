@@ -39,7 +39,11 @@ InspectorTest.dumpCacheTree = async function()
         }
         var dataGrid = view._dataGrid;
         for (var node of dataGrid.rootNode().children) {
-            var entries = Array.from(node.element().children, td => td.textContent).filter(text => text);
+            var children = Array.from(node.element().children).filter(function (element) {
+                // Removes timestamp, potential flake depending on time zone
+                return !(element.classList.contains("responseTime-column"));
+            });
+            var entries = Array.from(children, td => td.textContent).filter(text => text);
             InspectorTest.addResult("        " + entries.join(", "));
         }
     }
