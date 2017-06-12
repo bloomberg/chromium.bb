@@ -23,6 +23,26 @@ bool ChromeIdentityService::HandleApplicationOpenURL(UIApplication* application,
   return false;
 }
 
+UINavigationController* ChromeIdentityService::CreateAccountDetailsController(
+    ChromeIdentity* identity,
+    id<ChromeIdentityBrowserOpener> browser_opener) {
+  return nil;
+}
+
+UINavigationController*
+ChromeIdentityService::CreateWebAndAppSettingDetailsController(
+    ChromeIdentity* identity,
+    id<ChromeIdentityBrowserOpener> browser_opener) {
+  return nil;
+}
+
+ChromeIdentityInteractionManager*
+ChromeIdentityService::CreateChromeIdentityInteractionManager(
+    ios::ChromeBrowserState* browser_state,
+    id<ChromeIdentityInteractionManagerDelegate> delegate) const {
+  return nil;
+}
+
 base::scoped_nsobject<UINavigationController>
 ChromeIdentityService::NewAccountDetails(
     ChromeIdentity* identity,

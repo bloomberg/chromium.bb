@@ -102,17 +102,36 @@ class ChromeIdentityService {
 
   // Returns a new account details controller to present. A cancel button is
   // present as leading navigation item.
-  virtual base::scoped_nsobject<UINavigationController> NewAccountDetails(
+  virtual UINavigationController* CreateAccountDetailsController(
       ChromeIdentity* identity,
       id<ChromeIdentityBrowserOpener> browser_opener);
 
   // Returns a new Web and App Setting Details controller to present.
+  virtual UINavigationController* CreateWebAndAppSettingDetailsController(
+      ChromeIdentity* identity,
+      id<ChromeIdentityBrowserOpener> browser_opener);
+
+  // Returns a new ChromeIdentityInteractionManager with |delegate| as its
+  // delegate.
+  virtual ChromeIdentityInteractionManager*
+  CreateChromeIdentityInteractionManager(
+      ios::ChromeBrowserState* browser_state,
+      id<ChromeIdentityInteractionManagerDelegate> delegate) const;
+
+  // Deprecated. Returns a new account details controller to present. A cancel
+  // button is present as leading navigation item.
+  virtual base::scoped_nsobject<UINavigationController> NewAccountDetails(
+      ChromeIdentity* identity,
+      id<ChromeIdentityBrowserOpener> browser_opener);
+
+  // Deprecated. Returns a new Web and App Setting Details controller to
+  // present.
   virtual base::scoped_nsobject<UINavigationController>
   NewWebAndAppSettingDetails(ChromeIdentity* identity,
                              id<ChromeIdentityBrowserOpener> browser_opener);
 
-  // Returns a new ChromeIdentityInteractionManager with |delegate| as its
-  // delegate.
+  // Deprecated. Returns a new ChromeIdentityInteractionManager with |delegate|
+  // as its delegate.
   virtual base::scoped_nsobject<ChromeIdentityInteractionManager>
   NewChromeIdentityInteractionManager(
       ios::ChromeBrowserState* browser_state,
