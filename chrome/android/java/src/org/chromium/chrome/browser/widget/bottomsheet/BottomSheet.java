@@ -1124,6 +1124,10 @@ public class BottomSheet
      */
     public void setSheetState(@SheetState int state, boolean animate) {
         assert state != SHEET_STATE_SCROLLING && state != SHEET_STATE_NONE;
+
+        // Half state is not valid on small screens.
+        if (state == SHEET_STATE_HALF && isSmallScreen()) state = SHEET_STATE_FULL;
+
         mTargetState = state;
 
         cancelAnimation();
