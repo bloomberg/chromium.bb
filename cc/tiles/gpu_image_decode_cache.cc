@@ -1123,7 +1123,8 @@ void GpuImageDecodeCache::DecodeImageIfNecessary(const DrawImage& draw_image,
         // DCHECKs here to enforce this.
         if (!draw_image.image()->getDeferredTextureImageData(
                 *context_threadsafe_proxy_.get(), &image_data->upload_params, 1,
-                backing_memory->data(), nullptr)) {
+                backing_memory->data(), nullptr,
+                ResourceFormatToClosestSkColorType(format_))) {
           DLOG(ERROR) << "getDeferredTextureImageData failed despite params "
                       << "having validated.";
           backing_memory->Unlock();
@@ -1223,7 +1224,8 @@ GpuImageDecodeCache::CreateImageData(const DrawImage& draw_image) {
       draw_image.matrix(), CalculateUploadScaleFilterQuality(draw_image),
       upload_scale_mip_level);
   size_t data_size = draw_image.image()->getDeferredTextureImageData(
-      *context_threadsafe_proxy_.get(), &params, 1, nullptr, nullptr);
+      *context_threadsafe_proxy_.get(), &params, 1, nullptr, nullptr,
+      ResourceFormatToClosestSkColorType(format_));
 
   if (data_size == 0) {
     // Can't upload image, too large or other failure. Try to use SW fallback.
