@@ -9,6 +9,7 @@
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/chromeos_switches.h"
@@ -103,6 +104,11 @@ class DataPromoNotificationTest : public testing::Test {
         new TestingProfileManager(TestingBrowserProcess::GetGlobal()));
     ASSERT_TRUE(profile_manager_->SetUp());
     profile_manager_->SetLoggedIn(true);
+
+    ProfileHelper::GetProfileByUserIdHashForTest(
+        ProfileHelper::GetUserIdHashByUserIdForTesting(
+            test_account_id.GetUserEmail()));
+
     ASSERT_TRUE(user_manager::UserManager::Get()->GetPrimaryUser());
 
     LoginState::Initialize();

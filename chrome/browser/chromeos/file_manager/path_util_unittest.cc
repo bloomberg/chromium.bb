@@ -100,14 +100,14 @@ TEST(FileManagerPathUtilTest, ConvertPathToArcUrl) {
 
   // Conversion of paths under the primary profile's downloads folder.
   const base::FilePath downloads = GetDownloadsFolderForProfile(
-      chromeos::ProfileHelper::Get()->GetProfileByUserIdHash(
+      chromeos::ProfileHelper::Get()->GetProfileByUserIdHashForTest(
           "user@gmail.com-hash"));
   EXPECT_TRUE(ConvertPathToArcUrl(downloads.AppendASCII("a/b/c"), &url));
   EXPECT_EQ(GURL("file:///sdcard/Download/a/b/c"), url);
 
   // Non-primary profile's downloads folder is not supported for ARC yet.
   const base::FilePath downloads2 = GetDownloadsFolderForProfile(
-      chromeos::ProfileHelper::Get()->GetProfileByUserIdHash(
+      chromeos::ProfileHelper::Get()->GetProfileByUserIdHashForTest(
           "user2@gmail.com-hash"));
   EXPECT_FALSE(ConvertPathToArcUrl(downloads2.AppendASCII("a/b/c"), &url));
 }

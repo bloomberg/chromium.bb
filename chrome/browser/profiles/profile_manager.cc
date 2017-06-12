@@ -487,6 +487,13 @@ Profile* ProfileManager::GetActiveUserProfile() {
   return profile;
 }
 
+// static
+Profile* ProfileManager::CreateInitialProfile() {
+  ProfileManager* const profile_manager = g_browser_process->profile_manager();
+  return profile_manager->GetProfile(profile_manager->user_data_dir().Append(
+      profile_manager->GetInitialProfileDir()));
+}
+
 Profile* ProfileManager::GetProfile(const base::FilePath& profile_dir) {
   TRACE_EVENT0("browser", "ProfileManager::GetProfile");
 
@@ -638,8 +645,8 @@ Profile* ProfileManager::GetLastUsedProfile(
     // If we get here, it means the user has logged in but the profile has not
     // finished initializing, so treat the user as not having logged in.
     if (!profile) {
-      DLOG(WARNING) << "Calling GetLastUsedProfile() before profile "
-                    << "initialization is completed. Returning login profile.";
+      LOG(WARNING) << "Calling GetLastUsedProfile() before profile "
+                   << "initialization is completed. Returning login profile.";
       return GetActiveUserOrOffTheRecordProfileFromPath(user_data_dir);
     }
     return profile->IsGuestSession() ? profile->GetOffTheRecordProfile() :
@@ -1322,9 +1329,9 @@ Profile* ProfileManager::GetActiveUserOrOffTheRecordProfileFromPath(
 
   default_profile_dir = default_profile_dir.Append(GetInitialProfileDir());
   ProfileInfo* profile_info = GetProfileInfoByPath(default_profile_dir);
-  // Fallback to default off-the-record profile, if user profile has not fully
-  // loaded yet.
-  if (profile_info && !profile_info->created)
+  // Fallback to default off-the-record profile, if user profile has not started
+  // loading or has not fully loaded yet.
+  if (!profile_info || !profile_info->created)
     default_profile_dir = profiles::GetDefaultProfileDir(user_data_dir);
 
   Profile* profile = GetProfile(default_profile_dir);

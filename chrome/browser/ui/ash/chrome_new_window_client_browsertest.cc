@@ -5,6 +5,7 @@
 #include "ash/new_window_controller.h"
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
+#include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -19,6 +20,17 @@ namespace {
 const char kTestUserName1[] = "test1@test.com";
 const char kTestUserName2[] = "test2@test.com";
 
+void CreateAndStartUserSession(const AccountId& account_id) {
+  using chromeos::ProfileHelper;
+  using session_manager::SessionManager;
+
+  const std::string user_id_hash =
+      ProfileHelper::GetUserIdHashByUserIdForTesting(account_id.GetUserEmail());
+  SessionManager::Get()->CreateSession(account_id, user_id_hash);
+  ProfileHelper::GetProfileByUserIdHashForTest(user_id_hash);
+  SessionManager::Get()->SessionStarted();
+}
+
 }  // namespace
 
 using ChromeNewWindowClientBrowserTest = InProcessBrowserTest;
@@ -28,8 +40,7 @@ using ChromeNewWindowClientBrowserTest = InProcessBrowserTest;
 // should open a new window.
 IN_PROC_BROWSER_TEST_F(ChromeNewWindowClientBrowserTest,
                        NewWindowForActiveWindowProfileTest) {
-  session_manager::SessionManager::Get()->CreateSession(
-      AccountId::FromUserEmail(kTestUserName1), kTestUserName1);
+  CreateAndStartUserSession(AccountId::FromUserEmail(kTestUserName1));
   Profile* profile1 = ProfileManager::GetActiveUserProfile();
   Browser* browser1 = CreateBrowser(profile1);
   // The newly created window should be created for the current active profile.
@@ -39,8 +50,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNewWindowClientBrowserTest,
       profile1);
 
   // Login another user and make sure the current active user changes.
-  session_manager::SessionManager::Get()->CreateSession(
-      AccountId::FromUserEmail(kTestUserName2), kTestUserName2);
+  CreateAndStartUserSession(AccountId::FromUserEmail(kTestUserName2));
   Profile* profile2 = ProfileManager::GetActiveUserProfile();
   EXPECT_NE(profile1, profile2);
 

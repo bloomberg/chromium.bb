@@ -360,6 +360,13 @@ void RestartOnTimeout() {
   chrome::AttemptRestart();
 }
 
+bool IsRunningTest() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+             ::switches::kTestName) ||
+         base::CommandLine::ForCurrentProcess()->HasSwitch(
+             ::switches::kTestType);
+}
+
 }  // namespace
 
 UserSessionManagerDelegate::~UserSessionManagerDelegate() {
@@ -902,15 +909,11 @@ void UserSessionManager::OnSessionRestoreStateChanged(
 
 void UserSessionManager::OnConnectionTypeChanged(
     net::NetworkChangeNotifier::ConnectionType type) {
-  bool is_running_test =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kTestName) ||
-      base::CommandLine::ForCurrentProcess()->HasSwitch(::switches::kTestType);
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   if (type == net::NetworkChangeNotifier::CONNECTION_NONE ||
       !user_manager->IsUserLoggedIn() ||
       !user_manager->IsLoggedInAsUserWithGaiaAccount() ||
-      user_manager->IsLoggedInAsStub() || is_running_test) {
+      user_manager->IsLoggedInAsStub() || IsRunningTest()) {
     return;
   }
 
@@ -942,8 +945,7 @@ void UserSessionManager::OnConnectionTypeChanged(
 
 void UserSessionManager::OnProfilePrepared(Profile* profile,
                                            bool browser_launched) {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kTestName)) {
+  if (!IsRunningTest()) {
     // Did not log in (we crashed or are debugging), need to restore Sync.
     // TODO(nkostylev): Make sure that OAuth state is restored correctly for all
     // users once it is fully multi-profile aware. http://crbug.com/238987
@@ -1078,6 +1080,11 @@ void UserSessionManager::InitProfilePreferences(
       const AccountInfo info = account_tracker->FindAccountInfoByEmail(
           user_context.GetAccountId().GetUserEmail());
       gaia_id = info.gaia;
+
+      // Use a fake gaia id for tests that do not have it.
+      if (IsRunningTest() && gaia_id.empty())
+        gaia_id = "fake_gaia_id_" + user_context.GetAccountId().GetUserEmail();
+
       DCHECK(!gaia_id.empty());
     }
 

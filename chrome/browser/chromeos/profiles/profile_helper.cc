@@ -64,6 +64,13 @@ class UsernameHashMatcher {
   const std::string& username_hash;
 };
 
+// Internal helper to get an already-loaded user profile by user id hash. Return
+// nullptr if the user profile is not yet loaded.
+Profile* GetProfileByUserIdHash(const std::string& user_id_hash) {
+  return g_browser_process->profile_manager()->GetProfileByPath(
+      ProfileHelper::GetProfilePathByUserIdHash(user_id_hash));
+}
+
 }  // anonymous namespace
 
 // static
@@ -93,10 +100,10 @@ ProfileHelper* ProfileHelper::Get() {
 }
 
 // static
-Profile* ProfileHelper::GetProfileByUserIdHash(
+Profile* ProfileHelper::GetProfileByUserIdHashForTest(
     const std::string& user_id_hash) {
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  return profile_manager->GetProfile(GetProfilePathByUserIdHash(user_id_hash));
+  return g_browser_process->profile_manager()->GetProfile(
+      ProfileHelper::GetProfilePathByUserIdHash(user_id_hash));
 }
 
 // static
@@ -292,8 +299,7 @@ Profile* ProfileHelper::GetProfileByUser(const user_manager::User* user) {
 
   if (!user->is_profile_created())
     return NULL;
-  Profile* profile =
-      ProfileHelper::GetProfileByUserIdHash(user->username_hash());
+  Profile* profile = GetProfileByUserIdHash(user->username_hash());
 
   // GetActiveUserProfile() or GetProfileByUserIdHash() returns a new instance
   // of ProfileImpl(), but actually its OffTheRecordProfile() should be used.
@@ -313,7 +319,7 @@ Profile* ProfileHelper::GetProfileByUserUnsafe(const user_manager::User* user) {
 
   Profile* profile = NULL;
   if (user->is_profile_created()) {
-    profile = ProfileHelper::GetProfileByUserIdHash(user->username_hash());
+    profile = GetProfileByUserIdHash(user->username_hash());
   } else {
     LOG(ERROR) << "ProfileHelper::GetProfileByUserUnsafe is called when "
                   "|user|'s profile is not created. It probably means that "

@@ -29,9 +29,10 @@ namespace chromeos {
 
 namespace {
 
-const char kUserId1[] = "user1@example.com";
-const char kUserId2[] = "user2@example.com";
-const char kUserId3[] = "user3@example.com";
+// Use consumer.example.com to keep policy code out of the tests.
+constexpr char kUserId1[] = "user1@consumer.example.com";
+constexpr char kUserId2[] = "user2@consumer.example.com";
+constexpr char kUserId3[] = "user3@consumer.example.com";
 
 }  // namespace
 

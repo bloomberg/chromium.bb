@@ -615,8 +615,9 @@ class MultiProfileFileManagerBrowserTest : public FileManagerBrowserTestBase {
 
   // Returns primary profile (if it is already created.)
   Profile* profile() override {
-    Profile* const profile = chromeos::ProfileHelper::GetProfileByUserIdHash(
-        kTestAccounts[PRIMARY_ACCOUNT_INDEX].hash);
+    Profile* const profile =
+        chromeos::ProfileHelper::GetProfileByUserIdHashForTest(
+            kTestAccounts[PRIMARY_ACCOUNT_INDEX].hash);
     return profile ? profile : FileManagerBrowserTestBase::profile();
   }
 
@@ -634,7 +635,7 @@ class MultiProfileFileManagerBrowserTest : public FileManagerBrowserTestBase {
     user_manager::UserManager::Get()->SaveUserDisplayName(
         account_id, base::UTF8ToUTF16(info.display_name));
     SigninManagerFactory::GetForProfile(
-        chromeos::ProfileHelper::GetProfileByUserIdHash(info.hash))
+        chromeos::ProfileHelper::GetProfileByUserIdHashForTest(info.hash))
         ->SetAuthenticatedAccountInfo(info.gaia_id, info.email);
   }
 
