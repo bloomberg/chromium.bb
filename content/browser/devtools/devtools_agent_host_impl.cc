@@ -411,4 +411,11 @@ bool DevToolsMessageChunkProcessor::ProcessChunkedMessageFromAgent(
   return true;
 }
 
+void DevToolsMessageChunkProcessor::Reset() {
+  message_buffer_ = std::string();
+  message_buffer_size_ = 0;
+  state_cookie_ = std::string();
+  last_call_id_ = 0;
+}
+
 }  // namespace content

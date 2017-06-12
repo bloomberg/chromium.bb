@@ -406,8 +406,6 @@ void NavigationRequest::BeginNavigation() {
 
   CreateNavigationHandle();
 
-  RenderFrameDevToolsAgentHost::OnBeforeNavigation(navigation_handle_.get());
-
   if (ShouldMakeNetworkRequestForURL(common_params_.url) &&
       !navigation_handle_->IsSameDocument()) {
     // It's safe to use base::Unretained because this NavigationRequest owns

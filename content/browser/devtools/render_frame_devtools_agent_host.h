@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <unordered_set>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -34,6 +35,7 @@ class BrowserContext;
 class DevToolsFrameTraceRecorder;
 class FrameTreeNode;
 class NavigationHandle;
+class NavigationHandleImpl;
 class NavigationThrottle;
 class RenderFrameHostImpl;
 struct BeginNavigationParams;
@@ -51,7 +53,6 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
                                         RenderFrameHost* current);
   static void OnBeforeNavigation(RenderFrameHost* current,
                                  RenderFrameHost* pending);
-  static void OnBeforeNavigation(NavigationHandle* navigation_handle);
   static void OnFailedNavigation(RenderFrameHost* host,
                                  const CommonNavigationParams& common_params,
                                  const BeginNavigationParams& begin_params,
@@ -100,6 +101,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
       const std::string& message) override;
 
   // WebContentsObserver overrides.
+  void DidStartNavigation(NavigationHandle* navigation_handle) override;
   void ReadyToCommitNavigation(NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(NavigationHandle* navigation_handle) override;
   void RenderFrameHostChanged(RenderFrameHost* old_host,
@@ -117,12 +119,6 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 
   void AboutToNavigateRenderFrame(RenderFrameHost* old_host,
                                   RenderFrameHost* new_host);
-  void AboutToNavigate(NavigationHandle* navigation_handle);
-  void OnFailedNavigation(const CommonNavigationParams& common_params,
-                          const BeginNavigationParams& begin_params,
-                          net::Error error_code);
-
-  void DispatchBufferedProtocolMessagesIfNecessary();
 
   void SetPending(RenderFrameHostImpl* host);
   void CommitPending();
@@ -143,6 +139,11 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   void DestroyOnRenderFrameGone();
 
   bool CheckConsistency();
+  void UpdateFrameHost(RenderFrameHostImpl* frame_host);
+  void MaybeReattachToRenderFrame();
+  void SendMessageFromProcessor(int session_id, const std::string& message);
+  void GrantPolicy(RenderFrameHostImpl* host);
+  void RevokePolicy(RenderFrameHostImpl* host);
 
 #if defined(OS_ANDROID)
   device::mojom::WakeLock* GetWakeLock();
@@ -168,19 +169,24 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 
   // PlzNavigate
 
-  // Handle that caused the setting of pending_.
-  NavigationHandle* pending_handle_;
-
-  // List of handles currently navigating.
-  std::set<NavigationHandle*> navigating_handles_;
-
-  struct PendingMessage {
+  // The active host we are talking to.
+  RenderFrameHostImpl* frame_host_ = nullptr;
+  struct Message {
     int session_id;
     std::string method;
     std::string message;
   };
-  // <call_id> -> PendingMessage
-  std::map<int, PendingMessage> in_navigation_protocol_message_buffer_;
+  // Chunk processor's state cookie always corresponds to a state before
+  // any of the suspended or waiting for response messages have been handled.
+  DevToolsMessageChunkProcessor chunk_processor_;
+  std::unordered_set<NavigationHandleImpl*> navigation_handles_;
+  bool render_frame_alive_ = false;
+  // These messages were sent before suspending, but their result have not been
+  // received yet, and state cookie has not been updated.
+  std::map<int, Message> waiting_for_response_messages_;
+  // These messages were queued after suspending, not sent to the agent,
+  // and will be sent after resuming.
+  std::map<int, Message> suspended_messages_;
 
   // The FrameTreeNode associated with this agent.
   FrameTreeNode* frame_tree_node_;
