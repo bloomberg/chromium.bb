@@ -75,11 +75,12 @@ public class BottomSheetNewTabControllerTest {
         mActivity.getTabModelSelector().getModel(false).addObserver(mTabModelObserver);
         mActivity.getTabModelSelector().getModel(true).addObserver(mTabModelObserver);
         mFadingBackgroundView = mActivity.getFadingBackgroundView();
+        mBottomSheetTestRule.setSheetState(BottomSheet.SHEET_STATE_PEEK, false);
     }
 
     @Test
     @SmallTest
-    public void testNTPOverTabSwitcher_Normal() throws InterruptedException, TimeoutException {
+    public void testNTPOverTabSwitcher_Normal() {
         assertEquals(1, mActivity.getTabModelSelector().getTotalTabCount());
         assertFalse("Overview mode should not be showing",
                 mActivity.getLayoutManager().overviewVisible());
@@ -114,7 +115,7 @@ public class BottomSheetNewTabControllerTest {
 
     @Test
     @SmallTest
-    public void testNTPOverTabSwitcher_Incognito() throws InterruptedException, TimeoutException {
+    public void testNTPOverTabSwitcher_Incognito() {
         assertEquals(1, mActivity.getTabModelSelector().getTotalTabCount());
         assertFalse("Overview mode should not be showing",
                 mActivity.getLayoutManager().overviewVisible());
@@ -157,7 +158,7 @@ public class BottomSheetNewTabControllerTest {
 
     @Test
     @SmallTest
-    public void testNTPOverTabSwitcher_NoTabs() throws InterruptedException, TimeoutException {
+    public void testNTPOverTabSwitcher_NoTabs() throws InterruptedException {
         // Close all tabs.
         ChromeTabUtils.closeAllTabs(InstrumentationRegistry.getInstrumentation(), mActivity);
         assertEquals(0, mActivity.getTabModelSelector().getTotalTabCount());
@@ -208,7 +209,7 @@ public class BottomSheetNewTabControllerTest {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
     }
 
-    private void createNewBlankTab(final boolean incognito) throws InterruptedException {
+    private void createNewBlankTab(final boolean incognito) {
         MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(),
                 mActivity, incognito ? R.id.new_incognito_tab_menu_id : R.id.new_tab_menu_id);
 
@@ -250,7 +251,7 @@ public class BottomSheetNewTabControllerTest {
 
         if (chromeHomeTabPageSelected) {
             assertFalse(mFadingBackgroundView.isEnabled());
-            assertEquals(0f, mFadingBackgroundView.getAlpha());
+            assertEquals(0f, mFadingBackgroundView.getAlpha(), 0);
         } else {
             assertTrue(mFadingBackgroundView.isEnabled());
         }
