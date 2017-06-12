@@ -6,8 +6,8 @@
 #define ASH_SYSTEM_IME_MENU_IME_MENU_TRAY_H_
 
 #include "ash/ash_export.h"
+#include "ash/public/interfaces/ime_info.mojom.h"
 #include "ash/system/ime/ime_observer.h"
-#include "ash/system/tray/ime_info.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/tray/tray_bubble_wrapper.h"
 #include "ash/system/virtual_keyboard/virtual_keyboard_observer.h"
@@ -103,7 +103,7 @@ class ASH_EXPORT ImeMenuTray : public TrayBackgroundView,
   ImeListView* ime_list_view_;
 
   views::Label* label_;
-  IMEInfo current_ime_;
+  mojom::ImeInfo current_ime_;
   bool show_keyboard_;
   bool force_show_keyboard_;
   bool keyboard_suppressed_;

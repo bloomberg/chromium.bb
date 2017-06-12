@@ -13,8 +13,8 @@
 #include <utility>
 
 #include "ash/ime/ime_controller.h"
+#include "ash/public/interfaces/ime_info.mojom.h"
 #include "ash/shell.h"
-#include "ash/system/tray/ime_info.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/hash.h"
@@ -63,9 +63,9 @@ namespace {
 
 InputMethodManagerImpl* g_instance = nullptr;
 
-ash::IMEInfo GetAshImeInfo(const InputMethodDescriptor& ime,
-                           const InputMethodUtil& util) {
-  ash::IMEInfo info;
+ash::mojom::ImeInfo GetAshImeInfo(const InputMethodDescriptor& ime,
+                                  const InputMethodUtil& util) {
+  ash::mojom::ImeInfo info;
   info.id = ime.id();
   info.name = util.GetInputMethodLongName(ime);
   info.medium_name = util.GetInputMethodMediumName(ime);
@@ -1370,42 +1370,27 @@ bool InputMethodManagerImpl::IsEmojiHandwritingVoiceOnImeMenuEnabled() {
   return base::FeatureList::IsEnabled(features::kEHVInputOnImeMenu);
 }
 
-ash::IMEInfo InputMethodManagerImpl::GetCurrentIme() const {
+ash::mojom::ImeInfo InputMethodManagerImpl::GetCurrentIme() const {
   if (!state_)
-    return ash::IMEInfo();
+    return ash::mojom::ImeInfo();
 
   InputMethodDescriptor ime = state_->GetCurrentInputMethod();
-  ash::IMEInfo info = GetAshImeInfo(ime, util_);
+  ash::mojom::ImeInfo info = GetAshImeInfo(ime, util_);
   info.selected = true;
   return info;
 }
 
-std::vector<ash::IMEPropertyInfo>
-InputMethodManagerImpl::GetCurrentImeProperties() const {
-  std::vector<ash::IMEPropertyInfo> properties;
-  ui::ime::InputMethodMenuItemList menu_list =
-      ui::ime::InputMethodMenuManager::GetInstance()
-          ->GetCurrentInputMethodMenuItemList();
-  for (size_t i = 0; i < menu_list.size(); ++i) {
-    ash::IMEPropertyInfo property;
-    property.key = menu_list[i].key;
-    property.name = base::UTF8ToUTF16(menu_list[i].label);
-    property.selected = menu_list[i].is_selection_item_checked;
-    properties.push_back(property);
-  }
-  return properties;
-}
-
-std::vector<ash::IMEInfo> InputMethodManagerImpl::GetAvailableImes() const {
+std::vector<ash::mojom::ImeInfo> InputMethodManagerImpl::GetAvailableImes()
+    const {
   if (!state_)
-    return std::vector<ash::IMEInfo>();
+    return std::vector<ash::mojom::ImeInfo>();
 
-  std::vector<ash::IMEInfo> imes;
+  std::vector<ash::mojom::ImeInfo> imes;
   std::string current_ime_id = state_->GetCurrentInputMethod().id();
   std::unique_ptr<InputMethodDescriptors> descriptors =
       state_->GetActiveInputMethods();
   for (const InputMethodDescriptor& descriptor : *descriptors) {
-    ash::IMEInfo info = GetAshImeInfo(descriptor, util_);
+    ash::mojom::ImeInfo info = GetAshImeInfo(descriptor, util_);
     info.selected = descriptor.id() == current_ime_id;
     imes.push_back(info);
   }
@@ -1418,6 +1403,22 @@ bool InputMethodManagerImpl::IsImeManaged() const {
 
   // Having a non-empty "allowed" list indicates that IMEs are managed.
   return !state_->GetAllowedInputMethods().empty();
+}
+
+std::vector<ash::mojom::ImeMenuItem>
+InputMethodManagerImpl::GetCurrentImeMenuItems() const {
+  std::vector<ash::mojom::ImeMenuItem> items;
+  ui::ime::InputMethodMenuItemList menu_list =
+      ui::ime::InputMethodMenuManager::GetInstance()
+          ->GetCurrentInputMethodMenuItemList();
+  for (size_t i = 0; i < menu_list.size(); ++i) {
+    ash::mojom::ImeMenuItem property;
+    property.key = menu_list[i].key;
+    property.label = base::UTF8ToUTF16(menu_list[i].label);
+    property.checked = menu_list[i].is_selection_item_checked;
+    items.push_back(property);
+  }
+  return items;
 }
 
 }  // namespace input_method

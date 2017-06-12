@@ -518,8 +518,6 @@ component("ash") {
     "system/tray/actionable_view.h",
     "system/tray/hover_highlight_view.cc",
     "system/tray/hover_highlight_view.h",
-    "system/tray/ime_info.cc",
-    "system/tray/ime_info.h",
     "system/tray/label_tray_view.cc",
     "system/tray/label_tray_view.h",
     "system/tray/size_range_layout.cc",

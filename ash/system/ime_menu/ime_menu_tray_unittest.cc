@@ -7,10 +7,10 @@
 #include "ash/accelerators/accelerator_controller.h"
 #include "ash/accessibility_delegate.h"
 #include "ash/ime/ime_controller.h"
+#include "ash/public/interfaces/ime_info.mojom.h"
 #include "ash/shell.h"
 #include "ash/system/ime_menu/ime_list_view.h"
 #include "ash/system/status_area_widget.h"
-#include "ash/system/tray/ime_info.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/status_area_widget_test_helper.h"
@@ -35,13 +35,13 @@ class TestImeController : public ImeController {
   ~TestImeController() override = default;
 
   // ImeController:
-  IMEInfo GetCurrentIme() const override { return current_ime_; }
-  std::vector<IMEInfo> GetAvailableImes() const override {
+  mojom::ImeInfo GetCurrentIme() const override { return current_ime_; }
+  std::vector<mojom::ImeInfo> GetAvailableImes() const override {
     return available_imes_;
   }
 
-  IMEInfo current_ime_;
-  std::vector<IMEInfo> available_imes_;
+  mojom::ImeInfo current_ime_;
+  std::vector<mojom::ImeInfo> available_imes_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestImeController);
@@ -78,8 +78,8 @@ class ImeMenuTrayTest : public test::AshTestBase {
   bool IsBubbleShown() { return GetTray()->IsImeMenuBubbleShown(); }
 
   // Verifies the IME menu list has been updated with the right IME list.
-  void ExpectValidImeList(const std::vector<IMEInfo>& expected_imes,
-                          const IMEInfo& expected_current_ime) {
+  void ExpectValidImeList(const std::vector<mojom::ImeInfo>& expected_imes,
+                          const mojom::ImeInfo& expected_current_ime) {
     const std::map<views::View*, std::string>& ime_map =
         ImeListViewTestApi(GetTray()->ime_list_view_).ime_map();
     EXPECT_EQ(expected_imes.size(), ime_map.size());
@@ -109,9 +109,11 @@ class ImeMenuTrayTest : public test::AshTestBase {
     ui::IMEBridge::Get()->SetCurrentInputContext(input_context);
   }
 
-  void SetCurrentIme(IMEInfo ime) { test_ime_controller_.current_ime_ = ime; }
+  void SetCurrentIme(mojom::ImeInfo ime) {
+    test_ime_controller_.current_ime_ = ime;
+  }
 
-  void SetAvailableImes(const std::vector<IMEInfo>& imes) {
+  void SetAvailableImes(const std::vector<mojom::ImeInfo>& imes) {
     test_ime_controller_.available_imes_ = imes;
   }
 
@@ -139,7 +141,7 @@ TEST_F(ImeMenuTrayTest, TrayLabelTest) {
   ASSERT_TRUE(IsVisible());
 
   // Changes the input method to "ime1".
-  IMEInfo info1;
+  mojom::ImeInfo info1;
   info1.id = "ime1";
   info1.name = UTF8ToUTF16("English");
   info1.medium_name = UTF8ToUTF16("English");
@@ -151,7 +153,7 @@ TEST_F(ImeMenuTrayTest, TrayLabelTest) {
   EXPECT_EQ(UTF8ToUTF16("US"), GetTrayText());
 
   // Changes the input method to a third-party IME extension.
-  IMEInfo info2;
+  mojom::ImeInfo info2;
   info2.id = "ime2";
   info2.name = UTF8ToUTF16("English UK");
   info2.medium_name = UTF8ToUTF16("English UK");
@@ -210,7 +212,7 @@ TEST_F(ImeMenuTrayTest, RefreshImeWithListViewCreated) {
   EXPECT_TRUE(IsTrayBackgroundActive());
   EXPECT_TRUE(IsBubbleShown());
 
-  IMEInfo info1, info2, info3;
+  mojom::ImeInfo info1, info2, info3;
   info1.id = "ime1";
   info1.name = UTF8ToUTF16("English");
   info1.medium_name = UTF8ToUTF16("English");
@@ -232,7 +234,7 @@ TEST_F(ImeMenuTrayTest, RefreshImeWithListViewCreated) {
   info3.third_party = false;
   info3.selected = false;
 
-  std::vector<IMEInfo> ime_info_list{info1, info2, info3};
+  std::vector<mojom::ImeInfo> ime_info_list{info1, info2, info3};
 
   SetAvailableImes(ime_info_list);
   SetCurrentIme(info1);

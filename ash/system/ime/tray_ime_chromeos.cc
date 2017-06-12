@@ -86,8 +86,8 @@ class IMEDetailedView : public ImeListView {
     return controlled_setting_icon_;
   }
 
-  void Update(const IMEInfoList& list,
-              const IMEPropertyInfoList& property_list,
+  void Update(const std::vector<mojom::ImeInfo>& list,
+              const std::vector<mojom::ImeMenuItem>& property_list,
               bool show_keyboard_toggle,
               SingleImeBehavior single_ime_behavior) override {
     ImeListView::Update(list, property_list, show_keyboard_toggle,
@@ -186,12 +186,12 @@ void TrayIME::Update() {
     default_->UpdateLabel(GetDefaultViewLabel(ime_list_.size() > 1));
   }
   if (detailed_) {
-    detailed_->Update(ime_list_, property_list_, ShouldShowKeyboardToggle(),
+    detailed_->Update(ime_list_, property_items_, ShouldShowKeyboardToggle(),
                       GetSingleImeBehavior());
   }
 }
 
-void TrayIME::UpdateTrayLabel(const IMEInfo& current, size_t count) {
+void TrayIME::UpdateTrayLabel(const mojom::ImeInfo& current, size_t count) {
   if (tray_label_) {
     bool visible = ShouldShowImeTrayItem(count) && is_visible_;
     tray_label_->SetVisible(visible);
@@ -266,7 +266,7 @@ void TrayIME::OnDetailedViewDestroyed() {
 void TrayIME::OnIMERefresh() {
   // Caches the current ime state.
   current_ime_ = ime_controller_->GetCurrentIme();
-  property_list_ = ime_controller_->GetCurrentImeProperties();
+  property_items_ = ime_controller_->GetCurrentImeMenuItems();
   ime_list_ = ime_controller_->GetAvailableImes();
 
   Update();
@@ -287,7 +287,7 @@ bool TrayIME::IsIMEManaged() {
 bool TrayIME::ShouldDefaultViewBeVisible() {
   return is_visible_ &&
          (ShouldShowImeTrayItem(ime_list_.size()) ||
-          property_list_.size() > 1 || ShouldShowKeyboardToggle());
+          property_items_.size() > 1 || ShouldShowKeyboardToggle());
 }
 
 bool TrayIME::ShouldShowImeTrayItem(size_t ime_count) {

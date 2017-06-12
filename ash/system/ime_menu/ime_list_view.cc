@@ -6,12 +6,12 @@
 
 #include "ash/ime/ime_controller.h"
 #include "ash/ime/ime_switch_type.h"
+#include "ash/public/interfaces/ime_info.mojom.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/actionable_view.h"
-#include "ash/system/tray/ime_info.h"
 #include "ash/system/tray/system_menu_button.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_details_view.h"
@@ -196,13 +196,14 @@ ImeListView::~ImeListView() {}
 void ImeListView::Init(bool show_keyboard_toggle,
                        SingleImeBehavior single_ime_behavior) {
   ImeController* ime_controller = Shell::Get()->ime_controller();
-  IMEInfoList list = ime_controller->GetAvailableImes();
-  IMEPropertyInfoList property_list = ime_controller->GetCurrentImeProperties();
-  Update(list, property_list, show_keyboard_toggle, single_ime_behavior);
+  std::vector<mojom::ImeInfo> list = ime_controller->GetAvailableImes();
+  std::vector<mojom::ImeMenuItem> property_items =
+      ime_controller->GetCurrentImeMenuItems();
+  Update(list, property_items, show_keyboard_toggle, single_ime_behavior);
 }
 
-void ImeListView::Update(const IMEInfoList& list,
-                         const IMEPropertyInfoList& property_list,
+void ImeListView::Update(const std::vector<mojom::ImeInfo>& list,
+                         const std::vector<mojom::ImeMenuItem>& property_items,
                          bool show_keyboard_toggle,
                          SingleImeBehavior single_ime_behavior) {
   ResetImeListView();
@@ -211,7 +212,7 @@ void ImeListView::Update(const IMEInfoList& list,
   CreateScrollableList();
 
   if (single_ime_behavior == ImeListView::SHOW_SINGLE_IME || list.size() > 1)
-    AppendImeListAndProperties(list, property_list);
+    AppendImeListAndProperties(list, property_items);
 
   if (show_keyboard_toggle)
     PrependKeyboardStatusRow();
@@ -247,8 +248,8 @@ void ImeListView::CloseImeListView() {
 }
 
 void ImeListView::AppendImeListAndProperties(
-    const IMEInfoList& list,
-    const IMEPropertyInfoList& property_list) {
+    const std::vector<mojom::ImeInfo>& list,
+    const std::vector<mojom::ImeMenuItem>& property_list) {
   DCHECK(ime_map_.empty());
   for (size_t i = 0; i < list.size(); i++) {
     views::View* ime_view =
@@ -269,8 +270,8 @@ void ImeListView::AppendImeListAndProperties(
       // Adds the property items.
       for (size_t i = 0; i < property_list.size(); i++) {
         ImeListItemView* property_view = new ImeListItemView(
-            owner(), this, base::string16(), property_list[i].name,
-            property_list[i].selected, kMenuIconColor);
+            owner(), this, base::string16(), property_list[i].label,
+            property_list[i].checked, kMenuIconColor);
         scroll_content()->AddChildView(property_view);
         property_map_[property_view] = property_list[i].key;
       }
