@@ -117,6 +117,10 @@ class CORE_EXPORT ContainerNode : public Node {
                      ExceptionState& = ASSERT_NO_EXCEPTION);
   Node* RemoveChild(Node* child, ExceptionState& = ASSERT_NO_EXCEPTION);
   Node* AppendChild(Node* new_child, ExceptionState& = ASSERT_NO_EXCEPTION);
+  bool EnsurePreInsertionValidity(const Node& new_child,
+                                  const Node* next,
+                                  const Node* old_child,
+                                  ExceptionState&) const;
 
   Element* getElementById(const AtomicString& id) const;
   HTMLCollection* getElementsByTagName(const AtomicString&);
@@ -415,10 +419,6 @@ class CORE_EXPORT ContainerNode : public Node {
   bool RecheckNodeInsertionStructuralPrereq(const NodeVector&,
                                             const Node* next,
                                             ExceptionState&);
-  inline bool EnsurePreInsertionValidity(const Node& new_child,
-                                         const Node* next,
-                                         const Node* old_child,
-                                         ExceptionState&) const;
   inline bool CheckParserAcceptChild(const Node& new_child) const;
   inline bool ContainsConsideringHostElements(const Node&,
                                               ExceptionState&) const;
