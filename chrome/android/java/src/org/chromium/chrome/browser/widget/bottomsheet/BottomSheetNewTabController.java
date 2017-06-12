@@ -75,14 +75,19 @@ public class BottomSheetNewTabController extends EmptyBottomSheetObserver {
         // to ensure the toolbar ends up in the correct state.
         if (!mLayoutManager.overviewVisible()) mLayoutManager.showOverview(true);
 
-        // Open the sheet.
-        mBottomSheet.setSheetState(mTabModelSelector.getTotalTabCount() == 0
-                        ? BottomSheet.SHEET_STATE_FULL
-                        : BottomSheet.SHEET_STATE_HALF,
-                true);
-
-        mBottomSheet.getBottomSheetMetrics().recordSheetOpenReason(
-                BottomSheetMetrics.OPENED_BY_NEW_TAB_CREATION);
+        // Open the sheet if it isn't open already. When toggling accessibility mode, this method
+        // may get called while the sheet is open. In that case, we should finish showing the new
+        // tab UI.
+        if (!mBottomSheet.isSheetOpen()) {
+            mBottomSheet.setSheetState(mTabModelSelector.getTotalTabCount() == 0
+                            ? BottomSheet.SHEET_STATE_FULL
+                            : BottomSheet.SHEET_STATE_HALF,
+                    true);
+            mBottomSheet.getBottomSheetMetrics().recordSheetOpenReason(
+                    BottomSheetMetrics.OPENED_BY_NEW_TAB_CREATION);
+        } else {
+            finishShowingNewTabUi();
+        }
     }
 
     /**
@@ -106,12 +111,7 @@ public class BottomSheetNewTabController extends EmptyBottomSheetObserver {
     public void onSheetOpened() {
         if (!mIsShowingNewTabUi) return;
 
-        // Transition from the tab switcher toolbar to the normal toolbar.
-        mToolbar.showNormalToolbar();
-
-        // ToolbarPhone makes the url bar unfocusable while in the tab switcher; make sure it is
-        // focusable when the sheet is open.
-        mLocationBar.setUrlBarFocusable(true);
+        finishShowingNewTabUi();
     }
 
     @Override
@@ -149,5 +149,14 @@ public class BottomSheetNewTabController extends EmptyBottomSheetObserver {
     private void onNewTabUiHidden() {
         mTabModelSelector.getModel(false).setIsPendingTabAdd(false);
         mTabModelSelector.getModel(true).setIsPendingTabAdd(false);
+    }
+
+    private void finishShowingNewTabUi() {
+        // Transition from the tab switcher toolbar to the normal toolbar.
+        mToolbar.showNormalToolbar();
+
+        // ToolbarPhone makes the url bar unfocusable while in the tab switcher; make sure it is
+        // focusable when the sheet is open.
+        mLocationBar.setUrlBarFocusable(true);
     }
 }
