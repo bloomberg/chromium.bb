@@ -163,10 +163,6 @@ class LocalFrameClientImpl final : public LocalFrameClient {
       WebMediaPlayerClient*) override;
   WebRemotePlaybackClient* CreateWebRemotePlaybackClient(
       HTMLMediaElement&) override;
-  ObjectContentType GetObjectContentType(
-      const KURL&,
-      const WTF::String& mime_type,
-      bool should_prefer_plug_ins_for_images) override;
   void DidChangeScrollOffset() override;
   void DidUpdateCurrentHistoryItem() override;
 
