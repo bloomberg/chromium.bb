@@ -10,8 +10,8 @@
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/common/extensions/api/notifications/notification_style.h"
-#include "content/public/child/v8_value_converter.h"
 #include "extensions/renderer/script_context.h"
+#include "gin/data_object_builder.h"
 #include "ui/base/layout.h"
 
 namespace extensions {
@@ -31,23 +31,29 @@ void NotificationsNativeHandler::GetNotificationImageSizes(
   float scale_factor =
       ui::GetScaleForScaleFactor(ui::GetSupportedScaleFactors().back());
 
-  std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
-  dict->SetDouble("scaleFactor", scale_factor);
-  dict->SetInteger("icon.width", bitmap_sizes.icon_size.width());
-  dict->SetInteger("icon.height", bitmap_sizes.icon_size.height());
-  dict->SetInteger("image.width", bitmap_sizes.image_size.width());
-  dict->SetInteger("image.height", bitmap_sizes.image_size.height());
-  dict->SetInteger("buttonIcon.width", bitmap_sizes.button_icon_size.width());
-  dict->SetInteger("buttonIcon.height", bitmap_sizes.button_icon_size.height());
-  dict->SetInteger("appIconMask.width",
-                   bitmap_sizes.app_icon_mask_size.width());
-  dict->SetInteger("appIconMask.height",
-                   bitmap_sizes.app_icon_mask_size.height());
+  v8::Isolate* isolate = GetIsolate();
+  v8::HandleScope handle_scope(isolate);
 
-  std::unique_ptr<content::V8ValueConverter> converter(
-      content::V8ValueConverter::create());
-  args.GetReturnValue().Set(
-      converter->ToV8Value(dict.get(), context()->v8_context()));
+  struct {
+    const char* key;
+    const gfx::Size& size;
+  } entries[] = {
+      {"icon", bitmap_sizes.icon_size},
+      {"image", bitmap_sizes.image_size},
+      {"buttonIcon", bitmap_sizes.button_icon_size},
+      {"appIconMask", bitmap_sizes.app_icon_mask_size},
+  };
+
+  gin::DataObjectBuilder builder(isolate);
+  builder.Set("scaleFactor", scale_factor);
+  for (const auto& entry : entries) {
+    builder.Set(entry.key, gin::DataObjectBuilder(isolate)
+                               .Set("width", entry.size.width())
+                               .Set("height", entry.size.height())
+                               .Build());
+  }
+
+  args.GetReturnValue().Set(builder.Build());
 }
 
 }  // namespace extensions
