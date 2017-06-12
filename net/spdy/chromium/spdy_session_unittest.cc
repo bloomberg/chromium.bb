@@ -5516,12 +5516,10 @@ class SendInitialSettingsOnNewSpdySessionTest : public SpdySessionTest {
                                 /* owns_buffer = */ false);
     SpdySerializedFrame settings_frame(
         spdy_util_.ConstructSpdySettings(expected_settings));
-    const SpdySerializedFrame* frames[2] = {&preface, &settings_frame};
-    char combined_frames[100];
-    int combined_frames_len = CombineFrames(
-        frames, arraysize(frames), combined_frames, arraysize(combined_frames));
-    MockWrite writes[] = {
-        MockWrite(ASYNC, combined_frames, combined_frames_len)};
+
+    SpdySerializedFrame combined_frame =
+        CombineFrames({&preface, &settings_frame});
+    MockWrite writes[] = {CreateMockWrite(combined_frame, 0)};
 
     StaticSocketDataProvider data(reads, arraysize(reads), writes,
                                   arraysize(writes));
