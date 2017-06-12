@@ -4,10 +4,13 @@
 
 source_set("widget") {
   sources = [
+    "sc_content_widget_coordinator.h",
+    "sc_content_widget_coordinator.mm",
     "sc_search_widget_coordinator.h",
     "sc_search_widget_coordinator.mm",
   ]
   deps = [
+    "//ios/chrome/content_widget_extension:content_widget",
     "//ios/chrome/search_widget_extension:search_widget",
     "//ios/showcase/common",
   ]

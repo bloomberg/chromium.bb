@@ -86,6 +86,11 @@
       showcase::kClassForInstantiationKey : @"SCSearchWidgetCoordinator",
       showcase::kUseCaseKey : @"Search Widget",
     },
+    @{
+      showcase::kClassForDisplayKey : @"ContentWidgetViewController",
+      showcase::kClassForInstantiationKey : @"SCContentWidgetCoordinator",
+      showcase::kUseCaseKey : @"Content Widget",
+    },
   ];
 }
 
