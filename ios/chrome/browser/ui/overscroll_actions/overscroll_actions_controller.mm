@@ -8,8 +8,6 @@
 
 #include <algorithm>
 #include "base/logging.h"
-#include "base/mac/objc_property_releaser.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/metrics/histogram_macros.h"
 #import "ios/chrome/browser/ui/browser_view_controller.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_gesture_recognizer.h"
@@ -20,6 +18,10 @@
 #include "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/voice/voice_search_notification_names.h"
 #import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 // This enum is used to record the overscroll actions performed by the user on
@@ -150,7 +152,7 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
   // Store the set of notifications that did increment the overscroll actions
   // lock. It is used in order to enforce the fact that the lock should only be
   // incremented/decremented once for a given notification.
-  base::scoped_nsobject<NSMutableSet> _lockIncrementNotifications;
+  NSMutableSet* _lockIncrementNotifications;
   // Store the notification name counterpart of another notification name.
   // Overscroll actions locking and unlocking works by listening to balanced
   // notifications. One notification lock and it's counterpart unlock. This
@@ -158,21 +160,20 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
   // counterpart name. Exemple:
   // UIKeyboardWillShowNotification trigger a lock. Its counterpart notification
   // name is UIKeyboardWillHideNotification.
-  base::scoped_nsobject<NSDictionary> _lockNotificationsCounterparts;
+  NSDictionary* _lockNotificationsCounterparts;
   // A view used to catch touches on the webview.
-  base::scoped_nsobject<UIView> _dummyView;
+  UIView* _dummyView;
   // The proxy used to interact with the webview.
-  base::scoped_nsprotocol<id<CRWWebViewProxy>> _webViewProxy;
+  id<CRWWebViewProxy> _webViewProxy;
   // The proxy used to interact with the webview's scrollview.
-  base::scoped_nsobject<CRWWebViewScrollViewProxy> _webViewScrollViewProxy;
+  CRWWebViewScrollViewProxy* _webViewScrollViewProxy;
   // The scrollview driving the OverscrollActionsController when not using
   // the scrollview from the CRWWebControllerObserver.
-  base::scoped_nsobject<UIScrollView> _scrollview;
-  base::mac::ObjCPropertyReleaser _propertyReleaser_OverscrollActionsController;
+  UIScrollView* _scrollview;
 }
 
 // The view displayed over the header view holding the actions.
-@property(nonatomic, retain) OverscrollActionsView* overscrollActionView;
+@property(nonatomic, strong) OverscrollActionsView* overscrollActionView;
 // Initial top inset added to the scrollview for the header.
 // This property is set from the delegate headerInset and cached on first
 // call. The cached value is reset when the webview proxy is set.
@@ -191,7 +192,7 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
 // overscroll controller is in OverscrollStateActionReady.
 @property(nonatomic, assign) CGPoint panPointScreenOrigin;
 // Pan gesture recognizer used to track horizontal touches.
-@property(nonatomic, retain) UIPanGestureRecognizer* panGestureRecognizer;
+@property(nonatomic, strong) UIPanGestureRecognizer* panGestureRecognizer;
 
 // Registers notifications to lock the overscroll actions on certain UI states.
 - (void)registerNotifications;
@@ -246,18 +247,16 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
 - (instancetype)initWithScrollView:(UIScrollView*)scrollView {
   self = [super init];
   if (self) {
-    _propertyReleaser_OverscrollActionsController.Init(
-        self, [OverscrollActionsController class]);
     _overscrollActionView =
         [[OverscrollActionsView alloc] initWithFrame:CGRectZero];
     _overscrollActionView.delegate = self;
-    _scrollview.reset([scrollView retain]);
+    _scrollview = scrollView;
     if (_scrollview) {
       [self setup];
     }
-    _lockIncrementNotifications.reset([[NSMutableSet alloc] init]);
+    _lockIncrementNotifications = [[NSMutableSet alloc] init];
 
-    _lockNotificationsCounterparts.reset([@{
+    _lockNotificationsCounterparts = @{
       UIKeyboardWillHideNotification : UIKeyboardWillShowNotification,
       kMenuWillHideNotification : kMenuWillShowNotification,
       kTabHistoryPopupWillHideNotification :
@@ -271,7 +270,7 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
           ios_internal::kLocationBarBecomesFirstResponderNotification,
       ios_internal::kSideSwipeDidStopNotification :
           ios_internal::kSideSwipeWillStartNotification
-    } retain]);
+    };
     [self registerNotifications];
   }
   return self;
@@ -280,7 +279,6 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
 - (void)dealloc {
   self.overscrollActionView.delegate = nil;
   [self invalidate];
-  [super dealloc];
 }
 
 - (void)scheduleInvalidate {
@@ -298,9 +296,9 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [self setWebViewInteractionEnabled:YES];
   _delegate = nil;
-  _webViewProxy.reset();
+  _webViewProxy = nil;
   [_webViewScrollViewProxy removeObserver:self];
-  _webViewScrollViewProxy.reset();
+  _webViewScrollViewProxy = nil;
 }
 
 - (void)clear {
@@ -515,9 +513,9 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
   DCHECK([webViewProxy scrollViewProxy]);
   _initialHeaderInset = 0;
   _initialHeaderHeight = 0;
-  _webViewProxy.reset([webViewProxy retain]);
+  _webViewProxy = webViewProxy;
   [_webViewScrollViewProxy removeObserver:self];
-  _webViewScrollViewProxy.reset([[webViewProxy scrollViewProxy] retain]);
+  _webViewScrollViewProxy = [webViewProxy scrollViewProxy];
   [_webViewScrollViewProxy addObserver:self];
   [self enableOverscrollActions];
 }
@@ -525,7 +523,7 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
 - (void)webControllerWillClose:(CRWWebController*)webController {
   [self disableOverscrollActions];
   [_webViewScrollViewProxy removeObserver:self];
-  _webViewScrollViewProxy.reset();
+  _webViewScrollViewProxy = nil;
 }
 
 #pragma mark - Private
@@ -558,7 +556,7 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
 - (void)registerNotifications {
   NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
   for (NSString* counterpartNotificationName in _lockNotificationsCounterparts
-           .get()) {
+           .allKeys) {
     [center addObserver:self
                selector:@selector(incrementOverscrollActionLockForNotification:)
                    name:[_lockNotificationsCounterparts
@@ -581,30 +579,30 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
 }
 
 - (void)setup {
-  base::scoped_nsobject<UIPanGestureRecognizer> panGesture;
+  UIPanGestureRecognizer* panGesture;
   // Workaround a bug occuring when Speak Selection is enabled.
   // See crbug.com/699655.
   if (UIAccessibilityIsSpeakSelectionEnabled()) {
-    panGesture.reset([[OverscrollActionsGestureRecognizer alloc]
+    panGesture = [[OverscrollActionsGestureRecognizer alloc]
         initWithTarget:self
-                action:@selector(panGesture:)]);
+                action:@selector(panGesture:)];
   } else {
-    panGesture.reset([[UIPanGestureRecognizer alloc]
-        initWithTarget:self
-                action:@selector(panGesture:)]);
+    panGesture =
+        [[UIPanGestureRecognizer alloc] initWithTarget:self
+                                                action:@selector(panGesture:)];
   }
   [panGesture setMaximumNumberOfTouches:1];
   [panGesture setDelegate:self];
   [[self scrollView] addGestureRecognizer:panGesture];
-  self.panGestureRecognizer = panGesture.get();
+  self.panGestureRecognizer = panGesture;
 }
 
 - (id<OverscrollActionsScrollView>)scrollView {
   if (_scrollview) {
-    return static_cast<id<OverscrollActionsScrollView>>(_scrollview.get());
+    return static_cast<id<OverscrollActionsScrollView>>(_scrollview);
   } else {
     return static_cast<id<OverscrollActionsScrollView>>(
-        _webViewScrollViewProxy.get());
+        _webViewScrollViewProxy);
   }
 }
 
@@ -788,7 +786,7 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
   // specific subviews.
   if (!enabled) {
     if (!_dummyView)
-      _dummyView.reset([[UIView alloc] init]);
+      _dummyView = [[UIView alloc] init];
     [_dummyView setFrame:[_webViewProxy bounds]];
     [_webViewProxy addSubview:_dummyView];
   } else {
