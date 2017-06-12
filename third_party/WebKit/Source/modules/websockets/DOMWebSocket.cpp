@@ -663,7 +663,7 @@ void DOMWebSocket::Resume() {
 
 void DOMWebSocket::DidConnect(const String& subprotocol,
                               const String& extensions) {
-  NETWORK_DVLOG(1) << "WebSocket " << this << " didConnect()";
+  NETWORK_DVLOG(1) << "WebSocket " << this << " DidConnect()";
   if (state_ != kConnecting)
     return;
   state_ = kOpen;
@@ -674,7 +674,7 @@ void DOMWebSocket::DidConnect(const String& subprotocol,
 
 void DOMWebSocket::DidReceiveTextMessage(const String& msg) {
   NETWORK_DVLOG(1) << "WebSocket " << this
-                   << " didReceiveTextMessage() Text message " << msg;
+                   << " DidReceiveTextMessage() Text message " << msg;
   if (state_ != kOpen)
     return;
   RecordReceiveTypeHistogram(kWebSocketReceiveTypeString);
@@ -685,7 +685,7 @@ void DOMWebSocket::DidReceiveTextMessage(const String& msg) {
 
 void DOMWebSocket::DidReceiveBinaryMessage(
     std::unique_ptr<Vector<char>> binary_data) {
-  NETWORK_DVLOG(1) << "WebSocket " << this << " didReceiveBinaryMessage() "
+  NETWORK_DVLOG(1) << "WebSocket " << this << " DidReceiveBinaryMessage() "
                    << binary_data->size() << " byte binary message";
   switch (binary_type_) {
     case kBinaryTypeBlob: {
@@ -716,14 +716,14 @@ void DOMWebSocket::DidReceiveBinaryMessage(
 }
 
 void DOMWebSocket::DidError() {
-  NETWORK_DVLOG(1) << "WebSocket " << this << " didError()";
+  NETWORK_DVLOG(1) << "WebSocket " << this << " DidError()";
   state_ = kClosed;
   event_queue_->Dispatch(Event::Create(EventTypeNames::error));
 }
 
 void DOMWebSocket::DidConsumeBufferedAmount(uint64_t consumed) {
   DCHECK_GE(buffered_amount_, consumed + consumed_buffered_amount_);
-  NETWORK_DVLOG(1) << "WebSocket " << this << " didConsumeBufferedAmount("
+  NETWORK_DVLOG(1) << "WebSocket " << this << " DidConsumeBufferedAmount("
                    << consumed << ")";
   if (state_ == kClosed)
     return;
@@ -733,7 +733,7 @@ void DOMWebSocket::DidConsumeBufferedAmount(uint64_t consumed) {
 }
 
 void DOMWebSocket::DidStartClosingHandshake() {
-  NETWORK_DVLOG(1) << "WebSocket " << this << " didStartClosingHandshake()";
+  NETWORK_DVLOG(1) << "WebSocket " << this << " DidStartClosingHandshake()";
   state_ = kClosing;
 }
 
@@ -741,7 +741,7 @@ void DOMWebSocket::DidClose(
     ClosingHandshakeCompletionStatus closing_handshake_completion,
     unsigned short code,
     const String& reason) {
-  NETWORK_DVLOG(1) << "WebSocket " << this << " didClose()";
+  NETWORK_DVLOG(1) << "WebSocket " << this << " DidClose()";
   if (!channel_)
     return;
   bool all_data_has_been_consumed =
