@@ -215,14 +215,6 @@ struct CONTENT_EXPORT WebPreferences {
   // Cues will not be placed in this margin area.
   float text_track_margin_percentage;
 
-  // Specifies aggressiveness of background tab throttling.
-  // expensive_background_throttling_cpu_budget is given in percentages,
-  // other values are in seconds.
-  float expensive_background_throttling_cpu_budget;
-  float expensive_background_throttling_initial_budget;
-  float expensive_background_throttling_max_budget;
-  float expensive_background_throttling_max_delay;
-
 #if defined(OS_ANDROID)
   bool text_autosizing_enabled;
   float font_scale_factor;

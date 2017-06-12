@@ -35,7 +35,6 @@ class PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
  public:
   WebViewSchedulerImpl(
       WebScheduler::InterventionReporter* intervention_reporter,
-      WebViewScheduler::WebViewSchedulerSettings* settings,
       RendererSchedulerImpl* renderer_scheduler,
       bool disable_background_timer_throttling);
 
@@ -125,7 +124,6 @@ class PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
   bool has_active_connection_;
   CPUTimeBudgetPool* background_time_budget_pool_;  // Not owned.
   CancelableClosureHolder delayed_background_throttling_enabler_;
-  WebViewScheduler::WebViewSchedulerSettings* settings_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(WebViewSchedulerImpl);
 };

@@ -51,11 +51,7 @@ WebSettingsImpl::WebSettingsImpl(Settings* settings,
       shrinks_viewport_content_to_fit_(false),
       viewport_meta_layout_size_quirk_(false),
       viewport_meta_non_user_scalable_quirk_(false),
-      clobber_user_agent_initial_scale_quirk_(false),
-      expensive_background_throttling_cpu_budget_(-1),
-      expensive_background_throttling_initial_budget_(-1),
-      expensive_background_throttling_max_budget_(-1),
-      expensive_background_throttling_max_delay_(-1) {
+      clobber_user_agent_initial_scale_quirk_(false) {
   DCHECK(settings);
 }
 
@@ -699,26 +695,6 @@ void WebSettingsImpl::SetV8CacheStrategiesForCacheStorage(
 
 void WebSettingsImpl::SetViewportStyle(WebViewportStyle style) {
   dev_tools_emulator_->SetViewportStyle(style);
-}
-
-void WebSettingsImpl::SetExpensiveBackgroundThrottlingCPUBudget(
-    float cpu_budget) {
-  expensive_background_throttling_cpu_budget_ = cpu_budget;
-}
-
-void WebSettingsImpl::SetExpensiveBackgroundThrottlingInitialBudget(
-    float initial_budget) {
-  expensive_background_throttling_initial_budget_ = initial_budget;
-}
-
-void WebSettingsImpl::SetExpensiveBackgroundThrottlingMaxBudget(
-    float max_budget) {
-  expensive_background_throttling_max_budget_ = max_budget;
-}
-
-void WebSettingsImpl::SetExpensiveBackgroundThrottlingMaxDelay(
-    float max_delay) {
-  expensive_background_throttling_max_delay_ = max_delay;
 }
 
 void WebSettingsImpl::SetMediaControlsEnabled(bool enabled) {

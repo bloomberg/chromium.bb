@@ -17,18 +17,6 @@ class WebFrameScheduler;
 
 class PLATFORM_EXPORT WebViewScheduler {
  public:
-  // Helper interface to plumb settings from WebSettings to scheduler.
-  class PLATFORM_EXPORT WebViewSchedulerSettings {
-   public:
-    virtual ~WebViewSchedulerSettings() {}
-
-    // Background throttling aggressiveness settings.
-    virtual float ExpensiveBackgroundThrottlingCPUBudget() = 0;
-    virtual float ExpensiveBackgroundThrottlingInitialBudget() = 0;
-    virtual float ExpensiveBackgroundThrottlingMaxBudget() = 0;
-    virtual float ExpensiveBackgroundThrottlingMaxDelay() = 0;
-  };
-
   virtual ~WebViewScheduler() {}
 
   // The scheduler may throttle tasks associated with background pages.
