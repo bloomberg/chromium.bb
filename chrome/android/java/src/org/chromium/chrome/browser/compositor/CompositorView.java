@@ -325,12 +325,7 @@ public class CompositorView
             mCompositorSurfaceManager.doneWithUnownedSurface();
         }
 
-        List<Runnable> runnables = mDrawingFinishedCallbacks;
-        mDrawingFinishedCallbacks = null;
-        if (runnables == null) return;
-        for (Runnable r : runnables) {
-            r.run();
-        }
+        runDrawFinishedCallbacks();
     }
 
     /**
@@ -394,6 +389,19 @@ public class CompositorView
         // the surface as well.  Otherwise, the surface is kept, which can
         // interfere with VR.
         mCompositorSurfaceManager.setVisibility(visibility);
+        // Clear out any outstanding callbacks that won't run if set to invisible.
+        if (visibility == View.INVISIBLE) {
+            runDrawFinishedCallbacks();
+        }
+    }
+
+    private void runDrawFinishedCallbacks() {
+        List<Runnable> runnables = mDrawingFinishedCallbacks;
+        mDrawingFinishedCallbacks = null;
+        if (runnables == null) return;
+        for (Runnable r : runnables) {
+            r.run();
+        }
     }
 
     // Implemented in native
