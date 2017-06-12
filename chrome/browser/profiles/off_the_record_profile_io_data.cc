@@ -205,8 +205,6 @@ void OffTheRecordProfileIOData::InitializeInternal(
   ApplyProfileParamsToContext(main_context);
 
   main_context->set_transport_security_state(transport_security_state());
-  main_context->set_cert_transparency_verifier(
-      io_thread_globals->system_request_context->cert_transparency_verifier());
   main_context->set_ct_policy_enforcer(
       io_thread_globals->system_request_context->ct_policy_enforcer());
 
