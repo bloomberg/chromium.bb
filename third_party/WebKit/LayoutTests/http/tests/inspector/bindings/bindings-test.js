@@ -148,6 +148,39 @@ InspectorTest.waitForSourceMap = function(sourceMapURLSuffix) {
     return promise;
 }
 
+var locationPool = new Bindings.LiveLocationPool();
+var nameSymbol = Symbol('LiveLocationNameForTest');
+var createdSymbol = Symbol('LiveLocationCreated');
+
+InspectorTest.createDebuggerLiveLocation = function(name, urlSuffix, lineNumber, columnNumber) {
+    var script = InspectorTest.debuggerModel.scripts().find(script => script.sourceURL.endsWith(urlSuffix));
+    var rawLocation = InspectorTest.debuggerModel.createRawLocation(script, lineNumber || 0, columnNumber || 0);
+    return Bindings.debuggerWorkspaceBinding.createLiveLocation(rawLocation, updateDelegate.bind(null, name), locationPool);
+}
+
+InspectorTest.createCSSLiveLocation = function(name, urlSuffix, lineNumber, columnNumber) {
+    var header = InspectorTest.cssModel.styleSheetHeaders().find(header => header.resourceURL().endsWith(urlSuffix));
+    var rawLocation = new SDK.CSSLocation(header, lineNumber || 0, columnNumber || 0);
+    return Bindings.cssWorkspaceBinding.createLiveLocation(rawLocation, updateDelegate.bind(null, name), locationPool);
+}
+
+function updateDelegate(name, liveLocation) {
+    liveLocation[nameSymbol] = name;
+    var hint = liveLocation[createdSymbol] ? '[ UPDATE ]' : '[ CREATE ]';
+    liveLocation[createdSymbol] = true;
+    InspectorTest.dumpLocation(liveLocation, hint);
+}
+
+InspectorTest.dumpLocation = function(liveLocation, hint) {
+    hint = hint || '[  GET   ]';
+    var prefix = `${hint}  LiveLocation-${liveLocation[nameSymbol]}: `;
+    var uiLocation = liveLocation.uiLocation();
+    if (!uiLocation) {
+        InspectorTest.addResult(prefix + 'null');
+        return;
+    }
+    InspectorTest.addResult(prefix + uiLocation.uiSourceCode.url() + ':' + uiLocation.lineNumber + ':' + uiLocation.columnNumber);
+}
 
 }
 

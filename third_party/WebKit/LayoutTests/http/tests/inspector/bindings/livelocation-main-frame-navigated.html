@@ -1,0 +1,41 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="./bindings-test.js"></script>
+
+<script>
+
+async function test()
+{
+    InspectorTest.markStep('attachFrame');
+    await Promise.all([
+        InspectorTest.attachFrame('frame', './resources/sourcemap-frame.html'),
+        InspectorTest.waitForSourceMap('sourcemap-script.js.map'),
+        InspectorTest.waitForSourceMap('sourcemap-style.css.map'),
+    ]);
+
+    var jsLiveLocation = InspectorTest.createDebuggerLiveLocation('js', 'sourcemap-script.js');
+    var cssLiveLocation = InspectorTest.createCSSLiveLocation('css', 'sourcemap-style.css');
+
+    InspectorTest.markStep('navigateMainFrame');
+    var url = "http://127.0.0.1:8000/inspector/bindings/resources/empty-page.html";
+    await InspectorTest.navigatePromise(url);
+    InspectorTest.dumpLocation(jsLiveLocation);
+    InspectorTest.dumpLocation(cssLiveLocation);
+
+    InspectorTest.markStep('navigateBack');
+    var originalUrl = "http://127.0.0.1:8000/inspector/bindings/bindings-main-frame-navigated.html";
+    await InspectorTest.navigatePromise(originalUrl);
+
+    InspectorTest.completeTest();
+}
+
+</script>
+
+</head>
+<body onload="runTest()">
+<p>
+Verify that debugger live location gets updated.
+</p>
+</body>
+</html>
