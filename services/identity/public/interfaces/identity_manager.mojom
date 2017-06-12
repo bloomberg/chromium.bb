@@ -4,14 +4,30 @@
 
 module identity.mojom;
 
-// TODO(blundell): Move account_id.mojom to
-// //services/identity/public/interfaces.
 import "components/signin/public/interfaces/account_id.mojom";
+import "mojo/common/time.mojom";
+import "services/identity/public/interfaces/google_service_auth_error.mojom";
+import "services/identity/public/interfaces/scope_set.mojom";
 
 // Gives access to information about the user's Google accounts.
 interface IdentityManager {
   // Returns the AccountId for the Google account that serves as the user's
   // primary account, or null if the user has no primary account (e.g., if they
   // are not signed in).
+  // TODO(blundell): Move away from using this struct to using a typemapped
+  // version of AccountInfo (and call this GetPrimaryAccountInfo()).
   GetPrimaryAccountId() => (signin.mojom.AccountId? account_id);
+
+  // Returns an access token with the requested scopes for the given
+  // |account_id|, or null if it is not possible to obtain such a token (e.g.,
+  // because the user is not signed in with that account). |expiration_time|
+  // gives the time until the returned token expires.  In the case of failure,
+  // |error| will give information detailing the reason for the failure, and
+  // |expiration_time| is undefined. |consumer_id| is an arbitrary string used
+  // to identity the consumer (e.g., in about:://signin-internals).
+  // NOTE: |account_id| corresponds to that used by OAuth2TokenService.
+  GetAccessToken(string account_id, ScopeSet scopes, string consumer_id) =>
+     (string? token,
+      mojo.common.mojom.Time expiration_time,
+      GoogleServiceAuthError error);
 };

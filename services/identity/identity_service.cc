@@ -9,8 +9,9 @@
 
 namespace identity {
 
-IdentityService::IdentityService(SigninManagerBase* signin_manager)
-    : signin_manager_(signin_manager) {
+IdentityService::IdentityService(SigninManagerBase* signin_manager,
+                                 ProfileOAuth2TokenService* token_service)
+    : signin_manager_(signin_manager), token_service_(token_service) {
   registry_.AddInterface<mojom::IdentityManager>(
       base::Bind(&IdentityService::Create, base::Unretained(this)));
 }
@@ -29,7 +30,7 @@ void IdentityService::OnBindInterface(
 
 void IdentityService::Create(const service_manager::BindSourceInfo& source_info,
                              mojom::IdentityManagerRequest request) {
-  IdentityManager::Create(std::move(request), signin_manager_);
+  IdentityManager::Create(std::move(request), signin_manager_, token_service_);
 }
 
 }  // namespace identity

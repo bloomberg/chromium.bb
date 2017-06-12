@@ -297,15 +297,16 @@ class FakeGetAuthTokenFunction : public IdentityGetAuthTokenFunction {
 
   void StartLoginAccessTokenRequest() override {
     if (auto_login_access_token_) {
-      if (login_access_token_result_) {
-        OnGetTokenSuccess(login_token_request_.get(),
-                          "access_token",
-                          base::Time::Now() + base::TimeDelta::FromHours(1LL));
-      } else {
-        GoogleServiceAuthError error(
+      base::Optional<std::string> access_token("access_token");
+      GoogleServiceAuthError error = GoogleServiceAuthError::AuthErrorNone();
+      if (!login_access_token_result_) {
+        access_token = base::nullopt;
+        error = GoogleServiceAuthError(
             GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
-        OnGetTokenFailure(login_token_request_.get(), error);
       }
+      OnGetAccessTokenComplete(
+          access_token, base::Time::Now() + base::TimeDelta::FromHours(1LL),
+          error);
     } else {
       // Make a request to the token service. The test now must tell
       // the token service to issue an access token (or an error).
