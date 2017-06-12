@@ -1441,8 +1441,6 @@ void TestPutImageDataOnCanvasWithColorSpaceSettings(
         fpixels1 = static_cast<float*>(vpointer);
         fpixels2 = static_cast<float*>(pixels_from_get_image_data);
         for (unsigned m = 0; m < data_length; m++) {
-          if (fpixels1[m] < 0)
-            fpixels1[m] = 0;
           if (fabs(fpixels1[m] - fpixels2[m]) > color_tolerance) {
             test_passed = false;
           }
@@ -1471,17 +1469,17 @@ TEST_F(CanvasRenderingContext2DTest, ColorManagedPutImageDataOnSRGBCanvas) {
 TEST_F(CanvasRenderingContext2DTest,
        ColorManagedPutImageDataOnLinearSRGBCanvas) {
   TestPutImageDataOnCanvasWithColorSpaceSettings(
-      CanvasElement(), CanvasColorSpaceSettings::CANVAS_LINEARSRGB, 0.15);
+      CanvasElement(), CanvasColorSpaceSettings::CANVAS_LINEARSRGB, 0.01);
 }
 
 TEST_F(CanvasRenderingContext2DTest, ColorManagedPutImageDataOnRec2020Canvas) {
   TestPutImageDataOnCanvasWithColorSpaceSettings(
-      CanvasElement(), CanvasColorSpaceSettings::CANVAS_REC2020, 0.1);
+      CanvasElement(), CanvasColorSpaceSettings::CANVAS_REC2020, 0.01);
 }
 
 TEST_F(CanvasRenderingContext2DTest, ColorManagedPutImageDataOnP3Canvas) {
   TestPutImageDataOnCanvasWithColorSpaceSettings(
-      CanvasElement(), CanvasColorSpaceSettings::CANVAS_P3, 0.1);
+      CanvasElement(), CanvasColorSpaceSettings::CANVAS_P3, 0.01);
 }
 
 void OverrideScriptEnabled(Settings& settings) {
