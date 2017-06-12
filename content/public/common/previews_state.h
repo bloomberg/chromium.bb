@@ -14,12 +14,6 @@
 
 namespace content {
 
-// Chrome Proxy Previews header and directives.
-const char kChromeProxyContentTransformHeader[] =
-    "chrome-proxy-content-transform";
-const char kChromeProxyEmptyImageDirective[] = "empty-image";
-const char kChromeProxyLitePageDirective[] = "lite-page";
-
 typedef int PreviewsState;
 
 // The Previews types which determines whether to request a Preview version of

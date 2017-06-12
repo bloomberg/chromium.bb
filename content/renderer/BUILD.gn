@@ -299,6 +299,8 @@ target(link_target_type, "renderer") {
     "presentation/presentation_connection_proxy.h",
     "presentation/presentation_dispatcher.cc",
     "presentation/presentation_dispatcher.h",
+    "previews_state_helper.cc",
+    "previews_state_helper.h",
     "push_messaging/push_messaging_client.cc",
     "push_messaging/push_messaging_client.h",
     "render_frame_impl.cc",

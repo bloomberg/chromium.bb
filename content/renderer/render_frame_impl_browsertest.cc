@@ -504,17 +504,17 @@ TEST_F(RenderFrameImplTest, ShouldUseClientLoFiForRequest) {
       {CLIENT_LOFI_ON, false, WebURLRequest::kServerLoFiOn, false},
       {PREVIEWS_UNSPECIFIED, false, WebURLRequest::kClientLoFiOn, true},
       {CLIENT_LOFI_ON, false, WebURLRequest::kClientLoFiOn, true},
+      {CLIENT_LOFI_ON | SERVER_LITE_PAGE_ON, true,
+       WebURLRequest::kPreviewsUnspecified, true},
+      {CLIENT_LOFI_ON | SERVER_LITE_PAGE_ON, false,
+       WebURLRequest::kPreviewsUnspecified, true},
 
       // If Client Lo-Fi isn't enabled for the frame, then it shouldn't be used
       // for any requests.
       {SERVER_LOFI_ON, true, WebURLRequest::kPreviewsUnspecified, false},
 
-      // SERVER_LITE_PAGE_ON, PREVIEWS_NO_TRANSFORM, and PREVIEWS_OFF should
-      // take precedence over Client Lo-Fi.
-      {CLIENT_LOFI_ON | SERVER_LITE_PAGE_ON, false,
-       WebURLRequest::kPreviewsUnspecified, false},
-      {CLIENT_LOFI_ON | SERVER_LITE_PAGE_ON, true,
-       WebURLRequest::kPreviewsUnspecified, false},
+      // PREVIEWS_NO_TRANSFORM and PREVIEWS_OFF should take precedence
+      // over Client Lo-Fi.
       {CLIENT_LOFI_ON | PREVIEWS_NO_TRANSFORM, false,
        WebURLRequest::kPreviewsUnspecified, false},
       {CLIENT_LOFI_ON | PREVIEWS_OFF, false,
