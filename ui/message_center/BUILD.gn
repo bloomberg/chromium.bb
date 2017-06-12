@@ -11,10 +11,12 @@ aggregate_vector_icons("message_center_vector_icons") {
   icon_directory = "vector_icons"
 
   icons = [
-    "notification_settings_button.1x.icon",
-    "notification_settings_button.icon",
     "notification_close_button.1x.icon",
     "notification_close_button.icon",
+    "notification_expand_less.icon",
+    "notification_expand_more.icon",
+    "notification_settings_button.1x.icon",
+    "notification_settings_button.icon",
     "product.1x.icon",
     "product.icon",
   ]
@@ -141,6 +143,8 @@ component("message_center") {
         "views/message_view_factory.h",
         "views/notification_button.cc",
         "views/notification_button.h",
+        "views/notification_header_view.cc",
+        "views/notification_header_view.h",
         "views/notification_view.cc",
         "views/notification_view.h",
         "views/notification_view_md.cc",

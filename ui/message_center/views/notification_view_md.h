@@ -12,18 +12,18 @@
 #include "ui/message_center/message_center_export.h"
 #include "ui/message_center/views/message_view.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/button/image_button.h"
 #include "ui/views/view_targeter_delegate.h"
 
 namespace views {
-class BoxLayout;
-class ImageView;
+class Label;
+class LabelButton;
 }
 
 namespace message_center {
 
 class BoundedLabel;
-class NotificationButton;
+class NotificationHeaderView;
+class ProportionalImageView;
 
 // View that displays all current types of notification (web, basic, image, and
 // list) except the custom notification. Future notification types may be
@@ -43,6 +43,7 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   void OnFocus() override;
   void ScrollRectToVisible(const gfx::Rect& rect) override;
   gfx::NativeCursor GetCursor(const ui::MouseEvent& event) override;
+  void OnMouseMoved(const ui::MouseEvent& event) override;
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
 
@@ -71,30 +72,32 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   void CreateOrUpdateCloseButtonView(const Notification& notification);
   void CreateOrUpdateSettingsButtonView(const Notification& notification);
 
+  bool IsExpandable();
+  void ToggleExpanded();
+  void UpdateViewForExpandedState(bool expanded);
+
+  // Whether this notification is expanded or not.
+  bool expanded_ = false;
+
   // Describes whether the view should display a hand pointer or not.
   bool clickable_;
 
-  // Views in the top view
-  views::BoxLayout* layout_ = nullptr;
+  // Container views directly attached to this view.
+  NotificationHeaderView* header_row_ = nullptr;
+  views::View* content_row_ = nullptr;
+  views::View* actions_row_ = nullptr;
 
-  // Views in the top view
-  views::View* top_view_ = nullptr;
-  BoundedLabel* context_title_view_ = nullptr;
+  // Containers for left and right side on |content_row_|
+  views::View* left_content_ = nullptr;
+  views::View* right_content_ = nullptr;
 
-  // Views in the main view
-  views::View* main_view_ = nullptr;
-  BoundedLabel* title_view_ = nullptr;
+  // Views which are dinamicallly created inside view hierarchy.
+  views::Label* title_view_ = nullptr;
   BoundedLabel* message_view_ = nullptr;
-
-  // Views in the bottom view
-  views::View* bottom_view_ = nullptr;
-
-  // Views in the floating controller
-  std::unique_ptr<views::ImageButton> settings_button_;
-  std::unique_ptr<views::ImageButton> close_button_;
-  std::unique_ptr<views::ImageView> small_image_view_;
-
-  std::vector<NotificationButton*> action_buttons_;
+  ProportionalImageView* icon_view_ = nullptr;
+  views::View* image_container_ = nullptr;
+  ProportionalImageView* image_view_ = nullptr;
+  std::vector<views::LabelButton*> action_buttons_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationViewMD);
 };

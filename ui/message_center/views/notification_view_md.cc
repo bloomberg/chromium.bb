@@ -22,38 +22,42 @@
 #include "ui/message_center/views/bounded_label.h"
 #include "ui/message_center/views/constants.h"
 #include "ui/message_center/views/message_center_controller.h"
-#include "ui/message_center/views/notification_button.h"
+#include "ui/message_center/views/notification_header_view.h"
 #include "ui/message_center/views/padded_button.h"
+#include "ui/message_center/views/proportional_image_view.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/native_cursor.h"
 #include "ui/views/view_targeter.h"
+#include "ui/views/widget/widget.h"
 
 namespace message_center {
 
 namespace {
 
 // Dimensions.
-constexpr int kNotificationRightPadding = 13;
-constexpr int kNotificationLeftPadding = 13;
-constexpr int kNotificationTopPadding = 6;
-constexpr int kNotificationBottomPadding = 10;
-constexpr gfx::Insets kNotificationPadding(kNotificationTopPadding,
-                                           kNotificationLeftPadding,
-                                           kNotificationBottomPadding,
-                                           kNotificationRightPadding);
-
-constexpr int kMaxContextTitleLines = 1;
+constexpr gfx::Insets kContentRowPadding(4, 12, 12, 12);
+constexpr gfx::Insets kActionsRowPadding(8, 8, 8, 8);
+constexpr int kActionsRowHorizontalSpacing = 8;
+constexpr gfx::Insets kImageContainerPadding(0, 12, 12, 12);
 
 // Foreground of small icon image.
 constexpr SkColor kSmallImageBackgroundColor = SK_ColorWHITE;
 // Background of small icon image.
 const SkColor kSmallImageColor = SkColorSetRGB(0x43, 0x43, 0x43);
+// Background of inline actions area.
+const SkColor kActionsRowBackgroundColor = SkColorSetRGB(0xee, 0xee, 0xee);
+
+// Max number of lines for message_view_.
+constexpr int kMaxLinesForMessageView = 1;
+constexpr int kMaxLinesForExpandedMessageView = 4;
 
 const gfx::ImageSkia CreateSolidColorImage(int width,
                                            int height,
@@ -105,10 +109,13 @@ views::View* NotificationViewMD::TargetForRect(views::View* root,
   // called. But buttons are exceptions, they'll have their own event handlings.
   std::vector<views::View*> buttons(action_buttons_.begin(),
                                     action_buttons_.end());
-  if (settings_button_)
-    buttons.push_back(settings_button_.get());
-  if (close_button_)
-    buttons.push_back(close_button_.get());
+  if (header_row_->settings_button())
+    buttons.push_back(header_row_->settings_button());
+  if (header_row_->close_button())
+    buttons.push_back(header_row_->close_button());
+  if (header_row_->expand_button())
+    buttons.push_back(header_row_->expand_button());
+  buttons.push_back(header_row_);
 
   for (size_t i = 0; i < buttons.size(); ++i) {
     gfx::Point point_in_child = point;
@@ -132,43 +139,50 @@ void NotificationViewMD::CreateOrUpdateViews(const Notification& notification) {
   CreateOrUpdateActionButtonViews(notification);
   CreateOrUpdateCloseButtonView(notification);
   CreateOrUpdateSettingsButtonView(notification);
+  UpdateViewForExpandedState(expanded_);
 }
 
 NotificationViewMD::NotificationViewMD(MessageCenterController* controller,
                                        const Notification& notification)
     : MessageView(controller, notification),
       clickable_(notification.clickable()) {
-  layout_ = new views::BoxLayout(views::BoxLayout::kVertical, gfx::Insets(), 2);
-  layout_->set_inside_border_insets(kNotificationPadding);
-  SetLayoutManager(layout_);
+  SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kVertical, gfx::Insets(), 0));
 
-  // Create the top_view_, which collects into a vertical box all content
-  // at the top of the notification (to the right of the icon) except for the
-  // close button.
-  top_view_ = new views::View();
-  views::BoxLayout* top_box_layout =
-      new views::BoxLayout(views::BoxLayout::kHorizontal, gfx::Insets(1, 0), 5);
-  top_box_layout->set_cross_axis_alignment(
-      views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
-  top_view_->SetLayoutManager(top_box_layout);
-  AddChildView(top_view_);
+  // |header_row_| contains app_icon, app_name, control buttons, etc...
+  header_row_ = new NotificationHeaderView(this);
+  AddChildView(header_row_);
 
-  main_view_ = new views::View();
-  main_view_->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical));
-  AddChildView(main_view_);
+  // |content_row_| contains title, message, image, progressbar, etc...
+  content_row_ = new views::View();
+  views::BoxLayout* content_row_layout = new views::BoxLayout(
+      views::BoxLayout::kHorizontal, kContentRowPadding, 0);
+  content_row_layout->set_cross_axis_alignment(
+      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+  content_row_->SetLayoutManager(content_row_layout);
+  AddChildView(content_row_);
 
-  // Create the bottom_view_, which collects notification icon.
-  bottom_view_ = new views::View();
-  bottom_view_->SetLayoutManager(
-      new views::BoxLayout(views::BoxLayout::kVertical));
-  AddChildView(bottom_view_);
+  // |left_content_| contains most contents like title, message, etc...
+  left_content_ = new views::View();
+  left_content_->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kVertical, gfx::Insets(), 0));
+  content_row_layout->SetFlexForView(left_content_, 1);
+  content_row_->AddChildView(left_content_);
 
-  views::ImageView* small_image_view = new views::ImageView();
-  small_image_view->SetImageSize(gfx::Size(kSmallImageSize, kSmallImageSize));
-  small_image_view->set_owned_by_client();
-  small_image_view_.reset(small_image_view);
-  top_view_->AddChildView(small_image_view_.get());
+  // |right_content_| contains notification icon and small image.
+  right_content_ = new views::View();
+  right_content_->SetLayoutManager(new views::FillLayout());
+  content_row_->AddChildView(right_content_);
+
+  // |action_row_| contains inline action button.
+  actions_row_ = new views::View();
+  actions_row_->SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kHorizontal, kActionsRowPadding,
+                           kActionsRowHorizontalSpacing));
+  actions_row_->SetBackground(
+      views::CreateSolidBackground(kActionsRowBackgroundColor));
+  actions_row_->SetVisible(false);
+  AddChildView(actions_row_);
 
   CreateOrUpdateViews(notification);
 
@@ -181,40 +195,10 @@ NotificationViewMD::~NotificationViewMD() {}
 void NotificationViewMD::Layout() {
   MessageView::Layout();
 
-  // Before any resizing, set or adjust the number of message lines.
-  int title_lines = 0;
-  if (title_view_) {
-    title_lines = title_view_->GetLinesForWidthAndLimit(title_view_->width(),
-                                                        kMaxTitleLines);
-  }
-  if (message_view_) {
-    message_view_->SetLineLimit(
-        std::max(0, message_center::kMessageExpandedLineLimit - title_lines));
-  }
-
-  // Settings & Bottom views.
-  if (settings_button_) {
-    gfx::Rect content_bounds = GetContentsBounds();
-    const gfx::Size settings_size(settings_button_->GetPreferredSize());
-    int marginFromRight = settings_size.width() + kControlButtonPadding;
-    if (close_button_)
-      marginFromRight += close_button_->GetPreferredSize().width();
-    gfx::Rect settings_rect(content_bounds.right() - marginFromRight,
-                            GetContentsBounds().y() + kControlButtonPadding,
-                            settings_size.width(), settings_size.height());
-    settings_button_->SetBoundsRect(settings_rect);
-  }
-
-  // Close button.
-  if (close_button_) {
-    gfx::Rect content_bounds = GetContentsBounds();
-    gfx::Size close_size(close_button_->GetPreferredSize());
-    gfx::Rect close_rect(
-        content_bounds.right() - close_size.width() - kControlButtonPadding,
-        content_bounds.y() + kControlButtonPadding, close_size.width(),
-        close_size.height());
-    close_button_->SetBoundsRect(close_rect);
-  }
+  // We need to call IsExpandable() at the end of Layout() call, since whether
+  // we should show expand button or not depends on the current view layout.
+  // (e.g. Show expand button when |message_view_| exceeds one line.)
+  header_row_->SetExpandButtonEnabled(IsExpandable());
 }
 
 void NotificationViewMD::OnFocus() {
@@ -233,6 +217,11 @@ gfx::NativeCursor NotificationViewMD::GetCursor(const ui::MouseEvent& event) {
     return views::View::GetCursor(event);
 
   return views::GetNativeHandCursor();
+}
+
+void NotificationViewMD::OnMouseMoved(const ui::MouseEvent& event) {
+  MessageView::OnMouseMoved(event);
+  UpdateControlButtonsVisibility();
 }
 
 void NotificationViewMD::OnMouseEntered(const ui::MouseEvent& event) {
@@ -261,15 +250,27 @@ void NotificationViewMD::ButtonPressed(views::Button* sender,
   // TODO(dewittj): Remove this hack.
   std::string id(notification_id());
 
-  if (close_button_ && sender == close_button_.get()) {
+  if (header_row_->IsCloseButtonEnabled() &&
+      sender == header_row_->close_button()) {
     // Warning: This causes the NotificationViewMD itself to be deleted, so
     // don't do anything afterwards.
     OnCloseButtonPressed();
     return;
   }
 
-  if (sender == settings_button_.get()) {
+  if (header_row_->IsSettingsButtonEnabled() &&
+      sender == header_row_->settings_button()) {
     controller()->ClickOnSettingsButton(id);
+    return;
+  }
+
+  // Tapping anywhere on |header_row_| can expand the notification, though only
+  // |expand_button| can be focused by TAB.
+  if (IsExpandable() &&
+      (sender == header_row_ || sender == header_row_->expand_button())) {
+    ToggleExpanded();
+    Layout();
+    SchedulePaint();
     return;
   }
 
@@ -283,41 +284,26 @@ void NotificationViewMD::ButtonPressed(views::Button* sender,
 }
 
 bool NotificationViewMD::IsCloseButtonFocused() const {
-  if (!close_button_)
+  if (!header_row_->IsCloseButtonEnabled())
     return false;
 
   const views::FocusManager* focus_manager = GetFocusManager();
   return focus_manager &&
-         focus_manager->GetFocusedView() == close_button_.get();
+         focus_manager->GetFocusedView() == header_row_->close_button();
 }
 
 void NotificationViewMD::RequestFocusOnCloseButton() {
-  if (close_button_)
-    close_button_->RequestFocus();
+  if (header_row_->IsCloseButtonEnabled())
+    header_row_->close_button()->RequestFocus();
 }
 
 void NotificationViewMD::CreateOrUpdateContextTitleView(
     const Notification& notification) {
-  DCHECK(top_view_);
-
-  const gfx::FontList& font_list = views::Label().font_list().Derive(
-      -2, gfx::Font::NORMAL, gfx::Font::Weight::NORMAL);
-
-  base::string16 sub_title = notification.display_source();
-  if (!context_title_view_) {
-    context_title_view_ = new BoundedLabel(sub_title, font_list);
-    context_title_view_->SetLineHeight(kTitleLineHeight);
-    context_title_view_->SetLineLimit(kMaxContextTitleLines);
-    top_view_->AddChildView(context_title_view_);
-  } else {
-    context_title_view_->SetText(sub_title);
-  }
+  header_row_->SetAppName(notification.display_source());
 }
 
 void NotificationViewMD::CreateOrUpdateTitleView(
     const Notification& notification) {
-  DCHECK(top_view_ != NULL);
-
   const gfx::FontList& font_list = views::Label().font_list().Derive(
       1, gfx::Font::NORMAL, gfx::Font::Weight::NORMAL);
 
@@ -327,11 +313,11 @@ void NotificationViewMD::CreateOrUpdateTitleView(
   base::string16 title = gfx::TruncateString(
       notification.title(), title_character_limit, gfx::WORD_BREAK);
   if (!title_view_) {
-    title_view_ = new BoundedLabel(title, font_list);
-    title_view_->SetLineHeight(kMessageLineHeight);
-    title_view_->SetColors(message_center::kRegularTextColor,
-                           kDimTextBackgroundColor);
-    main_view_->AddChildView(title_view_);
+    title_view_ = new views::Label(title);
+    title_view_->SetFontList(font_list);
+    title_view_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    title_view_->SetEnabledColor(message_center::kRegularTextColor);
+    left_content_->AddChildView(title_view_);
   } else {
     title_view_->SetText(title);
   }
@@ -346,8 +332,6 @@ void NotificationViewMD::CreateOrUpdateMessageView(
     return;
   }
 
-  DCHECK(top_view_ != NULL);
-
   base::string16 text = gfx::TruncateString(
       notification.message(), kMessageCharacterLimit, gfx::WORD_BREAK);
 
@@ -356,10 +340,10 @@ void NotificationViewMD::CreateOrUpdateMessageView(
 
   if (!message_view_) {
     message_view_ = new BoundedLabel(text, font_list);
-    message_view_->SetLineLimit(message_center::kMessageExpandedLineLimit);
+    message_view_->SetLineLimit(kMaxLinesForMessageView);
     message_view_->SetColors(message_center::kDimTextColor,
                              kContextTextBackgroundColor);
-    main_view_->AddChildView(message_view_);
+    left_content_->AddChildView(message_view_);
   } else {
     message_view_->SetText(text);
   }
@@ -377,7 +361,14 @@ void NotificationViewMD::CreateOrUpdateListItemViews(
 
 void NotificationViewMD::CreateOrUpdateIconView(
     const Notification& notification) {
-  // TODO(yoshiki): Implement this.
+  gfx::Size image_view_size(30, 30);
+  if (!icon_view_) {
+    icon_view_ = new ProportionalImageView(image_view_size);
+    right_content_->AddChildView(icon_view_);
+  }
+
+  gfx::ImageSkia icon = notification.icon().AsImageSkia();
+  icon_view_->SetImage(icon, icon.size());
 }
 
 void NotificationViewMD::CreateOrUpdateSmallIconView(
@@ -386,70 +377,148 @@ void NotificationViewMD::CreateOrUpdateSmallIconView(
       notification.small_image().IsEmpty()
           ? GetProductIcon()
           : GetMaskedIcon(notification.small_image().AsImageSkia());
-
-  small_image_view_->SetImage(icon);
+  header_row_->SetAppIcon(icon);
 }
 
 void NotificationViewMD::CreateOrUpdateImageView(
     const Notification& notification) {
-  // TODO(yoshiki): Implement this.
+  // |image_view_| is the view representing the area covered by the
+  // notification's image, including background and border.  Its size can be
+  // specified in advance and images will be scaled to fit including a border if
+  // necessary.
+  if (notification.image().IsEmpty()) {
+    left_content_->RemoveChildView(image_container_);
+    image_container_ = NULL;
+    image_view_ = NULL;
+    return;
+  }
+
+  gfx::Size ideal_size(kNotificationPreferredImageWidth,
+                       kNotificationPreferredImageHeight);
+
+  if (!image_container_) {
+    image_container_ = new views::View();
+    image_container_->SetLayoutManager(new views::FillLayout());
+    image_container_->SetBorder(
+        views::CreateEmptyBorder(kImageContainerPadding));
+    image_container_->SetBackground(
+        views::CreateSolidBackground(message_center::kImageBackgroundColor));
+
+    image_view_ = new message_center::ProportionalImageView(ideal_size);
+    image_container_->AddChildView(image_view_);
+    // Insert the created image container just after the |content_row_|.
+    AddChildViewAt(image_container_, GetIndexOf(content_row_) + 1);
+  }
+
+  DCHECK(image_view_);
+  image_view_->SetImage(notification.image().AsImageSkia(), ideal_size);
 }
 
 void NotificationViewMD::CreateOrUpdateActionButtonViews(
     const Notification& notification) {
-  // TODO(yoshiki): Implement this.
+  std::vector<ButtonInfo> buttons = notification.buttons();
+  bool new_buttons = action_buttons_.size() != buttons.size();
+
+  if (new_buttons || buttons.size() == 0) {
+    for (auto* item : action_buttons_)
+      delete item;
+    action_buttons_.clear();
+  }
+
+  DCHECK_EQ(this, actions_row_->parent());
+
+  for (size_t i = 0; i < buttons.size(); ++i) {
+    ButtonInfo button_info = buttons[i];
+    if (new_buttons) {
+      views::LabelButton* button = new views::LabelButton(
+          this, button_info.title, views::style::CONTEXT_BUTTON_MD);
+      button->SetFocusForPlatform();
+      action_buttons_.push_back(button);
+      actions_row_->AddChildView(button);
+    } else {
+      action_buttons_[i]->SetText(button_info.title);
+      action_buttons_[i]->SchedulePaint();
+      action_buttons_[i]->Layout();
+    }
+  }
+
+  if (new_buttons) {
+    // TODO(fukino): Investigate if this Layout() is necessary.
+    Layout();
+    views::Widget* widget = GetWidget();
+    if (widget != NULL) {
+      widget->SetSize(widget->GetContentsView()->GetPreferredSize());
+      GetWidget()->SynthesizeMouseMoveEvent();
+    }
+  }
 }
 
 void NotificationViewMD::CreateOrUpdateCloseButtonView(
     const Notification& notification) {
-  if (!notification.pinned() && !close_button_) {
-    close_button_ = base::MakeUnique<PaddedButton>(this);
-    close_button_->SetImage(views::Button::STATE_NORMAL, GetCloseIcon());
-    close_button_->SetAccessibleName(l10n_util::GetStringUTF16(
-        IDS_MESSAGE_CENTER_CLOSE_NOTIFICATION_BUTTON_ACCESSIBLE_NAME));
-    close_button_->SetTooltipText(l10n_util::GetStringUTF16(
-        IDS_MESSAGE_CENTER_CLOSE_NOTIFICATION_BUTTON_TOOLTIP));
-    close_button_->set_owned_by_client();
-    AddChildView(close_button_.get());
-    UpdateControlButtonsVisibility();
-  } else if (notification.pinned() && close_button_) {
-    close_button_.reset();
+  if (!notification.pinned()) {
+    header_row_->SetCloseButtonEnabled(true);
+  } else {
+    header_row_->SetCloseButtonEnabled(false);
   }
 }
 
 void NotificationViewMD::CreateOrUpdateSettingsButtonView(
     const Notification& notification) {
-  if (!settings_button_ && notification.delegate() &&
-      notification.delegate()->ShouldDisplaySettingsButton()) {
-    settings_button_ = base::MakeUnique<PaddedButton>(this);
-    settings_button_->SetImage(views::Button::STATE_NORMAL, GetSettingsIcon());
-    settings_button_->SetAccessibleName(l10n_util::GetStringUTF16(
-        IDS_MESSAGE_NOTIFICATION_SETTINGS_BUTTON_ACCESSIBLE_NAME));
-    settings_button_->SetTooltipText(l10n_util::GetStringUTF16(
-        IDS_MESSAGE_NOTIFICATION_SETTINGS_BUTTON_ACCESSIBLE_NAME));
-    settings_button_->set_owned_by_client();
-    AddChildView(settings_button_.get());
-  } else {
-    settings_button_.reset();
+  if (notification.delegate() &&
+      notification.delegate()->ShouldDisplaySettingsButton())
+    header_row_->SetSettingsButtonEnabled(true);
+  else
+    header_row_->SetSettingsButtonEnabled(false);
+}
+
+bool NotificationViewMD::IsExpandable() {
+  // Expandable if the message exceeds one line.
+  if (message_view_ && message_view_->visible() &&
+      message_view_->GetLinesForWidthAndLimit(message_view_->width(), -1) > 1) {
+    return true;
   }
-  UpdateControlButtonsVisibility();
+  // Expandable if there is at least one inline action.
+  if (actions_row_->has_children())
+    return true;
+
+  // Expandable if the notification has image.
+  if (image_view_)
+    return true;
+
+  // TODO(fukino): Expandable if both progress bar and message exist.
+
+  return false;
+}
+
+void NotificationViewMD::ToggleExpanded() {
+  expanded_ = !expanded_;
+  UpdateViewForExpandedState(expanded_);
+  content_row_->InvalidateLayout();
+  if (controller())
+    controller()->UpdateNotificationSize(notification_id());
+}
+
+void NotificationViewMD::UpdateViewForExpandedState(bool expanded) {
+  header_row_->SetExpanded(expanded);
+  if (message_view_) {
+    message_view_->SetLineLimit(expanded ? kMaxLinesForExpandedMessageView
+                                         : kMaxLinesForMessageView);
+  }
+  if (image_container_)
+    image_container_->SetVisible(expanded);
+  actions_row_->SetVisible(expanded && actions_row_->has_children());
 }
 
 void NotificationViewMD::UpdateControlButtonsVisibility() {
-  const bool target_visibility =
-      IsMouseHovered() || HasFocus() ||
-      (close_button_ && close_button_->HasFocus()) ||
-      (settings_button_ && settings_button_->HasFocus());
+  const bool target_visibility = IsMouseHovered() || HasFocus() ||
+                                 (header_row_->IsExpandButtonEnabled() &&
+                                  header_row_->expand_button()->HasFocus()) ||
+                                 (header_row_->IsCloseButtonEnabled() &&
+                                  header_row_->close_button()->HasFocus()) ||
+                                 (header_row_->IsSettingsButtonEnabled() &&
+                                  header_row_->settings_button()->HasFocus());
 
-  if (close_button_) {
-    if (target_visibility != close_button_->visible())
-      close_button_->SetVisible(target_visibility);
-  }
-
-  if (settings_button_) {
-    if (target_visibility != settings_button_->visible())
-      settings_button_->SetVisible(target_visibility);
-  }
+  header_row_->SetControlButtonsVisible(target_visibility);
 }
 
 }  // namespace message_center
