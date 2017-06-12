@@ -363,12 +363,6 @@ NOINLINE void ResetThread_IO(std::unique_ptr<BrowserProcessSubThread> thread) {
   thread.reset();
 }
 
-NOINLINE void ResetThread_IndexedDb(std::unique_ptr<base::Thread> thread) {
-  volatile int inhibit_comdat = __LINE__;
-  ALLOW_UNUSED_LOCAL(inhibit_comdat);
-  thread.reset();
-}
-
 MSVC_POP_WARNING()
 MSVC_ENABLE_OPTIMIZE();
 
@@ -1314,10 +1308,6 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
           break;
       }
     }
-    {
-      TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:IndexedDBThread");
-      ResetThread_IndexedDb(std::move(indexed_db_thread_));
-    }
 
     // Close the blocking I/O pool after the other threads. Other threads such
     // as the I/O thread may need to schedule work like closing files or
@@ -1401,9 +1391,6 @@ int BrowserMainLoop::BrowserThreadsStarted() {
         switches::kIsRunningInMash);
   }
 #endif
-
-  indexed_db_thread_.reset(new base::Thread("IndexedDB"));
-  indexed_db_thread_->Start();
 
   HistogramSynchronizer::GetInstance();
 #if defined(OS_ANDROID) || defined(OS_CHROMEOS)

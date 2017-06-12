@@ -14,7 +14,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/fileapi/fileapi_message_filter.h"
@@ -49,7 +49,7 @@ namespace {
 struct SafeIOThreadConnectionWrapper {
   SafeIOThreadConnectionWrapper(std::unique_ptr<IndexedDBConnection> connection)
       : connection(std::move(connection)),
-        idb_runner(base::ThreadTaskRunnerHandle::Get()) {}
+        idb_runner(base::SequencedTaskRunnerHandle::Get()) {}
   ~SafeIOThreadConnectionWrapper() {
     if (connection) {
       idb_runner->PostTask(
@@ -73,7 +73,7 @@ struct SafeIOThreadConnectionWrapper {
 struct SafeIOThreadCursorWrapper {
   SafeIOThreadCursorWrapper(std::unique_ptr<IndexedDBCursor> cursor)
       : cursor(std::move(cursor)),
-        idb_runner(base::ThreadTaskRunnerHandle::Get()) {}
+        idb_runner(base::SequencedTaskRunnerHandle::Get()) {}
   ~SafeIOThreadCursorWrapper() {
     if (cursor)
       idb_runner->DeleteSoon(FROM_HERE, cursor.release());
@@ -204,15 +204,15 @@ IndexedDBCallbacks::IndexedDBCallbacks(
                                     origin,
                                     std::move(idb_runner))) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  thread_checker_.DetachFromThread();
+  DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 IndexedDBCallbacks::~IndexedDBCallbacks() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 void IndexedDBCallbacks::OnError(const IndexedDBDatabaseError& error) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!complete_);
 
   BrowserThread::PostTask(
@@ -230,7 +230,7 @@ void IndexedDBCallbacks::OnError(const IndexedDBDatabaseError& error) {
 }
 
 void IndexedDBCallbacks::OnSuccess(const std::vector<base::string16>& value) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!complete_);
   DCHECK(io_helper_);
 
@@ -242,7 +242,7 @@ void IndexedDBCallbacks::OnSuccess(const std::vector<base::string16>& value) {
 }
 
 void IndexedDBCallbacks::OnBlocked(int64_t existing_version) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!complete_);
   DCHECK(io_helper_);
 
@@ -269,7 +269,7 @@ void IndexedDBCallbacks::OnUpgradeNeeded(
     std::unique_ptr<IndexedDBConnection> connection,
     const IndexedDBDatabaseMetadata& metadata,
     const IndexedDBDataLossInfo& data_loss_info) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!complete_);
   DCHECK(io_helper_);
 
@@ -297,7 +297,7 @@ void IndexedDBCallbacks::OnUpgradeNeeded(
 void IndexedDBCallbacks::OnSuccess(
     std::unique_ptr<IndexedDBConnection> connection,
     const IndexedDBDatabaseMetadata& metadata) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!complete_);
   DCHECK(io_helper_);
 
@@ -330,7 +330,7 @@ void IndexedDBCallbacks::OnSuccess(std::unique_ptr<IndexedDBCursor> cursor,
                                    const IndexedDBKey& key,
                                    const IndexedDBKey& primary_key,
                                    IndexedDBValue* value) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!complete_);
   DCHECK(io_helper_);
 
@@ -357,7 +357,7 @@ void IndexedDBCallbacks::OnSuccess(std::unique_ptr<IndexedDBCursor> cursor,
 void IndexedDBCallbacks::OnSuccess(const IndexedDBKey& key,
                                    const IndexedDBKey& primary_key,
                                    IndexedDBValue* value) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!complete_);
   DCHECK(io_helper_);
 
@@ -382,7 +382,7 @@ void IndexedDBCallbacks::OnSuccessWithPrefetch(
     const std::vector<IndexedDBKey>& keys,
     const std::vector<IndexedDBKey>& primary_keys,
     std::vector<IndexedDBValue>* values) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!complete_);
   DCHECK(io_helper_);
   DCHECK_EQ(keys.size(), primary_keys.size());
@@ -404,7 +404,7 @@ void IndexedDBCallbacks::OnSuccessWithPrefetch(
 }
 
 void IndexedDBCallbacks::OnSuccess(IndexedDBReturnValue* value) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!complete_);
 
   DCHECK_EQ(blink::kWebIDBDataLossNone, data_loss_);
@@ -426,7 +426,7 @@ void IndexedDBCallbacks::OnSuccess(IndexedDBReturnValue* value) {
 
 void IndexedDBCallbacks::OnSuccessArray(
     std::vector<IndexedDBReturnValue>* values) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!complete_);
   DCHECK(io_helper_);
 
@@ -445,7 +445,7 @@ void IndexedDBCallbacks::OnSuccessArray(
 }
 
 void IndexedDBCallbacks::OnSuccess(const IndexedDBKey& value) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!complete_);
   DCHECK(io_helper_);
 
@@ -459,7 +459,7 @@ void IndexedDBCallbacks::OnSuccess(const IndexedDBKey& value) {
 }
 
 void IndexedDBCallbacks::OnSuccess(int64_t value) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!complete_);
 
   BrowserThread::PostTask(
@@ -470,7 +470,7 @@ void IndexedDBCallbacks::OnSuccess(int64_t value) {
 }
 
 void IndexedDBCallbacks::OnSuccess() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!complete_);
   DCHECK(io_helper_);
 

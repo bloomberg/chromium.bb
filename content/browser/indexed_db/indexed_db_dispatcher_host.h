@@ -82,7 +82,7 @@ class CONTENT_EXPORT IndexedDBDispatcherHost
                            int exit_code) override;
 
  private:
-  class IDBThreadHelper;
+  class IDBSequenceHelper;
   // Friends to enable OnDestruct() delegation.
   friend class BrowserThread;
   friend class IndexedDBDispatcherHostTest;
@@ -131,7 +131,7 @@ class CONTENT_EXPORT IndexedDBDispatcherHost
   mojo::StrongAssociatedBindingSet<::indexed_db::mojom::Cursor>
       cursor_bindings_;
 
-  IDBThreadHelper* idb_helper_;
+  IDBSequenceHelper* idb_helper_;
 
   base::WeakPtrFactory<IndexedDBDispatcherHost> weak_factory_;
 

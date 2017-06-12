@@ -63,7 +63,7 @@ namespace {
 void GetAllOriginsAndPaths(const base::FilePath& indexeddb_path,
                            std::vector<Origin>* origins,
                            std::vector<base::FilePath>* file_paths) {
-  // TODO(jsbell): DCHECK that this is running on an IndexedDB thread,
+  // TODO(jsbell): DCHECK that this is running on an IndexedDB sequence,
   // if a global handle to it is ever available.
   if (indexeddb_path.empty())
     return;
@@ -86,7 +86,7 @@ void GetAllOriginsAndPaths(const base::FilePath& indexeddb_path,
 void ClearSessionOnlyOrigins(
     const base::FilePath& indexeddb_path,
     scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy) {
-  // TODO(jsbell): DCHECK that this is running on an IndexedDB thread,
+  // TODO(jsbell): DCHECK that this is running on an IndexedDB sequence,
   // if a global handle to it is ever available.
   std::vector<Origin> origins;
   std::vector<base::FilePath> file_paths;
@@ -110,11 +110,11 @@ IndexedDBContextImpl::IndexedDBContextImpl(
     const base::FilePath& data_path,
     storage::SpecialStoragePolicy* special_storage_policy,
     storage::QuotaManagerProxy* quota_manager_proxy,
-    base::SequencedTaskRunner* task_runner)
+    scoped_refptr<base::SequencedTaskRunner> task_runner)
     : force_keep_session_state_(false),
       special_storage_policy_(special_storage_policy),
       quota_manager_proxy_(quota_manager_proxy),
-      task_runner_(task_runner) {
+      task_runner_(std::move(task_runner)) {
   IDB_TRACE("init");
   if (!data_path.empty())
     data_path_ = data_path.Append(kIndexedDBDirectory);

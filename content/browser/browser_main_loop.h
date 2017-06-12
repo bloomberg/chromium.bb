@@ -151,7 +151,6 @@ class CONTENT_EXPORT BrowserMainLoop {
     return discardable_shared_memory_manager_.get();
   }
   midi::MidiService* midi_service() const { return midi_service_.get(); }
-  base::Thread* indexed_db_thread() const { return indexed_db_thread_.get(); }
 
   bool is_tracing_startup_for_duration() const {
     return is_tracing_startup_for_duration_;
@@ -282,7 +281,6 @@ class CONTENT_EXPORT BrowserMainLoop {
   std::unique_ptr<BrowserProcessSubThread> io_thread_;
 
   // Members initialized in |BrowserThreadsStarted()| --------------------------
-  std::unique_ptr<base::Thread> indexed_db_thread_;
   std::unique_ptr<ServiceManagerContext> service_manager_context_;
   std::unique_ptr<mojo::edk::ScopedIPCSupport> mojo_ipc_support_;
 

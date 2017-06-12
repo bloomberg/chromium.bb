@@ -121,9 +121,9 @@ class DatabaseImpl : public ::indexed_db::mojom::Database {
   void AckReceivedBlobs(const std::vector<std::string>& uuids) override;
 
  private:
-  class IDBThreadHelper;
+  class IDBSequenceHelper;
 
-  IDBThreadHelper* helper_;
+  IDBSequenceHelper* helper_;
   // This raw pointer is safe because all DatabaseImpl instances are owned by
   // an IndexedDBDispatcherHost.
   IndexedDBDispatcherHost* dispatcher_host_;

@@ -12,11 +12,11 @@
 
 namespace content {
 
-// Expected to be constructed on IO thread, and used/destroyed on IDB thread.
-class CursorImpl::IDBThreadHelper {
+// Expected to be constructed on IO thread, and used/destroyed on IDB sequence.
+class CursorImpl::IDBSequenceHelper {
  public:
-  explicit IDBThreadHelper(std::unique_ptr<IndexedDBCursor> cursor);
-  ~IDBThreadHelper();
+  explicit IDBSequenceHelper(std::unique_ptr<IndexedDBCursor> cursor);
+  ~IDBSequenceHelper();
 
   void Advance(uint32_t count, scoped_refptr<IndexedDBCallbacks> callbacks);
   void Continue(const IndexedDBKey& key,
@@ -28,14 +28,14 @@ class CursorImpl::IDBThreadHelper {
  private:
   std::unique_ptr<IndexedDBCursor> cursor_;
 
-  DISALLOW_COPY_AND_ASSIGN(IDBThreadHelper);
+  DISALLOW_COPY_AND_ASSIGN(IDBSequenceHelper);
 };
 
 CursorImpl::CursorImpl(std::unique_ptr<IndexedDBCursor> cursor,
                        const url::Origin& origin,
                        IndexedDBDispatcherHost* dispatcher_host,
                        scoped_refptr<base::SequencedTaskRunner> idb_runner)
-    : helper_(new IDBThreadHelper(std::move(cursor))),
+    : helper_(new IDBSequenceHelper(std::move(cursor))),
       dispatcher_host_(dispatcher_host),
       origin_(origin),
       idb_runner_(std::move(idb_runner)) {}
@@ -50,7 +50,7 @@ void CursorImpl::Advance(
   scoped_refptr<IndexedDBCallbacks> callbacks(
       new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
                              std::move(callbacks_info), idb_runner_));
-  idb_runner_->PostTask(FROM_HERE, base::Bind(&IDBThreadHelper::Advance,
+  idb_runner_->PostTask(FROM_HERE, base::Bind(&IDBSequenceHelper::Advance,
                                               base::Unretained(helper_), count,
                                               base::Passed(&callbacks)));
 }
@@ -64,7 +64,7 @@ void CursorImpl::Continue(
                              std::move(callbacks_info), idb_runner_));
   idb_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&IDBThreadHelper::Continue, base::Unretained(helper_), key,
+      base::Bind(&IDBSequenceHelper::Continue, base::Unretained(helper_), key,
                  primary_key, base::Passed(&callbacks)));
 }
 
@@ -74,7 +74,7 @@ void CursorImpl::Prefetch(
   scoped_refptr<IndexedDBCallbacks> callbacks(
       new IndexedDBCallbacks(dispatcher_host_->AsWeakPtr(), origin_,
                              std::move(callbacks_info), idb_runner_));
-  idb_runner_->PostTask(FROM_HERE, base::Bind(&IDBThreadHelper::Prefetch,
+  idb_runner_->PostTask(FROM_HERE, base::Bind(&IDBSequenceHelper::Prefetch,
                                               base::Unretained(helper_), count,
                                               base::Passed(&callbacks)));
 }
@@ -88,23 +88,23 @@ void CursorImpl::PrefetchReset(
 
   idb_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&IDBThreadHelper::PrefetchReset, base::Unretained(helper_),
+      base::Bind(&IDBSequenceHelper::PrefetchReset, base::Unretained(helper_),
                  used_prefetches, unused_prefetches));
 }
 
-CursorImpl::IDBThreadHelper::IDBThreadHelper(
+CursorImpl::IDBSequenceHelper::IDBSequenceHelper(
     std::unique_ptr<IndexedDBCursor> cursor)
     : cursor_(std::move(cursor)) {}
 
-CursorImpl::IDBThreadHelper::~IDBThreadHelper() {}
+CursorImpl::IDBSequenceHelper::~IDBSequenceHelper() {}
 
-void CursorImpl::IDBThreadHelper::Advance(
+void CursorImpl::IDBSequenceHelper::Advance(
     uint32_t count,
     scoped_refptr<IndexedDBCallbacks> callbacks) {
   cursor_->Advance(count, std::move(callbacks));
 }
 
-void CursorImpl::IDBThreadHelper::Continue(
+void CursorImpl::IDBSequenceHelper::Continue(
     const IndexedDBKey& key,
     const IndexedDBKey& primary_key,
     scoped_refptr<IndexedDBCallbacks> callbacks) {
@@ -115,14 +115,14 @@ void CursorImpl::IDBThreadHelper::Continue(
       std::move(callbacks));
 }
 
-void CursorImpl::IDBThreadHelper::Prefetch(
+void CursorImpl::IDBSequenceHelper::Prefetch(
     int32_t count,
     scoped_refptr<IndexedDBCallbacks> callbacks) {
   cursor_->PrefetchContinue(count, std::move(callbacks));
 }
 
-void CursorImpl::IDBThreadHelper::PrefetchReset(int32_t used_prefetches,
-                                                int32_t unused_prefetches) {
+void CursorImpl::IDBSequenceHelper::PrefetchReset(int32_t used_prefetches,
+                                                  int32_t unused_prefetches) {
   leveldb::Status s =
       cursor_->PrefetchReset(used_prefetches, unused_prefetches);
   // TODO(cmumford): Handle this error (crbug.com/363397)

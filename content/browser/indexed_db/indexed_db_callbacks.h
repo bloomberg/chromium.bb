@@ -14,8 +14,8 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "base/strings/string16.h"
-#include "base/threading/thread_checker.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
 #include "content/common/indexed_db/indexed_db.mojom.h"
@@ -36,7 +36,7 @@ struct IndexedDBDatabaseMetadata;
 struct IndexedDBReturnValue;
 struct IndexedDBValue;
 
-// Expected to be constructed on IO thread and called/deleted from IDB thread.
+// Expected to be constructed on IO thread and called/deleted from IDB sequence.
 class CONTENT_EXPORT IndexedDBCallbacks
     : public base::RefCounted<IndexedDBCallbacks> {
  public:
@@ -128,7 +128,7 @@ class CONTENT_EXPORT IndexedDBCallbacks
   base::TimeTicks connection_open_start_time_;
 
   std::unique_ptr<IOThreadHelper, BrowserThread::DeleteOnIOThread> io_helper_;
-  base::ThreadChecker thread_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBCallbacks);
 };

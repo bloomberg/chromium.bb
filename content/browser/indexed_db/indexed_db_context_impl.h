@@ -62,7 +62,7 @@ class CONTENT_EXPORT IndexedDBContextImpl
   IndexedDBContextImpl(const base::FilePath& data_path,
                        storage::SpecialStoragePolicy* special_storage_policy,
                        storage::QuotaManagerProxy* quota_manager_proxy,
-                       base::SequencedTaskRunner* task_runner);
+                       scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   IndexedDBFactory* GetIDBFactory();
 

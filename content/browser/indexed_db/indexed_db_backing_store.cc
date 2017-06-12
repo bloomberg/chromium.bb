@@ -2599,8 +2599,8 @@ class LocalWriteClosure : public FileWriterDelegate::DelegateWriteCallback,
  private:
   virtual ~LocalWriteClosure() {
     // Make sure the last reference to a ChainedBlobWriter is released (and
-    // deleted) on the IDB thread since it owns a transaction which has thread
-    // affinity.
+    // deleted) on the IDB sequence since it owns a transaction which has
+    // sequence affinity.
     IndexedDBBackingStore::Transaction::ChainedBlobWriter* raw_tmp =
         chained_blob_writer_.get();
     raw_tmp->AddRef();
