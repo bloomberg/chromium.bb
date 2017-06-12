@@ -10,12 +10,14 @@
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "ui/app_list/app_list_constants.h"
+#include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/app_list/resources/grit/app_list_resources.h"
 #include "ui/app_list/search_box_model.h"
 #include "ui/app_list/speech_ui_model.h"
+#include "ui/app_list/views/app_list_view.h"
 #include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/search_box_view_delegate.h"
 #include "ui/base/ime/text_input_flags.h"
@@ -34,6 +36,7 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/shadow_border.h"
+#include "ui/views/widget/widget.h"
 
 namespace app_list {
 
@@ -42,16 +45,28 @@ namespace {
 const int kPadding = 16;
 const int kInnerPadding = 24;
 const int kPreferredWidth = 360;
+const int kPreferredWidthFullscreen = 544;
 const int kPreferredHeight = 48;
 
 const SkColor kHintTextColor = SkColorSetRGB(0xA0, 0xA0, 0xA0);
 
 const int kBackgroundBorderCornerRadius = 2;
+const int kBackgroundBorderCornerRadiusFullscreen = 20;
+
+bool IsFullscreenAppListEnabled() {
+  // Cache this value to avoid repeated lookup.
+  static bool cached_value = features::IsFullscreenAppListEnabled();
+  return cached_value;
+}
 
 // A background that paints a solid white rounded rect with a thin grey border.
 class SearchBoxBackground : public views::Background {
  public:
-  SearchBoxBackground() {}
+  SearchBoxBackground()
+      : background_border_corner_radius_(
+            IsFullscreenAppListEnabled()
+                ? kBackgroundBorderCornerRadiusFullscreen
+                : kBackgroundBorderCornerRadius) {}
   ~SearchBoxBackground() override {}
 
  private:
@@ -62,8 +77,10 @@ class SearchBoxBackground : public views::Background {
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
     flags.setColor(kSearchBoxBackground);
-    canvas->DrawRoundRect(bounds, kBackgroundBorderCornerRadius, flags);
+    canvas->DrawRoundRect(bounds, background_border_corner_radius_, flags);
   }
+
+  const int background_border_corner_radius_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchBoxBackground);
 };
@@ -114,7 +131,8 @@ class SearchBoxImageButton : public views::ImageButton {
 };
 
 SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
-                             AppListViewDelegate* view_delegate)
+                             AppListViewDelegate* view_delegate,
+                             AppListView* app_list_view)
     : delegate_(delegate),
       view_delegate_(view_delegate),
       model_(NULL),
@@ -123,9 +141,13 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
       speech_button_(NULL),
       search_box_(new views::Textfield),
       contents_view_(NULL),
+      app_list_view_(app_list_view),
       focused_view_(FOCUS_SEARCH_BOX) {
   SetLayoutManager(new views::FillLayout);
-  SetPreferredSize(gfx::Size(kPreferredWidth, kPreferredHeight));
+  SetPreferredSize(gfx::Size(IsFullscreenAppListEnabled()
+                                 ? kPreferredWidthFullscreen
+                                 : kPreferredWidth,
+                             kPreferredHeight));
   AddChildView(content_container_);
 
   SetShadow(GetShadowForZHeight(2));
@@ -323,6 +345,11 @@ void SearchBoxView::ContentsChanged(views::Textfield* sender,
   UpdateModel();
   view_delegate_->AutoLaunchCanceled();
   NotifyQueryChanged();
+
+  if (IsFullscreenAppListEnabled() && !app_list_view_->is_fullscreen()) {
+    // If the app list is in the peeking state, switch it to fullscreen.
+    app_list_view_->SetState(AppListView::FULLSCREEN);
+  }
 }
 
 bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,

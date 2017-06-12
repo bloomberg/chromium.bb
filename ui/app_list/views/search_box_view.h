@@ -31,6 +31,7 @@ enum SearchBoxFocus {
 };
 
 class AppListModel;
+class AppListView;
 class AppListViewDelegate;
 class SearchBoxModel;
 class SearchBoxViewDelegate;
@@ -47,7 +48,8 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
                                       public SpeechUIModelObserver {
  public:
   SearchBoxView(SearchBoxViewDelegate* delegate,
-                AppListViewDelegate* view_delegate);
+                AppListViewDelegate* view_delegate,
+                AppListView* app_list_view = nullptr);
   ~SearchBoxView() override;
 
   void ModelChanged();
@@ -118,6 +120,7 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
   SearchBoxImageButton* speech_button_;  // Owned by views hierarchy.
   views::Textfield* search_box_;  // Owned by views hierarchy.
   views::View* contents_view_;  // Owned by views hierarchy.
+  app_list::AppListView* app_list_view_;  // Owned by views hierarchy.
 
   SearchBoxFocus focused_view_;  // Which element has TAB'd focus.
 

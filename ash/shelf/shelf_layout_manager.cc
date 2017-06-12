@@ -28,6 +28,7 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/i18n/rtl.h"
+#include "ui/app_list/app_list_features.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -425,6 +426,16 @@ void ShelfLayoutManager::OnVirtualKeyboardStateChanged(
       &keyboard_observer_);
 }
 
+void ShelfLayoutManager::OnAppListVisibilityChanged(bool shown,
+                                                    aura::Window* root_window) {
+  if (shelf_ != Shelf::ForWindow(root_window))
+    return;
+
+  is_app_list_visible_ = shown;
+  if (app_list::features::IsFullscreenAppListEnabled())
+    MaybeUpdateShelfBackground(AnimationChangeType::IMMEDIATE);
+}
+
 void ShelfLayoutManager::OnWindowActivated(ActivationReason reason,
                                            aura::Window* gained_active,
                                            aura::Window* lost_active) {
@@ -467,6 +478,10 @@ ShelfBackgroundType ShelfLayoutManager::GetShelfBackgroundType() const {
   // Handle all non active screen states, including OOBE and pre-login.
   if (state_.session_state != session_manager::SessionState::ACTIVE)
     return SHELF_BACKGROUND_OVERLAP;
+
+  // If the app list is active, hide the shelf background to prevent overlap.
+  if (is_app_list_visible_ && app_list::features::IsFullscreenAppListEnabled())
+    return SHELF_BACKGROUND_DEFAULT;
 
   if (state_.visibility_state != SHELF_AUTO_HIDE &&
       state_.window_state == wm::WORKSPACE_WINDOW_STATE_MAXIMIZED) {

@@ -897,6 +897,12 @@ void RootWindowController::CreateContainers() {
   wm::SetSnapsChildrenToPhysicalPixelBoundary(always_on_top_container);
   always_on_top_container->SetProperty(kUsesScreenCoordinatesKey, true);
 
+  aura::Window* app_list_container =
+      CreateContainer(kShellWindowId_AppListContainer, "AppListContainer",
+                      non_lock_screen_containers);
+  wm::SetSnapsChildrenToPhysicalPixelBoundary(app_list_container);
+  app_list_container->SetProperty(kUsesScreenCoordinatesKey, true);
+
   aura::Window* shelf_container =
       CreateContainer(kShellWindowId_ShelfContainer, "ShelfContainer",
                       non_lock_screen_containers);
@@ -916,12 +922,6 @@ void RootWindowController::CreateContainers() {
   wm::SetSnapsChildrenToPhysicalPixelBoundary(shelf_bubble_container);
   shelf_bubble_container->SetProperty(kUsesScreenCoordinatesKey, true);
   shelf_bubble_container->SetProperty(kLockedToRootKey, true);
-
-  aura::Window* app_list_container =
-      CreateContainer(kShellWindowId_AppListContainer, "AppListContainer",
-                      non_lock_screen_containers);
-  wm::SetSnapsChildrenToPhysicalPixelBoundary(app_list_container);
-  app_list_container->SetProperty(kUsesScreenCoordinatesKey, true);
 
   aura::Window* modal_container =
       CreateContainer(kShellWindowId_SystemModalContainer,

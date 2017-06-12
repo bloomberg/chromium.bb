@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "ash/ash_switches.h"
+#include "ash/public/cpp/config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -14,6 +15,8 @@
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
 #include "ui/app_list/app_list_features.h"
+#include "ui/app_list/app_list_switches.h"
+#include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/window.h"
@@ -54,12 +57,12 @@ class AppListPresenterDelegateTest : public test::AshTestBase,
     UpdateDisplay("1024x768");
   }
 
- private:
   void EnableFullscreenAppList() {
     scoped_feature_list_.InitAndEnableFeature(
         app_list::features::kEnableFullscreenAppList);
   }
 
+ private:
   test::TestAppListViewPresenterImpl app_list_presenter_impl_;
   bool test_with_fullscreen_;
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -71,7 +74,7 @@ class AppListPresenterDelegateTest : public test::AshTestBase,
 // the parameterized tests.
 INSTANTIATE_TEST_CASE_P(, AppListPresenterDelegateTest, testing::Bool());
 
-// Tests that app launcher hides when focus moves to a normal window.
+// Tests that app list hides when focus moves to a normal window.
 TEST_P(AppListPresenterDelegateTest, HideOnFocusOut) {
   app_list_presenter_impl()->Show(GetPrimaryDisplayId());
   EXPECT_TRUE(app_list_presenter_impl()->GetTargetVisibility());
@@ -82,7 +85,7 @@ TEST_P(AppListPresenterDelegateTest, HideOnFocusOut) {
   EXPECT_FALSE(app_list_presenter_impl()->GetTargetVisibility());
 }
 
-// Tests that app launcher remains visible when focus is moved to a different
+// Tests that app list remains visible when focus is moved to a different
 // window in kShellWindowId_AppListContainer.
 TEST_P(AppListPresenterDelegateTest,
        RemainVisibleWhenFocusingToApplistContainer) {
@@ -140,7 +143,7 @@ TEST_F(AppListPresenterDelegateTest, TapOutsideBubbleClosesBubble) {
   EXPECT_FALSE(app_list_presenter_impl()->GetTargetVisibility());
 }
 
-// Tests opening the app launcher on a non-primary display, then deleting the
+// Tests opening the app list on a non-primary display, then deleting the
 // display.
 TEST_P(AppListPresenterDelegateTest, NonPrimaryDisplay) {
   // Set up a screen with two displays (horizontally adjacent).
@@ -163,7 +166,7 @@ TEST_P(AppListPresenterDelegateTest, NonPrimaryDisplay) {
   EXPECT_FALSE(app_list_presenter_impl()->GetTargetVisibility());
 }
 
-// Tests opening the app launcher on a tiny display that is too small to contain
+// Tests opening the app list on a tiny display that is too small to contain
 // it.
 TEST_F(AppListPresenterDelegateTest, TinyDisplay) {
   // Set up a screen with a tiny display (height smaller than the app list).
@@ -184,6 +187,69 @@ TEST_F(AppListPresenterDelegateTest, TinyDisplay) {
   const int kMinimalAppListMargin = 10;
 
   EXPECT_GE(app_list_view_top, kMinimalAppListMargin);
+}
+
+// Tests that the peeking app list is enlarged to fullscreen after the user
+// types in the search box.
+TEST_F(AppListPresenterDelegateTest, SnapToFullscreenAfterSearchboxInput) {
+  // TODO(newcomer): investigate failure in mash. http://crbug.com/726838.
+  if (Shell::GetAshConfig() == Config::MASH)
+    return;
+
+  EnableFullscreenAppList();
+  UpdateDisplay("1024x768");
+  EXPECT_TRUE(app_list::features::IsFullscreenAppListEnabled());
+  app_list_presenter_impl()->Show(GetPrimaryDisplayId());
+  app_list::AppListView* app_list = app_list_presenter_impl()->GetView();
+  // Check that it is in peeking mode.
+  EXPECT_FALSE(app_list->is_fullscreen());
+
+  // Dummy key event to search box.
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  generator.PressKey(ui::KeyboardCode::VKEY_0, 0);
+  // Check that it is in fullscreen mode.
+  EXPECT_TRUE(app_list->is_fullscreen());
+}
+
+// Tests that the peeking app list closes if the user taps outside its
+// bounds.
+TEST_F(AppListPresenterDelegateTest, TapAndClickOutsideClosesPeekingAppList) {
+  EnableFullscreenAppList();
+
+  app_list_presenter_impl()->Show(GetPrimaryDisplayId());
+  EXPECT_TRUE(app_list_presenter_impl()->GetTargetVisibility());
+  ui::test::EventGenerator& generator = GetEventGenerator();
+
+  // Grab the bounds of the search box,
+  // which is guaranteed to be inside the app list.
+  gfx::Point tap_point = app_list_presenter_impl()
+                             ->GetView()
+                             ->search_box_widget()
+                             ->GetContentsView()
+                             ->GetBoundsInScreen()
+                             .CenterPoint();
+
+  // Tapping inside the bounds doesn't close the app list.
+  generator.GestureTapAt(tap_point);
+  EXPECT_TRUE(app_list_presenter_impl()->GetTargetVisibility());
+
+  // Clicking inside the bounds doesn't close the app list.
+  generator.MoveMouseTo(tap_point);
+  generator.ClickLeftButton();
+  EXPECT_TRUE(app_list_presenter_impl()->GetTargetVisibility());
+
+  // Tapping outside the bounds closes the app list.
+  tap_point.set_x(tap_point.x() + 750);
+  generator.GestureTapAt(tap_point);
+  EXPECT_FALSE(app_list_presenter_impl()->GetTargetVisibility());
+
+  app_list_presenter_impl()->Show(GetPrimaryDisplayId());
+  EXPECT_TRUE(app_list_presenter_impl()->GetTargetVisibility());
+
+  // Clicking outside the bounds closes the app list.
+  generator.MoveMouseTo(tap_point);
+  generator.ClickLeftButton();
+  EXPECT_FALSE(app_list_presenter_impl()->GetTargetVisibility());
 }
 
 }  // namespace ash

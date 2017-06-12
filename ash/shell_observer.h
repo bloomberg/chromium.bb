@@ -16,6 +16,10 @@ namespace ash {
 
 class ASH_EXPORT ShellObserver {
  public:
+  // Called when the AppList is shown or dismissed.
+  virtual void OnAppListVisibilityChanged(bool shown,
+                                          aura::Window* root_window) {}
+
   // Called when a casting session is started or stopped.
   virtual void OnCastingSessionStartedOrStopped(bool started) {}
 
