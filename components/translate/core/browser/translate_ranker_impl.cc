@@ -133,7 +133,7 @@ TranslateRankerImpl::TranslateRankerImpl(const base::FilePath& model_path,
                                          const GURL& model_url,
                                          ukm::UkmRecorder* ukm_recorder)
     : ukm_recorder_(ukm_recorder),
-      is_logging_enabled_(true),
+      is_logging_enabled_(false),
       is_query_enabled_(base::FeatureList::IsEnabled(kTranslateRankerQuery)),
       is_enforcement_enabled_(
           base::FeatureList::IsEnabled(kTranslateRankerEnforcement)),
@@ -183,6 +183,10 @@ GURL TranslateRankerImpl::GetModelURL() {
 }
 
 void TranslateRankerImpl::EnableLogging(bool value) {
+  if (value != is_logging_enabled_) {
+    DVLOG(3) << "Cleared translate events cache.";
+    event_cache_.clear();
+  }
   is_logging_enabled_ = value;
 }
 

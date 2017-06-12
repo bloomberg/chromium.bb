@@ -60,6 +60,9 @@ class TranslateRanker : public KeyedService {
       const GURL& url,
       metrics::TranslateEventProto* translate_event) = 0;
 
+  // Override the default enabled/disabled state of translate event logging.
+  virtual void EnableLogging(bool enable_logging) = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(TranslateRanker);
 };

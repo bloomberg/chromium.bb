@@ -22,9 +22,9 @@ void TranslateRankerMetricsProvider::ProvideGeneralMetrics(
           ->GetChromeBrowserStateManager()
           ->GetLoadedBrowserStates();
   for (auto* state : browser_states) {
-    TranslateRanker* ranker =
-        TranslateRankerFactory::GetInstance()->GetForBrowserState(state);
+    TranslateRanker* ranker = TranslateRankerFactory::GetForBrowserState(state);
     DCHECK(ranker);
+    UpdateLoggingState();
     std::vector<metrics::TranslateEventProto> translate_events;
     ranker->FlushTranslateEvents(&translate_events);
 
@@ -32,6 +32,28 @@ void TranslateRankerMetricsProvider::ProvideGeneralMetrics(
       uma_proto->add_translate_event()->Swap(&event);
     }
   }
+}
+
+void TranslateRankerMetricsProvider::UpdateLoggingState() {
+  std::vector<ios::ChromeBrowserState*> browser_states =
+      GetApplicationContext()
+          ->GetChromeBrowserStateManager()
+          ->GetLoadedBrowserStates();
+  for (auto* state : browser_states) {
+    TranslateRanker* ranker = TranslateRankerFactory::GetForBrowserState(state);
+    DCHECK(ranker);
+    ranker->EnableLogging(logging_enabled_);
+  }
+}
+
+void TranslateRankerMetricsProvider::OnRecordingEnabled() {
+  logging_enabled_ = true;
+  UpdateLoggingState();
+}
+
+void TranslateRankerMetricsProvider::OnRecordingDisabled() {
+  logging_enabled_ = false;
+  UpdateLoggingState();
 }
 
 }  // namespace translate

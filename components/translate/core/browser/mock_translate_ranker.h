@@ -40,6 +40,9 @@ class MockTranslateRanker : public TranslateRanker {
 
   // TranslateRanker Implementation:
   uint32_t GetModelVersion() const override;
+  void EnableLogging(bool logging_enabled) override {
+    is_logging_enabled_ = logging_enabled;
+  }
   bool ShouldOfferTranslation(
       metrics::TranslateEventProto* translate_events) override;
   void FlushTranslateEvents(

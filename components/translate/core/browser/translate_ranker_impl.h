@@ -90,10 +90,8 @@ class TranslateRankerImpl : public TranslateRanker {
   // from Finch.
   static GURL GetModelURL();
 
-  // Override the default enabled/disabled state of translate event logging.
-  void EnableLogging(bool value);
-
   // TranslateRanker...
+  void EnableLogging(bool value) override;
   uint32_t GetModelVersion() const override;
   bool ShouldOfferTranslation(
       metrics::TranslateEventProto* translate_event) override;
