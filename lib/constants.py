@@ -323,8 +323,6 @@ SOM_BUILDS = {
     # be changed to a programatically list instead of a hardcoded list.
     'gardener': [
         (WATERFALL_INTERNAL, 'master-chromium-pfq', SOM_SEVERITY_PFQ_FAILURE),
-        (WATERFALL_CHROME, 'x86-alex-tot-chrome-pfq-informational',
-         SOM_SEVERITY_CHROME_INFORMATIONAL_FAILURE),
         (WATERFALL_CHROME, 'lumpy-tot-chrome-pfq-informational',
          SOM_SEVERITY_CHROME_INFORMATIONAL_FAILURE),
         (WATERFALL_CHROME, 'peach_pit-tot-chrome-pfq-informational',
