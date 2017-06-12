@@ -2,26 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-define('mojo/edk/js/tests/js_to_cpp_tests', [
-  'console',
-  'mojo/edk/js/tests/js_to_cpp.mojom',
-  'mojo/public/js/bindings',
-  'mojo/public/js/connector',
-  'mojo/public/js/core',
-], function (console, jsToCpp, bindings, connector, core) {
+(function () {
   var retainedJsSide;
-  var retainedJsSideStub;
   var sampleData;
   var sampleMessage;
   var BAD_VALUE = 13;
   var DATA_PIPE_PARAMS = {
-    flags: core.CREATE_DATA_PIPE_OPTIONS_FLAG_NONE,
     elementNumBytes: 1,
     capacityNumBytes: 64
   };
 
   function JsSideConnection() {
-    this.binding = new bindings.Binding(jsToCpp.JsSide, this);
+    this.binding = new mojo.Binding(jsToCpp.JsSide, this);
   }
 
   JsSideConnection.prototype.setCppSide = function(cppSide) {
@@ -55,13 +47,13 @@ define('mojo/edk/js/tests/js_to_cpp_tests', [
       arg.si8 = BAD_VALUE;
 
     for (i = 0; i < numIterations; ++i) {
-      dataPipe1 = core.createDataPipe(DATA_PIPE_PARAMS);
-      dataPipe2 = core.createDataPipe(DATA_PIPE_PARAMS);
-      messagePipe1 = core.createMessagePipe();
-      messagePipe2 = core.createMessagePipe();
+      dataPipe1 = Mojo.createDataPipe(DATA_PIPE_PARAMS);
+      dataPipe2 = Mojo.createDataPipe(DATA_PIPE_PARAMS);
+      messagePipe1 = Mojo.createMessagePipe();
+      messagePipe2 = Mojo.createMessagePipe();
 
-      arg.data_handle = dataPipe1.consumerHandle;
-      arg.message_handle = messagePipe1.handle1;
+      arg.dataHandle = dataPipe1.consumer;
+      arg.messageHandle = messagePipe1.handle1;
 
       specialArg = new jsToCpp.EchoArgs();
       specialArg.si64 = -1;
@@ -69,20 +61,19 @@ define('mojo/edk/js/tests/js_to_cpp_tests', [
       specialArg.si16 = -1;
       specialArg.si8 = -1;
       specialArg.name = 'going';
-      specialArg.data_handle = dataPipe2.consumerHandle;
-      specialArg.message_handle = messagePipe2.handle1;
+      specialArg.dataHandle = dataPipe2.consumer;
+      specialArg.messageHandle = messagePipe2.handle1;
 
       writeDataPipe(dataPipe1, sampleData);
       writeDataPipe(dataPipe2, sampleData);
       writeMessagePipe(messagePipe1, sampleMessage);
       writeMessagePipe(messagePipe2, sampleMessage);
-
       this.cppSide_.echoResponse(createEchoArgsList(specialArg, arg));
 
-      core.close(dataPipe1.producerHandle);
-      core.close(dataPipe2.producerHandle);
-      core.close(messagePipe1.handle0);
-      core.close(messagePipe2.handle0);
+      dataPipe1.producer.close();
+      dataPipe2.producer.close();
+      messagePipe1.handle0.close();
+      messagePipe2.handle0.close();
     }
     this.cppSide_.testFinished();
   };
@@ -91,7 +82,7 @@ define('mojo/edk/js/tests/js_to_cpp_tests', [
     var iteration = 0;
     var dataPipe;
     var messagePipe;
-    var proto = connector.Connector.prototype;
+    var proto = mojo.internal.Connector.prototype;
     var stopSignalled = false;
 
     proto.realAccept = proto.accept;
@@ -110,13 +101,13 @@ define('mojo/edk/js/tests/js_to_cpp_tests', [
     };
 
     while (!stopSignalled) {
-      messagePipe = core.createMessagePipe();
+      messagePipe = Mojo.createMessagePipe();
       writeMessagePipe(messagePipe, sampleMessage);
-      arg.message_handle = messagePipe.handle1;
+      arg.messageHandle = messagePipe.handle1;
 
       this.cppSide_.bitFlipResponse(createEchoArgsList(arg), null);
 
-      core.close(messagePipe.handle0);
+      messagePipe.handle0.close();
       iteration += 1;
     }
 
@@ -129,7 +120,7 @@ define('mojo/edk/js/tests/js_to_cpp_tests', [
     var iteration = 0;
     var dataPipe;
     var messagePipe;
-    var proto = connector.Connector.prototype;
+    var proto = mojo.internal.Connector.prototype;
     var stopSignalled = false;
 
     proto.realAccept = proto.accept;
@@ -146,13 +137,13 @@ define('mojo/edk/js/tests/js_to_cpp_tests', [
     };
 
     while (!stopSignalled) {
-      messagePipe = core.createMessagePipe();
+      messagePipe = Mojo.createMessagePipe();
       writeMessagePipe(messagePipe, sampleMessage);
-      arg.message_handle = messagePipe.handle1;
+      arg.messageHandle = messagePipe.handle1;
 
       this.cppSide_.backPointerResponse(createEchoArgsList(arg));
 
-      core.close(messagePipe.handle0);
+      messagePipe.handle0.close();
       iteration += 1;
     }
 
@@ -162,10 +153,9 @@ define('mojo/edk/js/tests/js_to_cpp_tests', [
   };
 
   function writeDataPipe(pipe, data) {
-    var writeResult = core.writeData(
-      pipe.producerHandle, data, core.WRITE_DATA_FLAG_ALL_OR_NONE);
+    var writeResult = pipe.producer.writeData(data);
 
-    if (writeResult.result != core.RESULT_OK) {
+    if (writeResult.result != Mojo.RESULT_OK) {
       console.log('ERROR: Data pipe write result was ' + writeResult.result);
       return false;
     }
@@ -177,8 +167,8 @@ define('mojo/edk/js/tests/js_to_cpp_tests', [
   }
 
   function writeMessagePipe(pipe, arrayBuffer) {
-    var result = core.writeMessage(pipe.handle0, arrayBuffer, [], 0);
-    if (result != core.RESULT_OK) {
+    var result = pipe.handle0.writeMessage(arrayBuffer, []);
+    if (result != Mojo.RESULT_OK) {
       console.log('ERROR: Message pipe write result was ' + result);
       return false;
     }
@@ -212,4 +202,4 @@ define('mojo/edk/js/tests/js_to_cpp_tests', [
     retainedJsSide = new JsSideConnection;
     retainedJsSide.binding.bind(jsSideRequestHandle);
   };
-});
+})();
