@@ -58,7 +58,8 @@ class TestCompositorFrameSink : public CompositorFrameSink,
       const RendererSettings& renderer_settings,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       bool synchronous_composite,
-      bool disable_display_vsync);
+      bool disable_display_vsync,
+      double refresh_rate);
   ~TestCompositorFrameSink() override;
 
   // This client must be set before BindToClient() happens.
@@ -104,6 +105,7 @@ class TestCompositorFrameSink : public CompositorFrameSink,
   const bool synchronous_composite_;
   const bool disable_display_vsync_;
   const RendererSettings renderer_settings_;
+  const double refresh_rate_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 

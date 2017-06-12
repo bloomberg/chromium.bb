@@ -29,10 +29,6 @@ class CC_EXPORT RendererSettings {
   bool gl_composited_texture_quad_border = false;
   bool show_overdraw_feedback = false;
   bool enable_color_correct_rendering = false;
-
-  // TODO(staraz): Move |refresh_rate| out. It's only used by
-  // TestCompositorFrameSink
-  double refresh_rate = 60.0;
   int highp_threshold_min = 0;
 
   // Determines whether we disallow non-exact matches when finding resources

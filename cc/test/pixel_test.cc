@@ -178,8 +178,8 @@ void PixelTest::SetUpGLRenderer(bool use_skia_gpu_backend,
       base::ThreadTaskRunnerHandle::Get());
 
   renderer_ = base::MakeUnique<GLRenderer>(
-      &settings_.renderer_settings, output_surface_.get(),
-      resource_provider_.get(), texture_mailbox_deleter_.get());
+      &renderer_settings_, output_surface_.get(), resource_provider_.get(),
+      texture_mailbox_deleter_.get());
   renderer_->Initialize();
   renderer_->SetVisible(true);
 }
@@ -202,8 +202,7 @@ void PixelTest::SetUpSoftwareRenderer() {
       settings_.enable_color_correct_rasterization,
       settings_.resource_settings);
   auto renderer = base::MakeUnique<SoftwareRenderer>(
-      &settings_.renderer_settings, output_surface_.get(),
-      resource_provider_.get());
+      &renderer_settings_, output_surface_.get(), resource_provider_.get());
   software_renderer_ = renderer.get();
   renderer_ = std::move(renderer);
   renderer_->Initialize();

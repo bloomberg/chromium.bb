@@ -8102,8 +8102,9 @@ class FakeDrawableLayerImpl : public LayerImpl {
       : LayerImpl(tree_impl, id) {}
 };
 
-// Make sure damage tracking propagates all the way to the graphics context,
-// where it should request to swap only the sub-buffer that is damaged.
+// Make sure damage tracking propagates all the way to the CompositorFrame
+// submitted to the CompositorFrameSink, where it should request to swap only
+// the sub-buffer that is damaged.
 TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
   scoped_refptr<TestContextProvider> context_provider(
       TestContextProvider::Create());
@@ -8118,7 +8119,6 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
   // This test creates its own LayerTreeHostImpl, so
   // that we can force partial swap enabled.
   LayerTreeSettings settings = DefaultSettings();
-  settings.renderer_settings.partial_swap_enabled = true;
   std::unique_ptr<LayerTreeHostImpl> layer_tree_host_impl =
       LayerTreeHostImpl::Create(
           settings, this, &task_runner_provider_, &stats_instrumentation_,
@@ -8239,138 +8239,6 @@ class FakeLayerWithQuads : public LayerImpl {
   FakeLayerWithQuads(LayerTreeImpl* tree_impl, int id)
       : LayerImpl(tree_impl, id) {}
 };
-
-static std::unique_ptr<LayerTreeHostImpl> SetupLayersForOpacity(
-    LayerTreeSettings settings,
-    bool partial_swap,
-    LayerTreeHostImplClient* client,
-    TaskRunnerProvider* task_runner_provider,
-    TaskGraphRunner* task_graph_runner,
-    RenderingStatsInstrumentation* stats_instrumentation,
-    CompositorFrameSink* compositor_frame_sink) {
-  settings.renderer_settings.partial_swap_enabled = partial_swap;
-  std::unique_ptr<LayerTreeHostImpl> my_host_impl = LayerTreeHostImpl::Create(
-      settings, client, task_runner_provider, stats_instrumentation,
-      task_graph_runner, AnimationHost::CreateForTesting(ThreadInstance::IMPL),
-      0, nullptr);
-  my_host_impl->SetVisible(true);
-  my_host_impl->InitializeRenderer(compositor_frame_sink);
-  my_host_impl->WillBeginImplFrame(
-      CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 2));
-  my_host_impl->SetViewportSize(gfx::Size(100, 100));
-
-  /*
-    Layers are created as follows:
-
-    +--------------------+
-    |                  1 |
-    |  +-----------+     |
-    |  |         2 |     |
-    |  | +-------------------+
-    |  | |   3               |
-    |  | +-------------------+
-    |  |           |     |
-    |  +-----------+     |
-    |                    |
-    |                    |
-    +--------------------+
-
-    Layers 1, 2 have render surfaces
-  */
-  std::unique_ptr<LayerImpl> root =
-      LayerImpl::Create(my_host_impl->active_tree(), 1);
-  std::unique_ptr<LayerImpl> child =
-      LayerImpl::Create(my_host_impl->active_tree(), 2);
-  std::unique_ptr<LayerImpl> grand_child =
-      FakeLayerWithQuads::Create(my_host_impl->active_tree(), 3);
-
-  gfx::Rect root_rect(0, 0, 100, 100);
-  gfx::Rect child_rect(10, 10, 50, 50);
-  gfx::Rect grand_child_rect(5, 5, 150, 150);
-
-  root->test_properties()->force_render_surface = true;
-  root->SetPosition(gfx::PointF(root_rect.origin()));
-  root->SetBounds(root_rect.size());
-  root->draw_properties().visible_layer_rect = root_rect;
-  root->SetDrawsContent(false);
-
-  child->SetPosition(gfx::PointF(child_rect.x(), child_rect.y()));
-  child->test_properties()->opacity = 0.5f;
-  child->SetBounds(gfx::Size(child_rect.width(), child_rect.height()));
-  child->draw_properties().visible_layer_rect = child_rect;
-  child->SetDrawsContent(false);
-  child->test_properties()->force_render_surface = true;
-
-  grand_child->SetPosition(gfx::PointF(grand_child_rect.origin()));
-  grand_child->SetBounds(grand_child_rect.size());
-  grand_child->draw_properties().visible_layer_rect = grand_child_rect;
-  grand_child->SetDrawsContent(true);
-
-  child->test_properties()->AddChild(std::move(grand_child));
-  root->test_properties()->AddChild(std::move(child));
-
-  my_host_impl->active_tree()->SetRootLayerForTesting(std::move(root));
-  my_host_impl->active_tree()->BuildPropertyTreesForTesting();
-  return my_host_impl;
-}
-
-TEST_F(LayerTreeHostImplTest, ContributingLayerEmptyScissorPartialSwap) {
-  TestTaskGraphRunner task_graph_runner;
-  scoped_refptr<TestContextProvider> provider(TestContextProvider::Create());
-  provider->BindToCurrentThread();
-  provider->TestContext3d()->set_have_post_sub_buffer(true);
-  std::unique_ptr<CompositorFrameSink> compositor_frame_sink(
-      FakeCompositorFrameSink::Create3d(provider));
-  std::unique_ptr<LayerTreeHostImpl> my_host_impl = SetupLayersForOpacity(
-      DefaultSettings(), true, this, &task_runner_provider_, &task_graph_runner,
-      &stats_instrumentation_, compositor_frame_sink.get());
-  {
-    TestFrameData frame;
-    EXPECT_EQ(DRAW_SUCCESS, my_host_impl->PrepareToDraw(&frame));
-
-    // Verify all quads have been computed
-    ASSERT_EQ(2U, frame.render_passes.size());
-    ASSERT_EQ(1U, frame.render_passes[0]->quad_list.size());
-    ASSERT_EQ(1U, frame.render_passes[1]->quad_list.size());
-    EXPECT_EQ(DrawQuad::SOLID_COLOR,
-              frame.render_passes[0]->quad_list.front()->material);
-    EXPECT_EQ(DrawQuad::RENDER_PASS,
-              frame.render_passes[1]->quad_list.front()->material);
-
-    my_host_impl->DrawLayers(&frame);
-    my_host_impl->DidDrawAllLayers(frame);
-  }
-  my_host_impl->ReleaseCompositorFrameSink();
-}
-
-TEST_F(LayerTreeHostImplTest, ContributingLayerEmptyScissorNoPartialSwap) {
-  TestTaskGraphRunner task_graph_runner;
-  scoped_refptr<TestContextProvider> provider(TestContextProvider::Create());
-  provider->BindToCurrentThread();
-  provider->TestContext3d()->set_have_post_sub_buffer(true);
-  std::unique_ptr<CompositorFrameSink> compositor_frame_sink(
-      FakeCompositorFrameSink::Create3d(provider));
-  std::unique_ptr<LayerTreeHostImpl> my_host_impl = SetupLayersForOpacity(
-      DefaultSettings(), false, this, &task_runner_provider_,
-      &task_graph_runner, &stats_instrumentation_, compositor_frame_sink.get());
-  {
-    TestFrameData frame;
-    EXPECT_EQ(DRAW_SUCCESS, my_host_impl->PrepareToDraw(&frame));
-
-    // Verify all quads have been computed
-    ASSERT_EQ(2U, frame.render_passes.size());
-    ASSERT_EQ(1U, frame.render_passes[0]->quad_list.size());
-    ASSERT_EQ(1U, frame.render_passes[1]->quad_list.size());
-    EXPECT_EQ(DrawQuad::SOLID_COLOR,
-              frame.render_passes[0]->quad_list.front()->material);
-    EXPECT_EQ(DrawQuad::RENDER_PASS,
-              frame.render_passes[1]->quad_list.front()->material);
-
-    my_host_impl->DrawLayers(&frame);
-    my_host_impl->DidDrawAllLayers(frame);
-  }
-  my_host_impl->ReleaseCompositorFrameSink();
-}
 
 TEST_F(LayerTreeHostImplTest, LayersFreeTextures) {
   std::unique_ptr<TestWebGraphicsContext3D> context =
@@ -8986,10 +8854,11 @@ TEST_F(LayerTreeHostImplTest, ShutdownReleasesContext) {
 
   constexpr bool synchronous_composite = true;
   constexpr bool disable_display_vsync = false;
+  constexpr double refresh_rate = 60.0;
   auto compositor_frame_sink = base::MakeUnique<TestCompositorFrameSink>(
       context_provider, TestContextProvider::CreateWorker(), nullptr, nullptr,
       RendererSettings(), base::ThreadTaskRunnerHandle::Get().get(),
-      synchronous_composite, disable_display_vsync);
+      synchronous_composite, disable_display_vsync, refresh_rate);
   compositor_frame_sink->SetClient(&test_client_);
 
   CreateHostImpl(DefaultSettings(), std::move(compositor_frame_sink));

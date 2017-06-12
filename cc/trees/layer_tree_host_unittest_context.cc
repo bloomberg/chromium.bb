@@ -79,6 +79,7 @@ class LayerTreeHostContextTest : public LayerTreeTest {
 
   std::unique_ptr<TestCompositorFrameSink> CreateCompositorFrameSink(
       const RendererSettings& renderer_settings,
+      double refresh_rate,
       scoped_refptr<ContextProvider> compositor_context_provider,
       scoped_refptr<ContextProvider> worker_context_provider) override {
     base::AutoLock lock(context3d_lock_);
@@ -99,7 +100,7 @@ class LayerTreeHostContextTest : public LayerTreeTest {
     }
 
     return LayerTreeTest::CreateCompositorFrameSink(
-        renderer_settings,
+        renderer_settings, refresh_rate,
         TestContextProvider::Create(std::move(compositor_context3d)),
         std::move(worker_context_provider));
   }

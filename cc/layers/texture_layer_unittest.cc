@@ -637,6 +637,7 @@ class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
 
   std::unique_ptr<TestCompositorFrameSink> CreateCompositorFrameSink(
       const RendererSettings& renderer_settings,
+      double refresh_rate,
       scoped_refptr<ContextProvider> compositor_context_provider,
       scoped_refptr<ContextProvider> worker_context_provider) override {
     constexpr bool disable_display_vsync = false;
@@ -646,7 +647,8 @@ class TextureLayerImplWithMailboxThreadedCallback : public LayerTreeTest {
     return base::MakeUnique<TestCompositorFrameSink>(
         compositor_context_provider, std::move(worker_context_provider),
         shared_bitmap_manager(), gpu_memory_buffer_manager(), renderer_settings,
-        ImplThreadTaskRunner(), synchronous_composite, disable_display_vsync);
+        ImplThreadTaskRunner(), synchronous_composite, disable_display_vsync,
+        refresh_rate);
   }
 
   void AdvanceTestCase() {

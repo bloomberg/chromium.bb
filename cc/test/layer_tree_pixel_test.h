@@ -38,6 +38,7 @@ class LayerTreePixelTest : public LayerTreeTest {
   // LayerTreeTest overrides.
   std::unique_ptr<TestCompositorFrameSink> CreateCompositorFrameSink(
       const RendererSettings& renderer_settings,
+      double refresh_rate,
       scoped_refptr<ContextProvider> compositor_context_provider,
       scoped_refptr<ContextProvider> worker_context_provider) override;
   std::unique_ptr<OutputSurface> CreateDisplayOutputSurfaceOnThread(

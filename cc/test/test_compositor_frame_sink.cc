@@ -29,7 +29,8 @@ TestCompositorFrameSink::TestCompositorFrameSink(
     const RendererSettings& renderer_settings,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
     bool synchronous_composite,
-    bool disable_display_vsync)
+    bool disable_display_vsync,
+    double refresh_rate)
     : CompositorFrameSink(std::move(compositor_context_provider),
                           std::move(worker_context_provider),
                           gpu_memory_buffer_manager,
@@ -37,6 +38,7 @@ TestCompositorFrameSink::TestCompositorFrameSink(
       synchronous_composite_(synchronous_composite),
       disable_display_vsync_(disable_display_vsync),
       renderer_settings_(renderer_settings),
+      refresh_rate_(refresh_rate),
       task_runner_(std::move(task_runner)),
       frame_sink_id_(kCompositorFrameSinkId),
       surface_manager_(new SurfaceManager),
@@ -75,8 +77,7 @@ bool TestCompositorFrameSink::BindToClient(CompositorFrameSinkClient* client) {
       begin_frame_source_.reset(new DelayBasedBeginFrameSource(
           base::MakeUnique<DelayBasedTimeSource>(task_runner_.get())));
       begin_frame_source_->SetAuthoritativeVSyncInterval(
-          base::TimeDelta::FromMilliseconds(1000.f /
-                                            renderer_settings_.refresh_rate));
+          base::TimeDelta::FromMilliseconds(1000.f / refresh_rate_));
     }
     scheduler.reset(new DisplayScheduler(
         begin_frame_source_.get(), task_runner_.get(),

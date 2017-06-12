@@ -466,10 +466,11 @@ class LayerTreeHostTestHiddenSurfaceNotAllocatedForSubtreeCopyRequest
 
   std::unique_ptr<TestCompositorFrameSink> CreateCompositorFrameSink(
       const RendererSettings& renderer_settings,
+      double refresh_rate,
       scoped_refptr<ContextProvider> compositor_context_provider,
       scoped_refptr<ContextProvider> worker_context_provider) override {
     auto frame_sink = LayerTreeHostCopyRequestTest::CreateCompositorFrameSink(
-        renderer_settings, std::move(compositor_context_provider),
+        renderer_settings, refresh_rate, std::move(compositor_context_provider),
         std::move(worker_context_provider));
     frame_sink_ = frame_sink.get();
     return frame_sink;
