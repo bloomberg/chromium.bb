@@ -29,6 +29,7 @@ source_set("app") {
 }
 
 source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "chrome_app_startup_parameters_unittest.mm",

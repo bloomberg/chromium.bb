@@ -4,7 +4,6 @@
 
 #import <Foundation/Foundation.h>
 
-#import "base/mac/bind_objc_block.h"
 #include "base/threading/thread.h"
 #import "ios/chrome/app/application_delegate/app_state.h"
 #import "ios/chrome/app/application_delegate/url_opener.h"
@@ -13,6 +12,10 @@
 #import "ios/chrome/test/base/scoped_block_swizzler.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 #pragma mark - MainController Testing Additions
 
@@ -65,16 +68,16 @@ class TabOpenerTest : public PlatformTest {
       id<StartupInformation> expectedStartupInformation,
       AppState* expectedAppState) {
     swizzle_block_executed_ = NO;
-    swizzle_block_.reset(
+    swizzle_block_ =
         [^(id self, NSDictionary* options, BOOL applicationActive,
            id<TabOpening> tabOpener, id<StartupInformation> startupInformation,
            AppState* appState) {
           swizzle_block_executed_ = YES;
           EXPECT_EQ(expectedLaunchOptions, options);
           EXPECT_EQ(expectedStartupInformation, startupInformation);
-          EXPECT_EQ(main_controller_.get(), tabOpener);
+          EXPECT_EQ(main_controller_, tabOpener);
           EXPECT_EQ(expectedAppState, appState);
-        } copy]);
+        } copy];
     URL_opening_handle_launch_swizzler_.reset(new ScopedBlockSwizzler(
         [URLOpener class], @selector(handleLaunchOptions:
                                        applicationActive:
@@ -85,16 +88,16 @@ class TabOpenerTest : public PlatformTest {
   }
 
   MainController* GetMainController() {
-    if (!main_controller_.get()) {
-      main_controller_.reset([[MainController alloc] initForTesting]);
+    if (!main_controller_) {
+      main_controller_ = [[MainController alloc] initForTesting];
     }
-    return main_controller_.get();
+    return main_controller_;
   }
 
  private:
-  base::scoped_nsobject<MainController> main_controller_;
+  MainController* main_controller_;
   __block BOOL swizzle_block_executed_;
-  base::mac::ScopedBlock<HandleLaunchOptions> swizzle_block_;
+  HandleLaunchOptions swizzle_block_;
   std::unique_ptr<ScopedBlockSwizzler> URL_opening_handle_launch_swizzler_;
 };
 
