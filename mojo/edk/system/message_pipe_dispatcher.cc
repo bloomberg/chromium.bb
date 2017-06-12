@@ -165,34 +165,26 @@ MojoResult MessagePipeDispatcher::WriteMessage(
 }
 
 MojoResult MessagePipeDispatcher::ReadMessage(
+    ReadMessageSizePolicy size_policy,
+    ReadMessageDiscardPolicy discard_policy,
+    uint32_t max_payload_size,
+    uint32_t max_num_handles,
     std::unique_ptr<ports::UserMessageEvent>* message,
-    uint32_t* num_bytes,
-    MojoHandle* handles,
-    uint32_t* num_handles,
-    MojoReadMessageFlags flags,
-    bool read_any_size) {
+    uint32_t* actual_payload_size,
+    uint32_t* actual_num_handles) {
   // We can't read from a port that's closed or in transit!
   if (port_closed_ || in_transit_)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  const bool may_discard = flags & MOJO_READ_MESSAGE_FLAG_MAY_DISCARD;
-
-  // Grab a message if the provided handles buffer is large enough. If the input
-  // |num_bytes| is provided and |read_any_size| is false, we also ensure
-  // that it specifies a size at least as large as the next available payload.
-  //
-  // If |read_any_size| is true, the input value of |*num_bytes| is ignored.
-  // This flag exists to support both new and old API behavior.
-  MojoResult read_result = UserMessageImpl::ReadMessageEventFromPort(
-      node_controller_, port_, read_any_size, may_discard, num_bytes, handles,
-      num_handles, message);
+  MojoResult rv = UserMessageImpl::ReadMessageEventFromPort(
+      port_, size_policy, discard_policy, max_payload_size, max_num_handles,
+      message, actual_payload_size, actual_num_handles);
 
   // We may need to update anyone watching our signals in case we just read the
   // last available message.
   base::AutoLock lock(signal_lock_);
   watchers_.NotifyState(GetHandleSignalsStateNoLock());
-
-  return read_result;
+  return rv;
 }
 
 HandleSignalsState
@@ -276,9 +268,10 @@ scoped_refptr<Dispatcher> MessagePipeDispatcher::Deserialize(
   const SerializedState* state = static_cast<const SerializedState*>(data);
 
   ports::PortRef port;
-  CHECK_EQ(
-      ports::OK,
-      internal::g_core->GetNodeController()->node()->GetPort(ports[0], &port));
+  if (internal::g_core->GetNodeController()->node()->GetPort(ports[0], &port) !=
+      ports::OK) {
+    return nullptr;
+  }
 
   return new MessagePipeDispatcher(internal::g_core->GetNodeController(), port,
                                    state->pipe_id, state->endpoint);

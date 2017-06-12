@@ -189,13 +189,9 @@ MojoResult MojoWriteMessageNew(MojoHandle message_pipe_handle,
 
 MojoResult MojoReadMessageNew(MojoHandle message_pipe_handle,
                               MojoMessageHandle* message,
-                              uint32_t* num_bytes,
-                              MojoHandle* handles,
-                              uint32_t* num_handles,
                               MojoReadMessageFlags flags) {
   assert(g_thunks.ReadMessageNew);
-  return g_thunks.ReadMessageNew(message_pipe_handle, message, num_bytes,
-                                 handles, num_handles, flags);
+  return g_thunks.ReadMessageNew(message_pipe_handle, message, flags);
 }
 
 MojoResult MojoAllocMessage(uint32_t num_bytes,
@@ -220,9 +216,21 @@ MojoResult MojoFreeMessage(MojoMessageHandle message) {
   return g_thunks.FreeMessage(message);
 }
 
-MojoResult MojoGetMessageBuffer(MojoMessageHandle message, void** buffer) {
-  assert(g_thunks.GetMessageBuffer);
-  return g_thunks.GetMessageBuffer(message, buffer);
+MojoResult MojoSerializeMessage(MojoMessageHandle message) {
+  assert(g_thunks.SerializeMessage);
+  return g_thunks.SerializeMessage(message);
+}
+
+MojoResult MojoGetSerializedMessageContents(
+    MojoMessageHandle message,
+    void** buffer,
+    uint32_t* num_bytes,
+    MojoHandle* handles,
+    uint32_t* num_handles,
+    MojoGetSerializedMessageContentsFlags flags) {
+  assert(g_thunks.GetSerializedMessageContents);
+  return g_thunks.GetSerializedMessageContents(message, buffer, num_bytes,
+                                               handles, num_handles, flags);
 }
 
 MojoResult MojoReleaseMessageContext(MojoMessageHandle message,

@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "mojo/edk/embedder/platform_handle_vector.h"
 #include "mojo/edk/system/channel.h"
 #include "mojo/edk/system/dispatcher.h"
@@ -19,11 +20,10 @@
 #include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/c/system/message_pipe.h"
 #include "mojo/public/c/system/types.h"
+#include "mojo/public/cpp/system/handle.h"
 
 namespace mojo {
 namespace edk {
-
-class NodeController;
 
 // UserMessageImpl is the sole implementation of ports::UserMessage used to
 // attach message data to any ports::UserMessageEvent.
@@ -35,6 +35,18 @@ class MOJO_SYSTEM_IMPL_EXPORT UserMessageImpl
     : public NON_EXPORTED_BASE(ports::UserMessage) {
  public:
   static const TypeInfo kUserMessageTypeInfo;
+
+  // Determines how ExtractSerializedHandles should behave when it encounters an
+  // unrecoverable serialized handle.
+  enum ExtractBadHandlePolicy {
+    // Continue extracting handles upon encountering a bad handle. The bad
+    // handle will be extracted with an invalid handle value.
+    kSkip,
+
+    // Abort the extraction process, leaving any valid serialized handles still
+    // in the message.
+    kAbort,
+  };
 
   ~UserMessageImpl() override;
 
@@ -61,40 +73,21 @@ class MOJO_SYSTEM_IMPL_EXPORT UserMessageImpl
   // |payload| and |payload_size| represent the range of bytes within
   // |channel_message| which should be parsed by this call.
   static std::unique_ptr<UserMessageImpl> CreateFromChannelMessage(
+      ports::UserMessageEvent* message_event,
       Channel::MessagePtr channel_message,
       void* payload,
       size_t payload_size);
 
-  // Reads a message from |port| on |node_controller|'s Node.
-  //
-  // The message may or may not require deserialization. If the read message is
-  // unserialized, it must have been sent from within the same process that's
-  // receiving it and this call merely passes ownership of the message object
-  // back out of the ports layer. In this case, |read_any_size| must be true,
-  // |*out_event| will own the read message upon return, and all other arguments
-  // are ignored.
-  //
-  // If the read message is still serialized, it must have been created by
-  // CreateFromChannelMessage() above whenever its bytes were first read from a
-  // Channel. In this case, the message will be taken form the port and returned
-  // in |*out_event|, if and only iff |read_any_size| is true or both
-  // |*num_bytes| and |*num_handles| are sufficiently large to contain the
-  // contents of the message. Upon success this returns |MOJO_RESULT_OK|, and
-  // updates |*num_bytes| and |*num_handles| with the actual size of the read
-  // message.
-  //
-  // Upon failure this returns any of various error codes detailed by the
-  // documentation for MojoReadMessage/MojoReadMessageNew in
-  // src/mojo/public/c/system/message_pipe.h.
+  // Attempts to read a message from the given |port|.
   static MojoResult ReadMessageEventFromPort(
-      NodeController* node_controller,
       const ports::PortRef& port,
-      bool read_any_size,
-      bool may_discard,
-      uint32_t* num_bytes,
-      MojoHandle* handles,
-      uint32_t* num_handles,
-      std::unique_ptr<ports::UserMessageEvent>* out_event);
+      Dispatcher::ReadMessageSizePolicy size_policy,
+      Dispatcher::ReadMessageDiscardPolicy discard_policy,
+      uint32_t max_payload_size,
+      uint32_t max_num_handles,
+      std::unique_ptr<ports::UserMessageEvent>* out_event,
+      uint32_t* actual_payload_size,
+      uint32_t* actual_num_handles);
 
   // Extracts the serialized Channel::Message from the UserMessageEvent in
   // |event|. |event| must have a serialized UserMessageImpl instance attached.
@@ -114,8 +107,7 @@ class MOJO_SYSTEM_IMPL_EXPORT UserMessageImpl
       return false;
     }
 
-    DCHECK(channel_message_);
-    return true;
+    return !!channel_message_;
   }
 
   void* user_payload() {
@@ -138,7 +130,21 @@ class MOJO_SYSTEM_IMPL_EXPORT UserMessageImpl
   void set_source_node(const ports::NodeName& name) { source_node_ = name; }
   const ports::NodeName& source_node() const { return source_node_; }
 
-  MojoResult SerializeIfNecessary(ports::UserMessageEvent* message_event);
+  // If this message is not already serialized, this serializes it.
+  MojoResult SerializeIfNecessary();
+
+  // Extracts handles from this (serialized) message.
+  //
+  // Returns |MOJO_RESULT_OK|
+  // if sucessful, |MOJO_RESULT_FAILED_PRECONDITION| if this isn't a serialized
+  // message, |MOJO_RESULT_NOT_FOUND| if all serialized handles have already
+  // been extracted, or |MOJO_RESULT_ABORTED| if one or more handles failed
+  // extraction.
+  //
+  // On success, |handles| is populated with |num_handles()| extracted handles,
+  // whose ownership is thereby transferred to the caller.
+  MojoResult ExtractSerializedHandles(ExtractBadHandlePolicy bad_handle_policy,
+                                      MojoHandle* handles);
 
  private:
   class ReadMessageFilter;
@@ -147,27 +153,37 @@ class MOJO_SYSTEM_IMPL_EXPORT UserMessageImpl
   // |thunks|. If the message is ever going to be routed to another node (see
   // |WillBeRoutedExternally()| below), it will be serialized at that time using
   // operations provided by |thunks|.
-  UserMessageImpl(uintptr_t context, const MojoMessageOperationThunks* thunks);
+  UserMessageImpl(ports::UserMessageEvent* message_event,
+                  uintptr_t context,
+                  const MojoMessageOperationThunks* thunks);
 
   // Creates a serialized UserMessageImpl backed by an existing Channel::Message
   // object. |header| and |user_payload| must be pointers into
   // |channel_message|'s own storage, and |user_payload_size| is the number of
   // bytes comprising the user message contents at |user_payload|.
-  UserMessageImpl(Channel::MessagePtr channel_message,
+  UserMessageImpl(ports::UserMessageEvent* message_event,
+                  Channel::MessagePtr channel_message,
                   void* header,
                   void* user_payload,
                   size_t user_payload_size);
 
   // UserMessage:
-  bool WillBeRoutedExternally(ports::UserMessageEvent* message_event) override;
+  bool WillBeRoutedExternally() override;
+
+  // The event which owns this serialized message. Not owned.
+  ports::UserMessageEvent* const message_event_;
 
   // Unserialized message state.
   uintptr_t context_ = 0;
-  const MojoMessageOperationThunks context_thunks_;
+  base::Optional<MojoMessageOperationThunks> context_thunks_;
 
   // Serialized message contents. May be null if this is not a serialized
   // message.
   Channel::MessagePtr channel_message_;
+
+  // Indicates whether any handles serialized within |channel_message_| have
+  // yet to be extracted.
+  bool has_serialized_handles_ = false;
 
   // Only valid if |channel_message_| is non-null. |header_| is the address
   // of the UserMessageImpl's internal MessageHeader structure within the

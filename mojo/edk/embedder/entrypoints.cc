@@ -76,8 +76,19 @@ MojoResult MojoFreeMessageImpl(MojoMessageHandle message) {
   return g_core->FreeMessage(message);
 }
 
-MojoResult MojoGetMessageBufferImpl(MojoMessageHandle message, void** buffer) {
-  return g_core->GetMessageBuffer(message, buffer);
+MojoResult MojoSerializeMessageImpl(MojoMessageHandle message) {
+  return g_core->SerializeMessage(message);
+}
+
+MojoResult MojoGetSerializedMessageContentsImpl(
+    MojoMessageHandle message,
+    void** buffer,
+    uint32_t* num_bytes,
+    MojoHandle* handles,
+    uint32_t* num_handles,
+    MojoGetSerializedMessageContentsFlags flags) {
+  return g_core->GetSerializedMessageContents(message, buffer, num_bytes,
+                                              handles, num_handles, flags);
 }
 
 MojoResult MojoReleaseMessageContextImpl(MojoMessageHandle message,
@@ -121,12 +132,8 @@ MojoResult MojoReadMessageImpl(MojoHandle message_pipe_handle,
 
 MojoResult MojoReadMessageNewImpl(MojoHandle message_pipe_handle,
                                   MojoMessageHandle* message,
-                                  uint32_t* num_bytes,
-                                  MojoHandle* handles,
-                                  uint32_t* num_handles,
                                   MojoReadMessageFlags flags) {
-  return g_core->ReadMessageNew(
-      message_pipe_handle, message, num_bytes, handles, num_handles, flags);
+  return g_core->ReadMessageNew(message_pipe_handle, message, flags);
 }
 
 MojoResult MojoFuseMessagePipesImpl(MojoHandle handle0, MojoHandle handle1) {
@@ -281,7 +288,8 @@ MojoSystemThunks MakeSystemThunks() {
                                     MojoAllocMessageImpl,
                                     MojoCreateMessageImpl,
                                     MojoFreeMessageImpl,
-                                    MojoGetMessageBufferImpl,
+                                    MojoSerializeMessageImpl,
+                                    MojoGetSerializedMessageContentsImpl,
                                     MojoReleaseMessageContextImpl,
                                     MojoWrapPlatformHandleImpl,
                                     MojoUnwrapPlatformHandleImpl,

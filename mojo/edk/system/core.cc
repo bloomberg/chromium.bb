@@ -235,8 +235,10 @@ bool Core::AddDispatchersFromTransit(
       failed = true;
   }
   if (failed) {
-    for (auto d : dispatchers)
-      d.dispatcher->Close();
+    for (auto d : dispatchers) {
+      if (d.dispatcher)
+        d.dispatcher->Close();
+    }
     return false;
   }
   return true;
@@ -510,15 +512,17 @@ MojoResult Core::AllocMessage(uint32_t num_bytes,
 MojoResult Core::CreateMessage(uintptr_t context,
                                const MojoMessageOperationThunks* thunks,
                                MojoMessageHandle* message_handle) {
-  if (!message_handle || !context || !thunks)
+  if (!message_handle || !context)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  if (thunks->struct_size != sizeof(MojoMessageOperationThunks))
-    return MOJO_RESULT_INVALID_ARGUMENT;
+  if (thunks) {
+    if (thunks->struct_size != sizeof(MojoMessageOperationThunks))
+      return MOJO_RESULT_INVALID_ARGUMENT;
 
-  if (!thunks->get_serialized_size || !thunks->serialize_handles ||
-      !thunks->serialize_payload || !thunks->destroy)
-    return MOJO_RESULT_INVALID_ARGUMENT;
+    if (!thunks->get_serialized_size || !thunks->serialize_handles ||
+        !thunks->serialize_payload || !thunks->destroy)
+      return MOJO_RESULT_INVALID_ARGUMENT;
+  }
 
   *message_handle = reinterpret_cast<MojoMessageHandle>(
       UserMessageImpl::CreateEventForNewMessageWithContext(context, thunks)
@@ -535,18 +539,55 @@ MojoResult Core::FreeMessage(MojoMessageHandle message_handle) {
   return MOJO_RESULT_OK;
 }
 
-MojoResult Core::GetMessageBuffer(MojoMessageHandle message_handle,
-                                  void** buffer) {
+MojoResult Core::SerializeMessage(MojoMessageHandle message_handle) {
   if (!message_handle)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  return reinterpret_cast<ports::UserMessageEvent*>(message_handle)
+      ->GetMessage<UserMessageImpl>()
+      ->SerializeIfNecessary();
+}
+
+MojoResult Core::GetSerializedMessageContents(
+    MojoMessageHandle message_handle,
+    void** buffer,
+    uint32_t* num_bytes,
+    MojoHandle* handles,
+    uint32_t* num_handles,
+    MojoGetSerializedMessageContentsFlags flags) {
+  if (!message_handle || (num_handles && *num_handles && !handles))
     return MOJO_RESULT_INVALID_ARGUMENT;
 
   auto* message = reinterpret_cast<ports::UserMessageEvent*>(message_handle)
                       ->GetMessage<UserMessageImpl>();
   if (!message->IsSerialized())
-    return MOJO_RESULT_NOT_FOUND;
+    return MOJO_RESULT_FAILED_PRECONDITION;
 
-  *buffer = message->user_payload();
-  return MOJO_RESULT_OK;
+  if (num_bytes) {
+    base::CheckedNumeric<uint32_t> payload_size = message->user_payload_size();
+    *num_bytes = payload_size.ValueOrDie();
+  }
+
+  if (message->user_payload_size() > 0) {
+    if (!num_bytes || !buffer)
+      return MOJO_RESULT_RESOURCE_EXHAUSTED;
+
+    *buffer = message->user_payload();
+  }
+
+  if (flags & MOJO_GET_SERIALIZED_MESSAGE_CONTENTS_FLAG_IGNORE_HANDLES)
+    return MOJO_RESULT_OK;
+
+  uint32_t max_num_handles = 0;
+  if (num_handles) {
+    max_num_handles = *num_handles;
+    *num_handles = static_cast<uint32_t>(message->num_handles());
+  }
+
+  if (message->num_handles() > max_num_handles)
+    return MOJO_RESULT_RESOURCE_EXHAUSTED;
+
+  return message->ExtractSerializedHandles(
+      UserMessageImpl::ExtractBadHandlePolicy::kAbort, handles);
 }
 
 MojoResult Core::ReleaseMessageContext(MojoMessageHandle message_handle,
@@ -595,11 +636,12 @@ MojoResult Core::CreateMessagePipe(
   *message_pipe_handle1 = AddDispatcher(
       new MessagePipeDispatcher(GetNodeController(), port1, pipe_id, 1));
   if (*message_pipe_handle1 == MOJO_HANDLE_INVALID) {
-    scoped_refptr<Dispatcher> unused;
-    unused->Close();
-
-    base::AutoLock lock(handles_->GetLock());
-    handles_->GetAndRemoveDispatcher(*message_pipe_handle0, &unused);
+    scoped_refptr<Dispatcher> dispatcher0;
+    {
+      base::AutoLock lock(handles_->GetLock());
+      handles_->GetAndRemoveDispatcher(*message_pipe_handle0, &dispatcher0);
+    }
+    dispatcher0->Close();
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
   }
 
@@ -615,26 +657,27 @@ MojoResult Core::WriteMessage(MojoHandle message_pipe_handle,
   if (num_bytes && !bytes)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  MojoMessageHandle message;
+  MojoMessageHandle message_handle;
   MojoResult rv = AllocMessage(num_bytes, handles, num_handles,
-                               MOJO_ALLOC_MESSAGE_FLAG_NONE, &message);
+                               MOJO_ALLOC_MESSAGE_FLAG_NONE, &message_handle);
   if (rv != MOJO_RESULT_OK)
     return rv;
 
   if (num_bytes) {
-    void* buffer = nullptr;
-    rv = GetMessageBuffer(message, &buffer);
-    DCHECK_EQ(rv, MOJO_RESULT_OK);
-    memcpy(buffer, bytes, num_bytes);
+    auto* message = reinterpret_cast<ports::UserMessageEvent*>(message_handle)
+                        ->GetMessage<UserMessageImpl>();
+    memcpy(message->user_payload(), bytes, num_bytes);
   }
 
-  return WriteMessageNew(message_pipe_handle, message, flags);
+  return WriteMessageNew(message_pipe_handle, message_handle, flags);
 }
 
 MojoResult Core::WriteMessageNew(MojoHandle message_pipe_handle,
                                  MojoMessageHandle message_handle,
                                  MojoWriteMessageFlags flags) {
   RequestContext request_context;
+  if (!message_handle)
+    return MOJO_RESULT_INVALID_ARGUMENT;
   auto message = base::WrapUnique(
       reinterpret_cast<ports::UserMessageEvent*>(message_handle));
   auto dispatcher = GetDispatcher(message_pipe_handle);
@@ -656,9 +699,15 @@ MojoResult Core::ReadMessage(MojoHandle message_pipe_handle,
   if (!dispatcher)
     return MOJO_RESULT_INVALID_ARGUMENT;
   std::unique_ptr<ports::UserMessageEvent> message_event;
+  const uint32_t max_payload_size = num_bytes ? *num_bytes : 0;
+  const uint32_t max_num_handles = num_handles ? *num_handles : 0;
+  auto discard_policy = flags & MOJO_READ_MESSAGE_FLAG_MAY_DISCARD
+                            ? Dispatcher::ReadMessageDiscardPolicy::kMayDiscard
+                            : Dispatcher::ReadMessageDiscardPolicy::kNoDiscard;
   MojoResult rv =
-      dispatcher->ReadMessage(&message_event, num_bytes, handles, num_handles,
-                              flags, false /* ignore_num_bytes */);
+      dispatcher->ReadMessage(Dispatcher::ReadMessageSizePolicy::kLimitedSize,
+                              discard_policy, max_payload_size, max_num_handles,
+                              &message_event, num_bytes, num_handles);
   if (rv != MOJO_RESULT_OK)
     return rv;
 
@@ -669,33 +718,41 @@ MojoResult Core::ReadMessage(MojoHandle message_pipe_handle,
     return MOJO_RESULT_OK;
 
   auto* message = message_event->GetMessage<UserMessageImpl>();
-
-  // This must be true for ReadMessage to have succeeded above.
   DCHECK(message->IsSerialized());
-
-  if (message->user_payload_size())
+  if (message->num_handles()) {
+    DCHECK_LE(message->num_handles(), max_num_handles);
+    MojoResult extract_result = message->ExtractSerializedHandles(
+        UserMessageImpl::ExtractBadHandlePolicy::kAbort, handles);
+    if (extract_result != MOJO_RESULT_OK)
+      return extract_result;
+  }
+  if (message->user_payload_size()) {
+    DCHECK_LE(message->user_payload_size(), max_payload_size);
     memcpy(bytes, message->user_payload(), message->user_payload_size());
+  }
   return MOJO_RESULT_OK;
 }
 
 MojoResult Core::ReadMessageNew(MojoHandle message_pipe_handle,
                                 MojoMessageHandle* message_handle,
-                                uint32_t* num_bytes,
-                                MojoHandle* handles,
-                                uint32_t* num_handles,
                                 MojoReadMessageFlags flags) {
-  DCHECK(message_handle);
-  DCHECK(!num_handles || !*num_handles || handles);
   RequestContext request_context;
   auto dispatcher = GetDispatcher(message_pipe_handle);
-  if (!dispatcher)
+  if (!dispatcher || !message_handle)
     return MOJO_RESULT_INVALID_ARGUMENT;
+
   std::unique_ptr<ports::UserMessageEvent> message_event;
   MojoResult rv =
-      dispatcher->ReadMessage(&message_event, num_bytes, handles, num_handles,
-                              flags, true /* ignore_num_bytes */);
+      dispatcher->ReadMessage(Dispatcher::ReadMessageSizePolicy::kAnySize,
+                              Dispatcher::ReadMessageDiscardPolicy::kNoDiscard,
+                              0, 0, &message_event, nullptr, nullptr);
   if (rv != MOJO_RESULT_OK)
     return rv;
+
+  // If there's nowhere to store the message handle and discard is allowed by
+  // the caller, we simply drop the message event.
+  if (flags & MOJO_READ_MESSAGE_FLAG_MAY_DISCARD && !message_handle)
+    return MOJO_RESULT_OK;
 
   *message_handle =
       reinterpret_cast<MojoMessageHandle>(message_event.release());

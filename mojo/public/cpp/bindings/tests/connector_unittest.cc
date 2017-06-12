@@ -308,7 +308,8 @@ TEST_F(ConnectorTest, MessageWithHandles) {
   AllocMessage(kText, &message1);
 
   MessagePipe pipe;
-  message1.mutable_handles()->push_back(pipe.handle0.release());
+  message1.mutable_handles()->emplace_back(
+      ScopedHandle::From(std::move(pipe.handle0)));
 
   connector0.Accept(&message1);
 
@@ -333,13 +334,10 @@ TEST_F(ConnectorTest, MessageWithHandles) {
 
   // Now send a message to the transferred handle and confirm it's sent through
   // to the orginal pipe.
-  // TODO(vtl): Do we need a better way of "downcasting" the handle types?
-  ScopedMessagePipeHandle smph;
-  smph.reset(MessagePipeHandle(message_received.handles()->front().value()));
-  message_received.mutable_handles()->front() = Handle();
-  // |smph| now owns this handle.
-
-  Connector connector_received(std::move(smph), Connector::SINGLE_THREADED_SEND,
+  auto pipe_handle = ScopedMessagePipeHandle::From(
+      std::move(message_received.mutable_handles()->front()));
+  Connector connector_received(std::move(pipe_handle),
+                               Connector::SINGLE_THREADED_SEND,
                                base::ThreadTaskRunnerHandle::Get());
   Connector connector_original(std::move(pipe.handle1),
                                Connector::SINGLE_THREADED_SEND,

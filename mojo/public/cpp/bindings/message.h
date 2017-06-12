@@ -59,7 +59,7 @@ class MOJO_CPP_BINDINGS_EXPORT Message {
   // Initializes a Message from an existing Mojo MessageHandle.
   void InitializeFromMojoMessage(ScopedMessageHandle message,
                                  uint32_t num_bytes,
-                                 std::vector<Handle>* handles);
+                                 std::vector<ScopedHandle>* handles);
 
   uint32_t data_num_bytes() const {
     return static_cast<uint32_t>(buffer_->size());
@@ -121,8 +121,8 @@ class MOJO_CPP_BINDINGS_EXPORT Message {
   const uint32_t* payload_interface_ids() const;
 
   // Access the handles.
-  const std::vector<Handle>* handles() const { return &handles_; }
-  std::vector<Handle>* mutable_handles() { return &handles_; }
+  const std::vector<ScopedHandle>* handles() const { return &handles_; }
+  std::vector<ScopedHandle>* mutable_handles() { return &handles_; }
 
   const std::vector<ScopedInterfaceEndpointHandle>*
   associated_endpoint_handles() const {
@@ -159,7 +159,7 @@ class MOJO_CPP_BINDINGS_EXPORT Message {
   void CloseHandles();
 
   std::unique_ptr<internal::MessageBuffer> buffer_;
-  std::vector<Handle> handles_;
+  std::vector<ScopedHandle> handles_;
   std::vector<ScopedInterfaceEndpointHandle> associated_endpoint_handles_;
 
   DISALLOW_COPY_AND_ASSIGN(Message);

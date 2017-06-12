@@ -95,6 +95,26 @@ const MojoAllocMessageFlags MOJO_ALLOC_MESSAGE_FLAG_NONE = 0;
 #define MOJO_ALLOC_MESSAGE_FLAG_NONE ((MojoAllocMessageFlags)0)
 #endif
 
+// |MojoGetSerializedMessageContentsFlags|: Used to specify different options
+// |MojoGetSerializedMessageContents()|.
+//   |MOJO_GET_SERIALIZED_MESSAGE_CONTENTS_FLAG_NONE| - No flags; default mode.
+//   |MOJO_GET_SERIALIZED_MESSAGE_CONTENTS_FLAG_IGNORE_HANDLES| - Don't attempt
+//       to extract any handles from the serialized message.
+
+typedef uint32_t MojoGetSerializedMessageContentsFlags;
+
+#ifdef __cplusplus
+const MojoGetSerializedMessageContentsFlags
+    MOJO_GET_SERIALIZED_MESSAGE_CONTENTS_FLAG_NONE = 0;
+const MojoGetSerializedMessageContentsFlags
+    MOJO_GET_SERIALIZED_MESSAGE_CONTENTS_FLAG_IGNORE_HANDLES = 1 << 0;
+#else
+#define MOJO_GET_SERIALIZED_MESSAGE_CONTENTS_FLAG_NONE \
+  ((MojoGetSerializedMessageContentsFlags)0)
+#define MOJO_GET_SERIALIZED_MESSAGE_CONTENTS_FLAG_IGNORE_HANDLES \
+  ((MojoGetSerializedMessageContentsFlags)1 << 0)
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -263,27 +283,21 @@ MOJO_SYSTEM_EXPORT MojoResult
 // the message bytes. The returned message must eventually be freed using
 // |MojoFreeMessage()|.
 //
-// Message payload can be accessed using |MojoGetMessageBuffer()|.
+// Message payload and handles can be accessed using
+// |MojoGetSerializedMessageContents()|.
 //
-//   |message_pipe_handle|, |num_bytes|, |handles|, |num_handles|, and |flags|
-//       correspond to their use in |MojoReadMessage()| above, with the
-//       exception that |num_bytes| is only an output argument.
-//   |message| must be non-null unless |MOJO_READ_MESSAGE_FLAG_MAY_DISCARD| is
-//       set in flags.
+// |message| must be non-null unless |MOJO_READ_MESSAGE_FLAG_MAY_DISCARD| is set
+//     in |flags|.
 //
 // Return values correspond to the return values for |MojoReadMessage()| above.
 // On success (MOJO_RESULT_OK), |*message| will contain a handle to a message
-// object which may be passed to |MojoGetMessageBuffer()| or
+// object which may be passed to |MojoGetSerializedMessageContents()| or
 // |MojoReleaseMessageContext()|. The caller owns the message object and is
 // responsible for freeing it via |MojoFreeMessage()| or
 // |MojoReleaseMessageContext()|.
-MOJO_SYSTEM_EXPORT MojoResult
-    MojoReadMessageNew(MojoHandle message_pipe_handle,
-                       MojoMessageHandle* message,  // Optional out.
-                       uint32_t* num_bytes,         // Optional out.
-                       MojoHandle* handles,         // Optional out.
-                       uint32_t* num_handles,       // Optional in/out.
-                       MojoReadMessageFlags flags);
+MOJO_SYSTEM_EXPORT MojoResult MojoReadMessageNew(MojoHandle message_pipe_handle,
+                                                 MojoMessageHandle* message,
+                                                 MojoReadMessageFlags flags);
 
 // Fuses two message pipe endpoints together. Given two pipes:
 //
@@ -310,8 +324,8 @@ MOJO_SYSTEM_EXPORT MojoResult
     MojoFuseMessagePipes(MojoHandle handle0, MojoHandle handle1);
 
 // Allocates a new message whose ownership may be passed to
-// |MojoWriteMessageNew()|. Use |MojoGetMessageBuffer()| to retrieve the address
-// of the mutable message payload.
+// |MojoWriteMessageNew()|. Use |MojoGetSerializedMessageContents()| to retrieve
+// the address of the mutable message payload.
 //
 // |num_bytes|: The size of the message payload in bytes.
 // |handles|: An array of handles to transfer in the message. This takes
@@ -364,12 +378,16 @@ MojoAllocMessage(uint32_t num_bytes,
 // the system will invoke the serialization helper functions from |thunks| on
 // |context| to obtain a serialized representation of the message.
 //
+// If |thunks| is null, the created message cannot be serialized. Subsequent
+// calls to |MojoSerializeMessage()| on the created message, or any attempt to
+// transmit the message across a process boundary, will fail.
+//
 // Returns:
 //   |MOJO_RESULT_OK| if a new message was created. |*message| contains a handle
 //       to the new message object on return.
-//   |MOJO_RESULT_INVALID_ARGUMENT| if |context| is 0, |thunks| is null, or any
-//       element of |thunks| is invalid. In this case, the value of |message| is
-//       ignored.
+//   |MOJO_RESULT_INVALID_ARGUMENT| if |context| is 0, or |thunks| is non-null
+//       and any element of |thunks| is invalid. In this case, the value of
+//       |message| is ignored.
 MOJO_SYSTEM_EXPORT MojoResult
 MojoCreateMessage(uintptr_t context,
                   const struct MojoMessageOperationThunks* thunks,
@@ -387,22 +405,83 @@ MojoCreateMessage(uintptr_t context,
 //   |MOJO_RESULT_INVALID_ARGUMENT| if |message| was not a valid message.
 MOJO_SYSTEM_EXPORT MojoResult MojoFreeMessage(MojoMessageHandle message);
 
-// Retrieves the address of mutable message bytes for a message allocated by
-// either |MojoAllocMessage()| or |MojoReadMessageNew()|.
+// Forces a message to be serialized in-place if not already serialized.
 //
 // Returns:
-//   |MOJO_RESULT_OK| if |message| is a valid message object with a serialized
-//       message buffer attached. |*buffer| will be updated to point to mutable
-//       message bytes.
-//   |MOJO_RESULT_NOT_FOUND| if |message| is a valid message object but has no
-//       serialized message buffer attached. In this case, callers should
-//       instead call |MojoReleaseMessageContext()| to retrieve its context
-//       value.
-//   |MOJO_RESULT_INVALID_ARGUMENT| if |message| is not a valid message object.
+//   |MOJO_RESULT_OK| if |message| was not serialized and is now serialized.
+//       In this case its thunks were invoked to perform serialization and
+//       ultimately destroy its associated context. The message may still be
+//       written to a pipe or decomposed by MojoGetSerializedMessageContents().
+//   |MOJO_RESULT_FAILED_PRECONDITION| if |message| was already serialized.
+//   |MOJO_RESULT_NOT_FOUND| if |message| cannot be serialized (i.e. it was
+//       created with null |MojoMessageOperationThunks|.)
+//   |MOJO_RESULT_BUSY| if one or more handles provided by the user context
+//       reported itself as busy during the serialization attempt. In this case
+//       all serialized handles are closed automatically.
+//   |MOJO_RESULT_ABORTED| if some other unspecified error occurred during
+//       handle serialization. In this case all serialized handles are closed
+//       automatically.
+//   |MOJO_RESULT_INVALID_ARGUMENT| if |message| is not a valid message handle.
 //
-// NOTE: A returned buffer address is always guaranteed to be 8-byte aligned.
-MOJO_SYSTEM_EXPORT MojoResult MojoGetMessageBuffer(MojoMessageHandle message,
-                                                   void** buffer);  // Out
+// Note that unserialized messages may be successfully transferred from one
+// message pipe endpoint to another without ever being serialized. This function
+// allows callers to coerce eager serialization.
+MOJO_SYSTEM_EXPORT MojoResult MojoSerializeMessage(MojoMessageHandle message);
+
+// Retrieves the contents of a serialized message.
+//
+// |message|: The message whose contents are to be retrieved.
+// |num_bytes|: An output parameter which will receive the total size in bytes
+//     of the message's payload.
+// |buffer|: An output parameter which will receive the address of a buffer
+//     containing exactly |*num_bytes| bytes of payload data. This buffer
+//     address is not owned by the caller and is only valid as long as the
+//     message handle in |message| is valid.
+// |num_handles|: An input/output parameter. On input, if not null, this points
+//     to value specifying the available capacity (in number of handles) of
+//     |handles|. On output, if not null, this will point to a value specifying
+//     the actual number of handles available in the serialized message.
+// |handles|: A buffer to contain up to (input) |*num_handles| handles. May be
+//     null if |num_handles| is null or |*num_handles| is 0.
+// |flags|: Flags to affect the behavior of this API.
+//
+// If |MOJO_GET_SERIALIZED_MESSAGE_CONTENTS_FLAG_IGNORE_HANDLES| is set in
+// |flags|, |num_handles| and |handles| arguments are ignored and only payload-
+// related outputs are updated.
+//
+// Returns:
+//   |MOJO_RESULT_OK| if |message| is a serialized message and the provided
+//       handle storage is sufficient to contain all handles attached to the
+//       message. In this case all non-null output parameters are filled in and
+//       ownership of any attached handles is transferred to the caller. It is
+//       no longer legal to call MojoGetSerializedMessageContents on this
+//       message handle.
+//   |MOJO_RESULT_INVALID_ARGUMENT| if |num_handles| is non-null and
+//       |*num_handles| is non-zero, but |handles| is null; or if |message| is
+//       not a valid message handle.
+//   |MOJO_RESULT_FAILED_PRECONDITION| if |message| is not a serialized message.
+//       The caller may either use |MojoSerializeMessage()| and try again, or
+//       use |MojoReleaseMessageContext()| to extract the message's unserialized
+//       context.
+//   |MOJO_RESULT_NOT_FOUND| if the message's serialized contents have already
+//       been extracted (or have failed to be extracted) by a previous call to
+//       |MojoGetSerializedMessageContents()|.
+//   |MOJO_RESULT_RESOURCE_EXHAUSTED| if |num_handles| is null and there are
+//       handles attached to the message, or if |*num_handles| on input is less
+//       than the number of handles attached to the message. Also may be
+//       returned if |num_bytes| or |buffer| is null and the message has a non-
+//       empty payload.
+//   |MOJO_RESULT_ARBORTED| if the serialized message could not be parsed or
+//       its attached handles could not be decoded properly. The message is left
+//       intact but is effectively useless: future calls to this API on the same
+//       message handle will yield the same result.
+MOJO_SYSTEM_EXPORT MojoResult
+MojoGetSerializedMessageContents(MojoMessageHandle message,
+                                 void** buffer,
+                                 uint32_t* num_bytes,
+                                 MojoHandle* handles,
+                                 uint32_t* num_handles,
+                                 MojoGetSerializedMessageContentsFlags flags);
 
 // Detaches the user-provided context from a message and returns it to the
 // caller. This can only succeed if the message is not in a serialized form.
@@ -414,7 +493,7 @@ MOJO_SYSTEM_EXPORT MojoResult MojoGetMessageBuffer(MojoMessageHandle message,
 //       |message|.
 //   |MOJO_RESULT_NOT_FOUND| if |message| is a valid message object which has no
 //       associated context value. In this case it must be a serialized message,
-//       and |MojoGetMessageBuffer()| should be called instead.
+//       and |MojoGetSerializedMessageContents()| should be called instead.
 //   |MOJO_RESULT_INVALID_ARGUMENT| if |message| is not a valid message object.
 MOJO_SYSTEM_EXPORT MojoResult
 MojoReleaseMessageContext(MojoMessageHandle message, uintptr_t* context);

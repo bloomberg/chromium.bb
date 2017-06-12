@@ -74,10 +74,13 @@ bool HandleTable::AddDispatchersFromTransit(
     return false;
 
   for (size_t i = 0; i < dispatchers.size(); ++i) {
-    MojoHandle handle = next_available_handle_++;
-    auto result = handles_.insert(
-        std::make_pair(handle, Entry(dispatchers[i].dispatcher)));
-    DCHECK(result.second);
+    MojoHandle handle = MOJO_HANDLE_INVALID;
+    if (dispatchers[i].dispatcher) {
+      handle = next_available_handle_++;
+      auto result = handles_.insert(
+          std::make_pair(handle, Entry(dispatchers[i].dispatcher)));
+      DCHECK(result.second);
+    }
     handles[i] = handle;
   }
 

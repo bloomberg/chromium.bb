@@ -419,9 +419,14 @@ TEST_F(MessagePipeTest, WriteAndReadMessageObject) {
                              MOJO_ALLOC_MESSAGE_FLAG_NONE, &message));
   ASSERT_NE(MOJO_MESSAGE_HANDLE_INVALID, message);
 
+  uint32_t num_bytes;
   void* buffer = nullptr;
-  EXPECT_EQ(MOJO_RESULT_OK, MojoGetMessageBuffer(message, &buffer));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoGetSerializedMessageContents(
+                message, &buffer, &num_bytes, nullptr, nullptr,
+                MOJO_GET_SERIALIZED_MESSAGE_CONTENTS_FLAG_NONE));
   ASSERT_TRUE(buffer);
+  EXPECT_EQ(kMessage.size(), num_bytes);
   memcpy(buffer, kMessage.data(), kMessage.size());
 
   MojoHandle a, b;
@@ -430,16 +435,16 @@ TEST_F(MessagePipeTest, WriteAndReadMessageObject) {
             MojoWriteMessageNew(a, message, MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   EXPECT_EQ(MOJO_RESULT_OK, WaitForSignals(b, MOJO_HANDLE_SIGNAL_READABLE));
-  uint32_t num_bytes = 0;
   uint32_t num_handles = 0;
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoReadMessageNew(b, &message, &num_bytes, nullptr, &num_handles,
-                               MOJO_READ_MESSAGE_FLAG_NONE));
+            MojoReadMessageNew(b, &message, MOJO_READ_MESSAGE_FLAG_NONE));
   ASSERT_NE(MOJO_MESSAGE_HANDLE_INVALID, message);
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoGetSerializedMessageContents(
+                message, &buffer, &num_bytes, nullptr, &num_handles,
+                MOJO_GET_SERIALIZED_MESSAGE_CONTENTS_FLAG_NONE));
   EXPECT_EQ(static_cast<uint32_t>(kMessage.size()), num_bytes);
   EXPECT_EQ(0u, num_handles);
-
-  EXPECT_EQ(MOJO_RESULT_OK, MojoGetMessageBuffer(message, &buffer));
   ASSERT_TRUE(buffer);
 
   EXPECT_EQ(0, strncmp(static_cast<const char*>(buffer), kMessage.data(),

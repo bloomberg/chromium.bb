@@ -44,9 +44,7 @@ Message::Message(Message&& other)
       associated_endpoint_handles_(
           std::move(other.associated_endpoint_handles_)) {}
 
-Message::~Message() {
-  CloseHandles();
-}
+Message::~Message() {}
 
 Message& Message::operator=(Message&& other) {
   Reset();
@@ -57,7 +55,6 @@ Message& Message::operator=(Message&& other) {
 }
 
 void Message::Reset() {
-  CloseHandles();
   handles_.clear();
   associated_endpoint_handles_.clear();
   buffer_.reset();
@@ -70,7 +67,7 @@ void Message::Initialize(size_t capacity, bool zero_initialized) {
 
 void Message::InitializeFromMojoMessage(ScopedMessageHandle message,
                                         uint32_t num_bytes,
-                                        std::vector<Handle>* handles) {
+                                        std::vector<ScopedHandle>* handles) {
   DCHECK(!buffer_);
   buffer_.reset(new internal::MessageBuffer(std::move(message), num_bytes));
   handles_.swap(*handles);
@@ -138,6 +135,10 @@ ScopedMessageHandle Message::TakeMojoMessage() {
       MOJO_ALLOC_MESSAGE_FLAG_NONE,
       &new_message);
   CHECK_EQ(rv, MOJO_RESULT_OK);
+
+  // The handles are now owned by the message object.
+  for (auto& handle : handles_)
+    ignore_result(handle.release());
   handles_.clear();
 
   void* new_buffer = nullptr;
@@ -153,14 +154,6 @@ ScopedMessageHandle Message::TakeMojoMessage() {
 void Message::NotifyBadMessage(const std::string& error) {
   DCHECK(buffer_);
   buffer_->NotifyBadMessage(error);
-}
-
-void Message::CloseHandles() {
-  for (std::vector<Handle>::iterator it = handles_.begin();
-       it != handles_.end(); ++it) {
-    if (it->is_valid())
-      CloseRaw(*it);
-  }
 }
 
 void Message::SerializeAssociatedEndpointHandles(
@@ -246,28 +239,18 @@ SyncMessageResponseContext::GetBadMessageCallback() {
 }
 
 MojoResult ReadMessage(MessagePipeHandle handle, Message* message) {
-  MojoResult rv;
-
-  std::vector<Handle> handles;
   ScopedMessageHandle mojo_message;
-  uint32_t num_bytes = 0, num_handles = 0;
-  rv = ReadMessageNew(handle,
-                      &mojo_message,
-                      &num_bytes,
-                      nullptr,
-                      &num_handles,
-                      MOJO_READ_MESSAGE_FLAG_NONE);
-  if (rv == MOJO_RESULT_RESOURCE_EXHAUSTED) {
-    DCHECK_GT(num_handles, 0u);
-    handles.resize(num_handles);
-    rv = ReadMessageNew(handle,
-                        &mojo_message,
-                        &num_bytes,
-                        reinterpret_cast<MojoHandle*>(handles.data()),
-                        &num_handles,
-                        MOJO_READ_MESSAGE_FLAG_NONE);
-  }
+  MojoResult rv =
+      ReadMessageNew(handle, &mojo_message, MOJO_READ_MESSAGE_FLAG_NONE);
+  if (rv != MOJO_RESULT_OK)
+    return rv;
 
+  uint32_t num_bytes = 0;
+  void* buffer;
+  std::vector<ScopedHandle> handles;
+  rv = GetSerializedMessageContents(
+      mojo_message.get(), &buffer, &num_bytes, &handles,
+      MOJO_GET_SERIALIZED_MESSAGE_CONTENTS_FLAG_NONE);
   if (rv != MOJO_RESULT_OK)
     return rv;
 

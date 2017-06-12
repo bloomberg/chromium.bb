@@ -214,6 +214,10 @@ class Node {
   // Guards |ports_|. This must never be acquired while an individual port's
   // lock is held on the same thread. Conversely, individual port locks may be
   // acquired while this one is held.
+  //
+  // Because UserMessage events may execute arbitrary user code during
+  // destruction, it is also important to ensure that such events are never
+  // destroyed while this (or any individual Port) lock is held.
   base::Lock ports_lock_;
   std::unordered_map<PortName, scoped_refptr<Port>> ports_;
 

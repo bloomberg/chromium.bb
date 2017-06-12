@@ -12,7 +12,7 @@ UserMessage::UserMessage(const TypeInfo* type_info) : type_info_(type_info) {}
 
 UserMessage::~UserMessage() = default;
 
-bool UserMessage::WillBeRoutedExternally(UserMessageEvent* event) {
+bool UserMessage::WillBeRoutedExternally() {
   return true;
 }
 
