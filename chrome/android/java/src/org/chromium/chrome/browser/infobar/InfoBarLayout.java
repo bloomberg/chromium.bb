@@ -251,6 +251,8 @@ public final class InfoBarLayout extends ViewGroup implements View.OnClickListen
      * Adjusts styling to account for the big icon layout.
      */
     public void setIsUsingBigIcon() {
+        if (mIconView == null) return;
+
         LayoutParams lp = (LayoutParams) mIconView.getLayoutParams();
         lp.width = mBigIconSize;
         lp.height = mBigIconSize;
