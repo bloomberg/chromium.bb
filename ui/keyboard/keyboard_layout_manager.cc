@@ -44,6 +44,8 @@ void KeyboardLayoutManager::SetChildBounds(aura::Window* child,
                                            const gfx::Rect& requested_bounds) {
   DCHECK(child == keyboard_);
 
+  TRACE_EVENT0("vk", "KeyboardLayoutSetChildBounds");
+
   // Request to change the bounds of child window (AKA the virtual keyboard
   // window) should change the container window first. Then the child window is
   // resized and covers the container window. Note the child's bound is only set

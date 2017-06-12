@@ -240,6 +240,7 @@ void KeyboardUIContent::ReloadKeyboardIfNeeded() {
       // navigate to a keyboard in a different extension. This keeps the UX the
       // same as Android. Note we need to explicitly close current page as it
       // might try to resize keyboard window in javascript on a resize event.
+      TRACE_EVENT0("vk", "ReloadKeyboardIfNeeded");
       GetKeyboardWindow()->SetBounds(gfx::Rect());
       keyboard_contents_->ClosePage();
       keyboard_controller()->SetKeyboardMode(FULL_WIDTH);
@@ -325,6 +326,7 @@ const aura::Window* KeyboardUIContent::GetKeyboardRootWindow() const {
 
 void KeyboardUIContent::LoadContents(const GURL& url) {
   if (keyboard_contents_) {
+    TRACE_EVENT0("vk", "LoadContents");
     content::OpenURLParams params(url, content::Referrer(),
                                   WindowOpenDisposition::SINGLETON_TAB,
                                   ui::PAGE_TRANSITION_AUTO_TOPLEVEL, false);
