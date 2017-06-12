@@ -12,12 +12,12 @@
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/optional.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/trace_event/trace_event.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
 #include "gpu/command_buffer/service/feature_info.h"
+#include "gpu/ipc/service/direct_composition_child_surface_win.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
 #include "gpu/ipc/service/switches.h"
@@ -40,11 +40,6 @@
 #define EGL_FLEXIBLE_SURFACE_COMPATIBILITY_SUPPORTED_ANGLE 0x33A6
 #endif /* EGL_ANGLE_flexible_surface_compatibility */
 
-#ifndef EGL_ANGLE_d3d_texture_client_buffer
-#define EGL_ANGLE_d3d_texture_client_buffer 1
-#define EGL_D3D_TEXTURE_ANGLE 0x33A3
-#endif /* EGL_ANGLE_d3d_texture_client_buffer */
-
 namespace gpu {
 namespace {
 
@@ -52,24 +47,6 @@ namespace {
 // converts them to BT.601 in the video processor.
 const base::Feature kFallbackBT709VideoToBT601{
     "FallbackBT709VideoToBT601", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// This class is used to make sure a specified surface isn't current, and upon
-// destruction it will make the surface current again if it had been before.
-class ScopedReleaseCurrent {
- public:
-  explicit ScopedReleaseCurrent(gl::GLSurface* this_surface) {
-    gl::GLContext* current_context = gl::GLContext::GetCurrent();
-    bool was_current =
-        current_context && current_context->IsCurrent(this_surface);
-    if (was_current) {
-      make_current_.emplace(current_context, this_surface);
-      current_context->ReleaseCurrent(this_surface);
-    }
-  }
-
- private:
-  base::Optional<ui::ScopedMakeCurrent> make_current_;
-};
 
 bool SizeContains(const gfx::Size& a, const gfx::Size& b) {
   return gfx::Rect(a).Contains(gfx::Rect(b));
@@ -174,11 +151,6 @@ bool HardwareSupportsOverlays() {
   }
   return false;
 }
-
-// Only one DirectComposition surface can be rendered into at a time. Track
-// here which IDCompositionSurface is being rendered into. If another context
-// is made current, then this surface will be suspended.
-IDCompositionSurface* g_current_surface;
 
 }  // namespace
 
@@ -1058,96 +1030,7 @@ bool DirectCompositionSurfaceWin::Initialize(gl::GLSurfaceFormat format) {
       eglCreatePbufferSurface(display, GetConfig(), &pbuffer_attribs[0]);
   CHECK(!!default_surface_);
 
-  return true;
-}
-
-void DirectCompositionSurfaceWin::ReleaseCurrentSurface() {
-  ReleaseDrawTexture(true);
-  dcomp_surface_.Reset();
-  swap_chain_.Reset();
-}
-
-void DirectCompositionSurfaceWin::InitializeSurface() {
-  TRACE_EVENT1("gpu", "DirectCompositionSurfaceWin::InitializeSurface()",
-               "enable_dc_layers_", enable_dc_layers_);
-  DCHECK(!dcomp_surface_);
-  DCHECK(!swap_chain_);
-  DXGI_FORMAT output_format =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableHDR)
-          ? DXGI_FORMAT_R16G16B16A16_FLOAT
-          : DXGI_FORMAT_B8G8R8A8_UNORM;
-  if (enable_dc_layers_) {
-    // Always treat as premultiplied, because an underlay could cause it to
-    // become transparent.
-    HRESULT hr = dcomp_device_->CreateSurface(
-        size_.width(), size_.height(), output_format,
-        DXGI_ALPHA_MODE_PREMULTIPLIED, dcomp_surface_.GetAddressOf());
-    has_been_rendered_to_ = false;
-    CHECK(SUCCEEDED(hr));
-  } else {
-    DXGI_ALPHA_MODE alpha_mode =
-        has_alpha_ ? DXGI_ALPHA_MODE_PREMULTIPLIED : DXGI_ALPHA_MODE_IGNORE;
-    base::win::ScopedComPtr<IDXGIDevice> dxgi_device;
-    d3d11_device_.CopyTo(dxgi_device.GetAddressOf());
-    base::win::ScopedComPtr<IDXGIAdapter> dxgi_adapter;
-    dxgi_device->GetAdapter(dxgi_adapter.GetAddressOf());
-    base::win::ScopedComPtr<IDXGIFactory2> dxgi_factory;
-    dxgi_adapter->GetParent(IID_PPV_ARGS(dxgi_factory.GetAddressOf()));
-
-    DXGI_SWAP_CHAIN_DESC1 desc = {};
-    desc.Width = size_.width();
-    desc.Height = size_.height();
-    desc.Format = output_format;
-    desc.Stereo = FALSE;
-    desc.SampleDesc.Count = 1;
-    desc.BufferCount = 2;
-    desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    desc.Scaling = DXGI_SCALING_STRETCH;
-    desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
-    desc.AlphaMode = alpha_mode;
-    desc.Flags = 0;
-    HRESULT hr = dxgi_factory->CreateSwapChainForComposition(
-        d3d11_device_.Get(), &desc, nullptr, swap_chain_.GetAddressOf());
-    has_been_rendered_to_ = false;
-    first_swap_ = true;
-    CHECK(SUCCEEDED(hr));
-  }
-}
-
-void DirectCompositionSurfaceWin::ReleaseDrawTexture(bool will_discard) {
-  if (real_surface_) {
-    eglDestroySurface(GetDisplay(), real_surface_);
-    real_surface_ = nullptr;
-  }
-  if (draw_texture_) {
-    draw_texture_.Reset();
-    if (dcomp_surface_) {
-      HRESULT hr = dcomp_surface_->EndDraw();
-      CHECK(SUCCEEDED(hr));
-    } else if (!will_discard) {
-      DXGI_PRESENT_PARAMETERS params = {};
-      RECT dirty_rect = swap_rect_.ToRECT();
-      params.DirtyRectsCount = 1;
-      params.pDirtyRects = &dirty_rect;
-      swap_chain_->Present1(first_swap_ ? 0 : 1, 0, &params);
-      if (first_swap_) {
-        // Wait for the GPU to finish executing its commands before
-        // committing the DirectComposition tree, or else the swapchain
-        // may flicker black when it's first presented.
-        base::win::ScopedComPtr<IDXGIDevice2> dxgi_device2;
-        HRESULT hr = d3d11_device_.CopyTo(dxgi_device2.GetAddressOf());
-        DCHECK(SUCCEEDED(hr));
-        base::WaitableEvent event(
-            base::WaitableEvent::ResetPolicy::AUTOMATIC,
-            base::WaitableEvent::InitialState::NOT_SIGNALED);
-        dxgi_device2->EnqueueSetEvent(event.handle());
-        event.Wait();
-        first_swap_ = false;
-      }
-    }
-  }
-  if (dcomp_surface_ == g_current_surface)
-    g_current_surface = nullptr;
+  return RecreateRootSurface();
 }
 
 void DirectCompositionSurfaceWin::Destroy() {
@@ -1158,20 +1041,8 @@ void DirectCompositionSurfaceWin::Destroy() {
     }
     default_surface_ = nullptr;
   }
-  if (real_surface_) {
-    if (!eglDestroySurface(GetDisplay(), real_surface_)) {
-      DLOG(ERROR) << "eglDestroySurface failed with error "
-                  << ui::GetLastEGLErrorString();
-    }
-    real_surface_ = nullptr;
-  }
-  if (dcomp_surface_ && (dcomp_surface_ == g_current_surface)) {
-    HRESULT hr = dcomp_surface_->EndDraw();
-    CHECK(SUCCEEDED(hr));
-    g_current_surface = nullptr;
-  }
-  draw_texture_.Reset();
-  dcomp_surface_.Reset();
+  if (root_surface_)
+    root_surface_->Destroy();
 }
 
 gfx::Size DirectCompositionSurfaceWin::GetSize() {
@@ -1183,7 +1054,7 @@ bool DirectCompositionSurfaceWin::IsOffscreen() {
 }
 
 void* DirectCompositionSurfaceWin::GetHandle() {
-  return real_surface_ ? real_surface_ : default_surface_;
+  return root_surface_ ? root_surface_->GetHandle() : default_surface_;
 }
 
 bool DirectCompositionSurfaceWin::Resize(const gfx::Size& size,
@@ -1200,17 +1071,14 @@ bool DirectCompositionSurfaceWin::Resize(const gfx::Size& size,
   }
   size_ = size;
   has_alpha_ = has_alpha;
-  ScopedReleaseCurrent release_current(this);
-  // New surface will be initialized in SetDrawRectangle.
-  ReleaseCurrentSurface();
-
-  return true;
+  ui::ScopedReleaseCurrent release_current(this);
+  return RecreateRootSurface();
 }
 
 gfx::SwapResult DirectCompositionSurfaceWin::SwapBuffers() {
   {
-    ScopedReleaseCurrent release_current(this);
-    ReleaseDrawTexture(false);
+    ui::ScopedReleaseCurrent release_current(this);
+    root_surface_->SwapBuffers();
 
     layer_tree_->CommitAndClearPendingOverlays();
   }
@@ -1237,8 +1105,11 @@ bool DirectCompositionSurfaceWin::ScheduleDCLayer(
 }
 
 bool DirectCompositionSurfaceWin::SetEnableDCLayers(bool enable) {
+  if (enable_dc_layers_ == enable)
+    return true;
+  ui::ScopedReleaseCurrent release_current(this);
   enable_dc_layers_ = enable;
-  return true;
+  return RecreateRootSurface();
 }
 
 
@@ -1251,18 +1122,8 @@ bool DirectCompositionSurfaceWin::SupportsPostSubBuffer() {
 }
 
 bool DirectCompositionSurfaceWin::OnMakeCurrent(gl::GLContext* context) {
-  if (g_current_surface != dcomp_surface_) {
-    if (g_current_surface) {
-      HRESULT hr = g_current_surface->SuspendDraw();
-      CHECK(SUCCEEDED(hr));
-      g_current_surface = nullptr;
-    }
-    if (draw_texture_) {
-      HRESULT hr = dcomp_surface_->ResumeDraw();
-      CHECK(SUCCEEDED(hr));
-      g_current_surface = dcomp_surface_.Get();
-    }
-  }
+  if (root_surface_)
+    return root_surface_->OnMakeCurrent(context);
   return true;
 }
 
@@ -1271,71 +1132,36 @@ bool DirectCompositionSurfaceWin::SupportsDCLayers() const {
 }
 
 bool DirectCompositionSurfaceWin::SetDrawRectangle(const gfx::Rect& rectangle) {
-  if (draw_texture_)
-    return false;
-  DCHECK(!real_surface_);
-  ScopedReleaseCurrent release_current(this);
-
-  if ((enable_dc_layers_ && !dcomp_surface_) ||
-      (!enable_dc_layers_ && !swap_chain_)) {
-    ReleaseCurrentSurface();
-    InitializeSurface();
-  }
-
-  if (!gfx::Rect(size_).Contains(rectangle)) {
-    DLOG(ERROR) << "Draw rectangle must be contained within size of surface";
-    return false;
-  }
-  if (gfx::Rect(size_) != rectangle && !has_been_rendered_to_) {
-    DLOG(ERROR) << "First draw to surface must draw to everything";
-    return false;
-  }
-
-  CHECK(!g_current_surface);
-
-  RECT rect = rectangle.ToRECT();
-  if (dcomp_surface_) {
-    POINT update_offset;
-    HRESULT hr = dcomp_surface_->BeginDraw(
-        &rect, IID_PPV_ARGS(draw_texture_.GetAddressOf()), &update_offset);
-    draw_offset_ = gfx::Point(update_offset) - gfx::Rect(rect).origin();
-    CHECK(SUCCEEDED(hr));
-  } else {
-    HRESULT hr =
-        swap_chain_->GetBuffer(0, IID_PPV_ARGS(draw_texture_.GetAddressOf()));
-    swap_rect_ = rectangle;
-    draw_offset_ = gfx::Vector2d();
-    CHECK(SUCCEEDED(hr));
-  }
-  has_been_rendered_to_ = true;
-
-  g_current_surface = dcomp_surface_.Get();
-
-  std::vector<EGLint> pbuffer_attribs{
-      EGL_WIDTH,
-      size_.width(),
-      EGL_HEIGHT,
-      size_.height(),
-      EGL_FLEXIBLE_SURFACE_COMPATIBILITY_SUPPORTED_ANGLE,
-      EGL_TRUE,
-      EGL_NONE};
-
-  EGLClientBuffer buffer =
-      reinterpret_cast<EGLClientBuffer>(draw_texture_.Get());
-  real_surface_ = eglCreatePbufferFromClientBuffer(
-      GetDisplay(), EGL_D3D_TEXTURE_ANGLE, buffer, GetConfig(),
-      &pbuffer_attribs[0]);
-
-  return true;
+  if (root_surface_)
+    return root_surface_->SetDrawRectangle(rectangle);
+  return false;
 }
 
 gfx::Vector2d DirectCompositionSurfaceWin::GetDrawOffset() const {
-  return draw_offset_;
+  if (root_surface_)
+    return root_surface_->GetDrawOffset();
+  return gfx::Vector2d();
 }
 
 void DirectCompositionSurfaceWin::WaitForSnapshotRendering() {
   DCHECK(gl::GLContext::GetCurrent()->IsCurrent(this));
   glFinish();
+}
+
+bool DirectCompositionSurfaceWin::RecreateRootSurface() {
+  root_surface_ = new DirectCompositionChildSurfaceWin(size_, has_alpha_,
+                                                       enable_dc_layers_);
+  return root_surface_->Initialize();
+}
+
+const base::win::ScopedComPtr<IDCompositionSurface>
+DirectCompositionSurfaceWin::dcomp_surface() const {
+  return root_surface_ ? root_surface_->dcomp_surface() : nullptr;
+}
+
+const base::win::ScopedComPtr<IDXGISwapChain1>
+DirectCompositionSurfaceWin::swap_chain() const {
+  return root_surface_ ? root_surface_->swap_chain() : nullptr;
 }
 
 scoped_refptr<base::TaskRunner>

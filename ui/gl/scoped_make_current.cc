@@ -35,4 +35,16 @@ bool ScopedMakeCurrent::Succeeded() const {
   return succeeded_;
 }
 
+ScopedReleaseCurrent::ScopedReleaseCurrent(gl::GLSurface* this_surface) {
+  gl::GLContext* current_context = gl::GLContext::GetCurrent();
+  bool was_current =
+      current_context && current_context->IsCurrent(this_surface);
+  if (was_current) {
+    make_current_.emplace(current_context, this_surface);
+    current_context->ReleaseCurrent(this_surface);
+  }
+}
+
+ScopedReleaseCurrent::~ScopedReleaseCurrent() {}
+
 }  // namespace ui

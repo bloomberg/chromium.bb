@@ -83,6 +83,8 @@ target(link_target_type, "ipc_service_sources") {
       "child_window_surface_win.h",
       "child_window_win.cc",
       "child_window_win.h",
+      "direct_composition_child_surface_win.cc",
+      "direct_composition_child_surface_win.h",
       "direct_composition_surface_win.cc",
       "direct_composition_surface_win.h",
       "image_transport_surface_win.cc",
