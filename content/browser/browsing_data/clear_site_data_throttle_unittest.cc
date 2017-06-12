@@ -33,8 +33,7 @@ namespace {
 
 const char kClearSiteDataHeaderPrefix[] = "Clear-Site-Data: ";
 
-const char kClearCookiesHeader[] =
-    "Clear-Site-Data: { \"types\": [ \"cookies\" ] }";
+const char kClearCookiesHeader[] = "Clear-Site-Data: \"cookies\"";
 
 void WaitForUIThread() {
   base::RunLoop run_loop;
@@ -174,36 +173,32 @@ TEST_F(ClearSiteDataThrottleTest, ParseHeaderAndExecuteClearingTask) {
     bool cache;
   } test_cases[] = {
       // One data type.
-      {"{ \"types\": [\"cookies\"] }", true, false, false},
-      {"{ \"types\": [\"storage\"] }", false, true, false},
-      {"{ \"types\": [\"cache\"] }", false, false, true},
+      {"\"cookies\"", true, false, false},
+      {"\"storage\"", false, true, false},
+      {"\"cache\"", false, false, true},
 
       // Two data types.
-      {"{ \"types\": [\"cookies\", \"storage\"] }", true, true, false},
-      {"{ \"types\": [\"cookies\", \"cache\"] }", true, false, true},
-      {"{ \"types\": [\"storage\", \"cache\"] }", false, true, true},
+      {"\"cookies\", \"storage\"", true, true, false},
+      {"\"cookies\", \"cache\"", true, false, true},
+      {"\"storage\", \"cache\"", false, true, true},
 
       // Three data types.
-      {"{ \"types\": [\"storage\", \"cache\", \"cookies\"] }", true, true,
-       true},
-      {"{ \"types\": [\"cache\", \"cookies\", \"storage\"] }", true, true,
-       true},
-      {"{ \"types\": [\"cookies\", \"storage\", \"cache\"] }", true, true,
-       true},
+      {"\"storage\", \"cache\", \"cookies\"", true, true, true},
+      {"\"cache\", \"cookies\", \"storage\"", true, true, true},
+      {"\"cookies\", \"storage\", \"cache\"", true, true, true},
 
       // Different formatting.
-      {"  { \"types\":   [\"cookies\" ]}", true, false, false},
+      {"\"cookies\"", true, false, false},
 
       // Duplicates.
-      {"{ \"types\": [\"cookies\", \"cookies\"] }", true, false, false},
+      {"\"cookies\", \"cookies\"", true, false, false},
 
-      // Other entries in the dictionary.
-      {"{ \"types\": [\"storage\"], \"other_params\": {} }", false, true,
-       false},
+      // Other JSON-formatted items in the list.
+      {"\"storage\", { \"other_params\": {} }", false, true, false},
 
       // Unknown types are ignored, but we still proceed with the deletion for
       // those that we recognize.
-      {"{ \"types\": [\"cache\", \"foo\"] }", false, false, true},
+      {"\"cache\", \"foo\"", false, false, true},
   };
 
   for (const TestCase& test_case : test_cases) {
@@ -252,18 +247,21 @@ TEST_F(ClearSiteDataThrottleTest, InvalidHeader) {
     const char* header;
     const char* console_message;
   } test_cases[] = {
-      {"", "Expected valid JSON.\n"},
-      {"\"unclosed quote", "Expected valid JSON.\n"},
-      {"\"some text\"", "Expected a JSON dictionary with a 'types' field.\n"},
-      {"{ \"field\" : {} }",
-       "Expected a JSON dictionary with a 'types' field.\n"},
-      {"{ \"types\" : [ \"passwords\" ] }",
+      {"", "No recognized types specified.\n"},
+      {"\"unclosed", "The header's value does not parse as valid JSON.\n"},
+      {"\"passwords\"",
        "Unrecognized type: \"passwords\".\n"
-       "No recognized types specified in the 'types' field.\n"},
-      {"{ \"types\" : [ [ \"list in a list\" ] ] }",
-       "Unrecognized type: [\"list in a list\"].\n"
-       "No recognized types specified in the 'types' field.\n"},
-      {"{ \"types\" : [ \"кукис\", \"сторидж\", \"кэш\" ]",
+       "No recognized types specified.\n"},
+      {"[ \"list\" ]",
+       "Unrecognized type: [\"list\"].\n"
+       "No recognized types specified.\n"},
+      {"[ \"list\" ]",
+       "Unrecognized type: [\"list\"].\n"
+       "No recognized types specified.\n"},
+      {"{ \"cookies\": [ \"a\" ] }",
+       "Unrecognized type: {\"cookies\":[\"a\"]}.\n"
+       "No recognized types specified.\n"},
+      {"\"кукис\", \"сторидж\", \"кэш\"",
        "Must only contain ASCII characters.\n"}};
 
   for (const TestCase& test_case : test_cases) {
@@ -405,13 +403,11 @@ TEST_F(ClearSiteDataThrottleTest, DeferAndResume) {
 
       // That includes malformed Clear-Site-Data headers or header values
       // that do not lead to deletion.
-      {REDIRECT, "Clear-Site-Data: { types: cookies } ", false},
-      {REDIRECT, "Clear-Site-Data: { \"types\": [ \"unknown type\" ] }", false},
+      {REDIRECT, "Clear-Site-Data: cookies", false},
+      {REDIRECT, "Clear-Site-Data: \"unknown type\"", false},
 
       // However, redirects are deferred for valid Clear-Site-Data headers.
-      {REDIRECT,
-       "Clear-Site-Data: { \"types\": [ \"cookies\", \"unknown type\" ] }",
-       true},
+      {REDIRECT, "Clear-Site-Data: \"cookies\", \"unknown type\"", true},
       {REDIRECT,
        base::StringPrintf("Content-Type: image/png;\n%s", kClearCookiesHeader),
        true},
@@ -419,17 +415,15 @@ TEST_F(ClearSiteDataThrottleTest, DeferAndResume) {
        base::StringPrintf("%s\nContent-Type: image/png;", kClearCookiesHeader),
        true},
 
-      // We expect at most one instance of the header. Multiple instances
-      // will not be parsed currently. This is not an inherent property of
-      // Clear-Site-Data, just a documentation of the current behavior.
+      // Multiple instances of the header will be parsed correctly.
       {REDIRECT,
        base::StringPrintf("%s\n%s", kClearCookiesHeader, kClearCookiesHeader),
-       false},
+       true},
 
       // Final response headers are treated the same way as in the case
       // of redirect.
       {REDIRECT, "Set-Cookie: abc=123;", false},
-      {REDIRECT, "Clear-Site-Data: { types: cookies } ", false},
+      {REDIRECT, "Clear-Site-Data: cookies", false},
       {REDIRECT, kClearCookiesHeader, true},
   };
 
@@ -518,34 +512,38 @@ TEST_F(ClearSiteDataThrottleTest, FormattedConsoleOutput) {
     const char* output;
   } kTestCases[] = {
       // Successful deletion outputs one line.
-      {"{ \"types\": [ \"cookies\" ] }", "https://origin1.com/foo",
+      {"\"cookies\"", "https://origin1.com/foo",
        "Clear-Site-Data header on 'https://origin1.com/foo': "
        "Cleared data types: cookies.\n"},
 
       // Another successful deletion.
-      {"{ \"types\": [ \"storage\" ] }", "https://origin2.com/foo",
+      {"\"storage\"", "https://origin2.com/foo",
        "Clear-Site-Data header on 'https://origin2.com/foo': "
        "Cleared data types: storage.\n"},
 
       // Redirect to the same URL. Unsuccessful deletion outputs two lines.
-      {"{ \"foo\": \"bar\" }", "https://origin2.com/foo",
+      {"\"foo\"", "https://origin2.com/foo",
        "Clear-Site-Data header on 'https://origin2.com/foo': "
-       "Expected a JSON dictionary with a 'types' field.\n"},
+       "Unrecognized type: \"foo\".\n"
+       "Clear-Site-Data header on 'https://origin2.com/foo': "
+       "No recognized types specified.\n"},
 
       // Redirect to another URL. Another unsuccessful deletion.
       {"\"some text\"", "https://origin3.com/bar",
        "Clear-Site-Data header on 'https://origin3.com/bar': "
-       "Expected a JSON dictionary with a 'types' field.\n"},
+       "Unrecognized type: \"some text\".\n"
+       "Clear-Site-Data header on 'https://origin3.com/bar': "
+       "No recognized types specified.\n"},
 
       // Yet another on the same URL.
-      {"{ \"types\" : [ \"passwords\" ] }", "https://origin3.com/bar",
+      {"\"passwords\"", "https://origin3.com/bar",
        "Clear-Site-Data header on 'https://origin3.com/bar': "
        "Unrecognized type: \"passwords\".\n"
        "Clear-Site-Data header on 'https://origin3.com/bar': "
-       "No recognized types specified in the 'types' field.\n"},
+       "No recognized types specified.\n"},
 
       // Successful deletion on the same URL.
-      {"{ \"types\": [ \"cache\" ] }", "https://origin3.com/bar",
+      {"\"cache\"", "https://origin3.com/bar",
        "Clear-Site-Data header on 'https://origin3.com/bar': "
        "Cleared data types: cache.\n"},
 
@@ -553,7 +551,7 @@ TEST_F(ClearSiteDataThrottleTest, FormattedConsoleOutput) {
       // Successful deletion outputs one line.
       {"", "https://origin1.com/foo",
        "Clear-Site-Data header on 'https://origin1.com/foo': "
-       "Expected valid JSON.\n"}};
+       "No recognized types specified.\n"}};
 
   bool kThrottleTypeIsNavigation[] = {true, false};
 

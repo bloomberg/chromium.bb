@@ -13,7 +13,7 @@ self.addEventListener('fetch', function(event) {
   if (url.pathname.match('resource_from_sw')) {
     event.respondWith(new Response(
         'Response content is not important, only the header is.', {
-            'headers': { 'Clear-Site-Data': '{ "types" : [ "cookies" ] }' }
+            'headers': { 'Clear-Site-Data': '"cookies"' }
         }));
     return;
   }
@@ -44,7 +44,7 @@ self.addEventListener('fetch', function(event) {
         origins[3] + 'resource_from_sw',
         origins[4] + 'another_resource_so_that_the_previous_one_isnt_reused',
     ];
-    var header = encodeURIComponent('{ "types": [ "cookies" ] }');
+    var header = encodeURIComponent('"cookies"');
 
     // Fetch all resources and report back to the C++ side by setting
     // the document title.

@@ -64,7 +64,7 @@ void WaitForTitle(const Shell* shell, const char* expected_title) {
 
 // A value of the Clear-Site-Data header that requests cookie deletion. Reused
 // in tests that need a valid header but do not depend on its value.
-static const char* kClearCookiesHeader = "{ \"types\": [ \"cookies\" ] }";
+static const char* kClearCookiesHeader = "\"cookies\"";
 
 // A helper class to observe BrowsingDataRemover deletion tasks coming from
 // ClearSiteData.
@@ -730,14 +730,13 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataThrottleBrowserTest, Types) {
     bool remove_storage;
     bool remove_cache;
   } test_cases[] = {
-      {"{ \"types\": [ \"cookies\" ] }", true, false, false},
-      {"{ \"types\": [ \"storage\" ] }", false, true, false},
-      {"{ \"types\": [ \"cache\" ] }", false, false, true},
-      {"{ \"types\": [ \"cookies\", \"storage\" ] }", true, true, false},
-      {"{ \"types\": [ \"cookies\", \"cache\" ] }", true, false, true},
-      {"{ \"types\": [ \"storage\", \"cache\" ] }", false, true, true},
-      {"{ \"types\": [ \"cookies\", \"storage\", \"cache\" ] }", true, true,
-       true},
+      {"\"cookies\"", true, false, false},
+      {"\"storage\"", false, true, false},
+      {"\"cache\"", false, false, true},
+      {"\"cookies\", \"storage\"", true, true, false},
+      {"\"cookies\", \"cache\"", true, false, true},
+      {"\"storage\", \"cache\"", false, true, true},
+      {"\"cookies\", \"storage\", \"cache\"", true, true, true},
   };
 
   for (const TestCase& test_case : test_cases) {
@@ -793,7 +792,7 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataThrottleBrowserTest,
   // worker for "origin1.com", as the header would not be respected outside
   // of the scope.
   GURL url = https_server()->GetURL("origin1.com", "/anything-in-the-scope");
-  AddQuery(&url, "header", "{ \"types\": [ \"storage\" ] }");
+  AddQuery(&url, "header", "\"storage\"");
   NavigateToURL(shell(), url);
   service_workers = GetServiceWorkers();
   EXPECT_EQ(2u, service_workers.size());
@@ -803,7 +802,7 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataThrottleBrowserTest,
   // not handled by "worker.js" is the path "resource".
   // The header will be respected and the worker deleted.
   url = https_server()->GetURL("origin1.com", "/resource");
-  AddQuery(&url, "header", "{ \"types\": [ \"storage\" ] }");
+  AddQuery(&url, "header", "\"storage\"");
   NavigateToURL(shell(), url);
 
   // Only "origin2.com" now has a service worker.
@@ -844,7 +843,7 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataThrottleBrowserTest, CacheIntegrationTest) {
 
   // Let Clear-Site-Data delete the "cache" of "origin1.com".
   GURL url = https_server()->GetURL("origin1.com", "/clear-site-data");
-  AddQuery(&url, "header", "{ \"types\": [ \"cache\" ] }");
+  AddQuery(&url, "header", "\"cache\"");
   NavigateToURL(shell(), url);
   base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(kTimeoutMs));
 
