@@ -15,6 +15,7 @@
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/RefCounted.h"
 #include "platform/wtf/RefPtr.h"
+#include "platform/wtf/Time.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/StringBuilder.h"
 #include "public/platform/Platform.h"
@@ -165,6 +166,7 @@ struct RequestResponse {
       : request(request), response(response) {}
   String request;
   String response;
+  double response_time;
 };
 
 class ResponsesAccumulator : public RefCounted<ResponsesAccumulator> {
@@ -186,6 +188,8 @@ class ResponsesAccumulator : public RefCounted<ResponsesAccumulator> {
         responses_.at(responses_.size() - num_responses_left_);
     request_response.request = request.Url().GetString();
     request_response.response = response.StatusText();
+    request_response.response_time =
+        WTF::Time::FromInternalValue(response.ResponseTime()).ToDoubleT();
 
     if (--num_responses_left_ != 0)
       return;
@@ -208,6 +212,7 @@ class ResponsesAccumulator : public RefCounted<ResponsesAccumulator> {
           DataEntry::create()
               .setRequest(request_response.request)
               .setResponse(request_response.response)
+              .setResponseTime(request_response.response_time)
               .build();
       array->addItem(std::move(entry));
     }
