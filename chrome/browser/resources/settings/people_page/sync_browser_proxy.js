@@ -35,11 +35,14 @@ settings.SyncStatus;
  * @enum {string}
  */
 settings.StatusAction = {
-  NO_ACTION: 'noAction',                  // No action to take.
-  REAUTHENTICATE: 'reauthenticate',       // User needs to reauthenticate.
-  SIGNOUT_AND_SIGNIN: 'signOutAndSignIn', // User needs to sign out and sign in.
-  UPGRADE_CLIENT: 'upgradeClient',        // User needs to upgrade the client.
-  ENTER_PASSPHRASE: 'enterPassphrase',    // User needs to enter passphrase.
+  NO_ACTION: 'noAction',             // No action to take.
+  REAUTHENTICATE: 'reauthenticate',  // User needs to reauthenticate.
+  SIGNOUT_AND_SIGNIN:
+      'signOutAndSignIn',               // User needs to sign out and sign in.
+  UPGRADE_CLIENT: 'upgradeClient',      // User needs to upgrade the client.
+  ENTER_PASSPHRASE: 'enterPassphrase',  // User needs to enter passphrase.
+  CONFIRM_SYNC_SETTINGS:
+      'confirmSyncSettings',  // User needs to confirm sync settings.
 };
 
 /**

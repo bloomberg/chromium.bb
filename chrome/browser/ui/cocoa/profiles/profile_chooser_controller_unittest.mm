@@ -24,6 +24,8 @@
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #include "chrome/browser/ui/cocoa/l10n_util.h"
@@ -38,6 +40,8 @@
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/signin/core/common/signin_pref_names.h"
 #include "components/sync_preferences/pref_service_syncable.h"
+
+using ::testing::Return;
 
 const std::string kGaiaId = "gaiaid-user@gmail.com";
 const std::string kEmail = "user@gmail.com";
@@ -55,6 +59,8 @@ class ProfileChooserControllerTest : public CocoaProfileTest {
     factories.push_back(
         std::make_pair(AccountFetcherServiceFactory::GetInstance(),
                        FakeAccountFetcherServiceBuilder::BuildForTests));
+    factories.push_back(std::make_pair(ProfileSyncServiceFactory::GetInstance(),
+                                       BuildMockProfileSyncService));
     AddTestingFactories(factories);
   }
 
@@ -73,6 +79,10 @@ class ProfileChooserControllerTest : public CocoaProfileTest {
         "test2", std::unique_ptr<sync_preferences::PrefServiceSyncable>(),
         base::ASCIIToUTF16("Test 2"), 1, std::string(),
         TestingProfile::TestingFactories());
+
+    mock_sync_service_ = static_cast<browser_sync::ProfileSyncServiceMock*>(
+        ProfileSyncServiceFactory::GetInstance()->GetForProfile(
+            browser()->profile()));
 
     menu_ = new AvatarMenu(
         testing_profile_manager()->profile_attributes_storage(), NULL, NULL);
@@ -109,11 +119,21 @@ class ProfileChooserControllerTest : public CocoaProfileTest {
     entry->SetAuthInfo(kGaiaId, base::ASCIIToUTF16(kEmail));
   }
 
+  void SuppressSyncConfirmationError() {
+    EXPECT_CALL(*mock_sync_service_, IsFirstSetupComplete())
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(*mock_sync_service_, IsFirstSetupInProgress())
+        .WillRepeatedly(Return(true));
+    EXPECT_CALL(*mock_sync_service_, IsSyncConfirmationNeeded())
+        .WillRepeatedly(Return(false));
+  }
+
   ProfileChooserController* controller() { return controller_; }
   AvatarMenu* menu() { return menu_; }
 
  private:
   base::scoped_nsobject<ProfileChooserController> controller_;
+  browser_sync::ProfileSyncServiceMock* mock_sync_service_ = nullptr;
 
   // Weak; owned by |controller_|.
   AvatarMenu* menu_;
@@ -289,6 +309,8 @@ TEST_F(ProfileChooserControllerTest, AccountManagementLayout) {
                    ->PickAccountIdForAccount(kSecondaryGaiaId, kSecondaryEmail);
   ProfileOAuth2TokenServiceFactory::GetForProfile(profile)
       ->UpdateCredentials(account_id, kLoginToken);
+
+  SuppressSyncConfirmationError();
 
   StartProfileChooserController();
   [controller() initMenuContentsWithView:

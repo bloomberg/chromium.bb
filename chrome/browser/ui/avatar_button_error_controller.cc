@@ -94,7 +94,8 @@ bool AvatarButtonErrorController::SyncErrorObserver::HasSyncError() {
     sync_service->QueryDetailedSyncStatus(&status);
     return sync_service->HasUnrecoverableError() ||
            status.sync_protocol_error.action == syncer::UPGRADE_CLIENT ||
-           (sync_error_controller && sync_error_controller->HasError());
+           (sync_error_controller && sync_error_controller->HasError()) ||
+           sync_service->IsSyncConfirmationNeeded();
   }
   return false;
 }

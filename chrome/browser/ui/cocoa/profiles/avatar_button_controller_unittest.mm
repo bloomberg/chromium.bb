@@ -10,6 +10,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/base_bubble_controller.h"
@@ -18,9 +20,12 @@
 #include "chrome/browser/ui/cocoa/test/cocoa_profile_test.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/signin/core/common/profile_management_switches.h"
+#include "components/sync_preferences/pref_service_syncable.h"
 #import "testing/gtest_mac.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
+
+using ::testing::Return;
 
 // Defined in the AvatarButtonController implementation.
 @interface AvatarButtonController (ExposedForTesting)
@@ -53,11 +58,29 @@
 
 class AvatarButtonControllerTest : public CocoaProfileTest {
  public:
+  AvatarButtonControllerTest() {
+    TestingProfile::TestingFactories factories;
+    factories.push_back(std::make_pair(ProfileSyncServiceFactory::GetInstance(),
+                                       BuildMockProfileSyncService));
+    AddTestingFactories(factories);
+  }
+
   void SetUp() override {
     DCHECK(profiles::IsMultipleProfilesEnabled());
 
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(browser());
+    ASSERT_TRUE(browser()->profile());
+
+    mock_sync_service_1_ = static_cast<browser_sync::ProfileSyncServiceMock*>(
+        ProfileSyncServiceFactory::GetInstance()->GetForProfile(
+            browser()->profile()));
+    EXPECT_CALL(*mock_sync_service_1_, IsFirstSetupComplete())
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(*mock_sync_service_1_, IsFirstSetupInProgress())
+        .WillRepeatedly(Return(true));
+    EXPECT_CALL(*mock_sync_service_1_, IsSyncConfirmationNeeded())
+        .WillRepeatedly(Return(false));
 
     controller_.reset([[MockAvatarButtonController alloc]
         initWithBrowser:browser()
@@ -69,6 +92,26 @@ class AvatarButtonControllerTest : public CocoaProfileTest {
     CocoaProfileTest::TearDown();
   }
 
+  void AddSecondProfile() {
+    TestingProfile::TestingFactories factories;
+    factories.push_back(std::make_pair(ProfileSyncServiceFactory::GetInstance(),
+                                       BuildMockProfileSyncService));
+
+    Profile* new_profile = testing_profile_manager()->CreateTestingProfile(
+        "batman", std::unique_ptr<sync_preferences::PrefServiceSyncable>(),
+        base::UTF8ToUTF16("Person 1"), 0, std::string(), factories);
+
+    mock_sync_service_2_ = static_cast<browser_sync::ProfileSyncServiceMock*>(
+        ProfileSyncServiceFactory::GetInstance()->GetForProfile(new_profile));
+
+    EXPECT_CALL(*mock_sync_service_2_, IsFirstSetupComplete())
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(*mock_sync_service_2_, IsFirstSetupInProgress())
+        .WillRepeatedly(Return(true));
+    EXPECT_CALL(*mock_sync_service_2_, IsSyncConfirmationNeeded())
+        .WillRepeatedly(Return(false));
+  }
+
   NSButton* button() { return [controller_ buttonView]; }
 
   NSView* view() { return [controller_ view]; }
@@ -77,6 +120,8 @@ class AvatarButtonControllerTest : public CocoaProfileTest {
 
  private:
   base::scoped_nsobject<MockAvatarButtonController> controller_;
+  browser_sync::ProfileSyncServiceMock* mock_sync_service_1_;
+  browser_sync::ProfileSyncServiceMock* mock_sync_service_2_;
 };
 
 TEST_F(AvatarButtonControllerTest, GenericButtonShown) {
@@ -96,7 +141,7 @@ TEST_F(AvatarButtonControllerTest, ProfileButtonShown) {
 
 TEST_F(AvatarButtonControllerTest, ProfileButtonWithErrorShown) {
   // Create a second profile, to force the button to display the profile name.
-  testing_profile_manager()->CreateTestingProfile("batman");
+  AddSecondProfile();
 
   EXPECT_EQ(0, [button() image].size.width);
   [controller() setErrorStatus:true];

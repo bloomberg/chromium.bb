@@ -576,6 +576,7 @@ void ProfileChooserView::ResetView() {
   reauth_account_button_map_.clear();
   sync_error_signin_button_ = nullptr;
   sync_error_passphrase_button_ = nullptr;
+  sync_error_settings_unconfirmed_button_ = nullptr;
   sync_error_upgrade_button_ = nullptr;
   sync_error_signin_again_button_ = nullptr;
   sync_error_signout_button_ = nullptr;
@@ -805,7 +806,8 @@ void ProfileChooserView::ButtonPressed(views::Button* sender,
     profiles::CloseProfileWindows(browser_->profile());
   } else if (sender == sync_error_signin_button_) {
     ShowViewFromMode(profiles::BUBBLE_VIEW_MODE_GAIA_REAUTH);
-  } else if (sender == sync_error_passphrase_button_) {
+  } else if (sender == sync_error_passphrase_button_ ||
+             sender == sync_error_settings_unconfirmed_button_) {
     chrome::ShowSettingsSubPage(browser_, chrome::kSyncSetupSubPage);
   } else if (sender == sync_error_upgrade_button_) {
     chrome::OpenUpdateChromeDialog(browser_);
@@ -986,9 +988,12 @@ views::View* ProfileChooserView::CreateProfileChooserView(
 views::View* ProfileChooserView::CreateSyncErrorViewIfNeeded() {
   int content_string_id, button_string_id;
   views::LabelButton** button_out = nullptr;
+  SigninManagerBase* signin_manager =
+      SigninManagerFactory::GetForProfile(browser_->profile());
   sync_ui_util::AvatarSyncErrorType error =
       sync_ui_util::GetMessagesForAvatarSyncError(
-          browser_->profile(), &content_string_id, &button_string_id);
+          browser_->profile(), *signin_manager, &content_string_id,
+          &button_string_id);
   switch (error) {
     case sync_ui_util::MANAGED_USER_UNRECOVERABLE_ERROR:
       button_out = &sync_error_signout_button_;
@@ -1007,6 +1012,9 @@ views::View* ProfileChooserView::CreateSyncErrorViewIfNeeded() {
       break;
     case sync_ui_util::PASSPHRASE_ERROR:
       button_out = &sync_error_passphrase_button_;
+      break;
+    case sync_ui_util::SETTINGS_UNCONFIRMED_ERROR:
+      button_out = &sync_error_settings_unconfirmed_button_;
       break;
     case sync_ui_util::NO_SYNC_ERROR:
       return nullptr;

@@ -9317,6 +9317,9 @@ Tell us what happened exactly before you got the profile error message:
       <message name="IDS_SYNC_ERROR_USER_MENU_SIGNOUT_BUTTON" desc="Button in the header of desktop user menu for managed users to sign out in an attempt to resolve an unrecoverable error.">
         Sign out
       </message>
+      <message name="IDS_SYNC_ERROR_USER_MENU_CONFIRM_SYNC_SETTINGS_BUTTON" desc="Button in the header of desktop user menu prompting users to confirm their sync settings.">
+        Open settings
+      </message>
       <if expr="use_ash">
         <message name="IDS_SYNC_NOTIFICATION_ACCEPT" desc="A button label shown in the sync error notification when the passphrase needs to be updated.">
           Update sync passphrase
@@ -9393,6 +9396,9 @@ Tell us what happened exactly before you got the profile error message:
         </message>
         <message name="IDS_SIGNED_IN_WITH_SYNC_SUPPRESSED" desc="The message that appears in the settings page indicating that user is signed in, but sync has been stopped.">
           Sync has been stopped via the Google Dashboard.
+        </message>
+        <message name="IDS_SYNC_SETTINGS_NOT_CONFIRMED" desc="The message that appears in the settings page indicating that user is signed in, but sync hasn't started because the sync settings haven't been confirmed.">
+          Confirm sync settings to start sync.
         </message>
         <message name="IDS_SYNC_ACCOUNT_SYNCING_WITH_MANAGE_LINK" desc="The message that appears in the options dialog indicating that account is syncing along with a link to manage their data (where supported, or not possible through the application)">
           Manage your synced data on <ph name="BEGIN_LINK">&lt;a href="$1" target=&quot;_blank&quot;&gt;<ex>&lt;a href="$1" target=&quot;_blank&quot;&gt;</ex></ph>Google Dashboard<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>.

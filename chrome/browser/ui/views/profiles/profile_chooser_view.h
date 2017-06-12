@@ -178,6 +178,7 @@ class ProfileChooserView : public content::WebContentsDelegate,
   views::LabelButton* sync_error_upgrade_button_;
   views::LabelButton* sync_error_signin_again_button_;
   views::LabelButton* sync_error_signout_button_;
+  views::LabelButton* sync_error_settings_unconfirmed_button_;
 
   // Links and buttons displayed in the active profile card.
   views::Link* manage_accounts_link_;
