@@ -13,7 +13,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/time/time.h"
@@ -30,15 +29,19 @@
 #include "ios/web/public/web_thread.h"
 #import "net/base/mac/url_conversions.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 // TabModelObserver that allows loaded urls to be sent to the crash server.
 @interface CrashReporterURLObserver : NSObject<TabModelObserver> {
  @private
   // Map associating the tab id to the breakpad key used to keep track of the
   // loaded URL.
-  base::scoped_nsobject<NSMutableDictionary> breakpadKeyByTabId_;
+  NSMutableDictionary* breakpadKeyByTabId_;
   // List of keys to use for recording URLs. This list is sorted such that a new
   // tab must use the first key in this list to record its URLs.
-  base::scoped_nsobject<NSMutableArray> breakpadKeys_;
+  NSMutableArray* breakpadKeys_;
 }
 + (CrashReporterURLObserver*)uniqueInstance;
 // Removes the URL for the tab with the given id from the URLs sent to the crash
@@ -65,7 +68,7 @@
  @private
   // Map associating the tab id to an object describing the current state of the
   // tab.
-  base::scoped_nsobject<NSMutableDictionary> tabCurrentStateByTabId_;
+  NSMutableDictionary* tabCurrentStateByTabId_;
 }
 + (CrashReporterURLObserver*)uniqueInstance;
 // Removes the stats for the tab tabId
@@ -114,10 +117,10 @@ const int kNumberOfURLsToSend = 1;
 
 - (id)init {
   if ((self = [super init])) {
-    breakpadKeyByTabId_.reset(
-        [[NSMutableDictionary alloc] initWithCapacity:kNumberOfURLsToSend]);
-    breakpadKeys_.reset(
-        [[NSMutableArray alloc] initWithCapacity:kNumberOfURLsToSend]);
+    breakpadKeyByTabId_ =
+        [[NSMutableDictionary alloc] initWithCapacity:kNumberOfURLsToSend];
+    breakpadKeys_ =
+        [[NSMutableArray alloc] initWithCapacity:kNumberOfURLsToSend];
     for (int i = 0; i < kNumberOfURLsToSend; ++i)
       [breakpadKeys_ addObject:[NSString stringWithFormat:@"url%d", i]];
     // Register for url changed notifications.
@@ -159,7 +162,6 @@ const int kNumberOfURLsToSend = 1;
   NSString* key = [breakpadKeyByTabId_ objectForKey:tabId];
   if (!key)
     return;
-  base::scoped_nsobject<NSString> alive([key retain]);
   breakpad_helper::RemoveReportParameter(key);
   breakpad_helper::RemoveReportParameter(PendingURLKeyForKey(key));
   [breakpadKeyByTabId_ removeObjectForKey:tabId];
@@ -174,9 +176,7 @@ const int kNumberOfURLsToSend = 1;
   BOOL reusingKey = NO;
   if (!breakpadKey) {
     // Get the first breakpad key and push it back at the end of the keys.
-    base::scoped_nsobject<NSString> alive(
-        [[breakpadKeys_ objectAtIndex:0] retain]);
-    breakpadKey = alive.get();
+    breakpadKey = [breakpadKeys_ objectAtIndex:0];
     [breakpadKeys_ removeObject:breakpadKey];
     [breakpadKeys_ addObject:breakpadKey];
     // Remove the current mapping to the breakpad key.
@@ -242,7 +242,7 @@ const int kNumberOfURLsToSend = 1;
 
 - (id)init {
   if ((self = [super init])) {
-    tabCurrentStateByTabId_.reset([[NSMutableDictionary alloc] init]);
+    tabCurrentStateByTabId_ = [[NSMutableDictionary alloc] init];
     // Register for url changed notifications.
     [[NSNotificationCenter defaultCenter]
         addObserver:self
@@ -276,9 +276,9 @@ const int kNumberOfURLsToSend = 1;
   NSMutableDictionary* tabCurrentState =
       [tabCurrentStateByTabId_ objectForKey:tabId];
   if (tabCurrentState == nil) {
-    base::scoped_nsobject<NSMutableDictionary> currentStateOfNewTab(
-        [[NSMutableDictionary alloc] init]);
-    [tabCurrentStateByTabId_ setObject:currentStateOfNewTab.get() forKey:tabId];
+    NSMutableDictionary* currentStateOfNewTab =
+        [[NSMutableDictionary alloc] init];
+    [tabCurrentStateByTabId_ setObject:currentStateOfNewTab forKey:tabId];
     tabCurrentState = [tabCurrentStateByTabId_ objectForKey:tabId];
   }
   [tabCurrentState setObject:value forKey:key];

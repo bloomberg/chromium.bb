@@ -31,6 +31,7 @@ source_set("crash_report") {
 }
 
 source_set("crash_report_internal") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "crash_report_helper.h",
     "crash_report_helper.mm",

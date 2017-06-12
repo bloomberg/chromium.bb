@@ -29,6 +29,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @protocol InfoBarManagerObserverBridgeProtocol
 - (void)infoBarRemoved:(infobars::InfoBar*)infobar;
 @end
@@ -110,16 +114,14 @@ class SessionCrashedInfoBarDelegate : public ConfirmInfoBarDelegate {
   int GetIconId() const override;
 
   // The CrashRestoreHelper to restore sessions.
-  base::scoped_nsobject<CrashRestoreHelper> crash_restore_helper_;
-  // The TabModel to restore sessions to.
-  base::scoped_nsobject<TabModel> tab_model_;
+  CrashRestoreHelper* crash_restore_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionCrashedInfoBarDelegate);
 };
 
 SessionCrashedInfoBarDelegate::SessionCrashedInfoBarDelegate(
     CrashRestoreHelper* crash_restore_helper)
-    : crash_restore_helper_([crash_restore_helper retain]) {}
+    : crash_restore_helper_(crash_restore_helper) {}
 
 SessionCrashedInfoBarDelegate::~SessionCrashedInfoBarDelegate() {}
 
@@ -171,7 +173,7 @@ int SessionCrashedInfoBarDelegate::GetIconId() const {
   BOOL _needRestoration;
   std::unique_ptr<InfoBarManagerObserverBridge> _infoBarBridge;
   // The TabModel to restore sessions to.
-  base::scoped_nsobject<TabModel> _tabModel;
+  TabModel* _tabModel;
 
   // Indicate that the session has been restored to tabs or to recently closed
   // and should not be rerestored.
@@ -195,7 +197,7 @@ int SessionCrashedInfoBarDelegate::GetIconId() const {
   DCHECK([tabModel currentTab]);
   infobars::InfoBarManager* infoBarManager =
       [[tabModel currentTab] infoBarManager];
-  _tabModel.reset([tabModel retain]);
+  _tabModel = tabModel;
   SessionCrashedInfoBarDelegate::Create(infoBarManager, self);
   _infoBarBridge.reset(new InfoBarManagerObserverBridge(infoBarManager, self));
 }
