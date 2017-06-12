@@ -37,6 +37,16 @@ TEST(QuatTest, AxisAngleCommon) {
       Quaternion(std::sin(radians / 2), 0, 0, std::cos(radians / 2)), q);
 }
 
+TEST(QuatTest, VectorToVectorRotation) {
+  Quaternion q(Vector3dF(1.0f, 0.0f, 0.0f), Vector3dF(0.0f, 1.0f, 0.0f));
+  Quaternion r(Vector3dF(0.0f, 0.0f, 1.0f), M_PI_2);
+
+  EXPECT_FLOAT_EQ(r.x(), q.x());
+  EXPECT_FLOAT_EQ(r.y(), q.y());
+  EXPECT_FLOAT_EQ(r.z(), q.z());
+  EXPECT_FLOAT_EQ(r.w(), q.w());
+}
+
 TEST(QuatTest, AxisAngleWithZeroLengthAxis) {
   Quaternion q(Vector3dF(0, 0, 0), 0.5);
   // If the axis of zero length, we should assume the default values.
@@ -77,15 +87,15 @@ TEST(QuatTest, Multiplication) {
 }
 
 TEST(QuatTest, Scaling) {
-  double values[] = {0, 0, 100};
+  double values[] = {0, 10, 100};
   for (size_t i = 0; i < arraysize(values); ++i) {
     double s = values[i];
     Quaternion q(1, 2, 3, 4);
-    Quaternion qs = q * s;
-    Quaternion sq = s * q;
     Quaternion expected(s, 2 * s, 3 * s, 4 * s);
-    CompareQuaternions(expected, qs);
-    CompareQuaternions(expected, sq);
+    CompareQuaternions(expected, q * s);
+    CompareQuaternions(expected, s * q);
+    if (s > 0)
+      CompareQuaternions(expected, q / (1 / s));
   }
 }
 
@@ -101,9 +111,9 @@ TEST(QuatTest, Lerp) {
 
   Quaternion a(4, 3, 2, 1);
   Quaternion b(1, 2, 3, 4);
-  CompareQuaternions(a.normalized(), a.Lerp(b, 0));
-  CompareQuaternions(b.normalized(), a.Lerp(b, 1));
-  CompareQuaternions(Quaternion(1, 1, 1, 1).normalized(), a.Lerp(b, 0.5));
+  CompareQuaternions(a.Normalized(), a.Lerp(b, 0));
+  CompareQuaternions(b.Normalized(), a.Lerp(b, 1));
+  CompareQuaternions(Quaternion(1, 1, 1, 1).Normalized(), a.Lerp(b, 0.5));
 }
 
 TEST(QuatTest, Slerp) {
