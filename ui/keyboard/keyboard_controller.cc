@@ -246,6 +246,8 @@ void KeyboardController::NotifyKeyboardBoundsChanging(
 }
 
 void KeyboardController::HideKeyboard(HideReason reason) {
+  TRACE_EVENT0("vk", "HideKeyboard");
+
   keyboard_visible_ = false;
   ToggleTouchEventLogging(true);
 
@@ -377,6 +379,8 @@ void KeyboardController::OnTextInputStateChanged(
   if (!container_.get())
     return;
 
+  TRACE_EVENT0("vk", "OnTextInputStateChanged");
+
   ui::TextInputType type =
       client ? client->GetTextInputType() : ui::TEXT_INPUT_TYPE_NONE;
 
@@ -422,6 +426,8 @@ void KeyboardController::ShowKeyboardInternal(int64_t display_id) {
   // The container window should have been created already when
   // |Shell::CreateKeyboard| is called.
   DCHECK(container_.get());
+
+  TRACE_EVENT0("vk", "ShowKeyboardInternal");
 
   if (container_->children().empty()) {
     keyboard::MarkKeyboardLoadStarted();

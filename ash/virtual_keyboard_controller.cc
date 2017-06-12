@@ -34,6 +34,7 @@ bool IsSmartVirtualKeyboardEnabled() {
 
 void MoveKeyboardToDisplayInternal(const int64_t display_id) {
   // Remove the keyboard from curent root window controller
+  TRACE_EVENT0("vk", "MoveKeyboardToDisplayInternal");
   Shell::Get()->keyboard_ui()->Hide();
   RootWindowController::ForWindow(
       keyboard::KeyboardController::GetInstance()->GetContainerWindow())
@@ -111,6 +112,8 @@ void VirtualKeyboardController::MoveKeyboardToDisplay(int64_t display_id) {
   DCHECK(keyboard::KeyboardController::GetInstance() != nullptr);
   DCHECK(display_id != display::kInvalidDisplayId);
 
+  TRACE_EVENT0("vk", "MoveKeyboardToDisplay");
+
   aura::Window* container =
       keyboard::KeyboardController::GetInstance()->GetContainerWindow();
   DCHECK(container != nullptr);
@@ -124,6 +127,8 @@ void VirtualKeyboardController::MoveKeyboardToDisplay(int64_t display_id) {
 
 void VirtualKeyboardController::MoveKeyboardToTouchableDisplay() {
   DCHECK(keyboard::KeyboardController::GetInstance() != nullptr);
+
+  TRACE_EVENT0("vk", "MoveKeyboardToTouchableDisplay");
 
   aura::Window* container =
       keyboard::KeyboardController::GetInstance()->GetContainerWindow();

@@ -18,8 +18,14 @@ KeyboardUI::~KeyboardUI() {}
 
 void KeyboardUI::ShowKeyboardContainer(aura::Window* container) {
   if (HasKeyboardWindow()) {
-    GetKeyboardWindow()->Show();
-    container->Show();
+    {
+      TRACE_EVENT0("vk", "ShowKeyboardContainerWindow");
+      GetKeyboardWindow()->Show();
+    }
+    {
+      TRACE_EVENT0("vk", "ShowKeyboardContainer");
+      container->Show();
+    }
   }
 }
 
@@ -33,6 +39,8 @@ void KeyboardUI::HideKeyboardContainer(aura::Window* container) {
 void KeyboardUI::EnsureCaretInWorkArea() {
   if (!GetInputMethod())
     return;
+
+  TRACE_EVENT0("vk", "EnsureCaretInWorkArea");
 
   const aura::Window* keyboard_window = GetKeyboardWindow();
   const gfx::Rect keyboard_bounds_in_screen =
