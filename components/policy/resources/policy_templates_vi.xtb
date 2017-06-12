@@ -156,6 +156,7 @@
       truy cập thiết bị quay video sẽ được cấp trên
       các trang đăng nhập SAML.  Nếu không tìm thấy mẫu
       phù hợp, quyền truy cập sẽ tự động bị từ chối.  Các mẫu ký tự đại diện không được phép.</translation>
+<translation id="1634989431648355062">Cho phép plugin <ph name="FLASH_PLUGIN_NAME" /> trên các trang web này</translation>
 <translation id="1655229863189977773">Đặt kích thước bộ nhớ cache của đĩa theo byte</translation>
 <translation id="166427968280387991">Máy chủ proxy</translation>
 <translation id="1668836044817793277">Có cho phép ứng dụng kiosk tự động khởi chạy với độ trễ bằng không kiểm soát phiên bản <ph name="PRODUCT_OS_NAME" /> hay không.
@@ -736,6 +737,11 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Việc không đặt các chính sách này sẽ cho phép người dùng tự chọn cài đặt proxy.</translation>
 <translation id="3758249152301468420">Vô hiệu hóa công cụ dành cho nhà phát triển</translation>
 <translation id="3765260570442823273">Thời lượng hiển thị thông điệp cảnh báo đăng xuất khi không hoạt động</translation>
+<translation id="376931976323225993">Cho phép bạn đặt cho phép hay không cho phép các trang web tự động chạy plugin <ph name="FLASH_PLUGIN_NAME" />. Bạn có thể cho phép hoặc từ chối tự động chạy plugin <ph name="FLASH_PLUGIN_NAME" /> cho tất cả các trang web.
+
+          Tính năng nhấp để phát sẽ cho phép plugin <ph name="FLASH_PLUGIN_NAME" /> chạy nhưng người dùng phải nhấp vào trình giữ chỗ để plugin đó bắt đầu chạy.
+
+          Nếu không thiết lập chính sách này, người dùng có thể thay đổi cài đặt này theo cách thủ công.</translation>
 <translation id="3780152581321609624">Bao gồm cổng không chuẩn trong  Kerberos SPN</translation>
 <translation id="3780319008680229708">Nếu chính sách này được đặt thành true thì biểu tượng thanh công cụ Cast sẽ luôn được hiển thị trên thanh công cụ hoặc menu mục bổ sung và người dùng sẽ không thể xóa biểu tượng này.
 
@@ -868,6 +874,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="4105989332710272578">Tắt buộc thực thi Tính minh bạch của chứng chỉ cho danh sách URL</translation>
 <translation id="4121350739760194865">Chặn các quảng cáo ứng dụng xuất hiện trên trang tab mới</translation>
 <translation id="4157003184375321727">Báo cáo phiên bản hệ điều hành và chương trình cơ sở</translation>
+<translation id="4183229833636799228">Cài đặt <ph name="FLASH_PLUGIN_NAME" /> mặc định</translation>
 <translation id="4192388905594723944">URL để xác thực mã thông báo xác thực ứng dụng truy cập từ xa</translation>
 <translation id="4203389617541558220">Giới hạn thời gian hoạt động của thiết bị bằng cách lên lịch tự động khởi động lại.
 
@@ -1209,6 +1216,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Xin lưu ý rằng nếu nền tảng hỗ trợ thông báo chính sách, độ trễ làm mới sẽ được đặt thành 24 giờ (bỏ qua tất cả các cài đặt mặc định và giá trị của chính sách này) vì thông báo chính sách được kỳ vọng sẽ bắt buộc làm mới tự động bất cứ khi nào chính sách thay đổi, giúp việc làm mới thường xuyên hơn trở nên không cần thiết.</translation>
 <translation id="5535973522252703021">Danh sách trắng máy chủ ủy quyền Kerberos</translation>
+<translation id="555077880566103058">Cho phép tất cả các trang web tự động chạy plugin <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="5559079916187891399">Chính sách này không ảnh hưởng đến các ứng dụng Android.</translation>
 <translation id="5560039246134246593">Thêm thông số cho quá trình tìm nạp khởi đầu Biến thể trong <ph name="PRODUCT_NAME" />.
 
@@ -1291,12 +1299,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="5868414965372171132">Cấu hình mạng ở mức người dùng</translation>
 <translation id="588135807064822874">Bật Chạm để tìm kiếm</translation>
 <translation id="5883015257301027298">Cài đặt cookie mặc định</translation>
-<translation id="5887291617378691520">Nếu 'Mở danh sách URL' được chọn là tác vụ khởi động, điều này sẽ cho phép bạn chỉ định danh sách URL được mở. Nếu không đặt tùy chọn này thì sẽ không có URL nào được mở khi khởi động.
-
-          Chính sách này chỉ hoạt động nếu chính sách 'RestoreOnStartup' được đặt thành 'RestoreOnStartupIsURLs'.
-
-          Chính sách này không áp dụng trên các phiên bản Windows không tham
-          gia vào miền Active Directory.</translation>
 <translation id="5887414688706570295">Định cấu hình tiền tố TalkGadget sẽ được máy chủ truy cập từ xa sử dụng và ngăn người dùng thay đổi tiền tố này.
 
           Nếu được chỉ định, tiền tố này sẽ được thêm vào đầu tên gốc của TalkGadget để tạo tên miền đầy đủ cho TalkGadget. Tên miền gốc của TalkGadget là '.talkgadget.google.com'.
@@ -1382,6 +1384,9 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Ngoài ra, chính sách này có thể được đặt thành một trong các giá trị sau: "sslv3", "tls1", "tls1.1" hoặc "tls1.2". Khi được đặt, <ph name="PRODUCT_NAME" /> sẽ không sử dụng các phiên bản SSL/TLS nhỏ hơn phiên bản đã chỉ định. Giá trị không xác định sẽ bị bỏ qua.
 
       Lưu ý rằng, dù số lớn hơn nhưng "sslv3" là phiên bản cũ hơn "tls1".</translation>
+<translation id="6181608880636987460">Cho phép bạn đặt danh sách mẫu url chỉ định các trang web không được phép chạy plugin <ph name="FLASH_PLUGIN_NAME" />.
+
+          Nếu bạn không thiết lập chính sách này, giá trị mặc định chung sẽ được sử dụng cho tất cả các trang web của chính sách 'DefaultPluginsSetting' nếu chính sách này được đặt hoặc nếu không thì giá trị mặc định chung sẽ được sử dụng cho cấu hình cá nhân của người dùng.</translation>
 <translation id="6190022522129724693">Cài đặt cửa sổ bật lên</translation>
 <translation id="6197453924249895891">Cấp quyền truy cập vào khóa kết hợp đến các tiện ích.
 
@@ -1501,6 +1506,9 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Đặt thành tắt hoặc không đặt tùy chọn này, trình tìm kiếm plugin sẽ hoạt động.</translation>
 <translation id="6699880231565102694">Bật xác thực hai bước cho máy chủ truy cập từ xa</translation>
+<translation id="6757438632136860443">Cho phép bạn đặt danh sách mẫu url chỉ định các trang web được phép chạy plugin <ph name="FLASH_PLUGIN_NAME" />.
+
+          Nếu bạn không thiết lập chính sách này, giá trị mặc định chung sẽ được sử dụng cho tất cả các trang web của chính sách 'DefaultPluginsSetting' nếu chính sách này được đặt hoặc nếu không thì giá trị mặc định chung sẽ được sử dụng cho cấu hình cá nhân của người dùng.</translation>
 <translation id="6766216162565713893">Cho phép trang web yêu cầu người dùng cấp quyền truy cập vào thiết bị Bluetooth lân cận</translation>
 <translation id="6770454900105963262">Báo cáo thông tin về các phiên kiosk hiện hoạt</translation>
 <translation id="6786747875388722282">Tiện ích</translation>
@@ -1528,6 +1536,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Nếu bạn đặt chính sách này, người dùng không thể thay đổi hoặc ghi đè chính sách.
 
           Nếu không đặt chính sách này, phản hồi bằng giọng nói bị tắt ngay từ đầu nhưng người dùng có thể bật tính năng này bất cứ lúc nào.</translation>
+<translation id="6922884955650325312">Chặn plugin <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="6923366716660828830">Chỉ định tên của nhà cung cấp dịch vụ tìm kiếm mặc định. Nếu để trống hoặc không đặt, tên máy chủ lưu trữ do URL tìm kiếm chỉ định sẽ được sử dụng.
 
           Chính sách này chỉ được xem xét nếu chính sách 'DefaultSearchProviderEnabled' được bật.</translation>
@@ -1573,18 +1582,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu tắt chính sách này, sẽ không có dấu trang nào được nhập.
 
       Nếu không thiết lập chính sách này, người dùng có thể được hỏi có nhập hay không hoặc quá trình nhập có thể diễn ra tự động.</translation>
-<translation id="7055358889740598917">Định cấu hình URL trang chủ mặc định trong <ph name="PRODUCT_NAME" /> và ngăn người dùng thay đổi cài đặt này.
-
-          Trang chủ là trang được mở bằng nút Trang chủ. Các trang mở khi khởi động được chính sách RestoreOnStartup kiểm soát.
-
-          Có thể đặt loại trang chủ thành URL bạn chỉ định tại đây hoặc thành Trang tab mới. Nếu bạn chọn Trang tab mới thì chính sách này không có hiệu lực.
-
-          Nếu bạn bật cài đặt này, người dùng sẽ không thể thay đổi URL trang chủ của họ trong <ph name="PRODUCT_NAME" /> nhưng vẫn có thể chọn Trang tab mới làm trang chủ của mình.
-
-          Không đặt chính sách này sẽ cho phép người dùng tự chọn trang chủ của mình nếu HomepageIsNewTabPage cũng không được đặt.
-
-          Chính sách này không áp dụng cho các phiên bản Windows không tham gia vào
-          miền Active Directory.</translation>
 <translation id="7063895219334505671">Cho phép cửa sổ bật lên trên các trang web này</translation>
 <translation id="706669471845501145">Cho phép các trang web hiển thị thông báo trên màn hình</translation>
 <translation id="7072406291414141328">Bật điều chỉnh băng thông mạng</translation>
@@ -1605,21 +1602,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu chính sách được đặt thành False thì chế độ nền sẽ bị tắt và người dùng không thể kiểm soát chế độ này trong trong cài đặt trình duyệt.
 
       Nếu chính sách này không được đặt thì chế độ nền sẽ bị tắt ban đầu và người dùng có thể kiểm soát chế độ này trong cài đặt trình duyệt.</translation>
-<translation id="7123297102171034788">Cho phép bạn chỉ định thao tác khi khởi động.
-
-          Nếu bạn chọn 'Mở trang tab mới', Trang tab mới sẽ luôn mở khi bạn khởi động <ph name="PRODUCT_NAME" />.
-
-          Nếu bạn chọn 'Khôi phục phiên cuối cùng', URL đã mở vào lần cuối <ph name="PRODUCT_NAME" /> bị đóng sẽ được mở lại và phiên duyệt web sẽ đươc khôi phục tại nơi bạn đã dừng lại.
-          Chọn tùy chọn này sẽ vô hiệu hóa một số cài đặt dựa vào phiên hoặc thực hiện các thao tác khi thoát (chẳng hạn như Xóa dữ liệu duyệt web khi thoát hoặc cookie chỉ trong phiên).
-
-          Nếu bạn chọn 'Mở danh sách URL', danh sách 'URL mở khi khởi động' sẽ mở ra khi người dùng khởi động <ph name="PRODUCT_NAME" />.
-
-          Nếu bạn bật cài đặt này, người dùng không thể thay đổi hoặc ghi đè cài đặt đó trong <ph name="PRODUCT_NAME" />.
-
-          Việc tắt cài đặt này tương đương với không định cấu hình cài đặt. Người dùng vẫn có thể thay đổi cài đặt đó trong <ph name="PRODUCT_NAME" />.
-
-          Chính sách này không áp dụng trên các phiên bản Windows không tham
-          gia vào miền Active Directory.</translation>
 <translation id="7128918109610518786">Liệt kê số nhận dạng ứng dụng mà <ph name="PRODUCT_OS_NAME" /> hiển thị dưới dạng ứng dụng được ghim trong thanh trình chạy.
 
       Nếu chính sách này được định cấu hình, bộ ứng dụng sẽ được cố định và người dùng không thể thay đổi được.
@@ -1852,20 +1834,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="793134539373873765">Chỉ định có sử dụng p2p cho các phần tải dữ liệu cập nhật OS không. Nếu được đặt thành True, các thiết bị sẽ chia sẻ và cố gắng sử dụng các phần tải dữ liệu cập nhật trên LAN, có thể làm giảm nghẽn và mức sử dụng băng thông Internet. Nếu phần tải dữ liệu cập nhật không khả dụng trên LAN, thiết bị sẽ quay lại tải xuống từ máy chủ cập nhật. Nếu được đặt thành False hay không được định cấu hình, p2p sẽ không được sử dụng.</translation>
 <translation id="7933141401888114454">Cho phép tạo người dùng được giám sát</translation>
 <translation id="793473937901685727">Đặt mức độ khả dụng của chứng chỉ cho ứng dụng ARC</translation>
-<translation id="7936098023732125869">Cho phép sử dụng nhà cung cấp dịch vụ tìm kiếm mặc định.
-
-          Nếu bạn bật cài đặt này, tìm kiếm mặc định được thực hiện khi người dùng nhập văn bản vào thanh địa chỉ không phải là URL.
-
-          Bạn có thể chỉ định nhà cung cấp dịch vụ tìm kiếm mặc định sẽ được sử dụng bằng cách đặt phần còn lại của chính sách tìm kiếm mặc định. Nếu các chính sách này không được đặt, người dùng có thể chọn nhà cung cấp mặc định.
-
-          Nếu bạn tắt cài đặt này, không có tìm kiếm nào được thực hiện khi người dùng nhập văn bản không phải là URL vào thanh địa chỉ.
-
-          Nếu bạn bật hoặc tắt cài đặt này, người dùng không thể thay đổi hoặc ghi đè cài đặt này trong <ph name="PRODUCT_NAME" />.
-
-          Nếu chính sách này không được đặt, nhà cung cấp dịch vụ tìm kiếm mặc định được bật và người dùng có thể đặt danh sách nhà cung cấp dịch vụ tìm kiếm.
-
-          Chính sách này không áp dụng trên các phiên bản Windows không tham
-          gia vào miền Active Directory.</translation>
 <translation id="7937766917976512374">Cho phép hoặc từ chối quay video</translation>
 <translation id="7941975817681987555">Không dự đoán tác vụ mạng trên kết nối mạng bất kỳ</translation>
 <translation id="7953256619080733119">Lưu trữ ngoại lệ hướng dẫn người dùng được quản lý</translation>
@@ -1990,18 +1958,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="8312129124898414409">Cho phép bạn đặt liệu các trang web có được phép sử dụng tạo khóa hay không. Bạn có thể cho phép hoặc từ chối sử dụng tạo khóa đối với tất cả các trang web.
 
           Nếu không thiết lập chính sách này, 'BlockKeygen' sẽ được sử dụng và người dùng có thể thay đổi cài đặt này.</translation>
-<translation id="8316806736175990584">Định cấu hình loại trang chủ mặc định trong <ph name="PRODUCT_NAME" /> và ngăn người dùng thay đổi tùy chọn trang chủ. Trang chủ có thể được đặt là URL mà bạn chỉ định hoặc đặt là Trang tab mới.
-
-          Nếu bạn bật cài đặt này, Trang tab mới sẽ luôn được sử dụng cho trang chủ và vị trí URL trang chủ được bỏ qua.
-
-          Nếu bạn tắt cài đặt này, trang chủ của người dùng sẽ không bao giờ là Trang tab mới trừ khi URL của trang này được đặt là 'chrome://newtab'.
-
-          Nếu bạn bật hoặc tắt cài đặt này, người dùng không thể thay đổi loại trang chủ của họ trong <ph name="PRODUCT_NAME" />.
-
-          Không đặt chính sách này sẽ cho phép người dùng tự chọn xem có sử dụng trang tab mới làm trang chủ hay không.
-
-          Chính sách này không áp dụng cho các phiên bản Windows không tham gia vào
-          miền Active Directory.</translation>
 <translation id="8329984337216493753">Chính sách này chỉ hoạt động trong chế độ bán lẻ.
 
       Khi DeviceIdleLogoutTimeout được chỉ định, chính sách này sẽ xác định thời lượng của hộp cảnh báo với bộ tính giờ đếm ngược được hiển thị cho người dùng trước khi tác vụ đăng xuất được thực thi.
@@ -2037,24 +1993,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="8519264904050090490">URL ngoại lệ hướng dẫn người dùng được quản lý</translation>
 <translation id="8544375438507658205">Trình hiển thị HTML mặc định dành cho <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Cảnh báo khi truy cập vào các trang web nằm ngoài gói nội dung</translation>
-<translation id="855339549837475534">Cả Chromium và Google Chrome đều hỗ trợ nhóm chính sách giống nhau. Xin
-      lưu ý rằng tài liệu này có thể bao gồm các chính sách dành
-      cho các phiên bản phần mềm chưa phát hành (nghĩa là mục 'Được hỗ
-      trợ trên' của các chính sách này nói đến một phiên bản chưa phát hành)
-      và những chính sách như vậy sẽ bị thay đổi hoặc xóa bỏ mà không cần báo trước.
-
-      Các chính sách này được sử dụng hoàn toàn cho mục đích định cấu hình các phiên
-      bản <ph name="PRODUCT_NAME" /> nội bộ trong tổ chức của bạn. Việc sử dụng các chính sách này
-      bên ngoài tổ chức của bạn (ví dụ: trong chương trình được phân phối công
-      khai) sẽ được coi là phần mềm độc hại và có thể bị Google và các nhà
-      cung cấp phần mềm diệt vi-rút gắn nhãn là phần mềm độc hại.
-
-      Bạn không cần định cấu hình các cài đặt này theo cách thủ công!  Các mẫu
-      dễ sử dụng dành cho Windows, Mac và Linux có sẵn để tải xuống từ <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
-
-      Chúng tôi khuyên bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù
-      việc cấp phép chính sách qua cổng đăng ký vẫn được hỗ trợ cho các phiên bản
-      Windows tham gia miền Active Directory.</translation>
 <translation id="8566842294717252664">Ẩn cửa hàng trực tuyến khỏi trang tab mới và trình chạy ứng dụng</translation>
 <translation id="8587229956764455752">Cho phép tạo tài khoản người dùng mới</translation>
 <translation id="8614804915612153606">Tắt cập nhật tự động</translation>
@@ -2071,17 +2009,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
          Nếu bạn không đặt chính sách này, <ph name="PRODUCT_NAME" /> sẽ cố gắng phát hiện xem máy chủ có ở trên mạng nội bộ hay không, sau đó mới phản hồi yêu cầu IWA.  Nếu máy chủ được phát hiện là ở trên mạng Internet thì yêu cầu IWA từ máy chủ sẽ bị <ph name="PRODUCT_NAME" /> bỏ qua.</translation>
 <translation id="8672321184841719703">Phiên bản cập nhật tự động đích</translation>
-<translation id="868068801094828689">Cho phép báo cáo ẩn danh về việc sử dụng và dữ liệu liên quan đến sự cố với <ph name="PRODUCT_NAME" /> tới Google và ngăn người dùng thay đổi cài đặt này.
-
-      Nếu bạn bật cài đặt này thì báo cáo ẩn danh về việc sử dụng và dữ liệu liên quan đến sự cố
-      sẽ được gửi tới Google. Nếu bạn tắt cài đặt này thì thông tin trên không được gửi
-      tới Google. Trong cả hai trường hợp, người dùng không thể thay đổi hay ghi đè cài đặt.
-      Nếu chính sách này không được đặt thì cài đặt này sẽ được người dùng chọn
-      trong khi cài đặt / lần chạy đầu tiên.
-
-      Chính sách này không áp dụng cho các phiên bản Windows không tham gia vào
-      miền Active Directory. (Đối với Chrome OS, hãy xem
-      DeviceMetricsReportingEnabled).</translation>
 <translation id="8693243869659262736">Sử dụng máy khách DNS tích hợp</translation>
 <translation id="8704831857353097849">Danh sách plugin bị tắt</translation>
 <translation id="8711086062295757690">Chỉ định từ khóa, là phím tắt được sử dụng trong thanh địa chỉ để kích hoạt tìm kiếm nhà cung cấp này.
@@ -2124,6 +2051,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="8858642179038618439">Bật Chế độ an toàn trên YouTube</translation>
 <translation id="8864975621965365890">Loại bỏ lời nhắc từ chối xuất hiện khi một trang web được hiển thị bởi <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Trang chủ</translation>
+<translation id="8882006618241293596">Chặn plugin <ph name="FLASH_PLUGIN_NAME" /> trên các trang web này</translation>
 <translation id="8906768759089290519">Bật chế độ khách</translation>
 <translation id="8908294717014659003">Cho phép bạn đặt liệu trang web có được phép truy cập vào thiết bị thu dữ liệu truyền thông hay không. Quyền truy cập vào thiết bị thu dữ liệu truyền thông có thể được phép theo mặc định hoặc người dùng có thể được hỏi mỗi lần trang web muốn có quyền truy cập vào thiết bị thu dữ liệu truyền thông.
 

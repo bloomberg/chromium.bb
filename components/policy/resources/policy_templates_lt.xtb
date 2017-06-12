@@ -156,6 +156,7 @@
       fiksuojančių įrenginių bus suteikta SAML prisijungimo puslapiuose. Neradus atitikties,
       prieiga bus automatiškai uždrausta. Pakaitos simbolių šablonai
       neleidžiami.</translation>
+<translation id="1634989431648355062">Leisti papildinį „<ph name="FLASH_PLUGIN_NAME" />“ šiose svetainėse</translation>
 <translation id="1655229863189977773">Nustatyti disko talpyklos dydį baitais</translation>
 <translation id="166427968280387991">Tarpinis serveris</translation>
 <translation id="1668836044817793277">Ar automatiškai be delsos paleistai viešojo terminalo programai bus leidžiama valdyti „<ph name="PRODUCT_OS_NAME" />“ versiją.
@@ -745,6 +746,11 @@
       Jei paliksite šią politiką nenustatytą, naudotojai galės patys pasirinkti tarpinio serverio nustatymus.</translation>
 <translation id="3758249152301468420">Neleisti kūrėjo įrankių</translation>
 <translation id="3765260570442823273">Neveikos būsenos atjungimo įspėjimo pranešimo trukmė</translation>
+<translation id="376931976323225993">Galima nustatyti, ar svetainėms leidžiama automatiškai paleisti papildinį „<ph name="FLASH_PLUGIN_NAME" />“. Automatinį papildinio „<ph name="FLASH_PLUGIN_NAME" />“ paleidimą galima visose svetainėse leisti arba uždrausti.
+
+          Pasirinkus „Spustelėti ir paleisti“ papildinį „<ph name="FLASH_PLUGIN_NAME" />“ galima paleisti, bet naudotojas turi spustelėti rezervuotą vietą, kad papildinys būtų vykdomas.
+
+          Jei ši politika nenustatyta, naudotojas galės pats pakeisti šį nustatymą.</translation>
 <translation id="3780152581321609624">Įtraukti nestandartinį prievadą į „Kerberos“ SPN</translation>
 <translation id="3780319008680229708">Jei ši politika bus nustatyta į „true“, „Cast“ įrankių juostos piktograma visada bus rodoma įrankių juostoje arba perpildymo meniu ir naudotojai negalės jos pašalinti.
 
@@ -883,6 +889,7 @@
 <translation id="4105989332710272578">Sertifikato skaidrumo taikymo URL sąrašui išjungimas</translation>
 <translation id="4121350739760194865">Neleisti rodyti programų reklamų naujo skirtuko puslapyje</translation>
 <translation id="4157003184375321727">Pranešti OS ir programinės aparatinės įrangos versiją</translation>
+<translation id="4183229833636799228">Numatytasis „<ph name="FLASH_PLUGIN_NAME" />“ nustatymas</translation>
 <translation id="4192388905594723944">URL, skirtas nuotolinio prisijungimo kliento autentifikavimo prieigos raktui patvirtinti</translation>
 <translation id="4203389617541558220">Apriboti įrenginio veikimo laiką suplanuojant automatinį operacinės sistemos įkėlimą.
 
@@ -1225,6 +1232,7 @@
 
       Atminkite, kad jei platformoje palaikomi politikos pranešimai, atnaujinimo delsa bus nustatyta į 24 val. (bus nepaisoma visų numatytųjų nustatymų ir šios politikos vertės), nes tikimasi, kad politikos pranešimai automatiškai suaktyvins atnaujinimą kaskart, kai politika bus pakeista, todėl nereikės dažniau atnaujinti.</translation>
 <translation id="5535973522252703021">„Kerberos“ nukreipimo serverio baltasis sąrašas</translation>
+<translation id="555077880566103058">Leisti visoms svetainėms automatiškai paleisti papildinį „<ph name="FLASH_PLUGIN_NAME" />“</translation>
 <translation id="5559079916187891399">Ši politika neturi įtakos „Android“ programoms.</translation>
 <translation id="5560039246134246593">Pridėkite variantų pirminės reikšmės pateikimo apribojimą „<ph name="PRODUCT_NAME" />“.
 
@@ -1307,12 +1315,6 @@
 <translation id="5868414965372171132">Naudotojo lygio tinklo konfigūracija</translation>
 <translation id="588135807064822874">Paieškos palietus įgalinimas</translation>
 <translation id="5883015257301027298">Numatytasis slapukų nustatymas</translation>
-<translation id="5887291617378691520">Jei kaip paleisties veiksmas pasirinkta „Atidaryti URL sąrašą“, galite nurodyti atidaromų URL sąrašą. Jei nenustatyta, paleidus programą neatidaromas joks URL.
-
-          Ši politika veikia, tik jei politika „RestoreOnStartup“ nustatyta į „RestoreOnStartupIsURLs“.
-
-          Ši politika nepasiekiama „Windows“ objektuose, kurie nesusieti
-          su aktyvaus katalogo domenu.</translation>
 <translation id="5887414688706570295">Konfigūruojamas „TalkGadget“ (Pokalbių programėlės) kodas, kuris bus naudojamas nuotolinės prieigos prieglobų, ir neleidžiama naudotojams jo keisti.
 
           Jei nurodytas, šis kodas iš anksto pridedamas prie pagrindinio „TalkGadget“ (Pokalbių programėlės) pavadinimo ir sukuriamas visas „TalkGadget“ (Pokalbių programėlės) domeno pavadinimas. Pagrindinis „TalkGadget“ (Pokalbių programėlės) pavadinimas yra „.talkgadget.google.com“.
@@ -1397,6 +1399,9 @@
       Kitaip tai gali būti nustatyta į vieną iš šių verčių: „sslv3“, „tls1“, „tls1.1“ arba „tls1.2“. Kai politika nustatyta, „<ph name="PRODUCT_NAME" />“ nenaudos senesnės nei nurodyta versijos SSL / TLS. Neatpažintos vertės bus nepaisoma.
 
       Atminkite, kad, nepaisant skaičiaus, „sslv3“ yra senesnės versijos funkcija nei „tls1“.</translation>
+<translation id="6181608880636987460">Galima nustatyti URL šablonų, kuriuose nurodomos svetainės, kurioms neleidžiama paleisti papildinio „<ph name="FLASH_PLUGIN_NAME" />“, sąrašą.
+
+          Jei ši politika nenustatyta, visose svetainėse bus naudojama visuotinė numatytoji vertė iš politikos „DefaultPluginsSetting“ (jei ji nustatyta) arba naudotojo asmeninės konfigūracijos (kitu atveju).</translation>
 <translation id="6190022522129724693">Numatytasis iššokančiųjų langų nustatymas</translation>
 <translation id="6197453924249895891">Suteikiama galimybė įmonės raktais pasiekti plėtinius.
 
@@ -1521,6 +1526,9 @@
 
       Neleidus šios parinkties ar jos nenustačius papildinių paieškos priemonė bus aktyvi.</translation>
 <translation id="6699880231565102694">Įgalinti nuotolinės prieigos prieglobų autentifikavimą dviem veiksniais</translation>
+<translation id="6757438632136860443">Galima nustatyti URL šablonų, kuriuose nurodomos svetainės, kurioms leidžiama paleisti papildinį „<ph name="FLASH_PLUGIN_NAME" />“, sąrašą.
+
+          Jei ši politika nenustatyta, visose svetainėse bus naudojama visuotinė numatytoji vertė iš politikos „DefaultPluginsSetting“ (jei ji nustatyta) arba naudotojo asmeninės konfigūracijos (kitu atveju).</translation>
 <translation id="6766216162565713893">Leisti svetainėms prašyti naudotojo suteikti leidimą pasiekti netoliese esantį „Bluetooth“ įrenginį</translation>
 <translation id="6770454900105963262">Informacijos apie aktyvias viešojo terminalo sesijas ataskaitos pateikimas</translation>
 <translation id="6786747875388722282">Plėtiniai</translation>
@@ -1548,6 +1556,7 @@
           Jei nustatysite šią politiką, naudotojai negalės jos pakeisti arba nepaisyti.
 
           Jei ši politika nenustatyta, ekrano skaitymas balsu bus išjungtas, bet naudotojas galės bet kada jį įgalinti.</translation>
+<translation id="6922884955650325312">Užblokuoti papildinį „<ph name="FLASH_PLUGIN_NAME" />“</translation>
 <translation id="6923366716660828830">Nurodomas numatytojo paieškos teikėjo pavadinimas. Jei laukas paliekamas tuščias arba nenustatomas, naudojamas paieškos URL nurodytas prieglobos pavadinimas.
 
           Į šią politiką atsižvelgiama, tik jei įgalinta politika „Numatytasis paieškos teikėjas įgalintas“.</translation>
@@ -1593,18 +1602,6 @@
       Jei neleidžiama, jokios žymės neimportuojamos.
 
       Jei nenustatyta, naudotojo gali būti klausiama, ar importuoti, arba gali būti importuojama automatiškai.</translation>
-<translation id="7055358889740598917">Konfigūruokite numatytojo pagrindinio „<ph name="PRODUCT_NAME" />“ puslapio URL ir neleiskite naudotojams jo pakeisti.
-
-          Pagrindinis puslapis atidaromas spustelėjus mygtuką „Pagrindinis“. Paleidžiant atidaromus puslapius kontroliuoja politika „RestoreOnStartup“.
-
-          Pagrindinio puslapio tipas gali būti nustatytas kaip URL, kurį čia nurodote, arba naujo skirtuko puslapis. Jei pasirenkate naujo skirtuko puslapį, tada šios politikos nepaisoma.
-
-          Jei įgalinsite šį nustatymą, naudotojai negalės keisti pagrindinio puslapio URL programoje „<ph name="PRODUCT_NAME" />“, bet vis tiek gali pasirinkti naujo skirtuko puslapį kaip pagrindinį puslapį.
-
-          Nenustačius šios politikos, naudotojas galės pats pasirinkti savo pagrindinį puslapį, jei nenustatyta ir „HomepageIsNewTabPage“.
-
-          Ši politika neveikia „Windows“ objektuose, kurie neprijungti
-          prie „Active Directory“ domeno.</translation>
 <translation id="7063895219334505671">Leisti iššokančiuosius langus šiose svetainėse</translation>
 <translation id="706669471845501145">Leisti svetainėse rodyti darbalaukio pranešimus</translation>
 <translation id="7072406291414141328">Įgalinamas tinklo siuntimo spartos reguliavimas</translation>
@@ -1626,21 +1623,6 @@
       Jei ši politika nustatyta į „False“, foninis režimas išjungiamas ir naudotojas negali jo valdyti naršyklės nustatymuose.
 
       Nenustačius šios politikos foninis režimas iš pradžių išjungiamas ir jį gali valdyti naudotojas naršyklės nustatymuose.</translation>
-<translation id="7123297102171034788">Leidžiama nurodyti elgseną paleidus sistemą.
-
-          Jei pasirinksite „Atidaryti naujo skirtuko puslapį“, naujo skirtuko puslapis bus visada atidaromas, kai paleisite „<ph name="PRODUCT_NAME" />“.
-
-          Jei pasirinksite „Atkurti paskutinę sesiją“, URL, kurie buvo atidaryti, kai „<ph name="PRODUCT_NAME" />“ buvo uždaryta, bus iš naujo atidaryti, o naršymo sesija bus atkurta nuo tos vietos, kur baigėte.
-          Pasirinkus šią parinktį, bus išjungti kai kurie nustatymai, kurie veikia naudojant sesijas arba kurie atlieka veiksmus išėjus (pvz., išvalomi naršymo duomenys išėjus arba naudojami tik sesijos slapukai).
-
-          Jei pasirinksite „Atidaryti URL sąrašą“, naudotojui paleidus „<ph name="PRODUCT_NAME" />“, bus atidarytas sąrašas „URL, atidaromi paleidus“.
-
-          Jei įgalinsite šį nustatymą, naudotojai negalės jo pakeisti arba nepaisyti sistemoje „<ph name="PRODUCT_NAME" />“.
-
-          Jei išjungsite šį nustatymą, jis bus tarsi nesukonfigūruotas. Naudotojas vis tiek galės jį pakeisti sistemoje „<ph name="PRODUCT_NAME" />“.
-
-          Ši politika nepasiekiama „Windows“ objektuose, kurie nesusieti
-          su aktyvaus katalogo domenu.</translation>
 <translation id="7128918109610518786">Programų identifikatorių sąrašas „<ph name="PRODUCT_OS_NAME" />“ rodomas kaip paleidimo priemonės juostoje prisegtos programos.
 
       Jei sukonfigūruota ši politika, nustatomas programų sąrašas ir naudotojas jo keisti negali.
@@ -1881,20 +1863,6 @@
 <translation id="793134539373873765">Nurodoma, ar P2P bus naudojamas naudingosiose OS naujinių apkrovose. Jei ši politika galioja, įrenginiai bendrins ir bandys naudoti naujinio naudingąsias apkrovas per LAN, taip potencialiai sumažindami interneto pralaidumo naudojimą ir perpildymą. Jei naujinio naudingoji apkrova nepasiekiama naudojant LAN, įrenginys vykdys atsisiuntimą iš naujinio serverio. Jei ši politika negalioja ar yra nesukonfigūruota, P2P nebus naudojama.</translation>
 <translation id="7933141401888114454">Įgalinti prižiūrimų naudotojų kūrimą</translation>
 <translation id="793473937901685727">Nustatykite, ar sertifikatai bus prieinami ARC programose</translation>
-<translation id="7936098023732125869">Įgalinamas numatytojo paieškos teikėjo naudojimas.
-
-          Jei įgalinsite šį nustatymą, naudotojui į „omnibox“ vedant tekstą, kuris nėra URL, bus vykdoma numatytoji paieška.
-
-          Nustatydami kitas numatytosios paieškos politikos parinktis galite nurodyti numatytąjį paieškos teikėją, kuris bus naudojamas įgalinus politiką. Jei jų nenustatysite, naudotojas galės pasirinkti numatytąjį teikėją.
-
-          Jei šį nustatymą išjungsite, naudotojui į „omnibox“ vedant tekstą, kuris nėra URL, paieška vykdoma nebus.
-
-          Jei šį nustatymą įgalinsite arba išjungsite, naudotojai negalės jo pakeisti ar nepaisyti sistemoje „<ph name="PRODUCT_NAME" />“.
-
-          Nenustačius šios politikos įgalinamas numatytasis paieškos teikėjas ir naudotojas gali nustatyti paieškos teikėjų sąrašą.
-
-          Ši politika nepasiekiama „Windows“ objektuose, kurie nesusieti
-          su aktyvaus katalogo domenu.</translation>
 <translation id="7937766917976512374">Leisti arba blokuoti vaizdo įrašo fiksavimą</translation>
 <translation id="7941975817681987555">Nenumatyti tinklo veiksmų, naudojant bet kurį tinklo ryšį</translation>
 <translation id="7953256619080733119">Tvarkomos naudotojo neautomatinių išimčių prieglobos</translation>
@@ -2019,18 +1987,6 @@
 <translation id="8312129124898414409">Leidžiama nustatyti, ar svetainėse leidžiama naudoti rakto generavimą. Naudoti rakto generavimą gali būti leidžiama arba draudžiama visose svetainėse.
 
           Nenustačius šios politikos, bus naudojama „BlockKeygen“ ir naudotojas galės tai pakeisti.</translation>
-<translation id="8316806736175990584">Konfigūruokite numatytojo „<ph name="PRODUCT_NAME" />“ pagrindinio puslapio tipą ir neleiskite naudotojams keisti pagrindinio puslapio nuostatų. Pagrindinį puslapį galima nustatyti nurodant URL arba kaip naujo skirtuko puslapį.
-
-          Jei įgalinsite šį nustatymą, naujo skirtuko puslapis visada bus naudojamas kaip pagrindinis puslapis, o pagrindinio puslapio URL vietos bus nepaisoma.
-
-          Jei šį nustatymą išjungsite, naudotojo pagrindinis puslapis niekada nebus naujo skirtuko puslapis, jei jo URL nebus nustatytas kaip „chrome://newtab“.
-
-          Jei šį nustatymą įgalinsite arba išjungsite, paleidę „<ph name="PRODUCT_NAME" />“ naudotojai negalės pakeisti pagrindinio puslapio tipo.
-
-          Nenustačius šios politikos, naudotojas galės pats pasirinkti, ar naujo skirtuko puslapis turi būti pagrindinis puslapis.
-
-          Ši politika neveikia „Windows“ objektuose, kurie neprijungti
-          prie „Active Directory“ domeno.</translation>
 <translation id="8329984337216493753">Ši politika aktyvi tik mažmeninės prekybos režimu.
 
       Kai nurodyta „Įrenginio neveikos būsenos atjungimo skirtasis laikas“, pagal šią politiką apibrėžiama įspėjimo laukelio su laiko skaičiavimo atgal laikmačiu, kuris rodomas naudotojui prieš atjungiant, trukmė.
@@ -2066,24 +2022,6 @@
 <translation id="8519264904050090490">Tvarkomi naudotojo neautomatinių išimčių URL</translation>
 <translation id="8544375438507658205">Numatytasis „<ph name="PRODUCT_FRAME_NAME" />“ HTML teikėjas</translation>
 <translation id="8549772397068118889">Įspėti, kai apsilankoma svetainėse, nesančiose turinio paketuose</translation>
-<translation id="855339549837475534">Tiek „Chromium“, tiek „Google Chrome“ palaiko tas pačias politikos
-      nuostatas. Atminkite, kad šiame dokumente gali būti politikos nuostatų, kurios
-      taikomos neišleistos versijos programinei įrangai (pvz., įrašas „palaikoma naudojant“
-      nurodo neišleistos versijos programą), ir tokios politikos nuostatos gali
-      būti pakeistos arba pašalintos be išankstinio įspėjimo.
-
-      Šios politikos nuostatos griežtai skirtos konfigūruoti tik
-      vidiniams sistemos „<ph name="PRODUCT_NAME" />“
-      objektams. Šių politikos nuostatų naudojimas už organizacijos ribų (pvz.,
-      viešai platinamoje programoje) laikomas kenkėjišku ir
-      „Google“ bei antivirusinės programinės įrangos teikėjai tai tikriausiai laikys kenkėjiška programa.
-
-      Šių nustatymų nereikia sukonfigūruoti rankiniu būdu! Lengvai naudojamų
-      šablonų, skirtų „Windows“, „Mac“ ir „Linux“, galite atsisiųsti adresu <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
-
-      Rekomenduojame politiką sistemoje „Windows“ nustatyti naudojant GPO, tačiau
-      aprūpinimo politika naudojant registrą vis tiek palaikoma „Windows“ objektuose,
-      kurie susieti su aktyvaus katalogo domenu.</translation>
 <translation id="8566842294717252664">Internetinės parduotuvės slėpimas Naujo skirtuko puslapyje ir programų paleidimo priemonėje</translation>
 <translation id="8587229956764455752">Leisti kurti naujų naudotojų paskyras</translation>
 <translation id="8614804915612153606">Neleidžiamas automatinis naujinys</translation>
@@ -2100,17 +2038,6 @@
 
           Jei nenustatysite šios politikos, „<ph name="PRODUCT_NAME" />“ bandys nustatyti, ar serveris yra intranete ir tik tada atsakys į IWA užklausas. Jei serveris aptinkamas internete, „<ph name="PRODUCT_NAME" />“ nepaisys jo siunčiamų IWA užklausų.</translation>
 <translation id="8672321184841719703">Taikomo automatinio naujinio versija</translation>
-<translation id="868068801094828689">Įgalinamas anonimiškų „Google“ skirtų „<ph name="PRODUCT_NAME" />“ naudojimo ir su strigtimis susijusių duomenų ataskaitų teikimas; naudotojams šio nustatymo keisti neleidžiama.
-
-      Jei įgalinsite šį nustatymą, „Google“ bus siunčiamos anonimiškos naudojimo
-      ir su strigtimis susijusių duomenų ataskaitos. Jei jį išjungsite, ši informacija nebus siunčiama
-      „Google“. Abiem atvejais naudotojai negalės keisti ar perrašyti nustatymo.
-      Nenustačius šios politikos, bus taikomas tas nustatymas, kurį naudotojas pasirinko
-      diegdamas / pirmą kartą paleisdamas.
-
-      Ši politika nepasiekiama „Windows“ objektuose, kurie nesusieti su
-      aktyvaus katalogo domenu. (Jei naudojate „Chrome“ OS, žr.
-      „DeviceMetricsReportingEnabled“.)</translation>
 <translation id="8693243869659262736">Naudoti integruotą DNS kliento programą</translation>
 <translation id="8704831857353097849">Neleidžiamų papildinių sąrašas</translation>
 <translation id="8711086062295757690">Nurodomas raktinis žodis, kuris yra spartusis klavišas, naudojamas „Omnibox“ šio teikėjo paieškai suaktyvinti.
@@ -2156,6 +2083,7 @@
 <translation id="8858642179038618439">Priverstinis „YouTube“ saugos režimas</translation>
 <translation id="8864975621965365890">Nerodomas raginimas išjungti, kuris rodomas, kai svetainę pateikia „<ph name="PRODUCT_FRAME_NAME" />“.</translation>
 <translation id="8870318296973696995">Pagrindinis puslapis</translation>
+<translation id="8882006618241293596">Užblokuoti papildinį „<ph name="FLASH_PLUGIN_NAME" />“ šiose svetainėse</translation>
 <translation id="8906768759089290519">Įgalinti svečio režimą</translation>
 <translation id="8908294717014659003">Leidžiama jums nustatyti, ar svetainėms leidžiama prieiga prie medijos vaizdų įvedimo įrenginių. Medijos vaizdų įvedimo įrenginių prieiga gali būti leidžiama pagal numatytuosius nustatymus arba naudotojo (-os) gali būti klausiama kiekvieną kartą, kai svetainė nori gauti prieigą prie medijos vaizdų įvedimo įrenginių.
 

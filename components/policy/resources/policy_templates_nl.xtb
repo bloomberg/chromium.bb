@@ -152,6 +152,7 @@
       video verleend op SAML-inlogpagina's. Als er geen overeenkomst wordt
       gevonden, wordt toegang automatisch geweigerd. Patronen met jokertekens
       zijn niet toegestaan</translation>
+<translation id="1634989431648355062">De <ph name="FLASH_PLUGIN_NAME" />-plug-in toestaan op deze sites</translation>
 <translation id="1655229863189977773">Grootte van schijfcache in bytes instellen</translation>
 <translation id="166427968280387991">Proxyserver</translation>
 <translation id="1668836044817793277">De kiosk-app die automatisch zonder vertraging is gestart, wel of niet toestaan de <ph name="PRODUCT_OS_NAME" />-versie te beheren.
@@ -743,6 +744,11 @@
       Als je dit beleid niet instelt, kunnen gebruikers zelf de gewenste proxyinstellingen selecteren.</translation>
 <translation id="3758249152301468420">Ontwikkelaarstools uitschakelen</translation>
 <translation id="3765260570442823273">Duur van de waarschuwing bij uitloggen inactieve gebruiker</translation>
+<translation id="376931976323225993">Hiermee kun je instellen of websites de <ph name="FLASH_PLUGIN_NAME" />-plug-in automatisch mogen uitvoeren. Het automatisch uitvoeren van de <ph name="FLASH_PLUGIN_NAME" />-plug-in kan worden toegestaan voor alle websites of worden geweigerd voor alle websites.
+
+          Via 'Klikken om te spelen' kan de <ph name="FLASH_PLUGIN_NAME" />-plug-in worden uitgevoerd, maar de gebruiker moet op de tijdelijke aanduiding klikken om de uitvoering te starten.
+
+          Als dit beleid niet wordt ingesteld, kan de gebruiker deze instelling handmatig wijzigen.</translation>
 <translation id="3780152581321609624">Niet-standaardpoort in Kerberos-SPN opnemen</translation>
 <translation id="3780319008680229708">Als dit beleid is ingesteld op 'waar' (true), wordt het Cast-icoon altijd weergegeven in de werkbalk of het overloopmenu en kunnen gebruikers het niet verwijderen.
 
@@ -880,6 +886,7 @@
 <translation id="4105989332710272578">Handhaving van Certificaattransparantie voor een lijst met URL's uitschakelen</translation>
 <translation id="4121350739760194865">Voorkomen dat app-promoties worden weergegeven op de pagina 'Nieuw tabblad'</translation>
 <translation id="4157003184375321727">Besturingssysteem- en firmwareversie rapporteren</translation>
+<translation id="4183229833636799228">Standaardinstelling voor <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">URL voor het valideren van verificatietoken voor client voor externe toegang</translation>
 <translation id="4203389617541558220">De bedrijfstijd van het apparaat beperken door automatisch opnieuw opstarten te plannen.
 
@@ -1217,6 +1224,7 @@
 
       Houd er rekening mee dat als het platform beleidsmeldingen ondersteunt, de vernieuwingsvertraging wordt ingesteld op 24 uur (hierbij worden alle standaardinstellingen en de waarde van dit beleid genegeerd) omdat beleidsmeldingen naar verwachting automatisch een vernieuwing afdwingen wanneer het beleid wordt gewijzigd, waardoor frequentere vernieuwingen overbodig zijn.</translation>
 <translation id="5535973522252703021">Witte lijst voor Kerberos-delegatieserver</translation>
+<translation id="555077880566103058">Alle sites toestaan om de <ph name="FLASH_PLUGIN_NAME" />-plug-in automatisch uit te voeren</translation>
 <translation id="5559079916187891399">Dit beleid is niet van invloed op Android-apps.</translation>
 <translation id="5560039246134246593">Een parameter toevoegen aan het ophalen van de seed voor varianten in <ph name="PRODUCT_NAME" />.
 
@@ -1300,12 +1308,6 @@
 <translation id="5868414965372171132">Netwerkconfiguratie op gebruikersniveau</translation>
 <translation id="588135807064822874">'Tikken om te zoeken' toestaan</translation>
 <translation id="5883015257301027298">Standaardinstelling voor cookies</translation>
-<translation id="5887291617378691520">Als 'Een lijst met URL's openen' als actie na het starten is geselecteerd, kun je hier de lijst met URL's opgeven die worden geopend. Als er geen waarde is opgegeven, worden er na het starten geen URL's geopend.
-
-          Dit beleid werkt alleen als het beleid RestoreOnStartup is ingesteld op RestoreOnStartupIsURLs.
-
-          Dit beleid is niet beschikbaar op Windows-instanties die niet aan een
-          Active Directory-domein zijn gekoppeld.</translation>
 <translation id="5887414688706570295">Hiermee configureer je het voorvoegsel voor het TalkGadget dat wordt gebruikt door hosts voor externe toegang en voorkom je dat gebruikers dit wijzigen.
 
           Als dit voorvoegsel is opgegeven, wordt het toegevoegd aan het begin van de basisnaam voor het TalkGadget om een volledige domeinnaam voor het TalkGadget te maken. De basisdomeinnaam voor het TalkGadget is '.talkgadget.google.com'.
@@ -1391,6 +1393,9 @@
       Anders kan dit worden ingesteld op een van de volgende waarden: 'sslv3', 'tls1', 'tls1.1' of 'tls1.2'. Als het beleid is ingesteld, gebruikt <ph name="PRODUCT_NAME" /> geen SSL-/TLS-versies lager dan de opgegeven versie. Een niet-herkende waarde wordt genegeerd.
 
       Let op dat 'sslv3' ondanks het cijfer een vroegere versie is dan 'tls1'.</translation>
+<translation id="6181608880636987460">Hiermee kun je een lijst met URL-patronen opgeven voor sites die de <ph name="FLASH_PLUGIN_NAME" />-plug-in niet mogen uitvoeren.
+
+          Als dit beleid niet wordt ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites. Je vindt deze in het beleid 'DefaultPluginsSetting' (als dit is ingesteld), of in de persoonlijke configuratie van de gebruiker.</translation>
 <translation id="6190022522129724693">Standaardinstelling voor pop-ups</translation>
 <translation id="6197453924249895891">Geeft extensies toegang tot zakelijke sleutels.
 
@@ -1515,6 +1520,9 @@
 
       Als je deze optie uitschakelt of niet instelt, wordt de zoekfunctie voor plug-ins geactiveerd.</translation>
 <translation id="6699880231565102694">Authenticatie in twee stappen inschakelen voor hosts voor externe toegang</translation>
+<translation id="6757438632136860443">Hiermee kun je een lijst met URL-patronen opgeven voor sites die de <ph name="FLASH_PLUGIN_NAME" />-plug-in mogen uitvoeren.
+
+          Als dit beleid niet wordt ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites. Je vindt deze in het beleid 'DefaultPluginsSetting' (als dit is ingesteld), of in de persoonlijke configuratie van de gebruiker.</translation>
 <translation id="6766216162565713893">Toestaan dat sites de gebruiker vragen om toegang te verlenen tot een Bluetooth-apparaat in de buurt</translation>
 <translation id="6770454900105963262">Informatie over actieve kiosk-sessies melden</translation>
 <translation id="6786747875388722282">Extensies</translation>
@@ -1540,6 +1548,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
           Als je dit beleid instelt, kunnen gebruikers dit niet wijzigen of negeren.
 
           Als je dit beleid niet instelt, is gesproken feedback eerst uitgeschakeld maar kan de gebruiker deze op elk moment inschakelen.</translation>
+<translation id="6922884955650325312">De <ph name="FLASH_PLUGIN_NAME" />-plug-in blokkeren</translation>
 <translation id="6923366716660828830">Hiermee wordt de naam van de standaardzoekprovider gespecificeerd. Als dit leeg is of niet wordt ingesteld, wordt de hostnaam gebruikt die door de zoek-URL wordt gespecificeerd.
 
           Dit beleid wordt alleen gebruikt als het beleid 'DefaultSearchProviderEnabled' is ingeschakeld.</translation>
@@ -1585,17 +1594,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Als het beleid is uitgeschakeld, worden er geen bladwijzers geïmporteerd.
 
       Als dit beleid niet wordt ingesteld, kan de gebruiker worden gevraagd of deze wil importeren, of wordt er automatisch geïmporteerd.</translation>
-<translation id="7055358889740598917">Hiermee wordt de standaardhomepage-URL in <ph name="PRODUCT_NAME" /> geconfigureerd en wordt voorkomen dat gebruikers deze wijzigen.
-
-          De homepage is de pagina die wordt geopend met de homepageknop. De pagina's die worden geopend bij het opstarten, worden beheerd door het RestoreOnStartup-beleid.
-
-          Het type homepage kan worden ingesteld op een URL die je hier opgeeft of op de nieuwe tabbladpagina. Als je de nieuwe tabbladpagina selecteert, is dit beleid niet van kracht.
-
-          Als je deze instelling inschakelt, kunnen gebruikers hun homepage-URL in <ph name="PRODUCT_NAME" /> niet wijzigen, maar kunnen ze de nieuwe tabbladpagina nog steeds kiezen als homepage.
-
-          Als dit beleid niet wordt ingesteld, kan de gebruiker zijn eigen homepage kiezen als HomepageIsNewTabPage ook niet is ingesteld.
-
-          Dit beleid is niet beschikbaar op Windows-instanties die niet zijn gekoppeld aan een Active Directory-domein.</translation>
 <translation id="7063895219334505671">Pop-ups toestaan ​​op deze sites</translation>
 <translation id="706669471845501145">Sites toestaan bureaubladmeldingen weer te geven</translation>
 <translation id="7072406291414141328">Netwerkbandbreedtebeperking inschakelen</translation>
@@ -1617,21 +1615,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
       Als dit beleid wordt ingesteld op 'onwaar', wordt de achtergrondmodus uitgeschakeld en kan deze niet door de gebruiker worden beheerd in de browserinstellingen.
 
       Als dit beleid niet wordt ingesteld, wordt de achtergrondmodus aanvankelijk uitgeschakeld en kan deze door de gebruiker worden beheerd in de browserinstellingen.</translation>
-<translation id="7123297102171034788">Hiermee kun je het gedrag bij het opstarten specificeren.
-
-          Als je 'Pagina 'Nieuwe tabblad' openen' kiest, wordt de nieuwe tabbladpagina altijd geopend als je <ph name="PRODUCT_NAME" /> start.
-
-          Als je 'De laatste sessie herstellen' kiest, worden de URL's die waren geopend de laatste keer dat <ph name="PRODUCT_NAME" /> werd gesloten, opnieuw geopend en wordt de browsersessie hersteld naar de situatie op het moment van afsluiten.
-          Als je deze optie kiest, worden enkele instellingen uitgeschakeld die afhankelijk zijn van sessies of die acties uitvoeren bij afsluiten (zoals browsergegevens wissen na afsluiten of sessiecookies).
-
-          Als je 'Een lijst met URL's openen' kiest, wordt de lijst 'URL's die worden geopend bij starten' geopend als de gebruiker <ph name="PRODUCT_NAME" /> opstart.
-
-          Als je deze instelling inschakelt, kunnen gebruikers de lijst niet wijzigen of negeren in <ph name="PRODUCT_NAME" />.
-
-          Het uitschakelen van deze instelling heeft hetzelfde effect als het niet configureren van de instelling. De gebruiker houdt de mogelijkheid om de lijst te wijzigen in <ph name="PRODUCT_NAME" />.
-
-          Dit beleid is niet beschikbaar op Windows-instanties die niet aan
-          een Active Directory-domein zijn gekoppeld.</translation>
 <translation id="7128918109610518786">Hiermee worden de app-ID's vermeld die <ph name="PRODUCT_OS_NAME" /> weergeeft als vastgezette apps in de balk van het opstartprogramma.
 
       Als dit beleid is geconfigureerd, staat de reeks apps vast en kan deze niet worden gewijzigd door de gebruiker.
@@ -1872,20 +1855,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="793134539373873765">Specificeert of p2p wordt gebruikt voor netto-updateladingen voor het besturingssysteem. Als dit is ingesteld op 'Waar', proberen apparaten netto-updateladingen (payloads) op te halen via het LAN, waardoor bandbreedtegebruik en vertraging kunnen worden verminderd. Als de netto-updatelading niet beschikbaar is via het LAN, gaat het apparaat over tot downloaden via een updateserver. Als deze instelling is ingesteld op 'Niet waar' of niet is geconfigureerd, wordt 2p2 niet gebruikt.</translation>
 <translation id="7933141401888114454">Maken van bewaakte gebruikers inschakelen</translation>
 <translation id="793473937901685727">Certificaatbeschikbaarheid instellen voor ARC-apps</translation>
-<translation id="7936098023732125869">Hiermee wordt het gebruik van een standaardzoekprovider ingeschakeld.
-
-          Als je deze instelling inschakelt, wordt er een zoekopdracht uitgevoerd via een standaardzoekprovider wanneer een gebruiker tekst in de omnibox opgeeft die geen URL is.
-
-          Je kunt de standaardzoekprovider opgeven door de rest van het standaardzoekbeleid in te stellen. Als dit leeg wordt gelaten, kan de gebruiker zelf de standaardprovider kiezen.
-
-          Als je deze instelling uitschakelt, wordt er geen zoekopdracht uitgevoerd wanneer de gebruiker tekst in de omnibox opgeeft die geen URL is.
-
-          Als je deze instelling in- of uitschakelt, kunnen gebruikers de instelling niet aanpassen of negeren in <ph name="PRODUCT_NAME" />.
-
-          Als er geen waarde voor dit beleid wordt opgegeven, wordt de standaardzoekprovider ingeschakeld en kan de gebruiker de lijst met zoekproviders zelf instellen.
-
-          Dit beleid is niet beschikbaar op Windows-instanties die niet aan
-          een Active Directory-domein zijn gekoppeld.</translation>
 <translation id="7937766917976512374">Het opnemen van video's toestaan of weigeren</translation>
 <translation id="7941975817681987555">Geen netwerkacties voorspellen voor een netwerkverbinding</translation>
 <translation id="7953256619080733119">Hosts van handmatige uitzonderingen voor beheerde gebruikers</translation>
@@ -2010,17 +1979,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="8312129124898414409">Hiermee kun je instellen of websites sleutels mogen genereren. Het genereren van sleutels kan ofwel worden toegestaan voor alle websites ofwel worden geweigerd voor alle websites.
 
           Als dit beleid niet wordt ingesteld, wordt 'BlockKeygen' gebruikt en kan de gebruiker dit wijzigen.</translation>
-<translation id="8316806736175990584">Hiermee wordt het type standaardhomepage in <ph name="PRODUCT_NAME" /> geconfigureerd en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen. De homepage kan worden ingesteld op een door jou gespecificeerde URL of op de nieuwe tabbladpagina.
-
-          Als je deze instelling inschakelt, wordt de nieuwe tabbladpagina altijd gebruikt voor de homepage en wordt de URL voor de homepage genegeerd.
-
-          Als je deze instelling uitschakelt, wordt de nieuwe tabbladpagina nooit weergegeven als de homepage, tenzij de URL is ingesteld op 'chrome://newtab'.
-
-          Als je deze instelling in- of uitschakelt, kunnen gebruikers het type homepage niet aanpassen in <ph name="PRODUCT_NAME" />.
-
-          Als dit beleid niet wordt ingesteld, kan de gebruiker ervoor kiezen de nieuwe tabbladpagina als homepage te gebruiken of een eigen pagina als homepage te gebruiken.
-
-          Dit beleid is niet beschikbaar op Windows-instanties die niet zijn gekoppeld aan een Active Directory-domein.</translation>
 <translation id="8329984337216493753">Dit beleid is alleen ingeschakeld in de winkelmodus.
 
       Als DeviceIdleLogoutTimeout is gespecificeerd, bepaalt dit beleid hoe lang het waarschuwingsvenster met afteltimer wordt weergegeven dat de gebruiker te zien krijgt voordat deze wordt afgemeld.
@@ -2056,24 +2014,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="8519264904050090490">URL's van handmatige uitzonderingen voor beheerde gebruikers</translation>
 <translation id="8544375438507658205">Standaard HTML-renderer voor <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Waarschuwen als sites worden bezocht die zich niet in de inhoudspakketten bevinden</translation>
-<translation id="855339549837475534">Chromium en Google Chrome ondersteunen dezelfde reeks
-      beleidsregels. Dit document bevat mogelijk beleidsregels die voor niet-
-      uitgebrachte softwareversies zijn bedoeld (het item 'ondersteund op' verwijst
-      naar een niet-uitgebrachte versie) en dergelijke beleidsregels kunnen zonder
-      kennisgeving worden gewijzigd of verwijderd.
-
-      Deze beleidsregels zijn uitsluitend bedoeld voor het configureren van
-      instanties van <ph name="PRODUCT_NAME" /> binnen je organisatie. Gebruik van deze beleidsregels
-      buiten je organisatie (bijvoorbeeld in een openbaar gedistribueerd
-      programma) wordt beschouwd als malware en wordt waarschijnlijk gelabeld
-      als malware door Google en antivirusproviders.
-
-      Je hoeft deze instellingen niet handmatig te configureren. Je kunt gebruiksvriendelijke
-      templates voor Windows, Mac en Linux downloaden via <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
-
-      De aanbevolen manier om beleidsregels te configureren op Windows, is via
-      GPO, maar het toewijzen van beleidsregels via een register wordt nog
-      steeds ondersteund voor Windows-instanties die zijn gekoppeld aan een Active Directory-domein.</translation>
 <translation id="8566842294717252664">De Web Store verbergen op de pagina 'Nieuw tabblad' en in de App Launcher</translation>
 <translation id="8587229956764455752">Het maken van nieuwe gebruikersaccounts toestaan</translation>
 <translation id="8614804915612153606">Schakelt 'Automatisch updaten' uit</translation>
@@ -2090,16 +2030,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
           Als je dit beleid niet instelt, probeert <ph name="PRODUCT_NAME" /> te detecteren of een server zich in het intranet bevindt en wordt daarna pas gereageerd op IWA-verzoeken. Als een server wordt gedetecteerd als intranet, worden IWA-verzoeken van de server genegeerd door <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8672321184841719703">Doelversie voor automatische updates</translation>
-<translation id="868068801094828689">Hiermee wordt anonieme rapportage van gebruiks- en crashgegevens voor <ph name="PRODUCT_NAME" /> aan Google ingeschakeld en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
-
-      Als je deze instelling inschakelt, worden anonieme gebruiks- en crashgegevens
-      naar Google verzonden. Als je deze instelling uitschakelt, wordt deze informatie
-      niet naar Google verzonden. In beide gevallen kunnen gebruikers de instelling niet aanpassen of negeren.
-      Als dit beleid niet wordt ingesteld, komt de instelling overeen met de keuze van de gebruiker bij installatie/eerste uitvoering.
-
-      Dit beleid is niet beschikbaar op Windows-instanties die niet aan
-      een Active Directory-domein zijn gekoppeld. (Zie voor Chrome OS
-      het beleid 'DeviceMetricsReportingEnabled'.)</translation>
 <translation id="8693243869659262736">Ingebouwde DNS-client gebruiken</translation>
 <translation id="8704831857353097849">Lijst met uitgeschakelde plug-ins</translation>
 <translation id="8711086062295757690">Hiermee wordt het zoekwoord gespecificeerd dat in de omnibox wordt gebruikt om de zoekfunctie voor deze provider te activeren.
@@ -2145,6 +2075,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="8858642179038618439">Beperkte modus van YouTube afdwingen</translation>
 <translation id="8864975621965365890">Hiermee onderdruk je de prompt die wordt weergegeven wanneer een site wordt weergegeven door <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Homepage</translation>
+<translation id="8882006618241293596">De <ph name="FLASH_PLUGIN_NAME" />-plug-in blokkeren op deze sites</translation>
 <translation id="8906768759089290519">Gastmodus inschakelen</translation>
 <translation id="8908294717014659003">Hiermee kun je instellen of websites toegang mogen krijgen tot media-opnameapparaten. Toegang tot media-opnameapparaten kan standaard worden toegestaan of de gebruiker kan elke keer om toestemming worden gevraagd wanneer een website toegang wil hebben tot media-opnameapparaten.
 

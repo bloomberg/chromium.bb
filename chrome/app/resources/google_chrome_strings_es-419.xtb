@@ -52,6 +52,7 @@
 
 Si accedes de todos modos, se fusionará la información de Google Chrome, como los favoritos, el historial y otros parámetros de configuración en <ph name="ACCOUNT_EMAIL_NEW" />.</translation>
 <translation id="2397416548179033562">Mostrar el menú de Chrome</translation>
+<translation id="2416359993254398973">Chrome necesita permiso para acceder a tu cámara para este sitio.</translation>
 <translation id="2429317896000329049">Google Chrome no pudo sincronizar los datos porque la sincronización no está disponible para el dominio.</translation>
 <translation id="2446511512801740068">Chrome no está actualizado porque no se reinició por un tiempo. Cuando lo reinicies, se aplicará la actualización disponible.</translation>
 <translation id="2485422356828889247">Desinstalación</translation>
@@ -153,6 +154,7 @@ Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCO
 <translation id="556024056938947818">Google Chrome está intentando mostrar contraseñas.</translation>
 <translation id="5563479599352954471">Buscar con un toque</translation>
 <translation id="5566025111015594046">Google Chrome (tráfico mDNS entrante)</translation>
+<translation id="557283862590186398">Chrome necesita permiso para acceder a tu micrófono para este sitio.</translation>
 <translation id="5620765574781326016">Obtén información sobre los temas en sitios web sin salir de la página.</translation>
 <translation id="565744775970812598">Chrome bloqueó <ph name="FILE_NAME" /> porque es posible que sea un archivo peligroso.</translation>
 <translation id="568643307450491754">Busca tus favoritos en el menú de Chrome o en la barra de favoritos.</translation>
@@ -177,6 +179,7 @@ Para obtener más instrucciones, revisa tu correo electrónico en <ph name="ACCO
 <translation id="6291549208091401781">Google Chrome ya está instalado para todos los usuarios en tu computadora.</translation>
 <translation id="6338556085225130112">Actualizando Google Chrome</translation>
 <translation id="6368958679917195344">Chrome OS es posible gracias al <ph name="BEGIN_LINK_CROS_OSS" />software de código abierto<ph name="END_LINK_CROS_OSS" /> adicional.</translation>
+<translation id="6393863479814692971">Chrome necesita permiso para acceder a tu cámara y tu micrófono para este sitio.</translation>
 <translation id="6400076122676892962">Esta computadora dejará de recibir actualizaciones de Google Chrome en breve porque Mac OS X 10.6, 10.7 y 10.8 ya no se admitirán.</translation>
 <translation id="6410540444482791104">Para ayudar a detectar apps y sitios peligrosos y que Chrome sea más seguro y fácil de usar, envía de forma automática información del sistema y contenido de la página a Google.</translation>
 <translation id="6470176598693778404">Esta computadora dejará de recibir actualizaciones de Google Chrome porque Mac OS X 10.6, 10.7 y 10.8 ya no se admitirán.</translation>

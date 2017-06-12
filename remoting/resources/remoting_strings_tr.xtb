@@ -64,10 +64,12 @@ Gizlilikle ilgili daha fazla bilgi edinmek için lütfen Google Gizlilik Politik
 <translation id="225614027745146050">Hoş Geldiniz</translation>
 <translation id="228809120910082333">Chromoting tarafından erişime izin vermek için lütfen aşağıda hesabınızı ve PIN kodunuzu onaylayın.</translation>
 <translation id="2314101195544969792"><ph name="APPLICATION_NAME" /> oturumunuz bir süredir etkin değil ve kısa bir süre sonra bağlantısı kesilecek.</translation>
+<translation id="2317666076142640974">Yeni <ph name="LINK_BEGIN" />Chrome Uzaktan Masaüstü web uygulamasına<ph name="LINK_END" /> önceden göz atın. Geri bildirimlerinizi merakla bekliyoruz.</translation>
 <translation id="2353140552984634198">Chromoting'i kullanarak bu bilgisayara güvenli bir şekilde erişebilirsiniz.</translation>
 <translation id="2359808026110333948">Devam Et</translation>
 <translation id="2366718077645204424">Ana bilgisayara erişilemiyor. Bu sorun, kullandığınız ağın yapılandırmasından kaynaklanıyor olabilir.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" /> Çevrimiçi olarak son görüldüğü zaman: <ph name="RELATIVE_TIMESTAMP" />.</translation>
+<translation id="2405928220797050937">Bu uygulama artık desteklenmiyor. En yeni özellikleri ve güvenlik güncellemelerini aldığınızdan emin olmak için lütfen <ph name="LINK_BEGIN" />Chrome Uzaktan Masaüstü web uygulamasını<ph name="LINK_END" /> kullanın.</translation>
 <translation id="2499160551253595098">Kullanım istatistiklerini ve kilitlenme raporlarını toplamamıza izin vererek Chrome Uzaktan Masaüstü'nü daha iyi hale getirmemize yardımcı olun.</translation>
 <translation id="2512228156274966424">NOT: Tüm klavye kısayollarının kullanılabilir olmasını sağlamak için Chrome Uzaktan Masaüstü'nü 'Pencere olarak aç' modunda yapılandırabilirsiniz.</translation>
 <translation id="2540992418118313681">Bu bilgisayarı başka bir kullanıcının görmesi ve kontrol etmesi için paylaşmak istiyor musunuz?</translation>
@@ -230,6 +232,7 @@ Masaüstü Ana Makinesi</translation>
 <translation id="6930242544192836755">Süre</translation>
 <translation id="6939719207673461467">Klavyeyi göster/gizle</translation>
 <translation id="6944854424004126054">Pencereyi geri yükle</translation>
+<translation id="6948905685698011662">Chrome Uzaktan Masaüstü artık web'de! <ph name="LINK_BEGIN" />Ücretsiz web uygulamamızı<ph name="LINK_END" /> inceleyin.</translation>
 <translation id="6963936880795878952">Bir kullanıcı geçersiz PIN ile bağlanmaya çalıştığından uzak bilgisayara yapılan bağlantılar geçici olarak engellenmiştir. Lütfen daha sonra tekrar deneyin.</translation>
 <translation id="6965382102122355670">Tamam</translation>
 <translation id="6985691951107243942"><ph name="HOSTNAME" /> adlı ana bilgisayara uzaktan bağlantıları devre dışı bırakmak istediğinizden emin misiniz? Daha sonra fikrinizi değiştirirseniz, bağlantıları yeniden etkinleştirmek için söz konusu bilgisayarı ziyaret etmeniz gerekecektir.</translation>
@@ -246,6 +249,7 @@ Masaüstü Ana Makinesi</translation>
 <translation id="7401733114166276557">Chrome Uzaktan Masaüstü</translation>
 <translation id="7434397035092923453">Şu istemci için erişim reddedildi: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">İstemci bağlandı: <ph name="CLIENT_USERNAME" />.</translation>
+<translation id="7589941250119944644">Chrome Uzaktan Masaüstü web'de yeni adresine taşınıyor. Önceki özellikleri içeren, hızlı ve ücretsiz <ph name="LINK_BEGIN" />web uygulamamızı<ph name="LINK_END" /> deneyin.</translation>
 <translation id="7606912958770842224">Uzaktan bağlantıları etkinleştir</translation>
 <translation id="7649070708921625228">Yardım</translation>
 <translation id="7658239707568436148">İptal</translation>

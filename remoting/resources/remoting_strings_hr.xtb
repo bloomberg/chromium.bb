@@ -64,10 +64,12 @@ Informacije o privatnosti potražite u Googleovim pravilima o privatnosti (http:
 <translation id="225614027745146050">Dobro došli</translation>
 <translation id="228809120910082333">Potvrdite svoj račun i PIN u nastavku da biste usluzi Chromoting dozvolili pristup.</translation>
 <translation id="2314101195544969792">Vaša sesija u aplikaciji <ph name="APPLICATION_NAME" /> nije aktivna već neko vrijeme, pa će se uskoro prekinuti veza.</translation>
+<translation id="2317666076142640974">Isprobajte novu <ph name="LINK_BEGIN" />web-aplikaciju Udaljena radna površina Chrome<ph name="LINK_END" />. Zanimaju nas vaše povratne informacije.</translation>
 <translation id="2353140552984634198">Ovom računalu možete sigurno pristupiti pomoću aplikacije Chromoting.</translation>
 <translation id="2359808026110333948">Nastavi</translation>
 <translation id="2366718077645204424">Nije moguće pristupiti hostu. To je vjerojatno zbog konfiguracije mreže koju upotrebljavate.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Posljednji put viđen online <ph name="RELATIVE_TIMESTAMP" />.</translation>
+<translation id="2405928220797050937">Ta aplikacija više nije podržana. Da biste dobili najnovije značajke i sigurnosna ažuriranja, upotrijebite <ph name="LINK_BEGIN" />web-aplikaciju Udaljena radna površina Chrome<ph name="LINK_END" />.</translation>
 <translation id="2499160551253595098">Pomognite nam poboljšati Udaljenu radnu površinu Chrome, dopustite nam prikupljanje statistike upotrebe i izvješća o padu programa.</translation>
 <translation id="2512228156274966424">NAPOMENA: kako biste osigurali dostupnost svih tipkovničkih prečaca, možete konfigurirati udaljenu radnu površinu Chrome da se otvara kao prozor.</translation>
 <translation id="2540992418118313681">Želite li dijeliti ovo računalo tako da ga neki drugi korisnik može vidjeti i upravljati njime?</translation>
@@ -230,6 +232,7 @@ površine Chrome</translation>
 <translation id="6930242544192836755">Trajanje</translation>
 <translation id="6939719207673461467">Prikaži/sakrij tipkovnicu.</translation>
 <translation id="6944854424004126054">Vraćanje prozora</translation>
+<translation id="6948905685698011662">Udaljena radna površina Chrome sada je na webu! Isprobajte našu <ph name="LINK_BEGIN" />besplatnu web-aplikaciju<ph name="LINK_END" />.</translation>
 <translation id="6963936880795878952">Veze s udaljenim računalom privremeno su blokirane jer se pokušao spojiti korisnik s nevažećim PIN-om. Pokušajte ponovo kasnije.</translation>
 <translation id="6965382102122355670">U redu</translation>
 <translation id="6985691951107243942">Jeste li sigurni da želite onemogućiti daljinske veze s hostom <ph name="HOSTNAME" />? Ako se predomislite, morat ćete se spojiti na to računalo da biste ponovo omogućili veze.</translation>
@@ -246,6 +249,7 @@ površine Chrome</translation>
 <translation id="7401733114166276557">Udaljena radna površine Chrome</translation>
 <translation id="7434397035092923453">Pristup je odbijen za klijenta: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">Povezani klijent: <ph name="CLIENT_USERNAME" />.</translation>
+<translation id="7589941250119944644">Udaljena radna površina Chrome seli se na web. Isprobajte brzu i besplatnu <ph name="LINK_BEGIN" />web-aplikaciju<ph name="LINK_END" /> s istim starim značajkama.</translation>
 <translation id="7606912958770842224">Omogući daljinske veze</translation>
 <translation id="7649070708921625228">Pomoć</translation>
 <translation id="7658239707568436148">Odustani</translation>

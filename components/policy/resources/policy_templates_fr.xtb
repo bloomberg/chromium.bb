@@ -158,6 +158,7 @@ Pour consulter des exemples détaillés, rendez-vous sur :
       connexion SAML. Si aucune correspondance n'est détectée, l'accès est
       automatiquement refusé. Les formats contenant des caractères génériques
       ne sont pas autorisés.</translation>
+<translation id="1634989431648355062">Autoriser le plug-in "<ph name="FLASH_PLUGIN_NAME" />" sur ces sites</translation>
 <translation id="1655229863189977773">Définir la taille du cache du disque en octets</translation>
 <translation id="166427968280387991">Serveur proxy</translation>
 <translation id="1668836044817793277">Autoriser ou non l'application kiosque lancée automatiquement sans délai à contrôler la version de <ph name="PRODUCT_OS_NAME" />.
@@ -753,6 +754,11 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
       Si ces règles ne sont pas configurées, les utilisateurs peuvent choisir eux-mêmes leurs paramètres de proxy.</translation>
 <translation id="3758249152301468420">Désactiver les outils de développement</translation>
 <translation id="3765260570442823273">Durée du message d'avertissement avant la déconnexion pour cause d'inactivité</translation>
+<translation id="376931976323225993">Cette règle permet d'indiquer si les sites Web sont autorisés à exécuter le plug-in "<ph name="FLASH_PLUGIN_NAME" />" automatiquement. L'exécution automatique du plug-in "<ph name="FLASH_PLUGIN_NAME" />" peut être soit autorisée pour tous les sites Web, soit refusée pour tous les sites Web.
+
+          L'option "Cliquer pour lire" autorise l'exécution du plug-in "<ph name="FLASH_PLUGIN_NAME" />", mais l'utilisateur doit cliquer sur l'espace réservé pour le lancer.
+
+          Si cette règle n'est pas configurée, l'utilisateur pourra modifier ce paramètre manuellement.</translation>
 <translation id="3780152581321609624">Inclure un port non standard dans le SPN Kerberos</translation>
 <translation id="3780319008680229708">Si cette règle est définie sur "true", l'icône Cast de la barre d'outils s'afficher toujours dans la barre d'outils ou dans le menu à développer et les utilisateurs ne peuvent pas la supprimer.
 
@@ -891,6 +897,7 @@ Cette option est habituellement désactivée dans le cadre de la protection cont
 <translation id="4105989332710272578">Désactiver l'application des règles de transparence des certificats pour une liste d'URL</translation>
 <translation id="4121350739760194865">Empêcher les promotions pour des applications de s'afficher sur la page Nouvel onglet</translation>
 <translation id="4157003184375321727">Indiquer la version du système d'exploitation et du micrologiciel</translation>
+<translation id="4183229833636799228">Paramètre par défaut pour le plug-in "<ph name="FLASH_PLUGIN_NAME" />"</translation>
 <translation id="4192388905594723944">URL permettant de valider le jeton d'authentification du client d'accès à distance</translation>
 <translation id="4203389617541558220">Limite la durée de fonctionnement de l'appareil en programmant des redémarrages automatiques.
 
@@ -1235,6 +1242,7 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
 
       Notez que si la plate-forme est compatible avec les notifications relatives aux règles, le délai d'actualisation sera défini sur 24 heures (ignorant ainsi toutes les valeurs par défaut et celle de cette règle). En effet, les notifications relatives aux règles forceront une actualisation automatique chaque fois qu'une règle est modifiée, ce qui rend inutile toute actualisation supplémentaire.</translation>
 <translation id="5535973522252703021">Liste blanche des serveurs de délégation Kerberos</translation>
+<translation id="555077880566103058">Autoriser tous les sites à exécuter le plug-in "<ph name="FLASH_PLUGIN_NAME" />" automatiquement</translation>
 <translation id="5559079916187891399">Cette règle n'a aucun effet sur les applications Android.</translation>
 <translation id="5560039246134246593">Permet d'ajouter un paramètre à la récupération de la valeur de départ des variantes dans <ph name="PRODUCT_NAME" />.
 
@@ -1317,12 +1325,6 @@ Si l'option "Forcé" est sélectionnée, les pages peuvent être ouvertes UNIQUE
 <translation id="5868414965372171132">Configuration réseau au niveau de l'utilisateur</translation>
 <translation id="588135807064822874">Activer la fonctionnalité Appuyer pour rechercher</translation>
 <translation id="5883015257301027298">Paramètre de cookies par défaut</translation>
-<translation id="5887291617378691520">Si l'option "Ouvrir une liste d'URL" est sélectionnée comme action de démarrage, vous pouvez spécifier la liste des URL qui sont ouvertes. Si cette règle n'est pas configurée, aucune URL ne sera ouverte au démarrage.
-
-          Cette règle ne fonctionne que si la règle RestoreOnStartup est définie sur RestoreOnStartupIsURLs.
-
-          Cette règle n'est pas disponible sur les instances de Windows qui ne sont pas associées
-          à un domaine Active Directory.</translation>
 <translation id="5887414688706570295">Configure le préfixe TalkGadget utilisé par les hôtes d'accès à distance et empêche les utilisateurs de le modifier.
 
           S'il est défini, ce préfixe est ajouté au nom TalkGadget de base afin de créer un nom de domaine TalkGadget complet. Le nom de domaine TalkGadget de base est ".talkgadget.google.com".
@@ -1409,6 +1411,9 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Dans les autres cas, les valeurs suivantes peuvent être utilisées : "sslv3", "tls1", "tls1.1" ou "tls1.2". Dans ce cas, <ph name="PRODUCT_NAME" /> n'utilisera pas de versions SSL/TLS plus anciennes que la version précisée. Toute valeur non reconnue sera ignorée.
 
       Veuillez noter que malgré son numéro, "sslv3" est une version plus ancienne que "tls1".</translation>
+<translation id="6181608880636987460">Cette règle permet de définir une liste de formats d'URL spécifiant les sites qui ne sont pas autorisés à exécuter le plug-in "<ph name="FLASH_PLUGIN_NAME" />".
+
+          Si cette règle n'est pas configurée, la valeur par défaut globale sera utilisée pour tous les sites à partir de la règle "DefaultPluginsSetting", si elle est définie, ou à défaut, à partir de la configuration personnelle de l'utilisateur.</translation>
 <translation id="6190022522129724693">Paramètre de fenêtres pop-up par défaut</translation>
 <translation id="6197453924249895891">Permettre aux extensions d'accéder aux clés d'entreprise.
 
@@ -1533,6 +1538,9 @@ Si cette règle n'est pas configurée, la valeur par défaut globale est utilis�
 
 Si vous désactivez cette option ou si vous ne la définissez pas, l'outil de recherche de plug-ins est activé.</translation>
 <translation id="6699880231565102694">Activer l'authentification forte pour les hôtes d'accès à distance</translation>
+<translation id="6757438632136860443">Cette règle permet de définir une liste de formats d'URL spécifiant les sites qui sont autorisés à exécuter le plug-in "<ph name="FLASH_PLUGIN_NAME" />".
+
+          Si cette règle n'est pas configurée, la valeur par défaut globale sera utilisée pour tous les sites à partir de la règle "DefaultPluginsSetting", si elle est définie, ou à défaut, à partir de la configuration personnelle de l'utilisateur.</translation>
 <translation id="6766216162565713893">Autoriser les sites à demander à l'utilisateur d'accorder l'accès à un appareil Bluetooth à proximité</translation>
 <translation id="6770454900105963262">Envoyer des rapports sur les sessions Kiosque actives</translation>
 <translation id="6786747875388722282">Extensions</translation>
@@ -1560,6 +1568,7 @@ Si vous désactivez cette option ou si vous ne la définissez pas, l'outil de re
           Si vous définissez cette règle, les utilisateurs ne peuvent pas la modifier ni l'ignorer.
 
           Si vous ne définissez pas cette règle, la fonctionnalité de commentaires audio est désactivée au départ, mais peut ensuite être activée à tout moment par les utilisateurs.</translation>
+<translation id="6922884955650325312">Bloquer le plug-in "<ph name="FLASH_PLUGIN_NAME" />"</translation>
 <translation id="6923366716660828830">Indique le nom du moteur de recherche par défaut. Si cette règle n'est pas configurée, le nom d'hôte spécifié par l'URL de recherche est utilisé. 
 
 Cette règle n'est prise en compte que si la règle "DefaultSearchProviderEnabled" est activée.</translation>
@@ -1605,18 +1614,6 @@ Si ce paramètre est désactivé, les utilisateurs ne peuvent pas imprimer sur <
 Si elle est désactivée, les favoris ne sont pas importés. 
 
 Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'importation, ou celle-ci peut se faire automatiquement.</translation>
-<translation id="7055358889740598917">Configurer l'URL de la page d'accueil par défaut dans <ph name="PRODUCT_NAME" /> et empêcher les utilisateurs de la modifier
-
-          La page d'accueil est la page qui s'ouvre lorsque l'utilisateur clique sur le bouton Accueil. Les pages qui s'affichent au démarrage sont gérées par les règles RestoreOnStartup.
-
-          La page d'accueil peut être une URL que vous définissez ici, ou une page Nouvel onglet. Dans ce dernier cas, cette règle ne s'applique pas.
-
-          Si vous activez ce paramètre, les utilisateurs ne peuvent pas modifier l'URL de leur page d'accueil dans <ph name="PRODUCT_NAME" />, mais ils peuvent toujours choisir la page Nouvel onglet comme page d'accueil.
-
-          Si cette règle n'est pas définie, l'utilisateur peut choisir lui-même sa page d'accueil, à condition que la règle HomepageIsNewTabPage ne soit pas également configurée.
-
-         Cette règle n'est pas disponible sur les instances de Windows qui ne
-         sont pas associées à un domaine Active Directory</translation>
 <translation id="7063895219334505671">Autoriser les fenêtres pop-up sur ces sites</translation>
 <translation id="706669471845501145">Autoriser les sites à afficher des notifications sur le bureau</translation>
 <translation id="7072406291414141328">Active la limitation de la bande passante réseau</translation>
@@ -1638,21 +1635,6 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
       Si cette règle est définie sur "False", le mode arrière-plan est désactivé et ne peut pas être contrôlé par l'utilisateur dans les paramètres du navigateur.
 
       Si cette règle n'est pas définie, le mode arrière-plan est désactivé initialement et peut être contrôlé par l'utilisateur dans les paramètres du navigateur.</translation>
-<translation id="7123297102171034788">Vous permet de spécifier le comportement au démarrage.
-
-          Si vous sélectionnez "Ouvrir la page Nouvel onglet", la page Nouvel onglet s'ouvre à chaque fois que vous démarrez <ph name="PRODUCT_NAME" />.
-
-          Si vous sélectionnez "Restaurer la dernière session", les URL qui étaient restées ouvertes lors de la dernière fermeture du navigateur <ph name="PRODUCT_NAME" /> sont rouvertes. La session de navigation est restaurée telle qu'elle avait été laissée.
-          La sélection de cette option désactive certains paramètres qui dépendent de certaines sessions ou qui effectuent certaines actions à la fermeture (telles que la suppression des données de navigation ou des cookies de la session correspondante).
-
-          Si vous sélectionnez l'option "Ouvrir une liste d'URL", la liste d'URL à ouvrir au démarrage s'ouvre lorsqu'un utilisateur démarre <ph name="PRODUCT_NAME" />.
-
-          Si vous activez ce paramètre, les utilisateurs ne peuvent pas le modifier ou le remplacer dans <ph name="PRODUCT_NAME" />.
-
-          La désactivation de ce paramètre équivaut à ne pas le configurer. L'utilisateur sera toujours en mesure de le modifier dans <ph name="PRODUCT_NAME" />.
-
-          Cette règle n'est pas disponible sur les instances de Windows
-          qui ne sont pas associées à un domaine Active Directory.</translation>
 <translation id="7128918109610518786">Permet de répertorier les identifiants des applications épinglées que <ph name="PRODUCT_OS_NAME" /> affiche dans la barre du lanceur d'applications.
 
       Si cette règle est configurée, le groupe d'applications est figé et ne peut plus être modifié par l'utilisateur.
@@ -1894,20 +1876,6 @@ Si cette règle n'est pas configurée, la règle "AllowImages" est utilisée, et
 <translation id="793134539373873765">Indiquer si une connexion P2P doit être utilisée pour les charges utiles de mise à jour de l'OS. Si le paramètre est défini sur "True", les charges utiles de mise à jour sur le réseau local sont partagées et utilisées par les appareils, ce qui peut avoir pour effet de réduire la quantité de bande passante utilisée et l'encombrement sur Internet. Si la charge utile de mise à jour n'est pas disponible sur le réseau local, le téléchargement est effectué sur l'appareil à partir d'un serveur de mise à jour. Si le paramètre est défini sur "False", ou s'il n'est pas configuré, la connexion P2P n'est pas utilisée.</translation>
 <translation id="7933141401888114454">Autoriser la création de comptes utilisateurs supervisés</translation>
 <translation id="793473937901685727">Définir la disponibilité des certificats pour les applications ARC</translation>
-<translation id="7936098023732125869">Active l'utilisation d'un fournisseur de moteur de recherche par défaut.
-
-          Si vous activez ce paramètre, une recherche par défaut est effectuée lorsque l'utilisateur saisit du texte autre qu'une URL dans l'omnibox.
-
-          Vous pouvez définir le fournisseur de moteur de recherche par défaut à utiliser en configurant le reste des règles de recherche par défaut. Si vous ne configurez pas ces règles, l'utilisateur peut choisir le fournisseur par défaut.
-
-          Si vous désactivez ce paramètre, aucune recherche n'est effectuée lorsque l'utilisateur saisit un texte autre qu'une URL dans l'omnibox.
-
-          Dans les deux cas, les utilisateurs ne peuvent pas modifier ni remplacer cette configuration dans <ph name="PRODUCT_NAME" />.
-
-          Si cette règle n'est pas configurée, le fournisseur de moteur de recherche par défaut est activé. L'utilisateur peut configurer la liste des fournisseurs de moteur de recherche.
-
-          Cette règle n'est pas disponible sur les instances de Windows qui ne sont pas associées
-           à un domaine Active Directory.</translation>
 <translation id="7937766917976512374">Autoriser ou interdire la capture vidéo</translation>
 <translation id="7941975817681987555">Ne pas prédire d'actions réseau lors d'une connexion au réseau</translation>
 <translation id="7953256619080733119">Hôtes d'exception manuelle des utilisateurs gérés</translation>
@@ -2032,18 +2000,6 @@ Si ce paramètre n'est pas défini, l'utilisateur peut décider d'utiliser cette
 <translation id="8312129124898414409">Permet d'indiquer si des sites Web sont autorisés à utiliser la génération de clé. Celle-ci peut être autorisée ou interdite pour tous les sites.
 
           Si cette règle n'est pas définie, le paramètre "BlockKeygen" est utilisé, et l'utilisateur est en mesure de le modifier.</translation>
-<translation id="8316806736175990584">Configure le type de la page d'accueil par défaut dans <ph name="PRODUCT_NAME" /> et empêche les utilisateurs de modifier les préférences de page d'accueil. Vous pouvez définir la page d'accueil sur une URL spécifique que vous indiquez ou sur la page Nouvel onglet.
-
-          Si vous activez ce paramètre, la page Nouvel onglet est systématiquement utilisée en tant que page d'accueil et l'adresse URL de la page d'accueil est ignorée.
-
-          Si vous désactivez ce paramètre, la page d'accueil de l'utilisateur ne correspondra jamais à la page Nouvel onglet, sauf si l'URL de la page d'accueil est définie en tant que "chrome://newtab".
-
-          Dans les deux cas, les utilisateurs ne peuvent pas modifier leur type de page d'accueil dans <ph name="PRODUCT_NAME" />.
-
-          Si cette règle n'est pas configurée, l'utilisateur peut choisir lui-même de définir la page Nouvel onglet comme page d'accueil.
-
-          Cette règle n'est pas disponible sur les instances de Windows qui ne
-          sont pas associées à un domaine Active Directory.</translation>
 <translation id="8329984337216493753">Cette règle n'est active qu'en mode Point de vente.
 
        Lorsque la valeur "DeviceIdleLogoutTimeout" est spécifiée, cette règle définit la durée de la boîte d'avertissement avec un compte à rebours qui s'affiche avant l'exécution de la déconnexion.
@@ -2079,24 +2035,6 @@ Si ce paramètre n'est pas défini, l'utilisateur peut décider d'utiliser cette
 <translation id="8519264904050090490">URL d'exception manuelle des utilisateurs gérés</translation>
 <translation id="8544375438507658205">Moteur de rendu HTML par défaut pour <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Prévenir en cas de consultation de sites en dehors des packs de contenu</translation>
-<translation id="855339549837475534">Chromium et Google Chrome sont dotés du même ensemble de règles.
-      Veuillez noter que ce document peut contenir des règles
-      destinées à des versions logicielles inédites (leur entrée sur la compatibilité
-      correspond à une version inédite) et ces règles peuvent être 
-      modifiées ou changées sans préavis.
-
-      Ces règles sont strictement réservées à la configuration des instances de
-      <ph name="PRODUCT_NAME" /> au sein de votre organisation.
-      L'utilisation de ces règles en dehors de votre organisation (par
-      exemple, dans un programme diffusé au public) sera considérée
-      comme malveillante et certainement identifiée comme telle par Google et les       fournisseurs d'antivirus.
-
-      Il est inutile de modifier manuellement ces paramètres. Vous pouvez
-      télécharger des modèles faciles à utiliser pour Windows, Mac et Linux depuis le site <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
-
-      Il est conseillé de configurer les règles sur Windows via GPO, même si
-      la gestion des règles via le registre est toujours possible pour les instances
-      de Windows associées à un domaine Active Directory.</translation>
 <translation id="8566842294717252664">Masquer le Chrome Web Store sur la page Nouvel onglet et dans le lanceur d'applications</translation>
 <translation id="8587229956764455752">Autoriser la création de comptes utilisateur</translation>
 <translation id="8614804915612153606">Désactive les mises à jour automatiques</translation>
@@ -2113,17 +2051,6 @@ Si ce paramètre n'est pas défini, l'utilisateur peut décider d'utiliser cette
 
           Si vous ne définissez pas cette règle, <ph name="PRODUCT_NAME" /> tente d'identifier si le serveur est sur l'Intranet, auquel cas il répond aux requêtes IWA. Si le serveur est sur Internet, les requêtes IWA sont ignorées par <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8672321184841719703">Cibler une version pour les mises à jour automatiques</translation>
-<translation id="868068801094828689">Permet d'envoyer des rapports anonymes sur les données relatives à l'utilisation et aux erreurs concernant <ph name="PRODUCT_NAME" /> à Google, et empêche les utilisateurs de modifier ce paramètre.
-
-      Si vous activez ce paramètre, des rapports anonymes sur les données relatives à l'utilisation et aux erreurs
-      sont envoyés à Google. Si vous le désactivez, aucun rapport n'est envoyé.
-      Dans les deux cas, les utilisateurs ne peuvent pas modifier ni remplacer le paramètre.
-      Si cette règle n'est pas configurée, le paramètre est défini sur l'option que l'utilisateur a choisie
-      lors de l'installation ou de la première exécution.
-
-      Cette règle n'est pas disponible sur les instances Windows qui ne sont pas associées
-      à un domaine Active Directory. (Pour Chrome OS, reportez-vous à
-      la règle DeviceMetricsReportingEnabled.)</translation>
 <translation id="8693243869659262736">Utiliser le client DNS intégré</translation>
 <translation id="8704831857353097849">Liste des plug-ins désactivés</translation>
 <translation id="8711086062295757690">Indique le mot clé qui est le raccourci utilisé dans l'Omnibox pour déclencher la recherche de ce moteur.
@@ -2169,6 +2096,7 @@ Si vous désactivez ce paramètre ou s'il n'est pas défini, le nom canonique du
 <translation id="8858642179038618439">Forcer le mode sécurisé de YouTube</translation>
 <translation id="8864975621965365890">Supprime l'invite de fermeture qui s'affiche lors du rendu d'un site par <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Page d'accueil</translation>
+<translation id="8882006618241293596">Bloquer le plug-in "<ph name="FLASH_PLUGIN_NAME" />" sur ces sites</translation>
 <translation id="8906768759089290519">Activer le mode invité</translation>
 <translation id="8908294717014659003">Vous permet de définir si les sites Web sont autorisés à accéder aux périphériques de capture multimédia. L'accès aux périphériques de capture multimédia peut être autorisé par défaut, ou l'utilisateur doit confirmer son autorisation chaque fois qu'un site Web souhaite accéder à ceux-ci.
 

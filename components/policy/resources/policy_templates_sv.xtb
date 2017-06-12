@@ -157,6 +157,7 @@
       åtkomst till videoinspelningsenheter på inloggningssidor med SAML.
       Om det inte blir någon träff nekas åtkomst automatiskt. Mönster
       med jokertecken får inte användas.</translation>
+<translation id="1634989431648355062">Tillåt pluginprogrammet för <ph name="FLASH_PLUGIN_NAME" /> på dessa webbplatser</translation>
 <translation id="1655229863189977773">Ange enhetens cachestorlek i byte</translation>
 <translation id="166427968280387991">Proxyserver</translation>
 <translation id="1668836044817793277">Anger om kioskappen som startas automatiskt utan fördröjning får styra vilken version av <ph name="PRODUCT_OS_NAME" /> som används.
@@ -746,6 +747,11 @@
       Om du inte anger de här principerna kan användarna själva välja proxyinställningar.</translation>
 <translation id="3758249152301468420">Inaktivera utvecklarverktygen</translation>
 <translation id="3765260570442823273">Varaktighet för varningsmeddelande för inaktivitetsutloggning</translation>
+<translation id="376931976323225993">Låter dig ange om pluginprogrammet för <ph name="FLASH_PLUGIN_NAME" /> får köras automatiskt på webbplatser. Det kan vara tillåtet för alla webbplatser eller inte tillåtet för någon webbplats att köra pluginprogrammet för <ph name="FLASH_PLUGIN_NAME" /> automatiskt.
+
+          Inställningen Klicka för att spela innebär att pluginprogrammet för <ph name="FLASH_PLUGIN_NAME" /> får köras, men användaren måste klicka på platshållaren för att det ska starta.
+
+          Om den här principen inte anges kan användaren ändra inställningen manuellt.</translation>
 <translation id="3780152581321609624">Inkludera port som inte är standard i Kerberos SPN</translation>
 <translation id="3780319008680229708">Om sant har angetts för principen visas alltid Cast-ikonen i verktygsfältet eller i fler menyalternativ och användarna kan inte ta bort den.
 
@@ -884,6 +890,7 @@
 <translation id="4105989332710272578">Inaktivera tillämpning av Certifikattransparens för en lista med webbadresser</translation>
 <translation id="4121350739760194865">Förhindra att appkampanjer visas på den nya fliksidan</translation>
 <translation id="4157003184375321727">Rapportera version av operativsystem och fast programvara</translation>
+<translation id="4183229833636799228">Standardinställning för <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">Webbadress för validering av autentiseringstoken för fjärråtkomstklient</translation>
 <translation id="4203389617541558220">Begränsa enhetens drifttid genom att schemalägga automatiska omstarter.
 
@@ -1226,6 +1233,7 @@
 
       Observera att om plattformen stöder policymeddelanden används 24 timmar som uppdateringsfördröjning (och alla standardvärden och detta principvärde ignoreras), eftersom uppdateringar då sker automatiskt så fort policyn förändras. Det gör tätare uppdateringar överflödiga.</translation>
 <translation id="5535973522252703021">Vitlista  för Kerberos-delegeringsserver</translation>
+<translation id="555077880566103058">Tillåt att pluginprogrammet för <ph name="FLASH_PLUGIN_NAME" /> körs på alla webbplatser</translation>
 <translation id="5559079916187891399">Den här principen gäller inte Android-appar.</translation>
 <translation id="5560039246134246593">Lägg till en parameter vid hämtningen av startvärdet för Variations i <ph name="PRODUCT_NAME" />.
 
@@ -1308,12 +1316,6 @@
 <translation id="5868414965372171132">Nätverkskonfiguration på användarnivå</translation>
 <translation id="588135807064822874">Aktivera Tryck för att söka</translation>
 <translation id="5883015257301027298">Standardinställning för cookies</translation>
-<translation id="5887291617378691520">Om Öppna följande sidor har valts som startåtgärd kan du ange en lista med webbadresser som ska öppnas.
-
-          Principen fungerar bara om principen RestoreOnStartup är inställd på RestoreOnStartupIsURLs.
-
-          Den här principen är inte tillgänglig på Windows-instanser som inte är anslutna
-          till en Active Directory-domän.</translation>
 <translation id="5887414688706570295">Konfigurerar prefixet TalkGadget som kommer att användas av fjärråtkomstvärdar och förhindrar att användare ändrar det.
 
           Om prefixet anges kopplas det till det grundläggande TalkGadget-namnet för att skapa ett fullständigt domännamn för TalkGadget. Det grundläggande domännamnet för TalkGadget är .talkgadget.google.com.
@@ -1400,6 +1402,9 @@
       I andra fall kan den sättas till något av följande värden: sslv3, tls1, tls1.1 eller tls1.2. Efter inställning kommer <ph name="PRODUCT_NAME" /> inte att använda SSL-/TLS-versioner som är tidigare än den angivna versionen. Ett värde som inte känns igen ignoreras.
 
       Observera att sslv3 trots numret är en tidigare version än tls1.</translation>
+<translation id="6181608880636987460">Låter dig ange en lista med webbadressmönster som definierar på vilka webbplatser pluginprogrammet för <ph name="FLASH_PLUGIN_NAME" /> inte får köras.
+
+          Om den här principen inte anges används det globala standardvärdet för alla webbplatser. Värdet hämtas antingen från principen DefaultPluginsSetting, om den har ställts in, eller från användarens egna inställningar.</translation>
 <translation id="6190022522129724693">Standardinställning för popup-fönster</translation>
 <translation id="6197453924249895891">Ger företagsnycklar åtkomst till tillägg.
 
@@ -1524,6 +1529,9 @@
 
       Om inställningen är inaktiverad eller inte anges används pluginsökaren.</translation>
 <translation id="6699880231565102694">Aktivera tvåfaktorsautentisering för fjärråtkomstvärdar</translation>
+<translation id="6757438632136860443">Låter dig ange en lista med webbadressmönster som definierar på vilka webbplatser pluginprogrammet för <ph name="FLASH_PLUGIN_NAME" /> får köras.
+
+          Om den här principen inte anges används det globala standardvärdet för alla webbplatser. Värdet hämtas antingen från principen DefaultPluginsSetting, om den har ställts in, eller från användarens egna inställningar.</translation>
 <translation id="6766216162565713893">Tillåt att webbplatser begär att få tillgång till Bluetooth-enheter i närheten</translation>
 <translation id="6770454900105963262">Rapportera information om aktiva kiosksessioner</translation>
 <translation id="6786747875388722282">Tillägg</translation>
@@ -1551,6 +1559,7 @@
           Om du anger den här principen kan användarna varken ändra eller åsidosätta den.
 
           Om den här principen inte anges är talad feedback inaktiverad från start, men funktionen kan aktiveras av användaren när som helst.</translation>
+<translation id="6922884955650325312">Blockera pluginprogrammet för <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="6923366716660828830">Policyn anger namnet på standardsökleverantören. Om värdet lämnas tomt eller inte anges används det värdnamn som angavs av sökadressen.
 
           Policyn används bara om policyn DefaultSearchProviderEnabled är aktiverad.</translation>
@@ -1596,18 +1605,6 @@
       Om policyn är inaktiverad importeras inga bokmärken.
 
       Om policyn inte har angetts kan användaren få välja om importen ska göras, eller så utförs importen automatiskt.</translation>
-<translation id="7055358889740598917">Konfigurerar webbadressen till standardstartsidan i <ph name="PRODUCT_NAME" /> och förhindrar att användarna ändrar den.
-
-          Startsidan är den sida som öppnas när användaren klickar på startknappen. Vilken sida som öppnas vid start styrs av RestoreOnStartup-policyerna.
-
-          Startsidans typ kan ställas in på en webbadress du anger här eller på sidan Ny flik. Om du väljer sidan Ny flik gäller inte den här policyn.
-
-          Om du aktiverar den här inställningen kan användarna inte ändra startsideadressen i <ph name="PRODUCT_NAME" />, men de kan fortfarande välja sidan Ny flik som startsida.
-
-          Om den här policyn inte ställs in kan användaren välja sin startsida själv om HomepageIsNewTabPage inte heller är inställd.
-
-          Den här policyn är inte tillgänglig i Windows-instanser som inte är kopplade
-          till en Active Directory-domän.</translation>
 <translation id="7063895219334505671">Tillåt popup-fönster på dessa webbplatser</translation>
 <translation id="706669471845501145">Tillåt att webbplatser visar aviseringar på skrivbordet</translation>
 <translation id="7072406291414141328">Aktiverar begränsning av bandbredden i nätverket</translation>
@@ -1629,21 +1626,6 @@
       Om policyn är inställd på falskt inaktiveras bakgrundsläget och det kan inte ändras av användaren i webbläsarinställningarna.
 
       Om policyn inte ställs in är bakgrundsläget inaktiverat från början och kan ändras av användaren i webbläsarinställningarna.</translation>
-<translation id="7123297102171034788">Innebär att du kan specificera vad som ska hända vid programstart.
-
-          Om du väljer Öppna sidan Ny flik öppnas alltid sidan Ny flik när du startar <ph name="PRODUCT_NAME" />.
-
-          Om du väljer Återställ den senaste sessionen öppnas de webbadresser som var öppna när <ph name="PRODUCT_NAME" /> stängdes senast och webbläsarsessionen återställs som den lämnades.
-          Om du väljer det här alternativet inaktiveras vissa inställningar som är beroende av sessioner eller som utför åtgärder när programmet avslutas (till exempel sessionscookies eller att rensa webbläsardata när programmet avslutas).
-
-          Om du väljer Öppna en lista med webbadresser öppnas "webbadresserna i listan Webbadresser att öppna vid start" när en användare startar <ph name="PRODUCT_NAME" />.
-
-          Om du aktiverar den här inställningen kan den inte ändras eller åsidosättas av användaren i <ph name="PRODUCT_NAME" />.
-
-          Om du inaktiverar inställningen är det samma sak som att inte konfigurera den. Användaren kan fortfarande ändra den i <ph name="PRODUCT_NAME" />.
-
-          Denna princip är inte tillgänglig på Windows-instanser som inte är anslutna
-          till en Active Directory-domän.</translation>
 <translation id="7128918109610518786">Visar en lista med de appidentifierare som ska visas som fasta appar i startfältet i <ph name="PRODUCT_OS_NAME" />.
 
       Om den här policyn är konfigurerad är appuppsättningen fast och kan inte ändras av användaren.
@@ -1883,20 +1865,6 @@
 <translation id="793134539373873765">Anger om p2p ska användas för uppdateringar av betalningar i operativsystemet. Om policyn är inställd på Sant kommer enheterna att dela och försöka använda uppdateringar av betalningar i det lokala nätverket och eventuellt reducera användningen av bandbredd och överbelastning. Om uppdateringar av betalningar inte är tillgängliga i det lokala nätverket kommer enheten att återgå till att ladda ned från en uppdateringsserver. Om policyn är inställd på Falskt eller inte konfigurerad kommer p2p inte att användas.</translation>
 <translation id="7933141401888114454">Aktivera alternativet att skapa övervakade användare</translation>
 <translation id="793473937901685727">Ange om certifikat ska vara tillgängliga för ARC-appar</translation>
-<translation id="7936098023732125869">Gör det möjligt att använda en standardsökleverantör.
-
-          Om du aktiverar den här inställningen görs en standardsökning när en användare skriver text som inte är en webbadress i adressfältet.
-
-          Du kan ange vilken standardsökleverantör som ska användas genom att ställa in resten av principerna för standardsökning. Om du lämnar dem tomma kan användaren välja standardleverantör.
-
-          Om du inaktiverar inställningen görs ingen sökning om användaren skriver text som inte är en webbadress i adressfältet.
-
-          Om du aktiverar eller inaktiverar inställningen kan användarna inte ändra eller åsidosätta inställningen i <ph name="PRODUCT_NAME" />.
-
-          Om principen inte ställs in aktiveras standardsökleverantören och användaren kan ställa in listan med sökleverantörer.
-
-          Denna princip är inte tillgänglig på Windows-instanser som inte är anslutna
-          till en Active Directory-domän.</translation>
 <translation id="7937766917976512374">Tillåta eller neka videoinspelning</translation>
 <translation id="7941975817681987555">Förutsäg inte nätverksåtgärder för någon nätverksanslutning</translation>
 <translation id="7953256619080733119">Värdar för hanterade användares manuella undantag</translation>
@@ -2021,18 +1989,6 @@
 <translation id="8312129124898414409">Gör att du kan ange om webbplatser får använda nyckelgenerering. Du kan antingen tillåta eller blockera användning av nyckelgenerering på alla webbplatser.
 
           Om du inte anger policyn används BlockKeygen och inställningen kan ändras av användaren.</translation>
-<translation id="8316806736175990584">Konfigurerar standardstartsidans typ i <ph name="PRODUCT_NAME" /> och förhindrar att användaren ändrar inställningarna för startsidan. Startsidan kan ställas in på en webbadress du anger eller på sidan Ny flik.
-
-          Om du aktiverar den här inställningen används alltid sidan Ny flik som startsida, och startsidans webbadress ignoreras.
-
-          Om du inaktiverar den här inställningen är aldrig användarens startsida sidan Ny flik, om inte webbadressen ställs in på chrome://newtab.
-
-          Om du aktiverar eller inaktiverar den här inställningen kan användarna inte ändra startsidans typ i <ph name="PRODUCT_NAME" />.
-
-          Om du inte ställer in den här policyn kan användarna välja om sidan Ny flik ska vara deras startsida.
-
-          Den här policyn är inte tillgänglig i Windows-instanser som inte är kopplade
-          till en Active Directory-domän.</translation>
 <translation id="8329984337216493753">Den här policyn är bara aktiv i återförsäljarläge.
 
       När DeviceIdleLogoutTimeout har angetts definierar den här policyn hur länge en varningsruta med nedräkning ska visas för användaren innan utloggningen genomförs.
@@ -2068,25 +2024,6 @@
 <translation id="8519264904050090490">Webbadresser för hanterade användares manuella undantag</translation>
 <translation id="8544375438507658205">HTML-standardrenderare för <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Varna när du besöker webbplatser utanför innehållspaket</translation>
-<translation id="855339549837475534">Både Chromium och Google Chrome har stöd för samma principuppsättning
-      Tänk på att det här dokumentet kan innehålla principer som är
-      inriktade på programversioner som inte har lanserats (d.v.s. posten Stöds på
-      syftar på en version som inte har lanserats) och att sådana principer
-      kan ändras eller tas bort utan föregående meddelande.
-
-      Dessa principer är enbart avsedda att användas för att konfigurera instanser
-      av <ph name="PRODUCT_NAME" /> internt inom din
-      organisation. Användning av dessa principer utanför organisationen (till
-      exempel i ett offentligt distribuerat program) anses utgöra skadlig
-      programvara och kommer förmodligen att märkas som skadlig programvara
-      av Google och antivirusprogram.
-
-      Dessa inställningar behöver inte konfigureras manuellt. Du kan ladda ned
-      lättanvända mallar för Windows, Mac och Linux på <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
-
-      Vi rekommenderar att du konfigurerar principen på Windows via GPO, men
-      administrationsprincipen via registret stöds fortfarande på Windows-instanser
-      som är kopplade till en Active Directory-domän.</translation>
 <translation id="8566842294717252664">Dölj webbutiken från sidan ny flik och startprogrammet för appar</translation>
 <translation id="8587229956764455752">Tillåt att nya användarkonton skapas</translation>
 <translation id="8614804915612153606">Inaktiverar automatisk uppdatering</translation>
@@ -2103,18 +2040,6 @@
 
           Om du inte ställer in den här principen kommer <ph name="PRODUCT_NAME" /> att försöka identifiera om en server finns i intranätet och endast då kommer den att svara på IWA-förfrågningar. Om en server identifieras som internet kommer IWA-förfrågningar därifrån att ignoreras av <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8672321184841719703">Målversion för automatisk uppdatering</translation>
-<translation id="868068801094828689">Aktiverar anonym rapportering av användning och kraschrelaterad data om <ph name="PRODUCT_NAME" /> till Google och förhindrar att användarna ändrar inställningen.
-
-      Om du aktiverar den här inställningen skickas anonyma rapporter om
-      användning och kraschrelaterad data till Google.
-      Om du inaktiverar inställningen skickas inte informationen till
-      Google. Användare kan inte ändra eller åsidosätta inställningen i något av
-      fallen. Om policyn inte ställs in kommer inställningen att bli den som
-      användaren valde vid installationen/första körningen.
-
-      Den här policyn är inte tillgänglig på Windows-instanser som inte är kopplade till en 
-      Active Directory-domän. (För Chrome OS finns mer information i
-      DeviceMetricsReportingEnabled.)</translation>
 <translation id="8693243869659262736">Använd en inbyggd DNS-klient</translation>
 <translation id="8704831857353097849">Lista med inaktiverade plugin-program</translation>
 <translation id="8711086062295757690">Policyn anger nyckelordet, som är ett kortkommando som används i adressfältet för att aktivera sökning för den här leverantören.
@@ -2160,6 +2085,7 @@
 <translation id="8858642179038618439">Tvinga fram Säkert läge på YouTube</translation>
 <translation id="8864975621965365890">Ser till att avvisningsmeddelandet som visas när en webbplats renderas av <ph name="PRODUCT_FRAME_NAME" /> inte visas.</translation>
 <translation id="8870318296973696995">Startsida</translation>
+<translation id="8882006618241293596">Blockera pluginprogrammet för <ph name="FLASH_PLUGIN_NAME" /> på dessa webbplatser</translation>
 <translation id="8906768759089290519">Aktivera gästläge</translation>
 <translation id="8908294717014659003">Gör att du kan ange om webbplatser ska kunna komma åt medieenheter. Åtkomst till medieenheter kan tillåtas som standard eller så kan användaren få en fråga varje gång en webbplats vill komma åt dem.
 

@@ -64,10 +64,12 @@
 <translation id="225614027745146050">እንኳን ደህና መጡ</translation>
 <translation id="228809120910082333">እባክዎ በChromoting መዳረሻ ለመፍቀድ መለያዎን እና ፒንዎን ከዚህ በታች ያረጋግጡ።</translation>
 <translation id="2314101195544969792">የእርስዎ የ<ph name="APPLICATION_NAME" /> ክፍለ-ጊዜ ለተወሰነ ጊዜ ቦዝኗል፣ እና በቅርብ ይቋረጣል።</translation>
+<translation id="2317666076142640974">በአዲሱ <ph name="LINK_BEGIN" />የChrome የርቀት ዴስክቶፕ የድር መተግበሪያ<ph name="LINK_END" /> ላይ የጨረፍታ ዕይታን ያግኙ። የእርስዎን ግብረመልስ መስማት ደስ ይለናል።</translation>
 <translation id="2353140552984634198">Chromotingን ተጠቅመው ይህንን ኮምፒውተር ደህንነቱ በተጠበቀ መልኩ ሊደርሱበት ይችላሉ።</translation>
 <translation id="2359808026110333948">ቀጥል</translation>
 <translation id="2366718077645204424">አስተናጋጁን መድረስ አልተቻለም። ይሄ በሚጠቀሙት አውታረ መረብ ላይ ባለ ውቅር ምክንያት ሳይሆን አይቀርም።</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  ለመጨረሻ ጊዜ መስመር ላይ የታየው በ<ph name="RELATIVE_TIMESTAMP" />።</translation>
+<translation id="2405928220797050937">ይህ መተግበሪያ ከእንግዲህ አይደገፍም። የቅርብ ጊዜዎቹን ባህሪዎች እና የደህንነት መጠበቂያ ዝማኔዎችን ማግኘትዎን እርግጠኛ ለመሆን እባክዎ  <ph name="LINK_BEGIN" />የChrome የርቀት ዴስክቶፕ የድር መተግበሪያ<ph name="LINK_END" />ን ይጠቀሙ።</translation>
 <translation id="2499160551253595098">የአጠቃቀም ስታትስቲክስ እና የብልሽት ሪፖርቶችን እንድንሰበስብ በመፍቀድ Chrome የርቀት ዴስክቶፕ እንድናሻሽል ያግዙን።</translation>
 <translation id="2512228156274966424">ማሳሰቢያ፦ ሁሉም የቁልፍ ሰሌዳ አቋራጮች የሚገኙ መሆናቸውን ለማረጋገጥ Chrome የርቀት ዴስክቶፕ ወደ «እንደ መስኮት ክፈት» ማዋቀር ይችላሉ።</translation>
 <translation id="2540992418118313681">ሌላ ተጠቃሚ ይህን ኮምፒውተር እንዲመለከት እና እንዲቆጣጠር ማጋራት ይፈልጋሉ?</translation>
@@ -230,6 +232,7 @@
 <translation id="6930242544192836755">ጊዜ</translation>
 <translation id="6939719207673461467">የቁልፍ ሰሌዳን አሳይ/ደብቅ።</translation>
 <translation id="6944854424004126054">መስኮት ወደነበረበት ይመልሱ</translation>
+<translation id="6948905685698011662">የChrome የርቀት ዴስክቶፕ አሁን ድሩ ላይ ነው! የእኛን <ph name="LINK_BEGIN" />ነጻ የድር መተግበሪያ<ph name="LINK_END" /> ይሞክሩት።</translation>
 <translation id="6963936880795878952">የሆነ ሰው ልክ ባልሆነ ፒን ከርቀት ኮምፒውተሩ ጋር ለመገናኘት ስለሞከረ ከእሱ ጋር ያሉ ግንኙነቶች ለጊዜው ታግደዋል። እባክዎ ቆይተው እንደገና ይሞክሩ።</translation>
 <translation id="6965382102122355670">እሺ</translation>
 <translation id="6985691951107243942">እርግጠኛ ነዎት ከ<ph name="HOSTNAME" /> ጋር ያሉትን የርቀት ግንኙነቶች ማሰናከል ይፈልጋሉ? ሐሳብዎን ከቀየሩ ግንኙነቶችን ዳግም ለማንቃት ያንን ኮምፒውተር መጎብኘት ይኖርብዎታል።</translation>
@@ -246,6 +249,7 @@
 <translation id="7401733114166276557">Chrome የርቀት ዴስክቶፕ</translation>
 <translation id="7434397035092923453">ለደንበኛ መዳረሻ ተከልክሏል፦ <ph name="CLIENT_USERNAME" />።</translation>
 <translation id="7444276978508498879">የተገናኘው ደንበኛ፦ <ph name="CLIENT_USERNAME" />።</translation>
+<translation id="7589941250119944644">የChrome የርቀት ዴስክቶፕ አሁን ወደ አዲስ መነሻ በድሩ ላይ እየተዛወረ ነው። የእኛን <ph name="LINK_BEGIN" />ድር መተግበሪያ<ph name="LINK_END" />—በፊት ከነበሩት ሁሉም ተመሳሳይ ባህሪያት ጋር አንድ ላይ ሆኖ ፈጣን እና ነጻ ነው።</translation>
 <translation id="7606912958770842224">የርቀት ግንኙነቶችን አንቃ</translation>
 <translation id="7649070708921625228">እገዛ</translation>
 <translation id="7658239707568436148">ይቅር</translation>

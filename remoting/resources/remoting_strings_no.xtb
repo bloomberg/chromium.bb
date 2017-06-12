@@ -64,10 +64,12 @@ Du kan finne informasjon om personvern i Googles personvernregler (http://goo.gl
 <translation id="225614027745146050">Velkommen</translation>
 <translation id="228809120910082333">Bekreft kontoen og PIN-koden din for å tillate tilgang via Chromoting.</translation>
 <translation id="2314101195544969792"><ph name="APPLICATION_NAME" />-økten din har vært inaktiv en stund og kommer snart til å bli koblet fra.</translation>
+<translation id="2317666076142640974">Ta en sniktitt på det nye <ph name="LINK_BEGIN" />Chrome Eksternt skrivebord-nettprogrammet<ph name="LINK_END" />. Vi vil gjerne høre hva du synes.</translation>
 <translation id="2353140552984634198">Du kan trygt bruke denne datamaskinen med Chromoting.</translation>
 <translation id="2359808026110333948">Fortsett</translation>
 <translation id="2366718077645204424">Kunne ikke nå verten. Dette er sannsynligvis på grunn av innstillingene for nettverket du bruker.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" /> Sist pålogget <ph name="RELATIVE_TIMESTAMP" />.</translation>
+<translation id="2405928220797050937">Denne appen støttes ikke lenger. For å sikre at du får de nyeste funksjonene og sikkerhetsoppdateringene, bør du bruke <ph name="LINK_BEGIN" />Chrome Eksternt skrivebord-nettprogrammet<ph name="LINK_END" />.</translation>
 <translation id="2499160551253595098">Hjelp oss med å forbedre Chrome Eksternt skrivebord ved å gi oss tillatelse til å samle bruksstatistikk og programstopprapporter.</translation>
 <translation id="2512228156274966424">MERK: For å sikre at alle hurtigtastene er tilgjengelige, kan du konfigurere Chrome Eksternt skrivebord til «Åpne som vindu».</translation>
 <translation id="2540992418118313681">Har du lyst til å dele denne datamaskinen slik at en annen bruker kan se og kontrollere den?</translation>
@@ -230,6 +232,7 @@ skrivebord-vert</translation>
 <translation id="6930242544192836755">Varighet</translation>
 <translation id="6939719207673461467">Vis/skjul tastaturet.</translation>
 <translation id="6944854424004126054">Gjenopprett vinduet</translation>
+<translation id="6948905685698011662">Chrome Eksternt skrivebord er nå på nettet. Ta en titt på det <ph name="LINK_BEGIN" />gratis nettprogrammet<ph name="LINK_END" /> vårt.</translation>
 <translation id="6963936880795878952">Tilkoblinger til den eksterne datamaskinen er midlertidig blokkert fordi noen prøvde å koble seg til med en ugyldig PIN-kode. Prøv på nytt senere.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Er du sikker på at du vil deaktivere eksterne tilkoblinger til <ph name="HOSTNAME" />? Hvis du ombestemmer deg, må du tilbake til datamaskinen for å gjenopprette tilkoblingene.</translation>
@@ -246,6 +249,7 @@ skrivebord-vert</translation>
 <translation id="7401733114166276557">Chrome Eksternt skrivebord</translation>
 <translation id="7434397035092923453">Klienten ble nektet tilgang: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">Klienten ble tilknyttet: <ph name="CLIENT_USERNAME" />.</translation>
+<translation id="7589941250119944644">Chrome Eksternt skrivebord flyttes til nettet. Prøv <ph name="LINK_BEGIN" />nettprogrammet<ph name="LINK_END" /> vårt – det er raskt og gratis og inneholder alle de samme funksjonene som før.</translation>
 <translation id="7606912958770842224">Slå på eksterne tilkoblinger</translation>
 <translation id="7649070708921625228">Hjelp</translation>
 <translation id="7658239707568436148">Avbryt</translation>

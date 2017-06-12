@@ -41,6 +41,7 @@
 <translation id="1232569758102978740">無題</translation>
 <translation id="1263231323834454256">リーディング リスト</translation>
 <translation id="1264126396475825575"><ph name="CRASH_TIME" /> にクラッシュ レポートが作成されました（まだアップロードされておらず、無視の指定もありません）</translation>
+<translation id="1283919782143846010">危険なコンテンツがブロックされました</translation>
 <translation id="1285320974508926690">このサイトは翻訳しない</translation>
 <translation id="129553762522093515">最近閉じたタブ</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Cookie を消去してみてください<ph name="END_LINK" /></translation>
@@ -54,6 +55,7 @@
 <translation id="1340482604681802745">引取先住所</translation>
 <translation id="1344211575059133124">このサイトにアクセスするには許可が必要です</translation>
 <translation id="1344588688991793829">Chromium の自動入力設定...</translation>
+<translation id="1348198688976932919">アクセス先のサイトには危険なアプリが含まれています</translation>
 <translation id="1374468813861204354">ヒント</translation>
 <translation id="1375198122581997741">バージョン情報</translation>
 <translation id="1377321085342047638">カード番号</translation>
@@ -152,6 +154,7 @@
 <translation id="2202020181578195191">有効期限（年）を正しい形式で入力してください</translation>
 <translation id="2212735316055980242">ポリシーが見つかりません</translation>
 <translation id="2213606439339815911">エントリを取得しています...</translation>
+<translation id="2218879909401188352"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> では現在、悪意のあるユーザーによって危険なアプリ（端末に損害を与えたり、モバイル利用料に不正な請求項目を追加したり、個人情報を抜き取ったりするアプリ）がインストールされる可能性があります。<ph name="BEGIN_LEARN_MORE_LINK" />詳細<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="2230458221926704099"><ph name="BEGIN_LINK" />診断アプリ<ph name="END_LINK" />を使用して接続を修正してください</translation>
 <translation id="2239100178324503013">送信</translation>
 <translation id="225207911366869382">この値は、このポリシーではサポートが終了しています。</translation>
@@ -162,8 +165,10 @@
 <translation id="230155334948463882">カード情報を更新</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> にはユーザー名とパスワードが必要です。</translation>
 <translation id="2354001756790975382">その他のブックマーク</translation>
+<translation id="2354430244986887761"><ph name="SITE" /> では最近、Google セーフ ブラウジングにより<ph name="BEGIN_LINK" />有害なアプリが検出<ph name="END_LINK" />されました。</translation>
 <translation id="2355395290879513365">このサイトで目にする画像は、悪意のあるユーザーによって差し替えられたものである可能性があります。</translation>
 <translation id="2356070529366658676">確認する</translation>
+<translation id="2359629602545592467">複数</translation>
 <translation id="2359808026110333948">続行</translation>
 <translation id="2365563543831475020"><ph name="CRASH_TIME" /> に作成されたクラッシュ レポートはアップロードされませんでした</translation>
 <translation id="2367567093518048410">レベル</translation>
@@ -199,6 +204,7 @@
 <translation id="2650446666397867134">ファイルへのアクセスが拒否されました</translation>
 <translation id="2653659639078652383">送信</translation>
 <translation id="2666117266261740852">他のタブやアプリを閉じる</translation>
+<translation id="2670429602441959756">このページには VR でまだご利用いただけない機能が含まれています。VR モードを終了します...</translation>
 <translation id="2674170444375937751">履歴からこれらのページを削除してもよろしいですか？</translation>
 <translation id="2677748264148917807">このページを離れる</translation>
 <translation id="2702801445560668637">リーディング リスト</translation>
@@ -218,6 +224,7 @@
 <translation id="277499241957683684">デバイス レコードがありません</translation>
 <translation id="2784949926578158345">接続がリセットされました。</translation>
 <translation id="2794233252405721443">サイトがブロックされています</translation>
+<translation id="2799020568854403057">アクセス先のサイトには有害なアプリが含まれています</translation>
 <translation id="2803306138276472711"><ph name="SITE" /> では最近、Google セーフ ブラウジングにより、<ph name="BEGIN_LINK" />不正なソフトウェアが検出されました<ph name="END_LINK" />。通常は安全なウェブサイトであっても、不正なソフトウェアに感染している場合があります。</translation>
 <translation id="2824775600643448204">アドレス検索バー</translation>
 <translation id="2826760142808435982">接続は <ph name="CIPHER" /> を使用して暗号化および認証されており、<ph name="KX" /> が鍵交換メカニズムとして使用されています。</translation>
@@ -252,6 +259,7 @@
 <translation id="3093245981617870298">現在オフラインです。</translation>
 <translation id="3105172416063519923">アセット ID:</translation>
 <translation id="3109728660330352905">このページを表示する権限がありません。</translation>
+<translation id="3120730422813725195">ELO</translation>
 <translation id="31207688938192855"><ph name="BEGIN_LINK" />接続診断ツールを実行してみてください<ph name="END_LINK" />。</translation>
 <translation id="3145945101586104090">応答をデコードできませんでした</translation>
 <translation id="3150653042067488994">一時的なサーバー エラーです</translation>
@@ -351,6 +359,7 @@
 <translation id="375403751935624634">サーバー エラーのため翻訳できませんでした。</translation>
 <translation id="3759461132968374835">最近発生した障害はありません。障害レポートが無効になっているときに発生した障害は、ここには表示されません。</translation>
 <translation id="3778403066972421603">このカードを Google アカウントとこの端末に保存しますか？</translation>
+<translation id="3783418713923659662">Mastercard</translation>
 <translation id="3787705759683870569">有効期限: <ph name="EXPIRATION_MONTH" /> / <ph name="EXPIRATION_YEAR" /></translation>
 <translation id="382518646247711829">プロキシ サーバーを使用している場合...</translation>
 <translation id="3828924085048779000">パスフレーズは必ず指定してください。</translation>
@@ -361,6 +370,9 @@
 <translation id="3886446263141354045">このサイトへのアクセス リクエストを <ph name="NAME" /> さんに送信しました</translation>
 <translation id="3890664840433101773">メールを追加</translation>
 <translation id="3901925938762663762">カードの有効期限が切れています</translation>
+<translation id="3945915738023014686">障害レポート ID <ph name="CRASH_ID" /> がアップロードされました（ローカルの障害 ID: <ph name="CRASH_LOCAL_ID" />）</translation>
+<translation id="3949571496842715403">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書には SAN（サブジェクトの別名）が指定されていません。原因として、設定が不適切であるか、悪意のあるユーザーによって接続が妨害されていることが考えられます。</translation>
+<translation id="3949601375789751990">閲覧履歴がここに表示されます</translation>
 <translation id="3963721102035795474">リーダーモード</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{なし}=1{1 件のサイトから}other{# 件のサイトから}}</translation>
 <translation id="397105322502079400">計算しています...</translation>
@@ -452,6 +464,7 @@
 <translation id="4850886885716139402">表示</translation>
 <translation id="4854362297993841467">この配達方法はご利用いただけません。別の方法を選択してください。</translation>
 <translation id="4858792381671956233">このサイトを開いてもよいかの問い合わせを保護者に送信しました</translation>
+<translation id="4863764087567530506">このコンテンツには、ユーザーを騙してソフトウェアをインストールさせたり、個人情報を危険にさらしたりする仕掛けが潜んでいる可能性があります。<ph name="BEGIN_LINK" />危険を理解したうえで表示<ph name="END_LINK" /></translation>
 <translation id="4880827082731008257">履歴を検索</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />、<ph name="TYPE_2" />、<ph name="TYPE_3" /></translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{他 1 件のウェブページ}other{他 # 件のウェブページ}}</translation>
@@ -525,6 +538,7 @@
 <translation id="5571083550517324815">この住所での受け取りはできません。別の住所を選択してください。</translation>
 <translation id="5572851009514199876">このサイトへのアクセス権があるかどうかを Chrome で確認できるように、Chrome を起動してログインしてください。</translation>
 <translation id="5580958916614886209">有効期限の「月」を確認してもう一度お試しください</translation>
+<translation id="5586446728396275693">保存されている住所はありません</translation>
 <translation id="5595485650161345191">住所の編集</translation>
 <translation id="560412284261940334">管理はサポートされていません</translation>
 <translation id="5610142619324316209">接続を確認する</translation>
@@ -538,6 +552,7 @@
 <translation id="5669703222995421982">自分向けのコンテンツを表示</translation>
 <translation id="5675650730144413517">このページは動作していません</translation>
 <translation id="5710435578057952990">このウェブサイトの ID は確認されていません。</translation>
+<translation id="5713016350996637505">詐欺的なコンテンツがブロックされました</translation>
 <translation id="5720705177508910913">現在のユーザー</translation>
 <translation id="5732392974455271431">ブロックの解除は保護者が行うことができます</translation>
 <translation id="5763042198335101085">有効なメールアドレスを入力してください</translation>
@@ -549,14 +564,12 @@
 <translation id="5803412860119678065"><ph name="CARD_DETAIL" /> を入力しますか？</translation>
 <translation id="5810442152076338065"><ph name="DOMAIN" /> への接続は古い暗号スイートにより暗号化されています。</translation>
 <translation id="5813119285467412249">追加のやり直し（&amp;R）</translation>
-<translation id="5814352347845180253"><ph name="SITE" /> と他の一部のサイトのプレミアム コンテンツにアクセスできなくなる可能性があります。</translation>
 <translation id="5838278095973806738">このサイトでは機密情報（パスワード、クレジット カードなど）を入力しないでください。悪意のあるユーザーに情報が盗まれる恐れがあります。</translation>
 <translation id="5869405914158311789">このサイトにアクセスできません</translation>
 <translation id="5869522115854928033">保存したパスワード</translation>
 <translation id="5872918882028971132">保護者からのおすすめ</translation>
 <translation id="5901630391730855834">黄</translation>
 <translation id="5920262536204764679">{NUM_COOKIES,plural, =1{1 個が使用中}other{# 個が使用中}}</translation>
-<translation id="5926846154125914413">一部のサイトのプレミアム コンテンツにアクセスできなくなる可能性があります。</translation>
 <translation id="5959728338436674663">危険なアプリやサイトの検出に役立てるために一部の<ph name="BEGIN_WHITEPAPER_LINK" />システム情報やページのコンテンツ<ph name="END_WHITEPAPER_LINK" />を Google に自動送信する。<ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="5967867314010545767">履歴から削除</translation>
 <translation id="5975083100439434680">縮小する</translation>
@@ -566,9 +579,11 @@
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6016158022840135739">{COUNT,plural, =1{ページ 1}other{ページ #}}</translation>
 <translation id="6017514345406065928">緑</translation>
+<translation id="6017850046339264347"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> では、悪意のあるユーザーによって詐欺的なアプリ（他のものに成りすましたり、ユーザーの追跡などに使用可能なデータを収集したりするアプリ）がインストールされる可能性があります。<ph name="BEGIN_LEARN_MORE_LINK" />詳細<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6027201098523975773">名前を入力してください</translation>
 <translation id="6040143037577758943">閉じる</translation>
 <translation id="6042308850641462728">もっと見る</translation>
+<translation id="6047233362582046994">有害なアプリが削除されていない状態で<ph name="BEGIN_LINK" />このサイトにアクセスする<ph name="END_LINK" />場合は、セキュリティ上のリスクについてご承知おきください。</translation>
 <translation id="6060685159320643512">これらの試験運用版は問題が発生する可能性があるため、ご利用の際には十分ご注意ください</translation>
 <translation id="6080696365213338172">管理者が提供する証明書を使用してコンテンツにアクセスしています。<ph name="DOMAIN" /> に提供するデータは管理者によって傍受される可能性があります。</translation>
 <translation id="6144381551823904650">{COUNT,plural, =0{なし}=1{1 個のパスワード（同期済み）}other{# 個のパスワード（同期済み）}}</translation>
@@ -627,6 +642,7 @@
 <translation id="6556915248009097796">有効期限: <ph name="EXPIRATION_DATE_ABBR" />、最終使用日: <ph name="LAST_USED_DATE_NO_DETAIL" /></translation>
 <translation id="6563469144985748109">管理者がまだサイトを開くことを許可していません</translation>
 <translation id="6569060085658103619">拡張機能のページを表示しています</translation>
+<translation id="657639383826808334">このコンテンツでは、個人情報を入手したり削除したりする危険なソフトウェアがインストールされる可能性があります。<ph name="BEGIN_LINK" />危険を理解したうえで表示<ph name="END_LINK" /></translation>
 <translation id="6596325263575161958">暗号化オプション</translation>
 <translation id="662080504995468778">とどまる</translation>
 <translation id="6626291197371920147">有効なカード番号を追加</translation>
@@ -717,6 +733,7 @@
 <translation id="7521387064766892559">Javascript</translation>
 <translation id="7535087603100972091">値</translation>
 <translation id="7537536606612762813">必須</translation>
+<translation id="7542403920425041731">確認すると、カードの情報がこのサイトと共有されます。</translation>
 <translation id="7542995811387359312">このフォームは安全な接続を使用していないため、クレジットカードの自動入力が無効になっています。</translation>
 <translation id="7543525346216957623">保護者に頼んでください</translation>
 <translation id="7549584377607005141">このウェブページを正しく表示するには、先ほど入力したデータが必要です。データは再送信できますが、このページで先ほど行った操作を繰り返すことになります。</translation>
@@ -790,10 +807,10 @@
 <translation id="8149426793427495338">パソコンがスリープ状態です。</translation>
 <translation id="8150722005171944719"><ph name="URL" /> のファイルを読むことができません。削除されたか移動された可能性があります。ファイルに対するアクセス権がない場合もあります。</translation>
 <translation id="8184538546369750125">グローバルのデフォルト値（[許可]）を使用</translation>
+<translation id="8191494405820426728">ローカルの障害 ID <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="8194797478851900357">移動の取り消し（&amp;U）</translation>
 <translation id="8201077131113104583">ID「<ph name="EXTENSION_ID" />」の拡張機能に対する無効な更新 URL です。</translation>
 <translation id="8202097416529803614">ご注文概要</translation>
-<translation id="8206354486702514201">この設定は管理者によって制御されています。</translation>
 <translation id="8218327578424803826">割り当てられた場所:</translation>
 <translation id="8225771182978767009">このサイトは、このパソコンを設定したユーザーによってブロックされています。</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />、<ph name="TYPE_2" /></translation>
@@ -866,6 +883,7 @@
 <translation id="8996941253935762404">この先のサイトには有害なプログラムがあります</translation>
 <translation id="8997023839087525404">サーバーから提示された証明書は、証明書の透明性ポリシーを介して公開されていません。一部の証明書は、信頼性の確保と攻撃者からの保護のため、証明書の透明性ポリシーを介して公開されることが要件となっています。</translation>
 <translation id="9001074447101275817">プロキシ <ph name="DOMAIN" /> にはユーザー名とパスワードを指定する必要があります。</translation>
+<translation id="9005998258318286617">PDF ドキュメントを読み込めませんでした。</translation>
 <translation id="901974403500617787">システム全体に適用されるフラグは所有者（<ph name="OWNER_EMAIL" />）のみが設定できます。</translation>
 <translation id="9020542370529661692">このページは<ph name="TARGET_LANGUAGE" />に翻訳されています</translation>
 <translation id="9035022520814077154">セキュリティ エラー</translation>

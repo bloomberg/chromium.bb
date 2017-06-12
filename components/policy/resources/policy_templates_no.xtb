@@ -156,6 +156,7 @@
       tilgang til videoopptaksenheter på SAML-påloggingssider. Hvis det ikke blir funnet
       samsvar, blir tilgangen avvist automatisk. Mønstre med jokertegn er ikke
       tillatt.</translation>
+<translation id="1634989431648355062">Tillat <ph name="FLASH_PLUGIN_NAME" />-programtillegget på disse nettstedene</translation>
 <translation id="1655229863189977773">Angi størrelse på diskbuffer i byte</translation>
 <translation id="166427968280387991">Proxytjener</translation>
 <translation id="1668836044817793277">Angir om den automatisk startede kioskappen uten forsinkelse skal kunne kontrollere <ph name="PRODUCT_OS_NAME" />-versjonen.
@@ -724,6 +725,11 @@
       Hvis du ikke spesifiserer denne regelen, kan brukerne velge egne innstillinger for proxy-tjenere.</translation>
 <translation id="3758249152301468420">Deaktiver utviklerverktøy</translation>
 <translation id="3765260570442823273">Varighet på advarselmeldingen for inaktiv avlogging</translation>
+<translation id="376931976323225993">Lar deg angi om <ph name="FLASH_PLUGIN_NAME" />-programtillegget skal kunne kjøres automatisk på nettsteder eller ikke. Du kan enten tillate eller forby automatisk kjøring av <ph name="FLASH_PLUGIN_NAME" />-programtillegget for alle nettsteder.
+
+          Med «Klikk for å spille av» kan <ph name="FLASH_PLUGIN_NAME" />-programtillegget kjøres, men brukeren må klikke på plassholderen for å starte det.
+
+          Hvis denne regelen ikke angis, kan brukeren endre innstillingen manuelt.</translation>
 <translation id="3780152581321609624">Inkluder ikke-standardisert port i SPN for Kerberos</translation>
 <translation id="3780319008680229708">Hvis denne regelen angis som «true» (sann), vises verktøyradikonet for Cast hele tiden i verktøyraden eller overflytsmenyen, og brukere kan ikke fjerne det.
 
@@ -855,6 +861,7 @@
 <translation id="4105989332710272578">Slå av tvungen sertifikatåpenhet for en liste med nettadresser</translation>
 <translation id="4121350739760194865">Gjør at programkampanjer ikke vises på siden Ny fane</translation>
 <translation id="4157003184375321727">Rapportering av operativsystem og maskinvareversjon</translation>
+<translation id="4183229833636799228">Standard <ph name="FLASH_PLUGIN_NAME" />-innstilling</translation>
 <translation id="4192388905594723944">Nettadressen for validering av autentiseringstokenet for klienten for ekstern tilgang</translation>
 <translation id="4203389617541558220">Begrens enhetens kjøretid ved å angi automatisk omstart.
 
@@ -1188,6 +1195,7 @@
 
       Merk: Hvis plattformen støtter varsler om brudd på reglene, angis forsinkelsen for ny innlasting til 24 timer (dette ignorerer alle standarder og verdien denne regelen er satt til), fordi det forventes at varsler om brudd på reglene fremtvinger ny innlasting automatisk når regelen endres. Dette gjør at det ikke er nødvendig med hyppige nye innlastinger.</translation>
 <translation id="5535973522252703021">Godkjenningsliste for delegasjonstjener for Kerberos</translation>
+<translation id="555077880566103058">Tillat at <ph name="FLASH_PLUGIN_NAME" />-programtillegget kan kjøres automatisk på alle nettsteder</translation>
 <translation id="5559079916187891399">Denne regelen har ingen innvirkning på Android-apper.</translation>
 <translation id="5560039246134246593">Legg til et parameter for hentingen av startverdien for variasjoner i <ph name="PRODUCT_NAME" />.
 
@@ -1270,12 +1278,6 @@
 <translation id="5868414965372171132">Nettverkskonfigurasjon på brukernivå</translation>
 <translation id="588135807064822874">Slå på «trykk for å søke»</translation>
 <translation id="5883015257301027298">Standardinnstilling for informasjonskapsler</translation>
-<translation id="5887291617378691520">Hvis «Åpne en liste over nettadresser» er valgt som oppstartshandling, kan du spesifisere listen over nettadresser som åpnes. Hvis regelen ikke spesifiseres, blir ingen nettadresser åpnet ved oppstart.
-
-          Denne regelen fungerer bare hvis innstillingen «RestoreOnStartup» er satt til «RestoreOnStartupIsURLs».
-
-          Denne regelen er ikke tilgjengelig på Windows-forekomster som ikke er 
-          knyttet til et Active Directory-domene.</translation>
 <translation id="5887414688706570295">Konfigurerer TalkGadget-prefikset som skal brukes av verter med ekstern adgang, og forhindrer brukere fra å endre det.
 
           Hvis dette prefikset er angitt, legges det til i basisnavnet for TalkGadget for slik å lage et fullstendig domenenavn for TalkGadget. Basisdomenenavnet for TalkGadget er «.talkgadget.google.com».
@@ -1361,6 +1363,9 @@
       Ellers kan den settes til én av de følgende verdiene: «sslv3», «tls1», «tls1.1» eller «tls1.2». Når den er spesifisert, bruker ikke <ph name="PRODUCT_NAME" /> SSL-/TLS-versjoner som er lavere enn den angitte versjonen. Verdier som ikke gjenkjennes, blir ignorert.
 
       Vær oppmerksom på at «sslv3» er en tidligere versjon enn «tls1», til tross for tallet.</translation>
+<translation id="6181608880636987460">Lar deg angi en liste med nettadressemønstre for å spesifisere nettsteder hvor <ph name="FLASH_PLUGIN_NAME" />-programtillegget ikke skal kunne kjøres automatisk.
+
+          Hvis denne regelen ikke angis, brukes den globale standardverdien for alle nettsteder. Denne verdien hentes fra «DefaultPluginsSetting»-regelen hvis den er angitt, eller fra brukerens personlige konfigurasjon hvis den ikke er angitt.</translation>
 <translation id="6190022522129724693">Standardinnstillinger for forgrunnsvinduer</translation>
 <translation id="6197453924249895891">Gir utvidelser tilgang til bedriftsnøkler.
 
@@ -1486,6 +1491,9 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
 
       Hvis dette alternativet deaktiveres eller ikke angis, vil programtilleggsøket være aktivt.</translation>
 <translation id="6699880231565102694">Aktiver to-delt autentisering for verter med ekstern adgang</translation>
+<translation id="6757438632136860443">Lar deg angi en liste med nettadressemønstre for å spesifisere nettsteder hvor <ph name="FLASH_PLUGIN_NAME" />-programtillegget skal kunne kjøres automatisk.
+
+          Hvis denne regelen ikke angis, brukes den globale standardverdien for alle nettsteder. Denne verdien hentes fra «DefaultPluginsSetting»-regelen hvis den er angitt, eller fra brukerens personlige konfigurasjon hvis den ikke er angitt.</translation>
 <translation id="6766216162565713893">La nettsteder be brukeren om tilgang til Bluetooth-enheter i nærheten</translation>
 <translation id="6770454900105963262">Rapportér informasjon om aktive kioskøkter</translation>
 <translation id="6786747875388722282">Utvidelser</translation>
@@ -1511,6 +1519,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
           Hvis du angir denne innstillingen, kan ikke brukere endre eller overstyre den.
 
           Hvis denne innstillingen ikke angis, deaktiveres muntlig tilbakemelding til å begynne med, men brukere kan aktivere den når som helst.</translation>
+<translation id="6922884955650325312">Blokkér <ph name="FLASH_PLUGIN_NAME" />-programtillegget</translation>
 <translation id="6923366716660828830">Angir navnet på standard søkeleverandør. Hvis dette ikke angis, brukes vertsnavnet angitt av søkenettadressen.
 
           Denne retningslinjen tas bare i betraktning hvis retningslinjen DefaultSearchProviderEnabled er aktivert.</translation>
@@ -1552,18 +1561,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
       Hvis denne innstillingen er deaktivert, kan ikke brukerne sende utskrift tl <ph name="CLOUD_PRINT_NAME" /> fra <ph name="PRODUCT_NAME" />-utskriftsdialogen</translation>
 <translation id="7053678646221257043">Denne retningslinjen fremtvinger import av bokmerker fra gjeldende standard nettleser, hvis den er aktivert. Hvis den er aktivert, påvirker denne retningslinjen også importeringsdialogen. Hvis den er deaktivert, kan det hende brukeren blir spurt om vedkommende vil importere, eller så kan importen skje automatisk.</translation>
-<translation id="7055358889740598917">Konfigurerer nettadressen for standard startside i <ph name="PRODUCT_NAME" /> og hindrer brukerne i å endre den.
-
-          Startsiden er siden som åpnes med startsideknappen. Siden som åpnes ved oppstart, kontrolleres av RestoreOnStartup-reglene.
-
-          Startsidetypen kan enten angis til en nettadresse du spesifiserer her, eller angis til Ny fane-siden. Hvis du velger Ny fane-siden, aktiveres ikke denne regelen.
-
-          Hvis du slår på denne regelen, kan ikke brukere endre nettadressen til startsiden i <ph name="PRODUCT_NAME" />, men de kan fortsatt velge Ny fane-siden som startside.
-
-          Hvis du ikke angir denne regelen, kan brukerne velge startside selv, forutsatt at ikke HomepageIsNewTabPage er angitt heller.
-
-          Denne regelen er ikke tilgjengelig på Windows-forekomster som ikke er
-          tilknyttet et Active Directory-domene.</translation>
 <translation id="7063895219334505671">Tillat forgrunnsvindu på disse nettstedene</translation>
 <translation id="706669471845501145">Tillat nettsteder å vise varsler på skrivebordet</translation>
 <translation id="7072406291414141328">Slår på reduksjon av båndbredde for nettverk</translation>
@@ -1585,21 +1582,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
       Hvis denne regelen settes til usann, slås bakgrunnsmodusen av. Den kan ikke kontrolleres av brukerne i nettleserinnstillingene.
 
       Hvis du ikke spesifiserer denne regelen, er bakgrunnsmodusen i utgangspunktet avslått, men den kan kontrolleres av brukerne i nettleserinnstillingene.</translation>
-<translation id="7123297102171034788">Gjør det mulig å spesifisere atferden ved oppstart.
-
-          Hvis du velger «Åpne Ny fane-siden», åpnes alltid en ny fane når du starter <ph name="PRODUCT_NAME" />.
-
-          Hvis du velger «Gjenopprett den siste økten», blir nettadressene som var åpne forrige gang <ph name="PRODUCT_NAME" /> ble lukket, åpnet igjen, og nettleserøkten gjenopprettes slik den var da den ble avsluttet.
-          Hvis dette alternativet velges, blir enkelte innstillinger som er avhengige av økter, eller som utfører handlinger ved avslutning (for eksempel sletting av nettleserdata ved avslutning eller øktspesifikke informasjonskapsler), slått av.
-
-          Hvis du velger «Åpne en liste over nettadresser», blir listen «Nettadresser som skal åpnes ved oppstart» åpnet når brukerne starter <ph name="PRODUCT_NAME" />.
-
-          Hvis du slår på denne regelen, kan ikke brukerne endre eller overstyre den i <ph name="PRODUCT_NAME" />.
-
-          Hvis denne regelen slås av, er virkningen den samme som hvis den ikke konfigureres. Brukeren kan fortsatt endre den i <ph name="PRODUCT_NAME" />.
-
-          Denne regelen er ikke tilgjengelig på Windows-forekomster som ikke er 
-          knyttet til et Active Directory-domene.</translation>
 <translation id="7128918109610518786">Viser en liste over programidentifikatorene <ph name="PRODUCT_OS_NAME" /> viser som festede programmer i programlisteraden.
 
       Hvis denne innstillingen er konfigurert, blir programsettet festet og kan ikke endres av brukeren.
@@ -1840,20 +1822,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="793134539373873765">Angir om p2p skal brukes for nyttelast av OS-oppdatering. Hvis angitt til «True», kommer enhetene til å dele og forsøke å konsumere oppdateringsnyttelast på LAN, noe som potensielt kan redusere Internett-båndbredden og -trafikken. Hvis oppdateringsnyttelasten ikke er tilgjengelig på LAN, går enheten tilbake til å laste ned fra en oppdateringstjener. Hvis angitt til «False» eller ikke konfigurert, blir ikke p2p brukt.</translation>
 <translation id="7933141401888114454">Slå på oppretting av administrerte brukere</translation>
 <translation id="793473937901685727">Angi sertifikattilgjengeligheten for ARC-apper</translation>
-<translation id="7936098023732125869">Slår på bruk av en standard søkeleverandør.
-
-          Hvis du slår på denne innstillingen, gjøres et vanlig søk når brukeren skriver inn tekst som ikke er en nettadresse, i multifunksjonsfeltet.
-
-          Du kan spesifisere hvem som skal brukes som standard søkeleverandør, ved å angi resten av reglene for standardsøk. Hvis du lar disse stå tomme, kan brukeren velge standardleverandør.
-
-          Hvis du slår av denne innstillingen, gjøres det ikke noe søk når brukeren skriver inn tekst som ikke er en nettadresse, i multifunksjonsfeltet.
-
-          Hvis du slår denne innstillingen på eller av, kan ikke brukerne endre eller overstyre innstillingen i <ph name="PRODUCT_NAME" />.
-
-          Hvis denne regelen ikke spesifiseres, er standard søkeleverandør slått på, og brukeren kan spesifisere listen over søkeleverandører.
-
-          Denne regelen er ikke tilgjengelig på Windows-forekomster som ikke er 
-          knyttet til et Active Directory-domene.</translation>
 <translation id="7937766917976512374">Tillat eller blokkér videoopptak</translation>
 <translation id="7941975817681987555">Ikke forutsi nettverkshandlinger på noen nettverkstilkoblinger</translation>
 <translation id="7953256619080733119">Verter for manuelle unntak for administrerte brukere</translation>
@@ -1975,18 +1943,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="8312129124898414409">Gjør det mulig å angi om nettsteder har tillatelse til å bruke nøkkelgenerering. Bruk av nøkkelgenerering kan enten være tillatt for alle nettsteder eller blokkert for alle nettsteder.
 
           Hvis denne regelen ikke angis, brukes «BlockKeygen», og brukeren kan endre den.</translation>
-<translation id="8316806736175990584">Konfigurerer typen for standard startside i <ph name="PRODUCT_NAME" />, og hindrer brukere å endre startsideinnstillingene. Startsiden kan enten angis til en nettadresse du spesifiserer, eller angis til Ny fane-siden.
-
-          Hvis du slår på denne innstillingen, brukes alltid Ny fane-siden som startside, og nettadressen til startsiden ignoreres.
-
-          Hvis du slår av denne innstillingen, kommer aldri brukerens startside til å bli Ny fane-siden, med mindre nettadressen er angitt som «chrome://newtab».
-
-          Hvis du slår på eller av denne innstillingen, kan ikke brukere endre startsidetypen i <ph name="PRODUCT_NAME" />.
-
-          Hvis denne regelen ikke angis, kommer brukere selv til å kunne velge om den nye fanen skal være startsiden deres.
-
-          Denne regelen er ikke tilgjengelig på Windows-forekomster som ikke er
-          tilknyttet et Active Directory-domene.</translation>
 <translation id="8329984337216493753">Denne retningslinjen er aktiv bare i detaljistmodus.
 
       Når DeviceIdleLogoutTimeout er spesifisert, definerer denne retningslinjen varigheten av advarselfeltet med en nedtellingsklokke som vises til brukeren før den blir logget av.
@@ -2021,26 +1977,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="8519264904050090490">Nettadresser med manuelle unntak for administrerte brukere</translation>
 <translation id="8544375438507658205">Standard gjengivelse av HTML for <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Varsle ved besøk på nettsteder som ikke inngår i innholdspakker</translation>
-<translation id="855339549837475534">Både Chromium og Google Chrome støtter det samme regelsettet.
-      Vær oppmerksom på at dette dokumentet kan inneholde regler som er
-      laget for upubliserte programvareversjoner (dvs. at «støttes på»-oppføringen
-      viser til en upublisert versjon), og at slike innstillinger kan
-      endres eller fjernes uten varsel.
-
-      Disse reglene er bare ment for å konfigurere forekomster 
-      av <ph name="PRODUCT_NAME" /> internt i organisasjonen din.
-      Hvis disse reglene brukes utenfor organisasjonen din (for
-      eksempel i offentlig distribuerte programmer), blir de betraktet som skadelig 
-      programvare, og de blir sannsynligvis definert som skadelig programvare av 
-      Google og leverandører av antivirusprogramvare.
-
-      Det er ikke nødvendig å konfigurere disse innstillingene manuelt.
-      Brukervennlige maler for Windows, Mac og Linux kan lastes ned fra <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
-
-      Det anbetales at regler i Windows konfigureres via GPO 
-      (gruppepolicyobjekter), selv om det fortsatt er støtte for å spesifisere regler
-      via registeret for Windows-forekomster som er knyttet til 
-      Active Directory-domener.</translation>
 <translation id="8566842294717252664">Skjul nettbutikken fra nye faner og appvelgeren</translation>
 <translation id="8587229956764455752">Tillat oppretting av nye brukerkontoer</translation>
 <translation id="8614804915612153606">Deaktiverer automatiske oppdateringer</translation>
@@ -2057,17 +1993,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
           Hvis du ikke spesifiserer denne regelen, forsøker <ph name="PRODUCT_NAME" /> å oppdage om en tjener er på intranett og bare svare på IWA-forespørsler hvis den er det. Hvis en tjener registreres som Internett, ignorerer <ph name="PRODUCT_NAME" /> IWA-forespørsler fra tjeneren.</translation>
 <translation id="8672321184841719703">Målversjon for automatiske oppdateringer</translation>
-<translation id="868068801094828689">Slår på anonym rapportering av bruks- og krasjrelaterte data om <ph name="PRODUCT_NAME" /> til Google og hindrer at brukerne kan endre denne innstillingen.
-
-      Hvis denne innstillingen er slått på, blir det sendt anonyme rapporter av
-      bruks- og krasjrelaterte data til Google. Hvis den er slått av, blir ikke denne
-      informasjonen sendt til Google. Uansett kan ikke brukerne endre eller overstyre
-      innstillingen. Hvis du ikke spesifiserer denne regelen, brukes innstillingen
-      brukerne velger ved installasjon / første kjøring.
-
-      Denne regelen er ikke tilgjengelig for Windows-forekomster som ikke er
-      knyttet til noe Active Directory-domene. (For Chrome OS, se
-      DeviceMetricsReportingEnabled.)</translation>
 <translation id="8693243869659262736">Bruk innebygd DNS-klient</translation>
 <translation id="8704831857353097849">Liste over deaktiverte programtillegg</translation>
 <translation id="8711086062295757690">Angir nøkkelordet, som er snarveien som brukes i søkefeltet for å utløse søket for denne leverandøren.
@@ -2107,6 +2032,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="8858642179038618439">Bruk tvungen sikkerhetsmodus i YouTube</translation>
 <translation id="8864975621965365890">Ignorerer avslagsforespørselen som vises når et nettsted gjengis av <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Startside</translation>
+<translation id="8882006618241293596">Blokkér <ph name="FLASH_PLUGIN_NAME" />-programtillegget på disse nettstedene</translation>
 <translation id="8906768759089290519">Aktiver gjestemodus</translation>
 <translation id="8908294717014659003">Lar deg angi om nettsteder skal gis tillatelse til å bruke digitaliseringsenhetene dine. Bruk av digitaliseringsenheter kan tillates som standard, eller angis slik at brukeren blir spurt om tillatelse hver gang et nettsted ønsker å bruke slike enheter.
 

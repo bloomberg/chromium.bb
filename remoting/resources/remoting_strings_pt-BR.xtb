@@ -64,10 +64,12 @@ Para ver mais informações sobre privacidade, consulte a Política de Privacida
 <translation id="225614027745146050">Bem-vindo</translation>
 <translation id="228809120910082333">Confirme sua conta e seu PIN abaixo para permitir acesso pelo Chromoting.</translation>
 <translation id="2314101195544969792">Sua sessão do <ph name="APPLICATION_NAME" /> está inativa há um tempo e será desconectada em breve.</translation>
+<translation id="2317666076142640974">Dê uma olhada no novo <ph name="LINK_BEGIN" />app da Web da Área de trabalho remota do Google Chrome<ph name="LINK_END" />. Adoraríamos receber seu feedback.</translation>
 <translation id="2353140552984634198">Com o Chromoting, você pode acessar este computador com segurança.</translation>
 <translation id="2359808026110333948">Continuar</translation>
 <translation id="2366718077645204424">Não é possível acessar o host. Isso se deve, provavelmente, à configuração da rede que você está usando.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Visto on-line pela última vez <ph name="RELATIVE_TIMESTAMP" />.</translation>
+<translation id="2405928220797050937">Esse app não é mais compatível. Para receber os recursos e atualizações de segurança mais recentes, use o <ph name="LINK_BEGIN" />app da Web da Área de trabalho remota do Google Chrome<ph name="LINK_END" />.</translation>
 <translation id="2499160551253595098">Ajude-nos a melhorar a Área de trabalho remota do Google Chrome por meio da coleta de estatísticas de uso e de relatórios de falhas.</translation>
 <translation id="2512228156274966424">OBSERVAÇÃO: para garantir que todos os atalhos do teclado estejam disponíveis, você pode configurar a Área de trabalho remota do Google Chrome para "Abrir como janela".</translation>
 <translation id="2540992418118313681">Gostaria de compartilhar este computador para que outro usuário o veja e controle?</translation>
@@ -230,6 +232,7 @@ remota do Google Chrome</translation>
 <translation id="6930242544192836755">Duração</translation>
 <translation id="6939719207673461467">Mostrar/ocultar teclado</translation>
 <translation id="6944854424004126054">Restaurar janela</translation>
+<translation id="6948905685698011662">A Área de trabalho remota do Google Chrome agora está na Web. Confira nosso <ph name="LINK_BEGIN" />app da Web gratuito<ph name="LINK_END" />.</translation>
 <translation id="6963936880795878952">As conexões com o computador remoto estão temporariamente bloqueadas porque alguém estava tentando se conectar a ele com um PIN inválido. Tente novamente mais tarde.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Tem certeza de que deseja desativar conexões remotas para <ph name="HOSTNAME" />? Se mudar de idéia, precisará visitar este computador para reativar as conexões.</translation>
@@ -246,6 +249,7 @@ remota do Google Chrome</translation>
 <translation id="7401733114166276557">Área de trabalho remota do Google Chrome</translation>
 <translation id="7434397035092923453">Acesso negado para o cliente <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">Cliente conectado: <ph name="CLIENT_USERNAME" />.</translation>
+<translation id="7589941250119944644">A Área de trabalho remota do Google Chrome agora tem nova versão na Web. Teste nosso <ph name="LINK_BEGIN" />app da Web<ph name="LINK_END" />: ele é rápido, gratuito e tem todos os mesmos recursos de antes.</translation>
 <translation id="7606912958770842224">Ativar conexões remotas</translation>
 <translation id="7649070708921625228">Ajuda</translation>
 <translation id="7658239707568436148">Cancelar</translation>

@@ -51,7 +51,7 @@
 <translation id="1152117524387175066">Laporkan status pengalih dev perangkat ketika boot.
 
       Jika kebijakan ini disetel ke false, status pengalih dev tidak akan dilaporkan.</translation>
-<translation id="1160939557934457296">Menonaktifkan untuk melanjutkan dari laman peringatan Penjelajahan Aman</translation>
+<translation id="1160939557934457296">Menonaktifkan untuk melanjutkan dari laman peringatan Safe Browsing</translation>
 <translation id="1198465924256827162">Frekuensi upload status perangkat dikirimkan, dalam milidetik.
 
       Jika kebijakan ini tidak disetel, frekuensi defaultnya adalah 3 jam. Frekuensi minimum
@@ -154,6 +154,7 @@
       perekam video akan diberikan di laman masuk SAML.  Jika tidak ditemukan
       kecocokan, akses akan ditolak secara otomatis.  Pola karakter pengganti
       tidak diizinkan.</translation>
+<translation id="1634989431648355062">Izinkan plugin <ph name="FLASH_PLUGIN_NAME" /> di situs ini</translation>
 <translation id="1655229863189977773">Setel ukuran cache disk dalam bita</translation>
 <translation id="166427968280387991">Server proxy</translation>
 <translation id="1668836044817793277">Mengizinkan peluncuran otomatis dengan aplikasi kios tanpa penundaan untuk mengontrol versi <ph name="PRODUCT_OS_NAME" /> atau tidak.
@@ -483,11 +484,11 @@
 
       Setiap entri daftar menentukan pengenal, yang digunakan secara internal untuk menunjukkan akun lokal perangkat yang berbeda secara terpisah.</translation>
 <translation id="2769952903507981510">Mengonfigurasi nama domain yang dibutuhkan untuk hosting akses jarak jauh</translation>
-<translation id="2785954641789149745">Mengaktifkan fitur Penjelajahan Aman <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah setelan ini.
+<translation id="2785954641789149745">Mengaktifkan fitur Safe Browsing <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah setelan ini.
 
-      Jika Anda mengaktifkan setelan ini, Penjelajahan Aman akan selalu aktif.
+      Jika Anda mengaktifkan setelan ini, Safe Browsing akan selalu aktif.
 
-      Jika Anda menonaktifkan setelan ini, Penjelajahan Aman tidak akan pernah aktif.
+      Jika Anda menonaktifkan setelan ini, Safe Browsing tidak akan pernah aktif.
 
       Jika Anda mengaktifkan atau menonaktifkan setelan ini, pengguna tidak dapat mengubah atau menimpa setelan "Aktifkan perlindungan phishing dan software perusak" di <ph name="PRODUCT_NAME" />.
 
@@ -504,7 +505,7 @@
           Jika setelan ini dinonaktifkan dan koneksi UDP yang keluar disaring oleh firewall, komputer ini hanya akan mengizinkan koneksi dari komputer klien dalam jaringan lokal.
 
           Jika kebijakan ini dibiarkan tidak disetel, setelan tersebut akan diaktifkan.</translation>
-<translation id="2811293057593285123">Layanan Penjelajahan Aman menampilkan laman peringatan saat pengguna bernavigasi ke situs yang diberi tanda sebagai berpotensi berbahaya. Mengaktifkan setelan ini mencegah pengguna terus melanjutkan dari laman peringatan ke situs yang berbahaya.
+<translation id="2811293057593285123">Layanan Safe Browsing menampilkan laman peringatan saat pengguna bernavigasi ke situs yang diberi tanda sebagai berpotensi berbahaya. Mengaktifkan setelan ini mencegah pengguna terus melanjutkan dari laman peringatan ke situs yang berbahaya.
 
       Jika setelan ini dinonaktifkan atau tidak dikonfigurasi, pengguna dapat memilih untuk melanjutkan ke situs yang diberi tanda setelah peringatan ditampilkan.</translation>
 <translation id="2824715612115726353">Aktifkan mode Penyamaran</translation>
@@ -710,6 +711,11 @@
       Membiarkan kebijakan ini tidak tersetel akan memungkinkan pengguna memilih setelan proxy-nya sendiri.</translation>
 <translation id="3758249152301468420">Nonaktifkan Alat Pengembang</translation>
 <translation id="3765260570442823273">Durasi pesan peringatan proses keluar nganggur</translation>
+<translation id="376931976323225993">Memungkinkan Anda menyetel apakah situs diizinkan untuk otomatis menjalankan plugin <ph name="FLASH_PLUGIN_NAME" />. Otomatis menjalankan plugin <ph name="FLASH_PLUGIN_NAME" /> dapat diizinkan untuk semua situs atau ditolak untuk semua situs.
+
+          Klik untuk mainkan memungkinkan plugin <ph name="FLASH_PLUGIN_NAME" /> berjalan, namun pengguna harus mengklik placeholder untuk mulai menjalankannya.
+
+          Jika kebijakan ini tidak disetel, pengguna akan dapat mengubah setelan ini secara manual.</translation>
 <translation id="3780152581321609624">Sertakan port non-standar di SPN Kerberos</translation>
 <translation id="3780319008680229708">Jika kebijakan ini disetel ke true, ikon toolbar Cast akan selalu ditampilkan di toolbar atau menu tambahan, dan pengguna tidak dapat menghapusnya.
 
@@ -838,6 +844,7 @@
 <translation id="4105989332710272578">Nonaktifkan penerapan Transparansi Sertifikat untuk daftar URL</translation>
 <translation id="4121350739760194865">Mencegah promosi apl muncul di laman tab baru</translation>
 <translation id="4157003184375321727">Laporkan versi OS dan firmware</translation>
+<translation id="4183229833636799228">Setelan <ph name="FLASH_PLUGIN_NAME" /> default</translation>
 <translation id="4192388905594723944">URL untuk memvalidasi token autentikasi klien akses jarak jauh</translation>
 <translation id="4203389617541558220">Membatasi waktu operasi perangkat dengan menjadwalkan mulai ulang otomatis.
 
@@ -888,7 +895,7 @@
 <translation id="4372704773119750918">Jangan izinkan pengguna perusahaan untuk menjadi bagian dari multiprofil (primer atau sekunder)</translation>
 <translation id="4377599627073874279">Izinkan semua situs menampilkan semua gambar</translation>
 <translation id="4389091865841123886">Mengonfigurasi pengesahan jarak jauh dengan mekanisme TPM.</translation>
-<translation id="4397469093966511008">Menyetel kebijakan ini ke false akan menghentikan pengguna memilih untuk mengirim beberapa informasi sistem dan konten halaman ke server Google. Jika disetel ke true atau tidak dikonfigurasi, pengguna akan diizinkan untuk mengirim beberapa informasi sistem dan konten halaman ke Penjelajahan Aman untuk membantu mendeteksi aplikasi dan situs yang berbahaya.</translation>
+<translation id="4397469093966511008">Menyetel kebijakan ini ke false akan menghentikan pengguna memilih untuk mengirim beberapa informasi sistem dan konten halaman ke server Google. Jika disetel ke true atau tidak dikonfigurasi, pengguna akan diizinkan untuk mengirim beberapa informasi sistem dan konten halaman ke Safe Browsing untuk membantu mendeteksi aplikasi dan situs yang berbahaya.</translation>
 <translation id="4418726081189202489">Menyetel kebijakan ini ke false akan menghentikan <ph name="PRODUCT_NAME" /> yang terkadang mengirim kueri ke server Google, untuk mengambil stempel waktu yang akurat. Kueri ini akan diaktifkan jika kebijakan disetel ke True atau tidak disetel.</translation>
 <translation id="4423597592074154136">Tentukan setelan proxy secara manual</translation>
 <translation id="4429220551923452215">Mengaktifkan atau menonaktifkan pintasan aplikasi di bilah bookmark.
@@ -1022,7 +1029,7 @@
 
           Kebijakan ini hanya dipatuhi jika kebijakan 'DefaultSearchProviderEnabled' diaktifkan.</translation>
 <translation id="489803897780524242">Parameter yang mengendalikan penempatan istilah penelusuran untuk penyedia penelusuran default</translation>
-<translation id="4899708173828500852">Aktifkan Penjelajahan Aman</translation>
+<translation id="4899708173828500852">Aktifkan Safe Browsing</translation>
 <translation id="4906194810004762807">Segarkan peringkat untuk Kebijakan Perangkat</translation>
 <translation id="4962262530309732070">Jika kebijakan ini disetel ke true atau tidak dikonfigurasi, <ph name="PRODUCT_NAME" /> akan mengizinkan setelan Tambahkan Orang dari pengelola pengguna.
 
@@ -1144,6 +1151,7 @@
 
       Perlu diperhatikan jika platform mendukung pemberitahuan kebijakan, jeda penyegaran akan disetel menjadi 24 jam (dengan mengabaikan semua setelan default dan nilai kebijakan ini) karena pemberitahuan kebijakan diperkirakan akan memaksa penyegaran otomatis setiap kali kebijakan berubah, menghasilkan lebih banyak penyegaran yang tidak diperlukan.</translation>
 <translation id="5535973522252703021">Daftar putih server delegasi Kerberos</translation>
+<translation id="555077880566103058">Izinkan semua situs menjalankan plugin <ph name="FLASH_PLUGIN_NAME" /> secara otomatis</translation>
 <translation id="5559079916187891399">Kebijakan ini tidak memengaruhi aplikasi Android.</translation>
 <translation id="5560039246134246593">Menambahkan parameter ke pengambilan bibit Variasi di <ph name="PRODUCT_NAME" />.
 
@@ -1220,12 +1228,6 @@
 <translation id="5868414965372171132">Konfigurasi jaringan tingkat pengguna</translation>
 <translation id="588135807064822874">Mengaktifkan Sentuh untuk Menelusuri</translation>
 <translation id="5883015257301027298">Setelan cookie default</translation>
-<translation id="5887291617378691520">Jika 'Buka daftar URL' dipilih sebagai tindakan saat memulai, ini akan memungkinkan Anda menentukan daftar URL yang dibuka. Jika tidak disetel, tidak akan ada URL yang dibuka saat memulai.
-
-          Kebijakan ini hanya akan bekerja jika kebijakan 'RestoreOnStartup' disetel ke 'RestoreOnStartupIsURLs'.
-
-          Kebijakan ini tidak tersedia di Windows yang tidak digabungkan
-          ke domain Active Directory.</translation>
 <translation id="5887414688706570295">Mengonfigurasi awalan TalkGadget yang akan digunakan oleh hosting akses jarak jauh dan mencegah pengguna mengubahnya.
 
           Jika ditentukan, awalan ini ditambahkan di depan nama TalkGadget dasar untuk membuat nama domain TalkGadget lengkap. Nama domain TalkGadget dasar adalah '.talkgadget.google.com'.
@@ -1309,6 +1311,9 @@
       Jika tidak, kebijakan ini akan disetel ke salah satu dari nilai berikut: "sslv3", "tls1", "tls1.1", atau "tls1.2". Jika disetel, <ph name="PRODUCT_NAME" /> tidak akan menggunakan SSL/TLS dengan versi yang kurang dari versi yang ditentukan. Nilai yang tidak dikenali akan diabaikan.
 
       Perhatikan bahwa, "sslv3" adalah versi yang lebih awal dibandingkan "tls1", meskipun angkanya lebih besar.</translation>
+<translation id="6181608880636987460">Memungkinkan Anda menetapkan daftar pola URL yang menentukan situs yang tidak diizinkan untuk menjalankan plugin <ph name="FLASH_PLUGIN_NAME" />.
+
+          Jika kebijakan ini dibiarkan tidak disetel, nilai default global akan digunakan untuk semua situs, baik dari kebijakan 'DefaultPluginsSetting' jika disetel, atau konfigurasi pribadi pengguna.</translation>
 <translation id="6190022522129724693">Setelan munculan default</translation>
 <translation id="6197453924249895891">Memberikan akses ke kunci perusahaan ke ekstensi.
 
@@ -1421,6 +1426,9 @@
 <translation id="6689792153960219308">Melaporkan status hardware</translation>
 <translation id="6693751878507293182">Jika Anda menyetel setelan ini untuk mengaktifkan penelusuran otomatis, pemasangan plugin yang hilang akan dinonaktifkan dalam <ph name="PRODUCT_NAME" />. Menyetel opsi ini menjadi nonaktif atau membiarkannya tidak disetel akan mengaktifkan pencari plugin.</translation>
 <translation id="6699880231565102694">Mengaktifkan autentikasi dua faktor untuk hosting akses jarak jauh</translation>
+<translation id="6757438632136860443">Memungkinkan Anda menetapkan daftar pola URL yang menentukan situs yang diizinkan menjalankan plugin <ph name="FLASH_PLUGIN_NAME" />.
+
+          Jika kebijakan dibiarkan tidak disetel, nilai default global akan digunakan untuk semua situs, baik dari kebijakan 'DefaultPluginsSetting' jika disetel, ataupun konfigurasi pribadi pengguna.</translation>
 <translation id="6766216162565713893">Izinkan situs meminta pengguna memberikan akses ke perangkat Bluetooth di sekitar</translation>
 <translation id="6770454900105963262">Melaporkan informasi tentang sesi kios aktif</translation>
 <translation id="6786747875388722282">Ekstensi</translation>
@@ -1448,6 +1456,7 @@
           Jika Anda menyetel kebijakan ini, pengguna tidak dapat mengubah atau menimpanya.
 
           Jika kebijakan ini tidak disetel, masukan yang diucapkan pertama-tama dinonaktifkan, namun dapat diaktifkan oleh pengguna kapan saja.</translation>
+<translation id="6922884955650325312">Blokir plugin <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="6923366716660828830">Menentukan nama penyedia penelusuran default. Jika dibiarkan kosong atau tidak disetel, nama host yang ditentukan oleh URL penelusuran akan digunakan. Kebijakan ini hanya dipertimbangkan jika kebijakan 'DefaultSearchProviderEnabled' diaktifkan.</translation>
 <translation id="6931242315485576290">Nonaktifkan sinkronisasi data dengan Google</translation>
 <translation id="6936894225179401731">Menentukan jumlah maksimum sambungan bersama ke server proxy.
@@ -1479,18 +1488,6 @@
 <translation id="7040229947030068419">Nilai contoh:</translation>
 <translation id="7049373494483449255">Mengizinkan <ph name="PRODUCT_NAME" /> mengirimkan dokumen ke <ph name="CLOUD_PRINT_NAME" /> untuk pencetakan. CATATAN: Setelan ini hanya memengaruhi dukungan <ph name="CLOUD_PRINT_NAME" /> dalam <ph name="PRODUCT_NAME" />. Setelan ini tidak mencegah pengguna mengirimkan pekerjaan cetak di situs web. Jika setelan ini diaktifkan atau tidak dikonfigurasi, pengguna dapat mencetak ke <ph name="CLOUD_PRINT_NAME" /> dari dialog cetak <ph name="PRODUCT_NAME" />. Jika setelan ini dinonaktifkan, pengguna tidak dapat mencetak ke <ph name="CLOUD_PRINT_NAME" /> dari dialog pencetakan <ph name="PRODUCT_NAME" /></translation>
 <translation id="7053678646221257043">Kebijakan ini memaksa bookmark diimpor dari browser default saat ini, jika diaktifkan. Jika diaktifkan, kebijakan ini juga memengaruhi dialog impor. Jika dinonaktifkan, tidak ada bookmark yang diimpor. Jika tidak disetel, pengguna mungkin akan diminta untuk mengimpor, atau pengimporan dapat terjadi secara otomatis.</translation>
-<translation id="7055358889740598917">Mengonfigurasi URL beranda default di <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubahnya.
-
-          Beranda adalah laman yang dibuka dengan tombol Beranda. Laman yang dibuka saat proses mulai dikontrol oleh kebijakan RestoreOnStartup.
-
-          Jenis beranda dapat disetel ke URL yang Anda tetapkan di sini atau disetel ke Laman Tab Baru. Jika Anda memilih Laman Tab Baru, kebijakan ini tidak akan berpengaruh.
-
-          Jika Anda mengaktifkan setelan ini, pengguna tidak dapat mengubah URL berandanya di <ph name="PRODUCT_NAME" />, tetapi mereka tetap dapat memilih Laman Tab Baru sebagai beranda.
-
-          Membiarkan kebijakan ini tidak disetel akan memungkinkan pengguna memilih berandanya sendiri jika HomepageIsNewTabPage juga tidak disetel.
-
-          Kebijakan ini tidak tersedia di Windows yang tidak bergabung dengan
-          domain Active Directory.</translation>
 <translation id="7063895219334505671">Izinkan munculan di situs ini</translation>
 <translation id="706669471845501145">Izinkan situs menampilkan pemberitahuan desktop</translation>
 <translation id="7072406291414141328">Mengaktifkan pembatasan bandwidth jaringan</translation>
@@ -1512,21 +1509,6 @@
       Jika kebijakan ini disetel ke False, mode latar belakang dinonaktifkan dan tidak dapat dikontrol oleh pengguna di setelan browser.
 
       Jika kebijakan ini tidak disetel, mode latar belakang pada awalnya akan dinonaktifkan dan dapat dikontrol oleh pengguna di setelan browser.</translation>
-<translation id="7123297102171034788">Memungkinkan Anda menentukan perilaku saat memulai.
-
-          Jika Anda memilih 'Buka Laman Tab Baru', maka Laman Tab Baru akan selalu dibuka saat Anda memulai <ph name="PRODUCT_NAME" />.
-
-          Jika Anda memilih 'Pulihkan sesi sebelumnya', URL yang dibuka saat <ph name="PRODUCT_NAME" /> ditutup terakhir kali akan dibuka kembali, dan sesi penjelajahan Anda akan dipulihkan seperti sebelumnya.
-          Memilih opsi ini akan menonaktifkan beberapa setelan yang bergantung pada sesi atau yang melakukan tindakan saat keluar (seperti Bersihkan data penjelajahan saat keluar atau cookie khusus sesi).
-
-          Jika Anda memilih 'Buka daftar URL', daftar 'URL yang harus dibuka saat memulai' akan dibuka saat pengguna memulai <ph name="PRODUCT_NAME" />.
-
-          Jika Anda mengaktifkan setelan ini, pengguna tidak dapat mengubah atau menggantinya di <ph name="PRODUCT_NAME" />.
-
-          Menonaktifkan setelan ini setara dengan membiarkannya tidak terkonfigurasi. Pengguna akan tetap dapat mengubahnya di <ph name="PRODUCT_NAME" />.
-
-          Kebijakan ini tidak tersedia di Windows yang tidak digabungkan
-          dengan domain Active Directory.</translation>
 <translation id="7128918109610518786">Mendaftar pengenal aplikasi yang ditampilkan <ph name="PRODUCT_OS_NAME" /> sebagai aplikasi tersemat pada bilah peluncur.
 
       Jika kebijakan ini dikonfigurasi, kumpulan aplikasi akan ditetapkan dan tidak dapat diubah oleh pengguna.
@@ -1546,7 +1528,7 @@
 
           Jika kebijakan "RestoreOnStartup" disetel untuk memulihkan URL dari sesi sebelumnya, kebijakan ini akan diabaikan dan cookie akan disimpan secara permanen untuk situs tersebut.</translation>
 <translation id="7207095846245296855">Paksa Google TelusurAman</translation>
-<translation id="7216442368414164495">Memungkinkan pengguna ikut serta dalam pelaporan yang diperluas Penjelajahan Aman</translation>
+<translation id="7216442368414164495">Memungkinkan pengguna ikut serta dalam pelaporan yang diperluas Safe Browsing</translation>
 <translation id="7234280155140786597">Nama hosting perpesanan asli yang dilarang (atau * untuk semua)</translation>
 <translation id="7236775576470542603">Menyetel jenis lup default yang diaktifkan di layar masuk.
 
@@ -1757,20 +1739,6 @@
 <translation id="793134539373873765">Tentukan apakah p2p akan digunakan untuk payload pembaruan OS. Jika disetel ke True, perangkat akan membagi dan berusaha menggunakan payload pembaruan pada LAN, serta berpotensi mengurangi penggunaan dan kepadatan bandwidth internet. Jika payload pembaruan tidak tersedia di LAN, perangkat tersebut akan kembali mendownload dari server yang diperbarui. Jika disetel ke False atau tidak dikonfigurasi, p2p tidak akan digunakan.</translation>
 <translation id="7933141401888114454">Mengaktifkan pembuatan pengguna yang dilindungi</translation>
 <translation id="793473937901685727">Menyetel ketersediaan sertifikat untuk aplikasi ARC</translation>
-<translation id="7936098023732125869">Mengaktifkan penggunaan penyedia penelusuran default.
-
-          Jika Anda mengaktifkan setelan ini, penelusuran default dilakukan saat pengguna mengetik teks di omnibox yang bukan merupakan URL.
-
-          Anda dapat menentukan penyedia penelusuran default untuk digunakan dengan menyetel kebijakan penelusuran default lainnya. Jika dikosongkan, pengguna dapat memilih penyedia default.
-
-          Jika Anda menonaktifkan setelan ini, tidak ada penelusuran yang dilakukan saat pengguna memasukkan teks bukan URL di omnibox.
-
-          Jika Anda mengaktifkan atau menonaktifkan setelan ini, pengguna tidak dapat mengubah atau mengganti setelan ini di <ph name="PRODUCT_NAME" />.
-
-          Jika kebijakan ini tidak disetel, penyedia penelusuran default akan aktif, dan pengguna dapat menyetel daftar penyedia penelusuran.
-
-          Kebijakan ini tidak tersedia di Windows yang tidak digabungkan
-          ke domain Active Directory.</translation>
 <translation id="7937766917976512374">Izinkan atau tolak penangkapan video</translation>
 <translation id="7941975817681987555">Jangan memprediksi tindakan jaringan di sambungan jaringan apa pun</translation>
 <translation id="7953256619080733119">Hosting pengecualian manual pengguna yang dikelola</translation>
@@ -1882,18 +1850,6 @@
 <translation id="8312129124898414409">Memungkinkan Anda menyetel apakah situs web diizinkan untuk menggunakan pembuatan kunci atau tidak. Penggunaan pembuatan kunci dapat diizinkan atau ditolak untuk semua situs web.
 
           Jika kebijakan ini tidak disetel, 'BlockKeygen' akan digunakan dan pengguna dapat mengubahnya.</translation>
-<translation id="8316806736175990584">Mengonfigurasi jenis beranda default di <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah preferensi beranda. Beranda dapat disetel ke URL yang Anda tetapkan atau disetel ke Laman Tab Baru.
-
-          Jika Anda mengaktifkan setelan ini, Laman Tab Baru akan selalu digunakan untuk beranda, dan lokasi URL beranda akan diabaikan.
-
-          Jika Anda menonaktifkan setelan ini, beranda pengguna tidak akan pernah disetel sebagai Laman Tab Baru, kecuali URL-nya disetel ke 'chrome://newtab'.
-
-          Jika Anda mengaktifkan atau menonaktifkan setelan ini, pengguna tidak dapat mengubah jenis berandanya di <ph name="PRODUCT_NAME" />.
-
-          Membiarkan kebijakan ini tidak disetel akan memungkinkan pengguna memilih sendiri apakah Laman Tab Baru merupakan beranda atau bukan.
-
-          Kebijakan ini tidak tersedia di Windows yang tidak bergabung dengan
-          domain Active Directory.</translation>
 <translation id="8329984337216493753">Kebijakan ini aktif dalam mode eceran saja.
 
       Jika DeviceIdleLogoutTimeout ditentukan, kebijakan ini menetapkan durasi kotak peringatan dengan pewaktu hitungan mundur yang ditampilkan ke pengguna sebelum proses keluar dieksekusi.
@@ -1929,24 +1885,6 @@
 <translation id="8519264904050090490">URL pengecualian manual pengguna yang dikelola</translation>
 <translation id="8544375438507658205">Pengurai HTML default untuk <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Memperingatkan saat mengunjungi situs di luar paket konten</translation>
-<translation id="855339549837475534">Chromium dan Google Chrome mendukung rangkaian kebijakan
-      yang sama. Harap diperhatikan bahwa dokumen ini dapat berisi kebijakan yang
-      ditargetkan untuk versi software yang belum dirilis (entri 'Didukung di'
-      merujuk ke versi yang belum dirilis) dan oleh karena itu, kebijakan semacam ini dapat
-      berubah atau dihapus tanpa pemberitahuan sebelumnya.
-
-      Kebijakan ini hanya khusus ditujukan untuk mengonfigurasi contoh
-      internal <ph name="PRODUCT_NAME" /> ke
-      organisasi Anda. Bila kebijakan ini digunakan di luar organisasi (misalnya
-      dalam program yang didistribusikan secara publik) akan dianggap sebagai software perusak dan mungkin
-      akan diberi label sebagai software perusak oleh Google dan vendor antivirus.
-
-      Setelan ini tidak perlu dikonfigurasi secara manual!  Template
-      yang mudah digunakan untuk Windows, Mac, dan Linux dapat didownload dari <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
-
-      Cara yang disarankan untuk mengonfigurasi kebijakan ini di Windows adalah melalui GPO, meskipun
-      menyediakan kebijakan melalui registri masih didukung untuk Windows
-      yang bergabung dalam domain Active Directory.</translation>
 <translation id="8566842294717252664">Menyembunyikan toko web dari Laman Tab Baru dan peluncur aplikasi</translation>
 <translation id="8587229956764455752">Mengizinkan pembuatan akun pengguna baru</translation>
 <translation id="8614804915612153606">Nonaktifkan Pembaruan Otomatis</translation>
@@ -1963,17 +1901,6 @@
 
           Jika Anda membiarkan kebijakan ini tidak disetel, <ph name="PRODUCT_NAME" /> akan mencoba mendeteksi apakah server ada di internet dan akan menanggapi permintaan IWA setelahnya.  Jika server terdeteksi sebagai internet, permintaan IWA darinya akan diabaikan oleh <ph name="PRODUCT_NAME" />.</translation>
 <translation id="8672321184841719703">Versi Pembaruan Otomatis Target</translation>
-<translation id="868068801094828689">Memungkinkan pelaporan penggunaan anonim dan data mogok <ph name="PRODUCT_NAME" /> ke Google dan mencegah pengguna mengubah setelan ini.
-
-      Jika setelan ini diaktifkan, pelaporan penggunaan anonim dan data terkait
-      mogok dikirim ke Google.  Jika dinonaktifkan, informasi ini tidak dikirim ke
-      Google.  Dalam kedua kasus tersebut, pengguna tidak dapat mengubah atau mengganti setelan.
-      Jika kebijakan ini tidak disetel, setelannya akan sesuai dengan yang dipilih
-      pengguna saat pemasangan/pertama kali menjalankan.
-
-      Kebijakan ini tidak tersedia di Windows yang tidak tergabung dalam
-      domain Active Directory.  (Untuk Chrome OS, lihat
-      DeviceMetricsReportingEnabled.)</translation>
 <translation id="8693243869659262736">Gunakan klien DNS di dalamnya</translation>
 <translation id="8704831857353097849">Daftar plugin yang dinonaktifkan</translation>
 <translation id="8711086062295757690">Menentukan kata kunci yang merupakan pintasan yang digunakan dalam omnibox guna memicu penelusuran untuk operator ini. Kebijakan ini bersifat opsional. Jika tidak disetel, kata kunci tidak akan mengaktifkan penyedia penelusuran. Kebijakan ini hanya dipertimbangkan jika kebijakan 'DefaultSearchProviderEnabled' diaktifkan.</translation>
@@ -2009,6 +1936,7 @@
 <translation id="8858642179038618439">Memaksakan Mode Perlindungan YouTube</translation>
 <translation id="8864975621965365890">Menimpa permintaan penghentian yang muncul saat situs dirender oleh <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Beranda</translation>
+<translation id="8882006618241293596">Blokir plugin <ph name="FLASH_PLUGIN_NAME" /> di situs ini</translation>
 <translation id="8906768759089290519">Aktifkan mode tamu</translation>
 <translation id="8908294717014659003">Memungkinkan Anda menyetel apakah situs web diizinkan untuk mengakses perangkat tangkap media. Akses ke perangkat tangkap media dapat diizinkan secara default, atau dapat ditanyakan pada pengguna setiap saat situs web ingin mendapatkan akses ke perangkat tangkap media.
 

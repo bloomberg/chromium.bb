@@ -141,6 +141,7 @@
 <translation id="1608755754295374538">无需提示用户即可使用音频捕获设备的网址</translation>
 <translation id="1617235075406854669">允许删除浏览器历史记录和下载记录</translation>
 <translation id="163200210584085447">系统会将此列表中的网址格式与请求网址的安全来源进行比对。如果找到了匹配项，系统将允许相应网址通过 SAML 登录页面访问视频捕获设备。如果未找到匹配项，系统将自动拒绝授予访问权限。不允许使用通配符模式。</translation>
+<translation id="1634989431648355062">允许这些网站运行 <ph name="FLASH_PLUGIN_NAME" /> 插件</translation>
 <translation id="1655229863189977773">设置磁盘缓存大小（字节）</translation>
 <translation id="166427968280387991">代理服务器</translation>
 <translation id="1668836044817793277">是否允许自动启动式零延迟自助服务终端应用控制 <ph name="PRODUCT_OS_NAME" />版本。
@@ -686,6 +687,11 @@
       如果您未设置这些政策，用户将可以自行选择代理设置。</translation>
 <translation id="3758249152301468420">停用开发者工具</translation>
 <translation id="3765260570442823273">待机退出警告讯息的持续时间</translation>
+<translation id="376931976323225993">可让您设置是否允许网站自动运行 <ph name="FLASH_PLUGIN_NAME" /> 插件。您既可允许所有网站自动运行 <ph name="FLASH_PLUGIN_NAME" /> 插件，也可禁止所有网站自动运行该插件。
+
+          选中“点击运行”选项可允许 <ph name="FLASH_PLUGIN_NAME" /> 插件运行，但用户必须点击该插件才能启动它。
+
+          如果未设置此政策，用户则可手动更改这项设置。</translation>
 <translation id="3780152581321609624">在 Kerberos SPN 中加入非标准端口</translation>
 <translation id="3780319008680229708">如果此政策设为 true，Cast 工具栏图标将始终显示在工具栏或菜单中，用户无法将其移除。
 
@@ -810,6 +816,7 @@
 <translation id="4105989332710272578">对于指定的一系列网址，不强制要求必须符合证书透明度政策</translation>
 <translation id="4121350739760194865">阻止在新标签页上显示应用宣传信息</translation>
 <translation id="4157003184375321727">报告操作系统和固件版本</translation>
+<translation id="4183229833636799228">默认 <ph name="FLASH_PLUGIN_NAME" /> 设置</translation>
 <translation id="4192388905594723944">验证远程访问客户端身份验证令牌时使用的网址</translation>
 <translation id="4203389617541558220">安排自动重启以限制设备的正常运行时间。
 
@@ -1112,6 +1119,7 @@
 
       请注意，如果平台支持政策通知，刷新延迟时间将被设为 24 小时（忽略所有默认值和此政策的值），这是因为只要政策发生变化，政策通知应该会自动强制进行刷新，所以没有必要更频繁地进行刷新。</translation>
 <translation id="5535973522252703021">Kerberos 授权服务器白名单</translation>
+<translation id="555077880566103058">允许所有网站自动运行 <ph name="FLASH_PLUGIN_NAME" /> 插件</translation>
 <translation id="5559079916187891399">此政策对 Android 应用没有任何影响。</translation>
 <translation id="5560039246134246593">在提取 <ph name="PRODUCT_NAME" /> 中的变体种子的方法中添加参数。
 
@@ -1188,11 +1196,6 @@
 <translation id="5868414965372171132">用户级网络配置</translation>
 <translation id="588135807064822874">启用“触摸搜索”功能</translation>
 <translation id="5883015257301027298">默认 Cookie 设置</translation>
-<translation id="5887291617378691520">如果您选择“打开网址列表”作为该浏览器启动时的操作，则能够以列表形式指定要打开的网址。如果此政策未设置，该浏览器启动时将不会打开任何网址。
-
-          仅当“RestoreOnStartup”政策设为“RestoreOnStartupIsURLs”时，此政策才有效。
-
-          此政策不适用于未加入 Active Directory 网域的 Windows 实例。</translation>
 <translation id="5887414688706570295">配置供远程访问主机使用的 TalkGadget 前缀，并禁止用户更改此设置。
 
           如果指定的话，该前缀将附加到 TalkGadge 基本名称之前，两者共同构成 TalkGadget 的完整域名。TalkGadget 基本域名为.talkgadget.google.com。
@@ -1275,6 +1278,9 @@
       您可以将此政策设为以下其中一个值：sslv3、tls1、tls1.1 或 tls1.2。如果您设置了此政策，<ph name="PRODUCT_NAME" /> 将不会使用低于指定版本的 SSL/TLS 版本。系统将忽略无法识别的值。
 
       请注意，sslv3 的版本低于 tls1，不要被数字迷惑了。</translation>
+<translation id="6181608880636987460">可让您设置一系列网址格式，以用于指定禁止哪些网站运行 <ph name="FLASH_PLUGIN_NAME" /> 插件。
+
+          如果未设置此政策，系统将会对所有网站使用“DefaultPluginsSetting”政策中的全局默认值（倘若已设置“DefaultPluginsSetting”政策），或使用用户个人配置中的全局默认值（倘若未设置“DefaultPluginsSetting”政策）。</translation>
 <translation id="6190022522129724693">默认弹出式窗口设置</translation>
 <translation id="6197453924249895891">向扩展程序授予对企业密钥的使用权限。
 
@@ -1387,6 +1393,9 @@
 <translation id="6689792153960219308">报告硬件状态</translation>
 <translation id="6693751878507293182">如果您启用了此设置，<ph name="PRODUCT_NAME" />就不会自动搜索和安装缺少的插件。如果停用或未设置此选项，就会启用插件查找程序。</translation>
 <translation id="6699880231565102694">为远程访问主机启用双重身份验证</translation>
+<translation id="6757438632136860443">可让您设置一系列网址格式，以用于指定允许哪些网站运行 <ph name="FLASH_PLUGIN_NAME" /> 插件。
+
+          如果未设置此政策，系统将会对所有网站使用“DefaultPluginsSetting”政策中的全局默认值（倘若已设置“DefaultPluginsSetting”政策），或使用用户个人配置中的全局默认值（倘若未设置“DefaultPluginsSetting”政策）。</translation>
 <translation id="6766216162565713893">允许网站请求用户授予对附近蓝牙设备的访问权限</translation>
 <translation id="6770454900105963262">报告自助服务终端的相关信息</translation>
 <translation id="6786747875388722282">扩展程序</translation>
@@ -1412,6 +1421,7 @@
           如果您设置了此政策，那么用户将无法对其进行更改或覆盖。
 
           如果未设置此政策，则语音反馈最初处于停用状态，但用户可以随时启用该功能。</translation>
+<translation id="6922884955650325312">禁止 <ph name="FLASH_PLUGIN_NAME" /> 插件运行</translation>
 <translation id="6923366716660828830">指定默认搜索服务提供商的名称。如果留空或未设置，系统就会使用由搜索网址指定的主机名。要考虑此政策，必须先启用“DefaultSearchProviderEnabled”政策。</translation>
 <translation id="6931242315485576290">停用与 Google 同步数据的功能</translation>
 <translation id="6936894225179401731">指定可同时连接到代理服务器的连接数上限。
@@ -1443,17 +1453,6 @@
 <translation id="7040229947030068419">值示例：</translation>
 <translation id="7049373494483449255">允许 <ph name="PRODUCT_NAME" />将文档提交到 <ph name="CLOUD_PRINT_NAME" />进行打印。请注意：这只会影响 <ph name="PRODUCT_NAME" />中的 <ph name="CLOUD_PRINT_NAME" />支持，并不会禁止用户在网站上提交打印作业。如果启用或未配置此设置，用户就可以通过 <ph name="PRODUCT_NAME" />的打印对话框使用 <ph name="CLOUD_PRINT_NAME" />进行打印。如果停用此设置，用户就无法通过 <ph name="PRODUCT_NAME" />的打印对话框使用 <ph name="CLOUD_PRINT_NAME" />进行打印。</translation>
 <translation id="7053678646221257043">如果启用此政策，就会强制从当前默认浏览器导入书签，还会影响导入对话框。如果停用此政策，就不会导入书签。如果未设置此政策，系统就会询问用户是否导入书签，或者系统自动进行导入。</translation>
-<translation id="7055358889740598917">指定 <ph name="PRODUCT_NAME" /> 的默认主页网址，并禁止用户对其进行更改。
-
-          主页是指用户点击“主页”按钮后打开的页面。该浏览器启动时打开的页面由 RestoreOnStartup 政策控制。
-
-          您可以将主页类型设为在此处指定的网址，也可以将其设为“打开新的标签页”。如果您选择“打开新的标签页”，此政策将不会产生任何影响。
-
-          如果您启用了此设置，用户将无法更改 <ph name="PRODUCT_NAME" /> 的主页网址，但仍可以选择“打开新的标签页”作为主页。
-
-          如果此政策未设置，并且 HomepageIsNewTabPage 也未设置，用户将可以自行选择主页。
-
-          此政策不适用于未加入 Active Directory 网域的 Windows 实例。</translation>
 <translation id="7063895219334505671">在这些网站上允许弹出式窗口</translation>
 <translation id="706669471845501145">允许网站显示桌面通知</translation>
 <translation id="7072406291414141328">启用调节网络带宽的功能</translation>
@@ -1475,21 +1474,6 @@
       如果此政策设为 False，系统将停用后台模式，并且用户无法在浏览器设置中控制该模式。
 
       如果此政策未设置，开始时系统将停用后台模式，但用户可以在浏览器设置中控制该模式。</translation>
-<translation id="7123297102171034788">可让您指定该浏览器启动时的行为。
-
-          如果您选择“打开新的标签页”，当您启动 <ph name="PRODUCT_NAME" /> 时，系统将始终打开新的标签页。
-
-          如果您选择“恢复上次的会话”，系统将重新打开 <ph name="PRODUCT_NAME" /> 上次关闭时打开着的网址，并将浏览会话恢复到关闭该浏览器时的状态。
-
-          如果您选择此选项，某些依赖于会话的设置或用于指定该浏览器退出时执行的操作的设置（例如，退出浏览器时清除浏览数据，或仅在会话期间有效的 Cookie）将会停用。
-
-          如果您选择“打开网址列表”，系统会在用户启动 <ph name="PRODUCT_NAME" /> 时打开“启动时打开的网址”列表。
-
-          如果您启用了此设置，用户将无法在 <ph name="PRODUCT_NAME" /> 中对其进行更改或覆盖。
-
-          停用此设置的效果等同于未配置此设置。用户仍可以在 <ph name="PRODUCT_NAME" /> 中对其进行更改。
-
-          此政策不适用于未加入 Active Directory 网域的 Windows 实例。</translation>
 <translation id="7128918109610518786">列出 <ph name="PRODUCT_OS_NAME" />在启动程序栏中显示为固定应用的应用标识符。
 
       如果配置此政策，系统将会固定该组应用且不允许用户进行更改。
@@ -1720,19 +1704,6 @@
 <translation id="793134539373873765">指定是否对操作系统更新有效负荷使用 p2p。如果设置为 True，设备将共享并试图消耗局域网中的更新有效负荷，从而可能会减少互联网带宽使用量和拥堵。如果局域网中没有更新有效负荷，设备将回退到从更新服务器下载。如果设置为 False 或未配置，则不会使用 p2p。</translation>
 <translation id="7933141401888114454">允许创建受监管用户</translation>
 <translation id="793473937901685727">为 ARC 应用设置证书可用性</translation>
-<translation id="7936098023732125869">启用默认搜索服务提供商。
-
-          如果您启用了此设置，当用户在多功能框中输入的内容不是网址时，系统将执行默认搜索。
-
-          您可以设置其余的默认搜索政策，以便指定要使用的默认搜索服务提供商。如果这些政策都留空，用户将可以自行选择默认搜索服务提供商。
-
-          如果您停用了此设置，当用户在多功能框中输入的内容不是网址时，系统将不会执行任何搜索。
-
-          如果您启用或停用了此设置，用户将无法在 <ph name="PRODUCT_NAME" /> 中对其进行更改或覆盖。
-
-          如果此政策未设置，系统将启用默认搜索服务提供商，并且用户可以设置搜索服务提供商列表。
-
-          此政策不适用于未加入 Active Directory 网域的 Windows 实例。</translation>
 <translation id="7937766917976512374">是否允许视频捕获</translation>
 <translation id="7941975817681987555">采用任何网络连接时，均不预测网络操作</translation>
 <translation id="7953256619080733119">托管用户手动管理的例外主机</translation>
@@ -1835,17 +1806,6 @@
 <translation id="8312129124898414409">可让您设置是否允许网站使用密钥生成功能。您可以允许或禁止所有网站使用密钥生成功能。
 
           如果此政策未设置，系统将使用“BlockKeygen”，并且用户可以更改此设置。</translation>
-<translation id="8316806736175990584">指定 <ph name="PRODUCT_NAME" /> 默认主页的类型，并禁止用户更改主页偏好设置。您可以将主页设为指定的网址，也可以将其设为“打开新的标签页”。
-
-          如果您启用了此设置，该浏览器将始终使用“打开新的标签页”作为主页，并忽略主页网址。
-
-          如果您停用了此设置，那么除非用户的主页网址设为“chrome://newtab”，否则该浏览器始终不会使用“打开新的标签页”作为主页。
-
-          如果您启用或停用了此设置，用户将无法更改 <ph name="PRODUCT_NAME" /> 的主页类型。
-
-          如果此政策未设置，用户将可以自行选择是否使用“打开新的标签页”作为主页。
-
-          此政策不适用于未加入 Active Directory 网域的 Windows 实例。</translation>
 <translation id="8329984337216493753">此政策仅在零售模式下有效。
 
       如果 DeviceIdleLogoutTimeout 已指定，此政策就用于定义警告框的持续时间，系统会在执行退出操作前向用户显示一个倒计时器。
@@ -1881,13 +1841,6 @@
 <translation id="8519264904050090490">托管用户手动管理的例外网址</translation>
 <translation id="8544375438507658205">默认 HTML 呈现器为“<ph name="PRODUCT_FRAME_NAME" />”</translation>
 <translation id="8549772397068118889">访问非内容包内的网站时发出警告</translation>
-<translation id="855339549837475534">Chromium 和 Google Chrome 支持的政策完全相同。请注意，本文档所含政策可能有一部分适用于尚未发布的软件版本（即它们的“支持环境”项针对的是尚未发布的版本），这些政策可能会随时变更或撤消，恕不另行事先通知。
-
-      这些政策只能用于配置您所在单位内部的 <ph name="PRODUCT_NAME" /> 实例。在您所在单位之外（例如在公开发布的程序中）使用这些政策时，会被视为恶意软件，并可能会被 Google 及防病毒软件供应商标记为恶意软件。
-
-      您无需手动配置这些设置！您可以从 <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" /> 下载适用于 Windows、Mac 和 Linux 的易用模板。
-
-      虽然在已加入 Active Directory 网域的 Windows 实例上仍可以通过注册表配置政策，但我们建议您通过 GPO 在 Windows 上配置政策。</translation>
 <translation id="8566842294717252664">在“打开新的标签页”页面和应用启动器中不显示网上应用店</translation>
 <translation id="8587229956764455752">允许创建新的用户帐号</translation>
 <translation id="8614804915612153606">停用自动更新</translation>
@@ -1904,11 +1857,6 @@
 
           如果此政策未设置，<ph name="PRODUCT_NAME" /> 将会尝试检测某个服务器是否在内网上，只有当该服务器在内网上时，该浏览器才会回应 IWA 请求。如果检测到某个服务器在互联网上，<ph name="PRODUCT_NAME" /> 将忽略来自它的 IWA 请求。</translation>
 <translation id="8672321184841719703">目标自动更新版本</translation>
-<translation id="868068801094828689">允许向 Google 匿名报告 <ph name="PRODUCT_NAME" /> 的使用情况和崩溃数据，并禁止用户更改此设置。
-
-      如果此设置处于启用状态，系统将向 Google 匿名发送使用情况和崩溃数据报告。如果此设置处于停用状态，系统将不会向 Google 发送此类信息。无论此设置处于启用状态还是停用状态，用户都无法更改或覆盖此设置。如果此政策未设置，系统将采用用户在安装/首次运行该浏览器时选择的设置。
-
-      此政策不适用于未加入 Active Directory 网域的 Windows 实例（对于 Chrome 操作系统，请参见 DeviceMetricsReportingEnabled）。</translation>
 <translation id="8693243869659262736">使用内置 DNS 客户端</translation>
 <translation id="8704831857353097849">已停用插件的列表</translation>
 <translation id="8711086062295757690">指定关键字，该关键字在多功能框中作为快捷方式来触发针对此提供商的搜索。此政策是可选的，如果未设置，就没有任何关键字可激活搜索服务提供商。要实施此政策，必须先启用“DefaultSearchProviderEnabled”政策。</translation>
@@ -1944,6 +1892,7 @@
 <translation id="8858642179038618439">强制启用 YouTube 安全模式</translation>
 <translation id="8864975621965365890">浏览使用 <ph name="PRODUCT_FRAME_NAME" />呈现的网站时，阻止显示“停止支持”的提示。</translation>
 <translation id="8870318296973696995">主页</translation>
+<translation id="8882006618241293596">禁止这些网站运行 <ph name="FLASH_PLUGIN_NAME" /> 插件</translation>
 <translation id="8906768759089290519">启用访客模式</translation>
 <translation id="8908294717014659003">允许您设置是否允许网站访问媒体捕获设备。系统默认为允许访问媒体捕获设备，否则，每次有网站要访问媒体捕获设备时都要征询用户同意。
 

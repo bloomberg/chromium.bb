@@ -64,10 +64,12 @@ Voor meer informatie over privacy bekijk je het Privacybeleid van Google (http:/
 <translation id="225614027745146050">Welkom</translation>
 <translation id="228809120910082333">Bevestig je account en pincode hieronder om toegang door Chromoting toe te staan.</translation>
 <translation id="2314101195544969792">Je <ph name="APPLICATION_NAME" />-sessie is al enige tijd inactief. Binnenkort wordt de verbinding verbroken.</translation>
+<translation id="2317666076142640974">Bekijk een voorproefje van de nieuwe <ph name="LINK_BEGIN" />Chrome Remote Desktop-webapp<ph name="LINK_END" />. We horen graag wat je ervan vindt.</translation>
 <translation id="2353140552984634198">Je kunt veilig toegang krijgen tot deze computer via Chromoting.</translation>
 <translation id="2359808026110333948">Doorgaan</translation>
 <translation id="2366718077645204424">Kan de host niet bereiken. Dit komt waarschijnlijk door de configuratie van het netwerk dat je gebruikt.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />  Laatst online gezien: <ph name="RELATIVE_TIMESTAMP" />.</translation>
+<translation id="2405928220797050937">Deze app wordt niet meer ondersteund. Gebruik de <ph name="LINK_BEGIN" />Chrome Remote Desktop-webapp<ph name="LINK_END" /> om er zeker van te zijn dat je de nieuwste functies en beveiligingsupdates ontvangt.</translation>
 <translation id="2499160551253595098">Help ons Chrome Remote Desktop te verbeteren door ons toestemming te geven gebruiksstatistieken en crashrapporten te verzamelen.</translation>
 <translation id="2512228156274966424">Opmerking: als je er zeker van wilt zijn dat alle sneltoetsen beschikbaar zijn, kun je Chrome Remote Desktop configureren om de modus 'Openen als venster' te gebruiken.</translation>
 <translation id="2540992418118313681">Wil je deze computer delen zodat een andere gebruiker deze kan bekijken en bedienen?</translation>
@@ -230,6 +232,7 @@ Desktop-host</translation>
 <translation id="6930242544192836755">Duur</translation>
 <translation id="6939719207673461467">Toetsenbord weergeven/verbergen.</translation>
 <translation id="6944854424004126054">Venster herstellen</translation>
+<translation id="6948905685698011662">Chrome Remote Desktop is nu beschikbaar op internet. Bekijk onze <ph name="LINK_BEGIN" />gratis webapp<ph name="LINK_END" />.</translation>
 <translation id="6963936880795878952">Verbindingen met de externe computer zijn tijdelijk geblokkeerd omdat iemand heeft geprobeerd met een ongeldige pincode verbinding te maken met de computer. Probeer het later opnieuw.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6985691951107243942">Weet je zeker dat je externe verbindingen met <ph name="HOSTNAME" /> wilt uitschakelen? Als je van gedachten verandert, moet je naar die computer gaan om de verbindingen weer in te schakelen.</translation>
@@ -246,6 +249,7 @@ Desktop-host</translation>
 <translation id="7401733114166276557">Chrome Remote Desktop</translation>
 <translation id="7434397035092923453">Toegang geweigerd voor client: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">Client verbonden: <ph name="CLIENT_USERNAME" />.</translation>
+<translation id="7589941250119944644">Chrome Remote Desktop krijgt een nieuwe locatie op internet. Probeer onze snelle, gratis <ph name="LINK_BEGIN" />webapp<ph name="LINK_END" /> met dezelfde functies als voorheen.</translation>
 <translation id="7606912958770842224">Externe verbindingen inschakelen</translation>
 <translation id="7649070708921625228">Help</translation>
 <translation id="7658239707568436148">Annuleren</translation>

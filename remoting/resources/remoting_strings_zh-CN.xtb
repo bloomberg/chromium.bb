@@ -64,10 +64,12 @@
 <translation id="225614027745146050">欢迎</translation>
 <translation id="228809120910082333">请在下方确认您的帐号和 PIN，以便允许通过 Chrome 远程访问进行访问。</translation>
 <translation id="2314101195544969792">您的<ph name="APPLICATION_NAME" />会话已经有一段时间没有活动了，连接即将断开。</translation>
+<translation id="2317666076142640974">快来试用一下新版<ph name="LINK_BEGIN" />“Chrome 远程桌面”网络应用<ph name="LINK_END" />吧。我们期待听到您的反馈。</translation>
 <translation id="2353140552984634198">您可使用 Chrome 远程访问安全地访问此计算机。</translation>
 <translation id="2359808026110333948">继续</translation>
 <translation id="2366718077645204424">无法连接到主机，这可能是由您所使用网络的配置导致的。</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" />上次在线时间：<ph name="RELATIVE_TIMESTAMP" />。</translation>
+<translation id="2405928220797050937">此应用已不再受支持。为确保您能获得最新的功能和安全更新，请使用新版<ph name="LINK_BEGIN" />“Chrome 远程桌面”网络应用<ph name="LINK_END" />。</translation>
 <translation id="2499160551253595098">允许我们收集使用情况统计信息和崩溃报告，以帮助改进 Chrome 远程桌面。</translation>
 <translation id="2512228156274966424">注意：为确保所有键盘快捷键都能正常使用，请将 Chrome 远程桌面配置为“在窗口中打开”。</translation>
 <translation id="2540992418118313681">您要与其他用户共享此计算机的查看和控制权限吗？</translation>
@@ -230,6 +232,7 @@
 <translation id="6930242544192836755">持续时间</translation>
 <translation id="6939719207673461467">显示/隐藏键盘。</translation>
 <translation id="6944854424004126054">恢复窗口</translation>
+<translation id="6948905685698011662">新版“Chrome 远程桌面”现已上线！快来查看一下我们的这款<ph name="LINK_BEGIN" />免费网络应用<ph name="LINK_END" />吧。</translation>
 <translation id="6963936880795878952">与远程计算机的连接已被暂时阻止，因为有人试图使用无效的 PIN 码连接到该计算机。请稍后重试。</translation>
 <translation id="6965382102122355670">确定</translation>
 <translation id="6985691951107243942">您确定要停用与“<ph name="HOSTNAME" />”的远程连接吗？如果您日后想要重新启用连接，需要访问该计算机。</translation>
@@ -246,6 +249,7 @@
 <translation id="7401733114166276557">Chrome 远程桌面</translation>
 <translation id="7434397035092923453"><ph name="CLIENT_USERNAME" /> 访问客户端的请求遭拒。</translation>
 <translation id="7444276978508498879">已连接客户端：<ph name="CLIENT_USERNAME" />。</translation>
+<translation id="7589941250119944644">新版“Chrome 远程桌面”现已上线！欢迎试用我们的这款<ph name="LINK_BEGIN" />网络应用<ph name="LINK_END" />：它既快速又免费，而且所具备的功能和之前完全相同。</translation>
 <translation id="7606912958770842224">启用远程连接</translation>
 <translation id="7649070708921625228">帮助</translation>
 <translation id="7658239707568436148">取消</translation>

@@ -142,6 +142,7 @@ Pokud je toto nastavení zakázáno nebo není nakonfigurováno, firemní uživa
 <translation id="1608755754295374538">Adresy URL, kterým bude udělen přístup pro záznam zvuku bez zobrazení výzvy</translation>
 <translation id="1617235075406854669">Aktivovat smazání historie prohlížeče a stahování</translation>
 <translation id="163200210584085447">Vzory v tomto seznamu budou porovnány s žádající adresou URL. Pokud bude nalezena shoda, bude na přihlašovacích stránkách SAML udělen přístup k zařízením pro záznam videa. Pokud shoda nalezena nebude, přístup bude automaticky odepřen. Vzory se zástupnými znaky nejsou povoleny.</translation>
+<translation id="1634989431648355062">Povolit plugin <ph name="FLASH_PLUGIN_NAME" /> na těchto webech</translation>
 <translation id="1655229863189977773">Nastavit velikost diskové mezipaměti v bajtech</translation>
 <translation id="166427968280387991">Proxy server</translation>
 <translation id="1668836044817793277">Udává, zda má mít automaticky spouštěná terminálová aplikace s nulovým zpožděním povoleno ovládat verzi systému <ph name="PRODUCT_OS_NAME" />.
@@ -721,6 +722,11 @@ Pokud tuto zásadu aktivujete nebo ji nenastavíte, uživatelé budou ve správc
       Pokud tyto zásady ponecháte nenastavené, uživatelé budou moci zvolit vlastní nastavení proxy serveru.</translation>
 <translation id="3758249152301468420">Deaktivovat nástroje pro vývojáře</translation>
 <translation id="3765260570442823273">Doba zobrazení zprávy s upozorněním na odhlášení z důvodu nečinnosti</translation>
+<translation id="376931976323225993">Umožňuje nastavit, zda mohou weby automaticky spouštět plugin <ph name="FLASH_PLUGIN_NAME" />. Automatické spouštění pluginu <ph name="FLASH_PLUGIN_NAME" /> lze buď pro všechny weby povolit, nebo naopak zakázat.
+
+          Plugin <ph name="FLASH_PLUGIN_NAME" /> lze spustit pomocí funkce přehrání kliknutím. Uživatel však jeho spuštění musí aktivovat kliknutím na zástupný symbol.
+
+          Pokud je tato zásada ponechána nenastavená, uživatel toto nastavení bude moci ručně změnit.</translation>
 <translation id="3780152581321609624">Zahrnout do hlavního názvu služby protokolu Kerberos nestandardní port</translation>
 <translation id="3780319008680229708">Je-li tato zásada nastavena na hodnotu true, bude ikona Cast na liště nebo v rozbalovací nabídce vždy zobrazena a uživatelé ji nebudou moci odebrat.
 
@@ -855,6 +861,7 @@ Není-li zásada nastavena, bude použita zásada AllowCookies a uživatelé ji
 <translation id="4105989332710272578">Deaktivovat vynucování zásad Certificate Transparency pro seznam adres URL</translation>
 <translation id="4121350739760194865">Zabraňuje zobrazování propagace aplikací na stránce Nová karta</translation>
 <translation id="4157003184375321727">Hlásit verzi operačního systému a firmwaru</translation>
+<translation id="4183229833636799228">Výchozí nastavení pluginu <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">Adresa URL k potvrzení ověřovacího tokenu klienta vzdáleného připojení</translation>
 <translation id="4203389617541558220">Omezuje dobu, po kterou může být zařízení spuštěno, naplánováním automatických restartů.
 
@@ -1192,6 +1199,7 @@ Pokud zásadu nastavíte, můžete nakonfigurovat, zda má uživatel oprávněn�
 
       Upozorňujeme, že pokud platforma podporuje oznámení o zásadách, budou všechna výchozí nastavení i hodnota této zásady ignorovány a interval aktualizací bude nastaven na 24 hodin. Očekává se totiž, že při změně zásad bude aktualizace vynucena automaticky prostřednictvím oznámení.</translation>
 <translation id="5535973522252703021">Seznam povolených serverů pro delegování ověření protokolu Kerberos</translation>
+<translation id="555077880566103058">Povolit všem webům automatické spouštění pluginu <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="5559079916187891399">Tato zásada nemá vliv na aplikace Android.</translation>
 <translation id="5560039246134246593">Přidá parametr k načítání počáteční hodnoty variace v prohlížeči <ph name="PRODUCT_NAME" />.
 
@@ -1274,11 +1282,6 @@ Pokud tuto zásadu nenastavíte, bude při prvním zobrazení přihlašovací ob
 <translation id="5868414965372171132">Konfigurace sítě na úrovni uživatele</translation>
 <translation id="588135807064822874">Povolit funkci Vyhledávání klepnutím</translation>
 <translation id="5883015257301027298">Výchozí nastavení souborů cookie</translation>
-<translation id="5887291617378691520">Pokud je jako akce při spuštění zaškrtnuto políčko Otevřít seznam adres URL, tato zásada umožňuje zvolit seznam adres URL, které budou otevřeny. Pokud tato zásada není nastavena, po spuštění se neotevře žádná adresa URL.
-
-Tato zásada funguje pouze v případě, že je zásada RestoreOnStartup nastavena na hodnotu RestoreOnStartupIsURLs.
-
-Tato zásada není k dispozici v instancích Windows, které nejsou připojené k doméně Active Directory.</translation>
 <translation id="5887414688706570295">Slouží ke konfiguraci předpony TalkGadget, kterou budou používat hostitelé vzdáleného přístupu, a brání uživatelům, aby ji změnili.
 
           Je-li tato předpona zadána, je přidána před základní název TalkGadget, čímž vznikne celý název domény TalkGadget. Základní název domény TalkGadget je „.talkgadget.google.com“.
@@ -1364,6 +1367,9 @@ Pokud tato zásada není nakonfigurována, <ph name="PRODUCT_NAME" /> použije v
 Zásadu lze nastavit na jednu z následujících hodnot: sslv3, tls1, tls1.1 nebo tls1.2. Je-li nastavena, <ph name="PRODUCT_NAME" /> nebude používat verze protokolů SSL a TLS nižší, než je uvedená verze. Nerozpoznané hodnoty budou ignorovány.
 
 Upozorňujeme, že verze sslv3 je starší než tls1 (bez ohledu na číslo).</translation>
+<translation id="6181608880636987460">Umožňuje nastavit seznam vzorů adres URL webů, které nemají povoleno spouštět plugin <ph name="FLASH_PLUGIN_NAME" />.
+
+          Pokud tuto zásadu nenastavíte, použije se pro všechny weby globální výchozí hodnota buď ze zásady DefaultPluginsSetting (pokud je nastavena), nebo z osobní konfigurace uživatele.</translation>
 <translation id="6190022522129724693">Výchozí nastavení vyskakovacích oken</translation>
 <translation id="6197453924249895891">Uděluje rozšířením přístup k podnikovým klíčům.
 
@@ -1487,6 +1493,9 @@ Není-li tato zásada nastavena na konkrétní hodnotu, bude předvídání sít
 
       Pokud tuto možnost deaktivujete nebo nenastavíte, bude nástroj pro vyhledávání pluginů aktivní.</translation>
 <translation id="6699880231565102694">Povolit dvoufázové ověření pro hostitele vzdáleného přístupu</translation>
+<translation id="6757438632136860443">Umožňuje nastavit seznam vzorů adres URL webů, které mají povoleno spouštět plugin <ph name="FLASH_PLUGIN_NAME" />.
+
+          Pokud tuto zásadu nenastavíte, použije se pro všechny weby globální výchozí hodnota buď ze zásady DefaultPluginsSetting (pokud je nastavena), nebo z osobní konfigurace uživatele.</translation>
 <translation id="6766216162565713893">Povolit webům žádat uživatele o udělení přístupu k blízkému zařízení Bluetooth</translation>
 <translation id="6770454900105963262">Nahlásit aktivní relace veřejného terminálu</translation>
 <translation id="6786747875388722282">Rozšíření</translation>
@@ -1511,6 +1520,7 @@ Pokud je tato zásada nastavena na hodnotu false, bude hlasová odezva vždy dea
 Pokud tuto zásadu nastavíte, uživatelé ji nebudou moci změnit ani přepsat.
 
 Pokud ji ponecháte nenastavenou, bude hlasová odezva ve výchozím nastavení deaktivována, ale uživatelé ji budou moci kdykoli aktivovat.</translation>
+<translation id="6922884955650325312">Blokovat plugin <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="6923366716660828830">Určuje název výchozího poskytovatele vyhledávání. Je-li toto pole ponecháno prázdné, bude použit název hostitele určený adresou URL vyhledávání.
 
           Tato zásada bude dodržována pouze v případě, že je aktivována zásada DefaultSearchProviderEnabled.</translation>
@@ -1556,17 +1566,6 @@ Pokud ji ponecháte nenastavenou, bude hlasová odezva ve výchozím nastavení 
       Je-li deaktivovaná, nebudou importovány žádné záložky.
 
       Není-li nastavena, může se uživatelům zobrazit výzva, zda chtějí záložky importovat, nebo může import probíhat automaticky.</translation>
-<translation id="7055358889740598917">Nakonfiguruje v prohlížeči <ph name="PRODUCT_NAME" /> adresu URL výchozí domovské stránky a zabrání uživatelům, aby toto nastavení změnili.
-
-          Domovská stránka je stránka, která se otevírá tlačítkem Domovská stránka. Stránky, které se otevírají po spuštění, jsou určeny zásadami RestoreOnStartup.
-
-          Typ domovské stránky může být nastaven na adresu URL, kterou zde zadáte, nebo na stránku Nová karta. Pokud zvolíte stránku Nová karta, tato zásada se nebude uplatňovat.
-
-          Pokud toto nastavení aktivujete, uživatelé v prohlížeči <ph name="PRODUCT_NAME" /> nebudou moci změnit adresu URL domovské stránky. Jako domovskou stránku však stále budou moci nastavit stránku Nová karta.
-
-          Pokud tuto zásadu nenastavíte a není nastavena ani zásada HomepageIsNewTabPage, uživatelé si budou moci zvolit vlastní domovskou stránku.
-
-          Tato zásada není k dispozici v instancích Windows, které nejsou připojeny k doméně Active Directory.</translation>
 <translation id="7063895219334505671">Povolit na těchto stránkách vyskakovací okna</translation>
 <translation id="706669471845501145">Povolit webovým stránkám zobrazovat oznámení na ploše</translation>
 <translation id="7072406291414141328">Aktivuje omezení rychlosti připojení</translation>
@@ -1588,20 +1587,6 @@ Pokud je tato zásada nastavena na hodnotu true, režim na pozadí je aktivován
 Pokud je tato zásada nastavena na hodnotu false, režim na pozadí je deaktivován a uživatel jej nemůže ovládat v nastaveních prohlížeče.
 
 Pokud je tato zásada ponechána nenastavená, režim na pozadí je ve výchozím nastavení deaktivován, ale uživatel jej může ovládat v nastaveních prohlížeče.</translation>
-<translation id="7123297102171034788">Umožňuje nastavit možnosti spouštění.
-
-Pokud vyberete možnost Otevřít stránku Nová karta, otevře se při spuštění prohlížeče <ph name="PRODUCT_NAME" /> stránka Nová karta.
-
-Pokud vyberete možnost Obnovit poslední relaci, otevřou se adresy URL, které byly otevřené při posledním ukončení prohlížeče <ph name="PRODUCT_NAME" />, a relace prohlížeče se obnoví ve stavu, v jakém jste ji opustili.
-Výběrem této možnosti deaktivujete některá nastavení, která jsou závislá na relacích nebo provádějí akce při zavření prohlížeče (například smazání údajů o prohlížení při ukončení nebo omezení souborů cookie pouze na relaci).
-
-Pokud vyberete možnost Otevřít seznam adres, otevřou se při spuštění prohlížeče <ph name="PRODUCT_NAME" /> adresy uvedené v seznamu Adresy URL otevírané při spuštění.
-
-Pokud toto nastavení aktivujete, uživatelé ho v prohlížeči <ph name="PRODUCT_NAME" /> nemohou změnit ani přepsat.
-
-Pokud toto nastavení deaktivujete, je to stejné, jako kdybyste ho nenastavili. Uživatelé ho v prohlížeči <ph name="PRODUCT_NAME" /> budou moci změnit.
-
-Tato zásada není k dispozici v instancích Windows, které nejsou připojené k doméně Active Directory.</translation>
 <translation id="7128918109610518786">Seznam identifikátorů aplikací, které se v <ph name="PRODUCT_OS_NAME" /> zobrazují jako připnuté na liště spouštěče.
 
       Když je zásada nakonfigurována, jsou tyto aplikace pevně dány a uživatel je nemůže změnit.
@@ -1840,19 +1825,6 @@ Tato zásada je určena k internímu použití prohlížečem <ph name="PRODUCT_
 <translation id="793134539373873765">Určuje, zda má být pro datové části aktualizací operačního systému použita síť p2p. Pokud zásadu nastavíte na hodnotu True, zařízení budou sdílet pokus o využití datových částí aktualizace v síti LAN, což může vést ke snížení zahlcení a míry využití připojení k internetu. Pokud datová část aktualizace není v síti LAN k dispozici, zařízení přepne zpět na stahování ze serveru aktualizace. Pokud tuto zásadu nenakonfigurujete nebo ji nastavíte na hodnotu False, síť p2p nebude použita.</translation>
 <translation id="7933141401888114454">Povolit vytváření dozorovaných uživatelů</translation>
 <translation id="793473937901685727">Nastavení dostupnosti certifikátů pro aplikace ARC</translation>
-<translation id="7936098023732125869">Umožňuje použít výchozího poskytovatele vyhledávání.
-
-Pokud toto nastavení aktivujete, po zadání textu do omniboxu (jiného než adresa URL) proběhne výchozí vyhledávání.
-
-Konkrétního výchozího poskytovatele vyhledávání můžete určit nastavením ostatních zásad výchozího vyhledávání. Pokud je nenastavíte, výchozího poskytovatele si bude moci zvolit uživatel.
-
-Pokud toto nastavení deaktivujete, po zadání textu do omniboxu (jiného než adresa URL) žádné vyhledávání neproběhne.
-
-Pokud toto nastavení aktivujete nebo deaktivujete, uživatelé ho v prohlížeči <ph name="PRODUCT_NAME" /> nebudou moci změnit ani přepsat.
-
-Pokud tuto zásadu nenastavíte, bude aktivován výchozí poskytovatel vyhledávání a seznam poskytovatelů vyhledávání bude moci nastavit uživatel.
-
-Tato zásada není k dispozici v instancích Windows, které nejsou připojené k doméně Active Directory.</translation>
 <translation id="7937766917976512374">Povolit nebo zakázat záznam videa</translation>
 <translation id="7941975817681987555">Nepředvídat síťové akce u žádných síťových připojení</translation>
 <translation id="7953256619080733119">Hostitelské servery ručních výjimek spravovaného uživatele</translation>
@@ -1967,17 +1939,6 @@ Pokud tato zásada není nastavena nebo je nastavena na hodnotu False, uživatel
 <translation id="8312129124898414409">Umožňuje nastavit, zda weby mohou generovat klíče. Generování klíčů je možné všem webům buď povolit, nebo zakázat.
 
 Pokud tuto zásadu nenastavíte, použije se zásada BlockKeygen a uživatel ji bude moci změnit.</translation>
-<translation id="8316806736175990584">Nakonfiguruje v prohlížeči <ph name="PRODUCT_NAME" /> typ výchozí domovské stránky a zabrání uživatelům ve změně tohoto nastavení. Domovská stránka může být nastavena buď na konkrétní adresu URL, nebo na stránku Nová karta.
-
-          Pokud toto nastavení aktivujete, jako domovská stránka se vždy použije stránka Nová karta a adresa URL domovské stránky bude ignorována. 
-
-          Pokud toto nastavení deaktivujete, stránka Nová karta se jako domovská stránka uživatele použije pouze v případě, že bude adresa URL domovské stránky nastavena na „chrome://newtab“.
-
-          Pokud toto nastavení aktivujete nebo deaktivujete, uživatelé nebudou moci v prohlížeči <ph name="PRODUCT_NAME" /> typ domovské stránky změnit.
-
-          Pokud tato zásada nebude nastavena, uživatel bude moci sám zvolit, zda se jako domovská stránka použije stránka Nová karta.
-
-          Tato zásada není k dispozici v instancích Windows, které nejsou připojeny k doméně Active Directory.</translation>
 <translation id="8329984337216493753">Tato zásada je aktivní pouze v režimu prodeje.
 
       Pokud je určena zásada DeviceIdleLogoutTimeout, určuje tato zásada, jak dlouho před odhlášením se bude uživateli zobrazovat okno s upozorněním a časovačem.
@@ -2013,13 +1974,6 @@ Pokud tuto zásadu nenastavíte, použije se zásada BlockKeygen a uživatel ji
 <translation id="8519264904050090490">Adresy URL ručních výjimek spravovaného uživatele</translation>
 <translation id="8544375438507658205">Výchozí modul vykreslení HTML pro plugin <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="8549772397068118889">Při návštěvě webů mimo obsahové balíčky zobrazit upozornění</translation>
-<translation id="855339549837475534">Prohlížeče Chromium a Google Chrome podporují stejné zásady. Upozorňujeme, že tento dokument může obsahovat zásady, které jsou určeny pro dosud nevydané verze softwaru (tj. jejich údaj „Podpora“ odkazuje na dosud nevydanou verzi) a že tyto zásady mohou být bez předchozího oznámení změněny nebo odstraněny.
-
-Tyto zásady jsou určeny pouze ke konfiguraci interních instancí prohlížeče <ph name="PRODUCT_NAME" /> ve vaší organizaci. Použití zásad mimo organizaci (např. ve veřejně distribuovaném programu) je považováno za malware a pravděpodobně bude společností Google a dodavateli antivirového softwaru takto i označeno.
-
-Tato nastavení není potřeba konfigurovat ručně. Na adrese <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" /> jsou k dispozici ke stažení snadno použitelné šablony pro Windows, Mac a Linux.
-
-Doporučený způsob nastavení zásad ve Windows je prostřednictvím objektu zásad skupiny (GPO). V instancích Windows připojených k doméně Active Directory je však stále podporováno spravování zásad prostřednictvím registrů.</translation>
 <translation id="8566842294717252664">Skrýt internetový obchod z karty Nová stránka a ze spouštěče aplikací</translation>
 <translation id="8587229956764455752">Povolit vytváření nových uživatelských účtů</translation>
 <translation id="8614804915612153606">Zakáže automatické aktualizace</translation>
@@ -2036,11 +1990,6 @@ Chcete-li zadat několik názvů serverů, oddělte je čárkami. Zástupné zna
 
 Pokud zásada zůstane nenastavena, pokusí se <ph name="PRODUCT_NAME" /> zjistit, zda se server nachází v intranetu, a teprve poté bude reagovat na požadavky IWA. Pokud bude server zjištěn jako internet, bude <ph name="PRODUCT_NAME" /> požadavky IWA ignorovat.</translation>
 <translation id="8672321184841719703">Cílová verze automatické aktualizace</translation>
-<translation id="868068801094828689">Aktivuje anonymní odesílání údajů o využití a selhání prohlížeče <ph name="PRODUCT_NAME" /> společnosti Google a brání uživatelům, aby toto nastavení změnili.
-
-Pokud je toto nastavení povoleno, anonymní údaje o využití a selhání budou odesílány společnosti Google. Pokud je zakázáno, tyto informace společnosti Google odesílány nebudou. V obou případech uživatelé nemohou toto nastavení změnit ani přepsat.Pokud tuto zásadu ponecháte nenastavenou, bude jako nastavení použita volba uživatele při instalaci nebo prvním spuštění.
-
-Tato zásada není k dispozici v relacích Windows, které nejsou připojené k doméně Active Directory. (Pokud používáte Chrome OS, přečtěte si informace o zásadě DeviceMetricsReportingEnabled.)</translation>
 <translation id="8693243869659262736">Použít integrovaného klienta DNS</translation>
 <translation id="8704831857353097849">Seznam deaktivovaných pluginů</translation>
 <translation id="8711086062295757690">Určuje klíčové slovo, které v adresním řádku spouští vyhledávání tohoto poskytovatele.
@@ -2086,6 +2035,7 @@ Pokud tato zásada není nakonfigurována nebo je hodnota nižší než 1 MB, <p
 <translation id="8858642179038618439">Vynutit Bezpečný režim YouTube</translation>
 <translation id="8864975621965365890">Potlačuje oznámení o ukončení podpory, která se zobrazuje, když je web vykreslován pomocí pluginu <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Domovská stránka</translation>
+<translation id="8882006618241293596">Blokovat plugin <ph name="FLASH_PLUGIN_NAME" /> na těchto webech</translation>
 <translation id="8906768759089290519">Aktivovat režim hosta</translation>
 <translation id="8908294717014659003">Umožňuje nastavit, zda webové stránky smějí používat zařízení pro pořizování mediálního obsahu. Přístup k zařízením pro pořizování mediálního obsahu může být povolen ve výchozím nastavení, nebo se uživateli může zobrazit dotaz pokaždé, když nějaké webové stránky budou chtít použít zařízení pro pořízení mediálního obsahu.
 

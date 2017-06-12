@@ -108,12 +108,14 @@
 <translation id="4549794359424059447">భవిష్యత్తు Chromium సంస్కరణల్లో ఇకపై Windows XP లేదా Windows Vistaకి మద్దతు ఉండదు.</translation>
 <translation id="4567424176335768812">మీరు <ph name="USER_EMAIL_ADDRESS" />గా సైన్ ఇన్ చేసారు. ఇప్పుడు మీరు మీ సైన్ ఇన్ చేసిన అన్ని పరికరాల్లో మీ బుక్‌మార్క్‌లు, చరిత్ర మరియు ఇతర సెట్టింగ్‌లను ప్రాప్యత చేయవచ్చు.</translation>
 <translation id="459535195905078186">Chromium అనువర్తనాలు</translation>
+<translation id="4611246891205775468">ఈ సైట్ కోసం మీ మైక్రోఫోన్‌ను యాక్సెస్ చేయడానికి Chromiumకు అనుమతి అవసరం.</translation>
 <translation id="4621240073146040695">దాదాపుగా నవీకృతంగా ఉంది! నవీకరణను పూర్తి చేయడానికి Chromiumని పునఃప్రారంభించండి.</translation>
 <translation id="4677944499843243528">ప్రొఫైల్‌ని మరొక కంప్యూటర్ (<ph name="HOST_NAME" />)లో మరో Chromium ప్రాసెస్ (<ph name="PROCESS_ID" />) ఉపయోగిస్తున్నట్లు కనిపిస్తోంది. Chromium ప్రొఫైల్‌ని లాక్ చేసినందున అది పాడవదు. ఈ ప్రొఫైల్‌ని వేరే ఇతర ప్రాసెస్‌లు ఏవీ ఉపయోగించడం లేదని మీకు ఖచ్చితంగా తెలిస్తే, మీరు ప్రొఫైల్‌ని అన్‌లాక్ చేసి Chromiumని మళ్లీ లాంచ్ చేయవచ్చు.</translation>
 <translation id="469338717132742108">Chromium OSతో సహాయాన్ని పొందండి</translation>
 <translation id="4708774505295300557">ఒకరు ఈ కంప్యూటర్‌లో మునుపు <ph name="ACCOUNT_EMAIL_LAST" /> వలె Chromiumకు సైన్ ఇన్ చేసారు. దయచేసి మీ సమాచారాన్ని విడిగా ఉంచేందుకు కొత్త Chromium వినియోగదారును సృష్టించండి.</translation>
 <translation id="4714956846925717402">Chromiumకి వేగవంతంగా వెళ్లండి</translation>
 <translation id="4743926867934016338">ఆమోదిస్తున్నాను, శోధించు</translation>
+<translation id="4825874709045178029">ఈ సైట్ కోసం మీ కెమెరాని యాక్సెస్ చేయడానికి Chromiumకు అనుమతి అవసరం.</translation>
 <translation id="4888717733111232871">mDNS ట్రాఫిక్‌ను అనుమతించడానికి Chromium ఇన్‌బౌండ్ నియమం.</translation>
 <translation id="4943838377383847465">Chromium నేపథ్య మోడ్‌లో ఉంది.</translation>
 <translation id="4987820182225656817">అతిథులు ఎటువంటి చరిత్రను వదలకుండానే Chromiumను ఉపయోగించవచ్చు.</translation>
@@ -228,6 +230,7 @@
 <translation id="8222496066431494154">మీ ఫోన్‌లో Chromiumను ఇన్‌స్టాల్ చేయండి. మేము మీ ఖాతా పునరుద్ధరణ ఫోన్ నంబర్‌కు SMSను పంపుతాము: <ph name="PHONE_NUMBER" /></translation>
 <translation id="8269379391216269538">Chromiumని మెరుగుపరచడంలో సహాయం అందించండి</translation>
 <translation id="8290862415967981663">ఈ ఫైల్ అపాయకరం కావచ్చు, కాబట్టి Chromium దీన్ని బ్లాక్ చేసింది.</translation>
+<translation id="8328596990138326317">ఈ సైట్ కోసం మీ కెమెరా మరియు మైక్రోఫోన్‌ను యాక్సెస్ చేయడానికి Chromiumకు అనుమతి అవసరం.</translation>
 <translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" /> మునుపు Chromiumని ఉపయోగించింది</translation>
 <translation id="8453117565092476964">ఇన్‌స్టాలర్ ఆర్కైవ్ పాడైంది లేదా చెల్లదు. దయచేసి Chromiumని మళ్లీ డౌన్‌లోడ్ చేయండి.</translation>
 <translation id="8493179195440786826">Chromium కాలం చెల్లినది</translation>

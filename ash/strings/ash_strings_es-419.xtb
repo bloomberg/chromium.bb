@@ -23,7 +23,7 @@
 <translation id="1550523713251050646">Haz clic para obtener más opciones</translation>
 <translation id="1621499497873603021">Tiempo restante hasta que se agote la batería: <ph name="TIME_LEFT" /></translation>
 <translation id="164969095109328410">Dispositivo Chrome</translation>
-<translation id="1677472565718498478">Tiempo restante: <ph name="TIME" /></translation>
+<translation id="1677472565718498478">Tiempo restante <ph name="TIME" /></translation>
 <translation id="1698760176351776263">Dirección IPv6: <ph name="ADDRESS" /></translation>
 <translation id="1734367976349034509">Este dispositivo está administrado por una empresa</translation>
 <translation id="1747827819627189109">Teclado en pantalla habilitado</translation>
@@ -41,7 +41,7 @@
 <translation id="2050339315714019657">Vertical</translation>
 <translation id="207439088875642105">Esta es una cuenta para niños administrada por <ph name="FIRST_PARENT_EMAIL" /> y <ph name="SECOND_PARENT_EMAIL" />.</translation>
 <translation id="2122028596993374965">Detener la transmisión de <ph name="TAB_NAME" /> a <ph name="RECEIVER_NAME" /></translation>
-<translation id="2127372758936585790">Cargador de baja potencia</translation>
+<translation id="2127372758936585790">Carga lenta</translation>
 <translation id="2144487987174258011">Reinicia para actualizar Adobe Flash Player</translation>
 <translation id="2208323208084708176">Modo de escritorio unificado</translation>
 <translation id="225680501294068881">Buscando dispositivos...</translation>
@@ -230,6 +230,7 @@ Presiona Alt y la tecla de búsqueda o Mayús para cancelar la operación.</tran
 <translation id="7593891976182323525">Tecla de búsqueda o Mayús</translation>
 <translation id="7649070708921625228">Ayuda</translation>
 <translation id="7692480393933218409">Cargando dispositivos USB-C conectados</translation>
+<translation id="776344839111254542">Haz clic para ver los detalles de la actualización</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> y <ph name="MINUTE" /></translation>
 <translation id="7823564328645135659">Después de sincronizar tu configuración, el idioma se cambió de "<ph name="FROM_LOCALE" />" a "<ph name="TO_LOCALE" />".</translation>
 <translation id="7904094684485781019">El administrador de esta cuenta inhabilitó el acceso múltiple.</translation>

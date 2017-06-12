@@ -156,6 +156,7 @@
       sisselogimislehtedele juurdepääs videosalvestusseadmetele. Kui vastet
       ei leita, blokeeritakse juurdepääs automaatselt. Metamärgiga mustreid
       ei lubata.</translation>
+<translation id="1634989431648355062">Luba nendel saitidel pistikprogramm <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="1655229863189977773">Määrake ketta vahemälu suurus baitides</translation>
 <translation id="166427968280387991">Puhverserver</translation>
 <translation id="1668836044817793277">Kas lubada automaatselt käivitatud viivituseta kioskirakendusel juhtida operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> versiooni?
@@ -736,6 +737,11 @@
       Kui jätate selle reegli määramata, siis saavad kasutajad ise puhverserveri seaded valida.</translation>
 <translation id="3758249152301468420">Keela arendaja tööriistad</translation>
 <translation id="3765260570442823273">Jõudeolekus väljalogimise hoiatussõnumi kestus</translation>
+<translation id="376931976323225993">Võimaldab määrata, kas veebisaitidel on lubatud automaatselt käitada pistikprogrammi <ph name="FLASH_PLUGIN_NAME" />. Pistikprogrammi <ph name="FLASH_PLUGIN_NAME" /> automaatse käitamise saab kas lubada kõikide veebisaitide jaoks või keelata kõikide veebisaitide jaoks.
+
+          Valik Klõpsa esitamiseks lubab pistikprogrammi <ph name="FLASH_PLUGIN_NAME" /> käitada, kuid kasutaja peab selle käivitamiseks kohahoidjal klõpsama.
+
+          Kui jätate selle reegli määramata, saab kasutaja käsitsi seda seadet muuta.</translation>
 <translation id="3780152581321609624">Kaasa Kerberose SPN-i mittestandardne port</translation>
 <translation id="3780319008680229708">Kui reegli väärtuseks on määratud Tõene, siis on Cast'i tööriistariba ikoon tööriistaribal või ületäitemenüüs alati kuvatud ja kasutajad ei saa seda eemaldada.
 
@@ -868,6 +874,7 @@
 <translation id="4105989332710272578">Sertifikaadi läbipaistvuse jõustamise keelamine URL-ide loendi jaoks</translation>
 <translation id="4121350739760194865">Rakenduste reklaamide ilmumise takistamine uuel vahelehel</translation>
 <translation id="4157003184375321727">OS-ist ja püsivara versioonist teavitamine</translation>
+<translation id="4183229833636799228">Pistikprogrammi <ph name="FLASH_PLUGIN_NAME" /> vaikeseade</translation>
 <translation id="4192388905594723944">URL kaugjuurdepääsuga kliendi autentimismärgi kinnitamiseks</translation>
 <translation id="4203389617541558220">Seadme tööaja piiramine, ajastades automaatsed taaskäivitused.
 
@@ -1208,6 +1215,7 @@
 
       Pange tähele, et kui platvorm toetab reeglite märguandeid, määratakse värskendamise viiteks 24 tundi (eirates kõiki vaikeväärtusi ja selle reegli väärtust), kuna eeldatakse, et reegli märguanded jõustavad reegli muutmisel automaatse värskendamise, mis muudab sagedasemad värskendused ebavajalikuks.</translation>
 <translation id="5535973522252703021">Kerberose volitusserveri lubatud nimekiri</translation>
+<translation id="555077880566103058">Luba kõigil saitidel pistikprogrammi <ph name="FLASH_PLUGIN_NAME" /> automaatne käitamine</translation>
 <translation id="5559079916187891399">See reegel ei mõjuta Androidi rakendusi.</translation>
 <translation id="5560039246134246593">Lisage parameeter variatsioonide lähteväärtuse toomisele teenuses <ph name="PRODUCT_NAME" />.
 
@@ -1290,12 +1298,6 @@
 <translation id="5868414965372171132">Kasutaja tasemel võrgukonfiguratsioon</translation>
 <translation id="588135807064822874">Funktsiooni Puuduta otsimiseks lubamine</translation>
 <translation id="5883015257301027298">Küpsiste vaikeseade</translation>
-<translation id="5887291617378691520">Kui käivitustoiminguks on määratud „Ava URL-ide loend”, siis saate määrata avatavate URL-ide loendi. Kui jätate selle määramata, siis ei avata käivitamisel ühtki URL-i.
-
-          Reegel kehtib ainult juhul, kui reegel „RestoreOnStartup” on määratud väärtusele „RestoreOnStartupIsURLs”.
-
-          See reegel pole saadaval Windowsi eksemplarides, mis pole liitunud
-          Active Directory domeeniga.</translation>
 <translation id="5887414688706570295">Seadistab TalkGadgeti eesliite, mida kasutavad kaugjuurdepääsu hostid, ja takistab kasutajatel selle muutmist.
 
           Kui eesliide on määratud, lisatakse eesliide TalkGadgeti põhinime ette, et luua TalkGadgeti täielik domeeninimi. TalkGadgeti domeeni põhinimi on „.talkgadget.google.com”.
@@ -1381,6 +1383,9 @@
       Muul juhul võidakse see määrata ühele järgmistest väärtustest: „sslv3”, „tls1”, „tls1.1” või „tls1.2”. Kui see on määratud, ei kasuta teenus <ph name="PRODUCT_NAME" /> SSL-i/TLS-i versioone, mis on määratud versioonist vanemad. Tundmatut väärtust eiratakse.
 
       Pange tähele, et numbrist olenemata on „sslv3” versioonist „tls1” vanem versioon.</translation>
+<translation id="6181608880636987460">Võimaldab määrata URL-i mustrite loendi, mis määrab saidid, millel ei ole lubatud pistikprogrammi <ph name="FLASH_PLUGIN_NAME" /> käitada.
+
+          Kui jätate selle reegli määramata, kasutatakse kõikide saitide puhul globaalset vaikeväärtust, mis pärineb reeglist „DefaultPluginsSetting” (kui see on määratud) või kasutaja isiklikust seadistusest.</translation>
 <translation id="6190022522129724693">Hüpikakende vaikeseade</translation>
 <translation id="6197453924249895891">Annab juurdepääsu laienduste ettevõttevõtmetele.
 
@@ -1505,6 +1510,9 @@
 
       Kui keelate valiku või jätate selle määramata, siis on pistikprogrammide leidja aktiivne.</translation>
 <translation id="6699880231565102694">Kahetasandilise autentimise lubamine kaugjuurdepääsu hostidele</translation>
+<translation id="6757438632136860443">Võimaldab määrata URL-i mustrite loendi, mis määrab saidid, millel on lubatud pistikprogrammi <ph name="FLASH_PLUGIN_NAME" /> käitada.
+
+          Kui jätate selle reegli määramata, kasutatakse kõikide saitide puhul globaalset vaikeväärtust, mis pärineb reeglist „DefaultPluginsSetting” (kui see on määratud) või kasutaja isiklikust seadistusest.</translation>
 <translation id="6766216162565713893">Luba saitidel paluda kasutajatelt juurdepääsu läheduses asuvatele Bloetoothi seadmetele</translation>
 <translation id="6770454900105963262">Aruandeteave aktiivsete kioskiseansside kohta</translation>
 <translation id="6786747875388722282">Laiendused</translation>
@@ -1532,6 +1540,7 @@
           Kui määrate reegli, ei saa kasutajad seda muuta ega alistada.
 
           Kui jätate reegli määramata, on suur kursor algselt keelatud, kuid kasutaja võib selle igal ajal lubada.</translation>
+<translation id="6922884955650325312">Pistikprogrammi <ph name="FLASH_PLUGIN_NAME" /> blokeerimine</translation>
 <translation id="6923366716660828830">Määrab vaikeotsingupakkuja nime. Kui see jäetakse tühjaks või määramata, siis kasutatakse otsingu URL-i määratud hosti nime.
 
           See reegel kehtib vaid juhul, kui reegel „DefaultSearchProviderEnabled” on lubatud.</translation>
@@ -1578,18 +1587,6 @@
       Reegli keelamisel järjehoidjaid ei impordita.
 
       Kui jätate reegli määramata, siis võib importimine toimuda automaatselt või kasutajalt võidakse küsida, kas ta soovib importida.</translation>
-<translation id="7055358889740598917">Seadistab teenuse <ph name="PRODUCT_NAME" /> avalehe vaike-URL-i ega luba kasutajatel seda muuta.
-
-          Avaleht on leht, mille saate avada nupuga Avaleht. Käivitamisel avanevad lehed põhinevad reeglitel RestoreOnStartup.
-
-          Avaleheks võib määrata siin sisestatud URL-i või uue vahelehe. Kui valite uue vahelehe, siis reegel ei jõustu.
-
-          Kui lubate seade, ei saa kasutajad teenuses <ph name="PRODUCT_NAME" /> avalehte muuta, ent nad saavad siiski määrata avaleheks uue vahelehe.
-
-          Kui jätate reegli määramata ja ka reegel HomepageIsNewTabPage on määramata, saab kasutaja ise avalehe valida.
-
-          Reegel ei ole saadaval Windowsi eksemplarides, mis ei ole liidetud
-          Active Directory domeeniga.</translation>
 <translation id="7063895219334505671">Luba hüpikaknad nendel saitidel</translation>
 <translation id="706669471845501145">Luba saitidel töölauateatiste näitamine</translation>
 <translation id="7072406291414141328">Lubab võrgu ribalaiuse piiramise</translation>
@@ -1611,21 +1608,6 @@
       Kui reegel on seatud väärtusele Väär, on taustarežiim keelatud ja kasutaja ei saa seda brauseri seadetes muuta.
 
       Kui jätate reegli määramata, on taustarežiim vaikimisi keelatud ja kasutaja saab seda brauseri seadetes muuta.</translation>
-<translation id="7123297102171034788">Võimaldab teil määrata käivitamisel tehtava toimingu.
-
-          Kui teete valiku „Ava uus vaheleht”, avaneb teenuse <ph name="PRODUCT_NAME" /> käivitamisel alati uus vaheleht.
-
-          Kui teete valiku „Taasta eelmine seanss”, avatakse uuesti URL-id, mis teenuse <ph name="PRODUCT_NAME" /> viimasel sulgemisel avatud olid, ja taastatakse viimane sirvimisseanss.
-          Kui teete selle valiku, keelatakse mõned seaded, mis põhinevad seanssidel või teevad väljumisel toiminguid (nt sirvimisandmete kustutamine väljumisel või ainult seansis kasutatavate küpsisefailide kustutamine).
-
-          Kui teete valiku „Ava URL-ide loend”, avaneb teenuse <ph name="PRODUCT_NAME" /> käivitamisel loend „Käivitamisel avanevad URL-id”.
-
-          Kui selle seade lubate, ei saa kasutajad seda teenuses <ph name="PRODUCT_NAME" /> muuta ega alistada.
-
-          Selle seade keelamine on võrdne selle seadistamata jätmisega. Kasutaja saab seda teenuses <ph name="PRODUCT_NAME" /> endiselt muuta.
-
-          See reegel pole saadaval Windowsi eksemplarides, mis pole liitunud
-          Active Directory domeeniga.</translation>
 <translation id="7128918109610518786">Loetleb rakenduste identifikaatorid, mida <ph name="PRODUCT_OS_NAME" /> näitab käivitusribal kinnitatud rakendustena.
 
       Kui eeskiri on seadistatud, on rakenduste kogum fikseeritud ja kasutaja ei saa seda muuta.
@@ -1865,20 +1847,6 @@
 <translation id="793134539373873765">Määrab, kas OS-i värskendamise lastide jaoks kasutatakse p2p-võrgustikku. Kui väärtuseks on seatud Tõene, siis seade jagab ja proovib tarbida värskendamise laste LAN-is, vähendades potentsiaalselt Interneti-ribalaiuse kasutamist ja ummistumist. Kui värskendamise last pole LAN-is saadaval, naaseb seade allalaadimise juurde värskendusserverist. Kui väärtuseks on seatud Vale või see pole määratud, siis p2p-võrgustikku ei kasutata.</translation>
 <translation id="7933141401888114454">Järelevalvega kasutajate loomise lubamine</translation>
 <translation id="793473937901685727">Sertifikaatide saadavuse määramine ARC-rakenduste jaoks</translation>
-<translation id="7936098023732125869">Lubab vaikeotsingupakkuja kasutamise.
-
-          Kui selle seade lubate, tehakse vaikeotsing, kui kasutaja sisestab omnikastikesse teksti, mis pole URL.
-
-          Saate määrata vaikeotsingupakkuja kasutamise, seadistades ülejäänud vaikeotsingu reeglid. Kui need jäetakse tühjaks, saab kasutaja valida vaikepakkuja.
-
-          Kui selle seade keelate, siis ei tehta otsingut, kui kasutaja sisestab omnikastikesse teksti, mis pole URL.
-
-          Kui selle seade lubate või keelate, ei saa kasutajad seade seadet teenuses <ph name="PRODUCT_NAME" /> muuta ega alistada.
-
-          Kui see reegel jäetakse määramata, lubatakse vaikeotsingupakkuja ja kasutaja saab määrata otsingupakkujate loendi.
-
-          See reegel pole saadaval Windowsi eksemplarides, mis pole liitunud
-          Active Directory domeeniga.</translation>
 <translation id="7937766917976512374">Video jäädvustamise lubamine või keelamine</translation>
 <translation id="7941975817681987555">Ära ennusta võrgutoiminguid ühegi võrguühenduse puhul</translation>
 <translation id="7953256619080733119">Kasutaja käsitsi sisestatavate hostide erandite haldamine</translation>
@@ -2004,18 +1972,6 @@
 <translation id="8312129124898414409">Võimaldab määrata, kas veebisaitidel on lubatud võtmeid luua. Võtmete loomise saab kõikide veebisaitide jaoks lubada või keelata.
 
           Kui jätate reegli määramata, kasutatakse reeglit „BlockKeygen” ja kasutaja saab seda muuta.</translation>
-<translation id="8316806736175990584">Seadistab teenuse <ph name="PRODUCT_NAME" /> vaikeavalehe tüübi ega luba kasutajatel avalehe eelistusi muuta. Avaleheks võib määrata URL-i või uue vahelehe.
-
-          Kui lubate selle seade, kasutatakse avalehena alati uut vahelehte ja avalehe URL-i asukohta eiratakse.
-
-          Kui keelate seade, ei ole kasutaja avaleht kunagi uus vaheleht, v.a juhul, kui avalehe URL-iks on määratud „chrome://newtab”.
-
-          Kui lubate või keelate seade, ei saa kasutajad teenuses <ph name="PRODUCT_NAME" /> avalehe tüüpi muuta.
-
-          Kui jätate reegli määramata, saab kasutaja ise valida, kas tema avaleht on uus vaheleht.
-
-          Reegel ei ole saadaval Windowsi eksemplarides, mis ei ole liidetud
-          Active Directory domeeniga.</translation>
 <translation id="8329984337216493753">See reegel on aktiivne vaid jaemüügirežiimis.
 
       Kui DeviceIdleLogoutTimeout on määratud, siis määratleb reegel, kui kaua kuvatakse loenduriga hoiatusboks enne väljalogimist.
@@ -2051,24 +2007,6 @@
 <translation id="8519264904050090490">Kasutaja käsitsi sisestatavate URL-ide erandite haldamine</translation>
 <translation id="8544375438507658205">Rakenduse <ph name="PRODUCT_FRAME_NAME" /> HTML-i vaikerenderdaja</translation>
 <translation id="8549772397068118889">Hoiatamine sisupakettidest väljaspool olevate saitide külastamisel</translation>
-<translation id="855339549837475534">Nii Chromium kui ka Google Chrome toetavad sama reeglite komplekti.
-      Pange tähele, et see dokument võib sisaldada reegleid, mis on
-      suunatud avaldamata tarkvaraversioonidele (seega kirje „toetatud versioonis”
-      viitab avaldamata versioonile), ja sellised reeglid võivad ette teatamata
-      muutuda või need võidakse eemaldada.
-
-      Need reeglid on mõeldud ainult teie organisatsioonisiseste
-      teenuse <ph name="PRODUCT_NAME" /> eksemplaride seadistamiseks.
-      Nende reeglite organisatsioonivälist kasutamist (näiteks
-      avalikult levitatavas programmis) loetakse pahavaraks ning
-      Google ja viirusetõrjeteenuse pakkujad tähistavad selle tõenäoliselt pahavarana.
-
-      Need seaded ei vaja käsitsi seadistamist! Lihtsalt kasutatavad
-      mallid Windowsi, Maci ja Linuxi jaoks saab alla laadida aadressilt <ph name="POLICY_TEMPLATE_DOWNLOAD_URL" />.
-
-      Soovituslik viis selle reegli seadistamiseks Windowsis on GPO kaudu, kuigi
-      reegli varustamist registri kaudu toetatakse endiselt Windowsi eksemplarides,
-      mis on liidetud Active Directory domeeniga.</translation>
 <translation id="8566842294717252664">Veebipoe peitmine uuel vahelehel ja rakenduste käivitajas</translation>
 <translation id="8587229956764455752">Luba uute kasutajakontode loomine</translation>
 <translation id="8614804915612153606">Keelab automaatvärskenduse</translation>
@@ -2085,17 +2023,6 @@
 
           Kui jätate selle reegli määramata, üritab <ph name="PRODUCT_NAME" /> tuvastada, kas server on intranetis, ja alles siis vastab IWA taotlustele. Kui server tuvastatakse Internetis, siis eirab <ph name="PRODUCT_NAME" /> sealt tulevaid IWA taotlusi.</translation>
 <translation id="8672321184841719703">Automaatse värskendamise sihtversioon</translation>
-<translation id="868068801094828689">Lubab rakenduse <ph name="PRODUCT_NAME" /> kasutamise ja kokkujooksmisega seotud andmete anonüümse edastamise Google’ile ning takistab kasutajaid seadet muutmast.
-
-      Kui seade on lubatud, saadetakse Google’ile anonüümseid andmeid
-      kasutamise ja kokkujooksmiste kohta. Kui seade on keelatud, ei saadeta
-      Google’ile neid andmeid. Kasutajad ei saa kummalgi juhul seadet muuta
-      ega alistada. Kui jätate selle määramata, rakendatakse seade, mille
-      kasutaja valis installimisel / esimesel käitamisel.
-
-      Reegel ei ole saadaval Windowsi eksemplarides, mis ei ole liidetud
-      Active Directory domeeniga. (Chrome OS-i puhul vaadake reegliga
-      DeviceMetricsReportingEnabled seonduvat teavet.)</translation>
 <translation id="8693243869659262736">Kasuta sisseehitatud DNS-i klienti</translation>
 <translation id="8704831857353097849">Keelatud pistikprogrammide loend</translation>
 <translation id="8711086062295757690">Määrab märksõna, mis on otsetee, mida kasutatakse omnikastikeses otsingupakkuja käivitamiseks.
@@ -2139,6 +2066,7 @@
 <translation id="8858642179038618439">YouTube’i ohutu režiimi jõustamine</translation>
 <translation id="8864975621965365890">Keelab tagasilükkamisviiba, mis kuvatakse, kui saiti renderdab <ph name="PRODUCT_FRAME_NAME" />.</translation>
 <translation id="8870318296973696995">Avaleht</translation>
+<translation id="8882006618241293596">Blokeeri nendel saitidel pistikprogramm <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="8906768759089290519">Luba külastajarežiim</translation>
 <translation id="8908294717014659003">Võimaldab määrata veebisaitidele juurdepääsu meediahõiveseadmetele. Juurdepääsu meediahõiveseadmetele saab lubada vaikimisi või lasta iga kord kasutajalt küsida, kui mõni veebisait neile juurdepääsu soovib.
 

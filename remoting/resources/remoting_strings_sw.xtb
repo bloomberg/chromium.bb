@@ -64,10 +64,12 @@ Kwa maelezo kuhusu faragha, tafadhali angalia Sera ya Faragha ya Google (http://
 <translation id="225614027745146050">Karibu</translation>
 <translation id="228809120910082333">Tafadhali thibitisha akaunti yako na PIN hapa chini ili kuruhusu ufikiaji kwa Chromoting.</translation>
 <translation id="2314101195544969792">Kipindi chako cha <ph name="APPLICATION_NAME" /> hakijawa kikitumika kwa muda na kitaondolewa baada ya muda mfupi.</translation>
+<translation id="2317666076142640974">Ijaribu <ph name="LINK_BEGIN" />programu mpya ya wavuti ya Chrome ya Ufikiaji wa Kompyuta kutoka Mbali<ph name="LINK_END" />. Tungependa kupata maoni yako.</translation>
 <translation id="2353140552984634198">Unaweza kufikia kwa usalama kompyuta hii kutumia Chromoting.</translation>
 <translation id="2359808026110333948">Endelea</translation>
 <translation id="2366718077645204424">Haiwezi kufikia seva pangishi. Labda hii ni kwa sababu ya usanidi wa mtandao unaotumia.</translation>
 <translation id="2370754117186920852"><ph name="OPTIONAL_OFFLINE_REASON" /> Mara ya mwisho alionekana mtandaoni <ph name="RELATIVE_TIMESTAMP" />.</translation>
+<translation id="2405928220797050937">Programu hii haitumiki tena. Ili upate vipengele vipya zaidi na masasisho ya usalama, tafadhali tumia <ph name="LINK_BEGIN" />programu ya wavuti ya Chrome ya Ufikiaji wa Kompyuta kutoka Mbali<ph name="LINK_END" />.</translation>
 <translation id="2499160551253595098">Tusaidie kuboresha Eneo-kazi la Mbali la Chrome kwa kuturuhusu tukusanye takwimu za matumizi na ripoti za hitilafu.</translation>
 <translation id="2512228156274966424">KUMBUKA: Ili kuhakikisha kuwa mikato yote ya kibodi inapatikana, unaweza kusanidi Kompyuta ya Mbali ya Chrome ili "Ifungue kama dirisha'’.</translation>
 <translation id="2540992418118313681">Ungependa kushiriki kompyuta hii kwa mtumiaji mwingine ili kuangalia na kudhibiti?</translation>
@@ -230,6 +232,7 @@ ya Mbali ya Chrome</translation>
 <translation id="6930242544192836755">Muda</translation>
 <translation id="6939719207673461467">Onyesha/ficha kibodi.</translation>
 <translation id="6944854424004126054">Rejesha dirisha</translation>
+<translation id="6948905685698011662">Programu ya Chrome ya Ufikiaji wa Kompyuta kutoka Mbali sasa ipo kwenye wavuti! Ijaribu <ph name="LINK_BEGIN" />programu yetu ya wavuti isiyolipishwa<ph name="LINK_END" />.</translation>
 <translation id="6963936880795878952">Miunganisho ya kompyuta ya mbali imezuiwa kwa muda kwa sababu mtu fulani alikuwa akijaribu kuifikia kwa kutumia PIN isiyo sahihi. Tafadhali jaribu tena baadaye.</translation>
 <translation id="6965382102122355670">Sawa</translation>
 <translation id="6985691951107243942">Una uhakika kuwa unataka kufunga miunganisho ya mbali kwa <ph name="HOSTNAME" />? Ukibadilisha nia, utahitajika kutembelea kompyuta hiyo ili uwashe miunganisho upya.</translation>
@@ -246,6 +249,7 @@ ya Mbali ya Chrome</translation>
 <translation id="7401733114166276557">Eneo-kazi la Mbali la Chrome</translation>
 <translation id="7434397035092923453">Kiteja kimenyimwa idhini ya kufikia: <ph name="CLIENT_USERNAME" />.</translation>
 <translation id="7444276978508498879">Kiteja kimeunganishwa: <ph name="CLIENT_USERNAME" />.</translation>
+<translation id="7589941250119944644">Programu ya Chrome ya Ufikiaji wa Kompyuta kutoka Mbali sasa inahamia sehemu mpya kwenye wavuti. Ijaribu <ph name="LINK_BEGIN" />programu yetu ya wavuti<ph name="LINK_END" />—inafanya kazi kwa kasi na hailipiwi, huku ikitumia vipengele vyote vya awali.</translation>
 <translation id="7606912958770842224">Washa miunganisho ya mbali</translation>
 <translation id="7649070708921625228">Usaidizi</translation>
 <translation id="7658239707568436148">Ghairi</translation>
