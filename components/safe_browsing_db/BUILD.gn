@@ -397,19 +397,14 @@ source_set("v4_update_protocol_manager_unittest") {
   ]
 }
 
-source_set("unit_tests") {
+source_set("unit_tests_shared") {
   testonly = true
   sources = [
     "database_manager_unittest.cc",
     "prefix_set_unittest.cc",
     "util_unittest.cc",
-    "v4_database_unittest.cc",
     "v4_get_hash_protocol_manager_unittest.cc",
-    "v4_local_database_manager_unittest.cc",
     "v4_protocol_manager_util_unittest.cc",
-    "v4_rice_unittest.cc",
-    "v4_store_unittest.cc",
-    "v4_update_protocol_manager_unittest.cc",
   ]
   deps = [
     ":database_manager",
@@ -417,8 +412,35 @@ source_set("unit_tests") {
     ":safebrowsing_proto",
     ":test_database_manager",
     ":util",
-    ":v4_database",
     ":v4_get_hash_protocol_manager",
+    ":v4_protocol_manager_util",
+    ":v4_test_util",
+    "//base",
+    "//content/public/browser",
+    "//content/test:test_support",
+    "//net",
+    "//net:test_support",
+    "//testing/gtest",
+  ]
+  if (is_win) {
+    # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+    cflags = [ "/wd4267" ]  # Conversion from size_t to 'type'.
+  }
+}
+
+source_set("unit_tests_desktop") {
+  testonly = true
+  sources = [
+    "v4_database_unittest.cc",
+    "v4_local_database_manager_unittest.cc",
+    "v4_rice_unittest.cc",
+    "v4_store_unittest.cc",
+    "v4_update_protocol_manager_unittest.cc",
+  ]
+  deps = [
+    ":unit_tests_shared",
+    ":util",
+    ":v4_database",
     ":v4_local_database_manager",
     ":v4_protocol_manager_util",
     ":v4_rice",
@@ -453,6 +475,7 @@ source_set("unit_tests_mobile") {
     ":remote_database_manager",
     ":safe_browsing_api_handler",
     ":safe_browsing_api_handler_util",
+    ":unit_tests_shared",
     ":util",
     ":v4_test_util",
     "//base",
