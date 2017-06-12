@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/extension_action_runner.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_with_management_policy_apitest.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/extensions/test_extension_dir.h"
 #include "chrome/browser/profiles/profile.h"
@@ -46,6 +47,7 @@
 #include "extensions/test/result_catcher.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
 #include "net/test/test_data_directory.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/test_url_fetcher_factory.h"
@@ -85,7 +87,7 @@ class CancelLoginDialog : public content::NotificationObserver {
  private:
   content::NotificationRegistrar registrar_;
 
- DISALLOW_COPY_AND_ASSIGN(CancelLoginDialog);
+  DISALLOW_COPY_AND_ASSIGN(CancelLoginDialog);
 };
 
 // Sends an XHR request to the provided host, port, and path, and responds when
@@ -115,11 +117,11 @@ void PerformXhrInFrame(content::RenderFrameHost* frame,
   EXPECT_TRUE(success);
 }
 
-// Returns the current count of webRequests received by the |extension| in
-// the background page (assumes the extension stores a value on the window
-// object). Returns -1 if something goes awry.
-int GetWebRequestCountFromBackgroundPage(const Extension* extension,
-                                         content::BrowserContext* context) {
+// Returns the current count of a variable stored in the |extension| background
+// page. Returns -1 if something goes awry.
+int GetCountFromBackgroundPage(const Extension* extension,
+                               content::BrowserContext* context,
+                               const std::string& variable_name) {
   ExtensionHost* host =
       ProcessManager::Get(context)->GetBackgroundHostForExtension(
           extension->id());
@@ -129,10 +131,18 @@ int GetWebRequestCountFromBackgroundPage(const Extension* extension,
   int count = -1;
   if (!ExecuteScriptAndExtractInt(
           host->host_contents(),
-          "window.domAutomationController.send(window.webRequestCount)",
-          &count))
+          "window.domAutomationController.send(" + variable_name + ")", &count))
     return -1;
   return count;
+}
+
+// Returns the current count of webRequests received by the |extension| in
+// the background page (assumes the extension stores a value on the window
+// object). Returns -1 if something goes awry.
+int GetWebRequestCountFromBackgroundPage(const Extension* extension,
+                                         content::BrowserContext* context) {
+  return GetCountFromBackgroundPage(extension, context,
+                                    "window.webRequestCount");
 }
 
 // A test delegate to wait allow waiting for responses to complete with an
@@ -952,6 +962,206 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
     url_fetcher.SetExpectedResponse(kExampleFullContent);
     url_fetcher.WaitForCompletion();
   }
+}
+
+// Tests that the webRequest events aren't dispatched when the request initiator
+// is protected by policy.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTestWithManagementPolicy,
+                       InitiatorProtectedByPolicy) {
+  // We expect that no request will be hidden or modification blocked. This
+  // means that the request to example.com will be seen by the extension.
+  {
+    ExtensionManagementPolicyUpdater pref(&policy_provider_);
+    pref.AddRuntimeBlockedHost("*", "*://notexample.com");
+  }
+
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
+  // Host navigated to.
+  const std::string example_com = "example.com";
+
+  // URL of a page that initiates a cross domain requests when navigated to.
+  const GURL extension_test_url = embedded_test_server()->GetURL(
+      example_com,
+      "/extensions/api_test/webrequest/policy_blocked/ref_remote_js.html");
+
+  ExtensionTestMessageListener listener("ready", false);
+  const Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII("webrequest/policy_blocked"));
+  ASSERT_TRUE(extension) << message_;
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+
+  // Extension communicates back using this listener name.
+  const std::string listener_message = "protected_origin";
+
+  // The number of requests initiated by a protected origin is tracked in
+  // the extension's background page under this variable name.
+  const std::string request_counter_name = "window.protectedOriginCount";
+
+  EXPECT_EQ(0, GetCountFromBackgroundPage(extension, profile(),
+                                          request_counter_name));
+
+  // Wait until all remote Javascript files have been blocked / pulled down.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), extension_test_url, WindowOpenDisposition::CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  // Domain that hosts javascript file referenced by example_com.
+  const std::string example2_com = "example2.com";
+
+  // The server saw a request for the remote Javascript file.
+  EXPECT_TRUE(BrowsedTo(example2_com));
+
+  // The request was seen by the extension.
+  EXPECT_EQ(1, GetCountFromBackgroundPage(extension, profile(),
+                                          request_counter_name));
+
+  // Clear the list of domains the server has seen.
+  ClearRequestLog();
+
+  // Make sure we've cleared the embedded server history.
+  EXPECT_FALSE(BrowsedTo(example2_com));
+
+  // Set the policy to hide requests to example.com or any resource
+  // it includes. We expect that in this test, the request to example2.com
+  // will not be seen by the extension.
+  {
+    ExtensionManagementPolicyUpdater pref(&policy_provider_);
+    pref.AddRuntimeBlockedHost("*", "*://" + example_com);
+  }
+
+  // Wait until all remote Javascript files have been pulled down.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), extension_test_url, WindowOpenDisposition::CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  // The server saw a request for the remote Javascript file.
+  EXPECT_TRUE(BrowsedTo(example2_com));
+
+  // The request was hidden from the extension.
+  EXPECT_EQ(1, GetCountFromBackgroundPage(extension, profile(),
+                                          request_counter_name));
+}
+
+// Tests that the webRequest events aren't dispatched when the URL of the
+// request is protected by policy.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTestWithManagementPolicy,
+                       UrlProtectedByPolicy) {
+  // Host protected by policy.
+  const std::string protected_domain = "example.com";
+
+  {
+    ExtensionManagementPolicyUpdater pref(&policy_provider_);
+    pref.AddRuntimeBlockedHost("*", "*://" + protected_domain);
+  }
+
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
+  LoadExtension(test_data_dir_.AppendASCII("webrequest/policy_blocked"));
+
+  // Listen in case extension sees the requst.
+  ExtensionTestMessageListener before_request_listener("protected_url", false);
+
+  // Path to resolve during test navigations.
+  const std::string test_path = "/defaultresponse?protected_url";
+
+  // Navigate to the protected domain and wait until page fully loads.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), embedded_test_server()->GetURL(protected_domain, test_path),
+      WindowOpenDisposition::CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  // The server saw a request for the protected site.
+  EXPECT_TRUE(BrowsedTo(protected_domain));
+
+  // The request was hidden from the extension.
+  EXPECT_FALSE(before_request_listener.was_satisfied());
+
+  // Host not protected by policy.
+  const std::string unprotected_domain = "notblockedexample.com";
+
+  // Now we'll test browsing to a non-protected website where we expect the
+  // extension to see the request.
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), embedded_test_server()->GetURL(unprotected_domain, test_path),
+      WindowOpenDisposition::CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
+
+  // The server saw a request for the non-protected site.
+  EXPECT_TRUE(BrowsedTo(unprotected_domain));
+
+  // The request was visible from the extension.
+  EXPECT_TRUE(before_request_listener.was_satisfied());
+}
+
+// Test that no webRequest events are seen for a protected host during normal
+// navigation. This replicates most of the tests from
+// WebRequestWithWithheldPermissions with a protected host. Granting a tab
+// specific permission shouldn't bypass our policy.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTestWithManagementPolicy,
+                       WebRequestProtectedByPolicy) {
+  FeatureSwitch::ScopedOverride enable_scripts_require_action(
+      FeatureSwitch::scripts_require_action(), true);
+
+  // Host protected by policy.
+  const std::string protected_domain = "example.com";
+
+  {
+    ExtensionManagementPolicyUpdater pref(&policy_provider_);
+    pref.AddRuntimeBlockedHost("*", "*://" + protected_domain);
+  }
+
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
+  ExtensionTestMessageListener listener("ready", false);
+  const Extension* extension =
+      LoadExtension(test_data_dir_.AppendASCII("webrequest_activetab"));
+  ASSERT_TRUE(extension) << message_;
+  EXPECT_TRUE(listener.WaitUntilSatisfied());
+
+  // Navigate the browser to a page in a new tab.
+  GURL url = embedded_test_server()->GetURL(protected_domain, "/empty.html");
+  chrome::NavigateParams params(browser(), url, ui::PAGE_TRANSITION_LINK);
+  params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+  ui_test_utils::NavigateToURL(&params);
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(web_contents);
+  ExtensionActionRunner* runner =
+      ExtensionActionRunner::GetForWebContents(web_contents);
+  ASSERT_TRUE(runner);
+
+  int port = embedded_test_server()->port();
+  const std::string kXhrPath = "simple.html";
+
+  // The extension shouldn't have currently received any webRequest events,
+  // since it doesn't have permission (and shouldn't receive any from an XHR).
+  EXPECT_EQ(0, GetWebRequestCountFromBackgroundPage(extension, profile()));
+  PerformXhrInFrame(web_contents->GetMainFrame(), protected_domain, port,
+                    kXhrPath);
+  EXPECT_EQ(0, GetWebRequestCountFromBackgroundPage(extension, profile()));
+
+  // Grant activeTab permission, and perform another XHR. The extension should
+  // still be blocked due to ExtensionSettings policy on example.com.
+  // Only records ACCESS_WITHHELD, not ACCESS_DENIED, this is why it matches
+  // BLOCKED_ACTION_NONE.
+  EXPECT_EQ(BLOCKED_ACTION_NONE, runner->GetBlockedActions(extension));
+  runner->set_default_bubble_close_action_for_testing(
+      base::WrapUnique(new ToolbarActionsBarBubbleDelegate::CloseAction(
+          ToolbarActionsBarBubbleDelegate::CLOSE_EXECUTE)));
+  runner->RunAction(extension, true);
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(content::WaitForLoadStop(web_contents));
+  EXPECT_EQ(BLOCKED_ACTION_NONE, runner->GetBlockedActions(extension));
+  int xhr_count = GetWebRequestCountFromBackgroundPage(extension, profile());
+  // ... which means that we should have a non-zero xhr count if the policy
+  // didn't block the events.
+  EXPECT_EQ(0, xhr_count);
+  // And the extension should also block future events.
+  PerformXhrInFrame(web_contents->GetMainFrame(), protected_domain, port,
+                    kXhrPath);
+  EXPECT_EQ(0, GetWebRequestCountFromBackgroundPage(extension, profile()));
 }
 
 }  // namespace extensions

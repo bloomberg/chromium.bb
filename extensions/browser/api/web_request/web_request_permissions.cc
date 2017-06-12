@@ -19,7 +19,6 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
-#include "url/origin.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/login/login_state.h"
@@ -151,7 +150,8 @@ PermissionsData::AccessType WebRequestPermissions::CanExtensionAccessURL(
     const GURL& url,
     int tab_id,
     bool crosses_incognito,
-    HostPermissionsCheck host_permissions_check) {
+    HostPermissionsCheck host_permissions_check,
+    const base::Optional<url::Origin>& initiator) {
   // extension_info_map can be NULL in testing.
   if (!extension_info_map)
     return PermissionsData::ACCESS_ALLOWED;
@@ -159,6 +159,12 @@ PermissionsData::AccessType WebRequestPermissions::CanExtensionAccessURL(
   const extensions::Extension* extension =
       extension_info_map->extensions().GetByID(extension_id);
   if (!extension)
+    return PermissionsData::ACCESS_DENIED;
+
+  // Prevent viewing / modifying requests initiated by a host protected by
+  // policy.
+  if (initiator && extension->permissions_data()->IsRuntimeBlockedHost(
+                       initiator->GetPhysicalOrigin().GetURL()))
     return PermissionsData::ACCESS_DENIED;
 
   // When we are in a Public Session, allow all URLs for webRequests initiated

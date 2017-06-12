@@ -258,15 +258,16 @@ class PermissionsData {
   // methods instead (e.g. CanAccessPage()).
   const URLPatternSet policy_allowed_hosts() const;
 
+  // Check if a specific URL is blocked by policy from extension use at runtime.
+  bool IsRuntimeBlockedHost(const GURL& url) const {
+    base::AutoLock auto_lock(runtime_lock_);
+    return IsRuntimeBlockedHostUnsafe(url);
+  }
+
 #if defined(UNIT_TEST)
   const PermissionSet* GetTabSpecificPermissionsForTesting(int tab_id) const {
     base::AutoLock auto_lock(runtime_lock_);
     return GetTabSpecificPermissions(tab_id);
-  }
-
-  bool IsRuntimeBlockedHostForTesting(const GURL& url) const {
-    base::AutoLock auto_lock(runtime_lock_);
-    return IsRuntimeBlockedHost(url);
   }
 #endif
 
@@ -296,7 +297,8 @@ class PermissionsData {
                           std::string* error) const;
 
   // Check if a specific URL is blocked by policy from extension use at runtime.
-  bool IsRuntimeBlockedHost(const GURL& url) const;
+  // You must acquire the runtime_lock_ before calling.
+  bool IsRuntimeBlockedHostUnsafe(const GURL& url) const;
 
   // Same as policy_blocked_hosts but instead returns a reference.
   // You must acquire runtime_lock_ before calling this.
