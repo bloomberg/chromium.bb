@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_ANDROID_HISTORY_BROWSING_HISTORY_BRIDGE_H_
 
 #include <jni.h>
+
+#include <memory>
 #include <vector>
 
 #include "base/android/jni_android.h"
@@ -19,7 +21,6 @@ using base::android::JavaParamRef;
 // history UI. This queries the BrowsingHistoryService and listens
 // for callbacks.
 class BrowsingHistoryBridge : public BrowsingHistoryServiceHandler {
-
  public:
   explicit BrowsingHistoryBridge(JNIEnv* env,
                                  const JavaParamRef<jobject>& obj,
@@ -32,14 +33,13 @@ class BrowsingHistoryBridge : public BrowsingHistoryServiceHandler {
                     jstring j_query,
                     int64_t j_query_end_time);
 
-  // Adds a HistoryEntry with the |j_url| and |j_timestamps| to the list of
-  // items being removed. The removal will not be committed until
+  // Adds a HistoryEntry with the |j_url| and |j_native_timestamps| to the list
+  // of items being removed. The removal will not be committed until
   // ::removeItems() is called.
-  void MarkItemForRemoval(
-      JNIEnv* env,
-      const JavaParamRef<jobject>& obj,
-      jstring j_url,
-      const JavaParamRef<jlongArray>& j_timestamps);
+  void MarkItemForRemoval(JNIEnv* env,
+                          const JavaParamRef<jobject>& obj,
+                          jstring j_url,
+                          const JavaParamRef<jlongArray>& j_native_timestamps);
 
   // Removes all items that have been marked for removal through
   // ::markItemForRemoval().

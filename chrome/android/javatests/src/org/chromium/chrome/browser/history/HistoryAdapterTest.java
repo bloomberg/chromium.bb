@@ -58,8 +58,8 @@ public class HistoryAdapterTest {
     @SmallTest
     public void testInitialize_SingleItem() {
         Date today = new Date();
-        long[] timestamps = {today.getTime(), today.getTime() - 100};
-        HistoryItem item1 = StubbedHistoryProvider.createHistoryItem(0, timestamps);
+        long timestamp = today.getTime();
+        HistoryItem item1 = StubbedHistoryProvider.createHistoryItem(0, timestamp);
         mHistoryProvider.addItem(item1);
 
         initializeAdapter();
@@ -72,11 +72,11 @@ public class HistoryAdapterTest {
     @SmallTest
     public void testRemove_TwoItemsOneDate() {
         Date today = new Date();
-        long[] timestamps = {today.getTime()};
-        HistoryItem item1 = StubbedHistoryProvider.createHistoryItem(0, timestamps);
+        long timestamp = today.getTime();
+        HistoryItem item1 = StubbedHistoryProvider.createHistoryItem(0, timestamp);
         mHistoryProvider.addItem(item1);
 
-        HistoryItem item2 = StubbedHistoryProvider.createHistoryItem(1, timestamps);
+        HistoryItem item2 = StubbedHistoryProvider.createHistoryItem(1, timestamp);
         mHistoryProvider.addItem(item2);
 
         initializeAdapter();
@@ -106,12 +106,12 @@ public class HistoryAdapterTest {
     @SmallTest
     public void testRemove_TwoItemsTwoDates() {
         Date today = new Date();
-        long[] timestamps = {today.getTime()};
-        HistoryItem item1 = StubbedHistoryProvider.createHistoryItem(0, timestamps);
+        long timestamp = today.getTime();
+        HistoryItem item1 = StubbedHistoryProvider.createHistoryItem(0, timestamp);
         mHistoryProvider.addItem(item1);
 
-        long[] timestamps2 = {today.getTime() - TimeUnit.DAYS.toMillis(3)};
-        HistoryItem item2 = StubbedHistoryProvider.createHistoryItem(1, timestamps2);
+        long timestamp2 = today.getTime() - TimeUnit.DAYS.toMillis(3);
+        HistoryItem item2 = StubbedHistoryProvider.createHistoryItem(1, timestamp2);
         mHistoryProvider.addItem(item2);
 
         initializeAdapter();
@@ -142,12 +142,12 @@ public class HistoryAdapterTest {
     @SmallTest
     public void testSearch() {
         Date today = new Date();
-        long[] timestamps = {today.getTime()};
-        HistoryItem item1 = StubbedHistoryProvider.createHistoryItem(0, timestamps);
+        long timestamp = today.getTime();
+        HistoryItem item1 = StubbedHistoryProvider.createHistoryItem(0, timestamp);
         mHistoryProvider.addItem(item1);
 
-        long[] timestamps2 = {today.getTime() - TimeUnit.DAYS.toMillis(3)};
-        HistoryItem item2 = StubbedHistoryProvider.createHistoryItem(1, timestamps2);
+        long timestamp2 = today.getTime() - TimeUnit.DAYS.toMillis(3);
+        HistoryItem item2 = StubbedHistoryProvider.createHistoryItem(1, timestamp2);
         mHistoryProvider.addItem(item2);
 
         initializeAdapter();
@@ -168,28 +168,28 @@ public class HistoryAdapterTest {
     @SmallTest
     public void testLoadMoreItems() {
         Date today = new Date();
-        long[] timestamps = {today.getTime()};
-        HistoryItem item1 = StubbedHistoryProvider.createHistoryItem(0, timestamps);
+        long timestamp = today.getTime();
+        HistoryItem item1 = StubbedHistoryProvider.createHistoryItem(0, timestamp);
         mHistoryProvider.addItem(item1);
 
-        HistoryItem item2 = StubbedHistoryProvider.createHistoryItem(1, timestamps);
+        HistoryItem item2 = StubbedHistoryProvider.createHistoryItem(1, timestamp);
         mHistoryProvider.addItem(item2);
 
-        HistoryItem item3 = StubbedHistoryProvider.createHistoryItem(2, timestamps);
+        HistoryItem item3 = StubbedHistoryProvider.createHistoryItem(2, timestamp);
         mHistoryProvider.addItem(item3);
 
-        HistoryItem item4 = StubbedHistoryProvider.createHistoryItem(3, timestamps);
+        HistoryItem item4 = StubbedHistoryProvider.createHistoryItem(3, timestamp);
         mHistoryProvider.addItem(item4);
 
-        long[] timestamps2 = {today.getTime() - TimeUnit.DAYS.toMillis(2)};
-        HistoryItem item5 = StubbedHistoryProvider.createHistoryItem(4, timestamps2);
+        long timestamp2 = today.getTime() - TimeUnit.DAYS.toMillis(2);
+        HistoryItem item5 = StubbedHistoryProvider.createHistoryItem(4, timestamp2);
         mHistoryProvider.addItem(item5);
 
-        HistoryItem item6 = StubbedHistoryProvider.createHistoryItem(0, timestamps2);
+        HistoryItem item6 = StubbedHistoryProvider.createHistoryItem(0, timestamp2);
         mHistoryProvider.addItem(item6);
 
-        long[] timestamps3 = {today.getTime() - TimeUnit.DAYS.toMillis(4)};
-        HistoryItem item7 = StubbedHistoryProvider.createHistoryItem(1, timestamps3);
+        long timestamp3 = today.getTime() - TimeUnit.DAYS.toMillis(4);
+        HistoryItem item7 = StubbedHistoryProvider.createHistoryItem(1, timestamp3);
         mHistoryProvider.addItem(item7);
 
         initializeAdapter();
@@ -210,8 +210,8 @@ public class HistoryAdapterTest {
     @SmallTest
     public void testOnHistoryDeleted() throws Exception {
         Date today = new Date();
-        long[] timestamps = {today.getTime()};
-        HistoryItem item1 = StubbedHistoryProvider.createHistoryItem(0, timestamps);
+        long timestamp = today.getTime();
+        HistoryItem item1 = StubbedHistoryProvider.createHistoryItem(0, timestamp);
         mHistoryProvider.addItem(item1);
 
         initializeAdapter();
@@ -234,11 +234,11 @@ public class HistoryAdapterTest {
     @SmallTest
     public void testBlockedSite() {
         Date today = new Date();
-        long[] timestamps = {today.getTime()};
-        HistoryItem item1 = StubbedHistoryProvider.createHistoryItem(0, timestamps);
+        long timestamp = today.getTime();
+        HistoryItem item1 = StubbedHistoryProvider.createHistoryItem(0, timestamp);
         mHistoryProvider.addItem(item1);
 
-        HistoryItem item2 = StubbedHistoryProvider.createHistoryItem(5, timestamps);
+        HistoryItem item2 = StubbedHistoryProvider.createHistoryItem(5, timestamp);
         mHistoryProvider.addItem(item2);
 
         initializeAdapter();

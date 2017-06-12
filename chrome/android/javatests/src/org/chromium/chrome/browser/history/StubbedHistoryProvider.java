@@ -99,22 +99,26 @@ public class StubbedHistoryProvider implements HistoryProvider {
         mItems.remove(item);
     }
 
-    public static HistoryItem createHistoryItem(int which, long[] timestamps) {
+    public static HistoryItem createHistoryItem(int which, long timestamp) {
+        long[] nativeTimestamps = {timestamp * 1000};
         if (which == 0) {
-            return new HistoryItem("http://google.com/", "www.google.com", "Google", timestamps,
-                    false);
+            return new HistoryItem("http://google.com/", "www.google.com", "Google", timestamp,
+                    nativeTimestamps, false);
         } else if (which == 1) {
-            return new HistoryItem("http://foo.com/", "www.foo.com", "Foo", timestamps, false);
+            return new HistoryItem(
+                    "http://foo.com/", "www.foo.com", "Foo", timestamp, nativeTimestamps, false);
         } else if (which == 2) {
-            return new HistoryItem("http://bar.com/", "www.bar.com", "Bar", timestamps, false);
+            return new HistoryItem(
+                    "http://bar.com/", "www.bar.com", "Bar", timestamp, nativeTimestamps, false);
         } else if (which == 3) {
-            return new HistoryItem("http://news.com/", "www.news.com", "News", timestamps, false);
+            return new HistoryItem(
+                    "http://news.com/", "www.news.com", "News", timestamp, nativeTimestamps, false);
         } else if (which == 4) {
-            return new HistoryItem("http://eng.com/", "www.eng.com", "Engineering", timestamps,
-                    false);
+            return new HistoryItem("http://eng.com/", "www.eng.com", "Engineering", timestamp,
+                    nativeTimestamps, false);
         } else if (which == 5) {
             return new HistoryItem("http://blocked.com/", "www.blocked.com", "Cannot Visit",
-                    timestamps, true);
+                    timestamp, nativeTimestamps, true);
         } else {
             return null;
         }
