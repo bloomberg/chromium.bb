@@ -392,8 +392,6 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
       compositor_deps->IsGpuMemoryBufferCompositorResourcesEnabled();
   settings.enable_color_correct_rasterization =
       cmd.HasSwitch(switches::kEnableColorCorrectRendering);
-  settings.renderer_settings.enable_color_correct_rendering =
-      cmd.HasSwitch(switches::kEnableColorCorrectRendering);
   settings.resource_settings.buffer_to_texture_target_map =
       compositor_deps->GetBufferToTextureTargetMap();
 
@@ -402,8 +400,6 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
 
   settings.use_layer_lists = cmd.HasSwitch(cc::switches::kEnableLayerLists);
 
-  settings.renderer_settings.allow_antialiasing &=
-      !cmd.HasSwitch(cc::switches::kDisableCompositedAntialiasing);
   // The means the renderer compositor has 2 possible modes:
   // - Threaded compositing with a scheduler.
   // - Single threaded compositing without a scheduler (for layout tests only).
@@ -460,7 +456,6 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
     settings.scrollbar_animator = cc::LayerTreeSettings::NO_ANIMATOR;
     settings.solid_color_scrollbar_color = SK_ColorTRANSPARENT;
   }
-  settings.renderer_settings.highp_threshold_min = 2048;
   // Android WebView handles root layer flings itself.
   settings.ignore_root_layer_flings = using_synchronous_compositor;
   // Memory policy on Android WebView does not depend on whether device is
@@ -484,9 +479,6 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
     // raster-on-demand, and use 50% of the memory otherwise.
     settings.max_memory_for_prepaint_percentage = 50;
   }
-  // Webview does not own the surface so should not clear it.
-  settings.renderer_settings.should_clear_root_render_pass =
-      !using_synchronous_compositor;
 
   if (base::SysInfo::IsLowEndDevice()) {
     // When running on a low end device, we limit cached bytes to 2MB.
@@ -547,8 +539,6 @@ cc::LayerTreeSettings RenderWidgetCompositor::GenerateLayerTreeSettings(
 
   settings.disallow_non_exact_resource_reuse =
       cmd.HasSwitch(cc::switches::kDisallowNonExactResourceReuse);
-  settings.renderer_settings.disallow_non_exact_resource_reuse =
-      settings.disallow_non_exact_resource_reuse;
 
   return settings;
 }

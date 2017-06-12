@@ -13,6 +13,7 @@
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "cc/base/switches.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/test/pixel_test_output_surface.h"
 #include "cc/test/test_compositor_frame_sink.h"
@@ -54,6 +55,7 @@
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/icc_profile.h"
+#include "ui/gfx/switches.h"
 #include "ui/gfx/test/icc_profiles.h"
 
 #if defined(OS_MACOSX)
@@ -340,18 +342,21 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies,
     if (!task_runner)
       task_runner = base::ThreadTaskRunnerHandle::Get().get();
 
-    ScreenInfo dummy_screen_info;
-    cc::LayerTreeSettings settings =
-        RenderWidgetCompositor::GenerateLayerTreeSettings(
-            *base::CommandLine::ForCurrentProcess(), deps, 1.f, false,
-            dummy_screen_info);
+    cc::RendererSettings renderer_settings;
+    base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
+    renderer_settings.enable_color_correct_rendering =
+        cmd->HasSwitch(switches::kEnableColorCorrectRendering);
+    renderer_settings.allow_antialiasing &=
+        !cmd->HasSwitch(cc::switches::kDisableCompositedAntialiasing);
+    renderer_settings.highp_threshold_min = 2048;
 
     constexpr bool disable_display_vsync = false;
+    constexpr double refresh_rate = 60.0;
     auto compositor_frame_sink = base::MakeUnique<cc::TestCompositorFrameSink>(
         std::move(compositor_context_provider),
         std::move(worker_context_provider), nullptr /* shared_bitmap_manager */,
-        gpu_memory_buffer_manager, settings.renderer_settings, task_runner,
-        synchronous_composite, disable_display_vsync);
+        gpu_memory_buffer_manager, renderer_settings, task_runner,
+        synchronous_composite, disable_display_vsync, refresh_rate);
     compositor_frame_sink->SetClient(this);
     compositor_frame_sinks_[routing_id] = compositor_frame_sink.get();
     return std::move(compositor_frame_sink);

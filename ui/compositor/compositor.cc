@@ -80,8 +80,7 @@ Compositor::Compositor(const cc::FrameSinkId& frame_sink_id,
   settings.layers_always_allowed_lcd_text = true;
   // Use occlusion to allow more overlapping windows to take less memory.
   settings.use_occlusion_for_tile_prioritization = true;
-  refresh_rate_ = settings.renderer_settings.refresh_rate =
-      context_factory_->GetRefreshRate();
+  refresh_rate_ = context_factory_->GetRefreshRate();
   settings.main_frame_before_activation_enabled = false;
 
   if (command_line->HasSwitch(cc::switches::kUIShowCompositedLayerBorders)) {

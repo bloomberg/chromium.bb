@@ -55,6 +55,7 @@ class PixelTest : public testing::Test {
   }
 
   LayerTreeSettings settings_;
+  RendererSettings renderer_settings_;
   gfx::Size device_viewport_size_;
   bool disable_picture_quad_image_filtering_;
   std::unique_ptr<FakeOutputSurfaceClient> output_surface_client_;

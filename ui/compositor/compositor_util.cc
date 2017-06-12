@@ -46,6 +46,8 @@ cc::RendererSettings CreateRendererSettings(uint32_t (
   }
   renderer_settings.disallow_non_exact_resource_reuse =
       command_line->HasSwitch(cc::switches::kDisallowNonExactResourceReuse);
+  renderer_settings.allow_antialiasing =
+      !command_line->HasSwitch(cc::switches::kDisableCompositedAntialiasing);
 
   return renderer_settings;
 }

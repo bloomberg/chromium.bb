@@ -41,6 +41,7 @@ LayerTreePixelTest::~LayerTreePixelTest() {}
 std::unique_ptr<TestCompositorFrameSink>
 LayerTreePixelTest::CreateCompositorFrameSink(
     const RendererSettings& renderer_settings,
+    double refresh_rate,
     scoped_refptr<ContextProvider>,
     scoped_refptr<ContextProvider>) {
   scoped_refptr<TestInProcessContextProvider> compositor_context_provider;
@@ -57,7 +58,8 @@ LayerTreePixelTest::CreateCompositorFrameSink(
   auto delegating_output_surface = base::MakeUnique<TestCompositorFrameSink>(
       compositor_context_provider, std::move(worker_context_provider),
       shared_bitmap_manager(), gpu_memory_buffer_manager(), RendererSettings(),
-      ImplThreadTaskRunner(), synchronous_composite, disable_display_vsync);
+      ImplThreadTaskRunner(), synchronous_composite, disable_display_vsync,
+      refresh_rate);
   delegating_output_surface->SetEnlargePassTextureAmount(
       enlarge_texture_amount_);
   return delegating_output_surface;
