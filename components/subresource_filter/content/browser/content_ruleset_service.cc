@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
+#include "base/task_scheduler/post_task.h"
 #include "components/subresource_filter/content/common/subresource_filter_messages.h"
 #include "components/subresource_filter/core/browser/ruleset_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -39,8 +40,9 @@ void CloseFile(base::File) {}
 void CloseFileOnFileThread(base::File* file) {
   if (!file->IsValid())
     return;
-  content::BrowserThread::PostTask(content::BrowserThread::FILE, FROM_HERE,
-                                   base::Bind(&CloseFile, base::Passed(file)));
+  base::PostTaskWithTraits(FROM_HERE,
+                           {base::TaskPriority::BACKGROUND, base::MayBlock()},
+                           base::Bind(&CloseFile, base::Passed(file)));
 }
 
 }  // namespace
