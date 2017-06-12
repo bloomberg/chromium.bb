@@ -961,17 +961,20 @@ def RunHWTestSuite(build, suite, board, pool=None, num=None, file_bugs=None,
     running_json_dump_flag = False
     json_dump_result = None
     job_id = _HWTestCreate(cmd, debug, **swarming_args)
-    if wait_for_results and job_id:
-      pass_hwtest = _HWTestWait(cmd, job_id, **swarming_args)
+    if job_id:
+      if wait_for_results:
+        pass_hwtest = _HWTestWait(cmd, job_id, **swarming_args)
       suite_details_link = tree_status.ConstructViceroySuiteDetailsURL(
           job_id=job_id)
       logging.PrintBuildbotLink('Suite details', suite_details_link)
-      # Only dump the json output when tests don't pass, since the json output
-      # is used to decide whether we can do subsystem based partial submission.
-      running_json_dump_flag = not pass_hwtest
-      if running_json_dump_flag:
-        json_dump_result = retry_util.RetryException(
-            ValueError, 3, _HWTestDumpJson, cmd, job_id, **swarming_args)
+      if wait_for_results:
+        # Only dump the json output when tests don't pass, since the json
+        # output is used to decide whether we can do subsystem based partial
+        # submission.
+        running_json_dump_flag = not pass_hwtest
+        if running_json_dump_flag:
+          json_dump_result = retry_util.RetryException(
+              ValueError, 3, _HWTestDumpJson, cmd, job_id, **swarming_args)
     return HWTestSuiteResult(None, json_dump_result)
   except cros_build_lib.RunCommandError as e:
     result = e.result
