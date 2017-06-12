@@ -102,37 +102,6 @@ Status FetchResultToStatus(FetchResult result) {
   return Status(StatusCode::PERMANENT_ERROR, std::string());
 }
 
-// Creates suggestions from dictionary values in |list| and adds them to
-// |suggestions|. Returns true on success, false if anything went wrong.
-// |remote_category_id| is only used if |content_suggestions_api| is true.
-bool AddSuggestionsFromListValue(bool content_suggestions_api,
-                                 int remote_category_id,
-                                 const base::ListValue& list,
-                                 RemoteSuggestion::PtrVector* suggestions,
-                                 const base::Time& fetch_time) {
-  for (const auto& value : list) {
-    const base::DictionaryValue* dict = nullptr;
-    if (!value.GetAsDictionary(&dict)) {
-      return false;
-    }
-
-    std::unique_ptr<RemoteSuggestion> suggestion;
-    if (content_suggestions_api) {
-      suggestion = RemoteSuggestion::CreateFromContentSuggestionsDictionary(
-          *dict, remote_category_id, fetch_time);
-    } else {
-      suggestion =
-          RemoteSuggestion::CreateFromChromeReaderDictionary(*dict, fetch_time);
-    }
-    if (!suggestion) {
-      return false;
-    }
-
-    suggestions->push_back(std::move(suggestion));
-  }
-  return true;
-}
-
 int GetMinuteOfTheDay(bool local_time,
                       bool reduced_resolution,
                       base::Clock* clock) {
@@ -149,23 +118,22 @@ int GetMinuteOfTheDay(bool local_time,
 // The response from the backend might include suggestions from multiple
 // categories. If only a single category was requested, this function filters
 // all other categories out.
-void FilterCategories(
-    RemoteSuggestionsFetcher::FetchedCategoriesVector* categories,
-    base::Optional<Category> exclusive_category) {
+void FilterCategories(FetchedCategoriesVector* categories,
+                      base::Optional<Category> exclusive_category) {
   if (!exclusive_category.has_value()) {
     return;
   }
   Category exclusive = exclusive_category.value();
-  auto category_it = std::find_if(
-      categories->begin(), categories->end(),
-      [&exclusive](const RemoteSuggestionsFetcher::FetchedCategory& c) -> bool {
-        return c.category == exclusive;
-      });
+  auto category_it =
+      std::find_if(categories->begin(), categories->end(),
+                   [&exclusive](const FetchedCategory& c) -> bool {
+                     return c.category == exclusive;
+                   });
   if (category_it == categories->end()) {
     categories->clear();
     return;
   }
-  RemoteSuggestionsFetcher::FetchedCategory category = std::move(*category_it);
+  FetchedCategory category = std::move(*category_it);
   categories->clear();
   categories->push_back(std::move(category));
 }
@@ -192,47 +160,6 @@ GURL GetFetchEndpoint(version_info::Channel channel) {
   NOTREACHED();
   return GURL{kContentSuggestionsStagingServer};
 }
-
-CategoryInfo BuildArticleCategoryInfo(
-    const base::Optional<base::string16>& title) {
-  return CategoryInfo(
-      title.has_value() ? title.value()
-                        : l10n_util::GetStringUTF16(
-                              IDS_NTP_ARTICLE_SUGGESTIONS_SECTION_HEADER),
-      ContentSuggestionsCardLayout::FULL_CARD,
-      ContentSuggestionsAdditionalAction::FETCH,
-      /*show_if_empty=*/true,
-      l10n_util::GetStringUTF16(IDS_NTP_ARTICLE_SUGGESTIONS_SECTION_EMPTY));
-}
-
-CategoryInfo BuildRemoteCategoryInfo(const base::string16& title,
-                                     bool allow_fetching_more_results) {
-  ContentSuggestionsAdditionalAction action =
-      ContentSuggestionsAdditionalAction::NONE;
-  if (allow_fetching_more_results) {
-    action = ContentSuggestionsAdditionalAction::FETCH;
-  }
-  return CategoryInfo(
-      title, ContentSuggestionsCardLayout::FULL_CARD, action,
-      /*show_if_empty=*/false,
-      // TODO(tschumann): The message for no-articles is likely wrong
-      // and needs to be added to the stubby protocol if we want to
-      // support it.
-      l10n_util::GetStringUTF16(IDS_NTP_ARTICLE_SUGGESTIONS_SECTION_EMPTY));
-}
-
-RemoteSuggestionsFetcher::FetchedCategory::FetchedCategory(Category c,
-                                                           CategoryInfo&& info)
-    : category(c), info(info) {}
-
-RemoteSuggestionsFetcher::FetchedCategory::FetchedCategory(FetchedCategory&&) =
-    default;
-
-RemoteSuggestionsFetcher::FetchedCategory::~FetchedCategory() = default;
-
-RemoteSuggestionsFetcher::FetchedCategory&
-RemoteSuggestionsFetcher::FetchedCategory::operator=(FetchedCategory&&) =
-    default;
 
 RemoteSuggestionsFetcher::RemoteSuggestionsFetcher(
     SigninManagerBase* signin_manager,
@@ -406,7 +333,7 @@ void RemoteSuggestionsFetcher::JsonRequestDone(
   }
 
   FetchedCategoriesVector categories;
-  if (!JsonToSnippets(*result, &categories, fetch_time)) {
+  if (!JsonToCategories(*result, &categories, fetch_time)) {
     LOG(WARNING) << "Received invalid snippets: " << last_fetch_json_;
     FetchFinished(OptionalFetchedCategories(), std::move(callback),
                   FetchResult::INVALID_SNIPPET_CONTENT_ERROR, std::string());
@@ -438,62 +365,6 @@ void RemoteSuggestionsFetcher::FetchFinished(
 
   std::move(callback).Run(FetchResultToStatus(fetch_result),
                           std::move(categories));
-}
-
-bool RemoteSuggestionsFetcher::JsonToSnippets(
-    const base::Value& parsed,
-    FetchedCategoriesVector* categories,
-    const base::Time& fetch_time) {
-  const base::DictionaryValue* top_dict = nullptr;
-  if (!parsed.GetAsDictionary(&top_dict)) {
-    return false;
-  }
-
-  const base::ListValue* categories_value = nullptr;
-  if (!top_dict->GetList("categories", &categories_value)) {
-    return false;
-  }
-
-  for (const auto& v : *categories_value) {
-    std::string utf8_title;
-    int remote_category_id = -1;
-    const base::DictionaryValue* category_value = nullptr;
-    if (!(v.GetAsDictionary(&category_value) &&
-          category_value->GetString("localizedTitle", &utf8_title) &&
-          category_value->GetInteger("id", &remote_category_id) &&
-          (remote_category_id > 0))) {
-      return false;
-    }
-
-    RemoteSuggestion::PtrVector suggestions;
-    const base::ListValue* suggestions_list = nullptr;
-    // Absence of a list of suggestions is treated as an empty list, which
-    // is permissible.
-    if (category_value->GetList("suggestions", &suggestions_list)) {
-      if (!AddSuggestionsFromListValue(
-              /*content_suggestions_api=*/true, remote_category_id,
-              *suggestions_list, &suggestions, fetch_time)) {
-        return false;
-      }
-    }
-    Category category = Category::FromRemoteCategory(remote_category_id);
-    if (category.IsKnownCategory(KnownCategories::ARTICLES)) {
-      categories->push_back(FetchedCategory(
-          category, BuildArticleCategoryInfo(base::UTF8ToUTF16(utf8_title))));
-    } else {
-      // TODO(tschumann): Right now, the backend does not yet populate this
-      // field. Make it mandatory once the backends provide it.
-      bool allow_fetching_more_results = false;
-      category_value->GetBoolean("allowFetchingMoreResults",
-                                 &allow_fetching_more_results);
-      categories->push_back(FetchedCategory(
-          category, BuildRemoteCategoryInfo(base::UTF8ToUTF16(utf8_title),
-                                            allow_fetching_more_results)));
-    }
-    categories->back().suggestions = std::move(suggestions);
-  }
-
-  return true;
 }
 
 }  // namespace ntp_snippets

@@ -18,6 +18,7 @@
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/category_info.h"
 #include "components/ntp_snippets/remote/json_request.h"
+#include "components/ntp_snippets/remote/json_to_categories.h"
 #include "components/ntp_snippets/remote/remote_suggestion.h"
 #include "components/ntp_snippets/remote/request_params.h"
 #include "components/ntp_snippets/status.h"
@@ -42,39 +43,12 @@ class UserClassifier;
 // the channel and variation parameters.
 GURL GetFetchEndpoint(version_info::Channel channel);
 
-// TODO(tschumann): BuildArticleCategoryInfo() and BuildRemoteCategoryInfo()
-// don't really belong into this library. However, as the fetcher is
-// providing this data for server-defined remote sections it's a good starting
-// point. Candiates to add to such a library would be persisting categories
-// (have all category managment in one place) or turning parsed JSON into
-// FetchedCategory objects (all domain-specific logic in one place).
-
-// Provides the CategoryInfo data for article suggestions. If |title| is
-// nullopt, then the default, hard-coded title will be used.
-CategoryInfo BuildArticleCategoryInfo(
-    const base::Optional<base::string16>& title);
-
-// Provides the CategoryInfo data for other remote suggestions.
-CategoryInfo BuildRemoteCategoryInfo(const base::string16& title,
-                                     bool allow_fetching_more_results);
-
 // Fetches suggestion data for the NTP from the server.
 // TODO(fhorschig): Untangle cyclic dependencies by introducing a
 // RemoteSuggestionsFetcherInterface. (Would be good for mock implementations,
 // too!)
 class RemoteSuggestionsFetcher {
  public:
-  struct FetchedCategory {
-    Category category;
-    CategoryInfo info;
-    RemoteSuggestion::PtrVector suggestions;
-
-    FetchedCategory(Category c, CategoryInfo&& info);
-    FetchedCategory(FetchedCategory&&);             // = default, in .cc
-    ~FetchedCategory();                             // = default, in .cc
-    FetchedCategory& operator=(FetchedCategory&&);  // = default, in .cc
-  };
-  using FetchedCategoriesVector = std::vector<FetchedCategory>;
   using OptionalFetchedCategories = base::Optional<FetchedCategoriesVector>;
 
   using SnippetsAvailableCallback =
@@ -155,10 +129,6 @@ class RemoteSuggestionsFetcher {
                      SnippetsAvailableCallback callback,
                      internal::FetchResult status_code,
                      const std::string& error_details);
-
-  bool JsonToSnippets(const base::Value& parsed,
-                      FetchedCategoriesVector* categories,
-                      const base::Time& fetch_time);
 
   // Authentication for signed-in users.
   SigninManagerBase* signin_manager_;

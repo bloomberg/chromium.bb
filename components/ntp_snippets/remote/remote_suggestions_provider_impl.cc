@@ -72,12 +72,11 @@ bool IsOrderingNewRemoteCategoriesBasedOnArticlesCategoryEnabled() {
 
 void AddFetchedCategoriesToRankerBasedOnArticlesCategory(
     CategoryRanker* ranker,
-    const RemoteSuggestionsFetcher::FetchedCategoriesVector& fetched_categories,
+    const FetchedCategoriesVector& fetched_categories,
     Category articles_category) {
   DCHECK(IsOrderingNewRemoteCategoriesBasedOnArticlesCategoryEnabled());
   // Insert categories which precede "Articles" in the response.
-  for (const RemoteSuggestionsFetcher::FetchedCategory& fetched_category :
-       fetched_categories) {
+  for (const FetchedCategory& fetched_category : fetched_categories) {
     if (fetched_category.category == articles_category) {
       break;
     }
@@ -782,8 +781,7 @@ void RemoteSuggestionsProviderImpl::OnFetchFinished(
     // TODO(treib): Reorder |category_contents_| to match the order we received
     // from the server. crbug.com/653816
     bool response_includes_article_category = false;
-    for (RemoteSuggestionsFetcher::FetchedCategory& fetched_category :
-         *fetched_categories) {
+    for (FetchedCategory& fetched_category : *fetched_categories) {
       // TODO(tschumann): Remove this histogram once we only talk to the content
       // suggestions cloud backend.
       if (fetched_category.category == articles_category_) {
@@ -808,8 +806,7 @@ void RemoteSuggestionsProviderImpl::OnFetchFinished(
       AddFetchedCategoriesToRankerBasedOnArticlesCategory(
           category_ranker_, *fetched_categories, articles_category_);
     } else {
-      for (const RemoteSuggestionsFetcher::FetchedCategory& fetched_category :
-           *fetched_categories) {
+      for (const FetchedCategory& fetched_category : *fetched_categories) {
         category_ranker_->AppendCategoryIfNecessary(fetched_category.category);
       }
     }
