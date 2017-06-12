@@ -12,9 +12,9 @@
     readonly attribute USVString topLevelOrigin;
     readonly attribute USVString paymentRequestOrigin;
     readonly attribute DOMString paymentRequestId;
-    readonly attribute sequence<PaymentMethodData> methodData;
+    readonly attribute FrozenArray<PaymentMethodData> methodData;
     readonly attribute PaymentItem total;
-    readonly attribute sequence<PaymentDetailsModifier> modifiers;
+    readonly attribute FrozenArray<PaymentDetailsModifier> modifiers;
     readonly attribute DOMString instrumentKey;
 
     [CallWith=ScriptState] Promise<WindowClient> openWindow(USVString url);
