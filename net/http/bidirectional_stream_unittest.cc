@@ -386,7 +386,7 @@ class MockTimer : public base::MockTimer {
 
 }  // namespace
 
-class BidirectionalStreamTest : public testing::TestWithParam<bool> {
+class BidirectionalStreamTest : public testing::Test {
  public:
   BidirectionalStreamTest()
       : default_url_(kDefaultUrl),
