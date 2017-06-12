@@ -246,12 +246,12 @@ TEST_F(WebPluginContainerTest, PrintOnePage) {
   TestPluginWebFrameClient
       plugin_web_frame_client;  // Must outlive webViewHelper.
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebView* web_view = web_view_helper.InitializeAndLoad(
+  WebViewBase* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "test.pdf", true, &plugin_web_frame_client);
   DCHECK(web_view);
   web_view->UpdateAllLifecyclePhases();
   RunPendingTasks();
-  WebFrame* frame = web_view->MainFrame();
+  WebLocalFrame* frame = web_view->MainFrameImpl();
 
   WebPrintParams print_params;
   print_params.print_content_area.width = 500;
@@ -270,12 +270,12 @@ TEST_F(WebPluginContainerTest, PrintAllPages) {
   TestPluginWebFrameClient
       plugin_web_frame_client;  // Must outlive webViewHelper.
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebView* web_view = web_view_helper.InitializeAndLoad(
+  WebViewBase* web_view = web_view_helper.InitializeAndLoad(
       base_url_ + "test.pdf", true, &plugin_web_frame_client);
   DCHECK(web_view);
   web_view->UpdateAllLifecyclePhases();
   RunPendingTasks();
-  WebFrame* frame = web_view->MainFrame();
+  WebLocalFrame* frame = web_view->MainFrameImpl();
 
   WebPrintParams print_params;
   print_params.print_content_area.width = 500;
@@ -283,8 +283,7 @@ TEST_F(WebPluginContainerTest, PrintAllPages) {
 
   frame->PrintBegin(print_params);
   PaintRecorder recorder;
-  frame->PrintPagesWithBoundaries(recorder.beginRecording(IntRect()),
-                                  WebSize());
+  frame->PrintPagesForTesting(recorder.beginRecording(IntRect()), WebSize());
   frame->PrintEnd();
   DCHECK(plugin_web_frame_client.PrintedAtLeastOnePage());
 }

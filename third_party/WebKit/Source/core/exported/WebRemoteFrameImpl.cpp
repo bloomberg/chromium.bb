@@ -190,40 +190,6 @@ unsigned WebRemoteFrameImpl::UnloadListenerCount() const {
   return 0;
 }
 
-int WebRemoteFrameImpl::PrintBegin(const WebPrintParams&,
-                                   const WebNode& constrain_to_node) {
-  NOTREACHED();
-  return 0;
-}
-
-float WebRemoteFrameImpl::PrintPage(int page_to_print, WebCanvas*) {
-  NOTREACHED();
-  return 0.0;
-}
-
-float WebRemoteFrameImpl::GetPrintPageShrink(int page) {
-  NOTREACHED();
-  return 0.0;
-}
-
-void WebRemoteFrameImpl::PrintEnd() {
-  NOTREACHED();
-}
-
-bool WebRemoteFrameImpl::IsPrintScalingDisabledForPlugin(const WebNode&) {
-  NOTREACHED();
-  return false;
-}
-
-void WebRemoteFrameImpl::PrintPagesWithBoundaries(WebCanvas*, const WebSize&) {
-  NOTREACHED();
-}
-
-WebRect WebRemoteFrameImpl::SelectionBoundsRect() const {
-  NOTREACHED();
-  return WebRect();
-}
-
 WebLocalFrame* WebRemoteFrameImpl::CreateLocalChild(
     WebTreeScopeType scope,
     const WebString& name,

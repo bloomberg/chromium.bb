@@ -49,6 +49,7 @@ struct WebConsoleMessage;
 struct WebContentSecurityPolicyViolation;
 struct WebFindOptions;
 struct WebFloatRect;
+struct WebPrintParams;
 struct WebPrintPresetOptions;
 struct WebScriptSource;
 struct WebSourceLocation;
@@ -681,12 +682,52 @@ class WebLocalFrame : public WebFrame {
   // If set to false, do not draw scrollbars on this frame's view.
   virtual void SetCanHaveScrollbars(bool) = 0;
 
+  // Printing ------------------------------------------------------------
+
+  // Reformats the WebFrame for printing. WebPrintParams specifies the printable
+  // content size, paper size, printable area size, printer DPI and print
+  // scaling option. If constrainToNode node is specified, then only the given
+  // node is printed (for now only plugins are supported), instead of the entire
+  // frame.
+  // Returns the number of pages that can be printed at the given
+  // page size.
+  virtual int PrintBegin(const WebPrintParams&,
+                         const WebNode& constrain_to_node = WebNode()) = 0;
+
+  // Returns the page shrinking factor calculated by webkit (usually
+  // between 1/1.33 and 1/2). Returns 0 if the page number is invalid or
+  // not in printing mode.
+  virtual float GetPrintPageShrink(int page) = 0;
+
+  // Prints one page, and returns the calculated page shrinking factor
+  // (usually between 1/1.33 and 1/2).  Returns 0 if the page number is
+  // invalid or not in printing mode.
+  virtual float PrintPage(int page_to_print, WebCanvas*) = 0;
+
+  // Reformats the WebFrame for screen display.
+  virtual void PrintEnd() = 0;
+
+  // If the frame contains a full-frame plugin or the given node refers to a
+  // plugin whose content indicates that printed output should not be scaled,
+  // return true, otherwise return false.
+  virtual bool IsPrintScalingDisabledForPlugin(const WebNode& = WebNode()) = 0;
+
   // Testing ------------------------------------------------------------------
 
   // Dumps the layer tree, used by the accelerated compositor, in
   // text form. This is used only by layout tests.
   virtual WebString GetLayerTreeAsTextForTesting(
       bool show_debug_info = false) const = 0;
+
+  // Prints the frame into the canvas, with page boundaries drawn as one pixel
+  // wide blue lines. This method exists to support layout tests.
+  virtual void PrintPagesForTesting(WebCanvas*, const WebSize&) = 0;
+
+  // Returns the bounds rect for current selection. If selection is performed
+  // on transformed text, the rect will still bound the selection but will
+  // not be transformed itself. If no selection is present, the rect will be
+  // empty ((0,0), (0,0)).
+  virtual WebRect GetSelectionBoundsRectForTesting() const = 0;
 
  protected:
   explicit WebLocalFrame(WebTreeScopeType scope) : WebFrame(scope) {}

@@ -565,7 +565,7 @@ void PrintWebViewHelper::PrintHeaderAndFooter(
     blink::WebCanvas* canvas,
     int page_number,
     int total_pages,
-    const blink::WebFrame& source_frame,
+    const blink::WebLocalFrame& source_frame,
     float webkit_scale_factor,
     const PageSizeMargins& page_layout,
     const PrintMsg_Print_Params& params) {
@@ -620,7 +620,7 @@ void PrintWebViewHelper::PrintHeaderAndFooter(
 }
 
 // static - Not anonymous so that platform implementations can use it.
-float PrintWebViewHelper::RenderPageContent(blink::WebFrame* frame,
+float PrintWebViewHelper::RenderPageContent(blink::WebLocalFrame* frame,
                                             int page_number,
                                             const gfx::Rect& canvas_area,
                                             const gfx::Rect& content_area,

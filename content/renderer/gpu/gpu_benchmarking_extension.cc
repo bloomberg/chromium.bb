@@ -6,8 +6,10 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/base64.h"
 #include "base/command_line.h"
@@ -467,7 +469,7 @@ bool BeginSmoothDrag(v8::Isolate* isolate,
   return true;
 }
 
-static void PrintDocument(blink::WebFrame* frame, SkDocument* doc) {
+static void PrintDocument(blink::WebLocalFrame* frame, SkDocument* doc) {
   const float kPageWidth = 612.0f;   // 8.5 inch
   const float kPageHeight = 792.0f;  // 11 inch
   const float kMarginTop = 29.0f;    // 0.40 inch
@@ -485,7 +487,7 @@ static void PrintDocument(blink::WebFrame* frame, SkDocument* doc) {
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
     float page_shrink = frame->GetPrintPageShrink(i);
-    DCHECK(page_shrink > 0);
+    DCHECK_GT(page_shrink, 0);
     canvas.scale(page_shrink, page_shrink);
 #endif
 
