@@ -185,8 +185,7 @@ class MockImageCaptureClient
     }
   }
   MOCK_METHOD0(OnCorrectPhotoTaken, void(void));
-  MOCK_METHOD1(OnTakePhotoFailure,
-               void(const base::Callback<void(mojom::BlobPtr)>&));
+  MOCK_METHOD1(OnTakePhotoFailure, void(base::Callback<void(mojom::BlobPtr)>));
 
   // GMock doesn't support move-only arguments, so we use this forward method.
   void DoOnGetPhotoCapabilities(mojom::PhotoCapabilitiesPtr capabilities) {
@@ -195,7 +194,7 @@ class MockImageCaptureClient
   }
   MOCK_METHOD0(OnCorrectGetPhotoCapabilities, void(void));
   MOCK_METHOD1(OnGetPhotoCapabilitiesFailure,
-               void(const base::Callback<void(mojom::PhotoCapabilitiesPtr)>&));
+               void(base::Callback<void(mojom::PhotoCapabilitiesPtr)>));
 
   const mojom::PhotoCapabilities* capabilities() { return capabilities_.get(); }
 

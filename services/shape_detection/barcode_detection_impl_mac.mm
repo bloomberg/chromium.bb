@@ -24,7 +24,7 @@ void RunCallbackWithBarcodes(
 }
 
 void RunCallbackWithNoBarcodes(
-    const shape_detection::mojom::BarcodeDetection::DetectCallback& callback) {
+    shape_detection::mojom::BarcodeDetection::DetectCallback callback) {
   callback.Run(
       std::vector<shape_detection::mojom::BarcodeDetectionResultPtr>());
 }
