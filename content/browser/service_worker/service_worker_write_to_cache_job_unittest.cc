@@ -286,7 +286,7 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
         mock_protocol_handler_(nullptr) {}
   ~ServiceWorkerWriteToCacheJobTest() override {}
 
-  void CreateHostForVersion(
+  base::WeakPtr<ServiceWorkerProviderHost> CreateHostForVersion(
       int process_id,
       int provider_id,
       const scoped_refptr<ServiceWorkerVersion>& version) {
@@ -297,6 +297,7 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
     base::WeakPtr<ServiceWorkerProviderHost> provider_host = host->AsWeakPtr();
     context()->AddProviderHost(std::move(host));
     provider_host->running_hosted_version_ = version;
+    return provider_host;
   }
 
   void SetUpScriptRequest(int process_id, int provider_id) {
@@ -339,9 +340,10 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
     version_ =
         new ServiceWorkerVersion(registration_.get(), script_url_,
                                  NextVersionId(), context()->AsWeakPtr());
-    CreateHostForVersion(helper_->mock_render_process_id(), provider_id,
-                         version_);
-    SetUpScriptRequest(helper_->mock_render_process_id(), provider_id);
+    base::WeakPtr<ServiceWorkerProviderHost> host = CreateHostForVersion(
+        helper_->mock_render_process_id(), provider_id, version_);
+    ASSERT_TRUE(host);
+    SetUpScriptRequest(helper_->mock_render_process_id(), host->provider_id());
 
     context()->storage()->LazyInitialize(base::Bind(&EmptyCallback));
     base::RunLoop().RunUntilIdle();
@@ -394,10 +396,10 @@ class ServiceWorkerWriteToCacheJobTest : public testing::Test {
         new ServiceWorkerVersion(registration_.get(), script_url_,
                                  NextVersionId(), context()->AsWeakPtr());
     new_version->set_pause_after_download(true);
-    CreateHostForVersion(helper_->mock_render_process_id(), provider_id,
-                         new_version);
+    base::WeakPtr<ServiceWorkerProviderHost> host = CreateHostForVersion(
+        helper_->mock_render_process_id(), provider_id, new_version);
 
-    SetUpScriptRequest(helper_->mock_render_process_id(), provider_id);
+    SetUpScriptRequest(helper_->mock_render_process_id(), host->provider_id());
     mock_protocol_handler_->SetCreateJobCallback(
         base::Bind(&CreateResponseJob, response));
     request_->Start();
