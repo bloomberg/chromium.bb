@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "ui/gl/gl_export.h"
 
 namespace gl {
@@ -31,6 +32,20 @@ class GL_EXPORT ScopedMakeCurrent {
   bool succeeded_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedMakeCurrent);
+};
+
+// This class is used to make sure a specified surface isn't current, and upon
+// destruction it will make the surface current again if it had been before.
+class GL_EXPORT ScopedReleaseCurrent {
+ public:
+  explicit ScopedReleaseCurrent(gl::GLSurface* this_surface);
+
+  ~ScopedReleaseCurrent();
+
+ private:
+  base::Optional<ScopedMakeCurrent> make_current_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedReleaseCurrent);
 };
 
 }  // namespace ui
