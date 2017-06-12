@@ -53,10 +53,10 @@ class MOJO_CPP_BINDINGS_EXPORT AssociatedBindingBase {
   // This method may only be called after this AssociatedBinding has been bound
   // to a message pipe. The error handler will be reset when this
   // AssociatedBinding is unbound or closed.
-  void set_connection_error_handler(const base::Closure& error_handler);
+  void set_connection_error_handler(base::OnceClosure error_handler);
 
   void set_connection_error_with_reason_handler(
-      const ConnectionErrorWithReasonCallback& error_handler);
+      ConnectionErrorWithReasonCallback error_handler);
 
   // Indicates whether the associated binding has been completed.
   bool is_bound() const { return !!endpoint_client_; }

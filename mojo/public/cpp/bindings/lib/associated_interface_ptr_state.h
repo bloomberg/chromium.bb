@@ -107,15 +107,16 @@ class AssociatedInterfacePtrState {
     return endpoint_client_ ? endpoint_client_->encountered_error() : false;
   }
 
-  void set_connection_error_handler(const base::Closure& error_handler) {
+  void set_connection_error_handler(base::OnceClosure error_handler) {
     DCHECK(endpoint_client_);
-    endpoint_client_->set_connection_error_handler(error_handler);
+    endpoint_client_->set_connection_error_handler(std::move(error_handler));
   }
 
   void set_connection_error_with_reason_handler(
-      const ConnectionErrorWithReasonCallback& error_handler) {
+      ConnectionErrorWithReasonCallback error_handler) {
     DCHECK(endpoint_client_);
-    endpoint_client_->set_connection_error_with_reason_handler(error_handler);
+    endpoint_client_->set_connection_error_with_reason_handler(
+        std::move(error_handler));
   }
 
   // Returns true if bound and awaiting a response to a message.

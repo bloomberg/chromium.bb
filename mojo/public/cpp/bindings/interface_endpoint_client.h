@@ -9,6 +9,7 @@
 
 #include <map>
 #include <memory>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -51,16 +52,16 @@ class MOJO_CPP_BINDINGS_EXPORT InterfaceEndpointClient
 
   // Sets the error handler to receive notifications when an error is
   // encountered.
-  void set_connection_error_handler(const base::Closure& error_handler) {
+  void set_connection_error_handler(base::OnceClosure error_handler) {
     DCHECK(thread_checker_.CalledOnValidThread());
-    error_handler_ = error_handler;
+    error_handler_ = std::move(error_handler);
     error_with_reason_handler_.Reset();
   }
 
   void set_connection_error_with_reason_handler(
-      const ConnectionErrorWithReasonCallback& error_handler) {
+      ConnectionErrorWithReasonCallback error_handler) {
     DCHECK(thread_checker_.CalledOnValidThread());
-    error_with_reason_handler_ = error_handler;
+    error_with_reason_handler_ = std::move(error_handler);
     error_handler_.Reset();
   }
 
@@ -172,7 +173,7 @@ class MOJO_CPP_BINDINGS_EXPORT InterfaceEndpointClient
 
   uint64_t next_request_id_ = 1;
 
-  base::Closure error_handler_;
+  base::OnceClosure error_handler_;
   ConnectionErrorWithReasonCallback error_with_reason_handler_;
   bool encountered_error_ = false;
 

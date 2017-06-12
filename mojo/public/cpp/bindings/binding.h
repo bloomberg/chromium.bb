@@ -174,15 +174,16 @@ class Binding {
   // This method may only be called after this Binding has been bound to a
   // message pipe. The error handler will be reset when this Binding is unbound
   // or closed.
-  void set_connection_error_handler(const base::Closure& error_handler) {
+  void set_connection_error_handler(base::OnceClosure error_handler) {
     DCHECK(is_bound());
-    internal_state_.set_connection_error_handler(error_handler);
+    internal_state_.set_connection_error_handler(std::move(error_handler));
   }
 
   void set_connection_error_with_reason_handler(
-      const ConnectionErrorWithReasonCallback& error_handler) {
+      ConnectionErrorWithReasonCallback error_handler) {
     DCHECK(is_bound());
-    internal_state_.set_connection_error_with_reason_handler(error_handler);
+    internal_state_.set_connection_error_with_reason_handler(
+        std::move(error_handler));
   }
 
   // Returns the interface implementation that was previously specified. Caller

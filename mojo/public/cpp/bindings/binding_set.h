@@ -73,14 +73,14 @@ class BindingSetBase {
 
   BindingSetBase() : weak_ptr_factory_(this) {}
 
-  void set_connection_error_handler(const base::Closure& error_handler) {
-    error_handler_ = error_handler;
+  void set_connection_error_handler(base::RepeatingClosure error_handler) {
+    error_handler_ = std::move(error_handler);
     error_with_reason_handler_.Reset();
   }
 
   void set_connection_error_with_reason_handler(
-      const ConnectionErrorWithReasonCallback& error_handler) {
-    error_with_reason_handler_ = error_handler;
+      RepeatingConnectionErrorWithReasonCallback error_handler) {
+    error_with_reason_handler_ = std::move(error_handler);
     error_handler_.Reset();
   }
 
@@ -209,7 +209,7 @@ class BindingSetBase {
           context_(std::move(context)) {
       binding_.AddFilter(base::MakeUnique<DispatchFilter>(this));
       binding_.set_connection_error_with_reason_handler(
-          base::Bind(&Entry::OnConnectionError, base::Unretained(this)));
+          base::BindOnce(&Entry::OnConnectionError, base::Unretained(this)));
     }
 
     void FlushForTesting() { binding_.FlushForTesting(); }
@@ -279,14 +279,15 @@ class BindingSetBase {
     if (!is_flushing_)
       bindings_.erase(it);
 
-    if (!error_handler_.is_null())
+    if (error_handler_) {
       error_handler_.Run();
-    else if (!error_with_reason_handler_.is_null())
+    } else if (error_with_reason_handler_) {
       error_with_reason_handler_.Run(custom_reason, description);
+    }
   }
 
-  base::Closure error_handler_;
-  ConnectionErrorWithReasonCallback error_with_reason_handler_;
+  base::RepeatingClosure error_handler_;
+  RepeatingConnectionErrorWithReasonCallback error_with_reason_handler_;
   PreDispatchCallback pre_dispatch_handler_;
   BindingId next_binding_id_ = 0;
   std::map<BindingId, std::unique_ptr<Entry>> bindings_;

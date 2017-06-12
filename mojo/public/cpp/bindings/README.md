@@ -389,7 +389,7 @@ invocation:
 ``` cpp
 sample::mojom::LoggerPtr logger;
 LoggerImpl impl(mojo::MakeRequest(&logger));
-impl.set_connection_error_handler(base::Bind([] { LOG(ERROR) << "Bye."; }));
+impl.set_connection_error_handler(base::BindOnce([] { LOG(ERROR) << "Bye."; }));
 logger->Log("OK cool");
 logger.reset();  // Closes the client end.
 ```
@@ -406,7 +406,7 @@ handler within its constructor:
 LoggerImpl::LoggerImpl(sample::mojom::LoggerRequest request)
     : binding_(this, std::move(request)) {
   binding_.set_connection_error_handler(
-      base::Bind(&LoggerImpl::OnError, base::Unretained(this)));
+      base::BindOnce(&LoggerImpl::OnError, base::Unretained(this)));
 }
 
 void LoggerImpl::OnError() {

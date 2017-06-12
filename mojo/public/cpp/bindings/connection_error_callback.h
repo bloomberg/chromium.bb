@@ -9,12 +9,15 @@
 
 namespace mojo {
 
-// This callback type accepts user-defined disconnect reason and description. If
-// the other side specifies a reason on closing the connection, it will be
+// These callback types accept user-defined disconnect reason and description.
+// If the other side specifies a reason on closing the connection, it will be
 // passed to the error handler.
 using ConnectionErrorWithReasonCallback =
-    base::Callback<void(uint32_t /* custom_reason */,
-                        const std::string& /* description */)>;
+    base::OnceCallback<void(uint32_t /* custom_reason */,
+                            const std::string& /* description */)>;
+using RepeatingConnectionErrorWithReasonCallback =
+    base::RepeatingCallback<void(uint32_t /* custom_reason */,
+                                 const std::string& /* description */)>;
 
 }  // namespace mojo
 
