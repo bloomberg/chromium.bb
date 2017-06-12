@@ -7,6 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <vector>
+
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/cpp/system/wait.h"
 #include "mojo/public/cpp/test_support/test_support.h"
@@ -26,50 +28,30 @@ bool WriteTextMessage(const MessagePipeHandle& handle,
 }
 
 bool ReadTextMessage(const MessagePipeHandle& handle, std::string* text) {
-  MojoResult rv;
-  bool did_wait = false;
+  if (Wait(handle, MOJO_HANDLE_SIGNAL_READABLE) != MOJO_RESULT_OK)
+    return false;
 
-  uint32_t num_bytes = 0, num_handles = 0;
-  for (;;) {
-    rv = ReadMessageRaw(handle,
-                        nullptr,
-                        &num_bytes,
-                        nullptr,
-                        &num_handles,
-                        MOJO_READ_MESSAGE_FLAG_NONE);
-    if (rv == MOJO_RESULT_SHOULD_WAIT) {
-      if (did_wait) {
-        assert(false);  // Looping endlessly!?
-        return false;
-      }
-      rv = Wait(handle, MOJO_HANDLE_SIGNAL_READABLE);
-      if (rv != MOJO_RESULT_OK)
-        return false;
-      did_wait = true;
-    } else {
-      assert(!num_handles);
-      break;
-    }
+  std::vector<uint8_t> bytes;
+  std::vector<ScopedHandle> handles;
+  if (ReadMessageRaw(handle, &bytes, &handles, MOJO_READ_MESSAGE_FLAG_NONE) !=
+      MOJO_RESULT_OK) {
+    return false;
   }
 
-  text->resize(num_bytes);
-  rv = ReadMessageRaw(handle,
-                      &text->at(0),
-                      &num_bytes,
-                      nullptr,
-                      &num_handles,
-                      MOJO_READ_MESSAGE_FLAG_NONE);
-  return rv == MOJO_RESULT_OK;
+  assert(handles.empty());
+  text->resize(bytes.size());
+  std::copy(bytes.begin(), bytes.end(), text->begin());
+  return true;
 }
 
 bool DiscardMessage(const MessagePipeHandle& handle) {
-  MojoResult rv = ReadMessageRaw(handle,
-                                 nullptr,
-                                 nullptr,
-                                 nullptr,
-                                 nullptr,
-                                 MOJO_READ_MESSAGE_FLAG_MAY_DISCARD);
-  return rv == MOJO_RESULT_OK;
+  MojoMessageHandle message;
+  int rv =
+      MojoReadMessageNew(handle.value(), &message, MOJO_READ_MESSAGE_FLAG_NONE);
+  if (rv != MOJO_RESULT_OK)
+    return false;
+  MojoFreeMessage(message);
+  return true;
 }
 
 void IterateAndReportPerf(const char* test_name,

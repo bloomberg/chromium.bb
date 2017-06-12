@@ -45,14 +45,6 @@ class MockDispatcher : public Dispatcher {
       std::unique_ptr<ports::UserMessageEvent> message_event,
       MojoWriteMessageFlags /*flags*/) override {
     info_->IncrementWriteMessageCallCount();
-
-    auto* message = message_event->GetMessage<UserMessageImpl>();
-    if (message->user_payload_size() > GetConfiguration().max_message_num_bytes)
-      return MOJO_RESULT_RESOURCE_EXHAUSTED;
-
-    if (message->num_handles())
-      return MOJO_RESULT_UNIMPLEMENTED;
-
     return MOJO_RESULT_OK;
   }
 

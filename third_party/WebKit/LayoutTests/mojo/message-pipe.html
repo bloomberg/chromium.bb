@@ -58,8 +58,8 @@ async_test((test) => {
     {
       let {result, buffer, handles} = handle0.readMessage();
       assert_equals(result, Mojo.RESULT_OK);
-      assert_equals(buffer, undefined);
-      assert_equals(handles, undefined);
+      assert_equals(buffer.byteLength, 0);
+      assert_array_equals(handles, []);
     }
   }));
   let result = handle1.writeMessage(new ArrayBuffer(0), []);

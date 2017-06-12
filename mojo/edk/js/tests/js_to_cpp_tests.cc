@@ -7,6 +7,7 @@
 
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/at_exit.h"
 #include "base/files/file_path.h"
@@ -75,16 +76,15 @@ void CheckDataPipe(ScopedDataPipeConsumerHandle data_pipe_handle) {
 }
 
 void CheckMessagePipe(MessagePipeHandle message_pipe_handle) {
-  unsigned char buffer[100];
-  uint32_t buffer_size = static_cast<uint32_t>(sizeof(buffer));
   MojoResult result = Wait(message_pipe_handle, MOJO_HANDLE_SIGNAL_READABLE);
   EXPECT_EQ(MOJO_RESULT_OK, result);
-  result = ReadMessageRaw(
-      message_pipe_handle, buffer, &buffer_size, 0, 0, 0);
+  std::vector<uint8_t> bytes;
+  std::vector<ScopedHandle> handles;
+  result = ReadMessageRaw(message_pipe_handle, &bytes, &handles, 0);
   EXPECT_EQ(MOJO_RESULT_OK, result);
-  EXPECT_EQ(64u, buffer_size);
+  EXPECT_EQ(64u, bytes.size());
   for (int i = 0; i < 64; ++i) {
-    EXPECT_EQ(255 - i, buffer[i]);
+    EXPECT_EQ(255 - i, bytes[i]);
   }
 }
 
@@ -176,14 +176,14 @@ void CheckCorruptedDataPipe(MojoHandle data_pipe_handle) {
 }
 
 void CheckCorruptedMessagePipe(MojoHandle message_pipe_handle) {
-  unsigned char buffer[100];
-  uint32_t buffer_size = static_cast<uint32_t>(sizeof(buffer));
-  MojoResult result = MojoReadMessage(
-      message_pipe_handle, buffer, &buffer_size, 0, 0, 0);
+  std::vector<uint8_t> bytes;
+  std::vector<ScopedHandle> handles;
+  MojoResult result = ReadMessageRaw(MessagePipeHandle(message_pipe_handle),
+                                     &bytes, &handles, 0);
   if (result != MOJO_RESULT_OK)
     return;
-  for (uint32_t i = 0; i < buffer_size; ++i)
-    g_waste_accumulator += buffer[i];
+  for (uint32_t i = 0; i < bytes.size(); ++i)
+    g_waste_accumulator += bytes[i];
 }
 
 void CheckCorruptedEchoArgs(const js_to_cpp::EchoArgsPtr& arg) {

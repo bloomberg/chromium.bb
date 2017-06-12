@@ -14,11 +14,14 @@
 
 #include <stdint.h>
 
+#include <vector>
+
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "mojo/public/c/system/message_pipe.h"
 #include "mojo/public/cpp/system/handle.h"
 #include "mojo/public/cpp/system/message.h"
+#include "mojo/public/cpp/system/system_export.h"
 
 namespace mojo {
 
@@ -57,37 +60,31 @@ inline MojoResult CreateMessagePipe(const MojoCreateMessagePipeOptions* options,
   return rv;
 }
 
-// The following "...Raw" versions fully expose the underlying API, and don't
-// help with ownership of handles (especially when writing messages). It is
-// expected that in most cases these methods will be called through generated
-// bindings anyway.
-// TODO(vtl): Write friendlier versions of these functions (using scoped
-// handles and/or vectors) if there is a demonstrated need for them.
+// A helper for writing a serialized message to a message pipe. Use this for
+// convenience in lieu of the lower-level MojoWriteMessage API, but beware that
+// it does incur an extra copy of the message payload.
+//
+// See documentation for MojoWriteMessage for return code details.
+MOJO_CPP_SYSTEM_EXPORT MojoResult
+WriteMessageRaw(MessagePipeHandle message_pipe,
+                const void* bytes,
+                size_t num_bytes,
+                const MojoHandle* handles,
+                size_t num_handles,
+                MojoWriteMessageFlags flags);
 
-// Writes to a message pipe.  If handles are attached, on success the handles
-// will no longer be valid (the receiver will receive equivalent, but logically
-// different, handles). See |MojoWriteMessage()| for complete documentation.
-inline MojoResult WriteMessageRaw(MessagePipeHandle message_pipe,
-                                  const void* bytes,
-                                  uint32_t num_bytes,
-                                  const MojoHandle* handles,
-                                  uint32_t num_handles,
-                                  MojoWriteMessageFlags flags) {
-  return MojoWriteMessage(
-      message_pipe.value(), bytes, num_bytes, handles, num_handles, flags);
-}
-
-// Reads from a message pipe. See |MojoReadMessage()| for complete
-// documentation.
-inline MojoResult ReadMessageRaw(MessagePipeHandle message_pipe,
-                                 void* bytes,
-                                 uint32_t* num_bytes,
-                                 MojoHandle* handles,
-                                 uint32_t* num_handles,
-                                 MojoReadMessageFlags flags) {
-  return MojoReadMessage(
-      message_pipe.value(), bytes, num_bytes, handles, num_handles, flags);
-}
+// A helper for reading serialized messages from a pipe. Use this for
+// convenience in lieu of the lower-level MojoReadMessage API, but beware that
+// it does incur an extra copy of the message payload.
+//
+// See documentation for MojoReadMessage for return code details. In addition to
+// those return codes, this may return |MOJO_RESULT_ABORTED| if the message was
+// unable to be serialized into the provided containers.
+MOJO_CPP_SYSTEM_EXPORT MojoResult
+ReadMessageRaw(MessagePipeHandle message_pipe,
+               std::vector<uint8_t>* payload,
+               std::vector<ScopedHandle>* handles,
+               MojoReadMessageFlags flags);
 
 // Writes to a message pipe. Takes ownership of |message| and any attached
 // handles.

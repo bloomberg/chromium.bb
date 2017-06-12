@@ -31,14 +31,59 @@
 #include "mojo/public/c/system/buffer.h"
 #include "mojo/public/c/system/functions.h"
 #include "mojo/public/c/system/types.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "mojo/public/cpp/system/wait.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-
 namespace mojo {
 namespace edk {
 namespace {
+
+// Temporary helpers to avoid tons of churn as old APIs are removed. These
+// support only enough of a subset of the old APIs to satisfy the usage in these
+// tests.
+//
+// TODO(rockot): Remove these.
+MojoResult MojoReadMessage(MojoHandle pipe,
+                           void* out_bytes,
+                           uint32_t* num_bytes,
+                           MojoHandle* out_handles,
+                           uint32_t* num_handles,
+                           MojoReadMessageFlags flags) {
+  std::vector<uint8_t> bytes;
+  std::vector<ScopedHandle> handles;
+  MojoResult rv =
+      ReadMessageRaw(MessagePipeHandle(pipe), &bytes, &handles, flags);
+  if (rv != MOJO_RESULT_OK)
+    return rv;
+
+  if (num_bytes)
+    *num_bytes = static_cast<uint32_t>(bytes.size());
+  if (!bytes.empty()) {
+    CHECK(out_bytes && num_bytes && *num_bytes >= bytes.size());
+    memcpy(out_bytes, bytes.data(), bytes.size());
+  }
+
+  if (num_handles)
+    *num_handles = static_cast<uint32_t>(handles.size());
+  if (!handles.empty()) {
+    CHECK(out_handles && num_handles && *num_handles >= handles.size());
+    for (size_t i = 0; i < handles.size(); ++i)
+      out_handles[i] = handles[i].release().value();
+  }
+  return MOJO_RESULT_OK;
+}
+
+MojoResult MojoWriteMessage(MojoHandle pipe,
+                            const void* bytes,
+                            uint32_t num_bytes,
+                            const MojoHandle* handles,
+                            uint32_t num_handles,
+                            MojoWriteMessageFlags flags) {
+  return WriteMessageRaw(MessagePipeHandle(pipe), bytes, num_bytes, handles,
+                         num_handles, flags);
+}
 
 class MultiprocessMessagePipeTest : public test::MojoTestBase {
  protected:

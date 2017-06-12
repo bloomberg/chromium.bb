@@ -244,15 +244,14 @@ class HandleSendingHelper {
     mojo::ScopedMessagePipeHandle pipe;
     EXPECT_TRUE(
         IPC::MojoMessageHelper::ReadMessagePipeFrom(&message, iter, &pipe));
-    std::string content(GetSendingFileContent().size(), ' ');
+    std::vector<uint8_t> content;
 
-    uint32_t num_bytes = static_cast<uint32_t>(content.size());
     ASSERT_EQ(MOJO_RESULT_OK,
               mojo::Wait(pipe.get(), MOJO_HANDLE_SIGNAL_READABLE));
     EXPECT_EQ(MOJO_RESULT_OK,
-              mojo::ReadMessageRaw(pipe.get(), &content[0], &num_bytes, nullptr,
-                                   nullptr, 0));
-    EXPECT_EQ(content, GetSendingFileContent());
+              mojo::ReadMessageRaw(pipe.get(), &content, nullptr, 0));
+    EXPECT_EQ(std::string(content.begin(), content.end()),
+              GetSendingFileContent());
   }
 
 #if defined(OS_POSIX)
@@ -354,13 +353,11 @@ DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(IPCChannelMojoTestSendMessagePipeClient) {
 }
 
 void ReadOK(mojo::MessagePipeHandle pipe) {
-  std::string should_be_ok("xx");
-  uint32_t num_bytes = static_cast<uint32_t>(should_be_ok.size());
+  std::vector<uint8_t> should_be_ok;
   CHECK_EQ(MOJO_RESULT_OK, mojo::Wait(pipe, MOJO_HANDLE_SIGNAL_READABLE));
   CHECK_EQ(MOJO_RESULT_OK,
-           mojo::ReadMessageRaw(pipe, &should_be_ok[0], &num_bytes, nullptr,
-                                nullptr, 0));
-  EXPECT_EQ(should_be_ok, std::string("OK"));
+           mojo::ReadMessageRaw(pipe, &should_be_ok, nullptr, 0));
+  EXPECT_EQ("OK", std::string(should_be_ok.begin(), should_be_ok.end()));
 }
 
 void WriteOK(mojo::MessagePipeHandle pipe) {

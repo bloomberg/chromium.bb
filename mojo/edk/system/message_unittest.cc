@@ -354,21 +354,13 @@ TEST_F(MessageTest, ReadMessageWithContextAsSerializedMessage) {
                 MOJO_WRITE_MESSAGE_FLAG_NONE));
   EXPECT_EQ(MOJO_RESULT_OK, WaitForSignals(b, MOJO_HANDLE_SIGNAL_READABLE));
 
-  // Attempt to read an unserialized message into serialized buffers. The
-  // request should fail.
-  uint32_t num_bytes = 0;
-  EXPECT_EQ(MOJO_RESULT_NOT_FOUND,
-            MojoReadMessage(b, nullptr, &num_bytes, nullptr, nullptr,
-                            MOJO_READ_MESSAGE_FLAG_NONE));
-  EXPECT_FALSE(message_was_destroyed);
-
-  // Try again, this time reading into a message object.
   MojoMessageHandle message_handle;
   EXPECT_EQ(MOJO_RESULT_OK, MojoReadMessageNew(b, &message_handle,
                                                MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_FALSE(message_was_destroyed);
 
   // Not a serialized message, so we can't get serialized contents.
+  uint32_t num_bytes = 0;
   void* buffer;
   uint32_t num_handles = 0;
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
