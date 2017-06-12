@@ -6,12 +6,14 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/ios/weak_nsobject.h"
-#include "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/passwords/password_generation_prompt_view.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/Dialogs/src/MaterialDialogs.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 // Material Design Component constraints.
@@ -25,9 +27,10 @@ const CGFloat kPrefHeight = 500;
 }  // namespace
 
 @interface PasswordGenerationPromptViewController () {
-  base::scoped_nsobject<NSString> _password;
-  base::WeakNSObject<UIViewController> _viewController;
-  base::WeakNSObject<PasswordGenerationPromptDialog> _contentView;
+  NSString* _password;
+  __weak UIViewController* _viewController;
+  __weak PasswordGenerationPromptDialog* _contentView;
+  MDCDialogTransitionController* _dialogTransitionController;
 }
 
 // Returns the maximum size of the dialog.
@@ -47,12 +50,12 @@ const CGFloat kPrefHeight = 500;
                   viewController:(UIViewController*)viewController {
   self = [super initWithNibName:nil bundle:nil];
   if (self) {
-    _password.reset([password copy]);
-    _viewController.reset(viewController);
-    _contentView.reset(contentView);
+    _password = [password copy];
+    _viewController = viewController;
+    _contentView = contentView;
+    _dialogTransitionController = [[MDCDialogTransitionController alloc] init];
     self.modalPresentationStyle = UIModalPresentationCustom;
-    self.transitioningDelegate =
-        [[[MDCDialogTransitionController alloc] init] autorelease];
+    self.transitioningDelegate = _dialogTransitionController;
   }
   return self;
 }

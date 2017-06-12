@@ -7,6 +7,10 @@
 #import "ios/chrome/browser/passwords/password_generation_prompt_view.h"
 #import "ios/chrome/browser/passwords/password_generation_prompt_view_controller.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @implementation PasswordsUiDelegateImpl
 
 #pragma mark -
@@ -31,15 +35,15 @@
   }
 
   PasswordGenerationPromptDialog* contentView =
-      [[[PasswordGenerationPromptDialog alloc]
+      [[PasswordGenerationPromptDialog alloc]
           initWithDelegate:delegate
-            viewController:topViewController] autorelease];
+            viewController:topViewController];
 
   UIViewController* viewController =
-      [[[PasswordGenerationPromptViewController alloc]
+      [[PasswordGenerationPromptViewController alloc]
           initWithPassword:password
                contentView:contentView
-            viewController:topViewController] autorelease];
+            viewController:topViewController];
 
   [topViewController presentViewController:viewController
                                   animated:YES

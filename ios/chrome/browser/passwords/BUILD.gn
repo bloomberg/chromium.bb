@@ -136,6 +136,7 @@ js_compile_unchecked("injected_js") {
 }
 
 source_set("passwords_internal") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "password_generation_prompt_view.h",
     "password_generation_prompt_view.mm",
