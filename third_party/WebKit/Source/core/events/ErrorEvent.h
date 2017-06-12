@@ -36,6 +36,7 @@
 #include "core/events/ErrorEventInit.h"
 #include "core/events/Event.h"
 #include "platform/bindings/DOMWrapperWorld.h"
+#include "platform/bindings/TraceWrapperV8Reference.h"
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/WTFString.h"
 
@@ -59,9 +60,10 @@ class ErrorEvent final : public Event {
     return new ErrorEvent(message, std::move(location), error, world);
   }
 
-  static ErrorEvent* Create(const AtomicString& type,
+  static ErrorEvent* Create(ScriptState* script_state,
+                            const AtomicString& type,
                             const ErrorEventInit& initializer) {
-    return new ErrorEvent(type, initializer);
+    return new ErrorEvent(script_state, type, initializer);
   }
   static ErrorEvent* CreateSanitizedError(DOMWrapperWorld* world) {
     return new ErrorEvent("Script error.",
@@ -92,6 +94,7 @@ class ErrorEvent final : public Event {
   void SetUnsanitizedMessage(const String&);
 
   DECLARE_VIRTUAL_TRACE();
+  DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
  private:
   ErrorEvent();
@@ -99,12 +102,12 @@ class ErrorEvent final : public Event {
              std::unique_ptr<SourceLocation>,
              ScriptValue error,
              DOMWrapperWorld*);
-  ErrorEvent(const AtomicString&, const ErrorEventInit&);
+  ErrorEvent(ScriptState*, const AtomicString&, const ErrorEventInit&);
 
   String unsanitized_message_;
   String sanitized_message_;
   std::unique_ptr<SourceLocation> location_;
-  ScriptValue error_;
+  TraceWrapperV8Reference<v8::Value> error_;
 
   RefPtr<DOMWrapperWorld> world_;
 };

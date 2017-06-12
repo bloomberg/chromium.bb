@@ -302,6 +302,8 @@ bool WorkerOrWorkletScriptController::Evaluate(
            source_code.StartPosition(), cache_handler, v8_cache_options);
   if (IsExecutionForbidden())
     return false;
+
+  ScriptState::Scope scope(script_state_.Get());
   if (state.had_exception) {
     if (error_event) {
       if (state.error_event_from_imported_script_) {
