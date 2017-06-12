@@ -34,7 +34,7 @@ class GLOzoneEglCast : public GLOzoneEGL {
   scoped_refptr<gl::GLSurface> CreateOffscreenGLSurface(
       const gfx::Size& size) override;
   intptr_t GetNativeDisplay() override;
-  bool LoadGLES2Bindings() override;
+  bool LoadGLES2Bindings(gl::GLImplementation implementation) override;
 
   intptr_t GetNativeWindow();
   bool ResizeDisplay(gfx::Size viewport_size);

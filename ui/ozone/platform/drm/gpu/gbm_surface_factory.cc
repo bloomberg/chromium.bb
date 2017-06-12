@@ -64,7 +64,9 @@ class GLOzoneEGLGbm : public GLOzoneEGL {
  protected:
   intptr_t GetNativeDisplay() override { return EGL_DEFAULT_DISPLAY; }
 
-  bool LoadGLES2Bindings() override { return LoadDefaultEGLGLES2Bindings(); }
+  bool LoadGLES2Bindings(gl::GLImplementation impl) override {
+    return LoadDefaultEGLGLES2Bindings(impl);
+  }
 
  private:
   GbmSurfaceFactory* surface_factory_;
@@ -108,7 +110,8 @@ std::vector<gl::GLImplementation>
 GbmSurfaceFactory::GetAllowedGLImplementations() {
   DCHECK(thread_checker_.CalledOnValidThread());
   return std::vector<gl::GLImplementation>{gl::kGLImplementationEGLGLES2,
-                                           gl::kGLImplementationOSMesaGL};
+                                           gl::kGLImplementationOSMesaGL,
+                                           gl::kGLImplementationSwiftShaderGL};
 }
 
 GLOzone* GbmSurfaceFactory::GetGLOzone(gl::GLImplementation implementation) {

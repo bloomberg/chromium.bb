@@ -42,7 +42,7 @@ class GLOzoneEGL : public GLOzone {
   virtual intptr_t GetNativeDisplay() = 0;
 
   // Sets up GL bindings for the native surface.
-  virtual bool LoadGLES2Bindings() = 0;
+  virtual bool LoadGLES2Bindings(gl::GLImplementation implementation) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GLOzoneEGL);

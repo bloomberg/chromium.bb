@@ -203,7 +203,7 @@ void GLOzoneEglCast::ChildDestroyed() {
     DestroyWindow();
 }
 
-bool GLOzoneEglCast::LoadGLES2Bindings() {
+bool GLOzoneEglCast::LoadGLES2Bindings(gl::GLImplementation implementation) {
   if (state_ != kInitialized) {
     InitializeHardware();
     if (state_ != kInitialized) {

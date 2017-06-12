@@ -143,7 +143,9 @@ class GLOzoneEGLX11 : public GLOzoneEGL {
     return reinterpret_cast<intptr_t>(gfx::GetXDisplay());
   }
 
-  bool LoadGLES2Bindings() override { return LoadDefaultEGLGLES2Bindings(); }
+  bool LoadGLES2Bindings(gl::GLImplementation implementation) override {
+    return LoadDefaultEGLGLES2Bindings(implementation);
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GLOzoneEGLX11);
@@ -161,9 +163,9 @@ X11SurfaceFactory::~X11SurfaceFactory() {}
 std::vector<gl::GLImplementation>
 X11SurfaceFactory::GetAllowedGLImplementations() {
   // DesktopGL (GLX) should be the first option when crbug.com/646982 is fixed.
-  return std::vector<gl::GLImplementation>{gl::kGLImplementationEGLGLES2,
-                                           gl::kGLImplementationDesktopGL,
-                                           gl::kGLImplementationOSMesaGL};
+  return std::vector<gl::GLImplementation>{
+      gl::kGLImplementationEGLGLES2, gl::kGLImplementationDesktopGL,
+      gl::kGLImplementationOSMesaGL, gl::kGLImplementationSwiftShaderGL};
 }
 
 GLOzone* X11SurfaceFactory::GetGLOzone(gl::GLImplementation implementation) {
@@ -171,6 +173,7 @@ GLOzone* X11SurfaceFactory::GetGLOzone(gl::GLImplementation implementation) {
     case gl::kGLImplementationDesktopGL:
       return glx_implementation_.get();
     case gl::kGLImplementationEGLGLES2:
+    case gl::kGLImplementationSwiftShaderGL:
       return egl_implementation_.get();
     case gl::kGLImplementationOSMesaGL:
       return osmesa_implementation_.get();
