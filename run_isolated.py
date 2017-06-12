@@ -367,10 +367,13 @@ def link_outputs_to_outdir(run_dir, out_dir, outputs):
   isolateserver.create_directories(out_dir, outputs)
   for o in outputs:
     try:
-      file_path.link_file(
-          os.path.join(out_dir, o),
-          os.path.join(run_dir, o),
-          file_path.HARDLINK_WITH_FALLBACK)
+      infile = os.path.join(run_dir, o)
+      outfile = os.path.join(out_dir, o)
+      if fs.islink(infile):
+        # TODO(aludwin): handle directories
+        fs.copy2(infile, outfile)
+      else:
+        file_path.link_file(outfile, infile, file_path.HARDLINK_WITH_FALLBACK)
     except OSError as e:
       logging.info("Couldn't collect output file %s: %s", o, e)
 
