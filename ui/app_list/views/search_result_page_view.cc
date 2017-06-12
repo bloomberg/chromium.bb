@@ -70,7 +70,7 @@ class ZeroWidthVerticalScrollBar : public views::OverlayScrollBar {
 
 SearchResultPageView::SearchResultPageView()
     : selected_index_(0),
-      is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()),
+      is_new_design_(features::IsSearchResultsNewDesignEnabled()),
       contents_view_(new views::View) {
   gfx::ShadowValue shadow = GetShadowForZHeight(kSearchResultZHeight);
   std::unique_ptr<views::Border> border(new views::ShadowBorder(shadow));
@@ -246,7 +246,7 @@ gfx::Rect SearchResultPageView::GetPageBoundsForState(
     AppListModel::State state) const {
   gfx::Rect onscreen_bounds = GetDefaultContentsBounds();
 
-  if (is_fullscreen_app_list_enabled_)
+  if (is_new_design_)
     onscreen_bounds.set_height(kFullscreenHeight);
 
   switch (state) {

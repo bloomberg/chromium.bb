@@ -66,8 +66,8 @@ class APP_LIST_EXPORT SearchResultPageView
   // -1 indicates no selection.
   int selected_index_;
 
-  // Whether launcher is shown in fullscreen mode.
-  bool const is_fullscreen_app_list_enabled_;
+  // Whether to use new UX design for search results.
+  bool const is_new_design_;
 
   // View containing SearchCardView instances. Owned by view hierarchy.
   views::View* const contents_view_;

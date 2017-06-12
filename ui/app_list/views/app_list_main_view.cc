@@ -52,10 +52,7 @@ AppListMainView::AppListMainView(AppListViewDelegate* delegate,
       contents_view_(nullptr),
       app_list_view_(app_list_view) {
   SetLayoutManager(
-      features::IsAnswerCardEnabled()
-          ? static_cast<views::LayoutManager*>(new views::FillLayout)
-          : static_cast<views::LayoutManager*>(new views::BoxLayout(
-                views::BoxLayout::kVertical, gfx::Insets(), 0)));
+      new views::BoxLayout(views::BoxLayout::kVertical, gfx::Insets(), 0));
   model_->AddObserver(this);
 }
 

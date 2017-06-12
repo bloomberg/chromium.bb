@@ -33,6 +33,11 @@ bool IsFullscreenAppListEnabled() {
   return base::FeatureList::IsEnabled(kEnableFullscreenAppList);
 }
 
+bool IsSearchResultsNewDesignEnabled() {
+  return IsFullscreenAppListEnabled() ||
+         (IsAnswerCardEnabled() && !IsAnswerCardDarkRunEnabled());
+}
+
 int APP_LIST_EXPORT AnswerCardMaxWidth() {
   static const int max_width = base::GetFieldTrialParamByFeatureAsInt(
       kEnableAnswerCard, "CardMaxWidth", 608);
