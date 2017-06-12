@@ -4,7 +4,6 @@
 
 #include "ui/base/clipboard/clipboard.h"
 
-#include <algorithm>
 #include <iterator>
 #include <limits>
 #include <memory>
@@ -12,6 +11,7 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -159,9 +159,7 @@ base::PlatformThreadId Clipboard::GetAndValidateThreadID() {
   // TODO(fdoray): Surround this block with #if DCHECK_IS_ON() and remove the
   // DumpWithoutCrashing() call once https://crbug.com/662055 is resolved.
   AllowedThreadsVector* allowed_threads = allowed_threads_.Pointer();
-  if (!allowed_threads->empty() &&
-      std::find(allowed_threads->begin(), allowed_threads->end(), id) ==
-          allowed_threads->end()) {
+  if (!allowed_threads->empty() && !base::ContainsValue(*allowed_threads, id)) {
     NOTREACHED();
     base::debug::DumpWithoutCrashing();
   }

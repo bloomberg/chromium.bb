@@ -4,11 +4,10 @@
 
 #include "ui/views/layout/grid_layout.h"
 
-#include <algorithm>
-
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "ui/views/border.h"
 #include "ui/views/layout/layout_provider.h"
 #include "ui/views/view.h"
@@ -485,9 +484,7 @@ void ColumnSet::AccumulateMasterColumns() {
   DCHECK(master_columns_.empty());
   for (const auto& column : columns_) {
     Column* master_column = column->GetLastMasterColumn();
-    if (master_column &&
-        std::find(master_columns_.begin(), master_columns_.end(),
-                  master_column) == master_columns_.end()) {
+    if (master_column && !base::ContainsValue(master_columns_, master_column)) {
       master_columns_.push_back(master_column);
     }
     // At this point, GetLastMasterColumn may not == master_column

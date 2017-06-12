@@ -1196,10 +1196,7 @@ bool IsX11WindowFullScreen(XID window) {
     if (GetAtomArrayProperty(window,
                              "_NET_WM_STATE",
                              &atom_properties)) {
-      return std::find(atom_properties.begin(),
-                       atom_properties.end(),
-                       fullscreen_atom) !=
-          atom_properties.end();
+      return base::ContainsValue(atom_properties, fullscreen_atom);
     }
   }
 
@@ -1230,8 +1227,7 @@ bool WmSupportsHint(XAtom atom) {
     return false;
   }
 
-  return std::find(supported_atoms.begin(), supported_atoms.end(), atom) !=
-      supported_atoms.end();
+  return base::ContainsValue(supported_atoms, atom);
 }
 
 XRefcountedMemory::XRefcountedMemory(unsigned char* x11_data, size_t length)

@@ -6,11 +6,11 @@
 
 #include <stdint.h>
 
-#include <algorithm>
 #include <set>
 
 #include "base/i18n/icu_string_conversions.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -53,9 +53,7 @@ void GetAtomIntersection(const std::vector< ::Atom>& desired,
                          std::vector< ::Atom>* output) {
   for (std::vector< ::Atom>::const_iterator it = desired.begin();
        it != desired.end(); ++it) {
-    std::vector< ::Atom>::const_iterator jt =
-      std::find(offered.begin(), offered.end(), *it);
-    if (jt != offered.end())
+    if (base::ContainsValue(offered, *it))
       output->push_back(*it);
   }
 }
