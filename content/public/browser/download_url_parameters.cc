@@ -18,16 +18,22 @@ namespace content {
 
 DownloadUrlParameters::DownloadUrlParameters(
     const GURL& url,
-    net::URLRequestContextGetter* url_request_context_getter)
-    : DownloadUrlParameters(url, -1, -1, -1, url_request_context_getter) {
-}
+    net::URLRequestContextGetter* url_request_context_getter,
+    const net::NetworkTrafficAnnotationTag& traffic_annotation)
+    : DownloadUrlParameters(url,
+                            -1,
+                            -1,
+                            -1,
+                            url_request_context_getter,
+                            traffic_annotation) {}
 
 DownloadUrlParameters::DownloadUrlParameters(
     const GURL& url,
     int render_process_host_id,
     int render_view_host_routing_id,
     int render_frame_host_routing_id,
-    net::URLRequestContextGetter* url_request_context_getter)
+    net::URLRequestContextGetter* url_request_context_getter,
+    const net::NetworkTrafficAnnotationTag& traffic_annotation)
     : content_initiated_(false),
       use_if_range_(true),
       method_("GET"),
@@ -39,7 +45,8 @@ DownloadUrlParameters::DownloadUrlParameters(
       url_request_context_getter_(url_request_context_getter),
       url_(url),
       do_not_prompt_for_login_(false),
-      transient_(false) {}
+      transient_(false),
+      traffic_annotation_(traffic_annotation) {}
 
 DownloadUrlParameters::~DownloadUrlParameters() {
 }
@@ -48,7 +55,8 @@ DownloadUrlParameters::~DownloadUrlParameters() {
 std::unique_ptr<DownloadUrlParameters>
 DownloadUrlParameters::CreateForWebContentsMainFrame(
     WebContents* web_contents,
-    const GURL& url) {
+    const GURL& url,
+    const net::NetworkTrafficAnnotationTag& traffic_annotation) {
   RenderFrameHost* render_frame_host = web_contents->GetMainFrame();
   StoragePartition* storage_partition = BrowserContext::GetStoragePartition(
       web_contents->GetBrowserContext(), render_frame_host->GetSiteInstance());
@@ -56,7 +64,7 @@ DownloadUrlParameters::CreateForWebContentsMainFrame(
       url, render_frame_host->GetProcess()->GetID(),
       render_frame_host->GetRenderViewHost()->GetRoutingID(),
       render_frame_host->GetRoutingID(),
-      storage_partition->GetURLRequestContext()));
+      storage_partition->GetURLRequestContext(), traffic_annotation));
 }
 
 }  // namespace content

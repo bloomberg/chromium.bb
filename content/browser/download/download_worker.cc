@@ -7,7 +7,6 @@
 #include "content/browser/download/download_create_info.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/web_contents.h"
-#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace content {
 namespace {
@@ -39,8 +38,8 @@ CreateUrlDownloader(std::unique_ptr<DownloadUrlParameters> params,
   // Build the URLRequest, BlobDataHandle is hold in original request for image
   // download.
   std::unique_ptr<net::URLRequest> url_request =
-      DownloadRequestCore::CreateRequestOnIOThread(
-          DownloadItem::kInvalidId, params.get(), NO_TRAFFIC_ANNOTATION_YET);
+      DownloadRequestCore::CreateRequestOnIOThread(DownloadItem::kInvalidId,
+                                                   params.get());
 
   return std::unique_ptr<UrlDownloader, BrowserThread::DeleteOnIOThread>(
       UrlDownloader::BeginDownload(delegate, std::move(url_request),

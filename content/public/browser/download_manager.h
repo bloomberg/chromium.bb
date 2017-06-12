@@ -40,7 +40,6 @@
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_url_parameters.h"
 #include "net/base/net_errors.h"
-#include "net/traffic_annotation/network_traffic_annotation.h"
 
 class GURL;
 
@@ -122,8 +121,7 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data {
 
   // See DownloadUrlParameters for details about controlling the download.
   virtual void DownloadUrl(
-      std::unique_ptr<DownloadUrlParameters> parameters,
-      const net::NetworkTrafficAnnotationTag& traffic_annotation) = 0;
+      std::unique_ptr<DownloadUrlParameters> parameters) = 0;
 
   // Allow objects to observe the download creation process.
   virtual void AddObserver(Observer* observer) = 0;

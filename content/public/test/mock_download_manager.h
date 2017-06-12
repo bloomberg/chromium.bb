@@ -13,7 +13,6 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_save_info.h"
 #include "content/public/browser/download_url_parameters.h"
-#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -113,9 +112,7 @@ class MockDownloadManager : public DownloadManager {
                    base::Time remove_begin,
                    base::Time remove_end));
   MOCK_METHOD1(DownloadUrlMock, void(DownloadUrlParameters*));
-  void DownloadUrl(
-      std::unique_ptr<DownloadUrlParameters> params,
-      const net::NetworkTrafficAnnotationTag& traffic_annotation) override {
+  void DownloadUrl(std::unique_ptr<DownloadUrlParameters> params) override {
     DownloadUrlMock(params.get());
   }
   MOCK_METHOD1(AddObserver, void(Observer* observer));

@@ -78,7 +78,7 @@ void CreateContextMenuDownload(
           web_contents->GetBrowserContext());
   std::unique_ptr<content::DownloadUrlParameters> dl_params(
       content::DownloadUrlParameters::CreateForWebContentsMainFrame(
-          web_contents, url));
+          web_contents, url, NO_TRAFFIC_ANNOTATION_YET));
   content::Referrer referrer = content::Referrer::SanitizeForRequest(
       url,
       content::Referrer(referring_url.GetAsReferrer(), params.referrer_policy));
@@ -92,7 +92,7 @@ void CreateContextMenuDownload(
   if (!is_link && extra_headers.empty())
     dl_params->set_prefer_cache(true);
   dl_params->set_prompt(false);
-  dlm->DownloadUrl(std::move(dl_params), NO_TRAFFIC_ANNOTATION_YET);
+  dlm->DownloadUrl(std::move(dl_params));
 }
 
 // Check if an interrupted download item can be auto resumed.

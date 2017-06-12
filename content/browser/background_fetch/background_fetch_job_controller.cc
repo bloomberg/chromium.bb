@@ -73,8 +73,8 @@ class BackgroundFetchJobController::Core : public DownloadItem::Observer {
     const ServiceWorkerFetchRequest& fetch_request = request->fetch_request();
 
     std::unique_ptr<DownloadUrlParameters> download_parameters(
-        base::MakeUnique<DownloadUrlParameters>(fetch_request.url,
-                                                request_context_.get()));
+        base::MakeUnique<DownloadUrlParameters>(
+            fetch_request.url, request_context_.get(), traffic_annotation));
 
     // TODO(peter): The |download_parameters| should be populated with all the
     // properties set in the |fetch_request| structure.
@@ -110,8 +110,7 @@ class BackgroundFetchJobController::Core : public DownloadItem::Observer {
                                                  weak_ptr_factory_.GetWeakPtr(),
                                                  std::move(request)));
 
-    download_manager->DownloadUrl(std::move(download_parameters),
-                                  traffic_annotation);
+    download_manager->DownloadUrl(std::move(download_parameters));
   }
 
   // DownloadItem::Observer overrides:

@@ -27,7 +27,6 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/download_url_parameters.h"
-#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace net {
 class NetLog;
@@ -80,9 +79,7 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
       const base::Callback<bool(const GURL&)>& url_filter,
       base::Time remove_begin,
       base::Time remove_end) override;
-  void DownloadUrl(
-      std::unique_ptr<DownloadUrlParameters> params,
-      const net::NetworkTrafficAnnotationTag& traffic_annotation) override;
+  void DownloadUrl(std::unique_ptr<DownloadUrlParameters> params) override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
   content::DownloadItem* CreateDownloadItem(

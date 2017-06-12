@@ -90,8 +90,7 @@ void DownloadUrlOnUIThread(std::unique_ptr<DownloadUrlParameters> parameters) {
   DownloadManager* download_manager =
       BrowserContext::GetDownloadManager(browser_context);
   RecordDownloadSource(INITIATED_BY_RENDERER);
-  download_manager->DownloadUrl(std::move(parameters),
-                                NO_TRAFFIC_ANNOTATION_YET);
+  download_manager->DownloadUrl(std::move(parameters));
 }
 
 // Common functionality for converting a sync renderer message to a callback
@@ -276,9 +275,9 @@ void RenderFrameMessageFilter::DownloadUrl(int render_view_id,
   if (!resource_context_)
     return;
 
-  std::unique_ptr<DownloadUrlParameters> parameters(
-      new DownloadUrlParameters(url, render_process_id_, render_view_id,
-                                render_frame_id, request_context_.get()));
+  std::unique_ptr<DownloadUrlParameters> parameters(new DownloadUrlParameters(
+      url, render_process_id_, render_view_id, render_frame_id,
+      request_context_.get(), NO_TRAFFIC_ANNOTATION_YET));
   parameters->set_content_initiated(true);
   parameters->set_suggested_name(suggested_name);
   parameters->set_prompt(use_prompt);
