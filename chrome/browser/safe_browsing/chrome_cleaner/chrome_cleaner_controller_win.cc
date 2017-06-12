@@ -46,14 +46,15 @@ constexpr int kRebootNotRequiredExitCode = 0;
 // Attempts to change the Chrome Cleaner binary's suffix to ".exe". Will return
 // an empty FilePath on failure. Should be called on a sequence with traits
 // appropriate for IO operations.
-base::FilePath VerifyAndRenameDownloadedCleaner(base::FilePath downloaded_path,
-                                                int http_response_code) {
+base::FilePath VerifyAndRenameDownloadedCleaner(
+    base::FilePath downloaded_path,
+    ChromeCleanerFetchStatus fetch_status) {
   base::ThreadRestrictions::AssertIOAllowed();
 
   if (downloaded_path.empty() || !base::PathExists(downloaded_path))
     return base::FilePath();
 
-  if (http_response_code != net::HTTP_OK) {
+  if (fetch_status != ChromeCleanerFetchStatus::kSuccess) {
     base::DeleteFile(downloaded_path, /*recursive=*/false);
     return base::FilePath();
   }
@@ -72,13 +73,13 @@ base::FilePath VerifyAndRenameDownloadedCleaner(base::FilePath downloaded_path,
 void OnChromeCleanerFetched(
     ChromeCleanerControllerDelegate::FetchedCallback fetched_callback,
     base::FilePath downloaded_path,
-    int http_response_code) {
+    ChromeCleanerFetchStatus fetch_status) {
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::BACKGROUND,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(VerifyAndRenameDownloadedCleaner, downloaded_path,
-                     http_response_code),
+                     fetch_status),
       std::move(fetched_callback));
 }
 

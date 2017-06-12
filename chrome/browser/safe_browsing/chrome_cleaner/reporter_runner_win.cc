@@ -483,7 +483,8 @@ void RecordReporterStepHistogram(SwReporterUmaValue value) {
   uma.RecordReporterStep(value);
 }
 
-void DisplaySRTPrompt(base::FilePath download_path, int http_response_code) {
+void DisplaySRTPrompt(base::FilePath download_path,
+                      ChromeCleanerFetchStatus fetch_status) {
   // As long as the fetch didn't fail due to HTTP_NOT_FOUND, show a prompt
   // (either offering the tool directly or pointing to the download page).
   // If the fetch failed to find the file, don't prompt the user since the
@@ -491,7 +492,7 @@ void DisplaySRTPrompt(base::FilePath download_path, int http_response_code) {
   // TODO(csharp): In the event the browser is closed before the prompt
   //               displays, we will wait until the next scanner run to
   //               re-display it.  Improve this. http://crbug.com/460295
-  if (http_response_code == net::HTTP_NOT_FOUND) {
+  if (fetch_status == ChromeCleanerFetchStatus::kNotFoundOnServer) {
     RecordSRTPromptHistogram(SRT_PROMPT_DOWNLOAD_UNAVAILABLE);
     return;
   }
@@ -571,7 +572,7 @@ int LaunchAndWaitForExitOnBackgroundThread(
 }  // namespace
 
 void DisplaySRTPromptForTesting(const base::FilePath& download_path) {
-  DisplaySRTPrompt(download_path, net::HTTP_OK);
+  DisplaySRTPrompt(download_path, ChromeCleanerFetchStatus::kSuccess);
 }
 
 namespace {
