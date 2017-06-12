@@ -64,23 +64,15 @@ public class SectionList
 
         SuggestionsSource suggestionsSource = mUiDelegate.getSuggestionsSource();
         int[] categories = suggestionsSource.getCategories();
-        int[] suggestionsPerCategory = new int[categories.length];
-        int visibleCategoriesCount = 0;
-        int categoryIndex = 0;
         for (int category : categories) {
             int categoryStatus = suggestionsSource.getCategoryStatus(category);
-            int suggestionsCount = 0;
             if (SnippetsBridge.isCategoryEnabled(categoryStatus)) {
-                suggestionsCount = resetSection(category, categoryStatus, alwaysAllowEmptySections);
-                if (mSections.get(category) != null) ++visibleCategoriesCount;
+                resetSection(category, categoryStatus, alwaysAllowEmptySections);
             }
-            suggestionsPerCategory[categoryIndex] = suggestionsCount;
-            ++categoryIndex;
         }
 
         maybeHideArticlesHeader();
-        mUiDelegate.getEventReporter().onPageShown(
-                categories, suggestionsPerCategory, visibleCategoriesCount);
+        recordDisplayedSuggestions(categories);
     }
 
     /**
@@ -255,6 +247,10 @@ public class SectionList
             resetSection(category, mUiDelegate.getSuggestionsSource().getCategoryStatus(category),
                     /* alwaysAllowEmptySections = */ false);
         }
+
+        // We may have updated (or not) the visible suggestions, so we still record the new state,
+        // for UMA parity with the [if categories changed] code path.
+        recordDisplayedSuggestions(categories);
     }
 
     private void removeSection(SuggestionsSection section) {
@@ -318,6 +314,25 @@ public class SectionList
         }
 
         return true;
+    }
+
+    /**
+     * Records the currently visible suggestion state: how many categories are visible and how many
+     * suggestions per category.
+     * @see org.chromium.chrome.browser.suggestions.SuggestionsEventReporter#onPageShown
+     */
+    private void recordDisplayedSuggestions(int[] categories) {
+        int[] suggestionsPerCategory = new int[categories.length];
+        int visibleCategoriesCount = 0;
+
+        for (int i = 0; i < categories.length; ++i) {
+            SuggestionsSection section = mSections.get(categories[i]);
+            suggestionsPerCategory[i] = section == null ? 0 : section.getSuggestionsCount();
+            visibleCategoriesCount += section == null ? 0 : 1;
+        }
+
+        mUiDelegate.getEventReporter().onPageShown(
+                categories, suggestionsPerCategory, visibleCategoriesCount);
     }
 
     SuggestionsSection getSectionForTesting(@CategoryInt int categoryId) {
