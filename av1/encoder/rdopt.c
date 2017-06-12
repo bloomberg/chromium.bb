@@ -1648,7 +1648,6 @@ static void daala_dist_sub8x8_txfm_rd(MACROBLOCK *x, BLOCK_SIZE bsize,
 #endif  // CONFIG_PVQ
   const int src_stride = p->src.stride;
   const int dst_stride = pd->dst.stride;
-  const int pred_stride = block_size_wide[bsize];
   const uint8_t *src = &p->src.buf[0];
   const uint8_t *dst = &pd->dst.buf[0];
   const int16_t *pred = &pd->pred[0];
@@ -1668,7 +1667,7 @@ static void daala_dist_sub8x8_txfm_rd(MACROBLOCK *x, BLOCK_SIZE bsize,
   DECLARE_ALIGNED(16, uint8_t, pred8[MAX_SB_SQUARE]);
 
   for (j = 0; j < bh; j++)
-    for (i = 0; i < bw; i++) pred8[j * bh + i] = pred[j * pred_stride + i];
+    for (i = 0; i < bw; i++) pred8[j * bw + i] = pred[j * bw + i];
 
   tmp1 = av1_daala_dist(src, src_stride, pred8, bw, bw, bh, qm,
                         use_activity_masking, qindex);
