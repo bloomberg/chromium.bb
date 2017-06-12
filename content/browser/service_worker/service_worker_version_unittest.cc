@@ -18,6 +18,7 @@
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_dispatcher_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/common/service_worker/service_worker_utils.h"
@@ -1109,9 +1110,9 @@ TEST_F(ServiceWorkerFailToStartTest, RendererCrash) {
   EXPECT_EQ(SERVICE_WORKER_ERROR_NETWORK, status);
   EXPECT_EQ(EmbeddedWorkerStatus::STARTING, version_->running_status());
 
-  // Simulate renderer crash: do what
+  // Simulate renderer crash: remove DispatcherHost like what
   // ServiceWorkerDispatcherHost::OnFilterRemoved does.
-  helper_->context()->RemoveDispatcherHost(helper_->mock_render_process_id());
+  helper_->RegisterDispatcherHost(helper_->mock_render_process_id(), nullptr);
   base::RunLoop().RunUntilIdle();
 
   // Callback completed.
@@ -1319,9 +1320,9 @@ TEST_F(ServiceWorkerVersionTest, RendererCrashDuringEvent) {
   // Callback has not completed yet.
   EXPECT_EQ(SERVICE_WORKER_OK, status);
 
-  // Simulate renderer crash: do what
+  // Simulate renderer crash: remove DispatcherHost like what
   // ServiceWorkerDispatcherHost::OnFilterRemoved does.
-  helper_->context()->RemoveDispatcherHost(helper_->mock_render_process_id());
+  helper_->RegisterDispatcherHost(helper_->mock_render_process_id(), nullptr);
   base::RunLoop().RunUntilIdle();
 
   // Callback completed.

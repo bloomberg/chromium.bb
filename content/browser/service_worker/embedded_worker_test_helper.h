@@ -119,6 +119,16 @@ class EmbeddedWorkerTestHelper : public IPC::Sender,
   void RegisterMockInstanceClient(
       std::unique_ptr<MockEmbeddedWorkerInstanceClient> client);
 
+  // Registers the dispatcher host for the process to a map managed by this test
+  // helper. If there is a existing dispatcher host, it'll removed before adding
+  // to the map. This should be called before ServiceWorkerDispatcherHost::Init
+  // because it internally calls ServiceWorkerContextCore::AddDispatcherHost.
+  // If |dispatcher_host| is nullptr, this method just removes the existing
+  // dispatcher host from the map.
+  void RegisterDispatcherHost(
+      int process_id,
+      scoped_refptr<ServiceWorkerDispatcherHost> dispatcher_host);
+
   template <typename MockType, typename... Args>
   MockType* CreateAndRegisterMockInstanceClient(Args&&... args);
 

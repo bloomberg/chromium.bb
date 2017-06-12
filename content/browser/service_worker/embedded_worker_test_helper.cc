@@ -306,8 +306,7 @@ EmbeddedWorkerTestHelper::EmbeddedWorkerTestHelper(
       new MockServiceWorkerDispatcherHost(
           mock_render_process_id_, browser_context_->GetResourceContext(),
           this));
-  wrapper_->context()->AddDispatcherHost(mock_render_process_id_,
-                                         dispatcher_host.get());
+  dispatcher_host->Init(wrapper_.get());
   dispatcher_hosts_[mock_render_process_id_] = std::move(dispatcher_host);
 
   render_process_host_->OverrideBinderForTesting(
@@ -329,7 +328,7 @@ void EmbeddedWorkerTestHelper::SimulateAddProcessToPattern(const GURL& pattern,
     scoped_refptr<ServiceWorkerDispatcherHost> dispatcher_host(
         new MockServiceWorkerDispatcherHost(
             process_id, browser_context_->GetResourceContext(), this));
-    wrapper_->context()->AddDispatcherHost(process_id, dispatcher_host.get());
+    dispatcher_host->Init(wrapper_.get());
     dispatcher_hosts_[process_id] = std::move(dispatcher_host);
   }
   wrapper_->process_manager()->AddProcessReferenceToPattern(pattern,
@@ -360,6 +359,12 @@ bool EmbeddedWorkerTestHelper::OnMessageReceived(const IPC::Message& message) {
 void EmbeddedWorkerTestHelper::RegisterMockInstanceClient(
     std::unique_ptr<MockEmbeddedWorkerInstanceClient> client) {
   mock_instance_clients_.push_back(std::move(client));
+}
+
+void EmbeddedWorkerTestHelper::RegisterDispatcherHost(
+    int process_id,
+    scoped_refptr<ServiceWorkerDispatcherHost> dispatcher_host) {
+  dispatcher_hosts_[process_id] = std::move(dispatcher_host);
 }
 
 ServiceWorkerContextCore* EmbeddedWorkerTestHelper::context() {
