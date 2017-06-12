@@ -6,7 +6,6 @@
 #define ASH_SHELL_PANEL_WINDOW_H_
 
 #include "base/macros.h"
-#include "ui/aura/aura_export.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
