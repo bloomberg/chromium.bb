@@ -381,13 +381,8 @@ void ScriptContext::OnResponseReceived(const std::string& name,
                            v8::Local<v8::Context>::New(isolate(), v8_context_)),
       v8::String::NewFromUtf8(isolate(), error.c_str())};
 
-  v8::Local<v8::Value> retval = module_system()->CallModuleMethod(
-      "sendRequest", "handleResponse", arraysize(argv), argv);
-
-  // In debug, the js will validate the callback parameters and return a
-  // string if a validation error has occured.
-  DCHECK(retval.IsEmpty() || retval->IsUndefined())
-      << *v8::String::Utf8Value(retval);
+  module_system()->CallModuleMethodSafe("sendRequest", "handleResponse",
+                                        arraysize(argv), argv);
 }
 
 bool ScriptContext::HasAPIPermission(APIPermission::ID permission) const {
