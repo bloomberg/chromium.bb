@@ -748,6 +748,13 @@ static bool IsStartOfDifferentDirection(const InlineBox* inline_box) {
   return prev_box->BidiLevel() > inline_box->BidiLevel();
 }
 
+// TODO(yosin): We have a forward declaration here to reduce patch size. We'll
+// replice this with an implementation once review finished.
+static InlineBoxPosition AdjustInlineBoxPositionForTextDirection(InlineBox*,
+                                                                 int,
+                                                                 UnicodeBidi,
+                                                                 TextDirection);
+
 template <typename Strategy>
 static InlineBoxPosition ComputeInlineBoxPositionTemplate(
     const PositionTemplate<Strategy>& position,
@@ -834,7 +841,16 @@ static InlineBoxPosition ComputeInlineBoxPositionTemplate(
 
   if (!inline_box)
     return InlineBoxPosition(inline_box, caret_offset);
+  return AdjustInlineBoxPositionForTextDirection(
+      inline_box, caret_offset, layout_object->Style()->GetUnicodeBidi(),
+      primary_direction);
+}
 
+static InlineBoxPosition AdjustInlineBoxPositionForTextDirection(
+    InlineBox* inline_box,
+    int caret_offset,
+    UnicodeBidi unicode_bidi,
+    TextDirection primary_direction) {
   unsigned char level = inline_box->BidiLevel();
 
   if (inline_box->Direction() == primary_direction) {
@@ -909,8 +925,7 @@ static InlineBoxPosition ComputeInlineBoxPositionTemplate(
     return InlineBoxPosition(inline_box, caret_offset);
   }
 
-  if (layout_object &&
-      layout_object->Style()->GetUnicodeBidi() == UnicodeBidi::kPlaintext) {
+  if (unicode_bidi == UnicodeBidi::kPlaintext) {
     if (inline_box->BidiLevel() < level)
       return InlineBoxPosition(inline_box, inline_box->CaretLeftmostOffset());
     return InlineBoxPosition(inline_box, inline_box->CaretRightmostOffset());
