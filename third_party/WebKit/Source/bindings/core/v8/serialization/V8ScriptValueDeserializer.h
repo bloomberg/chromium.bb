@@ -26,8 +26,8 @@ class File;
 //
 // A deserializer cannot be used multiple times; it is expected that its
 // deserialize method will be invoked exactly once.
-class GC_PLUGIN_IGNORE("https://crbug.com/644725") CORE_EXPORT
-    V8ScriptValueDeserializer : public v8::ValueDeserializer::Delegate {
+class CORE_EXPORT V8ScriptValueDeserializer
+    : public v8::ValueDeserializer::Delegate {
   STACK_ALLOCATED();
   WTF_MAKE_NONCOPYABLE(V8ScriptValueDeserializer);
 
