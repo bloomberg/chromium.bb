@@ -209,7 +209,13 @@
         <div class="title">
           $i18n{clearBrowsingData}
           <div class="secondary">
-            $i18n{importantSitesSubtitle}
+            <template is="dom-if"
+                if="[[!prefs.browser.clear_data.cache.value]]">
+              $i18n{importantSitesSubtitleCookies}
+            </template>
+            <template is="dom-if" if="[[prefs.browser.clear_data.cache.value]]">
+              $i18n{importantSitesSubtitleCookiesAndCache}
+            </template>
           </div>
         </div>
         <div class="body">

@@ -870,8 +870,11 @@
   <message name="IDS_SETTINGS_CLEAR_DATA_CLEARS_SYNCED_DATA" desc="Information that data which is synced across user's devices will be deleted from all those devices.">
     This clears synced data from all devices.
   </message>
-  <message name="IDS_SETTINGS_IMPORTANT_SITES_SUBTITLE" desc="Subtitle for the important sites dialog.">
+  <message name="IDS_SETTINGS_IMPORTANT_SITES_SUBTITLE_COOKIES" desc="Subtitle for the important sites dialog.">
     This will clear cookies and site data for all sites, including
+  </message>
+  <message name="IDS_SETTINGS_IMPORTANT_SITES_SUBTITLE_COOKIES_AND_CACHE" desc="Subtitle for the important sites dialog.">
+    This will clear cookies and cache for all sites, including
   </message>
   <message name="IDS_SETTINGS_IMPORTANT_SITES_CONFIRM" desc="Text for confirmation button of the important sites dialog.">
     Confirm
