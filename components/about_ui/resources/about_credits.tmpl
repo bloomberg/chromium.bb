@@ -66,12 +66,14 @@ input + label + div {
 }
 input + label::after {
   content: "show license";
+  cursor: pointer;
 }
 input:checked + label + div {
   display: block;
 }
 input:checked + label::after {
   content: "hide license";
+  cursor: pointer;
 }
 </style>
 </head>
