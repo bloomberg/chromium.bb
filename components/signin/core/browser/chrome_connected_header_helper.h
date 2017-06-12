@@ -27,6 +27,11 @@ class ChromeConnectedHeaderHelper : public SigninHeaderHelper {
       const content_settings::CookieSettings* cookie_settings,
       int profile_mode_mask);
 
+  // Returns the parameters contained in the X-Chrome-Manage-Accounts response
+  // header.
+  static ManageAccountsParams BuildManageAccountsParams(
+      const std::string& header_value);
+
  private:
   // Returns whether the URL is eligible for the Gaia ID parameter.
   bool IsUrlEligibleToIncludeGaiaId(const GURL& url, bool is_header_request);

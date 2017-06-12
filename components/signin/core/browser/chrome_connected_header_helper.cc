@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -19,9 +20,32 @@ namespace signin {
 
 namespace {
 
+const char kContinueUrlAttrName[] = "continue_url";
+const char kEmailAttrName[] = "email";
 const char kEnableAccountConsistencyAttrName[] = "enable_account_consistency";
 const char kGaiaIdAttrName[] = "id";
+const char kIsSameTabAttrName[] = "is_same_tab";
+const char kIsSamlAttrName[] = "is_saml";
 const char kProfileModeAttrName[] = "mode";
+const char kServiceTypeAttrName[] = "action";
+
+// Determines the service type that has been passed from Gaia in the header.
+GAIAServiceType GetGAIAServiceTypeFromHeader(const std::string& header_value) {
+  if (header_value == "SIGNOUT")
+    return GAIA_SERVICE_TYPE_SIGNOUT;
+  else if (header_value == "INCOGNITO")
+    return GAIA_SERVICE_TYPE_INCOGNITO;
+  else if (header_value == "ADDSESSION")
+    return GAIA_SERVICE_TYPE_ADDSESSION;
+  else if (header_value == "REAUTH")
+    return GAIA_SERVICE_TYPE_REAUTH;
+  else if (header_value == "SIGNUP")
+    return GAIA_SERVICE_TYPE_SIGNUP;
+  else if (header_value == "DEFAULT")
+    return GAIA_SERVICE_TYPE_DEFAULT;
+  else
+    return GAIA_SERVICE_TYPE_NONE;
+}
 
 }  // namespace
 
@@ -35,6 +59,34 @@ std::string ChromeConnectedHeaderHelper::BuildRequestCookieIfPossible(
   return chrome_connected_helper.BuildRequestHeaderIfPossible(
       false /* is_header_request */, url, account_id, cookie_settings,
       profile_mode_mask);
+}
+
+// static
+ManageAccountsParams ChromeConnectedHeaderHelper::BuildManageAccountsParams(
+    const std::string& header_value) {
+  DCHECK(!header_value.empty());
+  ManageAccountsParams params;
+  ResponseHeaderDictionary header_dictionary =
+      ParseAccountConsistencyResponseHeader(header_value);
+  ResponseHeaderDictionary::const_iterator it = header_dictionary.begin();
+  for (; it != header_dictionary.end(); ++it) {
+    const std::string key_name(it->first);
+    if (key_name == kServiceTypeAttrName) {
+      params.service_type =
+          GetGAIAServiceTypeFromHeader(header_dictionary[kServiceTypeAttrName]);
+    } else if (key_name == kEmailAttrName) {
+      params.email = header_dictionary[kEmailAttrName];
+    } else if (key_name == kIsSamlAttrName) {
+      params.is_saml = header_dictionary[kIsSamlAttrName] == "true";
+    } else if (key_name == kContinueUrlAttrName) {
+      params.continue_url = header_dictionary[kContinueUrlAttrName];
+    } else if (key_name == kIsSameTabAttrName) {
+      params.is_same_tab = header_dictionary[kIsSameTabAttrName] == "true";
+    } else {
+      DLOG(WARNING) << "Unexpected Gaia header attribute '" << key_name << "'.";
+    }
+  }
+  return params;
 }
 
 bool ChromeConnectedHeaderHelper::IsUrlEligibleToIncludeGaiaId(

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/signin/chrome_signin_helper.h"
 
+#include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
@@ -14,11 +15,14 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/url_constants.h"
 #include "components/signin/core/browser/account_reconcilor.h"
+#include "components/signin/core/browser/chrome_connected_header_helper.h"
 #include "components/signin/core/browser/signin_header_helper.h"
+#include "components/signin/core/common/profile_management_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/gaia/gaia_auth_util.h"
+#include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
 
 #if defined(OS_ANDROID)
@@ -33,6 +37,8 @@ namespace signin {
 
 namespace {
 
+const char kChromeManageAccountsHeader[] = "X-Chrome-Manage-Accounts";
+
 // Processes the mirror response header on the UI thread. Currently depending
 // on the value of |header_value|, it either shows the profile avatar menu, or
 // opens an incognito window/tab.
@@ -40,6 +46,8 @@ void ProcessMirrorHeaderUIThread(int child_id,
                                  int route_id,
                                  ManageAccountsParams manage_accounts_params) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_EQ(switches::AccountConsistencyMethod::kMirror,
+            switches::GetAccountConsistencyMethod());
 
   GAIAServiceType service_type = manage_accounts_params.service_type;
   DCHECK_NE(GAIA_SERVICE_TYPE_NONE, service_type);
@@ -53,8 +61,7 @@ void ProcessMirrorHeaderUIThread(int child_id,
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   AccountReconcilor* account_reconcilor =
       AccountReconcilorFactory::GetForProfile(profile);
-  account_reconcilor->OnReceivedManageAccountsResponse(
-      manage_accounts_params.service_type);
+  account_reconcilor->OnReceivedManageAccountsResponse(service_type);
 #if !defined(OS_ANDROID)
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
   if (browser) {
@@ -93,26 +100,6 @@ void ProcessMirrorHeaderUIThread(int child_id,
                                                                service_type);
   }
 #endif  // !defined(OS_ANDROID)
-}
-
-// Returns the parameters contained in the X-Chrome-Manage-Accounts response
-// header.
-// If the request does not have a response header or if the header contains
-// garbage, then |service_type| is set to |GAIA_SERVICE_TYPE_NONE|.
-// Must be called on IO thread.
-ManageAccountsParams BuildManageAccountsParamsHelper(net::URLRequest* request,
-                                                     ProfileIOData* io_data) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-
-  const content::ResourceRequestInfo* info =
-      content::ResourceRequestInfo::ForRequest(request);
-  if (!(info && info->GetResourceType() == content::RESOURCE_TYPE_MAIN_FRAME)) {
-    ManageAccountsParams empty_params;
-    empty_params.service_type = GAIA_SERVICE_TYPE_NONE;
-    return empty_params;
-  }
-
-  return BuildManageAccountsParamsIfExists(request, io_data->IsOffTheRecord());
 }
 
 }  // namespace
@@ -157,8 +144,42 @@ void ProcessMirrorResponseHeaderIfExists(net::URLRequest* request,
                                          ProfileIOData* io_data,
                                          int child_id,
                                          int route_id) {
-  ManageAccountsParams params =
-      BuildManageAccountsParamsHelper(request, io_data);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  const content::ResourceRequestInfo* info =
+      content::ResourceRequestInfo::ForRequest(request);
+  if (!(info && info->GetResourceType() == content::RESOURCE_TYPE_MAIN_FRAME))
+    return;
+
+  if (!gaia::IsGaiaSignonRealm(request->url().GetOrigin()))
+    return;
+
+  net::HttpResponseHeaders* response_headers = request->response_headers();
+  if (!response_headers)
+    return;
+
+  std::string header_value;
+  if (!response_headers->GetNormalizedHeader(kChromeManageAccountsHeader,
+                                             &header_value)) {
+    return;
+  }
+
+  if (io_data->IsOffTheRecord()) {
+    NOTREACHED() << "Gaia should not send the X-Chrome-Manage-Accounts header "
+                 << "in incognito.";
+    return;
+  }
+
+  if (switches::GetAccountConsistencyMethod() !=
+      switches::AccountConsistencyMethod::kMirror) {
+    NOTREACHED() << "Gaia should not send the X-Chrome-Manage-Accounts header "
+                 << "when Mirror is disabled.";
+    return;
+  }
+
+  ManageAccountsParams params = BuildManageAccountsParams(header_value);
+  // If the request does not have a response header or if the header contains
+  // garbage, then |service_type| is set to |GAIA_SERVICE_TYPE_NONE|.
   if (params.service_type == GAIA_SERVICE_TYPE_NONE)
     return;
 
