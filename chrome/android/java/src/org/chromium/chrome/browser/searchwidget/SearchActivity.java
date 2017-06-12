@@ -26,6 +26,7 @@ import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.omnibox.AutocompleteController;
+import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
 import org.chromium.chrome.browser.tab.Tab;
@@ -161,6 +162,8 @@ public class SearchActivity extends AsyncInitializationActivity
         final Callback<Boolean> deferredCallback = new Callback<Boolean>() {
             @Override
             public void onResult(Boolean result) {
+                if (isActivityDestroyed()) return;
+
                 if (result == null || !result.booleanValue()) {
                     Log.e(TAG, "User failed to select a default search engine.");
                     finish();
@@ -170,14 +173,21 @@ public class SearchActivity extends AsyncInitializationActivity
                 finishDeferredInitialization();
             }
         };
-        if (!getActivityDelegate().showSearchEngineDialogIfNeeded(this, deferredCallback)) {
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    finishDeferredInitialization();
+        final Runnable showSearchEngineDialogTrigger = new Runnable() {
+            @Override
+            public void run() {
+                if (!getActivityDelegate().showSearchEngineDialogIfNeeded(
+                            SearchActivity.this, deferredCallback)) {
+                    mHandler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            deferredCallback.onResult(true);
+                        }
+                    });
                 }
-            });
-        }
+            }
+        };
+        TemplateUrlService.getInstance().runWhenLoaded(showSearchEngineDialogTrigger);
     }
 
     void finishDeferredInitialization() {

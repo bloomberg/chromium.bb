@@ -288,19 +288,13 @@ public class FirstRunActivity extends AsyncInitializationActivity implements Fir
     public void finishNativeInitialization() {
         super.finishNativeInitialization();
 
-        final TemplateUrlService templateUrlService = TemplateUrlService.getInstance();
-        if (templateUrlService.isLoaded()) {
-            onNativeDependenciesFullyInitialized();
-        } else {
-            templateUrlService.registerLoadListener(new TemplateUrlService.LoadListener() {
-                @Override
-                public void onTemplateUrlServiceLoaded() {
-                    templateUrlService.unregisterLoadListener(this);
-                    onNativeDependenciesFullyInitialized();
-                }
-            });
-            templateUrlService.load();
-        }
+        Runnable onNativeFinished = new Runnable() {
+            @Override
+            public void run() {
+                onNativeDependenciesFullyInitialized();
+            }
+        };
+        TemplateUrlService.getInstance().runWhenLoaded(onNativeFinished);
     }
 
     private void onNativeDependenciesFullyInitialized() {
