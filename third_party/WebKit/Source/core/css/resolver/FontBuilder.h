@@ -42,7 +42,7 @@ class CORE_EXPORT FontBuilder {
   WTF_MAKE_NONCOPYABLE(FontBuilder);
 
  public:
-  FontBuilder(const Document&);
+  FontBuilder(const Document*);
 
   void SetInitial(float effective_zoom);
 
