@@ -33,7 +33,7 @@ class ArrowBubbleDrawable extends Drawable implements Drawable.Callback {
     private final Path mArrowPath;
     private final Paint mArrowPaint;
 
-    private final ShapeDrawable mBubbleDrawable;
+    private final Drawable mBubbleDrawable;
 
     private int mArrowXOffsetPx;
     private boolean mArrowOnTop;
@@ -58,10 +58,9 @@ class ArrowBubbleDrawable extends Drawable implements Drawable.Callback {
         mArrowPaint.setColor(Color.WHITE);
         mArrowPaint.setStyle(Paint.Style.FILL);
 
-        mBubbleDrawable = new ShapeDrawable(
+        mBubbleDrawable = DrawableCompat.wrap(new ShapeDrawable(
                 new RoundRectShape(new float[] {mRadiusPx, mRadiusPx, mRadiusPx, mRadiusPx,
-                        mRadiusPx, mRadiusPx, mRadiusPx, mRadiusPx},
-                        null, null));
+                    mRadiusPx, mRadiusPx, mRadiusPx, mRadiusPx}, null, null)));
 
         mBubbleDrawable.setCallback(this);
     }
@@ -133,17 +132,16 @@ class ArrowBubbleDrawable extends Drawable implements Drawable.Callback {
     public void draw(Canvas canvas) {
         mBubbleDrawable.draw(canvas);
 
+        canvas.save();
         // If the arrow is on the bottom, flip the arrow before drawing.
         if (!mArrowOnTop) {
-            canvas.save();
-
             int arrowCenterYPx = getBounds().height() - mArrowHeightPx / 2;
             canvas.scale(1, -1, mArrowXOffsetPx, arrowCenterYPx);
             canvas.translate(0, arrowCenterYPx - mArrowHeightPx / 2);
         }
         canvas.translate(mArrowXOffsetPx, 0);
         canvas.drawPath(mArrowPath, mArrowPaint);
-        if (!mArrowOnTop) canvas.restore();
+        canvas.restore();
     }
 
     @Override
