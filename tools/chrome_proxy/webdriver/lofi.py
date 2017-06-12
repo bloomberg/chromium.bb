@@ -5,6 +5,7 @@
 import common
 from common import TestDriver
 from common import IntegrationTest
+from decorators import ChromeVersionBeforeM
 
 
 class LoFi(IntegrationTest):
@@ -68,6 +69,8 @@ class LoFi(IntegrationTest):
   # Checks that LoFi images are not served, but the if-heavy CPAT header is
   # added when LoFi slow connections are used and the network quality estimator
   # returns 4G.
+  # If-heavy stopped being added in M61.
+  @ChromeVersionBeforeM(61)
   def testLoFiIfHeavyFastConnection(self):
     with TestDriver() as test_driver:
       test_driver.AddChromeArg('--enable-spdy-proxy-auth')
