@@ -117,7 +117,7 @@ void CoordinatorImpl::RequestGlobalMemoryDump(
       args.dump_type != base::trace_event::MemoryDumpType::SUMMARY_ONLY) {
     for (const auto& request : queued_memory_dump_requests_) {
       if (request.args.level_of_detail == args.level_of_detail) {
-        VLOG(1) << base::trace_event::MemoryDumpManager::kLogPrefix << " ("
+        VLOG(1) << "RequestGlobalMemoryDump("
                 << base::trace_event::MemoryDumpTypeToString(args.dump_type)
                 << ") skipped because another dump request with the same "
                    "level of detail ("
@@ -219,8 +219,7 @@ void CoordinatorImpl::OnProcessMemoryDumpResponse(
 
   if (!success) {
     ++failed_memory_dump_count_;
-    VLOG(1) << base::trace_event::MemoryDumpManager::kLogPrefix
-            << " failed because of NACK from client";
+    VLOG(1) << "RequestGlobalMemoryDump() FAIL: NACK from client process";
   }
 
   FinalizeGlobalMemoryDumpIfAllManagersReplied();
