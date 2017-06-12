@@ -1,0 +1,163 @@
+<html><head>
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-keys-behavior/iron-a11y-keys-behavior.html">
+<link rel="import" href="../prefs/prefs_behavior.html">
+</head><body><dom-module id="night-light-slider">
+  <template>
+    <style>
+      :host {
+        cursor: default;
+        text-align: center;
+        user-select: none;
+      }
+
+      #sliderContainer {
+        display: inline-block;
+        position: relative;
+        user-select: none;
+        width: 570px;
+      }
+
+      #sliderBar {
+        background-color: #ccc;
+        background-size: 100%;
+        display: inline-block;
+        height: 2px;
+        position: relative;
+        width: inherit;
+      }
+
+      .knob {
+        background: rgb(51, 103, 214);
+        border-radius: 6px;
+        height: 12px;
+        left: 0;
+        margin-left: -6px;
+        margin-top: -5px;
+        position: absolute;
+        width: 12px;
+        z-index: 3;
+      }
+
+      .knob:focus {
+        box-shadow: 0 0 5pt 5pt rgb(204, 217, 245);
+        outline: none;
+      }
+
+      .expanded-knob {
+        transform: scale(1.5);
+        z-index: 3;
+      }
+
+      #progressContainer {
+        height: 100%;
+        overflow: hidden;
+        position: absolute;
+        width: 100%;
+      }
+
+      .progress {
+        background: rgb(51, 103, 214);
+        height: 100%;
+        position: absolute;
+        z-index: 1;
+      }
+
+      #labelContainer {
+        height: 2em;
+      }
+
+      .label {
+        background: rgb(51, 103, 214);
+        border-radius: 14px;
+        color: white;
+        font-family: Roboto-Bold;
+        font-size: 12px;
+        left: 0;
+        line-height: 1.5em;
+        margin-left: -2.5em;
+        position: absolute;
+        text-align: center;
+        vertical-align: middle;
+        width: 5em;
+      }
+
+      .end-label-overlap {
+        margin-top: -2em;
+      }
+
+      #markersContainer {
+        display: flex;
+        height: 100%;
+        left: 0;
+        position: absolute;
+        width: 100%;
+      }
+
+      .markers {
+        background-color: black;
+        border-radius: 50%;
+        display: block;
+        height: 100%;
+        margin-left: -1px;
+        padding: 0;
+        position: absolute;
+        width: 2PX;
+        z-index: 2;
+      }
+
+      #legendContainer {
+        height: 10px;
+        position: relative;
+        width: inherit;
+      }
+
+      #legendContainer > div {
+        color: rgb(100, 100, 100);
+        font-family: Roboto-Regular;
+        font-size: 12px;
+        margin-left: -2em;
+        position: absolute;
+        text-align: center;
+        top: 5px;
+        width: 4em;
+      }
+    </style>
+
+    <div id="sliderContainer">
+      <div id="labelContainer">
+        <div id="startLabel" class="label"
+            aria-label="$i18n{displayNightLightStartTime}">
+          [[startTime_]]
+        </div>
+        <div id="endLabel" class="label"
+            aria-label="$i18n{displayNightLightStopTime}">
+          [[endTime_]]
+        </div>
+      </div>
+      <div id="sliderBar">
+        <div id="progressContainer">
+          <div id="endProgress" class="progress"></div>
+          <div id="startProgress" class="progress"></div>
+        </div>
+        <div id="markersContainer">
+        </div>
+        <div id="startKnob" class="knob" tabindex="1" on-down="startDrag_"
+            on-up="endDrag_" on-track="continueDrag_"></div>
+        <div id="endKnob" class="knob" tabindex="2" on-down="startDrag_"
+            on-up="endDrag_" on-track="continueDrag_"></div>
+      </div>
+      <div id="legendContainer">
+        <!-- TODO(afakhry): Check if these values need to be localized. -->
+        <div style="left: 0%;">6 PM</div>
+        <div style="left: 25%;">12 AM</div>
+        <div style="left: 50%;">6 AM</div>
+        <div style="left: 75%;">12 PM</div>
+        <div style="left: 100%;">6 PM</div>
+      </div>
+    </div>
+
+  </template>
+</dom-module>
+<script src="night_light_slider.js"></script></body></html>

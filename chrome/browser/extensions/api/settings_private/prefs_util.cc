@@ -304,6 +304,12 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
   (*s_whitelist)[ash::prefs::kNightLightTemperature] =
       settings_private::PrefType::PREF_TYPE_NUMBER;
+  (*s_whitelist)[ash::prefs::kNightLightScheduleType] =
+      settings_private::PrefType::PREF_TYPE_NUMBER;
+  (*s_whitelist)[ash::prefs::kNightLightCustomStartTime] =
+      settings_private::PrefType::PREF_TYPE_NUMBER;
+  (*s_whitelist)[ash::prefs::kNightLightCustomEndTime] =
+      settings_private::PrefType::PREF_TYPE_NUMBER;
 
   // Input method settings.
   (*s_whitelist)[::prefs::kLanguagePreloadEngines] =

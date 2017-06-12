@@ -83,6 +83,15 @@ cr.define('device_page_tests', function() {
 
   function getFakePrefs() {
     return {
+      ash: {
+        night_light: {
+          schedule_type: {
+            key: 'ash.night_light.schedule_type',
+            type: chrome.settingsPrivate.PrefType.NUMBER,
+            value: 0,
+          },
+        },
+      },
       settings: {
         touchpad: {
           enable_tap_to_click: {

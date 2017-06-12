@@ -11,6 +11,8 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="display_layout.html">
 <link rel="import" href="display_overscan_dialog.html">
+<link rel="import" href="night_light_slider.html">
+<link rel="import" href="../controls/settings_dropdown_menu.html">
 <link rel="import" href="../controls/settings_slider.html">
 <link rel="import" href="../prefs/prefs_behavior.html">
 <link rel="import" href="../settings_shared_css.html">
@@ -54,6 +56,10 @@
 
      #controlsDiv > .settings-box:first-of-type {
        border-top: none;
+     }
+
+     #nightLightSlider {
+       margin-top: 20px;
      }
     </style>
     <div class="settings-box first layout vertical self-stretch">
@@ -227,6 +233,29 @@
               label-max="$i18n{displayNightLightTempSliderMaxLabel}"
               pref="{{prefs.ash.night_light.color_temperature}}">
           </settings-slider>
+        </div>
+        <!-- Schedule settings -->
+        <div class="settings-box embedded">
+          <div id="nightLightScheduleLabel" class="start textarea">
+            $i18n{displayNightLightScheduleLabel}
+          </div>
+          <settings-dropdown-menu
+              id="nightLightScheduleTypeDropDown"
+              aria-labelledby="nightLightScheduleLabel"
+              pref="{{prefs.ash.night_light.schedule_type}}"
+              menu-options="[[scheduleTypesList_]]">
+          </settings-dropdown-menu>
+        </div>
+        <!-- Custom schedule slider -->
+        <div class="settings-box embedded continuation">
+          <iron-collapse id="nightLightCustomScheduleCollapse"
+              class="start textarea layout vertical"
+              opened="[[shouldOpenCustomScheduleCollapse_]]">
+            <div class="settings-box embedded continuation">
+              <night-light-slider id="nightLightSlider" prefs="{{prefs}}">
+              </night-light-slider>
+            </div>
+          </iron-collapse>
         </div>
       </div>
     </template>
