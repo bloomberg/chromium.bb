@@ -3357,30 +3357,6 @@
             ]
         }
     ],
-    "WebRTC-TunedClippingLevelMin-SessionRandomized": [
-        {
-            "platforms": [
-                "chromeos",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "TunedClippingLevelMin070",
-                    "enable_features": [
-                        "TunedClippingLevelMin70"
-                    ],
-                    "disable_features": [
-                        "TunedClippingLevelMin110",
-                        "TunedClippingLevelMin150",
-                        "TunedClippingLevelMin170",
-                        "TunedClippingLevelMin30"
-                    ]
-                }
-            ]
-        }
-    ],
     "use-new-media-cache": [
         {
             "platforms": [
