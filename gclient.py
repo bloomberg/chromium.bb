@@ -616,7 +616,9 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
               'ParseDepsFile(%s): Strict mode disallows %r -> %r' %
               (self.name, key, val))
 
-    self._vars = local_scope.get('vars', {})
+    # Since we heavily post-process things, freeze ones which should
+    # reflect original state of DEPS.
+    self._vars = gclient_utils.freeze(local_scope.get('vars', {}))
 
     deps = local_scope.get('deps', {})
     if 'recursion' in local_scope:
@@ -718,8 +720,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         condition = dep_value.get('condition')
       if condition:
         # TODO(phajdan.jr): should we also take custom vars into account?
-        condition_value = gclient_eval.EvaluateCondition(
-            condition, local_scope.get('vars', {}))
+        condition_value = gclient_eval.EvaluateCondition(condition, self._vars)
         should_process = should_process and condition_value
       deps_to_add.append(Dependency(
           self, name, url, None, None, self.custom_vars, None,
