@@ -20,6 +20,7 @@
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/c/system/functions.h"
 #include "mojo/public/c/system/message_pipe.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -54,6 +55,22 @@ class DataPipeTest : public test::MojoTestBase {
       CHECK_EQ(MOJO_RESULT_OK, MojoClose(producer_));
     if (consumer_ != MOJO_HANDLE_INVALID)
       CHECK_EQ(MOJO_RESULT_OK, MojoClose(consumer_));
+  }
+
+  MojoResult ReadEmptyMessageWithHandles(MojoHandle pipe,
+                                         MojoHandle* out_handles,
+                                         uint32_t num_handles) {
+    std::vector<uint8_t> bytes;
+    std::vector<ScopedHandle> handles;
+    MojoResult rv = ReadMessageRaw(MessagePipeHandle(pipe), &bytes, &handles,
+                                   MOJO_READ_MESSAGE_FLAG_NONE);
+    if (rv == MOJO_RESULT_OK) {
+      CHECK_EQ(0u, bytes.size());
+      CHECK_EQ(num_handles, handles.size());
+      for (size_t i = 0; i < num_handles; ++i)
+        out_handles[i] = handles[i].release().value();
+    }
+    return rv;
   }
 
   MojoResult Create(const MojoCreateDataPipeOptions* options) {
@@ -1530,16 +1547,12 @@ TEST_F(DataPipeTest, SendProducer) {
             MojoCreateMessagePipe(nullptr, &pipe0, &pipe1));
 
   ASSERT_EQ(MOJO_RESULT_OK,
-            MojoWriteMessage(pipe0, nullptr, 0, &producer_, 1,
-                             MOJO_WRITE_MESSAGE_FLAG_NONE));
+            WriteMessageRaw(MessagePipeHandle(pipe0), nullptr, 0, &producer_, 1,
+                            MOJO_WRITE_MESSAGE_FLAG_NONE));
   producer_ = MOJO_HANDLE_INVALID;
   ASSERT_EQ(MOJO_RESULT_OK,
             WaitForSignals(pipe1, MOJO_HANDLE_SIGNAL_READABLE, &hss));
-  uint32_t num_handles = 1;
-  ASSERT_EQ(MOJO_RESULT_OK,
-            MojoReadMessage(pipe1, nullptr, 0, &producer_, &num_handles,
-                            MOJO_READ_MESSAGE_FLAG_NONE));
-  ASSERT_EQ(num_handles, 1u);
+  ASSERT_EQ(MOJO_RESULT_OK, ReadEmptyMessageWithHandles(pipe1, &producer_, 1));
 
   // Write more data.
   const char kExtraData[] = "bye world";
@@ -1605,16 +1618,12 @@ TEST_F(DataPipeTest, ConsumerWithClosedProducerSent) {
             MojoCreateMessagePipe(nullptr, &pipe0, &pipe1));
 
   ASSERT_EQ(MOJO_RESULT_OK,
-            MojoWriteMessage(pipe0, nullptr, 0, &consumer_, 1,
-                             MOJO_WRITE_MESSAGE_FLAG_NONE));
+            WriteMessageRaw(MessagePipeHandle(pipe0), nullptr, 0, &consumer_, 1,
+                            MOJO_WRITE_MESSAGE_FLAG_NONE));
   consumer_ = MOJO_HANDLE_INVALID;
   ASSERT_EQ(MOJO_RESULT_OK,
             WaitForSignals(pipe1, MOJO_HANDLE_SIGNAL_READABLE, &state));
-  uint32_t num_handles = 1;
-  ASSERT_EQ(MOJO_RESULT_OK,
-            MojoReadMessage(pipe1, nullptr, 0, &consumer_, &num_handles,
-                            MOJO_READ_MESSAGE_FLAG_NONE));
-  ASSERT_EQ(num_handles, 1u);
+  ASSERT_EQ(MOJO_RESULT_OK, ReadEmptyMessageWithHandles(pipe1, &consumer_, 1));
 
   ASSERT_EQ(MOJO_RESULT_OK,
             WaitForSignals(consumer_, MOJO_HANDLE_SIGNAL_PEER_CLOSED, &state));
@@ -1724,8 +1733,8 @@ TEST_F(DataPipeTest, Multiprocess) {
 
     // Send child process the data pipe.
     ASSERT_EQ(MOJO_RESULT_OK,
-              MojoWriteMessage(server_mp, nullptr, 0, &consumer_, 1,
-                               MOJO_WRITE_MESSAGE_FLAG_NONE));
+              WriteMessageRaw(MessagePipeHandle(server_mp), nullptr, 0,
+                              &consumer_, 1, MOJO_WRITE_MESSAGE_FLAG_NONE));
 
     // Send a bunch of data of varying sizes.
     uint8_t buffer[100];
@@ -1744,21 +1753,16 @@ TEST_F(DataPipeTest, Multiprocess) {
 
     // Swap ends.
     ASSERT_EQ(MOJO_RESULT_OK,
-              MojoWriteMessage(server_mp, nullptr, 0, &producer_, 1,
-                               MOJO_WRITE_MESSAGE_FLAG_NONE));
+              WriteMessageRaw(MessagePipeHandle(server_mp), nullptr, 0,
+                              &producer_, 1, MOJO_WRITE_MESSAGE_FLAG_NONE));
 
     // Receive the consumer from the other side.
     producer_ = MOJO_HANDLE_INVALID;
     MojoHandleSignalsState hss = MojoHandleSignalsState();
     ASSERT_EQ(MOJO_RESULT_OK,
               WaitForSignals(server_mp, MOJO_HANDLE_SIGNAL_READABLE, &hss));
-    MojoHandle handles[2];
-    uint32_t num_handles = arraysize(handles);
     ASSERT_EQ(MOJO_RESULT_OK,
-              MojoReadMessage(server_mp, nullptr, 0, handles, &num_handles,
-                              MOJO_READ_MESSAGE_FLAG_NONE));
-    ASSERT_EQ(1u, num_handles);
-    consumer_ = handles[0];
+              ReadEmptyMessageWithHandles(server_mp, &consumer_, 1));
 
     // Read the test string twice. Once for when we sent it, and once for the
     // other end sending it.
@@ -1782,13 +1786,8 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(MultiprocessClient, DataPipeTest, client_mp) {
   MojoHandleSignalsState hss = MojoHandleSignalsState();
   ASSERT_EQ(MOJO_RESULT_OK,
             WaitForSignals(client_mp, MOJO_HANDLE_SIGNAL_READABLE, &hss));
-  MojoHandle handles[2];
-  uint32_t num_handles = arraysize(handles);
   ASSERT_EQ(MOJO_RESULT_OK,
-            MojoReadMessage(client_mp, nullptr, 0, handles, &num_handles,
-                            MOJO_READ_MESSAGE_FLAG_NONE));
-  ASSERT_EQ(1u, num_handles);
-  consumer = handles[0];
+            ReadEmptyMessageWithHandles(client_mp, &consumer, 1));
 
   // Read the initial string that was sent.
   int32_t buffer[100];
@@ -1810,20 +1809,17 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(MultiprocessClient, DataPipeTest, client_mp) {
   }
 
   // Swap ends.
-  ASSERT_EQ(MOJO_RESULT_OK, MojoWriteMessage(client_mp, nullptr, 0, &consumer,
-                                             1, MOJO_WRITE_MESSAGE_FLAG_NONE));
+  ASSERT_EQ(MOJO_RESULT_OK,
+            WriteMessageRaw(MessagePipeHandle(client_mp), nullptr, 0, &consumer,
+                            1, MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   // Receive the producer from the other side.
   MojoHandle producer = MOJO_HANDLE_INVALID;
   hss = MojoHandleSignalsState();
   ASSERT_EQ(MOJO_RESULT_OK,
             WaitForSignals(client_mp, MOJO_HANDLE_SIGNAL_READABLE, &hss));
-  num_handles = arraysize(handles);
   ASSERT_EQ(MOJO_RESULT_OK,
-            MojoReadMessage(client_mp, nullptr, 0, handles, &num_handles,
-                            MOJO_READ_MESSAGE_FLAG_NONE));
-  ASSERT_EQ(1u, num_handles);
-  producer = handles[0];
+            ReadEmptyMessageWithHandles(client_mp, &producer, 1));
 
   // Write the test string one more time.
   EXPECT_TRUE(WriteAllData(producer, kMultiprocessTestData, kTestDataSize));

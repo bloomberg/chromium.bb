@@ -31,6 +31,7 @@ component("system") {
     "handle.h",
     "handle_signals_state.h",
     "message.h",
+    "message_pipe.cc",
     "message_pipe.h",
     "platform_handle.cc",
     "platform_handle.h",

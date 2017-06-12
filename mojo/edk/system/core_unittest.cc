@@ -50,21 +50,18 @@ TEST_F(CoreTest, Basic) {
   ASSERT_NE(h, MOJO_HANDLE_INVALID);
 
   ASSERT_EQ(0u, info.GetWriteMessageCallCount());
+  MojoMessageHandle message;
+  ASSERT_EQ(MOJO_RESULT_OK, core()->CreateMessage(42, nullptr, &message));
   ASSERT_EQ(MOJO_RESULT_OK,
-            core()->WriteMessage(h, nullptr, 0, nullptr, 0,
-                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
+            core()->WriteMessageNew(h, message, MOJO_WRITE_MESSAGE_FLAG_NONE));
   ASSERT_EQ(1u, info.GetWriteMessageCallCount());
 
   ASSERT_EQ(0u, info.GetReadMessageCallCount());
-  uint32_t num_bytes = 0;
-  ASSERT_EQ(
-      MOJO_RESULT_OK,
-      core()->ReadMessage(h, nullptr, &num_bytes, nullptr, nullptr,
-                          MOJO_READ_MESSAGE_FLAG_NONE));
+  ASSERT_EQ(MOJO_RESULT_OK,
+            core()->ReadMessageNew(h, &message, MOJO_READ_MESSAGE_FLAG_NONE));
   ASSERT_EQ(1u, info.GetReadMessageCallCount());
   ASSERT_EQ(MOJO_RESULT_OK,
-            core()->ReadMessage(h, nullptr, nullptr, nullptr, nullptr,
-                                MOJO_READ_MESSAGE_FLAG_NONE));
+            core()->ReadMessageNew(h, &message, MOJO_READ_MESSAGE_FLAG_NONE));
   ASSERT_EQ(2u, info.GetReadMessageCallCount());
 
   ASSERT_EQ(0u, info.GetWriteDataCallCount());
@@ -123,137 +120,28 @@ TEST_F(CoreTest, InvalidArguments) {
   // |CreateMessagePipe()|: Nothing to check (apart from things that cause
   // death).
 
-  // |WriteMessage()|:
+  // |WriteMessageNew()|:
   // Only check arguments checked by |Core|, namely |handle|, |handles|, and
   // |num_handles|.
   {
     ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              core()->WriteMessage(MOJO_HANDLE_INVALID, nullptr, 0,
-                                   nullptr, 0, MOJO_WRITE_MESSAGE_FLAG_NONE));
-
-    MockHandleInfo info;
-    MojoHandle h = CreateMockHandle(&info);
-    MojoHandle handles[2] = {MOJO_HANDLE_INVALID, MOJO_HANDLE_INVALID};
-
-    // Huge handle count (implausibly big on some systems -- more than can be
-    // stored in a 32-bit address space).
-    // Note: This may return either |MOJO_RESULT_INVALID_ARGUMENT| or
-    // |MOJO_RESULT_RESOURCE_EXHAUSTED|, depending on whether it's plausible or
-    // not.
-    ASSERT_NE(
-        MOJO_RESULT_OK,
-        core()->WriteMessage(h, nullptr, 0, handles,
-                             std::numeric_limits<uint32_t>::max(),
-                             MOJO_WRITE_MESSAGE_FLAG_NONE));
-    ASSERT_EQ(0u, info.GetWriteMessageCallCount());
-
-    // Null |bytes| with non-zero message size.
-    ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              core()->WriteMessage(h, nullptr, 1, nullptr, 0,
-                                   MOJO_WRITE_MESSAGE_FLAG_NONE));
-    ASSERT_EQ(0u, info.GetWriteMessageCallCount());
-
-    // Null |handles| with non-zero handle count.
-    ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              core()->WriteMessage(h, nullptr, 0, nullptr, 1,
-                                   MOJO_WRITE_MESSAGE_FLAG_NONE));
-    ASSERT_EQ(0u, info.GetWriteMessageCallCount());
-
-    // Huge handle count (plausibly big).
-    ASSERT_EQ(MOJO_RESULT_RESOURCE_EXHAUSTED,
-              core()->WriteMessage(
-                  h, nullptr, 0, handles,
-                  std::numeric_limits<uint32_t>::max() / sizeof(handles[0]),
-                  MOJO_WRITE_MESSAGE_FLAG_NONE));
-    ASSERT_EQ(0u, info.GetWriteMessageCallCount());
-
-    // Invalid handle in |handles|.
-    ASSERT_EQ(
-        MOJO_RESULT_INVALID_ARGUMENT,
-        core()->WriteMessage(h, nullptr, 0, handles, 1,
-                             MOJO_WRITE_MESSAGE_FLAG_NONE));
-    ASSERT_EQ(0u, info.GetWriteMessageCallCount());
-
-    // Two invalid handles in |handles|.
-    ASSERT_EQ(
-        MOJO_RESULT_INVALID_ARGUMENT,
-        core()->WriteMessage(h, nullptr, 0, handles, 2,
-                             MOJO_WRITE_MESSAGE_FLAG_NONE));
-    ASSERT_EQ(0u, info.GetWriteMessageCallCount());
-
-    // Can't send a handle over itself. Note that this will also cause |h| to be
-    // closed.
-    handles[0] = h;
-    ASSERT_EQ(
-        MOJO_RESULT_INVALID_ARGUMENT,
-        core()->WriteMessage(h, nullptr, 0, handles, 1,
-                             MOJO_WRITE_MESSAGE_FLAG_NONE));
-    ASSERT_EQ(0u, info.GetWriteMessageCallCount());
-
-    h = CreateMockHandle(&info);
-
-    MockHandleInfo info2;
-
-    // This is "okay", but |MockDispatcher| doesn't implement it.
-    handles[0] = CreateMockHandle(&info2);
-    ASSERT_EQ(
-        MOJO_RESULT_UNIMPLEMENTED,
-        core()->WriteMessage(h, nullptr, 0, handles, 1,
-                             MOJO_WRITE_MESSAGE_FLAG_NONE));
-    ASSERT_EQ(1u, info.GetWriteMessageCallCount());
-
-    // One of the |handles| is still invalid.
-    handles[0] = CreateMockHandle(&info2);
-    ASSERT_EQ(
-        MOJO_RESULT_INVALID_ARGUMENT,
-        core()->WriteMessage(h, nullptr, 0, handles, 2,
-                             MOJO_WRITE_MESSAGE_FLAG_NONE));
-    ASSERT_EQ(1u, info.GetWriteMessageCallCount());
-
-    // One of the |handles| is the same as |h|. Both handles are closed.
-    handles[0] = CreateMockHandle(&info2);
-    handles[1] = h;
-    ASSERT_EQ(
-        MOJO_RESULT_INVALID_ARGUMENT,
-        core()->WriteMessage(h, nullptr, 0, handles, 2,
-                             MOJO_WRITE_MESSAGE_FLAG_NONE));
-    ASSERT_EQ(1u, info.GetWriteMessageCallCount());
-
-    h = CreateMockHandle(&info);
-
-    // Can't send a handle twice in the same message.
-    handles[0] = CreateMockHandle(&info2);
-    handles[1] = handles[0];
-    ASSERT_EQ(
-        MOJO_RESULT_BUSY,
-        core()->WriteMessage(h, nullptr, 0, handles, 2,
-                             MOJO_WRITE_MESSAGE_FLAG_NONE));
-    ASSERT_EQ(1u, info.GetWriteMessageCallCount());
-
-    ASSERT_EQ(MOJO_RESULT_OK, core()->Close(h));
+              core()->WriteMessageNew(MOJO_HANDLE_INVALID, 0,
+                                      MOJO_WRITE_MESSAGE_FLAG_NONE));
   }
 
-  // |ReadMessage()|:
+  // |ReadMessageNew()|:
   // Only check arguments checked by |Core|, namely |handle|, |handles|, and
   // |num_handles|.
   {
-    ASSERT_EQ(
-        MOJO_RESULT_INVALID_ARGUMENT,
-        core()->ReadMessage(MOJO_HANDLE_INVALID, nullptr, nullptr, nullptr,
-                            nullptr, MOJO_READ_MESSAGE_FLAG_NONE));
-
+    ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+              core()->ReadMessageNew(MOJO_HANDLE_INVALID, nullptr,
+                                     MOJO_READ_MESSAGE_FLAG_NONE));
     MockHandleInfo info;
     MojoHandle h = CreateMockHandle(&info);
-
-    // Okay.
-    uint32_t handle_count = 0;
-    ASSERT_EQ(MOJO_RESULT_OK,
-              core()->ReadMessage(
-                  h, nullptr, nullptr, nullptr, &handle_count,
-                  MOJO_READ_MESSAGE_FLAG_NONE));
+    ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+              core()->ReadMessageNew(h, nullptr, MOJO_READ_MESSAGE_FLAG_NONE));
     // Checked by |Core|, shouldn't go through to the dispatcher.
-    ASSERT_EQ(1u, info.GetReadMessageCallCount());
-
+    ASSERT_EQ(0u, info.GetReadMessageCallCount());
     ASSERT_EQ(MOJO_RESULT_OK, core()->Close(h));
   }
 }
@@ -279,44 +167,29 @@ TEST_F(CoreTest, MessagePipe) {
   ASSERT_EQ(kAllSignals, hss[1].satisfiable_signals);
 
   // Try to read anyway.
-  char buffer[1] = {'a'};
-  uint32_t buffer_size = 1;
+  MojoMessageHandle message;
   ASSERT_EQ(
       MOJO_RESULT_SHOULD_WAIT,
-      core()->ReadMessage(h[0], buffer, &buffer_size, nullptr, nullptr,
-                          MOJO_READ_MESSAGE_FLAG_NONE));
-  // Check that it left its inputs alone.
-  ASSERT_EQ('a', buffer[0]);
-  ASSERT_EQ(1u, buffer_size);
+      core()->ReadMessageNew(h[0], &message, MOJO_READ_MESSAGE_FLAG_NONE));
 
   // Write to |h[1]|.
-  buffer[0] = 'b';
-  ASSERT_EQ(
-      MOJO_RESULT_OK,
-      core()->WriteMessage(h[1], buffer, 1, nullptr, 0,
-                           MOJO_WRITE_MESSAGE_FLAG_NONE));
+  const uintptr_t kTestMessageContext = 123;
+  ASSERT_EQ(MOJO_RESULT_OK,
+            core()->CreateMessage(kTestMessageContext, nullptr, &message));
+  ASSERT_EQ(MOJO_RESULT_OK, core()->WriteMessageNew(
+                                h[1], message, MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   // Wait for |h[0]| to become readable.
   EXPECT_EQ(MOJO_RESULT_OK, mojo::Wait(mojo::Handle(h[0]),
                                        MOJO_HANDLE_SIGNAL_READABLE, &hss[0]));
 
   // Read from |h[0]|.
-  // First, get only the size.
-  buffer_size = 0;
-  ASSERT_EQ(
-      MOJO_RESULT_RESOURCE_EXHAUSTED,
-      core()->ReadMessage(h[0], nullptr, &buffer_size, nullptr, nullptr,
-                          MOJO_READ_MESSAGE_FLAG_NONE));
-  ASSERT_EQ(1u, buffer_size);
-  // Then actually read it.
-  buffer[0] = 'c';
-  buffer_size = 1;
-  ASSERT_EQ(
-      MOJO_RESULT_OK,
-      core()->ReadMessage(h[0], buffer, &buffer_size, nullptr, nullptr,
-                          MOJO_READ_MESSAGE_FLAG_NONE));
-  ASSERT_EQ('b', buffer[0]);
-  ASSERT_EQ(1u, buffer_size);
+  ASSERT_EQ(MOJO_RESULT_OK, core()->ReadMessageNew(
+                                h[0], &message, MOJO_READ_MESSAGE_FLAG_NONE));
+  uintptr_t context;
+  ASSERT_EQ(MOJO_RESULT_OK, core()->ReleaseMessageContext(message, &context));
+  ASSERT_EQ(kTestMessageContext, context);
+  ASSERT_EQ(MOJO_RESULT_OK, core()->FreeMessage(message));
 
   // |h[0]| should no longer be readable.
   hss[0] = kEmptyMojoHandleSignalsState;
@@ -325,11 +198,10 @@ TEST_F(CoreTest, MessagePipe) {
   ASSERT_EQ(kAllSignals, hss[0].satisfiable_signals);
 
   // Write to |h[0]|.
-  buffer[0] = 'd';
-  ASSERT_EQ(
-      MOJO_RESULT_OK,
-      core()->WriteMessage(h[0], buffer, 1, nullptr, 0,
-                           MOJO_WRITE_MESSAGE_FLAG_NONE));
+  ASSERT_EQ(MOJO_RESULT_OK,
+            core()->CreateMessage(kTestMessageContext, nullptr, &message));
+  ASSERT_EQ(MOJO_RESULT_OK, core()->WriteMessageNew(
+                                h[0], message, MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   // Close |h[0]|.
   ASSERT_EQ(MOJO_RESULT_OK, core()->Close(h[0]));
@@ -352,9 +224,9 @@ TEST_F(CoreTest, MessagePipe) {
             hss[1].satisfiable_signals);
 
   // Discard a message from |h[1]|.
-  ASSERT_EQ(MOJO_RESULT_RESOURCE_EXHAUSTED,
-            core()->ReadMessage(h[1], nullptr, nullptr, nullptr, nullptr,
-                                MOJO_READ_MESSAGE_FLAG_MAY_DISCARD));
+  ASSERT_EQ(MOJO_RESULT_OK, core()->ReadMessageNew(
+                                h[1], &message, MOJO_READ_MESSAGE_FLAG_NONE));
+  ASSERT_EQ(MOJO_RESULT_OK, core()->FreeMessage(message));
 
   // |h[1]| is no longer readable (and will never be).
   hss[1] = kFullMojoHandleSignalsState;
@@ -363,150 +235,48 @@ TEST_F(CoreTest, MessagePipe) {
   EXPECT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss[1].satisfiable_signals);
 
   // Try writing to |h[1]|.
-  buffer[0] = 'e';
+  ASSERT_EQ(MOJO_RESULT_OK,
+            core()->CreateMessage(kTestMessageContext, nullptr, &message));
   ASSERT_EQ(
       MOJO_RESULT_FAILED_PRECONDITION,
-      core()->WriteMessage(h[1], buffer, 1, nullptr, 0,
-                           MOJO_WRITE_MESSAGE_FLAG_NONE));
+      core()->WriteMessageNew(h[1], message, MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   ASSERT_EQ(MOJO_RESULT_OK, core()->Close(h[1]));
 }
 
 // Tests passing a message pipe handle.
 TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing1) {
-  const char kHello[] = "hello";
-  const uint32_t kHelloSize = static_cast<uint32_t>(sizeof(kHello));
-  const char kWorld[] = "world!!!";
-  const uint32_t kWorldSize = static_cast<uint32_t>(sizeof(kWorld));
-  char buffer[100];
-  const uint32_t kBufferSize = static_cast<uint32_t>(sizeof(buffer));
-  uint32_t num_bytes;
-  MojoHandle handles[10];
-  uint32_t num_handles;
   MojoHandleSignalsState hss;
-  MojoHandle h_received;
-
   MojoHandle h_passing[2];
   ASSERT_EQ(MOJO_RESULT_OK,
             core()->CreateMessagePipe(nullptr, &h_passing[0], &h_passing[1]));
 
   // Make sure that |h_passing[]| work properly.
+  const uintptr_t kTestMessageContext = 42;
+  MojoMessageHandle message;
   ASSERT_EQ(MOJO_RESULT_OK,
-            core()->WriteMessage(h_passing[0], kHello, kHelloSize, nullptr, 0,
-                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
+            core()->CreateMessage(kTestMessageContext, nullptr, &message));
+  ASSERT_EQ(MOJO_RESULT_OK,
+            core()->WriteMessageNew(h_passing[0], message,
+                                    MOJO_WRITE_MESSAGE_FLAG_NONE));
   hss = kEmptyMojoHandleSignalsState;
   EXPECT_EQ(MOJO_RESULT_OK, mojo::Wait(mojo::Handle(h_passing[1]),
                                        MOJO_HANDLE_SIGNAL_READABLE, &hss));
   ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
             hss.satisfied_signals);
   ASSERT_EQ(kAllSignals, hss.satisfiable_signals);
-  num_bytes = kBufferSize;
-  num_handles = arraysize(handles);
+  MojoMessageHandle message_handle;
   ASSERT_EQ(MOJO_RESULT_OK,
-            core()->ReadMessage(
-                h_passing[1], buffer, &num_bytes, handles, &num_handles,
-                MOJO_READ_MESSAGE_FLAG_NONE));
-  ASSERT_EQ(kHelloSize, num_bytes);
-  ASSERT_STREQ(kHello, buffer);
-  ASSERT_EQ(0u, num_handles);
-
-  // Make sure that you can't pass either of the message pipe's handles over
-  // itself.
-  ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            core()->WriteMessage(h_passing[0], kHello, kHelloSize,
-                                 &h_passing[0], 1,
-                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
+            core()->ReadMessageNew(h_passing[1], &message_handle,
+                                   MOJO_READ_MESSAGE_FLAG_NONE));
+  uintptr_t context;
   ASSERT_EQ(MOJO_RESULT_OK,
-            core()->CreateMessagePipe(nullptr, &h_passing[0], &h_passing[1]));
-
-  ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            core()->WriteMessage(h_passing[0], kHello, kHelloSize,
-                                 &h_passing[1], 1,
-                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->CreateMessagePipe(nullptr, &h_passing[0], &h_passing[1]));
-
-  MojoHandle h_passed[2];
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->CreateMessagePipe(nullptr, &h_passed[0], &h_passed[1]));
-
-  // Make sure that |h_passed[]| work properly.
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->WriteMessage(h_passed[0], kHello, kHelloSize, nullptr, 0,
-                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
-  hss = kEmptyMojoHandleSignalsState;
-  ASSERT_EQ(MOJO_RESULT_OK, mojo::Wait(mojo::Handle(h_passed[1]),
-                                       MOJO_HANDLE_SIGNAL_READABLE, &hss));
-  ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
-            hss.satisfied_signals);
-  ASSERT_EQ(kAllSignals, hss.satisfiable_signals);
-  num_bytes = kBufferSize;
-  num_handles = arraysize(handles);
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->ReadMessage(
-                h_passed[1], buffer, &num_bytes, handles, &num_handles,
-                MOJO_READ_MESSAGE_FLAG_NONE));
-  ASSERT_EQ(kHelloSize, num_bytes);
-  ASSERT_STREQ(kHello, buffer);
-  ASSERT_EQ(0u, num_handles);
-
-  // Send |h_passed[1]| from |h_passing[0]| to |h_passing[1]|.
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->WriteMessage(h_passing[0], kWorld, kWorldSize,
-                                 &h_passed[1], 1,
-                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
-  hss = kEmptyMojoHandleSignalsState;
-  ASSERT_EQ(MOJO_RESULT_OK, mojo::Wait(mojo::Handle(h_passing[1]),
-                                       MOJO_HANDLE_SIGNAL_READABLE, &hss));
-  ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
-            hss.satisfied_signals);
-  ASSERT_EQ(kAllSignals, hss.satisfiable_signals);
-  num_bytes = kBufferSize;
-  num_handles = arraysize(handles);
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->ReadMessage(
-                h_passing[1], buffer, &num_bytes, handles, &num_handles,
-                MOJO_READ_MESSAGE_FLAG_NONE));
-  ASSERT_EQ(kWorldSize, num_bytes);
-  ASSERT_STREQ(kWorld, buffer);
-  ASSERT_EQ(1u, num_handles);
-  h_received = handles[0];
-  ASSERT_NE(h_received, MOJO_HANDLE_INVALID);
-  ASSERT_NE(h_received, h_passing[0]);
-  ASSERT_NE(h_received, h_passing[1]);
-  ASSERT_NE(h_received, h_passed[0]);
-
-  // Note: We rely on the Mojo system not re-using handle values very often.
-  ASSERT_NE(h_received, h_passed[1]);
-
-  // |h_passed[1]| should no longer be valid; check that trying to close it
-  // fails. See above note.
-  ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT, core()->Close(h_passed[1]));
-
-  // Write to |h_passed[0]|. Should receive on |h_received|.
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->WriteMessage(h_passed[0], kHello, kHelloSize, nullptr, 0,
-                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
-  hss = kEmptyMojoHandleSignalsState;
-  ASSERT_EQ(MOJO_RESULT_OK, mojo::Wait(mojo::Handle(h_received),
-                                       MOJO_HANDLE_SIGNAL_READABLE, &hss));
-  ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
-            hss.satisfied_signals);
-  ASSERT_EQ(kAllSignals, hss.satisfiable_signals);
-  num_bytes = kBufferSize;
-  num_handles = arraysize(handles);
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->ReadMessage(
-                h_received, buffer, &num_bytes, handles, &num_handles,
-                MOJO_READ_MESSAGE_FLAG_NONE));
-  ASSERT_EQ(kHelloSize, num_bytes);
-  ASSERT_STREQ(kHello, buffer);
-  ASSERT_EQ(0u, num_handles);
+            core()->ReleaseMessageContext(message_handle, &context));
+  ASSERT_EQ(kTestMessageContext, context);
+  ASSERT_EQ(MOJO_RESULT_OK, MojoFreeMessage(message_handle));
 
   ASSERT_EQ(MOJO_RESULT_OK, core()->Close(h_passing[0]));
   ASSERT_EQ(MOJO_RESULT_OK, core()->Close(h_passing[1]));
-  ASSERT_EQ(MOJO_RESULT_OK, core()->Close(h_passed[0]));
-  ASSERT_EQ(MOJO_RESULT_OK, core()->Close(h_received));
 }
 
 TEST_F(CoreTest, DataPipe) {
@@ -694,233 +464,6 @@ TEST_F(CoreTest, DataPipe) {
 
   ASSERT_EQ(MOJO_RESULT_OK, core()->Close(ch));
 }
-
-// Tests passing data pipe producer and consumer handles.
-TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing2) {
-  const char kHello[] = "hello";
-  const uint32_t kHelloSize = static_cast<uint32_t>(sizeof(kHello));
-  const char kWorld[] = "world!!!";
-  const uint32_t kWorldSize = static_cast<uint32_t>(sizeof(kWorld));
-  char buffer[100];
-  const uint32_t kBufferSize = static_cast<uint32_t>(sizeof(buffer));
-  uint32_t num_bytes;
-  MojoHandle handles[10];
-  uint32_t num_handles;
-  MojoHandleSignalsState hss;
-
-  MojoHandle h_passing[2];
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->CreateMessagePipe(nullptr, &h_passing[0], &h_passing[1]));
-
-  MojoHandle ph, ch;
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->CreateDataPipe(nullptr, &ph, &ch));
-
-  // Send |ch| from |h_passing[0]| to |h_passing[1]|.
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->WriteMessage(h_passing[0], kHello, kHelloSize, &ch, 1,
-                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
-  hss = kEmptyMojoHandleSignalsState;
-  ASSERT_EQ(MOJO_RESULT_OK, mojo::Wait(mojo::Handle(h_passing[1]),
-                                       MOJO_HANDLE_SIGNAL_READABLE, &hss));
-  ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
-            hss.satisfied_signals);
-  ASSERT_EQ(kAllSignals, hss.satisfiable_signals);
-  num_bytes = kBufferSize;
-  num_handles = arraysize(handles);
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->ReadMessage(
-                h_passing[1], buffer, &num_bytes, handles, &num_handles,
-                MOJO_READ_MESSAGE_FLAG_NONE));
-  ASSERT_EQ(kHelloSize, num_bytes);
-  ASSERT_STREQ(kHello, buffer);
-  ASSERT_EQ(1u, num_handles);
-  MojoHandle ch_received = handles[0];
-  ASSERT_NE(ch_received, MOJO_HANDLE_INVALID);
-  ASSERT_NE(ch_received, h_passing[0]);
-  ASSERT_NE(ch_received, h_passing[1]);
-  ASSERT_NE(ch_received, ph);
-
-  // Note: We rely on the Mojo system not re-using handle values very often.
-  ASSERT_NE(ch_received, ch);
-
-  // |ch| should no longer be valid; check that trying to close it fails. See
-  // above note.
-  ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT, core()->Close(ch));
-
-  // Write to |ph|. Should receive on |ch_received|.
-  num_bytes = kWorldSize;
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->WriteData(ph, kWorld, &num_bytes,
-                              MOJO_WRITE_DATA_FLAG_ALL_OR_NONE));
-  hss = kEmptyMojoHandleSignalsState;
-  EXPECT_EQ(MOJO_RESULT_OK, mojo::Wait(mojo::Handle(ch_received),
-                                       MOJO_HANDLE_SIGNAL_READABLE, &hss));
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_NEW_DATA_READABLE,
-            hss.satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED |
-                MOJO_HANDLE_SIGNAL_NEW_DATA_READABLE,
-            hss.satisfiable_signals);
-  num_bytes = kBufferSize;
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->ReadData(ch_received, buffer, &num_bytes,
-                             MOJO_READ_MESSAGE_FLAG_NONE));
-  ASSERT_EQ(kWorldSize, num_bytes);
-  ASSERT_STREQ(kWorld, buffer);
-
-  // Now pass |ph| in the same direction.
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->WriteMessage(h_passing[0], kWorld, kWorldSize, &ph, 1,
-                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
-  hss = kEmptyMojoHandleSignalsState;
-  ASSERT_EQ(MOJO_RESULT_OK, mojo::Wait(mojo::Handle(h_passing[1]),
-                                       MOJO_HANDLE_SIGNAL_READABLE, &hss));
-  ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
-            hss.satisfied_signals);
-  ASSERT_EQ(kAllSignals, hss.satisfiable_signals);
-  num_bytes = kBufferSize;
-  num_handles = arraysize(handles);
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->ReadMessage(
-                h_passing[1], buffer, &num_bytes, handles, &num_handles,
-                MOJO_READ_MESSAGE_FLAG_NONE));
-  ASSERT_EQ(kWorldSize, num_bytes);
-  ASSERT_STREQ(kWorld, buffer);
-  ASSERT_EQ(1u, num_handles);
-  MojoHandle ph_received = handles[0];
-  ASSERT_NE(ph_received, MOJO_HANDLE_INVALID);
-  ASSERT_NE(ph_received, h_passing[0]);
-  ASSERT_NE(ph_received, h_passing[1]);
-  ASSERT_NE(ph_received, ch_received);
-
-  // Again, rely on the Mojo system not re-using handle values very often.
-  ASSERT_NE(ph_received, ph);
-
-  // |ph| should no longer be valid; check that trying to close it fails. See
-  // above note.
-  ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT, core()->Close(ph));
-
-  // Write to |ph_received|. Should receive on |ch_received|.
-  num_bytes = kHelloSize;
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->WriteData(ph_received, kHello, &num_bytes,
-                              MOJO_WRITE_DATA_FLAG_ALL_OR_NONE));
-  hss = kEmptyMojoHandleSignalsState;
-  EXPECT_EQ(MOJO_RESULT_OK, mojo::Wait(mojo::Handle(ch_received),
-                                       MOJO_HANDLE_SIGNAL_READABLE, &hss));
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_NEW_DATA_READABLE,
-            hss.satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED |
-                MOJO_HANDLE_SIGNAL_NEW_DATA_READABLE,
-            hss.satisfiable_signals);
-  num_bytes = kBufferSize;
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->ReadData(ch_received, buffer, &num_bytes,
-                             MOJO_READ_MESSAGE_FLAG_NONE));
-  ASSERT_EQ(kHelloSize, num_bytes);
-  ASSERT_STREQ(kHello, buffer);
-
-  ph = ph_received;
-  ph_received = MOJO_HANDLE_INVALID;
-  ch = ch_received;
-  ch_received = MOJO_HANDLE_INVALID;
-
-  // Make sure that |ph| can't be sent if it's in a two-phase write.
-  void* write_ptr = nullptr;
-  num_bytes = 0;
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->BeginWriteData(ph, &write_ptr, &num_bytes,
-                                   MOJO_WRITE_DATA_FLAG_NONE));
-  ASSERT_GE(num_bytes, 1u);
-  ASSERT_EQ(MOJO_RESULT_BUSY,
-            core()->WriteMessage(h_passing[0], kHello, kHelloSize, &ph, 1,
-                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
-
-  // But |ch| can, even if |ph| is in a two-phase write.
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->WriteMessage(h_passing[0], kHello, kHelloSize, &ch, 1,
-                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
-  ch = MOJO_HANDLE_INVALID;
-  EXPECT_EQ(MOJO_RESULT_OK, mojo::Wait(mojo::Handle(h_passing[1]),
-                                       MOJO_HANDLE_SIGNAL_READABLE));
-  num_bytes = kBufferSize;
-  num_handles = arraysize(handles);
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->ReadMessage(
-                h_passing[1], buffer, &num_bytes, handles, &num_handles,
-                MOJO_READ_MESSAGE_FLAG_NONE));
-  ASSERT_EQ(kHelloSize, num_bytes);
-  ASSERT_STREQ(kHello, buffer);
-  ASSERT_EQ(1u, num_handles);
-  ch = handles[0];
-  ASSERT_NE(ch, MOJO_HANDLE_INVALID);
-
-  // Complete the two-phase write.
-  static_cast<char*>(write_ptr)[0] = 'x';
-  ASSERT_EQ(MOJO_RESULT_OK, core()->EndWriteData(ph, 1));
-
-  // Wait for |ch| to be readable.
-  hss = kEmptyMojoHandleSignalsState;
-  EXPECT_EQ(MOJO_RESULT_OK,
-            mojo::Wait(mojo::Handle(ch), MOJO_HANDLE_SIGNAL_READABLE, &hss));
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_NEW_DATA_READABLE,
-            hss.satisfied_signals);
-  EXPECT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_PEER_CLOSED |
-                MOJO_HANDLE_SIGNAL_NEW_DATA_READABLE,
-            hss.satisfiable_signals);
-
-  // Make sure that |ch| can't be sent if it's in a two-phase read.
-  const void* read_ptr = nullptr;
-  num_bytes = 1;
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->BeginReadData(ch, &read_ptr, &num_bytes,
-                                  MOJO_READ_DATA_FLAG_ALL_OR_NONE));
-  ASSERT_EQ(MOJO_RESULT_BUSY,
-            core()->WriteMessage(h_passing[0], kHello, kHelloSize, &ch, 1,
-                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
-
-  // But |ph| can, even if |ch| is in a two-phase read.
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->WriteMessage(h_passing[0], kWorld, kWorldSize, &ph, 1,
-                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
-  ph = MOJO_HANDLE_INVALID;
-  hss = kEmptyMojoHandleSignalsState;
-  EXPECT_EQ(MOJO_RESULT_OK, mojo::Wait(mojo::Handle(h_passing[1]),
-                                       MOJO_HANDLE_SIGNAL_READABLE, &hss));
-  ASSERT_EQ(MOJO_HANDLE_SIGNAL_READABLE | MOJO_HANDLE_SIGNAL_WRITABLE,
-            hss.satisfied_signals);
-  ASSERT_EQ(kAllSignals, hss.satisfiable_signals);
-  num_bytes = kBufferSize;
-  num_handles = arraysize(handles);
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->ReadMessage(
-                h_passing[1], buffer, &num_bytes, handles, &num_handles,
-                MOJO_READ_MESSAGE_FLAG_NONE));
-  ASSERT_EQ(kWorldSize, num_bytes);
-  ASSERT_STREQ(kWorld, buffer);
-  ASSERT_EQ(1u, num_handles);
-  ph = handles[0];
-  ASSERT_NE(ph, MOJO_HANDLE_INVALID);
-
-  // Complete the two-phase read.
-  ASSERT_EQ('x', static_cast<const char*>(read_ptr)[0]);
-  ASSERT_EQ(MOJO_RESULT_OK, core()->EndReadData(ch, 1));
-
-  ASSERT_EQ(MOJO_RESULT_OK, core()->Close(h_passing[0]));
-  ASSERT_EQ(MOJO_RESULT_OK, core()->Close(h_passing[1]));
-  ASSERT_EQ(MOJO_RESULT_OK, core()->Close(ph));
-  ASSERT_EQ(MOJO_RESULT_OK, core()->Close(ch));
-}
-
-struct TestAsyncWaiter {
-  TestAsyncWaiter() : result(MOJO_RESULT_UNKNOWN) {}
-
-  void Awake(MojoResult r) { result = r; }
-
-  MojoResult result;
-};
-
-// TODO(vtl): Test |DuplicateBufferHandle()| and |MapBuffer()|.
 
 }  // namespace
 }  // namespace edk

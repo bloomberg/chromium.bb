@@ -118,13 +118,12 @@ MojoResult WriteMessage(
   std::vector<MojoHandle> raw_handles(handles.size());
   for (size_t i = 0; i < handles.size(); ++i)
     raw_handles[i] = handles[i]->get().value();
-  MojoResult rv = MojoWriteMessage(handle.value(),
-                          buffer.bytes(),
-                          static_cast<uint32_t>(buffer.num_bytes()),
-                          raw_handles.empty() ? NULL : &raw_handles[0],
-                          static_cast<uint32_t>(raw_handles.size()),
-                          flags);
-  // MojoWriteMessage takes ownership of the handles, so release them here.
+  MojoResult rv =
+      WriteMessageRaw(MessagePipeHandle(handle.value()), buffer.bytes(),
+                      static_cast<uint32_t>(buffer.num_bytes()),
+                      raw_handles.empty() ? NULL : &raw_handles[0],
+                      static_cast<uint32_t>(raw_handles.size()), flags);
+  // WriteMessageRaw takes ownership of the handles, so release them here.
   for (size_t i = 0; i < handles.size(); ++i)
     ignore_result(handles[i]->release());
 
@@ -134,34 +133,55 @@ MojoResult WriteMessage(
 gin::Dictionary ReadMessage(const gin::Arguments& args,
                             mojo::Handle handle,
                             MojoReadMessageFlags flags) {
-  uint32_t num_bytes = 0;
-  uint32_t num_handles = 0;
-  MojoResult result = MojoReadMessage(
-      handle.value(), NULL, &num_bytes, NULL, &num_handles, flags);
-  if (result != MOJO_RESULT_RESOURCE_EXHAUSTED) {
+  MojoMessageHandle message;
+  MojoResult result =
+      MojoReadMessageNew(handle.value(), &message, MOJO_READ_MESSAGE_FLAG_NONE);
+  if (result != MOJO_RESULT_OK) {
     gin::Dictionary dictionary = gin::Dictionary::CreateEmpty(args.isolate());
     dictionary.Set("result", result);
     return dictionary;
   }
 
+  result = MojoSerializeMessage(message);
+  if (result != MOJO_RESULT_OK && result != MOJO_RESULT_FAILED_PRECONDITION) {
+    MojoFreeMessage(message);
+    gin::Dictionary dictionary = gin::Dictionary::CreateEmpty(args.isolate());
+    dictionary.Set("result", MOJO_RESULT_ABORTED);
+    return dictionary;
+  }
+
+  uint32_t num_bytes = 0;
+  void* bytes;
+  uint32_t num_handles = 0;
+  std::vector<mojo::Handle> handles;
+  result = MojoGetSerializedMessageContents(
+      message, &bytes, &num_bytes, nullptr, &num_handles,
+      MOJO_GET_SERIALIZED_MESSAGE_CONTENTS_FLAG_NONE);
+  if (result == MOJO_RESULT_RESOURCE_EXHAUSTED) {
+    handles.resize(num_handles);
+    result = MojoGetSerializedMessageContents(
+        message, &bytes, &num_bytes,
+        reinterpret_cast<MojoHandle*>(handles.data()), &num_handles,
+        MOJO_GET_SERIALIZED_MESSAGE_CONTENTS_FLAG_NONE);
+  }
+
+  if (result != MOJO_RESULT_OK) {
+    MojoFreeMessage(message);
+    gin::Dictionary dictionary = gin::Dictionary::CreateEmpty(args.isolate());
+    dictionary.Set("result", MOJO_RESULT_ABORTED);
+    return dictionary;
+  }
+
   v8::Local<v8::ArrayBuffer> array_buffer =
       v8::ArrayBuffer::New(args.isolate(), num_bytes);
-  std::vector<mojo::Handle> handles(num_handles);
+  if (num_bytes) {
+    gin::ArrayBuffer buffer;
+    ConvertFromV8(args.isolate(), array_buffer, &buffer);
+    DCHECK_EQ(buffer.num_bytes(), num_bytes);
+    memcpy(buffer.bytes(), bytes, num_bytes);
+  }
 
-  gin::ArrayBuffer buffer;
-  ConvertFromV8(args.isolate(), array_buffer, &buffer);
-  CHECK(buffer.num_bytes() == num_bytes);
-
-  result = MojoReadMessage(handle.value(),
-                           buffer.bytes(),
-                           &num_bytes,
-                           handles.empty() ? NULL :
-                               reinterpret_cast<MojoHandle*>(&handles[0]),
-                           &num_handles,
-                           flags);
-
-  CHECK(buffer.num_bytes() == num_bytes);
-  CHECK(handles.size() == num_handles);
+  MojoFreeMessage(message);
 
   gin::Dictionary dictionary = gin::Dictionary::CreateEmpty(args.isolate());
   dictionary.Set("result", result);

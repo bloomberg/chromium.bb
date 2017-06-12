@@ -15,6 +15,8 @@
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/c/system/functions.h"
 #include "mojo/public/c/system/watcher.h"
+#include "mojo/public/cpp/system/handle.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 #include "mojo/public/cpp/system/wait.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -117,9 +119,9 @@ void MojoTestBase::WriteMessageWithHandles(MojoHandle mp,
                                            const std::string& message,
                                            const MojoHandle *handles,
                                            uint32_t num_handles) {
-  CHECK_EQ(MojoWriteMessage(mp, message.data(),
-                            static_cast<uint32_t>(message.size()),
-                            handles, num_handles, MOJO_WRITE_MESSAGE_FLAG_NONE),
+  CHECK_EQ(WriteMessageRaw(MessagePipeHandle(mp), message.data(),
+                           static_cast<uint32_t>(message.size()), handles,
+                           num_handles, MOJO_WRITE_MESSAGE_FLAG_NONE),
            MOJO_RESULT_OK);
 }
 
@@ -131,25 +133,20 @@ void MojoTestBase::WriteMessage(MojoHandle mp, const std::string& message) {
 // static
 std::string MojoTestBase::ReadMessageWithHandles(
     MojoHandle mp,
-    MojoHandle* handles,
+    MojoHandle* out_handles,
     uint32_t expected_num_handles) {
   CHECK_EQ(WaitForSignals(mp, MOJO_HANDLE_SIGNAL_READABLE), MOJO_RESULT_OK);
 
-  uint32_t message_size = 0;
-  uint32_t num_handles = 0;
-  CHECK_EQ(MojoReadMessage(mp, nullptr, &message_size, nullptr, &num_handles,
-                           MOJO_READ_MESSAGE_FLAG_NONE),
-           MOJO_RESULT_RESOURCE_EXHAUSTED);
-  CHECK_EQ(expected_num_handles, num_handles);
+  std::vector<uint8_t> bytes;
+  std::vector<ScopedHandle> handles;
+  CHECK_EQ(MOJO_RESULT_OK,
+           ReadMessageRaw(MessagePipeHandle(mp), &bytes, &handles,
+                          MOJO_READ_MESSAGE_FLAG_NONE));
+  CHECK_EQ(expected_num_handles, handles.size());
+  for (size_t i = 0; i < handles.size(); ++i)
+    out_handles[i] = handles[i].release().value();
 
-  std::string message(message_size, 'x');
-  CHECK_EQ(MojoReadMessage(mp, &message[0], &message_size, handles,
-                           &num_handles, MOJO_READ_MESSAGE_FLAG_NONE),
-           MOJO_RESULT_OK);
-  CHECK_EQ(message_size, message.size());
-  CHECK_EQ(num_handles, expected_num_handles);
-
-  return message;
+  return std::string(bytes.begin(), bytes.end());
 }
 
 // static
@@ -157,28 +154,20 @@ std::string MojoTestBase::ReadMessageWithOptionalHandle(MojoHandle mp,
                                                         MojoHandle* handle) {
   CHECK_EQ(WaitForSignals(mp, MOJO_HANDLE_SIGNAL_READABLE), MOJO_RESULT_OK);
 
-  uint32_t message_size = 0;
-  uint32_t num_handles = 0;
-  CHECK_EQ(MojoReadMessage(mp, nullptr, &message_size, nullptr, &num_handles,
-                           MOJO_READ_MESSAGE_FLAG_NONE),
-           MOJO_RESULT_RESOURCE_EXHAUSTED);
-  CHECK(num_handles == 0 || num_handles == 1);
-
+  std::vector<uint8_t> bytes;
+  std::vector<ScopedHandle> handles;
+  CHECK_EQ(MOJO_RESULT_OK,
+           ReadMessageRaw(MessagePipeHandle(mp), &bytes, &handles,
+                          MOJO_READ_MESSAGE_FLAG_NONE));
+  CHECK(handles.size() == 0 || handles.size() == 1);
   CHECK(handle);
 
-  std::string message(message_size, 'x');
-  CHECK_EQ(MojoReadMessage(mp, &message[0], &message_size, handle,
-                           &num_handles, MOJO_READ_MESSAGE_FLAG_NONE),
-           MOJO_RESULT_OK);
-  CHECK_EQ(message_size, message.size());
-  CHECK(num_handles == 0 || num_handles == 1);
-
-  if (num_handles)
-    CHECK_NE(*handle, MOJO_HANDLE_INVALID);
+  if (handles.size() == 1)
+    *handle = handles[0].release().value();
   else
     *handle = MOJO_HANDLE_INVALID;
 
-  return message;
+  return std::string(bytes.begin(), bytes.end());
 }
 
 // static
@@ -192,19 +181,14 @@ void MojoTestBase::ReadMessage(MojoHandle mp,
                                size_t num_bytes) {
   CHECK_EQ(WaitForSignals(mp, MOJO_HANDLE_SIGNAL_READABLE), MOJO_RESULT_OK);
 
-  uint32_t message_size = 0;
-  uint32_t num_handles = 0;
-  CHECK_EQ(MojoReadMessage(mp, nullptr, &message_size, nullptr, &num_handles,
-                           MOJO_READ_MESSAGE_FLAG_NONE),
-           MOJO_RESULT_RESOURCE_EXHAUSTED);
-  CHECK_EQ(num_handles, 0u);
-  CHECK_EQ(message_size, num_bytes);
-
-  CHECK_EQ(MojoReadMessage(mp, data, &message_size, nullptr, &num_handles,
-                           MOJO_READ_MESSAGE_FLAG_NONE),
-           MOJO_RESULT_OK);
-  CHECK_EQ(num_handles, 0u);
-  CHECK_EQ(message_size, num_bytes);
+  std::vector<uint8_t> bytes;
+  std::vector<ScopedHandle> handles;
+  CHECK_EQ(MOJO_RESULT_OK,
+           ReadMessageRaw(MessagePipeHandle(mp), &bytes, &handles,
+                          MOJO_READ_MESSAGE_FLAG_NONE));
+  CHECK_EQ(0u, handles.size());
+  CHECK_EQ(num_bytes, bytes.size());
+  memcpy(data, bytes.data(), bytes.size());
 }
 
 // static
@@ -305,7 +289,7 @@ std::string MojoTestBase::ReadData(MojoHandle consumer, size_t size) {
            MOJO_RESULT_OK);
   CHECK_EQ(num_bytes, static_cast<uint32_t>(size));
 
-  return std::string(buffer.data(), buffer.size());
+  return std::string(buffer.begin(), buffer.end());
 }
 
 // static

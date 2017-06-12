@@ -396,13 +396,12 @@ TEST_F(StructTraitsTest, EchoMoveOnlyStructWithTraits) {
 
   EXPECT_EQ(MOJO_RESULT_OK, Wait(received.get(), MOJO_HANDLE_SIGNAL_READABLE));
 
-  char buffer[10] = {0};
-  uint32_t buffer_size = static_cast<uint32_t>(sizeof(buffer));
-  EXPECT_EQ(MOJO_RESULT_OK,
-            ReadMessageRaw(received.get(), buffer, &buffer_size, nullptr,
-                           nullptr, MOJO_READ_MESSAGE_FLAG_NONE));
-  EXPECT_EQ(kHelloSize, buffer_size);
-  EXPECT_STREQ(kHello, buffer);
+  std::vector<uint8_t> bytes;
+  std::vector<ScopedHandle> handles;
+  EXPECT_EQ(MOJO_RESULT_OK, ReadMessageRaw(received.get(), &bytes, &handles,
+                                           MOJO_READ_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(kHelloSize, bytes.size());
+  EXPECT_STREQ(kHello, reinterpret_cast<char*>(bytes.data()));
 }
 
 void CaptureNullableMoveOnlyStructWithTraitsImpl(

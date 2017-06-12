@@ -12,6 +12,7 @@
 
 #include "base/macros.h"
 #include "base/threading/simple_thread.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 #include "mojo/public/cpp/system/wait.h"
 #include "mojo/public/cpp/test_support/test_support.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
@@ -37,10 +38,10 @@ class MessagePipeWriterThread : public base::SimpleThread {
     char buffer[10000];
     assert(num_bytes_ <= sizeof(buffer));
 
-    // TODO(vtl): Should I throttle somehow?
     for (;;) {
-      MojoResult result = MojoWriteMessage(handle_, buffer, num_bytes_, nullptr,
-                                           0, MOJO_WRITE_MESSAGE_FLAG_NONE);
+      MojoResult result = mojo::WriteMessageRaw(
+          mojo::MessagePipeHandle(handle_), buffer, num_bytes_, nullptr, 0,
+          MOJO_WRITE_MESSAGE_FLAG_NONE);
       if (result == MOJO_RESULT_OK) {
         num_writes_++;
         continue;
@@ -74,12 +75,11 @@ class MessagePipeReaderThread : public base::SimpleThread {
   ~MessagePipeReaderThread() override {}
 
   void Run() override {
-    char buffer[10000];
-
     for (;;) {
-      uint32_t num_bytes = static_cast<uint32_t>(sizeof(buffer));
-      MojoResult result = MojoReadMessage(handle_, buffer, &num_bytes, nullptr,
-                                          nullptr, MOJO_READ_MESSAGE_FLAG_NONE);
+      std::vector<uint8_t> bytes;
+      MojoResult result =
+          mojo::ReadMessageRaw(mojo::MessagePipeHandle(handle_), &bytes,
+                               nullptr, MOJO_READ_MESSAGE_FLAG_NONE);
       if (result == MOJO_RESULT_OK) {
         num_reads_++;
         continue;
@@ -114,7 +114,7 @@ class MessagePipeReaderThread : public base::SimpleThread {
 
 class CorePerftest : public testing::Test {
  public:
-  CorePerftest() : buffer_(nullptr), num_bytes_(0) {}
+  CorePerftest() {}
   ~CorePerftest() override {}
 
   static void NoOp(void* /*closure*/) {}
@@ -132,22 +132,22 @@ class CorePerftest : public testing::Test {
 
   static void MessagePipe_WriteAndRead(void* closure) {
     CorePerftest* self = static_cast<CorePerftest*>(closure);
-    MojoResult result =
-        MojoWriteMessage(self->h0_, self->buffer_, self->num_bytes_, nullptr, 0,
-                         MOJO_WRITE_MESSAGE_FLAG_NONE);
+    MojoResult result = mojo::WriteMessageRaw(
+        mojo::MessagePipeHandle(self->h0_), self->buffer_.data(),
+        self->buffer_.size(), nullptr, 0, MOJO_WRITE_MESSAGE_FLAG_NONE);
     ALLOW_UNUSED_LOCAL(result);
     assert(result == MOJO_RESULT_OK);
-    uint32_t read_bytes = self->num_bytes_;
-    result = MojoReadMessage(self->h1_, self->buffer_, &read_bytes, nullptr,
+    result =
+        mojo::ReadMessageRaw(mojo::MessagePipeHandle(self->h1_), &self->buffer_,
                              nullptr, MOJO_READ_MESSAGE_FLAG_NONE);
     assert(result == MOJO_RESULT_OK);
   }
 
   static void MessagePipe_EmptyRead(void* closure) {
     CorePerftest* self = static_cast<CorePerftest*>(closure);
+    MojoMessageHandle message;
     MojoResult result =
-        MojoReadMessage(self->h0_, nullptr, nullptr, nullptr, nullptr,
-                        MOJO_READ_MESSAGE_FLAG_MAY_DISCARD);
+        MojoReadMessageNew(self->h0_, &message, MOJO_READ_MESSAGE_FLAG_NONE);
     ALLOW_UNUSED_LOCAL(result);
     assert(result == MOJO_RESULT_SHOULD_WAIT);
   }
@@ -233,8 +233,7 @@ class CorePerftest : public testing::Test {
   MojoHandle h0_;
   MojoHandle h1_;
 
-  void* buffer_;
-  uint32_t num_bytes_;
+  std::vector<uint8_t> buffer_;
 
  private:
 #if !defined(WIN32)
@@ -268,21 +267,19 @@ TEST_F(CorePerftest, MessagePipe_WriteAndRead) {
   MojoResult result = MojoCreateMessagePipe(nullptr, &h0_, &h1_);
   ALLOW_UNUSED_LOCAL(result);
   assert(result == MOJO_RESULT_OK);
-  char buffer[10000] = {0};
-  buffer_ = buffer;
-  num_bytes_ = 10u;
+  buffer_.resize(10);
   mojo::test::IterateAndReportPerf("MessagePipe_WriteAndRead", "10bytes",
                                    &CorePerftest::MessagePipe_WriteAndRead,
                                    this);
-  num_bytes_ = 100u;
+  buffer_.resize(100);
   mojo::test::IterateAndReportPerf("MessagePipe_WriteAndRead", "100bytes",
                                    &CorePerftest::MessagePipe_WriteAndRead,
                                    this);
-  num_bytes_ = 1000u;
+  buffer_.resize(1000);
   mojo::test::IterateAndReportPerf("MessagePipe_WriteAndRead", "1000bytes",
                                    &CorePerftest::MessagePipe_WriteAndRead,
                                    this);
-  num_bytes_ = 10000u;
+  buffer_.resize(10000);
   mojo::test::IterateAndReportPerf("MessagePipe_WriteAndRead", "10000bytes",
                                    &CorePerftest::MessagePipe_WriteAndRead,
                                    this);

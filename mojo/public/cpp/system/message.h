@@ -50,6 +50,18 @@ class MessageHandle {
 
 using ScopedMessageHandle = ScopedHandleBase<MessageHandle>;
 
+inline MojoResult CreateMessage(uintptr_t context,
+                                const MojoMessageOperationThunks* thunks,
+                                ScopedMessageHandle* handle) {
+  MojoMessageHandle raw_handle;
+  MojoResult rv = MojoCreateMessage(context, thunks, &raw_handle);
+  if (rv != MOJO_RESULT_OK)
+    return rv;
+
+  handle->reset(MessageHandle(raw_handle));
+  return MOJO_RESULT_OK;
+}
+
 inline MojoResult AllocMessage(size_t num_bytes,
                                const MojoHandle* handles,
                                size_t num_handles,

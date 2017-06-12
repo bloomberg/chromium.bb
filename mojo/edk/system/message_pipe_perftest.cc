@@ -42,23 +42,22 @@ class MessagePipePerfTest : public test::MojoTestBase {
 
  protected:
   void WriteWaitThenRead(MojoHandle mp) {
-    CHECK_EQ(MojoWriteMessage(mp, payload_.data(),
-                              static_cast<uint32_t>(payload_.size()), nullptr,
-                              0, MOJO_WRITE_MESSAGE_FLAG_NONE),
-             MOJO_RESULT_OK);
+    CHECK_EQ(
+        WriteMessageRaw(MessagePipeHandle(mp), payload_.data(), payload_.size(),
+                        nullptr, 0, MOJO_WRITE_MESSAGE_FLAG_NONE),
+        MOJO_RESULT_OK);
     HandleSignalsState hss;
     CHECK_EQ(WaitForSignals(mp, MOJO_HANDLE_SIGNAL_READABLE, &hss),
              MOJO_RESULT_OK);
-    uint32_t read_buffer_size = static_cast<uint32_t>(read_buffer_.size());
-    CHECK_EQ(MojoReadMessage(mp, &read_buffer_[0], &read_buffer_size, nullptr,
-                             nullptr, MOJO_READ_MESSAGE_FLAG_NONE),
+    CHECK_EQ(ReadMessageRaw(MessagePipeHandle(mp), &read_buffer_, nullptr,
+                            MOJO_READ_MESSAGE_FLAG_NONE),
              MOJO_RESULT_OK);
-    CHECK_EQ(read_buffer_size, static_cast<uint32_t>(payload_.size()));
+    CHECK_EQ(read_buffer_.size(), payload_.size());
   }
 
   void SendQuitMessage(MojoHandle mp) {
-    CHECK_EQ(MojoWriteMessage(mp, "", 0, nullptr, 0,
-                              MOJO_WRITE_MESSAGE_FLAG_NONE),
+    CHECK_EQ(WriteMessageRaw(MessagePipeHandle(mp), "", 0, nullptr, 0,
+                             MOJO_WRITE_MESSAGE_FLAG_NONE),
              MOJO_RESULT_OK);
   }
 
@@ -92,7 +91,7 @@ class MessagePipePerfTest : public test::MojoTestBase {
   }
 
   static int RunPingPongClient(MojoHandle mp) {
-    std::string buffer(1000000, '\0');
+    std::vector<uint8_t> buffer;
     int rv = 0;
     while (true) {
       // Wait for our end of the message pipe to be readable.
@@ -103,20 +102,18 @@ class MessagePipePerfTest : public test::MojoTestBase {
         break;
       }
 
-      uint32_t read_size = static_cast<uint32_t>(buffer.size());
-      CHECK_EQ(MojoReadMessage(mp, &buffer[0],
-                               &read_size, nullptr,
-                               0, MOJO_READ_MESSAGE_FLAG_NONE),
+      CHECK_EQ(ReadMessageRaw(MessagePipeHandle(mp), &buffer, nullptr,
+                              MOJO_READ_MESSAGE_FLAG_NONE),
                MOJO_RESULT_OK);
 
       // Empty message indicates quit.
-      if (read_size == 0)
+      if (buffer.empty())
         break;
 
-      CHECK_EQ(MojoWriteMessage(mp, &buffer[0],
-                                read_size,
-                                nullptr, 0, MOJO_WRITE_MESSAGE_FLAG_NONE),
-               MOJO_RESULT_OK);
+      CHECK_EQ(
+          WriteMessageRaw(MessagePipeHandle(mp), buffer.data(), buffer.size(),
+                          nullptr, 0, MOJO_WRITE_MESSAGE_FLAG_NONE),
+          MOJO_RESULT_OK);
     }
 
     return rv;
@@ -126,7 +123,7 @@ class MessagePipePerfTest : public test::MojoTestBase {
   int message_count_;
   size_t message_size_;
   std::string payload_;
-  std::string read_buffer_;
+  std::vector<uint8_t> read_buffer_;
   std::unique_ptr<base::PerfTimeLogger> perf_logger_;
 
   DISALLOW_COPY_AND_ASSIGN(MessagePipePerfTest);
