@@ -1172,6 +1172,18 @@ TEST_F(ClientSideDetectionHostTest, TestPreClassificationCheckHttpsUrl) {
   NavigateAndCommit(url);
   WaitAndCheckPreClassificationChecks();
 
+  ExpectStartPhishingDetection(&url);
+  ExpectShouldClassifyForMalwareResult(true);
+}
+
+TEST_F(ClientSideDetectionHostTest,
+       TestPreClassificationCheckNoneHttpOrHttpsUrl) {
+  GURL url("file://host.com/");
+  ExpectPreClassificationChecks(url, &kFalse, &kFalse, &kFalse, &kFalse,
+                                &kFalse, &kFalse, &kFalse, &kFalse);
+  NavigateAndCommit(url);
+  WaitAndCheckPreClassificationChecks();
+
   ExpectStartPhishingDetection(NULL);
   ExpectShouldClassifyForMalwareResult(true);
 }
