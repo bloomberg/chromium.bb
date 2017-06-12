@@ -217,7 +217,7 @@ class VM(object):
     def _WaitForProc(exe, numpids):
       try:
         retry_util.RetryException(
-            exc_retry=_TooFewPidsException,
+            exception=_TooFewPidsException,
             max_retry=20,
             functor=lambda: _GetRunningPids(exe, numpids),
             sleep=2)
@@ -241,7 +241,7 @@ class VM(object):
 
     try:
       result = retry_util.RetryException(
-          exc_retry=remote_access.SSHConnectionError,
+          exception=remote_access.SSHConnectionError,
           max_retry=10,
           functor=lambda: self.RemoteCommand(cmd=['echo']),
           sleep=5)
