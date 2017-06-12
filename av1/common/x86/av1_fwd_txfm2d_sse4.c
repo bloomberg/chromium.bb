@@ -45,6 +45,7 @@ static INLINE void fwd_txfm2d_sse4_1(const int16_t *input, int32_t *output,
   // Rectangular transforms use c code only, so it should be ok for now.
   // It will be corrected when there are sse implementations for rectangular
   // transforms.
+  assert(cfg->row_cfg->txfm_size == cfg->col_cfg->txfm_size);
   const int txfm_size = cfg->row_cfg->txfm_size;
   const int8_t *shift = cfg->row_cfg->shift;
   const int8_t *stage_range_col = cfg->col_cfg->stage_range;

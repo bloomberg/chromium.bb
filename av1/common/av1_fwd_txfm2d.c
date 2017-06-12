@@ -51,8 +51,8 @@ static INLINE void fwd_txfm2d_c(const int16_t *input, int32_t *output,
   const int txfm_size_col = cfg->row_cfg->txfm_size;
   const int txfm_size_row = cfg->col_cfg->txfm_size;
   // Take the shift from the larger dimension in the rectangular case.
-  const int8_t *shift =
-      txfm_size_col > txfm_size_row ? cfg->row_cfg->shift : cfg->col_cfg->shift;
+  const int8_t *shift = (txfm_size_col > txfm_size_row) ? cfg->row_cfg->shift
+                                                        : cfg->col_cfg->shift;
   const int8_t *stage_range_col = cfg->col_cfg->stage_range;
   const int8_t *stage_range_row = cfg->row_cfg->stage_range;
   const int8_t *cos_bit_col = cfg->col_cfg->cos_bit;
@@ -264,10 +264,10 @@ static const TXFM_1D_CFG *fwd_txfm_row_cfg_ls[TX_TYPES_1D][TX_SIZES] = {
 TXFM_2D_FLIP_CFG av1_get_fwd_txfm_cfg(int tx_type, int tx_size) {
   TXFM_2D_FLIP_CFG cfg;
   set_flip_cfg(tx_type, &cfg);
-  int tx_type_col = vtx_tab[tx_type];
-  int tx_type_row = htx_tab[tx_type];
-  int tx_size_col = txsize_vert_map[tx_size];
-  int tx_size_row = txsize_horz_map[tx_size];
+  const int tx_type_col = vtx_tab[tx_type];
+  const int tx_type_row = htx_tab[tx_type];
+  const int tx_size_col = txsize_vert_map[tx_size];
+  const int tx_size_row = txsize_horz_map[tx_size];
   cfg.col_cfg = fwd_txfm_col_cfg_ls[tx_type_col][tx_size_col];
   cfg.row_cfg = fwd_txfm_row_cfg_ls[tx_type_row][tx_size_row];
   return cfg;

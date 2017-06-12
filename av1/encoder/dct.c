@@ -2149,20 +2149,6 @@ void av1_fwd_idtx_c(const int16_t *src_diff, tran_low_t *coeff, int stride,
 }
 #endif  // CONFIG_EXT_TX
 
-#if CONFIG_HIGHBITDEPTH
-void av1_highbd_fht32x32_c(const int16_t *input, tran_low_t *output, int stride,
-                           int tx_type) {
-  av1_fht32x32_c(input, output, stride, tx_type);
-}
-
-#if CONFIG_TX64X64
-void av1_highbd_fht64x64_c(const int16_t *input, tran_low_t *output, int stride,
-                           int tx_type) {
-  av1_fht64x64_c(input, output, stride, tx_type);
-}
-#endif  // CONFIG_TX64X64
-#endif  // CONFIG_HIGHBITDEPTH
-
 #if CONFIG_DPCM_INTRA
 void av1_dpcm_ft4_c(const int16_t *input, int stride, TX_TYPE_1D tx_type,
                     tran_low_t *output) {

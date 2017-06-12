@@ -1458,7 +1458,6 @@ void av1_highbd_inv_txfm_add_4x4(const tran_low_t *input, uint8_t *dest,
     case ADST_DCT:
     case DCT_ADST:
     case ADST_ADST:
-      // fallthrough intended
       av1_inv_txfm2d_add_4x4(input, CONVERT_TO_SHORTPTR(dest), stride, tx_type,
                              bd);
       break;
@@ -1468,7 +1467,6 @@ void av1_highbd_inv_txfm_add_4x4(const tran_low_t *input, uint8_t *dest,
     case FLIPADST_FLIPADST:
     case ADST_FLIPADST:
     case FLIPADST_ADST:
-      // fallthrough intended
       av1_inv_txfm2d_add_4x4(input, CONVERT_TO_SHORTPTR(dest), stride, tx_type,
                              bd);
       break;
@@ -1480,7 +1478,6 @@ void av1_highbd_inv_txfm_add_4x4(const tran_low_t *input, uint8_t *dest,
     case V_FLIPADST:
     case H_FLIPADST:
     case IDTX:
-      // fallthrough intended
       av1_inv_txfm2d_add_4x4_c(input, CONVERT_TO_SHORTPTR(dest), stride,
                                tx_type, bd);
       break;
@@ -1544,7 +1541,6 @@ static void highbd_inv_txfm_add_8x8(const tran_low_t *input, uint8_t *dest,
     case ADST_DCT:
     case DCT_ADST:
     case ADST_ADST:
-      // fallthrough intended
       av1_inv_txfm2d_add_8x8(input, CONVERT_TO_SHORTPTR(dest), stride, tx_type,
                              bd);
       break;
@@ -1554,7 +1550,6 @@ static void highbd_inv_txfm_add_8x8(const tran_low_t *input, uint8_t *dest,
     case FLIPADST_FLIPADST:
     case ADST_FLIPADST:
     case FLIPADST_ADST:
-      // fallthrough intended
       av1_inv_txfm2d_add_8x8(input, CONVERT_TO_SHORTPTR(dest), stride, tx_type,
                              bd);
       break;
@@ -1566,7 +1561,6 @@ static void highbd_inv_txfm_add_8x8(const tran_low_t *input, uint8_t *dest,
     case V_FLIPADST:
     case H_FLIPADST:
     case IDTX:
-      // fallthrough intended
       av1_inv_txfm2d_add_8x8_c(input, CONVERT_TO_SHORTPTR(dest), stride,
                                tx_type, bd);
       break;
@@ -1584,7 +1578,6 @@ static void highbd_inv_txfm_add_16x16(const tran_low_t *input, uint8_t *dest,
     case ADST_DCT:
     case DCT_ADST:
     case ADST_ADST:
-      // fallthrough intended
       av1_inv_txfm2d_add_16x16(input, CONVERT_TO_SHORTPTR(dest), stride,
                                tx_type, bd);
       break;
@@ -1594,7 +1587,6 @@ static void highbd_inv_txfm_add_16x16(const tran_low_t *input, uint8_t *dest,
     case FLIPADST_FLIPADST:
     case ADST_FLIPADST:
     case FLIPADST_ADST:
-      // fallthrough intended
       av1_inv_txfm2d_add_16x16(input, CONVERT_TO_SHORTPTR(dest), stride,
                                tx_type, bd);
       break;
@@ -1606,7 +1598,6 @@ static void highbd_inv_txfm_add_16x16(const tran_low_t *input, uint8_t *dest,
     case V_FLIPADST:
     case H_FLIPADST:
     case IDTX:
-      // fallthrough intended
       av1_inv_txfm2d_add_16x16_c(input, CONVERT_TO_SHORTPTR(dest), stride,
                                  tx_type, bd);
       break;
@@ -1624,7 +1615,6 @@ static void highbd_inv_txfm_add_32x32(const tran_low_t *input, uint8_t *dest,
     case ADST_DCT:
     case DCT_ADST:
     case ADST_ADST:
-      // fallthrough intended
       av1_inv_txfm2d_add_32x32(input, CONVERT_TO_SHORTPTR(dest), stride,
                                tx_type, bd);
       break;
@@ -1634,7 +1624,6 @@ static void highbd_inv_txfm_add_32x32(const tran_low_t *input, uint8_t *dest,
     case FLIPADST_FLIPADST:
     case ADST_FLIPADST:
     case FLIPADST_ADST:
-      // fallthrough intended
       av1_inv_txfm2d_add_32x32(input, CONVERT_TO_SHORTPTR(dest), stride,
                                tx_type, bd);
       break;
@@ -1646,7 +1635,6 @@ static void highbd_inv_txfm_add_32x32(const tran_low_t *input, uint8_t *dest,
     case V_FLIPADST:
     case H_FLIPADST:
     case IDTX:
-      // fallthrough intended
       av1_inv_txfm2d_add_32x32_c(input, CONVERT_TO_SHORTPTR(dest), stride,
                                  tx_type, bd);
       break;
