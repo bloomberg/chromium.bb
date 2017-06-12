@@ -5,6 +5,7 @@
 #ifndef UI_KEYBOARD_KEYBOARD_CONTROLLER_OBSERVER_H_
 #define UI_KEYBOARD_KEYBOARD_CONTROLLER_OBSERVER_H_
 
+#include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_export.h"
 
 namespace gfx {
@@ -26,8 +27,11 @@ class KEYBOARD_EXPORT KeyboardControllerObserver {
   virtual void OnKeyboardClosed() = 0;
 
   // Called when the keyboard has been hidden and the hiding animation finished
-  // successfully
+  // successfully. This is same as |state| == HIDDEN on OnStateChanged.
   virtual void OnKeyboardHidden() {}
+
+  // When state changed.
+  virtual void OnStateChanged(const KeyboardControllerState state) {}
 };
 
 }  // namespace keyboard
