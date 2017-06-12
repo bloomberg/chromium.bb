@@ -129,9 +129,9 @@ public class HistoryActivityTest extends BaseActivityInstrumentationTestCase<His
         mHistoryProvider = new StubbedHistoryProvider();
 
         Date today = new Date();
-        long[] timestamps = {today.getTime()};
-        mItem1 = StubbedHistoryProvider.createHistoryItem(0, timestamps);
-        mItem2 = StubbedHistoryProvider.createHistoryItem(1, timestamps);
+        long timestamp = today.getTime();
+        mItem1 = StubbedHistoryProvider.createHistoryItem(0, timestamp);
+        mItem2 = StubbedHistoryProvider.createHistoryItem(1, timestamp);
         mHistoryProvider.addItem(mItem1);
         mHistoryProvider.addItem(mItem2);
 
