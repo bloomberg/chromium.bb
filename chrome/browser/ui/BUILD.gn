@@ -520,6 +520,7 @@ split_static_library("ui") {
     "//components/ntp_tiles",
     "//components/offline_pages/core",
     "//components/offline_pages/core/background:background_offliner",
+    "//components/offline_pages/core/prefetch",
     "//components/omnibox/browser",
     "//components/onc",
     "//components/password_manager/content/browser",

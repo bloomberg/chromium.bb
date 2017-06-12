@@ -16,6 +16,7 @@ class GCMAppHandler;
 namespace offline_pages {
 
 class PrefetchGCMHandler;
+class PrefetchService;
 
 // Main class and entry point for the Offline Pages Prefetching feature, that
 // controls the lifetime of all major subcomponents of the prefetching system.
@@ -23,6 +24,9 @@ class PrefetchGCMHandler {
  public:
   PrefetchGCMHandler() = default;
   virtual ~PrefetchGCMHandler() = default;
+
+  // Sets the prefetch service. Must be called before using the handler.
+  virtual void SetService(PrefetchService* service) = 0;
 
   // Returns the GCMAppHandler for this object.  Can return |nullptr| in unit
   // tests.

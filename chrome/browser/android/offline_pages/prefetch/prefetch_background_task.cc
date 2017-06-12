@@ -4,6 +4,8 @@
 
 #include "chrome/browser/android/offline_pages/prefetch/prefetch_background_task.h"
 
+#include <memory>
+
 #include "base/time/time.h"
 #include "chrome/browser/offline_pages/prefetch/prefetch_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -39,9 +41,6 @@ namespace prefetch {
 static jboolean StartPrefetchTask(JNIEnv* env,
                                   const JavaParamRef<jobject>& jcaller,
                                   const JavaParamRef<jobject>& jprofile) {
-  if (!IsPrefetchingOfflinePagesEnabled())
-    return false;
-
   Profile* profile = ProfileAndroid::FromProfileAndroid(jprofile);
   DCHECK(profile);
 

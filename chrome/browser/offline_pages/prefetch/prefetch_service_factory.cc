@@ -5,6 +5,7 @@
 #include "chrome/browser/offline_pages/prefetch/prefetch_service_factory.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"

@@ -28,6 +28,7 @@ PrefetchServiceImpl::PrefetchServiceImpl(
       prefetch_store_(std::move(store)),
       suggested_articles_observer_(std::move(suggested_articles_observer)) {
   prefetch_dispatcher_->SetService(this);
+  prefetch_gcm_handler_->SetService(this);
 }
 
 PrefetchServiceImpl::~PrefetchServiceImpl() = default;
@@ -50,6 +51,10 @@ PrefetchStore* PrefetchServiceImpl::GetPrefetchStore() {
 
 SuggestedArticlesObserver* PrefetchServiceImpl::GetSuggestedArticlesObserver() {
   return suggested_articles_observer_.get();
+}
+
+OfflineEventLogger* PrefetchServiceImpl::GetLogger() {
+  return &logger_;
 }
 
 void PrefetchServiceImpl::Shutdown() {

@@ -32,7 +32,8 @@ var SavePageRequest;
 /**
  * @typedef {{
  *   modelIsLogging: boolean,
- *   queueIsLogging: boolean
+ *   queueIsLogging: boolean,
+ *   prefetchIsLogging: boolean
  * }}
  */
 var IsLogging;
@@ -83,6 +84,12 @@ cr.define('offlineInternals', function() {
      * @param {boolean} shouldLog True if logging should be enabled.
      */
     setRecordRequestQueue: function(shouldLog) {},
+
+    /**
+     * Sets whether to record logs for prefetching.
+     * @param {boolean} shouldLog True if logging should be enabled.
+     */
+    setRecordPrefetchService: function(shouldLog) {},
 
     /**
      * Gets the currently recorded logs.
@@ -162,6 +169,11 @@ cr.define('offlineInternals', function() {
     /** @override */
     setRecordRequestQueue: function(shouldLog) {
       chrome.send('setRecordRequestQueue', [shouldLog]);
+    },
+
+    /** @override */
+    setRecordPrefetchService: function(shouldLog) {
+      chrome.send('setRecordPrefetchService', [shouldLog]);
     },
 
     /** @override */

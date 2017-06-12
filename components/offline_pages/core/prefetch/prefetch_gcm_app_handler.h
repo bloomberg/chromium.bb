@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_PREFETCH_GCM_APP_HANDLER_H_
 #define COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_PREFETCH_GCM_APP_HANDLER_H_
 
+#include <memory>
 #include <string>
 
 #include "components/gcm_driver/gcm_app_handler.h"
@@ -12,6 +13,7 @@
 #include "components/offline_pages/core/prefetch/prefetch_gcm_handler.h"
 
 namespace offline_pages {
+class PrefetchService;
 
 extern const char kPrefetchingOfflinePagesAppId[];
 
@@ -28,11 +30,8 @@ class PrefetchGCMAppHandler : public gcm::GCMAppHandler,
         instance_id::InstanceID::GetTokenCallback callback) = 0;
   };
 
-  PrefetchGCMAppHandler(std::unique_ptr<TokenFactory> token_factory);
+  explicit PrefetchGCMAppHandler(std::unique_ptr<TokenFactory> token_factory);
   ~PrefetchGCMAppHandler() override;
-
-  // PrefetchGCMHandler implementation.
-  void GetGCMToken(instance_id::InstanceID::GetTokenCallback callback) override;
 
   // gcm::GCMAppHandler implementation.
   void ShutdownHandler() override;
@@ -48,10 +47,14 @@ class PrefetchGCMAppHandler : public gcm::GCMAppHandler,
   bool CanHandle(const std::string& app_id) const override;
 
   // offline_pages::PrefetchGCMHandler implementation.
+  void SetService(PrefetchService* service) override;
   gcm::GCMAppHandler* AsGCMAppHandler() override;
   std::string GetAppId() const override;
+  void GetGCMToken(instance_id::InstanceID::GetTokenCallback callback) override;
 
  private:
+  // Not owned, PrefetchService owns |this.
+  PrefetchService* prefetch_service_;
   std::unique_ptr<TokenFactory> token_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefetchGCMAppHandler);

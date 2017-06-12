@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_PREFETCH_DISPATCHER_H_
 #define COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_PREFETCH_DISPATCHER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -66,6 +67,11 @@ class PrefetchDispatcher {
   // this call completes, the system will reschedule the task based on whether
   // SetNeedsReschedule has been called.
   virtual void StopBackgroundTask() = 0;
+
+  // Called when the GCM app handler receives a GCM message with an embeddeed
+  // operation name.
+  virtual void GCMOperationCompletedMessageReceived(
+      const std::string& operation_name) = 0;
 
   // Used by the test to signal the completion of the background task.
   virtual void RequestFinishBackgroundTaskForTest() = 0;

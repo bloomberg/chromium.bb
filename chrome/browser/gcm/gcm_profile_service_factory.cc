@@ -99,15 +99,13 @@ KeyedService* GCMProfileServiceFactory::BuildServiceInstanceFor(
       blocking_task_runner));
 #endif
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
-  if (offline_pages::IsPrefetchingOfflinePagesEnabled()) {
-    offline_pages::PrefetchService* prefetch_service =
-        offline_pages::PrefetchServiceFactory::GetForBrowserContext(context);
-    if (prefetch_service != nullptr) {
-      offline_pages::PrefetchGCMHandler* prefetch_gcm_handler =
-          prefetch_service->GetPrefetchGCMHandler();
-      service->driver()->AddAppHandler(prefetch_gcm_handler->GetAppId(),
-                                       prefetch_gcm_handler->AsGCMAppHandler());
-    }
+  offline_pages::PrefetchService* prefetch_service =
+      offline_pages::PrefetchServiceFactory::GetForBrowserContext(context);
+  if (prefetch_service != nullptr) {
+    offline_pages::PrefetchGCMHandler* prefetch_gcm_handler =
+        prefetch_service->GetPrefetchGCMHandler();
+    service->driver()->AddAppHandler(prefetch_gcm_handler->GetAppId(),
+                                     prefetch_gcm_handler->AsGCMAppHandler());
   }
 #endif  // BUILDFLAG(ENABLE_OFFLINE_PAGES)
 

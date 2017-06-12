@@ -28,10 +28,13 @@ class TestPrefetchDispatcher : public PrefetchDispatcher {
   void BeginBackgroundTask(std::unique_ptr<ScopedBackgroundTask> task) override;
   void StopBackgroundTask() override;
   void SetService(PrefetchService* service) override;
+  void GCMOperationCompletedMessageReceived(
+      const std::string& operation_name) override;
   void RequestFinishBackgroundTaskForTest() override;
 
   std::vector<PrefetchURL> latest_prefetch_urls;
   std::unique_ptr<ClientId> last_removed_client_id;
+  std::vector<std::string> operation_list;
 
   int new_suggestions_count = 0;
   int remove_all_suggestions_count = 0;

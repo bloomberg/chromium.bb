@@ -16,6 +16,15 @@ cr.define('offlineInternals', function() {
       offlineInternals.OfflineInternalsBrowserProxyImpl.getInstance();
 
   /**
+   * Helper to fill enabled labels based on boolean value.
+   * @param {boolean} enabled Whether the text should show on or off.
+   * @return {string}
+   */
+  function getTextLabel(enabled) {
+    return enabled ? 'On' : 'Off';
+  }
+
+  /**
    * Fill stored pages table.
    * @param {!Array<OfflinePage>} pages An array object representing
    *     stored offline pages.
@@ -189,8 +198,10 @@ cr.define('offlineInternals', function() {
    * @param {!IsLogging} logStatus Status of logging.
    */
   function updateLogStatus(logStatus) {
-    $('model-status').textContent = logStatus.modelIsLogging ? 'On' : 'Off';
-    $('request-status').textContent = logStatus.queueIsLogging ? 'On' : 'Off';
+    $('model-status').textContent = getTextLabel(logStatus.modelIsLogging);
+    $('request-status').textContent = getTextLabel(logStatus.queueIsLogging);
+    $('prefetch-status').textContent =
+        getTextLabel(logStatus.prefetchIsLogging);
   }
 
   /**
@@ -233,19 +244,30 @@ cr.define('offlineInternals', function() {
 
   function initialize() {
     /**
-     * @param {!boolean} enabled Whether to enable Logging.
+     * @param {boolean} enabled Whether to enable Logging. If the
+     * OfflinePageModlel does not exist in this context, the action is ignored.
      */
     function togglePageModelLog(enabled) {
       browserProxy.setRecordPageModel(enabled);
-      $('model-status').textContent = enabled ? 'On' : 'Off';
+      $('model-status').textContent = getTextLabel(enabled);
     }
 
     /**
-     * @param {!boolean} enabled Whether to enable Logging.
+     * @param {boolean} enabled Whether to enable Logging. If the
+     * OfflinePageModlel does not exist in this context, the action is ignored.
      */
     function toggleRequestQueueLog(enabled) {
       browserProxy.setRecordRequestQueue(enabled);
-      $('request-status').textContent = enabled ? 'On' : 'Off';
+      $('request-status').textContent = getTextLabel(enabled);
+    }
+
+    /**
+     * @param {boolean} enabled Whether to enable Logging. If the
+     * OfflinePageModlel does not exist in this context, the action is ignored.
+     */
+    function togglePrefetchServiceLog(enabled) {
+      browserProxy.setRecordPrefetchService(enabled);
+      $('prefetch-status').textContent = getTextLabel(enabled);
     }
 
     var incognito = loadTimeData.getBoolean('isIncognito');
@@ -269,6 +291,8 @@ cr.define('offlineInternals', function() {
     $('log-model-off').onclick = togglePageModelLog.bind(this, false);
     $('log-request-on').onclick = toggleRequestQueueLog.bind(this, true);
     $('log-request-off').onclick = toggleRequestQueueLog.bind(this, false);
+    $('log-prefetch-on').onclick = togglePrefetchServiceLog.bind(this, true);
+    $('log-prefetch-off').onclick = togglePrefetchServiceLog.bind(this, false);
     $('refresh-logs').onclick = refreshLog;
     $('add-to-queue').onclick = function() {
       var saveUrls = $('url').value.split(',');
