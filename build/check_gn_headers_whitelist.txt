@@ -326,9 +326,6 @@ third_party/libvpx/source/config/nacl/vpx_config.h
 third_party/libvpx/source/config/nacl/vpx_dsp_rtcd.h
 third_party/libvpx/source/config/nacl/vpx_scale_rtcd.h
 third_party/libvpx/source/config/vpx_version.h
-third_party/libwebp/mux/animi.h
-third_party/libwebp/mux/muxi.h
-third_party/libwebp/webp/mux.h
 third_party/libxslt/src/libxslt/xsltwin32config.h
 third_party/opus/src/src/opus_private.h
 third_party/opus/src/tests/test_opus_common.h
