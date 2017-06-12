@@ -79,9 +79,8 @@ void RecordPendingChildCount(size_t count) {
 
 Channel::MessagePtr SerializeEventMessage(ports::ScopedEvent event) {
   if (event->type() == ports::Event::Type::kUserMessage) {
-    // User message events may already be serialized or need to perform some
-    // custom-bound serialization routines.
-    return UserMessageImpl::SerializeEventMessage(
+    // User message events must already be partially serialized.
+    return UserMessageImpl::FinalizeEventMessage(
         ports::Event::Cast<ports::UserMessageEvent>(&event));
   }
 

@@ -23,6 +23,7 @@ source_set("ports") {
     "port_ref.cc",
     "port_ref.h",
     "user_data.h",
+    "user_message.cc",
     "user_message.h",
   ]
 

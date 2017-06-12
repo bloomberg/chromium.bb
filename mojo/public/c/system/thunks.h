@@ -105,8 +105,13 @@ struct MojoSystemThunks {
                              uint32_t num_handles,
                              MojoAllocMessageFlags flags,
                              MojoMessageHandle* message);
+  MojoResult (*CreateMessage)(uintptr_t context,
+                              const struct MojoMessageOperationThunks* thunks,
+                              MojoMessageHandle* message);
   MojoResult (*FreeMessage)(MojoMessageHandle message);
   MojoResult (*GetMessageBuffer)(MojoMessageHandle message, void** buffer);
+  MojoResult (*ReleaseMessageContext)(MojoMessageHandle message,
+                                      uintptr_t* context);
   MojoResult (*WrapPlatformHandle)(
       const struct MojoPlatformHandle* platform_handle,
       MojoHandle* mojo_handle);

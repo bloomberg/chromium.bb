@@ -67,8 +67,10 @@ class PeekSizeMessageFilter : public ports::MessageFilter {
   ~PeekSizeMessageFilter() override {}
 
   // ports::MessageFilter:
-  bool Match(const ports::UserMessageEvent& message) override {
-    message_size_ = message.GetMessage<UserMessageImpl>()->user_payload_size();
+  bool Match(const ports::UserMessageEvent& message_event) override {
+    const auto* message = message_event.GetMessage<UserMessageImpl>();
+    if (message->IsSerialized())
+      message_size_ = message->user_payload_size();
     return false;
   }
 
@@ -141,13 +143,10 @@ MojoResult MessagePipeDispatcher::WriteMessage(
   if (port_closed_ || in_transit_)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  const size_t num_bytes =
-      message->GetMessage<UserMessageImpl>()->user_payload_size();
   int rv = node_controller_->SendUserMessage(port_, std::move(message));
 
   DVLOG(4) << "Sent message on pipe " << pipe_id_ << " endpoint " << endpoint_
-           << " [port=" << port_.name() << "; rv=" << rv
-           << "; num_bytes=" << num_bytes << "]";
+           << " [port=" << port_.name() << "; rv=" << rv << "]";
 
   if (rv != ports::OK) {
     if (rv == ports::ERROR_PORT_UNKNOWN ||

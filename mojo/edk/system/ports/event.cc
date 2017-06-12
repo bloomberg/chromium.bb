@@ -148,6 +148,11 @@ void UserMessageEvent::ReservePorts(size_t num_ports) {
   ports_.resize(num_ports);
 }
 
+bool UserMessageEvent::NotifyWillBeRoutedExternally() {
+  DCHECK(message_);
+  return message_->WillBeRoutedExternally(this);
+}
+
 // static
 ScopedEvent UserMessageEvent::Deserialize(const PortName& port_name,
                                           const void* buffer,

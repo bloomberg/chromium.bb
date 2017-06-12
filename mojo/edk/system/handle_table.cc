@@ -107,7 +107,7 @@ MojoResult HandleTable::GetAndRemoveDispatcher(
 
 MojoResult HandleTable::BeginTransit(
     const MojoHandle* handles,
-    uint32_t num_handles,
+    size_t num_handles,
     std::vector<Dispatcher::DispatcherInTransit>* dispatchers) {
   dispatchers->clear();
   dispatchers->reserve(num_handles);

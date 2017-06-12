@@ -31,14 +31,18 @@ class NodeController;
 // A UserMessageImpl may be either serialized or unserialized. Unserialized
 // instances are serialized lazily only when necessary, i.e., if and when
 // Serialize() is called to obtain a serialized message for wire transfer.
-//
-// TODO(crbug.com/725321): Implement support for unserialized messages.
 class MOJO_SYSTEM_IMPL_EXPORT UserMessageImpl
     : public NON_EXPORTED_BASE(ports::UserMessage) {
  public:
   static const TypeInfo kUserMessageTypeInfo;
 
   ~UserMessageImpl() override;
+
+  // Creates a new ports::UserMessageEvent with an attached unserialized
+  // UserMessageImpl associated with |context| and |thunks|.
+  static std::unique_ptr<ports::UserMessageEvent>
+  CreateEventForNewMessageWithContext(uintptr_t context,
+                                      const MojoMessageOperationThunks* thunks);
 
   // Creates a new ports::UserMessageEvent with an attached serialized
   // UserMessageImpl. May fail iff one or more |dispatchers| fails to serialize
@@ -92,22 +96,27 @@ class MOJO_SYSTEM_IMPL_EXPORT UserMessageImpl
       uint32_t* num_handles,
       std::unique_ptr<ports::UserMessageEvent>* out_event);
 
-  // Produces a serialized Channel::Message from the UserMessageEvent in
-  // |event|. |event| must have a UserMessageImpl instance attached.
-  //
-  // If the attached message is not already serialized, it is serialized into a
-  // new Channel::Message; otherwise this simply passes ownership of the
-  // internally owned serialized data.
-  //
-  // In any case, |message_event| is serialized into the front of the message
-  // payload before returning.
-  static Channel::MessagePtr SerializeEventMessage(
+  // Extracts the serialized Channel::Message from the UserMessageEvent in
+  // |event|. |event| must have a serialized UserMessageImpl instance attached.
+  // |message_event| is serialized into the front of the message payload before
+  // returning.
+  static Channel::MessagePtr FinalizeEventMessage(
       std::unique_ptr<ports::UserMessageEvent> event);
 
-  // TODO(crbug.com/725321): Support unserialized messages.
-  bool HasContext() const { return false; }
-  uintptr_t context() const { return 0; }
-  bool IsSerialized() const { return true; }
+  bool HasContext() const { return context_ != 0; }
+  uintptr_t ReleaseContext();
+
+  uintptr_t context() const { return context_; }
+
+  bool IsSerialized() const {
+    if (HasContext()) {
+      DCHECK(!channel_message_);
+      return false;
+    }
+
+    DCHECK(channel_message_);
+    return true;
+  }
 
   void* user_payload() {
     DCHECK(IsSerialized());
@@ -129,17 +138,16 @@ class MOJO_SYSTEM_IMPL_EXPORT UserMessageImpl
   void set_source_node(const ports::NodeName& name) { source_node_ = name; }
   const ports::NodeName& source_node() const { return source_node_; }
 
+  MojoResult SerializeIfNecessary(ports::UserMessageEvent* message_event);
+
  private:
   class ReadMessageFilter;
 
-  // Constructs a serialized UserMessageImpl backed by a new Channel::Message
-  // with enough storage for the given number of serialized event, header, and
-  // payload bytes; transferred ports; and system handles.
-  UserMessageImpl(size_t event_size,
-                  size_t header_size,
-                  size_t payload_size,
-                  size_t num_ports,
-                  size_t num_handles);
+  // Creates an unserialized UserMessageImpl with an associated |context| and
+  // |thunks|. If the message is ever going to be routed to another node (see
+  // |WillBeRoutedExternally()| below), it will be serialized at that time using
+  // operations provided by |thunks|.
+  UserMessageImpl(uintptr_t context, const MojoMessageOperationThunks* thunks);
 
   // Creates a serialized UserMessageImpl backed by an existing Channel::Message
   // object. |header| and |user_payload| must be pointers into
@@ -149,6 +157,13 @@ class MOJO_SYSTEM_IMPL_EXPORT UserMessageImpl
                   void* header,
                   void* user_payload,
                   size_t user_payload_size);
+
+  // UserMessage:
+  bool WillBeRoutedExternally(ports::UserMessageEvent* message_event) override;
+
+  // Unserialized message state.
+  uintptr_t context_ = 0;
+  const MojoMessageOperationThunks context_thunks_;
 
   // Serialized message contents. May be null if this is not a serialized
   // message.

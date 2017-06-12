@@ -66,12 +66,23 @@ MojoResult MojoAllocMessageImpl(uint32_t num_bytes,
   return g_core->AllocMessage(num_bytes, handles, num_handles, flags, message);
 }
 
+MojoResult MojoCreateMessageImpl(uintptr_t context,
+                                 const MojoMessageOperationThunks* thunks,
+                                 MojoMessageHandle* message) {
+  return g_core->CreateMessage(context, thunks, message);
+}
+
 MojoResult MojoFreeMessageImpl(MojoMessageHandle message) {
   return g_core->FreeMessage(message);
 }
 
 MojoResult MojoGetMessageBufferImpl(MojoMessageHandle message, void** buffer) {
   return g_core->GetMessageBuffer(message, buffer);
+}
+
+MojoResult MojoReleaseMessageContextImpl(MojoMessageHandle message,
+                                         uintptr_t* context) {
+  return g_core->ReleaseMessageContext(message, context);
 }
 
 MojoResult MojoCreateMessagePipeImpl(
@@ -268,8 +279,10 @@ MojoSystemThunks MakeSystemThunks() {
                                     MojoWriteMessageNewImpl,
                                     MojoReadMessageNewImpl,
                                     MojoAllocMessageImpl,
+                                    MojoCreateMessageImpl,
                                     MojoFreeMessageImpl,
                                     MojoGetMessageBufferImpl,
+                                    MojoReleaseMessageContextImpl,
                                     MojoWrapPlatformHandleImpl,
                                     MojoUnwrapPlatformHandleImpl,
                                     MojoWrapPlatformSharedBufferHandleImpl,
