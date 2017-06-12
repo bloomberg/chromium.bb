@@ -728,6 +728,7 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
   //////////////////////////////////////////////////////////////////////////////
   // DATA_TYPE_CONTENT_SETTINGS
   if (remove_mask & DATA_TYPE_CONTENT_SETTINGS) {
+    base::RecordAction(UserMetricsAction("ClearBrowsingData_ContentSettings"));
     const auto* registry =
         content_settings::ContentSettingsRegistry::GetInstance();
     auto* map = HostContentSettingsMapFactory::GetForProfile(profile_);

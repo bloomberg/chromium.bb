@@ -505,7 +505,11 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        RecordUserAction.record("ClearBrowsingData_DialogCreated");
+        // Don't record this action if TabsInCBD is enabled because this class is created twice.
+        // The action will be recorded in ClearBrowsingDataTabsFragment instead.
+        if (!ClearBrowsingDataTabsFragment.isFeatureEnabled()) {
+            RecordUserAction.record("ClearBrowsingData_DialogCreated");
+        }
         mMaxImportantSites = BrowsingDataBridge.getMaxImportantSites();
         BrowsingDataBridge.getInstance().requestInfoAboutOtherFormsOfBrowsingHistory(this);
         getActivity().setTitle(R.string.clear_browsing_data_title);

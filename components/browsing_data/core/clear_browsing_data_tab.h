@@ -14,6 +14,8 @@ namespace browsing_data {
 // TODO(dullweber): Maybe rename "ADVANCED" to "DEFAULT" because it is used in
 //   multiple places without a differentiation between advanced and basic.
 //
+// Do not change the values here, as they are used for UMA histograms.
+//
 // A Java counterpart will be generated for this enum.
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.browsing_data
 enum class ClearBrowsingDataTab { BASIC, ADVANCED, NUM_TYPES };

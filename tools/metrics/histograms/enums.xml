@@ -4814,6 +4814,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2119087611" label="nl"/>
 </enum>
 
+<enum name="ClearBrowsingDataTab" type="int">
+  <int value="0" label="Basic"/>
+  <int value="1" label="Advanced"/>
+</enum>
+
 <enum name="ClearDataSiteBlacklistCrossedReason" type="int">
   <int value="0" label="Durable"/>
   <int value="1" label="Notifications"/>

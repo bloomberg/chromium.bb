@@ -23997,6 +23997,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="History.ClearBrowsingData.UserDeletedFromTab"
+    enum="ClearBrowsingDataTab">
+  <owner>dullweber@chromium.org</owner>
+  <owner>msramek@chromium.org</owner>
+  <summary>
+    Recorded when the user deletes their browsing data. Shows which tab was used
+    to perform the deletion.
+  </summary>
+</histogram>
+
 <histogram name="History.DatabaseAdvancedMetricsTime" units="ms">
   <owner>shess@chromium.org</owner>
   <summary>
