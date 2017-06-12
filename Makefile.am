@@ -61,3 +61,11 @@ distwin64-dir :
 # .dockerignore
 .dockerignore : .gitignore
 	sed -e 's|^\([^/#]\)|# \1|' -e 's|^/||' -e 's|\+|\\+|g' $< >$@
+
+.PHONY : format-sources
+format-sources :
+	@if git status liblouis tools --porcelain | grep ^MM >/dev/null; then \
+		echo "You have unstaged changes. Not reformatting." >&2 && exit 1; \
+	fi
+	cd liblouis && make $@
+	cd tools && make $@

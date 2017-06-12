@@ -76,3 +76,9 @@ nobase_dist_bin_SCRIPTS = \
 	lou_maketable.d/utils.py                \
 	lou_maketable.d/wrap_patgen.sh
 endif
+
+SOURCE_FORMATTER := clang-format -i
+
+.PHONY : format-sources
+format-sources :
+	for file in $(SOURCES); do $(SOURCE_FORMATTER) $$file; done
