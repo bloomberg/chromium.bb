@@ -105,6 +105,38 @@ remoting.startHostUsingFacade_ = function(hostFacade) {
 };
 
 /**
+ * @return {Promise} Promise for fresh IceConfig.
+ * @private
+ */
+remoting.fetchIceConfig_ = function() {
+  var kDefaultIceConfig =
+      { 'iceServers': [{'urls': ['stun:stun.l.google.com:19302']}] };
+  return new remoting.Xhr({
+    method: 'GET',
+    url: remoting.settings.DIRECTORY_API_BASE_URL + '/@me/iceconfig',
+    useIdentity: true,
+    acceptJson: true
+  }).start().catch(function(err) {
+    console.error('Failed to fetch IceConfig:', err);
+    return kDefaultIceConfig;
+  }).then(function(response) {
+    if (response.status != 200) {
+      console.error(
+          'Failed to fetch ICE config. Status: ' + response.status +
+          ' response: ' + response.getText());
+      return kDefaultIceConfig;
+    }
+
+    var result = /** @type {!Object} */ (response.getJson());
+    // Unwrap data envelope.
+    if (result.hasOwnProperty('data')) {
+      result = result.data;
+    }
+    return result;
+  });
+}
+
+/**
  * @param {remoting.It2MeHostFacade} hostFacade An initialized
  *     It2MeHostFacade.
  * @param {string} token The OAuth access token.
@@ -121,10 +153,16 @@ remoting.tryShareWithToken_ = function(hostFacade, token) {
 
   console.assert(hostSession_ === null, '|hostSession_| already exists.');
   hostSession_ = new remoting.HostSession();
-  remoting.identity.getEmail().then(
-      function(/** string */ email) {
+  var emailPromise = remoting.identity.getEmail();
+  var iceConfigPromise = remoting.fetchIceConfig_();
+  Promise.all([emailPromise, iceConfigPromise]).then(
+      function(values) {
+        /** string */
+        var email = values[0];
+        /** Object */
+        var iceConfig = values[1];
         hostSession_.connect(
-            hostFacade, email, token, onHostStateChanged_,
+            hostFacade, email, token, iceConfig, onHostStateChanged_,
             onNatTraversalPolicyChanged_, logDebugInfo_, showShareError_);
       });
 };

@@ -117,6 +117,7 @@ remoting.It2MeHostFacade.prototype.initialize =
  * @param {string} email The user's email address.
  * @param {string} authServiceWithToken Concatenation of the auth service
  *     (e.g. oauth2) and the access token.
+ * @param {Object} iceConfig ICE config for the host.
  * @param {function(remoting.HostSession.State):void} onStateChanged Callback to
  *     invoke when the host state changes.
  * @param {function(boolean):void} onNatPolicyChanged Callback to invoke when
@@ -133,10 +134,10 @@ remoting.It2MeHostFacade.prototype.initialize =
  *     an error.
  * @return {void}
  */
-remoting.It2MeHostFacade.prototype.connect =
-    function(email, authServiceWithToken, onStateChanged, onNatPolicyChanged,
-             logDebugInfo, xmppServerAddress, xmppServerUseTls, directoryBotJid,
-             onError) {
+remoting.It2MeHostFacade.prototype.connect = function(
+    email, authServiceWithToken, iceConfig, onStateChanged, onNatPolicyChanged,
+    logDebugInfo, xmppServerAddress, xmppServerUseTls, directoryBotJid,
+    onError) {
   if (!this.port_) {
     console.error(
         'remoting.It2MeHostFacade.connect() without initialization.');
@@ -153,7 +154,8 @@ remoting.It2MeHostFacade.prototype.connect =
     authServiceWithToken: authServiceWithToken,
     xmppServerAddress: xmppServerAddress,
     xmppServerUseTls: xmppServerUseTls,
-    directoryBotJid: directoryBotJid
+    directoryBotJid: directoryBotJid,
+    iceConfig: iceConfig
   });
 };
 
