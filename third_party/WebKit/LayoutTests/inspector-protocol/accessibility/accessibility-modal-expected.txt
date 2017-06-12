@@ -165,34 +165,6 @@ Open Dialog
   },
   "properties": [
     {
-      "name": "live",
-      "value": {
-        "type": "token",
-        "value": "assertive"
-      }
-    },
-    {
-      "name": "atomic",
-      "value": {
-        "type": "boolean",
-        "value": false
-      }
-    },
-    {
-      "name": "relevant",
-      "value": {
-        "type": "tokenList",
-        "value": "additions text"
-      }
-    },
-    {
-      "name": "busy",
-      "value": {
-        "type": "boolean",
-        "value": false
-      }
-    },
-    {
       "name": "modal",
       "value": {
         "type": "boolean",
