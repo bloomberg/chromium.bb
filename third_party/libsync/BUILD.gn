@@ -3,17 +3,21 @@
 # found in the LICENSE file.
 
 config("libsync_config") {
-  include_dirs = [ "include" ]
+  include_dirs = [
+    "include",
+    "src",
+    "src/include",
+  ]
 }
 
 source_set("libsync") {
   sources = [
     "include/linux/sw_sync.h",
     "include/linux/sync.h",
-    "include/sw_sync.h",
-    "include/sync/sync.h",
+    "src/include/sync.h",
+    "src/sw_sync.h",
+    "src/sync.c",
     "strlcpy.c",
-    "sync.c",
   ]
 
   configs -= [ "//build/config/compiler:chromium_code" ]
