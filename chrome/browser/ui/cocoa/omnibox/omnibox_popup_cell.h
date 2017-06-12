@@ -66,7 +66,7 @@ class OmniboxPopupViewMac;
 
 + (NSAttributedString*)createSeparatorStringForDarkTheme:(BOOL)isDarkTheme;
 
-+ (CGFloat)getContentAreaWidth:(NSRect)cellFrame;
++ (CGFloat)getTextContentAreaWidth:(CGFloat)cellContentMaxWidth;
 
 + (CGFloat)getContentTextHeightForDoubleLine:(BOOL)isDoubleLine;
 

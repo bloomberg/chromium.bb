@@ -122,8 +122,8 @@ const NSInteger kMiddleButtonNumber = 2;
         base::mac::ObjCCastStrict<OmniboxPopupCellData>(
             [array_ objectAtIndex:row]);
     // Subtract any Material Design padding and/or icon.
-    rowRect.size.width = [OmniboxPopupCell getContentAreaWidth:rowRect] -
-                         [matrix contentLeftPadding];
+    rowRect.size.width =
+        [OmniboxPopupCell getTextContentAreaWidth:[matrix contentMaxWidth]];
     NSAttributedString* text = [cellData description];
     // Provide no more than 3 lines of space.
     rowRect.size.height =
@@ -146,6 +146,7 @@ const NSInteger kMiddleButtonNumber = 2;
 @synthesize separator = separator_;
 @synthesize maxMatchContentsWidth = maxMatchContentsWidth_;
 @synthesize contentLeftPadding = contentLeftPadding_;
+@synthesize contentMaxWidth = contentMaxWidth_;
 @synthesize answerLineHeight = answerLineHeight_;
 @synthesize hasDarkTheme = hasDarkTheme_;
 
