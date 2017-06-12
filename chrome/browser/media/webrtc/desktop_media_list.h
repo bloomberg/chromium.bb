@@ -55,6 +55,8 @@ class DesktopMediaList {
 
   virtual int GetSourceCount() const = 0;
   virtual const Source& GetSource(int index) const = 0;
+
+  virtual content::DesktopMediaID::Type GetMediaListType() const = 0;
 };
 
 #endif  // CHROME_BROWSER_MEDIA_WEBRTC_DESKTOP_MEDIA_LIST_H_
