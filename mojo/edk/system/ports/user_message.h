@@ -11,6 +11,8 @@ namespace mojo {
 namespace edk {
 namespace ports {
 
+class UserMessageEvent;
+
 // Base type to use for any embedder-defined user message implementation. This
 // class is intentionally empty.
 //
@@ -25,11 +27,19 @@ class UserMessage {
  public:
   struct TypeInfo {};
 
-  virtual ~UserMessage() {}
-
-  explicit UserMessage(const TypeInfo* type_info) : type_info_(type_info) {}
+  explicit UserMessage(const TypeInfo* type_info);
+  virtual ~UserMessage();
 
   const TypeInfo* type_info() const { return type_info_; }
+
+  // Invoked immediately before the system asks the embedder to forward this
+  // message to an external node. |message_event| is the event which owns this
+  // message and which will be routed externally.
+  //
+  // Returns |true| if the message is OK to route externally, or |false|
+  // otherwise. Returning |false| implies an unrecoverable condition, and the
+  // message event will be destroyed without further routing.
+  virtual bool WillBeRoutedExternally(UserMessageEvent* message_event);
 
  private:
   const TypeInfo* const type_info_;

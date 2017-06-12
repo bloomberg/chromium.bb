@@ -5,11 +5,18 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <algorithm>
+#include <memory>
+#include <string>
+#include <vector>
+
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "mojo/edk/system/test_utils.h"
 #include "mojo/edk/test/mojo_test_base.h"
 #include "mojo/public/c/system/core.h"
 #include "mojo/public/c/system/types.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 
 namespace mojo {
 namespace edk {
@@ -392,21 +399,6 @@ TEST_F(MessagePipeTest, BasicWaiting) {
             WaitForSignals(pipe1_, MOJO_HANDLE_SIGNAL_READABLE, &hss));
   ASSERT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfied_signals);
   ASSERT_EQ(MOJO_HANDLE_SIGNAL_PEER_CLOSED, hss.satisfiable_signals);
-}
-
-TEST_F(MessagePipeTest, InvalidMessageObjects) {
-  // null message
-  ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            MojoFreeMessage(MOJO_MESSAGE_HANDLE_INVALID));
-
-  // null message
-  ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            MojoGetMessageBuffer(MOJO_MESSAGE_HANDLE_INVALID, nullptr));
-
-  // Non-zero num_handles with null handles array.
-  ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            MojoAllocMessage(0, nullptr, 1, MOJO_ALLOC_MESSAGE_FLAG_NONE,
-                             nullptr));
 }
 
 TEST_F(MessagePipeTest, AllocAndFreeMessage) {

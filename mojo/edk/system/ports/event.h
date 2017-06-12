@@ -101,6 +101,7 @@ class UserMessageEvent : public Event {
   }
 
   void ReservePorts(size_t num_ports);
+  bool NotifyWillBeRoutedExternally();
 
   uint32_t sequence_num() const { return sequence_num_; }
   void set_sequence_num(uint32_t sequence_num) { sequence_num_ = sequence_num; }

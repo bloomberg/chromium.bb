@@ -242,6 +242,27 @@ bool Core::AddDispatchersFromTransit(
   return true;
 }
 
+MojoResult Core::AcquireDispatchersForTransit(
+    const MojoHandle* handles,
+    size_t num_handles,
+    std::vector<Dispatcher::DispatcherInTransit>* dispatchers) {
+  base::AutoLock lock(handles_->GetLock());
+  MojoResult rv = handles_->BeginTransit(handles, num_handles, dispatchers);
+  if (rv != MOJO_RESULT_OK)
+    handles_->CancelTransit(*dispatchers);
+  return rv;
+}
+
+void Core::ReleaseDispatchersForTransit(
+    const std::vector<Dispatcher::DispatcherInTransit>& dispatchers,
+    bool in_transit) {
+  base::AutoLock lock(handles_->GetLock());
+  if (in_transit)
+    handles_->CompleteTransitAndClose(dispatchers);
+  else
+    handles_->CancelTransit(dispatchers);
+}
+
 MojoResult Core::CreatePlatformHandleWrapper(
     ScopedPlatformHandle platform_handle,
     MojoHandle* wrapper_handle) {
@@ -469,31 +490,40 @@ MojoResult Core::AllocMessage(uint32_t num_bytes,
   RequestContext request_context;
 
   std::vector<Dispatcher::DispatcherInTransit> dispatchers;
-  {
-    base::AutoLock lock(handles_->GetLock());
-    MojoResult rv = handles_->BeginTransit(handles, num_handles, &dispatchers);
-    if (rv != MOJO_RESULT_OK) {
-      handles_->CancelTransit(dispatchers);
-      return rv;
-    }
-  }
-  DCHECK_EQ(num_handles, dispatchers.size());
+  MojoResult acquire_result =
+      AcquireDispatchersForTransit(handles, num_handles, &dispatchers);
+  if (acquire_result != MOJO_RESULT_OK)
+    return acquire_result;
 
+  DCHECK_EQ(num_handles, dispatchers.size());
   std::unique_ptr<ports::UserMessageEvent> message;
   MojoResult rv = UserMessageImpl::CreateEventForNewSerializedMessage(
       num_bytes, dispatchers.data(), num_handles, &message);
 
-  {
-    base::AutoLock lock(handles_->GetLock());
-    if (rv == MOJO_RESULT_OK) {
-      handles_->CompleteTransitAndClose(dispatchers);
-      *message_handle = reinterpret_cast<MojoMessageHandle>(message.release());
-    } else {
-      handles_->CancelTransit(dispatchers);
-    }
-  }
+  ReleaseDispatchersForTransit(dispatchers, rv == MOJO_RESULT_OK);
+  if (rv == MOJO_RESULT_OK)
+    *message_handle = reinterpret_cast<MojoMessageHandle>(message.release());
 
   return rv;
+}
+
+MojoResult Core::CreateMessage(uintptr_t context,
+                               const MojoMessageOperationThunks* thunks,
+                               MojoMessageHandle* message_handle) {
+  if (!message_handle || !context || !thunks)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  if (thunks->struct_size != sizeof(MojoMessageOperationThunks))
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  if (!thunks->get_serialized_size || !thunks->serialize_handles ||
+      !thunks->serialize_payload || !thunks->destroy)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  *message_handle = reinterpret_cast<MojoMessageHandle>(
+      UserMessageImpl::CreateEventForNewMessageWithContext(context, thunks)
+          .release());
+  return MOJO_RESULT_OK;
 }
 
 MojoResult Core::FreeMessage(MojoMessageHandle message_handle) {
@@ -516,6 +546,20 @@ MojoResult Core::GetMessageBuffer(MojoMessageHandle message_handle,
     return MOJO_RESULT_NOT_FOUND;
 
   *buffer = message->user_payload();
+  return MOJO_RESULT_OK;
+}
+
+MojoResult Core::ReleaseMessageContext(MojoMessageHandle message_handle,
+                                       uintptr_t* context) {
+  if (!message_handle)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  auto* message = reinterpret_cast<ports::UserMessageEvent*>(message_handle)
+                      ->GetMessage<UserMessageImpl>();
+  if (!message->HasContext())
+    return MOJO_RESULT_NOT_FOUND;
+
+  *context = message->ReleaseContext();
   return MOJO_RESULT_OK;
 }
 
@@ -625,8 +669,9 @@ MojoResult Core::ReadMessage(MojoHandle message_pipe_handle,
     return MOJO_RESULT_OK;
 
   auto* message = message_event->GetMessage<UserMessageImpl>();
-  if (!message->IsSerialized())
-    return MOJO_RESULT_UNKNOWN;  // Maybe we need a better result code.
+
+  // This must be true for ReadMessage to have succeeded above.
+  DCHECK(message->IsSerialized());
 
   if (message->user_payload_size())
     memcpy(bytes, message->user_payload(), message->user_payload_size());

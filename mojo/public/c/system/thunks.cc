@@ -208,6 +208,13 @@ MojoResult MojoAllocMessage(uint32_t num_bytes,
       num_bytes, handles, num_handles, flags, message);
 }
 
+MojoResult MojoCreateMessage(uintptr_t context,
+                             const MojoMessageOperationThunks* thunks,
+                             MojoMessageHandle* message) {
+  assert(g_thunks.CreateMessage);
+  return g_thunks.CreateMessage(context, thunks, message);
+}
+
 MojoResult MojoFreeMessage(MojoMessageHandle message) {
   assert(g_thunks.FreeMessage);
   return g_thunks.FreeMessage(message);
@@ -216,6 +223,12 @@ MojoResult MojoFreeMessage(MojoMessageHandle message) {
 MojoResult MojoGetMessageBuffer(MojoMessageHandle message, void** buffer) {
   assert(g_thunks.GetMessageBuffer);
   return g_thunks.GetMessageBuffer(message, buffer);
+}
+
+MojoResult MojoReleaseMessageContext(MojoMessageHandle message,
+                                     uintptr_t* context) {
+  assert(g_thunks.ReleaseMessageContext);
+  return g_thunks.ReleaseMessageContext(message, context);
 }
 
 MojoResult MojoWrapPlatformHandle(

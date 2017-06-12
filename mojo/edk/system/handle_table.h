@@ -47,7 +47,7 @@ class MOJO_SYSTEM_IMPL_EXPORT HandleTable
   // if any of the handles are invalid; or MOJO_RESULT_OK if successful.
   MojoResult BeginTransit(
       const MojoHandle* handles,
-      uint32_t num_handles,
+      size_t num_handles,
       std::vector<Dispatcher::DispatcherInTransit>* dispatchers);
 
   void CompleteTransitAndClose(

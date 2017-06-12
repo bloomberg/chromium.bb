@@ -116,6 +116,25 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
       const std::vector<Dispatcher::DispatcherInTransit>& dispatchers,
       MojoHandle* handles);
 
+  // Marks a set of handles as busy and acquires references to each of their
+  // dispatchers. The caller MUST eventually call ReleaseDispatchersForTransit()
+  // on the resulting |*dispatchers|.
+  MojoResult AcquireDispatchersForTransit(
+      const MojoHandle* handles,
+      size_t num_handles,
+      std::vector<Dispatcher::DispatcherInTransit>* dispatchers);
+
+  // Releases dispatchers previously acquired by
+  // |AcquireDispatchersForTransit()|. |in_transit| should be |true| if the
+  // caller has fully serialized every dispatcher in |dispatchers|, in which
+  // case this will close and remove their handles from the handle table.
+  //
+  // If |in_transit| is false, this simply unmarks the dispatchers as busy,
+  // making them available for general use once again.
+  void ReleaseDispatchersForTransit(
+      const std::vector<Dispatcher::DispatcherInTransit>& dispatchers,
+      bool in_transit);
+
   // See "mojo/edk/embedder/embedder.h" for more information on these functions.
   MojoResult CreatePlatformHandleWrapper(ScopedPlatformHandle platform_handle,
                                          MojoHandle* wrapper_handle);
@@ -176,8 +195,13 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
                           uint32_t num_handles,
                           MojoAllocMessageFlags flags,
                           MojoMessageHandle* message_handle);
+  MojoResult CreateMessage(uintptr_t context,
+                           const MojoMessageOperationThunks* thunks,
+                           MojoMessageHandle* message_handle);
   MojoResult FreeMessage(MojoMessageHandle message_handle);
   MojoResult GetMessageBuffer(MojoMessageHandle message_handle, void** buffer);
+  MojoResult ReleaseMessageContext(MojoMessageHandle message_handle,
+                                   uintptr_t* context);
   MojoResult GetProperty(MojoPropertyType type, void* value);
 
   // These methods correspond to the API functions defined in
