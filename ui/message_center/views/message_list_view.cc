@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <algorithm>
+#include "ui/message_center/views/message_list_view.h"
 
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/message_center_switches.h"
 #include "ui/message_center/views/message_center_view.h"
-#include "ui/message_center/views/message_list_view.h"
 #include "ui/message_center/views/message_view.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
@@ -105,8 +105,7 @@ void MessageListView::RemoveNotification(MessageView* view) {
 
   // TODO(yhananda): We should consider consolidating clearing_all_views_,
   // deleting_views_ and deleted_when_done_.
-  if (std::find(clearing_all_views_.begin(), clearing_all_views_.end(), view) !=
-          clearing_all_views_.end() ||
+  if (base::ContainsValue(clearing_all_views_, view) ||
       deleting_views_.find(view) != deleting_views_.end() ||
       deleted_when_done_.find(view) != deleted_when_done_.end()) {
     // Let's skip deleting the view if it's already scheduled for deleting.
@@ -138,8 +137,7 @@ void MessageListView::RemoveNotification(MessageView* view) {
 void MessageListView::UpdateNotification(MessageView* view,
                                          const Notification& notification) {
   // Skip updating the notification being cleared
-  if (std::find(clearing_all_views_.begin(), clearing_all_views_.end(), view) !=
-      clearing_all_views_.end())
+  if (base::ContainsValue(clearing_all_views_, view))
     return;
 
   int index = GetIndexOf(view);
@@ -345,8 +343,7 @@ bool MessageListView::IsValidChild(const views::View* child) const {
              deleting_views_.end() &&
          deleted_when_done_.find(const_cast<views::View*>(child)) ==
              deleted_when_done_.end() &&
-         std::find(clearing_all_views_.begin(), clearing_all_views_.end(),
-                   child) == clearing_all_views_.end();
+         !base::ContainsValue(clearing_all_views_, child);
 }
 
 void MessageListView::DoUpdateIfPossible() {

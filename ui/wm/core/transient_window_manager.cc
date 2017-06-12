@@ -8,6 +8,7 @@
 #include <functional>
 
 #include "base/auto_reset.h"
+#include "base/stl_util.h"
 #include "ui/aura/client/transient_window_client_observer.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tracker.h"
@@ -63,8 +64,7 @@ void TransientWindowManager::AddTransientChild(Window* child) {
   TransientWindowManager* child_manager = Get(child);
   if (child_manager->transient_parent_)
     Get(child_manager->transient_parent_)->RemoveTransientChild(child);
-  DCHECK(std::find(transient_children_.begin(), transient_children_.end(),
-                   child) == transient_children_.end());
+  DCHECK(!base::ContainsValue(transient_children_, child));
   transient_children_.push_back(child);
   child_manager->transient_parent_ = window_;
 

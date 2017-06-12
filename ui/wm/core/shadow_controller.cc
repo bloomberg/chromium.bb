@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
+#include "base/stl_util.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/env_observer.h"
@@ -77,11 +78,8 @@ ShadowElevation GetShadowElevationForWindowLosingActive(
     aura::Window* losing_active,
     aura::Window* gaining_active) {
   if (gaining_active && GetHideOnDeactivate(gaining_active)) {
-    aura::Window::Windows::const_iterator it =
-        std::find(GetTransientChildren(losing_active).begin(),
-                  GetTransientChildren(losing_active).end(),
-                  gaining_active);
-    if (it != GetTransientChildren(losing_active).end())
+    if (base::ContainsValue(GetTransientChildren(losing_active),
+                            gaining_active))
       return ShadowController::kActiveNormalShadowElevation;
   }
   return kInactiveNormalShadowElevation;
