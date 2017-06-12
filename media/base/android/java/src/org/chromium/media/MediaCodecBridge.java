@@ -193,19 +193,18 @@ class MediaCodecBridge {
     }
 
     @CalledByNative
-    private static MediaCodecBridge create(
-            String mime, boolean isSecure, int direction, boolean requireSoftwareCodec) {
+    private static MediaCodecBridge create(String mime, int codecType, int direction) {
         MediaCodecUtil.CodecCreationInfo info = new MediaCodecUtil.CodecCreationInfo();
         try {
             if (direction == MediaCodecDirection.ENCODER) {
                 info = MediaCodecUtil.createEncoder(mime);
             } else {
-                // |isSecure| only applies to video decoders.
-                info = MediaCodecUtil.createDecoder(mime, isSecure, requireSoftwareCodec);
+                // |codecType| only applies to decoders not encoders.
+                info = MediaCodecUtil.createDecoder(mime, codecType);
             }
         } catch (Exception e) {
-            Log.e(TAG, "Failed to create MediaCodec: %s, isSecure: %s, direction: %d",
-                    mime, isSecure, direction, e);
+            Log.e(TAG, "Failed to create MediaCodec: %s, codecType: %d, direction: %d", mime,
+                    codecType, direction, e);
         }
 
         if (info.mediaCodec == null) return null;

@@ -22,6 +22,13 @@
 
 namespace media {
 
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.media
+enum class CodecType {
+  kAny,
+  kSecure,    // Note that all secure codecs are HW codecs.
+  kSoftware,  // In some cases hardware codecs could hang the GPU process.
+};
+
 // A bridge to a Java MediaCodec.
 class MEDIA_EXPORT MediaCodecBridgeImpl : public MediaCodecBridge {
  public:
@@ -29,7 +36,7 @@ class MEDIA_EXPORT MediaCodecBridgeImpl : public MediaCodecBridge {
   // nullptr on failure.
   static std::unique_ptr<MediaCodecBridge> CreateVideoDecoder(
       VideoCodec codec,
-      bool is_secure,         // Will be used with encrypted content.
+      CodecType codec_type,
       const gfx::Size& size,  // Output frame size.
       jobject surface,        // Output surface, optional.
       jobject media_crypto,   // MediaCrypto object, optional.
@@ -37,8 +44,7 @@ class MEDIA_EXPORT MediaCodecBridgeImpl : public MediaCodecBridge {
       const std::vector<uint8_t>& csd0,
       const std::vector<uint8_t>& csd1,
       // Should adaptive playback be allowed if supported.
-      bool allow_adaptive_playback = true,
-      bool require_software_codec = false);
+      bool allow_adaptive_playback = true);
 
   // Creates and starts a new MediaCodec configured for encoding. Returns
   // nullptr on failure.
@@ -57,6 +63,8 @@ class MEDIA_EXPORT MediaCodecBridgeImpl : public MediaCodecBridge {
       jobject media_crypto);
 
   ~MediaCodecBridgeImpl() override;
+
+  // MediaCodecBridge implementation.
   void Stop() override;
   MediaCodecStatus Flush() override;
   MediaCodecStatus GetOutputSize(gfx::Size* size) override;
@@ -102,9 +110,8 @@ class MEDIA_EXPORT MediaCodecBridgeImpl : public MediaCodecBridge {
 
  private:
   MediaCodecBridgeImpl(const std::string& mime,
-                       bool is_secure,
-                       MediaCodecDirection direction,
-                       bool require_software_codec);
+                       CodecType codec_type,
+                       MediaCodecDirection direction);
 
   // Calls MediaCodec#start(). Returns whether it was successful.
   bool Start();
