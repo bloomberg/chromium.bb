@@ -1,1 +1,1 @@
-"cookies"
+{ "types": [ "cookies" ] }
