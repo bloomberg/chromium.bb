@@ -1591,7 +1591,7 @@ void PaintLayer::AppendSingleFragmentIgnoringPagination(
     OverlayScrollbarClipBehavior overlay_scrollbar_clip_behavior,
     ShouldRespectOverflowClipType respect_overflow_clip,
     const LayoutPoint* offset_from_root,
-    const LayoutSize& sub_pixel_accumulation) {
+    const LayoutSize& sub_pixel_accumulation) const {
   PaintLayerFragment fragment;
   ClipRectsContext clip_rects_context(root_layer, clip_rects_cache_slot,
                                       overlay_scrollbar_clip_behavior,
@@ -1622,7 +1622,7 @@ void PaintLayer::CollectFragments(
     ShouldRespectOverflowClipType respect_overflow_clip,
     const LayoutPoint* offset_from_root,
     const LayoutSize& sub_pixel_accumulation,
-    const LayoutRect* layer_bounding_box) {
+    const LayoutRect* layer_bounding_box) const {
   // For unpaginated layers, there is only one fragment. We also avoid
   // fragmentation when compositing, due to implementation limitations.
   if (!EnclosingPaginationLayer() ||

@@ -1393,6 +1393,199 @@ TEST_P(CompositedLayerMappingTest, AncestorClipMaskRequiredByBorderRadius) {
 }
 
 TEST_P(CompositedLayerMappingTest,
+       AncestorClipMaskNotRequiredByNestedBorderRadius) {
+  // This case has the child within all ancestors and does not require a
+  // mask.
+  SetBodyInnerHTML(
+      "<style>"
+      "  #grandparent {"
+      "    width: 200px; height: 200px; overflow: hidden; border-radius: 25px;"
+      "  }"
+      "  #parent { position: relative; left: 40px; top: 40px; width: 120px;"
+      "           height: 120px; border-radius: 10px; overflow: hidden;"
+      "  }"
+      "  #child { position: relative; left: 10px; top: 10px; width: 100px;"
+      "           height: 100px; background-color: green;"
+      "           will-change: transform;"
+      "  }"
+      "</style>"
+      "<div id='grandparent'>"
+      "  <div id='parent'>"
+      "    <div id='child'></div>"
+      "</div>");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  Element* child = GetDocument().getElementById("child");
+  ASSERT_TRUE(child);
+  PaintLayer* child_paint_layer =
+      ToLayoutBoxModelObject(child->GetLayoutObject())->Layer();
+  ASSERT_TRUE(child_paint_layer);
+  CompositedLayerMapping* child_mapping =
+      child_paint_layer->GetCompositedLayerMapping();
+  ASSERT_TRUE(child_mapping);
+  EXPECT_TRUE(child_mapping->AncestorClippingLayer());
+  EXPECT_FALSE(child_mapping->AncestorClippingLayer()->MaskLayer());
+  EXPECT_FALSE(child_mapping->AncestorClippingMaskLayer());
+}
+
+TEST_P(CompositedLayerMappingTest,
+       AncestorClipMaskRequiredByParentBorderRadius) {
+  // This case has the child within the grandparent but not the parent, and does
+  // require a mask so that the parent will clip the corners.
+  SetBodyInnerHTML(
+      "<style>"
+      "  #grandparent {"
+      "    width: 200px; height: 200px; overflow: hidden; border-radius: 25px;"
+      "  }"
+      "  #parent { position: relative; left: 40px; top: 40px; width: 120px;"
+      "           height: 120px; border-radius: 10px; overflow: hidden;"
+      "  }"
+      "  #child { position: relative; left: 1px; top: 1px; width: 118px;"
+      "           height: 118px; background-color: green;"
+      "           will-change: transform;"
+      "  }"
+      "</style>"
+      "<div id='grandparent'>"
+      "  <div id='parent'>"
+      "    <div id='child'></div>"
+      "</div>");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  Element* child = GetDocument().getElementById("child");
+  ASSERT_TRUE(child);
+  PaintLayer* child_paint_layer =
+      ToLayoutBoxModelObject(child->GetLayoutObject())->Layer();
+  ASSERT_TRUE(child_paint_layer);
+  CompositedLayerMapping* child_mapping =
+      child_paint_layer->GetCompositedLayerMapping();
+  ASSERT_TRUE(child_mapping);
+  ASSERT_TRUE(child_mapping->AncestorClippingLayer());
+  EXPECT_TRUE(child_mapping->AncestorClippingLayer()->MaskLayer());
+  ASSERT_TRUE(child_mapping->AncestorClippingMaskLayer());
+  const FloatSize layer_size =
+      child_mapping->AncestorClippingMaskLayer()->Size();
+  EXPECT_EQ(120, layer_size.Width());
+  EXPECT_EQ(120, layer_size.Height());
+}
+
+TEST_P(CompositedLayerMappingTest,
+       AncestorClipMaskNotRequiredByParentBorderRadius) {
+  // This case has the child within the grandparent but not the parent, and does
+  // not require a mask because the parent does not have border radius
+  SetBodyInnerHTML(
+      "<style>"
+      "  #grandparent {"
+      "    width: 200px; height: 200px; overflow: hidden; border-radius: 25px;"
+      "  }"
+      "  #parent { position: relative; left: 40px; top: 40px; width: 120px;"
+      "           height: 120px; overflow: hidden;"
+      "  }"
+      "  #child { position: relative; left: -10px; top: -10px; width: 140px;"
+      "           height: 140px; background-color: green;"
+      "           will-change: transform;"
+      "  }"
+      "</style>"
+      "<div id='grandparent'>"
+      "  <div id='parent'>"
+      "    <div id='child'></div>"
+      "</div>");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  Element* child = GetDocument().getElementById("child");
+  ASSERT_TRUE(child);
+  PaintLayer* child_paint_layer =
+      ToLayoutBoxModelObject(child->GetLayoutObject())->Layer();
+  ASSERT_TRUE(child_paint_layer);
+  CompositedLayerMapping* child_mapping =
+      child_paint_layer->GetCompositedLayerMapping();
+  ASSERT_TRUE(child_mapping);
+  EXPECT_TRUE(child_mapping->AncestorClippingLayer());
+  EXPECT_FALSE(child_mapping->AncestorClippingLayer()->MaskLayer());
+  EXPECT_FALSE(child_mapping->AncestorClippingMaskLayer());
+}
+
+TEST_P(CompositedLayerMappingTest,
+       AncestorClipMaskRequiredByGrandparentBorderRadius1) {
+  // This case has the child clipped by the grandparent border radius but not
+  // the parent, and requires a mask to clip to the grandparent. Although in
+  // an optimized world we would not need this because the parent clips out
+  // the child before it is clipped by the grandparent.
+  SetBodyInnerHTML(
+      "<style>"
+      "  #grandparent {"
+      "    width: 200px; height: 200px; overflow: hidden; border-radius: 25px;"
+      "  }"
+      "  #parent { position: relative; left: 40px; top: 40px; width: 120px;"
+      "           height: 120px; overflow: hidden;"
+      "  }"
+      "  #child { position: relative; left: -10px; top: -10px; width: 180px;"
+      "           height: 180px; background-color: green;"
+      "           will-change: transform;"
+      "  }"
+      "</style>"
+      "<div id='grandparent'>"
+      "  <div id='parent'>"
+      "    <div id='child'></div>"
+      "</div>");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  Element* child = GetDocument().getElementById("child");
+  ASSERT_TRUE(child);
+  PaintLayer* child_paint_layer =
+      ToLayoutBoxModelObject(child->GetLayoutObject())->Layer();
+  ASSERT_TRUE(child_paint_layer);
+  CompositedLayerMapping* child_mapping =
+      child_paint_layer->GetCompositedLayerMapping();
+  ASSERT_TRUE(child_mapping);
+  ASSERT_TRUE(child_mapping->AncestorClippingLayer());
+  EXPECT_TRUE(child_mapping->AncestorClippingLayer()->MaskLayer());
+  ASSERT_TRUE(child_mapping->AncestorClippingMaskLayer());
+  const FloatSize layer_size =
+      child_mapping->AncestorClippingMaskLayer()->Size();
+  EXPECT_EQ(120, layer_size.Width());
+  EXPECT_EQ(120, layer_size.Height());
+}
+
+TEST_P(CompositedLayerMappingTest,
+       AncestorClipMaskRequiredByGrandparentBorderRadius2) {
+  // Similar to the previous case, but here we really do need the mask.
+  SetBodyInnerHTML(
+      "<style>"
+      "  #grandparent {"
+      "    width: 200px; height: 200px; overflow: hidden; border-radius: 25px;"
+      "  }"
+      "  #parent { position: relative; left: 40px; top: 40px; width: 180px;"
+      "           height: 180px; overflow: hidden;"
+      "  }"
+      "  #child { position: relative; left: -10px; top: -10px; width: 180px;"
+      "           height: 180px; background-color: green;"
+      "           will-change: transform;"
+      "  }"
+      "</style>"
+      "<div id='grandparent'>"
+      "  <div id='parent'>"
+      "    <div id='child'></div>"
+      "</div>");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  Element* child = GetDocument().getElementById("child");
+  ASSERT_TRUE(child);
+  PaintLayer* child_paint_layer =
+      ToLayoutBoxModelObject(child->GetLayoutObject())->Layer();
+  ASSERT_TRUE(child_paint_layer);
+  CompositedLayerMapping* child_mapping =
+      child_paint_layer->GetCompositedLayerMapping();
+  ASSERT_TRUE(child_mapping);
+  ASSERT_TRUE(child_mapping->AncestorClippingLayer());
+  EXPECT_TRUE(child_mapping->AncestorClippingLayer()->MaskLayer());
+  ASSERT_TRUE(child_mapping->AncestorClippingMaskLayer());
+  const FloatSize layer_size =
+      child_mapping->AncestorClippingMaskLayer()->Size();
+  EXPECT_EQ(160, layer_size.Width());
+  EXPECT_EQ(160, layer_size.Height());
+}
+
+TEST_P(CompositedLayerMappingTest,
        AncestorClipMaskNotRequiredByBorderRadiusInside) {
   // Verify that we do not create the mask layer when the child is contained
   // within the rounded rect clip.

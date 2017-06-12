@@ -488,15 +488,16 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
       const GraphicsLayerPaintInfo&,
       const Vector<GraphicsLayerPaintInfo>& layers);
 
-  // Conservatively check that a border-radius clip does not clip a child.
+  // Conservatively check that a sequence of border-radius clips do not clip
+  // this layer. The compositing_ancestor is the nearest compositing ancestor
+  // layer and we can stop checking clips at that layer because higher layer
+  // clips will be applied elsewhere.
   // This is a fast approximate test. Depending on the shape of the child and
-  // the size of the border radius, this method may return false when in fact
+  // the size of the clips, this method may return false when in fact
   // the child is not clipped. We accept the approximation because most border
   // radii are small and the outcome is used to reduce the number of layers,
   // not influence correctness.
-  bool AncestorRoundedCornersWontClip(
-      const LayoutBoxModelObject& child,
-      const LayoutBoxModelObject& clipping_ancestor);
+  bool AncestorRoundedCornersWontClip(const PaintLayer* compositing_ancestor);
 
   // Return true in |owningLayerIsClipped| iff |m_owningLayer|'s compositing
   // ancestor is not a descendant (inclusive) of the clipping container for

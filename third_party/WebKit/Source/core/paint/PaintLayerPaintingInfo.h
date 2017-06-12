@@ -96,7 +96,7 @@ struct PaintLayerPaintingInfo {
   GlobalPaintFlags GetGlobalPaintFlags() const { return global_paint_flags_; }
 
   // TODO(jchaffraix): We should encapsulate all these fields.
-  PaintLayer* root_layer;
+  const PaintLayer* root_layer;
   LayoutRect paint_dirty_rect;  // relative to rootLayer;
   LayoutSize sub_pixel_accumulation;
   IntSize scroll_offset_accumulation;

@@ -53,15 +53,25 @@ class CORE_EXPORT LayerClipRecorder {
 
   ~LayerClipRecorder();
 
- private:
-  void CollectRoundedRectClips(PaintLayer&,
-                               const PaintLayer* clip_root,
-                               GraphicsContext&,
-                               const LayoutPoint& fragment_offset,
-                               PaintLayerFlags,
-                               BorderRadiusClippingRule,
-                               Vector<FloatRoundedRect>& rounded_rect_clips);
+  // Build a vector of the border radius clips that should be applied to
+  // the given PaintLayer, walking up the paint layer tree to the clip_root.
+  // The offset_within_layer is an offset to apply to the clip to position it
+  // in the required clipping coordinates (for cases when the painting
+  // coordinate system is offset from the layer coordinate system).
+  // cross_composited_scrollers should be true when the search for clips should
+  // continue even if the clipping layer is painting into a composited scrolling
+  // layer, as when painting a mask for a child of the scroller.
+  // The BorderRadiusClippingRule defines whether clips on the PaintLayer itself
+  // are included. Output is appended to rounded_rect_clips.
+  static void CollectRoundedRectClips(
+      PaintLayer&,
+      const PaintLayer* clip_root,
+      const LayoutPoint& offset_within_layer,
+      bool cross_composited_scrollers,
+      BorderRadiusClippingRule,
+      Vector<FloatRoundedRect>& rounded_rect_clips);
 
+ private:
   GraphicsContext& graphics_context_;
   const LayoutBoxModelObject& layout_object_;
   DisplayItem::Type clip_type_;
