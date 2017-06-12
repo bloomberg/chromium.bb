@@ -1119,6 +1119,9 @@ RTCPeerConnectionHandler::RTCPeerConnectionHandler(
     : client_(client),
       is_closed_(false),
       dependency_factory_(dependency_factory),
+      track_adapter_map_(new WebRtcMediaStreamTrackAdapterMap(
+          dependency_factory_,
+          base::ThreadTaskRunnerHandle::Get())),
       weak_factory_(this) {
   CHECK(client_);
   GetPeerConnectionHandlers()->insert(this);
@@ -1553,8 +1556,8 @@ bool RTCPeerConnectionHandler::AddStream(
 
   PerSessionWebRTCAPIMetrics::GetInstance()->IncrementStreamCounter();
 
-  local_streams_.push_back(
-      base::MakeUnique<WebRtcMediaStreamAdapter>(stream, dependency_factory_));
+  local_streams_.push_back(base::MakeUnique<WebRtcMediaStreamAdapter>(
+      dependency_factory_, track_adapter_map_, stream));
 
   webrtc::MediaStreamInterface* webrtc_stream =
       local_streams_.back()->webrtc_media_stream();

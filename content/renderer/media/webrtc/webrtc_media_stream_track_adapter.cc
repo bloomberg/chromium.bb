@@ -18,7 +18,6 @@ WebRtcMediaStreamTrackAdapter::CreateLocalTrackAdapter(
     const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
     const blink::WebMediaStreamTrack& web_track) {
   DCHECK(main_thread->BelongsToCurrentThread());
-  DCHECK(!web_track.Source().Remote());
   scoped_refptr<WebRtcMediaStreamTrackAdapter> local_track_adapter(
       new WebRtcMediaStreamTrackAdapter(factory, main_thread));
   if (web_track.Source().GetType() == blink::WebMediaStreamSource::kTypeAudio) {
@@ -71,24 +70,19 @@ void WebRtcMediaStreamTrackAdapter::Dispose() {
   if (!is_initialized_)
     return;
   is_initialized_ = false;
-  if (!web_track_.Source().Remote()) {
-    if (web_track_.Source().GetType() ==
-        blink::WebMediaStreamSource::kTypeAudio) {
+  if (web_track_.Source().GetType() ==
+      blink::WebMediaStreamSource::kTypeAudio) {
+    if (local_track_audio_sink_)
       DisposeLocalAudioTrack();
-    } else {
-      DCHECK_EQ(web_track_.Source().GetType(),
-                blink::WebMediaStreamSource::kTypeVideo);
-      DisposeLocalVideoTrack();
-    }
-  } else {
-    if (web_track_.Source().GetType() ==
-        blink::WebMediaStreamSource::kTypeAudio) {
+    else
       DisposeRemoteAudioTrack();
-    } else {
-      DCHECK_EQ(web_track_.Source().GetType(),
-                blink::WebMediaStreamSource::kTypeVideo);
+  } else {
+    DCHECK_EQ(web_track_.Source().GetType(),
+              blink::WebMediaStreamSource::kTypeVideo);
+    if (local_track_video_sink_)
+      DisposeLocalVideoTrack();
+    else
       DisposeRemoteVideoTrack();
-    }
   }
 }
 
@@ -121,7 +115,6 @@ void WebRtcMediaStreamTrackAdapter::InitializeLocalAudioTrack(
   DCHECK(main_thread_->BelongsToCurrentThread());
   DCHECK(!is_initialized_);
   DCHECK(!web_track.IsNull());
-  DCHECK(!web_track.Source().Remote());
   DCHECK_EQ(web_track.Source().GetType(),
             blink::WebMediaStreamSource::kTypeAudio);
   web_track_ = web_track;
@@ -158,7 +151,6 @@ void WebRtcMediaStreamTrackAdapter::InitializeLocalVideoTrack(
   DCHECK(main_thread_->BelongsToCurrentThread());
   DCHECK(!is_initialized_);
   DCHECK(!web_track.IsNull());
-  DCHECK(!web_track.Source().Remote());
   DCHECK_EQ(web_track.Source().GetType(),
             blink::WebMediaStreamSource::kTypeVideo);
   web_track_ = web_track;
@@ -218,12 +210,11 @@ void WebRtcMediaStreamTrackAdapter::
 void WebRtcMediaStreamTrackAdapter::DisposeLocalAudioTrack() {
   DCHECK(main_thread_->BelongsToCurrentThread());
   DCHECK(!is_initialized_);
-  DCHECK(!web_track_.Source().Remote());
+  DCHECK(local_track_audio_sink_);
   DCHECK_EQ(web_track_.Source().GetType(),
             blink::WebMediaStreamSource::kTypeAudio);
   MediaStreamAudioTrack* audio_track = MediaStreamAudioTrack::From(web_track_);
   DCHECK(audio_track);
-  DCHECK(local_track_audio_sink_);
   audio_track->RemoveSink(local_track_audio_sink_.get());
   local_track_audio_sink_.reset();
   webrtc_track_ = nullptr;
@@ -233,7 +224,7 @@ void WebRtcMediaStreamTrackAdapter::DisposeLocalAudioTrack() {
 void WebRtcMediaStreamTrackAdapter::DisposeLocalVideoTrack() {
   DCHECK(main_thread_->BelongsToCurrentThread());
   DCHECK(!is_initialized_);
-  DCHECK(!web_track_.Source().Remote());
+  DCHECK(local_track_video_sink_);
   DCHECK_EQ(web_track_.Source().GetType(),
             blink::WebMediaStreamSource::kTypeVideo);
   local_track_video_sink_.reset();
@@ -244,7 +235,7 @@ void WebRtcMediaStreamTrackAdapter::DisposeLocalVideoTrack() {
 void WebRtcMediaStreamTrackAdapter::DisposeRemoteAudioTrack() {
   DCHECK(main_thread_->BelongsToCurrentThread());
   DCHECK(!is_initialized_);
-  DCHECK(web_track_.Source().Remote());
+  DCHECK(remote_audio_track_adapter_);
   DCHECK_EQ(web_track_.Source().GetType(),
             blink::WebMediaStreamSource::kTypeAudio);
   factory_->GetWebRtcSignalingThread()->PostTask(
@@ -257,7 +248,7 @@ void WebRtcMediaStreamTrackAdapter::DisposeRemoteAudioTrack() {
 void WebRtcMediaStreamTrackAdapter::DisposeRemoteVideoTrack() {
   DCHECK(main_thread_->BelongsToCurrentThread());
   DCHECK(!is_initialized_);
-  DCHECK(web_track_.Source().Remote());
+  DCHECK(remote_video_track_adapter_);
   DCHECK_EQ(web_track_.Source().GetType(),
             blink::WebMediaStreamSource::kTypeVideo);
   FinalizeRemoteTrackDisposingOnMainThread();

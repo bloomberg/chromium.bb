@@ -4,10 +4,12 @@
 
 #include "content/renderer/media/peer_connection_tracker.h"
 
+#include "base/message_loop/message_loop.h"
 #include "content/common/media/peer_connection_tracker_messages.h"
 #include "content/public/test/mock_render_thread.h"
 #include "content/renderer/media/mock_web_rtc_peer_connection_handler_client.h"
 #include "content/renderer/media/rtc_peer_connection_handler.h"
+#include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "ipc/ipc_message_macros.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -43,20 +45,27 @@ bool MockSendTargetThread::OnMessageReceived(const IPC::Message& msg) {
 
 class MockPeerConnectionHandler : public RTCPeerConnectionHandler {
  public:
-  MockPeerConnectionHandler() : RTCPeerConnectionHandler(&client_, nullptr) {}
+  MockPeerConnectionHandler()
+      : RTCPeerConnectionHandler(&client_, &dependency_factory_) {}
   MOCK_METHOD0(CloseClientPeerConnection, void());
 
  private:
+  MockPeerConnectionDependencyFactory dependency_factory_;
   MockWebRTCPeerConnectionHandlerClient client_;
+};
+
+class PeerConnectionTrackerTest : public ::testing::Test {
+ private:
+  base::MessageLoop message_loop_;
 };
 
 }  // namespace
 
-TEST(PeerConnectionTrackerTest, CreatingObject) {
+TEST_F(PeerConnectionTrackerTest, CreatingObject) {
   PeerConnectionTracker tracker;
 }
 
-TEST(PeerConnectionTrackerTest, TrackCreateOffer) {
+TEST_F(PeerConnectionTrackerTest, TrackCreateOffer) {
   PeerConnectionTracker tracker;
   // Note: blink::WebRTCOfferOptions is not mockable. So we can't write
   // tests for anything but a null options parameter.
@@ -78,7 +87,7 @@ TEST(PeerConnectionTrackerTest, TrackCreateOffer) {
   tracker.TrackCreateOffer(&pc_handler, options);
 }
 
-TEST(PeerConnectionTrackerTest, OnSuspend) {
+TEST_F(PeerConnectionTrackerTest, OnSuspend) {
   PeerConnectionTracker tracker;
   // Initialization stuff.
   MockPeerConnectionHandler pc_handler;
