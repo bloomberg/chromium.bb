@@ -29,7 +29,6 @@
 using chrome_test_util::AssertMainTabCount;
 using chrome_test_util::OmniboxText;
 using chrome_test_util::TapWebViewElementWithId;
-using chrome_test_util::WebViewContainingText;
 using web::test::HttpServer;
 
 namespace {
@@ -66,8 +65,7 @@ NSString* GetBlockedPopupInfobarText(size_t blocked_count) {
   [super setUp];
   // Open the test page. There should only be one tab open.
   [ChromeEarlGrey loadURL:HttpServer::MakeUrl(kTestURL)];
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText("Expected result")]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:"Expected result"];
   AssertMainTabCount(1);
 }
 
@@ -89,8 +87,7 @@ NSString* GetBlockedPopupInfobarText(size_t blocked_count) {
 
   TapWebViewElementWithId("webScenarioWindowOpenSameURLWithBlankTarget");
   AssertMainTabCount(2);
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText("Expected result")]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:"Expected result"];
 
   id value = ExecuteJavaScript(@"sessionStorage.getItem('key');", &error);
   GREYAssert(!error, @"Error during script execution: %@", error);

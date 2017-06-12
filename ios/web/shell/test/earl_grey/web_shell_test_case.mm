@@ -14,7 +14,6 @@
 #endif
 
 using web::test::HttpServer;
-using web::WebViewContainingText;
 
 @implementation WebShellTestCase
 

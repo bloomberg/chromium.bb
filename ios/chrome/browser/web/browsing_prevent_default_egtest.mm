@@ -97,17 +97,7 @@ class ScopedBlockPopupsPref {
   // Tap on the test link and wait for the page to display "Click done", as an
   // indicator that the element was tapped.
   chrome_test_util::TapWebViewElementWithId(linkID);
-  [[GREYCondition
-      conditionWithName:@"Waiting for webview to display 'Click done'."
-                  block:^BOOL {
-                    id<GREYMatcher> webViewMatcher =
-                        chrome_test_util::WebViewContainingText("Click done");
-                    NSError* error = nil;
-                    [[EarlGrey selectElementWithMatcher:webViewMatcher]
-                        assertWithMatcher:grey_notNil()
-                                    error:&error];
-                    return error == nil;
-                  }] waitWithTimeout:kConditionTimeout];
+  [ChromeEarlGrey waitForWebViewContainingText:"Click done"];
 
   // Check that no navigation occurred and no new tabs were opened.
   chrome_test_util::AssertMainTabCount(1U);
@@ -149,19 +139,7 @@ class ScopedBlockPopupsPref {
   const std::string linkID =
       "webScenarioBrowsingLinkPreventDefaultOverridesWindowOpen";
   chrome_test_util::TapWebViewElementWithId(linkID);
-
-  // Stall a bit to make sure the webview doesn't do anything asynchronously.
-  [[GREYCondition
-      conditionWithName:@"Waiting for webview to display 'Click done'."
-                  block:^BOOL {
-                    id<GREYMatcher> webViewMatcher =
-                        chrome_test_util::WebViewContainingText("Click done");
-                    NSError* error = nil;
-                    [[EarlGrey selectElementWithMatcher:webViewMatcher]
-                        assertWithMatcher:grey_notNil()
-                                    error:&error];
-                    return error == nil;
-                  }] waitWithTimeout:kConditionTimeout];
+  [ChromeEarlGrey waitForWebViewContainingText:"Click done"];
 
   // Check that the tab navigated to about:blank and no new tabs were opened.
   [[GREYCondition

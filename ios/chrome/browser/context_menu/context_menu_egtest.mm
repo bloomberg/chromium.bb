@@ -6,7 +6,6 @@
 #import <UIKit/UIKit.h>
 #import <XCTest/XCTest.h>
 
-#include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
@@ -224,9 +223,7 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
                                    chrome_test_util::GetCurrentWebState())]
       performAction:grey_scrollToContentEdge(kGREYContentEdgeBottom)];
 
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewContainingText(
-                                          kDestinationLinkID)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kDestinationLinkID];
 
   LongPressElementAndTapOnButton(kDestinationLinkID, OpenLinkInNewTabButton());
 

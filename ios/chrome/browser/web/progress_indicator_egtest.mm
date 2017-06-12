@@ -152,8 +152,7 @@ class InfinitePendingResponseProvider : public HtmlResponseProvider {
   chrome_test_util::LoadUrl(infinitePendingURL);
 
   // Wait until the page is half loaded.
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kPageText)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kPageText];
 
   // Verify progress view visible and halfway progress.
   [[EarlGrey selectElementWithMatcher:ProgressViewWithProgress(0.5)]
@@ -185,12 +184,17 @@ class InfinitePendingResponseProvider : public HtmlResponseProvider {
   // Load form first.
   [ChromeEarlGrey loadURL:formURL];
 
+  // TODO(crbug.com/707009): Replace this matcher with
+  // [ChromeEarlGrey waitForWebViewContainingText]. It fails to synchronize with
+  // the progress bar.
   [[EarlGrey selectElementWithMatcher:WebViewContainingText(kFormPageText)]
       assertWithMatcher:grey_notNil()];
 
   chrome_test_util::SubmitWebViewFormWithId(kFormID);
 
   // Wait until the page is half loaded.
+  // TODO(crbug.com/707009): Replace this matcher with
+  // [ChromeEarlGrey waitForWebViewContainingText].
   [[EarlGrey selectElementWithMatcher:WebViewContainingText(kPageText)]
       assertWithMatcher:grey_notNil()];
 
@@ -218,14 +222,12 @@ class InfinitePendingResponseProvider : public HtmlResponseProvider {
 
   [ChromeEarlGrey loadURL:formURL];
 
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kFormPageText)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kFormPageText];
 
   chrome_test_util::SubmitWebViewFormWithId(kFormID);
 
   // Verify the new page has been loaded.
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kPageText)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kPageText];
 
   // Verify progress view is not visible.
   [[EarlGrey selectElementWithMatcher:ProgressView()]
@@ -248,8 +250,7 @@ class InfinitePendingResponseProvider : public HtmlResponseProvider {
   [ChromeEarlGrey loadURL:formURL];
 
   // Verify the form page has been loaded.
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kFormPageText)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kFormPageText];
 
   chrome_test_util::SubmitWebViewFormWithId(kFormID);
 

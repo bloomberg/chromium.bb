@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/test/app/navigation_test_util.h"
+#import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
@@ -51,10 +52,7 @@ const char kHTMLURL[] = "http://test";
   web::test::SetUpSimpleHttpServer(responses);
 
   chrome_test_util::LoadUrl(url);
-  id<GREYMatcher> response1Matcher =
-      chrome_test_util::WebViewContainingText(response);
-  [[EarlGrey selectElementWithMatcher:response1Matcher]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:response];
 
   [self printCurrentPage];
 }

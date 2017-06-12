@@ -53,10 +53,7 @@
   [ChromeEarlGrey loadURL:startURL];
 
   // Waits for the page to load and check it is the expected content.
-  id<GREYMatcher> responseMatcher =
-      chrome_test_util::WebViewContainingText(responses[startURL]);
-  [[EarlGrey selectElementWithMatcher:responseMatcher]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:responses[startURL]];
 
   // In the omnibox, the URL should be present, without the http:// prefix.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
@@ -81,10 +78,7 @@
                   @"Did not navigate to the destination url.");
 
   // Verifies that the destination page is shown.
-  id<GREYMatcher> navigationMatcher =
-      chrome_test_util::WebViewContainingText(responses[destinationURL]);
-  [[EarlGrey selectElementWithMatcher:grey_kindOfClass([WKWebView class])]
-      assertWithMatcher:navigationMatcher];
+  [ChromeEarlGrey waitForWebViewContainingText:responses[destinationURL]];
 }
 
 @end

@@ -35,6 +35,7 @@
 #import "ios/web/public/test/http_server/html_response_provider.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
+#import "ios/web/public/test/web_view_content_test_util.h"
 #include "net/base/network_change_notifier.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -317,20 +318,17 @@ void AssertIsShowingDistillablePage(bool online) {
   NSString* contentToKeep = base::SysUTF8ToNSString(kContentToKeep);
   // There will be multiple reloads, wait for the page to be displayed.
   if (online) {
-    // TODO(crbug.com/707009): Remove use of WebViewContainingText, with a
-    // method that is not an EarlGrey matcher.
-    id<GREYMatcher> web_view_match = nil;
-    web_view_match = chrome_test_util::WebViewContainingText(kContentToKeep);
-    ConditionBlock wait_for_loading = ^{
-      NSError* error = nil;
-      [[EarlGrey selectElementWithMatcher:web_view_match]
-          assertWithMatcher:grey_notNil()
-                      error:&error];
-      return error == nil;
-    };
-    GREYAssert(testing::WaitUntilConditionOrTimeout(kLoadOfflineTimeout,
-                                                    wait_for_loading),
-               @"Page did not load.");
+    // Due to the reloads, a timeout longer than what is provided in
+    // [ChromeEarlGrey waitForWebViewContainingText] is required, so call
+    // WebViewContainingText directly.
+    GREYAssert(testing::WaitUntilConditionOrTimeout(
+                   kLoadOfflineTimeout,
+                   ^bool {
+                     return web::test::IsWebViewContainingText(
+                         chrome_test_util::GetCurrentWebState(),
+                         kContentToKeep);
+                   }),
+               @"Waiting for online page.");
   } else {
     [ChromeEarlGrey waitForStaticHTMLViewContainingText:contentToKeep];
   }
@@ -341,15 +339,16 @@ void AssertIsShowingDistillablePage(bool online) {
                                           distillableURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
-  // Test presence of online page
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewContainingText(
-                                          kContentToKeep)]
-      assertWithMatcher:online ? grey_notNil() : grey_nil()];
-
-  // Test presence of offline page.
+  // Test that the offline and online pages are properly displayed.
   if (online) {
+    [ChromeEarlGrey
+        waitForWebViewContainingText:base::SysNSStringToUTF8(contentToKeep)];
     [ChromeEarlGrey waitForStaticHTMLViewNotContainingText:contentToKeep];
   } else {
+    // TODO(crbug.com/714157): Remove matcher that asserts grey_nil().
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewContainingText(
+                                            kContentToKeep)]
+        assertWithMatcher:grey_nil()];
     [ChromeEarlGrey waitForStaticHTMLViewContainingText:contentToKeep];
   }
 

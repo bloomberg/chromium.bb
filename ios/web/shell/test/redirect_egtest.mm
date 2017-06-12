@@ -19,7 +19,6 @@
 
 using web::AddressFieldText;
 using web::test::HttpServer;
-using web::WebViewContainingText;
 
 // Redirect test cases for the web shell.
 @interface RedirectTestCase : WebShellTestCase
@@ -53,8 +52,7 @@ using web::WebViewContainingText;
   [ShellEarlGrey loadURL:firstRedirectURL];
   [[EarlGrey selectElementWithMatcher:AddressFieldText(destinationURL.spec())]
       assertWithMatcher:grey_notNil()];
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kFinalPageContent)]
-      assertWithMatcher:grey_notNil()];
+  [ShellEarlGrey waitForWebViewContainingText:kFinalPageContent];
 }
 
 // Tests simple 301 redirection.
@@ -77,8 +75,7 @@ using web::WebViewContainingText;
   [ShellEarlGrey loadURL:firstRedirectURL];
   [[EarlGrey selectElementWithMatcher:AddressFieldText(destinationURL.spec())]
       assertWithMatcher:grey_notNil()];
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kFinalPageContent)]
-      assertWithMatcher:grey_notNil()];
+  [ShellEarlGrey waitForWebViewContainingText:kFinalPageContent];
 }
 
 // Tests simple 302 redirection.
@@ -101,8 +98,7 @@ using web::WebViewContainingText;
   [ShellEarlGrey loadURL:firstRedirectURL];
   [[EarlGrey selectElementWithMatcher:AddressFieldText(destinationURL.spec())]
       assertWithMatcher:grey_notNil()];
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kFinalPageContent)]
-      assertWithMatcher:grey_notNil()];
+  [ShellEarlGrey waitForWebViewContainingText:kFinalPageContent];
 }
 
 @end

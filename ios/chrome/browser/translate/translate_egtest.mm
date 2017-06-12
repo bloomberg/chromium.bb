@@ -777,25 +777,19 @@ using translate::LanguageDetectionController;
              @"Did not receive all translate status callbacks");
 
   // Check that the translation happened.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewContainingText(
-                                          "Translated")]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:"Translated"];
 
   // Click on the link.
   [ChromeEarlGrey tapWebViewElementWithID:@"link"];
   GURL frenchPagePathURL = web::test::HttpServer::MakeUrl(
       base::StringPrintf("http://%s", kFrenchPagePath));
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::WebViewContainingText("link")]
-      assertWithMatcher:grey_nil()];
+  [ChromeEarlGrey waitForWebViewContainingText:"link"];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           frenchPagePathURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Check that the auto-translation happened.
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewContainingText(
-                                          "Translated")]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:"Translated"];
 }
 
 #pragma mark - Utility methods

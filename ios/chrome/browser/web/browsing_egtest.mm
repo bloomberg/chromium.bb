@@ -40,7 +40,6 @@
 #endif
 
 using chrome_test_util::OmniboxText;
-using chrome_test_util::WebViewContainingText;
 
 namespace {
 
@@ -148,16 +147,12 @@ id<GREYMatcher> GoButtonMatcher() {
   [ChromeEarlGrey loadURL:URL];
   std::string expectedBodyBeforeReload(
       ReloadResponseProvider::GetResponseBody(0 /* request number */));
-  [[EarlGrey
-      selectElementWithMatcher:WebViewContainingText(expectedBodyBeforeReload)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:expectedBodyBeforeReload];
 
   [ChromeEarlGreyUI reload];
   std::string expectedBodyAfterReload(
       ReloadResponseProvider::GetResponseBody(1 /* request_number */));
-  [[EarlGrey
-      selectElementWithMatcher:WebViewContainingText(expectedBodyAfterReload)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:expectedBodyAfterReload];
 }
 
 // Tests that a tab's title is based on the URL when no other information is
@@ -434,8 +429,7 @@ id<GREYMatcher> GoButtonMatcher() {
   // onclick event.
   [[EarlGrey selectElementWithMatcher:OmniboxText("chrome://version")]
       assertWithMatcher:grey_nil()];
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText("Hello world!")]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:"Hello world!"];
 
   // Verify that no new tabs were open which could load chrome://version.
   chrome_test_util::AssertMainTabCount(1U);
@@ -546,8 +540,7 @@ id<GREYMatcher> GoButtonMatcher() {
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(@"Go")]
       performAction:grey_tap()];
 
-  id<GREYMatcher> webView = chrome_test_util::WebViewContainingText("foo");
-  [[EarlGrey selectElementWithMatcher:webView] assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:"foo"];
 
   // Verify that the JavaScript did not affect history by going back and then
   // forward again.
@@ -639,21 +632,18 @@ id<GREYMatcher> GoButtonMatcher() {
 
   // Open the URL, focus the textfield,and submit via keyboard.
   [ChromeEarlGrey loadURL:URL];
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText("hello!")]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:"hello!"];
 
   [self submitFormUsingKeyboardGoButtonWithInputID:"textfield"];
 
   // Verify that the browser navigates to the expected URL.
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText("baz!")]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:"baz!"];
   [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Go back and verify that the browser navigates to the original URL.
   [self goBack];
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText("hello!")]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:"hello!"];
   [[EarlGrey selectElementWithMatcher:OmniboxText(URL.GetContent())]
       assertWithMatcher:grey_notNil()];
 }

@@ -15,6 +15,7 @@
 #include "ios/chrome/test/app/navigation_test_util.h"
 #include "ios/chrome/test/app/web_view_interaction_test_util.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
+#import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/testing/wait_util.h"
@@ -30,7 +31,6 @@
 using chrome_test_util::BackButton;
 using chrome_test_util::ForwardButton;
 using chrome_test_util::TapWebViewElementWithId;
-using chrome_test_util::WebViewContainingText;
 
 namespace {
 
@@ -86,14 +86,12 @@ id<GREYMatcher> WaitForOmniboxText(std::string text) {
 
   // Verify that app version is present on the page.
   const std::string version = version_info::GetVersionNumber();
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(version)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:version];
 
   // Verify that mobile User Agent string is present on the page.
   const std::string userAgent =
       web::GetWebClient()->GetUserAgent(web::UserAgentType::MOBILE);
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(userAgent)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:userAgent];
 }
 
 // Tests that chrome://physical-web renders and the page title is present.
@@ -104,9 +102,9 @@ id<GREYMatcher> WaitForOmniboxText(std::string text) {
   LoadWebUIUrl(kChromeUIPhysicalWebHost);
 
   // Verify that the title string is present on the page.
-  std::string pageTitle = l10n_util::GetStringUTF8(IDS_PHYSICAL_WEB_UI_TITLE);
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(pageTitle)]
-      assertWithMatcher:grey_notNil()];
+  const std::string pageTitle =
+      l10n_util::GetStringUTF8(IDS_PHYSICAL_WEB_UI_TITLE);
+  [ChromeEarlGrey waitForWebViewContainingText:pageTitle];
 }
 
 // Tests that clicking on a link for a native page from chrome://chrome-urls
@@ -121,8 +119,7 @@ id<GREYMatcher> WaitForOmniboxText(std::string text) {
   [[EarlGrey selectElementWithMatcher:WaitForOmniboxText("chrome://terms")]
       assertWithMatcher:grey_sufficientlyVisible()];
   const std::string kTermsText = "Google Chrome Terms of Service";
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kTermsText)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kTermsText];
 }
 
 // Tests that back navigation functions properly after navigation via anchor
@@ -136,9 +133,7 @@ id<GREYMatcher> WaitForOmniboxText(std::string text) {
   // Verify that the resulting page is chrome://version.
   [[EarlGrey selectElementWithMatcher:WaitForOmniboxText("chrome://version")]
       assertWithMatcher:grey_sufficientlyVisible()];
-  const std::string kAuthorsText = "The Chromium Authors";
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kAuthorsText)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:"The Chromium Authors"];
 
   // Tap the back button in the toolbar and verify that the resulting page is
   // the previously visited page chrome://chrome-urls.
@@ -146,9 +141,7 @@ id<GREYMatcher> WaitForOmniboxText(std::string text) {
   [[EarlGrey
       selectElementWithMatcher:WaitForOmniboxText("chrome://chrome-urls")]
       assertWithMatcher:grey_sufficientlyVisible()];
-  const std::string kChromeURLsText = "List of Chrome URLs";
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kChromeURLsText)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:"List of Chrome URLs"];
 }
 
 // Tests that back and forward navigation between chrome URLs functions

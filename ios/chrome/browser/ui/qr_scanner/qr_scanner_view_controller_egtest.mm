@@ -24,6 +24,7 @@
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/base/scoped_block_swizzler.h"
+#import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "ios/shared/chrome/browser/ui/omnibox/location_bar_delegate.h"
@@ -277,14 +278,6 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
 // Checks that the omnibox is visible and contains |text|.
 - (void)assertOmniboxIsVisibleWithText:(std::string)text {
   [[EarlGrey selectElementWithMatcher:OmniboxText(text)]
-      assertWithMatcher:grey_notNil()];
-}
-
-// Checks that the page that is currently loaded contains the |response|.
-- (void)assertTestURLIsLoaded:(std::string)response {
-  id<GREYMatcher> testURLResponseMatcher =
-      chrome_test_util::WebViewContainingText(response);
-  [[EarlGrey selectElementWithMatcher:testURLResponseMatcher]
       assertWithMatcher:grey_notNil()];
 }
 
@@ -787,7 +780,7 @@ void TapKeyboardReturnKeyInOmniboxWithText(std::string text) {
   } else {
     TapKeyboardReturnKeyInOmniboxWithText(result);
   }
-  [self assertTestURLIsLoaded:response];
+  [ChromeEarlGrey waitForWebViewContainingText:response];
 
   // Press the back button to get back to the NTP.
   TapButton(WebToolbarBackButton());
