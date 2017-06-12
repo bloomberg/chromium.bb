@@ -9,20 +9,27 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial.h"
-#include "build/build_config.h"
 #include "components/signin/core/common/signin_switches.h"
 
 namespace switches {
 
-bool IsAccountConsistencyMirrorEnabled() {
+AccountConsistencyMethod GetAccountConsistencyMethod() {
 #if defined(OS_ANDROID) || defined(OS_IOS)
-  // Account consistency is enabled on Android and iOS.
-  return true;
+  // Mirror is enabled on Android and iOS.
+  return AccountConsistencyMethod::kMirror;
 #else
   base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
-  return cmd->GetSwitchValueASCII(switches::kAccountConsistency) ==
-         switches::kAccountConsistencyMirror;
+  std::string method = cmd->GetSwitchValueASCII(switches::kAccountConsistency);
+  if (method == switches::kAccountConsistencyMirror)
+    return AccountConsistencyMethod::kMirror;
+  if (method == switches::kAccountConsistencyDice)
+    return AccountConsistencyMethod::kDice;
+  return AccountConsistencyMethod::kDisabled;
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
+}
+
+bool IsAccountConsistencyMirrorEnabled() {
+  return GetAccountConsistencyMethod() == AccountConsistencyMethod::kMirror;
 }
 
 bool IsExtensionsMultiAccount() {
@@ -34,7 +41,7 @@ bool IsExtensionsMultiAccount() {
 
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kExtensionsMultiAccount) ||
-         IsAccountConsistencyMirrorEnabled();
+         GetAccountConsistencyMethod() == AccountConsistencyMethod::kMirror;
 }
 
 void EnableAccountConsistencyMirrorForTesting(base::CommandLine* command_line) {
@@ -43,5 +50,12 @@ void EnableAccountConsistencyMirrorForTesting(base::CommandLine* command_line) {
                                   switches::kAccountConsistencyMirror);
 #endif
 }
+
+#if !defined(OS_ANDROID) && !defined(OS_IOS)
+void EnableAccountConsistencyDiceForTesting(base::CommandLine* command_line) {
+  command_line->AppendSwitchASCII(switches::kAccountConsistency,
+                                  switches::kAccountConsistencyDice);
+}
+#endif
 
 }  // namespace switches
