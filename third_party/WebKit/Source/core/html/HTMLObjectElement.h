@@ -110,7 +110,9 @@ class CORE_EXPORT HTMLObjectElement final : public HTMLPlugInElement,
   // FIXME: This function should not deal with url or serviceType
   // so that we can better share code between <object> and <embed>.
   void ParametersForPlugin(Vector<String>& param_names,
-                           Vector<String>& param_values);
+                           Vector<String>& param_values,
+                           String& url,
+                           String& service_type);
 
   bool HasValidClassId() const;
 

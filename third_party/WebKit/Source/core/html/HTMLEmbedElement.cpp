@@ -175,7 +175,7 @@ void HTMLEmbedElement::UpdatePluginInternal() {
     service_type_ = "text/html";
   }
 
-  RequestObject(param_names, param_values);
+  RequestObject(url_, service_type_, param_names, param_values);
 }
 
 bool HTMLEmbedElement::LayoutObjectIsNeeded(const ComputedStyle& style) {

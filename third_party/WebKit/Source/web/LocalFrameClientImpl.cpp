@@ -81,6 +81,7 @@
 #include "platform/feature_policy/FeaturePolicy.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/network/HTTPParsers.h"
+#include "platform/network/mime/MIMETypeRegistry.h"
 #include "platform/plugins/PluginData.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/StringExtras.h"
@@ -811,6 +812,47 @@ std::unique_ptr<WebMediaPlayer> LocalFrameClientImpl::CreateWebMediaPlayer(
 WebRemotePlaybackClient* LocalFrameClientImpl::CreateWebRemotePlaybackClient(
     HTMLMediaElement& html_media_element) {
   return HTMLMediaElementRemotePlayback::remote(html_media_element);
+}
+
+ObjectContentType LocalFrameClientImpl::GetObjectContentType(
+    const KURL& url,
+    const String& explicit_mime_type,
+    bool should_prefer_plug_ins_for_images) {
+  // This code is based on Apple's implementation from
+  // WebCoreSupport/WebFrameBridge.mm.
+
+  String mime_type = explicit_mime_type;
+  if (mime_type.IsEmpty()) {
+    // Try to guess the MIME type based off the extension.
+    String filename = url.LastPathComponent();
+    int extension_pos = filename.ReverseFind('.');
+    if (extension_pos >= 0) {
+      String extension = filename.Substring(extension_pos + 1);
+      mime_type = MIMETypeRegistry::GetWellKnownMIMETypeForExtension(extension);
+    }
+
+    if (mime_type.IsEmpty())
+      return kObjectContentFrame;
+  }
+
+  // If Chrome is started with the --disable-plugins switch, pluginData is 0.
+  PluginData* plugin_data = web_frame_->GetFrame()->GetPluginData();
+  bool plug_in_supports_mime_type =
+      plugin_data && plugin_data->SupportsMimeType(mime_type);
+
+  if (MIMETypeRegistry::IsSupportedImageMIMEType(mime_type)) {
+    return should_prefer_plug_ins_for_images && plug_in_supports_mime_type
+               ? kObjectContentNetscapePlugin
+               : kObjectContentImage;
+  }
+
+  if (plug_in_supports_mime_type)
+    return kObjectContentNetscapePlugin;
+
+  if (MIMETypeRegistry::IsSupportedNonImageMIMEType(mime_type))
+    return kObjectContentFrame;
+
+  return kObjectContentNone;
 }
 
 WebCookieJar* LocalFrameClientImpl::CookieJar() const {

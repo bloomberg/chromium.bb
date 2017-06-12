@@ -51,6 +51,13 @@ enum NavigationType {
   kNavigationTypeOther
 };
 
+enum ObjectContentType {
+  kObjectContentNone,
+  kObjectContentImage,
+  kObjectContentFrame,
+  kObjectContentNetscapePlugin,
+};
+
 enum ShouldSendReferrer { kMaybeSendReferrer, kNeverSendReferrer };
 
 enum ShouldSetOpener { kMaybeSetOpener, kNeverSetOpener };

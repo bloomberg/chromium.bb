@@ -223,6 +223,11 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual WebRemotePlaybackClient* CreateWebRemotePlaybackClient(
       HTMLMediaElement&) = 0;
 
+  virtual ObjectContentType GetObjectContentType(
+      const KURL&,
+      const String& mime_type,
+      bool should_prefer_plug_ins_for_images) = 0;
+
   virtual void DidCreateNewDocument() = 0;
   virtual void DispatchDidClearWindowObjectInMainWorld() = 0;
   virtual void DocumentElementAvailable() = 0;
