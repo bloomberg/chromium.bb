@@ -15,10 +15,10 @@
                 assert_unreached('addModule should fail.')
             },
             function(error) {
-                assert_equals(error.name, 'NetworkError', 'error should be a NetworkError.');
+                assert_equals(error.name, 'AbortError', 'error should be an AbortError.');
             });
 
-    }, 'Importing a script rejects the given promise with NetworkError because it violated the same origin CSP policy.');
+    }, 'Importing a script rejects the given promise with AbortError because it violated the same origin CSP policy.');
 </script>
 </body>
 </html>
