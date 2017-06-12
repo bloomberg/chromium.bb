@@ -16,6 +16,7 @@
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/RefPtr.h"
 #include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkColorSpaceXformCanvas.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkSurface.h"
 
@@ -302,6 +303,12 @@ static sk_sp<SkImage> UnPremulSkImageToPremul(
 
 static void ApplyColorSpaceConversion(sk_sp<SkImage>& image,
                                       ParsedOptions& options) {
+  if (options.color_params.UsesOutputSpaceBlending() &&
+      RuntimeEnabledFeatures::ColorCorrectRenderingEnabled()) {
+    image = image->makeColorSpace(options.color_params.GetSkColorSpace(),
+                                  SkTransferFunctionBehavior::kIgnore);
+  }
+
   if (!options.color_canvas_extensions_enabled)
     return;
 
@@ -480,6 +487,15 @@ static PassRefPtr<StaticBitmapImage> CropImageAndApplyColorSpaceConversion(
   if (src_rect.IsEmpty())
     return StaticBitmapImage::Create(surface->makeImageSnapshot());
 
+  SkCanvas* canvas = surface->getCanvas();
+  std::unique_ptr<SkCanvas> color_transform_canvas;
+  if (parsed_options.color_params.UsesOutputSpaceBlending() &&
+      RuntimeEnabledFeatures::ColorCorrectRenderingEnabled()) {
+    color_transform_canvas = SkCreateColorSpaceXformCanvas(
+        canvas, parsed_options.color_params.GetSkColorSpace());
+    canvas = color_transform_canvas.get();
+  }
+
   SkScalar dst_left = std::min(0, -parsed_options.crop_rect.X());
   SkScalar dst_top = std::min(0, -parsed_options.crop_rect.Y());
   if (parsed_options.crop_rect.X() < 0)
@@ -487,8 +503,8 @@ static PassRefPtr<StaticBitmapImage> CropImageAndApplyColorSpaceConversion(
   if (parsed_options.crop_rect.Y() < 0)
     dst_top = -parsed_options.crop_rect.Y();
   if (parsed_options.flip_y) {
-    surface->getCanvas()->translate(0, surface->height());
-    surface->getCanvas()->scale(1, -1);
+    canvas->translate(0, surface->height());
+    canvas->scale(1, -1);
   }
   if (parsed_options.should_scale_input) {
     SkRect draw_src_rect = SkRect::MakeXYWH(
@@ -498,10 +514,9 @@ static PassRefPtr<StaticBitmapImage> CropImageAndApplyColorSpaceConversion(
                                             parsed_options.resize_height);
     SkPaint paint;
     paint.setFilterQuality(parsed_options.resize_quality);
-    surface->getCanvas()->drawImageRect(skia_image, draw_src_rect,
-                                        draw_dst_rect, &paint);
+    canvas->drawImageRect(skia_image, draw_src_rect, draw_dst_rect, &paint);
   } else {
-    surface->getCanvas()->drawImage(skia_image, dst_left, dst_top);
+    canvas->drawImage(skia_image, dst_left, dst_top);
   }
   skia_image = surface->makeImageSnapshot();
   ApplyColorSpaceConversion(skia_image, parsed_options);
@@ -552,7 +567,15 @@ ImageBitmap::ImageBitmap(ImageElementBase* image,
         SkImageInfo::Make(sk_image->width(), sk_image->height(), dst_color_type,
                           kPremul_SkAlphaType, dst_color_space);
     sk_sp<SkSurface> surface = SkSurface::MakeRaster(image_info);
-    surface->getCanvas()->drawImage(sk_image, 0, 0);
+    SkCanvas* canvas = surface->getCanvas();
+    std::unique_ptr<SkCanvas> color_transform_canvas;
+    if (parsed_options.color_params.UsesOutputSpaceBlending() &&
+        RuntimeEnabledFeatures::ColorCorrectRenderingEnabled()) {
+      color_transform_canvas = SkCreateColorSpaceXformCanvas(
+          canvas, parsed_options.color_params.GetSkColorSpace());
+      canvas = color_transform_canvas.get();
+    }
+    canvas->drawImage(sk_image, 0, 0);
     image_ = StaticBitmapImage::Create(surface->makeImageSnapshot());
   }
   if (!image_)
@@ -912,7 +935,15 @@ ImageBitmap::ImageBitmap(ImageData* data,
     paint.setFilterQuality(parsed_options.resize_quality);
     SkRect dst_draw_rect = SkRect::MakeWH(parsed_options.resize_width,
                                           parsed_options.resize_height);
-    surface->getCanvas()->drawImageRect(sk_image, dst_draw_rect, &paint);
+    SkCanvas* canvas = surface->getCanvas();
+    std::unique_ptr<SkCanvas> color_transform_canvas;
+    if (parsed_options.color_params.UsesOutputSpaceBlending() &&
+        RuntimeEnabledFeatures::ColorCorrectRenderingEnabled()) {
+      color_transform_canvas = SkCreateColorSpaceXformCanvas(
+          canvas, parsed_options.color_params.GetSkColorSpace());
+      canvas = color_transform_canvas.get();
+    }
+    canvas->drawImageRect(sk_image, dst_draw_rect, &paint);
     sk_image = surface->makeImageSnapshot();
   }
   ApplyColorSpaceConversion(sk_image, parsed_options);
