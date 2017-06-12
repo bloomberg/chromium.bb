@@ -4668,14 +4668,14 @@ void RenderFrameImpl::PostAccessibilityEvent(const blink::WebAXObject& obj,
 void RenderFrameImpl::HandleAccessibilityFindInPageResult(
     int identifier,
     int match_index,
-    const blink::WebAXObject& start_object,
+    const blink::WebNode& start_node,
     int start_offset,
-    const blink::WebAXObject& end_object,
+    const blink::WebNode& end_node,
     int end_offset) {
   if (render_accessibility_) {
     render_accessibility_->HandleAccessibilityFindInPageResult(
-        identifier, match_index, start_object, start_offset,
-        end_object, end_offset);
+        identifier, match_index, blink::WebAXObject::FromWebNode(start_node),
+        start_offset, blink::WebAXObject::FromWebNode(end_node), end_offset);
   }
 }
 

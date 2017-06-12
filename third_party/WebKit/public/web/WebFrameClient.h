@@ -728,13 +728,12 @@ class BLINK_EXPORT WebFrameClient {
   virtual void PostAccessibilityEvent(const WebAXObject&, WebAXEvent) {}
 
   // Provides accessibility information about a find in page result.
-  virtual void HandleAccessibilityFindInPageResult(
-      int identifier,
-      int match_index,
-      const WebAXObject& start_object,
-      int start_offset,
-      const WebAXObject& end_object,
-      int end_offset) {}
+  virtual void HandleAccessibilityFindInPageResult(int identifier,
+                                                   int match_index,
+                                                   const WebNode& start_node,
+                                                   int start_offset,
+                                                   const WebNode& end_node,
+                                                   int end_offset) {}
 
   // Fullscreen ----------------------------------------------------------
 
