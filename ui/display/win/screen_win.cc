@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/stl_util.h"
 #include "base/win/win_util.h"
 #include "ui/display/display.h"
 #include "ui/display/display_layout.h"
@@ -590,8 +591,7 @@ void ScreenWin::RecordDisplayScaleFactors() const {
     // it so that if it's wildly out-of-band we won't send it to the backend.
     const int reported_scale = std::min(
         std::max(base::checked_cast<int>(scale_factor * 100), 0), 1000);
-    if (std::find(unique_scale_factors.begin(), unique_scale_factors.end(),
-                  reported_scale) == unique_scale_factors.end()) {
+    if (!base::ContainsValue(unique_scale_factors, reported_scale)) {
       unique_scale_factors.push_back(reported_scale);
       UMA_HISTOGRAM_SPARSE_SLOWLY("UI.DeviceScale", reported_scale);
     }

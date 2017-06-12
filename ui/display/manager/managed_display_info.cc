@@ -6,11 +6,11 @@
 
 #include <stdio.h>
 
-#include <algorithm>
 #include <string>
 #include <vector>
 
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -507,9 +507,7 @@ void ManagedDisplayInfo::SetColorProfile(ColorCalibrationProfile profile) {
 
 bool ManagedDisplayInfo::IsColorProfileAvailable(
     ColorCalibrationProfile profile) const {
-  return std::find(available_color_profiles_.begin(),
-                   available_color_profiles_.end(),
-                   profile) != available_color_profiles_.end();
+  return base::ContainsValue(available_color_profiles_, profile);
 }
 
 bool ManagedDisplayInfo::Use125DSFForUIScaling() const {

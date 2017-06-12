@@ -20,6 +20,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/run_loop.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
@@ -798,8 +799,7 @@ void DisplayManager::UpdateDisplaysWith(
   std::vector<size_t> updated_indices;
   UpdateNonPrimaryDisplayBoundsForLayout(&new_displays, &updated_indices);
   for (size_t updated_index : updated_indices) {
-    if (std::find(added_display_indices.begin(), added_display_indices.end(),
-                  updated_index) == added_display_indices.end()) {
+    if (!base::ContainsValue(added_display_indices, updated_index)) {
       uint32_t metrics = DisplayObserver::DISPLAY_METRIC_BOUNDS |
                          DisplayObserver::DISPLAY_METRIC_WORK_AREA;
       if (display_changes.find(updated_index) != display_changes.end())
