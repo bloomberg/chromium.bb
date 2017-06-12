@@ -178,8 +178,7 @@ void V8TestIntegerIndexed::indexedPropertyDeleterCallback(uint32_t index, const 
 }
 
 static const V8DOMConfiguration::AccessorConfiguration V8TestIntegerIndexedAccessors[] = {
-      { "length", V8TestIntegerIndexed::lengthAttributeGetterCallback, V8TestIntegerIndexed::lengthAttributeSetterCallback, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds }
-    ,
+    { "length", V8TestIntegerIndexed::lengthAttributeGetterCallback, V8TestIntegerIndexed::lengthAttributeSetterCallback, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::None), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds },
 };
 
 static const V8DOMConfiguration::MethodConfiguration V8TestIntegerIndexedMethods[] = {
