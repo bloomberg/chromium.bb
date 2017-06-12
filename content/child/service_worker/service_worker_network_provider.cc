@@ -163,6 +163,10 @@ ServiceWorkerNetworkProvider::CreateForNavigation(
 ServiceWorkerNetworkProvider*
 ServiceWorkerNetworkProvider::FromWebServiceWorkerNetworkProvider(
     blink::WebServiceWorkerNetworkProvider* provider) {
+  if (!provider) {
+    DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
+    return nullptr;
+  }
   return static_cast<WebServiceWorkerNetworkProviderForFrame*>(provider)
       ->provider();
 }
