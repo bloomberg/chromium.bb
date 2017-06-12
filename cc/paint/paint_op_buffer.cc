@@ -817,22 +817,6 @@ void PaintOpBuffer::ReallocBuffer(size_t new_size) {
 
 std::pair<void*, size_t> PaintOpBuffer::AllocatePaintOp(size_t sizeof_op,
                                                         size_t bytes) {
-  if (!op_count_) {
-    if (bytes) {
-      // Internal first_op buffer doesn't have room for extra data.
-      // If the op wants extra bytes, then we'll just store a Noop
-      // in the first_op and proceed from there.  This seems unlikely
-      // to be a common case.
-      push<NoopOp>();
-    } else {
-      op_count_++;
-      return std::make_pair(first_op_.void_data(), 0);
-    }
-  }
-
-  // We've filled |first_op_| by now so we need to allocate space in |data_|.
-  DCHECK(op_count_);
-
   // Compute a skip such that all ops in the buffer are aligned to the
   // maximum required alignment of all ops.
   size_t skip = MathUtil::UncheckedRoundUp(sizeof_op + bytes, PaintOpAlign);

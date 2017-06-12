@@ -825,8 +825,8 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
   // Resize the PaintOpBuffer to exactly fit the current amount of used space.
   void ShrinkToFit();
 
-  PaintOp* GetFirstOp() const {
-    return const_cast<PaintOp*>(first_op_.data_as<PaintOp>());
+  const PaintOp* GetFirstOp() const {
+    return reinterpret_cast<const PaintOp*>(data_.get());
   }
 
   template <typename T, typename... Args>
@@ -895,9 +895,7 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
     explicit Iterator(const PaintOpBuffer* buffer)
         : buffer_(buffer), ptr_(buffer_->data_.get()) {}
 
-    PaintOp* operator->() const {
-      return op_idx_ ? reinterpret_cast<PaintOp*>(ptr_) : buffer_->GetFirstOp();
-    }
+    PaintOp* operator->() const { return reinterpret_cast<PaintOp*>(ptr_); }
     PaintOp* operator*() const { return operator->(); }
     Iterator begin() { return Iterator(buffer_, buffer_->data_.get(), 0); }
     Iterator end() {
@@ -910,12 +908,11 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
       return other.op_idx_ != op_idx_;
     }
     Iterator& operator++() {
-      if (!op_idx_++)
-        return *this;
       PaintOp* op = **this;
       uint32_t type = op->type;
       CHECK_LE(type, static_cast<uint32_t>(PaintOpType::LastPaintOpType));
       ptr_ += op->skip;
+      op_idx_++;
       return *this;
     }
     operator bool() const { return op_idx_ < buffer_->size(); }
@@ -962,9 +959,6 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
     subrecord_bytes_used_ += op->AdditionalBytesUsed();
   }
 
-  // As a performance optimization because n=1 is an extremely common case just
-  // store the first op in the PaintOpBuffer itself to avoid an extra alloc.
-  base::AlignedMemory<sizeof(LargestPaintOp), PaintOpAlign> first_op_;
   std::unique_ptr<char, base::AlignedFreeDeleter> data_;
   size_t used_ = 0;
   size_t reserved_ = 0;

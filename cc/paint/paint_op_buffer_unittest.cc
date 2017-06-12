@@ -14,18 +14,6 @@ using testing::_;
 using testing::Property;
 using testing::Mock;
 
-namespace {
-
-template <typename T>
-void CheckRefCnt(const T& obj, int32_t count) {
-// Skia doesn't define getRefCnt in all builds.
-#ifdef SK_DEBUG
-  EXPECT_EQ(obj->getRefCnt(), count);
-#endif
-}
-
-}  // namespace
-
 namespace cc {
 
 TEST(PaintOpBufferTest, Empty) {
@@ -78,75 +66,6 @@ TEST(PaintOpBufferTest, SimpleAppend) {
   EXPECT_FALSE(iter);
 }
 
-// PaintOpBuffer has a special case for first ops stored locally, so
-// make sure that appending different kind of ops as a first op works
-// properly, as well as resetting and reusing the first local op.
-TEST(PaintOpBufferTest, FirstOpWithAndWithoutData) {
-  PaintOpBuffer buffer;
-  char text[] = "asdf";
-
-  // Use a color filter and its ref count to verify that the destructor
-  // is called on ops after reset.
-  PaintFlags flags;
-  sk_sp<SkColorFilter> filter =
-      SkColorFilter::MakeModeFilter(SK_ColorMAGENTA, SkBlendMode::kSrcOver);
-  flags.setColorFilter(filter);
-  CheckRefCnt(filter, 2);
-
-  buffer.push_with_data<DrawTextOp>(text, arraysize(text), 0.f, 0.f, flags);
-  CheckRefCnt(filter, 3);
-
-  // Verify that when the first op has data, which may not fit in the
-  // PaintRecord internal buffer, that it adds a noop as the first op
-  // and then appends the "op with data" into the heap buffer.
-  ASSERT_EQ(buffer.size(), 2u);
-  EXPECT_EQ(buffer.GetFirstOp()->GetType(), PaintOpType::Noop);
-
-  // Verify iteration behavior and brief smoke test of op state.
-  {
-    PaintOpBuffer::Iterator iter(&buffer);
-    PaintOp* noop = *iter;
-    EXPECT_EQ(buffer.GetFirstOp(), noop);
-    ++iter;
-
-    PaintOp* op = *iter;
-    ASSERT_EQ(op->GetType(), PaintOpType::DrawText);
-    DrawTextOp* draw_text_op = static_cast<DrawTextOp*>(op);
-    EXPECT_EQ(draw_text_op->bytes, arraysize(text));
-
-    const void* data = draw_text_op->GetData();
-    EXPECT_EQ(memcmp(data, text, arraysize(text)), 0);
-
-    ++iter;
-    EXPECT_FALSE(iter);
-  }
-
-  // Reset, verify state, and append an op that will fit in the first slot.
-  buffer.Reset();
-  CheckRefCnt(filter, 2);
-
-  ASSERT_EQ(buffer.size(), 0u);
-  EXPECT_EQ(PaintOpBuffer::Iterator(&buffer), false);
-
-  SkRect rect = SkRect::MakeXYWH(1, 2, 3, 4);
-  buffer.push<DrawRectOp>(rect, flags);
-  CheckRefCnt(filter, 3);
-
-  ASSERT_EQ(buffer.size(), 1u);
-  EXPECT_EQ(buffer.GetFirstOp()->GetType(), PaintOpType::DrawRect);
-
-  PaintOpBuffer::Iterator iter(&buffer);
-  ASSERT_EQ(iter->GetType(), PaintOpType::DrawRect);
-  DrawRectOp* draw_rect_op = static_cast<DrawRectOp*>(*iter);
-  EXPECT_EQ(draw_rect_op->rect, rect);
-
-  ++iter;
-  EXPECT_FALSE(iter);
-
-  buffer.Reset();
-  ASSERT_EQ(buffer.size(), 0u);
-  CheckRefCnt(filter, 2);
-}
 
 // Verify that PaintOps with data are stored properly.
 TEST(PaintOpBufferTest, PaintOpData) {
