@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
+import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
 import org.chromium.chrome.browser.widget.ControlContainer;
 import org.chromium.content.browser.ContentVideoView;
 import org.chromium.content.browser.ContentViewCore;
@@ -471,6 +472,8 @@ public class ChromeFullscreenManager
         }
         boolean controlsResizeView =
                 topContentOffset > 0 || bottomControlOffset < getBottomControlsHeight();
+        controlsResizeView &= !VrShellDelegate.isInVr();
+
         viewCore.setTopControlsHeight(getTopControlsHeight(), controlsResizeView);
         viewCore.setBottomControlsHeight(getBottomControlsHeight());
     }
