@@ -135,3 +135,16 @@ to show a diff of ELF symbols.
 ### You Would Like Assistance
 
  * Feel free to email [binary-size@chromium.org](https://groups.google.com/a/chromium.org/forum/#!forum/binary-size).
+
+# For Binary Size Sheriffs
+
+## Step 1: Check work queue daily
+
+ * Bugs requiring sheriffs to take a look at are labeled `Performance-Sheriff` and `Performance-Size`.
+ * After resolving the bug by finding an owner or debugging or commenting, remove the `Performance-Sheriff` label.
+
+## Step 2: Check alerts regularly
+
+ * Check [alert page](https://chromeperf.appspot.com/alerts?sheriff=Binary%20Size%20Sheriff) regularly for new alerts.
+ * Join [binary-size-alerts@chromium.org](https://groups.google.com/a/chromium.org/forum/#!forum/binary-size-alerts). Eventually it will be all set up.
+ * Deal with alerts as outlined above.
