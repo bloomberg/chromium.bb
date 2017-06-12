@@ -495,23 +495,25 @@ static void install{{v8_class}}Template(v8::Isolate* isolate, const DOMWrapperWo
   instanceTemplate->SetAccessCheckCallbackAndHandler({{v8_class_or_partial}}::securityCheck, v8::NamedPropertyHandlerConfiguration({{cross_origin_named_getter}}, {{cross_origin_named_setter}}, nullptr, nullptr, {{cross_origin_named_enumerator}}), v8::IndexedPropertyHandlerConfiguration({{cross_origin_indexed_getter}}), v8::External::New(isolate, const_cast<WrapperTypeInfo*>(&{{v8_class}}::wrapperTypeInfo)));
   {% endif %}
 
-  {% for feature_name, attribute_list in runtime_enabled_attributes | groupby('runtime_enabled_feature_name') %}
+  {% for feature_name, attribute_list in runtime_enabled_attributes | selectattr('is_data_type_property') | groupby('runtime_enabled_feature_name') %}
   {% filter runtime_enabled(feature_name) %}
-  {% for attribute in attribute_list | unique_by('name') | sort %}
-  {% if attribute.is_data_type_property %}
-  static const V8DOMConfiguration::AttributeConfiguration attribute{{attribute.name}}Configuration[] = {
-    {{attribute_configuration(attribute) | indent(2)}}
+  static const V8DOMConfiguration::AttributeConfiguration attribute_configurations[] = {
+      {% for attribute in attribute_list | sort %}
+      {{attribute_configuration(attribute) | indent(6)}},
+      {% endfor %}
   };
-  for (const auto& attributeConfig : attribute{{attribute.name}}Configuration)
-    V8DOMConfiguration::InstallAttribute(isolate, world, instanceTemplate, prototypeTemplate, attributeConfig);
-  {% else %}
-  static const V8DOMConfiguration::AccessorConfiguration accessor{{attribute.name}}Configuration[] = {
-    {{accessor_configuration(attribute) | indent(2)}}
-  };
-  for (const auto& accessorConfig : accessor{{attribute.name}}Configuration)
-    V8DOMConfiguration::InstallAccessor(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, accessorConfig);
-  {% endif %}
+  V8DOMConfiguration::InstallAttributes(isolate, world, instanceTemplate, prototypeTemplate, attribute_configurations, WTF_ARRAY_LENGTH(attribute_configurations));
+  {% endfilter %}
   {% endfor %}
+
+  {% for feature_name, attribute_list in runtime_enabled_attributes | selectattr('is_data_type_property', 'equalto', False) | groupby('runtime_enabled_feature_name') %}
+  {% filter runtime_enabled(feature_name) %}
+  static const V8DOMConfiguration::AccessorConfiguration accessor_configurations[] = {
+      {% for attribute in attribute_list | sort %}
+      {{accessor_configuration(attribute) | indent(6)}},
+      {% endfor %}
+  };
+  V8DOMConfiguration::InstallAccessors(isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate, signature, accessor_configurations, WTF_ARRAY_LENGTH(accessor_configurations));
   {% endfilter %}
   {% endfor %}
 
@@ -655,23 +657,28 @@ void {{v8_class_or_partial}}::installRuntimeEnabledFeatures(v8::Isolate* isolate
 
   {# TODO(peria): Generate code to install constants. It depends on runtime_enabled_feaure of this interface. #}
 
-  {% for feature_name, attrs in runtime_enabled_attributes | groupby('runtime_enabled_feature_name') %}
+  {% for feature_name, attrs in runtime_enabled_attributes | selectattr('is_data_type_property') | groupby('runtime_enabled_feature_name') %}
   {% filter runtime_enabled(feature_name) %}
-  {% for attribute in attrs | unique_by('name') | sort %}
-  {% if attribute.is_data_type_property %}
-  static const V8DOMConfiguration::AttributeConfiguration attribute{{attribute.name}}Configuration[] = {
-    {{attribute_configuration(attribute) | indent(2)}}
+  static const V8DOMConfiguration::AttributeConfiguration attribute_configurations[] = {
+      {% for attribute in attrs | sort %}
+      {{attribute_configuration(attribute) | indent(6)}},
+      {% endfor %}
   };
-  for (const auto& attributeConfig : attribute{{attribute.name}}Configuration)
-    V8DOMConfiguration::InstallAttribute(isolate, world, instance, prototype, attributeConfig);
-  {% else %}
-  static const V8DOMConfiguration::AccessorConfiguration accessor{{attribute.name}}Configuration[] = {
-    {{accessor_configuration(attribute) | indent(2)}}
-  };
-  for (const auto& accessorConfig : accessor{{attribute.name}}Configuration)
-    V8DOMConfiguration::InstallAccessor(isolate, world, instance, prototype, interface, signature, accessorConfig);
-  {% endif %}
+  V8DOMConfiguration::InstallAttributes(isolate, world, instance, prototype,
+      attribute_configurations, WTF_ARRAY_LENGTH(attribute_configurations));
+  {% endfilter %}
   {% endfor %}
+
+  {% for feature_name, attrs in runtime_enabled_attributes | selectattr('is_data_type_property', 'equalto', False) | groupby('runtime_enabled_feature_name') %}
+  {% filter runtime_enabled(feature_name) %}
+  static const V8DOMConfiguration::AccessorConfiguration accessor_configurations[] = {
+      {% for attribute in attrs | sort %}
+      {{accessor_configuration(attribute) | indent(6)}},
+      {% endfor %}
+  };
+  V8DOMConfiguration::InstallAccessors(isolate, world, instance, prototype,
+      interface, signature, accessor_configurations,
+      WTF_ARRAY_LENGTH(accessor_configurations));
   {% endfilter %}
   {% endfor %}
 

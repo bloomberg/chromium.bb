@@ -122,11 +122,9 @@ void V8TestException::toStringMethodCallback(const v8::FunctionCallbackInfo<v8::
 }
 
 static const V8DOMConfiguration::AccessorConfiguration V8TestExceptionAccessors[] = {
-      { "readonlyUnsignedShortAttribute", V8TestException::readonlyUnsignedShortAttributeAttributeGetterCallback, nullptr, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds }
-    ,
+    { "readonlyUnsignedShortAttribute", V8TestException::readonlyUnsignedShortAttributeAttributeGetterCallback, nullptr, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds },
 
-      { "readonlyStringAttribute", V8TestException::readonlyStringAttributeAttributeGetterCallback, nullptr, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds }
-    ,
+    { "readonlyStringAttribute", V8TestException::readonlyStringAttributeAttributeGetterCallback, nullptr, nullptr, nullptr, static_cast<v8::PropertyAttribute>(v8::ReadOnly), V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kAllWorlds },
 };
 
 static const V8DOMConfiguration::MethodConfiguration V8TestExceptionMethods[] = {

@@ -494,6 +494,19 @@ void V8DOMConfiguration::InstallAttributes(
                              attributes[i], world);
 }
 
+void V8DOMConfiguration::InstallAttributes(
+    v8::Isolate* isolate,
+    const DOMWrapperWorld& world,
+    v8::Local<v8::Object> instance,
+    v8::Local<v8::Object> prototype,
+    const AttributeConfiguration* attributes,
+    size_t attribute_count) {
+  for (size_t i = 0; i < attribute_count; ++i) {
+    InstallAttributeInternal(isolate, instance, prototype, attributes[i],
+                             world);
+  }
+}
+
 void V8DOMConfiguration::InstallAttribute(
     v8::Isolate* isolate,
     const DOMWrapperWorld& world,
@@ -538,6 +551,21 @@ void V8DOMConfiguration::InstallAccessors(
   for (size_t i = 0; i < accessor_count; ++i)
     InstallAccessorInternal(isolate, instance_template, prototype_template,
                             interface_template, signature, accessors[i], world);
+}
+
+void V8DOMConfiguration::InstallAccessors(
+    v8::Isolate* isolate,
+    const DOMWrapperWorld& world,
+    v8::Local<v8::Object> instance,
+    v8::Local<v8::Object> prototype,
+    v8::Local<v8::Function> interface,
+    v8::Local<v8::Signature> signature,
+    const AccessorConfiguration* accessors,
+    size_t accessor_count) {
+  for (size_t i = 0; i < accessor_count; ++i) {
+    InstallAccessorInternal(isolate, instance, prototype, interface, signature,
+                            accessors[i], world);
+  }
 }
 
 void V8DOMConfiguration::InstallAccessor(
