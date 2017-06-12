@@ -6,6 +6,7 @@
 #define COMPONENTS_SIGNIN_CORE_COMMON_SIGNIN_SWITCHES_H_
 
 #include "base/feature_list.h"
+#include "build/build_config.h"
 
 namespace switches {
 

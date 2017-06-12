@@ -31,12 +31,13 @@ enum ProfileMode {
 };
 
 extern const char kChromeConnectedHeader[];
+extern const char kDiceRequestHeader[];
 
-// The ServiceType specified by GAIA in the response header accompanying the 204
+// The ServiceType specified by Gaia in the response header accompanying the 204
 // response. This indicates the action Chrome is supposed to lead the user to
 // perform.
 enum GAIAServiceType {
-  GAIA_SERVICE_TYPE_NONE = 0,    // No GAIA response header.
+  GAIA_SERVICE_TYPE_NONE = 0,    // No Gaia response header.
   GAIA_SERVICE_TYPE_SIGNOUT,     // Logout all existing sessions.
   GAIA_SERVICE_TYPE_INCOGNITO,   // Open an incognito tab.
   GAIA_SERVICE_TYPE_ADDSESSION,  // Add a secondary account.
@@ -61,14 +62,53 @@ struct ManageAccountsParams {
 
 // iOS has no notion of route and child IDs.
 #if !defined(OS_IOS)
-  // The child id associated with the web content of the request.
+  // The child ID associated with the web content of the request.
   int child_id;
-  // The route id associated with the web content of the request.
+  // The route ID associated with the web content of the request.
   int route_id;
 #endif  // !defined(OS_IOS)
 
   ManageAccountsParams();
   ManageAccountsParams(const ManageAccountsParams& other);
+};
+
+// Base class for managing the signin headers (Dice and Chrome-Connected).
+class SigninHeaderHelper {
+ public:
+  // Appends or remove the header to a network request if necessary.
+  bool AppendOrRemoveRequestHeader(
+      net::URLRequest* request,
+      const char* header_name,
+      const GURL& redirect_url,
+      const std::string& account_id,
+      const content_settings::CookieSettings* cookie_settings,
+      int profile_mode_mask);
+
+ protected:
+  SigninHeaderHelper() {}
+  virtual ~SigninHeaderHelper() {}
+
+  // Returns the value of the request header, or empty if the header should not
+  // be added. Calls into BuildRequestHeader() which is customized by
+  // subclasses.
+  std::string BuildRequestHeaderIfPossible(
+      bool is_header_request,
+      const GURL& url,
+      const std::string& account_id,
+      const content_settings::CookieSettings* cookie_settings,
+      int profile_mode_mask);
+
+ private:
+  // Returns whether the url is eligible for the request header.
+  virtual bool IsUrlEligibleForRequestHeader(const GURL& url) = 0;
+
+  // Returns the value of the request header, or empty if the header should not
+  // be added.
+  // The request is assumed to be eligible.
+  virtual std::string BuildRequestHeader(bool is_header_request,
+                                         const GURL& url,
+                                         const std::string& account_id,
+                                         int profile_mode_mask) = 0;
 };
 
 // Returns true if signin cookies are allowed.
@@ -86,7 +126,7 @@ std::string BuildMirrorRequestCookieIfPossible(
 // Adds account consistency header to all Gaia requests from a connected
 // profile, with the exception of requests from gaia webview.
 // Removes the header in case it should not be transfered to a redirected url.
-bool AppendOrRemoveAccountConsistentyRequestHeader(
+void AppendOrRemoveAccountConsistentyRequestHeader(
     net::URLRequest* request,
     const GURL& redirect_url,
     const std::string& account_id,

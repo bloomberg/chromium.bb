@@ -32,6 +32,10 @@ static_library("browser") {
     "child_account_info_fetcher_android.h",
     "child_account_info_fetcher_impl.cc",
     "child_account_info_fetcher_impl.h",
+    "chrome_connected_header_helper.cc",
+    "chrome_connected_header_helper.h",
+    "dice_header_helper.cc",
+    "dice_header_helper.h",
     "gaia_cookie_manager_service.cc",
     "gaia_cookie_manager_service.h",
     "profile_identity_provider.cc",
@@ -104,6 +108,13 @@ static_library("browser") {
       "signin_manager.cc",
       "signin_status_metrics_provider.cc",
       "signin_status_metrics_provider_delegate.cc",
+    ]
+  }
+
+  if (is_android || is_ios) {
+    sources -= [
+      "dice_header_helper.cc",
+      "dice_header_helper.h",
     ]
   }
 

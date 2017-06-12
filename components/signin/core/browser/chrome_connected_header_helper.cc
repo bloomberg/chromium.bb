@@ -1,0 +1,118 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "components/signin/core/browser/chrome_connected_header_helper.h"
+
+#include <vector>
+
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
+#include "components/google/core/browser/google_util.h"
+#include "components/signin/core/common/profile_management_switches.h"
+#include "google_apis/gaia/gaia_auth_util.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "url/gurl.h"
+
+namespace signin {
+
+namespace {
+
+const char kEnableAccountConsistencyAttrName[] = "enable_account_consistency";
+const char kGaiaIdAttrName[] = "id";
+const char kProfileModeAttrName[] = "mode";
+
+}  // namespace
+
+// static
+std::string ChromeConnectedHeaderHelper::BuildRequestCookieIfPossible(
+    const GURL& url,
+    const std::string& account_id,
+    const content_settings::CookieSettings* cookie_settings,
+    int profile_mode_mask) {
+  ChromeConnectedHeaderHelper chrome_connected_helper;
+  return chrome_connected_helper.BuildRequestHeaderIfPossible(
+      false /* is_header_request */, url, account_id, cookie_settings,
+      profile_mode_mask);
+}
+
+bool ChromeConnectedHeaderHelper::IsUrlEligibleToIncludeGaiaId(
+    const GURL& url,
+    bool is_header_request) {
+  if (is_header_request) {
+    // Gaia ID is only necessary for Drive. Don't set it otherwise.
+    return IsDriveOrigin(url.GetOrigin());
+  }
+
+  // Cookie requests don't have the granularity to only include the Gaia ID for
+  // Drive origin. Set it on all google.com instead.
+  if (!url.SchemeIsCryptographic())
+    return false;
+
+  const std::string kGoogleDomain = "google.com";
+  std::string domain = net::registry_controlled_domains::GetDomainAndRegistry(
+      url, net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
+  return domain == kGoogleDomain;
+}
+
+bool ChromeConnectedHeaderHelper::IsDriveOrigin(const GURL& url) {
+  if (!url.SchemeIsCryptographic())
+    return false;
+
+  const GURL kGoogleDriveURL("https://drive.google.com");
+  const GURL kGoogleDocsURL("https://docs.google.com");
+  return url == kGoogleDriveURL || url == kGoogleDocsURL;
+}
+
+bool ChromeConnectedHeaderHelper::IsUrlEligibleForRequestHeader(
+    const GURL& url) {
+  // Only set the header for Drive and Gaia always, and other Google properties
+  // if account consistency is enabled. Vasquette, which is integrated with most
+  // Google properties, needs the header to redirect certain user actions to
+  // Chrome native UI. Drive and Gaia need the header to tell if the current
+  // user is connected.
+
+  // Consider the account ID sensitive and limit it to secure domains.
+  if (!url.SchemeIsCryptographic())
+    return false;
+
+  GURL origin(url.GetOrigin());
+  bool is_enable_account_consistency =
+      switches::IsAccountConsistencyMirrorEnabled();
+  bool is_google_url = is_enable_account_consistency &&
+                       (google_util::IsGoogleDomainUrl(
+                            url, google_util::ALLOW_SUBDOMAIN,
+                            google_util::DISALLOW_NON_STANDARD_PORTS) ||
+                        google_util::IsYoutubeDomainUrl(
+                            url, google_util::ALLOW_SUBDOMAIN,
+                            google_util::DISALLOW_NON_STANDARD_PORTS));
+  return is_google_url || IsDriveOrigin(origin) ||
+         gaia::IsGaiaSignonRealm(origin);
+}
+
+std::string ChromeConnectedHeaderHelper::BuildRequestHeader(
+    bool is_header_request,
+    const GURL& url,
+    const std::string& account_id,
+    int profile_mode_mask) {
+  if (account_id.empty())
+    return std::string();
+
+  std::vector<std::string> parts;
+  if (IsUrlEligibleToIncludeGaiaId(url, is_header_request)) {
+    // Only set the Gaia ID on domains that actually requires it.
+    parts.push_back(
+        base::StringPrintf("%s=%s", kGaiaIdAttrName, account_id.c_str()));
+  }
+  parts.push_back(
+      base::StringPrintf("%s=%s", kProfileModeAttrName,
+                         base::IntToString(profile_mode_mask).c_str()));
+  parts.push_back(base::StringPrintf(
+      "%s=%s", kEnableAccountConsistencyAttrName,
+      switches::IsAccountConsistencyMirrorEnabled() ? "true" : "false"));
+
+  return base::JoinString(parts, is_header_request ? "," : ":");
+}
+
+}  // namespace signin
