@@ -18,6 +18,7 @@ import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Pair;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
@@ -737,8 +738,9 @@ public class DownloadManagerService
             Context context, @Nullable String filePath, long downloadId,
             boolean isSupportedMimeType) {
         assert !ThreadUtils.runningOnUiThread();
-        Uri contentUri = DownloadManagerDelegate.getContentUriFromDownloadManager(
-                context, downloadId);
+        Uri contentUri = filePath == null
+                ? DownloadManagerDelegate.getContentUriFromDownloadManager(context, downloadId)
+                : ApiCompatibilityUtils.getUriForDownloadedFile(new File(filePath));
         if (contentUri == null) return null;
 
         DownloadManager manager =
