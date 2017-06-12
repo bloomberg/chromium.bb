@@ -30,10 +30,6 @@ crbug.com/410974 virtual/scroll_customization/fast/scroll-behavior/scroll-custom
 # -----------------------------------------------------------------
 
 crbug.com/662477 external/wpt/html/webappapis/idle-callbacks/cancel-invoked.html [ Leak ]
-crbug.com/662477 external/wpt/html/webappapis/scripting/events/onerroreventhandler.html [ Leak ]
-
-# Likely caused by http://crbug.com/501866.
-crbug.com/701695 external/wpt/html/webappapis/scripting/events/event-handler-processing-algorithm-error/window-synthetic-errorevent.html [ Leak ]
 
 # -----------------------------------------------------------------
 # Untriaged but known leaks of SuspendableObject (fast).

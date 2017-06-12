@@ -32,6 +32,7 @@
 
 [
     Constructor(DOMString type, optional ErrorEventInit eventInitDict),
+    ConstructorCallWith=ScriptState
     // TODO(foolip): Exposed=(Window,Worker)
 ] interface ErrorEvent : Event {
     readonly attribute DOMString message;
