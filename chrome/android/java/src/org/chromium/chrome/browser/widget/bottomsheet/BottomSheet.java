@@ -48,6 +48,7 @@ import org.chromium.chrome.browser.toolbar.BottomToolbarPhone;
 import org.chromium.chrome.browser.toolbar.ViewShiftingActionBarDelegate;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
+import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.FadingBackgroundView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetContentController.ContentType;
 import org.chromium.chrome.browser.widget.textbubble.ViewAnchoredTextBubble;
@@ -399,25 +400,44 @@ public class BottomSheet
 
     /**
      * Check if a touch event is in the swipable x-axis range of the toolbar when in peeking mode.
-     * If the "chrome-home-swipe-logic" flag is not set to "restrict-area" or the sheet is open,
-     * this function returns true.
+     * If the "chrome-home-swipe-logic" flag is not set to "restrict-area", "button-only" or the
+     * sheet is open, this function returns true.
      * @param e The touch event.
      * @return True if the touch is inside the swipable area of the toolbar.
      */
     private boolean isTouchInSwipableXRange(MotionEvent e) {
         // If the sheet is already open or the experiment is not enabled, no need to restrict the
         // swipe area.
-        if (mActivity == null || isSheetOpen()
-                || !ChromeSwitches.CHROME_HOME_SWIPE_LOGIC_RESTRICT_AREA.equals(
-                           FeatureUtilities.getChromeHomeSwipeLogicType())) {
-            return true;
+        if (mActivity == null || isSheetOpen()) return true;
+
+        String logicType = FeatureUtilities.getChromeHomeSwipeLogicType();
+
+        // By default, the entire toolbar is swipable.
+        float startX = 0;
+        float endX = mDefaultToolbarView.getWidth();
+
+        if (ChromeSwitches.CHROME_HOME_SWIPE_LOGIC_RESTRICT_AREA.equals(logicType)
+                && !FeatureUtilities.isChromeHomeExpandButtonEnabled()) {
+            // Determine an area in the middle of the toolbar that is swipable. This will only
+            // trigger if the expand button is disabled.
+            float allowedSwipeWidth = mContainerWidth * SWIPE_ALLOWED_FRACTION;
+            startX = mVisibleViewportRect.left + (mContainerWidth - allowedSwipeWidth) / 2;
+            endX = startX + allowedSwipeWidth;
+        } else if (ChromeSwitches.CHROME_HOME_SWIPE_LOGIC_BUTTON_ONLY.equals(logicType)
+                && FeatureUtilities.isChromeHomeExpandButtonEnabled()) {
+            // In order for this logic to trigger, the expand button must be enabled.
+            View expandButton = mDefaultToolbarView.getExpandButton();
+            ViewUtils.getRelativeLayoutPosition(mDefaultToolbarView, expandButton, mLocationArray);
+            startX = mVisibleViewportRect.left + mLocationArray[0];
+            endX = startX + expandButton.getWidth();
+        } else if (FeatureUtilities.isChromeHomeExpandButtonEnabled()) {
+            // If no swipe logic experiments are running and the expand button is enabled, the bar
+            // cannot be swiped in the peeking state.
+            startX = 0;
+            endX = 0;
         }
 
-        // Determine an area in the middle of the toolbar that is swipable.
-        float allowedSwipeWidth = mContainerWidth * SWIPE_ALLOWED_FRACTION;
-        float startX = mVisibleViewportRect.left + (mContainerWidth - allowedSwipeWidth) / 2;
-        float endX = startX + allowedSwipeWidth;
-        return e.getRawX() > startX && e.getRawX() < endX;
+        return e.getRawX() > startX && e.getRawX() < endX || getSheetState() != SHEET_STATE_PEEK;
     }
 
     /**
@@ -1314,18 +1334,13 @@ public class BottomSheet
                 && (mTabModelSelector.getCurrentTab() == null
                            || mTabModelSelector.getCurrentTab().getActivity().isInOverviewMode());
 
-        // If the expand button is enabled, do not allow swiping when the sheet is in the peeking
-        // position.
-        boolean blockPeekingSwipes = FeatureUtilities.isChromeHomeExpandButtonEnabled()
-                && getSheetState() == SHEET_STATE_PEEK;
-
         if (mFindInPageView == null) mFindInPageView = findViewById(R.id.find_toolbar);
         boolean isFindInPageVisible =
                 mFindInPageView != null && mFindInPageView.getVisibility() == View.VISIBLE;
 
         return !isToolbarAndroidViewHidden()
-                && (!isInOverviewMode || mNtpController.isShowingNewTabUi()) && !isFindInPageVisible
-                && !blockPeekingSwipes;
+                && (!isInOverviewMode || mNtpController.isShowingNewTabUi())
+                && !isFindInPageVisible;
     }
 
     /**
