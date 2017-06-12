@@ -95,6 +95,7 @@ source_set("unit_tests") {
     "generate_page_bundle_request_unittest.cc",
     "get_operation_request_unittest.cc",
     "prefetch_dispatcher_impl_unittest.cc",
+    "prefetch_gcm_app_handler_unittest.cc",
     "prefetch_item_unittest.cc",
     "prefetch_request_fetcher_unittest.cc",
     "prefetch_request_operation_response_unittest.cc",
@@ -106,7 +107,9 @@ source_set("unit_tests") {
   deps = [
     ":prefetch",
     ":test_support",
+    "//components/gcm_driver/instance_id",
     "//components/offline_pages/core",
+    "//components/offline_pages/core:switches",
     "//components/offline_pages/core:test_support",
     "//net:test_support",
     "//testing/gmock",

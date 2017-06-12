@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "components/offline_pages/core/offline_event_logger.h"
 #include "components/offline_pages/core/prefetch/prefetch_service.h"
 
 namespace offline_pages {
@@ -32,11 +33,14 @@ class PrefetchServiceImpl : public PrefetchService {
   PrefetchGCMHandler* GetPrefetchGCMHandler() override;
   PrefetchStore* GetPrefetchStore() override;
   SuggestedArticlesObserver* GetSuggestedArticlesObserver() override;
+  OfflineEventLogger* GetLogger() override;
 
   // KeyedService implementation:
   void Shutdown() override;
 
  private:
+  OfflineEventLogger logger_;
+
   std::unique_ptr<OfflineMetricsCollector> offline_metrics_collector_;
   std::unique_ptr<PrefetchDispatcher> prefetch_dispatcher_;
   std::unique_ptr<PrefetchGCMHandler> prefetch_gcm_handler_;

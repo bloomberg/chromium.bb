@@ -11,6 +11,7 @@
 #include "components/offline_pages/core/prefetch/prefetch_gcm_handler.h"
 
 namespace offline_pages {
+class PrefetchService;
 
 // Test for testing.
 class TestPrefetchGCMHandler : public PrefetchGCMHandler {
@@ -21,6 +22,7 @@ class TestPrefetchGCMHandler : public PrefetchGCMHandler {
   gcm::GCMAppHandler* AsGCMAppHandler() override;
   std::string GetAppId() const override;
   void GetGCMToken(instance_id::InstanceID::GetTokenCallback callback) override;
+  void SetService(PrefetchService* service) override;
 };
 
 }  // namespace offline_pages

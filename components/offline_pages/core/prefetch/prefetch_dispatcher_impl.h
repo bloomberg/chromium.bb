@@ -6,6 +6,8 @@
 #define COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_PREFETCH_DISPATCHER_IMPL_H_
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "base/macros.h"
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
@@ -27,6 +29,8 @@ class PrefetchDispatcherImpl : public PrefetchDispatcher {
   void RemovePrefetchURLsByClientId(const ClientId& client_id) override;
   void BeginBackgroundTask(std::unique_ptr<ScopedBackgroundTask> task) override;
   void StopBackgroundTask() override;
+  void GCMOperationCompletedMessageReceived(
+      const std::string& operation_name) override;
   void RequestFinishBackgroundTaskForTest() override;
 
  private:

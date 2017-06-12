@@ -8,6 +8,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace offline_pages {
+class OfflineEventLogger;
 class OfflineMetricsCollector;
 class PrefetchDispatcher;
 class PrefetchGCMHandler;
@@ -29,6 +30,7 @@ class PrefetchService : public KeyedService {
   virtual PrefetchDispatcher* GetPrefetchDispatcher() = 0;
   virtual PrefetchGCMHandler* GetPrefetchGCMHandler() = 0;
   virtual PrefetchStore* GetPrefetchStore() = 0;
+  virtual OfflineEventLogger* GetLogger() = 0;
 
   // May be |nullptr| in tests.  The PrefetchService does not depend on the
   // SuggestedArticlesObserver, it merely owns it for lifetime purposes.

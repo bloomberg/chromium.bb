@@ -6,14 +6,30 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
+#include "components/offline_pages/core/offline_event_logger.h"
+#include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/prefetch/prefetch_in_memory_store.h"
 #include "components/offline_pages/core/prefetch/prefetch_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
+
+class TestScopedBackgroundTask
+    : public PrefetchDispatcher::ScopedBackgroundTask {
+ public:
+  TestScopedBackgroundTask() = default;
+  ~TestScopedBackgroundTask() override = default;
+
+  void SetNeedsReschedule(bool reschedule, bool backoff) override {
+    needs_reschedule_called = true;
+  }
+
+  bool needs_reschedule_called = false;
+};
 
 class PrefetchDispatcherTest : public testing::Test, public PrefetchService {
  public:
@@ -24,6 +40,7 @@ class PrefetchDispatcherTest : public testing::Test, public PrefetchService {
   void TearDown() override;
 
   // PrefetchService implementation:
+  OfflineEventLogger* GetLogger() override;
   OfflineMetricsCollector* GetOfflineMetricsCollector() override;
   PrefetchDispatcher* GetPrefetchDispatcher() override;
   PrefetchGCMHandler* GetPrefetchGCMHandler() override;
@@ -34,10 +51,16 @@ class PrefetchDispatcherTest : public testing::Test, public PrefetchService {
   void Shutdown() override {}
 
   void PumpLoop();
+  PrefetchDispatcher::ScopedBackgroundTask* GetBackgroundTask() {
+    return dispatcher_impl_->task_.get();
+  }
 
   TaskQueue* dispatcher_task_queue() { return &dispatcher_impl_->task_queue_; }
 
  private:
+  OfflineEventLogger logger_;
+  base::test::ScopedFeatureList feature_list_;
+
   std::unique_ptr<PrefetchInMemoryStore> in_memory_store_;
   std::unique_ptr<PrefetchDispatcherImpl> dispatcher_impl_;
 
@@ -47,7 +70,9 @@ class PrefetchDispatcherTest : public testing::Test, public PrefetchService {
 
 PrefetchDispatcherTest::PrefetchDispatcherTest()
     : task_runner_(new base::TestSimpleTaskRunner),
-      task_runner_handle_(task_runner_) {}
+      task_runner_handle_(task_runner_) {
+  feature_list_.InitAndEnableFeature(kPrefetchingOfflinePagesFeature);
+}
 
 void PrefetchDispatcherTest::SetUp() {
   ASSERT_EQ(base::ThreadTaskRunnerHandle::Get(), task_runner_);
@@ -59,6 +84,10 @@ void PrefetchDispatcherTest::SetUp() {
 
 void PrefetchDispatcherTest::TearDown() {
   task_runner_->ClearPendingTasks();
+}
+
+OfflineEventLogger* PrefetchDispatcherTest::GetLogger() {
+  return &logger_;
 }
 
 OfflineMetricsCollector* PrefetchDispatcherTest::GetOfflineMetricsCollector() {
@@ -104,6 +133,25 @@ TEST_F(PrefetchDispatcherTest, AddCandidatePrefetchURLsTask) {
   PumpLoop();
   EXPECT_FALSE(dispatcher_task_queue()->HasPendingTasks());
   EXPECT_FALSE(dispatcher_task_queue()->HasRunningTask());
+}
+
+TEST_F(PrefetchDispatcherTest, DispatcherDoesNothingIfFeatureNotEnabled) {
+  base::test::ScopedFeatureList disabled_feature_list;
+  disabled_feature_list.InitAndDisableFeature(kPrefetchingOfflinePagesFeature);
+
+  // Don't add a task for new prefetch URLs.
+  ClientId client_id("namespace", "id");
+  PrefetchURL prefetch_url(client_id, GURL("https://www.chromium.org"));
+  GetPrefetchDispatcher()->AddCandidatePrefetchURLs(
+      std::vector<PrefetchURL>(1, prefetch_url));
+  EXPECT_FALSE(dispatcher_task_queue()->HasRunningTask());
+
+  // Do nothing with a new background task.
+  GetPrefetchDispatcher()->BeginBackgroundTask(
+      base::MakeUnique<TestScopedBackgroundTask>());
+  EXPECT_EQ(nullptr, GetBackgroundTask());
+
+  // Everything else is unimplemented.
 }
 
 }  // namespace offline_pages
