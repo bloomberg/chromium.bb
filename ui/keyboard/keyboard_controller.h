@@ -46,26 +46,6 @@ enum KeyboardMode {
   FLOATING,
 };
 
-// Represents the current state of the keyboard managed by the controller.
-enum class KeyboardControllerState {
-  UNKNOWN = 0,
-  // Keyboard is shown.
-  SHOWN,
-  // Keyboard is being shown via animation.
-  SHOWING,
-  // Waiting for an extension to be loaded and then move to SHOWING.
-  LOADING_EXTENSION,
-  // Keyboard is still shown, but will move to HIDING in a short period, or if
-  // an input element gets focused again, will move to SHOWN.
-  WILL_HIDE,
-  // Keyboard is being hidden via animation.
-  HIDING,
-  // Keyboard is hidden, but has shown at least once.
-  HIDDEN,
-  // Keyboard has never been shown.
-  INITIAL,
-};
-
 // Provides control of the virtual keyboard, including providing a container
 // and controlling visibility.
 class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
@@ -152,8 +132,6 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
     return current_keyboard_bounds_;
   }
 
-  KeyboardControllerState GetStateForTest() const { return state_; }
-
  private:
   // For access to Observer methods for simulation.
   friend class KeyboardControllerTest;
@@ -191,12 +169,6 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // display.
   void AdjustKeyboardBounds();
 
-  // Validates the state transition. Called from ChangeState.
-  void CheckStateTransition(KeyboardControllerState prev,
-                            KeyboardControllerState next);
-  // Changes the current state with validating the transition.
-  void ChangeState(KeyboardControllerState state);
-
   std::unique_ptr<KeyboardUI> ui_;
   KeyboardLayoutDelegate* layout_delegate_;
   std::unique_ptr<aura::Window> container_;
@@ -216,8 +188,6 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
 
   // The currently used keyboard position.
   gfx::Rect current_keyboard_bounds_;
-
-  KeyboardControllerState state_;
 
   static KeyboardController* instance_;
 
