@@ -7,8 +7,8 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
-#include "chrome/browser/chromeos/arc/arc_auth_context.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
+#include "chrome/browser/chromeos/arc/auth/arc_auth_context.h"
 
 namespace arc {
 
