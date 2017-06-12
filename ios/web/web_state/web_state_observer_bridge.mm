@@ -15,10 +15,10 @@ WebStateObserverBridge::~WebStateObserverBridge() {
 }
 
 void WebStateObserverBridge::NavigationItemsPruned(size_t pruned_item_count) {
-  SEL selector = @selector(webState:navigationItemsPrunedCount:);
+  SEL selector = @selector(webState:didPruneNavigationItemsWithCount:);
   if ([observer_ respondsToSelector:selector]) {
     [observer_ webState:web_state()
-        navigationItemsPrunedCount:pruned_item_count];
+        didPruneNavigationItemsWithCount:pruned_item_count];
   }
 }
 

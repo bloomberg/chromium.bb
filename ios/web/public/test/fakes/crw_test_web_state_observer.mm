@@ -23,7 +23,7 @@ TestUpdateFaviconUrlCandidatesInfo::~TestUpdateFaviconUrlCandidatesInfo() =
 }
 
 @implementation CRWTestWebStateObserver {
-  // Arguments passed to |webState:navigationItemsPrunedCount:|.
+  // Arguments passed to |webState:didPruneNavigationItemsWithCount:|.
   std::unique_ptr<web::TestNavigationItemsPrunedInfo>
       _navigationItemsPrunedInfo;
   // Arguments passed to |webState:didStartNavigation:|.
@@ -137,7 +137,7 @@ TestUpdateFaviconUrlCandidatesInfo::~TestUpdateFaviconUrlCandidatesInfo() =
 #pragma mark CRWWebStateObserver methods -
 
 - (void)webState:(web::WebState*)webState
-    navigationItemsPrunedCount:(size_t)pruned_item_count {
+    didPruneNavigationItemsWithCount:(size_t)pruned_item_count {
   _navigationItemsPrunedInfo =
       base::MakeUnique<web::TestNavigationItemsPrunedInfo>();
   _navigationItemsPrunedInfo->web_state = webState;

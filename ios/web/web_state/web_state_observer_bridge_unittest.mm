@@ -38,7 +38,7 @@ class WebStateObserverBridgeTest : public PlatformTest {
   scoped_refptr<net::HttpResponseHeaders> response_headers_;
 };
 
-// Tests |webState:navigationItemsPrunedCount:| forwarding.
+// Tests |webState:didPruneNavigationItemsWithCount:| forwarding.
 TEST_F(WebStateObserverBridgeTest, NavigationItemsPruned) {
   ASSERT_FALSE([observer_ navigationItemsPrunedInfo]);
 
