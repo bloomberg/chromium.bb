@@ -347,9 +347,12 @@ bool DownloadRequestCore::OnResponseStarted(
 
   // GURL::GetOrigin() doesn't support getting the inner origin of a blob URL.
   // However, requesting a cross origin blob URL would have resulted in a
-  // network error, so we'll just ignore them here.
+  // network error, so we'll just ignore them here. Furthermore, we consider
+  // data: and about: schemes as same origin regardless of the initiator.
   if (request()->initiator().has_value() &&
       !create_info->url_chain.back().SchemeIsBlob() &&
+      !create_info->url_chain.back().SchemeIs(url::kAboutScheme) &&
+      !create_info->url_chain.back().SchemeIs(url::kDataScheme) &&
       request()->initiator()->GetURL() !=
           create_info->url_chain.back().GetOrigin()) {
     create_info->save_info->suggested_name.clear();
