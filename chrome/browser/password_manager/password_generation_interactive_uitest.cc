@@ -137,9 +137,8 @@ class PasswordGenerationInteractiveTest :
   TestPopupObserver observer_;
 };
 
-// Disabled due to flakiness due to resizes, see http://crbug.com/407998.
 IN_PROC_BROWSER_TEST_F(PasswordGenerationInteractiveTest,
-                       DISABLED_PopupShownAndPasswordSelected) {
+                       PopupShownAndPasswordSelected) {
   FocusPasswordField();
   EXPECT_TRUE(GenerationPopupShowing());
   SendKeyToPopup(ui::VKEY_DOWN);
