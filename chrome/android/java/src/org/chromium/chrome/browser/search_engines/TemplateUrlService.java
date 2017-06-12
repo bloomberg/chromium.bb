@@ -167,6 +167,31 @@ public class TemplateUrlService {
     }
 
     /**
+     * Ensure the TemplateUrlService is loaded before running the specified action.  If the service
+     * is already loaded, then run the action immediately.
+     * <p>
+     * Because this can introduce an arbitrary delay in the action being executed, ensure the state
+     * is still valid in the action before interacting with anything that might no longer be
+     * available (i.e. an Activity that has since been destroyed).
+     *
+     * @param action The action to be run.
+     */
+    public void runWhenLoaded(final Runnable action) {
+        if (isLoaded()) {
+            action.run();
+        } else {
+            registerLoadListener(new LoadListener() {
+                @Override
+                public void onTemplateUrlServiceLoaded() {
+                    unregisterLoadListener(this);
+                    action.run();
+                }
+            });
+            load();
+        }
+    }
+
+    /**
      * Returns a list of the prepopulated search engines.
      *
      * Warning: TemplateUrl.getIndex() is *not* an index into this list, since this list contains

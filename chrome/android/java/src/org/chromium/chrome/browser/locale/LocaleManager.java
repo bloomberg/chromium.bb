@@ -270,28 +270,20 @@ public class LocaleManager {
         assert LibraryLoader.isInitialized();
 
         // Load up the search engines.
-        final TemplateUrlService instance = TemplateUrlService.getInstance();
-        if (!instance.isLoaded()) {
-            instance.registerLoadListener(new TemplateUrlService.LoadListener() {
-                @Override
-                public void onTemplateUrlServiceLoaded() {
-                    instance.unregisterLoadListener(this);
-
-                    // If the activity has been destroyed by the time the TemplateUrlService has
-                    // loaded, then do not attempt to show the dialog.
-                    if (ApplicationStatus.getStateForActivity(activity)
-                            == ActivityState.DESTROYED) {
-                        if (onDismissed != null) onDismissed.onResult(false);
-                        return;
-                    }
-
-                    showPromoDialog(dialogCreator);
+        Runnable showDialogAction = new Runnable() {
+            @Override
+            public void run() {
+                // If the activity has been destroyed by the time the TemplateUrlService has
+                // loaded, then do not attempt to show the dialog.
+                if (ApplicationStatus.getStateForActivity(activity) == ActivityState.DESTROYED) {
+                    if (onDismissed != null) onDismissed.onResult(false);
+                    return;
                 }
-            });
-            instance.load();
-        } else {
-            showPromoDialog(dialogCreator);
-        }
+
+                showPromoDialog(dialogCreator);
+            }
+        };
+        TemplateUrlService.getInstance().runWhenLoaded(showDialogAction);
     }
 
     private void showPromoDialog(Callable<PromoDialog> dialogCreator) {
