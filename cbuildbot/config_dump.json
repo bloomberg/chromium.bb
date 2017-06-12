@@ -848,7 +848,6 @@
             "manifest_version": true,
             "master": true,
             "overlays": "both",
-            "prebuilts": "private",
             "push_overlays": "both",
             "slave_configs": [],
             "useflags": [
@@ -20011,6 +20010,7 @@
         "hw_tests": [
             "{\n    \"async\": false,\n    \"blocking\": false,\n    \"critical\": false,\n    \"file_bugs\": true,\n    \"max_retries\": 5,\n    \"minimum_duts\": 0,\n    \"num\": 1,\n    \"offload_failures_only\": false,\n    \"pool\": \"bvt\",\n    \"priority\": \"PFQ\",\n    \"retry\": true,\n    \"suite\": \"AFDO_record\",\n    \"suite_min_duts\": 0,\n    \"timeout\": 6000,\n    \"warn_only\": true\n}"
         ],
+        "prebuilts": "private",
         "sync_chrome": true,
         "useflags": [
             "-debug_fission",
