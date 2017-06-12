@@ -20,7 +20,7 @@
 
 // Invoked by WebStateObserverBridge::NavigationItemsPruned.
 - (void)webState:(web::WebState*)webState
-    navigationItemsPrunedCount:(size_t)pruned_item_count;
+    didPruneNavigationItemsWithCount:(size_t)pruned_item_count;
 
 // Invoked by WebStateObserverBridge::NavigationItemCommitted.
 - (void)webState:(web::WebState*)webState
