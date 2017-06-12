@@ -31,6 +31,7 @@ APP_LIST_EXPORT extern const base::Feature kEnableFullscreenAppList;
 bool APP_LIST_EXPORT IsAnswerCardEnabled();
 bool APP_LIST_EXPORT IsAnswerCardDarkRunEnabled();
 bool APP_LIST_EXPORT IsFullscreenAppListEnabled();
+bool APP_LIST_EXPORT IsSearchResultsNewDesignEnabled();
 int APP_LIST_EXPORT AnswerCardMaxWidth();
 int APP_LIST_EXPORT AnswerCardMaxHeight();
 std::string APP_LIST_EXPORT AnswerServerUrl();
