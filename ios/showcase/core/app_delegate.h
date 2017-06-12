@@ -11,6 +11,9 @@
 
 @property(strong, nonatomic) UIWindow* window;
 
+// Sets the application to display the Showcase home.
+- (void)setupUI;
+
 @end
 
 #endif  // IOS_SHOWCASE_CORE_APP_DELEGATE_H_

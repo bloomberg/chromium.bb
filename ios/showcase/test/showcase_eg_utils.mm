@@ -47,7 +47,11 @@ void Open(NSString* name) {
 void Close() {
   // Some screens hides the navigation bar. Make sure it is showing.
   ShowcaseNavigationController().navigationBarHidden = NO;
+  [[EarlGrey selectElementWithMatcher:BackButton()]
+      assertWithMatcher:grey_interactable()];
   [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:HomeScreen()]
+      assertWithMatcher:grey_sufficientlyVisible()];
 }
 
 }  // namespace showcase_utils

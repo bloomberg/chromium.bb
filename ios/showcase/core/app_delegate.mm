@@ -18,17 +18,23 @@
 @implementation AppDelegate
 @synthesize window = _window;
 
+- (void)setupUI {
+  ShowcaseViewController* viewController =
+      [[ShowcaseViewController alloc] initWithRows:[AppDelegate rowsToDisplay]];
+  UINavigationController* navigationController = [[UINavigationController alloc]
+      initWithRootViewController:viewController];
+  self.window.rootViewController = navigationController;
+}
+
+#pragma mark - UIApplicationDelegate
+
 - (BOOL)application:(UIApplication*)application
     didFinishLaunchingWithOptions:(NSDictionary*)launchOptions {
   base::MakeUnique<IOSChromeMain>();
   ResourceBundle::InitSharedInstanceWithLocale(
       std::string(), nullptr, ResourceBundle::LOAD_COMMON_RESOURCES);
   self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-  ShowcaseViewController* viewController =
-      [[ShowcaseViewController alloc] initWithRows:[self rowsToDisplay]];
-  UINavigationController* navigationController = [[UINavigationController alloc]
-      initWithRootViewController:viewController];
-  self.window.rootViewController = navigationController;
+  [self setupUI];
   [self.window makeKeyAndVisible];
 
   return YES;
@@ -37,7 +43,7 @@
 #pragma mark - Private
 
 // Creates model data to display in the view controller.
-- (NSArray<showcase::ModelRow*>*)rowsToDisplay {
++ (NSArray<showcase::ModelRow*>*)rowsToDisplay {
   NSArray<showcase::ModelRow*>* rows = [ShowcaseModel model];
   NSSortDescriptor* sortDescriptor =
       [NSSortDescriptor sortDescriptorWithKey:showcase::kClassForDisplayKey

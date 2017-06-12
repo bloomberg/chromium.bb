@@ -12,6 +12,7 @@ source_set("test") {
   ]
   deps = [
     "//base",
+    "//ios/showcase/core",
     "//ios/testing/earl_grey:earl_grey_support",
     "//ios/third_party/earl_grey",
     "//testing/gtest",
