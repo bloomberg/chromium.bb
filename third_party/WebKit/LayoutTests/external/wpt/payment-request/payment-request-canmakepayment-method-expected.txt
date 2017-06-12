@@ -1,9 +1,0 @@
-This is a testharness.js-based test.
-FAIL If request.[[state]] is "created", then return a promise that resolves to true for known method. promise_test: Unhandled rejection with value: object "SecurityError: Failed to construct 'PaymentRequest': Must be in a secure context"
-FAIL If request.[[state]] is "interactive", then return a promise rejected with an "InvalidStateError" DOMException. promise_test: Unhandled rejection with value: object "SecurityError: Failed to construct 'PaymentRequest': Must be in a secure context"
-FAIL If request.[[state]] is "closed", then return a promise rejected with an "InvalidStateError" DOMException. promise_test: Unhandled rejection with value: object "SecurityError: Failed to construct 'PaymentRequest': Must be in a secure context"
-FAIL If payment method identifier and serialized parts are supported, resolve promise with true. promise_test: Unhandled rejection with value: object "SecurityError: Failed to construct 'PaymentRequest': Must be in a secure context"
-FAIL If payment method identifier is unknown, resolve promise with false. assert_true: Unexpected exception testing method this-is-not-supported, expected false. See error console. expected true got false
-FAIL Optionally, at the user agent's discretion, return a promise rejected with a "NotAllowedError" DOMException. promise_test: Unhandled rejection with value: object "SecurityError: Failed to construct 'PaymentRequest': Must be in a secure context"
-Harness: the test ran to completion.
-

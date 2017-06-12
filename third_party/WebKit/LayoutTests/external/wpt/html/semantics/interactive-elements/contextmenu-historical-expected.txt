@@ -1,0 +1,14 @@
+This is a testharness.js-based test.
+PASS HTMLMenuItemElement must not be not present 
+FAIL onshow must not be present on the GlobalEventHandlers locations assert_false: Window must not have a property "onshow" expected false got true
+PASS RelatedEvent must not be present 
+PASS el.contextMenu must not be present 
+PASS menu.type must not exist or reflect the content attribute 
+PASS menu.label must not exist or reflect the content attribute 
+PASS :enabled must not match menuitems 
+PASS :disabled must not match menuitems 
+PASS :checked must not match menuitems 
+PASS :default must not match menuitems 
+PASS The user-agent stylesheet must leave type="context" menus as block display like other menus 
+Harness: the test ran to completion.
+

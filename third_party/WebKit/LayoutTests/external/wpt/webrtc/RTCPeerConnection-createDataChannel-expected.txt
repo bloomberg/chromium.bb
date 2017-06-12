@@ -1,30 +1,42 @@
 This is a testharness.js-based test.
-PASS createDataChannel required arguments 
-PASS createDataChannel with closed connection 
-FAIL createDataChannel defaults assert_equals: maxPacketLifeTime expected (object) null but got (undefined) undefined
-PASS createDataChannel with label "foo" 
-PASS createDataChannel with label null 
-PASS createDataChannel with label undefined 
-PASS createDataChannel with label lone surrogate 
-PASS createDataChannel with ordered false 
-PASS createDataChannel with ordered null/undefined 
-FAIL createDataChannel with maxPacketLifeTime 0 assert_equals: expected (number) 0 but got (undefined) undefined
-PASS createDataChannel with maxRetransmits 0 
-FAIL createDataChannel with both maxPacketLifeTime and maxRetransmits assert_throws: function "() => pc.createDataChannel('', {
+PASS createDataChannel with no argument should throw TypeError 
+PASS createDataChannel with closed connection should throw InvalidStateError 
+FAIL createDataChannel attribute default values assert_equals: maxPacketLifeTime expected (object) null but got (undefined) undefined
+PASS createDataChannel with label "foo" should succeed 
+PASS createDataChannel with label null should succeed 
+PASS createDataChannel with label undefined should succeed 
+PASS createDataChannel with label lone surrogate should succeed 
+PASS createDataChannel with ordered false should succeed 
+PASS createDataChannel with ordered null/undefined should succeed 
+FAIL createDataChannel with maxPacketLifeTime 0 should succeed assert_equals: expected (number) 0 but got (undefined) undefined
+PASS createDataChannel with maxRetransmits 0 should succeed 
+FAIL createDataChannel with both maxPacketLifeTime and maxRetransmits should throw SyntaxError assert_throws: function "() => pc.createDataChannel('', {
     maxPacketLifeTime: 0,
     maxRetransmits: 0
   })" did not throw
-PASS createDataChannel with protocol "foo" 
-PASS createDataChannel with protocol null 
-PASS createDataChannel with protocol undefined 
-PASS createDataChannel with protocol lone surrogate 
-PASS createDataChannel with negotiated true 
-PASS createDataChannel with id -1 
-PASS createDataChannel with id 0 
-PASS createDataChannel with id 1 
-PASS createDataChannel with id 65534 
-FAIL createDataChannel with id 65535 assert_throws: function "() => pc.createDataChannel('', { id: id })" did not throw
-PASS createDataChannel with id 65536 
-FAIL createDataChannel with priority "high" assert_equals: expected (string) "high" but got (undefined) undefined
+PASS createDataChannel with protocol "foo" should succeed 
+PASS createDataChannel with protocol null should succeed 
+PASS createDataChannel with protocol undefined should succeed 
+PASS createDataChannel with protocol lone surrogate should succeed 
+PASS createDataChannel with negotiated true should succeed 
+PASS createDataChannel with id 0 should succeed 
+PASS createDataChannel with id 1 should succeed 
+PASS createDataChannel with id 65534 should succeed 
+PASS createDataChannel with id -1 should throw TypeError 
+FAIL createDataChannel with id 65535 should throw TypeError assert_throws: function "() => pc.createDataChannel('', { id })" did not throw
+PASS createDataChannel with id 65536 should throw TypeError 
+FAIL createDataChannel with priority "high" should succeed assert_equals: expected (string) "high" but got (undefined) undefined
+FAIL createDataChannel with invalid priority should throw TypeError assert_throws: function "() => pc.createDataChannel('', { priority: 'invalid' })" did not throw
+FAIL createDataChannel with negotiated false and long label should throw TypeError assert_throws: function "() =>
+    pc.createDataChannel('', {
+      label: ' '.repeat(65536),
+      negotiated: false
+    })" did not throw
+FAIL createDataChannel with negotiated false and long protocol should throw TypeError assert_throws: function "() =>
+    pc.createDataChannel('', {
+      protocol: ' '.repeat(65536),
+      negotiated: false
+    })" did not throw
+PASS createDataChannel with negotiated true and long label and long protocol should succeed 
 Harness: the test ran to completion.
 

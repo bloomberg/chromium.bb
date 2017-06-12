@@ -1953,6 +1953,10 @@ crbug.com/723826 virtual/mojo-loading/http/tests/security/w3c/cross-origin-objec
 crbug.com/724251 virtual/threaded/animations/svg-attribute-interpolation/svg-startOffset-interpolation.html [ Failure Pass ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/wasm/wasm_indexeddb_test.html [ Timeout ]
+crbug.com/626703 external/wpt/wasm/wasm_local_iframe_test.html [ Failure ]
+crbug.com/626703 external/wpt/wasm/wasm_serialization_tests.html [ Failure ]
+crbug.com/626703 external/wpt/wasm/wasm_service_worker_test.html [ Failure ]
 crbug.com/626703 external/wpt/payment-request/payment-request-show-method.https.html [ Pass Failure ]
 crbug.com/626703 external/wpt/webrtc/RTCPeerConnection-createOffer.html [ Timeout ]
 crbug.com/626703 external/wpt/webrtc/RTCPeerConnection-onnegotiationneeded.html [ Timeout ]
@@ -2011,7 +2015,7 @@ crbug.com/626703 external/wpt/html/infrastructure/urls/resolving-urls/query-enco
 crbug.com/626703 external/wpt/html/semantics/embedded-content/the-iframe-element/cross_origin_parentage.html [ Timeout ]
 crbug.com/626703 external/wpt/html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-menu.html [ Failure ]
 crbug.com/626703 external/wpt/html/semantics/grouping-content/the-li-element/grouping-li-reftest-list-owner-skip-no-boxes.html [ Failure ]
-crbug.com/626703 external/wpt/html/semantics/interactive-elements/context-menus/contextmenu-event-manual.htm [ Timeout ]
+crbug.com/626703 external/wpt/html/webappapis/scripting/events/contextmenu-event-manual.htm [ Timeout ]
 crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/async_007.htm [ Timeout ]
 crbug.com/626703 external/wpt/html/semantics/scripting-1/the-script-element/async_010.htm [ Timeout ]
 crbug.com/626703 external/wpt/html/webappapis/idle-callbacks/callback-exception.html [ Timeout ]

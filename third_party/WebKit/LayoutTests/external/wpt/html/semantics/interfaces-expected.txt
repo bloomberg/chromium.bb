@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 295 tests; 284 PASS, 11 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 293 tests; 284 PASS, 9 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Interfaces for a 
 PASS Interfaces for A 
 PASS Interfaces for abbr 
@@ -167,8 +167,6 @@ PASS Interfaces for marquee
 PASS Interfaces for MARQUEE 
 PASS Interfaces for menu 
 PASS Interfaces for MENU 
-FAIL Interfaces for menuitem assert_equals: Element menuitem should have HTMLMenuItemElement as its primary interface. expected "[object HTMLMenuItemElement]" but got "[object HTMLUnknownElement]"
-FAIL Interfaces for MENUITEM assert_equals: Element MENUITEM should have HTMLMenuItemElement as its primary interface. expected "[object HTMLMenuItemElement]" but got "[object HTMLUnknownElement]"
 PASS Interfaces for meta 
 PASS Interfaces for META 
 PASS Interfaces for meter 

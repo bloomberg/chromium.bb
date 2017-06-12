@@ -1,0 +1,6 @@
+This is a testharness.js-based test.
+FAIL PaymentRequestUpdateEvent constructor throws in a non-secure context assert_throws: function "() => {
+    new PaymentRequestUpdateEvent("test");
+  }" did not throw
+Harness: the test ran to completion.
+
