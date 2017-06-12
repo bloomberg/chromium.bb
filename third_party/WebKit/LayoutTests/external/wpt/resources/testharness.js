@@ -1326,7 +1326,8 @@ policies and contribution forms [3].
         }
         this.name = name;
 
-        this.phase = this.phases.INITIAL;
+        this.phase = tests.phase === tests.phases.ABORTED ?
+            this.phases.COMPLETE : this.phases.INITIAL;
 
         this.status = this.NOTRUN;
         this.timeout_id = null;
@@ -1522,11 +1523,35 @@ policies and contribution forms [3].
         this.cleanup();
     };
 
+    /*
+     * Invoke all specified cleanup functions. If one or more produce an error,
+     * the context is in an unpredictable state, so all further testing should
+     * be cancelled.
+     */
     Test.prototype.cleanup = function() {
+        var error_count = 0;
+        var total;
+
         forEach(this.cleanup_callbacks,
                 function(cleanup_callback) {
-                    cleanup_callback();
+                    try {
+                        cleanup_callback();
+                    } catch (e) {
+                        // Set test phase immediately so that tests declared
+                        // within subsequent cleanup functions are not run.
+                        tests.phase = tests.phases.ABORTED;
+                        error_count += 1;
+                    }
                 });
+
+        if (error_count > 0) {
+            total = this.cleanup_callbacks.length;
+            tests.status.status = tests.status.ERROR;
+            tests.status.message = "Test named '" + this.name +
+                "' specified " + total + " 'cleanup' function" +
+                (total > 1 ? "s" : "") + ", and " + error_count + " failed.";
+            tests.status.stack = null;
+        }
     };
 
     /*
@@ -1710,7 +1735,8 @@ policies and contribution forms [3].
             SETUP:1,
             HAVE_TESTS:2,
             HAVE_RESULTS:3,
-            COMPLETE:4
+            COMPLETE:4,
+            ABORTED:5
         };
         this.phase = this.phases.INITIAL;
 
@@ -1844,7 +1870,8 @@ policies and contribution forms [3].
     };
 
     Tests.prototype.all_done = function() {
-        return (this.tests.length > 0 && test_environment.all_loaded &&
+        return this.phase === this.phases.ABORTED ||
+            (this.tests.length > 0 && test_environment.all_loaded &&
                 this.num_pending === 0 && !this.wait_for_finish &&
                 !this.processing_callbacks &&
                 !this.pending_remotes.some(function(w) { return w.running; }));

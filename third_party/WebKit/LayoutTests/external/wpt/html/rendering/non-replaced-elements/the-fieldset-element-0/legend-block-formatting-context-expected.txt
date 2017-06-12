@@ -1,0 +1,7 @@
+This is a testharness.js-based test.
+FAIL in-body assert_equals: legend.offsetLeft expected 0 but got 50
+PASS rendered-legend 
+FAIL in-fieldset-second-child assert_equals: legend.offsetLeft expected 2 but got 52
+FAIL in-fieldset-descendant assert_equals: legend.offsetTop expected 50 but got 100
+Harness: the test ran to completion.
+
