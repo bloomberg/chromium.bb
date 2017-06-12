@@ -76,6 +76,10 @@ class ClientNativePixmapFactory;
 }  // namespace gfx
 #endif
 
+namespace viz {
+class FrameSinkManagerHost;
+}
+
 namespace content {
 class BrowserMainParts;
 class BrowserOnlineStateObserver;
@@ -159,6 +163,14 @@ class CONTENT_EXPORT BrowserMainLoop {
   const base::FilePath& startup_trace_file() const {
     return startup_trace_file_;
   }
+
+#if !defined(OS_ANDROID)
+  // TODO(fsamuel): We should find an object to own FrameSinkManagerHost on all
+  // platforms including Android. See http://crbug.com/732507.
+  viz::FrameSinkManagerHost* frame_sink_manager_host() const {
+    return frame_sink_manager_host_.get();
+  }
+#endif
 
   void StopStartupTracingTimer();
 
@@ -315,6 +327,9 @@ class CONTENT_EXPORT BrowserMainLoop {
   scoped_refptr<SaveFileManager> save_file_manager_;
   std::unique_ptr<memory_instrumentation::CoordinatorImpl>
       memory_instrumentation_coordinator_;
+#if !defined(OS_ANDROID)
+  std::unique_ptr<viz::FrameSinkManagerHost> frame_sink_manager_host_;
+#endif
 
   // DO NOT add members here. Add them to the right categories above.
 

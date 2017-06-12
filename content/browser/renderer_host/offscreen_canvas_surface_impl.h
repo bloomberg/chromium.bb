@@ -9,6 +9,7 @@
 #include "base/compiler_specific.h"
 #include "cc/surfaces/frame_sink_id.h"
 #include "cc/surfaces/surface_info.h"
+#include "components/viz/host/frame_sink_manager_host.h"
 #include "components/viz/host/frame_sink_observer.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -25,6 +26,7 @@ class CONTENT_EXPORT OffscreenCanvasSurfaceImpl
   using DestroyCallback = base::OnceCallback<void()>;
 
   OffscreenCanvasSurfaceImpl(
+      viz::FrameSinkManagerHost* frame_sink_manager_host,
       const cc::FrameSinkId& parent_frame_sink_id,
       const cc::FrameSinkId& frame_sink_id,
       blink::mojom::OffscreenCanvasSurfaceClientPtr client,
@@ -62,6 +64,8 @@ class CONTENT_EXPORT OffscreenCanvasSurfaceImpl
   // Registered as a callback for when |binding_| is closed. Will call
   // |destroy_callback_|.
   void OnSurfaceConnectionClosed();
+
+  viz::FrameSinkManagerHost* const frame_sink_manager_host_;
 
   blink::mojom::OffscreenCanvasSurfaceClientPtr client_;
   mojo::Binding<blink::mojom::OffscreenCanvasSurface> binding_;

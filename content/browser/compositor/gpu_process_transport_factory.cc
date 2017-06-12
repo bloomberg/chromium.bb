@@ -34,6 +34,7 @@
 #include "components/viz/display_compositor/gl_helper.h"
 #include "components/viz/display_compositor/host_shared_bitmap_manager.h"
 #include "components/viz/host/frame_sink_manager_host.h"
+#include "content/browser/browser_main_loop.h"
 #include "content/browser/compositor/browser_compositor_output_surface.h"
 #include "content/browser/compositor/gpu_browser_compositor_output_surface.h"
 #include "content/browser/compositor/gpu_surfaceless_browser_compositor_output_surface.h"
@@ -205,9 +206,6 @@ GpuProcessTransportFactory::GpuProcessTransportFactory()
       task_graph_runner_(new cc::SingleThreadTaskGraphRunner),
       callback_factory_(this) {
   cc::SetClientNameForMetrics("Browser");
-
-  frame_sink_manager_host_ = base::MakeUnique<viz::FrameSinkManagerHost>();
-  frame_sink_manager_host_->ConnectToFrameSinkManager();
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kDisableGpuVsync)) {
@@ -729,12 +727,14 @@ cc::FrameSinkId GpuProcessTransportFactory::AllocateFrameSinkId() {
 }
 
 cc::SurfaceManager* GpuProcessTransportFactory::GetSurfaceManager() {
-  return frame_sink_manager_host_->surface_manager();
+  return BrowserMainLoop::GetInstance()
+      ->frame_sink_manager_host()
+      ->surface_manager();
 }
 
 viz::FrameSinkManagerHost*
 GpuProcessTransportFactory::GetFrameSinkManagerHost() {
-  return frame_sink_manager_host_.get();
+  return BrowserMainLoop::GetInstance()->frame_sink_manager_host();
 }
 
 void GpuProcessTransportFactory::SetDisplayVisible(ui::Compositor* compositor,

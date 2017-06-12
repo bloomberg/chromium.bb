@@ -71,6 +71,7 @@
 #include "content/browser/cache_storage/cache_storage_context_impl.h"
 #include "content/browser/cache_storage/cache_storage_dispatcher_host.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/compositor/surface_utils.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/dom_storage/dom_storage_message_filter.h"
 #include "content/browser/field_trial_recorder.h"
@@ -1639,8 +1640,8 @@ void RenderProcessHostImpl::CreateOffscreenCanvasProvider(
   if (!offscreen_canvas_provider_) {
     // The client id gets converted to a uint32_t in FrameSinkId.
     uint32_t renderer_client_id = base::checked_cast<uint32_t>(id_);
-    offscreen_canvas_provider_ =
-        base::MakeUnique<OffscreenCanvasProviderImpl>(renderer_client_id);
+    offscreen_canvas_provider_ = base::MakeUnique<OffscreenCanvasProviderImpl>(
+        GetFrameSinkManagerHost(), renderer_client_id);
   }
   offscreen_canvas_provider_->Add(std::move(request));
 }
