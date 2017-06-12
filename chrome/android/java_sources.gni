@@ -68,6 +68,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/UrlConstants.java",
   "java/src/org/chromium/chrome/browser/UsbChooserDialog.java",
   "java/src/org/chromium/chrome/browser/WarmupManager.java",
+  "java/src/org/chromium/chrome/browser/WebApkChildProcessServiceImpl.java",
   "java/src/org/chromium/chrome/browser/WebContentsFactory.java",
   "java/src/org/chromium/chrome/browser/WindowDelegate.java",
   "java/src/org/chromium/chrome/browser/accessibility/FontSizePrefs.java",
