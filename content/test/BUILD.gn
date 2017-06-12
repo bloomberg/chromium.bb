@@ -1444,6 +1444,7 @@ test("content_unittests") {
     "../renderer/presentation/presentation_dispatcher_unittest.cc",
     "../renderer/presentation/test_presentation_connection.cc",
     "../renderer/presentation/test_presentation_connection.h",
+    "../renderer/previews_state_helper_unittest.cc",
     "../renderer/render_thread_impl_unittest.cc",
     "../renderer/render_widget_unittest.cc",
     "../renderer/scheduler/resource_dispatch_throttler_unittest.cc",

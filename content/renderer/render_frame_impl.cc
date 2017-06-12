@@ -133,6 +133,7 @@
 #include "content/renderer/pepper/pepper_audio_controller.h"
 #include "content/renderer/pepper/plugin_instance_throttler_impl.h"
 #include "content/renderer/presentation/presentation_dispatcher.h"
+#include "content/renderer/previews_state_helper.h"
 #include "content/renderer/push_messaging/push_messaging_client.h"
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_process.h"
@@ -3620,10 +3621,10 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
   // main frame documents. Subframes inherit from the main frame and should not
   // change at commit time.
   if (is_main_frame_ && !navigation_state->WasWithinSameDocument()) {
-    previews_state_ =
-        extra_data ? extra_data->previews_state() : PREVIEWS_OFF;
-
+    previews_state_ = PREVIEWS_OFF;
     if (extra_data) {
+      previews_state_ = GetPreviewsStateFromMainFrameResponse(
+          extra_data->previews_state(), web_url_response);
       effective_connection_type_ =
           EffectiveConnectionTypeToWebEffectiveConnectionType(
               extra_data->effective_connection_type());
@@ -4059,8 +4060,7 @@ bool RenderFrameImpl::ShouldUseClientLoFiForRequest(
 
   if (!(previews_state_ & CLIENT_LOFI_ON))
     return false;
-  if (previews_state_ &
-      (SERVER_LITE_PAGE_ON | PREVIEWS_OFF | PREVIEWS_NO_TRANSFORM)) {
+  if (previews_state_ & (PREVIEWS_OFF | PREVIEWS_NO_TRANSFORM)) {
     return false;
   }
 
