@@ -76,12 +76,12 @@ bool DisplayManager::SetDisplayConfiguration(
     int64_t primary_display_id) {
   if (window_server_->display_creation_config() !=
       DisplayCreationConfig::MANUAL) {
-    DVLOG(1) << "SetDisplayConfiguration is only valid when roots manually "
-                "created";
+    LOG(ERROR) << "SetDisplayConfiguration is only valid when roots manually "
+                  "created";
     return false;
   }
   if (displays.size() != viewport_metrics.size()) {
-    DVLOG(1) << "SetDisplayConfiguration called with mismatch in sizes";
+    LOG(ERROR) << "SetDisplayConfiguration called with mismatch in sizes";
     return false;
   }
   size_t primary_display_index = displays.size();
@@ -89,24 +89,24 @@ bool DisplayManager::SetDisplayConfiguration(
   for (size_t i = 0; i < displays.size(); ++i) {
     const display::Display& display = displays[i];
     if (display.id() == display::kInvalidDisplayId) {
-      DVLOG(1) << "SetDisplayConfiguration passed invalid display id";
+      LOG(ERROR) << "SetDisplayConfiguration passed invalid display id";
       return false;
     }
     if (!display_ids.insert(display.id()).second) {
-      DVLOG(1) << "SetDisplayConfiguration passed duplicate display id";
+      LOG(ERROR) << "SetDisplayConfiguration passed duplicate display id";
       return false;
     }
     if (display.id() == primary_display_id)
       primary_display_index = i;
     Display* ws_display = GetDisplayById(display.id());
     if (!ws_display) {
-      DVLOG(1) << "SetDisplayConfiguration passed unknown display id "
-               << display.id();
+      LOG(ERROR) << "SetDisplayConfiguration passed unknown display id "
+                 << display.id();
       return false;
     }
   }
   if (primary_display_index == displays.size()) {
-    DVLOG(1) << "SetDisplayConfiguration primary id not in displays";
+    LOG(ERROR) << "SetDisplayConfiguration primary id not in displays";
     return false;
   }
 
