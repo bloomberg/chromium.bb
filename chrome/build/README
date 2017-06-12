@@ -1,0 +1,6 @@
+How to create the order files
+=============================
+TODO(hans): Add proper instructions here.
+
+The current order files were created with this hack:
+https://codereview.chromium.org/2924093003

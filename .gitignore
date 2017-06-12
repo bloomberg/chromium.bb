@@ -69,6 +69,10 @@ vs-chromium-project.txt
 /cdm
 /ceee/internal/
 /chrome/angle_unittests_run.xml
+/chrome/build/chrome.x64.orderfile
+/chrome/build/chrome.x86.orderfile
+/chrome/build/chrome_child.x64.orderfile
+/chrome/build/chrome_child.x86.orderfile
 /chrome/content_gl_tests_run.xml
 /chrome/gl_tests_run.xml
 /chrome/gles2_conform_test_run.xml
