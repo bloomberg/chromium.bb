@@ -19,6 +19,7 @@ class Sender;
 
 namespace base {
 class DictionaryValue;
+class ListValue;
 }
 
 namespace extensions {
@@ -34,6 +35,14 @@ class EventBindings : public ObjectBackedNativeHandler {
   // |context|.
   static bool HasListener(ScriptContext* context,
                           const std::string& event_name);
+
+  // Dispatches the event in the given |context| with the provided
+  // |event_args| and |filtering_info|.
+  static void DispatchEventInContext(
+      const std::string& event_name,
+      const base::ListValue* event_args,
+      const base::DictionaryValue* filtering_info,
+      ScriptContext* context);
 
  private:
   // JavaScript handler which forwards to AttachEvent().
@@ -76,8 +85,6 @@ class EventBindings : public ObjectBackedNativeHandler {
   // |is_manual| false if this is part of the extension unload process where all
   // listeners are automatically detached.
   void DetachFilteredEvent(int matcher_id, bool is_manual);
-
-  void MatchAgainstEventFilter(const v8::FunctionCallbackInfo<v8::Value>& args);
 
   void AttachUnmanagedEvent(const v8::FunctionCallbackInfo<v8::Value>& args);
   void DetachUnmanagedEvent(const v8::FunctionCallbackInfo<v8::Value>& args);
