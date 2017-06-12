@@ -143,6 +143,7 @@
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/PerformanceMonitor.h"
 #include "core/frame/Settings.h"
+#include "core/frame/VisualViewport.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/DocumentNameCollection.h"
 #include "core/html/HTMLAllCollection.h"
@@ -6450,6 +6451,12 @@ void Document::UpdateHoverActiveState(const HitTestRequest& request,
       SetActiveHoverElement(new_active_element);
     }
   }
+
+  // Do not set hover state if event is from touch and on mobile.
+  bool allow_hover_changes =
+      !(request.TouchEvent() && GetPage() &&
+        GetPage()->GetVisualViewport().ShouldDisableDesktopWorkarounds());
+
   // If the mouse has just been pressed, set :active on the chain. Those (and
   // only those) nodes should remain :active until the mouse is released.
   bool allow_active_changes = !old_active_element && ActiveHoverElement();
@@ -6469,7 +6476,8 @@ void Document::UpdateHoverActiveState(const HitTestRequest& request,
       SkipDisplayNoneAncestors(inner_element_in_document);
 
   // Update our current hover element.
-  SetHoverElement(new_hover_element);
+  if (allow_hover_changes)
+    SetHoverElement(new_hover_element);
 
   Node* ancestor_element = nullptr;
   if (old_hover_element && old_hover_element->isConnected() &&
@@ -6510,8 +6518,10 @@ void Document::UpdateHoverActiveState(const HitTestRequest& request,
       elements_to_add_to_chain.push_back(curr);
   }
 
-  for (Element* element : elements_to_remove_from_chain)
-    element->SetHovered(false);
+  if (allow_hover_changes) {
+    for (Element* element : elements_to_remove_from_chain)
+      element->SetHovered(false);
+  }
 
   bool saw_common_ancestor = false;
   for (Element* element : elements_to_add_to_chain) {
@@ -6521,7 +6531,8 @@ void Document::UpdateHoverActiveState(const HitTestRequest& request,
       saw_common_ancestor = true;
     if (allow_active_changes)
       element->SetActive(true);
-    if (!saw_common_ancestor || element == hover_element_)
+    if (allow_hover_changes &&
+        (!saw_common_ancestor || element == hover_element_))
       element->SetHovered(true);
   }
 }
