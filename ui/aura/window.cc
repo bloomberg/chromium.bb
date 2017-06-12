@@ -15,6 +15,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -359,8 +360,7 @@ void Window::AddChild(Window* child) {
 
   port_->OnWillAddChild(child);
 
-  DCHECK(std::find(children_.begin(), children_.end(), child) ==
-      children_.end());
+  DCHECK(!base::ContainsValue(children_, child));
   if (child->parent())
     child->parent()->RemoveChildImpl(child, this);
 
@@ -634,8 +634,7 @@ void Window::RemoveOrDestroyChildren() {
     if (child->owned_by_parent_) {
       delete child;
       // Deleting the child so remove it from out children_ list.
-      DCHECK(std::find(children_.begin(), children_.end(), child) ==
-             children_.end());
+      DCHECK(!base::ContainsValue(children_, child));
     } else {
       // Even if we can't delete the child, we still need to remove it from the
       // parent so that relevant bookkeeping (parent_ back-pointers etc) are

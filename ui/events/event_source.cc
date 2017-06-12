@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/stl_util.h"
 #include "ui/events/event_rewriter.h"
 #include "ui/events/event_sink.h"
 
@@ -17,8 +18,7 @@ EventSource::~EventSource() {}
 
 void EventSource::AddEventRewriter(EventRewriter* rewriter) {
   DCHECK(rewriter);
-  DCHECK(rewriter_list_.end() ==
-         std::find(rewriter_list_.begin(), rewriter_list_.end(), rewriter));
+  DCHECK(!base::ContainsValue(rewriter_list_, rewriter));
   rewriter_list_.push_back(rewriter);
 }
 
