@@ -618,9 +618,16 @@ void RTCVideoEncoder::Impl::EncodeOneFrame() {
   }
 
   if (requires_copy) {
+    // TODO(magjed/emircan): This check is needed in order for the
+    // |pending_timestamps_| DHCECK below to not fail. It shouldn't be
+    // necessary.
+    const bool use_media_timestamp =
+        frame && (frame->HasTextures() ||
+                  frame->storage_type() == media::VideoFrame::STORAGE_SHMEM);
     const base::TimeDelta timestamp =
-        frame ? frame->timestamp()
-              : base::TimeDelta::FromMilliseconds(next_frame->ntp_time_ms());
+        use_media_timestamp
+            ? frame->timestamp()
+            : base::TimeDelta::FromMilliseconds(next_frame->ntp_time_ms());
     base::SharedMemory* input_buffer = input_buffers_[index].get();
     frame = media::VideoFrame::WrapExternalSharedMemory(
         media::PIXEL_FORMAT_I420, input_frame_coded_size_,
