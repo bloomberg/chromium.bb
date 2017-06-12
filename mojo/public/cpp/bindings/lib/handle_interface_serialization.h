@@ -117,7 +117,8 @@ struct Serializer<InterfacePtrDataView<Base>, InterfacePtr<T>> {
                         Interface_Data* output,
                         SerializationContext* context) {
     InterfacePtrInfo<T> info = input.PassInterface();
-    output->handle = context->handles.AddHandle(info.PassHandle().release());
+    output->handle =
+        context->handles.AddHandle(ScopedHandle::From(info.PassHandle()));
     output->version = info.version();
   }
 
@@ -143,7 +144,8 @@ struct Serializer<InterfaceRequestDataView<Base>, InterfaceRequest<T>> {
   static void Serialize(InterfaceRequest<T>& input,
                         Handle_Data* output,
                         SerializationContext* context) {
-    *output = context->handles.AddHandle(input.PassMessagePipe().release());
+    *output =
+        context->handles.AddHandle(ScopedHandle::From(input.PassMessagePipe()));
   }
 
   static bool Deserialize(Handle_Data* input,
@@ -165,7 +167,7 @@ struct Serializer<ScopedHandleBase<T>, ScopedHandleBase<T>> {
   static void Serialize(ScopedHandleBase<T>& input,
                         Handle_Data* output,
                         SerializationContext* context) {
-    *output = context->handles.AddHandle(input.release());
+    *output = context->handles.AddHandle(ScopedHandle::From(std::move(input)));
   }
 
   static bool Deserialize(Handle_Data* input,

@@ -47,12 +47,13 @@ MojoResult Dispatcher::WriteMessage(
 }
 
 MojoResult Dispatcher::ReadMessage(
+    ReadMessageSizePolicy size_policy,
+    ReadMessageDiscardPolicy discard_policy,
+    uint32_t max_payload_size,
+    uint32_t max_num_handles,
     std::unique_ptr<ports::UserMessageEvent>* message,
-    uint32_t* num_bytes,
-    MojoHandle* handles,
-    uint32_t* num_handles,
-    MojoReadMessageFlags flags,
-    bool read_any_size) {
+    uint32_t* actual_payload_size,
+    uint32_t* actual_num_handles) {
   return MOJO_RESULT_INVALID_ARGUMENT;
 }
 

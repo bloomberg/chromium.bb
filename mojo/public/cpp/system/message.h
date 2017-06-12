@@ -6,6 +6,7 @@
 #define MOJO_PUBLIC_CPP_SYSTEM_MESSAGE_H_
 
 #include <limits>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
@@ -67,9 +68,35 @@ inline MojoResult AllocMessage(size_t num_bytes,
   return MOJO_RESULT_OK;
 }
 
-inline MojoResult GetMessageBuffer(MessageHandle message, void** buffer) {
+inline MojoResult GetSerializedMessageContents(
+    MessageHandle message,
+    void** buffer,
+    uint32_t* num_bytes,
+    std::vector<ScopedHandle>* handles,
+    MojoGetSerializedMessageContentsFlags flags) {
   DCHECK(message.is_valid());
-  return MojoGetMessageBuffer(message.value(), buffer);
+  DCHECK(num_bytes);
+  DCHECK(buffer);
+  uint32_t num_handles = 0;
+  MojoResult rv = MojoGetSerializedMessageContents(
+      message.value(), buffer, num_bytes, nullptr, &num_handles, flags);
+  if (rv != MOJO_RESULT_RESOURCE_EXHAUSTED) {
+    if (handles)
+      handles->clear();
+    return rv;
+  }
+
+  handles->resize(num_handles);
+  return MojoGetSerializedMessageContents(
+      message.value(), buffer, num_bytes,
+      reinterpret_cast<MojoHandle*>(handles->data()), &num_handles, flags);
+}
+
+inline MojoResult GetMessageBuffer(MessageHandle message, void** buffer) {
+  uint32_t num_bytes;
+  return GetSerializedMessageContents(
+      message, buffer, &num_bytes, nullptr,
+      MOJO_GET_SERIALIZED_MESSAGE_CONTENTS_FLAG_IGNORE_HANDLES);
 }
 
 inline MojoResult NotifyBadMessage(MessageHandle message,

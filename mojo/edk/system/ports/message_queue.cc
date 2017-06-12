@@ -76,6 +76,11 @@ void MessageQueue::GetReferencedPorts(std::vector<PortName>* port_names) {
   }
 }
 
+void MessageQueue::TakeAllMessages(
+    std::vector<std::unique_ptr<UserMessageEvent>>* messages) {
+  *messages = std::move(heap_);
+}
+
 }  // namespace ports
 }  // namespace edk
 }  // namespace mojo

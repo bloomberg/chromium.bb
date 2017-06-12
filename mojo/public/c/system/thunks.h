@@ -96,9 +96,6 @@ struct MojoSystemThunks {
                                 MojoWriteMessageFlags flags);
   MojoResult (*ReadMessageNew)(MojoHandle message_pipe_handle,
                                MojoMessageHandle* message,
-                               uint32_t* num_bytes,
-                               MojoHandle* handles,
-                               uint32_t* num_handles,
                                MojoReadMessageFlags flags);
   MojoResult (*AllocMessage)(uint32_t num_bytes,
                              const MojoHandle* handles,
@@ -109,7 +106,14 @@ struct MojoSystemThunks {
                               const struct MojoMessageOperationThunks* thunks,
                               MojoMessageHandle* message);
   MojoResult (*FreeMessage)(MojoMessageHandle message);
-  MojoResult (*GetMessageBuffer)(MojoMessageHandle message, void** buffer);
+  MojoResult (*SerializeMessage)(MojoMessageHandle message);
+  MojoResult (*GetSerializedMessageContents)(
+      MojoMessageHandle message,
+      void** buffer,
+      uint32_t* num_bytes,
+      MojoHandle* handles,
+      uint32_t* num_handles,
+      MojoGetSerializedMessageContentsFlags flags);
   MojoResult (*ReleaseMessageContext)(MojoMessageHandle message,
                                       uintptr_t* context);
   MojoResult (*WrapPlatformHandle)(

@@ -29,24 +29,24 @@ class MOJO_CPP_BINDINGS_EXPORT SerializedHandleVector {
   size_t size() const { return handles_.size(); }
 
   // Adds a handle to the handle list and returns its index for encoding.
-  Handle_Data AddHandle(mojo::Handle handle);
+  Handle_Data AddHandle(mojo::ScopedHandle handle);
 
   // Takes a handle from the list of serialized handle data.
-  mojo::Handle TakeHandle(const Handle_Data& encoded_handle);
+  mojo::ScopedHandle TakeHandle(const Handle_Data& encoded_handle);
 
   // Takes a handle from the list of serialized handle data and returns it in
   // |*out_handle| as a specific scoped handle type.
   template <typename T>
   ScopedHandleBase<T> TakeHandleAs(const Handle_Data& encoded_handle) {
-    return MakeScopedHandle(T(TakeHandle(encoded_handle).value()));
+    return ScopedHandleBase<T>::From(TakeHandle(encoded_handle));
   }
 
   // Swaps all owned handles out with another Handle vector.
-  void Swap(std::vector<mojo::Handle>* other);
+  void Swap(std::vector<mojo::ScopedHandle>* other);
 
  private:
   // Handles are owned by this object.
-  std::vector<mojo::Handle> handles_;
+  std::vector<mojo::ScopedHandle> handles_;
 
   DISALLOW_COPY_AND_ASSIGN(SerializedHandleVector);
 };

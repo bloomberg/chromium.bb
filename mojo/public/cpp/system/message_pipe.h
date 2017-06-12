@@ -102,13 +102,9 @@ inline MojoResult WriteMessageNew(MessagePipeHandle message_pipe,
 // documentation.
 inline MojoResult ReadMessageNew(MessagePipeHandle message_pipe,
                                  ScopedMessageHandle* message,
-                                 uint32_t* num_bytes,
-                                 MojoHandle* handles,
-                                 uint32_t* num_handles,
                                  MojoReadMessageFlags flags) {
   MojoMessageHandle raw_message;
-  MojoResult rv = MojoReadMessageNew(message_pipe.value(), &raw_message,
-                                     num_bytes, handles, num_handles, flags);
+  MojoResult rv = MojoReadMessageNew(message_pipe.value(), &raw_message, flags);
   if (rv != MOJO_RESULT_OK)
     return rv;
 

@@ -199,7 +199,14 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
                            const MojoMessageOperationThunks* thunks,
                            MojoMessageHandle* message_handle);
   MojoResult FreeMessage(MojoMessageHandle message_handle);
-  MojoResult GetMessageBuffer(MojoMessageHandle message_handle, void** buffer);
+  MojoResult SerializeMessage(MojoMessageHandle message_handle);
+  MojoResult GetSerializedMessageContents(
+      MojoMessageHandle message_handle,
+      void** buffer,
+      uint32_t* num_bytes,
+      MojoHandle* handles,
+      uint32_t* num_handles,
+      MojoGetSerializedMessageContentsFlags flags);
   MojoResult ReleaseMessageContext(MojoMessageHandle message_handle,
                                    uintptr_t* context);
   MojoResult GetProperty(MojoPropertyType type, void* value);
@@ -227,9 +234,6 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
                          MojoReadMessageFlags flags);
   MojoResult ReadMessageNew(MojoHandle message_pipe_handle,
                             MojoMessageHandle* message_handle,
-                            uint32_t* num_bytes,
-                            MojoHandle* handles,
-                            uint32_t* num_handles,
                             MojoReadMessageFlags flags);
   MojoResult FuseMessagePipes(MojoHandle handle0, MojoHandle handle1);
   MojoResult NotifyBadMessage(MojoMessageHandle message_handle,

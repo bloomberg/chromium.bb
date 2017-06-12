@@ -12,38 +12,31 @@
 namespace mojo {
 namespace internal {
 
-SerializedHandleVector::SerializedHandleVector() {}
+SerializedHandleVector::SerializedHandleVector() = default;
 
-SerializedHandleVector::~SerializedHandleVector() {
-  for (auto handle : handles_) {
-    if (handle.is_valid()) {
-      MojoResult rv = MojoClose(handle.value());
-      DCHECK_EQ(rv, MOJO_RESULT_OK);
-    }
-  }
-}
+SerializedHandleVector::~SerializedHandleVector() = default;
 
-Handle_Data SerializedHandleVector::AddHandle(mojo::Handle handle) {
+Handle_Data SerializedHandleVector::AddHandle(mojo::ScopedHandle handle) {
   Handle_Data data;
   if (!handle.is_valid()) {
     data.value = kEncodedInvalidHandleValue;
   } else {
     DCHECK_LT(handles_.size(), std::numeric_limits<uint32_t>::max());
     data.value = static_cast<uint32_t>(handles_.size());
-    handles_.push_back(handle);
+    handles_.emplace_back(std::move(handle));
   }
   return data;
 }
 
-mojo::Handle SerializedHandleVector::TakeHandle(
+mojo::ScopedHandle SerializedHandleVector::TakeHandle(
     const Handle_Data& encoded_handle) {
   if (!encoded_handle.is_valid())
-    return mojo::Handle();
+    return mojo::ScopedHandle();
   DCHECK_LT(encoded_handle.value, handles_.size());
-  return FetchAndReset(&handles_[encoded_handle.value]);
+  return std::move(handles_[encoded_handle.value]);
 }
 
-void SerializedHandleVector::Swap(std::vector<mojo::Handle>* other) {
+void SerializedHandleVector::Swap(std::vector<mojo::ScopedHandle>* other) {
   handles_.swap(*other);
 }
 

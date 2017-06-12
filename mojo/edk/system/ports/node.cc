@@ -729,8 +729,23 @@ int Node::AddPortWithName(const PortName& port_name, scoped_refptr<Port> port) {
 
 void Node::ErasePort(const PortName& port_name) {
   PortLocker::AssertNoPortsLockedOnCurrentThread();
-  base::AutoLock lock(ports_lock_);
-  ports_.erase(port_name);
+  scoped_refptr<Port> port;
+  {
+    base::AutoLock lock(ports_lock_);
+    auto it = ports_.find(port_name);
+    if (it == ports_.end())
+      return;
+    port = std::move(it->second);
+    ports_.erase(it);
+  }
+  // NOTE: We are careful not to release the port's messages while holding any
+  // locks, since they may run arbitrary user code upon destruction.
+  std::vector<std::unique_ptr<UserMessageEvent>> messages;
+  {
+    PortRef port_ref(port_name, std::move(port));
+    SinglePortLocker locker(&port_ref);
+    locker.port()->message_queue.TakeAllMessages(&messages);
+  }
   DVLOG(2) << "Deleted port " << port_name << "@" << name_;
 }
 
@@ -1232,11 +1247,11 @@ void Node::DestroyAllPortsWithPeer(const NodeName& node_name,
         }
       }
     }
+  }
 
-    for (const auto& proxy_name : dead_proxies_to_broadcast) {
-      ports_.erase(proxy_name);
-      DVLOG(2) << "Forcibly deleted port " << proxy_name << "@" << name_;
-    }
+  for (const auto& proxy_name : dead_proxies_to_broadcast) {
+    ErasePort(proxy_name);
+    DVLOG(2) << "Forcibly deleted port " << proxy_name << "@" << name_;
   }
 
   // Wake up any receiving ports who have just observed simulated peer closure.

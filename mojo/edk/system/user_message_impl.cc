@@ -179,18 +179,22 @@ class UserMessageImpl::ReadMessageFilter : public ports::MessageFilter {
   // Creates a new ReadMessageFilter which captures and potentially modifies
   // various (unowned) local state within
   // UserMessageImpl::ReadMessageEventFromPort.
-  ReadMessageFilter(bool read_any_size,
-                    bool may_discard,
-                    uint32_t* num_bytes,
-                    uint32_t* num_handles,
-                    bool* no_space,
-                    bool* invalid_message)
-      : read_any_size_(read_any_size),
-        may_discard_(may_discard),
-        num_bytes_(num_bytes),
-        num_handles_(num_handles),
-        no_space_(no_space),
-        invalid_message_(invalid_message) {}
+  ReadMessageFilter(Dispatcher::ReadMessageSizePolicy size_policy,
+                    Dispatcher::ReadMessageDiscardPolicy discard_policy,
+                    uint32_t max_payload_size,
+                    uint32_t max_num_handles,
+                    uint32_t* actual_payload_size,
+                    uint32_t* actual_num_handles,
+                    bool* exceeds_size_limit_flag,
+                    bool* invalid_message_flag)
+      : size_policy_(size_policy),
+        discard_policy_(discard_policy),
+        max_payload_size_(max_payload_size),
+        max_num_handles_(max_num_handles),
+        actual_payload_size_(actual_payload_size),
+        actual_num_handles_(actual_num_handles),
+        exceeds_size_limit_flag_(exceeds_size_limit_flag),
+        invalid_message_flag_(invalid_message_flag) {}
 
   ~ReadMessageFilter() override {}
 
@@ -201,8 +205,8 @@ class UserMessageImpl::ReadMessageFilter : public ports::MessageFilter {
       // Not a serialized message, so there's nothing to validate or filter
       // against. We only ensure that the caller expected a message object and
       // not a specific serialized buffer size.
-      if (!read_any_size_) {
-        *invalid_message_ = true;
+      if (size_policy_ != Dispatcher::ReadMessageSizePolicy::kAnySize) {
+        *invalid_message_flag_ = true;
         return false;
       }
       return true;
@@ -214,42 +218,43 @@ class UserMessageImpl::ReadMessageFilter : public ports::MessageFilter {
     DCHECK(message->header_);
     auto* header = static_cast<MessageHeader*>(message->header_);
 
-    uint32_t bytes_to_read = 0;
     base::CheckedNumeric<uint32_t> checked_bytes_available =
         message->user_payload_size();
     if (!checked_bytes_available.IsValid()) {
-      *invalid_message_ = true;
+      *invalid_message_flag_ = true;
       return true;
     }
     const uint32_t bytes_available = checked_bytes_available.ValueOrDie();
-    if (num_bytes_) {
-      bytes_to_read = std::min(*num_bytes_, bytes_available);
-      *num_bytes_ = bytes_available;
-    }
+    const uint32_t bytes_to_read = std::min(max_payload_size_, bytes_available);
+    if (actual_payload_size_)
+      *actual_payload_size_ = bytes_available;
 
-    uint32_t handles_to_read = 0;
-    uint32_t handles_available = header->num_dispatchers;
-    if (num_handles_) {
-      handles_to_read = std::min(*num_handles_, handles_available);
-      *num_handles_ = handles_available;
-    }
+    const uint32_t handles_available = header->num_dispatchers;
+    const uint32_t handles_to_read =
+        std::min(max_num_handles_, handles_available);
+    if (actual_num_handles_)
+      *actual_num_handles_ = handles_available;
 
-    if (handles_to_read < handles_available ||
-        (!read_any_size_ && bytes_to_read < bytes_available)) {
-      *no_space_ = true;
-      return may_discard_;
+    if ((handles_to_read < handles_available ||
+         bytes_to_read < bytes_available) &&
+        size_policy_ == Dispatcher::ReadMessageSizePolicy::kLimitedSize) {
+      *exceeds_size_limit_flag_ = true;
+      return discard_policy_ ==
+             Dispatcher::ReadMessageDiscardPolicy::kMayDiscard;
     }
 
     return true;
   }
 
  private:
-  const bool read_any_size_;
-  const bool may_discard_;
-  uint32_t* const num_bytes_;
-  uint32_t* const num_handles_;
-  bool* const no_space_;
-  bool* const invalid_message_;
+  const Dispatcher::ReadMessageSizePolicy size_policy_;
+  const Dispatcher::ReadMessageDiscardPolicy discard_policy_;
+  const uint32_t max_payload_size_;
+  const uint32_t max_num_handles_;
+  uint32_t* const actual_payload_size_;
+  uint32_t* const actual_num_handles_;
+  bool* const exceeds_size_limit_flag_;
+  bool* const invalid_message_flag_;
 
   DISALLOW_COPY_AND_ASSIGN(ReadMessageFilter);
 };
@@ -258,8 +263,24 @@ class UserMessageImpl::ReadMessageFilter : public ports::MessageFilter {
 const ports::UserMessage::TypeInfo UserMessageImpl::kUserMessageTypeInfo = {};
 
 UserMessageImpl::~UserMessageImpl() {
-  if (HasContext())
-    context_thunks_.destroy(context_);
+  if (HasContext()) {
+    if (context_thunks_.has_value())
+      context_thunks_->destroy(context_);
+    DCHECK(!channel_message_);
+    DCHECK(!has_serialized_handles_);
+  } else if (IsSerialized() && has_serialized_handles_) {
+    // Ensure that any handles still serialized within this message are
+    // extracted and closed so they don't leak.
+    std::vector<MojoHandle> handles(num_handles());
+    MojoResult result =
+        ExtractSerializedHandles(ExtractBadHandlePolicy::kSkip, handles.data());
+    if (result == MOJO_RESULT_OK) {
+      for (auto handle : handles) {
+        if (handle != MOJO_HANDLE_INVALID)
+          MojoClose(handle);
+      }
+    }
+  }
 }
 
 // static
@@ -268,8 +289,8 @@ UserMessageImpl::CreateEventForNewMessageWithContext(
     uintptr_t context,
     const MojoMessageOperationThunks* thunks) {
   auto message_event = base::MakeUnique<ports::UserMessageEvent>(0);
-  message_event->AttachMessage(
-      base::WrapUnique(new UserMessageImpl(context, thunks)));
+  message_event->AttachMessage(base::WrapUnique(
+      new UserMessageImpl(message_event.get(), context, thunks)));
   return message_event;
 }
 
@@ -288,14 +309,16 @@ MojoResult UserMessageImpl::CreateEventForNewSerializedMessage(
                                         &header, &user_payload);
   if (rv != MOJO_RESULT_OK)
     return rv;
-  event->AttachMessage(base::WrapUnique(new UserMessageImpl(
-      std::move(channel_message), header, user_payload, num_bytes)));
+  event->AttachMessage(base::WrapUnique(
+      new UserMessageImpl(event.get(), std::move(channel_message), header,
+                          user_payload, num_bytes)));
   *out_event = std::move(event);
   return MOJO_RESULT_OK;
 }
 
 // static
 std::unique_ptr<UserMessageImpl> UserMessageImpl::CreateFromChannelMessage(
+    ports::UserMessageEvent* message_event,
     Channel::MessagePtr channel_message,
     void* payload,
     size_t payload_size) {
@@ -310,26 +333,30 @@ std::unique_ptr<UserMessageImpl> UserMessageImpl::CreateFromChannelMessage(
 
   void* user_payload = static_cast<uint8_t*>(payload) + header_size;
   const size_t user_payload_size = payload_size - header_size;
-  return base::WrapUnique(new UserMessageImpl(
-      std::move(channel_message), header, user_payload, user_payload_size));
+  return base::WrapUnique(
+      new UserMessageImpl(message_event, std::move(channel_message), header,
+                          user_payload, user_payload_size));
 }
 
 // static
 MojoResult UserMessageImpl::ReadMessageEventFromPort(
-    NodeController* node_controller,
     const ports::PortRef& port,
-    bool read_any_size,
-    bool may_discard,
-    uint32_t* num_bytes,
-    MojoHandle* handles,
-    uint32_t* num_handles,
-    std::unique_ptr<ports::UserMessageEvent>* out_event) {
-  bool no_space = false;
+    Dispatcher::ReadMessageSizePolicy size_policy,
+    Dispatcher::ReadMessageDiscardPolicy discard_policy,
+    uint32_t max_payload_size,
+    uint32_t max_num_handles,
+    std::unique_ptr<ports::UserMessageEvent>* out_event,
+    uint32_t* actual_payload_size,
+    uint32_t* actual_num_handles) {
+  bool exceeds_size_limit = false;
   bool invalid_message = false;
-  ReadMessageFilter filter(read_any_size, may_discard, num_bytes, num_handles,
-                           &no_space, &invalid_message);
+  ReadMessageFilter filter(size_policy, discard_policy, max_payload_size,
+                           max_num_handles, actual_payload_size,
+                           actual_num_handles, &exceeds_size_limit,
+                           &invalid_message);
   std::unique_ptr<ports::UserMessageEvent> message_event;
-  int rv = node_controller->node()->GetMessage(port, &message_event, &filter);
+  int rv = internal::g_core->GetNodeController()->node()->GetMessage(
+      port, &message_event, &filter);
   if (invalid_message)
     return MOJO_RESULT_NOT_FOUND;
 
@@ -339,13 +366,14 @@ MojoResult UserMessageImpl::ReadMessageEventFromPort(
       return MOJO_RESULT_INVALID_ARGUMENT;
 
     NOTREACHED();
-    return MOJO_RESULT_UNKNOWN;  // TODO: Add a better error code here?
+    return MOJO_RESULT_UNKNOWN;
   }
 
-  if (no_space) {
-    // |*num_handles| (and/or |*num_bytes| if |read_any_size| is false) wasn't
-    // sufficient to hold this message's data. The message will still be in
-    // queue unless MOJO_READ_MESSAGE_FLAG_MAY_DISCARD was set.
+  if (exceeds_size_limit) {
+    // |size_policy| is |kLimitedSize| and the next available message exceeded
+    // the constraints specified by |max_payload_size| and/or |max_num_handles|.
+    // The message may or may not have been read off the pipe, depending on the
+    // given value of |discard_policy|.
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
   }
 
@@ -356,92 +384,6 @@ MojoResult UserMessageImpl::ReadMessageEventFromPort(
     // Peer is closed and there are no more messages to read.
     DCHECK_EQ(rv, ports::ERROR_PORT_PEER_CLOSED);
     return MOJO_RESULT_FAILED_PRECONDITION;
-  }
-
-  // Alright! We have a message and the caller has provided sufficient storage
-  // in which to receive it, if applicable.
-
-  auto* message = message_event->GetMessage<UserMessageImpl>();
-  if (message->HasContext()) {
-    // Not a serialized message, so there's no more work to do.
-    *out_event = std::move(message_event);
-    return MOJO_RESULT_OK;
-  }
-
-  DCHECK(message->IsSerialized());
-
-  const MessageHeader* header =
-      static_cast<const MessageHeader*>(message->header_);
-  const DispatcherHeader* dispatcher_headers =
-      reinterpret_cast<const DispatcherHeader*>(header + 1);
-
-  if (header->num_dispatchers > std::numeric_limits<uint16_t>::max())
-    return MOJO_RESULT_UNKNOWN;
-
-  // Deserialize dispatchers.
-  if (header->num_dispatchers > 0) {
-    DCHECK(handles);
-    std::vector<Dispatcher::DispatcherInTransit> dispatchers(
-        header->num_dispatchers);
-
-    size_t data_payload_index =
-        sizeof(MessageHeader) +
-        header->num_dispatchers * sizeof(DispatcherHeader);
-    if (data_payload_index > header->header_size)
-      return MOJO_RESULT_UNKNOWN;
-    const char* dispatcher_data = reinterpret_cast<const char*>(
-        dispatcher_headers + header->num_dispatchers);
-    size_t port_index = 0;
-    size_t platform_handle_index = 0;
-    ScopedPlatformHandleVectorPtr msg_handles =
-        message->channel_message_->TakeHandles();
-    const size_t num_msg_handles = msg_handles ? msg_handles->size() : 0;
-    for (size_t i = 0; i < header->num_dispatchers; ++i) {
-      const DispatcherHeader& dh = dispatcher_headers[i];
-      auto type = static_cast<Dispatcher::Type>(dh.type);
-
-      base::CheckedNumeric<size_t> next_payload_index = data_payload_index;
-      next_payload_index += dh.num_bytes;
-      if (!next_payload_index.IsValid() ||
-          header->header_size < next_payload_index.ValueOrDie()) {
-        return MOJO_RESULT_UNKNOWN;
-      }
-
-      base::CheckedNumeric<size_t> next_port_index = port_index;
-      next_port_index += dh.num_ports;
-      if (!next_port_index.IsValid() ||
-          message_event->num_ports() < next_port_index.ValueOrDie()) {
-        return MOJO_RESULT_UNKNOWN;
-      }
-
-      base::CheckedNumeric<size_t> next_platform_handle_index =
-          platform_handle_index;
-      next_platform_handle_index += dh.num_platform_handles;
-      if (!next_platform_handle_index.IsValid() ||
-          num_msg_handles < next_platform_handle_index.ValueOrDie()) {
-        return MOJO_RESULT_UNKNOWN;
-      }
-
-      PlatformHandle* out_handles =
-          num_msg_handles ? msg_handles->data() + platform_handle_index
-                          : nullptr;
-      dispatchers[i].dispatcher = Dispatcher::Deserialize(
-          type, dispatcher_data, dh.num_bytes,
-          message_event->ports() + port_index, dh.num_ports, out_handles,
-          dh.num_platform_handles);
-      if (!dispatchers[i].dispatcher)
-        return MOJO_RESULT_UNKNOWN;
-
-      dispatcher_data += dh.num_bytes;
-      data_payload_index = next_payload_index.ValueOrDie();
-      port_index = next_port_index.ValueOrDie();
-      platform_handle_index = next_platform_handle_index.ValueOrDie();
-    }
-
-    if (!node_controller->core()->AddDispatchersFromTransit(dispatchers,
-                                                            handles)) {
-      return MOJO_RESULT_UNKNOWN;
-    }
   }
 
   *out_event = std::move(message_event);
@@ -480,21 +422,23 @@ size_t UserMessageImpl::num_handles() const {
   return static_cast<const MessageHeader*>(header_)->num_dispatchers;
 }
 
-MojoResult UserMessageImpl::SerializeIfNecessary(
-    ports::UserMessageEvent* message_event) {
+MojoResult UserMessageImpl::SerializeIfNecessary() {
   if (IsSerialized())
     return MOJO_RESULT_FAILED_PRECONDITION;
+  if (!context_thunks_.has_value())
+    return MOJO_RESULT_NOT_FOUND;
 
   DCHECK(HasContext());
+  DCHECK(!has_serialized_handles_);
   size_t num_bytes = 0;
   size_t num_handles = 0;
-  context_thunks_.get_serialized_size(context_, &num_bytes, &num_handles);
+  context_thunks_->get_serialized_size(context_, &num_bytes, &num_handles);
 
   std::vector<ScopedHandle> handles(num_handles);
   std::vector<Dispatcher::DispatcherInTransit> dispatchers;
   if (num_handles > 0) {
     auto* raw_handles = reinterpret_cast<MojoHandle*>(handles.data());
-    context_thunks_.serialize_handles(context_, raw_handles);
+    context_thunks_->serialize_handles(context_, raw_handles);
     MojoResult acquire_result = internal::g_core->AcquireDispatchersForTransit(
         raw_handles, num_handles, &dispatchers);
     if (acquire_result != MOJO_RESULT_OK)
@@ -503,7 +447,7 @@ MojoResult UserMessageImpl::SerializeIfNecessary(
 
   Channel::MessagePtr channel_message;
   MojoResult rv = SerializeEventMessage(
-      message_event, num_bytes, dispatchers.data(), num_handles,
+      message_event_, num_bytes, dispatchers.data(), num_handles,
       &channel_message, &header_, &user_payload_);
   if (num_handles > 0) {
     internal::g_core->ReleaseDispatchersForTransit(dispatchers,
@@ -517,35 +461,126 @@ MojoResult UserMessageImpl::SerializeIfNecessary(
   for (auto& handle : handles)
     ignore_result(handle.release());
 
-  context_thunks_.serialize_payload(context_, user_payload_);
+  if (num_bytes)
+    context_thunks_->serialize_payload(context_, user_payload_);
   user_payload_size_ = num_bytes;
   channel_message_ = std::move(channel_message);
 
-  context_thunks_.destroy(context_);
+  context_thunks_->destroy(context_);
   context_ = 0;
+  has_serialized_handles_ = true;
   return MOJO_RESULT_OK;
 }
 
-UserMessageImpl::UserMessageImpl(uintptr_t context,
+MojoResult UserMessageImpl::ExtractSerializedHandles(
+    ExtractBadHandlePolicy bad_handle_policy,
+    MojoHandle* handles) {
+  if (!IsSerialized())
+    return MOJO_RESULT_FAILED_PRECONDITION;
+
+  if (!has_serialized_handles_)
+    return MOJO_RESULT_NOT_FOUND;
+
+  const MessageHeader* header = static_cast<const MessageHeader*>(header_);
+  const DispatcherHeader* dispatcher_headers =
+      reinterpret_cast<const DispatcherHeader*>(header + 1);
+
+  if (header->num_dispatchers > std::numeric_limits<uint16_t>::max())
+    return MOJO_RESULT_ABORTED;
+
+  if (header->num_dispatchers == 0)
+    return MOJO_RESULT_OK;
+
+  has_serialized_handles_ = false;
+
+  std::vector<Dispatcher::DispatcherInTransit> dispatchers(
+      header->num_dispatchers);
+
+  size_t data_payload_index =
+      sizeof(MessageHeader) +
+      header->num_dispatchers * sizeof(DispatcherHeader);
+  if (data_payload_index > header->header_size)
+    return MOJO_RESULT_ABORTED;
+  const char* dispatcher_data = reinterpret_cast<const char*>(
+      dispatcher_headers + header->num_dispatchers);
+  size_t port_index = 0;
+  size_t platform_handle_index = 0;
+  ScopedPlatformHandleVectorPtr msg_handles = channel_message_->TakeHandles();
+  const size_t num_msg_handles = msg_handles ? msg_handles->size() : 0;
+  for (size_t i = 0; i < header->num_dispatchers; ++i) {
+    const DispatcherHeader& dh = dispatcher_headers[i];
+    auto type = static_cast<Dispatcher::Type>(dh.type);
+
+    base::CheckedNumeric<size_t> next_payload_index = data_payload_index;
+    next_payload_index += dh.num_bytes;
+    if (!next_payload_index.IsValid() ||
+        header->header_size < next_payload_index.ValueOrDie()) {
+      return MOJO_RESULT_ABORTED;
+    }
+
+    base::CheckedNumeric<size_t> next_port_index = port_index;
+    next_port_index += dh.num_ports;
+    if (!next_port_index.IsValid() ||
+        message_event_->num_ports() < next_port_index.ValueOrDie()) {
+      return MOJO_RESULT_ABORTED;
+    }
+
+    base::CheckedNumeric<size_t> next_platform_handle_index =
+        platform_handle_index;
+    next_platform_handle_index += dh.num_platform_handles;
+    if (!next_platform_handle_index.IsValid() ||
+        num_msg_handles < next_platform_handle_index.ValueOrDie()) {
+      return MOJO_RESULT_ABORTED;
+    }
+
+    PlatformHandle* out_handles =
+        num_msg_handles ? msg_handles->data() + platform_handle_index : nullptr;
+    dispatchers[i].dispatcher = Dispatcher::Deserialize(
+        type, dispatcher_data, dh.num_bytes,
+        message_event_->ports() + port_index, dh.num_ports, out_handles,
+        dh.num_platform_handles);
+    if (!dispatchers[i].dispatcher &&
+        bad_handle_policy == ExtractBadHandlePolicy::kAbort) {
+      return MOJO_RESULT_ABORTED;
+    }
+
+    dispatcher_data += dh.num_bytes;
+    data_payload_index = next_payload_index.ValueOrDie();
+    port_index = next_port_index.ValueOrDie();
+    platform_handle_index = next_platform_handle_index.ValueOrDie();
+  }
+
+  if (!internal::g_core->AddDispatchersFromTransit(dispatchers, handles))
+    return MOJO_RESULT_ABORTED;
+
+  return MOJO_RESULT_OK;
+}
+
+UserMessageImpl::UserMessageImpl(ports::UserMessageEvent* message_event,
+                                 uintptr_t context,
                                  const MojoMessageOperationThunks* thunks)
     : ports::UserMessage(&kUserMessageTypeInfo),
-      context_(context),
-      context_thunks_(*thunks) {}
+      message_event_(message_event),
+      context_(context) {
+  if (thunks)
+    context_thunks_ = *thunks;
+}
 
-UserMessageImpl::UserMessageImpl(Channel::MessagePtr channel_message,
+UserMessageImpl::UserMessageImpl(ports::UserMessageEvent* message_event,
+                                 Channel::MessagePtr channel_message,
                                  void* header,
                                  void* user_payload,
                                  size_t user_payload_size)
     : ports::UserMessage(&kUserMessageTypeInfo),
-      context_thunks_({}),
+      message_event_(message_event),
       channel_message_(std::move(channel_message)),
+      has_serialized_handles_(true),
       header_(header),
       user_payload_(user_payload),
       user_payload_size_(user_payload_size) {}
 
-bool UserMessageImpl::WillBeRoutedExternally(
-    ports::UserMessageEvent* message_event) {
-  MojoResult result = SerializeIfNecessary(message_event);
+bool UserMessageImpl::WillBeRoutedExternally() {
+  MojoResult result = SerializeIfNecessary();
   return result == MOJO_RESULT_OK || result == MOJO_RESULT_FAILED_PRECONDITION;
 }
 

@@ -150,7 +150,7 @@ void UserMessageEvent::ReservePorts(size_t num_ports) {
 
 bool UserMessageEvent::NotifyWillBeRoutedExternally() {
   DCHECK(message_);
-  return message_->WillBeRoutedExternally(this);
+  return message_->WillBeRoutedExternally();
 }
 
 // static

@@ -111,12 +111,12 @@ ports::ScopedEvent DeserializeEventMessage(
   // in the first place.
   DCHECK_LE(event_size, size);
 
+  auto message_event = ports::Event::Cast<ports::UserMessageEvent>(&event);
   auto message = UserMessageImpl::CreateFromChannelMessage(
-      std::move(channel_message), static_cast<uint8_t*>(data) + event_size,
-      size - event_size);
+      message_event.get(), std::move(channel_message),
+      static_cast<uint8_t*>(data) + event_size, size - event_size);
   message->set_source_node(from_node);
 
-  auto message_event = ports::Event::Cast<ports::UserMessageEvent>(&event);
   message_event->AttachMessage(std::move(message));
   return std::move(message_event);
 }
