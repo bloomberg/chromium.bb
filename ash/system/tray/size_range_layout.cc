@@ -22,6 +22,9 @@ SizeRangeLayout::SizeRangeLayout()
     : SizeRangeLayout(gfx::Size(kAbsoluteMinSize, kAbsoluteMinSize),
                       gfx::Size(kAbsoluteMaxSize, kAbsoluteMaxSize)) {}
 
+SizeRangeLayout::SizeRangeLayout(const gfx::Size& size)
+    : SizeRangeLayout(size, size) {}
+
 SizeRangeLayout::SizeRangeLayout(const gfx::Size& min_size,
                                  const gfx::Size& max_size)
     : layout_manager_(new views::FillLayout()),
