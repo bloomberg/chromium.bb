@@ -59,8 +59,6 @@ component("web") {
     "LocalFrameClientImpl.h",
     "MediaKeysClientImpl.cpp",
     "MediaKeysClientImpl.h",
-    "NavigatorContentUtilsClientImpl.cpp",
-    "NavigatorContentUtilsClientImpl.h",
     "PageOverlay.cpp",
     "PageOverlay.h",
     "PopupMenuImpl.cpp",

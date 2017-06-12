@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "web/NavigatorContentUtilsClientImpl.h"
+#include "modules/navigatorcontentutils/NavigatorContentUtilsClientImpl.h"
 
 #include "core/frame/WebLocalFrameBase.h"
 #include "public/web/WebFrameClient.h"
