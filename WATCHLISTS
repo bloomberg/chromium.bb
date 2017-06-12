@@ -1260,6 +1260,7 @@
                   '|third_party/WebKit/Source/core/rendering/.*Bidi',
     },
     'blink_bindings': {
+      'filepath': 'third_party/WebKit/Source/platform/bindings',
       'filepath': 'third_party/WebKit/Source/bindings',
     },
     'blink_bindings_serialization': {
