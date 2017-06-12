@@ -24,7 +24,9 @@ compile_plist("entitlements") {
 
 ios_appex_bundle("search_widget_extension") {
   deps = [
+    ":resources",
     ":search_widget",
+    ":system_strings",
   ]
 
   extra_substitutions = [
@@ -48,8 +50,6 @@ source_set("search_widget") {
   ]
 
   deps = [
-    ":resources",
-    ":system_strings",
     "//base",
     "//components/open_from_clipboard:open_from_clipboard_impl",
     "//ios/chrome/common/app_group",
