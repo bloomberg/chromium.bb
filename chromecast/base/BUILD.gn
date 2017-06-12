@@ -38,6 +38,8 @@ source_set("base") {
     "bind_to_task_runner.h",
     "cast_constants.cc",
     "cast_constants.h",
+    "cast_features.cc",
+    "cast_features.h",
     "cast_paths.cc",
     "cast_paths.h",
     "cast_resource.cc",
@@ -127,6 +129,7 @@ test("cast_base_unittests") {
   sources = [
     "alarm_manager_unittest.cc",
     "bind_to_task_runner_unittest.cc",
+    "cast_features_unittest.cc",
     "device_capabilities_impl_unittest.cc",
     "error_codes_unittest.cc",
     "observer_unittest.cc",

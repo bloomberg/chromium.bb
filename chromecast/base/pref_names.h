@@ -8,6 +8,8 @@
 namespace chromecast {
 namespace prefs {
 
+extern const char kActiveDCSExperiments[];
+extern const char kLatestDCSFeatures[];
 extern const char kMetricsIsNewClientID[];
 extern const char kOptInStats[];
 extern const char kStabilityChildProcessCrashCount[];

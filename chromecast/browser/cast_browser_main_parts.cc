@@ -22,11 +22,13 @@
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "chromecast/base/cast_constants.h"
+#include "chromecast/base/cast_features.h"
 #include "chromecast/base/cast_paths.h"
 #include "chromecast/base/cast_sys_info_util.h"
 #include "chromecast/base/chromecast_switches.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
 #include "chromecast/base/metrics/grouped_histogram.h"
+#include "chromecast/base/pref_names.h"
 #include "chromecast/base/version.h"
 #include "chromecast/browser/cast_browser_context.h"
 #include "chromecast/browser/cast_browser_process.h"
@@ -282,6 +284,7 @@ CastBrowserMainParts::CastBrowserMainParts(
     URLRequestContextFactory* url_request_context_factory)
     : BrowserMainParts(),
       cast_browser_process_(new CastBrowserProcess()),
+      field_trial_list_(nullptr),
       parameters_(parameters),
       url_request_context_factory_(url_request_context_factory),
       net_log_(new CastNetLog()),
@@ -417,9 +420,6 @@ int CastBrowserMainParts::PreCreateThreads() {
   if (!base::CreateDirectory(home_dir))
     return 1;
 
-  // Hook for internal code
-  cast_browser_process_->browser_client()->PreCreateThreads();
-
   // Set GL strings so GPU config code can make correct feature blacklisting/
   // whitelisting decisions.
   // Note: SetGLStrings can be called before GpuDataManager::Initialize.
@@ -428,6 +428,29 @@ int CastBrowserMainParts::PreCreateThreads() {
       sys_info->GetGlVendor(), sys_info->GetGlRenderer(),
       sys_info->GetGlVersion());
 #endif
+
+  scoped_refptr<PrefRegistrySimple> pref_registry(new PrefRegistrySimple());
+  metrics::RegisterPrefs(pref_registry.get());
+  PrefProxyConfigTrackerImpl::RegisterPrefs(pref_registry.get());
+  cast_browser_process_->SetPrefService(
+      PrefServiceHelper::CreatePrefService(pref_registry.get()));
+
+  // As soon as the PrefService is set, initialize the base::FeatureList, so
+  // objects initialized after this point can use features from
+  // base::FeatureList.
+  const auto* features_dict =
+      cast_browser_process_->pref_service()->GetDictionary(
+          prefs::kLatestDCSFeatures);
+  const auto* experiment_ids = cast_browser_process_->pref_service()->GetList(
+      prefs::kActiveDCSExperiments);
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  InitializeFeatureList(
+      *features_dict, *experiment_ids,
+      command_line->GetSwitchValueASCII(switches::kEnableFeatures),
+      command_line->GetSwitchValueASCII(switches::kDisableFeatures));
+
+  // Hook for internal code
+  cast_browser_process_->browser_client()->PreCreateThreads();
 
 #if defined(USE_AURA)
   cast_browser_process_->SetCastScreen(base::WrapUnique(new CastScreen()));
@@ -441,11 +464,6 @@ int CastBrowserMainParts::PreCreateThreads() {
 }
 
 void CastBrowserMainParts::PreMainMessageLoopRun() {
-  scoped_refptr<PrefRegistrySimple> pref_registry(new PrefRegistrySimple());
-  metrics::RegisterPrefs(pref_registry.get());
-  PrefProxyConfigTrackerImpl::RegisterPrefs(pref_registry.get());
-  cast_browser_process_->SetPrefService(
-      PrefServiceHelper::CreatePrefService(pref_registry.get()));
 
 #if !defined(OS_ANDROID)
   memory_pressure_monitor_.reset(new CastMemoryPressureMonitor());

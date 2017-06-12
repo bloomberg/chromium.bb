@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/metrics/field_trial.h"
 #include "build/buildflag.h"
 #include "chromecast/chromecast_features.h"
 #include "content/public/browser/browser_main_parts.h"
@@ -65,6 +66,7 @@ class CastBrowserMainParts : public content::BrowserMainParts {
 
  private:
   std::unique_ptr<CastBrowserProcess> cast_browser_process_;
+  base::FieldTrialList field_trial_list_;
   const content::MainFunctionParams parameters_;  // For running browser tests.
   URLRequestContextFactory* const url_request_context_factory_;
   std::unique_ptr<net::NetLog> net_log_;

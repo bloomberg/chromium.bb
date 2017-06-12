@@ -247,6 +247,7 @@ source_set("browsertests") {
   sources = [
     "cast_media_blocker_browsertest.cc",
     "renderer_prelauncher_test.cc",
+    "test/cast_features_browsertest.cc",
     "test/cast_navigation_browsertest.cc",
   ]
 
@@ -255,8 +256,10 @@ source_set("browsertests") {
   deps = [
     ":test_support",
     "//chromecast:chromecast_features",
+    "//chromecast/base",
     "//chromecast/base:chromecast_switches",
     "//chromecast/base/metrics",
+    "//components/prefs",
     "//media/base:test_support",
   ]
 }
