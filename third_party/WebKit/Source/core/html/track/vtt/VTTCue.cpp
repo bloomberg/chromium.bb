@@ -578,7 +578,7 @@ static CSSValueID DetermineTextDirection(DocumentFragment* vtt_root) {
 
     node = NodeTraversal::Next(*node);
   }
-  return IsLeftToRightDirection(text_direction) ? CSSValueLtr : CSSValueRtl;
+  return IsLtr(text_direction) ? CSSValueLtr : CSSValueRtl;
 }
 
 float VTTCue::CalculateComputedTextPosition() const {

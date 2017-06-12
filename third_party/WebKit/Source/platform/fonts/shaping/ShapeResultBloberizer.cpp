@@ -291,9 +291,8 @@ float ShapeResultBloberizer::FillFastHorizontalGlyphs(
   auto results = result_buffer.results_;
 
   for (unsigned i = 0; i < results.size(); ++i) {
-    const auto& word_result = IsLeftToRightDirection(text_direction)
-                                  ? results[i]
-                                  : results[results.size() - 1 - i];
+    const auto& word_result =
+        IsLtr(text_direction) ? results[i] : results[results.size() - 1 - i];
     advance = FillFastHorizontalGlyphs(word_result.Get(), advance);
   }
 

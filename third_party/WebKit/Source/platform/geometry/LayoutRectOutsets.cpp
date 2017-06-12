@@ -95,15 +95,15 @@ LayoutUnit LayoutRectOutsets::After(WritingMode writing_mode) const {
 LayoutUnit LayoutRectOutsets::Start(WritingMode writing_mode,
                                     TextDirection direction) const {
   if (IsHorizontalWritingMode(writing_mode))
-    return IsLeftToRightDirection(direction) ? left_ : right_;
-  return IsLeftToRightDirection(direction) ? top_ : bottom_;
+    return IsLtr(direction) ? left_ : right_;
+  return IsLtr(direction) ? top_ : bottom_;
 }
 
 LayoutUnit LayoutRectOutsets::end(WritingMode writing_mode,
                                   TextDirection direction) const {
   if (IsHorizontalWritingMode(writing_mode))
-    return IsLeftToRightDirection(direction) ? right_ : left_;
-  return IsLeftToRightDirection(direction) ? bottom_ : top_;
+    return IsLtr(direction) ? right_ : left_;
+  return IsLtr(direction) ? bottom_ : top_;
 }
 
 LayoutUnit LayoutRectOutsets::Over(WritingMode writing_mode) const {
@@ -152,12 +152,12 @@ void LayoutRectOutsets::SetStart(WritingMode writing_mode,
                                  TextDirection direction,
                                  LayoutUnit value) {
   if (IsHorizontalWritingMode(writing_mode)) {
-    if (IsLeftToRightDirection(direction))
+    if (IsLtr(direction))
       left_ = value;
     else
       right_ = value;
   } else {
-    if (IsLeftToRightDirection(direction))
+    if (IsLtr(direction))
       top_ = value;
     else
       bottom_ = value;
@@ -168,12 +168,12 @@ void LayoutRectOutsets::SetEnd(WritingMode writing_mode,
                                TextDirection direction,
                                LayoutUnit value) {
   if (IsHorizontalWritingMode(writing_mode)) {
-    if (IsLeftToRightDirection(direction))
+    if (IsLtr(direction))
       right_ = value;
     else
       left_ = value;
   } else {
-    if (IsLeftToRightDirection(direction))
+    if (IsLtr(direction))
       bottom_ = value;
     else
       top_ = value;

@@ -26,12 +26,27 @@
 #ifndef TextDirection_h
 #define TextDirection_h
 
+#include <cstdint>
+
 namespace blink {
 
-enum class TextDirection : unsigned { kRtl, kLtr };
+// The direction of text in bidirectional scripts such as Arabic or Hebrew.
+//
+// Used for explicit directions such as in the HTML dir attribute or the CSS
+// 'direction' property.
+// https://html.spec.whatwg.org/multipage/dom.html#the-dir-attribute
+// https://drafts.csswg.org/css-writing-modes/#direction
+//
+// Also used for resolved directions by UAX#9 UNICODE BIDIRECTIONAL ALGORITHM.
+// http://unicode.org/reports/tr9/
+enum class TextDirection : uint8_t { kLtr = 0, kRtl = 1 };
 
-inline bool IsLeftToRightDirection(TextDirection direction) {
+inline bool IsLtr(TextDirection direction) {
   return direction == TextDirection::kLtr;
+}
+
+inline bool IsRtl(TextDirection direction) {
+  return direction != TextDirection::kLtr;
 }
 }
 
