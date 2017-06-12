@@ -23,8 +23,7 @@ void RunCallbackWithResults(
   callback.Run(std::move(results));
 }
 
-void RunCallbackWithNoResults(
-    const mojom::TextDetection::DetectCallback& callback) {
+void RunCallbackWithNoResults(mojom::TextDetection::DetectCallback callback) {
   callback.Run(std::vector<mojom::TextDetectionResultPtr>());
 }
 

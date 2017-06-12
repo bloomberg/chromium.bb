@@ -30,7 +30,7 @@ void RunGetCapabilitiesCallbackOnUIThread(
 }
 
 void RunFailedGetCapabilitiesCallback(
-    const ImageCaptureImpl::GetCapabilitiesCallback& cb) {
+    ImageCaptureImpl::GetCapabilitiesCallback cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   media::mojom::PhotoCapabilitiesPtr empty_capabilities =
       media::mojom::PhotoCapabilities::New();
@@ -54,8 +54,7 @@ void RunSetOptionsCallbackOnUIThread(
                           base::Bind(callback, success));
 }
 
-void RunFailedSetOptionsCallback(
-    const ImageCaptureImpl::SetOptionsCallback& cb) {
+void RunFailedSetOptionsCallback(ImageCaptureImpl::SetOptionsCallback cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   cb.Run(false);
 }
@@ -68,7 +67,7 @@ void RunTakePhotoCallbackOnUIThread(
       base::Bind(callback, base::Passed(std::move(blob))));
 }
 
-void RunFailedTakePhotoCallback(const ImageCaptureImpl::TakePhotoCallback& cb) {
+void RunFailedTakePhotoCallback(ImageCaptureImpl::TakePhotoCallback cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   cb.Run(media::mojom::Blob::New());
 }

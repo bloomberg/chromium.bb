@@ -21,7 +21,7 @@ void RunCallbackWithFaces(
 }
 
 void RunCallbackWithNoFaces(
-    const shape_detection::mojom::FaceDetection::DetectCallback& callback) {
+    shape_detection::mojom::FaceDetection::DetectCallback callback) {
   callback.Run(std::vector<shape_detection::mojom::FaceDetectionResultPtr>());
 }
 

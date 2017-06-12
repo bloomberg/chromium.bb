@@ -16,32 +16,23 @@ namespace media {
 template <typename CallbackType>
 class ScopedResultCallback {
  public:
-  using OnErrorCallback = base::Callback<void(const CallbackType&)>;
-  ScopedResultCallback(const CallbackType& callback,
-                       const OnErrorCallback& on_error_callback)
-      : callback_(callback), on_error_callback_(on_error_callback) {}
+  using OnErrorCallback = base::OnceCallback<void(CallbackType)>;
+  ScopedResultCallback(CallbackType callback, OnErrorCallback on_error_callback)
+      : callback_(std::move(callback)),
+        on_error_callback_(std::move(on_error_callback)) {}
 
   ~ScopedResultCallback() {
     if (!callback_.is_null())
-      on_error_callback_.Run(callback_);
+      std::move(on_error_callback_).Run(std::move(callback_));
   }
 
-  ScopedResultCallback(ScopedResultCallback&& other) {
-    *this = std::move(other);
-  }
-
-  ScopedResultCallback& operator=(ScopedResultCallback&& other) {
-    callback_ = other.callback_;
-    other.callback_.Reset();
-    on_error_callback_ = other.on_error_callback_;
-    other.on_error_callback_.Reset();
-    return *this;
-  }
+  ScopedResultCallback(ScopedResultCallback&& other) = default;
+  ScopedResultCallback& operator=(ScopedResultCallback&& other) = default;
 
   template <typename... Args>
-  void Run(Args... args) {
+  void Run(Args&&... args) {
     on_error_callback_.Reset();
-    base::ResetAndReturn(&callback_).Run(std::forward<Args>(args)...);
+    std::move(callback_).Run(std::forward<Args>(args)...);
   }
 
  private:
