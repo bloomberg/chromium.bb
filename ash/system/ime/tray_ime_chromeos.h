@@ -7,10 +7,10 @@
 
 #include <stddef.h>
 
+#include "ash/public/interfaces/ime_info.mojom.h"
 #include "ash/system/accessibility_observer.h"
 #include "ash/system/ime/ime_observer.h"
 #include "ash/system/ime_menu/ime_list_view.h"
-#include "ash/system/tray/ime_info.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/system/virtual_keyboard/virtual_keyboard_observer.h"
 #include "base/macros.h"
@@ -49,7 +49,7 @@ class ASH_EXPORT TrayIME : public SystemTrayItem,
   // Repopulates the DefaultView and DetailedView.
   void Update();
   // Updates the System Tray label.
-  void UpdateTrayLabel(const IMEInfo& info, size_t count);
+  void UpdateTrayLabel(const mojom::ImeInfo& info, size_t count);
   // Returns whether the virtual keyboard toggle should be shown in the
   // detailed view.
   bool ShouldShowKeyboardToggle();
@@ -90,9 +90,9 @@ class ASH_EXPORT TrayIME : public SystemTrayItem,
   // Whether the virtual keyboard is suppressed.
   bool keyboard_suppressed_;
   // Cached IME info.
-  IMEInfoList ime_list_;
-  IMEInfo current_ime_;
-  IMEPropertyInfoList property_list_;
+  std::vector<mojom::ImeInfo> ime_list_;
+  mojom::ImeInfo current_ime_;
+  std::vector<mojom::ImeMenuItem> property_items_;
 
   // Whether the IME label and tray items should be visible.
   bool is_visible_;

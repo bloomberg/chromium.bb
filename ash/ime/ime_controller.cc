@@ -4,26 +4,28 @@
 
 #include "ash/ime/ime_controller.h"
 
+#include "ash/public/interfaces/ime_info.mojom.h"
+
 namespace ash {
 
 ImeController::ImeController() = default;
 
 ImeController::~ImeController() = default;
 
-IMEInfo ImeController::GetCurrentIme() const {
-  return IMEInfo();
+mojom::ImeInfo ImeController::GetCurrentIme() const {
+  return mojom::ImeInfo();
 }
 
-std::vector<IMEPropertyInfo> ImeController::GetCurrentImeProperties() const {
-  return std::vector<IMEPropertyInfo>();
-}
-
-std::vector<IMEInfo> ImeController::GetAvailableImes() const {
-  return std::vector<IMEInfo>();
+std::vector<mojom::ImeInfo> ImeController::GetAvailableImes() const {
+  return std::vector<mojom::ImeInfo>();
 }
 
 bool ImeController::IsImeManaged() const {
   return false;
+}
+
+std::vector<mojom::ImeMenuItem> ImeController::GetCurrentImeMenuItems() const {
+  return std::vector<mojom::ImeMenuItem>();
 }
 
 }  // namespace ash

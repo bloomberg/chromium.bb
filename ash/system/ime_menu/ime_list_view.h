@@ -5,12 +5,19 @@
 #ifndef ASH_SYSTEM_IME_MENU_IME_LIST_VIEW_H_
 #define ASH_SYSTEM_IME_MENU_IME_LIST_VIEW_H_
 
+#include <vector>
+
 #include "ash/ash_export.h"
-#include "ash/system/tray/ime_info.h"
 #include "ash/system/tray/tray_details_view.h"
 #include "ui/views/controls/button/button.h"
 
 namespace ash {
+
+namespace mojom {
+class ImeInfo;
+class ImeMenuItem;
+}
+
 class KeyboardStatusRow;
 
 // Base class used to represent a selecatable list of available IMEs.
@@ -25,7 +32,7 @@ class ImeListView : public TrayDetailsView {
     HIDE_SINGLE_IME
   };
 
-  ImeListView(SystemTrayItem* owner);
+  explicit ImeListView(SystemTrayItem* owner);
 
   ~ImeListView() override;
 
@@ -33,8 +40,8 @@ class ImeListView : public TrayDetailsView {
   void Init(bool show_keyboard_toggle, SingleImeBehavior single_ime_behavior);
 
   // Updates the view.
-  virtual void Update(const IMEInfoList& list,
-                      const IMEPropertyInfoList& property_list,
+  virtual void Update(const std::vector<mojom::ImeInfo>& list,
+                      const std::vector<mojom::ImeMenuItem>& property_items,
                       bool show_keyboard_toggle,
                       SingleImeBehavior single_ime_behavior);
 
@@ -73,8 +80,9 @@ class ImeListView : public TrayDetailsView {
   friend class ImeListViewTestApi;
 
   // Appends the IMEs and properties to the IME menu's scrollable area.
-  void AppendImeListAndProperties(const IMEInfoList& list,
-                                  const IMEPropertyInfoList& property_list);
+  void AppendImeListAndProperties(
+      const std::vector<mojom::ImeInfo>& list,
+      const std::vector<mojom::ImeMenuItem>& property_items);
 
   // Initializes |keyboard_status_row_| and adds it above the scrollable list.
   void PrependKeyboardStatusRow();
