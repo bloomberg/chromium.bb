@@ -20,9 +20,14 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/task_scheduler/post_task.h"
+#include "chrome/browser/chromeos/login/helper.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_util.h"
@@ -359,6 +364,22 @@ void ArcVoiceInteractionFrameworkService::SetVoiceInteractionContextEnabled(
 void ArcVoiceInteractionFrameworkService::StartSessionFromUserInteraction(
     const gfx::Rect& rect) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (!ProfileManager::GetActiveUserProfile()->GetPrefs()->GetBoolean(
+          prefs::kArcVoiceInteractionValuePropAccepted)) {
+    // If voice interaction value prop already showing, return.
+    if (chromeos::LoginDisplayHost::default_host())
+      return;
+    // If voice interaction value prop has not been accepted, show the value
+    // prop OOBE page again.
+    gfx::Rect screen_bounds(chromeos::CalculateScreenBounds(gfx::Size()));
+    // The display host will be destructed at the end of OOBE flow.
+    chromeos::LoginDisplayHostImpl* display_host =
+        new chromeos::LoginDisplayHostImpl(screen_bounds);
+    display_host->StartWizard(
+        chromeos::OobeScreen::SCREEN_VOICE_INTERACTION_VALUE_PROP);
+    return;
+  }
 
   if (!arc_bridge_service()->voice_interaction_framework()->has_instance()) {
     SetArcCpuRestriction(false);

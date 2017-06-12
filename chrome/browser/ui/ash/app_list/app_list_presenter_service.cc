@@ -49,8 +49,8 @@ void AppListPresenterService::ToggleAppList(int64_t display_id) {
 void AppListPresenterService::StartVoiceInteractionSession() {
   auto* service = arc::ArcServiceManager::Get()
                       ->GetService<arc::ArcVoiceInteractionFrameworkService>();
-  DCHECK(service);
-  service->StartSessionFromUserInteraction(gfx::Rect());
+  if (service)
+    service->StartSessionFromUserInteraction(gfx::Rect());
 }
 
 app_list::AppListPresenterImpl* AppListPresenterService::GetPresenter() {

@@ -95,6 +95,7 @@
 #include "components/pairing/shark_connection_listener.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_types.h"
@@ -255,6 +256,9 @@ WizardController::WizardController(LoginDisplayHost* host, OobeUI* oobe_ui)
   DCHECK(default_controller_ == nullptr);
   default_controller_ = this;
   screen_manager_ = base::MakeUnique<ScreenManager>(this);
+  // In session OOBE was initiated from voice interaction keyboard shortcuts.
+  is_in_session_oobe_ =
+      session_manager::SessionManager::Get()->IsSessionStarted();
   if (!ash_util::IsRunningInMash()) {
     AccessibilityManager* accessibility_manager = AccessibilityManager::Get();
     CHECK(accessibility_manager);
@@ -828,6 +832,13 @@ void WizardController::OnTermsOfServiceAccepted() {
 }
 
 void WizardController::OnArcTermsOfServiceFinished() {
+  const Profile* profile = ProfileManager::GetActiveUserProfile();
+  if (is_in_session_oobe_) {
+    if (profile->GetPrefs()->GetBoolean(prefs::kArcTermsAccepted))
+      StartVoiceInteractionSetupWizard();
+    OnOobeFlowFinished();
+    return;
+  }
   // If the user finished with the PlayStore Terms of Service, advance to the
   // user image screen.
   ShowUserImageScreen();
@@ -838,12 +849,12 @@ void WizardController::OnVoiceInteractionValuePropSkipped() {
 }
 
 void WizardController::OnVoiceInteractionValuePropAccepted() {
-  // Start voice interaction setup wizard in container
-  arc::ArcVoiceInteractionFrameworkService* service =
-      arc::ArcServiceManager::Get()
-          ->GetService<arc::ArcVoiceInteractionFrameworkService>();
-  if (service)
-    service->StartVoiceInteractionSetupWizard();
+  const Profile* profile = ProfileManager::GetActiveUserProfile();
+  if (is_in_session_oobe_ && !arc::IsArcPlayStoreEnabledForProfile(profile)) {
+    ShowArcTermsOfServiceScreen();
+    return;
+  }
+  StartVoiceInteractionSetupWizard();
   OnOobeFlowFinished();
 }
 
@@ -862,6 +873,13 @@ void WizardController::OnAutoEnrollmentCheckCompleted() {
 }
 
 void WizardController::OnOobeFlowFinished() {
+  if (is_in_session_oobe_) {
+    host_->SetStatusAreaVisible(true);
+    host_->Finalize(base::OnceClosure());
+    host_ = nullptr;
+    return;
+  }
+
   if (!time_oobe_started_.is_null()) {
     base::TimeDelta delta = base::Time::Now() - time_oobe_started_;
     UMA_HISTOGRAM_CUSTOM_TIMES("OOBE.BootToSignInCompleted", delta,
@@ -1544,8 +1562,10 @@ bool WizardController::ShouldShowArcTerms() const {
 }
 
 bool WizardController::ShouldShowVoiceInteractionValueProp() const {
-  if (!arc::IsArcPlayStoreEnabledForProfile(
-          ProfileManager::GetActiveUserProfile())) {
+  // If the OOBE flow was initiated from voice interaction shortcut, we will
+  // show Arc terms later.
+  if (!is_in_session_oobe_ && !arc::IsArcPlayStoreEnabledForProfile(
+                                  ProfileManager::GetActiveUserProfile())) {
     VLOG(1) << "Skip Voice Interaction Value Prop screen because Arc Terms is "
             << "skipped.";
     return false;
@@ -1556,6 +1576,14 @@ bool WizardController::ShouldShowVoiceInteractionValueProp() const {
     return false;
   }
   return true;
+}
+
+void WizardController::StartVoiceInteractionSetupWizard() {
+  arc::ArcVoiceInteractionFrameworkService* service =
+      arc::ArcServiceManager::Get()
+          ->GetService<arc::ArcVoiceInteractionFrameworkService>();
+  if (service)
+    service->StartVoiceInteractionSetupWizard();
 }
 
 void WizardController::MaybeStartListeningForSharkConnection() {
