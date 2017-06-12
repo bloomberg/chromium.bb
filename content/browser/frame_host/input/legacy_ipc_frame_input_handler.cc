@@ -5,6 +5,7 @@
 #include "content/browser/frame_host/input/legacy_ipc_frame_input_handler.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "content/browser/renderer_host/input/legacy_input_router_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/input_messages.h"
 
@@ -139,8 +140,9 @@ void LegacyIPCFrameInputHandler::MoveRangeSelectionExtent(
 
 void LegacyIPCFrameInputHandler::SendInput(
     std::unique_ptr<IPC::Message> message) {
-  frame_host_->GetRenderWidgetHost()->input_router()->SendInput(
-      std::move(message));
+  static_cast<LegacyInputRouterImpl*>(
+      frame_host_->GetRenderWidgetHost()->input_router())
+      ->SendInput(std::move(message));
 }
 
 }  // namespace content

@@ -41,7 +41,7 @@
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/frame_metadata_util.h"
 #include "content/browser/renderer_host/input/input_router_config_helper.h"
-#include "content/browser/renderer_host/input/input_router_impl.h"
+#include "content/browser/renderer_host/input/legacy_input_router_impl.h"
 #include "content/browser/renderer_host/input/synthetic_gesture.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_controller.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_target.h"
@@ -333,7 +333,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
 
   latency_tracker_.Initialize(routing_id_, GetProcess()->GetID());
 
-  input_router_.reset(new InputRouterImpl(
+  input_router_.reset(new LegacyInputRouterImpl(
       process_, this, this, routing_id_, GetInputRouterConfigForPlatform()));
 
   touch_emulator_.reset();
@@ -1691,7 +1691,7 @@ void RenderWidgetHostImpl::RendererExited(base::TerminationStatus status,
   // renderer. Otherwise it may be stuck waiting for the old renderer to ack an
   // event. (In particular, the above call to view_->RenderProcessGone will
   // destroy the aura window, which may dispatch a synthetic mouse move.)
-  input_router_.reset(new InputRouterImpl(
+  input_router_.reset(new LegacyInputRouterImpl(
       process_, this, this, routing_id_, GetInputRouterConfigForPlatform()));
 
   synthetic_gesture_controller_.reset();

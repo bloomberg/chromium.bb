@@ -20,7 +20,7 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "content/browser/gpu/compositor_util.h"
-#include "content/browser/renderer_host/input/input_router_impl.h"
+#include "content/browser/renderer_host/input/legacy_input_router_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate_view.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
@@ -138,6 +138,7 @@ class MockInputRouter : public InputRouter {
   bool HasPendingEvents() const override { return false; }
   void SetDeviceScaleFactor(float device_scale_factor) override {}
   void SetFrameTreeNodeId(int frameTreeNodeId) override {}
+  cc::TouchAction AllowedTouchAction() override { return cc::kTouchActionAuto; }
 
   // IPC::Listener
   bool OnMessageReceived(const IPC::Message& message) override {
@@ -202,8 +203,8 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
   }
 
   void DisableGestureDebounce() {
-    input_router_.reset(new InputRouterImpl(
-        process_, this, this, routing_id_, InputRouterImpl::Config()));
+    input_router_.reset(new LegacyInputRouterImpl(
+        process_, this, this, routing_id_, InputRouter::Config()));
   }
 
   WebInputEvent::Type acked_touch_event_type() const {

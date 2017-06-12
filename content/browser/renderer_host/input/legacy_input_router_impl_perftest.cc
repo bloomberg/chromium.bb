@@ -12,7 +12,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "content/browser/renderer_host/input/input_ack_handler.h"
 #include "content/browser/renderer_host/input/input_router_client.h"
-#include "content/browser/renderer_host/input/input_router_impl.h"
+#include "content/browser/renderer_host/input/legacy_input_router_impl.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_features.h"
@@ -191,13 +191,10 @@ class InputEventTimer {
 
   ~InputEventTimer() {
     perf_test::PrintResult(
-        "avg_time_per_event",
-        "",
-        test_name_,
+        "avg_time_per_event", "", test_name_,
         static_cast<size_t>(((base::TimeTicks::Now() - start_) / event_count_)
                                 .InMicroseconds()),
-        "us",
-        true);
+        "us", true);
   }
 
  private:
@@ -215,13 +212,13 @@ bool ShouldBlockEventStream(const blink::WebInputEvent& event) {
 
 }  // namespace
 
-class InputRouterImplPerfTest : public testing::Test {
+class LegacyInputRouterImplPerfTest : public testing::Test {
  public:
-  InputRouterImplPerfTest()
+  LegacyInputRouterImplPerfTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI),
         last_input_id_(0) {}
-  ~InputRouterImplPerfTest() override {}
+  ~LegacyInputRouterImplPerfTest() override {}
 
  protected:
   // testing::Test
@@ -229,11 +226,9 @@ class InputRouterImplPerfTest : public testing::Test {
     sender_.reset(new NullIPCSender());
     client_.reset(new NullInputRouterClient());
     ack_handler_.reset(new NullInputAckHandler());
-    input_router_.reset(new InputRouterImpl(sender_.get(),
-                                            client_.get(),
-                                            ack_handler_.get(),
-                                            MSG_ROUTING_NONE,
-                                            InputRouterImpl::Config()));
+    input_router_.reset(new LegacyInputRouterImpl(
+        sender_.get(), client_.get(), ack_handler_.get(), MSG_ROUTING_NONE,
+        InputRouter::Config()));
   }
 
   void TearDown() override {
@@ -356,7 +351,7 @@ class InputRouterImplPerfTest : public testing::Test {
   std::unique_ptr<NullIPCSender> sender_;
   std::unique_ptr<NullInputRouterClient> client_;
   std::unique_ptr<NullInputAckHandler> ack_handler_;
-  std::unique_ptr<InputRouterImpl> input_router_;
+  std::unique_ptr<LegacyInputRouterImpl> input_router_;
 };
 
 const size_t kDefaultSteps(100);
@@ -364,44 +359,38 @@ const size_t kDefaultIterations(100);
 const gfx::Vector2dF kDefaultOrigin(100, 100);
 const gfx::Vector2dF kDefaultDistance(500, 500);
 
-TEST_F(InputRouterImplPerfTest, TouchSwipe) {
+TEST_F(LegacyInputRouterImplPerfTest, TouchSwipe) {
   SimulateEventSequence(
       "TouchSwipe ",
       BuildTouchSequence(kDefaultSteps, kDefaultOrigin, kDefaultDistance),
-      false,
-      kDefaultIterations);
+      false, kDefaultIterations);
 }
 
-TEST_F(InputRouterImplPerfTest, TouchSwipeDelayedAck) {
+TEST_F(LegacyInputRouterImplPerfTest, TouchSwipeDelayedAck) {
   SimulateEventSequence(
       "TouchSwipeDelayedAck ",
-      BuildTouchSequence(kDefaultSteps, kDefaultOrigin, kDefaultDistance),
-      true,
+      BuildTouchSequence(kDefaultSteps, kDefaultOrigin, kDefaultDistance), true,
       kDefaultIterations);
 }
 
-TEST_F(InputRouterImplPerfTest, GestureScroll) {
+TEST_F(LegacyInputRouterImplPerfTest, GestureScroll) {
   SimulateEventSequence(
       "GestureScroll ",
       BuildScrollSequence(kDefaultSteps, kDefaultOrigin, kDefaultDistance),
-      false,
-      kDefaultIterations);
+      false, kDefaultIterations);
 }
 
-TEST_F(InputRouterImplPerfTest, GestureScrollDelayedAck) {
+TEST_F(LegacyInputRouterImplPerfTest, GestureScrollDelayedAck) {
   SimulateEventSequence(
       "GestureScrollDelayedAck ",
       BuildScrollSequence(kDefaultSteps, kDefaultOrigin, kDefaultDistance),
-      true,
-      kDefaultIterations);
+      true, kDefaultIterations);
 }
 
-TEST_F(InputRouterImplPerfTest, TouchSwipeToGestureScroll) {
+TEST_F(LegacyInputRouterImplPerfTest, TouchSwipeToGestureScroll) {
   SimulateTouchAndScrollEventSequence("TouchSwipeToGestureScroll ",
-                                      kDefaultSteps,
-                                      kDefaultOrigin,
-                                      kDefaultDistance,
-                                      kDefaultIterations);
+                                      kDefaultSteps, kDefaultOrigin,
+                                      kDefaultDistance, kDefaultIterations);
 }
 
 }  // namespace content

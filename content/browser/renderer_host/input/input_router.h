@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_INPUT_INPUT_ROUTER_H_
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_INPUT_ROUTER_H_
 
+#include "cc/input/touch_action.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/browser/renderer_host/input/gesture_event_queue.h"
 #include "content/browser/renderer_host/input/touch_event_queue.h"
@@ -63,6 +64,9 @@ class InputRouter : public IPC::Listener {
   // Sets the frame tree node id of associated frame, used when tracing
   // input event latencies to relate events to their target frames.
   virtual void SetFrameTreeNodeId(int frameTreeNodeId) = 0;
+
+  // Return the currently allowed touch-action.
+  virtual cc::TouchAction AllowedTouchAction() = 0;
 };
 
 }  // namespace content
