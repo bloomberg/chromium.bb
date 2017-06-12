@@ -2502,12 +2502,6 @@ crbug.com/707359 [ Mac ] fast/css-grid-layout/grid-self-baseline-vertical-rl-05.
 crbug.com/730821 virtual/exotic-color-space/images/color-profile-layer-filter.html [ Failure ]
 
 # TODO(ccameron): Fix in progress.
-crbug.com/730983 fast/canvas/webgl/texImage-imageBitmap-from-image-resize.html [ Failure ]
-crbug.com/730983 fast/canvas/webgl/texImage-imageBitmap-from-image.html [ Failure ]
-crbug.com/730983 virtual/display_list_2d_canvas/fast/canvas/webgl/texImage-imageBitmap-from-image-resize.html [ Failure ]
-crbug.com/730983 virtual/display_list_2d_canvas/fast/canvas/webgl/texImage-imageBitmap-from-image.html [ Failure ]
-crbug.com/730983 virtual/gpu/fast/canvas/webgl/texImage-imageBitmap-from-image-resize.html [ Failure ]
-crbug.com/730983 virtual/gpu/fast/canvas/webgl/texImage-imageBitmap-from-image.html [ Failure ]
 crbug.com/731783 fast/media/mq-color-gamut-api.html [ Failure Timeout ]
 crbug.com/731783 fast/media/mq-color-gamut-picture.html [ Failure Timeout ]
 
