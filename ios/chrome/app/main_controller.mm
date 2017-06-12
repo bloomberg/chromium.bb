@@ -268,14 +268,6 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   base::scoped_nsobject<SigninInteractionController>
       _signinInteractionController;
 
-  // The number of memory warnings that have been received in this
-  // foreground session.
-  int _foregroundMemoryWarningCount;
-
-  // The time at which to reset the OOM crash flag in the user defaults. This
-  // is used to handle receiving multiple memory warnings in short succession.
-  CFAbsoluteTime _outOfMemoryResetTime;
-
   // YES while animating the dismissal of stack view.
   BOOL _dismissingStackView;
 
