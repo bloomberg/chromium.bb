@@ -12,9 +12,10 @@ layer at (0,0) size 800x600
         LayoutText {#text} at (0,35) size 52x19
           text run at (0,35) width 52: "border:0"
         LayoutImage {IMG} at (52,0) size 338x50
-      LayoutBlockFlow {HR} at (0,119) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow (anonymous) at (0,129) size 784x57
         LayoutText {#text} at (0,37) size 52x19
           text run at (0,37) width 52: "border:1"
         LayoutImage {IMG} at (52,0) size 340x52 [border: (1px solid #000000)]
         LayoutText {#text} at (0,0) size 0x0
+layer at (8,127) size 784x2 clip at (0,0) size 0x0
+  LayoutBlockFlow {HR} at (0,119) size 784x2 [border: (1px inset #EEEEEE)]

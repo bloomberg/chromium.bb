@@ -3,7 +3,6 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-      LayoutBlockFlow {HR} at (0,0) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {P} at (0,18) size 784x18
         LayoutText {#text} at (0,0) size 54x18
           text run at (0,0) width 54: "Test for "
@@ -16,9 +15,12 @@ layer at (0,0) size 800x600
             text run at (360,0) width 253: "resize property doesn't work on iframes"
         LayoutText {#text} at (612,0) size 5x18
           text run at (612,0) width 5: "."
-      LayoutBlockFlow {HR} at (0,52) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow (anonymous) at (0,62) size 784x230
         LayoutText {#text} at (0,0) size 0x0
+layer at (8,8) size 784x2 clip at (0,0) size 0x0
+  LayoutBlockFlow {HR} at (0,0) size 784x2 [border: (1px inset #EEEEEE)]
+layer at (8,60) size 784x2 clip at (0,0) size 0x0
+  LayoutBlockFlow {HR} at (0,52) size 784x2 [border: (1px inset #EEEEEE)]
 layer at (58,120) size 163x130
   LayoutIFrame {IFRAME} at (50,50) size 163x130 [border: (2px solid #0000FF)]
     layer at (0,0) size 159x126

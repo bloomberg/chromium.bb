@@ -23,7 +23,6 @@ layer at (0,0) size 800x600
             text run at (231,0) width 9: "P"
         LayoutText {#text} at (240,0) size 208x19
           text run at (240,0) width 208: "ASS\x{201D}, with nothing before the P."
-      LayoutBlockFlow {HR} at (0,92) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {P} at (0,110) size 784x20
         LayoutInline {<pseudo:first-letter>} at (0,0) size 9x19 [color=#0000FF]
           LayoutTextFragment (anonymous) at (0,0) size 9x19
@@ -42,3 +41,5 @@ layer at (0,0) size 800x600
             text run at (0,0) width 9: "P"
         LayoutTextFragment {#text} at (9,0) size 30x19
           text run at (9,0) width 30: "ASS"
+layer at (8,100) size 784x2 clip at (0,0) size 0x0
+  LayoutBlockFlow {HR} at (0,92) size 784x2 [border: (1px inset #EEEEEE)]

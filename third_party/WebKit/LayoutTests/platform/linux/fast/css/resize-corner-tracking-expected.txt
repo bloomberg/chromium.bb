@@ -3,7 +3,6 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutBlockFlow {HTML} at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x584
-      LayoutBlockFlow {HR} at (0,0) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {P} at (0,18) size 784x20
         LayoutText {#text} at (0,0) size 52x19
           text run at (0,0) width 52: "Test for "
@@ -16,7 +15,6 @@ layer at (0,0) size 800x600
             text run at (403,0) width 318: "Resize corner does not track the mouse accurately"
         LayoutText {#text} at (720,0) size 5x19
           text run at (720,0) width 5: "."
-      LayoutBlockFlow {HR} at (0,54) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow (anonymous) at (0,189) size 784x363
         LayoutText {#text} at (169,106) size 4x19
           text run at (169,106) width 4: " "
@@ -25,6 +23,10 @@ layer at (0,0) size 800x600
           text run at (198,168) width 4: " "
         LayoutBR {BR} at (0,0) size 0x0
         LayoutText {#text} at (0,0) size 0x0
+layer at (8,8) size 784x2 clip at (0,0) size 0x0
+  LayoutBlockFlow {HR} at (0,0) size 784x2 [border: (1px inset #EEEEEE)]
+layer at (8,62) size 784x2 clip at (0,0) size 0x0
+  LayoutBlockFlow {HR} at (0,54) size 784x2 [border: (1px inset #EEEEEE)]
 layer at (8,72) size 173x125 clip at (10,74) size 169x121
   LayoutBlockFlow {DIV} at (0,64) size 173x125 [border: (2px solid #0000FF)]
 layer at (8,197) size 169x121 clip at (10,199) size 165x117

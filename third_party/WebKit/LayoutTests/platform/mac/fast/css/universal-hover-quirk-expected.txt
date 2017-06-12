@@ -8,7 +8,6 @@ layer at (0,0) size 800x600
           LayoutText {#text} at (0,0) size 252x18
             text run at (0,0) width 252: "This should not turn red when hovered."
         LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow {HR} at (0,26) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {P} at (0,44) size 784x36
         LayoutText {#text} at (0,0) size 54x18
           text run at (0,0) width 54: "Test for "
@@ -25,4 +24,6 @@ layer at (0,0) size 800x600
             text run at (707,2) width 55: "*:hover"
         LayoutText {#text} at (0,18) size 261x18
           text run at (0,18) width 261: "does not match anything in quirks mode."
+layer at (8,34) size 784x2 clip at (0,0) size 0x0
+  LayoutBlockFlow {HR} at (0,26) size 784x2 [border: (1px inset #EEEEEE)]
 caret: position 1 of child 0 {#text} of child 1 {SPAN} of child 1 {DIV} of body

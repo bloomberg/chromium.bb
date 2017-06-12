@@ -15,7 +15,8 @@ layer at (0,0) size 800x600
             text run at (403,0) width 375: "Drop shadow obscures \"add more stuff\" bubble at live.com"
         LayoutText {#text} at (777,0) size 5x19
           text run at (777,0) width 5: "."
-      LayoutBlockFlow {HR} at (0,36) size 784x2 [border: (1px inset #EEEEEE)]
+layer at (8,44) size 784x2 clip at (0,0) size 0x0
+  LayoutBlockFlow {HR} at (0,36) size 784x2 [border: (1px inset #EEEEEE)]
 layer at (8,54) size 784x0
   LayoutBlockFlow (relative positioned) {DIV} at (0,46) size 784x0
 layer at (8,54) size 100x100

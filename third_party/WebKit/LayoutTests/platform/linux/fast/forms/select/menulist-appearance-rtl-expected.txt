@@ -53,7 +53,6 @@ layer at (0,0) size 800x567
             LayoutText {#text} at (0,0) size 69x19
               text run at (0,0) width 22: "abc"
               text run at (22,0) width 47 RTL: "\x{5D0}\x{5E4}\x{5E8}\x{5E1}\x{5DE}\x{5D5}\x{5DF}"
-      LayoutBlockFlow {HR} at (0,252) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {DIV} at (0,262) size 784x59
         LayoutBlockFlow (anonymous) at (0,0) size 784x20
           LayoutText {#text} at (0,0) size 622x19
@@ -67,10 +66,13 @@ layer at (0,0) size 800x567
               LayoutText (anonymous) at (4,1) size 91x16
                 text run at (4,1) width 91 RTL: "\x{627}\x{644}\x{627}\x{642}\x{62A}\x{631}\x{627}\x{62D}\x{627}\x{62A} / \x{627}\x{644}\x{634}\x{643}\x{627}\x{648}\x{64A}"
           LayoutText {#text} at (0,0) size 0x0
-      LayoutBlockFlow {HR} at (0,329) size 784x2 [border: (1px inset #EEEEEE)]
       LayoutBlockFlow {P} at (0,347) size 784x20
         LayoutText {#text} at (0,0) size 694x19
           text run at (0,0) width 694: "Verify that the alignment and writing direction of each selected item matches the one below the pop-up button."
+layer at (8,268) size 784x2 clip at (0,0) size 0x0
+  LayoutBlockFlow {HR} at (0,252) size 784x2 [border: (1px inset #EEEEEE)]
+layer at (8,345) size 784x2 clip at (0,0) size 0x0
+  LayoutBlockFlow {HR} at (0,329) size 784x2 [border: (1px inset #EEEEEE)]
 layer at (8,399) size 784x160
   LayoutBlockFlow {DIV} at (0,383) size 784x160
     LayoutMultiColumnSet (anonymous) at (0,0) size 784x160
