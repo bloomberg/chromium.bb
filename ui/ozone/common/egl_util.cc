@@ -5,8 +5,10 @@
 #include "ui/ozone/common/egl_util.h"
 
 #include "base/files/file_path.h"
+#include "base/path_service.h"
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_features.h"
 #include "ui/gl/gl_implementation.h"
 
 namespace ui {
@@ -15,27 +17,25 @@ namespace {
 const char kDefaultEglSoname[] = "libEGL.so.1";
 const char kDefaultGlesSoname[] = "libGLESv2.so.2";
 
-}  // namespace
+#if BUILDFLAG(ENABLE_SWIFTSHADER)
+const char kGLESv2SwiftShaderLibraryName[] = "libGLESv2.so";
+const char kEGLSwiftShaderLibraryName[] = "libEGL.so";
+#endif
 
-bool LoadDefaultEGLGLES2Bindings() {
-  return LoadEGLGLES2Bindings(kDefaultEglSoname, kDefaultGlesSoname);
-}
-
-bool LoadEGLGLES2Bindings(
-    const char* egl_library_name,
-    const char* gles_library_name) {
+bool LoadEGLGLES2Bindings(const base::FilePath& egl_library_path,
+                          const base::FilePath& gles_library_path) {
   base::NativeLibraryLoadError error;
   base::NativeLibrary gles_library =
-      base::LoadNativeLibrary(base::FilePath(gles_library_name), &error);
+      base::LoadNativeLibrary(gles_library_path, &error);
   if (!gles_library) {
-    LOG(WARNING) << "Failed to load GLES library: " << error.ToString();
+    LOG(ERROR) << "Failed to load GLES library: " << error.ToString();
     return false;
   }
 
   base::NativeLibrary egl_library =
-      base::LoadNativeLibrary(base::FilePath(egl_library_name), &error);
+      base::LoadNativeLibrary(base::FilePath(egl_library_path), &error);
   if (!egl_library) {
-    LOG(WARNING) << "Failed to load EGL library: " << error.ToString();
+    LOG(ERROR) << "Failed to load EGL library: " << error.ToString();
     base::UnloadNativeLibrary(gles_library);
     return false;
   }
@@ -56,6 +56,32 @@ bool LoadEGLGLES2Bindings(
   gl::AddGLNativeLibrary(gles_library);
 
   return true;
+}
+
+}  // namespace
+
+bool LoadDefaultEGLGLES2Bindings(gl::GLImplementation implementation) {
+  base::FilePath glesv2_path;
+  base::FilePath egl_path;
+
+  if (implementation == gl::kGLImplementationSwiftShaderGL) {
+#if BUILDFLAG(ENABLE_SWIFTSHADER)
+    base::FilePath module_path;
+    if (!PathService::Get(base::DIR_MODULE, &module_path))
+      return false;
+    module_path = module_path.Append("swiftshader/");
+
+    glesv2_path = module_path.Append(kGLESv2SwiftShaderLibraryName);
+    egl_path = module_path.Append(kEGLSwiftShaderLibraryName);
+#else
+    return false;
+#endif
+  } else {
+    glesv2_path = base::FilePath(kDefaultGlesSoname);
+    egl_path = base::FilePath(kDefaultEglSoname);
+  }
+
+  return LoadEGLGLES2Bindings(egl_path, glesv2_path);
 }
 
 EGLConfig ChooseEGLConfig(EGLDisplay display, const int32_t* attributes) {

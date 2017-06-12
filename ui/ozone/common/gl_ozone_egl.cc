@@ -25,7 +25,7 @@ bool GLOzoneEGL::InitializeGLOneOffPlatform() {
 
 bool GLOzoneEGL::InitializeStaticGLBindings(
     gl::GLImplementation implementation) {
-  if (!LoadGLES2Bindings())
+  if (!LoadGLES2Bindings(implementation))
     return false;
 
   gl::SetGLImplementation(gl::kGLImplementationEGLGLES2);

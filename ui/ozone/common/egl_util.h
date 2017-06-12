@@ -7,13 +7,11 @@
 
 #include <stdint.h>
 
+#include "ui/gl/gl_implementation.h"
+
 namespace ui {
 
-bool LoadDefaultEGLGLES2Bindings();
-
-bool LoadEGLGLES2Bindings(
-    const char* egl_library_name,
-    const char* gles_library_name);
+bool LoadDefaultEGLGLES2Bindings(gl::GLImplementation impl);
 
 void* /* EGLConfig */ ChooseEGLConfig(void* /* EGLConfig */ display,
                                       const int32_t* attributes);
