@@ -94,7 +94,7 @@ class ServiceWorkerRegistrationTest : public testing::Test {
     ServiceWorkerRegistrationInfo observed_info_;
   };
 
- private:
+ protected:
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   TestBrowserThreadBundle thread_bundle_;
 };
@@ -257,7 +257,7 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest {
 
     // Give the active version a controllee.
     host_ = CreateProviderHostForWindow(
-        33 /* dummy render process id */, 1 /* dummy provider_id */,
+        helper_->mock_render_process_id(), 1 /* dummy provider_id */,
         true /* is_parent_frame_secure */, context()->AsWeakPtr(),
         &remote_endpoint_);
     version_1->AddControllee(host_.get());
