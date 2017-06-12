@@ -44,7 +44,6 @@
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::NavigationBarDoneButton;
 using chrome_test_util::OpenLinkInNewTabButton;
-using chrome_test_util::WebViewContainingText;
 
 namespace {
 char kURL1[] = "http://firstURL";
@@ -253,8 +252,7 @@ void MockSignIn() {
   // Tap a history entry and assert that navigation to that entry's URL occurs.
   [[EarlGrey selectElementWithMatcher:HistoryEntry(_URL1, kTitle1)]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kResponse1)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kResponse1];
 }
 
 // Tests that history is not changed after performing back navigation.
@@ -264,8 +262,7 @@ void MockSignIn() {
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::BackButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kResponse1)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kResponse1];
 
   [self openHistoryPanel];
 
@@ -482,16 +479,13 @@ void MockSignIn() {
 
 - (void)loadTestURLs {
   [ChromeEarlGrey loadURL:_URL1];
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kResponse1)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kResponse1];
 
   [ChromeEarlGrey loadURL:_URL2];
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kResponse2)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kResponse2];
 
   [ChromeEarlGrey loadURL:_URL3];
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kResponse3)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kResponse3];
 }
 
 - (void)openHistoryPanel {

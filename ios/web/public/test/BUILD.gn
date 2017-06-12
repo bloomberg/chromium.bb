@@ -43,6 +43,8 @@ source_set("test") {
     "web_test_suite.h",
     "web_test_with_web_state.h",
     "web_test_with_web_state.mm",
+    "web_view_content_test_util.h",
+    "web_view_content_test_util.mm",
     "web_view_interaction_test_util.h",
     "web_view_interaction_test_util.mm",
   ]

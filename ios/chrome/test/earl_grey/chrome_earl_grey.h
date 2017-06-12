@@ -79,6 +79,10 @@ id ExecuteJavaScript(NSString* javascript,
 // Waits for a Chrome error page. If it is not found within a timeout, a
 // GREYAssert is induced.
 + (void)waitForErrorPage;
+
+// Waits for the current web view to contain |text|. If the condition is not met
+// within a timeout, a GREYAssert is induced.
++ (void)waitForWebViewContainingText:(std::string)text;
 @end
 
 #endif  // IOS_CHROME_TEST_EARL_GREY_CHROME_EARL_GREY_H_

@@ -24,7 +24,6 @@
 
 using chrome_test_util::OmniboxText;
 using chrome_test_util::TapWebViewElementWithId;
-using chrome_test_util::WebViewContainingText;
 using chrome_test_util::WebViewNotContainingText;
 
 using web::test::HttpServer;
@@ -139,8 +138,7 @@ using web::test::HttpServer;
 
   [ChromeEarlGrey loadURL:URL];
   // Check that the timer has completed.
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kTimerCompleted)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kTimerCompleted];
   // DNS error page should still not appear.
   [self checkErrorPageIsNotVisible];
 }
@@ -176,8 +174,7 @@ using web::test::HttpServer;
   [ChromeEarlGrey loadURL:URL];
   TapWebViewElementWithId(kButtonId);
   // Check that the timer has completed.
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kTimerCompleted)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kTimerCompleted];
   // DNS error page should still not appear.
   [self checkErrorPageIsNotVisible];
 }

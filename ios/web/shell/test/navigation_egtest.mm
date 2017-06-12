@@ -8,7 +8,6 @@
 
 #import <EarlGrey/EarlGrey.h>
 
-#include "base/strings/sys_string_conversions.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
 #include "ios/web/shell/test/app/web_view_interaction_test_util.h"
@@ -49,11 +48,11 @@
   // Create map of canned responses and set up the test HTML server.
   std::map<GURL, std::string> responses;
   const GURL URL1 = web::test::HttpServer::MakeUrl("http://firstURL");
-  std::string response1 = "Test Page 1";
+  const char response1[] = "Test Page 1";
   responses[URL1] = response1;
 
   const GURL URL2 = web::test::HttpServer::MakeUrl("http://secondURL");
-  std::string response2 = "Test Page 2";
+  const char response2[] = "Test Page 2";
   responses[URL2] = response2;
 
   web::test::SetUpSimpleHttpServer(responses);
@@ -61,28 +60,24 @@
   [ShellEarlGrey loadURL:URL1];
   [[EarlGrey selectElementWithMatcher:web::AddressFieldText(URL1.spec())]
       assertWithMatcher:grey_notNil()];
-  [[EarlGrey selectElementWithMatcher:web::WebViewContainingText(response1)]
-      assertWithMatcher:grey_notNil()];
+  [ShellEarlGrey waitForWebViewContainingText:response1];
 
   [ShellEarlGrey loadURL:URL2];
   [[EarlGrey selectElementWithMatcher:web::AddressFieldText(URL2.spec())]
       assertWithMatcher:grey_notNil()];
-  [[EarlGrey selectElementWithMatcher:web::WebViewContainingText(response2)]
-      assertWithMatcher:grey_notNil()];
+  [ShellEarlGrey waitForWebViewContainingText:response2];
 
   [[EarlGrey selectElementWithMatcher:web::BackButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:web::AddressFieldText(URL1.spec())]
       assertWithMatcher:grey_notNil()];
-  [[EarlGrey selectElementWithMatcher:web::WebViewContainingText(response1)]
-      assertWithMatcher:grey_notNil()];
+  [ShellEarlGrey waitForWebViewContainingText:response1];
 
   [[EarlGrey selectElementWithMatcher:web::ForwardButton()]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:web::AddressFieldText(URL2.spec())]
       assertWithMatcher:grey_notNil()];
-  [[EarlGrey selectElementWithMatcher:web::WebViewContainingText(response2)]
-      assertWithMatcher:grey_notNil()];
+  [ShellEarlGrey waitForWebViewContainingText:response2];
 }
 
 // Tests back and forward navigation where a fragment link is tapped.
@@ -143,9 +138,7 @@
 
   [[EarlGrey selectElementWithMatcher:web::AddressFieldText(URL.spec())]
       assertWithMatcher:grey_notNil()];
-  [[EarlGrey
-      selectElementWithMatcher:web::WebViewContainingText("Default prevented!")]
-      assertWithMatcher:grey_notNil()];
+  [ShellEarlGrey waitForWebViewContainingText:"Default prevented!"];
 }
 
 // Tests tapping on a link with unsupported URL scheme.
@@ -175,9 +168,7 @@
 
   [[EarlGrey selectElementWithMatcher:web::AddressFieldText(URL.spec())]
       assertWithMatcher:grey_notNil()];
-  [[EarlGrey
-      selectElementWithMatcher:web::WebViewContainingText("No navigation!")]
-      assertWithMatcher:grey_notNil()];
+  [ShellEarlGrey waitForWebViewContainingText:"No navigation!"];
 }
 
 @end

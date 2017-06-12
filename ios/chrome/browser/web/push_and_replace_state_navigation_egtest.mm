@@ -234,9 +234,9 @@ const char* kReplaceStateRootPathSpaceURL = "http://ios/rep lace";
   const GURL pushStateUnicode2URLEncoded = web::test::HttpServer::MakeUrl(
       "http://ios/testing/data/http_server_files/"
       "history.html#unicode2%E2%88%A2");
-  std::string pushStateUnicodeLabel = "Action: pushStateUnicodeᄑ";
+  const char pushStateUnicodeLabel[] = "Action: pushStateUnicodeᄑ";
   NSString* pushStateUnicodeStatus = @"pushStateUnicodeᄑ";
-  std::string pushStateUnicode2Label = "Action: pushStateUnicode2∢";
+  const char pushStateUnicode2Label[] = "Action: pushStateUnicode2∢";
   NSString* pushStateUnicode2Status = @"pushStateUnicode2∢";
 
   web::test::SetUpFileBasedHttpServer();
@@ -251,18 +251,14 @@ const char* kReplaceStateRootPathSpaceURL = "http://ios/rep lace";
       selectElementWithMatcher:chrome_test_util::OmniboxText(
                                    pushStateUnicodeURLEncoded.GetContent())]
       assertWithMatcher:grey_notNil()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewContainingText(
-                                          pushStateUnicodeLabel)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:pushStateUnicodeLabel];
 
   [ChromeEarlGrey tapWebViewElementWithID:@"pushStateUnicode2"];
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::OmniboxText(
                                    pushStateUnicode2URLEncoded.GetContent())]
       assertWithMatcher:grey_notNil()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewContainingText(
-                                          pushStateUnicode2Label)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:pushStateUnicode2Label];
 
   // Do a push state without a unicode character.
   const GURL pushStatePathURL =
@@ -330,18 +326,19 @@ const char* kReplaceStateRootPathSpaceURL = "http://ios/rep lace";
 - (void)assertStatusText:(NSString*)status
                  withURL:(const GURL&)urlToVerify
               pageLoaded:(BOOL)pageLoaded {
-  id<GREYMatcher> pageLoadedMatcher =
-      pageLoaded ? chrome_test_util::WebViewContainingText("onload")
-                 : chrome_test_util::WebViewNotContainingText("onload");
-  [[EarlGrey selectElementWithMatcher:pageLoadedMatcher]
-      assertWithMatcher:grey_notNil()];
+  if (pageLoaded) {
+    [ChromeEarlGrey waitForWebViewContainingText:"onload"];
+  } else {
+    id<GREYMatcher> pageLoadedMatcher =
+        chrome_test_util::WebViewNotContainingText("onload");
+    [[EarlGrey selectElementWithMatcher:pageLoadedMatcher]
+        assertWithMatcher:grey_notNil()];
+  }
 
   if (status != NULL) {
     NSString* statusLabel = [NSString stringWithFormat:@"Action: %@", status];
-    [[EarlGrey
-        selectElementWithMatcher:chrome_test_util::WebViewContainingText(
-                                     base::SysNSStringToUTF8(statusLabel))]
-        assertWithMatcher:grey_notNil()];
+    [ChromeEarlGrey
+        waitForWebViewContainingText:base::SysNSStringToUTF8(statusLabel)];
   }
 
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(

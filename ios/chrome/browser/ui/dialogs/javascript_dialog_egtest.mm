@@ -21,6 +21,7 @@
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/testing/earl_grey/matchers.h"
 #import "ios/testing/wait_util.h"
+#import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
 #include "ios/web/public/test/url_test_util.h"
@@ -149,21 +150,21 @@ NSString* GetScriptForAlertWithType(JavaScriptAlertType type) {
 // HTTP server constants.
 
 // URL and response for a blank document.
-const char* kJavaScriptTestURL = "http://jsalerts";
-const char* kJavaScriptTestResponse =
+const char kJavaScriptTestURL[] = "http://jsalerts";
+const char kJavaScriptTestResponse[] =
     "<!DOCTYPE html><html><body></body></html>";
 
 // URL and response for a page with an onload alert.
-const char* kOnLoadAlertURL = "http://onloadalert";
-const char* kOnLoadAlertResponse =
+const char kOnLoadAlertURL[] = "http://onloadalert";
+const char kOnLoadAlertResponse[] =
     "<!DOCTYPE html><html><body onload=\"alert('alert')\"></body></html>";
 
 // URL and response for a page with a link to |kOnLoadAlertURL|.
-const char* kPageWithLinkURL = "http://pagewithlink";
-const char* kPageWithLinkResponseFormat =
+const char kPageWithLinkURL[] = "http://pagewithlink";
+const char kPageWithLinkResponseFormat[] =
     "<!DOCTYPE html><html><body><a id=\"%s\" href=\"%s\">%s</a></body></html>";
-const char* kPageWithLinkText = "LINK TO ONLOAD ALERT PAGE";
-const char* kLinkID = "link-id";
+const char kPageWithLinkText[] = "LINK TO ONLOAD ALERT PAGE";
+const char kLinkID[] = "link-id";
 std::string GetPageWithLinkResponse() {
   return base::SysNSStringToUTF8([NSString
       stringWithFormat:@(kPageWithLinkResponseFormat), kLinkID,
@@ -171,13 +172,6 @@ std::string GetPageWithLinkResponse() {
                        kPageWithLinkText]);
 }
 
-// Waits until |string| is displayed on the web view.
-void WaitForWebDisplay(const std::string& string) {
-  id<GREYMatcher> response1Matcher =
-      chrome_test_util::WebViewContainingText(string);
-  [[EarlGrey selectElementWithMatcher:response1Matcher]
-      assertWithMatcher:grey_notNil()];
-}
 
 // Display the javascript alert.
 void DisplayJavaScriptAlert(JavaScriptAlertType type) {
@@ -324,12 +318,12 @@ void TapSuppressDialogsButton() {
 
 - (void)loadBlankTestPage {
   [ChromeEarlGrey loadURL:HttpServer::MakeUrl(kJavaScriptTestURL)];
-  WaitForWebDisplay(std::string());
+  [ChromeEarlGrey waitForWebViewContainingText:std::string()];
 }
 
 - (void)loadPageWithLink {
   [ChromeEarlGrey loadURL:HttpServer::MakeUrl(kPageWithLinkURL)];
-  WaitForWebDisplay(kPageWithLinkText);
+  [ChromeEarlGrey waitForWebViewContainingText:kPageWithLinkText];
 }
 
 #pragma mark - Tests
@@ -350,7 +344,7 @@ void TapSuppressDialogsButton() {
   [[EarlGrey selectElementWithMatcher:OKButton()] performAction:grey_tap()];
 
   // Wait for the html body to be reset to the correct value.
-  WaitForWebDisplay(kAlertResultBody);
+  [ChromeEarlGrey waitForWebViewContainingText:kAlertResultBody];
 }
 
 // Tests that a confirmation dialog is shown, and that the completion block is
@@ -370,7 +364,7 @@ void TapSuppressDialogsButton() {
   [[EarlGrey selectElementWithMatcher:OKButton()] performAction:grey_tap()];
 
   // Wait for the html body to be reset to the correct value.
-  WaitForWebDisplay(kConfirmationResultBodyOK);
+  [ChromeEarlGrey waitForWebViewContainingText:kConfirmationResultBodyOK];
 }
 
 // Tests that a confirmation dialog is shown, and that the completion block is
@@ -391,7 +385,8 @@ void TapSuppressDialogsButton() {
   TapCancel();
 
   // Wait for the html body to be reset to the correct value.
-  WaitForWebDisplay(kConfirmationResultBodyCancelled);
+  [ChromeEarlGrey
+      waitForWebViewContainingText:kConfirmationResultBodyCancelled];
 }
 
 // Tests that a prompt dialog is shown, and that the completion block is called
@@ -414,7 +409,7 @@ void TapSuppressDialogsButton() {
   [[EarlGrey selectElementWithMatcher:OKButton()] performAction:grey_tap()];
 
   // Wait for the html body to be reset to the input text.
-  WaitForWebDisplay(kPromptTestUserInput);
+  [ChromeEarlGrey waitForWebViewContainingText:kPromptTestUserInput];
 }
 
 // Tests that a prompt dialog is shown, and that the completion block is called
@@ -438,7 +433,7 @@ void TapSuppressDialogsButton() {
   TapCancel();
 
   // Wait for the html body to be reset to the cancel text.
-  WaitForWebDisplay(kPromptResultBodyCancelled);
+  [ChromeEarlGrey waitForWebViewContainingText:kPromptResultBodyCancelled];
 }
 
 // Tests that JavaScript alerts that are shown in a loop can be suppressed.
@@ -465,7 +460,7 @@ void TapSuppressDialogsButton() {
   TapSuppressDialogsButton();
 
   // Wait for the html body to be reset to the loop finished text.
-  WaitForWebDisplay(kAlertLoopFinishedText);
+  [ChromeEarlGrey waitForWebViewContainingText:kAlertLoopFinishedText];
 }
 
 // Tests to ensure crbug.com/658260 does not regress.
@@ -505,7 +500,7 @@ void TapSuppressDialogsButton() {
   [[EarlGrey selectElementWithMatcher:OKButton()] performAction:grey_tap()];
 
   // Wait for the html body to be reset to the correct value.
-  WaitForWebDisplay(kAlertResultBody);
+  [ChromeEarlGrey waitForWebViewContainingText:kAlertResultBody];
 }
 
 // Tests that an alert is presented after displaying the share menu.
@@ -534,7 +529,7 @@ void TapSuppressDialogsButton() {
   [[EarlGrey selectElementWithMatcher:OKButton()] performAction:grey_tap()];
 
   // Wait for the html body to be reset to the correct value.
-  WaitForWebDisplay(kAlertResultBody);
+  [ChromeEarlGrey waitForWebViewContainingText:kAlertResultBody];
 }
 
 // Tests that an alert is presented after a new tab animation is finished.
@@ -548,8 +543,13 @@ void TapSuppressDialogsButton() {
 
   // Load the test page with a link to kOnLoadAlertURL and long tap on the link.
   [self loadPageWithLink];
+
+  // TODO(crbug.com/712358): Use method LongPressElementAndTapOnButton once
+  // it is moved out of context_menu_egtests.mm and into a shared location.
+  [ChromeEarlGrey waitForWebViewContainingText:kPageWithLinkText];
   id<GREYMatcher> webViewMatcher =
-      chrome_test_util::WebViewContainingText(std::string(kPageWithLinkText));
+      web::WebViewInWebState(chrome_test_util::GetCurrentWebState());
+
   [[EarlGrey selectElementWithMatcher:webViewMatcher]
       performAction:chrome_test_util::LongPressElementForContextMenu(
                         kLinkID, true /* menu should appear */)];

@@ -621,9 +621,7 @@ bool IsCertificateCleared() {
 
   // Load |kUrl| and check that cookie is not set.
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kUrl)];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewContainingText(
-                                          kResponse)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kResponse];
 
   NSDictionary* cookies = [ChromeEarlGrey cookies];
   GREYAssertEqual(0U, cookies.count, @"No cookie should be found.");
@@ -631,13 +629,9 @@ bool IsCertificateCleared() {
   // Visit |kUrlWithSetCookie| to set a cookie and then load |kUrl| to check it
   // is still set.
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kUrlWithSetCookie)];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewContainingText(
-                                          kResponseWithSetCookie)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kResponseWithSetCookie];
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kUrl)];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewContainingText(
-                                          kResponse)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kResponse];
 
   cookies = [ChromeEarlGrey cookies];
   GREYAssertEqualObjects(kCookieValue, cookies[kCookieName],
@@ -656,9 +650,7 @@ bool IsCertificateCleared() {
 
   // Reload and test that there are no cookies left.
   [ChromeEarlGrey loadURL:web::test::HttpServer::MakeUrl(kUrl)];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewContainingText(
-                                          kResponse)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kResponse];
 
   cookies = [ChromeEarlGrey cookies];
   GREYAssertEqual(0U, cookies.count, @"No cookie should be found.");

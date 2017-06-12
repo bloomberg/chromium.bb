@@ -10,6 +10,7 @@
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/chrome/test/app/navigation_test_util.h"
+#import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/testing/wait_util.h"
@@ -25,7 +26,6 @@
 
 using testing::WaitUntilConditionOrTimeout;
 using testing::kWaitForPageLoadTimeout;
-using chrome_test_util::WebViewContainingText;
 
 namespace {
 
@@ -96,8 +96,7 @@ void WaitForHttpAuthDialog() {
   [[EarlGrey selectElementWithMatcher:LoginButton()] performAction:grey_tap()];
 
   const std::string pageText = web::HttpAuthResponseProvider::page_text();
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(pageText)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:pageText];
 }
 
 // Tests Basic HTTP Authentication with incorrect username and password.

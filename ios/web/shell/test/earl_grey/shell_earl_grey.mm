@@ -8,6 +8,7 @@
 
 #import "ios/testing/wait_util.h"
 #import "ios/web/public/test/earl_grey/js_test_util.h"
+#import "ios/web/public/test/web_view_content_test_util.h"
 #include "ios/web/shell/test/app/navigation_test_util.h"
 #import "ios/web/shell/test/app/web_shell_test_util.h"
 
@@ -38,6 +39,17 @@
   // Ensure any UI elements handled by EarlGrey become idle for any subsequent
   // EarlGrey steps.
   [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+}
+
++ (void)waitForWebViewContainingText:(std::string)text {
+  GREYCondition* condition = [GREYCondition
+      conditionWithName:@"Wait for web view containing text"
+                  block:^BOOL {
+                    return web::test::IsWebViewContainingText(
+                        web::shell_test_util::GetCurrentWebState(), text);
+                  }];
+  GREYAssert([condition waitWithTimeout:testing::kWaitForUIElementTimeout],
+             @"Failed waiting for web view containing %s", text.c_str());
 }
 
 @end

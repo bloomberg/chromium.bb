@@ -107,10 +107,7 @@ id<GREYMatcher> RecentlyClosedLabelMatcher() {
 
   // Open the test page in a new tab.
   [ChromeEarlGrey loadURL:testPageURL];
-  id<GREYMatcher> webViewMatcher =
-      chrome_test_util::WebViewContainingText("hello");
-  [[EarlGrey selectElementWithMatcher:webViewMatcher]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:"hello"];
 
   // Open the Recent Tabs panel, check that the test page is not
   // present.

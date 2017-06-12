@@ -24,8 +24,7 @@ using chrome_test_util::WebViewContainingText;
 // Verifies Internet connectivity by navigating to browsingtest.appspot.com.
 - (void)testNetworkConnection {
   [ChromeEarlGrey loadURL:GURL("http://browsingtest.appspot.com")];
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText("Window1")]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:"Window1"];
 }
 
 @end

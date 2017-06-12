@@ -22,7 +22,6 @@
 using chrome_test_util::BackButton;
 using chrome_test_util::ForwardButton;
 using chrome_test_util::TapWebViewElementWithId;
-using chrome_test_util::WebViewContainingText;
 
 namespace {
 
@@ -208,8 +207,7 @@ class RedirectResponseProvider : public web::DataResponseProvider {
   const GURL windowHistoryURL =
       web::test::HttpServer::MakeUrl(kWindowHistoryGoTestURL);
   [ChromeEarlGrey loadURL:windowHistoryURL];
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kOnLoadText)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kOnLoadText];
 
   // Tap on the window.history.go() button.  This will clear |kOnLoadText|, so
   // the subsequent check for |kOnLoadText| will only pass if a reload has
@@ -217,8 +215,7 @@ class RedirectResponseProvider : public web::DataResponseProvider {
   [ChromeEarlGrey tapWebViewElementWithID:kGoNoParameterID];
 
   // Verify that the onload text is reset.
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kOnLoadText)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kOnLoadText];
 }
 
 // Tests reloading the current page via history.go(0).
@@ -229,8 +226,7 @@ class RedirectResponseProvider : public web::DataResponseProvider {
   const GURL windowHistoryURL =
       web::test::HttpServer::MakeUrl(kWindowHistoryGoTestURL);
   [ChromeEarlGrey loadURL:windowHistoryURL];
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kOnLoadText)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kOnLoadText];
 
   // Tap on the window.history.go() button.  This will clear |kOnLoadText|, so
   // the subsequent check for |kOnLoadText| will only pass if a reload has
@@ -238,8 +234,7 @@ class RedirectResponseProvider : public web::DataResponseProvider {
   [ChromeEarlGrey tapWebViewElementWithID:kGoZeroID];
 
   // Verify that the onload text is reset.
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kOnLoadText)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kOnLoadText];
 }
 
 // Tests that calling window.history.go() with an offset that is out of bounds
@@ -251,22 +246,19 @@ class RedirectResponseProvider : public web::DataResponseProvider {
   const GURL windowHistoryURL =
       web::test::HttpServer::MakeUrl(kWindowHistoryGoTestURL);
   [ChromeEarlGrey loadURL:windowHistoryURL];
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kOnLoadText)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kOnLoadText];
 
   // Tap on the window.history.go(2) button.  This will clear all div text, so
   // the subsequent check for |kNoOpText| will only pass if no navigations have
   // occurred.
   [ChromeEarlGrey tapWebViewElementWithID:kGoTwoID];
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kNoOpText)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kNoOpText];
 
   // Tap on the window.history.go(-2) button.  This will clear all div text, so
   // the subsequent check for |kNoOpText| will only pass if no navigations have
   // occurred.
   [ChromeEarlGrey tapWebViewElementWithID:kGoBackTwoID];
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kNoOpText)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kNoOpText];
 }
 
 // Tests going back and forward via history.go().
@@ -291,21 +283,18 @@ class RedirectResponseProvider : public web::DataResponseProvider {
   [ChromeEarlGrey loadURL:secondURL];
   [ChromeEarlGrey loadURL:thirdURL];
   [ChromeEarlGrey loadURL:fourthURL];
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText("page4")]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:"page4"];
 
   // Tap button to go back 3 pages.
   TapWebViewElementWithId("goBack");
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText("page1")]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:"page1"];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           firstURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Tap button to go forward 2 pages.
   TapWebViewElementWithId("goForward");
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText("page3")]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:"page3"];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           thirdURL.GetContent())]
       assertWithMatcher:grey_notNil()];
@@ -320,22 +309,19 @@ class RedirectResponseProvider : public web::DataResponseProvider {
   const GURL windowHistoryURL =
       web::test::HttpServer::MakeUrl(kWindowHistoryGoTestURL);
   [ChromeEarlGrey loadURL:windowHistoryURL];
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kOnLoadText)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kOnLoadText];
 
   const GURL sampleURL = web::test::HttpServer::MakeUrl(kSampleFileBasedURL);
   [ChromeEarlGrey loadURL:sampleURL];
 
   [ChromeEarlGrey loadURL:windowHistoryURL];
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kOnLoadText)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kOnLoadText];
 
   // Tap the window.history.go(-2) button.  This will clear the current page's
   // |kOnLoadText|, so the subsequent check will only pass if another load
   // occurs.
   [ChromeEarlGrey tapWebViewElementWithID:kGoBackTwoID];
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kOnLoadText)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kOnLoadText];
 }
 
 #pragma mark window.history.[back/forward] operations
@@ -381,17 +367,14 @@ class RedirectResponseProvider : public web::DataResponseProvider {
   // Tap the back button in the toolbar and verify the page with forward button
   // is loaded.
   [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
-  [[EarlGrey
-      selectElementWithMatcher:WebViewContainingText(kForwardHTMLSentinel)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kForwardHTMLSentinel];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           firstURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Tap the forward button in the HTML and verify the second URL is loaded.
   TapWebViewElementWithId(kForwardHTMLButtonLabel);
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(kTestPageSentinel)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kTestPageSentinel];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           secondURL.GetContent())]
       assertWithMatcher:grey_notNil()];
@@ -471,9 +454,7 @@ class RedirectResponseProvider : public web::DataResponseProvider {
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           page1URL.GetContent())]
       assertWithMatcher:grey_notNil()];
-  [[EarlGrey
-      selectElementWithMatcher:WebViewContainingText(backHashChangeContent)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:backHashChangeContent];
 
   // Navigate forward to the new URL. This should fire a hashchange event.
   std::string forwardHashChangeContent = "forwardHashChange";
@@ -484,16 +465,17 @@ class RedirectResponseProvider : public web::DataResponseProvider {
       selectElementWithMatcher:chrome_test_util::OmniboxText(
                                    hashChangedWithHistoryURL.GetContent())]
       assertWithMatcher:grey_notNil()];
-  [[EarlGrey
-      selectElementWithMatcher:WebViewContainingText(forwardHashChangeContent)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:forwardHashChangeContent];
 
   // Load a hash URL directly. This shouldn't fire a hashchange event.
   std::string hashChangeContent = "FAIL_loadUrlHashChange";
   [self addHashChangeListenerWithContent:hashChangeContent];
   [ChromeEarlGrey loadURL:hashChangedWithHistoryURL];
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText(hashChangeContent)]
-      assertWithMatcher:grey_nil()];
+  // TODO(crbug.com/714157): Remove matcher that waits.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::WebViewNotContainingText(
+                                   hashChangeContent)]
+      assertWithMatcher:grey_notNil()];
 }
 
 // Loads a URL and replaces its location, then updates its location.hash

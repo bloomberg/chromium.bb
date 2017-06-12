@@ -33,8 +33,6 @@ const std::string kFindInPageResponse = "Find in page. Find in page.";
 
 }  // namespace
 
-using chrome_test_util::WebViewContainingText;
-
 // Tests for Find in Page.
 @interface FindInPageTestCase : ChromeTestCase
 
@@ -223,9 +221,7 @@ using chrome_test_util::WebViewContainingText;
   [ChromeEarlGrey loadURL:self.testURL];
 
   // Verify web page finished loading.
-  [[EarlGrey
-      selectElementWithMatcher:WebViewContainingText(kFindInPageResponse)]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:kFindInPageResponse];
 }
 
 @end

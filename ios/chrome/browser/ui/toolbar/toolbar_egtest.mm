@@ -32,7 +32,6 @@
 
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::OmniboxText;
-using chrome_test_util::WebViewContainingText;
 
 // Toolbar integration tests for Chrome.
 @interface ToolbarTestCase : ChromeTestCase
@@ -78,8 +77,7 @@ void SelectNewTabPagePanel(NewTabPage::PanelIdentifier panel_type) {
   [ChromeEarlGrey loadURL:URL];
   [[EarlGrey selectElementWithMatcher:OmniboxText(URL.GetContent())]
       assertWithMatcher:grey_notNil()];
-  [[EarlGrey selectElementWithMatcher:WebViewContainingText("You've arrived")]
-      assertWithMatcher:grey_notNil()];
+  [ChromeEarlGrey waitForWebViewContainingText:"You've arrived"];
 }
 
 // Verifies opening a new tab from the tools menu.
