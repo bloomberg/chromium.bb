@@ -118,7 +118,7 @@ void ServiceWorkerPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
   if (!IsServiceWorkerControlled(info)) {
     if (!WasStartedInForegroundOptionalEventInForeground(
             timing.paint_timing->first_contentful_paint, info) ||
-        !FromGWSPageLoadMetricsLogger::IsGoogleSearchResultUrl(info.url)) {
+        !page_load_metrics::IsGoogleSearchResultUrl(info.url)) {
       return;
     }
     PAGE_LOAD_HISTOGRAM(
@@ -153,7 +153,7 @@ void ServiceWorkerPageLoadMetricsObserver::OnFirstContentfulPaintInPage(
         internal::kHistogramServiceWorkerParseStartToFirstContentfulPaintInbox,
         timing.paint_timing->first_contentful_paint.value() -
             timing.parse_timing->parse_start.value());
-  } else if (FromGWSPageLoadMetricsLogger::IsGoogleSearchResultUrl(info.url)) {
+  } else if (page_load_metrics::IsGoogleSearchResultUrl(info.url)) {
     PAGE_LOAD_HISTOGRAM(
         internal::kHistogramServiceWorkerFirstContentfulPaintSearch,
         timing.paint_timing->first_contentful_paint.value());
@@ -173,7 +173,7 @@ void ServiceWorkerPageLoadMetricsObserver::
     return;
   }
   if (!IsServiceWorkerControlled(info)) {
-    if (!FromGWSPageLoadMetricsLogger::IsGoogleSearchResultUrl(info.url))
+    if (!page_load_metrics::IsGoogleSearchResultUrl(info.url))
       return;
     PAGE_LOAD_HISTOGRAM(
         internal::kHistogramNoServiceWorkerFirstMeaningfulPaintSearch,
@@ -200,7 +200,7 @@ void ServiceWorkerPageLoadMetricsObserver::
         internal::kHistogramServiceWorkerParseStartToFirstMeaningfulPaintInbox,
         timing.paint_timing->first_meaningful_paint.value() -
             timing.parse_timing->parse_start.value());
-  } else if (FromGWSPageLoadMetricsLogger::IsGoogleSearchResultUrl(info.url)) {
+  } else if (page_load_metrics::IsGoogleSearchResultUrl(info.url)) {
     PAGE_LOAD_HISTOGRAM(
         internal::kHistogramServiceWorkerFirstMeaningfulPaintSearch,
         timing.paint_timing->first_meaningful_paint.value());
@@ -219,7 +219,7 @@ void ServiceWorkerPageLoadMetricsObserver::OnDomContentLoadedEventStart(
     return;
   }
   if (!IsServiceWorkerControlled(info)) {
-    if (!FromGWSPageLoadMetricsLogger::IsGoogleSearchResultUrl(info.url))
+    if (!page_load_metrics::IsGoogleSearchResultUrl(info.url))
       return;
     PAGE_LOAD_HISTOGRAM(
         internal::kHistogramNoServiceWorkerDomContentLoadedSearch,
@@ -233,7 +233,7 @@ void ServiceWorkerPageLoadMetricsObserver::OnDomContentLoadedEventStart(
     PAGE_LOAD_HISTOGRAM(
         internal::kHistogramServiceWorkerDomContentLoadedInbox,
         timing.document_timing->dom_content_loaded_event_start.value());
-  } else if (FromGWSPageLoadMetricsLogger::IsGoogleSearchResultUrl(info.url)) {
+  } else if (page_load_metrics::IsGoogleSearchResultUrl(info.url)) {
     PAGE_LOAD_HISTOGRAM(
         internal::kHistogramServiceWorkerDomContentLoadedSearch,
         timing.document_timing->dom_content_loaded_event_start.value());
@@ -247,7 +247,7 @@ void ServiceWorkerPageLoadMetricsObserver::OnLoadEventStart(
           timing.document_timing->load_event_start, info))
     return;
   if (!IsServiceWorkerControlled(info)) {
-    if (!FromGWSPageLoadMetricsLogger::IsGoogleSearchResultUrl(info.url))
+    if (!page_load_metrics::IsGoogleSearchResultUrl(info.url))
       return;
     PAGE_LOAD_HISTOGRAM(internal::kHistogramNoServiceWorkerLoadSearch,
                         timing.document_timing->load_event_start.value());
@@ -258,7 +258,7 @@ void ServiceWorkerPageLoadMetricsObserver::OnLoadEventStart(
   if (IsInboxSite(info.url)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerLoadInbox,
                         timing.document_timing->load_event_start.value());
-  } else if (FromGWSPageLoadMetricsLogger::IsGoogleSearchResultUrl(info.url)) {
+  } else if (page_load_metrics::IsGoogleSearchResultUrl(info.url)) {
     PAGE_LOAD_HISTOGRAM(internal::kHistogramServiceWorkerLoadSearch,
                         timing.document_timing->load_event_start.value());
   }
