@@ -1429,10 +1429,10 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
 
 #if CONFIG_CFL
 static int cfl_alpha_dist(const uint8_t *y_pix, int y_stride,
-                          const double y_average, const uint8_t *src,
-                          int src_stride, int width, int height,
-                          TX_SIZE tx_size, double dc_pred, double alpha,
-                          int *dist_neg_out) {
+                          const double y_averages[MAX_NUM_TXB],
+                          const uint8_t *src, int src_stride, int width,
+                          int height, TX_SIZE tx_size, double dc_pred,
+                          double alpha, int *dist_neg_out) {
   const double dc_pred_bias = dc_pred + 0.5;
   int dist = 0;
   int diff;
@@ -1459,15 +1459,17 @@ static int cfl_alpha_dist(const uint8_t *y_pix, int y_stride,
   const int src_block_row_off = src_stride * tx_height;
   const uint8_t *t_y_pix;
   const uint8_t *t_src;
+  int a = 0;
   for (int b_j = 0; b_j < height; b_j += tx_height) {
     const int h = b_j + tx_height;
     for (int b_i = 0; b_i < width; b_i += tx_width) {
       const int w = b_i + tx_width;
+      const double tx_avg = y_averages[a++];
       t_y_pix = y_pix;
       t_src = src;
       for (int t_j = b_j; t_j < h; t_j++) {
         for (int t_i = b_i; t_i < w; t_i++) {
-          const double scaled_luma = alpha * (t_y_pix[t_i] - y_average);
+          const double scaled_luma = alpha * (t_y_pix[t_i] - tx_avg);
           const int uv = t_src[t_i];
 
           // TODO(ltrudeau) add support for HBD.
@@ -1527,7 +1529,7 @@ static void cfl_compute_alpha_ind(MACROBLOCK *const x, FRAME_CONTEXT *ec_ctx,
   const int height = cfl->uv_height;
   const double dc_pred_u = cfl->dc_pred[CFL_PRED_U];
   const double dc_pred_v = cfl->dc_pred[CFL_PRED_V];
-  const double y_average = cfl->y_average;
+  const double *y_averages = cfl->y_averages;
   const uint8_t *y_pix = cfl->y_down_pix;
 
   CFL_SIGN_TYPE *signs = mbmi->cfl_alpha_signs;
@@ -1536,18 +1538,19 @@ static void cfl_compute_alpha_ind(MACROBLOCK *const x, FRAME_CONTEXT *ec_ctx,
 
   int sse[CFL_PRED_PLANES][CFL_MAGS_SIZE];
   sse[CFL_PRED_U][0] =
-      cfl_alpha_dist(y_pix, MAX_SB_SIZE, y_average, src_u, src_stride_u, width,
+      cfl_alpha_dist(y_pix, MAX_SB_SIZE, y_averages, src_u, src_stride_u, width,
                      height, tx_size, dc_pred_u, 0, NULL);
   sse[CFL_PRED_V][0] =
-      cfl_alpha_dist(y_pix, MAX_SB_SIZE, y_average, src_v, src_stride_v, width,
+      cfl_alpha_dist(y_pix, MAX_SB_SIZE, y_averages, src_v, src_stride_v, width,
                      height, tx_size, dc_pred_v, 0, NULL);
+
   for (int m = 1; m < CFL_MAGS_SIZE; m += 2) {
     assert(cfl_alpha_mags[m + 1] == -cfl_alpha_mags[m]);
     sse[CFL_PRED_U][m] = cfl_alpha_dist(
-        y_pix, MAX_SB_SIZE, y_average, src_u, src_stride_u, width, height,
+        y_pix, MAX_SB_SIZE, y_averages, src_u, src_stride_u, width, height,
         tx_size, dc_pred_u, cfl_alpha_mags[m], &sse[CFL_PRED_U][m + 1]);
     sse[CFL_PRED_V][m] = cfl_alpha_dist(
-        y_pix, MAX_SB_SIZE, y_average, src_v, src_stride_v, width, height,
+        y_pix, MAX_SB_SIZE, y_averages, src_v, src_stride_v, width, height,
         tx_size, dc_pred_v, cfl_alpha_mags[m], &sse[CFL_PRED_V][m + 1]);
   }
 

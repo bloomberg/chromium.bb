@@ -183,24 +183,41 @@ static void cfl_dc_pred(MACROBLOCKD *xd, BLOCK_SIZE plane_bsize) {
   cfl->dc_pred[CFL_PRED_V] = sum_v / num_pel;
 }
 
-static void cfl_compute_average(CFL_CTX *cfl) {
+static void cfl_compute_averages(CFL_CTX *cfl, TX_SIZE tx_size) {
   const int width = cfl->uv_width;
   const int height = cfl->uv_height;
-  const double num_pel = width * height;
+  const int tx_height = tx_size_high[tx_size];
+  const int tx_width = tx_size_wide[tx_size];
+  const int stride = width >> tx_size_wide_log2[tx_size];
+  const int block_row_stride = MAX_SB_SIZE << tx_size_high_log2[tx_size];
+  const double num_pel = tx_width * tx_height;
   // TODO(ltrudeau) Convert to uint16 for HBD support
   const uint8_t *y_pix = cfl->y_down_pix;
   // TODO(ltrudeau) Convert to uint16 for HBD support
+  const uint8_t *t_y_pix;
+  double *averages = cfl->y_averages;
 
   cfl_load(cfl, 0, 0, width, height);
 
-  int sum = 0;
-  for (int j = 0; j < height; j++) {
-    for (int i = 0; i < width; i++) {
-      sum += y_pix[i];
+  int a = 0;
+  for (int b_j = 0; b_j < height; b_j += tx_height) {
+    for (int b_i = 0; b_i < width; b_i += tx_width) {
+      int sum = 0;
+      t_y_pix = y_pix;
+      for (int t_j = 0; t_j < tx_height; t_j++) {
+        for (int t_i = b_i; t_i < b_i + tx_width; t_i++) {
+          sum += t_y_pix[t_i];
+        }
+        t_y_pix += MAX_SB_SIZE;
+      }
+      averages[a++] = sum / num_pel;
     }
-    y_pix += MAX_SB_SIZE;
+    assert(a % stride == 0);
+    y_pix += block_row_stride;
   }
-  cfl->y_average = sum / num_pel;
+
+  cfl->y_averages_stride = stride;
+  assert(a <= MAX_NUM_TXB);
 }
 
 static INLINE double cfl_idx_to_alpha(int alpha_idx, CFL_SIGN_TYPE alpha_sign,
@@ -234,7 +251,12 @@ void cfl_predict_block(MACROBLOCKD *const xd, uint8_t *dst, int dst_stride,
   const double alpha = cfl_idx_to_alpha(
       mbmi->cfl_alpha_idx, mbmi->cfl_alpha_signs[plane - 1], plane - 1);
 
-  const double avg = cfl->y_average;
+  const int avg_row =
+      (row << tx_size_wide_log2[0]) >> tx_size_wide_log2[tx_size];
+  const int avg_col =
+      (col << tx_size_high_log2[0]) >> tx_size_high_log2[tx_size];
+  const double avg =
+      cfl->y_averages[cfl->y_averages_stride * avg_row + avg_col];
 
   cfl_load(cfl, row, col, width, height);
   for (int j = 0; j < height; j++) {
@@ -348,7 +370,7 @@ void cfl_compute_parameters(MACROBLOCKD *const xd, TX_SIZE tx_size) {
   // Compute block-level DC_PRED for both chromatic planes.
   // DC_PRED replaces beta in the linear model.
   cfl_dc_pred(xd, plane_bsize);
-  // Compute block-level average on reconstructed luma input.
-  cfl_compute_average(cfl);
+  // Compute transform-level average on reconstructed luma input.
+  cfl_compute_averages(cfl, tx_size);
   cfl->are_parameters_computed = 1;
 }

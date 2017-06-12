@@ -41,8 +41,10 @@ typedef struct {
   // this context
   int uv_height, uv_width;
 
-  // Average of the luma reconstructed values over the entire prediction unit
-  double y_average;
+  // Transform level averages of the luma reconstructed values over the entire
+  // prediction unit
+  double y_averages[MAX_NUM_TXB];
+  int y_averages_stride;
 
   int are_parameters_computed;
 
