@@ -1,1 +1,1 @@
-{ "types": [ "storage" ] }
+"storage"

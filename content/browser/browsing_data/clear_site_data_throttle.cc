@@ -4,11 +4,10 @@
 
 #include "content/browser/browsing_data/clear_site_data_throttle.h"
 
-#include "base/json/json_reader.h"
-#include "base/json/json_string_value_serializer.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/scoped_observer.h"
+#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
@@ -37,12 +36,10 @@ const char kNameForLogging[] = "ClearSiteDataThrottle";
 
 const char kClearSiteDataHeader[] = "Clear-Site-Data";
 
-const char kTypesKey[] = "types";
-
 // Datatypes.
-const char kDatatypeCookies[] = "cookies";
-const char kDatatypeStorage[] = "storage";
-const char kDatatypeCache[] = "cache";
+const char kDatatypeCookies[] = "\"cookies\"";
+const char kDatatypeStorage[] = "\"storage\"";
+const char kDatatypeCache[] = "\"cache\"";
 
 // Pretty-printed log output.
 const char kConsoleMessageTemplate[] = "Clear-Site-Data header on '%s': %s";
@@ -446,35 +443,13 @@ bool ClearSiteDataThrottle::ParseHeader(const std::string& header,
     return false;
   }
 
-  std::unique_ptr<base::Value> parsed_header = base::JSONReader::Read(header);
-
-  if (!parsed_header) {
-    delegate->AddMessage(current_url, "Expected valid JSON.",
-                         CONSOLE_MESSAGE_LEVEL_ERROR);
-    return false;
-  }
-
-  const base::DictionaryValue* dictionary = nullptr;
-  const base::ListValue* types = nullptr;
-  if (!parsed_header->GetAsDictionary(&dictionary) ||
-      !dictionary->GetListWithoutPathExpansion(kTypesKey, &types)) {
-    delegate->AddMessage(current_url,
-                         "Expected a JSON dictionary with a 'types' field.",
-                         CONSOLE_MESSAGE_LEVEL_ERROR);
-    return false;
-  }
-
-  DCHECK(types);
-
   *clear_cookies = false;
   *clear_storage = false;
   *clear_cache = false;
 
   std::string type_names;
-  for (const base::Value& value : *types) {
-    std::string type;
-    value.GetAsString(&type);
-
+  for (const base::StringPiece& type : base::SplitStringPiece(
+           header, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
     bool* data_type = nullptr;
 
     if (type == kDatatypeCookies) {
@@ -484,31 +459,26 @@ bool ClearSiteDataThrottle::ParseHeader(const std::string& header,
     } else if (type == kDatatypeCache) {
       data_type = clear_cache;
     } else {
-      std::string serialized_type;
-      JSONStringValueSerializer serializer(&serialized_type);
-      serializer.Serialize(value);
-      delegate->AddMessage(
-          current_url,
-          base::StringPrintf("Unrecognized type: %s.", serialized_type.c_str()),
-          CONSOLE_MESSAGE_LEVEL_ERROR);
+      delegate->AddMessage(current_url,
+                           base::StringPrintf("Unrecognized type: %s.",
+                                              type.as_string().c_str()),
+                           CONSOLE_MESSAGE_LEVEL_ERROR);
       continue;
     }
 
     DCHECK(data_type);
 
-    // Each data type should only be processed once.
     if (*data_type)
       continue;
 
     *data_type = true;
     if (!type_names.empty())
       type_names += kConsoleMessageDatatypeSeparator;
-    type_names += type;
+    type_names += type.as_string();
   }
 
   if (!*clear_cookies && !*clear_storage && !*clear_cache) {
-    delegate->AddMessage(current_url,
-                         "No recognized types specified in the 'types' field.",
+    delegate->AddMessage(current_url, "No recognized types specified.",
                          CONSOLE_MESSAGE_LEVEL_ERROR);
     return false;
   }
