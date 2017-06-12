@@ -40,6 +40,7 @@
 #include "platform/fonts/FontCacheKey.h"
 #include "platform/fonts/FontDataCache.h"
 #include "platform/fonts/FontDescription.h"
+#include "platform/fonts/FontGlobalContext.h"
 #include "platform/fonts/FontPlatformData.h"
 #include "platform/fonts/FontSmoothingMode.h"
 #include "platform/fonts/SimpleFontData.h"
@@ -96,8 +97,7 @@ bool FontCache::use_skia_font_fallback_ = false;
 #endif  // OS(WIN)
 
 FontCache* FontCache::GetFontCache() {
-  DEFINE_STATIC_LOCAL(FontCache, global_font_cache, ());
-  return &global_font_cache;
+  return &FontGlobalContext::GetFontCache();
 }
 
 #if !OS(MACOSX)
