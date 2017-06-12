@@ -25,8 +25,7 @@ void WorkletPendingTasks::Abort() {
   //     2: "Reject promise with an "AbortError" DOMException."
   if (counter_ != -1) {
     counter_ = -1;
-    // TODO(nhiroki): This should be kAbortError.
-    resolver_->Reject(DOMException::Create(kNetworkError));
+    resolver_->Reject(DOMException::Create(kAbortError));
   }
 }
 
