@@ -114,6 +114,7 @@ compile_plist("entitlements") {
 }
 
 source_set("app_internal") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "application_mode.h",
     "chrome_app_startup_parameters.h",

@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
@@ -16,6 +15,10 @@
 #include "ios/chrome/common/x_callback_url.h"
 #import "net/base/mac/url_conversions.h"
 #include "url/gurl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -47,9 +50,9 @@ enum MobileSessionStartAction {
 }  // namespace
 
 @implementation ChromeAppStartupParameters {
-  base::scoped_nsobject<NSString> _secureSourceApp;
-  base::scoped_nsobject<NSString> _declaredSourceApp;
-  base::scoped_nsobject<NSURL> _completeURL;
+  NSString* _secureSourceApp;
+  NSString* _declaredSourceApp;
+  NSURL* _completeURL;
 }
 
 - (instancetype)initWithExternalURL:(const GURL&)externalURL
@@ -66,9 +69,9 @@ enum MobileSessionStartAction {
   self = [super initWithExternalURL:externalURL
                 xCallbackParameters:xCallbackParameters];
   if (self) {
-    _declaredSourceApp.reset([declaredSourceApp copy]);
-    _secureSourceApp.reset([secureSourceApp copy]);
-    _completeURL.reset([completeURL retain]);
+    _declaredSourceApp = [declaredSourceApp copy];
+    _secureSourceApp = [secureSourceApp copy];
+    _completeURL = completeURL;
   }
   return self;
 }
@@ -117,8 +120,8 @@ enum MobileSessionStartAction {
       return nil;
     }
 
-    base::scoped_nsobject<XCallbackParameters> xcallbackParameters(
-        [[XCallbackParameters alloc] initWithSourceAppId:appId]);
+    XCallbackParameters* xcallbackParameters =
+        [[XCallbackParameters alloc] initWithSourceAppId:appId];
 
     return [[ChromeAppStartupParameters alloc]
         initWithExternalURL:url
@@ -174,8 +177,8 @@ enum MobileSessionStartAction {
                                              fromSourceApplication:
                                                  (NSString*)appId {
   NSString* appGroup = app_group::ApplicationGroup();
-  base::scoped_nsobject<NSUserDefaults> sharedDefaults(
-      [[NSUserDefaults alloc] initWithSuiteName:appGroup]);
+  NSUserDefaults* sharedDefaults =
+      [[NSUserDefaults alloc] initWithSuiteName:appGroup];
 
   NSString* commandDictionaryPreference =
       base::SysUTF8ToNSString(app_group::kChromeAppGroupCommandPreference);

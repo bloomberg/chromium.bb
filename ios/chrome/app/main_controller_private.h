@@ -52,8 +52,6 @@ class ChromeBrowserState;
 @property(nonatomic, retain)
     UIViewController<TabSwitcher>* tabSwitcherController;
 @property(nonatomic, readonly)
-    SettingsNavigationController* settingsNavigationController;
-@property(nonatomic, readonly)
     SigninInteractionController* signinInteractionController;
 
 // The top presented view controller that is not currently being dismissed.
