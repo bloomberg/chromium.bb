@@ -648,13 +648,12 @@ class CONTENT_EXPORT RenderFrameImpl
   blink::WebScreenOrientationClient* GetWebScreenOrientationClient() override;
   void PostAccessibilityEvent(const blink::WebAXObject& obj,
                               blink::WebAXEvent event) override;
-  void HandleAccessibilityFindInPageResult(
-      int identifier,
-      int match_index,
-      const blink::WebAXObject& start_object,
-      int start_offset,
-      const blink::WebAXObject& end_object,
-      int end_offset) override;
+  void HandleAccessibilityFindInPageResult(int identifier,
+                                           int match_index,
+                                           const blink::WebNode& start_node,
+                                           int start_offset,
+                                           const blink::WebNode& end_node,
+                                           int end_offset) override;
   void DidChangeManifest() override;
   void EnterFullscreen() override;
   void ExitFullscreen() override;

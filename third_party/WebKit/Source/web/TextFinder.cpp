@@ -258,11 +258,9 @@ void TextFinder::ReportFindInPageResultToAccessibility(int identifier) {
   ax_object_cache->HandleTextMarkerDataAdded(start_node, end_node);
 
   if (OwnerFrame().Client()) {
-    AXObjectImpl* start_object = ax_object_cache->Get(start_node);
-    AXObjectImpl* end_object = ax_object_cache->Get(end_node);
     OwnerFrame().Client()->HandleAccessibilityFindInPageResult(
-        identifier, active_match_index_ + 1, WebAXObject(start_object),
-        active_match_->startOffset(), WebAXObject(end_object),
+        identifier, active_match_index_ + 1, blink::WebNode(start_node),
+        active_match_->startOffset(), blink::WebNode(end_node),
         active_match_->endOffset());
   }
 }
