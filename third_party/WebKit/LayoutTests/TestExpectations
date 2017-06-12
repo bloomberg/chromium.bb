@@ -2519,14 +2519,16 @@ crbug.com/730821 virtual/exotic-color-space/images/color-profile-layer-filter.ht
 crbug.com/731783 fast/media/mq-color-gamut-api.html [ Failure Timeout ]
 crbug.com/731783 fast/media/mq-color-gamut-picture.html [ Failure Timeout ]
 
-# Rebaselines haven't been correctly uploaded yet.
-# TODO(ccameron): Rebaseline these.
-crbug.com/713891 virtual/exotic-color-space/images/animated-png.html [ Pass Failure ]
-crbug.com/713891 virtual/exotic-color-space/images/color-profile-border-image.html [ Pass Failure ]
-crbug.com/713891 virtual/exotic-color-space/images/color-profile-group.html [ Pass Failure ]
+# Flakily timing out or failing.
+# TODO(ccameron): Investigate this.
 crbug.com/731211 virtual/exotic-color-space/images/color-profile-munsell-adobe-to-srgb.html [ Pass Failure Timeout ]
 crbug.com/731211 virtual/exotic-color-space/images/color-profile-munsell-srgb-to-srgb.html [ Pass Failure Timeout ]
-crbug.com/731153 [ Mac10.9 ] virtual/exotic-color-space/images/color-profile-reflection.html [ Failure ]
+crbug.com/730267 virtual/gpu-rasterization/images/color-profile-group.html [ Pass Timeout Failure ]
+crbug.com/730267 virtual/gpu-rasterization/images/color-profile-layer.html [ Pass Timeout Failure ]
+crbug.com/730267 virtual/gpu-rasterization/images/color-profile-layer-filter.html [ Pass Timeout Failure ]
+
+# Reftest with slightly different pixels values, can be left disabled.
+crbug.com/713891 virtual/exotic-color-space/images/animated-png.html [ Pass Failure ]
 
 # [selectors-4]
 crbug.com/706118 external/wpt/css/selectors4/hover-001-manual.html [ Skip ]
@@ -2539,12 +2541,6 @@ crbug.com/576815 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/576815 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/selectors4/dir-style-03a.html [ Failure ]
 crbug.com/576815 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/selectors4/dir-style-03b.html [ Failure ]
 crbug.com/576815 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/selectors4/dir-style-04.html [ Failure ]
-
-# Flakily timing out or failing.
-# TODO(ccameron): Investigate this.
-crbug.com/730267 virtual/gpu-rasterization/images/color-profile-group.html [ Pass Timeout Failure ]
-crbug.com/730267 virtual/gpu-rasterization/images/color-profile-layer.html [ Pass Timeout Failure ]
-crbug.com/730267 virtual/gpu-rasterization/images/color-profile-layer-filter.html [ Pass Timeout Failure ]
 
 # TODO(chrishall): this is a temporary mediation step as part of the P0 issue crbug.com/657646
 # this is not meant to be here for more than a few days (from 2016-11-03 SYD)
