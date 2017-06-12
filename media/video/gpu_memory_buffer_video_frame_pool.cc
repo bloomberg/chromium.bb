@@ -29,7 +29,6 @@
 #include "media/renderers/gpu_video_accelerator_factories.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "ui/gfx/buffer_format_util.h"
-#include "ui/gfx/gpu_memory_buffer_tracing.h"
 #include "ui/gl/trace_util.h"
 
 namespace media {
@@ -475,8 +474,15 @@ bool GpuMemoryBufferVideoFramePool::PoolImpl::OnMemoryDump(
         auto shared_buffer_guid =
             plane_resource.gpu_memory_buffer->GetGUIDForTracing(
                 tracing_process_id);
-        pmd->CreateSharedGlobalAllocatorDump(shared_buffer_guid);
-        pmd->AddOwnershipEdge(dump->guid(), shared_buffer_guid, kImportance);
+        auto shared_memory_guid =
+            plane_resource.gpu_memory_buffer->GetHandle().handle.GetGUID();
+        if (!shared_memory_guid.is_empty()) {
+          pmd->CreateSharedMemoryOwnershipEdge(dump->guid(), shared_buffer_guid,
+                                               shared_memory_guid, kImportance);
+        } else {
+          pmd->CreateSharedGlobalAllocatorDump(shared_buffer_guid);
+          pmd->AddOwnershipEdge(dump->guid(), shared_buffer_guid, kImportance);
+        }
       }
     }
   }

@@ -467,9 +467,16 @@ bool GLES2Implementation::OnMemoryDump(
                     transfer_buffer_->GetFreeSize());
     auto guid = GetBufferGUIDForTracing(tracing_process_id,
                                         transfer_buffer_->GetShmId());
+    auto shared_memory_guid =
+        transfer_buffer_->shared_memory_handle().GetGUID();
     const int kImportance = 2;
-    pmd->CreateSharedGlobalAllocatorDump(guid);
-    pmd->AddOwnershipEdge(dump->guid(), guid, kImportance);
+    if (!shared_memory_guid.is_empty()) {
+      pmd->CreateSharedMemoryOwnershipEdge(dump->guid(), guid,
+                                           shared_memory_guid, kImportance);
+    } else {
+      pmd->CreateSharedGlobalAllocatorDump(guid);
+      pmd->AddOwnershipEdge(dump->guid(), guid, kImportance);
+    }
   }
 
   return true;

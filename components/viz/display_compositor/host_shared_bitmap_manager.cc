@@ -186,8 +186,15 @@ bool HostSharedBitmapManager::OnMemoryDump(
     // Generate a global GUID used to share this allocation with renderer
     // processes.
     auto guid = cc::GetSharedBitmapGUIDForTracing(bitmap.first);
-    pmd->CreateSharedGlobalAllocatorDump(guid);
-    pmd->AddOwnershipEdge(dump->guid(), guid);
+    base::UnguessableToken shared_memory_guid;
+    if (bitmap.second->memory) {
+      shared_memory_guid = bitmap.second->memory->handle().GetGUID();
+      pmd->CreateSharedMemoryOwnershipEdge(
+          dump->guid(), guid, shared_memory_guid, 0 /* importance*/);
+    } else {
+      pmd->CreateSharedGlobalAllocatorDump(guid);
+      pmd->AddOwnershipEdge(dump->guid(), guid);
+    }
   }
 
   return true;

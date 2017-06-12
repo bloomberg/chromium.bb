@@ -77,8 +77,7 @@ void GLImageSharedMemory::OnMemoryDump(
     const std::string& dump_name) {
   size_t size_in_bytes = 0;
 
-  if (shared_memory_)
-    size_in_bytes = stride() * GetSize().height();
+  size_in_bytes = stride() * GetSize().height();
 
   // Dump under "/shared_memory", as the base class may also dump to
   // "/texture_memory".
@@ -90,8 +89,9 @@ void GLImageSharedMemory::OnMemoryDump(
 
   auto guid =
       gfx::GetSharedMemoryGUIDForTracing(process_tracing_id, shared_memory_id_);
-  pmd->CreateSharedGlobalAllocatorDump(guid);
-  pmd->AddOwnershipEdge(dump->guid(), guid);
+  auto shared_memory_guid = shared_memory_->handle().GetGUID();
+  pmd->CreateSharedMemoryOwnershipEdge(dump->guid(), guid, shared_memory_guid,
+                                       0 /* importance */);
 }
 
 }  // namespace gl

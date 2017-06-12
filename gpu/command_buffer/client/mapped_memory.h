@@ -50,6 +50,8 @@ class GPU_EXPORT MemoryChunk {
     return shm_id_;
   }
 
+  gpu::Buffer* shared_memory() const { return shm_.get(); }
+
   // Allocates a block of memory. If the buffer is out of directly available
   // memory, this function may wait until memory that was freed "pending a
   // token" can be re-used.
