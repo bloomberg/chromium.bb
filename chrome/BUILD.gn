@@ -452,6 +452,22 @@ if (is_win) {
     if (enable_package_mash_services) {
       deps += embedded_mash_service_deps
     }
+
+    if (is_clang && is_official_build && !use_lld) {
+      orderfile = "build/chrome.$target_cpu.orderfile"
+      rebased_orderfile = rebase_path(orderfile, root_build_dir)
+      inputs = [
+        orderfile,
+      ]
+      ldflags += [
+        "/order:@$rebased_orderfile",
+
+        # Ignore warnings about missing functions or functions not in their
+        # own section.
+        "/ignore:4037",
+        "/ignore:4065",
+      ]
+    }
   }
 
   if (is_multi_dll_chrome) {
@@ -499,6 +515,22 @@ if (is_win) {
         "/DELAYLOAD:esent.dll",
         "/DELAYLOAD:wininet.dll",
       ]
+
+      if (is_clang && is_official_build && !use_lld) {
+        orderfile = "build/chrome_child.$target_cpu.orderfile"
+        rebased_orderfile = rebase_path(orderfile, root_build_dir)
+        inputs = [
+          orderfile,
+        ]
+        ldflags += [
+          "/order:@$rebased_orderfile",
+
+          # Ignore warnings about missing functions or functions not in their
+          # own section.
+          "/ignore:4037",
+          "/ignore:4065",
+        ]
+      }
 
       if (symbol_level == 2) {
         # Incremental linking doesn't work on this target in debug mode with
