@@ -31827,7 +31827,8 @@ from previous Chrome versions.
   <int value="7" label="KILLSWITCH"/>
   <int value="8" label="CANCEL"/>
   <int value="9" label="RESULT_FROM_CACHE"/>
-  <int value="10" label="NOT_HTTP_URL"/>
+  <int value="10" label="DEPRECATED: NOT_HTTP_URL"/>
+  <int value="11" label="SCHEME_NOT_SUPPORTED"/>
 </enum>
 
 <enum name="SBClientDownloadCheckDownloadStats" type="int">
