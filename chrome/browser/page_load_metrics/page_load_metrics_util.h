@@ -134,6 +134,42 @@ bool DidObserveLoadingBehaviorInAnyFrame(
     const page_load_metrics::PageLoadExtraInfo& info,
     blink::WebLoadingBehaviorFlag behavior);
 
+// Whether the given url has a Google Search hostname.
+// Examples:
+//   https://www.google.com -> true
+//   https://www.google.co.jp -> true
+//   https://www.google.example.com -> false
+//   https://docs.google.com -> false
+bool IsGoogleSearchHostname(const GURL& url);
+
+// Whether the given url is for a Google Search results page. See
+// https://docs.google.com/document/d/1jNPZ6Aeh0KV6umw1yZrrkfXRfxWNruwu7FELLx_cpOg/edit
+// for additional details.
+// Examples:
+//   https://www.google.com/#q=test -> true
+//   https://www.google.com/search?q=test -> true
+//   https://www.google.com/ -> false
+//   https://www.google.com/about/ -> false
+bool IsGoogleSearchResultUrl(const GURL& url);
+
+// Whether the given url is a Google Search redirector URL.
+bool IsGoogleSearchRedirectorUrl(const GURL& url);
+
+// Whether the given query string contains the given component. The query
+// parameter should contain the query string of a URL (the portion following
+// the question mark, excluding the question mark). The component must fully
+// match a component in the query string. For example, 'foo=bar' would match
+// the query string 'a=b&foo=bar&c=d' but would not match 'a=b&zzzfoo=bar&c=d'
+// since, though foo=bar appears in the query string, the key specified in the
+// component 'foo' does not match the full key in the query string
+// 'zzzfoo'. For QueryContainsComponent, the component should of the form
+// 'key=value'. For QueryContainsComponentPrefix, the component should be of
+// the form 'key=' (where the value is not specified).
+bool QueryContainsComponent(const base::StringPiece query,
+                            const base::StringPiece component);
+bool QueryContainsComponentPrefix(const base::StringPiece query,
+                                  const base::StringPiece component);
+
 }  // namespace page_load_metrics
 
 #endif  // CHROME_BROWSER_PAGE_LOAD_METRICS_PAGE_LOAD_METRICS_UTIL_H_

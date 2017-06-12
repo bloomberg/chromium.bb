@@ -316,135 +316,18 @@ bool WasAbortedBeforeInteraction(
 
 }  // namespace
 
-// See
-// https://docs.google.com/document/d/1jNPZ6Aeh0KV6umw1yZrrkfXRfxWNruwu7FELLx_cpOg/edit
-// for additional details.
-
-// static
-bool FromGWSPageLoadMetricsLogger::IsGoogleSearchHostname(const GURL& url) {
-  base::Optional<std::string> result =
-      page_load_metrics::GetGoogleHostnamePrefix(url);
-  return result && result.value() == "www";
-}
-
-// static
-bool FromGWSPageLoadMetricsLogger::IsGoogleSearchResultUrl(const GURL& url) {
-  // NOTE: we do not require 'q=' in the query, as AJAXy search may instead
-  // store the query in the URL fragment.
-  if (!IsGoogleSearchHostname(url)) {
-    return false;
-  }
-
-  if (!QueryContainsComponentPrefix(url.query_piece(), "q=") &&
-      !QueryContainsComponentPrefix(url.ref_piece(), "q=")) {
-    return false;
-  }
-
-  const base::StringPiece path = url.path_piece();
-  return path == "/search" || path == "/webhp" || path == "/custom" ||
-         path == "/";
-}
-
-// static
-bool FromGWSPageLoadMetricsLogger::IsGoogleSearchRedirectorUrl(
-    const GURL& url) {
-  if (!IsGoogleSearchHostname(url))
-    return false;
-
-  // The primary search redirector.  Google search result redirects are
-  // differentiated from other general google redirects by 'source=web' in the
-  // query string.
-  if (url.path_piece() == "/url" && url.has_query() &&
-      QueryContainsComponent(url.query_piece(), "source=web")) {
-    return true;
-  }
-
-  // Intent-based navigations from search are redirected through a second
-  // redirector, which receives its redirect URL in the fragment/hash/ref
-  // portion of the URL (the portion after '#'). We don't check for the presence
-  // of certain params in the ref since this redirector is only used for
-  // redirects from search.
-  return url.path_piece() == "/searchurl/r.html" && url.has_ref();
-}
-
-// static
-bool FromGWSPageLoadMetricsLogger::QueryContainsComponent(
-    const base::StringPiece query,
-    const base::StringPiece component) {
-  return QueryContainsComponentHelper(query, component, false);
-}
-
-// static
-bool FromGWSPageLoadMetricsLogger::QueryContainsComponentPrefix(
-    const base::StringPiece query,
-    const base::StringPiece component) {
-  return QueryContainsComponentHelper(query, component, true);
-}
-
-// static
-bool FromGWSPageLoadMetricsLogger::QueryContainsComponentHelper(
-    const base::StringPiece query,
-    const base::StringPiece component,
-    bool component_is_prefix) {
-  if (query.empty() || component.empty() ||
-      component.length() > query.length()) {
-    return false;
-  }
-
-  // Verify that the provided query string does not include the query or
-  // fragment start character, as the logic below depends on this character not
-  // being included.
-  DCHECK(query[0] != '?' && query[0] != '#');
-
-  // We shouldn't try to find matches beyond the point where there aren't enough
-  // characters left in query to fully match the component.
-  const size_t last_search_start = query.length() - component.length();
-
-  // We need to search for matches in a loop, rather than stopping at the first
-  // match, because we may initially match a substring that isn't a full query
-  // string component. Consider, for instance, the query string 'ab=cd&b=c'. If
-  // we search for component 'b=c', the first substring match will be characters
-  // 1-3 (zero-based) in the query string. However, this isn't a full component
-  // (the full component is ab=cd) so the match will fail. Thus, we must
-  // continue our search to find the second substring match, which in the
-  // example is at characters 6-8 (the end of the query string) and is a
-  // successful component match.
-  for (size_t start_offset = 0; start_offset <= last_search_start;
-       start_offset += component.length()) {
-    start_offset = query.find(component, start_offset);
-    if (start_offset == std::string::npos) {
-      // We searched to end of string and did not find a match.
-      return false;
-    }
-    // Verify that the character prior to the component is valid (either we're
-    // at the beginning of the query string, or are preceded by an ampersand).
-    if (start_offset != 0 && query[start_offset - 1] != '&') {
-      continue;
-    }
-    if (!component_is_prefix) {
-      // Verify that the character after the component substring is valid
-      // (either we're at the end of the query string, or are followed by an
-      // ampersand).
-      const size_t after_offset = start_offset + component.length();
-      if (after_offset < query.length() && query[after_offset] != '&') {
-        continue;
-      }
-    }
-    return true;
-  }
-  return false;
-}
-
 FromGWSPageLoadMetricsLogger::FromGWSPageLoadMetricsLogger() {}
 
 void FromGWSPageLoadMetricsLogger::SetPreviouslyCommittedUrl(const GURL& url) {
-  previously_committed_url_is_search_results_ = IsGoogleSearchResultUrl(url);
+  previously_committed_url_is_search_results_ =
+      page_load_metrics::IsGoogleSearchResultUrl(url);
   previously_committed_url_is_search_redirector_ =
-      IsGoogleSearchRedirectorUrl(url);
+      page_load_metrics::IsGoogleSearchRedirectorUrl(url);
 }
 
 void FromGWSPageLoadMetricsLogger::SetProvisionalUrl(const GURL& url) {
-  provisional_url_has_search_hostname_ = IsGoogleSearchHostname(url);
+  provisional_url_has_search_hostname_ =
+      page_load_metrics::IsGoogleSearchHostname(url);
 }
 
 FromGWSPageLoadMetricsObserver::FromGWSPageLoadMetricsObserver() {}
@@ -601,7 +484,7 @@ void FromGWSPageLoadMetricsLogger::OnFailedProvisionalLoad(
 
 bool FromGWSPageLoadMetricsLogger::ShouldLogFailedProvisionalLoadMetrics() {
   // See comment in ShouldLogPostCommitMetrics above the call to
-  // IsGoogleSearchHostname for more info on this if test.
+  // page_load_metrics::IsGoogleSearchHostname for more info on this if test.
   if (provisional_url_has_search_hostname_)
     return false;
 
@@ -621,7 +504,7 @@ bool FromGWSPageLoadMetricsLogger::ShouldLogPostCommitMetrics(const GURL& url) {
   // these cases are relatively uncommon, and we run the risk of logging metrics
   // for some search redirector URLs. Thus we choose the more conservative
   // approach of ignoring all urls on known search hostnames.
-  if (IsGoogleSearchHostname(url))
+  if (page_load_metrics::IsGoogleSearchHostname(url))
     return false;
 
   // We're only interested in tracking navigations (e.g. clicks) initiated via
