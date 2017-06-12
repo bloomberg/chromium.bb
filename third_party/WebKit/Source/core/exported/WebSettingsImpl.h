@@ -201,10 +201,6 @@ class CORE_EXPORT WebSettingsImpl final
   void SetWebSecurityEnabled(bool) override;
   void SetWideViewportQuirkEnabled(bool) override;
   void SetXSSAuditorEnabled(bool) override;
-  void SetExpensiveBackgroundThrottlingCPUBudget(float) override;
-  void SetExpensiveBackgroundThrottlingInitialBudget(float) override;
-  void SetExpensiveBackgroundThrottlingMaxBudget(float) override;
-  void SetExpensiveBackgroundThrottlingMaxDelay(float) override;
   void SetMediaControlsEnabled(bool) override;
   void SetDoNotUpdateSelectionOnMutatingSelectionRange(bool) override;
 
@@ -230,18 +226,6 @@ class CORE_EXPORT WebSettingsImpl final
   }
   bool ClobberUserAgentInitialScaleQuirk() const {
     return clobber_user_agent_initial_scale_quirk_;
-  }
-  float ExpensiveBackgroundThrottlingCPUBudget() const {
-    return expensive_background_throttling_cpu_budget_;
-  }
-  float ExpensiveBackgroundThrottlingInitialBudget() const {
-    return expensive_background_throttling_initial_budget_;
-  }
-  float ExpensiveBackgroundThrottlingMaxDelay() const {
-    return expensive_background_throttling_max_delay_;
-  }
-  float ExpensiveBackgroundThrottlingMaxBudget() const {
-    return expensive_background_throttling_max_budget_;
   }
 
   void SetMockGestureTapHighlightsEnabled(bool);
@@ -269,10 +253,6 @@ class CORE_EXPORT WebSettingsImpl final
   // the Android SDK prior to and including version 18. Presumably, this
   // can be removed any time after 2015. See http://crbug.com/313754.
   bool clobber_user_agent_initial_scale_quirk_;
-  float expensive_background_throttling_cpu_budget_;
-  float expensive_background_throttling_initial_budget_;
-  float expensive_background_throttling_max_budget_;
-  float expensive_background_throttling_max_delay_;
 };
 
 }  // namespace blink

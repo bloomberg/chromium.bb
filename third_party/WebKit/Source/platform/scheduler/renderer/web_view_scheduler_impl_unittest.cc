@@ -8,8 +8,11 @@
 
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/field_trial.h"
+#include "base/metrics/field_trial_params.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "cc/test/ordered_simple_task_runner.h"
+#include "components/variations/variations_associated_data.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/scheduler/base/test_time_source.h"
 #include "platform/scheduler/child/scheduler_tqm_delegate_for_test.h"
@@ -39,9 +42,8 @@ class WebViewSchedulerImplTest : public testing::Test {
     delegate_ = SchedulerTqmDelegateForTest::Create(
         mock_task_runner_, base::MakeUnique<TestTimeSource>(clock_.get()));
     scheduler_.reset(new RendererSchedulerImpl(delegate_));
-    web_view_scheduler_.reset(
-        new WebViewSchedulerImpl(nullptr, nullptr, scheduler_.get(),
-                                 DisableBackgroundTimerThrottling()));
+    web_view_scheduler_.reset(new WebViewSchedulerImpl(
+        nullptr, scheduler_.get(), DisableBackgroundTimerThrottling()));
     web_frame_scheduler_ =
         web_view_scheduler_->CreateWebFrameSchedulerImpl(nullptr);
   }
@@ -196,7 +198,7 @@ TEST_F(WebViewSchedulerImplTest, RepeatingLoadingTask_PageInBackground) {
 
 TEST_F(WebViewSchedulerImplTest, RepeatingTimers_OneBackgroundOneForeground) {
   std::unique_ptr<WebViewSchedulerImpl> web_view_scheduler2(
-      new WebViewSchedulerImpl(nullptr, nullptr, scheduler_.get(), false));
+      new WebViewSchedulerImpl(nullptr, scheduler_.get(), false));
   std::unique_ptr<WebFrameSchedulerImpl> web_frame_scheduler2 =
       web_view_scheduler2->CreateWebFrameSchedulerImpl(nullptr);
 
@@ -749,17 +751,20 @@ void ExpensiveTestTask(base::SimpleTestTickClock* clock,
   clock->Advance(base::TimeDelta::FromMilliseconds(250));
 }
 
-class FakeWebViewSchedulerSettings
-    : public WebViewScheduler::WebViewSchedulerSettings {
- public:
-  float ExpensiveBackgroundThrottlingCPUBudget() override { return 0.01; }
+void InitializeTrialParams() {
+  std::map<std::string, std::string> params = {{"cpu_budget", "0.01"},
+                                               {"max_budget", "0.0"},
+                                               {"initial_budget", "0.0"},
+                                               {"max_delay", "0.0"}};
+  const char kParamName[] = "ExpensiveBackgroundTimerThrottling";
+  const char kGroupName[] = "Enabled";
+  EXPECT_TRUE(base::AssociateFieldTrialParams(kParamName, kGroupName, params));
+  EXPECT_TRUE(base::FieldTrialList::CreateFieldTrial(kParamName, kGroupName));
 
-  float ExpensiveBackgroundThrottlingInitialBudget() override { return 0.0; }
-
-  float ExpensiveBackgroundThrottlingMaxBudget() override { return 0.0; }
-
-  float ExpensiveBackgroundThrottlingMaxDelay() override { return 0.0; }
-};
+  std::map<std::string, std::string> actual_params;
+  base::GetFieldTrialParams(kParamName, &actual_params);
+  EXPECT_EQ(actual_params, params);
+}
 
 }  // namespace
 
@@ -767,10 +772,13 @@ TEST_F(WebViewSchedulerImplTest, BackgroundThrottlingGracePeriod) {
   ScopedExpensiveBackgroundTimerThrottlingForTest
       budget_background_throttling_enabler(true);
 
+  std::unique_ptr<base::FieldTrialList> field_trial_list =
+      base::MakeUnique<base::FieldTrialList>(nullptr);
+  InitializeTrialParams();
+  web_view_scheduler_.reset(
+      new WebViewSchedulerImpl(nullptr, scheduler_.get(), false));
+
   std::vector<base::TimeTicks> run_times;
-  FakeWebViewSchedulerSettings web_view_scheduler_settings;
-  web_view_scheduler_.reset(new WebViewSchedulerImpl(
-      nullptr, &web_view_scheduler_settings, scheduler_.get(), false));
   web_frame_scheduler_ =
       web_view_scheduler_->CreateWebFrameSchedulerImpl(nullptr);
   web_view_scheduler_->SetPageVisible(false);
@@ -825,17 +833,21 @@ TEST_F(WebViewSchedulerImplTest, BackgroundThrottlingGracePeriod) {
       run_times,
       ElementsAre(base::TimeTicks() + base::TimeDelta::FromSeconds(12),
                   base::TimeTicks() + base::TimeDelta::FromSeconds(26)));
+
+  variations::testing::ClearAllVariationParams();
 }
 
 TEST_F(WebViewSchedulerImplTest, OpenWebSocketExemptsFromBudgetThrottling) {
   ScopedExpensiveBackgroundTimerThrottlingForTest
       budget_background_throttling_enabler(true);
 
-  std::vector<base::TimeTicks> run_times;
-  FakeWebViewSchedulerSettings web_view_scheduler_settings;
+  std::unique_ptr<base::FieldTrialList> field_trial_list =
+      base::MakeUnique<base::FieldTrialList>(nullptr);
+  InitializeTrialParams();
   std::unique_ptr<WebViewSchedulerImpl> web_view_scheduler(
-      new WebViewSchedulerImpl(nullptr, &web_view_scheduler_settings,
-                               scheduler_.get(), false));
+      new WebViewSchedulerImpl(nullptr, scheduler_.get(), false));
+
+  std::vector<base::TimeTicks> run_times;
 
   std::unique_ptr<WebFrameSchedulerImpl> web_frame_scheduler1 =
       web_view_scheduler->CreateWebFrameSchedulerImpl(nullptr);
@@ -937,6 +949,8 @@ TEST_F(WebViewSchedulerImplTest, OpenWebSocketExemptsFromBudgetThrottling) {
       ElementsAre(base::TimeTicks() + base::TimeDelta::FromSeconds(84),
                   base::TimeTicks() + base::TimeDelta::FromSeconds(109),
                   base::TimeTicks() + base::TimeDelta::FromSeconds(134)));
+
+  variations::testing::ClearAllVariationParams();
 }
 
 }  // namespace scheduler

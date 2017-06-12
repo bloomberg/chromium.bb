@@ -14,11 +14,13 @@ include_rules = [
   "+base/logging.h",
   "+base/message_loop/message_loop.h",
   "+base/metrics/field_trial.h",
+  "+base/metrics/field_trial_params.h",
   "+base/metrics/histogram_macros.h",
   "+base/optional.h",
   "+base/pending_task.h",
   "+base/run_loop.h",
   "+base/single_thread_task_runner.h",
+  "+base/strings/string_number_conversions.h",
   "+base/synchronization/lock.h",
   "+base/threading/platform_thread.h",
   "+base/threading/thread.h",
@@ -28,5 +30,6 @@ include_rules = [
 specific_include_rules = {
   ".*test\.cc": [
     "+testing",
+    "+components/variations/variations_associated_data.h",
   ],
 }

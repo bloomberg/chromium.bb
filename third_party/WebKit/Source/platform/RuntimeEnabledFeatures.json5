@@ -399,7 +399,7 @@
     },
     {
       name: "ExpensiveBackgroundTimerThrottling",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "ExperimentalCanvasFeatures",

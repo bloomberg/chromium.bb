@@ -925,15 +925,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   web_view->SetDefaultPageScaleLimits(prefs.default_minimum_page_scale_factor,
                                       prefs.default_maximum_page_scale_factor);
 
-  settings->SetExpensiveBackgroundThrottlingCPUBudget(
-      prefs.expensive_background_throttling_cpu_budget);
-  settings->SetExpensiveBackgroundThrottlingInitialBudget(
-      prefs.expensive_background_throttling_initial_budget);
-  settings->SetExpensiveBackgroundThrottlingMaxBudget(
-      prefs.expensive_background_throttling_max_budget);
-  settings->SetExpensiveBackgroundThrottlingMaxDelay(
-      prefs.expensive_background_throttling_max_delay);
-
 #if defined(OS_ANDROID)
   settings->SetAllowCustomScrollbarInMainFrame(false);
   settings->SetTextAutosizingEnabled(prefs.text_autosizing_enabled);

@@ -41,12 +41,11 @@ void RendererWebSchedulerImpl::ResumeTimerQueue() {
 
 std::unique_ptr<blink::WebViewScheduler>
 RendererWebSchedulerImpl::CreateWebViewScheduler(
-    InterventionReporter* intervention_reporter,
-    WebViewScheduler::WebViewSchedulerSettings* settings) {
-  return base::WrapUnique(new WebViewSchedulerImpl(
-      intervention_reporter, settings, renderer_scheduler_,
-      !blink::RuntimeEnabledFeatures::
-          TimerThrottlingForBackgroundTabsEnabled()));
+    InterventionReporter* intervention_reporter) {
+  return base::WrapUnique(
+      new WebViewSchedulerImpl(intervention_reporter, renderer_scheduler_,
+                               !blink::RuntimeEnabledFeatures::
+                                   TimerThrottlingForBackgroundTabsEnabled()));
 }
 
 RendererScheduler* RendererWebSchedulerImpl::GetRendererSchedulerForTest() {

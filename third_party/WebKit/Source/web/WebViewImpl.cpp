@@ -377,11 +377,10 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
       display_mode_(kWebDisplayModeBrowser),
       elastic_overscroll_(FloatSize()),
       mutator_(nullptr),
-      scheduler_(WTF::WrapUnique(Platform::Current()
-                                     ->CurrentThread()
-                                     ->Scheduler()
-                                     ->CreateWebViewScheduler(this, this)
-                                     .release())),
+      scheduler_(Platform::Current()
+                     ->CurrentThread()
+                     ->Scheduler()
+                     ->CreateWebViewScheduler(this)),
       last_frame_time_monotonic_(0),
       override_compositor_visibility_(false) {
   Page::PageClients page_clients;
@@ -1110,22 +1109,6 @@ void WebViewImpl::ReportIntervention(const WebString& message) {
     return;
   WebConsoleMessage console_message(WebConsoleMessage::kLevelWarning, message);
   MainFrameImpl()->AddMessageToConsole(console_message);
-}
-
-float WebViewImpl::ExpensiveBackgroundThrottlingCPUBudget() {
-  return SettingsImpl()->ExpensiveBackgroundThrottlingCPUBudget();
-}
-
-float WebViewImpl::ExpensiveBackgroundThrottlingInitialBudget() {
-  return SettingsImpl()->ExpensiveBackgroundThrottlingInitialBudget();
-}
-
-float WebViewImpl::ExpensiveBackgroundThrottlingMaxBudget() {
-  return SettingsImpl()->ExpensiveBackgroundThrottlingMaxBudget();
-}
-
-float WebViewImpl::ExpensiveBackgroundThrottlingMaxDelay() {
-  return SettingsImpl()->ExpensiveBackgroundThrottlingMaxDelay();
 }
 
 WebInputEventResult WebViewImpl::HandleKeyEvent(const WebKeyboardEvent& event) {
