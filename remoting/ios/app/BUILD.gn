@@ -2,11 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/chrome_build.gni")
-import("//build/config/ios/rules.gni")
-import("//build/mac/tweak_info_plist.gni")
-import("//build/util/process_version.gni")
-import("//remoting/build/config/remoting_build.gni")
+import("//remoting/ios/app/remoting_ios_tmpl.gni")
 
 group("all") {
   testonly = true
@@ -16,7 +12,8 @@ group("all") {
   ]
 }
 
-source_set("main") {
+# source set to be used by both external and internal app.
+source_set("common_source_set") {
   sources = [
     "app_delegate.h",
     "app_delegate.mm",
@@ -30,7 +27,6 @@ source_set("main") {
     "host_collection_view_controller.mm",
     "host_view_controller.h",
     "host_view_controller.mm",
-    "main.mm",
     "pin_entry_view.h",
     "pin_entry_view.mm",
     "remoting_settings_view_controller.h",
@@ -61,53 +57,18 @@ source_set("main") {
   configs += [ "//build/config/compiler:enable_arc" ]
 }
 
-tweak_info_plist("tweak_info_plist") {
-  info_plist = "//remoting/ios/app/resources/Info.plist"
-  args = [ "--platform=ios" ]
-}
-
-ios_app_bundle("ios_remoting_app") {
-  output_name = "$remoting_ios_executable_name"
-
-  entitlements_path = "resources/Remoting.entitlements"
-  info_plist_target = ":tweak_info_plist"
-
-  extra_substitutions = [
-    "BUNDLE_IDENTIFIER=$remoting_ios_bundle_id",
-    "DISPLAY_NAME=$remoting_ios_display_name",
-    "EXECUTABLE_NAME=$remoting_ios_executable_name",
-    "MINIMUM_OS_VERSION=7.0",
-    "PRODUCT_NAME=$remoting_ios_product_name",
-    "VERSION_FULL=$remoting_version_full",
-    "VERSION_SHORT=$remoting_version_short",
+source_set("main") {
+  sources = [
+    "main.mm",
   ]
-
-  libs = [
-    "Accelerate.framework",
-    "AudioToolbox.framework",
-    "CoreAudio.framework",
-    "CoreData.framework",
-    "CoreMIDI.framework",
-    "CoreVideo.framework",
-    "GLKit.framework",
-    "OpenGLES.framework",
-    "Webkit.framework",
-    "SafariServices.framework",
-    "SystemConfiguration.framework",
-  ]
-
   deps = [
-    ":main",
-    "//base",
-    "//remoting/ios/app/resources:assets",
-    "//remoting/ios/app/resources:launchscreen_assets",
-    "//remoting/ios/app/resources:remoting_icons",
-    "//remoting/ios/display",
+    ":common_source_set",
   ]
-
-  bundle_deps = [ ":launchscreen_storyboard" ]
+  configs += [ "//build/config/compiler:enable_arc" ]
 }
 
-bundle_data_ib_file("launchscreen_storyboard") {
-  source = "resources/LaunchScreen.storyboard"
+ios_remoting_app_tmpl("ios_remoting_app") {
+  output_name = "chromoting"
+  entitlements_path = "resources/Remoting.entitlements"
+  remoting_source_set = ":main"
 }
