@@ -105,6 +105,14 @@ StyleSelfAlignmentData LayoutGrid::SelfAlignmentForChild(
                               : AlignSelfForChild(child, style);
 }
 
+StyleSelfAlignmentData LayoutGrid::DefaultAlignmentForChild(
+    GridAxis axis,
+    const ComputedStyle& style) const {
+  return axis == kGridRowAxis
+             ? style.ResolvedJustifyItems(SelfAlignmentNormalBehavior(this))
+             : style.ResolvedAlignItems(SelfAlignmentNormalBehavior(this));
+}
+
 bool LayoutGrid::SelfAlignmentChangedToStretch(GridAxis axis,
                                                const ComputedStyle& old_style,
                                                const ComputedStyle& new_style,
@@ -125,6 +133,26 @@ bool LayoutGrid::SelfAlignmentChangedFromStretch(GridAxis axis,
              kItemPositionStretch;
 }
 
+bool LayoutGrid::DefaultAlignmentChangedFromStretch(
+    GridAxis axis,
+    const ComputedStyle& old_style,
+    const ComputedStyle& new_style) const {
+  return DefaultAlignmentForChild(axis, old_style).GetPosition() ==
+             kItemPositionStretch &&
+         DefaultAlignmentForChild(axis, new_style).GetPosition() !=
+             kItemPositionStretch;
+}
+
+bool LayoutGrid::DefaultAlignmentChangedToStretch(
+    GridAxis axis,
+    const ComputedStyle& old_style,
+    const ComputedStyle& new_style) const {
+  return DefaultAlignmentForChild(axis, old_style).GetPosition() !=
+             kItemPositionStretch &&
+         DefaultAlignmentForChild(axis, new_style).GetPosition() ==
+             kItemPositionStretch;
+}
+
 void LayoutGrid::StyleDidChange(StyleDifference diff,
                                 const ComputedStyle* old_style) {
   LayoutBlock::StyleDidChange(diff, old_style);
@@ -132,10 +160,14 @@ void LayoutGrid::StyleDidChange(StyleDifference diff,
     return;
 
   const ComputedStyle& new_style = StyleRef();
-  if (old_style &&
-      old_style->ResolvedAlignItems(SelfAlignmentNormalBehavior(this))
-              .GetPosition() == kItemPositionStretch &&
-      diff.NeedsFullLayout()) {
+  if (diff.NeedsFullLayout() &&
+      (DefaultAlignmentChangedToStretch(kGridRowAxis, *old_style, new_style) ||
+       DefaultAlignmentChangedToStretch(kGridColumnAxis, *old_style,
+                                        new_style) ||
+       DefaultAlignmentChangedFromStretch(kGridRowAxis, *old_style,
+                                          new_style) ||
+       DefaultAlignmentChangedFromStretch(kGridColumnAxis, *old_style,
+                                          new_style))) {
     // Style changes on the grid container implying stretching (to-stretch) or
     // shrinking (from-stretch) require the affected items to be laid out again.
     // These logic only applies to 'stretch' since the rest of the alignment
