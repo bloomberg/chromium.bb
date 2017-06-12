@@ -168,8 +168,18 @@ class AudioBufferSourceHandler final : public AudioScheduledSourceHandler {
   // conversion factor, and the value of playbackRate and detune AudioParams.
   double ComputePlaybackRate();
 
+  double GetMinPlaybackRate();
+
   // The minimum playbackRate value ever used for this source.
   double min_playback_rate_;
+
+  // |min_playback_rate_| may be updated by the audio thread
+  // while the main thread checks if the node is in a stoppable
+  // state, hence access needs to be atomic.
+  //
+  // TODO: when the codebase adopts std::atomic<>, use it for
+  // |min_playback_rate_|.
+  Mutex min_playback_rate_mutex_;
 };
 
 class AudioBufferSourceNode final : public AudioScheduledSourceNode {

@@ -590,10 +590,19 @@ double AudioBufferSourceHandler::ComputePlaybackRate() {
   if (!is_playback_rate_valid)
     final_playback_rate = 1.0;
 
-  // Record the minimum playback rate for use by handleStoppableSourceNode.
-  min_playback_rate_ = std::min(final_playback_rate, min_playback_rate_);
+  // Record the minimum playback rate for use by HandleStoppableSourceNode.
+  if (final_playback_rate < min_playback_rate_) {
+    MutexLocker locker(min_playback_rate_mutex_);
+    min_playback_rate_ = final_playback_rate;
+  }
 
   return final_playback_rate;
+}
+
+double AudioBufferSourceHandler::GetMinPlaybackRate() {
+  DCHECK(IsMainThread());
+  MutexLocker locker(min_playback_rate_mutex_);
+  return min_playback_rate_;
 }
 
 bool AudioBufferSourceHandler::PropagatesSilence() const {
@@ -611,12 +620,13 @@ void AudioBufferSourceHandler::HandleStoppableSourceNode() {
   // If looping was ever done (m_didSetLooping = true), give up.  We can't
   // easily determine how long we looped so we don't know the actual duration
   // thus far, so don't try to do anything fancy.
+  double min_playback_rate = GetMinPlaybackRate();
   if (!DidSetLooping() && Buffer() && IsPlayingOrScheduled() &&
-      min_playback_rate_ > 0) {
+      min_playback_rate > 0) {
     // Adjust the duration to include the playback rate. Only need to account
     // for rate < 1 which makes the sound last longer.  For rate >= 1, the
     // source stops sooner, but that's ok.
-    double actual_duration = Buffer()->duration() / min_playback_rate_;
+    double actual_duration = Buffer()->duration() / min_playback_rate;
 
     double stop_time = start_time_ + actual_duration;
 
