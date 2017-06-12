@@ -435,6 +435,13 @@ void ShippingAddressEditorViewController::OnComboboxModelChanged(
     // It is safe to update synchronously since the change comes from the model
     // and not from the UI.
     OnDataChanged(/*synchronous=*/true);
+  } else {
+    base::string16 state_value =
+        GetInitialValueForType(autofill::ADDRESS_HOME_STATE);
+    if (!state_value.empty()) {
+      combobox->SelectValue(state_value);
+      OnPerformAction(combobox);
+    }
   }
 }
 
