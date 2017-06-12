@@ -187,7 +187,7 @@ TEST_F(ToolbarMediatorTest, TestLoadingProgress) {
   mediator_.consumer = consumer_;
 
   [mediator_ webState:mediator_.webState didChangeLoadingProgress:0.42];
-  [[consumer_ verify] setLoadingProgress:0.42];
+  [[consumer_ verify] setLoadingProgressFraction:0.42];
 }
 
 // Test that the mediator's observation of -broadcastTabStripVisible: triggers

@@ -62,7 +62,7 @@
 
 - (void)webState:(web::WebState*)webState
     didChangeLoadingProgress:(double)progress {
-  [self.consumer setLoadingProgress:progress];
+  [self.consumer setLoadingProgressFraction:progress];
 }
 
 #pragma mark - ChromeBroadcastObserver

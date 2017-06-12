@@ -324,7 +324,7 @@
   [self updateAllButtonsVisibility];
 }
 
-- (void)setLoadingProgress:(double)progress {
+- (void)setLoadingProgressFraction:(double)progress {
   [self.progressBar setProgress:progress animated:YES completion:nil];
 }
 
