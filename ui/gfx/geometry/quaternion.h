@@ -20,6 +20,9 @@ class GFX_EXPORT Quaternion {
       : x_(x), y_(y), z_(z), w_(w) {}
   Quaternion(const Vector3dF& axis, double angle);
 
+  // Constructs a quaternion representing a rotation between |from| and |to|.
+  Quaternion(const Vector3dF& from, const Vector3dF& to);
+
   constexpr double x() const { return x_; }
   void set_x(double x) { x_ = x; }
 
@@ -56,7 +59,7 @@ class GFX_EXPORT Quaternion {
   // and values outside that range will extrapolate beyond in either direction.
   Quaternion Lerp(const Quaternion& q, double t) const;
 
-  Quaternion normalized() const;
+  Quaternion Normalized() const;
 
   std::string ToString() const;
 
@@ -75,6 +78,12 @@ inline Quaternion operator*(const Quaternion& q, double s) {
 // |s| is an arbitrary, real constant.
 inline Quaternion operator*(double s, const Quaternion& q) {
   return Quaternion(q.x() * s, q.y() * s, q.z() * s, q.w() * s);
+}
+
+// |s| is an arbitrary, real constant.
+inline Quaternion operator/(const Quaternion& q, double s) {
+  double inv = 1.0 / s;
+  return q * inv;
 }
 
 }  // namespace gfx
