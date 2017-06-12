@@ -26851,7 +26851,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>dgrogan@chromium.org</owner>
   <summary>
     Time Non-IDB LevelDBEnv slept before successfully completing this operation.
-    0 means success on the first try.
+    0 means success on the first try, as LevelDBEnv only sleeps when retries are
+    needed.
   </summary>
 </histogram>
 
@@ -32410,6 +32411,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Errors (base::File::Error) encountered by a single leveldb method in
     leveldb's Mojo environment.
+  </summary>
+</histogram>
+
+<histogram name="MojoLevelDBEnv.RetryRecoveredFromErrorIn"
+    enum="PlatformFileError">
+  <owner>mek@chromium.org</owner>
+  <summary>
+    When Mojo LevelDBEnv successfully retries an operation that had failed,
+    record the error from the most recent failed attempt.
+  </summary>
+</histogram>
+
+<histogram name="MojoLevelDBEnv.TimeUntilSuccessFor" units="ms">
+  <owner>mek@chromium.org</owner>
+  <summary>
+    Time Mojo LevelDBEnv slept before successfully completing this operation. 0
+    means success on the first try, as LevelDBEnv only sleeps when retries are
+    needed.
   </summary>
 </histogram>
 
@@ -76339,8 +76358,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>treib@chromium.org</owner>
   <summary>
     The time for the new tab page to fire the &quot;load&quot; event. Note: This
-    is usually recorded with a suffix (.Local/Google/Other). The base version
-    is recorded only on Android. Recorded only once per tab, i.e. excluding
+    is usually recorded with a suffix (.Local/Google/Other). The base version is
+    recorded only on Android. Recorded only once per tab, i.e. excluding
     back/forward navigations.
   </summary>
 </histogram>
@@ -89395,6 +89414,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       name="LevelDBEnv.ServiceWorker.RetryRecoveredFromErrorIn"/>
   <affected-histogram name="LevelDBEnv.ServiceWorker.TimeUntilSuccessFor"/>
   <affected-histogram name="LevelDBEnv.TimeUntilSuccessFor"/>
+  <affected-histogram name="MojoLevelDBEnv.RetryRecoveredFromErrorIn"/>
+  <affected-histogram name="MojoLevelDBEnv.TimeUntilSuccessFor"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="LevelDBEnvRetryTimes" separator="">

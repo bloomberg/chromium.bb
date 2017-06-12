@@ -257,6 +257,58 @@ class Thread : public base::PlatformThread::Delegate {
   DISALLOW_COPY_AND_ASSIGN(Thread);
 };
 
+class Retrier {
+ public:
+  Retrier(leveldb_env::MethodID method, MojoRetrierProvider* provider)
+      : start_(base::TimeTicks::Now()),
+        limit_(start_ + base::TimeDelta::FromMilliseconds(
+                            provider->MaxRetryTimeMillis())),
+        last_(start_),
+        time_to_sleep_(base::TimeDelta::FromMilliseconds(10)),
+        success_(true),
+        method_(method),
+        last_error_(base::File::FILE_OK),
+        provider_(provider) {}
+
+  ~Retrier() {
+    if (success_) {
+      provider_->RecordRetryTime(method_, last_ - start_);
+      if (last_error_ != base::File::FILE_OK) {
+        DCHECK_LT(last_error_, 0);
+        provider_->RecordRecoveredFromError(method_, last_error_);
+      }
+    }
+  }
+
+  bool ShouldKeepTrying(FileError error) {
+    return ShouldKeepTrying(static_cast<base::File::Error>(error));
+  }
+
+  bool ShouldKeepTrying(base::File::Error last_error) {
+    DCHECK_NE(last_error, base::File::FILE_OK);
+    last_error_ = last_error;
+    if (last_ < limit_) {
+      base::PlatformThread::Sleep(time_to_sleep_);
+      last_ = base::TimeTicks::Now();
+      return true;
+    }
+    success_ = false;
+    return false;
+  }
+
+ private:
+  base::TimeTicks start_;
+  base::TimeTicks limit_;
+  base::TimeTicks last_;
+  base::TimeDelta time_to_sleep_;
+  bool success_;
+  leveldb_env::MethodID method_;
+  base::File::Error last_error_;
+  MojoRetrierProvider* provider_;
+
+  DISALLOW_COPY_AND_ASSIGN(Retrier);
+};
+
 }  // namespace
 
 MojoEnv::MojoEnv(scoped_refptr<LevelDBMojoProxy> file_thread,
@@ -358,7 +410,11 @@ Status MojoEnv::DeleteFile(const std::string& fname) {
 
 Status MojoEnv::CreateDir(const std::string& dirname) {
   TRACE_EVENT1("leveldb", "MojoEnv::CreateDir", "dirname", dirname);
-  FileError error = thread_->CreateDir(dir_, dirname);
+  Retrier retrier(leveldb_env::kCreateDir, this);
+  FileError error;
+  do {
+    error = thread_->CreateDir(dir_, dirname);
+  } while (error != FileError::OK && retrier.ShouldKeepTrying(error));
   if (error != FileError::OK)
     RecordFileError(leveldb_env::kCreateDir, error);
   return FilesystemErrorToStatus(error, dirname, leveldb_env::kCreateDir);
@@ -383,7 +439,11 @@ Status MojoEnv::GetFileSize(const std::string& fname, uint64_t* file_size) {
 
 Status MojoEnv::RenameFile(const std::string& src, const std::string& target) {
   TRACE_EVENT2("leveldb", "MojoEnv::RenameFile", "src", src, "target", target);
-  FileError error = thread_->RenameFile(dir_, src, target);
+  Retrier retrier(leveldb_env::kRenameFile, this);
+  FileError error;
+  do {
+    error = thread_->RenameFile(dir_, src, target);
+  } while (error != FileError::OK && retrier.ShouldKeepTrying(error));
   if (error != FileError::OK)
     RecordFileError(leveldb_env::kRenameFile, error);
   return FilesystemErrorToStatus(error, src, leveldb_env::kRenameFile);
@@ -392,8 +452,11 @@ Status MojoEnv::RenameFile(const std::string& src, const std::string& target) {
 Status MojoEnv::LockFile(const std::string& fname, FileLock** lock) {
   TRACE_EVENT1("leveldb", "MojoEnv::LockFile", "fname", fname);
 
-  std::pair<FileError, LevelDBMojoProxy::OpaqueLock*> p =
-      thread_->LockFile(dir_, fname);
+  Retrier retrier(leveldb_env::kLockFile, this);
+  std::pair<FileError, LevelDBMojoProxy::OpaqueLock*> p;
+  do {
+    p = thread_->LockFile(dir_, fname);
+  } while (p.first != FileError::OK && retrier.ShouldKeepTrying(p.first));
 
   if (p.first != FileError::OK)
     RecordFileError(leveldb_env::kLockFile, p.first);
@@ -443,6 +506,26 @@ Status MojoEnv::NewLogger(const std::string& fname, Logger** result) {
   }
 }
 
+uint64_t MojoEnv::NowMicros() {
+  return base::TimeTicks::Now().ToInternalValue();
+}
+
+void MojoEnv::SleepForMicroseconds(int micros) {
+  // Round up to the next millisecond.
+  base::PlatformThread::Sleep(base::TimeDelta::FromMicroseconds(micros));
+}
+
+void MojoEnv::Schedule(void (*function)(void* arg), void* arg) {
+  base::PostTaskWithTraits(FROM_HERE,
+                           {base::MayBlock(), base::WithBaseSyncPrimitives(),
+                            base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
+                           base::Bind(function, arg));
+}
+
+void MojoEnv::StartThread(void (*function)(void* arg), void* arg) {
+  new Thread(function, arg);  // Will self-delete.
+}
+
 void MojoEnv::RecordErrorAt(leveldb_env::MethodID method) const {
   UMA_HISTOGRAM_ENUMERATION("MojoLevelDBEnv.IOError", method,
                             leveldb_env::kNumEntries);
@@ -464,29 +547,29 @@ void MojoEnv::RecordBytesWritten(int amount) const {
   UMA_HISTOGRAM_COUNTS_10M("Storage.BytesWritten.MojoLevelDBEnv", amount);
 }
 
+int MojoEnv::MaxRetryTimeMillis() const {
+  return 1000;
+}
+
+void MojoEnv::RecordRetryTime(leveldb_env::MethodID method,
+                              base::TimeDelta time) const {
+  std::string uma_name = std::string("MojoLevelDBEnv.TimeUntilSuccessFor") +
+                         MethodIDToString(method);
+  UmaHistogramCustomTimes(uma_name, time, base::TimeDelta::FromMilliseconds(1),
+                          base::TimeDelta::FromMilliseconds(1001), 42);
+}
+
+void MojoEnv::RecordRecoveredFromError(leveldb_env::MethodID method,
+                                       base::File::Error error) const {
+  std::string uma_name =
+      std::string("MojoLevelDBEnv.RetryRecoveredFromErrorIn") +
+      MethodIDToString(method);
+  base::UmaHistogramExactLinear(uma_name, -error, -base::File::FILE_ERROR_MAX);
+}
+
 void MojoEnv::RecordFileError(leveldb_env::MethodID method,
                               FileError error) const {
   RecordOSError(method, static_cast<base::File::Error>(error));
-}
-
-uint64_t MojoEnv::NowMicros() {
-  return base::TimeTicks::Now().ToInternalValue();
-}
-
-void MojoEnv::SleepForMicroseconds(int micros) {
-  // Round up to the next millisecond.
-  base::PlatformThread::Sleep(base::TimeDelta::FromMicroseconds(micros));
-}
-
-void MojoEnv::Schedule(void (*function)(void* arg), void* arg) {
-  base::PostTaskWithTraits(FROM_HERE,
-                           {base::MayBlock(), base::WithBaseSyncPrimitives(),
-                            base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
-                           base::Bind(function, arg));
-}
-
-void MojoEnv::StartThread(void (*function)(void* arg), void* arg) {
-  new Thread(function, arg);  // Will self-delete.
 }
 
 }  // namespace leveldb
