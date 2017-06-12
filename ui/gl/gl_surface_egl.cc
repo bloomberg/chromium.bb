@@ -30,7 +30,7 @@
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_surface_stub.h"
-#include "ui/gl/gl_switches.h"
+#include "ui/gl/gl_utils.h"
 #include "ui/gl/scoped_make_current.h"
 #include "ui/gl/sync_control_vsync_provider.h"
 
@@ -703,8 +703,7 @@ EGLDisplay GLSurfaceEGL::InitializeDisplay(
                         "EGL_ANGLE_display_robust_resource_initialization");
   bool use_robust_resource_init =
       supports_robust_resource_init &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUsePassthroughCmdDecoderGL);
+      UsePassthroughCommandDecoder(base::CommandLine::ForCurrentProcess());
 
   std::vector<DisplayType> init_displays;
   GetEGLInitDisplays(supports_angle_d3d, supports_angle_opengl,
