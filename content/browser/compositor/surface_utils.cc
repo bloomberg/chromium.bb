@@ -12,6 +12,7 @@
 #include "cc/resources/single_release_callback.h"
 #include "components/viz/display_compositor/gl_helper.h"
 #include "components/viz/host/frame_sink_manager_host.h"
+#include "content/browser/browser_main_loop.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
@@ -177,10 +178,7 @@ viz::FrameSinkManagerHost* GetFrameSinkManagerHost() {
 #if defined(OS_ANDROID)
   return CompositorImpl::GetFrameSinkManagerHost();
 #else
-  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  if (!factory)
-    return nullptr;
-  return factory->GetContextFactoryPrivate()->GetFrameSinkManagerHost();
+  return BrowserMainLoop::GetInstance()->frame_sink_manager_host();
 #endif
 }
 

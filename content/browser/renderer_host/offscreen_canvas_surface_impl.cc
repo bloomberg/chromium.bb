@@ -15,12 +15,14 @@
 namespace content {
 
 OffscreenCanvasSurfaceImpl::OffscreenCanvasSurfaceImpl(
+    viz::FrameSinkManagerHost* frame_sink_manager_host,
     const cc::FrameSinkId& parent_frame_sink_id,
     const cc::FrameSinkId& frame_sink_id,
     blink::mojom::OffscreenCanvasSurfaceClientPtr client,
     blink::mojom::OffscreenCanvasSurfaceRequest request,
     DestroyCallback destroy_callback)
-    : client_(std::move(client)),
+    : frame_sink_manager_host_(frame_sink_manager_host),
+      client_(std::move(client)),
       binding_(this, std::move(request)),
       destroy_callback_(std::move(destroy_callback)),
       frame_sink_id_(frame_sink_id),
@@ -28,15 +30,15 @@ OffscreenCanvasSurfaceImpl::OffscreenCanvasSurfaceImpl(
   binding_.set_connection_error_handler(
       base::Bind(&OffscreenCanvasSurfaceImpl::OnSurfaceConnectionClosed,
                  base::Unretained(this)));
-  GetFrameSinkManagerHost()->AddObserver(this);
+  frame_sink_manager_host_->AddObserver(this);
 }
 
 OffscreenCanvasSurfaceImpl::~OffscreenCanvasSurfaceImpl() {
   if (has_created_compositor_frame_sink_) {
-    GetFrameSinkManagerHost()->UnregisterFrameSinkHierarchy(
+    frame_sink_manager_host_->UnregisterFrameSinkHierarchy(
         parent_frame_sink_id_, frame_sink_id_);
   }
-  GetFrameSinkManagerHost()->RemoveObserver(this);
+  frame_sink_manager_host_->RemoveObserver(this);
 }
 
 void OffscreenCanvasSurfaceImpl::CreateCompositorFrameSink(
@@ -47,12 +49,12 @@ void OffscreenCanvasSurfaceImpl::CreateCompositorFrameSink(
     return;
   }
 
-  GetFrameSinkManagerHost()->CreateCompositorFrameSink(
+  frame_sink_manager_host_->CreateCompositorFrameSink(
       frame_sink_id_, std::move(request),
       mojo::MakeRequest(&compositor_frame_sink_private_), std::move(client));
 
-  GetFrameSinkManagerHost()->RegisterFrameSinkHierarchy(parent_frame_sink_id_,
-                                                        frame_sink_id_);
+  frame_sink_manager_host_->RegisterFrameSinkHierarchy(parent_frame_sink_id_,
+                                                       frame_sink_id_);
   has_created_compositor_frame_sink_ = true;
 }
 

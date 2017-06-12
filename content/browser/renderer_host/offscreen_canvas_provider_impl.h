@@ -13,6 +13,10 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "third_party/WebKit/public/platform/modules/offscreencanvas/offscreen_canvas_surface.mojom.h"
 
+namespace viz {
+class FrameSinkManagerHost;
+}
+
 namespace content {
 
 class OffscreenCanvasSurfaceImpl;
@@ -21,7 +25,9 @@ class OffscreenCanvasSurfaceImpl;
 class CONTENT_EXPORT OffscreenCanvasProviderImpl
     : public blink::mojom::OffscreenCanvasProvider {
  public:
-  explicit OffscreenCanvasProviderImpl(uint32_t renderer_client_id);
+  OffscreenCanvasProviderImpl(
+      viz::FrameSinkManagerHost* frame_sink_manager_host,
+      uint32_t renderer_client_id);
   ~OffscreenCanvasProviderImpl() override;
 
   void Add(blink::mojom::OffscreenCanvasProviderRequest request);
@@ -43,6 +49,8 @@ class CONTENT_EXPORT OffscreenCanvasProviderImpl
   // Destroys the |canvas_map_| entry for |frame_sink_id|. Provided as a
   // callback to each OffscreenCanvasSurfaceImpl so they can destroy themselves.
   void DestroyOffscreenCanvasSurface(cc::FrameSinkId frame_sink_id);
+
+  viz::FrameSinkManagerHost* const frame_sink_manager_host_;
 
   // FrameSinkIds for offscreen canvas must use the renderer client id.
   const uint32_t renderer_client_id_;

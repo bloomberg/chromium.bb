@@ -53,6 +53,7 @@
 #include "components/tracing/common/trace_to_console.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "components/viz/display_compositor/host_shared_bitmap_manager.h"
+#include "components/viz/host/frame_sink_manager_host.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/dom_storage/dom_storage_area.h"
@@ -1218,6 +1219,10 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   BrowserCompositorMac::DisableRecyclingForShutdown();
 #endif
 
+#if !defined(OS_ANDROID)
+  frame_sink_manager_host_.reset();
+#endif
+
 #if defined(USE_AURA) || defined(OS_MACOSX)
   {
     TRACE_EVENT0("shutdown",
@@ -1442,6 +1447,13 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   }
 #endif  // defined(USE_AURA)
 #endif  // defined(OS_ANDROID)
+
+#if !defined(OS_ANDROID)
+  if (!service_manager::ServiceManagerIsRemote()) {
+    frame_sink_manager_host_ = base::MakeUnique<viz::FrameSinkManagerHost>();
+    frame_sink_manager_host_->ConnectToFrameSinkManager();
+  }
+#endif
 
   // Enable the GpuMemoryBuffer dump provider with IO thread affinity. Note that
   // unregistration happens on the IO thread (See

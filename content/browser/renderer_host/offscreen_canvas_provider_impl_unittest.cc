@@ -147,16 +147,15 @@ class OffscreenCanvasProviderImplTest : public testing::Test {
     ImageTransportFactory::InitializeForUnitTests(
         std::unique_ptr<ImageTransportFactory>(
             new NoTransportImageTransportFactory));
-    ImageTransportFactory::GetInstance()
-        ->GetContextFactoryPrivate()
-        ->GetFrameSinkManagerHost()
-        ->ConnectToFrameSinkManager();
 #endif
-    provider_ =
-        base::MakeUnique<OffscreenCanvasProviderImpl>(kRendererClientId);
+    frame_sink_manager_host_ = base::MakeUnique<viz::FrameSinkManagerHost>();
+    frame_sink_manager_host_->ConnectToFrameSinkManager();
+    provider_ = base::MakeUnique<OffscreenCanvasProviderImpl>(
+        frame_sink_manager_host_.get(), kRendererClientId);
   }
   void TearDown() override {
     provider_.reset();
+    frame_sink_manager_host_.reset();
 #if !defined(OS_ANDROID)
     ImageTransportFactory::Terminate();
 #endif
@@ -164,6 +163,7 @@ class OffscreenCanvasProviderImplTest : public testing::Test {
 
  private:
   base::MessageLoop message_loop_;
+  std::unique_ptr<viz::FrameSinkManagerHost> frame_sink_manager_host_;
   std::unique_ptr<OffscreenCanvasProviderImpl> provider_;
 };
 

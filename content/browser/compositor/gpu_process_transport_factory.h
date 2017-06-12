@@ -110,9 +110,6 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
   scoped_refptr<cc::VulkanInProcessContextProvider>
   SharedVulkanContextProvider();
 
-  // Manages creation and hierarchy of frame sinks.
-  std::unique_ptr<viz::FrameSinkManagerHost> frame_sink_manager_host_;
-
   cc::FrameSinkIdAllocator frame_sink_id_allocator_;
 
 #if defined(OS_WIN)
