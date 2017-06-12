@@ -118,9 +118,10 @@ ConfirmInfoBarDelegate::InfoBarButton UITagToButton(NSUInteger tag) {
     base::ReplaceFirstSubstringAfterOffset(
         &messageText, 0, _confirmInfobarDelegate->GetLinkText(), msgLink);
 
+    __weak ConfirmInfoBarController* weakSelf = self;
     [view addLabel:base::SysUTF16ToNSString(messageText)
             action:^(NSUInteger tag) {
-              [self infobarLinkDidPress:tag];
+              [weakSelf infobarLinkDidPress:tag];
             }];
   } else {
     NSString* label =

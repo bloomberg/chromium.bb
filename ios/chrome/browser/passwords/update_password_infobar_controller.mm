@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/passwords/update_password_infobar_controller.h"
 
+#include "base/ios/weak_nsobject.h"
 #import "base/mac/objc_property_releaser.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -61,9 +62,10 @@ NSUInteger kAccountTag = 10;
         &messageText, 0, _delegate->selected_account(), usernameLink);
   }
 
+  base::WeakNSObject<UpdatePasswordInfoBarController> weakSelf(self);
   [view addLabel:base::SysUTF16ToNSString(messageText)
           action:^(NSUInteger tag) {
-            [self infobarLinkDidPress:tag];
+            [weakSelf infobarLinkDidPress:tag];
           }];
 }
 

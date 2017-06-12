@@ -7,6 +7,7 @@
 #include <stddef.h>
 #import <UIKit/UIKit.h>
 
+#include "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
@@ -172,9 +173,11 @@ NSTimeInterval kPickerAnimationDurationInSeconds = 0.2;
   NSString* label =
       l10n_util::GetNSStringF(IDS_TRANSLATE_INFOBAR_BEFORE_MESSAGE_IOS,
                               originalLanguageWithLink, targetLanguageWithLink);
+
+  base::WeakNSObject<BeforeTranslateInfoBarController> weakSelf(self);
   [view addLabel:label
           action:^(NSUInteger tag) {
-            [self infobarLinkDidPress:tag];
+            [weakSelf infobarLinkDidPress:tag];
           }];
 }
 
