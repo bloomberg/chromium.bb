@@ -77,6 +77,7 @@ component("aura") {
     "window_tree_host_platform.h",
   ]
   sources = [
+    "aura_export.h",
     "client/aura_constants.cc",
     "client/capture_client.cc",
     "client/cursor_client.cc",

@@ -375,7 +375,6 @@ ui/accessibility/ax_export.h
 ui/app_list/app_list_export.h
 ui/app_list/app_list_item.h
 ui/app_list/app_list_switches.h
-ui/aura/aura_export.h
 ui/base/clipboard/clipboard_test_template.h
 ui/base/dragdrop/download_file_interface.h
 ui/compositor/compositor_constants.h
