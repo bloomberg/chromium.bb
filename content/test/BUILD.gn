@@ -1661,6 +1661,7 @@ test("content_unittests") {
       "../renderer/media/webrtc/rtc_stats_unittest.cc",
       "../renderer/media/webrtc/stun_field_trial_unittest.cc",
       "../renderer/media/webrtc/webrtc_media_stream_adapter_unittest.cc",
+      "../renderer/media/webrtc/webrtc_media_stream_track_adapter_map_unittest.cc",
       "../renderer/media/webrtc/webrtc_media_stream_track_adapter_unittest.cc",
       "../renderer/media/webrtc/webrtc_video_capturer_adapter_unittest.cc",
       "../renderer/media/webrtc_audio_renderer_unittest.cc",
