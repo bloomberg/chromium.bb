@@ -81,24 +81,21 @@ base::string16 GetChromeCounterTextFromResult(
     // Three cases: Nonzero result for the entire cache, nonzero result for
     // a subset of cache (i.e. a finite time interval), and almost zero (< 1MB).
     static const int kBytesInAMegabyte = 1024 * 1024;
-    base::string16 size_string;
     if (cache_size_bytes >= kBytesInAMegabyte) {
       base::string16 formatted_size = FormatBytesMBOrHigher(cache_size_bytes);
-      size_string = !is_upper_limit ? formatted_size
-                                    : l10n_util::GetStringFUTF16(
-                                          IDS_DEL_CACHE_COUNTER_UPPER_ESTIMATE,
-                                          formatted_size);
-    } else {
-      size_string = l10n_util::GetStringUTF16(
-          is_basic_tab ? IDS_DEL_CACHE_COUNTER_ALMOST_EMPTY_BASIC
-                       : IDS_DEL_CACHE_COUNTER_ALMOST_EMPTY);
+      if (!is_upper_limit) {
+        return is_basic_tab ? l10n_util::GetStringFUTF16(
+                                  IDS_DEL_CACHE_COUNTER_BASIC, formatted_size)
+                            : formatted_size;
+      }
+      return l10n_util::GetStringFUTF16(
+          is_basic_tab ? IDS_DEL_CACHE_COUNTER_UPPER_ESTIMATE_BASIC
+                       : IDS_DEL_CACHE_COUNTER_UPPER_ESTIMATE,
+          formatted_size);
     }
-    if (is_basic_tab) {
-      // Wrap the size string inside a sentence.
-      return l10n_util::GetStringFUTF16(IDS_DEL_CACHE_COUNTER_BASIC,
-                                        size_string);
-    }
-    return size_string;
+    return l10n_util::GetStringUTF16(
+        is_basic_tab ? IDS_DEL_CACHE_COUNTER_ALMOST_EMPTY_BASIC
+                     : IDS_DEL_CACHE_COUNTER_ALMOST_EMPTY);
   }
   if (pref_name == browsing_data::prefs::kDeleteCookiesBasic) {
     // The basic tab doesn't show cookie counter results.
