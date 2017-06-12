@@ -58,6 +58,7 @@ import org.chromium.chrome.browser.contextualsearch.ContextualSearchInternalStat
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.gsa.GSAContextDisplaySelection;
+import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
@@ -145,6 +146,13 @@ public class ContextualSearchManagerTest {
                 FirstRunStatus.setFirstRunFlowComplete(true);
             }
         });
+        LocaleManager.setInstanceForTest(new LocaleManager() {
+            @Override
+            public boolean needToCheckForSearchEnginePromo() {
+                return false;
+            }
+        });
+
         mActivityTestRule.startMainActivityWithURL(mTestServer.getURL(TEST_PAGE));
         // There's a problem with immediate startup that causes flakes due to the page not being
         // ready, so specify a startup-delay of 1000 for legacy behavior.  See crbug.com/635661.

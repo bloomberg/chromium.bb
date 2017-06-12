@@ -88,6 +88,7 @@ import org.chromium.chrome.browser.history.HistoryManagerUtils;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.init.ProcessInitializationHandler;
+import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.media.PictureInPictureController;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.metrics.StartupMetrics;
@@ -740,7 +741,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      * @return Whether contextual search is allowed for this activity or not.
      */
     protected boolean isContextualSearchAllowed() {
-        return true;
+        return !LocaleManager.getInstance().needToCheckForSearchEnginePromo();
     }
 
     @Override
@@ -1377,9 +1378,18 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         return new IntentHandlerDelegate() {
             @Override
             public void processWebSearchIntent(String query) {
-                Intent searchIntent = new Intent(Intent.ACTION_WEB_SEARCH);
+                final Intent searchIntent = new Intent(Intent.ACTION_WEB_SEARCH);
                 searchIntent.putExtra(SearchManager.QUERY, query);
-                startActivity(searchIntent);
+                Callback<Boolean> callback = new Callback<Boolean>() {
+                    @Override
+                    public void onResult(Boolean result) {
+                        if (result != null && result) startActivity(searchIntent);
+                    }
+                };
+                if (!LocaleManager.getInstance().showSearchEnginePromoIfNeeded(
+                            ChromeActivity.this, callback)) {
+                    callback.onResult(true);
+                }
             }
 
             @Override
