@@ -1,7 +1,7 @@
 AC_PREREQ([2.64])
 
 m4_define([wayland_protocols_major_version], [1])
-m4_define([wayland_protocols_minor_version], [7])
+m4_define([wayland_protocols_minor_version], [8])
 m4_define([wayland_protocols_version],
           [wayland_protocols_major_version.wayland_protocols_minor_version])
 
