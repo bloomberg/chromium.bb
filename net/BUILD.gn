@@ -3037,8 +3037,12 @@ source_set("quic_test_tools") {
   sources = [
     "quic/chromium/crypto_test_utils_chromium.cc",
     "quic/platform/api/quic_test.h",
+    "quic/platform/api/quic_test_loopback.cc",
+    "quic/platform/api/quic_test_loopback.h",
     "quic/platform/impl/quic_test_impl.cc",
     "quic/platform/impl/quic_test_impl.h",
+    "quic/platform/impl/quic_test_loopback_impl.cc",
+    "quic/platform/impl/quic_test_loopback_impl.h",
     "quic/test_tools/crypto_test_utils.cc",
     "quic/test_tools/crypto_test_utils.h",
     "quic/test_tools/delayed_verify_strike_register_client.cc",
