@@ -130,6 +130,9 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   Color InactiveListBoxSelectionBackgroundColor() const;
   Color InactiveListBoxSelectionForegroundColor() const;
 
+  virtual Color PlatformSpellingMarkerUnderlineColor() const;
+  virtual Color PlatformGrammarMarkerUnderlineColor() const;
+
   // Highlight and text colors for TextMatches.
   Color PlatformTextSearchHighlightColor(bool active_match) const;
   Color PlatformTextSearchColor(bool active_match) const;
