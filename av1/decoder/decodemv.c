@@ -201,9 +201,14 @@ static PREDICTION_MODE read_inter_mode(FRAME_CONTEXT *ec_ctx, MACROBLOCKD *xd,
                                        aom_reader *r, int16_t ctx) {
   FRAME_COUNTS *counts = xd->counts;
   int16_t mode_ctx = ctx & NEWMV_CTX_MASK;
-  aom_prob mode_prob = ec_ctx->newmv_prob[mode_ctx];
+  int is_newmv, is_zeromv, is_refmv;
+#if CONFIG_NEW_MULTISYMBOL
+  is_newmv = aom_read_symbol(r, ec_ctx->newmv_cdf[mode_ctx], 2, ACCT_STR) == 0;
+#else
+  is_newmv = aom_read(r, ec_ctx->newmv_prob[mode_ctx], ACCT_STR) == 0;
+#endif
 
-  if (aom_read(r, mode_prob, ACCT_STR) == 0) {
+  if (is_newmv) {
     if (counts) ++counts->newmv_mode[mode_ctx][0];
     return NEWMV;
   }
@@ -213,8 +218,13 @@ static PREDICTION_MODE read_inter_mode(FRAME_CONTEXT *ec_ctx, MACROBLOCKD *xd,
 
   mode_ctx = (ctx >> ZEROMV_OFFSET) & ZEROMV_CTX_MASK;
 
-  mode_prob = ec_ctx->zeromv_prob[mode_ctx];
-  if (aom_read(r, mode_prob, ACCT_STR) == 0) {
+#if CONFIG_NEW_MULTISYMBOL
+  is_zeromv =
+      aom_read_symbol(r, ec_ctx->zeromv_cdf[mode_ctx], 2, ACCT_STR) == 0;
+#else
+  is_zeromv = aom_read(r, ec_ctx->zeromv_prob[mode_ctx], ACCT_STR) == 0;
+#endif
+  if (is_zeromv) {
     if (counts) ++counts->zeromv_mode[mode_ctx][0];
     return ZEROMV;
   }
@@ -226,9 +236,13 @@ static PREDICTION_MODE read_inter_mode(FRAME_CONTEXT *ec_ctx, MACROBLOCKD *xd,
   if (ctx & (1 << SKIP_NEARMV_OFFSET)) mode_ctx = 7;
   if (ctx & (1 << SKIP_NEARESTMV_SUB8X8_OFFSET)) mode_ctx = 8;
 
-  mode_prob = ec_ctx->refmv_prob[mode_ctx];
+#if CONFIG_NEW_MULTISYMBOL
+  is_refmv = aom_read_symbol(r, ec_ctx->refmv_cdf[mode_ctx], 2, ACCT_STR) == 0;
+#else
+  is_refmv = aom_read(r, ec_ctx->refmv_prob[mode_ctx], ACCT_STR) == 0;
+#endif
 
-  if (aom_read(r, mode_prob, ACCT_STR) == 0) {
+  if (is_refmv) {
     if (counts) ++counts->refmv_mode[mode_ctx][0];
 
     return NEARESTMV;
@@ -241,7 +255,7 @@ static PREDICTION_MODE read_inter_mode(FRAME_CONTEXT *ec_ctx, MACROBLOCKD *xd,
   assert(0);
 }
 
-static void read_drl_idx(const AV1_COMMON *cm, MACROBLOCKD *xd,
+static void read_drl_idx(FRAME_CONTEXT *ec_ctx, MACROBLOCKD *xd,
                          MB_MODE_INFO *mbmi, aom_reader *r) {
   uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
   mbmi->ref_mv_idx = 0;
@@ -260,14 +274,14 @@ static void read_drl_idx(const AV1_COMMON *cm, MACROBLOCKD *xd,
     for (idx = 0; idx < 2; ++idx) {
       if (xd->ref_mv_count[ref_frame_type] > idx + 1) {
         uint8_t drl_ctx = av1_drl_ctx(xd->ref_mv_stack[ref_frame_type], idx);
-        aom_prob drl_prob = cm->fc->drl_prob[drl_ctx];
-        if (!aom_read(r, drl_prob, ACCT_STR)) {
-          mbmi->ref_mv_idx = idx;
-          if (xd->counts) ++xd->counts->drl_mode[drl_ctx][0];
-          return;
-        }
-        mbmi->ref_mv_idx = idx + 1;
-        if (xd->counts) ++xd->counts->drl_mode[drl_ctx][1];
+#if CONFIG_NEW_MULTISYMBOL
+        int drl_idx = aom_read_symbol(r, ec_ctx->drl_cdf[drl_ctx], 2, ACCT_STR);
+#else
+        int drl_idx = aom_read(r, ec_ctx->drl_prob[drl_ctx], ACCT_STR);
+#endif
+        mbmi->ref_mv_idx = idx + drl_idx;
+        if (xd->counts) ++xd->counts->drl_mode[drl_ctx][drl_idx];
+        if (!drl_idx) return;
       }
     }
   }
@@ -280,14 +294,14 @@ static void read_drl_idx(const AV1_COMMON *cm, MACROBLOCKD *xd,
     for (idx = 1; idx < 3; ++idx) {
       if (xd->ref_mv_count[ref_frame_type] > idx + 1) {
         uint8_t drl_ctx = av1_drl_ctx(xd->ref_mv_stack[ref_frame_type], idx);
-        aom_prob drl_prob = cm->fc->drl_prob[drl_ctx];
-        if (!aom_read(r, drl_prob, ACCT_STR)) {
-          mbmi->ref_mv_idx = idx - 1;
-          if (xd->counts) ++xd->counts->drl_mode[drl_ctx][0];
-          return;
-        }
-        mbmi->ref_mv_idx = idx;
-        if (xd->counts) ++xd->counts->drl_mode[drl_ctx][1];
+#if CONFIG_NEW_MULTISYMBOL
+        int drl_idx = aom_read_symbol(r, ec_ctx->drl_cdf[drl_ctx], 2, ACCT_STR);
+#else
+        int drl_idx = aom_read(r, ec_ctx->drl_prob[drl_ctx], ACCT_STR);
+#endif
+        mbmi->ref_mv_idx = idx + drl_idx - 1;
+        if (xd->counts) ++xd->counts->drl_mode[drl_ctx][drl_idx];
+        if (!drl_idx) return;
       }
     }
   }
@@ -2059,7 +2073,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 #else  // !CONFIG_EXT_INTER
       if (mbmi->mode == NEARMV || mbmi->mode == NEWMV)
 #endif  // CONFIG_EXT_INTER
-        read_drl_idx(cm, xd, mbmi, r);
+        read_drl_idx(ec_ctx, xd, mbmi, r);
     }
   }
 

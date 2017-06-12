@@ -185,6 +185,12 @@ typedef struct frame_contexts {
   aom_prob zeromv_prob[ZEROMV_MODE_CONTEXTS];
   aom_prob refmv_prob[REFMV_MODE_CONTEXTS];
   aom_prob drl_prob[DRL_MODE_CONTEXTS];
+#if CONFIG_NEW_MULTISYMBOL
+  aom_cdf_prob newmv_cdf[NEWMV_MODE_CONTEXTS][CDF_SIZE(2)];
+  aom_cdf_prob zeromv_cdf[ZEROMV_MODE_CONTEXTS][CDF_SIZE(2)];
+  aom_cdf_prob refmv_cdf[REFMV_MODE_CONTEXTS][CDF_SIZE(2)];
+  aom_cdf_prob drl_cdf[DRL_MODE_CONTEXTS][CDF_SIZE(2)];
+#endif
 
 #if CONFIG_EXT_INTER
   aom_prob inter_compound_mode_probs[INTER_MODE_CONTEXTS]
