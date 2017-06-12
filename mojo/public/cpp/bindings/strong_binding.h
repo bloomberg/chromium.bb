@@ -59,16 +59,16 @@ class StrongBinding {
   //
   // This method may only be called after this StrongBinding has been bound to a
   // message pipe.
-  void set_connection_error_handler(const base::Closure& error_handler) {
+  void set_connection_error_handler(base::OnceClosure error_handler) {
     DCHECK(binding_.is_bound());
-    connection_error_handler_ = error_handler;
+    connection_error_handler_ = std::move(error_handler);
     connection_error_with_reason_handler_.Reset();
   }
 
   void set_connection_error_with_reason_handler(
-      const ConnectionErrorWithReasonCallback& error_handler) {
+      ConnectionErrorWithReasonCallback error_handler) {
     DCHECK(binding_.is_bound());
-    connection_error_with_reason_handler_ = error_handler;
+    connection_error_with_reason_handler_ = std::move(error_handler);
     connection_error_handler_.Reset();
   }
 
@@ -97,15 +97,17 @@ class StrongBinding {
 
   void OnConnectionError(uint32_t custom_reason,
                          const std::string& description) {
-    if (!connection_error_handler_.is_null())
-      connection_error_handler_.Run();
-    else if (!connection_error_with_reason_handler_.is_null())
-      connection_error_with_reason_handler_.Run(custom_reason, description);
+    if (connection_error_handler_) {
+      std::move(connection_error_handler_).Run();
+    } else if (connection_error_with_reason_handler_) {
+      std::move(connection_error_with_reason_handler_)
+          .Run(custom_reason, description);
+    }
     Close();
   }
 
   std::unique_ptr<Interface> impl_;
-  base::Closure connection_error_handler_;
+  base::OnceClosure connection_error_handler_;
   ConnectionErrorWithReasonCallback connection_error_with_reason_handler_;
   Binding<Interface> binding_;
   base::WeakPtrFactory<StrongBinding> weak_factory_;

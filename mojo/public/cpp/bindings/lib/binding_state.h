@@ -50,15 +50,16 @@ class MOJO_CPP_BINDINGS_EXPORT BindingStateBase {
   void Close();
   void CloseWithReason(uint32_t custom_reason, const std::string& description);
 
-  void set_connection_error_handler(const base::Closure& error_handler) {
+  void set_connection_error_handler(base::OnceClosure error_handler) {
     DCHECK(is_bound());
-    endpoint_client_->set_connection_error_handler(error_handler);
+    endpoint_client_->set_connection_error_handler(std::move(error_handler));
   }
 
   void set_connection_error_with_reason_handler(
-      const ConnectionErrorWithReasonCallback& error_handler) {
+      ConnectionErrorWithReasonCallback error_handler) {
     DCHECK(is_bound());
-    endpoint_client_->set_connection_error_with_reason_handler(error_handler);
+    endpoint_client_->set_connection_error_with_reason_handler(
+        std::move(error_handler));
   }
 
   bool is_bound() const { return !!router_; }

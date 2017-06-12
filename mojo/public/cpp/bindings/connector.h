@@ -6,6 +6,7 @@
 #define MOJO_PUBLIC_CPP_BINDINGS_CONNECTOR_H_
 
 #include <memory>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -70,9 +71,9 @@ class MOJO_CPP_BINDINGS_EXPORT Connector
 
   // Sets the error handler to receive notifications when an error is
   // encountered while reading from the pipe or waiting to read from the pipe.
-  void set_connection_error_handler(const base::Closure& error_handler) {
+  void set_connection_error_handler(base::OnceClosure error_handler) {
     DCHECK(thread_checker_.CalledOnValidThread());
-    connection_error_handler_ = error_handler;
+    connection_error_handler_ = std::move(error_handler);
   }
 
   // Returns true if an error was encountered while reading from the pipe or
@@ -185,7 +186,7 @@ class MOJO_CPP_BINDINGS_EXPORT Connector
 
   void EnsureSyncWatcherExists();
 
-  base::Closure connection_error_handler_;
+  base::OnceClosure connection_error_handler_;
 
   ScopedMessagePipeHandle message_pipe_;
   MessageReceiver* incoming_receiver_ = nullptr;
