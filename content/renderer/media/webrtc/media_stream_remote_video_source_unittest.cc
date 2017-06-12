@@ -9,6 +9,7 @@
 
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/child/child_process.h"
@@ -45,12 +46,37 @@ class MediaStreamRemoteVideoSourceTest
         child_process_(new ChildProcess()),
         mock_factory_(new MockPeerConnectionDependencyFactory()),
         webrtc_video_track_(MockWebRtcVideoTrack::Create("test")),
-        remote_source_(new MediaStreamRemoteVideoSourceUnderTest(
-            std::unique_ptr<TrackObserver>(
-                new TrackObserver(base::ThreadTaskRunnerHandle::Get(),
-                                  webrtc_video_track_.get())))),
+        remote_source_(nullptr),
         number_of_successful_track_starts_(0),
-        number_of_failed_track_starts_(0) {
+        number_of_failed_track_starts_(0) {}
+
+  void SetUp() override {
+    scoped_refptr<base::SingleThreadTaskRunner> main_thread =
+        base::ThreadTaskRunnerHandle::Get();
+
+    base::WaitableEvent waitable_event(
+        base::WaitableEvent::ResetPolicy::MANUAL,
+        base::WaitableEvent::InitialState::NOT_SIGNALED);
+
+    std::unique_ptr<TrackObserver> track_observer;
+    mock_factory_->GetWebRtcSignalingThread()->PostTask(
+        FROM_HERE,
+        base::Bind(
+            [](scoped_refptr<base::SingleThreadTaskRunner> main_thread,
+               webrtc::MediaStreamTrackInterface* webrtc_track,
+               std::unique_ptr<TrackObserver>* track_observer,
+               base::WaitableEvent* waitable_event) {
+              track_observer->reset(
+                  new TrackObserver(main_thread, webrtc_track));
+              waitable_event->Signal();
+            },
+            main_thread, base::Unretained(webrtc_video_track_.get()),
+            base::Unretained(&track_observer),
+            base::Unretained(&waitable_event)));
+    waitable_event.Wait();
+
+    remote_source_ =
+        new MediaStreamRemoteVideoSourceUnderTest(std::move(track_observer));
     webkit_source_.Initialize(blink::WebString::FromASCII("dummy_source_id"),
                               blink::WebMediaStreamSource::kTypeVideo,
                               blink::WebString::FromASCII("dummy_source_name"),
@@ -86,7 +112,20 @@ class MediaStreamRemoteVideoSourceTest
   }
 
   void StopWebRtcTrack() {
-    static_cast<MockWebRtcVideoTrack*>(webrtc_video_track_.get())->SetEnded();
+    base::WaitableEvent waitable_event(
+        base::WaitableEvent::ResetPolicy::MANUAL,
+        base::WaitableEvent::InitialState::NOT_SIGNALED);
+    mock_factory_->GetWebRtcSignalingThread()->PostTask(
+        FROM_HERE, base::Bind(
+                       [](MockWebRtcVideoTrack* video_track,
+                          base::WaitableEvent* waitable_event) {
+                         video_track->SetEnded();
+                         waitable_event->Signal();
+                       },
+                       base::Unretained(static_cast<MockWebRtcVideoTrack*>(
+                           webrtc_video_track_.get())),
+                       base::Unretained(&waitable_event)));
+    waitable_event.Wait();
   }
 
   const blink::WebMediaStreamSource& webkit_source() const {
