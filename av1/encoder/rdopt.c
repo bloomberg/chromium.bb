@@ -5077,7 +5077,9 @@ static int check_best_zero_mv(
     const MV_REFERENCE_FRAME ref_frames[2], const BLOCK_SIZE bsize, int block,
     int mi_row, int mi_col) {
   int_mv zeromv[2] = { {.as_int = 0 } };
+#if CONFIG_GLOBAL_MOTION
   int comp_pred_mode = ref_frames[1] > INTRA_FRAME;
+#endif
   (void)mi_row;
   (void)mi_col;
 #if CONFIG_GLOBAL_MOTION
