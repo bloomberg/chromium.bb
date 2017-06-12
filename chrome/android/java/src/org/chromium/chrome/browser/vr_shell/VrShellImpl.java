@@ -277,7 +277,7 @@ public class VrShellImpl
         mRenderToSurfaceLayoutParent = new FrameLayout(mActivity) {
             @Override
             public boolean dispatchTouchEvent(MotionEvent event) {
-                getUiLayout().dispatchTouchEvent(event);
+                getContainer().dispatchTouchEvent(event);
                 return true;
             }
         };
