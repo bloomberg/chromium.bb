@@ -173,8 +173,8 @@ bool RemoteSafeBrowsingDatabaseManager::CanCheckResourceType(
 }
 
 bool RemoteSafeBrowsingDatabaseManager::CanCheckUrl(const GURL& url) const {
-  return url.SchemeIs(url::kHttpsScheme) || url.SchemeIs(url::kHttpScheme) ||
-         url.SchemeIs(url::kFtpScheme);
+  return url.SchemeIsHTTPOrHTTPS() || url.SchemeIs(url::kFtpScheme) ||
+         url.SchemeIsWSOrWSS();
 }
 
 bool RemoteSafeBrowsingDatabaseManager::ChecksAreAlwaysAsync() const {

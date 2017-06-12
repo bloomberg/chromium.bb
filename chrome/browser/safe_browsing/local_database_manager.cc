@@ -336,8 +336,8 @@ bool LocalSafeBrowsingDatabaseManager::CanCheckResourceType(
 }
 
 bool LocalSafeBrowsingDatabaseManager::CanCheckUrl(const GURL& url) const {
-  return url.SchemeIs(url::kFtpScheme) || url.SchemeIs(url::kHttpScheme) ||
-         url.SchemeIs(url::kHttpsScheme);
+  return url.SchemeIsHTTPOrHTTPS() || url.SchemeIs(url::kFtpScheme) ||
+         url.SchemeIsWSOrWSS();
 }
 
 bool LocalSafeBrowsingDatabaseManager::CheckDownloadUrl(

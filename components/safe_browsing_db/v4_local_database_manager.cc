@@ -200,8 +200,8 @@ bool V4LocalDatabaseManager::CanCheckResourceType(
 }
 
 bool V4LocalDatabaseManager::CanCheckUrl(const GURL& url) const {
-  return url.SchemeIs(url::kHttpsScheme) || url.SchemeIs(url::kHttpScheme) ||
-         url.SchemeIs(url::kFtpScheme);
+  return url.SchemeIsHTTPOrHTTPS() || url.SchemeIs(url::kFtpScheme) ||
+         url.SchemeIsWSOrWSS();
 }
 
 bool V4LocalDatabaseManager::ChecksAreAlwaysAsync() const {
