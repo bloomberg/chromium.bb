@@ -6,8 +6,6 @@
 
 #include <memory>
 
-#include "base/ios/weak_nsobject.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/passwords/password_generation_prompt_delegate.h"
@@ -21,6 +19,10 @@
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -84,10 +86,10 @@ const CGFloat kDescriptionLabelTopPadding = 10.0f;
 @end
 
 @implementation PasswordGenerationPromptView {
-  base::scoped_nsobject<NSString> _password;
-  base::WeakNSProtocol<id<PasswordGenerationPromptDelegate>> _delegate;
-  base::scoped_nsobject<NSURL> _URL;
-  base::scoped_nsobject<UILabel> _title;
+  NSString* _password;
+  __weak id<PasswordGenerationPromptDelegate> _delegate;
+  NSURL* _URL;
+  UILabel* _title;
 }
 
 - (instancetype)initWithPassword:(NSString*)password
@@ -95,22 +97,21 @@ const CGFloat kDescriptionLabelTopPadding = 10.0f;
                             (id<PasswordGenerationPromptDelegate>)delegate {
   self = [super initWithFrame:CGRectZero];
   if (self) {
-    _URL.reset(
-        [[NSURL URLWithString:@"chromeinternal://showpasswords"] retain]);
-    _delegate.reset(delegate);
-    _password.reset([password copy]);
+    _URL = [NSURL URLWithString:@"chromeinternal://showpasswords"];
+    _delegate = delegate;
+    _password = [password copy];
   }
   return self;
 }
 
 - (void)configure {
-  UIView* headerView = [[[UIView alloc] initWithFrame:CGRectZero] autorelease];
+  UIView* headerView = [[UIView alloc] initWithFrame:CGRectZero];
   UIImageView* icon = [self keyIconView];
   UILabel* title = [self titleLabel];
   UILabel* password = [self passwordLabel:_password];
   UITextView* description = [self description];
 
-  _title.reset([title retain]);
+  _title = title;
 
   [headerView addSubview:icon];
   [headerView addSubview:title];
@@ -190,27 +191,27 @@ const CGFloat kDescriptionLabelTopPadding = 10.0f;
   [attrsDictionary setObject:UIColorFromRGB(kTitleLabelFontColor)
                       forKey:NSForegroundColorAttributeName];
 
-  NSMutableAttributedString* string = [[[NSMutableAttributedString alloc]
+  NSMutableAttributedString* string = [[NSMutableAttributedString alloc]
       initWithString:l10n_util::GetNSString(
                          IDS_IOS_GENERATED_PASSWORD_PROMPT_TITLE)
-          attributes:attrsDictionary] autorelease];
+          attributes:attrsDictionary];
 
-  base::scoped_nsobject<UILabel> titleLabel([[UILabel alloc] init]);
+  UILabel* titleLabel = [[UILabel alloc] init];
   [titleLabel setAttributedText:string];
   [titleLabel setNumberOfLines:0];
   [titleLabel sizeToFit];
-  return titleLabel.autorelease();
+  return titleLabel = nil;
 }
 
 - (UILabel*)passwordLabel:(NSString*)password {
-  base::scoped_nsobject<UILabel> passwordLabel([[UILabel alloc] init]);
+  UILabel* passwordLabel = [[UILabel alloc] init];
   [passwordLabel setText:password];
   [passwordLabel setTextColor:UIColorFromRGB(kPasswordLabelFontColor)];
   [passwordLabel setFont:[[MDCTypography fontLoader]
                              regularFontOfSize:kPasswordLabelFontSize]];
   [passwordLabel setNumberOfLines:1];
   [passwordLabel sizeToFit];
-  return passwordLabel.autorelease();
+  return passwordLabel = nil;
 }
 
 - (UITextView*)description {
@@ -219,26 +220,25 @@ const CGFloat kDescriptionLabelTopPadding = 10.0f;
       l10n_util::GetNSString(IDS_IOS_GENERATED_PASSWORD_PROMPT_DESCRIPTION),
       &linkRange);
 
-  base::scoped_nsobject<NSMutableParagraphStyle> paragraphStyle(
-      [[NSMutableParagraphStyle alloc] init]);
+  NSMutableParagraphStyle* paragraphStyle =
+      [[NSMutableParagraphStyle alloc] init];
   [paragraphStyle setLineSpacing:kDescriptionLabelLineSpacing];
 
   NSDictionary* attributeDictionary =
       [NSDictionary dictionaryWithObjectsAndKeys:
                         UIColorFromRGB(kDescriptionLabelFontColor),
-                        NSForegroundColorAttributeName, paragraphStyle.get(),
+                        NSForegroundColorAttributeName, paragraphStyle,
                         NSParagraphStyleAttributeName,
                         [[MDCTypography fontLoader]
                             regularFontOfSize:kDescriptionLabelFontSize],
                         NSFontAttributeName, nil];
 
-  base::scoped_nsobject<NSMutableAttributedString> attributedString(
+  NSMutableAttributedString* attributedString =
       [[NSMutableAttributedString alloc] initWithString:description
-                                             attributes:attributeDictionary]);
+                                             attributes:attributeDictionary];
 
   UITextView* descriptionView =
-      [[[UITextView alloc] initWithFrame:CGRectZero textContainer:nil]
-          autorelease];
+      [[UITextView alloc] initWithFrame:CGRectZero textContainer:nil];
   descriptionView.scrollEnabled = NO;
   descriptionView.selectable = YES;
   descriptionView.editable = NO;
@@ -260,8 +260,7 @@ const CGFloat kDescriptionLabelTopPadding = 10.0f;
   UIImage* keyIcon = ui::ResourceBundle::GetSharedInstance()
                          .GetImageNamed(IDR_IOS_INFOBAR_AUTOLOGIN)
                          .ToUIImage();
-  UIImageView* keyIconView =
-      [[[UIImageView alloc] initWithImage:keyIcon] autorelease];
+  UIImageView* keyIconView = [[UIImageView alloc] initWithImage:keyIcon];
   [keyIconView setFrame:{CGPointZero, keyIcon.size}];
   return keyIconView;
 }
@@ -272,7 +271,7 @@ const CGFloat kDescriptionLabelTopPadding = 10.0f;
     shouldInteractWithURL:(NSURL*)URL
                   inRange:(NSRange)characterRange
               interaction:(UITextItemInteraction)interaction {
-  DCHECK([URL isEqual:_URL.get()]);
+  DCHECK([URL isEqual:_URL]);
   [_delegate showSavedPasswords:self];
   return NO;
 }
@@ -282,8 +281,8 @@ const CGFloat kDescriptionLabelTopPadding = 10.0f;
 #pragma mark - Classes emulating MDCDialog
 
 @interface PasswordGenerationPromptDialog () {
-  base::WeakNSObject<UIViewController> _viewController;
-  base::WeakNSProtocol<id<PasswordGenerationPromptDelegate>> _weakDelegate;
+  __weak UIViewController* _viewController;
+  __weak id<PasswordGenerationPromptDelegate> _weakDelegate;
 }
 
 // Dismiss the dialog.
@@ -301,8 +300,8 @@ const CGFloat kDescriptionLabelTopPadding = 10.0f;
                   viewController:(UIViewController*)viewController {
   self = [super initWithFrame:CGRectZero];
   if (self) {
-    _viewController.reset(viewController);
-    _weakDelegate.reset(delegate);
+    _viewController = viewController;
+    _weakDelegate = delegate;
   }
   return self;
 }
@@ -318,10 +317,10 @@ const CGFloat kDescriptionLabelTopPadding = 10.0f;
 
 // Creates the view containing the buttons.
 - (UIView*)createButtons {
-  UIView* view = [[[UIView alloc] initWithFrame:CGRectZero] autorelease];
+  UIView* view = [[UIView alloc] initWithFrame:CGRectZero];
 
   NSString* cancelTitle = l10n_util::GetNSString(IDS_CANCEL);
-  MDCFlatButton* cancelButton = [[[MDCFlatButton alloc] init] autorelease];
+  MDCFlatButton* cancelButton = [[MDCFlatButton alloc] init];
   [cancelButton setTitle:cancelTitle forState:UIControlStateNormal];
   [cancelButton sizeToFit];
   [cancelButton setCustomTitleColor:[UIColor blackColor]];
@@ -331,7 +330,7 @@ const CGFloat kDescriptionLabelTopPadding = 10.0f;
 
   NSString* acceptTitle =
       l10n_util::GetNSString(IDS_IOS_GENERATED_PASSWORD_ACCEPT);
-  MDCFlatButton* OKButton = [[[MDCFlatButton alloc] init] autorelease];
+  MDCFlatButton* OKButton = [[MDCFlatButton alloc] init];
   [OKButton setTitle:acceptTitle forState:UIControlStateNormal];
   [OKButton sizeToFit];
   [OKButton setCustomTitleColor:[UIColor blackColor]];
@@ -363,9 +362,8 @@ const CGFloat kDescriptionLabelTopPadding = 10.0f;
 // Creates the view containing the password text and the buttons.
 - (void)configureGlobalViewWithPassword:(NSString*)password {
   PasswordGenerationPromptView* passwordContentView =
-      [[[PasswordGenerationPromptView alloc] initWithPassword:password
-                                                     delegate:_weakDelegate]
-          autorelease];
+      [[PasswordGenerationPromptView alloc] initWithPassword:password
+                                                    delegate:_weakDelegate];
 
   [passwordContentView configure];
 
