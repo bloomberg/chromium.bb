@@ -162,6 +162,8 @@ std::string GetSyncErrorAction(sync_ui_util::ActionType action_type) {
       return "upgradeClient";
     case sync_ui_util::ENTER_PASSPHRASE:
       return "enterPassphrase";
+    case sync_ui_util::CONFIRM_SYNC_SETTINGS:
+      return "confirmSyncSettings";
     default:
       return "noAction";
   }

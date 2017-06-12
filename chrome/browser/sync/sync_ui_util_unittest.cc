@@ -48,6 +48,7 @@ enum DistinctState {
   STATUS_CASE_AUTH_ERROR,
   STATUS_CASE_PROTOCOL_ERROR,
   STATUS_CASE_PASSPHRASE_ERROR,
+  STATUS_CASE_CONFIRM_SYNC_SETTINGS,
   STATUS_CASE_SYNCED,
   STATUS_CASE_SYNC_DISABLED_BY_POLICY,
   NUMBER_OF_STATUS_CASES
@@ -173,6 +174,16 @@ void GetDistinctCase(ProfileSyncServiceMock* service,
           .WillRepeatedly(Return(false));
       return;
     }
+    case STATUS_CASE_CONFIRM_SYNC_SETTINGS: {
+      EXPECT_CALL(*service, IsSyncConfirmationNeeded())
+          .WillRepeatedly(Return(true));
+      EXPECT_CALL(*service, IsPassphraseRequired())
+          .WillRepeatedly(Return(false));
+      syncer::SyncEngine::Status status;
+      EXPECT_CALL(*service, QueryDetailedSyncStatus(_))
+          .WillRepeatedly(DoAll(SetArgPointee<0>(status), Return(false)));
+      return;
+    }
     case STATUS_CASE_PASSPHRASE_ERROR: {
       EXPECT_CALL(*service, IsFirstSetupComplete())
           .WillRepeatedly(Return(true));
@@ -238,6 +249,8 @@ sync_ui_util::ActionType GetActionTypeforDistinctCase(int case_number) {
       return sync_ui_util::UPGRADE_CLIENT;
     case STATUS_CASE_PASSPHRASE_ERROR:
       return sync_ui_util::ENTER_PASSPHRASE;
+    case STATUS_CASE_CONFIRM_SYNC_SETTINGS:
+      return sync_ui_util::CONFIRM_SYNC_SETTINGS;
     case STATUS_CASE_SYNCED:
       return sync_ui_util::NO_ACTION;
     case STATUS_CASE_SYNC_DISABLED_BY_POLICY:
@@ -412,4 +425,24 @@ TEST_F(SyncUIUtilTest, ActionableErrorWithPassiveMessage) {
 
   EXPECT_NE(first_actionable_error_status_label,
             second_actionable_error_status_label);
+}
+
+TEST_F(SyncUIUtilTest, SyncSettingsConfirmationNeededTest) {
+  std::unique_ptr<Profile> profile(MakeSignedInTestingProfile());
+  SigninManagerBase* signin =
+      SigninManagerFactory::GetForProfile(profile.get());
+
+  ProfileSyncServiceMock service(
+      CreateProfileSyncServiceParamsForTest(profile.get()));
+  EXPECT_CALL(service, IsSyncConfirmationNeeded()).WillRepeatedly(Return(true));
+
+  base::string16 actionable_error_status_label;
+  base::string16 link_label;
+  sync_ui_util::ActionType action_type = sync_ui_util::NO_ACTION;
+
+  sync_ui_util::GetStatusLabels(
+      profile.get(), &service, *signin, sync_ui_util::PLAIN_TEXT,
+      &actionable_error_status_label, &link_label, &action_type);
+
+  EXPECT_EQ(action_type, sync_ui_util::CONFIRM_SYNC_SETTINGS);
 }

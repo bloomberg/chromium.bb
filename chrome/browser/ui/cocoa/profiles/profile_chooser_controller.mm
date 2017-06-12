@@ -891,7 +891,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   chrome::OpenUpdateChromeDialog(browser_);
 }
 
-- (IBAction)showSyncPassphraseSetupView:(id)sender {
+- (IBAction)showSyncSetupView:(id)sender {
   chrome::ShowSettingsSubPage(browser_, chrome::kSyncSetupSubPage);
 }
 
@@ -1207,9 +1207,12 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 - (NSView*)buildSyncErrorViewIfNeeded {
   int contentStringId, buttonStringId;
   SEL buttonAction;
+  SigninManagerBase* signinManager =
+      SigninManagerFactory::GetForProfile(browser_->profile());
   sync_ui_util::AvatarSyncErrorType error =
       sync_ui_util::GetMessagesForAvatarSyncError(
-          browser_->profile(), &contentStringId, &buttonStringId);
+          browser_->profile(), *signinManager, &contentStringId,
+          &buttonStringId);
   switch (error) {
     case sync_ui_util::MANAGED_USER_UNRECOVERABLE_ERROR:
       buttonAction = @selector(showSignoutView:);
@@ -1227,7 +1230,8 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       buttonAction = @selector(showUpdateChromeView:);
       break;
     case sync_ui_util::PASSPHRASE_ERROR:
-      buttonAction = @selector(showSyncPassphraseSetupView:);
+    case sync_ui_util::SETTINGS_UNCONFIRMED_ERROR:
+      buttonAction = @selector(showSyncSetupView:);
       break;
     case sync_ui_util::NO_SYNC_ERROR:
       return nil;

@@ -320,6 +320,7 @@ Polymer({
         settings.navigateTo(settings.Route.ABOUT);
         break;
       case settings.StatusAction.ENTER_PASSPHRASE:
+      case settings.StatusAction.CONFIRM_SYNC_SETTINGS:
       case settings.StatusAction.NO_ACTION:
       default:
         settings.navigateTo(settings.Route.SYNC);
