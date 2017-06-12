@@ -178,7 +178,7 @@ UserPolicyManagerFactoryChromeOS::CreateManagerForProfile(
     case AccountType::UNKNOWN:
     case AccountType::GOOGLE:
       // TODO(tnagel): Return nullptr for unknown accounts once AccountId
-      // migration is finished.
+      // migration is finished.  (KioskAppManager still needs to be migrated.)
       if (!user->HasGaiaAccount()) {
         return {};
       }
