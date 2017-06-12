@@ -156,6 +156,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['passthrough', 'opengl', 'intel'], bug=665521)
 
     # Passthrough command decoder / OpenGL / AMD
+    self.Fail('conformance/extensions/ext-sRGB.html',
+        ['passthrough', 'opengl', 'amd'], bug=679696)
     self.Fail('conformance/glsl/constructors/glsl-construct-mat2.html',
         ['passthrough', 'opengl', 'amd'], bug=665521)
     self.Fail('conformance/glsl/constructors/' +
@@ -170,6 +172,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['passthrough', 'opengl', 'amd', 'linux'], bug=1007) # angle bug ID
     self.Fail('conformance/glsl/misc/struct-nesting-of-variable-names.html',
         ['passthrough', 'opengl', 'amd', 'linux'], bug=665521)
+    self.Fail('conformance/renderbuffers/renderbuffer-initialization.html',
+        ['passthrough', 'opengl', 'amd'], bug=1635) # angle bug ID
     self.Fail('conformance/renderbuffers/framebuffer-state-restoration.html',
         ['passthrough', 'opengl', 'amd'], bug=665521)
     self.Fail('conformance/uniforms/out-of-bounds-uniform-array-access.html',
@@ -374,11 +378,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # Win / Intel / Passthrough command decoder
     self.Flaky('conformance/renderbuffers/framebuffer-state-restoration.html',
         ['win', 'intel', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('conformance/textures/misc/' +
-        'copytexsubimage2d-large-partial-copy-corruption.html',
-        ['win', 'intel', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('conformance/textures/misc/copytexsubimage2d-subrects.html',
-        ['win10', 'intel', 'passthrough', 'd3d11'], bug=685232)
 
     # Mac failures
     self.Flaky('conformance/extensions/oes-texture-float-with-video.html',
