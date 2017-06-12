@@ -499,7 +499,7 @@
     },
     {
       name: "HideNonceContentAttribute",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "IDBObserver",
