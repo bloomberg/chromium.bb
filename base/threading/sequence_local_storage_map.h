@@ -18,6 +18,9 @@ namespace internal {
 // ScopedSetSequenceMapLocalStorageForCurrentThread. When a
 // SequenceLocalStorageMap is destroyed, it invokes the destructors associated
 // with values stored within it.
+// The Get() and Set() methods should not be accessed directly.
+// Use SequenceLocalStorageSlot to Get() and Set() values in the current
+// sequence's SequenceLocalStorageMap.
 class BASE_EXPORT SequenceLocalStorageMap {
  public:
   SequenceLocalStorageMap();
