@@ -8,6 +8,10 @@
 #include "base/time/time.h"
 #include "testing/platform_test.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 TEST(DeferredInitializationRunnerTest, TestSharedInstance) {
   EXPECT_TRUE([DeferredInitializationRunner sharedInstance]);
   // Cancelling a non-existing block does nothing.

@@ -7,11 +7,14 @@
 #import <Foundation/Foundation.h>
 
 #import "base/mac/foundation_util.h"
-#include "base/mac/scoped_nsobject.h"
 #import "ios/chrome/app/chrome_overlay_window_testing.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 // Tests that the application does not crash if |applicationDidEnterBackground|
 // is called when the application is launched in background.
@@ -26,8 +29,7 @@ TEST(MainApplicationDelegateTest, CrashIfNotInitialized) {
   [[[application stub] andReturnValue:OCMOCK_VALUE(backgroundState)]
       applicationState];
 
-  MainApplicationDelegate* delegate =
-      [[[MainApplicationDelegate alloc] init] autorelease];
+  MainApplicationDelegate* delegate = [[MainApplicationDelegate alloc] init];
   [delegate application:application didFinishLaunchingWithOptions:nil];
   [delegate applicationDidEnterBackground:application];
 
