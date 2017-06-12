@@ -55,6 +55,7 @@
 #include "core/page/scrolling/StickyPositionScrollingConstraints.h"
 #include "core/page/scrolling/TopDocumentRootScrollerController.h"
 #include "core/paint/FramePaintTiming.h"
+#include "core/paint/LayerClipRecorder.h"
 #include "core/paint/ObjectPaintInvalidator.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayerPainter.h"
@@ -507,23 +508,31 @@ void CompositedLayerMapping::UpdateCompositingReasons() {
 }
 
 bool CompositedLayerMapping::AncestorRoundedCornersWontClip(
-    const LayoutBoxModelObject& child,
-    const LayoutBoxModelObject& clipping_ancestor) {
-  LayoutRect local_visual_rect = composited_bounds_;
-  child.MapToVisualRectInAncestorSpace(&clipping_ancestor, local_visual_rect);
-  FloatRoundedRect rounded_clip_rect =
-      clipping_ancestor.Style()->GetRoundedInnerBorderFor(
-          clipping_ancestor.LocalVisualRect());
-  FloatRect inner_clip_rect = rounded_clip_rect.RadiusCenterRect();
-  // The first condition catches cases where the child is certainly inside
-  // the rounded corner portion of the border, and cannot be clipped by
-  // the rounded portion. The second catches cases where the child is
-  // entirely outside the rectangular border (ignoring rounded corners) so
-  // is also unaffected by the rounded corners. In both cases the existing
-  // rectangular clip is adequate and the mask is unnecessary.
-  return inner_clip_rect.Contains(FloatRect(local_visual_rect)) ||
-         !local_visual_rect.Intersects(
-             EnclosingLayoutRect(rounded_clip_rect.Rect()));
+    const PaintLayer* compositing_ancestor) {
+  // Find all clips up to the ancestor compositing container to correctly
+  // handle nested clips.
+  LayoutPoint offset_to_clipper;
+  owning_layer_.ConvertToLayerCoords(compositing_ancestor, offset_to_clipper);
+  Vector<FloatRoundedRect> rounded_rect_clips;
+  LayerClipRecorder::CollectRoundedRectClips(
+      owning_layer_, compositing_ancestor, -offset_to_clipper, true,
+      LayerClipRecorder::kDoNotIncludeSelfForBorderRadius, rounded_rect_clips);
+
+  for (auto clip_rect : rounded_rect_clips) {
+    FloatRect inner_clip_rect = clip_rect.RadiusCenterRect();
+    // The first condition catches cases where the child is certainly inside
+    // the rounded corner portion of the border, and cannot be clipped by
+    // the rounded portion. The second catches cases where the child is
+    // entirely outside the rectangular border (ignoring rounded corners) so
+    // is also unaffected by the rounded corners. In both cases the existing
+    // rectangular clip is adequate and the mask is unnecessary.
+    if (!(inner_clip_rect.Contains(FloatRect(composited_bounds_)) ||
+          !composited_bounds_.Intersects(
+              EnclosingLayoutRect(clip_rect.Rect())))) {
+      return false;
+    }
+  }
+  return true;
 }
 
 void CompositedLayerMapping::
@@ -575,11 +584,10 @@ void CompositedLayerMapping::
   // TODO(schenney): CSS clips are not applied to composited children, and
   // should be via mask or by compositing the parent too.
   // https://bugs.chromium.org/p/chromium/issues/detail?id=615870
-  DCHECK(clipping_container->Style());
-  owning_layer_is_masked =
-      owning_layer_is_clipped &&
-      clipping_container->Style()->HasBorderRadius() &&
-      !AncestorRoundedCornersWontClip(GetLayoutObject(), *clipping_container);
+  if (owning_layer_is_clipped) {
+    owning_layer_is_masked =
+        !AncestorRoundedCornersWontClip(compositing_ancestor);
+  }
 }
 
 const PaintLayer* CompositedLayerMapping::ScrollParent() {

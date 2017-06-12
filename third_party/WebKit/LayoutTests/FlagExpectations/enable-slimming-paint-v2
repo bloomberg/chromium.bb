@@ -1978,6 +1978,9 @@ crbug.com/157218 compositing/overflow/siblings-composited-with-border-radius-anc
 crbug.com/157218 compositing/overflow/grandchild-composited-with-border-radius-ancestor.html [ Failure ]
 crbug.com/157218 compositing/overflow/grandchild-with-border-radius-ancestor.html [ Failure ]
 crbug.com/157218 compositing/overflow/siblings-composited-with-border-radius-ancestor-one-clipped.html [ Failure ]
+crbug.com/157218 compositing/overflow/border-radius-on-grandparent-composited-grandchild.html [ Failure ]
+crbug.com/157218 compositing/overflow/border-radius-on-parent-composited-grandchild.html [ Failure ]
+crbug.com/157218 compositing/overflow/border-radius-on-two-ancestors-composited-grandchild.html [ Failure ]
 
 # Notes about rebaselined tests:
 #

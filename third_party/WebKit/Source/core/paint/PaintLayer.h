@@ -875,7 +875,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
       OverlayScrollbarClipBehavior = kIgnorePlatformOverlayScrollbarSize,
       ShouldRespectOverflowClipType = kRespectOverflowClip,
       const LayoutPoint* offset_from_root = 0,
-      const LayoutSize& sub_pixel_accumulation = LayoutSize());
+      const LayoutSize& sub_pixel_accumulation = LayoutSize()) const;
   void CollectFragments(
       PaintLayerFragments&,
       const PaintLayer* root_layer,
@@ -886,7 +886,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
       ShouldRespectOverflowClipType = kRespectOverflowClip,
       const LayoutPoint* offset_from_root = 0,
       const LayoutSize& sub_pixel_accumulation = LayoutSize(),
-      const LayoutRect* layer_bounding_box = 0);
+      const LayoutRect* layer_bounding_box = 0) const;
 
   LayoutPoint LayoutBoxLocation() const {
     return GetLayoutObject().IsBox() ? ToLayoutBox(GetLayoutObject()).Location()

@@ -427,15 +427,18 @@ PaintResult PaintLayerPainter::PaintLayerContents(
                                         ? kUncachedClipRects
                                         : kPaintingClipRects;
     LayoutPoint offset_to_clipper;
-    PaintLayer* paint_layer_for_fragments = &paint_layer_;
+    const PaintLayer* paint_layer_for_fragments = &paint_layer_;
     if (paint_flags & kPaintLayerPaintingAncestorClippingMaskPhase) {
-      // Compute fragments and their clips with respect to the clipping
-      // container. The paint rect is in this layer's space, so convert it
-      // to the clipper's layer's space. The rootLayer is also changed to
-      // the clipper's layer to simplify coordinate system adjustments.
-      // The change to rootLayer must persist to correctly record the clips.
+      // Compute fragments and their clips with respect to the outermost
+      // clipping container. This handles nested border radius by including
+      // all of them in the mask.
+      //
+      // The paint rect is in this layer's space, so convert it to the clipper's
+      // layer's space. The rootLayer is also changed to the clipper's layer to
+      // simplify coordinate system adjustments. The change to rootLayer must
+      // persist to correctly record the clips.
       paint_layer_for_fragments =
-          paint_layer_.ClippingContainer()->EnclosingLayer();
+          paint_layer_.EnclosingLayerWithCompositedLayerMapping(kExcludeSelf);
       local_painting_info.root_layer = paint_layer_for_fragments;
       paint_layer_.ConvertToLayerCoords(local_painting_info.root_layer,
                                         offset_to_clipper);
@@ -1010,9 +1013,6 @@ void PaintLayerPainter::PaintFragmentWithPhase(
         break;
     }
 
-    // TODO(schenney): Nested border-radius clips are not applied to composited
-    // children, probably due to an incorrect clipRoot.
-    // https://bugs.chromium.org/p/chromium/issues/detail?id=672561
     clip_recorder.emplace(context, paint_layer_.GetLayoutObject(), clip_type,
                           clip_rect, painting_info.root_layer,
                           fragment.pagination_offset, paint_flags,

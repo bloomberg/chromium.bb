@@ -29,10 +29,13 @@ LayerClipRecorder::LayerClipRecorder(GraphicsContext& graphics_context,
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
   IntRect snapped_clip_rect = PixelSnappedIntRect(clip_rect.Rect());
+  bool painting_masks =
+      (paint_flags & kPaintLayerPaintingChildClippingMaskPhase ||
+       paint_flags & kPaintLayerPaintingAncestorClippingMaskPhase);
   Vector<FloatRoundedRect> rounded_rects;
-  if (clip_root && clip_rect.HasRadius()) {
-    CollectRoundedRectClips(*layout_object.Layer(), clip_root, graphics_context,
-                            fragment_offset, paint_flags, rule, rounded_rects);
+  if (clip_root && (clip_rect.HasRadius() || painting_masks)) {
+    CollectRoundedRectClips(*layout_object.Layer(), clip_root, fragment_offset,
+                            painting_masks, rule, rounded_rects);
   }
 
   graphics_context_.GetPaintController().CreateAndAppend<ClipDisplayItem>(
@@ -59,9 +62,8 @@ static bool InContainingBlockChain(PaintLayer* start_layer,
 void LayerClipRecorder::CollectRoundedRectClips(
     PaintLayer& paint_layer,
     const PaintLayer* clip_root,
-    GraphicsContext& context,
-    const LayoutPoint& fragment_offset,
-    PaintLayerFlags paint_flags,
+    const LayoutPoint& offset_within_layer,
+    bool cross_composited_scrollers,
     BorderRadiusClippingRule rule,
     Vector<FloatRoundedRect>& rounded_rect_clips) {
   // If the clip rect has been tainted by a border radius, then we have to walk
@@ -78,15 +80,13 @@ void LayerClipRecorder::CollectRoundedRectClips(
     // frame to update the clip. We only want to make sure that the mask layer
     // is properly clipped so that it can in turn clip the scrolled contents in
     // the compositor.
-    if (layer->NeedsCompositedScrolling() &&
-        !(paint_flags & kPaintLayerPaintingChildClippingMaskPhase ||
-          paint_flags & kPaintLayerPaintingAncestorClippingMaskPhase))
+    if (!cross_composited_scrollers && layer->NeedsCompositedScrolling())
       break;
 
     if (layer->GetLayoutObject().HasOverflowClip() &&
         layer->GetLayoutObject().Style()->HasBorderRadius() &&
         InContainingBlockChain(&paint_layer, layer)) {
-      LayoutPoint delta(fragment_offset);
+      LayoutPoint delta(offset_within_layer);
       layer->ConvertToLayerCoords(clip_root, delta);
 
       // The PaintLayer's size is pixel-snapped if it is a LayoutBox. We can't
