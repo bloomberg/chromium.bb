@@ -471,9 +471,6 @@ NSString* const kNativeControllerTemporaryKey = @"NativeControllerTemporaryKey";
   // YES if waiting for a foreground tab due to expectNewForegroundTab.
   BOOL _expectingForegroundTab;
 
-  // Whether or not -shutdown has been called.
-  BOOL _isShutdown;
-
   // The ChromeBrowserState associated with this BVC.
   ios::ChromeBrowserState* _browserState;  // weak
 
@@ -992,7 +989,19 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 }
 
 - (void)dealloc {
-  DCHECK(_isShutdown) << "-shutdown must be called before dealloc.";
+  _tabStripController = nil;
+  _infoBarContainer = nil;
+  _readingListMenuNotifier = nil;
+  if (_bookmarkModel)
+    _bookmarkModel->RemoveObserver(_bookmarkModelBridge.get());
+  [_model removeObserver:self];
+  [[UpgradeCenter sharedInstance] unregisterClient:self];
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [_toolbarController setDelegate:nil];
+  if (_voiceSearchController)
+    _voiceSearchController->SetDelegate(nil);
+  [_rateThisAppDialog setDelegate:nil];
+  [_model closeAllTabs];
 }
 
 #pragma mark - Accessibility
@@ -2256,25 +2265,6 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
       base::BindBlockArc(completionHandler ? completionHandler
                                            : ^{
                                              }));
-}
-
-- (void)shutdown {
-  DCHECK(!_isShutdown);
-  _isShutdown = YES;
-
-  _tabStripController = nil;
-  _infoBarContainer = nil;
-  _readingListMenuNotifier = nil;
-  if (_bookmarkModel)
-    _bookmarkModel->RemoveObserver(_bookmarkModelBridge.get());
-  [_model removeObserver:self];
-  [[UpgradeCenter sharedInstance] unregisterClient:self];
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
-  [_toolbarController setDelegate:nil];
-  if (_voiceSearchController)
-    _voiceSearchController->SetDelegate(nil);
-  [_rateThisAppDialog setDelegate:nil];
-  [_model closeAllTabs];
 }
 
 #pragma mark - SnapshotOverlayProvider methods
