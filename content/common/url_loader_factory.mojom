@@ -4,6 +4,7 @@
 
 module content.mojom;
 
+import "mutable_network_traffic_annotation_tag.mojom";
 import "url_loader.mojom";
 
 [Native]
@@ -23,7 +24,8 @@ interface URLLoaderFactory {
                        int32 request_id,
                        uint32 options,
                        URLRequest request,
-                       URLLoaderClient client);
+                       URLLoaderClient client,
+                       MutableNetworkTrafficAnnotationTag traffic_annotation);
 
   // Loads the resource for the given |request| synchronously.
   // |request_id| is for compatibility with the existing Chrome IPC.

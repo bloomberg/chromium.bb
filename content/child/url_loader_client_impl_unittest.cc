@@ -14,6 +14,7 @@
 #include "ipc/ipc_sender.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/redirect_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -57,7 +58,9 @@ class URLLoaderClientImplTest : public ::testing::Test,
                             int32_t request_id,
                             uint32_t options,
                             const ResourceRequest& url_request,
-                            mojom::URLLoaderClientPtr client) override {
+                            mojom::URLLoaderClientPtr client,
+                            const net::MutableNetworkTrafficAnnotationTag&
+                                traffic_annotation) override {
     url_loader_client_ = std::move(client);
   }
 

@@ -14,6 +14,7 @@
 #include "content/common/url_loader.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request.h"
 
 namespace content {
@@ -28,7 +29,8 @@ class CONTENT_EXPORT URLLoaderImpl : public mojom::URLLoader,
                 mojom::URLLoaderAssociatedRequest url_loader_request,
                 int32_t options,
                 const ResourceRequest& request,
-                mojom::URLLoaderClientPtr url_loader_client);
+                mojom::URLLoaderClientPtr url_loader_client,
+                const net::NetworkTrafficAnnotationTag& traffic_annotation);
   ~URLLoaderImpl() override;
 
   // Called when the associated NetworkContext is going away.

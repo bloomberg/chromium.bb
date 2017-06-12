@@ -293,7 +293,9 @@ class BlobURLRequestJobTest : public testing::Test {
       base::RunLoop().RunUntilIdle();
       factory->CreateLoaderAndStart(mojo::MakeRequest(&url_loader), 0, 0,
                                     mojom::kURLLoadOptionNone, request,
-                                    url_loader_client.CreateInterfacePtr());
+                                    url_loader_client.CreateInterfacePtr(),
+                                    net::MutableNetworkTrafficAnnotationTag(
+                                        TRAFFIC_ANNOTATION_FOR_TESTS));
       url_loader_client.RunUntilComplete();
 
       if (url_loader_client.response_body().is_valid()) {

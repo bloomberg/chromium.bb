@@ -14,6 +14,7 @@
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/cpp/system/wait.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -83,7 +84,8 @@ class URLLoaderImplTest : public testing::Test {
         CreateResourceRequest("GET", RESOURCE_TYPE_MAIN_FRAME, url);
 
     URLLoaderImpl loader_impl(context(), mojo::MakeIsolatedRequest(&loader),
-                              options, request, client->CreateInterfacePtr());
+                              options, request, client->CreateInterfacePtr(),
+                              TRAFFIC_ANNOTATION_FOR_TESTS);
 
     client->RunUntilComplete();
   }

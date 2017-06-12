@@ -386,7 +386,8 @@ void BlobURLLoaderFactory::CreateLoaderAndStart(
     int32_t request_id,
     uint32_t options,
     const ResourceRequest& request,
-    mojom::URLLoaderClientPtr client) {
+    mojom::URLLoaderClientPtr client,
+    const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   new BlobURLLoader(std::move(loader), request, std::move(client),
                     blob_storage_context_.get(), file_system_context_);

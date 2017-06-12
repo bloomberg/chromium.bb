@@ -10,6 +10,7 @@
 #include "content/common/url_loader.mojom.h"
 #include "content/common/url_loader_factory.mojom.h"
 #include "content/public/common/url_loader_throttle.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -50,7 +51,9 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
                             int32_t request_id,
                             uint32_t options,
                             const ResourceRequest& url_request,
-                            mojom::URLLoaderClientPtr client) override {
+                            mojom::URLLoaderClientPtr client,
+                            const net::MutableNetworkTrafficAnnotationTag&
+                                traffic_annotation) override {
     create_loader_and_start_called_++;
 
     client_ptr_ = std::move(client);
@@ -209,7 +212,8 @@ class ThrottlingURLLoaderTest : public testing::Test {
     request->url = GURL("http://example.org");
     loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
         factory_.factory_ptr().get(), std::move(throttles_), 0, 0, 0,
-        std::move(request), &client_);
+        std::move(request), &client_,
+        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
     factory_.factory_ptr().FlushForTesting();
   }
 

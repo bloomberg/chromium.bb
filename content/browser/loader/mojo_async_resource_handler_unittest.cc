@@ -296,7 +296,9 @@ class TestURLLoaderFactory final : public mojom::URLLoaderFactory {
                             int32_t request_id,
                             uint32_t options,
                             const ResourceRequest& url_request,
-                            mojom::URLLoaderClientPtr client_ptr) override {
+                            mojom::URLLoaderClientPtr client_ptr,
+                            const net::MutableNetworkTrafficAnnotationTag&
+                                traffic_annotation) override {
     loader_request_ = std::move(request);
     client_ptr_ = std::move(client_ptr);
   }
@@ -360,7 +362,8 @@ class MojoAsyncResourceHandlerTestBase {
     url_loader_factory_->CreateLoaderAndStart(
         mojo::MakeRequest(&url_loader_proxy_), kRouteId, kRequestId,
         mojom::kURLLoadOptionNone, request,
-        url_loader_client_.CreateInterfacePtr());
+        url_loader_client_.CreateInterfacePtr(),
+        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
 
     url_loader_factory_.FlushForTesting();
     DCHECK(weak_binding);

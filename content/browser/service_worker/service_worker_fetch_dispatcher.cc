@@ -665,7 +665,8 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
   url_loader_factory->CreateLoaderAndStart(
       mojo::MakeRequest(&url_loader_associated_ptr),
       original_info->GetRouteID(), request_id, mojom::kURLLoadOptionNone,
-      request, std::move(url_loader_client_ptr_to_pass));
+      request, std::move(url_loader_client_ptr_to_pass),
+      net::MutableNetworkTrafficAnnotationTag(NO_TRAFFIC_ANNOTATION_YET));
 
   std::unique_ptr<DelegatingURLLoader> url_loader(
       base::MakeUnique<DelegatingURLLoader>(

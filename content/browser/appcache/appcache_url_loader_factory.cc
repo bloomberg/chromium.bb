@@ -16,6 +16,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace content {
 
@@ -48,7 +49,8 @@ void AppCacheURLLoaderFactory::CreateLoaderAndStart(
     int32_t request_id,
     uint32_t options,
     const ResourceRequest& request,
-    mojom::URLLoaderClientPtr client) {
+    mojom::URLLoaderClientPtr client,
+    const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   NOTREACHED() << "Currently not implemented";
 }

@@ -671,8 +671,8 @@ int ResourceDispatcher::StartAsync(
         ThrottlingURLLoader::CreateLoaderAndStart(
             url_loader_factory, std::move(throttles), routing_id, request_id,
             mojom::kURLLoadOptionNone, std::move(request), client.get(),
+            net::MutableNetworkTrafficAnnotationTag(NO_TRAFFIC_ANNOTATION_YET),
             std::move(task_runner));
-    ;
     pending_requests_[request_id]->url_loader = std::move(url_loader);
     pending_requests_[request_id]->url_loader_client = std::move(client);
   } else {
