@@ -27,10 +27,6 @@
 
 interface SVGScriptElement : SVGElement {
     [Reflect] attribute DOMString type;
-
-    // Content Security Policy
-    // https://w3c.github.io/webappsec/specs/content-security-policy/#script-src-the-nonce-attribute
-    [CEReactions, RuntimeEnabled=ExperimentalContentSecurityPolicyFeatures] attribute DOMString nonce;
 };
 
 SVGScriptElement implements SVGURIReference;

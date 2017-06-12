@@ -9,5 +9,5 @@
 [
     NoInterfaceObject
 ] interface NoncedElement {
-    [CEReactions, RuntimeEnabled=ExperimentalContentSecurityPolicyFeatures] attribute DOMString nonce;
+    [CEReactions, RuntimeEnabled=HideNonceContentAttribute] attribute DOMString nonce;
 };
