@@ -96,6 +96,20 @@ class DCLayerOverlayProcessor {
                              QuadList::ConstIterator quad_list_begin,
                              QuadList::ConstIterator quad,
                              DCLayerOverlay* ca_layer_overlay);
+  bool ProcessForOverlay(const gfx::RectF& display_rect,
+                         QuadList* quad_list,
+                         const gfx::Rect& quad_rectangle,
+                         const gfx::RectF& occlusion_bounding_box,
+                         const QuadList::Iterator& it,
+                         gfx::Rect* damage_rect);
+  bool ProcessForUnderlay(const gfx::RectF& display_rect,
+                          QuadList* quad_list,
+                          const gfx::Rect& quad_rectangle,
+                          const gfx::RectF& occlusion_bounding_box,
+                          const QuadList::Iterator& it,
+                          gfx::Rect* damage_rect,
+                          gfx::Rect* this_frame_underlay_rect,
+                          DCLayerOverlay* dc_layer);
 
   gfx::Rect previous_frame_underlay_rect_;
   gfx::Rect previous_occlusion_bounding_box_;
