@@ -356,9 +356,14 @@ Node* ContainerNode::InsertBefore(Node* new_child,
   DCHECK(new_child);
   // https://dom.spec.whatwg.org/#concept-node-pre-insert
 
-  // insertBefore(node, 0) is equivalent to appendChild(node)
+  // insertBefore(node, null) is equivalent to appendChild(node)
   if (!ref_child)
     return AppendChild(new_child, exception_state);
+
+  // 1. Ensure pre-insertion validity of node into parent before child.
+  if (!EnsurePreInsertionValidity(*new_child, ref_child, nullptr,
+                                  exception_state))
+    return new_child;
 
   // 2. Let reference child be child.
   // 3. If reference child is node, set it to node’s next sibling.
@@ -368,11 +373,7 @@ Node* ContainerNode::InsertBefore(Node* new_child,
       return AppendChild(new_child, exception_state);
   }
 
-  // 1. Ensure pre-insertion validity of node into parent before child.
-  if (!EnsurePreInsertionValidity(*new_child, ref_child, nullptr,
-                                  exception_state))
-    return new_child;
-
+  // 4. Adopt node into parent’s node document.
   NodeVector targets;
   DOMTreeMutationDetector detector(*new_child, *this);
   if (!CollectChildrenAndRemoveFromOldParent(*new_child, targets,
@@ -384,6 +385,7 @@ Node* ContainerNode::InsertBefore(Node* new_child,
       return new_child;
   }
 
+  // 5. Insert node into parent before reference child.
   NodeVector post_insertion_notification_targets;
   {
     ChildListMutationScope mutation(*this);
