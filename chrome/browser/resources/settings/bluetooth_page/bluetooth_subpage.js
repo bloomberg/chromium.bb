@@ -98,7 +98,7 @@ Polymer({
 
     /**
      * Set to the name of the dialog to show. This page uses a single
-     * paper-dialog to host one of two dialog elements: 'pairDevice' or
+     * dialog to host one of two dialog elements: 'pairDevice' or
      * 'connectError'. This allows a seamless transition between dialogs.
      * Note: This property should be set before opening the dialog and setting
      * the property will not itself cause the dialog to open.

@@ -111,7 +111,7 @@ Polymer({
   },
 
   /**
-   * Handles tapping on a paper-item's Remove Word icon button.
+   * Handles tapping on a "Remove word" icon button.
    * @param {!{model: !{item: string}}} e
    */
   onRemoveWordTap_: function(e) {
