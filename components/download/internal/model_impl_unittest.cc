@@ -72,7 +72,6 @@ TEST_F(DownloadServiceModelImplTest, SuccessfulInitWithEntries) {
 
   EXPECT_TRUE(test::CompareEntry(&entry1, model_->Get(entry1.guid)));
   EXPECT_TRUE(test::CompareEntry(&entry2, model_->Get(entry2.guid)));
-  EXPECT_EQ(2u, model_->StateCount(Entry::State::NEW));
 }
 
 TEST_F(DownloadServiceModelImplTest, BadInit) {
@@ -94,18 +93,15 @@ TEST_F(DownloadServiceModelImplTest, Add) {
 
   model_->Initialize(&client_);
   store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>());
-  EXPECT_EQ(0u, model_->StateCount(Entry::State::NEW));
 
   model_->Add(entry1);
   EXPECT_TRUE(test::CompareEntry(&entry1, model_->Get(entry1.guid)));
   EXPECT_TRUE(test::CompareEntry(&entry1, store_->LastUpdatedEntry()));
   store_->TriggerUpdate(true);
-  EXPECT_EQ(1u, model_->StateCount(Entry::State::NEW));
 
   model_->Add(entry2);
   EXPECT_TRUE(test::CompareEntry(&entry2, model_->Get(entry2.guid)));
   EXPECT_TRUE(test::CompareEntry(&entry2, store_->LastUpdatedEntry()));
-  EXPECT_EQ(2u, model_->StateCount(Entry::State::NEW));
 
   store_->TriggerUpdate(false);
   EXPECT_EQ(nullptr, model_->Get(entry2.guid));
@@ -125,27 +121,31 @@ TEST_F(DownloadServiceModelImplTest, Update) {
   InSequence sequence;
   EXPECT_CALL(client_, OnModelReady(true)).Times(1);
   EXPECT_CALL(client_, OnItemUpdated(true, entry1.client, entry1.guid))
-      .Times(1);
+      .Times(2);
   EXPECT_CALL(client_, OnItemUpdated(false, entry1.client, entry1.guid))
       .Times(1);
 
   model_->Initialize(&client_);
   store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
-  EXPECT_EQ(1u, model_->StateCount(Entry::State::NEW));
+  std::vector<Entry*> entries_pointers = model_->PeekEntries();
 
+  // Update with a different object.
   model_->Update(entry2);
   EXPECT_TRUE(test::CompareEntry(&entry2, model_->Get(entry2.guid)));
   EXPECT_TRUE(test::CompareEntry(&entry2, store_->LastUpdatedEntry()));
   store_->TriggerUpdate(true);
-  EXPECT_EQ(0u, model_->StateCount(Entry::State::NEW));
-  EXPECT_EQ(1u, model_->StateCount(Entry::State::AVAILABLE));
+
+  // Update with the same object.
+  Entry* entry = model_->Get(entry1.guid);
+  entry->state = Entry::State::NEW;
+  model_->Update(*entry);
+  store_->TriggerUpdate(true);
+  // Peek entries should return the same set of pointers.
+  EXPECT_TRUE(test::CompareEntryList(entries_pointers, model_->PeekEntries()));
 
   model_->Update(entry3);
   EXPECT_TRUE(test::CompareEntry(&entry3, model_->Get(entry3.guid)));
   EXPECT_TRUE(test::CompareEntry(&entry3, store_->LastUpdatedEntry()));
-  EXPECT_EQ(0u, model_->StateCount(Entry::State::NEW));
-  EXPECT_EQ(0u, model_->StateCount(Entry::State::AVAILABLE));
-  EXPECT_EQ(1u, model_->StateCount(Entry::State::ACTIVE));
 
   store_->TriggerUpdate(false);
   EXPECT_TRUE(test::CompareEntry(&entry3, model_->Get(entry3.guid)));
@@ -165,19 +165,16 @@ TEST_F(DownloadServiceModelImplTest, Remove) {
 
   model_->Initialize(&client_);
   store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
-  EXPECT_EQ(2u, model_->StateCount(Entry::State::NEW));
 
   model_->Remove(entry1.guid);
   EXPECT_EQ(entry1.guid, store_->LastRemovedEntry());
   EXPECT_EQ(nullptr, model_->Get(entry1.guid));
   store_->TriggerRemove(true);
-  EXPECT_EQ(1u, model_->StateCount(Entry::State::NEW));
 
   model_->Remove(entry2.guid);
   EXPECT_EQ(entry2.guid, store_->LastRemovedEntry());
   EXPECT_EQ(nullptr, model_->Get(entry2.guid));
   store_->TriggerRemove(false);
-  EXPECT_EQ(0u, model_->StateCount(Entry::State::NEW));
 }
 
 TEST_F(DownloadServiceModelImplTest, Get) {
@@ -221,15 +218,12 @@ TEST_F(DownloadServiceModelImplTest, TestRemoveAfterAdd) {
 
   model_->Initialize(&client_);
   store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>());
-  EXPECT_EQ(0u, model_->StateCount(Entry::State::NEW));
 
   model_->Add(entry);
   EXPECT_TRUE(test::CompareEntry(&entry, model_->Get(entry.guid)));
-  EXPECT_EQ(1u, model_->StateCount(Entry::State::NEW));
 
   model_->Remove(entry.guid);
   EXPECT_EQ(nullptr, model_->Get(entry.guid));
-  EXPECT_EQ(0u, model_->StateCount(Entry::State::NEW));
 
   store_->TriggerUpdate(true);
   store_->TriggerRemove(true);
@@ -252,17 +246,12 @@ TEST_F(DownloadServiceModelImplTest, TestRemoveAfterUpdate) {
   model_->Initialize(&client_);
   store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
   EXPECT_TRUE(test::CompareEntry(&entry1, model_->Get(entry1.guid)));
-  EXPECT_EQ(1u, model_->StateCount(Entry::State::NEW));
 
   model_->Update(entry2);
   EXPECT_TRUE(test::CompareEntry(&entry2, model_->Get(entry2.guid)));
-  EXPECT_EQ(1u, model_->StateCount(Entry::State::AVAILABLE));
-  EXPECT_EQ(0u, model_->StateCount(Entry::State::NEW));
 
   model_->Remove(entry2.guid);
   EXPECT_EQ(nullptr, model_->Get(entry2.guid));
-  EXPECT_EQ(0u, model_->StateCount(Entry::State::AVAILABLE));
-  EXPECT_EQ(0u, model_->StateCount(Entry::State::NEW));
 
   store_->TriggerUpdate(true);
   store_->TriggerRemove(true);

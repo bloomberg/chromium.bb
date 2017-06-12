@@ -32,7 +32,6 @@ class ModelImpl : public Model {
   void Update(const Entry& entry) override;
   void Remove(const std::string& guid) override;
   Entry* Get(const std::string& guid) override;
-  uint32_t StateCount(Entry::State state) override;
   EntryList PeekEntries() override;
 
  private:
@@ -61,9 +60,6 @@ class ModelImpl : public Model {
   // A map of [guid] -> [std::unique_ptr<Entry>].  Effectively the cache of the
   // entries saved in Store.
   OwnedEntryMap entries_;
-
-  // A map of Entry::State -> the total number of entries with that state.
-  std::map<Entry::State, uint32_t> state_counts_;
 
   base::WeakPtrFactory<ModelImpl> weak_ptr_factory_;
 
