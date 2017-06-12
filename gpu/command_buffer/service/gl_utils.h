@@ -69,6 +69,7 @@ void APIENTRY LogGLDebugMessage(GLenum source,
 
 void InitializeGLDebugLogging();
 
+bool ValidContextLostReason(GLenum reason);
 error::ContextLostReason GetContextLostReasonFromResetStatus(
     GLenum reset_status);
 
