@@ -110,10 +110,10 @@ static INLINE void highbd_inter_predictor(const uint8_t *src, int src_stride,
                                           const InterpFilter interp_filter,
 #endif
                                           int xs, int ys, int bd) {
-  const int ref = conv_params->ref;
   const int avg = conv_params->do_average;
   assert(avg == 0 || avg == 1);
 #if CONFIG_DUAL_FILTER
+  const int ref = conv_params->ref;
   const InterpFilterParams interp_filter_params_x =
       av1_get_interp_filter_params(interp_filter[1 + 2 * ref]);
   const InterpFilterParams interp_filter_params_y =
