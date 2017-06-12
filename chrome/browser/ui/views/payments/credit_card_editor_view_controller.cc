@@ -283,10 +283,11 @@ CreditCardEditorViewController::CreateCustomFieldView(
 
     combobox_layout->StartRow(0, 0);
     constexpr int kInputFieldHeight = 28;
-    EditorField tmp_month{autofill::CREDIT_CARD_EXP_MONTH, base::string16(),
-                          EditorField::LengthHint::HINT_SHORT,
-                          /*required=*/true,
-                          EditorField::ControlType::COMBOBOX};
+    EditorField tmp_month{
+        autofill::CREDIT_CARD_EXP_MONTH,
+        l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_EXPIRATION_MONTH),
+        EditorField::LengthHint::HINT_SHORT,
+        /*required=*/true, EditorField::ControlType::COMBOBOX};
     std::unique_ptr<ValidatingCombobox> month_combobox =
         CreateComboboxForField(tmp_month);
     *focusable_field = month_combobox.get();
@@ -294,9 +295,11 @@ CreditCardEditorViewController::CreateCustomFieldView(
                              views::GridLayout::FILL, views::GridLayout::FILL,
                              0, kInputFieldHeight);
 
-    EditorField tmp_year{autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR,
-                         base::string16(), EditorField::LengthHint::HINT_SHORT,
-                         /*required=*/true, EditorField::ControlType::COMBOBOX};
+    EditorField tmp_year{
+        autofill::CREDIT_CARD_EXP_4_DIGIT_YEAR,
+        l10n_util::GetStringUTF16(IDS_AUTOFILL_FIELD_LABEL_EXPIRATION_YEAR),
+        EditorField::LengthHint::HINT_SHORT,
+        /*required=*/true, EditorField::ControlType::COMBOBOX};
     std::unique_ptr<ValidatingCombobox> year_combobox =
         CreateComboboxForField(tmp_year);
     combobox_layout->AddView(year_combobox.release(), 1, 1,
