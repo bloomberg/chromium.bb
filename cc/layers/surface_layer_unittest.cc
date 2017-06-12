@@ -34,6 +34,8 @@ namespace {
 
 using testing::_;
 using testing::Eq;
+using testing::ElementsAre;
+using testing::SizeIs;
 
 static constexpr FrameSinkId kArbitraryFrameSinkId(1, 1);
 
@@ -41,6 +43,13 @@ class SurfaceLayerTest : public testing::Test {
  public:
   SurfaceLayerTest()
       : host_impl_(&task_runner_provider_, &task_graph_runner_) {}
+
+  // Synchronizes |layer_tree_host_| and |host_impl_| and pushes surface ids.
+  void SynchronizeTrees() {
+    TreeSynchronizer::PushLayerProperties(layer_tree_host_.get(),
+                                          host_impl_.pending_tree());
+    layer_tree_host_->PushSurfaceIdsTo(host_impl_.pending_tree());
+  }
 
  protected:
   void SetUp() override {
@@ -171,9 +180,7 @@ TEST_F(SurfaceLayerTest, SurfaceInfoPushProperties) {
 
   std::unique_ptr<SurfaceLayerImpl> layer_impl =
       SurfaceLayerImpl::Create(host_impl_.pending_tree(), layer->id());
-  TreeSynchronizer::PushLayerProperties(layer_tree_host_.get(),
-                                        host_impl_.pending_tree());
-  layer_tree_host_->PushSurfaceIdsTo(host_impl_.pending_tree());
+  SynchronizeTrees();
 
   // Verify that pending tree received the surface id and also has
   // needs_surface_ids_sync set to true as it needs to sync with active tree.
@@ -198,9 +205,7 @@ TEST_F(SurfaceLayerTest, SurfaceInfoPushProperties) {
   EXPECT_TRUE(layer_tree_host_->needs_surface_ids_sync());
   EXPECT_EQ(layer_tree_host_->SurfaceLayerIds().size(), 1u);
 
-  TreeSynchronizer::PushLayerProperties(layer_tree_host_.get(),
-                                        host_impl_.pending_tree());
-  layer_tree_host_->PushSurfaceIdsTo(host_impl_.pending_tree());
+  SynchronizeTrees();
 
   EXPECT_EQ(host_impl_.pending_tree()->SurfaceLayerIds().size(), 1u);
 
@@ -208,6 +213,139 @@ TEST_F(SurfaceLayerTest, SurfaceInfoPushProperties) {
   // SurfaceInfo is pushed through.
   EXPECT_EQ(primary_info, layer_impl->primary_surface_info());
   EXPECT_EQ(fallback_info, layer_impl->fallback_surface_info());
+}
+
+// This test verifies the list of surface ids is correct when there are cloned
+// surface layers. This emulates the flow of maximize and minimize animations on
+// Chrome OS.
+TEST_F(SurfaceLayerTest, CheckSurfaceReferencesForClonedLayer) {
+  // We use a nice mock here because we are not really interested in calls to
+  // MockSurfaceReferenceFactory and we don't want warnings printed.
+  scoped_refptr<SurfaceReferenceFactory> ref_factory =
+      new testing::NiceMock<MockSurfaceReferenceFactory>();
+
+  const SurfaceId old_surface_id(
+      kArbitraryFrameSinkId,
+      LocalSurfaceId(1, base::UnguessableToken::Create()));
+  const SurfaceInfo old_surface_info(old_surface_id, 1.f, gfx::Size(1, 1));
+
+  // This layer will always contain the old surface id and will be deleted when
+  // animation is done.
+  scoped_refptr<SurfaceLayer> layer1 = SurfaceLayer::Create(ref_factory);
+  layer1->SetLayerTreeHost(layer_tree_host_.get());
+  layer1->SetPrimarySurfaceInfo(old_surface_info);
+  layer1->SetFallbackSurfaceInfo(old_surface_info);
+
+  // This layer will eventually be switched be switched to show the new surface
+  // id and will be retained when animation is done.
+  scoped_refptr<SurfaceLayer> layer2 = SurfaceLayer::Create(ref_factory);
+  layer2->SetLayerTreeHost(layer_tree_host_.get());
+  layer2->SetPrimarySurfaceInfo(old_surface_info);
+  layer2->SetFallbackSurfaceInfo(old_surface_info);
+
+  std::unique_ptr<SurfaceLayerImpl> layer_impl1 =
+      SurfaceLayerImpl::Create(host_impl_.pending_tree(), layer1->id());
+  std::unique_ptr<SurfaceLayerImpl> layer_impl2 =
+      SurfaceLayerImpl::Create(host_impl_.pending_tree(), layer2->id());
+
+  SynchronizeTrees();
+
+  // Verify that only |old_surface_id| is going to be referenced.
+  EXPECT_THAT(layer_tree_host_->SurfaceLayerIds(), ElementsAre(old_surface_id));
+  EXPECT_THAT(host_impl_.pending_tree()->SurfaceLayerIds(),
+              ElementsAre(old_surface_id));
+
+  const SurfaceId new_surface_id(
+      kArbitraryFrameSinkId,
+      LocalSurfaceId(2, base::UnguessableToken::Create()));
+  const SurfaceInfo new_surface_info(new_surface_id, 1.f, gfx::Size(2, 2));
+
+  // Switch the new layer to use |new_surface_id|.
+  layer2->SetPrimarySurfaceInfo(new_surface_info);
+  layer2->SetFallbackSurfaceInfo(new_surface_info);
+
+  SynchronizeTrees();
+
+  // Verify that both surface ids are going to be referenced.
+  EXPECT_THAT(layer_tree_host_->SurfaceLayerIds(),
+              ElementsAre(old_surface_id, new_surface_id));
+  EXPECT_THAT(host_impl_.pending_tree()->SurfaceLayerIds(),
+              ElementsAre(old_surface_id, new_surface_id));
+
+  // Unparent the old layer like it's being destroyed at the end of animation.
+  layer1->SetLayerTreeHost(nullptr);
+
+  SynchronizeTrees();
+
+  // Verify that only |new_surface_id| is going to be referenced.
+  EXPECT_THAT(layer_tree_host_->SurfaceLayerIds(), ElementsAre(new_surface_id));
+  EXPECT_THAT(host_impl_.pending_tree()->SurfaceLayerIds(),
+              ElementsAre(new_surface_id));
+
+  // Cleanup for destruction.
+  layer2->SetLayerTreeHost(nullptr);
+}
+
+// This test verifies LayerTreeHost::needs_surface_ids_sync() is correct when
+// there are cloned surface layers.
+TEST_F(SurfaceLayerTest, CheckNeedsSurfaceIdsSyncForClonedLayers) {
+  // We use a nice mock here because we are not really interested in calls to
+  // MockSurfaceReferenceFactory and we don't want warnings printed.
+  scoped_refptr<SurfaceReferenceFactory> ref_factory =
+      new testing::NiceMock<MockSurfaceReferenceFactory>();
+
+  const SurfaceInfo surface_info(
+      SurfaceId(kArbitraryFrameSinkId,
+                LocalSurfaceId(1, base::UnguessableToken::Create())),
+      1.f, gfx::Size(1, 1));
+
+  scoped_refptr<SurfaceLayer> layer1 = SurfaceLayer::Create(ref_factory);
+  layer1->SetLayerTreeHost(layer_tree_host_.get());
+  layer1->SetPrimarySurfaceInfo(surface_info);
+  layer1->SetFallbackSurfaceInfo(surface_info);
+
+  // Verify the surface id is in SurfaceLayerIds() and needs_surface_ids_sync()
+  // is true.
+  EXPECT_TRUE(layer_tree_host_->needs_surface_ids_sync());
+  EXPECT_THAT(layer_tree_host_->SurfaceLayerIds(), SizeIs(1));
+
+  std::unique_ptr<SurfaceLayerImpl> layer_impl1 =
+      SurfaceLayerImpl::Create(host_impl_.pending_tree(), layer1->id());
+  SynchronizeTrees();
+
+  // After syncchronizing trees verify needs_surface_ids_sync() is false.
+  EXPECT_FALSE(layer_tree_host_->needs_surface_ids_sync());
+
+  // Create the second layer that is a clone of the first.
+  scoped_refptr<SurfaceLayer> layer2 = SurfaceLayer::Create(ref_factory);
+  layer2->SetLayerTreeHost(layer_tree_host_.get());
+  layer2->SetPrimarySurfaceInfo(surface_info);
+  layer2->SetFallbackSurfaceInfo(surface_info);
+
+  // Verify that after creating the second layer with the same surface id that
+  // needs_surface_ids_sync() is still false.
+  EXPECT_FALSE(layer_tree_host_->needs_surface_ids_sync());
+  EXPECT_THAT(layer_tree_host_->SurfaceLayerIds(), SizeIs(1));
+
+  std::unique_ptr<SurfaceLayerImpl> layer_impl2 =
+      SurfaceLayerImpl::Create(host_impl_.pending_tree(), layer2->id());
+  SynchronizeTrees();
+
+  // Verify needs_surface_ids_sync() is still false after synchronizing trees.
+  EXPECT_FALSE(layer_tree_host_->needs_surface_ids_sync());
+
+  // Destroy one of the layers, leaving one layer with the surface id.
+  layer1->SetLayerTreeHost(nullptr);
+
+  // Verify needs_surface_ids_sync() is still false.
+  EXPECT_FALSE(layer_tree_host_->needs_surface_ids_sync());
+
+  // Destroy the last layer, this should change the set of layer surface ids.
+  layer2->SetLayerTreeHost(nullptr);
+
+  // Verify SurfaceLayerIds() is empty and needs_surface_ids_sync() is true.
+  EXPECT_TRUE(layer_tree_host_->needs_surface_ids_sync());
+  EXPECT_THAT(layer_tree_host_->SurfaceLayerIds(), SizeIs(0));
 }
 
 // Check that SurfaceSequence is sent through swap promise.

@@ -16,6 +16,8 @@
 #include <vector>
 
 #include "base/cancelable_callback.h"
+#include "base/containers/flat_map.h"
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -355,7 +357,7 @@ class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(SurfaceReferenceOwner),
 
   void AddSurfaceLayerId(const SurfaceId& surface_id);
   void RemoveSurfaceLayerId(const SurfaceId& surface_id);
-  const base::flat_set<SurfaceId>& SurfaceLayerIds() const;
+  base::flat_set<SurfaceId> SurfaceLayerIds() const;
 
   void AddLayerShouldPushProperties(Layer* layer);
   void RemoveLayerShouldPushProperties(Layer* layer);
@@ -624,7 +626,8 @@ class CC_EXPORT LayerTreeHost : public NON_EXPORTED_BASE(SurfaceReferenceOwner),
 
   scoped_refptr<HeadsUpDisplayLayer> hud_layer_;
 
-  base::flat_set<SurfaceId> surface_layer_ids_;
+  // The number of SurfaceLayers that have fallback set to SurfaceId.
+  base::flat_map<SurfaceId, int> surface_layer_ids_;
 
   // Set of layers that need to push properties.
   std::unordered_set<Layer*> layers_that_should_push_properties_;

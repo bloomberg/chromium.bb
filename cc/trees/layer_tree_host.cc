@@ -1094,17 +1094,26 @@ bool LayerTreeHost::PaintContent(const LayerList& update_layer_list,
 }
 
 void LayerTreeHost::AddSurfaceLayerId(const SurfaceId& surface_id) {
-  surface_layer_ids_.insert(surface_id);
-  needs_surface_ids_sync_ = true;
+  if (++surface_layer_ids_[surface_id] == 1)
+    needs_surface_ids_sync_ = true;
 }
 
 void LayerTreeHost::RemoveSurfaceLayerId(const SurfaceId& surface_id) {
-  surface_layer_ids_.erase(surface_id);
-  needs_surface_ids_sync_ = true;
+  auto iter = surface_layer_ids_.find(surface_id);
+  if (iter == surface_layer_ids_.end())
+    return;
+
+  if (--iter->second <= 0) {
+    surface_layer_ids_.erase(iter);
+    needs_surface_ids_sync_ = true;
+  }
 }
 
-const base::flat_set<SurfaceId>& LayerTreeHost::SurfaceLayerIds() const {
-  return surface_layer_ids_;
+base::flat_set<SurfaceId> LayerTreeHost::SurfaceLayerIds() const {
+  base::flat_set<SurfaceId> ids;
+  for (auto& map_entry : surface_layer_ids_)
+    ids.insert(map_entry.first);
+  return ids;
 }
 
 void LayerTreeHost::AddLayerShouldPushProperties(Layer* layer) {
