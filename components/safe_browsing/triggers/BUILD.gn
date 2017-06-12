@@ -5,18 +5,32 @@
 import("//build/config/features.gni")
 
 source_set("triggers") {
-  if (safe_browsing_mode != 0) {
-    sources = [
-      "trigger_manager.cc",
-      "trigger_manager.h",
-    ]
+  sources = [
+    "trigger_manager.cc",
+    "trigger_manager.h",
+  ]
+  public_deps = [
+    "//components/security_interstitials/content:security_interstitial_page",
+    "//content/public/browser:browser",
+  ]
+  deps = [
+    "//base:base",
+    "//components/safe_browsing:safe_browsing",
+    "//components/safe_browsing/browser:browser",
+  ]
+}
 
-    deps = [
-      "//base:base",
-      "//components/safe_browsing:safe_browsing",
-      "//components/safe_browsing/browser:browser",
-      "//components/security_interstitials/content:security_interstitial_page",
-      "//content/public/browser:browser",
-    ]
-  }
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "trigger_manager_unittest.cc",
+  ]
+  deps = [
+    ":triggers",
+    "//base",
+    "//chrome/test:test_support",
+    "//components/safe_browsing/browser:browser",
+    "//content/test:test_support",
+    "//testing/gtest",
+  ]
 }

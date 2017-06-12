@@ -19,14 +19,15 @@ source_set("safe_browsing") {
     "base_ui_manager.cc",
     "base_ui_manager.h",
   ]
-
+  public_deps = [
+    "//components/security_interstitials/content:security_interstitial_page",
+  ]
   deps = [
     ":base_ping_manager",
     "//base:base",
     "//base:i18n",
     "//components/safe_browsing/common:safe_browsing_prefs",
     "//components/safe_browsing_db:database_manager",
-    "//components/security_interstitials/content:security_interstitial_page",
     "//components/security_interstitials/core:core",
     "//content/public/browser:browser",
     "//content/public/common:common",

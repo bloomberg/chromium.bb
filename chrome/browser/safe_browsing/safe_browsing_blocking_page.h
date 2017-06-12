@@ -122,10 +122,9 @@ class SafeBrowsingBlockingPage : public BaseBlockingPage {
                            bool did_proceed,
                            int num_visits) override;
 
-  // A ThreatDetails object that we start generating when the
-  // blocking page is shown. The object will be sent when the warning
-  // is gone (if the user enables the feature).
-  scoped_refptr<ThreatDetails> threat_details_;
+  // Whether ThreatDetails collection is in progress as part of this
+  // interstitial.
+  bool threat_details_in_progress_;
 
   // The factory used to instantiate SafeBrowsingBlockingPage objects.
   // Useful for tests, so they can provide their own implementation of

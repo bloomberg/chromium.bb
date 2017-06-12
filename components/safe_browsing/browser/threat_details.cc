@@ -196,6 +196,12 @@ ThreatDetails::ThreatDetails(
   StartCollection();
 }
 
+ThreatDetails::ThreatDetails()
+    : cache_result_(false),
+      did_proceed_(false),
+      num_visits_(0),
+      ambiguous_dom_(false) {}
+
 ThreatDetails::~ThreatDetails() {}
 
 bool ThreatDetails::OnMessageReceived(const IPC::Message& message,
