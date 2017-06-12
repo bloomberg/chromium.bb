@@ -20,6 +20,7 @@
 #include "ui/gfx/switches.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
+#include "ui/gl/gl_utils.h"
 #include "ui/gl/init/gl_factory.h"
 
 #if defined(USE_OZONE)
@@ -191,7 +192,7 @@ bool GpuInit::InitializeAndStartSandbox(const base::CommandLine& command_line) {
   gpu_info_.in_process_gpu = false;
 
   gpu_info_.passthrough_cmd_decoder =
-      command_line.HasSwitch(switches::kUsePassthroughCmdDecoder);
+      gl::UsePassthroughCommandDecoder(&command_line);
 
   sandbox_helper_->PreSandboxStartup();
 
