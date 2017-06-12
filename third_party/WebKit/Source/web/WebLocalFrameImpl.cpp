@@ -290,8 +290,9 @@ class ChromePrintContext : public PrintContext {
     return scale;
   }
 
-  void SpoolAllPagesWithBoundaries(WebCanvas* canvas,
-                                   const FloatSize& page_size_in_pixels) {
+  void SpoolAllPagesWithBoundariesForTesting(
+      WebCanvas* canvas,
+      const FloatSize& page_size_in_pixels) {
     DispatchEventsForPrintingOnAllFrames();
     if (!GetFrame()->GetDocument() ||
         GetFrame()->GetDocument()->GetLayoutViewItem().IsNull())
@@ -332,8 +333,9 @@ class ChromePrintContext : public PrintContext {
       AffineTransform transform;
       transform.Translate(0, current_height);
 #if OS(WIN) || OS(MACOSX)
-      // Account for the disabling of scaling in spoolPage. In the context
-      // of spoolAllPagesWithBoundaries the scale HAS NOT been pre-applied.
+      // Account for the disabling of scaling in spoolPage. In the context of
+      // SpoolAllPagesWithBoundariesForTesting the scale HAS NOT been
+      // pre-applied.
       float scale = GetPageShrink(page_index);
       transform.Scale(scale, scale);
 #endif
@@ -1480,16 +1482,16 @@ WebString WebLocalFrameImpl::PageProperty(const WebString& property_name,
                                       page_index);
 }
 
-void WebLocalFrameImpl::PrintPagesWithBoundaries(
+void WebLocalFrameImpl::PrintPagesForTesting(
     WebCanvas* canvas,
     const WebSize& page_size_in_pixels) {
   DCHECK(print_context_);
 
-  print_context_->SpoolAllPagesWithBoundaries(
+  print_context_->SpoolAllPagesWithBoundariesForTesting(
       canvas, FloatSize(page_size_in_pixels.width, page_size_in_pixels.height));
 }
 
-WebRect WebLocalFrameImpl::SelectionBoundsRect() const {
+WebRect WebLocalFrameImpl::GetSelectionBoundsRectForTesting() const {
   return HasSelection() ? WebRect(IntRect(GetFrame()->Selection().Bounds()))
                         : WebRect();
 }

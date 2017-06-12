@@ -44,7 +44,6 @@ class DictionaryValue;
 }
 
 namespace blink {
-class WebFrame;
 class WebLocalFrame;
 class WebView;
 }
@@ -322,7 +321,7 @@ class PrintWebViewHelper
   // |page_number| is zero-based.
   // When method is called, canvas should be setup to draw to |canvas_area|
   // with |scale_factor|.
-  static float RenderPageContent(blink::WebFrame* frame,
+  static float RenderPageContent(blink::WebLocalFrame* frame,
                                  int page_number,
                                  const gfx::Rect& canvas_area,
                                  const gfx::Rect& content_area,
@@ -354,7 +353,7 @@ class PrintWebViewHelper
   static void PrintHeaderAndFooter(blink::WebCanvas* canvas,
                                    int page_number,
                                    int total_pages,
-                                   const blink::WebFrame& source_frame,
+                                   const blink::WebLocalFrame& source_frame,
                                    float webkit_scale_factor,
                                    const PageSizeMargins& page_layout_in_points,
                                    const PrintMsg_Print_Params& params);

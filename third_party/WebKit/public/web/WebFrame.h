@@ -62,7 +62,6 @@ class WebURLRequest;
 class WebView;
 enum class WebSandboxFlags;
 struct WebFrameOwnerProperties;
-struct WebPrintParams;
 struct WebRect;
 struct WebSize;
 
@@ -262,47 +261,7 @@ class BLINK_EXPORT WebFrame {
   // notifications.
   virtual bool IsLoading() const;
 
-  // Printing ------------------------------------------------------------
-
-  // Reformats the WebFrame for printing. WebPrintParams specifies the printable
-  // content size, paper size, printable area size, printer DPI and print
-  // scaling option. If constrainToNode node is specified, then only the given
-  // node is printed (for now only plugins are supported), instead of the entire
-  // frame.
-  // Returns the number of pages that can be printed at the given
-  // page size.
-  virtual int PrintBegin(const WebPrintParams&,
-                         const WebNode& constrain_to_node = WebNode()) = 0;
-
-  // Returns the page shrinking factor calculated by webkit (usually
-  // between 1/1.33 and 1/2). Returns 0 if the page number is invalid or
-  // not in printing mode.
-  virtual float GetPrintPageShrink(int page) = 0;
-
-  // Prints one page, and returns the calculated page shrinking factor
-  // (usually between 1/1.33 and 1/2).  Returns 0 if the page number is
-  // invalid or not in printing mode.
-  virtual float PrintPage(int page_to_print, WebCanvas*) = 0;
-
-  // Reformats the WebFrame for screen display.
-  virtual void PrintEnd() = 0;
-
-  // If the frame contains a full-frame plugin or the given node refers to a
-  // plugin whose content indicates that printed output should not be scaled,
-  // return true, otherwise return false.
-  virtual bool IsPrintScalingDisabledForPlugin(const WebNode& = WebNode()) = 0;
-
   // Utility -------------------------------------------------------------
-
-  // Prints all of the pages into the canvas, with page boundaries drawn as
-  // one pixel wide blue lines. This method exists to support layout tests.
-  virtual void PrintPagesWithBoundaries(WebCanvas*, const WebSize&) = 0;
-
-  // Returns the bounds rect for current selection. If selection is performed
-  // on transformed text, the rect will still bound the selection but will
-  // not be transformed itself. If no selection is present, the rect will be
-  // empty ((0,0), (0,0)).
-  virtual WebRect SelectionBoundsRect() const = 0;
 
   // Returns the frame inside a given frame or iframe element. Returns 0 if
   // the given element is not a frame, iframe or if the frame is empty.

@@ -8782,7 +8782,7 @@ TEST_P(ParameterizedWebFrameTest, PrintingBasic)
   FrameTestHelpers::WebViewHelper web_view_helper;
   web_view_helper.InitializeAndLoad("data:text/html,Hello, world.");
 
-  WebFrame* frame = web_view_helper.WebView()->MainFrame();
+  WebLocalFrame* frame = web_view_helper.WebView()->MainFrameImpl();
 
   WebPrintParams print_params;
   print_params.print_content_area.width = 500;

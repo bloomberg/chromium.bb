@@ -229,13 +229,13 @@ class WEB_EXPORT WebLocalFrameImpl final
                                   int& margin_left) override;
   WebString PageProperty(const WebString& property_name,
                          int page_index) override;
-  void PrintPagesWithBoundaries(WebCanvas*, const WebSize&) override;
+  void PrintPagesForTesting(WebCanvas*, const WebSize&) override;
 
   void DispatchMessageEventWithOriginCheck(
       const WebSecurityOrigin& intended_target_origin,
       const WebDOMEvent&) override;
 
-  WebRect SelectionBoundsRect() const override;
+  WebRect GetSelectionBoundsRectForTesting() const override;
 
   WebString GetLayerTreeAsTextForTesting(
       bool show_debug_info = false) const override;

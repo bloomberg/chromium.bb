@@ -56,15 +56,6 @@ class CORE_EXPORT WebRemoteFrameImpl final
   WebAssociatedURLLoader* CreateAssociatedURLLoader(
       const WebAssociatedURLLoaderOptions&) override;
   unsigned UnloadListenerCount() const override;
-  int PrintBegin(const WebPrintParams&,
-                 const WebNode& constrain_to_node) override;
-  float PrintPage(int page_to_print, WebCanvas*) override;
-  float GetPrintPageShrink(int page) override;
-  void PrintEnd() override;
-  bool IsPrintScalingDisabledForPlugin(const WebNode&) override;
-  void PrintPagesWithBoundaries(WebCanvas*, const WebSize&) override;
-
-  WebRect SelectionBoundsRect() const override;
 
   // WebRemoteFrame methods:
   WebLocalFrame* CreateLocalChild(WebTreeScopeType,

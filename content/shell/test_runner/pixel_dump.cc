@@ -5,6 +5,7 @@
 #include "content/shell/test_runner/pixel_dump.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -48,7 +49,8 @@ struct PixelsDumpRequest {
 
 class CaptureCallback : public blink::WebCompositeAndReadbackAsyncCallback {
  public:
-  CaptureCallback(const base::Callback<void(const SkBitmap&)>& callback);
+  explicit CaptureCallback(
+      const base::Callback<void(const SkBitmap&)>& callback);
   virtual ~CaptureCallback();
 
   void set_wait_for_popup(bool wait) { wait_for_popup_ = wait; }
@@ -74,7 +76,12 @@ void DrawSelectionRect(const PixelsDumpRequest& dump_request,
   if (!dump_request.layout_test_runtime_flags.dump_selection_rect())
     return;
   // If there is a selection rect - draw a red 1px border enclosing rect
-  blink::WebRect wr = dump_request.web_view->MainFrame()->SelectionBoundsRect();
+  CHECK(dump_request.web_view->MainFrame()->IsWebLocalFrame())
+      << "This function cannot be called if the main frame is not a "
+         "local frame.";
+  blink::WebRect wr = dump_request.web_view->MainFrame()
+                          ->ToWebLocalFrame()
+                          ->GetSelectionBoundsRectForTesting();
   if (wr.IsEmpty())
     return;
   // Render a red rectangle bounding selection rect
@@ -92,7 +99,12 @@ void CapturePixelsForPrinting(std::unique_ptr<PixelsDumpRequest> dump_request) {
   dump_request->web_view->UpdateAllLifecyclePhases();
 
   blink::WebSize page_size_in_pixels = dump_request->web_view->Size();
-  blink::WebFrame* web_frame = dump_request->web_view->MainFrame();
+
+  CHECK(dump_request->web_view->MainFrame()->IsWebLocalFrame())
+      << "This function cannot be called if the main frame is not a "
+         "local frame.";
+  blink::WebLocalFrame* web_frame =
+      dump_request->web_view->MainFrame()->ToWebLocalFrame();
 
   int page_count = web_frame->PrintBegin(page_size_in_pixels);
   int totalHeight = page_count * (page_size_in_pixels.height + 1) - 1;
@@ -109,7 +121,7 @@ void CapturePixelsForPrinting(std::unique_ptr<PixelsDumpRequest> dump_request) {
   }
 
   cc::SkiaPaintCanvas canvas(bitmap);
-  web_frame->PrintPagesWithBoundaries(&canvas, page_size_in_pixels);
+  web_frame->PrintPagesForTesting(&canvas, page_size_in_pixels);
   web_frame->PrintEnd();
 
   DrawSelectionRect(*dump_request, &canvas);
