@@ -34664,6 +34664,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.Certificate.SHA1.MainFrame" enum="SHA1Status">
+  <obsolete>
+    Deprecated 06/2017 as SHA-1 was successfully disabled in 01/2017.
+  </obsolete>
   <owner>rsleevi@chromium.org</owner>
   <summary>
     Whether or not SHA-1 was present in a resource fetched for the main frame,
@@ -34672,6 +34675,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.Certificate.SHA1.Subresource" enum="SHA1Status">
+  <obsolete>
+    Deprecated 06/2017 as SHA-1 was successfully disabled in 01/2017.
+  </obsolete>
   <owner>rsleevi@chromium.org</owner>
   <summary>
     Whether or not SHA-1 was present in a subresource fetch, and if so, what its
