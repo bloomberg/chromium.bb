@@ -16,8 +16,7 @@ You can propose changes to this style guide by sending an email to
 request review for a change to this file. If there's no consensus,
 `src/styleguide/c++/OWNERS` get to decide.
 
-Blink code in `third_party/WebKit` uses [Blink
-style](https://sites.google.com/a/chromium.org/dev/blink/coding-style).
+Blink code in `third_party/WebKit` uses [Blink style](blink-c++.md).
 
 ## C++11 features
 
