@@ -18,16 +18,16 @@
 
 namespace media {
 
-typedef base::Callback<void(CdmPromise::Exception exception_code,
-                            uint32_t system_code,
-                            const std::string& error_message)>
+typedef base::OnceCallback<void(CdmPromise::Exception exception_code,
+                                uint32_t system_code,
+                                const std::string& error_message)>
     PromiseRejectedCB;
 
 template <typename... T>
 class MEDIA_EXPORT CdmCallbackPromise : public CdmPromiseTemplate<T...> {
  public:
-  CdmCallbackPromise(const base::Callback<void(const T&...)>& resolve_cb,
-                     const PromiseRejectedCB& reject_cb);
+  CdmCallbackPromise(base::OnceCallback<void(const T&...)> resolve_cb,
+                     PromiseRejectedCB reject_cb);
   virtual ~CdmCallbackPromise();
 
   // CdmPromiseTemplate<T> implementation.
@@ -41,7 +41,7 @@ class MEDIA_EXPORT CdmCallbackPromise : public CdmPromiseTemplate<T...> {
   using CdmPromiseTemplate<T...>::MarkPromiseSettled;
   using CdmPromiseTemplate<T...>::RejectPromiseOnDestruction;
 
-  base::Callback<void(const T&...)> resolve_cb_;
+  base::OnceCallback<void(const T&...)> resolve_cb_;
   PromiseRejectedCB reject_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(CdmCallbackPromise);

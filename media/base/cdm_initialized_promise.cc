@@ -7,23 +7,23 @@
 namespace media {
 
 CdmInitializedPromise::CdmInitializedPromise(
-    const CdmCreatedCB& cdm_created_cb,
-    const scoped_refptr<ContentDecryptionModule>& cdm)
-    : cdm_created_cb_(cdm_created_cb), cdm_(cdm) {}
+    CdmCreatedCB cdm_created_cb,
+    scoped_refptr<ContentDecryptionModule> cdm)
+    : cdm_created_cb_(std::move(cdm_created_cb)), cdm_(std::move(cdm)) {}
 
 CdmInitializedPromise::~CdmInitializedPromise() {
 }
 
 void CdmInitializedPromise::resolve() {
   MarkPromiseSettled();
-  cdm_created_cb_.Run(cdm_, "");
+  std::move(cdm_created_cb_).Run(cdm_, "");
 }
 
 void CdmInitializedPromise::reject(CdmPromise::Exception exception_code,
                                    uint32_t system_code,
                                    const std::string& error_message) {
   MarkPromiseSettled();
-  cdm_created_cb_.Run(nullptr, error_message);
+  std::move(cdm_created_cb_).Run(nullptr, error_message);
   // Usually after this |this| (and the |cdm_| within it) will be destroyed.
 }
 
