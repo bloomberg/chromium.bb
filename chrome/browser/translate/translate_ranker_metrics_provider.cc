@@ -21,8 +21,9 @@ void TranslateRankerMetricsProvider::ProvideGeneralMetrics(
     TranslateRanker* ranker =
         TranslateRankerFactory::GetForBrowserContext(profile);
     if (!ranker)
-      return;
+      continue;
 
+    UpdateLoggingState();
     std::vector<metrics::TranslateEventProto> translate_events;
     ranker->FlushTranslateEvents(&translate_events);
 
@@ -30,6 +31,27 @@ void TranslateRankerMetricsProvider::ProvideGeneralMetrics(
       uma_proto->add_translate_event()->Swap(&event);
     }
   }
+}
+
+void TranslateRankerMetricsProvider::UpdateLoggingState() {
+  std::vector<Profile*> loaded_profiles =
+      g_browser_process->profile_manager()->GetLoadedProfiles();
+  for (Profile* profile : loaded_profiles) {
+    TranslateRanker* ranker =
+        TranslateRankerFactory::GetForBrowserContext(profile);
+    if (ranker)
+      ranker->EnableLogging(logging_enabled_);
+  }
+}
+
+void TranslateRankerMetricsProvider::OnRecordingEnabled() {
+  logging_enabled_ = true;
+  UpdateLoggingState();
+}
+
+void TranslateRankerMetricsProvider::OnRecordingDisabled() {
+  logging_enabled_ = false;
+  UpdateLoggingState();
 }
 
 }  // namespace translate

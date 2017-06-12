@@ -12,13 +12,22 @@ namespace translate {
 // Provides metrics related to the translate ranker.
 class TranslateRankerMetricsProvider : public metrics::MetricsProvider {
  public:
-  TranslateRankerMetricsProvider() {}
+  TranslateRankerMetricsProvider() : logging_enabled_(false) {}
+
   ~TranslateRankerMetricsProvider() override {}
 
- private:
   // From metrics::MetricsProvider...
   void ProvideGeneralMetrics(
       metrics::ChromeUserMetricsExtension* uma_proto) override;
+  void OnRecordingEnabled() override;
+  void OnRecordingDisabled() override;
+
+ private:
+  // Updates the logging state of all ranker instances.
+  void UpdateLoggingState();
+
+  // The current state of logging.
+  bool logging_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateRankerMetricsProvider);
 };

@@ -319,6 +319,7 @@ TEST_F(TranslateRankerImplTest, ShouldOfferTranslation_NoModel) {
 
 TEST_F(TranslateRankerImplTest, RecordAndFlushEvents) {
   std::unique_ptr<translate::TranslateRanker> ranker = GetRankerForTest(0.0f);
+  ranker->EnableLogging(true);
   std::vector<metrics::TranslateEventProto> flushed_events;
 
   GURL url0("https://www.google.com");
@@ -358,30 +359,76 @@ TEST_F(TranslateRankerImplTest, RecordAndFlushEvents) {
       GetTestUkmRecorder()->GetSourceForUrl(url1.spec().c_str())->url().spec());
 }
 
-TEST_F(TranslateRankerImplTest, LoggingDisabledViaOverride) {
+TEST_F(TranslateRankerImplTest, EnableLogging) {
   std::unique_ptr<translate::TranslateRankerImpl> ranker =
       GetRankerForTest(0.0f);
   std::vector<metrics::TranslateEventProto> flushed_events;
 
+  // Logging is disabled by default. No events will be cached.
+  ranker->RecordTranslateEvent(0, GURL(), &translate_event1_);
+  ranker->RecordTranslateEvent(1, GURL(), &translate_event2_);
+
   ranker->FlushTranslateEvents(&flushed_events);
   EXPECT_EQ(0U, flushed_events.size());
 
+  // Once we enable logging, events will be cached.
+  ranker->EnableLogging(true);
   ranker->RecordTranslateEvent(0, GURL(), &translate_event1_);
   ranker->RecordTranslateEvent(1, GURL(), &translate_event2_);
-  ranker->RecordTranslateEvent(2, GURL(), &translate_event3_);
 
-  // Logging is enabled by default, so events should be cached.
   ranker->FlushTranslateEvents(&flushed_events);
-  EXPECT_EQ(3U, flushed_events.size());
+  EXPECT_EQ(2U, flushed_events.size());
+  flushed_events.clear();
 
-  // Override the feature setting to disable logging.
+  // Turning logging back off, caching is disabled once again.
   ranker->EnableLogging(false);
-
   ranker->RecordTranslateEvent(0, GURL(), &translate_event1_);
   ranker->RecordTranslateEvent(1, GURL(), &translate_event2_);
-  ranker->RecordTranslateEvent(2, GURL(), &translate_event3_);
 
   // Logging is disabled, so no events should be cached.
+  ranker->FlushTranslateEvents(&flushed_events);
+  EXPECT_EQ(0U, flushed_events.size());
+}
+
+TEST_F(TranslateRankerImplTest, EnableLoggingClearsCache) {
+  std::unique_ptr<translate::TranslateRankerImpl> ranker =
+      GetRankerForTest(0.0f);
+  std::vector<metrics::TranslateEventProto> flushed_events;
+  // Logging is disabled by default. No events will be cached.
+  ranker->RecordTranslateEvent(0, GURL(), &translate_event1_);
+  // Making sure that cache is still empty once logging is turned on.
+  ranker->EnableLogging(true);
+  ranker->FlushTranslateEvents(&flushed_events);
+  EXPECT_EQ(0U, flushed_events.size());
+
+  // These events will be cached.
+  ranker->RecordTranslateEvent(0, GURL(), &translate_event1_);
+  ranker->RecordTranslateEvent(1, GURL(), &translate_event2_);
+  // Cache will not be cleared if the logging state does not change.
+  ranker->EnableLogging(true);
+  ranker->FlushTranslateEvents(&flushed_events);
+  EXPECT_EQ(2U, flushed_events.size());
+  flushed_events.clear();
+  // Cache is now empty after being flushed.
+  ranker->FlushTranslateEvents(&flushed_events);
+  EXPECT_EQ(0U, flushed_events.size());
+
+  // Filling cache again.
+  ranker->EnableLogging(true);
+  ranker->RecordTranslateEvent(0, GURL(), &translate_event1_);
+  ranker->RecordTranslateEvent(1, GURL(), &translate_event2_);
+  // Switching logging off will clear the cache.
+  ranker->EnableLogging(false);
+  ranker->FlushTranslateEvents(&flushed_events);
+  EXPECT_EQ(0U, flushed_events.size());
+
+  // Filling cache again.
+  ranker->EnableLogging(true);
+  ranker->RecordTranslateEvent(0, GURL(), &translate_event1_);
+  ranker->RecordTranslateEvent(1, GURL(), &translate_event2_);
+  // Switching logging off and on again will clear the cache.
+  ranker->EnableLogging(false);
+  ranker->EnableLogging(true);
   ranker->FlushTranslateEvents(&flushed_events);
   EXPECT_EQ(0U, flushed_events.size());
 }
@@ -390,6 +437,7 @@ TEST_F(TranslateRankerImplTest, ShouldOverrideDecision_OverrideDisabled) {
   InitFeatures({}, {kTranslateRankerDecisionOverride});
   std::unique_ptr<translate::TranslateRankerImpl> ranker =
       GetRankerForTest(0.0f);
+  ranker->EnableLogging(true);
   const int kEventType = 12;
   metrics::TranslateEventProto translate_event = CreateDefaultTranslateEvent();
 
@@ -409,6 +457,7 @@ TEST_F(TranslateRankerImplTest, ShouldOverrideDecision_OverrideEnabled) {
                {kTranslateRankerQuery, kTranslateRankerEnforcement});
   std::unique_ptr<translate::TranslateRankerImpl> ranker =
       GetRankerForTest(0.0f);
+  ranker->EnableLogging(true);
   metrics::TranslateEventProto translate_event = CreateDefaultTranslateEvent();
   // DecisionOverride is decoupled from querying and enforcement. Enabling
   // only DecisionOverride will not query the Ranker. Ranker returns its default
@@ -437,6 +486,7 @@ TEST_F(TranslateRankerImplTest,
   // queried and a decision is overridden.
   std::unique_ptr<translate::TranslateRankerImpl> ranker =
       GetRankerForTest(0.0f);
+  ranker->EnableLogging(true);
   metrics::TranslateEventProto translate_event = CreateDefaultTranslateEvent();
   // Ranker's decision is DONT_SHOW, but we are in query mode only, so Ranker
   // does not suppress the UI.
