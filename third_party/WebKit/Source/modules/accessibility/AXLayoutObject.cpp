@@ -1347,7 +1347,6 @@ const AtomicString& AXLayoutObject::LiveRegionStatus() const {
   // These roles have implicit live region status.
   if (live_region_status.IsEmpty()) {
     switch (RoleValue()) {
-      case kAlertDialogRole:
       case kAlertRole:
         return live_region_status_assertive;
       case kLogRole:

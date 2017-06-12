@@ -1,2 +1,2 @@
 AXWebArea AXRoleDescription='HTML content'
-++AXGroup AXSubrole=AXApplicationAlertDialog AXRoleDescription='alertdialog' AXARIABusy='0' AXARIALive='assertive'
+++AXGroup AXSubrole=AXApplicationAlertDialog AXRoleDescription='alertdialog'
