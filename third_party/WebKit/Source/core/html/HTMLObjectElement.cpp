@@ -148,11 +148,8 @@ static void MapDataParamToSrc(Vector<String>* param_names,
 // TODO(schenney): crbug.com/572908 This function should not deal with url or
 // serviceType!
 void HTMLObjectElement::ParametersForPlugin(Vector<String>& param_names,
-                                            Vector<String>& param_values,
-                                            String& url,
-                                            String& service_type) {
+                                            Vector<String>& param_values) {
   HashSet<StringImpl*, CaseFoldingHash> unique_param_names;
-  String url_parameter;
 
   // Scan the PARAM children and store their name/value pairs.
   // Get the URL and type from the params if we don't already have them.
@@ -168,33 +165,23 @@ void HTMLObjectElement::ParametersForPlugin(Vector<String>& param_names,
 
     // TODO(schenney): crbug.com/572908 url adjustment does not belong in this
     // function.
-    if (url.IsEmpty() && url_parameter.IsEmpty() &&
-        (DeprecatedEqualIgnoringCase(name, "src") ||
-         DeprecatedEqualIgnoringCase(name, "movie") ||
-         DeprecatedEqualIgnoringCase(name, "code") ||
-         DeprecatedEqualIgnoringCase(name, "url")))
-      url_parameter = StripLeadingAndTrailingHTMLSpaces(p->Value());
+    // HTML5 says that an object resource's URL is specified by the object's
+    // data attribute, not by a param element. However, for compatibility, allow
+    // the resource's URL to be given by a param named "src", "movie", "code" or
+    // "url" if we know that resource points to a plugin.
+    if (url_.IsEmpty() && (DeprecatedEqualIgnoringCase(name, "src") ||
+                           DeprecatedEqualIgnoringCase(name, "movie") ||
+                           DeprecatedEqualIgnoringCase(name, "code") ||
+                           DeprecatedEqualIgnoringCase(name, "url"))) {
+      url_ = StripLeadingAndTrailingHTMLSpaces(p->Value());
+    }
     // TODO(schenney): crbug.com/572908 serviceType calculation does not belong
     // in this function.
-    if (service_type.IsEmpty() && DeprecatedEqualIgnoringCase(name, "type")) {
-      service_type = p->Value();
-      size_t pos = service_type.Find(";");
+    if (service_type_.IsEmpty() && DeprecatedEqualIgnoringCase(name, "type")) {
+      size_t pos = p->Value().Find(";");
       if (pos != kNotFound)
-        service_type = service_type.Left(pos);
+        service_type_ = p->Value().GetString().Left(pos);
     }
-  }
-
-  // When OBJECT is used for an applet via Sun's Java plugin, the CODEBASE
-  // attribute in the tag points to the Java plugin itself (an ActiveX
-  // component) while the actual applet CODEBASE is in a PARAM tag. See
-  // <http://java.sun.com/products/plugin/1.2/docs/tags.html>. This means we
-  // have to explicitly suppress the tag's CODEBASE attribute if there is none
-  // in a PARAM, else our Java plugin will misinterpret it. [4004531]
-  String codebase;
-  if (MIMETypeRegistry::IsJavaAppletMIMEType(service_type)) {
-    codebase = "codebase";
-    unique_param_names.insert(
-        codebase.Impl());  // pretend we found it in a PARAM already
   }
 
   // Turn the attributes of the <object> element into arrays, but don't override
@@ -209,17 +196,6 @@ void HTMLObjectElement::ParametersForPlugin(Vector<String>& param_names,
   }
 
   MapDataParamToSrc(&param_names, &param_values);
-
-  // HTML5 says that an object resource's URL is specified by the object's data
-  // attribute, not by a param element. However, for compatibility, allow the
-  // resource's URL to be given by a param named "src", "movie", "code" or "url"
-  // if we know that resource points to a plugin.
-  if (url.IsEmpty() && !url_parameter.IsEmpty()) {
-    KURL completed_url = GetDocument().CompleteURL(url_parameter);
-    bool use_fallback;
-    if (ShouldUsePlugin(completed_url, service_type, false, use_fallback))
-      url = url_parameter;
-  }
 }
 
 bool HTMLObjectElement::HasFallbackContent() const {
@@ -292,17 +268,14 @@ void HTMLObjectElement::UpdatePluginInternal() {
     return;
   }
 
-  String url = this->Url();
-  String service_type = service_type_;
-
   // TODO(schenney): crbug.com/572908 These should be joined into a
   // PluginParameters class.
   Vector<String> param_names;
   Vector<String> param_values;
-  ParametersForPlugin(param_names, param_values, url, service_type);
+  ParametersForPlugin(param_names, param_values);
 
   // Note: url is modified above by parametersForPlugin.
-  if (!AllowedToLoadFrameURL(url)) {
+  if (!AllowedToLoadFrameURL(url_)) {
     DispatchErrorEvent();
     return;
   }
@@ -317,13 +290,12 @@ void HTMLObjectElement::UpdatePluginInternal() {
       GetDocument().GetFrame()->Loader().Client()->OverrideFlashEmbedWithHTML(
           GetDocument().CompleteURL(url_));
   if (!overriden_url.IsEmpty()) {
-    url = url_ = overriden_url.GetString();
-    service_type = service_type_ = "text/html";
+    url_ = overriden_url.GetString();
+    service_type_ = "text/html";
   }
 
-  if (!HasValidClassId() ||
-      !RequestObject(url, service_type, param_names, param_values)) {
-    if (!url.IsEmpty())
+  if (!HasValidClassId() || !RequestObject(param_names, param_values)) {
+    if (!url_.IsEmpty())
       DispatchErrorEvent();
     if (HasFallbackContent())
       RenderFallbackContent();
