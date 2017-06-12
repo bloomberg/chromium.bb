@@ -46,7 +46,7 @@ id ExecuteJavaScript(NSString* javascript,
 // Loads |URL| in the current WebState with transition type
 // ui::PAGE_TRANSITION_TYPED, and waits for the loading to complete within a
 // timeout, or a GREYAssert is induced.
-+ (void)loadURL:(GURL)URL;
++ (void)loadURL:(const GURL&)URL;
 
 // Reloads the page and waits for the loading to complete within a timeout, or a
 // GREYAssert is induced.

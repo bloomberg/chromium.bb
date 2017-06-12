@@ -105,7 +105,7 @@ id ExecuteJavaScript(NSString* javascript,
 
 #pragma mark - Navigation Utilities
 
-+ (void)loadURL:(GURL)URL {
++ (void)loadURL:(const GURL&)URL {
   chrome_test_util::LoadUrl(URL);
   // Make sure that the page started loading.
   GREYAssert(chrome_test_util::IsLoading(), @"Page did not start loading.");
