@@ -28,8 +28,8 @@ class Transferables;
 //
 // A serializer cannot be used multiple times; it is expected that its serialize
 // method will be invoked exactly once.
-class GC_PLUGIN_IGNORE("https://crbug.com/644725")
-    CORE_EXPORT V8ScriptValueSerializer : public v8::ValueSerializer::Delegate {
+class CORE_EXPORT V8ScriptValueSerializer
+    : public v8::ValueSerializer::Delegate {
   STACK_ALLOCATED();
   WTF_MAKE_NONCOPYABLE(V8ScriptValueSerializer);
 
