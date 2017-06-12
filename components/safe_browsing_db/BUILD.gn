@@ -33,6 +33,7 @@ group("safe_browsing_db_shared") {
     ":prefix_set",
     ":safebrowsing_proto",
     ":util",
+    ":v4_feature_list",  # Used by SafeBrowsingService
     "//components/safe_browsing/common:safe_browsing_prefs",
   ]
 }
