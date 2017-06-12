@@ -104,17 +104,22 @@ class GitCL(object):
             A dict mapping Build objects to TryJobSTatus objects, with
             only the latest jobs included.
         """
-        try_results = self.try_job_results()
+        try_results = self.try_job_results(builder_names)
         builds = try_results.keys()
         if builder_names:
             builds = [b for b in builds if b.builder_name in builder_names]
         latest_builds = filter_latest_builds(builds)
         return {b: s for b, s in try_results.items() if b in latest_builds}
 
-    def try_job_results(self):
+    def try_job_results(self, builder_names=None):
         """Returns a dict mapping Build objects to TryJobStatus objects."""
         raw_results = self.fetch_raw_try_job_results()
-        return {self._build(r): self._try_job_status(r) for r in raw_results}
+        build_to_status = {}
+        for result in raw_results:
+            if builder_names and result['builder_name'] not in builder_names:
+                continue
+            build_to_status[self._build(result)] = self._try_job_status(result)
+        return build_to_status
 
     def fetch_raw_try_job_results(self):
         """Requests results of try jobs for the current CL and the parsed JSON.
@@ -139,6 +144,7 @@ class GitCL(object):
         if url is None:
             return Build(builder_name, None)
         match = re.match(r'.*/builds/(\d+)?$', url)
+        assert match, '%s did not match expected format' % url
         build_number = match.group(1)
         assert build_number and build_number.isdigit()
         return Build(builder_name, int(build_number))
