@@ -5,19 +5,17 @@ promise_test(() => {
                                   '\'optionalServices\' in requestDevice() ' +
                                   'options. https://goo.gl/HxfxSQ',
                                   'SecurityError');
-  return setBluetoothFakeAdapter('DelayedServicesDiscoveryAdapter')
-    .then(() => requestDeviceWithKeyDown({
-      filters: [{services: ['heart_rate']}]}))
-    .then(device => device.gatt.connect())
-    .then(gatt => Promise.all([
+  return getHealthThermometerDeviceWithServicesDiscovered({
+      filters: [{services: ['health_thermometer']}]})
+    .then(([device]) => Promise.all([
       assert_promise_rejects_with_message(
-        gatt.CALLS([
+        device.gatt.CALLS([
           getPrimaryService(glucose.alias)|
           getPrimaryServices(glucose.alias)[UUID]
         ]), expected),
       assert_promise_rejects_with_message(
-        gatt.FUNCTION_NAME(glucose.name), expected),
+        device.gatt.FUNCTION_NAME(glucose.name), expected),
       assert_promise_rejects_with_message(
-        gatt.FUNCTION_NAME(glucose.uuid), expected)]));
-}, 'Delayed services discovered, request for absent service without ' +
-   'permission. Reject with SecurityError.');
+        device.gatt.FUNCTION_NAME(glucose.uuid), expected)]));
+}, 'Request for absent service without permission. Should Reject with ' +
+   'SecurityError even if services have been discovered already.');

@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<script>
+window.onmessage = messageEvent => {
+  if (messageEvent.data.type === 'DiscoverServices') {
+    navigator.bluetooth.requestDevice(messageEvent.data.options)
+      .then(device => device.gatt.connect())
+      .then(gatt => {
+        return gatt.getPrimaryServices()
+        // TODO(crbug.com/719816): Remove catch once the device
+        // has some services.
+          .catch(e => {
+            if (e.name !== 'NotFoundError' ||
+                e.message !== 'No Services found in device.') {
+              throw e;
+            }
+          });
+      })
+      .then(() => parent.postMessage('DiscoveryComplete', '*'))
+      .catch(err => {
+        console.error(err);
+        parent.postMessage('FAIL: ' + err, '*');
+      });
+  }
+};
+parent.postMessage("Ready", "*");
+</script>
