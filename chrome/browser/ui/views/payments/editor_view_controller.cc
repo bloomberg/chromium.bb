@@ -206,6 +206,7 @@ EditorViewController::CreateComboboxForField(const EditorField& field) {
       base::MakeUnique<ValidatingCombobox>(GetComboboxModelForType(field.type),
                                            CreateValidationDelegate(field));
   base::string16 initial_value = GetInitialValueForType(field.type);
+  combobox->SetAccessibleName(field.label);
   if (!initial_value.empty()) {
     combobox->SelectValue(initial_value);
     combobox->SetInvalid(!combobox->IsValid());
@@ -373,6 +374,7 @@ views::View* EditorViewController::CreateInputField(views::GridLayout* layout,
       // Set the initial value and validity state.
       base::string16 initial_value = GetInitialValueForType(field.type);
       text_field->SetText(initial_value);
+      text_field->SetAccessibleName(field.label);
       *valid = text_field->IsValid();
       if (!initial_value.empty())
         text_field->SetInvalid(!(*valid));
