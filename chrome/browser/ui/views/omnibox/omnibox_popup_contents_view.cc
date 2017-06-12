@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "build/build_config.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
 #include "chrome/browser/ui/views/theme_copying_widget.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "third_party/skia/include/core/SkDrawLooper.h"
 #include "ui/base/theme_provider.h"
@@ -25,6 +27,7 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/shadow_value.h"
+#include "ui/views/bubble/bubble_border.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/view_targeter.h"
 #include "ui/views/widget/widget.h"
@@ -86,14 +89,17 @@ OmniboxPopupContentsView::OmniboxPopupContentsView(
   // The contents is owned by the LocationBarView.
   set_owned_by_client();
 
-  if (g_top_shadow.Get().isNull()) {
+  bool narrow_popup =
+      base::FeatureList::IsEnabled(omnibox::kUIExperimentNarrowDropdown);
+
+  if (g_top_shadow.Get().isNull() && !narrow_popup) {
     std::vector<gfx::ShadowValue> shadows;
     // Blur by 1dp. See comment below about blur accounting.
     shadows.emplace_back(gfx::Vector2d(), 2, SK_ColorBLACK);
     g_top_shadow.Get() =
         gfx::ImageSkiaOperations::CreateHorizontalShadow(shadows, false);
   }
-  if (g_bottom_shadow.Get().isNull()) {
+  if (g_bottom_shadow.Get().isNull() && !narrow_popup) {
     const int kSmallShadowBlur = 3;
     const int kLargeShadowBlur = 8;
     const int kLargeShadowYOffset = 3;
@@ -226,11 +232,16 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
   for (size_t i = result_size; i < AutocompleteResult::GetMaxMatches(); ++i)
     child_at(i)->SetVisible(false);
 
-  // We want the popup to appear to overlay the bottom of the toolbar. So we
-  // shift the popup to completely cover the client edge, and then draw an
-  // additional semitransparent shadow above that.
-  int top_edge_overlap = views::NonClientFrameView::kClientEdgeThickness +
-                         g_top_shadow.Get().height();
+  int top_edge_overlap = 0;
+  bool narrow_popup =
+      base::FeatureList::IsEnabled(omnibox::kUIExperimentNarrowDropdown);
+  if (!narrow_popup) {
+    // We want the popup to appear to overlay the bottom of the toolbar. So we
+    // shift the popup to completely cover the client edge, and then draw an
+    // additional semitransparent shadow above that.
+    top_edge_overlap = g_top_shadow.Get().height() +
+                       views::NonClientFrameView::kClientEdgeThickness;
+  }
 
   gfx::Point top_left_screen_coord;
   int width;
@@ -239,6 +250,22 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
       &end_margin_, top_edge_overlap);
   gfx::Rect new_target_bounds(top_left_screen_coord,
                               gfx::Size(width, CalculatePopupHeight()));
+
+  if (narrow_popup) {
+    SkColor background_color = GetNativeTheme()->GetSystemColor(
+        ui::NativeTheme::kColorId_ResultsTableNormalBackground);
+    auto border = base::MakeUnique<views::BubbleBorder>(
+        views::BubbleBorder::NONE, views::BubbleBorder::SMALL_SHADOW,
+        background_color);
+
+    // Outdent the popup to factor in the shadow size.
+    int border_thickness = border->GetBorderThickness();
+    new_target_bounds.Inset(-border_thickness, -border_thickness,
+                            -border_thickness, -border_thickness);
+
+    SetBackground(base::MakeUnique<views::BubbleBackground>(border.get()));
+    SetBorder(std::move(border));
+  }
 
   // If we're animating and our target height changes, reset the animation.
   // NOTE: If we just reset blindly on _every_ update, then when the user types
@@ -455,6 +482,11 @@ const char* OmniboxPopupContentsView::GetClassName() const {
 }
 
 void OmniboxPopupContentsView::OnPaint(gfx::Canvas* canvas) {
+  if (base::FeatureList::IsEnabled(omnibox::kUIExperimentNarrowDropdown)) {
+    View::OnPaint(canvas);
+    return;
+  }
+
   canvas->TileImageInt(g_top_shadow.Get(), 0, 0, width(),
                        g_top_shadow.Get().height());
   canvas->TileImageInt(g_bottom_shadow.Get(), 0,
@@ -463,6 +495,11 @@ void OmniboxPopupContentsView::OnPaint(gfx::Canvas* canvas) {
 }
 
 void OmniboxPopupContentsView::PaintChildren(const ui::PaintContext& context) {
+  if (base::FeatureList::IsEnabled(omnibox::kUIExperimentNarrowDropdown)) {
+    View::PaintChildren(context);
+    return;
+  }
+
   gfx::Rect contents_bounds = GetContentsBounds();
   contents_bounds.Inset(0, g_top_shadow.Get().height(), 0,
                         g_bottom_shadow.Get().height());
