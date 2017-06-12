@@ -273,6 +273,7 @@ void OmniboxPopupViewMac::PositionPopup(const CGFloat matrixHeight) {
   NSRect matrix_frame = NSZeroRect;
   matrix_frame.origin.x = 0;
   [matrix_ setContentLeftPadding:match_omnibox_width ? 0 : field_origin_base.x];
+  [matrix_ setContentMaxWidth:NSWidth([field_ bounds])];
   matrix_frame.origin.y = PopupPaddingVertical();
   matrix_frame.size.width = table_width;
   matrix_frame.size.height = matrixHeight;

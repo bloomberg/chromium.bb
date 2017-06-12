@@ -483,8 +483,8 @@ NSAttributedString* CreateClassifiedAttributedString(
       base::mac::ObjCCastStrict<OmniboxPopupCellData>([self objectValue]);
   OmniboxPopupMatrix* tableView =
       base::mac::ObjCCastStrict<OmniboxPopupMatrix>(controlView);
-  CGFloat remainingWidth = [OmniboxPopupCell getContentAreaWidth:cellFrame] -
-                           [tableView contentLeftPadding];
+  CGFloat remainingWidth =
+      [OmniboxPopupCell getTextContentAreaWidth:[tableView contentMaxWidth]];
   CGFloat contentsWidth = [cellData getMatchContentsWidth];
   CGFloat separatorWidth = [[tableView separator] size].width;
   CGFloat descriptionWidth =
@@ -586,8 +586,8 @@ NSAttributedString* CreateClassifiedAttributedString(
   OmniboxPopupCellData* cellData =
       base::mac::ObjCCastStrict<OmniboxPopupCellData>([self objectValue]);
   CGFloat offset = 0.0f;
-  CGFloat remainingWidth = [OmniboxPopupCell getContentAreaWidth:cellFrame] -
-                           [tableView contentLeftPadding];
+  CGFloat remainingWidth =
+      [OmniboxPopupCell getTextContentAreaWidth:[tableView contentMaxWidth]];
   CGFloat prefixWidth = [[cellData prefix] size].width;
 
   CGFloat prefixOffset = 0.0f;
@@ -720,8 +720,8 @@ NSAttributedString* CreateClassifiedAttributedString(
   return CreateAttributedString(raw_separator, DimTextColor(isDarkTheme));
 }
 
-+ (CGFloat)getContentAreaWidth:(NSRect)cellFrame {
-  return NSWidth(cellFrame) - kMaterialTextStartOffset;
++ (CGFloat)getTextContentAreaWidth:(CGFloat)cellContentMaxWidth {
+  return cellContentMaxWidth - kMaterialTextStartOffset;
 }
 
 + (CGFloat)getContentTextHeightForDoubleLine:(BOOL)isDoubleLine {
