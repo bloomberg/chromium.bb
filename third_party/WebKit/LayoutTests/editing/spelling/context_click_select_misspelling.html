@@ -11,7 +11,7 @@ test(() => assert_not_equals(window.internals, undefined),
 test(() => assert_not_equals(window.eventSender, undefined),
      'This test requires event sender to simulate keyboard and mouse actions.');
 
-const kNumTests = 4;
+const kNumTests = 5;
 const heldTest = async_test(
     () => assert_true(true),
     'Dummy async test for blocking test harness.',
@@ -39,7 +39,7 @@ function assertContextClickSelection(
   range.setStart(textNode, offset);
 
   const rect = range.getClientRects()[0];
-  const x = document.offsetLeft + rect.left;
+  const x = document.offsetLeft + rect.left + 2;
   const y = document.offsetTop + rect.top + rect.height / 2;
   eventSender.mouseMoveTo(x, y);
   const contextMenuElements = eventSender.contextClick();
@@ -86,6 +86,44 @@ spellcheck_test(
             'Context clicking "home" does not select the correctly spelled word');
       },
       'Context clicking misspelled word in INPUT selects the word.',
+      {sample: sample, blockHeldTest: true})
+    });
+
+spellcheck_test(
+    '<div contenteditable>wellcome home.|</div>',
+    '',
+    '<div contenteditable>#wellcome# home.</div>',
+    {
+      title: 'Context click at boundary of misspelled word.',
+      callback: sample => test(() => {
+        const container = sample.document.querySelector('div');
+        const shouldSelect = isMac(navigator.platform);
+        if (shouldSelect) {
+          // On Mac, right-clicking immediately before a word will select it.
+          assertContextClickSelection(
+            container, 0, 'wellcome',
+            'Context clicking immediately before "wellcome" selects it');
+
+          // De-select "wellcome"; otherwise, context-clicking immediately after "wellcome" will
+          // not change the selection (since it would select a space and not another word)
+          container.ownerDocument.getSelection().removeAllRanges();
+
+          // On Mac, right-clicking immediately after a word will select the space after it.
+          assertContextClickSelection(
+            container, 8, ' ',
+            'Context clicking immediately after "wellcome" selects the space after it');
+          return;
+        }
+
+        assertContextClickSelection(
+            container, 0, '',
+            'Context clicking immediately before "wellcome" does not select it');
+
+        assertContextClickSelection(
+            container, 8, '',
+            'Context clicking immediately after "wellcome" does not select it');
+      },
+      'Context clicking immediately before or after misspelled word in editable DIV does not select it.',
       {sample: sample, blockHeldTest: true})
     });
 
