@@ -154,6 +154,8 @@ class CC_EXPORT ScrollbarAnimationController {
   const bool show_scrollbars_on_scroll_gesture_;
   const bool need_thinning_animation_;
 
+  bool is_mouse_down_;
+
   std::unique_ptr<SingleScrollbarAnimationControllerThinning>
       vertical_controller_;
   std::unique_ptr<SingleScrollbarAnimationControllerThinning>

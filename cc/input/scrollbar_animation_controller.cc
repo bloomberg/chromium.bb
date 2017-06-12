@@ -53,6 +53,7 @@ ScrollbarAnimationController::ScrollbarAnimationController(
       opacity_(initial_opacity),
       show_scrollbars_on_scroll_gesture_(false),
       need_thinning_animation_(false),
+      is_mouse_down_(false),
       weak_factory_(this) {}
 
 ScrollbarAnimationController::ScrollbarAnimationController(
@@ -74,6 +75,7 @@ ScrollbarAnimationController::ScrollbarAnimationController(
       opacity_(initial_opacity),
       show_scrollbars_on_scroll_gesture_(true),
       need_thinning_animation_(true),
+      is_mouse_down_(false),
       weak_factory_(this) {
   vertical_controller_ = SingleScrollbarAnimationControllerThinning::Create(
       scroll_element_id, ScrollbarOrientation::VERTICAL, client,
@@ -102,6 +104,7 @@ ScrollbarAnimationController::GetScrollbarAnimationController(
 void ScrollbarAnimationController::StartAnimation() {
   DCHECK(animation_change_ != NONE);
   delayed_scrollbar_animation_.Cancel();
+  need_trigger_scrollbar_fade_in_ = false;
   is_animating_ = true;
   last_awaken_time_ = base::TimeTicks();
   client_->SetNeedsAnimateForScrollbarAnimation();
@@ -109,6 +112,7 @@ void ScrollbarAnimationController::StartAnimation() {
 
 void ScrollbarAnimationController::StopAnimation() {
   delayed_scrollbar_animation_.Cancel();
+  need_trigger_scrollbar_fade_in_ = false;
   is_animating_ = false;
   animation_change_ = NONE;
 }
@@ -224,21 +228,41 @@ void ScrollbarAnimationController::DidRequestShowFromMainThread() {
 }
 
 void ScrollbarAnimationController::DidMouseDown() {
-  if (!need_thinning_animation_ || ScrollbarsHidden())
+  if (!need_thinning_animation_)
     return;
+
+  is_mouse_down_ = true;
+
+  if (ScrollbarsHidden()) {
+    if (need_trigger_scrollbar_fade_in_) {
+      delayed_scrollbar_animation_.Cancel();
+      need_trigger_scrollbar_fade_in_ = false;
+    }
+    return;
+  }
 
   vertical_controller_->DidMouseDown();
   horizontal_controller_->DidMouseDown();
 }
 
 void ScrollbarAnimationController::DidMouseUp() {
-  if (!need_thinning_animation_ || !Captured())
+  if (!need_thinning_animation_)
     return;
+
+  is_mouse_down_ = false;
+
+  if (!Captured()) {
+    if (MouseIsNearAnyScrollbar() && ScrollbarsHidden()) {
+      PostDelayedAnimation(FADE_IN);
+      need_trigger_scrollbar_fade_in_ = true;
+    }
+    return;
+  }
 
   vertical_controller_->DidMouseUp();
   horizontal_controller_->DidMouseUp();
 
-  if (!MouseIsNearAnyScrollbar())
+  if (!MouseIsNearAnyScrollbar() && !ScrollbarsHidden())
     PostDelayedAnimation(FADE_OUT);
 }
 
@@ -268,12 +292,17 @@ void ScrollbarAnimationController::DidMouseMove(
   vertical_controller_->DidMouseMove(device_viewport_point);
   horizontal_controller_->DidMouseMove(device_viewport_point);
 
-  need_trigger_scrollbar_fade_in_ = MouseIsNearAnyScrollbar();
-
-  if (Captured())
+  if (Captured()) {
+    DCHECK(!ScrollbarsHidden());
     return;
+  }
 
   if (ScrollbarsHidden()) {
+    // Do not fade in scrollbar when user interacting with the content below
+    // scrollbar.
+    if (is_mouse_down_)
+      return;
+    need_trigger_scrollbar_fade_in_ = MouseIsNearAnyScrollbar();
     if (need_trigger_scrollbar_fade_in_before !=
         need_trigger_scrollbar_fade_in_) {
       if (need_trigger_scrollbar_fade_in_) {
