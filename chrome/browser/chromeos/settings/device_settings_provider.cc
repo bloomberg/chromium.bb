@@ -460,11 +460,17 @@ void DecodeHeartbeatPolicies(
 void DecodeGenericPolicies(
     const em::ChromeDeviceSettingsProto& policy,
     PrefValueMap* new_values_cache) {
-  if (policy.has_metrics_enabled()) {
+  if (policy.has_metrics_enabled() &&
+      policy.metrics_enabled().has_metrics_enabled()) {
     new_values_cache->SetBoolean(kStatsReportingPref,
                                  policy.metrics_enabled().metrics_enabled());
   } else {
-    new_values_cache->SetBoolean(kStatsReportingPref, false);
+    // If the policy is missing, default to reporting enabled on enterprise-
+    // enrolled devices, c.f. crbug/456186.
+    policy::BrowserPolicyConnectorChromeOS* connector =
+        g_browser_process->platform_part()->browser_policy_connector_chromeos();
+    bool is_enterprise_managed = connector->IsEnterpriseManaged();
+    new_values_cache->SetBoolean(kStatsReportingPref, is_enterprise_managed);
   }
 
   if (!policy.has_release_channel() ||
