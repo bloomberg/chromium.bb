@@ -9,7 +9,7 @@
 #include "base/logging.h"
 
 #import "ios/chrome/browser/ui/bookmarks/bookmark_extended_button.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmark_home_view_controller.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_home_handset_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"

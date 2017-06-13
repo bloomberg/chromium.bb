@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "ios/chrome/browser/ui/bookmarks/bookmark_home_handset_view_controller.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmark_home_handset_view_controller.h"
 #include "ios/chrome/browser/ui/bookmarks/bookmark_ios_unittest.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_promo_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
@@ -40,9 +40,9 @@ using bookmarks::BookmarkNode;
 
 namespace {
 
-using BookmarkHomeViewControllerTest = BookmarkIOSUnitTest;
+using BookmarkHomeHandsetViewControllerTest = BookmarkIOSUnitTest;
 
-TEST_F(BookmarkHomeViewControllerTest, DeleteNodesUpdatesEditNodes) {
+TEST_F(BookmarkHomeHandsetViewControllerTest, DeleteNodesUpdatesEditNodes) {
   @autoreleasepool {
     const BookmarkNode* mobileNode = _bookmarkModel->mobile_node();
     const BookmarkNode* f1 = AddFolder(mobileNode, @"f1");

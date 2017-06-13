@@ -32,8 +32,6 @@ source_set("bookmarks") {
     "bookmark_home_primary_view.h",
     "bookmark_home_tablet_ntp_controller.h",
     "bookmark_home_tablet_ntp_controller.mm",
-    "bookmark_home_view_controller.h",
-    "bookmark_home_view_controller.mm",
     "bookmark_home_waiting_view.h",
     "bookmark_home_waiting_view.mm",
     "bookmark_interaction_controller.h",
@@ -130,7 +128,7 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
-    "bookmark_home_view_controller_unittest.mm",
+    "bookmark_home_handset_view_controller_unittest.mm",
     "bookmark_ios_unittest.h",
     "bookmark_ios_unittest.mm",
     "bookmark_position_cache_unittest.mm",
