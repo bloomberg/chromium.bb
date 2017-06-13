@@ -722,9 +722,7 @@ TEST_F(DoodleServiceTest, GetImageFetchesCTAImage) {
   service()->Refresh();
   DoodleConfig config = CreateConfig(DoodleType::SIMPLE);
   // Set a CTA image, which should take precedence over the regular image.
-  config.large_image.is_animated_gif = true;
   config.large_cta_image = DoodleImage(GURL("https://doodle.com/cta.jpg"));
-  config.large_cta_image->is_cta = true;
   fetcher()->ServeAllCallbacks(DoodleState::AVAILABLE,
                                base::TimeDelta::FromHours(1), config);
   ASSERT_THAT(service()->config(), Eq(config));
