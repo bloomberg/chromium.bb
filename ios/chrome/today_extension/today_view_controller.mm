@@ -376,7 +376,7 @@ NSString* const kPhysicalWebOptedInPreference = @"PhysicalWebOptedIn";
   [_urlsTable setRowHeight:ui_util::kSecondLineHeight];
   [_urlsTable setSeparatorStyle:UITableViewCellSeparatorStyleNone];
   _tableViewHeight.reset(
-      [[[_urlsTable heightAnchor] constraintEqualToConstant:0] retain]);
+      [[_urlsTable heightAnchor] constraintEqualToConstant:0]);
   [_tableViewHeight setActive:YES];
 
   _contentStackView.reset([[UIStackView alloc]
@@ -535,41 +535,31 @@ NSString* const kPhysicalWebOptedInPreference = @"PhysicalWebOptedIn";
   _currentFooterLabel = footerLabel;
   [[_footerLabel view] removeFromSuperview];
   base::WeakNSObject<TodayViewController> weakSelf(self);
-  base::mac::ScopedBlock<ProceduralBlock> learnMoreBlock;
-  base::mac::ScopedBlock<ProceduralBlock> turnOffPhysicalWeb;
-  base::mac::ScopedBlock<ProceduralBlock> turnOnPhysicalWeb;
-  base::mac::ScopedBlock<ProceduralBlock> optInPhysicalWeb;
-  base::mac::ScopedBlock<ProceduralBlock> optOutPhysicalWeb;
+  ProceduralBlock learnMoreBlock = ^{
+    [weakSelf learnMore];
+  };
 
-  learnMoreBlock.reset(
-      ^{
-        [weakSelf learnMore];
-      },
-      base::scoped_policy::RETAIN);
+  ProceduralBlock turnOffPhysicalWeb;
+  ProceduralBlock turnOnPhysicalWeb;
+  ProceduralBlock optInPhysicalWeb;
+  ProceduralBlock optOutPhysicalWeb;
+
   if (![[LockScreenState sharedInstance] isScreenLocked]) {
-    turnOffPhysicalWeb.reset(
-        ^{
-          [weakSelf setPhysicalWebEnabled:NO];
-        },
-        base::scoped_policy::RETAIN);
+    turnOffPhysicalWeb = ^{
+      [weakSelf setPhysicalWebEnabled:NO];
+    };
 
-    turnOnPhysicalWeb.reset(
-        ^{
-          [weakSelf setPhysicalWebEnabled:YES];
-        },
-        base::scoped_policy::RETAIN);
+    turnOnPhysicalWeb = ^{
+      [weakSelf setPhysicalWebEnabled:YES];
+    };
 
-    optInPhysicalWeb.reset(
-        ^{
-          [weakSelf physicalWebOptIn];
-        },
-        base::scoped_policy::RETAIN);
+    optInPhysicalWeb = ^{
+      [weakSelf physicalWebOptIn];
+    };
 
-    optOutPhysicalWeb.reset(
-        ^{
-          [weakSelf physicalWebOptOut];
-        },
-        base::scoped_policy::RETAIN);
+    optOutPhysicalWeb = ^{
+      [weakSelf physicalWebOptOut];
+    };
   }
 
   switch (footerLabel) {
@@ -978,14 +968,14 @@ NSString* const kPhysicalWebOptedInPreference = @"PhysicalWebOptedIn";
     URLActionBlock action = ^(NSString* url) {
       [weakSelf openClipboardURLInChrome:url];
     };
-    cell = [[[URLTableCell alloc]
+    cell = [[URLTableCell alloc]
           initWithTitle:l10n_util::GetNSString(
                             IDS_IOS_OPEN_COPIED_LINK_TODAY_EXTENSION)
                     url:_pasteURL
                    icon:@"todayview_clipboard"
               leftInset:_defaultLeadingMarginInset
         reuseIdentifier:pasteboardReusableID
-                  block:action] autorelease];
+                  block:action];
     cell.selectionStyle = UITableViewCellSelectionStyleNone;
   }
   return cell;
@@ -1005,12 +995,12 @@ NSString* const kPhysicalWebOptedInPreference = @"PhysicalWebOptedIn";
       [weakSelf setDisplayAllPhysicalWebItems:YES];
       [weakSelf refreshWidget];
     };
-    cell = [[[URLTableCell alloc] initWithTitle:title
-                                            url:@""
-                                           icon:@""
-                                      leftInset:_defaultLeadingMarginInset
-                                reuseIdentifier:showMoreReusableID
-                                          block:action] autorelease];
+    cell = [[URLTableCell alloc] initWithTitle:title
+                                           url:@""
+                                          icon:@""
+                                     leftInset:_defaultLeadingMarginInset
+                               reuseIdentifier:showMoreReusableID
+                                         block:action];
     cell.selectionStyle = UITableViewCellSelectionStyleNone;
   }
   return cell;
@@ -1028,12 +1018,12 @@ NSString* const kPhysicalWebOptedInPreference = @"PhysicalWebOptedIn";
     URLActionBlock action = ^(NSString* url) {
       [weakSelf openPhysicalWebURLInChrome:url];
     };
-    cell = [[[URLTableCell alloc] initWithTitle:[device title]
-                                            url:[[device url] absoluteString]
-                                           icon:@"todayview_physical_web"
-                                      leftInset:_defaultLeadingMarginInset
-                                reuseIdentifier:physicalWebReusableID
-                                          block:action] autorelease];
+    cell = [[URLTableCell alloc] initWithTitle:[device title]
+                                           url:[[device url] absoluteString]
+                                          icon:@"todayview_physical_web"
+                                     leftInset:_defaultLeadingMarginInset
+                               reuseIdentifier:physicalWebReusableID
+                                         block:action];
     cell.selectionStyle = UITableViewCellSelectionStyleNone;
   }
   return cell;

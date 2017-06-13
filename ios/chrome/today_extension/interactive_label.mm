@@ -34,8 +34,8 @@
   base::scoped_nsobject<NSString> _labelString;
   base::scoped_nsobject<NSString> _buttonString;
   base::scoped_nsobject<UITextView> _label;
-  base::mac::ScopedBlock<ProceduralBlock> _linkBlock;
-  base::mac::ScopedBlock<ProceduralBlock> _buttonBlock;
+  ProceduralBlock _linkBlock;
+  ProceduralBlock _buttonBlock;
   base::scoped_nsobject<TransparentButton> _activationButton;
   NSRange _buttonRange;
   base::scoped_nsobject<NSMutableAttributedString> _attributedText;
@@ -67,7 +67,7 @@
     NSString* prefixedString =
         [NSString stringWithFormat:@"\u200B%@", labelString];
     _labelString.reset([prefixedString copy]);
-    _linkBlock.reset(linkBlock, base::scoped_policy::RETAIN);
+    _linkBlock = [linkBlock copy];
 
     _label.reset([[NoSelectionUITextView alloc] initWithFrame:CGRectZero]);
     [_label setTranslatesAutoresizingMaskIntoConstraints:NO];
@@ -99,7 +99,7 @@
     BOOL showButton = buttonString && buttonBlock;
     if (showButton) {
       _buttonString.reset([buttonString copy]);
-      _buttonBlock.reset(buttonBlock, base::scoped_policy::RETAIN);
+      _buttonBlock = [buttonBlock copy];
       _activationButton.reset(
           [[TransparentButton alloc] initWithFrame:CGRectZero]);
       [_activationButton addTarget:self
@@ -112,14 +112,14 @@
       [_activationButton setBorderColor:ui_util::BorderColor()];
       [self addSubview:_activationButton];
       [self bringSubviewToFront:_activationButton];
-      _buttonTopConstraint.reset([[[_activationButton topAnchor]
-          constraintEqualToAnchor:[self topAnchor]] retain]);
-      _buttonLeftConstraint.reset([[[_activationButton leftAnchor]
-          constraintEqualToAnchor:[self leftAnchor]] retain]);
-      _buttonWidthConstraint.reset([[[_activationButton widthAnchor]
-          constraintEqualToConstant:0] retain]);
-      _buttonHeightConstraint.reset([[[_activationButton heightAnchor]
-          constraintEqualToConstant:0] retain]);
+      _buttonTopConstraint.reset([[_activationButton topAnchor]
+          constraintEqualToAnchor:[self topAnchor]]);
+      _buttonLeftConstraint.reset([[_activationButton leftAnchor]
+          constraintEqualToAnchor:[self leftAnchor]]);
+      _buttonWidthConstraint.reset(
+          [[_activationButton widthAnchor] constraintEqualToConstant:0]);
+      _buttonHeightConstraint.reset(
+          [[_activationButton heightAnchor] constraintEqualToConstant:0]);
       [NSLayoutConstraint activateConstraints:@[
         _buttonTopConstraint, _buttonLeftConstraint, _buttonWidthConstraint,
         _buttonHeightConstraint
@@ -233,12 +233,14 @@
 - (BOOL)textView:(UITextView*)textView
     shouldInteractWithURL:(NSURL*)URL
                   inRange:(NSRange)characterRange {
-  _linkBlock.get()();
+  if (_linkBlock)
+    _linkBlock();
   return NO;
 }
 
 - (void)buttonPressed:(id)sender {
-  _buttonBlock.get()();
+  if (_buttonBlock)
+    _buttonBlock();
 }
 
 - (CGSize)intrinsicContentSize {

@@ -59,9 +59,9 @@ const CGFloat kDescriptionFontSize = 14;
   // Distance between the icon and the title.
   CGFloat _imageTextSeparator;
   // Opt-in action block.
-  base::mac::ScopedBlock<EnableDisableBlock> _optinAction;
+  EnableDisableBlock _optinAction;
   // Dismiss action block.
-  base::mac::ScopedBlock<EnableDisableBlock> _dismissAction;
+  EnableDisableBlock _dismissAction;
   // Whether the screen is locked.
   BOOL _locked;
 }
@@ -116,9 +116,8 @@ const CGFloat kDescriptionFontSize = 14;
              linkBlock:learnMoreBlock
            buttonBlock:NULL]);
     [_descriptionLabel setTranslatesAutoresizingMaskIntoConstraints:NO];
-    UIStackView* textStack = [[[UIStackView alloc]
-        initWithArrangedSubviews:@[ _titleView, _descriptionLabel ]]
-        autorelease];
+    UIStackView* textStack = [[UIStackView alloc]
+        initWithArrangedSubviews:@[ _titleView, _descriptionLabel ]];
 
     [textStack setAxis:UILayoutConstraintAxisVertical];
     [textStack setDistribution:UIStackViewDistributionEqualSpacing];
@@ -184,7 +183,7 @@ const CGFloat kDescriptionFontSize = 14;
   [_dismissButton addTarget:self
                      action:@selector(dismissButtonPressed:)
            forControlEvents:UIControlEventTouchUpInside];
-  _dismissAction.reset(dismissAction, base::scoped_policy::RETAIN);
+  _dismissAction = [dismissAction copy];
   [_dismissButton setTranslatesAutoresizingMaskIntoConstraints:NO];
 
   _optInButton.reset([[TransparentButton alloc] initWithFrame:CGRectZero]);
@@ -207,7 +206,7 @@ const CGFloat kDescriptionFontSize = 14;
   [[_optInButton widthAnchor]
       constraintEqualToAnchor:[_dismissButton widthAnchor]];
 
-  _optinAction.reset(optinAction, base::scoped_policy::RETAIN);
+  _optinAction = [optinAction copy];
   UIStackView* buttonStack = [[UIStackView alloc]
       initWithArrangedSubviews:@[ _dismissButton, _optInButton ]];
   [buttonStack setUserInteractionEnabled:YES];
@@ -228,7 +227,7 @@ const CGFloat kDescriptionFontSize = 14;
   [[_optInButton widthAnchor]
       constraintEqualToAnchor:[_dismissButton widthAnchor]]
       .active = YES;
-  return [buttonStack autorelease];
+  return buttonStack;
 }
 
 - (CGFloat)heightForWidth:(CGFloat)width {
@@ -252,11 +251,13 @@ const CGFloat kDescriptionFontSize = 14;
 }
 
 - (void)optInButtonPressed:(id)sender {
-  _optinAction.get()();
+  if (_optinAction)
+    _optinAction();
 }
 
 - (void)dismissButtonPressed:(id)sender {
-  _dismissAction.get()();
+  if (_dismissAction)
+    _dismissAction();
 }
 
 @end
