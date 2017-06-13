@@ -393,22 +393,7 @@ void BookmarkBarViewBackground::Paint(gfx::Canvas* canvas,
 // static
 const char BrowserView::kViewClassName[] = "BrowserView";
 
-BrowserView::BrowserView()
-    : views::ClientView(nullptr, nullptr),
-      frame_(nullptr),
-      top_container_(nullptr),
-      tabstrip_(nullptr),
-      toolbar_(nullptr),
-      find_bar_host_view_(nullptr),
-      infobar_container_(nullptr),
-      contents_web_view_(nullptr),
-      devtools_web_view_(nullptr),
-      contents_container_(nullptr),
-      initialized_(false),
-      handling_theme_changed_(false),
-      in_process_fullscreen_(false),
-      force_location_bar_focus_(false),
-      activate_modal_dialog_factory_(this) {}
+BrowserView::BrowserView() : views::ClientView(nullptr, nullptr) {}
 
 BrowserView::~BrowserView() {
   // All the tabs should have been destroyed already. If we were closed by the

@@ -585,7 +585,7 @@ class BrowserView : public BrowserWindow,
   int GetMaxTopInfoBarArrowHeight();
 
   // The BrowserFrame that hosts this view.
-  BrowserFrame* frame_;
+  BrowserFrame* frame_ = nullptr;
 
   // The Browser object we are associated with.
   std::unique_ptr<Browser> browser_;
@@ -623,13 +623,13 @@ class BrowserView : public BrowserWindow,
   // The view that manages the tab strip, toolbar, and sometimes the bookmark
   // bar. Stacked top in the view hiearachy so it can be used to slide out
   // the top views in immersive fullscreen.
-  TopContainerView* top_container_;
+  TopContainerView* top_container_ = nullptr;
 
   // The TabStrip.
-  TabStrip* tabstrip_;
+  TabStrip* tabstrip_ = nullptr;
 
   // The Toolbar containing the navigation buttons, menus and the address bar.
-  ToolbarView* toolbar_;
+  ToolbarView* toolbar_ = nullptr;
 
   // The Bookmark Bar View for this window. Lazily created. May be null for
   // non-tabbed browsers like popups. May not be visible.
@@ -638,23 +638,23 @@ class BrowserView : public BrowserWindow,
   // The do-nothing view which controls the z-order of the find bar widget
   // relative to views which paint into layers and views with an associated
   // NativeView.
-  View* find_bar_host_view_;
+  View* find_bar_host_view_ = nullptr;
 
   // The download shelf view (view at the bottom of the page).
   std::unique_ptr<DownloadShelfView> download_shelf_;
 
   // The InfoBarContainerView that contains InfoBars for the current tab.
-  InfoBarContainerView* infobar_container_;
+  InfoBarContainerView* infobar_container_ = nullptr;
 
   // The view that contains the selected WebContents.
-  ContentsWebView* contents_web_view_;
+  ContentsWebView* contents_web_view_ = nullptr;
 
   // The view that contains devtools window for the selected WebContents.
-  views::WebView* devtools_web_view_;
+  views::WebView* devtools_web_view_ = nullptr;
 
   // The view managing the devtools and contents positions.
   // Handled by ContentsLayoutManager.
-  views::View* contents_container_;
+  views::View* contents_container_ = nullptr;
 
   // Tracks and stores the last focused view which is not the
   // devtools_web_view_ or any of its children. Used to restore focus once
@@ -668,16 +668,16 @@ class BrowserView : public BrowserWindow,
   std::map<ui::Accelerator, int> accelerator_table_;
 
   // True if we have already been initialized.
-  bool initialized_;
+  bool initialized_ = false;
 
   // True if we're currently handling a theme change (i.e. inside
   // OnThemeChanged()).
-  bool handling_theme_changed_;
+  bool handling_theme_changed_ = false;
 
   // True when in ProcessFullscreen(). The flag is used to avoid reentrance and
   // to ignore requests to layout while in ProcessFullscreen() to reduce
   // jankiness.
-  bool in_process_fullscreen_;
+  bool in_process_fullscreen_ = false;
 
   std::unique_ptr<ExclusiveAccessBubbleViews> exclusive_access_bubble_;
 
@@ -699,7 +699,7 @@ class BrowserView : public BrowserWindow,
 
   // If this flag is set then SetFocusToLocationBar() will set focus to the
   // location bar even if the browser window is not active.
-  bool force_location_bar_focus_;
+  bool force_location_bar_focus_ = false;
 
   std::unique_ptr<ImmersiveModeController> immersive_mode_controller_;
 
@@ -711,7 +711,8 @@ class BrowserView : public BrowserWindow,
 
   std::unique_ptr<BrowserWindowHistogramHelper> histogram_helper_;
 
-  mutable base::WeakPtrFactory<BrowserView> activate_modal_dialog_factory_;
+  mutable base::WeakPtrFactory<BrowserView> activate_modal_dialog_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(BrowserView);
 };
