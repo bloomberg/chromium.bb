@@ -58,6 +58,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   const int16_t *const dequant = xd->plane[plane].seg_dequant[mbmi->segment_id];
   const int shift = av1_get_tx_scale(tx_size);
   const int bwl = b_width_log2_lookup[txsize_to_bsize[tx_size]] + 2;
+  const int height = tx_size_high[tx_size];
   int cul_level = 0;
   unsigned int(*nz_map_count)[SIG_COEF_CONTEXTS][2];
   uint8_t txb_mask[32 * 32] = { 0 };
@@ -87,7 +88,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 
   for (c = 0; c < seg_eob; ++c) {
     int is_nz;
-    int coeff_ctx = get_nz_map_ctx(tcoeffs, txb_mask, scan[c], bwl);
+    int coeff_ctx = get_nz_map_ctx(tcoeffs, txb_mask, scan[c], bwl, height);
     int eob_ctx = get_eob_ctx(tcoeffs, scan[c], txs_ctx);
 
     if (c < seg_eob - 1)
@@ -128,7 +129,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 
       if (*v <= i) continue;
 
-      ctx = get_base_ctx(tcoeffs, scan[c], bwl, i + 1);
+      ctx = get_base_ctx(tcoeffs, scan[c], bwl, height, i + 1);
 
       if (aom_read(r, coeff_base[ctx], tx_size)) {
         *v = i + 1;
@@ -170,7 +171,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
       sign = aom_read_bit(r, ACCT_STR);
     }
 
-    ctx = get_br_ctx(tcoeffs, scan[c], bwl);
+    ctx = get_br_ctx(tcoeffs, scan[c], bwl, height);
 
     if (cm->fc->coeff_lps[txs_ctx][plane_type][ctx] == 0) exit(0);
 

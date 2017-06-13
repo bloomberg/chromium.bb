@@ -37,14 +37,14 @@ static int base_ref_offset[BASE_CONTEXT_POSITION_NUM][2] = {
 };
 
 static INLINE int get_level_count(const tran_low_t *tcoeffs, int stride,
-                                  int row, int col, int level,
+                                  int height, int row, int col, int level,
                                   int (*nb_offset)[2], int nb_num) {
   int count = 0;
   for (int idx = 0; idx < nb_num; ++idx) {
     const int ref_row = row + nb_offset[idx][0];
     const int ref_col = col + nb_offset[idx][1];
     const int pos = ref_row * stride + ref_col;
-    if (ref_row < 0 || ref_col < 0 || ref_row >= stride || ref_col >= stride)
+    if (ref_row < 0 || ref_col < 0 || ref_row >= height || ref_col >= stride)
       continue;
     tran_low_t abs_coeff = abs(tcoeffs[pos]);
     count += abs_coeff > level;
@@ -53,14 +53,15 @@ static INLINE int get_level_count(const tran_low_t *tcoeffs, int stride,
 }
 
 static INLINE void get_mag(int *mag, const tran_low_t *tcoeffs, int stride,
-                           int row, int col, int (*nb_offset)[2], int nb_num) {
+                           int height, int row, int col, int (*nb_offset)[2],
+                           int nb_num) {
   mag[0] = 0;
   mag[1] = 0;
   for (int idx = 0; idx < nb_num; ++idx) {
     const int ref_row = row + nb_offset[idx][0];
     const int ref_col = col + nb_offset[idx][1];
     const int pos = ref_row * stride + ref_col;
-    if (ref_row < 0 || ref_col < 0 || ref_row >= stride || ref_col >= stride)
+    if (ref_row < 0 || ref_col < 0 || ref_row >= height || ref_col >= stride)
       continue;
     tran_low_t abs_coeff = abs(tcoeffs[pos]);
     if (nb_offset[idx][0] >= 0 && nb_offset[idx][1] >= 0) {
@@ -74,15 +75,16 @@ static INLINE void get_mag(int *mag, const tran_low_t *tcoeffs, int stride,
   }
 }
 static INLINE int get_level_count_mag(int *mag, const tran_low_t *tcoeffs,
-                                      int stride, int row, int col, int level,
-                                      int (*nb_offset)[2], int nb_num) {
+                                      int stride, int height, int row, int col,
+                                      int level, int (*nb_offset)[2],
+                                      int nb_num) {
   int count = 0;
   *mag = 0;
   for (int idx = 0; idx < nb_num; ++idx) {
     const int ref_row = row + nb_offset[idx][0];
     const int ref_col = col + nb_offset[idx][1];
     const int pos = ref_row * stride + ref_col;
-    if (ref_row < 0 || ref_col < 0 || ref_row >= stride || ref_col >= stride)
+    if (ref_row < 0 || ref_col < 0 || ref_row >= height || ref_col >= stride)
       continue;
     tran_low_t abs_coeff = abs(tcoeffs[pos]);
     count += abs_coeff > level;
@@ -115,15 +117,16 @@ static INLINE int get_base_ctx_from_count_mag(int row, int col, int count,
 
 static INLINE int get_base_ctx(const tran_low_t *tcoeffs,
                                int c,  // raster order
-                               const int bwl, const int level) {
+                               const int bwl, const int height,
+                               const int level) {
   const int stride = 1 << bwl;
   const int row = c >> bwl;
   const int col = c - (row << bwl);
   const int level_minus_1 = level - 1;
   int mag;
-  int count =
-      get_level_count_mag(&mag, tcoeffs, stride, row, col, level_minus_1,
-                          base_ref_offset, BASE_CONTEXT_POSITION_NUM);
+  int count = get_level_count_mag(&mag, tcoeffs, stride, height, row, col,
+                                  level_minus_1, base_ref_offset,
+                                  BASE_CONTEXT_POSITION_NUM);
   int ctx_idx = get_base_ctx_from_count_mag(row, col, count, mag, level);
   return ctx_idx;
 }
@@ -173,15 +176,15 @@ static INLINE int get_br_ctx_from_count_mag(int row, int col, int count,
 
 static INLINE int get_br_ctx(const tran_low_t *tcoeffs,
                              const int c,  // raster order
-                             const int bwl) {
+                             const int bwl, const int height) {
   const int stride = 1 << bwl;
   const int row = c >> bwl;
   const int col = c - (row << bwl);
   const int level_minus_1 = NUM_BASE_LEVELS;
   int mag;
-  const int count =
-      get_level_count_mag(&mag, tcoeffs, stride, row, col, level_minus_1,
-                          br_ref_offset, BR_CONTEXT_POSITION_NUM);
+  const int count = get_level_count_mag(&mag, tcoeffs, stride, height, row, col,
+                                        level_minus_1, br_ref_offset,
+                                        BR_CONTEXT_POSITION_NUM);
   const int ctx = get_br_ctx_from_count_mag(row, col, count, mag);
   return ctx;
 }
@@ -195,7 +198,7 @@ static int sig_ref_offset[SIG_REF_OFFSET_NUM][2] = {
 static INLINE int get_nz_map_ctx(const tran_low_t *tcoeffs,
                                  const uint8_t *txb_mask,
                                  const int coeff_idx,  // raster order
-                                 const int bwl) {
+                                 const int bwl, const int height) {
   const int row = coeff_idx >> bwl;
   const int col = coeff_idx - (row << bwl);
   int ctx = 0;
@@ -228,7 +231,7 @@ static INLINE int get_nz_map_ctx(const tran_low_t *tcoeffs,
     int ref_col = col + sig_ref_offset[idx][1];
     int pos;
 
-    if (ref_row < 0 || ref_col < 0 || ref_row >= stride || ref_col >= stride)
+    if (ref_row < 0 || ref_col < 0 || ref_row >= height || ref_col >= stride)
       continue;
 
     pos = (ref_row << bwl) + ref_col;
