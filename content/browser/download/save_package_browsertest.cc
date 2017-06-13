@@ -21,6 +21,66 @@ namespace content {
 
 const char kTestFile[] = "/simple_page.html";
 
+class TestShellDownloadManagerDelegate : public ShellDownloadManagerDelegate {
+ public:
+  explicit TestShellDownloadManagerDelegate(SavePageType save_page_type)
+      : save_page_type_(save_page_type) {}
+
+  void ChooseSavePath(WebContents* web_contents,
+                      const base::FilePath& suggested_path,
+                      const base::FilePath::StringType& default_extension,
+                      bool can_save_as_complete,
+                      const SavePackagePathPickedCallback& callback) override {
+    callback.Run(suggested_path, save_page_type_,
+                 SavePackageDownloadCreatedCallback());
+  }
+
+  void GetSaveDir(BrowserContext* context,
+                  base::FilePath* website_save_dir,
+                  base::FilePath* download_save_dir,
+                  bool* skip_dir_check) override {
+    *website_save_dir = download_dir_;
+    *download_save_dir = download_dir_;
+    *skip_dir_check = false;
+  }
+
+  bool ShouldCompleteDownload(DownloadItem* download,
+                              const base::Closure& closure) override {
+    return true;
+  }
+
+  base::FilePath download_dir_;
+  SavePageType save_page_type_;
+};
+
+class DownloadicidalObserver : public DownloadManager::Observer {
+ public:
+  explicit DownloadicidalObserver(bool remove_download)
+      : remove_download_(remove_download) {}
+  void OnDownloadCreated(DownloadManager* manager,
+                         DownloadItem* item) override {
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(
+                       [](bool remove_download, const base::Closure& closure,
+                          DownloadItem* item) {
+                         remove_download ? item->Remove() : item->Cancel(true);
+                         closure.Run();
+                       },
+                       remove_download_, quit_closure_, item));
+  }
+  base::Closure quit_closure_;
+  bool remove_download_;
+};
+
+class SavePackageCompletionWaiter : public DownloadManager::Observer {
+ public:
+  void OnSavePackageSuccessfullyFinished(DownloadManager* m,
+                                         DownloadItem* d) override {
+    quit_closure_.Run();
+  }
+  base::Closure quit_closure_;
+};
+
 class SavePackageBrowserTest : public ContentBrowserTest {
  protected:
   void SetUp() override {
@@ -34,6 +94,53 @@ class SavePackageBrowserTest : public ContentBrowserTest {
                            base::FilePath* dir) {
     *full_file_name = save_dir_.GetPath().AppendASCII(prefix + ".htm");
     *dir = save_dir_.GetPath().AppendASCII(prefix + "_files");
+  }
+
+  // Start a SavePackage download and then cancels it. If |remove_download| is
+  // true, the download item will be removed while page is being saved.
+  // Otherwise, the download item will be canceled.
+  void RunAndCancelSavePackageDownload(SavePageType save_page_type,
+                                       bool remove_download) {
+    ASSERT_TRUE(embedded_test_server()->Start());
+    GURL url = embedded_test_server()->GetURL("/page_with_iframe.html");
+    NavigateToURL(shell(), url);
+    auto* download_manager =
+        static_cast<DownloadManagerImpl*>(BrowserContext::GetDownloadManager(
+            shell()->web_contents()->GetBrowserContext()));
+    auto delegate =
+        base::MakeUnique<TestShellDownloadManagerDelegate>(save_page_type);
+    delegate->download_dir_ = save_dir_.GetPath();
+    auto* old_delegate = download_manager->GetDelegate();
+    download_manager->SetDelegate(delegate.get());
+
+    {
+      base::RunLoop run_loop;
+      DownloadicidalObserver download_item_killer(false);
+      download_manager->AddObserver(&download_item_killer);
+      download_item_killer.quit_closure_ = run_loop.QuitClosure();
+
+      scoped_refptr<SavePackage> save_package(
+          new SavePackage(shell()->web_contents()));
+      save_package->GetSaveInfo();
+      run_loop.Run();
+      download_manager->RemoveObserver(&download_item_killer);
+      EXPECT_TRUE(save_package->canceled());
+    }
+
+    // Run a second download to completion so that any pending tasks will get
+    // flushed out. If the previous SavePackage operation didn't cleanup after
+    // itself, then there could be stray tasks that invoke the now defunct
+    // download item.
+    {
+      base::RunLoop run_loop;
+      SavePackageCompletionWaiter completion_waiter;
+      completion_waiter.quit_closure_ = run_loop.QuitClosure();
+      download_manager->AddObserver(&completion_waiter);
+      shell()->web_contents()->OnSavePage();
+      run_loop.Run();
+      download_manager->RemoveObserver(&completion_waiter);
+    }
+    download_manager->SetDelegate(old_delegate);
   }
 
   // Temporary directory we will save pages to.
@@ -68,98 +175,11 @@ IN_PROC_BROWSER_TEST_F(SavePackageBrowserTest, ExplicitCancel) {
 }
 
 IN_PROC_BROWSER_TEST_F(SavePackageBrowserTest, DownloadItemDestroyed) {
-  class TestShellDownloadManagerDelegate : public ShellDownloadManagerDelegate {
-   public:
-    void ChooseSavePath(
-        WebContents* web_contents,
-        const base::FilePath& suggested_path,
-        const base::FilePath::StringType& default_extension,
-        bool can_save_as_complete,
-        const SavePackagePathPickedCallback& callback) override {
-      callback.Run(suggested_path, SAVE_PAGE_TYPE_AS_COMPLETE_HTML,
-                   SavePackageDownloadCreatedCallback());
-    }
+  RunAndCancelSavePackageDownload(SAVE_PAGE_TYPE_AS_COMPLETE_HTML, true);
+}
 
-    void GetSaveDir(BrowserContext* context,
-                    base::FilePath* website_save_dir,
-                    base::FilePath* download_save_dir,
-                    bool* skip_dir_check) override {
-      *website_save_dir = download_dir_;
-      *download_save_dir = download_dir_;
-      *skip_dir_check = false;
-    }
-
-    bool ShouldCompleteDownload(DownloadItem* download,
-                                const base::Closure& closure) override {
-      return true;
-    }
-
-    base::FilePath download_dir_;
-  };
-
-  class DownloadicidalObserver : public DownloadManager::Observer {
-   public:
-    void OnDownloadCreated(DownloadManager* manager,
-                           DownloadItem* item) override {
-      base::SequencedTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE, base::Bind(
-                         [](const base::Closure& closure, DownloadItem* item) {
-                           item->Remove();
-                           closure.Run();
-                         },
-                         quit_closure_, item));
-    }
-    base::Closure quit_closure_;
-  };
-
-  ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url = embedded_test_server()->GetURL("/page_with_iframe.html");
-  NavigateToURL(shell(), url);
-  auto* download_manager =
-      static_cast<DownloadManagerImpl*>(BrowserContext::GetDownloadManager(
-          shell()->web_contents()->GetBrowserContext()));
-  auto delegate = base::MakeUnique<TestShellDownloadManagerDelegate>();
-  delegate->download_dir_ = save_dir_.GetPath();
-  auto* old_delegate = download_manager->GetDelegate();
-  download_manager->SetDelegate(delegate.get());
-
-  {
-    base::RunLoop run_loop;
-    DownloadicidalObserver download_item_killer;
-    download_manager->AddObserver(&download_item_killer);
-    download_item_killer.quit_closure_ = run_loop.QuitClosure();
-
-    scoped_refptr<SavePackage> save_package(
-        new SavePackage(shell()->web_contents()));
-    save_package->GetSaveInfo();
-    run_loop.Run();
-    download_manager->RemoveObserver(&download_item_killer);
-    EXPECT_TRUE(save_package->canceled());
-  }
-
-  class SavePackageCompletionWaiter : public DownloadManager::Observer {
-   public:
-    void OnSavePackageSuccessfullyFinished(DownloadManager* m,
-                                           DownloadItem* d) override {
-      quit_closure_.Run();
-    }
-    base::Closure quit_closure_;
-  };
-
-  // Run a second download to completion so that any pending tasks will get
-  // flushed out. If the previous SavePackage operation didn't cleanup after
-  // itself, then there could be stray tasks that invoke the now defunct
-  // download item.
-  {
-    base::RunLoop run_loop;
-    SavePackageCompletionWaiter completion_waiter;
-    completion_waiter.quit_closure_ = run_loop.QuitClosure();
-    download_manager->AddObserver(&completion_waiter);
-    shell()->web_contents()->OnSavePage();
-    run_loop.Run();
-    download_manager->RemoveObserver(&completion_waiter);
-  }
-  download_manager->SetDelegate(old_delegate);
+IN_PROC_BROWSER_TEST_F(SavePackageBrowserTest, DownloadItemCanceled) {
+  RunAndCancelSavePackageDownload(SAVE_PAGE_TYPE_AS_MHTML, false);
 }
 
 }  // namespace content
