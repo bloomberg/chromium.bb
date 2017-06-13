@@ -208,6 +208,9 @@ class RTCVideoEncoder::Impl
 
   void SetStatus(int32_t status);
 
+  // Records |failed_timestamp_match_| value after a session.
+  void RecordTimestampMatchUMA() const;
+
   // This is attached to |gpu_task_runner_|, not the thread class is constructed
   // on.
   base::ThreadChecker thread_checker_;
@@ -410,6 +413,7 @@ void RTCVideoEncoder::Impl::RequestEncodingParametersChange(
 void RTCVideoEncoder::Impl::Destroy(base::WaitableEvent* async_waiter) {
   DVLOG(3) << "Impl::Destroy()";
   DCHECK(thread_checker_.CalledOnValidThread());
+  RecordTimestampMatchUMA();
   if (video_encoder_) {
     video_encoder_.reset();
     SetStatus(WEBRTC_VIDEO_CODEC_UNINITIALIZED);
@@ -425,6 +429,11 @@ int32_t RTCVideoEncoder::Impl::GetStatus() const {
 void RTCVideoEncoder::Impl::SetStatus(int32_t status) {
   base::AutoLock lock(status_lock_);
   status_ = status;
+}
+
+void RTCVideoEncoder::Impl::RecordTimestampMatchUMA() const {
+  UMA_HISTOGRAM_BOOLEAN("Media.RTCVideoEncoderTimestampMatchSuccess",
+                        failed_timestamp_match_ == false);
 }
 
 void RTCVideoEncoder::Impl::RequireBitstreamBuffers(
@@ -512,7 +521,7 @@ void RTCVideoEncoder::Impl::BitstreamBufferReady(int32_t bitstream_buffer_id,
   // Find RTP timestamp by going through |pending_timestamps_|. Derive it from
   // capture time otherwise.
   base::Optional<uint32_t> rtp_timestamp;
-  if (!timestamp.is_zero() && !failed_timestamp_match_) {
+  if (!failed_timestamp_match_) {
     // Pop timestamps until we have a match.
     while (!pending_timestamps_.empty()) {
       const auto& front_timestamps = pending_timestamps_.front();
