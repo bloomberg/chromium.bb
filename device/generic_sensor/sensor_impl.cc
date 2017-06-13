@@ -11,7 +11,9 @@
 namespace device {
 
 SensorImpl::SensorImpl(scoped_refptr<PlatformSensor> sensor)
-    : sensor_(std::move(sensor)), suspended_(false) {
+    : sensor_(std::move(sensor)),
+      suspended_(false),
+      suppress_on_change_events_count_(0) {
   sensor_->AddClient(this);
 }
 
@@ -28,7 +30,10 @@ void SensorImpl::AddConfiguration(
     AddConfigurationCallback callback) {
   // TODO(Mikhail): To avoid overflowing browser by repeated AddConfigs
   // (maybe limit the number of configs per client).
-  std::move(callback).Run(sensor_->StartListening(this, configuration));
+  bool success = sensor_->StartListening(this, configuration);
+  if (success && configuration.suppress_on_change_events())
+    ++suppress_on_change_events_count_;
+  std::move(callback).Run(success);
 }
 
 void SensorImpl::GetDefaultConfiguration(
@@ -39,7 +44,10 @@ void SensorImpl::GetDefaultConfiguration(
 void SensorImpl::RemoveConfiguration(
     const PlatformSensorConfiguration& configuration,
     RemoveConfigurationCallback callback) {
-  std::move(callback).Run(sensor_->StopListening(this, configuration));
+  bool success = sensor_->StopListening(this, configuration);
+  if (success && configuration.suppress_on_change_events())
+    --suppress_on_change_events_count_;
+  std::move(callback).Run(success);
 }
 
 void SensorImpl::Suspend() {
@@ -54,7 +62,7 @@ void SensorImpl::Resume() {
 
 void SensorImpl::OnSensorReadingChanged() {
   DCHECK(!suspended_);
-  if (client_)
+  if (client_ && suppress_on_change_events_count_ == 0)
     client_->SensorReadingChanged();
 }
 

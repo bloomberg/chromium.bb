@@ -17,6 +17,11 @@ struct StructTraits<device::mojom::SensorConfigurationDataView,
     return input.frequency();
   }
 
+  static bool suppress_on_change_events(
+      const device::PlatformSensorConfiguration& input) {
+    return input.suppress_on_change_events();
+  }
+
   static bool Read(device::mojom::SensorConfigurationDataView data,
                    device::PlatformSensorConfiguration* out);
 };

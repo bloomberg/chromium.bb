@@ -40,6 +40,10 @@ class SensorImpl final : public mojom::Sensor, public PlatformSensor::Client {
   scoped_refptr<PlatformSensor> sensor_;
   mojom::SensorClientPtr client_;
   bool suspended_;
+  // The number of configurations that have |suppress_on_change_events_|
+  // flag set to true. If there is at least one configuration that sets this
+  // flag to true, SensorClient::SensorReadingChanged() is not called.
+  int suppress_on_change_events_count_;
 
   DISALLOW_COPY_AND_ASSIGN(SensorImpl);
 };
