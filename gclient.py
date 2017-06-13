@@ -561,6 +561,9 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
   def _postprocess_deps(self, deps, rel_prefix):
     """Performs post-processing of deps compared to what's in the DEPS file."""
+    # Make sure the dict is mutable, e.g. in case it's frozen.
+    deps = dict(deps)
+
     # If a line is in custom_deps, but not in the solution, we want to append
     # this line to the solution.
     for d in self.custom_deps:
