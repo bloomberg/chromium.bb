@@ -193,6 +193,7 @@ MaterialBookmarksPolicyTest.prototype = {
 
   testGenPreamble: function() {
     GEN('SetIncognitoAvailability(IncognitoModePrefs::DISABLED);');
+    GEN('SetCanEditBookmarks(false);');
   },
 
   extraLibraries: MaterialBookmarksBrowserTest.prototype.extraLibraries.concat([

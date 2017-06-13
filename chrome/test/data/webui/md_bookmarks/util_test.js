@@ -59,4 +59,47 @@ suite('util', function() {
     var newSet = bookmarks.util.removeIdsFromSet(set, toRemove);
     assertDeepEquals(['5'], normalizeSet(newSet));
   });
+
+  test('canEditNode and canReorderChildren', function() {
+    var store = new bookmarks.TestStore({
+      nodes: testTree(
+          createFolder(
+              '1',
+              [
+                createItem('11'),
+              ]),
+          createFolder(
+              '4',
+              [
+                createItem('41', {unmodifiable: 'managed'}),
+              ],
+              {unmodifiable: 'managed'})),
+    });
+
+    // Top-level folders are unmodifiable, but their children can be changed.
+    assertFalse(bookmarks.util.canEditNode(store.data, '1'));
+    assertTrue(bookmarks.util.canReorderChildren(store.data, '1'));
+
+    // Managed folders are entirely unmodifiable.
+    assertFalse(bookmarks.util.canEditNode(store.data, '4'));
+    assertFalse(bookmarks.util.canReorderChildren(store.data, '4'));
+    assertFalse(bookmarks.util.canEditNode(store.data, '41'));
+    assertFalse(bookmarks.util.canReorderChildren(store.data, '41'));
+
+    // Regular nodes are modifiable.
+    assertTrue(bookmarks.util.canEditNode(store.data, '11'));
+    assertTrue(bookmarks.util.canReorderChildren(store.data, '11'));
+
+    // When editing is disabled globally, everything is unmodifiable.
+    store.data.prefs.canEdit = false;
+
+    assertFalse(bookmarks.util.canEditNode(store.data, '1'));
+    assertFalse(bookmarks.util.canReorderChildren(store.data, '1'));
+
+    assertFalse(bookmarks.util.canEditNode(store.data, '41'));
+    assertFalse(bookmarks.util.canReorderChildren(store.data, '41'));
+
+    assertFalse(bookmarks.util.canEditNode(store.data, '11'));
+    assertFalse(bookmarks.util.canReorderChildren(store.data, '11'));
+  });
 });

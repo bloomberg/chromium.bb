@@ -426,6 +426,13 @@ cr.define('bookmarks', function() {
 
       e.preventDefault();
 
+      // If any node can't be dragged, early return (after preventDefault).
+      var anyUnmodifiable = draggedNodes.some(function(itemId) {
+        return !bookmarks.util.canEditNode(state, itemId);
+      });
+      if (anyUnmodifiable)
+        return;
+
       // If we are dragging a single link, we can do the *Link* effect.
       // Otherwise, we only allow copy and move.
       if (e.dataTransfer) {
@@ -474,7 +481,6 @@ cr.define('bookmarks', function() {
       this.autoExpander_.update(e, overElement);
       if (!overElement)
         return;
-
 
       // Now we know that we can drop. Determine if we will drop above, on or
       // below based on mouse position etc.
@@ -546,6 +552,9 @@ cr.define('bookmarks', function() {
 
       if (isBookmarkList(overElement))
         itemId = state.selectedFolder;
+
+      if (!bookmarks.util.canReorderChildren(state, itemId))
+        return DropPosition.NONE;
 
       // Drags of a bookmark onto itself or of a folder into its children aren't
       // allowed.

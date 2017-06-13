@@ -30,6 +30,11 @@ suite('<bookmarks-command-manager>', function() {
                     '12',
                     [
                       createItem('121', {url: 'http://121/'}),
+                      createFolder(
+                          '122',
+                          [
+                            createItem('1221'),
+                          ]),
                     ]),
                 createItem('13', {url: 'http://13/'}),
               ]),
@@ -136,11 +141,11 @@ suite('<bookmarks-command-manager>', function() {
       lastDelete = idArray.sort();
     };
 
-    var parentAndChildren = new Set(['1', '2', '12', '111']);
+    var parentAndChildren = new Set(['11', '12', '111', '1221']);
     assertTrue(commandManager.canExecute(Command.DELETE, parentAndChildren));
     commandManager.handle(Command.DELETE, parentAndChildren);
 
-    assertDeepEquals(['1', '2'], lastDelete);
+    assertDeepEquals(['11', '12'], lastDelete);
   });
 
   test('expandUrls_ expands one level of URLs', function() {
@@ -186,6 +191,39 @@ suite('<bookmarks-command-manager>', function() {
 
     assertTrue(commandItem[Command.OPEN_INCOGNITO].disabled);
     assertFalse(commandItem[Command.OPEN_INCOGNITO].hidden);
+  });
+
+  test('cannot execute editing commands when editing is disabled', function() {
+    var items = new Set(['12']);
+
+    store.data.prefs.canEdit = false;
+    store.data.selection.items = items;
+    store.notifyObservers();
+
+    assertFalse(commandManager.canExecute(Command.EDIT, items));
+    assertFalse(commandManager.canExecute(Command.DELETE, items));
+    assertFalse(commandManager.canExecute(Command.UNDO, items));
+    assertFalse(commandManager.canExecute(Command.REDO, items));
+
+    // No divider line should be visible when only 'Open' commands are enabled.
+    commandManager.openCommandMenuAtPosition(0, 0);
+    commandManager.root.querySelectorAll('hr').forEach(element => {
+      assertTrue(element.hidden);
+    });
+  });
+
+  test('cannot edit unmodifiable nodes', function() {
+    // Cannot edit root folders.
+    var items = new Set(['1']);
+    assertFalse(commandManager.canExecute(Command.EDIT, items));
+    assertFalse(commandManager.canExecute(Command.DELETE, items));
+
+    store.data.nodes['12'].unmodifiable = 'managed';
+    store.notifyObservers();
+
+    items = new Set(['12']);
+    assertFalse(commandManager.canExecute(Command.EDIT, items));
+    assertFalse(commandManager.canExecute(Command.DELETE, items));
   });
 });
 

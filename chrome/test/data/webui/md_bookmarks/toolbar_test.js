@@ -13,10 +13,13 @@ suite('<bookmarks-toolbar>', function() {
 
   setup(function() {
     store = new bookmarks.TestStore({
-      nodes: testTree(createFolder('1', [
-        createItem('2'),
-        createItem('3'),
-      ])),
+      nodes: testTree(createFolder(
+          '1',
+          [
+            createItem('2'),
+            createItem('3'),
+            createFolder('4', [], {unmodifiable: 'managed'}),
+          ])),
       selection: {
         items: new Set(),
         anchor: null,
@@ -43,13 +46,21 @@ suite('<bookmarks-toolbar>', function() {
     assertTrue(toolbar.showSelectionOverlay);
   });
 
+  test('overlay does not show when editing is disabled', function() {
+    store.data.prefs.canEdit = false
+    store.data.selection.items = new Set(['2', '3']);
+    store.notifyObservers();
+    assertFalse(toolbar.showSelectionOverlay);
+  });
+
   test('clicking overlay delete button triggers a delete command', function() {
     store.data.selection.items = new Set(['2', '3']);
     store.notifyObservers();
 
     Polymer.dom.flush();
-    MockInteractions.tap(
-        toolbar.$$('cr-toolbar-selection-overlay').deleteButton);
+    var button = toolbar.$$('cr-toolbar-selection-overlay').deleteButton;
+    assertFalse(button.disabled);
+    MockInteractions.tap(button);
 
     commandManager.assertLastCommand(Command.DELETE, ['2', '3']);
   });
@@ -63,5 +74,35 @@ suite('<bookmarks-toolbar>', function() {
     MockInteractions.pressAndReleaseKeyOn(input, 67, modifier, 'c');
 
     commandManager.assertLastCommand(null);
+  });
+
+  test('delete button is disabled when items are unmodifiable', function() {
+    store.data.nodes['3'].unmodifiable = 'managed';
+    store.data.selection.items = new Set(['2', '3']);
+    store.notifyObservers();
+    Polymer.dom.flush();
+
+    assertTrue(toolbar.showSelectionOverlay);
+    assertTrue(
+        toolbar.$$('cr-toolbar-selection-overlay').deleteButton.disabled);
+  });
+
+  test('overflow menu options are disabled when appropriate', function() {
+    store.data.selectedFolder = '1';
+    store.notifyObservers();
+
+    assertFalse(toolbar.$.addBookmarkButton.disabled);
+
+    store.data.selectedFolder = '4';
+    store.notifyObservers();
+
+    assertTrue(toolbar.$.addBookmarkButton.disabled);
+    assertFalse(toolbar.$.importBookmarkButton.disabled);
+
+    store.data.prefs.canEdit = false;
+    store.notifyObservers();
+
+    assertTrue(toolbar.$.addBookmarkButton.disabled);
+    assertTrue(toolbar.$.importBookmarkButton.disabled);
   });
 });

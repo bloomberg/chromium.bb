@@ -19,7 +19,7 @@
             on-tap="onCommandClick_">
           [[getCommandLabel_(command, menuIds_)]]
         </button>
-        <hr hidden$="[[!showDividerAfter_(command)]]"></hr>
+        <hr hidden$="[[!showDividerAfter_(command, menuIds_)]]"></hr>
       </template>
     </dialog>
     <template is="cr-lazy-render" id="editDialog">

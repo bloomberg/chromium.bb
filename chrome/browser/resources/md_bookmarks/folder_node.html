@@ -80,8 +80,10 @@
       }
     </style>
 
-    <div id="container" class="v-centered" on-tap="selectFolder_"
-        draggable="[[!isTopLevelFolder_(depth)]]"
+    <div id="container"
+        class="v-centered"
+        draggable="true"
+        on-tap="selectFolder_"
         tabindex$="[[getTabIndex_(isSelectedFolder_)]]"
         hidden="[[isRootFolder_(depth)]]">
       <template is="dom-if" if="[[hasChildFolder_(item_.children)]]">

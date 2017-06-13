@@ -22,6 +22,10 @@ class BookmarksMessageHandler : public content::WebUIMessageHandler {
   void HandleGetIncognitoAvailability(const base::ListValue* args);
   void UpdateIncognitoAvailability();
 
+  bool CanEditBookmarks();
+  void HandleGetCanEditBookmarks(const base::ListValue* args);
+  void UpdateCanEditBookmarks();
+
   // content::WebUIMessageHandler:
   void RegisterMessages() override;
   void OnJavascriptAllowed() override;

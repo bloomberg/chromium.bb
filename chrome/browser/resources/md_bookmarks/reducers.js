@@ -408,6 +408,10 @@ cr.define('bookmarks', function() {
         return /** @type {PreferencesState} */ (Object.assign({}, prefs, {
           incognitoAvailability: action.value,
         }));
+      case 'set-can-edit':
+        return /** @type {PreferencesState} */ (Object.assign({}, prefs, {
+          canEdit: action.value,
+        }));
       default:
         return prefs;
     }

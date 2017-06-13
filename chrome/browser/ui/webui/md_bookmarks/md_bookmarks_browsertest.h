@@ -15,9 +15,11 @@ class MdBookmarksBrowserTest : public WebUIBrowserTest,
   ~MdBookmarksBrowserTest() override;
 
   void SetIncognitoAvailability(int availability);
+  void SetCanEditBookmarks(bool canEdit);
 
  private:
   void HandleSetIncognitoAvailability(const base::ListValue* args);
+  void HandleSetCanEditBookmarks(const base::ListValue* args);
 
   // content::WebUIMessageHandler:
   void RegisterMessages() override;

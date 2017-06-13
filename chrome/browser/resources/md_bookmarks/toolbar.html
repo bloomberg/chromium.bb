@@ -48,20 +48,21 @@
     </style>
     <dialog is="cr-action-menu" id="dropdown">
       <button class="dropdown-item" on-tap="onSortTap_"
-          disabled="[[hasSearchTerm_(searchTerm_)]]">
+          disabled="[[!canChangeList_]]">
         $i18n{menuSort}
       </button>
       <hr>
-      <button class="dropdown-item" on-tap="onAddBookmarkTap_"
-          disabled="[[hasSearchTerm_(searchTerm_)]]">
+      <button id="addBookmarkButton" class="dropdown-item"
+          on-tap="onAddBookmarkTap_" disabled="[[!canChangeList_]]">
         $i18n{menuAddBookmark}
       </button>
       <button class="dropdown-item" on-tap="onAddFolderTap_"
-          disabled="[[hasSearchTerm_(searchTerm_)]]">
+          disabled="[[!canChangeList_]]">
         $i18n{menuAddFolder}
       </button>
       <hr>
-      <button class="dropdown-item" on-tap="onImportTap_">
+      <button id="importBookmarkButton" class="dropdown-item"
+          on-tap="onImportTap_" disabled="[[!globalCanEdit_]]">
         $i18n{menuImport}
       </button>
       <button class="dropdown-item" on-tap="onExportTap_">
@@ -87,7 +88,8 @@
     <template is="dom-if" if="[[showSelectionOverlay]]">
       <cr-toolbar-selection-overlay delete-label="$i18n{delete}"
           cancel-label="$i18n{cancel}"
-          selection-label="[[getItemsSelectedString_(selectedCount_)]]"
+          selection-label="[[getItemsSelectedString_(selectedItems_.size)]]"
+          delete-disabled="[[!canDeleteSelection_(selectedItems_)]]"
           on-delete-selected-items="onDeleteSelectionTap_"
           on-clear-selected-items="onClearSelectionTap_">
       </cr-toolbar-selection-overlay>

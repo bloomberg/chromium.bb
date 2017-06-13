@@ -50,6 +50,7 @@ var ClosedFolderState;
 
 /**
  * @typedef {{
+ *   canEdit: boolean,
  *   incognitoAvailability: IncognitoAvailability,
  * }}
  */

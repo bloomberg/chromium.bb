@@ -25,6 +25,12 @@
         font-weight: 500;
       }
 
+      paper-button[disabled] {
+        background: transparent;
+        color: inherit;
+        opacity: 0.7;
+      }
+
       #number-selected {
         flex: 1;
       }
@@ -51,7 +57,8 @@
       <paper-button on-tap="onClearSelectionTap_">
         [[cancelLabel]]
       </paper-button>
-      <paper-button id="delete" on-tap="onDeleteTap_">
+      <paper-button id="delete" on-tap="onDeleteTap_"
+          disabled="[[deleteDisabled]]">
         [[deleteLabel]]
       </paper-button>
     </div>

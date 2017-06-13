@@ -23,7 +23,7 @@ Polymer({
 
     showSelectionOverlay: {
       type: Boolean,
-      computed: 'shouldShowSelectionOverlay_(selectedCount_)',
+      computed: 'shouldShowSelectionOverlay_(selectedItems_, globalCanEdit_)',
       readOnly: true,
       reflectToAttribute: true,
     },
@@ -34,16 +34,35 @@ Polymer({
       reflectToAttribute: true,
     },
 
+    /** @private {!Set<string>} */
+    selectedItems_: Object,
+
     /** @private */
-    selectedCount_: Number,
+    globalCanEdit_: Boolean,
+
+    /** @private */
+    selectedFolder_: String,
+
+    /** @private */
+    canChangeList_: {
+      type: Boolean,
+      computed:
+          'computeCanChangeList_(selectedFolder_, searchTerm_, globalCanEdit_)',
+    }
   },
 
   attached: function() {
     this.watch('searchTerm_', function(state) {
       return state.search.term;
     });
-    this.watch('selectedCount_', function(state) {
-      return state.selection.items.size;
+    this.watch('selectedItems_', function(state) {
+      return state.selection.items;
+    });
+    this.watch('globalCanEdit_', function(state) {
+      return state.prefs.canEdit;
+    });
+    this.watch('selectedFolder_', function(state) {
+      return state.selectedFolder;
     });
     this.updateFromStore();
   },
@@ -143,8 +162,10 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  hasSearchTerm_: function() {
-    return !!this.searchTerm_;
+  computeCanChangeList_: function() {
+    return !this.searchTerm_ &&
+        bookmarks.util.canReorderChildren(
+            this.getState(), this.selectedFolder_);
   },
 
   /**
@@ -152,7 +173,12 @@ Polymer({
    * @private
    */
   shouldShowSelectionOverlay_: function() {
-    return this.selectedCount_ > 1;
+    return this.selectedItems_.size > 1 && this.globalCanEdit_;
+  },
+
+  canDeleteSelection_: function() {
+    return bookmarks.CommandManager.getInstance().canExecute(
+        Command.DELETE, this.selectedItems_);
   },
 
   /**
@@ -160,6 +186,6 @@ Polymer({
    * @private
    */
   getItemsSelectedString_: function() {
-    return loadTimeData.getStringF('itemsSelected', this.selectedCount_);
+    return loadTimeData.getStringF('itemsSelected', this.selectedItems_.size);
   },
 });
