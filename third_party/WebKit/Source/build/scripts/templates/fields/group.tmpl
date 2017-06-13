@@ -12,7 +12,7 @@ class {{group.type_name}} : public RefCounted<{{group.type_name}}> {
 
   bool operator==(const {{group.type_name}}& other) const {
     return (
-    {% for field in group.fields %}
+    {% for field in group.fields if not field.custom_compare %}
       {{compare(field.wrapper_pointer_name, field.name, "other")}}{{print_if(not loop.last, ' &&')}}
     {% endfor %}
     );

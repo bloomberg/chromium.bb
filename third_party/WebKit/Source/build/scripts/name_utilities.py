@@ -30,7 +30,9 @@ import os.path
 import re
 
 
+# Acronyms are kept as all caps.
 ACRONYMS = [
+    '3D',
     'CSSOM',
     'CSS',
     'DNS',
@@ -126,7 +128,8 @@ def enum_for_css_property_alias(property_name):
 
 def split_name(name):
     """Splits a name in some format to a list of words"""
-    return re.findall(r'(?:[A-Z][a-z]*)|[a-z]+|(?:\d+[a-z]*)', upper_first_letter(name))
+    return re.findall('|'.join(ACRONYMS) + r'|(?:[A-Z][a-z]*)|[a-z]+|(?:\d+[a-z]*)',
+                      upper_first_letter(name))
 
 
 def upper_camel_case(name):

@@ -114,7 +114,9 @@
     // Can only be set if the field template is storage_only.
     wrapper_pointer_name: {
       valid_type: "str",
-      valid_values: ["RefPtr", "Persistent"],
+      // TODO(shend): Remove DataRef once we generate all of
+      // StyleRareNonInheritedData.
+      valid_values: ["RefPtr", "Persistent", "std::unique_ptr", "DataPersistent", "DataRef"],
     },
 
     // - keywords: ["keyword1", "keyword2"]
@@ -591,6 +593,11 @@
       api_class: "CSSPropertyAPIAlignOrJustifyContent",
       converter: "ConvertContentAlignmentData",
       initial: "InitialContentAlignment",
+      field_template: "storage_only",
+      type_name: "StyleContentAlignmentData",
+      field_group: "rare-non-inherited",
+      default_value: "StyleContentAlignmentData(kContentPositionNormal, kContentDistributionDefault, kOverflowAlignmentDefault)",
+      include_paths: ["core/style/StyleContentAlignmentData.h"],
     },
     {
       name: "align-items",
@@ -598,6 +605,11 @@
       api_methods: ["parseSingleValue"],
       converter: "ConvertSelfOrDefaultAlignmentData",
       initial: "InitialDefaultAlignment",
+      field_template: "storage_only",
+      type_name: "StyleSelfAlignmentData",
+      field_group: "rare-non-inherited",
+      default_value: "StyleSelfAlignmentData(RuntimeEnabledFeatures::CSSGridLayoutEnabled() ? kItemPositionNormal : kItemPositionStretch, kOverflowAlignmentDefault)",
+      include_paths: ["core/style/StyleSelfAlignmentData.h"],
     },
     {
       name: "alignment-baseline",
@@ -609,6 +621,11 @@
       api_methods: ["parseSingleValue"],
       converter: "ConvertSelfOrDefaultAlignmentData",
       initial: "InitialSelfAlignment",
+      field_template: "storage_only",
+      type_name: "StyleSelfAlignmentData",
+      field_group: "rare-non-inherited",
+      default_value: "StyleSelfAlignmentData(kItemPositionAuto, kOverflowAlignmentDefault)",
+      include_paths: ["core/style/StyleSelfAlignmentData.h"],
     },
     {
       name: "backdrop-filter",
@@ -619,6 +636,11 @@
     },
     {
       name: "backface-visibility",
+      field_template: "storage_only",
+      type_name: "EBackfaceVisibility",
+      field_group: "rare-non-inherited",
+      default_value: "kBackfaceVisibilityVisible",
+      field_size: 1,
     },
     {
       name: "background-attachment",
@@ -918,6 +940,11 @@
       name: "box-shadow",
       converter: "ConvertShadowList",
       interpolable: true,
+      field_template: "storage_only",
+      type_name: "ShadowList",
+      field_group: "rare-non-inherited",
+      default_value: "nullptr",
+      wrapper_pointer_name: "RefPtr",
     },
     {
       name: "box-sizing",
@@ -1007,6 +1034,12 @@
       api_methods: ["parseSingleValue"],
       converter: "ConvertClipPath",
       interpolable: true,
+      field_template: "storage_only",
+      type_name: "ClipPathOperation",
+      field_group: "rare-non-inherited",
+      default_value: "nullptr",
+      wrapper_pointer_name: "RefPtr",
+      include_paths: ["core/style/ClipPathOperation.h"],
     },
     {
       name: "clip-rule",
@@ -1040,6 +1073,12 @@
       api_methods: ["parseSingleValue"],
       converter: "ConvertFlags<Containment>",
       runtime_flag: "CSSContainment",
+      name_for_methods: "Contain",
+      type_name: "Containment",
+      field_template: "storage_only",
+      field_group: "rare-non-inherited",
+      field_size: 4,
+      default_value: "kContainsNone",
     },
     {
       name: "content",
@@ -1048,6 +1087,12 @@
       custom_all: true,
       separator: ",",
       typedom_types: ["Image"],
+      type_name: "ContentData",
+      field_template: "storage_only",
+      field_group: "rare-non-inherited",
+      default_value: "nullptr",
+      wrapper_pointer_name: "Persistent",
+      include_paths: ["core/style/ContentData.h"],
     },
     {
       name: "counter-increment",
@@ -1320,6 +1365,11 @@
     },
     {
       name: "isolation",
+      type_name: "EIsolation",
+      field_template: "storage_only",
+      field_group: "rare-non-inherited",
+      field_size: 1,
+      default_value: "kIsolationAuto",
     },
     {
       name: "justify-content",
@@ -1327,6 +1377,11 @@
       api_methods: ["parseSingleValue"],
       converter: "ConvertContentAlignmentData",
       initial: "InitialContentAlignment",
+      field_template: "storage_only",
+      type_name: "StyleContentAlignmentData",
+      field_group: "rare-non-inherited",
+      default_value: "StyleContentAlignmentData(kContentPositionNormal, kContentDistributionDefault, kOverflowAlignmentDefault)",
+      include_paths: ["core/style/StyleContentAlignmentData.h"],
     },
     {
       name: "justify-items",
@@ -1335,6 +1390,11 @@
       converter: "ConvertSelfOrDefaultAlignmentData",
       initial: "InitialSelfAlignment",
       runtime_flag: "CSSGridLayout",
+      field_template: "storage_only",
+      type_name: "StyleSelfAlignmentData",
+      field_group: "rare-non-inherited",
+      default_value: "StyleSelfAlignmentData(kItemPositionAuto, kOverflowAlignmentDefault)",
+      include_paths: ["core/style/StyleSelfAlignmentData.h"],
     },
     {
       name: "justify-self",
@@ -1343,6 +1403,11 @@
       converter: "ConvertSelfOrDefaultAlignmentData",
       initial: "InitialSelfAlignment",
       runtime_flag: "CSSGridLayout",
+      field_template: "storage_only",
+      type_name: "StyleSelfAlignmentData",
+      field_group: "rare-non-inherited",
+      default_value: "StyleSelfAlignmentData(kItemPositionAuto, kOverflowAlignmentDefault)",
+      include_paths: ["core/style/StyleSelfAlignmentData.h"],
     },
     {
       name: "left",
@@ -1574,11 +1639,19 @@
     {
       name: "object-fit",
       type_name: "ObjectFit",
+      field_template: "storage_only",
+      field_group: "rare-non-inherited",
+      field_size: 3,
+      default_value: "kObjectFitFill",
     },
     {
       name: "object-position",
       converter: "ConvertPosition",
       interpolable: true,
+      field_template: "storage_only",
+      type_name: "LengthPoint",
+      field_group: "rare-non-inherited",
+      default_value: "LengthPoint(Length(50.0, kPercent), Length(50.0, kPercent))",
     },
     {
       name: "offset-anchor",
@@ -1614,19 +1687,26 @@
       converter: "ConvertOffsetRotate",
       interpolable: true,
     },
+    // Whether or not we're transparent.
     {
       name: "opacity",
       api_class: "CSSPropertyAPIOpacity",
       api_methods: ["parseSingleValue"],
       interpolable: true,
+      field_template: "storage_only",
       type_name: "float",
+      field_group: "rare-non-inherited",
+      default_value: "1.0",
     },
     {
       name: "order",
       api_class: true,
       api_methods: ["parseSingleValue"],
       interpolable: true,
+      field_template: "storage_only",
       type_name: "int",
+      field_group: "rare-non-inherited",
+      default_value: "0",
     },
     {
       name: "orphans",
@@ -1762,11 +1842,19 @@
       api_class: "CSSPropertyAPIPerspective",
       converter: "ConvertPerspective",
       interpolable: true,
+      field_template: "storage_only",
+      type_name: "float",
+      field_group: "rare-non-inherited",
+      default_value: "0.0",
     },
     {
       name: "perspective-origin",
       converter: "ConvertPosition",
       interpolable: true,
+      field_template: "storage_only",
+      type_name: "LengthPoint",
+      field_group: "rare-non-inherited",
+      default_value: "LengthPoint(Length(50.0, kPercent), Length(50.0, kPercent))",
     },
     {
       name: "pointer-events",
@@ -1804,6 +1892,11 @@
     {
       name: "resize",
       custom_value: true,
+      type_name: "EResize",
+      field_template: "storage_only",
+      field_group: "rare-non-inherited",
+      field_size: 2,
+      default_value: "RESIZE_NONE",
     },
     {
       name: "right",
@@ -1846,11 +1939,19 @@
       name: "scroll-behavior",
       runtime_flag: "CSSOMSmoothScroll",
       type_name: "ScrollBehavior",
+      field_template: "storage_only",
+      field_group: "rare-non-inherited",
+      field_size: 2,
+      default_value: "kScrollBehaviorAuto",
     },
     {
       name: "scroll-snap-type",
       runtime_flag: "CSSScrollSnapPoints",
       type_name: "ScrollSnapType",
+      field_template: "storage_only",
+      field_group: "rare-non-inherited",
+      field_size: 2,
+      default_value: "kScrollSnapTypeNone",
     },
     {
       name: "scroll-snap-points-x",
@@ -1879,7 +1980,10 @@
       api_class: true,
       api_methods: ["parseSingleValue"],
       interpolable: true,
+      field_template: "storage_only",
       type_name: "float",
+      field_group: "rare-non-inherited",
+      default_value: "0.0",
     },
     {
       name: "shape-margin",
@@ -1887,6 +1991,10 @@
       api_methods: ["parseSingleValue"],
       converter: "ConvertLength",
       interpolable: true,
+      field_template: "storage_only",
+      type_name: "Length",
+      field_group: "rare-non-inherited",
+      default_value: "Length(0, kFixed)",
     },
     {
       name: "shape-outside",
@@ -1895,6 +2003,12 @@
       converter: "ConvertShapeValue",
       interpolable: true,
       typedom_types: ["Image"],
+      field_template: "storage_only",
+      type_name: "ShapeValue",
+      field_group: "rare-non-inherited",
+      default_value: "nullptr",
+      wrapper_pointer_name: "Persistent",
+      include_paths: ["core/style/ShapeValue.h"],
     },
     {
       name: "shape-rendering",
@@ -2071,6 +2185,10 @@
       custom_all: true,
       interpolable: true,
       runtime_flag: "CSS3TextDecorations",
+      field_template: "storage_only",
+      type_name: "StyleColor",
+      field_group: "rare-non-inherited",
+      default_value: "StyleColor::CurrentColor()",
     },
     {
       name: "text-decoration-line",
@@ -2097,6 +2215,10 @@
       name: "text-decoration-style",
       runtime_flag: "CSS3TextDecorations",
       type_name: "TextDecorationStyle",
+      field_template: "storage_only",
+      field_group: "rare-non-inherited",
+      default_value: "kTextDecorationStyleSolid",
+      field_size: 3,
     },
     {
       name: "text-indent",
@@ -2126,6 +2248,10 @@
     {
       name: "text-overflow",
       type_name: "TextOverflow",
+      field_template: "storage_only",
+      field_group: "rare-non-inherited",
+      default_value: "kTextOverflowClip",
+      field_size: 1,
     },
     {
       name: "text-shadow",
@@ -2193,6 +2319,11 @@
       api_methods: ["parseSingleValue"],
       converter: "ConvertFlags<TouchAction>",
       type_name: "TouchAction",
+      field_template: "storage_only",
+      field_group: "rare-non-inherited",
+      field_size: 6, // TODO(shend): Make this use "kTouchActionBits".
+      default_value: "TouchAction::kTouchActionAuto",
+      include_paths: ["platform/graphics/TouchAction.h"],
     },
     {
       name: "transform",
@@ -2221,6 +2352,10 @@
     {
       name: "transform-style",
       name_for_methods: "TransformStyle3D",
+      field_template: "storage_only",
+      field_group: "rare-non-inherited",
+      default_value: "kTransformStyle3DFlat",
+      field_size: 1,
     },
     {
       name: "translate",
@@ -2294,6 +2429,10 @@
     {
       name: "-webkit-appearance",
       type_name: "ControlPart",
+      field_template: "storage_only",
+      field_group: "rare-non-inherited",
+      default_value: "kNoControlPart",
+      field_size: 6,
     },
     {
       name: "-webkit-app-region",
@@ -2384,6 +2523,12 @@
     {
       name: "-webkit-box-reflect",
       converter: "ConvertBoxReflect",
+      field_template: "storage_only",
+      type_name: "StyleReflection",
+      field_group: "rare-non-inherited",
+      default_value: "nullptr",
+      wrapper_pointer_name: "RefPtr",
+      include_paths: ["core/style/StyleReflection.h"],
     },
     {
       name: "column-count",
@@ -2466,19 +2611,32 @@
       default_value: "auto",
       field_group: "rare-inherited",
     },
+    // An Apple extension.
     {
       name: "-webkit-line-clamp",
       api_class: true,
       api_methods: ["parseSingleValue"],
       type_name: "LineClampValue",
+      field_template: "storage_only",
+      field_group: "rare-non-inherited",
+      default_value: "LineClampValue()",
+      include_paths: ["core/style/LineClampValue.h"],
     },
     {
       name: "-webkit-margin-after-collapse",
       type_name: "EMarginCollapse",
+      field_template: "storage_only",
+      field_group: "rare-non-inherited",
+      default_value: "kMarginCollapseCollapse",
+      field_size: 2,
     },
     {
       name: "-webkit-margin-before-collapse",
       type_name: "EMarginCollapse",
+      field_template: "storage_only",
+      field_group: "rare-non-inherited",
+      default_value: "kMarginCollapseCollapse",
+      field_size: 2,
     },
     {
       name: "-webkit-margin-bottom-collapse",
@@ -2712,6 +2870,11 @@
     },
     {
       name: "-webkit-user-drag",
+      field_template: "storage_only",
+      type_name: "EUserDrag",
+      field_group: "rare-non-inherited",
+      default_value: "DRAG_AUTO",
+      field_size: 2,
     },
     {
       name: "-webkit-user-modify",

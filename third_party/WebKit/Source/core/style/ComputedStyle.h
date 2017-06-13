@@ -59,7 +59,6 @@
 #include "core/style/StyleInheritedVariables.h"
 #include "core/style/StyleMultiColData.h"
 #include "core/style/StyleOffsetRotation.h"
-#include "core/style/StyleRareNonInheritedData.h"
 #include "core/style/StyleReflection.h"
 #include "core/style/StyleSelfAlignmentData.h"
 #include "core/style/StyleTransformData.h"
@@ -238,9 +237,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   friend class StyleResolver;
 
  protected:
-  // non-inherited attributes
-  DataRef<StyleRareNonInheritedData> rare_non_inherited_data_;
-
   // list of associated pseudo styles
   std::unique_ptr<PseudoStyleCache> cached_pseudo_styles_;
 

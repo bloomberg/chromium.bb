@@ -24,12 +24,20 @@ from itertools import chain
 # https://codereview.chromium.org/2841413002
 # TODO(shend): Put alignment sizes into code form, rather than linking to a CL which may disappear.
 ALIGNMENT_ORDER = [
+    # Aligns like double
     'double',
-    'AtomicString', 'RefPtr', 'Persistent', 'Font', 'FillLayer', 'NinePieceImage',  # Aligns like a pointer (can be 32 or 64 bits)
-    'LengthBox', 'LengthSize', 'Length', 'TextSizeAdjust', 'TabSize', 'float',
-    'StyleColor', 'Color', 'LayoutUnit', 'unsigned', 'int',
+    # Aligns like a pointer (can be 32 or 64 bits)
+    'AtomicString', 'DataRef', 'RefPtr', 'DataPersistent', 'Persistent', 'std::unique_ptr',
+    'Vector<String>', 'Font', 'FillLayer', 'NinePieceImage',
+    # Aligns like float
+    'LengthBox', 'LengthSize', 'FloatSize', 'LengthPoint', 'Length', 'TextSizeAdjust', 'TabSize', 'float',
+    # Aligns like int
+    'StyleColor', 'Color', 'LayoutUnit', 'LineClampValue', 'OutlineValue', 'unsigned', 'int',
+    # Aligns like short
     'short',
-    'uint8_t', 'char',
+    # Aligns like char
+    'StyleSelfAlignmentData', 'StyleContentAlignmentData', 'uint8_t', 'char',
+    # Aligns like bool
     'bool'
 ]
 

@@ -46,6 +46,11 @@ class DataPersistent {
     const_cast<DataPersistent&>(other).own_copy_ = false;
   }
 
+  DataPersistent(DataPersistent&& other)
+      : data_(std::move(other.data_)), own_copy_(other.own_copy_) {
+    other.own_copy_ = false;
+  }
+
   const T* Get() const { return data_ ? data_->Get() : nullptr; }
 
   const T& operator*() const { return data_ ? *Get() : nullptr; }
@@ -78,6 +83,12 @@ class DataPersistent {
   }
 
   void operator=(std::nullptr_t) { data_.clear(); }
+  DataPersistent& operator=(DataPersistent&& other) {
+    data_ = std::move(other.data_);
+    own_copy_ = other.own_copy_;
+    other.own_copy_ = false;
+    return *this;
+  }
 
  private:
   // Reduce size of DataPersistent<> by delaying creation of Persistent<>.
