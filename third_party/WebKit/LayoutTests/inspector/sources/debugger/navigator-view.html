@@ -7,8 +7,8 @@
 <script>
 async function test()
 {
-    var networkProject1 = Bindings.NetworkProject.forTarget(InspectorTest.mainTarget);
-    networkProject1._reset();
+    Bindings.NetworkProject.forTarget(InspectorTest.mainTarget)._resetForTest();
+    Bindings.resourceMapping._resetForTest(InspectorTest.mainTarget);
 
     var pageMock = new InspectorTest.PageMock('mock-url.com/frame.html');
     pageMock.disableDOMCapability();
@@ -142,7 +142,7 @@ async function test()
 
     InspectorTest.addResult("\n\n================================================");
     InspectorTest.addResult("Removing all resources:");
-    networkProject2._reset();
+    Bindings.NetworkProject.forTarget(target2)._resetForTest();
     InspectorTest.dumpNavigatorViewInAllModes(sourcesNavigatorView);
     InspectorTest.dumpNavigatorViewInAllModes(contentScriptsNavigatorView);
 

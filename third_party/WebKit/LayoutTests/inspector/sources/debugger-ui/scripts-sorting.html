@@ -17,7 +17,8 @@ async function test()
     sourcesNavigatorView = createNavigatorView(Sources.SourcesNavigatorView);
     contentScriptsNavigatorView = createNavigatorView(Sources.ContentScriptsNavigatorView);
 
-    Bindings.NetworkProject.forTarget(InspectorTest.mainTarget)._reset();
+    Bindings.NetworkProject.forTarget(InspectorTest.mainTarget)._resetForTest();
+    Bindings.resourceMapping._resetForTest(InspectorTest.mainTarget);
 
     var pageMock = new InspectorTest.PageMock('http://example.com');
     pageMock.disableDOMCapability();
