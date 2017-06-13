@@ -735,13 +735,18 @@ static void alloc_util_frame_buffers(AV1_COMP *cpi) {
                                NULL, NULL))
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate last frame deblocked buffer");
-  if (aom_realloc_frame_buffer(&cpi->trial_frame_rst, cm->width, cm->height,
-                               cm->subsampling_x, cm->subsampling_y,
+  if (aom_realloc_frame_buffer(
+          &cpi->trial_frame_rst,
+#if CONFIG_FRAME_SUPERRES
+          cm->superres_upscaled_width, cm->superres_upscaled_height,
+#else
+          cm->width, cm->height,
+#endif  // CONFIG_FRAME_SUPERRES
+          cm->subsampling_x, cm->subsampling_y,
 #if CONFIG_HIGHBITDEPTH
-                               cm->use_highbitdepth,
+          cm->use_highbitdepth,
 #endif
-                               AOM_BORDER_IN_PIXELS, cm->byte_alignment, NULL,
-                               NULL, NULL))
+          AOM_BORDER_IN_PIXELS, cm->byte_alignment, NULL, NULL, NULL))
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate trial restored frame buffer");
   int extra_rstbuf_sz = RESTORATION_EXTBUF_SIZE;
@@ -3763,19 +3768,29 @@ static void set_frame_size(AV1_COMP *cpi, int width, int height) {
                        "Failed to allocate frame buffer");
 
 #if CONFIG_LOOP_RESTORATION
-  // TODO(afergs): Use cm->superres_upscaled_(width|height)
-  set_restoration_tilesize(cm->width, cm->height, cm->rst_info);
+  set_restoration_tilesize(
+#if CONFIG_FRAME_SUPERRES
+      cm->superres_upscaled_width, cm->superres_upscaled_height,
+#else
+      cm->width, cm->height,
+#endif  // CONFIG_FRAME_SUPERRES
+      cm->rst_info);
   for (int i = 0; i < MAX_MB_PLANE; ++i)
     cm->rst_info[i].frame_restoration_type = RESTORE_NONE;
   av1_alloc_restoration_buffers(cm);
   for (int i = 0; i < MAX_MB_PLANE; ++i) {
     cpi->rst_search[i].restoration_tilesize =
         cm->rst_info[i].restoration_tilesize;
-    av1_alloc_restoration_struct(cm, &cpi->rst_search[i], cm->width,
-                                 cm->height);
+    av1_alloc_restoration_struct(cm, &cpi->rst_search[i],
+#if CONFIG_FRAME_SUPERRES
+                                 cm->superres_upscaled_width,
+                                 cm->superres_upscaled_height);
+#else
+                                 cm->width, cm->height);
+#endif  // CONFIG_FRAME_SUPERRES
   }
-#endif  // CONFIG_LOOP_RESTORATION
-  alloc_util_frame_buffers(cpi);
+#endif                            // CONFIG_LOOP_RESTORATION
+  alloc_util_frame_buffers(cpi);  // TODO(afergs): Remove? Gets called anyways.
   init_motion_estimation(cpi);
 
   for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
@@ -3831,8 +3846,11 @@ static void setup_frame_size(AV1_COMP *cpi) {
   AV1_COMMON *cm = &cpi->common;
   cm->superres_upscaled_width = encode_width;
   cm->superres_upscaled_height = encode_height;
-  av1_calculate_next_superres_scale(cpi, encode_width, encode_width);
+  cpi->common.superres_scale_numerator =
+      av1_calculate_next_superres_scale(cpi, encode_width, encode_width);
   av1_calculate_superres_size(cm, &encode_width, &encode_height);
+// printf("Resize/superres %d x %d -> %d x %d\n", encode_width, encode_height,
+//        cm->superres_upscaled_width, cm->superres_upscaled_height);
 #endif  // CONFIG_FRAME_SUPERRES
 
   set_frame_size(cpi, encode_width, encode_height);

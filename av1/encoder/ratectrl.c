@@ -1704,18 +1704,15 @@ int av1_calculate_next_superres_scale(AV1_COMP *cpi, int width, int height) {
   (void)height;
   (void)oxcf;
 #if RANDOM_SUPERRES
-  if (cpi->common.frame_type != KEY_FRAME) {
-    if (oxcf->pass == 2 || oxcf->pass == 0) {
-      static unsigned int seed = 34567;
-      int new_num = lcg_rand16(&seed) % 9 + 8;
-      if (new_num * width / SUPERRES_SCALE_DENOMINATOR * 2 < oxcf->width ||
-          new_num * height / SUPERRES_SCALE_DENOMINATOR * 2 < oxcf->height)
-        new_num = SUPERRES_SCALE_DENOMINATOR;
-      cpi->common.superres_scale_numerator = new_num;
-      return new_num;
-    }
+  if (oxcf->pass == 2 || oxcf->pass == 0) {
+    static unsigned int seed = 34567;
+    int new_num = lcg_rand16(&seed) % 9 + 8;
+    if (new_num * width / SUPERRES_SCALE_DENOMINATOR * 2 < oxcf->width ||
+        new_num * height / SUPERRES_SCALE_DENOMINATOR * 2 < oxcf->height)
+      new_num = SUPERRES_SCALE_DENOMINATOR;
+    return new_num;
   }
 #endif  // RANDOM_SUPERRES
-  return 16;
+  return SUPERRES_SCALE_DENOMINATOR;
 }
 #endif  // CONFIG_FRAME_SUPERRES

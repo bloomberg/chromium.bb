@@ -1261,8 +1261,8 @@ static void loop_restoration_rows(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
 #endif  // CONFIG_HIGHBITDEPTH
   YV12_BUFFER_CONFIG dst_;
 
-  yend = AOMMIN(yend, cm->height);
-  uvend = AOMMIN(uvend, cm->subsampling_y ? (cm->height + 1) >> 1 : cm->height);
+  yend = AOMMIN(yend, yheight);
+  uvend = AOMMIN(uvend, uvheight);
 
   if (components_pattern == (1 << AOM_PLANE_Y)) {
     // Only y
@@ -1400,11 +1400,16 @@ void av1_loop_restoration_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
                                 int partial_frame, YV12_BUFFER_CONFIG *dst) {
   int start_mi_row, end_mi_row, mi_rows_to_filter;
   start_mi_row = 0;
+#if CONFIG_FRAME_SUPERRES
+  mi_rows_to_filter =
+      ALIGN_POWER_OF_TWO(cm->superres_upscaled_height, 3) >> MI_SIZE_LOG2;
+#else
   mi_rows_to_filter = cm->mi_rows;
-  if (partial_frame && cm->mi_rows > 8) {
-    start_mi_row = cm->mi_rows >> 1;
+#endif  // CONFIG_FRAME_SUPERRES
+  if (partial_frame && mi_rows_to_filter > 8) {
+    start_mi_row = mi_rows_to_filter >> 1;
     start_mi_row &= 0xfffffff8;
-    mi_rows_to_filter = AOMMAX(cm->mi_rows / 8, 8);
+    mi_rows_to_filter = AOMMAX(mi_rows_to_filter / 8, 8);
   }
   end_mi_row = start_mi_row + mi_rows_to_filter;
   loop_restoration_init(&cm->rst_internal, cm->frame_type == KEY_FRAME);
