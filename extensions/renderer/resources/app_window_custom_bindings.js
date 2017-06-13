@@ -6,7 +6,6 @@
 
 var appWindowNatives = requireNative('app_window_natives');
 var runtimeNatives = requireNative('runtime');
-var Event = require('event_bindings').Event;
 var forEach = require('utils').forEach;
 var renderFrameObserverNatives = requireNative('renderFrameObserverNatives');
 
@@ -19,6 +18,17 @@ var kSetSizeConstraintsFunction = 'setSizeConstraints';
 
 if (!apiBridge)
   var binding = require('binding').Binding;
+
+var jsEvent;
+function createAnonymousEvent() {
+  if (bindingUtil) {
+    // Native custom events ignore schema.
+    return bindingUtil.createCustomEvent(undefined, undefined, false);
+  }
+  if (!jsEvent)
+    jsEvent = require('event_bindings').Event;
+  return new jsEvent();
+}
 
 // Bounds class definition.
 var Bounds = function(boundsKey) {
@@ -211,7 +221,7 @@ appWindow.registerCustomHook(function(bindingsAPI) {
     currentWindowInternal =
         getInternalApi ?
             getInternalApi('app.currentWindowInternal') :
-        binding.create('app.currentWindowInternal').generate();
+            binding.create('app.currentWindowInternal').generate();
     var AppWindow = function() {
       this.innerBounds = new Bounds('innerBounds');
       this.outerBounds = new Bounds('outerBounds');
@@ -225,7 +235,7 @@ appWindow.registerCustomHook(function(bindingsAPI) {
     AppWindow.prototype.moveTo = $Function.bind(window.moveTo, window);
     AppWindow.prototype.resizeTo = $Function.bind(window.resizeTo, window);
     AppWindow.prototype.contentWindow = window;
-    AppWindow.prototype.onClosed = new Event();
+    AppWindow.prototype.onClosed = createAnonymousEvent();
     AppWindow.prototype.close = function() {
       this.contentWindow.close();
     };

@@ -10,13 +10,15 @@ var AppViewGuestInternal =
     getInternalApi ?
         getInternalApi('appViewGuestInternal') :
         require('binding').Binding.create('appViewGuestInternal').generate();
-var eventBindings = require('event_bindings');
+var registerArgumentMassager = bindingUtil ?
+    $Function.bind(bindingUtil.registerEventArgumentMassager, bindingUtil) :
+    require('event_bindings').registerArgumentMassager;
 var fileSystemHelpers = requireNative('file_system_natives');
 var GetIsolatedFileSystem = fileSystemHelpers.GetIsolatedFileSystem;
 var entryIdManager = require('entryIdManager');
 
-eventBindings.registerArgumentMassager('app.runtime.onEmbedRequested',
-    function(args, dispatch) {
+registerArgumentMassager('app.runtime.onEmbedRequested',
+                         function(args, dispatch) {
   var appEmbeddingRequest = args[0];
   var id = appEmbeddingRequest.guestInstanceId;
   delete appEmbeddingRequest.guestInstanceId;
@@ -31,8 +33,7 @@ eventBindings.registerArgumentMassager('app.runtime.onEmbedRequested',
   dispatch([appEmbeddingRequest]);
 });
 
-eventBindings.registerArgumentMassager('app.runtime.onLaunched',
-    function(args, dispatch) {
+registerArgumentMassager('app.runtime.onLaunched', function(args, dispatch) {
   var launchData = args[0];
   if (launchData.items) {
     // An onLaunched corresponding to file_handlers in the app's manifest.

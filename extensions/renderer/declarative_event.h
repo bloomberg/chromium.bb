@@ -27,7 +27,8 @@ class DeclarativeEvent final : public gin::Wrappable<DeclarativeEvent> {
                    APITypeReferenceMap* type_refs,
                    APIRequestHandler* request_handler,
                    const std::vector<std::string>& actions_list,
-                   const std::vector<std::string>& conditions_list);
+                   const std::vector<std::string>& conditions_list,
+                   int webview_instance_id);
   ~DeclarativeEvent() override;
 
   static gin::WrapperInfo kWrapperInfo;
@@ -51,6 +52,8 @@ class DeclarativeEvent final : public gin::Wrappable<DeclarativeEvent> {
   APITypeReferenceMap* type_refs_;
 
   APIRequestHandler* request_handler_;
+
+  const int webview_instance_id_;
 
   DISALLOW_COPY_AND_ASSIGN(DeclarativeEvent);
 };

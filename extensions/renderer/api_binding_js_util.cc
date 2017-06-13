@@ -9,15 +9,17 @@
 #include "extensions/renderer/api_request_handler.h"
 #include "extensions/renderer/api_signature.h"
 #include "extensions/renderer/api_type_reference_map.h"
+#include "extensions/renderer/declarative_event.h"
 #include "gin/converter.h"
 #include "gin/dictionary.h"
+#include "gin/handle.h"
 #include "gin/object_template_builder.h"
 
 namespace extensions {
 
 gin::WrapperInfo APIBindingJSUtil::kWrapperInfo = {gin::kEmbedderNativeGin};
 
-APIBindingJSUtil::APIBindingJSUtil(const APITypeReferenceMap* type_refs,
+APIBindingJSUtil::APIBindingJSUtil(APITypeReferenceMap* type_refs,
                                    APIRequestHandler* request_handler,
                                    APIEventHandler* event_handler,
                                    const binding::RunJSFunction& run_js)
@@ -35,6 +37,8 @@ gin::ObjectTemplateBuilder APIBindingJSUtil::GetObjectTemplateBuilder(
       .SetMethod("registerEventArgumentMassager",
                  &APIBindingJSUtil::RegisterEventArgumentMassager)
       .SetMethod("createCustomEvent", &APIBindingJSUtil::CreateCustomEvent)
+      .SetMethod("createCustomDeclarativeEvent",
+                 &APIBindingJSUtil::CreateCustomDeclarativeEvent)
       .SetMethod("invalidateEvent", &APIBindingJSUtil::InvalidateEvent)
       .SetMethod("setLastError", &APIBindingJSUtil::SetLastError)
       .SetMethod("clearLastError", &APIBindingJSUtil::ClearLastError)
@@ -135,6 +139,23 @@ void APIBindingJSUtil::CreateCustomEvent(gin::Arguments* arguments,
   }
 
   arguments->Return(event);
+}
+
+void APIBindingJSUtil::CreateCustomDeclarativeEvent(
+    gin::Arguments* arguments,
+    const std::string& event_name,
+    const std::vector<std::string>& actions_list,
+    const std::vector<std::string>& conditions_list,
+    int webview_instance_id) {
+  v8::Isolate* isolate = arguments->isolate();
+  v8::HandleScope handle_scope(isolate);
+
+  gin::Handle<DeclarativeEvent> event = gin::CreateHandle(
+      isolate,
+      new DeclarativeEvent(event_name, type_refs_, request_handler_,
+                           actions_list, conditions_list, webview_instance_id));
+
+  arguments->Return(event.ToV8());
 }
 
 void APIBindingJSUtil::InvalidateEvent(gin::Arguments* arguments,

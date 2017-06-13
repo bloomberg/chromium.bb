@@ -120,7 +120,7 @@ TEST_F(DeclarativeEventTest, TestRulesSchema) {
   gin::Handle<DeclarativeEvent> emitter = gin::CreateHandle(
       context->GetIsolate(),
       new DeclarativeEvent("declEvent", type_refs(), request_handler(),
-                           {"action1", "action2"}, {"condition"}));
+                           {"action1", "action2"}, {"condition"}, 0));
 
   v8::Local<v8::Value> emitter_value = emitter.ToV8();
 

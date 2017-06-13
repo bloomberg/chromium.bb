@@ -4,7 +4,6 @@
 
 // Event management for GuestViewContainers.
 
-var EventBindings = require('event_bindings');
 var GuestViewInternalNatives = requireNative('guest_view_internal');
 var MessagingNatives = requireNative('messaging_natives');
 

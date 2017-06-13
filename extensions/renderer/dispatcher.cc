@@ -707,7 +707,6 @@ std::vector<std::pair<const char*, int>> Dispatcher::GetJsResources() {
   std::vector<std::pair<const char*, int>> resources = {
       {"appView", IDR_APP_VIEW_JS},
       {"entryIdManager", IDR_ENTRY_ID_MANAGER},
-      {kEventBindings, IDR_EVENT_BINDINGS_JS},
       {"extensionOptions", IDR_EXTENSION_OPTIONS_JS},
       {"extensionOptionsAttributes", IDR_EXTENSION_OPTIONS_ATTRIBUTES_JS},
       {"extensionOptionsConstants", IDR_EXTENSION_OPTIONS_CONSTANTS_JS},
@@ -800,6 +799,7 @@ std::vector<std::pair<const char*, int>> Dispatcher::GetJsResources() {
 
   if (!FeatureSwitch::native_crx_bindings()->IsEnabled()) {
     resources.emplace_back("binding", IDR_BINDING_JS);
+    resources.emplace_back(kEventBindings, IDR_EVENT_BINDINGS_JS);
 
     // Custom types sources.
     resources.emplace_back("StorageArea", IDR_STORAGE_AREA_JS);
