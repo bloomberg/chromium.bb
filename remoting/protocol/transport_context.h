@@ -19,6 +19,7 @@
 
 namespace remoting {
 
+class OAuthTokenGetter;
 class SignalStrategy;
 class UrlRequestFactory;
 
@@ -55,8 +56,12 @@ class TransportContext : public base::RefCountedThreadSafe<TransportContext> {
     ice_config_[TURN] = ice_config;
   }
 
-  void set_ice_config_url(const std::string& ice_config_url) {
+  void set_ice_config_url(const std::string& ice_config_url,
+                          OAuthTokenGetter* oauth_token_getter) {
+    DCHECK(!ice_config_url.empty());
+    DCHECK(!oauth_token_getter);
     ice_config_url_ = ice_config_url;
+    oauth_token_getter_ = oauth_token_getter;
   }
 
   // Sets relay mode for all future calls of GetIceConfig(). Doesn't affect
@@ -95,6 +100,8 @@ class TransportContext : public base::RefCountedThreadSafe<TransportContext> {
   TransportRole role_;
 
   std::string ice_config_url_;
+  OAuthTokenGetter* oauth_token_getter_ = nullptr;
+
   RelayMode relay_mode_ = RelayMode::GTURN;
 
   std::array<std::unique_ptr<IceConfigRequest>, kNumRelayModes>
