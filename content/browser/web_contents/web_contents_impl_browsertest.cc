@@ -942,7 +942,8 @@ namespace {
 class TestJavaScriptDialogManager : public JavaScriptDialogManager,
                                     public WebContentsDelegate {
  public:
-  TestJavaScriptDialogManager() : message_loop_runner_(new MessageLoopRunner) {}
+  TestJavaScriptDialogManager()
+      : is_fullscreen_(false), message_loop_runner_(new MessageLoopRunner) {}
   ~TestJavaScriptDialogManager() override {}
 
   void Wait() {
@@ -957,6 +958,20 @@ class TestJavaScriptDialogManager : public JavaScriptDialogManager,
   JavaScriptDialogManager* GetJavaScriptDialogManager(
       WebContents* source) override {
     return this;
+  }
+
+  void EnterFullscreenModeForTab(WebContents* web_contents,
+                                 const GURL& origin) override {
+    is_fullscreen_ = true;
+  }
+
+  void ExitFullscreenModeForTab(WebContents*) override {
+    is_fullscreen_ = false;
+  }
+
+  bool IsFullscreenForTabOrPending(
+      const WebContents* web_contents) const override {
+    return is_fullscreen_;
   }
 
   // JavaScriptDialogManager
@@ -976,7 +991,10 @@ class TestJavaScriptDialogManager : public JavaScriptDialogManager,
 
   void RunBeforeUnloadDialog(WebContents* web_contents,
                              bool is_reload,
-                             const DialogClosedCallback& callback) override {}
+                             const DialogClosedCallback& callback) override {
+    callback.Run(true, base::string16());
+    message_loop_runner_->Quit();
+  }
 
   bool HandleJavaScriptDialog(WebContents* web_contents,
                               bool accept,
@@ -989,6 +1007,8 @@ class TestJavaScriptDialogManager : public JavaScriptDialogManager,
 
  private:
   std::string last_message_;
+
+  bool is_fullscreen_;
 
   // The MessageLoopRunner used to spin the message loop.
   scoped_refptr<MessageLoopRunner> message_loop_runner_;
@@ -1393,6 +1413,58 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, UserAgentOverride) {
       base::Bind(&ResourceDispatcherHost::SetDelegate,
                  base::Unretained(ResourceDispatcherHostImpl::Get()),
                  old_delegate));
+}
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       DialogsFromJavaScriptEndFullscreen) {
+  WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
+  TestJavaScriptDialogManager dialog_manager;
+  wc->SetDelegate(&dialog_manager);
+
+  GURL url("about:blank");
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  // alert
+  wc->EnterFullscreenMode(url);
+  EXPECT_TRUE(wc->IsFullscreenForCurrentTab());
+  std::string script = "alert('hi')";
+  EXPECT_TRUE(content::ExecuteScript(wc, script));
+  dialog_manager.Wait();
+  EXPECT_FALSE(wc->IsFullscreenForCurrentTab());
+
+  // confirm
+  wc->EnterFullscreenMode(url);
+  EXPECT_TRUE(wc->IsFullscreenForCurrentTab());
+  script = "confirm('hi')";
+  EXPECT_TRUE(content::ExecuteScript(wc, script));
+  dialog_manager.Wait();
+  EXPECT_FALSE(wc->IsFullscreenForCurrentTab());
+
+  // prompt
+  wc->EnterFullscreenMode(url);
+  EXPECT_TRUE(wc->IsFullscreenForCurrentTab());
+  script = "prompt('hi')";
+  EXPECT_TRUE(content::ExecuteScript(wc, script));
+  dialog_manager.Wait();
+  EXPECT_FALSE(wc->IsFullscreenForCurrentTab());
+
+  // beforeunload
+  wc->EnterFullscreenMode(url);
+  EXPECT_TRUE(wc->IsFullscreenForCurrentTab());
+  // Disable the hang monitor (otherwise there will be a race between the
+  // beforeunload dialog and the beforeunload hang timer) and give the page a
+  // gesture to allow dialogs.
+  wc->GetMainFrame()->DisableBeforeUnloadHangMonitorForTesting();
+  wc->GetMainFrame()->ExecuteJavaScriptWithUserGestureForTests(
+      base::string16());
+  script = "window.onbeforeunload=function(e){ return 'x' };";
+  EXPECT_TRUE(content::ExecuteScript(wc, script));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+  dialog_manager.Wait();
+  EXPECT_FALSE(wc->IsFullscreenForCurrentTab());
+
+  wc->SetDelegate(nullptr);
+  wc->SetJavaScriptDialogManagerForTesting(nullptr);
 }
 
 }  // namespace content

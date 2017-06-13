@@ -448,6 +448,7 @@ class CONTENT_EXPORT WebContentsImpl
   void StopFinding(StopFindAction action) override;
   bool WasRecentlyAudible() override;
   void GetManifest(const GetManifestCallback& callback) override;
+  bool IsFullscreenForCurrentTab() const override;
   void ExitFullscreen(bool will_cause_resize) override;
   void ResumeLoadingCreatedWebContents() override;
   void OnPasswordInputShownOnHttp() override;
@@ -705,7 +706,8 @@ class CONTENT_EXPORT WebContentsImpl
                           bool user_gesture,
                           bool last_unlocked_by_target,
                           bool privileged) override;
-  bool IsFullscreenForCurrentTab() const override;
+  // The following function is already listed under WebContents overrides:
+  // bool IsFullscreenForCurrentTab() const override;
   blink::WebDisplayMode GetDisplayMode(
       RenderWidgetHostImpl* render_widget_host) const override;
   void LostCapture(RenderWidgetHostImpl* render_widget_host) override;
@@ -911,6 +913,8 @@ class CONTENT_EXPORT WebContentsImpl
                            CrossSiteIframeAccessibility);
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplBrowserTest,
                            JavaScriptDialogsInMainAndSubframes);
+  FRIEND_TEST_ALL_PREFIXES(WebContentsImplBrowserTest,
+                           DialogsFromJavaScriptEndFullscreen);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest,
                            IframeBeforeUnloadParentHang);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest,
