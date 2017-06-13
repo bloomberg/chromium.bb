@@ -26,17 +26,33 @@
 #ifndef ContextMenuClient_h
 #define ContextMenuClient_h
 
+#include "core/CoreExport.h"
+
 namespace blink {
 
 class ContextMenu;
+class Document;
+class Editor;
+class WebViewBase;
+struct WebContextMenuData;
 
-class ContextMenuClient {
+class CORE_EXPORT ContextMenuClient {
  public:
+  explicit ContextMenuClient(WebViewBase& web_view) : web_view_(&web_view) {}
   virtual ~ContextMenuClient() {}
 
   // Returns whether a Context Menu was actually shown.
-  virtual bool ShowContextMenu(const ContextMenu*, bool from_touch) = 0;
-  virtual void ClearContextMenu() = 0;
+  virtual bool ShowContextMenu(const ContextMenu*, bool from_touch);
+  virtual void ClearContextMenu();
+
+ protected:
+  ContextMenuClient() : web_view_(nullptr) {}
+
+ private:
+  void PopulateCustomMenuItems(const ContextMenu*, WebContextMenuData*);
+  static int ComputeEditFlags(Document&, Editor&);
+  bool ShouldShowContextMenuFromTouch(const blink::WebContextMenuData&);
+  WebViewBase* web_view_;
 };
 
 }  // namespace blink

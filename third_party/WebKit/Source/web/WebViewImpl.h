@@ -36,6 +36,7 @@
 #include "core/exported/WebViewBase.h"
 #include "core/frame/ResizeViewportAnchor.h"
 #include "core/page/ChromeClient.h"
+#include "core/page/ContextMenuClient.h"
 #include "core/page/ContextMenuProvider.h"
 #include "core/page/EventWithHitTestResults.h"
 #include "core/page/PageWidgetDelegate.h"
@@ -63,7 +64,6 @@
 #include "public/platform/WebVector.h"
 #include "public/web/WebNavigationPolicy.h"
 #include "public/web/WebPageImportanceSignals.h"
-#include "web/ContextMenuClientImpl.h"
 #include "web/EditorClientImpl.h"
 #include "web/MediaKeysClientImpl.h"
 #include "web/StorageClientImpl.h"
@@ -593,7 +593,7 @@ class WEB_EXPORT WebViewImpl final
   WebSpellCheckClient* spell_check_client_;
 
   Persistent<ChromeClient> chrome_client_;
-  ContextMenuClientImpl context_menu_client_impl_;
+  ContextMenuClient context_menu_client_;
   EditorClientImpl editor_client_impl_;
   SpellCheckerClientImpl spell_checker_client_impl_;
   StorageClientImpl storage_client_impl_;

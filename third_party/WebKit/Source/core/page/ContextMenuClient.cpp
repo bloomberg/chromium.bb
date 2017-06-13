@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "web/ContextMenuClientImpl.h"
+#include "core/page/ContextMenuClient.h"
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/CSSPropertyNames.h"
@@ -163,8 +163,8 @@ static String SelectMisspellingAsync(LocalFrame* selected_frame,
 }
 
 // static
-int ContextMenuClientImpl::ComputeEditFlags(Document& selected_document,
-                                            Editor& editor) {
+int ContextMenuClient::ComputeEditFlags(Document& selected_document,
+                                        Editor& editor) {
   int edit_flags = WebContextMenuData::kCanDoNone;
   if (!selected_document.IsHTMLDocument() &&
       !selected_document.IsXHTMLDocument())
@@ -190,7 +190,7 @@ int ContextMenuClientImpl::ComputeEditFlags(Document& selected_document,
   return edit_flags;
 }
 
-bool ContextMenuClientImpl::ShouldShowContextMenuFromTouch(
+bool ContextMenuClient::ShouldShowContextMenuFromTouch(
     const WebContextMenuData& data) {
   return web_view_->GetPage()
              ->GetSettings()
@@ -254,8 +254,8 @@ static HTMLFormElement* CurrentForm(const FrameSelection& current_selection) {
   return ScanForForm(start);
 }
 
-bool ContextMenuClientImpl::ShowContextMenu(const ContextMenu* default_menu,
-                                            bool from_touch) {
+bool ContextMenuClient::ShowContextMenu(const ContextMenu* default_menu,
+                                        bool from_touch) {
   // Displaying the context menu in this function is a big hack as we don't
   // have context, i.e. whether this is being invoked via a script or in
   // response to user input (Mouse event WM_RBUTTONDOWN,
@@ -309,9 +309,10 @@ bool ContextMenuClientImpl::ShowContextMenu(const ContextMenu* default_menu,
         isHTMLImageElement(r.InnerNodeOrImageMapImage())) {
       HTMLImageElement* image_element =
           toHTMLImageElement(r.InnerNodeOrImageMapImage());
-      if (image_element && image_element->CachedImage())
+      if (image_element && image_element->CachedImage()) {
         data.image_response = WrappedResourceResponse(
             image_element->CachedImage()->GetResponse());
+      }
     }
   } else if (!r.AbsoluteMediaURL().IsEmpty()) {
     data.src_url = r.AbsoluteMediaURL();
@@ -442,13 +443,15 @@ bool ContextMenuClientImpl::ShowContextMenu(const ContextMenu* default_menu,
   }
 
   if (selected_frame->GetEditor().SelectionHasStyle(CSSPropertyDirection,
-                                                    "ltr") != kFalseTriState)
+                                                    "ltr") != kFalseTriState) {
     data.writing_direction_left_to_right |=
         WebContextMenuData::kCheckableMenuItemChecked;
+  }
   if (selected_frame->GetEditor().SelectionHasStyle(CSSPropertyDirection,
-                                                    "rtl") != kFalseTriState)
+                                                    "rtl") != kFalseTriState) {
     data.writing_direction_right_to_left |=
         WebContextMenuData::kCheckableMenuItemChecked;
+  }
 
   data.referrer_policy = static_cast<WebReferrerPolicy>(
       selected_frame->GetDocument()->GetReferrerPolicy());
@@ -507,7 +510,7 @@ bool ContextMenuClientImpl::ShowContextMenu(const ContextMenu* default_menu,
   return true;
 }
 
-void ContextMenuClientImpl::ClearContextMenu() {
+void ContextMenuClient::ClearContextMenu() {
   HitTestResult r =
       web_view_->GetPage()->GetContextMenuController().GetHitTestResult();
   LocalFrame* selected_frame = r.InnerNodeFrame();
@@ -559,9 +562,8 @@ static void PopulateSubMenuItems(const Vector<ContextMenuItem>& input_menu,
   sub_menu_items.Swap(output_items);
 }
 
-void ContextMenuClientImpl::PopulateCustomMenuItems(
-    const ContextMenu* default_menu,
-    WebContextMenuData* data) {
+void ContextMenuClient::PopulateCustomMenuItems(const ContextMenu* default_menu,
+                                                WebContextMenuData* data) {
   PopulateSubMenuItems(default_menu->Items(), data->custom_items);
 }
 
