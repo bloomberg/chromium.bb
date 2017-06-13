@@ -142,16 +142,15 @@ bool DesktopCaptureChooseDesktopMediaFunctionBase::Execute(
     tab_list = std::move(media_lists[2]);
     picker_ = g_picker_factory->CreatePicker();
   } else {
-    webrtc::DesktopCaptureOptions capture_options =
-        webrtc::DesktopCaptureOptions::CreateDefault();
-    capture_options.set_disable_effects(false);
-
     // Create a screens list.
     if (show_screens) {
 #if defined(USE_ASH)
       screen_list = base::MakeUnique<DesktopMediaListAsh>(
           content::DesktopMediaID::TYPE_SCREEN);
 #else   // !defined(USE_ASH)
+      webrtc::DesktopCaptureOptions capture_options =
+          webrtc::DesktopCaptureOptions::CreateDefault();
+      capture_options.set_disable_effects(false);
       screen_list = base::MakeUnique<NativeDesktopMediaList>(
           content::DesktopMediaID::TYPE_SCREEN,
           webrtc::DesktopCapturer::CreateScreenCapturer(capture_options));
@@ -164,6 +163,14 @@ bool DesktopCaptureChooseDesktopMediaFunctionBase::Execute(
       window_list = base::MakeUnique<DesktopMediaListAsh>(
           content::DesktopMediaID::TYPE_WINDOW);
 #else   // !defined(USE_ASH)
+      // NativeDesktopMediaList calls the capturers on a background
+      // thread. This means that the two DesktopCapturer instances (for screens
+      // and windows) created here cannot share the same DesktopCaptureOptions
+      // instance. DesktopCaptureOptions owns X connection, which cannot be used
+      // on multiple threads concurrently.
+      webrtc::DesktopCaptureOptions capture_options =
+          webrtc::DesktopCaptureOptions::CreateDefault();
+      capture_options.set_disable_effects(false);
       window_list = base::MakeUnique<NativeDesktopMediaList>(
           content::DesktopMediaID::TYPE_WINDOW,
           webrtc::DesktopCapturer::CreateWindowCapturer(capture_options));
