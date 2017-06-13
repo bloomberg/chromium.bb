@@ -83,6 +83,10 @@ id ExecuteJavaScript(NSString* javascript,
 // Waits for the current web view to contain |text|. If the condition is not met
 // within a timeout, a GREYAssert is induced.
 + (void)waitForWebViewContainingText:(std::string)text;
+
+// Waits for there to be no web view containing |text|. If the condition is not
+// met within a timeout, a GREYAssert is induced.
++ (void)waitForWebViewNotContainingText:(std::string)text;
 @end
 
 #endif  // IOS_CHROME_TEST_EARL_GREY_CHROME_EARL_GREY_H_

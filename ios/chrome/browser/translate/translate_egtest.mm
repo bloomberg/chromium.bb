@@ -727,8 +727,7 @@ using translate::LanguageDetectionController;
 
 // Tests that translation occurs automatically on second navigation to an
 // already translated page.
-// TODO(crbug.com/732797): Reenable this test.
-- (void)DISABLED_testAutoTranslate {
+- (void)testAutoTranslate {
   // The translate machinery will not auto-fire without API keys, unless that
   // behavior is overridden for testing.
   translate::TranslateManager::SetIgnoreMissingKeyForTesting(true);
@@ -755,14 +754,14 @@ using translate::LanguageDetectionController;
 
   // Set up a fake URL for the translate script, to avoid hitting real servers.
   base::CommandLine& command_line = *base::CommandLine::ForCurrentProcess();
-  GURL translateScriptURL =
-      web::test::HttpServer::MakeUrl("http://translatescript");
+  GURL translateScriptURL = web::test::HttpServer::MakeUrl(
+      base::StringPrintf("http://%s", kTranslateScriptPath));
   command_line.AppendSwitchASCII(translate::switches::kTranslateScriptURL,
                                  translateScriptURL.spec().c_str());
 
   // Translate the page with the link.
-  GURL frenchPageURL =
-      web::test::HttpServer::MakeUrl("http://frenchpagewithlink");
+  GURL frenchPageURL = web::test::HttpServer::MakeUrl(
+      base::StringPrintf("http://%s", kFrenchPageWithLinkPath));
   [ChromeEarlGrey loadURL:frenchPageURL];
   [[EarlGrey
       selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
@@ -782,9 +781,10 @@ using translate::LanguageDetectionController;
 
   // Click on the link.
   [ChromeEarlGrey tapWebViewElementWithID:@"link"];
+  [ChromeEarlGrey waitForWebViewNotContainingText:"link"];
+
   GURL frenchPagePathURL = web::test::HttpServer::MakeUrl(
       base::StringPrintf("http://%s", kFrenchPagePath));
-  [ChromeEarlGrey waitForWebViewContainingText:"link"];
   [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
                                           frenchPagePathURL.GetContent())]
       assertWithMatcher:grey_notNil()];

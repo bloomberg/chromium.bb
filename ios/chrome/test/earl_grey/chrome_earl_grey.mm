@@ -195,4 +195,15 @@ id ExecuteJavaScript(NSString* javascript,
   GREYAssert([condition waitWithTimeout:testing::kWaitForUIElementTimeout],
              @"Failed waiting for web view containing %s", text.c_str());
 }
+
++ (void)waitForWebViewNotContainingText:(std::string)text {
+  GREYCondition* condition = [GREYCondition
+      conditionWithName:@"Wait for web view not containing text"
+                  block:^BOOL {
+                    return !web::test::IsWebViewContainingText(
+                        chrome_test_util::GetCurrentWebState(), text);
+                  }];
+  GREYAssert([condition waitWithTimeout:testing::kWaitForUIElementTimeout],
+             @"Failed waiting for web view not containing %s", text.c_str());
+}
 @end
