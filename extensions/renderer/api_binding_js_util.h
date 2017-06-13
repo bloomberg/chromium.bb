@@ -26,7 +26,7 @@ class APITypeReferenceMap;
 // some of our JS bindings, we can reduce or remove this class.
 class APIBindingJSUtil final : public gin::Wrappable<APIBindingJSUtil> {
  public:
-  APIBindingJSUtil(const APITypeReferenceMap* type_refs,
+  APIBindingJSUtil(APITypeReferenceMap* type_refs,
                    APIRequestHandler* request_handler,
                    APIEventHandler* event_handler,
                    const binding::RunJSFunction& run_js);
@@ -55,14 +55,20 @@ class APIBindingJSUtil final : public gin::Wrappable<APIBindingJSUtil> {
 
   // A handler to allow custom bindings to create custom extension API event
   // objects (e.g. foo.onBar).
-  // Note: The JS version allows for constructing declarative events; it's
-  // unclear if we'll need to support this.
   // TODO(devlin): Currently, we ignore schema. We may want to take it into
   // account.
   void CreateCustomEvent(gin::Arguments* arguments,
                          v8::Local<v8::Value> v8_event_name,
                          v8::Local<v8::Value> unused_schema,
                          bool supports_filters);
+
+  // Creates a new declarative event.
+  void CreateCustomDeclarativeEvent(
+      gin::Arguments* arguments,
+      const std::string& event_name,
+      const std::vector<std::string>& actions_list,
+      const std::vector<std::string>& conditions_list,
+      int webview_instance_id);
 
   // Invalidates an event, removing its listeners and preventing any more from
   // being added.
@@ -84,7 +90,7 @@ class APIBindingJSUtil final : public gin::Wrappable<APIBindingJSUtil> {
                                 v8::Local<v8::Function> callback);
 
   // Type references. Guaranteed to outlive this object.
-  const APITypeReferenceMap* type_refs_;
+  APITypeReferenceMap* type_refs_;
 
   // The request handler. Guaranteed to outlive this object.
   APIRequestHandler* request_handler_;

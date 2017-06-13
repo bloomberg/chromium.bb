@@ -114,10 +114,12 @@ DeclarativeEvent::DeclarativeEvent(
     APITypeReferenceMap* type_refs,
     APIRequestHandler* request_handler,
     const std::vector<std::string>& actions_list,
-    const std::vector<std::string>& conditions_list)
+    const std::vector<std::string>& conditions_list,
+    int webview_instance_id)
     : event_name_(name),
       type_refs_(type_refs),
-      request_handler_(request_handler) {
+      request_handler_(request_handler),
+      webview_instance_id_(webview_instance_id) {
   // In declarative events, the specification of the rules can change. This only
   // matters for the events.addRules function. Check whether or not a
   // specialized version for this event exists, and, if not, create it.
@@ -179,12 +181,9 @@ void DeclarativeEvent::HandleFunction(const std::string& signature_name,
   // The events API has two undocumented parameters for each function: the name
   // of the event, and the "webViewInstanceId". Currently, stub 0 for webview
   // instance id.
-  // TODO(devlin): We'll need to fix that to get it to work with webviews.
-  // Longer term, it would be *great* to just factor that out entirely (can we
-  // not get that information on the browser side? Investigate).
   argument_list.insert(argument_list.begin(),
                        {gin::StringToSymbol(isolate, event_name_),
-                        v8::Integer::New(isolate, 0)});
+                        v8::Integer::New(isolate, webview_instance_id_)});
 
   std::unique_ptr<base::ListValue> converted_arguments;
   v8::Local<v8::Function> callback;

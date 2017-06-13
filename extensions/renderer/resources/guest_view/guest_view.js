@@ -6,7 +6,6 @@
 // creation, attaching, and destruction.
 
 var CreateEvent = require('guestViewEvents').CreateEvent;
-var EventBindings = require('event_bindings');
 var GuestViewInternal = getInternalApi ?
     getInternalApi('guestViewInternal') :
     require('binding').Binding.create('guestViewInternal').generate();

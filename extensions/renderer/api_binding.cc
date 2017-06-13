@@ -497,7 +497,7 @@ void APIBinding::GetEventObject(
         isolate, new DeclarativeEvent(
                      event_data->full_name, event_data->binding->type_refs_,
                      event_data->binding->request_handler_, event_data->actions,
-                     event_data->conditions));
+                     event_data->conditions, 0));
     retval = event.ToV8();
   } else {
     retval = event_data->binding->event_handler_->CreateEventInstance(
