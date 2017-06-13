@@ -326,6 +326,15 @@ public class NFCTest {
         assertEquals(JSON_MIME, jsonNdefMessage.getRecords()[0].toMimeType());
         assertEquals(TEST_JSON, new String(jsonNdefMessage.getRecords()[0].getPayload()));
         assertEquals(NdefRecord.TNF_EXTERNAL_TYPE, jsonNdefMessage.getRecords()[1].getTnf());
+
+        // Test EMPTY record conversion.
+        NfcRecord emptyNfcRecord = new NfcRecord();
+        emptyNfcRecord.recordType = NfcRecordType.EMPTY;
+        NfcMessage emptyNfcMessage = createNfcMessage(TEST_URL, emptyNfcRecord);
+        NdefMessage emptyNdefMessage = NfcTypeConverter.toNdefMessage(emptyNfcMessage);
+        assertEquals(2, emptyNdefMessage.getRecords().length);
+        assertEquals(NdefRecord.TNF_EMPTY, emptyNdefMessage.getRecords()[0].getTnf());
+        assertEquals(NdefRecord.TNF_EXTERNAL_TYPE, emptyNdefMessage.getRecords()[1].getTnf());
     }
 
     /**
@@ -1020,6 +1029,27 @@ public class NFCTest {
 
         verify(mNfcClient, times(0))
                 .onWatch(mOnWatchCallbackCaptor.capture(), any(NfcMessage.class));
+    }
+
+    /**
+     * Test that Nfc.push() succeeds for NFC messages with EMPTY records.
+     */
+    @Test
+    @Feature({"NFCTest"})
+    public void testPushWithEmptyRecord() {
+        TestNfcImpl nfc = new TestNfcImpl(mContext, mDelegate);
+        mDelegate.invokeCallback();
+        PushResponse mockCallback = mock(PushResponse.class);
+
+        // Create message with empty record.
+        NfcRecord emptyNfcRecord = new NfcRecord();
+        emptyNfcRecord.recordType = NfcRecordType.EMPTY;
+        NfcMessage nfcMessage = createNfcMessage(TEST_URL, emptyNfcRecord);
+
+        nfc.push(nfcMessage, createNfcPushOptions(), mockCallback);
+        nfc.processPendingOperationsForTesting(mNfcTagHandler);
+        verify(mockCallback).call(mErrorCaptor.capture());
+        assertNull(mErrorCaptor.getValue());
     }
 
     /**
