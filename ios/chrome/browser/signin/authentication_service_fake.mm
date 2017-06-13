@@ -13,6 +13,10 @@
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/public/provider/chrome/browser/signin/chrome_identity.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 AuthenticationServiceFake::AuthenticationServiceFake(
     ios::ChromeBrowserState* browser_state)
     : AuthenticationService(
@@ -25,13 +29,13 @@ AuthenticationServiceFake::~AuthenticationServiceFake() {}
 
 void AuthenticationServiceFake::SignIn(ChromeIdentity* identity,
                                        const std::string& hosted_domain) {
-  authenticated_identity_.reset([identity retain]);
+  authenticated_identity_ = identity;
 }
 
 void AuthenticationServiceFake::SignOut(
     signin_metrics::ProfileSignout signout_source,
     ProceduralBlock completion) {
-  authenticated_identity_.reset();
+  authenticated_identity_ = nil;
   if (completion)
     completion();
 }
@@ -45,7 +49,7 @@ bool AuthenticationServiceFake::HaveAccountsChanged() {
 }
 
 bool AuthenticationServiceFake::IsAuthenticated() {
-  return authenticated_identity_.get();
+  return authenticated_identity_ != nil;
 }
 
 ChromeIdentity* AuthenticationServiceFake::GetAuthenticatedIdentity() {
