@@ -26,7 +26,6 @@ import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.omnibox.AutocompleteController;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarManageable;
 import org.chromium.chrome.browser.tab.Tab;
@@ -55,11 +54,12 @@ public class SearchActivity extends AsyncInitializationActivity
         /**
          * Called to launch the search engine dialog if it's needed.
          * @param activity Activity that is launching the dialog.
-         * @param callback Called when the dialog has been dismissed.
-         * @return Whether or not the search dialog was shown.
+         * @param onSearchEngineFinalized Called when the dialog has been dismissed.
          */
-        boolean showSearchEngineDialogIfNeeded(Activity activity, Callback<Boolean> callback) {
-            return LocaleManager.getInstance().showSearchEnginePromoIfNeeded(activity, callback);
+        void showSearchEngineDialogIfNeeded(
+                Activity activity, Callback<Boolean> onSearchEngineFinalized) {
+            LocaleManager.getInstance().showSearchEnginePromoIfNeeded(
+                    activity, onSearchEngineFinalized);
         }
 
         /** Called when {@link SearchActivity#finishDeferredInitialization} is done. */
@@ -159,7 +159,7 @@ public class SearchActivity extends AsyncInitializationActivity
         mSearchBox.onNativeLibraryReady();
 
         // Force the user to choose a search engine if they have to.
-        final Callback<Boolean> deferredCallback = new Callback<Boolean>() {
+        final Callback<Boolean> onSearchEngineFinalizedCallback = new Callback<Boolean>() {
             @Override
             public void onResult(Boolean result) {
                 if (isActivityDestroyed()) return;
@@ -170,24 +170,16 @@ public class SearchActivity extends AsyncInitializationActivity
                     return;
                 }
 
-                finishDeferredInitialization();
+                mHandler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        finishDeferredInitialization();
+                    }
+                });
             }
         };
-        final Runnable showSearchEngineDialogTrigger = new Runnable() {
-            @Override
-            public void run() {
-                if (!getActivityDelegate().showSearchEngineDialogIfNeeded(
-                            SearchActivity.this, deferredCallback)) {
-                    mHandler.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            deferredCallback.onResult(true);
-                        }
-                    });
-                }
-            }
-        };
-        TemplateUrlService.getInstance().runWhenLoaded(showSearchEngineDialogTrigger);
+        getActivityDelegate().showSearchEngineDialogIfNeeded(
+                SearchActivity.this, onSearchEngineFinalizedCallback);
     }
 
     void finishDeferredInitialization() {

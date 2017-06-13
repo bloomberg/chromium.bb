@@ -35,7 +35,7 @@ public class DefaultSearchEnginePromoDialog extends PromoDialog {
     private final int mDialogType;
 
     /** Called when the dialog is dismissed after the user has chosen a search engine. */
-    private final Callback<Boolean> mOnDismissed;
+    private final Callback<Boolean> mOnSuccessCallback;
 
     /** Encapsulates most of the logic for filling the dialog and handling clicks. */
     private DefaultSearchEngineDialogHelper mHelper;
@@ -45,13 +45,14 @@ public class DefaultSearchEnginePromoDialog extends PromoDialog {
      *
      * @param activity    Activity to build the dialog with.
      * @param dialogType  Type of dialog to show.
-     * @param onDismissed Notified about whether the user chose an engine when it got dismissed.
+     * @param onSuccessCallback Notified whether the user successfully chose a search engine and
+     *                          dismissed the dialog.
      */
     DefaultSearchEnginePromoDialog(Activity activity, @SearchEnginePromoType int dialogType,
-            @Nullable Callback<Boolean> onDismissed) {
+            @Nullable Callback<Boolean> onSuccessCallback) {
         super(activity);
         mDialogType = dialogType;
-        mOnDismissed = onDismissed;
+        mOnSuccessCallback = onSuccessCallback;
         setOnDismissListener(this);
 
         // No one should be able to bypass this dialog by clicking outside or by hitting back.
@@ -113,8 +114,8 @@ public class DefaultSearchEnginePromoDialog extends PromoDialog {
             if (getOwnerActivity() != null) getOwnerActivity().finish();
         }
 
-        if (mOnDismissed != null) {
-            mOnDismissed.onResult(mHelper.getCurrentlySelectedKeyword() != null);
+        if (mOnSuccessCallback != null) {
+            mOnSuccessCallback.onResult(mHelper.getCurrentlySelectedKeyword() != null);
         }
 
         if (sCurrentDialog == this) setCurrentDialog(null);

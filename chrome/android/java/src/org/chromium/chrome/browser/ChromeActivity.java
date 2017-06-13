@@ -1386,10 +1386,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
                         if (result != null && result) startActivity(searchIntent);
                     }
                 };
-                if (!LocaleManager.getInstance().showSearchEnginePromoIfNeeded(
-                            ChromeActivity.this, callback)) {
-                    callback.onResult(true);
-                }
+                LocaleManager.getInstance().showSearchEnginePromoIfNeeded(
+                        ChromeActivity.this, callback);
             }
 
             @Override
