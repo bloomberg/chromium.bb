@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 typemaps = [
+  "//content/public/common/manifest.typemap",
   "//content/public/common/referrer.typemap",
   "//content/public/common/resource_type.typemap",
 ]

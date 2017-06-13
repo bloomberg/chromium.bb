@@ -706,6 +706,7 @@ mojom("mojo_bindings") {
     "//third_party/WebKit/Source/platform",
   ]
   sources = [
+    "platform/display_mode.mojom",
     "platform/mime_registry.mojom",
     "platform/modules/app_banner/app_banner.mojom",
     "platform/modules/background_fetch/background_fetch.mojom",
@@ -716,6 +717,8 @@ mojom("mojo_bindings") {
     "platform/modules/fetch/fetch_api_request.mojom",
     "platform/modules/hyphenation/hyphenation.mojom",
     "platform/modules/keyboard_lock/keyboard_lock.mojom",
+    "platform/modules/manifest/manifest.mojom",
+    "platform/modules/manifest/manifest_manager.mojom",
     "platform/modules/notifications/notification.mojom",
     "platform/modules/notifications/notification_service.mojom",
     "platform/modules/permissions/permission.mojom",
@@ -733,6 +736,7 @@ mojom("mojo_bindings") {
   public_deps = [
     ":android_mojo_bindings",
     "//device/bluetooth/public/interfaces",
+    "//device/screen_orientation/public/interfaces",
     "//mojo/common:common_custom_types",
     "//ui/gfx/geometry/mojo",
     "//url/mojo:url_mojom_gurl",

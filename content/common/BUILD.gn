@@ -212,7 +212,6 @@ source_set("common") {
     "mac/font_descriptor.mm",
     "mac/font_loader.h",
     "mac/font_loader.mm",
-    "manifest_manager_messages.h",
     "media/aec_dump_messages.h",
     "media/audio_messages.h",
     "media/cdm_info.cc",
