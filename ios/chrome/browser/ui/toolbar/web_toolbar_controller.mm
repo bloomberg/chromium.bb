@@ -29,6 +29,7 @@
 #include "ios/chrome/browser/autocomplete/autocomplete_scheme_classifier_impl.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#include "ios/chrome/browser/experimental_flags.h"
 #include "ios/chrome/browser/reading_list/reading_list_model_factory.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #import "ios/chrome/browser/tabs/tab.h"
@@ -47,6 +48,8 @@
 #import "ios/chrome/browser/ui/reversed_animation.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/toolbar/keyboard_accessory_view.h"
+#import "ios/chrome/browser/ui/toolbar/keyboard_accessory_view_protocol.h"
+#import "ios/chrome/browser/ui/toolbar/new_keyboard_accessory_view.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_controller+protected.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_controller.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_model_ios.h"
@@ -242,7 +245,7 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
   UIButton* _voiceSearchButton;
   OmniboxTextFieldIOS* _omniBox;
   UIButton* _cancelButton;
-  KeyboardAccessoryView* _keyBoardAccessoryView;
+  UIView<KeyboardAccessoryViewProtocol>* _keyboardAccessoryView;
   // Progress bar used to show what fraction of the page has loaded.
   MDCProgressView* _determinateProgressView;
   UIImageView* _omniboxBackground;
@@ -875,10 +878,10 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
     [self updateToolbarState];
 
     // Update keyboard accessory views.
-    auto mode = _keyBoardAccessoryView.mode;
-    _keyBoardAccessoryView = nil;
+    auto mode = _keyboardAccessoryView.mode;
+    _keyboardAccessoryView = nil;
     [_omniBox setInputAccessoryView:[self keyboardAccessoryView]];
-    _keyBoardAccessoryView.mode = mode;
+    _keyboardAccessoryView.mode = mode;
     if ([_omniBox isFirstResponder]) {
       [_omniBox reloadInputViews];
     }
@@ -1261,7 +1264,7 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
   [self.delegate locationBarDidBecomeFirstResponder:self];
   [self animateMaterialOmnibox];
 
-  _keyBoardAccessoryView.mode = VOICE_SEARCH;
+  _keyboardAccessoryView.mode = VOICE_SEARCH;
 
   // Record the appropriate user action for focusing the omnibox.
   web::WebState* webState = [self.delegate currentWebState];
@@ -1299,13 +1302,13 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
   // If the voice search button is visible but about to be hidden (i.e.
   // the omnibox is no longer empty) then this is the first omnibox text so
   // record a user action.
-  if (_keyBoardAccessoryView.mode == VOICE_SEARCH && editingAndNotEmpty) {
+  if (_keyboardAccessoryView.mode == VOICE_SEARCH && editingAndNotEmpty) {
     base::RecordAction(UserMetricsAction("MobileFirstTextInOmnibox"));
   }
   if (editingAndNotEmpty) {
-    _keyBoardAccessoryView.mode = KEY_SHORTCUTS;
+    _keyboardAccessoryView.mode = KEY_SHORTCUTS;
   } else {
-    _keyBoardAccessoryView.mode = VOICE_SEARCH;
+    _keyboardAccessoryView.mode = VOICE_SEARCH;
   }
 }
 
@@ -1464,7 +1467,7 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
   if (ios::GetChromeBrowserProvider()
           ->GetVoiceSearchProvider()
           ->IsVoiceSearchEnabled()) {
-    [self preloadVoiceSearch:_keyBoardAccessoryView];
+    [self preloadVoiceSearch:_keyboardAccessoryView];
   }
 }
 
@@ -1475,10 +1478,16 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
     base::RecordAction(UserMetricsAction("MobileCustomRowVoiceSearch"));
     GenericChromeCommand* command =
         [[GenericChromeCommand alloc] initWithTag:IDC_VOICE_SEARCH];
-    [_keyBoardAccessoryView chromeExecuteCommand:command];
+    [_keyboardAccessoryView chromeExecuteCommand:command];
   } else {
-    _keyBoardAccessoryView.mode = KEY_SHORTCUTS;
+    _keyboardAccessoryView.mode = KEY_SHORTCUTS;
   }
+}
+
+- (void)keyboardAccessoryCameraSearchTouchUpInside {
+  GenericChromeCommand* command =
+      [[GenericChromeCommand alloc] initWithTag:IDC_SHOW_QR_SCANNER];
+  [_keyboardAccessoryView chromeExecuteCommand:command];
 }
 
 - (void)keyPressed:(NSString*)title {
@@ -1842,18 +1851,28 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
 }
 
 - (UIView*)keyboardAccessoryView {
-  if (!_keyBoardAccessoryView) {
-    NSArray<NSString*>* buttonTitles =
-        [NSArray arrayWithObjects:@":", @".", @"-", @"/", kDotComTLD, nil];
-    _keyBoardAccessoryView =
-        [[KeyboardAccessoryView alloc] initWithButtons:buttonTitles
-                                              delegate:self];
-    [_keyBoardAccessoryView
+  if (!_keyboardAccessoryView) {
+    if (experimental_flags::IsKeyboardAccessoryViewWithCameraSearchEnabled()) {
+      // The '.' shortcut is left out because the new keyboard accessory view
+      // has less free space for the shortcut buttons, and the '.' is already
+      // present in the standard iOS keyboard.
+      NSArray<NSString*>* buttonTitles = @[ @":", @"-", @"/", kDotComTLD ];
+      _keyboardAccessoryView =
+          [[NewKeyboardAccessoryView alloc] initWithButtons:buttonTitles
+                                                   delegate:self];
+    } else {
+      NSArray<NSString*>* buttonTitles =
+          @[ @":", @".", @"-", @"/", kDotComTLD ];
+      _keyboardAccessoryView =
+          [[KeyboardAccessoryView alloc] initWithButtons:buttonTitles
+                                                delegate:self];
+    }
+    [_keyboardAccessoryView
         setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
     _hardwareKeyboardWatcher = [[HardwareKeyboardWatcher alloc]
-        initWithAccessoryView:_keyBoardAccessoryView];
+        initWithAccessoryView:_keyboardAccessoryView];
   }
-  return _keyBoardAccessoryView;
+  return _keyboardAccessoryView;
 }
 
 - (void)preloadVoiceSearch:(id)sender {

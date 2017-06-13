@@ -277,4 +277,9 @@ bool IsNewFeedbackKitEnabled() {
       boolForKey:@"NewFeedbackKitEnabled"];
 }
 
+bool IsKeyboardAccessoryViewWithCameraSearchEnabled() {
+  return [[NSUserDefaults standardUserDefaults]
+      boolForKey:@"NewKeyboardAccessoryViewEnabled"];
+}
+
 }  // namespace experimental_flags

@@ -106,6 +106,9 @@ bool IsNativeAppLauncherEnabled();
 // Whether a new version of FeedbackKit is the preferred feedback UI provider.
 bool IsNewFeedbackKitEnabled();
 
+// Whether the keyboard accessory view with camera search is enabled.
+bool IsKeyboardAccessoryViewWithCameraSearchEnabled();
+
 }  // namespace experimental_flags
 
 #endif  // IOS_CHROME_BROWSER_EXPERIMENTAL_FLAGS_H_
