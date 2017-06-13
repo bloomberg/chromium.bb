@@ -78,7 +78,7 @@
     <color name="url_emphasis_light_default_text">#ffffff</color>
 
     <!-- Omnibox Suggestion colors -->
-    <color name="suggestion_url">@color/google_blue_700</color>
+    <color name="suggestion_url">#5595fe</color>
     <color name="answers_description_text_negative">@color/google_red_700</color>
     <color name="answers_description_text_positive">@color/google_green_700</color>
     <color name="answers_answer_text">#8a8a8a</color>
