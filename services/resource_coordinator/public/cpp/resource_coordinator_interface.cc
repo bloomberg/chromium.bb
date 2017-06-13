@@ -4,6 +4,8 @@
 
 #include "services/resource_coordinator/public/cpp/resource_coordinator_interface.h"
 
+#include <utility>
+
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/resource_coordinator/public/interfaces/coordination_unit_provider.mojom.h"
 #include "services/resource_coordinator/public/interfaces/service_constants.mojom.h"
@@ -80,6 +82,23 @@ void ResourceCoordinatorInterface::AddChildByID(
     const CoordinationUnitID& child_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
   service_->AddChild(child_id);
+}
+
+void ResourceCoordinatorInterface::RemoveChild(
+    const ResourceCoordinatorInterface& child) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(service_);
+  // We could keep the ID around ourselves, but this hop ensures that the child
+  // has been created on the service-side.
+  child.service()->GetID(
+      base::Bind(&ResourceCoordinatorInterface::RemoveChildByID,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ResourceCoordinatorInterface::RemoveChildByID(
+    const CoordinationUnitID& child_id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  service_->RemoveChild(child_id);
 }
 
 }  // namespace resource_coordinator

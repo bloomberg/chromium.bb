@@ -54,9 +54,13 @@ interface CoordinationUnit {
   // Add a new binding to an existing CoordinationUnit.
   AddBinding(CoordinationUnit& request);
 
-  // child_id must represent a CU which already exists service-side,
+  // child_id must represent a CU that already exists service-side,
   // and can't be a direct ascendent or descendent of the current unit.
   AddChild(CoordinationUnitID child_id);
+
+  // child_id must represent a CU that already exists service-side
+  // and is a direct descendent of the current unit.
+  RemoveChild(CoordinationUnitID child_id);
   SetCoordinationPolicyCallback(CoordinationPolicyCallback callback);
 
   // Sets a property on the CoordinationUnitImpl's internal key-value store.

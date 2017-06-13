@@ -35,6 +35,7 @@ class CoordinationUnitImpl : public mojom::CoordinationUnit {
   void GetID(const GetIDCallback& callback) override;
   void AddBinding(mojom::CoordinationUnitRequest request) override;
   void AddChild(const CoordinationUnitID& child_id) override;
+  void RemoveChild(const CoordinationUnitID& child_id) override;
   void SetCoordinationPolicyCallback(
       mojom::CoordinationPolicyCallbackPtr callback) override;
   void SetProperty(mojom::PropertyPtr property) override;
@@ -65,7 +66,7 @@ class CoordinationUnitImpl : public mojom::CoordinationUnit {
 
  private:
   bool AddChild(CoordinationUnitImpl* child);
-  void RemoveChild(CoordinationUnitImpl* child);
+  bool RemoveChild(CoordinationUnitImpl* child);
   void AddParent(CoordinationUnitImpl* parent);
   void RemoveParent(CoordinationUnitImpl* parent);
   bool HasParent(CoordinationUnitImpl* unit);

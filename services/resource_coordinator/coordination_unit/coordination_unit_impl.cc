@@ -157,9 +157,28 @@ bool CoordinationUnitImpl::AddChild(CoordinationUnitImpl* child) {
   return children_.count(child) ? false : children_.insert(child).second;
 }
 
-void CoordinationUnitImpl::RemoveChild(CoordinationUnitImpl* child) {
+void CoordinationUnitImpl::RemoveChild(const CoordinationUnitID& child_id) {
+  auto child_iter = g_cu_map().find(child_id);
+  if (child_iter == g_cu_map().end()) {
+    return;
+  }
+
+  CoordinationUnitImpl* child = child_iter->second;
+  if (!HasChild(child)) {
+    return;
+  }
+
+  DCHECK(child->id_ == child_id);
+  DCHECK(child != this);
+
+  if (RemoveChild(child)) {
+    child->RemoveParent(this);
+  }
+}
+
+bool CoordinationUnitImpl::RemoveChild(CoordinationUnitImpl* child) {
   size_t children_removed = children_.erase(child);
-  DCHECK_EQ(1u, children_removed);
+  return children_removed > 0;
 }
 
 void CoordinationUnitImpl::AddParent(CoordinationUnitImpl* parent) {
