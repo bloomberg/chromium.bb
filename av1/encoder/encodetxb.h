@@ -33,6 +33,7 @@ typedef struct TxbInfo {
   TX_SIZE txs_ctx;
   int bwl;
   int stride;
+  int height;
   int eob;
   int seg_eob;
   const SCAN_ORDER *scan_order;

@@ -435,7 +435,7 @@ static void gen_base_count_mag_arr(int (*base_count_arr)[MAX_TX_SQUARE],
 }
 
 static void gen_nz_count_arr(int(*nz_count_arr), const tran_low_t *qcoeff,
-                             int stride, int eob,
+                             int stride, int height, int eob,
                              const SCAN_ORDER *scan_order) {
   const int16_t *scan = scan_order->scan;
   const int16_t *iscan = scan_order->iscan;
@@ -443,7 +443,8 @@ static void gen_nz_count_arr(int(*nz_count_arr), const tran_low_t *qcoeff,
     const int coeff_idx = scan[c];  // raster order
     const int row = coeff_idx / stride;
     const int col = coeff_idx % stride;
-    nz_count_arr[coeff_idx] = get_nz_count(qcoeff, stride, row, col, iscan);
+    nz_count_arr[coeff_idx] =
+        get_nz_count(qcoeff, stride, height, row, col, iscan);
   }
 }
 
@@ -550,7 +551,7 @@ static INLINE int get_golomb_cost(int abs_qc) {
 void gen_txb_cache(TxbCache *txb_cache, TxbInfo *txb_info) {
   const int16_t *scan = txb_info->scan_order->scan;
   gen_nz_count_arr(txb_cache->nz_count_arr, txb_info->qcoeff, txb_info->stride,
-                   txb_info->eob, txb_info->scan_order);
+                   txb_info->height, txb_info->eob, txb_info->scan_order);
   gen_nz_ctx_arr(txb_cache->nz_ctx_arr, txb_cache->nz_count_arr,
                  txb_info->qcoeff, txb_info->bwl, txb_info->eob,
                  txb_info->scan_order);
@@ -1120,8 +1121,8 @@ static int get_coeff_cost(tran_low_t qc, int scan_idx, TxbInfo *txb_info,
   const int16_t *iscan = txb_info->scan_order->iscan;
 
   if (scan_idx < txb_info->seg_eob) {
-    int coeff_ctx =
-        get_nz_map_ctx2(txb_info->qcoeff, scan[scan_idx], txb_info->bwl, iscan);
+    int coeff_ctx = get_nz_map_ctx2(txb_info->qcoeff, scan[scan_idx],
+                                    txb_info->bwl, txb_info->height, iscan);
     cost += av1_cost_bit(txb_probs->nz_map[coeff_ctx], is_nz);
   }
 
@@ -1458,6 +1459,7 @@ int av1_optimize_txb(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
 
   const int bwl = b_width_log2_lookup[txsize_to_bsize[tx_size]] + 2;
   const int stride = 1 << bwl;
+  const int height = tx_size_high[tx_size];
   aom_prob(*coeff_base)[COEFF_BASE_CONTEXTS] =
       xd->fc->coeff_base[txs_ctx][plane_type];
 
@@ -1479,9 +1481,9 @@ int av1_optimize_txb(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
       (x->rdmult * plane_rd_mult[is_inter][plane_type] + 2) >> 2;
   const int64_t rddiv = x->rddiv;
 
-  TxbInfo txb_info = { qcoeff,  dqcoeff,    tcoeff,  dequant, shift,
-                       tx_size, txs_ctx,    bwl,     stride,  eob,
-                       seg_eob, scan_order, txb_ctx, rdmult,  rddiv };
+  TxbInfo txb_info = { qcoeff,     dqcoeff, tcoeff, dequant, shift, tx_size,
+                       txs_ctx,    bwl,     stride, height,  eob,   seg_eob,
+                       scan_order, txb_ctx, rdmult, rddiv };
   TxbCache txb_cache;
   gen_txb_cache(&txb_cache, &txb_info);
 
