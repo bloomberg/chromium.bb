@@ -5,11 +5,14 @@
 #import "ios/chrome/browser/passwords/password_generation_offer_view.h"
 
 #include "base/i18n/rtl.h"
-#include "base/mac/scoped_nsobject.h"
 #include "ios/chrome/browser/passwords/password_generation_utils.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 // Constants for the offer view.
@@ -24,7 +27,7 @@ const CGFloat kOfferLabelFontSize = 15.0;
   const CGRect defaultFrame = CGRectMake(0, 0, 100, 100);
   self = [super initWithFrame:defaultFrame];
   if (self) {
-    base::scoped_nsobject<UILabel> label([[UILabel alloc] init]);
+    UILabel* label = [[UILabel alloc] init];
     [label setText:l10n_util::GetNSString(IDS_IOS_GENERATE_PASSWORD_LABEL)];
     UIFont* font = [UIFont systemFontOfSize:kOfferLabelFontSize];
     [label setFont:font];
@@ -41,8 +44,7 @@ const CGFloat kOfferLabelFontSize = 15.0;
     [self addSubview:label];
 
     // Invisible button for tap recognition.
-    base::scoped_nsobject<UIButton> button(
-        [[UIButton alloc] initWithFrame:[self bounds]]);
+    UIButton* button = [[UIButton alloc] initWithFrame:[self bounds]];
     [button setBackgroundColor:[UIColor clearColor]];
     [button setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
                                 UIViewAutoresizingFlexibleHeight];

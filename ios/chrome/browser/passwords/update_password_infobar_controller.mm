@@ -4,14 +4,16 @@
 
 #import "ios/chrome/browser/passwords/update_password_infobar_controller.h"
 
-#include "base/ios/weak_nsobject.h"
-#import "base/mac/objc_property_releaser.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/infobars/confirm_infobar_controller+protected.h"
 #include "ios/chrome/browser/passwords/ios_chrome_update_password_infobar_delegate.h"
 #import "ios/chrome/browser/ui/elements/selector_coordinator.h"
 #import "ios/chrome/browser/ui/infobars/infobar_view.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 // Tag for the account link in the info bar message. Set to 10 to avoid conflict
@@ -20,25 +22,14 @@ NSUInteger kAccountTag = 10;
 }
 
 @interface UpdatePasswordInfoBarController ()<SelectorCoordinatorDelegate> {
-  base::mac::ObjCPropertyReleaser
-      _propertyReleaser_UpdatePasswordInfoBarController;
   IOSChromeUpdatePasswordInfoBarDelegate* _delegate;
 }
-@property(nonatomic, retain) SelectorCoordinator* selectorCoordinator;
+@property(nonatomic, strong) SelectorCoordinator* selectorCoordinator;
 @end
 
 @implementation UpdatePasswordInfoBarController
 
 @synthesize selectorCoordinator = _selectorCoordinator;
-
-- (instancetype)initWithDelegate:(InfoBarViewDelegate*)delegate {
-  self = [super initWithDelegate:delegate];
-  if (self) {
-    _propertyReleaser_UpdatePasswordInfoBarController.Init(
-        self, [UpdatePasswordInfoBarController class]);
-  }
-  return self;
-}
 
 - (InfoBarView*)viewForDelegate:
                     (IOSChromeUpdatePasswordInfoBarDelegate*)delegate
@@ -62,7 +53,7 @@ NSUInteger kAccountTag = 10;
         &messageText, 0, _delegate->selected_account(), usernameLink);
   }
 
-  base::WeakNSObject<UpdatePasswordInfoBarController> weakSelf(self);
+  __weak UpdatePasswordInfoBarController* weakSelf = self;
   [view addLabel:base::SysUTF16ToNSString(messageText)
           action:^(NSUInteger tag) {
             [weakSelf infobarLinkDidPress:tag];
@@ -76,8 +67,8 @@ NSUInteger kAccountTag = 10;
 
   UIViewController* baseViewController =
       [[UIApplication sharedApplication] keyWindow].rootViewController;
-  self.selectorCoordinator = [[[SelectorCoordinator alloc]
-      initWithBaseViewController:baseViewController] autorelease];
+  self.selectorCoordinator = [[SelectorCoordinator alloc]
+      initWithBaseViewController:baseViewController];
   self.selectorCoordinator.delegate = self;
   self.selectorCoordinator.options =
       [NSOrderedSet orderedSetWithArray:_delegate->GetAccounts()];

@@ -9,6 +9,10 @@
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 // Sanitizes |JSONString| and wraps it in quotes so it can be injected safely in
 // JavaScript.

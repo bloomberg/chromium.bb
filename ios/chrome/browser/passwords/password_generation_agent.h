@@ -38,10 +38,10 @@ class PasswordManagerDriver;
 
 // Initializes PasswordGenerationAgent, which observes the specified web state.
 - (instancetype)
-         initWithWebState:(web::WebState*)webState
-          passwordManager:(password_manager::PasswordManager*)passwordManager
-    passwordManagerDriver:(password_manager::PasswordManagerDriver*)driver
-      passwordsUiDelegate:(id<PasswordsUiDelegate>)UIDelegate;
+     initWithWebState:(web::WebState*)webState
+      passwordManager:(password_manager::PasswordManager*)passwordManager
+passwordManagerDriver:(password_manager::PasswordManagerDriver*)driver
+  passwordsUiDelegate:(id<PasswordsUiDelegate>)delegate;
 
 - (instancetype)init NS_UNAVAILABLE;
 
@@ -81,12 +81,12 @@ class PasswordManagerDriver;
 // Initializes PasswordGenerationAgent, which observes the specified web state,
 // and allows injecting JavaScript managers for testing.
 - (instancetype)
-         initWithWebState:(web::WebState*)webState
-          passwordManager:(password_manager::PasswordManager*)passwordManager
-    passwordManagerDriver:(password_manager::PasswordManagerDriver*)driver
-        JSPasswordManager:(JsPasswordManager*)JSPasswordManager
-      JSSuggestionManager:(JsSuggestionManager*)JSSuggestionManager
-      passwordsUiDelegate:(id<PasswordsUiDelegate>)UIDelegate;
+     initWithWebState:(web::WebState*)webState
+      passwordManager:(password_manager::PasswordManager*)passwordManager
+passwordManagerDriver:(password_manager::PasswordManagerDriver*)driver
+    JSPasswordManager:(JsPasswordManager*)javaScriptPasswordManager
+  JSSuggestionManager:(JsSuggestionManager*)suggestionManager
+  passwordsUiDelegate:(id<PasswordsUiDelegate>)delegate;
 
 // Clears all per-page state.
 - (void)clearState;

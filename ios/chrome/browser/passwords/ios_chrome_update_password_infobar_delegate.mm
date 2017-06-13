@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -21,6 +20,10 @@
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 using password_manager::PasswordFormManager;
 
 // static
@@ -32,8 +35,8 @@ void IOSChromeUpdatePasswordInfoBarDelegate::Create(
   auto delegate = base::WrapUnique(new IOSChromeUpdatePasswordInfoBarDelegate(
       is_smart_lock_branding_enabled, std::move(form_manager)));
   std::unique_ptr<InfoBarIOS> infobar(new InfoBarIOS(std::move(delegate)));
-  base::scoped_nsobject<UpdatePasswordInfoBarController> controller(
-      [[UpdatePasswordInfoBarController alloc] initWithDelegate:infobar.get()]);
+  UpdatePasswordInfoBarController* controller =
+      [[UpdatePasswordInfoBarController alloc] initWithDelegate:infobar.get()];
   infobar->SetController(controller);
   infobar_manager->AddInfoBar(std::move(infobar));
 }
