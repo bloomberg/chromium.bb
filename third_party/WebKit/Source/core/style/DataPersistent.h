@@ -29,7 +29,11 @@ class DataPersistent {
   USING_FAST_MALLOC(DataPersistent);
 
  public:
-  DataPersistent() : own_copy_(false) {}
+  DataPersistent()
+      : data_(WTF::WrapUnique(new Persistent<T>(T::Create()))),
+        own_copy_(true) {}
+
+  DataPersistent(std::nullptr_t) : data_(nullptr), own_copy_(false) {}
 
   DataPersistent(const DataPersistent& other) : own_copy_(false) {
     if (other.data_)
