@@ -27,6 +27,8 @@ class Value;
 
 namespace content {
 
+class NavigationHandle;
+
 class ShellDevToolsDelegate {
  public:
   virtual void Close() = 0;
@@ -63,6 +65,7 @@ class ShellDevToolsBindings : public WebContentsObserver,
 
  private:
   // WebContentsObserver overrides
+  void ReadyToCommitNavigation(NavigationHandle* navigation_handle) override;
   void RenderViewCreated(RenderViewHost* render_view_host) override;
   void DocumentAvailableInMainFrame() override;
   void WebContentsDestroyed() override;
@@ -83,6 +86,8 @@ class ShellDevToolsBindings : public WebContentsObserver,
   using PendingRequestsMap = std::map<const net::URLFetcher*, int>;
   PendingRequestsMap pending_requests_;
   base::DictionaryValue preferences_;
+  using ExtensionsAPIs = std::map<std::string, std::string>;
+  ExtensionsAPIs extensions_api_;
   base::WeakPtrFactory<ShellDevToolsBindings> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellDevToolsBindings);

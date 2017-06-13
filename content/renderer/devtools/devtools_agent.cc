@@ -287,14 +287,12 @@ void DevToolsAgent::ContinueProgram() {
   GetWebAgent()->ContinueProgram();
 }
 
-void DevToolsAgent::OnSetupDevToolsClient(
-    const std::string& compatibility_script) {
+void DevToolsAgent::OnSetupDevToolsClient(const std::string& api_script) {
   // We only want to register once; and only in main frame.
-  DCHECK(!frame_->GetWebFrame()->Parent());
   if (is_devtools_client_)
     return;
   is_devtools_client_ = true;
-  new DevToolsClient(frame_, compatibility_script);
+  new DevToolsClient(frame_, api_script);
 }
 
 WebDevToolsAgent* DevToolsAgent::GetWebAgent() {

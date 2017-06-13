@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "base/guid.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/json/string_escape.h"
@@ -18,6 +19,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/storage_partition.h"
@@ -129,6 +131,22 @@ ShellDevToolsBindings::~ShellDevToolsBindings() {
     delete pair.first;
   if (agent_host_)
     agent_host_->DetachClient(this);
+}
+
+void ShellDevToolsBindings::ReadyToCommitNavigation(
+    NavigationHandle* navigation_handle) {
+#if !defined(OS_ANDROID)
+  content::RenderFrameHost* frame = navigation_handle->GetRenderFrameHost();
+  if (!frame->GetParent())
+    return;
+  std::string origin = navigation_handle->GetURL().GetOrigin().spec();
+  auto it = extensions_api_.find(origin);
+  if (it == extensions_api_.end())
+    return;
+  std::string script = base::StringPrintf("%s(\"%s\")", it->second.c_str(),
+                                          base::GenerateGUID().c_str());
+  DevToolsFrontendHost::SetupExtensionsAPI(frame, script);
+#endif
 }
 
 void ShellDevToolsBindings::RenderViewCreated(
@@ -286,6 +304,12 @@ void ShellDevToolsBindings::HandleMessageFromDevToolsFrontend(
   } else if (method == "reattach") {
     agent_host_->DetachClient(this);
     agent_host_->AttachClient(this);
+  } else if (method == "registerExtensionsAPI") {
+    std::string origin;
+    std::string script;
+    if (!params->GetString(0, &origin) || !params->GetString(1, &script))
+      return;
+    extensions_api_[origin + "/"] = script;
   } else {
     return;
   }

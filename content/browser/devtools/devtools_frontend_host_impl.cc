@@ -32,6 +32,15 @@ DevToolsFrontendHost* DevToolsFrontendHost::Create(
 }
 
 // static
+void DevToolsFrontendHost::SetupExtensionsAPI(
+    RenderFrameHost* frame,
+    const std::string& extension_api) {
+  DCHECK(frame->GetParent());
+  frame->Send(new DevToolsMsg_SetupDevToolsClient(frame->GetRoutingID(),
+                                                  extension_api));
+}
+
+// static
 base::StringPiece DevToolsFrontendHost::GetFrontendResource(
     const std::string& path) {
   for (size_t i = 0; i < kDevtoolsResourcesSize; ++i) {
