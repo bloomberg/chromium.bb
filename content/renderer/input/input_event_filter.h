@@ -97,6 +97,13 @@ class CONTENT_EXPORT InputEventFilter : public InputHandlerManagerClient,
       ui::WebScopedInputEvent event,
       const ui::LatencyInfo& latency_info,
       std::unique_ptr<ui::DidOverscrollParams> overscroll_params);
+  void SendInputEventAck(
+      int routing_id,
+      blink::WebInputEvent::Type event_type,
+      int unique_touch_event_id,
+      InputEventAckState ack_state,
+      const ui::LatencyInfo& latency_info,
+      std::unique_ptr<ui::DidOverscrollParams> overscroll_params);
   void SendMessage(std::unique_ptr<IPC::Message> message);
   void SendMessageOnIOThread(std::unique_ptr<IPC::Message> message);
 

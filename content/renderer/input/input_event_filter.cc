@@ -124,9 +124,9 @@ void InputEventFilter::DispatchNonBlockingEventToMainThread(
   DCHECK(target_task_runner_->BelongsToCurrentThread());
   RouteQueueMap::iterator iter = route_queues_.find(routing_id);
   if (iter != route_queues_.end()) {
-    iter->second->HandleEvent(std::move(event), latency_info,
-                              DISPATCH_TYPE_NON_BLOCKING,
-                              INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING);
+    iter->second->HandleEvent(
+        std::move(event), latency_info, DISPATCH_TYPE_NON_BLOCKING,
+        INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING, HandledEventCallback());
   }
 }
 
@@ -249,6 +249,11 @@ void InputEventFilter::DidForwardToHandlerAndOverscroll(
   uint32_t unique_touch_event_id =
       ui::WebInputEventTraits::GetUniqueTouchEventId(*event);
   WebInputEvent::Type type = event->GetType();
+  HandledEventCallback callback;
+  if (send_ack) {
+    callback = base::Bind(&InputEventFilter::SendInputEventAck, this,
+                          routing_id, type, unique_touch_event_id);
+  }
 
   if (ack_state == INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING ||
       ack_state == INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING_DUE_TO_FLING ||
@@ -256,18 +261,30 @@ void InputEventFilter::DidForwardToHandlerAndOverscroll(
     DCHECK(!overscroll_params);
     RouteQueueMap::iterator iter = route_queues_.find(routing_id);
     if (iter != route_queues_.end()) {
-      send_ack &= iter->second->HandleEvent(std::move(event), latency_info,
-                                            dispatch_type, ack_state);
+      iter->second->HandleEvent(std::move(event), latency_info, dispatch_type,
+                                ack_state, std::move(callback));
+      return;
     }
   }
-  event.reset();
+  if (callback) {
+    std::move(callback).Run(ack_state, latency_info,
+                            std::move(overscroll_params));
+  }
+}
 
-  if (!send_ack)
-    return;
+void InputEventFilter::SendInputEventAck(
+    int routing_id,
+    blink::WebInputEvent::Type event_type,
+    int unique_touch_event_id,
+    InputEventAckState ack_state,
+    const ui::LatencyInfo& latency_info,
+    std::unique_ptr<ui::DidOverscrollParams> overscroll_params) {
+  bool main_thread = main_task_runner_->BelongsToCurrentThread();
 
-  InputEventAck ack(InputEventAckSource::COMPOSITOR_THREAD, type, ack_state,
-                    latency_info, std::move(overscroll_params),
-                    unique_touch_event_id);
+  InputEventAck ack(main_thread ? InputEventAckSource::MAIN_THREAD
+                                : InputEventAckSource::COMPOSITOR_THREAD,
+                    event_type, ack_state, latency_info,
+                    std::move(overscroll_params), unique_touch_event_id);
   SendMessage(std::unique_ptr<IPC::Message>(
       new InputHostMsg_HandleInputEvent_ACK(routing_id, ack)));
 }

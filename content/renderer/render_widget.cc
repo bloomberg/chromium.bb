@@ -819,24 +819,33 @@ void RenderWidget::OnHandleInputEvent(
   if (!input_event)
     return;
 
+  HandledEventCallback callback;
+  if (dispatch_type == DISPATCH_TYPE_BLOCKING) {
+    callback = base::Bind(
+        &RenderWidget::SendInputEventAck, this, input_event->GetType(),
+        ui::WebInputEventTraits::GetUniqueTouchEventId(*input_event));
+  }
   input_handler_->HandleInputEvent(
       blink::WebCoalescedInputEvent(*input_event, coalesced_events),
-      latency_info, dispatch_type);
+      latency_info, std::move(callback));
 }
 
-InputEventAckState RenderWidget::HandleInputEvent(
+void RenderWidget::HandleInputEvent(
     const blink::WebCoalescedInputEvent& input_event,
     const ui::LatencyInfo& latency_info,
-    InputEventDispatchType dispatch_type) {
-  return input_handler_->HandleInputEvent(input_event, latency_info,
-                                          dispatch_type);
+    HandledEventCallback callback) {
+  input_handler_->HandleInputEvent(input_event, latency_info,
+                                   std::move(callback));
 }
 
-void RenderWidget::SendInputEventAck(blink::WebInputEvent::Type type,
-                                     InputEventAckState ack_result,
-                                     uint32_t touch_event_id) {
-  InputEventAck ack(InputEventAckSource::MAIN_THREAD, type, ack_result,
-                    touch_event_id);
+void RenderWidget::SendInputEventAck(
+    blink::WebInputEvent::Type type,
+    uint32_t touch_event_id,
+    InputEventAckState ack_state,
+    const ui::LatencyInfo& latency_info,
+    std::unique_ptr<ui::DidOverscrollParams> overscroll_params) {
+  InputEventAck ack(InputEventAckSource::MAIN_THREAD, type, ack_state,
+                    latency_info, std::move(overscroll_params), touch_event_id);
   Send(new InputHostMsg_HandleInputEvent_ACK(routing_id_, ack));
 }
 
@@ -1060,12 +1069,6 @@ void RenderWidget::ClearEditCommands() {
 
 void RenderWidget::OnDidOverscroll(const ui::DidOverscrollParams& params) {
   Send(new InputHostMsg_DidOverscroll(routing_id_, params));
-}
-
-void RenderWidget::OnInputEventAck(
-    std::unique_ptr<InputEventAck> input_event_ack) {
-  SendOrCrash(
-      new InputHostMsg_HandleInputEvent_ACK(routing_id_, *input_event_ack));
 }
 
 void RenderWidget::SetInputHandler(RenderWidgetInputHandler* input_handler) {

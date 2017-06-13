@@ -21,22 +21,21 @@ const base::TimeDelta kMaxRafDelay =
 
 class QueuedClosure : public MainThreadEventQueueTask {
  public:
-  QueuedClosure(const base::Closure& closure) : closure_(closure) {}
+  QueuedClosure(base::OnceClosure closure) : closure_(std::move(closure)) {}
 
   ~QueuedClosure() override {}
 
-  FilterResult FilterNewEvent(
-      const MainThreadEventQueueTask& other_task) override {
-    return other_task.IsWebInputEvent() ? FilterResult::KeepIterating
-                                        : FilterResult::StopIterating;
+  FilterResult FilterNewEvent(MainThreadEventQueueTask* other_task) override {
+    return other_task->IsWebInputEvent() ? FilterResult::KeepIterating
+                                         : FilterResult::StopIterating;
   }
 
   bool IsWebInputEvent() const override { return false; }
 
-  void Dispatch(MainThreadEventQueue*) override { closure_.Run(); }
+  void Dispatch(MainThreadEventQueue*) override { std::move(closure_).Run(); }
 
  private:
-  base::Closure closure_;
+  base::OnceClosure closure_;
 };
 
 // Time interval at which touchmove events during scroll will be skipped
@@ -51,48 +50,46 @@ class QueuedWebInputEvent : public ScopedWebInputEventWithLatencyInfo,
  public:
   QueuedWebInputEvent(ui::WebScopedInputEvent event,
                       const ui::LatencyInfo& latency,
-                      InputEventDispatchType dispatch_type,
-                      bool originally_cancelable)
+                      bool originally_cancelable,
+                      HandledEventCallback callback)
       : ScopedWebInputEventWithLatencyInfo(std::move(event), latency),
-        dispatch_type_(dispatch_type),
         non_blocking_coalesced_count_(0),
         creation_timestamp_(base::TimeTicks::Now()),
         last_coalesced_timestamp_(creation_timestamp_),
-        originally_cancelable_(originally_cancelable) {}
+        originally_cancelable_(originally_cancelable),
+        callback_(std::move(callback)) {}
 
   ~QueuedWebInputEvent() override {}
 
-  FilterResult FilterNewEvent(
-      const MainThreadEventQueueTask& other_task) override {
-    if (!other_task.IsWebInputEvent())
+  FilterResult FilterNewEvent(MainThreadEventQueueTask* other_task) override {
+    if (!other_task->IsWebInputEvent())
       return FilterResult::StopIterating;
 
-    const QueuedWebInputEvent& other_event =
-        static_cast<const QueuedWebInputEvent&>(other_task);
-    if (other_event.event().GetType() ==
+    QueuedWebInputEvent* other_event =
+        static_cast<QueuedWebInputEvent*>(other_task);
+    if (other_event->event().GetType() ==
         blink::WebInputEvent::kTouchScrollStarted) {
       return HandleTouchScrollStartQueued();
     }
 
-    if (!event().IsSameEventClass(other_event.event()))
+    if (!event().IsSameEventClass(other_event->event()))
       return FilterResult::KeepIterating;
 
-    if (!ScopedWebInputEventWithLatencyInfo::CanCoalesceWith(other_event))
+    if (!ScopedWebInputEventWithLatencyInfo::CanCoalesceWith(*other_event))
       return FilterResult::StopIterating;
 
-    // If the other event was blocking store its unique touch event id to
-    // ack later.
-    if (other_event.dispatch_type_ == DISPATCH_TYPE_BLOCKING) {
-      blocking_coalesced_event_ids_.push_back(
-          ui::WebInputEventTraits::GetUniqueTouchEventId(other_event.event()));
+    // If the other event was blocking store its callback to call later.
+    if (other_event->callback_) {
+      blocking_coalesced_callbacks_.push_back(
+          std::move(other_event->callback_));
     } else {
       non_blocking_coalesced_count_++;
     }
-    ScopedWebInputEventWithLatencyInfo::CoalesceWith(other_event);
+    ScopedWebInputEventWithLatencyInfo::CoalesceWith(*other_event);
     last_coalesced_timestamp_ = base::TimeTicks::Now();
 
     // The newest event (|other_item|) always wins when updating fields.
-    originally_cancelable_ = other_event.originally_cancelable_;
+    originally_cancelable_ = other_event->originally_cancelable_;
 
     return FilterResult::CoalescedEvent;
   }
@@ -121,10 +118,36 @@ class QueuedWebInputEvent : public ScopedWebInputEventWithLatencyInfo,
           (now - creationTimestamp()).InMicroseconds(), 1, kTenSeconds, 50);
     }
 
-    InputEventAckState ack_result = queue->HandleEventOnMainThread(
-        coalesced_event(), latencyInfo(), dispatchType());
-    for (const auto id : blockingCoalescedEventIds())
-      queue->SendInputEventAck(event(), ack_result, id);
+    HandledEventCallback callback = base::BindOnce(
+        &QueuedWebInputEvent::HandledEvent, base::Unretained(this), queue);
+    queue->HandleEventOnMainThread(coalesced_event(), latencyInfo(),
+                                   std::move(callback));
+  }
+
+  void HandledEvent(MainThreadEventQueue* queue,
+                    InputEventAckState ack_result,
+                    const ui::LatencyInfo& latency_info,
+                    std::unique_ptr<ui::DidOverscrollParams> overscroll) {
+    if (callback_) {
+      std::move(callback_).Run(ack_result, latency_info, std::move(overscroll));
+    } else {
+      DCHECK(!overscroll) << "Unexpected overscroll for un-acked event";
+    }
+
+    for (auto&& callback : blocking_coalesced_callbacks_)
+      std::move(callback).Run(ack_result, latency_info, nullptr);
+
+    size_t num_events_handled = 1 + blocking_coalesced_callbacks_.size();
+    if (queue->renderer_scheduler_) {
+      // TODO(dtapuska): Change the scheduler API to take into account number of
+      // events processed.
+      for (size_t i = 0; i < num_events_handled; ++i) {
+        queue->renderer_scheduler_->DidHandleInputEventOnMainThread(
+            event(), ack_result == INPUT_EVENT_ACK_STATE_CONSUMED
+                         ? blink::WebInputEventResult::kHandledApplication
+                         : blink::WebInputEventResult::kNotHandled);
+      }
+    }
   }
 
   bool originallyCancelable() const { return originally_cancelable_; }
@@ -152,17 +175,13 @@ class QueuedWebInputEvent : public ScopedWebInputEventWithLatencyInfo,
     }
   }
 
-  const std::deque<uint32_t>& blockingCoalescedEventIds() const {
-    return blocking_coalesced_event_ids_;
-  }
-  InputEventDispatchType dispatchType() const { return dispatch_type_; }
   base::TimeTicks creationTimestamp() const { return creation_timestamp_; }
   base::TimeTicks lastCoalescedTimestamp() const {
     return last_coalesced_timestamp_;
   }
 
   size_t coalescedCount() const {
-    return non_blocking_coalesced_count_ + blocking_coalesced_event_ids_.size();
+    return non_blocking_coalesced_count_ + blocking_coalesced_callbacks_.size();
   }
 
   bool IsContinuousEvent() const {
@@ -176,13 +195,8 @@ class QueuedWebInputEvent : public ScopedWebInputEventWithLatencyInfo,
     }
   }
 
-  InputEventDispatchType dispatch_type_;
-
-  // Contains the unique touch event ids to be acked. If
-  // the events are not TouchEvents the values will be 0. More importantly for
-  // those cases the deque ends up containing how many additional ACKs
-  // need to be sent.
-  std::deque<uint32_t> blocking_coalesced_event_ids_;
+  // Contains the pending callbacks to be called.
+  std::deque<HandledEventCallback> blocking_coalesced_callbacks_;
   // Contains the number of non-blocking events coalesced.
   size_t non_blocking_coalesced_count_;
   base::TimeTicks creation_timestamp_;
@@ -193,6 +207,8 @@ class QueuedWebInputEvent : public ScopedWebInputEventWithLatencyInfo,
   // this is the state at which the renderer received the event from the
   // browser.
   bool originally_cancelable_;
+
+  HandledEventCallback callback_;
 };
 
 MainThreadEventQueue::SharedState::SharedState()
@@ -245,11 +261,12 @@ MainThreadEventQueue::MainThreadEventQueue(
 
 MainThreadEventQueue::~MainThreadEventQueue() {}
 
-bool MainThreadEventQueue::HandleEvent(
+void MainThreadEventQueue::HandleEvent(
     ui::WebScopedInputEvent event,
     const ui::LatencyInfo& latency,
     InputEventDispatchType original_dispatch_type,
-    InputEventAckState ack_result) {
+    InputEventAckState ack_result,
+    HandledEventCallback callback) {
   DCHECK(original_dispatch_type == DISPATCH_TYPE_BLOCKING ||
          original_dispatch_type == DISPATCH_TYPE_NON_BLOCKING);
   DCHECK(ack_result == INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING ||
@@ -322,22 +339,24 @@ bool MainThreadEventQueue::HandleEvent(
     }
   }
 
-  InputEventDispatchType dispatch_type =
-      non_blocking ? DISPATCH_TYPE_NON_BLOCKING : DISPATCH_TYPE_BLOCKING;
+  HandledEventCallback event_callback;
+  if (!non_blocking) {
+    event_callback = std::move(callback);
+  }
 
-  std::unique_ptr<QueuedWebInputEvent> event_with_dispatch_type(
-      new QueuedWebInputEvent(std::move(event), latency, dispatch_type,
-                              originally_cancelable));
+  std::unique_ptr<QueuedWebInputEvent> queued_event(
+      new QueuedWebInputEvent(std::move(event), latency, originally_cancelable,
+                              std::move(event_callback)));
 
-  QueueEvent(std::move(event_with_dispatch_type));
+  QueueEvent(std::move(queued_event));
 
-  // send an ack when we are non-blocking.
-  return non_blocking;
+  if (callback)
+    std::move(callback).Run(ack_result, latency, nullptr);
 }
 
-void MainThreadEventQueue::QueueClosure(const base::Closure& closure) {
+void MainThreadEventQueue::QueueClosure(base::OnceClosure closure) {
   bool needs_post_task = false;
-  std::unique_ptr<QueuedClosure> item(new QueuedClosure(closure));
+  std::unique_ptr<QueuedClosure> item(new QueuedClosure(std::move(closure)));
   {
     base::AutoLock lock(shared_state_lock_);
     shared_state_.events_.Queue(std::move(item));
@@ -515,28 +534,12 @@ bool MainThreadEventQueue::IsRafAlignedEvent(
   }
 }
 
-InputEventAckState MainThreadEventQueue::HandleEventOnMainThread(
+void MainThreadEventQueue::HandleEventOnMainThread(
     const blink::WebCoalescedInputEvent& event,
     const ui::LatencyInfo& latency,
-    InputEventDispatchType dispatch_type) {
+    HandledEventCallback handled_callback) {
   if (client_)
-    return client_->HandleInputEvent(event, latency, dispatch_type);
-  return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
-}
-
-void MainThreadEventQueue::SendInputEventAck(const blink::WebInputEvent& event,
-                                             InputEventAckState ack_result,
-                                             uint32_t touch_event_id) {
-  DCHECK(main_task_runner_->BelongsToCurrentThread());
-  if (!client_)
-    return;
-  client_->SendInputEventAck(event.GetType(), ack_result, touch_event_id);
-  if (renderer_scheduler_) {
-    renderer_scheduler_->DidHandleInputEventOnMainThread(
-        event, ack_result == INPUT_EVENT_ACK_STATE_CONSUMED
-                   ? blink::WebInputEventResult::kHandledApplication
-                   : blink::WebInputEventResult::kNotHandled);
-  }
+    client_->HandleInputEvent(event, latency, std::move(handled_callback));
 }
 
 void MainThreadEventQueue::SetNeedsMainFrame() {
