@@ -59,7 +59,7 @@ static const int cfl_alpha_codes[CFL_ALPHABET_SIZE][CFL_PRED_PLANES] = {
 
 void cfl_init(CFL_CTX *cfl, AV1_COMMON *cm);
 
-void cfl_dc_pred(MACROBLOCKD *xd, BLOCK_SIZE plane_bsize, TX_SIZE tx_size);
+void cfl_dc_pred(MACROBLOCKD *xd, BLOCK_SIZE plane_bsize);
 
 static INLINE double cfl_idx_to_alpha(int alpha_idx, CFL_SIGN_TYPE alpha_sign,
                                       CFL_PRED_TYPE pred_type) {

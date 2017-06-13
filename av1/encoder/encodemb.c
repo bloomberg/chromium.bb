@@ -1636,11 +1636,23 @@ void av1_predict_intra_block_encoder_facade(MACROBLOCK *x,
     if (blk_col == 0 && blk_row == 0 && plane == AOM_PLANE_U) {
       CFL_CTX *const cfl = xd->cfl;
       cfl_update_costs(cfl, ec_ctx);
-      cfl_dc_pred(xd, plane_bsize, tx_size);
+      cfl_dc_pred(xd, plane_bsize);
       mbmi->cfl_alpha_idx =
           cfl_compute_alpha_ind(x, cfl, plane_bsize, mbmi->cfl_alpha_signs);
     }
   }
+#if CONFIG_DEBUG
+// av1_predict_intra_block_facade does not pass plane_bsize, we need to validate
+// that we will get the same value of plane_bsize on the other side.
+#if CONFIG_CB4X4 && !CONFIG_CHROMA_2X2
+  const BLOCK_SIZE plane_bsize_val =
+      AOMMAX(BLOCK_4X4, get_plane_block_size(mbmi->sb_type, &xd->plane[plane]));
+#else
+  const BLOCK_SIZE plane_bsize_val =
+      get_plane_block_size(mbmi->sb_type, &xd->plane[plane]);
+#endif  // CONFIG_CB4X4 && !CONFIG_CHROMA_2X2
+  assert(plane_bsize == plane_bsize_val);
+#endif  // CONFIG_DEBUG
   av1_predict_intra_block_facade(xd, plane, block_idx, blk_col, blk_row,
                                  tx_size);
 }

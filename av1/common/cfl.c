@@ -28,7 +28,7 @@ void cfl_init(CFL_CTX *cfl, AV1_COMMON *cm) {
 
 // CfL computes its own block-level DC_PRED. This is required to compute both
 // alpha_cb and alpha_cr before the prediction are computed.
-void cfl_dc_pred(MACROBLOCKD *xd, BLOCK_SIZE plane_bsize, TX_SIZE tx_size) {
+void cfl_dc_pred(MACROBLOCKD *xd, BLOCK_SIZE plane_bsize) {
   const struct macroblockd_plane *const pd_u = &xd->plane[AOM_PLANE_U];
   const struct macroblockd_plane *const pd_v = &xd->plane[AOM_PLANE_V];
 
@@ -38,12 +38,9 @@ void cfl_dc_pred(MACROBLOCKD *xd, BLOCK_SIZE plane_bsize, TX_SIZE tx_size) {
   const int dst_u_stride = pd_u->dst.stride;
   const int dst_v_stride = pd_v->dst.stride;
 
-  const int block_width = (plane_bsize != BLOCK_INVALID)
-                              ? block_size_wide[plane_bsize]
-                              : tx_size_wide[tx_size];
-  const int block_height = (plane_bsize != BLOCK_INVALID)
-                               ? block_size_high[plane_bsize]
-                               : tx_size_high[tx_size];
+  assert(plane_bsize != BLOCK_INVALID);
+  const int block_width = block_size_wide[plane_bsize];
+  const int block_height = block_size_high[plane_bsize];
 
   // Number of pixel on the top and left borders.
   const double num_pel = block_width + block_height;

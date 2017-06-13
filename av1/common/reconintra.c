@@ -2528,11 +2528,15 @@ void av1_predict_intra_block_facade(MACROBLOCKD *xd, int plane, int block_idx,
 #if CONFIG_CFL
   if (plane != AOM_PLANE_Y && mbmi->uv_mode == DC_PRED) {
     if (plane == AOM_PLANE_U && blk_col == 0 && blk_row == 0) {
-      // Compute the block-level DC_PRED for both chromatic planes prior to
-      // processing the first chromatic plane in order to compute alpha_cb and
-      // alpha_cr. Note: This is not required on the decoder side because alpha
-      // is signaled.
-      cfl_dc_pred(xd, get_plane_block_size(block_idx, pd), tx_size);
+// Compute the block-level DC_PRED for both chromatic planes. DC_PRED replaces
+// beta in the linear model.
+#if CONFIG_CB4X4 && !CONFIG_CHROMA_2X2
+      const BLOCK_SIZE plane_bsize =
+          AOMMAX(BLOCK_4X4, get_plane_block_size(mbmi->sb_type, pd));
+#else
+      const BLOCK_SIZE plane_bsize = get_plane_block_size(mbmi->sb_type, pd);
+#endif
+      cfl_dc_pred(xd, plane_bsize);
     }
 
     cfl_predict_block(
