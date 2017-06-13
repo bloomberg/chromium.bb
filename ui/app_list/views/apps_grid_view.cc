@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "ui/app_list/app_list_constants.h"
+#include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_folder_item.h"
 #include "ui/app_list/app_list_item.h"
 #include "ui/app_list/app_list_switches.h"
@@ -20,7 +21,8 @@
 #include "ui/app_list/views/app_list_folder_view.h"
 #include "ui/app_list/views/app_list_item_view.h"
 #include "ui/app_list/views/apps_grid_view_delegate.h"
-#include "ui/app_list/views/page_switcher.h"
+#include "ui/app_list/views/page_switcher_horizontal.h"
+#include "ui/app_list/views/page_switcher_vertical.h"
 #include "ui/app_list/views/pulsing_block_view.h"
 #include "ui/app_list/views/top_icon_animation_view.h"
 #include "ui/aura/window.h"
@@ -229,9 +231,16 @@ AppsGridView::AppsGridView(AppsGridViewDelegate* delegate)
                                            kOverscrollPageTransitionDurationMs);
 
   pagination_model_.AddObserver(this);
-  pagination_controller_.reset(new PaginationController(
-      &pagination_model_, PaginationController::SCROLL_AXIS_HORIZONTAL));
-  page_switcher_view_ = new PageSwitcher(&pagination_model_);
+
+  if (features::IsFullscreenAppListEnabled()) {
+    page_switcher_view_ = new PageSwitcherVertical(&pagination_model_);
+    pagination_controller_.reset(new PaginationController(
+        &pagination_model_, PaginationController::SCROLL_AXIS_VERTICAL));
+  } else {
+    page_switcher_view_ = new PageSwitcherHorizontal(&pagination_model_);
+    pagination_controller_.reset(new PaginationController(
+        &pagination_model_, PaginationController::SCROLL_AXIS_HORIZONTAL));
+  }
   AddChildView(page_switcher_view_);
 }
 
@@ -630,11 +639,18 @@ bool AppsGridView::IsAnimatingView(AppListItemView* view) {
 
 gfx::Size AppsGridView::CalculatePreferredSize() const {
   const gfx::Insets insets(GetInsets());
-  // If we are in a folder, ignore the page switcher for height calculations.
-  int page_switcher_height =
-      folder_delegate_ ? 0 : page_switcher_view_->GetPreferredSize().height();
   gfx::Size size = GetTileGridSize();
-  size.Enlarge(insets.width(), insets.height() + page_switcher_height);
+  if (features::IsFullscreenAppListEnabled()) {
+    // If we are in a folder, ignore the page switcher for width calculations.
+    int page_switcher_width =
+        folder_delegate_ ? 0 : page_switcher_view_->GetPreferredSize().width();
+    size.Enlarge(insets.width() + page_switcher_width, insets.height());
+  } else {
+    // If we are in a folder, ignore the page switcher for height calculations.
+    int page_switcher_height =
+        folder_delegate_ ? 0 : page_switcher_view_->GetPreferredSize().height();
+    size.Enlarge(insets.width(), insets.height() + page_switcher_height);
+  }
   return size;
 }
 
@@ -666,11 +682,18 @@ void AppsGridView::Layout() {
   }
   views::ViewModelUtils::SetViewBoundsToIdealBounds(pulsing_blocks_model_);
 
-  const int page_switcher_height =
-      page_switcher_view_->GetPreferredSize().height();
   gfx::Rect rect(GetContentsBounds());
-  rect.set_y(rect.bottom() - page_switcher_height);
-  rect.set_height(page_switcher_height);
+  if (features::IsFullscreenAppListEnabled()) {
+    const int page_switcher_width =
+        page_switcher_view_->GetPreferredSize().width();
+    rect.set_x(rect.right() - page_switcher_width);
+    rect.set_width(page_switcher_width);
+  } else {
+    const int page_switcher_height =
+        page_switcher_view_->GetPreferredSize().height();
+    rect.set_y(rect.bottom() - page_switcher_height);
+    rect.set_height(page_switcher_height);
+  }
   page_switcher_view_->SetBoundsRect(rect);
 }
 
