@@ -1558,6 +1558,7 @@ enum class WebFeature : uint32_t {
   kBudgetAPIGetCost = 2021,
   kBudgetAPIGetBudget = 2022,
   kCrossOriginMainFrameNulledNonEmptyNameAccessed = 2023,
+  kDeprecatedTimingFunctionStepMiddle = 2024,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

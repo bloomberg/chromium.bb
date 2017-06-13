@@ -40,6 +40,7 @@
 #include "core/css/CSSValuePair.h"
 #include "core/css/resolver/StyleBuilderConverter.h"
 #include "core/css/resolver/StyleResolverState.h"
+#include "core/frame/Deprecation.h"
 #include "core/style/BorderImageLengthBox.h"
 #include "core/style/FillLayer.h"
 
@@ -408,7 +409,8 @@ CSSTransitionData::TransitionProperty CSSToStyleMap::MapAnimationProperty(
 
 PassRefPtr<TimingFunction> CSSToStyleMap::MapAnimationTimingFunction(
     const CSSValue& value,
-    bool allow_step_middle) {
+    bool allow_step_middle,
+    Document* document) {
   // FIXME: We should probably only call into this function with a valid
   // single timing function value which isn't initial or inherit. We can
   // currently get into here with initial since the parser expands unset
@@ -435,9 +437,15 @@ PassRefPtr<TimingFunction> CSSToStyleMap::MapAnimationTimingFunction(
         return StepsTimingFunction::Preset(
             StepsTimingFunction::StepPosition::START);
       case CSSValueStepMiddle:
-        if (allow_step_middle)
+        if (allow_step_middle) {
+          DCHECK(document);
+          if (document) {
+            Deprecation::CountDeprecation(
+                *document, WebFeature::kDeprecatedTimingFunctionStepMiddle);
+          }
           return StepsTimingFunction::Preset(
               StepsTimingFunction::StepPosition::MIDDLE);
+        }
         return CSSTimingData::InitialTimingFunction();
       case CSSValueStepEnd:
         return StepsTimingFunction::Preset(
@@ -469,9 +477,16 @@ PassRefPtr<TimingFunction> CSSToStyleMap::MapAnimationTimingFunction(
   const CSSStepsTimingFunctionValue& steps_timing_function =
       ToCSSStepsTimingFunctionValue(value);
   if (steps_timing_function.GetStepPosition() ==
-          StepsTimingFunction::StepPosition::MIDDLE &&
-      !allow_step_middle)
-    return CSSTimingData::InitialTimingFunction();
+      StepsTimingFunction::StepPosition::MIDDLE) {
+    if (!allow_step_middle) {
+      return CSSTimingData::InitialTimingFunction();
+    }
+    DCHECK(document);
+    if (document) {
+      Deprecation::CountDeprecation(
+          *document, WebFeature::kDeprecatedTimingFunctionStepMiddle);
+    }
+  }
   return StepsTimingFunction::Create(steps_timing_function.NumberOfSteps(),
                                      steps_timing_function.GetStepPosition());
 }

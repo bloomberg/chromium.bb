@@ -15450,6 +15450,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2021" label="BudgetAPIGetCost"/>
   <int value="2022" label="BudgetAPIGetBudget"/>
   <int value="2023" label="CrossOriginMainFrameNulledNonEmptyNameAccessed"/>
+  <int value="2024" label="DeprecatedTimingFunctionStepMiddle"/>
 </enum>
 
 <enum name="FeedbackSource" type="int">
