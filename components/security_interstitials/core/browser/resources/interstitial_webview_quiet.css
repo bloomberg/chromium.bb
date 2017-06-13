@@ -8,6 +8,9 @@ body {
 
 #details {
   box-sizing: border-box;
+  color: rgba(0, 0, 0, .54);
+  font-family: Roboto-Regular, sans-serif;
+  font-size: 0.93333em;
   height: auto;
   line-height: 1.48em;
   margin: 0;
@@ -25,17 +28,15 @@ body {
 }
 
 #details-link {
-  color: rgba(0,0,0,.38);
-  /* For V1, the details link is hidden. */
-  display: none;
+  color: rgba(0, 0, 0, .38);
   text-decoration: underline;
   text-transform: none;
 }
 
 h1 {
-  color: rgba(0,0,0,.38);
-  font-family: Roboto-Regular;
-  font-size: 1.037037em;
+  color: rgba(0, 0, 0, .38);
+  font-family: Roboto-Regular, sans-serif;
+  font-size: 0.93333em;
   font-weight: normal;
   line-height: 1.4em;
   margin: 8px 0 8px;
@@ -73,19 +74,17 @@ h1 {
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  font-size: 0.9em;
   height: 100vh;
   justify-content: center;
   line-height: 1.6em;
   margin: 0 auto;
-  max-width: 640px;
+  max-width: 480px;
   padding: 16px;
   width: 100%;
 }
 
 #main-content {
   align-self: auto;
-  color: rgba(0, 0, 0, .54);
   flex: 0 1 auto;
   text-align: center;
 }
@@ -101,6 +100,10 @@ h1 {
   .icon {
     max-height: 36px;
     max-width: 36px;
+  }
+
+  .interstitial-wrapper {
+    padding: 48px;
   }
 }
 

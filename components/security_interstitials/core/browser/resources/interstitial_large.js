@@ -56,7 +56,7 @@ function appendDebuggingField(title, value, fixedWidth) {
 }
 
 function toggleDebuggingInfo() {
-  $('error-debugging-info').classList.toggle('hidden');
+  $('error-debugging-info').classList.toggle(HIDDEN_CLASS);
 }
 
 function setupEvents() {
@@ -70,7 +70,7 @@ function setupEvents() {
   if (ssl) {
     $('body').classList.add(badClock ? 'bad-clock' : 'ssl');
     $('error-code').textContent = loadTimeData.getString('errorCode');
-    $('error-code').classList.remove('hidden');
+    $('error-code').classList.remove(HIDDEN_CLASS);
   } else if (captivePortal) {
     $('body').classList.add('captive-portal');
   } else {
@@ -80,7 +80,7 @@ function setupEvents() {
   $('icon').classList.add('icon');
 
   if (hidePrimaryButton) {
-    $('primary-button').classList.add('hidden');
+    $('primary-button').classList.add(HIDDEN_CLASS);
   } else {
     $('primary-button').addEventListener('click', function() {
       switch (interstitialType) {
@@ -113,7 +113,7 @@ function setupEvents() {
       sendCommand(SecurityInterstitialCommandId.CMD_PROCEED);
     });
   } else if (!ssl) {
-    $('final-paragraph').classList.add('hidden');
+    $('final-paragraph').classList.add(HIDDEN_CLASS);
   }
 
   if (ssl && overridable) {
@@ -137,13 +137,13 @@ function setupEvents() {
     $('details-button').classList.add('hidden');
   } else {
     $('details-button').addEventListener('click', function(event) {
-      var hiddenDetails = $('details').classList.toggle('hidden');
+      var hiddenDetails = $('details').classList.toggle(HIDDEN_CLASS);
 
       if (mobileNav) {
         // Details appear over the main content on small screens.
-        $('main-content').classList.toggle('hidden', !hiddenDetails);
+        $('main-content').classList.toggle(HIDDEN_CLASS, !hiddenDetails);
       } else {
-        $('main-content').classList.remove('hidden');
+        $('main-content').classList.remove(HIDDEN_CLASS);
       }
 
       $('details-button').innerText = hiddenDetails ?
@@ -163,15 +163,7 @@ function setupEvents() {
     });
   }
 
-  document.addEventListener('click', function(e) {
-    var anchor = findAncestor(/** @type {Node} */ (e.target), function(el) {
-      return el.tagName == 'A';
-    });
-    // Use getAttribute() to prevent URL normalization.
-    if (anchor && anchor.getAttribute('href') == '#')
-      e.preventDefault();
-  });
-
+  preventDefaultOnPoundLinkClicks();
   setupExtendedReportingCheckbox();
   setupSSLDebuggingInfo();
   document.addEventListener('keypress', handleKeypress);
