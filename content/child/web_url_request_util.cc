@@ -218,10 +218,8 @@ int GetLoadFlagsForWebURLRequest(const blink::WebURLRequest& request) {
   if (!request.AllowStoredCredentials()) {
     load_flags |= net::LOAD_DO_NOT_SAVE_COOKIES;
     load_flags |= net::LOAD_DO_NOT_SEND_COOKIES;
-  }
-
-  if (!request.AllowStoredCredentials())
     load_flags |= net::LOAD_DO_NOT_SEND_AUTH_DATA;
+  }
 
   if (request.GetExtraData()) {
     RequestExtraData* extra_data =
