@@ -133,6 +133,7 @@ class GerritCL(object):
         return True
 
     def exportable_filename(self, filename):
+        """Returns True if the file could be exportable, or False otherwise."""
         filename = os.path.basename(filename.lower())
         return (
             not filename.endswith('-expected.txt')
@@ -175,7 +176,7 @@ class GerritCL(object):
             else:
                 in_exportable_diff = False
 
-        # Join into string, newline at end is required.
+        # Join into string; the newline at the end is required.
         if not filtered_patch[-1].strip():
             filtered_patch = filtered_patch[:-1]
         patch = '\n'.join(filtered_patch) + '\n'

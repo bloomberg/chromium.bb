@@ -5,19 +5,21 @@
 from webkitpy.w3c.chromium_finder import absolute_chromium_dir, absolute_chromium_wpt_dir
 from webkitpy.common.system.executive import ScriptError
 
+# TODO(qyearsley): Use PathFinder to get this path.
 CHROMIUM_WPT_DIR = 'third_party/WebKit/LayoutTests/external/wpt/'
 
 
 class ChromiumCommit(object):
 
     def __init__(self, host, sha=None, position=None):
-        """
+        """Initializes a ChomiumCommit object, given a sha or commit position.
+
         Args:
-            host: A Host object
-            sha: A Chromium commit SHA
-            position: A string of the form:
+            host: A Host object.
+            sha: A Chromium commit SHA hash.
+            position: A commit position footer string of the form:
                     'Cr-Commit-Position: refs/heads/master@{#431915}'
-                or just:
+                or just the commit position string:
                     'refs/heads/master@{#431915}'
         """
         self.host = host
@@ -46,6 +48,7 @@ class ChromiumCommit(object):
 
     def num_behind_master(self):
         """Returns the number of commits this commit is behind origin/master.
+
         It is inclusive of this commit and of the latest commit.
         """
         return len(self.host.executive.run_command([
@@ -63,7 +66,8 @@ class ChromiumCommit(object):
                 'git', 'footers', '--position', sha
             ], cwd=self.absolute_chromium_dir).strip()
         except ScriptError as e:
-            # Some commits don't have a position, e.g. when creating PRs for Gerrit CLs.
+            # Commits from Gerrit CLs that have not yet been committed in
+            # Chromium do not have a commit position.
             if 'Unable to infer commit position from footers' in e.message:
                 return 'no-commit-position-yet'
             else:
@@ -91,6 +95,7 @@ class ChromiumCommit(object):
         ], cwd=self.absolute_chromium_dir)
 
     def change_id(self):
+        """Returns the Change-Id footer if it is present."""
         return self.host.executive.run_command([
             'git', 'footers', '--key', 'Change-Id', self.sha
         ], cwd=self.absolute_chromium_dir).strip()
@@ -117,6 +122,7 @@ class ChromiumCommit(object):
 
     @staticmethod
     def is_baseline(basename):
+        """Checks whether a given file name in wpt appears to be a baseline."""
         # TODO(qyearsley): Find a better, centralized place for this.
         return basename.endswith('-expected.txt')
 
