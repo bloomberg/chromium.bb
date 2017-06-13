@@ -78,9 +78,13 @@ class TestImporter(object):
                 # If there are exportable commits, then there's no more work
                 # to do for now. This isn't really an error case; we expect
                 # to hit this case some of the time.
+
                 _log.info('There were exportable but not-yet-exported commits:')
                 for commit in commits:
-                    _log.info('  https://chromium.googlesource.com/chromium/src/+/%s', commit.sha)
+                    _log.info('Commit: %s', commit.url())
+                    _log.info('Modified files in wpt directory in this commit:')
+                    for path in commit.filtered_changed_files():
+                        _log.info('  %s', path)
                 _log.info('Aborting import to prevent clobbering these commits.')
                 self.clean_up_temp_repo(temp_repo_path)
                 return 0

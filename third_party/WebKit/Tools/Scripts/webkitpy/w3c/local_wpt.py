@@ -130,8 +130,11 @@ class LocalWPT(object):
         except ScriptError:
             _log.warning('Patch did not apply cleanly, skipping.')
             if chromium_commit:
-                _log.warning('Commit details:\n%s\n%s', chromium_commit.sha,
-                             chromium_commit.subject())
+                _log.info('Commit: %s', chromium_commit.url())
+                _log.info('  Commit subject: "%s"', chromium_commit.subject())
+                _log.info('  Modified files in wpt directory in this commit:')
+                for path in chromium_commit.filtered_changed_files():
+                    _log.info('    %s', path)
             output = ''
 
         self.clean()
