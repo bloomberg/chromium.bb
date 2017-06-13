@@ -206,6 +206,7 @@ class CCParamTraitsTest : public testing::Test {
     EXPECT_EQ(a->a_plane_resource_id(), b->a_plane_resource_id());
     EXPECT_EQ(a->color_space, b->color_space);
     EXPECT_EQ(a->bits_per_channel, b->bits_per_channel);
+    EXPECT_EQ(a->require_overlay, b->require_overlay);
   }
 
   void Compare(const TransferableResource& a, const TransferableResource& b) {
@@ -420,7 +421,7 @@ TEST_F(CCParamTraitsTest, AllQuads) {
       arbitrary_rectf2, arbitrary_size1, arbitrary_size2, arbitrary_resourceid1,
       arbitrary_resourceid2, arbitrary_resourceid3, arbitrary_resourceid4,
       arbitrary_video_color_space, arbitrary_color_space, arbitrary_float1,
-      arbitrary_float2, arbitrary_int);
+      arbitrary_float2, arbitrary_int, arbitrary_bool2);
   pass_cmp->CopyFromAndAppendDrawQuad(yuvvideo_in,
                                       yuvvideo_in->shared_quad_state);
 

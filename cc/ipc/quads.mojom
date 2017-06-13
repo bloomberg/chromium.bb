@@ -104,6 +104,7 @@ struct YUVVideoQuadState {
   float resource_multiplier;
   uint32 bits_per_channel;
   gfx.mojom.ColorSpace video_color_space;
+  bool require_overlay;
 };
 
 union DrawQuadState {
