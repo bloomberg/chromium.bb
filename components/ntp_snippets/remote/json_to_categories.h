@@ -20,9 +20,9 @@ struct FetchedCategory {
   RemoteSuggestion::PtrVector suggestions;
 
   FetchedCategory(Category c, CategoryInfo&& info);
-  FetchedCategory(FetchedCategory&&);             // = default, in .cc
-  ~FetchedCategory();                             // = default, in .cc
-  FetchedCategory& operator=(FetchedCategory&&);  // = default, in .cc
+  FetchedCategory(FetchedCategory&&);
+  ~FetchedCategory();
+  FetchedCategory& operator=(FetchedCategory&&);
 };
 
 using FetchedCategoriesVector = std::vector<FetchedCategory>;
