@@ -23,7 +23,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "web/LinkHighlightImpl.h"
+#include "core/paint/LinkHighlightImpl.h"
 
 #include <memory>
 #include "core/dom/DOMNodeIds.h"
@@ -38,6 +38,7 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/paint/PaintLayer.h"
+#include "platform/LayoutTestSupport.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/animation/CompositorAnimation.h"
 #include "platform/animation/CompositorAnimationCurve.h"
@@ -321,13 +322,15 @@ void LinkHighlightImpl::StartHighlightAnimationIfNeeded() {
   float extra_duration_required = std::max(
       0.f, kMinPreFadeDuration -
                static_cast<float>(MonotonicallyIncreasingTime() - start_time_));
-  if (extra_duration_required)
+  if (extra_duration_required) {
     curve->AddKeyframe(CompositorFloatKeyframe(extra_duration_required,
                                                kStartOpacity, timing_function));
+  }
   // For layout tests we don't fade out.
   curve->AddKeyframe(CompositorFloatKeyframe(
       kFadeDuration + extra_duration_required,
-      LayoutTestMode() ? kStartOpacity : 0, timing_function));
+      LayoutTestSupport::IsRunningLayoutTest() ? kStartOpacity : 0,
+      timing_function));
 
   std::unique_ptr<CompositorAnimation> animation = CompositorAnimation::Create(
       *curve, CompositorTargetProperty::OPACITY, 0, 0);

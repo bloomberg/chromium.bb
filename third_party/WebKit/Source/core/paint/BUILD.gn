@@ -90,6 +90,8 @@ blink_core_sources("paint") {
     "LayoutObjectDrawingRecorder.h",
     "LineBoxListPainter.cpp",
     "LineBoxListPainter.h",
+    "LinkHighlightImpl.cpp",
+    "LinkHighlightImpl.h",
     "ListItemPainter.cpp",
     "ListItemPainter.h",
     "ListMarkerPainter.cpp",

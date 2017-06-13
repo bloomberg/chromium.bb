@@ -13,5 +13,6 @@ include_rules = [
     "+public/web",
     "+services/service_manager/public/cpp",
     "+third_party/skia/include",
+    "+ui/gfx/geometry",
     "-web",
 ]

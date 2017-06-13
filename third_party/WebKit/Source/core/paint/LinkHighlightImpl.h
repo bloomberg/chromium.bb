@@ -27,6 +27,7 @@
 #define LinkHighlightImpl_h
 
 #include <memory>
+#include "core/CoreExport.h"
 #include "platform/animation/CompositorAnimationDelegate.h"
 #include "platform/animation/CompositorAnimationPlayer.h"
 #include "platform/animation/CompositorAnimationPlayerClient.h"
@@ -36,7 +37,6 @@
 #include "platform/wtf/Forward.h"
 #include "public/platform/WebContentLayer.h"
 #include "public/platform/WebContentLayerClient.h"
-#include "web/WebExport.h"
 
 namespace blink {
 
@@ -47,7 +47,7 @@ class WebContentLayer;
 class WebLayer;
 class WebViewBase;
 
-class WEB_EXPORT LinkHighlightImpl final
+class CORE_EXPORT LinkHighlightImpl final
     : public LinkHighlight,
       public WebContentLayerClient,
       public CompositorAnimationDelegate,
