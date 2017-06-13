@@ -419,7 +419,7 @@ enum HdcpVersion {
 };
 
 struct Policy {
-  Policy() : min_hdcp_version(kHdcpNone) {}
+  Policy() : min_hdcp_version(kHdcpVersionNone) {}
 
   HdcpVersion min_hdcp_version;
 };
