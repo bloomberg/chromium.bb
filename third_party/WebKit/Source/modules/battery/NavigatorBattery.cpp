@@ -4,10 +4,8 @@
 
 #include "modules/battery/NavigatorBattery.h"
 
-#include "core/dom/DOMException.h"
-#include "core/dom/Document.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/frame/LocalDOMWindow.h"
+#include "core/dom/ExecutionContext.h"
+#include "core/frame/LocalFrame.h"
 #include "modules/battery/BatteryManager.h"
 
 namespace blink {
@@ -21,26 +19,10 @@ ScriptPromise NavigatorBattery::getBattery(ScriptState* script_state,
 }
 
 ScriptPromise NavigatorBattery::getBattery(ScriptState* script_state) {
-  ExecutionContext* execution_context = ExecutionContext::From(script_state);
-
-  // Check secure context.
-  String error_message;
-  if (!execution_context->IsSecureContext(error_message)) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(kSecurityError, error_message));
+  if (!battery_manager_) {
+    battery_manager_ =
+        BatteryManager::Create(ExecutionContext::From(script_state));
   }
-
-  // Check top-level browsing context.
-  if (!ToDocument(execution_context)->domWindow()->GetFrame() ||
-      !ToDocument(execution_context)->GetFrame()->IsMainFrame()) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state, DOMException::Create(
-                          kSecurityError, "Not a top-level browsing context."));
-  }
-
-  if (!battery_manager_)
-    battery_manager_ = BatteryManager::Create(execution_context);
-
   return battery_manager_->StartRequest(script_state);
 }
 

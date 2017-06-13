@@ -18,15 +18,8 @@ function processMessage(event) {
         w.close();
         w = null;
     } else if (event.data == "closed") {
-      nav.getBattery().then(battery => {
-        assert_unreachable('getBattery should reject on a closed window');
-      })
-      .catch(error => {
-        // DOMException.SECURITY_ERR = 18.
-        debug('Error Code is ' + error.code);
-        assert_equals(error.code, DOMException.SECURITY_ERR);
-      });
-      setTimeout(finishJSTest, 0);
+        shouldBeUndefined("nav.getBattery()");
+        finishJSTest();
     }
 }
 
