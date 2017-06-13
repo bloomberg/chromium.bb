@@ -40,6 +40,7 @@
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/paint/FloatClipRecorder.h"
+#include "core/paint/PaintLayer.h"
 #include "core/paint/TransformRecorder.h"
 #include "core/style/ComputedStyle.h"
 #include "core/svg/SVGDocumentExtensions.h"
@@ -605,17 +606,26 @@ void SVGImage::ServiceAnimations(double monotonic_animation_start_time) {
   LocalFrameView* frame_view = ToLocalFrame(page_->MainFrame())->View();
   frame_view->UpdateAllLifecyclePhasesExceptPaint();
 
-  // For SPv2 we run updateAnimations after the paint phase, but per above
-  // comment we don't want to run lifecycle through to paint for SVG images.
-  // Since we know SVG images never have composited animations we can update
-  // animations directly without worrying about including
-  // PaintArtifactCompositor analysis of whether animations should be
-  // composited.
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    // For SPv2 we run UpdateAnimations after the paint phase, but per above
+    // comment we don't want to run lifecycle through to paint for SVG images.
+    // Since we know SVG images never have composited animations we can update
+    // animations directly without worrying about including
+    // PaintArtifactCompositor analysis of whether animations should be
+    // composited.
     Optional<CompositorElementIdSet> composited_element_ids;
     DocumentAnimations::UpdateAnimations(
         frame_view->GetLayoutView()->GetDocument(),
         DocumentLifecycle::kLayoutClean, composited_element_ids);
+
+    // Notify observers for image change. In SPv1 this is done through window
+    // rect invalidation during paint invalidation of the SVGImage's frame view.
+    auto* layer = frame_view->GetLayoutView()->Layer();
+    if (layer->NeedsRepaint()) {
+      if (auto* observer = GetImageObserver())
+        observer->ChangedInRect(this, Rect());
+      layer->ClearNeedsRepaintRecursively();
+    }
   }
 }
 

@@ -272,7 +272,7 @@ void LayoutBoxModelObject::StyleWillChange(StyleDifference diff,
   // PaintLayerCompositor::paintInvalidationOnCompositingChange() doesn't work
   // for the case because we can only see the new paintInvalidationContainer
   // during compositing update.
-  if (Style() &&
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() && Style() &&
       Style()->IsStackingContext() != new_style.IsStackingContext() &&
       // InvalidatePaintIncludingNonCompositingDescendants() requires this.
       IsRooted()) {
@@ -403,7 +403,8 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
   // gets the same layout after changing position property, although no
   // re-raster (rect-based invalidation) is needed, display items should
   // still update their paint offset.
-  if (old_style) {
+  // For SPv2, invalidation for paint offset change is done during PrePaint.
+  if (old_style && !RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     bool new_style_is_fixed_position =
         Style()->GetPosition() == EPosition::kFixed;
     bool old_style_is_fixed_position =

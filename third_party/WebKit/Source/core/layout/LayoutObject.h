@@ -2174,9 +2174,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   inline void InvalidateContainerPreferredLogicalWidths();
 
-  void InvalidatePaintIncludingNonSelfPaintingLayerDescendantsInternal(
-      const LayoutBoxModelObject& paint_invalidation_container);
-
   LayoutObject* ContainerForAbsolutePosition(AncestorSkipInfo* = nullptr) const;
 
   const LayoutBoxModelObject* EnclosingCompositedContainer() const;

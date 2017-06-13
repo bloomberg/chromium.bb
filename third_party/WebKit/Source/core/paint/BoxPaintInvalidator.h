@@ -39,7 +39,7 @@ class CORE_EXPORT BoxPaintInvalidator {
 
   PaintInvalidationReason ComputePaintInvalidationReason();
 
-  bool IncrementallyInvalidatePaint(PaintInvalidationReason,
+  void IncrementallyInvalidatePaint(PaintInvalidationReason,
                                     const LayoutRect& old_rect,
                                     const LayoutRect& new_rect);
 

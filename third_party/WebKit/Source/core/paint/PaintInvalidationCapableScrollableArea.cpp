@@ -69,15 +69,23 @@ static bool InvalidatePaintOfScrollControlIfNeeded(
     const LayoutBoxModelObject& paint_invalidation_container) {
   bool should_invalidate_new_rect = needs_paint_invalidation;
   if (new_visual_rect != previous_visual_rect) {
-    ObjectPaintInvalidator(box).InvalidatePaintUsingContainer(
-        paint_invalidation_container, previous_visual_rect,
-        PaintInvalidationReason::kScrollControl);
+    // TODO(crbug.com/732612)): Implement partial raster invalidation for scroll
+    // controls.
+    if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+      ObjectPaintInvalidator(box).InvalidatePaintUsingContainer(
+          paint_invalidation_container, previous_visual_rect,
+          PaintInvalidationReason::kScrollControl);
+    }
     should_invalidate_new_rect = true;
   }
   if (should_invalidate_new_rect) {
-    ObjectPaintInvalidator(box).InvalidatePaintUsingContainer(
-        paint_invalidation_container, new_visual_rect,
-        PaintInvalidationReason::kScrollControl);
+    // TODO(crbug.com/732612): Implement partial raster invalidation for scroll
+    // controls.
+    if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+      ObjectPaintInvalidator(box).InvalidatePaintUsingContainer(
+          paint_invalidation_container, new_visual_rect,
+          PaintInvalidationReason::kScrollControl);
+    }
     return true;
   }
   return false;
