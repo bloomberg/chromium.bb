@@ -372,7 +372,7 @@ TEST_F(RendererImplTest, Destroy_PendingInitializeAfterSetCdm) {
 
   // SetCdm() will trigger the initialization to start. But it will not complete
   // because the |video_renderer_| is not returning the initialization callback.
-  SetCdmAndExpect(false);
+  SetCdmAndExpect(true);
   EXPECT_EQ(PIPELINE_OK, initialization_status_);
 
   Destroy();
@@ -455,7 +455,7 @@ TEST_F(RendererImplTest, SetCdmAfterInitialize_EncryptedStream_Failure) {
   // Initialization is pending until CDM is set.
   EXPECT_EQ(PIPELINE_OK, initialization_status_);
 
-  SetCdmAndExpect(false);
+  SetCdmAndExpect(true);
   EXPECT_EQ(PIPELINE_ERROR_INITIALIZATION_FAILED, initialization_status_);
 }
 

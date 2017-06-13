@@ -167,17 +167,13 @@ void RendererImpl::SetCdm(CdmContext* cdm_context,
   }
 
   cdm_context_ = cdm_context;
+  cdm_attached_cb.Run(true);
 
-  if (state_ != STATE_INIT_PENDING_CDM) {
-    cdm_attached_cb.Run(true);
+  if (state_ != STATE_INIT_PENDING_CDM)
     return;
-  }
 
   DCHECK(!init_cb_.is_null());
   state_ = STATE_INITIALIZING;
-  // |cdm_attached_cb| will be fired after initialization finishes.
-  pending_cdm_attached_cb_ = cdm_attached_cb;
-
   InitializeAudioRenderer();
 }
 
@@ -334,10 +330,6 @@ bool RendererImpl::HasEncryptedStream() {
 
 void RendererImpl::FinishInitialization(PipelineStatus status) {
   DCHECK(!init_cb_.is_null());
-
-  if (!pending_cdm_attached_cb_.is_null())
-    base::ResetAndReturn(&pending_cdm_attached_cb_).Run(status == PIPELINE_OK);
-
   base::ResetAndReturn(&init_cb_).Run(status);
 }
 

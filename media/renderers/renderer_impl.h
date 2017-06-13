@@ -214,7 +214,6 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
   bool video_ended_;
 
   CdmContext* cdm_context_;
-  CdmAttachedCB pending_cdm_attached_cb_;
 
   bool underflow_disabled_for_testing_;
   bool clockless_video_playback_enabled_for_testing_;
