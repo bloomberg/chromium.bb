@@ -38,7 +38,7 @@ import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.content.browser.accessibility.BrowserAccessibilityManager;
+import org.chromium.content.browser.accessibility.WebContentsAccessibility;
 import org.chromium.content.browser.accessibility.captioning.CaptioningBridgeFactory;
 import org.chromium.content.browser.accessibility.captioning.SystemCaptioningBridge;
 import org.chromium.content.browser.accessibility.captioning.TextTrackSettings;
@@ -239,11 +239,8 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     // Whether native accessibility, i.e. without any script injection, is allowed.
     private boolean mNativeAccessibilityAllowed;
 
-    // Whether native accessibility, i.e. without any script injection, has been enabled.
-    private boolean mNativeAccessibilityEnabled;
-
     // Handles native accessibility, i.e. without any script injection.
-    private BrowserAccessibilityManager mBrowserAccessibilityManager;
+    private WebContentsAccessibility mWebContentsAccessibility;
 
     // System accessibility service.
     private final AccessibilityManager mAccessibilityManager;
@@ -1254,8 +1251,8 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
 
         MotionEvent offset = createOffsetMotionEvent(event);
         try {
-            if (mBrowserAccessibilityManager != null && !mIsObscuredByAnotherView
-                    && mBrowserAccessibilityManager.onHoverEvent(offset)) {
+            if (mWebContentsAccessibility != null && !mIsObscuredByAnotherView
+                    && mWebContentsAccessibility.onHoverEvent(offset)) {
                 return true;
             }
 
@@ -1568,10 +1565,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
                 mGestureStateListenersIterator.next().onScaleLimitsChanged(
                         minPageScaleFactor, maxPageScaleFactor);
             }
-        }
-
-        if (mBrowserAccessibilityManager != null) {
-            mBrowserAccessibilityManager.notifyFrameInfoInitialized();
         }
 
         TraceEvent.end("ContentViewCore:updateFrameInfo");
@@ -1913,7 +1906,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
      * @return Whether or not this action is supported.
      */
     public boolean supportsAccessibilityAction(int action) {
-        // TODO(dmazzoni): implement this in BrowserAccessibilityManager.
+        // TODO(dmazzoni): implement this in WebContentsAccessibility.
         return false;
     }
 
@@ -1928,34 +1921,18 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
      *         the super {@link View} class.
      */
     public boolean performAccessibilityAction(int action, Bundle arguments) {
-        // TODO(dmazzoni): implement this in BrowserAccessibilityManager.
+        // TODO(dmazzoni): implement this in WebContentsAccessibility.
         return false;
     }
 
     /**
-     * Set the BrowserAccessibilityManager, used for native accessibility
-     * (not script injection). This is only set when system accessibility
-     * has been enabled.
-     * @param manager The new BrowserAccessibilityManager.
-     */
-    public void setBrowserAccessibilityManager(BrowserAccessibilityManager manager) {
-        mBrowserAccessibilityManager = manager;
-
-        if (mBrowserAccessibilityManager != null && mRenderCoordinates.hasFrameInfo()) {
-            mBrowserAccessibilityManager.notifyFrameInfoInitialized();
-        }
-
-        if (mBrowserAccessibilityManager == null) mNativeAccessibilityEnabled = false;
-    }
-
-    /**
-     * Get the BrowserAccessibilityManager, used for native accessibility
+     * Get the WebContentsAccessibility, used for native accessibility
      * (not script injection). This will return null when system accessibility
      * is not enabled.
-     * @return This view's BrowserAccessibilityManager.
+     * @return This view's WebContentsAccessibility.
      */
-    public BrowserAccessibilityManager getBrowserAccessibilityManager() {
-        return mBrowserAccessibilityManager;
+    public WebContentsAccessibility getWebContentsAccessibility() {
+        return mWebContentsAccessibility;
     }
 
     /**
@@ -1968,16 +1945,16 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     public AccessibilityNodeProvider getAccessibilityNodeProvider() {
         if (mIsObscuredByAnotherView) return null;
 
-        if (mBrowserAccessibilityManager != null) {
-            return mBrowserAccessibilityManager.getAccessibilityNodeProvider();
+        if (mWebContentsAccessibility != null) {
+            if (mWebContentsAccessibility.isEnabled()) {
+                return mWebContentsAccessibility.getAccessibilityNodeProvider();
+            }
+            mWebContentsAccessibility.enable();
+        } else if (mNativeAccessibilityAllowed) {
+            mWebContentsAccessibility = WebContentsAccessibility.create(mContext, mContainerView,
+                    mWebContents, mRenderCoordinates, mShouldSetAccessibilityFocusOnPageLoad);
+            mWebContentsAccessibility.enable();
         }
-
-        if (mNativeAccessibilityAllowed && !mNativeAccessibilityEnabled
-                && mNativeContentViewCore != 0) {
-            mNativeAccessibilityEnabled = true;
-            nativeSetAccessibilityEnabled(mNativeContentViewCore, true);
-        }
-
         return null;
     }
 
@@ -2108,13 +2085,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
             mNativeAccessibilityAllowed = true;
             mTouchExplorationEnabled = mAccessibilityManager.isTouchExplorationEnabled();
         }
-    }
-
-    /**
-     * Return whether or not we should set accessibility focus on page load.
-     */
-    public boolean shouldSetAccessibilityFocusOnPageLoad() {
-        return mShouldSetAccessibilityFocusOnPageLoad;
     }
 
     /**
@@ -2355,9 +2325,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
             String name);
 
     private native void nativeWasResized(long nativeContentViewCoreImpl);
-
-    private native void nativeSetAccessibilityEnabled(
-            long nativeContentViewCoreImpl, boolean enabled);
 
     private native void nativeSetTextTrackSettings(long nativeContentViewCoreImpl,
             boolean textTracksEnabled, String textTrackBackgroundColor, String textTrackFontFamily,

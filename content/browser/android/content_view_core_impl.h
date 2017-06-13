@@ -199,10 +199,6 @@ class ContentViewCoreImpl : public ContentViewCore,
       const base::android::JavaParamRef<jstring>& name);
   void WasResized(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
 
-  void SetAccessibilityEnabled(JNIEnv* env,
-                               const base::android::JavaParamRef<jobject>& obj,
-                               bool enabled);
-
   void SetTextTrackSettings(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
@@ -278,8 +274,6 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   // Returns the viewport size after accounting for the viewport offset.
   gfx::Size GetViewSize() const;
-
-  void SetAccessibilityEnabledInternal(bool enabled);
 
   bool IsFullscreenRequiredForOrientationLock() const;
 
@@ -367,8 +361,6 @@ class ContentViewCoreImpl : public ContentViewCore,
   // The cache of device's current orientation set from Java side, this value
   // will be sent to Renderer once it is ready.
   int device_orientation_;
-
-  bool accessibility_enabled_;
 
   // Manages injecting Java objects.
   scoped_refptr<GinJavaBridgeDispatcherHost> java_bridge_dispatcher_host_;

@@ -40,6 +40,7 @@ RenderWidgetHostViewBase::RenderWidgetHostViewBase()
       text_input_manager_(nullptr),
       wheel_scroll_latching_enabled_(base::FeatureList::IsEnabled(
           features::kTouchpadAndWheelScrollLatching)),
+      web_contents_accessibility_(nullptr),
       renderer_frame_number_(0),
       weak_factory_(this) {}
 

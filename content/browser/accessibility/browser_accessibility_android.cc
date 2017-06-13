@@ -17,6 +17,11 @@
 #include "ui/accessibility/platform/ax_android_constants.h"
 #include "ui/accessibility/platform/ax_snapshot_node_android_platform.h"
 
+namespace aria_strings {
+const char kAriaLivePolite[] = "polite";
+const char kAriaLiveAssertive[] = "assertive";
+}
+
 namespace {
 
 // These are enums from android.text.InputType in Java:

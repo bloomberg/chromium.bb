@@ -1,4 +1,4 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,32 +13,35 @@ import android.os.Build;
 import android.text.SpannableString;
 import android.text.style.LocaleSpan;
 import android.util.SparseArray;
+import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityNodeInfo.AccessibilityAction;
 
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content.browser.RenderCoordinates;
+import org.chromium.content_public.browser.WebContents;
 
 import java.util.Locale;
 
 /**
- * Subclass of BrowserAccessibilityManager for Lollipop.
+ * Subclass of WebContentsAccessibility for Lollipop.
  */
 @JNINamespace("content")
 @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-public class LollipopBrowserAccessibilityManager extends KitKatBrowserAccessibilityManager {
+public class LollipopWebContentsAccessibility extends KitKatWebContentsAccessibility {
     private static SparseArray<AccessibilityAction> sAccessibilityActionMap =
             new SparseArray<AccessibilityAction>();
     private String mSystemLanguageTag;
 
-    LollipopBrowserAccessibilityManager(long nativeBrowserAccessibilityManagerAndroid,
-            ContentViewCore contentViewCore) {
-        super(nativeBrowserAccessibilityManagerAndroid, contentViewCore);
+    LollipopWebContentsAccessibility(Context context, ViewGroup containerView,
+            WebContents webContents, RenderCoordinates renderCoordinates,
+            boolean shouldFocusOnPageLoad) {
+        super(context, containerView, webContents, renderCoordinates, shouldFocusOnPageLoad);
 
         // Cache the system language and set up a listener for when it changes.
         IntentFilter filter = new IntentFilter(Intent.ACTION_LOCALE_CHANGED);
-        mContentViewCore.getContext().registerReceiver(new BroadcastReceiver() {
+        context.registerReceiver(new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 mSystemLanguageTag = Locale.getDefault().toLanguageTag();
@@ -49,12 +52,8 @@ public class LollipopBrowserAccessibilityManager extends KitKatBrowserAccessibil
 
     @Override
     protected void setAccessibilityNodeInfoLollipopAttributes(AccessibilityNodeInfo node,
-            boolean canOpenPopup,
-            boolean contentInvalid,
-            boolean dismissable,
-            boolean multiLine,
-            int inputType,
-            int liveRegion) {
+            boolean canOpenPopup, boolean contentInvalid, boolean dismissable, boolean multiLine,
+            int inputType, int liveRegion) {
         node.setCanOpenPopup(canOpenPopup);
         node.setContentInvalid(contentInvalid);
         node.setDismissable(contentInvalid);
@@ -64,10 +63,10 @@ public class LollipopBrowserAccessibilityManager extends KitKatBrowserAccessibil
     }
 
     @Override
-    protected void setAccessibilityNodeInfoCollectionInfo(AccessibilityNodeInfo node,
-            int rowCount, int columnCount, boolean hierarchical) {
-        node.setCollectionInfo(AccessibilityNodeInfo.CollectionInfo.obtain(
-                rowCount, columnCount, hierarchical));
+    protected void setAccessibilityNodeInfoCollectionInfo(
+            AccessibilityNodeInfo node, int rowCount, int columnCount, boolean hierarchical) {
+        node.setCollectionInfo(
+                AccessibilityNodeInfo.CollectionInfo.obtain(rowCount, columnCount, hierarchical));
     }
 
     @Override
@@ -78,10 +77,9 @@ public class LollipopBrowserAccessibilityManager extends KitKatBrowserAccessibil
     }
 
     @Override
-    protected void setAccessibilityNodeInfoRangeInfo(AccessibilityNodeInfo node,
-            int rangeType, float min, float max, float current) {
-        node.setRangeInfo(AccessibilityNodeInfo.RangeInfo.obtain(
-                rangeType, min, max, current));
+    protected void setAccessibilityNodeInfoRangeInfo(
+            AccessibilityNodeInfo node, int rangeType, float min, float max, float current) {
+        node.setRangeInfo(AccessibilityNodeInfo.RangeInfo.obtain(rangeType, min, max, current));
     }
 
     @Override
@@ -92,40 +90,35 @@ public class LollipopBrowserAccessibilityManager extends KitKatBrowserAccessibil
 
     @Override
     protected void setAccessibilityEventLollipopAttributes(AccessibilityEvent event,
-            boolean canOpenPopup,
-            boolean contentInvalid,
-            boolean dismissable,
-            boolean multiLine,
-            int inputType,
-            int liveRegion) {
+            boolean canOpenPopup, boolean contentInvalid, boolean dismissable, boolean multiLine,
+            int inputType, int liveRegion) {
         // This is just a fallback for pre-Lollipop systems.
         // Do nothing on Lollipop and higher.
     }
 
     @Override
-    protected void setAccessibilityEventCollectionInfo(AccessibilityEvent event,
-            int rowCount, int columnCount, boolean hierarchical) {
+    protected void setAccessibilityEventCollectionInfo(
+            AccessibilityEvent event, int rowCount, int columnCount, boolean hierarchical) {
         // This is just a fallback for pre-Lollipop systems.
         // Do nothing on Lollipop and higher.
     }
 
     @Override
-    protected void setAccessibilityEventHeadingFlag(AccessibilityEvent event,
-            boolean heading) {
+    protected void setAccessibilityEventHeadingFlag(AccessibilityEvent event, boolean heading) {
         // This is just a fallback for pre-Lollipop systems.
         // Do nothing on Lollipop and higher.
     }
 
     @Override
-    protected void setAccessibilityEventCollectionItemInfo(AccessibilityEvent event,
-            int rowIndex, int rowSpan, int columnIndex, int columnSpan) {
+    protected void setAccessibilityEventCollectionItemInfo(
+            AccessibilityEvent event, int rowIndex, int rowSpan, int columnIndex, int columnSpan) {
         // This is just a fallback for pre-Lollipop systems.
         // Do nothing on Lollipop and higher.
     }
 
     @Override
-    protected void setAccessibilityEventRangeInfo(AccessibilityEvent event,
-            int rangeType, float min, float max, float current) {
+    protected void setAccessibilityEventRangeInfo(
+            AccessibilityEvent event, int rangeType, float min, float max, float current) {
         // This is just a fallback for pre-Lollipop systems.
         // Do nothing on Lollipop and higher.
     }
