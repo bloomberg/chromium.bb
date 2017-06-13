@@ -7,8 +7,6 @@
  * Note bindings are not generated for experimental commands and events, if you
  * need to use one of those you must use the
  * <code>chromium.DevTools.Connection</code> class directly.
- *
- * TODO(alexclarke): Consider generating bindings for experimental stuff too.
  */
 'use strict';
 
@@ -22,6 +20,74 @@ goog.forwardDeclare('chromium.DevTools.{{forward_declaration}}');
 {% endfor %}
 
 /**
+ * Experimental bindings for the {{domain.domain}} DevTools Domain.  Note these
+ * are subject to change without warning. Use at your own risk.
+ */
+class Experimental{{domain.domain}} {
+  /**
+   * @param {!Connection} connection The DevTools connection.
+   */
+  constructor(connection) {
+    /** @private {!Connection} */
+    this.connection_ = connection;
+  };
+
+  /**
+   * Removes an event listener.
+   *
+   * @param {number} id The id of the event listener to remove.
+   * @return {boolean} Whether the event listener was actually removed.
+   */
+  removeEventListener(id) {
+    return this.connection_.removeEventListener(id);
+  }
+
+{# Generate all commands. #}
+{% for command in domain.commands %}
+  {% set method_name = command.name | sanitize_literal %}
+  {% set title_case_method_name = method_name | to_title_case %}
+  {% if command.parameters|length > 0 %}
+    {% set param_name = 'params' %}
+    {% set param_type = '{' + domain.domain + '.' + title_case_method_name + 'Params}' %}
+  {% else %}
+    {% set param_name = 'opt_params' %}
+    {% set param_type = '{' + domain.domain + '.' + title_case_method_name + 'Params=}' %}
+  {% endif %}
+  {% set result_type = '{!Promise<' + domain.domain + '.' + title_case_method_name + 'Result>}' %}
+
+  /**
+    {% if command.description %}
+    * {{ command.description }}
+    {% endif %}
+    * @param {{param_type}} {{param_name}}
+    * @return {{result_type}}
+    */
+  {{method_name}}({{param_name}}) {
+    return /** @type {{result_type}} **/(
+        this.connection_.sendDevToolsMessage(
+            '{{domain.domain}}.{{command.name}}', {{param_name}}));
+  }
+{% endfor %}
+
+{# Generate all events. #}
+{% for event in domain.events %}
+  {% set param_type = '{!function(!' + domain.domain + '.' + event.name | to_title_case + 'Params)}' %}
+
+  /**
+    {% if event.description %}
+    * {{ event.description }}
+    {% endif %}
+    * @param {{param_type}} listener
+    * @return {number} The id of this event listener.
+    */
+  on{{event.name | to_title_case}}(listener) {
+    return this.connection_.addEventListener(
+        '{{domain.domain}}.{{event.name}}', /** @type {!function(!Object): undefined} */ (listener));
+  }
+{% endfor %}
+}
+
+/**
  * Bindings for the {{domain.domain}} DevTools Domain.
  */
 class {{domain.domain}} {
@@ -31,31 +97,46 @@ class {{domain.domain}} {
   constructor(connection) {
     /** @private {!Connection} */
     this.connection_ = connection;
+
+    /** @type {!Experimental{{domain.domain}}} */
+    this.experimental = new Experimental{{domain.domain}}(connection);
   };
+
+  /**
+   * Removes an event listener.
+   *
+   * @param {number} id The id of the event listener to remove.
+   * @return {boolean} Whether the event listener was actually removed.
+   */
+  removeEventListener(id) {
+    return this.connection_.removeEventListener(id);
+  }
+
 {# Generate non-experimental commands. #}
 {% for command in domain.commands %}
   {% if command.experimental %}{% continue %}{% endif %}
-  {% set method_name = command.name | sanitize_literal | to_title_case %}
+  {% set method_name = command.name | sanitize_literal %}
+  {% set title_case_method_name = method_name | to_title_case %}
   {% if command.parameters|length > 0 %}
     {% set param_name = 'params' %}
-    {% set param_type = '{' + domain.domain + '.' + method_name + 'Params}' %}
+    {% set param_type = '{' + domain.domain + '.' + title_case_method_name + 'Params}' %}
   {% else %}
     {% set param_name = 'opt_params' %}
-    {% set param_type = '{' + domain.domain + '.' + method_name + 'Params=}' %}
+    {% set param_type = '{' + domain.domain + '.' + title_case_method_name + 'Params=}' %}
   {% endif %}
-  {% set result_type = '{!Promise<' + domain.domain + '.' + method_name + 'Result>}' %}
+  {% set result_type = '{!Promise<' + domain.domain + '.' + title_case_method_name + 'Result>}' %}
 
   /**
     {% if command.description %}
     * {{ command.description }}
     {% endif %}
-    * @param {{param_type}} {{param_name}} 
+    * @param {{param_type}} {{param_name}}
     * @return {{result_type}}
     */
   {{method_name}}({{param_name}}) {
     return /** @type {{result_type}} **/(
-        this.connection_.sendDevToolsMessage('{{domain.domain}}.{{command.name}}',
-                                             {{param_name}}));
+        this.connection_.sendDevToolsMessage(
+            '{{domain.domain}}.{{command.name}}', {{param_name}}));
   }
 {% endfor %}
 
@@ -69,9 +150,10 @@ class {{domain.domain}} {
     * {{ event.description }}
     {% endif %}
     * @param {{param_type}} listener
+    * @return {number} The id of this event listener.
     */
-  On{{event.name | to_title_case}}(listener) {
-    this.connection_.addEventListener(
+  on{{event.name | to_title_case}}(listener) {
+    return this.connection_.addEventListener(
         '{{domain.domain}}.{{event.name}}', /** @type {!function(!Object): undefined} */ (listener));
   }
 {% endfor %}
@@ -113,11 +195,9 @@ class {{domain.domain}} {
  * @typedef {{ '{{' }}
   {% for property in type.properties %}
     {% if property.optional %}
- *   {{property.name}}: ({{ short_form(resolve_type(property).js_type) }}|undefined){% if not loop.last %},{% endif %}
- 
+ *   {{property.name}}: ({{ short_form(resolve_type(property).js_type) }}|undefined){{',' if not loop.last}}
     {% else %}
- *   {{property.name}}: {{ short_form(resolve_type(property).js_type) }}{% if not loop.last %}, {% endif %}
-
+ *   {{property.name}}: {{ short_form(resolve_type(property).js_type) }}{{',' if not loop.last}}
     {% endif %}
   {% endfor %}
  * {{ '}}' }}
