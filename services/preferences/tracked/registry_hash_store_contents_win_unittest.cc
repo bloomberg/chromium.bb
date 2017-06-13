@@ -4,13 +4,9 @@
 
 #include "services/preferences/tracked/registry_hash_store_contents_win.h"
 
-#include "base/bind.h"
-#include "base/files/scoped_temp_dir.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_reg_util_win.h"
-#include "base/threading/thread.h"
 #include "base/values.h"
 #include "base/win/registry.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,8 +33,7 @@ class RegistryHashStoreContentsWinTest : public testing::Test {
     ASSERT_NO_FATAL_FAILURE(
         registry_override_manager_.OverrideRegistry(HKEY_CURRENT_USER));
 
-    contents.reset(
-        new RegistryHashStoreContentsWin(kRegistryPath, kStoreKey, nullptr));
+    contents.reset(new RegistryHashStoreContentsWin(kRegistryPath, kStoreKey));
   }
 
   std::unique_ptr<HashStoreContents> contents;
@@ -122,91 +117,4 @@ TEST_F(RegistryHashStoreContentsWinTest, TestReset) {
   split_macs.clear();
   EXPECT_FALSE(contents->GetSplitMacs(kSplitPrefPath, &split_macs));
   EXPECT_EQ(0U, split_macs.size());
-}
-
-TEST(RegistryHashStoreContentsWinScopedTest, TestScopedDirsCleared) {
-  std::string stored_mac;
-
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  const base::string16 registry_path =
-      temp_dir.GetPath().DirName().BaseName().LossyDisplayName();
-
-  RegistryHashStoreContentsWin verifying_contents(registry_path, kStoreKey,
-                                                  nullptr);
-
-  scoped_refptr<TempScopedDirRegistryCleaner> temp_scoped_dir_cleaner =
-      base::MakeRefCounted<TempScopedDirRegistryCleaner>();
-  std::unique_ptr<RegistryHashStoreContentsWin> contentsA =
-      base::MakeUnique<RegistryHashStoreContentsWin>(registry_path, kStoreKey,
-                                                     temp_scoped_dir_cleaner);
-  std::unique_ptr<RegistryHashStoreContentsWin> contentsB =
-      base::MakeUnique<RegistryHashStoreContentsWin>(registry_path, kStoreKey,
-                                                     temp_scoped_dir_cleaner);
-
-  contentsA->SetMac(kAtomicPrefPath, kTestStringA);
-  contentsB->SetMac(kAtomicPrefPath, kTestStringB);
-
-  temp_scoped_dir_cleaner = nullptr;
-  EXPECT_TRUE(verifying_contents.GetMac(kAtomicPrefPath, &stored_mac));
-  EXPECT_EQ(kTestStringB, stored_mac);
-
-  contentsB.reset();
-  EXPECT_TRUE(verifying_contents.GetMac(kAtomicPrefPath, &stored_mac));
-  EXPECT_EQ(kTestStringB, stored_mac);
-
-  contentsA.reset();
-  EXPECT_FALSE(verifying_contents.GetMac(kAtomicPrefPath, &stored_mac));
-}
-
-void OffThreadTempScopedDirDestructor(
-    base::string16 registry_path,
-    std::unique_ptr<HashStoreContents> contents) {
-  std::string stored_mac;
-
-  RegistryHashStoreContentsWin verifying_contents(registry_path, kStoreKey,
-                                                  nullptr);
-
-  contents->SetMac(kAtomicPrefPath, kTestStringB);
-  EXPECT_TRUE(verifying_contents.GetMac(kAtomicPrefPath, &stored_mac));
-  EXPECT_EQ(kTestStringB, stored_mac);
-
-  contents.reset();
-  EXPECT_FALSE(verifying_contents.GetMac(kAtomicPrefPath, &stored_mac));
-}
-
-TEST(RegistryHashStoreContentsWinScopedTest, TestScopedDirsClearedMultiThread) {
-  std::string stored_mac;
-
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  const base::string16 registry_path =
-      temp_dir.GetPath().DirName().BaseName().LossyDisplayName();
-
-  RegistryHashStoreContentsWin verifying_contents(registry_path, kStoreKey,
-                                                  nullptr);
-
-  base::Thread test_thread("scoped_dir_cleaner_test_thread");
-  test_thread.StartAndWaitForTesting();
-
-  scoped_refptr<TempScopedDirRegistryCleaner> temp_scoped_dir_cleaner =
-      base::MakeRefCounted<TempScopedDirRegistryCleaner>();
-  std::unique_ptr<RegistryHashStoreContentsWin> contents =
-      base::MakeUnique<RegistryHashStoreContentsWin>(
-          registry_path, kStoreKey, std::move(temp_scoped_dir_cleaner));
-  base::OnceClosure other_thread_closure =
-      base::BindOnce(&OffThreadTempScopedDirDestructor, registry_path,
-                     base::Passed(contents->MakeCopy()));
-
-  contents->SetMac(kAtomicPrefPath, kTestStringA);
-  contents.reset();
-
-  EXPECT_TRUE(verifying_contents.GetMac(kAtomicPrefPath, &stored_mac));
-  EXPECT_EQ(kTestStringA, stored_mac);
-
-  test_thread.task_runner()->PostTask(FROM_HERE,
-                                      std::move(other_thread_closure));
-  test_thread.FlushForTesting();
-
-  EXPECT_FALSE(verifying_contents.GetMac(kAtomicPrefPath, &stored_mac));
 }
