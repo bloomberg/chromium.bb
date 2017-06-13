@@ -983,6 +983,12 @@ IPC_MESSAGE_ROUTED2(FrameMsg_AdvanceFocus,
                     blink::WebFocusType /* type */,
                     int32_t /* source_routing_id */)
 
+// Tells the RenderFrame to advance the focus to next input node in the form by
+// moving in specified direction if the currently focused node is a Text node
+// (textfield, text area or content editable nodes).
+IPC_MESSAGE_ROUTED1(FrameMsg_AdvanceFocusInForm,
+                    blink::WebFocusType /* direction for advancing focus */)
+
 // Sent when the user wants to search for a word on the page (find-in-page).
 IPC_MESSAGE_ROUTED3(FrameMsg_Find,
                     int /* request_id */,

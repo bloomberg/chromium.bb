@@ -73,6 +73,7 @@ if (is_android) {
   java_cpp_enum("blink_headers_java_enums_srcjar") {
     sources = [
       "./platform/WebDisplayMode.h",
+      "./platform/WebFocusType.h",
       "./platform/WebInputEvent.h",
       "./platform/WebTextInputMode.h",
       "./platform/WebTextInputType.h",
