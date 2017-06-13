@@ -10,9 +10,11 @@
 #include "core/dom/Document.h"
 #include "core/exported/WebSharedWorkerImpl.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/offscreencanvas/OffscreenCanvas.h"
+#include "core/page/ChromeClient.h"
 #include "core/workers/WorkerContentSettingsClient.h"
 #include "modules/EventModulesFactory.h"
 #include "modules/EventModulesNames.h"
@@ -20,6 +22,8 @@
 #include "modules/IndexedDBNames.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 #include "modules/app_banner/AppBannerController.h"
+#include "modules/audio_output_devices/AudioOutputDeviceClient.h"
+#include "modules/audio_output_devices/AudioOutputDeviceClientImpl.h"
 #include "modules/canvas2d/CanvasRenderingContext2D.h"
 #include "modules/compositorworker/CompositorWorkerThread.h"
 #include "modules/csspaint/CSSPaintImageGeneratorImpl.h"
@@ -29,9 +33,18 @@
 #include "modules/imagebitmap/ImageBitmapRenderingContext.h"
 #include "modules/indexeddb/IndexedDBClientImpl.h"
 #include "modules/installation/InstallationServiceImpl.h"
+#include "modules/installedapp/InstalledAppController.h"
 #include "modules/media_controls/MediaControlsImpl.h"
+#include "modules/mediastream/UserMediaClientImpl.h"
+#include "modules/mediastream/UserMediaController.h"
+#include "modules/navigatorcontentutils/NavigatorContentUtils.h"
+#include "modules/navigatorcontentutils/NavigatorContentUtilsClientImpl.h"
 #include "modules/offscreencanvas2d/OffscreenCanvasRenderingContext2D.h"
+#include "modules/presentation/PresentationController.h"
+#include "modules/push_messaging/PushController.h"
+#include "modules/screen_orientation/ScreenOrientationControllerImpl.h"
 #include "modules/time_zone_monitor/TimeZoneMonitorClient.h"
+#include "modules/vr/VRController.h"
 #include "modules/webdatabase/DatabaseManager.h"
 #include "modules/webgl/WebGL2RenderingContext.h"
 #include "modules/webgl/WebGLRenderingContext.h"
@@ -100,6 +113,31 @@ void ModulesInitializer::Initialize() {
     // frame()->document().
     frame->GetInterfaceRegistry()->AddInterface(WTF::Bind(
         &AppBannerController::BindMojoRequest, WrapWeakPersistent(frame)));
+  });
+
+  // Supplements installed on a frame using ChromeClient
+  ChromeClient::RegisterSupplementInstallCallback([](LocalFrame& frame) {
+    WebLocalFrameBase* web_frame = WebLocalFrameBase::FromFrame(&frame);
+    WebFrameClient* client = web_frame->Client();
+    DCHECK(client);
+    ProvidePushControllerTo(frame, client->PushClient());
+    ProvideUserMediaTo(frame,
+                       UserMediaClientImpl::Create(client->UserMediaClient()));
+    ProvideIndexedDBClientTo(frame, IndexedDBClientImpl::Create(frame));
+    ProvideLocalFileSystemTo(frame, LocalFileSystemClient::Create());
+    NavigatorContentUtils::ProvideTo(
+        *frame.DomWindow()->navigator(),
+        NavigatorContentUtilsClientImpl::Create(web_frame));
+
+    ScreenOrientationControllerImpl::ProvideTo(
+        frame, client->GetWebScreenOrientationClient());
+    if (RuntimeEnabledFeatures::PresentationEnabled())
+      PresentationController::ProvideTo(frame, client->PresentationClient());
+    if (RuntimeEnabledFeatures::AudioOutputDevicesEnabled()) {
+      ProvideAudioOutputDeviceClientTo(frame,
+                                       new AudioOutputDeviceClientImpl(frame));
+    }
+    InstalledAppController::ProvideTo(frame, client->GetRelatedAppsFetcher());
   });
 
   // WebSharedWorkerImpl callbacks for modules initialization.

@@ -227,6 +227,8 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
 
   void SetCursorForPlugin(const WebCursorInfo&, LocalFrame*) override {}
 
+  void InstallSupplements(LocalFrame&) override {}
+
   std::unique_ptr<WebFrameScheduler> CreateFrameScheduler(
       BlameContext*) override;
 };

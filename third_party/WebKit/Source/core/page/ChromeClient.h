@@ -347,7 +347,11 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
   // any, and 0.0 otherwise.
   virtual double LastFrameTimeMonotonic() const { return 0.0; }
 
-  virtual void InstallSupplements(LocalFrame&) {}
+  using SupplementInstallCallback = void (*)(LocalFrame&);
+  // Allows for the registration of a callback that is used to install
+  // supplements on a specified LocalFrame.
+  static void RegisterSupplementInstallCallback(SupplementInstallCallback);
+  virtual void InstallSupplements(LocalFrame&);
 
   virtual WebLayerTreeView* GetWebLayerTreeView(LocalFrame*) { return nullptr; }
 
@@ -382,6 +386,9 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
                                             const String& default_value,
                                             String& result) = 0;
   virtual void PrintDelegate(LocalFrame*) = 0;
+
+ protected:
+  static SupplementInstallCallback supplement_install_callback_;
 
  private:
   bool CanOpenModalIfDuringPageDismissal(Frame& main_frame,
