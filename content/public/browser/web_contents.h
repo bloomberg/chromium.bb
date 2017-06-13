@@ -740,6 +740,9 @@ class WebContents : public PageNavigator,
   // Requests the manifest URL and the Manifest of the main frame's document.
   virtual void GetManifest(const GetManifestCallback& callback) = 0;
 
+  // Returns whether the renderer is in fullscreen mode.
+  virtual bool IsFullscreenForCurrentTab() const = 0;
+
   // Requests the renderer to exit fullscreen.
   // |will_cause_resize| indicates whether the fullscreen change causes a
   // view resize. e.g. This will be false when going from tab fullscreen to
