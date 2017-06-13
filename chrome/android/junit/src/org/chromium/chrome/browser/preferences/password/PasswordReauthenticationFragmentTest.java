@@ -15,6 +15,7 @@ import android.content.Intent;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.annotation.Config;
 
 import org.chromium.testing.local.LocalRobolectricTestRunner;
 
@@ -22,6 +23,7 @@ import org.chromium.testing.local.LocalRobolectricTestRunner;
  * Tests for the "Save Passwords" settings screen.
  */
 @RunWith(LocalRobolectricTestRunner.class)
+@Config(manifest = Config.NONE)
 public class PasswordReauthenticationFragmentTest {
     /**
      * Ensure that upon reauthentication PasswordReauthenticationFragment is popped from
