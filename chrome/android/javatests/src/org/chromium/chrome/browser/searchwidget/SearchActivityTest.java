@@ -81,7 +81,8 @@ public class SearchActivityTest {
         }
 
         @Override
-        boolean showSearchEngineDialogIfNeeded(Activity activity, Callback<Boolean> callback) {
+        void showSearchEngineDialogIfNeeded(
+                Activity activity, Callback<Boolean> onSearchEngineFinalized) {
             showSearchEngineDialogIfNeededCallback.notifyCalled();
 
             if (shouldShowRealSearchDialog) {
@@ -91,10 +92,11 @@ public class SearchActivityTest {
                         return SEARCH_ENGINE_PROMO_SHOW_EXISTING;
                     }
                 });
-                return super.showSearchEngineDialogIfNeeded(activity, callback);
+                super.showSearchEngineDialogIfNeeded(activity, onSearchEngineFinalized);
+                return;
             }
 
-            return shouldDelayDeferredInitialization;
+            onSearchEngineFinalized.onResult(!shouldDelayDeferredInitialization);
         }
 
         @Override

@@ -478,6 +478,10 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             // complete, and this will only show promos on the second opportunity. This is
             // because the FRE is shown on the first opportunity, and we don't want to show such
             // content back to back.
+            //
+            // TODO(tedchoc): Unify promo dialog logic as the search engine promo dialog checks
+            //                might not have completed at this point and we could show multiple
+            //                promos.
             if (!mLocaleManager.hasShownSearchEnginePromoThisSession() && !mIntentWithEffect
                     && FirstRunStatus.getFirstRunFlowComplete()
                     && preferenceManager.getPromosSkippedOnFirstStart()) {
