@@ -87,12 +87,17 @@ class WebApkInstaller : public net::URLFetcherDelegate {
                          const base::android::JavaParamRef<jobject>& obj,
                          jint result);
 
-  // Creates a WebApk install or update request.
-  // Should be used only for testing.
-  void BuildWebApkProtoInBackgroundForTesting(
-      const base::Callback<void(std::unique_ptr<webapk::WebApk>)>& callback,
+  // Asynchronously builds the WebAPK proto on a background thread for an update
+  // or install request. Runs |callback| on the calling thread when complete.
+  static void BuildProto(
+      const ShortcutInfo& shortcut_info,
+      const SkBitmap& primary_icon,
+      const SkBitmap& badge_icon,
+      const std::string& package_name,
+      const std::string& version,
       const std::map<std::string, std::string>& icon_url_to_murmur2_hash,
-      bool is_manifest_stale);
+      bool is_manifest_stale,
+      const base::Callback<void(std::unique_ptr<webapk::WebApk>)>& callback);
 
   // Registers JNI hooks.
   static bool Register(JNIEnv* env);
@@ -150,22 +155,10 @@ class WebApkInstaller : public net::URLFetcherDelegate {
                                  const std::string& primary_icon_hash,
                                  const std::string& badge_icon_hash);
 
-  // Sends request to WebAPK server to create WebAPK. During a successful
-  // request the WebAPK server responds with the URL of the generated WebAPK.
-  // |webapk| is the proto to send to the WebAPK server.
-  void SendCreateWebApkRequest(std::unique_ptr<webapk::WebApk> webapk_proto);
-
-  // Sends request to WebAPK server to update a WebAPK. During a successful
-  // request the WebAPK server responds with the URL of the generated WebAPK.
-  // |webapk| is the proto to send to the WebAPK server.
-  void SendUpdateWebApkRequest(int webapk_version,
-                               std::unique_ptr<webapk::WebApk> webapk_proto);
-
   // Sends a request to WebAPK server to create/update WebAPK. During a
   // successful request the WebAPK server responds with the URL of the generated
   // WebAPK.
-  void SendRequest(std::unique_ptr<webapk::WebApk> request_proto,
-                   const GURL& server_url);
+  void SendRequest(std::unique_ptr<webapk::WebApk> request_proto);
 
   net::URLRequestContextGetter* request_context_getter_;
 
@@ -202,7 +195,6 @@ class WebApkInstaller : public net::URLFetcherDelegate {
 
   // Whether the server wants the WebAPK to request updates less frequently.
   bool relax_updates_;
-
 
   // Indicates whether the installer is for installing or updating a WebAPK.
   TaskType task_type_;

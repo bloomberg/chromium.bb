@@ -187,9 +187,7 @@ std::unique_ptr<net::test_server::HttpResponse> BuildValidWebApkResponse(
 // Builds WebApk proto and blocks till done.
 class BuildProtoRunner {
  public:
-  explicit BuildProtoRunner(content::BrowserContext* browser_context)
-      : browser_context_(browser_context) {}
-
+  BuildProtoRunner() {}
   ~BuildProtoRunner() {}
 
   void BuildSync(
@@ -201,15 +199,13 @@ class BuildProtoRunner {
     info.best_primary_icon_url = best_primary_icon_url;
     info.best_badge_icon_url = best_badge_icon_url;
 
-    // WebApkInstaller owns itself.
     SkBitmap primary_icon(gfx::test::CreateBitmap(144, 144));
     SkBitmap badge_icon(gfx::test::CreateBitmap(72, 72));
-    WebApkInstaller* installer = new TestWebApkInstaller(
-        browser_context_, info, primary_icon, badge_icon);
-    installer->BuildWebApkProtoInBackgroundForTesting(
+    WebApkInstaller::BuildProto(
+        info, primary_icon, badge_icon, "" /* package_name */, "" /* version */,
+        icon_url_to_murmur2_hash, is_manifest_stale,
         base::Bind(&BuildProtoRunner::OnBuiltWebApkProto,
-                   base::Unretained(this)),
-        icon_url_to_murmur2_hash, is_manifest_stale);
+                   base::Unretained(this)));
 
     base::RunLoop run_loop;
     on_completed_callback_ = run_loop.QuitClosure();
@@ -224,8 +220,6 @@ class BuildProtoRunner {
     webapk_request_ = std::move(webapk);
     on_completed_callback_.Run();
   }
-
-  content::BrowserContext* browser_context_;
 
   // The populated webapk::WebApk.
   std::unique_ptr<webapk::WebApk> webapk_request_;
@@ -292,8 +286,7 @@ class WebApkInstallerTest : public ::testing::Test {
   }
 
   std::unique_ptr<BuildProtoRunner> CreateBuildProtoRunner() {
-    return std::unique_ptr<BuildProtoRunner>(
-        new BuildProtoRunner(profile_.get()));
+    return std::unique_ptr<BuildProtoRunner>(new BuildProtoRunner());
   }
 
   net::test_server::EmbeddedTestServer* test_server() { return &test_server_; }
