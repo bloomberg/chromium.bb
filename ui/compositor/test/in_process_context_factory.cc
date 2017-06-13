@@ -135,10 +135,12 @@ struct InProcessContextFactory::PerCompositorData {
 };
 
 InProcessContextFactory::InProcessContextFactory(
-    viz::FrameSinkManagerHost* frame_sink_manager)
+    viz::FrameSinkManagerHost* frame_sink_manager,
+    cc::SurfaceManager* surface_manager)
     : frame_sink_id_allocator_(kDefaultClientId),
       use_test_surface_(true),
-      frame_sink_manager_(frame_sink_manager) {
+      frame_sink_manager_(frame_sink_manager),
+      surface_manager_(surface_manager) {
   DCHECK(frame_sink_manager);
   DCHECK_NE(gl::GetGLImplementation(), gl::kGLImplementationNone)
       << "If running tests, ensure that main() is calling "
@@ -316,7 +318,7 @@ cc::FrameSinkId InProcessContextFactory::AllocateFrameSinkId() {
 }
 
 cc::SurfaceManager* InProcessContextFactory::GetSurfaceManager() {
-  return frame_sink_manager_->surface_manager();
+  return surface_manager_;
 }
 
 viz::FrameSinkManagerHost* InProcessContextFactory::GetFrameSinkManagerHost() {

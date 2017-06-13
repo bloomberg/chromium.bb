@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/metrics/persistent_memory_allocator.h"
 #include "base/observer_list.h"
 #include "content/public/browser/render_process_host.h"
@@ -166,7 +167,6 @@ class MockRenderProcessHost : public RenderProcessHost {
   BrowserContext* browser_context_;
   base::ObserverList<RenderProcessHostObserver> observers_;
 
-  IDMap<RenderWidgetHost*> render_widget_hosts_;
   int prev_routing_id_;
   IDMap<IPC::Listener*> listeners_;
   bool fast_shutdown_started_;
@@ -179,6 +179,7 @@ class MockRenderProcessHost : public RenderProcessHost {
       renderer_interface_;
   std::map<std::string, InterfaceBinder> binder_overrides_;
   service_manager::Identity child_identity_;
+  base::WeakPtrFactory<MockRenderProcessHost> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MockRenderProcessHost);
 };

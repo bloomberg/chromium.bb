@@ -29,10 +29,11 @@ namespace content {
 //  fact a distinct object) When these selectors are called, the relevant
 // edit command is executed in WebCore.
 class CONTENT_EXPORT RenderWidgetHostViewMacEditCommandHelper {
-   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewMacEditCommandHelperTest,
-                            TestAddEditingSelectorsToClass);
-   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewMacEditCommandHelperTest,
-                            TestEditingCommandDelivery);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostViewMacEditCommandHelperTest,
+                           TestAddEditingSelectorsToClass);
+  FRIEND_TEST_ALL_PREFIXES(
+      RenderWidgetHostViewMacEditCommandHelperWithTaskEnvTest,
+      TestEditingCommandDelivery);
 
  public:
   RenderWidgetHostViewMacEditCommandHelper();

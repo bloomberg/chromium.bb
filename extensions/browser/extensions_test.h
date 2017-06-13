@@ -37,6 +37,10 @@ class TestExtensionsBrowserClient;
 class ExtensionsTest : public testing::Test {
  public:
   ExtensionsTest();
+  // If the test uses a TestBrowserThreadBundle, then it must be given to the
+  // constructor here so that this class can use its MessageLoop.
+  explicit ExtensionsTest(
+      std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle);
   ~ExtensionsTest() override;
 
   // Returned as a BrowserContext since most users don't need methods from
@@ -70,11 +74,15 @@ class ExtensionsTest : public testing::Test {
   std::unique_ptr<ExtensionPrefValueMap> extension_pref_value_map_;
   std::unique_ptr<PrefService> pref_service_;
 
+  MockExtensionSystemFactory<MockExtensionSystem> extension_system_factory_;
+
+  // Optional thread bundle for some subclasses. Needs to exist before
+  // the RenderViewHostTestEnabler if it is going to exist.
+  std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle_;
+
   // The existence of this object enables tests via
   // RenderViewHostTester.
-  content::RenderViewHostTestEnabler rvh_test_enabler_;
-
-  MockExtensionSystemFactory<MockExtensionSystem> extension_system_factory_;
+  std::unique_ptr<content::RenderViewHostTestEnabler> rvh_test_enabler_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionsTest);
 };

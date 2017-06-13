@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/values.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/api_unittest.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/shell/browser/shell_oauth2_token_service.h"

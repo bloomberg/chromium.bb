@@ -46,7 +46,8 @@ MockRenderProcessHost::MockRenderProcessHost(BrowserContext* browser_context)
       deletion_callback_called_(false),
       is_for_guests_only_(false),
       is_process_backgrounded_(false),
-      worker_ref_count_(0) {
+      worker_ref_count_(0),
+      weak_ptr_factory_(this) {
   // Child process security operations can't be unit tested unless we add
   // ourselves as an existing child process.
   ChildProcessSecurityPolicyImpl::GetInstance()->Add(GetID());
@@ -212,11 +213,19 @@ bool MockRenderProcessHost::IgnoreInputEvents() const {
   return false;
 }
 
+static void DeleteIt(base::WeakPtr<MockRenderProcessHost> h) {
+  if (h)
+    delete h.get();
+}
+
 void MockRenderProcessHost::Cleanup() {
   if (listeners_.IsEmpty()) {
     for (auto& observer : observers_)
       observer.RenderProcessHostDestroyed(this);
-    base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
+    // Post the delete of |this| as a WeakPtr so that if |this| is deleted by a
+    // test directly, we don't double free.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&DeleteIt, weak_ptr_factory_.GetWeakPtr()));
     RenderProcessHostImpl::UnregisterHost(GetID());
     deletion_callback_called_ = true;
   }

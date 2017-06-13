@@ -129,9 +129,15 @@ RenderViewHostTestEnabler::RenderViewHostTestEnabler()
     : rph_factory_(new MockRenderProcessHostFactory()),
       rvh_factory_(new TestRenderViewHostFactory(rph_factory_.get())),
       rfh_factory_(new TestRenderFrameHostFactory()) {
+  // A MessageLoop is needed for Mojo bindings to graphics services. Some
+  // tests have their own, so this only creates one when none exists. This
+  // means tests must ensure any MessageLoop they make is created before
+  // the RenderViewHostTestEnabler.
+  if (!base::MessageLoop::current())
+    message_loop_ = base::MakeUnique<base::MessageLoop>();
 #if !defined(OS_ANDROID)
   ImageTransportFactory::InitializeForUnitTests(
-      base::WrapUnique(new NoTransportImageTransportFactory));
+      base::MakeUnique<NoTransportImageTransportFactory>());
 #else
   if (!screen_)
     screen_.reset(ui::CreateDummyScreenAndroid());

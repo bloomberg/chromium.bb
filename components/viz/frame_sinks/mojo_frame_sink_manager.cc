@@ -38,7 +38,7 @@ MojoFrameSinkManager::~MojoFrameSinkManager() {
   manager_.RemoveObserver(this);
 }
 
-void MojoFrameSinkManager::Connect(
+void MojoFrameSinkManager::BindPtrAndSetClient(
     cc::mojom::FrameSinkManagerRequest request,
     cc::mojom::FrameSinkManagerClientPtr client) {
   DCHECK(!binding_.is_bound());

@@ -80,10 +80,10 @@ ExtensionServiceTestBase::ExtensionServiceInitParams::
         default;
 
 ExtensionServiceTestBase::ExtensionServiceTestBase()
-    : thread_bundle_(new content::TestBrowserThreadBundle(kThreadOptions)),
-      service_(NULL),
+    : thread_bundle_(kThreadOptions),
+      service_(nullptr),
       testing_local_state_(TestingBrowserProcess::GetGlobal()),
-      registry_(NULL) {
+      registry_(nullptr) {
   base::FilePath test_data_dir;
   if (!PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir)) {
     ADD_FAILURE();

@@ -32,9 +32,21 @@ std::unique_ptr<content::TestBrowserContext> CreateTestIncognitoContext() {
 
 namespace extensions {
 
-ExtensionsTest::ExtensionsTest() {}
+ExtensionsTest::ExtensionsTest()
+    : rvh_test_enabler_(
+          base::MakeUnique<content::RenderViewHostTestEnabler>()) {}
+
+ExtensionsTest::ExtensionsTest(
+    std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle)
+    : thread_bundle_(std::move(thread_bundle)),
+      rvh_test_enabler_(
+          base::MakeUnique<content::RenderViewHostTestEnabler>()) {}
 
 ExtensionsTest::~ExtensionsTest() {
+  // Destroy the task runners before nulling the browser/utility clients, as
+  // posted tasks may use them.
+  rvh_test_enabler_.reset();
+  thread_bundle_.reset();
   content::SetBrowserClientForTesting(nullptr);
   content::SetUtilityClientForTesting(nullptr);
 }

@@ -50,7 +50,8 @@ const size_t g_invalid_size_t = std::numeric_limits<size_t>::max();
 class LoadMonitoringExtensionHostQueueTest : public ExtensionsTest {
  public:
   LoadMonitoringExtensionHostQueueTest()
-      : finished_(false),
+      : ExtensionsTest(base::MakeUnique<content::TestBrowserThreadBundle>()),
+        finished_(false),
         // Arbitrary choice of an invalid size_t.
         num_queued_(g_invalid_size_t),
         num_loaded_(g_invalid_size_t),
@@ -101,7 +102,6 @@ class LoadMonitoringExtensionHostQueueTest : public ExtensionsTest {
     max_active_loading_ = max_active_loading;
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<LoadMonitoringExtensionHostQueue> queue_;
   std::vector<std::unique_ptr<StubDeferredStartRenderHost>> stubs_;
 

@@ -39,7 +39,8 @@ const ValueStore::WriteOptions DEFAULTS = ValueStore::DEFAULTS;
 // history, the test names are unchanged.
 class ExtensionSettingsFrontendTest : public ExtensionsTest {
  public:
-  ExtensionSettingsFrontendTest() = default;
+  ExtensionSettingsFrontendTest()
+      : ExtensionsTest(base::MakeUnique<content::TestBrowserThreadBundle>()) {}
 
   void SetUp() override {
     ExtensionsTest::SetUp();
@@ -66,7 +67,6 @@ class ExtensionSettingsFrontendTest : public ExtensionsTest {
   scoped_refptr<ValueStoreFactoryImpl> storage_factory_;
 
  private:
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
   ExtensionsAPIClient extensions_api_client_;
 };
 

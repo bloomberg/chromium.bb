@@ -151,14 +151,12 @@ class FakeExtensionSystem : public MockExtensionSystem {
 
 class UpdateServiceTest : public ExtensionsTest {
  public:
-  UpdateServiceTest() {}
+  UpdateServiceTest()
+      : ExtensionsTest(base::MakeUnique<content::TestBrowserThreadBundle>()) {}
   ~UpdateServiceTest() override {}
 
   void SetUp() override {
     ExtensionsTest::SetUp();
-    browser_threads_.reset(new content::TestBrowserThreadBundle(
-        content::TestBrowserThreadBundle::DEFAULT));
-
     extensions_browser_client()->set_extension_system_factory(
         &fake_extension_system_factory_);
     extensions_browser_client()->SetUpdateClientFactory(base::Bind(
@@ -199,7 +197,6 @@ class UpdateServiceTest : public ExtensionsTest {
  private:
   UpdateService* update_service_;
   scoped_refptr<FakeUpdateClient> update_client_;
-  std::unique_ptr<content::TestBrowserThreadBundle> browser_threads_;
   MockExtensionSystemFactory<FakeExtensionSystem>
       fake_extension_system_factory_;
 };

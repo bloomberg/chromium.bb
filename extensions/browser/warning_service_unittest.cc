@@ -34,7 +34,11 @@ class MockObserver : public WarningService::Observer {
   MOCK_METHOD1(ExtensionWarningsChanged, void(const ExtensionIdSet&));
 };
 
-typedef ExtensionsTest WarningServiceTest;
+class WarningServiceTest : public ExtensionsTest {
+ public:
+  WarningServiceTest()
+      : ExtensionsTest(base::MakeUnique<content::TestBrowserThreadBundle>()) {}
+};
 
 const char ext1_id[] = "extension1";
 const char ext2_id[] = "extension2";
@@ -46,7 +50,6 @@ const Warning::WarningType warning_2 = Warning::kNetworkConflict;
 // Check that inserting a warning triggers notifications, whereas inserting
 // the same warning again is silent.
 TEST_F(WarningServiceTest, SetWarning) {
-  content::TestBrowserThreadBundle thread_bundle_;
   content::TestBrowserContext browser_context;
   TestWarningService warning_service(&browser_context);
   MockObserver observer;
@@ -70,7 +73,6 @@ TEST_F(WarningServiceTest, SetWarning) {
 // Check that ClearWarnings deletes exactly the specified warnings and
 // triggers notifications where appropriate.
 TEST_F(WarningServiceTest, ClearWarnings) {
-  content::TestBrowserThreadBundle thread_bundle_;
   content::TestBrowserContext browser_context;
   TestWarningService warning_service(&browser_context);
   MockObserver observer;
