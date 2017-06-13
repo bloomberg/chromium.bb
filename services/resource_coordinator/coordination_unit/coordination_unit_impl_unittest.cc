@@ -147,6 +147,40 @@ TEST_F(CoordinationUnitImplTest, MAYBE_AddChild) {
   }
 }
 
+TEST_F(CoordinationUnitImplTest, RemoveChild) {
+  CoordinationUnitID parent_cu_id(CoordinationUnitType::kFrame, std::string());
+  CoordinationUnitID child_cu_id(CoordinationUnitType::kFrame, std::string());
+
+  std::unique_ptr<CoordinationUnitImpl> parent_coordination_unit =
+      coordination_unit_factory::CreateCoordinationUnit(
+          parent_cu_id, service_context_ref_factory()->CreateRef());
+  std::unique_ptr<CoordinationUnitImpl> child_coordination_unit =
+      coordination_unit_factory::CreateCoordinationUnit(
+          child_cu_id, service_context_ref_factory()->CreateRef());
+
+  // Parent-child relationships have not been established yet.
+  EXPECT_EQ(0u, parent_coordination_unit->children().size());
+  EXPECT_EQ(0u, parent_coordination_unit->parents().size());
+  EXPECT_EQ(0u, child_coordination_unit->children().size());
+  EXPECT_EQ(0u, child_coordination_unit->parents().size());
+
+  parent_coordination_unit->AddChild(child_coordination_unit->id());
+
+  // Ensure correct Parent-child relationships have been established.
+  EXPECT_EQ(1u, parent_coordination_unit->children().size());
+  EXPECT_EQ(0u, parent_coordination_unit->parents().size());
+  EXPECT_EQ(0u, child_coordination_unit->children().size());
+  EXPECT_EQ(1u, child_coordination_unit->parents().size());
+
+  parent_coordination_unit->RemoveChild(child_coordination_unit->id());
+
+  // Parent-child relationships should no longer exist.
+  EXPECT_EQ(0u, parent_coordination_unit->children().size());
+  EXPECT_EQ(0u, parent_coordination_unit->parents().size());
+  EXPECT_EQ(0u, child_coordination_unit->children().size());
+  EXPECT_EQ(0u, child_coordination_unit->parents().size());
+}
+
 TEST_F(CoordinationUnitImplTest, CyclicGraphUnits) {
   TestCoordinationUnit parent_unit(
       provider(), CoordinationUnitType::kWebContents, std::string());

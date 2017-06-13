@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <string>
+
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
@@ -38,11 +40,13 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT
 
   void SendEvent(const mojom::EventType& event_type);
   void AddChild(const ResourceCoordinatorInterface& child);
+  void RemoveChild(const ResourceCoordinatorInterface& child);
 
  private:
   void ConnectToService(service_manager::Connector* connector,
                         const CoordinationUnitID& cu_id);
   void AddChildByID(const CoordinationUnitID& child_id);
+  void RemoveChildByID(const CoordinationUnitID& child_id);
 
   mojom::CoordinationUnitPtr service_;
 
