@@ -226,6 +226,10 @@ struct DrawRenderPassDrawQuadParams {
   gfx::Transform contents_device_transform;
 
   gfx::RectF tex_coord_rect;
+
+  // The color space of the texture bound for sampling (from filter_image or
+  // contents_resource_lock, depending on the path taken).
+  gfx::ColorSpace contents_color_space;
 };
 
 static GLint GetActiveTextureUnit(GLES2Interface* gl) {
@@ -650,12 +654,11 @@ static sk_sp<SkImage> WrapTexture(
 
 static sk_sp<SkImage> ApplyImageFilter(
     std::unique_ptr<GLRenderer::ScopedUseGrContext> use_gr_context,
-    ResourceProvider* resource_provider,
     const gfx::RectF& src_rect,
     const gfx::RectF& dst_rect,
     const gfx::Vector2dF& scale,
     sk_sp<SkImageFilter> filter,
-    const Resource* source_texture_resource,
+    const ResourceProvider::ScopedReadLockGL& source_texture_lock,
     SkIPoint* offset,
     SkIRect* subset,
     bool flip_texture,
@@ -663,11 +666,8 @@ static sk_sp<SkImage> ApplyImageFilter(
   if (!filter || !use_gr_context)
     return nullptr;
 
-  ResourceProvider::ScopedReadLockGL lock(resource_provider,
-                                          source_texture_resource->id());
-
   sk_sp<SkImage> src_image =
-      WrapTexture(lock, use_gr_context->context(), flip_texture);
+      WrapTexture(source_texture_lock, use_gr_context->context(), flip_texture);
 
   if (!src_image) {
     TRACE_EVENT_INSTANT0("cc",
@@ -1044,10 +1044,9 @@ void GLRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad,
   params.tex_coord_rect = quad->tex_coord_rect;
   if (bypass != render_pass_bypass_quads_.end()) {
     TileDrawQuad* tile_quad = &bypass->second;
-    // RGBA_8888 here is arbitrary and unused.
+    // RGBA_8888 and the gfx::ColorSpace() here are arbitrary and unused.
     Resource tile_resource(tile_quad->resource_id(), tile_quad->texture_size,
-                           ResourceFormat::RGBA_8888,
-                           current_frame()->current_render_pass->color_space);
+                           ResourceFormat::RGBA_8888, gfx::ColorSpace());
     // The projection matrix used by GLRenderer has a flip.  As tile texture
     // inputs are oriented opposite to framebuffer outputs, don't flip via
     // texture coords and let the projection matrix naturallyd o it.
@@ -1241,11 +1240,16 @@ bool GLRenderer::UpdateRPDQWithSkiaFilters(
         SkIPoint offset;
         SkIRect subset;
         gfx::RectF src_rect(quad->rect);
+
+        ResourceProvider::ScopedReadLockGL prefilter_contents_texture_lock(
+            resource_provider_, params->contents_texture->id());
+        params->contents_color_space =
+            prefilter_contents_texture_lock.color_space();
         params->filter_image = ApplyImageFilter(
-            ScopedUseGrContext::Create(this), resource_provider_, src_rect,
-            params->dst_rect, quad->filters_scale, std::move(filter),
-            params->contents_texture, &offset, &subset, params->flip_texture,
-            quad->filters_origin);
+            ScopedUseGrContext::Create(this), src_rect, params->dst_rect,
+            quad->filters_scale, std::move(filter),
+            prefilter_contents_texture_lock, &offset, &subset,
+            params->flip_texture, quad->filters_origin);
         if (!params->filter_image)
           return false;
         params->dst_rect =
@@ -1280,7 +1284,8 @@ void GLRenderer::UpdateRPDQTexturesForSampling(
     gl_->BindTexture(GL_TEXTURE_2D, filter_image_id);
     gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     gl_->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
+    // |params->contents_color_space| was populated when |params->filter_image|
+    // was populated.
     params->source_needs_flip = kBottomLeft_GrSurfaceOrigin == origin;
   } else {
     params->contents_resource_lock =
@@ -1288,6 +1293,8 @@ void GLRenderer::UpdateRPDQTexturesForSampling(
             resource_provider_, params->contents_texture->id(), GL_LINEAR);
     DCHECK_EQ(static_cast<GLenum>(GL_TEXTURE_2D),
               params->contents_resource_lock->target());
+    params->contents_color_space =
+        params->contents_resource_lock->color_space();
     params->source_needs_flip = params->flip_texture;
   }
 }
@@ -1323,14 +1330,11 @@ void GLRenderer::ChooseRPDQProgram(DrawRenderPassDrawQuadParams* params) {
     sampler_type =
         SamplerTypeFromTextureTarget(params->mask_resource_lock->target());
   }
-
   SetUseProgram(ProgramKey::RenderPass(
                     tex_coord_precision, sampler_type, shader_blend_mode,
                     params->use_aa ? USE_AA : NO_AA, mask_mode,
                     mask_for_background, params->use_color_matrix),
-                params->contents_resource_lock
-                    ? params->contents_resource_lock->color_space()
-                    : gfx::ColorSpace());
+                params->contents_color_space);
 }
 
 void GLRenderer::UpdateRPDQUniforms(DrawRenderPassDrawQuadParams* params) {
