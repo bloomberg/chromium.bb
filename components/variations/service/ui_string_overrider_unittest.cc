@@ -10,8 +10,7 @@
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chrome_variations {
-
+namespace variations {
 namespace {
 
 const size_t kNumResources = 4;
@@ -42,7 +41,7 @@ class UIStringOverriderTest : public ::testing::Test {
   }
 
  private:
-  variations::UIStringOverrider provider_;
+  UIStringOverrider provider_;
 
   DISALLOW_COPY_AND_ASSIGN(UIStringOverriderTest);
 };
@@ -61,4 +60,4 @@ TEST_F(UIStringOverriderTest, LookupFound) {
     EXPECT_EQ(kResourceIndices[i], GetResourceIndex(kResourceHashes[i]));
 }
 
-}  // namespace chrome_variations
+}  // namespace variations

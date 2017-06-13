@@ -157,7 +157,7 @@ VariationsSeedStore::VariationsSeedStore(PrefService* local_state)
 VariationsSeedStore::~VariationsSeedStore() {
 }
 
-bool VariationsSeedStore::LoadSeed(variations::VariationsSeed* seed) {
+bool VariationsSeedStore::LoadSeed(VariationsSeed* seed) {
   invalid_base64_signature_.clear();
 
 #if defined(OS_ANDROID)
@@ -203,7 +203,7 @@ bool VariationsSeedStore::StoreSeedData(
     const base::Time& date_fetched,
     bool is_delta_compressed,
     bool is_gzip_compressed,
-    variations::VariationsSeed* parsed_seed) {
+    VariationsSeed* parsed_seed) {
   // If the data is gzip compressed, first uncompress it.
   std::string ungzipped_data;
   if (is_gzip_compressed) {
@@ -403,14 +403,14 @@ bool VariationsSeedStore::StoreSeedDataNoDelta(
     const std::string& base64_seed_signature,
     const std::string& country_code,
     const base::Time& date_fetched,
-    variations::VariationsSeed* parsed_seed) {
+    VariationsSeed* parsed_seed) {
   if (seed_data.empty()) {
     RecordSeedStoreHistogram(VARIATIONS_SEED_STORE_FAILED_EMPTY_GZIP_CONTENTS);
     return false;
   }
 
   // Only store the seed data if it parses correctly.
-  variations::VariationsSeed seed;
+  VariationsSeed seed;
   if (!seed.ParseFromString(seed_data)) {
     RecordSeedStoreHistogram(VARIATIONS_SEED_STORE_FAILED_PARSE);
     return false;

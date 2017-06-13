@@ -14,7 +14,6 @@
 
 namespace variations {
 namespace testing {
-
 namespace {
 
 // The fixed testing group created in the provided trail when setting up params.
@@ -23,7 +22,7 @@ const char kGroupTesting[] = "Testing";
 base::FieldTrial* CreateFieldTrialWithParams(
     const std::string& trial_name,
     const std::map<std::string, std::string>& param_values) {
-  variations::AssociateVariationParams(trial_name, kGroupTesting, param_values);
+  AssociateVariationParams(trial_name, kGroupTesting, param_values);
   return base::FieldTrialList::CreateFieldTrial(trial_name, kGroupTesting);
 }
 
@@ -79,11 +78,11 @@ void VariationParamsManager::SetVariationParamsWithFeatureAssociations(
 }
 
 void VariationParamsManager::ClearAllVariationIDs() {
-  variations::testing::ClearAllVariationIDs();
+  testing::ClearAllVariationIDs();
 }
 
 void VariationParamsManager::ClearAllVariationParams() {
-  variations::testing::ClearAllVariationParams();
+  testing::ClearAllVariationParams();
   // When the scoped feature list is destroyed, it puts back the original
   // feature list that was there when InitWithFeatureList() was called.
   scoped_feature_list_.reset(new base::test::ScopedFeatureList());

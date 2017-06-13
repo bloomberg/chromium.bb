@@ -48,12 +48,12 @@ class TestVariationsSeedStore : public VariationsSeedStore {
 // study called "test", which contains one experiment called "abc" with
 // probability weight 100. |seed|'s study field will be cleared before adding
 // the new study.
-variations::VariationsSeed CreateTestSeed() {
-  variations::VariationsSeed seed;
-  variations::Study* study = seed.add_study();
+VariationsSeed CreateTestSeed() {
+  VariationsSeed seed;
+  Study* study = seed.add_study();
   study->set_name("test");
   study->set_default_experiment_name("abc");
-  variations::Study_Experiment* experiment = study->add_experiment();
+  Study_Experiment* experiment = study->add_experiment();
   experiment->set_name("abc");
   experiment->set_probability_weight(100);
   seed.set_serial_number("123");
@@ -61,7 +61,7 @@ variations::VariationsSeed CreateTestSeed() {
 }
 
 // Serializes |seed| to protobuf binary format.
-std::string SerializeSeed(const variations::VariationsSeed& seed) {
+std::string SerializeSeed(const VariationsSeed& seed) {
   std::string serialized_seed;
   seed.SerializeToString(&serialized_seed);
   return serialized_seed;
@@ -76,7 +76,7 @@ std::string Compress(const std::string& data) {
 }
 
 // Serializes |seed| to compressed base64-encoded protobuf binary format.
-std::string SerializeSeedBase64(const variations::VariationsSeed& seed) {
+std::string SerializeSeedBase64(const VariationsSeed& seed) {
   std::string serialized_seed = SerializeSeed(seed);
   std::string base64_serialized_seed;
   base::Base64Encode(Compress(serialized_seed), &base64_serialized_seed);
@@ -94,7 +94,7 @@ bool PrefHasDefaultValue(const TestingPrefServiceSimple& prefs,
 
 TEST(VariationsSeedStoreTest, LoadSeed) {
   // Store good seed data to test if loading from prefs works.
-  const variations::VariationsSeed seed = CreateTestSeed();
+  const VariationsSeed seed = CreateTestSeed();
   const std::string base64_seed = SerializeSeedBase64(seed);
 
   TestingPrefServiceSimple prefs;
@@ -103,7 +103,7 @@ TEST(VariationsSeedStoreTest, LoadSeed) {
 
   TestVariationsSeedStore seed_store(&prefs);
 
-  variations::VariationsSeed loaded_seed;
+  VariationsSeed loaded_seed;
   // Check that loading a seed works correctly.
   EXPECT_TRUE(seed_store.LoadSeed(&loaded_seed));
 
@@ -158,7 +158,7 @@ TEST(VariationsSeedStoreTest, GetInvalidSignature) {
   prefs.SetString(prefs::kVariationsSeedSignature, base64_seed_signature);
 
   VariationsSeedStore seed_store(&prefs);
-  variations::VariationsSeed loaded_seed;
+  VariationsSeed loaded_seed;
   seed_store.LoadSeed(&loaded_seed);
   std::string invalid_signature = seed_store.GetInvalidSignature();
   // Valid signature so we get an empty string.
@@ -184,7 +184,7 @@ TEST(VariationsSeedStoreTest, GetInvalidSignature) {
 }
 
 TEST(VariationsSeedStoreTest, StoreSeedData) {
-  const variations::VariationsSeed seed = CreateTestSeed();
+  const VariationsSeed seed = CreateTestSeed();
   const std::string serialized_seed = SerializeSeed(seed);
 
   TestingPrefServiceSimple prefs;
@@ -211,14 +211,14 @@ TEST(VariationsSeedStoreTest, StoreSeedData) {
 }
 
 TEST(VariationsSeedStoreTest, StoreSeedData_ParsedSeed) {
-  const variations::VariationsSeed seed = CreateTestSeed();
+  const VariationsSeed seed = CreateTestSeed();
   const std::string serialized_seed = SerializeSeed(seed);
 
   TestingPrefServiceSimple prefs;
   VariationsSeedStore::RegisterPrefs(prefs.registry());
   TestVariationsSeedStore seed_store(&prefs);
 
-  variations::VariationsSeed parsed_seed;
+  VariationsSeed parsed_seed;
   EXPECT_TRUE(seed_store.StoreSeedData(serialized_seed, std::string(),
                                        std::string(), base::Time::Now(), false,
                                        false, &parsed_seed));
@@ -245,7 +245,7 @@ TEST(VariationsSeedStoreTest, StoreSeedData_CountryCode) {
 }
 
 TEST(VariationsSeedStoreTest, StoreSeedData_GzippedSeed) {
-  const variations::VariationsSeed seed = CreateTestSeed();
+  const VariationsSeed seed = CreateTestSeed();
   const std::string serialized_seed = SerializeSeed(seed);
   std::string compressed_seed;
   ASSERT_TRUE(compression::GzipCompress(serialized_seed, &compressed_seed));
@@ -254,7 +254,7 @@ TEST(VariationsSeedStoreTest, StoreSeedData_GzippedSeed) {
   VariationsSeedStore::RegisterPrefs(prefs.registry());
   TestVariationsSeedStore seed_store(&prefs);
 
-  variations::VariationsSeed parsed_seed;
+  VariationsSeed parsed_seed;
   EXPECT_TRUE(seed_store.StoreSeedData(compressed_seed, std::string(),
                                        std::string(), base::Time::Now(), false,
                                        true, &parsed_seed));
@@ -270,7 +270,7 @@ TEST(VariationsSeedStoreTest, StoreSeedData_GzippedEmptySeed) {
   VariationsSeedStore::RegisterPrefs(prefs.registry());
   TestVariationsSeedStore seed_store(&prefs);
 
-  variations::VariationsSeed parsed_seed;
+  VariationsSeed parsed_seed;
   EXPECT_FALSE(seed_store.StoreSeedData(compressed_seed, std::string(),
                                        std::string(), base::Time::Now(), false,
                                        true, &parsed_seed));

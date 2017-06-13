@@ -17,10 +17,8 @@ class PrefService;
 class PrefRegistrySimple;
 
 namespace variations {
-class VariationsSeed;
-}
 
-namespace variations {
+class VariationsSeed;
 
 // VariationsSeedStore is a helper class for reading and writing the variations
 // seed from Local State.
@@ -32,7 +30,7 @@ class VariationsSeedStore {
   // Loads the variations seed data from local state into |seed|. If there is a
   // problem with loading, the pref value is cleared and false is returned. If
   // successful, |seed| will contain the loaded data and true is returned.
-  bool LoadSeed(variations::VariationsSeed* seed);
+  bool LoadSeed(VariationsSeed* seed);
 
   // Stores the given seed |data| (serialized protobuf) to local state, along
   // with a base64-encoded digital signature for seed and the date when it was
@@ -51,7 +49,7 @@ class VariationsSeedStore {
                      const base::Time& date_fetched,
                      bool is_delta_compressed,
                      bool is_gzip_compressed,
-                     variations::VariationsSeed* parsed_seed);
+                     VariationsSeed* parsed_seed);
 
   // Updates |kVariationsSeedDate| and logs when previous date was from a
   // different day.
@@ -111,12 +109,11 @@ class VariationsSeedStore {
 
   // Internal version of |StoreSeedData()| that assumes |seed_data| is not delta
   // compressed.
-  bool StoreSeedDataNoDelta(
-      const std::string& seed_data,
-      const std::string& base64_seed_signature,
-      const std::string& country_code,
-      const base::Time& date_fetched,
-      variations::VariationsSeed* parsed_seed);
+  bool StoreSeedDataNoDelta(const std::string& seed_data,
+                            const std::string& base64_seed_signature,
+                            const std::string& country_code,
+                            const base::Time& date_fetched,
+                            VariationsSeed* parsed_seed);
 
   // Applies a delta-compressed |patch| to |existing_data|, producing the result
   // in |output|. Returns whether the operation was successful.

@@ -15,7 +15,6 @@
 #include "components/variations/variations_experiment_util.h"
 
 namespace variations {
-
 namespace {
 
 const char kVariationPrefix[] = "CrVar";
@@ -25,7 +24,7 @@ const char kVariationPrefix[] = "CrVar";
 base::string16 ExtractNonVariationLabels(const base::string16& labels) {
   // First, split everything by the label separator.
   std::vector<base::StringPiece16> entries = base::SplitStringPiece(
-      labels, base::StringPiece16(&variations::kExperimentLabelSeparator, 1),
+      labels, base::StringPiece16(&kExperimentLabelSeparator, 1),
       base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   // For each label, keep the ones that do not look like a Variations label.
@@ -40,7 +39,7 @@ base::string16 ExtractNonVariationLabels(const base::string16& labels) {
 
     // Dump the whole thing, including the timestamp.
     if (!non_variation_labels.empty())
-      non_variation_labels += variations::kExperimentLabelSeparator;
+      non_variation_labels += kExperimentLabelSeparator;
     entry.AppendToString(&non_variation_labels);
   }
 

@@ -19,7 +19,6 @@
 #include "net/base/escape.h"
 
 namespace variations {
-
 namespace {
 
 std::string EscapeValue(const std::string& value) {
@@ -38,7 +37,7 @@ void AssociateParamsFromExperiment(
       const FieldTrialTestingExperimentParams& param = experiment.params[i];
       params[param.key] = param.value;
     }
-    variations::AssociateVariationParams(study_name, experiment.name, params);
+    AssociateVariationParams(study_name, experiment.name, params);
   }
   base::FieldTrial* trial =
       base::FieldTrialList::CreateFieldTrial(study_name, experiment.name);
@@ -126,7 +125,7 @@ bool AssociateParamsFromString(const std::string& varations_string) {
       std::string value = EscapeValue(key_values[i + 1]);
       params[key] = value;
     }
-    variations::AssociateVariationParams(trial, group, params);
+    AssociateVariationParams(trial, group, params);
   }
   return true;
 }
