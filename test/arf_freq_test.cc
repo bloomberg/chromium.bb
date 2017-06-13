@@ -99,7 +99,6 @@ class ArfFreqTestLarge
       cfg_.rc_buf_initial_sz = 500;
       cfg_.rc_buf_optimal_sz = 600;
     }
-    dec_cfg_.threads = 4;
   }
 
   virtual void BeginPassHook(unsigned int) {

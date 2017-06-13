@@ -99,7 +99,6 @@ void Encoder::Flush() {
 
 void EncoderTest::InitializeConfig() {
   const aom_codec_err_t res = codec_->DefaultEncoderConfig(&cfg_, 0);
-  dec_cfg_ = aom_codec_dec_cfg_t();
   ASSERT_EQ(AOM_CODEC_OK, res);
 }
 
