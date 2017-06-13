@@ -30,8 +30,14 @@ const char kDidAcknowledgeExistingNtpExtensions[] =
     "ack_existing_ntp_extensions";
 
 // Whether to acknowledge existing extensions overriding the NTP for the active
-// profile. Currently disabled for all platforms and only available for testing.
-bool g_acknowledge_existing_extensions = false;
+// profile. Active on ChromeOS to rollout the NTP bubble without prompting for
+// previously-installed extensions.
+bool g_acknowledge_existing_extensions =
+#if defined(OS_CHROMEOS)
+    true;
+#else
+    false;
+#endif
 
 }  // namespace
 
