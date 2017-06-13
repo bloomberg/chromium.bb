@@ -7,7 +7,6 @@
 #include <memory>
 #include "core/StylePropertyShorthand.h"
 #include "core/css/CSSBasicShapeValues.h"
-#include "core/css/CSSBorderImage.h"
 #include "core/css/CSSContentDistributionValue.h"
 #include "core/css/CSSCursorImageValue.h"
 #include "core/css/CSSCustomIdentValue.h"
@@ -22,7 +21,6 @@
 #include "core/css/CSSInitialValue.h"
 #include "core/css/CSSPendingSubstitutionValue.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
-#include "core/css/CSSQuadValue.h"
 #include "core/css/CSSReflectValue.h"
 #include "core/css/CSSShadowValue.h"
 #include "core/css/CSSStringValue.h"
@@ -42,6 +40,7 @@
 #include "core/css/parser/FontVariantNumericParser.h"
 #include "core/css/properties/CSSPropertyAlignmentUtils.h"
 #include "core/css/properties/CSSPropertyAnimationNameUtils.h"
+#include "core/css/properties/CSSPropertyBorderImageUtils.h"
 #include "core/css/properties/CSSPropertyColumnUtils.h"
 #include "core/css/properties/CSSPropertyDescriptor.h"
 #include "core/css/properties/CSSPropertyFontUtils.h"
@@ -771,151 +770,6 @@ static CSSValue* ConsumeScrollSnapPoints(CSSParserTokenRange& range,
   return nullptr;
 }
 
-static CSSIdentifierValue* ConsumeBorderImageRepeatKeyword(
-    CSSParserTokenRange& range) {
-  return ConsumeIdent<CSSValueStretch, CSSValueRepeat, CSSValueSpace,
-                      CSSValueRound>(range);
-}
-
-static CSSValue* ConsumeBorderImageRepeat(CSSParserTokenRange& range) {
-  CSSIdentifierValue* horizontal = ConsumeBorderImageRepeatKeyword(range);
-  if (!horizontal)
-    return nullptr;
-  CSSIdentifierValue* vertical = ConsumeBorderImageRepeatKeyword(range);
-  if (!vertical)
-    vertical = horizontal;
-  return CSSValuePair::Create(horizontal, vertical,
-                              CSSValuePair::kDropIdenticalValues);
-}
-
-static CSSValue* ConsumeBorderImageSlice(CSSParserTokenRange& range,
-                                         bool default_fill) {
-  bool fill = ConsumeIdent<CSSValueFill>(range);
-  CSSValue* slices[4] = {0};
-
-  for (size_t index = 0; index < 4; ++index) {
-    CSSPrimitiveValue* value = ConsumePercent(range, kValueRangeNonNegative);
-    if (!value)
-      value = ConsumeNumber(range, kValueRangeNonNegative);
-    if (!value)
-      break;
-    slices[index] = value;
-  }
-  if (!slices[0])
-    return nullptr;
-  if (ConsumeIdent<CSSValueFill>(range)) {
-    if (fill)
-      return nullptr;
-    fill = true;
-  }
-  Complete4Sides(slices);
-  if (default_fill)
-    fill = true;
-  return CSSBorderImageSliceValue::Create(
-      CSSQuadValue::Create(slices[0], slices[1], slices[2], slices[3],
-                           CSSQuadValue::kSerializeAsQuad),
-      fill);
-}
-
-static CSSValue* ConsumeBorderImageOutset(CSSParserTokenRange& range) {
-  CSSValue* outsets[4] = {0};
-
-  CSSValue* value = nullptr;
-  for (size_t index = 0; index < 4; ++index) {
-    value = ConsumeNumber(range, kValueRangeNonNegative);
-    if (!value)
-      value = ConsumeLength(range, kHTMLStandardMode, kValueRangeNonNegative);
-    if (!value)
-      break;
-    outsets[index] = value;
-  }
-  if (!outsets[0])
-    return nullptr;
-  Complete4Sides(outsets);
-  return CSSQuadValue::Create(outsets[0], outsets[1], outsets[2], outsets[3],
-                              CSSQuadValue::kSerializeAsQuad);
-}
-
-static CSSValue* ConsumeBorderImageWidth(CSSParserTokenRange& range) {
-  CSSValue* widths[4] = {0};
-
-  CSSValue* value = nullptr;
-  for (size_t index = 0; index < 4; ++index) {
-    value = ConsumeNumber(range, kValueRangeNonNegative);
-    if (!value)
-      value = ConsumeLengthOrPercent(range, kHTMLStandardMode,
-                                     kValueRangeNonNegative,
-                                     UnitlessQuirk::kForbid);
-    if (!value)
-      value = ConsumeIdent<CSSValueAuto>(range);
-    if (!value)
-      break;
-    widths[index] = value;
-  }
-  if (!widths[0])
-    return nullptr;
-  Complete4Sides(widths);
-  return CSSQuadValue::Create(widths[0], widths[1], widths[2], widths[3],
-                              CSSQuadValue::kSerializeAsQuad);
-}
-
-static bool ConsumeBorderImageComponents(CSSParserTokenRange& range,
-                                         const CSSParserContext* context,
-                                         CSSValue*& source,
-                                         CSSValue*& slice,
-                                         CSSValue*& width,
-                                         CSSValue*& outset,
-                                         CSSValue*& repeat,
-                                         bool default_fill) {
-  do {
-    if (!source) {
-      source = ConsumeImageOrNone(range, context);
-      if (source)
-        continue;
-    }
-    if (!repeat) {
-      repeat = ConsumeBorderImageRepeat(range);
-      if (repeat)
-        continue;
-    }
-    if (!slice) {
-      slice = ConsumeBorderImageSlice(range, default_fill);
-      if (slice) {
-        DCHECK(!width);
-        DCHECK(!outset);
-        if (ConsumeSlashIncludingWhitespace(range)) {
-          width = ConsumeBorderImageWidth(range);
-          if (ConsumeSlashIncludingWhitespace(range)) {
-            outset = ConsumeBorderImageOutset(range);
-            if (!outset)
-              return false;
-          } else if (!width) {
-            return false;
-          }
-        }
-      } else {
-        return false;
-      }
-    } else {
-      return false;
-    }
-  } while (!range.AtEnd());
-  return true;
-}
-
-static CSSValue* ConsumeWebkitBorderImage(CSSParserTokenRange& range,
-                                          const CSSParserContext* context) {
-  CSSValue* source = nullptr;
-  CSSValue* slice = nullptr;
-  CSSValue* width = nullptr;
-  CSSValue* outset = nullptr;
-  CSSValue* repeat = nullptr;
-  if (ConsumeBorderImageComponents(range, context, source, slice, width, outset,
-                                   repeat, true /* default_fill */))
-    return CreateBorderImageValue(source, slice, width, outset, repeat);
-  return nullptr;
-}
-
 static CSSValue* ConsumeReflect(CSSParserTokenRange& range,
                                 const CSSParserContext* context) {
   CSSIdentifierValue* direction =
@@ -936,7 +790,8 @@ static CSSValue* ConsumeReflect(CSSParserTokenRange& range,
 
   CSSValue* mask = nullptr;
   if (!range.AtEnd()) {
-    mask = ConsumeWebkitBorderImage(range, context);
+    mask =
+        CSSPropertyBorderImageUtils::ConsumeWebkitBorderImage(range, context);
     if (!mask)
       return nullptr;
   }
@@ -1749,18 +1604,20 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
       return ConsumeScrollSnapPoints(range_, context_->Mode());
     case CSSPropertyBorderImageRepeat:
     case CSSPropertyWebkitMaskBoxImageRepeat:
-      return ConsumeBorderImageRepeat(range_);
+      return CSSPropertyBorderImageUtils::ConsumeBorderImageRepeat(range_);
     case CSSPropertyBorderImageSlice:
     case CSSPropertyWebkitMaskBoxImageSlice:
-      return ConsumeBorderImageSlice(range_, false /* default_fill */);
+      return CSSPropertyBorderImageUtils::ConsumeBorderImageSlice(
+          range_, false /* default_fill */);
     case CSSPropertyBorderImageOutset:
     case CSSPropertyWebkitMaskBoxImageOutset:
-      return ConsumeBorderImageOutset(range_);
+      return CSSPropertyBorderImageUtils::ConsumeBorderImageOutset(range_);
     case CSSPropertyBorderImageWidth:
     case CSSPropertyWebkitMaskBoxImageWidth:
-      return ConsumeBorderImageWidth(range_);
+      return CSSPropertyBorderImageUtils::ConsumeBorderImageWidth(range_);
     case CSSPropertyWebkitBorderImage:
-      return ConsumeWebkitBorderImage(range_, context_);
+      return CSSPropertyBorderImageUtils::ConsumeWebkitBorderImage(range_,
+                                                                   context_);
     case CSSPropertyWebkitBoxReflect:
       return ConsumeReflect(range_, context_);
     case CSSPropertyBackgroundAttachment:
@@ -2473,8 +2330,9 @@ bool CSSPropertyParser::ConsumeBorderImage(CSSPropertyID property,
   CSSValue* width = nullptr;
   CSSValue* outset = nullptr;
   CSSValue* repeat = nullptr;
-  if (ConsumeBorderImageComponents(range_, context_, source, slice, width,
-                                   outset, repeat, default_fill)) {
+  if (CSSPropertyBorderImageUtils::ConsumeBorderImageComponents(
+          range_, context_, source, slice, width, outset, repeat,
+          default_fill)) {
     switch (property) {
       case CSSPropertyWebkitMaskBoxImage:
         AddParsedProperty(
