@@ -209,6 +209,7 @@ void WebApkInstaller::UpdateAsync(
     content::BrowserContext* context,
     const ShortcutInfo& shortcut_info,
     const SkBitmap& primary_icon,
+    const SkBitmap& badge_icon,
     const std::string& webapk_package,
     int webapk_version,
     const std::map<std::string, std::string>& icon_url_to_murmur2_hash,
@@ -216,7 +217,7 @@ void WebApkInstaller::UpdateAsync(
     const FinishCallback& finish_callback) {
   // The installer will delete itself when it is done.
   WebApkInstaller* installer = new WebApkInstaller(
-      context, shortcut_info, primary_icon, SkBitmap());
+      context, shortcut_info, primary_icon, badge_icon);
   installer->UpdateAsync(webapk_package, webapk_version,
                          icon_url_to_murmur2_hash, is_manifest_stale,
                          finish_callback);

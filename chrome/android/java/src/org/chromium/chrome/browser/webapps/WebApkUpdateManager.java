@@ -64,12 +64,15 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
      */
     private static class PendingUpdate {
         public WebApkInfo mUpdateInfo;
-        public String mBestIconUrl;
+        public String mPrimaryIconUrl;
+        public String mBadgeIconUrl;
         public boolean mIsManifestStale;
 
-        public PendingUpdate(WebApkInfo info, String bestIconUrl, boolean isManifestStale) {
+        public PendingUpdate(WebApkInfo info, String primaryIconUrl, String badgeIconUrl,
+                boolean isManifestStale) {
             mUpdateInfo = info;
-            mBestIconUrl = bestIconUrl;
+            mPrimaryIconUrl = primaryIconUrl;
+            mBadgeIconUrl = badgeIconUrl;
             mIsManifestStale = isManifestStale;
         }
     }
@@ -100,8 +103,8 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
      */
     public boolean requestPendingUpdate() {
         if (mPendingUpdate != null) {
-            updateAsync(mPendingUpdate.mUpdateInfo, mPendingUpdate.mBestIconUrl,
-                    mPendingUpdate.mIsManifestStale);
+            updateAsync(mPendingUpdate.mUpdateInfo, mPendingUpdate.mPrimaryIconUrl,
+                    mPendingUpdate.mBadgeIconUrl, mPendingUpdate.mIsManifestStale);
             return true;
         }
         return false;
@@ -121,16 +124,17 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
 
     @Override
     public void onWebManifestForInitialUrlNotWebApkCompatible() {
-        onGotManifestData(null, null);
+        onGotManifestData(null, null, null);
     }
 
     @Override
-    public void onGotManifestData(WebApkInfo fetchedInfo, String bestIconUrl) {
+    public void onGotManifestData(WebApkInfo fetchedInfo, String primaryIconUrl,
+            String badgeIconUrl) {
         mStorage.updateTimeOfLastCheckForUpdatedWebManifest();
 
         boolean gotManifest = (fetchedInfo != null);
         boolean needsUpgrade = isShellApkVersionOutOfDate(mInfo)
-                || (gotManifest && needsUpdate(mInfo, fetchedInfo, bestIconUrl));
+                || (gotManifest && needsUpdate(fetchedInfo, primaryIconUrl, badgeIconUrl));
         Log.v(TAG, "Got Manifest: " + gotManifest);
         Log.v(TAG, "WebAPK upgrade needed: " + needsUpgrade);
 
@@ -162,14 +166,15 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
         recordUpdate(mStorage, WebApkInstallResult.FAILURE, false /* relaxUpdates*/);
 
         if (fetchedInfo != null) {
-            scheduleUpdate(fetchedInfo, bestIconUrl, false /* isManifestStale */);
+            scheduleUpdate(fetchedInfo, primaryIconUrl, badgeIconUrl, false /* isManifestStale */);
             return;
         }
 
         // Tell the server that the our version of the Web Manifest might be stale and to ignore
         // our Web Manifest data if the server's Web Manifest data is newer. This scenario can
         // occur if the Web Manifest is temporarily unreachable.
-        scheduleUpdate(mInfo, "" /* bestIconUrl */, true /* isManifestStale */);
+        scheduleUpdate(mInfo, "" /* primaryIconUrl */, "" /* badgeIconUrl */,
+                true /* isManifestStale */);
     }
 
     /**
@@ -183,11 +188,12 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
      * Sends update request to WebAPK Server if the WebAPK is running in the background; caches the
      * fetched WebApkInfo otherwise.
      */
-    protected void scheduleUpdate(WebApkInfo info, String bestIconUrl, boolean isManifestStale) {
+    protected void scheduleUpdate(WebApkInfo info, String primaryIconUrl, String badgeIconUrl,
+            boolean isManifestStale) {
         int numberOfUpdateRequests = mStorage.getUpdateRequests();
         boolean forceUpdateNow =  numberOfUpdateRequests >= MAX_UPDATE_ATTEMPTS;
         if (!isInForeground() || forceUpdateNow) {
-            updateAsync(info, bestIconUrl, isManifestStale);
+            updateAsync(info, primaryIconUrl, badgeIconUrl, isManifestStale);
             WebApkUma.recordUpdateRequestSent(WebApkUma.UPDATE_REQUEST_SENT_FIRST_TRY);
             return;
         }
@@ -196,7 +202,7 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
         // The {@link numberOfUpdateRequests} can never exceed 2 here (otherwise we'll have taken
         // the branch above and have returned before reaching this statement).
         WebApkUma.recordUpdateRequestQueued(numberOfUpdateRequests);
-        mPendingUpdate = new PendingUpdate(info, bestIconUrl, isManifestStale);
+        mPendingUpdate = new PendingUpdate(info, primaryIconUrl, badgeIconUrl, isManifestStale);
     }
 
     /** Returns whether the associated WebApkActivity is running in foreground. */
@@ -208,8 +214,9 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
     /**
      * Sends update request to the WebAPK Server and cleanup.
      */
-    private void updateAsync(WebApkInfo info, String bestIconUrl, boolean isManifestStale) {
-        updateAsyncImpl(info, bestIconUrl, isManifestStale);
+    private void updateAsync(WebApkInfo info, String primaryIconUrl, String badgeIconUrl,
+            boolean isManifestStale) {
+        updateAsyncImpl(info, primaryIconUrl, badgeIconUrl, isManifestStale);
         mStorage.resetUpdateRequests();
         mPendingUpdate = null;
     }
@@ -217,7 +224,8 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
     /**
      * Sends update request to the WebAPK Server.
      */
-    protected void updateAsyncImpl(WebApkInfo info, String bestIconUrl, boolean isManifestStale) {
+    protected void updateAsyncImpl(WebApkInfo info, String primaryIconUrl, String badgeIconUrl,
+            boolean isManifestStale) {
         if (info == null) {
             return;
         }
@@ -234,9 +242,10 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
             i++;
         }
         nativeUpdateAsync(info.id(), info.manifestStartUrl(), info.scopeUri().toString(),
-                info.name(), info.shortName(), bestIconUrl, info.icon(), iconUrls, iconHashes,
-                info.displayMode(), info.orientation(), info.themeColor(), info.backgroundColor(),
-                info.manifestUrl(), info.webApkPackageName(), versionCode, isManifestStale);
+                info.name(), info.shortName(), primaryIconUrl, info.icon(), badgeIconUrl,
+                info.badgeIcon(), iconUrls, iconHashes, info.displayMode(), info.orientation(),
+                info.themeColor(), info.backgroundColor(), info.manifestUrl(),
+                info.webApkPackageName(), versionCode, isManifestStale);
     }
 
     /**
@@ -315,19 +324,27 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
 
     /**
      * Checks whether the WebAPK needs to be updated.
-     * @param info               Meta data from WebAPK's Android Manifest.
-     * @param fetchedInfo        Fetched data for Web Manifest.
-     * @param bestFetchedIconUrl The icon URL in {@link fetchedInfo#iconUrlToMurmur2HashMap()} best
-     *                           suited for use as the launcher icon on this device.
+     * @param fetchedInfo    Fetched data for Web Manifest.
+     * @param primaryIconUrl The icon URL in {@link fetchedInfo#iconUrlToMurmur2HashMap()} best
+     *                       suited for use as the launcher icon on this device.
+     * @param badgeIconUrl   The icon URL in {@link fetchedInfo#iconUrlToMurmur2HashMap()} best
+     *                       suited for use as the badge icon on this device.
      */
-    private boolean needsUpdate(WebApkInfo info, WebApkInfo fetchedInfo, String bestIconUrl) {
-        // We should have computed the Murmur2 hash for the bitmap at the best icon URL for
-        // {@link fetchedInfo} (but not the other icon URLs.)
-        String fetchedBestIconMurmur2Hash = fetchedInfo.iconUrlToMurmur2HashMap().get(bestIconUrl);
-        String bestIconMurmur2Hash =
-                findMurmur2HashForUrlIgnoringFragment(mInfo.iconUrlToMurmur2HashMap(), bestIconUrl);
+    private boolean needsUpdate(WebApkInfo fetchedInfo, String primaryIconUrl,
+            String badgeIconUrl) {
+        // We should have computed the Murmur2 hashes for the bitmaps at the primary icon URL and
+        // the badge icon for {@link fetchedInfo} (but not the other icon URLs.)
+        String fetchedPrimaryIconMurmur2Hash = fetchedInfo.iconUrlToMurmur2HashMap()
+                .get(primaryIconUrl);
+        String primaryIconMurmur2Hash = findMurmur2HashForUrlIgnoringFragment(
+                mInfo.iconUrlToMurmur2HashMap(), primaryIconUrl);
+        String fetchedBadgeIconMurmur2Hash = fetchedInfo.iconUrlToMurmur2HashMap()
+                .get(badgeIconUrl);
+        String badgeIconMurmur2Hash = findMurmur2HashForUrlIgnoringFragment(
+                mInfo.iconUrlToMurmur2HashMap(), badgeIconUrl);
 
-        return !TextUtils.equals(bestIconMurmur2Hash, fetchedBestIconMurmur2Hash)
+        return !TextUtils.equals(primaryIconMurmur2Hash, fetchedPrimaryIconMurmur2Hash)
+                || !TextUtils.equals(badgeIconMurmur2Hash, fetchedBadgeIconMurmur2Hash)
                 || !urlsMatchIgnoringFragments(
                            mInfo.scopeUri().toString(), fetchedInfo.scopeUri().toString())
                 || !urlsMatchIgnoringFragments(
@@ -377,8 +394,8 @@ public class WebApkUpdateManager implements WebApkUpdateDataFetcher.Observer {
     }
 
     private static native void nativeUpdateAsync(String id, String startUrl, String scope,
-            String name, String shortName, String bestIconUrl, Bitmap bestIcon, String[] iconUrls,
-            String[] iconHashes, int displayMode, int orientation, long themeColor,
-            long backgroundColor, String manifestUrl, String webApkPackage, int webApkVersion,
-            boolean isManifestStale);
+            String name, String shortName, String primaryIconUrl, Bitmap primaryIcon,
+            String badgeIconUrl, Bitmap badgeIcon, String[] iconUrls, String[] iconHashes,
+            int displayMode, int orientation, long themeColor, long backgroundColor,
+            String manifestUrl, String webApkPackage, int webApkVersion, boolean isManifestStale);
 }

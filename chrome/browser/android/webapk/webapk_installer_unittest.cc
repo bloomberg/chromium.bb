@@ -31,6 +31,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/image/image_unittest_util.h"
 #include "url/gurl.h"
 
 namespace {
@@ -201,8 +202,10 @@ class BuildProtoRunner {
     info.best_badge_icon_url = best_badge_icon_url;
 
     // WebApkInstaller owns itself.
-    WebApkInstaller* installer =
-        new TestWebApkInstaller(browser_context_, info, SkBitmap(), SkBitmap());
+    SkBitmap primary_icon(gfx::test::CreateBitmap(144, 144));
+    SkBitmap badge_icon(gfx::test::CreateBitmap(72, 72));
+    WebApkInstaller* installer = new TestWebApkInstaller(
+        browser_context_, info, primary_icon, badge_icon);
     installer->BuildWebApkProtoInBackgroundForTesting(
         base::Bind(&BuildProtoRunner::OnBuiltWebApkProto,
                    base::Unretained(this)),
@@ -410,8 +413,8 @@ TEST_F(WebApkInstallerTest, UpdateSuccessWithEmptyDownloadUrlInResponse) {
 }
 
 // When there is no Web Manifest available for a site, an empty
-// |best_primary_icon_url| is used to build a WebApk update request. Tests the
-// request can be built properly.
+// |best_primary_icon_url| and an empty |best_badge_icon_url| is used to build a
+// WebApk update request. Tests the request can be built properly.
 TEST_F(WebApkInstallerTest, BuildWebApkProtoWhenManifestIsObsolete) {
   std::string icon_url_1 = test_server()->GetURL("/icon1.png").spec();
   std::string icon_url_2 = test_server()->GetURL("/icon2.png").spec();
@@ -426,23 +429,27 @@ TEST_F(WebApkInstallerTest, BuildWebApkProtoWhenManifestIsObsolete) {
   ASSERT_NE(nullptr, webapk_request);
 
   webapk::WebAppManifest manifest = webapk_request->manifest();
-  ASSERT_EQ(3, manifest.icons_size());
+  ASSERT_EQ(4, manifest.icons_size());
 
-  webapk::Image icons[3];
-  for (int i = 0; i < 3; ++i)
+  webapk::Image icons[4];
+  for (int i = 0; i < 4; ++i)
     icons[i] = manifest.icons(i);
 
   EXPECT_EQ("", icons[0].src());
   EXPECT_FALSE(icons[0].has_hash());
   EXPECT_TRUE(icons[0].has_image_data());
 
-  EXPECT_EQ(icon_url_1, icons[1].src());
-  EXPECT_EQ(icon_url_to_murmur2_hash[icon_url_1], icons[1].hash());
-  EXPECT_FALSE(icons[1].has_image_data());
+  EXPECT_EQ("", icons[1].src());
+  EXPECT_FALSE(icons[1].has_hash());
+  EXPECT_TRUE(icons[1].has_image_data());
 
-  EXPECT_EQ(icon_url_2, icons[2].src());
-  EXPECT_EQ(icon_url_to_murmur2_hash[icon_url_2], icons[2].hash());
+  EXPECT_EQ(icon_url_1, icons[2].src());
+  EXPECT_EQ(icon_url_to_murmur2_hash[icon_url_1], icons[2].hash());
   EXPECT_FALSE(icons[2].has_image_data());
+
+  EXPECT_EQ(icon_url_2, icons[3].src());
+  EXPECT_EQ(icon_url_to_murmur2_hash[icon_url_2], icons[3].hash());
+  EXPECT_FALSE(icons[3].has_image_data());
 }
 
 // Tests a WebApk install or update request is built properly when the Chrome

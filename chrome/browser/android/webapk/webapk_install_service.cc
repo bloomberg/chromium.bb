@@ -43,7 +43,8 @@ void WebApkInstallService::InstallAsync(const ShortcutInfo& shortcut_info,
 
 void WebApkInstallService::UpdateAsync(
     const ShortcutInfo& shortcut_info,
-    const SkBitmap& shortcut_icon,
+    const SkBitmap& primary_icon,
+    const SkBitmap& badge_icon,
     const std::string& webapk_package,
     int webapk_version,
     const std::map<std::string, std::string>& icon_url_to_murmur2_hash,
@@ -54,7 +55,7 @@ void WebApkInstallService::UpdateAsync(
   installs_.insert(shortcut_info.manifest_url);
 
   WebApkInstaller::UpdateAsync(
-      browser_context_, shortcut_info, shortcut_icon, webapk_package,
+      browser_context_, shortcut_info, primary_icon, badge_icon, webapk_package,
       webapk_version, icon_url_to_murmur2_hash, is_manifest_stale,
       base::Bind(&WebApkInstallService::OnFinishedInstall,
                  weak_ptr_factory_.GetWeakPtr(), shortcut_info.manifest_url,
