@@ -1,6 +1,14 @@
 {% from 'utilities.cpp.tmpl' import declare_enum_validation_variable, v8_value_to_local_cpp_value %}
 
 {##############################################################################}
+{% macro runtime_timer_scope(counter) %}
+{% if counter -%}
+RuntimeCallStats* runtime_call_stats = RuntimeCallStats::From(info.GetIsolate());
+RuntimeCallTimerScope timer_scope(runtime_call_stats,
+                                  RuntimeCallStats::CounterId::{{counter}});
+{%- endif %}
+{% endmacro %}
+
 {% macro generate_method(method, world_suffix) %}
 static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const v8::FunctionCallbackInfo<v8::Value>& info) {
   {% filter format_remove_duplicates([
@@ -10,6 +18,7 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kExecutionContext, "{{interface_name}}", "{{method.name}}");
   {%- endset %}
 
+  {{runtime_timer_scope(method.rcs_counter) | indent(2)}}
   {% set function_call = func_call_with_prep_of_args(method, world_suffix) %}
 
   {% if 'exceptionState' in function_call or

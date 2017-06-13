@@ -197,6 +197,9 @@ def attribute_context(interface, attribute, interfaces):
     if not has_custom_setter(attribute) and has_setter(interface, attribute):
         setter_context(interface, attribute, interfaces, context)
 
+    # [RuntimeCallStatsCounter]
+    runtime_call_stats_context(context, extended_attributes)
+
     # [CrossOrigin] is incompatible with a number of other attributes, so check
     # for them here.
     if is_cross_origin:
@@ -208,6 +211,20 @@ def attribute_context(interface, attribute, interfaces):
             raise Exception('[CrossOrigin] cannot be used for constructors: %s.%s', interface.name, attribute.name)
 
     return context
+
+
+def runtime_call_stats_context(context, extended_attributes):
+    counter = ''
+    if 'RuntimeCallStatsCounter' in extended_attributes:
+        includes.add('platform/bindings/RuntimeCallStats.h')
+        counter = extended_attributes['RuntimeCallStatsCounter']
+    runtime_call_stats = {
+        'getter_counter': 'k%s_Getter' % counter if counter else '',
+        'setter_counter': 'k%s_Setter' % counter if counter else ''
+    }
+    context.update({
+        'runtime_call_stats': runtime_call_stats
+    })
 
 
 def filter_accessors(attributes):

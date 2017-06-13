@@ -90,6 +90,9 @@ Replaceable
 # Valid values for [RuntimeEnabled] are the Runtime Enabled Features, listed in
 # Source/platform/RuntimeEnabledFeatures.json5
 RuntimeEnabled=*
+# Valid values for [RuntimeCallStatsCounter] are counters defined in
+# Source/platform/bindings/RuntimeCallStats.h
+RuntimeCallStatsCounter=*
 SameObject
 SaveSameObject
 SecureContext

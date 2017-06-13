@@ -97,17 +97,43 @@ class PLATFORM_EXPORT RuntimeCallStats {
   // Get RuntimeCallStats object associated with the given isolate.
   static RuntimeCallStats* From(v8::Isolate*);
 
+// The following 3 macros are used to define counters that are used in the
+// bindings layer to measure call stats for IDL interface methods and
+// attributes. Also see documentation for [RuntimeCallStatsCounter] in
+// bindings/IDLExtendedAttributes.md.
+
+// Use this to define a counter for IDL interface methods.
+// [RuntimeCallStatsCounter=MethodCounter] void method() =>
+// BINDINGS_METHOD(V, MethodCounter)
+#define BINDINGS_METHOD(V, counter) V(counter)
+
+// Use this to define a counter for IDL readonly attributes.
+// [RuntimeCallStatsCounter=AttributeCounter] readonly attribute boolean attr =>
+// BINDINGS_READ_ONLY_ATTRIBUTE(V, AttributeCounter)
+#define BINDINGS_READ_ONLY_ATTRIBUTE(V, counter) V(counter##_Getter)
+
+// Use this to define counters for IDL attributes (defines a counter each for
+// getter and setter).
+// [RuntimeCallStats=AttributeCounter] attribute long attr
+// => BINDINGS_ATTRIBUTE(V, AttributeCounter)
+#define BINDINGS_ATTRIBUTE(V, counter) \
+  V(counter##_Getter)                  \
+  V(counter##_Setter)
+
 // Counters
-#define FOR_EACH_COUNTER(V)          \
-  V(UpdateStyle)                     \
-  V(UpdateLayout)                    \
-  V(CollectGarbage)                  \
-  V(PerformIdleLazySweep)            \
-  V(UpdateLayerPositionsAfterLayout) \
-  V(PaintContents)                   \
-  V(ProcessStyleSheet)               \
-  V(TestCounter1)                    \
-  V(TestCounter2)
+#define FOR_EACH_COUNTER(V)                                             \
+  V(UpdateStyle)                                                        \
+  V(UpdateLayout)                                                       \
+  V(CollectGarbage)                                                     \
+  V(PerformIdleLazySweep)                                               \
+  V(UpdateLayerPositionsAfterLayout)                                    \
+  V(PaintContents)                                                      \
+  V(ProcessStyleSheet)                                                  \
+  V(TestCounter1)                                                       \
+  V(TestCounter2)                                                       \
+  BINDINGS_METHOD(V, BindingsMethodTestCounter)                         \
+  BINDINGS_READ_ONLY_ATTRIBUTE(V, BindingsReadOnlyAttributeTestCounter) \
+  BINDINGS_ATTRIBUTE(V, BindingsAttributeTestCounter)
 
   enum class CounterId : uint16_t {
 #define ADD_ENUM_VALUE(counter) k##counter,

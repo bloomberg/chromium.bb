@@ -49,8 +49,35 @@ TEST_F(RuntimeCallStatsTest, InitialCountShouldBeZero) {
 
 TEST_F(RuntimeCallStatsTest, StatsCounterNameIsCorrect) {
   RuntimeCallStats stats;
-  EXPECT_EQ(0, strcmp("TestCounter1",
-                      stats.GetCounter(test_counter_1_id)->GetName()));
+  EXPECT_STREQ("TestCounter1", stats.GetCounter(test_counter_1_id)->GetName());
+}
+
+TEST_F(RuntimeCallStatsTest, TestBindingsCountersForMethods) {
+  RuntimeCallStats stats;
+  RuntimeCallCounter* method_counter =
+      stats.GetCounter(RuntimeCallStats::CounterId::kBindingsMethodTestCounter);
+  EXPECT_STREQ("BindingsMethodTestCounter", method_counter->GetName());
+}
+
+TEST_F(RuntimeCallStatsTest, TestBindingsCountersForReadOnlyAttributes) {
+  RuntimeCallStats stats;
+  RuntimeCallCounter* getter_counter =
+      stats.GetCounter(RuntimeCallStats::CounterId::
+                           kBindingsReadOnlyAttributeTestCounter_Getter);
+  EXPECT_STREQ("BindingsReadOnlyAttributeTestCounter_Getter",
+               getter_counter->GetName());
+}
+
+TEST_F(RuntimeCallStatsTest, TestBindingsCountersForAttributes) {
+  RuntimeCallStats stats;
+  RuntimeCallCounter* getter_counter = stats.GetCounter(
+      RuntimeCallStats::CounterId::kBindingsAttributeTestCounter_Getter);
+  RuntimeCallCounter* setter_counter = stats.GetCounter(
+      RuntimeCallStats::CounterId::kBindingsAttributeTestCounter_Setter);
+  EXPECT_STREQ("BindingsAttributeTestCounter_Getter",
+               getter_counter->GetName());
+  EXPECT_STREQ("BindingsAttributeTestCounter_Setter",
+               setter_counter->GetName());
 }
 
 TEST_F(RuntimeCallStatsTest, CountIsUpdatedAfterLeave) {

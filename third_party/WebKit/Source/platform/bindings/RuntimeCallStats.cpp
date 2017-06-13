@@ -75,11 +75,11 @@ String RuntimeCallStats::ToString() const {
   StringBuilder builder;
   builder.Append("Runtime Call Stats for Blink \n");
   builder.Append(
-      "Name                                               Count     Time "
+      "Name                                                    Count     Time "
       "(ms)\n\n");
   for (int i = 0; i < number_of_counters_; i++) {
     const RuntimeCallCounter* counter = &counters_[i];
-    builder.Append(String::Format("%-50s  %8" PRIu64 "  %9.3f\n",
+    builder.Append(String::Format("%-55s  %8" PRIu64 "  %9.3f\n",
                                   counter->GetName(), counter->GetCount(),
                                   counter->GetTime().InMillisecondsF()));
   }

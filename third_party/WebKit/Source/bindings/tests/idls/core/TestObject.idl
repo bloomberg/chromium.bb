@@ -201,6 +201,8 @@ interface TestObject {
     [Reflect, ReflectOnly=("ltr","rtl","auto"), ReflectMissing="auto", ReflectInvalid="ltr"] attribute DOMString limitedWithInvalidMissingDefaultAttribute;
     [Reflect, ReflectOnly=("anonymous","use-credentials"), ReflectEmpty="anonymous", ReflectInvalid="anonymous"] readonly attribute DOMString corsSettingAttribute;
     [Reflect, ReflectOnly=("empty","missing","invalid","a-normal"), ReflectEmpty="empty", ReflectMissing="missing", ReflectInvalid="invalid"] readonly attribute DOMString limitedWithEmptyMissingInvalidAttribute;
+    [RuntimeCallStatsCounter=RuntimeCallStatsCounterAttribute] attribute long RuntimeCallStatsCounterAttribute;
+    [RuntimeCallStatsCounter=RuntimeCallStatsCounterReadOnlyAttribute] readonly attribute double RuntimeCallStatsCounterReadOnlyAttribute;
 
     [Replaceable] readonly attribute long replaceableReadonlyLongAttribute;
     [PutForwards=href] readonly attribute TestNode locationPutForwards;
@@ -548,6 +550,8 @@ interface TestObject {
     void voidMethodTestInterfaceGarbageCollectedSequenceArg(sequence<TestInterfaceGarbageCollected> testInterfaceGarbageCollectedSequenceArg);
     void voidMethodTestInterfaceGarbageCollectedArrayArg(TestInterfaceGarbageCollected[] testInterfaceGarbageCollectedArrayArg);
     [NewObject] TestInterface newObjectTestInterfaceMethod();
+    [RuntimeCallStatsCounter=RuntimeCallStatsCounterMethod] void RuntimeCallStatsCounterMethod();
+
 
     serializer DOMString serializerMethod();
 
