@@ -727,7 +727,33 @@ static void fdct32(const tran_low_t *input, tran_low_t *output) {
 
 #ifndef AV1_DCT_GTEST
 
+#if CONFIG_LGT
+static void flgt4(const tran_low_t *input, tran_low_t *output) {
+  if (!(input[0] | input[1] | input[2] | input[3])) {
+    output[0] = output[1] = output[2] = output[3] = 0;
+    return;
+  }
+
+  tran_high_t s[4] = { 0 };
+  for (int i = 0; i < 4; ++i)
+    for (int j = 0; j < 4; ++j) s[j] += lgtbasis4[j][i] * input[i];
+
+  for (int i = 0; i < 4; ++i) output[i] = (tran_low_t)fdct_round_shift(s[i]);
+}
+
+static void flgt8(const tran_low_t *input, tran_low_t *output) {
+  tran_high_t s[8] = { 0 };
+  for (int i = 0; i < 8; ++i)
+    for (int j = 0; j < 8; ++j) s[j] += lgtbasis8[j][i] * input[i];
+
+  for (int i = 0; i < 8; ++i) output[i] = (tran_low_t)fdct_round_shift(s[i]);
+}
+#endif  // CONFIG_LGT
+
 static void fadst4(const tran_low_t *input, tran_low_t *output) {
+#if CONFIG_LGT
+  flgt4(input, output);
+#else
   tran_high_t x0, x1, x2, x3;
   tran_high_t s0, s1, s2, s3, s4, s5, s6, s7;
 
@@ -765,9 +791,13 @@ static void fadst4(const tran_low_t *input, tran_low_t *output) {
   output[1] = (tran_low_t)fdct_round_shift(s1);
   output[2] = (tran_low_t)fdct_round_shift(s2);
   output[3] = (tran_low_t)fdct_round_shift(s3);
+#endif  // CONFIG_LGT
 }
 
 static void fadst8(const tran_low_t *input, tran_low_t *output) {
+#if CONFIG_LGT
+  flgt8(input, output);
+#else
   tran_high_t s0, s1, s2, s3, s4, s5, s6, s7;
 
   tran_high_t x0 = input[7];
@@ -836,6 +866,7 @@ static void fadst8(const tran_low_t *input, tran_low_t *output) {
   output[5] = (tran_low_t)-x7;
   output[6] = (tran_low_t)x5;
   output[7] = (tran_low_t)-x1;
+#endif  // CONFIG_LGT
 }
 
 static void fadst16(const tran_low_t *input, tran_low_t *output) {
