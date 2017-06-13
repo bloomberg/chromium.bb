@@ -343,6 +343,16 @@ _BANNED_CPP_FUNCTIONS = (
       (),
     ),
     (
+      'BrowserThread::(FILE|FILE_USER_BLOCKING|DB|PROCESS_LAUNCHER|CACHE)',
+      (
+        'The non-UI/IO BrowserThreads are deprecated, please migrate this',
+        'code to TaskScheduler. See https://goo.gl/mDSxKl for details.',
+        'For questions, contact base/task_scheduler/OWNERS.',
+      ),
+      True,
+      (),
+    ),
+    (
       'base::SequenceChecker',
       (
         'Consider using SEQUENCE_CHECKER macros instead of the class directly.',
