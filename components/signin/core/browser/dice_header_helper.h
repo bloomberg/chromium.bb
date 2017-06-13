@@ -19,6 +19,11 @@ class DiceHeaderHelper : public SigninHeaderHelper {
   DiceHeaderHelper() {}
   ~DiceHeaderHelper() override {}
 
+  // Returns the parameters contained in the X-Chrome-ID-Consistency-Response
+  // response header.
+  static DiceResponseParams BuildDiceResponseParams(
+      const std::string& header_value);
+
  private:
   // SigninHeaderHelper implementation:
   bool IsUrlEligibleForRequestHeader(const GURL& url) override;

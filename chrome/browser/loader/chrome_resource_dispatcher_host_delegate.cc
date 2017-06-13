@@ -799,12 +799,8 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
 
-  // See if the response contains the X-Chrome-Manage-Accounts header. If so
-  // show the profile avatar bubble so that user can complete signin/out action
-  // the native UI.
-  signin::ProcessMirrorResponseHeaderIfExists(request, io_data,
-                                              info->GetChildID(),
-                                              info->GetRouteID());
+  signin::ProcessAccountConsistencyResponseHeaders(
+      request, GURL(), io_data, info->GetChildID(), info->GetRouteID());
 
   // Built-in additional protection for the chrome web store origin.
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -848,6 +844,8 @@ void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
   // native UI. The only exception is requests from gaia webview, since the
   // native profile management UI is built on top of it.
   signin::FixAccountConsistencyRequestHeader(
+      request, redirect_url, io_data, info->GetChildID(), info->GetRouteID());
+  signin::ProcessAccountConsistencyResponseHeaders(
       request, redirect_url, io_data, info->GetChildID(), info->GetRouteID());
 
   if (io_data->loading_predictor_observer()) {
