@@ -142,9 +142,7 @@ void HTMLFrameOwnerElement::SetSandboxFlags(SandboxFlags flags) {
   sandbox_flags_ = flags;
   // Recalculate the container policy in case the allow-same-origin flag has
   // changed.
-  container_policy_ = GetContainerPolicyFromAllowedFeatures(
-      AllowedFeatures(), AllowFullscreen(), AllowPaymentRequest(),
-      GetOriginForFeaturePolicy());
+  container_policy_ = ConstructContainerPolicy();
 
   // Don't notify about updates if ContentFrame() is null, for example when
   // the subframe hasn't been created yet.
@@ -166,9 +164,7 @@ void HTMLFrameOwnerElement::DisposePluginSoon(PluginView* plugin) {
 }
 
 void HTMLFrameOwnerElement::UpdateContainerPolicy() {
-  container_policy_ = GetContainerPolicyFromAllowedFeatures(
-      AllowedFeatures(), AllowFullscreen(), AllowPaymentRequest(),
-      GetOriginForFeaturePolicy());
+  container_policy_ = ConstructContainerPolicy();
   // Don't notify about updates if ContentFrame() is null, for example when
   // the subframe hasn't been created yet.
   if (ContentFrame()) {

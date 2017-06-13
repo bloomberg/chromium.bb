@@ -24,11 +24,12 @@
 #ifndef HTMLFrameElement_h
 #define HTMLFrameElement_h
 
+#include "core/CoreExport.h"
 #include "core/html/HTMLFrameElementBase.h"
 
 namespace blink {
 
-class HTMLFrameElement final : public HTMLFrameElementBase {
+class CORE_EXPORT HTMLFrameElement final : public HTMLFrameElementBase {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -37,6 +38,9 @@ class HTMLFrameElement final : public HTMLFrameElementBase {
   bool HasFrameBorder() const { return frame_border_; }
 
   bool NoResize() const;
+
+  Vector<WebParsedFeaturePolicyDeclaration> ConstructContainerPolicy()
+      const override;
 
  private:
   explicit HTMLFrameElement(Document&);

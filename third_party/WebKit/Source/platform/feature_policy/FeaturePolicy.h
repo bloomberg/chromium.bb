@@ -41,14 +41,6 @@ ParseFeaturePolicy(const String& policy,
                    Vector<String>* messages,
                    const FeatureNameMap& feature_names);
 
-// Given a vector of WebFeaturePolicyFeatures and an origin, creates a vector of
-// whitelists, one for each feature specified.
-PLATFORM_EXPORT WebParsedFeaturePolicy GetContainerPolicyFromAllowedFeatures(
-    const WebVector<WebFeaturePolicyFeature>& features,
-    bool allowfullscreen,
-    bool allowpayment,
-    RefPtr<SecurityOrigin>);
-
 // Verifies whether feature policy is enabled and |feature| is supported in
 // feature policy.
 PLATFORM_EXPORT bool IsSupportedInFeaturePolicy(WebFeaturePolicyFeature);
