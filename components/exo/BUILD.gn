@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//chrome/common/features.gni")
 import("//build/config/ui.gni")
 import("//testing/test.gni")
 
@@ -13,7 +14,6 @@ source_set("exo") {
     "compositor_frame_sink_holder.h",
     "display.cc",
     "display.h",
-    "gaming_seat.cc",
     "gaming_seat.h",
     "keyboard.cc",
     "keyboard.h",
@@ -71,8 +71,13 @@ source_set("exo") {
     "//ui/wm/public",
   ]
 
-  if (use_ozone) {
+  if (enable_exo_ozone_gamepad) {
+    defines = [ "USE_OZONE_GAMEPAD" ]
+    sources += [ "gaming_seat_ozone.cc" ]
     deps += [ "//ui/ozone" ]
+    deps += [ "//ui/events/ozone:events_ozone_evdev" ]
+  } else {
+    sources += [ "gaming_seat.cc" ]
   }
 
   if (is_chromeos) {
@@ -112,7 +117,6 @@ source_set("unit_tests") {
   sources = [
     "buffer_unittest.cc",
     "display_unittest.cc",
-    "gaming_seat_unittest.cc",
     "keyboard_unittest.cc",
     "pointer_unittest.cc",
     "shared_memory_unittest.cc",
@@ -151,6 +155,14 @@ source_set("unit_tests") {
 
   if (use_ozone) {
     deps += [ "//ui/ozone" ]
+  }
+
+  if (enable_exo_ozone_gamepad) {
+    sources += [
+      "../../ui/events/ozone/gamepad/gamepad_event.cc",
+      "gaming_seat_unittest.cc",
+    ]
+    deps += [ "//ui/events/ozone:events_ozone_evdev" ]
   }
 }
 
