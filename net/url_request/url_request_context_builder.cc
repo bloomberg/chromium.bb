@@ -136,9 +136,11 @@ class BasicNetworkDelegate : public NetworkDelegateImpl {
   DISALLOW_COPY_AND_ASSIGN(BasicNetworkDelegate);
 };
 
-// Define a context class that can self-manage the ownership of its components
-// via a UrlRequestContextStorage object. Since it cancels requests in its
-// destructor, it's not safe to subclass this.
+// A URLRequestContext subclass that owns most of its components
+// via a UrlRequestContextStorage object. When URLRequestContextBuilder::Build()
+// is called, ownership of all URLRequestContext components is passed to the
+// ContainerURLRequestContext. Since this cancels requests in its destructor,
+// it's not safe to subclass this.
 class ContainerURLRequestContext final : public URLRequestContext {
  public:
   explicit ContainerURLRequestContext(
