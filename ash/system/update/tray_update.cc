@@ -14,6 +14,7 @@
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_controller.h"
 #include "ash/system/tray/system_tray_delegate.h"
+#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
@@ -24,6 +25,7 @@
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 namespace {
@@ -137,9 +139,13 @@ class TrayUpdate::UpdateView : public ActionableView {
 };
 
 TrayUpdate::TrayUpdate(SystemTray* system_tray)
-    : TrayImageItem(system_tray, kSystemTrayUpdateIcon, UMA_UPDATE) {}
+    : TrayImageItem(system_tray, kSystemTrayUpdateIcon, UMA_UPDATE) {
+  Shell::Get()->system_tray_notifier()->AddUpdateObserver(this);
+}
 
-TrayUpdate::~TrayUpdate() {}
+TrayUpdate::~TrayUpdate() {
+  Shell::Get()->system_tray_notifier()->RemoveUpdateObserver(this);
+}
 
 bool TrayUpdate::GetInitialVisibility() {
   // If chrome tells ash there is an update available before this item's system
@@ -157,6 +163,16 @@ views::View* TrayUpdate::CreateDefaultView(LoginStatus status) {
 
 void TrayUpdate::OnDefaultViewDestroyed() {
   update_view_ = nullptr;
+}
+
+void TrayUpdate::OnUpdateOverCellularTargetSet(bool success) {
+  if (!success)
+    return;
+
+  tray_view()->SetVisible(false);
+  update_over_cellular_available_ = false;
+  if (update_view_)
+    update_view_->GetWidget()->Close();
 }
 
 void TrayUpdate::ShowUpdateIcon(mojom::UpdateSeverity severity,

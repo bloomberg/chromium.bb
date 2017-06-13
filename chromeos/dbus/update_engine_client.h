@@ -73,6 +73,9 @@ class CHROMEOS_EXPORT UpdateEngineClient : public DBusClient {
 
     // Called when the status is updated.
     virtual void UpdateStatusChanged(const Status& status) {}
+
+    // Called when the update over cellular target is set.
+    virtual void OnUpdateOverCellularTargetSet(bool success) {}
   };
 
   ~UpdateEngineClient() override;

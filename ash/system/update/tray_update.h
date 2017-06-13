@@ -7,6 +7,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/system/tray/tray_image_item.h"
+#include "ash/system/update/update_observer.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
@@ -26,7 +27,7 @@ enum class UpdateType;
 // The system update tray item. The tray icon stays visible once an update
 // notification is received. The icon only disappears after a reboot to apply
 // the update. Exported for test.
-class ASH_EXPORT TrayUpdate : public TrayImageItem {
+class ASH_EXPORT TrayUpdate : public TrayImageItem, public UpdateObserver {
  public:
   explicit TrayUpdate(SystemTray* system_tray);
   ~TrayUpdate() override;
@@ -53,6 +54,9 @@ class ASH_EXPORT TrayUpdate : public TrayImageItem {
   bool GetInitialVisibility() override;
   views::View* CreateDefaultView(LoginStatus status) override;
   void OnDefaultViewDestroyed() override;
+
+  // Overridden from UpdateObserver.
+  void OnUpdateOverCellularTargetSet(bool success) override;
 
   // Expose label information for testing.
   views::Label* GetLabelForTesting();
