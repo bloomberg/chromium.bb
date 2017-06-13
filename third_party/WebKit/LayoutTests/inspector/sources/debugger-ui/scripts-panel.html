@@ -25,7 +25,8 @@ function test()
         InspectorTest.addResult("Source requested for " + this.url());
     }
 
-    Bindings.NetworkProject.forTarget(InspectorTest.mainTarget)._reset();
+    Bindings.NetworkProject.forTarget(InspectorTest.mainTarget)._resetForTest();
+    Bindings.resourceMapping._resetForTest(InspectorTest.mainTarget);
     var page = new InspectorTest.PageMock('http://example.com');
     InspectorTest.connectToPage('mock-page', page, true /* makeMainTarget */);
 

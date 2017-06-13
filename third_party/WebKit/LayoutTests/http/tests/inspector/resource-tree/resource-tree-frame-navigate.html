@@ -7,40 +7,38 @@
 <link rel="stylesheet" href="resources/styles-initial.css">
 
 <script>
-function navigateIframe()
+function navigateIframe(url)
 {
     var iframe = document.getElementById("iframe");
-    iframe.setAttribute("src", "resources/resource-tree-frame-navigate-iframe-after.html");
+    iframe.setAttribute("src", url);
+    return new Promise(x => iframe.onload = x);
 }
 
-function test()
+async function test()
 {
     InspectorTest.addResult("Before navigation");
     InspectorTest.addResult("====================================");
+    await InspectorTest.evaluateInPageAsync('navigateIframe("resources/resource-tree-frame-navigate-iframe-before.html")');
     InspectorTest.dumpResourceTreeEverything();
-    InspectorTest.addConsoleSniffer(step2);
-    InspectorTest.evaluateInPage("navigateIframe()");
 
-    function step2()
-    {
-        InspectorTest.addResult("");
-        InspectorTest.addResult("After navigation");
-        InspectorTest.addResult("====================================");
-        InspectorTest.dumpResourceTreeEverything();
-        InspectorTest.completeTest();
-    }
+    InspectorTest.addResult("");
+    InspectorTest.addResult("After navigation");
+    InspectorTest.addResult("====================================");
+    await InspectorTest.evaluateInPageAsync('navigateIframe("resources/resource-tree-frame-navigate-iframe-after.html")');
+    InspectorTest.dumpResourceTreeEverything();
+    InspectorTest.completeTest();
 }
 
 </script>
 
 </head>
 
-<body>
+<body onload='runTest()'>
 <p>
 Tests resource tree model on iframe navigation, compares resource tree against golden. Every line is important.
 </p>
 
-<iframe id="iframe" src="resources/resource-tree-frame-navigate-iframe-before.html" onload="runTest()">
+<iframe id="iframe">
 
 </body>
 </html>

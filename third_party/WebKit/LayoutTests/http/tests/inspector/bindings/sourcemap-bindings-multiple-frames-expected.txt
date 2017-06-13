@@ -14,7 +14,7 @@ Workspace: 7 uiSourceCodes.
 
 Running: createIframesAndWaitForSourceMaps
 Removed: 0 uiSourceCodes
-Workspace: 21 uiSourceCodes.
+Workspace: 20 uiSourceCodes.
     debugger:///VM[XXX] bindings-test.js
     debugger:///VM[XXX] inspector-test.js
     debugger:///VM[XXX] sourcemap-bindings-multiple-frames.html
@@ -24,7 +24,6 @@ Workspace: 21 uiSourceCodes.
 [+] debugger:///VM[XXX] _test_create-iframe1.js
 [+] debugger:///VM[XXX] _test_create-iframe2.js
     http://127.0.0.1:8000/inspector/bindings/bindings-test.js
-[+] http://127.0.0.1:8000/inspector/bindings/resources/sourcemap-frame.html
 [+] http://127.0.0.1:8000/inspector/bindings/resources/sourcemap-frame.html
 [+] http://127.0.0.1:8000/inspector/bindings/resources/sourcemap-sass.scss
 [+] http://127.0.0.1:8000/inspector/bindings/resources/sourcemap-script.js
@@ -38,8 +37,7 @@ Workspace: 21 uiSourceCodes.
 [+] _test_create-iframe2.js
 
 Running: detachFrame1
-Removed: 3 uiSourceCodes
-[-] http://127.0.0.1:8000/inspector/bindings/resources/sourcemap-frame.html
+Removed: 2 uiSourceCodes
 [-] http://127.0.0.1:8000/inspector/bindings/resources/sourcemap-script.js
 [-] http://127.0.0.1:8000/inspector/bindings/resources/sourcemap-style.css
 Workspace: 20 uiSourceCodes.

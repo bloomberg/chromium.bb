@@ -5,7 +5,16 @@ InspectorTest.createWorkspace = function()
     InspectorTest.testTargetManager = new SDK.TargetManager();
     InspectorTest.testWorkspace = new Workspace.Workspace();
     InspectorTest.testNetworkProjectManager = new Bindings.NetworkProjectManager(InspectorTest.testTargetManager, InspectorTest.testWorkspace);
+    InspectorTest.testResourceMapping = new Bindings.ResourceMapping(InspectorTest.testTargetManager, InspectorTest.testWorkspace);
     InspectorTest.testDebuggerWorkspaceBinding = new Bindings.DebuggerWorkspaceBinding(InspectorTest.testTargetManager, InspectorTest.testWorkspace);
+    // Override ResourceMapping so that CSSWorkspaceBinding and DebuggerWorkspaceBinding refer to the correct one.
+    Bindings.resourceMapping = InspectorTest.testResourceMapping;
+}
+
+function resourceMappingModelInfoForTarget(target) {
+    var resourceTreeModel = target.model(SDK.ResourceTreeModel);
+    var binding = resourceTreeModel ? InspectorTest.testResourceMapping._modelToInfo.get(resourceTreeModel) : null;
+    return binding;
 }
 
 InspectorTest.createMockTarget = function(id)
@@ -13,6 +22,7 @@ InspectorTest.createMockTarget = function(id)
     var capabilities = SDK.Target.Capability.AllForTests;
     var target = InspectorTest.testTargetManager.createTarget("mock-target-id-" + id, "mock-target-" + id, capabilities & (~SDK.Target.Capability.JS), (params) => new SDK.StubConnection(params), null);
     InspectorTest.testNetworkProject = Bindings.NetworkProject.forTarget(target);
+    InspectorTest.testResourceMappingModelInfo = resourceMappingModelInfoForTarget(target);
     target._capabilitiesMask = capabilities;
     target._inspectedURL = InspectorTest.mainTarget.inspectedURL();
     target.resourceTreeModel = target.model(SDK.ResourceTreeModel);
@@ -129,6 +139,8 @@ InspectorTest.DebuggerModelMock = class extends SDK.SDKModel {
     createRawLocationByURL(url, line, column)
     {
         var script = this._scriptForURL(url);
+        if (!script)
+            return null;
         return new SDK.DebuggerModel.Location(this, script.scriptId, line, column);
     }
 
@@ -232,11 +244,13 @@ InspectorTest.addUISourceCode = function(target, breakpointManager, url, doNotSe
     InspectorTest.addResult("  Adding UISourceCode: " + url);
 
     // Add resource to get UISourceCode.
-    var uiSourceCode = InspectorTest.testWorkspace.uiSourceCodeForURL(url);
-    if (uiSourceCode)
-        uiSourceCode.project().removeFile(url);
+    var resourceMappingModelInfo = resourceMappingModelInfoForTarget(target);
+    if (resourceMappingModelInfo._bindings.has(url)) {
+        resourceMappingModelInfo._bindings.get(url).dispose();
+        resourceMappingModelInfo._bindings.delete(url);
+    }
     var resource = new SDK.Resource(target, null, url, url, '', '', Common.resourceTypes.Document, 'text/html', null, null);
-    InspectorTest.testNetworkProject._addResource(resource);
+    resourceMappingModelInfo._resourceAdded({data: resource});
     uiSourceCode = InspectorTest.testWorkspace.uiSourceCodeForURL(url);
 
     InspectorTest.uiSourceCodes[url] = uiSourceCode;

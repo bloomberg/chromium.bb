@@ -13,7 +13,8 @@ function test()
         mockTarget.debuggerModel.reset();
         InspectorTest.addResult("  Resetting workspace.");
         breakpointManager._debuggerWorkspaceBinding._reset(mockTarget.debuggerModel);
-        InspectorTest.testNetworkProject._reset();
+        InspectorTest.testNetworkProject._resetForTest();
+        InspectorTest.testResourceMappingModelInfo._resetForTest();
     }
 
     function createBreakpoint(url, lineNumber, condition, enabled)
