@@ -121,6 +121,9 @@ class ProcessMemoryMetricsEmitterTest : public InProcessBrowserTest {
 
 #if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
 #define MAYBE_FetchAndEmitMetrics DISABLED_FetchAndEmitMetrics
+#elif defined(OS_MACOSX)
+// Flaky on Mac. http://crbug.com/732501.
+#define MAYBE_FetchAndEmitMetrics DISABLED_FetchAndEmitMetrics
 #else
 #define MAYBE_FetchAndEmitMetrics FetchAndEmitMetrics
 #endif
