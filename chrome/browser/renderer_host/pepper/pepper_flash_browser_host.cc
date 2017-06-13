@@ -13,14 +13,18 @@
 #include "content/public/browser/browser_ppapi_host.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
-#include "device/power_save_blocker/power_save_blocker.h"
+#include "content/public/common/service_manager_connection.h"
+#include "device/wake_lock/public/interfaces/wake_lock_provider.mojom.h"
 #include "ipc/ipc_message_macros.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/host/dispatch_host_message.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/resource_message_params.h"
 #include "ppapi/shared_impl/time_conversion.h"
+#include "services/device/public/interfaces/constants.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "url/gurl.h"
 
 #if defined(OS_WIN)
@@ -32,6 +36,7 @@
 using content::BrowserPpapiHost;
 using content::BrowserThread;
 using content::RenderProcessHost;
+using content::ServiceManagerConnection;
 
 namespace chrome {
 
@@ -49,6 +54,16 @@ scoped_refptr<content_settings::CookieSettings> GetCookieSettings(
     return CookieSettingsFactory::GetForProfile(profile);
   }
   return NULL;
+}
+
+void BindConnectorRequest(
+    service_manager::mojom::ConnectorRequest connector_request) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(ServiceManagerConnection::GetForProcess());
+
+  ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->BindConnectorRequest(std::move(connector_request));
 }
 
 }  // namespace
@@ -82,18 +97,12 @@ int32_t PepperFlashBrowserHost::OnResourceMessageReceived(
 }
 
 void PepperFlashBrowserHost::OnDelayTimerFired() {
-  power_save_blocker_.reset();
+  GetWakeLock()->CancelWakeLock();
 }
 
 int32_t PepperFlashBrowserHost::OnUpdateActivity(
     ppapi::host::HostMessageContext* host_context) {
-  if (!power_save_blocker_) {
-    power_save_blocker_.reset(new device::PowerSaveBlocker(
-        device::PowerSaveBlocker::kPowerSaveBlockPreventDisplaySleep,
-        device::PowerSaveBlocker::kReasonOther, "Requested By PepperFlash",
-        BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
-        BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE)));
-  }
+  GetWakeLock()->RequestWakeLock();
   // There is no specification for how long OnUpdateActivity should prevent the
   // screen from going to sleep. Empirically, twitch.tv calls this method every
   // 10 seconds. Be conservative and allow 45 seconds (set in |delay_timer_|'s
@@ -167,6 +176,38 @@ void PepperFlashBrowserHost::GetLocalDataRestrictions(
   SendReply(reply_context,
             PpapiPluginMsg_Flash_GetLocalDataRestrictionsReply(
                 static_cast<int32_t>(restrictions)));
+}
+
+device::mojom::WakeLock* PepperFlashBrowserHost::GetWakeLock() {
+  // Here is a lazy binding, and will not reconnect after connection error.
+  if (wake_lock_)
+    return wake_lock_.get();
+
+  device::mojom::WakeLockRequest request = mojo::MakeRequest(&wake_lock_);
+
+  // Service manager connection might be not initialized in some testing
+  // contexts.
+  if (!ServiceManagerConnection::GetForProcess())
+    return wake_lock_.get();
+
+  service_manager::mojom::ConnectorRequest connector_request;
+  auto connector = service_manager::Connector::Create(&connector_request);
+
+  // The existing connector is bound to the UI thread, the current thread is
+  // IO thread. So bind the ConnectorRequest of IO thread to the connector
+  // in UI thread.
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&BindConnectorRequest, std::move(connector_request)));
+
+  device::mojom::WakeLockProviderPtr wake_lock_provider;
+  connector->BindInterface(device::mojom::kServiceName,
+                           mojo::MakeRequest(&wake_lock_provider));
+  wake_lock_provider->GetWakeLockWithoutContext(
+      device::mojom::WakeLockType::PreventDisplaySleep,
+      device::mojom::WakeLockReason::ReasonOther, "Requested By PepperFlash",
+      std::move(request));
+  return wake_lock_.get();
 }
 
 }  // namespace chrome

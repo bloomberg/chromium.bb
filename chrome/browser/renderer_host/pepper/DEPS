@@ -1,5 +1,7 @@
 include_rules = [
   # ppapi/host and ppapi/proxy are already added at a higher level DEPS file.
   "+ppapi/shared_impl",
+  "+device/wake_lock/public/interfaces",
+  "+services/device/public/interfaces",
 ]
 
