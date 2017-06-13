@@ -31,6 +31,7 @@
 #include "core/layout/LayoutGeometryMap.h"
 
 #include "core/dom/Document.h"
+#include "core/frame/FrameTestHelpers.h"
 #include "core/frame/WebLocalFrameBase.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutView.h"
@@ -44,7 +45,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "web/WebLocalFrameImpl.h"
 #include "web/WebViewImpl.h"
-#include "web/tests/FrameTestHelpers.h"
 
 namespace blink {
 

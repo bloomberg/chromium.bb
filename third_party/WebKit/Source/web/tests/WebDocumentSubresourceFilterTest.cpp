@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "core/dom/Element.h"
+#include "core/frame/FrameTestHelpers.h"
 #include "core/html/HTMLImageElement.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
@@ -19,7 +20,6 @@
 #include "public/web/WebLocalFrame.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "web/tests/FrameTestHelpers.h"
 
 namespace blink {
 

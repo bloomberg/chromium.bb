@@ -183,8 +183,6 @@ test("webkit_unit_tests") {
     "tests/FakeWebPlugin.cpp",
     "tests/FakeWebPlugin.h",
     "tests/FrameSerializerTest.cpp",
-    "tests/FrameTestHelpers.cpp",
-    "tests/FrameTestHelpers.h",
     "tests/HTMLDocumentParserLoadingTest.cpp",
     "tests/HTMLImportSheetsTest.cpp",
     "tests/ImeOnFocusTest.cpp",

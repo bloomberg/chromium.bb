@@ -6,6 +6,7 @@
 #include "core/dom/ClientRect.h"
 #include "core/exported/WebRemoteFrameImpl.h"
 #include "core/frame/BrowserControls.h"
+#include "core/frame/FrameTestHelpers.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/RootFrameViewport.h"
 #include "core/frame/VisualViewport.h"
@@ -32,7 +33,6 @@
 #include "public/web/WebScriptSource.h"
 #include "public/web/WebSettings.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "web/tests/FrameTestHelpers.h"
 
 using blink::testing::RunPendingTasks;
 using testing::Mock;

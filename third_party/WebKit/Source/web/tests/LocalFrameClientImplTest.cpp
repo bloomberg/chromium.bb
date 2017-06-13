@@ -30,6 +30,7 @@
 
 #include "web/LocalFrameClientImpl.h"
 
+#include "core/frame/FrameTestHelpers.h"
 #include "core/frame/WebLocalFrameBase.h"
 #include "core/loader/FrameLoader.h"
 #include "platform/weborigin/KURL.h"
@@ -40,7 +41,6 @@
 #include "public/web/WebView.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "web/tests/FrameTestHelpers.h"
 
 using testing::_;
 using testing::Mock;

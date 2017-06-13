@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "core/dom/Range.h"
+#include "core/frame/FrameTestHelpers.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/WebLocalFrameBase.h"
 #include "core/input/EventHandler.h"
@@ -17,7 +18,6 @@
 #include "public/web/WebSettings.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "web/tests/FrameTestHelpers.h"
 
 using ::testing::_;
 

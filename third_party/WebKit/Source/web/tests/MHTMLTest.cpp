@@ -29,6 +29,7 @@
  */
 
 #include "core/dom/Document.h"
+#include "core/frame/FrameTestHelpers.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Location.h"
 #include "core/page/Page.h"
@@ -50,7 +51,6 @@
 #include "public/web/WebFrame.h"
 #include "public/web/WebView.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "web/tests/FrameTestHelpers.h"
 
 using blink::URLTestHelpers::ToKURL;
 

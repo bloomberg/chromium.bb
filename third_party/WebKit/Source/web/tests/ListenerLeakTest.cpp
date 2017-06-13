@@ -28,6 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "core/frame/FrameTestHelpers.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
@@ -36,7 +37,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8-profiler.h"
 #include "v8/include/v8.h"
-#include "web/tests/FrameTestHelpers.h"
 
 namespace blink {
 
