@@ -727,7 +727,8 @@ using translate::LanguageDetectionController;
 
 // Tests that translation occurs automatically on second navigation to an
 // already translated page.
-- (void)testAutoTranslate {
+// TODO(crbug.com/732797): Reenable this test.
+- (void)DISABLED_testAutoTranslate {
   // The translate machinery will not auto-fire without API keys, unless that
   // behavior is overridden for testing.
   translate::TranslateManager::SetIgnoreMissingKeyForTesting(true);
