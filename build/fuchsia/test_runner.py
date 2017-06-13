@@ -47,6 +47,9 @@ def MakeTargetImageName(common_prefix, output_directory, location):
   output_directory: an optional prefix on location that will also be removed.
   location: the file path to relativize.
 
+  .so files will be stored into the lib subdirectory to be able to be found by
+  default by the loader.
+
   Examples:
 
   >>> MakeTargetImageName(common_prefix='/work/cr/src/',
@@ -58,6 +61,11 @@ def MakeTargetImageName(common_prefix, output_directory, location):
   ...                     output_directory='/work/cr/src/out/fuch',
   ...                     location='/work/cr/src/out/fuch/icudtl.dat')
   'icudtl.dat'
+
+  >>> MakeTargetImageName(common_prefix='/work/cr/src/',
+  ...                     output_directory='/work/cr/src/out/fuch',
+  ...                     location='/work/cr/src/out/fuch/libbase.so')
+  'lib/libbase.so'
   """
   assert output_directory.startswith(common_prefix)
   output_dir_no_common_prefix = output_directory[len(common_prefix):]
@@ -65,6 +73,10 @@ def MakeTargetImageName(common_prefix, output_directory, location):
   loc = location[len(common_prefix):]
   if loc.startswith(output_dir_no_common_prefix):
     loc = loc[len(output_dir_no_common_prefix)+1:]
+  # TODO(fuchsia): The requirements for finding/loading .so are in flux, so this
+  # ought to be reconsidered at some point. See https://crbug.com/732897.
+  if location.endswith('.so'):
+    loc = 'lib/' + loc
   return loc
 
 
