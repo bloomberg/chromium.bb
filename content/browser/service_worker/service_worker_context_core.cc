@@ -766,6 +766,13 @@ int ServiceWorkerContextCore::GetVersionFailureCount(int64_t version_id) {
   return it->second.count;
 }
 
+void ServiceWorkerContextCore::OnStorageWiped() {
+  if (!observer_list_)
+    return;
+  observer_list_->Notify(FROM_HERE,
+                         &ServiceWorkerContextCoreObserver::OnStorageWiped);
+}
+
 void ServiceWorkerContextCore::OnRunningStateChanged(
     ServiceWorkerVersion* version) {
   if (!observer_list_)

@@ -104,7 +104,7 @@ bool ServiceWorkerContext::IsExcludedHeaderNameForFetchEvent(
 
 ServiceWorkerContextWrapper::ServiceWorkerContextWrapper(
     BrowserContext* browser_context)
-    : observer_list_(
+    : core_observer_list_(
           new base::ObserverListThreadSafe<ServiceWorkerContextCoreObserver>()),
       process_manager_(new ServiceWorkerProcessManager(browser_context)),
       is_incognito_(false),
@@ -740,12 +740,12 @@ void ServiceWorkerContextWrapper::GetUserDataForAllRegistrationsByKeyPrefix(
 
 void ServiceWorkerContextWrapper::AddObserver(
     ServiceWorkerContextCoreObserver* observer) {
-  observer_list_->AddObserver(observer);
+  core_observer_list_->AddObserver(observer);
 }
 
 void ServiceWorkerContextWrapper::RemoveObserver(
     ServiceWorkerContextCoreObserver* observer) {
-  observer_list_->RemoveObserver(observer);
+  core_observer_list_->RemoveObserver(observer);
 }
 
 bool ServiceWorkerContextWrapper::OriginHasForeignFetchRegistrations(
@@ -781,7 +781,8 @@ void ServiceWorkerContextWrapper::InitInternal(
   }
   context_core_.reset(new ServiceWorkerContextCore(
       user_data_directory, std::move(database_task_manager), disk_cache_thread,
-      quota_manager_proxy, special_storage_policy, observer_list_.get(), this));
+      quota_manager_proxy, special_storage_policy, core_observer_list_.get(),
+      this));
 }
 
 void ServiceWorkerContextWrapper::ShutdownOnIO() {
@@ -821,9 +822,7 @@ void ServiceWorkerContextWrapper::DidDeleteAndStartOver(
   }
   context_core_.reset(new ServiceWorkerContextCore(context_core_.get(), this));
   DVLOG(1) << "Restarted ServiceWorkerContextCore successfully.";
-
-  observer_list_->Notify(FROM_HERE,
-                         &ServiceWorkerContextCoreObserver::OnStorageWiped);
+  context_core_->OnStorageWiped();
 }
 
 void ServiceWorkerContextWrapper::BindWorkerFetchContext(

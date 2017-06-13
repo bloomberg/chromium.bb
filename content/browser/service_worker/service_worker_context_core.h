@@ -126,6 +126,8 @@ class CONTENT_EXPORT ServiceWorkerContextCore
       ServiceWorkerContextWrapper* wrapper);
   ~ServiceWorkerContextCore() override;
 
+  void OnStorageWiped();
+
   // ServiceWorkerVersion::Listener overrides.
   void OnRunningStateChanged(ServiceWorkerVersion* version) override;
   void OnVersionStateChanged(ServiceWorkerVersion* version) override;
