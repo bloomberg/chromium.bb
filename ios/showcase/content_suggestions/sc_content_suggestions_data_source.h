@@ -13,12 +13,6 @@
 @interface SCContentSuggestionsDataSource
     : NSObject<ContentSuggestionsDataSource>
 
-// Title of the first suggested article.
-+ (NSString*)titleFirstSuggestion;
-
-// Title of the Reading List item.
-+ (NSString*)titleReadingListItem;
-
 @end
 
 #endif  // IOS_SHOWCASE_CONTENT_SUGGESTIONS_SC_CONTENT_SUGGESTIONS_DATA_SOURCE_H_
