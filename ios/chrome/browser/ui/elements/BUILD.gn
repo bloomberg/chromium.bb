@@ -38,6 +38,7 @@ source_set("unit_tests") {
 }
 
 source_set("elements_internal") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "activity_overlay_coordinator.h",
     "activity_overlay_coordinator.mm",

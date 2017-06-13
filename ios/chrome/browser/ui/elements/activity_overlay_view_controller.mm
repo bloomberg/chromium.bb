@@ -8,6 +8,10 @@
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/ActivityIndicator/src/MaterialActivityIndicator.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 // Size of the activity indicator.
 const CGFloat kActivityIndicatorSize = 48;
@@ -21,9 +25,9 @@ const CGFloat kBackgroundAlpha = 0.5;
   [super viewDidLoad];
   self.view.backgroundColor = [UIColor colorWithWhite:0 alpha:kBackgroundAlpha];
 
-  MDCActivityIndicator* activityIndicator = [[[MDCActivityIndicator alloc]
+  MDCActivityIndicator* activityIndicator = [[MDCActivityIndicator alloc]
       initWithFrame:CGRectMake(0, 0, kActivityIndicatorSize,
-                               kActivityIndicatorSize)] autorelease];
+                               kActivityIndicatorSize)];
   activityIndicator.translatesAutoresizingMaskIntoConstraints = NO;
   [self.view addSubview:activityIndicator];
   AddSameCenterConstraints(self.view, activityIndicator);
