@@ -13,23 +13,18 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/files/scoped_temp_dir.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "base/values.h"
 #include "components/sync/base/model_type.h"
-#include "components/sync/engine_impl/loopback_server/loopback_server.h"
-#include "components/sync/engine_impl/loopback_server/loopback_server_entity.h"
-#include "components/sync/engine_impl/loopback_server/persistent_bookmark_entity.h"
-#include "components/sync/engine_impl/loopback_server/persistent_tombstone_entity.h"
-#include "components/sync/engine_impl/loopback_server/persistent_unique_client_entity.h"
 #include "components/sync/protocol/sync.pb.h"
+#include "components/sync/test/fake_server/fake_server_entity.h"
 
 namespace fake_server {
 
 // A fake version of the Sync server used for testing. This class is not thread
 // safe.
-class FakeServer : public syncer::LoopbackServer::ObserverForTests {
+class FakeServer {
  public:
   class Observer {
    public:
@@ -42,7 +37,7 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
   };
 
   FakeServer();
-  ~FakeServer() override;
+  virtual ~FakeServer();
 
   // Handles a /command POST (with the given |request|) to the server. Three
   // output arguments, |error_code|, |response_code|, and |response|, are used
@@ -69,7 +64,7 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
 
   // Returns all entities stored by the server of the given |model_type|.
   // This method returns SyncEntity protocol buffer objects (instead of
-  // LoopbackServerEntity) so that callers can inspect datatype-specific data
+  // FakeServerEntity) so that callers can inspect datatype-specific data
   // (e.g., the URL of a session tab).
   std::vector<sync_pb::SyncEntity> GetSyncEntitiesByModelType(
       syncer::ModelType model_type);
@@ -77,7 +72,7 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
   // Adds |entity| to the server's collection of entities. This method makes no
   // guarantees that the added entity will result in successful server
   // operations.
-  void InjectEntity(std::unique_ptr<syncer::LoopbackServerEntity> entity);
+  void InjectEntity(std::unique_ptr<FakeServerEntity> entity);
 
   // Modifies the entity on the server with the given |id|. The entity's
   // EntitySpecifics are replaced with |updated_specifics| and its version is
@@ -145,20 +140,87 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
   // This can be used to trigger exponential backoff in the client.
   void DisableNetwork();
 
-  // Implement LoopbackServer::ObserverForTests:
-  void OnCommit(const std::string& committer_id,
-                syncer::ModelTypeSet committed_model_types) override;
+  // Returns the entity ID of the Bookmark Bar folder.
+  std::string GetBookmarkBarFolderId() const;
 
   // Returns the current FakeServer as a WeakPtr.
   base::WeakPtr<FakeServer> AsWeakPtr();
 
  private:
+  using EntityMap = std::map<std::string, std::unique_ptr<FakeServerEntity>>;
+
+  // Gets FakeServer ready for syncing.
+  void Init();
+
+  // Processes a GetUpdates call.
+  bool HandleGetUpdatesRequest(const sync_pb::GetUpdatesMessage& get_updates,
+                               sync_pb::GetUpdatesResponse* response);
+
+  // Processes a Commit call.
+  bool HandleCommitRequest(const sync_pb::CommitMessage& message,
+                           const std::string& invalidator_client_id,
+                           sync_pb::CommitResponse* response);
+
+  // Creates and saves a permanent folder for Bookmarks (e.g., Bookmark Bar).
+  bool CreatePermanentBookmarkFolder(const std::string& server_tag,
+                                     const std::string& name);
+
+  // Inserts the default permanent items in |entities_|.
+  bool CreateDefaultPermanentItems();
+
+  // Saves a |entity| to |entities_|.
+  void SaveEntity(std::unique_ptr<FakeServerEntity> entity);
+
+  // Commits a client-side SyncEntity to the server as a FakeServerEntity.
+  // The client that sent the commit is identified via |client_guid|. The
+  // parent ID string present in |client_entity| should be ignored in favor
+  // of |parent_id|. If the commit is successful, the entity's server ID string
+  // is returned and a new FakeServerEntity is saved in |entities_|.
+  std::string CommitEntity(
+      const sync_pb::SyncEntity& client_entity,
+      sync_pb::CommitResponse_EntryResponse* entry_response,
+      const std::string& client_guid,
+      const std::string& parent_id);
+
+  // Populates |entry_response| based on the stored entity identified by
+  // |entity_id|. It is assumed that the entity identified by |entity_id| has
+  // already been stored using SaveEntity.
+  void BuildEntryResponseForSuccessfulCommit(
+      const std::string& entity_id,
+      sync_pb::CommitResponse_EntryResponse* entry_response);
+
+  // Determines whether the SyncEntity with id_string |id| is a child of an
+  // entity with id_string |potential_parent_id|.
+  bool IsChild(const std::string& id, const std::string& potential_parent_id);
+
+  // Creates and saves tombstones for all children of the entity with the given
+  // |id|. A tombstone is not created for the entity itself.
+  void DeleteChildren(const std::string& id);
+
   // Returns whether a triggered error should be sent for the request.
   bool ShouldSendTriggeredError() const;
+
+  // Updates the |entity| to a new version and increments the version counter
+  // that the server uses to assign versions.
+  void UpdateEntityVersion(FakeServerEntity* entity);
+
+  // Returns the store birthday.
+  std::string GetStoreBirthday() const;
+
+  // This is the last version number assigned to an entity. The next entity will
+  // have a version number of version_ + 1.
+  int64_t version_;
+
+  // The current store birthday value.
+  int64_t store_birthday_;
 
   // Whether the server should act as if incoming connections are properly
   // authenticated.
   bool authenticated_;
+
+  // All SyncEntity objects saved by the server. The key value is the entity's
+  // id string.
+  EntityMap entities_;
 
   // All Keystore keys known to the server.
   std::vector<std::string> keystore_keys_;
@@ -195,9 +257,6 @@ class FakeServer : public syncer::LoopbackServer::ObserverForTests {
 
   // Used to verify that FakeServer is only used from one thread.
   base::ThreadChecker thread_checker_;
-
-  std::unique_ptr<syncer::LoopbackServer> loopback_server_;
-  std::unique_ptr<base::ScopedTempDir> loopback_server_storage_;
 
   // Creates WeakPtr versions of the current FakeServer. This must be the last
   // data member!

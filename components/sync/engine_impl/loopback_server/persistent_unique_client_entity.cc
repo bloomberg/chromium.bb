@@ -5,7 +5,6 @@
 #include "components/sync/engine_impl/loopback_server/persistent_unique_client_entity.h"
 
 #include "base/guid.h"
-#include "components/sync/base/hash_util.h"
 #include "components/sync/engine_impl/loopback_server/persistent_permanent_entity.h"
 #include "components/sync/protocol/sync.pb.h"
 
@@ -32,8 +31,7 @@ PersistentUniqueClientEntity::PersistentUniqueClientEntity(
 PersistentUniqueClientEntity::~PersistentUniqueClientEntity() {}
 
 // static
-std::unique_ptr<LoopbackServerEntity>
-PersistentUniqueClientEntity::CreateFromEntity(
+std::unique_ptr<LoopbackServerEntity> PersistentUniqueClientEntity::Create(
     const sync_pb::SyncEntity& client_entity) {
   CHECK(client_entity.has_client_defined_unique_tag())
       << "A PersistentUniqueClientEntity must have a client-defined unique "
@@ -44,20 +42,6 @@ PersistentUniqueClientEntity::CreateFromEntity(
       id, model_type, client_entity.version(), client_entity.name(),
       client_entity.client_defined_unique_tag(), client_entity.specifics(),
       client_entity.ctime(), client_entity.mtime()));
-}
-
-// static
-std::unique_ptr<LoopbackServerEntity>
-PersistentUniqueClientEntity::CreateFromEntitySpecifics(
-    const string& name,
-    const sync_pb::EntitySpecifics& entity_specifics) {
-  ModelType model_type = GetModelTypeFromSpecifics(entity_specifics);
-  string client_defined_unique_tag = GenerateSyncableHash(model_type, name);
-  string id =
-      LoopbackServerEntity::CreateId(model_type, client_defined_unique_tag);
-  return std::unique_ptr<LoopbackServerEntity>(new PersistentUniqueClientEntity(
-      id, model_type, 0, name, client_defined_unique_tag, entity_specifics,
-      1337, 1337));
 }
 
 // static
