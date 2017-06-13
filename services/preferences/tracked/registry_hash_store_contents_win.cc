@@ -6,10 +6,12 @@
 
 #include <windows.h>
 
+#include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -66,43 +68,21 @@ bool ClearSplitMac(const base::string16& reg_key_name,
   return false;
 }
 
-// Deletes |reg_key_name| if it exists.
-void DeleteRegistryKey(const base::string16& reg_key_name) {
-  base::win::RegKey key;
-  if (key.Open(HKEY_CURRENT_USER, reg_key_name.c_str(),
-               KEY_SET_VALUE | KEY_WOW64_32KEY) == ERROR_SUCCESS) {
-    LONG result = key.DeleteKey(L"");
-    DCHECK(result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND) << result;
-  }
-}
-
 }  // namespace
-
-void TempScopedDirRegistryCleaner::SetRegistryPath(
-    const base::string16& registry_path) {
-  if (registry_path_.empty())
-    registry_path_ = registry_path;
-  else
-    DCHECK_EQ(registry_path_, registry_path);
-}
-
-TempScopedDirRegistryCleaner::~TempScopedDirRegistryCleaner() {
-  DCHECK(!registry_path_.empty());
-  DeleteRegistryKey(registry_path_);
-}
 
 RegistryHashStoreContentsWin::RegistryHashStoreContentsWin(
     const base::string16& registry_path,
-    const base::string16& store_key,
-    scoped_refptr<TempScopedDirCleaner> temp_dir_cleaner)
+    const base::string16& store_key)
     : preference_key_name_(registry_path + L"\\PreferenceMACs\\" + store_key),
-      temp_dir_cleaner_(std::move(temp_dir_cleaner)) {
-  if (temp_dir_cleaner_)
-    static_cast<TempScopedDirRegistryCleaner*>(temp_dir_cleaner_.get())
-        ->SetRegistryPath(preference_key_name_);
+      reset_on_delete_(base::StartsWith(store_key,
+                                        base::ScopedTempDir::GetTempDirPrefix(),
+                                        base::CompareCase::INSENSITIVE_ASCII)) {
 }
 
-RegistryHashStoreContentsWin::~RegistryHashStoreContentsWin() = default;
+RegistryHashStoreContentsWin::~RegistryHashStoreContentsWin() {
+  if (reset_on_delete_)
+    Reset();
+}
 
 RegistryHashStoreContentsWin::RegistryHashStoreContentsWin(
     const RegistryHashStoreContentsWin& other) = default;
@@ -121,7 +101,14 @@ base::StringPiece RegistryHashStoreContentsWin::GetUMASuffix() const {
 }
 
 void RegistryHashStoreContentsWin::Reset() {
-  DeleteRegistryKey(preference_key_name_);
+  base::win::RegKey key;
+  if (key.Open(HKEY_CURRENT_USER, preference_key_name_.c_str(),
+               KEY_SET_VALUE | KEY_WOW64_32KEY) == ERROR_SUCCESS) {
+    LONG result = key.DeleteKey(L"");
+    DCHECK(result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND ||
+           result == ERROR_ACCESS_DENIED || result == ERROR_KEY_DELETED)
+        << result;
+  }
 }
 
 bool RegistryHashStoreContentsWin::GetMac(const std::string& path,
