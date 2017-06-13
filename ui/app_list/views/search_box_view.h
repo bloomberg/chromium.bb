@@ -16,6 +16,7 @@
 #include "ui/views/view.h"
 
 namespace views {
+class ImageView;
 class Textfield;
 }  // namespace views
 
@@ -115,7 +116,8 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
   AppListViewDelegate* view_delegate_;  // Not owned.
   AppListModel* model_;  // Owned by the profile-keyed service.
 
-  views::View* content_container_;     // Owned by views hierarchy.
+  views::View* content_container_;       // Owned by views hierarchy.
+  views::ImageView* google_icon_;        // Owned by views hierarchy.
   SearchBoxImageButton* back_button_;    // Owned by views hierarchy.
   SearchBoxImageButton* speech_button_;  // Owned by views hierarchy.
   views::Textfield* search_box_;  // Owned by views hierarchy.
