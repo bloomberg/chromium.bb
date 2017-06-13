@@ -283,14 +283,14 @@ BaseBlockingPage::GetInterstitialReason(
     const BaseUIManager::UnsafeResource& resource = *iter;
     safe_browsing::SBThreatType threat_type = resource.threat_type;
     if (threat_type == SB_THREAT_TYPE_URL_MALWARE ||
-        threat_type == SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL) {
+        threat_type == SB_THREAT_TYPE_URL_CLIENT_SIDE_MALWARE) {
       return BaseSafeBrowsingErrorUI::SB_REASON_MALWARE;
     } else if (threat_type == SB_THREAT_TYPE_URL_UNWANTED) {
       harmful = true;
     } else {
       DCHECK(threat_type == SB_THREAT_TYPE_URL_PHISHING ||
-             threat_type == SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL ||
-             threat_type == SB_THREAT_TYPE_PASSWORD_PROTECTION_PHISHING_URL);
+             threat_type == SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING ||
+             threat_type == SB_THREAT_TYPE_URL_PASSWORD_PROTECTION_PHISHING);
     }
   }
 

@@ -43,10 +43,10 @@ bool UnsafeResource::IsMainPageLoadBlocked() const {
   // Client-side phishing/malware detection and password protection phishing
   // interstitials never block the main frame load, since they happen after the
   // page is finished loading.
-  if (threat_type == safe_browsing::SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL ||
-      threat_type == safe_browsing::SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL ||
+  if (threat_type == safe_browsing::SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING ||
+      threat_type == safe_browsing::SB_THREAT_TYPE_URL_CLIENT_SIDE_MALWARE ||
       threat_type ==
-          safe_browsing::SB_THREAT_TYPE_PASSWORD_PROTECTION_PHISHING_URL) {
+          safe_browsing::SB_THREAT_TYPE_URL_PASSWORD_PROTECTION_PHISHING) {
     return false;
   }
 

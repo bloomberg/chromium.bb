@@ -566,7 +566,7 @@ void ClientSideDetectionHost::MaybeShowPhishingWarning(GURL phishing_url,
       resource.url = phishing_url;
       resource.original_url = phishing_url;
       resource.is_subresource = false;
-      resource.threat_type = SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL;
+      resource.threat_type = SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING;
       resource.threat_source =
           safe_browsing::ThreatSource::CLIENT_SIDE_DETECTION;
       resource.web_contents_getter = safe_browsing::SafeBrowsingUIManager::
@@ -602,7 +602,7 @@ void ClientSideDetectionHost::MaybeShowMalwareWarning(GURL original_url,
       resource.url = malware_url;
       resource.original_url = original_url;
       resource.is_subresource = (malware_url.host() != original_url.host());
-      resource.threat_type = SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL;
+      resource.threat_type = SB_THREAT_TYPE_URL_CLIENT_SIDE_MALWARE;
       resource.threat_source =
           safe_browsing::ThreatSource::CLIENT_SIDE_DETECTION;
       resource.web_contents_getter = safe_browsing::SafeBrowsingUIManager::

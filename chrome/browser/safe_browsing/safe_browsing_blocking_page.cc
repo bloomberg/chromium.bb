@@ -141,9 +141,9 @@ bool SafeBrowsingBlockingPage::ShouldReportThreatDetails(
   return threat_type == SB_THREAT_TYPE_URL_PHISHING ||
          threat_type == SB_THREAT_TYPE_URL_MALWARE ||
          threat_type == SB_THREAT_TYPE_URL_UNWANTED ||
-         threat_type == SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL ||
-         threat_type == SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL ||
-         threat_type == SB_THREAT_TYPE_PASSWORD_PROTECTION_PHISHING_URL;
+         threat_type == SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING ||
+         threat_type == SB_THREAT_TYPE_URL_CLIENT_SIDE_MALWARE ||
+         threat_type == SB_THREAT_TYPE_URL_PASSWORD_PROTECTION_PHISHING;
 }
 
 SafeBrowsingBlockingPage::~SafeBrowsingBlockingPage() {

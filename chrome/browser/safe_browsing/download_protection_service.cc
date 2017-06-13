@@ -222,7 +222,7 @@ class DownloadUrlSBClient
   }
 
   bool IsDangerous(SBThreatType threat_type) const {
-    return threat_type == SB_THREAT_TYPE_BINARY_MALWARE_URL;
+    return threat_type == SB_THREAT_TYPE_URL_BINARY_MALWARE;
   }
 
   // Implements SafeBrowsingDatabaseManager::Client.

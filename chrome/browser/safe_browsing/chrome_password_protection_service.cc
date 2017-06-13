@@ -148,7 +148,7 @@ void ChromePasswordProtectionService::ShowPhishingInterstitial(
   resource.url = phishing_url;
   resource.original_url = phishing_url;
   resource.is_subresource = false;
-  resource.threat_type = SB_THREAT_TYPE_PASSWORD_PROTECTION_PHISHING_URL;
+  resource.threat_type = SB_THREAT_TYPE_URL_PASSWORD_PROTECTION_PHISHING;
   resource.threat_source =
       safe_browsing::ThreatSource::PASSWORD_PROTECTION_SERVICE;
   resource.web_contents_getter =

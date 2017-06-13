@@ -1093,7 +1093,7 @@ TEST_F(V4LocalDatabaseManagerTest, TestCheckDownloadUrlWithOneBlacklisted) {
   store_and_hash_prefixes.emplace_back(GetUrlMalBinId(), bad_hash_prefix);
   ReplaceV4Database(store_and_hash_prefixes, true /* stores_available */);
 
-  TestClient client(SB_THREAT_TYPE_BINARY_MALWARE_URL, url_chain);
+  TestClient client(SB_THREAT_TYPE_URL_BINARY_MALWARE, url_chain);
   EXPECT_FALSE(
       v4_local_database_manager_->CheckDownloadUrl(url_chain, &client));
   EXPECT_FALSE(client.on_check_download_urls_result_called_);
