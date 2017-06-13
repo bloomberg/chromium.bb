@@ -16,6 +16,8 @@ const base::Feature kEnableAnswerCardDarkRun{"EnableAnswerCardDarkRun",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableFullscreenAppList{"EnableFullscreenAppList",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kEnablePlaystoreAppSearch{
+    "EnablePlaystoreAppSearch", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsAnswerCardEnabled() {
   static const bool enabled = base::FeatureList::IsEnabled(kEnableAnswerCard);
@@ -38,13 +40,19 @@ bool IsSearchResultsNewDesignEnabled() {
          (IsAnswerCardEnabled() && !IsAnswerCardDarkRunEnabled());
 }
 
-int APP_LIST_EXPORT AnswerCardMaxWidth() {
+bool IsPlaystoreAppSearchEnabled() {
+  static const bool enabled =
+      base::FeatureList::IsEnabled(kEnablePlaystoreAppSearch);
+  return enabled;
+}
+
+int AnswerCardMaxWidth() {
   static const int max_width = base::GetFieldTrialParamByFeatureAsInt(
       kEnableAnswerCard, "CardMaxWidth", 608);
   return max_width;
 }
 
-int APP_LIST_EXPORT AnswerCardMaxHeight() {
+int AnswerCardMaxHeight() {
   static const int max_height = base::GetFieldTrialParamByFeatureAsInt(
       kEnableAnswerCard, "CardMaxHeight", 266);
   return max_height;
