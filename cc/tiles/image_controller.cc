@@ -81,8 +81,10 @@ void ImageController::StopWorkerTasks() {
     // The task (if one exists) would have run already, we just need to make
     // sure it was completed. Multiple requests for the same image use the same
     // task so it could have already been completed.
-    if (request.task && !request.task->HasCompleted())
+    if (request.task && !request.task->HasCompleted()) {
+      request.task->OnTaskCompleted();
       request.task->DidComplete();
+    }
 
     if (request.need_unref)
       cache_->UnrefImage(request.draw_image);
@@ -107,8 +109,10 @@ void ImageController::StopWorkerTasks() {
       if (request.task->state().IsNew())
         request.task->state().DidCancel();
 
-      if (!request.task->HasCompleted())
+      if (!request.task->HasCompleted()) {
+        request.task->OnTaskCompleted();
         request.task->DidComplete();
+      }
     }
     cache_->UnrefImage(request.draw_image);
 
