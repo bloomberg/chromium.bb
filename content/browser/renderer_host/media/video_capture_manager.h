@@ -157,9 +157,8 @@ class CONTENT_EXPORT VideoCaptureManager
   void SetDesktopCaptureWindowId(media::VideoCaptureSessionId session_id,
                                  gfx::NativeViewId window_id);
 
-  void GetPhotoCapabilities(
-      int session_id,
-      VideoCaptureDevice::GetPhotoCapabilitiesCallback callback);
+  void GetPhotoState(int session_id,
+                     VideoCaptureDevice::GetPhotoStateCallback callback);
   void SetPhotoOptions(int session_id,
                        media::mojom::PhotoSettingsPtr settings,
                        VideoCaptureDevice::SetPhotoOptionsCallback callback);

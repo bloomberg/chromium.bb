@@ -76,7 +76,7 @@ class ErrorFakeDevice : public media::VideoCaptureDevice {
   }
 
   void StopAndDeAllocate() override {}
-  void GetPhotoCapabilities(GetPhotoCapabilitiesCallback callback) override {}
+  void GetPhotoState(GetPhotoStateCallback callback) override {}
   void SetPhotoOptions(media::mojom::PhotoSettingsPtr settings,
                        SetPhotoOptionsCallback callback) override {}
   void TakePhoto(TakePhotoCallback callback) override {}

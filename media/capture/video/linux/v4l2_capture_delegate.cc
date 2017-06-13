@@ -544,14 +544,13 @@ void V4L2CaptureDelegate::TakePhoto(
   take_photo_callbacks_.push(std::move(callback));
 }
 
-void V4L2CaptureDelegate::GetPhotoCapabilities(
-    VideoCaptureDevice::GetPhotoCapabilitiesCallback callback) {
+void V4L2CaptureDelegate::GetPhotoState(
+    VideoCaptureDevice::GetPhotoStateCallback callback) {
   DCHECK(v4l2_task_runner_->BelongsToCurrentThread());
   if (!device_fd_.is_valid() || !is_capturing_)
     return;
 
-  mojom::PhotoCapabilitiesPtr photo_capabilities =
-      mojom::PhotoCapabilities::New();
+  mojom::PhotoStatePtr photo_capabilities = mojom::PhotoState::New();
 
   photo_capabilities->zoom =
       RetrieveUserControlRange(device_fd_.get(), V4L2_CID_ZOOM_ABSOLUTE);

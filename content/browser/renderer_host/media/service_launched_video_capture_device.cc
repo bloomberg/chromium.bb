@@ -21,8 +21,8 @@ ServiceLaunchedVideoCaptureDevice::~ServiceLaunchedVideoCaptureDevice() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
 }
 
-void ServiceLaunchedVideoCaptureDevice::GetPhotoCapabilities(
-    media::VideoCaptureDevice::GetPhotoCapabilitiesCallback callback) const {
+void ServiceLaunchedVideoCaptureDevice::GetPhotoState(
+    media::VideoCaptureDevice::GetPhotoStateCallback callback) const {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   NOTIMPLEMENTED();
 }

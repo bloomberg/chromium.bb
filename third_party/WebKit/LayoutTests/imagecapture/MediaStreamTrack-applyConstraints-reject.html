@@ -22,7 +22,7 @@ var makePromiseTest = function(getConstraint) {
     return mockImageCaptureReady
       .then(mock => {
         theMock = mock;
-        theMock.capabilities().supports_torch = false;
+        theMock.state().supports_torch = false;
 
         var stream = canvas.captureStream();
         videoTrack = stream.getVideoTracks()[0];
@@ -39,7 +39,7 @@ var makePromiseTest = function(getConstraint) {
       })
       .then(function() {
         const constraints = {
-          advanced : [ getConstraint(theMock.capabilities()) ]
+          advanced : [ getConstraint(theMock.state()) ]
         };
         return promise_rejects(t, "NotSupportedError",
                                videoTrack.applyConstraints(constraints));

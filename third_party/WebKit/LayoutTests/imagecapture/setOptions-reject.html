@@ -22,7 +22,7 @@ var makePromiseTest = function(getOption) {
     return mockImageCaptureReady
       .then(mock => {
         theMock = mock;
-        theMock.capabilities().red_eye_reduction = 0;
+        theMock.state().red_eye_reduction = 0;
 
         var stream = canvas.captureStream();
         return new ImageCapture(stream.getVideoTracks()[0]);
@@ -35,7 +35,7 @@ var makePromiseTest = function(getOption) {
         return capturer.getPhotoCapabilities();
       })
       .then(c => {
-        const options = getOption(theMock.capabilities());
+        const options = getOption(theMock.state());
         return promise_rejects(t, "NotSupportedError",
                                theCapturer.setOptions(options));
       });

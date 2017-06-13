@@ -50,15 +50,15 @@ InProcessLaunchedVideoCaptureDevice::~InProcessLaunchedVideoCaptureDevice() {
                             device_task_runner_)));
 }
 
-void InProcessLaunchedVideoCaptureDevice::GetPhotoCapabilities(
-    media::VideoCaptureDevice::GetPhotoCapabilitiesCallback callback) const {
+void InProcessLaunchedVideoCaptureDevice::GetPhotoState(
+    media::VideoCaptureDevice::GetPhotoStateCallback callback) const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Unretained() is safe to use here because |device| would be null if it
   // was scheduled for shutdown and destruction, and because this task is
   // guaranteed to run before the task that destroys the |device|.
   device_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&media::VideoCaptureDevice::GetPhotoCapabilities,
+      base::Bind(&media::VideoCaptureDevice::GetPhotoState,
                  base::Unretained(device_.get()), base::Passed(&callback)));
 }
 

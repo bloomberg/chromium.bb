@@ -81,15 +81,15 @@ class MODULES_EXPORT ImageCapture final
  private:
   ImageCapture(ExecutionContext*, MediaStreamTrack*);
 
-  void OnMojoPhotoCapabilities(ScriptPromiseResolver*,
-                               bool trigger_take_photo,
-                               media::mojom::blink::PhotoCapabilitiesPtr);
+  void OnMojoGetPhotoState(ScriptPromiseResolver*,
+                           bool trigger_take_photo,
+                           media::mojom::blink::PhotoStatePtr);
   void OnMojoSetOptions(ScriptPromiseResolver*,
                         bool trigger_take_photo,
                         bool result);
   void OnMojoTakePhoto(ScriptPromiseResolver*, media::mojom::blink::BlobPtr);
 
-  void UpdateMediaTrackCapabilities(media::mojom::blink::PhotoCapabilitiesPtr);
+  void UpdateMediaTrackCapabilities(media::mojom::blink::PhotoStatePtr);
   void OnServiceConnectionError();
 
   Member<MediaStreamTrack> stream_track_;

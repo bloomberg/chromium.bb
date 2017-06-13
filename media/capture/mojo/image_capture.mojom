@@ -23,9 +23,11 @@ enum RedEyeReduction { NEVER, ALWAYS, CONTROLLABLE };
 //  https://www.w3.org/TR/image-capture/#FillLightMode
 enum FillLightMode { OFF, AUTO, FLASH };
 
-// Equivalent to idl's MediaTrackCapabilities plus PhotoCapabilities.
-struct PhotoCapabilities {
+// Equivalent to idl's MediaTrackCapabilities plus PhotoCapabilities and their
+// associated settings.
+struct PhotoState {
   // https://w3c.github.io/mediacapture-image/#mediatrackcapabilities-section
+  // and https://w3c.github.io/mediacapture-image/#mediatracksettings-section
   array<MeteringMode> supported_white_balance_modes;
   MeteringMode current_white_balance_mode;
   array<MeteringMode> supported_exposure_modes;
@@ -48,7 +50,8 @@ struct PhotoCapabilities {
   bool supports_torch;
   bool torch;
 
-  // https://w3c.github.io/mediacapture-image/##photocapabilities-section
+  // https://w3c.github.io/mediacapture-image/##photocapabilities-section and
+  // https://w3c.github.io/mediacapture-image/##photosettings-section
   RedEyeReduction red_eye_reduction;
   Range height;
   Range width;
@@ -120,8 +123,8 @@ interface ImageCapture
 {
     // Retrieves the image capture device capabilities and current settings.
     // https://www.w3.org/TR/image-capture/#dom-imagecapture-getphotocapabilities
-    GetCapabilities(string source_id)
-        => (PhotoCapabilities capabilities);
+    GetPhotoState(string source_id)
+        => (PhotoState state);
 
     // Sets the |settings| on the associated video capture device.
     // https://www.w3.org/TR/image-capture/#dom-imagecapture-setoptions

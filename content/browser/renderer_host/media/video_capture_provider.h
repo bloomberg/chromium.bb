@@ -52,9 +52,8 @@ class LaunchedVideoCaptureDevice
     : public media::VideoFrameConsumerFeedbackObserver {
  public:
   // Device operation methods.
-  virtual void GetPhotoCapabilities(
-      media::VideoCaptureDevice::GetPhotoCapabilitiesCallback callback)
-      const = 0;
+  virtual void GetPhotoState(
+      media::VideoCaptureDevice::GetPhotoStateCallback callback) const = 0;
   virtual void SetPhotoOptions(
       media::mojom::PhotoSettingsPtr settings,
       media::VideoCaptureDevice::SetPhotoOptionsCallback callback) = 0;

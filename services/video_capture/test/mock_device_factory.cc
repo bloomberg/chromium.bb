@@ -27,8 +27,8 @@ class RawPointerVideoCaptureDevice : public media::VideoCaptureDevice {
   }
   void RequestRefreshFrame() override { device_->RequestRefreshFrame(); }
   void StopAndDeAllocate() override { device_->StopAndDeAllocate(); }
-  void GetPhotoCapabilities(GetPhotoCapabilitiesCallback callback) override {
-    device_->GetPhotoCapabilities(std::move(callback));
+  void GetPhotoState(GetPhotoStateCallback callback) override {
+    device_->GetPhotoState(std::move(callback));
   }
   void SetPhotoOptions(media::mojom::PhotoSettingsPtr settings,
                        SetPhotoOptionsCallback callback) override {

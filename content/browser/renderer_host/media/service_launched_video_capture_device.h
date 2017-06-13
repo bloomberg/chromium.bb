@@ -19,9 +19,8 @@ class ServiceLaunchedVideoCaptureDevice : public LaunchedVideoCaptureDevice {
   ~ServiceLaunchedVideoCaptureDevice() override;
 
   // LaunchedVideoCaptureDevice implementation.
-  void GetPhotoCapabilities(
-      media::VideoCaptureDevice::GetPhotoCapabilitiesCallback callback)
-      const override;
+  void GetPhotoState(
+      media::VideoCaptureDevice::GetPhotoStateCallback callback) const override;
   void SetPhotoOptions(
       media::mojom::PhotoSettingsPtr settings,
       media::VideoCaptureDevice::SetPhotoOptionsCallback callback) override;

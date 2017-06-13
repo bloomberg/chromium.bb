@@ -101,10 +101,9 @@ void VideoCaptureDeviceLinux::TakePhoto(TakePhotoCallback callback) {
   v4l2_thread_.task_runner()->PostTask(FROM_HERE, std::move(functor));
 }
 
-void VideoCaptureDeviceLinux::GetPhotoCapabilities(
-    GetPhotoCapabilitiesCallback callback) {
+void VideoCaptureDeviceLinux::GetPhotoState(GetPhotoStateCallback callback) {
   auto functor =
-      base::Bind(&V4L2CaptureDelegate::GetPhotoCapabilities,
+      base::Bind(&V4L2CaptureDelegate::GetPhotoState,
                  capture_impl_->GetWeakPtr(), base::Passed(&callback));
   if (!v4l2_thread_.IsRunning()) {
     // We have to wait until we get the device AllocateAndStart()ed.

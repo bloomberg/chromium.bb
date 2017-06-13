@@ -158,15 +158,15 @@ class MockClient : public VideoCaptureDevice::Client {
 class ImageCaptureClient : public base::RefCounted<ImageCaptureClient> {
  public:
   // GMock doesn't support move-only arguments, so we use this forward method.
-  void DoOnGetPhotoCapabilities(mojom::PhotoCapabilitiesPtr capabilities) {
-    capabilities_ = std::move(capabilities);
-    OnCorrectGetPhotoCapabilities();
+  void DoOnGetPhotoState(mojom::PhotoStatePtr state) {
+    state_ = std::move(state);
+    OnCorrectGetPhotoState();
   }
-  MOCK_METHOD0(OnCorrectGetPhotoCapabilities, void(void));
-  MOCK_METHOD1(OnGetPhotoCapabilitiesFailure,
-               void(base::Callback<void(mojom::PhotoCapabilitiesPtr)>));
+  MOCK_METHOD0(OnCorrectGetPhotoState, void(void));
+  MOCK_METHOD1(OnGetPhotoStateFailure,
+               void(base::Callback<void(mojom::PhotoStatePtr)>));
 
-  const mojom::PhotoCapabilities* capabilities() { return capabilities_.get(); }
+  const mojom::PhotoState* state() { return state_.get(); }
 
   MOCK_METHOD1(OnCorrectSetPhotoOptions, void(bool));
   MOCK_METHOD1(OnSetPhotoOptionsFailure, void(base::Callback<void(bool)>));
@@ -190,7 +190,7 @@ class ImageCaptureClient : public base::RefCounted<ImageCaptureClient> {
   friend class base::RefCounted<ImageCaptureClient>;
   virtual ~ImageCaptureClient() {}
 
-  mojom::PhotoCapabilitiesPtr capabilities_;
+  mojom::PhotoStatePtr state_;
 };
 
 }  // namespace
@@ -375,79 +375,75 @@ TEST_F(FakeVideoCaptureDeviceTest, GetAndSetCapabilities) {
   EXPECT_CALL(*client_, OnStarted());
   device->AllocateAndStart(capture_params, std::move(client_));
 
-  VideoCaptureDevice::GetPhotoCapabilitiesCallback scoped_get_callback(
-      base::Bind(&ImageCaptureClient::DoOnGetPhotoCapabilities,
-                 image_capture_client_),
-      base::Bind(&ImageCaptureClient::OnGetPhotoCapabilitiesFailure,
+  VideoCaptureDevice::GetPhotoStateCallback scoped_get_callback(
+      base::Bind(&ImageCaptureClient::DoOnGetPhotoState, image_capture_client_),
+      base::Bind(&ImageCaptureClient::OnGetPhotoStateFailure,
                  image_capture_client_));
 
-  EXPECT_CALL(*image_capture_client_.get(), OnCorrectGetPhotoCapabilities())
-      .Times(1);
-  device->GetPhotoCapabilities(std::move(scoped_get_callback));
+  EXPECT_CALL(*image_capture_client_.get(), OnCorrectGetPhotoState()).Times(1);
+  device->GetPhotoState(std::move(scoped_get_callback));
   run_loop_.reset(new base::RunLoop());
   run_loop_->Run();
 
-  const mojom::PhotoCapabilities* capabilities =
-      image_capture_client_->capabilities();
-  ASSERT_TRUE(capabilities);
-  EXPECT_EQ(mojom::MeteringMode::NONE,
-            capabilities->current_white_balance_mode);
-  EXPECT_EQ(mojom::MeteringMode::NONE, capabilities->current_exposure_mode);
-  EXPECT_EQ(mojom::MeteringMode::NONE, capabilities->current_focus_mode);
+  const mojom::PhotoState* state = image_capture_client_->state();
+  ASSERT_TRUE(state);
+  EXPECT_EQ(mojom::MeteringMode::NONE, state->current_white_balance_mode);
+  EXPECT_EQ(mojom::MeteringMode::NONE, state->current_exposure_mode);
+  EXPECT_EQ(mojom::MeteringMode::NONE, state->current_focus_mode);
 
-  EXPECT_EQ(0, capabilities->exposure_compensation->min);
-  EXPECT_EQ(0, capabilities->exposure_compensation->max);
-  EXPECT_EQ(0, capabilities->exposure_compensation->current);
-  EXPECT_EQ(0, capabilities->exposure_compensation->step);
-  EXPECT_EQ(0, capabilities->color_temperature->min);
-  EXPECT_EQ(0, capabilities->color_temperature->max);
-  EXPECT_EQ(0, capabilities->color_temperature->current);
-  EXPECT_EQ(0, capabilities->color_temperature->step);
-  EXPECT_EQ(100, capabilities->iso->min);
-  EXPECT_EQ(100, capabilities->iso->max);
-  EXPECT_EQ(100, capabilities->iso->current);
-  EXPECT_EQ(0, capabilities->iso->step);
+  EXPECT_EQ(0, state->exposure_compensation->min);
+  EXPECT_EQ(0, state->exposure_compensation->max);
+  EXPECT_EQ(0, state->exposure_compensation->current);
+  EXPECT_EQ(0, state->exposure_compensation->step);
+  EXPECT_EQ(0, state->color_temperature->min);
+  EXPECT_EQ(0, state->color_temperature->max);
+  EXPECT_EQ(0, state->color_temperature->current);
+  EXPECT_EQ(0, state->color_temperature->step);
+  EXPECT_EQ(100, state->iso->min);
+  EXPECT_EQ(100, state->iso->max);
+  EXPECT_EQ(100, state->iso->current);
+  EXPECT_EQ(0, state->iso->step);
 
-  EXPECT_EQ(0, capabilities->brightness->min);
-  EXPECT_EQ(0, capabilities->brightness->max);
-  EXPECT_EQ(0, capabilities->brightness->current);
-  EXPECT_EQ(0, capabilities->brightness->step);
-  EXPECT_EQ(0, capabilities->contrast->min);
-  EXPECT_EQ(0, capabilities->contrast->max);
-  EXPECT_EQ(0, capabilities->contrast->current);
-  EXPECT_EQ(0, capabilities->contrast->step);
-  EXPECT_EQ(0, capabilities->saturation->min);
-  EXPECT_EQ(0, capabilities->saturation->max);
-  EXPECT_EQ(0, capabilities->saturation->current);
-  EXPECT_EQ(0, capabilities->saturation->step);
-  EXPECT_EQ(0, capabilities->sharpness->min);
-  EXPECT_EQ(0, capabilities->sharpness->max);
-  EXPECT_EQ(0, capabilities->sharpness->current);
-  EXPECT_EQ(0, capabilities->sharpness->step);
+  EXPECT_EQ(0, state->brightness->min);
+  EXPECT_EQ(0, state->brightness->max);
+  EXPECT_EQ(0, state->brightness->current);
+  EXPECT_EQ(0, state->brightness->step);
+  EXPECT_EQ(0, state->contrast->min);
+  EXPECT_EQ(0, state->contrast->max);
+  EXPECT_EQ(0, state->contrast->current);
+  EXPECT_EQ(0, state->contrast->step);
+  EXPECT_EQ(0, state->saturation->min);
+  EXPECT_EQ(0, state->saturation->max);
+  EXPECT_EQ(0, state->saturation->current);
+  EXPECT_EQ(0, state->saturation->step);
+  EXPECT_EQ(0, state->sharpness->min);
+  EXPECT_EQ(0, state->sharpness->max);
+  EXPECT_EQ(0, state->sharpness->current);
+  EXPECT_EQ(0, state->sharpness->step);
 
-  EXPECT_FALSE(capabilities->supports_torch);
-  EXPECT_FALSE(capabilities->torch);
+  EXPECT_FALSE(state->supports_torch);
+  EXPECT_FALSE(state->torch);
 
-  EXPECT_EQ(mojom::RedEyeReduction::NEVER, capabilities->red_eye_reduction);
+  EXPECT_EQ(mojom::RedEyeReduction::NEVER, state->red_eye_reduction);
   EXPECT_EQ(capture_params.requested_format.frame_size.height(),
-            capabilities->height->current);
-  EXPECT_EQ(96, capabilities->height->min);
-  EXPECT_EQ(1080, capabilities->height->max);
-  EXPECT_EQ(1, capabilities->height->step);
+            state->height->current);
+  EXPECT_EQ(96, state->height->min);
+  EXPECT_EQ(1080, state->height->max);
+  EXPECT_EQ(1, state->height->step);
   EXPECT_EQ(capture_params.requested_format.frame_size.width(),
-            capabilities->width->current);
-  EXPECT_EQ(96, capabilities->width->min);
-  EXPECT_EQ(1920, capabilities->width->max);
-  EXPECT_EQ(1, capabilities->width->step);
-  EXPECT_EQ(100, capabilities->zoom->min);
-  EXPECT_EQ(400, capabilities->zoom->max);
-  EXPECT_EQ(1, capabilities->zoom->step);
-  EXPECT_GE(capabilities->zoom->current, capabilities->zoom->min);
-  EXPECT_GE(capabilities->zoom->max, capabilities->zoom->current);
-  EXPECT_TRUE(capabilities->fill_light_mode.empty());
+            state->width->current);
+  EXPECT_EQ(96, state->width->min);
+  EXPECT_EQ(1920, state->width->max);
+  EXPECT_EQ(1, state->width->step);
+  EXPECT_EQ(100, state->zoom->min);
+  EXPECT_EQ(400, state->zoom->max);
+  EXPECT_EQ(1, state->zoom->step);
+  EXPECT_GE(state->zoom->current, state->zoom->min);
+  EXPECT_GE(state->zoom->max, state->zoom->current);
+  EXPECT_TRUE(state->fill_light_mode.empty());
 
   // Set options: zoom to the maximum value.
-  const int max_zoom_value = capabilities->zoom->max;
+  const int max_zoom_value = state->zoom->max;
   VideoCaptureDevice::SetPhotoOptionsCallback scoped_set_callback(
       base::Bind(&ImageCaptureClient::OnCorrectSetPhotoOptions,
                  image_capture_client_),
@@ -465,19 +461,16 @@ TEST_F(FakeVideoCaptureDeviceTest, GetAndSetCapabilities) {
   run_loop_->Run();
 
   // Retrieve Capabilities again and check against the set values.
-  VideoCaptureDevice::GetPhotoCapabilitiesCallback scoped_get_callback2(
-      base::Bind(&ImageCaptureClient::DoOnGetPhotoCapabilities,
-                 image_capture_client_),
-      base::Bind(&ImageCaptureClient::OnGetPhotoCapabilitiesFailure,
+  VideoCaptureDevice::GetPhotoStateCallback scoped_get_callback2(
+      base::Bind(&ImageCaptureClient::DoOnGetPhotoState, image_capture_client_),
+      base::Bind(&ImageCaptureClient::OnGetPhotoStateFailure,
                  image_capture_client_));
 
-  EXPECT_CALL(*image_capture_client_.get(), OnCorrectGetPhotoCapabilities())
-      .Times(1);
-  device->GetPhotoCapabilities(std::move(scoped_get_callback2));
+  EXPECT_CALL(*image_capture_client_.get(), OnCorrectGetPhotoState()).Times(1);
+  device->GetPhotoState(std::move(scoped_get_callback2));
   run_loop_.reset(new base::RunLoop());
   run_loop_->Run();
-  EXPECT_EQ(max_zoom_value,
-            image_capture_client_->capabilities()->zoom->current);
+  EXPECT_EQ(max_zoom_value, image_capture_client_->state()->zoom->current);
 
   device->StopAndDeAllocate();
 }
