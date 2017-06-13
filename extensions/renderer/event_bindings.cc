@@ -22,6 +22,7 @@
 #include "extensions/common/event_filter.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_messages.h"
+#include "extensions/common/extension_urls.h"
 #include "extensions/common/value_counter.h"
 #include "extensions/renderer/extension_frame_helper.h"
 #include "extensions/renderer/script_context.h"
@@ -88,44 +89,6 @@ int DecrementEventListenerCount(ScriptContext* script_context,
                .Get()[GetKeyForScriptContext(script_context)][event_name];
 }
 
-EventFilteringInfo ParseFromObject(v8::Local<v8::Object> object,
-                                   v8::Isolate* isolate) {
-  EventFilteringInfo info;
-  v8::Local<v8::String> url(v8::String::NewFromUtf8(isolate, "url"));
-  if (object->Has(url)) {
-    v8::Local<v8::Value> url_value(object->Get(url));
-    info.SetURL(GURL(*v8::String::Utf8Value(url_value)));
-  }
-  v8::Local<v8::String> instance_id(
-      v8::String::NewFromUtf8(isolate, "instanceId"));
-  if (object->Has(instance_id)) {
-    v8::Local<v8::Value> instance_id_value(object->Get(instance_id));
-    info.SetInstanceID(instance_id_value->IntegerValue());
-  }
-  v8::Local<v8::String> service_type(
-      v8::String::NewFromUtf8(isolate, "serviceType"));
-  if (object->Has(service_type)) {
-    v8::Local<v8::Value> service_type_value(object->Get(service_type));
-    info.SetServiceType(*v8::String::Utf8Value(service_type_value));
-  }
-  v8::Local<v8::String> window_types(
-      v8::String::NewFromUtf8(isolate, "windowType"));
-  if (object->Has(window_types)) {
-    v8::Local<v8::Value> window_types_value(object->Get(window_types));
-    info.SetWindowType(*v8::String::Utf8Value(window_types_value));
-  }
-
-  v8::Local<v8::String> window_exposed(
-      v8::String::NewFromUtf8(isolate, "windowExposedByDefault"));
-  if (object->Has(window_exposed)) {
-    v8::Local<v8::Value> window_exposed_value(object->Get(window_exposed));
-    info.SetWindowExposedByDefault(
-        window_exposed_value.As<v8::Boolean>()->Value());
-  }
-
-  return info;
-}
-
 // Add a filter to |event_name| in |extension_id|, returning true if it
 // was the first filter for that event in that extension.
 bool AddFilter(const std::string& event_name,
@@ -163,6 +126,33 @@ bool RemoveFilter(const std::string& event_name,
   return false;
 }
 
+// Returns a v8::Array containing the ids of the listeners that match the given
+// |event_filter_dict| in the given |script_context|.
+v8::Local<v8::Array> GetMatchingListeners(
+    ScriptContext* script_context,
+    const std::string& event_name,
+    const base::DictionaryValue& event_filter_dict) {
+  const EventFilter& event_filter = g_event_filter.Get();
+  EventFilteringInfo info(event_filter_dict);
+  v8::Isolate* isolate = script_context->isolate();
+  v8::Local<v8::Context> context = script_context->v8_context();
+
+  // Only match events routed to this context's RenderFrame or ones that don't
+  // have a routingId in their filter.
+  std::set<EventFilter::MatcherID> matched_event_filters =
+      event_filter.MatchEvent(event_name, info,
+                              script_context->GetRenderFrame()->GetRoutingID());
+  v8::Local<v8::Array> array(
+      v8::Array::New(isolate, matched_event_filters.size()));
+  int i = 0;
+  for (EventFilter::MatcherID id : matched_event_filters) {
+    CHECK(array->CreateDataProperty(context, i++, v8::Integer::New(isolate, id))
+              .ToChecked());
+  }
+
+  return array;
+}
+
 }  // namespace
 
 EventBindings::EventBindings(ScriptContext* context)
@@ -176,9 +166,6 @@ EventBindings::EventBindings(ScriptContext* context)
       base::Bind(&EventBindings::AttachFilteredEvent, base::Unretained(this)));
   RouteFunction("DetachFilteredEvent",
                 base::Bind(&EventBindings::DetachFilteredEventHandler,
-                           base::Unretained(this)));
-  RouteFunction("MatchAgainstEventFilter",
-                base::Bind(&EventBindings::MatchAgainstEventFilter,
                            base::Unretained(this)));
   RouteFunction(
       "AttachUnmanagedEvent",
@@ -214,6 +201,32 @@ bool EventBindings::HasListener(ScriptContext* script_context,
   }
 
   return false;
+}
+
+// static
+void EventBindings::DispatchEventInContext(
+    const std::string& event_name,
+    const base::ListValue* event_args,
+    const base::DictionaryValue* filtering_info,
+    ScriptContext* context) {
+  v8::HandleScope handle_scope(context->isolate());
+  v8::Context::Scope context_scope(context->v8_context());
+
+  v8::Local<v8::Array> listener_ids;
+  if (filtering_info && !filtering_info->empty())
+    listener_ids = GetMatchingListeners(context, event_name, *filtering_info);
+  else
+    listener_ids = v8::Array::New(context->isolate());
+
+  std::unique_ptr<content::V8ValueConverter> converter(
+      content::V8ValueConverter::create());
+  v8::Local<v8::Value> v8_args[] = {
+      gin::StringToSymbol(context->isolate(), event_name),
+      converter->ToV8Value(event_args, context->v8_context()), listener_ids,
+  };
+
+  context->module_system()->CallModuleMethodSafe(
+      kEventBindings, "dispatchEvent", arraysize(v8_args), v8_args);
 }
 
 void EventBindings::AttachEventHandler(
@@ -295,8 +308,8 @@ void EventBindings::DetachEvent(const std::string& event_name, bool is_manual) {
 // MatcherID AttachFilteredEvent(string event_name, object filter)
 // event_name - Name of the event to attach.
 // filter - Which instances of the named event are we interested in.
-// returns the id assigned to the listener, which will be returned from calls
-// to MatchAgainstEventFilter where this listener matches.
+// returns the id assigned to the listener, which will be provided to calls to
+// dispatchEvent().
 void EventBindings::AttachFilteredEvent(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   CHECK_EQ(2, args.Length());
@@ -368,29 +381,6 @@ void EventBindings::DetachFilteredEvent(int matcher_id, bool is_manual) {
 
   event_filter.RemoveEventMatcher(matcher_id);
   attached_matcher_ids_.erase(matcher_id);
-}
-
-void EventBindings::MatchAgainstEventFilter(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  v8::Isolate* isolate = args.GetIsolate();
-  typedef std::set<EventFilter::MatcherID> MatcherIDs;
-  EventFilter& event_filter = g_event_filter.Get();
-  std::string event_name = *v8::String::Utf8Value(args[0]);
-  EventFilteringInfo info =
-      ParseFromObject(args[1]->ToObject(isolate), isolate);
-  // Only match events routed to this context's RenderFrame or ones that don't
-  // have a routingId in their filter.
-  MatcherIDs matched_event_filters = event_filter.MatchEvent(
-      event_name, info, context()->GetRenderFrame()->GetRoutingID());
-  v8::Local<v8::Array> array(
-      v8::Array::New(isolate, matched_event_filters.size()));
-  int i = 0;
-  for (MatcherIDs::iterator it = matched_event_filters.begin();
-       it != matched_event_filters.end();
-       ++it) {
-    array->Set(v8::Integer::New(isolate, i++), v8::Integer::New(isolate, *it));
-  }
-  args.GetReturnValue().Set(array);
 }
 
 void EventBindings::AttachUnmanagedEvent(
