@@ -440,6 +440,11 @@ String Deprecation::DeprecationMessage(WebFeature feature) {
           "the CredentialsContainer.preventSilentAccess method", M62,
           "4781762488041472");
 
+    case WebFeature::kDeprecatedTimingFunctionStepMiddle:
+      return replacedWillBeRemoved(
+          "The step timing function with step position 'middle'",
+          "the frames timing function", M62, "5189363944128512");
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
       return String();
