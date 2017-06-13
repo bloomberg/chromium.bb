@@ -47,6 +47,9 @@ class DirectoryImpl : public mojom::Directory {
   void Rename(const std::string& path,
               const std::string& new_path,
               RenameCallback callback) override;
+  void Replace(const std::string& path,
+               const std::string& new_path,
+               ReplaceCallback callback) override;
   void Delete(const std::string& path,
               uint32_t delete_flags,
               DeleteCallback callback) override;

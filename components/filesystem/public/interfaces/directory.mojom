@@ -65,6 +65,13 @@ interface Directory {
   [Sync]
   Rename(string path, string new_path) => (FileError error);
 
+  // Renames file |path| to |new_path|. Both paths must be on the same volume,
+  // or the function will fail. Destination file will be created if it doesn't
+  // exist. Prefer this function over Rename when dealing with temporary files.
+  // On Windows it preserves attributes of the target file.
+  [Sync]
+  Replace(string path, string new_path) => (FileError error);
+
   // Deletes the given path, which may be a file or a directory (see
   // |kDeleteFlag...| for details).
   [Sync]
