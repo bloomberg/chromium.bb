@@ -980,13 +980,41 @@ bool DownloadsDownloadFunction::RunAsync() {
       BrowserContext::GetStoragePartition(
           render_frame_host()->GetProcess()->GetBrowserContext(),
           render_frame_host()->GetSiteInstance());
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("downloads_api_run_async", R"(
+        semantics {
+          sender: "Downloads API"
+          description:
+            "This request is made when an extension makes an API call to "
+            "download a file."
+          trigger:
+            "An API call from an extension, can be in response to user input "
+            "or autonomously."
+          data:
+            "The extension may provide any data that it has permission to "
+            "access, or is provided to it by the user."
+          destination: OTHER
+        }
+        policy {
+          cookies_allowed: true
+          cookies_store: "user"
+          setting:
+            "This feature cannot be disabled in settings, but disabling all "
+            "extensions will prevent it."
+          chrome_policy {
+            ExtensionInstallBlacklist {
+              ExtensionInstallBlacklist: {
+                entries: '*'
+              }
+            }
+          }
+        })");
   std::unique_ptr<content::DownloadUrlParameters> download_params(
       new content::DownloadUrlParameters(
           download_url, render_frame_host()->GetProcess()->GetID(),
           render_frame_host()->GetRenderViewHost()->GetRoutingID(),
           render_frame_host()->GetRoutingID(),
-          storage_partition->GetURLRequestContext(),
-          NO_TRAFFIC_ANNOTATION_YET));
+          storage_partition->GetURLRequestContext(), traffic_annotation));
 
   base::FilePath creator_suggested_filename;
   if (options.filename.get()) {
