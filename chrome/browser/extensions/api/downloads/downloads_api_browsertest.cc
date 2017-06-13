@@ -947,7 +947,7 @@ scoped_refptr<UIThreadExtensionFunction> MockedGetFileIconFunction(
 }
 
 // https://crbug.com/678967
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_LINUX)
 #define MAYBE_DownloadExtensionTest_FileIcon_Active DISABLED_DownloadExtensionTest_FileIcon_Active
 #else
 #define MAYBE_DownloadExtensionTest_FileIcon_Active DownloadExtensionTest_FileIcon_Active
