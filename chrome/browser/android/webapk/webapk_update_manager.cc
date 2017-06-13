@@ -49,8 +49,10 @@ static void UpdateAsync(
     const JavaParamRef<jstring>& java_scope,
     const JavaParamRef<jstring>& java_name,
     const JavaParamRef<jstring>& java_short_name,
-    const JavaParamRef<jstring>& java_best_primary_icon_url,
-    const JavaParamRef<jobject>& java_best_primary_icon_bitmap,
+    const JavaParamRef<jstring>& java_primary_icon_url,
+    const JavaParamRef<jobject>& java_primary_icon_bitmap,
+    const JavaParamRef<jstring>& java_badge_icon_url,
+    const JavaParamRef<jobject>& java_badge_icon_bitmap,
     const JavaParamRef<jobjectArray>& java_icon_urls,
     const JavaParamRef<jobjectArray>& java_icon_hashes,
     jint java_display_mode,
@@ -70,13 +72,8 @@ static void UpdateAsync(
   }
 
   std::string id(ConvertJavaStringToUTF8(env, java_id));
-  GURL start_url(ConvertJavaStringToUTF8(env, java_start_url));
-  GURL scope(ConvertJavaStringToUTF8(env, java_scope));
-  GURL web_manifest_url(ConvertJavaStringToUTF8(env, java_web_manifest_url));
-  GURL best_primary_icon_url(
-      ConvertJavaStringToUTF8(env, java_best_primary_icon_url));
-  ShortcutInfo info(start_url);
-  info.scope = scope;
+  ShortcutInfo info(GURL(ConvertJavaStringToUTF8(env, java_start_url)));
+  info.scope = GURL(ConvertJavaStringToUTF8(env, java_scope));
   info.name = ConvertJavaStringToUTF16(env, java_name);
   info.short_name = ConvertJavaStringToUTF16(env, java_short_name);
   info.user_title = info.short_name;
@@ -85,8 +82,11 @@ static void UpdateAsync(
       static_cast<blink::WebScreenOrientationLockType>(java_orientation);
   info.theme_color = (int64_t)java_theme_color;
   info.background_color = (int64_t)java_background_color;
-  info.best_primary_icon_url = best_primary_icon_url;
-  info.manifest_url = web_manifest_url;
+  info.best_primary_icon_url =
+      GURL(ConvertJavaStringToUTF8(env, java_primary_icon_url));
+  info.best_badge_icon_url =
+      GURL(ConvertJavaStringToUTF8(env, java_badge_icon_url));
+  info.manifest_url = GURL(ConvertJavaStringToUTF8(env, java_web_manifest_url));
 
   base::android::AppendJavaStringArrayToStringVector(env, java_icon_urls.obj(),
                                                      &info.icon_urls);
@@ -99,10 +99,15 @@ static void UpdateAsync(
   for (size_t i = 0; i < info.icon_urls.size(); ++i)
     icon_url_to_murmur2_hash[info.icon_urls[i]] = icon_hashes[i];
 
-  gfx::JavaBitmap java_bitmap_lock(java_best_primary_icon_bitmap);
-  SkBitmap best_primary_icon_bitmap =
-      gfx::CreateSkBitmapFromJavaBitmap(java_bitmap_lock);
-  best_primary_icon_bitmap.setImmutable();
+  gfx::JavaBitmap java_primary_icon_bitmap_lock(java_primary_icon_bitmap);
+  SkBitmap primary_icon =
+      gfx::CreateSkBitmapFromJavaBitmap(java_primary_icon_bitmap_lock);
+  primary_icon.setImmutable();
+
+  gfx::JavaBitmap java_badge_icon_bitmap_lock(java_badge_icon_bitmap);
+  SkBitmap badge_icon =
+      gfx::CreateSkBitmapFromJavaBitmap(java_badge_icon_bitmap_lock);
+  badge_icon.setImmutable();
 
   std::string webapk_package;
   ConvertJavaStringToUTF8(env, java_webapk_package, &webapk_package);
@@ -117,7 +122,7 @@ static void UpdateAsync(
     return;
   }
   install_service->UpdateAsync(
-      info, best_primary_icon_bitmap, webapk_package, java_webapk_version,
+      info, primary_icon, badge_icon, webapk_package, java_webapk_version,
       icon_url_to_murmur2_hash, java_is_manifest_stale,
       base::Bind(&WebApkUpdateManager::OnBuiltWebApk, id));
 }

@@ -67,7 +67,8 @@ class WebApkInstallService : public KeyedService {
   // after the request to install the WebAPK is sent to Google Play.
   void UpdateAsync(
       const ShortcutInfo& shortcut_info,
-      const SkBitmap& shortcut_icon,
+      const SkBitmap& primary_icon,
+      const SkBitmap& badge_icon,
       const std::string& webapk_package,
       int webapk_version,
       const std::map<std::string, std::string>& icon_url_to_murmur2_hash,

@@ -71,7 +71,7 @@ public class WebApkUpdateDataFetcherTest {
             extends CallbackHelper implements WebApkUpdateDataFetcher.Observer {
         private boolean mWebApkCompatible;
         private String mName;
-        private String mBestIconMurmur2Hash;
+        private String mPrimaryIconMurmur2Hash;
 
         @Override
         public void onWebManifestForInitialUrlNotWebApkCompatible() {
@@ -80,11 +80,12 @@ public class WebApkUpdateDataFetcherTest {
         }
 
         @Override
-        public void onGotManifestData(WebApkInfo fetchedInfo, String bestIconUrl) {
+        public void onGotManifestData(
+                WebApkInfo fetchedInfo, String primaryIconUrl, String badgeIconUrl) {
             Assert.assertNull(mName);
             mWebApkCompatible = true;
             mName = fetchedInfo.name();
-            mBestIconMurmur2Hash = fetchedInfo.iconUrlToMurmur2HashMap().get(bestIconUrl);
+            mPrimaryIconMurmur2Hash = fetchedInfo.iconUrlToMurmur2HashMap().get(primaryIconUrl);
             notifyCalled();
         }
 
@@ -96,8 +97,8 @@ public class WebApkUpdateDataFetcherTest {
             return mName;
         }
 
-        public String bestIconMurmur2Hash() {
-            return mBestIconMurmur2Hash;
+        public String primaryIconMurmur2Hash() {
+            return mPrimaryIconMurmur2Hash;
         }
     }
 
@@ -208,6 +209,6 @@ public class WebApkUpdateDataFetcherTest {
                 mTestServer.getURL(WEB_MANIFEST_WITH_LONG_ICON_MURMUR2_HASH), waiter);
         waiter.waitForCallback(0);
 
-        Assert.assertEquals(LONG_ICON_MURMUR2_HASH, waiter.bestIconMurmur2Hash());
+        Assert.assertEquals(LONG_ICON_MURMUR2_HASH, waiter.primaryIconMurmur2Hash());
     }
 }

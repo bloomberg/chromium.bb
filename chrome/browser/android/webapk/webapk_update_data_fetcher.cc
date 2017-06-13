@@ -114,8 +114,13 @@ void WebApkUpdateDataFetcher::FetchInstallableData() {
       ShortcutHelper::GetIdealHomescreenIconSizeInPx();
   params.minimum_primary_icon_size_in_px =
       ShortcutHelper::GetMinimumHomescreenIconSizeInPx();
+  params.ideal_badge_icon_size_in_px =
+      ShortcutHelper::GetIdealBadgeIconSizeInPx();
+  params.minimum_badge_icon_size_in_px =
+      ShortcutHelper::GetIdealBadgeIconSizeInPx();
   params.check_installable = true;
   params.fetch_valid_primary_icon = true;
+  params.fetch_valid_badge_icon = true;
   InstallableManager::CreateForWebContents(web_contents());
   InstallableManager* installable_manager =
       InstallableManager::FromWebContents(web_contents());
@@ -150,58 +155,89 @@ void WebApkUpdateDataFetcher::OnDidGetInstallableData(
   info_.UpdateFromManifest(data.manifest);
   info_.manifest_url = data.manifest_url;
   info_.best_primary_icon_url = data.primary_icon_url;
-  best_primary_icon_ = *data.primary_icon;
+  primary_icon_ = *data.primary_icon;
+
+  if (data.badge_icon && !data.badge_icon->drawsNothing()) {
+    info_.best_badge_icon_url = data.badge_icon_url;
+    badge_icon_ = *data.badge_icon;
+  }
 
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
 
   WebApkIconHasher::DownloadAndComputeMurmur2Hash(
-      profile->GetRequestContext(), data.primary_icon_url,
-      base::Bind(&WebApkUpdateDataFetcher::OnGotIconMurmur2Hash,
+      profile->GetRequestContext(), info_.best_primary_icon_url,
+      base::Bind(&WebApkUpdateDataFetcher::OnGotPrimaryIconMurmur2Hash,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void WebApkUpdateDataFetcher::OnGotIconMurmur2Hash(
-    const std::string& best_primary_icon_murmur2_hash) {
-  if (best_primary_icon_murmur2_hash.empty()) {
+void WebApkUpdateDataFetcher::OnGotPrimaryIconMurmur2Hash(
+    const std::string& primary_icon_murmur2_hash) {
+  if (primary_icon_murmur2_hash.empty()) {
     OnWebManifestNotWebApkCompatible();
     return;
   }
 
-  OnDataAvailable(info_, best_primary_icon_murmur2_hash, best_primary_icon_);
+  if (!info_.best_badge_icon_url.is_empty() &&
+      info_.best_badge_icon_url != info_.best_primary_icon_url) {
+    Profile* profile =
+        Profile::FromBrowserContext(web_contents()->GetBrowserContext());
+
+    WebApkIconHasher::DownloadAndComputeMurmur2Hash(
+        profile->GetRequestContext(), info_.best_badge_icon_url,
+        base::Bind(&WebApkUpdateDataFetcher::OnDataAvailable,
+                   weak_ptr_factory_.GetWeakPtr(), primary_icon_murmur2_hash,
+                   true));
+  } else {
+    OnDataAvailable(primary_icon_murmur2_hash, false, "");
+  }
 }
 
 void WebApkUpdateDataFetcher::OnDataAvailable(
-    const ShortcutInfo& info,
-    const std::string& best_primary_icon_murmur2_hash,
-    const SkBitmap& best_primary_icon) {
+    const std::string& primary_icon_murmur2_hash,
+    bool did_fetch_badge_icon,
+    const std::string& badge_icon_murmur2_hash) {
+  if (did_fetch_badge_icon && badge_icon_murmur2_hash.empty()) {
+    OnWebManifestNotWebApkCompatible();
+    return;
+  }
+
   JNIEnv* env = base::android::AttachCurrentThread();
 
   ScopedJavaLocalRef<jstring> java_url =
-      base::android::ConvertUTF8ToJavaString(env, info.url.spec());
+      base::android::ConvertUTF8ToJavaString(env, info_.url.spec());
   ScopedJavaLocalRef<jstring> java_scope =
-      base::android::ConvertUTF8ToJavaString(env, info.scope.spec());
+      base::android::ConvertUTF8ToJavaString(env, info_.scope.spec());
   ScopedJavaLocalRef<jstring> java_name =
-      base::android::ConvertUTF16ToJavaString(env, info.name);
+      base::android::ConvertUTF16ToJavaString(env, info_.name);
   ScopedJavaLocalRef<jstring> java_short_name =
-      base::android::ConvertUTF16ToJavaString(env, info.short_name);
-  ScopedJavaLocalRef<jstring> java_best_primary_icon_url =
+      base::android::ConvertUTF16ToJavaString(env, info_.short_name);
+  ScopedJavaLocalRef<jstring> java_primary_icon_url =
+      base::android::ConvertUTF8ToJavaString(
+          env, info_.best_primary_icon_url.spec());
+  ScopedJavaLocalRef<jstring> java_primary_icon_murmur2_hash =
       base::android::ConvertUTF8ToJavaString(env,
-                                             info.best_primary_icon_url.spec());
-  ScopedJavaLocalRef<jstring> java_best_primary_icon_murmur2_hash =
+                                             primary_icon_murmur2_hash);
+  ScopedJavaLocalRef<jobject> java_primary_icon =
+      gfx::ConvertToJavaBitmap(&primary_icon_);
+  ScopedJavaLocalRef<jstring> java_badge_icon_url =
       base::android::ConvertUTF8ToJavaString(env,
-                                             best_primary_icon_murmur2_hash);
-  ScopedJavaLocalRef<jobject> java_best_primary_icon =
-      gfx::ConvertToJavaBitmap(&best_primary_icon);
-
+                                             info_.best_badge_icon_url.spec());
+  ScopedJavaLocalRef<jstring> java_badge_icon_murmur2_hash =
+      base::android::ConvertUTF8ToJavaString(env,
+                                             badge_icon_murmur2_hash);
+  ScopedJavaLocalRef<jobject> java_badge_icon;
+  if (!badge_icon_.drawsNothing())
+      java_badge_icon = gfx::ConvertToJavaBitmap(&badge_icon_);
   ScopedJavaLocalRef<jobjectArray> java_icon_urls =
-      base::android::ToJavaArrayOfStrings(env, info.icon_urls);
+      base::android::ToJavaArrayOfStrings(env, info_.icon_urls);
 
   Java_WebApkUpdateDataFetcher_onDataAvailable(
       env, java_ref_, java_url, java_scope, java_name, java_short_name,
-      java_best_primary_icon_url, java_best_primary_icon_murmur2_hash,
-      java_best_primary_icon, java_icon_urls, info.display, info.orientation,
-      info.theme_color, info.background_color);
+      java_primary_icon_url, java_primary_icon_murmur2_hash,
+      java_primary_icon, java_badge_icon_url, java_badge_icon_murmur2_hash,
+      java_badge_icon, java_icon_urls, info_.display, info_.orientation,
+      info_.theme_color, info_.background_color);
 }
 
 void WebApkUpdateDataFetcher::OnWebManifestNotWebApkCompatible() {

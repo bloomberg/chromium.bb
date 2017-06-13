@@ -50,7 +50,6 @@ class WebApkInstaller : public net::URLFetcherDelegate {
                            const SkBitmap& badge_icon,
                            const FinishCallback& finish_callback);
 
-  // TODO(zpeng): Add badge icon to WebAPK update route.
   // Creates a self-owned WebApkInstaller instance and talks to the Chrome
   // WebAPK server to update a WebAPK on the server and locally requests the
   // APK to be installed. Calls |callback| once the install completed or failed.
@@ -58,6 +57,7 @@ class WebApkInstaller : public net::URLFetcherDelegate {
       content::BrowserContext* context,
       const ShortcutInfo& shortcut_info,
       const SkBitmap& primary_icon,
+      const SkBitmap& badge_icon,
       const std::string& webapk_package,
       int webapk_version,
       const std::map<std::string, std::string>& icon_url_to_murmur2_hash,
