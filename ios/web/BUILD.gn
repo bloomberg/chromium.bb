@@ -544,7 +544,6 @@ test("ios_web_unittests") {
 }
 
 test("ios_web_inttests") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   deps = [
     ":web",
     "//base/test:test_support",

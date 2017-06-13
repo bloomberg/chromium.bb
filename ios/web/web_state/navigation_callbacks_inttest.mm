@@ -509,8 +509,9 @@ TEST_F(NavigationCallbacksTest, MAYBE_UserInitiatedPostNavigation) {
 
   // Load request using POST HTTP method.
   web::NavigationManager::WebLoadParams params(url);
-  params.post_data.reset([@"foo" dataUsingEncoding:NSUTF8StringEncoding]);
-  params.extra_headers.reset(@{ @"Content-Type" : @"text/html" });
+  params.post_data.reset(
+      [[@"foo" dataUsingEncoding:NSUTF8StringEncoding] retain]);
+  params.extra_headers.reset([@{ @"Content-Type" : @"text/html" } retain]);
   LoadWithParams(params);
 }
 
