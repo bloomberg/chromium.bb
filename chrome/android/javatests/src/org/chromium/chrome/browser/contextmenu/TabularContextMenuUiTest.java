@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.contextmenu;
 import android.support.design.widget.TabLayout;
 import android.support.test.filters.SmallTest;
 import android.util.Pair;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.TextView;
 
@@ -50,13 +51,14 @@ public class TabularContextMenuUiTest {
 
         private MockMenuParams(int mediaType, String pageUrl, String linkUrl, String linkText,
                 String unfilteredLinkUrl, String srcUrl, String titleText,
-                boolean imageWasFetchedLoFi, Referrer referrer, boolean canSavemedia) {
+                boolean imageWasFetchedLoFi, Referrer referrer, boolean canSavemedia,
+                int touchPointXDp, int touchPointYDp) {
             super(mediaType, pageUrl, linkUrl, linkText, unfilteredLinkUrl, srcUrl, titleText,
-                    imageWasFetchedLoFi, referrer, canSavemedia);
+                    imageWasFetchedLoFi, referrer, canSavemedia, touchPointXDp, touchPointYDp);
         }
 
         private MockMenuParams(String url) {
-            this(0, "", "", "", "", "", "", false, null, true);
+            this(0, "", "", "", "", "", "", false, null, true, 0, 0);
             mUrl = url;
         }
 
@@ -84,16 +86,20 @@ public class TabularContextMenuUiTest {
         itemGroups.add(
                 new Pair<>(R.string.contextmenu_link_title, Collections.unmodifiableList(item)));
         final String url = "http://google.com";
+        View tabularContextMenu = LayoutInflater.from(mActivityTestRule.getActivity())
+                                          .inflate(R.layout.tabular_context_menu, null);
+        final TabularContextMenuViewPager pager =
+                (TabularContextMenuViewPager) tabularContextMenu.findViewById(R.id.custom_pager);
         View view = ThreadUtils.runOnUiThreadBlocking(new Callable<View>() {
             @Override
             public View call() {
-                return dialog.createPagerView(
-                        mActivityTestRule.getActivity(), new MockMenuParams(url), itemGroups);
+                return dialog.initPagerView(mActivityTestRule.getActivity(),
+                        new MockMenuParams(url), itemGroups, pager);
             }
         });
 
         TabLayout layout = (TabLayout) view.findViewById(R.id.tab_layout);
-        Assert.assertEquals(layout.getVisibility(), View.GONE);
+        Assert.assertEquals(View.GONE, layout.getVisibility());
     }
 
     @Test
@@ -111,16 +117,20 @@ public class TabularContextMenuUiTest {
         itemGroups.add(
                 new Pair<>(R.string.contextmenu_link_title, Collections.unmodifiableList(item)));
         final String url = "http://google.com";
+        View tabularContextMenu = LayoutInflater.from(mActivityTestRule.getActivity())
+                                          .inflate(R.layout.tabular_context_menu, null);
+        final TabularContextMenuViewPager pager =
+                (TabularContextMenuViewPager) tabularContextMenu.findViewById(R.id.custom_pager);
         View view = ThreadUtils.runOnUiThreadBlocking(new Callable<View>() {
             @Override
             public View call() {
-                return dialog.createPagerView(
-                        mActivityTestRule.getActivity(), new MockMenuParams(url), itemGroups);
+                return dialog.initPagerView(mActivityTestRule.getActivity(),
+                        new MockMenuParams(url), itemGroups, pager);
             }
         });
 
         TabLayout layout = (TabLayout) view.findViewById(R.id.tab_layout);
-        Assert.assertEquals(layout.getVisibility(), View.VISIBLE);
+        Assert.assertEquals(View.VISIBLE, layout.getVisibility());
     }
 
     @Test
