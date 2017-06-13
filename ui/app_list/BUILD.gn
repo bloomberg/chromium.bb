@@ -4,6 +4,18 @@
 
 import("//build/config/ui.gni")
 import("//testing/test.gni")
+import("//ui/vector_icons/vector_icons.gni")
+
+aggregate_vector_icons("app_list_vector_icons") {
+  icon_directory = "vector_icons"
+
+  icons = [
+    "ic_google_black.1x.icon",
+    "ic_google_black.icon",
+    "ic_mic_black.1x.icon",
+    "ic_mic_black.icon",
+  ]
+}
 
 component("app_list") {
   sources = [
@@ -68,9 +80,12 @@ component("app_list") {
     "speech_ui_model_observer.h",
   ]
 
+  sources += get_target_outputs(":app_list_vector_icons")
+
   defines = [ "APP_LIST_IMPLEMENTATION" ]
 
   deps = [
+    ":app_list_vector_icons",
     "//base",
     "//base:i18n",
     "//base/third_party/dynamic_annotations",

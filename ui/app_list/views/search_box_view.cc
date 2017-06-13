@@ -17,6 +17,7 @@
 #include "ui/app_list/resources/grit/app_list_resources.h"
 #include "ui/app_list/search_box_model.h"
 #include "ui/app_list/speech_ui_model.h"
+#include "ui/app_list/vector_icons.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/search_box_view_delegate.h"
@@ -26,6 +27,7 @@
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/shadow_value.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
@@ -42,16 +44,24 @@ namespace app_list {
 
 namespace {
 
-const int kPadding = 16;
-const int kInnerPadding = 24;
-const int kPreferredWidth = 360;
-const int kPreferredWidthFullscreen = 544;
-const int kPreferredHeight = 48;
+constexpr int kPadding = 16;
+constexpr int kInnerPadding = 24;
+constexpr int kPreferredWidth = 360;
+constexpr int kPreferredWidthFullscreen = 544;
+constexpr int kPreferredHeight = 48;
 
-const SkColor kHintTextColor = SkColorSetRGB(0xA0, 0xA0, 0xA0);
+constexpr SkColor kHintTextColor = SkColorSetARGBMacro(0xFF, 0xA0, 0xA0, 0xA0);
 
-const int kBackgroundBorderCornerRadius = 2;
-const int kBackgroundBorderCornerRadiusFullscreen = 20;
+constexpr int kBackgroundBorderCornerRadius = 2;
+constexpr int kBackgroundBorderCornerRadiusFullscreen = 20;
+
+constexpr int kGoogleIconSize = 24;
+constexpr int kMicIconSize = 24;
+
+// Default color used when wallpaper customized color is not available for
+// searchbox, #000 at 87% opacity.
+constexpr SkColor kDefaultSearchboxColor =
+    SkColorSetARGBMacro(0xDE, 0x00, 0x00, 0x00);
 
 // A background that paints a solid white rounded rect with a thin grey border.
 class SearchBoxBackground : public views::Background {
@@ -70,7 +80,7 @@ class SearchBoxBackground : public views::Background {
 
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
-    flags.setColor(kSearchBoxBackground);
+    flags.setColor(kSearchBoxBackgroundDefault);
     canvas->DrawRoundRect(bounds, background_border_corner_radius_, flags);
   }
 
@@ -129,12 +139,13 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
                              AppListView* app_list_view)
     : delegate_(delegate),
       view_delegate_(view_delegate),
-      model_(NULL),
+      model_(nullptr),
       content_container_(new views::View),
-      back_button_(NULL),
-      speech_button_(NULL),
+      google_icon_(nullptr),
+      back_button_(nullptr),
+      speech_button_(nullptr),
       search_box_(new views::Textfield),
-      contents_view_(NULL),
+      contents_view_(nullptr),
       app_list_view_(app_list_view),
       focused_view_(FOCUS_SEARCH_BOX),
       is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()) {
@@ -146,14 +157,6 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
   AddChildView(content_container_);
 
   SetShadow(GetShadowForZHeight(2));
-  back_button_ = new SearchBoxImageButton(this);
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  back_button_->SetImage(views::ImageButton::STATE_NORMAL,
-                         rb.GetImageSkiaNamed(IDR_APP_LIST_FOLDER_BACK_NORMAL));
-  back_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-                                  views::ImageButton::ALIGN_MIDDLE);
-  SetBackButtonLabel(false);
-  content_container_->AddChildView(back_button_);
   content_container_->SetBackground(base::MakeUnique<SearchBoxBackground>());
 
   views::BoxLayout* layout = new views::BoxLayout(
@@ -166,11 +169,30 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
 
   search_box_->SetBorder(views::NullBorder());
   search_box_->SetTextColor(kSearchTextColor);
-  search_box_->SetBackgroundColor(kSearchBoxBackground);
-  search_box_->set_placeholder_text_color(kHintTextColor);
+  search_box_->SetBackgroundColor(kSearchBoxBackgroundDefault);
   search_box_->set_controller(this);
   search_box_->SetTextInputType(ui::TEXT_INPUT_TYPE_SEARCH);
   search_box_->SetTextInputFlags(ui::TEXT_INPUT_FLAG_AUTOCORRECT_OFF);
+  if (is_fullscreen_app_list_enabled_) {
+    google_icon_ = new views::ImageView();
+    google_icon_->SetImage(gfx::CreateVectorIcon(
+        kIcGoogleBlackIcon, kGoogleIconSize, kDefaultSearchboxColor));
+    content_container_->AddChildView(google_icon_);
+
+    search_box_->set_placeholder_text_color(kDefaultSearchboxColor);
+  } else {
+    back_button_ = new SearchBoxImageButton(this);
+    ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+    back_button_->SetImage(
+        views::ImageButton::STATE_NORMAL,
+        rb.GetImageSkiaNamed(IDR_APP_LIST_FOLDER_BACK_NORMAL));
+    back_button_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
+                                    views::ImageButton::ALIGN_MIDDLE);
+    SetBackButtonLabel(false);
+    content_container_->AddChildView(back_button_);
+
+    search_box_->set_placeholder_text_color(kHintTextColor);
+  }
   content_container_->AddChildView(search_box_);
   layout->SetFlexForView(search_box_, 1);
 
@@ -418,14 +440,26 @@ void SearchBoxView::SpeechRecognitionButtonPropChanged() {
     }
 
     speech_button_->SetAccessibleName(speech_button_prop->accessible_name);
+    if (is_fullscreen_app_list_enabled_) {
+      speech_button_->SetImage(
+          views::Button::STATE_NORMAL,
+          gfx::CreateVectorIcon(kIcMicBlackIcon, kMicIconSize,
+                                kDefaultSearchboxColor));
+    }
+    // TODO(warx): consider removing on_tooltip as it is not accessible due to
+    // the overlap of speech UI.
     if (view_delegate_->GetSpeechUI()->state() ==
         SPEECH_RECOGNITION_HOTWORD_LISTENING) {
-      speech_button_->SetImage(
-          views::Button::STATE_NORMAL, &speech_button_prop->on_icon);
+      if (!is_fullscreen_app_list_enabled_) {
+        speech_button_->SetImage(views::Button::STATE_NORMAL,
+                                 &speech_button_prop->on_icon);
+      }
       speech_button_->SetTooltipText(speech_button_prop->on_tooltip);
     } else {
-      speech_button_->SetImage(
-          views::Button::STATE_NORMAL, &speech_button_prop->off_icon);
+      if (!is_fullscreen_app_list_enabled_) {
+        speech_button_->SetImage(views::Button::STATE_NORMAL,
+                                 &speech_button_prop->off_icon);
+      }
       speech_button_->SetTooltipText(speech_button_prop->off_tooltip);
     }
   } else {

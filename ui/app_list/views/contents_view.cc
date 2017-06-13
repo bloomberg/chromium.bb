@@ -210,13 +210,15 @@ void ContentsView::ActivePageChanged() {
   DCHECK(start_page_view_);
 
   // Set the visibility of the search box's back button.
-  app_list_main_view_->search_box_view()->back_button()->SetVisible(
-      state != AppListModel::STATE_START);
-  app_list_main_view_->search_box_view()->Layout();
-  bool folder_active = (state == AppListModel::STATE_APPS)
-                           ? apps_container_view_->IsInFolderView()
-                           : false;
-  app_list_main_view_->search_box_view()->SetBackButtonLabel(folder_active);
+  if (!features::IsFullscreenAppListEnabled()) {
+    app_list_main_view_->search_box_view()->back_button()->SetVisible(
+        state != AppListModel::STATE_START);
+    app_list_main_view_->search_box_view()->Layout();
+    bool folder_active = (state == AppListModel::STATE_APPS)
+                             ? apps_container_view_->IsInFolderView()
+                             : false;
+    app_list_main_view_->search_box_view()->SetBackButtonLabel(folder_active);
+  }
 
   // Whenever the page changes, the custom launcher page is considered to have
   // been reset.

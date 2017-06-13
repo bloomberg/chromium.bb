@@ -10,7 +10,7 @@
 namespace app_list {
 
 const SkColor kContentsBackgroundColor = SkColorSetRGB(0xF2, 0xF2, 0xF2);
-const SkColor kSearchBoxBackground = SK_ColorWHITE;
+const SkColor kSearchBoxBackgroundDefault = SK_ColorWHITE;
 
 const SkColor kSearchTextColor = SkColorSetRGB(0x33, 0x33, 0x33);
 
