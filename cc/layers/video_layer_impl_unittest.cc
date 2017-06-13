@@ -351,6 +351,8 @@ TEST(VideoLayerImplTest, NativeYUVFrameGeneratesYUVQuad) {
   ASSERT_TRUE(video_frame);
   video_frame->metadata()->SetBoolean(media::VideoFrameMetadata::ALLOW_OVERLAY,
                                       true);
+  video_frame->metadata()->SetBoolean(
+      media::VideoFrameMetadata::REQUIRE_OVERLAY, true);
   FakeVideoFrameProvider provider;
   provider.set_frame(video_frame);
 
@@ -373,6 +375,7 @@ TEST(VideoLayerImplTest, NativeYUVFrameGeneratesYUVQuad) {
             (yuv_draw_quad->ya_tex_size.height() + 1) / 2);
   EXPECT_EQ(yuv_draw_quad->uv_tex_size.width(),
             (yuv_draw_quad->ya_tex_size.width() + 1) / 2);
+  EXPECT_TRUE(yuv_draw_quad->require_overlay);
 }
 
 TEST(VideoLayerImplTest, NativeARGBFrameGeneratesStreamVideoQuad) {

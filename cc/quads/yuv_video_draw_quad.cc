@@ -71,7 +71,8 @@ void YUVVideoDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
                               const gfx::ColorSpace& video_color_space,
                               float offset,
                               float multiplier,
-                              uint32_t bits_per_channel) {
+                              uint32_t bits_per_channel,
+                              bool require_overlay) {
   DrawQuad::SetAll(shared_quad_state, DrawQuad::YUV_VIDEO_CONTENT, rect,
                    opaque_rect, visible_rect, needs_blending);
   this->ya_tex_coord_rect = ya_tex_coord_rect;
@@ -88,6 +89,7 @@ void YUVVideoDrawQuad::SetAll(const SharedQuadState* shared_quad_state,
   this->resource_offset = offset;
   this->resource_multiplier = multiplier;
   this->bits_per_channel = bits_per_channel;
+  this->require_overlay = require_overlay;
 }
 
 const YUVVideoDrawQuad* YUVVideoDrawQuad::MaterialCast(
@@ -110,6 +112,7 @@ void YUVVideoDrawQuad::ExtendValue(
                     resources.ids[kVPlaneResourceIdIndex]);
   value->SetInteger("a_plane_resource_id",
                     resources.ids[kAPlaneResourceIdIndex]);
+  value->SetBoolean("require_overlay", require_overlay);
 }
 
 }  // namespace cc

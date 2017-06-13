@@ -79,7 +79,8 @@ class CC_EXPORT YUVVideoDrawQuad : public DrawQuad {
               const gfx::ColorSpace& video_color_space,
               float offset,
               float multiplier,
-              uint32_t bits_per_channel);
+              uint32_t bits_per_channel,
+              bool require_overlay);
 
   gfx::RectF ya_tex_coord_rect;
   gfx::RectF uv_tex_coord_rect;
@@ -91,6 +92,7 @@ class CC_EXPORT YUVVideoDrawQuad : public DrawQuad {
   uint32_t bits_per_channel = 8;
   // TODO(hubbe): Move to ResourceProvider::ScopedSamplerGL.
   gfx::ColorSpace video_color_space;
+  bool require_overlay = false;
 
   static const YUVVideoDrawQuad* MaterialCast(const DrawQuad*);
 

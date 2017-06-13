@@ -420,6 +420,11 @@ struct StructTraits<cc::mojom::YUVVideoQuadStateDataView, cc::DrawQuad> {
         cc::YUVVideoDrawQuad::MaterialCast(&input);
     return quad->video_color_space;
   }
+  static bool require_overlay(const cc::DrawQuad& input) {
+    const cc::YUVVideoDrawQuad* quad =
+        cc::YUVVideoDrawQuad::MaterialCast(&input);
+    return quad->require_overlay;
+  }
 
   static bool Read(cc::mojom::YUVVideoQuadStateDataView data,
                    cc::DrawQuad* out);

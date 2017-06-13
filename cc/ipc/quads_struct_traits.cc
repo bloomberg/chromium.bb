@@ -255,6 +255,7 @@ bool StructTraits<cc::mojom::YUVVideoQuadStateDataView, cc::DrawQuad>::Read(
       quad->bits_per_channel > cc::YUVVideoDrawQuad::kMaxBitsPerChannel) {
     return false;
   }
+  quad->require_overlay = data.require_overlay();
   return true;
 }
 
