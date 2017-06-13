@@ -267,7 +267,7 @@ NSString* const kDoneTouchBarId = @"DONE";
   if (!textFieldEditor_)
     textFieldEditor_.reset([[DialogTextFieldEditor alloc] init]);
 
-  return textFieldEditor_.get();
+  return textFieldEditor_.autorelease();
 }
 
 // Shows the bookmark editor sheet for more advanced editing.

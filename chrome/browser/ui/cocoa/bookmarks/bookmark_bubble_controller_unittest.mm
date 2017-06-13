@@ -485,6 +485,29 @@ TEST_F(BookmarkBubbleControllerTest, SyncPromoSignedIn) {
   EXPECT_EQ(0u, [[controller.syncPromoPlaceholder subviews] count]);
 }
 
+// Tests to see if setting the title textfield multiple times will crash.
+// See crbug.com/731284.
+TEST_F(BookmarkBubbleControllerTest, TextfieldChanges) {
+  BookmarkModel* model = GetBookmarkModel();
+  EXPECT_TRUE(model);
+  const BookmarkNode* bookmark_bar_node = model->bookmark_bar_node();
+  EXPECT_TRUE(bookmark_bar_node);
+  const BookmarkNode* node =
+      model->AddURL(bookmark_bar_node, 0, ASCIIToUTF16("short-title"),
+                    GURL(kTestBookmarkURL));
+
+  BookmarkBubbleController* controller = ControllerForNode(node);
+  EXPECT_TRUE(controller);
+
+  const BookmarkNode* parent = node->parent();
+  EXPECT_TRUE(parent);
+
+  [controller setTitle:@"test" parentFolder:parent];
+  [controller setTitle:@"" parentFolder:parent];
+  [controller setTitle:@"             " parentFolder:parent];
+  [controller setTitle:@"       test 2      " parentFolder:parent];
+}
+
 // Verifies the bubble's touch bar.
 TEST_F(BookmarkBubbleControllerTest, TouchBar) {
   if (!base::mac::IsAtLeastOS10_12())
