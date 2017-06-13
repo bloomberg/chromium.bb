@@ -96,7 +96,7 @@ class ChromiumCommit(object):
         ], cwd=self.absolute_chromium_dir).strip()
 
     def filtered_changed_files(self):
-        """Makes a patch with just changes in files in the WPT dir for a given commit."""
+        """Returns a list of modified exportable files."""
         changed_files = self.host.executive.run_command([
             'git', 'diff-tree', '--name-only', '--no-commit-id', '-r', self.sha,
             '--', self.absolute_chromium_wpt_dir
@@ -130,3 +130,7 @@ class ChromiumCommit(object):
         return self.host.executive.run_command([
             'git', 'format-patch', '-1', '--stdout', self.sha, '--'
         ] + filtered_files, cwd=self.absolute_chromium_dir)
+
+    def url(self):
+        """Returns a URL to view more information about this commit."""
+        return 'https://chromium.googlesource.com/chromium/src/+/%s' % self.short_sha

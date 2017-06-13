@@ -2,24 +2,22 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import collections
-
 from webkitpy.common.checkout.git_mock import MockGit
 from webkitpy.common.host_mock import MockHost
 from webkitpy.common.system.executive_mock import MockExecutive
 from webkitpy.common.system.log_testing import LoggingTestCase
 from webkitpy.w3c.test_importer import TestImporter
-
-
-MockChromiumCommit = collections.namedtuple('ChromiumCommit', ('sha', 'position'))
+from webkitpy.w3c.chromium_commit_mock import MockChromiumCommit
 
 
 class TestImporterTest(LoggingTestCase):
 
     def test_abort_on_exportable_commits(self):
-        importer = TestImporter(MockHost())
+        host = MockHost()
+        importer = TestImporter(host)
         importer.exportable_but_not_exported_commits = lambda _: [
-            MockChromiumCommit(sha='deadbeef', position=123)]
+            MockChromiumCommit(host, position='refs/heads/master@{#431915}')
+        ]
         importer.checkout_is_okay = lambda _: True
         return_code = importer.main(['wpt'])
         self.assertEqual(return_code, 0)
@@ -27,7 +25,10 @@ class TestImporterTest(LoggingTestCase):
             'INFO: Cloning repo: https://chromium.googlesource.com/external/w3c/web-platform-tests.git\n',
             'INFO: Local path: /mock-checkout/third_party/WebKit/LayoutTests/wpt\n',
             'INFO: There were exportable but not-yet-exported commits:\n',
-            'INFO:   https://chromium.googlesource.com/chromium/src/+/deadbeef\n',
+            'INFO: Commit: https://fake-chromium-commit-viewer.org/+/5e9a83004a\n',
+            'INFO: Modified files in wpt directory in this commit:\n',
+            'INFO:   third_party/WebKit/LayoutTests/external/wpt/one.html\n',
+            'INFO:   third_party/WebKit/LayoutTests/external/wpt/two.html\n',
             'INFO: Aborting import to prevent clobbering these commits.\n',
             'INFO: Deleting temp repo directory /mock-checkout/third_party/WebKit/LayoutTests/wpt.\n',
         ])
