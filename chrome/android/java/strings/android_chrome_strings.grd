@@ -428,7 +428,7 @@ CHAR-LIMIT guidelines:
         Saved passwords will appear here.
       </message>
       <message name="IDS_PASSWORD_ENTRY_EDITOR_TITLE" desc='Title of the "edit a name/password" screen.'>
-        Edit saved account
+        Saved password
       </message>
       <message name="IDS_PASSWORD_ENTRY_EDITOR_SITE_TITLE" desc='Title preceding the identification of the site where the stored password comes from.'>
         Site
@@ -456,6 +456,32 @@ CHAR-LIMIT guidelines:
       </message>
       <message name="IDS_PASSWORD_ENTRY_EDITOR_DELETE_STORED_PASSWORD" desc='Content description for the button that allows users to delete the stored password.'>
         Delete stored password
+      </message>
+      <message name="IDS_PASSWORD_ENTRY_EDITOR_USERNAME_COPIED_INTO_CLIPBOARD" desc='Text that announces to the user that the username of a saved account has been copied into clipboard.'>
+        Username copied
+      </message>
+      <message name="IDS_PASSWORD_ENTRY_EDITOR_SITE_COPIED_INTO_CLIPBOARD" desc='Text that announces to the user that the site of a saved account has been copied into clipboard.'>
+        Site copied
+      </message>
+      <message name="IDS_PASSWORD_ENTRY_EDITOR_PASSWORD_COPIED_INTO_CLIPBOARD" desc='Text that announces to the user that the password of a saved account has been copied into clipboard.'>
+        Password copied
+      </message>
+      <message name="IDS_PASSWORD_ENTRY_EDITOR_SET_LOCK_SCREEN" desc='Text prompting user to set device lock in order to view/copy passwords'>
+        In order to view and copy passwords you must set up a device lock in your device's security settings.
+      </message>
+      <message name="IDS_PASSWORD_ENTRY_EDITOR_NOT_AVAILABLE_ON_PRE_LOLLIPOP" desc='Text that announced user that password viewing is not possible on pre-Lollipop devices'>
+        Password viewing and copying are not available on your version of Android.
+      </message>
+
+      <!-- Lock Screen Fragment -->
+      <message name="IDS_LOCKSCREEN_VERIFICATION_TITLE" desc='Customized title for lock screen prompting user to unlock their phone to continue with setup.'>
+        Confirm your screen lock
+      </message>
+      <message name="IDS_LOCKSCREEN_VERIFICATION_TEXT" desc='User needs to enter lock pattern to verify that they own this phone.'>
+        For security reasons, you need to confirm your screen lock in order to access your password.
+      </message>
+      <message name="IDS_LOCKSCREEN_DESCRIPTION" desc='Text on lockscreen explaining to user that they need to unlock the device to continue setup.'>
+        Unlock to continue setting up your phone
       </message>
 
       <!-- Homepage preferences -->
