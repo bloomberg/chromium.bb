@@ -36,6 +36,7 @@
 #include "bindings/core/v8/SourceLocation.h"
 #include "core/workers/ParentFrameTaskRunners.h"
 #include "core/workers/WorkerThreadLifecycleObserver.h"
+#include "modules/websockets/DocumentWebSocketChannel.h"
 #include "modules/websockets/WebSocketChannel.h"
 #include "modules/websockets/WebSocketChannelClient.h"
 #include "platform/heap/Handle.h"
@@ -88,18 +89,24 @@ class WorkerWebSocketChannel final : public WebSocketChannel {
   DECLARE_VIRTUAL_TRACE();
 
   class Bridge;
+
+  // A WebSocketChannelClient to pass to |main_channel_|. It forwards
+  // method incovactions to the worker thread, and re-invokes them on the
+  // WebSocketChannelClient given to the WorkerWebSocketChannel.
+  //
   // Allocated and used in the main thread.
-  class Peer final : public GarbageCollectedFinalized<Peer>,
-                     public WebSocketChannelClient,
-                     public WorkerThreadLifecycleObserver {
-    USING_GARBAGE_COLLECTED_MIXIN(Peer);
-    WTF_MAKE_NONCOPYABLE(Peer);
+  class MainChannelClient final
+      : public GarbageCollectedFinalized<MainChannelClient>,
+        public WebSocketChannelClient,
+        public WorkerThreadLifecycleObserver {
+    USING_GARBAGE_COLLECTED_MIXIN(MainChannelClient);
+    WTF_MAKE_NONCOPYABLE(MainChannelClient);
 
    public:
-    Peer(Bridge*,
-         RefPtr<WebTaskRunner>,
-         WorkerThreadLifecycleContext*);
-    ~Peer() override;
+    MainChannelClient(Bridge*,
+                      RefPtr<WebTaskRunner>,
+                      WorkerThreadLifecycleContext*);
+    ~MainChannelClient() override;
 
     // SourceLocation parameter may be shown when the connection fails.
     bool Initialize(std::unique_ptr<SourceLocation>, ThreadableLoadingContext*);
@@ -134,12 +141,14 @@ class WorkerWebSocketChannel final : public WebSocketChannel {
     void ContextDestroyed(WorkerThreadLifecycleContext*) override;
 
    private:
+    void ReleaseMainChannel();
+
     CrossThreadWeakPersistent<Bridge> bridge_;
     RefPtr<WebTaskRunner> worker_networking_task_runner_;
-    Member<WebSocketChannel> main_web_socket_channel_;
+    Member<DocumentWebSocketChannel> main_channel_;
   };
 
-  // Bridge for Peer. Running on the worker thread.
+  // Bridge for MainChannelClient. Running on the worker thread.
   class Bridge final : public GarbageCollectedFinalized<Bridge> {
     WTF_MAKE_NONCOPYABLE(Bridge);
 
@@ -182,7 +191,7 @@ class WorkerWebSocketChannel final : public WebSocketChannel {
     Member<WebSocketChannelClient> client_;
     Member<WorkerGlobalScope> worker_global_scope_;
     CrossThreadPersistent<ParentFrameTaskRunners> parent_frame_task_runners_;
-    CrossThreadPersistent<Peer> peer_;
+    CrossThreadPersistent<MainChannelClient> main_channel_client_;
   };
 
  private:
