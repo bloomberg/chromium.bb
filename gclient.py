@@ -341,6 +341,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     # Keep track of original values, before post-processing (e.g. deps_os).
     self._orig_dependencies = []
     self._vars = {}
+    self._os_dependencies = {}
 
     # A cache of the files affected by the current operation, necessary for
     # hooks.
@@ -739,8 +740,13 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     # load os specific dependencies if defined.  these dependencies may
     # override or extend the values defined by the 'deps' member.
     target_os_list = self.target_os
-    if 'deps_os' in local_scope and target_os_list:
-      deps = self.MergeWithOsDeps(deps, local_scope['deps_os'], target_os_list)
+    if 'deps_os' in local_scope:
+      for dep_os, os_deps in local_scope['deps_os'].iteritems():
+        self._os_dependencies[dep_os] = self._deps_to_objects(
+            self._postprocess_deps(os_deps, rel_prefix), use_relative_paths)
+      if target_os_list:
+        deps = self.MergeWithOsDeps(
+            deps, local_scope['deps_os'], target_os_list)
 
     deps_to_add = self._deps_to_objects(
         self._postprocess_deps(deps, rel_prefix), use_relative_paths)
@@ -1066,6 +1072,11 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
   @gclient_utils.lockedmethod
   def orig_dependencies(self):
     return tuple(self._orig_dependencies)
+
+  @property
+  @gclient_utils.lockedmethod
+  def os_dependencies(self):
+    return dict(self._os_dependencies)
 
   @property
   @gclient_utils.lockedmethod
@@ -1718,12 +1729,14 @@ def CMDflatten(parser, args):
     return code
 
   deps = {}
+  deps_os = {}
   hooks = []
   pre_deps_hooks = []
   unpinned_deps = {}
 
   for solution in client.dependencies:
-    _FlattenSolution(solution, deps, hooks, pre_deps_hooks, unpinned_deps)
+    _FlattenSolution(
+        solution, deps, deps_os, hooks, pre_deps_hooks, unpinned_deps)
 
   if options.require_pinned_revisions and unpinned_deps:
     sys.stderr.write('The following dependencies are not pinned:\n')
@@ -1735,6 +1748,7 @@ def CMDflatten(parser, args):
         client.dependencies[0]._gn_args_file,
         client.dependencies[0]._gn_args) +
     _DepsToLines(deps) +
+    _DepsOsToLines(deps_os) +
     _HooksToLines('hooks', hooks) +
     _HooksToLines('pre_deps_hooks', pre_deps_hooks) +
     ['']  # Ensure newline at end of file.
@@ -1749,7 +1763,8 @@ def CMDflatten(parser, args):
   return 0
 
 
-def _FlattenSolution(solution, deps, hooks, pre_deps_hooks, unpinned_deps):
+def _FlattenSolution(
+    solution, deps, deps_os, hooks, pre_deps_hooks, unpinned_deps):
   """Visits a solution in order to flatten it (see CMDflatten).
 
   Arguments:
@@ -1758,6 +1773,8 @@ def _FlattenSolution(solution, deps, hooks, pre_deps_hooks, unpinned_deps):
   Out-parameters:
     deps (dict of name -> Dependency): will be filled with all Dependency
         objects indexed by their name
+    deps_os (dict of os name -> dep name -> Dependency): same as above,
+        for OS-specific deps
     hooks (list of (Dependency, hook)): will be filled with flattened hooks
     pre_deps_hooks (list of (Dependency, hook)): will be filled with flattened
         pre_deps_hooks
@@ -1766,11 +1783,11 @@ def _FlattenSolution(solution, deps, hooks, pre_deps_hooks, unpinned_deps):
   """
   logging.debug('_FlattenSolution(%r)', solution)
 
-  _FlattenDep(solution, deps, hooks, pre_deps_hooks, unpinned_deps)
-  _FlattenRecurse(solution, deps, hooks, pre_deps_hooks, unpinned_deps)
+  _FlattenDep(solution, deps, deps_os, hooks, pre_deps_hooks, unpinned_deps)
+  _FlattenRecurse(solution, deps, deps_os, hooks, pre_deps_hooks, unpinned_deps)
 
 
-def _FlattenDep(dep, deps, hooks, pre_deps_hooks, unpinned_deps):
+def _FlattenDep(dep, deps, deps_os, hooks, pre_deps_hooks, unpinned_deps):
   """Visits a dependency in order to flatten it (see CMDflatten).
 
   Arguments:
@@ -1778,6 +1795,7 @@ def _FlattenDep(dep, deps, hooks, pre_deps_hooks, unpinned_deps):
 
   Out-parameters:
     deps (dict): will be filled with flattened deps
+    deps_os (dict): will be filled with flattened deps_os
     hooks (list): will be filled with flattened hooks
     pre_deps_hooks (list): will be filled with flattened pre_deps_hooks
     unpinned_deps (dict): will be filled with unpinned deps
@@ -1786,10 +1804,14 @@ def _FlattenDep(dep, deps, hooks, pre_deps_hooks, unpinned_deps):
 
   _AddDep(dep, deps, unpinned_deps)
 
+  for dep_os, os_deps in dep.os_dependencies.iteritems():
+    for os_dep in os_deps:
+      deps_os.setdefault(dep_os, {})[os_dep.name] = os_dep
+
   deps_by_name = dict((d.name, d) for d in dep.dependencies)
   for recurse_dep_name in (dep.recursedeps or []):
     _FlattenRecurse(
-        deps_by_name[recurse_dep_name], deps, hooks, pre_deps_hooks,
+        deps_by_name[recurse_dep_name], deps, deps_os, hooks, pre_deps_hooks,
         unpinned_deps)
 
   # TODO(phajdan.jr): also handle hooks_os.
@@ -1798,7 +1820,7 @@ def _FlattenDep(dep, deps, hooks, pre_deps_hooks, unpinned_deps):
       [(dep, {'action': hook}) for hook in dep.pre_deps_hooks])
 
 
-def _FlattenRecurse(dep, deps, hooks, pre_deps_hooks, unpinned_deps):
+def _FlattenRecurse(dep, deps, deps_os, hooks, pre_deps_hooks, unpinned_deps):
   """Helper for flatten that recurses into |dep|'s dependencies.
 
   Arguments:
@@ -1806,6 +1828,7 @@ def _FlattenRecurse(dep, deps, hooks, pre_deps_hooks, unpinned_deps):
 
   Out-parameters:
     deps (dict): will be filled with flattened deps
+    deps_os (dict): will be filled with flattened deps_os
     hooks (list): will be filled with flattened hooks
     pre_deps_hooks (list): will be filled with flattened pre_deps_hooks
     unpinned_deps (dict): will be filled with unpinned deps
@@ -1814,7 +1837,7 @@ def _FlattenRecurse(dep, deps, hooks, pre_deps_hooks, unpinned_deps):
 
   # TODO(phajdan.jr): also handle deps_os.
   for sub_dep in dep.orig_dependencies:
-    _FlattenDep(sub_dep, deps, hooks, pre_deps_hooks, unpinned_deps)
+    _FlattenDep(sub_dep, deps, deps_os, hooks, pre_deps_hooks, unpinned_deps)
 
 
 def _AddDep(dep, deps, unpinned_deps):
@@ -1862,6 +1885,17 @@ def _DepsToLines(deps):
         '  },',
         '',
     ])
+  s.extend(['}', ''])
+  return s
+
+
+def _DepsOsToLines(deps_os):
+  """Converts |deps_os| dict to list of lines for output."""
+  s = ['deps_os = {']
+  for dep_os, os_deps in sorted(deps_os.iteritems()):
+    s.append('  "%s": {' % dep_os)
+    s.extend(['    %s' % l for l in _DepsToLines(os_deps)])
+    s.extend(['  },', ''])
   s.extend(['}', ''])
   return s
 
