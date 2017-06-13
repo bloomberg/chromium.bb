@@ -111,18 +111,14 @@ def BuildFileList(override_dir):
     ]
   elif VS_VERSION == '2017':
     paths += [
-        ('VC/redist/MSVC/14.*.*/x86/Microsoft.VC150.CRT', 'sys32'),
-        ('VC/redist/MSVC/14.*.*/x86/Microsoft.VC150.CRT', 'win_sdk/bin/x86'),
-        ('VC/redist/MSVC/14.*.*/x86/Microsoft.VC150.MFC', 'sys32'),
-        ('VC/redist/MSVC/14.*.*/debug_nonredist/x86/Microsoft.VC150.DebugCRT', 'sys32'),
-        ('VC/redist/MSVC/14.*.*/debug_nonredist/x86/Microsoft.VC150.DebugMFC', 'sys32'),
-        ('VC/redist/MSVC/14.*.*/x64/Microsoft.VC150.CRT', 'sys64'),
-        ('VC/redist/MSVC/14.*.*/x64/Microsoft.VC150.CRT', 'VC/bin/amd64_x86'),
-        ('VC/redist/MSVC/14.*.*/x64/Microsoft.VC150.CRT', 'VC/bin/amd64'),
-        ('VC/redist/MSVC/14.*.*/x64/Microsoft.VC150.CRT', 'win_sdk/bin/x64'),
-        ('VC/redist/MSVC/14.*.*/x64/Microsoft.VC150.MFC', 'sys64'),
-        ('VC/redist/MSVC/14.*.*/debug_nonredist/x64/Microsoft.VC150.DebugCRT', 'sys64'),
-        ('VC/redist/MSVC/14.*.*/debug_nonredist/x64/Microsoft.VC150.DebugMFC', 'sys64'),
+        ('VC/redist/MSVC/14.*.*/x86/Microsoft.VC*.CRT', 'sys32'),
+        ('VC/redist/MSVC/14.*.*/x86/Microsoft.VC*.CRT', 'win_sdk/bin/x86'),
+        ('VC/redist/MSVC/14.*.*/debug_nonredist/x86/Microsoft.VC*.DebugCRT', 'sys32'),
+        ('VC/redist/MSVC/14.*.*/x64/Microsoft.VC*.CRT', 'sys64'),
+        ('VC/redist/MSVC/14.*.*/x64/Microsoft.VC*.CRT', 'VC/bin/amd64_x86'),
+        ('VC/redist/MSVC/14.*.*/x64/Microsoft.VC*.CRT', 'VC/bin/amd64'),
+        ('VC/redist/MSVC/14.*.*/x64/Microsoft.VC*.CRT', 'win_sdk/bin/x64'),
+        ('VC/redist/MSVC/14.*.*/debug_nonredist/x64/Microsoft.VC*.DebugCRT', 'sys64'),
     ]
   else:
     raise ValueError('VS_VERSION %s' % VS_VERSION)
