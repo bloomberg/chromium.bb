@@ -6879,7 +6879,6 @@ TEST_F(LayerTreeHostCommonTest, StickyPositionMainThreadUpdates) {
   sticky_position.scroll_container_relative_containing_block_rect =
       gfx::Rect(0, 0, 50, 50);
   sticky_pos->SetStickyPositionConstraint(sticky_position);
-  sticky_pos->SetElementId(LayerIdToElementIdForTesting(sticky_pos->id()));
 
   root->SetBounds(gfx::Size(100, 100));
   container->SetBounds(gfx::Size(100, 100));
@@ -6919,8 +6918,8 @@ TEST_F(LayerTreeHostCommonTest, StickyPositionMainThreadUpdates) {
 
   // Now the main thread commits the new position of the sticky element.
   scroller->SetScrollOffset(gfx::ScrollOffset(15, 15));
-  sticky_pos->SetPosition(gfx::PointF(10, 25));
-  sticky_pos->SetOffsetForStickyPositionFromMainThread(gfx::Size(0, 5));
+  // Shift the layer by -offset_for_position_sticky.
+  sticky_pos->SetPosition(gfx::PointF(10, 25) - gfx::Vector2dF(0, 5));
   ExecuteCalculateDrawProperties(root.get());
   host()->host_impl()->CreatePendingTree();
   host()->CommitAndCreatePendingTree();
@@ -6973,7 +6972,6 @@ TEST_F(LayerTreeHostCommonTest, StickyPositionCompositedContainer) {
   sticky_position.scroll_container_relative_containing_block_rect =
       gfx::Rect(20, 20, 30, 30);
   sticky_pos->SetStickyPositionConstraint(sticky_position);
-  sticky_pos->SetElementId(LayerIdToElementIdForTesting(sticky_pos->id()));
 
   root->SetBounds(gfx::Size(100, 100));
   container->SetBounds(gfx::Size(100, 100));
@@ -7015,8 +7013,8 @@ TEST_F(LayerTreeHostCommonTest, StickyPositionCompositedContainer) {
 
   // Now the main thread commits the new position of the sticky element.
   scroller->SetScrollOffset(gfx::ScrollOffset(0, 25));
-  sticky_pos->SetPosition(gfx::PointF(0, 15));
-  sticky_pos->SetOffsetForStickyPositionFromMainThread(gfx::Size(0, 5));
+  // Shift the layer by -offset_for_position_sticky.
+  sticky_pos->SetPosition(gfx::PointF(0, 15) - gfx::Vector2dF(0, 5));
   ExecuteCalculateDrawProperties(root.get());
   host()->host_impl()->CreatePendingTree();
   host()->CommitAndCreatePendingTree();

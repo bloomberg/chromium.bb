@@ -183,7 +183,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   void SetBackdropFilters(CompositorFilterOperations);
 
   void SetStickyPositionConstraint(const WebLayerStickyPositionConstraint&);
-  void SetOffsetForStickyPosition(const WebSize&);
 
   void SetFilterQuality(SkFilterQuality);
 

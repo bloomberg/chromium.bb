@@ -353,6 +353,8 @@ bool TransformTree::CombineInversesBetween(int source_id,
   return all_are_invertible;
 }
 
+// This function should match the offset we set for sticky position layer in
+// CompositedLayerMapping::UpdateMainGraphicsLayerGeometry.
 gfx::Vector2dF StickyPositionOffset(TransformTree* tree, TransformNode* node) {
   if (node->sticky_position_constraint_id == -1)
     return gfx::Vector2dF();
@@ -461,7 +463,7 @@ gfx::Vector2dF StickyPositionOffset(TransformTree* tree, TransformNode* node) {
       ancestor_sticky_box_offset + ancestor_containing_block_offset +
       sticky_offset;
 
-  return sticky_offset - node->offset_for_sticky_position_from_main_thread;
+  return sticky_offset;
 }
 
 void TransformTree::UpdateLocalTransform(TransformNode* node) {
