@@ -52,6 +52,7 @@
 #include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 #include "net/url_request/url_request_throttler_manager.h"
+#include "url/url_constants.h"
 
 #if !BUILDFLAG(DISABLE_FILE_SUPPORT)
 #include "net/url_request/file_protocol_handler.h"  // nogncheck
@@ -479,13 +480,13 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   protocol_handlers_.clear();
 
   if (data_enabled_)
-    job_factory->SetProtocolHandler("data",
+    job_factory->SetProtocolHandler(url::kDataScheme,
                                     base::WrapUnique(new DataProtocolHandler));
 
 #if !BUILDFLAG(DISABLE_FILE_SUPPORT)
   if (file_enabled_) {
     job_factory->SetProtocolHandler(
-        "file",
+        url::kFileScheme,
         base::MakeUnique<FileProtocolHandler>(context->GetFileTaskRunner()));
   }
 #endif  // !BUILDFLAG(DISABLE_FILE_SUPPORT)
@@ -493,7 +494,7 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
 #if !BUILDFLAG(DISABLE_FTP_SUPPORT)
   if (ftp_enabled_) {
     job_factory->SetProtocolHandler(
-        "ftp", FtpProtocolHandler::Create(context->host_resolver()));
+        url::kFtpScheme, FtpProtocolHandler::Create(context->host_resolver()));
   }
 #endif  // !BUILDFLAG(DISABLE_FTP_SUPPORT)
 
