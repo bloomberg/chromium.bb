@@ -26,6 +26,7 @@
 #ifndef ExternalDateTimeChooser_h
 #define ExternalDateTimeChooser_h
 
+#include "core/CoreExport.h"
 #include "core/html/forms/DateTimeChooser.h"
 
 namespace blink {
@@ -35,7 +36,7 @@ class DateTimeChooserClient;
 class WebString;
 class WebViewClient;
 
-class ExternalDateTimeChooser final : public DateTimeChooser {
+class CORE_EXPORT ExternalDateTimeChooser final : public DateTimeChooser {
  public:
   static ExternalDateTimeChooser* Create(ChromeClient*,
                                          WebViewClient*,

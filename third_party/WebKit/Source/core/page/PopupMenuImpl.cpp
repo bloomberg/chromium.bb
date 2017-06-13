@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "web/PopupMenuImpl.h"
+#include "core/page/PopupMenuImpl.h"
 
 #include "core/HTMLNames.h"
 #include "core/css/CSSFontSelector.h"
@@ -366,9 +366,10 @@ void PopupMenuImpl::AddElementStyle(ItemIterationContext& context,
     AddProperty("fontSize", font_description.ComputedPixelSize(), data);
   }
   // Our UA stylesheet has font-weight:normal for OPTION.
-  if (kFontWeightNormal != font_description.Weight())
+  if (kFontWeightNormal != font_description.Weight()) {
     AddProperty("fontWeight",
                 String(FontWeightToString(font_description.Weight())), data);
+  }
   if (base_font.Family() != font_description.Family()) {
     PagePopupClient::AddString("fontFamily: [\n", data);
     for (const FontFamily* f = &font_description.Family(); f; f = f->Next()) {
@@ -378,17 +379,19 @@ void PopupMenuImpl::AddElementStyle(ItemIterationContext& context,
     }
     PagePopupClient::AddString("],\n", data);
   }
-  if (base_font.Style() != font_description.Style())
+  if (base_font.Style() != font_description.Style()) {
     AddProperty("fontStyle",
                 String(FontStyleToString(font_description.Style())), data);
+  }
 
   if (base_font.VariantCaps() != font_description.VariantCaps() &&
       font_description.VariantCaps() == FontDescription::kSmallCaps)
     AddProperty("fontVariant", String("small-caps"), data);
 
-  if (base_style.TextTransform() != style->TextTransform())
+  if (base_style.TextTransform() != style->TextTransform()) {
     AddProperty("textTransform",
                 String(TextTransformToString(style->TextTransform())), data);
+  }
 
   PagePopupClient::AddString("},\n", data);
 }

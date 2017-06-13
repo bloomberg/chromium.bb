@@ -317,6 +317,8 @@ blink_core_sources("html") {
     "forms/DateTimeSymbolicFieldElement.h",
     "forms/EmailInputType.cpp",
     "forms/EmailInputType.h",
+    "forms/ExternalDateTimeChooser.cpp",
+    "forms/ExternalDateTimeChooser.h",
     "forms/FileInputType.cpp",
     "forms/FileInputType.h",
     "forms/FormController.cpp",
