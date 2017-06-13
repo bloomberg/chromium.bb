@@ -129,9 +129,14 @@ class CORE_EXPORT HTMLFrameOwnerElement : public HTMLElement,
     return SecurityOrigin::CreateUnique();
   }
 
-  // Construct a new feature policy container policy for this frame, based on
-  // the frame attributes and the effective origin specified in the frame
+  // Return a feature policy container policy for this frame, based on the
+  // frame attributes and the effective origin specified in the frame
   // attributes.
+  virtual Vector<WebParsedFeaturePolicyDeclaration> ConstructContainerPolicy()
+      const = 0;
+
+  // Update the container policy and notify the frame loader client of any
+  // changes.
   void UpdateContainerPolicy();
 
  private:

@@ -198,6 +198,59 @@ void HTMLIFrameElement::ParseAttribute(
   }
 }
 
+Vector<WebParsedFeaturePolicyDeclaration>
+HTMLIFrameElement::ConstructContainerPolicy() const {
+  RefPtr<SecurityOrigin> origin = GetOriginForFeaturePolicy();
+  Vector<WebParsedFeaturePolicyDeclaration> container_policy;
+
+  // Populate the initial container policy from the allow attribute.
+  for (const WebFeaturePolicyFeature feature : AllowedFeatures()) {
+    WebParsedFeaturePolicyDeclaration whitelist;
+    whitelist.feature = feature;
+    whitelist.origins = Vector<WebSecurityOrigin>(1UL, {origin});
+    container_policy.push_back(whitelist);
+  }
+
+  // If allowfullscreen attribute is present and no fullscreen policy is set,
+  // enable the feature for all origins.
+  if (AllowFullscreen()) {
+    bool has_fullscreen_policy = false;
+    for (const auto& declaration : container_policy) {
+      if (declaration.feature == WebFeaturePolicyFeature::kFullscreen) {
+        has_fullscreen_policy = true;
+        break;
+      }
+    }
+    if (!has_fullscreen_policy) {
+      WebParsedFeaturePolicyDeclaration whitelist;
+      whitelist.feature = WebFeaturePolicyFeature::kFullscreen;
+      whitelist.matches_all_origins = true;
+      whitelist.origins = Vector<WebSecurityOrigin>(0UL);
+      container_policy.push_back(whitelist);
+    }
+  }
+  // If the allowpaymentrequest attribute is present and no 'payment' policy is
+  // set, enable the feature for all origins.
+  if (AllowPaymentRequest()) {
+    bool has_payment_policy = false;
+    for (const auto& declaration : container_policy) {
+      if (declaration.feature == WebFeaturePolicyFeature::kPayment) {
+        has_payment_policy = true;
+        break;
+      }
+    }
+    if (!has_payment_policy) {
+      WebParsedFeaturePolicyDeclaration whitelist;
+      whitelist.feature = WebFeaturePolicyFeature::kPayment;
+      whitelist.matches_all_origins = true;
+      whitelist.origins = Vector<WebSecurityOrigin>(0UL);
+      container_policy.push_back(whitelist);
+    }
+  }
+
+  return container_policy;
+}
+
 bool HTMLIFrameElement::LayoutObjectIsNeeded(const ComputedStyle& style) {
   return ContentFrame() && !collapsed_by_client_ &&
          HTMLElement::LayoutObjectIsNeeded(style);

@@ -40,6 +40,7 @@ class CORE_EXPORT HTMLFrameElementBase : public HTMLFrameOwnerElement {
   int MarginHeight() const final { return margin_height_; }
 
  protected:
+  friend class HTMLFrameElementTest;
   friend class HTMLIFrameElementTest;
 
   HTMLFrameElementBase(const QualifiedName&, Document&);
