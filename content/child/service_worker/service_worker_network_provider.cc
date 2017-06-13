@@ -229,6 +229,11 @@ void ServiceWorkerNetworkProvider::SetServiceWorkerVersionId(
 }
 
 bool ServiceWorkerNetworkProvider::IsControlledByServiceWorker() const {
+  if (ServiceWorkerUtils::IsServicificationEnabled()) {
+    // Interception for subresource loading is not working (yet)
+    // when servicification is enabled.
+    return false;
+  }
   return context() && context()->controller();
 }
 
