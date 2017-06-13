@@ -54,10 +54,6 @@ config("skia_config") {
     defines += [ "SK_HAS_JPEG_LIBRARY" ]
   }
 
-  if (!use_system_freetype) {
-    defines += [ "SK_FREETYPE_MINIMUM_RUNTIME_VERSION=(((FREETYPE_MAJOR) * 0x01000000) | ((FREETYPE_MINOR) * 0x00010000) | ((FREETYPE_PATCH) * 0x00000100))" ]
-  }
-
   if (is_component_build) {
     defines += [
       "SKIA_DLL",
@@ -127,6 +123,10 @@ config("skia_library_config") {
   include_dirs += [ "//third_party/skia/src/effects/gradients" ]
 
   defines = []
+
+  if (!use_system_freetype) {
+    defines += [ "SK_FREETYPE_MINIMUM_RUNTIME_VERSION=(((FREETYPE_MAJOR) * 0x01000000) | ((FREETYPE_MINOR) * 0x00010000) | ((FREETYPE_PATCH) * 0x00000100))" ]
+  }
 
   if (is_component_build) {
     defines += [ "SKIA_IMPLEMENTATION=1" ]
