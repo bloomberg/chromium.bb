@@ -75,12 +75,6 @@ constexpr float kAppListOpacity = 0.8;
 // The vertical position for the appearing animation of the speech UI.
 constexpr float kSpeechUIAppearingPosition = 12;
 
-bool IsFullscreenAppListEnabled() {
-  // Cache this value to avoid repeated lookup.
-  static bool cached_value = features::IsFullscreenAppListEnabled();
-  return cached_value;
-}
-
 // This view forwards the focus to the search box widget by providing it as a
 // FocusTraversable when a focus search is provided.
 class SearchBoxFocusHost : public views::View {
@@ -197,15 +191,15 @@ AppListView::AppListView(AppListViewDelegate* delegate)
       search_box_focus_host_(nullptr),
       search_box_widget_(nullptr),
       search_box_view_(nullptr),
+      is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()),
       app_list_state_(PEEKING),
       display_observer_(this),
       overlay_view_(nullptr),
       animation_observer_(new HideViewAnimationObserver()) {
   CHECK(delegate);
-
   delegate_->GetSpeechUI()->AddObserver(this);
 
-  if (IsFullscreenAppListEnabled())
+  if (is_fullscreen_app_list_enabled_)
     display_observer_.Add(display::Screen::GetScreen());
 }
 
@@ -223,7 +217,7 @@ void AppListView::Initialize(gfx::NativeView parent, int initial_apps_page) {
   set_color(kContentsBackgroundColor);
   set_parent_window(parent);
 
-  if (IsFullscreenAppListEnabled())
+  if (is_fullscreen_app_list_enabled_)
     InitializeFullscreen(parent, initial_apps_page);
   else
     InitializeBubble(parent, initial_apps_page);
@@ -231,7 +225,7 @@ void AppListView::Initialize(gfx::NativeView parent, int initial_apps_page) {
   InitChildWidgets();
   AddChildView(overlay_view_);
 
-  if (IsFullscreenAppListEnabled())
+  if (is_fullscreen_app_list_enabled_)
     SetState(app_list_state_);
 
   if (delegate_)
@@ -249,7 +243,7 @@ void AppListView::SetBubbleArrow(views::BubbleBorder::Arrow arrow) {
 
 void AppListView::MaybeSetAnchorPoint(const gfx::Point& anchor_point) {
   // if the AppListView is a bubble
-  if (!IsFullscreenAppListEnabled())
+  if (!is_fullscreen_app_list_enabled_)
     SetAnchorRect(gfx::Rect(anchor_point, gfx::Size()));
 }
 
@@ -264,7 +258,7 @@ void AppListView::ShowWhenReady() {
 
 void AppListView::UpdateBounds() {
   // if the AppListView is a bubble
-  if (!IsFullscreenAppListEnabled())
+  if (!is_fullscreen_app_list_enabled_)
     SizeToContents();
 }
 
@@ -357,7 +351,7 @@ void AppListView::InitContents(gfx::NativeView parent, int initial_apps_page) {
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
           "440224, 441028 AppListView::InitContents"));
 
-  if (IsFullscreenAppListEnabled()) {
+  if (is_fullscreen_app_list_enabled_) {
     // The shield view that colors the background of the app list and makes it
     // transparent.
     app_list_background_shield_ = new views::View;
@@ -596,7 +590,7 @@ void AppListView::GetWidgetHitTestMask(gfx::Path* mask) const {
 }
 
 void AppListView::OnMouseEvent(ui::MouseEvent* event) {
-  if (!IsFullscreenAppListEnabled())
+  if (!is_fullscreen_app_list_enabled_)
     return;
 
   switch (event->type()) {
@@ -618,7 +612,7 @@ void AppListView::OnMouseEvent(ui::MouseEvent* event) {
 }
 
 void AppListView::OnGestureEvent(ui::GestureEvent* event) {
-  if (!IsFullscreenAppListEnabled())
+  if (!is_fullscreen_app_list_enabled_)
     return;
 
   switch (event->type()) {
@@ -646,7 +640,7 @@ bool AppListView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   // If the ContentsView does not handle the back action, then this is the
   // top level, so we close the app list.
   if (!app_list_main_view_->contents_view()->Back()) {
-    if (IsFullscreenAppListEnabled()) {
+    if (is_fullscreen_app_list_enabled_) {
       SetState(CLOSED);
     } else {
       app_list_main_view_->Close();
@@ -681,7 +675,7 @@ void AppListView::Layout() {
     speech_view_->SetBoundsRect(speech_bounds);
   }
 
-  if (IsFullscreenAppListEnabled()) {
+  if (is_fullscreen_app_list_enabled_) {
     app_list_main_view_->contents_view()->Layout();
     app_list_background_shield_->SetBoundsRect(contents_bounds);
   }
@@ -804,7 +798,7 @@ void AppListView::OnSpeechRecognitionStateChanged(
 
 void AppListView::OnDisplayMetricsChanged(const display::Display& display,
                                           uint32_t changed_metrics) {
-  if (!IsFullscreenAppListEnabled())
+  if (!is_fullscreen_app_list_enabled_)
     return;
 
   // Set the |fullscreen_widget_| size to fit the new display metrics.
