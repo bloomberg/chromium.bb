@@ -212,7 +212,8 @@ TEST_F('EditingTest', 'SingleCharacterLine', function() {
     ]);
 });
 
-TEST_F('EditingTest', 'RichTextMoveByLine', function() {
+// Fails flakily, see https://crbug.com/724847.
+TEST_F('EditingTest', 'DISABLED_RichTextMoveByLine', function() {
   editing.useRichText = true;
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
@@ -259,7 +260,8 @@ TEST_F('EditingTest', 'RichTextMoveByLine', function() {
   });
 });
 
-TEST_F('EditingTest', 'RichTextMoveByCharacter', function() {
+// Fails flakily, see https://crbug.com/732000.
+TEST_F('EditingTest', 'DISABLED_RichTextMoveByCharacter', function() {
   editing.useRichText = true;
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
@@ -330,7 +332,8 @@ TEST_F('EditingTest', 'RichTextMoveByCharacter', function() {
 });
 
 // Tests specifically for cursor workarounds.
-TEST_F('EditingTest', 'RichTextMoveByCharacterNodeWorkaround', function() {
+// Fails flakily, see https://crbug.com/731825.
+TEST_F('EditingTest', 'DISABLED_RichTextMoveByCharacterNodeWorkaround', function() {
   editing.useRichText = true;
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function() {/*!
