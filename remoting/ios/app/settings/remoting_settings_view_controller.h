@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef REMOTING_IOS_APP_REMOTING_SETTINGS_VIEW_CONTROLLER_H_
-#define REMOTING_IOS_APP_REMOTING_SETTINGS_VIEW_CONTROLLER_H_
+#ifndef REMOTING_IOS_APP_REMOTING_SETTINGS_SETTINGS_VIEW_CONTROLLER_H_
+#define REMOTING_IOS_APP_REMOTING_SETTINGS_SETTINGS_VIEW_CONTROLLER_H_
 
 #import "ios/third_party/material_components_ios/src/components/Collections/src/MaterialCollections.h"
 
 @interface RemotingSettingsViewController : MDCCollectionViewController
 @end
 
-#endif  // REMOTING_IOS_APP_REMOTING_SETTINGS_VIEW_CONTROLLER_H_
+#endif  // REMOTING_IOS_APP_REMOTING_SETTINGS_SETTINGS_VIEW_CONTROLLER_H_

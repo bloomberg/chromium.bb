@@ -11,6 +11,7 @@
 #include <memory>
 
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
+#import "remoting/ios/app/settings/remoting_settings_view_controller.h"
 #import "remoting/ios/client_gestures.h"
 #import "remoting/ios/client_keyboard.h"
 #import "remoting/ios/display/eagl_view.h"
@@ -31,6 +32,7 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
   ClientGestures* _clientGestures;
   ClientKeyboard* _clientKeyboard;
   CGSize _keyboardSize;
+  BOOL _surfaceCreated;
 }
 @end
 
@@ -41,6 +43,7 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
   if (self) {
     _client = client;
     _keyboardSize = CGSizeZero;
+    _surfaceCreated = NO;
   }
   return self;
 }
@@ -67,11 +70,19 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
   [_floatingButton setImage:settingsImage forState:UIControlStateNormal];
   [_floatingButton sizeToFit];
   [self.view addSubview:_floatingButton];
+
+  // TODO(yuweih): This should be loaded from and stored into user defaults.
+  _client.gestureInterpreter->SetInputMode(
+      remoting::GestureInterpreter::DIRECT_INPUT_MODE);
 }
 
 - (void)viewDidUnload {
   [super viewDidUnload];
   // TODO(nicholss): There needs to be a hook to tell the client we are done.
+
+  [(EAGLView*)self.view stop];
+  _clientGestures = nil;
+  _client = nil;
 }
 
 - (BOOL)prefersStatusBarHidden {
@@ -80,29 +91,24 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
 
 - (void)viewDidAppear:(BOOL)animated {
   [super viewDidAppear:animated];
-  [_client.displayHandler onSurfaceCreated:(EAGLView*)self.view];
-
+  if (!_surfaceCreated) {
+    [_client.displayHandler onSurfaceCreated:(EAGLView*)self.view];
+    _surfaceCreated = YES;
+  }
   // viewDidLayoutSubviews may be called before viewDidAppear, in which case
   // the surface is not ready to handle the transformation matrix.
   // Call onSurfaceChanged here to cover that case.
   [_client surfaceChanged:self.view.frame];
-
-  // TODO(yuweih): This should be loaded from and stored into user defaults.
-  _client.gestureInterpreter->SetInputMode(
-      remoting::GestureInterpreter::DIRECT_INPUT_MODE);
-}
-
-- (void)viewDidDisappear:(BOOL)animated {
-  [super viewDidDisappear:animated];
-  [(EAGLView*)self.view stop];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
 
-  _clientGestures =
-      [[ClientGestures alloc] initWithView:self.view client:_client];
-  _clientGestures.delegate = self;
+  if (!_clientGestures) {
+    _clientGestures =
+        [[ClientGestures alloc] initWithView:self.view client:_client];
+    _clientGestures.delegate = self;
+  }
   [[NSNotificationCenter defaultCenter]
       addObserver:self
          selector:@selector(keyboardWillShow:)
@@ -119,8 +125,6 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
 - (void)viewWillDisappear:(BOOL)animated {
   [super viewWillDisappear:animated];
 
-  _clientGestures = nil;
-  _client = nil;
   [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
@@ -264,6 +268,18 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
   [alert addAction:[UIAlertAction actionWithTitle:@"Disconnect"
                                             style:UIAlertActionStyleDefault
                                           handler:disconnectHandler]];
+
+  __weak HostViewController* weakSelf = self;
+  void (^settingsHandler)(UIAlertAction*) = ^(UIAlertAction*) {
+    RemotingSettingsViewController* settingsViewController =
+        [[RemotingSettingsViewController alloc] init];
+    [weakSelf presentViewController:settingsViewController
+                           animated:YES
+                         completion:nil];
+  };
+  [alert addAction:[UIAlertAction actionWithTitle:@"Settings"
+                                            style:UIAlertActionStyleDefault
+                                          handler:settingsHandler]];
 
   __weak UIAlertController* weakAlert = alert;
   void (^cancelHandler)(UIAlertAction*) = ^(UIAlertAction*) {

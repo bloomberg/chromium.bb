@@ -16,7 +16,7 @@
 #import "remoting/ios/app/client_connection_view_controller.h"
 #import "remoting/ios/app/host_collection_view_controller.h"
 #import "remoting/ios/app/host_view_controller.h"
-#import "remoting/ios/app/remoting_settings_view_controller.h"
+#import "remoting/ios/app/remoting_menu_view_controller.h"
 #import "remoting/ios/app/remoting_theme.h"
 #import "remoting/ios/domain/client_session_details.h"
 #import "remoting/ios/facade/remoting_authentication.h"
@@ -72,7 +72,7 @@ static CGFloat kHostInset = 5.f;
         [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"ic_menu"]
                                          style:UIBarButtonItemStyleDone
                                         target:self
-                                        action:@selector(didSelectSettings)];
+                                        action:@selector(didSelectMenu)];
     self.navigationItem.leftBarButtonItem = menuButton;
 
     UIBarButtonItem* refreshButton = [[UIBarButtonItem alloc]
@@ -137,7 +137,7 @@ static CGFloat kHostInset = 5.f;
   if (!_isAuthenticated) {
     // TODO(nicholss): This is used as a demo of the app functionality for the
     // moment but the real app will force the login flow if unauthenticated.
-    [self didSelectSettings];
+    [self didSelectMenu];
     // [self didSelectRefresh];
     MDCSnackbarMessage* message = [[MDCSnackbarMessage alloc] init];
     message.text = @"Please login.";
@@ -250,12 +250,10 @@ animationControllerForDismissedController:(UIViewController*)dismissed {
   [_remotingService requestHostListFetch];
 }
 
-- (void)didSelectSettings {
-  RemotingSettingsViewController* settingsViewController =
-      [[RemotingSettingsViewController alloc] init];
-  [self presentViewController:settingsViewController
-                     animated:YES
-                   completion:nil];
+- (void)didSelectMenu {
+  RemotingMenuViewController* menuViewController =
+      [[RemotingMenuViewController alloc] init];
+  [self presentViewController:menuViewController animated:YES completion:nil];
 }
 
 - (void)presentStatus {

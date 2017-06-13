@@ -6,77 +6,31 @@
 #error "This file requires ARC support."
 #endif
 
-#import "remoting/ios/app/remoting_settings_view_controller.h"
+#import "remoting/ios/app/settings/remoting_settings_view_controller.h"
 
 #import "ios/third_party/material_components_ios/src/components/AppBar/src/MaterialAppBar.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
-#import "remoting/ios/facade/remoting_authentication.h"
-#import "remoting/ios/facade/remoting_service.h"
+#import "remoting/ios/app/settings/setting_option.h"
 
-#include "base/strings/stringprintf.h"
-#include "google_apis/google_api_keys.h"
-#include "net/base/escape.h"
-
-// TODO(nicholss): This should be generated from a remoting/base class:
+#include "base/logging.h"
 
 static NSString* const kReusableIdentifierItem =
     @"remotingSettingsViewControllerItem";
 static UIColor* kBackgroundColor =
     [UIColor colorWithRed:0.f green:0.67f blue:0.55f alpha:1.f];
 
-namespace {
-const char kChromotingAuthScopeValues[] =
-    "https://www.googleapis.com/auth/chromoting "
-    "https://www.googleapis.com/auth/googletalk "
-    "https://www.googleapis.com/auth/userinfo.email";
-
-std::string GetAuthorizationCodeUri() {
-  // Replace space characters with a '+' sign when formatting.
-  bool use_plus = true;
-  return base::StringPrintf(
-      "https://accounts.google.com/o/oauth2/auth"
-      "?scope=%s"
-      "&redirect_uri=https://chromoting-oauth.talkgadget.google.com/"
-      "talkgadget/oauth/chrome-remote-desktop/dev"
-      "&response_type=code"
-      "&client_id=%s"
-      "&access_type=offline"
-      "&approval_prompt=force",
-      net::EscapeUrlEncodedData(kChromotingAuthScopeValues, use_plus).c_str(),
-      net::EscapeUrlEncodedData(
-          google_apis::GetOAuth2ClientID(google_apis::CLIENT_REMOTING),
-          use_plus)
-          .c_str());
-}
-
-}  // namespace
-
 @interface RemotingSettingsViewController () {
   MDCAppBar* _appBar;
+  NSArray* _sections;
   NSMutableArray* _content;
 }
 @end
 
-// This is the chromium version of the settings view controller. This will
-// launch a web view to login and collect an oauth token to be able to login to
-// the app without the standard google login flow.
-//
-// This class is majority boiler plate code to get a collection view.
-// It will be replaced with a sidebar-like view in the future, but in
-// chromium this is how we get an oauth token to login to the app.
-//
-// Note: this class is not localized, it will not be shipped to production.
-//
-// TODO(nicholss): This class needs to be split into a shareable view
-// for chromium and prod to share.
-//
 @implementation RemotingSettingsViewController
 
 - (id)init {
   self = [super init];
   if (self) {
-    self.title = @"Settings";
-
     _appBar = [[MDCAppBar alloc] init];
     [self addChildViewController:_appBar.headerViewController];
 
@@ -97,13 +51,14 @@ std::string GetAuthorizationCodeUri() {
       self.collectionView;
   [_appBar addSubviewsToParent];
 
-  UIBarButtonItem* backButton =
-      [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"Back"]
+  // TODO(nicholss): X should be an image.
+  UIBarButtonItem* closeButton =
+      [[UIBarButtonItem alloc] initWithTitle:@"X"
                                        style:UIBarButtonItemStyleDone
                                       target:self
-                                      action:@selector(didTapBack:)];
-  self.navigationItem.leftBarButtonItem = backButton;
-  self.navigationItem.rightBarButtonItem = nil;
+                                      action:@selector(didTapClose:)];
+  self.navigationItem.leftBarButtonItem = nil;
+  self.navigationItem.rightBarButtonItem = closeButton;
 
   [self.collectionView registerClass:[MDCCollectionViewTextCell class]
           forCellWithReuseIdentifier:kReusableIdentifierItem];
@@ -114,8 +69,51 @@ std::string GetAuthorizationCodeUri() {
 
   self.styler.cellStyle = MDCCollectionViewCellStyleCard;
 
+  _sections = @[
+    @"Display options", @"Mouse options", @"Keyboard controls", @"Support"
+  ];
+
   _content = [NSMutableArray array];
-  [_content addObject:@[ @"Login", @"Logout" ]];
+
+  SettingOption* shrinkOption = [[SettingOption alloc] init];
+  shrinkOption.title = @"Shrink to fit";
+  // TODO(nicholss): I think this text changes based on value. Confirm.
+  shrinkOption.subtext = @"Don't change resolution to match window";
+
+  SettingOption* resizeOption = [[SettingOption alloc] init];
+  resizeOption.title = @"Resize to fit";
+  // TODO(nicholss): I think this text changes based on value. Confirm.
+  resizeOption.subtext = @"Update remote resolution to match window";
+
+  [_content addObject:@[ shrinkOption, resizeOption ]];
+
+  SettingOption* trackpadMode = [[SettingOption alloc] init];
+  trackpadMode.title = @"Trackpad mode";
+  // TODO(nicholss): I think this text changes based on value. Confirm.
+  trackpadMode.subtext = @"Screen acts like a trackpad";
+
+  [_content addObject:@[ trackpadMode ]];
+
+  SettingOption* ctrlAltDelOption = [[SettingOption alloc] init];
+  ctrlAltDelOption.title = @"Press \"Ctrl+Alt+Del\"";
+
+  SettingOption* printScreenOption = [[SettingOption alloc] init];
+  printScreenOption.title = @"Press \"Print Screen\"";
+
+  [_content addObject:@[ ctrlAltDelOption, printScreenOption ]];
+
+  SettingOption* helpCenterOption = [[SettingOption alloc] init];
+  helpCenterOption.title = @"Help center";
+
+  SettingOption* faqsOption = [[SettingOption alloc] init];
+  faqsOption.title = @"FAQs";
+
+  SettingOption* sendFeedbackOption = [[SettingOption alloc] init];
+  sendFeedbackOption.title = @"Send feedback";
+
+  [_content addObject:@[ helpCenterOption, faqsOption, sendFeedbackOption ]];
+
+  DCHECK_EQ(_content.count, _sections.count);
 }
 
 #pragma mark - UICollectionViewDataSource
@@ -136,28 +134,9 @@ std::string GetAuthorizationCodeUri() {
       dequeueReusableCellWithReuseIdentifier:kReusableIdentifierItem
                                 forIndexPath:indexPath];
   cell.textLabel.text =
-      _content[(NSUInteger)indexPath.section][(NSUInteger)indexPath.item];
-
-  if (indexPath.section == 0 && indexPath.item == 0) {
-    MDCRaisedButton* accessCodeButton = [[MDCRaisedButton alloc] init];
-    [accessCodeButton setTitle:@"Get Access Code"
-                      forState:UIControlStateNormal];
-    [accessCodeButton sizeToFit];
-    [accessCodeButton addTarget:self
-                         action:@selector(didTapGetAccessCode:)
-               forControlEvents:UIControlEventTouchUpInside];
-    accessCodeButton.translatesAutoresizingMaskIntoConstraints = NO;
-    cell.accessoryView = accessCodeButton;
-  } else if (indexPath.section == 0 && indexPath.item == 1) {
-    MDCRaisedButton* logoutButton = [[MDCRaisedButton alloc] init];
-    [logoutButton setTitle:@"Logout" forState:UIControlStateNormal];
-    [logoutButton sizeToFit];
-    [logoutButton addTarget:self
-                     action:@selector(didTapLogout:)
-           forControlEvents:UIControlEventTouchUpInside];
-    logoutButton.translatesAutoresizingMaskIntoConstraints = NO;
-    cell.accessoryView = logoutButton;
-  }
+      ((SettingOption*)
+           _content[(NSUInteger)indexPath.section][(NSUInteger)indexPath.item])
+          .title;
 
   return cell;
 }
@@ -170,9 +149,7 @@ std::string GetAuthorizationCodeUri() {
                                          withReuseIdentifier:kind
                                                 forIndexPath:indexPath];
   if ([kind isEqualToString:UICollectionElementKindSectionHeader]) {
-    if (indexPath.section == 0) {
-      supplementaryView.textLabel.text = @"Account";
-    }
+    supplementaryView.textLabel.text = _sections[(NSUInteger)indexPath.section];
     supplementaryView.textLabel.textColor = kBackgroundColor;
   }
   return supplementaryView;
@@ -190,19 +167,8 @@ std::string GetAuthorizationCodeUri() {
 
 #pragma mark - Private
 
-- (void)didTapBack:(id)button {
+- (void)didTapClose:(id)button {
   [self dismissViewControllerAnimated:YES completion:nil];
-}
-
-- (void)didTapGetAccessCode:(id)sender {
-  NSString* authUri =
-      [NSString stringWithCString:GetAuthorizationCodeUri().c_str()
-                         encoding:[NSString defaultCStringEncoding]];
-  [[UIApplication sharedApplication] openURL:[NSURL URLWithString:authUri]];
-}
-
-- (void)didTapLogout:(id)sender {
-  [[RemotingService SharedInstance].authentication logout];
 }
 
 @end
