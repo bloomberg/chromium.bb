@@ -22,7 +22,7 @@ bgcanvasLowerRight.width = 100;
 bgcanvasLowerRight.height = 100;
 var bgctxLowerRight = bgcanvasLowerRight.getContext('2d');
 bgctxLowerRight.fillStyle = 'green';
-bgctxLowerRight.fillRect(bgcanvasLowerRight.width/2, bgcanvasLowerRight.height/2, bgcanvasLowerRight.width/2, bgcanvasLowerRight.height/2);
+bgctxLowerRight.fillRect(-50, -50, 100, 100);
 
 var bgcanvasUpperLeft = document.createElement('canvas');
 bgcanvasUpperLeft.width = 100;
@@ -32,11 +32,11 @@ bgctxUpperLeft.fillStyle = 'green';
 bgctxUpperLeft.fillRect(0, 0, bgcanvasUpperLeft.width/2, bgcanvasUpperLeft.height/2);
 
 var bgcanvasCenter = document.createElement('canvas');
-bgcanvasCenter.width = 300;
-bgcanvasCenter.height = 300;
+bgcanvasCenter.width = 100;
+bgcanvasCenter.height = 100;
 var bgctxCenter = bgcanvasCenter.getContext('2d');
 bgctxCenter.fillStyle = 'green';
-bgctxCenter.fillRect(100, 100, 100, 100);
+bgctxCenter.fillRect(-50, -50, 300, 300);
 
 var ctx1 = canvas1.getContext('2d');
 var ctx2 = canvas2.getContext('2d');

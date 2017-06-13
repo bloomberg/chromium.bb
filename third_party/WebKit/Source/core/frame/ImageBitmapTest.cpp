@@ -576,25 +576,24 @@ TEST_F(ImageBitmapTest,
 }
 
 TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionImageData) {
-  unsigned char data_buffer[4] = {255, 0, 0, 255};
+  sk_sp<SkColorSpace> src_rgb_color_space = SkColorSpace::MakeSRGB();
+  unsigned char data_buffer[4] = {32, 96, 160, 255};
   DOMUint8ClampedArray* data = DOMUint8ClampedArray::Create(data_buffer, 4);
-  ImageData* image_data =
-      ImageData::Create(IntSize(1, 1), NotShared<DOMUint8ClampedArray>(data));
+  ImageDataColorSettings color_settings;
+  ImageData* image_data = ImageData::Create(
+      IntSize(1, 1), NotShared<DOMUint8ClampedArray>(data), &color_settings);
   std::unique_ptr<uint8_t[]> src_pixel(new uint8_t[4]());
   memcpy(src_pixel.get(), image_data->data()->Data(), 4);
 
   Optional<IntRect> crop_rect = IntRect(0, 0, 1, 1);
   sk_sp<SkColorSpace> color_space = nullptr;
-  SkColorSpaceXform::ColorFormat color_format32 =
-      (SkColorType::kN32_SkColorType == kBGRA_8888_SkColorType)
-          ? SkColorSpaceXform::ColorFormat::kBGRA_8888_ColorFormat
-          : SkColorSpaceXform::ColorFormat::kRGBA_8888_ColorFormat;
   SkColorType color_type = SkColorType::kN32_SkColorType;
-  SkColorSpaceXform::ColorFormat color_format = color_format32;
+  SkColorSpaceXform::ColorFormat color_format =
+      SkColorSpaceXform::ColorFormat::kRGBA_8888_ColorFormat;
 
   for (uint8_t i =
            static_cast<uint8_t>(ColorSpaceConversion::DEFAULT_COLOR_CORRECTED);
-       i <= static_cast<uint8_t>(ColorSpaceConversion::LINEAR_RGB); i++) {
+       i <= static_cast<uint8_t>(ColorSpaceConversion::LAST); i++) {
     ColorSpaceConversion color_space_conversion =
         static_cast<ColorSpaceConversion>(i);
     ImageBitmapOptions options =
@@ -612,10 +611,23 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionImageData) {
       case ColorSpaceConversion::DEFAULT_COLOR_CORRECTED:
       case ColorSpaceConversion::SRGB:
         color_space = SkColorSpace::MakeSRGB();
-        color_format = color_format32;
         break;
       case ColorSpaceConversion::LINEAR_RGB:
         color_space = SkColorSpace::MakeSRGBLinear();
+        color_type = SkColorType::kRGBA_F16_SkColorType;
+        color_format = SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat;
+        break;
+      case ColorSpaceConversion::P3:
+        color_space =
+            SkColorSpace::MakeRGB(SkColorSpace::kLinear_RenderTargetGamma,
+                                  SkColorSpace::kDCIP3_D65_Gamut);
+        color_type = SkColorType::kRGBA_F16_SkColorType;
+        color_format = SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat;
+        break;
+      case ColorSpaceConversion::REC2020:
+        color_space =
+            SkColorSpace::MakeRGB(SkColorSpace::kLinear_RenderTargetGamma,
+                                  SkColorSpace::kRec2020_Gamut);
         color_type = SkColorType::kRGBA_F16_SkColorType;
         color_format = SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat;
         break;
@@ -634,13 +646,14 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionImageData) {
     // Transform the source pixel and check if the pixel from image bitmap has
     // the same color information.
     std::unique_ptr<SkColorSpaceXform> color_space_xform =
-        SkColorSpaceXform::New(image_data->GetSkColorSpace().get(),
-                               color_space.get());
+        SkColorSpaceXform::New(src_rgb_color_space.get(), color_space.get());
     std::unique_ptr<uint8_t[]> transformed_pixel(
         new uint8_t[image_info.bytesPerPixel()]());
-    color_space_xform->apply(color_format, transformed_pixel.get(),
-                             color_format32, src_pixel.get(), 1,
-                             SkAlphaType::kUnpremul_SkAlphaType);
+    color_space_xform->apply(
+        color_format, transformed_pixel.get(),
+        SkColorSpaceXform::ColorFormat::kRGBA_8888_ColorFormat, src_pixel.get(),
+        1, SkAlphaType::kUnpremul_SkAlphaType);
+
     int compare = std::memcmp(converted_pixel.get(), transformed_pixel.get(),
                               image_info.bytesPerPixel());
     ASSERT_EQ(compare, 0);

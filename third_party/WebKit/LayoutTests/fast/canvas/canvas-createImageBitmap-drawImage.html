@@ -260,6 +260,8 @@ function checkCrop(imageBitmap) {
     // red should be drawn to (0, 0), (10, 10)
     clearContext(ctx);
     ctx.drawImage(imageBitmap, 0, 0);
+    shouldBeRed(0, 1);
+    shouldBeRed(1, 0);
     shouldBeRed(1, 1);
     shouldBeRed(9, 9);
     shouldBeClear(12, 12);
@@ -329,45 +331,39 @@ function checkOverCrop(imageBitmap) {
     debug("Check over crop.");
     bitmap = imageBitmap;
     shouldBeType("bitmap", "ImageBitmap");
-    shouldBe("bitmap.width", "60");
-    shouldBe("bitmap.height", "60");
+    shouldBe("bitmap.width", "20");
+    shouldBe("bitmap.height", "20");
 
-    // should be drawn to (10, 10), (30, 30)
+    // should be drawn to (0, 0), (20, 20)
     clearContext(ctx);
     ctx.drawImage(imageBitmap, 0, 0);
-    shouldBeClear(1, 1);
-    shouldBeClear(9, 9);
-    shouldBeRed(11, 11);
-    shouldBeRed(19, 19);
-    shouldBeGreen(21, 19);
-    shouldBeBlue(19, 21);
-    shouldBeBlack(21, 21);
-    shouldBeBlack(29, 29);
-    shouldBeClear(32, 1);
-    shouldBeClear(1, 32);
-    shouldBeClear(32, 32);
-
-    // should be drawn to (5, 5), (15, 15)
-    clearContext(ctx);
-    ctx.drawImage(imageBitmap, 0, 0, 30, 30);
-    shouldBeClear(1, 1);
-    shouldBeClear(4, 4);
-    shouldBeRed(6, 6);
     shouldBeRed(9, 9);
     shouldBeGreen(11, 9);
     shouldBeBlue(9, 11);
     shouldBeBlack(11, 11);
-    shouldBeBlack(14, 14);
-    shouldBeClear(16, 1);
-    shouldBeClear(1, 16);
-    shouldBeClear(16, 16);
+    shouldBeBlack(19, 19);
+    shouldBeClear(1, 21);
+    shouldBeClear(21, 1);
+    shouldBeClear(21, 21);
+
+    // shrunk to (0, 0), (10, 10)
+    clearContext(ctx);
+    ctx.drawImage(imageBitmap, 0, 0, 10, 10);
+    shouldBeRed(4, 4);
+    shouldBeGreen(6, 4);
+    shouldBeBlue(4, 6);
+    shouldBeBlack(6, 6);
+    shouldBeBlack(9, 9);
+    shouldBeClear(1, 11);
+    shouldBeClear(11, 1);
+    shouldBeClear(11, 11);
 }
 
 function checkOverCropRight(imageBitmap) {
     debug("Check over crop right.");
     bitmap = imageBitmap;
-    shouldBe("bitmap.width", "50");
-    shouldBe("bitmap.height", "50");
+    shouldBe("bitmap.width", "10");
+    shouldBe("bitmap.height", "10");
 
     // black should be drawn to (0, 0), (10, 10)
     clearContext(ctx);
@@ -380,7 +376,7 @@ function checkOverCropRight(imageBitmap) {
 
     // black should be drawn to (0, 0), (4, 4)
     clearContext(ctx);
-    ctx.drawImage(imageBitmap, 0, 0, 20, 20);
+    ctx.drawImage(imageBitmap, 0, 0, 4, 4);
     shouldBeBlack(1, 1);
     shouldBeBlack(3, 3);
     shouldBeClear(5, 5);

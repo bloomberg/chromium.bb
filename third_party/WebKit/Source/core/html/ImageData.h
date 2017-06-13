@@ -134,9 +134,11 @@ class CORE_EXPORT ImageData final : public GarbageCollectedFinalized<ImageData>,
 
   DOMArrayBufferBase* BufferBase() const;
 
-  sk_sp<SkColorSpace> GetSkColorSpace();
+  CanvasColorParams GetCanvasColorParams();
   bool ImageDataInCanvasColorSettings(const CanvasColorSpace&,
                                       const CanvasPixelFormat&,
+                                      std::unique_ptr<uint8_t[]>&);
+  bool ImageDataInCanvasColorSettings(const CanvasColorParams&,
                                       std::unique_ptr<uint8_t[]>&);
 
   // ImageBitmapSource implementation

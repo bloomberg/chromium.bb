@@ -633,13 +633,15 @@ DOMArrayBufferBase* ImageData::BufferBase() const {
   return nullptr;
 }
 
-// For ImageData, the color space is only specified by color settings.
-// It cannot have a SkColorSpace. This doesn't mean anything. Fix this.
-sk_sp<SkColorSpace> ImageData::GetSkColorSpace() {
+CanvasColorParams ImageData::GetCanvasColorParams() {
   if (!RuntimeEnabledFeatures::ColorCanvasExtensionsEnabled())
-    return nullptr;
-
-  return SkColorSpace::MakeSRGB();
+    return CanvasColorParams();
+  CanvasColorSpace color_space =
+      ImageData::GetCanvasColorSpace(color_settings_.colorSpace());
+  CanvasPixelFormat pixel_format = kRGBA8CanvasPixelFormat;
+  if (color_settings_.storageFormat() != kUint8ClampedArrayStorageFormatName)
+    pixel_format = kF16CanvasPixelFormat;
+  return CanvasColorParams(color_space, pixel_format);
 }
 
 bool ImageData::ImageDataInCanvasColorSettings(
@@ -728,6 +730,14 @@ bool ImageData::ImageDataInCanvasColorSettings(
                     src_data, num_pixels, SkAlphaType::kUnpremul_SkAlphaType))
     return false;
   return true;
+}
+
+bool ImageData::ImageDataInCanvasColorSettings(
+    const CanvasColorParams& canvas_color_params,
+    std::unique_ptr<uint8_t[]>& converted_pixels) {
+  return ImageDataInCanvasColorSettings(canvas_color_params.color_space(),
+                                        canvas_color_params.pixel_format(),
+                                        converted_pixels);
 }
 
 void ImageData::Trace(Visitor* visitor) {
