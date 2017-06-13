@@ -1,3 +1,6 @@
+# For Chrome OS apps APIs.
+tbarzic@chromium.org
+
 per-file *view*.json=fsamuel@chromium.org
 per-file *view*.json=lazyboy@chromium.org
 per-file *view*.json=hanxi@chromium.org

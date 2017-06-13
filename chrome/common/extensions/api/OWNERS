@@ -4,6 +4,9 @@
 # For documentation.
 mkearney@chromium.org
 
+# For Chrome OS apps APIs.
+tbarzic@chromium.org
+
 per-file input_method_private.json=shuchen@chromium.org
 per-file webview*.json=paulmeyer@chromium.org
 per-file webview*.json=fsamuel@chromium.org
