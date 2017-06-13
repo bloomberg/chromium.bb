@@ -8,7 +8,9 @@
 #include "base/stl_util.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/download/download_permission_request.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "components/content_settings/core/browser/content_settings_details.h"
@@ -27,9 +29,6 @@
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/download/download_request_infobar_delegate_android.h"
-#else
-#include "chrome/browser/download/download_permission_request.h"
-#include "chrome/browser/permissions/permission_request_manager.h"
 #endif
 
 using content::BrowserThread;
@@ -174,12 +173,13 @@ void DownloadRequestLimiter::TabDownloadState::DidGetUserInteraction(
     return;
   }
 
-#if defined(OS_ANDROID)
-  bool promptable = InfoBarService::FromWebContents(web_contents()) != nullptr;
-#else
-  bool promptable =
-      PermissionRequestManager::FromWebContents(web_contents()) != nullptr;
-#endif
+  bool promptable;
+  if (PermissionRequestManager::IsEnabled()) {
+    promptable =
+        PermissionRequestManager::FromWebContents(web_contents()) != nullptr;
+  } else {
+    promptable = InfoBarService::FromWebContents(web_contents()) != nullptr;
+  }
 
   // See PromptUserForDownload(): if there's no InfoBarService, then
   // DOWNLOADS_NOT_ALLOWED is functionally equivalent to PROMPT_BEFORE_DOWNLOAD.
@@ -208,19 +208,21 @@ void DownloadRequestLimiter::TabDownloadState::PromptUserForDownload(
   if (is_showing_prompt())
     return;
 
-#if defined(OS_ANDROID)
-  DownloadRequestInfoBarDelegateAndroid::Create(
-      InfoBarService::FromWebContents(web_contents_), factory_.GetWeakPtr());
-#else
-  PermissionRequestManager* permission_request_manager =
-      PermissionRequestManager::FromWebContents(web_contents_);
-  if (permission_request_manager) {
-    permission_request_manager->AddRequest(
-        new DownloadPermissionRequest(factory_.GetWeakPtr()));
+  if (PermissionRequestManager::IsEnabled()) {
+    PermissionRequestManager* permission_request_manager =
+        PermissionRequestManager::FromWebContents(web_contents_);
+    if (permission_request_manager) {
+      permission_request_manager->AddRequest(
+          new DownloadPermissionRequest(factory_.GetWeakPtr()));
+    } else {
+      Cancel();
+    }
   } else {
-    Cancel();
-  }
+#if defined(OS_ANDROID)
+    DownloadRequestInfoBarDelegateAndroid::Create(
+        InfoBarService::FromWebContents(web_contents_), factory_.GetWeakPtr());
 #endif
+  }
 }
 
 void DownloadRequestLimiter::TabDownloadState::SetContentSetting(
