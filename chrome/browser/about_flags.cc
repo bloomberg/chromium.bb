@@ -538,13 +538,9 @@ const FeatureEntry::Choice kProgressBarAnimationChoices[] = {
     {flags_ui::kGenericExperimentChoiceDisabled,
      switches::kProgressBarAnimation, "disabled"},
     {flag_descriptions::kProgressBarAnimationLinear,
-     switches::kProgressBarAnimation, "linear"},
-    {flag_descriptions::kProgressBarAnimationSmooth,
      switches::kProgressBarAnimation, "smooth"},
     {flag_descriptions::kProgressBarAnimationSmoothIndeterminate,
      switches::kProgressBarAnimation, "smooth-indeterminate"},
-    {flag_descriptions::kProgressBarAnimationFastStart,
-     switches::kProgressBarAnimation, "fast-start"},
 };
 
 const FeatureEntry::Choice kProgressBarCompletionChoices[] = {
