@@ -89,7 +89,7 @@ class CCSerializationPerfTest : public testing::Test {
                            single_sqs == UseSingleSharedQuadState::YES
                                ? "_per_render_pass_shared_quad_state"
                                : "_per_quad_shared_quad_state",
-                           test_name, count, "", true);
+                           test_name, count, "runs/s", true);
   }
 
   static void RunSerializationTestParamTraits(
@@ -133,7 +133,7 @@ class CCSerializationPerfTest : public testing::Test {
                            single_sqs == UseSingleSharedQuadState::YES
                                ? "_per_render_pass_shared_quad_state"
                                : "_per_quad_shared_quad_state",
-                           test_name, count, "", true);
+                           test_name, count, "runs/s", true);
   }
 
   static void RunDeserializationTestStructTraits(
@@ -180,7 +180,7 @@ class CCSerializationPerfTest : public testing::Test {
         single_sqs == UseSingleSharedQuadState::YES
             ? "_per_render_pass_shared_quad_state"
             : "_per_quad_shared_quad_state",
-        test_name, count, "", true);
+        test_name, count, "runs/s", true);
   }
 
   static void RunSerializationTestStructTraits(
@@ -224,7 +224,7 @@ class CCSerializationPerfTest : public testing::Test {
                            single_sqs == UseSingleSharedQuadState::YES
                                ? "_per_render_pass_shared_quad_state"
                                : "_per_quad_shared_quad_state",
-                           test_name, count, "", true);
+                           test_name, count, "runs/s", true);
   }
 
   static void RunComplexCompositorFrameTest(const std::string& test_name) {
