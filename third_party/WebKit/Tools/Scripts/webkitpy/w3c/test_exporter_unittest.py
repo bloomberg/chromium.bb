@@ -31,7 +31,7 @@ class TestExporterTest(unittest.TestCase):
             PullRequest(title='title1', number=1234, body='', state='open'),
         ])
         test_exporter.gerrit = MockGerritAPI(host, 'gerrit-username', 'gerrit-token')
-        test_exporter.get_exportable_commits = lambda limit: [
+        test_exporter.get_exportable_commits = lambda: [
             ChromiumCommit(host, position='refs/heads/master@{#458475}'),
             ChromiumCommit(host, position='refs/heads/master@{#458476}'),
             ChromiumCommit(host, position='refs/heads/master@{#458477}'),
@@ -128,7 +128,7 @@ class TestExporterTest(unittest.TestCase):
             ),
         ], unsuccessful_merge_index=0)
         test_exporter.gerrit = MockGerritAPI(host, 'gerrit-username', 'gerrit-token')
-        test_exporter.get_exportable_commits = lambda limit: [
+        test_exporter.get_exportable_commits = lambda: [
             ChromiumCommit(host, position='refs/heads/master@{#458475}'),
             ChromiumCommit(host, position='refs/heads/master@{#458476}'),
             ChromiumCommit(host, position='refs/heads/master@{#458477}'),
@@ -159,7 +159,7 @@ class TestExporterTest(unittest.TestCase):
         test_exporter = TestExporter(host, 'gh-username', 'gh-token', gerrit_user=None,
                                      gerrit_token=None, dry_run=False)
         test_exporter.wpt_github = MockWPTGitHub(pull_requests=[])
-        test_exporter.get_exportable_commits = lambda limit: []
+        test_exporter.get_exportable_commits = lambda: []
         test_exporter.gerrit = MockGerritAPI(host, 'gerrit-username', 'gerrit-token')
         test_exporter.gerrit.get = lambda path, raw: base64.b64encode('sample diff')  # pylint: disable=unused-argument
         test_exporter.gerrit.query_exportable_open_cls = lambda: [
@@ -196,7 +196,7 @@ class TestExporterTest(unittest.TestCase):
             PullRequest(title='title1', number=1234,
                         body='description\nWPT-Export-Revision: 1', state='open'),
         ])
-        test_exporter.get_exportable_commits = lambda limit: []
+        test_exporter.get_exportable_commits = lambda: []
         test_exporter.gerrit = MockGerritAPI(host, 'gerrit-username', 'gerrit-token')
         test_exporter.gerrit.query_exportable_open_cls = lambda: [
             GerritCL(data={
@@ -225,7 +225,7 @@ class TestExporterTest(unittest.TestCase):
             PullRequest(title='title1', number=1234,
                         body='description\nWPT-Export-Revision: 1', state='open'),
         ])
-        test_exporter.get_exportable_commits = lambda limit: []
+        test_exporter.get_exportable_commits = lambda: []
         test_exporter.gerrit = MockGerritAPI(host, 'gerrit-username', 'gerrit-token')
         test_exporter.gerrit.get = lambda path, raw: base64.b64encode('sample diff')  # pylint: disable=unused-argument
         test_exporter.gerrit.query_exportable_open_cls = lambda: [
@@ -274,7 +274,7 @@ class TestExporterTest(unittest.TestCase):
                         body='description\nWPT-Export-Revision: 9\nChange-Id: decafbad',
                         state='open'),
         ])
-        test_exporter.get_exportable_commits = lambda limit: [
+        test_exporter.get_exportable_commits = lambda: [
             ChromiumCommit(host, sha='c881563d734a86f7d9cd57ac509653a61c45c240'),
         ]
         test_exporter.gerrit = MockGerritAPI(host, 'gerrit-username', 'gerrit-token')
@@ -296,7 +296,7 @@ class TestExporterTest(unittest.TestCase):
         test_exporter = TestExporter(host, 'gh-username', 'gh-token', gerrit_user=None,
                                      gerrit_token=None, dry_run=False)
         test_exporter.wpt_github = MockWPTGitHub(pull_requests=[])
-        test_exporter.get_exportable_commits = lambda limit: []
+        test_exporter.get_exportable_commits = lambda: []
         test_exporter.gerrit = MockGerritAPI(host, 'gerrit-username', 'gerrit-token')
         test_exporter.gerrit.get = lambda path, raw: base64.b64encode('sample diff')  # pylint: disable=unused-argument
         test_exporter.gerrit.query_exportable_open_cls = lambda: [
