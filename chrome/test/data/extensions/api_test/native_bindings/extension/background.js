@@ -57,6 +57,7 @@ var tests = [
   },
   function testMessaging() {
     var tabId;
+
     var createPort = function() {
       chrome.test.assertTrue(!!tabId);
       var port = chrome.tabs.connect(tabId);
@@ -64,16 +65,22 @@ var tests = [
       port.onMessage.addListener(message => {
         chrome.test.assertEq('content script', message);
         port.disconnect();
-        chrome.test.succeed();
+        chrome.tabs.sendMessage(tabId, 'async bounce', function(response) {
+          chrome.test.assertEq('bounced', response);
+          chrome.test.succeed();
+        });
       });
       port.postMessage('background page');
     };
 
-    chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    chrome.runtime.onMessage.addListener(function listener(
+        message, sender, sendResponse) {
       chrome.test.assertEq('startFlow', message);
       createPort();
       sendResponse('started');
+      chrome.runtime.onMessage.removeListener(listener);
     });
+
     var url = 'http://localhost:' + portNumber +
               '/native_bindings/extension/messaging_test.html';
     chrome.tabs.create({url: url}, function(tab) {

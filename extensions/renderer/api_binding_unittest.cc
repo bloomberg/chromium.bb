@@ -164,6 +164,7 @@ class APIBindingUnittest : public APIBindingTest {
       availability_callback_ = base::Bind(&AllowAllFeatures);
     event_handler_ = base::MakeUnique<APIEventHandler>(
         base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
+        base::Bind(&RunFunctionOnGlobalAndReturnHandle),
         base::Bind(&OnEventListenersChanged));
     binding_ = base::MakeUnique<APIBinding>(
         kBindingName, binding_functions_.get(), binding_types_.get(),
