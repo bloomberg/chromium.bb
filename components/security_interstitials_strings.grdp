@@ -210,16 +210,16 @@
 
   <!-- WebView Safe Browsing quiet interstitals medium sized -->
   <message name="IDS_MALWARE_WEBVIEW_HEADING" desc="The heading of the malware interstitial on medium sized Webview.">
-    Dangerous content blocked
+    Dangerous content blocked.
   </message>
   <message name="IDS_MALWARE_WEBVIEW_EXPLANATION_PARAGRAPH" desc="The explanation of why Safe Browsing has blocked the page. Allows the user to proceed using a link.">
-    This content might try to install dangerous software on your device that steals or deletes your information. <ph name="BEGIN_LINK">&lt;a href="#" id="proceed-link"&gt;</ph>Show anyway<ph name="END_LINK">&lt;/a&gt;</ph>.
+    This content might try to install dangerous software on your device that steals or deletes your information. <ph name="BEGIN_LINK">&lt;a href="#" id="proceed-link"&gt;</ph>Show anyway<ph name="END_LINK">&lt;/a&gt;</ph>
   </message>
   <message name="IDS_PHISHING_WEBVIEW_HEADING" desc="The heading of the phishing interstitial on medium sized Webview.">
-    Deceptive content blocked
+    Deceptive content blocked.
   </message>
   <message name="IDS_PHISHING_WEBVIEW_EXPLANATION_PARAGRAPH" desc="The explanation of why Safe Browsing has blocked the page. Allows the user to proceed using a link.">
-    This content might try to trick you into installing software or revealing personal information. <ph name="BEGIN_LINK">&lt;a href="#" id="proceed-link"&gt;</ph>Show anyway<ph name="END_LINK">&lt;/a&gt;</ph>.
+    This content might try to trick you into installing software or revealing personal information. <ph name="BEGIN_LINK">&lt;a href="#" id="proceed-link"&gt;</ph>Show anyway<ph name="END_LINK">&lt;/a&gt;</ph>
   </message>
 
 </grit-part>

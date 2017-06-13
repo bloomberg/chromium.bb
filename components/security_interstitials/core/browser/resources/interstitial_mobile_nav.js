@@ -16,7 +16,7 @@ function onResize() {
       '(max-height: 560px) and (min-height: 240px) and ' +
       '(min-width: 421px)';
 
-  var detailsHidden = helpOuterBox.classList.contains('hidden');
+  var detailsHidden = helpOuterBox.classList.contains(HIDDEN_CLASS);
   var runnerContainer = document.querySelector('.runner-container');
 
   // Check for change in nav status.
@@ -25,17 +25,17 @@ function onResize() {
 
     // Handle showing the top content / details sections according to state.
     if (mobileNav) {
-      mainContent.classList.toggle('hidden', !detailsHidden);
-      helpOuterBox.classList.toggle('hidden', detailsHidden);
+      mainContent.classList.toggle(HIDDEN_CLASS, !detailsHidden);
+      helpOuterBox.classList.toggle(HIDDEN_CLASS, detailsHidden);
       if (runnerContainer) {
-        runnerContainer.classList.toggle('hidden', !detailsHidden);
+        runnerContainer.classList.toggle(HIDDEN_CLASS, !detailsHidden);
       }
     } else if (!detailsHidden) {
       // Non mobile nav with visible details.
-      mainContent.classList.remove('hidden');
-      helpOuterBox.classList.remove('hidden');
+      mainContent.classList.remove(HIDDEN_CLASS);
+      helpOuterBox.classList.remove(HIDDEN_CLASS);
       if (runnerContainer) {
-        runnerContainer.classList.remove('hidden');
+        runnerContainer.classList.remove(HIDDEN_CLASS);
       }
     }
   }

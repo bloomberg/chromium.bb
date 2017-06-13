@@ -90,7 +90,34 @@ void SafeBrowsingQuietErrorUI::SetGiantWebViewForTesting(
 
 void SafeBrowsingQuietErrorUI::HandleCommand(
     SecurityInterstitialCommands command) {
-  NOTREACHED();
+  switch (command) {
+    case CMD_PROCEED: {
+      // User pressed on the button to proceed.
+      if (!is_proceed_anyway_disabled()) {
+        controller()->metrics_helper()->RecordUserDecision(
+            MetricsHelper::PROCEED);
+        controller()->Proceed();
+      }
+      break;
+    }
+    case CMD_DONT_PROCEED:
+    case CMD_DO_REPORT:
+    case CMD_DONT_REPORT:
+    case CMD_SHOW_MORE_SECTION:
+    case CMD_OPEN_HELP_CENTER:
+    case CMD_RELOAD:
+    case CMD_OPEN_REPORTING_PRIVACY:
+    case CMD_OPEN_WHITEPAPER:
+    case CMD_OPEN_DIAGNOSTIC:
+    case CMD_REPORT_PHISHING_ERROR:
+    case CMD_OPEN_DATE_SETTINGS:
+    case CMD_OPEN_LOGIN:
+    case CMD_ERROR:
+    case CMD_TEXT_FOUND:
+    case CMD_TEXT_NOT_FOUND:
+      NOTREACHED();
+      break;
+  }
 }
 
 int SafeBrowsingQuietErrorUI::GetHTMLTemplateId() const {

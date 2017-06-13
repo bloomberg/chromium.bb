@@ -27,6 +27,8 @@ var SecurityInterstitialCommandId = {
   CMD_REPORT_PHISHING_ERROR: 12
 };
 
+var HIDDEN_CLASS = 'hidden';
+
 /**
  * A convenience method for sending commands to the parent page.
  * @param {string} cmd  The command to send.
@@ -43,4 +45,19 @@ function sendCommand(cmd) {
   document.documentElement.appendChild(iframe);
   iframe.parentNode.removeChild(iframe);
 // </if>
+}
+
+/**
+ * Call this to stop clicks on <a href="#"> links from scrolling to the top of
+ * the page (and possibly showing a # in the link).
+ */
+function preventDefaultOnPoundLinkClicks() {
+  document.addEventListener('click', function(e) {
+    var anchor = findAncestor(/** @type {Node} */ (e.target), function(el) {
+      return el.tagName == 'A';
+    });
+    // Use getAttribute() to prevent URL normalization.
+    if (anchor && anchor.getAttribute('href') == '#')
+      e.preventDefault();
+  });
 }
