@@ -38,6 +38,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 // Constant for timeout while waiting for asynchronous sync operations.
@@ -455,9 +459,6 @@ void AssertNumberOfEntitiesWithName(int entity_count,
                   }];
   BOOL success = [condition waitWithTimeout:kSyncOperationTimeout];
   DCHECK(success || blockSafeError);
-  if (blockSafeError) {
-    [blockSafeError autorelease];
-  }
   GREYAssertTrue(success, [blockSafeError localizedDescription]);
 }
 
@@ -580,9 +581,6 @@ void AssertNumberOfEntitiesWithName(int entity_count,
                   }];
   BOOL success = [condition waitWithTimeout:kSyncOperationTimeout];
   DCHECK(success || blockSafeError);
-  if (blockSafeError) {
-    [blockSafeError autorelease];
-  }
   GREYAssert(success, [blockSafeError localizedDescription]);
 }
 

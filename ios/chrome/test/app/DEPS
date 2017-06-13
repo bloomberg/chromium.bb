@@ -1,0 +1,6 @@
+specific_include_rules = {
+  # TODO(crbug.com/732525): Remove crw_web_controller.h exception.
+  "^tab_test_util.mm$": [
+    "+ios/web/web_state/ui/crw_web_controller.h",
+  ],
+}

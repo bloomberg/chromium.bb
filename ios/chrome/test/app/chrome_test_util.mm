@@ -27,6 +27,10 @@
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
 #import "ios/web/public/test/native_controller_test_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 // Methods to access private members for testing.
 @interface BreakpadController (Testing)
 - (BOOL)isEnabled;
