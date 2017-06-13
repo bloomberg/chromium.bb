@@ -50,6 +50,8 @@ CreateDemoModeFeatureEngagementTracker() {
   std::string chosen_feature_name = base::GetFieldTrialParamValueByFeature(
       kIPHDemoMode, kIPHDemoModeFeatureChoiceParam);
 
+  DVLOG(2) << "Enabling demo mode. Chosen feature: " << chosen_feature_name;
+
   std::unique_ptr<EditableConfiguration> configuration =
       base::MakeUnique<EditableConfiguration>();
 
@@ -89,6 +91,7 @@ CreateDemoModeFeatureEngagementTracker() {
 FeatureEngagementTracker* FeatureEngagementTracker::Create(
     const base::FilePath& storage_dir,
     const scoped_refptr<base::SequencedTaskRunner>& background_task_runner) {
+  DVLOG(2) << "Creating FeatureEngagementTracker";
   if (base::FeatureList::IsEnabled(kIPHDemoMode))
     return CreateDemoModeFeatureEngagementTracker().release();
 
@@ -179,7 +182,8 @@ bool FeatureEngagementTrackerImpl::ShouldTriggerHelpUI(
   }
 
   stats::RecordShouldTriggerHelpUI(feature, result);
-  DVLOG(2) << "Trigger result for " << feature.name << ": " << result;
+  DVLOG(2) << "Trigger result for " << feature.name
+           << ": trigger=" << result.NoErrors() << " " << result;
   return result.NoErrors();
 }
 
