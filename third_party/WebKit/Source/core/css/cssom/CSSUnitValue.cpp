@@ -5,38 +5,14 @@
 #include "core/css/cssom/CSSUnitValue.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "platform/wtf/MathExtras.h"
 
 namespace blink {
-
-namespace {
-
-bool IsValidUnit(CSSPrimitiveValue::UnitType unit) {
-  // UserUnits returns true for CSSPrimitiveValue::IsLength below.
-  if (unit == CSSPrimitiveValue::UnitType::kUserUnits)
-    return false;
-  if (unit == CSSPrimitiveValue::UnitType::kNumber ||
-      unit == CSSPrimitiveValue::UnitType::kPercentage ||
-      CSSPrimitiveValue::IsLength(unit) || CSSPrimitiveValue::IsAngle(unit) ||
-      CSSPrimitiveValue::IsTime(unit) || CSSPrimitiveValue::IsFrequency(unit) ||
-      CSSPrimitiveValue::IsResolution(unit) || CSSPrimitiveValue::IsFlex(unit))
-    return true;
-  return false;
-}
-
-}  // namespace
-
-CSSPrimitiveValue::UnitType CSSUnitValue::UnitFromName(const String& name) {
-  if (EqualIgnoringASCIICase(name, "number"))
-    return CSSPrimitiveValue::UnitType::kNumber;
-  if (EqualIgnoringASCIICase(name, "percent") || name == "%")
-    return CSSPrimitiveValue::UnitType::kPercentage;
-  return CSSPrimitiveValue::StringToUnitType(name);
-}
 
 CSSUnitValue* CSSUnitValue::Create(double value,
                                    const String& unit_name,
                                    ExceptionState& exception_state) {
-  CSSPrimitiveValue::UnitType unit = CSSUnitValue::UnitFromName(unit_name);
+  CSSPrimitiveValue::UnitType unit = UnitFromName(unit_name);
   if (!IsValidUnit(unit)) {
     exception_state.ThrowTypeError("Invalid unit: " + unit_name);
     return nullptr;
@@ -60,7 +36,7 @@ CSSUnitValue* CSSUnitValue::FromCSSValue(
 
 void CSSUnitValue::setUnit(const String& unit_name,
                            ExceptionState& exception_state) {
-  CSSPrimitiveValue::UnitType unit = CSSUnitValue::UnitFromName(unit_name);
+  CSSPrimitiveValue::UnitType unit = UnitFromName(unit_name);
   if (!IsValidUnit(unit))
     exception_state.ThrowTypeError("Invalid unit: " + unit_name);
 
@@ -102,6 +78,73 @@ CSSStyleValue::StyleValueType CSSUnitValue::GetType() const {
 
 const CSSValue* CSSUnitValue::ToCSSValue() const {
   return CSSPrimitiveValue::Create(value_, unit_);
+}
+
+CSSUnitValue* CSSUnitValue::to(CSSPrimitiveValue::UnitType unit) const {
+  if (unit_ == unit)
+    return Create(value_, unit_);
+
+  // TODO(meade): Implement other types.
+  if (CSSPrimitiveValue::IsAngle(unit_) && CSSPrimitiveValue::IsAngle(unit))
+    return Create(ConvertAngle(unit), unit);
+
+  return nullptr;
+}
+
+double CSSUnitValue::ConvertAngle(CSSPrimitiveValue::UnitType unit) const {
+  switch (unit_) {
+    case CSSPrimitiveValue::UnitType::kDegrees:
+      switch (unit) {
+        case CSSPrimitiveValue::UnitType::kRadians:
+          return deg2rad(value_);
+        case CSSPrimitiveValue::UnitType::kGradians:
+          return deg2grad(value_);
+        case CSSPrimitiveValue::UnitType::kTurns:
+          return deg2turn(value_);
+        default:
+          NOTREACHED();
+          return 0;
+      }
+    case CSSPrimitiveValue::UnitType::kRadians:
+      switch (unit) {
+        case CSSPrimitiveValue::UnitType::kDegrees:
+          return rad2deg(value_);
+        case CSSPrimitiveValue::UnitType::kGradians:
+          return rad2grad(value_);
+        case CSSPrimitiveValue::UnitType::kTurns:
+          return rad2turn(value_);
+        default:
+          NOTREACHED();
+          return 0;
+      }
+    case CSSPrimitiveValue::UnitType::kGradians:
+      switch (unit) {
+        case CSSPrimitiveValue::UnitType::kDegrees:
+          return grad2deg(value_);
+        case CSSPrimitiveValue::UnitType::kRadians:
+          return grad2rad(value_);
+        case CSSPrimitiveValue::UnitType::kTurns:
+          return grad2turn(value_);
+        default:
+          NOTREACHED();
+          return 0;
+      }
+    case CSSPrimitiveValue::UnitType::kTurns:
+      switch (unit) {
+        case CSSPrimitiveValue::UnitType::kDegrees:
+          return turn2deg(value_);
+        case CSSPrimitiveValue::UnitType::kRadians:
+          return turn2rad(value_);
+        case CSSPrimitiveValue::UnitType::kGradians:
+          return turn2grad(value_);
+        default:
+          NOTREACHED();
+          return 0;
+      }
+    default:
+      NOTREACHED();
+      return 0;
+  }
 }
 
 }  // namespace blink

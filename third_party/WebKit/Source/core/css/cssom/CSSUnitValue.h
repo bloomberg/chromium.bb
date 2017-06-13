@@ -33,23 +33,36 @@ class CORE_EXPORT CSSUnitValue final : public CSSNumericValue {
   String unit() const;
   String type() const;
 
-  // Gets the Typed OM category, e.g. length, angle, etc.
-  StyleValueType GetType() const override;
-  bool ContainsPercent() const override {
+  // Internal methods.
+  CSSPrimitiveValue::UnitType GetInternalUnit() const { return unit_; }
+
+  // From CSSNumericValue.
+  CSSUnitValue* to(CSSPrimitiveValue::UnitType) const final;
+  bool IsCalculated() const final { return false; }
+
+  // From CSSStyleValue.
+  StyleValueType GetType() const final;
+  bool ContainsPercent() const final {
     return unit_ == CSSPrimitiveValue::UnitType::kPercentage;
   }
-  // Gets the representation that can be applied to an inline style.
-  const CSSValue* ToCSSValue() const override;
+  const CSSValue* ToCSSValue() const final;
 
  private:
-  static CSSPrimitiveValue::UnitType UnitFromName(const String& name);
 
   CSSUnitValue(double value, CSSPrimitiveValue::UnitType unit)
       : CSSNumericValue(), value_(value), unit_(unit) {}
 
+  double ConvertAngle(CSSPrimitiveValue::UnitType) const;
+
   double value_;
   CSSPrimitiveValue::UnitType unit_;
 };
+
+DEFINE_TYPE_CASTS(CSSUnitValue,
+                  CSSNumericValue,
+                  value,
+                  !value->IsCalculated(),
+                  !value.IsCalculated());
 
 }  // namespace blink
 

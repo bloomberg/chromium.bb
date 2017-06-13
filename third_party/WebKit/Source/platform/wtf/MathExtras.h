@@ -135,6 +135,12 @@ inline double turn2grad(double t) {
 inline double grad2turn(double g) {
   return g / 400;
 }
+inline double rad2turn(double r) {
+  return r / twoPiDouble;
+}
+inline double turn2rad(double t) {
+  return t * twoPiDouble;
+}
 
 inline float deg2rad(float d) {
   return d * piFloat / 180.0f;
