@@ -35,4 +35,14 @@ TEST(WTF_PtrUtilTest, canMakeUniqueArray) {
 
   ASSERT_TRUE(char_array.get());
 }
+
+struct EmptyStruct {};
+
+TEST(WTF_PtrUtilTest, canMakeUniqueArrayOfStructs) {
+  constexpr size_t kBufferSize = 20;
+  auto struct_array = MakeUnique<EmptyStruct[]>(kBufferSize);
+
+  ASSERT_TRUE(struct_array.get());
 }
+
+}  // namespace WTF
