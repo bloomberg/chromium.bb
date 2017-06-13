@@ -89,6 +89,11 @@ def main():
         options.input_libs, options.deps_lib,
       ]
       subprocess.check_call(command)
+      # Strip debug info from output lib so its size doesn't exceed 512mb.
+      command = [
+        'xcrun', 'strip', '-S', options.output_lib,
+      ]
+      subprocess.check_call(command)
       return
 
   if os.path.exists(options.output_lib):
