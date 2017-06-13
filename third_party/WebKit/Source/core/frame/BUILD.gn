@@ -49,6 +49,8 @@ blink_core_sources("frame") {
     "FrameView.h",
     "FrameViewAutoSizeInfo.cpp",
     "FrameViewAutoSizeInfo.h",
+    "FullscreenController.cpp",
+    "FullscreenController.h",
     "History.cpp",
     "History.h",
     "HostsUsingFeatures.cpp",
