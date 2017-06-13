@@ -11,6 +11,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -23,39 +24,57 @@ class SingleLogSourceTest : public ::testing::Test {
   SingleLogSourceTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI),
-        source_(SingleLogSource::SupportedSource::kMessages),
         num_callback_calls_(0) {
-    CHECK(dir_.CreateUniqueTempDir());
-    log_file_path_ = dir_.GetPath().Append("log_file");
-
-    // Create the dummy log file for writing.
-    base::File new_file;
-    new_file.Initialize(log_file_path_, base::File::FLAG_CREATE_ALWAYS |
-                                            base::File::FLAG_WRITE);
-    new_file.Close();
-    CHECK(base::PathExists(log_file_path_));
-
-    // Open the dummy log file for reading from within the log source.
-    source_.file_.Initialize(log_file_path_,
-                             base::File::FLAG_OPEN | base::File::FLAG_READ);
-    CHECK(source_.file_.IsValid());
+    InitializeTestLogDir();
   }
 
   ~SingleLogSourceTest() override {}
 
-  // Writes a string to |log_file_path_|.
-  bool WriteFile(const std::string& input) {
-    return base::WriteFile(log_file_path_, input.data(), input.size());
+ protected:
+  // Sets up a dummy system log directory.
+  void InitializeTestLogDir() {
+    ASSERT_TRUE(log_dir_.CreateUniqueTempDir());
+
+    // Create file "messages".
+    const base::FilePath messages_path = log_dir_.GetPath().Append("messages");
+    base::WriteFile(messages_path, "", 0);
+    EXPECT_TRUE(base::PathExists(messages_path)) << messages_path.value();
+
+    // Create file "ui/ui.LATEST".
+    const base::FilePath ui_dir_path = log_dir_.GetPath().Append("ui");
+    ASSERT_TRUE(base::CreateDirectory(ui_dir_path)) << ui_dir_path.value();
+
+    const base::FilePath ui_latest_path = ui_dir_path.Append("ui.LATEST");
+    base::WriteFile(ui_latest_path, "", 0);
+    ASSERT_TRUE(base::PathExists(ui_latest_path)) << ui_latest_path.value();
   }
-  // Appends a string to |log_file_path_|.
-  bool AppendToFile(const std::string& input) {
-    return base::AppendToFile(log_file_path_, input.data(), input.size());
+
+  // Initializes the unit under test, |source_| to read a file from the dummy
+  // system log directory.
+  void InitializeSource(SingleLogSource::SupportedSource source_type) {
+    source_ = base::MakeUnique<SingleLogSource>(source_type);
+    source_->log_file_dir_path_ = log_dir_.GetPath();
+    log_file_path_ = source_->log_file_dir_path_.Append(source_->source_name());
+    ASSERT_TRUE(base::PathExists(log_file_path_)) << log_file_path_.value();
+  }
+
+  // Writes/appends (respectively) a string |input| to file indicated by
+  // |relative_path| under |log_dir_|.
+  bool WriteFile(const base::FilePath& relative_path,
+                 const std::string& input) {
+    return base::WriteFile(log_dir_.GetPath().Append(relative_path),
+                           input.data(), input.size());
+  }
+  bool AppendToFile(const base::FilePath& relative_path,
+                    const std::string& input) {
+    return base::AppendToFile(log_dir_.GetPath().Append(relative_path),
+                              input.data(), input.size());
   }
 
   // Calls source_.Fetch() to start a logs fetch operation. Passes in
   // OnFileRead() as a callback. Runs until Fetch() has completed.
   void FetchFromSource() {
-    source_.Fetch(
+    source_->Fetch(
         base::Bind(&SingleLogSourceTest::OnFileRead, base::Unretained(this)));
     scoped_task_environment_.RunUntilIdle();
   }
@@ -88,7 +107,7 @@ class SingleLogSourceTest : public ::testing::Test {
   content::TestBrowserThreadBundle browser_thread_bundle_;
 
   // Unit under test.
-  SingleLogSource source_;
+  std::unique_ptr<SingleLogSource> source_;
 
   // Counts the number of times that |source_| has invoked the callback.
   int num_callback_calls_;
@@ -98,15 +117,16 @@ class SingleLogSourceTest : public ::testing::Test {
   std::string latest_response_;
 
   // Temporary dir for creating a dummy log file.
-  base::ScopedTempDir dir_;
+  base::ScopedTempDir log_dir_;
 
-  // Path to the dummy log file in |dir_|.
+  // Path to the dummy log file in |log_dir_|.
   base::FilePath log_file_path_;
 
   DISALLOW_COPY_AND_ASSIGN(SingleLogSourceTest);
 };
 
 TEST_F(SingleLogSourceTest, EmptyFile) {
+  InitializeSource(SingleLogSource::SupportedSource::kMessages);
   FetchFromSource();
 
   EXPECT_EQ(1, num_callback_calls());
@@ -114,7 +134,9 @@ TEST_F(SingleLogSourceTest, EmptyFile) {
 }
 
 TEST_F(SingleLogSourceTest, SingleRead) {
-  EXPECT_TRUE(AppendToFile("Hello world!\n"));
+  InitializeSource(SingleLogSource::SupportedSource::kUiLatest);
+
+  EXPECT_TRUE(AppendToFile(base::FilePath("ui/ui.LATEST"), "Hello world!\n"));
   FetchFromSource();
 
   EXPECT_EQ(1, num_callback_calls());
@@ -122,19 +144,23 @@ TEST_F(SingleLogSourceTest, SingleRead) {
 }
 
 TEST_F(SingleLogSourceTest, IncrementalReads) {
-  EXPECT_TRUE(AppendToFile("Hello world!\n"));
+  InitializeSource(SingleLogSource::SupportedSource::kMessages);
+
+  EXPECT_TRUE(AppendToFile(base::FilePath("messages"), "Hello world!\n"));
   FetchFromSource();
 
   EXPECT_EQ(1, num_callback_calls());
   EXPECT_EQ("Hello world!\n", latest_response());
 
-  EXPECT_TRUE(AppendToFile("The quick brown fox jumps over the lazy dog\n"));
+  EXPECT_TRUE(AppendToFile(base::FilePath("messages"),
+                           "The quick brown fox jumps over the lazy dog\n"));
   FetchFromSource();
 
   EXPECT_EQ(2, num_callback_calls());
   EXPECT_EQ("The quick brown fox jumps over the lazy dog\n", latest_response());
 
-  EXPECT_TRUE(AppendToFile("Some like it hot.\nSome like it cold\n"));
+  EXPECT_TRUE(AppendToFile(base::FilePath("messages"),
+                           "Some like it hot.\nSome like it cold\n"));
   FetchFromSource();
 
   EXPECT_EQ(3, num_callback_calls());
@@ -154,14 +180,16 @@ TEST_F(SingleLogSourceTest, IncrementalReads) {
 // This test is just to ensure that the SingleLogSource class is robust enough
 // not to break in the event of an overwrite.
 TEST_F(SingleLogSourceTest, FileOverwrite) {
-  EXPECT_TRUE(AppendToFile("0123456789\n"));
+  InitializeSource(SingleLogSource::SupportedSource::kUiLatest);
+
+  EXPECT_TRUE(AppendToFile(base::FilePath("ui/ui.LATEST"), "0123456789\n"));
   FetchFromSource();
 
   EXPECT_EQ(1, num_callback_calls());
   EXPECT_EQ("0123456789\n", latest_response());
 
   // Overwrite the file.
-  EXPECT_TRUE(WriteFile("abcdefg\n"));
+  EXPECT_TRUE(WriteFile(base::FilePath("ui/ui.LATEST"), "abcdefg\n"));
   FetchFromSource();
 
   // Should re-read from the beginning.
@@ -169,7 +197,7 @@ TEST_F(SingleLogSourceTest, FileOverwrite) {
   EXPECT_EQ("abcdefg\n", latest_response());
 
   // Append to the file to make sure incremental read still works.
-  EXPECT_TRUE(AppendToFile("hijk\n"));
+  EXPECT_TRUE(AppendToFile(base::FilePath("ui/ui.LATEST"), "hijk\n"));
   FetchFromSource();
 
   EXPECT_EQ(3, num_callback_calls());
@@ -180,7 +208,7 @@ TEST_F(SingleLogSourceTest, FileOverwrite) {
   //   abcdefg~hijk~     <-- "~" is a single-char representation of newline.
   // New contents:
   //   lmnopqrstuvwxyz~  <-- excess text beyond end of prev contents: "yz~"
-  EXPECT_TRUE(WriteFile("lmnopqrstuvwxyz\n"));
+  EXPECT_TRUE(WriteFile(base::FilePath("ui/ui.LATEST"), "lmnopqrstuvwxyz\n"));
   FetchFromSource();
 
   EXPECT_EQ(4, num_callback_calls());
@@ -188,35 +216,37 @@ TEST_F(SingleLogSourceTest, FileOverwrite) {
 }
 
 TEST_F(SingleLogSourceTest, IncompleteLines) {
-  EXPECT_TRUE(AppendToFile("0123456789"));
+  InitializeSource(SingleLogSource::SupportedSource::kMessages);
+
+  EXPECT_TRUE(AppendToFile(base::FilePath("messages"), "0123456789"));
   FetchFromSource();
 
   EXPECT_EQ(1, num_callback_calls());
   EXPECT_EQ("", latest_response());
 
-  EXPECT_TRUE(AppendToFile("abcdefg"));
+  EXPECT_TRUE(AppendToFile(base::FilePath("messages"), "abcdefg"));
   FetchFromSource();
 
   EXPECT_EQ(2, num_callback_calls());
   EXPECT_EQ("", latest_response());
 
-  EXPECT_TRUE(AppendToFile("hijk\n"));
+  EXPECT_TRUE(AppendToFile(base::FilePath("messages"), "hijk\n"));
   FetchFromSource();
 
   EXPECT_EQ(3, num_callback_calls());
   // All the previously written text should be read this time.
   EXPECT_EQ("0123456789abcdefghijk\n", latest_response());
 
-  EXPECT_TRUE(AppendToFile("Hello world\n"));
-  EXPECT_TRUE(AppendToFile("Goodbye world"));
-  FetchFromSource();
-
   // Partial whole-line reads are not supported. The last byte of the read must
   // be a new line.
+  EXPECT_TRUE(AppendToFile(base::FilePath("messages"), "Hello world\n"));
+  EXPECT_TRUE(AppendToFile(base::FilePath("messages"), "Goodbye world"));
+  FetchFromSource();
+
   EXPECT_EQ(4, num_callback_calls());
   EXPECT_EQ("", latest_response());
 
-  EXPECT_TRUE(AppendToFile("\n"));
+  EXPECT_TRUE(AppendToFile(base::FilePath("messages"), "\n"));
   FetchFromSource();
 
   EXPECT_EQ(5, num_callback_calls());
@@ -224,7 +254,10 @@ TEST_F(SingleLogSourceTest, IncompleteLines) {
 }
 
 TEST_F(SingleLogSourceTest, Anonymize) {
-  EXPECT_TRUE(AppendToFile("My MAC address is: 11:22:33:44:55:66\n"));
+  InitializeSource(SingleLogSource::SupportedSource::kUiLatest);
+
+  EXPECT_TRUE(AppendToFile(base::FilePath("ui/ui.LATEST"),
+                           "My MAC address is: 11:22:33:44:55:66\n"));
   FetchFromSource();
 
   EXPECT_EQ(1, num_callback_calls());
@@ -232,13 +265,14 @@ TEST_F(SingleLogSourceTest, Anonymize) {
 
   // Suppose the write operation is not atomic, and the MAC address is written
   // across two separate writes.
-  EXPECT_TRUE(AppendToFile("Your MAC address is: AB:88:C"));
+  EXPECT_TRUE(AppendToFile(base::FilePath("ui/ui.LATEST"),
+                           "Your MAC address is: AB:88:C"));
   FetchFromSource();
 
   EXPECT_EQ(2, num_callback_calls());
   EXPECT_EQ("", latest_response());
 
-  EXPECT_TRUE(AppendToFile("D:99:EF:77\n"));
+  EXPECT_TRUE(AppendToFile(base::FilePath("ui/ui.LATEST"), "D:99:EF:77\n"));
   FetchFromSource();
 
   EXPECT_EQ(3, num_callback_calls());

@@ -13,23 +13,28 @@ namespace system_logs {
 
 namespace {
 
-// Converts a logs source type to the corresponding filename. In the future, if
-// non-file source types are added, this function should return an empty string.
-std::string GetLogFileSourceFilename(SingleLogSource::SupportedSource source) {
+const char kDefaultSystemLogDirPath[] = "/var/log";
+
+// Converts a logs source type to the corresponding file path, relative to the
+// base system log directory path. In the future, if non-file source types are
+// added, this function should return an empty file path.
+base::FilePath GetLogFileSourceRelativeFilePath(
+    SingleLogSource::SupportedSource source) {
   switch (source) {
     case SingleLogSource::SupportedSource::kMessages:
-      return "/var/log/messages";
+      return base::FilePath("messages");
     case SingleLogSource::SupportedSource::kUiLatest:
-      return "/var/log/ui/ui.LATEST";
+      return base::FilePath("ui/ui.LATEST");
   }
   NOTREACHED();
-  return "";
+  return base::FilePath();
 }
 
 }  // namespace
 
 SingleLogSource::SingleLogSource(SupportedSource source)
-    : SystemLogsSource(GetLogFileSourceFilename(source)),
+    : SystemLogsSource(GetLogFileSourceRelativeFilePath(source).value()),
+      log_file_dir_path_(kDefaultSystemLogDirPath),
       num_bytes_read_(0),
       weak_ptr_factory_(this) {}
 
@@ -51,7 +56,7 @@ void SingleLogSource::Fetch(const SysLogsSourceCallback& callback) {
 void SingleLogSource::ReadFile(SystemLogsResponse* result) {
   // Attempt to open the file if it was not previously opened.
   if (!file_.IsValid()) {
-    file_.Initialize(base::FilePath(source_name()),
+    file_.Initialize(base::FilePath(log_file_dir_path_).Append(source_name()),
                      base::File::FLAG_OPEN | base::File::FLAG_READ);
     if (!file_.IsValid())
       return;
