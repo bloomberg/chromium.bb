@@ -52,7 +52,8 @@ def ParseNinjaDepsOutput(ninja_out, out_dir):
   """Parse ninja output and get the header files"""
   all_headers = set()
 
-  prefix = '..' + os.sep + '..' + os.sep
+  # Ninja always uses "/", even on Windows.
+  prefix = '../../'
 
   is_valid = False
   for line in ninja_out:
@@ -82,12 +83,15 @@ def GetHeadersFromGN(out_dir, q):
   tmp = None
   ans, err = set(), None
   try:
-    tmp = tempfile.mkdtemp()
+    # Argument |dir| is needed to make sure it's on the same drive on Windows.
+    # dir='' means dir='.', but doesn't introduce an unneeded prefix.
+    tmp = tempfile.mkdtemp(dir='')
     shutil.copy2(os.path.join(out_dir, 'args.gn'),
                  os.path.join(tmp, 'args.gn'))
     # Do "gn gen" in a temp dir to prevent dirtying |out_dir|.
+    gn_exe = 'gn.bat' if sys.platform == 'win32' else 'gn'
     subprocess.check_call([
-      os.path.join(DEPOT_TOOLS_DIR, 'gn'), 'gen', tmp, '--ide=json', '-q'])
+      os.path.join(DEPOT_TOOLS_DIR, gn_exe), 'gen', tmp, '--ide=json', '-q'])
     gn_json = json.load(open(os.path.join(tmp, 'project.json')))
     ans = ParseGNProjectJSON(gn_json, out_dir, tmp)
   except Exception as e:
@@ -123,10 +127,12 @@ def GetDepsPrefixes(q):
   """Return all the folders controlled by DEPS file"""
   prefixes, err = set(), None
   try:
+    gclient_exe = 'gclient.bat' if sys.platform == 'win32' else 'gclient'
     gclient_out = subprocess.check_output([
-      os.path.join(DEPOT_TOOLS_DIR, 'gclient'),
-      'recurse', '--no-progress', '-j1',
-      'python', '-c', 'import os;print os.environ["GCLIENT_DEP_PATH"]'])
+        os.path.join(DEPOT_TOOLS_DIR, gclient_exe),
+        'recurse', '--no-progress', '-j1',
+        'python', '-c', 'import os;print os.environ["GCLIENT_DEP_PATH"]'],
+        universal_newlines=True)
     for i in gclient_out.split('\n'):
       if i.startswith('src/'):
         i = i[4:]
