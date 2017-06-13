@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef COMPONENTS_DOWNLOAD_INTERNAL_TEST_MOCK_CONTROLLER_H_
+#define COMPONENTS_DOWNLOAD_INTERNAL_TEST_MOCK_CONTROLLER_H_
+
 #include "base/macros.h"
 #include "components/download/internal/controller.h"
 #include "components/download/internal/startup_status.h"
@@ -26,6 +29,9 @@ class MockController : public Controller {
   MOCK_METHOD2(ChangeDownloadCriteria,
                void(const std::string&, const SchedulingParams&));
   MOCK_METHOD1(GetOwnerOfDownload, DownloadClient(const std::string&));
+  MOCK_METHOD2(OnStartScheduledTask,
+               void(DownloadTaskType, const TaskFinishedCallback&));
+  MOCK_METHOD1(OnStopScheduledTask, bool(DownloadTaskType task_type));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockController);
@@ -33,3 +39,5 @@ class MockController : public Controller {
 
 }  // namespace test
 }  // namespace download
+
+#endif  // COMPONENTS_DOWNLOAD_INTERNAL_TEST_MOCK_CONTROLLER_H_

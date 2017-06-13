@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "components/download/public/clients.h"
+#include "components/download/public/download_task_types.h"
 #include "components/keyed_service/core/keyed_service.h"
 
 namespace download {
@@ -21,6 +22,8 @@ namespace download {
 class Client;
 struct DownloadParams;
 struct SchedulingParams;
+
+using TaskFinishedCallback = base::Callback<void(bool)>;
 
 // A service responsible for helping facilitate the scheduling and downloading
 // of file content from the web.  See |DownloadParams| for more details on the
@@ -47,6 +50,20 @@ class DownloadService : public KeyedService {
     // error on some internal component like the persistence layer.
     UNAVAILABLE = 2,
   };
+
+  // Callback method to run by the service when a pre-scheduled task starts.
+  // This method is invoked on main thread and while it is running, the system
+  // holds a wakelock which is not released until either the |callback| is run
+  // or OnStopScheduledTask is invoked by the system. Do not call this method
+  // directly.
+  virtual void OnStartScheduledTask(DownloadTaskType task_type,
+                                    const TaskFinishedCallback& callback) = 0;
+
+  // Callback method to run by the service if the system decides to stop the
+  // task. Returns true if the task needs to be rescheduled. Any pending
+  // TaskFinishedCallback should be reset after this call. Do not call this
+  // method directly.
+  virtual bool OnStopScheduledTask(DownloadTaskType task_type) = 0;
 
   // Whether or not the DownloadService is currently available, initialized
   // successfully, and ready to be used.

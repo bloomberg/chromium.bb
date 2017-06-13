@@ -7,6 +7,7 @@
 
 #include "components/download/public/clients.h"
 #include "components/download/public/download_params.h"
+#include "components/download/public/download_task_types.h"
 
 namespace download {
 
@@ -60,6 +61,18 @@ enum class ModelAction {
   COUNT = 4,
 };
 
+// Enum used by UMA metrics to log the status of scheduled tasks.
+enum class ScheduledTaskStatus {
+  // Startup failed and the task was not run.
+  ABORTED_ON_FAILED_INIT = 0,
+
+  // OnStopScheduledTask() was received before the task could be fired.
+  CANCELLED_ON_STOP = 1,
+
+  // Callback was run successfully after completion of the task.
+  COMPLETED_NORMALLY = 2,
+};
+
 // Logs the results of starting up the Controller.  Will log each failure reason
 // if |status| contains more than one initialization failure.
 void LogControllerStartupStatus(const StartupStatus& status);
@@ -74,6 +87,10 @@ void LogStartDownloadResult(DownloadClient client,
 // Logs statistics about the result of a Model operation.  Used to track failure
 // cases.
 void LogModelOperationResult(ModelAction action, bool success);
+
+// Log statistics about the status of a TaskFinishedCallback.
+void LogScheduledTaskStatus(DownloadTaskType task_type,
+                            ScheduledTaskStatus status);
 
 }  // namespace stats
 }  // namespace download

@@ -345,6 +345,8 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/download/items/OfflineContentAggregatorFactory.java",
   "java/src/org/chromium/chrome/browser/download/items/OfflineContentAggregatorNotificationBridgeUi.java",
   "java/src/org/chromium/chrome/browser/download/items/OfflineContentAggregatorNotificationBridgeUiFactory.java",
+  "java/src/org/chromium/chrome/browser/download/service/DownloadBackgroundTask.java",
+  "java/src/org/chromium/chrome/browser/download/service/DownloadTaskScheduler.java",
   "java/src/org/chromium/chrome/browser/download/ui/BackendItems.java",
   "java/src/org/chromium/chrome/browser/download/ui/BackendProvider.java",
   "java/src/org/chromium/chrome/browser/download/ui/DeletedFileTracker.java",

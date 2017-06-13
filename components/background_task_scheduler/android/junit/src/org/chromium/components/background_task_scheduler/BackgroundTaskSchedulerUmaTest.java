@@ -67,7 +67,13 @@ public class BackgroundTaskSchedulerUmaTest {
         assertEquals(BackgroundTaskSchedulerUma.BACKGROUND_TASK_OFFLINE_PREFETCH,
                 BackgroundTaskSchedulerUma.toUmaEnumValueFromTaskId(
                         TaskIds.OFFLINE_PAGES_PREFETCH_JOB_ID));
-        assertEquals(BackgroundTaskSchedulerUma.BACKGROUND_TASK_COUNT, 8);
+        assertEquals(BackgroundTaskSchedulerUma.BACKGROUND_TASK_DOWNLOAD_SERVICE,
+                BackgroundTaskSchedulerUma.toUmaEnumValueFromTaskId(
+                        TaskIds.DOWNLOAD_SERVICE_JOB_ID));
+        assertEquals(BackgroundTaskSchedulerUma.BACKGROUND_TASK_DOWNLOAD_CLEANUP,
+                BackgroundTaskSchedulerUma.toUmaEnumValueFromTaskId(
+                        TaskIds.DOWNLOAD_CLEANUP_JOB_ID));
+        assertEquals(BackgroundTaskSchedulerUma.BACKGROUND_TASK_COUNT, 10);
     }
 
     @Test
