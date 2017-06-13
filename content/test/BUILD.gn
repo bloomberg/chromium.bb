@@ -1214,6 +1214,7 @@ test("content_unittests") {
     "../browser/media/capture/audio_mirroring_manager_unittest.cc",
     "../browser/media/capture/web_contents_audio_input_stream_unittest.cc",
     "../browser/media/cdm_registry_impl_unittest.cc",
+    "../browser/media/media_devices_permission_checker_unittest.cc",
     "../browser/media/media_internals_unittest.cc",
     "../browser/media/midi_host_unittest.cc",
     "../browser/media/session/audio_focus_manager_unittest.cc",
