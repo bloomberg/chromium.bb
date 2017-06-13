@@ -101,7 +101,7 @@ public class BrowserActionActivity extends AsyncInitializationActivity {
         Referrer referrer = IntentHandler.constructValidReferrerForAuthority(mCreatorPackageName);
         return new ContextMenuParams(mType, mUri.toString(), mUri.toString(), mUri.toString(),
                 mUri.toString(), mUri.toString(), mUri.toString(), false /* imageWasFetchedLoFi */,
-                referrer, false /* canSaveMedia */);
+                referrer, false /* canSaveMedia */, 0 /* touchPointXDp */, 0 /* touchPointYDp */);
     }
 
     @Override

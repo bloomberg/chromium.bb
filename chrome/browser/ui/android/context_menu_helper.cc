@@ -123,7 +123,7 @@ ContextMenuHelper::CreateJavaContextMenuParams(
           ConvertUTF16ToJavaString(env, params.title_text),
           image_was_fetched_lo_fi,
           ConvertUTF8ToJavaString(env, sanitizedReferrer.spec()),
-          params.referrer_policy, can_save);
+          params.referrer_policy, can_save, params.x, params.y);
 
   return jmenu_info;
 }

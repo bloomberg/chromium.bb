@@ -16,6 +16,8 @@ import org.chromium.chrome.R;
  * pager.
  */
 public class TabularContextMenuViewPager extends ViewPager {
+    private static final double MAX_WIDTH_PROPORTION = 0.75;
+
     public TabularContextMenuViewPager(Context context) {
         super(context);
     }
@@ -32,11 +34,20 @@ public class TabularContextMenuViewPager extends ViewPager {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         int menuHeight = 0;
         int tabHeight = 0;
+
         // getCurrentItem() does not take into account the tab layout unlike getChildCount().
         int currentItemsIndex = getCurrentItem() + 1;
 
+        // TODO(injae): Fix sizing on orientation changes (crbug.com/731173)
+        int contextMenuWidth = (int) Math.min(
+                getResources().getDisplayMetrics().widthPixels * MAX_WIDTH_PROPORTION,
+                getResources().getDimensionPixelSize(R.dimen.context_menu_max_width));
+
+        widthMeasureSpec = MeasureSpec.makeMeasureSpec(contextMenuWidth, MeasureSpec.EXACTLY);
+
         for (int i = 0; i < getChildCount(); i++) {
             View child = getChildAt(i);
+
             child.measure(
                     widthMeasureSpec, MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
             int measuredHeight = child.getMeasuredHeight();

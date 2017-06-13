@@ -120,26 +120,27 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
                 return;
             }
 
-            final ContextMenuUi menuUi = new TabularContextMenuUi(new Runnable() {
+            final TabularContextMenuUi menuUi = new TabularContextMenuUi(new Runnable() {
                 @Override
                 public void run() {
                     shareImageDirectly(ShareHelper.getLastShareComponentName());
                 }
             });
+            menuUi.setRenderCoordinates(contentViewCore.getRenderCoordinates());
             menuUi.displayMenu(mActivity, mCurrentContextMenuParams, items, mCallback, mOnMenuShown,
                     mOnMenuClosed);
             if (mCurrentContextMenuParams.isImage()) {
                 getThumbnail(new Callback<Bitmap>() {
                     @Override
                     public void onResult(Bitmap result) {
-                        ((TabularContextMenuUi) menuUi).onImageThumbnailRetrieved(result);
+                        menuUi.onImageThumbnailRetrieved(result);
                     }
                 });
             }
             return;
         }
 
-        // The Platform Context Menu requires the listener within this hepler since this helper and
+        // The Platform Context Menu requires the listener within this helper since this helper and
         // provides context menu for us to show.
         view.setOnCreateContextMenuListener(this);
         if (view.showContextMenu()) {

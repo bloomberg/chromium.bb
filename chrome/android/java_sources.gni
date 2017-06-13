@@ -1219,6 +1219,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/widget/BoundedLinearLayout.java",
   "java/src/org/chromium/chrome/browser/widget/ClipDrawableProgressBar.java",
   "java/src/org/chromium/chrome/browser/widget/CompatibilityTextInputLayout.java",
+  "java/src/org/chromium/chrome/browser/widget/ContextMenuDialog.java",
   "java/src/org/chromium/chrome/browser/widget/ControlContainer.java",
   "java/src/org/chromium/chrome/browser/widget/DateDividedAdapter.java",
   "java/src/org/chromium/chrome/browser/widget/DualControlLayout.java",

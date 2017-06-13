@@ -147,16 +147,16 @@ public class ChromeContextMenuPopulatorTest {
 
     private static ContextMenuParams createLinkContextParams() {
         return new ContextMenuParams(
-                0, PAGE_URL, LINK_URL, LINK_TEXT, "", "", "", false, null, false);
+                0, PAGE_URL, LINK_URL, LINK_TEXT, "", "", "", false, null, false, 0, 0);
     }
 
     private static ContextMenuParams createImageContextParams() {
         return new ContextMenuParams(ContextMenuParams.MediaType.MEDIA_TYPE_IMAGE, PAGE_URL, "", "",
-                IMAGE_SRC_URL, IMAGE_TITLE_TEXT, "", false, null, true);
+                IMAGE_SRC_URL, IMAGE_TITLE_TEXT, "", false, null, true, 0, 0);
     }
 
     private static ContextMenuParams createImageLinkContextParams() {
         return new ContextMenuParams(ContextMenuParams.MediaType.MEDIA_TYPE_IMAGE, PAGE_URL,
-                PAGE_URL, LINK_URL, IMAGE_SRC_URL, IMAGE_TITLE_TEXT, "", false, null, true);
+                PAGE_URL, LINK_URL, IMAGE_SRC_URL, IMAGE_TITLE_TEXT, "", false, null, true, 0, 0);
     }
 }
