@@ -52,6 +52,7 @@ class CastAudioOutputStream::Backend
         buffer_duration_(audio_params.GetBufferDuration()),
         first_start_(true),
         push_in_progress_(false),
+        encountered_error_(false),
         decoder_(nullptr),
         source_callback_(nullptr),
         weak_factory_(this) {
@@ -150,7 +151,7 @@ class CastAudioOutputStream::Backend
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
     DCHECK(push_in_progress_);
 
-    if (!source_callback_) {
+    if (!source_callback_ || encountered_error_) {
       push_in_progress_ = false;
       return;
     }
@@ -187,7 +188,7 @@ class CastAudioOutputStream::Backend
     DCHECK(push_in_progress_);
     push_in_progress_ = false;
 
-    if (!source_callback_)
+    if (!source_callback_ || encountered_error_)
       return;
 
     if (status != MediaPipelineBackend::kBufferSuccess) {
@@ -215,6 +216,8 @@ class CastAudioOutputStream::Backend
   void OnDecoderError() override {
     VLOG(1) << this << ": " << __func__;
     DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+    encountered_error_ = true;
     if (source_callback_)
       source_callback_->OnError();
   }
@@ -232,6 +235,7 @@ class CastAudioOutputStream::Backend
   const base::TimeDelta buffer_duration_;
   bool first_start_;
   bool push_in_progress_;
+  bool encountered_error_;
   base::TimeTicks next_push_time_;
   std::unique_ptr<TaskRunnerImpl> backend_task_runner_;
   std::unique_ptr<MediaPipelineBackend> backend_;

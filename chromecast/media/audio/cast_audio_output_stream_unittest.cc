@@ -95,9 +95,8 @@ class FakeAudioDecoder : public MediaPipelineBackend::AudioDecoder {
       case PIPELINE_STATUS_ERROR:
         return MediaPipelineBackend::kBufferFailed;
       case PIPELINE_STATUS_ASYNC_ERROR:
-        pending_push_ = true;
         delegate_->OnDecoderError();
-        return MediaPipelineBackend::kBufferPending;
+        return MediaPipelineBackend::kBufferSuccess;
       default:
         NOTREACHED();
         return MediaPipelineBackend::kBufferFailed;
