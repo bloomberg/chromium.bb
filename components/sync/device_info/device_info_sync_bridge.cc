@@ -114,7 +114,7 @@ DeviceInfoSyncBridge::CreateMetadataChangeList() {
 
 base::Optional<ModelError> DeviceInfoSyncBridge::MergeSyncData(
     std::unique_ptr<MetadataChangeList> metadata_change_list,
-    EntityDataMap entity_data_map) {
+    EntityChangeList entity_data) {
   DCHECK(has_provider_initialized_);
   DCHECK(change_processor()->IsTrackingMetadata());
   const DeviceInfo* local_info =
@@ -138,10 +138,10 @@ base::Optional<ModelError> DeviceInfoSyncBridge::MergeSyncData(
   bool has_changes = false;
   std::string local_guid = local_info->guid();
   std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();
-  for (const auto& kv : entity_data_map) {
+  for (const auto& change : entity_data) {
     const DeviceInfoSpecifics& specifics =
-        kv.second.value().specifics.device_info();
-    DCHECK_EQ(kv.first, specifics.cache_guid());
+        change.data().specifics.device_info();
+    DCHECK_EQ(change.storage_key(), specifics.cache_guid());
     if (specifics.cache_guid() == local_guid) {
       // Don't Put local data if it's the same as the remote copy.
       if (local_info->Equals(*SpecificsToModel(specifics))) {

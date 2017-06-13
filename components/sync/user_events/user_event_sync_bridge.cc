@@ -76,7 +76,7 @@ UserEventSyncBridge::CreateMetadataChangeList() {
 
 base::Optional<ModelError> UserEventSyncBridge::MergeSyncData(
     std::unique_ptr<MetadataChangeList> metadata_change_list,
-    EntityDataMap entity_data_map) {
+    EntityChangeList entity_data) {
   NOTREACHED();
   return {};
 }

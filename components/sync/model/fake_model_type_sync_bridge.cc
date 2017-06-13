@@ -232,13 +232,6 @@ base::Optional<ModelError> FakeModelTypeSyncBridge::MergeSyncData(
   return {};
 }
 
-base::Optional<ModelError> FakeModelTypeSyncBridge::MergeSyncData(
-    std::unique_ptr<MetadataChangeList> metadata_change_list,
-    EntityDataMap entity_data) {
-  NOTREACHED();
-  return {};
-}
-
 base::Optional<ModelError> FakeModelTypeSyncBridge::ApplySyncChanges(
     std::unique_ptr<MetadataChangeList> metadata_changes,
     EntityChangeList entity_changes) {

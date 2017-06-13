@@ -158,19 +158,6 @@ EntityChangeList EntityAddList(
   return changes;
 }
 
-// Similar helper to EntityAddList(...), only wraps in a EntityDataMap for a
-// merge call. Order is irrelevant, since the map sorts by key. Should not
-// contain multiple specifics with the same guid.
-EntityDataMap InlineEntityDataMap(
-    const std::vector<DeviceInfoSpecifics>& specifics_list) {
-  EntityDataMap map;
-  for (const auto& specifics : specifics_list) {
-    EXPECT_EQ(map.end(), map.find(specifics.cache_guid()));
-    map[specifics.cache_guid()] = SpecificsToEntity(specifics);
-  }
-  return map;
-}
-
 }  // namespace
 
 class DeviceInfoSyncBridgeTest : public testing::Test,
@@ -572,7 +559,7 @@ TEST_F(DeviceInfoSyncBridgeTest, MergeEmpty) {
   InitializeAndPump();
   EXPECT_EQ(1, change_count());
   auto error = bridge()->MergeSyncData(bridge()->CreateMetadataChangeList(),
-                                       EntityDataMap());
+                                       EntityChangeList());
   EXPECT_FALSE(error);
   EXPECT_EQ(1, change_count());
   // TODO(skym): Stop sending local twice. The first of the two puts will
@@ -603,9 +590,9 @@ TEST_F(DeviceInfoSyncBridgeTest, MergeWithData) {
       bridge()->CreateMetadataChangeList();
   metadata_changes->UpdateModelTypeState(state);
 
-  auto error = bridge()->MergeSyncData(
-      std::move(metadata_changes),
-      InlineEntityDataMap({conflict_remote, unique_remote}));
+  auto error =
+      bridge()->MergeSyncData(std::move(metadata_changes),
+                              EntityAddList({conflict_remote, unique_remote}));
   EXPECT_FALSE(error);
   EXPECT_EQ(2, change_count());
 
@@ -639,7 +626,7 @@ TEST_F(DeviceInfoSyncBridgeTest, MergeLocalGuid) {
   InitializeAndPump();
 
   auto error = bridge()->MergeSyncData(bridge()->CreateMetadataChangeList(),
-                                       InlineEntityDataMap({specifics}));
+                                       EntityAddList({specifics}));
   EXPECT_FALSE(error);
   EXPECT_EQ(0, change_count());
   EXPECT_EQ(1u, bridge()->GetAllDeviceInfo().size());
@@ -655,7 +642,7 @@ TEST_F(DeviceInfoSyncBridgeTest, MergeLocalGuidBeforeReconcile) {
   // EntityData because its cache guid is the same the local device's.
   auto error = bridge()->MergeSyncData(
       bridge()->CreateMetadataChangeList(),
-      InlineEntityDataMap({CreateSpecifics(kDefaultLocalSuffix)}));
+      EntityAddList({CreateSpecifics(kDefaultLocalSuffix)}));
   EXPECT_FALSE(error);
   EXPECT_EQ(0, change_count());
   EXPECT_EQ(0u, bridge()->GetAllDeviceInfo().size());
@@ -670,13 +657,13 @@ TEST_F(DeviceInfoSyncBridgeTest, ClearProviderAndMerge) {
 
   local_device()->Clear();
   auto error1 = bridge()->MergeSyncData(bridge()->CreateMetadataChangeList(),
-                                        InlineEntityDataMap({specifics}));
+                                        EntityAddList({specifics}));
   EXPECT_FALSE(error1);
   EXPECT_EQ(1u, bridge()->GetAllDeviceInfo().size());
 
   local_device()->Initialize(CreateModel(kDefaultLocalSuffix));
   auto error2 = bridge()->MergeSyncData(bridge()->CreateMetadataChangeList(),
-                                        InlineEntityDataMap({specifics}));
+                                        EntityAddList({specifics}));
   EXPECT_FALSE(error2);
   EXPECT_EQ(2u, bridge()->GetAllDeviceInfo().size());
 }

@@ -183,16 +183,18 @@ PrintersSyncBridge::CreateMetadataChangeList() {
 
 base::Optional<syncer::ModelError> PrintersSyncBridge::MergeSyncData(
     std::unique_ptr<MetadataChangeList> metadata_change_list,
-    syncer::EntityDataMap entity_data_map) {
+    syncer::EntityChangeList entity_data) {
   DCHECK(change_processor()->IsTrackingMetadata());
 
   std::unique_ptr<ModelTypeStore::WriteBatch> batch =
       store_delegate_->CreateWriteBatch();
-  for (const auto& entry : entity_data_map) {
+  std::set<std::string> sync_entity_ids;
+  for (const auto& change : entity_data) {
     const sync_pb::PrinterSpecifics& specifics =
-        entry.second.value().specifics.printer();
+        change.data().specifics.printer();
 
-    DCHECK_EQ(entry.first, specifics.id());
+    DCHECK_EQ(change.storage_key(), specifics.id());
+    sync_entity_ids.insert(specifics.id());
 
     // Write the update to local storage even if we already have it.
     StoreSpecifics(base::MakeUnique<sync_pb::PrinterSpecifics>(specifics),
@@ -203,7 +205,7 @@ base::Optional<syncer::ModelError> PrintersSyncBridge::MergeSyncData(
   // appropriate metadata.
   for (const auto& entry : all_data_) {
     const std::string& local_entity_id = entry.first;
-    if (!base::ContainsKey(entity_data_map, local_entity_id)) {
+    if (!base::ContainsKey(sync_entity_ids, local_entity_id)) {
       // Only local objects which were not updated are uploaded.  Objects for
       // which there was a remote copy are overwritten.
       change_processor()->Put(local_entity_id, CopyToEntityData(*entry.second),

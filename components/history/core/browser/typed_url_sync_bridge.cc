@@ -81,7 +81,7 @@ TypedURLSyncBridge::CreateMetadataChangeList() {
 
 base::Optional<syncer::ModelError> TypedURLSyncBridge::MergeSyncData(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
-    syncer::EntityDataMap entity_data_map) {
+    syncer::EntityChangeList entity_data) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   NOTIMPLEMENTED();
   return {};

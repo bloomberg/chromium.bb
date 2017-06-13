@@ -43,7 +43,6 @@ using syncer::EntityChange;
 using syncer::EntityChangeList;
 using syncer::EntityData;
 using syncer::EntityDataPtr;
-using syncer::EntityDataMap;
 using syncer::FakeModelTypeChangeProcessor;
 using syncer::KeyAndData;
 using syncer::ModelError;
@@ -194,7 +193,7 @@ class AutocompleteSyncBridgeTest : public testing::Test {
     return key;
   }
 
-  EntityChangeList EntityAddList(
+  EntityChangeList CreateEntityAddList(
       const std::vector<AutofillSpecifics>& specifics_vector) {
     EntityChangeList changes;
     for (const auto& specifics : specifics_vector) {
@@ -204,28 +203,19 @@ class AutocompleteSyncBridgeTest : public testing::Test {
     return changes;
   }
 
-  EntityDataMap CreateEntityDataMap(
-      const std::vector<AutofillSpecifics>& specifics_vector) {
-    EntityDataMap map;
-    for (const auto& specifics : specifics_vector) {
-      map[GetStorageKey(specifics)] = SpecificsToEntity(specifics);
-    }
-    return map;
-  }
-
-  void VerifyApplyChanges(const std::vector<EntityChange>& changes) {
+  void VerifyApplyChanges(const EntityChangeList& changes) {
     const auto error = bridge()->ApplySyncChanges(
         bridge()->CreateMetadataChangeList(), changes);
     EXPECT_FALSE(error);
   }
 
   void VerifyApplyAdds(const std::vector<AutofillSpecifics>& specifics) {
-    VerifyApplyChanges(EntityAddList(specifics));
+    VerifyApplyChanges(CreateEntityAddList(specifics));
   }
 
   void VerifyMerge(const std::vector<AutofillSpecifics>& specifics) {
     const auto error = bridge()->MergeSyncData(
-        bridge()->CreateMetadataChangeList(), CreateEntityDataMap(specifics));
+        bridge()->CreateMetadataChangeList(), CreateEntityAddList(specifics));
     EXPECT_FALSE(error);
   }
 

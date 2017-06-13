@@ -35,7 +35,7 @@ class PrintersSyncBridge : public syncer::ModelTypeSyncBridge {
       override;
   base::Optional<syncer::ModelError> MergeSyncData(
       std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
-      syncer::EntityDataMap entity_data_map) override;
+      syncer::EntityChangeList entity_data) override;
   base::Optional<syncer::ModelError> ApplySyncChanges(
       std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
       syncer::EntityChangeList entity_changes) override;

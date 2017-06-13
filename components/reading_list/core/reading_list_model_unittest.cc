@@ -115,7 +115,7 @@ class TestReadingListStorage : public ReadingListModelStorage {
 
   base::Optional<syncer::ModelError> MergeSyncData(
       std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
-      syncer::EntityDataMap entity_data_map) override {
+      syncer::EntityChangeList entity_data) override {
     NOTREACHED();
     return {};
   }

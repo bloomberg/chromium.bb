@@ -31,7 +31,6 @@ using sync_pb::AutofillSpecifics;
 using syncer::EntityChange;
 using syncer::EntityChangeList;
 using syncer::EntityData;
-using syncer::EntityDataMap;
 using syncer::MetadataChangeList;
 using syncer::ModelError;
 using syncer::ModelTypeChangeProcessor;
@@ -326,14 +325,14 @@ AutocompleteSyncBridge::CreateMetadataChangeList() {
 
 Optional<syncer::ModelError> AutocompleteSyncBridge::MergeSyncData(
     std::unique_ptr<MetadataChangeList> metadata_change_list,
-    EntityDataMap entity_data_map) {
+    EntityChangeList entity_data) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   SyncDifferenceTracker tracker(GetAutofillTable());
-  for (auto kv : entity_data_map) {
-    DCHECK(kv.second->specifics.has_autofill());
+  for (const auto& change : entity_data) {
+    DCHECK(change.data().specifics.has_autofill());
     RETURN_IF_ERROR(tracker.IncorporateRemoteSpecifics(
-        kv.first, kv.second->specifics.autofill()));
+        change.storage_key(), change.data().specifics.autofill()));
   }
 
   RETURN_IF_ERROR(tracker.FlushToLocal(web_data_backend_));
