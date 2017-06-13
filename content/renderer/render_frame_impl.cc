@@ -2920,8 +2920,6 @@ RenderFrameImpl::CreateWorkerFetchContext() {
     ServiceWorkerNetworkProvider* provider =
         ServiceWorkerNetworkProvider::FromWebServiceWorkerNetworkProvider(
             web_provider);
-    if (!provider)
-      return nullptr;
     worker_fetch_context->set_service_worker_provider_id(
         provider->provider_id());
     worker_fetch_context->set_is_controlled_by_service_worker(
@@ -2973,10 +2971,6 @@ RenderFrameImpl::CreateServiceWorkerProvider() {
   ServiceWorkerNetworkProvider* provider =
       ServiceWorkerNetworkProvider::FromWebServiceWorkerNetworkProvider(
           frame_->DataSource()->GetServiceWorkerNetworkProvider());
-  if (!provider) {
-    DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
-    return nullptr;
-  }
   if (!provider->context()) {
     // The context can be null when the frame is sandboxed.
     return nullptr;
@@ -3433,12 +3427,6 @@ void RenderFrameImpl::DidCreateDataSource(blink::WebLocalFrame* frame,
   // exists).
   if (datasource->GetServiceWorkerNetworkProvider())
     return;
-
-  if (ServiceWorkerUtils::IsServicificationEnabled()) {
-    // Disable interception via ServiceWorkerNetworkProvider if
-    // servicification is enabled.
-    return;
-  }
 
   datasource->SetServiceWorkerNetworkProvider(
       ServiceWorkerNetworkProvider::CreateForNavigation(
