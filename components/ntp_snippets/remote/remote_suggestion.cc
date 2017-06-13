@@ -329,22 +329,6 @@ std::unique_ptr<RemoteSuggestion> RemoteSuggestion::CreateFromProto(
   return snippet;
 }
 
-// static
-std::unique_ptr<RemoteSuggestion> RemoteSuggestion::CreateForTesting(
-    const std::string& id,
-    int remote_category_id,
-    const GURL& url,
-    const std::string& publisher_name,
-    const GURL& amp_url) {
-  auto snippet =
-      MakeUnique(std::vector<std::string>(1, id), remote_category_id);
-  snippet->url_ = url;
-  snippet->publisher_name_ = publisher_name;
-  snippet->amp_url_ = amp_url;
-
-  return snippet;
-}
-
 SnippetProto RemoteSuggestion::ToProto() const {
   SnippetProto result;
   for (const std::string& id : ids_) {

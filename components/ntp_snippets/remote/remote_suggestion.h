@@ -54,14 +54,6 @@ class RemoteSuggestion {
   static std::unique_ptr<RemoteSuggestion> CreateFromProto(
       const SnippetProto& proto);
 
-  // TODO(treib): Make tests use the public interface and remove this.
-  static std::unique_ptr<RemoteSuggestion> CreateForTesting(
-      const std::string& id,
-      int remote_category_id,
-      const GURL& url,
-      const std::string& publisher_name,
-      const GURL& amp_url);
-
   // Creates a protocol buffer corresponding to this suggestion, for persisting.
   SnippetProto ToProto() const;
 
