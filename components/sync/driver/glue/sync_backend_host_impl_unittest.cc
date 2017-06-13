@@ -348,7 +348,6 @@ TEST_F(SyncEngineTest, FirstTimeSync) {
 // downloaded or cleaned.
 TEST_F(SyncEngineTest, Restart) {
   sync_prefs_->SetFirstSetupComplete();
-  ModelTypeSet all_but_nigori = enabled_types_;
   fake_manager_factory_->set_progress_marker_types(enabled_types_);
   fake_manager_factory_->set_initial_sync_ended_types(enabled_types_);
   InitializeBackend(true);

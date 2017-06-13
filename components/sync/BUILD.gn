@@ -602,7 +602,7 @@ static_library("sync") {
     "//components/os_crypt",
     "//components/pref_registry",
     "//components/prefs",
-    "//components/reading_list/core:reading_list_enable_flags",
+    "//components/reading_list/features:reading_list_enable_flags",
     "//components/signin/core/browser",
     "//components/sync/engine_impl/attachments/proto",
     "//components/version_info",

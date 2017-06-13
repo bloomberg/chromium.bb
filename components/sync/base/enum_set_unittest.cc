@@ -33,6 +33,17 @@ TEST_F(EnumSetTest, ClassConstants) {
   EXPECT_EQ(static_cast<size_t>(5), TestEnumSet::kValueCount);
 }
 
+// Use static_assert to check that functions we expect to be compile time
+// evaluatable are really that way.
+TEST_F(EnumSetTest, ConstexprsAreValid) {
+  static_assert(TestEnumSet::All().Has(TEST_1),
+                "expected All() to be integral constant expression");
+  static_assert(TestEnumSet::FromRange(TEST_1, TEST_3).Has(TEST_1),
+                "expected FromRange() to be integral constant expression");
+  static_assert(TestEnumSet(TEST_1).Has(TEST_1),
+                "expected TestEnumSet() to be integral constant expression");
+}
+
 TEST_F(EnumSetTest, DefaultConstructor) {
   const TestEnumSet enums;
   EXPECT_TRUE(enums.Empty());
@@ -98,6 +109,12 @@ TEST_F(EnumSetTest, FromRange) {
             TestEnumSet::FromRange(TEST_1, TEST_3));
   EXPECT_EQ(TestEnumSet::All(), TestEnumSet::FromRange(TEST_0, TEST_4));
   EXPECT_EQ(TestEnumSet(TEST_1), TestEnumSet::FromRange(TEST_1, TEST_1));
+
+  using RestrictedRangeSet = EnumSet<TestEnum, TEST_1, TEST_MAX>;
+  EXPECT_EQ(RestrictedRangeSet(TEST_1, TEST_2, TEST_3),
+            RestrictedRangeSet::FromRange(TEST_1, TEST_3));
+  EXPECT_EQ(RestrictedRangeSet::All(),
+            RestrictedRangeSet::FromRange(TEST_1, TEST_4));
 }
 
 TEST_F(EnumSetTest, Put) {

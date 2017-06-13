@@ -12,6 +12,7 @@
 #include <string>
 
 #include "base/logging.h"
+#include "components/reading_list/features/reading_list_enable_flags.h"
 #include "components/sync/base/enum_set.h"
 
 namespace base {
@@ -193,32 +194,70 @@ ModelType GetModelType(const sync_pb::SyncEntity& sync_entity);
 // prefer using GetModelType where possible.
 ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics);
 
+// Notes:
+// 1) This list must contain exactly the same elements as the set returned by
+//    UserSelectableTypes().
+// 2) This list must be in the same order as the respective values in the
+//    ModelType enum.
+constexpr const char* kUserSelectableDataTypeNames[] = {
+    "bookmarks",   "preferences", "passwords",  "autofill",
+    "themes",      "typedUrls",   "extensions", "apps",
+#if BUILDFLAG(ENABLE_READING_LIST)
+    "readingList",
+#endif
+    "tabs",
+};
+
 // Protocol types are those types that have actual protocol buffer
 // representations. This distinguishes them from Proxy types, which have no
 // protocol representation and are never sent to the server.
-ModelTypeSet ProtocolTypes();
+constexpr ModelTypeSet ProtocolTypes() {
+  return ModelTypeSet(BOOKMARKS, PREFERENCES, PASSWORDS, AUTOFILL_PROFILE,
+                      AUTOFILL, AUTOFILL_WALLET_DATA, AUTOFILL_WALLET_METADATA,
+                      THEMES, TYPED_URLS, EXTENSIONS, SEARCH_ENGINES, SESSIONS,
+                      APPS, APP_SETTINGS, EXTENSION_SETTINGS, APP_NOTIFICATIONS,
+                      HISTORY_DELETE_DIRECTIVES, SYNCED_NOTIFICATIONS,
+                      SYNCED_NOTIFICATION_APP_INFO, DICTIONARY, FAVICON_IMAGES,
+                      FAVICON_TRACKING, DEVICE_INFO, PRIORITY_PREFERENCES,
+                      SUPERVISED_USER_SETTINGS, SUPERVISED_USERS,
+                      SUPERVISED_USER_SHARED_SETTINGS, ARTICLES, APP_LIST,
+                      WIFI_CREDENTIALS, SUPERVISED_USER_WHITELISTS, ARC_PACKAGE,
+                      PRINTERS, READING_LIST, USER_EVENTS, NIGORI, EXPERIMENTS);
+}
 
 // These are the normal user-controlled types. This is to distinguish from
 // ControlTypes which are always enabled.  Note that some of these share a
 // preference flag, so not all of them are individually user-selectable.
-ModelTypeSet UserTypes();
+constexpr ModelTypeSet UserTypes() {
+  return ModelTypeSet::FromRange(FIRST_USER_MODEL_TYPE, LAST_USER_MODEL_TYPE);
+}
 
 // These are the user-selectable data types.
-ModelTypeSet UserSelectableTypes();
-bool IsUserSelectableType(ModelType model_type);
-ModelTypeNameMap GetUserSelectableTypeNameMap();
+constexpr ModelTypeSet UserSelectableTypes() {
+  return ModelTypeSet(BOOKMARKS, PREFERENCES, PASSWORDS, AUTOFILL, THEMES,
+                      TYPED_URLS, EXTENSIONS, APPS,
+#if BUILDFLAG(ENABLE_READING_LIST)
+                      READING_LIST,
+#endif
+                      PROXY_TABS);
+}
 
-// This is the subset of UserTypes() that can be encrypted.
-ModelTypeSet EncryptableUserTypes();
+constexpr bool IsUserSelectableType(ModelType model_type) {
+  return UserSelectableTypes().Has(model_type);
+}
 
 // This is the subset of UserTypes() that have priority over other types.  These
 // types are synced before other user types and are never encrypted.
-ModelTypeSet PriorityUserTypes();
+constexpr ModelTypeSet PriorityUserTypes() {
+  return ModelTypeSet(DEVICE_INFO, PRIORITY_PREFERENCES);
+}
 
 // Proxy types are placeholder types for handling implicitly enabling real
 // types. They do not exist at the server, and are simply used for
 // UI/Configuration logic.
-ModelTypeSet ProxyTypes();
+constexpr ModelTypeSet ProxyTypes() {
+  return ModelTypeSet::FromRange(FIRST_PROXY_TYPE, LAST_PROXY_TYPE);
+}
 
 // Returns a list of all control types.
 //
@@ -230,23 +269,43 @@ ModelTypeSet ProxyTypes();
 // - Their contents are not encrypted automatically.
 // - They support custom update application and conflict resolution logic.
 // - All change processing occurs on the sync thread (GROUP_PASSIVE).
-ModelTypeSet ControlTypes();
+constexpr ModelTypeSet ControlTypes() {
+  return ModelTypeSet::FromRange(FIRST_CONTROL_MODEL_TYPE,
+                                 LAST_CONTROL_MODEL_TYPE);
+}
 
 // Returns true if this is a control type.
 //
 // See comment above for more information on what makes these types special.
-bool IsControlType(ModelType model_type);
+constexpr bool IsControlType(ModelType model_type) {
+  return ControlTypes().Has(model_type);
+}
 
 // Core types are those data types used by sync's core functionality (i.e. not
 // user data types). These types are always enabled, and include ControlTypes().
 //
 // The set of all core types.
-ModelTypeSet CoreTypes();
+constexpr ModelTypeSet CoreTypes() {
+  return ModelTypeSet(
+      NIGORI, EXPERIMENTS, SUPERVISED_USERS, SUPERVISED_USER_SETTINGS,
+      SYNCED_NOTIFICATIONS, SYNCED_NOTIFICATION_APP_INFO,
+      SUPERVISED_USER_SHARED_SETTINGS, SUPERVISED_USER_WHITELISTS);
+}
 // Those core types that have high priority (includes ControlTypes()).
-ModelTypeSet PriorityCoreTypes();
+constexpr ModelTypeSet PriorityCoreTypes() {
+  return ModelTypeSet(NIGORI, EXPERIMENTS, SUPERVISED_USERS,
+                      SUPERVISED_USER_SETTINGS);
+}
 
 // Types that may commit data, but should never be included in a GetUpdates.
-ModelTypeSet CommitOnlyTypes();
+constexpr ModelTypeSet CommitOnlyTypes() {
+  return ModelTypeSet(USER_EVENTS);
+}
+
+ModelTypeNameMap GetUserSelectableTypeNameMap();
+
+// This is the subset of UserTypes() that can be encrypted.
+ModelTypeSet EncryptableUserTypes();
 
 // Determine a model type from the field number of its associated
 // EntitySpecifics field.  Returns UNSPECIFIED if the field number is

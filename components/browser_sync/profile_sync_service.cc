@@ -32,7 +32,7 @@
 #include "components/invalidation/public/invalidation_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/json_pref_store.h"
-#include "components/reading_list/core/reading_list_enable_flags.h"
+#include "components/reading_list/features/reading_list_enable_flags.h"
 #include "components/signin/core/browser/about_signin_internals.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
