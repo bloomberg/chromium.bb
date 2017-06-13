@@ -416,15 +416,21 @@ WebURLRequest CreateURLRequestForNavigation(
   if (is_view_source_mode_enabled)
     request.SetCachePolicy(WebCachePolicy::kReturnCacheDataElseLoad);
 
+  WebString web_referrer;
   if (common_params.referrer.url.is_valid()) {
-    WebString web_referrer = WebSecurityPolicy::GenerateReferrerHeader(
+    web_referrer = WebSecurityPolicy::GenerateReferrerHeader(
         common_params.referrer.policy, common_params.url,
         WebString::FromUTF8(common_params.referrer.url.spec()));
+    request.SetHTTPReferrer(web_referrer, common_params.referrer.policy);
     if (!web_referrer.IsEmpty()) {
-      request.SetHTTPReferrer(web_referrer, common_params.referrer.policy);
       request.AddHTTPOriginIfNeeded(
           WebSecurityOrigin(url::Origin(common_params.referrer.url)));
     }
+  }
+
+  if (!web_referrer.IsEmpty() ||
+      common_params.referrer.policy != blink::kWebReferrerPolicyDefault) {
+    request.SetHTTPReferrer(web_referrer, common_params.referrer.policy);
   }
 
   request.SetIsSameDocumentNavigation(is_same_document_navigation);

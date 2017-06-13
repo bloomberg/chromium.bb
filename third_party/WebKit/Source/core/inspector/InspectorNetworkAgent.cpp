@@ -296,7 +296,7 @@ String GetReferrerPolicy(ReferrerPolicy policy) {
     case kReferrerPolicyDefault:
       if (RuntimeEnabledFeatures::ReducedReferrerGranularityEnabled()) {
         return protocol::Network::Request::ReferrerPolicyEnum::
-            NoReferrerWhenDowngradeOriginWhenCrossOrigin;
+            StrictOriginWhenCrossOrigin;
       } else {
         return protocol::Network::Request::ReferrerPolicyEnum::
             NoReferrerWhenDowngrade;
@@ -311,9 +311,13 @@ String GetReferrerPolicy(ReferrerPolicy policy) {
     case kReferrerPolicyOriginWhenCrossOrigin:
       return protocol::Network::Request::ReferrerPolicyEnum::
           OriginWhenCrossOrigin;
+    case kReferrerPolicySameOrigin:
+      return protocol::Network::Request::ReferrerPolicyEnum::SameOrigin;
+    case kReferrerPolicyStrictOrigin:
+      return protocol::Network::Request::ReferrerPolicyEnum::StrictOrigin;
     case kReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin:
       return protocol::Network::Request::ReferrerPolicyEnum::
-          NoReferrerWhenDowngradeOriginWhenCrossOrigin;
+          StrictOriginWhenCrossOrigin;
   }
 
   return protocol::Network::Request::ReferrerPolicyEnum::

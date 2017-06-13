@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-PASS Test referer header /beacon/resources/ 
-FAIL Test referer header http://www1.web-platform.test:8001/beacon/resources/ assert_equals: Correct referrer header result expected "" but got "http://web-platform.test:8001/beacon/headers/header-referrer-same-origin.html"
-Harness: the test ran to completion.
-

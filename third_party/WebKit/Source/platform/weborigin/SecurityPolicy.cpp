@@ -123,9 +123,23 @@ Referrer SecurityPolicy::GenerateReferrer(ReferrerPolicy referrer_policy,
       }
       break;
     }
+    case kReferrerPolicySameOrigin: {
+      RefPtr<SecurityOrigin> referrer_origin =
+          SecurityOrigin::Create(referrer_url);
+      RefPtr<SecurityOrigin> url_origin = SecurityOrigin::Create(url);
+      if (!url_origin->IsSameSchemeHostPort(referrer_origin.Get())) {
+        return Referrer(Referrer::NoReferrer(), referrer_policy_no_default);
+      }
+      return Referrer(referrer, referrer_policy_no_default);
+    }
+    case kReferrerPolicyStrictOrigin: {
+      String origin = SecurityOrigin::Create(referrer_url)->ToString();
+      return Referrer(ShouldHideReferrer(url, referrer_url)
+                          ? Referrer::NoReferrer()
+                          : origin + "/",
+                      referrer_policy_no_default);
+    }
     case kReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin: {
-      // If the flag is enabled, and we're dealing with a cross-origin request,
-      // strip it.  Otherwise fall through to NoReferrerWhenDowngrade behavior.
       RefPtr<SecurityOrigin> referrer_origin =
           SecurityOrigin::Create(referrer_url);
       RefPtr<SecurityOrigin> url_origin = SecurityOrigin::Create(url);
@@ -284,6 +298,18 @@ bool SecurityPolicy::ReferrerPolicyFromString(
       (support_legacy_keywords &&
        EqualIgnoringASCIICase(policy, "origin-when-crossorigin"))) {
     *result = kReferrerPolicyOriginWhenCrossOrigin;
+    return true;
+  }
+  if (EqualIgnoringASCIICase(policy, "same-origin")) {
+    *result = kReferrerPolicySameOrigin;
+    return true;
+  }
+  if (EqualIgnoringASCIICase(policy, "strict-origin")) {
+    *result = kReferrerPolicyStrictOrigin;
+    return true;
+  }
+  if (EqualIgnoringASCIICase(policy, "strict-origin-when-cross-origin")) {
+    *result = kReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin;
     return true;
   }
   if (EqualIgnoringASCIICase(policy, "no-referrer-when-downgrade") ||

@@ -17,7 +17,10 @@ enum ReferrerPolicy {
   ReferrerPolicyNever,
   ReferrerPolicyOrigin,
   ReferrerPolicyOriginWhenCrossOrigin,
-  ReferrerPolicyLast = ReferrerPolicyOriginWhenCrossOrigin
+  ReferrerPolicySameOrigin,
+  ReferrerPolicyStrictOrigin,
+  ReferrerPolicyStrictOriginWhenCrossOrigin,
+  ReferrerPolicyLast = ReferrerPolicyStrictOriginWhenCrossOrigin
 };
 
 // This struct holds a referrer URL, as well as the referrer policy to be

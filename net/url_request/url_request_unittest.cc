@@ -8853,141 +8853,244 @@ class URLRequestTestReferrerPolicy : public URLRequestTest {
 TEST_F(URLRequestTestReferrerPolicy, HTTPToSameOriginHTTP) {
   InstantiateSameOriginServers(net::EmbeddedTestServer::TYPE_HTTP);
 
+  GURL referrer = origin_server()->GetURL("/path/to/file.html");
   VerifyReferrerAfterRedirect(
       URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
-      origin_server()->GetURL("/path/to/file.html"),
-      origin_server()->GetURL("/path/to/file.html"));
+      referrer, referrer);
 
   VerifyReferrerAfterRedirect(
       URLRequest::REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN,
-      origin_server()->GetURL("/path/to/file.html"),
-      origin_server()->GetURL("/path/to/file.html"));
+      referrer, referrer);
 
   VerifyReferrerAfterRedirect(
-      URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN,
-      origin_server()->GetURL("/path/to/file.html"),
-      origin_server()->GetURL("/path/to/file.html"));
+      URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN, referrer, referrer);
 
-  VerifyReferrerAfterRedirect(URLRequest::NEVER_CLEAR_REFERRER,
-                              origin_server()->GetURL("/path/to/file.html"),
-                              origin_server()->GetURL("/path/to/file.html"));
+  VerifyReferrerAfterRedirect(URLRequest::NEVER_CLEAR_REFERRER, referrer,
+                              referrer);
+
+  // The original referrer set on the request is expected to obey the referrer
+  // policy and already be stripped to the origin; thus this test case just
+  // checks that this policy doesn't cause the referrer to change when following
+  // a redirect.
+  VerifyReferrerAfterRedirect(URLRequest::ORIGIN, referrer.GetOrigin(),
+                              referrer.GetOrigin());
+
+  VerifyReferrerAfterRedirect(
+      URLRequest::CLEAR_REFERRER_ON_TRANSITION_CROSS_ORIGIN, referrer,
+      referrer);
+
+  // The original referrer set on the request is expected to obey the referrer
+  // policy and already be stripped to the origin; thus this test case just
+  // checks that this policy doesn't cause the referrer to change when following
+  // a redirect.
+  VerifyReferrerAfterRedirect(
+      URLRequest::ORIGIN_CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
+      referrer.GetOrigin(), referrer.GetOrigin());
+
+  VerifyReferrerAfterRedirect(URLRequest::NO_REFERRER, GURL(), GURL());
 }
 
 TEST_F(URLRequestTestReferrerPolicy, HTTPToCrossOriginHTTP) {
   InstantiateCrossOriginServers(net::EmbeddedTestServer::TYPE_HTTP,
                                 net::EmbeddedTestServer::TYPE_HTTP);
+  GURL referrer = origin_server()->GetURL("/path/to/file.html");
 
   VerifyReferrerAfterRedirect(
       URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
-      origin_server()->GetURL("/path/to/file.html"),
-      origin_server()->GetURL("/path/to/file.html"));
+      referrer, referrer);
 
   VerifyReferrerAfterRedirect(
       URLRequest::REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN,
-      origin_server()->GetURL("/path/to/file.html"),
-      origin_server()->GetURL("/"));
+      referrer, referrer.GetOrigin());
 
   VerifyReferrerAfterRedirect(
-      URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN,
-      origin_server()->GetURL("/path/to/file.html"),
-      origin_server()->GetURL("/"));
+      URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN, referrer,
+      referrer.GetOrigin());
 
-  VerifyReferrerAfterRedirect(URLRequest::NEVER_CLEAR_REFERRER,
-                              origin_server()->GetURL("/path/to/file.html"),
-                              origin_server()->GetURL("/path/to/file.html"));
+  VerifyReferrerAfterRedirect(URLRequest::NEVER_CLEAR_REFERRER, referrer,
+                              referrer);
+
+  // The original referrer set on the request is expected to obey the referrer
+  // policy and already be stripped to the origin; thus this test case just
+  // checks that this policy doesn't cause the referrer to change when following
+  // a redirect.
+  VerifyReferrerAfterRedirect(URLRequest::ORIGIN, referrer.GetOrigin(),
+                              referrer.GetOrigin());
+
+  VerifyReferrerAfterRedirect(
+      URLRequest::CLEAR_REFERRER_ON_TRANSITION_CROSS_ORIGIN, referrer, GURL());
+
+  // The original referrer set on the request is expected to obey the referrer
+  // policy and already be stripped to the origin; thus this test case just
+  // checks that this policy doesn't cause the referrer to change when following
+  // a redirect.
+  VerifyReferrerAfterRedirect(
+      URLRequest::ORIGIN_CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
+      referrer.GetOrigin(), referrer.GetOrigin());
+
+  VerifyReferrerAfterRedirect(URLRequest::NO_REFERRER, GURL(), GURL());
 }
 
 TEST_F(URLRequestTestReferrerPolicy, HTTPSToSameOriginHTTPS) {
   InstantiateSameOriginServers(net::EmbeddedTestServer::TYPE_HTTPS);
+  GURL referrer = origin_server()->GetURL("/path/to/file.html");
 
   VerifyReferrerAfterRedirect(
       URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
-      origin_server()->GetURL("/path/to/file.html"),
-      origin_server()->GetURL("/path/to/file.html"));
+      referrer, referrer);
 
   VerifyReferrerAfterRedirect(
       URLRequest::REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN,
-      origin_server()->GetURL("/path/to/file.html"),
-      origin_server()->GetURL("/path/to/file.html"));
+      referrer, referrer);
 
   VerifyReferrerAfterRedirect(
-      URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN,
-      origin_server()->GetURL("/path/to/file.html"),
-      origin_server()->GetURL("/path/to/file.html"));
+      URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN, referrer, referrer);
 
-  VerifyReferrerAfterRedirect(URLRequest::NEVER_CLEAR_REFERRER,
-                              origin_server()->GetURL("/path/to/file.html"),
-                              origin_server()->GetURL("/path/to/file.html"));
+  VerifyReferrerAfterRedirect(URLRequest::NEVER_CLEAR_REFERRER, referrer,
+                              referrer);
+
+  // The original referrer set on the request is expected to obey the referrer
+  // policy and already be stripped to the origin; thus this test case just
+  // checks that this policy doesn't cause the referrer to change when following
+  // a redirect.
+  VerifyReferrerAfterRedirect(URLRequest::ORIGIN, referrer.GetOrigin(),
+                              referrer.GetOrigin());
+
+  VerifyReferrerAfterRedirect(
+      URLRequest::CLEAR_REFERRER_ON_TRANSITION_CROSS_ORIGIN, referrer,
+      referrer);
+
+  // The original referrer set on the request is expected to obey the referrer
+  // policy and already be stripped to the origin; thus this test case just
+  // checks that this policy doesn't cause the referrer to change when following
+  // a redirect.
+  VerifyReferrerAfterRedirect(
+      URLRequest::ORIGIN_CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
+      referrer.GetOrigin(), referrer.GetOrigin());
+
+  VerifyReferrerAfterRedirect(URLRequest::NO_REFERRER, GURL(), GURL());
 }
 
 TEST_F(URLRequestTestReferrerPolicy, HTTPSToCrossOriginHTTPS) {
   InstantiateCrossOriginServers(net::EmbeddedTestServer::TYPE_HTTPS,
                                 net::EmbeddedTestServer::TYPE_HTTPS);
+  GURL referrer = origin_server()->GetURL("/path/to/file.html");
 
   VerifyReferrerAfterRedirect(
       URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
-      origin_server()->GetURL("/path/to/file.html"),
-      origin_server()->GetURL("/path/to/file.html"));
+      referrer, referrer);
 
   VerifyReferrerAfterRedirect(
       URLRequest::REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN,
-      origin_server()->GetURL("/path/to/file.html"),
-      origin_server()->GetURL("/"));
+      referrer, origin_server()->GetURL("/"));
 
   VerifyReferrerAfterRedirect(
-      URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN,
-      origin_server()->GetURL("/path/to/file.html"),
+      URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN, referrer,
       origin_server()->GetURL("/"));
 
-  VerifyReferrerAfterRedirect(URLRequest::NEVER_CLEAR_REFERRER,
-                              origin_server()->GetURL("/path/to/file.html"),
-                              origin_server()->GetURL("/path/to/file.html"));
+  VerifyReferrerAfterRedirect(URLRequest::NEVER_CLEAR_REFERRER, referrer,
+                              referrer);
+
+  // The original referrer set on the request is expected to obey the referrer
+  // policy and already be stripped to the origin; thus this test case just
+  // checks that this policy doesn't cause the referrer to change when following
+  // a redirect.
+  VerifyReferrerAfterRedirect(URLRequest::ORIGIN, referrer.GetOrigin(),
+                              referrer.GetOrigin());
+
+  VerifyReferrerAfterRedirect(
+      URLRequest::CLEAR_REFERRER_ON_TRANSITION_CROSS_ORIGIN, referrer, GURL());
+
+  // The original referrer set on the request is expected to obey the referrer
+  // policy and already be stripped to the origin; thus this test case just
+  // checks that this policy doesn't cause the referrer to change when following
+  // a redirect.
+  VerifyReferrerAfterRedirect(
+      URLRequest::ORIGIN_CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
+      referrer.GetOrigin(), referrer.GetOrigin());
+
+  VerifyReferrerAfterRedirect(URLRequest::NO_REFERRER, GURL(), GURL());
 }
 
 TEST_F(URLRequestTestReferrerPolicy, HTTPToHTTPS) {
   InstantiateCrossOriginServers(net::EmbeddedTestServer::TYPE_HTTP,
                                 net::EmbeddedTestServer::TYPE_HTTPS);
+  GURL referrer = origin_server()->GetURL("/path/to/file.html");
 
   VerifyReferrerAfterRedirect(
       URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
-      origin_server()->GetURL("/path/to/file.html"),
-      origin_server()->GetURL("/path/to/file.html"));
+      referrer, referrer);
 
   VerifyReferrerAfterRedirect(
       URLRequest::REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN,
-      origin_server()->GetURL("/path/to/file.html"),
-      origin_server()->GetURL("/"));
+      referrer, origin_server()->GetURL("/"));
 
   VerifyReferrerAfterRedirect(
-      URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN,
-      origin_server()->GetURL("/path/to/file.html"),
+      URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN, referrer,
       origin_server()->GetURL("/"));
 
-  VerifyReferrerAfterRedirect(URLRequest::NEVER_CLEAR_REFERRER,
-                              origin_server()->GetURL("/path/to/file.html"),
-                              origin_server()->GetURL("/path/to/file.html"));
+  VerifyReferrerAfterRedirect(URLRequest::NEVER_CLEAR_REFERRER, referrer,
+                              referrer);
+
+  // The original referrer set on the request is expected to obey the referrer
+  // policy and already be stripped to the origin; thus this test case just
+  // checks that this policy doesn't cause the referrer to change when following
+  // a redirect.
+  VerifyReferrerAfterRedirect(URLRequest::ORIGIN, referrer.GetOrigin(),
+                              referrer.GetOrigin());
+
+  VerifyReferrerAfterRedirect(
+      URLRequest::CLEAR_REFERRER_ON_TRANSITION_CROSS_ORIGIN, referrer, GURL());
+
+  // The original referrer set on the request is expected to obey the referrer
+  // policy and already be stripped to the origin; thus this test case just
+  // checks that this policy doesn't cause the referrer to change when following
+  // a redirect.
+  VerifyReferrerAfterRedirect(
+      URLRequest::ORIGIN_CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
+      referrer.GetOrigin(), referrer.GetOrigin());
+
+  VerifyReferrerAfterRedirect(URLRequest::NO_REFERRER, GURL(), GURL());
 }
 
 TEST_F(URLRequestTestReferrerPolicy, HTTPSToHTTP) {
   InstantiateCrossOriginServers(net::EmbeddedTestServer::TYPE_HTTPS,
                                 net::EmbeddedTestServer::TYPE_HTTP);
+  GURL referrer = origin_server()->GetURL("/path/to/file.html");
 
   VerifyReferrerAfterRedirect(
       URLRequest::CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
-      origin_server()->GetURL("/path/to/file.html"), GURL());
+      referrer, GURL());
 
   VerifyReferrerAfterRedirect(
       URLRequest::REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN,
-      origin_server()->GetURL("/path/to/file.html"), GURL());
+      referrer, GURL());
 
   VerifyReferrerAfterRedirect(
-      URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN,
-      origin_server()->GetURL("/path/to/file.html"),
+      URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN, referrer,
       origin_server()->GetURL("/"));
 
-  VerifyReferrerAfterRedirect(URLRequest::NEVER_CLEAR_REFERRER,
-                              origin_server()->GetURL("/path/to/file.html"),
-                              origin_server()->GetURL("/path/to/file.html"));
+  VerifyReferrerAfterRedirect(URLRequest::NEVER_CLEAR_REFERRER, referrer,
+                              referrer);
+
+  // The original referrer set on the request is expected to obey the referrer
+  // policy and already be stripped to the origin; thus this test case just
+  // checks that this policy doesn't cause the referrer to change when following
+  // a redirect.
+  VerifyReferrerAfterRedirect(URLRequest::ORIGIN, referrer.GetOrigin(),
+                              referrer.GetOrigin());
+
+  VerifyReferrerAfterRedirect(
+      URLRequest::CLEAR_REFERRER_ON_TRANSITION_CROSS_ORIGIN, referrer, GURL());
+
+  // The original referrer set on the request is expected to obey the referrer
+  // policy and already be stripped to the origin, though it should be
+  // subsequently cleared during the downgrading redirect.
+  VerifyReferrerAfterRedirect(
+      URLRequest::ORIGIN_CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE,
+      referrer.GetOrigin(), GURL());
+
+  VerifyReferrerAfterRedirect(URLRequest::NO_REFERRER, GURL(), GURL());
 }
 
 class HTTPSRequestTest : public testing::Test {

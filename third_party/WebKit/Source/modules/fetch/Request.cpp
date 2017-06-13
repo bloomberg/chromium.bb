@@ -609,9 +609,12 @@ String Request::getReferrerPolicy() const {
       return "origin";
     case kReferrerPolicyOriginWhenCrossOrigin:
       return "origin-when-cross-origin";
+    case kReferrerPolicySameOrigin:
+      return "same-origin";
+    case kReferrerPolicyStrictOrigin:
+      return "strict-origin";
     case kReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin:
-      DCHECK(RuntimeEnabledFeatures::ReducedReferrerGranularityEnabled());
-      return "no-referrer-when-downgrade-origin-when-cross-origin";
+      return "strict-origin-when-cross-origin";
   }
   NOTREACHED();
   return String();

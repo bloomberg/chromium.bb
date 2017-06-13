@@ -102,6 +102,11 @@ TEST(SecurityPolicyTest, GenerateReferrer) {
       {kReferrerPolicyOrigin, kInsecureURLA, kInsecureURLA, kInsecureOriginA},
       {kReferrerPolicyOriginWhenCrossOrigin, kInsecureURLA, kInsecureURLA,
        kInsecureURLA},
+      {kReferrerPolicySameOrigin, kInsecureURLA, kInsecureURLA, kInsecureURLA},
+      {kReferrerPolicyStrictOrigin, kInsecureURLA, kInsecureURLA,
+       kInsecureOriginA},
+      {kReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin,
+       kInsecureURLA, kInsecureURLA, kInsecureURLA},
 
       // HTTP -> HTTP: Cross Origin
       {kReferrerPolicyAlways, kInsecureURLA, kInsecureURLB, kInsecureURLA},
@@ -112,6 +117,11 @@ TEST(SecurityPolicyTest, GenerateReferrer) {
       {kReferrerPolicyOrigin, kInsecureURLA, kInsecureURLB, kInsecureOriginA},
       {kReferrerPolicyOriginWhenCrossOrigin, kInsecureURLA, kInsecureURLB,
        kInsecureOriginA},
+      {kReferrerPolicySameOrigin, kInsecureURLA, kInsecureURLB, 0},
+      {kReferrerPolicyStrictOrigin, kInsecureURLA, kInsecureURLB,
+       kInsecureOriginA},
+      {kReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin,
+       kInsecureURLA, kInsecureURLB, kInsecureOriginA},
 
       // HTTPS -> HTTPS: Same Origin
       {kReferrerPolicyAlways, kSecureURLA, kSecureURLA, kSecureURLA},
@@ -122,6 +132,10 @@ TEST(SecurityPolicyTest, GenerateReferrer) {
       {kReferrerPolicyOrigin, kSecureURLA, kSecureURLA, kSecureOriginA},
       {kReferrerPolicyOriginWhenCrossOrigin, kSecureURLA, kSecureURLA,
        kSecureURLA},
+      {kReferrerPolicySameOrigin, kSecureURLA, kSecureURLA, kSecureURLA},
+      {kReferrerPolicyStrictOrigin, kSecureURLA, kSecureURLA, kSecureOriginA},
+      {kReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin, kSecureURLA,
+       kSecureURLA, kSecureURLA},
 
       // HTTPS -> HTTPS: Cross Origin
       {kReferrerPolicyAlways, kSecureURLA, kSecureURLB, kSecureURLA},
@@ -132,6 +146,10 @@ TEST(SecurityPolicyTest, GenerateReferrer) {
       {kReferrerPolicyOrigin, kSecureURLA, kSecureURLB, kSecureOriginA},
       {kReferrerPolicyOriginWhenCrossOrigin, kSecureURLA, kSecureURLB,
        kSecureOriginA},
+      {kReferrerPolicySameOrigin, kSecureURLA, kSecureURLB, 0},
+      {kReferrerPolicyStrictOrigin, kSecureURLA, kSecureURLB, kSecureOriginA},
+      {kReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin, kSecureURLA,
+       kSecureURLB, kSecureOriginA},
 
       // HTTP -> HTTPS
       {kReferrerPolicyAlways, kInsecureURLA, kSecureURLB, kInsecureURLA},
@@ -142,6 +160,11 @@ TEST(SecurityPolicyTest, GenerateReferrer) {
       {kReferrerPolicyOrigin, kInsecureURLA, kSecureURLB, kInsecureOriginA},
       {kReferrerPolicyOriginWhenCrossOrigin, kInsecureURLA, kSecureURLB,
        kInsecureOriginA},
+      {kReferrerPolicySameOrigin, kInsecureURLA, kSecureURLB, 0},
+      {kReferrerPolicyStrictOrigin, kInsecureURLA, kSecureURLB,
+       kInsecureOriginA},
+      {kReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin,
+       kInsecureURLA, kSecureURLB, kInsecureOriginA},
 
       // HTTPS -> HTTP
       {kReferrerPolicyAlways, kSecureURLA, kInsecureURLB, kSecureURLA},
@@ -151,6 +174,10 @@ TEST(SecurityPolicyTest, GenerateReferrer) {
       {kReferrerPolicyOrigin, kSecureURLA, kInsecureURLB, kSecureOriginA},
       {kReferrerPolicyOriginWhenCrossOrigin, kSecureURLA, kSecureURLB,
        kSecureOriginA},
+      {kReferrerPolicySameOrigin, kSecureURLA, kInsecureURLB, 0},
+      {kReferrerPolicyStrictOrigin, kSecureURLA, kInsecureURLB, 0},
+      {kReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin, kSecureURLA,
+       kInsecureURLB, 0},
 
       // blob and filesystem URL handling
       {kReferrerPolicyAlways, kInsecureURLA, kBlobURL, 0},
