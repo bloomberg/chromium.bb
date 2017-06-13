@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2017 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/lockscreen_main"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:title="@string/lockscreen_verification_title">
+
+    <TextView
+        android:id="@+id/lockscreen_description_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/lockscreen_verification_text"/>
+
+    <Button
+        android:id="@+id/lockscreen_next_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start"
+        android:paddingStart="0dp"
+        android:text="@string/next"
+        style="?android:attr/borderlessButtonStyle"/>
+</LinearLayout>

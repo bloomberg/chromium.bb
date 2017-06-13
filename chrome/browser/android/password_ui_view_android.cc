@@ -105,12 +105,14 @@ ScopedJavaLocalRef<jobject> PasswordUIViewAndroid::GetSavedPasswordEntry(
   if (!form) {
     return Java_PasswordUIView_createSavedPasswordEntry(
         env, ConvertUTF8ToJavaString(env, std::string()),
+        ConvertUTF16ToJavaString(env, base::string16()),
         ConvertUTF16ToJavaString(env, base::string16()));
   }
   std::string human_readable_origin = GetDisplayOriginForSettings(*form);
   return Java_PasswordUIView_createSavedPasswordEntry(
       env, ConvertUTF8ToJavaString(env, human_readable_origin),
-      ConvertUTF16ToJavaString(env, form->username_value));
+      ConvertUTF16ToJavaString(env, form->username_value),
+      ConvertUTF16ToJavaString(env, form->password_value));
 }
 
 ScopedJavaLocalRef<jstring> PasswordUIViewAndroid::GetSavedPasswordException(
