@@ -814,9 +814,6 @@ std::string AXNodeData::ToString() const {
       case AX_ATTR_ROLE_DESCRIPTION:
         result += " role_description=" + value;
         break;
-      case AX_ATTR_SHORTCUT:
-        result += " shortcut=" + value;
-        break;
       case AX_ATTR_URL:
         result += " url=" + value;
         break;

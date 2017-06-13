@@ -462,7 +462,7 @@ STDMETHODIMP AXPlatformNodeWin::get_accKeyboardShortcut(
   AXPlatformNodeWin* target;
   COM_OBJECT_VALIDATE_VAR_ID_1_ARG_AND_GET_TARGET(var_id, acc_key, target);
 
-  return target->GetStringAttributeAsBstr(ui::AX_ATTR_SHORTCUT, acc_key);
+  return target->GetStringAttributeAsBstr(ui::AX_ATTR_KEY_SHORTCUTS, acc_key);
 }
 
 STDMETHODIMP AXPlatformNodeWin::get_accName(
