@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_FEATURE_LIST_H_
-#define COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_FEATURE_LIST_H_
+#ifndef COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_PUBLIC_FEATURE_LIST_H_
+#define COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_PUBLIC_FEATURE_LIST_H_
 
 #include <vector>
 
 #include "base/feature_list.h"
+#include "build/build_config.h"
 #include "components/feature_engagement_tracker/public/feature_constants.h"
 #include "components/flags_ui/feature_entry.h"
 
@@ -24,12 +25,13 @@ namespace {
 
 // Defines a const flags_ui::FeatureEntry::FeatureParam for the given
 // base::Feature. The constant name will be on the form
-// kFooFeature --> kFooFeatureVariation. This is intended to be used with
-// VARIATION_ENTRY below to be able to insert it into an array of
-// flags_ui::FeatureEntry::FeatureVariation.
-#define DEFINE_VARIATION_PARAM(base_feature)                                   \
+// kFooFeature --> kFooFeatureVariation. The |feature_name| argument must
+// match the base::Feature::name member of the |base_feature|.
+// This is intended to be used with VARIATION_ENTRY below to be able to insert
+// it into an array of flags_ui::FeatureEntry::FeatureVariation.
+#define DEFINE_VARIATION_PARAM(base_feature, feature_name)                     \
   constexpr flags_ui::FeatureEntry::FeatureParam base_feature##Variation[] = { \
-      {kIPHDemoModeFeatureChoiceParam, base_feature.name}}
+      {kIPHDemoModeFeatureChoiceParam, feature_name}}
 
 // Defines a single flags_ui::FeatureEntry::FeatureVariation entry, fully
 // enclosed. This is intended to be used with the declaration of
@@ -41,10 +43,13 @@ namespace {
   }
 
 // Defines a flags_ui::FeatureEntry::FeatureParam for each feature.
-DEFINE_VARIATION_PARAM(kIPHDataSaverPreviewFeature);
-DEFINE_VARIATION_PARAM(kIPHDataSaverDetailFeature);
-DEFINE_VARIATION_PARAM(kIPHDownloadPageFeature);
-DEFINE_VARIATION_PARAM(kIPHDownloadHomeFeature);
+DEFINE_VARIATION_PARAM(kIPHDummyFeature, "IPH_Dummy");
+#if defined(OS_ANDROID)
+DEFINE_VARIATION_PARAM(kIPHDataSaverPreviewFeature, "IPH_DataSaverPreview");
+DEFINE_VARIATION_PARAM(kIPHDataSaverDetailFeature, "IPH_DataSaverDetail");
+DEFINE_VARIATION_PARAM(kIPHDownloadPageFeature, "IPH_DownloadPage");
+DEFINE_VARIATION_PARAM(kIPHDownloadHomeFeature, "IPH_DownloadHome");
+#endif  // OS_ANDROID
 
 }  // namespace
 
@@ -53,10 +58,14 @@ DEFINE_VARIATION_PARAM(kIPHDownloadHomeFeature);
 // are possible to enable on their own in demo mode.
 constexpr flags_ui::FeatureEntry::FeatureVariation
     kIPHDemoModeChoiceVariations[] = {
+#if defined(OS_ANDROID)
         VARIATION_ENTRY(kIPHDataSaverPreviewFeature),
         VARIATION_ENTRY(kIPHDataSaverDetailFeature),
         VARIATION_ENTRY(kIPHDownloadPageFeature),
         VARIATION_ENTRY(kIPHDownloadHomeFeature),
+#else
+        VARIATION_ENTRY(kIPHDummyFeature),  // Ensures non-empty array.
+#endif  // OS_ANDROID
 };
 
 #undef DEFINE_VARIATION_PARAM
@@ -67,4 +76,4 @@ FeatureVector GetAllFeatures();
 
 }  // namespace feature_engagement_tracker
 
-#endif  // COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_INTERNAL_FEATURE_LIST_H_
+#endif  // COMPONENTS_FEATURE_ENGAGEMENT_TRACKER_PUBLIC_FEATURE_LIST_H_
