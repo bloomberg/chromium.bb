@@ -292,6 +292,14 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
   layer->SetClipTreeIndex(data_for_children->clip_tree_parent);
 }
 
+static Layer* LayerById(Layer* layer, int id) {
+  return layer->layer_tree_host()->LayerById(id);
+}
+
+static LayerImpl* LayerById(LayerImpl* layer, int id) {
+  return layer->layer_tree_impl()->LayerById(id);
+}
+
 template <typename LayerType>
 static inline bool IsAtBoundaryOf3dRenderingContext(LayerType* layer) {
   return Parent(layer)
@@ -547,8 +555,8 @@ bool AddTransformNodeIfNeeded(
         sticky_data->constraints.nearest_layer_shifting_sticky_box;
     if (shifting_sticky_box_layer_id != Layer::INVALID_ID) {
       sticky_data->nearest_node_shifting_sticky_box =
-          data_for_children->property_trees->transform_tree
-              .FindNodeIndexFromOwningLayerId(shifting_sticky_box_layer_id);
+          LayerById(layer, shifting_sticky_box_layer_id)
+              ->transform_tree_index();
       DCHECK(sticky_data->nearest_node_shifting_sticky_box !=
              TransformTree::kInvalidNodeId);
     }
@@ -556,9 +564,8 @@ bool AddTransformNodeIfNeeded(
         sticky_data->constraints.nearest_layer_shifting_containing_block;
     if (shifting_containing_block_layer_id != Layer::INVALID_ID) {
       sticky_data->nearest_node_shifting_containing_block =
-          data_for_children->property_trees->transform_tree
-              .FindNodeIndexFromOwningLayerId(
-                  shifting_containing_block_layer_id);
+          LayerById(layer, shifting_containing_block_layer_id)
+              ->transform_tree_index();
       DCHECK(sticky_data->nearest_node_shifting_containing_block !=
              TransformTree::kInvalidNodeId);
     }

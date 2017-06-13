@@ -102,12 +102,6 @@ class CC_EXPORT PropertyTree {
 
   void AsValueInto(base::trace_event::TracedValue* value) const;
 
-  const T* FindNodeFromOwningLayerId(int id) const {
-#if DCHECK_IS_ON()
-    DCHECK(SupportsNodeLookupFromOwningLayerId());
-#endif
-    return Node(FindNodeIndexFromOwningLayerId(id));
-  }
   T* UpdateNodeFromOwningLayerId(int id) {
 #if DCHECK_IS_ON()
     DCHECK(SupportsNodeLookupFromOwningLayerId());
@@ -119,17 +113,6 @@ class CC_EXPORT PropertyTree {
     }
 
     return Node(index);
-  }
-
-  int FindNodeIndexFromOwningLayerId(int id) const {
-#if DCHECK_IS_ON()
-    DCHECK(SupportsNodeLookupFromOwningLayerId());
-#endif
-    auto iter = owning_layer_id_to_node_index_.find(id);
-    if (iter == owning_layer_id_to_node_index_.end())
-      return kInvalidNodeId;
-    else
-      return iter->second;
   }
 
   void SetOwningLayerIdForNode(const T* node, int id) {
@@ -151,6 +134,23 @@ class CC_EXPORT PropertyTree {
 #endif
 
  private:
+  const T* FindNodeFromOwningLayerId(int id) const {
+#if DCHECK_IS_ON()
+    DCHECK(SupportsNodeLookupFromOwningLayerId());
+#endif
+    return Node(FindNodeIndexFromOwningLayerId(id));
+  }
+  int FindNodeIndexFromOwningLayerId(int id) const {
+#if DCHECK_IS_ON()
+    DCHECK(SupportsNodeLookupFromOwningLayerId());
+#endif
+    auto iter = owning_layer_id_to_node_index_.find(id);
+    if (iter == owning_layer_id_to_node_index_.end())
+      return kInvalidNodeId;
+    else
+      return iter->second;
+  }
+
   std::vector<T> nodes_;
 
   // Maps from layer id to the property tree node index. This container is
