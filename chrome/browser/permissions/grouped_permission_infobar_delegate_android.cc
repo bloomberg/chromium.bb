@@ -42,20 +42,12 @@ ContentSettingsType GroupedPermissionInfoBarDelegate::GetContentSettingType(
   return permission_prompt_->GetContentSettingType(position);
 }
 
-int GroupedPermissionInfoBarDelegate::GetIconIdForPermission(
-    size_t position) const {
-  return permission_prompt_->GetIconIdForPermission(position);
-}
-
-base::string16 GroupedPermissionInfoBarDelegate::GetMessageTextFragment(
-    size_t position) const {
-  return permission_prompt_->GetMessageTextFragment(position);
+int GroupedPermissionInfoBarDelegate::GetIconId() const {
+  return permission_prompt_->GetIconId();
 }
 
 base::string16 GroupedPermissionInfoBarDelegate::GetMessageText() const {
-  return l10n_util::GetStringFUTF16(
-      IDS_PERMISSIONS_BUBBLE_PROMPT,
-      url_formatter::FormatUrlForSecurityDisplay(requesting_origin_));
+  return permission_prompt_->GetMessageText();
 }
 
 bool GroupedPermissionInfoBarDelegate::Accept() {
@@ -105,20 +97,11 @@ GroupedPermissionInfoBarDelegate::GetInfoBarType() const {
 }
 
 int GroupedPermissionInfoBarDelegate::GetButtons() const {
-  // If there is only one permission in the infobar, we show both OK and CANCEL
-  // button to allow/deny it. If there are multiple, we only show OK button
-  // which means making decision for all permissions according to each accept
-  // toggle.
-  return (PermissionCount() > 1) ? BUTTON_OK : (BUTTON_OK | BUTTON_CANCEL);
+  return BUTTON_OK | BUTTON_CANCEL;
 }
 
 base::string16 GroupedPermissionInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
-  if (PermissionCount() > 1) {
-    return l10n_util::GetStringUTF16((button == BUTTON_OK) ? IDS_APP_OK
-                                                           : IDS_APP_CANCEL);
-  }
-
   return l10n_util::GetStringUTF16((button == BUTTON_OK) ? IDS_PERMISSION_ALLOW
                                                          : IDS_PERMISSION_DENY);
 }

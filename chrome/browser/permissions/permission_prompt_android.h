@@ -35,12 +35,13 @@ class PermissionPromptAndroid : public PermissionPrompt {
   void Accept();
   void Deny();
 
+  // We show one permission at a time except for grouped mic+camera, for which
+  // we still have a single icon and message text.
   size_t PermissionCount() const;
   bool ShouldShowPersistenceToggle() const;
   ContentSettingsType GetContentSettingType(size_t position) const;
-  int GetIconIdForPermission(size_t position) const;
-  base::string16 GetMessageText(size_t position) const;
-  base::string16 GetMessageTextFragment(size_t position) const;
+  int GetIconId() const;
+  base::string16 GetMessageText() const;
 
   base::string16 GetLinkText() const;
   GURL GetLinkURL() const;

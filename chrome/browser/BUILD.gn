@@ -4229,7 +4229,6 @@ if (is_android) {
       "../android/java/src/org/chromium/chrome/browser/infobar/DataReductionPromoInfoBarDelegate.java",
       "../android/java/src/org/chromium/chrome/browser/infobar/DuplicateDownloadInfoBar.java",
       "../android/java/src/org/chromium/chrome/browser/infobar/GeneratedPasswordSavedInfoBarDelegate.java",
-      "../android/java/src/org/chromium/chrome/browser/infobar/GroupedPermissionInfoBar.java",
       "../android/java/src/org/chromium/chrome/browser/infobar/InfoBar.java",
       "../android/java/src/org/chromium/chrome/browser/infobar/InfoBarContainer.java",
       "../android/java/src/org/chromium/chrome/browser/infobar/InstantAppsInfoBar.java",
