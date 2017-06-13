@@ -213,7 +213,7 @@ class WebURLRequest {
   BLINK_PLATFORM_EXPORT void SetRequestorOrigin(const WebSecurityOrigin&);
 
   // Controls whether user name, password, and cookies may be sent with the
-  // request. (If false, this overrides allowCookies.)
+  // request.
   BLINK_PLATFORM_EXPORT bool AllowStoredCredentials() const;
   BLINK_PLATFORM_EXPORT void SetAllowStoredCredentials(bool);
 
