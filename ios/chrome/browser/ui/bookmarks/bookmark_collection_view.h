@@ -20,15 +20,9 @@ class GURL;
 @protocol UrlLoader;
 
 namespace bookmarks {
-class BookmarkModel;
 class BookmarkNode;
 }  // namespace bookmarks
 
-namespace ios {
-class ChromeBrowserState;
-}  // namespace ios
-
-// This protocol is provided for subclasses, and is not used in this class.
 @protocol BookmarkCollectionViewDelegate<NSObject>
 
 // This method tells the delegate to add the node and cell
@@ -71,13 +65,15 @@ class ChromeBrowserState;
 // Dismisses the promo.
 - (void)bookmarkCollectionViewDismissPromo:(BookmarkCollectionView*)view;
 
+// Tells the delegate that a folder was selected for navigation.
+- (void)bookmarkCollectionView:(BookmarkCollectionView*)view
+    selectedFolderForNavigation:(const bookmarks::BookmarkNode*)folder;
 @end
 
-// This is an abstract class.
-// It contains a collection view specific to bookmarks.
-// This class is responsible for the UI of the collection view.
-// Subclasses are responsible for handling the model layer.
-//
+// Shows all sub-folders and sub-urls of a folder node in a collection view.
+// Note: This class intentionally does not try to maintain state through a
+// folder transition. Depending on the type of animation that the designers
+// choose, we may require multiple instances of this view.
 // Note about the implementation of the |BookmarkHomePrimaryView| in this class:
 // * |contentPositionInPortraitOrientation|: Regardless of the current
 //       orientation, returns the y of the content offset of the collection view
@@ -96,125 +92,20 @@ class ChromeBrowserState;
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
                                frame:(CGRect)frame;
 
-#pragma mark - Methods that subclasses can override
-
 // Callback whenever the collection view is scrolled.
 - (void)collectionViewScrolled;
 
-#pragma mark - Methods that subclasses must override (non-UI)
+// Refreshes the entire view to reflect |folder|.
+- (void)resetFolder:(const bookmarks::BookmarkNode*)folder;
 
-// BookmarkModelBridgeObserver Callbacks
-// Instances of this class automatically observe the bookmark model.
-// The bookmark model has loaded.
-- (void)bookmarkModelLoaded;
-// The node has changed, but not its children.
-- (void)bookmarkNodeChanged:(const bookmarks::BookmarkNode*)bookmarkNode;
-// The node has not changed, but its children have.
-- (void)bookmarkNodeChildrenChanged:
-    (const bookmarks::BookmarkNode*)bookmarkNode;
-// The node has moved to a new parent folder.
-- (void)bookmarkNode:(const bookmarks::BookmarkNode*)bookmarkNode
-     movedFromParent:(const bookmarks::BookmarkNode*)oldParent
-            toParent:(const bookmarks::BookmarkNode*)newParent;
-// |node| was deleted from |folder|.
-- (void)bookmarkNodeDeleted:(const bookmarks::BookmarkNode*)node
-                 fromFolder:(const bookmarks::BookmarkNode*)folder;
-// All non-permanent nodes have been removed.
-- (void)bookmarkModelRemovedAllNodes;
-
-// Called when a user is attempting to select a cell.
-// Returning NO prevents the cell from being selected.
-- (BOOL)shouldSelectCellAtIndexPath:(NSIndexPath*)indexPath;
-// Called when a cell is tapped outside of editing mode.
-- (void)didTapCellAtIndexPath:(NSIndexPath*)indexPath;
-// Called when a user selected a cell in the editing state.
-- (void)didAddCellForEditingAtIndexPath:(NSIndexPath*)indexPath;
-- (void)didRemoveCellForEditingAtIndexPath:(NSIndexPath*)indexPath;
-// Called when a user taps the menu button on a cell.
-- (void)didTapMenuButtonAtIndexPath:(NSIndexPath*)indexPath
-                             onView:(UIView*)view
-                            forCell:(BookmarkItemCell*)cell;
-
-// Whether a cell should show a button and of which type.
-- (bookmark_cell::ButtonType)buttonTypeForCellAtIndexPath:
-    (NSIndexPath*)indexPath;
-
-// Whether a long press at the cell at |indexPath| should be allowed.
-- (BOOL)allowLongPressForCellAtIndexPath:(NSIndexPath*)indexPath;
-// The |cell| at |indexPath| received a long press.
-- (void)didLongPressCell:(UICollectionViewCell*)cell
-             atIndexPath:(NSIndexPath*)indexPath;
-
-// Whether the cell has been selected in editing mode.
-- (BOOL)cellIsSelectedForEditingAtIndexPath:(NSIndexPath*)indexPath;
-
-// Updates the collection view based on the current state of all models and
-// contextual parameters, such as the interface orientation.
-- (void)updateCollectionView;
-
-// Returns the bookmark node associated with |indexPath|.
-- (const bookmarks::BookmarkNode*)nodeAtIndexPath:(NSIndexPath*)indexPath;
-
-#pragma mark - Methods that subclasses must override (UI)
-
-// The size of the header for |section|. A return value of CGSizeZero prevents
-// a header from showing.
-- (CGSize)headerSizeForSection:(NSInteger)section;
-// Create a cell for display at |indexPath|.
-- (UICollectionViewCell*)cellAtIndexPath:(NSIndexPath*)indexPath;
-// Create a header view for the element at |indexPath|.
-- (UICollectionReusableView*)headerAtIndexPath:(NSIndexPath*)indexPath;
-- (NSInteger)numberOfItemsInSection:(NSInteger)section;
-- (NSInteger)numberOfSections;
-
-#pragma mark - Methods that subclasses can override (UI)
-
-// The inset of the section.
-- (UIEdgeInsets)insetForSectionAtIndex:(NSInteger)section;
-// The size of the cell at |indexPath|.
-- (CGSize)cellSizeForIndexPath:(NSIndexPath*)indexPath;
-// The minimal horizontal space between items to respect between cells in
-// |section|.
-- (CGFloat)minimumInteritemSpacingForSectionAtIndex:(NSInteger)section;
-// The minimal vertical space between items to respect between cells in
-// |section|.
-- (CGFloat)minimumLineSpacingForSectionAtIndex:(NSInteger)section;
-// The text to display when there are no items in the collection. Default is
-// |IDS_IOS_BOOKMARK_NO_BOOKMARKS_LABEL|.
-- (NSString*)textWhenCollectionIsEmpty;
-
-#pragma mark - Convenience methods for subclasses
-
-- (BookmarkItemCell*)cellForBookmark:(const bookmarks::BookmarkNode*)node
-                           indexPath:(NSIndexPath*)indexPath;
-- (BookmarkFolderCell*)cellForFolder:(const bookmarks::BookmarkNode*)node
-                           indexPath:(NSIndexPath*)indexPath;
-
-// |animateMenuVisibility| refers to whether the change in the visibility of the
-// menu button is animated.
-// |animateSelectedState| refers to whether the change in the selected state (in
-// editing mode) of the cell is animated.
-// This method updates the visibility of the menu button.
-// This method updates the selected state of the cell (in editing mode).
-- (void)updateEditingStateOfCellAtIndexPath:(NSIndexPath*)indexPath
-                      animateMenuVisibility:(BOOL)animateMenuVisibility
-                       animateSelectedState:(BOOL)animateSelectedState;
-
-// Cancels all async loads of favicons. Subclasses should call this method when
-// the bookmark model is going through significant changes, then manually call
-// loadFaviconAtIndexPath: for everything that needs to be loaded; or
-// just reload relevant cells.
-- (void)cancelAllFaviconLoads;
-
-// Asynchronously loads favicon for given index path. The loads are cancelled
-// upon cell reuse automatically.
-- (void)loadFaviconAtIndexPath:(NSIndexPath*)indexPath;
-
-#pragma mark - Commonly used properties
+// Called when something outside the view causes the promo state to change.
+- (void)promoStateChangedAnimated:(BOOL)animate;
 
 @property(nonatomic, assign, readonly) bookmarks::BookmarkModel* bookmarkModel;
 @property(nonatomic, weak, readonly) id<UrlLoader> loader;
 @property(nonatomic, assign, readonly) ios::ChromeBrowserState* browserState;
+@property(nonatomic, weak) id<BookmarkCollectionViewDelegate> delegate;
+@property(nonatomic, assign, readonly) const bookmarks::BookmarkNode* folder;
 
 #pragma mark - Editing
 
