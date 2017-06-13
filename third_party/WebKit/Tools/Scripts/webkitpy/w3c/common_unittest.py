@@ -7,7 +7,7 @@ import unittest
 from webkitpy.common.host_mock import MockHost
 from webkitpy.common.system.executive_mock import mock_git_commands
 from webkitpy.w3c.chromium_commit import ChromiumCommit
-from webkitpy.w3c.common import exportable_commits_since
+from webkitpy.w3c.common import _exportable_commits_since
 
 
 class MockLocalWPT(object):
@@ -31,7 +31,7 @@ class CommonTest(unittest.TestCase):
             'footers': 'cr-rev-position',
         })
 
-        commits = exportable_commits_since('beefcafe', host, MockLocalWPT())
+        commits = _exportable_commits_since('beefcafe', host, MockLocalWPT())
         self.assertEqual(len(commits), 1)
         self.assertIsInstance(commits[0], ChromiumCommit)
         self.assertEqual(host.executive.calls, [
@@ -55,7 +55,7 @@ class CommonTest(unittest.TestCase):
             'footers': 'cr-rev-position',
         })
 
-        commits = exportable_commits_since('add087a97844f4b9e307d9a216940582d96db306', host, MockLocalWPT())
+        commits = _exportable_commits_since('add087a97844f4b9e307d9a216940582d96db306', host, MockLocalWPT())
         self.assertEqual(commits, [])
         self.assertEqual(host.executive.calls, [
             ['git', 'rev-parse', '--show-toplevel'],
@@ -77,7 +77,7 @@ class CommonTest(unittest.TestCase):
             'diff-tree': '',
         }, strict=True)
 
-        commits = exportable_commits_since('add087a97844f4b9e307d9a216940582d96db306', host, MockLocalWPT())
+        commits = _exportable_commits_since('add087a97844f4b9e307d9a216940582d96db306', host, MockLocalWPT())
         self.assertEqual(len(commits), 0)
         self.assertEqual(host.executive.calls, [
             ['git', 'rev-parse', '--show-toplevel'],
@@ -98,7 +98,7 @@ class CommonTest(unittest.TestCase):
             'footers': 'cr-rev-position',
         })
 
-        commits = exportable_commits_since('beefcafe', host, MockLocalWPT())
+        commits = _exportable_commits_since('beefcafe', host, MockLocalWPT())
         self.assertEqual(commits, [])
         self.assertEqual(host.executive.calls, [
             ['git', 'rev-parse', '--show-toplevel'],

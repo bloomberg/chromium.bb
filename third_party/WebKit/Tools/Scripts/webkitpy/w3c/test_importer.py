@@ -19,7 +19,7 @@ from webkitpy.common.net.buildbot import current_build_link
 from webkitpy.common.path_finder import PathFinder
 from webkitpy.layout_tests.models.test_expectations import TestExpectations, TestExpectationParser
 from webkitpy.layout_tests.port.base import Port
-from webkitpy.w3c.common import WPT_REPO_URL, WPT_DEST_NAME, exportable_commits_since
+from webkitpy.w3c.common import WPT_REPO_URL, WPT_DEST_NAME, exportable_commits_over_last_n_commits
 from webkitpy.w3c.directory_owners_extractor import DirectoryOwnersExtractor
 from webkitpy.w3c.local_wpt import LocalWPT
 from webkitpy.w3c.test_copier import TestCopier
@@ -156,10 +156,9 @@ class TestImporter(object):
             A list of commits in the Chromium repo that are exportable
             but not yet exported to the web-platform-tests repo.
         """
-        local_wpt = LocalWPT(self.host, path=wpt_path)
         assert self.host.filesystem.exists(wpt_path)
-        _, chromium_commit = local_wpt.most_recent_chromium_commit()
-        return exportable_commits_since(chromium_commit.sha, self.host, local_wpt)
+        local_wpt = LocalWPT(self.host, path=wpt_path)
+        return exportable_commits_over_last_n_commits(self.host, local_wpt)
 
     def clean_up_temp_repo(self, temp_repo_path):
         """Removes the temporary copy of the wpt repo that was downloaded."""

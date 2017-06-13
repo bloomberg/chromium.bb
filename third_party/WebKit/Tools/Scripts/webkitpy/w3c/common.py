@@ -16,6 +16,7 @@ WPT_GH_REPO_NAME = 'web-platform-tests'
 WPT_GH_URL = 'https://github.com/%s/%s/' % (WPT_GH_ORG, WPT_GH_REPO_NAME)
 WPT_GH_SSH_URL_TEMPLATE = 'https://{}@github.com/%s/%s.git' % (WPT_GH_ORG, WPT_GH_REPO_NAME)
 WPT_REVISION_FOOTER = 'WPT-Export-Revision:'
+DEFAULT_COMMIT_HISTORY_WINDOW = 5000
 
 # TODO(qyearsley): This directory should be able to be constructed with
 # PathFinder and WPT_DEST_NAME, plus the string "external".
@@ -28,7 +29,7 @@ WPT_REPO_URL = 'https://chromium.googlesource.com/external/w3c/web-platform-test
 _log = logging.getLogger(__name__)
 
 
-def exportable_commits_since(chromium_commit_hash, host, local_wpt):
+def _exportable_commits_since(chromium_commit_hash, host, local_wpt):
     """Lists exportable commits after a certain point.
 
     Args:
@@ -55,7 +56,7 @@ def exportable_commits_since(chromium_commit_hash, host, local_wpt):
     return [commit for commit in chromium_commits if is_exportable(commit, local_wpt)]
 
 
-def exportable_commits_over_last_n_commits(number, host, local_wpt):
+def exportable_commits_over_last_n_commits(host, local_wpt, number=DEFAULT_COMMIT_HISTORY_WINDOW):
     """Lists exportable commits after a certain point.
 
     Args:
@@ -70,7 +71,7 @@ def exportable_commits_over_last_n_commits(number, host, local_wpt):
         A list of ChromiumCommit objects for commits that are exportable after
         the given commit, in chronological order.
     """
-    return exportable_commits_since('HEAD~{}'.format(number + 1), host, local_wpt)
+    return _exportable_commits_since('HEAD~{}'.format(number + 1), host, local_wpt)
 
 
 def is_exportable(chromium_commit, local_wpt):

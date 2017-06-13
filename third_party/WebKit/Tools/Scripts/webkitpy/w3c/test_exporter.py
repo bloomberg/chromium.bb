@@ -16,7 +16,6 @@ from webkitpy.w3c.wpt_github import WPTGitHub, MergeError
 _log = logging.getLogger(__name__)
 
 PR_HISTORY_WINDOW = 100
-COMMIT_HISTORY_WINDOW = 5000
 
 
 class TestExporter(object):
@@ -39,7 +38,7 @@ class TestExporter(object):
         open_gerrit_cls = self.gerrit.query_exportable_open_cls()
         self.process_gerrit_cls(open_gerrit_cls)
 
-        exportable_commits = self.get_exportable_commits(limit=COMMIT_HISTORY_WINDOW)
+        exportable_commits = self.get_exportable_commits()
         for exportable_commit in exportable_commits:
             pull_request = self.corresponding_pull_request_for_commit(exportable_commit)
 
@@ -78,8 +77,8 @@ class TestExporter(object):
                 _log.info('No in-flight PR found for CL. Creating...')
                 self.create_or_update_pull_request_from_cl(cl)
 
-    def get_exportable_commits(self, limit):
-        return exportable_commits_over_last_n_commits(limit, self.host, self.local_wpt)
+    def get_exportable_commits(self):
+        return exportable_commits_over_last_n_commits(self.host, self.local_wpt)
 
     def merge_pull_request(self, pull_request):
         _log.info('In-flight PR found: %s', pull_request.title)
