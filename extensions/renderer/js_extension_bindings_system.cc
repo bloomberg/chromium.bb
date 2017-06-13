@@ -28,6 +28,8 @@ namespace extensions {
 
 namespace {
 
+static const char kEventDispatchFunction[] = "dispatchEvent";
+
 // Gets |field| from |object| or creates it as an empty object if it doesn't
 // exist.
 v8::Local<v8::Object> GetOrCreateObject(const v8::Local<v8::Object>& object,
@@ -250,8 +252,26 @@ void JsExtensionBindingsSystem::DispatchEventInContext(
     const base::ListValue* event_args,
     const base::DictionaryValue* filtering_info,
     ScriptContext* context) {
-  EventBindings::DispatchEventInContext(event_name, event_args, filtering_info,
-                                        context);
+  v8::HandleScope handle_scope(context->isolate());
+  v8::Context::Scope context_scope(context->v8_context());
+
+  std::vector<v8::Local<v8::Value>> arguments;
+  arguments.push_back(gin::StringToSymbol(context->isolate(), event_name));
+
+  {
+    std::unique_ptr<content::V8ValueConverter> converter(
+        content::V8ValueConverter::create());
+    arguments.push_back(
+        converter->ToV8Value(event_args, context->v8_context()));
+    if (filtering_info && !filtering_info->empty()) {
+      arguments.push_back(
+          converter->ToV8Value(filtering_info, context->v8_context()));
+    }
+  }
+
+  context->module_system()->CallModuleMethodSafe(
+      kEventBindings, kEventDispatchFunction, arguments.size(),
+      arguments.data());
 }
 
 bool JsExtensionBindingsSystem::HasEventListenerInContext(

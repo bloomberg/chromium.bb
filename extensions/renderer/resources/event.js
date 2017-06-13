@@ -241,15 +241,18 @@
 
   // Dispatches a named event with the given argument array. The args array is
   // the list of arguments that will be sent to the event callback.
-  // |listenerIds| contains the ids of matching listeners, or is an empty array
-  // for all listeners.
-  function dispatchEvent(name, args, listenerIds) {
+  function dispatchEvent(name, args, filteringInfo) {
+    var listenerIDs = [];
+
+    if (filteringInfo)
+      listenerIDs = eventNatives.MatchAgainstEventFilter(name, filteringInfo);
+
     var event = attachedNamedEvents[name];
     if (!event)
       return;
 
     var dispatchArgs = function(args) {
-      var result = event.dispatch_(args, listenerIds);
+      var result = event.dispatch_(args, listenerIDs);
       if (result)
         logging.DCHECK(!result.validationErrors, result.validationErrors);
       return result;
