@@ -150,13 +150,9 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
   CheckAllMemoryMetrics(histogram_tester, 1);
 }
 
-#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
-#define MAYBE_FetchDuringTrace DISABLED_FetchDuringTrace
-#else
-#define MAYBE_FetchDuringTrace FetchDuringTrace
-#endif
+// Flaky or failing everywhere, http://crbug.com/732927.
 IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
-                       MAYBE_FetchDuringTrace) {
+                       DISABLED_FetchDuringTrace) {
   GURL url1("about:blank");
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), url1, WindowOpenDisposition::NEW_FOREGROUND_TAB,
@@ -204,12 +200,9 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
   CheckAllMemoryMetrics(histogram_tester, 1);
 }
 
-#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
-#define MAYBE_FetchThreeTimes DISABLED_FetchThreeTimes
-#else
-#define MAYBE_FetchThreeTimes FetchThreeTimes
-#endif
-IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest, MAYBE_FetchThreeTimes) {
+// Flaky or failing everywhere, http://crbug.com/732927.
+IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
+                       DISABLED_FetchThreeTimes) {
   GURL url1("about:blank");
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), url1, WindowOpenDisposition::NEW_FOREGROUND_TAB,
