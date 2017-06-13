@@ -4,11 +4,8 @@
 
 #import "ios/chrome/browser/ui/authentication/authentication_flow.h"
 
-#include "base/ios/weak_nsobject.h"
 #include "base/logging.h"
-#include "base/mac/objc_property_releaser.h"
 #include "base/mac/scoped_block.h"
-#include "base/mac/scoped_nsobject.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
@@ -20,6 +17,10 @@
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #include "ios/public/provider/chrome/browser/signin/signin_error_provider.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 using signin_ui::CompletionCallback;
 
@@ -80,9 +81,9 @@ NSError* IdentityMissingError() {
 @implementation AuthenticationFlow {
   ShouldClearData _shouldClearData;
   PostSignInAction _postSignInAction;
-  base::scoped_nsobject<UIViewController> _presentingViewController;
-  base::mac::ScopedBlock<CompletionCallback> _signInCompletion;
-  base::scoped_nsobject<AuthenticationFlowPerformer> _performer;
+  UIViewController* _presentingViewController;
+  CompletionCallback _signInCompletion;
+  AuthenticationFlowPerformer* _performer;
 
   // State machine tracking.
   AuthenticationState _state;
@@ -93,16 +94,14 @@ NSError* IdentityMissingError() {
   BOOL _shouldShowManagedConfirmation;
   BOOL _shouldStartSync;
   ios::ChromeBrowserState* _browserState;
-  base::scoped_nsobject<ChromeIdentity> _browserStateIdentity;
-  base::scoped_nsobject<ChromeIdentity> _identityToSignIn;
-  base::scoped_nsobject<NSString> _identityToSignInHostedDomain;
+  ChromeIdentity* _browserStateIdentity;
+  ChromeIdentity* _identityToSignIn;
+  NSString* _identityToSignInHostedDomain;
 
   // This AuthenticationFlow keeps a reference to |self| while a sign-in flow is
   // is in progress to ensure it outlives any attempt to destroy it in
   // |_signInCompletion|.
-  base::scoped_nsobject<AuthenticationFlow> _selfRetainer;
-
-  base::mac::ObjCPropertyReleaser _propertyReleaser_AuthenticationFlow;
+  AuthenticationFlow* _selfRetainer;
 }
 
 @synthesize handlingError = _handlingError;
@@ -119,12 +118,11 @@ NSError* IdentityMissingError() {
     DCHECK(browserState);
     DCHECK(presentingViewController);
     _browserState = browserState;
-    _identityToSignIn.reset([identity retain]);
+    _identityToSignIn = identity;
     _shouldClearData = shouldClearData;
     _postSignInAction = postSignInAction;
-    _presentingViewController.reset([presentingViewController retain]);
+    _presentingViewController = presentingViewController;
     _state = BEGIN;
-    _propertyReleaser_AuthenticationFlow.Init(self, [AuthenticationFlow class]);
   }
   return self;
 }
@@ -133,12 +131,11 @@ NSError* IdentityMissingError() {
   DCHECK_EQ(BEGIN, _state);
   DCHECK(!_signInCompletion);
   DCHECK(completion);
-  _signInCompletion.reset(completion, base::scoped_policy::RETAIN);
-  _selfRetainer.reset([self retain]);
+  _signInCompletion = [completion copy];
+  _selfRetainer = self;
   // Kick off the state machine.
   if (!_performer) {
-    _performer.reset(
-        [[AuthenticationFlowPerformer alloc] initWithDelegate:self]);
+    _performer = [[AuthenticationFlowPerformer alloc] initWithDelegate:self];
   }
   [self continueSignin];
 }
@@ -160,7 +157,7 @@ NSError* IdentityMissingError() {
 
 - (void)setPresentingViewController:
     (UIViewController*)presentingViewController {
-  _presentingViewController.reset([presentingViewController retain]);
+  _presentingViewController = presentingViewController;
 }
 
 #pragma mark State machine management
@@ -315,15 +312,16 @@ NSError* IdentityMissingError() {
       }
       [self completeSignInWithSuccess:NO];
       return;
-    case CLEANUP_BEFORE_DONE:
+    case CLEANUP_BEFORE_DONE: {
       // Clean up asynchronously to ensure that |self| does not die while
       // the flow is running.
       DCHECK([NSThread isMainThread]);
       dispatch_async(dispatch_get_main_queue(), ^{
-        _selfRetainer.reset();
+        _selfRetainer = nil;
       });
       [self continueSignin];
       return;
+    }
     case DONE:
       return;
   }
@@ -331,9 +329,9 @@ NSError* IdentityMissingError() {
 }
 
 - (void)checkSigninSteps {
-  _browserStateIdentity.reset(
-      [AuthenticationServiceFactory::GetForBrowserState(_browserState)
-              ->GetAuthenticatedIdentity() retain]);
+  _browserStateIdentity =
+      AuthenticationServiceFactory::GetForBrowserState(_browserState)
+          ->GetAuthenticatedIdentity();
   if (_browserStateIdentity)
     _shouldSignOut = YES;
 
@@ -359,8 +357,8 @@ NSError* IdentityMissingError() {
 - (void)completeSignInWithSuccess:(BOOL)success {
   DCHECK(_signInCompletion)
       << "|completeSignInWithSuccess| should not be called twice.";
-  _signInCompletion.get()(success);
-  _signInCompletion.reset();
+  _signInCompletion(success);
+  _signInCompletion = nil;
   [self continueSignin];
 }
 
@@ -381,11 +379,10 @@ NSError* IdentityMissingError() {
   DCHECK(error);
   _failedOrCancelled = YES;
   self.handlingError = YES;
-  base::WeakNSObject<AuthenticationFlow> weakSelf(self);
+  __weak AuthenticationFlow* weakSelf = self;
   [_performer showAuthenticationError:error
                        withCompletion:^{
-                         base::scoped_nsobject<AuthenticationFlow> strongSelf(
-                             [weakSelf retain]);
+                         AuthenticationFlow* strongSelf = weakSelf;
                          if (!strongSelf)
                            return;
                          [strongSelf setHandlingError:NO];
@@ -418,7 +415,7 @@ NSError* IdentityMissingError() {
 - (void)didFetchManagedStatus:(NSString*)hostedDomain {
   DCHECK_EQ(FETCH_MANAGED_STATUS, _state);
   _shouldShowManagedConfirmation = [hostedDomain length] > 0;
-  _identityToSignInHostedDomain.reset([hostedDomain retain]);
+  _identityToSignInHostedDomain = hostedDomain;
   [self continueSignin];
 }
 
@@ -450,7 +447,7 @@ NSError* IdentityMissingError() {
 #pragma mark - Used for testing
 
 - (void)setPerformerForTesting:(AuthenticationFlowPerformer*)performer {
-  _performer.reset([performer retain]);
+  _performer = performer;
 }
 
 @end

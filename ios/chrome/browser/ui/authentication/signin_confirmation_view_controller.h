@@ -37,7 +37,7 @@
 // Scrolls the confirmation view to the bottom of its content.
 - (void)scrollToBottom;
 
-@property(nonatomic, assign) id<SigninConfirmationViewControllerDelegate>
+@property(nonatomic, weak) id<SigninConfirmationViewControllerDelegate>
     delegate;
 
 @end

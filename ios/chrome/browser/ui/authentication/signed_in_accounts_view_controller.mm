@@ -35,6 +35,10 @@
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 const int kMaxShownAccounts = 3;
@@ -65,11 +69,10 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
     : CollectionViewController<ChromeIdentityServiceObserver> {
   ios::ChromeBrowserState* _browserState;  // Weak.
   std::unique_ptr<ChromeIdentityServiceObserverBridge> _identityServiceObserver;
-  base::scoped_nsobject<ResizedAvatarCache> _avatarCache;
+  ResizedAvatarCache* _avatarCache;
 
   // Enable lookup of item corresponding to a given identity GAIA ID string.
-  base::scoped_nsobject<NSDictionary<NSString*, CollectionViewItem*>>
-      _identityMap;
+  NSDictionary<NSString*, CollectionViewItem*>* _identityMap;
 }
 @end
 
@@ -79,7 +82,7 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
   self = [super initWithStyle:CollectionViewControllerStyleDefault];
   if (self) {
     _browserState = browserState;
-    _avatarCache.reset([[ResizedAvatarCache alloc] init]);
+    _avatarCache = [[ResizedAvatarCache alloc] init];
     _identityServiceObserver.reset(
         new ChromeIdentityServiceObserverBridge(self));
     [self loadModel];
@@ -106,7 +109,7 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
   [super loadModel];
   CollectionViewModel* model = self.collectionViewModel;
   NSMutableDictionary<NSString*, CollectionViewItem*>* mutableIdentityMap =
-      [[[NSMutableDictionary alloc] init] autorelease];
+      [[NSMutableDictionary alloc] init];
 
   [model addSectionWithIdentifier:SectionIdentifierAccounts];
   ProfileOAuth2TokenService* oauth2_service =
@@ -122,14 +125,14 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
     [model addItem:item toSectionWithIdentifier:SectionIdentifierAccounts];
     [mutableIdentityMap setObject:item forKey:identity.gaiaID];
   }
-  _identityMap.reset([mutableIdentityMap retain]);
+  _identityMap = mutableIdentityMap;
 }
 
 #pragma mark Model objects
 
 - (CollectionViewItem*)accountItem:(ChromeIdentity*)identity {
-  CollectionViewAccountItem* item = [[[CollectionViewAccountItem alloc]
-      initWithType:ItemTypeAccount] autorelease];
+  CollectionViewAccountItem* item =
+      [[CollectionViewAccountItem alloc] initWithType:ItemTypeAccount];
   [self updateAccountItem:item withIdentity:identity];
   return item;
 }
@@ -180,14 +183,13 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
     OAuth2TokenServiceObserverBridgeDelegate> {
   ios::ChromeBrowserState* _browserState;  // Weak.
   std::unique_ptr<OAuth2TokenServiceObserverBridge> _tokenServiceObserver;
-  base::scoped_nsobject<MDCDialogTransitionController> _transitionController;
+  MDCDialogTransitionController* _transitionController;
 
-  base::scoped_nsobject<UILabel> _titleLabel;
-  base::scoped_nsobject<SignedInAccountsCollectionViewController>
-      _accountsCollection;
-  base::scoped_nsobject<UILabel> _infoLabel;
-  base::scoped_nsobject<MDCButton> _primaryButton;
-  base::scoped_nsobject<MDCButton> _secondaryButton;
+  UILabel* _titleLabel;
+  SignedInAccountsCollectionViewController* _accountsCollection;
+  UILabel* _infoLabel;
+  MDCButton* _primaryButton;
+  MDCButton* _secondaryButton;
 }
 @end
 
@@ -212,7 +214,7 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
     _browserState = browserState;
     _tokenServiceObserver.reset(new OAuth2TokenServiceObserverBridge(
         OAuth2TokenServiceFactory::GetForBrowserState(_browserState), self));
-    _transitionController.reset([[MDCDialogTransitionController alloc] init]);
+    _transitionController = [[MDCDialogTransitionController alloc] init];
     self.modalPresentationStyle = UIModalPresentationCustom;
     self.transitioningDelegate = _transitionController;
   }
@@ -231,7 +233,6 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
   [_secondaryButton removeTarget:self
                           action:@selector(onSecondaryButtonPressed:)
                 forControlEvents:UIControlEventTouchDown];
-  [super dealloc];
 }
 
 #pragma mark UIViewController
@@ -260,31 +261,31 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
 
   self.view.backgroundColor = [UIColor whiteColor];
 
-  _titleLabel.reset([[UILabel alloc] initWithFrame:CGRectZero]);
-  _titleLabel.get().text =
+  _titleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+  _titleLabel.text =
       l10n_util::GetNSString(IDS_IOS_SIGNED_IN_ACCOUNTS_VIEW_TITLE);
-  _titleLabel.get().textColor = [[MDCPalette greyPalette] tint900];
-  _titleLabel.get().font = [MDCTypography headlineFont];
-  _titleLabel.get().translatesAutoresizingMaskIntoConstraints = NO;
+  _titleLabel.textColor = [[MDCPalette greyPalette] tint900];
+  _titleLabel.font = [MDCTypography headlineFont];
+  _titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
   [self.view addSubview:_titleLabel];
 
-  _accountsCollection.reset([[SignedInAccountsCollectionViewController alloc]
-      initWithBrowserState:_browserState]);
-  _accountsCollection.get().view.translatesAutoresizingMaskIntoConstraints = NO;
+  _accountsCollection = [[SignedInAccountsCollectionViewController alloc]
+      initWithBrowserState:_browserState];
+  _accountsCollection.view.translatesAutoresizingMaskIntoConstraints = NO;
   [self addChildViewController:_accountsCollection];
-  [self.view addSubview:_accountsCollection.get().view];
+  [self.view addSubview:_accountsCollection.view];
   [_accountsCollection didMoveToParentViewController:self];
 
-  _infoLabel.reset([[UILabel alloc] initWithFrame:CGRectZero]);
-  _infoLabel.get().text =
+  _infoLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+  _infoLabel.text =
       l10n_util::GetNSString(IDS_IOS_SIGNED_IN_ACCOUNTS_VIEW_INFO);
-  _infoLabel.get().numberOfLines = 0;
-  _infoLabel.get().textColor = [[MDCPalette greyPalette] tint700];
-  _infoLabel.get().font = [MDCTypography body1Font];
-  _infoLabel.get().translatesAutoresizingMaskIntoConstraints = NO;
+  _infoLabel.numberOfLines = 0;
+  _infoLabel.textColor = [[MDCPalette greyPalette] tint700];
+  _infoLabel.font = [MDCTypography body1Font];
+  _infoLabel.translatesAutoresizingMaskIntoConstraints = NO;
   [self.view addSubview:_infoLabel];
 
-  _primaryButton.reset([[MDCFlatButton alloc] init]);
+  _primaryButton = [[MDCFlatButton alloc] init];
   [_primaryButton addTarget:self
                      action:@selector(onPrimaryButtonPressed:)
            forControlEvents:UIControlEventTouchUpInside];
@@ -293,13 +294,13 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
       forState:UIControlStateNormal];
   [_primaryButton setBackgroundColor:[[MDCPalette cr_bluePalette] tint500]
                             forState:UIControlStateNormal];
-  _primaryButton.get().customTitleColor = [UIColor whiteColor];
-  _primaryButton.get().underlyingColorHint = [UIColor blackColor];
-  _primaryButton.get().inkColor = [UIColor colorWithWhite:1 alpha:0.2f];
-  _primaryButton.get().translatesAutoresizingMaskIntoConstraints = NO;
+  _primaryButton.customTitleColor = [UIColor whiteColor];
+  _primaryButton.underlyingColorHint = [UIColor blackColor];
+  _primaryButton.inkColor = [UIColor colorWithWhite:1 alpha:0.2f];
+  _primaryButton.translatesAutoresizingMaskIntoConstraints = NO;
   [self.view addSubview:_primaryButton];
 
-  _secondaryButton.reset([[MDCFlatButton alloc] init]);
+  _secondaryButton = [[MDCFlatButton alloc] init];
   [_secondaryButton addTarget:self
                        action:@selector(onSecondaryButtonPressed:)
              forControlEvents:UIControlEventTouchUpInside];
@@ -309,16 +310,15 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
       forState:UIControlStateNormal];
   [_secondaryButton setBackgroundColor:[UIColor whiteColor]
                               forState:UIControlStateNormal];
-  _secondaryButton.get().customTitleColor =
-      [[MDCPalette cr_bluePalette] tint500];
-  _secondaryButton.get().underlyingColorHint = [UIColor whiteColor];
-  _secondaryButton.get().inkColor = [UIColor colorWithWhite:0 alpha:0.06f];
-  _secondaryButton.get().translatesAutoresizingMaskIntoConstraints = NO;
+  _secondaryButton.customTitleColor = [[MDCPalette cr_bluePalette] tint500];
+  _secondaryButton.underlyingColorHint = [UIColor whiteColor];
+  _secondaryButton.inkColor = [UIColor colorWithWhite:0 alpha:0.06f];
+  _secondaryButton.translatesAutoresizingMaskIntoConstraints = NO;
   [self.view addSubview:_secondaryButton];
 
   NSDictionary* views = @{
     @"title" : _titleLabel,
-    @"accounts" : _accountsCollection.get().view,
+    @"accounts" : _accountsCollection.view,
     @"info" : _infoLabel,
     @"primaryButton" : _primaryButton,
     @"secondaryButton" : _secondaryButton,
@@ -370,8 +370,8 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
 
 - (void)onSecondaryButtonPressed:(id)sender {
   [self dismiss];
-  base::scoped_nsobject<GenericChromeCommand> showAccountsSettingsCommand(
-      [[GenericChromeCommand alloc] initWithTag:IDC_SHOW_ACCOUNTS_SETTINGS]);
+  GenericChromeCommand* showAccountsSettingsCommand =
+      [[GenericChromeCommand alloc] initWithTag:IDC_SHOW_ACCOUNTS_SETTINGS];
   [self chromeExecuteCommand:showAccountsSettingsCommand];
 }
 
@@ -385,7 +385,7 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
     return;
   }
   [_accountsCollection loadModel];
-  [_accountsCollection.get().collectionView reloadData];
+  [_accountsCollection.collectionView reloadData];
 }
 
 @end

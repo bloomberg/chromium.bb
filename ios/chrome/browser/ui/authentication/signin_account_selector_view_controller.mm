@@ -7,7 +7,6 @@
 #include <memory>
 
 #import "base/mac/foundation_util.h"
-#import "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/signin/chrome_identity_service_observer_bridge.h"
 #import "ios/chrome/browser/ui/authentication/resized_avatar_cache.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
@@ -25,6 +24,10 @@
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #import "ui/base/l10n/l10n_util.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 const CGFloat kHeaderViewMinHeight = 100.;
@@ -48,7 +51,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     ChromeIdentityServiceObserver> {
   std::unique_ptr<ChromeIdentityServiceObserverBridge> _identityServiceObserver;
   // Cache for account avatar images.
-  base::scoped_nsobject<ResizedAvatarCache> _avatarCache;
+  ResizedAvatarCache* _avatarCache;
 }
 @end
 
@@ -61,7 +64,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   if (self) {
     _identityServiceObserver.reset(
         new ChromeIdentityServiceObserverBridge(self));
-    _avatarCache.reset([[ResizedAvatarCache alloc] init]);
+    _avatarCache = [[ResizedAvatarCache alloc] init];
   }
   return self;
 }
@@ -92,29 +95,24 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (UIView*)contentViewWithFrame:(CGRect)frame {
-  base::scoped_nsobject<UIView> contentView(
-      [[UIView alloc] initWithFrame:frame]);
-  contentView.get().autoresizingMask =
+  UIView* contentView = [[UIView alloc] initWithFrame:frame];
+  contentView.autoresizingMask =
       (UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight);
-  contentView.get().clipsToBounds = YES;
+  contentView.clipsToBounds = YES;
 
-  base::scoped_nsobject<UILabel> titleLabel(
-      [[UILabel alloc] initWithFrame:CGRectZero]);
-  titleLabel.get().text =
+  UILabel* titleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+  titleLabel.text =
       l10n_util::GetNSString(IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_TITLE);
-  titleLabel.get().textColor = [[MDCPalette greyPalette] tint900];
-  titleLabel.get().font = [MDCTypography headlineFont];
-  titleLabel.get().translatesAutoresizingMaskIntoConstraints = NO;
+  titleLabel.textColor = [[MDCPalette greyPalette] tint900];
+  titleLabel.font = [MDCTypography headlineFont];
+  titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
 
-  base::scoped_nsobject<UIView> divider(
-      [[UIView alloc] initWithFrame:CGRectZero]);
-  divider.get().backgroundColor = [[MDCPalette greyPalette] tint300];
-  divider.get().translatesAutoresizingMaskIntoConstraints = NO;
+  UIView* divider = [[UIView alloc] initWithFrame:CGRectZero];
+  divider.backgroundColor = [[MDCPalette greyPalette] tint300];
+  divider.translatesAutoresizingMaskIntoConstraints = NO;
 
-  base::scoped_nsobject<UILayoutGuide> layoutGuide1(
-      [[UILayoutGuide alloc] init]);
-  base::scoped_nsobject<UILayoutGuide> layoutGuide2(
-      [[UILayoutGuide alloc] init]);
+  UILayoutGuide* layoutGuide1 = [[UILayoutGuide alloc] init];
+  UILayoutGuide* layoutGuide2 = [[UILayoutGuide alloc] init];
 
   [contentView addSubview:titleLabel];
   [contentView addSubview:divider];
@@ -133,7 +131,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     @"H:|[divider]|",
   ];
   ApplyVisualConstraints(constraints, views);
-  return contentView.autorelease();
+  return contentView = nil;
 }
 
 - (void)viewWillLayoutSubviews {
@@ -171,8 +169,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (CollectionViewItem*)titleItem {
   // TODO(crbug.com/662549) : Rename FooterItem to be used as regular item.
-  CollectionViewFooterItem* item = [[[CollectionViewFooterItem alloc]
-      initWithType:ItemTypeTitle] autorelease];
+  CollectionViewFooterItem* item =
+      [[CollectionViewFooterItem alloc] initWithType:ItemTypeTitle];
   item.text =
       l10n_util::GetNSString(IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_DESCRIPTION);
   return item;
@@ -180,8 +178,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (CollectionViewItem*)accountItemForIdentity:(ChromeIdentity*)identity
                                       checked:(BOOL)isChecked {
-  CollectionViewAccountItem* item = [[[CollectionViewAccountItem alloc]
-      initWithType:ItemTypeAccount] autorelease];
+  CollectionViewAccountItem* item =
+      [[CollectionViewAccountItem alloc] initWithType:ItemTypeAccount];
   [self updateAccountItem:item withIdentity:identity];
   if (isChecked) {
     item.accessoryType = MDCCollectionViewCellAccessoryCheckmark;
@@ -197,8 +195,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (CollectionViewItem*)addAccountItem {
-  CollectionViewAccountItem* item = [[[CollectionViewAccountItem alloc]
-      initWithType:ItemTypeAddAccount] autorelease];
+  CollectionViewAccountItem* item =
+      [[CollectionViewAccountItem alloc] initWithType:ItemTypeAddAccount];
   item.text = l10n_util::GetNSString(
       IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_ADD_ACCOUNT_BUTTON);
   item.image = [UIImage imageNamed:@"settings_accounts_add_account"];
@@ -229,8 +227,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
     // TODO(crbug.com/631486) : Checkmark animation.
     selectedAccountItem.accessoryType = MDCCollectionViewCellAccessoryCheckmark;
 
-    base::scoped_nsobject<NSMutableArray<CollectionViewItem*>> reloadItems(
-        [[NSMutableArray alloc] init]);
+    NSMutableArray<CollectionViewItem*>* reloadItems =
+        [[NSMutableArray alloc] init];
     [reloadItems addObject:selectedAccountItem];
 
     // Uncheck all the other account items.
