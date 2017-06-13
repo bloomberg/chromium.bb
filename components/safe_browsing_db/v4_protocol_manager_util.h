@@ -169,6 +169,9 @@ ListIdentifier GetUrlSocEngId();
 ListIdentifier GetUrlSubresourceFilterId();
 ListIdentifier GetUrlUwsId();
 
+// Returns the basename of the store file, without the ".store" extension.
+std::string GetUmaSuffixForStore(const base::FilePath& file_path);
+
 // Represents the state of each store.
 using StoreStateMap = std::unordered_map<ListIdentifier, std::string>;
 

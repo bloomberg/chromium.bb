@@ -198,6 +198,9 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   // Called when the database has been updated and schedules the next update.
   void DatabaseUpdated();
 
+  // Delete any *.store files from disk that are no longer used.
+  void DeleteUnusedStoreFiles();
+
   // Identifies the prefixes and the store they matched in, for a given |check|.
   // Returns true if one or more hash prefix matches are found; false otherwise.
   bool GetPrefixMatches(
