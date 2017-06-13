@@ -455,12 +455,4 @@ ContentBrowserClient::GetTaskSchedulerInitParams() {
   return nullptr;
 }
 
-bool ContentBrowserClient::ShouldRedirectDOMStorageTaskRunner() {
-  return false;
-}
-
-bool ContentBrowserClient::RedirectNonUINonIOBrowserThreadsToTaskScheduler() {
-  return false;
-}
-
 }  // namespace content

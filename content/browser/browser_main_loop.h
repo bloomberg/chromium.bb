@@ -291,15 +291,21 @@ class CONTENT_EXPORT BrowserMainLoop {
 #endif
 
   // Members initialized in |CreateThreads()| ----------------------------------
-  // Note: some |*_thread_| members below may never be initialized when
-  // redirection to TaskScheduler is enabled. (ref.
-  // ContentBrowserClient::RedirectNonUINonIOBrowserThreadsToTaskScheduler()).
-  std::unique_ptr<BrowserProcessSubThread> db_thread_;
-  std::unique_ptr<BrowserProcessSubThread> file_user_blocking_thread_;
-  std::unique_ptr<BrowserProcessSubThread> file_thread_;
-  std::unique_ptr<BrowserProcessSubThread> process_launcher_thread_;
-  std::unique_ptr<BrowserProcessSubThread> cache_thread_;
+  // Only the IO thread is a real thread by default, other BrowserThreads are
+  // redirected to TaskScheduler under the hood.
   std::unique_ptr<BrowserProcessSubThread> io_thread_;
+#if defined(OS_ANDROID)
+  // On Android, the PROCESS_LAUNCHER thread is handled by Java,
+  // |process_launcher_thread_| is merely a proxy to the real message loop.
+  std::unique_ptr<BrowserProcessSubThread> process_launcher_thread_;
+#elif defined(OS_WIN)
+  // TaskScheduler doesn't support async I/O on Windows as CACHE thread is
+  // the only user and this use case is going away in
+  // https://codereview.chromium.org/2216583003/.
+  // TODO(gavinp): Remove this (and thus enable redirection of the CACHE thread
+  // on Windows) once that CL lands.
+  std::unique_ptr<BrowserProcessSubThread> cache_thread_;
+#endif
 
   // Members initialized in |BrowserThreadsStarted()| --------------------------
   std::unique_ptr<ServiceManagerContext> service_manager_context_;
