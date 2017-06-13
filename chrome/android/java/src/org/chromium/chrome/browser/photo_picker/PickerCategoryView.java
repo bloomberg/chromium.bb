@@ -28,6 +28,7 @@ import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.ui.PhotoPickerListener;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -358,6 +359,7 @@ public class PickerCategoryView extends RelativeLayout
      */
     private void notifyPhotosSelected() {
         List<PickerBitmap> selectedFiles = mSelectionDelegate.getSelectedItems();
+        Collections.sort(selectedFiles);
         String[] photos = new String[selectedFiles.size()];
         int i = 0;
         for (PickerBitmap bitmap : selectedFiles) {
