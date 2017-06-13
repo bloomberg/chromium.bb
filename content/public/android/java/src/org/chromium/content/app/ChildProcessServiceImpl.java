@@ -61,7 +61,8 @@ public class ChildProcessServiceImpl {
     private final Object mBinderLock = new Object();
     private final Object mLibraryInitializedLock = new Object();
 
-    @GuardedBy("mBinderLock")
+    // True if we should enforce that bindToCaller() is called before setupConnection().
+    // Only set once in bind(), does not require synchronization.
     private boolean mBindToCallerCheck;
 
     // PID of the client of this service, set in bindToCaller(), if mBindToCallerCheck is true.
@@ -77,18 +78,27 @@ public class ChildProcessServiceImpl {
     private long mCpuFeatures;
     // File descriptors that should be registered natively.
     private FileDescriptorInfo[] mFdInfos;
+
     // Linker-specific parameters for this child process service.
+    // Only set once in bind(), does not require synchronization.
     private ChromiumLinkerParams mLinkerParams;
+
     // Child library process type.
+    // Only set once in bind(), does not require synchronization.
     private int mLibraryProcessType;
 
     @GuardedBy("mLibraryInitializedLock")
     private boolean mLibraryInitialized;
 
+    // Called once the service is bound and all service related member variables have been set.
+    // Only set once in bind(), does not require synchronization.
+    private boolean mServiceBound;
+
     /**
      * If >= 0 enables "validation of caller of {@link mBinder}'s methods". A RemoteException
      * is thrown when an application with a uid other than {@link mAuthorizedCallerUid} calls
      * {@link mBinder}'s methods.
+     * Only set once in {@link bind}, does not require synchronization.
      */
     private int mAuthorizedCallerUid;
 
@@ -116,8 +126,9 @@ public class ChildProcessServiceImpl {
         // NOTE: Implement any IChildProcessService methods here.
         @Override
         public boolean bindToCaller() {
+            assert mBindToCallerCheck;
+            assert mServiceBound;
             synchronized (mBinderLock) {
-                assert mBindToCallerCheck;
                 int callingPid = Binder.getCallingPid();
                 if (mBoundCallingPid == 0) {
                     mBoundCallingPid = callingPid;
@@ -133,6 +144,7 @@ public class ChildProcessServiceImpl {
         @Override
         public void setupConnection(Bundle args, ICallbackInt pidCallback, IBinder gpuCallback)
                 throws RemoteException {
+            assert mServiceBound;
             synchronized (mBinderLock) {
                 if (mBindToCallerCheck && mBoundCallingPid == 0) {
                     Log.e(TAG, "Service has not been bound with bindToCaller()");
@@ -149,12 +161,14 @@ public class ChildProcessServiceImpl {
 
         @Override
         public void crashIntentionallyForTesting() {
+            assert mServiceBound;
             Process.killProcess(Process.myPid());
         }
 
         @Override
         public boolean onTransact(int arg0, Parcel arg1, Parcel arg2, int arg3)
                 throws RemoteException {
+            assert mServiceBound;
             if (mAuthorizedCallerUid >= 0) {
                 int callingUid = Binder.getCallingUid();
                 if (callingUid != mAuthorizedCallerUid) {
@@ -198,6 +212,7 @@ public class ChildProcessServiceImpl {
                             mMainThread.wait();
                         }
                     }
+                    assert mServiceBound;
                     CommandLine.init(mCommandLineParams);
 
                     if (ContentSwitches.SWITCH_RENDERER_PROCESS.equals(
@@ -260,6 +275,7 @@ public class ChildProcessServiceImpl {
                         mLibraryInitializedLock.notifyAll();
                     }
                     synchronized (mMainThread) {
+                        mMainThread.notifyAll();
                         while (mFdInfos == null) {
                             mMainThread.wait();
                         }
@@ -321,31 +337,27 @@ public class ChildProcessServiceImpl {
     }
 
     /*
-     * Returns communication channel to service.
+     * Returns the communication channel to the service. Note that even if multiple clients were to
+     * connect, we should only get one call to this method. So there is no need to synchronize
+     * member variables that are only set in this method and accessed from binder methods, as binder
+     * methods can't be called until this method returns.
      * @param intent The intent that was used to bind to the service.
      * @param authorizedCallerUid If >= 0, enables "validation of service caller". A RemoteException
-     *        is thrown when an application with a uid other than
-     *        {@link authorizedCallerUid} calls the service's methods.
+     * is thrown when an application with a uid other than {@link authorizedCallerUid} calls the
+     * service's methods.
+     * @return the binder used by the client to setup the connection.
      */
     public IBinder bind(Intent intent, int authorizedCallerUid) {
+        assert !mServiceBound;
         mAuthorizedCallerUid = authorizedCallerUid;
-        initializeParams(intent);
+        // mLinkerParams is never used if Linker.isUsed() returns false. See create().
+        mLinkerParams = (ChromiumLinkerParams) intent.getParcelableExtra(
+                ChildProcessConstants.EXTRA_LINKER_PARAMS);
+        mLibraryProcessType = ChildProcessCreationParams.getLibraryProcessType(intent);
+        mBindToCallerCheck =
+                intent.getBooleanExtra(ChildProcessConstants.EXTRA_BIND_TO_CALLER, false);
+        mServiceBound = true;
         return mBinder;
-    }
-
-    private void initializeParams(Intent intent) {
-        synchronized (mMainThread) {
-            // mLinkerParams is never used if Linker.isUsed() returns false.
-            // See onCreate().
-            mLinkerParams = (ChromiumLinkerParams) intent.getParcelableExtra(
-                    ChildProcessConstants.EXTRA_LINKER_PARAMS);
-            mLibraryProcessType = ChildProcessCreationParams.getLibraryProcessType(intent);
-            mMainThread.notifyAll();
-        }
-        synchronized (mBinderLock) {
-            mBindToCallerCheck =
-                    intent.getBooleanExtra(ChildProcessConstants.EXTRA_BIND_TO_CALLER, false);
-        }
     }
 
     private void getServiceInfo(Bundle bundle) {
