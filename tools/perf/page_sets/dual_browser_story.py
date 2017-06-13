@@ -241,7 +241,8 @@ class DualBrowserStorySet(story_module.StorySet):
   def __init__(self):
     super(DualBrowserStorySet, self).__init__(
         archive_data_file='data/dual_browser_story.json',
-        cloud_storage_bucket=story_module.PARTNER_BUCKET)
+        cloud_storage_bucket=story_module.PARTNER_BUCKET,
+        verify_names=True)
 
     for query, url in zip(SEARCH_QUERIES, URL_LIST):
       # Stories that run on the android-webview browser.

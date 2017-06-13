@@ -16,7 +16,8 @@ class DesktopMemoryPage(page_module.Page):
   def __init__(self, url, page_set):
     super(DesktopMemoryPage, self).__init__(
         url=url, page_set=page_set,
-        shared_page_state_class=shared_page_state.SharedDesktopPageState)
+        shared_page_state_class=shared_page_state.SharedDesktopPageState,
+        name=url)
 
   def _DumpMemory(self, action_runner, phase):
     with action_runner.CreateInteraction(phase):
@@ -49,7 +50,7 @@ class DesktopMemoryPageSet(story.StorySet):
   """ Desktop sites with interesting memory characteristics """
 
   def __init__(self):
-    super(DesktopMemoryPageSet, self).__init__()
+    super(DesktopMemoryPageSet, self).__init__(verify_names=True)
 
     urls_list = [
       'http://www.google.com',

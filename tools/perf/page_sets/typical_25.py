@@ -16,7 +16,7 @@ class Typical25Page(page_module.Page):
     super(Typical25Page, self).__init__(
         url=url, page_set=page_set,
         shared_page_state_class=shared_page_state_class,
-        cache_temperature=cache_temperature)
+        cache_temperature=cache_temperature, name=url)
     self._run_no_page_interactions = run_no_page_interactions
 
   def RunPageInteractions(self, action_runner):
@@ -37,7 +37,8 @@ class Typical25PageSet(story.StorySet):
                cache_temperatures=None):
     super(Typical25PageSet, self).__init__(
       archive_data_file='data/typical_25.json',
-      cloud_storage_bucket=story.PARTNER_BUCKET)
+      cloud_storage_bucket=story.PARTNER_BUCKET,
+      verify_names=True)
     if cache_temperatures is None:
       cache_temperatures = [cache_temperature_module.ANY]
 
