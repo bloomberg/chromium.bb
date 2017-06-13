@@ -286,7 +286,7 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
 
   const scoped_refptr<
       base::ObserverListThreadSafe<ServiceWorkerContextCoreObserver>>
-      observer_list_;
+      core_observer_list_;
   const std::unique_ptr<ServiceWorkerProcessManager> process_manager_;
   // Cleared in ShutdownOnIO():
   std::unique_ptr<ServiceWorkerContextCore> context_core_;
