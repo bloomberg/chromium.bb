@@ -208,8 +208,6 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
 
   bool Print(LocalFrame*);
 
-  virtual void AnnotatedRegionsChanged() = 0;
-
   virtual ColorChooser* OpenColorChooser(LocalFrame*,
                                          ColorChooserClient*,
                                          const Color&) = 0;

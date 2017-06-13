@@ -227,10 +227,7 @@ class WebViewClient : protected WebWidgetClient {
   // Informs the browser that the page scale has changed.
   virtual void PageScaleFactorChanged() {}
 
-  // Draggable regions ----------------------------------------------------
-
-  // Informs the browser that the draggable regions have been updated.
-  virtual void DraggableRegionsChanged() {}
+  // Gestures -------------------------------------------------------------
 
   virtual bool CanHandleGestureEvent() { return false; }
 

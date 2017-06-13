@@ -22,7 +22,6 @@ class ExtensionHelper : public content::RenderViewObserver {
  private:
   // RenderViewObserver implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
-  void DraggableRegionsChanged(blink::WebFrame* frame) override;
   void OnDestruct() override;
 
   void OnAppWindowClosed();

@@ -103,6 +103,7 @@ class ExtensionFrameHelper
   void WillReleaseScriptContext(v8::Local<v8::Context>, int world_id) override;
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnDestruct() override;
+  void DraggableRegionsChanged() override;
 
   // IPC handlers.
   void OnExtensionValidateMessagePort(const PortId& id);

@@ -649,6 +649,9 @@ class BLINK_EXPORT WebFrameClient {
   // notify that the <body> will be attached soon.
   virtual void WillInsertBody(WebLocalFrame*) {}
 
+  // Informs the browser that the draggable regions have been updated.
+  virtual void DraggableRegionsChanged() {}
+
   // Find-in-page notifications ------------------------------------------
 
   // Notifies how many matches have been found in this frame so far, for a
@@ -804,6 +807,7 @@ class BLINK_EXPORT WebFrameClient {
   }
 
   // Loading --------------------------------------------------------------
+
   virtual std::unique_ptr<blink::WebURLLoader> CreateURLLoader() {
     NOTREACHED();
     return nullptr;

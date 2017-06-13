@@ -97,9 +97,11 @@ WindowController* AppWindowContentsImpl::GetWindowController() const {
   return nullptr;
 }
 
-bool AppWindowContentsImpl::OnMessageReceived(const IPC::Message& message) {
+bool AppWindowContentsImpl::OnMessageReceived(
+    const IPC::Message& message,
+    content::RenderFrameHost* sender) {
   bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(AppWindowContentsImpl, message)
+  IPC_BEGIN_MESSAGE_MAP_WITH_PARAM(AppWindowContentsImpl, message, sender)
     IPC_MESSAGE_HANDLER(ExtensionHostMsg_UpdateDraggableRegions,
                         UpdateDraggableRegions)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -114,8 +116,10 @@ void AppWindowContentsImpl::ReadyToCommitNavigation(
 }
 
 void AppWindowContentsImpl::UpdateDraggableRegions(
+    content::RenderFrameHost* sender,
     const std::vector<DraggableRegion>& regions) {
-  host_->UpdateDraggableRegions(regions);
+  if (!sender->GetParent())  // Only process events from the main frame.
+    host_->UpdateDraggableRegions(regions);
 }
 
 void AppWindowContentsImpl::SuspendRenderFrameHost(

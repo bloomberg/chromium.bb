@@ -2312,11 +2312,6 @@ double RenderViewImpl::zoomFactorToZoomLevel(double factor) const {
   return ZoomFactorToZoomLevel(factor);
 }
 
-void RenderViewImpl::DraggableRegionsChanged() {
-  for (auto& observer : observers_)
-    observer.DraggableRegionsChanged(webview()->MainFrame());
-}
-
 void RenderViewImpl::PageImportanceSignalsChanged() {
   if (!webview() || !main_render_frame_)
     return;

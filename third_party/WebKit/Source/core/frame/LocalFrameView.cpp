@@ -2826,8 +2826,9 @@ void LocalFrameView::UpdateDocumentAnnotatedRegions() const {
   if (new_regions == document->AnnotatedRegions())
     return;
   document->SetAnnotatedRegions(new_regions);
-  if (Page* page = frame_->GetPage())
-    page->GetChromeClient().AnnotatedRegionsChanged();
+
+  DCHECK(frame_->Client());
+  frame_->Client()->AnnotatedRegionsChanged();
 }
 
 void LocalFrameView::DidAttachDocument() {

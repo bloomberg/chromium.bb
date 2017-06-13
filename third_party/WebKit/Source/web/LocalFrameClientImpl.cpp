@@ -1059,4 +1059,8 @@ LocalFrameClientImpl::GetInterfaceProvider() {
   return web_frame_->Client()->GetInterfaceProvider();
 }
 
+void LocalFrameClientImpl::AnnotatedRegionsChanged() {
+  web_frame_->Client()->DraggableRegionsChanged();
+}
+
 }  // namespace blink

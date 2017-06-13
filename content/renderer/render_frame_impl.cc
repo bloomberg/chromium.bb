@@ -6701,6 +6701,11 @@ std::unique_ptr<blink::WebURLLoader> RenderFrameImpl::CreateURLLoader() {
   return blink::Platform::Current()->CreateURLLoader();
 }
 
+void RenderFrameImpl::DraggableRegionsChanged() {
+  for (auto& observer : observers_)
+    observer.DraggableRegionsChanged();
+}
+
 blink::WebPageVisibilityState RenderFrameImpl::GetVisibilityState() const {
   return VisibilityState();
 }

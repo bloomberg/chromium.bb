@@ -46,20 +46,6 @@ void ExtensionHelper::OnDestruct() {
   delete this;
 }
 
-void ExtensionHelper::DraggableRegionsChanged(blink::WebFrame* frame) {
-  blink::WebVector<blink::WebDraggableRegion> webregions =
-      frame->GetDocument().DraggableRegions();
-  std::vector<DraggableRegion> regions;
-  for (size_t i = 0; i < webregions.size(); ++i) {
-    DraggableRegion region;
-    render_view()->ConvertViewportToWindowViaWidget(&webregions[i].bounds);
-    region.bounds = webregions[i].bounds;
-    region.draggable = webregions[i].draggable;
-    regions.push_back(region);
-  }
-  Send(new ExtensionHostMsg_UpdateDraggableRegions(routing_id(), regions));
-}
-
 void ExtensionHelper::OnSetFrameName(const std::string& name) {
   blink::WebView* web_view = render_view()->GetWebView();
   if (web_view)
