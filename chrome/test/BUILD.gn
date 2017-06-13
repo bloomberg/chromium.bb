@@ -2440,14 +2440,6 @@ test("browser_tests") {
         "//chrome:chrome_framework",
       ]
 
-      # TODO(rsesek): Remove once https://crbug.com/611414 is fixed.
-      data += [
-        "$root_out_dir/Chromium.app/",
-        "$root_out_dir/Chromium Framework.framework/",
-        "$root_out_dir/power_saver_test_plugin.plugin/",
-        "$root_out_dir/ppapi_tests.plugin/",
-      ]
-
       # The browser window can be views or Cocoa on Mac. Test accordingly.
       if (!mac_views_browser) {
         sources += [
@@ -3480,7 +3472,6 @@ test("unit_tests") {
 
   if (is_mac) {
     data_deps += [ "//chrome:chrome_framework" ]
-    data += [ "$root_out_dir/Chromium Framework.framework/" ]
   }
 
   if (enable_offline_pages) {
