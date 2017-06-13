@@ -206,9 +206,6 @@ void DecodeInfoCallback(png_struct* png_ptr, png_info* info_ptr) {
   // Pick our row format converter necessary for this data.
   if (!input_has_alpha) {
     switch (state->output_format) {
-      case PNGCodec::FORMAT_RGB:
-        state->output_channels = 3;
-        break;
       case PNGCodec::FORMAT_RGBA:
         state->output_channels = 4;
         png_set_add_alpha(png_ptr, 0xFF, PNG_FILLER_AFTER);
@@ -225,10 +222,6 @@ void DecodeInfoCallback(png_struct* png_ptr, png_info* info_ptr) {
     }
   } else {
     switch (state->output_format) {
-      case PNGCodec::FORMAT_RGB:
-        state->output_channels = 3;
-        png_set_strip_alpha(png_ptr);
-        break;
       case PNGCodec::FORMAT_RGBA:
         state->output_channels = 4;
         break;
@@ -634,12 +627,6 @@ bool EncodeWithCompressionLevel(const unsigned char* input,
   int input_color_components, output_color_components;
   int png_output_color_type;
   switch (format) {
-    case PNGCodec::FORMAT_RGB:
-      input_color_components = 3;
-      output_color_components = 3;
-      png_output_color_type = PNG_COLOR_TYPE_RGB;
-      break;
-
     case PNGCodec::FORMAT_RGBA:
       input_color_components = 4;
       if (discard_transparency) {
