@@ -97,8 +97,8 @@ void InfoBarContainerAndroid::PlatformSpecificReplaceInfoBar(
 
 void InfoBarContainerAndroid::PlatformSpecificRemoveInfoBar(
     infobars::InfoBar* infobar) {
-  InfoBarAndroid* android_infobar = static_cast<InfoBarAndroid*>(infobar);
-  android_infobar->CloseJavaInfoBar();
+  // The infobar will be closed by InfoBar::PlatformSpecificHide, this call
+  // is a noop on Android.
 }
 
 
