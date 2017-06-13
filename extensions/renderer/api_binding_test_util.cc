@@ -110,9 +110,7 @@ v8::Local<v8::Function> FunctionFromString(v8::Local<v8::Context> context,
 
 std::unique_ptr<base::Value> V8ToBaseValue(v8::Local<v8::Value> value,
                                            v8::Local<v8::Context> context) {
-  std::unique_ptr<content::V8ValueConverter> converter(
-      content::V8ValueConverter::create());
-  return converter->FromV8Value(value, context);
+  return content::V8ValueConverter::Create()->FromV8Value(value, context);
 }
 
 v8::Local<v8::Value> RunFunction(v8::Local<v8::Function> function,

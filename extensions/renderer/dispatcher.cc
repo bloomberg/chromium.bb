@@ -149,8 +149,8 @@ void CallModuleMethod(const std::string& module_name,
   v8::HandleScope handle_scope(context->isolate());
   v8::Context::Scope context_scope(context->v8_context());
 
-  std::unique_ptr<content::V8ValueConverter> converter(
-      content::V8ValueConverter::create());
+  std::unique_ptr<content::V8ValueConverter> converter =
+      content::V8ValueConverter::Create();
 
   std::vector<v8::Local<v8::Value>> arguments;
   for (const auto& arg : *args) {

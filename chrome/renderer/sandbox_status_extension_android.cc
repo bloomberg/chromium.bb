@@ -148,10 +148,8 @@ void SandboxStatusExtension::RunCallback(
   v8::Local<v8::Function> callback_local =
       v8::Local<v8::Function>::New(isolate, *callback);
 
-  std::unique_ptr<content::V8ValueConverter> converter(
-      content::V8ValueConverter::create());
-
-  v8::Local<v8::Value> argv[] = {converter->ToV8Value(status.get(), context)};
+  v8::Local<v8::Value> argv[] = {
+      content::V8ValueConverter::Create()->ToV8Value(status.get(), context)};
   render_frame()->GetWebFrame()->CallFunctionEvenIfScriptDisabled(
       callback_local, v8::Object::New(isolate), 1, argv);
 }

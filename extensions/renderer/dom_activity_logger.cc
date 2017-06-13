@@ -14,7 +14,6 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 
-using content::V8ValueConverter;
 using blink::WebString;
 using blink::WebURL;
 
@@ -28,7 +27,8 @@ void AppendV8Value(const std::string& api_name,
                    const v8::Local<v8::Value>& v8_value,
                    base::ListValue* list) {
   DCHECK(list);
-  std::unique_ptr<V8ValueConverter> converter(V8ValueConverter::create());
+  std::unique_ptr<content::V8ValueConverter> converter =
+      content::V8ValueConverter::Create();
   ActivityLogConverterStrategy strategy;
   converter->SetFunctionAllowed(true);
   converter->SetStrategy(&strategy);

@@ -15,8 +15,6 @@
 #include "extensions/renderer/dispatcher.h"
 #include "extensions/renderer/script_context.h"
 
-using content::V8ValueConverter;
-
 namespace extensions {
 
 APIActivityLogger::APIActivityLogger(ScriptContext* context,
@@ -65,7 +63,8 @@ void APIActivityLogger::LogInternal(
   // Get the array of api call arguments.
   v8::Local<v8::Array> arg_array = v8::Local<v8::Array>::Cast(args[2]);
   if (arg_array->Length() > 0) {
-    std::unique_ptr<V8ValueConverter> converter(V8ValueConverter::create());
+    std::unique_ptr<content::V8ValueConverter> converter =
+        content::V8ValueConverter::Create();
     ActivityLogConverterStrategy strategy;
     converter->SetFunctionAllowed(true);
     converter->SetStrategy(&strategy);

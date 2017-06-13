@@ -104,9 +104,8 @@ v8::Local<v8::Value> LanguageDetectionResult::ToValue(ScriptContext* context) {
   v8::Isolate* isolate = v8_context->GetIsolate();
   v8::EscapableHandleScope handle_scope(isolate);
 
-  std::unique_ptr<content::V8ValueConverter> converter(
-      content::V8ValueConverter::create());
-  v8::Local<v8::Value> result = converter->ToV8Value(&dict_value, v8_context);
+  v8::Local<v8::Value> result =
+      content::V8ValueConverter::Create()->ToV8Value(&dict_value, v8_context);
   return handle_scope.Escape(result);
 }
 

@@ -221,8 +221,8 @@ void APIEventHandler::FireEventInContext(const std::string& event_name,
   // Note: since we only convert the arguments once, if a listener modifies an
   // object (including an array), other listeners will see that modification.
   // TODO(devlin): This is how it's always been, but should it be?
-  std::unique_ptr<content::V8ValueConverter> converter(
-      content::V8ValueConverter::create());
+  std::unique_ptr<content::V8ValueConverter> converter =
+      content::V8ValueConverter::Create();
 
   auto massager_iter = data->massagers.find(event_name);
   if (massager_iter == data->massagers.end()) {

@@ -128,9 +128,8 @@ void DispatchOnConnectToScriptContext(
 
   if (extension) {
     if (!source->tab.empty() && !extension->is_platform_app()) {
-      std::unique_ptr<content::V8ValueConverter> converter(
-          content::V8ValueConverter::create());
-      tab = converter->ToV8Value(&source->tab, script_context->v8_context());
+      tab = content::V8ValueConverter::Create()->ToV8Value(
+          &source->tab, script_context->v8_context());
     }
 
     ExternallyConnectableInfo* externally_connectable =

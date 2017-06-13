@@ -175,8 +175,8 @@ class V8ValueConverterImpl::ScopedUniquenessGuard {
   DISALLOW_COPY_AND_ASSIGN(ScopedUniquenessGuard);
 };
 
-V8ValueConverter* V8ValueConverter::create() {
-  return new V8ValueConverterImpl();
+std::unique_ptr<V8ValueConverter> V8ValueConverter::Create() {
+  return base::MakeUnique<V8ValueConverterImpl>();
 }
 
 V8ValueConverterImpl::V8ValueConverterImpl()

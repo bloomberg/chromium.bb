@@ -126,8 +126,8 @@ void APIRequestHandler::CompleteRequest(int request_id,
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context = pending_request.context.Get(isolate);
   v8::Context::Scope context_scope(context);
-  std::unique_ptr<content::V8ValueConverter> converter(
-      content::V8ValueConverter::create());
+  std::unique_ptr<content::V8ValueConverter> converter =
+      content::V8ValueConverter::Create();
   std::vector<v8::Local<v8::Value>> args;
   args.reserve(response_args.GetSize() +
                pending_request.callback_arguments.size());

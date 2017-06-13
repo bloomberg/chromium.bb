@@ -352,15 +352,14 @@ void ScriptInjection::OnJsInjectionCompleted(
   if (expects_results) {
     if (!results.empty() && !results[0].IsEmpty()) {
       // Right now, we only support returning single results (per frame).
-      std::unique_ptr<content::V8ValueConverter> v8_converter(
-          content::V8ValueConverter::create());
       // It's safe to always use the main world context when converting
       // here. V8ValueConverterImpl shouldn't actually care about the
       // context scope, and it switches to v8::Object's creation context
       // when encountered.
       v8::Local<v8::Context> context =
           render_frame_->GetWebFrame()->MainWorldScriptContext();
-      execution_result_ = v8_converter->FromV8Value(results[0], context);
+      execution_result_ =
+          content::V8ValueConverter::Create()->FromV8Value(results[0], context);
     }
     if (!execution_result_.get())
       execution_result_ = base::MakeUnique<base::Value>();

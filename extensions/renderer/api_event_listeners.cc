@@ -64,9 +64,8 @@ bool ValidateFilter(v8::Local<v8::Context> context,
     return false;
   }
 
-  std::unique_ptr<content::V8ValueConverter> converter(
-      content::V8ValueConverter::create());
-  std::unique_ptr<base::Value> value = converter->FromV8Value(filter, context);
+  std::unique_ptr<base::Value> value =
+      content::V8ValueConverter::Create()->FromV8Value(filter, context);
   if (!value || !value->is_dict()) {
     *error = "could not convert filter.";
     return false;

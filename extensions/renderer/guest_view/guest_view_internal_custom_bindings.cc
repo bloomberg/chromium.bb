@@ -163,14 +163,11 @@ void GuestViewInternalCustomBindings::AttachGuest(
 
   int guest_instance_id = args[1]->Int32Value();
 
-  std::unique_ptr<base::DictionaryValue> params;
-  {
-    std::unique_ptr<V8ValueConverter> converter(V8ValueConverter::create());
-    std::unique_ptr<base::Value> params_as_value(
-        converter->FromV8Value(args[2], context()->v8_context()));
-    params = base::DictionaryValue::From(std::move(params_as_value));
-    CHECK(params);
-  }
+  std::unique_ptr<base::DictionaryValue> params = base::DictionaryValue::From(
+      content::V8ValueConverter::Create()->FromV8Value(
+          args[2], context()->v8_context()));
+  CHECK(params);
+
   // We should be careful that some malicious JS in the GuestView's embedder
   // hasn't destroyed |guest_view_container| during the enumeration of the
   // properties of the guest's object during extraction of |params| above
@@ -249,14 +246,11 @@ void GuestViewInternalCustomBindings::AttachIframeGuest(
   content::RenderFrame* render_frame = GetRenderFrame(args[3]);
   RenderFrameStatus render_frame_status(render_frame);
 
-  std::unique_ptr<base::DictionaryValue> params;
-  {
-    std::unique_ptr<V8ValueConverter> converter(V8ValueConverter::create());
-    std::unique_ptr<base::Value> params_as_value(
-        converter->FromV8Value(args[2], context()->v8_context()));
-    params = base::DictionaryValue::From(std::move(params_as_value));
-    CHECK(params);
-  }
+  std::unique_ptr<base::DictionaryValue> params = base::DictionaryValue::From(
+      content::V8ValueConverter::Create()->FromV8Value(
+          args[2], context()->v8_context()));
+  CHECK(params);
+
   if (!render_frame_status.is_ok())
     return;
 
