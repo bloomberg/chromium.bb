@@ -71,8 +71,6 @@ component("web") {
     "StorageClientImpl.h",
     "StorageQuotaClientImpl.cpp",
     "StorageQuotaClientImpl.h",
-    "TextFinder.cpp",
-    "TextFinder.h",
     "WebDevToolsAgentImpl.cpp",
     "WebDevToolsAgentImpl.h",
     "WebDevToolsFrontendImpl.cpp",

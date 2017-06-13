@@ -76,6 +76,8 @@ blink_core_sources("editing") {
     "SurroundingText.h",
     "TextAffinity.cpp",
     "TextAffinity.h",
+    "TextFinder.cpp",
+    "TextFinder.h",
     "TextGranularity.h",
     "VisiblePosition.cpp",
     "VisiblePosition.h",

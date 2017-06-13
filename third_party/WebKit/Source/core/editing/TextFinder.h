@@ -31,6 +31,7 @@
 #ifndef TextFinder_h
 #define TextFinder_h
 
+#include "core/CoreExport.h"
 #include "core/editing/FindOptions.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/heap/Handle.h"
@@ -42,7 +43,6 @@
 #include "public/platform/WebFloatRect.h"
 #include "public/platform/WebRect.h"
 #include "public/web/WebFindOptions.h"
-#include "web/WebExport.h"
 
 namespace blink {
 
@@ -52,7 +52,7 @@ class WebLocalFrameBase;
 template <typename T>
 class WebVector;
 
-class WEB_EXPORT TextFinder final
+class CORE_EXPORT TextFinder final
     : public GarbageCollectedFinalized<TextFinder> {
   WTF_MAKE_NONCOPYABLE(TextFinder);
 
