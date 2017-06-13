@@ -325,6 +325,8 @@ component("ash") {
     "shelf/shelf_window_watcher.h",
     "shelf/shelf_window_watcher_item_delegate.cc",
     "shelf/shelf_window_watcher_item_delegate.h",
+    "shelf/voice_interaction_overlay.cc",
+    "shelf/voice_interaction_overlay.h",
     "shell.cc",
     "shell.h",
     "shell_delegate.h",
