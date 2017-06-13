@@ -5,6 +5,10 @@
 #ifndef MemberCopy_h
 #define MemberCopy_h
 
+#include <memory>
+#include "core/style/ContentData.h"
+#include "core/style/DataPersistent.h"
+#include "core/style/DataRef.h"
 #include "platform/heap/Persistent.h"
 #include "platform/wtf/RefPtr.h"
 
@@ -18,6 +22,27 @@ RefPtr<T> MemberCopy(const RefPtr<T>& v) {
 template <typename T>
 Persistent<T> MemberCopy(const Persistent<T>& v) {
   return v;
+}
+
+template <typename T>
+std::unique_ptr<T> MemberCopy(const std::unique_ptr<T>& v) {
+  return v ? v->Clone() : nullptr;
+}
+
+template <typename T>
+DataPersistent<T> MemberCopy(const DataPersistent<T>& v) {
+  return v;
+}
+
+// TODO(shend): Remove this once all subgroups of StyleRareNonInheritedData are
+// generated
+template <typename T>
+DataRef<T> MemberCopy(const DataRef<T>& v) {
+  return v;
+}
+
+inline Persistent<ContentData> MemberCopy(const Persistent<ContentData>& v) {
+  return v ? v->Clone() : nullptr;
 }
 
 }  // namespace blink
