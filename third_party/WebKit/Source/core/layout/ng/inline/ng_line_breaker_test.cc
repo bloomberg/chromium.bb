@@ -38,13 +38,9 @@ class NGLineBreakerTest : public NGBaseLayoutAlgorithmTest {
     NGLineBreaker line_breaker(node, space.Get());
     NGInlineLayoutAlgorithm algorithm(node, space.Get());
     Vector<NGInlineItemResults> lines;
-    while (true) {
-      NGInlineItemResults item_results;
-      line_breaker.NextLine(&item_results, &algorithm);
-      if (item_results.IsEmpty())
-        break;
-      lines.push_back(item_results);
-    }
+    NGLineInfo line_info;
+    while (line_breaker.NextLine(&line_info, &algorithm))
+      lines.push_back(std::move(line_info.Results()));
     return lines;
   }
 };

@@ -71,23 +71,26 @@ NGLineBreaker::NGLineBreaker(NGInlineNode node,
   }
 }
 
-void NGLineBreaker::NextLine(NGInlineItemResults* item_results,
+bool NGLineBreaker::NextLine(NGLineInfo* line_info,
                              NGInlineLayoutAlgorithm* algorithm) {
-  BreakLine(item_results, algorithm);
+  BreakLine(line_info, algorithm);
 
   // TODO(kojii): When editing, or caret is enabled, trailing spaces at wrap
   // point should not be removed. For other cases, we can a) remove, b) leave
   // characters without glyphs, or c) leave both characters and glyphs without
   // measuring. Need to decide which one works the best.
   SkipCollapsibleWhitespaces();
+
+  return !line_info->Results().IsEmpty();
 }
 
-void NGLineBreaker::BreakLine(NGInlineItemResults* item_results,
+void NGLineBreaker::BreakLine(NGLineInfo* line_info,
                               NGInlineLayoutAlgorithm* algorithm) {
-  DCHECK(item_results->IsEmpty());
+  NGInlineItemResults* item_results = &line_info->Results();
+  item_results->clear();
   const Vector<NGInlineItem>& items = node_.Items();
-  const ComputedStyle& style = node_.Style();
-  UpdateBreakIterator(style);
+  line_info->SetLineStyle(node_, !item_index_ && !offset_);
+  UpdateBreakIterator(line_info->LineStyle());
   available_width_ = algorithm->AvailableWidth();
   position_ = LayoutUnit(0);
   LineBreakState state = LineBreakState::kNotBreakable;
@@ -102,10 +105,12 @@ void NGLineBreaker::BreakLine(NGInlineItemResults* item_results,
       continue;
     }
 
-    if (state == LineBreakState::kBreakAfterTrailings)
+    if (state == LineBreakState::kBreakAfterTrailings) {
+      line_info->SetIsLastLine(false);
       return;
+    }
     if (state == LineBreakState::kIsBreakable && position_ > available_width_)
-      return HandleOverflow(item_results);
+      return HandleOverflow(line_info);
 
     item_results->push_back(
         NGInlineItemResult(item_index_, offset_, item.EndOffset()));
@@ -116,8 +121,10 @@ void NGLineBreaker::BreakLine(NGInlineItemResults* item_results,
       state = HandleAtomicInline(item, item_result);
     } else if (item.Type() == NGInlineItem::kControl) {
       state = HandleControlItem(item, item_result);
-      if (state == LineBreakState::kForcedBreak)
+      if (state == LineBreakState::kForcedBreak) {
+        line_info->SetIsLastLine(true);
         return;
+      }
     } else if (item.Type() == NGInlineItem::kOpenTag) {
       HandleOpenTag(item, item_result);
       state = LineBreakState::kNotBreakable;
@@ -128,7 +135,8 @@ void NGLineBreaker::BreakLine(NGInlineItemResults* item_results,
     }
   }
   if (state == LineBreakState::kIsBreakable && position_ > available_width_)
-    return HandleOverflow(item_results);
+    return HandleOverflow(line_info);
+  line_info->SetIsLastLine(true);
 }
 
 NGLineBreaker::LineBreakState NGLineBreaker::HandleText(
@@ -333,7 +341,8 @@ void NGLineBreaker::HandleCloseTag(const NGInlineItem& item,
 // Handles when the last item overflows.
 // At this point, item_results does not fit into the current line, and there
 // are no break opportunities in item_results.back().
-void NGLineBreaker::HandleOverflow(NGInlineItemResults* item_results) {
+void NGLineBreaker::HandleOverflow(NGLineInfo* line_info) {
+  NGInlineItemResults* item_results = &line_info->Results();
   const Vector<NGInlineItem>& items = node_.Items();
   LayoutUnit rewind_width = available_width_ - position_;
   DCHECK_LT(rewind_width, 0);
@@ -361,7 +370,7 @@ void NGLineBreaker::HandleOverflow(NGInlineItemResults* item_results) {
         if (item_result->inline_size <= item_available_width) {
           DCHECK_LT(item_result->end_offset, item.EndOffset());
           DCHECK(!item_result->prohibit_break_after);
-          return Rewind(item_results, i + 1);
+          return Rewind(line_info, i + 1);
         }
         if (!item_result->prohibit_break_after &&
             !last_item_prohibits_break_before) {
@@ -372,7 +381,7 @@ void NGLineBreaker::HandleOverflow(NGInlineItemResults* item_results) {
       // Try to break after this item.
       if (break_before_if_before_allow && !item_result->prohibit_break_after) {
         if (rewind_width_if_before_allow >= 0)
-          return Rewind(item_results, break_before_if_before_allow);
+          return Rewind(line_info, break_before_if_before_allow);
         break_before = break_before_if_before_allow;
       }
 
@@ -394,11 +403,13 @@ void NGLineBreaker::HandleOverflow(NGInlineItemResults* item_results) {
   // The rewind point did not found, let this line overflow.
   // If there was a break opporunity, the overflow should stop there.
   if (break_before)
-    Rewind(item_results, break_before);
+    return Rewind(line_info, break_before);
+
+  line_info->SetIsLastLine(item_index_ >= items.size());
 }
 
-void NGLineBreaker::Rewind(NGInlineItemResults* item_results,
-                           unsigned new_end) {
+void NGLineBreaker::Rewind(NGLineInfo* line_info, unsigned new_end) {
+  NGInlineItemResults* item_results = &line_info->Results();
   // TODO(kojii): Should we keep results for the next line? We don't need to
   // re-layout atomic inlines.
   // TODO(kojii): Removing processed floats is likely a problematic. Keep
@@ -406,6 +417,8 @@ void NGLineBreaker::Rewind(NGInlineItemResults* item_results,
   item_results->Shrink(new_end);
 
   MoveToNextOf(item_results->back());
+  DCHECK_LT(item_index_, node_.Items().size());
+  line_info->SetIsLastLine(false);
 }
 
 void NGLineBreaker::UpdateBreakIterator(const ComputedStyle& style) {

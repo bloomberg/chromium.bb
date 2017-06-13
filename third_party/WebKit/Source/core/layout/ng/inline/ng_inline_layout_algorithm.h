@@ -45,7 +45,7 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
   // Create a line.
   // @return false if the line does not fit in the constraint space in block
   //         direction.
-  bool CreateLine(NGInlineItemResults*, RefPtr<NGInlineBreakToken> = nullptr);
+  bool CreateLine(NGLineInfo*, RefPtr<NGInlineBreakToken> = nullptr);
 
   RefPtr<NGLayoutResult> Layout() override;
 
@@ -60,22 +60,21 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
  private:
   bool IsHorizontalWritingMode() const { return is_horizontal_writing_mode_; }
 
-  bool IsFirstLine() const;
-  const ComputedStyle& FirstLineStyle() const;
-  const ComputedStyle& LineStyle() const;
-
   LayoutUnit LogicalLeftOffset() const;
 
   void BidiReorder(NGInlineItemResults*);
 
-  bool PlaceItems(NGInlineItemResults*, RefPtr<NGInlineBreakToken>);
+  bool PlaceItems(NGLineInfo*, RefPtr<NGInlineBreakToken>);
   NGInlineBoxState* PlaceAtomicInline(const NGInlineItem&,
                                       NGInlineItemResult*,
+                                      bool is_first_line,
                                       LayoutUnit position,
                                       NGLineBoxFragmentBuilder*,
                                       NGTextFragmentBuilder*);
 
-  void ApplyTextAlign(LayoutUnit* line_left,
+  void ApplyTextAlign(const ComputedStyle&,
+                      ETextAlign,
+                      LayoutUnit* line_left,
                       LayoutUnit inline_size,
                       LayoutUnit available_width);
 
@@ -91,7 +90,6 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
   NGLogicalRect current_opportunity_;
 
   unsigned is_horizontal_writing_mode_ : 1;
-  unsigned disallow_first_line_rules_ : 1;
 
   NGConstraintSpaceBuilder space_builder_;
   NGBoxStrut border_and_padding_;
