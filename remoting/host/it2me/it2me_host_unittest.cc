@@ -182,6 +182,7 @@ class It2MeHostTest : public testing::Test, public It2MeHost::Observer {
 
   std::unique_ptr<base::MessageLoop> message_loop_;
   std::unique_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<FakeSignalStrategy> fake_bot_signal_strategy_;
 
   std::unique_ptr<ChromotingHostContext> host_context_;
   scoped_refptr<AutoThreadTaskRunner> network_task_runner_;
@@ -208,6 +209,8 @@ void It2MeHostTest::SetUp() {
       base::ThreadTaskRunnerHandle::Get(), run_loop_->QuitClosure()));
   network_task_runner_ = host_context_->network_task_runner();
   ui_task_runner_ = host_context_->ui_task_runner();
+  fake_bot_signal_strategy_.reset(
+      new FakeSignalStrategy(SignalingAddress("fake_bot_jid")));
 }
 
 void It2MeHostTest::TearDown() {
@@ -268,13 +271,16 @@ void It2MeHostTest::StartHost() {
   ice_config.expiration_time =
       base::Time::Now() + base::TimeDelta::FromHours(1);
 
+  auto fake_signal_strategy =
+      base::MakeUnique<FakeSignalStrategy>(SignalingAddress("fake_local_jid"));
+  fake_bot_signal_strategy_->ConnectTo(fake_signal_strategy.get());
+
   it2me_host_ = new It2MeHost();
   it2me_host_->Connect(host_context_->Copy(),
                        base::MakeUnique<base::DictionaryValue>(*policies_),
                        std::move(dialog_factory), weak_factory_.GetWeakPtr(),
-                       base::WrapUnique(new FakeSignalStrategy(
-                           SignalingAddress("fake_local_jid"))),
-                       kTestUserName, "fake_bot_jid", ice_config);
+                       std::move(fake_signal_strategy), kTestUserName,
+                       "fake_bot_jid", ice_config);
 
   base::RunLoop run_loop;
   state_change_callback_ =
