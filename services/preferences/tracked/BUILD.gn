@@ -25,6 +25,7 @@ source_set("tracked") {
     "registry_hash_store_contents_win.h",
     "segregated_pref_store.cc",
     "segregated_pref_store.h",
+    "temp_scoped_dir_cleaner.h",
     "tracked_atomic_preference.cc",
     "tracked_atomic_preference.h",
     "tracked_persistent_pref_store_factory.cc",
