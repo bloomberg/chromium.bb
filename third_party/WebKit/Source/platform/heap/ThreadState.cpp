@@ -618,9 +618,11 @@ void ThreadState::PerformIdleLazySweep(double deadline_seconds) {
   if (SweepForbidden())
     return;
 
-  RuntimeCallTimerScope runtime_scope(
-      RuntimeCallStats::From(GetIsolate()),
-      RuntimeCallStats::CounterId::kPerformIdleLazySweep);
+  Optional<RuntimeCallTimerScope> timer_scope;
+  if (v8::Isolate* isolate = GetIsolate()) {
+    timer_scope.emplace(RuntimeCallStats::From(isolate),
+                        RuntimeCallStats::CounterId::kPerformIdleLazySweep);
+  }
 
   TRACE_EVENT1("blink_gc,devtools.timeline",
                "ThreadState::performIdleLazySweep", "idleDeltaInSeconds",
