@@ -1,7 +1,10 @@
 *
 
 # Changes to the SmokeTests file must be actually approved so it doesn't grow willy-nilly.
+per-file SmokeTests=set noparent
 per-file SmokeTests=dpranke@chromium.org
 per-file SmokeTests=peter@chromium.org
 per-file SmokeTests=ojan@chromium.org
+
+per-file ImageFirstTests=set noparent
 per-file ImageFirstTests=file://third_party/WebKit/Source/core/layout/OWNERS
