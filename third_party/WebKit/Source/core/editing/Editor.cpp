@@ -1615,10 +1615,13 @@ Range* Editor::FindStringAndScrollToVisible(const String& target,
     return nullptr;
 
   Node* first_node = next_match->FirstNode();
+
   first_node->GetLayoutObject()->ScrollRectToVisible(
       LayoutRect(next_match->BoundingBox()),
       ScrollAlignment::kAlignCenterIfNeeded,
-      ScrollAlignment::kAlignCenterIfNeeded, kUserScroll);
+      ScrollAlignment::kAlignCenterIfNeeded, kProgrammaticScroll, true,
+      kScrollBehaviorSmooth);
+
   first_node->GetDocument().SetSequentialFocusNavigationStartingPoint(
       first_node);
 

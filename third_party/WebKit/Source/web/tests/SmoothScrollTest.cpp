@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "bindings/core/v8/ScrollIntoViewOptionsOrBoolean.h"
+#include "core/dom/Range.h"
+#include "core/editing/Editor.h"
+#include "core/editing/TextFinder.h"
 #include "core/frame/ScrollIntoViewOptions.h"
 #include "core/frame/ScrollToOptions.h"
 #include "public/web/WebScriptSource.h"
@@ -281,6 +284,30 @@ TEST_F(SmoothScrollTest, BlockAndInlineSettings) {
             content->OffsetLeft() + content_width - window_width);
   ASSERT_EQ(Window().scrollY(),
             content->OffsetTop() + content_height - window_height);
+}
+
+TEST_F(SmoothScrollTest, FindTriggersSmoothScroll) {
+  v8::HandleScope HandleScope(v8::Isolate::GetCurrent());
+  WebView().Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(
+      "<div id='space' style='height: 2000px'></div>"
+      "<div id='content' style='height: 2000px'>text</div>");
+
+  Range* range = GetDocument().createRange();
+  MainFrame().GetFrame()->GetEditor().FindStringAndScrollToVisible(
+      "text", range, kCaseInsensitive);
+
+  // Scrolling the container
+  Compositor().BeginFrame();  // update run_state_.
+  Compositor().BeginFrame();  // Set start_time = now.
+  Compositor().BeginFrame(0.2);
+  ASSERT_EQ(Window().scrollY(), 299);
+
+  // Finish scrolling the container
+  Compositor().BeginFrame(1);
+  ASSERT_EQ(Window().scrollY(), 1708);
 }
 
 }  // namespace

@@ -650,6 +650,23 @@ void LayoutBox::ScrollRectToVisible(const LayoutRect& rect,
                                     ScrollType scroll_type,
                                     bool make_visible_in_visual_viewport,
                                     ScrollBehavior scroll_behavior) {
+  SmoothScrollSequencer* sequencer =
+      GetFrame()->GetPage()->GetSmoothScrollSequencer();
+  sequencer->AbortAnimations();
+  ScrollRectToVisibleRecursive(rect, align_x, align_y, scroll_type,
+                               make_visible_in_visual_viewport,
+                               scroll_behavior);
+  if (scroll_behavior == kScrollBehaviorSmooth)
+    sequencer->RunQueuedAnimations();
+}
+
+void LayoutBox::ScrollRectToVisibleRecursive(
+    const LayoutRect& rect,
+    const ScrollAlignment& align_x,
+    const ScrollAlignment& align_y,
+    ScrollType scroll_type,
+    bool make_visible_in_visual_viewport,
+    ScrollBehavior scroll_behavior) {
   DCHECK(scroll_type == kProgrammaticScroll || scroll_type == kUserScroll);
   // Presumably the same issue as in setScrollTop. See crbug.com/343132.
   DisableCompositingQueryAsserts disabler;
@@ -724,9 +741,9 @@ void LayoutBox::ScrollRectToVisible(const LayoutRect& rect,
     parent_box = EnclosingScrollableBox();
 
   if (parent_box) {
-    parent_box->ScrollRectToVisible(new_rect, align_x, align_y, scroll_type,
-                                    make_visible_in_visual_viewport,
-                                    scroll_behavior);
+    parent_box->ScrollRectToVisibleRecursive(
+        new_rect, align_x, align_y, scroll_type,
+        make_visible_in_visual_viewport, scroll_behavior);
   }
 }
 
