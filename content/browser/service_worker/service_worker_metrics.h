@@ -122,6 +122,7 @@ class ServiceWorkerMetrics {
     BACKGROUND_FETCH_CLICK = 24,
     BACKGROUND_FETCH_FAIL = 25,
     BACKGROUND_FETCHED = 26,
+    NAVIGATION_HINT = 27,
     // Add new events to record here.
     NUM_TYPES
   };

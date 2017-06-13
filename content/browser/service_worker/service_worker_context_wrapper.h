@@ -110,6 +110,9 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
                                const std::string& request_uuid) override;
   bool FinishedExternalRequest(int64_t service_worker_version_id,
                                const std::string& request_uuid) override;
+  void StartServiceWorkerForNavigationHint(
+      const GURL& document_url,
+      const StartServiceWorkerForNavigationHintCallback& callback) override;
 
   // These methods must only be called from the IO thread.
   ServiceWorkerRegistration* GetLiveRegistration(int64_t registration_id);
@@ -278,6 +281,20 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   void DidFindRegistrationForUpdate(
       ServiceWorkerStatusCode status,
       scoped_refptr<content::ServiceWorkerRegistration> registration);
+
+  void StartServiceWorkerForNavigationHintOnIO(
+      const GURL& document_url,
+      const StartServiceWorkerForNavigationHintCallback& callback);
+
+  void DidFindRegistrationForNavigationHint(
+      const StartServiceWorkerForNavigationHintCallback& callback,
+      ServiceWorkerStatusCode status,
+      scoped_refptr<ServiceWorkerRegistration> registration);
+
+  void DidStartServiceWorkerForNavigationHint(
+      const GURL& pattern,
+      const StartServiceWorkerForNavigationHintCallback& callback,
+      ServiceWorkerStatusCode code);
 
   // The core context is only for use on the IO thread.
   // Can be null before/during init, during/after shutdown, and after
