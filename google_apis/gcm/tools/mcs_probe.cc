@@ -24,6 +24,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/task_scheduler/task_scheduler.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/default_clock.h"
@@ -504,6 +505,7 @@ int MCSProbeMain(int argc, char* argv[]) {
   logging::InitLogging(settings);
 
   base::MessageLoopForIO message_loop;
+  base::TaskScheduler::CreateAndStartWithDefaultParams("MCSProbe");
 
   // For check-in and creating registration ids.
   const scoped_refptr<MyTestURLRequestContextGetter> context_getter =
