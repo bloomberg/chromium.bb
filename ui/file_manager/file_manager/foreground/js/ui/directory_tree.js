@@ -122,7 +122,6 @@ function DirectoryItem(label, tree) {
   item.hasChildren = false;
 
   item.label = label;
-  item.setAttribute('aria-label', label);
 
   return item;
 }
