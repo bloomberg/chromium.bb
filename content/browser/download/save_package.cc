@@ -320,6 +320,10 @@ void SavePackage::InitWithDownloadItem(
 
 void SavePackage::OnMHTMLGenerated(int64_t size) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!download_)
+    return;
+
+  CHECK_EQ(download_->GetState(), DownloadItem::IN_PROGRESS);
   if (size <= 0) {
     Cancel(false);
     return;
@@ -704,6 +708,7 @@ void SavePackage::Finish() {
 
   if (download_) {
     if (save_type_ != SAVE_PAGE_TYPE_AS_MHTML) {
+      CHECK_EQ(download_->GetState(), DownloadItem::IN_PROGRESS);
       download_->DestinationUpdate(
           all_save_items_count_, CurrentSpeed(),
           std::vector<DownloadItem::ReceivedSlice>());
@@ -735,6 +740,7 @@ void SavePackage::SaveFinished(SaveItemId save_item_id,
   // Inform the DownloadItem to update UI.
   // We use the received bytes as number of saved files.
   if (download_) {
+    CHECK_EQ(download_->GetState(), DownloadItem::IN_PROGRESS);
     download_->DestinationUpdate(
         completed_count(), CurrentSpeed(),
         std::vector<DownloadItem::ReceivedSlice>());
@@ -1461,7 +1467,6 @@ void SavePackage::OnPathPicked(
 void SavePackage::FinalizeDownloadEntry() {
   DCHECK(download_);
   DCHECK(download_manager_);
-
   download_manager_->OnSavePackageSuccessfullyFinished(download_);
   download_ = nullptr;
   download_manager_ = nullptr;
