@@ -6,7 +6,6 @@
 #include "ash/shell.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
-#include "base/test/test_simple_task_runner.h"
 #include "components/exo/buffer.h"
 #include "components/exo/gamepad_delegate.h"
 #include "components/exo/gaming_seat_delegate.h"
@@ -18,6 +17,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/focus_client.h"
+#include "ui/events/ozone/gamepad/gamepad_provider_ozone.h"
 
 namespace exo {
 namespace {
@@ -45,53 +45,35 @@ class MockGamepadDelegate : public GamepadDelegate {
 class GamingSeatTest : public test::ExoTestBase {
  public:
   GamingSeatTest() {}
-
-  std::unique_ptr<device::GamepadDataFetcher> MockDataFetcherFactory() {
-    device::Gamepads initial_data;
-    std::unique_ptr<device::MockGamepadDataFetcher> fetcher(
-        new device::MockGamepadDataFetcher(initial_data));
-    mock_data_fetcher_ = fetcher.get();
-    return std::move(fetcher);
-  }
-
   void InitializeGamingSeat(MockGamingSeatDelegate* delegate) {
-    polling_task_runner_ = new base::TestSimpleTaskRunner();
-    gaming_seat_.reset(
-        new GamingSeat(delegate, polling_task_runner_.get(),
-                       base::Bind(&GamingSeatTest::MockDataFetcherFactory,
-                                  base::Unretained(this))));
-    // Run the polling task runner to have it create the data fetcher.
-    polling_task_runner_->RunPendingTasks();
+    gaming_seat_.reset(new GamingSeat(delegate, nullptr));
   }
 
   void DestroyGamingSeat(MockGamingSeatDelegate* delegate) {
     EXPECT_CALL(*delegate, Die()).Times(1);
-    mock_data_fetcher_ = nullptr;
     gaming_seat_.reset();
-    // Process tasks until polling is shut down.
-    polling_task_runner_->RunPendingTasks();
-    polling_task_runner_ = nullptr;
   }
 
-  void SetDataAndPostToDelegate(const device::Gamepads& new_data) {
-    ASSERT_TRUE(mock_data_fetcher_ != nullptr);
-    mock_data_fetcher_->SetTestData(new_data);
-    // Run one polling cycle, which will post a task to the origin task runner.
-    polling_task_runner_->RunPendingTasks();
-    // Run origin task runner to invoke delegate.
-    base::RunLoop().RunUntilIdle();
+  void UpdateGamepadDevice(const std::vector<int>& gamepad_device_ids) {
+    std::vector<ui::InputDevice> gamepad_devices;
+    for (auto& id : gamepad_device_ids) {
+      gamepad_devices.push_back(ui::InputDevice(
+          id, ui::InputDeviceType::INPUT_DEVICE_EXTERNAL, "gamepad"));
+    }
+    ui::GamepadProviderOzone::GetInstance()->DispatchGamepadDevicesUpdated(
+        gamepad_devices);
+  }
+
+  void SendFrameToGamepads(const std::vector<int>& gamepad_device_ids) {
+    for (auto& id : gamepad_device_ids) {
+      ui::GamepadEvent event(id, ui::GamepadEventType::FRAME, 0, 0,
+                             base::TimeTicks());
+      ui::GamepadProviderOzone::GetInstance()->DispatchGamepadEvent(event);
+    }
   }
 
  protected:
   std::unique_ptr<GamingSeat> gaming_seat_;
-
-  // Task runner to simulate the polling thread.
-  scoped_refptr<base::TestSimpleTaskRunner> polling_task_runner_;
-
-  // Weak reference to the mock data fetcher provided by MockDataFetcherFactory.
-  // This instance is valid until both gamepad_ and polling_task_runner_ are
-  // shut down.
-  device::MockGamepadDataFetcher* mock_data_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(GamingSeatTest);
 };
@@ -112,212 +94,51 @@ TEST_F(GamingSeatTest, ConnectionChange) {
       .WillOnce(testing::Return(true));
 
   InitializeGamingSeat(gaming_seat_delegate);
-  testing::StrictMock<MockGamepadDelegate> gamepad_delegate0;
-  testing::StrictMock<MockGamepadDelegate> gamepad_delegate1;
-  testing::StrictMock<MockGamepadDelegate> gamepad_delegate2;
+  testing::StrictMock<MockGamepadDelegate> gamepad_delegate[6];
 
   {  // Test sequence
     testing::InSequence s;
-    // connect gamepad 0
-    // connect gamepad 2
-    // connect gamepad 1
+    // Connect 2 gamepads.
     EXPECT_CALL(*gaming_seat_delegate, GamepadAdded())
-        .WillOnce(testing::Return(&gamepad_delegate0))
-        .WillOnce(testing::Return(&gamepad_delegate2))
-        .WillOnce(testing::Return(&gamepad_delegate1));
-    // disconnect gamepad 1
-    EXPECT_CALL(gamepad_delegate1, OnRemoved()).Times(1);
+        .WillOnce(testing::Return(&gamepad_delegate[0]))
+        .WillOnce(testing::Return(&gamepad_delegate[1]));
+    // Send frame to connected gamepad.
+    EXPECT_CALL(gamepad_delegate[0], OnFrame()).Times(1);
+    EXPECT_CALL(gamepad_delegate[1], OnFrame()).Times(1);
+    // Connect 3 more.
+    EXPECT_CALL(*gaming_seat_delegate, GamepadAdded())
+        .WillOnce(testing::Return(&gamepad_delegate[2]))
+        .WillOnce(testing::Return(&gamepad_delegate[3]))
+        .WillOnce(testing::Return(&gamepad_delegate[4]));
+    // Send frame to all gamepads.
+    EXPECT_CALL(gamepad_delegate[0], OnFrame()).Times(1);
+    EXPECT_CALL(gamepad_delegate[1], OnFrame()).Times(1);
+    EXPECT_CALL(gamepad_delegate[2], OnFrame()).Times(1);
+    EXPECT_CALL(gamepad_delegate[3], OnFrame()).Times(1);
+    EXPECT_CALL(gamepad_delegate[4], OnFrame()).Times(1);
+    // Disconnect gamepad 0 and gamepad 2 and connect a new gamepad.
+    EXPECT_CALL(gamepad_delegate[0], OnRemoved()).Times(1);
+    EXPECT_CALL(gamepad_delegate[2], OnRemoved()).Times(1);
+    EXPECT_CALL(gamepad_delegate[4], OnRemoved()).Times(1);
+    EXPECT_CALL(*gaming_seat_delegate, GamepadAdded())
+        .WillOnce(testing::Return(&gamepad_delegate[5]));
+    // Send frame to all gamepads.
+    EXPECT_CALL(gamepad_delegate[1], OnFrame()).Times(1);
+    EXPECT_CALL(gamepad_delegate[3], OnFrame()).Times(1);
+    EXPECT_CALL(gamepad_delegate[5], OnFrame()).Times(1);
+
     // disconnect other gamepads
-    EXPECT_CALL(gamepad_delegate0, OnRemoved()).Times(1);
-    EXPECT_CALL(gamepad_delegate2, OnRemoved()).Times(1);
+    EXPECT_CALL(gamepad_delegate[1], OnRemoved()).Times(1);
+    EXPECT_CALL(gamepad_delegate[3], OnRemoved()).Times(1);
+    EXPECT_CALL(gamepad_delegate[5], OnRemoved()).Times(1);
   }
   // Gamepad connected.
-  device::Gamepads gamepad_connected;
-  gamepad_connected.items[0].connected = true;
-  gamepad_connected.items[0].timestamp = 1;
-  SetDataAndPostToDelegate(gamepad_connected);
-
-  gamepad_connected.items[2].connected = true;
-  gamepad_connected.items[2].timestamp = 1;
-  SetDataAndPostToDelegate(gamepad_connected);
-
-  gamepad_connected.items[1].connected = true;
-  gamepad_connected.items[1].timestamp = 1;
-  SetDataAndPostToDelegate(gamepad_connected);
-
-  // Gamepad 1 is dis connected
-  gamepad_connected.items[1].connected = false;
-  gamepad_connected.items[1].timestamp = 2;
-
-  SetDataAndPostToDelegate(gamepad_connected);
-
-  // Gamepad disconnected.
-  device::Gamepads all_disconnected;
-  SetDataAndPostToDelegate(all_disconnected);
-
-  DestroyGamingSeat(gaming_seat_delegate);
-}
-
-TEST_F(GamingSeatTest, OnAxis) {
-  std::unique_ptr<Surface> surface(new Surface);
-  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
-  gfx::Size buffer_size(10, 10);
-  std::unique_ptr<Buffer> buffer(
-      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
-  surface->Attach(buffer.get());
-  surface->Commit();
-
-  testing::StrictMock<MockGamingSeatDelegate>* gaming_seat_delegate =
-      new testing::StrictMock<MockGamingSeatDelegate>();
-  EXPECT_CALL(*gaming_seat_delegate,
-              CanAcceptGamepadEventsForSurface(testing::_))
-      .WillOnce(testing::Return(true));
-
-  InitializeGamingSeat(gaming_seat_delegate);
-  testing::StrictMock<MockGamepadDelegate> gamepad_delegate0;
-  testing::StrictMock<MockGamepadDelegate> gamepad_delegate2;
-
-  // connect gamepad 0 and 2
-  EXPECT_CALL(*gaming_seat_delegate, GamepadAdded())
-      .WillOnce(testing::Return(&gamepad_delegate0))
-      .WillOnce(testing::Return(&gamepad_delegate2));
-
-  device::Gamepads gamepad_connected;
-  gamepad_connected.items[0].connected = true;
-  gamepad_connected.items[0].timestamp = 1;
-  SetDataAndPostToDelegate(gamepad_connected);
-
-  gamepad_connected.items[2].connected = true;
-  gamepad_connected.items[2].timestamp = 1;
-  SetDataAndPostToDelegate(gamepad_connected);
-
-  // send axis event to 2 and then 0
-  device::Gamepads axis_moved;
-  axis_moved.items[0].connected = true;
-  axis_moved.items[0].timestamp = 1;
-  axis_moved.items[2].connected = true;
-  axis_moved.items[2].timestamp = 2;
-  axis_moved.items[2].axes_length = 1;
-  axis_moved.items[2].axes[0] = 1.0;
-
-  EXPECT_CALL(gamepad_delegate2, OnAxis(0, 1.0)).Times(1);
-  EXPECT_CALL(gamepad_delegate2, OnFrame()).Times(1);
-  SetDataAndPostToDelegate(axis_moved);
-
-  axis_moved.items[0].timestamp = 2;
-  axis_moved.items[0].axes_length = 1;
-  axis_moved.items[0].axes[0] = 2.0;
-
-  EXPECT_CALL(gamepad_delegate0, OnAxis(0, 2.0)).Times(1);
-  EXPECT_CALL(gamepad_delegate0, OnFrame()).Times(1);
-  SetDataAndPostToDelegate(axis_moved);
-
-  EXPECT_CALL(gamepad_delegate0, OnRemoved()).Times(1);
-  EXPECT_CALL(gamepad_delegate2, OnRemoved()).Times(1);
-  DestroyGamingSeat(gaming_seat_delegate);
-}
-
-TEST_F(GamingSeatTest, OnButton) {
-  std::unique_ptr<Surface> surface(new Surface);
-  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
-  gfx::Size buffer_size(10, 10);
-  std::unique_ptr<Buffer> buffer(
-      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
-  surface->Attach(buffer.get());
-  surface->Commit();
-
-  testing::StrictMock<MockGamingSeatDelegate>* gaming_seat_delegate =
-      new testing::StrictMock<MockGamingSeatDelegate>();
-  EXPECT_CALL(*gaming_seat_delegate,
-              CanAcceptGamepadEventsForSurface(testing::_))
-      .WillOnce(testing::Return(true));
-
-  InitializeGamingSeat(gaming_seat_delegate);
-  testing::StrictMock<MockGamepadDelegate> gamepad_delegate0;
-  testing::StrictMock<MockGamepadDelegate> gamepad_delegate2;
-
-  // connect gamepad 0 and 2
-  EXPECT_CALL(*gaming_seat_delegate, GamepadAdded())
-      .WillOnce(testing::Return(&gamepad_delegate0))
-      .WillOnce(testing::Return(&gamepad_delegate2));
-
-  device::Gamepads gamepad_connected;
-  gamepad_connected.items[0].connected = true;
-  gamepad_connected.items[0].timestamp = 1;
-  SetDataAndPostToDelegate(gamepad_connected);
-
-  gamepad_connected.items[2].connected = true;
-  gamepad_connected.items[2].timestamp = 1;
-  SetDataAndPostToDelegate(gamepad_connected);
-
-  // send axis event to 2 and then 0
-  device::Gamepads axis_moved;
-  axis_moved.items[0].connected = true;
-  axis_moved.items[0].timestamp = 1;
-  axis_moved.items[2].connected = true;
-  axis_moved.items[2].timestamp = 2;
-
-  axis_moved.items[2].buttons_length = 1;
-  axis_moved.items[2].buttons[0].pressed = true;
-  axis_moved.items[2].buttons[0].value = 1.0;
-
-  EXPECT_CALL(gamepad_delegate2, OnButton(0, true, 1.0)).Times(1);
-  EXPECT_CALL(gamepad_delegate2, OnFrame()).Times(1);
-  SetDataAndPostToDelegate(axis_moved);
-
-  axis_moved.items[0].timestamp = 2;
-  axis_moved.items[0].buttons_length = 1;
-  axis_moved.items[0].buttons[0].pressed = true;
-  axis_moved.items[0].buttons[0].value = 2.0;
-
-  EXPECT_CALL(gamepad_delegate0, OnButton(0, true, 2.0)).Times(1);
-  EXPECT_CALL(gamepad_delegate0, OnFrame()).Times(1);
-  SetDataAndPostToDelegate(axis_moved);
-
-  EXPECT_CALL(gamepad_delegate0, OnRemoved()).Times(1);
-  EXPECT_CALL(gamepad_delegate2, OnRemoved()).Times(1);
-
-  DestroyGamingSeat(gaming_seat_delegate);
-}
-
-TEST_F(GamingSeatTest, OnWindowFocused) {
-  // Create surface and move focus to it.
-  std::unique_ptr<Surface> surface(new Surface);
-  std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
-  gfx::Size buffer_size(10, 10);
-  std::unique_ptr<Buffer> buffer(
-      new Buffer(exo_test_helper()->CreateGpuMemoryBuffer(buffer_size)));
-  surface->Attach(buffer.get());
-  surface->Commit();
-
-  testing::StrictMock<MockGamingSeatDelegate>* gaming_seat_delegate =
-      new testing::StrictMock<MockGamingSeatDelegate>();
-  EXPECT_CALL(*gaming_seat_delegate,
-              CanAcceptGamepadEventsForSurface(testing::_))
-      .WillOnce(testing::Return(true));
-
-  InitializeGamingSeat(gaming_seat_delegate);
-
-  // In focus. Should be polling indefinitely, check a couple of time that the
-  // poll task is re-posted.
-  for (size_t i = 0; i < 5; ++i) {
-    polling_task_runner_->RunPendingTasks();
-    ASSERT_TRUE(polling_task_runner_->HasPendingTask());
-  }
-
-  // Remove focus from window.
-  aura::client::FocusClient* focus_client =
-      aura::client::GetFocusClient(ash::Shell::GetPrimaryRootWindow());
-  focus_client->FocusWindow(nullptr);
-
-  // Run EnablePolling and OnPoll task, no more polls should be scheduled.
-  // In the first round of RunPendingTasks we will execute
-  // EnablePollingOnPollingThread, which will cause the polling to stop being
-  // scheduled in the next round.
-  polling_task_runner_->RunPendingTasks();
-  polling_task_runner_->RunPendingTasks();
-  ASSERT_FALSE(polling_task_runner_->HasPendingTask());
-
+  UpdateGamepadDevice({0, 1});
+  SendFrameToGamepads({0, 1});
+  UpdateGamepadDevice({0, 1, 2, 3, 4});
+  SendFrameToGamepads({0, 1, 2, 3, 4});
+  UpdateGamepadDevice({1, 3, 5});
+  SendFrameToGamepads({1, 2, 3, 4, 5});
   DestroyGamingSeat(gaming_seat_delegate);
 }
 

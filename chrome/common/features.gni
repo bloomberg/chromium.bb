@@ -49,6 +49,10 @@ declare_args() {
   enable_one_click_signin =
       is_win || is_mac || (is_linux && !is_chromeos && !is_chromecast)
 
+  # Indicates if Exo should use ozone gamepad. If this is false, exo will use
+  # /device/gamepad as backend.
+  enable_exo_ozone_gamepad = use_ozone
+
   # Set to true to bundle all the mash related mojo services into chrome.
   # Specify --mash to chrome to have chrome start the mash environment.
   enable_package_mash_services = is_chromeos
