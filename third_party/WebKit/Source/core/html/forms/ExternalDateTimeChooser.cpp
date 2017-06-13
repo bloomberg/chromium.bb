@@ -23,7 +23,7 @@
  * SUCH DAMAGE.
  */
 
-#include "web/ExternalDateTimeChooser.h"
+#include "core/html/forms/ExternalDateTimeChooser.h"
 
 #include "core/InputTypeNames.h"
 #include "core/html/forms/DateTimeChooserClient.h"

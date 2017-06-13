@@ -26,6 +26,7 @@
 
 namespace blink {
 
+// TODO(sashab): Move PopupMenu to core/page.
 class PopupMenu : public GarbageCollectedFinalized<PopupMenu> {
  public:
   virtual ~PopupMenu() {}

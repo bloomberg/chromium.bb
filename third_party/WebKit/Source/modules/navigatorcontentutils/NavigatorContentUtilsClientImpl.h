@@ -14,8 +14,9 @@ namespace blink {
 
 class WebLocalFrameBase;
 
+// TODO(sashab): Merge this class with its parent (NavigatorContentUtilsClient).
 class MODULES_EXPORT NavigatorContentUtilsClientImpl final
-    : public NON_EXPORTED_BASE(NavigatorContentUtilsClient) {
+    : NON_EXPORTED_BASE(public NavigatorContentUtilsClient) {
  public:
   static NavigatorContentUtilsClientImpl* Create(WebLocalFrameBase*);
   ~NavigatorContentUtilsClientImpl() override {}

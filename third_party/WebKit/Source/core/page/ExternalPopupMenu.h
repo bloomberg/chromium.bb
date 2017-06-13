@@ -32,13 +32,13 @@
 #define ExternalPopupMenu_h
 
 #include <memory>
+#include "core/CoreExport.h"
 #include "platform/PopupMenu.h"
 #include "platform/Timer.h"
 #include "platform/wtf/Compiler.h"
 #include "public/platform/WebCanvas.h"
 #include "public/platform/WebScrollbar.h"
 #include "public/web/WebExternalPopupMenuClient.h"
-#include "web/WebExport.h"
 
 namespace blink {
 
@@ -51,8 +51,8 @@ struct WebPopupMenuInfo;
 
 // The ExternalPopupMenu connects the actual implementation of the popup menu
 // to the WebCore popup menu.
-class WEB_EXPORT ExternalPopupMenu final : NON_EXPORTED_BASE(public PopupMenu),
-                                           public WebExternalPopupMenuClient {
+class CORE_EXPORT ExternalPopupMenu final : NON_EXPORTED_BASE(public PopupMenu),
+                                            public WebExternalPopupMenuClient {
  public:
   ExternalPopupMenu(LocalFrame&, HTMLSelectElement&, WebView&);
   ~ExternalPopupMenu() override;
