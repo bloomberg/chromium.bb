@@ -21,8 +21,8 @@
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/bookmarks/bars/bookmark_editing_bar.h"
 #import "ios/chrome/browser/ui/bookmarks/bars/bookmark_navigation_bar.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_collection_view.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_edit_view_controller.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmark_folder_collection_view.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_folder_editor_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_folder_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_primary_view.h"
@@ -75,8 +75,8 @@ const CGFloat kNavigationBarTopMargin = 8.0;
 @end
 
 @interface BookmarkHomeTabletNTPController ()<
+    BookmarkCollectionViewDelegate,
     BookmarkEditViewControllerDelegate,
-    BookmarkFolderCollectionViewDelegate,
     BookmarkFolderEditorViewControllerDelegate,
     BookmarkFolderViewControllerDelegate,
     BookmarkMenuViewDelegate,
@@ -124,12 +124,11 @@ const CGFloat kNavigationBarTopMargin = 8.0;
 
 #pragma mark - Properties and methods akin to BookmarkHomeHandsetViewController
 
-// This views holds the primary content of this controller. At any point in
-// time, it contains exactly one of the BookmarkCollectionView subclasses.
+// This views holds the primary content of this controller.
 @property(nonatomic, readwrite, strong) ContentView* view;
 
 // The possible views that can be shown from the menu.
-@property(nonatomic, strong) BookmarkFolderCollectionView* folderView;
+@property(nonatomic, strong) BookmarkCollectionView* folderView;
 // This view is created and used if the model is not fully loaded yet by the
 // time this controller starts.
 @property(nonatomic, strong) BookmarkHomeWaitingView* waitForModelView;
@@ -500,9 +499,9 @@ const CGFloat kNavigationBarTopMargin = 8.0;
   if (self.folderView)
     return;
 
-  BookmarkFolderCollectionView* view = [[BookmarkFolderCollectionView alloc]
-      initWithBrowserState:self.browserState
-                     frame:CGRectZero];
+  BookmarkCollectionView* view =
+      [[BookmarkCollectionView alloc] initWithBrowserState:self.browserState
+                                                     frame:CGRectZero];
   self.folderView = view;
   self.folderView.delegate = self;
   [self.folderView setEditing:self.editing animated:NO];
@@ -962,10 +961,10 @@ const CGFloat kNavigationBarTopMargin = 8.0;
                                                    self.browserState);
 }
 
-#pragma mark - BookmarkFolderCollectionViewDelegate
+#pragma mark - BookmarkCollectionViewDelegate
 
-- (void)bookmarkFolderCollectionView:(BookmarkFolderCollectionView*)view
-         selectedFolderForNavigation:(const BookmarkNode*)folder {
+- (void)bookmarkCollectionView:(BookmarkCollectionView*)view
+    selectedFolderForNavigation:(const BookmarkNode*)folder {
   BookmarkMenuItem* menuItem = nil;
   if (view == self.folderView) {
     const BookmarkNode* parent = RootLevelFolderForNode(folder, self.bookmarks);

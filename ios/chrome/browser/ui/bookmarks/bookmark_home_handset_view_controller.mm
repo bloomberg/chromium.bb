@@ -19,8 +19,8 @@
 #import "ios/chrome/browser/ui/bookmarks/bars/bookmark_editing_bar.h"
 #import "ios/chrome/browser/ui/bookmarks/bars/bookmark_navigation_bar.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_collection_cells.h"
+#import "ios/chrome/browser/ui/bookmarks/bookmark_collection_view.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_edit_view_controller.h"
-#import "ios/chrome/browser/ui/bookmarks/bookmark_folder_collection_view.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_folder_editor_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_folder_view_controller.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_home_primary_view.h"
@@ -50,8 +50,8 @@ const CGFloat kBookmarkMenuWidth = 264;
 }  // namespace
 
 @interface BookmarkHomeHandsetViewController ()<
+    BookmarkCollectionViewDelegate,
     BookmarkEditViewControllerDelegate,
-    BookmarkFolderCollectionViewDelegate,
     BookmarkFolderEditorViewControllerDelegate,
     BookmarkFolderViewControllerDelegate,
     BookmarkMenuViewDelegate,
@@ -62,6 +62,7 @@ const CGFloat kBookmarkMenuWidth = 264;
   std::unique_ptr<bookmarks::BookmarkModelBridge> _bridge;
 }
 
+// This views holds the primary content of this view controller.
 // Redefined to be readwrite.
 @property(nonatomic, strong, readwrite) NSMutableArray* editIndexPaths;
 
@@ -71,11 +72,10 @@ const CGFloat kBookmarkMenuWidth = 264;
 defaultMoveFolderFromBookmarks:(const std::set<const BookmarkNode*>&)bookmarks
                          model:(bookmarks::BookmarkModel*)model;
 
-// This views holds the primary content of this view controller. At any point in
-// time, it contains exactly one of the BookmarkCollectionView subclasses.
+// This views holds the primary content of this view controller.
 @property(nonatomic, strong) UIView* contentView;
 // The possible views that can be shown from the menu.
-@property(nonatomic, strong) BookmarkFolderCollectionView* folderView;
+@property(nonatomic, strong) BookmarkCollectionView* folderView;
 // This view is created and used if the model is not fully loaded yet by the
 // time this controller starts.
 @property(nonatomic, strong) BookmarkHomeWaitingView* waitForModelView;
@@ -217,8 +217,6 @@ defaultMoveFolderFromBookmarks:(const std::set<const BookmarkNode*>&)bookmarks
 // Saves the current position and asks the delegate to open the url.
 - (void)delegateDismiss:(const GURL&)url;
 
-// TODO(crbug.com/450646): This should not be needed but require refactoring of
-// the BookmarkCollectionViewDelegate.
 - (NSIndexPath*)indexPathForCell:(UICollectionViewCell*)cell;
 
 @end
@@ -445,7 +443,7 @@ defaultMoveFolderFromBookmarks:(const std::set<const BookmarkNode*>&)bookmarks
   if (self.folderView)
     return;
 
-  BookmarkFolderCollectionView* view = [[BookmarkFolderCollectionView alloc]
+  BookmarkCollectionView* view = [[BookmarkCollectionView alloc]
       initWithBrowserState:self.browserState
                      frame:[self frameForPrimaryView]];
   self.folderView = view;
@@ -814,10 +812,10 @@ defaultMoveFolderFromBookmarks:(const std::set<const BookmarkNode*>&)bookmarks
                                                    self.browserState);
 }
 
-#pragma mark - BookmarkFolderCollectionViewDelegate
+#pragma mark - BookmarkCollectionViewDelegate
 
-- (void)bookmarkFolderCollectionView:(BookmarkFolderCollectionView*)view
-         selectedFolderForNavigation:(const BookmarkNode*)folder {
+- (void)bookmarkCollectionView:(BookmarkCollectionView*)view
+    selectedFolderForNavigation:(const BookmarkNode*)folder {
   BookmarkMenuItem* menuItem = nil;
   if (view == self.folderView) {
     const BookmarkNode* parent = RootLevelFolderForNode(folder, self.bookmarks);

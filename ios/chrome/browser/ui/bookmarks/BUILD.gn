@@ -19,8 +19,6 @@ source_set("bookmarks") {
     "bookmark_elevated_toolbar.mm",
     "bookmark_extended_button.h",
     "bookmark_extended_button.mm",
-    "bookmark_folder_collection_view.h",
-    "bookmark_folder_collection_view.mm",
     "bookmark_folder_editor_view_controller.h",
     "bookmark_folder_editor_view_controller.mm",
     "bookmark_folder_table_view_cell.h",
