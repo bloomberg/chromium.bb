@@ -175,7 +175,7 @@ class ImageDecodeTaskImpl : public TileTask {
         image_.image().get(),
         devtools_instrumentation::ScopedImageDecodeTask::kGpu,
         ImageDecodeCache::ToScopedTaskType(tracing_info_.task_type));
-    cache_->DecodeImage(image_);
+    cache_->DecodeImage(image_, tracing_info_.task_type);
   }
 
   // Overridden from TileTask:
@@ -260,12 +260,15 @@ void GpuImageDecodeCache::DecodedImageData::Unlock() {
 }
 
 void GpuImageDecodeCache::DecodedImageData::SetLockedData(
-    std::unique_ptr<base::DiscardableMemory> data) {
+    std::unique_ptr<base::DiscardableMemory> data,
+    bool out_of_raster) {
   DCHECK(!is_locked_);
   DCHECK(data);
   DCHECK(!data_);
+  DCHECK_EQ(usage_stats_.lock_count, 1);
   data_ = std::move(data);
   is_locked_ = true;
+  usage_stats_.first_lock_out_of_raster = out_of_raster;
 }
 
 void GpuImageDecodeCache::DecodedImageData::ResetData() {
@@ -309,6 +312,10 @@ void GpuImageDecodeCache::DecodedImageData::ReportUsageStats() const {
                             DECODED_IMAGE_STATE_COUNT);
   UMA_HISTOGRAM_BOOLEAN("Renderer4.GpuImageDecodeState.FirstLockWasted",
                         usage_stats_.first_lock_wasted);
+  if (usage_stats_.first_lock_out_of_raster)
+    UMA_HISTOGRAM_BOOLEAN(
+        "Renderer4.GpuImageDecodeState.FirstLockWasted.OutOfRaster",
+        usage_stats_.first_lock_wasted);
 }
 
 GpuImageDecodeCache::UploadedImageData::UploadedImageData() = default;
@@ -531,7 +538,7 @@ DecodedDrawImage GpuImageDecodeCache::GetDecodedImageForDraw(
 
   // We may or may not need to decode and upload the image we've found, the
   // following functions early-out to if we already decoded.
-  DecodeImageIfNecessary(draw_image, image_data);
+  DecodeImageIfNecessary(draw_image, image_data, TaskType::kInRaster);
   UploadImageIfNecessary(draw_image, image_data);
   // Unref the image decode, but not the image. The image ref will be released
   // in DrawWithImageFinished.
@@ -696,14 +703,15 @@ bool GpuImageDecodeCache::OnMemoryDump(
   return true;
 }
 
-void GpuImageDecodeCache::DecodeImage(const DrawImage& draw_image) {
+void GpuImageDecodeCache::DecodeImage(const DrawImage& draw_image,
+                                      TaskType task_type) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                "GpuImageDecodeCache::DecodeImage");
   base::AutoLock lock(lock_);
   ImageData* image_data = GetImageDataForDrawImage(draw_image);
   DCHECK(image_data);
   DCHECK(!image_data->is_at_raster);
-  DecodeImageIfNecessary(draw_image, image_data);
+  DecodeImageIfNecessary(draw_image, image_data, task_type);
 }
 
 void GpuImageDecodeCache::UploadImage(const DrawImage& draw_image) {
@@ -1066,7 +1074,8 @@ bool GpuImageDecodeCache::ExceedsPreferredCount() const {
 }
 
 void GpuImageDecodeCache::DecodeImageIfNecessary(const DrawImage& draw_image,
-                                                 ImageData* image_data) {
+                                                 ImageData* image_data,
+                                                 TaskType task_type) {
   lock_.AssertAcquired();
 
   DCHECK_GT(image_data->decode.ref_count, 0u);
@@ -1146,7 +1155,8 @@ void GpuImageDecodeCache::DecodeImageIfNecessary(const DrawImage& draw_image,
     return;
   }
 
-  image_data->decode.SetLockedData(std::move(backing_memory));
+  image_data->decode.SetLockedData(std::move(backing_memory),
+                                   task_type == TaskType::kOutOfRaster);
 }
 
 void GpuImageDecodeCache::UploadImageIfNecessary(const DrawImage& draw_image,

@@ -91984,6 +91984,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="UMA.Histograms.Activity"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="OutOfRaster" separator=".">
+  <suffix name="OutOfRaster"
+      label="Task was not performed as part of a raster task."/>
+  <affected-histogram name="Renderer4.GpuImageDecodeState.FirstLockWasted"/>
+  <affected-histogram
+      name="Renderer4.SoftwareImageDecodeState.FirstLockWasted"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="OverlappedReadImpact" separator="_">
   <obsolete>
     Experiments no longer active.

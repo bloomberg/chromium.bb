@@ -188,6 +188,7 @@ class CC_EXPORT SoftwareImageDecodeCache
     // scaled image. Either case represents this decode as being valuable and
     // not wasted.
     void mark_used() { usage_stats_.used = true; }
+    void mark_out_of_raster() { usage_stats_.first_lock_out_of_raster = true; }
 
    private:
     struct UsageStats {
@@ -197,6 +198,7 @@ class CC_EXPORT SoftwareImageDecodeCache
       bool used = false;
       bool last_lock_failed = false;
       bool first_lock_wasted = false;
+      bool first_lock_out_of_raster = false;
     };
 
     bool locked_;
