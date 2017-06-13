@@ -11,13 +11,16 @@ from collections import namedtuple
 from webkitpy.w3c.common import WPT_GH_ORG, WPT_GH_REPO_NAME
 from webkitpy.common.memoized import memoized
 
-
 _log = logging.getLogger(__name__)
 API_BASE = 'https://api.github.com'
 EXPORT_LABEL = 'chromium-export'
 
 
 class WPTGitHub(object):
+    """An interface to GitHub for interacting with the web-platform-tests repo.
+
+    This class contains methods for sending requests to the GitHub API.
+    """
 
     def __init__(self, host, user, token, pr_history_window=30):
         self.host = host
@@ -224,7 +227,6 @@ class WPTGitHub(object):
         return None
 
 
-
 class MergeError(Exception):
     """An error specifically for when a PR cannot be merged.
 
@@ -232,5 +234,6 @@ class MergeError(Exception):
     indicating that the PR could not be merged.
     """
     pass
+
 
 PullRequest = namedtuple('PullRequest', ['title', 'number', 'body', 'state'])

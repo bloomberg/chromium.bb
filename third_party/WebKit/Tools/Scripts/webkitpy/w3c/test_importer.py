@@ -8,11 +8,7 @@ If this script is given the argument --auto-update, it will also:
  1. Upload a CL.
  2. Trigger try jobs and wait for them to complete.
  3. Make any changes that are required for new failing tests.
- 4. Commit the CL.
-
-If this script is given the argument --auto-update, it will also attempt to
-upload a CL, trigger try jobs, and make any changes that are required for
-new failing tests before committing.
+ 4. Attempt to land the CL.
 """
 
 import argparse
@@ -166,6 +162,7 @@ class TestImporter(object):
         return exportable_commits_since(chromium_commit.sha, self.host, local_wpt)
 
     def clean_up_temp_repo(self, temp_repo_path):
+        """Removes the temporary copy of the wpt repo that was downloaded."""
         _log.info('Deleting temp repo directory %s.', temp_repo_path)
         self.fs.rmtree(temp_repo_path)
 
@@ -239,6 +236,13 @@ class TestImporter(object):
         self._delete_orphaned_baselines(dest_path)
 
         self._generate_manifest(dest_path)
+
+        # TODO(qyearsley): Consider running the imported tests with
+        # `run-webkit-tests --reset-results external/wpt` to get most of
+        # the cross-platform baselines without having to wait for try jobs.
+        # TODO(qyearsley): Consider updating manifest after adding baselines.
+        # TODO(qyearsley): Consider starting CQ at the same time as the
+        # initial try jobs.
 
         _log.info('Updating TestExpectations for any removed or renamed tests.')
         self.update_all_test_expectations_files(self._list_deleted_tests(), self._list_renamed_tests())
@@ -438,13 +442,24 @@ class TestImporter(object):
         return '\n'.join(message_lines)
 
     def fetch_new_expectations_and_baselines(self):
-        """Adds new expectations and downloads baselines based on try job results, then commits and uploads the change."""
+        """Modifies expectation lines and baselines based on try job results.
+
+        Assuming that there are some try job results available, this
+        adds new expectation lines to TestExpectations and downloads new
+        baselines based on the try job results.
+
+        This is the same as invoking the `wpt-update-expectations` script.
+        """
         _log.info('Adding test expectations lines to LayoutTests/TestExpectations.')
         expectation_updater = WPTExpectationsUpdater(self.host)
         expectation_updater.run(args=[])
 
     def update_all_test_expectations_files(self, deleted_tests, renamed_tests):
-        """Updates all test expectations files for tests that have been deleted or renamed."""
+        """Updates all test expectations files for tests that have been deleted or renamed.
+
+        This is only for deleted or renamed tests in the initial import,
+        not for tests that have failures in try jobs.
+        """
         port = self.host.port_factory.get()
         for path, file_contents in port.all_expectations_dict().iteritems():
             parser = TestExpectationParser(port, all_tests=None, is_lint_mode=False)
@@ -452,7 +467,7 @@ class TestImporter(object):
             self._update_single_test_expectations_file(path, expectation_lines, deleted_tests, renamed_tests)
 
     def _update_single_test_expectations_file(self, path, expectation_lines, deleted_tests, renamed_tests):
-        """Updates single test expectations file."""
+        """Updates a single test expectations file."""
         # FIXME: This won't work for removed or renamed directories with test expectations
         # that are directories rather than individual tests.
         new_lines = []
@@ -473,7 +488,7 @@ class TestImporter(object):
         self.host.filesystem.write_text_file(path, new_file_contents)
 
     def _list_deleted_tests(self):
-        """Returns a list of layout tests that have been deleted."""
+        """List of layout tests that have been deleted."""
         out = self.check_run(['git', 'diff', 'origin/master', '-M100%', '--diff-filter=D', '--name-only'])
         deleted_tests = []
         for line in out.splitlines():
@@ -483,7 +498,10 @@ class TestImporter(object):
         return deleted_tests
 
     def _list_renamed_tests(self):
-        """Returns a dict mapping source to dest name for layout tests that have been renamed."""
+        """Lists tests that have been renamed.
+
+        Returns a dict mapping source name to destination name.
+        """
         out = self.check_run(['git', 'diff', 'origin/master', '-M100%', '--diff-filter=R', '--name-status'])
         renamed_tests = {}
         for line in out.splitlines():

@@ -27,13 +27,12 @@ class WPTManifest(object):
     def _items_for_path(self, path_in_wpt):
         """Returns manifest items for the given WPT path, or None if not found.
 
-        The format of a manifest item depends on
-        https://github.com/w3c/wpt-tools/blob/master/manifest/item.py
-        and is assumed to be a list of the format [url, extras],
-        or [url, references, extras] for reftests, or None if not found.
+        The format of a manifest item depends on:
+          https://github.com/w3c/web-platform-tests/blob/master/tools/manifest/item.py
 
         For most testharness tests, the returned items is expected
-        to look like this:: [["/some/test/path.html", {}]]
+        to look like this: [["/some/test/path.html", {}]]. For reference tests,
+        it will be a list with three items ([url, references, extras]).
         """
         items = self.raw_dict['items']
         if path_in_wpt in items['manual']:
@@ -74,7 +73,7 @@ class WPTManifest(object):
         """Extracts reference information of the specified reference test.
 
         The return value is a list of (match/not-match, reference path in wpt)
-        like:
+        pairs, like:
            [("==", "foo/bar/baz-match.html"),
             ("!=", "foo/bar/baz-mismatch.html")]
         """
@@ -89,7 +88,7 @@ class WPTManifest(object):
 
     @staticmethod
     def ensure_manifest(host):
-        """Checks whether the manifest exists, and then generates it if necessary."""
+        """Generates the MANIFEST.json file if it does not exist."""
         finder = PathFinder(host.filesystem)
         manifest_path = finder.path_from_layout_tests('external', 'wpt', 'MANIFEST.json')
         base_manifest_path = finder.path_from_layout_tests('external', 'WPT_BASE_MANIFEST.json')

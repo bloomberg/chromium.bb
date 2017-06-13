@@ -17,12 +17,17 @@ class DirectoryOwnersExtractor(object):
         self.owner_map = None
 
     def read_owner_map(self):
-        """Reads the W3CImportExpectations file and returns a map of directories to owners."""
+        """Reads W3CImportExpectations and stores the owner information."""
         input_path = self.finder.path_from_layout_tests('W3CImportExpectations')
         input_contents = self.filesystem.read_text_file(input_path)
         self.owner_map = self.lines_to_owner_map(input_contents.splitlines())
 
     def lines_to_owner_map(self, lines):
+        """Returns a dict mapping directories to owners.
+
+        Args:
+            lines: Lines in W3CImportExpectations.
+        """
         current_owners = []
         owner_map = {}
         for line in lines:
@@ -49,6 +54,7 @@ class DirectoryOwnersExtractor(object):
 
     @staticmethod
     def extract_directory(line):
+        """Extracts the directory substring for an enabled directory."""
         match = re.match(r'# ?(?P<directory>\S+) \[ (Pass|Skip) \]', line)
         if match and match.group('directory'):
             return match.group('directory')

@@ -7,6 +7,9 @@ from webkitpy.w3c.wpt_github import MergeError
 
 class MockWPTGitHub(object):
 
+    # Some unused arguments may be included to match the real class's API.
+    # pylint: disable=unused-argument
+
     def __init__(self, pull_requests, unsuccessful_merge_index=-1, create_pr_fail_index=-1):
         self.pull_requests = pull_requests
         self.calls = []
@@ -16,7 +19,7 @@ class MockWPTGitHub(object):
         self.create_pr_index = 0
         self.create_pr_fail_index = create_pr_fail_index
 
-    def all_pull_requests(self, limit=30):  # pylint: disable=unused-argument
+    def all_pull_requests(self, limit=30):
         self.calls.append('all_pull_requests')
         return self.pull_requests
 
@@ -39,7 +42,7 @@ class MockWPTGitHub(object):
 
         return {'number': 5678}
 
-    def update_pr(self, pr_number, desc_title, body):  # pylint: disable=unused-argument
+    def update_pr(self, pr_number, desc_title, body):
         self.calls.append('update_pr')
 
         return {'number': 5678}
