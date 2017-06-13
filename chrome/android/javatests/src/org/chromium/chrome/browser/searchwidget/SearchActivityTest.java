@@ -27,6 +27,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -61,6 +62,8 @@ import java.util.concurrent.Callable;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class SearchActivityTest {
+    private static final long OMNIBOX_SHOW_TIMEOUT_MS = ScalableTimeout.scaleTimeout(5000);
+
     private static class TestDelegate
             extends SearchActivityDelegate implements DefaultSearchEnginePromoDialogObserver {
         public final CallbackHelper shouldDelayNativeInitializationCallback = new CallbackHelper();
@@ -73,6 +76,7 @@ public class SearchActivityTest {
         public boolean shouldShowRealSearchDialog;
 
         public DefaultSearchEnginePromoDialog shownPromoDialog;
+        public Callback<Boolean> onSearchEngineFinalizedCallback;
 
         @Override
         boolean shouldDelayNativeInitialization() {
@@ -83,6 +87,7 @@ public class SearchActivityTest {
         @Override
         void showSearchEngineDialogIfNeeded(
                 Activity activity, Callback<Boolean> onSearchEngineFinalized) {
+            onSearchEngineFinalizedCallback = onSearchEngineFinalized;
             showSearchEngineDialogIfNeededCallback.notifyCalled();
 
             if (shouldShowRealSearchDialog) {
@@ -96,7 +101,7 @@ public class SearchActivityTest {
                 return;
             }
 
-            onSearchEngineFinalized.onResult(!shouldDelayDeferredInitialization);
+            if (!shouldDelayDeferredInitialization) onSearchEngineFinalized.onResult(true);
         }
 
         @Override
@@ -268,6 +273,7 @@ public class SearchActivityTest {
         final SearchActivity searchActivity = startSearchActivity();
         mTestDelegate.shouldDelayNativeInitializationCallback.waitForCallback(0);
         mTestDelegate.showSearchEngineDialogIfNeededCallback.waitForCallback(0);
+        Assert.assertNotNull(mTestDelegate.onSearchEngineFinalizedCallback);
         Assert.assertEquals(0, mTestDelegate.onFinishDeferredInitializationCallback.getCallCount());
 
         // Set some text in the search box, then continue startup.
@@ -275,7 +281,7 @@ public class SearchActivityTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                searchActivity.finishDeferredInitialization();
+                mTestDelegate.onSearchEngineFinalizedCallback.onResult(true);
             }
         });
 
@@ -289,7 +295,7 @@ public class SearchActivityTest {
         final SearchActivityLocationBarLayout locationBar =
                 (SearchActivityLocationBarLayout) searchActivity.findViewById(
                         R.id.search_location_bar);
-        OmniboxTestUtils.waitForOmniboxSuggestions(locationBar);
+        OmniboxTestUtils.waitForOmniboxSuggestions(locationBar, OMNIBOX_SHOW_TIMEOUT_MS);
 
         // Hitting enter should submit the URL and kick the user to the browser.
         final Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
@@ -376,7 +382,7 @@ public class SearchActivityTest {
         final SearchActivityLocationBarLayout locationBar =
                 (SearchActivityLocationBarLayout) searchActivity.findViewById(
                         R.id.search_location_bar);
-        OmniboxTestUtils.waitForOmniboxSuggestions(locationBar);
+        OmniboxTestUtils.waitForOmniboxSuggestions(locationBar, OMNIBOX_SHOW_TIMEOUT_MS);
 
         // Start the Activity again by firing another copy of the same Intent.
         SearchActivity restartedActivity = startSearchActivity(1);
