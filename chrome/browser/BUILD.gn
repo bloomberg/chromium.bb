@@ -2152,8 +2152,10 @@ split_static_library("browser") {
     ]
     deps += [
       "//components/pdf/browser",
+      "//device/wake_lock/public/interfaces",
       "//ppapi/features",
       "//ppapi/proxy:ipc",
+      "//services/device/public/interfaces:constants",
       "//third_party/adobe/flash:flapper_version_h",
     ]
   }
