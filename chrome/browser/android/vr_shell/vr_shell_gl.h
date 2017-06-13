@@ -153,8 +153,12 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
                       const gfx::Point& local_point_pixels);
   void SendHoverMove(const gfx::PointF& target_point,
                      const gfx::Point& local_point_pixels);
-  void SendButtonDown(UiElement* target, const gfx::PointF& target_point);
-  bool SendButtonUp(UiElement* target, const gfx::PointF& target_point);
+  void SendButtonDown(UiElement* target,
+                      const gfx::PointF& target_point,
+                      const gfx::Point& local_point_pixels);
+  bool SendButtonUp(UiElement* target,
+                    const gfx::PointF& target_point,
+                    const gfx::Point& local_point_pixels);
   void SendTap(UiElement* target,
                const gfx::PointF& target_point,
                const gfx::Point& local_point_pixels);

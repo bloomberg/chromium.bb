@@ -163,11 +163,16 @@ gvr::Mat4f PerspectiveMatrixFromView(const gvr::Rectf& fov,
 std::unique_ptr<blink::WebMouseEvent> MakeMouseEvent(
     blink::WebInputEvent::Type type,
     double timestamp,
-    const gfx::Point& loc) {
-  std::unique_ptr<blink::WebMouseEvent> mouse_event(new blink::WebMouseEvent(
-      type, blink::WebInputEvent::kNoModifiers, timestamp));
+    const gfx::Point& location,
+    bool down) {
+  blink::WebInputEvent::Modifiers modifiers =
+      down ? blink::WebInputEvent::kLeftButtonDown
+           : blink::WebInputEvent::kNoModifiers;
+  std::unique_ptr<blink::WebMouseEvent> mouse_event(
+      new blink::WebMouseEvent(type, modifiers, timestamp));
   mouse_event->pointer_type = blink::WebPointerProperties::PointerType::kMouse;
-  mouse_event->SetPositionInWidget(loc.x(), loc.y());
+  mouse_event->button = blink::WebPointerProperties::Button::kLeft;
+  mouse_event->SetPositionInWidget(location.x(), location.y());
   mouse_event->click_count = 1;
 
   return mouse_event;
@@ -606,8 +611,8 @@ void VrShellGl::HandleControllerInput(const gfx::Vector3dF& head_direction) {
   if (!SendHoverEnter(target_element, target_local_point, local_point_pixels)) {
     SendHoverMove(target_local_point, local_point_pixels);
   }
-  SendButtonDown(target_element, target_local_point);
-  if (!SendButtonUp(target_element, target_local_point))
+  SendButtonDown(target_element, target_local_point, local_point_pixels);
+  if (!SendButtonUp(target_element, target_local_point, local_point_pixels))
     SendTap(target_element, target_local_point, local_point_pixels);
 }
 
@@ -706,7 +711,7 @@ void VrShellGl::SendHoverLeave(UiElement* target) {
     return;
   if (hover_target_->fill() == Fill::CONTENT) {
     SendGestureToContent(MakeMouseEvent(blink::WebInputEvent::kMouseLeave,
-                                        NowSeconds(), gfx::Point()));
+                                        NowSeconds(), gfx::Point(), in_click_));
   } else {
     hover_target_->OnHoverLeave();
   }
@@ -720,7 +725,8 @@ bool VrShellGl::SendHoverEnter(UiElement* target,
     return false;
   if (target->fill() == Fill::CONTENT) {
     SendGestureToContent(MakeMouseEvent(blink::WebInputEvent::kMouseEnter,
-                                        NowSeconds(), local_point_pixels));
+                                        NowSeconds(), local_point_pixels,
+                                        in_click_));
   } else {
     target->OnHoverEnter(target_point);
   }
@@ -734,41 +740,53 @@ void VrShellGl::SendHoverMove(const gfx::PointF& target_point,
     return;
   if (hover_target_->fill() == Fill::CONTENT) {
     SendGestureToContent(MakeMouseEvent(blink::WebInputEvent::kMouseMove,
-                                        NowSeconds(), local_point_pixels));
+                                        NowSeconds(), local_point_pixels,
+                                        in_click_));
   } else {
     hover_target_->OnMove(target_point);
   }
 }
 
 void VrShellGl::SendButtonDown(UiElement* target,
-                               const gfx::PointF& target_point) {
+                               const gfx::PointF& target_point,
+                               const gfx::Point& local_point_pixels) {
   if (in_click_)
     return;
   if (!controller_->ButtonDownHappened(gvr::kControllerButtonClick))
     return;
   input_locked_element_ = target;
   in_click_ = true;
-  // We don't support down/up for content yet.
-  if (!target || target->fill() == Fill::CONTENT)
+  if (!target)
     return;
-  target->OnButtonDown(target_point);
+  if (target->fill() == Fill::CONTENT) {
+    SendGestureToContent(MakeMouseEvent(blink::WebInputEvent::kMouseDown,
+                                        NowSeconds(), local_point_pixels,
+                                        in_click_));
+  } else {
+    target->OnButtonDown(target_point);
+  }
 }
 
 bool VrShellGl::SendButtonUp(UiElement* target,
-                             const gfx::PointF& target_point) {
+                             const gfx::PointF& target_point,
+                             const gfx::Point& local_point_pixels) {
   if (!in_click_)
     return false;
-  if (!controller_->ButtonUpHappened(gvr::kControllerButtonClick))
+  if (!controller_->ButtonUpHappened(gvr::kControllerButtonClick) &&
+      controller_->ButtonState(gvr::kControllerButtonClick))
     return false;
   in_click_ = false;
   if (!input_locked_element_)
     return true;
   DCHECK(input_locked_element_ == target);
   input_locked_element_ = nullptr;
-  // We don't support down/up for content yet.
-  if (target->fill() == Fill::CONTENT)
-    return false;
-  target->OnButtonUp(target_point);
+  if (target->fill() == Fill::CONTENT) {
+    SendGestureToContent(MakeMouseEvent(blink::WebInputEvent::kMouseUp,
+                                        NowSeconds(), local_point_pixels,
+                                        in_click_));
+  } else {
+    target->OnButtonUp(target_point);
+  }
   return true;
 }
 
@@ -777,9 +795,6 @@ void VrShellGl::SendTap(UiElement* target,
                         const gfx::Point& local_point_pixels) {
   if (!target)
     return;
-  if (controller_->ButtonUpHappened(gvr::kControllerButtonClick) &&
-      target->fill() == Fill::CONTENT)
-    touch_pending_ = true;
   if (!touch_pending_)
     return;
   touch_pending_ = false;
