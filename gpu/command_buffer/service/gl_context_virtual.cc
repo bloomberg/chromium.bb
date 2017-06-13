@@ -100,6 +100,10 @@ gl::YUVToRGBConverter* GLContextVirtual::GetYUVToRGBConverter() {
   return shared_context_->GetYUVToRGBConverter();
 }
 
+void GLContextVirtual::ForceReleaseVirtuallyCurrent() {
+  shared_context_->OnReleaseVirtuallyCurrent(this);
+}
+
 GLContextVirtual::~GLContextVirtual() {
   Destroy();
 }

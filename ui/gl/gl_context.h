@@ -176,6 +176,11 @@ class GL_EXPORT GLContext : public base::RefCounted<GLContext> {
   // extension entry points.
   void ReinitializeDynamicBindings();
 
+  // Forces this context, which must be a virtual context, to be no
+  // longer considered virtually current. The real context remains
+  // current.
+  virtual void ForceReleaseVirtuallyCurrent();
+
  protected:
   virtual ~GLContext();
 

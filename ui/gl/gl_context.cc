@@ -136,6 +136,10 @@ void GLContext::ReinitializeDynamicBindings() {
   InitializeDynamicBindings();
 }
 
+void GLContext::ForceReleaseVirtuallyCurrent() {
+  NOTREACHED();
+}
+
 bool GLContext::HasExtension(const char* name) {
   std::string extensions = GetExtensions();
   extensions += " ";
