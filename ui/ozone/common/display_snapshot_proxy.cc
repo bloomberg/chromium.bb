@@ -22,7 +22,7 @@ bool SameModes(const DisplayMode_Params& lhs, const DisplayMode_Params& rhs) {
 }  // namespace
 
 DisplaySnapshotProxy::DisplaySnapshotProxy(const DisplaySnapshot_Params& params)
-    : DisplaySnapshot(
+    : DisplaySnapshotMojo(
           params.display_id,
           params.origin,
           params.physical_size,
@@ -34,9 +34,9 @@ DisplaySnapshotProxy::DisplaySnapshotProxy(const DisplaySnapshot_Params& params)
           params.sys_path,
           std::vector<std::unique_ptr<const display::DisplayMode>>(),
           params.edid,
-          NULL,
-          NULL),
-      string_representation_(params.string_representation) {
+          nullptr,
+          nullptr,
+          params.string_representation) {
   for (size_t i = 0; i < params.modes.size(); ++i) {
     modes_.push_back(base::MakeUnique<display::DisplayMode>(
         params.modes[i].size, params.modes[i].is_interlaced,
@@ -56,10 +56,6 @@ DisplaySnapshotProxy::DisplaySnapshotProxy(const DisplaySnapshot_Params& params)
 }
 
 DisplaySnapshotProxy::~DisplaySnapshotProxy() {
-}
-
-std::string DisplaySnapshotProxy::ToString() const {
-  return string_representation_;
 }
 
 }  // namespace ui

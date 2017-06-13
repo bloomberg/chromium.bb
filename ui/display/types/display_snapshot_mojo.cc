@@ -66,11 +66,39 @@ DisplaySnapshotMojo::DisplaySnapshotMojo(int64_t display_id,
   maximum_cursor_size_ = maximum_cursor_size;
 }
 
+DisplaySnapshotMojo::DisplaySnapshotMojo(int64_t display_id,
+                                         const gfx::Point& origin,
+                                         const gfx::Size& physical_size,
+                                         DisplayConnectionType type,
+                                         bool is_aspect_preserving_scaling,
+                                         bool has_overscan,
+                                         bool has_color_correction_matrix,
+                                         std::string display_name,
+                                         const base::FilePath& sys_path,
+                                         DisplayModeList modes,
+                                         const std::vector<uint8_t>& edid,
+                                         const DisplayMode* current_mode,
+                                         const DisplayMode* native_mode,
+                                         std::string string_representation)
+    : DisplaySnapshot(display_id,
+                      origin,
+                      physical_size,
+                      type,
+                      is_aspect_preserving_scaling,
+                      has_overscan,
+                      has_color_correction_matrix,
+                      display_name,
+                      sys_path,
+                      std::move(modes),
+                      edid,
+                      current_mode,
+                      native_mode),
+      string_representation_(string_representation) {}
+
 DisplaySnapshotMojo::~DisplaySnapshotMojo() = default;
 
-// TODO(thanhph): Implement ToString() for debugging purposes.
 std::string DisplaySnapshotMojo::ToString() const {
-  return "";
+  return string_representation_;
 }
 
 }  // namespace display
