@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.payments.ui;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.View;
 import android.widget.GridView;
 
 /**
@@ -22,10 +23,10 @@ public class ExpandableGridView extends GridView {
         // GridView does not work well in a ScrollView when it uses WRAP_CONTENT.
         // Instead, force it to use AT_MOST.
         // https://stackoverflow.com/questions/4523609/grid-of-images-inside-scrollview
-        final int heightSize = MeasureSpec.getSize(heightMeasureSpec);
         int heightSpec;
         if (getLayoutParams().height == LayoutParams.WRAP_CONTENT) {
-            heightSpec = MeasureSpec.makeMeasureSpec(heightSize, MeasureSpec.AT_MOST);
+            heightSpec = MeasureSpec.makeMeasureSpec(
+                    Integer.MAX_VALUE & View.MEASURED_SIZE_MASK, MeasureSpec.AT_MOST);
         } else {
             heightSpec = heightMeasureSpec;
         }
