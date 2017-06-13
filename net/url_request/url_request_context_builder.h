@@ -53,6 +53,7 @@ class HttpAuthHandlerFactory;
 class HttpServerProperties;
 class NetworkQualityEstimator;
 class ProxyConfigService;
+struct ReportingPolicy;
 class URLRequestContext;
 class URLRequestInterceptor;
 
@@ -281,6 +282,11 @@ class NET_EXPORT URLRequestContextBuilder {
 
   void SetCertVerifier(std::unique_ptr<CertVerifier> cert_verifier);
 
+  // Sets the reporting policy of the created request context. If not set, or
+  // set to nullptr, reporting is disabled.
+  void set_reporting_policy(
+      std::unique_ptr<net::ReportingPolicy> reporting_policy);
+
   void SetInterceptors(std::vector<std::unique_ptr<URLRequestInterceptor>>
                            url_request_interceptors);
 
@@ -366,6 +372,7 @@ class NET_EXPORT URLRequestContextBuilder {
   std::unique_ptr<HttpAuthHandlerFactory> http_auth_handler_factory_;
   std::unique_ptr<CertVerifier> cert_verifier_;
   std::unique_ptr<CTVerifier> ct_verifier_;
+  std::unique_ptr<net::ReportingPolicy> reporting_policy_;
   std::vector<std::unique_ptr<URLRequestInterceptor>> url_request_interceptors_;
   std::unique_ptr<HttpServerProperties> http_server_properties_;
   std::map<std::string, std::unique_ptr<URLRequestJobFactory::ProtocolHandler>>

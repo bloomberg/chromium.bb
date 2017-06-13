@@ -39,6 +39,8 @@
 #include "net/net_features.h"
 #include "net/nqe/network_quality_estimator.h"
 #include "net/quic/chromium/quic_stream_factory.h"
+#include "net/reporting/reporting_policy.h"
+#include "net/reporting/reporting_service.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/default_channel_id_store.h"
 #include "net/ssl/ssl_config_service_defaults.h"
@@ -144,6 +146,10 @@ class ContainerURLRequestContext final : public URLRequestContext {
       : file_task_runner_(file_task_runner), storage_(this) {}
 
   ~ContainerURLRequestContext() override {
+    // Destroy the ReportingService before the rest of the URLRequestContext, so
+    // it cancels any pending requests it may have.
+    storage_.set_reporting_service(nullptr);
+
     // Shut down the ProxyService, as it may have pending URLRequests using this
     // context. Since this cancels requests, it's not safe to subclass this, as
     // some parts of the URLRequestContext may then be torn down before this
@@ -266,6 +272,11 @@ void URLRequestContextBuilder::set_ct_verifier(
 void URLRequestContextBuilder::SetCertVerifier(
     std::unique_ptr<CertVerifier> cert_verifier) {
   cert_verifier_ = std::move(cert_verifier);
+}
+
+void URLRequestContextBuilder::set_reporting_policy(
+    std::unique_ptr<net::ReportingPolicy> reporting_policy) {
+  reporting_policy_ = std::move(reporting_policy);
 }
 
 void URLRequestContextBuilder::SetInterceptors(
@@ -496,7 +507,11 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
     url_request_interceptors_.clear();
   }
   storage->set_job_factory(std::move(top_job_factory));
-  // TODO(willchan): Support sdch.
+
+  if (reporting_policy_) {
+    storage->set_reporting_service(
+        ReportingService::Create(*reporting_policy_, context.get()));
+  }
 
   return std::move(context);
 }
