@@ -738,11 +738,6 @@ void RemoteSuggestionsProviderImpl::OnFetchMoreFinished(
   // |fetched_category.suggestions|.
   ArchiveSuggestions(existing_content, &fetched_category.suggestions);
 
-  // TODO(tschumann): We should properly honor the existing category state,
-  // e.g. to make sure we don't serve results after the sign-out. Revisit this:
-  // Should Nuke also cancel outstanding requests, or do we want to check the
-  // status?
-  UpdateCategoryStatus(category, CategoryStatus::AVAILABLE);
   fetching_callback.Run(Status::Success(), std::move(result));
 }
 
@@ -994,6 +989,8 @@ void RemoteSuggestionsProviderImpl::ClearSuggestions() {
 }
 
 void RemoteSuggestionsProviderImpl::NukeAllSuggestions() {
+  // TODO(tschumann): Should Nuke also cancel outstanding requests? Or should we
+  // only block the results of such outstanding requests?
   for (const auto& item : category_contents_) {
     Category category = item.first;
     const CategoryContent& content = item.second;
