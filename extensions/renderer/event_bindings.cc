@@ -333,7 +333,9 @@ void EventBindings::AttachFilteredEvent(
   }
 
   int id = g_event_filter.Get().AddEventMatcher(
-      event_name, ParseEventMatcher(std::move(filter)));
+      event_name,
+      base::MakeUnique<EventMatcher>(
+          std::move(filter), context()->GetRenderFrame()->GetRoutingID()));
   if (id == -1) {
     args.GetReturnValue().Set(static_cast<int32_t>(-1));
     return;
@@ -400,12 +402,6 @@ void EventBindings::DetachUnmanagedEvent(
   CHECK(args[0]->IsString());
   std::string event_name = gin::V8ToString(args[0]);
   g_unmanaged_listeners.Get()[context()].erase(event_name);
-}
-
-std::unique_ptr<EventMatcher> EventBindings::ParseEventMatcher(
-    std::unique_ptr<base::DictionaryValue> filter) {
-  return base::MakeUnique<EventMatcher>(
-      std::move(filter), context()->GetRenderFrame()->GetRoutingID());
 }
 
 IPC::Sender* EventBindings::GetIPCSender() {
