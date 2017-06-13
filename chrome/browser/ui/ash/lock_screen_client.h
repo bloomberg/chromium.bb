@@ -8,6 +8,10 @@
 #include "ash/public/interfaces/lock_screen.mojom.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "ui/base/ime/chromeos/input_method_manager.h"
+
+using AuthenticateUserCallback =
+    ash::mojom::LockScreenClient::AuthenticateUserCallback;
 
 // Handles method calls sent from ash to chrome. Also sends messages from chrome
 // to ash.
@@ -21,9 +25,15 @@ class LockScreenClient : public ash::mojom::LockScreenClient {
    public:
     Delegate();
     virtual ~Delegate();
+    virtual void HandleAuthenticateUser(const AccountId& account_id,
+                                        const std::string& hashed_password,
+                                        bool authenticated_by_pin,
+                                        AuthenticateUserCallback callback) = 0;
     virtual void HandleAttemptUnlock(const AccountId& account_id) = 0;
     virtual void HandleHardlockPod(const AccountId& account_id) = 0;
     virtual void HandleRecordClickOnLockIcon(const AccountId& account_id) = 0;
+    virtual void HandleOnFocusPod(const AccountId& account_id) = 0;
+    virtual void HandleOnNoPodFocused() = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Delegate);
@@ -39,6 +49,11 @@ class LockScreenClient : public ash::mojom::LockScreenClient {
   void AttemptUnlock(const AccountId& account_id) override;
   void HardlockPod(const AccountId& account_id) override;
   void RecordClickOnLockIcon(const AccountId& account_id) override;
+  void OnFocusPod(const AccountId& account_id) override;
+  void OnNoPodFocused() override;
+  void LoadWallpaper(const AccountId& account_id) override;
+  void SignOutUser() override;
+  void OnMaxIncorrectPasswordAttempted(const AccountId& account_id) override;
 
   // Wrappers around the mojom::LockScreen interface.
   void ShowLockScreen(ash::mojom::LockScreen::ShowLockScreenCallback on_shown);
@@ -54,6 +69,7 @@ class LockScreenClient : public ash::mojom::LockScreenClient {
                    ash::mojom::AuthType auth_type,
                    const base::string16& initial_value);
   void LoadUsers(std::unique_ptr<base::ListValue> users_list, bool show_guest);
+  void SetPinEnabledForUser(const AccountId& account_id, bool is_enabled);
 
   void SetDelegate(Delegate* delegate);
 

@@ -40,6 +40,7 @@
 #include "chrome/browser/chromeos/login/hwid_checker.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/lock/webui_screen_locker.h"
+#include "chrome/browser/chromeos/login/lock_screen_utils.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
 #include "chrome/browser/chromeos/login/reauth_stats.h"
@@ -126,12 +127,6 @@ const char kNoLockScreenApps[] = "LOCK_SCREEN_APPS_STATE.NONE";
 const char kBackgroundLockScreenApps[] = "LOCK_SCREEN_APPS_STATE.BACKGROUND";
 const char kForegroundLockScreenApps[] = "LOCK_SCREEN_APPS_STATE.FOREGROUND";
 
-static bool Contains(const std::vector<std::string>& container,
-                     const std::string& value) {
-  return std::find(container.begin(), container.end(), value) !=
-         container.end();
-}
-
 class CallOnReturn {
  public:
   explicit CallOnReturn(const base::Closure& callback)
@@ -201,64 +196,6 @@ std::string GetNetworkName(const std::string& service_path) {
   if (!network)
     return std::string();
   return network->name();
-}
-
-static bool SetUserInputMethodImpl(
-    const std::string& username,
-    const std::string& user_input_method,
-    input_method::InputMethodManager::State* ime_state) {
-  if (!chromeos::input_method::InputMethodManager::Get()->IsLoginKeyboard(
-          user_input_method)) {
-    LOG(WARNING) << "SetUserInputMethod('" << username
-                 << "'): stored user last input method '" << user_input_method
-                 << "' is no longer Full Latin Keyboard Language"
-                 << " (entry dropped). Use hardware default instead.";
-
-    PrefService* const local_state = g_browser_process->local_state();
-    DictionaryPrefUpdate updater(local_state, prefs::kUsersLastInputMethod);
-
-    base::DictionaryValue* const users_last_input_methods = updater.Get();
-    if (users_last_input_methods != nullptr) {
-      users_last_input_methods->SetStringWithoutPathExpansion(username, "");
-    }
-    return false;
-  }
-
-  if (!Contains(ime_state->GetActiveInputMethodIds(), user_input_method)) {
-    if (!ime_state->EnableInputMethod(user_input_method)) {
-      DLOG(ERROR) << "SigninScreenHandler::SetUserInputMethod('" << username
-                  << "'): user input method '" << user_input_method
-                  << "' is not enabled and enabling failed (ignored!).";
-    }
-  }
-  ime_state->ChangeInputMethod(user_input_method, false /* show_message */);
-
-  return true;
-}
-
-void EnforcePolicyInputMethods(std::string user_input_method) {
-  chromeos::CrosSettings* cros_settings = chromeos::CrosSettings::Get();
-  const base::ListValue* login_screen_input_methods = nullptr;
-  if (!cros_settings->GetList(chromeos::kDeviceLoginScreenInputMethods,
-                              &login_screen_input_methods)) {
-    return;
-  }
-
-  std::vector<std::string> allowed_input_methods;
-
-  // Add user's input method first so it is pre-selected.
-  if (!user_input_method.empty()) {
-    allowed_input_methods.push_back(user_input_method);
-  }
-
-  std::string input_method;
-  for (const auto& input_method_entry : *login_screen_input_methods) {
-    if (input_method_entry.GetAsString(&input_method))
-      allowed_input_methods.push_back(input_method);
-  }
-  chromeos::input_method::InputMethodManager* imm =
-      chromeos::input_method::InputMethodManager::Get();
-  imm->GetActiveIMEState()->SetAllowedInputMethods(allowed_input_methods);
 }
 
 void StopEnforcingPolicyInputMethods() {
@@ -371,56 +308,6 @@ SigninScreenHandler::~SigninScreenHandler() {
   network_state_informer_->RemoveObserver(this);
   proximity_auth::ScreenlockBridge::Get()->SetLockHandler(nullptr);
   proximity_auth::ScreenlockBridge::Get()->SetFocusedUser(EmptyAccountId());
-}
-
-// static
-std::string SigninScreenHandler::GetUserLastInputMethod(
-    const std::string& username) {
-  PrefService* const local_state = g_browser_process->local_state();
-  const base::DictionaryValue* users_last_input_methods =
-      local_state->GetDictionary(prefs::kUsersLastInputMethod);
-
-  if (!users_last_input_methods) {
-    DLOG(WARNING) << "GetUserLastInputMethod('" << username
-                  << "'): no kUsersLastInputMethod";
-    return std::string();
-  }
-
-  std::string input_method;
-
-  if (!users_last_input_methods->GetStringWithoutPathExpansion(username,
-                                                               &input_method)) {
-    DVLOG(0) << "GetUserLastInputMethod('" << username
-             << "'): no input method for this user";
-    return std::string();
-  }
-
-  return input_method;
-}
-
-// static
-// Update keyboard layout to least recently used by the user.
-void SigninScreenHandler::SetUserInputMethod(
-    const std::string& username,
-    input_method::InputMethodManager::State* ime_state) {
-  bool succeed = false;
-
-  const std::string input_method = GetUserLastInputMethod(username);
-
-  EnforcePolicyInputMethods(input_method);
-
-  if (!input_method.empty())
-    succeed = SetUserInputMethodImpl(username, input_method, ime_state);
-
-  // This is also a case when last layout is set only for a few local users,
-  // thus others need to be switched to default locale.
-  // Otherwise they will end up using another user's locale to log in.
-  if (!succeed) {
-    DVLOG(0) << "SetUserInputMethod('" << username
-             << "'): failed to set user layout. Switching to default.";
-
-    ime_state->SetInputMethodLoginDefault();
-  }
 }
 
 void SigninScreenHandler::DeclareLocalizedValues(
@@ -1493,8 +1380,9 @@ void SigninScreenHandler::HandleFocusPod(const AccountId& account_id) {
   if (user && user->is_logged_in() && !user->is_active()) {
     SessionControllerClient::DoSwitchActiveUser(account_id);
   } else {
-    SetUserInputMethod(account_id.GetUserEmail(), ime_state_.get());
-    SetKeyboardSettings(account_id);
+    lock_screen_utils::SetUserInputMethod(account_id.GetUserEmail(),
+                                          ime_state_.get());
+    lock_screen_utils::SetKeyboardSettings(account_id);
     WallpaperManager::Get()->SetUserWallpaperDelayed(account_id);
 
     bool use_24hour_clock = false;
@@ -1510,7 +1398,7 @@ void SigninScreenHandler::HandleFocusPod(const AccountId& account_id) {
 
 void SigninScreenHandler::HandleNoPodFocused() {
   focused_pod_account_id_.reset();
-  EnforcePolicyInputMethods(std::string());
+  lock_screen_utils::EnforcePolicyInputMethods(std::string());
 }
 
 void SigninScreenHandler::HandleGetPublicSessionKeyboardLayouts(
@@ -1651,7 +1539,7 @@ bool SigninScreenHandler::IsGuestSigninAllowed() const {
 
 void SigninScreenHandler::OnShowAddUser() {
   is_account_picker_showing_first_time_ = false;
-  EnforcePolicyInputMethods(std::string());
+  lock_screen_utils::EnforcePolicyInputMethods(std::string());
   gaia_screen_handler_->ShowGaiaAsync();
 }
 
@@ -1677,40 +1565,12 @@ void SigninScreenHandler::OnAllowedInputMethodsChanged() {
     return;
 
   if (focused_pod_account_id_) {
-    std::string user_input_method =
-        GetUserLastInputMethod(focused_pod_account_id_->GetUserEmail());
-    EnforcePolicyInputMethods(user_input_method);
+    std::string user_input_method = lock_screen_utils::GetUserLastInputMethod(
+        focused_pod_account_id_->GetUserEmail());
+    lock_screen_utils::EnforcePolicyInputMethods(user_input_method);
   } else {
-    EnforcePolicyInputMethods(std::string());
+    lock_screen_utils::EnforcePolicyInputMethods(std::string());
   }
-}
-
-void SigninScreenHandler::SetKeyboardSettings(const AccountId& account_id) {
-  bool auto_repeat_enabled = language_prefs::kXkbAutoRepeatEnabled;
-  if (user_manager::known_user::GetBooleanPref(
-          account_id, prefs::kLanguageXkbAutoRepeatEnabled,
-          &auto_repeat_enabled) &&
-      !auto_repeat_enabled) {
-    input_method::InputMethodManager::Get()
-        ->GetImeKeyboard()
-        ->SetAutoRepeatEnabled(false);
-    return;
-  }
-
-  int auto_repeat_delay = language_prefs::kXkbAutoRepeatDelayInMs;
-  int auto_repeat_interval = language_prefs::kXkbAutoRepeatIntervalInMs;
-  user_manager::known_user::GetIntegerPref(
-      account_id, prefs::kLanguageXkbAutoRepeatDelay, &auto_repeat_delay);
-  user_manager::known_user::GetIntegerPref(
-      account_id, prefs::kLanguageXkbAutoRepeatInterval, &auto_repeat_interval);
-  input_method::AutoRepeatRate rate;
-  rate.initial_delay_in_ms = auto_repeat_delay;
-  rate.repeat_interval_in_ms = auto_repeat_interval;
-  input_method::InputMethodManager::Get()
-      ->GetImeKeyboard()
-      ->SetAutoRepeatEnabled(true);
-  input_method::InputMethodManager::Get()->GetImeKeyboard()->SetAutoRepeatRate(
-      rate);
 }
 
 }  // namespace chromeos
