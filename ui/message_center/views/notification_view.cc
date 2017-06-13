@@ -217,6 +217,7 @@ NotificationView::NotificationView(MessageCenterController* controller,
 
   SetEventTargeter(
       std::unique_ptr<views::ViewTargeter>(new views::ViewTargeter(this)));
+  set_notify_enter_exit_on_child(true);
 }
 
 NotificationView::~NotificationView() {
@@ -710,10 +711,20 @@ void NotificationView::CreateOrUpdateCloseButtonView(
 }
 
 void NotificationView::UpdateControlButtonsVisibility() {
+#if defined(OS_CHROMEOS)
+  // On Chrome OS, the settings button and the close button are shown only when
+  // the mouse is hovering on the notification.
   const bool target_visibility =
       IsMouseHovered() || HasFocus() ||
-      (close_button_ && close_button_->HasFocus()) ||
-      (settings_button_view_ && settings_button_view_->HasFocus());
+      (close_button_ &&
+       (close_button_->HasFocus() || close_button_->IsMouseHovered())) ||
+      (settings_button_view_ && (settings_button_view_->HasFocus() ||
+                                 settings_button_view_->IsMouseHovered()));
+#else
+  // On non Chrome OS, the settings button and the close button are always
+  // shown.
+  const bool target_visibility = true;
+#endif
 
   if (close_button_) {
     if (target_visibility != close_button_->visible())
