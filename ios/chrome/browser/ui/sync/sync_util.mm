@@ -19,6 +19,10 @@
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 // Enumerated constants for logging when a sign-in error infobar was shown
 // to the user. This was added for crbug/265352 to quantify how often this
@@ -109,19 +113,17 @@ GenericChromeCommand* GetSyncCommandForBrowserState(
       syncSetupService->GetSyncServiceState();
   switch (syncState) {
     case SyncSetupService::kSyncServiceSignInNeedsUpdate:
-      return [[[ShowSigninCommand alloc]
+      return [[ShowSigninCommand alloc]
           initWithOperation:AUTHENTICATION_OPERATION_REAUTHENTICATE
-                accessPoint:signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN]
-          autorelease];
+                accessPoint:signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN];
     case SyncSetupService::kSyncServiceNeedsPassphrase:
-      return [[[GenericChromeCommand alloc]
-          initWithTag:IDC_SHOW_SYNC_PASSPHRASE_SETTINGS] autorelease];
+      return [[GenericChromeCommand alloc]
+          initWithTag:IDC_SHOW_SYNC_PASSPHRASE_SETTINGS];
     case SyncSetupService::kSyncServiceCouldNotConnect:
     case SyncSetupService::kSyncServiceServiceUnavailable:
     case SyncSetupService::kSyncServiceUnrecoverableError:
     case SyncSetupService::kNoSyncServiceError:
-      return [[[GenericChromeCommand alloc] initWithTag:IDC_SHOW_SYNC_SETTINGS]
-          autorelease];
+      return [[GenericChromeCommand alloc] initWithTag:IDC_SHOW_SYNC_SETTINGS];
   }
 }
 
