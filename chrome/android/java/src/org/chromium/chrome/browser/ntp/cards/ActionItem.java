@@ -75,9 +75,15 @@ public class ActionItem extends OptionalLeaf {
                 mCategoryInfo.performViewAllAction(uiDelegate.getNavigationDelegate());
                 return;
             case ContentSuggestionsAdditionalAction.FETCH:
-                uiDelegate.getSuggestionsSource().fetchSuggestions(
-                        mCategoryInfo.getCategory(), mParentSection.getDisplayedSuggestionIds());
-                mParentSection.onFetchStarted();
+                if (mParentSection.getSuggestionsCount() == 0
+                        && mParentSection.getCategoryInfo().isRemote()) {
+                    // TODO(jkrcal): Implement in the backend instead. See https://crbug.com/728570
+                    uiDelegate.getSuggestionsSource().fetchRemoteSuggestions();
+                } else {
+                    uiDelegate.getSuggestionsSource().fetchSuggestions(mCategoryInfo.getCategory(),
+                            mParentSection.getDisplayedSuggestionIds());
+                    mParentSection.onFetchStarted();
+                }
                 return;
             case ContentSuggestionsAdditionalAction.NONE:
             default:
