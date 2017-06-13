@@ -155,6 +155,21 @@ void GetUrlVisitCountTask::DoneRunOnMainThread() {
 
 GetUrlVisitCountTask::~GetUrlVisitCountTask() {}
 
+void InitializeOnDBThread(
+    ResourcePrefetchPredictor::PrefetchDataMap* url_resource_data,
+    ResourcePrefetchPredictor::PrefetchDataMap* host_resource_data,
+    ResourcePrefetchPredictor::RedirectDataMap* url_redirect_data,
+    ResourcePrefetchPredictor::RedirectDataMap* host_redirect_data,
+    ResourcePrefetchPredictor::ManifestDataMap* manifest_data,
+    ResourcePrefetchPredictor::OriginDataMap* origin_data) {
+  url_resource_data->InitializeOnDBThread();
+  host_resource_data->InitializeOnDBThread();
+  url_redirect_data->InitializeOnDBThread();
+  host_redirect_data->InitializeOnDBThread();
+  manifest_data->InitializeOnDBThread();
+  origin_data->InitializeOnDBThread();
+}
+
 }  // namespace
 
 namespace internal {
@@ -366,7 +381,8 @@ ResourcePrefetchPredictor::ResourcePrefetchPredictor(
       initialization_state_(NOT_INITIALIZED),
       tables_(PredictorDatabaseFactory::GetForProfile(profile)
                   ->resource_prefetch_tables()),
-      history_service_observer_(this) {
+      history_service_observer_(this),
+      weak_factory_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // Some form of learning has to be enabled.
@@ -375,15 +391,6 @@ ResourcePrefetchPredictor::ResourcePrefetchPredictor(
 
 ResourcePrefetchPredictor::~ResourcePrefetchPredictor() {}
 
-void ResourcePrefetchPredictor::InitializeOnDBThread() {
-  url_resource_data_->InitializeOnDBThread();
-  host_resource_data_->InitializeOnDBThread();
-  url_redirect_data_->InitializeOnDBThread();
-  host_redirect_data_->InitializeOnDBThread();
-  manifest_data_->InitializeOnDBThread();
-  origin_data_->InitializeOnDBThread();
-}
-
 void ResourcePrefetchPredictor::StartInitialization() {
   TRACE_EVENT0("browser", "ResourcePrefetchPredictor::StartInitialization");
 
@@ -391,26 +398,34 @@ void ResourcePrefetchPredictor::StartInitialization() {
     return;
   initialization_state_ = INITIALIZING;
 
-  url_resource_data_ = base::MakeUnique<PrefetchDataMap>(
+  // Create local caches using the database as loaded.
+  auto url_resource_data = base::MakeUnique<PrefetchDataMap>(
       tables_, tables_->url_resource_table(), config_.max_urls_to_track);
-  host_resource_data_ = base::MakeUnique<PrefetchDataMap>(
+  auto host_resource_data = base::MakeUnique<PrefetchDataMap>(
       tables_, tables_->host_resource_table(), config_.max_hosts_to_track);
-  url_redirect_data_ = base::MakeUnique<RedirectDataMap>(
+  auto url_redirect_data = base::MakeUnique<RedirectDataMap>(
       tables_, tables_->url_redirect_table(), config_.max_urls_to_track);
-  host_redirect_data_ = base::MakeUnique<RedirectDataMap>(
+  auto host_redirect_data = base::MakeUnique<RedirectDataMap>(
       tables_, tables_->host_redirect_table(), config_.max_hosts_to_track);
-  manifest_data_ = base::MakeUnique<ManifestDataMap>(
+  auto manifest_data = base::MakeUnique<ManifestDataMap>(
       tables_, tables_->manifest_table(), config_.max_hosts_to_track);
-  origin_data_ = base::MakeUnique<OriginDataMap>(
+  auto origin_data = base::MakeUnique<OriginDataMap>(
       tables_, tables_->origin_table(), config_.max_hosts_to_track);
 
-  // Storage objects have to be initialized on a DB thread.
-  BrowserThread::PostTaskAndReply(
-      BrowserThread::DB, FROM_HERE,
-      base::BindOnce(&ResourcePrefetchPredictor::InitializeOnDBThread,
-                     base::Unretained(this)),
-      base::BindOnce(&ResourcePrefetchPredictor::ConnectToHistoryService,
-                     AsWeakPtr()));
+  // Get raw pointers to pass to the first task. Ownership of the unique_ptrs
+  // will be passed to the reply task.
+  auto task = base::BindOnce(InitializeOnDBThread, url_resource_data.get(),
+                             host_resource_data.get(), url_redirect_data.get(),
+                             host_redirect_data.get(), manifest_data.get(),
+                             origin_data.get());
+  auto reply = base::BindOnce(
+      &ResourcePrefetchPredictor::CreateCaches, weak_factory_.GetWeakPtr(),
+      std::move(url_resource_data), std::move(host_resource_data),
+      std::move(url_redirect_data), std::move(host_redirect_data),
+      std::move(manifest_data), std::move(origin_data));
+
+  BrowserThread::PostTaskAndReply(BrowserThread::DB, FROM_HERE, std::move(task),
+                                  std::move(reply));
 }
 
 void ResourcePrefetchPredictor::RecordURLRequest(
@@ -513,7 +528,7 @@ void ResourcePrefetchPredictor::SetStatsCollector(
 void ResourcePrefetchPredictor::Shutdown() {
   if (prefetch_manager_.get()) {
     prefetch_manager_->ShutdownOnUIThread();
-    prefetch_manager_ = NULL;
+    prefetch_manager_ = nullptr;
   }
   history_service_observer_.RemoveAll();
 }
@@ -629,7 +644,7 @@ void ResourcePrefetchPredictor::OnNavigationComplete(
       std::unique_ptr<history::HistoryDBTask>(new GetUrlVisitCountTask(
           std::move(summary),
           base::BindOnce(&ResourcePrefetchPredictor::OnVisitCountLookup,
-                         AsWeakPtr()))),
+                         weak_factory_.GetWeakPtr()))),
       &history_lookup_consumer_);
 
   // Report readiness metric with 20% probability.
@@ -637,7 +652,7 @@ void ResourcePrefetchPredictor::OnNavigationComplete(
     history_service->TopHosts(
         kNumSampleHosts,
         base::Bind(&ResourcePrefetchPredictor::ReportDatabaseReadiness,
-                   AsWeakPtr()));
+                   weak_factory_.GetWeakPtr()));
   }
 }
 
@@ -773,6 +788,33 @@ bool ResourcePrefetchPredictor::PopulateFromManifest(
   }
 
   return has_prefetchable_resource;
+}
+
+void ResourcePrefetchPredictor::CreateCaches(
+    std::unique_ptr<PrefetchDataMap> url_resource_data,
+    std::unique_ptr<PrefetchDataMap> host_resource_data,
+    std::unique_ptr<RedirectDataMap> url_redirect_data,
+    std::unique_ptr<RedirectDataMap> host_redirect_data,
+    std::unique_ptr<ManifestDataMap> manifest_data,
+    std::unique_ptr<OriginDataMap> origin_data) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK_EQ(INITIALIZING, initialization_state_);
+
+  DCHECK(url_resource_data);
+  DCHECK(host_resource_data);
+  DCHECK(url_redirect_data);
+  DCHECK(host_redirect_data);
+  DCHECK(manifest_data);
+  DCHECK(origin_data);
+
+  url_resource_data_ = std::move(url_resource_data);
+  host_resource_data_ = std::move(host_resource_data);
+  url_redirect_data_ = std::move(url_redirect_data);
+  host_redirect_data_ = std::move(host_redirect_data);
+  manifest_data_ = std::move(manifest_data);
+  origin_data_ = std::move(origin_data);
+
+  ConnectToHistoryService();
 }
 
 void ResourcePrefetchPredictor::OnHistoryAndCacheLoaded() {
