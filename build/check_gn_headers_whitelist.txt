@@ -368,7 +368,6 @@ third_party/zlib/contrib/minizip/crypt.h
 tools/battor_agent/battor_protocol_types.h
 tools/gn/ordered_set.h
 tools/ipc_fuzzer/message_lib/all_message_null_macros.h
-ui/accessibility/ax_export.h
 ui/app_list/app_list_export.h
 ui/app_list/app_list_item.h
 ui/app_list/app_list_switches.h
