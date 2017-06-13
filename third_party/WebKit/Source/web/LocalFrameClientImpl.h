@@ -139,6 +139,11 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   void DidObserveLoadingBehavior(WebLoadingBehaviorFlag) override;
   void SelectorMatchChanged(const Vector<String>& added_selectors,
                             const Vector<String>& removed_selectors) override;
+
+  // Creates a WebDataSourceImpl that is a DocumentLoader but also has:
+  // - storage to store an extra data that can be used by the content layer
+  // - wrapper methods to expose DocumentLoader's variables to the content
+  //   layer
   DocumentLoader* CreateDocumentLoader(LocalFrame*,
                                        const ResourceRequest&,
                                        const SubstituteData&,

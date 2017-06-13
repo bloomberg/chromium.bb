@@ -86,7 +86,7 @@ class CORE_EXPORT FrameLoader final {
 
   ProgressTracker& Progress() const { return *progress_tracker_; }
 
-  // Starts a load. It will eventually call startLoad() or loadInSameDocument().
+  // Starts a load. It will eventually call StartLoad() or LoadInSameDocument().
   // For history navigations or reloads, an appropriate FrameLoadType should be
   // given. Otherwise, FrameLoadTypeStandard should be used (and the final
   // FrameLoadType will be computed). For history navigations, a history item

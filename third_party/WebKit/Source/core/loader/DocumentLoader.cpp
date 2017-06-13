@@ -847,7 +847,7 @@ bool DocumentLoader::MaybeLoadEmpty() {
   return true;
 }
 
-void DocumentLoader::StartLoadingMainResource() {
+void DocumentLoader::StartLoading() {
   GetTiming().MarkNavigationStart();
   DCHECK(!main_resource_);
   DCHECK_EQ(state_, kNotStarted);

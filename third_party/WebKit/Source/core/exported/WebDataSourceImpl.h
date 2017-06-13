@@ -44,6 +44,8 @@
 
 namespace blink {
 
+// Extends blink::DocumentLoader to attach |extra_data_| to store data that can
+// be set/get via the WebDataSource interface.
 class CORE_EXPORT WebDataSourceImpl final : public DocumentLoader,
                                             public WebDataSource {
  public:
