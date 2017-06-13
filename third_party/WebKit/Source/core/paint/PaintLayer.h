@@ -246,6 +246,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   void AddChild(PaintLayer* new_child, PaintLayer* before_child = 0);
   PaintLayer* RemoveChild(PaintLayer*);
 
+  void ClearClipRects(ClipRectsCacheSlot = kNumberOfClipRectsCacheSlots);
+
   void RemoveOnlyThisLayerAfterStyleChange();
   void InsertOnlyThisLayerAfterStyleChange();
 
