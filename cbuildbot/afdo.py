@@ -70,7 +70,8 @@ AFDO_ARCH_GENERATORS = {'amd64': 'amd64',
                         'arm': 'amd64',
                         'x86': 'amd64'}
 
-AFDO_ALERT_RECIPIENTS = ['chromeos-toolchain@google.com']
+AFDO_ALERT_RECIPIENTS = [
+    'chromeos-toolchain-sheriff@grotations.appspotmail.com']
 
 
 class MissingAFDOData(failures_lib.StepFailure):
