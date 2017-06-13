@@ -424,12 +424,12 @@ class SignalStrengthImageSource : public gfx::CanvasImageSource {
 // Utilities for extracting icon images.
 
 ImageType ImageTypeForNetworkType(const std::string& type) {
-  if (type == shill::kTypeWifi) {
+  if (NetworkTypePattern::WiFi().MatchesType(type))
     return ARCS;
-  } else if (type == shill::kTypeCellular || type == shill::kTypeWimax ||
-             type == chromeos::kTypeTether) {
+
+  if (NetworkTypePattern::Mobile().MatchesType(type))
     return BARS;
-  }
+
   return NONE;
 }
 
