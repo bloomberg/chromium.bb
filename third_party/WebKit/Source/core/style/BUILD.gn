@@ -96,8 +96,6 @@ blink_core_sources("rendering") {
     "StylePath.cpp",
     "StylePath.h",
     "StylePendingImage.h",
-    "StyleRareNonInheritedData.cpp",
-    "StyleRareNonInheritedData.h",
     "StyleRay.cpp",
     "StyleRay.h",
     "StyleReflection.h",
