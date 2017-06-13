@@ -613,8 +613,9 @@ def FindGclientRoot(from_dir, filename='.gclient'):
       # might have failed. In that case, we cannot verify that the .gclient
       # is the one we want to use. In order to not to cause too much trouble,
       # just issue a warning and return the path anyway.
-      print >> sys.stderr, ("%s file in parent directory %s might not be the "
-          "file you want to use" % (filename, path))
+      print >> sys.stderr, ("%s missing, %s file in parent directory %s might "
+          "not be the file you want to use." %
+          (entries_filename, filename, path))
       return path
     scope = {}
     try:
