@@ -354,7 +354,6 @@
                     "//4": "browser_main_loop.cc).",
                     "name": "RedirectWithDefaultInitParams",
                     "params": {
-                        "RedirectNonUINonIOBrowserThreads": "true",
                         "RedirectSequencedWorkerPools": "true"
                     }
                 },
@@ -363,7 +362,6 @@
                     "forcing_flag": "enable-browser-task-scheduler",
                     "params": {
                         "RedirectHistoryService": "true",
-                        "RedirectNonUINonIOBrowserThreads": "true",
                         "RedirectSequencedWorkerPools": "true"
                     }
                 },

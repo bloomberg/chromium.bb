@@ -795,14 +795,6 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Performs any necessary PostTask API redirection to the task scheduler.
   virtual void PerformExperimentalTaskSchedulerRedirections() {}
-
-  // Returns true if the DOMStorageTaskRunner should be redirected to the task
-  // scheduler.
-  virtual bool ShouldRedirectDOMStorageTaskRunner();
-
-  // If this returns true, all BrowserThreads (but UI/IO) that support it on
-  // this platform will experimentally be redirected to TaskScheduler.
-  virtual bool RedirectNonUINonIOBrowserThreadsToTaskScheduler();
 };
 
 }  // namespace content
