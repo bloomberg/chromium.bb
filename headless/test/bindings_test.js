@@ -8,6 +8,7 @@ goog.module.declareLegacyNamespace();
 
 const Connection = goog.require('chromium.DevTools.Connection');
 const DOM = goog.require('chromium.DevTools.DOM');
+const Page = goog.require('chromium.DevTools.Page');
 const Runtime = goog.require('chromium.DevTools.Runtime');
 
 /**
@@ -22,7 +23,7 @@ class BindingsTest {
   evalOneAddOne() {
     let connection = new Connection(window.TabSocket);
     let runtime = new Runtime(connection);
-    runtime.Evaluate({'expression': '1+1'}).then(function(message) {
+    runtime.evaluate({'expression': '1+1'}).then(function(message) {
       connection.sendDevToolsMessage(
           '__Result',
           {'result': JSON.stringify(message.result.value)});
@@ -35,16 +36,39 @@ class BindingsTest {
   listenForChildNodeCountUpdated() {
     let connection = new Connection(window.TabSocket);
     let dom = new DOM(connection);
-    dom.OnChildNodeCountUpdated(function(params) {
+    dom.onChildNodeCountUpdated(function(params) {
       connection.sendDevToolsMessage('__Result',
                                      {'result': JSON.stringify(params)});
     });
-    dom.Enable().then(function() {
-      return dom.GetDocument({});
+    dom.enable().then(function() {
+      return dom.getDocument({});
     }).then(function() {
       // Create a new div which should trigger the event.
       let div = document.createElement('div');
       document.body.appendChild(div);
+    });
+  }
+
+  /**
+   * Uses experimental commands to create an isolated world.
+   */
+  getIsolatedWorldName() {
+    let connection = new Connection(window.TabSocket);
+    let page = new Page(connection);
+    let runtime = new Runtime(connection);
+    runtime.enable().then(function() {
+      runtime.onExecutionContextCreated(function(params) {
+        if (params.context.auxData['isDefault'] === false) {
+          connection.sendDevToolsMessage(
+              '__Result', {'result': 'Created ' + params.context.name});
+        }
+      });
+      page.experimental.getResourceTree().then(function(result) {
+        page.experimental.createIsolatedWorld({
+          'frameId': result.frameTree.frame.id,
+          'worldName': 'Test Isolated World'
+        });
+      });
     });
   }
 }
