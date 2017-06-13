@@ -2303,6 +2303,9 @@ void WebMediaPlayerImpl::ScheduleIdlePauseTimer() {
 }
 
 void WebMediaPlayerImpl::CreateWatchTimeReporter() {
+  if (!HasVideo() && !HasAudio())
+    return;
+
   // Create the watch time reporter and synchronize its initial state.
   watch_time_reporter_.reset(
       new WatchTimeReporter(HasAudio(), HasVideo(), !!chunk_demuxer_,

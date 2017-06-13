@@ -733,6 +733,14 @@ TEST_F(WebMediaPlayerImplTest, AutoplayMuted_SetVolume) {
   wmpi_->SetVolume(1.0);
 }
 
+TEST_F(WebMediaPlayerImplTest, NoStreams) {
+  InitializeWebMediaPlayerImpl(true);
+  PipelineMetadata metadata;
+
+  // Nothing should happen.  In particular, no assertions should fail.
+  OnMetadata(metadata);
+}
+
 TEST_F(WebMediaPlayerImplTest, NaturalSizeChange) {
   InitializeWebMediaPlayerImpl(true);
   PipelineMetadata metadata;
