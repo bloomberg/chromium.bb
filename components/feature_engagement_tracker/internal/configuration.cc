@@ -40,6 +40,29 @@ bool Comparator::MeetsCriteria(uint32_t v) const {
   }
 }
 
+std::ostream& operator<<(std::ostream& os, const Comparator& comparator) {
+  switch (comparator.type) {
+    case ANY:
+      return os << "ANY";
+    case LESS_THAN:
+      return os << "<" << comparator.value;
+    case GREATER_THAN:
+      return os << ">" << comparator.value;
+    case LESS_THAN_OR_EQUAL:
+      return os << "<=" << comparator.value;
+    case GREATER_THAN_OR_EQUAL:
+      return os << ">=" << comparator.value;
+    case EQUAL:
+      return os << "==" << comparator.value;
+    case NOT_EQUAL:
+      return os << "!=" << comparator.value;
+    default:
+      // All cases should be covered.
+      NOTREACHED();
+      return os;
+  }
+}
+
 EventConfig::EventConfig() : window(0), storage(0) {}
 
 EventConfig::EventConfig(const std::string& name,
@@ -49,6 +72,13 @@ EventConfig::EventConfig(const std::string& name,
     : name(name), comparator(comparator), window(window), storage(storage) {}
 
 EventConfig::~EventConfig() = default;
+
+std::ostream& operator<<(std::ostream& os, const EventConfig& event_config) {
+  return os << "{ name: " << event_config.name
+            << ", comparator: " << event_config.comparator
+            << ", window: " << event_config.window
+            << ", storage: " << event_config.storage << " }";
+}
 
 FeatureConfig::FeatureConfig() : valid(false) {}
 
@@ -83,6 +113,23 @@ bool operator==(const FeatureConfig& lhs, const FeatureConfig& rhs) {
                   lhs.session_rate, lhs.availability) ==
          std::tie(rhs.valid, rhs.used, rhs.trigger, rhs.event_configs,
                   rhs.session_rate, rhs.availability);
+}
+
+std::ostream& operator<<(std::ostream& os,
+                         const FeatureConfig& feature_config) {
+  os << "{ valid: " << feature_config.valid << ", used: " << feature_config.used
+     << ", trigger: " << feature_config.trigger << ", event_configs: [";
+  bool first = true;
+  for (const auto& event_config : feature_config.event_configs) {
+    if (first) {
+      first = false;
+      os << event_config;
+    } else {
+      os << ", " << event_config;
+    }
+  }
+  return os << "], session_rate: " << feature_config.session_rate
+            << ", availability: " << feature_config.availability << " }";
 }
 
 }  // namespace feature_engagement_tracker

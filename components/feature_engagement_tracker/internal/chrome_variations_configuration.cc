@@ -205,6 +205,8 @@ void ChromeVariationsConfiguration::ParseFeatureConfig(
   DCHECK(feature);
   DCHECK(configs_.find(feature->name) == configs_.end());
 
+  DVLOG(3) << "Parsing feature config for " << feature->name;
+
   // Initially all new configurations are considered invalid.
   FeatureConfig& config = configs_[feature->name];
   config.valid = false;
@@ -217,6 +219,7 @@ void ChromeVariationsConfiguration::ParseFeatureConfig(
         stats::ConfigParsingEvent::FAILURE_NO_FIELD_TRIAL);
     // Returns early. If no field trial, ConfigParsingEvent::FAILURE will not be
     // recorded.
+    DVLOG(3) << "No field trial for " << feature->name;
     return;
   }
 
@@ -284,8 +287,11 @@ void ChromeVariationsConfiguration::ParseFeatureConfig(
 
   if (config.valid) {
     stats::RecordConfigParsingEvent(stats::ConfigParsingEvent::SUCCESS);
+    DVLOG(2) << "Config for " << feature->name << " is valid.";
+    DVLOG(3) << "Config for " << feature->name << " = " << config;
   } else {
     stats::RecordConfigParsingEvent(stats::ConfigParsingEvent::FAILURE);
+    DVLOG(2) << "Config for " << feature->name << " is invalid.";
   }
 
   // Notice parse errors for used and trigger events will also cause the
