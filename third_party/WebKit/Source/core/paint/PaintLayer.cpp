@@ -1446,9 +1446,11 @@ void PaintLayer::InsertOnlyThisLayerAfterStyleChange() {
     const LayoutBoxModelObject& previous_paint_invalidation_container =
         GetLayoutObject().Parent()->ContainerForPaintInvalidation();
     if (!previous_paint_invalidation_container.StyleRef().IsStackingContext()) {
-      ObjectPaintInvalidator(GetLayoutObject())
-          .InvalidatePaintIncludingNonSelfPaintingLayerDescendants(
-              previous_paint_invalidation_container);
+      if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+        ObjectPaintInvalidator(GetLayoutObject())
+            .InvalidatePaintIncludingNonSelfPaintingLayerDescendants(
+                previous_paint_invalidation_container);
+      }
       // Set needsRepaint along the original compositingContainer chain.
       GetLayoutObject().Parent()->EnclosingLayer()->SetNeedsRepaint();
       did_set_paint_invalidation = true;

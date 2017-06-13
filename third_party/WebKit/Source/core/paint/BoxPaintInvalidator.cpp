@@ -49,11 +49,13 @@ static LayoutRect ComputeBottomDelta(const LayoutPoint& location,
   return LayoutRect();
 }
 
-bool BoxPaintInvalidator::IncrementallyInvalidatePaint(
+void BoxPaintInvalidator::IncrementallyInvalidatePaint(
     PaintInvalidationReason reason,
     const LayoutRect& old_rect,
     const LayoutRect& new_rect) {
+  DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
   DCHECK(old_rect.Location() == new_rect.Location());
+  DCHECK(old_rect.Size() != new_rect.Size());
   LayoutRect right_delta = ComputeRightDelta(
       new_rect.Location(), old_rect.Size(), new_rect.Size(),
       reason == PaintInvalidationReason::kIncremental ? box_.BorderRight()
@@ -63,15 +65,12 @@ bool BoxPaintInvalidator::IncrementallyInvalidatePaint(
       reason == PaintInvalidationReason::kIncremental ? box_.BorderBottom()
                                                       : LayoutUnit());
 
-  if (right_delta.IsEmpty() && bottom_delta.IsEmpty())
-    return false;
-
+  DCHECK(!right_delta.IsEmpty() || !bottom_delta.IsEmpty());
   ObjectPaintInvalidatorWithContext object_paint_invalidator(box_, context_);
   object_paint_invalidator.InvalidatePaintRectangleWithContext(right_delta,
                                                                reason);
   object_paint_invalidator.InvalidatePaintRectangleWithContext(bottom_delta,
                                                                reason);
-  return true;
 }
 
 PaintInvalidationReason BoxPaintInvalidator::ComputePaintInvalidationReason() {
@@ -234,15 +233,19 @@ void BoxPaintInvalidator::InvalidateScrollingContentsBackgroundIfNeeded() {
         should_fully_invalidate;
   }
 
-  if (should_fully_invalidate_on_scrolling_contents_layer) {
-    ObjectPaintInvalidatorWithContext(box_, context_)
-        .FullyInvalidatePaint(
-            PaintInvalidationReason::kBackgroundOnScrollingContentsLayer,
-            old_layout_overflow, new_layout_overflow);
-  } else {
-    IncrementallyInvalidatePaint(
-        PaintInvalidationReason::kBackgroundOnScrollingContentsLayer,
-        old_layout_overflow, new_layout_overflow);
+  // TODO(crbug.com/732611): Implement raster invalidation of background on
+  // scrolling contents layer for SPv2.
+  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    if (should_fully_invalidate_on_scrolling_contents_layer) {
+      ObjectPaintInvalidatorWithContext(box_, context_)
+          .FullyInvalidatePaint(
+              PaintInvalidationReason::kBackgroundOnScrollingContentsLayer,
+              old_layout_overflow, new_layout_overflow);
+    } else {
+      IncrementallyInvalidatePaint(
+          PaintInvalidationReason::kBackgroundOnScrollingContentsLayer,
+          old_layout_overflow, new_layout_overflow);
+    }
   }
 
   context_.painting_layer->SetNeedsRepaint();
@@ -258,17 +261,25 @@ PaintInvalidationReason BoxPaintInvalidator::InvalidatePaint() {
 
   PaintInvalidationReason reason = ComputePaintInvalidationReason();
   if (reason == PaintInvalidationReason::kIncremental) {
-    bool invalidated;
+    bool should_invalidate;
     if (box_.IsLayoutView() &&
         !RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-      invalidated = IncrementallyInvalidatePaint(
-          reason, context_.old_visual_rect, box_.VisualRect());
+      should_invalidate = context_.old_visual_rect != box_.VisualRect();
+      if (should_invalidate &&
+          !RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+        IncrementallyInvalidatePaint(reason, context_.old_visual_rect,
+                                     box_.VisualRect());
+      }
     } else {
-      invalidated = IncrementallyInvalidatePaint(
-          reason, LayoutRect(context_.old_location, box_.PreviousSize()),
-          LayoutRect(context_.new_location, box_.Size()));
+      should_invalidate = box_.PreviousSize() != box_.Size();
+      if (should_invalidate &&
+          !RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+        IncrementallyInvalidatePaint(
+            reason, LayoutRect(context_.old_location, box_.PreviousSize()),
+            LayoutRect(context_.new_location, box_.Size()));
+      }
     }
-    if (invalidated) {
+    if (should_invalidate) {
       context_.painting_layer->SetNeedsRepaint();
       box_.InvalidateDisplayItemClients(reason);
     } else {

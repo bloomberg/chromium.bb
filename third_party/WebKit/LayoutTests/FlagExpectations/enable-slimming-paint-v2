@@ -2109,6 +2109,16 @@ crbug.com/706066 paint/invalidation/scale-page-shrink.html [ Crash ]
 crbug.com/706066 paint/invalidation/compositing/page-scale-repaint.html [ Crash ]
 crbug.com/706066 paint/invalidation/relayout-fixed-position-after-scale.html [ Crash ]
 
+Bug(none) paint/invalidation/negative-shadow-box-shrink.html [ Failure ]
+Bug(none) paint/invalidation/svg/feImage-remove-target.svg [ Failure ]
+Bug(none) paint/invalidation/svg/feImage-target-attribute-change-with-use-indirection.svg [ Failure ]
+Bug(none) paint/invalidation/svg/feImage-target-remove-from-document.svg [ Failure ]
+Bug(none) paint/invalidation/svg/js-update-stop-linked-gradient.svg [ Failure ]
+Bug(none) paint/invalidation/svg/pending-resource-after-removal.xhtml [ Failure ]
+Bug(none) paint/invalidation/svg/svg-background-partial-redraw.html [ Failure ]
+
+crbug.com/719721 virtual/threaded/animations/composited-animation-style-update.html [ Pass Failure ]
+
 Bug(none) paint/pagination/composited-paginated-outlined-box.html [ Failure ]
 Bug(none) paint/pagination/composited-paginated-inline.html [ Failure ]
 
