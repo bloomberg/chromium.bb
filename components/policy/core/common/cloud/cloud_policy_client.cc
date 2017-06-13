@@ -629,7 +629,7 @@ void CloudPolicyClient::OnCertificateUploadCompleted(
     const CloudPolicyClient::StatusCallback& callback,
     DeviceManagementStatus status,
     int net_error,
-    const enterprise_management::DeviceManagementResponse& response) {
+    const em::DeviceManagementResponse& response) {
   bool success = true;
   status_ = status;
   if (status != DM_STATUS_SUCCESS) {
@@ -718,7 +718,7 @@ void CloudPolicyClient::OnStatusUploadCompleted(
     const CloudPolicyClient::StatusCallback& callback,
     DeviceManagementStatus status,
     int net_error,
-    const enterprise_management::DeviceManagementResponse& response) {
+    const em::DeviceManagementResponse& response) {
   status_ = status;
   if (status != DM_STATUS_SUCCESS)
     NotifyClientError();
@@ -733,8 +733,8 @@ void CloudPolicyClient::OnRemoteCommandsFetched(
     const RemoteCommandCallback& callback,
     DeviceManagementStatus status,
     int net_error,
-    const enterprise_management::DeviceManagementResponse& response) {
-  std::vector<enterprise_management::RemoteCommand> commands;
+    const em::DeviceManagementResponse& response) {
+  std::vector<em::RemoteCommand> commands;
   if (status == DM_STATUS_SUCCESS) {
     if (response.has_remote_command_response()) {
       for (const auto& command : response.remote_command_response().commands())
@@ -753,7 +753,7 @@ void CloudPolicyClient::OnGcmIdUpdated(
     const StatusCallback& callback,
     DeviceManagementStatus status,
     int net_error,
-    const enterprise_management::DeviceManagementResponse& response) {
+    const em::DeviceManagementResponse& response) {
   status_ = status;
   if (status != DM_STATUS_SUCCESS)
     NotifyClientError();
