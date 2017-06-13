@@ -24,7 +24,7 @@ TEST(CSSPropertyParserTest, CSSPaint_Functions) {
   const CSSValue* value = CSSParser::ParseSingleValue(
       CSSPropertyBackgroundImage, "paint(foo, func1(1px, 3px), red)");
   ASSERT_TRUE(value);
-  ASSERT_TRUE(value->IsImageGeneratorValue());
+  ASSERT_TRUE(value->IsValueList());
   EXPECT_EQ(value->CssText(), "paint(foo, func1(1px, 3px), red)");
 }
 
@@ -32,7 +32,7 @@ TEST(CSSPropertyParserTest, CSSPaint_NoArguments) {
   const CSSValue* value =
       CSSParser::ParseSingleValue(CSSPropertyBackgroundImage, "paint(foo)");
   ASSERT_TRUE(value);
-  ASSERT_TRUE(value->IsImageGeneratorValue());
+  ASSERT_TRUE(value->IsValueList());
   EXPECT_EQ(value->CssText(), "paint(foo)");
 }
 
@@ -40,7 +40,7 @@ TEST(CSSPropertyParserTest, CSSPaint_ValidArguments) {
   const CSSValue* value = CSSParser::ParseSingleValue(
       CSSPropertyBackgroundImage, "paint(bar, 10px, red)");
   ASSERT_TRUE(value);
-  ASSERT_TRUE(value->IsImageGeneratorValue());
+  ASSERT_TRUE(value->IsValueList());
   EXPECT_EQ(value->CssText(), "paint(bar, 10px, red)");
 }
 

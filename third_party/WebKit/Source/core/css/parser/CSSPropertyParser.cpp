@@ -932,17 +932,17 @@ static void AddBackgroundValue(CSSValue*& list, CSSValue* value) {
   }
 }
 
-static CSSValue* ConsumeCommaSeparatedBackgroundComponent(
+static CSSValueList* ConsumeCommaSeparatedBackgroundComponent(
     CSSPropertyID unresolved_property,
     CSSParserTokenRange& range,
     const CSSParserContext* context) {
-  CSSValue* result = nullptr;
+  CSSValueList* result = CSSValueList::CreateCommaSeparated();
   do {
     CSSValue* value =
         ConsumeBackgroundComponent(unresolved_property, range, context);
     if (!value)
       return nullptr;
-    AddBackgroundValue(result, value);
+    result->Append(*value);
   } while (ConsumeCommaIncludingWhitespace(range));
   return result;
 }
