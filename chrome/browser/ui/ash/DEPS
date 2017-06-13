@@ -1,5 +1,9 @@
 include_rules = [
   "+ash/public/interfaces",
+  # TODO(ananta): Remove this when we move files which display UI in
+  # chrome/browser/ui/ash to chrome/browser/ui/views/ash
+  # crbug.com/728877
+  "+chrome/browser/ui/views/harmony/chrome_layout_provider.h",
   "+components/arc",
   "+components/drive",
   "+components/session_manager/core",

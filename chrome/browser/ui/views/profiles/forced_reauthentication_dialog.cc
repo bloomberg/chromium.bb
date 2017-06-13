@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/sync/profile_signin_confirmation_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
@@ -27,8 +28,6 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/layout/layout_constants.h"
-#include "ui/views/layout/layout_provider.h"
 #include "ui/views/view.h"
 #include "ui/views/window/dialog_client_view.h"
 
@@ -76,7 +75,7 @@ class PromptLabel : public views::StyledLabel {
       : views::StyledLabel(text, listener) {}
 
   gfx::Insets GetInsets() const override {
-    return views::LayoutProvider::Get()->GetInsetsMetric(
+    return ChromeLayoutProvider::Get()->GetInsetsMetric(
         views::INSETS_DIALOG_CONTENTS);
   }
 };
@@ -199,12 +198,12 @@ void ForcedReauthenticationDialog::AddedToWidget() {
   views::StyledLabel* explanation_label =
       new views::StyledLabel(signin_explanation_text, nullptr);
 
+  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   // Layout the components.
-  const gfx::Insets panel_insets =
-      views::LayoutProvider::Get()->GetInsetsMetric(
-          views::INSETS_DIALOG_CONTENTS);
-  SetBorder(views::CreateEmptyBorder(panel_insets.top(), 0,
-                                     panel_insets.bottom(), 0));
+  const gfx::Insets dialog_insets =
+      provider->GetInsetsMetric(views::INSETS_DIALOG_CONTENTS);
+  SetBorder(views::CreateEmptyBorder(dialog_insets.top(), 0,
+                                     dialog_insets.bottom(), 0));
   views::GridLayout* dialog_layout = new views::GridLayout(this);
   SetLayoutManager(dialog_layout);
 
@@ -217,13 +216,14 @@ void ForcedReauthenticationDialog::AddedToWidget() {
                          views::GridLayout::FILL, 0, 0);
 
   // Use a new column set for the explanation label so we can add padding.
-  dialog_layout->AddPaddingRow(0.0, views::kPanelVertMargin);
+  dialog_layout->AddPaddingRow(0.0, dialog_insets.top());
   views::ColumnSet* explanation_columns = dialog_layout->AddColumnSet(1);
-  explanation_columns->AddPaddingColumn(0.0, views::kButtonHEdgeMarginNew);
+
+  explanation_columns->AddPaddingColumn(0.0, dialog_insets.left());
   explanation_columns->AddColumn(views::GridLayout::FILL,
                                  views::GridLayout::FILL, 100,
                                  views::GridLayout::USE_PREF, 0, 0);
-  explanation_columns->AddPaddingColumn(0.0, views::kButtonHEdgeMarginNew);
+  explanation_columns->AddPaddingColumn(0.0, dialog_insets.right());
   dialog_layout->StartRow(0, 1);
   const int kPreferredWidth = 440;
   dialog_layout->AddView(explanation_label, 1, 1, views::GridLayout::FILL,
