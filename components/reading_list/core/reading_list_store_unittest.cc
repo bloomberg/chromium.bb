@@ -224,7 +224,7 @@ TEST_F(ReadingListStoreTest, SaveOneUnread) {
 }
 
 TEST_F(ReadingListStoreTest, SyncMergeOneEntry) {
-  syncer::EntityDataMap remote_input;
+  syncer::EntityChangeList remote_input;
   ReadingListEntry entry(GURL("http://read.example.com/"), "read title",
                          AdvanceAndGetTime(clock_));
   entry.SetRead(true, AdvanceAndGetTime(clock_));
@@ -235,7 +235,8 @@ TEST_F(ReadingListStoreTest, SyncMergeOneEntry) {
   data.client_tag_hash = "http://read.example.com/";
   *data.specifics.mutable_reading_list() = *specifics;
 
-  remote_input["http://read.example.com/"] = data.PassToPtr();
+  remote_input.push_back(syncer::EntityChange::CreateAdd(
+      "http://read.example.com/", data.PassToPtr()));
 
   std::unique_ptr<syncer::MetadataChangeList> metadata_changes(
       reading_list_store_->CreateMetadataChangeList());
@@ -248,7 +249,6 @@ TEST_F(ReadingListStoreTest, SyncMergeOneEntry) {
 }
 
 TEST_F(ReadingListStoreTest, ApplySyncChangesOneAdd) {
-  syncer::EntityDataMap remote_input;
   ReadingListEntry entry(GURL("http://read.example.com/"), "read title",
                          AdvanceAndGetTime(clock_));
   entry.SetRead(true, AdvanceAndGetTime(clock_));
@@ -271,7 +271,6 @@ TEST_F(ReadingListStoreTest, ApplySyncChangesOneAdd) {
 }
 
 TEST_F(ReadingListStoreTest, ApplySyncChangesOneMerge) {
-  syncer::EntityDataMap remote_input;
   AdvanceAndGetTime(clock_);
   model_->AddEntry(GURL("http://unread.example.com/"), "unread title",
                    reading_list::ADDED_VIA_CURRENT_APP);
@@ -302,7 +301,6 @@ TEST_F(ReadingListStoreTest, ApplySyncChangesOneIgnored) {
                              "old unread title", AdvanceAndGetTime(clock_));
   old_entry.SetRead(true, AdvanceAndGetTime(clock_));
 
-  syncer::EntityDataMap remote_input;
   AdvanceAndGetTime(clock_);
   model_->AddEntry(GURL("http://unread.example.com/"), "new unread title",
                    reading_list::ADDED_VIA_CURRENT_APP);

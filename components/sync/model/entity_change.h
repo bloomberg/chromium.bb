@@ -28,10 +28,6 @@ class EntityChange {
   std::string storage_key() const { return storage_key_; }
   ChangeType type() const { return type_; }
   const EntityData& data() const { return data_.value(); }
-  // TODO(pavely): data_ptr() is added temporarily to support converting
-  // ModelTypeSyncBridge::MergeSyncData from map to change list. Should be
-  // removed as part of crbug.com/719570.
-  const EntityDataPtr& data_ptr() const { return data_; }
 
  private:
   EntityChange(const std::string& storage_key,

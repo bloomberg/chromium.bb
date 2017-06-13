@@ -66,28 +66,7 @@ class ModelTypeSyncBridge : public base::SupportsWeakPtr<ModelTypeSyncBridge> {
   // completely saved during the current run.
   virtual base::Optional<ModelError> MergeSyncData(
       std::unique_ptr<MetadataChangeList> metadata_change_list,
-      EntityChangeList entity_data);
-
-  // Perform the initial merge between local and sync data. This should only be
-  // called when a data type is first enabled to start syncing, and there is no
-  // sync metadata. Best effort should be made to match local and sync data. The
-  // keys in the |entity_data_map| will have been created via
-  // GetStorageKey(...), and if a local and sync data should match/merge but
-  // disagree on storage key, the bridge should delete one of the records
-  // (preferably local). Any local pieces of data that are not present in sync
-  // should immediately be Put(...) to the processor before returning. The same
-  // MetadataChangeList that was passed into this function can be passed to
-  // Put(...) calls. Delete(...) can also be called but should not be needed for
-  // most model types. Durable storage writes, if not able to combine all change
-  // atomically, should save the metadata after the data changes, so that this
-  // merge will be re-driven by sync if is not completely saved during the
-  // current run.
-  // TODO(pavely): This function should be removed as part of crbug.com/719570
-  // once all bridge implementations are switched to the other MergeSyncData
-  // signature.
-  virtual base::Optional<ModelError> MergeSyncData(
-      std::unique_ptr<MetadataChangeList> metadata_change_list,
-      EntityDataMap entity_data_map) = 0;
+      EntityChangeList entity_data) = 0;
 
   // Apply changes from the sync server locally.
   // Please note that |entity_changes| might have fewer entries than

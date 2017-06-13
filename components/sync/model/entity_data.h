@@ -28,7 +28,6 @@ struct EntityDataTraits {
 
 using EntityDataPtr = ProtoValuePtr<EntityData, EntityDataTraits>;
 using EntityDataList = std::vector<EntityDataPtr>;
-using EntityDataMap = std::map<std::string, EntityDataPtr>;
 
 // A light-weight container for sync entity data which represents either
 // local data created on the ModelTypeSyncBridge side or remote data created

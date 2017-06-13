@@ -107,9 +107,6 @@ class FakeModelTypeSyncBridge : public ModelTypeSyncBridge {
   base::Optional<ModelError> MergeSyncData(
       std::unique_ptr<MetadataChangeList> metadata_change_list,
       EntityChangeList entity_data) override;
-  base::Optional<ModelError> MergeSyncData(
-      std::unique_ptr<MetadataChangeList> metadata_change_list,
-      EntityDataMap entity_data) override;
   base::Optional<ModelError> ApplySyncChanges(
       std::unique_ptr<MetadataChangeList> metadata_change_list,
       EntityChangeList entity_changes) override;
