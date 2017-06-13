@@ -88,7 +88,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   for (c = 0; c < seg_eob; ++c) {
     int is_nz;
     int coeff_ctx = get_nz_map_ctx(tcoeffs, txb_mask, scan[c], bwl);
-    int eob_ctx = get_eob_ctx(tcoeffs, scan[c], bwl);
+    int eob_ctx = get_eob_ctx(tcoeffs, scan[c], txs_ctx);
 
     if (c < seg_eob - 1)
       is_nz = aom_read(r, nz_map[coeff_ctx], tx_size);

@@ -338,12 +338,12 @@ static INLINE int get_nz_map_ctx2(const tran_low_t *tcoeffs,
 
 static INLINE int get_eob_ctx(const tran_low_t *tcoeffs,
                               const int coeff_idx,  // raster order
-                              const int bwl) {
+                              const TX_SIZE txs_ctx) {
   (void)tcoeffs;
-  if (bwl == 2) return av1_coeff_band_4x4[coeff_idx];
-  if (bwl == 3) return av1_coeff_band_8x8[coeff_idx];
-  if (bwl == 4) return av1_coeff_band_16x16[coeff_idx];
-  if (bwl == 5) return av1_coeff_band_32x32[coeff_idx];
+  if (txs_ctx == TX_4X4) return av1_coeff_band_4x4[coeff_idx];
+  if (txs_ctx == TX_8X8) return av1_coeff_band_8x8[coeff_idx];
+  if (txs_ctx == TX_16X16) return av1_coeff_band_16x16[coeff_idx];
+  if (txs_ctx == TX_32X32) return av1_coeff_band_32x32[coeff_idx];
 
   assert(0);
   return 0;

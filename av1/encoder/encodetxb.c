@@ -102,7 +102,7 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 
   for (c = 0; c < eob; ++c) {
     int coeff_ctx = get_nz_map_ctx(tcoeff, txb_mask, scan[c], bwl);
-    int eob_ctx = get_eob_ctx(tcoeff, scan[c], bwl);
+    int eob_ctx = get_eob_ctx(tcoeff, scan[c], txs_ctx);
 
     tran_low_t v = tcoeff[scan[c]];
     is_nz = (v != 0);
@@ -396,7 +396,7 @@ int av1_cost_coeffs_txb(const AV1_COMP *const cpi, MACROBLOCK *x, int plane,
       }
 
       if (c < seg_eob) {
-        int eob_ctx = get_eob_ctx(qcoeff, scan[c], bwl);
+        int eob_ctx = get_eob_ctx(qcoeff, scan[c], txs_ctx);
         cost += av1_cost_bit(xd->fc->eob_flag[txs_ctx][plane_type][eob_ctx],
                              c == (eob - 1));
       }
@@ -788,7 +788,7 @@ static int try_self_level_down(tran_low_t *low_coeff, int coeff_idx,
 
     if (scan_idx < txb_info->seg_eob) {
       const int eob_ctx =
-          get_eob_ctx(txb_info->qcoeff, coeff_idx, txb_info->bwl);
+          get_eob_ctx(txb_info->qcoeff, coeff_idx, txb_info->txs_ctx);
       cost_diff -= av1_cost_bit(txb_probs->eob_flag[eob_ctx],
                                 scan_idx == (txb_info->eob - 1));
     }
@@ -860,6 +860,7 @@ int try_level_down(int coeff_idx, const TxbCache *txb_cache,
       const int nb_row = row - sig_ref_offset[i][0];
       const int nb_col = col - sig_ref_offset[i][1];
       const int nb_coeff_idx = nb_row * txb_info->stride + nb_col;
+
       const int nb_scan_idx = iscan[nb_coeff_idx];
       if (nb_scan_idx < eob && nb_row >= 0 && nb_col >= 0 &&
           nb_row < txb_info->stride && nb_col < txb_info->stride) {
@@ -932,7 +933,7 @@ static int get_low_coeff_cost(int coeff_idx, const TxbCache *txb_cache,
     cost += get_base_cost(abs_qc, ctx, txb_probs->coeff_base, base_idx);
     if (scan_idx < txb_info->seg_eob) {
       const int eob_ctx =
-          get_eob_ctx(txb_info->qcoeff, coeff_idx, txb_info->bwl);
+          get_eob_ctx(txb_info->qcoeff, coeff_idx, txb_info->txs_ctx);
       cost += av1_cost_bit(txb_probs->eob_flag[eob_ctx],
                            scan_idx == (txb_info->eob - 1));
     }
@@ -989,7 +990,7 @@ int try_change_eob(int *new_eob, int coeff_idx, const TxbCache *txb_cache,
     // Note that get_eob_ctx does NOT actually account for qcoeff, so we don't
     // need to lower down the qcoeff here
     const int eob_ctx =
-        get_eob_ctx(txb_info->qcoeff, scan[*new_eob - 1], txb_info->bwl);
+        get_eob_ctx(txb_info->qcoeff, scan[*new_eob - 1], txb_info->txs_ctx);
     cost_diff -= av1_cost_bit(txb_probs->eob_flag[eob_ctx], 0);
     cost_diff += av1_cost_bit(txb_probs->eob_flag[eob_ctx], 1);
   } else {
@@ -1144,7 +1145,7 @@ static int get_coeff_cost(tran_low_t qc, int scan_idx, TxbInfo *txb_info,
 
     if (scan_idx < txb_info->seg_eob) {
       int eob_ctx =
-          get_eob_ctx(txb_info->qcoeff, scan[scan_idx], txb_info->bwl);
+          get_eob_ctx(txb_info->qcoeff, scan[scan_idx], txb_info->txs_ctx);
       cost += av1_cost_bit(txb_probs->eob_flag[eob_ctx],
                            scan_idx == (txb_info->eob - 1));
     }
@@ -1478,9 +1479,9 @@ int av1_optimize_txb(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
       (x->rdmult * plane_rd_mult[is_inter][plane_type] + 2) >> 2;
   const int64_t rddiv = x->rddiv;
 
-  TxbInfo txb_info = { qcoeff,     dqcoeff, tcoeff, dequant, shift,
-                       tx_size,    bwl,     stride, eob,     seg_eob,
-                       scan_order, txb_ctx, rdmult, rddiv };
+  TxbInfo txb_info = { qcoeff,  dqcoeff,    tcoeff,  dequant, shift,
+                       tx_size, txs_ctx,    bwl,     stride,  eob,
+                       seg_eob, scan_order, txb_ctx, rdmult,  rddiv };
   TxbCache txb_cache;
   gen_txb_cache(&txb_cache, &txb_info);
 
@@ -1583,7 +1584,7 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
     tran_low_t v = qcoeff[scan[c]];
     int is_nz = (v != 0);
     int coeff_ctx = get_nz_map_ctx(tcoeff, txb_mask, scan[c], bwl);
-    int eob_ctx = get_eob_ctx(tcoeff, scan[c], bwl);
+    int eob_ctx = get_eob_ctx(tcoeff, scan[c], txsize_ctx);
 
     if (c == seg_eob - 1) break;
 
