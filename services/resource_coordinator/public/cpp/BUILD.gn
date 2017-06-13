@@ -30,7 +30,7 @@ component("resource_coordinator_cpp") {
     "//services/resource_coordinator/public/interfaces:interfaces_internal",
     "//services/resource_coordinator/public/interfaces:interfaces_internal_blink",
     "//services/service_manager/public/cpp",
-    "//third_party/smhasher:murmurhash2",
+    "//third_party/smhasher:cityhash",
   ]
 
   allow_circular_includes_from = [

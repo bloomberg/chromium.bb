@@ -108,13 +108,7 @@ TEST_F(CoordinationUnitImplTest, BasicPolicyCallback) {
   test_coordination_unit.ForcePolicyUpdates();
 }
 
-#if defined(OS_ANDROID)
-// TODO(thakis): Figure out, reenable. https://crbug.com/732061
-#define MAYBE_AddChild DISABLED_AddChild
-#else
-#define MAYBE_AddChild AddChild
-#endif
-TEST_F(CoordinationUnitImplTest, MAYBE_AddChild) {
+TEST_F(CoordinationUnitImplTest, AddChild) {
   TestCoordinationUnit parent_unit(
       provider(), CoordinationUnitType::kWebContents, "parent_unit");
 

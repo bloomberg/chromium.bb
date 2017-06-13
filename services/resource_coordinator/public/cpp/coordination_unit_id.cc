@@ -6,20 +6,16 @@
 
 #include "base/numerics/safe_conversions.h"
 #include "base/unguessable_token.h"
-#include "third_party/smhasher/src/MurmurHash2.h"
+#include "third_party/smhasher/src/City.h"
 
 namespace resource_coordinator {
 
 namespace {
 
-// The seed to use when taking the murmur2 hash of the id.
-const uint64_t kMurmur2HashSeed = 0;
-
-uint64_t CreateMurmurHash64A(const std::string& id) {
+uint64_t CreateCityHash64(const std::string& id) {
   DCHECK(base::IsValueInRangeForNumericType<int>(id.size()));
 
-  return MurmurHash64A(&id.front(), static_cast<int>(id.size()),
-                       kMurmur2HashSeed);
+  return CityHash64(&id.front(), static_cast<int>(id.size()));
 }
 
 }  // namespace
@@ -30,7 +26,7 @@ CoordinationUnitID::CoordinationUnitID()
 CoordinationUnitID::CoordinationUnitID(const CoordinationUnitType& type,
                                        const std::string& new_id)
     : type(type) {
-  id = CreateMurmurHash64A(
+  id = CreateCityHash64(
       !new_id.empty() ? new_id : base::UnguessableToken().Create().ToString());
 }
 
