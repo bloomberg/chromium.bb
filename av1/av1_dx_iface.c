@@ -443,6 +443,8 @@ static aom_codec_err_t init_decoder(aom_codec_alg_priv_t *ctx) {
       return AOM_CODEC_MEM_ERROR;
     }
 #endif
+    frame_worker_data->pbi->allow_lowbitdepth = ctx->cfg.allow_lowbitdepth;
+
     // If decoding in serial mode, FrameWorker thread could create tile worker
     // thread or loopfilter thread.
     frame_worker_data->pbi->max_threads =

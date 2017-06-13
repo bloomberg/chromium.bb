@@ -122,6 +122,7 @@ typedef struct AV1Decoder {
   aom_decrypt_cb decrypt_cb;
   void *decrypt_state;
 
+  int allow_lowbitdepth;
   int max_threads;
   int inv_tile_order;
   int need_resync;   // wait for key/intra-only frame.

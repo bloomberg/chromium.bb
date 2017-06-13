@@ -4216,7 +4216,8 @@ static void error_handler(void *data) {
 }
 
 static void read_bitdepth_colorspace_sampling(AV1_COMMON *cm,
-                                              struct aom_read_bit_buffer *rb) {
+                                              struct aom_read_bit_buffer *rb,
+                                              int allow_lowbitdepth) {
   if (cm->profile >= PROFILE_2) {
     cm->bit_depth = aom_rb_read_bit(rb) ? AOM_BITS_12 : AOM_BITS_10;
   } else {
@@ -4224,7 +4225,7 @@ static void read_bitdepth_colorspace_sampling(AV1_COMMON *cm,
   }
 
 #if CONFIG_HIGHBITDEPTH
-  cm->use_highbitdepth = cm->bit_depth > AOM_BITS_8 || !CONFIG_LOWBITDEPTH;
+  cm->use_highbitdepth = cm->bit_depth > AOM_BITS_8 || !allow_lowbitdepth;
 #endif
 #if CONFIG_COLORSPACE_HEADERS
   cm->color_space = aom_rb_read_literal(rb, 5);
@@ -4459,7 +4460,7 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
       aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
                          "Invalid frame sync code");
 
-    read_bitdepth_colorspace_sampling(cm, rb);
+    read_bitdepth_colorspace_sampling(cm, rb, pbi->allow_lowbitdepth);
     pbi->refresh_frame_flags = (1 << REF_FRAMES) - 1;
 
     for (i = 0; i < INTER_REFS_PER_FRAME; ++i) {
@@ -4515,7 +4516,7 @@ static size_t read_uncompressed_header(AV1Decoder *pbi,
         aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
                            "Invalid frame sync code");
 
-      read_bitdepth_colorspace_sampling(cm, rb);
+      read_bitdepth_colorspace_sampling(cm, rb, pbi->allow_lowbitdepth);
 
       pbi->refresh_frame_flags = aom_rb_read_literal(rb, REF_FRAMES);
       setup_frame_size(cm, rb);

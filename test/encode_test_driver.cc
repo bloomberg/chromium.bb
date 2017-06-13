@@ -210,6 +210,7 @@ void EncoderTest::MismatchHook(const aom_image_t *img_enc,
 
 void EncoderTest::RunLoop(VideoSource *video) {
   aom_codec_dec_cfg_t dec_cfg = aom_codec_dec_cfg_t();
+  dec_cfg.allow_lowbitdepth = 1;
 
   stats_.Reset();
 

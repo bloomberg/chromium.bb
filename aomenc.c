@@ -1363,7 +1363,7 @@ static void initialize_encoder(struct stream_state *stream,
 #if CONFIG_AV1_DECODER
   if (global->test_decode != TEST_DECODE_OFF) {
     const AvxInterface *decoder = get_aom_decoder_by_name(global->codec->name);
-    aom_codec_dec_cfg_t cfg = { 0, 0, 0 };
+    aom_codec_dec_cfg_t cfg = { 0, 0, 0, CONFIG_LOWBITDEPTH };
     aom_codec_dec_init(&stream->decoder, decoder->codec_interface(), &cfg, 0);
 
 #if CONFIG_EXT_TILE
