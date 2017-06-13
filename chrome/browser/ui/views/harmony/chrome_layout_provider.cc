@@ -36,6 +36,8 @@ int ChromeLayoutProvider::GetDistanceMetric(int metric) const {
       return views::kRelatedControlSmallVerticalSpacing;
     case DISTANCE_RELATED_LABEL_HORIZONTAL:
       return views::kItemLabelSpacing;
+    case DISTANCE_RELATED_LABEL_HORIZONTAL_LIST:
+      return views::kRelatedControlHorizontalSpacing;
     case DISTANCE_SUBSECTION_HORIZONTAL_INDENT:
       return views::kCheckboxIndent;
     case DISTANCE_UNRELATED_CONTROL_HORIZONTAL:
