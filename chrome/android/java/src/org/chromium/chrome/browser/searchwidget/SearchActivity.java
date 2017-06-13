@@ -182,7 +182,9 @@ public class SearchActivity extends AsyncInitializationActivity
                 SearchActivity.this, onSearchEngineFinalizedCallback);
     }
 
-    void finishDeferredInitialization() {
+    private void finishDeferredInitialization() {
+        assert !mIsActivityUsable
+                : "finishDeferredInitialization() incorrectly called multiple times";
         mIsActivityUsable = true;
         if (mQueuedUrl != null) loadUrl(mQueuedUrl);
 
