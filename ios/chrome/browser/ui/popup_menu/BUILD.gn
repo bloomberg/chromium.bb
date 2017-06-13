@@ -14,6 +14,7 @@ bundle_data("resources") {
 }
 
 source_set("popup_menu") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "popup_menu_controller.h",
     "popup_menu_controller.mm",

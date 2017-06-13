@@ -23,15 +23,15 @@
 
 // View that contains all subviews. Subclasses should add their views to
 // |containerView_|.
-@property(nonatomic, readonly, retain) UIView* containerView;
+@property(nonatomic, readonly, strong) UIView* containerView;
 // Displays the background and border of the popup.
-@property(nonatomic, readonly, retain) PopupMenuView* popupContainer;
+@property(nonatomic, readonly, strong) PopupMenuView* popupContainer;
 // Button used to dismiss the popup. Covers the entire window behind the popup
 // menu. Catches any touch events outside of the popup and invokes
 // |-tappedBehindPopup:| if there are any.
-@property(nonatomic, readonly, retain) UIButton* backgroundButton;
+@property(nonatomic, readonly, strong) UIButton* backgroundButton;
 // Delegate for the popup menu.
-@property(nonatomic, assign) id<PopupMenuDelegate> delegate;
+@property(nonatomic, weak) id<PopupMenuDelegate> delegate;
 
 // Initializes the PopupMenuController and adds its views inside of parent.
 - (id)initWithParentView:(UIView*)parent;

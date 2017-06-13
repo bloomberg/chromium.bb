@@ -4,10 +4,8 @@
 
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_controller.h"
 
-#import "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 #include "base/mac/bundle_locations.h"
-#include "base/mac/objc_property_releaser.h"
 #import "ios/chrome/browser/ui/animation_util.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_view.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
@@ -15,6 +13,10 @@
 #import "ios/chrome/common/material_timing.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 using ios::material::TimingFunction;
 
@@ -55,7 +57,6 @@ static CGPoint AnimateInIntermediaryPoint(CGPoint source, CGPoint destination) {
 }  // anonymous namespace
 
 @interface PopupMenuController ()<PopupMenuViewDelegate> {
-  base::mac::ObjCPropertyReleaser propertyReleaser_PopupMenuController_;
   CGPoint sourceAnimationPoint_;
 }
 @end
@@ -85,9 +86,6 @@ static CGPoint AnimateInIntermediaryPoint(CGPoint source, CGPoint destination) {
   DCHECK(parent);
   self = [super init];
   if (self) {
-    propertyReleaser_PopupMenuController_.Init(self,
-                                               [PopupMenuController class]);
-
     popupContainer_ = [[PopupMenuView alloc]
         initWithFrame:CGRectMake(0, 0, kPopupContainerWidth,
                                  kPopupContainerHeight)];
@@ -176,7 +174,6 @@ static CGPoint AnimateInIntermediaryPoint(CGPoint source, CGPoint destination) {
   [popupContainer_ removeFromSuperview];
   [backgroundButton_ removeFromSuperview];
   [containerView_ removeFromSuperview];
-  [super dealloc];
 }
 
 - (void)tappedBehindPopup:(id)sender {
@@ -244,8 +241,6 @@ static CGPoint AnimateInIntermediaryPoint(CGPoint source, CGPoint destination) {
   [CATransaction begin];
   [CATransaction setAnimationTimingFunction:easeIn];
   [CATransaction setAnimationDuration:ios::material::kDuration2];
-
-  base::WeakNSObject<PopupMenuController> weakSelf(self);
   [CATransaction setCompletionBlock:^{
     if (completion)
       completion();
