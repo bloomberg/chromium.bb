@@ -310,7 +310,7 @@ struct CheckedRshOp<T,
                     typename std::enable_if<std::is_integral<T>::value &&
                                             std::is_integral<U>::value>::type> {
   using result_type = T;
-  template <typename V = result_type>
+  template <typename V>
   static bool Do(T x, U shift, V* result) {
     // Use the type conversion push negative values out of range.
     using ShiftType = typename std::make_unsigned<T>::type;
@@ -334,7 +334,7 @@ struct CheckedAndOp<T,
                                             std::is_integral<U>::value>::type> {
   using result_type = typename std::make_unsigned<
       typename MaxExponentPromotion<T, U>::type>::type;
-  template <typename V = result_type>
+  template <typename V>
   static bool Do(T x, U y, V* result) {
     result_type tmp = static_cast<result_type>(x) & static_cast<result_type>(y);
     *result = static_cast<V>(tmp);
@@ -353,7 +353,7 @@ struct CheckedOrOp<T,
                                            std::is_integral<U>::value>::type> {
   using result_type = typename std::make_unsigned<
       typename MaxExponentPromotion<T, U>::type>::type;
-  template <typename V = result_type>
+  template <typename V>
   static bool Do(T x, U y, V* result) {
     result_type tmp = static_cast<result_type>(x) | static_cast<result_type>(y);
     *result = static_cast<V>(tmp);
@@ -372,7 +372,7 @@ struct CheckedXorOp<T,
                                             std::is_integral<U>::value>::type> {
   using result_type = typename std::make_unsigned<
       typename MaxExponentPromotion<T, U>::type>::type;
-  template <typename V = result_type>
+  template <typename V>
   static bool Do(T x, U y, V* result) {
     result_type tmp = static_cast<result_type>(x) ^ static_cast<result_type>(y);
     *result = static_cast<V>(tmp);
@@ -392,11 +392,12 @@ struct CheckedMaxOp<
     typename std::enable_if<std::is_arithmetic<T>::value &&
                             std::is_arithmetic<U>::value>::type> {
   using result_type = typename MaxExponentPromotion<T, U>::type;
-  template <typename V = result_type>
+  template <typename V>
   static bool Do(T x, U y, V* result) {
-    *result = IsGreater<T, U>::Test(x, y) ? static_cast<result_type>(x)
-                                          : static_cast<result_type>(y);
-    return true;
+    result_type tmp = IsGreater<T, U>::Test(x, y) ? static_cast<result_type>(x)
+                                                  : static_cast<result_type>(y);
+    *result = static_cast<V>(tmp);
+    return IsValueInRangeForNumericType<V>(tmp);
   }
 };
 
@@ -412,11 +413,12 @@ struct CheckedMinOp<
     typename std::enable_if<std::is_arithmetic<T>::value &&
                             std::is_arithmetic<U>::value>::type> {
   using result_type = typename LowestValuePromotion<T, U>::type;
-  template <typename V = result_type>
+  template <typename V>
   static bool Do(T x, U y, V* result) {
-    *result = IsLess<T, U>::Test(x, y) ? static_cast<result_type>(x)
-                                       : static_cast<result_type>(y);
-    return true;
+    result_type tmp = IsLess<T, U>::Test(x, y) ? static_cast<result_type>(x)
+                                               : static_cast<result_type>(y);
+    *result = static_cast<V>(tmp);
+    return IsValueInRangeForNumericType<V>(tmp);
   }
 };
 
