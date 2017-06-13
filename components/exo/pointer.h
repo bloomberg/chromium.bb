@@ -38,6 +38,7 @@ class Surface;
 // devices, such as mice, which control the pointer location and pointer focus.
 class Pointer : public ui::EventHandler,
                 public WMHelper::CursorObserver,
+                public WMHelper::DisplayConfigurationObserver,
                 public SurfaceDelegate,
                 public SurfaceObserver {
  public:
@@ -62,6 +63,9 @@ class Pointer : public ui::EventHandler,
   void OnCursorSetChanged(ui::CursorSetType cursor_set) override;
   void OnCursorDisplayChanged(const display::Display& display) override;
 
+  // Overridden from WMHelper::DisplayConfigurationObserver:
+  void OnDisplayConfigurationChanged() override;
+
   // Overridden from SurfaceDelegate:
   void OnSurfaceCommit() override;
   bool IsSurfaceSynchronized() const override;
@@ -72,6 +76,9 @@ class Pointer : public ui::EventHandler,
  private:
   // Returns the effective target for |event|.
   Surface* GetEffectiveTargetForEvent(ui::Event* event) const;
+
+  // Updates the |surface_| from which the cursor is captured.
+  void UpdatePointerSurface(Surface* surface);
 
   // Asynchronously update the cursor by capturing a snapshot of |surface_|.
   void CaptureCursor(const gfx::Point& hotspot);

@@ -78,6 +78,7 @@ Pointer::Pointer(PointerDelegate* delegate)
   auto* helper = WMHelper::GetInstance();
   helper->AddPreTargetHandler(this);
   helper->AddCursorObserver(this);
+  helper->AddDisplayConfigurationObserver(this);
 }
 
 Pointer::~Pointer() {
@@ -89,6 +90,7 @@ Pointer::~Pointer() {
     focus_->UnregisterCursorProvider(this);
   }
   auto* helper = WMHelper::GetInstance();
+  helper->RemoveDisplayConfigurationObserver(this);
   helper->RemoveCursorObserver(this);
   helper->RemovePreTargetHandler(this);
 }
@@ -108,24 +110,7 @@ void Pointer::SetCursor(Surface* surface, const gfx::Point& hotspot) {
       DLOG(ERROR) << "Surface has already been assigned a role";
       return;
     }
-    if (surface_) {
-      surface_->window()->SetTransform(gfx::Transform());
-      if (surface_->window()->parent())
-        surface_->window()->parent()->RemoveChild(surface_->window());
-      surface_->SetSurfaceDelegate(nullptr);
-      surface_->RemoveSurfaceObserver(this);
-    }
-    surface_ = surface;
-    if (surface_) {
-      surface_->SetSurfaceDelegate(this);
-      surface_->AddSurfaceObserver(this);
-      // Note: Surface window needs to be added to the tree so we can take a
-      // snapshot. Where in the tree is not important but we might as well use
-      // the cursor container.
-      WMHelper::GetInstance()
-          ->GetPrimaryDisplayContainer(ash::kShellWindowId_MouseCursorContainer)
-          ->AddChild(surface_->window());
-    }
+    UpdatePointerSurface(surface);
     cursor_changed = true;
   }
 
@@ -281,6 +266,13 @@ void Pointer::OnCursorDisplayChanged(const display::Display& display) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// WMHelper::DisplayConfigurationObserver overrides:
+
+void Pointer::OnDisplayConfigurationChanged() {
+  UpdatePointerSurface(surface_);
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // SurfaceDelegate overrides:
 
 void Pointer::OnSurfaceCommit() {
@@ -319,6 +311,27 @@ Surface* Pointer::GetEffectiveTargetForEvent(ui::Event* event) const {
     return nullptr;
 
   return delegate_->CanAcceptPointerEventsForSurface(target) ? target : nullptr;
+}
+
+void Pointer::UpdatePointerSurface(Surface* surface) {
+  if (surface_) {
+    surface_->window()->SetTransform(gfx::Transform());
+    if (surface_->window()->parent())
+      surface_->window()->parent()->RemoveChild(surface_->window());
+    surface_->SetSurfaceDelegate(nullptr);
+    surface_->RemoveSurfaceObserver(this);
+  }
+  surface_ = surface;
+  if (surface_) {
+    surface_->SetSurfaceDelegate(this);
+    surface_->AddSurfaceObserver(this);
+    // Note: Surface window needs to be added to the tree so we can take a
+    // snapshot. Where in the tree is not important but we might as well use
+    // the cursor container.
+    WMHelper::GetInstance()
+        ->GetPrimaryDisplayContainer(ash::kShellWindowId_MouseCursorContainer)
+        ->AddChild(surface_->window());
+  }
 }
 
 void Pointer::CaptureCursor(const gfx::Point& hotspot) {
