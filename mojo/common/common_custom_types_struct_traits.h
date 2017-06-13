@@ -23,10 +23,18 @@
 namespace mojo {
 
 template <>
-struct StructTraits<common::mojom::String16DataView, base::string16> {
-  static ConstCArray<uint16_t> data(const base::string16& str) {
+struct StructTraits<common::mojom::String16DataView, base::StringPiece16> {
+  static ConstCArray<uint16_t> data(base::StringPiece16 str) {
     return ConstCArray<uint16_t>(str.size(),
                                  reinterpret_cast<const uint16_t*>(str.data()));
+  }
+};
+
+template <>
+struct StructTraits<common::mojom::String16DataView, base::string16> {
+  static ConstCArray<uint16_t> data(const base::string16& str) {
+    return StructTraits<common::mojom::String16DataView,
+                        base::StringPiece16>::data(str);
   }
 
   static bool Read(common::mojom::String16DataView data, base::string16* out);

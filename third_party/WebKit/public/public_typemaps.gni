@@ -4,6 +4,7 @@
 
 # These are typemaps which are shared between Blink public and its embedder.
 typemaps = [
+  "//third_party/WebKit/public/platform/display_mode.typemap",
   "//third_party/WebKit/public/platform/referrer_policy.typemap",
   "//third_party/WebKit/public/platform/modules/screen_orientation/screen_orientation_lock_types.typemap",
   "//third_party/WebKit/public/web/console_message.typemap",

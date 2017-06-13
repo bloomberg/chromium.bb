@@ -94,6 +94,7 @@ include_rules = [
   "+third_party/WebKit/public/platform/modules/installedapp/installed_app_provider.mojom.h",
   "+third_party/WebKit/public/platform/modules/installedapp/related_application.mojom.h",
   "+third_party/WebKit/public/platform/modules/keyboard_lock/keyboard_lock.mojom.h",
+  "+third_party/WebKit/public/platform/modules/manifest/manifest_manager.mojom.h",
   "+third_party/WebKit/public/platform/modules/mediasession/media_session.mojom.h",
   "+third_party/WebKit/public/platform/modules/notifications/WebNotificationConstants.h",
   "+third_party/WebKit/public/platform/modules/notifications/notification.mojom.h",
