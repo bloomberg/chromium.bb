@@ -63,7 +63,7 @@ function test()
             InspectorTest.cssModel.setStyleSheetText(styleSheet.id, 'body {color: blue}');
             // Expect StylesSourceMapping to sync styleSheet with network UISourceCode.
             // Persistence acts synchronously.
-            InspectorTest.addSniffer(Bindings.StylesSourceMapping.prototype, '_styleFileSyncedForTest', next);
+            InspectorTest.addSniffer(Bindings.StyleFile.prototype, '_styleFileSyncedForTest', next);
 
             function throwProtocolError(styleSheetId) {
                 InspectorTest.addResult('Protocol Error: FAKE PROTOCOL ERROR');

@@ -31,7 +31,7 @@ function test()
 
             function testSetResourceContentMinor(next)
             {
-                InspectorTest.addSniffer(Bindings.StyleFile.prototype, "_styleContentSet", styleUpdatedMinor);
+                InspectorTest.addSniffer(Bindings.StyleFile.prototype, "_styleFileSyncedForTest", styleUpdatedMinor);
                 uiSourceCode.setWorkingCopy("body {\n  margin: 15px;\n  padding: 10px;\n}");
 
                 function styleUpdatedMinor()
@@ -42,12 +42,12 @@ function test()
 
             function testSetResourceContentMajor(next)
             {
-                InspectorTest.addSniffer(Bindings.StyleFile.prototype, "_styleContentSet", styleUpdatedMinor);
+                InspectorTest.addSniffer(Bindings.StyleFile.prototype, "_styleFileSyncedForTest", styleUpdatedMinor);
                 uiSourceCode.setWorkingCopy("body {\n  margin: 20px;\n  padding: 10px;\n}");
 
                 function styleUpdatedMinor()
                 {
-                    InspectorTest.addSniffer(Bindings.StyleFile.prototype, "_styleContentSet", styleUpdatedMajor);
+                    InspectorTest.addSniffer(Bindings.StyleFile.prototype, "_styleFileSyncedForTest", styleUpdatedMajor);
                     uiSourceCode.commitWorkingCopy(function() { });
 
                     function styleUpdatedMajor()

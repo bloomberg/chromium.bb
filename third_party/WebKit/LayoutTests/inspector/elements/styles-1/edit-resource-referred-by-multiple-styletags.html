@@ -4,38 +4,47 @@
 <script src="../../../http/tests/inspector/elements-test.js"></script>
 <script src="../../../http/tests/inspector/debugger-test.js"></script>
 <script src="../../../http/tests/inspector/live-edit-test.js"></script>
+<script src="../../../http/tests/inspector/bindings/bindings-test.js"></script>
 <script>
 
 function prepareTest()
 {
-    var text = document.querySelector(".stylesheet-text").textContent;
-    for (var i = 0; i < 3; ++i) {
-        var style = document.createElement("style");
-        style.textContent = text;
-        document.head.appendChild(style);
-    }
     runTest();
 }
 
-function test()
+async function test()
 {
-    InspectorTest.showScriptSource("stylesheet.css", onEditorOpened);
+    await InspectorTest.attachShadowDOM('shadow1', '#template'),
+    await InspectorTest.attachFrame('frame', './resources/frame.html');
+    var uiSourceCode = await InspectorTest.waitForUISourceCode('stylesheet.css');
+    var headers = InspectorTest.cssModel.styleSheetHeaders().filter(header => header.resourceURL().endsWith('stylesheet.css'));
+    InspectorTest.addResult('Headers count: ' + headers.length);
 
-    function onEditorOpened(sourceFrame)
-    {
-        InspectorTest.addSniffer(SDK.CSSModel.prototype, "_fireStyleSheetChanged", didEditStyleSheet);
-        InspectorTest.replaceInSource(sourceFrame, "100px", "2em");
-    }
+    InspectorTest.markStep('Make edits with Sources Panel');
+    var sourceFrame = await new Promise(x => InspectorTest.showScriptSource("stylesheet.css", x));
+    InspectorTest.replaceInSource(sourceFrame, 'red', 'EDITED');
+    await InspectorTest.addSnifferPromise(Bindings.StyleFile.prototype, '_styleFileSyncedForTest');
+    await checkHeadersContent();
 
-    function didEditStyleSheet()
-    {
-        InspectorTest.selectNodeAndWaitForStyles("inspected", didSelectNode);
-    }
 
-    function didSelectNode()
-    {
-        InspectorTest.dumpSelectedElementStyles(true, false);
-        InspectorTest.completeTest();
+    InspectorTest.markStep('Make edits via css model');
+    InspectorTest.cssModel.setStyleSheetText(headers[0].id, '* { --foo: "bar" }');
+    await InspectorTest.addSnifferPromise(Bindings.StyleFile.prototype, '_styleFileSyncedForTest');
+    await checkHeadersContent();
+    InspectorTest.completeTest();
+
+
+    async function checkHeadersContent(expected) {
+        var contents = await Promise.all(headers.map(header => header.requestContent()));
+        contents.push(uiSourceCode.workingCopy());
+        var dedup = new Set(contents);
+        if (dedup.size !== 1) {
+            InspectorTest.addResult('ERROR: contents are out of sync!');
+            InspectorTest.completeTest();
+            return;
+        }
+        InspectorTest.addResult('Both headers and uiSourceCode content:');
+        InspectorTest.addResult(dedup.firstValue());
     }
 }
 </script>
@@ -47,12 +56,16 @@ Tests that editing sourcecode which is referred by multiple stylesheets (via sou
 
 <div id="inspected">Inspected node</div>
 
-<div class="stylesheet-text" hidden>
-#inspected {
-    font-size: 100px;
-}
+<style>div{color:red;}
 /*# sourceURL=stylesheet.css */
-</div>
+</style>
+
+<template id='template'>
+<style>div{color:red;}
+/*# sourceURL=stylesheet.css */
+</style>
+<p>Hi! I'm ShadowDOM v1!</p>
+</template>
 
 </body>
 </html>
