@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/stl_util.h"
 #include "components/device_event_log/device_event_log.h"
 
 namespace device {
@@ -24,9 +25,7 @@ struct CollectionHasReportId {
     if (report_id_ == HidConnection::kAnyReportId)
       return true;
 
-    return std::find(info.report_ids.begin(),
-                     info.report_ids.end(),
-                     report_id_) != info.report_ids.end();
+    return base::ContainsValue(info.report_ids, report_id_);
   }
 
  private:
