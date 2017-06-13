@@ -254,6 +254,7 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
         boolean showThumbnail = shouldShowThumbnail(horizontalStyle, verticalStyle, layout);
 
         mHeadlineTextView.setVisibility(showHeadline ? View.VISIBLE : View.GONE);
+        mHeadlineTextView.setMaxLines(getHeaderMaxLines(horizontalStyle, verticalStyle, layout));
         mArticleSnippetTextView.setVisibility(showDescription ? View.VISIBLE : View.GONE);
         mThumbnailView.setVisibility(showThumbnail ? View.VISIBLE : View.GONE);
 
@@ -304,6 +305,14 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
         if (layout == ContentSuggestionsCardLayout.MINIMAL_CARD) return false;
 
         return true;
+    }
+
+    /**
+     * If no summary (no description) is shown, allow more lines for the header (title).
+     * @return The maximum number of header text lines.
+     */
+    private int getHeaderMaxLines(int horizontalStyle, int verticalStyle, int layout) {
+        return shouldShowDescription(horizontalStyle, verticalStyle, layout) ? 2 : 3;
     }
 
     private static String getPublisherString(SnippetArticle article) {
