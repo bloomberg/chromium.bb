@@ -8,10 +8,12 @@
 #include <utility>
 
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shelf/ink_drop_button_listener.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_view.h"
+#include "ash/shelf/voice_interaction_overlay.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/tray_popup_utils.h"
@@ -23,7 +25,16 @@
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/app_list/presenter/app_list.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/layer_animation_element.h"
+#include "ui/compositor/layer_animation_observer.h"
+#include "ui/compositor/layer_animation_sequence.h"
+#include "ui/compositor/paint_context.h"
+#include "ui/compositor/paint_recorder.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/image/canvas_image_source.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_operations.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_impl.h"
@@ -53,6 +64,14 @@ AppListButton::AppListButton(InkDropButtonListener* listener,
   SetSize(gfx::Size(kShelfSize, kShelfSize));
   SetFocusPainter(TrayPopupUtils::CreateFocusPainter());
   set_notify_action(CustomButton::NOTIFY_ON_PRESS);
+
+  if (chromeos::switches::IsVoiceInteractionEnabled()) {
+    voice_interaction_overlay_ = new VoiceInteractionOverlay(this);
+    AddChildView(voice_interaction_overlay_);
+    voice_interaction_overlay_->SetVisible(false);
+  } else {
+    voice_interaction_overlay_ = nullptr;
+  }
 }
 
 AppListButton::~AppListButton() {
@@ -92,21 +111,31 @@ void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
       shelf_view_->PointerReleasedOnButton(this, ShelfView::TOUCH, false);
       event->SetHandled();
       return;
+    case ui::ET_GESTURE_TAP:
+    case ui::ET_GESTURE_TAP_CANCEL:
+      if (voice_interaction_overlay_)
+        voice_interaction_overlay_->EndAnimation();
+      ImageButton::OnGestureEvent(event);
+      return;
     case ui::ET_GESTURE_TAP_DOWN:
+      if (voice_interaction_overlay_)
+        voice_interaction_overlay_->StartAnimation();
       if (!Shell::Get()->IsAppListVisible())
         AnimateInkDrop(views::InkDropState::ACTION_PENDING, event);
       ImageButton::OnGestureEvent(event);
-      break;
+      return;
     case ui::ET_GESTURE_LONG_PRESS:
       if (chromeos::switches::IsVoiceInteractionEnabled()) {
         base::RecordAction(base::UserMetricsAction(
             "VoiceInteraction.Started.AppListButtonLongPress"));
         Shell::Get()->app_list()->StartVoiceInteractionSession();
+        DCHECK(voice_interaction_overlay_);
+        voice_interaction_overlay_->BurstAnimation();
         event->SetHandled();
       } else {
         ImageButton::OnGestureEvent(event);
       }
-      break;
+      return;
     case ui::ET_GESTURE_LONG_TAP:
       if (chromeos::switches::IsVoiceInteractionEnabled()) {
         // Also consume the long tap event. This happens after the user long
@@ -117,7 +146,7 @@ void AppListButton::OnGestureEvent(ui::GestureEvent* event) {
       } else {
         ImageButton::OnGestureEvent(event);
       }
-      break;
+      return;
     default:
       ImageButton::OnGestureEvent(event);
       return;
@@ -201,9 +230,12 @@ void AppListButton::PaintButtonContents(gfx::Canvas* canvas) {
 
   // Paint a white ring as the foreground. The ceil/dsf math assures that the
   // ring draws sharply and is centered at all scale factors.
-  const float kRingOuterRadiusDp = 7.f;
-  const float kRingThicknessDp = 1.5f;
-
+  float ring_outer_radius_dp = 7.f;
+  float ring_thickness_dp = 1.5f;
+  if (chromeos::switches::IsVoiceInteractionEnabled()) {
+    ring_outer_radius_dp = 8.f;
+    ring_thickness_dp = 1.f;
+  }
   {
     gfx::ScopedCanvas scoped_canvas(canvas);
     const float dsf = canvas->UndoDeviceScaleFactor();
@@ -213,11 +245,18 @@ void AppListButton::PaintButtonContents(gfx::Canvas* canvas) {
     fg_flags.setAntiAlias(true);
     fg_flags.setStyle(cc::PaintFlags::kStroke_Style);
     fg_flags.setColor(kShelfIconColor);
-    const float thickness = std::ceil(kRingThicknessDp * dsf);
-    const float radius = std::ceil(kRingOuterRadiusDp * dsf) - thickness / 2;
+    const float thickness = std::ceil(ring_thickness_dp * dsf);
+    const float radius = std::ceil(ring_outer_radius_dp * dsf) - thickness / 2;
     fg_flags.setStrokeWidth(thickness);
     // Make sure the center of the circle lands on pixel centers.
     canvas->DrawCircle(circle_center, radius, fg_flags);
+
+    if (chromeos::switches::IsVoiceInteractionEnabled()) {
+      const float kCircleRadiusDp = 5.f;
+      fg_flags.setStyle(cc::PaintFlags::kFill_Style);
+      canvas->DrawCircle(circle_center, std::ceil(kCircleRadiusDp * dsf),
+                         fg_flags);
+    }
   }
 }
 

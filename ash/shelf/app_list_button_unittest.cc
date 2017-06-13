@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "base/command_line.h"
+#include "base/test/scoped_command_line.h"
 #include "chromeos/chromeos_switches.h"
 #include "ui/app_list/presenter/app_list.h"
 #include "ui/app_list/presenter/test/test_app_list_presenter.h"
@@ -27,10 +28,14 @@ class AppListButtonTest : public AshTestBase {
   ~AppListButtonTest() override {}
 
   void SetUp() override {
+    command_line_ = base::MakeUnique<base::test::ScopedCommandLine>();
+    SetupCommandLine(command_line_->GetProcessCommandLine());
     AshTestBase::SetUp();
     app_list_button_ =
         GetPrimaryShelf()->GetShelfViewForTesting()->GetAppListButton();
   }
+
+  virtual void SetupCommandLine(base::CommandLine* command_line) {}
 
   void SendGestureEvent(ui::GestureEvent* event) {
     app_list_button_->OnGestureEvent(event);
@@ -38,8 +43,8 @@ class AppListButtonTest : public AshTestBase {
 
  private:
   AppListButton* app_list_button_;
+  std::unique_ptr<base::test::ScopedCommandLine> command_line_;
 
- private:
   DISALLOW_COPY_AND_ASSIGN(AppListButtonTest);
 };
 
@@ -54,13 +59,23 @@ TEST_F(AppListButtonTest, LongPressGestureWithoutVoiceInteractionFlag) {
   EXPECT_EQ(0u, test_app_list_presenter.voice_session_count());
 }
 
-TEST_F(AppListButtonTest, LongPressGestureWithVoiceInteractionFlag) {
+class VoiceInteractionAppListButtonTest : public AppListButtonTest {
+ public:
+  VoiceInteractionAppListButtonTest() {}
+
+  void SetupCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(chromeos::switches::kEnableVoiceInteraction);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(VoiceInteractionAppListButtonTest);
+};
+
+TEST_F(VoiceInteractionAppListButtonTest,
+       LongPressGestureWithVoiceInteractionFlag) {
   app_list::test::TestAppListPresenter test_app_list_presenter;
   Shell::Get()->app_list()->SetAppListPresenter(
       test_app_list_presenter.CreateInterfacePtrAndBind());
-
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      chromeos::switches::kEnableVoiceInteraction);
 
   EXPECT_TRUE(base::CommandLine::ForCurrentProcess()->HasSwitch(
       chromeos::switches::kEnableVoiceInteraction));
