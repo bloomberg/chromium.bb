@@ -2311,18 +2311,6 @@ def CMDrevinfo(parser, args):
   return 0
 
 
-def CMDhookinfo(parser, args):
-  """Outputs the hooks that would be run by `gclient runhooks`."""
-  (options, args) = parser.parse_args(args)
-  options.force = True
-  client = GClient.LoadCurrentConfig(options)
-  if not client:
-    raise gclient_utils.Error('client not configured; see \'gclient config\'')
-  client.RunOnDeps(None, [])
-  print('; '.join(' '.join(hook) for hook in client.GetHooks(options)))
-  return 0
-
-
 def CMDverify(parser, args):
   """Verifies the DEPS file deps are only from allowed_hosts."""
   (options, args) = parser.parse_args(args)
