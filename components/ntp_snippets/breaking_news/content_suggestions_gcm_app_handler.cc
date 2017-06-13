@@ -25,15 +25,20 @@ const char kContentSuggestionsGCMSenderId[] = "128223710667";
 // Must match Java GoogleCloudMessaging.INSTANCE_ID_SCOPE.
 const char kGCMScope[] = "GCM";
 
+// Key of the suggestion json in the data in the pushed content suggestion.
+const char kPushedSuggestionKey[] = "payload";
+
 ContentSuggestionsGCMAppHandler::ContentSuggestionsGCMAppHandler(
     gcm::GCMDriver* gcm_driver,
     instance_id::InstanceIDDriver* instance_id_driver,
     PrefService* pref_service,
-    std::unique_ptr<SubscriptionManager> subscription_manager)
+    std::unique_ptr<SubscriptionManager> subscription_manager,
+    const ParseJSONCallback& parse_json_callback)
     : gcm_driver_(gcm_driver),
       instance_id_driver_(instance_id_driver),
       pref_service_(pref_service),
       subscription_manager_(std::move(subscription_manager)),
+      parse_json_callback_(parse_json_callback),
       weak_factory_(this) {}
 
 ContentSuggestionsGCMAppHandler::~ContentSuggestionsGCMAppHandler() {
@@ -115,8 +120,23 @@ void ContentSuggestionsGCMAppHandler::OnStoreReset() {
 void ContentSuggestionsGCMAppHandler::OnMessage(
     const std::string& app_id,
     const gcm::IncomingMessage& message) {
-  // TODO(mamir): Build the message.
-  on_new_content_callback_.Run(base::Value());
+  DCHECK_EQ(app_id, kContentSuggestionsGCMAppID);
+
+  gcm::MessageData::const_iterator it = message.data.find(kPushedSuggestionKey);
+  if (it == message.data.end()) {
+    LOG(WARNING)
+        << "Receiving pushed content failure: Content suggestion ID missing.";
+    return;
+  }
+
+  std::string suggestions = it->second;
+
+  parse_json_callback_.Run(
+      suggestions,
+      base::Bind(&ContentSuggestionsGCMAppHandler::OnJsonSuccess,
+                 weak_factory_.GetWeakPtr()),
+      base::Bind(&ContentSuggestionsGCMAppHandler::OnJsonError,
+                 weak_factory_.GetWeakPtr(), suggestions));
 }
 
 void ContentSuggestionsGCMAppHandler::OnMessagesDeleted(
@@ -145,6 +165,17 @@ void ContentSuggestionsGCMAppHandler::RegisterProfilePrefs(
     PrefRegistrySimple* registry) {
   registry->RegisterStringPref(
       prefs::kContentSuggestionsGCMSubscriptionTokenCache, std::string());
+}
+
+void ContentSuggestionsGCMAppHandler::OnJsonSuccess(
+    std::unique_ptr<base::Value> content) {
+  on_new_content_callback_.Run(std::move(content));
+}
+
+void ContentSuggestionsGCMAppHandler::OnJsonError(const std::string& json_str,
+                                                  const std::string& error) {
+  LOG(WARNING) << "Error parsing JSON:" << error
+               << " when parsing:" << json_str;
 }
 
 }  // namespace ntp_snippets
