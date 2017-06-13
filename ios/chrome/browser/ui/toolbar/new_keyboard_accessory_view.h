@@ -2,23 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_TOOLBAR_KEYBOARD_ACCESSORY_VIEW_H_
-#define IOS_CHROME_BROWSER_UI_TOOLBAR_KEYBOARD_ACCESSORY_VIEW_H_
+#ifndef IOS_CHROME_BROWSER_UI_TOOLBAR_NEW_KEYBOARD_ACCESSORY_VIEW_H_
+#define IOS_CHROME_BROWSER_UI_TOOLBAR_NEW_KEYBOARD_ACCESSORY_VIEW_H_
 
 #import <UIKit/UIKIt.h>
 
 #import "ios/chrome/browser/ui/toolbar/keyboard_accessory_view_protocol.h"
 
 // Accessory View above the keyboard.
-// Supports two modes: one where a Voice Search button is shown, and one where
-// a list of buttons based on |buttonTitles| is shown.
-// The default mode is the Voice Search mode.
-@interface KeyboardAccessoryView
+// Shows keys that are shortcuts to commonly used characters or strings,
+// and buttons to start Voice Search or a Camera Search.
+@interface NewKeyboardAccessoryView
     : UIInputView<KeyboardAccessoryViewProtocol, UIInputViewAudioFeedback>
 
-// Designated initializer. |buttonTitles| lists the titles of the buttons shown
-// in the KEY_SHORTCUTS mode. Can be nil or empty. |delegate| receives the
-// various events triggered in the view. Not retained, and can be nil.
+// Designated initializer. |buttonTitles| lists the titles of the shortcut
+// buttons. |delegate| receives the various events triggered in the view. Not
+// retained, and can be nil.
 - (instancetype)initWithButtons:(NSArray<NSString*>*)buttonTitles
                        delegate:(id<KeyboardAccessoryViewDelegate>)delegate
     NS_DESIGNATED_INITIALIZER;
@@ -30,4 +29,4 @@
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_KEYBOARD_ACCESSORY_VIEW_H_
+#endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_NEW_KEYBOARD_ACCESSORY_VIEW_H_

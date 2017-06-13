@@ -7,14 +7,14 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/fancy_ui/tinted_button.h"
+#import "ios/chrome/browser/ui/fancy_ui/colored_button.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_controller.h"
 
-// TintedButton specialization that updates the tint color when the tools menu
+// ColoredButton specialization that updates the tint color when the tools menu
 // is visible or when the reading list associated with |readingListModel|
 // contains unread items.
 // Draws and animates the icon of the button using UIBezierPaths.
-@interface ToolbarToolsMenuButton : TintedButton
+@interface ToolbarToolsMenuButton : ColoredButton
 
 // Initializes and returns a newly allocated TintedButton with the specified
 // |frame| and the |style| of the toolbar it belongs to.
