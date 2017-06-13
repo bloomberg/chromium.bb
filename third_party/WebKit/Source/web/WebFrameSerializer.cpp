@@ -62,6 +62,7 @@
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/StringConcatenate.h"
 #include "public/platform/WebString.h"
@@ -95,6 +96,7 @@ class MHTMLFrameSerializerDelegate final : public FrameSerializer::Delegate {
   bool ShouldSkipResource(
       FrameSerializer::ResourceHasCacheControlNoStoreHeader) override;
   Vector<Attribute> GetCustomAttributes(const Element&) override;
+  bool ShouldCollectProblemMetric() override;
 
  private:
   bool ShouldIgnoreHiddenElement(const Element&);
@@ -278,6 +280,10 @@ Vector<Attribute> MHTMLFrameSerializerDelegate::GetCustomAttributes(
   }
 
   return attributes;
+}
+
+bool MHTMLFrameSerializerDelegate::ShouldCollectProblemMetric() {
+  return web_delegate_.UsePageProblemDetectors();
 }
 
 void MHTMLFrameSerializerDelegate::GetCustomAttributesForImageElement(

@@ -49,4 +49,15 @@ void SparseHistogram::Sample(base::HistogramBase::Sample sample) {
   histogram_->Add(sample);
 }
 
+LinearHistogram::LinearHistogram(const char* name,
+                                 base::HistogramBase::Sample min,
+                                 base::HistogramBase::Sample max,
+                                 int32_t bucket_count)
+    : CustomCountHistogram(base::LinearHistogram::FactoryGet(
+          name,
+          min,
+          max,
+          bucket_count,
+          base::HistogramBase::kUmaTargetedHistogramFlag)) {}
+
 }  // namespace blink

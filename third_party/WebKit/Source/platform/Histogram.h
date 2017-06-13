@@ -54,6 +54,14 @@ class PLATFORM_EXPORT SparseHistogram {
   base::HistogramBase* histogram_;
 };
 
+class PLATFORM_EXPORT LinearHistogram : public CustomCountHistogram {
+ public:
+  explicit LinearHistogram(const char* name,
+                           base::HistogramBase::Sample min,
+                           base::HistogramBase::Sample max,
+                           int32_t bucket_count);
+};
+
 class PLATFORM_EXPORT ScopedUsHistogramTimer {
  public:
   ScopedUsHistogramTimer(CustomCountHistogram& counter)

@@ -68,6 +68,8 @@ class WebFrameSerializer {
     virtual bool UseBinaryEncoding() = 0;
 
     virtual bool RemovePopupOverlay() = 0;
+
+    virtual bool UsePageProblemDetectors() = 0;
   };
 
   // Generates and returns an MHTML header.

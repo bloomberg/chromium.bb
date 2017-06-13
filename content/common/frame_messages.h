@@ -520,6 +520,9 @@ IPC_STRUCT_BEGIN(FrameMsg_SerializeAsMHTML_Params)
   // Whether to remove popup overlay while serializing.
   IPC_STRUCT_MEMBER(bool, mhtml_popup_overlay_removal)
 
+  // Whether to detect problems while serializing.
+  IPC_STRUCT_MEMBER(bool, mhtml_problem_detection)
+
   // Frame to content-id map.
   // Keys are routing ids of either RenderFrames or RenderFrameProxies.
   // Values are MHTML content-ids - see WebFrameSerializer::generateMHTMLParts.

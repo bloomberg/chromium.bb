@@ -267,7 +267,14 @@ void SerializerMarkupAccumulator::AppendRewrittenAttribute(
 
 FrameSerializer::FrameSerializer(Deque<SerializedResource>& resources,
                                  Delegate& delegate)
-    : resources_(&resources), is_serializing_css_(false), delegate_(delegate) {}
+    : resources_(&resources),
+      is_serializing_css_(false),
+      delegate_(delegate),
+      total_image_count_(0),
+      loaded_image_count_(0),
+      total_css_count_(0),
+      loaded_css_count_(0),
+      should_collect_problem_metric_(false) {}
 
 void FrameSerializer::SerializeFrame(const LocalFrame& frame) {
   TRACE_EVENT0("page-serialization", "FrameSerializer::serializeFrame");
@@ -299,6 +306,8 @@ void FrameSerializer::SerializeFrame(const LocalFrame& frame) {
         SharedBuffer::Create(frame_html.data(), frame_html.length())));
   }
 
+  should_collect_problem_metric_ =
+      delegate_.ShouldCollectProblemMetric() && frame.IsMainFrame();
   for (Node* node : serialized_nodes) {
     DCHECK(node);
     if (!node->IsElementNode())
@@ -341,6 +350,36 @@ void FrameSerializer::SerializeFrame(const LocalFrame& frame) {
         SerializeCSSStyleSheet(*sheet, KURL());
     }
   }
+  if (should_collect_problem_metric_) {
+    // Report detectors through UMA.
+    // We're having exact 21 buckets for percentage because we want to have 5%
+    // in each bucket to avoid potential spikes in the distribution.
+    UMA_HISTOGRAM_COUNTS_100(
+        "PageSerialization.ProblemDetection.TotalImageCount",
+        static_cast<int64_t>(total_image_count_));
+    if (total_image_count_ > 0) {
+      DCHECK_LE(loaded_image_count_, total_image_count_);
+      DEFINE_STATIC_LOCAL(
+          LinearHistogram, image_histogram,
+          ("PageSerialization.ProblemDetection.LoadedImagePercentage", 1, 100,
+           21));
+      image_histogram.Count(
+          static_cast<int64_t>(loaded_image_count_ * 100 / total_image_count_));
+    }
+
+    UMA_HISTOGRAM_COUNTS_100("PageSerialization.ProblemDetection.TotalCSSCount",
+                             static_cast<int64_t>(total_css_count_));
+    if (total_css_count_ > 0) {
+      DCHECK_LE(loaded_css_count_, total_css_count_);
+      DEFINE_STATIC_LOCAL(
+          LinearHistogram, css_histogram,
+          ("PageSerialization.ProblemDetection.LoadedCSSPercentage", 1, 100,
+           21));
+      css_histogram.Count(
+          static_cast<int64_t>(loaded_css_count_ * 100 / total_css_count_));
+    }
+    should_collect_problem_metric_ = false;
+  }
 }
 
 void FrameSerializer::SerializeCSSStyleSheet(CSSStyleSheet& style_sheet,
@@ -353,6 +392,13 @@ void FrameSerializer::SerializeCSSStyleSheet(CSSStyleSheet& style_sheet,
   if (!is_inline_css && (resource_urls_.Contains(url) ||
                          delegate_.ShouldSkipResourceWithURL(url))) {
     return;
+  }
+  if (!is_inline_css)
+    resource_urls_.insert(url);
+  if (should_collect_problem_metric_ && !is_inline_css) {
+    total_css_count_++;
+    if (style_sheet.LoadCompleted())
+      loaded_css_count_++;
   }
 
   TRACE_EVENT2("page-serialization", "FrameSerializer::serializeCSSStyleSheet",
@@ -390,7 +436,6 @@ void FrameSerializer::SerializeCSSStyleSheet(CSSStyleSheet& style_sheet,
     resources_->push_back(
         SerializedResource(url, String("text/css"),
                            SharedBuffer::Create(text.data(), text.length())));
-    resource_urls_.insert(url);
   }
 
   // Sub resources need to be serialized even if the CSS definition doesn't
@@ -473,14 +518,19 @@ void FrameSerializer::AddToResources(
   }
 
   resources_->push_back(SerializedResource(url, mime_type, std::move(data)));
-  resource_urls_.insert(url);
 }
 
 void FrameSerializer::AddImageToResources(ImageResourceContent* image,
                                           const KURL& url) {
-  if (!image || !image->HasImage() || image->ErrorOccurred() ||
-      !ShouldAddURL(url))
+  if (!ShouldAddURL(url))
     return;
+  resource_urls_.insert(url);
+  if (should_collect_problem_metric_)
+    total_image_count_++;
+  if (!image || !image->HasImage() || image->ErrorOccurred())
+    return;
+  if (should_collect_problem_metric_ && image->IsLoaded())
+    loaded_image_count_++;
 
   TRACE_EVENT2("page-serialization", "FrameSerializer::addImageToResources",
                "type", "image", "url", url.ElidedString().Utf8().data());
@@ -506,8 +556,10 @@ void FrameSerializer::AddImageToResources(ImageResourceContent* image,
 }
 
 void FrameSerializer::AddFontToResources(FontResource* font) {
-  if (!font || !font->IsLoaded() || !font->ResourceBuffer() ||
-      !ShouldAddURL(font->Url()))
+  if (!font || !ShouldAddURL(font->Url()))
+    return;
+  resource_urls_.insert(font->Url());
+  if (!font || !font->IsLoaded() || !font->ResourceBuffer())
     return;
 
   RefPtr<const SharedBuffer> data(font->ResourceBuffer());

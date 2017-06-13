@@ -107,6 +107,8 @@ class CORE_EXPORT FrameSerializer final {
     virtual Vector<Attribute> GetCustomAttributes(const Element&) {
       return Vector<Attribute>();
     }
+
+    virtual bool ShouldCollectProblemMetric() { return false; }
   };
 
   // Constructs a serializer that will write output to the given deque of
@@ -146,11 +148,19 @@ class CORE_EXPORT FrameSerializer final {
   void RetrieveResourcesForCSSValue(const CSSValue&, Document&);
 
   Deque<SerializedResource>* resources_;
+  // This hashset is only used for de-duplicating resources to be serialized.
   HashSet<KURL> resource_urls_;
 
   bool is_serializing_css_;
 
   Delegate& delegate_;
+
+  // Variables for problem detection during serialization.
+  int total_image_count_;
+  int loaded_image_count_;
+  int total_css_count_;
+  int loaded_css_count_;
+  bool should_collect_problem_metric_;
 };
 
 }  // namespace blink
