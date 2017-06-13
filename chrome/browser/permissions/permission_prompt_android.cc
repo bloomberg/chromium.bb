@@ -10,7 +10,10 @@
 #include "chrome/browser/permissions/permission_dialog_delegate.h"
 #include "chrome/browser/permissions/permission_request.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/generated_resources.h"
+#include "chrome/grit/theme_resources.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/url_formatter/elide_url.h"
 #include "ui/base/l10n/l10n_util.h"
 
 PermissionPromptAndroid::PermissionPromptAndroid(
@@ -108,23 +111,39 @@ ContentSettingsType PermissionPromptAndroid::GetContentSettingType(
   return requests[position]->GetContentSettingsType();
 }
 
-int PermissionPromptAndroid::GetIconIdForPermission(size_t position) const {
-  const std::vector<PermissionRequest*>& requests = delegate_->Requests();
-  DCHECK_LT(position, requests.size());
-  return requests[position]->GetIconId();
+// Grouped permission requests can only be Mic+Camera or Camera+Mic
+static void CheckValidRequestGroup(
+    const std::vector<PermissionRequest*>& requests) {
+  DCHECK_EQ(static_cast<size_t>(2), requests.size());
+  DCHECK_EQ(requests[0]->GetOrigin(), requests[1]->GetOrigin());
+  DCHECK((requests[0]->GetPermissionRequestType() ==
+              PermissionRequestType::PERMISSION_MEDIASTREAM_MIC &&
+          requests[1]->GetPermissionRequestType() ==
+              PermissionRequestType::PERMISSION_MEDIASTREAM_CAMERA) ||
+         (requests[0]->GetPermissionRequestType() ==
+              PermissionRequestType::PERMISSION_MEDIASTREAM_CAMERA &&
+          requests[1]->GetPermissionRequestType() ==
+              PermissionRequestType::PERMISSION_MEDIASTREAM_MIC));
 }
 
-base::string16 PermissionPromptAndroid::GetMessageText(size_t position) const {
+int PermissionPromptAndroid::GetIconId() const {
   const std::vector<PermissionRequest*>& requests = delegate_->Requests();
-  DCHECK_LT(position, requests.size());
-  return requests[position]->GetMessageText();
+  if (requests.size() == 1)
+    return requests[0]->GetIconId();
+  CheckValidRequestGroup(requests);
+  return IDR_INFOBAR_MEDIA_STREAM_CAMERA;
 }
 
-base::string16 PermissionPromptAndroid::GetMessageTextFragment(
-    size_t position) const {
+base::string16 PermissionPromptAndroid::GetMessageText() const {
   const std::vector<PermissionRequest*>& requests = delegate_->Requests();
-  DCHECK_LT(position, requests.size());
-  return requests[position]->GetMessageTextFragment();
+  if (requests.size() == 1)
+    return requests[0]->GetMessageText();
+  CheckValidRequestGroup(requests);
+  return l10n_util::GetStringFUTF16(
+      IDS_MEDIA_CAPTURE_AUDIO_AND_VIDEO,
+      url_formatter::FormatUrlForSecurityDisplay(
+          requests[0]->GetOrigin(),
+          url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
 }
 
 base::string16 PermissionPromptAndroid::GetLinkText() const {

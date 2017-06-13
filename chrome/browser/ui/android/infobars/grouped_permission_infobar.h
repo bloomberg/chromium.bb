@@ -12,6 +12,8 @@
 
 class GroupedPermissionInfoBarDelegate;
 
+// TODO(timloh): This is incorrectly named as we've removed grouped permissions,
+// rename it to PermissionInfoBar once crbug.com/606138 is done.
 class GroupedPermissionInfoBar : public ConfirmInfoBar {
  public:
   explicit GroupedPermissionInfoBar(

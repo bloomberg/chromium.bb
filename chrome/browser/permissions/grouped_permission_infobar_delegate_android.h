@@ -17,7 +17,8 @@ class PermissionPromptAndroid;
 
 // An InfoBar that displays a group of permission requests, each of which can be
 // allowed or blocked independently.
-// TODO(tsergeant): Expand this class so it can be used without subclassing.
+// TODO(timloh): This is incorrectly named as we've removed grouped permissions,
+// rename it to PermissionInfoBarDelegate once crbug.com/606138 is done.
 class GroupedPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   // Public so we can have std::unique_ptr<GroupedPermissionInfoBarDelegate>.
@@ -36,10 +37,9 @@ class GroupedPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
   bool ShouldShowPersistenceToggle() const;
 
   ContentSettingsType GetContentSettingType(size_t position) const;
-  int GetIconIdForPermission(size_t position) const;
 
-  // Message text to display for an individual permission at |position|.
-  base::string16 GetMessageTextFragment(size_t position) const;
+  // InfoBarDelegate:
+  int GetIconId() const override;
 
   // ConfirmInfoBarDelegate:
   base::string16 GetMessageText() const override;

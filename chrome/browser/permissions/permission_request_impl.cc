@@ -102,7 +102,6 @@ PermissionRequest::IconId PermissionRequestImpl::GetIconId() const {
 
 #if defined(OS_ANDROID)
 base::string16 PermissionRequestImpl::GetMessageText() const {
-  // This is currently only used for modal dialogs on Android.
   int message_id;
   switch (content_settings_type_) {
     case CONTENT_SETTINGS_TYPE_GEOLOCATION:

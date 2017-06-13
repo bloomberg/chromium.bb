@@ -157,9 +157,8 @@ void PermissionDialogDelegate::CreateJavaDelegate(JNIEnv* env) {
   j_delegate_.Reset(Java_PermissionDialogDelegate_create(
       env, reinterpret_cast<uintptr_t>(this), tab_->GetJavaObject(),
       base::android::ToJavaIntArray(env, content_settings_types).obj(),
-      ResourceMapper::MapFromChromiumId(
-          permission_prompt_->GetIconIdForPermission(0)),
-      ConvertUTF16ToJavaString(env, permission_prompt_->GetMessageText(0)),
+      ResourceMapper::MapFromChromiumId(permission_prompt_->GetIconId()),
+      ConvertUTF16ToJavaString(env, permission_prompt_->GetMessageText()),
       ConvertUTF16ToJavaString(env, permission_prompt_->GetLinkText()),
       primaryButtonText, secondaryButtonText,
       permission_prompt_->ShouldShowPersistenceToggle()));
