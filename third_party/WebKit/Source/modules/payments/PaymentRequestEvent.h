@@ -5,6 +5,7 @@
 #ifndef PaymentRequestEvent_h
 #define PaymentRequestEvent_h
 
+#include "bindings/core/v8/ScriptValue.h"
 #include "modules/EventModules.h"
 #include "modules/payments/PaymentRequestEventInit.h"
 #include "modules/serviceworkers/ExtendableEvent.h"
@@ -17,6 +18,7 @@ class AtomicString;
 namespace blink {
 
 class RespondWithObserver;
+class ScriptState;
 
 class MODULES_EXPORT PaymentRequestEvent final : public ExtendableEvent {
   DEFINE_WRAPPERTYPEINFO();
@@ -37,7 +39,7 @@ class MODULES_EXPORT PaymentRequestEvent final : public ExtendableEvent {
   const String& paymentRequestOrigin() const;
   const String& paymentRequestId() const;
   const HeapVector<PaymentMethodData>& methodData() const;
-  void total(PaymentItem& value) const;
+  const ScriptValue total(ScriptState*) const;
   const HeapVector<PaymentDetailsModifier>& modifiers() const;
   const String& instrumentKey() const;
 
