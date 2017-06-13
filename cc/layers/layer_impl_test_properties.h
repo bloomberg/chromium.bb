@@ -46,7 +46,6 @@ struct CC_EXPORT LayerImplTestProperties {
   SkBlendMode blend_mode;
   LayerPositionConstraint position_constraint;
   LayerStickyPositionConstraint sticky_position_constraint;
-  gfx::Size offset_for_sticky_position_from_main_thread;
   gfx::Point3F transform_origin;
   gfx::Transform transform;
   LayerImpl* scroll_parent;

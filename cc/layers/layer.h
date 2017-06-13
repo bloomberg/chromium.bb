@@ -174,11 +174,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     return inputs_.sticky_position_constraint;
   }
 
-  void SetOffsetForStickyPositionFromMainThread(const gfx::Size& offset);
-  const gfx::Size offset_for_sticky_position_from_main_thread() const {
-    return inputs_.offset_for_sticky_position_from_main_thread;
-  }
-
   void SetTransform(const gfx::Transform& transform);
   const gfx::Transform& transform() const { return inputs_.transform; }
 
@@ -592,7 +587,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     LayerPositionConstraint position_constraint;
 
     LayerStickyPositionConstraint sticky_position_constraint;
-    gfx::Size offset_for_sticky_position_from_main_thread;
 
     ElementId element_id;
 

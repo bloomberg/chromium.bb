@@ -1110,31 +1110,6 @@ void Layer::SetStickyPositionConstraint(
   SetNeedsCommit();
 }
 
-void Layer::SetOffsetForStickyPositionFromMainThread(const gfx::Size& offset) {
-  DCHECK(IsPropertyChangeAllowed());
-  if (inputs_.offset_for_sticky_position_from_main_thread == offset)
-    return;
-  inputs_.offset_for_sticky_position_from_main_thread = offset;
-
-  if (!layer_tree_host_)
-    return;
-
-  SetSubtreePropertyChanged();
-  PropertyTrees* property_trees = layer_tree_host_->property_trees();
-  if (TransformNode* transform_node =
-          property_trees->transform_tree.FindNodeFromElementId(
-              inputs_.element_id)) {
-    DCHECK_EQ(transform_tree_index(), transform_node->id);
-    transform_node->offset_for_sticky_position_from_main_thread =
-        gfx::Vector2dF(offset.width(), offset.height());
-    transform_node->needs_local_transform_update = true;
-    transform_node->transform_changed = true;
-    layer_tree_host_->property_trees()->transform_tree.set_needs_update(true);
-  }
-
-  SetNeedsCommit();
-}
-
 static void RunCopyCallbackOnMainThread(
     std::unique_ptr<CopyOutputRequest> request,
     std::unique_ptr<CopyOutputResult> result) {

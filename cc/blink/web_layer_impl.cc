@@ -417,14 +417,6 @@ blink::WebLayerStickyPositionConstraint WebLayerImpl::StickyPositionConstraint()
       layer_->sticky_position_constraint());
 }
 
-void WebLayerImpl::SetOffsetForStickyPosition(const blink::WebSize& offset) {
-  layer_->SetOffsetForStickyPositionFromMainThread(offset);
-}
-
-blink::WebSize WebLayerImpl::OffsetForStickyPosition() const {
-  return layer_->offset_for_sticky_position_from_main_thread();
-}
-
 void WebLayerImpl::SetScrollClient(blink::WebLayerScrollClient* scroll_client) {
   if (scroll_client) {
     layer_->set_did_scroll_callback(

@@ -370,6 +370,10 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   void UpdateChildClippingMaskLayerGeometry();
   void UpdateStickyConstraints(const ComputedStyle&);
 
+  // Returns true if the compositor will be responsible for applying the sticky
+  // position offset for this composited layer.
+  bool UsesCompositedStickyPosition() const;
+
   void CreatePrimaryGraphicsLayer();
   void DestroyGraphicsLayers();
 

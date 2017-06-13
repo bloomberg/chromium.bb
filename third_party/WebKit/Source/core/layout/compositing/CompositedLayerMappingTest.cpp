@@ -1688,11 +1688,6 @@ TEST_P(CompositedLayerMappingTest, StickyPositionMainThreadOffset) {
   CompositedLayerMapping* sticky_mapping =
       sticky_layer->GetCompositedLayerMapping();
   ASSERT_TRUE(sticky_mapping);
-  // Main thread offset for sticky should be "StickyTop - InnerPadding".
-  EXPECT_EQ(IntPoint(0, 15), IntPoint(sticky_mapping->MainGraphicsLayer()
-                                          ->ContentLayer()
-                                          ->Layer()
-                                          ->OffsetForStickyPosition()));
 
   // Now scroll the page - this should increase the main thread offset.
   LayoutBoxModelObject* scroller =
@@ -1706,11 +1701,6 @@ TEST_P(CompositedLayerMappingTest, StickyPositionMainThreadOffset) {
   EXPECT_TRUE(sticky_layer->NeedsCompositingInputsUpdate());
   GetDocument().View()->UpdateLifecycleToCompositingCleanPlusScrolling();
   EXPECT_FALSE(sticky_layer->NeedsCompositingInputsUpdate());
-
-  EXPECT_EQ(IntPoint(0, 115), IntPoint(sticky_mapping->MainGraphicsLayer()
-                                           ->ContentLayer()
-                                           ->Layer()
-                                           ->OffsetForStickyPosition()));
 }
 
 TEST_P(CompositedLayerMappingTest, StickyPositionNotSquashed) {
@@ -1752,6 +1742,73 @@ TEST_P(CompositedLayerMappingTest, StickyPositionNotSquashed) {
   EXPECT_EQ(kPaintsIntoOwnBacking, sticky1->GetCompositingState());
   EXPECT_EQ(kPaintsIntoOwnBacking, sticky2->GetCompositingState());
   EXPECT_EQ(kPaintsIntoOwnBacking, sticky3->GetCompositingState());
+}
+
+TEST_P(CompositedLayerMappingTest,
+       LayerPositionForStickyElementInCompositedScroller) {
+  SetBodyInnerHTML(
+      "<style>"
+      " .scroller { overflow: scroll; width: 200px; height: 600px; }"
+      " .composited { will-change:transform; }"
+      " .box { position: sticky; width: 185px; height: 50px; top: 0px; }"
+      " .container { width: 100%; height: 1000px; }"
+      "</style>"
+      "<div id='scroller' class='composited scroller'>"
+      " <div class='composited container'>"
+      "  <div id='sticky' class='box'></div>"
+      " </div>"
+      "</div>");
+
+  CompositedLayerMapping* mapping =
+      ToLayoutBlock(GetLayoutObjectByElementId("sticky"))
+          ->Layer()
+          ->GetCompositedLayerMapping();
+  ASSERT_TRUE(mapping);
+  GraphicsLayer* main_graphics_layer = mapping->MainGraphicsLayer();
+
+  PaintLayer* scroller =
+      ToLayoutBlock(GetLayoutObjectByElementId("scroller"))->Layer();
+  PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
+  scrollable_area->ScrollToAbsolutePosition(
+      FloatPoint(scrollable_area->ScrollPosition().Y(), 100));
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  EXPECT_FLOAT_EQ(0, main_graphics_layer->GetPosition().X());
+  EXPECT_FLOAT_EQ(0, main_graphics_layer->GetPosition().Y());
+}
+
+TEST_P(CompositedLayerMappingTest,
+       LayerPositionForStickyElementInNonCompositedScroller) {
+  SetBodyInnerHTML(
+      "<style>"
+      " .scroller { overflow: scroll; width: 200px; height: 600px; }"
+      " .composited { will-change:transform; }"
+      " .box { position: sticky; width: 185px; height: 50px; top: 0px; }"
+      " .container { width: 100%; height: 1000px; }"
+      "</style>"
+      "<div id='scroller' class='scroller'>"
+      " <div class='composited container'>"
+      "  <div id='sticky' class='box'></div>"
+      " </div>"
+      "</div>");
+
+  CompositedLayerMapping* mapping =
+      ToLayoutBlock(GetLayoutObjectByElementId("sticky"))
+          ->Layer()
+          ->GetCompositedLayerMapping();
+  ASSERT_TRUE(mapping);
+  GraphicsLayer* main_graphics_layer = mapping->MainGraphicsLayer();
+
+  PaintLayer* scroller =
+      ToLayoutBlock(GetLayoutObjectByElementId("scroller"))->Layer();
+  PaintLayerScrollableArea* scrollable_area = scroller->GetScrollableArea();
+  ASSERT_TRUE(scrollable_area);
+  scrollable_area->ScrollToAbsolutePosition(
+      FloatPoint(scrollable_area->ScrollPosition().Y(), 100));
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  EXPECT_FLOAT_EQ(0, main_graphics_layer->GetPosition().X());
+  EXPECT_FLOAT_EQ(100, main_graphics_layer->GetPosition().Y());
 }
 
 }  // namespace blink

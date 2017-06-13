@@ -202,12 +202,6 @@ class WebLayer {
       const WebLayerStickyPositionConstraint&) = 0;
   virtual WebLayerStickyPositionConstraint StickyPositionConstraint() const = 0;
 
-  // Sets the relative position of the sticky box and its original position
-  // before scroll. This will be used to calculate the actual sticky position
-  // offset from cc side.
-  virtual void SetOffsetForStickyPosition(const WebSize&) = 0;
-  virtual WebSize OffsetForStickyPosition() const = 0;
-
   // The scroll client is notified when the scroll position of the WebLayer
   // changes. Only a single scroll client can be set for a WebLayer at a time.
   // The WebLayer does not take ownership of the scroll client, and it is the

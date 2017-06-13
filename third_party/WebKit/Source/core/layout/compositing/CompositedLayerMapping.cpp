@@ -282,75 +282,71 @@ void CompositedLayerMapping::UpdateBackdropFilters(const ComputedStyle& style) {
       OwningLayer().CreateCompositorFilterOperationsForBackdropFilter(style));
 }
 
+bool CompositedLayerMapping::UsesCompositedStickyPosition() const {
+  return GetLayoutObject().Style()->GetPosition() == EPosition::kSticky &&
+         (owning_layer_.AncestorOverflowLayer()->IsRootLayer()
+              ? GetLayoutObject().View()->GetFrameView()->IsScrollable()
+              : owning_layer_.AncestorOverflowLayer()
+                    ->NeedsCompositedScrolling());
+}
+
 void CompositedLayerMapping::UpdateStickyConstraints(
     const ComputedStyle& style) {
-  bool sticky = style.GetPosition() == EPosition::kSticky;
   const PaintLayer* ancestor_overflow_layer =
       owning_layer_.AncestorOverflowLayer();
-  // TODO(flackr): Do we still need this?
-  if (sticky) {
-    if (!ancestor_overflow_layer->IsRootLayer()) {
-      sticky = ancestor_overflow_layer->NeedsCompositedScrolling();
-    } else {
-      sticky = GetLayoutObject().View()->GetFrameView()->IsScrollable();
-    }
-  }
-
   WebLayerStickyPositionConstraint web_constraint;
-  if (sticky) {
-    const StickyConstraintsMap& constraints_map =
-        ancestor_overflow_layer->GetScrollableArea()->GetStickyConstraintsMap();
-    const StickyPositionScrollingConstraints& constraints =
-        constraints_map.at(&owning_layer_);
+  const StickyConstraintsMap& constraints_map =
+      ancestor_overflow_layer->GetScrollableArea()->GetStickyConstraintsMap();
+  const StickyPositionScrollingConstraints& constraints =
+      constraints_map.at(&owning_layer_);
 
-    web_constraint.is_sticky = true;
-    web_constraint.is_anchored_left =
-        constraints.GetAnchorEdges() &
-        StickyPositionScrollingConstraints::kAnchorEdgeLeft;
-    web_constraint.is_anchored_right =
-        constraints.GetAnchorEdges() &
-        StickyPositionScrollingConstraints::kAnchorEdgeRight;
-    web_constraint.is_anchored_top =
-        constraints.GetAnchorEdges() &
-        StickyPositionScrollingConstraints::kAnchorEdgeTop;
-    web_constraint.is_anchored_bottom =
-        constraints.GetAnchorEdges() &
-        StickyPositionScrollingConstraints::kAnchorEdgeBottom;
-    web_constraint.left_offset = constraints.LeftOffset();
-    web_constraint.right_offset = constraints.RightOffset();
-    web_constraint.top_offset = constraints.TopOffset();
-    web_constraint.bottom_offset = constraints.BottomOffset();
-    web_constraint.scroll_container_relative_sticky_box_rect =
-        EnclosingIntRect(constraints.ScrollContainerRelativeStickyBoxRect());
-    web_constraint.scroll_container_relative_containing_block_rect =
-        EnclosingIntRect(
-            constraints.ScrollContainerRelativeContainingBlockRect());
-    // TODO(smcgruer): Until http://crbug.com/702229 is fixed, the nearest
-    // sticky layers may not be composited and we may incorrectly end up with
-    // invalid layer IDs.
-    LayoutBoxModelObject* sticky_box_shifting_ancestor =
-        constraints.NearestStickyBoxShiftingStickyBox();
-    if (sticky_box_shifting_ancestor &&
-        sticky_box_shifting_ancestor->Layer()->GetCompositedLayerMapping()) {
-      web_constraint.nearest_layer_shifting_sticky_box =
-          sticky_box_shifting_ancestor->Layer()
-              ->GetCompositedLayerMapping()
-              ->MainGraphicsLayer()
-              ->PlatformLayer()
-              ->Id();
-    }
-    LayoutBoxModelObject* containing_block_shifting_ancestor =
-        constraints.NearestStickyBoxShiftingContainingBlock();
-    if (containing_block_shifting_ancestor &&
+  web_constraint.is_sticky = true;
+  web_constraint.is_anchored_left =
+      constraints.GetAnchorEdges() &
+      StickyPositionScrollingConstraints::kAnchorEdgeLeft;
+  web_constraint.is_anchored_right =
+      constraints.GetAnchorEdges() &
+      StickyPositionScrollingConstraints::kAnchorEdgeRight;
+  web_constraint.is_anchored_top =
+      constraints.GetAnchorEdges() &
+      StickyPositionScrollingConstraints::kAnchorEdgeTop;
+  web_constraint.is_anchored_bottom =
+      constraints.GetAnchorEdges() &
+      StickyPositionScrollingConstraints::kAnchorEdgeBottom;
+  web_constraint.left_offset = constraints.LeftOffset();
+  web_constraint.right_offset = constraints.RightOffset();
+  web_constraint.top_offset = constraints.TopOffset();
+  web_constraint.bottom_offset = constraints.BottomOffset();
+  web_constraint.scroll_container_relative_sticky_box_rect =
+      EnclosingIntRect(constraints.ScrollContainerRelativeStickyBoxRect());
+  web_constraint.scroll_container_relative_containing_block_rect =
+      EnclosingIntRect(
+          constraints.ScrollContainerRelativeContainingBlockRect());
+  // TODO(smcgruer): Until http://crbug.com/702229 is fixed, the nearest
+  // sticky layers may not be composited and we may incorrectly end up with
+  // invalid layer IDs.
+  LayoutBoxModelObject* sticky_box_shifting_ancestor =
+      constraints.NearestStickyBoxShiftingStickyBox();
+  if (sticky_box_shifting_ancestor &&
+      sticky_box_shifting_ancestor->Layer()->GetCompositedLayerMapping()) {
+    web_constraint.nearest_layer_shifting_sticky_box =
+        sticky_box_shifting_ancestor->Layer()
+            ->GetCompositedLayerMapping()
+            ->MainGraphicsLayer()
+            ->PlatformLayer()
+            ->Id();
+  }
+  LayoutBoxModelObject* containing_block_shifting_ancestor =
+      constraints.NearestStickyBoxShiftingContainingBlock();
+  if (containing_block_shifting_ancestor &&
+      containing_block_shifting_ancestor->Layer()
+          ->GetCompositedLayerMapping()) {
+    web_constraint.nearest_layer_shifting_containing_block =
         containing_block_shifting_ancestor->Layer()
-            ->GetCompositedLayerMapping()) {
-      web_constraint.nearest_layer_shifting_containing_block =
-          containing_block_shifting_ancestor->Layer()
-              ->GetCompositedLayerMapping()
-              ->MainGraphicsLayer()
-              ->PlatformLayer()
-              ->Id();
-    }
+            ->GetCompositedLayerMapping()
+            ->MainGraphicsLayer()
+            ->PlatformLayer()
+            ->Id();
   }
 
   graphics_layer_->SetStickyPositionConstraint(web_constraint);
@@ -1078,7 +1074,8 @@ void CompositedLayerMapping::UpdateGraphicsLayerGeometry(
                                           graphics_layer_parent_location);
   UpdateContentsOffsetInCompositingLayer(
       snapped_offset_from_composited_ancestor, graphics_layer_parent_location);
-  UpdateStickyConstraints(GetLayoutObject().StyleRef());
+  if (UsesCompositedStickyPosition())
+    UpdateStickyConstraints(GetLayoutObject().StyleRef());
   UpdateSquashingLayerGeometry(
       graphics_layer_parent_location, compositing_container, squashed_layers_,
       squashing_layer_.get(),
@@ -1136,16 +1133,11 @@ void CompositedLayerMapping::UpdateMainGraphicsLayerGeometry(
     const IntRect& relative_compositing_bounds,
     const IntRect& local_compositing_bounds,
     const IntPoint& graphics_layer_parent_location) {
-  graphics_layer_->SetPosition(FloatPoint(
-      relative_compositing_bounds.Location() - graphics_layer_parent_location));
-  graphics_layer_->SetOffsetFromLayoutObject(
-      ToIntSize(local_compositing_bounds.Location()));
-  // Find the layout offset of the unshifted sticky box within its parent
-  // composited layer. This information is used by the compositor side to
-  // compute the additional offset required to keep the element stuck under
-  // compositor scrolling.
-  FloatSize main_thread_sticky_offset;
-  if (GetLayoutObject().Style()->GetPosition() == EPosition::kSticky) {
+  // Find and remove the offset applied for sticky position if the compositor
+  // will shift the layer for sticky position to avoid offsetting the layer
+  // twice.
+  FloatSize offset_for_sticky_position;
+  if (UsesCompositedStickyPosition()) {
     const StickyConstraintsMap& constraints_map =
         owning_layer_.AncestorOverflowLayer()
             ->GetScrollableArea()
@@ -1153,11 +1145,15 @@ void CompositedLayerMapping::UpdateMainGraphicsLayerGeometry(
     const StickyPositionScrollingConstraints& constraints =
         constraints_map.at(&owning_layer_);
 
-    main_thread_sticky_offset =
+    offset_for_sticky_position =
         constraints.GetOffsetForStickyPosition(constraints_map);
   }
-  graphics_layer_->SetOffsetForStickyPosition(
-      RoundedIntSize(main_thread_sticky_offset));
+  graphics_layer_->SetPosition(
+      FloatPoint(relative_compositing_bounds.Location() -
+                 graphics_layer_parent_location) -
+      offset_for_sticky_position);
+  graphics_layer_->SetOffsetFromLayoutObject(
+      ToIntSize(local_compositing_bounds.Location()));
 
   FloatSize old_size = graphics_layer_->Size();
   const FloatSize contents_size(relative_compositing_bounds.Size());
