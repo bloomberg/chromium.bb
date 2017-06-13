@@ -264,7 +264,8 @@ Polymer({
   onImportUserTap_: function(event) {
     if (this.signedInUserIndex_ == NO_USER_SELECTED) {
       // A custodian must be selected.
-      this.handleMessage_(this.i18n('custodianAccountNotSelectedError'));
+      this.handleMessage_(
+          this.i18nAdvanced('custodianAccountNotSelectedError'));
     } else {
       var signedInUser = this.signedInUser_(this.signedInUserIndex_);
       this.hideMessage_();
@@ -286,7 +287,8 @@ Polymer({
       this.createProfile_();
     } else if (this.signedInUserIndex_ == NO_USER_SELECTED) {
       // If the new profile is supervised, a custodian must be selected.
-      this.handleMessage_(this.i18n('custodianAccountNotSelectedError'));
+      this.handleMessage_(
+          this.i18nAdvanced('custodianAccountNotSelectedError'));
     } else {
       var signedInUser = this.signedInUser_(this.signedInUserIndex_);
       this.hideMessage_();
@@ -310,7 +312,7 @@ Polymer({
       this.$.importUserPopup.show(this.signedInUser_(this.signedInUserIndex_),
                                   supervisedUsers);
     } else {
-      this.handleMessage_(this.i18n('noSupervisedUserImportText'));
+      this.handleMessage_(this.i18nAdvanced('noSupervisedUserImportText'));
     }
   },
 
@@ -361,9 +363,10 @@ Polymer({
         }
       };
 
-      this.handleMessage_(allOnCurrentDevice ?
-          this.i18n('managedProfilesExistingLocalSupervisedUser') :
-          this.i18nAdvanced('manageProfilesExistingSupervisedUser', opts));
+      this.handleMessage_(
+          allOnCurrentDevice ?
+              this.i18nAdvanced('managedProfilesExistingLocalSupervisedUser') :
+              this.i18nAdvanced('manageProfilesExistingSupervisedUser', opts));
       return;
     }
     // No existing supervised user's name matches the entered profile name.

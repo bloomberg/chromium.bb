@@ -277,25 +277,28 @@ Polymer({
     switch (this.currentUpdateStatusEvent_.status) {
       case UpdateStatus.CHECKING:
       case UpdateStatus.NEED_PERMISSION_TO_UPDATE:
-        return this.i18n('aboutUpgradeCheckStarted');
+        return this.i18nAdvanced('aboutUpgradeCheckStarted');
       case UpdateStatus.NEARLY_UPDATED:
 // <if expr="chromeos">
         if (this.currentChannel_ != this.targetChannel_)
-          return this.i18n('aboutUpgradeSuccessChannelSwitch');
+          return this.i18nAdvanced('aboutUpgradeSuccessChannelSwitch');
 // </if>
-        return this.i18n('aboutUpgradeRelaunch');
+        return this.i18nAdvanced('aboutUpgradeRelaunch');
       case UpdateStatus.UPDATED:
-        return this.i18n('aboutUpgradeUpToDate');
+        return this.i18nAdvanced('aboutUpgradeUpToDate');
       case UpdateStatus.UPDATING:
         assert(typeof this.currentUpdateStatusEvent_.progress == 'number');
         var progressPercent = this.currentUpdateStatusEvent_.progress + '%';
 
 // <if expr="chromeos">
         if (this.currentChannel_ != this.targetChannel_) {
-          return this.i18n(
-              'aboutUpgradeUpdatingChannelSwitch',
-              this.i18n(settings.browserChannelToI18nId(this.targetChannel_)),
-              progressPercent);
+          return this.i18nAdvanced('aboutUpgradeUpdatingChannelSwitch', {
+            substitutions: [
+              this.i18nAdvanced(
+                  settings.browserChannelToI18nId(this.targetChannel_)),
+              progressPercent
+            ]
+          });
         }
 // </if>
         if (this.currentUpdateStatusEvent_.progress > 0) {
@@ -304,9 +307,11 @@ Polymer({
           // it's certainly quite possible to validly end up here with 0% on
           // platforms that support incremental progress, nobody really likes
           // seeing that they're 0% done with something.
-          return this.i18n('aboutUpgradeUpdatingPercent', progressPercent);
+          return this.i18nAdvanced('aboutUpgradeUpdatingPercent', {
+            substitutions: [progressPercent],
+          });
         }
-        return this.i18n('aboutUpgradeUpdating');
+        return this.i18nAdvanced('aboutUpgradeUpdating');
       default:
         function formatMessage(msg) {
           return parseHtmlSubset(
