@@ -34,6 +34,10 @@
 #import "ios/chrome/test/app/chrome_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 fake_server::FakeServer* gSyncFakeServer = nullptr;
@@ -286,7 +290,7 @@ BOOL IsTypedUrlPresentOnClient(const GURL& url,
   __block int count = 0;
   using history::OriginCountAndLastVisitMap;
   history_service->GetCountsAndLastVisitForOrigins(
-      origins, base::BindBlock(^(const OriginCountAndLastVisitMap& result) {
+      origins, base::BindBlockArc(^(const OriginCountAndLastVisitMap& result) {
         auto iter = result.find(block_safe_url);
         if (iter != result.end())
           count = iter->second.first;

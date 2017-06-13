@@ -14,6 +14,10 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/stl_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 base::HistogramBase* FindHistogram(const std::string& name,
                                    FailureBlock failure_block) {

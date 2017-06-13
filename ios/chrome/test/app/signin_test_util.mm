@@ -25,6 +25,10 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_status.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 net::FakeURLFetcherFactory* gFakeURLFetcherFactory = nullptr;
@@ -154,9 +158,8 @@ bool SignOutAndClearAccounts() {
   // Clear known identities.
   ios::ChromeIdentityService* identity_service =
       ios::GetChromeBrowserProvider()->GetChromeIdentityService();
-  base::scoped_nsobject<NSArray> identities(
-      [identity_service->GetAllIdentities() copy]);
-  for (ChromeIdentity* identity in identities.get()) {
+  NSArray* identities([identity_service->GetAllIdentities() copy]);
+  for (ChromeIdentity* identity in identities) {
     identity_service->ForgetIdentity(identity, nil);
   }
 

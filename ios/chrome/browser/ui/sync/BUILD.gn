@@ -30,6 +30,7 @@ source_set("sync") {
 }
 
 source_set("eg_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "sync_fake_server_egtest.mm",
