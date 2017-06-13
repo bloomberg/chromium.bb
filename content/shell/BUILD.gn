@@ -768,6 +768,7 @@ mojom("mojo_bindings") {
   sources = [
     "common/layout_test.mojom",
     "common/layout_test/layout_test_bluetooth_fake_adapter_setter.mojom",
+    "common/power_monitor_test.mojom",
   ]
   public_deps = [
     "//mojo/common:common_custom_types",
