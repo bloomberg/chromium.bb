@@ -947,7 +947,13 @@ class JsonPrefStoreCallbackTest : public JsonPrefStoreTest {
   DISALLOW_COPY_AND_ASSIGN(JsonPrefStoreCallbackTest);
 };
 
-TEST_F(JsonPrefStoreCallbackTest, TestSerializeDataCallbacks) {
+// Flaky on Linux TSAN. http://crbug.com/732445.
+#if defined(OS_LINUX) && defined(THREAD_SANITIZER)
+#define MAYBE_TestSerializeDataCallbacks DISABLED_TestSerializeDataCallbacks
+#else
+#define MAYBE_TestSerializeDataCallbacks TestSerializeDataCallbacks
+#endif
+TEST_F(JsonPrefStoreCallbackTest, MAYBE_TestSerializeDataCallbacks) {
   base::FilePath input_file = temp_dir_.GetPath().AppendASCII("write.json");
   ASSERT_LT(0,
             base::WriteFile(input_file, kReadJson, arraysize(kReadJson) - 1));
