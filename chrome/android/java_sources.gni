@@ -1234,8 +1234,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/widget/NumberRollView.java",
   "java/src/org/chromium/chrome/browser/widget/OverviewListLayout.java",
   "java/src/org/chromium/chrome/browser/widget/PaddedFrameLayout.java",
-  "java/src/org/chromium/chrome/browser/widget/ProgressAnimationFastStart.java",
-  "java/src/org/chromium/chrome/browser/widget/ProgressAnimationLinear.java",
   "java/src/org/chromium/chrome/browser/widget/ProgressAnimationSmooth.java",
   "java/src/org/chromium/chrome/browser/widget/PromoDialog.java",
   "java/src/org/chromium/chrome/browser/widget/PromoDialogLayout.java",

@@ -234,10 +234,6 @@ public class ToolbarProgressBar extends ClipDrawableProgressBar {
                 setForegroundColor(getForegroundColor());
             }
             UiUtils.insertAfter(mProgressBarContainer, mAnimatingView, this);
-        } else if (TextUtils.equals(animation, "fast-start")) {
-            mAnimationLogic = new ProgressAnimationFastStart();
-        } else if (TextUtils.equals(animation, "linear")) {
-            mAnimationLogic = new ProgressAnimationLinear();
         }
     }
 
