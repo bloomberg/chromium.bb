@@ -63,7 +63,7 @@ std::unique_ptr<RenderPass> RenderPass::Create(
 
 RenderPass::RenderPass()
     : quad_list(kDefaultNumQuadsToReserve),
-      shared_quad_state_list(ALIGNOF(SharedQuadState),
+      shared_quad_state_list(alignof(SharedQuadState),
                              sizeof(SharedQuadState),
                              kDefaultNumSharedQuadStatesToReserve) {}
 
@@ -72,7 +72,7 @@ RenderPass::RenderPass()
 RenderPass::RenderPass(size_t num_layers)
     : has_transparent_background(true),
       quad_list(kDefaultNumQuadsToReserve),
-      shared_quad_state_list(ALIGNOF(SharedQuadState),
+      shared_quad_state_list(alignof(SharedQuadState),
                              sizeof(SharedQuadState),
                              num_layers) {}
 
@@ -80,7 +80,7 @@ RenderPass::RenderPass(size_t shared_quad_state_list_size,
                        size_t quad_list_size)
     : has_transparent_background(true),
       quad_list(quad_list_size),
-      shared_quad_state_list(ALIGNOF(SharedQuadState),
+      shared_quad_state_list(alignof(SharedQuadState),
                              sizeof(SharedQuadState),
                              shared_quad_state_list_size) {}
 

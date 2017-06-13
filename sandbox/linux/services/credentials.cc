@@ -94,7 +94,7 @@ bool ChrootToSafeEmptyDir() {
   // /proc/tid directory for the thread (since /proc may not be aware of the
   // PID namespace). With a process, we can just use /proc/self.
   pid_t pid = -1;
-  char stack_buf[PTHREAD_STACK_MIN] ALIGNAS(16);
+  alignas(16) char stack_buf[PTHREAD_STACK_MIN];
 #if defined(ARCH_CPU_X86_FAMILY) || defined(ARCH_CPU_ARM_FAMILY) || \
     defined(ARCH_CPU_MIPS_FAMILY)
   // The stack grows downward.

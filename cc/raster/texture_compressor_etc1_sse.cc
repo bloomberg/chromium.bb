@@ -790,7 +790,7 @@ void TextureCompressorETC1SSE::Compress(const uint8_t* src,
   DCHECK_GE(height, 4);
   DCHECK_EQ((height & 3), 0);
 
-  ALIGNAS(16) uint8_t block[64];
+  alignas(16) uint8_t block[64];
   __m128i packed[4];
   __m128i red[4], green[4], blue[4], alpha[4];
   __sse_data data;

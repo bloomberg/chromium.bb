@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <memory>
 
+#include "base/memory/aligned_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "cc/base/math_util.h"
 #include "cc/output/gl_renderer.h"

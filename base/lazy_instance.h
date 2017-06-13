@@ -41,7 +41,6 @@
 #include "base/base_export.h"
 #include "base/debug/leak_annotations.h"
 #include "base/logging.h"
-#include "base/memory/aligned_memory.h"
 #include "base/threading/thread_restrictions.h"
 
 // LazyInstance uses its own struct initializer-list style static
@@ -55,7 +54,7 @@ namespace base {
 template <typename Type>
 struct LazyInstanceTraitsBase {
   static Type* New(void* instance) {
-    DCHECK_EQ(reinterpret_cast<uintptr_t>(instance) & (ALIGNOF(Type) - 1), 0u);
+    DCHECK_EQ(reinterpret_cast<uintptr_t>(instance) & (alignof(Type) - 1), 0u);
     // Use placement new to initialize our instance in our preallocated space.
     // The parenthesis is very important here to force POD type initialization.
     return new (instance) Type();
@@ -195,7 +194,7 @@ class LazyInstance {
 #endif
     return static_cast<Type*>(internal::GetOrCreateLazyPointer(
         &private_instance_,
-        [this]() { return Traits::New(private_buf_.void_data()); },
+        [this]() { return Traits::New(private_buf_); },
         Traits::kRegisterOnExit ? OnExit : nullptr, this));
   }
 
@@ -204,19 +203,31 @@ class LazyInstance {
       case 0:
         return p == NULL;
       case internal::kLazyInstanceStateCreating:
-        return static_cast<void*>(p) == private_buf_.void_data();
+        return static_cast<void*>(p) == private_buf_;
       default:
         return p == instance();
     }
   }
 
+  // MSVC gives a warning that the alignment expands the size of the
+  // LazyInstance struct to make the size a multiple of the alignment. This
+  // is expected in this case.
+#if defined(OS_WIN)
+#pragma warning(push)
+#pragma warning(disable: 4324)
+#endif
+
   // Effectively private: member data is only public to allow the linker to
   // statically initialize it and to maintain a POD class. DO NOT USE FROM
   // OUTSIDE THIS CLASS.
-
   subtle::AtomicWord private_instance_;
+
   // Preallocated space for the Type instance.
-  base::AlignedMemory<sizeof(Type), ALIGNOF(Type)> private_buf_;
+  alignas(Type) char private_buf_[sizeof(Type)];
+
+#if defined(OS_WIN)
+#pragma warning(pop)
+#endif
 
  private:
   Type* instance() {

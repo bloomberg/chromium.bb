@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/aligned_memory.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "build/build_config.h"

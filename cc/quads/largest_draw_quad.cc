@@ -47,8 +47,8 @@ template <typename...>
 struct MaxAlign {};
 template <class T, class... Args>
 struct MaxAlign<T, Args...> {
-  static constexpr size_t value = ALIGNOF(T) > MaxAlign<Args...>::value
-                                      ? ALIGNOF(T)
+  static constexpr size_t value = alignof(T) > MaxAlign<Args...>::value
+                                      ? alignof(T)
                                       : MaxAlign<Args...>::value;
 };
 template <>

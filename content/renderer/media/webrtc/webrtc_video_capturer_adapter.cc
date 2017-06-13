@@ -5,7 +5,6 @@
 #include "content/renderer/media/webrtc/webrtc_video_capturer_adapter.h"
 
 #include "base/bind.h"
-#include "base/memory/aligned_memory.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"

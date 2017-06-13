@@ -211,10 +211,10 @@ struct CC_PAINT_EXPORT PaintOpWithArray : PaintOpWithArrayBase {
     // if T is aligned, and M's alignment needs are a multiple of T's size, then
     // M will also be aligned when placed immediately after T.
     static_assert(
-        sizeof(T) % ALIGNOF(M) == 0,
+        sizeof(T) % alignof(M) == 0,
         "T must be padded such that an array of M is aligned after it");
     static_assert(
-        ALIGNOF(T) >= ALIGNOF(M),
+        alignof(T) >= alignof(M),
         "T must have not have less alignment requirements than the array data");
     return reinterpret_cast<const M*>(op + 1);
   }
@@ -778,7 +778,7 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
   enum { kInitialBufferSize = 4096 };
   // It's not necessarily the case that the op with the maximum alignment
   // requirements is also the biggest op, but for now that's true.
-  static constexpr size_t PaintOpAlign = ALIGNOF(DrawDRRectOp);
+  static constexpr size_t PaintOpAlign = alignof(DrawDRRectOp);
 
   PaintOpBuffer();
   ~PaintOpBuffer() override;
@@ -935,7 +935,7 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
 
   template <typename T, typename... Args>
   T* push_internal(size_t bytes, Args&&... args) {
-    static_assert(ALIGNOF(T) <= PaintOpAlign, "");
+    static_assert(alignof(T) <= PaintOpAlign, "");
 
     auto pair = AllocatePaintOp(sizeof(T), bytes);
     T* op = reinterpret_cast<T*>(pair.first);

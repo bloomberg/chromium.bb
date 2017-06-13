@@ -199,7 +199,7 @@ class TRACING_EXPORT ProtoZeroMessage {
   // the arena are meaningful only for the root message. The static_assert in
   // the .cc file guarantees that the sizeof(nested_messages_arena_) is enough
   // to contain up to kMaxNestingDepth messages.
-  ALIGNAS(sizeof(void*)) uint8_t nested_messages_arena_[512];
+  alignas(sizeof(void*)) uint8_t nested_messages_arena_[512];
 
   // DO NOT add any fields below |nested_messages_arena_|. The memory layout of
   // nested messages would overflow the storage allocated by the root message.
