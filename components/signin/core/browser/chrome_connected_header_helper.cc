@@ -71,17 +71,17 @@ ManageAccountsParams ChromeConnectedHeaderHelper::BuildManageAccountsParams(
   ResponseHeaderDictionary::const_iterator it = header_dictionary.begin();
   for (; it != header_dictionary.end(); ++it) {
     const std::string key_name(it->first);
+    const std::string value(it->second);
     if (key_name == kServiceTypeAttrName) {
-      params.service_type =
-          GetGAIAServiceTypeFromHeader(header_dictionary[kServiceTypeAttrName]);
+      params.service_type = GetGAIAServiceTypeFromHeader(value);
     } else if (key_name == kEmailAttrName) {
-      params.email = header_dictionary[kEmailAttrName];
+      params.email = value;
     } else if (key_name == kIsSamlAttrName) {
-      params.is_saml = header_dictionary[kIsSamlAttrName] == "true";
+      params.is_saml = value == "true";
     } else if (key_name == kContinueUrlAttrName) {
-      params.continue_url = header_dictionary[kContinueUrlAttrName];
+      params.continue_url = value;
     } else if (key_name == kIsSameTabAttrName) {
-      params.is_same_tab = header_dictionary[kIsSameTabAttrName] == "true";
+      params.is_same_tab = value == "true";
     } else {
       DLOG(WARNING) << "Unexpected Gaia header attribute '" << key_name << "'.";
     }

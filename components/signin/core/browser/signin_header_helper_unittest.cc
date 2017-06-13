@@ -337,4 +337,23 @@ TEST_F(SigninHeaderHelperTest, TestIgnoreMirrorHeaderNonEligibleURLs) {
   EXPECT_EQ(fake_header, header);
 }
 
+TEST_F(SigninHeaderHelperTest, TestInvalidManageAccountsParams) {
+  ManageAccountsParams params = BuildManageAccountsParams("blah");
+  EXPECT_EQ(GAIA_SERVICE_TYPE_NONE, params.service_type);
+}
+
+TEST_F(SigninHeaderHelperTest, TestBuildManageAccountsParams) {
+  const char kContinueURL[] = "https://www.example.com/continue";
+  const char kEmail[] = "foo@example.com";
+
+  ManageAccountsParams params = BuildManageAccountsParams(base::StringPrintf(
+      "action=REAUTH,email=%s,is_saml=true,is_same_tab=true,continue_url=%s",
+      kEmail, kContinueURL));
+  EXPECT_EQ(GAIA_SERVICE_TYPE_REAUTH, params.service_type);
+  EXPECT_EQ(kEmail, params.email);
+  EXPECT_EQ(true, params.is_saml);
+  EXPECT_EQ(true, params.is_same_tab);
+  EXPECT_EQ(GURL(kContinueURL), params.continue_url);
+}
+
 }  // namespace signin
