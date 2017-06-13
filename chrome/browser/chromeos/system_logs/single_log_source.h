@@ -37,6 +37,9 @@ class SingleLogSource : public SystemLogsSource {
   // Reads all available content from |file_| that has not already been read.
   void ReadFile(SystemLogsResponse* result);
 
+  // Path to system log file directory.
+  base::FilePath log_file_dir_path_;
+
   // Keeps track of how much data has been read from |file_|.
   size_t num_bytes_read_;
 
