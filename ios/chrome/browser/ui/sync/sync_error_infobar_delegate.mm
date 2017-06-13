@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/browser_sync/profile_sync_service.h"
@@ -25,6 +24,10 @@
 #import "ios/chrome/browser/ui/commands/generic_chrome_command.h"
 #import "ios/chrome/browser/ui/sync/sync_util.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 // static
 bool SyncErrorInfoBarDelegate::Create(infobars::InfoBarManager* infobar_manager,
@@ -52,8 +55,8 @@ SyncErrorInfoBarDelegate::SyncErrorInfoBarDelegate(
   button_text_ = base::SysNSStringToUTF16(
       ios_internal::sync::GetSyncErrorButtonTitleForBrowserState(
           browser_state_));
-  command_.reset([ios_internal::sync::GetSyncCommandForBrowserState(
-      browser_state_) retain]);
+  command_.reset(
+      ios_internal::sync::GetSyncCommandForBrowserState(browser_state_));
 
   // Register for sync status changes.
   syncer::SyncService* sync_service =
