@@ -939,7 +939,6 @@ interface Document : Node
     getter onselect
     getter onselectionchange
     getter onselectstart
-    getter onshow
     getter onstalled
     getter onsubmit
     getter onsuspend
@@ -1104,7 +1103,6 @@ interface Document : Node
     setter onselect
     setter onselectionchange
     setter onselectstart
-    setter onshow
     setter onstalled
     setter onsubmit
     setter onsuspend
@@ -1794,7 +1792,6 @@ interface HTMLElement : Element
     getter onseeked
     getter onseeking
     getter onselect
-    getter onshow
     getter onstalled
     getter onsubmit
     getter onsuspend
@@ -1886,7 +1883,6 @@ interface HTMLElement : Element
     setter onseeked
     setter onseeking
     setter onselect
-    setter onshow
     setter onstalled
     setter onsubmit
     setter onsuspend
@@ -4606,7 +4602,6 @@ interface SVGElement : Element
     getter onseeked
     getter onseeking
     getter onselect
-    getter onshow
     getter onstalled
     getter onsubmit
     getter onsuspend
@@ -4688,7 +4683,6 @@ interface SVGElement : Element
     setter onseeked
     setter onseeking
     setter onselect
-    setter onshow
     setter onstalled
     setter onsubmit
     setter onsuspend
@@ -7883,7 +7877,6 @@ interface webkitURL
     getter onseeked
     getter onseeking
     getter onselect
-    getter onshow
     getter onstalled
     getter onstorage
     getter onsubmit
@@ -8063,7 +8056,6 @@ interface webkitURL
     setter onseeked
     setter onseeking
     setter onselect
-    setter onshow
     setter onstalled
     setter onstorage
     setter onsubmit

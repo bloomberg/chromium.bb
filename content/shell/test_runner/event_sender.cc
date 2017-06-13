@@ -399,12 +399,11 @@ void PopulateCustomItems(const WebVector<WebMenuItemInfo>& customItems,
       strings->push_back(prefixCopy + kSeparatorIdentifier);
     } else if (customItems[i].type == blink::WebMenuItemInfo::kSubMenu) {
       strings->push_back(prefixCopy + customItems[i].label.Utf8() +
-                         customItems[i].icon.Utf8() + kSubMenuIdentifier);
+                         kSubMenuIdentifier);
       PopulateCustomItems(customItems[i].sub_menu_items,
                           prefixCopy + kSubMenuDepthIdentifier, strings);
     } else {
-      strings->push_back(prefixCopy + customItems[i].label.Utf8() +
-                         customItems[i].icon.Utf8());
+      strings->push_back(prefixCopy + customItems[i].label.Utf8());
     }
   }
 }

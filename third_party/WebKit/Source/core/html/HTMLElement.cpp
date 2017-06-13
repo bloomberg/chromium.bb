@@ -396,7 +396,6 @@ const AtomicString& HTMLElement::EventNameForAttributeName(
         {onseekingAttr, EventTypeNames::seeking},
         {onselectAttr, EventTypeNames::select},
         {onselectstartAttr, EventTypeNames::selectstart},
-        {onshowAttr, EventTypeNames::show},
         {onstalledAttr, EventTypeNames::stalled},
         {onsubmitAttr, EventTypeNames::submit},
         {onsuspendAttr, EventTypeNames::suspend},

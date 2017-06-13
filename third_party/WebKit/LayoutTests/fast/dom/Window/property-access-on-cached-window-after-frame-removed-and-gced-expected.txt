@@ -118,7 +118,6 @@ PASS childWindow.onsearch is null
 PASS childWindow.onseeked is null
 PASS childWindow.onseeking is null
 PASS childWindow.onselect is null
-PASS childWindow.onshow is null
 PASS childWindow.onstalled is null
 PASS childWindow.onstorage is null
 PASS childWindow.onsubmit is null

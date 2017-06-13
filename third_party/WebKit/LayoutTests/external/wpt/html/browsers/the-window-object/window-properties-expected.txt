@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 166 tests; 156 PASS, 10 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 166 tests; 155 PASS, 11 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Value Properties of the Global Object 
 PASS Value Property: NaN 
 PASS Value Property: Infinity 
@@ -129,7 +129,7 @@ PASS Window attribute: onscroll
 PASS Window attribute: onseeked 
 PASS Window attribute: onseeking 
 PASS Window attribute: onselect 
-PASS Window attribute: onshow 
+FAIL Window attribute: onshow assert_true: onshow in window expected true got false
 PASS Window attribute: onstalled 
 PASS Window attribute: onstorage 
 PASS Window attribute: onsubmit 
