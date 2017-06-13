@@ -344,8 +344,6 @@ public class LocaleManager {
      */
     @SearchEnginePromoType
     public int getSearchEnginePromoShowType() {
-        assert TemplateUrlService.getInstance().isLoaded();
-
         if (!isSpecialLocaleEnabled()) return SEARCH_ENGINE_PROMO_DONT_SHOW;
         SharedPreferences preferences = ContextUtils.getAppSharedPreferences();
         if (preferences.getBoolean(PREF_PROMO_SHOWN, false)) {
