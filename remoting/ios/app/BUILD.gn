@@ -45,6 +45,7 @@ source_set("common_source_set") {
     "//remoting/client/input",
     "//remoting/ios:ios_core",
     "//remoting/ios/app/settings",
+    "//remoting/ios/mdc",
     "//remoting/protocol",
     "//ui/base",
     "//ui/gfx",

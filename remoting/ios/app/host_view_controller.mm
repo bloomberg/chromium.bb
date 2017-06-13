@@ -15,6 +15,7 @@
 #import "remoting/ios/client_gestures.h"
 #import "remoting/ios/client_keyboard.h"
 #import "remoting/ios/display/eagl_view.h"
+#import "remoting/ios/mdc/MDCActionImageView.h"
 #import "remoting/ios/session/remoting_client.h"
 
 #include "base/strings/sys_string_conversions.h"
@@ -32,6 +33,7 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
   ClientGestures* _clientGestures;
   ClientKeyboard* _clientKeyboard;
   CGSize _keyboardSize;
+  MDCActionImageView* _actionImageView;
   BOOL _surfaceCreated;
 }
 @end
@@ -60,15 +62,22 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
 - (void)viewDidLoad {
   [super viewDidLoad];
   _floatingButton =
-      [MDCFloatingButton floatingButtonWithShape:MDCFloatingButtonShapeMini];
-  [_floatingButton setTitle:@"+" forState:UIControlStateNormal];
+      [MDCFloatingButton floatingButtonWithShape:MDCFloatingButtonShapeDefault];
+  [_floatingButton setTitle:@" " forState:UIControlStateNormal];
   [_floatingButton addTarget:self
                       action:@selector(didTap:)
             forControlEvents:UIControlEventTouchUpInside];
+  [_floatingButton sizeToFit];
 
   UIImage* settingsImage = [UIImage imageNamed:@"Settings"];
-  [_floatingButton setImage:settingsImage forState:UIControlStateNormal];
-  [_floatingButton sizeToFit];
+  UIImage* backImage = [UIImage imageNamed:@"Back"];
+
+  _actionImageView =
+      [[MDCActionImageView alloc] initWithFrame:_floatingButton.bounds
+                                   primaryImage:settingsImage
+                                    activeImage:backImage];
+  [_floatingButton addSubview:_actionImageView];
+
   [self.view addSubview:_floatingButton];
 
   // TODO(yuweih): This should be loaded from and stored into user defaults.
@@ -284,6 +293,7 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
   __weak UIAlertController* weakAlert = alert;
   void (^cancelHandler)(UIAlertAction*) = ^(UIAlertAction*) {
     [weakAlert dismissViewControllerAnimated:YES completion:nil];
+    [_actionImageView setActive:NO animated:YES];
   };
   [alert addAction:[UIAlertAction actionWithTitle:@"Cancel"
                                             style:UIAlertActionStyleCancel
@@ -297,6 +307,7 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
   alert.popoverPresentationController.permittedArrowDirections =
       UIPopoverArrowDirectionDown;
   [self presentViewController:alert animated:YES completion:nil];
+  [_actionImageView setActive:YES animated:YES];
 }
 
 @end
