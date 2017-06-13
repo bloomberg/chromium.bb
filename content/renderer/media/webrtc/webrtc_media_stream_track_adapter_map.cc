@@ -47,9 +47,8 @@ WebRtcMediaStreamTrackAdapterMap::AdapterRef::~AdapterRef() {
 }
 
 WebRtcMediaStreamTrackAdapterMap::WebRtcMediaStreamTrackAdapterMap(
-    PeerConnectionDependencyFactory* const factory,
-    const scoped_refptr<base::SingleThreadTaskRunner>& main_thread)
-    : factory_(factory), main_thread_(main_thread) {
+    PeerConnectionDependencyFactory* const factory)
+    : factory_(factory), main_thread_(base::ThreadTaskRunnerHandle::Get()) {
   DCHECK(factory_);
   DCHECK(main_thread_);
 }
@@ -90,7 +89,7 @@ std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>
 WebRtcMediaStreamTrackAdapterMap::GetOrCreateRemoteTrackAdapter(
     webrtc::MediaStreamTrackInterface* webrtc_track) {
   DCHECK(webrtc_track);
-  DCHECK(factory_->GetWebRtcSignalingThread()->BelongsToCurrentThread());
+  DCHECK(!main_thread_->BelongsToCurrentThread());
   return GetOrCreateTrackAdapter(
       AdapterRef::Type::kRemote,
       base::Bind(&WebRtcMediaStreamTrackAdapter::CreateRemoteTrackAdapter,

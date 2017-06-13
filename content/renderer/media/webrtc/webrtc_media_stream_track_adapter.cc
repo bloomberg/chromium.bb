@@ -17,7 +17,9 @@ WebRtcMediaStreamTrackAdapter::CreateLocalTrackAdapter(
     PeerConnectionDependencyFactory* factory,
     const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
     const blink::WebMediaStreamTrack& web_track) {
+  DCHECK(factory);
   DCHECK(main_thread->BelongsToCurrentThread());
+  DCHECK(!web_track.IsNull());
   scoped_refptr<WebRtcMediaStreamTrackAdapter> local_track_adapter(
       new WebRtcMediaStreamTrackAdapter(factory, main_thread));
   if (web_track.Source().GetType() == blink::WebMediaStreamSource::kTypeAudio) {
@@ -36,7 +38,8 @@ WebRtcMediaStreamTrackAdapter::CreateRemoteTrackAdapter(
     PeerConnectionDependencyFactory* factory,
     const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
     webrtc::MediaStreamTrackInterface* webrtc_track) {
-  DCHECK(factory->GetWebRtcSignalingThread()->BelongsToCurrentThread());
+  DCHECK(factory);
+  DCHECK(!main_thread->BelongsToCurrentThread());
   DCHECK(webrtc_track);
   scoped_refptr<WebRtcMediaStreamTrackAdapter> remote_track_adapter(
       new WebRtcMediaStreamTrackAdapter(factory, main_thread));
@@ -163,7 +166,7 @@ void WebRtcMediaStreamTrackAdapter::InitializeLocalVideoTrack(
 
 void WebRtcMediaStreamTrackAdapter::InitializeRemoteAudioTrack(
     webrtc::AudioTrackInterface* webrtc_audio_track) {
-  DCHECK(factory_->GetWebRtcSignalingThread()->BelongsToCurrentThread());
+  DCHECK(!main_thread_->BelongsToCurrentThread());
   DCHECK(!is_initialized_);
   DCHECK(webrtc_audio_track);
   DCHECK_EQ(webrtc_audio_track->kind(),
@@ -179,7 +182,7 @@ void WebRtcMediaStreamTrackAdapter::InitializeRemoteAudioTrack(
 
 void WebRtcMediaStreamTrackAdapter::InitializeRemoteVideoTrack(
     webrtc::VideoTrackInterface* webrtc_video_track) {
-  DCHECK(factory_->GetWebRtcSignalingThread()->BelongsToCurrentThread());
+  DCHECK(!main_thread_->BelongsToCurrentThread());
   DCHECK(!is_initialized_);
   DCHECK(webrtc_video_track);
   DCHECK_EQ(webrtc_video_track->kind(),
@@ -256,7 +259,7 @@ void WebRtcMediaStreamTrackAdapter::DisposeRemoteVideoTrack() {
 
 void WebRtcMediaStreamTrackAdapter::
     UnregisterRemoteAudioTrackAdapterOnSignalingThread() {
-  DCHECK(factory_->GetWebRtcSignalingThread()->BelongsToCurrentThread());
+  DCHECK(!main_thread_->BelongsToCurrentThread());
   DCHECK(!is_initialized_);
   DCHECK(remote_audio_track_adapter_);
   remote_audio_track_adapter_->Unregister();

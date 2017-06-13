@@ -5,7 +5,9 @@
 #ifndef CONTENT_RENDERER_MEDIA_REMOTE_MEDIA_STREAM_IMPL_H_
 #define CONTENT_RENDERER_MEDIA_REMOTE_MEDIA_STREAM_IMPL_H_
 
+#include <map>
 #include <memory>
+#include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -14,13 +16,11 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "content/common/content_export.h"
+#include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter_map.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/webrtc/api/mediastreaminterface.h"
 
 namespace content {
-
-class RemoteAudioTrackAdapter;
-class RemoteVideoTrackAdapter;
 
 // RemoteMediaStreamImpl serves as a container and glue between remote webrtc
 // MediaStreams and WebKit MediaStreams. For each remote MediaStream received
@@ -28,73 +28,44 @@ class RemoteVideoTrackAdapter;
 // owned by RtcPeerConnection.
 class CONTENT_EXPORT RemoteMediaStreamImpl {
  public:
+  // A map between track IDs and references to track adapters.
+  using AdapterRefMap =
+      std::map<std::string,
+               std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>>;
+
   RemoteMediaStreamImpl(
       const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
+      const scoped_refptr<WebRtcMediaStreamTrackAdapterMap>& track_adapter_map,
       webrtc::MediaStreamInterface* webrtc_stream);
   ~RemoteMediaStreamImpl();
 
   const blink::WebMediaStream& webkit_stream() { return webkit_stream_; }
-  const scoped_refptr<webrtc::MediaStreamInterface>& webrtc_stream() {
-    return observer_->stream();
-  }
+  const scoped_refptr<webrtc::MediaStreamInterface>& webrtc_stream();
 
  private:
-  typedef std::vector<scoped_refptr<RemoteAudioTrackAdapter>>
-      RemoteAudioTrackAdapters;
-  typedef std::vector<scoped_refptr<RemoteVideoTrackAdapter>>
-      RemoteVideoTrackAdapters;
+  class Observer;
 
-  void InitializeOnMainThread(const std::string& label);
+  void InitializeOnMainThread(const std::string& label,
+                              AdapterRefMap track_adapter_refs,
+                              size_t audio_track_count,
+                              size_t video_track_count);
 
-  class Observer
-      : NON_EXPORTED_BASE(public webrtc::ObserverInterface),
-        public base::RefCountedThreadSafe<Observer> {
-   public:
-    Observer(const base::WeakPtr<RemoteMediaStreamImpl>& media_stream,
-             const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
-             webrtc::MediaStreamInterface* webrtc_stream);
-
-    const scoped_refptr<webrtc::MediaStreamInterface>& stream() const {
-      return webrtc_stream_;
-    }
-
-    const scoped_refptr<base::SingleThreadTaskRunner>& main_thread() const {
-      return main_thread_;
-    }
-
-    void InitializeOnMainThread(const std::string& label);
-
-    // Uninitializes the observer, unregisteres from receiving notifications
-    // and releases the webrtc stream.
-    // Note: Must be called from the main thread before releasing the main
-    // reference.
-    void Unregister();
-
-   private:
-    friend class base::RefCountedThreadSafe<Observer>;
-    ~Observer() override;
-
-    // webrtc::ObserverInterface implementation.
-    void OnChanged() override;
-
-    void OnChangedOnMainThread(
-        std::unique_ptr<RemoteAudioTrackAdapters> audio_tracks,
-        std::unique_ptr<RemoteVideoTrackAdapters> video_tracks);
-
-    base::WeakPtr<RemoteMediaStreamImpl> media_stream_;
-    const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
-    scoped_refptr<webrtc::MediaStreamInterface> webrtc_stream_;
-  };
-
-  void OnChanged(std::unique_ptr<RemoteAudioTrackAdapters> audio_tracks,
-                 std::unique_ptr<RemoteVideoTrackAdapters> video_tracks);
+  void OnChanged(AdapterRefMap new_adapter_refs);
 
   const scoped_refptr<base::SingleThreadTaskRunner> signaling_thread_;
   scoped_refptr<Observer> observer_;
 
-  RemoteVideoTrackAdapters video_track_observers_;
-  RemoteAudioTrackAdapters audio_track_observers_;
+  // The map and owner of all track adapters for the associated peer connection.
+  // When a track is added or removed from this stream, the map provides us with
+  // a reference to the corresponding track adapter, creating a new one if
+  // necessary.
+  scoped_refptr<WebRtcMediaStreamTrackAdapterMap> track_adapter_map_;
   blink::WebMediaStream webkit_stream_;
+  // A map between track IDs and references to track adapters for any tracks
+  // that belong to this stream. Keeping an adapter reference alive ensures the
+  // adapter is not disposed by the |track_adapter_map_|, as is necessary for as
+  // long as the webrtc layer track is in use by the webrtc layer stream.
+  AdapterRefMap adapter_refs_;
 
   base::WeakPtrFactory<RemoteMediaStreamImpl> weak_factory_;
 

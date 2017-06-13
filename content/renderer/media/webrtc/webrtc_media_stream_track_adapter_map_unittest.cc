@@ -26,8 +26,7 @@ class WebRtcMediaStreamTrackAdapterMapTest : public ::testing::Test {
   void SetUp() override {
     dependency_factory_.reset(new MockPeerConnectionDependencyFactory());
     main_thread_ = base::ThreadTaskRunnerHandle::Get();
-    map_ = new WebRtcMediaStreamTrackAdapterMap(dependency_factory_.get(),
-                                                main_thread_);
+    map_ = new WebRtcMediaStreamTrackAdapterMap(dependency_factory_.get());
   }
 
   void TearDown() override { blink::WebHeap::CollectAllGarbageForTesting(); }
