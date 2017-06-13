@@ -13,8 +13,7 @@ MojoUkmRecorder::MojoUkmRecorder(mojom::UkmRecorderInterfacePtr interface)
 MojoUkmRecorder::~MojoUkmRecorder() = default;
 
 void MojoUkmRecorder::UpdateSourceURL(SourceId source_id, const GURL& url) {
-  DCHECK(false);
-  // Not implemented yet, currently a no-op.
+  interface_->UpdateSourceURL(source_id, url.spec());
 }
 
 void MojoUkmRecorder::AddEntry(mojom::UkmEntryPtr entry) {
