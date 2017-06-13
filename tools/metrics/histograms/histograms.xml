@@ -9975,6 +9975,37 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Cryptohome.DircryptoMigrationInitialFreeSpaceInMb" units="MB">
+  <owner>dspaid@chromium.org</owner>
+  <summary>
+    The total amount of free disk space on the system when the user started the
+    migration from ecryptfs to ext4-crypto.  This is only logged when the user
+    encounters an insufficient space error.
+  </summary>
+</histogram>
+
+<histogram name="Cryptohome.DircryptoMigrationNoSpaceFailureFreeSpaceInMb"
+    units="MB">
+  <owner>dspaid@chromium.org</owner>
+  <summary>
+    The total amount of free disk space on the system when the user received an
+    insufficient space error during the migration from ecryptfs to ext4-crypto.
+    This is only logged when the user encounters an insufficient space error.
+  </summary>
+</histogram>
+
+<histogram name="Cryptohome.DircryptoMigrationNoSpaceXattrSizeInBytes"
+    units="bytes">
+  <owner>dspaid@chromium.org</owner>
+  <summary>
+    The total number of bytes of xattr data that we are trying to store on a
+    file when we receive an insufficient space error.  This includes both xattr
+    data already present on the file as well as the new xattr we are trying to
+    set.  This is only logged during ecryptfs to ext4-crypto migration if we
+    receive an insufficient space error when setting a new extended attribute.
+  </summary>
+</histogram>
+
 <histogram name="Cryptohome.DircryptoMigrationStartStatus"
     enum="DircryptoMigrationStartStatus">
   <owner>dspaid@chromium.org</owner>
