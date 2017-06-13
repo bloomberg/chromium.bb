@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -23,7 +22,6 @@
 #include "content/browser/blob_storage/blob_url_loader_factory.h"
 #include "content/browser/loader/test_url_loader_client.h"
 #include "content/browser/url_loader_factory_getter.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/common/data_pipe_utils.h"
 #include "net/base/net_errors.h"
@@ -132,7 +130,7 @@ disk_cache::ScopedEntryPtr CreateDiskCacheEntryWithSideData(
 
 }  // namespace
 
-class BlobURLRequestJobTest : public testing::Test {
+class BlobURLRequestJobTest : public testing::TestWithParam<bool> {
  public:
   // A simple ProtocolHandler implementation to create BlobURLRequestJob.
   class MockProtocolHandler
@@ -273,8 +271,7 @@ class BlobURLRequestJobTest : public testing::Test {
                    const net::HttpRequestHeaders& extra_headers) {
     GURL url("blob:blah");
 
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kEnableNetworkService)) {
+    if (GetParam()) {
       GetHandleFromBuilder();  // To add to StorageContext.
       const_cast<storage::BlobStorageRegistry&>(blob_context_.registry())
           .CreateUrlMapping(url, blob_data_->uuid());
@@ -420,18 +417,18 @@ class BlobURLRequestJobTest : public testing::Test {
   std::string expected_response_;
 };
 
-TEST_F(BlobURLRequestJobTest, TestGetSimpleDataRequest) {
+TEST_P(BlobURLRequestJobTest, TestGetSimpleDataRequest) {
   blob_data_->AppendData(kTestData1);
   TestSuccessNonrangeRequest(kTestData1, arraysize(kTestData1) - 1);
 }
 
-TEST_F(BlobURLRequestJobTest, TestGetSimpleFileRequest) {
+TEST_P(BlobURLRequestJobTest, TestGetSimpleFileRequest) {
   blob_data_->AppendFile(temp_file1_, 0, std::numeric_limits<uint64_t>::max(),
                          base::Time());
   TestSuccessNonrangeRequest(kTestFileData1, arraysize(kTestFileData1) - 1);
 }
 
-TEST_F(BlobURLRequestJobTest, TestGetLargeFileRequest) {
+TEST_P(BlobURLRequestJobTest, TestGetLargeFileRequest) {
   base::FilePath large_temp_file =
       temp_dir_.GetPath().AppendASCII("LargeBlob.dat");
   std::string large_data;
@@ -446,7 +443,7 @@ TEST_F(BlobURLRequestJobTest, TestGetLargeFileRequest) {
   TestSuccessNonrangeRequest(large_data, large_data.size());
 }
 
-TEST_F(BlobURLRequestJobTest, TestGetNonExistentFileRequest) {
+TEST_P(BlobURLRequestJobTest, TestGetNonExistentFileRequest) {
   base::FilePath non_existent_file =
       temp_file1_.InsertBeforeExtension(FILE_PATH_LITERAL("-na"));
   blob_data_->AppendFile(non_existent_file, 0,
@@ -454,20 +451,20 @@ TEST_F(BlobURLRequestJobTest, TestGetNonExistentFileRequest) {
   TestErrorRequest(404);
 }
 
-TEST_F(BlobURLRequestJobTest, TestGetChangedFileRequest) {
+TEST_P(BlobURLRequestJobTest, TestGetChangedFileRequest) {
   base::Time old_time =
       temp_file_modification_time1_ - base::TimeDelta::FromSeconds(10);
   blob_data_->AppendFile(temp_file1_, 0, 3, old_time);
   TestErrorRequest(404);
 }
 
-TEST_F(BlobURLRequestJobTest, TestGetSlicedFileRequest) {
+TEST_P(BlobURLRequestJobTest, TestGetSlicedFileRequest) {
   blob_data_->AppendFile(temp_file1_, 2, 4, temp_file_modification_time1_);
   std::string result(kTestFileData1 + 2, 4);
   TestSuccessNonrangeRequest(result, 4);
 }
 
-TEST_F(BlobURLRequestJobTest, TestGetSimpleFileSystemFileRequest) {
+TEST_P(BlobURLRequestJobTest, TestGetSimpleFileSystemFileRequest) {
   SetUpFileSystem();
   blob_data_->AppendFileSystemFile(temp_file_system_file1_, 0,
                                    std::numeric_limits<uint64_t>::max(),
@@ -476,7 +473,7 @@ TEST_F(BlobURLRequestJobTest, TestGetSimpleFileSystemFileRequest) {
                              arraysize(kTestFileSystemFileData1) - 1);
 }
 
-TEST_F(BlobURLRequestJobTest, TestGetLargeFileSystemFileRequest) {
+TEST_P(BlobURLRequestJobTest, TestGetLargeFileSystemFileRequest) {
   SetUpFileSystem();
   std::string large_data;
   large_data.reserve(kBufferSize * 5);
@@ -492,7 +489,7 @@ TEST_F(BlobURLRequestJobTest, TestGetLargeFileSystemFileRequest) {
   TestSuccessNonrangeRequest(large_data, large_data.size());
 }
 
-TEST_F(BlobURLRequestJobTest, TestGetNonExistentFileSystemFileRequest) {
+TEST_P(BlobURLRequestJobTest, TestGetNonExistentFileSystemFileRequest) {
   SetUpFileSystem();
   GURL non_existent_file = GetFileSystemURL("non-existent.dat");
   blob_data_->AppendFileSystemFile(
@@ -500,7 +497,7 @@ TEST_F(BlobURLRequestJobTest, TestGetNonExistentFileSystemFileRequest) {
   TestErrorRequest(404);
 }
 
-TEST_F(BlobURLRequestJobTest, TestGetInvalidFileSystemFileRequest) {
+TEST_P(BlobURLRequestJobTest, TestGetInvalidFileSystemFileRequest) {
   SetUpFileSystem();
   GURL invalid_file;
   blob_data_->AppendFileSystemFile(
@@ -508,7 +505,7 @@ TEST_F(BlobURLRequestJobTest, TestGetInvalidFileSystemFileRequest) {
   TestErrorRequest(500);
 }
 
-TEST_F(BlobURLRequestJobTest, TestGetChangedFileSystemFileRequest) {
+TEST_P(BlobURLRequestJobTest, TestGetChangedFileSystemFileRequest) {
   SetUpFileSystem();
   base::Time old_time = temp_file_system_file_modification_time1_ -
                         base::TimeDelta::FromSeconds(10);
@@ -516,7 +513,7 @@ TEST_F(BlobURLRequestJobTest, TestGetChangedFileSystemFileRequest) {
   TestErrorRequest(404);
 }
 
-TEST_F(BlobURLRequestJobTest, TestGetSlicedFileSystemFileRequest) {
+TEST_P(BlobURLRequestJobTest, TestGetSlicedFileSystemFileRequest) {
   SetUpFileSystem();
   blob_data_->AppendFileSystemFile(temp_file_system_file1_, 2, 4,
                                    temp_file_system_file_modification_time1_);
@@ -524,7 +521,7 @@ TEST_F(BlobURLRequestJobTest, TestGetSlicedFileSystemFileRequest) {
   TestSuccessNonrangeRequest(result, 4);
 }
 
-TEST_F(BlobURLRequestJobTest, TestGetSimpleDiskCacheRequest) {
+TEST_P(BlobURLRequestJobTest, TestGetSimpleDiskCacheRequest) {
   blob_data_->AppendDiskCacheEntry(new EmptyDataHandle(),
                                    disk_cache_entry_.get(),
                                    kTestDiskCacheStreamIndex);
@@ -532,14 +529,14 @@ TEST_F(BlobURLRequestJobTest, TestGetSimpleDiskCacheRequest) {
                              arraysize(kTestDiskCacheData1) - 1);
 }
 
-TEST_F(BlobURLRequestJobTest, TestGetComplicatedDataFileAndDiskCacheRequest) {
+TEST_P(BlobURLRequestJobTest, TestGetComplicatedDataFileAndDiskCacheRequest) {
   SetUpFileSystem();
   std::string result;
   BuildComplicatedData(&result);
   TestSuccessNonrangeRequest(result, GetTotalBlobLength());
 }
 
-TEST_F(BlobURLRequestJobTest, TestGetRangeRequest1) {
+TEST_P(BlobURLRequestJobTest, TestGetRangeRequest1) {
   SetUpFileSystem();
   std::string result;
   BuildComplicatedData(&result);
@@ -560,7 +557,7 @@ TEST_F(BlobURLRequestJobTest, TestGetRangeRequest1) {
   EXPECT_EQ(GetTotalBlobLength(), length);
 }
 
-TEST_F(BlobURLRequestJobTest, TestGetRangeRequest2) {
+TEST_P(BlobURLRequestJobTest, TestGetRangeRequest2) {
   SetUpFileSystem();
   std::string result;
   BuildComplicatedData(&result);
@@ -582,7 +579,7 @@ TEST_F(BlobURLRequestJobTest, TestGetRangeRequest2) {
   EXPECT_EQ(total, length);
 }
 
-TEST_F(BlobURLRequestJobTest, TestGetRangeRequest3) {
+TEST_P(BlobURLRequestJobTest, TestGetRangeRequest3) {
   SetUpFileSystem();
   std::string result;
   BuildComplicatedData(&result);
@@ -603,7 +600,7 @@ TEST_F(BlobURLRequestJobTest, TestGetRangeRequest3) {
   EXPECT_EQ(GetTotalBlobLength(), length);
 }
 
-TEST_F(BlobURLRequestJobTest, TestExtraHeaders) {
+TEST_P(BlobURLRequestJobTest, TestExtraHeaders) {
   blob_data_->set_content_type(kTestContentType);
   blob_data_->set_content_disposition(kTestContentDisposition);
   blob_data_->AppendData(kTestData1);
@@ -622,7 +619,7 @@ TEST_F(BlobURLRequestJobTest, TestExtraHeaders) {
   EXPECT_EQ(kTestContentDisposition, content_disposition);
 }
 
-TEST_F(BlobURLRequestJobTest, TestSideData) {
+TEST_P(BlobURLRequestJobTest, TestSideData) {
   disk_cache::ScopedEntryPtr disk_cache_entry_with_side_data =
       CreateDiskCacheEntryWithSideData(disk_cache_backend_.get(),
                                        kTestDiskCacheKey2, kTestDiskCacheData2,
@@ -639,7 +636,7 @@ TEST_F(BlobURLRequestJobTest, TestSideData) {
   EXPECT_EQ(std::string(kTestDiskCacheSideData), response_metadata_);
 }
 
-TEST_F(BlobURLRequestJobTest, TestZeroSizeSideData) {
+TEST_P(BlobURLRequestJobTest, TestZeroSizeSideData) {
   disk_cache::ScopedEntryPtr disk_cache_entry_with_side_data =
       CreateDiskCacheEntryWithSideData(disk_cache_backend_.get(),
                                        kTestDiskCacheKey2, kTestDiskCacheData2,
@@ -656,10 +653,15 @@ TEST_F(BlobURLRequestJobTest, TestZeroSizeSideData) {
   EXPECT_TRUE(response_metadata_.empty());
 }
 
-TEST_F(BlobURLRequestJobTest, BrokenBlob) {
+TEST_P(BlobURLRequestJobTest, BrokenBlob) {
   blob_handle_ = blob_context_.AddBrokenBlob(
       "uuid", "", "", storage::BlobStatus::ERR_INVALID_CONSTRUCTION_ARGUMENTS);
   TestErrorRequest(500);
 }
+
+// The parameter's value determines whether BlobURLLoaderFactory is used.
+INSTANTIATE_TEST_CASE_P(BlobURLRequestJobTest,
+                        BlobURLRequestJobTest,
+                        ::testing::Bool());
 
 }  // namespace content
