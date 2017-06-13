@@ -19,6 +19,7 @@ class DownloadManager;
 namespace download {
 
 class DownloadService;
+class TaskScheduler;
 
 // |clients| is a map of DownloadClient -> std::unique_ptr<Client>.  This
 // represents all of the clients that are allowed to have requests made on
@@ -34,7 +35,8 @@ DownloadService* CreateDownloadService(
     std::unique_ptr<DownloadClientMap> clients,
     content::DownloadManager* download_manager,
     const base::FilePath& storage_dir,
-    const scoped_refptr<base::SequencedTaskRunner>& background_task_runner);
+    const scoped_refptr<base::SequencedTaskRunner>& background_task_runner,
+    std::unique_ptr<TaskScheduler> task_scheduler);
 
 }  // namespace download
 

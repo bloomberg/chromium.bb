@@ -48,6 +48,7 @@
 #include "chrome/browser/android/download/download_controller.h"
 #include "chrome/browser/android/download/download_manager_service.h"
 #include "chrome/browser/android/download/items/offline_content_aggregator_factory_android.h"
+#include "chrome/browser/android/download/service/download_background_task.h"
 #include "chrome/browser/android/download/ui/thumbnail_provider.h"
 #include "chrome/browser/android/favicon_helper.h"
 #include "chrome/browser/android/feature_engagement_tracker/feature_engagement_tracker_factory_android.h"
@@ -308,6 +309,8 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"DomDistillerServiceFactory",
      dom_distiller::android::DomDistillerServiceFactoryAndroid::Register},
     {"DomDistillerTabUtils", RegisterDomDistillerTabUtils},
+    {"DownloadBackgroundTask",
+     download::android::RegisterDownloadBackgroundTask},
     {"DownloadController", DownloadController::RegisterDownloadController},
     {"DownloadManagerService",
      DownloadManagerService::RegisterDownloadManagerService},

@@ -8,13 +8,13 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/callback_helpers.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/download/internal/client_set.h"
 #include "components/download/internal/config.h"
 #include "components/download/internal/entry.h"
 #include "components/download/internal/entry_utils.h"
 #include "components/download/internal/model.h"
-#include "components/download/internal/stats.h"
 
 namespace download {
 
@@ -23,12 +23,14 @@ ControllerImpl::ControllerImpl(
     std::unique_ptr<Configuration> config,
     std::unique_ptr<DownloadDriver> driver,
     std::unique_ptr<Model> model,
-    std::unique_ptr<DeviceStatusListener> device_status_listener)
+    std::unique_ptr<DeviceStatusListener> device_status_listener,
+    std::unique_ptr<TaskScheduler> task_scheduler)
     : clients_(std::move(clients)),
       config_(std::move(config)),
       driver_(std::move(driver)),
       model_(std::move(model)),
-      device_status_listener_(std::move(device_status_listener)) {}
+      device_status_listener_(std::move(device_status_listener)),
+      task_scheduler_(std::move(task_scheduler)) {}
 
 ControllerImpl::~ControllerImpl() {
   device_status_listener_->Stop();
@@ -135,6 +137,57 @@ DownloadClient ControllerImpl::GetOwnerOfDownload(const std::string& guid) {
   return entry ? entry->client : DownloadClient::INVALID;
 }
 
+void ControllerImpl::OnStartScheduledTask(
+    DownloadTaskType task_type,
+    const TaskFinishedCallback& callback) {
+  task_finished_callbacks_[task_type] = callback;
+  if (!startup_status_.Complete()) {
+    return;
+  } else if (!startup_status_.Ok()) {
+    HandleTaskFinished(task_type, false,
+                       stats::ScheduledTaskStatus::ABORTED_ON_FAILED_INIT);
+    return;
+  }
+
+  ProcessScheduledTasks();
+}
+
+bool ControllerImpl::OnStopScheduledTask(DownloadTaskType task_type) {
+  HandleTaskFinished(task_type, false,
+                     stats::ScheduledTaskStatus::CANCELLED_ON_STOP);
+  return true;
+}
+
+void ControllerImpl::ProcessScheduledTasks() {
+  if (!startup_status_.Ok()) {
+    while (!task_finished_callbacks_.empty()) {
+      auto it = task_finished_callbacks_.begin();
+      HandleTaskFinished(it->first, false,
+                         stats::ScheduledTaskStatus::ABORTED_ON_FAILED_INIT);
+    }
+    return;
+  }
+
+  while (!task_finished_callbacks_.empty()) {
+    auto it = task_finished_callbacks_.begin();
+    // TODO(shaktisahu): Execute the scheduled task.
+
+    HandleTaskFinished(it->first, false,
+                       stats::ScheduledTaskStatus::COMPLETED_NORMALLY);
+  }
+}
+
+void ControllerImpl::HandleTaskFinished(DownloadTaskType task_type,
+                                        bool needs_reschedule,
+                                        stats::ScheduledTaskStatus status) {
+  if (status != stats::ScheduledTaskStatus::CANCELLED_ON_STOP) {
+    base::ResetAndReturn(&task_finished_callbacks_[task_type])
+        .Run(needs_reschedule);
+  }
+  stats::LogScheduledTaskStatus(task_type, status);
+  task_finished_callbacks_.erase(task_type);
+}
+
 void ControllerImpl::OnDriverReady(bool success) {
   DCHECK(!startup_status_.driver_ok.has_value());
   startup_status_.driver_ok = success;
@@ -205,6 +258,7 @@ void ControllerImpl::AttemptToFinalizeSetup() {
   if (!startup_status_.Ok()) {
     // TODO(dtrainor): Recover here.  Try to clean up any disk state and, if
     // possible, any DownloadDriver data and continue with initialization?
+    ProcessScheduledTasks();
     return;
   }
 
@@ -216,6 +270,7 @@ void ControllerImpl::AttemptToFinalizeSetup() {
   // TODO(dtrainor): Post this so that the initialization step is finalized
   // before Clients can take action.
   NotifyClientsOfStartup();
+  ProcessScheduledTasks();
 }
 
 void ControllerImpl::CancelOrphanedRequests() {

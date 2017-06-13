@@ -17,6 +17,16 @@ DownloadServiceImpl::DownloadServiceImpl(std::unique_ptr<Controller> controller)
 
 DownloadServiceImpl::~DownloadServiceImpl() = default;
 
+void DownloadServiceImpl::OnStartScheduledTask(
+    DownloadTaskType task_type,
+    const TaskFinishedCallback& callback) {
+  controller_->OnStartScheduledTask(task_type, callback);
+}
+
+bool DownloadServiceImpl::OnStopScheduledTask(DownloadTaskType task_type) {
+  return controller_->OnStopScheduledTask(task_type);
+}
+
 DownloadService::ServiceStatus DownloadServiceImpl::GetStatus() {
   if (!controller_->GetStartupStatus()->Complete())
     return DownloadService::ServiceStatus::STARTING_UP;

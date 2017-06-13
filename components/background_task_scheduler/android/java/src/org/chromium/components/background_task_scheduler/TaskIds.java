@@ -20,6 +20,8 @@ public final class TaskIds {
     public static final int CHROME_MINIDUMP_UPLOADING_JOB_ID = 43;
     public static final int OFFLINE_PAGES_BACKGROUND_JOB_ID = 77;
     public static final int OFFLINE_PAGES_PREFETCH_JOB_ID = 78;
+    public static final int DOWNLOAD_SERVICE_JOB_ID = 53;
+    public static final int DOWNLOAD_CLEANUP_JOB_ID = 54;
 
     private TaskIds() {}
 }

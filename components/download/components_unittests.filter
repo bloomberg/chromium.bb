@@ -1,8 +1,10 @@
+BatteryListenerTest.*
 DownloadDriverImplTest.*
 DownloadServiceClientSetTest.*
 DownloadServiceControllerImplTest.*
 DownloadServiceImplTest.*
 DownloadServiceEntryUtilsTest.*
 DownloadServiceModelImplTest.*
-BatteryListenerTest.*
+DownloadStoreTest.*
 NetworkListenerTest.*
+ProtoConversionsTest.*

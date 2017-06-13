@@ -10,14 +10,20 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/task_traits.h"
+#include "chrome/browser/download/download_task_scheduler_impl.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "components/download/content/factory/download_service_factory.h"
 #include "components/download/public/clients.h"
 #include "components/download/public/download_service.h"
+#include "components/download/public/task_scheduler.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
+
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/download/service/download_task_scheduler.h"
+#endif
 
 // static
 DownloadServiceFactory* DownloadServiceFactory::GetInstance() {
@@ -56,8 +62,17 @@ KeyedService* DownloadServiceFactory::BuildServiceInstanceFor(
       base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BACKGROUND});
 
+  std::unique_ptr<download::TaskScheduler> task_scheduler;
+
+#if defined(OS_ANDROID)
+  task_scheduler = base::MakeUnique<download::android::DownloadTaskScheduler>();
+#else
+  task_scheduler = base::MakeUnique<DownloadTaskSchedulerImpl>(context);
+#endif
+
   return download::CreateDownloadService(std::move(clients), download_manager,
-                                         storage_dir, background_task_runner);
+                                         storage_dir, background_task_runner,
+                                         std::move(task_scheduler));
 }
 
 content::BrowserContext* DownloadServiceFactory::GetBrowserContextToUse(
