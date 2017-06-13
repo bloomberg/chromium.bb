@@ -20,6 +20,8 @@
 
 namespace midi {
 
+class TaskService;
+
 // Manages MidiManager backends.  This class expects to be constructed and
 // destructed on the browser main thread, but methods can be called on both
 // the main thread and the I/O thread.
@@ -54,13 +56,20 @@ class MIDI_EXPORT MidiService final {
   // MidiManager, each task should ensure that MidiManager that posted the task
   // is still alive while accessing |this|. TaskRunners will be reused when
   // another MidiManager is instantiated.
+  // TODO(toyoshim): Remove this interface.
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(size_t runner_id);
+
+  // Obtains a TaskService that lives with MidiService.
+  TaskService* task_service() { return task_service_.get(); }
 
  private:
   // Holds MidiManager instance. If the dynamic instantiation feature is
   // enabled, the MidiManager would be constructed and destructed on the I/O
   // thread, and all MidiManager methods would be called on the I/O thread.
   std::unique_ptr<MidiManager> manager_;
+
+  // Holds TaskService instance.
+  std::unique_ptr<TaskService> task_service_;
 
   // TaskRunner to destruct |manager_| on the right thread.
   scoped_refptr<base::SingleThreadTaskRunner> manager_destructor_runner_;

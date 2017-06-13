@@ -92,6 +92,8 @@ component("midi") {
     "midi_service.h",
     "midi_switches.cc",
     "midi_switches.h",
+    "task_service.cc",
+    "task_service.h",
   ]
 
   configs += [ ":midi_config" ]
@@ -183,6 +185,7 @@ test("midi_unittests") {
     "midi_manager_unittest.cc",
     "midi_manager_usb_unittest.cc",
     "midi_message_queue_unittest.cc",
+    "task_service_unittest.cc",
     "usb_midi_descriptor_parser_unittest.cc",
     "usb_midi_input_stream_unittest.cc",
     "usb_midi_output_stream_unittest.cc",

@@ -9,6 +9,7 @@
 #include "base/strings/stringprintf.h"
 #include "media/midi/midi_manager.h"
 #include "media/midi/midi_switches.h"
+#include "media/midi/task_service.h"
 
 namespace midi {
 
@@ -27,7 +28,8 @@ bool IsDynamicInstantiationEnabled() {
 }  // namespace
 
 MidiService::MidiService(void)
-    : is_dynamic_instantiation_enabled_(IsDynamicInstantiationEnabled()),
+    : task_service_(base::MakeUnique<TaskService>()),
+      is_dynamic_instantiation_enabled_(IsDynamicInstantiationEnabled()),
       active_clients_(0u) {
   base::AutoLock lock(lock_);
 
@@ -36,7 +38,9 @@ MidiService::MidiService(void)
 }
 
 MidiService::MidiService(std::unique_ptr<MidiManager> manager)
-    : is_dynamic_instantiation_enabled_(false), active_clients_(0u) {
+    : task_service_(base::MakeUnique<TaskService>()),
+      is_dynamic_instantiation_enabled_(false),
+      active_clients_(0u) {
   base::AutoLock lock(lock_);
 
   manager_ = std::move(manager);
