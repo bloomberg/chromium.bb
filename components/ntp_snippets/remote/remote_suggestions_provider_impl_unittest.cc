@@ -41,7 +41,7 @@
 #include "components/ntp_snippets/remote/persistent_scheduler.h"
 #include "components/ntp_snippets/remote/remote_suggestion.h"
 #include "components/ntp_snippets/remote/remote_suggestions_database.h"
-#include "components/ntp_snippets/remote/remote_suggestions_fetcher.h"
+#include "components/ntp_snippets/remote/remote_suggestions_fetcher_impl.h"
 #include "components/ntp_snippets/remote/remote_suggestions_scheduler.h"
 #include "components/ntp_snippets/remote/test_utils.h"
 #include "components/ntp_snippets/user_classifier.h"
@@ -444,7 +444,7 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
         new net::TestURLRequestContextGetter(task_runner.get());
 
     utils_.ResetSigninManager();
-    auto suggestions_fetcher = base::MakeUnique<RemoteSuggestionsFetcher>(
+    auto suggestions_fetcher = base::MakeUnique<RemoteSuggestionsFetcherImpl>(
         utils_.fake_signin_manager(), /*token_service=*/nullptr,
         std::move(request_context_getter), utils_.pref_service(), nullptr,
         base::Bind(&ParseJson), GetFetchEndpoint(version_info::Channel::STABLE),
@@ -1272,7 +1272,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, ReturnTemporaryErrorForInvalidJson) {
                          "invalid json string}]}",
                          /*known_ids=*/std::set<std::string>(),
                          base::Bind(&SuggestionsLoaded, &loaded));
-  EXPECT_THAT(suggestions_fetcher()->last_status(),
+  EXPECT_THAT(suggestions_fetcher()->GetLastStatusForDebugging(),
               StartsWith("Received invalid JSON"));
 }
 
@@ -1286,7 +1286,7 @@ TEST_F(RemoteSuggestionsProviderImplTest,
                          GetTestJson({GetIncompleteSuggestion()}),
                          /*known_ids=*/std::set<std::string>(),
                          base::Bind(&SuggestionsLoaded, &loaded));
-  EXPECT_THAT(suggestions_fetcher()->last_status(),
+  EXPECT_THAT(suggestions_fetcher()->GetLastStatusForDebugging(),
               StartsWith("Invalid / empty list"));
 }
 
@@ -1319,7 +1319,7 @@ TEST_F(RemoteSuggestionsProviderImplTest, LoadInvalidJson) {
   auto service = MakeSuggestionsProvider();
 
   LoadFromJSONString(service.get(), GetTestJson({GetInvalidSuggestion()}));
-  EXPECT_THAT(suggestions_fetcher()->last_status(),
+  EXPECT_THAT(suggestions_fetcher()->GetLastStatusForDebugging(),
               StartsWith("Received invalid JSON"));
   EXPECT_THAT(service->GetSuggestionsForTesting(articles_category()),
               IsEmpty());
@@ -1332,10 +1332,10 @@ TEST_F(RemoteSuggestionsProviderImplTest,
   LoadFromJSONString(service.get(), GetTestJson({GetSuggestion()}));
   ASSERT_THAT(service->GetSuggestionsForTesting(articles_category()),
               SizeIs(1));
-  ASSERT_EQ("OK", suggestions_fetcher()->last_status());
+  ASSERT_EQ("OK", suggestions_fetcher()->GetLastStatusForDebugging());
 
   LoadFromJSONString(service.get(), GetTestJson({GetInvalidSuggestion()}));
-  EXPECT_THAT(suggestions_fetcher()->last_status(),
+  EXPECT_THAT(suggestions_fetcher()->GetLastStatusForDebugging(),
               StartsWith("Received invalid JSON"));
   // This should not have changed the existing suggestions.
   EXPECT_THAT(service->GetSuggestionsForTesting(articles_category()),
@@ -1346,7 +1346,8 @@ TEST_F(RemoteSuggestionsProviderImplTest, LoadIncompleteJson) {
   auto service = MakeSuggestionsProvider();
 
   LoadFromJSONString(service.get(), GetTestJson({GetIncompleteSuggestion()}));
-  EXPECT_EQ("Invalid / empty list.", suggestions_fetcher()->last_status());
+  EXPECT_EQ("Invalid / empty list.",
+            suggestions_fetcher()->GetLastStatusForDebugging());
   EXPECT_THAT(service->GetSuggestionsForTesting(articles_category()),
               IsEmpty());
 }
@@ -1360,7 +1361,8 @@ TEST_F(RemoteSuggestionsProviderImplTest,
               SizeIs(1));
 
   LoadFromJSONString(service.get(), GetTestJson({GetIncompleteSuggestion()}));
-  EXPECT_EQ("Invalid / empty list.", suggestions_fetcher()->last_status());
+  EXPECT_EQ("Invalid / empty list.",
+            suggestions_fetcher()->GetLastStatusForDebugging());
   // This should not have changed the existing suggestions.
   EXPECT_THAT(service->GetSuggestionsForTesting(articles_category()),
               SizeIs(1));

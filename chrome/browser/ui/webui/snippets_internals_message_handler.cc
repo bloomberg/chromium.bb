@@ -382,10 +382,10 @@ void SnippetsInternalsMessageHandler::SendAllContent() {
   if (remote_suggestions_provider_) {
     const ntp_snippets::RemoteSuggestionsFetcher* fetcher =
         remote_suggestions_provider_->suggestions_fetcher_for_debugging();
-    SendString("switch-fetch-url", fetcher->fetch_url().spec());
+    SendString("switch-fetch-url", fetcher->GetFetchUrlForDebugging().spec());
     web_ui()->CallJavascriptFunctionUnsafe(
         "chrome.SnippetsInternals.receiveJson",
-        base::Value(fetcher->last_json()));
+        base::Value(fetcher->GetLastJsonForDebugging()));
   }
 
   std::set<variations::VariationID> ids = SnippetsExperiments();
@@ -482,7 +482,7 @@ void SnippetsInternalsMessageHandler::SendContentSuggestions() {
   if (remote_suggestions_provider_) {
     const std::string& status =
         remote_suggestions_provider_->suggestions_fetcher_for_debugging()
-            ->last_status();
+            ->GetLastStatusForDebugging();
     if (!status.empty()) {
       SendString("remote-status", "Finished: " + status);
     }

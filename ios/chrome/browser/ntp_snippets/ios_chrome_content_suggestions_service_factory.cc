@@ -30,7 +30,7 @@
 #include "components/ntp_snippets/reading_list/reading_list_suggestions_provider.h"
 #include "components/ntp_snippets/remote/persistent_scheduler.h"
 #include "components/ntp_snippets/remote/remote_suggestions_database.h"
-#include "components/ntp_snippets/remote/remote_suggestions_fetcher.h"
+#include "components/ntp_snippets/remote/remote_suggestions_fetcher_impl.h"
 #include "components/ntp_snippets/remote/remote_suggestions_provider_impl.h"
 #include "components/ntp_snippets/remote/remote_suggestions_scheduler_impl.h"
 #include "components/ntp_snippets/remote/remote_suggestions_status_service.h"
@@ -58,7 +58,7 @@ using ntp_snippets::ContentSuggestionsService;
 using ntp_snippets::GetFetchEndpoint;
 using ntp_snippets::PersistentScheduler;
 using ntp_snippets::RemoteSuggestionsDatabase;
-using ntp_snippets::RemoteSuggestionsFetcher;
+using ntp_snippets::RemoteSuggestionsFetcherImpl;
 using ntp_snippets::RemoteSuggestionsProviderImpl;
 using ntp_snippets::RemoteSuggestionsSchedulerImpl;
 using ntp_snippets::RemoteSuggestionsStatusService;
@@ -179,7 +179,7 @@ IOSChromeContentSuggestionsServiceFactory::BuildServiceInstanceFor(
       api_key = is_stable_channel ? google_apis::GetAPIKey()
                                   : google_apis::GetNonStableAPIKey();
     }
-    auto suggestions_fetcher = base::MakeUnique<RemoteSuggestionsFetcher>(
+    auto suggestions_fetcher = base::MakeUnique<RemoteSuggestionsFetcherImpl>(
         signin_manager, token_service, request_context, prefs, nullptr,
         base::Bind(&ParseJson), GetFetchEndpoint(GetChannel()), api_key,
         user_classifier_raw);
