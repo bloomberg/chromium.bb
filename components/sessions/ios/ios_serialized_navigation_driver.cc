@@ -10,13 +10,6 @@
 
 namespace sessions {
 
-namespace {
-const int kObsoleteReferrerPolicyAlways = 0;
-const int kObsoleteReferrerPolicyDefault = 1;
-const int kObsoleteReferrerPolicyNever = 2;
-const int kObsoleteReferrerPolicyOrigin = 3;
-}  // namespace
-
 // static
 SerializedNavigationDriver* SerializedNavigationDriver::Get() {
   return IOSSerializedNavigationDriver::GetInstance();
@@ -38,45 +31,6 @@ IOSSerializedNavigationDriver::~IOSSerializedNavigationDriver() {
 
 int IOSSerializedNavigationDriver::GetDefaultReferrerPolicy() const {
   return web::ReferrerPolicyDefault;
-}
-
-bool IOSSerializedNavigationDriver::MapReferrerPolicyToOldValues(
-    int referrer_policy,
-    int* mapped_referrer_policy) const {
-  switch (referrer_policy) {
-    case web::ReferrerPolicyAlways:
-    case web::ReferrerPolicyDefault:
-      // "always" and "default" are the same value in all versions.
-      *mapped_referrer_policy = referrer_policy;
-      return true;
-
-    case web::ReferrerPolicyOrigin:
-      // "origin" exists in the old encoding.
-      *mapped_referrer_policy = kObsoleteReferrerPolicyOrigin;
-      return true;
-
-    default:
-      // Everything else is mapped to never.
-      *mapped_referrer_policy = kObsoleteReferrerPolicyNever;
-      return false;
-  }
-}
-
-bool IOSSerializedNavigationDriver::MapReferrerPolicyToNewValues(
-    int referrer_policy,
-    int* mapped_referrer_policy) const {
-  switch (referrer_policy) {
-    case kObsoleteReferrerPolicyAlways:
-    case kObsoleteReferrerPolicyDefault:
-      // "always" and "default" are the same value in all versions.
-      *mapped_referrer_policy = referrer_policy;
-      return true;
-
-    default:
-      // Since we don't know what encoding was used, we map the rest to "never".
-      *mapped_referrer_policy = web::ReferrerPolicyNever;
-      return false;
-  }
 }
 
 std::string
