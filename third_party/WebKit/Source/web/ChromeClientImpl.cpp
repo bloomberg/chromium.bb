@@ -66,18 +66,6 @@
 #include "core/page/Page.h"
 #include "core/page/PopupOpeningObserver.h"
 #include "modules/accessibility/AXObjectImpl.h"
-#include "modules/audio_output_devices/AudioOutputDeviceClient.h"
-#include "modules/audio_output_devices/AudioOutputDeviceClientImpl.h"
-#include "modules/filesystem/LocalFileSystemClient.h"
-#include "modules/indexeddb/IndexedDBClientImpl.h"
-#include "modules/installedapp/InstalledAppController.h"
-#include "modules/mediastream/UserMediaController.h"
-#include "modules/navigatorcontentutils/NavigatorContentUtils.h"
-#include "modules/navigatorcontentutils/NavigatorContentUtilsClientImpl.h"
-#include "modules/presentation/PresentationController.h"
-#include "modules/push_messaging/PushController.h"
-#include "modules/screen_orientation/ScreenOrientationControllerImpl.h"
-#include "modules/vr/VRController.h"
 #include "platform/Cursor.h"
 #include "platform/FileChooser.h"
 #include "platform/Histogram.h"
@@ -1133,30 +1121,6 @@ std::unique_ptr<WebFrameScheduler> ChromeClientImpl::CreateFrameScheduler(
 
 double ChromeClientImpl::LastFrameTimeMonotonic() const {
   return web_view_->LastFrameTimeMonotonic();
-}
-
-void ChromeClientImpl::InstallSupplements(LocalFrame& frame) {
-  WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(&frame);
-  WebFrameClient* client = web_frame->Client();
-  DCHECK(client);
-  ProvidePushControllerTo(frame, client->PushClient());
-  ProvideUserMediaTo(frame,
-                     UserMediaClientImpl::Create(client->UserMediaClient()));
-  ProvideIndexedDBClientTo(frame, IndexedDBClientImpl::Create(frame));
-  ProvideLocalFileSystemTo(frame, LocalFileSystemClient::Create());
-  NavigatorContentUtils::ProvideTo(
-      *frame.DomWindow()->navigator(),
-      NavigatorContentUtilsClientImpl::Create(web_frame));
-
-  ScreenOrientationControllerImpl::ProvideTo(
-      frame, client->GetWebScreenOrientationClient());
-  if (RuntimeEnabledFeatures::PresentationEnabled())
-    PresentationController::ProvideTo(frame, client->PresentationClient());
-  if (RuntimeEnabledFeatures::AudioOutputDevicesEnabled()) {
-    ProvideAudioOutputDeviceClientTo(frame,
-                                     new AudioOutputDeviceClientImpl(frame));
-  }
-  InstalledAppController::ProvideTo(frame, client->GetRelatedAppsFetcher());
 }
 
 }  // namespace blink

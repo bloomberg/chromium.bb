@@ -225,8 +225,6 @@ class WEB_EXPORT ChromeClientImpl final : public ChromeClient {
   void UnregisterPopupOpeningObserver(PopupOpeningObserver*) override;
   void NotifyPopupOpeningObservers() const override;
 
-  void InstallSupplements(LocalFrame&) override;
-
   WebLayerTreeView* GetWebLayerTreeView(LocalFrame*) override;
 
   WebLocalFrameBase* GetWebLocalFrameBase(LocalFrame*) override;
