@@ -17,8 +17,7 @@ from infra_libs.ts_mon.common import interface
 from infra_libs.ts_mon.common import monitors
 from infra_libs.ts_mon.common import pb_to_popo
 from infra_libs.ts_mon.common import targets
-from infra_libs.ts_mon.protos.current import metrics_pb2
-from infra_libs.ts_mon.protos.new import metrics_pb2 as new_metrics_pb2
+from infra_libs.ts_mon.protos import metrics_pb2
 import infra_libs
 
 
@@ -26,19 +25,18 @@ class MonitorTest(unittest.TestCase):
 
   def test_send(self):
     m = monitors.Monitor()
-    metric1 = metrics_pb2.MetricsData(name='m1')
+    metric1 = metrics_pb2.MetricsPayload()
     with self.assertRaises(NotImplementedError):
       m.send(metric1)
+
 
 class HttpsMonitorTest(unittest.TestCase):
 
   def setUp(self):
     interface.state.reset_for_unittest()
-    interface.state.use_new_proto = False
 
   def message(self, pb):
-    pb = monitors.Monitor._wrap_proto(pb)
-    return json.dumps({'resource': pb_to_popo.convert(pb) })
+    return json.dumps({'payload': pb_to_popo.convert(pb)})
 
   def _test_send(self, http):
     mon = monitors.HttpsMonitor('endpoint',
@@ -46,20 +44,12 @@ class HttpsMonitorTest(unittest.TestCase):
     resp = mock.MagicMock(spec=httplib2.Response, status=200)
     mon._http.request = mock.MagicMock(return_value=[resp, ""])
 
-    metric1 = metrics_pb2.MetricsData(name='m1')
-    mon.send(metric1)
-    metric2 = metrics_pb2.MetricsData(name='m2')
-    mon.send([metric1, metric2])
-    collection = metrics_pb2.MetricsCollection(data=[metric1, metric2])
-    mon.send(collection)
+    payload = metrics_pb2.MetricsPayload()
+    payload.metrics_collection.add().metrics_data_set.add().metric_name = 'a'
+    mon.send(payload)
 
     mon._http.request.assert_has_calls([
-      mock.call('endpoint', method='POST', body=self.message(metric1),
-                headers={'Content-Type': 'application/json'}),
-      mock.call('endpoint', method='POST',
-                body=self.message([metric1, metric2]),
-                headers={'Content-Type': 'application/json'}),
-      mock.call('endpoint', method='POST', body=self.message(collection),
+      mock.call('endpoint', method='POST', body=self.message(payload),
                 headers={'Content-Type': 'application/json'}),
     ])
 
@@ -80,7 +70,8 @@ class HttpsMonitorTest(unittest.TestCase):
     resp = mock.MagicMock(spec=httplib2.Response, status=400)
     mon._http.request = mock.MagicMock(return_value=[resp, ""])
 
-    metric1 = metrics_pb2.MetricsData(name='m1')
+    metric1 = metrics_pb2.MetricsPayload()
+    metric1.metrics_collection.add().metrics_data_set.add().metric_name = 'a'
     mon.send(metric1)
 
     mon._http.request.assert_called_once_with(
@@ -96,7 +87,8 @@ class HttpsMonitorTest(unittest.TestCase):
         monitors.CredentialFactory.from_string('/path/to/creds.p8.json'))
     mon._http.request = mock.MagicMock(side_effect=ValueError())
 
-    metric1 = metrics_pb2.MetricsData(name='m1')
+    metric1 = metrics_pb2.MetricsPayload()
+    metric1.metrics_collection.add().metrics_data_set.add().metric_name = 'a'
     mon.send(metric1)
 
     mon._http.request.assert_called_once_with(
@@ -105,198 +97,6 @@ class HttpsMonitorTest(unittest.TestCase):
         body=self.message(metric1),
         headers={'Content-Type': 'application/json'})
 
-  def test_send_new(self):
-    interface.state.use_new_proto = True
-    mon = monitors.HttpsMonitor('endpoint',
-        monitors.CredentialFactory.from_string(':gce'), http=httplib2.Http())
-    resp = mock.MagicMock(spec=httplib2.Response, status=200)
-    mon._http.request = mock.MagicMock(return_value=[resp, ""])
-
-    payload = new_metrics_pb2.MetricsPayload()
-    mon.send(payload)
-
-    mon._http.request.assert_has_calls([
-      mock.call('endpoint', method='POST',
-                body=json.dumps({'payload': pb_to_popo.convert(payload)}),
-                headers={'Content-Type': 'application/json'}),
-    ])
-
-
-class PubSubMonitorTest(unittest.TestCase):
-
-  def setUp(self):
-    super(PubSubMonitorTest, self).setUp()
-    interface.state.target = targets.TaskTarget(
-        'test_service', 'test_job', 'test_region', 'test_host')
-
-  @mock.patch('infra_libs.httplib2_utils.InstrumentedHttp', autospec=True)
-  @mock.patch('infra_libs.ts_mon.common.monitors.discovery', autospec=True)
-  @mock.patch('infra_libs.ts_mon.common.monitors.GoogleCredentials',
-              autospec=True)
-  def test_init_service_account(self, gc, discovery, instrumented_http):
-    m_open = mock.mock_open(read_data='{"type": "service_account"}')
-    creds = gc.from_stream.return_value
-    scoped_creds = creds.create_scoped.return_value
-    http_mock = instrumented_http.return_value
-    metric1 = metrics_pb2.MetricsData(name='m1')
-    with mock.patch('infra_libs.ts_mon.common.monitors.open', m_open,
-                    create=True):
-      mon = monitors.PubSubMonitor(
-          monitors.CredentialFactory.from_string('/path/to/creds.p8.json'),
-          'myproject', 'mytopic')
-      mon.send(metric1)
-
-    m_open.assert_called_once_with('/path/to/creds.p8.json', 'r')
-    creds.create_scoped.assert_called_once_with(monitors.PubSubMonitor._SCOPES)
-    scoped_creds.authorize.assert_called_once_with(http_mock)
-    discovery.build.assert_called_once_with('pubsub', 'v1', http=http_mock)
-    self.assertEquals(mon._topic, 'projects/myproject/topics/mytopic')
-
-  @mock.patch('infra_libs.httplib2_utils.InstrumentedHttp', autospec=True)
-  @mock.patch('infra_libs.ts_mon.common.monitors.discovery', autospec=True)
-  @mock.patch('infra_libs.ts_mon.common.monitors.gce.AppAssertionCredentials',
-              autospec=True)
-  def test_init_gce_credential(self, aac, discovery, instrumented_http):
-    creds = aac.return_value
-    http_mock = instrumented_http.return_value
-    metric1 = metrics_pb2.MetricsData(name='m1')
-    mon = monitors.PubSubMonitor(
-        monitors.CredentialFactory.from_string(':gce'), 'myproject', 'mytopic')
-    mon.send(metric1)
-
-    aac.assert_called_once_with(monitors.PubSubMonitor._SCOPES)
-    creds.authorize.assert_called_once_with(http_mock)
-    discovery.build.assert_called_once_with('pubsub', 'v1', http=http_mock)
-    self.assertEquals(mon._topic, 'projects/myproject/topics/mytopic')
-
-  @mock.patch('infra_libs.httplib2_utils.InstrumentedHttp', autospec=True)
-  @mock.patch('infra_libs.ts_mon.common.monitors.discovery', autospec=True)
-  @mock.patch('infra_libs.ts_mon.common.monitors.Storage', autospec=True)
-  def test_init_storage(self, storage, discovery, instrumented_http):
-    storage_inst = mock.Mock()
-    storage.return_value = storage_inst
-    creds = storage_inst.get.return_value
-
-    m_open = mock.mock_open(read_data='{}')
-    http_mock = instrumented_http.return_value
-    metric1 = metrics_pb2.MetricsData(name='m1')
-    with mock.patch('infra_libs.ts_mon.common.monitors.open', m_open,
-                    create=True):
-      mon = monitors.PubSubMonitor(
-          monitors.CredentialFactory.from_string('/path/to/creds.p8.json'),
-          'myproject', 'mytopic')
-      mon.send(metric1)
-
-    m_open.assert_called_once_with('/path/to/creds.p8.json', 'r')
-    storage_inst.get.assert_called_once_with()
-    creds.authorize.assert_called_once_with(http_mock)
-    discovery.build.assert_called_once_with('pubsub', 'v1', http=http_mock)
-    self.assertEquals(mon._topic, 'projects/myproject/topics/mytopic')
-
-  @mock.patch('infra_libs.ts_mon.common.monitors.CredentialFactory.'
-              'from_string')
-  @mock.patch('googleapiclient.discovery.build', autospec=True)
-  def test_send(self, _discovery, _load_creds):
-    mon = monitors.PubSubMonitor(
-        monitors.CredentialFactory.from_string('/path/to/creds.p8.json'),
-        'myproject', 'mytopic')
-    mon._api = mock.MagicMock()
-    topic = 'projects/myproject/topics/mytopic'
-
-    metric1 = metrics_pb2.MetricsData(name='m1')
-    mon.send(metric1)
-    metric2 = metrics_pb2.MetricsData(name='m2')
-    mon.send([metric1, metric2])
-    collection = metrics_pb2.MetricsCollection(data=[metric1, metric2])
-    mon.send(collection)
-
-    def message(pb):
-      pb = monitors.Monitor._wrap_proto(pb)
-      return {'messages': [{'data': base64.b64encode(pb.SerializeToString())}]}
-    publish = mon._api.projects.return_value.topics.return_value.publish
-    publish.assert_has_calls([
-        mock.call(topic=topic, body=message(metric1)),
-        mock.call().execute(num_retries=5),
-        mock.call(topic=topic, body=message([metric1, metric2])),
-        mock.call().execute(num_retries=5),
-        mock.call(topic=topic, body=message(collection)),
-        mock.call().execute(num_retries=5),
-        ])
-
-  @mock.patch('infra_libs.ts_mon.common.monitors.CredentialFactory.'
-              'from_string')
-  @mock.patch('googleapiclient.discovery.build', autospec=True)
-  def test_send_uninitialized(self, discovery, _load_creds):
-    """Test initialization retry logic, and also un-instrumented http path."""
-    discovery.side_effect = EnvironmentError()  # Fail initialization.
-    mon = monitors.PubSubMonitor(
-        monitors.CredentialFactory.from_string('/path/to/creds.p8.json'),
-        'myproject', 'mytopic', use_instrumented_http=False)
-
-    metric1 = metrics_pb2.MetricsData(name='m1')
-    mon.send(metric1)
-    self.assertIsNone(mon._api)
-
-     # Another retry: initialization succeeds.
-    discovery.side_effect = None
-    mon.send(metric1)
-
-    def message(pb):
-      pb = monitors.Monitor._wrap_proto(pb)
-      return {'messages': [{'data': base64.b64encode(pb.SerializeToString())}]}
-
-    topic = 'projects/myproject/topics/mytopic'
-
-    publish = mon._api.projects.return_value.topics.return_value.publish
-    publish.assert_has_calls([
-        mock.call(topic=topic, body=message(metric1)),
-        mock.call().execute(num_retries=5),
-    ])
-
-  @mock.patch('infra_libs.ts_mon.common.monitors.CredentialFactory.'
-              'from_string')
-  @mock.patch('googleapiclient.discovery.build', autospec=True)
-  def test_send_fails(self, _discovery, _load_creds):
-    # Test for an occasional flake of .publish().execute().
-    mon = monitors.PubSubMonitor(
-        monitors.CredentialFactory.from_string('/path/to/creds.p8.json'),
-        'myproject', 'mytopic')
-    mon._api = mock.MagicMock()
-    topic = 'projects/myproject/topics/mytopic'
-
-    metric1 = metrics_pb2.MetricsData(name='m1')
-    mon.send(metric1)
-
-    publish = mon._api.projects.return_value.topics.return_value.publish
-    publish.side_effect = ValueError()
-
-    metric2 = metrics_pb2.MetricsData(name='m2')
-    mon.send([metric1, metric2])
-    collection = metrics_pb2.MetricsCollection(data=[metric1, metric2])
-    publish.side_effect = errors.HttpError(
-        mock.Mock(status=404, reason='test'), '')
-    mon.send(collection)
-
-    # Test that all caught exceptions are specified without errors.
-    # When multiple exceptions are specified in the 'except' clause,
-    # they are evaluated lazily, and may contain syntax errors.
-    # Throwing an uncaught exception forces all exception specs to be
-    # evaluated, catching more runtime errors.
-    publish.side_effect = Exception('uncaught')
-    with self.assertRaises(Exception):
-      mon.send(collection)
-
-    def message(pb):
-      pb = monitors.Monitor._wrap_proto(pb)
-      return {'messages': [{'data': base64.b64encode(pb.SerializeToString())}]}
-    publish.assert_has_calls([
-        mock.call(topic=topic, body=message(metric1)),
-        mock.call().execute(num_retries=5),
-        mock.call(topic=topic, body=message([metric1, metric2])),
-        mock.call(topic=topic, body=message(collection)),
-        ])
-
-
 
 class DebugMonitorTest(unittest.TestCase):
 
@@ -304,33 +104,31 @@ class DebugMonitorTest(unittest.TestCase):
     with infra_libs.temporary_directory() as temp_dir:
       filename = os.path.join(temp_dir, 'out')
       m = monitors.DebugMonitor(filename)
-      metric1 = metrics_pb2.MetricsData(name='m1')
-      m.send(metric1)
-      metric2 = metrics_pb2.MetricsData(name='m2')
-      m.send([metric1, metric2])
-      collection = metrics_pb2.MetricsCollection(data=[metric1, metric2])
-      m.send(collection)
+      payload = metrics_pb2.MetricsPayload()
+      payload.metrics_collection.add().metrics_data_set.add().metric_name = 'm1'
+      m.send(payload)
       with open(filename) as fh:
         output = fh.read()
-    self.assertEquals(output.count('data {\n  name: "m1"\n}'), 3)
-    self.assertEquals(output.count('data {\n  name: "m2"\n}'), 2)
+    self.assertIn('metrics_data_set {\n    metric_name: "m1"\n  }', output)
 
-  def test_send_log(self):
+  @mock.patch('logging.info')
+  def test_send_log(self, mock_logging_info):
     m = monitors.DebugMonitor()
-    metric1 = metrics_pb2.MetricsData(name='m1')
-    m.send(metric1)
-    metric2 = metrics_pb2.MetricsData(name='m2')
-    m.send([metric1, metric2])
-    collection = metrics_pb2.MetricsCollection(data=[metric1, metric2])
-    m.send(collection)
+    payload = metrics_pb2.MetricsPayload()
+    payload.metrics_collection.add().metrics_data_set.add().metric_name = 'm1'
+    m.send(payload)
+    self.assertEqual(1, mock_logging_info.call_count)
+    output = mock_logging_info.call_args[0][1]
+    self.assertIn('metrics_data_set {\n    metric_name: "m1"\n  }', output)
 
 
 class NullMonitorTest(unittest.TestCase):
 
   def test_send(self):
     m = monitors.NullMonitor()
-    metric1 = metrics_pb2.MetricsData(name='m1')
-    m.send(metric1)
+    payload = metrics_pb2.MetricsPayload()
+    payload.metrics_collection.add().metrics_data_set.add().metric_name = 'm1'
+    m.send(payload)
 
 
 class CredentialFactoryTest(unittest.TestCase):
@@ -357,3 +155,29 @@ class CredentialFactoryTest(unittest.TestCase):
         'test@example.com', ['foo'])
     self.assertEqual(mock_creds.return_value, creds)
 
+  @mock.patch('oauth2client.client.GoogleCredentials.from_stream')
+  def test_file_credentials_google(self, mock_from_stream):
+    with infra_libs.temporary_directory() as temp_dir:
+      path = os.path.join(temp_dir, 'foo')
+      with open(path, 'w') as fh:
+        json.dump({'type': 'blah'}, fh)
+
+      ret = monitors.FileCredentials(path).create(['bar'])
+
+      mock_from_stream.assert_called_once_with(path)
+      creds = mock_from_stream.return_value
+      creds.create_scoped.assert_called_once_with(['bar'])
+      self.assertEqual(ret, creds.create_scoped.return_value)
+
+  @mock.patch('infra_libs.ts_mon.common.monitors.Storage')
+  def test_file_credentials_non_google(self, mock_storage):
+    with infra_libs.temporary_directory() as temp_dir:
+      path = os.path.join(temp_dir, 'foo')
+      with open(path, 'w') as fh:
+        json.dump({}, fh)
+
+      ret = monitors.FileCredentials(path).create(['bar'])
+
+      mock_storage.assert_called_once_with(path)
+      mock_storage.return_value.get.assert_called_once_with()
+      self.assertEqual(ret, mock_storage.return_value.get.return_value)

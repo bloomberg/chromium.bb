@@ -8,36 +8,35 @@ from infra_libs.ts_mon.common import distribution
 
 
 class BucketerTestBase(unittest.TestCase):
-  def assertBucketCounts(self, b, expected_total):
+  def assertLowerBounds(self, b, expected_lower_bounds):
+    expected_total = len(expected_lower_bounds)
+
+    # Test the instance attributes in the Bucketer.
     self.assertEquals(expected_total - 2, b.num_finite_buckets)
     self.assertEquals(expected_total, b.total_buckets)
     self.assertEquals(0, b.underflow_bucket)
     self.assertEquals(expected_total - 1, b.overflow_bucket)
+    self.assertEquals(expected_lower_bounds, b._lower_bounds)
 
-  def assertBoundaries(self, b, expected_finite_upper_boundaries):
-    self.assertEquals(
-        b.num_finite_buckets, len(expected_finite_upper_boundaries))
+    # Test the bucket_boundaries and bucket_for_value methods.
+    for i, lower_bound in enumerate(expected_lower_bounds):
+      # This bucket's upper bound is the next bucket's lower bound, or Infinity
+      # if this is the last bucket.
+      try:
+        upper_bound = expected_lower_bounds[i + 1]
+      except IndexError:
+        upper_bound = float('Inf')
 
-    expected_boundaries = [(float('-Inf'), 0)]
-
-    previous = 0
-    for value in expected_finite_upper_boundaries:
-      expected_boundaries.append((previous, value))
-      previous = value
-
-    expected_boundaries.append((previous, float('Inf')))
-
-    self.assertEquals(expected_boundaries, list(b.all_bucket_boundaries()))
-    for i, expected in enumerate(expected_boundaries):
-      self.assertEquals(expected, b.bucket_boundaries(i))
-      self.assertEquals(i, b.bucket_for_value(expected[0]))
-      self.assertEquals(i, b.bucket_for_value(expected[0] + 0.5))
-      self.assertEquals(i, b.bucket_for_value(expected[1] - 0.5))
+      self.assertLess(lower_bound, upper_bound)
+      self.assertEquals((lower_bound, upper_bound), b.bucket_boundaries(i))
+      self.assertEquals(i, b.bucket_for_value(lower_bound))
+      self.assertEquals(i, b.bucket_for_value(lower_bound + 0.5))
+      self.assertEquals(i, b.bucket_for_value(upper_bound - 0.5))
 
     with self.assertRaises(IndexError):
       b.bucket_boundaries(-1)
     with self.assertRaises(IndexError):
-      b.bucket_boundaries(len(expected_boundaries))
+      b.bucket_boundaries(len(expected_lower_bounds))
 
 
 class FixedWidthBucketerTest(BucketerTestBase):
@@ -46,20 +45,27 @@ class FixedWidthBucketerTest(BucketerTestBase):
       distribution.FixedWidthBucketer(width=10, num_finite_buckets=-1)
 
   def test_negative_width(self):
-    with self.assertRaises(ValueError):
+    with self.assertRaises(AssertionError):
       distribution.FixedWidthBucketer(width=-1, num_finite_buckets=1)
 
   def test_zero_size(self):
     b = distribution.FixedWidthBucketer(width=10, num_finite_buckets=0)
-
-    self.assertBucketCounts(b, 2)
-    self.assertBoundaries(b, [])
+    self.assertLowerBounds(b, [float('-Inf'), 0])
 
   def test_one_size(self):
     b = distribution.FixedWidthBucketer(width=10, num_finite_buckets=1)
+    self.assertLowerBounds(b, [float('-Inf'), 0, 10])
 
-    self.assertBucketCounts(b, 3)
-    self.assertBoundaries(b, [10])
+  def test_bucket_for_value(self):
+    b = distribution.FixedWidthBucketer(width=10, num_finite_buckets=5)
+    self.assertEquals(0, b.bucket_for_value(float('-Inf')))
+    self.assertEquals(0, b.bucket_for_value(-100))
+    self.assertEquals(0, b.bucket_for_value(-1))
+    self.assertEquals(1, b.bucket_for_value(0))
+    self.assertEquals(5, b.bucket_for_value(45))
+    self.assertEquals(6, b.bucket_for_value(51))
+    self.assertEquals(6, b.bucket_for_value(100000))
+    self.assertEquals(6, b.bucket_for_value(float('Inf')))
 
 
 class GeometricBucketerTest(BucketerTestBase):
@@ -67,33 +73,50 @@ class GeometricBucketerTest(BucketerTestBase):
     with self.assertRaises(ValueError):
       distribution.GeometricBucketer(num_finite_buckets=-1)
 
-  def test_small_scale(self):
-    with self.assertRaises(ValueError):
+  def test_bad_growth_factors(self):
+    with self.assertRaises(AssertionError):
       distribution.GeometricBucketer(growth_factor=-1)
-    with self.assertRaises(ValueError):
+    with self.assertRaises(AssertionError):
       distribution.GeometricBucketer(growth_factor=0)
-    with self.assertRaises(ValueError):
+    with self.assertRaises(AssertionError):
       distribution.GeometricBucketer(growth_factor=1)
 
   def test_zero_size(self):
     b = distribution.GeometricBucketer(num_finite_buckets=0)
-
-    self.assertBucketCounts(b, 2)
-    self.assertBoundaries(b, [])
+    self.assertLowerBounds(b, [float('-Inf'), 1])
 
   def test_large_size(self):
     b = distribution.GeometricBucketer(growth_factor=4, num_finite_buckets=4)
+    self.assertLowerBounds(b, [float('-Inf'), 1, 4, 16, 64, 256])
 
-    self.assertBucketCounts(b, 6)
-    self.assertBoundaries(b, [1, 4, 16, 64])
+  def test_scale(self):
+    b = distribution.GeometricBucketer(growth_factor=4, num_finite_buckets=4,
+                                       scale=.1)
+    # bucket lower bounds will be approximately [float('-Inf'), .1, .4, 1.6,
+    # 6.4, 25.6], but to avoid floating point errors affecting test assert on
+    # bucket_for_value instead of using assertLowerBounds.
+    self.assertEquals(0, b.bucket_for_value(float('-Inf')))
+    self.assertEquals(0, b.bucket_for_value(.05))
+    self.assertEquals(1, b.bucket_for_value(.2))
+    self.assertEquals(5, b.bucket_for_value(float('Inf')))
+
+  def test_bucket_for_value(self):
+    b = distribution.GeometricBucketer(growth_factor=2, num_finite_buckets=5)
+    self.assertEquals(0, b.bucket_for_value(float('-Inf')))
+    self.assertEquals(0, b.bucket_for_value(-100))
+    self.assertEquals(0, b.bucket_for_value(-1))
+    self.assertEquals(0, b.bucket_for_value(0))
+    self.assertEquals(1, b.bucket_for_value(1))
+    self.assertEquals(5, b.bucket_for_value(31))
+    self.assertEquals(6, b.bucket_for_value(32))
+    self.assertEquals(6, b.bucket_for_value(100000))
+    self.assertEquals(6, b.bucket_for_value(float('Inf')))
 
 
 class CustomBucketerTest(BucketerTestBase):
   def test_boundaries(self):
-    b = distribution.Bucketer(width=10, growth_factor=2, num_finite_buckets=4)
-
-    self.assertBucketCounts(b, 6)
-    self.assertBoundaries(b, [11, 22, 34, 48])
+    with self.assertRaises(ValueError):
+      distribution._Bucketer(width=10, growth_factor=2, num_finite_buckets=4)
 
 
 class DistributionTest(unittest.TestCase):
@@ -109,13 +132,13 @@ class DistributionTest(unittest.TestCase):
 
     self.assertEqual(111, d.sum)
     self.assertEqual(3, d.count)
-    self.assertEqual({2: 1, 6: 1, 11: 1}, d.buckets)
+    self.assertEqual({1: 1, 5: 1, 10: 1}, d.buckets)
 
     d.add(50)
 
     self.assertEqual(161, d.sum)
     self.assertEqual(4, d.count)
-    self.assertEqual({2: 1, 6: 1, 10: 1, 11: 1}, d.buckets)
+    self.assertEqual({1: 1, 5: 1, 9: 1, 10: 1}, d.buckets)
 
   def test_add_on_bucket_boundary(self):
     d = distribution.Distribution(distribution.FixedWidthBucketer(width=10))

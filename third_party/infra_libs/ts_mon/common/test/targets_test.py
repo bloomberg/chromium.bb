@@ -5,27 +5,15 @@
 import unittest
 
 from infra_libs.ts_mon.common import targets
-from infra_libs.ts_mon.protos.current import metrics_pb2
-from infra_libs.ts_mon.protos.new import metrics_pb2 as new_metrics_pb2
+from infra_libs.ts_mon.protos import metrics_pb2
 
 
 class DeviceTargetTest(unittest.TestCase):
 
   def test_populate_target(self):
-    pb = metrics_pb2.MetricsData()
+    pb = metrics_pb2.MetricsCollection()
     t = targets.DeviceTarget('reg', 'role', 'net', 'host')
-    t._populate_target_pb(pb)
-    self.assertEquals(pb.network_device.metro, 'reg')
-    self.assertEquals(pb.network_device.role, 'role')
-    self.assertEquals(pb.network_device.hostgroup, 'net')
-    self.assertEquals(pb.network_device.hostname, 'host')
-    self.assertEquals(pb.network_device.realm, 'ACQ_CHROME')
-    self.assertEquals(pb.network_device.alertable, True)
-
-  def test_populate_target_new(self):
-    pb = new_metrics_pb2.MetricsCollection()
-    t = targets.DeviceTarget('reg', 'role', 'net', 'host')
-    t._populate_target_pb_new(pb)
+    t.populate_target_pb(pb)
     self.assertEquals(pb.network_device.metro, 'reg')
     self.assertEquals(pb.network_device.role, 'role')
     self.assertEquals(pb.network_device.hostgroup, 'net')
@@ -63,19 +51,9 @@ class DeviceTargetTest(unittest.TestCase):
 class TaskTargetTest(unittest.TestCase):
 
   def test_populate_target(self):
-    pb = metrics_pb2.MetricsData()
+    pb = metrics_pb2.MetricsCollection()
     t = targets.TaskTarget('serv', 'job', 'reg', 'host')
-    t._populate_target_pb(pb)
-    self.assertEquals(pb.task.service_name, 'serv')
-    self.assertEquals(pb.task.job_name, 'job')
-    self.assertEquals(pb.task.data_center, 'reg')
-    self.assertEquals(pb.task.host_name, 'host')
-    self.assertEquals(pb.task.task_num, 0)
-
-  def test_populate_target_new(self):
-    pb = new_metrics_pb2.MetricsCollection()
-    t = targets.TaskTarget('serv', 'job', 'reg', 'host')
-    t._populate_target_pb_new(pb)
+    t.populate_target_pb(pb)
     self.assertEquals(pb.task.service_name, 'serv')
     self.assertEquals(pb.task.job_name, 'job')
     self.assertEquals(pb.task.data_center, 'reg')

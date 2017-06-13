@@ -117,11 +117,18 @@ class MonitoringFailedToFlushAllMetricsError(MonitoringError):
             (self.error_count))
 
 
-class UnknownModificationTypeError(MonitoringError):
-  """Raised when using a Modification with an unknown type value."""
+class MetricDefinitionError(MonitoringError):
+  """Raised when a metric was defined incorrectly."""
 
-  def __init__(self, mod_type):
-    self.mod_type = mod_type
+
+class WrongFieldsError(MonitoringError):
+  """Raised when a metric is given different fields to its definition."""
+
+  def __init__(self, metric_name, got, expected):
+    self.metric_name = metric_name
+    self.got = got
+    self.expected = expected
 
   def __str__(self):
-    return 'Unknown modification type "%s"' % self.mod_type
+    return 'Metric "%s" is defined with %s fields but was given %s' % (
+        self.metric_name, self.expected, self.got)

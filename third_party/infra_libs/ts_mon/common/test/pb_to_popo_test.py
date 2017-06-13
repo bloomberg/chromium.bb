@@ -6,40 +6,31 @@ import unittest
 
 from infra_libs.ts_mon.common import monitors
 from infra_libs.ts_mon.common import pb_to_popo
-from infra_libs.ts_mon.protos.current import acquisition_network_device_pb2
-from infra_libs.ts_mon.protos.current import acquisition_task_pb2
-from infra_libs.ts_mon.protos.current import metrics_pb2
+from infra_libs.ts_mon.protos import metrics_pb2
 
 class PbToPopoTest(unittest.TestCase):
 
   def test_convert(self):
-    task = acquisition_task_pb2.Task(service_name='service')
-    network_device = acquisition_network_device_pb2.NetworkDevice(
-                         hostname='host', alertable=True)
-    metric1 = metrics_pb2.MetricsData(
-        name='m1', counter=200, task=task,
-        units=metrics_pb2.MetricsData.Units.Value('SECONDS'))
-    metric2 = metrics_pb2.MetricsData(name='m2', network_device=network_device,
-                                      cumulative_double_value=123.456)
-    collection = metrics_pb2.MetricsCollection(data=[metric1, metric2],
-                                               start_timestamp_us=12345)
+    data_set = metrics_pb2.MetricsDataSet()
+    data_set.metric_name = 'foo'
+    data = data_set.data.add()
+    data.bool_value = True
+    data = data_set.data.add()
+    data.bool_value = False
+    data = data_set.data.add()
+    data.int64_value = 200
+    data = data_set.data.add()
+    data.double_value = 123.456
 
-    popo = pb_to_popo.convert(collection)
+    popo = pb_to_popo.convert(data_set)
     expected = {
+      'metric_name': 'foo',
       'data': [
-        {
-          'name': 'm1',
-          'counter': 200L,
-          'task': { 'service_name': 'service' },
-          'units': 1
-        },
-        {
-          'name': 'm2',
-          'cumulative_double_value': 123.456,
-          'network_device': { 'hostname': 'host', 'alertable': True }
-        }
+        {'bool_value': True},
+        {'bool_value': False},
+        {'int64_value': 200L},
+        {'double_value': 123.456},
       ],
-      'start_timestamp_us': 12345L
     }
     self.assertDictEqual(expected, popo)
 

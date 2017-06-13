@@ -18,7 +18,6 @@ from infra_libs.ts_mon.common import interface
 from infra_libs.ts_mon.common import standard_metrics
 from infra_libs.ts_mon.common import monitors
 from infra_libs.ts_mon.common import targets
-from infra_libs.ts_mon.common.test import stubs
 import infra_libs
 
 
@@ -38,29 +37,6 @@ class GlobalsTest(auto_stub.TestCase):
     # and needs to be stopped before running any other tests.
     interface.close()
     super(GlobalsTest, self).tearDown()
-
-  @mock.patch('requests.get', autospec=True)
-  @mock.patch('socket.getfqdn', autospec=True)
-  def test_pubsub_monitor_args(self, fake_fqdn, fake_get):
-    fake_fqdn.return_value = 'slave1-a1.reg.tld'
-    fake_get.return_value.side_effect = requests.exceptions.ConnectionError
-    p = argparse.ArgumentParser()
-    config.add_argparse_options(p)
-    args = p.parse_args([
-        '--ts-mon-credentials', '/path/to/creds.p8.json',
-        '--ts-mon-endpoint', 'pubsub://invalid-project/invalid-topic'])
-
-    config.process_argparse_options(args)
-
-    self.assertIsInstance(interface.state.global_monitor,
-                          monitors.PubSubMonitor)
-
-    self.assertIsInstance(interface.state.target, targets.DeviceTarget)
-    self.assertEquals(interface.state.target.hostname, 'slave1-a1')
-    self.assertEquals(interface.state.target.region, 'reg')
-    self.assertEquals(args.ts_mon_flush, 'auto')
-    self.assertIsNotNone(interface.state.flush_thread)
-    self.assertTrue(standard_metrics.up.get())
 
   @mock.patch('requests.get', autospec=True)
   @mock.patch('socket.getfqdn', autospec=True)
@@ -159,37 +135,6 @@ class GlobalsTest(auto_stub.TestCase):
 
     config.process_argparse_options(args)
     self.assertIsNone(interface.state.flush_thread)
-
-  @mock.patch('infra_libs.ts_mon.common.monitors.PubSubMonitor', autospec=True)
-  def test_pubsub_args(self, fake_monitor):
-    singleton = mock.Mock()
-    fake_monitor.return_value = singleton
-    p = argparse.ArgumentParser()
-    config.add_argparse_options(p)
-    args = p.parse_args(['--ts-mon-credentials', '/path/to/creds.p8.json',
-                         '--ts-mon-endpoint', 'pubsub://mytopic/myproject'])
-    config.process_argparse_options(args)
-    fake_monitor.assert_called_once_with(
-        mock.ANY, 'mytopic', 'myproject',
-        ca_certs=None, use_instrumented_http=True)
-    cred_factory = fake_monitor.call_args[0][0]
-    self.assertIsInstance(cred_factory, monitors.FileCredentials)
-    self.assertEquals(cred_factory.path, '/path/to/creds.p8.json')
-    self.assertIs(interface.state.global_monitor, singleton)
-
-  @mock.patch('infra_libs.ts_mon.common.monitors.PubSubMonitor', autospec=True)
-  def test_pubsub_without_credentials(self, fake_monitor):
-    # safety net, not supposed to be called.
-    singleton = mock.Mock()
-    fake_monitor.return_value = singleton
-
-    p = argparse.ArgumentParser()
-    config.add_argparse_options(p)
-    args = p.parse_args(['--ts-mon-config-file',
-                         os.path.join(DATA_DIR, 'empty-config-file.json'),
-                         '--ts-mon-endpoint', 'pubsub://mytopic/myproject'])
-    config.process_argparse_options(args)
-    self.assertIsInstance(interface.state.global_monitor, monitors.NullMonitor)
 
   @mock.patch('infra_libs.ts_mon.common.monitors.DebugMonitor', auto_spec=True)
   def test_dryrun_args(self, fake_monitor):
@@ -369,23 +314,6 @@ class GlobalsTest(auto_stub.TestCase):
     r.status_code = 404
 
     self.assertEquals('golo', config._default_region('foo.golo'))
-
-  def test_use_new_proto_from_config(self):
-    self.mock(config, 'load_machine_config', lambda x: {
-        'use_new_proto': True})
-    p = argparse.ArgumentParser()
-    config.add_argparse_options(p)
-    args = p.parse_args([])
-    config.process_argparse_options(args)
-    self.assertEqual(interface.state.use_new_proto, True)
-
-  def test_use_new_proto_from_arg(self):
-    self.mock(config, 'load_machine_config', lambda x: {})
-    p = argparse.ArgumentParser()
-    config.add_argparse_options(p)
-    args = p.parse_args(['--ts-mon-use-new-proto'])
-    config.process_argparse_options(args)
-    self.assertEqual(interface.state.use_new_proto, True)
 
 
 class ConfigTest(unittest.TestCase):

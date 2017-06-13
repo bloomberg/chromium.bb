@@ -4,17 +4,19 @@
 
 import functools
 import operator
+import random
+import threading
 import time
 import unittest
 
 import mock
 
+from infra_libs.ts_mon.common import distribution
 from infra_libs.ts_mon.common import interface
 from infra_libs.ts_mon.common import errors
 from infra_libs.ts_mon.common import metric_store
 from infra_libs.ts_mon.common import metrics
 from infra_libs.ts_mon.common import targets
-from infra_libs.ts_mon.common.test import stubs
 
 
 class DefaultModifyFnTest(unittest.TestCase):
@@ -28,14 +30,6 @@ class DefaultModifyFnTest(unittest.TestCase):
     with self.assertRaises(errors.MonitoringDecreasingValueError) as cm:
       fn(2, -1)
     self.assertIn('"foo"', str(cm.exception))
-
-
-class MetricFieldsValuesTest(unittest.TestCase):
-  def test_iteritems(self):
-    mfv = metric_store.MetricFieldsValues()
-    fields = (('field', 'value'),)
-    mfv.set_value(fields, 84)
-    self.assertEqual([(fields, 84)], list(mfv.iteritems()))
 
 
 class MetricStoreTestBase(object):
@@ -65,7 +59,7 @@ class MetricStoreTestBase(object):
 
     self.store = self.state.store
 
-    self.metric = metrics.Metric('foo')
+    self.metric = metrics.Metric('foo', 'desc', None)
 
   def create_store(self, *args, **kwargs):
     kwargs['time_fn'] = self.mock_time
@@ -80,8 +74,8 @@ class MetricStoreTestBase(object):
     self.metric._start_time = None
     self.mock_time.return_value = 1234
 
-    self.store.set('foo', (('field', 'value'),), None, 42)
-    self.store.set('foo', (('field', 'value2'),), None, 43)
+    self.store.set('foo', ('value',), None, 42)
+    self.store.set('foo', ('value2',), None, 43)
 
     all_metrics = list(self.store.get_all())
     self.assertEqual(1, len(all_metrics))
@@ -91,8 +85,8 @@ class MetricStoreTestBase(object):
   def test_uses_start_time_from_metric(self):
     self.metric._start_time = 5678
 
-    self.store.set('foo', (('field', 'value'),), None, 42)
-    self.store.set('foo', (('field', 'value2'),), None, 43)
+    self.store.set('foo', ('value',), None, 42)
+    self.store.set('foo', ('value2',), None, 43)
 
     all_metrics = list(self.store.get_all())
     self.assertEqual(1, len(all_metrics))
@@ -100,9 +94,9 @@ class MetricStoreTestBase(object):
     self.assertEqual(5678, all_metrics[0][2])
 
   def test_get(self):
-    fields1 = (('field', 'value'),)
-    fields2 = (('field', 'value2'),)
-    fields3 = (('field', 'value3'),)
+    fields1 = ('value',)
+    fields2 = ('value2',)
+    fields3 = ('value3',)
     target_fields1 = {'region': 'rrr'}
     target_fields2 = {'region': 'rrr', 'hostname': 'hhh'}
 
@@ -124,8 +118,8 @@ class MetricStoreTestBase(object):
     self.assertIsNone(self.store.get('bar', (), None))
 
   def test_iter_field_values(self):
-    fields1 = (('field', 'value'),)
-    fields2 = (('field', 'value2'),)
+    fields1 = ('value',)
+    fields2 = ('value2',)
     target_fields1 = {'region': 'rrr'}
 
     self.store.set('foo', fields1, None, 42)
@@ -134,26 +128,26 @@ class MetricStoreTestBase(object):
 
     field_values = list(self.store.iter_field_values('foo'))
     self.assertEquals([
-        ((('field', 'value'),), 42),
-        ((('field', 'value2'),), 43),
-        ((('field', 'value2'),), 44),
+        (('value',), 42),
+        (('value2',), 43),
+        (('value2',), 44),
     ], sorted(field_values))
 
   def test_set_enforce_ge(self):
-    self.store.set('foo', (('field', 'value'),), None, 42, enforce_ge=True)
-    self.store.set('foo', (('field', 'value'),), None, 43, enforce_ge=True)
+    self.store.set('foo', ('value',), None, 42, enforce_ge=True)
+    self.store.set('foo', ('value',), None, 43, enforce_ge=True)
 
     with self.assertRaises(errors.MonitoringDecreasingValueError):
-      self.store.set('foo', (('field', 'value'),), None, 42, enforce_ge=True)
+      self.store.set('foo', ('value',), None, 42, enforce_ge=True)
 
   def test_incr(self):
-    self.store.set('foo', (('field', 'value'),), None, 42)
-    self.store.incr('foo', (('field', 'value'),), None, 4)
+    self.store.set('foo', ('value',), None, 42)
+    self.store.incr('foo', ('value',), None, 4)
 
-    self.assertEquals(46, self.store.get('foo', (('field', 'value'),), None))
+    self.assertEquals(46, self.store.get('foo', ('value',), None))
 
     with self.assertRaises(errors.MonitoringDecreasingValueError):
-      self.store.incr('foo', (('field', 'value'),), None, -1)
+      self.store.incr('foo', ('value',), None, -1)
 
   def test_incr_modify_fn(self):
     def spec_fn(n, i): # pragma: no cover
@@ -161,24 +155,24 @@ class MetricStoreTestBase(object):
     modify_fn = mock.create_autospec(spec_fn, spec_set=True)
     modify_fn.return_value = 7
 
-    self.store.set('foo', (('field', 'value'),), None, 42)
-    self.store.incr('foo', (('field', 'value'),), None, 3, modify_fn=modify_fn)
+    self.store.set('foo', ('value',), None, 42)
+    self.store.incr('foo', ('value',), None, 3, modify_fn=modify_fn)
 
-    self.assertEquals(7, self.store.get('foo', (('field', 'value'),), None))
+    self.assertEquals(7, self.store.get('foo', ('value',), None))
     modify_fn.assert_called_once_with(42, 3)
 
   def test_reset_for_unittest(self):
-    self.store.set('foo', (('field', 'value'),), None, 42)
+    self.store.set('foo', ('value',), None, 42)
     self.store.reset_for_unittest()
-    self.assertIsNone(self.store.get('foo', (('field', 'value'),), None))
+    self.assertIsNone(self.store.get('foo', ('value',), None))
 
   def test_reset_for_unittest_name(self):
-    self.store.set('foo', (('field', 'value'),), None, 42)
+    self.store.set('foo', ('value',), None, 42)
     self.store.reset_for_unittest(name='bar')
-    self.assertEquals(42, self.store.get('foo', (('field', 'value'),), None))
+    self.assertEquals(42, self.store.get('foo', ('value',), None))
 
     self.store.reset_for_unittest(name='foo')
-    self.assertIsNone(self.store.get('foo', (('field', 'value'),), None))
+    self.assertIsNone(self.store.get('foo', ('value',), None))
 
   def test_unregister_metric(self):
     fields = (('field', 'value'),)
@@ -187,6 +181,68 @@ class MetricStoreTestBase(object):
     all_metrics = list(self.store.get_all())
     self.assertEqual(1, len(all_metrics))
     self.assertEqual('foo', all_metrics[0][1].name)
+
+  def test_copies_distributions(self):
+    def modify_fn(dist, delta):
+      # This is the same as the modify_fn in _DistributionMetricBase's add().
+      if dist == 0:
+        dist = distribution.Distribution(distribution.GeometricBucketer())
+      dist.add(delta)
+      return dist
+
+    # Increment the metric once to create it in the store.
+    self.store.incr('foo', (), None, 42, modify_fn)
+
+    # Get its value from get_all.  We should get a copy of the distribution.
+    dist = list(list(self.store.get_all())[0][4].iteritems())[0][1]
+    self.assertEqual(1, dist.count)
+    self.assertEqual(42, dist.sum)
+
+    # Increment the metric again.
+    self.store.incr('foo', (), None, 42, modify_fn)
+
+    # The object we got should not change.
+    self.assertEqual(1, dist.count)
+    self.assertEqual(42, dist.sum)
+
+  def test_get_all_thread_safe(self):
+    """Dumb test to check that setting metrics while calling get_all is ok."""
+
+    start = threading.Event()
+    stop = threading.Event()
+
+    def modify_worker():
+      start.wait()
+      while not stop.is_set():
+        self.store.set('foo', (('field', random.random()),), None, 1)
+
+    successful_workers = []
+    def get_all_worker():
+      start.wait()
+      while not stop.is_set():
+        for _, _, _, _, fields_values in self.store.get_all():
+          list(fields_values.iteritems())
+      successful_workers.append(True)
+
+    # Create 10 modify threads and 10 get_all threads.
+    threads = (
+        [threading.Thread(target=modify_worker) for _ in xrange(10)] +
+        [threading.Thread(target=get_all_worker) for _ in xrange(10)])
+
+    # Start all the threads at once.
+    for thread in threads:
+      thread.start()
+    start.set()
+
+    # Wait 2 seconds then stop them all.
+    time.sleep(2)
+    stop.set()
+    for thread in threads:
+      thread.join()
+
+    # All the threads should've been successful and not raised an exception in
+    # get_all.
+    self.assertEqual([True] * 10, successful_workers)
 
 
 class InProcessMetricStoreTest(MetricStoreTestBase, unittest.TestCase):
