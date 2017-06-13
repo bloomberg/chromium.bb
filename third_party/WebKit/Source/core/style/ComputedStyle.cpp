@@ -1423,6 +1423,36 @@ const AtomicString& ComputedStyle::HyphenString() const {
              : hyphen_minus_string;
 }
 
+ETextAlign ComputedStyle::GetTextAlign(bool is_last_line) const {
+  if (!is_last_line)
+    return GetTextAlign();
+
+  // When this is the last line of a block, or the line ends with a forced line
+  // break.
+  // https://drafts.csswg.org/css-text-3/#propdef-text-align-last
+  switch (TextAlignLast()) {
+    case ETextAlignLast::kStart:
+      return ETextAlign::kStart;
+    case ETextAlignLast::kEnd:
+      return ETextAlign::kEnd;
+    case ETextAlignLast::kLeft:
+      return ETextAlign::kLeft;
+    case ETextAlignLast::kRight:
+      return ETextAlign::kRight;
+    case ETextAlignLast::kCenter:
+      return ETextAlign::kCenter;
+    case ETextAlignLast::kJustify:
+      return ETextAlign::kJustify;
+    case ETextAlignLast::kAuto:
+      ETextAlign text_align = GetTextAlign();
+      if (text_align == ETextAlign::kJustify)
+        return ETextAlign::kStart;
+      return text_align;
+  }
+  NOTREACHED();
+  return GetTextAlign();
+}
+
 const AtomicString& ComputedStyle::TextEmphasisMarkString() const {
   switch (GetTextEmphasisMark()) {
     case TextEmphasisMark::kNone:

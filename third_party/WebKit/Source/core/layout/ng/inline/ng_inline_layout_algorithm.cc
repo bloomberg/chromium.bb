@@ -46,7 +46,6 @@ NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
     : NGLayoutAlgorithm(inline_node, space, break_token),
       is_horizontal_writing_mode_(
           blink::IsHorizontalWritingMode(space->WritingMode())),
-      disallow_first_line_rules_(false),
       space_builder_(space) {
   container_builder_.MutableUnpositionedFloats() = space->UnpositionedFloats();
 
@@ -68,31 +67,7 @@ NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
   border_and_padding_ = ComputeBorders(ConstraintSpace(), Style()) +
                         ComputePadding(ConstraintSpace(), Style());
 
-  if (break_token) {
-    // If a break_token is given, we're re-starting layout for 2nd or later
-    // lines, and that the first line we create should not use the first line
-    // rules.
-    DCHECK(!break_token->IsFinished());
-    DCHECK(break_token->TextOffset() || break_token->ItemIndex());
-    disallow_first_line_rules_ = true;
-  } else {
-    auto& engine = Node().GetLayoutObject()->GetDocument().GetStyleEngine();
-    disallow_first_line_rules_ = !engine.UsesFirstLineRules();
-  }
-
   FindNextLayoutOpportunity();
-}
-
-bool NGInlineLayoutAlgorithm::IsFirstLine() const {
-  return !disallow_first_line_rules_ && container_builder_.Children().IsEmpty();
-}
-
-const ComputedStyle& NGInlineLayoutAlgorithm::FirstLineStyle() const {
-  return Node().GetLayoutObject()->FirstLineStyleRef();
-}
-
-const ComputedStyle& NGInlineLayoutAlgorithm::LineStyle() const {
-  return IsFirstLine() ? FirstLineStyle() : Style();
 }
 
 LayoutUnit NGInlineLayoutAlgorithm::AvailableWidth() const {
@@ -109,12 +84,12 @@ LayoutUnit NGInlineLayoutAlgorithm::LogicalLeftOffset() const {
 }
 
 bool NGInlineLayoutAlgorithm::CreateLine(
-    NGInlineItemResults* item_results,
+    NGLineInfo* line_info,
     RefPtr<NGInlineBreakToken> break_token) {
   if (Node().IsBidiEnabled())
-    BidiReorder(item_results);
+    BidiReorder(&line_info->Results());
 
-  if (!PlaceItems(item_results, break_token))
+  if (!PlaceItems(line_info, break_token))
     return false;
 
   // Prepare for the next line.
@@ -212,11 +187,12 @@ void NGInlineLayoutAlgorithm::LayoutAndPositionFloat(
 }
 
 bool NGInlineLayoutAlgorithm::PlaceItems(
-    NGInlineItemResults* line_items,
+    NGLineInfo* line_info,
     RefPtr<NGInlineBreakToken> break_token) {
+  NGInlineItemResults* line_items = &line_info->Results();
   const Vector<NGInlineItem>& items = Node().Items();
 
-  const ComputedStyle& line_style = LineStyle();
+  const ComputedStyle& line_style = line_info->LineStyle();
   NGLineHeightMetrics line_metrics(line_style, baseline_type_);
   NGLineHeightMetrics line_metrics_with_leading = line_metrics;
   line_metrics_with_leading.AddLeading(line_style.ComputedLineHeightAsFixed());
@@ -227,7 +203,7 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
   // The baseline is adjusted after the height of the line box is computed.
   NGTextFragmentBuilder text_builder(Node());
   NGInlineBoxState* box =
-      box_states_.OnBeginPlaceItems(&LineStyle(), baseline_type_);
+      box_states_.OnBeginPlaceItems(&line_style, baseline_type_);
 
   // Place items from line-left to line-right along with the baseline.
   // Items are already bidi-reordered to the visual order.
@@ -268,8 +244,8 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
       box = box_states_.OnCloseTag(item, &line_box, box, baseline_type_);
       continue;
     } else if (item.Type() == NGInlineItem::kAtomicInline) {
-      box = PlaceAtomicInline(item, &item_result, position, &line_box,
-                              &text_builder);
+      box = PlaceAtomicInline(item, &item_result, line_info->IsFirstLine(),
+                              position, &line_box, &text_builder);
     } else if (item.Type() == NGInlineItem::kOutOfFlowPositioned) {
       // TODO(layout-dev): Report the correct static position for the out of
       // flow descendant. We can't do this here yet as it doesn't know the
@@ -322,7 +298,8 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
   LayoutUnit inline_size = position;
   NGLogicalOffset offset(LogicalLeftOffset(),
                          baseline - box_states_.LineBoxState().metrics.ascent);
-  ApplyTextAlign(&offset.inline_offset, inline_size,
+  ApplyTextAlign(line_style, line_style.GetTextAlign(line_info->IsLastLine()),
+                 &offset.inline_offset, inline_size,
                  current_opportunity_.size.inline_size);
 
   line_box.SetInlineSize(inline_size);
@@ -338,6 +315,7 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
 NGInlineBoxState* NGInlineLayoutAlgorithm::PlaceAtomicInline(
     const NGInlineItem& item,
     NGInlineItemResult* item_result,
+    bool is_first_line,
     LayoutUnit position,
     NGLineBoxFragmentBuilder* line_box,
     NGTextFragmentBuilder* text_builder) {
@@ -361,7 +339,7 @@ NGInlineBoxState* NGInlineLayoutAlgorithm::PlaceAtomicInline(
       IsHorizontalWritingMode() ? LineDirectionMode::kHorizontalLine
                                 : LineDirectionMode::kVerticalLine;
   LayoutUnit baseline_offset(layout_box->BaselinePosition(
-      baseline_type_, IsFirstLine(), line_direction_mode));
+      baseline_type_, is_first_line, line_direction_mode));
 
   NGLineHeightMetrics metrics(baseline_offset, block_size - baseline_offset);
   box->metrics.Unite(metrics);
@@ -383,11 +361,11 @@ NGInlineBoxState* NGInlineLayoutAlgorithm::PlaceAtomicInline(
   return box_states_.OnCloseTag(item, line_box, box, baseline_type_);
 }
 
-void NGInlineLayoutAlgorithm::ApplyTextAlign(LayoutUnit* line_left,
+void NGInlineLayoutAlgorithm::ApplyTextAlign(const ComputedStyle& line_style,
+                                             ETextAlign text_align,
+                                             LayoutUnit* line_left,
                                              LayoutUnit inline_size,
                                              LayoutUnit available_width) {
-  // TODO(kojii): Implement text-align-last.
-  ETextAlign text_align = LineStyle().GetTextAlign();
   switch (text_align) {
     case ETextAlign::kRight:
     case ETextAlign::kWebkitRight:
@@ -395,8 +373,7 @@ void NGInlineLayoutAlgorithm::ApplyTextAlign(LayoutUnit* line_left,
       // So even if text-align is right, if direction is LTR, wide lines should
       // overflow out of the right side of the block.
       // TODO(kojii): Investigate how to handle trailing spaces.
-      if (inline_size < available_width ||
-          !LineStyle().IsLeftToRightDirection())
+      if (inline_size < available_width || !line_style.IsLeftToRightDirection())
         *line_left += available_width - inline_size;
       break;
     default:
@@ -426,14 +403,9 @@ RefPtr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
   content_size_ = BreakToken() ? LayoutUnit() : border_and_padding_.block_start;
 
   NGLineBreaker line_breaker(Node(), constraint_space_, BreakToken());
-  NGInlineItemResults item_results;
-  while (true) {
-    line_breaker.NextLine(&item_results, this);
-    if (item_results.IsEmpty())
-      break;
-    CreateLine(&item_results, line_breaker.CreateBreakToken());
-    item_results.clear();
-  }
+  NGLineInfo line_info;
+  while (line_breaker.NextLine(&line_info, this))
+    CreateLine(&line_info, line_breaker.CreateBreakToken());
 
   // TODO(crbug.com/716930): Avoid calculating border/padding twice.
   if (!BreakToken())

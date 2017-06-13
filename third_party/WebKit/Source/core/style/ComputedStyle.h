@@ -2427,6 +2427,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   Hyphenation* GetHyphenation() const;
   const AtomicString& HyphenString() const;
 
+  // text-align utility functions.
+  using ComputedStyleBase::GetTextAlign;
+  ETextAlign GetTextAlign(bool is_last_line) const;
+
   // Line-height utility functions.
   const Length& SpecifiedLineHeight() const;
   int ComputedLineHeight() const;

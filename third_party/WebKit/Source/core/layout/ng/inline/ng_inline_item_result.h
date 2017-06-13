@@ -13,6 +13,8 @@
 
 namespace blink {
 
+class NGInlineNode;
+
 // The result of measuring NGInlineItem.
 //
 // This is a transient context object only while building line boxes.
@@ -60,6 +62,44 @@ struct CORE_EXPORT NGInlineItemResult {
 
 // Represents a set of NGInlineItemResult that form a line box.
 using NGInlineItemResults = Vector<NGInlineItemResult, 32>;
+
+// Represents a line to build.
+//
+// This is a transient context object only while building line boxes.
+//
+// NGLineBreaker produces, and NGInlineLayoutAlgorithm consumes.
+class CORE_EXPORT NGLineInfo {
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+
+ public:
+  NGLineInfo() {}
+  explicit NGLineInfo(size_t capacity) : results_(capacity) {}
+
+  // The style to use for the line.
+  const ComputedStyle& LineStyle() const {
+    DCHECK(line_style_);
+    return *line_style_;
+  }
+  void SetLineStyle(const NGInlineNode&, bool is_first_line);
+
+  // Use ::first-line style if true.
+  // https://drafts.csswg.org/css-pseudo/#selectordef-first-line
+  bool IsFirstLine() const { return is_first_line_; }
+
+  // The last line of a block, or the line ends with a forced line break.
+  // https://drafts.csswg.org/css-text-3/#propdef-text-align-last
+  bool IsLastLine() const { return is_last_line_; }
+  void SetIsLastLine(bool is_last_line) { is_last_line_ = is_last_line; }
+
+  // NGInlineItemResults for this line.
+  NGInlineItemResults& Results() { return results_; }
+
+ private:
+  const ComputedStyle* line_style_ = nullptr;
+  NGInlineItemResults results_;
+  bool is_first_line_ = false;
+  bool is_last_line_ = false;
+};
 
 }  // namespace blink
 

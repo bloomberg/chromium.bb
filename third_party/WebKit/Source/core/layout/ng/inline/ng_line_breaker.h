@@ -38,13 +38,13 @@ class CORE_EXPORT NGLineBreaker {
   // TODO(kojii): NGInlineLayoutAlgorithm is needed because floats require
   // not only constraint space but also container builder. Consider refactor
   // not to require algorithm.
-  void NextLine(NGInlineItemResults*, NGInlineLayoutAlgorithm*);
+  bool NextLine(NGLineInfo*, NGInlineLayoutAlgorithm*);
 
   // Create an NGInlineBreakToken for the last line returned by NextLine().
   RefPtr<NGInlineBreakToken> CreateBreakToken() const;
 
  private:
-  void BreakLine(NGInlineItemResults*, NGInlineLayoutAlgorithm*);
+  void BreakLine(NGLineInfo*, NGInlineLayoutAlgorithm*);
 
   enum class LineBreakState {
     // The current position is not breakable.
@@ -71,8 +71,8 @@ class CORE_EXPORT NGLineBreaker {
   void HandleOpenTag(const NGInlineItem&, NGInlineItemResult*);
   void HandleCloseTag(const NGInlineItem&, NGInlineItemResult*);
 
-  void HandleOverflow(NGInlineItemResults*);
-  void Rewind(NGInlineItemResults*, unsigned new_end);
+  void HandleOverflow(NGLineInfo*);
+  void Rewind(NGLineInfo*, unsigned new_end);
 
   void UpdateBreakIterator(const ComputedStyle&);
 

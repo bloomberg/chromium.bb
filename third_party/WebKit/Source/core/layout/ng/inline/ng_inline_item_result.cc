@@ -4,6 +4,8 @@
 
 #include "core/layout/ng/inline/ng_inline_item_result.h"
 
+#include "core/layout/ng/inline/ng_inline_node.h"
+
 namespace blink {
 
 NGInlineItemResult::NGInlineItemResult() {}
@@ -16,5 +18,17 @@ NGInlineItemResult::NGInlineItemResult(unsigned index,
       end_offset(end),
       no_break_opportunities_inside(false),
       prohibit_break_after(false) {}
+
+void NGLineInfo::SetLineStyle(const NGInlineNode& node, bool is_first_line) {
+  LayoutObject* layout_object = node.GetLayoutObject();
+  if (is_first_line &&
+      layout_object->GetDocument().GetStyleEngine().UsesFirstLineRules()) {
+    is_first_line_ = true;
+    line_style_ = layout_object->FirstLineStyle();
+    return;
+  }
+  is_first_line_ = false;
+  line_style_ = layout_object->Style();
+}
 
 }  // namespace blink

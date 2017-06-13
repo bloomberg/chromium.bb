@@ -359,21 +359,17 @@ static LayoutUnit ComputeContentSize(NGInlineNode node,
           .ToConstraintSpace(writing_mode);
   NGLineBreaker line_breaker(node, space.Get());
   NGInlineLayoutAlgorithm algorithm(node, space.Get());
-  NGInlineItemResults item_results;
+  NGLineInfo line_info;
   LayoutUnit result;
-  while (true) {
-    line_breaker.NextLine(&item_results, &algorithm);
-    if (item_results.IsEmpty())
-      break;
+  while (line_breaker.NextLine(&line_info, &algorithm)) {
     LayoutUnit inline_size;
-    for (const NGInlineItemResult item_result : item_results)
+    for (const NGInlineItemResult item_result : line_info.Results())
       inline_size += item_result.inline_size;
     if (mode == ContentSizeMode::Max) {
       result = std::max(inline_size, result);
     } else {
       result += inline_size;
     }
-    item_results.clear();
   }
   return result;
 }

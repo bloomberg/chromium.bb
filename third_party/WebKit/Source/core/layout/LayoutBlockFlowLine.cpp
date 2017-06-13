@@ -361,31 +361,7 @@ RootInlineBox* LayoutBlockFlow::ConstructLine(BidiRunList<BidiRun>& bidi_runs,
 
 ETextAlign LayoutBlockFlow::TextAlignmentForLine(
     bool ends_with_soft_break) const {
-  ETextAlign alignment = Style()->GetTextAlign();
-  if (ends_with_soft_break)
-    return alignment;
-
-  ETextAlignLast alignment_last = Style()->TextAlignLast();
-  switch (alignment_last) {
-    case ETextAlignLast::kStart:
-      return ETextAlign::kStart;
-    case ETextAlignLast::kEnd:
-      return ETextAlign::kEnd;
-    case ETextAlignLast::kLeft:
-      return ETextAlign::kLeft;
-    case ETextAlignLast::kRight:
-      return ETextAlign::kRight;
-    case ETextAlignLast::kCenter:
-      return ETextAlign::kCenter;
-    case ETextAlignLast::kJustify:
-      return ETextAlign::kJustify;
-    case ETextAlignLast::kAuto:
-      if (alignment == ETextAlign::kJustify)
-        return ETextAlign::kStart;
-      return alignment;
-  }
-
-  return alignment;
+  return Style()->GetTextAlign(!ends_with_soft_break);
 }
 
 static bool TextAlignmentNeedsTrailingSpace(ETextAlign text_align,
