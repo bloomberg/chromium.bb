@@ -19,7 +19,7 @@
 #include "content/browser/devtools/service_worker_devtools_agent_host.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
-#include "content/browser/service_worker/service_worker_context_observer.h"
+#include "content/browser/service_worker/service_worker_context_core_observer.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_version.h"
@@ -269,12 +269,12 @@ void DidGetRegistrations(
 }  // namespace
 
 class ServiceWorkerInternalsUI::PartitionObserver
-    : public ServiceWorkerContextObserver {
+    : public ServiceWorkerContextCoreObserver {
  public:
   PartitionObserver(int partition_id, WebUI* web_ui)
       : partition_id_(partition_id), web_ui_(web_ui) {}
   ~PartitionObserver() override {}
-  // ServiceWorkerContextObserver overrides:
+  // ServiceWorkerContextCoreObserver overrides:
   void OnRunningStateChanged(int64_t version_id,
                              EmbeddedWorkerStatus) override {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);

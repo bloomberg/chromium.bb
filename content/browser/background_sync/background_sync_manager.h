@@ -23,7 +23,7 @@
 #include "content/browser/background_sync/background_sync_registration.h"
 #include "content/browser/background_sync/background_sync_status.h"
 #include "content/browser/cache_storage/cache_storage_scheduler.h"
-#include "content/browser/service_worker/service_worker_context_observer.h"
+#include "content/browser/service_worker/service_worker_context_core_observer.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_status_code.h"
@@ -51,7 +51,7 @@ class ServiceWorkerContextWrapper;
 // the sync registrations are removed. This class must be run on the IO
 // thread. The asynchronous methods are executed sequentially.
 class CONTENT_EXPORT BackgroundSyncManager
-    : NON_EXPORTED_BASE(public ServiceWorkerContextObserver) {
+    : NON_EXPORTED_BASE(public ServiceWorkerContextCoreObserver) {
  public:
   using BoolCallback = base::Callback<void(bool)>;
   using StatusCallback = base::Callback<void(BackgroundSyncStatus)>;
@@ -83,7 +83,7 @@ class CONTENT_EXPORT BackgroundSyncManager
   void GetRegistrations(int64_t sw_registration_id,
                         const StatusAndRegistrationsCallback& callback);
 
-  // ServiceWorkerContextObserver overrides.
+  // ServiceWorkerContextCoreObserver overrides.
   void OnRegistrationDeleted(int64_t sw_registration_id,
                              const GURL& pattern) override;
   void OnStorageWiped() override;

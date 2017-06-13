@@ -1345,7 +1345,7 @@ source_set("browser") {
     "service_worker/service_worker_client_utils.h",
     "service_worker/service_worker_context_core.cc",
     "service_worker/service_worker_context_core.h",
-    "service_worker/service_worker_context_observer.h",
+    "service_worker/service_worker_context_core_observer.h",
     "service_worker/service_worker_context_request_handler.cc",
     "service_worker/service_worker_context_request_handler.h",
     "service_worker/service_worker_context_watcher.cc",

@@ -389,7 +389,7 @@ TEST_F(PlatformNotificationContextTest, DestroyDatabaseOnStorageWiped) {
   ASSERT_TRUE(success());
   EXPECT_FALSE(notification_id().empty());
 
-  // Call the OnStorageWiped override from the ServiceWorkerContextObserver,
+  // Call the OnStorageWiped override from the ServiceWorkerContextCoreObserver,
   // which indicates that the database should go away entirely.
   context->OnStorageWiped();
 

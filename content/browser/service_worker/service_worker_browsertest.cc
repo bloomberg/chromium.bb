@@ -36,7 +36,7 @@
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
-#include "content/browser/service_worker/service_worker_context_observer.h"
+#include "content/browser/service_worker/service_worker_context_core_observer.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_fetch_dispatcher.h"
 #include "content/browser/service_worker/service_worker_registration.h"
@@ -174,7 +174,7 @@ void ExpectResultAndRun(bool expected,
 }
 
 class WorkerActivatedObserver
-    : public ServiceWorkerContextObserver,
+    : public ServiceWorkerContextCoreObserver,
       public base::RefCountedThreadSafe<WorkerActivatedObserver> {
  public:
   explicit WorkerActivatedObserver(ServiceWorkerContextWrapper* context)
@@ -182,7 +182,7 @@ class WorkerActivatedObserver
   void Init() {
     RunOnIOThread(base::Bind(&WorkerActivatedObserver::InitOnIOThread, this));
   }
-  // ServiceWorkerContextObserver overrides.
+  // ServiceWorkerContextCoreObserver overrides.
   void OnVersionStateChanged(int64_t version_id,
                              ServiceWorkerVersion::Status) override {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
@@ -520,14 +520,14 @@ class ConsoleListener : public EmbeddedWorkerInstance::Listener {
 
 // Listens to console messages on ServiceWorkerContextWrapper.
 class ConsoleMessageContextObserver
-    : public ServiceWorkerContextObserver,
+    : public ServiceWorkerContextCoreObserver,
       public base::RefCountedThreadSafe<ConsoleMessageContextObserver> {
  public:
   explicit ConsoleMessageContextObserver(ServiceWorkerContextWrapper* context)
       : context_(context) {}
   void Init() { context_->AddObserver(this); }
 
-  // ServiceWorkerContextObserver overrides.
+  // ServiceWorkerContextCoreObserver overrides.
   void OnReportConsoleMessage(int64_t version_id,
                               int process_id,
                               int thread_id,
