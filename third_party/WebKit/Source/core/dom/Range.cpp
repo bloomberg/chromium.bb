@@ -852,6 +852,7 @@ DocumentFragment* Range::cloneContents(ExceptionState& exception_state) {
   return ProcessContents(CLONE_CONTENTS, exception_state);
 }
 
+// https://dom.spec.whatwg.org/#concept-range-insert
 void Range::insertNode(Node* new_node, ExceptionState& exception_state) {
   if (!new_node) {
     // FIXME: Generated bindings code never calls with null, and neither should
@@ -860,91 +861,76 @@ void Range::insertNode(Node* new_node, ExceptionState& exception_state) {
     return;
   }
 
-  // HierarchyRequestError: Raised if the container of the start of the Range is
-  // of a type that does not allow children of the type of newNode or if newNode
-  // is an ancestor of the container.
-
-  // an extra one here - if a text node is going to split, it must have a parent
-  // to insert into
-  bool start_is_text = start_.Container().IsTextNode();
-  if (start_is_text && !start_.Container().parentNode()) {
+  // 1. If range’s start node is a ProcessingInstruction or Comment node, is a
+  // Text node whose parent is null, or is node, then throw a
+  // HierarchyRequestError.
+  Node& start_node = start_.Container();
+  if (start_node.getNodeType() == Node::kProcessingInstructionNode ||
+      start_node.getNodeType() == Node::kCommentNode) {
+    exception_state.ThrowDOMException(
+        kHierarchyRequestError,
+        "Nodes of type '" + new_node->nodeName() +
+            "' may not be inserted inside nodes of type '" +
+            start_node.nodeName() + "'.");
+    return;
+  }
+  const bool start_is_text = start_node.IsTextNode();
+  if (start_is_text && !start_node.parentNode()) {
     exception_state.ThrowDOMException(kHierarchyRequestError,
                                       "This operation would split a text node, "
                                       "but there's no parent into which to "
                                       "insert.");
     return;
   }
+  if (start_node == new_node) {
+    exception_state.ThrowDOMException(
+        kHierarchyRequestError,
+        "Unable to insert a node into a Range starting from the node itself.");
+    return;
+  }
 
-  // In the case where the container is a text node, we check against the
-  // container's parent, because text nodes get split up upon insertion.
-  Node* check_against;
+  // According to the specification, the following condition is checked in the
+  // step 6. However our EnsurePreInsertionValidity() supports only
+  // ContainerNode parent.
+  if (start_node.IsAttributeNode()) {
+    exception_state.ThrowDOMException(
+        kHierarchyRequestError,
+        "Nodes of type '" + new_node->nodeName() +
+            "' may not be inserted inside nodes of type 'Attr'.");
+    return;
+  }
+
+  // 2. Let referenceNode be null.
+  Node* reference_node = nullptr;
+  // 3. If range’s start node is a Text node, set referenceNode to that Text
+  // node.
+  // 4. Otherwise, set referenceNode to the child of start node whose index is
+  // start offset, and null if there is no such child.
   if (start_is_text)
-    check_against = start_.Container().parentNode();
+    reference_node = &start_node;
   else
-    check_against = &start_.Container();
+    reference_node = NodeTraversal::ChildAt(start_node, start_.Offset());
 
-  Node::NodeType new_node_type = new_node->getNodeType();
-  int num_new_children;
-  if (new_node_type == Node::kDocumentFragmentNode) {
-    // check each child node, not the DocumentFragment itself
-    num_new_children = 0;
-    for (Node* c = ToDocumentFragment(new_node)->firstChild(); c;
-         c = c->nextSibling()) {
-      if (!check_against->ChildTypeAllowed(c->getNodeType())) {
-        exception_state.ThrowDOMException(
-            kHierarchyRequestError,
-            "The node to be inserted contains a '" + c->nodeName() +
-                "' node, which may not be inserted here.");
-        return;
-      }
-      ++num_new_children;
-    }
-  } else {
-    num_new_children = 1;
-    if (!check_against->ChildTypeAllowed(new_node_type)) {
-      exception_state.ThrowDOMException(
-          kHierarchyRequestError,
-          "The node to be inserted is a '" + new_node->nodeName() +
-              "' node, which may not be inserted here.");
-      return;
-    }
-  }
+  // 5. Let parent be range’s start node if referenceNode is null, and
+  // referenceNode’s parent otherwise.
+  ContainerNode& parent = reference_node ? *reference_node->parentNode()
+                                         : ToContainerNode(start_node);
 
-  for (Node& node : NodeTraversal::InclusiveAncestorsOf(start_.Container())) {
-    if (node == new_node) {
-      exception_state.ThrowDOMException(kHierarchyRequestError,
-                                        "The node to be inserted contains the "
-                                        "insertion point; it may not be "
-                                        "inserted into itself.");
-      return;
-    }
-  }
-
-  // InvalidNodeTypeError: Raised if new_node is an Attr or Document node.
-  switch (new_node_type) {
-    case Node::kAttributeNode:
-    case Node::kDocumentNode:
-      exception_state.ThrowDOMException(
-          kInvalidNodeTypeError, "The node to be inserted is a '" +
-                                     new_node->nodeName() +
-                                     "' node, which may not be inserted here.");
-      return;
-    default:
-      break;
-  }
+  // 6. Ensure pre-insertion validity of node into parent before referenceNode.
+  if (!parent.EnsurePreInsertionValidity(*new_node, reference_node, nullptr,
+                                         exception_state))
+    return;
 
   EventQueueScope scope;
   bool collapsed = start_ == end_;
-  Node* container = nullptr;
   if (start_is_text) {
-    container = &start_.Container();
     Text* new_text =
-        ToText(container)->splitText(start_.Offset(), exception_state);
+        ToText(start_node).splitText(start_.Offset(), exception_state);
     if (exception_state.HadException())
       return;
 
-    container = &start_.Container();
-    container->parentNode()->InsertBefore(new_node, new_text, exception_state);
+    start_.Container().parentNode()->InsertBefore(new_node, new_text,
+                                                  exception_state);
     if (exception_state.HadException())
       return;
 
@@ -962,6 +948,10 @@ void Range::insertNode(Node* new_node, ExceptionState& exception_state) {
       end_.SetToBeforeChild(*new_text);
     }
   } else {
+    const int num_new_children =
+        new_node->IsDocumentFragment() ? LengthOfContents(new_node) : 1;
+
+    const Node::NodeType new_node_type = new_node->getNodeType();
     Node* last_child = (new_node_type == Node::kDocumentFragmentNode)
                            ? ToDocumentFragment(new_node)->lastChild()
                            : new_node;
@@ -976,13 +966,11 @@ void Range::insertNode(Node* new_node, ExceptionState& exception_state) {
       return;
     }
 
-    container = &start_.Container();
-    Node* reference_node = NodeTraversal::ChildAt(*container, start_.Offset());
     // TODO(tkent): The following check must be unnecessary if we follow the
     // algorithm defined in the specification.
     // https://dom.spec.whatwg.org/#concept-range-insert
     if (new_node != reference_node) {
-      container->insertBefore(new_node, reference_node, exception_state);
+      start_node.insertBefore(new_node, reference_node, exception_state);
       if (exception_state.HadException())
         return;
     }
