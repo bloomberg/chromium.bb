@@ -41,7 +41,7 @@ class AuthenticationServiceFake : public AuthenticationService {
  private:
   explicit AuthenticationServiceFake(ios::ChromeBrowserState* browser_state);
 
-  base::scoped_nsobject<ChromeIdentity> authenticated_identity_;
+  __strong ChromeIdentity* authenticated_identity_;
   bool have_accounts_changed_;
 };
 

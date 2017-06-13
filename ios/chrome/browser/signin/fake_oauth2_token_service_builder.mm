@@ -13,6 +13,10 @@
 #include "ios/chrome/browser/signin/signin_client_factory.h"
 #include "ios/chrome/browser/signin/signin_error_controller_factory.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 std::unique_ptr<KeyedService> BuildFakeOAuth2TokenService(
     web::BrowserState* context) {
   ios::ChromeBrowserState* browser_state =
