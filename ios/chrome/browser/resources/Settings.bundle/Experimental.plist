@@ -39,7 +39,7 @@
 			<string>Disable Request Mobile Site</string>
 			<key>Key</key>
 			<string>RequestMobileSiteDisabled</string>
-			<key>Default</key>
+			<key>DefaultValue</key>
 			<false/>
 		</dict>
 		<dict>
