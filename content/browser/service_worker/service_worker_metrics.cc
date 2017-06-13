@@ -84,6 +84,8 @@ std::string EventTypeToSuffix(ServiceWorkerMetrics::EventType event_type) {
       return "_BACKGROUND_FETCH_FAIL";
     case ServiceWorkerMetrics::EventType::BACKGROUND_FETCHED:
       return "_BACKGROUND_FETCHED";
+    case ServiceWorkerMetrics::EventType::NAVIGATION_HINT:
+      return "_NAVIGATION_HINT";
     case ServiceWorkerMetrics::EventType::NUM_TYPES:
       NOTREACHED() << static_cast<int>(event_type);
   }
@@ -317,6 +319,8 @@ const char* ServiceWorkerMetrics::EventTypeToString(EventType event_type) {
       return "Background Fetch Fail";
     case EventType::BACKGROUND_FETCHED:
       return "Background Fetched";
+    case EventType::NAVIGATION_HINT:
+      return "Navigation Hint";
     case EventType::NUM_TYPES:
       break;
   }
@@ -664,6 +668,8 @@ void ServiceWorkerMetrics::RecordEventDuration(EventType event,
                                  time);
       break;
 
+    case EventType::NAVIGATION_HINT:
+    // The navigation hint should not be sent as an event.
     case EventType::UNKNOWN:
     case EventType::NUM_TYPES:
       NOTREACHED() << "Invalid event type";

@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -36,6 +37,20 @@
 
 namespace {
 
+const std::string kInstallAndWaitForActivatedPage =
+    "<script>"
+    "navigator.serviceWorker.register('./sw.js', {scope: './scope/'})"
+    "  .then(function(reg) {"
+    "      reg.addEventListener('updatefound', function() {"
+    "          var worker = reg.installing;"
+    "          worker.addEventListener('statechange', function() {"
+    "              if (worker.state == 'activated')"
+    "                document.title = 'READY';"
+    "            });"
+    "        });"
+    "    });"
+    "</script>";
+
 class ChromeServiceWorkerTest : public InProcessBrowserTest {
  protected:
   ChromeServiceWorkerTest() {
@@ -54,15 +69,37 @@ class ChromeServiceWorkerTest : public InProcessBrowserTest {
                               contents.data(), contents.size()));
   }
 
+  void NavigateToPageAndWaitForReadyTitle(const std::string path) {
+    const base::string16 expected_title1 = base::ASCIIToUTF16("READY");
+    content::TitleWatcher title_watcher1(
+        browser()->tab_strip_model()->GetActiveWebContents(), expected_title1);
+    ui_test_utils::NavigateToURL(browser(),
+                                 embedded_test_server()->GetURL(path));
+    EXPECT_EQ(expected_title1, title_watcher1.WaitAndGetTitle());
+  }
+
+  void InitializeServer() {
+    embedded_test_server()->ServeFilesFromDirectory(
+        service_worker_dir_.GetPath());
+    ASSERT_TRUE(embedded_test_server()->Start());
+  }
+
+  content::ServiceWorkerContext* GetServiceWorkerContext() {
+    return content::BrowserContext::GetDefaultStoragePartition(
+               browser()->profile())
+        ->GetServiceWorkerContext();
+  }
+
   base::ScopedTempDir service_worker_dir_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ChromeServiceWorkerTest);
 };
 
-static void ExpectResultAndRun(bool expected,
+template <typename T>
+static void ExpectResultAndRun(T expected,
                                const base::Closure& continuation,
-                               bool actual) {
+                               T actual) {
   EXPECT_EQ(expected, actual);
   continuation.Run();
 }
@@ -76,15 +113,11 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest,
       service_worker_dir_.GetPath());
   ASSERT_TRUE(embedded_test_server()->Start());
 
-  content::ServiceWorkerContext* sw_context =
-      content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
-          ->GetServiceWorkerContext();
-
   base::RunLoop run_loop;
-  sw_context->RegisterServiceWorker(
+  GetServiceWorkerContext()->RegisterServiceWorker(
       embedded_test_server()->GetURL("/"),
       embedded_test_server()->GetURL("/service_worker.js"),
-      base::Bind(&ExpectResultAndRun, true, run_loop.QuitClosure()));
+      base::Bind(&ExpectResultAndRun<bool>, true, run_loop.QuitClosure()));
   run_loop.Run();
 
   // Leave the Service Worker registered, and make sure that the browser can
@@ -100,21 +133,15 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest,
   WriteFile(FILE_PATH_LITERAL("service_worker.js.mock-http-headers"),
             "HTTP/1.1 200 OK\nContent-Type: text/javascript");
   WriteFile(FILE_PATH_LITERAL("test.html"), "");
-
-  embedded_test_server()->ServeFilesFromDirectory(
-      service_worker_dir_.GetPath());
-  ASSERT_TRUE(embedded_test_server()->Start());
+  InitializeServer();
 
   Browser* incognito = CreateIncognitoBrowser();
-  content::ServiceWorkerContext* sw_context =
-      content::BrowserContext::GetDefaultStoragePartition(incognito->profile())
-          ->GetServiceWorkerContext();
 
   base::RunLoop run_loop;
-  sw_context->RegisterServiceWorker(
+  GetServiceWorkerContext()->RegisterServiceWorker(
       embedded_test_server()->GetURL("/"),
       embedded_test_server()->GetURL("/service_worker.js"),
-      base::Bind(&ExpectResultAndRun, true, run_loop.QuitClosure()));
+      base::Bind(&ExpectResultAndRun<bool>, true, run_loop.QuitClosure()));
   run_loop.Run();
 
   ui_test_utils::NavigateToURL(incognito,
@@ -131,24 +158,17 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest,
 IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest,
                        FailRegisterServiceWorkerWhenJSDisabled) {
   WriteFile(FILE_PATH_LITERAL("service_worker.js"), "");
-
-  embedded_test_server()->ServeFilesFromDirectory(
-      service_worker_dir_.GetPath());
-  ASSERT_TRUE(embedded_test_server()->Start());
+  InitializeServer();
 
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
       ->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_JAVASCRIPT,
                                  CONTENT_SETTING_BLOCK);
 
-  content::ServiceWorkerContext* sw_context =
-      content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
-          ->GetServiceWorkerContext();
-
   base::RunLoop run_loop;
-  sw_context->RegisterServiceWorker(
+  GetServiceWorkerContext()->RegisterServiceWorker(
       embedded_test_server()->GetURL("/"),
       embedded_test_server()->GetURL("/service_worker.js"),
-      base::Bind(&ExpectResultAndRun, false, run_loop.QuitClosure()));
+      base::Bind(&ExpectResultAndRun<bool>, false, run_loop.QuitClosure()));
   run_loop.Run();
 }
 
@@ -161,37 +181,12 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest,
       "                             {headers: {'Content-Type': 'text/html'}}));"
       "};");
   WriteFile(FILE_PATH_LITERAL("scope/done.html"), "<title>Done</title>");
-  WriteFile(
-      FILE_PATH_LITERAL("test.html"),
-      "<script>"
-      "navigator.serviceWorker.register('./sw.js', {scope: './scope/'})"
-      "  .then(function(reg) {"
-      "      reg.addEventListener('updatefound', function() {"
-      "          var worker = reg.installing;"
-      "          worker.addEventListener('statechange', function() {"
-      "              if (worker.state == 'activated')"
-      "                document.title = 'READY';"
-      "            });"
-      "        });"
-      "    });"
-      "</script>");
-  embedded_test_server()->ServeFilesFromDirectory(
-      service_worker_dir_.GetPath());
-  ASSERT_TRUE(embedded_test_server()->Start());
+  WriteFile(FILE_PATH_LITERAL("test.html"), kInstallAndWaitForActivatedPage);
+  InitializeServer();
+  NavigateToPageAndWaitForReadyTitle("/test.html");
 
-  const base::string16 expected_title1 = base::ASCIIToUTF16("READY");
-  content::TitleWatcher title_watcher1(
-      browser()->tab_strip_model()->GetActiveWebContents(), expected_title1);
-  ui_test_utils::NavigateToURL(browser(),
-                               embedded_test_server()->GetURL("/test.html"));
-  EXPECT_EQ(expected_title1, title_watcher1.WaitAndGetTitle());
-
-  content::ServiceWorkerContext* sw_context =
-      content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
-          ->GetServiceWorkerContext();
-  sw_context->StopAllServiceWorkersForOrigin(
+  GetServiceWorkerContext()->StopAllServiceWorkersForOrigin(
       embedded_test_server()->base_url());
-
   HostContentSettingsMapFactory::GetForProfile(browser()->profile())
       ->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_JAVASCRIPT,
                                  CONTENT_SETTING_BLOCK);
@@ -609,6 +604,100 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerFetchPPAPIPrivateTest,
                        OtherOriginCORSCredentials) {
   EXPECT_EQ(GetRequestStringForPNACL("#OtherCORSCredentials"),
             ExecutePNACLUrlLoaderTest("OtherCORSCredentials"));
+}
+
+class ChromeServiceWorkerNavigationHintTest : public ChromeServiceWorkerTest {
+ protected:
+  void RunNavigationHintTest(
+      const char* scope,
+      content::StartServiceWorkerForNavigationHintResult expeced_requst,
+      bool expected_started) {
+    base::HistogramTester histogram_tester;
+    base::RunLoop run_loop;
+    GetServiceWorkerContext()->StartServiceWorkerForNavigationHint(
+        embedded_test_server()->GetURL(scope),
+        base::Bind(&ExpectResultAndRun<
+                       content::StartServiceWorkerForNavigationHintResult>,
+                   expeced_requst, run_loop.QuitClosure()));
+    run_loop.Run();
+    if (expected_started) {
+      histogram_tester.ExpectBucketCount(
+          "ServiceWorker.StartWorker.Purpose",
+          27 /* ServiceWorkerMetrics::EventType::NAVIGATION_HINT  */, 1);
+      histogram_tester.ExpectBucketCount(
+          "ServiceWorker.StartWorker.StatusByPurpose_NAVIGATION_HINT",
+          0 /* SERVICE_WORKER_OK  */, 1);
+    } else {
+      histogram_tester.ExpectTotalCount("ServiceWorker.StartWorker.Purpose", 0);
+      histogram_tester.ExpectTotalCount(
+          "ServiceWorker.StartWorker.StatusByPurpose_NAVIGATION_HINT", 0);
+    }
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerNavigationHintTest, Started) {
+  WriteFile(FILE_PATH_LITERAL("sw.js"), "self.onfetch = function(e) {};");
+  WriteFile(FILE_PATH_LITERAL("test.html"), kInstallAndWaitForActivatedPage);
+  InitializeServer();
+  NavigateToPageAndWaitForReadyTitle("/test.html");
+  GetServiceWorkerContext()->StopAllServiceWorkersForOrigin(
+      embedded_test_server()->base_url());
+  RunNavigationHintTest(
+      "/scope/", content::StartServiceWorkerForNavigationHintResult::STARTED,
+      true);
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerNavigationHintTest, AlreadyRunning) {
+  WriteFile(FILE_PATH_LITERAL("sw.js"), "self.onfetch = function(e) {};");
+  WriteFile(FILE_PATH_LITERAL("test.html"), kInstallAndWaitForActivatedPage);
+  InitializeServer();
+  NavigateToPageAndWaitForReadyTitle("/test.html");
+  RunNavigationHintTest(
+      "/scope/",
+      content::StartServiceWorkerForNavigationHintResult::ALREADY_RUNNING,
+      false);
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerNavigationHintTest,
+                       NoServiceWorkerRegistration) {
+  InitializeServer();
+  RunNavigationHintTest("/scope/",
+                        content::StartServiceWorkerForNavigationHintResult::
+                            NO_SERVICE_WORKER_REGISTRATION,
+                        false);
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerNavigationHintTest,
+                       NoActiveServiceWorkerVersion) {
+  WriteFile(FILE_PATH_LITERAL("sw.js"),
+            "self.oninstall = function(e) {\n"
+            "    e.waitUntil(new Promise(r => { /* never resolve */ }));\n"
+            "  };\n"
+            "self.onfetch = function(e) {};");
+  InitializeServer();
+  base::RunLoop run_loop;
+  GetServiceWorkerContext()->RegisterServiceWorker(
+      embedded_test_server()->GetURL("/scope/"),
+      embedded_test_server()->GetURL("/sw.js"),
+      base::Bind(&ExpectResultAndRun<bool>, true, run_loop.QuitClosure()));
+  run_loop.Run();
+  RunNavigationHintTest("/scope/",
+                        content::StartServiceWorkerForNavigationHintResult::
+                            NO_ACTIVE_SERVICE_WORKER_VERSION,
+                        false);
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerNavigationHintTest, NoFetchHandler) {
+  WriteFile(FILE_PATH_LITERAL("sw.js"), "/* empty */");
+  WriteFile(FILE_PATH_LITERAL("test.html"), kInstallAndWaitForActivatedPage);
+  InitializeServer();
+  NavigateToPageAndWaitForReadyTitle("/test.html");
+  GetServiceWorkerContext()->StopAllServiceWorkersForOrigin(
+      embedded_test_server()->base_url());
+  RunNavigationHintTest(
+      "/scope/",
+      content::StartServiceWorkerForNavigationHintResult::NO_FETCH_HANDLER,
+      false);
 }
 
 }  // namespace

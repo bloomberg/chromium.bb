@@ -94657,6 +94657,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       This experiment was turned down, see https://crbug.com/616502.
     </obsolete>
   </suffix>
+  <suffix name="NAVIGATION_HINT" label="NAVIGATION_HINT"/>
   <affected-histogram name="ServiceWorker.EventDispatchingDelay"/>
   <affected-histogram name="ServiceWorker.StartWorker.StatusByPurpose"/>
   <affected-histogram name="ServiceWorker.StartWorker.Time_DuringStartup"/>
