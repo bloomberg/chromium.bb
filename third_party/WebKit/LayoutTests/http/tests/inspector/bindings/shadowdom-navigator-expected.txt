@@ -53,6 +53,7 @@ top
       inspector-test.js
   (no domain)
     sourcemap-script.js
+    sourcemap-style.css
 
 Running: detachShadow2
 top

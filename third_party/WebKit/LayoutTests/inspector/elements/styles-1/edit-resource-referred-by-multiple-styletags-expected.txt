@@ -1,23 +1,15 @@
 Tests that editing sourcecode which is referred by multiple stylesheets (via sourceURL comment) updates all stylesheets.
 
 Inspected node
-[expanded] 
-element.style { ()
 
-[expanded] 
-#inspected { (stylesheet.css:2 -> stylesheet.css:2:13)
-    font-size: 2em;
+Headers count: 3
 
-[expanded] 
-#inspected { (stylesheet.css:2 -> stylesheet.css:2:13)
-/-- overloaded --/     font-size: 2em;
+Running: Make edits with Sources Panel
+Both headers and uiSourceCode content:
+div{color:EDITED;}
 
-[expanded] 
-#inspected { (stylesheet.css:2 -> stylesheet.css:2:13)
-/-- overloaded --/     font-size: 2em;
 
-[expanded] 
-div { (user agent stylesheet)
-    display: block;
-
+Running: Make edits via css model
+Both headers and uiSourceCode content:
+* { --foo: "bar" }
 
