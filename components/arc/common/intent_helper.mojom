@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Next MinVersion: 16
+// Next MinVersion: 17
 
 module arc.mojom;
 
@@ -84,7 +84,7 @@ struct UrlWithMimeType {
 
 // Handles intents from ARC in Chrome.
 // Deprecated method ID: 4
-// Next method ID: 6
+// Next method ID: 7
 interface IntentHelperHost {
   // Called when icons associated with the package are no longer up to date.
   [MinVersion=3] OnIconInvalidated@1(string package_name);
@@ -105,6 +105,9 @@ interface IntentHelperHost {
   // Sets an image as the wallpaper.
   // |jpeg_data| is a JPEG encoded wallpaper image.
   [MinVersion=8] SetWallpaperDeprecated@4(array<uint8> jpeg_data);
+
+  // Opens the volume control.
+  [MinVersion=16] OpenVolumeControl@6();
 };
 
 // Sends intents to ARC on behalf of Chrome.
