@@ -34,7 +34,7 @@ namespace content {
 class BrowserContext;
 class ResourceContext;
 class ServiceWorkerContextCore;
-class ServiceWorkerContextObserver;
+class ServiceWorkerContextCoreObserver;
 class StoragePartitionImpl;
 
 // A refcounted wrapper class for our core object. Higher level content lib
@@ -217,8 +217,8 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   // These methods can be called from any thread.
   void UpdateRegistration(const GURL& pattern);
   void SetForceUpdateOnPageLoad(bool force_update_on_page_load);
-  void AddObserver(ServiceWorkerContextObserver* observer);
-  void RemoveObserver(ServiceWorkerContextObserver* observer);
+  void AddObserver(ServiceWorkerContextCoreObserver* observer);
+  void RemoveObserver(ServiceWorkerContextCoreObserver* observer);
 
   bool is_incognito() const { return is_incognito_; }
 
@@ -284,8 +284,9 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   // DeleteAndStartOver fails.
   ServiceWorkerContextCore* context();
 
-  const scoped_refptr<base::ObserverListThreadSafe<
-      ServiceWorkerContextObserver>> observer_list_;
+  const scoped_refptr<
+      base::ObserverListThreadSafe<ServiceWorkerContextCoreObserver>>
+      observer_list_;
   const std::unique_ptr<ServiceWorkerProcessManager> process_manager_;
   // Cleared in ShutdownOnIO():
   std::unique_ptr<ServiceWorkerContextCore> context_core_;

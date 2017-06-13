@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_CONTEXT_OBSERVER_H_
-#define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_CONTEXT_OBSERVER_H_
+#ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_CONTEXT_CORE_OBSERVER_H_
+#define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_CONTEXT_CORE_OBSERVER_H_
 
 #include <stdint.h>
 
@@ -18,7 +18,7 @@ namespace content {
 
 enum class EmbeddedWorkerStatus;
 
-class ServiceWorkerContextObserver {
+class ServiceWorkerContextCoreObserver {
  public:
   struct ErrorInfo {
     ErrorInfo(const base::string16& message,
@@ -93,9 +93,9 @@ class ServiceWorkerContextObserver {
   virtual void OnStorageWiped() {}
 
  protected:
-  virtual ~ServiceWorkerContextObserver() {}
+  virtual ~ServiceWorkerContextCoreObserver() {}
 };
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_CONTEXT_OBSERVER_H_
+#endif  // CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_CONTEXT_CORE_OBSERVER_H_

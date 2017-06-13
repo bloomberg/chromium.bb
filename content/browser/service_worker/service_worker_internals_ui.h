@@ -12,7 +12,6 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "content/browser/service_worker/service_worker_context_observer.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/public/browser/web_ui_controller.h"
 

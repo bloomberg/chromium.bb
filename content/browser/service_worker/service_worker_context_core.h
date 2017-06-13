@@ -42,7 +42,7 @@ class SpecialStoragePolicy;
 namespace content {
 
 class EmbeddedWorkerRegistry;
-class ServiceWorkerContextObserver;
+class ServiceWorkerContextCoreObserver;
 class ServiceWorkerContextWrapper;
 class ServiceWorkerDatabaseTaskManager;
 class ServiceWorkerDispatcherHost;
@@ -109,8 +109,8 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   // the local path on disk. Given an empty |user_data_directory|,
   // nothing will be stored on disk. |observer_list| is created in
   // ServiceWorkerContextWrapper. When Notify() of |observer_list| is called in
-  // ServiceWorkerContextCore, the methods of ServiceWorkerContextObserver will
-  // be called on the thread which called AddObserver() of |observer_list|.
+  // ServiceWorkerContextCore, the methods of ServiceWorkerContextCoreObserver
+  // will be called on the thread which called AddObserver() of |observer_list|.
   ServiceWorkerContextCore(
       const base::FilePath& user_data_directory,
       std::unique_ptr<ServiceWorkerDatabaseTaskManager>
@@ -118,7 +118,8 @@ class CONTENT_EXPORT ServiceWorkerContextCore
       const scoped_refptr<base::SingleThreadTaskRunner>& disk_cache_thread,
       storage::QuotaManagerProxy* quota_manager_proxy,
       storage::SpecialStoragePolicy* special_storage_policy,
-      base::ObserverListThreadSafe<ServiceWorkerContextObserver>* observer_list,
+      base::ObserverListThreadSafe<ServiceWorkerContextCoreObserver>*
+          observer_list,
       ServiceWorkerContextWrapper* wrapper);
   ServiceWorkerContextCore(
       ServiceWorkerContextCore* old_context,
@@ -384,7 +385,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
   // This is used to avoid unnecessary disk read operation in tests. This value
   // is false if Chrome was relaunched after service workers were registered.
   bool was_service_worker_registered_;
-  scoped_refptr<base::ObserverListThreadSafe<ServiceWorkerContextObserver>>
+  scoped_refptr<base::ObserverListThreadSafe<ServiceWorkerContextCoreObserver>>
       observer_list_;
   base::WeakPtrFactory<ServiceWorkerContextCore> weak_factory_;
 

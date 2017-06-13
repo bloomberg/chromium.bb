@@ -22,7 +22,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
-#include "content/browser/service_worker/service_worker_context_observer.h"
+#include "content/browser/service_worker/service_worker_context_core_observer.h"
 #include "content/browser/service_worker/service_worker_process_manager.h"
 #include "content/browser/service_worker/service_worker_quota_client.h"
 #include "content/browser/service_worker/service_worker_version.h"
@@ -105,7 +105,7 @@ bool ServiceWorkerContext::IsExcludedHeaderNameForFetchEvent(
 ServiceWorkerContextWrapper::ServiceWorkerContextWrapper(
     BrowserContext* browser_context)
     : observer_list_(
-          new base::ObserverListThreadSafe<ServiceWorkerContextObserver>()),
+          new base::ObserverListThreadSafe<ServiceWorkerContextCoreObserver>()),
       process_manager_(new ServiceWorkerProcessManager(browser_context)),
       is_incognito_(false),
       storage_partition_(nullptr),
@@ -739,12 +739,12 @@ void ServiceWorkerContextWrapper::GetUserDataForAllRegistrationsByKeyPrefix(
 }
 
 void ServiceWorkerContextWrapper::AddObserver(
-    ServiceWorkerContextObserver* observer) {
+    ServiceWorkerContextCoreObserver* observer) {
   observer_list_->AddObserver(observer);
 }
 
 void ServiceWorkerContextWrapper::RemoveObserver(
-    ServiceWorkerContextObserver* observer) {
+    ServiceWorkerContextCoreObserver* observer) {
   observer_list_->RemoveObserver(observer);
 }
 
@@ -823,7 +823,7 @@ void ServiceWorkerContextWrapper::DidDeleteAndStartOver(
   DVLOG(1) << "Restarted ServiceWorkerContextCore successfully.";
 
   observer_list_->Notify(FROM_HERE,
-                         &ServiceWorkerContextObserver::OnStorageWiped);
+                         &ServiceWorkerContextCoreObserver::OnStorageWiped);
 }
 
 void ServiceWorkerContextWrapper::BindWorkerFetchContext(

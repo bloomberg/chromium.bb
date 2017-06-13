@@ -14,7 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/browser/browsing_data/browsing_data_filter_builder_impl.h"
-#include "content/browser/service_worker/service_worker_context_observer.h"
+#include "content/browser/service_worker/service_worker_context_core_observer.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browsing_data_remover.h"
@@ -114,7 +114,8 @@ class TestBrowsingDataRemoverDelegate : public MockBrowsingDataRemoverDelegate {
 
 // TODO(msramek): A class like this already exists in ServiceWorkerBrowserTest.
 // Consider extracting it to a test utils file.
-class ServiceWorkerActivationObserver : public ServiceWorkerContextObserver {
+class ServiceWorkerActivationObserver
+    : public ServiceWorkerContextCoreObserver {
  public:
   static void SignalActivation(ServiceWorkerContextWrapper* context,
                                const base::Closure& callback) {
@@ -130,7 +131,7 @@ class ServiceWorkerActivationObserver : public ServiceWorkerContextObserver {
 
   ~ServiceWorkerActivationObserver() override {}
 
-  // ServiceWorkerContextObserver overrides.
+  // ServiceWorkerContextCoreObserver overrides.
   void OnVersionStateChanged(int64_t version_id,
                              ServiceWorkerVersion::Status) override {
     if (context_->GetLiveVersion(version_id)->status() ==
@@ -141,7 +142,7 @@ class ServiceWorkerActivationObserver : public ServiceWorkerContextObserver {
   }
 
   ServiceWorkerContextWrapper* context_;
-  ScopedObserver<ServiceWorkerContextWrapper, ServiceWorkerContextObserver>
+  ScopedObserver<ServiceWorkerContextWrapper, ServiceWorkerContextCoreObserver>
       scoped_observer_;
   base::Closure callback_;
 };

@@ -15,7 +15,7 @@
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
-#include "content/browser/service_worker/service_worker_context_observer.h"
+#include "content/browser/service_worker/service_worker_context_core_observer.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
@@ -122,7 +122,7 @@ struct NotificationLog {
 
 }  // namespace
 
-class ServiceWorkerContextTest : public ServiceWorkerContextObserver,
+class ServiceWorkerContextTest : public ServiceWorkerContextCoreObserver,
                                  public testing::Test {
  public:
   ServiceWorkerContextTest()
@@ -135,7 +135,7 @@ class ServiceWorkerContextTest : public ServiceWorkerContextObserver,
 
   void TearDown() override { helper_.reset(); }
 
-  // ServiceWorkerContextObserver overrides.
+  // ServiceWorkerContextCoreObserver overrides.
   void OnRegistrationStored(int64_t registration_id,
                             const GURL& pattern) override {
     NotificationLog log;

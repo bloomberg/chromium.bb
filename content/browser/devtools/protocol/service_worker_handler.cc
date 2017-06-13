@@ -422,7 +422,7 @@ void ServiceWorkerHandler::OnWorkerVersionUpdated(
 void ServiceWorkerHandler::OnErrorReported(
     int64_t registration_id,
     int64_t version_id,
-    const ServiceWorkerContextObserver::ErrorInfo& info) {
+    const ServiceWorkerContextCoreObserver::ErrorInfo& info) {
   frontend_->WorkerErrorReported(
       ServiceWorker::ServiceWorkerErrorMessage::Create()
           .SetErrorMessage(base::UTF16ToUTF8(info.error_message))

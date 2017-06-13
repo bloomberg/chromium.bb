@@ -15,7 +15,7 @@
 #include "content/browser/devtools/protocol/service_worker.h"
 #include "content/browser/devtools/service_worker_devtools_agent_host.h"
 #include "content/browser/devtools/service_worker_devtools_manager.h"
-#include "content/browser/service_worker/service_worker_context_observer.h"
+#include "content/browser/service_worker/service_worker_context_core_observer.h"
 #include "content/browser/service_worker/service_worker_info.h"
 
 namespace content {
@@ -59,7 +59,7 @@ class ServiceWorkerHandler : public DevToolsDomainHandler,
       const std::vector<ServiceWorkerVersionInfo>& registrations);
   void OnErrorReported(int64_t registration_id,
                        int64_t version_id,
-                       const ServiceWorkerContextObserver::ErrorInfo& info);
+                       const ServiceWorkerContextCoreObserver::ErrorInfo& info);
 
   void OpenNewDevToolsWindow(int process_id, int devtools_agent_route_id);
   void ClearForceUpdate();

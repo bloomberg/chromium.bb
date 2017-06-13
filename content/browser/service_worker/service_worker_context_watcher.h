@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "content/browser/service_worker/service_worker_context_observer.h"
+#include "content/browser/service_worker/service_worker_context_core_observer.h"
 #include "content/browser/service_worker/service_worker_info.h"
 
 namespace content {
@@ -22,7 +22,7 @@ enum class EmbeddedWorkerStatus;
 // Used to monitor the status change of the ServiceWorker registrations and
 // versions in the ServiceWorkerContext from UI thread.
 class ServiceWorkerContextWatcher
-    : public ServiceWorkerContextObserver,
+    : public ServiceWorkerContextCoreObserver,
       public base::RefCountedThreadSafe<ServiceWorkerContextWatcher> {
  public:
   typedef base::Callback<void(
@@ -65,7 +65,7 @@ class ServiceWorkerContextWatcher
       ServiceWorkerRegistrationInfo::DeleteFlag delete_flag);
   void SendVersionInfo(const ServiceWorkerVersionInfo& version);
 
-  // ServiceWorkerContextObserver implements
+  // ServiceWorkerContextCoreObserver implements
   void OnNewLiveRegistration(int64_t registration_id,
                              const GURL& pattern) override;
   void OnNewLiveVersion(const ServiceWorkerVersionInfo& version_info) override;
