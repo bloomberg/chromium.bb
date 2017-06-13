@@ -97,7 +97,10 @@ message ActiveDirectoryAccountInfo {
   // the userAccountControl property of the Active Directory user account
   // information. Used in authpolicyd only, unused in Chrome.
   optional uint32 user_account_control = 6;
-  // Next ID to use: 7
+  // Common name of the user, e.g. "John Doe [jdoe]". Taken from the commonName
+  // property of the Active Directory user account information.
+  optional string common_name = 7;
+  // Next ID to use: 8
 }
 
 // Message sent to Chromium by authpolicy service as a response to a successful
