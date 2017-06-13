@@ -33,15 +33,12 @@ function test()
         UI.panels.heap_profiler.showProfile(profile);
     }
 
-    function snapshotReceived(profile)
+    async function snapshotReceived(profile)
     {
         InspectorTest.addResult("PASS: snapshot was received");
         var snapshotProxy = profile._snapshotProxy;
-        snapshotProxy.callMethod(didGetBodyWrapperIds, "idsOfObjectsWithName", "HTMLBodyElement");
-    }
+        var bodyWrapperIds = await snapshotProxy._callMethodPromise("idsOfObjectsWithName", "HTMLBodyElement");
 
-    async function didGetBodyWrapperIds(bodyWrapperIds)
-    {
         if (bodyWrapperIds.length < 3)
             return clear("FAILED: less than 3 HTMLBodyElement objects were detected");
 

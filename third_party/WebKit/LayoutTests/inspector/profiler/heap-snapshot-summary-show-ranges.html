@@ -19,15 +19,14 @@ function test()
             InspectorTest.takeAndOpenSnapshot(createHeapSnapshot, step1);
             var row;
 
-            function dumpAndPopulate(step, from, to, callback)
+            function dumpAndPopulate(step, from, to)
             {
                 InspectorTest.addResult("");
                 InspectorTest.addResult(step);
                 InspectorTest.addResult("Retrieved ranges: " + JSON.stringify(row._retrievedChildrenRanges));
                 for (var i = 0; i < row.children.length; ++i)
                     InspectorTest.addResult("[" + i + "] " + row.children[i]._element.textContent.replace(/[^\w\d]/mg, " "));
-                if (callback)
-                    row._populateChildren(from, to, callback);
+                return row._populateChildren(from, to);
             }
 
             function step1()
@@ -42,39 +41,15 @@ function test()
                 InspectorTest.expandRow(row, step3);
             }
 
-            function step3()
+            async function step3()
             {
-                dumpAndPopulate("Step 3", 30, 40, step4);
-            }
-
-            function step4()
-            {
-                dumpAndPopulate("Step 4", 20, 25, step5);
-            }
-
-            function step5()
-            {
-                dumpAndPopulate("Step 5", 28, 35, step6);
-            }
-
-            function step6()
-            {
-                dumpAndPopulate("Step 6", 18, 26, step7);
-            }
-
-            function step7()
-            {
-                dumpAndPopulate("Step 7", 15, 45, step8);
-            }
-
-            function step8()
-            {
-                dumpAndPopulate("Step 8", 10, 15, step9);
-            }
-
-            function step9()
-            {
-                dumpAndPopulate("Step 9");
+                await dumpAndPopulate("Step 3", 30, 40);
+                await dumpAndPopulate("Step 4", 20, 25);
+                await dumpAndPopulate("Step 5", 28, 35);
+                await dumpAndPopulate("Step 6", 18, 26);
+                await dumpAndPopulate("Step 7", 15, 45);
+                await dumpAndPopulate("Step 8", 10, 15);
+                await dumpAndPopulate("Step 9");
                 setTimeout(next, 0);
             }
         }

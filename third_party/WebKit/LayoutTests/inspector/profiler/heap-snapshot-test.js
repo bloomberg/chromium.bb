@@ -549,28 +549,14 @@ InspectorTest.clickRowAndGetRetainers = function(row, callback)
     };
     this._currentGrid()._mouseDownInDataTable(event);
     var rootNode = InspectorTest.currentProfileView()._retainmentDataGrid.rootNode();
-    function populateComplete()
-    {
-        rootNode.removeEventListener(Profiler.HeapSnapshotGridNode.Events.PopulateComplete, populateComplete, this);
-        callback(rootNode);
-    }
-    rootNode.addEventListener(Profiler.HeapSnapshotGridNode.Events.PopulateComplete, populateComplete, this);
+    rootNode.once(Profiler.HeapSnapshotGridNode.Events.PopulateComplete).then(() => callback(rootNode));
 };
 
 InspectorTest.clickShowMoreButton = function(buttonName, row, callback)
 {
     callback = InspectorTest.safeWrap(callback);
     var parent = row.parent;
-    function populateComplete()
-    {
-        parent.removeEventListener(Profiler.HeapSnapshotGridNode.Events.PopulateComplete, populateComplete, this);
-        function callCallback()
-        {
-            callback(parent);
-        }
-        setTimeout(callCallback, 0);
-    }
-    parent.addEventListener(Profiler.HeapSnapshotGridNode.Events.PopulateComplete, populateComplete, this);
+    parent.once(Profiler.HeapSnapshotGridNode.Events.PopulateComplete).then(() => setTimeout(() => callback(parent), 0));
     row[buttonName].click();
 };
 
@@ -607,16 +593,7 @@ InspectorTest.countDataRows = function(row, filter)
 InspectorTest.expandRow = function(row, callback)
 {
     callback = InspectorTest.safeWrap(callback);
-    function populateComplete()
-    {
-        row.removeEventListener(Profiler.HeapSnapshotGridNode.Events.PopulateComplete, populateComplete, this);
-        function callCallback()
-        {
-            callback(row);
-        }
-        setTimeout(callCallback, 0);
-    }
-    row.addEventListener(Profiler.HeapSnapshotGridNode.Events.PopulateComplete, populateComplete, this);
+    row.once(Profiler.HeapSnapshotGridNode.Events.PopulateComplete).then(() => setTimeout(() => callback(row), 0));
     (function expand()
     {
         if (row.hasChildren())
