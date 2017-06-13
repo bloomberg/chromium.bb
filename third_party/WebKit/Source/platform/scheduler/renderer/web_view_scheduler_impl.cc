@@ -162,6 +162,8 @@ WebViewSchedulerImpl::CreateFrameScheduler(blink::BlameContext* blame_context) {
 void WebViewSchedulerImpl::Unregister(WebFrameSchedulerImpl* frame_scheduler) {
   DCHECK(frame_schedulers_.find(frame_scheduler) != frame_schedulers_.end());
   frame_schedulers_.erase(frame_scheduler);
+  provisional_loads_.erase(frame_scheduler);
+  expect_backward_forwards_navigation_.erase(frame_scheduler);
 }
 
 void WebViewSchedulerImpl::OnNavigation() {

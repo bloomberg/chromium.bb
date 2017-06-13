@@ -241,6 +241,11 @@ class RendererSchedulerImplForTest : public RendererSchedulerImpl {
     return GetAnyThread().begin_main_frame_on_critical_path;
   }
 
+  bool waiting_for_meaningful_paint() const {
+    base::AutoLock lock(any_thread_lock_);
+    return GetAnyThread().waiting_for_meaningful_paint;
+  }
+
   int update_policy_count_;
   std::vector<std::string> use_cases_;
 };
@@ -3997,5 +4002,60 @@ TEST_F(RendererSchedulerImplTest, MaxQueueingTimeMetricRecordTheMax) {
   scheduler_->DidCommitProvisionalLoad(false, false, false);
   tester.ExpectUniqueSample("RendererScheduler.MaxQueueingTime", 500, 1);
 }
+
+TEST_F(RendererSchedulerImplTest, DidCommitProvisionalLoad) {
+  scheduler_->OnFirstMeaningfulPaint();
+  EXPECT_FALSE(scheduler_->waiting_for_meaningful_paint());
+
+  // Check that we only clear state for main frame navigations that are either
+  // not history inert or are reloads.
+  scheduler_->DidCommitProvisionalLoad(false /* is_web_history_inert_commit */,
+                                       false /* is_reload */,
+                                       false /* is_main_frame */);
+  EXPECT_FALSE(scheduler_->waiting_for_meaningful_paint());
+
+  scheduler_->OnFirstMeaningfulPaint();
+  scheduler_->DidCommitProvisionalLoad(false /* is_web_history_inert_commit */,
+                                       false /* is_reload */,
+                                       true /* is_main_frame */);
+  EXPECT_TRUE(scheduler_->waiting_for_meaningful_paint());  // State cleared.
+
+  scheduler_->OnFirstMeaningfulPaint();
+  scheduler_->DidCommitProvisionalLoad(false /* is_web_history_inert_commit */,
+                                       true /* is_reload */,
+                                       false /* is_main_frame */);
+  EXPECT_FALSE(scheduler_->waiting_for_meaningful_paint());
+
+  scheduler_->OnFirstMeaningfulPaint();
+  scheduler_->DidCommitProvisionalLoad(false /* is_web_history_inert_commit */,
+                                       true /* is_reload */,
+                                       true /* is_main_frame */);
+  EXPECT_TRUE(scheduler_->waiting_for_meaningful_paint());  // State cleared.
+
+  scheduler_->OnFirstMeaningfulPaint();
+  scheduler_->DidCommitProvisionalLoad(true /* is_web_history_inert_commit */,
+                                       false /* is_reload */,
+                                       false /* is_main_frame */);
+  EXPECT_FALSE(scheduler_->waiting_for_meaningful_paint());
+
+  scheduler_->OnFirstMeaningfulPaint();
+  scheduler_->DidCommitProvisionalLoad(true /* is_web_history_inert_commit */,
+                                       false /* is_reload */,
+                                       true /* is_main_frame */);
+  EXPECT_FALSE(scheduler_->waiting_for_meaningful_paint());
+
+  scheduler_->OnFirstMeaningfulPaint();
+  scheduler_->DidCommitProvisionalLoad(true /* is_web_history_inert_commit */,
+                                       true /* is_reload */,
+                                       false /* is_main_frame */);
+  EXPECT_FALSE(scheduler_->waiting_for_meaningful_paint());
+
+  scheduler_->OnFirstMeaningfulPaint();
+  scheduler_->DidCommitProvisionalLoad(true /* is_web_history_inert_commit */,
+                                       true /* is_reload */,
+                                       true /* is_main_frame */);
+  EXPECT_TRUE(scheduler_->waiting_for_meaningful_paint());  // State cleared.
+}
+
 }  // namespace scheduler
 }  // namespace blink

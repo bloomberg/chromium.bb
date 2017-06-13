@@ -1664,6 +1664,8 @@ void RendererSchedulerImpl::DidCommitProvisionalLoad(
     bool is_web_history_inert_commit,
     bool is_reload,
     bool is_main_frame) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+               "RendererSchedulerImpl::OnDidCommitProvisionalLoad");
   // Initialize |max_queueing_time_metric| lazily so that
   // |SingleSampleMetricsFactory::SetFactory()| is called before
   // |SingleSampleMetricsFactory::Get()|
@@ -1677,9 +1679,7 @@ void RendererSchedulerImpl::DidCommitProvisionalLoad(
 
   // If this either isn't a history inert commit or it's a reload then we must
   // reset the task cost estimators.
-  if (is_main_frame && (is_web_history_inert_commit || is_reload)) {
-    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
-                 "RendererSchedulerImpl::OnDidCommitProvisionalLoad");
+  if (is_main_frame && (!is_web_history_inert_commit || is_reload)) {
     base::AutoLock lock(any_thread_lock_);
     ResetForNavigationLocked();
   }
@@ -1715,6 +1715,8 @@ void RendererSchedulerImpl::ResumeTimerQueueWhenForegroundedOrResumed() {
 }
 
 void RendererSchedulerImpl::ResetForNavigationLocked() {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+               "RendererSchedulerImpl::ResetForNavigationLocked");
   helper_.CheckOnValidThread();
   any_thread_lock_.AssertAcquired();
   GetAnyThread().user_model.Reset(helper_.scheduler_tqm_delegate()->NowTicks());
