@@ -134,8 +134,8 @@ message TabNavigation {
   // The status code from the last navigation.
   optional int32 http_status_code = 20;
 
-  // Referrer policy. Old, broken value.
-  optional int32 obsolete_referrer_policy = 21 [default = 1];
+  // Referrer policy. Old, broken value. Deprecated in M61.
+  optional int32 obsolete_referrer_policy = 21 [deprecated = true];
   // True if created from restored navigation entry that hasn't been loaded.
   optional bool is_restored = 22;
   // The chain of redirections for this navigation, from the original URL
