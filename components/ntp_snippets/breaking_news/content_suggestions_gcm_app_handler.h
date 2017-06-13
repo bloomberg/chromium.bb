@@ -29,14 +29,24 @@ namespace ntp_snippets {
 // be called upon received push content suggestions.
 class ContentSuggestionsGCMAppHandler : public gcm::GCMAppHandler {
  public:
-  // TODO(mamir): Check if a better paramater datatype makes more sense.
-  using OnNewContentCallback = base::Callback<void(const base::Value& content)>;
+  // Callbacks for JSON parsing to allow injecting platform-dependent code.
+  using SuccessCallback =
+      base::Callback<void(std::unique_ptr<base::Value> result)>;
+  using ErrorCallback = base::Callback<void(const std::string& error)>;
+  using ParseJSONCallback =
+      base::Callback<void(const std::string& raw_json_string,
+                          const SuccessCallback& success_callback,
+                          const ErrorCallback& error_callback)>;
+
+  using OnNewContentCallback =
+      base::Callback<void(std::unique_ptr<base::Value> content)>;
 
   ContentSuggestionsGCMAppHandler(
       gcm::GCMDriver* gcm_driver,
       instance_id::InstanceIDDriver* instance_id_driver,
       PrefService* pref_service_,
-      std::unique_ptr<SubscriptionManager> subscription_manager);
+      std::unique_ptr<SubscriptionManager> subscription_manager,
+      const ParseJSONCallback& parse_json_callback);
 
   // If still listening, calls StopListening()
   ~ContentSuggestionsGCMAppHandler() override;
@@ -73,10 +83,18 @@ class ContentSuggestionsGCMAppHandler : public gcm::GCMAppHandler {
   void DidSubscribe(const std::string& subscription_id,
                     instance_id::InstanceID::Result result);
 
+  // Called after successfully parsing the received suggestion JSON.
+  void OnJsonSuccess(std::unique_ptr<base::Value> content);
+
+  // Called in case the received suggestion JSON inside the GCM has a parse
+  // error.
+  void OnJsonError(const std::string& json_str, const std::string& error);
+
   gcm::GCMDriver* const gcm_driver_;
   instance_id::InstanceIDDriver* const instance_id_driver_;
   PrefService* const pref_service_;
   const std::unique_ptr<SubscriptionManager> subscription_manager_;
+  const ParseJSONCallback parse_json_callback_;
 
   // Called after every time a new message is received in OnMessage() to notify
   // the content provider.

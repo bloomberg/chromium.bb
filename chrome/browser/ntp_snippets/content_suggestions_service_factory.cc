@@ -400,7 +400,8 @@ void SubscribeForGCMPushUpdates(PrefService* pref_service,
 
   auto handler = base::MakeUnique<ContentSuggestionsGCMAppHandler>(
       gcm_driver, instance_id_profile_service->driver(), pref_service,
-      std::move(subscription_manager));
+      std::move(subscription_manager),
+      base::Bind(&safe_json::SafeJsonParser::Parse));
 
   auto provider = base::MakeUnique<BreakingNewsSuggestionsProvider>(
       service, std::move(handler));

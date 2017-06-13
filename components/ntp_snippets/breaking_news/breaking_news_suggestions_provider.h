@@ -50,7 +50,7 @@ class BreakingNewsSuggestionsProvider : public ContentSuggestionsProvider {
 
   // Callback called from the GCM handler when new content has been pushed from
   // the server.
-  void OnNewContentSuggestion(const base::Value& content);
+  void OnNewContentSuggestion(std::unique_ptr<base::Value> content);
 
   std::unique_ptr<ContentSuggestionsGCMAppHandler> gcm_app_handler_;
   const Category provided_category_;

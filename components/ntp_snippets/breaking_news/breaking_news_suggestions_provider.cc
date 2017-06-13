@@ -33,7 +33,7 @@ void BreakingNewsSuggestionsProvider::Start() {
 }
 
 void BreakingNewsSuggestionsProvider::OnNewContentSuggestion(
-    const base::Value& content) {}
+    std::unique_ptr<base::Value> content) {}
 
 ////////////////////////////////////////////////////////////////////////////////
 // Private methods
