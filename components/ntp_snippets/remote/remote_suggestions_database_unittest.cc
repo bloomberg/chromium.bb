@@ -41,9 +41,14 @@ bool operator==(const RemoteSuggestion& lhs, const RemoteSuggestion& rhs) {
 namespace {
 
 std::unique_ptr<RemoteSuggestion> CreateTestSuggestion() {
-  return RemoteSuggestion::CreateForTesting(
-      "http://localhost", kArticlesRemoteId, GURL("http://localhost"),
-      "Publisher", GURL("http://amp"));
+  SnippetProto proto;
+  proto.add_ids("http://localhost");
+  proto.set_remote_category_id(1);  // Articles
+  auto* source = proto.add_sources();
+  source->set_url("http://localhost");
+  source->set_publisher_name("Publisher");
+  source->set_amp_url("http://amp");
+  return RemoteSuggestion::CreateFromProto(proto);
 }
 
 MATCHER_P(SnippetEq, snippet, "") {
