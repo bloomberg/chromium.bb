@@ -508,12 +508,16 @@ class PLATFORM_EXPORT RendererSchedulerImpl
     bool has_navigated;
     std::unique_ptr<base::SingleSampleMetric> max_queueing_time_metric;
     base::TimeDelta max_queueing_time;
+    base::TimeTicks background_status_changed_at;
     std::set<WebViewSchedulerImpl*> web_view_schedulers;  // Not owned.
     RAILModeObserver* rail_mode_observer;                 // Not owned.
     WakeUpBudgetPool* wake_up_budget_pool;                // Not owned.
     TaskDurationMetricReporter task_duration_reporter;
     TaskDurationMetricReporter foreground_task_duration_reporter;
     TaskDurationMetricReporter background_task_duration_reporter;
+    TaskDurationMetricReporter background_first_minute_task_duration_reporter;
+    TaskDurationMetricReporter
+        background_after_first_minute_task_duration_reporter;
   };
 
   struct AnyThread {

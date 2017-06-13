@@ -221,13 +221,19 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
       is_audio_playing(false),
       virtual_time_paused(false),
       has_navigated(false),
+      background_status_changed_at(now),
       rail_mode_observer(nullptr),
       wake_up_budget_pool(nullptr),
       task_duration_reporter("RendererScheduler.TaskDurationPerQueueType2"),
       foreground_task_duration_reporter(
           "RendererScheduler.TaskDurationPerQueueType2.Foreground"),
       background_task_duration_reporter(
-          "RendererScheduler.TaskDurationPerQueueType2.Background") {
+          "RendererScheduler.TaskDurationPerQueueType2.Background"),
+      background_first_minute_task_duration_reporter(
+          "RendererScheduler.TaskDurationPerQueueType2.Background.FirstMinute"),
+      background_after_first_minute_task_duration_reporter(
+          "RendererScheduler.TaskDurationPerQueueType2.Background."
+          "AfterFirstMinute") {
   foreground_main_thread_load_tracker.Resume(now);
 }
 
@@ -1895,6 +1901,21 @@ void RendererSchedulerImpl::DidProcessTask(TaskQueue* task_queue,
                     end_time_ticks);
 }
 
+namespace {
+
+// Calculates the length of the intersection of two given time intervals.
+base::TimeDelta DurationOfIntervalOverlap(base::TimeTicks start1,
+                                          base::TimeTicks end1,
+                                          base::TimeTicks start2,
+                                          base::TimeTicks end2) {
+  DCHECK_LE(start1, end1);
+  DCHECK_LE(start2, end2);
+  return std::max(std::min(end1, end2) - std::max(start1, start2),
+                  base::TimeDelta());
+}
+
+}  // namespace
+
 void RendererSchedulerImpl::RecordTaskMetrics(TaskQueue::QueueType queue_type,
                                               base::TimeTicks start_time,
                                               base::TimeTicks end_time) {
@@ -1923,6 +1944,27 @@ void RendererSchedulerImpl::RecordTaskMetrics(TaskQueue::QueueType queue_type,
   if (GetMainThreadOnly().renderer_backgrounded) {
     GetMainThreadOnly().background_task_duration_reporter.RecordTask(queue_type,
                                                                      duration);
+
+    // One minute is long enough for the majority of pages to complete their
+    // loading during this period.
+    base::TimeTicks one_minute_after_backgrounding =
+        GetMainThreadOnly().background_status_changed_at +
+        base::TimeDelta::FromMinutes(1);
+
+    GetMainThreadOnly()
+        .background_first_minute_task_duration_reporter.RecordTask(
+            queue_type, DurationOfIntervalOverlap(
+                            start_time, end_time,
+                            GetMainThreadOnly().background_status_changed_at,
+                            one_minute_after_backgrounding));
+
+    GetMainThreadOnly()
+        .background_after_first_minute_task_duration_reporter.RecordTask(
+            queue_type,
+            DurationOfIntervalOverlap(
+                start_time, end_time, one_minute_after_backgrounding,
+                std::max(one_minute_after_backgrounding, end_time)));
+
   } else {
     GetMainThreadOnly().foreground_task_duration_reporter.RecordTask(queue_type,
                                                                      duration);
