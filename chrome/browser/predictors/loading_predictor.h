@@ -36,8 +36,7 @@ class LoadingStatsCollector;
 // predictor.
 //
 // All methods must be called from the UI thread.
-class LoadingPredictor : public KeyedService,
-                         public base::SupportsWeakPtr<LoadingPredictor> {
+class LoadingPredictor : public KeyedService {
  public:
   LoadingPredictor(const LoadingPredictorConfig& config, Profile* profile);
   ~LoadingPredictor() override;
@@ -65,6 +64,10 @@ class LoadingPredictor : public KeyedService,
       const ResourcePrefetchPredictor::URLRequestSummary& summary);
   void OnMainFrameResponse(
       const ResourcePrefetchPredictor::URLRequestSummary& summary);
+
+  base::WeakPtr<LoadingPredictor> GetWeakPtr() {
+    return weak_factory_.GetWeakPtr();
+  }
 
  private:
   // Cancels an active hint, from its iterator inside |active_hints_|. If the
@@ -100,6 +103,8 @@ class LoadingPredictor : public KeyedService,
                            TestMainFrameRequestDoesntCancelExternalHint);
   FRIEND_TEST_ALL_PREFIXES(LoadingPredictorTest,
                            TestDontTrackNonPrefetchableUrls);
+
+  base::WeakPtrFactory<LoadingPredictor> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LoadingPredictor);
 };

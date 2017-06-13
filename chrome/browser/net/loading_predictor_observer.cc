@@ -79,7 +79,7 @@ bool TryToFillNavigationID(
 namespace chrome_browser_net {
 
 LoadingPredictorObserver::LoadingPredictorObserver(LoadingPredictor* predictor)
-    : predictor_(predictor->AsWeakPtr()) {
+    : predictor_(predictor->GetWeakPtr()) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 

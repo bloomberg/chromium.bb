@@ -25,7 +25,8 @@ LoadingPredictor::LoadingPredictor(const LoadingPredictorConfig& config,
           resource_prefetch_predictor_.get(),
           config)),
       loading_data_collector_(base::MakeUnique<LoadingDataCollector>(
-          resource_prefetch_predictor())) {
+          resource_prefetch_predictor())),
+      weak_factory_(this) {
   resource_prefetch_predictor_->SetStatsCollector(stats_collector_.get());
 }
 

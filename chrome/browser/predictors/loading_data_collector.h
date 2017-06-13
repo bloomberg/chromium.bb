@@ -19,8 +19,7 @@ namespace predictors {
 // Records to the database and stats collection classes navigation events as
 // reported by various observers. All the non-static methods of this class need
 // to be called on the UI thread.
-class LoadingDataCollector
-    : public base::SupportsWeakPtr<LoadingDataCollector> {
+class LoadingDataCollector {
  public:
   explicit LoadingDataCollector(ResourcePrefetchPredictor* predictor);
   ~LoadingDataCollector();

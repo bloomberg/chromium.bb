@@ -101,7 +101,6 @@ class LoadingStatsCollector;
 // with main frame.
 class ResourcePrefetchPredictor
     : public history::HistoryServiceObserver,
-      public base::SupportsWeakPtr<ResourcePrefetchPredictor>,
       public precache::PrecacheManager::Delegate {
  public:
   // Data collected for origin-based prediction, for a single origin during a
@@ -190,6 +189,17 @@ class ResourcePrefetchPredictor
     REDIRECT_CORRECTLY_PREDICTED,
     MAX
   };
+
+  using PrefetchDataMap =
+      GlowplugKeyValueData<PrefetchData, internal::LastVisitTimeCompare>;
+  using RedirectDataMap =
+      GlowplugKeyValueData<RedirectData, internal::LastVisitTimeCompare>;
+  using ManifestDataMap = GlowplugKeyValueData<precache::PrecacheManifest,
+                                               internal::ManifestCompare>;
+  using OriginDataMap =
+      GlowplugKeyValueData<OriginData, internal::LastVisitTimeCompare>;
+  using NavigationMap =
+      std::map<NavigationID, std::unique_ptr<PageRequestSummary>>;
 
   ResourcePrefetchPredictor(const LoadingPredictorConfig& config,
                             Profile* profile);
@@ -314,18 +324,6 @@ class ResourcePrefetchPredictor
     INITIALIZING = 1,
     INITIALIZED = 2
   };
-  typedef GlowplugKeyValueData<PrefetchData, internal::LastVisitTimeCompare>
-      PrefetchDataMap;
-  typedef GlowplugKeyValueData<RedirectData, internal::LastVisitTimeCompare>
-      RedirectDataMap;
-  typedef GlowplugKeyValueData<precache::PrecacheManifest,
-                               internal::ManifestCompare>
-      ManifestDataMap;
-  typedef GlowplugKeyValueData<OriginData, internal::LastVisitTimeCompare>
-      OriginDataMap;
-  typedef std::map<NavigationID, std::unique_ptr<PageRequestSummary>>
-      NavigationMap;
-
   // Returns true if the request (should have a response in it) is "no-store".
   static bool IsNoStore(const net::URLRequest& request);
 
@@ -364,7 +362,14 @@ class ResourcePrefetchPredictor
   bool PopulateFromManifest(const std::string& manifest_host,
                             std::vector<GURL>* urls) const;
 
-  void InitializeOnDBThread();
+  // Callback for the task to read the predictor database. Takes ownership of
+  // all arguments.
+  void CreateCaches(std::unique_ptr<PrefetchDataMap> url_resource_data,
+                    std::unique_ptr<PrefetchDataMap> host_resource_data,
+                    std::unique_ptr<RedirectDataMap> url_redirect_data,
+                    std::unique_ptr<RedirectDataMap> host_redirect_data,
+                    std::unique_ptr<ManifestDataMap> manifest_data,
+                    std::unique_ptr<OriginDataMap> origin_data);
 
   // Called during initialization when history is read and the predictor
   // database has been read.
@@ -454,6 +459,8 @@ class ResourcePrefetchPredictor
 
   ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
       history_service_observer_;
+
+  base::WeakPtrFactory<ResourcePrefetchPredictor> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourcePrefetchPredictor);
 };
