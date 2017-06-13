@@ -168,7 +168,8 @@ bool ContainerNode::IsChildTypeAllowed(const Node& child) const {
 
 // Returns true if |new_child| contains this node. In that case,
 // |exception_state| has an exception.
-bool ContainerNode::ContainsConsideringHostElements(
+// https://dom.spec.whatwg.org/#concept-tree-host-including-inclusive-ancestor
+bool ContainerNode::IsHostIncludingInclusiveAncestorOfThis(
     const Node& new_child,
     ExceptionState& exception_state) const {
   // Non-ContainerNode can contain nothing.
@@ -204,7 +205,7 @@ bool ContainerNode::EnsurePreInsertionValidity(
     DCHECK(IsChildTypeAllowed(new_child));
     // 2. If node is a host-including inclusive ancestor of parent, throw a
     // HierarchyRequestError.
-    if (ContainsConsideringHostElements(new_child, exception_state))
+    if (IsHostIncludingInclusiveAncestorOfThis(new_child, exception_state))
       return false;
     // 3. If child is not null and its parent is not parent, then throw a
     // NotFoundError.
@@ -232,7 +233,7 @@ bool ContainerNode::EnsurePreInsertionValidity(
 
   // 2. If node is a host-including inclusive ancestor of parent, throw a
   // HierarchyRequestError.
-  if (ContainsConsideringHostElements(new_child, exception_state))
+  if (IsHostIncludingInclusiveAncestorOfThis(new_child, exception_state))
     return false;
 
   // 3. If child is not null and its parent is not parent, then throw a
@@ -269,7 +270,7 @@ bool ContainerNode::RecheckNodeInsertionStructuralPrereq(
       return false;
     }
     if (IsDocumentNode()) {
-      // For Document, no need to check ContainsConsideringHostElements()
+      // For Document, no need to check host-including inclusive ancestor
       // because a Document node can't be a child of other nodes.
       // However, status of existing doctype or root element might be changed
       // and we need to check it again.
@@ -277,7 +278,7 @@ bool ContainerNode::RecheckNodeInsertionStructuralPrereq(
                                             exception_state))
         return false;
     } else {
-      if (ContainsConsideringHostElements(*child, exception_state))
+      if (IsHostIncludingInclusiveAncestorOfThis(*child, exception_state))
         return false;
     }
   }
