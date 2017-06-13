@@ -560,8 +560,9 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
         dst->AddStringAttribute(ui::AX_ATTR_LANGUAGE, src.Language().Utf8());
     }
 
-    if (src.KeyboardShortcut().length()) {
-      dst->AddStringAttribute(ui::AX_ATTR_SHORTCUT,
+    if (src.KeyboardShortcut().length() &&
+        !dst->HasStringAttribute(ui::AX_ATTR_KEY_SHORTCUTS)) {
+      dst->AddStringAttribute(ui::AX_ATTR_KEY_SHORTCUTS,
                               src.KeyboardShortcut().Utf8());
     }
 

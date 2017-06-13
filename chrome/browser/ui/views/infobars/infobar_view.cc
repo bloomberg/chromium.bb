@@ -280,7 +280,7 @@ void InfoBarView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
           ? IDS_ACCNAME_INFOBAR_WARNING
           : IDS_ACCNAME_INFOBAR_PAGE_ACTION));
   node_data->role = ui::AX_ROLE_ALERT;
-  node_data->AddStringAttribute(ui::AX_ATTR_SHORTCUT, "Alt+Shift+A");
+  node_data->AddStringAttribute(ui::AX_ATTR_KEY_SHORTCUTS, "Alt+Shift+A");
 }
 
 gfx::Size InfoBarView::CalculatePreferredSize() const {

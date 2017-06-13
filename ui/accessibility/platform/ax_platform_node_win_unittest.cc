@@ -178,7 +178,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleValue) {
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleShortcut) {
   AXNodeData root;
   root.id = 1;
-  root.AddStringAttribute(AX_ATTR_SHORTCUT, "Shortcut");
+  root.AddStringAttribute(AX_ATTR_KEY_SHORTCUTS, "Shortcut");
   Init(root);
 
   ScopedComPtr<IAccessible> root_obj(GetRootIAccessible());

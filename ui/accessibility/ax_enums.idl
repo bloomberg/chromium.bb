@@ -347,7 +347,6 @@
     placeholder,
     role,
     role_description,
-    shortcut,
     url,
     value
   };

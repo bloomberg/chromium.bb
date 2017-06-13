@@ -595,18 +595,7 @@ STDMETHODIMP BrowserAccessibilityComWin::get_accKeyboardShortcut(
   if (!owner())
     return E_FAIL;
 
-  if (!acc_key)
-    return E_INVALIDARG;
-
-  BrowserAccessibilityComWin* target = GetTargetFromChildID(var_id);
-  if (!target)
-    return E_INVALIDARG;
-
-  if (target->HasStringAttribute(ui::AX_ATTR_KEY_SHORTCUTS)) {
-    return target->GetStringAttributeAsBstr(ui::AX_ATTR_KEY_SHORTCUTS, acc_key);
-  }
-
-  return target->GetStringAttributeAsBstr(ui::AX_ATTR_SHORTCUT, acc_key);
+  return AXPlatformNodeWin::get_accKeyboardShortcut(var_id, acc_key);
 }
 
 STDMETHODIMP BrowserAccessibilityComWin::get_accName(VARIANT var_id,
