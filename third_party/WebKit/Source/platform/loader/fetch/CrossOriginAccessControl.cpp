@@ -123,30 +123,6 @@ static bool IsOriginSeparator(UChar ch) {
   return IsASCIISpace(ch) || ch == ',';
 }
 
-static bool IsInterestingStatusCode(int status_code) {
-  // Predicate that gates what status codes should be included in console error
-  // messages for responses containing no access control headers.
-  return status_code >= 400;
-}
-
-static void AppendOriginDeniedMessage(StringBuilder& builder,
-                                      const SecurityOrigin* security_origin) {
-  builder.Append(" Origin '");
-  builder.Append(security_origin->ToString());
-  builder.Append("' is therefore not allowed access.");
-}
-
-static void AppendNoCORSInformationalMessage(
-    StringBuilder& builder,
-    WebURLRequest::RequestContext context) {
-  if (context != WebURLRequest::kRequestContextFetch)
-    return;
-  builder.Append(
-      " Have the server send the header with a valid value, or, if an "
-      "opaque response serves your needs, set the request's mode to "
-      "'no-cors' to fetch the resource with CORS disabled.");
-}
-
 CrossOriginAccessControl::AccessStatus CrossOriginAccessControl::CheckAccess(
     const ResourceResponse& response,
     StoredCredentials include_credentials,
@@ -207,6 +183,30 @@ CrossOriginAccessControl::AccessStatus CrossOriginAccessControl::CheckAccess(
     }
   }
   return kAccessAllowed;
+}
+
+static bool IsInterestingStatusCode(int status_code) {
+  // Predicate that gates what status codes should be included in console error
+  // messages for responses containing no access control headers.
+  return status_code >= 400;
+}
+
+static void AppendOriginDeniedMessage(StringBuilder& builder,
+                                      const SecurityOrigin* security_origin) {
+  builder.Append(" Origin '");
+  builder.Append(security_origin->ToString());
+  builder.Append("' is therefore not allowed access.");
+}
+
+static void AppendNoCORSInformationalMessage(
+    StringBuilder& builder,
+    WebURLRequest::RequestContext context) {
+  if (context != WebURLRequest::kRequestContextFetch)
+    return;
+  builder.Append(
+      " Have the server send the header with a valid value, or, if an "
+      "opaque response serves your needs, set the request's mode to "
+      "'no-cors' to fetch the resource with CORS disabled.");
 }
 
 void CrossOriginAccessControl::AccessControlErrorString(
