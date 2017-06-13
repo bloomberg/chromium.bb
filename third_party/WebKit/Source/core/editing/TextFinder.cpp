@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "web/TextFinder.h"
+#include "core/editing/TextFinder.h"
 
 #include "core/dom/AXObjectCacheBase.h"
 #include "core/dom/Range.h"
@@ -435,7 +435,7 @@ void TextFinder::ScopeStringMatches(int identifier,
 
     // Scoping effort ran out of time, lets ask for another time-slice.
     ScopeStringMatchesSoon(identifier, search_text, options);
-    return;                         // Done for now, resume work later.
+    return;  // Done for now, resume work later.
   }
 
   FinishCurrentScopingEffort(identifier);
@@ -484,19 +484,20 @@ void TextFinder::IncreaseMatchCount(int identifier, int count) {
   total_match_count_ += count;
 
   // Update the UI with the latest findings.
-  if (OwnerFrame().Client())
+  if (OwnerFrame().Client()) {
     OwnerFrame().Client()->ReportFindInPageMatchCount(
         identifier, total_match_count_, !frame_scoping_ || !total_match_count_);
+  }
 }
 
 void TextFinder::ReportFindInPageSelection(const WebRect& selection_rect,
                                            int active_match_ordinal,
                                            int identifier) {
   // Update the UI with the latest selection rect.
-  if (OwnerFrame().Client())
+  if (OwnerFrame().Client()) {
     OwnerFrame().Client()->ReportFindInPageSelection(
         identifier, active_match_ordinal, selection_rect);
-
+  }
   // Update accessibility too, so if the user commits to this query
   // we can move accessibility focus to this result.
   ReportFindInPageResultToAccessibility(identifier);
@@ -552,13 +553,14 @@ void TextFinder::UpdateFindMatchRects() {
 
   // Invalidate the rects in child frames. Will be updated later during
   // traversal.
-  if (!find_match_rects_are_valid_)
+  if (!find_match_rects_are_valid_) {
     for (WebFrame* child = OwnerFrame().FirstChild(); child;
-         child = child->NextSibling())
+         child = child->NextSibling()) {
       ToWebLocalFrameBase(child)
           ->EnsureTextFinder()
           .find_match_rects_are_valid_ = false;
-
+    }
+  }
   find_match_rects_are_valid_ = true;
 }
 
