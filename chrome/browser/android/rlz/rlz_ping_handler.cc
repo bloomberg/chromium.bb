@@ -24,6 +24,10 @@ using base::android::JavaParamRef;
 
 constexpr int kMaxRetries = 10;
 
+namespace {
+const char kProtocolCgiVariable[] = "rep";
+}
+
 namespace chrome {
 namespace android {
 
@@ -63,6 +67,8 @@ void RlzPingHandler::Ping(
       "https://%s%s?", rlz_lib::kFinancialServer, rlz_lib::kFinancialPingPath));
   request_url = net::AppendQueryParameter(
       request_url, rlz_lib::kProductSignatureCgiVariable, "chrome");
+  request_url =
+      net::AppendQueryParameter(request_url, kProtocolCgiVariable, "1");
   request_url = net::AppendQueryParameter(
       request_url, rlz_lib::kProductBrandCgiVariable, brand);
   request_url = net::AppendQueryParameter(
