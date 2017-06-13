@@ -990,7 +990,11 @@ class RTCPeerConnectionHandler::Observer
       public PeerConnectionObserver {
  public:
   Observer(const base::WeakPtr<RTCPeerConnectionHandler>& handler)
-      : handler_(handler), main_thread_(base::ThreadTaskRunnerHandle::Get()) {}
+      : handler_(handler),
+        main_thread_(base::ThreadTaskRunnerHandle::Get()),
+        track_adapter_map_(handler_->track_adapter_map_) {
+    DCHECK(track_adapter_map_);
+  }
 
  protected:
   friend class base::RefCountedThreadSafe<RTCPeerConnectionHandler::Observer>;
@@ -1010,7 +1014,7 @@ class RTCPeerConnectionHandler::Observer
   void OnAddStream(rtc::scoped_refptr<MediaStreamInterface> stream) override {
     DCHECK(stream);
     std::unique_ptr<RemoteMediaStreamImpl> remote_stream(
-        new RemoteMediaStreamImpl(main_thread_, stream));
+        new RemoteMediaStreamImpl(main_thread_, track_adapter_map_, stream));
 
     // The webkit object owned by RemoteMediaStreamImpl, will be initialized
     // asynchronously and the posted task will execude after that initialization
@@ -1111,6 +1115,7 @@ class RTCPeerConnectionHandler::Observer
  private:
   const base::WeakPtr<RTCPeerConnectionHandler> handler_;
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
+  const scoped_refptr<WebRtcMediaStreamTrackAdapterMap> track_adapter_map_;
 };
 
 RTCPeerConnectionHandler::RTCPeerConnectionHandler(
@@ -1119,9 +1124,8 @@ RTCPeerConnectionHandler::RTCPeerConnectionHandler(
     : client_(client),
       is_closed_(false),
       dependency_factory_(dependency_factory),
-      track_adapter_map_(new WebRtcMediaStreamTrackAdapterMap(
-          dependency_factory_,
-          base::ThreadTaskRunnerHandle::Get())),
+      track_adapter_map_(
+          new WebRtcMediaStreamTrackAdapterMap(dependency_factory_)),
       weak_factory_(this) {
   CHECK(client_);
   GetPeerConnectionHandlers()->insert(this);
