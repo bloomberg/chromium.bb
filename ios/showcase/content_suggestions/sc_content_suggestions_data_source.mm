@@ -47,16 +47,6 @@ using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
 @synthesize readingListSection = _readingListSection;
 @synthesize articleSection = _articleSection;
 
-#pragma mark - Public
-
-+ (NSString*)titleFirstSuggestion {
-  return @"Title of the first suggestions";
-}
-
-+ (NSString*)titleReadingListItem {
-  return @"Reading List item: No subtitle, no image";
-}
-
 #pragma mark - ContentSuggestionsDataSource
 
 - (NSArray<ContentSuggestionsSectionInformation*>*)sectionsInfo {
@@ -82,7 +72,7 @@ using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
     }
     case ContentSuggestionsSectionReadingList: {
       SCContentSuggestionsItem* suggestion = [self article];
-      suggestion.title = [[self class] titleReadingListItem];
+      suggestion.title = @"Reading List item: No subtitle, no image";
       suggestion.subtitle = nil;
       suggestion.hasImage = NO;
       suggestion.suggestionIdentifier.sectionInfo = self.readingListSection;
@@ -91,7 +81,7 @@ using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
     case ContentSuggestionsSectionArticles: {
       NSMutableArray<CSCollectionViewItem*>* items = [NSMutableArray array];
       SCContentSuggestionsItem* suggestion = [self article];
-      suggestion.title = [[self class] titleFirstSuggestion];
+      suggestion.title = @"Title of the first suggestions";
       suggestion.suggestionIdentifier.IDInSection = std::to_string(1);
       [items addObject:suggestion];
       for (int i = 2; i < 6; i++) {
@@ -157,8 +147,6 @@ using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
         initWithSectionID:ContentSuggestionsSectionReadingList];
     _readingListSection.title =
         l10n_util::GetNSString(IDS_NTP_READING_LIST_SUGGESTIONS_SECTION_HEADER);
-    _readingListSection.emptyText =
-        l10n_util::GetNSString(IDS_NTP_READING_LIST_SUGGESTIONS_SECTION_EMPTY);
     _readingListSection.footerTitle =
         l10n_util::GetNSString(IDS_IOS_CONTENT_SUGGESTIONS_FOOTER_TITLE);
   }
