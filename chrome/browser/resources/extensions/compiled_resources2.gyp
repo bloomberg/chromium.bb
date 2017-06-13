@@ -63,7 +63,6 @@
           '<(DEPTH)/third_party/jstemplate/jsevalcontext.js',
           'extension_command_list.js',
           '<(DEPTH)/ui/webui/resources/js/cr/ui/controlled_indicator.js',
-          '<(DEPTH)/chrome/browser/resources/uber/uber_utils.js',
           'extension_error_overlay.js',
           'drag_and_drop_handler.js',
           '<(DEPTH)/ui/webui/resources/js/cr/ui/list_selection_model.js',

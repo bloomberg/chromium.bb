@@ -32,7 +32,6 @@
 #include "chrome/browser/ui/webui/flags_ui.h"
 #include "chrome/browser/ui/webui/flash_ui.h"
 #include "chrome/browser/ui/webui/gcm_internals_ui.h"
-#include "chrome/browser/ui/webui/help/help_ui.h"
 #include "chrome/browser/ui/webui/identity_internals_ui.h"
 #include "chrome/browser/ui/webui/instant_ui.h"
 #include "chrome/browser/ui/webui/interstitials/interstitial_ui.h"
@@ -125,7 +124,6 @@
 #include "chrome/browser/ui/webui/ntp/new_tab_ui.h"
 #include "chrome/browser/ui/webui/sync_file_system_internals/sync_file_system_internals_ui.h"
 #include "chrome/browser/ui/webui/system_info_ui.h"
-#include "chrome/browser/ui/webui/uber/uber_ui.h"
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -414,9 +412,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
       ::switches::MdFeedbackEnabled()) {
     return &NewWebUI<MdFeedbackUI>;
   }
-  // Help is implemented with native UI elements on Android.
-  if (url.host_piece() == chrome::kChromeUIHelpFrameHost)
-    return &NewWebUI<HelpUI>;
   // Identity API is not available on Android.
   if (url.host_piece() == chrome::kChromeUIIdentityInternalsHost)
     return &NewWebUI<IdentityInternalsUI>;
@@ -427,24 +422,14 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
       url.host_piece() == chrome::kChromeUIMdSettingsHost) {
     return &NewWebUI<settings::MdSettingsUI>;
   }
-  // If the material design extensions page is enabled, it gets its own host.
-  // Otherwise, it's handled by the uber settings page.
-  if (url.host_piece() == chrome::kChromeUIExtensionsHost &&
-      base::FeatureList::IsEnabled(features::kMaterialDesignExtensions)) {
+  if (url.host_piece() == chrome::kChromeUIExtensionsHost)
     return &NewWebUI<extensions::ExtensionsUI>;
-  }
   if (url.host_piece() == chrome::kChromeUIHistoryHost)
     return &NewWebUI<MdHistoryUI>;
   if (url.host_piece() == chrome::kChromeUISyncFileSystemInternalsHost)
     return &NewWebUI<SyncFileSystemInternalsUI>;
   if (url.host_piece() == chrome::kChromeUISystemInfoHost)
     return &NewWebUI<SystemInfoUI>;
-  // Uber frame is not used on Android.
-  if (url.host_piece() == chrome::kChromeUIUberFrameHost)
-    return &NewWebUI<UberFrameUI>;
-  // Uber page is not used on Android.
-  if (url.host_piece() == chrome::kChromeUIUberHost)
-    return &NewWebUI<UberUI>;
 #endif  // !defined(OS_ANDROID)
 #if defined(OS_WIN)
   if (url.host_piece() == chrome::kChromeUIConflictsHost)

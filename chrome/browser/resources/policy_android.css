@@ -2,11 +2,11 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-body.uber-frame {
+body {
   -webkit-margin-start: 0;
 }
 
-body.uber-frame > .page {
+body > .page {
   -webkit-margin-end: 0;
   -webkit-padding-end: 10px;
   -webkit-padding-start: 10px;
@@ -19,22 +19,22 @@ body.uber-frame > .page {
   z-index: 4;
 }
 
-body.uber-frame header {
+body header {
   left: 0;
   max-width: none;
   min-width: 0;
 }
 
-body.uber-frame header > h1 {
+body header > h1 {
   margin-left: 10px;
 }
 
-body.uber-frame section {
+body section {
   -webkit-padding-start: 0;
   max-width: none;
 }
 
-body.uber-frame section > h3 {
+body section > h3 {
   -webkit-margin-start: 0;
 }
 
@@ -132,7 +132,7 @@ section:not(.empty) > div.no-policies-set {
   display: none;
 }
 
-body.uber-frame * section.policy-table-section {
+body * section.policy-table-section {
   padding-bottom: 10px;
 }
 

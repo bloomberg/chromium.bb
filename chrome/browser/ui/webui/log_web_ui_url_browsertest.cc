@@ -18,9 +18,9 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/strings/grit/components_strings.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
-#include "extensions/features/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -35,8 +35,15 @@ class LogWebUIUrlTest : public InProcessBrowserTest {
   LogWebUIUrlTest() {}
   ~LogWebUIUrlTest() override {}
 
-  std::vector<Bucket> GetSamples() {
-    return histogram_tester_.GetAllSamples(webui::kWebUICreatedForUrl);
+  void RunTest(int title_ids, const GURL& url) {
+    auto* tab = browser()->tab_strip_model()->GetActiveWebContents();
+    base::string16 title = l10n_util::GetStringUTF16(title_ids);
+    content::TitleWatcher title_watcher(tab, title);
+    ui_test_utils::NavigateToURL(browser(), url);
+    ASSERT_EQ(title, title_watcher.WaitAndGetTitle());
+    uint32_t origin_hash = base::Hash(url.GetOrigin().spec());
+    EXPECT_THAT(histogram_tester_.GetAllSamples(webui::kWebUICreatedForUrl),
+                ElementsAre(Bucket(origin_hash, 1)));
   }
 
  private:
@@ -45,35 +52,17 @@ class LogWebUIUrlTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(LogWebUIUrlTest);
 };
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
 IN_PROC_BROWSER_TEST_F(LogWebUIUrlTest, TestExtensionsPage) {
-  content::WebContents* tab =
-      browser()->tab_strip_model()->GetActiveWebContents();
-
-  base::string16 extension_title =
-      l10n_util::GetStringUTF16(IDS_MANAGE_EXTENSIONS_SETTING_WINDOWS_TITLE);
-
-  {
-    content::TitleWatcher title_watcher(tab, extension_title);
-    ui_test_utils::NavigateToURL(browser(),
-                                 GURL(chrome::kChromeUIExtensionsURL));
-    ASSERT_EQ(extension_title, title_watcher.WaitAndGetTitle());
-  }
-
-  std::string scheme(content::kChromeUIScheme);
-  GURL uber_url(scheme + "://" + chrome::kChromeUIUberHost);
-  uint32_t uber_url_hash = base::Hash(uber_url.spec());
-
-  GURL uber_frame_url(chrome::kChromeUIUberFrameURL);
-  uint32_t uber_frame_url_hash = base::Hash(uber_frame_url.spec());
-
-  GURL extensions_frame_url(chrome::kChromeUIExtensionsFrameURL);
-  uint32_t extensions_frame_url_hash = base::Hash(extensions_frame_url.spec());
-
-  EXPECT_THAT(GetSamples(), ElementsAre(Bucket(extensions_frame_url_hash, 1),
-                                        Bucket(uber_frame_url_hash, 1),
-                                        Bucket(uber_url_hash, 1)));
+  RunTest(IDS_MANAGE_EXTENSIONS_SETTING_WINDOWS_TITLE,
+          GURL(chrome::kChromeUIExtensionsURL));
 }
-#endif
+
+IN_PROC_BROWSER_TEST_F(LogWebUIUrlTest, TestHistoryPage) {
+  RunTest(IDS_HISTORY_TITLE, GURL(chrome::kChromeUIHistoryURL));
+}
+
+IN_PROC_BROWSER_TEST_F(LogWebUIUrlTest, TestSettingsPage) {
+  RunTest(IDS_SETTINGS_SETTINGS, GURL(chrome::kChromeUISettingsURL));
+}
 
 }  // namespace webui

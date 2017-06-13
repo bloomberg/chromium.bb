@@ -44,7 +44,7 @@ ExtensionSettingsWebUITest.prototype = {
    * @type {string}
    * @const
    */
-  browsePreload: 'chrome://extensions-frame/',
+  browsePreload: 'chrome://extensions/',
 
   /** @override */
   typedefCppFixture: 'ExtensionSettingsUIBrowserTest',
@@ -299,7 +299,7 @@ AutoScrollExtensionSettingsWebUITest.prototype = {
   __proto__: BasicExtensionSettingsWebUITest.prototype,
 
   /** @override */
-  browsePreload: 'chrome://extensions-frame/?id=' + GOOD_EXTENSION_ID,
+  browsePreload: 'chrome://extensions/?id=' + GOOD_EXTENSION_ID,
 
   /** @override */
   testGenPreamble: function() {
@@ -398,7 +398,7 @@ SettingsCommandsExtensionSettingsWebUITest.prototype = {
    * @type {string}
    * @const
    */
-  browsePreload: 'chrome://extensions-frame/configureCommands',
+  browsePreload: 'chrome://extensions/configureCommands',
 };
 
 TEST_F('SettingsCommandsExtensionSettingsWebUITest', 'testChromeSendHandler',
@@ -421,8 +421,7 @@ TEST_F('SettingsCommandsExtensionSettingsWebUITest', 'extensionSettingsUri',
     assertTrue($('extension-commands-overlay').classList.contains('showing'));
     assertEquals($('extension-commands-overlay').getAttribute('aria-hidden'),
                  'false');
-    assertEquals(window.location.href,
-                 'chrome://extensions-frame/configureCommands');
+    assertEquals(window.location.href, 'chrome://extensions/configureCommands');
 
     // Close command overlay.
     $('extension-commands-dismiss').click();
@@ -436,7 +435,7 @@ TEST_F('SettingsCommandsExtensionSettingsWebUITest', 'extensionSettingsUri',
   var checkExtensionsUrl = function() {
     // After closing the overlay, the URL shouldn't include commands overlay
     // reference.
-    assertEquals(window.location.href, 'chrome://extensions-frame/');
+    assertEquals(window.location.href, 'chrome://extensions/');
     this.nextStep();
   };
 

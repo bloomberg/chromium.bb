@@ -589,50 +589,6 @@ GURL ReplaceURLHostAndPath(const GURL& url,
   return url.ReplaceComponents(replacements);
 }
 
-// Maps "foo://bar/baz/" to "foo://chrome/bar/baz/".
-GURL AddUberHost(const GURL& url) {
-  const std::string uber_host = chrome::kChromeUIUberHost;
-  std::string new_path;
-  url.host_piece().AppendToString(&new_path);
-  url.path_piece().AppendToString(&new_path);
-
-  return ReplaceURLHostAndPath(url, uber_host, new_path);
-}
-
-// If url->host() is "chrome" and url->path() has characters other than the
-// first slash, changes the url from "foo://chrome/bar/" to "foo://bar/" and
-// returns true. Otherwise returns false.
-bool RemoveUberHost(GURL* url) {
-  if (url->host() != chrome::kChromeUIUberHost)
-    return false;
-
-  if (url->path().empty() || url->path() == "/")
-    return false;
-
-  const std::string old_path = url->path();
-
-  const std::string::size_type separator = old_path.find('/', 1);
-  std::string new_host;
-  std::string new_path;
-  if (separator == std::string::npos) {
-    new_host = old_path.substr(1);
-  } else {
-    new_host = old_path.substr(1, separator - 1);
-    new_path = old_path.substr(separator);
-  }
-
-  // Do not allow URLs with paths empty before the first slash since we can't
-  // have an empty host. (e.g "foo://chrome//")
-  if (new_host.empty())
-    return false;
-
-  *url = ReplaceURLHostAndPath(*url, new_host, new_path);
-
-  DCHECK(url->is_valid());
-
-  return true;
-}
-
 // Handles the rewriting of the new tab page URL based on group policy.
 bool HandleNewTabPageLocationOverride(
     GURL* url,
@@ -662,20 +618,10 @@ bool HandleWebUI(GURL* url, content::BrowserContext* browser_context) {
     return true;  // Return true to update the displayed URL.
   }
 
-  // Do not handle special URLs such as "about:foo"
-  if (!url->host().empty()) {
-    const GURL chrome_url = AddUberHost(*url);
-
-    // Handle valid "chrome://chrome/foo" URLs so the reverse handler will
-    // be called.
-    if (ChromeWebUIControllerFactory::GetInstance()->UseWebUIForURL(
-            browser_context, chrome_url))
-      return true;
-  }
-
   if (!ChromeWebUIControllerFactory::GetInstance()->UseWebUIForURL(
-          browser_context, *url))
+          browser_context, *url)) {
     return false;
+  }
 
 #if defined(OS_CHROMEOS)
   // Special case : in ChromeOS in Guest mode bookmarks and history are
@@ -699,13 +645,7 @@ bool HandleWebUI(GURL* url, content::BrowserContext* browser_context) {
 bool HandleWebUIReverse(GURL* url, content::BrowserContext* browser_context) {
   // No need to actually reverse-rewrite the URL, but return true to update the
   // displayed URL when rewriting chrome://help to chrome://settings/help.
-  if (url->host() == chrome::kChromeUISettingsHost)
-    return true;
-
-  if (!url->is_valid() || !url->SchemeIs(content::kChromeUIScheme))
-    return false;
-
-  return RemoveUberHost(url);
+  return url->host() == chrome::kChromeUISettingsHost;
 }
 
 bool CertMatchesFilter(const net::X509Certificate& cert,

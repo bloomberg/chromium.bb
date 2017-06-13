@@ -984,7 +984,7 @@ cr.define('extensions', function() {
       // Add the options query string. Corner case: the 'options' query string
       // will clobber the 'id' query string if the options link is clicked when
       // 'id' is in the URL, or if both query strings are in the URL.
-      uber.replaceState({}, '?options=' + extensionId);
+      window.history.replaceState({}, '', '/?options=' + extensionId);
 
       var overlay = extensions.ExtensionOptionsOverlay.getInstance();
       var shownCallback = function() {
@@ -1003,7 +1003,7 @@ cr.define('extensions', function() {
         $('overlay').removeEventListener('cancelOverlay', f);
 
         // Remove the options query string.
-        uber.replaceState({}, '');
+        window.history.replaceState({}, '', '/');
       });
 
       // TODO(dbeam): why do we need to focus <extensionoptions> before and

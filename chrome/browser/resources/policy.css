@@ -2,11 +2,11 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-body.uber-frame {
+body {
   -webkit-margin-start: 23px;
 }
 
-body.uber-frame > .page {
+body > .page {
   -webkit-margin-end: 0;
   -webkit-padding-end: 24px;
 }
@@ -17,16 +17,16 @@ body.uber-frame > .page {
   z-index: 4;
 }
 
-body.uber-frame header {
+body header {
   left: 23px;
   max-width: none;
 }
 
-html[dir='rtl'] body.uber-frame header {
+html[dir='rtl'] body header {
   right: 23px;
 }
 
-body.uber-frame section {
+body section {
   max-width: none;
 }
 

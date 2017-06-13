@@ -4,7 +4,6 @@
 
 // <include src="../../../../ui/webui/resources/js/cr/ui/focus_row.js">
 // <include src="../../../../ui/webui/resources/js/cr/ui/focus_grid.js">
-// <include src="../uber/uber_utils.js">
 // <include src="drag_and_drop_handler.js">
 // <include src="extension_code.js">
 // <include src="extension_commands_overlay.js">
@@ -65,12 +64,8 @@ cr.define('extensions', function() {
      */
     initialize: function() {
       this.setLoading_(true);
-      uber.onContentFrameLoaded();
       cr.ui.FocusOutlineManager.forDocument(document);
       measureCheckboxStrings();
-
-      // Set the title.
-      uber.setTitle(loadTimeData.getString('extensionSettings'));
 
       var extensionList = new ExtensionList(this);
       extensionList.id = 'extension-settings-list';
@@ -385,7 +380,7 @@ cr.define('extensions', function() {
           lastFocused.focus();
 
         $('overlay').removeEventListener('cancelOverlay', f);
-        uber.replaceState({}, '');
+        window.history.replaceState({}, '', '/');
       });
       node.classList.add('showing');
     }
@@ -409,9 +404,6 @@ cr.define('extensions', function() {
       assert(settings.dragWrapperHandler_).dragEnabled =
           !node || node == $('drop-target-overlay');
     }
-
-    uber.invokeMethodOnParent(node ? 'beginInterceptingEvents' :
-                                     'stopInterceptingEvents');
   };
 
   ExtensionSettings.focusOverlay = function() {

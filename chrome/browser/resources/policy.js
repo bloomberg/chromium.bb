@@ -428,7 +428,6 @@ cr.define('policy', function() {
      * Main initialization function. Called by the browser on page load.
      */
     initialize: function() {
-      uber.onContentFrameLoaded();
       cr.ui.FocusOutlineManager.forDocument(document);
 
       this.mainSection = $('main-section');
