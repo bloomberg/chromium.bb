@@ -668,10 +668,40 @@ void WebstoreInstaller::StartDownload(const std::string& extension_id,
   content::StoragePartition* storage_partition =
       BrowserContext::GetStoragePartition(profile_,
                                           render_frame_host->GetSiteInstance());
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::DefineNetworkTrafficAnnotation("webstore_installer", R"(
+        semantics {
+          sender: "Webstore Installer"
+          description: "Downloads an extension for installation."
+          trigger:
+            "User initiates a webstore extension installation flow, including "
+            "installing from the webstore, inline installation from a site, "
+            "re-installing a corrupted extension, and others."
+          data:
+            "The id of the extension to be installed and information about the "
+            "user's installation, including version, language, distribution "
+            "(Chrome vs Chromium), NaCl architecture, installation source (as "
+            "an enum), and accepted crx formats."
+          destination: GOOGLE_OWNED_SERVICE
+        }
+        policy {
+          cookies_allowed: true
+          cookies_store: "user"
+          setting:
+            "This feature cannot be disabled. It is only activated if the user "
+            "triggers an extension installation."
+          chrome_policy {
+            ExtensionInstallBlacklist {
+              ExtensionInstallBlacklist: {
+                entries: '*'
+              }
+            }
+          }
+        })");
   std::unique_ptr<DownloadUrlParameters> params(new DownloadUrlParameters(
       download_url_, render_process_host_id, render_view_host_routing_id,
       render_frame_host->GetRoutingID(),
-      storage_partition->GetURLRequestContext(), NO_TRAFFIC_ANNOTATION_YET));
+      storage_partition->GetURLRequestContext(), traffic_annotation));
   params->set_file_path(file);
   if (controller.GetVisibleEntry())
     params->set_referrer(content::Referrer::SanitizeForRequest(
