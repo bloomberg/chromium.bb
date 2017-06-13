@@ -61,7 +61,7 @@ bool DecryptContextImplClearKey::DoDecrypt(CastDecoderBuffer* buffer,
   AES_KEY aes_key;
   if (AES_set_encrypt_key(key_u8, AES_BLOCK_SIZE * 8, &aes_key) != 0) {
     LOG(ERROR) << "Failed to set the AES key";
-    return buffer;
+    return false;
   }
 
   // Get the IV.
