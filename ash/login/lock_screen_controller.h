@@ -44,6 +44,8 @@ class ASH_EXPORT LockScreenController
                    const base::string16& initial_value) override;
   void LoadUsers(std::unique_ptr<base::ListValue> users,
                  bool show_guest) override;
+  void SetPinEnabledForUser(const AccountId& account_id,
+                            bool is_enabled) override;
 
   // Wrappers around the mojom::LockScreenClient interface.
   // Hash the password and send AuthenticateUser request to LockScreenClient.
@@ -58,6 +60,11 @@ class ASH_EXPORT LockScreenController
   void AttemptUnlock(const AccountId& account_id);
   void HardlockPod(const AccountId& account_id);
   void RecordClickOnLockIcon(const AccountId& account_id);
+  void OnFocusPod(const AccountId& account_id);
+  void OnNoPodFocused();
+  void LoadWallpaper(const AccountId& account_id);
+  void SignOutUser();
+  void OnMaxIncorrectPasswordAttempted(const AccountId& account_id);
 
  private:
   using PendingAuthenticateUserCall =

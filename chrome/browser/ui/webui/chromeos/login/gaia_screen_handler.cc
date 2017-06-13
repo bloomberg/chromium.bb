@@ -17,6 +17,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chromeos/language_preferences.h"
+#include "chrome/browser/chromeos/login/lock_screen_utils.h"
 #include "chrome/browser/chromeos/login/screens/network_error.h"
 #include "chrome/browser/chromeos/login/ui/user_adding_screen.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
@@ -879,8 +880,8 @@ void GaiaScreenHandler::ShowGaiaScreenIfReady() {
 
   // Set Least Recently Used input method for the user.
   if (!populated_email_.empty()) {
-    SigninScreenHandler::SetUserInputMethod(populated_email_,
-                                            gaia_ime_state.get());
+    lock_screen_utils::SetUserInputMethod(populated_email_,
+                                          gaia_ime_state.get());
   } else {
     std::vector<std::string> input_methods;
     if (gaia_ime_state->GetAllowedInputMethods().empty()) {
@@ -889,7 +890,7 @@ void GaiaScreenHandler::ShowGaiaScreenIfReady() {
     } else {
       input_methods = gaia_ime_state->GetAllowedInputMethods();
     }
-    const std::string owner_im = SigninScreenHandler::GetUserLastInputMethod(
+    const std::string owner_im = lock_screen_utils::GetUserLastInputMethod(
         user_manager::UserManager::Get()->GetOwnerAccountId().GetUserEmail());
     const std::string system_im = g_browser_process->local_state()->GetString(
         language_prefs::kPreferredKeyboardLayout);

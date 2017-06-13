@@ -4,8 +4,12 @@
 
 #include "chrome/browser/ui/ash/lock_screen_client.h"
 
+#include <utility>
+
 #include "ash/public/interfaces/constants.mojom.h"
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
+#include "chrome/browser/chromeos/login/reauth_stats.h"
+#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
 
@@ -43,15 +47,9 @@ void LockScreenClient::AuthenticateUser(const AccountId& account_id,
                                         const std::string& hashed_password,
                                         bool authenticated_by_pin,
                                         AuthenticateUserCallback callback) {
-  // TODO(xiaoyinh): Complete the implementation below.
-  // It should be similar as SigninScreenHandler::HandleAuthenticateUser.
-  chromeos::UserContext user_context(account_id);
-  chromeos::Key key(chromeos::Key::KEY_TYPE_SALTED_SHA256_TOP_HALF,
-                    std::string(), hashed_password);
-  user_context.SetKey(key);
-  user_context.SetIsUsingPin(authenticated_by_pin);
-  chromeos::ScreenLocker::default_screen_locker()->Authenticate(
-      user_context, std::move(callback));
+  if (delegate_)
+    delegate_->HandleAuthenticateUser(account_id, hashed_password,
+                                    authenticated_by_pin, std::move(callback));
 }
 
 void LockScreenClient::ShowLockScreen(
@@ -60,21 +58,42 @@ void LockScreenClient::ShowLockScreen(
 }
 
 void LockScreenClient::AttemptUnlock(const AccountId& account_id) {
-  if (!delegate_)
-    return;
-  delegate_->HandleAttemptUnlock(account_id);
+  if (delegate_)
+    delegate_->HandleAttemptUnlock(account_id);
 }
 
 void LockScreenClient::HardlockPod(const AccountId& account_id) {
-  if (!delegate_)
-    return;
-  delegate_->HandleHardlockPod(account_id);
+  if (delegate_)
+    delegate_->HandleHardlockPod(account_id);
 }
 
 void LockScreenClient::RecordClickOnLockIcon(const AccountId& account_id) {
-  if (!delegate_)
-    return;
-  delegate_->HandleRecordClickOnLockIcon(account_id);
+  if (delegate_)
+    delegate_->HandleRecordClickOnLockIcon(account_id);
+}
+
+void LockScreenClient::OnFocusPod(const AccountId& account_id) {
+  if (delegate_)
+    delegate_->HandleOnFocusPod(account_id);
+}
+
+void LockScreenClient::OnNoPodFocused() {
+  if (delegate_)
+    delegate_->HandleOnNoPodFocused();
+}
+
+void LockScreenClient::LoadWallpaper(const AccountId& account_id) {
+  chromeos::WallpaperManager::Get()->SetUserWallpaperDelayed(account_id);
+}
+
+void LockScreenClient::SignOutUser() {
+  chromeos::ScreenLocker::default_screen_locker()->Signout();
+}
+
+void LockScreenClient::OnMaxIncorrectPasswordAttempted(
+    const AccountId& account_id) {
+  RecordReauthReason(account_id,
+                     chromeos::ReauthReason::INCORRECT_PASSWORD_ENTERED);
 }
 
 void LockScreenClient::ShowErrorMessage(int32_t login_attempts,
@@ -108,6 +127,11 @@ void LockScreenClient::SetAuthType(const AccountId& account_id,
 void LockScreenClient::LoadUsers(std::unique_ptr<base::ListValue> users_list,
                                  bool show_guest) {
   lock_screen_->LoadUsers(std::move(users_list), show_guest);
+}
+
+void LockScreenClient::SetPinEnabledForUser(const AccountId& account_id,
+                                            bool is_enabled) {
+  lock_screen_->SetPinEnabledForUser(account_id, is_enabled);
 }
 
 void LockScreenClient::SetDelegate(Delegate* delegate) {

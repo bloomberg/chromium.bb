@@ -67,5 +67,22 @@ TEST_F(LockScreenControllerTest, RequestEasyUnlock) {
   base::RunLoop().RunUntilIdle();
 }
 
+TEST_F(LockScreenControllerTest, RequestUserPodFocus) {
+  LockScreenController* controller = Shell::Get()->lock_screen_controller();
+  std::unique_ptr<MockLockScreenClient> client = BindMockLockScreenClient();
+
+  AccountId id = AccountId::FromUserEmail("user1@test.com");
+
+  // Verify FocusPod mojo call is run with the same account id.
+  EXPECT_CALL(*client, OnFocusPod(id));
+  controller->OnFocusPod(id);
+  base::RunLoop().RunUntilIdle();
+
+  // Verify NoPodFocused mojo call is run.
+  EXPECT_CALL(*client, OnNoPodFocused());
+  controller->OnNoPodFocused();
+  base::RunLoop().RunUntilIdle();
+}
+
 }  // namespace
 }  // namespace ash

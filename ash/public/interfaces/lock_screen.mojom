@@ -78,6 +78,11 @@ interface LockScreen {
   // |users|:      A list of users who can unlock the device.
   // |show_guest|: Whether to show guest session button.
   LoadUsers(mojo.common.mojom.ListValue users, bool show_guest);
+
+  // Notification if pin is enabled or disabled for the given user.
+  // |account_id|:   The account id of the user in the user pod.
+  // |is_enabled|:   True if pin unlock is enabled.
+  SetPinEnabledForUser(signin.mojom.AccountId account_id, bool is_enabled);
 };
 
 // Allows ash lock screen to control a client (e.g. Chrome browser). Requests
@@ -108,4 +113,19 @@ interface LockScreenClient {
   // Record clicks on the lock icon in the user pod.
   // |account_id|:    The account id of the user in the user pod.
   RecordClickOnLockIcon(signin.mojom.AccountId account_id);
+
+  // Focus user pod of user with |account_id|.
+  OnFocusPod(signin.mojom.AccountId account_id);
+
+  // Notify that no user pod is focused.
+  OnNoPodFocused();
+
+  // Load wallpaper of user with |account_id|.
+  LoadWallpaper(signin.mojom.AccountId account_id);
+
+  // Sign out current user.
+  SignOutUser();
+
+  // User with |account_id| has reached maximum incorrect password attempts.
+  OnMaxIncorrectPasswordAttempted(signin.mojom.AccountId account_id);
 };

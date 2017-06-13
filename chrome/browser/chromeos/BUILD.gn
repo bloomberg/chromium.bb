@@ -800,6 +800,8 @@ source_set("chromeos") {
     "login/lock/views_screen_locker.h",
     "login/lock/webui_screen_locker.cc",
     "login/lock/webui_screen_locker.h",
+    "login/lock_screen_utils.cc",
+    "login/lock_screen_utils.h",
     "login/login_wizard.h",
     "login/oobe_screen.cc",
     "login/oobe_screen.h",

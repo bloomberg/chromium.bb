@@ -59,6 +59,11 @@ void LockScreenController::LoadUsers(std::unique_ptr<base::ListValue> users,
   NOTIMPLEMENTED();
 }
 
+void LockScreenController::SetPinEnabledForUser(const AccountId& account_id,
+                                                bool is_enabled) {
+  NOTIMPLEMENTED();
+}
+
 void LockScreenController::AuthenticateUser(
     const AccountId& account_id,
     const std::string& password,
@@ -95,6 +100,37 @@ void LockScreenController::RecordClickOnLockIcon(const AccountId& account_id) {
   if (!lock_screen_client_)
     return;
   lock_screen_client_->RecordClickOnLockIcon(account_id);
+}
+
+void LockScreenController::OnFocusPod(const AccountId& account_id) {
+  if (!lock_screen_client_)
+    return;
+  lock_screen_client_->OnFocusPod(account_id);
+}
+
+void LockScreenController::OnNoPodFocused() {
+  if (!lock_screen_client_)
+    return;
+  lock_screen_client_->OnNoPodFocused();
+}
+
+void LockScreenController::LoadWallpaper(const AccountId& account_id) {
+  if (!lock_screen_client_)
+    return;
+  lock_screen_client_->LoadWallpaper(account_id);
+}
+
+void LockScreenController::SignOutUser() {
+  if (!lock_screen_client_)
+    return;
+  lock_screen_client_->SignOutUser();
+}
+
+void LockScreenController::OnMaxIncorrectPasswordAttempted(
+    const AccountId& account_id) {
+  if (!lock_screen_client_)
+    return;
+  lock_screen_client_->OnMaxIncorrectPasswordAttempted(account_id);
 }
 
 void LockScreenController::DoAuthenticateUser(
