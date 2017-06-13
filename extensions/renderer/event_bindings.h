@@ -23,7 +23,6 @@ class ListValue;
 }
 
 namespace extensions {
-class EventMatcher;
 
 // This class deals with the javascript bindings related to Event objects.
 class EventBindings : public ObjectBackedNativeHandler {
@@ -88,9 +87,6 @@ class EventBindings : public ObjectBackedNativeHandler {
 
   void AttachUnmanagedEvent(const v8::FunctionCallbackInfo<v8::Value>& args);
   void DetachUnmanagedEvent(const v8::FunctionCallbackInfo<v8::Value>& args);
-
-  std::unique_ptr<EventMatcher> ParseEventMatcher(
-      std::unique_ptr<base::DictionaryValue> filter);
 
   IPC::Sender* GetIPCSender();
 
