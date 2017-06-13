@@ -433,7 +433,7 @@ class EmptyContextMenuClient final : public ContextMenuClient {
   USING_FAST_MALLOC(EmptyContextMenuClient);
 
  public:
-  EmptyContextMenuClient() {}
+  EmptyContextMenuClient() : ContextMenuClient() {}
   ~EmptyContextMenuClient() override {}
   bool ShowContextMenu(const ContextMenu*, bool) override { return false; }
   void ClearContextMenu() override {}

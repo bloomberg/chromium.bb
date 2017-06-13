@@ -337,7 +337,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
     : client_(client),
       spell_check_client_(nullptr),
       chrome_client_(WebFactory::GetInstance().CreateChromeClient(this)),
-      context_menu_client_impl_(this),
+      context_menu_client_(*this),
       editor_client_impl_(this),
       spell_checker_client_impl_(this),
       storage_client_impl_(this),
@@ -385,7 +385,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
       override_compositor_visibility_(false) {
   Page::PageClients page_clients;
   page_clients.chrome_client = chrome_client_.Get();
-  page_clients.context_menu_client = &context_menu_client_impl_;
+  page_clients.context_menu_client = &context_menu_client_;
   page_clients.editor_client = &editor_client_impl_;
   page_clients.spell_checker_client = &spell_checker_client_impl_;
 
