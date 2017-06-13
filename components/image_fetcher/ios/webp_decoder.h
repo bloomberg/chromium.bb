@@ -12,7 +12,7 @@
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/memory/ref_counted.h"
-#include "third_party/libwebp/webp/decode.h"
+#include "third_party/libwebp/src/webp/decode.h"
 
 @class NSData;
 
