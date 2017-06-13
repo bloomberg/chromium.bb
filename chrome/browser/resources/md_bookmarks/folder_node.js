@@ -83,11 +83,6 @@ Polymer({
     return this.$.container;
   },
 
-  /** @return {boolean} */
-  isTopLevelFolder_: function() {
-    return this.depth == 0;
-  },
-
   /**
    * @private
    * @param {!Event} e

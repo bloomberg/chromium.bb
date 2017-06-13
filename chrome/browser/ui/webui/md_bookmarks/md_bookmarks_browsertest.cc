@@ -8,6 +8,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/pref_names.h"
+#include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/prefs/pref_service.h"
 
 MdBookmarksBrowserTest::MdBookmarksBrowserTest() {}
@@ -19,6 +20,10 @@ void MdBookmarksBrowserTest::RegisterMessages() {
       "testSetIncognito",
       base::Bind(&MdBookmarksBrowserTest::HandleSetIncognitoAvailability,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "testSetCanEdit",
+      base::Bind(&MdBookmarksBrowserTest::HandleSetCanEditBookmarks,
+                 base::Unretained(this)));
 }
 
 void MdBookmarksBrowserTest::SetIncognitoAvailability(int availability) {
@@ -26,6 +31,11 @@ void MdBookmarksBrowserTest::SetIncognitoAvailability(int availability) {
               availability < IncognitoModePrefs::AVAILABILITY_NUM_TYPES);
   browser()->profile()->GetPrefs()->SetInteger(
       prefs::kIncognitoModeAvailability, availability);
+}
+
+void MdBookmarksBrowserTest::SetCanEditBookmarks(bool canEdit) {
+  browser()->profile()->GetPrefs()->SetBoolean(
+      bookmarks::prefs::kEditBookmarksEnabled, canEdit);
 }
 
 void MdBookmarksBrowserTest::HandleSetIncognitoAvailability(
@@ -39,6 +49,21 @@ void MdBookmarksBrowserTest::HandleSetIncognitoAvailability(
   ASSERT_TRUE(args->GetInteger(1, &pref_value));
 
   SetIncognitoAvailability(pref_value);
+
+  ResolveJavascriptCallback(*callback_id, base::Value());
+}
+
+void MdBookmarksBrowserTest::HandleSetCanEditBookmarks(
+    const base::ListValue* args) {
+  AllowJavascript();
+
+  ASSERT_EQ(2U, args->GetSize());
+  const base::Value* callback_id;
+  ASSERT_TRUE(args->Get(0, &callback_id));
+  bool pref_value;
+  ASSERT_TRUE(args->GetBoolean(1, &pref_value));
+
+  SetCanEditBookmarks(pref_value);
 
   ResolveJavascriptCallback(*callback_id, base::Value());
 }

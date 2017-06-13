@@ -71,6 +71,7 @@ cr.define('bookmarks.util', function() {
       selectedFolder: '0',
       closedFolders: new Set(),
       prefs: {
+        canEdit: true,
         incognitoAvailability: IncognitoAvailability.ENABLED,
       },
       search: {
@@ -91,6 +92,33 @@ cr.define('bookmarks.util', function() {
    */
   function isShowingSearch(state) {
     return !!state.search.term && !state.search.inProgress;
+  }
+
+  /**
+   * Returns true if the node with ID |itemId| is modifiable, allowing
+   * the node to be renamed, moved or deleted. Note that if a node is
+   * uneditable, it may still have editable children (for example, the top-level
+   * folders).
+   * @param {BookmarksPageState} state
+   * @param {string} itemId
+   * @return {boolean}
+   */
+  function canEditNode(state, itemId) {
+    return itemId != ROOT_NODE_ID &&
+        state.nodes[itemId].parentId != ROOT_NODE_ID &&
+        !state.nodes[itemId].unmodifiable && state.prefs.canEdit;
+  }
+
+  /**
+   * Returns true if it is possible to modify the children list of the node with
+   * ID |itemId|. This includes rearranging the children or adding new ones.
+   * @param {BookmarksPageState} state
+   * @param {string} itemId
+   * @return {boolean}
+   */
+  function canReorderChildren(state, itemId) {
+    return itemId != ROOT_NODE_ID && !state.nodes[itemId].unmodifiable &&
+        state.prefs.canEdit;
   }
 
   /**
@@ -166,6 +194,8 @@ cr.define('bookmarks.util', function() {
   }
 
   return {
+    canEditNode: canEditNode,
+    canReorderChildren: canReorderChildren,
     createEmptyState: createEmptyState,
     getDescendants: getDescendants,
     getDisplayedList: getDisplayedList,

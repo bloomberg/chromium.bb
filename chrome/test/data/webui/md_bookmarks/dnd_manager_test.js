@@ -91,6 +91,7 @@ suite('drag and drop', function() {
     });
     store.replaceSingleton();
 
+    draggedIds = null;
     chrome.bookmarkManagerPrivate.startDrag = function(nodes, isTouch) {
       draggedIds = nodes;
     };
@@ -489,5 +490,41 @@ suite('drag and drop', function() {
     dispatchDragEvent('dragstart', dragElement);
     assertDeepEquals([], normalizeSet(store.data.selection.items));
     dispatchDragEvent('dragend', dragElement);
+  });
+
+  test('cannot drag items when editing is disabled', function() {
+    store.data.prefs.canEdit = false;
+    store.notifyObservers();
+
+    var dragElement = getFolderNode('11');
+    dispatchDragEvent('dragstart', dragElement);
+    assertEquals(null, draggedIds);
+  });
+
+  test('cannot start dragging unmodifiable items', function() {
+    store.data.nodes['2'].unmodifiable = 'managed';
+    store.notifyObservers();
+
+    var dragElement = getFolderNode('1');
+    dispatchDragEvent('dragstart', dragElement);
+    assertEquals(null, draggedIds);
+
+    dragElement = getFolderNode('2');
+    dispatchDragEvent('dragstart', dragElement);
+    assertEquals(null, draggedIds);
+  });
+
+  test('cannot drag onto folders with unmodifiable children', function() {
+    store.data.nodes['2'].unmodifiable = 'managed';
+    store.notifyObservers();
+
+    var dragElement = getListItem('12');
+    dispatchDragEvent('dragstart', dragElement);
+
+    // Can't drag onto the unmodifiable node.
+    var dragTarget = getFolderNode('2');
+    dispatchDragEvent('dragover', dragTarget);
+    assertEquals(
+        DropPosition.NONE, dndManager.calculateValidDropPositions_(dragTarget));
   });
 });

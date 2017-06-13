@@ -188,12 +188,13 @@ TEST_F('MaterialBookmarksFocusTest', 'All', function() {
       chrome.bookmarkManagerPrivate.removeTrees = function() {}
 
       store.data.selection.items = new Set(['3', '4']);
+      store.data.selectedFolder = '2';
       store.notifyObservers();
 
-      getFolderNode('1').$.container.focus();
-      keydown('1', 'delete');
+      getFolderNode('2').$.container.focus();
+      keydown('2', 'delete');
 
-      commandManager.assertLastCommand(Command.DELETE, ['1']);
+      commandManager.assertLastCommand(Command.DELETE, ['2']);
     });
   });
 

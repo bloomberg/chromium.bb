@@ -85,6 +85,13 @@ cr.define('bookmarks.ApiListener', function() {
     dispatch(bookmarks.actions.setIncognitoAvailability(availability));
   }
 
+  /**
+   * @param {boolean} canEdit
+   */
+  function onCanEditBookmarksChanged(canEdit) {
+    dispatch(bookmarks.actions.setCanEditBookmarks(canEdit));
+  }
+
   function init() {
     chrome.bookmarks.onChanged.addListener(onBookmarkChanged);
     chrome.bookmarks.onChildrenReordered.addListener(onChildrenReordered);
@@ -98,6 +105,10 @@ cr.define('bookmarks.ApiListener', function() {
         .then(onIncognitoAvailabilityChanged);
     cr.addWebUIListener(
         'incognito-availability-changed', onIncognitoAvailabilityChanged);
+
+    cr.sendWithPromise('getCanEditBookmarks').then(onCanEditBookmarksChanged);
+    cr.addWebUIListener(
+        'can-edit-bookmarks-changed', onCanEditBookmarksChanged);
   }
 
   return {

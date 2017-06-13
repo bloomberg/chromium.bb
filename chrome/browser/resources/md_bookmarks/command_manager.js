@@ -32,13 +32,21 @@ cr.define('bookmarks', function() {
         },
       },
 
-      /** @type {Set<string>} */
+      /** @private {Set<string>} */
       menuIds_: Object,
+
+      /** @private */
+      globalCanEdit_: Boolean,
     },
 
     attached: function() {
       assert(CommandManager.instance_ == null);
       CommandManager.instance_ = this;
+
+      this.watch('globalCanEdit_', function(state) {
+        return state.prefs.canEdit;
+      });
+      this.updateFromStore();
 
       /** @private {function(!Event)} */
       this.boundOnOpenItemMenu_ = this.onOpenItemMenu_.bind(this);
@@ -120,7 +128,7 @@ cr.define('bookmarks', function() {
           return itemIds.size > 0;
         case Command.UNDO:
         case Command.REDO:
-          return true;
+          return this.globalCanEdit_;
         default:
           return this.isCommandVisible_(command, itemIds) &&
               this.isCommandEnabled_(command, itemIds);
@@ -136,13 +144,11 @@ cr.define('bookmarks', function() {
     isCommandVisible_: function(command, itemIds) {
       switch (command) {
         case Command.EDIT:
-          return itemIds.size == 1;
+          return itemIds.size == 1 && this.globalCanEdit_;
         case Command.COPY:
-          return itemIds.size == 1 &&
-              this.containsMatchingNode_(itemIds, function(node) {
-                return !!node.url;
-              });
+          return this.isSingleBookmark_(itemIds);
         case Command.DELETE:
+          return itemIds.size > 0 && this.globalCanEdit_;
         case Command.OPEN_NEW_TAB:
         case Command.OPEN_NEW_WINDOW:
         case Command.OPEN_INCOGNITO:
@@ -160,6 +166,12 @@ cr.define('bookmarks', function() {
      */
     isCommandEnabled_: function(command, itemIds) {
       switch (command) {
+        case Command.EDIT:
+        case Command.DELETE:
+          var state = this.getState();
+          return !this.containsMatchingNode_(itemIds, function(node) {
+            return !bookmarks.util.canEditNode(state, node.id);
+          });
         case Command.OPEN_NEW_TAB:
         case Command.OPEN_NEW_WINDOW:
           return this.expandUrls_(itemIds).length > 0;
@@ -358,6 +370,18 @@ cr.define('bookmarks', function() {
     },
 
     /**
+     * @param {!Set<string>} itemIds
+     * @return {boolean} True if |itemIds| is a single bookmark (non-folder)
+     *     node.
+     */
+    isSingleBookmark_: function(itemIds) {
+      return itemIds.size == 1 &&
+          this.containsMatchingNode_(itemIds, function(node) {
+            return !!node.url;
+          });
+    },
+
+    /**
      * @param {Event} e
      * @private
      */
@@ -447,8 +471,9 @@ cr.define('bookmarks', function() {
      * @return {boolean}
      * @private
      */
-    showDividerAfter_: function(command) {
-      return command == Command.DELETE;
+    showDividerAfter_: function(command, itemIds) {
+      return command == Command.DELETE &&
+          (this.globalCanEdit_ || this.isSingleBookmark_(itemIds));
     },
   });
 

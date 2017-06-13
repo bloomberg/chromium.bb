@@ -8,6 +8,7 @@
 #include "base/values.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 
@@ -20,6 +21,10 @@ void BookmarksMessageHandler::RegisterMessages() {
       "getIncognitoAvailability",
       base::Bind(&BookmarksMessageHandler::HandleGetIncognitoAvailability,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getCanEditBookmarks",
+      base::Bind(&BookmarksMessageHandler::HandleGetCanEditBookmarks,
+                 base::Unretained(this)));
 }
 
 void BookmarksMessageHandler::OnJavascriptAllowed() {
@@ -29,15 +34,14 @@ void BookmarksMessageHandler::OnJavascriptAllowed() {
       prefs::kIncognitoModeAvailability,
       base::Bind(&BookmarksMessageHandler::UpdateIncognitoAvailability,
                  base::Unretained(this)));
+  pref_change_registrar_.Add(
+      bookmarks::prefs::kEditBookmarksEnabled,
+      base::Bind(&BookmarksMessageHandler::UpdateCanEditBookmarks,
+                 base::Unretained(this)));
 }
 
 void BookmarksMessageHandler::OnJavascriptDisallowed() {
   pref_change_registrar_.RemoveAll();
-}
-
-void BookmarksMessageHandler::UpdateIncognitoAvailability() {
-  FireWebUIListener("incognito-availability-changed",
-                    base::Value(GetIncognitoAvailability()));
 }
 
 int BookmarksMessageHandler::GetIncognitoAvailability() {
@@ -55,4 +59,30 @@ void BookmarksMessageHandler::HandleGetIncognitoAvailability(
 
   ResolveJavascriptCallback(*callback_id,
                             base::Value(GetIncognitoAvailability()));
+}
+
+void BookmarksMessageHandler::UpdateIncognitoAvailability() {
+  FireWebUIListener("incognito-availability-changed",
+                    base::Value(GetIncognitoAvailability()));
+}
+
+bool BookmarksMessageHandler::CanEditBookmarks() {
+  PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
+  return prefs->GetBoolean(bookmarks::prefs::kEditBookmarksEnabled);
+}
+
+void BookmarksMessageHandler::HandleGetCanEditBookmarks(
+    const base::ListValue* args) {
+  CHECK_EQ(1U, args->GetSize());
+  const base::Value* callback_id;
+  CHECK(args->Get(0, &callback_id));
+
+  AllowJavascript();
+
+  ResolveJavascriptCallback(*callback_id, base::Value(CanEditBookmarks()));
+}
+
+void BookmarksMessageHandler::UpdateCanEditBookmarks() {
+  FireWebUIListener("can-edit-bookmarks-changed",
+                    base::Value(CanEditBookmarks()));
 }
