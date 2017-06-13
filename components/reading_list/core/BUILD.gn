@@ -2,8 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/buildflag_header.gni")
-import("//components/reading_list/core/reading_list.gni")
+import("//components/reading_list/features/reading_list.gni")
 
 source_set("core") {
   sources = [
@@ -25,10 +24,10 @@ source_set("core") {
     "reading_list_store_delegate.h",
   ]
   deps = [
-    ":flags",
     "//base",
     "//components/keyed_service/core",
     "//components/prefs",
+    "//components/reading_list/features:flags",
     "//components/sync",
     "//net",
     "//url",
@@ -55,23 +54,4 @@ source_set("unit_tests") {
     "//testing/gtest",
     "//url",
   ]
-}
-
-source_set("flags") {
-  sources = [
-    "reading_list_switches.cc",
-    "reading_list_switches.h",
-  ]
-  deps = [
-    "//base",
-  ]
-  public_deps = [
-    ":reading_list_enable_flags",
-  ]
-}
-
-buildflag_header("reading_list_enable_flags") {
-  header = "reading_list_enable_flags.h"
-  _enabled = is_ios && enable_reading_list
-  flags = [ "ENABLE_READING_LIST=$_enabled" ]
 }

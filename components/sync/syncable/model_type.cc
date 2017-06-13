@@ -10,7 +10,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_split.h"
 #include "base/values.h"
-#include "components/reading_list/core/reading_list_enable_flags.h"
 #include "components/sync/protocol/app_notification_specifics.pb.h"
 #include "components/sync/protocol/app_setting_specifics.pb.h"
 #include "components/sync/protocol/app_specifics.pb.h"
@@ -151,20 +150,6 @@ const ModelTypeInfo kModelTypeInfoMap[] = {
 
 static_assert(arraysize(kModelTypeInfoMap) == MODEL_TYPE_COUNT,
               "kModelTypeInfoMap should have MODEL_TYPE_COUNT elements");
-
-// Notes:
-// 1) This list must contain exactly the same elements as the set returned by
-//    UserSelectableTypes().
-// 2) This list must be in the same order as the respective values in the
-//    ModelType enum.
-const char* kUserSelectableDataTypeNames[] = {
-    "bookmarks",   "preferences", "passwords",  "autofill",
-    "themes",      "typedUrls",   "extensions", "apps",
-#if BUILDFLAG(ENABLE_READING_LIST)
-    "readingList",
-#endif
-    "tabs",
-};
 
 void AddDefaultFieldValue(ModelType type, sync_pb::EntitySpecifics* specifics) {
   switch (type) {
@@ -426,29 +411,6 @@ ModelType GetModelTypeFromSpecifics(const sync_pb::EntitySpecifics& specifics) {
   return UNSPECIFIED;
 }
 
-ModelTypeSet ProtocolTypes() {
-  return Difference(ModelTypeSet::All(), ProxyTypes());
-}
-
-ModelTypeSet UserTypes() {
-  // TODO(sync): We should be able to build the actual enumset's internal
-  // bitset value here at compile time, instead of makes a new one each time.
-  return ModelTypeSet::FromRange(FIRST_USER_MODEL_TYPE, LAST_USER_MODEL_TYPE);
-}
-
-ModelTypeSet UserSelectableTypes() {
-  return ModelTypeSet(BOOKMARKS, PREFERENCES, PASSWORDS, AUTOFILL, THEMES,
-                      TYPED_URLS, EXTENSIONS, APPS,
-#if BUILDFLAG(ENABLE_READING_LIST)
-                      READING_LIST,
-#endif
-                      PROXY_TABS);
-}
-
-bool IsUserSelectableType(ModelType model_type) {
-  return UserSelectableTypes().Has(model_type);
-}
-
 ModelTypeNameMap GetUserSelectableTypeNameMap() {
   ModelTypeNameMap type_names;
   ModelTypeSet type_set = UserSelectableTypes();
@@ -498,51 +460,6 @@ ModelTypeSet EncryptableUserTypes() {
   // may or may not be encrypted themselves.
   encryptable_user_types.RemoveAll(ProxyTypes());
   return encryptable_user_types;
-}
-
-ModelTypeSet PriorityUserTypes() {
-  return ModelTypeSet(DEVICE_INFO, PRIORITY_PREFERENCES);
-}
-
-ModelTypeSet ControlTypes() {
-  // TODO(sync): We should be able to build the actual enumset's internal
-  // bitset value here at compile time, instead of makes a new one each time.
-  return ModelTypeSet::FromRange(FIRST_CONTROL_MODEL_TYPE,
-                                 LAST_CONTROL_MODEL_TYPE);
-}
-
-ModelTypeSet ProxyTypes() {
-  return ModelTypeSet::FromRange(FIRST_PROXY_TYPE, LAST_PROXY_TYPE);
-}
-
-bool IsControlType(ModelType model_type) {
-  return ControlTypes().Has(model_type);
-}
-
-ModelTypeSet CoreTypes() {
-  ModelTypeSet result = PriorityCoreTypes();
-
-  // The following are low priority core types.
-  result.Put(SYNCED_NOTIFICATIONS);
-  result.Put(SYNCED_NOTIFICATION_APP_INFO);
-  result.Put(SUPERVISED_USER_SHARED_SETTINGS);
-  result.Put(SUPERVISED_USER_WHITELISTS);
-
-  return result;
-}
-
-ModelTypeSet PriorityCoreTypes() {
-  ModelTypeSet result = ControlTypes();
-
-  // The following are non-control core types.
-  result.Put(SUPERVISED_USERS);
-  result.Put(SUPERVISED_USER_SETTINGS);
-
-  return result;
-}
-
-ModelTypeSet CommitOnlyTypes() {
-  return ModelTypeSet(USER_EVENTS);
 }
 
 const char* ModelTypeToString(ModelType model_type) {

@@ -119,27 +119,41 @@ class EnumSet {
 
   EnumSet() {}
 
-  // Recursively chain constructors. Base case is the empty pack.
-  template <class... T>
-  EnumSet(E head, T... tail) : EnumSet(tail...) {
-    Put(head);
+  ~EnumSet() = default;
+
+  static constexpr uint64_t single_val_bitstring(E val) {
+    return 1ULL << (ToIndex(val));
   }
 
+  // Base case for recursive packing of a list of enum values. The uint64_t
+  // corresponding to an empty list is 0.
+  static constexpr uint64_t bitstring() { return 0ULL; }
+
+  // As of writing, constexpr expressions can't contain anything other than a
+  // return statement (and static asserts). To pack a variable number of enum
+  // value arguments into a bitstring, we use template varargs with a recursive
+  // constructor. Each recursive call packs one more enum into the bitstring,
+  // and the individual results are combined with bitwise or.
+  template <class... T>
+  static constexpr uint64_t bitstring(E head, T... tail) {
+    return (single_val_bitstring(head)) | bitstring(tail...);
+  }
+
+  template <class... T>
+  constexpr EnumSet(E head, T... tail)
+      : EnumSet(EnumBitSet(bitstring(head, tail...))) {}
+
   // Returns an EnumSet with all possible values.
-  static EnumSet All() {
-    EnumBitSet enums;
-    enums.set();
-    return EnumSet(enums);
+  static constexpr EnumSet All() {
+    return EnumSet(EnumBitSet((1ULL << kValueCount) - 1));
   }
 
   // Returns an EnumSet with all the values from start to end, inclusive.
-  static EnumSet FromRange(E start, E end) {
-    EnumSet set;
-    set.PutRange(start, end);
-    return set;
+  static constexpr EnumSet FromRange(E start, E end) {
+    return EnumSet(EnumBitSet(
+        ((single_val_bitstring(end)) - (single_val_bitstring(start))) |
+        (single_val_bitstring(end))));
   }
-
-  ~EnumSet() {}
 
   // Copy constructor and assignment welcome.
 
@@ -182,8 +196,8 @@ class EnumSet {
   void Clear() { enums_.reset(); }
 
   // Returns true iff the given value is in range and a member of our set.
-  bool Has(E value) const {
-    return InRange(value) && enums_.test(ToIndex(value));
+  constexpr bool Has(E value) const {
+    return InRange(value) && enums_[ToIndex(value)];
   }
 
   // Returns true iff the given set is a subset of our set.
@@ -215,19 +229,22 @@ class EnumSet {
   friend EnumSet Difference<E, MinEnumValue, MaxEnumValue>(EnumSet set1,
                                                            EnumSet set2);
 
-  explicit EnumSet(EnumBitSet enums) : enums_(enums) {}
+  // A bitset can't be constexpr constructed if it has size > 64, since the
+  // constexpr constructor uses a uint64_t. If your EnumSet has > 64 values, you
+  // can safely remove the constepxr qualifiers from this file, at the cost of
+  // some minor optimizations.
+  explicit constexpr EnumSet(EnumBitSet enums) : enums_(enums) {
+    static_assert(kValueCount < 64,
+                  "Max number of enum values is 64 for constexpr ");
+  }
 
-  static bool InRange(E value) {
+  static constexpr bool InRange(E value) {
     return (value >= MinEnumValue) && (value <= MaxEnumValue);
   }
 
   // Converts a value to/from an index into |enums_|.
 
-  static size_t ToIndex(E value) {
-    DCHECK_GE(value, MinEnumValue);
-    DCHECK_LE(value, MaxEnumValue);
-    return value - MinEnumValue;
-  }
+  static constexpr size_t ToIndex(E value) { return value - MinEnumValue; }
 
   static E FromIndex(size_t i) {
     DCHECK_LT(i, kValueCount);

@@ -33,7 +33,7 @@ static_library("browser_sync") {
     "//components/password_manager/sync/browser",
     "//components/pref_registry",
     "//components/prefs",
-    "//components/reading_list/core:flags",
+    "//components/reading_list/features:flags",
     "//components/signin/core/browser",
     "//components/strings",
     "//components/sync_bookmarks",

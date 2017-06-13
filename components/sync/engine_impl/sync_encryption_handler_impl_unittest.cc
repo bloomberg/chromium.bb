@@ -535,7 +535,6 @@ TEST_F(SyncEncryptionHandlerImplTest, ReceiveOldNigori) {
                               other_encrypted_specifics.mutable_encrypted());
   sync_pb::EntitySpecifics our_encrypted_specifics;
   our_encrypted_specifics.mutable_bookmark()->set_title("title2");
-  ModelTypeSet encrypted_types = EncryptableUserTypes();
 
   // Set up the current encryption state (containing both keys and encrypt
   // everything).
