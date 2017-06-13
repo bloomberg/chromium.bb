@@ -2790,7 +2790,8 @@ class ViewportDeltasAppliedDuringPinch : public LayerTreeHostTest {
   bool sent_gesture_;
 };
 
-MULTI_THREAD_TEST_F(ViewportDeltasAppliedDuringPinch);
+// Disabled for flakiness, http://crbug.com/733001
+// MULTI_THREAD_TEST_F(ViewportDeltasAppliedDuringPinch);
 
 class LayerTreeHostTestSetVisible : public LayerTreeHostTest {
  public:
