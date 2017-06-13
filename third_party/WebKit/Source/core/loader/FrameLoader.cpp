@@ -242,6 +242,7 @@ FrameLoader::FrameLoader(LocalFrame* frame)
       protect_provisional_loader_(false),
       detached_(false) {
   DCHECK(frame_);
+
   TRACE_EVENT_OBJECT_CREATED_WITH_ID("loading", "FrameLoader", this);
   TakeObjectSnapshot();
 }
@@ -259,28 +260,34 @@ DEFINE_TRACE(FrameLoader) {
 
 void FrameLoader::Init() {
   ScriptForbiddenScope forbid_scripts;
+
   ResourceRequest initial_request(KURL(kParsedURLString, g_empty_string));
   initial_request.SetRequestContext(WebURLRequest::kRequestContextInternal);
   initial_request.SetFrameType(frame_->IsMainFrame()
                                    ? WebURLRequest::kFrameTypeTopLevel
                                    : WebURLRequest::kFrameTypeNested);
+
   provisional_document_loader_ =
       Client()->CreateDocumentLoader(frame_, initial_request, SubstituteData(),
                                      ClientRedirectPolicy::kNotClientRedirect);
-  provisional_document_loader_->StartLoadingMainResource();
+  provisional_document_loader_->StartLoading();
+
   frame_->GetDocument()->CancelParsing();
+
   state_machine_.AdvanceTo(
       FrameLoaderStateMachine::kDisplayingInitialEmptyDocument);
+
   // Suppress finish notifications for initial empty documents, since they don't
   // generate start notifications.
   document_loader_->SetSentDidFinishLoad();
   if (frame_->GetPage()->Suspended())
     SetDefersLoading(true);
+
   TakeObjectSnapshot();
 }
 
 LocalFrameClient* FrameLoader::Client() const {
-  return static_cast<LocalFrameClient*>(frame_->Client());
+  return frame_->Client();
 }
 
 void FrameLoader::SetDefersLoading(bool defers) {
@@ -566,6 +573,7 @@ void FrameLoader::LoadInSameDocument(
   // We need to scroll to the fragment whether or not a hash change occurred,
   // since the user might have scrolled since the previous navigation.
   ProcessFragment(url, frame_load_type, kNavigationWithinSameDocument);
+
   TakeObjectSnapshot();
 }
 
@@ -936,6 +944,7 @@ void FrameLoader::StopAllLoaders() {
   }
 
   in_stop_all_loaders_ = false;
+
   TakeObjectSnapshot();
 }
 
@@ -1005,6 +1014,7 @@ bool FrameLoader::PrepareForCommit() {
   document_loader_ = provisional_document_loader_.Release();
   if (document_loader_)
     document_loader_->MarkAsCommitted();
+
   TakeObjectSnapshot();
 
   return true;
@@ -1445,13 +1455,13 @@ void FrameLoader::StartLoad(FrameLoadRequest& frame_load_request,
 
   // TODO(ananta):
   // We should get rid of the dependency on the DocumentLoader in consumers of
-  // the didStartProvisionalLoad() notification.
+  // the DidStartProvisionalLoad() notification.
   Client()->DispatchDidStartProvisionalLoad(provisional_document_loader_,
                                             resource_request);
   DCHECK(provisional_document_loader_);
 
   if (navigation_policy == kNavigationPolicyCurrentTab) {
-    provisional_document_loader_->StartLoadingMainResource();
+    provisional_document_loader_->StartLoading();
     // This should happen after the request is sent, so that the state
     // the inspector stored in the matching frameScheduledClientNavigation()
     // is available while sending the request.
