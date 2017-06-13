@@ -94,7 +94,7 @@ assigned files by:
 * base::SingleThreadTaskRunner -> base::SequencedTaskRunner
 * base::ThreadTaskRunnerHandle -> base::SequencedTaskRunnerHandle
 * base::ThreadChecker -> base::SequenceChecker
-* base::ThreadLocalStorage::Slot -> base::SequenceLocalStorageSlot (coming [very soon](https://chromium-review.googlesource.com/c/527322/))
+* base::ThreadLocalStorage::Slot -> base::SequenceLocalStorageSlot
 * BrowserThread::DeleteOnThread -> base::DeleteOnTaskRunner / base::RefCountedDeleteOnSequence
 * CreateSingleThreadTaskRunnerWithTraits() -> CreateSequencedTaskRunnerWithTraits()
    * Every CreateSingleThreadTaskRunnerWithTraits() usage should be accompanied
