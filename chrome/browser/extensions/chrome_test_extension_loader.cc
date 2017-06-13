@@ -104,6 +104,10 @@ base::FilePath ChromeTestExtensionLoader::PackExtension(
     return base::FilePath();
   }
 
+  if (!temp_dir_.CreateUniqueTempDir()) {
+    ADD_FAILURE() << "Could not create unique temp dir.";
+    return base::FilePath();
+  }
   base::FilePath crx_path = temp_dir_.GetPath().AppendASCII("temp.crx");
   if (base::PathExists(crx_path)) {
     ADD_FAILURE() << "Crx path exists: " << crx_path.value()
@@ -118,7 +122,8 @@ base::FilePath ChromeTestExtensionLoader::PackExtension(
     return base::FilePath();
   }
 
-  base::FilePath* pem_path_to_use = &fallback_pem_path;
+  base::FilePath empty_path;
+  base::FilePath* pem_path_to_use = &empty_path;
   if (!pem_path_.empty()) {
     pem_path_to_use = &pem_path_;
     if (!base::PathExists(pem_path_)) {
