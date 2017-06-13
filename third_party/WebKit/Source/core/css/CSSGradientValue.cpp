@@ -101,19 +101,22 @@ DEFINE_TRACE(CSSGradientColorStop) {
   visitor->Trace(color_);
 }
 
-PassRefPtr<Image> CSSGradientValue::GetImage(const LayoutObject& layout_object,
-                                             const IntSize& size) {
+PassRefPtr<Image> CSSGradientValue::GetImage(
+    const ImageResourceObserver& client,
+    const Document& document,
+    const ComputedStyle& style,
+    const IntSize& size) {
   if (size.IsEmpty())
     return nullptr;
 
   if (is_cacheable_) {
-    if (!Clients().Contains(&layout_object))
+    if (!Clients().Contains(&client))
       return nullptr;
 
     // Need to look up our size.  Create a string of width*height to use as a
     // hash key.
     Image* result =
-        this->CSSImageGeneratorValue::GetImage(&layout_object, size);
+        this->CSSImageGeneratorValue::GetImage(&client, document, style, size);
     if (result)
       return result;
   }
@@ -122,10 +125,12 @@ PassRefPtr<Image> CSSGradientValue::GetImage(const LayoutObject& layout_object,
   RefPtr<Gradient> gradient;
 
   const ComputedStyle* root_style =
-      layout_object.GetDocument().documentElement()->GetComputedStyle();
+      document.documentElement()->GetComputedStyle();
+  // TODO: Break dependency on LayoutObject.
+  const LayoutObject& layout_object = static_cast<const LayoutObject&>(client);
   CSSToLengthConversionData conversion_data(
-      layout_object.Style(), root_style, LayoutViewItem(layout_object.View()),
-      layout_object.Style()->EffectiveZoom());
+      &style, root_style, LayoutViewItem(layout_object.View()),
+      style.EffectiveZoom());
 
   switch (GetClassType()) {
     case kLinearGradientClass:

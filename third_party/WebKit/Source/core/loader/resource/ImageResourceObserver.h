@@ -24,6 +24,7 @@
 #define ImageResourceObserver_h
 
 #include "core/CoreExport.h"
+#include "core/style/StyleImage.h"
 #include "platform/graphics/ImageAnimationPolicy.h"
 #include "platform/loader/fetch/ResourceLoadPriority.h"
 #include "platform/wtf/Forward.h"
@@ -40,7 +41,11 @@ class CORE_EXPORT ImageResourceObserver {
   // Called whenever a frame of an image changes, either because we got more
   // data from the network or because we are animating. If not null, the IntRect
   // is the changed rect of the image.
-  virtual void ImageChanged(ImageResourceContent*, const IntRect* = 0) {}
+  virtual void ImageChanged(ImageResourceContent*, const IntRect* = nullptr) {}
+
+  // Sub-classes that have an associated image need to override this function
+  // to get notified of any image change.
+  virtual void ImageChanged(WrappedImagePtr, const IntRect* = nullptr) {}
 
   // Called just after imageChanged() if all image data is received or errored.
   // TODO(hiroshige): Merge imageNotifyFinished() into imageChanged().

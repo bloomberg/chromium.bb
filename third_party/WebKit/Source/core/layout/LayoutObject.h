@@ -1544,12 +1544,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   // ImageResourceClient override.
   void ImageChanged(ImageResourceContent*, const IntRect* = nullptr) final;
+  void ImageChanged(WrappedImagePtr, const IntRect* = nullptr) override {}
   bool WillRenderImage() final;
   bool GetImageAnimationPolicy(ImageAnimationPolicy&) final;
-
-  // Sub-classes that have an associated image need to override this function
-  // to get notified of any image change.
-  virtual void ImageChanged(WrappedImagePtr, const IntRect* = nullptr) {}
 
   std::pair<int, int> SelectionStartEnd() const;
 

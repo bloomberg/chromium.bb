@@ -36,7 +36,6 @@
 namespace blink {
 
 class CrossfadeSubimageObserverProxy;
-class LayoutObject;
 
 class CORE_EXPORT CSSCrossfadeValue final : public CSSImageGeneratorValue {
   friend class CrossfadeSubimageObserverProxy;
@@ -53,7 +52,10 @@ class CORE_EXPORT CSSCrossfadeValue final : public CSSImageGeneratorValue {
 
   String CustomCSSText() const;
 
-  PassRefPtr<Image> GetImage(const LayoutObject&, const IntSize&);
+  PassRefPtr<Image> GetImage(const ImageResourceObserver&,
+                             const Document&,
+                             const ComputedStyle&,
+                             const IntSize& container_size);
   bool IsFixedSize() const { return true; }
   IntSize FixedSize(const Document&, const FloatSize&);
 

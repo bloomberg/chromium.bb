@@ -57,11 +57,13 @@ class StyleFetchedImage final : public StyleImage,
                        const LayoutSize& default_object_size) const override;
   bool ImageHasRelativeSize() const override;
   bool UsesImageContainerSize() const override;
-  void AddClient(LayoutObject*) override;
-  void RemoveClient(LayoutObject*) override;
+  void AddClient(ImageResourceObserver*) override;
+  void RemoveClient(ImageResourceObserver*) override;
   void ImageNotifyFinished(ImageResourceContent*) override;
   String DebugName() const override { return "StyleFetchedImage"; }
-  PassRefPtr<Image> GetImage(const LayoutObject&,
+  PassRefPtr<Image> GetImage(const ImageResourceObserver&,
+                             const Document&,
+                             const ComputedStyle&,
                              const IntSize&) const override;
   bool KnownToBeOpaque(const Document&, const ComputedStyle&) const override;
   ImageResourceContent* CachedImage() const override;

@@ -22,11 +22,11 @@ class Image;
 class CSSPaintImageGeneratorImpl final : public CSSPaintImageGenerator {
  public:
   static CSSPaintImageGenerator* Create(const String& name,
-                                        Document&,
+                                        const Document&,
                                         Observer*);
   ~CSSPaintImageGeneratorImpl() override;
 
-  PassRefPtr<Image> Paint(const LayoutObject&,
+  PassRefPtr<Image> Paint(const ImageResourceObserver&,
                           const IntSize&,
                           const CSSStyleValueVector*) final;
   const Vector<CSSPropertyID>& NativeInvalidationProperties() const final;

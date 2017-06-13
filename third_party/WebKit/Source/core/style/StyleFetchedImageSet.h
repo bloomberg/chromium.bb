@@ -34,6 +34,7 @@
 namespace blink {
 
 class CSSImageSetValue;
+class ImageResourceObserver;
 
 // This class keeps one cached image and has access to a set of alternatives.
 
@@ -66,10 +67,12 @@ class StyleFetchedImageSet final : public StyleImage,
                        const LayoutSize& default_object_size) const override;
   bool ImageHasRelativeSize() const override;
   bool UsesImageContainerSize() const override;
-  void AddClient(LayoutObject*) override;
-  void RemoveClient(LayoutObject*) override;
-  PassRefPtr<Image> GetImage(const LayoutObject&,
-                             const IntSize&) const override;
+  void AddClient(ImageResourceObserver*) override;
+  void RemoveClient(ImageResourceObserver*) override;
+  PassRefPtr<Image> GetImage(const ImageResourceObserver&,
+                             const Document&,
+                             const ComputedStyle&,
+                             const IntSize& container_size) const override;
   float ImageScaleFactor() const override { return image_scale_factor_; }
   bool KnownToBeOpaque(const Document&, const ComputedStyle&) const override;
   ImageResourceContent* CachedImage() const override;

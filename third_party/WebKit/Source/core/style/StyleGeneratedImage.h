@@ -32,6 +32,7 @@ namespace blink {
 class CSSValue;
 class CSSImageGeneratorValue;
 class Document;
+class ImageResourceObserver;
 
 class CORE_EXPORT StyleGeneratedImage final : public StyleImage {
  public:
@@ -49,9 +50,11 @@ class CORE_EXPORT StyleGeneratedImage final : public StyleImage {
                        const LayoutSize& default_object_size) const override;
   bool ImageHasRelativeSize() const override { return !fixed_size_; }
   bool UsesImageContainerSize() const override { return !fixed_size_; }
-  void AddClient(LayoutObject*) override;
-  void RemoveClient(LayoutObject*) override;
-  PassRefPtr<Image> GetImage(const LayoutObject&,
+  void AddClient(ImageResourceObserver*) override;
+  void RemoveClient(ImageResourceObserver*) override;
+  PassRefPtr<Image> GetImage(const ImageResourceObserver&,
+                             const Document&,
+                             const ComputedStyle&,
                              const IntSize&) const override;
   bool KnownToBeOpaque(const Document&, const ComputedStyle&) const override;
 

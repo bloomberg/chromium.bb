@@ -37,6 +37,7 @@ namespace blink {
 class Color;
 class Gradient;
 class Document;
+class LayoutObject;
 
 enum CSSGradientType {
   kCSSDeprecatedLinearGradient,
@@ -87,7 +88,10 @@ namespace blink {
 
 class CSSGradientValue : public CSSImageGeneratorValue {
  public:
-  PassRefPtr<Image> GetImage(const LayoutObject&, const IntSize&);
+  PassRefPtr<Image> GetImage(const ImageResourceObserver&,
+                             const Document&,
+                             const ComputedStyle&,
+                             const IntSize&);
 
   void AddStop(const CSSGradientColorStop& stop) {
     stops_.push_back(stop);

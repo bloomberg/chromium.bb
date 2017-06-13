@@ -38,9 +38,9 @@ CSSImageGeneratorValue::CSSImageGeneratorValue(ClassType class_type)
 
 CSSImageGeneratorValue::~CSSImageGeneratorValue() {}
 
-void CSSImageGeneratorValue::AddClient(const LayoutObject* layout_object,
+void CSSImageGeneratorValue::AddClient(const ImageResourceObserver* client,
                                        const IntSize& size) {
-  DCHECK(layout_object);
+  DCHECK(client);
   if (clients_.IsEmpty()) {
     DCHECK(!keep_alive_);
     keep_alive_ = this;
@@ -49,9 +49,9 @@ void CSSImageGeneratorValue::AddClient(const LayoutObject* layout_object,
   if (!size.IsEmpty())
     sizes_.insert(size);
 
-  LayoutObjectSizeCountMap::iterator it = clients_.find(layout_object);
+  ClientSizeCountMap::iterator it = clients_.find(client);
   if (it == clients_.end()) {
-    clients_.insert(layout_object, SizeAndCount(size, 1));
+    clients_.insert(client, SizeAndCount(size, 1));
   } else {
     SizeAndCount& size_count = it->value;
     ++size_count.count;
@@ -64,9 +64,9 @@ CSSImageGeneratorValue* CSSImageGeneratorValue::ValueWithURLsMadeAbsolute() {
   return this;
 }
 
-void CSSImageGeneratorValue::RemoveClient(const LayoutObject* layout_object) {
-  DCHECK(layout_object);
-  LayoutObjectSizeCountMap::iterator it = clients_.find(layout_object);
+void CSSImageGeneratorValue::RemoveClient(const ImageResourceObserver* client) {
+  DCHECK(client);
+  ClientSizeCountMap::iterator it = clients_.find(client);
   SECURITY_DCHECK(it != clients_.end());
 
   IntSize removed_image_size;
@@ -79,7 +79,7 @@ void CSSImageGeneratorValue::RemoveClient(const LayoutObject* layout_object) {
   }
 
   if (!--size_count.count)
-    clients_.erase(layout_object);
+    clients_.erase(client);
 
   if (clients_.IsEmpty()) {
     DCHECK(keep_alive_);
@@ -87,15 +87,17 @@ void CSSImageGeneratorValue::RemoveClient(const LayoutObject* layout_object) {
   }
 }
 
-Image* CSSImageGeneratorValue::GetImage(const LayoutObject* layout_object,
+Image* CSSImageGeneratorValue::GetImage(const ImageResourceObserver* client,
+                                        const Document&,
+                                        const ComputedStyle&,
                                         const IntSize& size) {
-  LayoutObjectSizeCountMap::iterator it = clients_.find(layout_object);
+  ClientSizeCountMap::iterator it = clients_.find(client);
   if (it != clients_.end()) {
     SizeAndCount& size_count = it->value;
     IntSize old_size = size_count.size;
     if (old_size != size) {
-      RemoveClient(layout_object);
-      AddClient(layout_object, size);
+      RemoveClient(client);
+      AddClient(client, size);
     }
   }
 
@@ -113,19 +115,24 @@ void CSSImageGeneratorValue::PutImage(const IntSize& size,
 }
 
 PassRefPtr<Image> CSSImageGeneratorValue::GetImage(
-    const LayoutObject& layout_object,
+    const ImageResourceObserver& client,
+    const Document& document,
+    const ComputedStyle& style,
     const IntSize& size) {
   switch (GetClassType()) {
     case kCrossfadeClass:
-      return ToCSSCrossfadeValue(this)->GetImage(layout_object, size);
+      return ToCSSCrossfadeValue(this)->GetImage(client, document, style, size);
     case kLinearGradientClass:
-      return ToCSSLinearGradientValue(this)->GetImage(layout_object, size);
+      return ToCSSLinearGradientValue(this)->GetImage(client, document, style,
+                                                      size);
     case kPaintClass:
-      return ToCSSPaintValue(this)->GetImage(layout_object, size);
+      return ToCSSPaintValue(this)->GetImage(client, document, style, size);
     case kRadialGradientClass:
-      return ToCSSRadialGradientValue(this)->GetImage(layout_object, size);
+      return ToCSSRadialGradientValue(this)->GetImage(client, document, style,
+                                                      size);
     case kConicGradientClass:
-      return ToCSSConicGradientValue(this)->GetImage(layout_object, size);
+      return ToCSSConicGradientValue(this)->GetImage(client, document, style,
+                                                     size);
     default:
       NOTREACHED();
   }

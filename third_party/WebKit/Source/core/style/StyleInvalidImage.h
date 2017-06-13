@@ -10,6 +10,8 @@
 
 namespace blink {
 
+class ImageResourceObserver;
+
 class StyleInvalidImage final : public StyleImage {
  public:
   static StyleInvalidImage* Create(const String& url) {
@@ -31,9 +33,11 @@ class StyleInvalidImage final : public StyleImage {
   }
   bool ImageHasRelativeSize() const override { return false; }
   bool UsesImageContainerSize() const override { return false; }
-  void AddClient(LayoutObject*) override {}
-  void RemoveClient(LayoutObject*) override {}
-  PassRefPtr<Image> GetImage(const LayoutObject&,
+  void AddClient(ImageResourceObserver*) override {}
+  void RemoveClient(ImageResourceObserver*) override {}
+  PassRefPtr<Image> GetImage(const ImageResourceObserver&,
+                             const Document&,
+                             const ComputedStyle&,
                              const IntSize&) const override {
     return nullptr;
   }
