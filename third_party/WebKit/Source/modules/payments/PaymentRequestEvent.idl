@@ -13,7 +13,7 @@
     readonly attribute USVString paymentRequestOrigin;
     readonly attribute DOMString paymentRequestId;
     readonly attribute FrozenArray<PaymentMethodData> methodData;
-    readonly attribute PaymentItem total;
+    [CallWith=ScriptState] readonly attribute object total;
     readonly attribute FrozenArray<PaymentDetailsModifier> modifiers;
     readonly attribute DOMString instrumentKey;
 

@@ -11,6 +11,7 @@
 #include "modules/serviceworkers/RespondWithObserver.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
 #include "modules/serviceworkers/ServiceWorkerWindowClientCallback.h"
+#include "platform/bindings/ScriptState.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/text/AtomicString.h"
 
@@ -53,8 +54,8 @@ const HeapVector<PaymentMethodData>& PaymentRequestEvent::methodData() const {
   return method_data_;
 }
 
-void PaymentRequestEvent::total(PaymentItem& value) const {
-  value = total_;
+const ScriptValue PaymentRequestEvent::total(ScriptState* script_state) const {
+  return ScriptValue::From(script_state, total_);
 }
 
 const HeapVector<PaymentDetailsModifier>& PaymentRequestEvent::modifiers()
