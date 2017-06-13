@@ -16,6 +16,7 @@
 #include "remoting/base/constants.h"
 #include "remoting/host/host_config.h"
 #include "remoting/host/host_details.h"
+#include "remoting/protocol/errors.h"
 #include "remoting/signaling/iq_sender.h"
 #include "remoting/signaling/jid_util.h"
 #include "remoting/signaling/signal_strategy.h"
@@ -42,6 +43,9 @@ const char kHostOsVersionTag[] = "host-os-version";
 const char kRegisterQueryResultTag[] = "register-support-host-result";
 const char kSupportIdTag[] = "support-id";
 const char kSupportIdLifetimeTag[] = "support-id-lifetime";
+
+// The signaling timeout for register support host requests.
+constexpr int kRegisterRequestTimeoutInSeconds = 10;
 }
 
 RegisterSupportHostRequest::RegisterSupportHostRequest(
@@ -68,12 +72,22 @@ void RegisterSupportHostRequest::OnSignalStrategyStateChange(
     SignalStrategy::State state) {
   if (state == SignalStrategy::CONNECTED) {
     DCHECK(!callback_.is_null());
-
     request_ = iq_sender_->SendIq(
         buzz::STR_SET, directory_bot_jid_,
         CreateRegistrationRequest(signal_strategy_->GetLocalAddress().jid()),
         base::Bind(&RegisterSupportHostRequest::ProcessResponse,
                    base::Unretained(this)));
+    if (!request_) {
+      std::string error_message =
+          "Error sending the register-support-host request.";
+      LOG(ERROR) << error_message;
+      CallCallback(std::string(), base::TimeDelta(), error_message);
+      return;
+    }
+
+    request_->SetTimeout(
+        base::TimeDelta::FromSeconds(kRegisterRequestTimeoutInSeconds));
+
   } else if (state == SignalStrategy::DISCONNECTED) {
     // We will reach here if signaling fails to connect.
     std::string error_message = "Signal strategy disconnected.";
@@ -143,11 +157,15 @@ void RegisterSupportHostRequest::ParseResponse(const XmlElement* response,
                                                std::string* error_message) {
   std::ostringstream error;
 
+  if (!response) {
+    *error_message = "register-support-host request timed out.";
+    return;
+  }
+
   std::string type = response->Attr(buzz::QN_TYPE);
   if (type == buzz::STR_ERROR) {
     error << "Received error in response to heartbeat: " << response->Str();
     *error_message = error.str();
-    LOG(ERROR) << *error_message;
     return;
   }
 
@@ -155,7 +173,6 @@ void RegisterSupportHostRequest::ParseResponse(const XmlElement* response,
   if (type != buzz::STR_RESULT) {
     error << "Received unexpect stanza of type \"" << type << "\"";
     *error_message = error.str();
-    LOG(ERROR) << *error_message;
     return;
   }
 
@@ -166,7 +183,6 @@ void RegisterSupportHostRequest::ParseResponse(const XmlElement* response,
           << "> is missing in the host registration response: "
           << response->Str();
     *error_message = error.str();
-    LOG(ERROR) << *error_message;
     return;
   }
 
@@ -177,7 +193,6 @@ void RegisterSupportHostRequest::ParseResponse(const XmlElement* response,
           << "> is missing in the host registration response: "
           << response->Str();
     *error_message = error.str();
-    LOG(ERROR) << *error_message;
     return;
   }
 
@@ -189,7 +204,6 @@ void RegisterSupportHostRequest::ParseResponse(const XmlElement* response,
           << "> is missing in the host registration response: "
           << response->Str();
     *error_message = error.str();
-    LOG(ERROR) << *error_message;
     return;
   }
 
@@ -200,7 +214,6 @@ void RegisterSupportHostRequest::ParseResponse(const XmlElement* response,
           << "> is malformed in the host registration response: "
           << response->Str();
     *error_message = error.str();
-    LOG(ERROR) << *error_message;
     return;
   }
 
@@ -215,6 +228,9 @@ void RegisterSupportHostRequest::ProcessResponse(IqRequest* request,
   base::TimeDelta lifetime;
   std::string error_message;
   ParseResponse(response, &support_id, &lifetime, &error_message);
+  if (!error_message.empty()) {
+    LOG(ERROR) << error_message;
+  }
   CallCallback(support_id, lifetime, error_message);
 }
 
