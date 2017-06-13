@@ -6,7 +6,9 @@
 
 #import <QuartzCore/QuartzCore.h>
 
-#include "base/mac/scoped_nsobject.h"
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 // The image edge insets for popup_background.png.
@@ -16,7 +18,7 @@ NS_INLINE UIEdgeInsets PopupBackgroundInsets() {
 };
 
 @implementation PopupMenuView {
-  base::scoped_nsobject<UIImageView> imageView_;
+  UIImageView* imageView_;
 }
 
 @synthesize delegate = delegate_;
@@ -41,7 +43,7 @@ NS_INLINE UIEdgeInsets PopupBackgroundInsets() {
   UIImage* image = [UIImage imageNamed:@"popup_background"];
   image = [image resizableImageWithCapInsets:PopupBackgroundInsets()];
 
-  imageView_.reset([[UIImageView alloc] initWithImage:image]);
+  imageView_ = [[UIImageView alloc] initWithImage:image];
   [self addSubview:imageView_];
 }
 

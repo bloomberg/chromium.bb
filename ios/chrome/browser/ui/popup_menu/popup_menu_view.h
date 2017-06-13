@@ -15,7 +15,7 @@
 @end
 
 @interface PopupMenuView : UIView
-@property(nonatomic, assign) id<PopupMenuViewDelegate> delegate;
+@property(nonatomic, weak) id<PopupMenuViewDelegate> delegate;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_POPUP_MENU_POPUP_MENU_VIEW_H_
