@@ -6,10 +6,6 @@
 
 #include "bidirectional_stream_c.h"
 
-// TODO(mef): Remove this header after transition to bidirectional_stream_c.h
-// See crbug.com/650462 for details.
-#include "cronet_c_for_grpc.h"
-
 // Type of HTTP cache; public interface to private implementation defined in
 // URLRequestContextConfig class.
 typedef NS_ENUM(NSInteger, CRNHttpCacheType) {
