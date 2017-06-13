@@ -218,11 +218,11 @@ void EventBindings::DispatchEventInContext(
   else
     listener_ids = v8::Array::New(context->isolate());
 
-  std::unique_ptr<content::V8ValueConverter> converter(
-      content::V8ValueConverter::create());
   v8::Local<v8::Value> v8_args[] = {
       gin::StringToSymbol(context->isolate(), event_name),
-      converter->ToV8Value(event_args, context->v8_context()), listener_ids,
+      content::V8ValueConverter::Create()->ToV8Value(event_args,
+                                                     context->v8_context()),
+      listener_ids,
   };
 
   context->module_system()->CallModuleMethodSafe(
@@ -322,10 +322,9 @@ void EventBindings::AttachFilteredEvent(
 
   std::unique_ptr<base::DictionaryValue> filter;
   {
-    std::unique_ptr<content::V8ValueConverter> converter(
-        content::V8ValueConverter::create());
-    std::unique_ptr<base::Value> filter_value(converter->FromV8Value(
-        v8::Local<v8::Object>::Cast(args[1]), context()->v8_context()));
+    std::unique_ptr<base::Value> filter_value =
+        content::V8ValueConverter::Create()->FromV8Value(
+            v8::Local<v8::Object>::Cast(args[1]), context()->v8_context());
     if (!filter_value || !filter_value->IsType(base::Value::Type::DICTIONARY)) {
       args.GetReturnValue().Set(static_cast<int32_t>(-1));
       return;

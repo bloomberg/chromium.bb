@@ -121,9 +121,8 @@ void WebUIExtension::Send(gin::Arguments* args) {
       return;
     }
 
-    std::unique_ptr<V8ValueConverter> converter(V8ValueConverter::create());
-    content = base::ListValue::From(
-        converter->FromV8Value(obj, frame->MainWorldScriptContext()));
+    content = base::ListValue::From(V8ValueConverter::Create()->FromV8Value(
+        obj, frame->MainWorldScriptContext()));
     DCHECK(content);
   }
 

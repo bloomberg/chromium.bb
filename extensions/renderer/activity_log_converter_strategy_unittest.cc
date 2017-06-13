@@ -10,8 +10,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"
 
-using content::V8ValueConverter;
-
 namespace extensions {
 
 class ActivityLogConverterStrategyTest : public testing::Test {
@@ -24,7 +22,7 @@ class ActivityLogConverterStrategyTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    converter_.reset(V8ValueConverter::create());
+    converter_ = content::V8ValueConverter::Create();
     strategy_.reset(new ActivityLogConverterStrategy());
     converter_->SetFunctionAllowed(true);
     converter_->SetStrategy(strategy_.get());
@@ -94,7 +92,7 @@ class ActivityLogConverterStrategyTest : public testing::Test {
   v8::HandleScope handle_scope_;
   v8::Global<v8::Context> context_;
   v8::Context::Scope context_scope_;
-  std::unique_ptr<V8ValueConverter> converter_;
+  std::unique_ptr<content::V8ValueConverter> converter_;
   std::unique_ptr<ActivityLogConverterStrategy> strategy_;
 };
 

@@ -72,7 +72,7 @@ class CONTENT_EXPORT V8ValueConverter {
     virtual bool FromV8Undefined(std::unique_ptr<base::Value>* out) const;
   };
 
-  static V8ValueConverter* create();
+  static std::unique_ptr<V8ValueConverter> Create();
 
   virtual ~V8ValueConverter() {}
 

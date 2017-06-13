@@ -17,8 +17,6 @@
 
 namespace extensions {
 
-using content::V8ValueConverter;
-
 namespace {
 const char kErrorNotSupported[] = "Not supported";
 const char kInvalidStreamArgs[] = "Invalid stream arguments";
@@ -136,9 +134,9 @@ void DisplaySourceCustomBindings::StartSession(
       GetChildValue(start_info, "authenticationInfo", isolate);
   if (!auth_info_v8_val->IsNull()) {
     CHECK(auth_info_v8_val->IsObject());
-    std::unique_ptr<V8ValueConverter> converter(V8ValueConverter::create());
-    std::unique_ptr<base::Value> auth_info_val(
-        converter->FromV8Value(auth_info_v8_val, context()->v8_context()));
+    std::unique_ptr<base::Value> auth_info_val =
+        content::V8ValueConverter::Create()->FromV8Value(
+            auth_info_v8_val, context()->v8_context());
     CHECK(auth_info_val);
     auth_info = DisplaySourceAuthInfo::FromValue(*auth_info_val);
   }

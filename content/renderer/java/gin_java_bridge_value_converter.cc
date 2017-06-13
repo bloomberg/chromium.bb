@@ -19,7 +19,7 @@
 namespace content {
 
 GinJavaBridgeValueConverter::GinJavaBridgeValueConverter()
-    : converter_(V8ValueConverter::create()) {
+    : converter_(V8ValueConverter::Create()) {
   converter_->SetDateAllowed(false);
   converter_->SetRegExpAllowed(false);
   converter_->SetFunctionAllowed(true);

@@ -327,8 +327,8 @@ bool APISignature::ConvertArgumentsIgnoringSchema(
   }
 
   auto json = base::MakeUnique<base::ListValue>();
-  std::unique_ptr<content::V8ValueConverter> converter(
-      content::V8ValueConverter::create());
+  std::unique_ptr<content::V8ValueConverter> converter =
+      content::V8ValueConverter::Create();
   converter->SetFunctionAllowed(true);
   for (size_t i = 0; i < size; ++i) {
     std::unique_ptr<base::Value> converted =

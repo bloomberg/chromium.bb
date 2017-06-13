@@ -618,11 +618,11 @@ bool ArgumentSpec::ParseArgumentToAny(v8::Local<v8::Context> context,
                                       std::string* error) const {
   DCHECK(type_ == ArgumentType::ANY || type_ == ArgumentType::BINARY);
   if (out_value) {
-    std::unique_ptr<content::V8ValueConverter> converter(
-        content::V8ValueConverter::create());
+    std::unique_ptr<content::V8ValueConverter> converter =
+        content::V8ValueConverter::Create();
     converter->SetStripNullFromObjects(!preserve_null_);
-    std::unique_ptr<base::Value> converted(
-        converter->FromV8Value(value, context));
+    std::unique_ptr<base::Value> converted =
+        converter->FromV8Value(value, context);
     if (!converted) {
       *error = api_errors::UnserializableValue();
       return false;

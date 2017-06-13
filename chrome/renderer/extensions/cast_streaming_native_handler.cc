@@ -496,7 +496,7 @@ void CastStreamingNativeHandler::GetSupportedParamsCastRtpStream(
   if (!transport)
     return;
 
-  std::unique_ptr<V8ValueConverter> converter(V8ValueConverter::create());
+  std::unique_ptr<V8ValueConverter> converter = V8ValueConverter::Create();
   std::vector<FrameSenderConfig> configs = transport->GetSupportedConfigs();
   v8::Local<v8::Array> result =
       v8::Array::New(args.GetIsolate(), static_cast<int>(configs.size()));
@@ -522,9 +522,8 @@ void CastStreamingNativeHandler::StartCastRtpStream(
   if (!transport)
     return;
 
-  std::unique_ptr<V8ValueConverter> converter(V8ValueConverter::create());
-  std::unique_ptr<base::Value> params_value(
-      converter->FromV8Value(args[1], context()->v8_context()));
+  std::unique_ptr<base::Value> params_value =
+      V8ValueConverter::Create()->FromV8Value(args[1], context()->v8_context());
   if (!params_value) {
     args.GetIsolate()->ThrowException(v8::Exception::TypeError(
         v8::String::NewFromUtf8(args.GetIsolate(), kUnableToConvertParams)));
@@ -618,9 +617,9 @@ void CastStreamingNativeHandler::SetOptionsCastUdpTransport(
   if (!transport)
     return;
 
-  std::unique_ptr<V8ValueConverter> converter(V8ValueConverter::create());
-  std::unique_ptr<base::DictionaryValue> options = base::DictionaryValue::From(
-      converter->FromV8Value(args[1], context()->v8_context()));
+  std::unique_ptr<base::DictionaryValue> options =
+      base::DictionaryValue::From(V8ValueConverter::Create()->FromV8Value(
+          args[1], context()->v8_context()));
   if (!options) {
     args.GetIsolate()->ThrowException(v8::Exception::TypeError(
         v8::String::NewFromUtf8(args.GetIsolate(), kUnableToConvertArgs)));
@@ -705,9 +704,8 @@ void CastStreamingNativeHandler::CallGetRawEventsCallback(
       get_raw_events_callbacks_.find(transport_id);
   if (it == get_raw_events_callbacks_.end())
     return;
-  std::unique_ptr<V8ValueConverter> converter(V8ValueConverter::create());
-  v8::Local<v8::Value> callback_args[] = {
-      converter->ToV8Value(raw_events.get(), context()->v8_context())};
+  v8::Local<v8::Value> callback_args[] = {V8ValueConverter::Create()->ToV8Value(
+      raw_events.get(), context()->v8_context())};
   context()->SafeCallFunction(v8::Local<v8::Function>::New(isolate, it->second),
                               arraysize(callback_args), callback_args);
   get_raw_events_callbacks_.erase(it);
@@ -724,9 +722,8 @@ void CastStreamingNativeHandler::CallGetStatsCallback(
   if (it == get_stats_callbacks_.end())
     return;
 
-  std::unique_ptr<V8ValueConverter> converter(V8ValueConverter::create());
-  v8::Local<v8::Value> callback_args[] = {
-      converter->ToV8Value(stats.get(), context()->v8_context())};
+  v8::Local<v8::Value> callback_args[] = {V8ValueConverter::Create()->ToV8Value(
+      stats.get(), context()->v8_context())};
   context()->SafeCallFunction(v8::Local<v8::Function>::New(isolate, it->second),
                               arraysize(callback_args), callback_args);
   get_stats_callbacks_.erase(it);
@@ -760,9 +757,8 @@ bool CastStreamingNativeHandler::FrameReceiverConfigFromArg(
     v8::Isolate* isolate,
     const v8::Local<v8::Value>& arg,
     media::cast::FrameReceiverConfig* config) const {
-  std::unique_ptr<V8ValueConverter> converter(V8ValueConverter::create());
-  std::unique_ptr<base::Value> params_value(
-      converter->FromV8Value(arg, context()->v8_context()));
+  std::unique_ptr<base::Value> params_value =
+      V8ValueConverter::Create()->FromV8Value(arg, context()->v8_context());
   if (!params_value) {
     isolate->ThrowException(v8::Exception::TypeError(
         v8::String::NewFromUtf8(isolate, kUnableToConvertParams)));
@@ -833,9 +829,8 @@ bool CastStreamingNativeHandler::IPEndPointFromArg(
     v8::Isolate* isolate,
     const v8::Local<v8::Value>& arg,
     net::IPEndPoint* ip_endpoint) const {
-  std::unique_ptr<V8ValueConverter> converter(V8ValueConverter::create());
-  std::unique_ptr<base::Value> destination_value(
-      converter->FromV8Value(arg, context()->v8_context()));
+  std::unique_ptr<base::Value> destination_value =
+      V8ValueConverter::Create()->FromV8Value(arg, context()->v8_context());
   if (!destination_value) {
     isolate->ThrowException(v8::Exception::TypeError(
         v8::String::NewFromUtf8(isolate, kInvalidAesIvMask)));
@@ -929,9 +924,9 @@ void CastStreamingNativeHandler::StartCastRtpReceiver(
 
   std::unique_ptr<base::DictionaryValue> options;
   if (args.Length() >= 9) {
-    std::unique_ptr<V8ValueConverter> converter(V8ValueConverter::create());
-    std::unique_ptr<base::Value> options_value(
-        converter->FromV8Value(args[8], context()->v8_context()));
+    std::unique_ptr<base::Value> options_value =
+        V8ValueConverter::Create()->FromV8Value(args[8],
+                                                context()->v8_context());
     if (!options_value->IsType(base::Value::Type::NONE)) {
       options = base::DictionaryValue::From(std::move(options_value));
       if (!options) {

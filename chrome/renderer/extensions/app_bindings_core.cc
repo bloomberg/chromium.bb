@@ -54,10 +54,8 @@ v8::Local<v8::Value> AppBindingsCore::GetDetails(
   std::unique_ptr<base::DictionaryValue> manifest_copy =
       extension->manifest()->value()->CreateDeepCopy();
   manifest_copy->SetString("id", extension->id());
-  std::unique_ptr<content::V8ValueConverter> converter(
-      content::V8ValueConverter::create());
-  return converter->ToV8Value(manifest_copy.get(),
-                              script_context->v8_context());
+  return content::V8ValueConverter::Create()->ToV8Value(
+      manifest_copy.get(), script_context->v8_context());
 }
 
 void AppBindingsCore::GetInstallState(ScriptContext* script_context,

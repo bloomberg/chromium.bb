@@ -33,8 +33,6 @@
 #include "third_party/WebKit/public/web/WebView.h"
 #include "v8/include/v8.h"
 
-using content::V8ValueConverter;
-
 namespace extensions {
 
 namespace {
@@ -372,13 +370,12 @@ void ScriptContext::OnResponseReceived(const std::string& name,
   DCHECK(thread_checker_.CalledOnValidThread());
   v8::HandleScope handle_scope(isolate());
 
-  std::unique_ptr<V8ValueConverter> converter(V8ValueConverter::create());
   v8::Local<v8::Value> argv[] = {
       v8::Integer::New(isolate(), request_id),
       v8::String::NewFromUtf8(isolate(), name.c_str()),
       v8::Boolean::New(isolate(), success),
-      converter->ToV8Value(&response,
-                           v8::Local<v8::Context>::New(isolate(), v8_context_)),
+      content::V8ValueConverter::Create()->ToV8Value(
+          &response, v8::Local<v8::Context>::New(isolate(), v8_context_)),
       v8::String::NewFromUtf8(isolate(), error.c_str())};
 
   module_system()->CallModuleMethodSafe("sendRequest", "handleResponse",

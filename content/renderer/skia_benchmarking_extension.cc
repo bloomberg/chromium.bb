@@ -76,10 +76,8 @@ class GfxImageDeserializer final : public SkImageDeserializer {
 
 std::unique_ptr<base::Value> ParsePictureArg(v8::Isolate* isolate,
                                              v8::Local<v8::Value> arg) {
-  std::unique_ptr<content::V8ValueConverter> converter(
-      content::V8ValueConverter::create());
-  return std::unique_ptr<base::Value>(
-      converter->FromV8Value(arg, isolate->GetCurrentContext()));
+  return content::V8ValueConverter::Create()->FromV8Value(
+      arg, isolate->GetCurrentContext());
 }
 
 std::unique_ptr<Picture> CreatePictureFromEncodedString(
@@ -209,10 +207,8 @@ void SkiaBenchmarking::Rasterize(gin::Arguments* args) {
   if (!args->PeekNext().IsEmpty()) {
     v8::Local<v8::Value> params;
     args->GetNext(&params);
-    std::unique_ptr<content::V8ValueConverter> converter(
-        content::V8ValueConverter::create());
-    std::unique_ptr<base::Value> params_value(
-        converter->FromV8Value(params, context));
+    std::unique_ptr<base::Value> params_value =
+        content::V8ValueConverter::Create()->FromV8Value(params, context);
 
     const base::DictionaryValue* params_dict = NULL;
     if (params_value.get() && params_value->GetAsDictionary(&params_dict)) {
@@ -282,10 +278,9 @@ void SkiaBenchmarking::GetOps(gin::Arguments* args) {
   picture->picture->playback(&benchmarking_canvas);
 
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
-  std::unique_ptr<content::V8ValueConverter> converter(
-      content::V8ValueConverter::create());
 
-  args->Return(converter->ToV8Value(&benchmarking_canvas.Commands(), context));
+  args->Return(content::V8ValueConverter::Create()->ToV8Value(
+      &benchmarking_canvas.Commands(), context));
 }
 
 void SkiaBenchmarking::GetOpTimings(gin::Arguments* args) {

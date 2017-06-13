@@ -125,10 +125,8 @@ void PlatformKeysNatives::NormalizeAlgorithm(
   if (!algorithm_dict)
     return;
 
-  std::unique_ptr<content::V8ValueConverter> converter(
-      content::V8ValueConverter::create());
-  call_info.GetReturnValue().Set(
-      converter->ToV8Value(algorithm_dict.get(), context()->v8_context()));
+  call_info.GetReturnValue().Set(content::V8ValueConverter::Create()->ToV8Value(
+      algorithm_dict.get(), context()->v8_context()));
 }
 
 }  // namespace extensions

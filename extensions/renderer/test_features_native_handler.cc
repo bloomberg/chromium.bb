@@ -23,10 +23,8 @@ void TestFeaturesNativeHandler::GetAPIFeatures(
     const v8::FunctionCallbackInfo<v8::Value>& args) {
   std::unique_ptr<JSONFeatureProviderSource> source(
       ExtensionsClient::Get()->CreateAPIFeatureSource());
-  std::unique_ptr<content::V8ValueConverter> converter(
-      content::V8ValueConverter::create());
-  args.GetReturnValue().Set(
-      converter->ToV8Value(&source->dictionary(), context()->v8_context()));
+  args.GetReturnValue().Set(content::V8ValueConverter::Create()->ToV8Value(
+      &source->dictionary(), context()->v8_context()));
 }
 
 }  // namespace extensions
