@@ -55,6 +55,10 @@ bool InfoBarAndroid::HasSetJavaInfoBar() const {
   return !java_info_bar_.is_null();
 }
 
+void InfoBarAndroid::PlatformSpecificHide(bool animate) {
+  CloseJavaInfoBar();
+}
+
 int InfoBarAndroid::GetInfoBarIdentifier(JNIEnv* env,
                                          const JavaParamRef<jobject>& obj) {
   return delegate()->GetIdentifier();

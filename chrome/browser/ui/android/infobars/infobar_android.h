@@ -42,6 +42,7 @@ class InfoBarAndroid : public infobars::InfoBar {
       const base::android::JavaRef<jobject>& java_info_bar);
   jobject GetJavaInfoBar();
   bool HasSetJavaInfoBar() const;
+  void PlatformSpecificHide(bool animate) override;
 
   // Tells the Java-side counterpart of this InfoBar to point to the replacement
   // InfoBar instead of this one.
