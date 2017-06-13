@@ -264,7 +264,6 @@ class CONTENT_EXPORT RenderWidget
 
   void OnDidHandleKeyEvent() override;
   void OnDidOverscroll(const ui::DidOverscrollParams& params) override;
-  void OnInputEventAck(std::unique_ptr<InputEventAck> input_event_ack) override;
   void SetInputHandler(RenderWidgetInputHandler* input_handler) override;
   void ShowVirtualKeyboard() override;
   void UpdateTextInputState() override;
@@ -419,14 +418,9 @@ class CONTENT_EXPORT RenderWidget
   // Requests a BeginMainFrame callback from the compositor.
   void SetNeedsMainFrame() override;
 
-  InputEventAckState HandleInputEvent(
-      const blink::WebCoalescedInputEvent& input_event,
-      const ui::LatencyInfo& latency_info,
-      InputEventDispatchType dispatch_type) override;
-
-  void SendInputEventAck(blink::WebInputEvent::Type type,
-                         InputEventAckState ack_result,
-                         uint32_t touch_event_id) override;
+  void HandleInputEvent(const blink::WebCoalescedInputEvent& input_event,
+                        const ui::LatencyInfo& latency_info,
+                        HandledEventCallback callback) override;
 
   scoped_refptr<MainThreadEventQueue> GetInputEventQueue();
 
@@ -847,6 +841,12 @@ class CONTENT_EXPORT RenderWidget
                                     bool reply_to_request);
 
   gfx::ColorSpace GetRasterColorSpace() const;
+
+  void SendInputEventAck(blink::WebInputEvent::Type type,
+                         uint32_t touch_event_id,
+                         InputEventAckState ack_state,
+                         const ui::LatencyInfo& latency_info,
+                         std::unique_ptr<ui::DidOverscrollParams>);
 
   // Indicates whether this widget has focus.
   bool has_focus_;

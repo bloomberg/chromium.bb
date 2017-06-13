@@ -14,7 +14,7 @@ void MainThreadEventQueueTaskList::Queue(
     std::unique_ptr<MainThreadEventQueueTask> event) {
   for (auto last_event_iter = queue_.rbegin(); last_event_iter != queue_.rend();
        ++last_event_iter) {
-    switch ((*last_event_iter)->FilterNewEvent(*event.get())) {
+    switch ((*last_event_iter)->FilterNewEvent(event.get())) {
       case MainThreadEventQueueTask::FilterResult::CoalescedEvent:
         return;
       case MainThreadEventQueueTask::FilterResult::StopIterating:

@@ -207,10 +207,10 @@ RenderWidgetInputHandler::RenderWidgetInputHandler(
 
 RenderWidgetInputHandler::~RenderWidgetInputHandler() {}
 
-InputEventAckState RenderWidgetInputHandler::HandleInputEvent(
+void RenderWidgetInputHandler::HandleInputEvent(
     const blink::WebCoalescedInputEvent& coalesced_event,
     const ui::LatencyInfo& latency_info,
-    InputEventDispatchType dispatch_type) {
+    HandledEventCallback callback) {
   const WebInputEvent& input_event = coalesced_event.Event();
   base::AutoReset<bool> handling_input_event_resetter(&handling_input_event_,
                                                       true);
@@ -392,20 +392,11 @@ InputEventAckState RenderWidgetInputHandler::HandleInputEvent(
   }
 
   TRACE_EVENT_SYNTHETIC_DELAY_END("blink.HandleInputEvent");
-
-  if (dispatch_type == DISPATCH_TYPE_BLOCKING) {
-    std::unique_ptr<InputEventAck> response(new InputEventAck(
-        InputEventAckSource::MAIN_THREAD, input_event.GetType(), ack_result,
-        swap_latency_info, std::move(event_overscroll),
-        ui::WebInputEventTraits::GetUniqueTouchEventId(input_event)));
-    delegate_->OnInputEventAck(std::move(response));
+  if (callback) {
+    std::move(callback).Run(ack_result, swap_latency_info,
+                            std::move(event_overscroll));
   } else {
     DCHECK(!event_overscroll) << "Unexpected overscroll for un-acked event";
-  }
-  if (RenderThreadImpl::current()) {
-    RenderThreadImpl::current()
-        ->GetRendererScheduler()
-        ->DidHandleInputEventOnMainThread(input_event, processed);
   }
 
 #if defined(OS_ANDROID)
@@ -439,7 +430,6 @@ InputEventAckState RenderWidgetInputHandler::HandleInputEvent(
     delegate_->FocusChangeComplete();
   }
 #endif
-  return ack_result;
 }
 
 void RenderWidgetInputHandler::DidOverscrollFromBlink(

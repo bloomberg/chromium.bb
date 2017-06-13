@@ -2546,25 +2546,23 @@ void RenderViewImpl::OnDiscardInputEvent(
     return;
   }
 
-  std::unique_ptr<InputEventAck> ack(new InputEventAck(
-      InputEventAckSource::MAIN_THREAD, input_event->GetType(),
-      INPUT_EVENT_ACK_STATE_NOT_CONSUMED));
-  OnInputEventAck(std::move(ack));
+  InputEventAck ack(InputEventAckSource::MAIN_THREAD, input_event->GetType(),
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  Send(new InputHostMsg_HandleInputEvent_ACK(routing_id_, ack));
 }
 
-InputEventAckState RenderViewImpl::HandleInputEvent(
+void RenderViewImpl::HandleInputEvent(
     const blink::WebCoalescedInputEvent& input_event,
     const ui::LatencyInfo& latency_info,
-    InputEventDispatchType dispatch_type) {
+    HandledEventCallback callback) {
   if (is_swapped_out_) {
-    OnDiscardInputEvent(&input_event.Event(),
-                        input_event.GetCoalescedEventsPointers(), latency_info,
-                        dispatch_type);
-    return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
+    std::move(callback).Run(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, latency_info,
+                            nullptr);
+    return;
   }
   idle_user_detector_->ActivityDetected();
-  return RenderWidget::HandleInputEvent(input_event, latency_info,
-                                        dispatch_type);
+  RenderWidget::HandleInputEvent(input_event, latency_info,
+                                 std::move(callback));
 }
 
 }  // namespace content

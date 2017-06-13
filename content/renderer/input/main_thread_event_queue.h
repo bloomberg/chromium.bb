@@ -17,10 +17,16 @@
 #include "content/renderer/input/scoped_web_input_event_with_latency_info.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
+#include "ui/events/blink/did_overscroll_params.h"
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/latency/latency_info.h"
 
 namespace content {
+
+using HandledEventCallback =
+    base::OnceCallback<void(InputEventAckState ack_state,
+                            const ui::LatencyInfo& latency_info,
+                            std::unique_ptr<ui::DidOverscrollParams>)>;
 
 // All interaction with the MainThreadEventQueueClient will occur
 // on the main thread.
@@ -29,14 +35,9 @@ class CONTENT_EXPORT MainThreadEventQueueClient {
   // Handle an |event| that was previously queued (possibly
   // coalesced with another event). Implementors must implement
   // this callback.
-  virtual InputEventAckState HandleInputEvent(
-      const blink::WebCoalescedInputEvent& event,
-      const ui::LatencyInfo& latency_info,
-      InputEventDispatchType dispatch_type) = 0;
-
-  virtual void SendInputEventAck(blink::WebInputEvent::Type type,
-                                 InputEventAckState ack_result,
-                                 uint32_t touch_event_id) = 0;
+  virtual void HandleInputEvent(const blink::WebCoalescedInputEvent& event,
+                                const ui::LatencyInfo& latency_info,
+                                HandledEventCallback handled_callback) = 0;
   virtual void SetNeedsMainFrame() = 0;
 };
 
@@ -87,12 +88,13 @@ class CONTENT_EXPORT MainThreadEventQueue
 
   // Called once the compositor has handled |event| and indicated that it is
   // a non-blocking event to be queued to the main thread.
-  bool HandleEvent(ui::WebScopedInputEvent event,
+  void HandleEvent(ui::WebScopedInputEvent event,
                    const ui::LatencyInfo& latency,
                    InputEventDispatchType dispatch_type,
-                   InputEventAckState ack_result);
+                   InputEventAckState ack_result,
+                   HandledEventCallback handled_callback);
   void DispatchRafAlignedInput(base::TimeTicks frame_time);
-  void QueueClosure(const base::Closure& closure);
+  void QueueClosure(base::OnceClosure closure);
 
   void ClearClient();
   void SetNeedsLowLatency(bool low_latency);
@@ -105,13 +107,9 @@ class CONTENT_EXPORT MainThreadEventQueue
   void DispatchEvents();
   void PossiblyScheduleMainFrame();
   void SetNeedsMainFrame();
-  InputEventAckState HandleEventOnMainThread(
-      const blink::WebCoalescedInputEvent& event,
-      const ui::LatencyInfo& latency,
-      InputEventDispatchType dispatch_type);
-  void SendInputEventAck(const blink::WebInputEvent& event,
-                         InputEventAckState ack_result,
-                         uint32_t touch_event_id);
+  void HandleEventOnMainThread(const blink::WebCoalescedInputEvent& event,
+                               const ui::LatencyInfo& latency,
+                               HandledEventCallback handled_callback);
 
   void SendEventToMainThread(const blink::WebInputEvent* event,
                              const ui::LatencyInfo& latency,

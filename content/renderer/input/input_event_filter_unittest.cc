@@ -156,22 +156,17 @@ class ReceivedMessage : public ReceivedItem {
 
 class ReceivedEvent : public ReceivedItem {
  public:
-  ReceivedEvent(const blink::WebCoalescedInputEvent& event,
-                InputEventDispatchType dispatch_type)
-      : event_(event.Event(), event.GetCoalescedEventsPointers()),
-        dispatch_type_(dispatch_type) {}
+  ReceivedEvent(const blink::WebCoalescedInputEvent& event)
+      : event_(event.Event(), event.GetCoalescedEventsPointers()) {}
 
   ~ReceivedEvent() override {}
 
   const ReceivedEvent* ItemAsEvent() const override { return this; }
 
-  InputEventDispatchType dispatch_type() const { return dispatch_type_; }
-
   const blink::WebInputEvent& event() const { return event_.Event(); }
 
  private:
   blink::WebCoalescedInputEvent event_;
-  InputEventDispatchType dispatch_type_;
 };
 
 class IPCMessageRecorder : public IPC::Listener {
@@ -192,9 +187,8 @@ class IPCMessageRecorder : public IPC::Listener {
     return *(messages_[i]->ItemAsEvent());
   }
 
-  void AppendEvent(const blink::WebCoalescedInputEvent& event,
-                   InputEventDispatchType dispatch_type) {
-    std::unique_ptr<ReceivedItem> item(new ReceivedEvent(event, dispatch_type));
+  void AppendEvent(const blink::WebCoalescedInputEvent& event) {
+    std::unique_ptr<ReceivedItem> item(new ReceivedEvent(event));
     messages_.push_back(std::move(item));
   }
 
@@ -264,17 +258,13 @@ class InputEventFilterTest : public testing::Test,
     filter_->RegisterRoutingID(kTestRoutingID, input_event_queue_);
   }
 
-  InputEventAckState HandleInputEvent(
-      const blink::WebCoalescedInputEvent& event,
-      const ui::LatencyInfo& latency,
-      InputEventDispatchType dispatch_type) override {
-    message_recorder_.AppendEvent(event, dispatch_type);
-    return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
+  void HandleInputEvent(const blink::WebCoalescedInputEvent& event,
+                        const ui::LatencyInfo& latency,
+                        HandledEventCallback callback) override {
+    message_recorder_.AppendEvent(event);
+    std::move(callback).Run(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, latency,
+                            nullptr);
   }
-
-  void SendInputEventAck(blink::WebInputEvent::Type type,
-                         InputEventAckState ack_result,
-                         uint32_t touch_event_id) override {}
 
   void SetNeedsMainFrame() override { event_recorder_->NeedsMainFrame(); }
 
@@ -342,7 +332,7 @@ TEST_F(InputEventFilterTest, Basic) {
   event_recorder_->set_send_to_widget(true);
 
   AddEventsToFilter(kEvents, arraysize(kEvents));
-  EXPECT_EQ(arraysize(kEvents), ipc_sink_.message_count());
+  EXPECT_EQ(2 * arraysize(kEvents), ipc_sink_.message_count());
   EXPECT_EQ(2 * arraysize(kEvents), event_recorder_->record_count());
   EXPECT_EQ(1u, message_recorder_.message_count());
 
@@ -466,33 +456,23 @@ TEST_F(InputEventFilterTest, NonBlockingWheel) {
   // First two messages should be identical.
   for (size_t i = 0; i < 2; ++i) {
     const ReceivedEvent& message = message_recorder_.event_at(i);
-
     const WebInputEvent& event = message.event();
-    InputEventDispatchType dispatch_type = message.dispatch_type();
-
     EXPECT_EQ(kEvents[i].size(), event.size());
     kEvents[i].dispatch_type =
         WebInputEvent::DispatchType::kListenersNonBlockingPassive;
     EXPECT_TRUE(memcmp(&kEvents[i], &event, event.size()) == 0);
-    EXPECT_EQ(InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING,
-              dispatch_type);
   }
 
   // Third message is coalesced.
   {
     const ReceivedEvent& message = message_recorder_.event_at(2);
-
     const WebMouseWheelEvent& event =
         static_cast<const WebMouseWheelEvent&>(message.event());
-    InputEventDispatchType dispatch_type = message.dispatch_type();
-
     kEvents[2].dispatch_type =
         WebInputEvent::DispatchType::kListenersNonBlockingPassive;
     EXPECT_EQ(kEvents[2].size(), event.size());
     EXPECT_EQ(kEvents[2].delta_x + kEvents[3].delta_x, event.delta_x);
     EXPECT_EQ(kEvents[2].delta_y + kEvents[3].delta_y, event.delta_y);
-    EXPECT_EQ(InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING,
-              dispatch_type);
   }
 }
 
@@ -521,34 +501,24 @@ TEST_F(InputEventFilterTest, NonBlockingTouch) {
   // First two messages should be identical.
   for (size_t i = 0; i < 2; ++i) {
     const ReceivedEvent& message = message_recorder_.event_at(i);
-
     const WebInputEvent& event = message.event();
-    InputEventDispatchType dispatch_type = message.dispatch_type();
-
     EXPECT_EQ(kEvents[i].size(), event.size());
     kEvents[i].dispatch_type =
         WebInputEvent::DispatchType::kListenersNonBlockingPassive;
     EXPECT_TRUE(memcmp(&kEvents[i], &event, event.size()) == 0);
-    EXPECT_EQ(InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING,
-              dispatch_type);
   }
 
   // Third message is coalesced.
   {
     const ReceivedEvent& message = message_recorder_.event_at(2);
-
     const WebTouchEvent& event =
         static_cast<const WebTouchEvent&>(message.event());
-    InputEventDispatchType dispatch_type = message.dispatch_type();
-
     EXPECT_EQ(kEvents[3].size(), event.size());
     EXPECT_EQ(1u, kEvents[3].touches_length);
     EXPECT_EQ(kEvents[3].touches[0].PositionInWidget().x,
               event.touches[0].PositionInWidget().x);
     EXPECT_EQ(kEvents[3].touches[0].PositionInWidget().y,
               event.touches[0].PositionInWidget().y);
-    EXPECT_EQ(InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING,
-              dispatch_type);
   }
 }
 
@@ -576,37 +546,26 @@ TEST_F(InputEventFilterTest, IntermingledNonBlockingTouch) {
   {
     const ReceivedEvent& message = message_recorder_.event_at(0);
     const WebInputEvent& event = message.event();
-    InputEventDispatchType dispatch_type = message.dispatch_type();
-
     EXPECT_EQ(kEvents[0].size(), event.size());
     kEvents[0].dispatch_type =
         WebInputEvent::DispatchType::kListenersNonBlockingPassive;
     EXPECT_TRUE(memcmp(&kEvents[0], &event, event.size()) == 0);
-    EXPECT_EQ(InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING,
-              dispatch_type);
   }
 
   {
     const ReceivedEvent& message = message_recorder_.event_at(1);
     const WebInputEvent& event = message.event();
-    InputEventDispatchType dispatch_type = message.dispatch_type();
-
     EXPECT_EQ(kEvents[1].size(), event.size());
     kEvents[1].dispatch_type =
         WebInputEvent::DispatchType::kListenersNonBlockingPassive;
     EXPECT_TRUE(memcmp(&kEvents[1], &event, event.size()) == 0);
-    EXPECT_EQ(InputEventDispatchType::DISPATCH_TYPE_NON_BLOCKING,
-              dispatch_type);
   }
 
   {
     const ReceivedEvent& message = message_recorder_.event_at(2);
     const WebInputEvent& event = message.event();
-    InputEventDispatchType dispatch_type = message.dispatch_type();
-
     EXPECT_EQ(kBlockingEvents[0].size(), event.size());
     EXPECT_TRUE(memcmp(&kBlockingEvents[0], &event, event.size()) == 0);
-    EXPECT_EQ(InputEventDispatchType::DISPATCH_TYPE_BLOCKING, dispatch_type);
   }
 }
 

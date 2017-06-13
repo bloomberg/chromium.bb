@@ -36,7 +36,7 @@ class MainThreadEventQueueTask {
   // Filter a new event that is about to be queued. Acceptable actions
   // are to coalesce event, stop iterating or keep iterating.
   // Iteration of the list begins at the end of the queue (newest to oldest).
-  virtual FilterResult FilterNewEvent(const MainThreadEventQueueTask&) = 0;
+  virtual FilterResult FilterNewEvent(MainThreadEventQueueTask*) = 0;
   virtual bool IsWebInputEvent() const = 0;
   virtual void Dispatch(MainThreadEventQueue*) = 0;
 };

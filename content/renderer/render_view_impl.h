@@ -377,10 +377,9 @@ class CONTENT_EXPORT RenderViewImpl
     return weak_ptr_factory_.GetWeakPtr();
   }
 
-  InputEventAckState HandleInputEvent(
-      const blink::WebCoalescedInputEvent& input_event,
-      const ui::LatencyInfo& latency_info,
-      InputEventDispatchType dispatch_type) override;
+  void HandleInputEvent(const blink::WebCoalescedInputEvent& input_event,
+                        const ui::LatencyInfo& latency_info,
+                        HandledEventCallback callback) override;
 
  protected:
   // RenderWidget overrides:
