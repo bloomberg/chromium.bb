@@ -4,38 +4,27 @@
 
 #import "ios/chrome/browser/ui/elements/activity_overlay_coordinator.h"
 
-#import "base/mac/objc_property_releaser.h"
 #import "ios/chrome/browser/ui/elements/activity_overlay_view_controller.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 
-@interface ActivityOverlayCoordinator () {
-  base::mac::ObjCPropertyReleaser _propertyReleaser_ActivityOverlayCoordinator;
-}
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
+@interface ActivityOverlayCoordinator ()
 // View controller that displays an activity indicator.
-@property(nonatomic, retain) UIViewController* activityOverlayViewController;
+@property(nonatomic, strong) UIViewController* activityOverlayViewController;
 @end
 
 @implementation ActivityOverlayCoordinator
 
 @synthesize activityOverlayViewController = _activityOverlayViewController;
 
-- (nullable instancetype)initWithBaseViewController:
-    (UIViewController*)viewController {
-  self = [super initWithBaseViewController:viewController];
-  if (self) {
-    _propertyReleaser_ActivityOverlayCoordinator.Init(
-        self, [ActivityOverlayCoordinator class]);
-  }
-  return self;
-}
-
 - (void)start {
   if (self.activityOverlayViewController)
     return;
   self.activityOverlayViewController =
-      [[[ActivityOverlayViewController alloc] initWithNibName:nil bundle:nil]
-          autorelease];
+      [[ActivityOverlayViewController alloc] initWithNibName:nil bundle:nil];
   [self.baseViewController
       addChildViewController:self.activityOverlayViewController];
   [self.baseViewController.view
