@@ -291,7 +291,7 @@ void LevelDBMojoProxy::RenameFileImpl(OpaqueDir* dir,
                                       const std::string& new_path,
                                       filesystem::mojom::FileError* out_error) {
   mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync;
-  bool completed = dir->directory->Rename(old_path, new_path, out_error);
+  bool completed = dir->directory->Replace(old_path, new_path, out_error);
   DCHECK(completed);
 }
 
