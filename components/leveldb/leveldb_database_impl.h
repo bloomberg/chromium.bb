@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/trace_event/memory_dump_provider.h"
 #include "base/unguessable_token.h"
 #include "components/leveldb/public/interfaces/leveldb.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -15,10 +16,13 @@
 namespace leveldb {
 
 // The backing to a database object that we pass to our called.
-class LevelDBDatabaseImpl : public mojom::LevelDBDatabase {
+class LevelDBDatabaseImpl : public mojom::LevelDBDatabase,
+                            public base::trace_event::MemoryDumpProvider {
  public:
   LevelDBDatabaseImpl(std::unique_ptr<leveldb::Env> environment,
-                      std::unique_ptr<leveldb::DB> db);
+                      std::unique_ptr<leveldb::DB> db,
+                      base::Optional<base::trace_event::MemoryAllocatorDumpGuid>
+                          memory_dump_id);
   ~LevelDBDatabaseImpl() override;
 
   // Overridden from LevelDBDatabase:
@@ -56,6 +60,10 @@ class LevelDBDatabaseImpl : public mojom::LevelDBDatabase {
   void IteratorPrev(const base::UnguessableToken& iterator,
                     IteratorPrevCallback callback) override;
 
+  // base::trace_event::MemoryDumpProvider implementation.
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override;
+
  private:
   // Returns the state of |it| to a caller. Note: This assumes that all the
   // iterator movement methods have the same callback signature. We don't
@@ -68,6 +76,7 @@ class LevelDBDatabaseImpl : public mojom::LevelDBDatabase {
 
   std::unique_ptr<leveldb::Env> environment_;
   std::unique_ptr<leveldb::DB> db_;
+  base::Optional<base::trace_event::MemoryAllocatorDumpGuid> memory_dump_id_;
 
   std::map<base::UnguessableToken, const Snapshot*> snapshot_map_;
 

@@ -105,4 +105,17 @@ bool EnumTraits<common::mojom::TextDirection, base::i18n::TextDirection>::
   return false;
 }
 
+// static
+bool StructTraits<common::mojom::MemoryAllocatorDumpCrossProcessUidDataView,
+                  base::trace_event::MemoryAllocatorDumpGuid>::
+    Read(common::mojom::MemoryAllocatorDumpCrossProcessUidDataView data,
+         base::trace_event::MemoryAllocatorDumpGuid* out) {
+  // Receiving a zeroed MemoryAllocatorDumpCrossProcessUid is a bug.
+  if (data.value() == 0)
+    return false;
+
+  *out = base::trace_event::MemoryAllocatorDumpGuid(data.value());
+  return true;
+}
+
 }  // namespace mojo

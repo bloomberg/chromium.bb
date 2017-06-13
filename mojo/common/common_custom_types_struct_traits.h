@@ -9,9 +9,11 @@
 #include "base/i18n/rtl.h"
 #include "base/process/process_handle.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/trace_event/memory_allocator_dump_guid.h"
 #include "base/unguessable_token.h"
 #include "base/version.h"
 #include "mojo/common/file.mojom-shared.h"
+#include "mojo/common/memory_allocator_dump_cross_process_uid.mojom-shared.h"
 #include "mojo/common/mojo_common_export.h"
 #include "mojo/common/process_id.mojom-shared.h"
 #include "mojo/common/string16.mojom-shared.h"
@@ -114,6 +116,18 @@ struct EnumTraits<common::mojom::TextDirection, base::i18n::TextDirection> {
       base::i18n::TextDirection text_direction);
   static bool FromMojom(common::mojom::TextDirection input,
                         base::i18n::TextDirection* out);
+};
+
+template <>
+struct StructTraits<common::mojom::MemoryAllocatorDumpCrossProcessUidDataView,
+                    base::trace_event::MemoryAllocatorDumpGuid> {
+  static uint64_t value(const base::trace_event::MemoryAllocatorDumpGuid& id) {
+    return id.ToUint64();
+  }
+
+  static bool Read(
+      common::mojom::MemoryAllocatorDumpCrossProcessUidDataView data,
+      base::trace_event::MemoryAllocatorDumpGuid* out);
 };
 
 }  // namespace mojo
