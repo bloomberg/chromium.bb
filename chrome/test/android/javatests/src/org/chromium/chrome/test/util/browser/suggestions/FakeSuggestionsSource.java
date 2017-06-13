@@ -36,12 +36,13 @@ public class FakeSuggestionsSource implements SuggestionsSource {
     private final Map<String, Bitmap> mThumbnails = new HashMap<>();
     private final Map<String, Bitmap> mFavicons = new HashMap<>();
 
+    private Bitmap mDefaultFavicon;
+
     private final List<Integer> mDismissedCategories = new ArrayList<>();
     private final Map<Integer, List<SnippetArticle>> mDismissedCategorySuggestions =
             new HashMap<>();
     private final Map<Integer, Integer> mDismissedCategoryStatus = new LinkedHashMap<>();
     private final Map<Integer, SuggestionsCategoryInfo> mDismissedCategoryInfo = new HashMap<>();
-
     /**
      * Sets the status to be returned for a given category.
      */
@@ -86,6 +87,15 @@ public class FakeSuggestionsSource implements SuggestionsSource {
      */
     public void setFaviconForId(String id, Bitmap bitmap) {
         mFavicons.put(id, bitmap);
+    }
+
+    /**
+     * Sets a default favicon to be returned for suggestions that don't have a specific favicon
+     * defined.
+     * @param bitmap The favicon bitmap to be returned by default.
+     */
+    public void setDefaultFavicon(Bitmap bitmap) {
+        mDefaultFavicon = bitmap;
     }
 
     /**
@@ -165,14 +175,21 @@ public class FakeSuggestionsSource implements SuggestionsSource {
     @Override
     public void fetchSuggestionFavicon(final SnippetArticle suggestion, int minimumSizePx,
             int desiredSizePx, final Callback<Bitmap> callback) {
-        if (mFavicons.containsKey(suggestion.mIdWithinCategory)) {
+        final Bitmap favicon = getFaviconForId(suggestion.mIdWithinCategory);
+        if (favicon != null) {
             ThreadUtils.postOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    callback.onResult(mFavicons.get(suggestion.mIdWithinCategory));
+                    callback.onResult(favicon);
                 }
             });
         }
+    }
+
+    private Bitmap getFaviconForId(String id) {
+        if (mFavicons.containsKey(id)) return mFavicons.get(id);
+
+        return mDefaultFavicon;
     }
 
     @Override

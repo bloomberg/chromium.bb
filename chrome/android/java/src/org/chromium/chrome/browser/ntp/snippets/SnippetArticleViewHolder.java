@@ -28,6 +28,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.compositor.layouts.ChromeAnimation;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.download.ui.DownloadFilter;
 import org.chromium.chrome.browser.download.ui.ThumbnailProvider;
@@ -69,6 +70,7 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
             REFRESH_OFFLINE_BADGE_VISIBILITY_CALLBACK = new RefreshOfflineBadgeVisibilityCallback();
 
     private static final String ARTICLE_AGE_FORMAT_STRING = " - %s";
+
     private static final int FADE_IN_ANIMATION_TIME_MS = 300;
     private static final int[] FAVICON_SERVICE_SUPPORTED_SIZES = {16, 24, 32, 48, 64};
     private static final String FAVICON_SERVICE_FORMAT =
@@ -251,7 +253,7 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
 
         boolean showHeadline = shouldShowHeadline();
         boolean showDescription = shouldShowDescription(horizontalStyle, verticalStyle, layout);
-        boolean showThumbnail = shouldShowThumbnail(horizontalStyle, verticalStyle, layout);
+        boolean showThumbnail = shouldShowThumbnail(layout);
 
         mHeadlineTextView.setVisibility(showHeadline ? View.VISIBLE : View.GONE);
         mHeadlineTextView.setMaxLines(getHeaderMaxLines(horizontalStyle, verticalStyle, layout));
@@ -300,7 +302,7 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
         return ChromeFeatureList.isEnabled(ChromeFeatureList.CONTENT_SUGGESTIONS_SHOW_SUMMARY);
     }
 
-    private boolean shouldShowThumbnail(int horizontalStyle, int verticalStyle, int layout) {
+    private boolean shouldShowThumbnail(int layout) {
         // Minimal cards don't have a thumbnail
         if (layout == ContentSuggestionsCardLayout.MINIMAL_CARD) return false;
 
@@ -446,17 +448,24 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
         // Store the bitmap to skip the download task next time we display this snippet.
         snippet.setThumbnailBitmap(mUiDelegate.getReferencePool().put(thumbnail));
 
+        mThumbnailView.setScaleType(ImageView.ScaleType.CENTER_CROP);
+        mThumbnailView.setBackground(null);
+        mThumbnailView.setTint(null);
+        int duration = (int) (FADE_IN_ANIMATION_TIME_MS
+                * ChromeAnimation.Animation.getAnimationMultiplier());
+        if (duration == 0) {
+            mThumbnailView.setImageBitmap(thumbnail);
+            return;
+        }
+
         // Cross-fade between the placeholder and the thumbnail. We cross-fade because the incoming
         // image may have transparency and we don't want the previous image showing up behind.
         Drawable[] layers = {mThumbnailView.getDrawable(),
                 new BitmapDrawable(mThumbnailView.getResources(), thumbnail)};
         TransitionDrawable transitionDrawable = new TransitionDrawable(layers);
-        mThumbnailView.setScaleType(ImageView.ScaleType.CENTER_CROP);
-        mThumbnailView.setBackground(null);
         mThumbnailView.setImageDrawable(transitionDrawable);
-        mThumbnailView.setTint(null);
         transitionDrawable.setCrossFadeEnabled(true);
-        transitionDrawable.startTransition(FADE_IN_ANIMATION_TIME_MS);
+        transitionDrawable.startTransition(duration);
     }
 
     private void fetchFaviconFromLocalCacheOrGoogleServer(final long faviconFetchStartTimeMs) {
