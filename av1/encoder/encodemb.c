@@ -1537,7 +1537,8 @@ static int cfl_alpha_dist(const uint8_t *y_pix, int y_stride, double y_avg,
 }
 
 static int cfl_compute_alpha_ind(MACROBLOCK *const x, const CFL_CTX *const cfl,
-                                 BLOCK_SIZE bsize,
+                                 int width, int height,
+                                 uint8_t y_pix[MAX_SB_SQUARE],
                                  CFL_SIGN_TYPE signs_out[CFL_SIGNS]) {
   const struct macroblock_plane *const p_u = &x->plane[AOM_PLANE_U];
   const struct macroblock_plane *const p_v = &x->plane[AOM_PLANE_V];
@@ -1545,33 +1546,25 @@ static int cfl_compute_alpha_ind(MACROBLOCK *const x, const CFL_CTX *const cfl,
   const uint8_t *const src_v = p_v->src.buf;
   const int src_stride_u = p_u->src.stride;
   const int src_stride_v = p_v->src.stride;
-  const int block_width = block_size_wide[bsize];
-  const int block_height = block_size_high[bsize];
   const double dc_pred_u = cfl->dc_pred[CFL_PRED_U];
   const double dc_pred_v = cfl->dc_pred[CFL_PRED_V];
-
-  // Temporary pixel buffer used to store the CfL prediction when we compute the
-  // alpha index.
-  uint8_t tmp_pix[MAX_SB_SQUARE];
-  // Load CfL Prediction over the entire block
-  const double y_avg =
-      cfl_load(cfl, tmp_pix, MAX_SB_SIZE, 0, 0, block_width, block_height);
+  const double y_avg = cfl->y_avg;
 
   int sse[CFL_PRED_PLANES][CFL_MAGS_SIZE];
   sse[CFL_PRED_U][0] =
-      cfl_alpha_dist(tmp_pix, MAX_SB_SIZE, y_avg, src_u, src_stride_u,
-                     block_width, block_height, dc_pred_u, 0, NULL);
+      cfl_alpha_dist(y_pix, MAX_SB_SIZE, y_avg, src_u, src_stride_u, width,
+                     height, dc_pred_u, 0, NULL);
   sse[CFL_PRED_V][0] =
-      cfl_alpha_dist(tmp_pix, MAX_SB_SIZE, y_avg, src_v, src_stride_v,
-                     block_width, block_height, dc_pred_v, 0, NULL);
+      cfl_alpha_dist(y_pix, MAX_SB_SIZE, y_avg, src_v, src_stride_v, width,
+                     height, dc_pred_v, 0, NULL);
   for (int m = 1; m < CFL_MAGS_SIZE; m += 2) {
     assert(cfl_alpha_mags[m + 1] == -cfl_alpha_mags[m]);
     sse[CFL_PRED_U][m] = cfl_alpha_dist(
-        tmp_pix, MAX_SB_SIZE, y_avg, src_u, src_stride_u, block_width,
-        block_height, dc_pred_u, cfl_alpha_mags[m], &sse[CFL_PRED_U][m + 1]);
+        y_pix, MAX_SB_SIZE, y_avg, src_u, src_stride_u, width, height,
+        dc_pred_u, cfl_alpha_mags[m], &sse[CFL_PRED_U][m + 1]);
     sse[CFL_PRED_V][m] = cfl_alpha_dist(
-        tmp_pix, MAX_SB_SIZE, y_avg, src_v, src_stride_v, block_width,
-        block_height, dc_pred_v, cfl_alpha_mags[m], &sse[CFL_PRED_V][m + 1]);
+        y_pix, MAX_SB_SIZE, y_avg, src_v, src_stride_v, width, height,
+        dc_pred_v, cfl_alpha_mags[m], &sse[CFL_PRED_V][m + 1]);
   }
 
   int dist;
@@ -1637,11 +1630,21 @@ void av1_predict_intra_block_encoder_facade(MACROBLOCK *x,
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   if (plane != AOM_PLANE_Y && mbmi->uv_mode == DC_PRED) {
     if (blk_col == 0 && blk_row == 0 && plane == AOM_PLANE_U) {
+      const int width =
+          max_intra_block_width(xd, plane_bsize, AOM_PLANE_U, tx_size);
+      const int height =
+          max_intra_block_height(xd, plane_bsize, AOM_PLANE_U, tx_size);
+
+      uint8_t tmp_pix[MAX_SB_SQUARE];
       CFL_CTX *const cfl = xd->cfl;
+
       cfl_update_costs(cfl, ec_ctx);
-      cfl_dc_pred(xd, plane_bsize);
-      mbmi->cfl_alpha_idx =
-          cfl_compute_alpha_ind(x, cfl, plane_bsize, mbmi->cfl_alpha_signs);
+      cfl_dc_pred(xd, width, height);
+      // Load CfL Prediction over the entire block
+      cfl_load(cfl, tmp_pix, MAX_SB_SIZE, 0, 0, width, height);
+      cfl->y_avg = cfl_compute_average(tmp_pix, MAX_SB_SIZE, width, height);
+      mbmi->cfl_alpha_idx = cfl_compute_alpha_ind(
+          x, cfl, width, height, tmp_pix, mbmi->cfl_alpha_signs);
     }
   }
 #if CONFIG_DEBUG

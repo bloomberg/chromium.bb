@@ -28,7 +28,7 @@ void cfl_init(CFL_CTX *cfl, AV1_COMMON *cm) {
 
 // CfL computes its own block-level DC_PRED. This is required to compute both
 // alpha_cb and alpha_cr before the prediction are computed.
-void cfl_dc_pred(MACROBLOCKD *xd, BLOCK_SIZE plane_bsize) {
+void cfl_dc_pred(MACROBLOCKD *xd, int width, int height) {
   const struct macroblockd_plane *const pd_u = &xd->plane[AOM_PLANE_U];
   const struct macroblockd_plane *const pd_v = &xd->plane[AOM_PLANE_V];
 
@@ -38,12 +38,8 @@ void cfl_dc_pred(MACROBLOCKD *xd, BLOCK_SIZE plane_bsize) {
   const int dst_u_stride = pd_u->dst.stride;
   const int dst_v_stride = pd_v->dst.stride;
 
-  assert(plane_bsize != BLOCK_INVALID);
-  const int block_width = block_size_wide[plane_bsize];
-  const int block_height = block_size_high[plane_bsize];
-
   // Number of pixel on the top and left borders.
-  const double num_pel = block_width + block_height;
+  const double num_pel = width + height;
 
   int sum_u = 0;
   int sum_v = 0;
@@ -64,13 +60,13 @@ void cfl_dc_pred(MACROBLOCKD *xd, BLOCK_SIZE plane_bsize) {
   if (xd->up_available && xd->mb_to_right_edge >= 0) {
 #endif
     // TODO(ltrudeau) replace this with DC_PRED assembly
-    for (int i = 0; i < block_width; i++) {
+    for (int i = 0; i < width; i++) {
       sum_u += dst_u[-dst_u_stride + i];
       sum_v += dst_v[-dst_v_stride + i];
     }
   } else {
-    sum_u = block_width * 127;
-    sum_v = block_width * 127;
+    sum_u = width * 127;
+    sum_v = width * 127;
   }
 
 #if CONFIG_CHROMA_SUB8X8
@@ -78,17 +74,29 @@ void cfl_dc_pred(MACROBLOCKD *xd, BLOCK_SIZE plane_bsize) {
 #else
   if (xd->left_available && xd->mb_to_bottom_edge >= 0) {
 #endif
-    for (int i = 0; i < block_height; i++) {
+    for (int i = 0; i < height; i++) {
       sum_u += dst_u[i * dst_u_stride - 1];
       sum_v += dst_v[i * dst_v_stride - 1];
     }
   } else {
-    sum_u += block_height * 129;
-    sum_v += block_height * 129;
+    sum_u += height * 129;
+    sum_v += height * 129;
   }
 
   xd->cfl->dc_pred[CFL_PRED_U] = sum_u / num_pel;
   xd->cfl->dc_pred[CFL_PRED_V] = sum_v / num_pel;
+}
+
+double cfl_compute_average(uint8_t *y_pix, int y_stride, int width,
+                           int height) {
+  int sum = 0;
+  for (int j = 0; j < height; j++) {
+    for (int i = 0; i < width; i++) {
+      sum += y_pix[i];
+    }
+    y_pix += y_stride;
+  }
+  return sum / (double)(width * height);
 }
 
 // Predict the current transform block using CfL.
@@ -97,8 +105,9 @@ void cfl_predict_block(const CFL_CTX *cfl, uint8_t *dst, int dst_stride,
                        double alpha) {
   const int width = tx_size_wide[tx_size];
   const int height = tx_size_high[tx_size];
+  const double y_avg = cfl->y_avg;
 
-  const double y_avg = cfl_load(cfl, dst, dst_stride, row, col, width, height);
+  cfl_load(cfl, dst, dst_stride, row, col, width, height);
 
   for (int j = 0; j < height; j++) {
     for (int i = 0; i < width; i++) {
@@ -142,8 +151,8 @@ void cfl_store(CFL_CTX *cfl, const uint8_t *input, int input_stride, int row,
 }
 
 // Load from the CfL pixel buffer into output
-double cfl_load(const CFL_CTX *cfl, uint8_t *output, int output_stride, int row,
-                int col, int width, int height) {
+void cfl_load(const CFL_CTX *cfl, uint8_t *output, int output_stride, int row,
+              int col, int width, int height) {
   const int sub_x = cfl->subsampling_x;
   const int sub_y = cfl->subsampling_y;
   const int tx_off_log2 = tx_size_wide_log2[0];
@@ -226,14 +235,4 @@ double cfl_load(const CFL_CTX *cfl, uint8_t *output, int output_stride, int row,
       output_row_offset += output_stride;
     }
   }
-
-  int avg = 0;
-  output_row_offset = 0;
-  for (int j = 0; j < height; j++) {
-    for (int i = 0; i < width; i++) {
-      avg += output[output_row_offset + i];
-    }
-    output_row_offset += output_stride;
-  }
-  return avg / (double)(width * height);
 }
