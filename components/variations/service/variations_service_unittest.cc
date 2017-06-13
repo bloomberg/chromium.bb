@@ -34,7 +34,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace variations {
-
 namespace {
 
 class TestVariationsServiceClient : public VariationsServiceClient {
@@ -42,7 +41,7 @@ class TestVariationsServiceClient : public VariationsServiceClient {
   TestVariationsServiceClient() {}
   ~TestVariationsServiceClient() override {}
 
-  // variations::VariationsServiceClient:
+  // VariationsServiceClient:
   std::string GetApplicationLocale() override { return std::string(); }
   base::Callback<base::Version(void)> GetVersionForSimulationCallback()
       override {
@@ -201,12 +200,12 @@ const char kTestSeedSerialNumber[] = "123";
 // study called "test", which contains one experiment called "abc" with
 // probability weight 100. |seed|'s study field will be cleared before adding
 // the new study.
-variations::VariationsSeed CreateTestSeed() {
-  variations::VariationsSeed seed;
-  variations::Study* study = seed.add_study();
+VariationsSeed CreateTestSeed() {
+  VariationsSeed seed;
+  Study* study = seed.add_study();
   study->set_name(kTestSeedStudyName);
   study->set_default_experiment_name(kTestSeedExperimentName);
-  variations::Study_Experiment* experiment = study->add_experiment();
+  Study_Experiment* experiment = study->add_experiment();
   experiment->set_name(kTestSeedExperimentName);
   experiment->set_probability_weight(kTestSeedExperimentProbability);
   seed.set_serial_number(kTestSeedSerialNumber);
@@ -214,7 +213,7 @@ variations::VariationsSeed CreateTestSeed() {
 }
 
 // Serializes |seed| to protobuf binary format.
-std::string SerializeSeed(const variations::VariationsSeed& seed) {
+std::string SerializeSeed(const VariationsSeed& seed) {
   std::string serialized_seed;
   seed.SerializeToString(&serialized_seed);
   return serialized_seed;
@@ -607,7 +606,7 @@ TEST_F(VariationsServiceTest, Observer) {
     TestVariationsServiceObserver observer;
     service.AddObserver(&observer);
 
-    variations::VariationsSeedSimulator::Result result;
+    VariationsSeedSimulator::Result result;
     result.normal_group_change_count = cases[i].normal_count;
     result.kill_best_effort_group_change_count = cases[i].best_effort_count;
     result.kill_critical_group_change_count = cases[i].critical_count;
@@ -693,7 +692,7 @@ TEST_F(VariationsServiceTest, LoadPermanentConsistencyCountry) {
       prefs.Set(prefs::kVariationsPermanentConsistencyCountry, list_value);
     }
 
-    variations::VariationsSeed seed(CreateTestSeed());
+    VariationsSeed seed(CreateTestSeed());
     std::string latest_country;
     if (test.latest_country_code)
       latest_country = test.latest_country_code;
@@ -764,7 +763,7 @@ TEST_F(VariationsServiceTest, OverrideStoredPermanentCountry) {
       prefs.Set(prefs::kVariationsPermanentConsistencyCountry, list_value);
     }
 
-    variations::VariationsSeed seed(CreateTestSeed());
+    VariationsSeed seed(CreateTestSeed());
 
     EXPECT_EQ(test.has_updated, service.OverrideStoredPermanentCountry(
                                     test.country_code_override))

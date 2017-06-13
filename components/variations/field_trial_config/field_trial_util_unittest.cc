@@ -16,7 +16,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace variations {
-
 namespace {
 
 class FieldTrialUtilTest : public ::testing::Test {
@@ -26,8 +25,8 @@ class FieldTrialUtilTest : public ::testing::Test {
   ~FieldTrialUtilTest() override {
     // Ensure that the maps are cleared between tests, since they are stored as
     // process singletons.
-    variations::testing::ClearAllVariationIDs();
-    variations::testing::ClearAllVariationParams();
+    testing::ClearAllVariationIDs();
+    testing::ClearAllVariationParams();
   }
 
  private:
@@ -45,12 +44,12 @@ TEST_F(FieldTrialUtilTest, AssociateParamsFromString) {
   ASSERT_TRUE(AssociateParamsFromString(kVariationsString));
 
   base::FieldTrialList::CreateFieldTrial(kTrialName, "B");
-  EXPECT_EQ("/", variations::GetVariationParamValue(kTrialName, "a"));
-  EXPECT_EQ(std::string(), variations::GetVariationParamValue(kTrialName, "b"));
-  EXPECT_EQ(std::string(), variations::GetVariationParamValue(kTrialName, "x"));
+  EXPECT_EQ("/", GetVariationParamValue(kTrialName, "a"));
+  EXPECT_EQ(std::string(), GetVariationParamValue(kTrialName, "b"));
+  EXPECT_EQ(std::string(), GetVariationParamValue(kTrialName, "x"));
 
   std::map<std::string, std::string> params;
-  EXPECT_TRUE(variations::GetVariationParams(kTrialName, &params));
+  EXPECT_TRUE(GetVariationParams(kTrialName, &params));
   EXPECT_EQ(1U, params.size());
   EXPECT_EQ("/", params["a"]);
 }
@@ -88,11 +87,11 @@ TEST_F(FieldTrialUtilTest, AssociateParamsFromFieldTrialConfig) {
   base::FeatureList feature_list;
   AssociateParamsFromFieldTrialConfig(kConfig, &feature_list);
 
-  EXPECT_EQ("1", variations::GetVariationParamValue("TestTrial1", "x"));
-  EXPECT_EQ("2", variations::GetVariationParamValue("TestTrial1", "y"));
+  EXPECT_EQ("1", GetVariationParamValue("TestTrial1", "x"));
+  EXPECT_EQ("2", GetVariationParamValue("TestTrial1", "y"));
 
   std::map<std::string, std::string> params;
-  EXPECT_TRUE(variations::GetVariationParams("TestTrial1", &params));
+  EXPECT_TRUE(GetVariationParams("TestTrial1", &params));
   EXPECT_EQ(2U, params.size());
   EXPECT_EQ("1", params["x"]);
   EXPECT_EQ("2", params["y"]);

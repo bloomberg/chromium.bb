@@ -29,7 +29,7 @@ void SyntheticTrialsActiveGroupIdProvider::OnSyntheticTrialsChanged(
   }
   // Update the experiments lists for crash reports to include the newly added
   // group.
-  variations::SetVariationListCrashKeys();
+  SetVariationListCrashKeys();
 }
 
 void SyntheticTrialsActiveGroupIdProvider::GetActiveGroupIds(

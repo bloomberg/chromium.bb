@@ -30,7 +30,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace variations {
-
 namespace {
 
 // Converts |time| to Study proto format.
@@ -938,13 +937,13 @@ TEST_F(VariationsSeedProcessorTest, LowEntropyStudyTest) {
   VariationsSeed seed;
   Study* study1 = seed.add_study();
   study1->set_name(kTrial1Name);
-  study1->set_consistency(variations::Study_Consistency_PERMANENT);
+  study1->set_consistency(Study::PERMANENT);
   study1->set_default_experiment_name(kDefaultName);
   AddExperiment(kGroup1Name, 50, study1);
   AddExperiment(kDefaultName, 50, study1);
   Study* study2 = seed.add_study();
   study2->set_name(kTrial2Name);
-  study2->set_consistency(variations::Study_Consistency_PERMANENT);
+  study2->set_consistency(Study::PERMANENT);
   study2->set_default_experiment_name(kDefaultName);
   AddExperiment(kGroup1Name, 50, study2);
   AddExperiment(kDefaultName, 50, study2);

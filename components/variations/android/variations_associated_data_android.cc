@@ -17,7 +17,6 @@ using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
 
 namespace variations {
-
 namespace android {
 
 ScopedJavaLocalRef<jstring> GetVariationParamValue(
@@ -45,5 +44,4 @@ bool RegisterVariationsAssociatedData(JNIEnv* env) {
 }
 
 }  // namespace android
-
 }  // namespace variations

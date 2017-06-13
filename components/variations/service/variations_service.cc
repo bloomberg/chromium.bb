@@ -50,7 +50,6 @@
 #include "url/gurl.h"
 
 namespace variations {
-
 namespace {
 
 // TODO(mad): To be removed when we stop updating the NetworkTimeTracker.
@@ -65,17 +64,16 @@ const int kMaxVariationsSeedAgeDays = 30;
 // that channel value. Otherwise, if the fake channel flag is provided, this
 // will return the fake channel. Failing that, this will return the UNKNOWN
 // channel.
-variations::Study_Channel GetChannelForVariations(
-    version_info::Channel product_channel) {
+Study::Channel GetChannelForVariations(version_info::Channel product_channel) {
   switch (product_channel) {
     case version_info::Channel::CANARY:
-      return variations::Study_Channel_CANARY;
+      return Study::CANARY;
     case version_info::Channel::DEV:
-      return variations::Study_Channel_DEV;
+      return Study::DEV;
     case version_info::Channel::BETA:
-      return variations::Study_Channel_BETA;
+      return Study::BETA;
     case version_info::Channel::STABLE:
-      return variations::Study_Channel_STABLE;
+      return Study::STABLE;
     case version_info::Channel::UNKNOWN:
       break;
   }
@@ -83,15 +81,15 @@ variations::Study_Channel GetChannelForVariations(
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           switches::kFakeVariationsChannel);
   if (forced_channel == "stable")
-    return variations::Study_Channel_STABLE;
+    return Study::STABLE;
   if (forced_channel == "beta")
-    return variations::Study_Channel_BETA;
+    return Study::BETA;
   if (forced_channel == "dev")
-    return variations::Study_Channel_DEV;
+    return Study::DEV;
   if (forced_channel == "canary")
-    return variations::Study_Channel_CANARY;
+    return Study::CANARY;
   DVLOG(1) << "Invalid channel provided: " << forced_channel;
-  return variations::Study_Channel_UNKNOWN;
+  return Study::UNKNOWN;
 }
 
 // Returns a string that will be used for the value of the 'osname' URL param
@@ -178,17 +176,17 @@ ResourceRequestsAllowedState ResourceRequestStateToHistogramValue(
 
 // Gets current form factor and converts it from enum DeviceFormFactor to enum
 // Study_FormFactor.
-variations::Study_FormFactor GetCurrentFormFactor() {
+Study::FormFactor GetCurrentFormFactor() {
   switch (ui::GetDeviceFormFactor()) {
     case ui::DEVICE_FORM_FACTOR_PHONE:
-      return variations::Study_FormFactor_PHONE;
+      return Study::PHONE;
     case ui::DEVICE_FORM_FACTOR_TABLET:
-      return variations::Study_FormFactor_TABLET;
+      return Study::TABLET;
     case ui::DEVICE_FORM_FACTOR_DESKTOP:
-      return variations::Study_FormFactor_DESKTOP;
+      return Study::DESKTOP;
   }
   NOTREACHED();
-  return variations::Study_FormFactor_DESKTOP;
+  return Study::DESKTOP;
 }
 
 // Gets the hardware class and returns it as a string. This returns an empty
@@ -307,7 +305,7 @@ bool VariationsService::CreateTrialsFromSeed(base::FeatureList* feature_list) {
 
   create_trials_from_seed_called_ = true;
 
-  variations::VariationsSeed seed;
+  VariationsSeed seed;
   if (!LoadSeed(&seed))
     return false;
 
@@ -344,7 +342,7 @@ bool VariationsService::CreateTrialsFromSeed(base::FeatureList* feature_list) {
   // safe because the callback is executed synchronously. It is not possible
   // to pass UIStringOverrider itself to VariationSeedProcessor as variations
   // components should not depends on //ui/base.
-  variations::VariationsSeedProcessor().CreateTrialsFromSeed(
+  VariationsSeedProcessor().CreateTrialsFromSeed(
       seed, *client_state,
       base::Bind(&UIStringOverrider::OverrideUIString,
                  base::Unretained(&ui_string_overrider_)),
@@ -592,8 +590,7 @@ bool VariationsService::StoreSeed(const std::string& seed_data,
                                   bool is_gzip_compressed) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  std::unique_ptr<variations::VariationsSeed> seed(
-      new variations::VariationsSeed);
+  std::unique_ptr<VariationsSeed> seed(new VariationsSeed);
   if (!seed_store_.StoreSeedData(seed_data, seed_signature, country_code,
                                  date_fetched, is_delta_compressed,
                                  is_gzip_compressed, seed.get())) {
@@ -656,7 +653,7 @@ void VariationsService::FetchVariationsSeed() {
 }
 
 void VariationsService::NotifyObservers(
-    const variations::VariationsSeedSimulator::Result& result) {
+    const VariationsSeedSimulator::Result& result) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (result.kill_critical_group_change_count > 0) {
@@ -769,7 +766,7 @@ void VariationsService::OnResourceRequestsAllowed() {
 }
 
 void VariationsService::PerformSimulationWithVersion(
-    std::unique_ptr<variations::VariationsSeed> seed,
+    std::unique_ptr<VariationsSeed> seed,
     const base::Version& version) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -782,8 +779,7 @@ void VariationsService::PerformSimulationWithVersion(
       state_manager_->CreateDefaultEntropyProvider();
   std::unique_ptr<const base::FieldTrial::EntropyProvider> low_provider =
       state_manager_->CreateLowEntropyProvider();
-  variations::VariationsSeedSimulator seed_simulator(*default_provider,
-                                                     *low_provider);
+  VariationsSeedSimulator seed_simulator(*default_provider, *low_provider);
 
   std::unique_ptr<ClientFilterableState> client_state =
       GetClientFilterableStateForVersion(version);

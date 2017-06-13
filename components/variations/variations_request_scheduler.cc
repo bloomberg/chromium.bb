@@ -47,8 +47,7 @@ void VariationsRequestScheduler::OnAppEnterForeground() {
 base::TimeDelta VariationsRequestScheduler::GetFetchPeriod() const {
   // The fetch interval can be overridden by a variation param.
   std::string period_min_str =
-      variations::GetVariationParamValue("VariationsServiceControl",
-                                         "fetch_period_min");
+      GetVariationParamValue("VariationsServiceControl", "fetch_period_min");
   size_t period_min;
   if (base::StringToSizeT(period_min_str, &period_min))
     return base::TimeDelta::FromMinutes(period_min);
