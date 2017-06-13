@@ -3,7 +3,7 @@ include_rules = [
   # //ash/public/interfaces and eliminate this.
   "+ash",
   
-  #TODO(ananta): Remove this when we move files which display UI in
+  # TODO(ananta): Remove this when we move files which display UI in
   # chrome/browser/chromeos to chrome/browser/ui/views/chromeos
   # crbug.com/728877
   "+chrome/browser/ui/views/harmony/chrome_layout_provider.h",

@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/events/event.h"
@@ -18,7 +19,6 @@
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
-#include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 
 namespace chrome {
@@ -44,9 +44,11 @@ ChromeCleanerDialog::ChromeCleanerDialog(
     : browser_(nullptr), controller_(controller) {
   DCHECK(controller_);
 
-  SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kVertical,
-      gfx::Insets(views::kPanelVertMargin, views::kButtonHEdgeMarginNew), 0));
+  SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kVertical,
+                           ChromeLayoutProvider::Get()->GetInsetsMetric(
+                               views::INSETS_DIALOG_CONTENTS),
+                           0));
   views::Label* label = new views::Label(controller_->GetMainText());
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);

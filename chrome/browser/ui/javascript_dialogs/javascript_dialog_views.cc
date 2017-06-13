@@ -10,7 +10,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/controls/message_box_view.h"
 #include "ui/views/controls/textfield/textfield.h"
-#include "ui/views/layout/layout_constants.h"
 
 JavaScriptDialogViews::~JavaScriptDialogViews() = default;
 
