@@ -195,6 +195,8 @@ class WebLayerTreeView {
   // corresponding Swap completes (either with DidSwap or DidNotSwap).
   virtual void NotifySwapTime(ReportTimeCallback callback) {}
 
+  virtual void RequestBeginMainFrameNotExpected(bool new_state) {}
+
   virtual void RequestDecode(const PaintImage& image,
                              const base::Callback<void(bool)>& callback) {}
 };

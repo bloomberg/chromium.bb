@@ -229,6 +229,8 @@ class CC_EXPORT SchedulerStateMachine {
   void SetNeedsBeginMainFrame();
   bool needs_begin_main_frame() const { return needs_begin_main_frame_; }
 
+  void SetMainThreadWantsBeginMainFrameNotExpectedMessages(bool new_state);
+
   // Requests a single impl frame (after the current frame if there is one
   // active).
   void SetNeedsOneBeginImplFrame();
@@ -406,6 +408,8 @@ class CC_EXPORT SchedulerStateMachine {
 
   bool previous_pending_tree_was_impl_side_ = false;
   bool current_pending_tree_is_impl_side_ = false;
+
+  bool wants_begin_main_frame_not_expected_ = false;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SchedulerStateMachine);

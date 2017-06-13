@@ -193,6 +193,7 @@ class LayerTreeHostImplTest : public testing::Test,
     did_request_impl_side_invalidation_ = true;
   }
   void NotifyImageDecodeRequestFinished() override {}
+  void RequestBeginMainFrameNotExpected(bool new_state) override {}
 
   void set_reduce_memory_result(bool reduce_memory_result) {
     reduce_memory_result_ = reduce_memory_result;

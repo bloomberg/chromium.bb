@@ -36,7 +36,7 @@ class WebFrameSchedulerImplTest : public testing::Test {
         mock_task_runner_, base::WrapUnique(new TestTimeSource(clock_.get())));
     scheduler_.reset(new RendererSchedulerImpl(delegate_));
     web_view_scheduler_.reset(
-        new WebViewSchedulerImpl(nullptr, scheduler_.get(), false));
+        new WebViewSchedulerImpl(nullptr, nullptr, scheduler_.get(), false));
     web_frame_scheduler_ =
         web_view_scheduler_->CreateWebFrameSchedulerImpl(nullptr);
   }

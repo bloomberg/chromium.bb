@@ -42,8 +42,9 @@ class WebViewSchedulerImplTest : public testing::Test {
     delegate_ = SchedulerTqmDelegateForTest::Create(
         mock_task_runner_, base::MakeUnique<TestTimeSource>(clock_.get()));
     scheduler_.reset(new RendererSchedulerImpl(delegate_));
-    web_view_scheduler_.reset(new WebViewSchedulerImpl(
-        nullptr, scheduler_.get(), DisableBackgroundTimerThrottling()));
+    web_view_scheduler_.reset(
+        new WebViewSchedulerImpl(nullptr, nullptr, scheduler_.get(),
+                                 DisableBackgroundTimerThrottling()));
     web_frame_scheduler_ =
         web_view_scheduler_->CreateWebFrameSchedulerImpl(nullptr);
   }
@@ -198,7 +199,7 @@ TEST_F(WebViewSchedulerImplTest, RepeatingLoadingTask_PageInBackground) {
 
 TEST_F(WebViewSchedulerImplTest, RepeatingTimers_OneBackgroundOneForeground) {
   std::unique_ptr<WebViewSchedulerImpl> web_view_scheduler2(
-      new WebViewSchedulerImpl(nullptr, scheduler_.get(), false));
+      new WebViewSchedulerImpl(nullptr, nullptr, scheduler_.get(), false));
   std::unique_ptr<WebFrameSchedulerImpl> web_frame_scheduler2 =
       web_view_scheduler2->CreateWebFrameSchedulerImpl(nullptr);
 
@@ -776,7 +777,7 @@ TEST_F(WebViewSchedulerImplTest, BackgroundThrottlingGracePeriod) {
       base::MakeUnique<base::FieldTrialList>(nullptr);
   InitializeTrialParams();
   web_view_scheduler_.reset(
-      new WebViewSchedulerImpl(nullptr, scheduler_.get(), false));
+      new WebViewSchedulerImpl(nullptr, nullptr, scheduler_.get(), false));
 
   std::vector<base::TimeTicks> run_times;
   web_frame_scheduler_ =
@@ -845,7 +846,7 @@ TEST_F(WebViewSchedulerImplTest, OpenWebSocketExemptsFromBudgetThrottling) {
       base::MakeUnique<base::FieldTrialList>(nullptr);
   InitializeTrialParams();
   std::unique_ptr<WebViewSchedulerImpl> web_view_scheduler(
-      new WebViewSchedulerImpl(nullptr, scheduler_.get(), false));
+      new WebViewSchedulerImpl(nullptr, nullptr, scheduler_.get(), false));
 
   std::vector<base::TimeTicks> run_times;
 

@@ -17,6 +17,13 @@ class WebFrameScheduler;
 
 class PLATFORM_EXPORT WebViewScheduler {
  public:
+  class PLATFORM_EXPORT WebViewSchedulerDelegate {
+   public:
+    virtual ~WebViewSchedulerDelegate() {}
+
+    virtual void RequestBeginMainFrameNotExpected(bool new_state) = 0;
+  };
+
   virtual ~WebViewScheduler() {}
 
   // The scheduler may throttle tasks associated with background pages.
@@ -81,6 +88,8 @@ class PLATFORM_EXPORT WebViewScheduler {
   virtual void AudioStateChanged(bool is_audio_playing) = 0;
 
   virtual bool HasActiveConnectionForTest() const = 0;
+
+  virtual void RequestBeginMainFrameNotExpected(bool new_state) = 0;
 };
 
 }  // namespace blink

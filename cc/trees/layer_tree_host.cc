@@ -1453,4 +1453,8 @@ void LayerTreeHost::SetHasCopyRequest(bool has_copy_request) {
   has_copy_request_ = has_copy_request;
 }
 
+void LayerTreeHost::RequestBeginMainFrameNotExpected(bool new_state) {
+  proxy_->RequestBeginMainFrameNotExpected(new_state);
+}
+
 }  // namespace cc

@@ -213,6 +213,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void RequestScheduleAnimation() override;
   void DidSubmitCompositorFrame() override;
   void DidLoseCompositorFrameSink() override;
+  void RequestBeginMainFrameNotExpected(bool new_state) override;
 
   enum {
     COMPOSITOR_FRAME_SINK_RETRIES_BEFORE_FALLBACK = 4,

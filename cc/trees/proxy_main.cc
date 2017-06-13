@@ -497,6 +497,14 @@ void ProxyMain::UpdateBrowserControlsState(BrowserControlsState constraints,
                                 constraints, current, animate));
 }
 
+void ProxyMain::RequestBeginMainFrameNotExpected(bool new_state) {
+  DCHECK(IsMainThread());
+  ImplThreadTaskRunner()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&ProxyImpl::RequestBeginMainFrameNotExpected,
+                     base::Unretained(proxy_impl_.get()), new_state));
+}
+
 bool ProxyMain::SendCommitRequestToImplThreadIfNeeded(
     CommitPipelineStage required_stage) {
   DCHECK(IsMainThread());

@@ -87,6 +87,7 @@ class CC_EXPORT ProxyMain : public Proxy {
   void UpdateBrowserControlsState(BrowserControlsState constraints,
                                   BrowserControlsState current,
                                   bool animate) override;
+  void RequestBeginMainFrameNotExpected(bool new_state) override;
 
   // Returns |true| if the request was actually sent, |false| if one was
   // already outstanding.
