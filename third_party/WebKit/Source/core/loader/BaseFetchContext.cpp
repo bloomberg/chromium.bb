@@ -260,16 +260,8 @@ ResourceRequestBlockedReason BaseFetchContext::CanRequestInternal(
         return ResourceRequestBlockedReason::kOrigin;
     }
 
-    if ((!url.User().IsEmpty() || !url.Pass().IsEmpty()) &&
-        resource_request.GetRequestContext() !=
-            WebURLRequest::kRequestContextXMLHttpRequest) {
-      CountDeprecation(
-          WebFeature::kRequestedSubresourceWithEmbeddedCredentials);
-      // TODO(mkwst): Remove the runtime-enabled check in M59:
-      // https://www.chromestatus.com/feature/5669008342777856
-      if (RuntimeEnabledFeatures::BlockCredentialedSubresourcesEnabled())
-        return ResourceRequestBlockedReason::kOrigin;
-    }
+    if (ShouldBlockFetchAsCredentialedSubresource(resource_request, url))
+      return ResourceRequestBlockedReason::kOrigin;
   }
 
   // Check for mixed content. We do this second-to-last so that when folks block

@@ -74,6 +74,8 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
       const ResourceRequest&,
       const KURL&,
       SecurityViolationReportingPolicy) const = 0;
+  virtual bool ShouldBlockFetchAsCredentialedSubresource(const ResourceRequest&,
+                                                         const KURL&) const = 0;
   virtual ReferrerPolicy GetReferrerPolicy() const = 0;
   virtual String GetOutgoingReferrer() const = 0;
   virtual const KURL& Url() const = 0;

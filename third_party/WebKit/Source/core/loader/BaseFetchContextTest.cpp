@@ -65,6 +65,10 @@ class MockBaseFetchContext final : public BaseFetchContext {
       SecurityViolationReportingPolicy) const override {
     return false;
   }
+  bool ShouldBlockFetchAsCredentialedSubresource(const ResourceRequest&,
+                                                 const KURL&) const override {
+    return false;
+  }
   ReferrerPolicy GetReferrerPolicy() const override {
     return execution_context_->GetReferrerPolicy();
   }

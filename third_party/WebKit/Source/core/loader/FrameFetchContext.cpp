@@ -933,6 +933,24 @@ bool FrameFetchContext::ShouldBlockFetchByMixedContentCheck(
   return MixedContentChecker::ShouldBlockFetch(GetFrame(), resource_request,
                                                url, reporting_policy);
 }
+
+bool FrameFetchContext::ShouldBlockFetchAsCredentialedSubresource(
+    const ResourceRequest& resource_request,
+    const KURL& url) const {
+  if ((!url.User().IsEmpty() || !url.Pass().IsEmpty()) &&
+      resource_request.GetRequestContext() !=
+          WebURLRequest::kRequestContextXMLHttpRequest) {
+    if (Url().User() != url.User() || Url().Pass() != url.Pass() ||
+        !SecurityOrigin::Create(url)->IsSameSchemeHostPort(
+            GetSecurityOrigin())) {
+      CountDeprecation(
+          WebFeature::kRequestedSubresourceWithEmbeddedCredentials);
+      return true;
+    }
+  }
+  return false;
+}
+
 ReferrerPolicy FrameFetchContext::GetReferrerPolicy() const {
   if (IsDetached())
     return frozen_state_->referrer_policy;
