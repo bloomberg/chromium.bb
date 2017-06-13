@@ -1240,6 +1240,8 @@ source_set("unit_tests") {
     "fileapi/FileTest.cpp",
     "frame/DOMTimerTest.cpp",
     "frame/FrameTest.cpp",
+    "frame/FrameTestHelpers.cpp",
+    "frame/FrameTestHelpers.h",
     "frame/HistoryTest.cpp",
     "frame/ImageBitmapTest.cpp",
     "frame/LocalFrameTest.cpp",

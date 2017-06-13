@@ -31,6 +31,7 @@
 #include "public/web/WebFrameSerializer.h"
 
 #include "core/exported/WebViewBase.h"
+#include "core/frame/FrameTestHelpers.h"
 #include "core/frame/WebLocalFrameBase.h"
 #include "platform/mhtml/MHTMLArchive.h"
 #include "platform/mhtml/MHTMLParser.h"
@@ -44,7 +45,6 @@
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "web/tests/FrameTestHelpers.h"
 
 namespace blink {
 

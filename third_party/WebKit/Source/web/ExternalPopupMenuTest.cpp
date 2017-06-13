@@ -7,6 +7,7 @@
 #include <memory>
 #include "core/HTMLNames.h"
 #include "core/dom/NodeComputedStyle.h"
+#include "core/frame/FrameTestHelpers.h"
 #include "core/frame/VisualViewport.h"
 #include "core/frame/WebLocalFrameBase.h"
 #include "core/html/HTMLSelectElement.h"
@@ -22,7 +23,6 @@
 #include "public/web/WebPopupMenuInfo.h"
 #include "public/web/WebSettings.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "web/tests/FrameTestHelpers.h"
 
 namespace blink {
 

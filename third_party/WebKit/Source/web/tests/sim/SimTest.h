@@ -6,7 +6,7 @@
 #define SimTest_h
 
 #include <gtest/gtest.h>
-#include "web/tests/FrameTestHelpers.h"
+#include "core/frame/FrameTestHelpers.h"
 #include "web/tests/sim/SimCompositor.h"
 #include "web/tests/sim/SimNetwork.h"
 #include "web/tests/sim/SimPage.h"

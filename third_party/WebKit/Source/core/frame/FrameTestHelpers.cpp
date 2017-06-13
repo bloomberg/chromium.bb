@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "web/tests/FrameTestHelpers.h"
+#include "core/frame/FrameTestHelpers.h"
 
 #include "core/exported/WebRemoteFrameImpl.h"
 #include "core/frame/WebLocalFrameBase.h"
@@ -77,12 +77,13 @@ TestWebFrameClient* TestClientForFrame(WebFrame* frame) {
 
 void RunServeAsyncRequestsTask(TestWebFrameClient* client) {
   Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
-  if (client->IsLoading())
+  if (client->IsLoading()) {
     Platform::Current()->CurrentThread()->GetWebTaskRunner()->PostTask(
         BLINK_FROM_HERE,
         WTF::Bind(&RunServeAsyncRequestsTask, WTF::Unretained(client)));
-  else
+  } else {
     testing::ExitRunLoop();
+  }
 }
 
 TestWebFrameClient* DefaultWebFrameClient() {

@@ -27,6 +27,7 @@
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/StyleSheetList.h"
 #include "core/exported/WebViewBase.h"
+#include "core/frame/FrameTestHelpers.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/VisualViewport.h"
 #include "core/frame/WebLocalFrameBase.h"
@@ -51,7 +52,6 @@
 #include "public/web/WebSettings.h"
 #include "public/web/WebViewClient.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "web/tests/FrameTestHelpers.h"
 
 namespace blink {
 

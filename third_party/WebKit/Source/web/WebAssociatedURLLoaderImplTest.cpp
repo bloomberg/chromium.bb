@@ -31,6 +31,7 @@
 #include "public/web/WebAssociatedURLLoader.h"
 
 #include <memory>
+#include "core/frame/FrameTestHelpers.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/wtf/PtrUtil.h"
@@ -48,7 +49,6 @@
 #include "public/web/WebFrame.h"
 #include "public/web/WebView.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "web/tests/FrameTestHelpers.h"
 
 using blink::URLTestHelpers::ToKURL;
 using blink::testing::RunPendingTasks;

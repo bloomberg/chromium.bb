@@ -5,7 +5,7 @@
 #ifndef SimWebFrameClient_h
 #define SimWebFrameClient_h
 
-#include "web/tests/FrameTestHelpers.h"
+#include "core/frame/FrameTestHelpers.h"
 
 namespace blink {
 

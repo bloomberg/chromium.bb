@@ -6,6 +6,7 @@
 
 #include <memory>
 #include "core/exported/WebViewBase.h"
+#include "core/frame/FrameTestHelpers.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/WebLocalFrameBase.h"
 #include "platform/graphics/Color.h"
@@ -22,7 +23,6 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPaint.h"
-#include "web/tests/FrameTestHelpers.h"
 
 using testing::_;
 using testing::AtLeast;

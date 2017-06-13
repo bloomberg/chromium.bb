@@ -29,6 +29,7 @@
  */
 
 #include "core/exported/WebViewBase.h"
+#include "core/frame/FrameTestHelpers.h"
 #include "core/frame/WebLocalFrameBase.h"
 #include "core/html/HTMLSelectElement.h"
 #include "core/html/forms/ColorChooserClient.h"
@@ -45,7 +46,6 @@
 #include "public/web/WebViewClient.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "web/ChromeClientImpl.h"
-#include "web/tests/FrameTestHelpers.h"
 
 namespace blink {
 

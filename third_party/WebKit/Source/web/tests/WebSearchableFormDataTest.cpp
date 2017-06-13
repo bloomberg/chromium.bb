@@ -30,6 +30,7 @@
 
 #include "public/web/WebSearchableFormData.h"
 
+#include "core/frame/FrameTestHelpers.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/Platform.h"
@@ -38,7 +39,6 @@
 #include "public/web/WebFrame.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "web/tests/FrameTestHelpers.h"
 
 namespace blink {
 
