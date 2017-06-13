@@ -19,6 +19,7 @@
 #include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_floats_utils.h"
 #include "core/layout/ng/ng_fragment_builder.h"
+#include "core/layout/ng/ng_layout_opportunity_iterator.h"
 #include "core/layout/ng/ng_layout_result.h"
 #include "core/layout/ng/ng_length_utils.h"
 #include "core/layout/ng/ng_space_utils.h"
@@ -49,37 +50,20 @@ NGInlineLayoutAlgorithm::NGInlineLayoutAlgorithm(
       space_builder_(space) {
   container_builder_.MutableUnpositionedFloats() = space->UnpositionedFloats();
 
-  // TODO(crbug.com/716930): We may be an empty LayoutInline due to splitting.
-  // Only resolve our BFC offset if we know that we are non-empty as we may
-  // need to pass through our margin strut.
-  if (!inline_node.Items().IsEmpty()) {
-    LayoutUnit bfc_block_offset = ConstraintSpace().BfcOffset().block_offset;
-    bfc_block_offset += ConstraintSpace().MarginStrut().Sum();
-    MaybeUpdateFragmentBfcOffset(ConstraintSpace(), bfc_block_offset,
-                                 &container_builder_);
-    PositionPendingFloats(bfc_block_offset, &container_builder_,
-                          MutableConstraintSpace());
-  }
-
   if (!is_horizontal_writing_mode_)
     baseline_type_ = FontBaseline::kIdeographicBaseline;
 
   border_and_padding_ = ComputeBorders(ConstraintSpace(), Style()) +
                         ComputePadding(ConstraintSpace(), Style());
-
-  FindNextLayoutOpportunity();
-}
-
-LayoutUnit NGInlineLayoutAlgorithm::AvailableWidth() const {
-  return current_opportunity_.InlineSize();
 }
 
 // The offset of 'line-left' side.
 // https://drafts.csswg.org/css-writing-modes/#line-left
-LayoutUnit NGInlineLayoutAlgorithm::LogicalLeftOffset() const {
+LayoutUnit NGInlineLayoutAlgorithm::LogicalLeftOffset(
+    const NGLayoutOpportunity& opportunity) const {
   // TODO(kojii): We need to convert 'line start' to 'line left'. They're
   // different in RTL. Maybe there are more where start and left are misused.
-  return current_opportunity_.InlineStartOffset() -
+  return opportunity.InlineStartOffset() -
          ConstraintSpace().BfcOffset().inline_offset;
 }
 
@@ -92,12 +76,15 @@ bool NGInlineLayoutAlgorithm::CreateLine(
   if (!PlaceItems(line_info, break_token))
     return false;
 
-  // Prepare for the next line.
-  NGLogicalOffset origin_point =
-      GetOriginPointForFloats(ContainerBfcOffset(), content_size_);
-  PositionPendingFloats(origin_point.block_offset, &container_builder_,
-                        MutableConstraintSpace());
-  FindNextLayoutOpportunity();
+  // If something has resolved our BFC offset we can place all of the
+  // unpositioned floats below the current line.
+  if (container_builder_.BfcOffset()) {
+    NGLogicalOffset origin_point =
+        GetOriginPointForFloats(ContainerBfcOffset(), content_size_);
+    PositionPendingFloats(origin_point.block_offset, &container_builder_,
+                          MutableConstraintSpace());
+  }
+
   return true;
 }
 
@@ -145,45 +132,6 @@ void NGInlineLayoutAlgorithm::BidiReorder(NGInlineItemResults* line_items) {
   }
 
   line_items->swap(line_items_in_visual_order);
-}
-
-// TODO(glebl): Add the support of clearance for inline floats.
-void NGInlineLayoutAlgorithm::LayoutAndPositionFloat(
-    LayoutUnit end_position,
-    LayoutObject* layout_object) {
-  NGBlockNode node(ToLayoutBox(layout_object));
-
-  NGLogicalOffset origin_offset =
-      GetOriginPointForFloats(ContainerBfcOffset(), content_size_);
-  const ComputedStyle& float_style = node.Style();
-  NGBoxStrut margins = ComputeMargins(ConstraintSpace(), float_style,
-                                      ConstraintSpace().WritingMode(),
-                                      ConstraintSpace().Direction());
-
-  // TODO(ikilpatrick): Add support for float break tokens inside an inline
-  // layout context.
-  RefPtr<NGUnpositionedFloat> unpositioned_float = NGUnpositionedFloat::Create(
-      current_opportunity_.size, ConstraintSpace().PercentageResolutionSize(),
-      origin_offset, ContainerBfcOffset(), margins, node,
-      /* break_token */ nullptr);
-  unpositioned_float->parent_bfc_block_offset =
-      ContainerBfcOffset().block_offset;
-
-  LayoutUnit inline_size = ComputeInlineSizeForUnpositionedFloat(
-      MutableConstraintSpace(), unpositioned_float.Get());
-
-  bool float_does_not_fit = end_position + inline_size + margins.InlineSum() >
-                            current_opportunity_.InlineSize();
-  // Check if we already have a pending float. That's because a float cannot be
-  // higher than any block or floated box generated before.
-  if (!container_builder_.UnpositionedFloats().IsEmpty() ||
-      float_does_not_fit) {
-    container_builder_.AddUnpositionedFloat(unpositioned_float);
-  } else {
-    container_builder_.AddPositionedFloat(
-        PositionFloat(unpositioned_float.Get(), MutableConstraintSpace()));
-    FindNextLayoutOpportunity();
-  }
 }
 
 bool NGInlineLayoutAlgorithm::PlaceItems(
@@ -295,12 +243,13 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
   // the line box to the line top.
   line_box.MoveChildrenInBlockDirection(baseline);
 
+  NGLayoutOpportunity line_opp = FindLayoutOpportunityForLine();
+
   LayoutUnit inline_size = position;
-  NGLogicalOffset offset(LogicalLeftOffset(),
+  NGLogicalOffset offset(LogicalLeftOffset(line_opp),
                          baseline - box_states_.LineBoxState().metrics.ascent);
   ApplyTextAlign(line_style, line_style.GetTextAlign(line_info->IsLastLine()),
-                 &offset.inline_offset, inline_size,
-                 current_opportunity_.size.inline_size);
+                 &offset.inline_offset, inline_size, line_opp.InlineSize());
 
   line_box.SetInlineSize(inline_size);
   container_builder_.AddChild(line_box.ToLineBoxFragment(), offset);
@@ -383,18 +332,23 @@ void NGInlineLayoutAlgorithm::ApplyTextAlign(const ComputedStyle& line_style,
   }
 }
 
-void NGInlineLayoutAlgorithm::FindNextLayoutOpportunity() {
+NGLayoutOpportunity NGInlineLayoutAlgorithm::FindLayoutOpportunityForLine() {
+  // TODO(ikilpatrick): Using the constraint space BFC offset here seems wrong.
+  // Logically we shouldn't hit this codepath when placing the items as we
+  // shouldn't have anything to place.
+  //
+  // Consider reworking PlaceItems to make sure this doesn't occur.
   NGLogicalOffset iter_offset = ConstraintSpace().BfcOffset();
   if (container_builder_.BfcOffset()) {
     iter_offset = ContainerBfcOffset();
-    iter_offset +=
-        {border_and_padding_.inline_start, border_and_padding_.block_start};
+    iter_offset += {border_and_padding_.inline_start, LayoutUnit()};
   }
   iter_offset.block_offset += content_size_;
-  auto* iter = MutableConstraintSpace()->LayoutOpportunityIterator(iter_offset);
-  NGLayoutOpportunity opportunity = iter->Next();
-  if (!opportunity.IsEmpty())
-    current_opportunity_ = opportunity;
+
+  return NGLayoutOpportunityIterator(ConstraintSpace().Exclusions().get(),
+                                     ConstraintSpace().AvailableSize(),
+                                     iter_offset)
+      .Next();
 }
 
 RefPtr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
@@ -402,9 +356,11 @@ RefPtr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
   // within a previous fragment.
   content_size_ = BreakToken() ? LayoutUnit() : border_and_padding_.block_start;
 
-  NGLineBreaker line_breaker(Node(), constraint_space_, BreakToken());
+  NGLineBreaker line_breaker(Node(), constraint_space_, &container_builder_,
+                             BreakToken());
   NGLineInfo line_info;
-  while (line_breaker.NextLine(&line_info, this))
+  while (line_breaker.NextLine(
+      &line_info, {border_and_padding_.inline_start, content_size_}))
     CreateLine(&line_info, line_breaker.CreateBreakToken());
 
   // TODO(crbug.com/716930): Avoid calculating border/padding twice.

@@ -357,11 +357,14 @@ static LayoutUnit ComputeContentSize(NGInlineNode node,
           .SetTextDirection(style.Direction())
           .SetAvailableSize({available_inline_size, NGSizeIndefinite})
           .ToConstraintSpace(writing_mode);
-  NGLineBreaker line_breaker(node, space.Get());
-  NGInlineLayoutAlgorithm algorithm(node, space.Get());
+
+  NGFragmentBuilder container_builder(
+      NGPhysicalFragment::NGFragmentType::kFragmentBox, node);
+
+  NGLineBreaker line_breaker(node, space.Get(), &container_builder);
   NGLineInfo line_info;
   LayoutUnit result;
-  while (line_breaker.NextLine(&line_info, &algorithm)) {
+  while (line_breaker.NextLine(&line_info, NGLogicalOffset())) {
     LayoutUnit inline_size;
     for (const NGInlineItemResult item_result : line_info.Results())
       inline_size += item_result.inline_size;

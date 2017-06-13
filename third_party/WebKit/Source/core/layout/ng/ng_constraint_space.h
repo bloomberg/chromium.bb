@@ -11,7 +11,6 @@
 #include "core/layout/ng/geometry/ng_margin_strut.h"
 #include "core/layout/ng/geometry/ng_physical_size.h"
 #include "core/layout/ng/ng_exclusion.h"
-#include "core/layout/ng/ng_layout_opportunity_iterator.h"
 #include "core/layout/ng/ng_unpositioned_float.h"
 #include "core/layout/ng/ng_writing_mode.h"
 #include "platform/heap/Handle.h"
@@ -109,12 +108,6 @@ class CORE_EXPORT NGConstraintSpace final
   // blockSize if possible.
   NGFragmentationType BlockFragmentationType() const;
 
-  // Returns a pointer to already existing Layout Opportunity iterator
-  // associated with this constraint space and {@code iter_offset} or creates a
-  // new one.
-  NGLayoutOpportunityIterator* LayoutOpportunityIterator(
-      const NGLogicalOffset& iter_offset);
-
   // Return true if this contraint space participates in a fragmentation
   // context.
   bool HasBlockFragmentation() const {
@@ -194,7 +187,6 @@ class CORE_EXPORT NGConstraintSpace final
   NGLogicalOffset bfc_offset_;
   const std::shared_ptr<NGExclusions> exclusions_;
   WTF::Optional<LayoutUnit> clearance_offset_;
-  std::unique_ptr<NGLayoutOpportunityIterator> layout_opp_iter_;
   Vector<RefPtr<NGUnpositionedFloat>> unpositioned_floats_;
 };
 

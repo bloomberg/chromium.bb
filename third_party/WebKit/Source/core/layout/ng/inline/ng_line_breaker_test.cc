@@ -35,11 +35,14 @@ class NGLineBreakerTest : public NGBaseLayoutAlgorithmTest {
         NGConstraintSpaceBuilder(NGWritingMode::kHorizontalTopBottom)
             .SetAvailableSize({available_width, NGSizeIndefinite})
             .ToConstraintSpace(NGWritingMode::kHorizontalTopBottom);
-    NGLineBreaker line_breaker(node, space.Get());
-    NGInlineLayoutAlgorithm algorithm(node, space.Get());
+
+    NGFragmentBuilder container_builder(
+        NGPhysicalFragment::NGFragmentType::kFragmentBox, node);
+
+    NGLineBreaker line_breaker(node, space.Get(), &container_builder);
     Vector<NGInlineItemResults> lines;
     NGLineInfo line_info;
-    while (line_breaker.NextLine(&line_info, &algorithm))
+    while (line_breaker.NextLine(&line_info, NGLogicalOffset()))
       lines.push_back(std::move(line_info.Results()));
     return lines;
   }
