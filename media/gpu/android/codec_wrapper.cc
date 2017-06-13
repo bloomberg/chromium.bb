@@ -26,7 +26,7 @@ class CodecWrapperImpl : public base::RefCountedThreadSafe<CodecWrapperImpl> {
   std::unique_ptr<MediaCodecBridge> TakeCodec();
   bool HasValidCodecOutputBuffers() const;
   void DiscardCodecOutputBuffers();
-  bool SupportsFlush() const;
+  bool SupportsFlush(DeviceInfo* device_info) const;
   bool Flush();
   MediaCodecStatus QueueInputBuffer(int index,
                                     const uint8_t* data,
@@ -122,9 +122,9 @@ void CodecWrapperImpl::DiscardCodecOutputBuffers_Locked() {
   buffer_ids_.clear();
 }
 
-bool CodecWrapperImpl::SupportsFlush() const {
+bool CodecWrapperImpl::SupportsFlush(DeviceInfo* device_info) const {
   base::AutoLock l(lock_);
-  return !MediaCodecUtil::CodecNeedsFlushWorkaround(codec_.get());
+  return !device_info->CodecNeedsFlushWorkaround(codec_.get());
 }
 
 bool CodecWrapperImpl::Flush() {
@@ -289,8 +289,8 @@ void CodecWrapper::DiscardCodecOutputBuffers() {
   impl_->DiscardCodecOutputBuffers();
 }
 
-bool CodecWrapper::SupportsFlush() const {
-  return impl_->SupportsFlush();
+bool CodecWrapper::SupportsFlush(DeviceInfo* device_info) const {
+  return impl_->SupportsFlush(device_info);
 }
 
 bool CodecWrapper::Flush() {

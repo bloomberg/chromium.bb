@@ -6,10 +6,19 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "gpu/ipc/common/gpu_surface_lookup.h"
 
 namespace media {
+
+// static
+std::unique_ptr<AndroidOverlay> ContentVideoViewOverlay::Create(
+    int surface_id,
+    AndroidOverlayConfig config) {
+  return base::MakeUnique<ContentVideoViewOverlay>(surface_id,
+                                                   std::move(config));
+}
 
 ContentVideoViewOverlay::ContentVideoViewOverlay(int surface_id,
                                                  AndroidOverlayConfig config)

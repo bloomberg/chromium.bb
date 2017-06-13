@@ -24,9 +24,11 @@
 #include "media/base/android/mock_android_overlay.h"
 #include "media/base/android/mock_media_codec_bridge.h"
 #include "media/gpu/android/fake_codec_allocator.h"
+#include "media/gpu/android/mock_device_info.h"
 #include "media/gpu/android_video_decode_accelerator.h"
 #include "media/gpu/android_video_surface_chooser.h"
 #include "media/gpu/avda_codec_allocator.h"
+#include "media/gpu/fake_android_video_surface_chooser.h"
 #include "media/video/picture.h"
 #include "media/video/video_decode_accelerator.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -78,104 +80,56 @@ class MockVDAClient : public VideoDecodeAccelerator::Client {
   DISALLOW_COPY_AND_ASSIGN(MockVDAClient);
 };
 
-// Surface chooser that calls mocked functions to allow counting calls, but
-// also records arguments.  Note that gmock can't mock out unique_ptrs
-// anyway, so we can't mock AndroidVideoSurfaceChooser directly.
-class FakeOverlayChooser : public NiceMock<AndroidVideoSurfaceChooser> {
- public:
-  FakeOverlayChooser() : weak_factory_(this) {}
-
-  // These are called by the real functions.  You may set expectations on
-  // them if you like.
-  MOCK_METHOD0(MockInitialize, void());
-  MOCK_METHOD0(MockReplaceOverlayFactory, void());
-
-  // We guarantee that we'll only clear this during destruction, so that you
-  // may treat it as "pointer that lasts as long as |this| does".
-  base::WeakPtr<FakeOverlayChooser> GetWeakPtrForTesting() {
-    return weak_factory_.GetWeakPtr();
-  }
-
-  void Initialize(UseOverlayCB use_overlay_cb,
-                  UseSurfaceTextureCB use_surface_texture_cb,
-                  AndroidOverlayFactoryCB initial_factory) override {
-    MockInitialize();
-
-    factory_ = std::move(initial_factory);
-    use_overlay_cb_ = std::move(use_overlay_cb);
-    use_surface_texture_cb_ = std::move(use_surface_texture_cb);
-  }
-
-  void ReplaceOverlayFactory(AndroidOverlayFactoryCB factory) override {
-    MockReplaceOverlayFactory();
-    factory_ = std::move(factory);
-  }
-
-  // Notify AVDA to use a surface texture.
-  void ProvideSurfaceTexture() {
-    use_surface_texture_cb_.Run();
-    base::RunLoop().RunUntilIdle();
-  }
-
-  void ProvideOverlay(std::unique_ptr<AndroidOverlay> overlay) {
-    use_overlay_cb_.Run(std::move(overlay));
-    base::RunLoop().RunUntilIdle();
-  }
-
-  UseOverlayCB use_overlay_cb_;
-  UseSurfaceTextureCB use_surface_texture_cb_;
-
-  AndroidOverlayFactoryCB factory_;
-
-  base::WeakPtrFactory<FakeOverlayChooser> weak_factory_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FakeOverlayChooser);
-};
-
 }  // namespace
 
 class AndroidVideoDecodeAcceleratorTest : public testing::Test {
  public:
-  // We pick this profile since it's always supported.
+  // Default to baseline H264 because it's always supported.
   AndroidVideoDecodeAcceleratorTest()
       : gl_decoder_(&command_buffer_service_), config_(H264PROFILE_BASELINE) {}
-
-  ~AndroidVideoDecodeAcceleratorTest() override {}
 
   void SetUp() override {
     JNIEnv* env = base::android::AttachCurrentThread();
     RegisterJni(env);
 
-    main_task_runner_ = base::ThreadTaskRunnerHandle::Get();
-
-    gl::init::ShutdownGL();
     ASSERT_TRUE(gl::init::InitializeGLOneOff());
     surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size(16, 16));
     context_ = gl::init::CreateGLContext(nullptr, surface_.get(),
                                          gl::GLContextAttribs());
     context_->MakeCurrent(surface_.get());
 
-    chooser_that_is_usually_null_ = base::MakeUnique<FakeOverlayChooser>();
-    chooser_ = chooser_that_is_usually_null_->GetWeakPtrForTesting();
+    codec_allocator_ = base::MakeUnique<FakeCodecAllocator>();
+    device_info_ = base::MakeUnique<NiceMock<MockDeviceInfo>>();
 
-    platform_config_.sdk_int = base::android::SDK_VERSION_MARSHMALLOW;
-    platform_config_.allow_setsurface = true;
-    platform_config_.force_deferred_surface_creation = false;
+    chooser_that_is_usually_null_ =
+        base::MakeUnique<NiceMock<FakeSurfaceChooser>>();
+    chooser_ = chooser_that_is_usually_null_.get();
 
     // By default, allow deferred init.
     config_.is_deferred_initialization_allowed = true;
   }
 
+  ~AndroidVideoDecodeAcceleratorTest() override {
+    // ~AVDASurfaceBundle() might rely on GL being available, so we have to
+    // explicitly drop references to them before tearing down GL.
+    vda_ = nullptr;
+    codec_allocator_ = nullptr;
+    context_ = nullptr;
+    surface_ = nullptr;
+    gl::init::ShutdownGL();
+  }
+
   // Create and initialize AVDA with |config_|, and return the result.
-  bool InitializeAVDA() {
+  bool InitializeAVDA(bool force_defer_surface_creation = false) {
     // Because VDA has a custom deleter, we must assign it to |vda_| carefully.
     AndroidVideoDecodeAccelerator* avda = new AndroidVideoDecodeAccelerator(
-        &codec_allocator_, std::move(chooser_that_is_usually_null_),
+        codec_allocator_.get(), std::move(chooser_that_is_usually_null_),
         base::Bind(&MakeContextCurrent),
         base::Bind(&GetGLES2Decoder, gl_decoder_.AsWeakPtr()),
-        AndroidOverlayMojoFactoryCB(), platform_config_);
+        AndroidOverlayMojoFactoryCB(), device_info_.get());
     vda_.reset(avda);
+    avda->force_defer_surface_creation_for_testing_ =
+        force_defer_surface_creation;
 
     bool result = vda_->Initialize(config_, &client_);
     base::RunLoop().RunUntilIdle();
@@ -197,13 +151,13 @@ class AndroidVideoDecodeAcceleratorTest : public testing::Test {
     overlay_callbacks_ = overlay->GetCallbacks();
 
     // Set the expectations first, since ProvideOverlay might cause callbacks.
-    EXPECT_CALL(codec_allocator_,
+    EXPECT_CALL(*codec_allocator_,
                 MockCreateMediaCodecAsync(overlay.get(), nullptr));
     chooser_->ProvideOverlay(std::move(overlay));
 
     // Provide the codec so that we can check if it's freed properly.
     EXPECT_CALL(client_, NotifyInitializationComplete(true));
-    codec_allocator_.ProvideMockCodecAsync();
+    codec_allocator_->ProvideMockCodecAsync();
     base::RunLoop().RunUntilIdle();
   }
 
@@ -214,13 +168,13 @@ class AndroidVideoDecodeAcceleratorTest : public testing::Test {
     ASSERT_FALSE(chooser_->factory_);
 
     // Set the expectations first, since ProvideOverlay might cause callbacks.
-    EXPECT_CALL(codec_allocator_,
+    EXPECT_CALL(*codec_allocator_,
                 MockCreateMediaCodecAsync(nullptr, NotNull()));
     chooser_->ProvideSurfaceTexture();
 
     // Provide the codec so that we can check if it's freed properly.
     EXPECT_CALL(client_, NotifyInitializationComplete(true));
-    codec_allocator_.ProvideMockCodecAsync();
+    codec_allocator_->ProvideMockCodecAsync();
     base::RunLoop().RunUntilIdle();
   }
 
@@ -248,16 +202,16 @@ class AndroidVideoDecodeAcceleratorTest : public testing::Test {
   gpu::FakeCommandBufferServiceBase command_buffer_service_;
   NiceMock<gpu::gles2::MockGLES2Decoder> gl_decoder_;
   NiceMock<MockVDAClient> client_;
-  FakeCodecAllocator codec_allocator_;
-  VideoDecodeAccelerator::Config config_;
+  std::unique_ptr<FakeCodecAllocator> codec_allocator_;
 
-  AndroidVideoDecodeAccelerator::PlatformConfig platform_config_;
+  // Only set until InitializeAVDA() is called.
+  std::unique_ptr<FakeSurfaceChooser> chooser_that_is_usually_null_;
+  FakeSurfaceChooser* chooser_;
+  VideoDecodeAccelerator::Config config_;
+  std::unique_ptr<MockDeviceInfo> device_info_;
 
   // Set by InitializeAVDAWithOverlay()
   MockAndroidOverlay::Callbacks overlay_callbacks_;
-
-  // We maintain a weak ref to this since AVDA owns it.
-  base::WeakPtr<FakeOverlayChooser> chooser_;
 
   // This must be a unique pointer to a VDA, not an AVDA, to ensure the
   // the default_delete specialization that calls Destroy() will be used.
@@ -266,11 +220,6 @@ class AndroidVideoDecodeAcceleratorTest : public testing::Test {
   AndroidVideoDecodeAccelerator* avda() {
     return reinterpret_cast<AndroidVideoDecodeAccelerator*>(vda_.get());
   }
-
- private:
-  // This is the object that |chooser_| points to, or nullptr once we assign
-  // ownership to AVDA.
-  std::unique_ptr<FakeOverlayChooser> chooser_that_is_usually_null_;
 };
 
 TEST_F(AndroidVideoDecodeAcceleratorTest, ConfigureUnsupportedCodec) {
@@ -286,7 +235,7 @@ TEST_F(AndroidVideoDecodeAcceleratorTest,
 
   config_.is_deferred_initialization_allowed = false;
 
-  EXPECT_CALL(codec_allocator_, MockCreateMediaCodecSync(_, _));
+  EXPECT_CALL(*codec_allocator_, MockCreateMediaCodecSync(_, _));
   ASSERT_TRUE(InitializeAVDA());
 }
 
@@ -295,9 +244,9 @@ TEST_F(AndroidVideoDecodeAcceleratorTest, FailingToCreateACodecSyncIsAnError) {
   SKIP_IF_MEDIACODEC_IS_NOT_AVAILABLE();
 
   config_.is_deferred_initialization_allowed = false;
-  codec_allocator_.allow_sync_creation = false;
+  codec_allocator_->allow_sync_creation = false;
 
-  EXPECT_CALL(codec_allocator_, MockCreateMediaCodecSync(nullptr, NotNull()));
+  EXPECT_CALL(*codec_allocator_, MockCreateMediaCodecSync(nullptr, NotNull()));
   ASSERT_FALSE(InitializeAVDA());
 }
 
@@ -314,15 +263,15 @@ TEST_F(AndroidVideoDecodeAcceleratorTest, FailingToCreateACodecAsyncIsAnError) {
   // Note that if we somehow end up deferring surface creation, then this would
   // no longer be expected to fail.  It would signal success before asking for a
   // surface or codec.
-  EXPECT_CALL(codec_allocator_, MockCreateMediaCodecAsync(_, NotNull()));
+  EXPECT_CALL(*codec_allocator_, MockCreateMediaCodecAsync(_, NotNull()));
   EXPECT_CALL(client_, NotifyInitializationComplete(false));
 
   ASSERT_TRUE(InitializeAVDA());
   chooser_->ProvideSurfaceTexture();
-  codec_allocator_.ProvideNullCodecAsync();
+  codec_allocator_->ProvideNullCodecAsync();
 
   // Make sure that codec allocation has happened before destroying the VDA.
-  testing::Mock::VerifyAndClearExpectations(&codec_allocator_);
+  testing::Mock::VerifyAndClearExpectations(codec_allocator_.get());
 }
 
 TEST_F(AndroidVideoDecodeAcceleratorTest,
@@ -332,16 +281,16 @@ TEST_F(AndroidVideoDecodeAcceleratorTest,
   // surface, though.
   SKIP_IF_MEDIACODEC_IS_NOT_AVAILABLE();
 
-  // It would be nicer if we didn't just force this on, since we might do so
-  // in a state that AVDA isn't supposed to handle (e.g., if we give it a
-  // surface, then it would never decide to defer surface creation).
-  platform_config_.force_deferred_surface_creation = true;
   config_.overlay_info.surface_id = SurfaceManager::kNoSurfaceID;
 
   EXPECT_CALL(*chooser_, MockInitialize()).Times(0);
   EXPECT_CALL(client_, NotifyInitializationComplete(true));
 
-  InitializeAVDA();
+  // It would be nicer if we didn't just force this on, since we might do so
+  // in a state that AVDA isn't supposed to handle (e.g., if we give it a
+  // surface, then it would never decide to defer surface creation).
+  bool force_defer_surface_creation = true;
+  InitializeAVDA(force_defer_surface_creation);
 }
 
 TEST_F(AndroidVideoDecodeAcceleratorTest,
@@ -356,11 +305,11 @@ TEST_F(AndroidVideoDecodeAcceleratorTest,
   // Delete the VDA, and make sure that it tries to free the codec and the right
   // surface texture.
   EXPECT_CALL(
-      codec_allocator_,
-      MockReleaseMediaCodec(codec_allocator_.most_recent_codec(),
-                            codec_allocator_.most_recent_overlay(),
-                            codec_allocator_.most_recent_surface_texture()));
-  codec_allocator_.codec_destruction_observer()->ExpectDestruction();
+      *codec_allocator_,
+      MockReleaseMediaCodec(codec_allocator_->most_recent_codec(),
+                            codec_allocator_->most_recent_overlay(),
+                            codec_allocator_->most_recent_surface_texture()));
+  codec_allocator_->codec_destruction_observer()->ExpectDestruction();
   vda_ = nullptr;
   base::RunLoop().RunUntilIdle();
 }
@@ -377,11 +326,11 @@ TEST_F(AndroidVideoDecodeAcceleratorTest, AsyncInitWithSurfaceAndDelete) {
   // Delete the VDA, and make sure that it tries to free the codec and the
   // overlay that it provided to us.
   EXPECT_CALL(
-      codec_allocator_,
-      MockReleaseMediaCodec(codec_allocator_.most_recent_codec(),
-                            codec_allocator_.most_recent_overlay(),
-                            codec_allocator_.most_recent_surface_texture()));
-  codec_allocator_.codec_destruction_observer()->ExpectDestruction();
+      *codec_allocator_,
+      MockReleaseMediaCodec(codec_allocator_->most_recent_codec(),
+                            codec_allocator_->most_recent_overlay(),
+                            codec_allocator_->most_recent_surface_texture()));
+  codec_allocator_->codec_destruction_observer()->ExpectDestruction();
   vda_ = nullptr;
   base::RunLoop().RunUntilIdle();
 }
@@ -397,14 +346,14 @@ TEST_F(AndroidVideoDecodeAcceleratorTest,
   // It would be nice if we knew that this was a surface texture.  As it is, we
   // just destroy the VDA and expect that we're provided with one.  Hopefully,
   // AVDA is actually calling SetSurface properly.
-  EXPECT_CALL(*codec_allocator_.most_recent_codec(), SetSurface(_))
+  EXPECT_CALL(*codec_allocator_->most_recent_codec(), SetSurface(_))
       .WillOnce(Return(true));
-  codec_allocator_.codec_destruction_observer()->DestructionIsOptional();
+  codec_allocator_->codec_destruction_observer()->DestructionIsOptional();
   overlay_callbacks_.SurfaceDestroyed.Run();
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_CALL(codec_allocator_,
-              MockReleaseMediaCodec(codec_allocator_.most_recent_codec(),
+  EXPECT_CALL(*codec_allocator_,
+              MockReleaseMediaCodec(codec_allocator_->most_recent_codec(),
                                     nullptr, NotNull()));
   vda_ = nullptr;
   base::RunLoop().RunUntilIdle();
@@ -417,7 +366,7 @@ TEST_F(AndroidVideoDecodeAcceleratorTest, SwitchesToSurfaceTextureEventually) {
 
   InitializeAVDAWithOverlay();
 
-  EXPECT_CALL(*codec_allocator_.most_recent_codec(), SetSurface(_))
+  EXPECT_CALL(*codec_allocator_->most_recent_codec(), SetSurface(_))
       .WillOnce(Return(true));
 
   // Note that it's okay if |avda_| switches before ProvideSurfaceTexture
@@ -426,10 +375,10 @@ TEST_F(AndroidVideoDecodeAcceleratorTest, SwitchesToSurfaceTextureEventually) {
   LetAVDAUpdateSurface();
 
   // Verify that we're now using some surface texture.
-  EXPECT_CALL(codec_allocator_,
-              MockReleaseMediaCodec(codec_allocator_.most_recent_codec(),
+  EXPECT_CALL(*codec_allocator_,
+              MockReleaseMediaCodec(codec_allocator_->most_recent_codec(),
                                     nullptr, NotNull()));
-  codec_allocator_.codec_destruction_observer()->ExpectDestruction();
+  codec_allocator_->codec_destruction_observer()->ExpectDestruction();
   vda_ = nullptr;
   base::RunLoop().RunUntilIdle();
 }
@@ -443,12 +392,12 @@ TEST_F(AndroidVideoDecodeAcceleratorTest,
 
   InitializeAVDAWithOverlay();
 
-  EXPECT_CALL(*codec_allocator_.most_recent_codec(), SetSurface(_))
+  EXPECT_CALL(*codec_allocator_->most_recent_codec(), SetSurface(_))
       .WillOnce(Return(false));
   EXPECT_CALL(client_,
               NotifyError(AndroidVideoDecodeAccelerator::PLATFORM_FAILURE))
       .Times(1);
-  codec_allocator_.codec_destruction_observer()->DestructionIsOptional();
+  codec_allocator_->codec_destruction_observer()->DestructionIsOptional();
   chooser_->ProvideSurfaceTexture();
   LetAVDAUpdateSurface();
 }
@@ -464,7 +413,7 @@ TEST_F(AndroidVideoDecodeAcceleratorTest,
   // Don't let AVDA switch immediately, else it could choose to SetSurface when
   // it first gets the overlay.
   SetHasUnrenderedPictureBuffers(true);
-  EXPECT_CALL(*codec_allocator_.most_recent_codec(), SetSurface(_)).Times(0);
+  EXPECT_CALL(*codec_allocator_->most_recent_codec(), SetSurface(_)).Times(0);
   std::unique_ptr<MockAndroidOverlay> overlay =
       base::MakeUnique<MockAndroidOverlay>();
   // Make sure that the overlay is not destroyed too soon.
@@ -496,9 +445,10 @@ TEST_F(AndroidVideoDecodeAcceleratorTest,
   SKIP_IF_MEDIACODEC_IS_NOT_AVAILABLE();
   EXPECT_CALL(client_, NotifyError(_)).Times(0);
 
-  platform_config_.allow_setsurface = false;
+  ON_CALL(*device_info_, IsSetOutputSurfaceSupported())
+      .WillByDefault(Return(false));
   InitializeAVDAWithOverlay();
-  EXPECT_CALL(*codec_allocator_.most_recent_codec(), SetSurface(_)).Times(0);
+  EXPECT_CALL(*codec_allocator_->most_recent_codec(), SetSurface(_)).Times(0);
 
   // This should not switch to SurfaceTexture.
   chooser_->ProvideSurfaceTexture();
@@ -510,23 +460,24 @@ TEST_F(AndroidVideoDecodeAcceleratorTest,
   // If AVDA receives OnSurfaceDestroyed without support for SetSurface, then it
   // should free the codec.
   SKIP_IF_MEDIACODEC_IS_NOT_AVAILABLE();
-  platform_config_.allow_setsurface = false;
+  ON_CALL(*device_info_, IsSetOutputSurfaceSupported())
+      .WillByDefault(Return(false));
   InitializeAVDAWithOverlay();
-  EXPECT_CALL(*codec_allocator_.most_recent_codec(), SetSurface(_)).Times(0);
+  EXPECT_CALL(*codec_allocator_->most_recent_codec(), SetSurface(_)).Times(0);
 
   // This should free the codec.
   EXPECT_CALL(
-      codec_allocator_,
-      MockReleaseMediaCodec(codec_allocator_.most_recent_codec(),
-                            codec_allocator_.most_recent_overlay(), nullptr));
-  codec_allocator_.codec_destruction_observer()->ExpectDestruction();
+      *codec_allocator_,
+      MockReleaseMediaCodec(codec_allocator_->most_recent_codec(),
+                            codec_allocator_->most_recent_overlay(), nullptr));
+  codec_allocator_->codec_destruction_observer()->ExpectDestruction();
   overlay_callbacks_.SurfaceDestroyed.Run();
   base::RunLoop().RunUntilIdle();
 
   // Verify that the codec has been released, since |vda_| will be destroyed
   // soon.  The expectations must be met before that.
   testing::Mock::VerifyAndClearExpectations(&codec_allocator_);
-  codec_allocator_.codec_destruction_observer()->DestructionIsOptional();
+  codec_allocator_->codec_destruction_observer()->DestructionIsOptional();
 }
 
 TEST_F(AndroidVideoDecodeAcceleratorTest,
@@ -537,7 +488,7 @@ TEST_F(AndroidVideoDecodeAcceleratorTest,
   InitializeAVDAWithSurfaceTexture();
 
   // This should do nothing.
-  EXPECT_CALL(*codec_allocator_.most_recent_codec(), SetSurface(_)).Times(0);
+  EXPECT_CALL(*codec_allocator_->most_recent_codec(), SetSurface(_)).Times(0);
   chooser_->ProvideSurfaceTexture();
 
   base::RunLoop().RunUntilIdle();

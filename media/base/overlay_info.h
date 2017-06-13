@@ -28,6 +28,10 @@ struct MEDIA_EXPORT OverlayInfo {
   bool HasValidSurfaceId() const;
   bool HasValidRoutingToken() const;
 
+  // Whether |other| refers to the same (surface_id, routing_token) pair as
+  // |this|.
+  bool RefersToSameOverlayAs(const OverlayInfo& other);
+
   // This is the SurfaceManager surface id, or SurfaceManager::kNoSurfaceID to
   // indicate that no surface from SurfaceManager should be used.
   int surface_id = SurfaceManager::kNoSurfaceID;
@@ -39,7 +43,6 @@ struct MEDIA_EXPORT OverlayInfo {
   bool is_fullscreen = false;
 };
 
-// Request OverlayInformation.
 using ProvideOverlayInfoCB = base::Callback<void(const OverlayInfo&)>;
 using RequestOverlayInfoCB =
     base::Callback<void(bool, const ProvideOverlayInfoCB&)>;

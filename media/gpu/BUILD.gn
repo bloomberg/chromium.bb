@@ -180,6 +180,8 @@ component("gpu") {
 
   if (is_android) {
     sources += [
+      "android/device_info.cc",
+      "android/device_info.h",
       "android_video_decode_accelerator.cc",
       "android_video_decode_accelerator.h",
       "android_video_surface_chooser.h",
@@ -457,10 +459,14 @@ source_set("android_video_decode_accelerator_unittests") {
     sources = [
       "android/fake_codec_allocator.cc",
       "android/fake_codec_allocator.h",
+      "android/mock_device_info.cc",
+      "android/mock_device_info.h",
       "android_video_decode_accelerator_unittest.cc",
       "android_video_surface_chooser_impl_unittest.cc",
       "avda_codec_allocator_unittest.cc",
       "content_video_view_overlay_allocator_unittest.cc",
+      "fake_android_video_surface_chooser.cc",
+      "fake_android_video_surface_chooser.h",
       "mock_surface_texture_gl_owner.cc",
       "mock_surface_texture_gl_owner.h",
       "surface_texture_gl_owner_unittest.cc",
