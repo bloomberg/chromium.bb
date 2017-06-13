@@ -82,11 +82,6 @@ crbug.com/664850 virtual/display_list_2d_canvas/fast/canvas/OffscreenCanvas-comm
 crbug.com/664852 virtual/gpu/fast/canvas/canvas-createImageBitmap-webgl.html [ Pass Failure ]
 crbug.com/664852 virtual/gpu/fast/canvas/OffscreenCanvas-2d-drawImage.html [ Pass Failure ]
 
-########## Skia issues ##########
-crbug.com/728566 virtual/gpu-rasterization/images/color-profile-background-image-cross-fade-png.html [ NeedsRebaseline ]
-crbug.com/728566 virtual/gpu-rasterization/images/color-profile-background-image-cross-fade.html [ NeedsRebaseline ]
-crbug.com/728566 virtual/gpu-rasterization/images/color-profile-mask-image-svg.html [ NeedsRebaseline ]
-
 ########## Bugs to fix ##########
 # This is a missing event and increasing the timeout or using run-after-layout-and-paint doesn't
 # seem to fix it.
