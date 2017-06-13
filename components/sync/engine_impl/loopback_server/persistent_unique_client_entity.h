@@ -39,8 +39,14 @@ class PersistentUniqueClientEntity : public LoopbackServerEntity {
   ~PersistentUniqueClientEntity() override;
 
   // Factory function for creating a PersistentUniqueClientEntity.
-  static std::unique_ptr<LoopbackServerEntity> Create(
+  static std::unique_ptr<LoopbackServerEntity> CreateFromEntity(
       const sync_pb::SyncEntity& client_entity);
+
+  // Factory function for creating a PersistentUniqueClientEntity for use in the
+  // FakeServer injection API.
+  static std::unique_ptr<LoopbackServerEntity> CreateFromEntitySpecifics(
+      const std::string& name,
+      const sync_pb::EntitySpecifics& entity_specifics);
 
   // Derives an ID from a unique client tagged entity.
   static std::string EffectiveIdForClientTaggedEntity(

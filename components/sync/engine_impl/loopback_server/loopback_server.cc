@@ -134,7 +134,10 @@ class UpdateSieve {
 }  // namespace
 
 LoopbackServer::LoopbackServer(const base::FilePath& persistent_file)
-    : version_(0), store_birthday_(0), persistent_file_(persistent_file) {
+    : version_(0),
+      store_birthday_(0),
+      persistent_file_(persistent_file),
+      observer_for_tests_(NULL) {
   Init();
 }
 
@@ -160,8 +163,9 @@ bool LoopbackServer::CreatePermanentBookmarkFolder(
     const std::string& name) {
   DCHECK(thread_checker_.CalledOnValidThread());
   std::unique_ptr<LoopbackServerEntity> entity =
-      PersistentPermanentEntity::Create(syncer::BOOKMARKS, server_tag, name,
-                                        ModelTypeToRootTag(syncer::BOOKMARKS));
+      PersistentPermanentEntity::CreateNew(
+          syncer::BOOKMARKS, server_tag, name,
+          ModelTypeToRootTag(syncer::BOOKMARKS));
   if (!entity)
     return false;
 
@@ -324,7 +328,7 @@ string LoopbackServer::CommitEntity(
 
   std::unique_ptr<LoopbackServerEntity> entity;
   if (client_entity.deleted()) {
-    entity = PersistentTombstoneEntity::Create(client_entity);
+    entity = PersistentTombstoneEntity::CreateFromEntity(client_entity);
     DeleteChildren(client_entity.id_string());
   } else if (GetModelType(client_entity) == syncer::NIGORI) {
     // NIGORI is the only permanent item type that should be updated by the
@@ -334,7 +338,7 @@ string LoopbackServer::CommitEntity(
     entity = PersistentPermanentEntity::CreateUpdatedNigoriEntity(
         client_entity, *iter->second);
   } else if (client_entity.has_client_defined_unique_tag()) {
-    entity = PersistentUniqueClientEntity::Create(client_entity);
+    entity = PersistentUniqueClientEntity::CreateFromEntity(client_entity);
   } else {
     // TODO(pvalenzuela): Validate entity's parent ID.
     EntityMap::const_iterator iter = entities_.find(client_entity.id_string());
@@ -406,7 +410,7 @@ void LoopbackServer::DeleteChildren(const string& id) {
   }
 
   for (auto& tombstone : tombstones) {
-    SaveEntity(PersistentTombstoneEntity::Create(tombstone));
+    SaveEntity(PersistentTombstoneEntity::CreateFromEntity(tombstone));
   }
 }
 
@@ -446,6 +450,9 @@ bool LoopbackServer::HandleCommitRequest(
     committed_model_types.Put(iter->second->GetModelType());
   }
 
+  if (observer_for_tests_)
+    observer_for_tests_->OnCommit(invalidator_client_id, committed_model_types);
+
   return true;
 }
 
@@ -454,12 +461,105 @@ void LoopbackServer::ClearServerData() {
   entities_.clear();
   keystore_keys_.clear();
   ++store_birthday_;
+  base::DeleteFile(persistent_file_, false);
   Init();
 }
 
 std::string LoopbackServer::GetStoreBirthday() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   return base::Int64ToString(store_birthday_);
+}
+
+std::vector<sync_pb::SyncEntity> LoopbackServer::GetSyncEntitiesByModelType(
+    ModelType model_type) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  std::vector<sync_pb::SyncEntity> sync_entities;
+  for (EntityMap::const_iterator it = entities_.begin(); it != entities_.end();
+       ++it) {
+    const LoopbackServerEntity& entity = *it->second;
+    if (!(entity.IsDeleted() || entity.IsPermanent()) &&
+        entity.GetModelType() == model_type) {
+      sync_pb::SyncEntity sync_entity;
+      entity.SerializeAsProto(&sync_entity);
+      sync_entities.push_back(sync_entity);
+    }
+  }
+  return sync_entities;
+}
+
+std::unique_ptr<base::DictionaryValue>
+LoopbackServer::GetEntitiesAsDictionaryValue() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  std::unique_ptr<base::DictionaryValue> dictionary(
+      new base::DictionaryValue());
+
+  // Initialize an empty ListValue for all ModelTypes.
+  ModelTypeSet all_types = ModelTypeSet::All();
+  for (ModelTypeSet::Iterator it = all_types.First(); it.Good(); it.Inc()) {
+    dictionary->Set(ModelTypeToString(it.Get()),
+                    base::MakeUnique<base::ListValue>());
+  }
+
+  for (EntityMap::const_iterator it = entities_.begin(); it != entities_.end();
+       ++it) {
+    const LoopbackServerEntity& entity = *it->second;
+    if (entity.IsDeleted() || entity.IsPermanent()) {
+      // Tombstones are ignored as they don't represent current data. Folders
+      // are also ignored as current verification infrastructure does not
+      // consider them.
+      continue;
+    }
+    base::ListValue* list_value;
+    if (!dictionary->GetList(ModelTypeToString(entity.GetModelType()),
+                             &list_value)) {
+      return std::unique_ptr<base::DictionaryValue>();
+    }
+    // TODO(pvalenzuela): Store more data for each entity so additional
+    // verification can be performed. One example of additional verification
+    // is checking the correctness of the bookmark hierarchy.
+    list_value->AppendString(entity.GetName());
+  }
+
+  return dictionary;
+}
+
+bool LoopbackServer::ModifyEntitySpecifics(
+    const std::string& id,
+    const sync_pb::EntitySpecifics& updated_specifics) {
+  EntityMap::const_iterator iter = entities_.find(id);
+  if (iter == entities_.end() ||
+      iter->second->GetModelType() !=
+          GetModelTypeFromSpecifics(updated_specifics)) {
+    return false;
+  }
+
+  LoopbackServerEntity* entity = iter->second.get();
+  entity->SetSpecifics(updated_specifics);
+  UpdateEntityVersion(entity);
+  return true;
+}
+
+bool LoopbackServer::ModifyBookmarkEntity(
+    const std::string& id,
+    const std::string& parent_id,
+    const sync_pb::EntitySpecifics& updated_specifics) {
+  EntityMap::const_iterator iter = entities_.find(id);
+  if (iter == entities_.end() ||
+      iter->second->GetModelType() != syncer::BOOKMARKS ||
+      GetModelTypeFromSpecifics(updated_specifics) != syncer::BOOKMARKS) {
+    return false;
+  }
+
+  PersistentBookmarkEntity* entity =
+      static_cast<PersistentBookmarkEntity*>(iter->second.get());
+
+  entity->SetParentId(parent_id);
+  entity->SetSpecifics(updated_specifics);
+  if (updated_specifics.has_bookmark()) {
+    entity->SetName(updated_specifics.bookmark().title());
+  }
+  UpdateEntityVersion(entity);
+  return true;
 }
 
 void LoopbackServer::SerializeState(sync_pb::LoopbackServerProto* proto) const {

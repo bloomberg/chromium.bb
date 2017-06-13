@@ -18,7 +18,7 @@
 #include "components/sync/protocol/preference_specifics.pb.h"
 #include "components/sync/protocol/priority_preference_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
-#include "components/sync/test/fake_server/unique_client_entity.h"
+#include "components/sync/test/fake_server/fake_server.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/sync_preferences/pref_service_syncable_observer.h"
 #include "content/public/browser/notification_details.h"
@@ -52,7 +52,8 @@ void InjectPreferenceValueToFakeServer(fake_server::FakeServer* fake_server,
   pref->set_value(serialized);
   const std::string id = "settings_reconciliation";
   fake_server->InjectEntity(
-      fake_server::UniqueClientEntity::CreateForInjection(id, specifics));
+      syncer::PersistentUniqueClientEntity::CreateFromEntitySpecifics(
+          id, specifics));
 }
 
 }  // namespace
