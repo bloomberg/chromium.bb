@@ -14,7 +14,8 @@ class IntlHiRuPage(page_cycler_story.PageCyclerStory):
     super(IntlHiRuPage, self).__init__(
         url=url, page_set=page_set,
         shared_page_state_class=shared_page_state.SharedDesktopPageState,
-        cache_temperature=cache_temperature)
+        cache_temperature=cache_temperature,
+        name=url)
     self.archive_data_file = 'data/intl_hi_ru.json'
 
 
@@ -25,7 +26,8 @@ class IntlHiRuPageSet(story.StorySet):
   def __init__(self, cache_temperatures=None):
     super(IntlHiRuPageSet, self).__init__(
       archive_data_file='data/intl_hi_ru.json',
-      cloud_storage_bucket=story.PARTNER_BUCKET)
+      cloud_storage_bucket=story.PARTNER_BUCKET,
+      verify_names=True)
     if cache_temperatures is None:
       cache_temperatures = [cache_temperature_module.ANY]
 

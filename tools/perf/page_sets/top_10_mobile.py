@@ -47,7 +47,7 @@ class Top10MobilePage(page_module.Page):
     super(Top10MobilePage, self).__init__(
         url=url, page_set=page_set, credentials_path = 'data/credentials.json',
         shared_page_state_class=shared_page_state.SharedMobilePageState,
-        cache_temperature=cache_temperature)
+        cache_temperature=cache_temperature, name=url)
     self.archive_data_file = 'data/top_10_mobile.json'
     self._run_no_page_interactions = run_no_page_interactions
     self._collect_memory_dumps = collect_memory_dumps
@@ -67,7 +67,8 @@ class _Top10MobilePageSet(story.StorySet):
   """ Base class for Top 10 mobile sites """
 
   def __init__(self, run_no_page_interactions=False,
-               collect_memory_dumps=False, cache_temperatures=None):
+               collect_memory_dumps=False, cache_temperatures=None,
+               verify_names=True):
     super(_Top10MobilePageSet, self).__init__(
       archive_data_file='data/top_10_mobile.json',
       cloud_storage_bucket=story.PARTNER_BUCKET)

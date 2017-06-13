@@ -14,7 +14,8 @@ class IntlKoThViPage(page_cycler_story.PageCyclerStory):
     super(IntlKoThViPage, self).__init__(
         url=url, page_set=page_set,
         shared_page_state_class=shared_page_state.SharedDesktopPageState,
-        cache_temperature=cache_temperature)
+        cache_temperature=cache_temperature,
+        name=url)
 
 
 class IntlKoThViPageSet(story.StorySet):
@@ -24,7 +25,8 @@ class IntlKoThViPageSet(story.StorySet):
   def __init__(self, cache_temperatures=None):
     super(IntlKoThViPageSet, self).__init__(
       archive_data_file='data/intl_ko_th_vi.json',
-      cloud_storage_bucket=story.PARTNER_BUCKET)
+      cloud_storage_bucket=story.PARTNER_BUCKET,
+      verify_names=True)
     if cache_temperatures is None:
       cache_temperatures = [cache_temperature_module.ANY]
 
