@@ -29,7 +29,6 @@ import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.ui.display.DisplayAndroid;
 
 import java.util.concurrent.TimeoutException;
 
@@ -39,7 +38,8 @@ import java.util.concurrent.TimeoutException;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
-        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG, "enable-features=VrShell"})
+        ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG, "enable-features=VrShell",
+        "enable-webvr"})
 @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
 public class VrShellNavigationTest {
     @Rule
@@ -95,14 +95,6 @@ public class VrShellNavigationTest {
         Assert.assertTrue(DOMUtils.isFullscreen(cvc.getWebContents()));
     }
 
-    private void enterPresentationOrFail(ContentViewCore cvc)
-            throws InterruptedException, TimeoutException {
-        VrTransitionUtils.enterPresentation(cvc);
-        mVrTestRule.pollJavaScriptBoolean("vrDisplay.isPresenting", POLL_TIMEOUT_SHORT_MS,
-                mVrTestRule.getFirstTabWebContents());
-        Assert.assertTrue(VrShellDelegate.getVrShellForTesting().getWebVrModeEnabled());
-    }
-
     private void assertState(WebContents wc, Page page, PresentationMode presentationMode,
             FullscreenMode fullscreenMode) throws InterruptedException, TimeoutException {
         Assert.assertTrue("Browser is in VR", VrShellDelegate.isInVr());
@@ -134,7 +126,6 @@ public class VrShellNavigationTest {
      * Tests navigation from a 2D to a WebVR page.
      */
     @Test
-    @CommandLineFlags.Add("enable-webvr")
     @MediumTest
     public void test2dToWebVr()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
@@ -150,7 +141,6 @@ public class VrShellNavigationTest {
      * Tests navigation from a fullscreened 2D to a WebVR page.
      */
     @Test
-    @CommandLineFlags.Add("enable-webvr")
     @MediumTest
     public void test2dFullscreenToWebVr()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
@@ -167,7 +157,6 @@ public class VrShellNavigationTest {
      * Tests navigation from a WebVR to a 2D page.
      */
     @Test
-    @CommandLineFlags.Add("enable-webvr")
     @MediumTest
     public void testWebVrTo2d()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
@@ -183,7 +172,6 @@ public class VrShellNavigationTest {
      * Tests navigation from a WebVR to a WebVR page.
      */
     @Test
-    @CommandLineFlags.Add("enable-webvr")
     @MediumTest
     public void testWebVrToWebVr()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
@@ -199,12 +187,11 @@ public class VrShellNavigationTest {
      * Tests navigation from a presenting WebVR to a 2D page.
      */
     @Test
-    @CommandLineFlags.Add("enable-webvr")
     @MediumTest
     public void testWebVrPresentingTo2d()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
         mVrTestRule.loadUrlAndAwaitInitialization(TEST_PAGE_WEBVR_URL, PAGE_LOAD_TIMEOUT_S);
-        enterPresentationOrFail(mVrTestRule.getFirstTabCvc());
+        VrTransitionUtils.enterPresentationOrFail(mVrTestRule.getFirstTabCvc());
 
         navigateTo(Page.PAGE_2D);
 
@@ -216,12 +203,11 @@ public class VrShellNavigationTest {
      * Tests navigation from a presenting WebVR to a WebVR page.
      */
     @Test
-    @CommandLineFlags.Add("enable-webvr")
     @MediumTest
     public void testWebVrPresentingToWebVr()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
         mVrTestRule.loadUrlAndAwaitInitialization(TEST_PAGE_WEBVR_URL, PAGE_LOAD_TIMEOUT_S);
-        enterPresentationOrFail(mVrTestRule.getFirstTabCvc());
+        VrTransitionUtils.enterPresentationOrFail(mVrTestRule.getFirstTabCvc());
 
         navigateTo(Page.PAGE_WEBVR);
 
@@ -233,7 +219,6 @@ public class VrShellNavigationTest {
      * Tests navigation from a fullscreened WebVR to a 2D page.
      */
     @Test
-    @CommandLineFlags.Add("enable-webvr")
     @MediumTest
     public void testWebVrFullscreenTo2d()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
@@ -250,7 +235,6 @@ public class VrShellNavigationTest {
      * Tests navigation from a fullscreened WebVR to a WebVR page.
      */
     @Test
-    @CommandLineFlags.Add("enable-webvr")
     @MediumTest
     public void testWebVrFullscreenToWebVr()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
@@ -261,40 +245,5 @@ public class VrShellNavigationTest {
 
         assertState(mVrTestRule.getFirstTabWebContents(), Page.PAGE_WEBVR,
                 PresentationMode.NON_PRESENTING, FullscreenMode.NON_FULLSCREENED);
-    }
-
-    /**
-     * Tests exit presentation transition from WebVR to VrShell
-     */
-    @Test
-    @CommandLineFlags.Add("enable-webvr")
-    @MediumTest
-    public void testExitPresentationWebVrToVrShell()
-            throws IllegalArgumentException, InterruptedException, TimeoutException {
-        mVrTestRule.loadUrlAndAwaitInitialization(TEST_PAGE_WEBVR_URL, PAGE_LOAD_TIMEOUT_S);
-        enterPresentationOrFail(mVrTestRule.getFirstTabCvc());
-
-        // Validate our size is what we expect.
-        DisplayAndroid primaryDisplay =
-                DisplayAndroid.getNonMultiDisplay(mVrTestRule.getActivity());
-        float expectedWidth = primaryDisplay.getDisplayWidth();
-        float expectedHeight = primaryDisplay.getDisplayHeight();
-        Assert.assertTrue(mVrTestRule.pollJavaScriptBoolean(
-                "screen.width == " + expectedWidth + " && screen.height == " + expectedHeight,
-                POLL_TIMEOUT_LONG_MS, mVrTestRule.getFirstTabWebContents()));
-
-        // Exit presentation through JavaScript.
-        mVrTestRule.runJavaScriptOrFail("vrDisplay.exitPresent();", POLL_TIMEOUT_SHORT_MS,
-                mVrTestRule.getFirstTabWebContents());
-
-        // Validate our size is what we expect.
-        expectedWidth = VrShellImpl.DEFAULT_CONTENT_WIDTH;
-        expectedHeight = VrShellImpl.DEFAULT_CONTENT_HEIGHT;
-
-        // We aren't comparing for equality because there is some rounding that occurs.
-        Assert.assertTrue(
-                mVrTestRule.pollJavaScriptBoolean("Math.abs(screen.width - " + expectedWidth
-                                + ") < 2 && Math.abs(screen.height - " + expectedHeight + ") < 2",
-                        POLL_TIMEOUT_LONG_MS, mVrTestRule.getFirstTabWebContents()));
     }
 }

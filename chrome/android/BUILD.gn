@@ -562,10 +562,16 @@ if (enable_vr) {
       "javatests/src/org/chromium/chrome/browser/vr_shell/util/VrShellDelegateUtils.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/util/VrTransitionUtils.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/VrFeedbackInfoBarTest.java",
-      "javatests/src/org/chromium/chrome/browser/vr_shell/VrShellTest.java",
+      "javatests/src/org/chromium/chrome/browser/vr_shell/VrInstallUpdateInfoBarTest.java",
+      "javatests/src/org/chromium/chrome/browser/vr_shell/VrShellCompositorViewHolderTest.java",
+      "javatests/src/org/chromium/chrome/browser/vr_shell/VrShellControllerInputTest.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/VrShellNavigationTest.java",
+      "javatests/src/org/chromium/chrome/browser/vr_shell/VrShellTransitionTest.java",
       "javatests/src/org/chromium/chrome/browser/vr_shell/VrTestRule.java",
-      "javatests/src/org/chromium/chrome/browser/vr_shell/WebVrTest.java",
+      "javatests/src/org/chromium/chrome/browser/vr_shell/WebVrDeviceTest.java",
+      "javatests/src/org/chromium/chrome/browser/vr_shell/WebVrInputTest.java",
+      "javatests/src/org/chromium/chrome/browser/vr_shell/WebVrTabTest.java",
+      "javatests/src/org/chromium/chrome/browser/vr_shell/WebVrTransitionTest.java",
     ]
 
     deps = [

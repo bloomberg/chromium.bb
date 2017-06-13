@@ -62,6 +62,7 @@ public class VrTestRule extends ChromeTabbedActivityTestRule {
                 startMainActivityOnBlankPage();
                 mFirstTabWebContents = getActivity().getActivityTab().getWebContents();
                 mFirstTabCvc = getActivity().getActivityTab().getContentViewCore();
+                Assert.assertFalse("Test did not start in VR", VrShellDelegate.isInVr());
                 base.evaluate();
             }
         }, desc);

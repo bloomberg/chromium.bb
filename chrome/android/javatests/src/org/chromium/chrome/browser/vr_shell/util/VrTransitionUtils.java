@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.vr_shell.util;
 
 import static org.chromium.chrome.browser.vr_shell.VrTestRule.POLL_CHECK_INTERVAL_SHORT_MS;
+import static org.chromium.chrome.browser.vr_shell.VrTestRule.POLL_TIMEOUT_SHORT_MS;
 
 import org.junit.Assert;
 
@@ -98,5 +99,19 @@ public class VrTransitionUtils {
     public static void enterPresentationAndWait(ContentViewCore cvc, WebContents webContents) {
         enterPresentation(cvc);
         VrTestRule.waitOnJavaScriptStep(webContents);
+    }
+
+    /**
+     * Sends a click event directly to the WebGL canvas then waits for WebVR to
+     * think that it is presenting, failing if this does not occur within the
+     * allotted time.
+     *
+     * @param cvc The ContentViewCore for the tab the canvas is in.
+     */
+    public static void enterPresentationOrFail(ContentViewCore cvc) {
+        enterPresentation(cvc);
+        VrTestRule.pollJavaScriptBoolean(
+                "vrDisplay.isPresenting", POLL_TIMEOUT_SHORT_MS, cvc.getWebContents());
+        Assert.assertTrue(VrShellDelegate.getVrShellForTesting().getWebVrModeEnabled());
     }
 }
