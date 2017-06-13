@@ -99,7 +99,11 @@ class TestOzonePlatform : public OzonePlatform {
   DISALLOW_COPY_AND_ASSIGN(TestOzonePlatform);
 };
 
-TEST(PlatformDisplayDefaultTest, EventDispatch) {
+// Test fails in part because services_unittests appears to have its own ozone
+// platform that it initializes. For some reason, this only started failing
+// locally and on the trybots on 06/13/2017, while passing when run on the CQ
+// and the builders. crbug.com/732987
+TEST(PlatformDisplayDefaultTest, DISABLED_EventDispatch) {
   // Setup ozone so the display can be initialized.
   TestOzonePlatform platform;
 
