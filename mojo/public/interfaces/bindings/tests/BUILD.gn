@@ -248,6 +248,6 @@ mojom("echo") {
   testonly = true
   sources = [
     "echo.mojom",
-    "echo_import.mojom",
+    "echo_import/echo_import.mojom",
   ]
 }

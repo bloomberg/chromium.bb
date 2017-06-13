@@ -8,6 +8,7 @@ import mojom.generate.generator as generator
 import mojom.generate.module as mojom
 import mojom.generate.pack as pack
 import os
+import urllib
 from mojom.generate.template_expander import UseJinja
 
 _kind_to_javascript_default_value = {
@@ -88,8 +89,9 @@ def GetArrayExpectedDimensionSizes(kind):
   return expected_dimension_sizes
 
 
-def GetRelativePath(module, base_module):
-  return os.path.relpath(module.path, os.path.dirname(base_module.path))
+def GetRelativeUrl(module, base_module):
+  return urllib.pathname2url(
+      os.path.relpath(module.path, os.path.dirname(base_module.path)))
 
 
 class JavaScriptStylizer(generator.Stylizer):
@@ -140,7 +142,7 @@ class Generator(generator.Generator):
       "encode_snippet": self._JavaScriptEncodeSnippet,
       "expression_to_text": self._ExpressionToText,
       "field_offset": JavaScriptFieldOffset,
-      "get_relative_path": GetRelativePath,
+      "get_relative_url": GetRelativeUrl,
       "has_callbacks": mojom.HasCallbacks,
       "is_any_handle_or_interface_kind": mojom.IsAnyHandleOrInterfaceKind,
       "is_array_kind": mojom.IsArrayKind,
