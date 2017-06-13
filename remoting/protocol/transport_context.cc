@@ -97,8 +97,8 @@ void TransportContext::EnsureFreshIceConfig() {
           LOG(WARNING) << "ice_config_url isn't set.";
           return;
         }
-        request.reset(new HttpIceConfigRequest(url_request_factory_.get(),
-                                               ice_config_url_));
+        request.reset(new HttpIceConfigRequest(
+            url_request_factory_.get(), ice_config_url_, oauth_token_getter_));
         break;
       case RelayMode::GTURN:
         request.reset(new JingleInfoRequest(signal_strategy_));

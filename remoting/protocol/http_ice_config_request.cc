@@ -15,8 +15,9 @@ namespace protocol {
 
 HttpIceConfigRequest::HttpIceConfigRequest(
     UrlRequestFactory* url_request_factory,
-    const std::string& url)
-    : url_(url) {
+    const std::string& url,
+    OAuthTokenGetter* oauth_token_getter)
+    : url_(url), weak_factory_(this) {
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("CRD_ice_config_request", R"(
         semantics {
@@ -55,7 +56,8 @@ HttpIceConfigRequest::HttpIceConfigRequest(
             "is shipped separately from Chromium, except on Chrome OS."
         })");
   url_request_ = url_request_factory->CreateUrlRequest(
-      UrlRequest::Type::POST, url_, traffic_annotation);
+      UrlRequest::Type::GET, url_, traffic_annotation);
+  oauth_token_getter_ = oauth_token_getter;
   url_request_->SetPostData("application/json", "");
 }
 
@@ -66,6 +68,29 @@ void HttpIceConfigRequest::Send(const OnIceConfigCallback& callback) {
   DCHECK(!callback.is_null());
 
   on_ice_config_callback_ = callback;
+
+  if (oauth_token_getter_) {
+    oauth_token_getter_->CallWithToken(base::Bind(
+        &HttpIceConfigRequest::OnOAuthToken, weak_factory_.GetWeakPtr()));
+  } else {
+    SendRequest();
+  }
+}
+
+void HttpIceConfigRequest::OnOAuthToken(OAuthTokenGetter::Status status,
+                                        const std::string& user_email,
+                                        const std::string& access_token) {
+  if (status != OAuthTokenGetter::SUCCESS) {
+    LOG(ERROR) << "Failed to get OAuth token for IceConfig request.";
+    base::ResetAndReturn(&on_ice_config_callback_).Run(IceConfig());
+    return;
+  }
+
+  url_request_->AddHeader("Authorization:Bearer " + access_token);
+  SendRequest();
+}
+
+void HttpIceConfigRequest::SendRequest() {
   url_request_->Start(
       base::Bind(&HttpIceConfigRequest::OnResponse, base::Unretained(this)));
 }
