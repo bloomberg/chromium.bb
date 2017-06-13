@@ -125,7 +125,7 @@ TEST_P(LinkLoaderPreloadTest, Preload) {
   if (test_case.expecting_load &&
       test_case.priority != kResourceLoadPriorityUnresolved) {
     ASSERT_EQ(1, fetcher->CountPreloads());
-    Resource* resource = loader->LinkPreloadedResourceForTesting();
+    Resource* resource = loader->GetResourceForTesting();
     ASSERT_NE(resource, nullptr);
     EXPECT_TRUE(fetcher->ContainsAsPreload(resource));
     EXPECT_EQ(test_case.priority, resource->GetResourceRequest().Priority());
@@ -310,7 +310,7 @@ TEST(LinkLoaderTest, Prefetch) {
                      test_case.referrer_policy, href_url,
                      dummy_page_holder->GetDocument(), NetworkHintsMock());
     ASSERT_TRUE(dummy_page_holder->GetDocument().Fetcher());
-    Resource* resource = loader->GetResource();
+    Resource* resource = loader->GetResourceForTesting();
     if (test_case.expecting_load) {
       EXPECT_TRUE(resource);
     } else {

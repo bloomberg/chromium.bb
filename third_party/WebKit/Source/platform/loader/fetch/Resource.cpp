@@ -42,6 +42,7 @@
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/loader/fetch/ResourceClient.h"
 #include "platform/loader/fetch/ResourceClientWalker.h"
+#include "platform/loader/fetch/ResourceFinishObserver.h"
 #include "platform/loader/fetch/ResourceLoader.h"
 #include "platform/network/HTTPParsers.h"
 #include "platform/scheduler/child/web_scheduler.h"
@@ -57,6 +58,16 @@
 #include "public/platform/WebSecurityOrigin.h"
 
 namespace blink {
+
+namespace {
+
+void NotifyFinishObservers(
+    HeapHashSet<WeakMember<ResourceFinishObserver>> observers) {
+  for (const auto& observer : observers)
+    observer->NotifyFinished();
+}
+
+}  // namespace
 
 // These response headers are not copied from a revalidated response to the
 // cached response headers. For compatibility, this list is based on Chromium's
@@ -302,6 +313,7 @@ DEFINE_TRACE(Resource) {
   visitor->Trace(clients_);
   visitor->Trace(clients_awaiting_callback_);
   visitor->Trace(finished_clients_);
+  visitor->Trace(finish_observers_);
   MemoryCoordinatorClient::Trace(visitor);
 }
 
@@ -315,6 +327,8 @@ void Resource::SetLoader(ResourceLoader* loader) {
 void Resource::CheckNotify() {
   if (IsLoading())
     return;
+
+  TriggerNotificationForFinishObservers();
 
   ResourceClientWalker<ResourceClient> w(clients_);
   while (ResourceClient* c = w.Next()) {
@@ -354,6 +368,18 @@ void Resource::SetResourceBuffer(PassRefPtr<SharedBuffer> resource_buffer) {
 void Resource::ClearData() {
   data_.Clear();
   encoded_size_memory_usage_ = 0;
+}
+
+void Resource::TriggerNotificationForFinishObservers() {
+  Platform::Current()
+      ->CurrentThread()
+      ->Scheduler()
+      ->LoadingTaskRunner()
+      ->PostTask(BLINK_FROM_HERE, WTF::Bind(&NotifyFinishObservers,
+                                            std::move(finish_observers_)));
+
+  finish_observers_.clear();
+  DidRemoveClientOrObserver();
 }
 
 void Resource::SetDataBufferingPolicy(
@@ -708,6 +734,24 @@ void Resource::RemoveClient(ResourceClient* client) {
     async_finish_pending_clients_task_.Cancel();
   }
 
+  DidRemoveClientOrObserver();
+}
+
+void Resource::AddFinishObserver(ResourceFinishObserver* client,
+                                 PreloadReferencePolicy policy) {
+  CHECK(!is_add_remove_client_prohibited_);
+  DCHECK(!finish_observers_.Contains(client));
+
+  WillAddClientOrObserver(policy);
+  finish_observers_.insert(client);
+  if (IsLoaded())
+    TriggerNotificationForFinishObservers();
+}
+
+void Resource::RemoveFinishObserver(ResourceFinishObserver* client) {
+  CHECK(!is_add_remove_client_prohibited_);
+
+  finish_observers_.erase(client);
   DidRemoveClientOrObserver();
 }
 

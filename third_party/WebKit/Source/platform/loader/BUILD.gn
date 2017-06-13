@@ -51,6 +51,7 @@ source_set("loader") {
     "fetch/ResourceError.h",
     "fetch/ResourceFetcher.cpp",
     "fetch/ResourceFetcher.h",
+    "fetch/ResourceFinishObserver.h",
     "fetch/ResourceLoadInfo.h",
     "fetch/ResourceLoadPriority.h",
     "fetch/ResourceLoadTiming.cpp",

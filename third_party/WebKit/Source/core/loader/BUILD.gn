@@ -105,8 +105,6 @@ blink_core_sources("loader") {
     "resource/ImageResourceObserver.h",
     "resource/LinkFetchResource.cpp",
     "resource/LinkFetchResource.h",
-    "resource/LinkPreloadResourceClients.cpp",
-    "resource/LinkPreloadResourceClients.h",
     "resource/MultipartImageResourceParser.cpp",
     "resource/MultipartImageResourceParser.h",
     "resource/ScriptResource.cpp",

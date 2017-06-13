@@ -220,7 +220,7 @@ void HTMLLinkElement::RemovedFrom(ContainerNode* insertion_point) {
   if (!insertion_point->isConnected())
     return;
 
-  link_loader_->Released();
+  link_loader_->Abort();
 
   if (!was_connected) {
     DCHECK(!GetLinkStyle() || !GetLinkStyle()->HasSheet());

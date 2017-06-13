@@ -47,11 +47,12 @@
 #include "core/loader/private/PrerenderHandle.h"
 #include "core/loader/resource/LinkFetchResource.h"
 #include "platform/Prerender.h"
-#include "platform/Timer.h"
 #include "platform/loader/LinkHeader.h"
 #include "platform/loader/fetch/FetchInitiatorTypeNames.h"
 #include "platform/loader/fetch/FetchParameters.h"
+#include "platform/loader/fetch/ResourceClient.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
+#include "platform/loader/fetch/ResourceFinishObserver.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/network/mime/MIMETypeRegistry.h"
 #include "public/platform/WebPrerender.h"
@@ -74,40 +75,65 @@ static unsigned PrerenderRelTypesFromRelAttribute(
   return result;
 }
 
+class LinkLoader::FinishObserver final
+    : public GarbageCollectedFinalized<ResourceFinishObserver>,
+      public ResourceFinishObserver {
+  USING_GARBAGE_COLLECTED_MIXIN(FinishObserver);
+  USING_PRE_FINALIZER(FinishObserver, ClearResource);
+
+ public:
+  FinishObserver(LinkLoader* loader,
+                 Resource* resource,
+                 Resource::PreloadReferencePolicy reference_policy)
+      : loader_(loader), resource_(resource) {
+    resource_->AddFinishObserver(this, reference_policy);
+  }
+
+  // ResourceFinishObserver implementation
+  void NotifyFinished() override {
+    if (!resource_)
+      return;
+    loader_->NotifyFinished();
+    ClearResource();
+  }
+  String DebugName() const override {
+    return "LinkLoader::ResourceFinishObserver";
+  }
+
+  Resource* GetResource() { return resource_; }
+  void ClearResource() {
+    if (!resource_)
+      return;
+    resource_->RemoveFinishObserver(this);
+    resource_ = nullptr;
+  }
+
+  DEFINE_INLINE_VIRTUAL_TRACE() {
+    visitor->Trace(loader_);
+    visitor->Trace(resource_);
+    blink::ResourceFinishObserver::Trace(visitor);
+  }
+
+ private:
+  Member<LinkLoader> loader_;
+  Member<Resource> resource_;
+};
+
 LinkLoader::LinkLoader(LinkLoaderClient* client,
                        RefPtr<WebTaskRunner> task_runner)
-    : client_(client),
-      link_load_timer_(task_runner, this, &LinkLoader::LinkLoadTimerFired),
-      link_loading_error_timer_(task_runner,
-                                this,
-                                &LinkLoader::LinkLoadingErrorTimerFired) {
+    : client_(client) {
   DCHECK(client_);
 }
 
 LinkLoader::~LinkLoader() {}
 
-void LinkLoader::LinkLoadTimerFired(TimerBase* timer) {
-  DCHECK_EQ(timer, &link_load_timer_);
-  client_->LinkLoaded();
-}
-
-void LinkLoader::LinkLoadingErrorTimerFired(TimerBase* timer) {
-  DCHECK_EQ(timer, &link_loading_error_timer_);
-  client_->LinkLoadingErrored();
-}
-
-void LinkLoader::TriggerEvents(const Resource* resource) {
+void LinkLoader::NotifyFinished() {
+  DCHECK(finish_observer_);
+  Resource* resource = finish_observer_->GetResource();
   if (resource->ErrorOccurred())
-    link_loading_error_timer_.StartOneShot(0, BLINK_FROM_HERE);
+    client_->LinkLoadingErrored();
   else
-    link_load_timer_.StartOneShot(0, BLINK_FROM_HERE);
-}
-
-void LinkLoader::NotifyFinished(Resource* resource) {
-  DCHECK_EQ(this->GetResource(), resource);
-
-  TriggerEvents(resource);
-  ClearResource();
+    client_->LinkLoaded();
 }
 
 void LinkLoader::DidStartPrerender() {
@@ -233,41 +259,8 @@ WTF::Optional<Resource::Type> LinkLoader::GetResourceTypeFromAsAttribute(
   return WTF::nullopt;
 }
 
-Resource* LinkLoader::LinkPreloadedResourceForTesting() {
-  return link_preload_resource_client_
-             ? link_preload_resource_client_->GetResource()
-             : nullptr;
-}
-
-void LinkLoader::CreateLinkPreloadResourceClient(Resource* resource) {
-  if (!resource)
-    return;
-  switch (resource->GetType()) {
-    case Resource::kImage:
-      link_preload_resource_client_ = LinkPreloadImageResourceClient::Create(
-          this, ToImageResource(resource));
-      break;
-    case Resource::kScript:
-      link_preload_resource_client_ = LinkPreloadScriptResourceClient::Create(
-          this, ToScriptResource(resource));
-      break;
-    case Resource::kCSSStyleSheet:
-      link_preload_resource_client_ = LinkPreloadStyleResourceClient::Create(
-          this, ToCSSStyleSheetResource(resource));
-      break;
-    case Resource::kFont:
-      link_preload_resource_client_ =
-          LinkPreloadFontResourceClient::Create(this, ToFontResource(resource));
-      break;
-    case Resource::kMedia:
-    case Resource::kTextTrack:
-    case Resource::kRaw:
-      link_preload_resource_client_ =
-          LinkPreloadRawResourceClient::Create(this, ToRawResource(resource));
-      break;
-    default:
-      NOTREACHED();
-  }
+Resource* LinkLoader::GetResourceForTesting() {
+  return finish_observer_ ? finish_observer_->GetResource() : nullptr;
 }
 
 static bool IsSupportedType(Resource::Type resource_type,
@@ -473,6 +466,9 @@ bool LinkLoader::LoadLink(
     const KURL& href,
     Document& document,
     const NetworkHintsInterface& network_hints_interface) {
+  // If any loading process is in progress, abort it.
+  Abort();
+
   if (!client_->ShouldLoadLink())
     return false;
 
@@ -483,17 +479,22 @@ bool LinkLoader::LoadLink(
                      cross_origin, network_hints_interface,
                      kLinkCalledFromMarkup);
 
-  CreateLinkPreloadResourceClient(PreloadIfNeeded(
+  Resource* preloaded_resource = PreloadIfNeeded(
       rel_attribute, href, document, as, type, media, cross_origin,
-      kLinkCalledFromMarkup, nullptr, referrer_policy));
+      kLinkCalledFromMarkup, nullptr, referrer_policy);
+  Resource* prefetched_resource = PrefetchIfNeeded(
+      document, href, rel_attribute, cross_origin, referrer_policy);
 
-  if (href.IsEmpty() || !href.IsValid())
-    Released();
+  DCHECK(!preloaded_resource || !prefetched_resource);
 
-  Resource* resource = PrefetchIfNeeded(document, href, rel_attribute,
-                                        cross_origin, referrer_policy);
-  if (resource)
-    SetResource(resource);
+  if (preloaded_resource) {
+    finish_observer_ = new FinishObserver(this, preloaded_resource,
+                                          Resource::kDontMarkAsReferenced);
+  }
+  if (prefetched_resource) {
+    finish_observer_ = new FinishObserver(this, prefetched_resource,
+                                          Resource::kMarkAsReferenced);
+  }
 
   if (const unsigned prerender_rel_types =
           PrerenderRelTypesFromRelAttribute(rel_attribute, document)) {
@@ -513,22 +514,21 @@ bool LinkLoader::LoadLink(
   return true;
 }
 
-void LinkLoader::Released() {
-  // Only prerenders need treatment here; other links either use the Resource
-  // interface, or are notionally atomic (dns prefetch).
+void LinkLoader::Abort() {
   if (prerender_) {
     prerender_->Cancel();
     prerender_.Clear();
   }
-  if (link_preload_resource_client_)
-    link_preload_resource_client_->Clear();
+  if (finish_observer_) {
+    finish_observer_->ClearResource();
+    finish_observer_ = nullptr;
+  }
 }
 
 DEFINE_TRACE(LinkLoader) {
+  visitor->Trace(finish_observer_);
   visitor->Trace(client_);
   visitor->Trace(prerender_);
-  visitor->Trace(link_preload_resource_client_);
-  ResourceOwner<Resource, ResourceClient>::Trace(visitor);
   PrerenderClient::Trace(visitor);
 }
 

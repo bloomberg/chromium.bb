@@ -61,6 +61,7 @@ class PLATFORM_EXPORT ResourceClient : public GarbageCollectedMixin {
  protected:
   ResourceClient() {}
 };
+
 }  // namespace blink
 
 #endif
