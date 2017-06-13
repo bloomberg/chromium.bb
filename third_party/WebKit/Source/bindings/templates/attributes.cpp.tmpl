@@ -1,4 +1,5 @@
 {% from 'utilities.cpp.tmpl' import declare_enum_validation_variable, v8_value_to_local_cpp_value %}
+{% from 'methods.cpp.tmpl' import runtime_timer_scope, runtime_call_stats_enter, runtime_call_stats_leave %}
 
 {##############################################################################}
 {% macro attribute_getter(attribute, world_suffix) %}
@@ -8,6 +9,7 @@ const v8::PropertyCallbackInfo<v8::Value>& info
 {%- else %}
 const v8::FunctionCallbackInfo<v8::Value>& info
 {%- endif %}) {
+  {{ runtime_timer_scope(attribute.runtime_call_stats.getter_counter) | indent(2) }}
   {% filter format_remove_duplicates(['ExceptionState exceptionState']) %}
   {% set define_exception_state -%}
   ExceptionState exceptionState(info.GetIsolate(), ExceptionState::kGetterContext, "{{interface_name}}", "{{attribute.name}}");
@@ -284,6 +286,7 @@ v8::Local<v8::Value> v8Value, const v8::PropertyCallbackInfo<void>& info
 {%- else %}
 v8::Local<v8::Value> v8Value, const v8::FunctionCallbackInfo<v8::Value>& info
 {%- endif %}) {
+  {{ runtime_timer_scope(attribute.runtime_call_stats.setter_counter) | indent(2) }}
   {% filter format_remove_duplicates(['ExceptionState exceptionState']) %}
   v8::Isolate* isolate = info.GetIsolate();
   ALLOW_UNUSED_LOCAL(isolate);

@@ -1464,6 +1464,32 @@ Ordinarily when passing in a value for a dictionary argument, the value must be 
 
 Usage: applies to dictionaries and arguments of methods. Takes no arguments itself.
 
+### [RuntimeCallStatsCounter] _(m, a)_
+
+Summary: Adding `[RuntimeCallStatsCounter=<Counter>]` as an extended attribute to an interface method or attribute results in call counts and run times of the method or attribute getter (and setter if present) using RuntimeCallStats (see Source/platform/bindings/RuntimeCallStats.h for more details about RuntimeCallStats). \<Counter\> is used to identify a group of counters that will be used to keep track of run times for a particular method/attribute.
+
+A counter with id `k<Counter>` will keep track of the execution time and counts for methods (including the time spent in the bindings layer). For attribute getters, it is `k<Counter>_Getter` and for setters, `k<Counter>_Setter`.
+
+Usage:
+
+```webidl
+interface Node {
+  [RuntimeCallStatsCounter=NodeOwnerDocument] readonly attribute Document? ownerDocument;
+  [RuntimeCallStatsCounter=NodeTextContent] attribute DOMString? textContent;
+  [RuntimeCallStatsCounter=NodeHasChildNodes] boolean hasChildNodes();
+}
+```
+
+The counters specified in the IDL file also need to be defined in Source/platform/bindings/RuntimeCallStats.h (under FOR_EACH_COUNTER) as follows:
+
+```cpp
+#define FOR_EACH_COUNTER(V)                          \
+...                                                  \
+  BINDINGS_READ_ONLY_ATTRIBUTE(V, NodeOwnerDocument) \
+  BINDINGS_ATTRIBUTE(V, NodeTextContent)             \
+  BINDINGS_METHOD(V, NodeHasChildNodes)
+```
+
 ### [URL] _(a)_
 
 Summary: `[URL]` indicates that a given DOMString represents a URL.
