@@ -902,7 +902,7 @@ void av1_superres_upscale(AV1_COMMON *cm, BufferPool *const pool) {
 
   if (aom_alloc_frame_buffer(&copy_buffer, cm->width, cm->height,
                              cm->subsampling_x, cm->subsampling_y,
-#ifdef CONFIG_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
                              cm->use_highbitdepth,
 #endif  // CONFIG_HIGHBITDEPTH
                              AOM_BORDER_IN_PIXELS, cm->byte_alignment))
@@ -933,7 +933,7 @@ void av1_superres_upscale(AV1_COMMON *cm, BufferPool *const pool) {
     if (aom_realloc_frame_buffer(
             frame_to_show, cm->superres_upscaled_width,
             cm->superres_upscaled_height, cm->subsampling_x, cm->subsampling_y,
-#ifdef CONFIG_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
             cm->use_highbitdepth,
 #endif  // CONFIG_HIGHBITDEPTH
             AOM_BORDER_IN_PIXELS, cm->byte_alignment, fb, cb, cb_priv))
@@ -945,7 +945,7 @@ void av1_superres_upscale(AV1_COMMON *cm, BufferPool *const pool) {
     if (aom_alloc_frame_buffer(frame_to_show, cm->superres_upscaled_width,
                                cm->superres_upscaled_height, cm->subsampling_x,
                                cm->subsampling_y,
-#ifdef CONFIG_HIGHBITDEPTH
+#if CONFIG_HIGHBITDEPTH
                                cm->use_highbitdepth,
 #endif  // CONFIG_HIGHBITDEPTH
                                AOM_BORDER_IN_PIXELS, cm->byte_alignment))

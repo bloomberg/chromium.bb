@@ -141,7 +141,7 @@ static void alloc_tree_contexts(AV1_COMMON *cm, PC_TREE *tree,
                      &tree->verticalb[1]);
   alloc_mode_context(cm, num_4x4_blk / 4, PARTITION_VERT_B,
                      &tree->verticalb[2]);
-#ifdef CONFIG_SUPERTX
+#if CONFIG_SUPERTX
   alloc_mode_context(cm, num_4x4_blk, PARTITION_HORZ,
                      &tree->horizontal_supertx);
   alloc_mode_context(cm, num_4x4_blk, PARTITION_VERT, &tree->vertical_supertx);
@@ -159,7 +159,7 @@ static void alloc_tree_contexts(AV1_COMMON *cm, PC_TREE *tree,
   alloc_mode_context(cm, num_4x4_blk, &tree->none);
   alloc_mode_context(cm, num_4x4_blk / 2, &tree->horizontal[0]);
   alloc_mode_context(cm, num_4x4_blk / 2, &tree->vertical[0]);
-#ifdef CONFIG_SUPERTX
+#if CONFIG_SUPERTX
   alloc_mode_context(cm, num_4x4_blk, &tree->horizontal_supertx);
   alloc_mode_context(cm, num_4x4_blk, &tree->vertical_supertx);
   alloc_mode_context(cm, num_4x4_blk, &tree->split_supertx);
@@ -190,7 +190,7 @@ static void free_tree_contexts(PC_TREE *tree) {
   free_mode_context(&tree->horizontal[1]);
   free_mode_context(&tree->vertical[0]);
   free_mode_context(&tree->vertical[1]);
-#ifdef CONFIG_SUPERTX
+#if CONFIG_SUPERTX
   free_mode_context(&tree->horizontal_supertx);
   free_mode_context(&tree->vertical_supertx);
   free_mode_context(&tree->split_supertx);
