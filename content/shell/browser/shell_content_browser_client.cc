@@ -177,7 +177,8 @@ bool ShellContentBrowserClient::DoesSiteRequireDedicatedProcess(
     BrowserContext* browser_context,
     const GURL& effective_site_url) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  DCHECK(command_line->HasSwitch(switches::kIsolateSitesForTesting));
+  if (!command_line->HasSwitch(switches::kIsolateSitesForTesting))
+    return false;
   std::string pattern =
       command_line->GetSwitchValueASCII(switches::kIsolateSitesForTesting);
 

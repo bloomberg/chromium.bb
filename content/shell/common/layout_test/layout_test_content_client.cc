@@ -20,4 +20,12 @@ bool LayoutTestContentClient::CanSendWhileSwappedOut(
   }
 }
 
+bool LayoutTestContentClient::IsSupplementarySiteIsolationModeEnabled() {
+#if defined(OS_ANDROID)
+  return false;
+#else
+  return true;
+#endif
+}
+
 }  // namespace content

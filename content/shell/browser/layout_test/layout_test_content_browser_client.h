@@ -43,6 +43,8 @@ class LayoutTestContentBrowserClient : public ShellContentBrowserClient {
       content::BrowserContext* context,
       content::StoragePartition* partition,
       const storage::OptionalQuotaSettingsCallback& callback) override;
+  bool DoesSiteRequireDedicatedProcess(BrowserContext* browser_context,
+                                       const GURL& effective_site_url) override;
 
   PlatformNotificationService* GetPlatformNotificationService() override;
 

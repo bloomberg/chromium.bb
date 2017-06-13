@@ -6,6 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/pattern.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
@@ -147,6 +148,16 @@ void LayoutTestContentBrowserClient::GetQuotaSettings(
   // The 1GB limit is intended to give a large headroom to tests that need to
   // build up a large data set and issue many concurrent reads or writes.
   callback.Run(storage::GetHardCodedSettings(1024 * 1024 * 1024));
+}
+
+bool LayoutTestContentBrowserClient::DoesSiteRequireDedicatedProcess(
+    BrowserContext* browser_context,
+    const GURL& effective_site_url) {
+  if (ShellContentBrowserClient::DoesSiteRequireDedicatedProcess(
+          browser_context, effective_site_url))
+    return true;
+  url::Origin origin(effective_site_url);
+  return base::MatchPattern(origin.Serialize(), "*oopif.test");
 }
 
 PlatformNotificationService*
