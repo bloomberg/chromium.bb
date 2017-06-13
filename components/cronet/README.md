@@ -7,6 +7,9 @@ for both Android and iOS. On Android, Cronet offers its own Java asynchronous
 API as well as support for the [java.net.HttpURLConnection] API.
 This document gives a brief introduction to using these two Java APIs.
 
+For instructions on checking out and building Cronet for Android see
+[Cronet for Android build instructions](android/build_instructions.md).
+
 ### Basics
 First you will need to extend `UrlRequest.Callback` to handle
 events during the lifetime of a request. For example:
