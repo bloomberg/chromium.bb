@@ -18,14 +18,16 @@ const CGFloat kSubtitleFontSize = 14;
 }
 
 @implementation NotificationCenterURLButton {
-  base::mac::ScopedBlock<URLActionBlock> _openURLBlock;
+  URLActionBlock _openURLBlock;
   base::scoped_nsobject<NSString> _url;
   base::scoped_nsobject<UILabel> _subtitleLabel;
   base::scoped_nsobject<UIView> _bottomSeparator;
 }
 
 - (void)openURL:(id)sender {
-  _openURLBlock.get()(_url);
+  if (_openURLBlock) {
+    _openURLBlock(_url);
+  }
 }
 
 - (NSString*)unescapeURLString:(NSString*)urlString {
@@ -50,7 +52,7 @@ const CGFloat kSubtitleFontSize = 14;
                      inkColor:ui_util::InkColor()
                    titleColor:ui_util::TitleColor()];
   if (self) {
-    _openURLBlock.reset(block, base::scoped_policy::RETAIN);
+    _openURLBlock = [block copy];
     [self setContentVerticalAlignment:UIControlContentVerticalAlignmentTop];
 
     _url.reset([url copy]);

@@ -30,6 +30,7 @@ compile_plist("entitlements") {
 }
 
 ios_appex_bundle("today_extension") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "footer_label.h",
     "footer_label.mm",
