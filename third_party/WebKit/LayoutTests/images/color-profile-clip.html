@@ -23,11 +23,7 @@ var images = 0;
 
 function load() {
   if (++images == 3 && window.testRunner)
-    testRunner.setColorProfile('colorSpin', done);
-}
-
-function done() {
-  setTimeout(function() { testRunner.notifyDone() }, 0);
+    setTimeout(function() { testRunner.notifyDone() }, 0);
 }
 
 if (window.testRunner) {

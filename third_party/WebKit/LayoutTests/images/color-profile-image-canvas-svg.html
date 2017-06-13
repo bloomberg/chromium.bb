@@ -20,17 +20,13 @@ window.onload = function() {
   var image = document.querySelector('img');
 
   image.onload = function() {
-    runAfterLayoutAndPaint(window.testRunner ? changeColorProfile : profileChanged);
+    runAfterLayoutAndPaint(loadedImage);
   };
 
   image.src = 'resources/color-profile-image-data-url.svg';
 };
 
-function changeColorProfile() {
-  window.testRunner.setColorProfile('sRGB', profileChanged);
-}
-
-function profileChanged() {
+function loadedImage() {
   setTimeout(drawImageToCanvas, 0, document.querySelector('img'));
 }
 

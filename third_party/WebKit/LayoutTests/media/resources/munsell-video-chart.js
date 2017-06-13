@@ -5,21 +5,10 @@ function testImageColors(source, cyanInTargetGamut) {
 
   var image = document.querySelector('img');
   image.onload = function() {
-    runAfterLayoutAndPaint(window.testRunner ? changeColorProfile : profileChanged);
+    runAfterLayoutAndPaint(function () { setTimeout(drawImageToCanvas, 0) });
   };
 
   image.src = source;
-}
-
-function changeColorProfile() {
-  /* The test image contains the Munsell colors in a known color space. Convert
-   * the colors to sRGB color space and test the transformed color accuracy.
-   */
-  window.testRunner.setColorProfile('sRGB', profileChanged);
-}
-
-function profileChanged() {
-  setTimeout(drawImageToCanvas, 0);
 }
 
 function drawImageToCanvas() {

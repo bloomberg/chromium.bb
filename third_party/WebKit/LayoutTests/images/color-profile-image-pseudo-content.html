@@ -25,16 +25,8 @@
 <script>
 window.onload = function() {
   if (window.testRunner)
-    runAfterLayoutAndPaint(changeColorProfile);
+    runAfterLayoutAndPaint(function() { testRunner.notifyDone() });
 };
-
-function changeColorProfile() {
-  setTimeout(function() { testRunner.setColorProfile('colorSpin', done) }, 0);
-}
-
-function done() {
-  setTimeout(function() { testRunner.notifyDone() }, 0);
-}
 
 if (window.testRunner) {
   testRunner.dumpAsTextWithPixelResults();

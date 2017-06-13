@@ -18,19 +18,11 @@ window.onload = function() {
   var image = document.querySelector('img');
 
   image.onload = function() {
-    runAfterLayoutAndPaint(window.testRunner ? changeColorProfile : profileChanged);
+    runAfterLayoutAndPaint(drawImageToCanvas);
   };
 
   image.src = 'resources/red-at-12-oclock-with-color-profile.jpg';
 };
-
-function changeColorProfile() {
-  window.testRunner.setColorProfile('sRGB', profileChanged);
-}
-
-function profileChanged() {
-  setTimeout(drawImageToCanvas, 0);
-}
 
 function drawImageToCanvas() {
   var canvas = document.querySelector('canvas');

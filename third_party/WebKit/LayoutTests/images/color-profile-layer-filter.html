@@ -26,11 +26,7 @@ function load(element) {
 
 function next() {
   if (++images == 3 && window.testRunner)
-    setTimeout(function() { testRunner.setColorProfile('colorSpin', profileChanged) }, 100);
-}
-
-function profileChanged() {
-  setTimeout(function() { testRunner.notifyDone() }, 0);
+    setTimeout(function() { testRunner.notifyDone() }, 0);
 }
 
 if (window.testRunner) {

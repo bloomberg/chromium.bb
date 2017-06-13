@@ -23,12 +23,8 @@ window.onload = function() {
   document.querySelector('div').classList.add('reflection');
 
   if (window.testRunner)
-    runAfterLayoutAndPaint(changeColorProfile);
+    runAfterLayoutAndPaint(done);
 };
-
-function changeColorProfile() {
-  testRunner.setColorProfile('colorSpin', done);
-}
 
 function done() {
   runAfterLayoutAndPaint(function() { testRunner.notifyDone() });

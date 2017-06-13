@@ -31,15 +31,11 @@ if (window.testRunner) {
 window.onload = function() {
   if (window.testRunner) {
     document.querySelector('video').oncanplaythrough = function() {
-      testRunner.setColorProfile('colorSpin', done);
+      setTimeout(function() { testRunner.notifyDone() }, 0);
     };
   }
 
   setSrcByTagName('video', findMediaFile('video', 'content/test'));
 };
-
-function done() {
-  setTimeout(function() { testRunner.notifyDone() }, 0);
-}
 </script>
 </html>

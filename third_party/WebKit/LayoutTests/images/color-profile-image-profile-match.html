@@ -19,18 +19,7 @@ var images = 0;
 
 function load() {
   if (++images == 3 && window.testRunner)
-    runAfterLayoutAndPaint(changeColorProfile);
-}
-
-function changeColorProfile() {
-  /* The test images have an sRGB color profile and so should pass through
-   * color correction unchanged if the output device profile is sRGB.
-   */
-  testRunner.setColorProfile('sRGB', done);
-}
-
-function done() {
-  setTimeout(function() { testRunner.notifyDone() }, 0);
+    runAfterLayoutAndPaint(function() { testRunner.notifyDone() });
 }
 
 if (window.testRunner) {

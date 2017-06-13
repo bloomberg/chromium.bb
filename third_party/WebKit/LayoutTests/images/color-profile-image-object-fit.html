@@ -24,11 +24,7 @@ var images = 0;
 
 function load() {
   if (++images == 2 && window.testRunner)
-    setTimeout(function() { testRunner.setColorProfile('colorSpin', done) }, 200);
-}
-
-function done() {
-  setTimeout(function() { testRunner.notifyDone() }, 0);
+    setTimeout(function() { testRunner.notifyDone() }, 0);
 }
 
 if (window.testRunner) {
