@@ -9,6 +9,7 @@ import android.content.DialogInterface;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
+import android.os.SystemClock;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.LruCache;
@@ -30,6 +31,7 @@ import org.chromium.ui.PhotoPickerListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A class for keeping track of common data associated with showing photos in
@@ -111,6 +113,9 @@ public class PickerCategoryView extends RelativeLayout
 
     // A worker task for asynchronously enumerating files off the main thread.
     private FileEnumWorkerTask mWorkerTask;
+
+    // The timestap for the start of the enumeration of files on disk.
+    private long mEnumStartTime;
 
     // Whether the connection to the service has been established.
     private boolean mServiceReady;
@@ -215,6 +220,15 @@ public class PickerCategoryView extends RelativeLayout
 
     @Override
     public void filesEnumeratedCallback(List<PickerBitmap> files) {
+        // Calculate the rate of files enumerated per tenth of a second.
+        long elapsedTimeMs = SystemClock.elapsedRealtime() - mEnumStartTime;
+        int rate = (int) (100 * files.size() / elapsedTimeMs);
+        RecordHistogram.recordTimesHistogram(
+                "Android.PhotoPicker.EnumerationTime", elapsedTimeMs, TimeUnit.MILLISECONDS);
+        RecordHistogram.recordCustomCountHistogram(
+                "Android.PhotoPicker.EnumeratedFiles", files.size(), 1, 10000, 50);
+        RecordHistogram.recordCount1000Histogram("Android.PhotoPicker.EnumeratedRate", rate);
+
         mPickerBitmaps = files;
         processBitmaps();
     }
@@ -350,6 +364,7 @@ public class PickerCategoryView extends RelativeLayout
             mWorkerTask.cancel(true);
         }
 
+        mEnumStartTime = SystemClock.elapsedRealtime();
         mWorkerTask = new FileEnumWorkerTask(this, new MimeTypeFileFilter(mMimeTypes));
         mWorkerTask.execute();
     }

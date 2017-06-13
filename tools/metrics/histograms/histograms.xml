@@ -993,6 +993,34 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Android.PhotoPicker.EnumeratedFiles" units="Files">
+  <owner>finnur@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    Measures the total number of files returned from the enumeration operation.
+    Measured once at the end of the enumeration operation.
+  </summary>
+</histogram>
+
+<histogram name="Android.PhotoPicker.EnumeratedRate"
+    units="Files per 10th of a second">
+  <owner>finnur@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    Measures the enumeration rate (files per tenths of a second). Measured once
+    at the end of the enumeration operation.
+  </summary>
+</histogram>
+
+<histogram name="Android.PhotoPicker.EnumerationTime" units="ms">
+  <owner>finnur@chromium.org</owner>
+  <owner>twellington@chromium.org</owner>
+  <summary>
+    Measures the amount of time the BitmapScaler spent enumerating files on
+    disk. Measured once at the end of the enumeration operation.
+  </summary>
+</histogram>
+
 <histogram name="Android.PhotoPicker.ImageByteCount" units="KB">
   <owner>finnur@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
