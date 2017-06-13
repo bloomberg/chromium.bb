@@ -7,7 +7,6 @@
 #include "core/layout/LayoutBlock.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
-#include "core/layout/ng/ng_layout_opportunity_iterator.h"
 
 namespace blink {
 
@@ -50,8 +49,7 @@ NGConstraintSpace::NGConstraintSpace(
       margin_strut_(margin_strut),
       bfc_offset_(bfc_offset),
       exclusions_(exclusions),
-      clearance_offset_(clearance_offset),
-      layout_opp_iter_(nullptr) {
+      clearance_offset_(clearance_offset) {
   unpositioned_floats_.swap(unpositioned_floats);
 }
 
@@ -130,24 +128,10 @@ RefPtr<NGConstraintSpace> NGConstraintSpace::CreateFromLayoutObject(
 
 void NGConstraintSpace::AddExclusion(const NGExclusion& exclusion) {
   exclusions_->Add(exclusion);
-  // Invalidate the Layout Opportunity Iterator.
-  layout_opp_iter_.reset();
 }
 
 NGFragmentationType NGConstraintSpace::BlockFragmentationType() const {
   return static_cast<NGFragmentationType>(block_direction_fragmentation_type_);
-}
-
-NGLayoutOpportunityIterator* NGConstraintSpace::LayoutOpportunityIterator(
-    const NGLogicalOffset& iter_offset) {
-  if (layout_opp_iter_ && layout_opp_iter_->Offset() != iter_offset)
-    layout_opp_iter_.reset();
-
-  if (!layout_opp_iter_) {
-    layout_opp_iter_ = WTF::MakeUnique<NGLayoutOpportunityIterator>(
-        Exclusions().get(), AvailableSize(), iter_offset);
-  }
-  return layout_opp_iter_.get();
 }
 
 bool NGConstraintSpace::operator==(const NGConstraintSpace& other) const {
