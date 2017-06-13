@@ -34,7 +34,7 @@ enum class DoodleType {
   SLIDESHOW,
 };
 
-// Information about a Doodle image. By default the dimensions are 0.
+// Information about a Doodle image.
 struct DoodleImage {
   DoodleImage(const GURL& url);
   ~DoodleImage();
@@ -49,10 +49,6 @@ struct DoodleImage {
   bool operator!=(const DoodleImage& other) const;
 
   GURL url;
-  int height;
-  int width;
-  bool is_animated_gif;
-  bool is_cta;
 
   // Copying and assignment allowed.
 };
@@ -75,13 +71,11 @@ struct DoodleConfig {
 
   DoodleType doodle_type;
   std::string alt_text;
-  std::string interactive_html;
 
   GURL target_url;
 
   DoodleImage large_image;
   base::Optional<DoodleImage> large_cta_image;
-  base::Optional<DoodleImage> transparent_large_image;
 
   // Copying and assignment allowed.
 };

@@ -200,7 +200,6 @@ TEST_F(DoodleFetcherImplTest, ResponseContainsValidBaseInformation) {
       "ddljson": {
         "alt_text":"Mouseover Text",
         "doodle_type":"SIMPLE",
-        "interactive_html":"\u003cstyle\u003e\u003c\/style\u003e",
         "target_url":"/search?q\u003dtest\u0026sa\u003dX\u0026ved\u003d0ahUKEw",
         "time_to_live_ms":55000,
         "large_image": {
@@ -218,11 +217,8 @@ TEST_F(DoodleFetcherImplTest, ResponseContainsValidBaseInformation) {
                          "0ahUKEw")));
   EXPECT_THAT(config.doodle_type, Eq(DoodleType::SIMPLE));
   EXPECT_THAT(config.alt_text, Eq("Mouseover Text"));
-  EXPECT_THAT(config.interactive_html,
-              Eq("\u003cstyle\u003e\u003c/style\u003e"));
 
   EXPECT_FALSE(config.large_cta_image.has_value());
-  EXPECT_FALSE(config.transparent_large_image.has_value());
 
   EXPECT_THAT(time_to_live, Eq(base::TimeDelta::FromMilliseconds(55000)));
 }
@@ -310,24 +306,13 @@ TEST_F(DoodleFetcherImplTest, ResponseContainsExactlyTheSampleImages) {
         "time_to_live_ms":55000,
         "large_image": {
           "height":225,
-          "is_animated_gif":true,
-          "is_cta":false,
           "url":"/logos/doodles/2015/new-years-eve-2015-59854387958251-hp.gif",
           "width":489
         },
         "large_cta_image": {
           "height":225,
-          "is_animated_gif":true,
-          "is_cta":true,
           "url":"/logos/doodles/2015/new-years-eve-2015-59854387958251-cta.gif",
           "width":489
-        },
-        "transparent_large_image": {
-          "height":225,
-          "is_animated_gif":false,
-          "is_cta":false,
-          "url":"/logos/doodles/2015/new-years-eve-2015-59854387958251-thp.png",
-          "width":510
         }
       }})json");
 
@@ -339,30 +324,12 @@ TEST_F(DoodleFetcherImplTest, ResponseContainsExactlyTheSampleImages) {
   EXPECT_THAT(config.large_image.url,
               Eq(Resolve("/logos/doodles/2015/new-years-eve-2015-5985438795"
                          "8251-hp.gif")));
-  EXPECT_THAT(config.large_image.width, Eq(489));
-  EXPECT_THAT(config.large_image.height, Eq(225));
-  EXPECT_TRUE(config.large_image.is_animated_gif);
-  EXPECT_FALSE(config.large_image.is_cta);
-
-  ASSERT_TRUE(config.transparent_large_image.has_value());
-  EXPECT_TRUE(config.transparent_large_image->url.is_valid());
-  EXPECT_THAT(config.transparent_large_image->url,
-              Eq(Resolve("/logos/doodles/2015/new-years-eve-2015-5985438795"
-                         "8251-thp.png")));
-  EXPECT_THAT(config.transparent_large_image->width, Eq(510));
-  EXPECT_THAT(config.transparent_large_image->height, Eq(225));
-  EXPECT_FALSE(config.transparent_large_image->is_animated_gif);
-  EXPECT_FALSE(config.transparent_large_image->is_cta);
 
   ASSERT_TRUE(config.large_cta_image.has_value());
   EXPECT_TRUE(config.large_cta_image->url.is_valid());
   EXPECT_THAT(config.large_cta_image->url,
               Eq(Resolve("/logos/doodles/2015/new-years-eve-2015-5985438795"
                          "8251-cta.gif")));
-  EXPECT_THAT(config.large_cta_image->width, Eq(489));
-  EXPECT_THAT(config.large_cta_image->height, Eq(225));
-  EXPECT_TRUE(config.large_cta_image->is_animated_gif);
-  EXPECT_TRUE(config.large_cta_image->is_cta);
 }
 
 TEST_F(DoodleFetcherImplTest, RespondsToMultipleRequestsWithSameFetcher) {
