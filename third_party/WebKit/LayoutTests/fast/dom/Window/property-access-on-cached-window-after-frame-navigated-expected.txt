@@ -146,7 +146,6 @@ PASS oldChildWindow.onsearch is newChildWindow.onsearch
 PASS oldChildWindow.onseeked is newChildWindow.onseeked
 PASS oldChildWindow.onseeking is newChildWindow.onseeking
 PASS oldChildWindow.onselect is newChildWindow.onselect
-PASS oldChildWindow.onshow is newChildWindow.onshow
 PASS oldChildWindow.onstalled is newChildWindow.onstalled
 PASS oldChildWindow.onstorage is newChildWindow.onstorage
 PASS oldChildWindow.onsubmit is newChildWindow.onsubmit

@@ -571,17 +571,6 @@ PASS Set Document.onselect
 PASS Enumerate Document.onselect 
 PASS Set Window.onselect 
 PASS Enumerate Window.onselect 
-PASS No Element.onshow 
-PASS Set HTMLElement.onshow 
-PASS Enumerate HTMLElement.onshow 
-PASS Reflect HTMLElement.onshow 
-PASS Set SVGElement.onshow 
-PASS Enumerate SVGElement.onshow 
-PASS Reflect SVGElement.onshow 
-PASS Set Document.onshow 
-PASS Enumerate Document.onshow 
-PASS Set Window.onshow 
-PASS Enumerate Window.onshow 
 PASS No Element.onsort 
 FAIL Set HTMLElement.onsort assert_equals: Initially null expected (object) null but got (undefined) undefined
 FAIL Enumerate HTMLElement.onsort assert_true: expected true got undefined

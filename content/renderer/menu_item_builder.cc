@@ -14,7 +14,6 @@ MenuItem MenuItemBuilder::Build(const blink::WebMenuItemInfo& item) {
   MenuItem result;
 
   result.label = item.label.Utf16();
-  result.icon = item.icon.Utf16();
   result.tool_tip = item.tool_tip.Utf16();
   result.type = static_cast<MenuItem::Type>(item.type);
   result.action = item.action;
