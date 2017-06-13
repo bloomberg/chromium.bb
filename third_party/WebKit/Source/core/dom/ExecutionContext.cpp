@@ -215,7 +215,9 @@ void ExecutionContext::ParseAndSetReferrerPolicy(const String& policies,
                  ? "'always', 'default', 'never', 'origin-when-crossorigin', "
                  : "") +
             "'no-referrer', 'no-referrer-when-downgrade', 'origin', "
-            "'origin-when-cross-origin', or 'unsafe-url'. The referrer policy "
+            "'origin-when-cross-origin', 'same-origin', 'strict-origin', "
+            "'strict-origin-when-cross-origin', or 'unsafe-url'. The referrer "
+            "policy "
             "has been left unchanged."));
     return;
   }

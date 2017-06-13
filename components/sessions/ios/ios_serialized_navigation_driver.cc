@@ -7,6 +7,7 @@
 #include "base/memory/singleton.h"
 #include "components/sessions/core/serialized_navigation_entry.h"
 #include "ios/web/public/referrer.h"
+#include "ios/web/public/referrer_util.h"
 
 namespace sessions {
 
@@ -53,29 +54,8 @@ void IOSSerializedNavigationDriver::Sanitize(
       NOTREACHED();
       referrer.policy = web::ReferrerPolicyNever;
     }
-    bool is_downgrade = referrer.url.SchemeIsCryptographic() &&
-                        !navigation->virtual_url_.SchemeIsCryptographic();
-    switch (referrer.policy) {
-      case web::ReferrerPolicyDefault:
-        if (is_downgrade)
-          referrer.url = GURL();
-        break;
-      case web::ReferrerPolicyNoReferrerWhenDowngrade:
-        if (is_downgrade)
-          referrer.url = GURL();
-      case web::ReferrerPolicyAlways:
-        break;
-      case web::ReferrerPolicyNever:
-        referrer.url = GURL();
-        break;
-      case web::ReferrerPolicyOrigin:
-        referrer.url = referrer.url.GetOrigin();
-        break;
-      case web::ReferrerPolicyOriginWhenCrossOrigin:
-        if (navigation->virtual_url_.GetOrigin() != referrer.url.GetOrigin())
-          referrer.url = referrer.url.GetOrigin();
-        break;
-    }
+    referrer.url = GURL(
+        ReferrerHeaderValueForNavigation(navigation->virtual_url_, referrer));
   }
 
   // Reset the referrer if it has changed.

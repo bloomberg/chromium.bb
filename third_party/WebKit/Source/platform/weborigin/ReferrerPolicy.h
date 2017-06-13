@@ -47,8 +47,16 @@ enum ReferrerPolicy {
   kReferrerPolicyOrigin,
   // https://w3c.github.io/webappsec/specs/referrer-policy/#referrer-policy-state-origin-when-cross-origin
   kReferrerPolicyOriginWhenCrossOrigin,
-  // Not spec conformant. set only when reduced-referrer-granularity is enabled.
+  // https://w3c.github.io/webappsec-referrer-policy/#referrer-policy-strict-origin-when-cross-origin
+  // Also used as the default policy when reduced-referrer-grnaularity is
+  // enabled (not spec conformant).
+  // TODO(estark): rename to kReferrerPolicyStrictOriginWhenCrossOrigin to
+  // match spec.
   kReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin,
+  // https://w3c.github.io/webappsec-referrer-policy/#referrer-policy-same-origin
+  kReferrerPolicySameOrigin,
+  // https://w3c.github.io/webappsec-referrer-policy/#referrer-policy-strict-origin
+  kReferrerPolicyStrictOrigin,
 };
 
 }  // namespace blink

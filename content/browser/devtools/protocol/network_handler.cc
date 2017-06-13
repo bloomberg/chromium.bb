@@ -320,7 +320,7 @@ String referrerPolicy(blink::WebReferrerPolicy referrer_policy) {
       if (base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kReducedReferrerGranularity)) {
         return Network::Request::ReferrerPolicyEnum::
-            NoReferrerWhenDowngradeOriginWhenCrossOrigin;
+            StrictOriginWhenCrossOrigin;
       } else {
         return Network::Request::ReferrerPolicyEnum::NoReferrerWhenDowngrade;
       }
@@ -332,9 +332,12 @@ String referrerPolicy(blink::WebReferrerPolicy referrer_policy) {
       return Network::Request::ReferrerPolicyEnum::Origin;
     case blink::kWebReferrerPolicyOriginWhenCrossOrigin:
       return Network::Request::ReferrerPolicyEnum::OriginWhenCrossOrigin;
+    case blink::kWebReferrerPolicySameOrigin:
+      return Network::Request::ReferrerPolicyEnum::SameOrigin;
+    case blink::kWebReferrerPolicyStrictOrigin:
+      return Network::Request::ReferrerPolicyEnum::StrictOrigin;
     case blink::kWebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin:
-      return Network::Request::ReferrerPolicyEnum::
-          NoReferrerWhenDowngradeOriginWhenCrossOrigin;
+      return Network::Request::ReferrerPolicyEnum::StrictOriginWhenCrossOrigin;
   }
   NOTREACHED();
   return Network::Request::ReferrerPolicyEnum::NoReferrerWhenDowngrade;
@@ -346,11 +349,9 @@ String referrerPolicy(net::URLRequest::ReferrerPolicy referrer_policy) {
       return Network::Request::ReferrerPolicyEnum::NoReferrerWhenDowngrade;
     case net::URLRequest::
         REDUCE_REFERRER_GRANULARITY_ON_TRANSITION_CROSS_ORIGIN:
-      return Network::Request::ReferrerPolicyEnum::
-          NoReferrerWhenDowngradeOriginWhenCrossOrigin;
+      return Network::Request::ReferrerPolicyEnum::StrictOriginWhenCrossOrigin;
     case net::URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN:
-      return Network::Request::ReferrerPolicyEnum::
-          NoReferrerWhenDowngradeOriginWhenCrossOrigin;
+      return Network::Request::ReferrerPolicyEnum::OriginWhenCrossOrigin;
     case net::URLRequest::NEVER_CLEAR_REFERRER:
       return Network::Request::ReferrerPolicyEnum::Origin;
     case net::URLRequest::ORIGIN:

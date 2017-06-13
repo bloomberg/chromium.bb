@@ -704,6 +704,22 @@ TEST_F(HTMLPreloadScannerTest, testReferrerPolicy) {
        "bla.gif", "http://example.test/", Resource::kImage, 0,
        kReferrerPolicyOriginWhenCrossOrigin, nullptr},
       {"http://example.test",
+       "<link rel=preload as=image referrerpolicy='same-origin' "
+       "href='bla.gif'/>",
+       "bla.gif", "http://example.test/", Resource::kImage, 0,
+       kReferrerPolicySameOrigin, nullptr},
+      {"http://example.test",
+       "<link rel=preload as=image referrerpolicy='strict-origin' "
+       "href='bla.gif'/>",
+       "bla.gif", "http://example.test/", Resource::kImage, 0,
+       kReferrerPolicyStrictOrigin, nullptr},
+      {"http://example.test",
+       "<link rel=preload as=image "
+       "referrerpolicy='strict-origin-when-cross-origin' "
+       "href='bla.gif'/>",
+       "bla.gif", "http://example.test/", Resource::kImage, 0,
+       kReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin, nullptr},
+      {"http://example.test",
        "<link rel='stylesheet' href='sheet.css' type='text/css'>", "sheet.css",
        "http://example.test/", Resource::kCSSStyleSheet, 0,
        kReferrerPolicyDefault, nullptr},

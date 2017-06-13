@@ -726,6 +726,8 @@ STATIC_ASSERT_ENUM(kWebReferrerPolicyNever, kReferrerPolicyNever);
 STATIC_ASSERT_ENUM(kWebReferrerPolicyOrigin, kReferrerPolicyOrigin);
 STATIC_ASSERT_ENUM(kWebReferrerPolicyOriginWhenCrossOrigin,
                    kReferrerPolicyOriginWhenCrossOrigin);
+STATIC_ASSERT_ENUM(kWebReferrerPolicySameOrigin, kReferrerPolicySameOrigin);
+STATIC_ASSERT_ENUM(kWebReferrerPolicyStrictOrigin, kReferrerPolicyStrictOrigin);
 STATIC_ASSERT_ENUM(
     kWebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin,
     kReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin);

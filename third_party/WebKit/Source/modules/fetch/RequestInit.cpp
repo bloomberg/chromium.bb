@@ -91,11 +91,13 @@ RequestInit::RequestInit(ExecutionContext* context,
         referrer.referrer_policy = kReferrerPolicyOrigin;
       } else if (referrer_policy_string == "origin-when-cross-origin") {
         referrer.referrer_policy = kReferrerPolicyOriginWhenCrossOrigin;
+      } else if (referrer_policy_string == "same-origin") {
+        referrer.referrer_policy = kReferrerPolicySameOrigin;
+      } else if (referrer_policy_string == "strict-origin") {
+        referrer.referrer_policy = kReferrerPolicyStrictOrigin;
       } else if (referrer_policy_string == "unsafe-url") {
         referrer.referrer_policy = kReferrerPolicyAlways;
-      } else if (referrer_policy_string ==
-                     "no-referrer-when-downgrade-origin-when-cross-origin" &&
-                 RuntimeEnabledFeatures::ReducedReferrerGranularityEnabled()) {
+      } else if (referrer_policy_string == "strict-origin-when-cross-origin") {
         referrer.referrer_policy =
             kReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin;
       } else {

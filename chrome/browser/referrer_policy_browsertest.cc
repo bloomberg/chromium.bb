@@ -90,6 +90,10 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
         return "origin";
       case blink::kWebReferrerPolicyOriginWhenCrossOrigin:
         return "origin-when-crossorigin";
+      case blink::kWebReferrerPolicySameOrigin:
+        return "same-origin";
+      case blink::kWebReferrerPolicyStrictOrigin:
+        return "strict-origin";
       case blink::kWebReferrerPolicyAlways:
         return "always";
       case blink::kWebReferrerPolicyNever:
@@ -597,6 +601,42 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest,
                   REGULAR_LINK, SERVER_REDIRECT_FROM_HTTP_TO_HTTP,
                   WindowOpenDisposition::CURRENT_TAB,
                   blink::WebMouseEvent::Button::kLeft, EXPECT_FULL_REFERRER);
+}
+
+// Same origin
+
+IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest,
+                       HttpLeftClickHTTPRedirectToHTTPSameOrigin) {
+  RunReferrerTest(blink::kWebReferrerPolicySameOrigin, START_ON_HTTP,
+                  REGULAR_LINK, SERVER_REDIRECT_FROM_HTTP_TO_HTTP,
+                  WindowOpenDisposition::CURRENT_TAB,
+                  blink::WebMouseEvent::Button::kLeft, EXPECT_FULL_REFERRER);
+}
+
+IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest,
+                       HttpLeftClickHTTPRedirectToHTTPSSameOrigin) {
+  RunReferrerTest(blink::kWebReferrerPolicySameOrigin, START_ON_HTTPS,
+                  REGULAR_LINK, SERVER_REDIRECT_FROM_HTTPS_TO_HTTP,
+                  WindowOpenDisposition::CURRENT_TAB,
+                  blink::WebMouseEvent::Button::kLeft, EXPECT_EMPTY_REFERRER);
+}
+
+// Strict origin
+
+IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest,
+                       HttpLeftClickHTTPRedirectToHTTPStrictOrigin) {
+  RunReferrerTest(
+      blink::kWebReferrerPolicyStrictOrigin, START_ON_HTTP, REGULAR_LINK,
+      SERVER_REDIRECT_FROM_HTTP_TO_HTTP, WindowOpenDisposition::CURRENT_TAB,
+      blink::WebMouseEvent::Button::kLeft, EXPECT_ORIGIN_AS_REFERRER);
+}
+
+IN_PROC_BROWSER_TEST_F(ReferrerPolicyTest,
+                       HttpLeftClickHTTPSRedirectToHTTPStrictOrigin) {
+  RunReferrerTest(blink::kWebReferrerPolicyStrictOrigin, START_ON_HTTPS,
+                  REGULAR_LINK, SERVER_REDIRECT_FROM_HTTPS_TO_HTTP,
+                  WindowOpenDisposition::CURRENT_TAB,
+                  blink::WebMouseEvent::Button::kLeft, EXPECT_EMPTY_REFERRER);
 }
 
 // Reduced 'referer' granularity flag tests.

@@ -186,6 +186,10 @@ blink::WebReferrerPolicy NetReferrerPolicyToBlinkReferrerPolicy(
       return blink::kWebReferrerPolicyAlways;
     case net::URLRequest::ORIGIN:
       return blink::kWebReferrerPolicyOrigin;
+    case net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_CROSS_ORIGIN:
+      return blink::kWebReferrerPolicySameOrigin;
+    case net::URLRequest::ORIGIN_CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE:
+      return blink::kWebReferrerPolicyStrictOrigin;
     case net::URLRequest::NO_REFERRER:
       return blink::kWebReferrerPolicyNever;
     case net::URLRequest::MAX_REFERRER_POLICY:

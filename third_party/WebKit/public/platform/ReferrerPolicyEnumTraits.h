@@ -29,6 +29,10 @@ struct EnumTraits<::blink::mojom::ReferrerPolicy, ::blink::WebReferrerPolicy> {
         return ::blink::mojom::ReferrerPolicy::ORIGIN;
       case ::blink::kWebReferrerPolicyOriginWhenCrossOrigin:
         return ::blink::mojom::ReferrerPolicy::ORIGIN_WHEN_CROSS_ORIGIN;
+      case ::blink::kWebReferrerPolicySameOrigin:
+        return ::blink::mojom::ReferrerPolicy::SAME_ORIGIN;
+      case ::blink::kWebReferrerPolicyStrictOrigin:
+        return ::blink::mojom::ReferrerPolicy::STRICT_ORIGIN;
       case ::blink::
           kWebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin:
         return ::blink::mojom::ReferrerPolicy::
@@ -59,6 +63,12 @@ struct EnumTraits<::blink::mojom::ReferrerPolicy, ::blink::WebReferrerPolicy> {
         return true;
       case ::blink::mojom::ReferrerPolicy::ORIGIN_WHEN_CROSS_ORIGIN:
         *out = ::blink::kWebReferrerPolicyOriginWhenCrossOrigin;
+        return true;
+      case ::blink::mojom::ReferrerPolicy::SAME_ORIGIN:
+        *out = ::blink::kWebReferrerPolicySameOrigin;
+        return true;
+      case ::blink::mojom::ReferrerPolicy::STRICT_ORIGIN:
+        *out = ::blink::kWebReferrerPolicyStrictOrigin;
         return true;
       case ::blink::mojom::ReferrerPolicy::
           NO_REFERRER_WHEN_DOWNGRADE_ORIGIN_WHEN_CROSS_ORIGIN:

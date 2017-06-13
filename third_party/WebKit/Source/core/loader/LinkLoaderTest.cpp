@@ -255,6 +255,18 @@ constexpr PreloadTestParams kPreloadTestParams[] = {
      WebURLRequest::kRequestContextImage, true, true,
      kReferrerPolicyOriginWhenCrossOrigin},
     {"http://example.test/cat.gif", "image", "image/gif", "",
+     kReferrerPolicySameOrigin, kResourceLoadPriorityLow,
+     WebURLRequest::kRequestContextImage, true, true,
+     kReferrerPolicySameOrigin},
+    {"http://example.test/cat.gif", "image", "image/gif", "",
+     kReferrerPolicyStrictOrigin, kResourceLoadPriorityLow,
+     WebURLRequest::kRequestContextImage, true, true,
+     kReferrerPolicyStrictOrigin},
+    {"http://example.test/cat.gif", "image", "image/gif", "",
+     kReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin,
+     kResourceLoadPriorityLow, WebURLRequest::kRequestContextImage, true, true,
+     kReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin},
+    {"http://example.test/cat.gif", "image", "image/gif", "",
      kReferrerPolicyNever, kResourceLoadPriorityLow,
      WebURLRequest::kRequestContextImage, true, true, kReferrerPolicyNever}};
 

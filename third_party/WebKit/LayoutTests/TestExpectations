@@ -1822,11 +1822,6 @@ crbug.com/694525 external/wpt/content-security-policy/reporting [ Skip ]
 crbug.com/694525 external/wpt/content-security-policy/script-src/script-src-1_10.html [ Skip ]
 crbug.com/694525 external/wpt/content-security-policy/script-src/script-src-strict_dynamic_in_img-src.html [ Skip ]
 
-# These policies are not implemented yet.
-crbug.com/627968 external/wpt/referrer-policy/same-origin/ [ Skip ]
-crbug.com/627968 external/wpt/referrer-policy/strict-origin/ [ Skip ]
-crbug.com/627968 external/wpt/referrer-policy/strict-origin-when-cross-origin/ [ Skip ]
-
 # These wpt/mixed-content tests have console errors that are different on different test runs.
 crbug.com/679742 external/wpt/mixed-content/allowed/http-csp/same-host-wss/websocket-request/top-level/keep-scheme-redirect/websocket-allowed.https.html [ Failure ]
 crbug.com/679742 external/wpt/mixed-content/allowed/meta-csp/same-host-wss/websocket-request/top-level/no-redirect/websocket-allowed.https.html [ Failure ]

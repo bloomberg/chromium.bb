@@ -61,6 +61,17 @@ Referrer Referrer::SanitizeForRequest(const GURL& request,
       if (request.GetOrigin() != sanitized_referrer.url.GetOrigin())
         sanitized_referrer.url = sanitized_referrer.url.GetOrigin();
       break;
+    case blink::kWebReferrerPolicyStrictOrigin:
+      if (is_downgrade) {
+        sanitized_referrer.url = GURL();
+      } else {
+        sanitized_referrer.url = sanitized_referrer.url.GetOrigin();
+      }
+      break;
+    case blink::kWebReferrerPolicySameOrigin:
+      if (request.GetOrigin() != sanitized_referrer.url.GetOrigin())
+        sanitized_referrer.url = GURL();
+      break;
     case blink::kWebReferrerPolicyNoReferrerWhenDowngradeOriginWhenCrossOrigin:
       if (is_downgrade) {
         sanitized_referrer.url = GURL();
@@ -101,6 +112,11 @@ net::URLRequest::ReferrerPolicy Referrer::ReferrerPolicyForUrlRequest(
           CLEAR_REFERRER_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
     case blink::kWebReferrerPolicyOriginWhenCrossOrigin:
       return net::URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN;
+    case blink::kWebReferrerPolicySameOrigin:
+      return net::URLRequest::CLEAR_REFERRER_ON_TRANSITION_CROSS_ORIGIN;
+    case blink::kWebReferrerPolicyStrictOrigin:
+      return net::URLRequest::
+          ORIGIN_CLEAR_ON_TRANSITION_FROM_SECURE_TO_INSECURE;
     case blink::kWebReferrerPolicyDefault:
       if (base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kReducedReferrerGranularity)) {
