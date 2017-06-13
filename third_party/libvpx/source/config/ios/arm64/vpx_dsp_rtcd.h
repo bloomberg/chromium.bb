@@ -214,7 +214,8 @@ void vpx_dc_top_predictor_8x8_neon(uint8_t *dst, ptrdiff_t y_stride, const uint8
 #define vpx_dc_top_predictor_8x8 vpx_dc_top_predictor_8x8_neon
 
 void vpx_fdct16x16_c(const int16_t *input, tran_low_t *output, int stride);
-#define vpx_fdct16x16 vpx_fdct16x16_c
+void vpx_fdct16x16_neon(const int16_t *input, tran_low_t *output, int stride);
+#define vpx_fdct16x16 vpx_fdct16x16_neon
 
 void vpx_fdct16x16_1_c(const int16_t *input, tran_low_t *output, int stride);
 #define vpx_fdct16x16_1 vpx_fdct16x16_1_c

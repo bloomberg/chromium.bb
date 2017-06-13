@@ -214,7 +214,8 @@ void vpx_dc_top_predictor_8x8_neon(uint8_t *dst, ptrdiff_t y_stride, const uint8
 RTCD_EXTERN void (*vpx_dc_top_predictor_8x8)(uint8_t *dst, ptrdiff_t y_stride, const uint8_t *above, const uint8_t *left);
 
 void vpx_fdct16x16_c(const int16_t *input, tran_low_t *output, int stride);
-#define vpx_fdct16x16 vpx_fdct16x16_c
+void vpx_fdct16x16_neon(const int16_t *input, tran_low_t *output, int stride);
+RTCD_EXTERN void (*vpx_fdct16x16)(const int16_t *input, tran_low_t *output, int stride);
 
 void vpx_fdct16x16_1_c(const int16_t *input, tran_low_t *output, int stride);
 #define vpx_fdct16x16_1 vpx_fdct16x16_1_c
@@ -918,6 +919,8 @@ static void setup_rtcd_internal(void)
     if (flags & HAS_NEON) vpx_dc_top_predictor_4x4 = vpx_dc_top_predictor_4x4_neon;
     vpx_dc_top_predictor_8x8 = vpx_dc_top_predictor_8x8_c;
     if (flags & HAS_NEON) vpx_dc_top_predictor_8x8 = vpx_dc_top_predictor_8x8_neon;
+    vpx_fdct16x16 = vpx_fdct16x16_c;
+    if (flags & HAS_NEON) vpx_fdct16x16 = vpx_fdct16x16_neon;
     vpx_fdct4x4 = vpx_fdct4x4_c;
     if (flags & HAS_NEON) vpx_fdct4x4 = vpx_fdct4x4_neon;
     vpx_fdct8x8 = vpx_fdct8x8_c;
