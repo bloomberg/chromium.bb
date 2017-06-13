@@ -72,10 +72,6 @@ void ComponentCloudPolicyUpdater::UpdateExternalPolicy(
   if (!cached_hash.empty() && data.secure_hash() == cached_hash)
     return;
 
-  // TODO(joaodasilva): implement the other two auth methods.
-  if (data.download_auth_method() != em::ExternalPolicyData::NONE)
-    return;
-
   const std::string key = NamespaceToKey(ns);
 
   if (data.download_url().empty() || !data.has_secure_hash()) {
