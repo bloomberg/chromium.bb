@@ -8,6 +8,7 @@
 #include "base/strings/string_util.h"
 #include "base/timer/elapsed_timer.h"
 #include "content/public/renderer/render_frame.h"
+#include "content/public/renderer/render_view.h"
 #include "extensions/common/api/messaging/message.h"
 #include "extensions/common/api/messaging/port_id.h"
 #include "extensions/common/constants.h"
@@ -333,6 +334,25 @@ void ExtensionFrameHelper::OnExtensionMessageInvoke(
 
 void ExtensionFrameHelper::OnDestruct() {
   delete this;
+}
+
+void ExtensionFrameHelper::DraggableRegionsChanged() {
+  if (!render_frame()->IsMainFrame())
+    return;
+
+  blink::WebVector<blink::WebDraggableRegion> webregions =
+      render_frame()->GetWebFrame()->GetDocument().DraggableRegions();
+  std::vector<DraggableRegion> regions;
+  for (blink::WebDraggableRegion& webregion : webregions) {
+    render_frame()->GetRenderView()->ConvertViewportToWindowViaWidget(
+        &webregion.bounds);
+
+    regions.push_back(DraggableRegion());
+    DraggableRegion& region = regions.back();
+    region.bounds = webregion.bounds;
+    region.draggable = webregion.draggable;
+  }
+  Send(new ExtensionHostMsg_UpdateDraggableRegions(routing_id(), regions));
 }
 
 }  // namespace extensions

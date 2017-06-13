@@ -236,6 +236,8 @@ class LocalFrameClientImpl final : public LocalFrameClient {
 
   service_manager::InterfaceProvider* GetInterfaceProvider() override;
 
+  void AnnotatedRegionsChanged() override;
+
  private:
   explicit LocalFrameClientImpl(WebLocalFrameBase*);
 

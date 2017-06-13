@@ -124,6 +124,9 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   // Called when script in the page calls window.print().
   virtual void ScriptedPrint(bool user_initiated) {}
 
+  // Called when draggable regions change.
+  virtual void DraggableRegionsChanged() {}
+
   // IPC::Listener implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
 

@@ -208,7 +208,6 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
 
   void DidAssociateFormControlsAfterLoad(LocalFrame*) override {}
 
-  void AnnotatedRegionsChanged() override {}
   String AcceptLanguages() override;
 
   CompositorWorkerProxyClient* CreateCompositorWorkerProxyClient(
@@ -372,6 +371,8 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
     // TODO(yhirano): Stop using Platform::CreateURLLoader() here.
     return Platform::Current()->CreateURLLoader();
   }
+
+  void AnnotatedRegionsChanged() override {}
 
  protected:
   EmptyLocalFrameClient() {}

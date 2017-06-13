@@ -969,11 +969,6 @@ void ChromeClientImpl::RequestPointerUnlock(LocalFrame* frame) {
       ->RequestPointerUnlock();
 }
 
-void ChromeClientImpl::AnnotatedRegionsChanged() {
-  if (WebViewClient* client = web_view_->Client())
-    client->DraggableRegionsChanged();
-}
-
 void ChromeClientImpl::DidAssociateFormControlsAfterLoad(LocalFrame* frame) {
   WebLocalFrameImpl* webframe = WebLocalFrameImpl::FromFrame(frame);
   if (webframe->AutofillClient())

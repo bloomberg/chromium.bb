@@ -118,7 +118,6 @@ class WEB_EXPORT ChromeClientImpl final : public ChromeClient {
   void DispatchViewportPropertiesDidChange(
       const ViewportDescription&) const override;
   void PrintDelegate(LocalFrame*) override;
-  void AnnotatedRegionsChanged() override;
   ColorChooser* OpenColorChooser(LocalFrame*,
                                  ColorChooserClient*,
                                  const Color&) override;

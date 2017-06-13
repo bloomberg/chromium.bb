@@ -347,6 +347,8 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   virtual TextCheckerClient& GetTextCheckerClient() const = 0;
 
   virtual std::unique_ptr<WebURLLoader> CreateURLLoader() = 0;
+
+  virtual void AnnotatedRegionsChanged() = 0;
 };
 
 }  // namespace blink

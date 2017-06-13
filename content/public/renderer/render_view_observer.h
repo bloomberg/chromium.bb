@@ -14,7 +14,6 @@
 class GURL;
 
 namespace blink {
-class WebFrame;
 class WebGestureEvent;
 class WebLocalFrame;
 struct WebURLError;
@@ -43,7 +42,6 @@ class CONTENT_EXPORT RenderViewObserver : public IPC::Listener,
   virtual void DidCommitProvisionalLoad(blink::WebLocalFrame* frame,
                                         bool is_new_navigation) {}
   virtual void DidClearWindowObject(blink::WebLocalFrame* frame) {}
-  virtual void DraggableRegionsChanged(blink::WebFrame* frame) {}
   virtual void DidCommitCompositorFrame() {}
   virtual void DidUpdateLayout() {}
 
