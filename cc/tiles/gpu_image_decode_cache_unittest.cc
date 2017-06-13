@@ -1662,6 +1662,44 @@ TEST(GpuImageDecodeCacheTest, ClearCache) {
   EXPECT_EQ(cache.GetNumCacheEntriesForTesting(), 0u);
 }
 
+TEST(GpuImageDecodeCacheTest, ClearCacheInUse) {
+  auto context_provider = TestContextProvider::Create();
+  context_provider->BindToCurrentThread();
+  TestGpuImageDecodeCache cache(context_provider.get());
+  bool is_decomposable = true;
+  SkFilterQuality quality = kHigh_SkFilterQuality;
+
+  // Create an image but keep it reffed so it can't be immediately freed.
+  sk_sp<SkImage> image = CreateImage(100, 100);
+  DrawImage draw_image(
+      CreatePaintImage(image), SkIRect::MakeWH(image->width(), image->height()),
+      quality, CreateMatrix(SkSize::Make(1.0f, 1.0f), is_decomposable),
+      DefaultColorSpace());
+  scoped_refptr<TileTask> task;
+  bool need_unref = cache.GetTaskForImageAndRef(
+      draw_image, ImageDecodeCache::TracingInfo(), &task);
+  EXPECT_TRUE(need_unref);
+  EXPECT_TRUE(task);
+  TestTileTaskRunner::ProcessTask(task->dependencies()[0].get());
+  TestTileTaskRunner::ProcessTask(task.get());
+
+  // We should now have data image in our cache.
+  EXPECT_GT(cache.GetBytesUsedForTesting(), 0u);
+  EXPECT_EQ(cache.GetNumCacheEntriesForTesting(), 1u);
+
+  // Tell our cache to clear resources.
+  cache.ClearCache();
+  // We should still have data, as we can't clear the in-use entry.
+  EXPECT_GT(cache.GetBytesUsedForTesting(), 0u);
+  // But the num (persistent) entries should be 0, as the entry is orphaned.
+  EXPECT_EQ(cache.GetNumCacheEntriesForTesting(), 0u);
+
+  // Unref the image, it should immidiately delete, leaving our cache empty.
+  cache.UnrefImage(draw_image);
+  EXPECT_EQ(cache.GetBytesUsedForTesting(), 0u);
+  EXPECT_EQ(cache.GetNumCacheEntriesForTesting(), 0u);
+}
+
 TEST(GpuImageDecodeCacheTest, GetTaskForImageDifferentColorSpace) {
   auto context_provider = TestContextProvider::Create();
   context_provider->BindToCurrentThread();
