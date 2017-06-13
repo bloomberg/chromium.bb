@@ -199,11 +199,11 @@ GURL BasePingManager::SafeBrowsingHitUrl(
   DCHECK(hit_report.threat_type == SB_THREAT_TYPE_URL_MALWARE ||
          hit_report.threat_type == SB_THREAT_TYPE_URL_PHISHING ||
          hit_report.threat_type == SB_THREAT_TYPE_URL_UNWANTED ||
-         hit_report.threat_type == SB_THREAT_TYPE_BINARY_MALWARE_URL ||
-         hit_report.threat_type == SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL ||
-         hit_report.threat_type == SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL ||
+         hit_report.threat_type == SB_THREAT_TYPE_URL_BINARY_MALWARE ||
+         hit_report.threat_type == SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING ||
+         hit_report.threat_type == SB_THREAT_TYPE_URL_CLIENT_SIDE_MALWARE ||
          hit_report.threat_type ==
-             SB_THREAT_TYPE_PASSWORD_PROTECTION_PHISHING_URL);
+             SB_THREAT_TYPE_URL_PASSWORD_PROTECTION_PHISHING);
   std::string url = ProtocolManagerHelper::ComposeUrl(
       url_prefix_, "report", client_name_, version_, std::string(),
       hit_report.extended_reporting_level);
@@ -219,16 +219,16 @@ GURL BasePingManager::SafeBrowsingHitUrl(
     case SB_THREAT_TYPE_URL_UNWANTED:
       threat_list = "uwsblhit";
       break;
-    case SB_THREAT_TYPE_BINARY_MALWARE_URL:
+    case SB_THREAT_TYPE_URL_BINARY_MALWARE:
       threat_list = "binurlhit";
       break;
-    case SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL:
+    case SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING:
       threat_list = "phishcsdhit";
       break;
-    case SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL:
+    case SB_THREAT_TYPE_URL_CLIENT_SIDE_MALWARE:
       threat_list = "malcsdhit";
       break;
-    case SB_THREAT_TYPE_PASSWORD_PROTECTION_PHISHING_URL:
+    case SB_THREAT_TYPE_URL_PASSWORD_PROTECTION_PHISHING:
       threat_list = "phishpphit";
       break;
     default:

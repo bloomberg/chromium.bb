@@ -1220,7 +1220,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckDownloadUrl) {
   client->CheckDownloadUrl(badbin_urls);
 
   // Now, the badbin_url is not safe since it is added to download database.
-  EXPECT_EQ(SB_THREAT_TYPE_BINARY_MALWARE_URL, client->GetThreatType());
+  EXPECT_EQ(SB_THREAT_TYPE_URL_BINARY_MALWARE, client->GetThreatType());
 }
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckUnwantedSoftwareUrl) {
@@ -1326,7 +1326,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckDownloadUrlRedirects) {
   client->CheckDownloadUrl(badbin_urls);
 
   // Now, the badbin_url is not safe since it is added to download database.
-  EXPECT_EQ(SB_THREAT_TYPE_BINARY_MALWARE_URL, client->GetThreatType());
+  EXPECT_EQ(SB_THREAT_TYPE_URL_BINARY_MALWARE, client->GetThreatType());
 }
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest, CheckResourceUrl) {
@@ -1386,7 +1386,7 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingServiceTest,
   client->CheckDownloadUrl(badbin_urls);
 
   // badbin_url is not safe since it is added to download database.
-  EXPECT_EQ(SB_THREAT_TYPE_BINARY_MALWARE_URL, client->GetThreatType());
+  EXPECT_EQ(SB_THREAT_TYPE_URL_BINARY_MALWARE, client->GetThreatType());
 
   //
   // Now introducing delays and we should hit timeout.
@@ -2113,7 +2113,7 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, CheckDownloadUrl) {
   client->CheckDownloadUrl(badbin_urls);
 
   // Now, the badbin_url is not safe since it is added to download database.
-  EXPECT_EQ(SB_THREAT_TYPE_BINARY_MALWARE_URL, client->GetThreatType());
+  EXPECT_EQ(SB_THREAT_TYPE_URL_BINARY_MALWARE, client->GetThreatType());
 }
 #endif  // defined(GOOGLE_CHROME_BUILD)
 
@@ -2213,7 +2213,7 @@ IN_PROC_BROWSER_TEST_F(V4SafeBrowsingServiceTest, CheckDownloadUrlRedirects) {
   client->CheckDownloadUrl(badbin_urls);
 
   // Now, the badbin_url is not safe since it is added to download database.
-  EXPECT_EQ(SB_THREAT_TYPE_BINARY_MALWARE_URL, client->GetThreatType());
+  EXPECT_EQ(SB_THREAT_TYPE_URL_BINARY_MALWARE, client->GetThreatType());
 }
 #endif  // defined(GOOGLE_CHROME_BUILD)
 

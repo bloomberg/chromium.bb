@@ -1081,7 +1081,7 @@ TEST_F(ThreatDetailsTest, HTTPCache) {
       ->NavigateAndCommit(GURL(kLandingURL));
 
   UnsafeResource resource;
-  InitResource(&resource, SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL,
+  InitResource(&resource, SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING,
                true /* is_subresource */, GURL(kThreatURL));
 
   scoped_refptr<ThreatDetailsWrap> report =
@@ -1107,7 +1107,7 @@ TEST_F(ThreatDetailsTest, HTTPCache) {
   actual.ParseFromString(serialized);
 
   ClientSafeBrowsingReportRequest expected;
-  expected.set_type(ClientSafeBrowsingReportRequest::CLIENT_SIDE_PHISHING_URL);
+  expected.set_type(ClientSafeBrowsingReportRequest::URL_CLIENT_SIDE_PHISHING);
   expected.set_url(kThreatURL);
   expected.set_page_url(kLandingURL);
   expected.set_referrer_url("");
@@ -1164,7 +1164,7 @@ TEST_F(ThreatDetailsTest, HttpsResourceSanitization) {
       ->NavigateAndCommit(GURL(kLandingURL));
 
   UnsafeResource resource;
-  InitResource(&resource, SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL,
+  InitResource(&resource, SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING,
                true /* is_subresource */, GURL(kThreatURLHttps));
 
   scoped_refptr<ThreatDetailsWrap> report =
@@ -1190,7 +1190,7 @@ TEST_F(ThreatDetailsTest, HttpsResourceSanitization) {
   actual.ParseFromString(serialized);
 
   ClientSafeBrowsingReportRequest expected;
-  expected.set_type(ClientSafeBrowsingReportRequest::CLIENT_SIDE_PHISHING_URL);
+  expected.set_type(ClientSafeBrowsingReportRequest::URL_CLIENT_SIDE_PHISHING);
   expected.set_url(kThreatURLHttps);
   expected.set_page_url(kLandingURL);
   expected.set_referrer_url("");
@@ -1244,7 +1244,7 @@ TEST_F(ThreatDetailsTest, HTTPCacheNoEntries) {
       ->NavigateAndCommit(GURL(kLandingURL));
 
   UnsafeResource resource;
-  InitResource(&resource, SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL,
+  InitResource(&resource, SB_THREAT_TYPE_URL_CLIENT_SIDE_MALWARE,
                true /* is_subresource */, GURL(kThreatURL));
 
   scoped_refptr<ThreatDetailsWrap> report =
@@ -1267,7 +1267,7 @@ TEST_F(ThreatDetailsTest, HTTPCacheNoEntries) {
   actual.ParseFromString(serialized);
 
   ClientSafeBrowsingReportRequest expected;
-  expected.set_type(ClientSafeBrowsingReportRequest::CLIENT_SIDE_MALWARE_URL);
+  expected.set_type(ClientSafeBrowsingReportRequest::URL_CLIENT_SIDE_MALWARE);
   expected.set_url(kThreatURL);
   expected.set_page_url(kLandingURL);
   expected.set_referrer_url("");

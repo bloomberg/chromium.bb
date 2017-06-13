@@ -93,18 +93,18 @@ enum SBThreatType {
   SB_THREAT_TYPE_URL_UNWANTED,
 
   // The download URL is malware.
-  SB_THREAT_TYPE_BINARY_MALWARE_URL,
+  SB_THREAT_TYPE_URL_BINARY_MALWARE,
 
   // Url detected by the client-side phishing model.  Note that unlike the
   // above values, this does not correspond to a downloaded list.
-  SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL,
+  SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING,
 
   // The Chrome extension or app (given by its ID) is malware.
   SB_THREAT_TYPE_EXTENSION,
 
   // Url detected by the client-side malware IP list. This IP list is part
   // of the client side detection model.
-  SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL,
+  SB_THREAT_TYPE_URL_CLIENT_SIDE_MALWARE,
 
   // Url leads to a blacklisted resource script. Note that no warnings should be
   // shown on this threat type, but an incident report might be sent.
@@ -120,7 +120,7 @@ enum SBThreatType {
   SB_THREAT_TYPE_CSD_WHITELIST,
 
   // Url detected by password protection service.
-  SB_THREAT_TYPE_PASSWORD_PROTECTION_PHISHING_URL,
+  SB_THREAT_TYPE_URL_PASSWORD_PROTECTION_PHISHING,
 };
 
 // The information required to uniquely identify each list the client is

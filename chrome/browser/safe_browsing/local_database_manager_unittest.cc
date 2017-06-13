@@ -103,7 +103,7 @@ bool LocalDatabaseManagerTest::RunTest(
 
 TEST_F(LocalDatabaseManagerTest, CheckCorrespondsListTypeForHash) {
   std::vector<SBThreatType> malware_threat(1,
-                                           SB_THREAT_TYPE_BINARY_MALWARE_URL);
+                                           SB_THREAT_TYPE_URL_BINARY_MALWARE);
   EXPECT_FALSE(RunSBHashTest(BINURL, malware_threat, {kMalwareList}));
   EXPECT_TRUE(RunSBHashTest(BINURL, malware_threat, {kBinUrlList}));
 
@@ -130,7 +130,7 @@ TEST_F(LocalDatabaseManagerTest, CheckCorrespondsListTypeForUrl) {
       {{host2, kBinUrlList}};
 
   std::vector<SBThreatType> malware_threat =
-      {SB_THREAT_TYPE_BINARY_MALWARE_URL};
+      {SB_THREAT_TYPE_URL_BINARY_MALWARE};
   EXPECT_FALSE(RunUrlTest(url, BINURL, malware_threat, malware_list_result));
   EXPECT_TRUE(RunUrlTest(url, BINURL, malware_threat, binurl_list_result));
 

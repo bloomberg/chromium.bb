@@ -166,7 +166,7 @@ SBThreatType GetThreatTypeFromListType(ListType list_type) {
     case UNWANTEDURL:
       return SB_THREAT_TYPE_URL_UNWANTED;
     case BINURL:
-      return SB_THREAT_TYPE_BINARY_MALWARE_URL;
+      return SB_THREAT_TYPE_URL_BINARY_MALWARE;
     case EXTENSIONBLACKLIST:
       return SB_THREAT_TYPE_EXTENSION;
     case RESOURCEBLACKLIST:
@@ -352,7 +352,7 @@ bool LocalSafeBrowsingDatabaseManager::CheckDownloadUrl(
   std::unique_ptr<SafeBrowsingCheck> check =
       base::MakeUnique<SafeBrowsingCheck>(
           url_chain, std::vector<SBFullHash>(), client, BINURL,
-          std::vector<SBThreatType>(1, SB_THREAT_TYPE_BINARY_MALWARE_URL));
+          std::vector<SBThreatType>(1, SB_THREAT_TYPE_URL_BINARY_MALWARE));
   std::vector<SBPrefix> prefixes;
   SafeBrowsingDatabase::GetDownloadUrlPrefixes(url_chain, &prefixes);
   StartSafeBrowsingCheck(

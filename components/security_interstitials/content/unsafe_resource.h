@@ -68,7 +68,7 @@ struct UnsafeResource {
   base::Callback<content::WebContents*(void)> web_contents_getter;
   safe_browsing::ThreatSource threat_source;
   // |token| field is only set if |threat_type| is
-  // SB_THREAT_TYPE_PASSWORD_PROTECTION_PHISHING_URL
+  // SB_THREAT_TYPE_URL_PASSWORD_PROTECTION_PHISHING
   std::string token;
 };
 

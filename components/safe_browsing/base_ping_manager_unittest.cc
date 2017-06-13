@@ -125,7 +125,7 @@ TEST_F(BasePingManagerTest, TestSafeBrowsingHitUrl) {
 
   {
     HitReport hp(base_hp);
-    hp.threat_type = SB_THREAT_TYPE_BINARY_MALWARE_URL;
+    hp.threat_type = SB_THREAT_TYPE_URL_BINARY_MALWARE;
     hp.threat_source = ThreatSource::REMOTE;
     hp.extended_reporting_level = SBER_LEVEL_OFF;
     hp.is_metrics_reporting_active = true;
@@ -143,7 +143,7 @@ TEST_F(BasePingManagerTest, TestSafeBrowsingHitUrl) {
 
   {
     HitReport hp(base_hp);
-    hp.threat_type = SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL;
+    hp.threat_type = SB_THREAT_TYPE_URL_CLIENT_SIDE_PHISHING;
     hp.threat_source = ThreatSource::LOCAL_PVER4;
     hp.extended_reporting_level = SBER_LEVEL_OFF;
     hp.is_metrics_reporting_active = false;
@@ -161,7 +161,7 @@ TEST_F(BasePingManagerTest, TestSafeBrowsingHitUrl) {
 
   {
     HitReport hp(base_hp);
-    hp.threat_type = SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL;
+    hp.threat_type = SB_THREAT_TYPE_URL_CLIENT_SIDE_MALWARE;
     hp.threat_source = ThreatSource::LOCAL_PVER4;
     hp.extended_reporting_level = SBER_LEVEL_OFF;
     hp.is_metrics_reporting_active = false;
@@ -180,7 +180,7 @@ TEST_F(BasePingManagerTest, TestSafeBrowsingHitUrl) {
   // Same as above, but add population_id
   {
     HitReport hp(base_hp);
-    hp.threat_type = SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL;
+    hp.threat_type = SB_THREAT_TYPE_URL_CLIENT_SIDE_MALWARE;
     hp.threat_source = ThreatSource::LOCAL_PVER4;
     hp.extended_reporting_level = SBER_LEVEL_OFF;
     hp.is_metrics_reporting_active = false;
@@ -270,7 +270,7 @@ TEST_F(BasePingManagerTest, TestReportSafeBrowsingHit) {
   hp.malicious_url = GURL("http://malicious.url.com");
   hp.page_url = GURL("http://page.url.com");
   hp.referrer_url = GURL("http://referrer.url.com");
-  hp.threat_type = SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL;
+  hp.threat_type = SB_THREAT_TYPE_URL_CLIENT_SIDE_MALWARE;
   hp.threat_source = ThreatSource::LOCAL_PVER4;
   hp.extended_reporting_level = SBER_LEVEL_OFF;
   hp.is_metrics_reporting_active = false;

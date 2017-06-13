@@ -69,7 +69,7 @@ ListInfos GetListInfos() {
       // The GetUrlMalBinId list is not working for non-GoogleChrome builds
       // currently so making it Chrome-only. See: http://crbug.com/728757
       ListInfo(kSyncOnlyOnChromeBuilds, "UrlMalBin.store", GetUrlMalBinId(),
-               SB_THREAT_TYPE_BINARY_MALWARE_URL),
+               SB_THREAT_TYPE_URL_BINARY_MALWARE),
       ListInfo(kSyncAlways, "ChromeExtMalware.store", GetChromeExtMalwareId(),
                SB_THREAT_TYPE_EXTENSION),
       ListInfo(kSyncOnlyOnChromeBuilds, "ChromeUrlClientIncident.store",

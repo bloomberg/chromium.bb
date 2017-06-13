@@ -393,7 +393,7 @@ TEST_F(ChromePasswordProtectionServiceTest,
   EXPECT_EQ(GURL(kPhishingURL), resource.url);
   EXPECT_EQ(GURL(kPhishingURL), resource.original_url);
   EXPECT_FALSE(resource.is_subresource);
-  EXPECT_EQ(SB_THREAT_TYPE_PASSWORD_PROTECTION_PHISHING_URL,
+  EXPECT_EQ(SB_THREAT_TYPE_URL_PASSWORD_PROTECTION_PHISHING,
             resource.threat_type);
   EXPECT_EQ(ThreatSource::PASSWORD_PROTECTION_SERVICE, resource.threat_source);
   EXPECT_EQ(web_contents(), resource.web_contents_getter.Run());
