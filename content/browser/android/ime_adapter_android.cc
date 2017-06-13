@@ -18,6 +18,7 @@
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
+#include "content/common/frame_messages.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -282,6 +283,17 @@ void ImeAdapterAndroid::FocusedNodeChanged(bool is_editable_node) {
   if (!obj.is_null()) {
     Java_ImeAdapter_focusedNodeChanged(env, obj, is_editable_node);
   }
+}
+
+void ImeAdapterAndroid::AdvanceFocusInForm(JNIEnv* env,
+                                           const JavaParamRef<jobject>& obj,
+                                           jint focus_type) {
+  RenderFrameHost* rfh = GetFocusedFrame();
+  if (!rfh)
+    return;
+
+  rfh->Send(new FrameMsg_AdvanceFocusInForm(
+      rfh->GetRoutingID(), static_cast<blink::WebFocusType>(focus_type)));
 }
 
 void ImeAdapterAndroid::SetEditableSelectionOffsets(

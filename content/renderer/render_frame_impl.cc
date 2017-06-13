@@ -175,6 +175,7 @@
 #include "third_party/WebKit/public/platform/URLConversion.h"
 #include "third_party/WebKit/public/platform/WebCachePolicy.h"
 #include "third_party/WebKit/public/platform/WebData.h"
+#include "third_party/WebKit/public/platform/WebFocusType.h"
 #include "third_party/WebKit/public/platform/WebKeyboardEvent.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayerSource.h"
@@ -1646,6 +1647,7 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_SetFrameOwnerProperties,
                         OnSetFrameOwnerProperties)
     IPC_MESSAGE_HANDLER(FrameMsg_AdvanceFocus, OnAdvanceFocus)
+    IPC_MESSAGE_HANDLER(FrameMsg_AdvanceFocusInForm, OnAdvanceFocusInForm)
     IPC_MESSAGE_HANDLER(FrameMsg_SetFocusedFrame, OnSetFocusedFrame)
     IPC_MESSAGE_HANDLER(FrameMsg_SetTextTrackSettings,
                         OnTextTrackSettingsChanged)
@@ -2271,6 +2273,12 @@ void RenderFrameImpl::OnAdvanceFocus(blink::WebFocusType type,
 
   render_view_->webview()->AdvanceFocusAcrossFrames(
       type, source_frame->web_frame(), frame_);
+}
+
+void RenderFrameImpl::OnAdvanceFocusInForm(blink::WebFocusType focus_type) {
+  if (render_view_->webview()->FocusedFrame() != frame_)
+    return;
+  frame_->AdvanceFocusInForm(focus_type);
 }
 
 void RenderFrameImpl::OnSetFocusedFrame() {

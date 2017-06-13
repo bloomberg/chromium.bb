@@ -326,6 +326,8 @@ class WEB_EXPORT WebLocalFrameImpl final
                             WebString& clip_text,
                             WebString& clip_html) override;
 
+  void AdvanceFocusInForm(WebFocusType) override;
+
   void InitializeCoreFrame(Page&,
                            FrameOwner*,
                            const AtomicString& name) override;
