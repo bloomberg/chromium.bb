@@ -93,7 +93,7 @@ class CONTENT_EXPORT DevToolsAgent
   void OnInspectElement(int session_id, int x, int y);
   void OnRequestNewWindowACK(bool success);
   void ContinueProgram();
-  void OnSetupDevToolsClient(const std::string& compatibility_script);
+  void OnSetupDevToolsClient(const std::string& api_script);
 
   void GotManifest(int session_id,
                    int command_id,

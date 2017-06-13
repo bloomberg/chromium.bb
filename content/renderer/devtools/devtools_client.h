@@ -31,8 +31,7 @@ class CONTENT_EXPORT DevToolsClient
     : public RenderFrameObserver,
       NON_EXPORTED_BASE(public blink::WebDevToolsFrontendClient) {
  public:
-  DevToolsClient(RenderFrame* main_render_frame,
-                 const std::string& compatibility_script);
+  DevToolsClient(RenderFrame* render_frame, const std::string& api_script);
   ~DevToolsClient() override;
 
  private:
@@ -48,7 +47,7 @@ class CONTENT_EXPORT DevToolsClient
   void OnDispatchOnInspectorFrontend(const std::string& message,
                                      uint32_t total_size);
 
-  std::string compatibility_script_;
+  std::string api_script_;
   std::unique_ptr<blink::WebDevToolsFrontend> web_tools_frontend_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsClient);

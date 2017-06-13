@@ -30,6 +30,10 @@ class DevToolsFrontendHost {
       RenderFrameHost* frontend_main_frame,
       const HandleMessageCallback& handle_message_callback);
 
+  CONTENT_EXPORT static void SetupExtensionsAPI(
+      RenderFrameHost* frame,
+      const std::string& extension_api);
+
   CONTENT_EXPORT virtual ~DevToolsFrontendHost() {}
 
   CONTENT_EXPORT virtual void BadMessageRecieved() {}

@@ -22,20 +22,21 @@ using blink::WebString;
 
 namespace content {
 
-DevToolsClient::DevToolsClient(RenderFrame* main_render_frame,
-                               const std::string& compatibility_script)
-    : RenderFrameObserver(main_render_frame),
-      compatibility_script_(compatibility_script),
-      web_tools_frontend_(
-          WebDevToolsFrontend::Create(main_render_frame->GetWebFrame(), this)) {
+DevToolsClient::DevToolsClient(RenderFrame* render_frame,
+                               const std::string& api_script)
+    : RenderFrameObserver(render_frame), api_script_(api_script) {
+  if (render_frame->IsMainFrame()) {
+    web_tools_frontend_.reset(
+        WebDevToolsFrontend::Create(render_frame->GetWebFrame(), this));
+  }
 }
 
 DevToolsClient::~DevToolsClient() {
 }
 
 void DevToolsClient::DidClearWindowObject() {
-  if (!compatibility_script_.empty())
-    render_frame()->ExecuteJavaScript(base::UTF8ToUTF16(compatibility_script_));
+  if (!api_script_.empty())
+    render_frame()->ExecuteJavaScript(base::UTF8ToUTF16(api_script_));
 }
 
 void DevToolsClient::OnDestruct() {

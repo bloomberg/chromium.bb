@@ -217,5 +217,7 @@ DevToolsEmbedderMessageDispatcher::CreateForDevToolsFrontend(
                                  &Delegate::Reattach, delegate);
   d->RegisterHandler("readyForTest",
                      &Delegate::ReadyForTest, delegate);
+  d->RegisterHandler("registerExtensionsAPI", &Delegate::RegisterExtensionsAPI,
+                     delegate);
   return d;
 }

@@ -94,6 +94,8 @@ class DevToolsEmbedderMessageDispatcher {
                                  const std::string& url) = 0;
     virtual void Reattach(const DispatchCallback& callback) = 0;
     virtual void ReadyForTest() = 0;
+    virtual void RegisterExtensionsAPI(const std::string& origin,
+                                       const std::string& script) = 0;
   };
 
   using DispatchCallback = Delegate::DispatchCallback;

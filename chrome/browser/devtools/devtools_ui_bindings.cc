@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/base64.h"
+#include "base/guid.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/json/string_escape.h"
@@ -512,8 +513,7 @@ void DevToolsUIBindings::FrontendWebContentsObserver::RenderProcessGone(
 
 void DevToolsUIBindings::FrontendWebContentsObserver::ReadyToCommitNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (navigation_handle->IsInMainFrame())
-    devtools_bindings_->UpdateFrontendHost(navigation_handle);
+  devtools_bindings_->ReadyToCommitNavigation(navigation_handle);
 }
 
 void DevToolsUIBindings::FrontendWebContentsObserver::
@@ -1287,20 +1287,6 @@ void DevToolsUIBindings::ShowDevToolsConfirmInfoBar(
   GlobalConfirmInfoBar::Show(std::move(delegate));
 }
 
-void DevToolsUIBindings::UpdateFrontendHost(
-    content::NavigationHandle* navigation_handle) {
-  if (!IsValidFrontendURL(navigation_handle->GetURL())) {
-    LOG(ERROR) << "Attempt to navigate to an invalid DevTools front-end URL: "
-        << navigation_handle->GetURL().spec();
-    frontend_host_.reset();
-    return;
-  }
-  frontend_host_.reset(content::DevToolsFrontendHost::Create(
-      navigation_handle->GetRenderFrameHost(),
-      base::Bind(&DevToolsUIBindings::HandleMessageFromDevToolsFrontend,
-                 base::Unretained(this))));
-}
-
 void DevToolsUIBindings::AddDevToolsExtensionsToClient() {
   const extensions::ExtensionRegistry* registry =
       extensions::ExtensionRegistry::Get(profile_->GetOriginalProfile());
@@ -1336,6 +1322,11 @@ void DevToolsUIBindings::AddDevToolsExtensionsToClient() {
 
   CallClientFunction("DevToolsAPI.addExtensions",
                      &results, NULL, NULL);
+}
+
+void DevToolsUIBindings::RegisterExtensionsAPI(const std::string& origin,
+                                               const std::string& script) {
+  extensions_api_[origin + "/"] = script;
 }
 
 void DevToolsUIBindings::SetDelegate(Delegate* delegate) {
@@ -1393,6 +1384,32 @@ void DevToolsUIBindings::CallClientFunction(const std::string& function_name,
   javascript.append(");");
   web_contents_->GetMainFrame()->ExecuteJavaScript(
       base::UTF8ToUTF16(javascript));
+}
+
+void DevToolsUIBindings::ReadyToCommitNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (navigation_handle->IsInMainFrame()) {
+    if (!IsValidFrontendURL(navigation_handle->GetURL())) {
+      LOG(ERROR) << "Attempt to navigate to an invalid DevTools front-end URL: "
+                 << navigation_handle->GetURL().spec();
+      frontend_host_.reset();
+      return;
+    }
+    frontend_host_.reset(content::DevToolsFrontendHost::Create(
+        navigation_handle->GetRenderFrameHost(),
+        base::Bind(&DevToolsUIBindings::HandleMessageFromDevToolsFrontend,
+                   base::Unretained(this))));
+    return;
+  }
+
+  content::RenderFrameHost* frame = navigation_handle->GetRenderFrameHost();
+  std::string origin = navigation_handle->GetURL().GetOrigin().spec();
+  auto it = extensions_api_.find(origin);
+  if (it == extensions_api_.end())
+    return;
+  std::string script = base::StringPrintf("%s(\"%s\")", it->second.c_str(),
+                                          base::GenerateGUID().c_str());
+  content::DevToolsFrontendHost::SetupExtensionsAPI(frame, script);
 }
 
 void DevToolsUIBindings::DocumentAvailableInMainFrame() {
