@@ -42,7 +42,8 @@ def SetupTsMonGlobalState(service_name,
                           short_lived=False,
                           indirect=False,
                           auto_flush=True,
-                          debug_file=None):
+                          debug_file=None,
+                          suppress_exception=True):
   """Uses a dummy argument parser to get the default behavior from ts-mon.
 
   Args:
@@ -55,6 +56,8 @@ def SetupTsMonGlobalState(service_name,
     auto_flush: Whether to create a thread to automatically flush metrics every
                 minute.
     debug_file: If non-none, send metrics to this path instead of to PubSub.
+    suppress_exception: True to silence any exception during the setup. Default
+                        is set to True.
   """
   if not config:
     return TrivialContextManager()
@@ -100,6 +103,8 @@ def SetupTsMonGlobalState(service_name,
   except Exception as e:
     logging.warning('Failed to configure ts_mon, monitoring is disabled: %s', e,
                     exc_info=True)
+    if not suppress_exception:
+      raise
 
 
   return TrivialContextManager()
