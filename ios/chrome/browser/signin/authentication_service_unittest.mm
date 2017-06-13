@@ -46,6 +46,10 @@
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 using testing::_;
 using testing::Invoke;
 using testing::Return;
@@ -197,7 +201,7 @@ class AuthenticationServiceTest : public PlatformTest,
   void SetCachedMDMInfo(ChromeIdentity* identity, NSDictionary* user_info) {
     authentication_service_
         ->cached_mdm_infos_[base::SysNSStringToUTF8([identity gaiaID])]
-        .reset([user_info retain]);
+        .reset(user_info);
   }
 
   bool HasCachedMDMInfo(ChromeIdentity* identity) {
