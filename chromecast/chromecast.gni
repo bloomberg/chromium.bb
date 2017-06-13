@@ -41,6 +41,9 @@ declare_args() {
   # device supports multizone. The command line flag --enable-multizone must
   # still be used to enable multizone.
   supports_multizone = is_cast_audio_only && !is_cast_desktop_build
+
+  # Set true for builds targeting Android Things.
+  is_android_things = false
 }
 
 declare_args() {
