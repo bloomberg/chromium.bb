@@ -53,18 +53,12 @@ const SkColor kHintTextColor = SkColorSetRGB(0xA0, 0xA0, 0xA0);
 const int kBackgroundBorderCornerRadius = 2;
 const int kBackgroundBorderCornerRadiusFullscreen = 20;
 
-bool IsFullscreenAppListEnabled() {
-  // Cache this value to avoid repeated lookup.
-  static bool cached_value = features::IsFullscreenAppListEnabled();
-  return cached_value;
-}
-
 // A background that paints a solid white rounded rect with a thin grey border.
 class SearchBoxBackground : public views::Background {
  public:
   SearchBoxBackground()
       : background_border_corner_radius_(
-            IsFullscreenAppListEnabled()
+            features::IsFullscreenAppListEnabled()
                 ? kBackgroundBorderCornerRadiusFullscreen
                 : kBackgroundBorderCornerRadius) {}
   ~SearchBoxBackground() override {}
@@ -142,9 +136,10 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
       search_box_(new views::Textfield),
       contents_view_(NULL),
       app_list_view_(app_list_view),
-      focused_view_(FOCUS_SEARCH_BOX) {
+      focused_view_(FOCUS_SEARCH_BOX),
+      is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()) {
   SetLayoutManager(new views::FillLayout);
-  SetPreferredSize(gfx::Size(IsFullscreenAppListEnabled()
+  SetPreferredSize(gfx::Size(is_fullscreen_app_list_enabled_
                                  ? kPreferredWidthFullscreen
                                  : kPreferredWidth,
                              kPreferredHeight));
@@ -346,7 +341,7 @@ void SearchBoxView::ContentsChanged(views::Textfield* sender,
   view_delegate_->AutoLaunchCanceled();
   NotifyQueryChanged();
 
-  if (IsFullscreenAppListEnabled() && !app_list_view_->is_fullscreen()) {
+  if (is_fullscreen_app_list_enabled_ && !app_list_view_->is_fullscreen()) {
     // If the app list is in the peeking state, switch it to fullscreen.
     app_list_view_->SetState(AppListView::FULLSCREEN);
   }

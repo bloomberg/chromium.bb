@@ -178,6 +178,8 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   gfx::Point initial_drag_point_;
   // The velocity of the gesture event.
   float last_fling_velocity_ = 0;
+  // Whether the fullscreen app list feature is enabled.
+  const bool is_fullscreen_app_list_enabled_;
   // The state of the app list, controlled via SetState().
   AppListState app_list_state_;
 

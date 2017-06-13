@@ -124,6 +124,9 @@ class APP_LIST_EXPORT SearchBoxView : public views::View,
 
   SearchBoxFocus focused_view_;  // Which element has TAB'd focus.
 
+  // Whether the fullscreen app list feature is enabled.
+  const bool is_fullscreen_app_list_enabled_;
+
   DISALLOW_COPY_AND_ASSIGN(SearchBoxView);
 };
 
