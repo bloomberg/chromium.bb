@@ -3,8 +3,6 @@
 <body>
 <script>
 
-/* Execute these tests with the browser_tests executable. */
-
 var allowedByDefault = '<a href="https://google.com">Google!</a>';
 var text = 'I\'m just text, nobody should have a problem with me!';
 var nonBreakingSpace = 'A\u00a0B\u00a0C';  // \u00a0 is a unicode nbsp.
@@ -22,7 +20,6 @@ function setUpPage() {
 }
 
 function testI18n() {
-  assertEquals(allowedByDefault, I18nBehavior.i18n('allowedByDefault'));
   assertEquals(text, I18nBehavior.i18n('text'));
   assertEquals(nonBreakingSpace, I18nBehavior.i18n('nonBreakingSpace'));
 
@@ -33,6 +30,9 @@ function testI18n() {
 }
 
 function testI18nAdvanced() {
+  assertEquals(
+      allowedByDefault,
+      I18nBehavior.i18nAdvanced('allowedByDefault'));
   I18nBehavior.i18nAdvanced('customAttr', {
     attrs: {
       is: function(el, val) {

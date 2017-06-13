@@ -21,9 +21,11 @@ Polymer({
    */
   getLabel_: function(extensionId, extensionName) {
     var manageUrl = 'chrome://extensions/?id=' + assert(this.extensionId);
-    return this.i18n('controlledByExtension',
-        '<a href="' + manageUrl + '" target="_blank">' +
-        assert(this.extensionName) + '</a>');
+    return this.i18nAdvanced('controlledByExtension', {
+      substitutions:
+          ['<a href="' + manageUrl + '" target="_blank">' +
+           assert(this.extensionName) + '</a>'],
+    });
   },
 
   /** @private */
