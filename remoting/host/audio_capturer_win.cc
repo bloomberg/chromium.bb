@@ -274,7 +274,9 @@ void AudioCapturerWin::DoCapture() {
       packet->set_bytes_per_sample(AudioPacket::BYTES_PER_SAMPLE_2);
       // Only the count of channels is taken into account now, we should also
       // consider dwChannelMask.
-      // TODO(zijiehe): Support also layouts.
+      // TODO(zijiehe): Convert dwChannelMask to layout and pass it to
+      // AudioPump. So the stream can be downmixed properly with both number and
+      // layouts of speakers.
       packet->set_channels(static_cast<AudioPacket::Channels>(
           wave_format_ex_->nChannels));
 
