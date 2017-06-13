@@ -762,18 +762,14 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, OneScrollNode) {
 
   auto* layer = ContentLayerAt(0);
   EXPECT_EQ(layer->id(), scroll_node.owning_layer_id);
-  auto scroll_node_index =
-      GetPropertyTrees().scroll_tree.FindNodeIndexFromOwningLayerId(
-          layer->id());
+  auto scroll_node_index = layer->scroll_tree_index();
   EXPECT_EQ(scroll_node_index, scroll_node.id);
 
   // Only one content layer, and the first child layer is the dummy layer for
   // the transform node.
   const cc::Layer* transform_node_layer = RootLayer()->children()[0].get();
   EXPECT_EQ(transform_node_layer->id(), transform_node.owning_layer_id);
-  auto transform_node_index =
-      GetPropertyTrees().transform_tree.FindNodeIndexFromOwningLayerId(
-          transform_node_layer->id());
+  auto transform_node_index = transform_node_layer->transform_tree_index();
   EXPECT_EQ(transform_node_index, transform_node.id);
 
   EXPECT_EQ(0u, scroll_client.did_scroll_count);
@@ -1705,9 +1701,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
       GetPropertyTrees().transform_tree.Node(
           transform_node_layer->transform_tree_index());
   EXPECT_EQ(transform_node_layer->id(), cc_transform_node->owning_layer_id);
-  auto transform_node_index =
-      GetPropertyTrees().transform_tree.FindNodeIndexFromOwningLayerId(
-          transform_node_layer->id());
+  auto transform_node_index = transform_node_layer->transform_tree_index();
   EXPECT_EQ(transform_node_index, cc_transform_node->id);
 }
 

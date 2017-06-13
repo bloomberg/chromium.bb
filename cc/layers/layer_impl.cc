@@ -624,8 +624,7 @@ float LayerImpl::Opacity() const {
 }
 
 const gfx::Transform& LayerImpl::Transform() const {
-  DCHECK_NE(GetTransformTree().FindNodeFromOwningLayerId(id()), nullptr);
-  return GetTransformTree().FindNodeFromOwningLayerId(id())->local;
+  return GetTransformTree().Node(transform_tree_index())->local;
 }
 
 void LayerImpl::SetElementId(ElementId element_id) {
