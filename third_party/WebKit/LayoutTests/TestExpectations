@@ -109,6 +109,7 @@ crbug.com/709009 virtual/gpu/fast/canvas/getPutImageDataPairTest.html [ Timeout 
 # instead of a timeout, which may fix things.
 crbug.com/713049 images/color-profile-reflection.html [ Failure Pass ]
 crbug.com/713049 virtual/gpu-rasterization/images/color-profile-reflection.html [ Failure Pass ]
+crbug.com/713049 virtual/exotic-color-space/images/color-profile-reflection.html [ Failure Pass ]
 
 crbug.com/717389 [ Linux Debug ] virtual/gpu/fast/canvas/canvas-clip-rule.html [ Crash ]
 crbug.com/717389 [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-clip-rule.html [ Timeout ]
