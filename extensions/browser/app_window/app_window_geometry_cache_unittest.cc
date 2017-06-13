@@ -41,7 +41,8 @@ scoped_refptr<Extension> CreateExtension(const std::string& id) {
 // Base class for tests.
 class AppWindowGeometryCacheTest : public ExtensionsTest {
  public:
-  AppWindowGeometryCacheTest() = default;
+  AppWindowGeometryCacheTest()
+      : ExtensionsTest(base::MakeUnique<content::TestBrowserThreadBundle>()) {}
 
   // testing::Test overrides:
   void SetUp() override;
@@ -65,7 +66,6 @@ class AppWindowGeometryCacheTest : public ExtensionsTest {
   std::string AddExtensionWithPrefs(const std::string& name);
 
  protected:
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
   ExtensionPrefs* extension_prefs_;  // Weak.
   std::unique_ptr<AppWindowGeometryCache> cache_;
 };

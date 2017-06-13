@@ -69,7 +69,9 @@ class ExtensionIconImageTest : public ExtensionsTest,
                                public IconImage::Observer {
  public:
   ExtensionIconImageTest()
-      : image_loaded_count_(0), quit_in_image_loaded_(false) {}
+      : ExtensionsTest(base::MakeUnique<content::TestBrowserThreadBundle>()),
+        image_loaded_count_(0),
+        quit_in_image_loaded_(false) {}
 
   ~ExtensionIconImageTest() override {}
 
@@ -125,7 +127,6 @@ class ExtensionIconImageTest : public ExtensionsTest,
   }
 
  private:
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
   int image_loaded_count_;
   bool quit_in_image_loaded_;
 

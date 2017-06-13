@@ -76,16 +76,11 @@ class JobTestObserver : public ContentVerifyJob::TestObserver {
 
 class ContentVerifyJobUnittest : public ExtensionsTest {
  public:
-  ContentVerifyJobUnittest() {}
+  ContentVerifyJobUnittest()
+      // The TestBrowserThreadBundle is needed for ContentVerifyJob::Start().
+      : ExtensionsTest(base::MakeUnique<content::TestBrowserThreadBundle>(
+            content::TestBrowserThreadBundle::REAL_IO_THREAD)) {}
   ~ContentVerifyJobUnittest() override {}
-
-  void SetUp() override {
-    ExtensionsTest::SetUp();
-
-    // Needed for ContentVerifyJob::Start().
-    browser_threads_ = base::MakeUnique<content::TestBrowserThreadBundle>(
-        content::TestBrowserThreadBundle::REAL_IO_THREAD);
-  }
 
   // Helper to get files from our subdirectory in the general extensions test
   // data dir.
@@ -135,7 +130,6 @@ class ContentVerifyJobUnittest : public ExtensionsTest {
 
  private:
   base::ScopedTempDir temp_dir_;
-  std::unique_ptr<content::TestBrowserThreadBundle> browser_threads_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentVerifyJobUnittest);
 };

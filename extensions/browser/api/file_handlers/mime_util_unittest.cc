@@ -51,7 +51,8 @@ storage::FileSystemURL CreateNativeLocalFileSystemURL(
 
 class FileHandlersMimeUtilTest : public ExtensionsTest {
  protected:
-  FileHandlersMimeUtilTest() {}
+  FileHandlersMimeUtilTest()
+      : ExtensionsTest(base::MakeUnique<content::TestBrowserThreadBundle>()) {}
   ~FileHandlersMimeUtilTest() override {}
 
   void SetUp() override {
@@ -66,7 +67,6 @@ class FileHandlersMimeUtilTest : public ExtensionsTest {
                               kSampleContent.size()));
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
   ExtensionsAPIClient extensions_api_client_;
   scoped_refptr<storage::FileSystemContext> file_system_context_;
   base::FilePath html_mime_file_path_;

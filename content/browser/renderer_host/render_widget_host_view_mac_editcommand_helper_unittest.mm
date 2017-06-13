@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include "base/mac/scoped_nsautorelease_pool.h"
+#include "base/message_loop/message_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/compositor/test/no_transport_image_transport_factory.h"
@@ -107,17 +108,33 @@ class RenderWidgetHostViewMacEditCommandHelperTest : public PlatformTest {
  protected:
   void SetUp() override {
     ImageTransportFactory::InitializeForUnitTests(
-        std::unique_ptr<ImageTransportFactory>(
-            new NoTransportImageTransportFactory));
+        base::MakeUnique<NoTransportImageTransportFactory>());
   }
   void TearDown() override { ImageTransportFactory::Terminate(); }
+
+ private:
+  base::MessageLoop message_loop_;
+};
+
+class RenderWidgetHostViewMacEditCommandHelperWithTaskEnvTest
+    : public PlatformTest {
+ protected:
+  void SetUp() override {
+    ImageTransportFactory::InitializeForUnitTests(
+        base::MakeUnique<NoTransportImageTransportFactory>());
+  }
+  void TearDown() override { ImageTransportFactory::Terminate(); }
+
+ private:
+  // This has a MessageLoop for ImageTransportFactory.
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
 };
 
 }  // namespace
 
 // Tests that editing commands make it through the pipeline all the way to
 // RenderWidgetHost.
-TEST_F(RenderWidgetHostViewMacEditCommandHelperTest,
+TEST_F(RenderWidgetHostViewMacEditCommandHelperWithTaskEnvTest,
        TestEditingCommandDelivery) {
   MockRenderWidgetHostDelegate delegate;
   TestBrowserContext browser_context;
@@ -131,7 +148,6 @@ TEST_F(RenderWidgetHostViewMacEditCommandHelperTest,
   ui::test::ScopedSetSupportedScaleFactors scoped_supported(supported_factors);
 
   base::mac::ScopedNSAutoreleasePool pool;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   int32_t routing_id = process_host->GetNextRoutingID();
   RenderWidgetHostEditCommandCounter* render_widget =

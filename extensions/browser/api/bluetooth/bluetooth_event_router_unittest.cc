@@ -42,7 +42,8 @@ namespace bluetooth = api::bluetooth;
 class BluetoothEventRouterTest : public ExtensionsTest {
  public:
   BluetoothEventRouterTest()
-      : mock_adapter_(new testing::StrictMock<device::MockBluetoothAdapter>()) {
+      : ExtensionsTest(base::MakeUnique<content::TestBrowserThreadBundle>()),
+        mock_adapter_(new testing::StrictMock<device::MockBluetoothAdapter>()) {
   }
 
   void SetUp() override {
@@ -59,7 +60,6 @@ class BluetoothEventRouterTest : public ExtensionsTest {
   }
 
  protected:
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
   testing::StrictMock<device::MockBluetoothAdapter>* mock_adapter_;
   std::unique_ptr<BluetoothEventRouter> router_;
 };

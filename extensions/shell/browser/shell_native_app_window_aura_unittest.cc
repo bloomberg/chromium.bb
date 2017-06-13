@@ -25,14 +25,14 @@ namespace extensions {
 
 class ShellNativeAppWindowAuraTest : public ExtensionsTest {
  public:
-  ShellNativeAppWindowAuraTest() {
+  ShellNativeAppWindowAuraTest()
+      : ExtensionsTest(base::MakeUnique<content::TestBrowserThreadBundle>()) {
     AppWindowClient::Set(&app_window_client_);
   }
 
   ~ShellNativeAppWindowAuraTest() override {}
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
   ShellAppWindowClient app_window_client_;
 };
 

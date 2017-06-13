@@ -33,9 +33,12 @@ class InProcessContextProvider;
 class InProcessContextFactory : public ContextFactory,
                                 public ContextFactoryPrivate {
  public:
-  // surface_manager is owned by the creator of this and must outlive the
-  // context factory.
-  explicit InProcessContextFactory(viz::FrameSinkManagerHost* manager);
+  // Both |frame_sink_manager_host| and |surface_manager| must outlive the
+  // ContextFactory.
+  // TODO(crbug.com/657959): |surface_manager| should go away and we should use
+  // the CompositorFrameSink from the FrameSinkManagerHost.
+  InProcessContextFactory(viz::FrameSinkManagerHost* frame_sink_manager_host,
+                          cc::SurfaceManager* surface_manager);
   ~InProcessContextFactory() override;
 
   // If true (the default) an OutputSurface is created that does not display
@@ -99,6 +102,7 @@ class InProcessContextFactory : public ContextFactory,
   bool use_test_surface_;
   double refresh_rate_ = 60.0;
   viz::FrameSinkManagerHost* frame_sink_manager_;
+  cc::SurfaceManager* surface_manager_;
   base::ObserverList<ContextFactoryObserver> observer_list_;
 
   cc::RendererSettings renderer_settings_;

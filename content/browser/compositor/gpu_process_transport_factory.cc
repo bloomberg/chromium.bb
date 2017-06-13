@@ -727,9 +727,7 @@ cc::FrameSinkId GpuProcessTransportFactory::AllocateFrameSinkId() {
 }
 
 cc::SurfaceManager* GpuProcessTransportFactory::GetSurfaceManager() {
-  return BrowserMainLoop::GetInstance()
-      ->frame_sink_manager_host()
-      ->surface_manager();
+  return BrowserMainLoop::GetInstance()->GetSurfaceManager();
 }
 
 viz::FrameSinkManagerHost*

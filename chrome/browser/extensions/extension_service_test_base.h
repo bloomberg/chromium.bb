@@ -140,10 +140,12 @@ class ExtensionServiceTestBase : public testing::Test {
   // after thread_bundle_ in the destruction order.
   base::ShadowingAtExitManager at_exit_manager_;
 
+  // The MessageLoop is used by RenderViewHostTestEnabler, so this must be
+  // created before it.
+  content::TestBrowserThreadBundle thread_bundle_;
+
   // Enable creation of WebContents without initializing a renderer.
   content::RenderViewHostTestEnabler rvh_test_enabler_;
-
-  std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle_;
 
  protected:
   // It's unfortunate that these are exposed to subclasses (rather than used

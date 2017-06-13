@@ -7,8 +7,8 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extensions_test.h"
 #include "extensions/browser/process_manager.h"
@@ -19,12 +19,12 @@ namespace extensions {
 
 class KeepAliveTest : public ExtensionsTest {
  public:
-  KeepAliveTest() {}
+  KeepAliveTest()
+      : ExtensionsTest(base::MakeUnique<content::TestBrowserThreadBundle>()) {}
   ~KeepAliveTest() override {}
 
   void SetUp() override {
     ExtensionsTest::SetUp();
-    message_loop_.reset(new base::MessageLoop);
     extension_ =
         ExtensionBuilder()
             .SetManifest(
@@ -44,11 +44,6 @@ class KeepAliveTest : public ExtensionsTest {
                     .Build())
             .SetID("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
             .Build();
-  }
-
-  void TearDown() override {
-    message_loop_.reset();
-    ExtensionsTest::TearDown();
   }
 
   void WaitUntilLazyKeepAliveChanges() {
@@ -72,7 +67,6 @@ class KeepAliveTest : public ExtensionsTest {
   }
 
  private:
-  std::unique_ptr<base::MessageLoop> message_loop_;
   scoped_refptr<const Extension> extension_;
 
   DISALLOW_COPY_AND_ASSIGN(KeepAliveTest);

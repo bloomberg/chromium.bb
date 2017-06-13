@@ -68,8 +68,9 @@ int main(int argc, char** argv) {
 
   // The ContextFactory must exist before any Compositors are created.
   viz::FrameSinkManagerHost frame_sink_manager_;
-  auto context_factory =
-      base::MakeUnique<ui::InProcessContextFactory>(&frame_sink_manager_);
+  cc::SurfaceManager surface_manager_;
+  auto context_factory = base::MakeUnique<ui::InProcessContextFactory>(
+      &frame_sink_manager_, &surface_manager_);
   context_factory->set_use_test_surface(false);
 
   base::MessageLoopForUI message_loop;

@@ -198,6 +198,7 @@ class RenderViewHostTestEnabler {
 #if defined(OS_ANDROID)
   std::unique_ptr<display::Screen> screen_;
 #endif
+  std::unique_ptr<base::MessageLoop> message_loop_;
   std::unique_ptr<MockRenderProcessHostFactory> rph_factory_;
   std::unique_ptr<TestRenderViewHostFactory> rvh_factory_;
   std::unique_ptr<TestRenderFrameHostFactory> rfh_factory_;

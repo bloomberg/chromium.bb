@@ -36,7 +36,10 @@ namespace extensions {
 
 class ImageLoaderTest : public ExtensionsTest {
  public:
-  ImageLoaderTest() : image_loaded_count_(0), quit_in_image_loaded_(false) {}
+  ImageLoaderTest()
+      : ExtensionsTest(base::MakeUnique<content::TestBrowserThreadBundle>()),
+        image_loaded_count_(0),
+        quit_in_image_loaded_(false) {}
 
   void OnImageLoaded(const gfx::Image& image) {
     image_loaded_count_++;
@@ -96,7 +99,6 @@ class ImageLoaderTest : public ExtensionsTest {
   gfx::ImageFamily image_family_;
 
  private:
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
   int image_loaded_count_;
   bool quit_in_image_loaded_;
 };

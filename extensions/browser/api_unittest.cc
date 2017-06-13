@@ -29,15 +29,14 @@ namespace utils = extensions::api_test_utils;
 
 namespace extensions {
 
-ApiUnitTest::ApiUnitTest() {}
+ApiUnitTest::ApiUnitTest()
+    : ExtensionsTest(base::MakeUnique<content::TestBrowserThreadBundle>()) {}
 
 ApiUnitTest::~ApiUnitTest() {}
 
 void ApiUnitTest::SetUp() {
   ExtensionsTest::SetUp();
 
-  thread_bundle_.reset(new content::TestBrowserThreadBundle(
-      content::TestBrowserThreadBundle::DEFAULT));
   user_prefs::UserPrefs::Set(browser_context(), &testing_pref_service_);
 
   extension_ = ExtensionBuilder()

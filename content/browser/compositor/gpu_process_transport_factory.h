@@ -18,6 +18,7 @@
 #include "build/build_config.h"
 #include "cc/output/renderer_settings.h"
 #include "cc/surfaces/frame_sink_id_allocator.h"
+#include "components/viz/host/frame_sink_manager_host.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "ui/compositor/compositor.h"
@@ -32,10 +33,6 @@ class VulkanInProcessContextProvider;
 
 namespace ui {
 class ContextProviderCommandBuffer;
-}
-
-namespace viz {
-class FrameSinkManagerHost;
 }
 
 namespace content {

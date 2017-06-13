@@ -57,7 +57,8 @@ const char kFeatureCSS3d[] = "css3d";
 
 class RequirementsCheckerTest : public ExtensionsTest {
  public:
-  RequirementsCheckerTest() {
+  RequirementsCheckerTest()
+      : ExtensionsTest(base::MakeUnique<content::TestBrowserThreadBundle>()) {
     manifest_dict_ = base::MakeUnique<base::DictionaryValue>();
   }
 
@@ -102,7 +103,6 @@ class RequirementsCheckerTest : public ExtensionsTest {
   PreloadCheckRunner runner_;
 
  private:
-  content::TestBrowserThreadBundle bundle_;
   scoped_refptr<Extension> extension_;
   std::unique_ptr<base::DictionaryValue> manifest_dict_;
 };

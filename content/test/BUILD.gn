@@ -250,6 +250,7 @@ static_library("test_support") {
     "//components/leveldb/public/interfaces",
     "//components/payments/mojom:mojom_payment_app",
     "//components/viz/display_compositor",
+    "//components/viz/frame_sinks",
     "//components/viz/host",
     "//content/app:both_for_content_tests",
     "//content/browser:for_content_tests",

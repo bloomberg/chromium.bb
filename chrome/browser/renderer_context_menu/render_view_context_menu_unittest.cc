@@ -101,6 +101,12 @@ std::unique_ptr<TestRenderViewContextMenu> CreateContextMenu(
 class RenderViewContextMenuTest : public testing::Test {
  protected:
   RenderViewContextMenuTest() = default;
+  // If the test uses a TestExtensionEnvironment, which provides a MessageLoop,
+  // it needs to be passed to the constructor so that it exists before the
+  // RenderViewHostTestEnabler which needs to use the MessageLoop.
+  explicit RenderViewContextMenuTest(
+      std::unique_ptr<extensions::TestExtensionEnvironment> env)
+      : environment_(std::move(env)) {}
 
   // Proxy defined here to minimize friend classes in RenderViewContextMenu
   static bool ExtensionContextAndPatternMatch(
@@ -123,6 +129,9 @@ class RenderViewContextMenuTest : public testing::Test {
     return base::MakeUnique<MenuItem>(id, "Added by an extension", false, true,
                                       type, contexts);
   }
+
+ protected:
+  std::unique_ptr<extensions::TestExtensionEnvironment> environment_;
 
  private:
   content::RenderViewHostTestEnabler rvh_test_enabler_;
@@ -301,7 +310,9 @@ TEST_F(RenderViewContextMenuTest, TargetIgnoredForSelectionOnImage) {
 
 class RenderViewContextMenuExtensionsTest : public RenderViewContextMenuTest {
  protected:
-  RenderViewContextMenuExtensionsTest() = default;
+  RenderViewContextMenuExtensionsTest()
+      : RenderViewContextMenuTest(
+            base::MakeUnique<extensions::TestExtensionEnvironment>()) {}
 
   void SetUp() override {
     RenderViewContextMenuTest::SetUp();
@@ -314,14 +325,11 @@ class RenderViewContextMenuExtensionsTest : public RenderViewContextMenuTest {
     RenderViewContextMenuTest::TearDown();
   }
 
-  TestingProfile* profile() const { return environment_.profile(); }
+  TestingProfile* profile() const { return environment_->profile(); }
 
-  extensions::TestExtensionEnvironment& environment() {
-    return environment_;
-  }
+  extensions::TestExtensionEnvironment& environment() { return *environment_; }
 
  protected:
-  extensions::TestExtensionEnvironment environment_;
   std::unique_ptr<ProtocolHandlerRegistry> registry_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewContextMenuExtensionsTest);

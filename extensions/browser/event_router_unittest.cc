@@ -127,7 +127,8 @@ std::unique_ptr<DictionaryValue> CreateHostSuffixFilter(
 
 class EventRouterTest : public ExtensionsTest {
  public:
-  EventRouterTest() {}
+  EventRouterTest()
+      : ExtensionsTest(base::MakeUnique<content::TestBrowserThreadBundle>()) {}
 
  protected:
   // Tests adding and removing observers from EventRouter.
@@ -174,7 +175,6 @@ class EventRouterTest : public ExtensionsTest {
   }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
   base::HistogramTester histogram_tester_;
 
   DISALLOW_COPY_AND_ASSIGN(EventRouterTest);
