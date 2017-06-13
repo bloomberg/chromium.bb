@@ -25,6 +25,9 @@ enum ChromeDistanceMetric {
   // Horizontal spacing between an item such as an icon or checkbox and a
   // label related to it.
   DISTANCE_RELATED_LABEL_HORIZONTAL,
+  // Horizontal spacing between an item and the related label, in the context of
+  // a row of such items. E.g. the bookmarks bar.
+  DISTANCE_RELATED_LABEL_HORIZONTAL_LIST,
   // Horizontal indent of a subsection relative to related items above, e.g.
   // checkboxes below explanatory text/headings.
   DISTANCE_SUBSECTION_HORIZONTAL_INDENT,

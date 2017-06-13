@@ -54,6 +54,8 @@ int HarmonyLayoutProvider::GetDistanceMetric(int metric) const {
       return kHarmonyLayoutUnit * 7;
     case DISTANCE_RELATED_LABEL_HORIZONTAL:
       return kHarmonyLayoutUnit;
+    case DISTANCE_RELATED_LABEL_HORIZONTAL_LIST:
+      return kHarmonyLayoutUnit / 2;
     case DISTANCE_SUBSECTION_HORIZONTAL_INDENT:
       return 0;
     case DISTANCE_UNRELATED_CONTROL_HORIZONTAL:
