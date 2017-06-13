@@ -84,10 +84,9 @@ public class WebappDataStorage {
     // The default shell Apk version of WebAPKs.
     static final int DEFAULT_SHELL_APK_VERSION = 1;
 
-    // Unset/invalid constants for last used times and URLs. 0 is used as the null last used time as
-    // WebappRegistry assumes that this is always a valid timestamp.
-    static final long LAST_USED_UNSET = 0;
-    static final long LAST_USED_INVALID = -1;
+    // Invalid constants for timestamps and URLs. '0' is used as the invalid timestamp as
+    // WebappRegistry and WebApkUpdateManager assume that timestamps are always valid.
+    static final long TIMESTAMP_INVALID = 0;
     static final String URL_INVALID = "";
     static final int VERSION_INVALID = 0;
 
@@ -139,14 +138,8 @@ public class WebappDataStorage {
      * Opens an instance of WebappDataStorage for the web app specified.
      * @param webappId The ID of the web app.
      */
-    static WebappDataStorage open(final String webappId) {
-        final WebappDataStorage storage = sFactory.create(webappId);
-        if (storage.getLastUsedTime() == LAST_USED_INVALID) {
-            // If the last used time is invalid then ensure that there is no data in the
-            // WebappDataStorage which needs to be cleaned up.
-            assert storage.isEmpty();
-        }
-        return storage;
+    static WebappDataStorage open(String webappId) {
+        return sFactory.create(webappId);
     }
 
     /**
@@ -321,10 +314,7 @@ public class WebappDataStorage {
     void clearHistory() {
         SharedPreferences.Editor editor = mPreferences.edit();
 
-        // The last used time is set to 0 to ensure that a valid value is always present.
-        // If the web app is not launched prior to the next cleanup, then its remaining data will be
-        // removed. Otherwise, the next launch from home screen will update the last used time.
-        editor.putLong(KEY_LAST_USED, LAST_USED_UNSET);
+        editor.remove(KEY_LAST_USED);
         editor.remove(KEY_URL);
         editor.remove(KEY_SCOPE);
         editor.remove(KEY_LAST_CHECK_WEB_MANIFEST_UPDATE_TIME);
@@ -364,7 +354,7 @@ public class WebappDataStorage {
      * Returns the last used time of this object, or -1 if it is not stored.
      */
     public long getLastUsedTime() {
-        return mPreferences.getLong(KEY_LAST_USED, LAST_USED_INVALID);
+        return mPreferences.getLong(KEY_LAST_USED, TIMESTAMP_INVALID);
     }
 
     /**
@@ -406,7 +396,7 @@ public class WebappDataStorage {
      * updated. This time needs to be set when the WebAPK is registered.
      */
     private long getLastCheckForWebManifestUpdateTime() {
-        return mPreferences.getLong(KEY_LAST_CHECK_WEB_MANIFEST_UPDATE_TIME, LAST_USED_INVALID);
+        return mPreferences.getLong(KEY_LAST_CHECK_WEB_MANIFEST_UPDATE_TIME, TIMESTAMP_INVALID);
     }
 
     /**
@@ -423,7 +413,7 @@ public class WebappDataStorage {
      * This time needs to be set when the WebAPK is registered.
      */
     long getLastWebApkUpdateRequestCompletionTime() {
-        return mPreferences.getLong(KEY_LAST_UPDATE_REQUEST_COMPLETE_TIME, LAST_USED_INVALID);
+        return mPreferences.getLong(KEY_LAST_UPDATE_REQUEST_COMPLETE_TIME, TIMESTAMP_INVALID);
     }
 
     /**
@@ -485,7 +475,7 @@ public class WebappDataStorage {
      */
     boolean didPreviousUpdateSucceed() {
         long lastUpdateCompletionTime = getLastWebApkUpdateRequestCompletionTime();
-        if (lastUpdateCompletionTime == WebappDataStorage.LAST_USED_INVALID) {
+        if (lastUpdateCompletionTime == TIMESTAMP_INVALID) {
             return true;
         }
         return getDidLastWebApkUpdateRequestSucceed();
@@ -518,9 +508,5 @@ public class WebappDataStorage {
         mId = webappId;
         mPreferences = ContextUtils.getApplicationContext().getSharedPreferences(
                 SHARED_PREFS_FILE_PREFIX + webappId, Context.MODE_PRIVATE);
-    }
-
-    private boolean isEmpty() {
-        return mPreferences.getAll().isEmpty();
     }
 }

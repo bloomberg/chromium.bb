@@ -73,7 +73,7 @@ public class WebApkUpdateManagerTest {
 
     /** {@link WebappDataStorage#Clock} subclass which enables time to be manually advanced. */
     private static class MockClock extends WebappDataStorage.Clock {
-        // 0 has a special meaning: {@link WebappDataStorage#LAST_USED_UNSET}.
+        // 0 has a special meaning: {@link WebappDataStorage#TIMESTAMP_INVALID}.
         private long mTimeMillis = 1;
 
         public void advance(long millis) {
