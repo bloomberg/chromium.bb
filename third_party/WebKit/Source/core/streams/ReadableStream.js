@@ -1040,7 +1040,7 @@
 
     highWaterMark = Number(highWaterMark);
     if (Number_isNaN(highWaterMark)) {
-      throw new RangeError(streamErrors.errInvalidHWM);
+      throw new RangeError(streamErrors.invalidHWM);
     }
     if (highWaterMark < 0) {
       throw new RangeError(streamErrors.invalidHWM);
