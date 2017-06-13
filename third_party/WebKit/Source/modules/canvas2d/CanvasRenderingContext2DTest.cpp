@@ -1144,7 +1144,12 @@ TEST_F(CanvasRenderingContext2DTest, ImageBitmapColorSpaceConversion) {
         break;
       case ColorSpaceConversion::DEFAULT_NOT_COLOR_CORRECTED:
         color_space = ColorBehavior::GlobalTargetColorSpace().ToSkColorSpace();
-        color_format = color_format32;
+        if (color_space->gammaIsLinear()) {
+          color_type = SkColorType::kRGBA_F16_SkColorType;
+          color_format = SkColorSpaceXform::ColorFormat::kRGBA_F16_ColorFormat;
+        } else {
+          color_format = color_format32;
+        }
         break;
       case ColorSpaceConversion::DEFAULT_COLOR_CORRECTED:
       case ColorSpaceConversion::SRGB:
