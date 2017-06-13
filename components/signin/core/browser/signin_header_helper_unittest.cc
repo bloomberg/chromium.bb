@@ -9,6 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
+#include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/signin/core/browser/chrome_connected_header_helper.h"
@@ -23,6 +24,8 @@
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
 #include "components/signin/core/browser/dice_header_helper.h"
 #endif
+
+namespace signin {
 
 class SigninHeaderHelperTest : public testing::Test {
  protected:
@@ -42,10 +45,10 @@ class SigninHeaderHelperTest : public testing::Test {
   void CheckMirrorCookieRequest(const GURL& url,
                                 const std::string& account_id,
                                 const std::string& expected_request) {
-    EXPECT_EQ(signin::BuildMirrorRequestCookieIfPossible(
-                  url, account_id, cookie_settings_.get(),
-                  signin::PROFILE_MODE_DEFAULT),
-              expected_request);
+    EXPECT_EQ(
+        BuildMirrorRequestCookieIfPossible(
+            url, account_id, cookie_settings_.get(), PROFILE_MODE_DEFAULT),
+        expected_request);
   }
 
   std::unique_ptr<net::URLRequest> CreateRequest(
@@ -54,9 +57,9 @@ class SigninHeaderHelperTest : public testing::Test {
     std::unique_ptr<net::URLRequest> url_request =
         url_request_context_.CreateRequest(url, net::DEFAULT_PRIORITY, nullptr,
                                            TRAFFIC_ANNOTATION_FOR_TESTS);
-    signin::AppendOrRemoveAccountConsistentyRequestHeader(
+    AppendOrRemoveAccountConsistentyRequestHeader(
         url_request.get(), GURL(), account_id, cookie_settings_.get(),
-        signin::PROFILE_MODE_DEFAULT);
+        PROFILE_MODE_DEFAULT);
     return url_request;
   }
 
@@ -80,7 +83,7 @@ class SigninHeaderHelperTest : public testing::Test {
     std::unique_ptr<net::URLRequest> url_request =
         CreateRequest(url, account_id);
     CheckAccountConsistencyHeaderRequest(
-        url_request.get(), signin::kChromeConnectedHeader, expected_request);
+        url_request.get(), kChromeConnectedHeader, expected_request);
   }
 
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
@@ -90,11 +93,10 @@ class SigninHeaderHelperTest : public testing::Test {
                               const std::string& expected_dice_request) {
     std::unique_ptr<net::URLRequest> url_request =
         CreateRequest(url, account_id);
-    CheckAccountConsistencyHeaderRequest(url_request.get(),
-                                         signin::kChromeConnectedHeader,
-                                         expected_mirror_request);
     CheckAccountConsistencyHeaderRequest(
-        url_request.get(), signin::kDiceRequestHeader, expected_dice_request);
+        url_request.get(), kChromeConnectedHeader, expected_mirror_request);
+    CheckAccountConsistencyHeaderRequest(url_request.get(), kDiceRequestHeader,
+                                         expected_dice_request);
   }
 #endif
 
@@ -222,6 +224,58 @@ TEST_F(SigninHeaderHelperTest, TestMirrorRequestDrive) {
       "id=0123456789:mode=0:enable_account_consistency=true");
 }
 
+TEST_F(SigninHeaderHelperTest, TestDiceInvalidResponseParams) {
+  DiceResponseParams params = BuildDiceResponseParams("blah");
+  EXPECT_EQ(DiceAction::NONE, params.user_intention);
+}
+
+TEST_F(SigninHeaderHelperTest, TestBuildDiceResponseParams) {
+  const char kAuthorizationCode[] = "authorization_code";
+  const char kEmail[] = "foo@example.com";
+  const char kObfuscatedGaiaID[] = "obfuscated_gaia_id";
+  const int kSessionIndex = 42;
+
+  {
+    // Signin response.
+    DiceResponseParams params = BuildDiceResponseParams(base::StringPrintf(
+        "action=SIGNIN,id=%s,email=%s,authuser=%i,authorization_code=%s",
+        kObfuscatedGaiaID, kEmail, kSessionIndex, kAuthorizationCode));
+    EXPECT_EQ(DiceAction::SIGNIN, params.user_intention);
+    EXPECT_EQ(kObfuscatedGaiaID, params.obfuscated_gaia_id);
+    EXPECT_EQ(kEmail, params.email);
+    EXPECT_EQ(kSessionIndex, params.session_index);
+    EXPECT_EQ(kAuthorizationCode, params.authorization_code);
+  }
+
+  {
+    // Signout response.
+    DiceResponseParams params = BuildDiceResponseParams(
+        base::StringPrintf("action=SIGNOUT,id=%s,email=%s,authuser=%i",
+                           kObfuscatedGaiaID, kEmail, kSessionIndex));
+    EXPECT_EQ(DiceAction::SIGNOUT, params.user_intention);
+    EXPECT_EQ(kObfuscatedGaiaID, params.obfuscated_gaia_id);
+    EXPECT_EQ(kEmail, params.email);
+    EXPECT_EQ(kSessionIndex, params.session_index);
+    EXPECT_EQ("", params.authorization_code);
+  }
+
+  {
+    // Missing authorization code.
+    DiceResponseParams params = BuildDiceResponseParams(
+        base::StringPrintf("action=SIGNIN,id=%s,email=%s,authuser=%i",
+                           kObfuscatedGaiaID, kEmail, kSessionIndex));
+    EXPECT_EQ(DiceAction::NONE, params.user_intention);
+  }
+
+  {
+    // Missing non-optional field (email).
+    DiceResponseParams params = BuildDiceResponseParams(base::StringPrintf(
+        "action=SIGNIN,id=%s,authuser=%i,authorization_code=%s",
+        kObfuscatedGaiaID, kSessionIndex, kAuthorizationCode));
+    EXPECT_EQ(DiceAction::NONE, params.user_intention);
+  }
+}
+
 #endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
 
 // Tests that the Mirror header request is returned normally when the redirect
@@ -235,11 +289,11 @@ TEST_F(SigninHeaderHelperTest, TestMirrorHeaderEligibleRedirectURL) {
   std::unique_ptr<net::URLRequest> url_request =
       url_request_context_.CreateRequest(url, net::DEFAULT_PRIORITY, nullptr,
                                          TRAFFIC_ANNOTATION_FOR_TESTS);
-  signin::AppendOrRemoveAccountConsistentyRequestHeader(
+  AppendOrRemoveAccountConsistentyRequestHeader(
       url_request.get(), redirect_url, account_id, cookie_settings_.get(),
-      signin::PROFILE_MODE_DEFAULT);
-  EXPECT_TRUE(url_request->extra_request_headers().HasHeader(
-      signin::kChromeConnectedHeader));
+      PROFILE_MODE_DEFAULT);
+  EXPECT_TRUE(
+      url_request->extra_request_headers().HasHeader(kChromeConnectedHeader));
 }
 
 // Tests that the Mirror header request is stripped when the redirect URL is not
@@ -253,11 +307,11 @@ TEST_F(SigninHeaderHelperTest, TestMirrorHeaderNonEligibleRedirectURL) {
   std::unique_ptr<net::URLRequest> url_request =
       url_request_context_.CreateRequest(url, net::DEFAULT_PRIORITY, nullptr,
                                          TRAFFIC_ANNOTATION_FOR_TESTS);
-  signin::AppendOrRemoveAccountConsistentyRequestHeader(
+  AppendOrRemoveAccountConsistentyRequestHeader(
       url_request.get(), redirect_url, account_id, cookie_settings_.get(),
-      signin::PROFILE_MODE_DEFAULT);
-  EXPECT_FALSE(url_request->extra_request_headers().HasHeader(
-      signin::kChromeConnectedHeader));
+      PROFILE_MODE_DEFAULT);
+  EXPECT_FALSE(
+      url_request->extra_request_headers().HasHeader(kChromeConnectedHeader));
 }
 
 // Tests that the Mirror header, whatever its value is, is untouched when both
@@ -272,13 +326,15 @@ TEST_F(SigninHeaderHelperTest, TestIgnoreMirrorHeaderNonEligibleURLs) {
   std::unique_ptr<net::URLRequest> url_request =
       url_request_context_.CreateRequest(url, net::DEFAULT_PRIORITY, nullptr,
                                          TRAFFIC_ANNOTATION_FOR_TESTS);
-  url_request->SetExtraRequestHeaderByName(signin::kChromeConnectedHeader,
-                                           fake_header, false);
-  signin::AppendOrRemoveAccountConsistentyRequestHeader(
+  url_request->SetExtraRequestHeaderByName(kChromeConnectedHeader, fake_header,
+                                           false);
+  AppendOrRemoveAccountConsistentyRequestHeader(
       url_request.get(), redirect_url, account_id, cookie_settings_.get(),
-      signin::PROFILE_MODE_DEFAULT);
+      PROFILE_MODE_DEFAULT);
   std::string header;
   EXPECT_TRUE(url_request->extra_request_headers().GetHeader(
-      signin::kChromeConnectedHeader, &header));
+      kChromeConnectedHeader, &header));
   EXPECT_EQ(fake_header, header);
 }
+
+}  // namespace signin

@@ -39,6 +39,10 @@ namespace {
 
 const char kChromeManageAccountsHeader[] = "X-Chrome-Manage-Accounts";
 
+#if !defined(OS_ANDROID)
+const char kDiceResponseHeader[] = "X-Chrome-ID-Consistency-Response";
+#endif
+
 // Processes the mirror response header on the UI thread. Currently depending
 // on the value of |header_value|, it either shows the profile avatar menu, or
 // opens an incognito window/tab.
@@ -102,44 +106,9 @@ void ProcessMirrorHeaderUIThread(int child_id,
 #endif  // !defined(OS_ANDROID)
 }
 
-}  // namespace
-
-void FixAccountConsistencyRequestHeader(net::URLRequest* request,
-                                        const GURL& redirect_url,
-                                        ProfileIOData* io_data,
-                                        int child_id,
-                                        int route_id) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-
-  if (io_data->IsOffTheRecord())
-    return;
-
-#if !defined(OS_ANDROID)
-  extensions::WebViewRendererState::WebViewInfo webview_info;
-  bool is_guest = extensions::WebViewRendererState::GetInstance()->GetInfo(
-      child_id, route_id, &webview_info);
-  // Do not set the account consistency header on requests from a native signin
-  // webview, as identified by an empty extension id which means the webview is
-  // embedded in a webui page, otherwise user may end up with a blank page as
-  // gaia uses the header to decide whether it returns 204 for certain end
-  // points.
-  if (is_guest && webview_info.owner_host.empty())
-    return;
-#endif  // !defined(OS_ANDROID)
-
-  int profile_mode_mask = PROFILE_MODE_DEFAULT;
-  if (io_data->incognito_availibility()->GetValue() ==
-          IncognitoModePrefs::DISABLED ||
-      IncognitoModePrefs::ArePlatformParentalControlsEnabled()) {
-    profile_mode_mask |= PROFILE_MODE_INCOGNITO_DISABLED;
-  }
-
-  // If new url is eligible to have the header, add it, otherwise remove it.
-  AppendOrRemoveAccountConsistentyRequestHeader(
-      request, redirect_url, io_data->google_services_account_id()->GetValue(),
-      io_data->GetCookieSettings(), profile_mode_mask);
-}
-
+// Looks for the X-Chrome-Manage-Accounts response header, and if found,
+// tries to show the avatar bubble in the browser identified by the
+// child/route id. Must be called on IO thread.
 void ProcessMirrorResponseHeaderIfExists(net::URLRequest* request,
                                          ProfileIOData* io_data,
                                          int child_id,
@@ -188,6 +157,111 @@ void ProcessMirrorResponseHeaderIfExists(net::URLRequest* request,
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
       base::Bind(ProcessMirrorHeaderUIThread, child_id, route_id, params));
+}
+
+#if !defined(OS_ANDROID)
+void ProcessDiceResponseHeaderIfExists(net::URLRequest* request,
+                                       ProfileIOData* io_data) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  if (io_data->IsOffTheRecord())
+    return;
+
+  const content::ResourceRequestInfo* info =
+      content::ResourceRequestInfo::ForRequest(request);
+  if (!(info && info->GetResourceType() == content::RESOURCE_TYPE_MAIN_FRAME))
+    return;
+
+  if (!gaia::IsGaiaSignonRealm(request->url().GetOrigin()))
+    return;
+
+  if (switches::GetAccountConsistencyMethod() !=
+      switches::AccountConsistencyMethod::kDice) {
+    return;
+  }
+
+  net::HttpResponseHeaders* response_headers = request->response_headers();
+  if (!response_headers)
+    return;
+
+  std::string header_value;
+  if (!response_headers->GetNormalizedHeader(kDiceResponseHeader,
+                                             &header_value)) {
+    return;
+  }
+
+  DiceResponseParams params = BuildDiceResponseParams(header_value);
+  // If the request does not have a response header or if the header contains
+  // garbage, then |user_intention| is set to |NONE|.
+  if (params.user_intention == DiceAction::NONE)
+    return;
+
+  // TODO(droger): Process the Dice header: on sign-in, exchange the
+  // authorization code for a refresh token, on sign-out just follow the
+  // sign-out URL.
+}
+#endif  // !defined(OS_ANDROID)
+
+}  // namespace
+
+void FixAccountConsistencyRequestHeader(net::URLRequest* request,
+                                        const GURL& redirect_url,
+                                        ProfileIOData* io_data,
+                                        int child_id,
+                                        int route_id) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+
+  if (io_data->IsOffTheRecord())
+    return;
+
+#if !defined(OS_ANDROID)
+  extensions::WebViewRendererState::WebViewInfo webview_info;
+  bool is_guest = extensions::WebViewRendererState::GetInstance()->GetInfo(
+      child_id, route_id, &webview_info);
+  // Do not set the account consistency header on requests from a native signin
+  // webview, as identified by an empty extension id which means the webview is
+  // embedded in a webui page, otherwise user may end up with a blank page as
+  // gaia uses the header to decide whether it returns 204 for certain end
+  // points.
+  if (is_guest && webview_info.owner_host.empty())
+    return;
+#endif  // !defined(OS_ANDROID)
+
+  int profile_mode_mask = PROFILE_MODE_DEFAULT;
+  if (io_data->incognito_availibility()->GetValue() ==
+          IncognitoModePrefs::DISABLED ||
+      IncognitoModePrefs::ArePlatformParentalControlsEnabled()) {
+    profile_mode_mask |= PROFILE_MODE_INCOGNITO_DISABLED;
+  }
+
+  // If new url is eligible to have the header, add it, otherwise remove it.
+  AppendOrRemoveAccountConsistentyRequestHeader(
+      request, redirect_url, io_data->google_services_account_id()->GetValue(),
+      io_data->GetCookieSettings(), profile_mode_mask);
+}
+
+void ProcessAccountConsistencyResponseHeaders(net::URLRequest* request,
+                                              const GURL& redirect_url,
+                                              ProfileIOData* io_data,
+                                              int child_id,
+                                              int route_id) {
+  if (redirect_url.is_empty()) {
+    // This is not a redirect.
+
+    // See if the response contains the X-Chrome-Manage-Accounts header. If so
+    // show the profile avatar bubble so that user can complete signin/out
+    // action the native UI.
+    signin::ProcessMirrorResponseHeaderIfExists(request, io_data, child_id,
+                                                route_id);
+  } else {
+// This is a redirect.
+
+#if !defined(OS_ANDROID)
+    // Process the Dice header: on sign-in, exchange the authorization code for
+    // a refresh token, on sign-out just follow the sign-out URL.
+    signin::ProcessDiceResponseHeaderIfExists(request, io_data);
+#endif
+  }
 }
 
 }  // namespace signin

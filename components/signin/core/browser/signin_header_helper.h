@@ -9,6 +9,7 @@
 #include <string>
 
 #include "build/build_config.h"
+#include "url/gurl.h"
 
 namespace content_settings {
 class CookieSettings;
@@ -17,8 +18,6 @@ class CookieSettings;
 namespace net {
 class URLRequest;
 }
-
-class GURL;
 
 namespace signin {
 
@@ -47,7 +46,14 @@ enum GAIAServiceType {
   GAIA_SERVICE_TYPE_DEFAULT,     // All other cases.
 };
 
-// Struct describing the paramters received in the manage account header.
+enum class DiceAction {
+  NONE,
+  SIGNIN,                 // Sign in an account.
+  SIGNOUT,                // Sign out of all sessions.
+  SINGLE_SESSION_SIGNOUT  // Sign out of a single session.
+};
+
+// Struct describing the parameters received in the manage account header.
 struct ManageAccountsParams {
   // The requested service type such as "ADDSESSION".
   GAIAServiceType service_type;
@@ -71,6 +77,31 @@ struct ManageAccountsParams {
 
   ManageAccountsParams();
   ManageAccountsParams(const ManageAccountsParams& other);
+};
+
+// Struct describing the parameters received in the Dice response header.
+struct DiceResponseParams {
+  DiceResponseParams();
+  ~DiceResponseParams();
+  DiceResponseParams(const DiceResponseParams& other);
+
+  DiceAction user_intention;
+
+  // Gaia ID of the account signed in or signed out (which may be a secondary
+  // account). When |user_intention| is SIGNOUT, this is the ID of the primary
+  // account.
+  std::string obfuscated_gaia_id;
+
+  // Email of the account signed in or signed out. When |user_intention| is
+  // SIGNOUT, this is the email of the primary account.
+  std::string email;
+
+  // Session index for the account signed in or signed out. When
+  // |user_intention| is SIGNOUT, this is 0.
+  int session_index;
+
+  // Optional. Must be set when |user_intention| is SIGNIN.
+  std::string authorization_code;
 };
 
 // Base class for managing the signin headers (Dice and Chrome-Connected).
@@ -145,6 +176,14 @@ void AppendOrRemoveAccountConsistentyRequestHeader(
 // Returns the parameters contained in the X-Chrome-Manage-Accounts response
 // header.
 ManageAccountsParams BuildManageAccountsParams(const std::string& header_value);
+
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
+// Returns the parameters contained in the X-Chrome-ID-Consistency-Response
+// response header.
+// Returns DiceAction::NONE in case of error (such as missing or malformed
+// parameters).
+DiceResponseParams BuildDiceResponseParams(const std::string& header_value);
+#endif
 
 }  // namespace signin
 

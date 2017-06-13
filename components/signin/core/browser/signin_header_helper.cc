@@ -17,7 +17,6 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/base/escape.h"
 #include "net/url_request/url_request.h"
-#include "url/gurl.h"
 
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
 #include "components/signin/core/browser/dice_header_helper.h"
@@ -41,6 +40,13 @@ ManageAccountsParams::ManageAccountsParams()
 }
 
 ManageAccountsParams::ManageAccountsParams(const ManageAccountsParams& other) =
+    default;
+
+DiceResponseParams::DiceResponseParams() : user_intention(DiceAction::NONE) {}
+
+DiceResponseParams::~DiceResponseParams() {}
+
+DiceResponseParams::DiceResponseParams(const DiceResponseParams& other) =
     default;
 
 bool SettingsAllowSigninCookies(
@@ -152,5 +158,11 @@ ManageAccountsParams BuildManageAccountsParams(
     const std::string& header_value) {
   return ChromeConnectedHeaderHelper::BuildManageAccountsParams(header_value);
 }
+
+#if !defined(OS_IOS) && !defined(OS_ANDROID)
+DiceResponseParams BuildDiceResponseParams(const std::string& header_value) {
+  return DiceHeaderHelper::BuildDiceResponseParams(header_value);
+}
+#endif
 
 }  // namespace signin
