@@ -28,7 +28,7 @@ shouldThrow("r.surroundContents(document.createElement('a'))", '"InvalidStateErr
 // But not when we don't try to split the comment.
 r.setStart(c1, 0);
 r.setEnd(c1, 5);
-shouldThrow("r.surroundContents(document.createElement('a'))", '"HierarchyRequestError: Failed to execute \'surroundContents\' on \'Range\': The node to be inserted is a \'A\' node, which may not be inserted here."');
+shouldThrow("r.surroundContents(document.createElement('a'))", '"HierarchyRequestError: Failed to execute \'surroundContents\' on \'Range\': Nodes of type \'A\' may not be inserted inside nodes of type \'#comment\'."');
 </script>
 </body>
 </html>
