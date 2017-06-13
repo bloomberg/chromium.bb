@@ -45,6 +45,7 @@
 #include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/login/login_state.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "components/google/core/browser/google_util.h"
@@ -103,6 +104,8 @@ void SystemTrayDelegateChromeOS::Initialize() {
   ui::ime::InputMethodMenuManager::GetInstance()->AddObserver(this);
 
   BrowserList::AddObserver(this);
+
+  DBusThreadManager::Get()->GetUpdateEngineClient()->AddObserver(this);
 }
 
 SystemTrayDelegateChromeOS::~SystemTrayDelegateChromeOS() {
@@ -119,6 +122,9 @@ SystemTrayDelegateChromeOS::~SystemTrayDelegateChromeOS() {
 
   BrowserList::RemoveObserver(this);
   StopObservingAppWindowRegistry();
+
+  if (DBusThreadManager::IsInitialized())
+    DBusThreadManager::Get()->GetUpdateEngineClient()->RemoveObserver(this);
 }
 
 void SystemTrayDelegateChromeOS::ShowUserLogin() {
@@ -375,6 +381,10 @@ void SystemTrayDelegateChromeOS::ImeMenuListChanged() {}
 void SystemTrayDelegateChromeOS::ImeMenuItemsChanged(
     const std::string& engine_id,
     const std::vector<input_method::InputMethodManager::MenuItem>& items) {}
+
+void SystemTrayDelegateChromeOS::OnUpdateOverCellularTargetSet(bool success) {
+  GetSystemTrayNotifier()->NotifyUpdateOverCellularTargetSet(success);
+}
 
 ash::SystemTrayDelegate* CreateSystemTrayDelegate() {
   return new SystemTrayDelegateChromeOS();

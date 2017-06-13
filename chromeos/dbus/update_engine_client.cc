@@ -468,13 +468,18 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
   void OnSetUpdateOverCellularTarget(
       const SetUpdateOverCellularTargetCallback& callback,
       dbus::Response* response) {
+    bool success = true;
     if (!response) {
+      success = false;
       LOG(ERROR) << update_engine::kSetUpdateOverCellularTarget
                  << " call failed";
-      callback.Run(false);
-      return;
     }
-    callback.Run(true);
+
+    for (auto& observer : observers_) {
+      observer.OnUpdateOverCellularTargetSet(success);
+    }
+
+    callback.Run(success);
   }
 
   // Called when a status update signal is received.
