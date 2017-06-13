@@ -2,23 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/snapshots/lru_cache.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
 TEST(LRUCacheTest, Basic) {
-  base::scoped_nsobject<LRUCache> cache([[LRUCache alloc] initWithCacheSize:3]);
+  LRUCache* cache = [[LRUCache alloc] initWithCacheSize:3];
 
-  base::scoped_nsobject<NSString> value1(
-      [[NSString alloc] initWithString:@"Value 1"]);
-  base::scoped_nsobject<NSString> value2(
-      [[NSString alloc] initWithString:@"Value 2"]);
-  base::scoped_nsobject<NSString> value3(
-      [[NSString alloc] initWithString:@"Value 3"]);
-  base::scoped_nsobject<NSString> value4(
-      [[NSString alloc] initWithString:@"Value 4"]);
+  NSString* value1 = @"Value 1";
+  NSString* value2 = @"Value 2";
+  NSString* value3 = @"Value 3";
+  NSString* value4 = @"Value 4";
 
   EXPECT_TRUE([cache count] == 0);
   EXPECT_TRUE([cache isEmpty]);
@@ -36,7 +35,7 @@ TEST(LRUCacheTest, Basic) {
   EXPECT_TRUE(value == nil);
 
   value = [cache objectForKey:@"VALUE 2"];
-  EXPECT_TRUE(value == value2.get());
+  EXPECT_TRUE(value == value2);
 
   // Removing a non existing key shouldn't do anything.
   [cache removeObjectForKey:@"XXX"];

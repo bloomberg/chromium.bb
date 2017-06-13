@@ -12,8 +12,6 @@
 #include "base/location.h"
 #include "base/mac/bind_objc_block.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/mac/scoped_nsautorelease_pool.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task_scheduler/task_scheduler.h"
@@ -26,6 +24,10 @@
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 static const NSUInteger kSessionCount = 10;
 static const NSUInteger kSnapshotPixelSize = 8;
 
@@ -37,10 +39,9 @@ class SnapshotCacheTest : public PlatformTest {
   // random colors.
   void SetUp() override {
     PlatformTest::SetUp();
-    snapshotCache_.reset([[SnapshotCache alloc] init]);
-    testImages_.reset([[NSMutableArray alloc] initWithCapacity:kSessionCount]);
-    testSessions_.reset(
-        [[NSMutableArray alloc] initWithCapacity:kSessionCount]);
+    snapshotCache_ = [[SnapshotCache alloc] init];
+    testImages_ = [[NSMutableArray alloc] initWithCapacity:kSessionCount];
+    testSessions_ = [[NSMutableArray alloc] initWithCapacity:kSessionCount];
 
     CGFloat scale = [snapshotCache_ snapshotScaleForDevice];
     UIGraphicsBeginImageContextWithOptions(
@@ -63,13 +64,11 @@ class SnapshotCacheTest : public PlatformTest {
   void TearDown() override {
     ClearDumpedImages();
     [snapshotCache_ shutdown];
-    snapshotCache_.reset();
+    snapshotCache_ = nil;
     PlatformTest::TearDown();
   }
 
-  SnapshotCache* GetSnapshotCache() {
-    return snapshotCache_.get();
-  }
+  SnapshotCache* GetSnapshotCache() { return snapshotCache_; }
 
   // Generates an image filled with a random color.
   UIImage* GenerateRandomImage(CGContextRef context) {
@@ -94,7 +93,7 @@ class SnapshotCacheTest : public PlatformTest {
     SnapshotCache* cache = GetSnapshotCache();
 
     NSString* sessionID;
-    for (sessionID in testSessions_.get())
+    for (sessionID in testSessions_)
       [cache removeImageWithSessionID:sessionID];
 
     FlushRunLoops();
@@ -105,7 +104,7 @@ class SnapshotCacheTest : public PlatformTest {
 
     __block BOOL foundImage = NO;
     __block NSUInteger numCallbacks = 0;
-    for (sessionID in testSessions_.get()) {
+    for (sessionID in testSessions_) {
       base::FilePath path([cache imagePathForSessionID:sessionID]);
 
       // Checks that the snapshot is not on disk.
@@ -138,10 +137,11 @@ class SnapshotCacheTest : public PlatformTest {
     SnapshotCache* cache = GetSnapshotCache();
     // Put color images in the cache.
     for (NSUInteger i = 0; i < count; ++i) {
-      base::mac::ScopedNSAutoreleasePool pool;
-      UIImage* image = [testImages_ objectAtIndex:i];
-      NSString* sessionID = [testSessions_ objectAtIndex:i];
-      [cache setImage:image withSessionID:sessionID];
+      @autoreleasepool {
+        UIImage* image = [testImages_ objectAtIndex:i];
+        NSString* sessionID = [testSessions_ objectAtIndex:i];
+        [cache setImage:image withSessionID:sessionID];
+      }
     }
     if (waitForFilesOnDisk) {
       FlushRunLoops();
@@ -205,9 +205,9 @@ class SnapshotCacheTest : public PlatformTest {
   }
 
   web::TestWebThreadBundle thread_bundle_;
-  base::scoped_nsobject<SnapshotCache> snapshotCache_;
-  base::scoped_nsobject<NSMutableArray> testSessions_;
-  base::scoped_nsobject<NSMutableArray> testImages_;
+  SnapshotCache* snapshotCache_;
+  NSMutableArray* testSessions_;
+  NSMutableArray* testImages_;
 };
 
 // This test simply put all the snapshots in the cache and then gets them back
@@ -439,8 +439,8 @@ TEST_F(SnapshotCacheTest, CreateGreyCacheFromDisk) {
 // Disabled due to the greyImage crash.  b/8048597
 TEST_F(SnapshotCacheTest, MostRecentGreyBlock) {
   const NSUInteger kNumImages = 3;
-  base::scoped_nsobject<NSMutableArray> sessionIDs(
-      [[NSMutableArray alloc] initWithCapacity:kNumImages]);
+  NSMutableArray* sessionIDs =
+      [[NSMutableArray alloc] initWithCapacity:kNumImages];
   [sessionIDs addObject:[testSessions_ objectAtIndex:0]];
   [sessionIDs addObject:[testSessions_ objectAtIndex:1]];
   [sessionIDs addObject:[testSessions_ objectAtIndex:2]];
@@ -497,7 +497,7 @@ TEST_F(SnapshotCacheTest, GreyImageAllInBackground) {
   // to disk, which happens in a background thread.
   FlushRunLoops();
 
-  for (NSString* sessionID in testSessions_.get()) {
+  for (NSString* sessionID in testSessions_) {
     base::FilePath path([cache greyImagePathForSessionID:sessionID]);
     EXPECT_TRUE(base::PathExists(path));
     base::DeleteFile(path, false);
