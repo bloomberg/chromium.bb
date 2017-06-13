@@ -132,6 +132,13 @@ public class RenderTestRule extends TestWatcher {
         Bitmap testBitmap = ThreadUtils.runOnUiThreadBlockingNoException(new Callable<Bitmap>() {
             @Override
             public Bitmap call() throws Exception {
+                int height = view.getMeasuredHeight();
+                int width = view.getMeasuredWidth();
+                if (height <= 0 || width <= 0) {
+                    throw new IllegalStateException(
+                            "Invalid view dimensions: " + width + "x" + height);
+                }
+
                 return UiUtils.generateScaledScreenshot(view, 0, Bitmap.Config.ARGB_8888);
             }
         });
