@@ -101,12 +101,12 @@ bool StyleFetchedImage::UsesImageContainerSize() const {
   return image_->UsesImageContainerSize();
 }
 
-void StyleFetchedImage::AddClient(LayoutObject* layout_object) {
-  image_->AddObserver(layout_object);
+void StyleFetchedImage::AddClient(ImageResourceObserver* observer) {
+  image_->AddObserver(observer);
 }
 
-void StyleFetchedImage::RemoveClient(LayoutObject* layout_object) {
-  image_->RemoveObserver(layout_object);
+void StyleFetchedImage::RemoveClient(ImageResourceObserver* observer) {
+  image_->RemoveObserver(observer);
 }
 
 void StyleFetchedImage::ImageNotifyFinished(ImageResourceContent*) {
@@ -118,14 +118,16 @@ void StyleFetchedImage::ImageNotifyFinished(ImageResourceContent*) {
 }
 
 PassRefPtr<Image> StyleFetchedImage::GetImage(
-    const LayoutObject& obj,
+    const ImageResourceObserver&,
+    const Document&,
+    const ComputedStyle& style,
     const IntSize& container_size) const {
   if (!image_->GetImage()->IsSVGImage())
     return image_->GetImage();
 
   return SVGImageForContainer::Create(ToSVGImage(image_->GetImage()),
-                                      container_size,
-                                      obj.StyleRef().EffectiveZoom(), url_);
+                                      container_size, style.EffectiveZoom(),
+                                      url_);
 }
 
 bool StyleFetchedImage::KnownToBeOpaque(const Document&,

@@ -68,10 +68,13 @@ CSSPaintDefinition::CSSPaintDefinition(
 CSSPaintDefinition::~CSSPaintDefinition() {}
 
 PassRefPtr<Image> CSSPaintDefinition::Paint(
-    const LayoutObject& layout_object,
+    const ImageResourceObserver& client,
     const IntSize& size,
     const CSSStyleValueVector* paint_arguments) {
   DCHECK(paint_arguments);
+
+  // TODO: Break dependency on LayoutObject. Passing the Node should work.
+  const LayoutObject& layout_object = static_cast<const LayoutObject&>(client);
 
   float zoom = layout_object.StyleRef().EffectiveZoom();
   const IntSize specified_size = GetSpecifiedSize(size, zoom);

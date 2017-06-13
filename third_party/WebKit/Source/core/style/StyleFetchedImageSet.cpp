@@ -107,23 +107,25 @@ bool StyleFetchedImageSet::UsesImageContainerSize() const {
   return best_fit_image_->UsesImageContainerSize();
 }
 
-void StyleFetchedImageSet::AddClient(LayoutObject* layout_object) {
-  best_fit_image_->AddObserver(layout_object);
+void StyleFetchedImageSet::AddClient(ImageResourceObserver* observer) {
+  best_fit_image_->AddObserver(observer);
 }
 
-void StyleFetchedImageSet::RemoveClient(LayoutObject* layout_object) {
-  best_fit_image_->RemoveObserver(layout_object);
+void StyleFetchedImageSet::RemoveClient(ImageResourceObserver* observer) {
+  best_fit_image_->RemoveObserver(observer);
 }
 
 PassRefPtr<Image> StyleFetchedImageSet::GetImage(
-    const LayoutObject& obj,
+    const ImageResourceObserver&,
+    const Document&,
+    const ComputedStyle& style,
     const IntSize& container_size) const {
   if (!best_fit_image_->GetImage()->IsSVGImage())
     return best_fit_image_->GetImage();
 
   return SVGImageForContainer::Create(ToSVGImage(best_fit_image_->GetImage()),
-                                      container_size,
-                                      obj.StyleRef().EffectiveZoom(), url_);
+                                      container_size, style.EffectiveZoom(),
+                                      url_);
 }
 
 bool StyleFetchedImageSet::KnownToBeOpaque(const Document&,

@@ -37,9 +37,9 @@ namespace blink {
 
 class Document;
 class Image;
-class LayoutObject;
 class FloatSize;
 class ComputedStyle;
+class ImageResourceObserver;
 
 struct SizeAndCount {
   DISALLOW_NEW();
@@ -50,15 +50,18 @@ struct SizeAndCount {
   int count;
 };
 
-using LayoutObjectSizeCountMap = HashMap<const LayoutObject*, SizeAndCount>;
+using ClientSizeCountMap = HashMap<const ImageResourceObserver*, SizeAndCount>;
 
 class CORE_EXPORT CSSImageGeneratorValue : public CSSValue {
  public:
   ~CSSImageGeneratorValue();
 
-  void AddClient(const LayoutObject*, const IntSize&);
-  void RemoveClient(const LayoutObject*);
-  PassRefPtr<Image> GetImage(const LayoutObject&, const IntSize&);
+  void AddClient(const ImageResourceObserver*, const IntSize&);
+  void RemoveClient(const ImageResourceObserver*);
+  PassRefPtr<Image> GetImage(const ImageResourceObserver&,
+                             const Document&,
+                             const ComputedStyle&,
+                             const IntSize&);
 
   bool IsFixedSize() const;
   IntSize FixedSize(const Document&, const FloatSize& default_object_size);
@@ -77,13 +80,16 @@ class CORE_EXPORT CSSImageGeneratorValue : public CSSValue {
  protected:
   explicit CSSImageGeneratorValue(ClassType);
 
-  Image* GetImage(const LayoutObject*, const IntSize&);
+  Image* GetImage(const ImageResourceObserver*,
+                  const Document&,
+                  const ComputedStyle&,
+                  const IntSize&);
   void PutImage(const IntSize&, PassRefPtr<Image>);
-  const LayoutObjectSizeCountMap& Clients() const { return clients_; }
+  const ClientSizeCountMap& Clients() const { return clients_; }
 
   HashCountedSet<IntSize>
       sizes_;  // A count of how many times a given image size is in use.
-  LayoutObjectSizeCountMap
+  ClientSizeCountMap
       clients_;  // A map from LayoutObjects (with entry count) to image sizes.
   HashMap<IntSize, RefPtr<Image>>
       images_;  // A cache of Image objects by image size.
@@ -91,7 +97,7 @@ class CORE_EXPORT CSSImageGeneratorValue : public CSSValue {
   // TODO(Oilpan): when/if we can make the layoutObject point directly to the
   // CSSImageGenerator value using a member we don't need to have this hack
   // where we keep a persistent to the instance as long as there are clients in
-  // the LayoutObjectSizeCountMap.
+  // the ClientSizeCountMap.
   SelfKeepAlive<CSSImageGeneratorValue> keep_alive_;
 };
 

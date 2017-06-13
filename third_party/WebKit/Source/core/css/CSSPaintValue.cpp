@@ -42,17 +42,19 @@ String CSSPaintValue::GetName() const {
   return name_->Value();
 }
 
-PassRefPtr<Image> CSSPaintValue::GetImage(const LayoutObject& layout_object,
+PassRefPtr<Image> CSSPaintValue::GetImage(const ImageResourceObserver& client,
+                                          const Document& document,
+                                          const ComputedStyle&,
                                           const IntSize& size) {
-  if (!generator_)
-    generator_ =
-        CSSPaintImageGenerator::Create(GetName(), layout_object.GetDocument(),
-                                       paint_image_generator_observer_);
+  if (!generator_) {
+    generator_ = CSSPaintImageGenerator::Create(
+        GetName(), document, paint_image_generator_observer_);
+  }
 
   if (!ParseInputArguments())
     return nullptr;
 
-  return generator_->Paint(layout_object, size, parsed_input_arguments_);
+  return generator_->Paint(client, size, parsed_input_arguments_);
 }
 
 bool CSSPaintValue::ParseInputArguments() {
@@ -94,8 +96,10 @@ void CSSPaintValue::Observer::PaintImageGeneratorReady() {
 }
 
 void CSSPaintValue::PaintImageGeneratorReady() {
-  for (const LayoutObject* client : Clients().Keys()) {
-    const_cast<LayoutObject*>(client)->ImageChanged(
+  for (const ImageResourceObserver* client : Clients().Keys()) {
+    // TODO(ikilpatrick): We shouldn't be casting like this or mutate the layout
+    // tree from a const pointer.
+    const_cast<ImageResourceObserver*>(client)->ImageChanged(
         static_cast<WrappedImagePtr>(this));
   }
 }

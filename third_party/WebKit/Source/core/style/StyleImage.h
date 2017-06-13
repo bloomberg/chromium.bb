@@ -33,11 +33,11 @@ namespace blink {
 class CSSValue;
 class ImageResourceContent;
 class IntSize;
-class LayoutObject;
 class LayoutSize;
 class SVGImage;
 class Document;
 class ComputedStyle;
+class ImageResourceObserver;
 
 typedef void* WrappedImagePtr;
 
@@ -63,12 +63,14 @@ class CORE_EXPORT StyleImage : public GarbageCollectedFinalized<StyleImage> {
                                const LayoutSize& default_object_size) const = 0;
   virtual bool ImageHasRelativeSize() const = 0;
   virtual bool UsesImageContainerSize() const = 0;
-  virtual void AddClient(LayoutObject*) = 0;
-  virtual void RemoveClient(LayoutObject*) = 0;
+  virtual void AddClient(ImageResourceObserver*) = 0;
+  virtual void RemoveClient(ImageResourceObserver*) = 0;
   // Note that the container_size is in the effective zoom level of
-  // the style that applies to the given LayoutObject, i.e if the zoom
+  // the style that applies to the given ImageResourceObserver, i.e if the zoom
   // level is 1.0 the container_size should be unzoomed.
-  virtual PassRefPtr<Image> GetImage(const LayoutObject&,
+  virtual PassRefPtr<Image> GetImage(const ImageResourceObserver&,
+                                     const Document&,
+                                     const ComputedStyle&,
                                      const IntSize& container_size) const = 0;
   virtual WrappedImagePtr Data() const = 0;
   virtual float ImageScaleFactor() const { return 1; }

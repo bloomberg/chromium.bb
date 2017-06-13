@@ -59,18 +59,20 @@ LayoutSize StyleGeneratedImage::ImageSize(
   return default_object_size;
 }
 
-void StyleGeneratedImage::AddClient(LayoutObject* layout_object) {
-  image_generator_value_->AddClient(layout_object, IntSize());
+void StyleGeneratedImage::AddClient(ImageResourceObserver* observer) {
+  image_generator_value_->AddClient(observer, IntSize());
 }
 
-void StyleGeneratedImage::RemoveClient(LayoutObject* layout_object) {
-  image_generator_value_->RemoveClient(layout_object);
+void StyleGeneratedImage::RemoveClient(ImageResourceObserver* observer) {
+  image_generator_value_->RemoveClient(observer);
 }
 
 PassRefPtr<Image> StyleGeneratedImage::GetImage(
-    const LayoutObject& layout_object,
+    const ImageResourceObserver& observer,
+    const Document& document,
+    const ComputedStyle& style,
     const IntSize& size) const {
-  return image_generator_value_->GetImage(layout_object, size);
+  return image_generator_value_->GetImage(observer, document, style, size);
 }
 
 bool StyleGeneratedImage::KnownToBeOpaque(const Document& document,

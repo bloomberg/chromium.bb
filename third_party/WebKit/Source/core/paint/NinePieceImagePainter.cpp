@@ -87,7 +87,9 @@ bool NinePieceImagePainter::Paint(GraphicsContext& graphics_context,
   // scale of them again.
   IntSize image_size = RoundedIntSize(style_image->ImageSize(
       layout_object.GetDocument(), 1, border_image_rect.Size()));
-  RefPtr<Image> image = style_image->GetImage(layout_object, image_size);
+  RefPtr<Image> image =
+      style_image->GetImage(layout_object, layout_object.GetDocument(),
+                            layout_object.StyleRef(), image_size);
 
   InterpolationQuality interpolation_quality =
       BoxPainter::ChooseInterpolationQuality(layout_object, image.Get(), 0,

@@ -267,7 +267,9 @@ class ImagePaintContext {
 
     const LayoutObject& image_client =
         background_object ? *background_object : obj;
-    image_ = style_image.GetImage(image_client, FlooredIntSize(container_size));
+    image_ = style_image.GetImage(image_client, image_client.GetDocument(),
+                                  image_client.StyleRef(),
+                                  FlooredIntSize(container_size));
 
     interpolation_quality_ = BoxPainter::ChooseInterpolationQuality(
         image_client, image_.Get(), &layer, container_size);
