@@ -4362,13 +4362,13 @@ TEST_F(URLRequestTestHTTP,
         url, DEFAULT_PRIORITY, &d, TRAFFIC_ANNOTATION_FOR_TESTS));
     r->Start();
 
+    base::RunLoop().Run();
+
     {
       HttpRequestHeaders headers;
       EXPECT_TRUE(r->GetFullRequestHeaders(&headers));
-      EXPECT_FALSE(headers.HasHeader("Authorization"));
+      EXPECT_TRUE(headers.HasHeader("Authorization"));
     }
-
-    base::RunLoop().Run();
 
     EXPECT_EQ(OK, d.request_status());
     EXPECT_EQ(200, r->GetResponseCode());
