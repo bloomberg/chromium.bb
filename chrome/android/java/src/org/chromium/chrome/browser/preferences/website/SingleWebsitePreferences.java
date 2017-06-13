@@ -39,8 +39,7 @@ import java.util.Set;
  * Shows the permissions and other settings for a particular website.
  */
 public class SingleWebsitePreferences extends PreferenceFragment
-        implements DialogInterface.OnClickListener, OnPreferenceChangeListener,
-                OnPreferenceClickListener {
+        implements OnPreferenceChangeListener, OnPreferenceClickListener {
     // SingleWebsitePreferences expects either EXTRA_SITE (a Website) or
     // EXTRA_ORIGIN (a WebsiteAddress) to be present (but not both). If
     // EXTRA_SITE is present, the fragment will display the permissions in that
@@ -270,55 +269,86 @@ public class SingleWebsitePreferences extends PreferenceFragment
         Set<String> permissionPreferenceKeys =
                 new HashSet<>(Arrays.asList(PERMISSION_PREFERENCE_KEYS));
         int maxPermissionOrder = 0;
-        ListAdapter preferences = getPreferenceScreen().getRootAdapter();
+        PreferenceScreen preferenceScreen = getPreferenceScreen();
+        ListAdapter preferences = preferenceScreen.getRootAdapter();
         for (int i = 0; i < preferences.getCount(); ++i) {
             Preference preference = (Preference) preferences.getItem(i);
-            if (PREF_SITE_TITLE.equals(preference.getKey())) {
-                preference.setTitle(mSite.getTitle());
-            } else if (PREF_CLEAR_DATA.equals(preference.getKey())) {
-                long usage = mSite.getTotalUsage();
-                if (usage > 0) {
-                    Context context = preference.getContext();
-                    preference.setTitle(String.format(
-                            context.getString(R.string.origin_settings_storage_usage_brief),
-                            Formatter.formatShortFileSize(context, usage)));
-                    ((ClearWebsiteStorage) preference).setConfirmationListener(this);
-                } else {
-                    getPreferenceScreen().removePreference(preference);
-                }
-            } else if (PREF_RESET_SITE.equals(preference.getKey())) {
-                preference.setOnPreferenceClickListener(this);
-            } else if (PREF_ADS_PERMISSION.equals(preference.getKey())) {
-                setUpAdsPreference(preference);
-            } else if (PREF_AUTOPLAY_PERMISSION.equals(preference.getKey())) {
-                setUpListPreference(preference, mSite.getAutoplayPermission());
-            } else if (PREF_BACKGROUND_SYNC_PERMISSION.equals(preference.getKey())) {
-                setUpListPreference(preference, mSite.getBackgroundSyncPermission());
-            } else if (PREF_CAMERA_CAPTURE_PERMISSION.equals(preference.getKey())) {
-                setUpListPreference(preference, mSite.getCameraPermission());
-            } else if (PREF_COOKIES_PERMISSION.equals(preference.getKey())) {
-                setUpListPreference(preference, mSite.getCookiePermission());
-            } else if (PREF_JAVASCRIPT_PERMISSION.equals(preference.getKey())) {
-                setUpListPreference(preference, mSite.getJavaScriptPermission());
-            } else if (PREF_LOCATION_ACCESS.equals(preference.getKey())) {
-                setUpLocationPreference(preference);
-            } else if (PREF_MIC_CAPTURE_PERMISSION.equals(preference.getKey())) {
-                setUpListPreference(preference, mSite.getMicrophonePermission());
-            } else if (PREF_MIDI_SYSEX_PERMISSION.equals(preference.getKey())) {
-                setUpListPreference(preference, mSite.getMidiPermission());
-            } else if (PREF_NOTIFICATIONS_PERMISSION.equals(preference.getKey())) {
-                setUpListPreference(preference, mSite.getNotificationPermission());
-            } else if (PREF_POPUP_PERMISSION.equals(preference.getKey())) {
-                setUpListPreference(preference, mSite.getPopupPermission());
-            } else if (PREF_PROTECTED_MEDIA_IDENTIFIER_PERMISSION.equals(preference.getKey())) {
-                setUpListPreference(preference, mSite.getProtectedMediaIdentifierPermission());
-            }
-
+            setUpPreference(preference);
+            // Keep track of the maximum 'order' value of permission preferences, to allow correct
+            // positioning of subsequent permission preferences.
             if (permissionPreferenceKeys.contains(preference.getKey())) {
                 maxPermissionOrder = Math.max(maxPermissionOrder, preference.getOrder());
             }
         }
+        setUpUsbPreferences(maxPermissionOrder);
+        setUpOsWarningPreferences();
 
+        // Remove categories if no sub-items.
+        if (!hasUsagePreferences()) {
+            Preference heading = preferenceScreen.findPreference(PREF_USAGE);
+            preferenceScreen.removePreference(heading);
+        }
+        if (!hasPermissionsPreferences()) {
+            Preference heading = preferenceScreen.findPreference(PREF_PERMISSIONS);
+            preferenceScreen.removePreference(heading);
+        }
+    }
+
+    private void setUpPreference(Preference preference) {
+        String key = preference.getKey();
+        if (PREF_SITE_TITLE.equals(key)) {
+            preference.setTitle(mSite.getTitle());
+        } else if (PREF_CLEAR_DATA.equals(key)) {
+            setUpClearDataPreference(preference);
+        } else if (PREF_RESET_SITE.equals(key)) {
+            preference.setOnPreferenceClickListener(this);
+        } else if (PREF_ADS_PERMISSION.equals(key)) {
+            setUpAdsPreference(preference);
+        } else if (PREF_AUTOPLAY_PERMISSION.equals(key)) {
+            setUpListPreference(preference, mSite.getAutoplayPermission());
+        } else if (PREF_BACKGROUND_SYNC_PERMISSION.equals(key)) {
+            setUpListPreference(preference, mSite.getBackgroundSyncPermission());
+        } else if (PREF_CAMERA_CAPTURE_PERMISSION.equals(key)) {
+            setUpListPreference(preference, mSite.getCameraPermission());
+        } else if (PREF_COOKIES_PERMISSION.equals(key)) {
+            setUpListPreference(preference, mSite.getCookiePermission());
+        } else if (PREF_JAVASCRIPT_PERMISSION.equals(key)) {
+            setUpListPreference(preference, mSite.getJavaScriptPermission());
+        } else if (PREF_LOCATION_ACCESS.equals(key)) {
+            setUpLocationPreference(preference);
+        } else if (PREF_MIC_CAPTURE_PERMISSION.equals(key)) {
+            setUpListPreference(preference, mSite.getMicrophonePermission());
+        } else if (PREF_MIDI_SYSEX_PERMISSION.equals(key)) {
+            setUpListPreference(preference, mSite.getMidiPermission());
+        } else if (PREF_NOTIFICATIONS_PERMISSION.equals(key)) {
+            setUpListPreference(preference, mSite.getNotificationPermission());
+        } else if (PREF_POPUP_PERMISSION.equals(key)) {
+            setUpListPreference(preference, mSite.getPopupPermission());
+        } else if (PREF_PROTECTED_MEDIA_IDENTIFIER_PERMISSION.equals(key)) {
+            setUpListPreference(preference, mSite.getProtectedMediaIdentifierPermission());
+        }
+    }
+
+    private void setUpClearDataPreference(Preference preference) {
+        long usage = mSite.getTotalUsage();
+        if (usage > 0) {
+            Context context = preference.getContext();
+            preference.setTitle(
+                    String.format(context.getString(R.string.origin_settings_storage_usage_brief),
+                            Formatter.formatShortFileSize(context, usage)));
+            ((ClearWebsiteStorage) preference)
+                    .setConfirmationListener(new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            clearStoredData();
+                        }
+                    });
+        } else {
+            getPreferenceScreen().removePreference(preference);
+        }
+    }
+
+    private void setUpUsbPreferences(int maxPermissionOrder) {
         for (UsbInfo info : mSite.getUsbInfo()) {
             Preference preference = new Preference(getActivity());
             preference.getExtras().putSerializable(EXTRA_USB_INFO, info);
@@ -330,16 +360,18 @@ public class SingleWebsitePreferences extends PreferenceFragment
             getPreferenceScreen().addPreference(preference);
             mUsbPermissionCount++;
         }
+    }
 
-        // Remove the 'permission is off in Android' message if not needed.
+    private void setUpOsWarningPreferences() {
         PreferenceScreen preferenceScreen = getPreferenceScreen();
         SiteSettingsCategory categoryWithWarning = getWarningCategory();
+        // Remove the 'permission is off in Android' message if not needed.
         if (categoryWithWarning == null) {
-            getPreferenceScreen().removePreference(
+            preferenceScreen.removePreference(
                     preferenceScreen.findPreference(PREF_OS_PERMISSIONS_WARNING));
-            getPreferenceScreen().removePreference(
+            preferenceScreen.removePreference(
                     preferenceScreen.findPreference(PREF_OS_PERMISSIONS_WARNING_EXTRA));
-            getPreferenceScreen().removePreference(
+            preferenceScreen.removePreference(
                     preferenceScreen.findPreference(PREF_OS_PERMISSIONS_WARNING_DIVIDER));
         } else {
             Preference osWarning = preferenceScreen.findPreference(PREF_OS_PERMISSIONS_WARNING);
@@ -348,22 +380,12 @@ public class SingleWebsitePreferences extends PreferenceFragment
             categoryWithWarning.configurePermissionIsOffPreferences(
                     osWarning, osWarningExtra, getActivity(), false);
             if (osWarning.getTitle() == null) {
-                getPreferenceScreen().removePreference(
+                preferenceScreen.removePreference(
                         preferenceScreen.findPreference(PREF_OS_PERMISSIONS_WARNING));
             } else if (osWarningExtra.getTitle() == null) {
-                getPreferenceScreen().removePreference(
+                preferenceScreen.removePreference(
                         preferenceScreen.findPreference(PREF_OS_PERMISSIONS_WARNING_EXTRA));
             }
-        }
-
-        // Remove categories if no sub-items.
-        if (!hasUsagePreferences()) {
-            Preference heading = preferenceScreen.findPreference(PREF_USAGE);
-            preferenceScreen.removePreference(heading);
-        }
-        if (!hasPermissionsPreferences()) {
-            Preference heading = preferenceScreen.findPreference(PREF_PERMISSIONS);
-            preferenceScreen.removePreference(heading);
         }
     }
 
@@ -614,11 +636,6 @@ public class SingleWebsitePreferences extends PreferenceFragment
             default:
                 return 0;
         }
-    }
-
-    @Override
-    public void onClick(DialogInterface dialog, int which) {
-        clearStoredData();
     }
 
     private void clearStoredData() {
