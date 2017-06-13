@@ -15,21 +15,12 @@
 
 <script>
 function rotate(element) {
-  if (window.testRunner)
-    setTimeout(function() { testRunner.setColorProfile('sRGB', new Function()) }, 0);
-
-  element.addEventListener('animationstart', start, false);
   element.addEventListener('animationend', end, false);
 
   if (window.testRunner)
     element.style.cssText += 'animation: rotate linear 1s';
   else
     element.style.cssText += 'animation: rotate linear 4s';
-}
-
-function start(event) {
-  if (window.testRunner)
-    setTimeout(function() { testRunner.setColorProfile('colorSpin', new Function()) }, 100);
 }
 
 function end(event) {

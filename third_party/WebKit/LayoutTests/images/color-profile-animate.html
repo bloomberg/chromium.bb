@@ -22,11 +22,7 @@ function fade(element) {
 
 function end(event) {
   if (window.testRunner)
-    testRunner.setColorProfile('colorSpin', done);
-}
-
-function done() {
-  setTimeout(function() { testRunner.notifyDone() }, 0);
+    setTimeout(function() { testRunner.notifyDone() }, 0);
 }
 
 if (window.testRunner) {

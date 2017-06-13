@@ -29,15 +29,7 @@
 <script>
 function load() {
   if (window.testRunner)
-    runAfterLayoutAndPaint(changeColorProfile);
-}
-
-function changeColorProfile() {
-  setTimeout(function() { testRunner.setColorProfile('colorSpin', done) }, 100);
-}
-
-function done() {
-  setTimeout(function() { testRunner.notifyDone() }, 0);
+    runAfterLayoutAndPaint(function() { testRunner.notifyDone() });
 }
 
 if (window.testRunner) {

@@ -33,7 +33,7 @@ window.onload = function() {
 
   video.addEventListener('seeked', function() {
     if (window.testRunner)
-      setTimeout(function() { testRunner.setColorProfile('colorSpin', done) }, 100);
+      setTimeout(function() { testRunner.notifyDone() }, 0);
     video.pause();
   }, false);
 
@@ -43,10 +43,6 @@ window.onload = function() {
 
 function seek(video, time) {
   video.currentTime = time;
-}
-
-function done() {
-  setTimeout(function() { testRunner.notifyDone() }, 0);
 }
 
 if (window.testRunner) {

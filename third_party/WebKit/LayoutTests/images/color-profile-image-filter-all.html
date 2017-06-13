@@ -72,12 +72,8 @@ div {
 <script>
 window.onload = function() {
   if (window.testRunner)
-    setTimeout(function() { testRunner.setColorProfile('colorSpin', done) }, 100);
+    setTimeout(function() { testRunner.notifyDone() }, 0);
 };
-
-function done() {
-  setTimeout(function() { testRunner.notifyDone() }, 0);
-}
 
 if (window.testRunner) {
   testRunner.dumpAsTextWithPixelResults();
