@@ -249,7 +249,7 @@ void ChromeDataUseAscriber::RenderFrameCreated(int render_process_id,
         RenderFrameHostID(render_process_id, render_frame_id));
     DCHECK(frame_iter == main_render_frame_data_use_map_.end());
     DataUseRecorderEntry entry =
-        CreateNewDataUseRecorder(nullptr, DataUse::TrafficType::UNKNOWN);
+        CreateNewDataUseRecorder(nullptr, DataUse::TrafficType::USER_TRAFFIC);
     entry->set_main_frame_id(
         RenderFrameHostID(render_process_id, render_frame_id));
     main_render_frame_data_use_map_.insert(std::make_pair(
