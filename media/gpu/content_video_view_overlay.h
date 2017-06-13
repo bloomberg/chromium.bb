@@ -5,6 +5,8 @@
 #ifndef MEDIA_GPU_CONTENT_VIDEO_VIEW_OVERLAY_H_
 #define MEDIA_GPU_CONTENT_VIDEO_VIEW_OVERLAY_H_
 
+#include <memory>
+
 #include "base/memory/weak_ptr.h"
 #include "media/base/android/android_overlay.h"
 #include "media/gpu/content_video_view_overlay_allocator.h"
@@ -15,6 +17,11 @@ namespace media {
 class ContentVideoViewOverlay
     : public ContentVideoViewOverlayAllocator::Client {
  public:
+  // This exists so we can bind construction into a callback returning
+  // std::unique_ptr<AndroidOverlay>.
+  static std::unique_ptr<AndroidOverlay> Create(int surface_id,
+                                                AndroidOverlayConfig config);
+
   // |config| is ignored except for callbacks.  Callbacks will not be called
   // before this returns.
   ContentVideoViewOverlay(int surface_id, AndroidOverlayConfig config);
@@ -30,16 +37,13 @@ class ContentVideoViewOverlay
   void OnSurfaceDestroyed() override;
   int32_t GetSurfaceId() override;
 
- protected:
-  // For tests.
-  ContentVideoViewOverlay();
-
  private:
   int surface_id_;
   AndroidOverlayConfig config_;
   gl::ScopedJavaSurface surface_;
 
   base::WeakPtrFactory<ContentVideoViewOverlay> weak_factory_;
+  DISALLOW_COPY_AND_ASSIGN(ContentVideoViewOverlay);
 };
 
 }  // namespace media

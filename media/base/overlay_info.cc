@@ -18,4 +18,8 @@ bool OverlayInfo::HasValidRoutingToken() const {
   return routing_token.has_value();
 }
 
+bool OverlayInfo::RefersToSameOverlayAs(const OverlayInfo& other) {
+  return surface_id == other.surface_id && routing_token == other.routing_token;
+}
+
 }  // namespace media

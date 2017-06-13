@@ -68,26 +68,22 @@ void FakeCodecAllocator::ReleaseMediaCodec(
                         surface_bundle->surface_texture.get());
 }
 
-void FakeCodecAllocator::ProvideMockCodecAsync() {
+MockMediaCodecBridge* FakeCodecAllocator::ProvideMockCodecAsync() {
   // There must be a pending codec creation.
-  ASSERT_TRUE(client_);
-  if (!client_)
-    return;
+  DCHECK(client_);
 
   std::unique_ptr<MockMediaCodecBridge> codec =
-      base::MakeUnique<MockMediaCodecBridge>();
-  most_recent_codec_ = codec.get();
+      base::MakeUnique<NiceMock<MockMediaCodecBridge>>();
+  auto* raw_codec = codec.get();
+  most_recent_codec_ = raw_codec;
   most_recent_codec_destruction_observer_ = codec->CreateDestructionObserver();
-  most_recent_codec_destruction_observer_->DoNotAllowDestruction();
   client_->OnCodecConfigured(std::move(codec));
+  return raw_codec;
 }
 
 void FakeCodecAllocator::ProvideNullCodecAsync() {
   // There must be a pending codec creation.
-  ASSERT_TRUE(client_);
-  if (!client_)
-    return;
-
+  DCHECK(client_);
   most_recent_codec_ = nullptr;
   client_->OnCodecConfigured(nullptr);
 }
@@ -95,9 +91,7 @@ void FakeCodecAllocator::ProvideNullCodecAsync() {
 void FakeCodecAllocator::CopyCodecAllocParams(
     scoped_refptr<CodecConfig> config) {
   config_ = config;
-  most_recent_bundle_ = config->surface_bundle;
   most_recent_overlay_ = config->surface_bundle->overlay.get();
-
   most_recent_surface_texture_ = config->surface_bundle->surface_texture.get();
 }
 

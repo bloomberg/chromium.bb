@@ -45,12 +45,12 @@ class MockAndroidOverlay : public testing::StrictMock<AndroidOverlay>,
   // Return callbacks that can be used to control the overlay.
   Callbacks GetCallbacks();
 
- private:
   // Send callbacks.
   void OnOverlayReady();
   void OnOverlayFailed();
   void OnSurfaceDestroyed();
 
+ private:
   // Initial configuration, mostly for callbacks.
   std::unique_ptr<AndroidOverlayConfig> config_;
 

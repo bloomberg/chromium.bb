@@ -28,6 +28,7 @@
 #include "ui/gl/gl_implementation.h"
 #endif
 #elif defined(OS_ANDROID)
+#include "media/gpu/android/device_info.h"
 #include "media/gpu/android_video_decode_accelerator.h"
 #include "media/gpu/android_video_surface_chooser_impl.h"
 #include "media/gpu/avda_codec_allocator.h"
@@ -184,8 +185,8 @@ GpuVideoDecodeAcceleratorFactory::CreateDXVAVDA(
   std::unique_ptr<VideoDecodeAccelerator> decoder;
   DVLOG(0) << "Initializing DXVA HW decoder for windows.";
   decoder.reset(new DXVAVideoDecodeAccelerator(
-      get_gl_context_cb_, make_context_current_cb_, bind_image_cb_,
-      workarounds, gpu_preferences));
+      get_gl_context_cb_, make_context_current_cb_, bind_image_cb_, workarounds,
+      gpu_preferences));
   return decoder;
 }
 #endif
@@ -254,7 +255,7 @@ GpuVideoDecodeAcceleratorFactory::CreateAndroidVDA(
       AVDACodecAllocator::GetInstance(),
       base::MakeUnique<AndroidVideoSurfaceChooserImpl>(),
       make_context_current_cb_, get_gles2_decoder_cb_, overlay_factory_cb_,
-      AndroidVideoDecodeAccelerator::PlatformConfig::CreateDefault()));
+      DeviceInfo::GetInstance()));
   return decoder;
 }
 #endif

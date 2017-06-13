@@ -22,6 +22,7 @@
 #include "media/base/android/media_drm_bridge_cdm_context.h"
 #include "media/base/android_overlay_mojo_factory.h"
 #include "media/base/content_decryption_module.h"
+#include "media/gpu/android/device_info.h"
 #include "media/gpu/android_video_surface_chooser.h"
 #include "media/gpu/avda_codec_allocator.h"
 #include "media/gpu/avda_picture_buffer_manager.h"
@@ -47,28 +48,13 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
   static VideoDecodeAccelerator::Capabilities GetCapabilities(
       const gpu::GpuPreferences& gpu_preferences);
 
-  // Various things that we normally ask the platform for, mostly for testing.
-  struct PlatformConfig {
-    int sdk_int = base::android::SDK_VERSION_MARSHMALLOW;
-
-    // Is SetSurface supported?  This is not the same as >= M, since we
-    // blacklist some devices.
-    bool allow_setsurface = true;
-
-    // For testing.
-    bool force_deferred_surface_creation = false;
-
-    // Create a default value that's appropriate for use in production.
-    static PlatformConfig CreateDefault();
-  };
-
   AndroidVideoDecodeAccelerator(
       AVDACodecAllocator* codec_allocator,
       std::unique_ptr<AndroidVideoSurfaceChooser> surface_chooser,
       const MakeGLContextCurrentCallback& make_context_current_cb,
       const GetGLES2DecoderCallback& get_gles2_decoder_cb,
       const AndroidOverlayMojoFactoryCB& overlay_factory_cb,
-      const PlatformConfig& platform_config);
+      DeviceInfo* device_info);
 
   ~AndroidVideoDecodeAccelerator() override;
 
@@ -397,7 +383,9 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
 
   std::unique_ptr<AndroidVideoSurfaceChooser> surface_chooser_;
 
-  PlatformConfig platform_config_;
+  DeviceInfo* device_info_;
+
+  bool force_defer_surface_creation_for_testing_;
 
   // Optional factory to produce mojo AndroidOverlay instances.
   AndroidOverlayMojoFactoryCB overlay_factory_cb_;

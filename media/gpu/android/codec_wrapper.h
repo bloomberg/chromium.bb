@@ -16,6 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #include "media/base/android/media_codec_bridge.h"
+#include "media/gpu/android/device_info.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/surface_texture_gl_owner.h"
 
@@ -76,7 +77,7 @@ class MEDIA_GPU_EXPORT CodecWrapper {
   void DiscardCodecOutputBuffers();
 
   // Whether the codec supports Flush().
-  bool SupportsFlush() const;
+  bool SupportsFlush(DeviceInfo* device_info) const;
 
   // See MediaCodecBridge documentation for the following.
   bool Flush();
