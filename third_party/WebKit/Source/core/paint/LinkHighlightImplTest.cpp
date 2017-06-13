@@ -23,7 +23,7 @@
  * DAMAGE.
  */
 
-#include "web/LinkHighlightImpl.h"
+#include "core/paint/LinkHighlightImpl.h"
 
 #include <memory>
 #include "bindings/core/v8/ExceptionState.h"
