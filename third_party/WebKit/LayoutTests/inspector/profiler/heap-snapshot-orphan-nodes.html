@@ -44,11 +44,12 @@ function test()
                 return builder.generateSnapshot();
             }
 
-            InspectorTest.addSniffer(Profiler.HeapSnapshotView.prototype, "_gotStatistics", checkStatistics, true);
+            InspectorTest.addSniffer(Profiler.HeapSnapshotView.prototype, "_retrieveStatistics", checkStatistics);
             InspectorTest.takeAndOpenSnapshot(createHeapSnapshot, step1);
 
-            function checkStatistics(statistics)
+            async function checkStatistics(arg, result)
             {
+                var statistics = await result;
                 InspectorTest.assertEquals(4610, statistics.total);
                 InspectorTest.assertEquals(4610, statistics.v8heap);
                 InspectorTest.addResult("SUCCESS: total size is correct.");

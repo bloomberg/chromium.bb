@@ -677,7 +677,7 @@ InspectorTest.switchToView = function(title, callback)
 {
     callback = InspectorTest.safeWrap(callback);
     var view = UI.panels.heap_profiler.visibleView;
-    view._changePerspectiveAndWait(title, callback);
+    view._changePerspectiveAndWait(title).then(callback);
     // Increase the grid container height so the viewport don't limit the number of nodes.
     InspectorTest._currentGrid().scrollContainer.style.height = "10000px";
 };
