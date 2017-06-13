@@ -431,6 +431,9 @@ void SoftwareImageDecodeCache::DecodeImage(const ImageKey& key,
     decoded_image->Unlock();
   }
 
+  if (task_type == DecodeTaskType::USE_OUT_OF_RASTER_TASKS)
+    decoded_image->mark_out_of_raster();
+
   decoded_images_.Put(key, std::move(decoded_image));
 }
 
@@ -1127,6 +1130,10 @@ SoftwareImageDecodeCache::DecodedImage::~DecodedImage() {
                             DECODED_IMAGE_STATE_COUNT);
   UMA_HISTOGRAM_BOOLEAN("Renderer4.SoftwareImageDecodeState.FirstLockWasted",
                         usage_stats_.first_lock_wasted);
+  if (usage_stats_.first_lock_out_of_raster)
+    UMA_HISTOGRAM_BOOLEAN(
+        "Renderer4.SoftwareImageDecodeState.FirstLockWasted.OutOfRaster",
+        usage_stats_.first_lock_wasted);
 }
 
 bool SoftwareImageDecodeCache::DecodedImage::Lock() {

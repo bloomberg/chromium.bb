@@ -136,7 +136,7 @@ class CC_EXPORT GpuImageDecodeCache
   void OnPurgeMemory() override;
 
   // Called by Decode / Upload tasks.
-  void DecodeImage(const DrawImage& image);
+  void DecodeImage(const DrawImage& image, TaskType task_type);
   void UploadImage(const DrawImage& image);
 
   // Called by Decode / Upload tasks when tasks are finished.
@@ -169,7 +169,8 @@ class CC_EXPORT GpuImageDecodeCache
     bool is_locked() const { return is_locked_; }
     bool Lock();
     void Unlock();
-    void SetLockedData(std::unique_ptr<base::DiscardableMemory> data);
+    void SetLockedData(std::unique_ptr<base::DiscardableMemory> data,
+                       bool out_of_raster);
     void ResetData();
     base::DiscardableMemory* data() const { return data_.get(); }
     void mark_used() { usage_stats_.used = true; }
@@ -187,6 +188,7 @@ class CC_EXPORT GpuImageDecodeCache
     struct UsageStats {
       int lock_count = 1;
       bool used = false;
+      bool first_lock_out_of_raster = false;
       bool first_lock_wasted = false;
     };
 
@@ -322,7 +324,8 @@ class CC_EXPORT GpuImageDecodeCache
   bool ExceedsPreferredCount() const;
 
   void DecodeImageIfNecessary(const DrawImage& draw_image,
-                              ImageData* image_data);
+                              ImageData* image_data,
+                              TaskType task_type);
 
   scoped_refptr<GpuImageDecodeCache::ImageData> CreateImageData(
       const DrawImage& image);
