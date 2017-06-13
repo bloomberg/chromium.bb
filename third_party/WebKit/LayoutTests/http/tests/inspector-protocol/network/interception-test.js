@@ -126,7 +126,7 @@ InspectorTest.startInterceptionTest = function(requestInterceptedDict,
     function onRequestIntercepted(event)
     {
         var filename = event.params.request.url.split('/').pop();
-        var id = canonicalId(event.params.InterceptionId);
+        var id = canonicalId(event.params.interceptionId);
         filenameToInterceptionId[filename] = id;
         if (!requestInterceptedDict.hasOwnProperty(filename)) {
             completeTest("FAILED: unexpected request interception " +
@@ -199,15 +199,15 @@ InspectorTest.startInterceptionTest = function(requestInterceptedDict,
 }
 
 InspectorTest.allowRequest = function(event) {
-    var id = canonicalId(event.params.InterceptionId);
+    var id = canonicalId(event.params.interceptionId);
     log(id, "allowRequest " + id);
     InspectorTest.sendCommand("Network.continueInterceptedRequest", {
-        "interceptionId": event.params.InterceptionId
+        "interceptionId": event.params.interceptionId
     });
 }
 
 InspectorTest.modifyRequest = function(event, params) {
-    var id = canonicalId(event.params.InterceptionId);
+    var id = canonicalId(event.params.interceptionId);
     var mods = [];
     for (property in params) {
         if (!params.hasOwnProperty(property))
@@ -227,30 +227,30 @@ InspectorTest.modifyRequest = function(event, params) {
     }
 
     log(id, "modifyRequest " + id + ": " + mods.join("; "));
-    params["interceptionId"] = event.params.InterceptionId;
+    params["interceptionId"] = event.params.interceptionId;
     InspectorTest.sendCommand("Network.continueInterceptedRequest", params);
 }
 
 InspectorTest.blockRequest = function(event, errorReason) {
-    var id = canonicalId(event.params.InterceptionId);
+    var id = canonicalId(event.params.interceptionId);
     log(id, "blockRequest " + id + " " + errorReason);
     InspectorTest.sendCommand("Network.continueInterceptedRequest", {
-        "interceptionId": event.params.InterceptionId,
+        "interceptionId": event.params.interceptionId,
         "errorReason": errorReason
     });
 }
 
 InspectorTest.mockResponse = function(event, rawResponse) {
-    var id = canonicalId(event.params.InterceptionId);
+    var id = canonicalId(event.params.interceptionId);
     log(id, "mockResponse " + id);
     InspectorTest.sendCommand("Network.continueInterceptedRequest", {
-        "interceptionId": event.params.InterceptionId,
+        "interceptionId": event.params.interceptionId,
         "rawResponse": btoa(rawResponse)
     });
 }
 
 InspectorTest.disableRequestInterception = function(event) {
-    var id = canonicalId(event.params.InterceptionId);
+    var id = canonicalId(event.params.interceptionId);
     log(id, "----- disableRequestInterception -----");
     InspectorTest.sendCommand("Network.enableRequestInterception", {
         "enabled": false,
