@@ -27,6 +27,6 @@
     Constructor(DOMString type, optional RTCPeerConnectionIceEventInit eventInitDict)
 ] interface RTCPeerConnectionIceEvent : Event {
     readonly attribute RTCIceCandidate? candidate;
-    // TODO(lunalu): add nullable url attribute here:
+    // TODO(loonybear): add nullable url attribute here:
     // https://rawgit.com/w3c/webrtc-pc/master/webrtc.html#rtcpeerconnectioniceevent
 };

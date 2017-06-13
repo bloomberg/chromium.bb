@@ -32,7 +32,7 @@
 
 [
   Constructor(DOMString type, optional FontFaceSetLoadEventInit eventInitDict),
-  // TODO(lunalu): Exposed=(Window,Worker)
+  // TODO(loonybear): Exposed=(Window,Worker)
   Exposed=Window
 ] interface FontFaceSetLoadEvent : Event {
     [SameObject] readonly attribute FrozenArray<FontFace> fontfaces;

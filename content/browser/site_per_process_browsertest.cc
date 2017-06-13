@@ -9668,8 +9668,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,
 // the fullscreen feature. Since there are no HTTP header policies involved,
 // this verifies the presence of the container policy in the iframe.
 // https://crbug.com/703703
-// TODO(lunalu): Currently feature policy is shipped without fullscreen (e.g.,
-// the implementation of allowfullscreen does not use feature policy
+// TODO(loonybear): Currently feature policy is shipped without fullscreen
+// (e.g., the implementation of allowfullscreen does not use feature policy
 // information). Once allowfullscreen is controlled by feature policy, re-enable
 // this test.
 IN_PROC_BROWSER_TEST_F(SitePerProcessFeaturePolicyBrowserTest,

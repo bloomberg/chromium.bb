@@ -51,7 +51,7 @@ class MockLockOrientationCallback : public blink::WebLockOrientationCallback {
   LockOrientationResultHolder* results_;
 };
 
-// TODO(lunalu): When available, test mojo service without needing a
+// TODO(loonybear): When available, test mojo service without needing a
 // RenderViewTest.
 class ScreenOrientationDispatcherTest : public RenderViewTest {
  protected:

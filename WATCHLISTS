@@ -1996,7 +1996,7 @@
     'eme': ['eme-reviews@chromium.org'],
     'extension': ['chromium-apps-reviews@chromium.org',
                   'extensions-reviews@chromium.org'],
-    'feature_policy': ['lunalu@chromium.org',
+    'feature_policy': ['loonybear@chromium.org',
                        'iclelland@chromium.org'],
     'feedback_ui': ['apacible+watch@chromium.org'],
     'fileapi': ['kinuko+fileapi@chromium.org',

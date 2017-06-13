@@ -795,7 +795,7 @@ crbug.com/538697 [ Win7 Debug ] virtual/threaded/printing/webgl-oversized-printi
 crbug.com/538697 [ Win7 Debug ] printing/webgl-oversized-printing.html [ Failure Crash ]
 
 # ====== Fullscreen tests failing with feature policy ======
-# TODO(lunalu): Turn tests on once feature policy implements allowfullscreen.
+# TODO(loonybear): Turn tests on once feature policy implements allowfullscreen.
 crbug.com/666761 virtual/feature-policy/http/tests/feature-policy/fullscreen-allowed-by-container-policy-relocate.html [ Failure ]
 crbug.com/666761 virtual/feature-policy/http/tests/feature-policy/fullscreen-allowed-by-container-policy.html [ Failure ]
 crbug.com/666761 virtual/feature-policy/http/tests/feature-policy/fullscreen-disabled.php [ Failure ]

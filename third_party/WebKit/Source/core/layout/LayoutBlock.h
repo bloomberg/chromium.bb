@@ -564,7 +564,7 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
   friend class NGBlockNode;
 
  public:
-  // TODO(lunalu): Temporary in order to ensure compatibility with existing
+  // TODO(loonybear): Temporary in order to ensure compatibility with existing
   // layout test results.
   virtual void AdjustChildDebugRect(LayoutRect&) const {}
 };

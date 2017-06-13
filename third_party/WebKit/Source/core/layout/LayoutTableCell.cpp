@@ -1495,7 +1495,7 @@ void LayoutTableCell::InvalidateDisplayItemClients(
     invalidator.InvalidateDisplayItemClient(*collapsed_border_values_, reason);
 }
 
-// TODO(lunalu): Deliberately dump the "inner" box of table cells, since that
+// TODO(loonybear): Deliberately dump the "inner" box of table cells, since that
 // is what current results reflect.  We'd like to clean up the results to dump
 // both the outer box and the intrinsic padding so that both bits of information
 // are captured by the results.
