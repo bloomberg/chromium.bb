@@ -121,7 +121,7 @@
     <!-- NTP Colors. Used on the bookmarks and recent tabs pages. -->
     <color name="ntp_bg">#f2f2f2</color>
     <color name="ntp_bg_incognito">#222</color>
-    <color name="ntp_search_box_hint">#969696</color>
+    <color name="ntp_search_box_hint">@color/black_alpha_54</color>
     <color name="ntp_list_item_text">#333</color>
     <color name="ntp_list_header_text">#333</color>
     <color name="ntp_list_header_subtext">#969696</color>
@@ -158,7 +158,7 @@
     <color name="incognito_primary_color">#505050</color>
 
     <!-- LocationBar colors -->
-    <color name="locationbar_dark_hint_text">@color/black_alpha_38</color>
+    <color name="locationbar_dark_hint_text">@color/black_alpha_54</color>
     <color name="locationbar_light_hint_text">@color/white_alpha_70</color>
     <color name="locationbar_light_selection_color">#cc5595fe</color>
     <color name="locationbar_status_color">@color/black_alpha_54</color>
