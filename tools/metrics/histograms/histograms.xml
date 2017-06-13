@@ -29591,6 +29591,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>Video codec profile used in RTC video encoder.</summary>
 </histogram>
 
+<histogram name="Media.RTCVideoEncoderTimestampMatchSuccess"
+    enum="BooleanSuccess">
+  <owner>emircan@chromium.org</owner>
+  <summary>
+    Indicates whether we were successful in preserving timestamps in hardware
+    video encoder session. It is tracked during the session and logged after it
+    ends.
+  </summary>
+</histogram>
+
 <histogram name="Media.Session.ActiveTime" units="ms">
   <owner>avayvod@chromium.org</owner>
   <owner>mlamouri@chromium.org</owner>
