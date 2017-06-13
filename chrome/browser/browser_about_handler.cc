@@ -71,24 +71,16 @@ bool WillHandleBrowserAboutURL(GURL* url,
   // Replace sync with sync-internals (for legacy reasons).
   } else if (host == chrome::kChromeUISyncHost) {
     host = chrome::kChromeUISyncInternalsHost;
-  // Redirect chrome://extensions.
+// Redirect chrome://extensions, chrome://extensions-frame, and
+// chrome://settings/extensions all to chrome://extensions and forward path.
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  } else if (host == chrome::kChromeUIExtensionsHost) {
-    // If the material design extensions page is enabled, it gets its own host.
-    // Otherwise, it's handled by the uber settings page.
-    if (base::FeatureList::IsEnabled(features::kMaterialDesignExtensions)) {
-      host = chrome::kChromeUIExtensionsHost;
-      path = url->path();
-    } else {
-      host = chrome::kChromeUIUberHost;
-      path = chrome::kChromeUIExtensionsHost + url->path();
-    }
-  // Redirect chrome://settings/extensions (legacy URL).
-  } else if (host == chrome::kChromeUISettingsHost &&
-             url->path() ==
-                 std::string("/") + chrome::kDeprecatedExtensionsSubPage) {
-    host = chrome::kChromeUIUberHost;
-    path = chrome::kChromeUIExtensionsHost;
+  } else if (host == chrome::kChromeUIExtensionsHost ||
+             host == chrome::kChromeUIExtensionsFrameHost ||
+             (host == chrome::kChromeUISettingsHost &&
+              url->path() ==
+                  std::string("/") + chrome::kDeprecatedExtensionsSubPage)) {
+    host = chrome::kChromeUIExtensionsHost;
+    path = url->path();
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
   } else if (host == chrome::kChromeUIHistoryHost) {
     // Redirect chrome://history.

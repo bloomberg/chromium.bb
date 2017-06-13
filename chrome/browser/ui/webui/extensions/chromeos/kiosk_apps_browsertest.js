@@ -17,7 +17,7 @@ KioskAppSettingsWebUITest.prototype = {
   /**
    * Browse to the kiosk app settings page.
    */
-  browsePreload: 'chrome://extensions-frame/',
+  browsePreload: 'chrome://extensions/',
 
   /** @override */
   commandLineSwitches: [{

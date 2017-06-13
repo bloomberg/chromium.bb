@@ -46,7 +46,6 @@ content::WebUIDataSource* CreatePolicyUIHtmlSource() {
   // Add required resources.
   source->AddResourcePath("policy.css", IDR_POLICY_CSS);
   source->AddResourcePath("policy.js", IDR_POLICY_JS);
-  source->AddResourcePath("uber_utils.js", IDR_UBER_UTILS_JS);
   source->SetDefaultResource(IDR_POLICY_HTML);
   return source;
 }

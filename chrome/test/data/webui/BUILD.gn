@@ -40,7 +40,6 @@ js2gtest("browser_tests_js_webui") {
     "../../../browser/ui/webui/chromeos/set_time_ui_browsertest.js",
     "../../../browser/ui/webui/extensions/chromeos/kiosk_apps_browsertest.js",
     "../../../browser/ui/webui/extensions/extension_settings_browsertest.js",
-    "../../../browser/ui/webui/help/help_browsertest.js",
     "../../../browser/ui/webui/identity_internals_ui_browsertest.js",
     "../../../browser/ui/webui/sync_internals_browsertest.js",
     "../../../browser/ui/webui/sync_setup_browsertest.js",

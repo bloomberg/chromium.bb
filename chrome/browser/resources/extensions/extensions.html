@@ -1,7 +1,8 @@
 <!doctype html>
-<html i18n-values="dir:textdirection;lang:language">
+<html dir="$i18n{textdirection}" lang="$i18n{language}">
 <head>
 <meta charset="utf-8">
+<title>$i18n{extensionSettings}</title>
 
 <link rel="stylesheet" href="extensions.css">
 <link rel="stylesheet" href="extension_commands_overlay.css">
@@ -49,10 +50,10 @@
 <script src="chrome://resources/js/cr/ui/list.js"></script>
 </if>
 
-<script src="chrome://extensions-frame/extensions.js"></script>
+<script src="chrome://extensions/extensions.js"></script>
 </head>
 
-<body class="uber-frame">
+<body>
 
 <div id="overlay" class="overlay" hidden>
   <include src="extension_commands_overlay.html">
@@ -273,7 +274,7 @@
 
 </div>
 
-<script src="chrome://extensions-frame/strings.js"></script>
+<script src="chrome://extensions/strings.js"></script>
 <script src="chrome://resources/js/i18n_template.js"></script>
 
 </body>

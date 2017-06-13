@@ -310,7 +310,7 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
 
 content::WebUIDataSource* CreateExtensionsHTMLSource() {
   content::WebUIDataSource* source =
-      content::WebUIDataSource::Create(chrome::kChromeUIExtensionsFrameHost);
+      content::WebUIDataSource::Create(chrome::kChromeUIExtensionsHost);
 
   source->SetJsonPath("strings.js");
   source->AddResourcePath("extensions.js", IDR_EXTENSIONS_JS);
