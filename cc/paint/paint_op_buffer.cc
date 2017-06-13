@@ -190,7 +190,7 @@ TYPES(M);
 #undef M
 
 #define M(T)                                               \
-  static_assert(ALIGNOF(T) <= PaintOpBuffer::PaintOpAlign, \
+  static_assert(alignof(T) <= PaintOpBuffer::PaintOpAlign, \
                 #T " must have alignment no bigger than PaintOpAlign");
 TYPES(M);
 #undef M

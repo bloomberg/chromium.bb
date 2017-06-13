@@ -41,15 +41,10 @@ union Color {
 
 // Codeword tables.
 // See: Table 3.17.2
-ALIGNAS(16) static const int16_t g_codeword_tables[8][4] = {
-    {-8, -2, 2, 8},
-    {-17, -5, 5, 17},
-    {-29, -9, 9, 29},
-    {-42, -13, 13, 42},
-    {-60, -18, 18, 60},
-    {-80, -24, 24, 80},
-    {-106, -33, 33, 106},
-    {-183, -47, 47, 183}};
+alignas(16) static const int16_t g_codeword_tables[8][4] = {
+    {-8, -2, 2, 8},       {-17, -5, 5, 17},    {-29, -9, 9, 29},
+    {-42, -13, 13, 42},   {-60, -18, 18, 60},  {-80, -24, 24, 80},
+    {-106, -33, 33, 106}, {-183, -47, 47, 183}};
 
 // Maps modifier indices to pixel index values.
 // See: Table 3.17.3

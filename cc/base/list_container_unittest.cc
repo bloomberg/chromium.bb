@@ -51,7 +51,7 @@ class DerivedElement3 : public DerivedElement {
 };
 
 const size_t kLargestDerivedElementSize = sizeof(DerivedElement3);
-const size_t kLargestDerivedElementAlign = ALIGNOF(DerivedElement3);
+const size_t kLargestDerivedElementAlign = alignof(DerivedElement3);
 
 static_assert(sizeof(DerivedElement1) <= kLargestDerivedElementSize,
               "Largest Derived Element size needs update. DerivedElement1 is "
@@ -59,10 +59,10 @@ static_assert(sizeof(DerivedElement1) <= kLargestDerivedElementSize,
 static_assert(sizeof(DerivedElement2) <= kLargestDerivedElementSize,
               "Largest Derived Element size needs update. DerivedElement2 is "
               "currently largest.");
-static_assert(ALIGNOF(DerivedElement1) <= kLargestDerivedElementSize,
+static_assert(alignof(DerivedElement1) <= kLargestDerivedElementSize,
               "Largest Derived Element align needs update. DerivedElement1 is "
               "currently largest.");
-static_assert(ALIGNOF(DerivedElement2) <= kLargestDerivedElementSize,
+static_assert(alignof(DerivedElement2) <= kLargestDerivedElementSize,
               "Largest Derived Element align needs update. DerivedElement2 is "
               "currently largest.");
 
@@ -137,7 +137,7 @@ class MockDerivedElementSubclass : public MockDerivedElement {
 const size_t kCurrentLargestDerivedElementSize =
     std::max(kLargestDerivedElementSize, sizeof(MockDerivedElementSubclass));
 const size_t kCurrentLargestDerivedElementAlign =
-    std::max(kLargestDerivedElementAlign, ALIGNOF(MockDerivedElementSubclass));
+    std::max(kLargestDerivedElementAlign, alignof(MockDerivedElementSubclass));
 
 TEST(ListContainerTest, ConstructorCalledInAllocateAndConstruct) {
   ListContainer<DerivedElement> list(kCurrentLargestDerivedElementAlign,
@@ -277,7 +277,7 @@ TEST(ListContainerTest, DestructorCalledOnceWhenErase) {
 }
 
 TEST(ListContainerTest, SimpleIndexAccessNonDerivedElement) {
-  ListContainer<NonDerivedElement> list(ALIGNOF(NonDerivedElement),
+  ListContainer<NonDerivedElement> list(alignof(NonDerivedElement),
                                         sizeof(NonDerivedElement), 0);
 
   size_t size = 3;
@@ -294,7 +294,7 @@ TEST(ListContainerTest, SimpleIndexAccessNonDerivedElement) {
 }
 
 TEST(ListContainerTest, SimpleInsertionNonDerivedElement) {
-  ListContainer<NonDerivedElement> list(ALIGNOF(NonDerivedElement),
+  ListContainer<NonDerivedElement> list(alignof(NonDerivedElement),
                                         sizeof(NonDerivedElement), 0);
 
   size_t size = 3;
@@ -308,7 +308,7 @@ TEST(ListContainerTest, SimpleInsertionNonDerivedElement) {
 }
 
 TEST(ListContainerTest, SimpleInsertionAndClearNonDerivedElement) {
-  ListContainer<NonDerivedElement> list(ALIGNOF(NonDerivedElement),
+  ListContainer<NonDerivedElement> list(alignof(NonDerivedElement),
                                         sizeof(NonDerivedElement), 0);
   EXPECT_TRUE(list.empty());
   EXPECT_EQ(0u, list.size());
@@ -329,7 +329,7 @@ TEST(ListContainerTest, SimpleInsertionAndClearNonDerivedElement) {
 }
 
 TEST(ListContainerTest, SimpleInsertionClearAndInsertAgainNonDerivedElement) {
-  ListContainer<NonDerivedElement> list(ALIGNOF(NonDerivedElement),
+  ListContainer<NonDerivedElement> list(alignof(NonDerivedElement),
                                         sizeof(NonDerivedElement), 0);
   EXPECT_TRUE(list.empty());
   EXPECT_EQ(0u, list.size());
@@ -362,7 +362,7 @@ TEST(ListContainerTest, SimpleInsertionClearAndInsertAgainNonDerivedElement) {
 // for, ListContainer can still perform like normal vector.
 TEST(ListContainerTest,
      SimpleInsertionTriggerMoreThanOneAllocationNonDerivedElement) {
-  ListContainer<NonDerivedElement> list(ALIGNOF(NonDerivedElement),
+  ListContainer<NonDerivedElement> list(alignof(NonDerivedElement),
                                         sizeof(NonDerivedElement), 2);
   std::vector<NonDerivedElement*> nde_list;
   size_t size = 10;
@@ -385,7 +385,7 @@ TEST(ListContainerTest,
   // Constructor sets the allocation size to 2. Every time ListContainer needs
   // to allocate again, it doubles allocation size. In this test, 10 elements is
   // needed, thus ListContainerShould allocate spaces 2, 4 and 8 elements.
-  ListContainer<NonDerivedElement> list(ALIGNOF(NonDerivedElement),
+  ListContainer<NonDerivedElement> list(alignof(NonDerivedElement),
                                         sizeof(NonDerivedElement), 2);
   std::vector<NonDerivedElement*> nde_list;
   size_t size = 10;
@@ -466,7 +466,7 @@ TEST(ListContainerTest,
 }
 
 TEST(ListContainerTest, SimpleIterationNonDerivedElement) {
-  ListContainer<NonDerivedElement> list(ALIGNOF(NonDerivedElement),
+  ListContainer<NonDerivedElement> list(alignof(NonDerivedElement),
                                         sizeof(NonDerivedElement), 0);
   std::vector<NonDerivedElement*> nde_list;
   size_t size = 10;
@@ -502,7 +502,7 @@ TEST(ListContainerTest, SimpleIterationNonDerivedElement) {
 }
 
 TEST(ListContainerTest, SimpleConstIteratorIterationNonDerivedElement) {
-  ListContainer<NonDerivedElement> list(ALIGNOF(NonDerivedElement),
+  ListContainer<NonDerivedElement> list(alignof(NonDerivedElement),
                                         sizeof(NonDerivedElement), 0);
   std::vector<const NonDerivedElement*> nde_list;
   size_t size = 10;
@@ -545,7 +545,7 @@ TEST(ListContainerTest, SimpleConstIteratorIterationNonDerivedElement) {
 }
 
 TEST(ListContainerTest, SimpleReverseInsertionNonDerivedElement) {
-  ListContainer<NonDerivedElement> list(ALIGNOF(NonDerivedElement),
+  ListContainer<NonDerivedElement> list(alignof(NonDerivedElement),
                                         sizeof(NonDerivedElement), 0);
   std::vector<NonDerivedElement*> nde_list;
   size_t size = 10;
@@ -884,7 +884,7 @@ TEST(ListContainerTest,
 
 TEST(ListContainerTest,
      SimpleIterationAndReverseIterationWithIndexNonDerivedElement) {
-  ListContainer<NonDerivedElement> list(ALIGNOF(NonDerivedElement),
+  ListContainer<NonDerivedElement> list(alignof(NonDerivedElement),
                                         sizeof(NonDerivedElement), 0);
   std::vector<NonDerivedElement*> nde_list;
   size_t size = 10;
@@ -931,7 +931,7 @@ TEST(ListContainerTest, RemoveLastDestruction) {
   // We keep an explicit instance count to make sure that the destructors are
   // indeed getting called.
   int counter = 0;
-  ListContainer<InstanceCounter> list(ALIGNOF(InstanceCounter),
+  ListContainer<InstanceCounter> list(alignof(InstanceCounter),
                                       sizeof(InstanceCounter), 1);
   EXPECT_EQ(0, counter);
   EXPECT_EQ(0u, list.size());
@@ -976,7 +976,7 @@ TEST(ListContainerTest, RemoveLastIteration) {
   struct SmallStruct {
     char dummy[16];
   };
-  ListContainer<SmallStruct> list(ALIGNOF(SmallStruct), sizeof(SmallStruct), 1);
+  ListContainer<SmallStruct> list(alignof(SmallStruct), sizeof(SmallStruct), 1);
   std::vector<SmallStruct*> pointers;
 
   // Utilities which keep these two lists in sync and check that their iteration

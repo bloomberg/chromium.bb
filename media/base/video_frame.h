@@ -15,6 +15,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/md5.h"
+#include "base/memory/aligned_memory.h"
 #include "base/memory/shared_memory.h"
 #include "base/synchronization/lock.h"
 #include "build/build_config.h"

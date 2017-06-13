@@ -32,8 +32,10 @@ using media::AudioParameters;
 namespace content {
 
 namespace {
+
 // Number of audio buffers in the faked ring buffer.
 const int kSegments = 10;
+
 }  // namespace
 
 // Mocked out sockets used for Send/ReceiveWithTimeout. Counts the number of

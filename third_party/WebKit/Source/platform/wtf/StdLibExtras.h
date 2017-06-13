@@ -27,7 +27,6 @@
 #define WTF_StdLibExtras_h
 
 #include <cstddef>
-#include "base/memory/aligned_memory.h"
 #include "base/numerics/safe_conversions.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/CPU.h"
@@ -163,12 +162,12 @@ class StaticSingleton final {
    public:
     template <typename HeapNew, typename PlacementNew>
     InstanceStorage(const HeapNew&, const PlacementNew& placement_new) {
-      placement_new(object_.void_data());
+      placement_new(&object_);
     }
-    T* Get() { return object_.template data_as<T>(); }
+    T* Get() { return reinterpret_cast<T*>(object_); }
 
    private:
-    base::AlignedMemory<sizeof(T), ALIGNOF(T)> object_;
+    alignas(T) char object_[sizeof(T)];
   };
 
   InstanceStorage<WrapperType> instance_;

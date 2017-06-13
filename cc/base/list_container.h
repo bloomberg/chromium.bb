@@ -101,7 +101,7 @@ class ListContainer {
   // Allocate().
   template <typename DerivedElementType>
   DerivedElementType* AllocateAndConstruct() {
-    return new (helper_.Allocate(ALIGNOF(DerivedElementType),
+    return new (helper_.Allocate(alignof(DerivedElementType),
                                  sizeof(DerivedElementType)))
         DerivedElementType;
   }
@@ -110,7 +110,7 @@ class ListContainer {
   // Allocate().
   template <typename DerivedElementType>
   DerivedElementType* AllocateAndCopyFrom(const DerivedElementType* source) {
-    return new (helper_.Allocate(ALIGNOF(DerivedElementType),
+    return new (helper_.Allocate(alignof(DerivedElementType),
                                  sizeof(DerivedElementType)))
         DerivedElementType(*source);
   }
@@ -154,7 +154,7 @@ class ListContainer {
   template <typename DerivedElementType>
   DerivedElementType* AppendByMoving(DerivedElementType* item) {
     size_t max_size_for_derived_class = helper_.MaxSizeForDerivedClass();
-    void* new_item = helper_.Allocate(ALIGNOF(DerivedElementType),
+    void* new_item = helper_.Allocate(alignof(DerivedElementType),
                                       max_size_for_derived_class);
     memcpy(new_item, static_cast<void*>(item), max_size_for_derived_class);
     // Construct a new element in-place so it can be destructed safely.
