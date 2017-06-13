@@ -21,8 +21,8 @@ class ImageCaptureImpl : public media::mojom::ImageCapture {
   static void Create(const service_manager::BindSourceInfo& source_info,
                      media::mojom::ImageCaptureRequest request);
 
-  void GetCapabilities(const std::string& source_id,
-                       const GetCapabilitiesCallback& callback) override;
+  void GetPhotoState(const std::string& source_id,
+                     const GetPhotoStateCallback& callback) override;
 
   void SetOptions(const std::string& source_id,
                   media::mojom::PhotoSettingsPtr settings,

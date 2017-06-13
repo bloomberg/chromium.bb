@@ -64,7 +64,7 @@ class FakeVideoCaptureDevice : public VideoCaptureDevice {
   void AllocateAndStart(const VideoCaptureParams& params,
                         std::unique_ptr<Client> client) override;
   void StopAndDeAllocate() override;
-  void GetPhotoCapabilities(GetPhotoCapabilitiesCallback callback) override;
+  void GetPhotoState(GetPhotoStateCallback callback) override;
   void SetPhotoOptions(mojom::PhotoSettingsPtr settings,
                        SetPhotoOptionsCallback callback) override;
   void TakePhoto(TakePhotoCallback callback) override;
@@ -127,8 +127,7 @@ class FakePhotoDevice {
                   const FakeDeviceState* fake_device_state);
   ~FakePhotoDevice();
 
-  void GetPhotoCapabilities(
-      VideoCaptureDevice::GetPhotoCapabilitiesCallback callback);
+  void GetPhotoState(VideoCaptureDevice::GetPhotoStateCallback callback);
   void TakePhoto(VideoCaptureDevice::TakePhotoCallback callback,
                  base::TimeDelta elapsed_time);
 

@@ -134,11 +134,11 @@ ScriptPromise ImageCapture::getPhotoCapabilities(ScriptState* script_state) {
   // camera;
   // TODO(mcasas) consider sending the security origin as well:
   // scriptState->getExecutionContext()->getSecurityOrigin()->toString()
-  service_->GetCapabilities(
+  service_->GetPhotoState(
       stream_track_->Component()->Source()->Id(),
-      ConvertToBaseCallback(WTF::Bind(
-          &ImageCapture::OnMojoPhotoCapabilities, WrapPersistent(this),
-          WrapPersistent(resolver), false /* trigger_take_photo */)));
+      ConvertToBaseCallback(
+          WTF::Bind(&ImageCapture::OnMojoGetPhotoState, WrapPersistent(this),
+                    WrapPersistent(resolver), false /* trigger_take_photo */)));
   return promise;
 }
 
@@ -589,45 +589,45 @@ ImageCapture::ImageCapture(ExecutionContext* context, MediaStreamTrack* track)
   service_.set_connection_error_handler(ConvertToBaseCallback(WTF::Bind(
       &ImageCapture::OnServiceConnectionError, WrapWeakPersistent(this))));
 
-  // Launch a retrieval of the current capabilities, which arrive asynchronously
+  // Launch a retrieval of the current photo state, which arrive asynchronously
   // to avoid blocking the main UI thread.
-  service_->GetCapabilities(
+  service_->GetPhotoState(
       stream_track_->Component()->Source()->Id(),
       ConvertToBaseCallback(WTF::Bind(
           &ImageCapture::UpdateMediaTrackCapabilities, WrapPersistent(this))));
 }
 
-void ImageCapture::OnMojoPhotoCapabilities(
+void ImageCapture::OnMojoGetPhotoState(
     ScriptPromiseResolver* resolver,
     bool trigger_take_photo,
-    media::mojom::blink::PhotoCapabilitiesPtr capabilities) {
+    media::mojom::blink::PhotoStatePtr photo_state) {
   if (!service_requests_.Contains(resolver))
     return;
 
-  if (capabilities.is_null()) {
+  if (photo_state.is_null()) {
     resolver->Reject(DOMException::Create(kUnknownError, "platform error"));
     service_requests_.erase(resolver);
     return;
   }
 
   photo_capabilities_ = PhotoCapabilities::Create();
-  photo_capabilities_->SetRedEyeReduction(capabilities->red_eye_reduction);
+  photo_capabilities_->SetRedEyeReduction(photo_state->red_eye_reduction);
   // TODO(mcasas): Remove the explicit MediaSettingsRange::create() when
   // mojo::StructTraits supports garbage-collected mappings,
   // https://crbug.com/700180.
-  if (capabilities->height->min != 0 || capabilities->height->max != 0) {
+  if (photo_state->height->min != 0 || photo_state->height->max != 0) {
     photo_capabilities_->SetImageHeight(
-        MediaSettingsRange::Create(std::move(capabilities->height)));
+        MediaSettingsRange::Create(std::move(photo_state->height)));
   }
-  if (capabilities->width->min != 0 || capabilities->width->max != 0) {
+  if (photo_state->width->min != 0 || photo_state->width->max != 0) {
     photo_capabilities_->SetImageWidth(
-        MediaSettingsRange::Create(std::move(capabilities->width)));
+        MediaSettingsRange::Create(std::move(photo_state->width)));
   }
-  if (!capabilities->fill_light_mode.IsEmpty())
-    photo_capabilities_->SetFillLightMode(capabilities->fill_light_mode);
+  if (!photo_state->fill_light_mode.IsEmpty())
+    photo_capabilities_->SetFillLightMode(photo_state->fill_light_mode);
 
-  // Update the local track capabilities cache.
-  UpdateMediaTrackCapabilities(std::move(capabilities));
+  // Update the local track photo_state cache.
+  UpdateMediaTrackCapabilities(std::move(photo_state));
 
   if (trigger_take_photo) {
     service_->TakePhoto(stream_track_->Component()->Source()->Id(),
@@ -666,11 +666,11 @@ void ImageCapture::OnMojoSetOptions(ScriptPromiseResolver* resolver,
   }
 
   // Retrieve the current device status after setting the options.
-  service_->GetCapabilities(
+  service_->GetPhotoState(
       stream_track_->Component()->Source()->Id(),
-      ConvertToBaseCallback(WTF::Bind(
-          &ImageCapture::OnMojoPhotoCapabilities, WrapPersistent(this),
-          WrapPersistent(resolver), trigger_take_photo)));
+      ConvertToBaseCallback(
+          WTF::Bind(&ImageCapture::OnMojoGetPhotoState, WrapPersistent(this),
+                    WrapPersistent(resolver), trigger_take_photo)));
 }
 
 void ImageCapture::OnMojoTakePhoto(ScriptPromiseResolver* resolver,
@@ -689,44 +689,44 @@ void ImageCapture::OnMojoTakePhoto(ScriptPromiseResolver* resolver,
 }
 
 void ImageCapture::UpdateMediaTrackCapabilities(
-    media::mojom::blink::PhotoCapabilitiesPtr capabilities) {
-  if (!capabilities)
+    media::mojom::blink::PhotoStatePtr photo_state) {
+  if (!photo_state)
     return;
 
   WTF::Vector<WTF::String> supported_white_balance_modes;
   supported_white_balance_modes.ReserveInitialCapacity(
-      capabilities->supported_white_balance_modes.size());
-  for (const auto& supported_mode : capabilities->supported_white_balance_modes)
+      photo_state->supported_white_balance_modes.size());
+  for (const auto& supported_mode : photo_state->supported_white_balance_modes)
     supported_white_balance_modes.push_back(ToString(supported_mode));
   if (!supported_white_balance_modes.IsEmpty()) {
     capabilities_.setWhiteBalanceMode(std::move(supported_white_balance_modes));
     settings_.setWhiteBalanceMode(
-        ToString(capabilities->current_white_balance_mode));
+        ToString(photo_state->current_white_balance_mode));
   }
 
   WTF::Vector<WTF::String> supported_exposure_modes;
   supported_exposure_modes.ReserveInitialCapacity(
-      capabilities->supported_exposure_modes.size());
-  for (const auto& supported_mode : capabilities->supported_exposure_modes)
+      photo_state->supported_exposure_modes.size());
+  for (const auto& supported_mode : photo_state->supported_exposure_modes)
     supported_exposure_modes.push_back(ToString(supported_mode));
   if (!supported_exposure_modes.IsEmpty()) {
     capabilities_.setExposureMode(std::move(supported_exposure_modes));
-    settings_.setExposureMode(ToString(capabilities->current_exposure_mode));
+    settings_.setExposureMode(ToString(photo_state->current_exposure_mode));
   }
 
   WTF::Vector<WTF::String> supported_focus_modes;
   supported_focus_modes.ReserveInitialCapacity(
-      capabilities->supported_focus_modes.size());
-  for (const auto& supported_mode : capabilities->supported_focus_modes)
+      photo_state->supported_focus_modes.size());
+  for (const auto& supported_mode : photo_state->supported_focus_modes)
     supported_focus_modes.push_back(ToString(supported_mode));
   if (!supported_focus_modes.IsEmpty()) {
     capabilities_.setFocusMode(std::move(supported_focus_modes));
-    settings_.setFocusMode(ToString(capabilities->current_focus_mode));
+    settings_.setFocusMode(ToString(photo_state->current_focus_mode));
   }
 
   HeapVector<Point2D> current_points_of_interest;
-  if (!capabilities->points_of_interest.IsEmpty()) {
-    for (const auto& point : capabilities->points_of_interest) {
+  if (!photo_state->points_of_interest.IsEmpty()) {
+    for (const auto& point : photo_state->points_of_interest) {
       Point2D web_point;
       web_point.setX(point->x);
       web_point.setY(point->y);
@@ -738,54 +738,54 @@ void ImageCapture::UpdateMediaTrackCapabilities(
   // TODO(mcasas): Remove the explicit MediaSettingsRange::create() when
   // mojo::StructTraits supports garbage-collected mappings,
   // https://crbug.com/700180.
-  if (capabilities->exposure_compensation->max !=
-      capabilities->exposure_compensation->min) {
+  if (photo_state->exposure_compensation->max !=
+      photo_state->exposure_compensation->min) {
     capabilities_.setExposureCompensation(
-        MediaSettingsRange::Create(*capabilities->exposure_compensation));
+        MediaSettingsRange::Create(*photo_state->exposure_compensation));
     settings_.setExposureCompensation(
-        capabilities->exposure_compensation->current);
+        photo_state->exposure_compensation->current);
   }
-  if (capabilities->color_temperature->max !=
-      capabilities->color_temperature->min) {
+  if (photo_state->color_temperature->max !=
+      photo_state->color_temperature->min) {
     capabilities_.setColorTemperature(
-        MediaSettingsRange::Create(*capabilities->color_temperature));
-    settings_.setColorTemperature(capabilities->color_temperature->current);
+        MediaSettingsRange::Create(*photo_state->color_temperature));
+    settings_.setColorTemperature(photo_state->color_temperature->current);
   }
-  if (capabilities->iso->max != capabilities->iso->min) {
-    capabilities_.setIso(MediaSettingsRange::Create(*capabilities->iso));
-    settings_.setIso(capabilities->iso->current);
+  if (photo_state->iso->max != photo_state->iso->min) {
+    capabilities_.setIso(MediaSettingsRange::Create(*photo_state->iso));
+    settings_.setIso(photo_state->iso->current);
   }
 
-  if (capabilities->brightness->max != capabilities->brightness->min) {
+  if (photo_state->brightness->max != photo_state->brightness->min) {
     capabilities_.setBrightness(
-        MediaSettingsRange::Create(*capabilities->brightness));
-    settings_.setBrightness(capabilities->brightness->current);
+        MediaSettingsRange::Create(*photo_state->brightness));
+    settings_.setBrightness(photo_state->brightness->current);
   }
-  if (capabilities->contrast->max != capabilities->contrast->min) {
+  if (photo_state->contrast->max != photo_state->contrast->min) {
     capabilities_.setContrast(
-        MediaSettingsRange::Create(*capabilities->contrast));
-    settings_.setContrast(capabilities->contrast->current);
+        MediaSettingsRange::Create(*photo_state->contrast));
+    settings_.setContrast(photo_state->contrast->current);
   }
-  if (capabilities->saturation->max != capabilities->saturation->min) {
+  if (photo_state->saturation->max != photo_state->saturation->min) {
     capabilities_.setSaturation(
-        MediaSettingsRange::Create(*capabilities->saturation));
-    settings_.setSaturation(capabilities->saturation->current);
+        MediaSettingsRange::Create(*photo_state->saturation));
+    settings_.setSaturation(photo_state->saturation->current);
   }
-  if (capabilities->sharpness->max != capabilities->sharpness->min) {
+  if (photo_state->sharpness->max != photo_state->sharpness->min) {
     capabilities_.setSharpness(
-        MediaSettingsRange::Create(*capabilities->sharpness));
-    settings_.setSharpness(capabilities->sharpness->current);
+        MediaSettingsRange::Create(*photo_state->sharpness));
+    settings_.setSharpness(photo_state->sharpness->current);
   }
 
-  if (capabilities->zoom->max != capabilities->zoom->min) {
-    capabilities_.setZoom(MediaSettingsRange::Create(*capabilities->zoom));
-    settings_.setZoom(capabilities->zoom->current);
+  if (photo_state->zoom->max != photo_state->zoom->min) {
+    capabilities_.setZoom(MediaSettingsRange::Create(*photo_state->zoom));
+    settings_.setZoom(photo_state->zoom->current);
   }
 
-  if (capabilities->supports_torch)
-    capabilities_.setTorch(capabilities->supports_torch);
-  if (capabilities->supports_torch)
-    settings_.setTorch(capabilities->torch);
+  if (photo_state->supports_torch)
+    capabilities_.setTorch(photo_state->supports_torch);
+  if (photo_state->supports_torch)
+    settings_.setTorch(photo_state->torch);
 }
 
 void ImageCapture::OnServiceConnectionError() {

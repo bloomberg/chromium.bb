@@ -271,10 +271,11 @@ class CAPTURE_EXPORT VideoCaptureDevice
   // happens first.
   virtual void StopAndDeAllocate() = 0;
 
-  // Retrieve the photo capabilities of the device (e.g. zoom levels etc).
-  using GetPhotoCapabilitiesCallback =
-      ScopedResultCallback<base::Callback<void(mojom::PhotoCapabilitiesPtr)>>;
-  virtual void GetPhotoCapabilities(GetPhotoCapabilitiesCallback callback);
+  // Retrieve the photo capabilities and settings of the device (e.g. zoom
+  // levels etc).
+  using GetPhotoStateCallback =
+      ScopedResultCallback<base::Callback<void(mojom::PhotoStatePtr)>>;
+  virtual void GetPhotoState(GetPhotoStateCallback callback);
 
   using SetPhotoOptionsCallback =
       ScopedResultCallback<base::Callback<void(bool)>>;

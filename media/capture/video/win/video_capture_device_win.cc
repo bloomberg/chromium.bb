@@ -532,14 +532,13 @@ void VideoCaptureDeviceWin::TakePhoto(TakePhotoCallback callback) {
   take_photo_callbacks_.push(std::move(callback));
 }
 
-void VideoCaptureDeviceWin::GetPhotoCapabilities(
-    GetPhotoCapabilitiesCallback callback) {
+void VideoCaptureDeviceWin::GetPhotoState(GetPhotoStateCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!camera_control_ || !video_control_)
     return;
 
-  auto photo_capabilities = mojom::PhotoCapabilities::New();
+  auto photo_capabilities = mojom::PhotoState::New();
 
   photo_capabilities->exposure_compensation = RetrieveControlRangeAndCurrent(
       [this](auto... args) {

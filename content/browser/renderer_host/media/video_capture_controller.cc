@@ -552,11 +552,11 @@ bool VideoCaptureController::IsDeviceAlive() const {
   return launched_device_ != nullptr;
 }
 
-void VideoCaptureController::GetPhotoCapabilities(
-    media::VideoCaptureDevice::GetPhotoCapabilitiesCallback callback) const {
+void VideoCaptureController::GetPhotoState(
+    media::VideoCaptureDevice::GetPhotoStateCallback callback) const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(launched_device_);
-  launched_device_->GetPhotoCapabilities(std::move(callback));
+  launched_device_->GetPhotoState(std::move(callback));
 }
 
 void VideoCaptureController::SetPhotoOptions(

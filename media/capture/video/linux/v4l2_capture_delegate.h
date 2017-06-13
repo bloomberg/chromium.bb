@@ -55,8 +55,7 @@ class CAPTURE_EXPORT V4L2CaptureDelegate final {
 
   void TakePhoto(VideoCaptureDevice::TakePhotoCallback callback);
 
-  void GetPhotoCapabilities(
-      VideoCaptureDevice::GetPhotoCapabilitiesCallback callback);
+  void GetPhotoState(VideoCaptureDevice::GetPhotoStateCallback callback);
   void SetPhotoOptions(mojom::PhotoSettingsPtr settings,
                        VideoCaptureDevice::SetPhotoOptionsCallback callback);
 

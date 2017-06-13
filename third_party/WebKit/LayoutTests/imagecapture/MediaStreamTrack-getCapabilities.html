@@ -22,7 +22,7 @@ async_test(function(t) {
   var mock_capabilities;
   mockImageCaptureReady
     .then(mock => {
-      mock_capabilities = mock.capabilities();
+      mock_capabilities = mock.state();
 
       // |stream| must be created _after_ |mock| is constructed to give the
       // latter time to override the bindings.

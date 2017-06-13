@@ -54,8 +54,8 @@ void MockDevice::StopAndDeAllocate() {
   client_.reset();
 }
 
-void MockDevice::GetPhotoCapabilities(GetPhotoCapabilitiesCallback callback) {
-  DoGetPhotoCapabilities(&callback);
+void MockDevice::GetPhotoState(GetPhotoStateCallback callback) {
+  DoGetPhotoState(&callback);
 }
 
 void MockDevice::SetPhotoOptions(media::mojom::PhotoSettingsPtr settings,

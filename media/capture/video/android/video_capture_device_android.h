@@ -64,7 +64,7 @@ class CAPTURE_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice {
   void AllocateAndStart(const VideoCaptureParams& params,
                         std::unique_ptr<Client> client) override;
   void StopAndDeAllocate() override;
-  void GetPhotoCapabilities(GetPhotoCapabilitiesCallback callback) override;
+  void GetPhotoState(GetPhotoStateCallback callback) override;
   void SetPhotoOptions(mojom::PhotoSettingsPtr settings,
                        SetPhotoOptionsCallback callback) override;
   void TakePhoto(TakePhotoCallback callback) override;
@@ -117,7 +117,7 @@ class CAPTURE_EXPORT VideoCaptureDeviceAndroid : public VideoCaptureDevice {
   void SetErrorState(const tracked_objects::Location& from_here,
                      const std::string& reason);
 
-  void DoGetPhotoCapabilities(GetPhotoCapabilitiesCallback callback);
+  void DoGetPhotoState(GetPhotoStateCallback callback);
   void DoSetPhotoOptions(mojom::PhotoSettingsPtr settings,
                          SetPhotoOptionsCallback callback);
   void DoTakePhoto(TakePhotoCallback callback);

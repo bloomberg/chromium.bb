@@ -21,7 +21,7 @@ async_test(function(t) {
   var mock_capabilities;
   mockImageCaptureReady
     .then(mock => {
-      mock_capabilities = mock.capabilities();
+      mock_capabilities = mock.state();
       return new ImageCapture(stream.getVideoTracks()[0]);
     },
     error => {

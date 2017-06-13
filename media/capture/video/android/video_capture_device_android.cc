@@ -221,8 +221,7 @@ void VideoCaptureDeviceAndroid::TakePhoto(TakePhotoCallback callback) {
   DoTakePhoto(std::move(callback));
 }
 
-void VideoCaptureDeviceAndroid::GetPhotoCapabilities(
-    GetPhotoCapabilitiesCallback callback) {
+void VideoCaptureDeviceAndroid::GetPhotoState(GetPhotoStateCallback callback) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   {
     base::AutoLock lock(lock_);
@@ -230,12 +229,12 @@ void VideoCaptureDeviceAndroid::GetPhotoCapabilities(
       return;
     if (!got_first_frame_) {  // We have to wait until we get the first frame.
       photo_requests_queue_.push_back(
-          base::Bind(&VideoCaptureDeviceAndroid::DoGetPhotoCapabilities,
+          base::Bind(&VideoCaptureDeviceAndroid::DoGetPhotoState,
                      weak_ptr_factory_.GetWeakPtr(), base::Passed(&callback)));
       return;
     }
   }
-  DoGetPhotoCapabilities(std::move(callback));
+  DoGetPhotoState(std::move(callback));
 }
 
 void VideoCaptureDeviceAndroid::SetPhotoOptions(
@@ -484,8 +483,8 @@ void VideoCaptureDeviceAndroid::DoTakePhoto(TakePhotoCallback callback) {
   }
 }
 
-void VideoCaptureDeviceAndroid::DoGetPhotoCapabilities(
-    GetPhotoCapabilitiesCallback callback) {
+void VideoCaptureDeviceAndroid::DoGetPhotoState(
+    GetPhotoStateCallback callback) {
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 #if DCHECK_IS_ON()
   {
@@ -500,9 +499,8 @@ void VideoCaptureDeviceAndroid::DoGetPhotoCapabilities(
       Java_VideoCapture_getPhotoCapabilities(env, j_capture_));
 
   // TODO(mcasas): Manual member copying sucks, consider adding typemapping from
-  // PhotoCapabilities to mojom::PhotoCapabilitiesPtr, https://crbug.com/622002.
-  mojom::PhotoCapabilitiesPtr photo_capabilities =
-      mojom::PhotoCapabilities::New();
+  // PhotoCapabilities to mojom::PhotoStatePtr, https://crbug.com/622002.
+  mojom::PhotoStatePtr photo_capabilities = mojom::PhotoState::New();
 
   const auto jni_white_balance_modes = caps.getWhiteBalanceModes();
   std::vector<mojom::MeteringMode> white_balance_modes;

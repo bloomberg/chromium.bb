@@ -21,19 +21,19 @@ namespace content {
 
 namespace {
 
-void RunGetCapabilitiesCallbackOnUIThread(
-    const ImageCaptureImpl::GetCapabilitiesCallback& callback,
-    media::mojom::PhotoCapabilitiesPtr capabilities) {
+void RunGetPhotoStateCallbackOnUIThread(
+    const ImageCaptureImpl::GetPhotoStateCallback& callback,
+    media::mojom::PhotoStatePtr capabilities) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::Bind(callback, base::Passed(&capabilities)));
 }
 
-void RunFailedGetCapabilitiesCallback(
-    ImageCaptureImpl::GetCapabilitiesCallback cb) {
+void RunFailedGetPhotoStateCallback(
+    ImageCaptureImpl::GetPhotoStateCallback cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  media::mojom::PhotoCapabilitiesPtr empty_capabilities =
-      media::mojom::PhotoCapabilities::New();
+  media::mojom::PhotoStatePtr empty_capabilities =
+      media::mojom::PhotoState::New();
   empty_capabilities->iso = media::mojom::Range::New();
   empty_capabilities->width = media::mojom::Range::New();
   empty_capabilities->height = media::mojom::Range::New();
@@ -72,10 +72,10 @@ void RunFailedTakePhotoCallback(ImageCaptureImpl::TakePhotoCallback cb) {
   cb.Run(media::mojom::Blob::New());
 }
 
-void GetCapabilitiesOnIOThread(
+void GetPhotoStateOnIOThread(
     const std::string& source_id,
     MediaStreamManager* media_stream_manager,
-    media::ScopedResultCallback<ImageCaptureImpl::GetCapabilitiesCallback>
+    media::ScopedResultCallback<ImageCaptureImpl::GetPhotoStateCallback>
         callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -84,7 +84,7 @@ void GetCapabilitiesOnIOThread(
 
   if (session_id == StreamDeviceInfo::kNoId)
     return;
-  media_stream_manager->video_capture_manager()->GetPhotoCapabilities(
+  media_stream_manager->video_capture_manager()->GetPhotoState(
       session_id, std::move(callback));
 }
 
@@ -134,18 +134,17 @@ void ImageCaptureImpl::Create(
                           std::move(request));
 }
 
-void ImageCaptureImpl::GetCapabilities(
-    const std::string& source_id,
-    const GetCapabilitiesCallback& callback) {
+void ImageCaptureImpl::GetPhotoState(const std::string& source_id,
+                                     const GetPhotoStateCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  media::ScopedResultCallback<GetCapabilitiesCallback> scoped_callback(
-      base::Bind(&RunGetCapabilitiesCallbackOnUIThread, callback),
-      media::BindToCurrentLoop(base::Bind(&RunFailedGetCapabilitiesCallback)));
+  media::ScopedResultCallback<GetPhotoStateCallback> scoped_callback(
+      base::Bind(&RunGetPhotoStateCallbackOnUIThread, callback),
+      media::BindToCurrentLoop(base::Bind(&RunFailedGetPhotoStateCallback)));
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&GetCapabilitiesOnIOThread, source_id,
+      base::Bind(&GetPhotoStateOnIOThread, source_id,
                  BrowserMainLoop::GetInstance()->media_stream_manager(),
                  base::Passed(&scoped_callback)));
 }

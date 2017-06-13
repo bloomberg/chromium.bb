@@ -38,8 +38,7 @@ class MockDevice : public media::VideoCaptureDevice {
                     std::unique_ptr<Client>* client));
   MOCK_METHOD0(RequestRefreshFrame, void());
   MOCK_METHOD0(DoStopAndDeAllocate, void());
-  MOCK_METHOD1(DoGetPhotoCapabilities,
-               void(GetPhotoCapabilitiesCallback* callback));
+  MOCK_METHOD1(DoGetPhotoState, void(GetPhotoStateCallback* callback));
   MOCK_METHOD2(DoSetPhotoOptions,
                void(media::mojom::PhotoSettingsPtr* settings,
                     SetPhotoOptionsCallback* callback));
@@ -50,7 +49,7 @@ class MockDevice : public media::VideoCaptureDevice {
   void AllocateAndStart(const media::VideoCaptureParams& params,
                         std::unique_ptr<Client> client) override;
   void StopAndDeAllocate() override;
-  void GetPhotoCapabilities(GetPhotoCapabilitiesCallback callback) override;
+  void GetPhotoState(GetPhotoStateCallback callback) override;
   void SetPhotoOptions(media::mojom::PhotoSettingsPtr settings,
                        SetPhotoOptionsCallback callback) override;
   void TakePhoto(TakePhotoCallback callback) override;

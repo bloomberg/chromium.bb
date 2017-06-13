@@ -127,8 +127,8 @@ class CONTENT_EXPORT VideoCaptureController
                                  base::OnceClosure done_cb);
   void ReleaseDeviceAsync(base::OnceClosure done_cb);
   bool IsDeviceAlive() const;
-  void GetPhotoCapabilities(
-      media::VideoCaptureDevice::GetPhotoCapabilitiesCallback callback) const;
+  void GetPhotoState(
+      media::VideoCaptureDevice::GetPhotoStateCallback callback) const;
   void SetPhotoOptions(
       media::mojom::PhotoSettingsPtr settings,
       media::VideoCaptureDevice::SetPhotoOptionsCallback callback);

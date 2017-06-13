@@ -14,7 +14,7 @@ let mockImageCaptureReady = define(
           handle => this.bindingSet_.addBinding(this, handle));
 
       this.state_ = {
-        capabilities: {
+        state: {
           supported_white_balance_modes: [
             imageCapture.MeteringMode.SINGLE_SHOT,
             imageCapture.MeteringMode.CONTINUOUS
@@ -60,58 +60,58 @@ let mockImageCaptureReady = define(
       this.bindingSet_ = new bindings.BindingSet(imageCapture.ImageCapture);
     }
 
-    getCapabilities(source_id) {
+    getPhotoState(source_id) {
       return Promise.resolve(this.state_);
     }
 
     setOptions(source_id, settings) {
       this.settings_ = settings;
       if (settings.has_iso)
-        this.state_.capabilities.iso.current = settings.iso;
+        this.state_.state.iso.current = settings.iso;
       if (settings.has_height)
-        this.state_.capabilities.height.current = settings.height;
+        this.state_.state.height.current = settings.height;
       if (settings.has_width)
-        this.state_.capabilities.width.current = settings.width;
+        this.state_.state.width.current = settings.width;
       if (settings.has_zoom)
-        this.state_.capabilities.zoom.current = settings.zoom;
+        this.state_.state.zoom.current = settings.zoom;
       if (settings.has_focus_mode)
-        this.state_.capabilities.current_focus_mode = settings.focus_mode;
+        this.state_.state.current_focus_mode = settings.focus_mode;
 
       if (settings.points_of_interest.length > 0) {
-        this.state_.capabilities.points_of_interest =
+        this.state_.state.points_of_interest =
             settings.points_of_interest;
       }
 
       if (settings.has_exposure_mode)
-        this.state_.capabilities.current_exposure_mode = settings.exposure_mode;
+        this.state_.state.current_exposure_mode = settings.exposure_mode;
 
       if (settings.has_exposure_compensation) {
-        this.state_.capabilities.exposure_compensation.current =
+        this.state_.state.exposure_compensation.current =
             settings.exposure_compensation;
       }
       if (settings.has_white_balance_mode) {
-        this.state_.capabilities.current_white_balance_mode =
+        this.state_.state.current_white_balance_mode =
             settings.white_balance_mode;
       }
       if (settings.has_fill_light_mode)
-        this.state_.capabilities.fill_light_mode = [settings.fill_light_mode];
+        this.state_.state.fill_light_mode = [settings.fill_light_mode];
       if (settings.has_red_eye_reduction)
-        this.state_.capabilities.red_eye_reduction = settings.red_eye_reduction;
+        this.state_.state.red_eye_reduction = settings.red_eye_reduction;
       if (settings.has_color_temperature) {
-        this.state_.capabilities.color_temperature.current =
+        this.state_.state.color_temperature.current =
             settings.color_temperature;
       }
       if (settings.has_brightness)
-        this.state_.capabilities.brightness.current = settings.brightness;
+        this.state_.state.brightness.current = settings.brightness;
       if (settings.has_contrast)
-        this.state_.capabilities.contrast.current = settings.contrast;
+        this.state_.state.contrast.current = settings.contrast;
       if (settings.has_saturation)
-        this.state_.capabilities.saturation.current = settings.saturation;
+        this.state_.state.saturation.current = settings.saturation;
       if (settings.has_sharpness)
-        this.state_.capabilities.sharpness.current = settings.sharpness;
+        this.state_.state.sharpness.current = settings.sharpness;
 
       if (settings.has_torch)
-        this.state_.capabilities.torch = settings.torch;
+        this.state_.state.torch = settings.torch;
 
       return Promise.resolve({ success : true });
     }
@@ -121,8 +121,8 @@ let mockImageCaptureReady = define(
                                         data : new Array(2) } });
     }
 
-    capabilities() {
-      return this.state_.capabilities;
+    state() {
+      return this.state_.state;
     }
 
     options() {

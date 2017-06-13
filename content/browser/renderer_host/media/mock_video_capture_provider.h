@@ -59,8 +59,8 @@ class MockLaunchedVideoCaptureDevice : public LaunchedVideoCaptureDevice {
   ~MockLaunchedVideoCaptureDevice() override;
 
   MOCK_CONST_METHOD1(
-      DoGetPhotoCapabilities,
-      void(media::VideoCaptureDevice::GetPhotoCapabilitiesCallback* callback));
+      DoGetPhotoState,
+      void(media::VideoCaptureDevice::GetPhotoStateCallback* callback));
   MOCK_METHOD2(
       DoSetPhotoOptions,
       void(media::mojom::PhotoSettingsPtr* settings,
@@ -75,10 +75,9 @@ class MockLaunchedVideoCaptureDevice : public LaunchedVideoCaptureDevice {
   MOCK_METHOD2(OnUtilizationReport,
                void(int frame_feedback_id, double utilization));
 
-  void GetPhotoCapabilities(
-      media::VideoCaptureDevice::GetPhotoCapabilitiesCallback callback)
+  void GetPhotoState(media::VideoCaptureDevice::GetPhotoStateCallback callback)
       const override {
-    DoGetPhotoCapabilities(&callback);
+    DoGetPhotoState(&callback);
   }
 
   void SetPhotoOptions(

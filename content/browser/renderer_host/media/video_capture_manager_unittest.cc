@@ -81,8 +81,8 @@ class WrappedDeviceFactory : public media::FakeVideoCaptureDeviceFactory {
       device_->StopAndDeAllocate();
     }
 
-    void GetPhotoCapabilities(GetPhotoCapabilitiesCallback callback) final {
-      device_->GetPhotoCapabilities(std::move(callback));
+    void GetPhotoState(GetPhotoStateCallback callback) final {
+      device_->GetPhotoState(std::move(callback));
     }
 
     void TakePhoto(TakePhotoCallback callback) final {

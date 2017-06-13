@@ -438,58 +438,54 @@ void FakeVideoCaptureDevice::StopAndDeAllocate() {
   frame_deliverer_.reset();
 }
 
-void FakeVideoCaptureDevice::GetPhotoCapabilities(
-    GetPhotoCapabilitiesCallback callback) {
+void FakeVideoCaptureDevice::GetPhotoState(GetPhotoStateCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  photo_device_->GetPhotoCapabilities(std::move(callback));
+  photo_device_->GetPhotoState(std::move(callback));
 }
 
-void FakePhotoDevice::GetPhotoCapabilities(
-    VideoCaptureDevice::GetPhotoCapabilitiesCallback callback) {
-  mojom::PhotoCapabilitiesPtr photo_capabilities =
-      mojom::PhotoCapabilities::New();
+void FakePhotoDevice::GetPhotoState(
+    VideoCaptureDevice::GetPhotoStateCallback callback) {
+  mojom::PhotoStatePtr photo_state = mojom::PhotoState::New();
 
-  photo_capabilities->current_white_balance_mode = mojom::MeteringMode::NONE;
-  photo_capabilities->current_exposure_mode = mojom::MeteringMode::NONE;
-  photo_capabilities->current_focus_mode = mojom::MeteringMode::NONE;
+  photo_state->current_white_balance_mode = mojom::MeteringMode::NONE;
+  photo_state->current_exposure_mode = mojom::MeteringMode::NONE;
+  photo_state->current_focus_mode = mojom::MeteringMode::NONE;
 
-  photo_capabilities->exposure_compensation = mojom::Range::New();
-  photo_capabilities->color_temperature = mojom::Range::New();
-  photo_capabilities->iso = mojom::Range::New();
-  photo_capabilities->iso->current = 100.0;
-  photo_capabilities->iso->max = 100.0;
-  photo_capabilities->iso->min = 100.0;
-  photo_capabilities->iso->step = 0.0;
+  photo_state->exposure_compensation = mojom::Range::New();
+  photo_state->color_temperature = mojom::Range::New();
+  photo_state->iso = mojom::Range::New();
+  photo_state->iso->current = 100.0;
+  photo_state->iso->max = 100.0;
+  photo_state->iso->min = 100.0;
+  photo_state->iso->step = 0.0;
 
-  photo_capabilities->brightness = media::mojom::Range::New();
-  photo_capabilities->contrast = media::mojom::Range::New();
-  photo_capabilities->saturation = media::mojom::Range::New();
-  photo_capabilities->sharpness = media::mojom::Range::New();
+  photo_state->brightness = media::mojom::Range::New();
+  photo_state->contrast = media::mojom::Range::New();
+  photo_state->saturation = media::mojom::Range::New();
+  photo_state->sharpness = media::mojom::Range::New();
 
-  photo_capabilities->zoom = mojom::Range::New();
-  photo_capabilities->zoom->current = fake_device_state_->zoom;
-  photo_capabilities->zoom->max = kMaxZoom;
-  photo_capabilities->zoom->min = kMinZoom;
-  photo_capabilities->zoom->step = kZoomStep;
+  photo_state->zoom = mojom::Range::New();
+  photo_state->zoom->current = fake_device_state_->zoom;
+  photo_state->zoom->max = kMaxZoom;
+  photo_state->zoom->min = kMinZoom;
+  photo_state->zoom->step = kZoomStep;
 
-  photo_capabilities->supports_torch = false;
-  photo_capabilities->torch = false;
+  photo_state->supports_torch = false;
+  photo_state->torch = false;
 
-  photo_capabilities->red_eye_reduction = mojom::RedEyeReduction::NEVER;
-  photo_capabilities->height = mojom::Range::New();
-  photo_capabilities->height->current =
-      fake_device_state_->format.frame_size.height();
-  photo_capabilities->height->max = 1080.0;
-  photo_capabilities->height->min = 96.0;
-  photo_capabilities->height->step = 1.0;
-  photo_capabilities->width = mojom::Range::New();
-  photo_capabilities->width->current =
-      fake_device_state_->format.frame_size.width();
-  photo_capabilities->width->max = 1920.0;
-  photo_capabilities->width->min = 96.0;
-  photo_capabilities->width->step = 1.0;
+  photo_state->red_eye_reduction = mojom::RedEyeReduction::NEVER;
+  photo_state->height = mojom::Range::New();
+  photo_state->height->current = fake_device_state_->format.frame_size.height();
+  photo_state->height->max = 1080.0;
+  photo_state->height->min = 96.0;
+  photo_state->height->step = 1.0;
+  photo_state->width = mojom::Range::New();
+  photo_state->width->current = fake_device_state_->format.frame_size.width();
+  photo_state->width->max = 1920.0;
+  photo_state->width->min = 96.0;
+  photo_state->width->step = 1.0;
 
-  callback.Run(std::move(photo_capabilities));
+  callback.Run(std::move(photo_state));
 }
 
 void FakeVideoCaptureDevice::SetPhotoOptions(mojom::PhotoSettingsPtr settings,
