@@ -605,10 +605,8 @@ bool PaintLayerCompositor::AllocateOrClearCompositedLayerMapping(
       inner_compositor->EnsureRootLayer();
   }
 
-  if (composited_layer_mapping_changed) {
-    layer->Clipper(PaintLayer::kDoNotUseGeometryMapper)
-        .ClearClipRectsIncludingDescendants(kPaintingClipRects);
-  }
+  if (composited_layer_mapping_changed)
+    layer->ClearClipRects(kPaintingClipRects);
 
   // If a fixed position layer gained/lost a compositedLayerMapping or the
   // reason not compositing it changed, the scrolling coordinator needs to
