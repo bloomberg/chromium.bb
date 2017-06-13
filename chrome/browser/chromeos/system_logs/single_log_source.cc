@@ -30,6 +30,19 @@ base::FilePath GetLogFileSourceRelativeFilePath(
   return base::FilePath();
 }
 
+// Attempts to store a string |value| in |*response| under |key|. If there is
+// already a string in |*response| under |key|, appends |value| to the existing
+// string value.
+void AppendToSystemLogsResponse(SystemLogsResponse* response,
+                                const std::string& key,
+                                const std::string& value) {
+  auto iter = response->find(key);
+  if (iter == response->end())
+    response->emplace(key, value);
+  else
+    iter->second += value;
+}
+
 }  // namespace
 
 SingleLogSource::SingleLogSource(SupportedSource source)
@@ -73,23 +86,34 @@ void SingleLogSource::ReadFile(SystemLogsResponse* result) {
   const size_t size_to_read = length - num_bytes_read_;
   std::string result_string;
   result_string.resize(size_to_read);
-  const size_t size_read =
-      file_.ReadAtCurrentPos(&result_string[0], size_to_read);
+  size_t size_read = file_.ReadAtCurrentPos(&result_string[0], size_to_read);
   result_string.resize(size_read);
 
   // The reader may only read complete lines.
   if (result_string.empty() || result_string.back() != '\n') {
-    // If an incomplete line was read, reset the file read offset to before the
-    // most recent read.
-    file_.Seek(base::File::FROM_CURRENT, -size_read);
-    result->emplace(source_name(), "");
-    return;
+    // If an incomplete line was read, return only the part that includes whole
+    // lines.
+    size_t last_newline_pos = result_string.find_last_of('\n');
+    if (last_newline_pos == std::string::npos) {
+      file_.Seek(base::File::FROM_CURRENT, -size_read);
+      AppendToSystemLogsResponse(result, source_name(), "");
+      return;
+    }
+    // The part of the string that will be returned includes the newline itself.
+    size_t adjusted_size_read = last_newline_pos + 1;
+    file_.Seek(base::File::FROM_CURRENT, -size_read + adjusted_size_read);
+    result_string.resize(adjusted_size_read);
+
+    // Update |size_read| to reflect that the read was only up to the last
+    // newline.
+    size_read = adjusted_size_read;
   }
 
   num_bytes_read_ += size_read;
 
   // Pass it back to the callback.
-  result->emplace(source_name(), anonymizer_.Anonymize(result_string));
+  AppendToSystemLogsResponse(result, source_name(),
+                             anonymizer_.Anonymize(result_string));
 }
 
 }  // namespace system_logs

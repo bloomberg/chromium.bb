@@ -63,7 +63,8 @@ class SingleLogSourceTest : public ::testing::Test {
   bool WriteFile(const base::FilePath& relative_path,
                  const std::string& input) {
     return base::WriteFile(log_dir_.GetPath().Append(relative_path),
-                           input.data(), input.size());
+                           input.data(),
+                           input.size()) == static_cast<int>(input.size());
   }
   bool AppendToFile(const base::FilePath& relative_path,
                     const std::string& input) {
@@ -237,20 +238,19 @@ TEST_F(SingleLogSourceTest, IncompleteLines) {
   // All the previously written text should be read this time.
   EXPECT_EQ("0123456789abcdefghijk\n", latest_response());
 
-  // Partial whole-line reads are not supported. The last byte of the read must
-  // be a new line.
+  // Check ability to read whole lines while leaving the remainder for later.
   EXPECT_TRUE(AppendToFile(base::FilePath("messages"), "Hello world\n"));
   EXPECT_TRUE(AppendToFile(base::FilePath("messages"), "Goodbye world"));
   FetchFromSource();
 
   EXPECT_EQ(4, num_callback_calls());
-  EXPECT_EQ("", latest_response());
+  EXPECT_EQ("Hello world\n", latest_response());
 
   EXPECT_TRUE(AppendToFile(base::FilePath("messages"), "\n"));
   FetchFromSource();
 
   EXPECT_EQ(5, num_callback_calls());
-  EXPECT_EQ("Hello world\nGoodbye world\n", latest_response());
+  EXPECT_EQ("Goodbye world\n", latest_response());
 }
 
 TEST_F(SingleLogSourceTest, Anonymize) {
