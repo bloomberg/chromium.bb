@@ -111,6 +111,10 @@ class CORE_EXPORT LayoutFlowThread : public LayoutBlockFlow {
                                   Vector<FloatQuad>&,
                                   MapCoordinatesFlags mode = 0);
 
+  void AddOutlineRects(Vector<LayoutRect>&,
+                       const LayoutPoint& additional_offset,
+                       IncludeBlockVisualOverflowOrNot) const override;
+
   bool NodeAtPoint(HitTestResult&,
                    const HitTestLocation& location_in_container,
                    const LayoutPoint& accumulated_offset,
