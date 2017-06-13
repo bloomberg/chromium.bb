@@ -41,6 +41,8 @@ import org.chromium.content_public.common.ContentProcessInfo;
 
 import java.util.concurrent.Semaphore;
 
+import javax.annotation.concurrent.GuardedBy;
+
 /**
  * This class implements all of the functionality for {@link ChildProcessService} which owns an
  * object of {@link ChildProcessServiceImpl}.
@@ -56,17 +58,20 @@ public class ChildProcessServiceImpl {
     // Only for a check that create is only called once.
     private static boolean sCreateCalled;
 
-    // Lock that protects the following members.
     private final Object mBinderLock = new Object();
-    private IGpuProcessCallback mGpuCallback;
+
+    @GuardedBy("mBinderLock")
     private boolean mBindToCallerCheck;
+
     // PID of the client of this service, set in bindToCaller(), if mBindToCallerCheck is true.
+    @GuardedBy("mBinderLock")
     private int mBoundCallingPid;
 
     // This is the native "Main" thread for the renderer / utility process.
     private Thread mMainThread;
     // Parameters received via IPC, only accessed while holding the mMainThread monitor.
     private String[] mCommandLineParams;
+    private IGpuProcessCallback mGpuCallback;
     private int mCpuCount;
     private long mCpuFeatures;
     // File descriptors that should be registered natively.
@@ -109,8 +114,8 @@ public class ChildProcessServiceImpl {
         // NOTE: Implement any IChildProcessService methods here.
         @Override
         public boolean bindToCaller() {
-            assert mBindToCallerCheck;
             synchronized (mBinderLock) {
+                assert mBindToCallerCheck;
                 int callingPid = Binder.getCallingPid();
                 if (mBoundCallingPid == 0) {
                     mBoundCallingPid = callingPid;
