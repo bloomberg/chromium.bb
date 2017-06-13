@@ -61,7 +61,6 @@
 #include "public/platform/WebCompositeAndReadbackAsyncCallback.h"
 #include "public/platform/WebCursorInfo.h"
 #include "public/platform/WebFloatRect.h"
-#include "public/web/WebAXObject.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebViewClient.h"
 #include "public/web/WebWidgetClient.h"
@@ -216,18 +215,6 @@ class PagePopupChromeClient final : public EmptyChromeClient {
   void AttachRootGraphicsLayer(GraphicsLayer* graphics_layer,
                                LocalFrame* local_root) override {
     popup_->SetRootGraphicsLayer(graphics_layer);
-  }
-
-  void PostAccessibilityNotification(
-      AXObject* obj,
-      AXObjectCache::AXNotification notification) override {
-    WebLocalFrameImpl* frame = WebLocalFrameImpl::FromFrame(
-        popup_->popup_client_->OwnerElement().GetDocument().GetFrame());
-    if (obj && frame && frame->Client()) {
-      frame->Client()->PostAccessibilityEvent(
-          WebAXObject(ToAXObjectImpl(obj)),
-          static_cast<WebAXEvent>(notification));
-    }
   }
 
   void SetToolTip(LocalFrame&,

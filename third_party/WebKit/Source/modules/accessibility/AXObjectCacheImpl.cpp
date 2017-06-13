@@ -37,6 +37,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "core/html/HTMLAreaElement.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
@@ -83,6 +84,7 @@
 #include "modules/accessibility/AXTableRow.h"
 #include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/PtrUtil.h"
+#include "public/web/WebFrameClient.h"
 
 namespace blink {
 
@@ -1113,10 +1115,13 @@ void AXObjectCacheImpl::PostPlatformNotification(AXObjectImpl* obj,
   if (!obj || !obj->GetDocument() || !obj->DocumentFrameView() ||
       !obj->DocumentFrameView()->GetFrame().GetPage())
     return;
-
-  ChromeClient& client =
-      obj->GetDocument()->AxObjectCacheOwner().GetPage()->GetChromeClient();
-  client.PostAccessibilityNotification(obj, notification);
+  // Send via WebFrameClient
+  WebLocalFrameBase* webframe = WebLocalFrameBase::FromFrame(
+      obj->GetDocument()->AxObjectCacheOwner().GetFrame());
+  if (webframe && webframe->Client()) {
+    webframe->Client()->PostAccessibilityEvent(
+        WebAXObject(obj), static_cast<WebAXEvent>(notification));
+  }
 }
 
 void AXObjectCacheImpl::HandleFocusedUIElementChanged(Node* old_focused_node,
