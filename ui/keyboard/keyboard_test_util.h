@@ -5,6 +5,8 @@
 #ifndef UI_KEYBOARD_KEYBOARD_TEST_UTIL_
 #define UI_KEYBOARD_KEYBOARD_TEST_UTIL_
 
+#include "ui/keyboard/keyboard_controller.h"
+
 namespace keyboard {
 
 // Waits until the keyboard is shown. Return false if there is no keyboard
@@ -14,6 +16,9 @@ bool WaitUntilShown();
 // Waits until the keyboard is hidden. Return false if there is no keyboard
 // window created.
 bool WaitUntilHidden();
+
+// Waits until the keyboard state is changed to the given state.
+void WaitControllerStateChangesTo(const KeyboardControllerState state);
 
 }  // namespace keyboard
 
