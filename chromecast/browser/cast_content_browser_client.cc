@@ -258,7 +258,10 @@ void CastContentBrowserClient::RenderProcessWillLaunch(
 
 #if defined(OS_ANDROID)
   // Cast on Android build always uses kForceVideoOverlays command line switch
-  // such that secure decoders can be used.
+  // such that secure codecs can always be rendered.
+  // TODO(yucliu): On Clank, secure codecs support is tied to AndroidOverlay.
+  // Remove kForceVideoOverlays and swtich to the Clank model for secure codecs
+  // support.
   host->AddFilter(new cdm::CdmMessageFilterAndroid(true));
 #endif  // defined(OS_ANDROID)
 }

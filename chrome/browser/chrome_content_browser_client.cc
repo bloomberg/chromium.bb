@@ -1155,7 +1155,7 @@ void ChromeContentBrowserClient::RenderProcessWillLaunch(
       context));
 #endif
 #if defined(OS_ANDROID)
-  host->AddFilter(new cdm::CdmMessageFilterAndroid(false));
+  host->AddFilter(new cdm::CdmMessageFilterAndroid());
 #endif
 
   bool is_incognito_process = profile->IsOffTheRecord();

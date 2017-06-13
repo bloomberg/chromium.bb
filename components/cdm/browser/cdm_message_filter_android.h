@@ -17,10 +17,9 @@ namespace cdm {
 // SupportedKeySystems information and passing it back to renderer.
 // TODO(xhwang): Convert this to a mojo interface or merge this with
 // desktop Chromium's IsPepperCdmAvailable() path.
-class CdmMessageFilterAndroid
-    : public content::BrowserMessageFilter {
+class CdmMessageFilterAndroid : public content::BrowserMessageFilter {
  public:
-  explicit CdmMessageFilterAndroid(bool can_use_secure_codecs);
+  explicit CdmMessageFilterAndroid(bool can_use_secure_codecs = false);
 
  private:
   ~CdmMessageFilterAndroid() override;
@@ -36,11 +35,12 @@ class CdmMessageFilterAndroid
 
   void OnGetPlatformKeySystemNames(std::vector<std::string>* key_systems);
 
-  // Whether rendering of secure codecs are supported, e.g. the decoded output
-  // can be rendered correctly.
-  // TODO(xhwang): Instead of a hard-coded value, check whether AndroidOverlay
-  // is supported. See http://crbug.com/459414
-  const bool can_use_secure_codecs_;
+  // By default, rendering of secure codecs is supported when AndroidOverlay is
+  // enabled. However, on platforms like Cast on Android, secure codecs are
+  // always supported. This flag is used to force secure codecs support on such
+  // platforms.
+  // TODO(yucliu): Remove this and completely switch to the Clank model.
+  const bool force_to_support_secure_codecs_;
 
   DISALLOW_COPY_AND_ASSIGN(CdmMessageFilterAndroid);
 };
