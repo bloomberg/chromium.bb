@@ -16,7 +16,6 @@
 #include "components/sync/test/fake_server/bookmark_entity_builder.h"
 #include "components/sync/test/fake_server/entity_builder_factory.h"
 #include "components/sync/test/fake_server/fake_server_verifier.h"
-#include "components/sync/test/fake_server/tombstone_entity.h"
 #include "ui/base/layout.h"
 
 using bookmarks::BookmarkModel;
@@ -347,8 +346,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest,
       GetFakeServer()->GetSyncEntitiesByModelType(syncer::BOOKMARKS);
   ASSERT_EQ(1ul, server_bookmarks.size());
   std::string entity_id = server_bookmarks[0].id_string();
-  std::unique_ptr<fake_server::FakeServerEntity> tombstone(
-      fake_server::TombstoneEntity::Create(entity_id, std::string()));
+  std::unique_ptr<syncer::LoopbackServerEntity> tombstone(
+      syncer::PersistentTombstoneEntity::CreateNew(entity_id, std::string()));
   GetFakeServer()->InjectEntity(std::move(tombstone));
 
   const syncer::ModelTypeSet kBookmarksType(syncer::BOOKMARKS);
