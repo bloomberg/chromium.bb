@@ -72,15 +72,11 @@ _cronet_sources = [
   "../url_request_context_config.h",
   "Cronet.h",
   "Cronet.mm",
-  "cronet_c_for_grpc.h",
   "cronet_environment.h",
   "cronet_environment.mm",
 ]
 
-_cronet_public_headers = [
-  "Cronet.h",
-  "cronet_c_for_grpc.h",
-]
+_cronet_public_headers = [ "Cronet.h" ]
 _cronet_public_headers += grpc_public_headers
 
 source_set("cronet_sources") {

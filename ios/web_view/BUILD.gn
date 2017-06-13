@@ -174,10 +174,7 @@ ios_framework_bundle("cronet_web_view_combined") {
   info_plist = "Info.plist"
 
   public_headers = ios_web_view_public_headers
-  public_headers += [
-    "//components/cronet/ios/Cronet.h",
-    "//components/cronet/ios/cronet_c_for_grpc.h",
-  ]
+  public_headers += [ "//components/cronet/ios/Cronet.h" ]
   public_headers += grpc_public_headers
 
   public = [
