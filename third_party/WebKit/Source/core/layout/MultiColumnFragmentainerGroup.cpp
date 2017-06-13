@@ -44,8 +44,17 @@ LayoutUnit MultiColumnFragmentainerGroup::LogicalHeightInFlowThreadAt(
   LayoutUnit logical_top = LogicalTopInFlowThreadAt(column_index);
   LayoutUnit logical_bottom = logical_top + column_height;
   if (logical_bottom > LogicalBottomInFlowThread()) {
-    DCHECK_EQ(column_index + 1, ActualColumnCount());
+    DCHECK_GE(column_index + 1, ActualColumnCount());
+    // Stay within the bounds of the flow thread. We need this clamping when
+    // we're dealing with the last column, and also if we're given a column
+    // index *after* the last column. Height should obviously be 0 then. We may
+    // be called with a column index that's one entry past the end if we're
+    // dealing with zero-height content at the very end of the flow thread, and
+    // this location is at a column boundary.
     logical_bottom = LogicalBottomInFlowThread();
+    // If the column index is out of bounds, the height better become zero.
+    DCHECK(column_index + 1 == ActualColumnCount() ||
+           logical_bottom <= logical_top);
   }
   return (logical_bottom - logical_top).ClampNegativeToZero();
 }
