@@ -50430,6 +50430,35 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PageSerialization.ProblemDetection.LoadedCSSPercentage"
+    units="%">
+  <owner>romax@chromium.org</owner>
+  <summary>
+    Percentage of loaded CSS elements in the main frame at the time of
+    serialization.
+  </summary>
+</histogram>
+
+<histogram name="PageSerialization.ProblemDetection.LoadedImagePercentage"
+    units="%">
+  <owner>romax@chromium.org</owner>
+  <summary>
+    Percentage of loaded images in the main frame at the time of serialization.
+  </summary>
+</histogram>
+
+<histogram name="PageSerialization.ProblemDetection.TotalCSSCount">
+  <owner>romax@chromium.org</owner>
+  <summary>
+    Total number of CSS elements in the main frame for serialization.
+  </summary>
+</histogram>
+
+<histogram name="PageSerialization.ProblemDetection.TotalImageCount">
+  <owner>romax@chromium.org</owner>
+  <summary>Total number of images in the main frame for serialization.</summary>
+</histogram>
+
 <histogram name="PageSerialization.SerializationTime.CSSElement"
     units="microseconds">
   <owner>carlosk@chromium.org</owner>

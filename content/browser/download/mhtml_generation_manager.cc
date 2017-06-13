@@ -253,6 +253,7 @@ MhtmlSaveStatus MHTMLGenerationManager::Job::SendToNextRenderFrame() {
   ipc_params.mhtml_binary_encoding = params_.use_binary_encoding;
   ipc_params.mhtml_cache_control_policy = params_.cache_control_policy;
   ipc_params.mhtml_popup_overlay_removal = params_.remove_popup_overlay;
+  ipc_params.mhtml_problem_detection = params_.use_page_problem_detectors;
 
   int frame_tree_node_id = pending_frame_tree_node_ids_.front();
   pending_frame_tree_node_ids_.pop();
@@ -608,8 +609,8 @@ base::File MHTMLGenerationManager::CreateFile(const base::FilePath& file_path) {
 
   base::File browser_file(file_path, file_flags);
   if (!browser_file.IsValid()) {
-    LOG(ERROR) << "Failed to create file to save MHTML at: " <<
-        file_path.value();
+    LOG(ERROR) << "Failed to create file to save MHTML at: "
+               << file_path.value();
   }
   return browser_file;
 }
