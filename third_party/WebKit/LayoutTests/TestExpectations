@@ -1570,10 +1570,6 @@ crbug.com/732829 css3/blending/mix-blend-mode-isolated-group-1.html [ NeedsManua
 crbug.com/732829 css3/blending/mix-blend-mode-isolated-group-2.html [ NeedsManualRebaseline ]
 crbug.com/732829 css3/blending/mix-blend-mode-isolated-group-3.html [ NeedsManualRebaseline ]
 crbug.com/732829 css3/blending/mix-blend-mode-simple-text.html [ NeedsManualRebaseline ]
-crbug.com/732829 css3/blending/svg-blend-color.html [ NeedsRebaseline ]
-crbug.com/732829 css3/blending/svg-blend-hue.html [ NeedsRebaseline ]
-crbug.com/732829 css3/blending/svg-blend-luminosity.html [ NeedsRebaseline ]
-crbug.com/732829 css3/blending/svg-blend-saturation.html [ NeedsRebaseline ]
 crbug.com/732829 svg/filters/feBlend-all-modes.html [ NeedsManualRebaseline ]
 
 
