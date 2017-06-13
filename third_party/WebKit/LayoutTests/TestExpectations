@@ -2878,3 +2878,5 @@ crbug.com/731535 [ Win ] fast/dom/Window/window-resize-contents.html [ Failure P
 
 crbug.com/732103 [ Mac ] http/tests/shapedetection/shapedetection-cross-origin.html [ Failure Pass Timeout ]
 crbug.com/732103 [ Mac ] virtual/mojo-loading/http/tests/shapedetection/shapedetection-cross-origin.html [ Failure Pass Timeout ]
+
+crbug.com/732665 [ Android ] paint/invalidation/selected-replaced.html [ Failure ]
