@@ -23,6 +23,10 @@
 #import "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 // This is duplicated here from ios/web/web_state/ui/web_view_js_utils.mm in
@@ -48,7 +52,7 @@ std::unique_ptr<base::Value> ValueResultFromScriptResult(id wk_result,
     return result;
   }
 
-  CFTypeID result_type = CFGetTypeID(wk_result);
+  CFTypeID result_type = CFGetTypeID(reinterpret_cast<CFTypeRef>(wk_result));
   if (result_type == CFStringGetTypeID()) {
     result.reset(new base::Value(base::SysNSStringToUTF16(wk_result)));
     DCHECK(result->IsType(base::Value::Type::STRING));
