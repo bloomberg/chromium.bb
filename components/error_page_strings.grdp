@@ -28,10 +28,10 @@
   </message>
   <if expr="is_android">
     <message name="IDS_ERRORPAGES_BUTTON_DOWNLOAD" desc="Label for the button on an error page to download the failed-to-load page at a later time">
-      Download page later
+      Download when online
     </message>
-    <message name="IDS_ERRORPAGES_BUTTON_DOWNLOADING" desc="Label for the button on an error page when it is clicked to start downloading the failed-to-load page">
-      Downloading
+    <message name="IDS_ERRORPAGES_BUTTON_DOWNLOADING" desc="Label for the button on an error page when it is clicked to queue the download for the failed-to-load page">
+      Waiting for connection…
     </message>
   </if>
 

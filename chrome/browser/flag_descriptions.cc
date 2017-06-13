@@ -2069,10 +2069,10 @@ const char kNtpOfflinePagesDescription[] =
     "offline pages are enabled.";
 
 const char kOfflinePagesAsyncDownloadName[] =
-    R"*(Enables showing "DOWNLOAD PAGE LATER" button in error pages.)*";
+    R"*(Enables showing "DOWNLOAD WHEN ONLINE" button in error pages.)*";
 
 const char kOfflinePagesAsyncDownloadDescription[] =
-    R"*(Enables showing "DOWNLOAD PAGE LATER" button in error pages such )*"
+    R"*(Enables showing "DOWNLOAD WHEN ONLINE" button in error pages such )*"
     R"*(that the user can click on it to download the page later.)*";
 
 const char kOfflinePagesSvelteConcurrentLoadingName[] =
