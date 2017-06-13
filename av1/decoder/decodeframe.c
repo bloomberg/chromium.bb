@@ -5120,7 +5120,6 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 
   return aom_reader_has_error(&r);
 }
-
 #ifdef NDEBUG
 #define debug_check_frame_counts(cm) (void)0
 #else  // !NDEBUG
@@ -5144,8 +5143,6 @@ static void debug_check_frame_counts(const AV1_COMMON *const cm) {
                  sizeof(cm->counts.blockz_count)));
   assert(!memcmp(cm->counts.switchable_interp, zero_counts.switchable_interp,
                  sizeof(cm->counts.switchable_interp)));
-  assert(!memcmp(cm->counts.inter_mode, zero_counts.inter_mode,
-                 sizeof(cm->counts.inter_mode)));
 #if CONFIG_EXT_INTER
   assert(!memcmp(cm->counts.inter_compound_mode,
                  zero_counts.inter_compound_mode,

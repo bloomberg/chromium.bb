@@ -1001,17 +1001,6 @@ static const aom_prob default_refmv_prob[REFMV_MODE_CONTEXTS] = {
 static const aom_prob default_drl_prob[DRL_MODE_CONTEXTS] = { 128, 160, 180,
                                                               128, 160 };
 
-static const aom_prob
-    default_inter_mode_probs[INTER_MODE_CONTEXTS][INTER_MODES - 1] = {
-      { 2, 173, 34 },  // 0 = both zero mv
-      { 7, 145, 85 },  // 1 = one zero mv + one a predicted mv
-      { 7, 166, 63 },  // 2 = two predicted mvs
-      { 7, 94, 66 },   // 3 = one predicted/zero and one new mv
-      { 8, 64, 46 },   // 4 = two new mvs
-      { 17, 81, 31 },  // 5 = one intra neighbour + x
-      { 25, 29, 30 },  // 6 = two intra neighbours
-    };
-
 #if CONFIG_EXT_INTER
 static const aom_prob default_inter_compound_mode_probs
     [INTER_MODE_CONTEXTS][INTER_COMPOUND_MODES - 1] = {
@@ -2597,17 +2586,6 @@ static const aom_cdf_prob
 #endif
     };
 #endif
-
-static const aom_cdf_prob
-    default_inter_mode_cdf[INTER_MODE_CONTEXTS][CDF_SIZE(INTER_MODES)] = {
-      { AOM_ICDF(256), AOM_ICDF(22227), AOM_ICDF(23627), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(896), AOM_ICDF(18948), AOM_ICDF(23537), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(896), AOM_ICDF(21563), AOM_ICDF(24320), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(896), AOM_ICDF(12599), AOM_ICDF(17799), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(1024), AOM_ICDF(8960), AOM_ICDF(13238), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(2176), AOM_ICDF(11856), AOM_ICDF(14388), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(3200), AOM_ICDF(6550), AOM_ICDF(9622), AOM_ICDF(32768), 0 },
-    };
 
 #if CONFIG_EXT_TX
 static const aom_cdf_prob default_intra_ext_tx_cdf
@@ -4526,7 +4504,6 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->zeromv_prob, default_zeromv_prob);
   av1_copy(fc->refmv_prob, default_refmv_prob);
   av1_copy(fc->drl_prob, default_drl_prob);
-  av1_copy(fc->inter_mode_probs, default_inter_mode_probs);
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
   av1_copy(fc->motion_mode_prob, default_motion_mode_prob);
 #if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
@@ -4568,7 +4545,6 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->uv_mode_cdf, default_uv_mode_cdf);
   av1_copy(fc->switchable_interp_cdf, default_switchable_interp_cdf);
   av1_copy(fc->partition_cdf, default_partition_cdf);
-  av1_copy(fc->inter_mode_cdf, default_inter_mode_cdf);
   av1_copy(fc->intra_ext_tx_cdf, default_intra_ext_tx_cdf);
   av1_copy(fc->inter_ext_tx_cdf, default_inter_ext_tx_cdf);
 #if CONFIG_EXT_INTRA && CONFIG_INTRA_INTERP
@@ -4647,10 +4623,6 @@ void av1_set_mode_cdfs(struct AV1Common *cm) {
   for (j = 0; j < SWITCHABLE_FILTER_CONTEXTS; ++j)
     av1_tree_to_cdf(av1_switchable_interp_tree, fc->switchable_interp_prob[j],
                     fc->switchable_interp_cdf[j]);
-
-  for (i = 0; i < INTER_MODE_CONTEXTS; ++i)
-    av1_tree_to_cdf(av1_inter_mode_tree, fc->inter_mode_probs[i],
-                    fc->inter_mode_cdf[i]);
 
   for (i = 0; i < BLOCK_SIZE_GROUPS; ++i)
     av1_tree_to_cdf(av1_intra_mode_tree, fc->y_mode_prob[i], fc->y_mode_cdf[i]);
