@@ -33,6 +33,7 @@
 
 #include <memory>
 
+#include "core/CoreExport.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/IntSize.h"
 #include "platform/graphics/Color.h"
@@ -43,7 +44,7 @@ class Element;
 class LocalFrame;
 class WebViewBase;
 
-class FullscreenController {
+class CORE_EXPORT FullscreenController {
  public:
   static std::unique_ptr<FullscreenController> Create(WebViewBase*);
 

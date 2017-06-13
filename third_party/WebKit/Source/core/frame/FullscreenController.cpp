@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "web/FullscreenController.h"
+#include "core/frame/FullscreenController.h"
 
 #include "core/dom/Document.h"
 #include "core/dom/Fullscreen.h"
@@ -258,9 +258,10 @@ void FullscreenController::DidUpdateLayout() {
     return;
 
   web_view_base_->SetPageScaleFactor(initial_page_scale_factor_);
-  if (web_view_base_->MainFrame()->IsWebLocalFrame())
+  if (web_view_base_->MainFrame()->IsWebLocalFrame()) {
     web_view_base_->MainFrame()->SetScrollOffset(
         WebSize(initial_scroll_offset_));
+  }
   web_view_base_->SetVisualViewportOffset(initial_visual_viewport_offset_);
   // Background color override was already restored when
   // fullscreenElementChanged([..], nullptr) was called while exiting.

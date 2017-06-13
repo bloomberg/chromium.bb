@@ -49,8 +49,6 @@ component("web") {
     "ExternalDateTimeChooser.h",
     "ExternalPopupMenu.cpp",
     "ExternalPopupMenu.h",
-    "FullscreenController.cpp",
-    "FullscreenController.h",
     "InspectorOverlayAgent.cpp",
     "InspectorOverlayAgent.h",
     "LinkHighlightImpl.cpp",
