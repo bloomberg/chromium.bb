@@ -185,9 +185,7 @@ LayoutUnit LayoutMultiColumnSet::NextLogicalTopForUnbreakableContent(
     LayoutUnit content_logical_height) const {
   DCHECK(flow_thread_offset.MightBeSaturated() ||
          PageLogicalTopForOffset(flow_thread_offset) == flow_thread_offset);
-  FragmentationContext* enclosing_fragmentation_context =
-      MultiColumnFlowThread()->EnclosingFragmentationContext();
-  if (!enclosing_fragmentation_context) {
+  if (!MultiColumnFlowThread()->EnclosingFragmentationContext()) {
     // If there's no enclosing fragmentation context, there'll ever be only one
     // row, and all columns there will have the same height.
     return flow_thread_offset;
@@ -208,9 +206,7 @@ LayoutUnit LayoutMultiColumnSet::NextLogicalTopForUnbreakableContent(
   if (flow_thread_offset >= first_row_logical_bottom_in_flow_thread)
     return flow_thread_offset;  // We're not in the first row. Give up.
   LayoutUnit new_logical_height =
-      enclosing_fragmentation_context->FragmentainerLogicalHeightAt(
-          first_row.BlockOffsetInEnclosingFragmentationContext() +
-          first_row.GroupLogicalHeight());
+      PageLogicalHeightForOffset(first_row_logical_bottom_in_flow_thread);
   if (content_logical_height > new_logical_height) {
     // The next outer column or page doesn't have enough space either. Give up
     // and stay where we are.
