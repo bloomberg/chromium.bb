@@ -64,6 +64,16 @@ static constexpr float kUrlBarHeight = 0.088 * kUrlBarDistance;
 static constexpr float kUrlBarVerticalOffset = -0.516 * kUrlBarDistance;
 static constexpr float kUrlBarRotationRad = -0.175;
 
+static constexpr float kIndicatorContentDistance = 0.1;
+static constexpr float kAudioCaptureIndicatorWidth = 0.5;
+static constexpr float kVideoCaptureIndicatorWidth = 0.5;
+static constexpr float kScreenCaptureIndicatorWidth = 0.4;
+
+static constexpr float kCaptureIndicatorsVerticalOffset = 0.1;
+static constexpr float kAudioCaptureHorizontalOffset = -0.6;
+static constexpr float kVideoCaptureHorizontalOffset = 0;
+static constexpr float kScreenCaptureHorizontalOffset = 0.6;
+
 static constexpr float kCloseButtonDistance = 2.4;
 static constexpr float kCloseButtonHeight = 0.088 * kCloseButtonDistance;
 static constexpr float kCloseButtonWidth = 0.088 * kCloseButtonDistance;
@@ -179,13 +189,15 @@ void UiSceneManager::CreateSecurityWarnings() {
 void UiSceneManager::CreateSystemIndicators() {
   std::unique_ptr<UiElement> element;
 
-  // TODO(acondor): Make constants for sizes and positions once the UX for the
-  // indicators is defined.
   element = base::MakeUnique<AudioCaptureIndicator>(512);
   element->set_debug_id(kAudioCaptureIndicator);
   element->set_id(AllocateId());
-  element->set_translation({-0.3, 0.8, -kContentDistance + 0.1});
-  element->set_size({0.5, 0, 1});
+  element->set_translation({kAudioCaptureHorizontalOffset,
+                            kCaptureIndicatorsVerticalOffset,
+                            kIndicatorContentDistance});
+  element->set_parent_id(main_content_->id());
+  element->set_y_anchoring(YAnchoring::YTOP);
+  element->set_size({kAudioCaptureIndicatorWidth, 0, 1});
   element->set_visible(false);
   audio_capture_indicator_ = element.get();
   scene_->AddUiElement(std::move(element));
@@ -193,8 +205,12 @@ void UiSceneManager::CreateSystemIndicators() {
   element = base::MakeUnique<VideoCaptureIndicator>(512);
   element->set_debug_id(kVideoCaptureIndicator);
   element->set_id(AllocateId());
-  element->set_translation({0.3, 0.8, -kContentDistance + 0.1});
-  element->set_size({0.5, 0, 1});
+  element->set_translation({kVideoCaptureHorizontalOffset,
+                            kCaptureIndicatorsVerticalOffset,
+                            kIndicatorContentDistance});
+  element->set_parent_id(main_content_->id());
+  element->set_y_anchoring(YAnchoring::YTOP);
+  element->set_size({kVideoCaptureIndicatorWidth, 0, 1});
   element->set_visible(false);
   video_capture_indicator_ = element.get();
   scene_->AddUiElement(std::move(element));
@@ -202,8 +218,12 @@ void UiSceneManager::CreateSystemIndicators() {
   element = base::MakeUnique<ScreenCaptureIndicator>(512);
   element->set_debug_id(kScreenCaptureIndicator);
   element->set_id(AllocateId());
-  element->set_translation({0.0, 0.65, -kContentDistance + 0.1});
-  element->set_size({0.4, 0, 1});
+  element->set_translation({kScreenCaptureHorizontalOffset,
+                            kCaptureIndicatorsVerticalOffset,
+                            kIndicatorContentDistance});
+  element->set_parent_id(main_content_->id());
+  element->set_y_anchoring(YAnchoring::YTOP);
+  element->set_size({kScreenCaptureIndicatorWidth, 0, 1});
   element->set_visible(false);
   screen_capture_indicator_ = element.get();
   scene_->AddUiElement(std::move(element));
