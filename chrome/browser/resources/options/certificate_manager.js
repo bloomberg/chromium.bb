@@ -202,6 +202,13 @@ cr.define('options', function() {
       this.caTab = new CertificateManagerTab('caCertsTab', this.isKiosk_);
       this.otherTab = new CertificateManagerTab('otherCertsTab', this.isKiosk_);
 
+      if (this.isKiosk_) {
+        // No "Servers" and "Authorities" tab in kiosk mode.
+        // See http://crbug.com/719907 for details.
+        $('server-certs-nav-tab').hidden = true;
+        $('ca-certs-nav-tab').hidden = true;
+      }
+
       this.addEventListener('visibleChange', this.handleVisibleChange_);
 
       $('certificate-confirm').onclick = function() {

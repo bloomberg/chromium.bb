@@ -376,16 +376,16 @@ message DeviceLocalAccountsProto {
   optional bool enable_auto_login_bailout = 4 [default = true];
 
   // Whether network configuration should be offered or not when the device
-  // does not have access to the Internet. If the policy is omitted or set to
-  // true, the network configuration will be offered. Otherwise, only an error
-  // message is displayed.
-  // Note: If both this policy and enable_auto_login_bailout policy above is
-  // set to false, there are chances that the device might become totally
-  // unusable when there is no Internet access and has to go through the
-  // recovery process.
+  // does not have access to the Internet. If the policy is set to true, the
+  // network configuration will be offered. Otherwise (policy is omitted or set
+  // to false), only an error message is displayed.
+  // Note: If enable_auto_login_bailout policy above is set to false and this
+  // policy is omitted or  set to false, there are chances that the device might
+  // become totally unusable when there is no Internet access and has to go
+  // through the recovery process.
   // If the device is offline at startup then the network configuration screen
   // is always shown, before auto-login kicks in.
-  optional bool prompt_for_network_when_offline = 5 [default = true];
+  optional bool prompt_for_network_when_offline = 5 [default = false];
 }
 
 message AllowRedeemChromeOsRegistrationOffersProto {
