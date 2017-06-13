@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "base/files/file_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -77,7 +76,6 @@
 #include "components/doodle/doodle_service.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/gcm_driver/gcm_channel_status_syncer.h"
-#include "components/metrics/metrics_service.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/ntp_snippets/breaking_news/content_suggestions_gcm_app_handler.h"
 #include "components/ntp_snippets/breaking_news/subscription_manager.h"
@@ -111,7 +109,6 @@
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/update_client/update_client.h"
 #include "components/variations/service/variations_service.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/features/features.h"
 #include "net/http/http_server_properties_manager.h"
@@ -279,23 +276,6 @@
 
 namespace {
 
-#if BUILDFLAG(ENABLE_GOOGLE_NOW)
-// Deprecated 3/2016
-constexpr char kGoogleGeolocationAccessEnabled[] =
-    "googlegeolocationaccess.enabled";
-#endif
-
-// Deprecated 4/2016.
-constexpr char kCheckDefaultBrowser[] = "browser.check_default_browser";
-
-// Deprecated 5/2016.
-constexpr char kDesktopSearchRedirectionInfobarShownPref[] =
-    "desktop_search_redirection_infobar_shown";
-
-// Deprecated 7/2016.
-constexpr char kNetworkPredictionEnabled[] = "dns_prefetching.enabled";
-constexpr char kDisableSpdy[] = "spdy.disabled";
-
 // Deprecated 8/2016.
 constexpr char kRecentlySelectedEncoding[] =
     "profile.recently_selected_encodings";
@@ -323,22 +303,6 @@ constexpr char kDistroRlzPingDelay[] = "ping_delay";
 // stripped in first_run.cc prior to applying this mapping. Cleanup for existing
 // Preferences files added here 2/2017.
 constexpr char kDistroDict[] = "distribution";
-
-void DeleteWebRTCIdentityStoreDBOnFileThread(
-    const base::FilePath& profile_path) {
-  base::DeleteFile(profile_path.Append(
-      FILE_PATH_LITERAL("WebRTCIdentityStore")), false);
-  base::DeleteFile(profile_path.Append(
-      FILE_PATH_LITERAL("WebRTCIdentityStore-journal")), false);
-}
-
-void DeleteWebRTCIdentityStoreDB(const Profile& profile) {
-  content::BrowserThread::PostDelayedTask(
-      content::BrowserThread::FILE, FROM_HERE,
-      base::BindOnce(&DeleteWebRTCIdentityStoreDBOnFileThread,
-                     profile.GetPath()),
-      base::TimeDelta::FromSeconds(120));
-}
 
 }  // namespace
 
@@ -665,17 +629,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   // Preferences registered only for migration (clearing or moving to a new key)
   // go here.
 
-#if BUILDFLAG(ENABLE_GOOGLE_NOW)
-  registry->RegisterBooleanPref(kGoogleGeolocationAccessEnabled, false);
-#endif
-
-  registry->RegisterBooleanPref(kCheckDefaultBrowser, true);
-
-  registry->RegisterBooleanPref(kDesktopSearchRedirectionInfobarShownPref,
-                                false);
-
-  registry->RegisterBooleanPref(kNetworkPredictionEnabled, true);
-  registry->RegisterBooleanPref(kDisableSpdy, false);
   registry->RegisterStringPref(kStaticEncodings, std::string());
   registry->RegisterStringPref(kRecentlySelectedEncoding, std::string());
   registry->RegisterBooleanPref(kWebKitUsesUniversalDetector, true);
@@ -729,33 +682,6 @@ void MigrateObsoleteBrowserPrefs(Profile* profile, PrefService* local_state) {
 // This method should be periodically pruned of year+ old migrations.
 void MigrateObsoleteProfilePrefs(Profile* profile) {
   PrefService* profile_prefs = profile->GetPrefs();
-
-#if BUILDFLAG(ENABLE_GOOGLE_NOW)
-  // Added 3/2016.
-  profile_prefs->ClearPref(kGoogleGeolocationAccessEnabled);
-#endif
-
-  // Added 4/2016.
-  if (!profile_prefs->GetBoolean(kCheckDefaultBrowser)) {
-    // Seed kDefaultBrowserLastDeclined with the install date.
-    metrics::MetricsService* metrics_service =
-        g_browser_process->metrics_service();
-    base::Time install_time =
-        metrics_service
-            ? base::Time::FromTimeT(metrics_service->GetInstallDate())
-            : base::Time::Now();
-    profile_prefs->SetInt64(prefs::kDefaultBrowserLastDeclined,
-                            install_time.ToInternalValue());
-  }
-  profile_prefs->ClearPref(kCheckDefaultBrowser);
-
-  // Added 5/2016.
-  profile_prefs->ClearPref(kDesktopSearchRedirectionInfobarShownPref);
-
-  // Added 7/2016.
-  DeleteWebRTCIdentityStoreDB(*profile);
-  profile_prefs->ClearPref(kNetworkPredictionEnabled);
-  profile_prefs->ClearPref(kDisableSpdy);
 
   // Added 8/2016.
   profile_prefs->ClearPref(kStaticEncodings);
