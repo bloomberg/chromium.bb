@@ -1539,7 +1539,7 @@ TEST_F(DataReductionProxyConfigTest, ShouldEnableLitePagesWithoutECTCheck) {
       config()->ShouldEnableLitePages(*request.get(), *previews_decider.get()));
 }
 
-TEST_F(DataReductionProxyConfigTest, ShouldAcceptServerLoFi) {
+TEST_F(DataReductionProxyConfigTest, ShouldAcceptServerPreview) {
   // Turn on proxy-decides-transform feature to satisfy DCHECK.
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndEnableFeature(
@@ -1554,35 +1554,25 @@ TEST_F(DataReductionProxyConfigTest, ShouldAcceptServerLoFi) {
   std::unique_ptr<TestPreviewsDecider> previews_decider =
       base::MakeUnique<TestPreviewsDecider>(false);
 
-  // Verify false for no flags.
-  EXPECT_FALSE(config()->ShouldAcceptServerLoFi(*request.get(),
-                                                *previews_decider.get()));
+  // Verify true for no flags.
+  EXPECT_TRUE(config()->ShouldAcceptServerPreview(*request.get(),
+                                                  *previews_decider.get()));
 
-  // Verify true for Always-On flag.
+  // Verify false for kill switch.
   base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kDataReductionProxyLoFi,
-      switches::kDataReductionProxyLoFiValueAlwaysOn);
-  EXPECT_TRUE(config()->ShouldAcceptServerLoFi(*request.get(),
-                                               *previews_decider.get()));
-
-  // Verify true for Always-On with LitePages enabled too.
-  base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kDataReductionProxyLoFi,
-      switches::kDataReductionProxyLoFiValueAlwaysOn);
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableDataReductionProxyLitePage);
-  EXPECT_TRUE(config()->ShouldAcceptServerLoFi(*request.get(),
-                                               *previews_decider.get()));
+      switches::kDataReductionProxyLoFiValueDisabled);
+  EXPECT_FALSE(config()->ShouldAcceptServerPreview(*request.get(),
+                                                   *previews_decider.get()));
 
   // Verify true for Slow Connection flag.
   base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kDataReductionProxyLoFi,
       switches::kDataReductionProxyLoFiValueSlowConnectionsOnly);
-  EXPECT_TRUE(config()->ShouldAcceptServerLoFi(*request.get(),
-                                               *previews_decider.get()));
+  EXPECT_TRUE(config()->ShouldAcceptServerPreview(*request.get(),
+                                                  *previews_decider.get()));
 
   // Verify false for Cellular Only flag and WIFI connection.
   base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
@@ -1591,34 +1581,14 @@ TEST_F(DataReductionProxyConfigTest, ShouldAcceptServerLoFi) {
       switches::kDataReductionProxyLoFiValueCellularOnly);
   config()->SetConnectionTypeForTesting(
       net::NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI);
-  EXPECT_FALSE(config()->ShouldAcceptServerLoFi(*request.get(),
-                                                *previews_decider.get()));
+  EXPECT_FALSE(config()->ShouldAcceptServerPreview(*request.get(),
+                                                   *previews_decider.get()));
 
   // Verify true for Cellular Only flag and 3G connection.
   config()->SetConnectionTypeForTesting(
       net::NetworkChangeNotifier::ConnectionType::CONNECTION_3G);
-  EXPECT_TRUE(config()->ShouldAcceptServerLoFi(*request.get(),
-                                               *previews_decider.get()));
-
-  // Verify true for field trial.
-  {
-    base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
-    base::FieldTrialList field_trial_list(nullptr);
-    base::FieldTrialList::CreateFieldTrial(params::GetLoFiFieldTrialName(),
-                                           "Enabled");
-    EXPECT_TRUE(config()->ShouldAcceptServerLoFi(*request.get(),
-                                                 *previews_decider.get()));
-  }
-
-  // Verify false for control field trial.
-  {
-    base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
-    base::FieldTrialList field_trial_list(nullptr);
-    base::FieldTrialList::CreateFieldTrial(params::GetLoFiFieldTrialName(),
-                                           "Control");
-    EXPECT_FALSE(config()->ShouldAcceptServerLoFi(*request.get(),
+  EXPECT_TRUE(config()->ShouldAcceptServerPreview(*request.get(),
                                                   *previews_decider.get()));
-  }
 
   // Verify PreviewsDecider check.
   {
@@ -1629,103 +1599,11 @@ TEST_F(DataReductionProxyConfigTest, ShouldAcceptServerLoFi) {
     base::FieldTrialList field_trial_list(nullptr);
     base::FieldTrialList::CreateFieldTrial(
         "DataReductionProxyPreviewsBlackListTransition", "Enabled");
-    EXPECT_FALSE(config()->ShouldAcceptServerLoFi(*request.get(),
-                                                  *previews_decider.get()));
+    EXPECT_FALSE(config()->ShouldAcceptServerPreview(*request.get(),
+                                                     *previews_decider.get()));
     previews_decider = base::MakeUnique<TestPreviewsDecider>(true);
-    EXPECT_TRUE(config()->ShouldAcceptServerLoFi(*request.get(),
-                                                 *previews_decider.get()));
-  }
-}
-
-TEST_F(DataReductionProxyConfigTest, ShouldAcceptLitePages) {
-  // Turn on proxy-decides-transform feature to satisfy DCHECK.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      features::kDataReductionProxyDecidesTransform);
-
-  net::TestURLRequestContext context_;
-  net::TestDelegate delegate_;
-  std::unique_ptr<net::URLRequest> request = context_.CreateRequest(
-      GURL(), net::IDLE, &delegate_, TRAFFIC_ANNOTATION_FOR_TESTS);
-  request->SetLoadFlags(request->load_flags() |
-                        net::LOAD_MAIN_FRAME_DEPRECATED);
-  std::unique_ptr<TestPreviewsDecider> previews_decider =
-      base::MakeUnique<TestPreviewsDecider>(false);
-
-  // Verify false for no flags.
-  EXPECT_FALSE(
-      config()->ShouldAcceptLitePages(*request.get(), *previews_decider.get()));
-
-  // Verify true for Always-On flag and LitePage flag.
-  base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kDataReductionProxyLoFi,
-      switches::kDataReductionProxyLoFiValueAlwaysOn);
-  EXPECT_FALSE(
-      config()->ShouldAcceptLitePages(*request.get(), *previews_decider.get()));
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableDataReductionProxyLitePage);
-  EXPECT_TRUE(
-      config()->ShouldAcceptLitePages(*request.get(), *previews_decider.get()));
-
-  // Verify true for Slow Connection flag and LitePage flag.
-  base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kDataReductionProxyLoFi,
-      switches::kDataReductionProxyLoFiValueSlowConnectionsOnly);
-  EXPECT_FALSE(
-      config()->ShouldAcceptLitePages(*request.get(), *previews_decider.get()));
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableDataReductionProxyLitePage);
-  EXPECT_TRUE(
-      config()->ShouldAcceptLitePages(*request.get(), *previews_decider.get()));
-
-  // Verify true for Cellular Only flag and 3G connection.
-  base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
-  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kDataReductionProxyLoFi,
-      switches::kDataReductionProxyLoFiValueCellularOnly);
-  config()->SetConnectionTypeForTesting(
-      net::NetworkChangeNotifier::ConnectionType::CONNECTION_3G);
-  EXPECT_FALSE(
-      config()->ShouldAcceptLitePages(*request.get(), *previews_decider.get()));
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kEnableDataReductionProxyLitePage);
-  EXPECT_TRUE(
-      config()->ShouldAcceptLitePages(*request.get(), *previews_decider.get()));
-
-  // Verify false for Cellular Only flag and WIFI connection.
-  config()->SetConnectionTypeForTesting(
-      net::NetworkChangeNotifier::ConnectionType::CONNECTION_WIFI);
-  EXPECT_FALSE(
-      config()->ShouldAcceptLitePages(*request.get(), *previews_decider.get()));
-
-  // Verify true for field trial.
-  {
-    base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
-    base::FieldTrialList field_trial_list(nullptr);
-    base::FieldTrialList::CreateFieldTrial(params::GetLoFiFieldTrialName(),
-                                           "Enabled_Preview");
-    EXPECT_TRUE(config()->ShouldAcceptLitePages(*request.get(),
-                                                *previews_decider.get()));
-  }
-
-  // Verify PreviewsDecider check.
-  {
-    base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
-    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kDataReductionProxyLoFi,
-        switches::kDataReductionProxyLoFiValueAlwaysOn);
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableDataReductionProxyLitePage);
-    base::FieldTrialList field_trial_list(nullptr);
-    base::FieldTrialList::CreateFieldTrial(
-        "DataReductionProxyPreviewsBlackListTransition", "Enabled");
-    EXPECT_FALSE(config()->ShouldAcceptLitePages(*request.get(),
-                                                 *previews_decider.get()));
-    previews_decider = base::MakeUnique<TestPreviewsDecider>(true);
-    EXPECT_TRUE(config()->ShouldAcceptLitePages(*request.get(),
-                                                *previews_decider.get()));
+    EXPECT_TRUE(config()->ShouldAcceptServerPreview(*request.get(),
+                                                    *previews_decider.get()));
   }
 }
 

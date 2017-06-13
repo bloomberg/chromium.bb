@@ -360,7 +360,7 @@ TEST_F(DataReductionProxyRequestOptionsTest, TestExperimentPrecedence) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableDataReductionProxyLitePage);
   expected_experiments.clear();
-  expected_experiments.push_back(chrome_proxy_force_lite_page_experiment());
+  expected_experiments.push_back(chrome_proxy_experiment_force_lite_page());
   SetHeaderExpectations(kExpectedSession, kExpectedCredentials, std::string(),
                         kClientStr, kExpectedBuild, kExpectedPatch, kPageId,
                         expected_experiments, &expected_header);

@@ -252,7 +252,8 @@ class DataReductionProxyConfig
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest, WarmupURL);
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest,
                            ShouldAcceptServerLoFi);
-  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest, ShouldAcceptLitePages);
+  FRIEND_TEST_ALL_PREFIXES(DataReductionProxyConfigTest,
+                           ShouldAcceptServerPreview);
 
   // Values of the estimated network quality at the beginning of the most
   // recent query of the Network Quality Estimator.
@@ -306,20 +307,11 @@ class DataReductionProxyConfig
       previews::PreviewsType previews_type) const;
 
   // Returns whether the client should report to the data reduction proxy that
-  // it is willing to accept the Server Lo-Fi optimization for |request|.
+  // it is willing to accept server previews for |request|.
   // |previews_decider| is used to check if |request| is locally blacklisted.
   // Should only be used if the kDataReductionProxyDecidesTransform feature is
   // enabled.
-  bool ShouldAcceptServerLoFi(
-      const net::URLRequest& request,
-      const previews::PreviewsDecider& previews_decider) const;
-
-  // Returns whether the client should report to the data reduction proxy that
-  // it is willing to accept a LitePage optimization for |request|.
-  // |previews_decider| is used to check if |request| is locally blacklisted.
-  // Should only be used if the kDataReductionProxyDecidesTransform feature is
-  // enabled.
-  bool ShouldAcceptLitePages(
+  bool ShouldAcceptServerPreview(
       const net::URLRequest& request,
       const previews::PreviewsDecider& previews_decider) const;
 

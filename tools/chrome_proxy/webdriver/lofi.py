@@ -183,5 +183,33 @@ class LoFi(IntegrationTest):
       # Verify that responses were seen.
       self.assertNotEqual(0, responses)
 
+  # Checks that LoFi images are served and the force empty image experiment
+  # directive is provided when LoFi is always-on without Lite Pages enabled.
+  def testLoFiForcedExperiment(self):
+    # If it was attempted to run with another experiment, skip this test.
+    if common.ParseFlags().browser_args and ('--data-reduction-proxy-experiment'
+        in common.ParseFlags().browser_args):
+      self.skipTest('This test cannot be run with other experiments.')
+    with TestDriver() as test_driver:
+      test_driver.AddChromeArg('--enable-spdy-proxy-auth')
+      test_driver.AddChromeArg('--data-reduction-proxy-lo-fi=always-on')
+
+      test_driver.LoadURL('http://check.googlezip.net/static/index.html')
+
+      lofi_responses = 0
+      for response in test_driver.GetHTTPResponses():
+        self.assertIn('exp=force_page_policies_empty_image',
+          response.request_headers['chrome-proxy'])
+        if response.url.endswith('html'):
+          # TODO(dougarnett): Check page-policies response when server supports
+          continue
+        if response.url.endswith('png'):
+          # TODO(dougarnett): Set 4G ECT when server supports force empty image
+          self.checkLoFiResponse(response, True)
+          lofi_responses = lofi_responses + 1
+
+      # Verify that Lo-Fi responses were seen.
+      self.assertNotEqual(0, lofi_responses)
+
 if __name__ == '__main__':
   IntegrationTest.RunAllTests()

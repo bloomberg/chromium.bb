@@ -1008,7 +1008,7 @@ bool DataReductionProxyConfig::ShouldEnableLoFi(
 
   if (base::FeatureList::IsEnabled(
           features::kDataReductionProxyDecidesTransform)) {
-    return ShouldAcceptServerLoFi(request, previews_decider);
+    return ShouldAcceptServerPreview(request, previews_decider);
   }
 
   bool enable_lofi = ShouldEnableLoFiInternal(request, previews_decider);
@@ -1032,7 +1032,7 @@ bool DataReductionProxyConfig::ShouldEnableLitePages(
 
   if (base::FeatureList::IsEnabled(
           features::kDataReductionProxyDecidesTransform)) {
-    return ShouldAcceptLitePages(request, previews_decider);
+    return ShouldAcceptServerPreview(request, previews_decider);
   }
 
   return ShouldEnableLitePagesInternal(request, previews_decider);
@@ -1063,67 +1063,30 @@ bool DataReductionProxyConfig::IsBlackListedOrDisabled(
   }
 }
 
-bool DataReductionProxyConfig::ShouldAcceptServerLoFi(
+bool DataReductionProxyConfig::ShouldAcceptServerPreview(
     const net::URLRequest& request,
     const previews::PreviewsDecider& previews_decider) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(base::FeatureList::IsEnabled(
       features::kDataReductionProxyDecidesTransform));
 
-  if (IsBlackListedOrDisabled(request, previews_decider,
-                              previews::PreviewsType::LOFI)) {
+  // For the transition to server-driven previews decisions, we will
+  // use existing Lo-Fi flags for disabling and cellular-only mode.
+  // TODO(dougarnett): Refactor flag names as part of bug 725645.
+  if (params::IsLoFiDisabledViaFlags()) {
     return false;
   }
-
-  if (params::IsLoFiAlwaysOnViaFlags()) {
-    return true;
-  }
-
-  if (params::IsLoFiCellularOnlyViaFlags()) {
-    return net::NetworkChangeNotifier::IsConnectionCellular(connection_type_);
-  }
-
-  if (params::IsLoFiSlowConnectionsOnlyViaFlags() ||
-      params::IsIncludedInLoFiEnabledFieldTrial()) {
-    // Accept Lo-Fi from the data reduction proxy (it will handle the effective
-    // connection type check).
-    return true;
-  }
-
-  return false;
-}
-
-bool DataReductionProxyConfig::ShouldAcceptLitePages(
-    const net::URLRequest& request,
-    const previews::PreviewsDecider& previews_decider) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(base::FeatureList::IsEnabled(
-      features::kDataReductionProxyDecidesTransform));
 
   if (IsBlackListedOrDisabled(request, previews_decider,
                               previews::PreviewsType::LITE_PAGE)) {
     return false;
   }
 
-  if (params::IsLoFiAlwaysOnViaFlags() &&
-      params::AreLitePagesEnabledViaFlags()) {
-    return true;
-  }
-
-  if (params::IsLoFiCellularOnlyViaFlags() &&
-      params::AreLitePagesEnabledViaFlags()) {
+  if (params::IsLoFiCellularOnlyViaFlags()) {
     return net::NetworkChangeNotifier::IsConnectionCellular(connection_type_);
   }
 
-  if ((params::IsLoFiSlowConnectionsOnlyViaFlags() &&
-       params::AreLitePagesEnabledViaFlags()) ||
-      params::IsIncludedInLitePageFieldTrial()) {
-    // Accept LitePages from the data reduction proxy (it will handle the
-    // effective connection type check).
-    return true;
-  }
-
-  return false;
+  return true;
 }
 
 bool DataReductionProxyConfig::ShouldEnableLoFiInternal(
