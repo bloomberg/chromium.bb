@@ -152,6 +152,21 @@ bool WorkerFetchContext::ShouldBlockFetchByMixedContentCheck(
                                              url);
 }
 
+bool WorkerFetchContext::ShouldBlockFetchAsCredentialedSubresource(
+    const ResourceRequest& resource_request,
+    const KURL& url) const {
+  if ((!url.User().IsEmpty() || !url.Pass().IsEmpty()) &&
+      resource_request.GetRequestContext() !=
+          WebURLRequest::kRequestContextXMLHttpRequest) {
+    if (Url().User() != url.User() || Url().Pass() != url.Pass()) {
+      CountDeprecation(
+          WebFeature::kRequestedSubresourceWithEmbeddedCredentials);
+      return true;
+    }
+  }
+  return false;
+}
+
 ReferrerPolicy WorkerFetchContext::GetReferrerPolicy() const {
   return global_scope_->GetReferrerPolicy();
 }

@@ -53,6 +53,8 @@ class WorkerFetchContext final : public BaseFetchContext {
       const ResourceRequest&,
       const KURL&,
       SecurityViolationReportingPolicy) const override;
+  bool ShouldBlockFetchAsCredentialedSubresource(const ResourceRequest&,
+                                                 const KURL&) const override;
   ReferrerPolicy GetReferrerPolicy() const override;
   String GetOutgoingReferrer() const override;
   const KURL& Url() const override;
