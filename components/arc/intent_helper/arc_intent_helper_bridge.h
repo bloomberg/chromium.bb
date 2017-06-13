@@ -60,6 +60,7 @@ class ArcIntentHelperBridge
   void OnOpenUrl(const std::string& url) override;
   void OpenWallpaperPicker() override;
   void SetWallpaperDeprecated(const std::vector<uint8_t>& jpeg_data) override;
+  void OpenVolumeControl() override;
 
   // Retrieves icons for the |activities| and calls |callback|.
   // See ActivityIconLoader::GetActivityIcons() for more details.

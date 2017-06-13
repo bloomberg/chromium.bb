@@ -11,6 +11,9 @@
 
 namespace arc {
 
+// static
+const char ArcAudioBridge::kArcServiceName[] = "arc::ArcAudioBridge";
+
 ArcAudioBridge::ArcAudioBridge(ArcBridgeService* bridge_service)
     : ArcService(bridge_service), binding_(this) {
   arc_bridge_service()->audio()->AddObserver(this);

@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
+#include "components/arc/audio/arc_audio_bridge.h"
 #include "components/arc/intent_helper/link_handler_model_impl.h"
 #include "components/arc/intent_helper/local_activity_resolver.h"
 #include "ui/base/layout.h"
@@ -87,6 +88,10 @@ void ArcIntentHelperBridge::SetWallpaperDeprecated(
     const std::vector<uint8_t>& jpeg_data) {
   DCHECK(thread_checker_.CalledOnValidThread());
   LOG(ERROR) << "IntentHelper.SetWallpaper is deprecated";
+}
+
+void ArcIntentHelperBridge::OpenVolumeControl() {
+  ArcServiceManager::Get()->GetService<ArcAudioBridge>()->ShowVolumeControls();
 }
 
 ArcIntentHelperBridge::GetResult ArcIntentHelperBridge::GetActivityIcons(
