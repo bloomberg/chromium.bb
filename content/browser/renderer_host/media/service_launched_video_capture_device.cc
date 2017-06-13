@@ -24,8 +24,7 @@ ServiceLaunchedVideoCaptureDevice::~ServiceLaunchedVideoCaptureDevice() {
 void ServiceLaunchedVideoCaptureDevice::GetPhotoState(
     media::VideoCaptureDevice::GetPhotoStateCallback callback) const {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-  // Not yet implemented on service side, but is called during
-  // JsLevelVideoCaptureBrowserTest. Do nothing here.
+  NOTIMPLEMENTED();
 }
 
 void ServiceLaunchedVideoCaptureDevice::SetPhotoOptions(
