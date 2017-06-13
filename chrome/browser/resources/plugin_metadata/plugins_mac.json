@@ -1,5 +1,5 @@
 {
-  "x-version": 28,
+  "x-version": 29,
   "google-talk": {
     "mime_types": [
     ],
@@ -115,9 +115,9 @@
     ],
     "versions": [
       {
-        "version": "25.0.0.171",
+        "version": "26.0.0.126",
         "status": "requires_authorization",
-        "reference": "https://helpx.adobe.com/security/products/flash-player/apsb17-15.html"
+        "reference": "https://helpx.adobe.com/security/products/flash-player/apsb17-17.html"
       }
     ],
     "lang": "en-US",
