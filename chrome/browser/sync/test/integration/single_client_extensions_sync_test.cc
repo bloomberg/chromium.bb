@@ -8,7 +8,7 @@
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "components/browser_sync/profile_sync_service.h"
-#include "components/sync/test/fake_server/fake_server.h"
+#include "components/sync/test/fake_server/tombstone_entity.h"
 
 using extensions_helper::AllProfilesHaveSameExtensionsAsVerifier;
 using extensions_helper::DisableExtension;
@@ -78,8 +78,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientExtensionsSyncTest, UninstallWinsConflicts) {
   std::vector<sync_pb::SyncEntity> server_extensions =
       GetFakeServer()->GetSyncEntitiesByModelType(syncer::EXTENSIONS);
   ASSERT_EQ(1ul, server_extensions.size());
-  std::unique_ptr<syncer::LoopbackServerEntity> tombstone(
-      syncer::PersistentTombstoneEntity::CreateNew(
+  std::unique_ptr<fake_server::FakeServerEntity> tombstone(
+      fake_server::TombstoneEntity::Create(
           server_extensions[0].id_string(),
           server_extensions[0].client_defined_unique_tag()));
   GetFakeServer()->InjectEntity(std::move(tombstone));

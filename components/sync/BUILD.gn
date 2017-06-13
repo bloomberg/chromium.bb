@@ -1024,20 +1024,30 @@ source_set("unit_tests") {
 static_library("test_support_fake_server") {
   testonly = true
   sources = [
+    "test/fake_server/bookmark_entity.cc",
+    "test/fake_server/bookmark_entity.h",
     "test/fake_server/bookmark_entity_builder.cc",
     "test/fake_server/bookmark_entity_builder.h",
     "test/fake_server/entity_builder_factory.cc",
     "test/fake_server/entity_builder_factory.h",
     "test/fake_server/fake_server.cc",
     "test/fake_server/fake_server.h",
+    "test/fake_server/fake_server_entity.cc",
+    "test/fake_server/fake_server_entity.h",
     "test/fake_server/fake_server_http_post_provider.cc",
     "test/fake_server/fake_server_http_post_provider.h",
     "test/fake_server/fake_server_network_resources.cc",
     "test/fake_server/fake_server_network_resources.h",
     "test/fake_server/fake_server_verifier.cc",
     "test/fake_server/fake_server_verifier.h",
+    "test/fake_server/permanent_entity.cc",
+    "test/fake_server/permanent_entity.h",
     "test/fake_server/sessions_hierarchy.cc",
     "test/fake_server/sessions_hierarchy.h",
+    "test/fake_server/tombstone_entity.cc",
+    "test/fake_server/tombstone_entity.h",
+    "test/fake_server/unique_client_entity.cc",
+    "test/fake_server/unique_client_entity.h",
   ]
 
   deps = [

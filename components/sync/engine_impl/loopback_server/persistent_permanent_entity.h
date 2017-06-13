@@ -29,7 +29,7 @@ class PersistentPermanentEntity : public LoopbackServerEntity {
 
   // Factory function for PersistentPermanentEntity. |server_tag| should be a
   // globally unique identifier.
-  static std::unique_ptr<LoopbackServerEntity> CreateNew(
+  static std::unique_ptr<LoopbackServerEntity> Create(
       const syncer::ModelType& model_type,
       const std::string& server_tag,
       const std::string& name,
