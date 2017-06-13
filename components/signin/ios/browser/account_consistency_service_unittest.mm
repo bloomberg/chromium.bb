@@ -8,7 +8,6 @@
 
 #include <memory>
 
-#import "base/mac/scoped_nsobject.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
@@ -26,6 +25,10 @@
 #include "testing/platform_test.h"
 #include "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 // URL of the Google domain where the CHROME_CONNECTED cookie is set/removed.
@@ -63,12 +66,11 @@ class FakeAccountConsistencyService : public AccountConsistencyService {
  private:
   WKWebView* BuildWKWebView() override {
     if (!mock_web_view_) {
-      mock_web_view_.reset(
-          [[OCMockObject niceMockForClass:[WKWebView class]] retain]);
+      mock_web_view_ = [OCMockObject niceMockForClass:[WKWebView class]];
     }
     return mock_web_view_;
   }
-  base::scoped_nsobject<id> mock_web_view_;
+  id mock_web_view_;
 };
 
 // Mock AccountReconcilor to catch call to OnReceivedManageAccountsResponse.
@@ -155,7 +157,7 @@ class AccountConsistencyServiceTest : public PlatformTest {
     void (^continueBlock)(NSInvocation*) = ^(NSInvocation* invocation) {
       if (!continue_navigation)
         return;
-      WKWebView* web_view = nil;
+      __unsafe_unretained WKWebView* web_view = nil;
       [invocation getArgument:&web_view atIndex:0];
       [GetNavigationDelegate() webView:web_view didFinishNavigation:nil];
     };
@@ -236,11 +238,11 @@ TEST_F(AccountConsistencyServiceTest, SignInSignOut) {
   id delegate =
       [OCMockObject mockForProtocol:@protocol(ManageAccountsDelegate)];
   NSDictionary* headers = [NSDictionary dictionary];
-  base::scoped_nsobject<NSHTTPURLResponse> response([[NSHTTPURLResponse alloc]
-       initWithURL:kCountryGoogleUrl
-        statusCode:200
-       HTTPVersion:@"HTTP/1.1"
-      headerFields:headers]);
+  NSHTTPURLResponse* response =
+      [[NSHTTPURLResponse alloc] initWithURL:kCountryGoogleUrl
+                                  statusCode:200
+                                 HTTPVersion:@"HTTP/1.1"
+                                headerFields:headers];
   account_consistency_service_->SetWebStateHandler(&web_state_, delegate);
   EXPECT_TRUE(web_state_.ShouldAllowResponse(response));
   web_state_.WebStateDestroyed();
@@ -292,11 +294,11 @@ TEST_F(AccountConsistencyServiceTest, ChromeManageAccountsNotOnGaia) {
   NSDictionary* headers =
       [NSDictionary dictionaryWithObject:@"action=DEFAULT"
                                   forKey:@"X-Chrome-Manage-Accounts"];
-  base::scoped_nsobject<NSHTTPURLResponse> response([[NSHTTPURLResponse alloc]
+  NSHTTPURLResponse* response = [[NSHTTPURLResponse alloc]
        initWithURL:[NSURL URLWithString:@"https://google.com"]
         statusCode:200
        HTTPVersion:@"HTTP/1.1"
-      headerFields:headers]);
+      headerFields:headers];
   account_consistency_service_->SetWebStateHandler(&web_state_, delegate);
   EXPECT_TRUE(web_state_.ShouldAllowResponse(response));
   web_state_.WebStateDestroyed();
@@ -311,11 +313,11 @@ TEST_F(AccountConsistencyServiceTest, ChromeManageAccountsNoHeader) {
       [OCMockObject mockForProtocol:@protocol(ManageAccountsDelegate)];
 
   NSDictionary* headers = [NSDictionary dictionary];
-  base::scoped_nsobject<NSHTTPURLResponse> response([[NSHTTPURLResponse alloc]
+  NSHTTPURLResponse* response = [[NSHTTPURLResponse alloc]
        initWithURL:[NSURL URLWithString:@"https://accounts.google.com/"]
         statusCode:200
        HTTPVersion:@"HTTP/1.1"
-      headerFields:headers]);
+      headerFields:headers];
   account_consistency_service_->SetWebStateHandler(&web_state_, delegate);
   EXPECT_TRUE(web_state_.ShouldAllowResponse(response));
   web_state_.WebStateDestroyed();
@@ -335,11 +337,11 @@ TEST_F(AccountConsistencyServiceTest, ChromeManageAccountsDefault) {
   NSDictionary* headers =
       [NSDictionary dictionaryWithObject:@"action=DEFAULT"
                                   forKey:@"X-Chrome-Manage-Accounts"];
-  base::scoped_nsobject<NSHTTPURLResponse> response([[NSHTTPURLResponse alloc]
+  NSHTTPURLResponse* response = [[NSHTTPURLResponse alloc]
        initWithURL:[NSURL URLWithString:@"https://accounts.google.com/"]
         statusCode:200
        HTTPVersion:@"HTTP/1.1"
-      headerFields:headers]);
+      headerFields:headers];
   account_consistency_service_->SetWebStateHandler(&web_state_, delegate);
   EXPECT_CALL(account_reconcilor_, OnReceivedManageAccountsResponse(
                                        signin::GAIA_SERVICE_TYPE_DEFAULT))

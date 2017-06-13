@@ -20,6 +20,10 @@
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 typedef ProfileOAuth2TokenServiceIOSProvider::AccountInfo ProviderAccount;
 
 class ProfileOAuth2TokenServiceIOSDelegateTest
