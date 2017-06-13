@@ -79,7 +79,7 @@ public class SiteSettingsPreferences extends PreferenceFragment
 
     private int keyToContentSettingsType(String key) {
         if (ADS_KEY.equals(key)) {
-            return ContentSettingsType.CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER;
+            return ContentSettingsType.CONTENT_SETTINGS_TYPE_ADS;
         } else if (AUTOPLAY_KEY.equals(key)) {
             return ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOPLAY;
         } else if (BACKGROUND_SYNC_KEY.equals(key)) {

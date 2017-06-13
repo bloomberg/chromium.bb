@@ -118,9 +118,9 @@ public class Website implements Serializable {
         // show the BLOCK state even when this permission is set to the default. In that case, just
         // set an exception now to BLOCK to enable changing the permission.
         if (mAdsException == null) {
-            setAdsException(new ContentSettingException(
-                    ContentSettingsType.CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER,
-                    getAddress().getOrigin(), ContentSetting.BLOCK, ""));
+            setAdsException(
+                    new ContentSettingException(ContentSettingsType.CONTENT_SETTINGS_TYPE_ADS,
+                            getAddress().getOrigin(), ContentSetting.BLOCK, ""));
         }
         mAdsException.setContentSetting(value);
     }

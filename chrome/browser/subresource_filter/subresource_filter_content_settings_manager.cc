@@ -58,7 +58,7 @@ SubresourceFilterContentSettingsManager::
   }
 
   cached_global_setting_for_metrics_ = settings_map_->GetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER, nullptr);
+      CONTENT_SETTINGS_TYPE_ADS, nullptr);
 }
 
 SubresourceFilterContentSettingsManager::
@@ -71,16 +71,14 @@ SubresourceFilterContentSettingsManager::
 ContentSetting SubresourceFilterContentSettingsManager::GetSitePermission(
     const GURL& url) const {
   return settings_map_->GetContentSetting(
-      url, GURL(),
-      ContentSettingsType::CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER,
+      url, GURL(), ContentSettingsType::CONTENT_SETTINGS_TYPE_ADS,
       std::string());
 }
 
 void SubresourceFilterContentSettingsManager::WhitelistSite(const GURL& url) {
   base::AutoReset<bool> resetter(&ignore_settings_changes_, true);
   settings_map_->SetContentSettingDefaultScope(
-      url, GURL(),
-      ContentSettingsType::CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER,
+      url, GURL(), ContentSettingsType::CONTENT_SETTINGS_TYPE_ADS,
       std::string(), CONTENT_SETTING_ALLOW);
   ChromeSubresourceFilterClient::LogAction(kActionContentSettingsAllowedFromUI);
 }
@@ -119,16 +117,14 @@ std::unique_ptr<base::DictionaryValue>
 SubresourceFilterContentSettingsManager::GetSiteMetadata(
     const GURL& url) const {
   return base::DictionaryValue::From(settings_map_->GetWebsiteSetting(
-      url, GURL(), CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER_DATA, std::string(),
-      nullptr));
+      url, GURL(), CONTENT_SETTINGS_TYPE_ADS_DATA, std::string(), nullptr));
 }
 
 void SubresourceFilterContentSettingsManager::SetSiteMetadata(
     const GURL& url,
     std::unique_ptr<base::DictionaryValue> dict) {
   settings_map_->SetWebsiteSettingDefaultScope(
-      url, GURL(),
-      ContentSettingsType::CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER_DATA,
+      url, GURL(), ContentSettingsType::CONTENT_SETTINGS_TYPE_ADS_DATA,
       std::string(), std::move(dict));
 }
 
@@ -137,8 +133,7 @@ void SubresourceFilterContentSettingsManager::OnContentSettingChanged(
     const ContentSettingsPattern& secondary_pattern,
     ContentSettingsType content_type,
     std::string resource_identifier) {
-  if (content_type != CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER ||
-      ignore_settings_changes_)
+  if (content_type != CONTENT_SETTINGS_TYPE_ADS || ignore_settings_changes_)
     return;
 
   const ContentSettingsDetails details(primary_pattern, secondary_pattern,
@@ -147,7 +142,7 @@ void SubresourceFilterContentSettingsManager::OnContentSettingChanged(
 
   if (details.update_all()) {
     ContentSetting global_setting = settings_map_->GetDefaultContentSetting(
-        CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER, nullptr);
+        CONTENT_SETTINGS_TYPE_ADS, nullptr);
     // Ignore changes which retain the status quo. This also avoids logging
     // metrics for changes which somehow notify this observer multiple times in
     // a row. This shouldn't discount real user initiated changes.
@@ -181,8 +176,7 @@ void SubresourceFilterContentSettingsManager::OnContentSettingChanged(
   }
 
   ContentSetting setting = settings_map_->GetContentSetting(
-      url, url, ContentSettingsType::CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER,
-      std::string());
+      url, url, ContentSettingsType::CONTENT_SETTINGS_TYPE_ADS, std::string());
   if (setting == CONTENT_SETTING_ALLOW) {
     ChromeSubresourceFilterClient::LogAction(kActionContentSettingsAllowed);
   } else if (setting == CONTENT_SETTING_BLOCK) {
@@ -208,8 +202,7 @@ void SubresourceFilterContentSettingsManager::OnURLsDeleted(
     const history::URLRows& deleted_rows,
     const std::set<GURL>& favicon_urls) {
   if (all_history) {
-    settings_map_->ClearSettingsForOneType(
-        CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER_DATA);
+    settings_map_->ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_ADS_DATA);
     return;
   }
 

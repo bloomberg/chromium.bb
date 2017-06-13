@@ -148,7 +148,7 @@ constexpr ContentSettingsType kContentTypeIconOrder[] = {
     CONTENT_SETTINGS_TYPE_MIXEDSCRIPT,
     CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS,
     CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA,  // Note: also handles mic.
-    CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER,
+    CONTENT_SETTINGS_TYPE_ADS,
     CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
     CONTENT_SETTINGS_TYPE_MIDI_SYSEX,
 };
@@ -426,8 +426,8 @@ void ContentSettingSubresourceFilterImageModel::UpdateFromWebContents(
 
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents);
-  if (!content_settings || !content_settings->IsContentBlocked(
-                               CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER)) {
+  if (!content_settings ||
+      !content_settings->IsContentBlocked(CONTENT_SETTINGS_TYPE_ADS)) {
     return;
   }
 
@@ -453,8 +453,8 @@ bool ContentSettingSubresourceFilterImageModel::ShouldRunAnimation(
     return false;
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents);
-  return content_settings && !content_settings->IsBlockageIndicated(
-                                 CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER);
+  return content_settings &&
+         !content_settings->IsBlockageIndicated(CONTENT_SETTINGS_TYPE_ADS);
 }
 
 void ContentSettingSubresourceFilterImageModel::SetAnimationHasRun(
@@ -464,8 +464,7 @@ void ContentSettingSubresourceFilterImageModel::SetAnimationHasRun(
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents);
   if (content_settings) {
-    content_settings->SetBlockageHasBeenIndicated(
-        CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER);
+    content_settings->SetBlockageHasBeenIndicated(CONTENT_SETTINGS_TYPE_ADS);
   }
 }
 
@@ -600,7 +599,7 @@ ContentSettingImageModel::GenerateContentSettingImageModels() {
       case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
         model = base::MakeUnique<ContentSettingMediaImageModel>();
         break;
-      case CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER:
+      case CONTENT_SETTINGS_TYPE_ADS:
         model = base::MakeUnique<ContentSettingSubresourceFilterImageModel>();
         break;
       case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:

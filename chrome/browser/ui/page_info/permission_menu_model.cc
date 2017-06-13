@@ -71,7 +71,7 @@ PermissionMenuModel::PermissionMenuModel(Profile* profile,
   }
 
   // The subresource filter permission does not display the default menu item.
-  if (permission_.type != CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER)
+  if (permission_.type != CONTENT_SETTINGS_TYPE_ADS)
     AddCheckItem(CONTENT_SETTING_DEFAULT, label);
 
   // Retrieve the string to show for allowing the permission.
@@ -106,7 +106,7 @@ PermissionMenuModel::PermissionMenuModel(Profile* profile,
 
   // Retrieve the string to show for blocking the permission.
   label = l10n_util::GetStringUTF16(IDS_PAGE_INFO_MENU_ITEM_BLOCK);
-  if (permission_.type == CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER) {
+  if (permission_.type == CONTENT_SETTINGS_TYPE_ADS) {
     label = l10n_util::GetStringUTF16(IDS_PAGE_INFO_MENU_ITEM_ADS_BLOCK);
   }
   if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {

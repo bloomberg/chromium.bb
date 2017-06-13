@@ -117,7 +117,7 @@ void PageInfoPopupAndroid::SetPermissionInfo(
   permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_IMAGES);
   permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_JAVASCRIPT);
   permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_POPUPS);
-  permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER);
+  permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_ADS);
   permissions_to_display.push_back(CONTENT_SETTINGS_TYPE_AUTOPLAY);
 
   std::map<ContentSettingsType, ContentSetting>
@@ -175,7 +175,7 @@ base::Optional<ContentSetting> PageInfoPopupAndroid::GetSettingToDisplay(
                  ? CONTENT_SETTING_ALLOW
                  : CONTENT_SETTING_BLOCK;
     }
-  } else if (permission.type == CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER) {
+  } else if (permission.type == CONTENT_SETTINGS_TYPE_ADS) {
     // The subresource filter permission should always display the default
     // setting if it is showing up in Page Info. Logic for whether the
     // setting should show up in Page Info is in ShouldShowPermission in

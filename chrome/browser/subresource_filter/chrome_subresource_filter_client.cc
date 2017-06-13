@@ -125,8 +125,7 @@ void ChromeSubresourceFilterClient::ToggleNotificationVisibility(
 #endif
     TabSpecificContentSettings* content_settings =
         TabSpecificContentSettings::FromWebContents(web_contents_);
-    content_settings->OnContentBlocked(
-        CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER);
+    content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_ADS);
 
     LogAction(kActionUIShown);
     did_show_ui_for_navigation_ = true;

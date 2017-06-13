@@ -84,7 +84,7 @@ TEST_F(PermissionMenuModelTest, TestIncognitoNotifications) {
 TEST_F(PermissionMenuModelTest, TestSubresourceFilter) {
   TestCallback callback;
   PageInfoUI::PermissionInfo permission;
-  permission.type = CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER;
+  permission.type = CONTENT_SETTINGS_TYPE_ADS;
   permission.setting = CONTENT_SETTING_BLOCK;
   permission.default_setting = CONTENT_SETTING_BLOCK;
   permission.is_incognito = false;

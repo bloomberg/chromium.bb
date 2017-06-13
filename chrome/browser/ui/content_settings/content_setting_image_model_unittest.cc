@@ -142,7 +142,7 @@ TEST_F(ContentSettingImageModelTest, SubresourceFilter) {
   EXPECT_FALSE(content_setting_image_model->is_visible());
   EXPECT_TRUE(content_setting_image_model->get_tooltip().empty());
 
-  content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER);
+  content_settings->OnContentBlocked(CONTENT_SETTINGS_TYPE_ADS);
   content_setting_image_model->UpdateFromWebContents(web_contents());
 
   EXPECT_TRUE(content_setting_image_model->is_visible());

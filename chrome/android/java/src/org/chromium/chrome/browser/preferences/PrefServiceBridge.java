@@ -736,8 +736,7 @@ public final class PrefServiceBridge {
      * @return Whether ads are enabled / allowed on sites that tend to show intrusive ads.
      */
     public boolean adsEnabled() {
-        return isContentSettingEnabled(
-                ContentSettingsType.CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER);
+        return isContentSettingEnabled(ContentSettingsType.CONTENT_SETTINGS_TYPE_ADS);
     }
 
     /**
@@ -746,8 +745,7 @@ public final class PrefServiceBridge {
      * @param allow attribute to enable ads / block ads if the site tends to show intrusive ads.
      */
     public void setAllowAdsEnabled(boolean allow) {
-        setContentSettingEnabled(
-                ContentSettingsType.CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER, allow);
+        setContentSettingEnabled(ContentSettingsType.CONTENT_SETTINGS_TYPE_ADS, allow);
     }
 
     /**

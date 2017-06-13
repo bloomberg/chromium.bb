@@ -828,8 +828,7 @@ static jboolean GetAdBlockingActivated(JNIEnv* env,
                                        const JavaParamRef<jstring>& jorigin) {
   GURL url(ConvertJavaStringToUTF8(env, jorigin));
   return !!GetHostContentSettingsMap(false)->GetWebsiteSetting(
-      url, GURL(), CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER_DATA, std::string(),
-      nullptr);
+      url, GURL(), CONTENT_SETTINGS_TYPE_ADS_DATA, std::string(), nullptr);
 }
 
 // Register native methods
