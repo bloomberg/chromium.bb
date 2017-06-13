@@ -47,9 +47,10 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
                             int16_t *max_scan_line, int *eob) {
   FRAME_COUNTS *counts = xd->counts;
   TX_SIZE tx_size = get_tx_size(plane, xd);
+  TX_SIZE txs_ctx = get_txsize_context(tx_size);
   PLANE_TYPE plane_type = get_plane_type(plane);
-  aom_prob *nz_map = cm->fc->nz_map[tx_size][plane_type];
-  aom_prob *eob_flag = cm->fc->eob_flag[tx_size][plane_type];
+  aom_prob *nz_map = cm->fc->nz_map[txs_ctx][plane_type];
+  aom_prob *eob_flag = cm->fc->eob_flag[txs_ctx][plane_type];
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   const int seg_eob = tx_size_2d[tx_size];
   int c = 0;
@@ -61,14 +62,14 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   unsigned int(*nz_map_count)[SIG_COEF_CONTEXTS][2];
   uint8_t txb_mask[32 * 32] = { 0 };
 
-  nz_map_count = (counts) ? &counts->nz_map[tx_size][plane_type] : NULL;
+  nz_map_count = (counts) ? &counts->nz_map[txs_ctx][plane_type] : NULL;
 
   memset(tcoeffs, 0, sizeof(*tcoeffs) * seg_eob);
 
   int all_zero =
-      aom_read(r, cm->fc->txb_skip[tx_size][txb_ctx->txb_skip_ctx], ACCT_STR);
+      aom_read(r, cm->fc->txb_skip[txs_ctx][txb_ctx->txb_skip_ctx], ACCT_STR);
   if (xd->counts)
-    ++xd->counts->txb_skip[tx_size][txb_ctx->txb_skip_ctx][all_zero];
+    ++xd->counts->txb_skip[txs_ctx][txb_ctx->txb_skip_ctx][all_zero];
 
   *eob = 0;
   if (all_zero) {
@@ -106,7 +107,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 
     if (is_nz) {
       int is_eob = aom_read(r, eob_flag[eob_ctx], tx_size);
-      if (counts) ++counts->eob_flag[tx_size][plane_type][eob_ctx][is_eob];
+      if (counts) ++counts->eob_flag[txs_ctx][plane_type][eob_ctx][is_eob];
       if (is_eob) break;
     }
     txb_mask[scan[c]] = 1;
@@ -117,7 +118,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 
   int i;
   for (i = 0; i < NUM_BASE_LEVELS; ++i) {
-    aom_prob *coeff_base = cm->fc->coeff_base[tx_size][plane_type][i];
+    aom_prob *coeff_base = cm->fc->coeff_base[txs_ctx][plane_type][i];
 
     update_eob = 0;
     for (c = *eob - 1; c >= 0; --c) {
@@ -133,7 +134,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
         *v = i + 1;
         cul_level += i + 1;
 
-        if (counts) ++counts->coeff_base[tx_size][plane_type][i][ctx][1];
+        if (counts) ++counts->coeff_base[txs_ctx][plane_type][i][ctx][1];
 
         if (c == 0) {
           int dc_sign_ctx = txb_ctx->dc_sign_ctx;
@@ -146,7 +147,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
         continue;
       }
       *v = i + 2;
-      if (counts) ++counts->coeff_base[tx_size][plane_type][i][ctx][0];
+      if (counts) ++counts->coeff_base[txs_ctx][plane_type][i][ctx][0];
 
       // update the eob flag for coefficients with magnitude above 1.
       update_eob = AOMMAX(update_eob, c);
@@ -171,18 +172,18 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 
     ctx = get_br_ctx(tcoeffs, scan[c], bwl);
 
-    if (cm->fc->coeff_lps[tx_size][plane_type][ctx] == 0) exit(0);
+    if (cm->fc->coeff_lps[txs_ctx][plane_type][ctx] == 0) exit(0);
 
     for (idx = 0; idx < COEFF_BASE_RANGE; ++idx) {
-      if (aom_read(r, cm->fc->coeff_lps[tx_size][plane_type][ctx], tx_size)) {
+      if (aom_read(r, cm->fc->coeff_lps[txs_ctx][plane_type][ctx], tx_size)) {
         *v = (idx + 1 + NUM_BASE_LEVELS);
         if (sign) *v = -(*v);
         cul_level += abs(*v);
 
-        if (counts) ++counts->coeff_lps[tx_size][plane_type][ctx][1];
+        if (counts) ++counts->coeff_lps[txs_ctx][plane_type][ctx][1];
         break;
       }
-      if (counts) ++counts->coeff_lps[tx_size][plane_type][ctx][0];
+      if (counts) ++counts->coeff_lps[txs_ctx][plane_type][ctx][0];
     }
     if (idx < COEFF_BASE_RANGE) continue;
 

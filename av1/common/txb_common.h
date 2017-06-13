@@ -24,6 +24,10 @@ typedef struct txb_ctx {
   int dc_sign_ctx;
 } TXB_CTX;
 
+static INLINE TX_SIZE get_txsize_context(TX_SIZE tx_size) {
+  return txsize_sqr_up_map[tx_size];
+}
+
 #define BASE_CONTEXT_POSITION_NUM 12
 static int base_ref_offset[BASE_CONTEXT_POSITION_NUM][2] = {
   /* clang-format off*/
