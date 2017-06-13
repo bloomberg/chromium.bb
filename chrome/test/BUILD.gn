@@ -2063,6 +2063,7 @@ test("browser_tests") {
         "../browser/ui/views/payments/payment_request_journey_logger_browsertest.cc",
         "../browser/ui/views/payments/payment_request_payment_app_browsertest.cc",
         "../browser/ui/views/payments/payment_request_payment_response_browsertest.cc",
+        "../browser/ui/views/payments/payment_request_requested_information_metric_browsertest.cc",
         "../browser/ui/views/payments/payment_request_use_stats_browsertest.cc",
         "../browser/ui/views/payments/payment_sheet_view_controller_browsertest.cc",
         "../browser/ui/views/payments/profile_list_view_controller_browsertest.cc",
