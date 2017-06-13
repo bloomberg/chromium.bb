@@ -16,14 +16,13 @@ class URLRequest;
 
 namespace predictors {
 
-// Records navigation events as reported by various observers to the database
-// and stats collection classes. All the non-static methods of this class need
+// Records to the database and stats collection classes navigation events as
+// reported by various observers. All the non-static methods of this class need
 // to be called on the UI thread.
 class LoadingDataCollector
     : public base::SupportsWeakPtr<LoadingDataCollector> {
  public:
-  explicit LoadingDataCollector(
-      predictors::ResourcePrefetchPredictor* predictor);
+  explicit LoadingDataCollector(ResourcePrefetchPredictor* predictor);
   ~LoadingDataCollector();
 
   // Thread safe.
@@ -37,11 +36,11 @@ class LoadingDataCollector
   // requests. Should only be called if the corresponding Should* functions
   // return true.
   void RecordURLRequest(
-      const predictors::ResourcePrefetchPredictor::URLRequestSummary& request);
+      const ResourcePrefetchPredictor::URLRequestSummary& request);
   void RecordURLResponse(
-      const predictors::ResourcePrefetchPredictor::URLRequestSummary& response);
+      const ResourcePrefetchPredictor::URLRequestSummary& response);
   void RecordURLRedirect(
-      const predictors::ResourcePrefetchPredictor::URLRequestSummary& response);
+      const ResourcePrefetchPredictor::URLRequestSummary& response);
 
   // Called when the main frame of a page completes loading.
   void RecordMainFrameLoadComplete(const NavigationID& navigation_id);
@@ -69,7 +68,7 @@ class LoadingDataCollector
 
   static void SetAllowPortInUrlsForTesting(bool state);
 
-  predictors::ResourcePrefetchPredictor* const predictor_;
+  ResourcePrefetchPredictor* const predictor_;
 };
 
 }  // namespace predictors
