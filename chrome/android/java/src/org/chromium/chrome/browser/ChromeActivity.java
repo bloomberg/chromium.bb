@@ -115,6 +115,7 @@ import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.share.OptionalShareTargetsManager;
 import org.chromium.chrome.browser.share.ShareActivity;
 import org.chromium.chrome.browser.share.ShareHelper;
+import org.chromium.chrome.browser.share.ShareParams;
 import org.chromium.chrome.browser.snackbar.BottomContainer;
 import org.chromium.chrome.browser.snackbar.DataReductionPromoSnackbarController;
 import org.chromium.chrome.browser.snackbar.DataUseSnackbarController;
@@ -1297,12 +1298,15 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         final Uri blockingUri = (isIncognito || webContents == null)
                 ? null
                 : ChromeFileProvider.generateUriAndBlockAccess(mainActivity);
+        ShareParams.Builder builder =
+                new ShareParams.Builder(mainActivity, currentTab.getTitle(), currentTab.getUrl())
+                        .setShareDirectly(shareDirectly)
+                        .setSaveLastUsed(!shareDirectly)
+                        .setScreenshotUri(blockingUri);
         if (canShareOfflinePage) {
-            OfflinePageUtils.shareOfflinePage(shareDirectly, true, mainActivity, null,
-                    blockingUri, null, currentTab);
+            OfflinePageUtils.shareOfflinePage(builder, currentTab);
         } else {
-            ShareHelper.share(shareDirectly, true, mainActivity, currentTab.getTitle(), null,
-                    currentTab.getUrl(), null, blockingUri, null);
+            ShareHelper.share(builder.build());
             if (shareDirectly) {
                 RecordUserAction.record("MobileMenuDirectShare");
             } else {
