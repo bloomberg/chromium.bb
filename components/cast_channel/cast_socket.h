@@ -20,7 +20,6 @@
 #include "components/cast_channel/cast_channel_enum.h"
 #include "components/cast_channel/cast_socket.h"
 #include "components/cast_channel/cast_transport.h"
-#include "components/cast_channel/proto/logging.pb.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
@@ -41,7 +40,7 @@ class X509Certificate;
 namespace cast_channel {
 class CastMessage;
 class Logger;
-struct LastErrors;
+struct LastError;
 
 // Cast device capabilities.
 enum CastDeviceCapability {
@@ -190,7 +189,7 @@ class CastSocketImpl : public CastSocket {
     ChannelError error_state() const;
 
     // Gets recorded error details.
-    LastErrors last_errors() const;
+    LastError last_error() const;
 
     // CastTransport::Delegate interface.
     void OnError(ChannelError error_state) override;
@@ -200,7 +199,7 @@ class CastSocketImpl : public CastSocket {
    private:
     CastSocketImpl* socket_;
     ChannelError error_state_;
-    LastErrors last_errors_;
+    LastError last_error_;
   };
 
   // Replaces the internally-constructed transport object with one provided
@@ -287,7 +286,7 @@ class CastSocketImpl : public CastSocket {
 
   virtual base::Timer* GetTimer();
 
-  void SetConnectState(proto::ConnectionState connect_state);
+  void SetConnectState(ConnectionState connect_state);
   void SetReadyState(ReadyState ready_state);
 
   THREAD_CHECKER(thread_checker_);
@@ -356,13 +355,13 @@ class CastSocketImpl : public CastSocket {
   bool audio_only_;
 
   // Connection flow state machine state.
-  proto::ConnectionState connect_state_;
+  ConnectionState connect_state_;
 
   // Write flow state machine state.
-  proto::WriteState write_state_;
+  WriteState write_state_;
 
   // Read flow state machine state.
-  proto::ReadState read_state_;
+  ReadState read_state_;
 
   // The last error encountered by the channel.
   ChannelError error_state_;

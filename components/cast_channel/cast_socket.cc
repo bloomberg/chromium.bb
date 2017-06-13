@@ -60,9 +60,10 @@
 namespace cast_channel {
 namespace {
 
-bool IsTerminalState(proto::ConnectionState state) {
-  return state == proto::CONN_STATE_FINISHED ||
-         state == proto::CONN_STATE_ERROR || state == proto::CONN_STATE_TIMEOUT;
+bool IsTerminalState(ConnectionState state) {
+  return state == ConnectionState::FINISHED ||
+         state == ConnectionState::CONNECT_ERROR ||
+         state == ConnectionState::TIMEOUT;
 }
 
 // Cert verifier which blindly accepts all certificates, regardless of validity.
@@ -128,7 +129,7 @@ CastSocketImpl::CastSocketImpl(const std::string& owner_extension_id,
       is_canceled_(false),
       device_capabilities_(device_capabilities),
       audio_only_(false),
-      connect_state_(proto::CONN_STATE_START_CONNECT),
+      connect_state_(ConnectionState::START_CONNECT),
       error_state_(ChannelError::NONE),
       ready_state_(ReadyState::NONE),
       auth_delegate_(nullptr) {
@@ -255,7 +256,7 @@ void CastSocketImpl::Connect(std::unique_ptr<CastTransport::Delegate> delegate,
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   VLOG_WITH_CONNECTION(1) << "Connect readyState = "
                           << ::cast_channel::ReadyStateToString(ready_state_);
-  DCHECK_EQ(proto::CONN_STATE_START_CONNECT, connect_state_);
+  DCHECK_EQ(ConnectionState::START_CONNECT, connect_state_);
 
   delegate_ = std::move(delegate);
 
@@ -266,7 +267,7 @@ void CastSocketImpl::Connect(std::unique_ptr<CastTransport::Delegate> delegate,
 
   connect_callback_ = callback;
   SetReadyState(ReadyState::CONNECTING);
-  SetConnectState(proto::CONN_STATE_TCP_CONNECT);
+  SetConnectState(ConnectionState::TCP_CONNECT);
 
   // Set up connection timeout.
   if (connect_timeout_.InMicroseconds() > 0) {
@@ -324,35 +325,35 @@ void CastSocketImpl::DoConnectLoop(int result) {
   // synchronously.
   int rv = result;
   do {
-    proto::ConnectionState state = connect_state_;
-    connect_state_ = proto::CONN_STATE_UNKNOWN;
+    ConnectionState state = connect_state_;
+    connect_state_ = ConnectionState::UNKNOWN;
     switch (state) {
-      case proto::CONN_STATE_TCP_CONNECT:
+      case ConnectionState::TCP_CONNECT:
         rv = DoTcpConnect();
         break;
-      case proto::CONN_STATE_TCP_CONNECT_COMPLETE:
+      case ConnectionState::TCP_CONNECT_COMPLETE:
         rv = DoTcpConnectComplete(rv);
         break;
-      case proto::CONN_STATE_SSL_CONNECT:
+      case ConnectionState::SSL_CONNECT:
         DCHECK_EQ(net::OK, rv);
         rv = DoSslConnect();
         break;
-      case proto::CONN_STATE_SSL_CONNECT_COMPLETE:
+      case ConnectionState::SSL_CONNECT_COMPLETE:
         rv = DoSslConnectComplete(rv);
         break;
-      case proto::CONN_STATE_AUTH_CHALLENGE_SEND:
+      case ConnectionState::AUTH_CHALLENGE_SEND:
         rv = DoAuthChallengeSend();
         break;
-      case proto::CONN_STATE_AUTH_CHALLENGE_SEND_COMPLETE:
+      case ConnectionState::AUTH_CHALLENGE_SEND_COMPLETE:
         rv = DoAuthChallengeSendComplete(rv);
         break;
-      case proto::CONN_STATE_AUTH_CHALLENGE_REPLY_COMPLETE:
+      case ConnectionState::AUTH_CHALLENGE_REPLY_COMPLETE:
         rv = DoAuthChallengeReplyComplete(rv);
         DCHECK(IsTerminalState(connect_state_));
         break;
       default:
-        NOTREACHED() << "Unknown state in connect flow: " << state;
-        SetConnectState(proto::CONN_STATE_FINISHED);
+        NOTREACHED() << "Unknown state in connect flow: " << AsInteger(state);
+        SetConnectState(ConnectionState::FINISHED);
         SetErrorState(ChannelError::UNKNOWN);
         DoConnectCallback();
         return;
@@ -373,26 +374,27 @@ void CastSocketImpl::DoConnectLoop(int result) {
 int CastSocketImpl::DoTcpConnect() {
   DCHECK(connect_loop_callback_.IsCancelled());
   VLOG_WITH_CONNECTION(1) << "DoTcpConnect";
-  SetConnectState(proto::CONN_STATE_TCP_CONNECT_COMPLETE);
+  SetConnectState(ConnectionState::TCP_CONNECT_COMPLETE);
   tcp_socket_ = CreateTcpSocket();
 
   int rv = tcp_socket_->Connect(
       base::Bind(&CastSocketImpl::DoConnectLoop, base::Unretained(this)));
-  logger_->LogSocketEventWithRv(channel_id_, proto::TCP_SOCKET_CONNECT, rv);
+  logger_->LogSocketEventWithRv(channel_id_, ChannelEvent::TCP_SOCKET_CONNECT,
+                                rv);
   return rv;
 }
 
 int CastSocketImpl::DoTcpConnectComplete(int connect_result) {
   VLOG_WITH_CONNECTION(1) << "DoTcpConnectComplete: " << connect_result;
-  logger_->LogSocketEventWithRv(channel_id_, proto::TCP_SOCKET_CONNECT_COMPLETE,
-                                connect_result);
+  logger_->LogSocketEventWithRv(
+      channel_id_, ChannelEvent::TCP_SOCKET_CONNECT_COMPLETE, connect_result);
   if (connect_result == net::OK) {
-    SetConnectState(proto::CONN_STATE_SSL_CONNECT);
+    SetConnectState(ConnectionState::SSL_CONNECT);
   } else if (connect_result == net::ERR_CONNECTION_TIMED_OUT) {
-    SetConnectState(proto::CONN_STATE_FINISHED);
+    SetConnectState(ConnectionState::FINISHED);
     SetErrorState(ChannelError::CONNECT_TIMEOUT);
   } else {
-    SetConnectState(proto::CONN_STATE_FINISHED);
+    SetConnectState(ConnectionState::FINISHED);
     SetErrorState(ChannelError::CONNECT_ERROR);
   }
   return connect_result;
@@ -401,25 +403,26 @@ int CastSocketImpl::DoTcpConnectComplete(int connect_result) {
 int CastSocketImpl::DoSslConnect() {
   DCHECK(connect_loop_callback_.IsCancelled());
   VLOG_WITH_CONNECTION(1) << "DoSslConnect";
-  SetConnectState(proto::CONN_STATE_SSL_CONNECT_COMPLETE);
+  SetConnectState(ConnectionState::SSL_CONNECT_COMPLETE);
   socket_ = CreateSslSocket(std::move(tcp_socket_));
 
   int rv = socket_->Connect(
       base::Bind(&CastSocketImpl::DoConnectLoop, base::Unretained(this)));
-  logger_->LogSocketEventWithRv(channel_id_, proto::SSL_SOCKET_CONNECT, rv);
+  logger_->LogSocketEventWithRv(channel_id_, ChannelEvent::SSL_SOCKET_CONNECT,
+                                rv);
   return rv;
 }
 
 int CastSocketImpl::DoSslConnectComplete(int result) {
-  logger_->LogSocketEventWithRv(channel_id_, proto::SSL_SOCKET_CONNECT_COMPLETE,
-                                result);
+  logger_->LogSocketEventWithRv(
+      channel_id_, ChannelEvent::SSL_SOCKET_CONNECT_COMPLETE, result);
   VLOG_WITH_CONNECTION(1) << "DoSslConnectComplete: " << result;
   if (result == net::OK) {
     peer_cert_ = ExtractPeerCert();
 
     if (!peer_cert_) {
       LOG_WITH_CONNECTION(WARNING) << "Could not extract peer cert.";
-      SetConnectState(proto::CONN_STATE_FINISHED);
+      SetConnectState(ConnectionState::FINISHED);
       SetErrorState(ChannelError::AUTHENTICATION_ERROR);
       return net::ERR_CERT_INVALID;
     }
@@ -434,12 +437,12 @@ int CastSocketImpl::DoSslConnectComplete(int result) {
     }
     auth_delegate_ = new AuthTransportDelegate(this);
     transport_->SetReadDelegate(base::WrapUnique(auth_delegate_));
-    SetConnectState(proto::CONN_STATE_AUTH_CHALLENGE_SEND);
+    SetConnectState(ConnectionState::AUTH_CHALLENGE_SEND);
   } else if (result == net::ERR_CONNECTION_TIMED_OUT) {
-    SetConnectState(proto::CONN_STATE_FINISHED);
+    SetConnectState(ConnectionState::FINISHED);
     SetErrorState(ChannelError::CONNECT_TIMEOUT);
   } else {
-    SetConnectState(proto::CONN_STATE_FINISHED);
+    SetConnectState(ConnectionState::FINISHED);
     SetErrorState(ChannelError::AUTHENTICATION_ERROR);
   }
   return result;
@@ -447,7 +450,7 @@ int CastSocketImpl::DoSslConnectComplete(int result) {
 
 int CastSocketImpl::DoAuthChallengeSend() {
   VLOG_WITH_CONNECTION(1) << "DoAuthChallengeSend";
-  SetConnectState(proto::CONN_STATE_AUTH_CHALLENGE_SEND_COMPLETE);
+  SetConnectState(ConnectionState::AUTH_CHALLENGE_SEND_COMPLETE);
 
   CastMessage challenge_message;
   CreateAuthChallengeMessage(&challenge_message, auth_context_);
@@ -464,14 +467,14 @@ int CastSocketImpl::DoAuthChallengeSend() {
 int CastSocketImpl::DoAuthChallengeSendComplete(int result) {
   VLOG_WITH_CONNECTION(1) << "DoAuthChallengeSendComplete: " << result;
   if (result < 0) {
-    SetConnectState(proto::CONN_STATE_ERROR);
+    SetConnectState(ConnectionState::CONNECT_ERROR);
     SetErrorState(ChannelError::CAST_SOCKET_ERROR);
-    logger_->LogSocketEventWithRv(channel_id_,
-                                  proto::SEND_AUTH_CHALLENGE_FAILED, result);
+    logger_->LogSocketEventWithRv(
+        channel_id_, ChannelEvent::SEND_AUTH_CHALLENGE_FAILED, result);
     return result;
   }
   transport_->Start();
-  SetConnectState(proto::CONN_STATE_AUTH_CHALLENGE_REPLY_COMPLETE);
+  SetConnectState(ConnectionState::AUTH_CHALLENGE_REPLY_COMPLETE);
   return net::ERR_IO_PENDING;
 }
 
@@ -485,8 +488,8 @@ ChannelError CastSocketImpl::AuthTransportDelegate::error_state() const {
   return error_state_;
 }
 
-LastErrors CastSocketImpl::AuthTransportDelegate::last_errors() const {
-  return last_errors_;
+LastError CastSocketImpl::AuthTransportDelegate::last_error() const {
+  return last_error_;
 }
 
 void CastSocketImpl::AuthTransportDelegate::OnError(ChannelError error_state) {
@@ -512,24 +515,24 @@ int CastSocketImpl::DoAuthChallengeReplyComplete(int result) {
 
   if (auth_delegate_->error_state() != ChannelError::NONE) {
     SetErrorState(auth_delegate_->error_state());
-    SetConnectState(proto::CONN_STATE_ERROR);
+    SetConnectState(ConnectionState::CONNECT_ERROR);
     return net::ERR_CONNECTION_FAILED;
   }
   auth_delegate_ = nullptr;
 
   if (result < 0) {
-    SetConnectState(proto::CONN_STATE_ERROR);
+    SetConnectState(ConnectionState::CONNECT_ERROR);
     return result;
   }
 
   if (!VerifyChallengeReply()) {
     SetErrorState(ChannelError::AUTHENTICATION_ERROR);
-    SetConnectState(proto::CONN_STATE_ERROR);
+    SetConnectState(ConnectionState::CONNECT_ERROR);
     return net::ERR_CONNECTION_FAILED;
   }
   VLOG_WITH_CONNECTION(1) << "Auth challenge verification succeeded";
 
-  SetConnectState(proto::CONN_STATE_FINISHED);
+  SetConnectState(ConnectionState::FINISHED);
   return net::OK;
 }
 
@@ -587,7 +590,7 @@ base::Timer* CastSocketImpl::GetTimer() {
   return connect_timeout_timer_.get();
 }
 
-void CastSocketImpl::SetConnectState(proto::ConnectionState connect_state) {
+void CastSocketImpl::SetConnectState(ConnectionState connect_state) {
   if (connect_state_ != connect_state) {
     connect_state_ = connect_state;
   }
