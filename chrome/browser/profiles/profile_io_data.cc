@@ -652,6 +652,16 @@ ProfileIOData::~ProfileIOData() {
            static_cast<void*>(it->second), sizeof(void*));
   }
 
+  // Prevent the TreeStateTracker from getting any more notifications by
+  // severing the link between it and the CTVerifier and unregistering it from
+  // new STH notifications.
+  //
+  // Only do this if the |cert_transparency_verifier_| is not null.
+  if (cert_transparency_verifier_) {
+    cert_transparency_verifier_->SetObserver(nullptr);
+    ct_tree_tracker_unregistration_.Run();
+  }
+
   // Destroy certificate_report_sender_ before main_request_context_,
   // since the former has a reference to the latter.
   if (transport_security_state_)
@@ -1291,16 +1301,6 @@ void ProfileIOData::ShutdownOnUIThread(
 
 void ProfileIOData::DestroyResourceContext() {
   resource_context_.reset();
-  // Prevent the cert_transparency_observer_ from getting any more
-  // notifications by severing the link between it and the
-  // cert_transparency_verifier_ and unregistering it from new STH
-  // notifications.
-  // Only do this if the profile was initalized and
-  // |cert_transparency_verifier_| is not null.
-  if (cert_transparency_verifier_) {
-    cert_transparency_verifier_->SetObserver(nullptr);
-    ct_tree_tracker_unregistration_.Run();
-  }
 }
 
 std::unique_ptr<net::HttpNetworkSession>
