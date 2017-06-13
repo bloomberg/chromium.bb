@@ -14,7 +14,7 @@
 
 @implementation BookmarkControllerFactory
 
-- (BookmarkHomeViewController*)
+- (BookmarkHomeHandsetViewController*)
 bookmarkControllerWithBrowserState:(ios::ChromeBrowserState*)browserState
                             loader:(id<UrlLoader>)loader {
   return

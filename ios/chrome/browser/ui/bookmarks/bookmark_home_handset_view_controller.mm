@@ -12,6 +12,7 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/strings/grit/components_strings.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+#include "ios/chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "ios/chrome/browser/bookmarks/bookmarks_utils.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/ui/alert_coordinator/action_sheet_coordinator.h"
@@ -60,6 +61,15 @@ const CGFloat kBookmarkMenuWidth = 264;
   // Bridge to register for bookmark changes.
   std::unique_ptr<bookmarks::BookmarkModelBridge> _bridge;
 }
+
+// Redefined to be readwrite.
+@property(nonatomic, strong, readwrite) NSMutableArray* editIndexPaths;
+
+// Returns the parent, if all the bookmarks are siblings.
+// Otherwise returns the mobile_node.
++ (const BookmarkNode*)
+defaultMoveFolderFromBookmarks:(const std::set<const BookmarkNode*>&)bookmarks
+                         model:(bookmarks::BookmarkModel*)model;
 
 // This views holds the primary content of this view controller. At any point in
 // time, it contains exactly one of the BookmarkCollectionView subclasses.
@@ -233,10 +243,26 @@ const CGFloat kBookmarkMenuWidth = 264;
 @synthesize scrollingMenuToTop = _scrollingMenuToTop;
 @synthesize bookmarkPromoController = _bookmarkPromoController;
 
+@synthesize delegate = _delegate;
+@synthesize editIndexPaths = _editIndexPaths;
+@synthesize editing = _editing;
+@synthesize bookmarks = _bookmarks;
+@synthesize loader = _loader;
+@synthesize browserState = _browserState;
+
 - (instancetype)initWithLoader:(id<UrlLoader>)loader
                   browserState:(ios::ChromeBrowserState*)browserState {
-  self = [super initWithLoader:loader browserState:browserState];
+  DCHECK(browserState);
+  self = [super initWithNibName:nil bundle:nil];
   if (self) {
+    _browserState = browserState->GetOriginalChromeBrowserState();
+    _loader = loader;
+
+    _bookmarks = ios::BookmarkModelFactory::GetForBrowserState(_browserState);
+    _editIndexPaths = [[NSMutableArray alloc] init];
+
+    [self resetEditNodes];
+
     _bridge.reset(new bookmarks::BookmarkModelBridge(self, self.bookmarks));
     // It is important to initialize the promo controller with the browser state
     // passed in, as it could be incognito.
@@ -258,9 +284,56 @@ const CGFloat kBookmarkMenuWidth = 264;
   _panelView.delegate = nil;
 }
 
+- (void)loadView {
+  CGRect frame = [[UIScreen mainScreen] bounds];
+  self.view = [[UIView alloc] initWithFrame:frame];
+}
+
+- (void)resetEditNodes {
+  _editNodes = std::set<const BookmarkNode*>();
+  _editNodesOrdered = std::vector<const BookmarkNode*>();
+  [self.editIndexPaths removeAllObjects];
+}
+
+- (void)insertEditNode:(const BookmarkNode*)node
+           atIndexPath:(NSIndexPath*)indexPath {
+  if (_editNodes.find(node) != _editNodes.end())
+    return;
+  _editNodes.insert(node);
+  _editNodesOrdered.push_back(node);
+  if (indexPath) {
+    [self.editIndexPaths addObject:indexPath];
+  } else {
+    // We insert null if we don't have the cell to keep the index valid.
+    [self.editIndexPaths addObject:[NSNull null]];
+  }
+}
+
+- (void)removeEditNode:(const BookmarkNode*)node
+           atIndexPath:(NSIndexPath*)indexPath {
+  if (_editNodes.find(node) == _editNodes.end())
+    return;
+
+  _editNodes.erase(node);
+  std::vector<const BookmarkNode*>::iterator it =
+      std::find(_editNodesOrdered.begin(), _editNodesOrdered.end(), node);
+  DCHECK(it != _editNodesOrdered.end());
+  _editNodesOrdered.erase(it);
+  if (indexPath) {
+    [self.editIndexPaths removeObject:indexPath];
+  } else {
+    // If we don't have the cell, we remove it by using its index.
+    const NSUInteger index = std::distance(_editNodesOrdered.begin(), it);
+    if (index < self.editIndexPaths.count) {
+      [self.editIndexPaths removeObjectAtIndex:index];
+    }
+  }
+}
+
 - (void)removeEditNode:(const BookmarkNode*)node
                   cell:(UICollectionViewCell*)cell {
-  [super removeEditNode:node atIndexPath:[self indexPathForCell:cell]];
+  [self removeEditNode:node atIndexPath:[self indexPathForCell:cell]];
+
   if (_editNodes.size() == 0)
     [self setEditing:NO animated:YES];
   else
@@ -458,7 +531,15 @@ const CGFloat kBookmarkMenuWidth = 264;
 }
 
 - (void)setEditing:(BOOL)editing animated:(BOOL)animated {
-  [super setEditing:editing animated:animated];
+  if (_editing == editing)
+    return;
+
+  _editing = editing;
+
+  // Only reset the editing state when leaving edit mode. This allows subclasses
+  // to add nodes for editing before entering edit mode.
+  if (!editing)
+    [self resetEditNodes];
 
   [self updateEditingStateAnimated:animated];
   if ([[self primaryMenuItem] supportsEditing])
@@ -961,8 +1042,6 @@ const CGFloat kBookmarkMenuWidth = 264;
   }
 }
 
-#pragma mark - BookmarkHomeViewController
-
 - (void)dismissModals:(BOOL)animated {
   [self.actionSheetCoordinator stop];
   self.actionSheetCoordinator = nil;
@@ -1102,8 +1181,8 @@ const CGFloat kBookmarkMenuWidth = 264;
         [[self primaryView] contentPositionInPortraitOrientation],
         [self primaryMenuItem]);
   }
-  [self.delegate bookmarkHomeViewControllerWantsDismissal:self
-                                          navigationToUrl:url];
+  [self.delegate bookmarkHomeHandsetViewControllerWantsDismissal:self
+                                                 navigationToUrl:url];
 }
 
 #pragma mark - BookmarkPromoControllerDelegate
@@ -1118,6 +1197,36 @@ const CGFloat kBookmarkMenuWidth = 264;
   NSIndexPath* indexPath =
       [[self primaryView].collectionView indexPathForCell:cell];
   return indexPath;
+}
+
++ (const BookmarkNode*)
+defaultMoveFolderFromBookmarks:(const std::set<const BookmarkNode*>&)bookmarks
+                         model:(bookmarks::BookmarkModel*)model {
+  if (bookmarks.size() == 0)
+    return model->mobile_node();
+  const BookmarkNode* firstParent = (*(bookmarks.begin()))->parent();
+  for (const BookmarkNode* node : bookmarks) {
+    if (node->parent() != firstParent)
+      return model->mobile_node();
+  }
+
+  return firstParent;
+}
+
+@end
+
+@implementation BookmarkHomeHandsetViewController (ExposedForTesting)
+
+- (void)ensureAllViewExists {
+  // Do nothing.
+}
+
+- (const std::set<const BookmarkNode*>&)editNodes {
+  return _editNodes;
+}
+
+- (void)setEditNodes:(const std::set<const BookmarkNode*>&)editNodes {
+  _editNodes = editNodes;
 }
 
 @end

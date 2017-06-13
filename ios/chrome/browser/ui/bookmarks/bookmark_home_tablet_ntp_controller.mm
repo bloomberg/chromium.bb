@@ -99,7 +99,7 @@ const CGFloat kNavigationBarTopMargin = 8.0;
 
 @property(nonatomic, strong) BookmarkPanelView* panelView;
 
-#pragma mark - Properties and methods akin to BookmarkHomeViewController
+#pragma mark - Properties and methods akin to BookmarkHomeHandsetViewController
 
 // Whether the view controller is in editing mode.
 @property(nonatomic, assign) BOOL editing;
