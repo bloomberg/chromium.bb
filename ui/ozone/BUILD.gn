@@ -223,6 +223,7 @@ test("ozone_unittests") {
   deps = [
     "//base/test:test_support",
     "//testing/gtest",
+    "//ui/gfx:test_support",
     "//ui/gfx/geometry",
   ]
 

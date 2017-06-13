@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "ui/display/types/display_mode.h"
 #include "ui/ozone/common/gpu/ozone_gpu_message_params.h"
+#include "ui/ozone/platform/drm/common/display_types.h"
 #include "ui/ozone/platform/drm/common/scoped_drm_types.h"
 
 typedef struct _drmModeModeInfo drmModeModeInfo;
@@ -68,6 +69,9 @@ DisplaySnapshot_Params CreateDisplaySnapshotParams(
     size_t device_index,
     const gfx::Point& origin);
 
+std::vector<DisplaySnapshot_Params> CreateParamsFromSnapshot(
+    const MovableDisplaySnapshots& displays);
+
 int GetFourCCFormatFromBufferFormat(gfx::BufferFormat format);
 gfx::BufferFormat GetBufferFormatFromFourCCFormat(int format);
 
@@ -88,6 +92,9 @@ const gfx::Size ModeSize(const drmModeModeInfo& mode);
 float ModeRefreshRate(const drmModeModeInfo& mode);
 
 bool ModeIsInterlaced(const drmModeModeInfo& mode);
+
+MovableDisplaySnapshots CreateMovableDisplaySnapshotsFromParams(
+    const std::vector<DisplaySnapshot_Params>& displays);
 
 }  // namespace ui
 

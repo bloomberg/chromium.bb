@@ -8,6 +8,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "ui/display/types/display_snapshot_mojo.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/cursor_proxy_mojo.h"
 #include "ui/ozone/platform/drm/gpu/drm_thread.h"
@@ -405,9 +406,10 @@ void MusThreadProxy::GpuConfigureNativeDisplayCallback(int64_t display_id,
 }
 
 void MusThreadProxy::GpuRefreshNativeDisplaysCallback(
-    const std::vector<DisplaySnapshot_Params>& displays) const {
+    std::vector<std::unique_ptr<display::DisplaySnapshotMojo>> displays) const {
   DCHECK(on_window_server_thread_.CalledOnValidThread());
-  display_manager_->GpuHasUpdatedNativeDisplays(displays);
+  display_manager_->GpuHasUpdatedNativeDisplays(
+      CreateParamsFromSnapshot(displays));
 }
 
 void MusThreadProxy::GpuDisableNativeDisplayCallback(int64_t display_id,

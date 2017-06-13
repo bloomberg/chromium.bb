@@ -13,6 +13,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/display/types/display_mode.h"
+#include "ui/display/types/display_snapshot_mojo.h"
+#include "ui/ozone/common/display_snapshot_proxy.h"
 #include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_buffer.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_generator.h"
@@ -229,9 +231,10 @@ void DrmThread::CheckOverlayCapabilities(
 }
 
 void DrmThread::RefreshNativeDisplays(
-    base::OnceCallback<void(const std::vector<DisplaySnapshot_Params>&)>
-        callback) {
-  std::move(callback).Run(display_manager_->GetDisplays());
+    base::OnceCallback<void(MovableDisplaySnapshots)> callback) {
+  auto snapshots =
+      CreateMovableDisplaySnapshotsFromParams(display_manager_->GetDisplays());
+  std::move(callback).Run(std::move(snapshots));
 }
 
 void DrmThread::ConfigureNativeDisplay(

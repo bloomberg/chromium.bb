@@ -15,7 +15,10 @@
 
 #include "base/containers/flat_map.h"
 #include "base/memory/ptr_util.h"
+#include "ui/display/types/display_mode.h"
+#include "ui/display/types/display_snapshot_mojo.h"
 #include "ui/display/util/edid_parser.h"
+#include "ui/ozone/common/display_snapshot_proxy.h"
 
 namespace ui {
 
@@ -317,7 +320,6 @@ DisplayMode_Params CreateDisplayModeParams(const drmModeModeInfo& mode) {
   params.size = gfx::Size(mode.hdisplay, mode.vdisplay);
   params.is_interlaced = mode.flags & DRM_MODE_FLAG_INTERLACE;
   params.refresh_rate = GetRefreshRate(mode);
-
   return params;
 }
 
@@ -382,6 +384,49 @@ DisplaySnapshot_Params CreateDisplaySnapshotParams(
     params.native_mode = params.modes.front();
   }
 
+  return params;
+}
+
+// TODO(rjkroege): Remove in a subsequent CL once Mojo IPC is used everywhere.
+std::vector<DisplaySnapshot_Params> CreateParamsFromSnapshot(
+    const MovableDisplaySnapshots& displays) {
+  std::vector<DisplaySnapshot_Params> params;
+  for (auto& d : displays) {
+    DisplaySnapshot_Params p;
+
+    p.display_id = d->display_id();
+    p.origin = d->origin();
+    p.physical_size = d->physical_size();
+    p.type = d->type();
+    p.is_aspect_preserving_scaling = d->is_aspect_preserving_scaling();
+    p.has_overscan = d->has_overscan();
+    p.has_color_correction_matrix = d->has_color_correction_matrix();
+    p.display_name = d->display_name();
+    p.sys_path = d->sys_path();
+
+    std::vector<DisplayMode_Params> mode_params;
+    for (const auto& m : d->modes()) {
+      mode_params.push_back(GetDisplayModeParams(*m));
+    }
+    p.modes = mode_params;
+    p.edid = d->edid();
+
+    if (d->current_mode()) {
+      p.has_current_mode = true;
+      p.current_mode = GetDisplayModeParams(*d->current_mode());
+    }
+
+    if (d->native_mode()) {
+      p.has_native_mode = true;
+      p.native_mode = GetDisplayModeParams(*d->native_mode());
+    }
+
+    p.product_id = d->product_id();
+    p.string_representation = d->ToString();
+    p.maximum_cursor_size = d->maximum_cursor_size();
+
+    params.push_back(p);
+  }
   return params;
 }
 
@@ -465,4 +510,13 @@ int GetFourCCFormatForOpaqueFramebuffer(gfx::BufferFormat format) {
       return 0;
   }
 }
+
+MovableDisplaySnapshots CreateMovableDisplaySnapshotsFromParams(
+    const std::vector<DisplaySnapshot_Params>& displays) {
+  MovableDisplaySnapshots snapshots;
+  for (const auto& d : displays)
+    snapshots.push_back(base::MakeUnique<DisplaySnapshotProxy>(d));
+  return snapshots;
+}
+
 }  // namespace ui
