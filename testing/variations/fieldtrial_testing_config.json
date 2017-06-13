@@ -2042,7 +2042,7 @@
             ],
             "experiments": [
                 {
-                    "name": "SBEROnlyNoIncognito",
+                    "name": "SBEROnlyNoIncognito2",
                     "params": {
                         "extended_reporting": "true",
                         "history_sync": "false",
@@ -2065,11 +2065,10 @@
             ],
             "experiments": [
                 {
-                    "name": "SBEROnlyNoIncognito",
+                    "name": "AllPopulation",
                     "params": {
-                        "extended_reporting": "true",
-                        "history_sync": "false",
-                        "incognito": "false"
+                        "all_population": "true",
+                        "incognito": "true"
                     },
                     "enable_features": [
                         "ProtectedPasswordEntryPinging"
