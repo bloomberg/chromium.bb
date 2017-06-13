@@ -427,8 +427,11 @@ void TranslateManager::NotifyTranslateError(TranslateErrors::Type error_type) {
 void TranslateManager::PageTranslated(const std::string& source_lang,
                                       const std::string& target_lang,
                                       TranslateErrors::Type error_type) {
-  language_state_.SetCurrentLanguage(target_lang);
+  if (error_type == TranslateErrors::NONE)
+    language_state_.SetCurrentLanguage(target_lang);
+
   language_state_.set_translation_pending(false);
+  language_state_.set_translation_error(error_type != TranslateErrors::NONE);
 
   if ((error_type == TranslateErrors::NONE) &&
       source_lang != translate::kUnknownLanguageCode &&

@@ -59,6 +59,10 @@ class LanguageState {
   bool translation_pending() const { return translation_pending_; }
   void set_translation_pending(bool value) { translation_pending_ = value; }
 
+  // Whether an error occured during translation.
+  bool translation_error() const { return translation_error_; }
+  void set_translation_error(bool value) { translation_error_ = value; }
+
   // Whether the user has already declined to translate the page.
   bool translation_declined() const { return translation_declined_; }
   void set_translation_declined(bool value) { translation_declined_ = value; }
@@ -108,6 +112,9 @@ class LanguageState {
   // TODO(jcampan): make the client send the language just once per navigation
   //                then we can get rid of that state.
   bool translation_pending_;
+
+  // Whether an error occured during translation.
+  bool translation_error_;
 
   // Whether the user has declined to translate the page (by closing the infobar
   // for example).  This is necessary as a new infobar could be shown if a new

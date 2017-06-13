@@ -14,6 +14,7 @@ LanguageState::LanguageState(TranslateDriver* driver)
       translate_driver_(driver),
       page_needs_translation_(false),
       translation_pending_(false),
+      translation_error_(false),
       translation_declined_(false),
       in_page_navigation_(false),
       translate_enabled_(false) {
@@ -45,6 +46,7 @@ void LanguageState::DidNavigate(bool in_page_navigation,
   SetIsPageTranslated(false);
 
   translation_pending_ = false;
+  translation_error_ = false;
   translation_declined_ = false;
 
   SetTranslateEnabled(false);

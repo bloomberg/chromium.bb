@@ -862,6 +862,8 @@ void Translate(Browser* browser) {
   if (chrome_translate_client) {
     if (chrome_translate_client->GetLanguageState().translation_pending())
       step = translate::TRANSLATE_STEP_TRANSLATING;
+    else if (chrome_translate_client->GetLanguageState().translation_error())
+      step = translate::TRANSLATE_STEP_TRANSLATE_ERROR;
     else if (chrome_translate_client->GetLanguageState().IsPageTranslated())
       step = translate::TRANSLATE_STEP_AFTER_TRANSLATE;
   }
