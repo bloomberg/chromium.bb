@@ -36,11 +36,12 @@ function test()
     InspectorTest.runHeapSnapshotTestSuite([
         function testStatistics(next)
         {
-            InspectorTest.addSniffer(Profiler.HeapSnapshotView.prototype, "_gotStatistics", step1, true);
-            InspectorTest.takeAndOpenSnapshot(createHeapSnapshot, function() {});
+            InspectorTest.addSniffer(Profiler.HeapSnapshotView.prototype, "_retrieveStatistics", step1);
+            InspectorTest.takeAndOpenSnapshot(createHeapSnapshot, () => {});
 
-            function step1(statistics)
+            async function step1(arg, result)
             {
+                var statistics = await result;
                 InspectorTest.addResult(JSON.stringify(statistics));
                 setTimeout(next, 0);
             }
