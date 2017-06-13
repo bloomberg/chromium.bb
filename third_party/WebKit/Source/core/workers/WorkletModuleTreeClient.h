@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef WorkletModuleTreeClient_h
+#define WorkletModuleTreeClient_h
+
 #include "core/dom/Modulator.h"
 #include "core/workers/WorkletPendingTasks.h"
 #include "platform/WebTaskRunner.h"
@@ -34,3 +37,5 @@ class WorkletModuleTreeClient final
 };
 
 }  // namespace blink
+
+#endif  // WorkletModuleTreeClient_h
