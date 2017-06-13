@@ -21,8 +21,6 @@
 #include "cc/layers/layer.h"
 #include "cc/layers/solid_color_layer.h"
 #include "cc/output/begin_frame_args.h"
-#include "content/browser/accessibility/browser_accessibility_manager_android.h"
-#include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/android/gesture_event_type.h"
 #include "content/browser/android/interstitial_page_delegate_android.h"
 #include "content/browser/android/java/gin_java_bridge_dispatcher_host.h"
@@ -215,8 +213,7 @@ ContentViewCoreImpl::ContentViewCoreImpl(
       web_contents_(static_cast<WebContentsImpl*>(web_contents)),
       page_scale_(1),
       dpi_scale_(dpi_scale),
-      device_orientation_(0),
-      accessibility_enabled_(false) {
+      device_orientation_(0) {
   GetViewAndroid()->SetLayer(cc::Layer::Create());
 
   // Currently, the only use case we have for overriding a user agent involves
@@ -360,7 +357,6 @@ void ContentViewCoreImpl::RenderViewHostChanged(RenderViewHost* old_host,
   }
 
   SetFocusInternal(HasFocus());
-  SetAccessibilityEnabledInternal(accessibility_enabled_);
 }
 
 RenderWidgetHostViewAndroid*
@@ -1049,13 +1045,6 @@ void ContentViewCoreImpl::WasResized(JNIEnv* env,
   SendScreenRectsAndResizeWidget();
 }
 
-void ContentViewCoreImpl::SetAccessibilityEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    bool enabled) {
-  SetAccessibilityEnabledInternal(enabled);
-}
-
 void ContentViewCoreImpl::SetTextTrackSettings(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,
@@ -1092,39 +1081,6 @@ bool ContentViewCoreImpl::IsFullscreenRequiredForOrientationLock() const {
   if (obj.is_null())
     return true;
   return Java_ContentViewCore_isFullscreenRequiredForOrientationLock(env, obj);
-}
-
-void ContentViewCoreImpl::SetAccessibilityEnabledInternal(bool enabled) {
-  accessibility_enabled_ = enabled;
-  BrowserAccessibilityStateImpl* accessibility_state =
-      BrowserAccessibilityStateImpl::GetInstance();
-  if (enabled) {
-    // First check if we already have a BrowserAccessibilityManager that
-    // just needs to be connected to the ContentViewCore.
-    if (web_contents_) {
-      BrowserAccessibilityManagerAndroid* manager =
-          static_cast<BrowserAccessibilityManagerAndroid*>(
-              web_contents_->GetRootBrowserAccessibilityManager());
-      if (manager) {
-        manager->SetContentViewCore(GetJavaObject());
-        return;
-      }
-    }
-
-    // Otherwise, enable accessibility globally unless it was
-    // explicitly disallowed by a command-line flag, then enable it for
-    // this WebContents if that succeeded.
-    accessibility_state->OnScreenReaderDetected();
-    if (accessibility_state->IsAccessibleBrowser() && web_contents_) {
-      web_contents_->AddAccessibilityMode(kAccessibilityModeComplete);
-    }
-  } else {
-    accessibility_state->ResetAccessibilityMode();
-    if (web_contents_) {
-      web_contents_->SetAccessibilityMode(
-          accessibility_state->accessibility_mode());
-    }
-  }
 }
 
 void ContentViewCoreImpl::SendOrientationChangeEventInternal() {

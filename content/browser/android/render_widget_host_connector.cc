@@ -19,6 +19,7 @@ class RenderWidgetHostConnector::Observer
   ~Observer() override;
 
   // WebContentsObserver implementation.
+  void RenderViewCreated(RenderViewHost* render_view_host) override;
   void RenderViewHostChanged(RenderViewHost* old_host,
                              RenderViewHost* new_host) override;
   void DidAttachInterstitialPage() override;
@@ -52,6 +53,11 @@ RenderWidgetHostConnector::Observer::Observer(
 
 RenderWidgetHostConnector::Observer::~Observer() {
   DCHECK(!active_rwhva_);
+}
+
+void RenderWidgetHostConnector::Observer::RenderViewCreated(
+    RenderViewHost* render_view_host) {
+  UpdateRenderWidgetHostView(GetRenderWidgetHostViewAndroid());
 }
 
 void RenderWidgetHostConnector::Observer::RenderViewHostChanged(

@@ -36,6 +36,7 @@
 #include "cc/trees/layer_tree_host.h"
 #include "components/viz/display_compositor/gl_helper.h"
 #include "content/browser/accessibility/browser_accessibility_manager_android.h"
+#include "content/browser/accessibility/web_contents_accessibility_android.h"
 #include "content/browser/android/composited_touch_handle_drawable.h"
 #include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/android/ime_adapter_android.h"
@@ -1410,6 +1411,12 @@ void RenderWidgetHostViewAndroid::SynchronousCopyContents(
   callback.Run(bitmap, READBACK_SUCCESS);
 }
 
+WebContentsAccessibilityAndroid*
+RenderWidgetHostViewAndroid::GetWebContentsAccessibilityAndroid() const {
+  return static_cast<WebContentsAccessibilityAndroid*>(
+      web_contents_accessibility_);
+}
+
 void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
     const cc::CompositorFrameMetadata& frame_metadata,
     bool is_transparent) {
@@ -1424,6 +1431,10 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
   if (ime_adapter_android_)
     ime_adapter_android_->UpdateFrameInfo(frame_metadata.selection.start,
                                           dip_scale, top_shown_pix);
+
+  auto* wcax = GetWebContentsAccessibilityAndroid();
+  if (wcax)
+    wcax->UpdateFrameInfo();
 
   if (!content_view_core_)
     return;
@@ -1747,12 +1758,9 @@ void RenderWidgetHostViewAndroid::OnSetNeedsFlushInput() {
 BrowserAccessibilityManager*
     RenderWidgetHostViewAndroid::CreateBrowserAccessibilityManager(
         BrowserAccessibilityDelegate* delegate, bool for_root_frame) {
-  base::android::ScopedJavaLocalRef<jobject> content_view_core_obj;
-  if (for_root_frame && host_ && content_view_core_)
-    content_view_core_obj = content_view_core_->GetJavaObject();
   return new BrowserAccessibilityManagerAndroid(
-      content_view_core_obj,
       BrowserAccessibilityManagerAndroid::GetEmptyDocument(),
+      for_root_frame && host_ ? GetWebContentsAccessibilityAndroid() : nullptr,
       delegate);
 }
 
@@ -1983,16 +1991,6 @@ void RenderWidgetHostViewAndroid::SetContentViewCore(
       parent_view->GetLayer()->AddChild(view_.GetLayer());
     }
     content_view_core_ = content_view_core;
-  }
-
-  BrowserAccessibilityManager* manager = NULL;
-  if (host_)
-    manager = host_->GetRootBrowserAccessibilityManager();
-  if (manager) {
-    base::android::ScopedJavaLocalRef<jobject> obj;
-    if (content_view_core_)
-      obj = content_view_core_->GetJavaObject();
-    manager->ToBrowserAccessibilityManagerAndroid()->SetContentViewCore(obj);
   }
 
   if (!content_view_core_) {

@@ -22,7 +22,6 @@
 #include "cc/output/begin_frame_args.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "components/viz/frame_sinks/frame_evictor.h"
-#include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/android/content_view_core_impl_observer.h"
 #include "content/browser/renderer_host/input/mouse_wheel_phase_handler.h"
 #include "content/browser/renderer_host/input/stylus_text_selector.h"
@@ -57,6 +56,7 @@ class RenderWidgetHostImpl;
 class SelectionPopupController;
 class SynchronousCompositorHost;
 class SynchronousCompositorClient;
+class WebContentsAccessibilityAndroid;
 struct NativeWebKeyboardEvent;
 
 // -----------------------------------------------------------------------------
@@ -346,6 +346,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void ComputeEventLatencyOSTouchHistograms(const ui::MotionEvent& event);
 
   void CreateOverscrollControllerIfPossible();
+
+  WebContentsAccessibilityAndroid* GetWebContentsAccessibilityAndroid() const;
 
   // The model object.
   RenderWidgetHostImpl* host_;
