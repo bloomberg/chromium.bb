@@ -1906,10 +1906,14 @@ CSSValue* ComputedStyleCSSValueMapping::ValueForFont(
   // this serialization.
   CSSValue* ligatures_value = ValueForFontVariantLigatures(style);
   CSSValue* numeric_value = ValueForFontVariantNumeric(style);
-  if (!DataEquivalent<CSSValue>(ligatures_value,
-                                CSSIdentifierValue::Create(CSSValueNormal)) ||
-      !DataEquivalent<CSSValue>(numeric_value,
-                                CSSIdentifierValue::Create(CSSValueNormal)))
+  // FIXME: Use DataEquivalent<CSSValue>(...) once http://crbug.com/729447 is
+  // resolved.
+  if (!DataEquivalent(
+          ligatures_value,
+          static_cast<CSSValue*>(CSSIdentifierValue::Create(CSSValueNormal))) ||
+      !DataEquivalent(
+          numeric_value,
+          static_cast<CSSValue*>(CSSIdentifierValue::Create(CSSValueNormal))))
     return nullptr;
 
   CSSIdentifierValue* caps_value = ValueForFontVariantCaps(style);
