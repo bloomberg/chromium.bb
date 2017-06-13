@@ -43,8 +43,9 @@ public class ShareUrlTest {
         mUiThreadTestRule.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Intent intent =
-                        ShareHelper.getShareIntent(new Activity(), "", "", sharedUrl, null, null);
+                ShareParams params =
+                        new ShareParams.Builder(new Activity(), "", sharedUrl).setText("").build();
+                Intent intent = ShareHelper.getShareLinkIntent(params);
                 Assert.assertTrue(intent.hasExtra(Intent.EXTRA_TEXT));
                 String url = intent.getStringExtra(Intent.EXTRA_TEXT);
                 Assert.assertEquals(originalUrl, url);

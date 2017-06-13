@@ -291,7 +291,6 @@ public class WebShareTest {
         });
 
         ShareHelper.setForceCustomChooserForTesting(true);
-
         mActivityTestRule.loadUrl(mUrl);
         // Click (instead of directly calling the JavaScript function) to simulate a user gesture.
         TouchCommon.singleClickView(mTab.getView());
