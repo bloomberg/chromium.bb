@@ -791,10 +791,10 @@ bool GpuCommandBufferStub::Initialize(
     // is in an indeterminate state, since the GLStateRestorer was not
     // initialized at the time the GLContextVirtual was made current. In
     // the case that this command decoder is the next one to be
-    // processed, force a "full" MakeCurrent to be performed. Note that
-    // GpuChannel's initialization of the gpu::Capabilities expects the
-    // context to be left current.
-    context->ReleaseCurrent(surface_.get());
+    // processed, force a "full virtual" MakeCurrent to be performed.
+    // Note that GpuChannel's initialization of the gpu::Capabilities
+    // expects the context to be left current.
+    context->ForceReleaseVirtuallyCurrent();
     if (!context->MakeCurrent(surface_.get())) {
       LOG(ERROR) << "Failed to make context current after initialization.";
       return false;
