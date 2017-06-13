@@ -93928,6 +93928,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="Time spent in tasks of a particular type when the renderer is in
              the foreground. Please note that individual tabs in this
              renderer can be backgrounded."/>
+  <suffix name="Background.FirstMinute"
+      label="Time spent in tasks of a particular type during the first minute
+             after backgrounding the renderer. A large amount of loading
+             tasks are expected during this period."/>
+  <suffix name="Background.AfterFirstMinute"
+      label="Time spent in tasks of a particular type starting from the first
+             minute after backgrounding the renderer. The renderer is
+             expected to be mostly idle during this period."/>
   <affected-histogram name="RendererScheduler.TaskDurationPerQueueType2"/>
 </histogram_suffixes>
 
