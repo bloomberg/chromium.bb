@@ -44,6 +44,8 @@ void WelcomeHandler::OnSyncConfirmationUIClosed(
 
 // Handles backend events necessary when user clicks "Sign in."
 void WelcomeHandler::HandleActivateSignIn(const base::ListValue* args) {
+  result_ = WelcomeResult::ATTEMPTED;
+
   if (SigninManagerFactory::GetForProfile(profile_)->IsAuthenticated()) {
     // In general, this page isn't shown to signed-in users; however, if one
     // should arrive here, then opening the sign-in dialog will likely lead
@@ -60,7 +62,11 @@ void WelcomeHandler::HandleActivateSignIn(const base::ListValue* args) {
 
 // Handles backend events necessary when user clicks "No thanks."
 void WelcomeHandler::HandleUserDecline(const base::ListValue* args) {
-  result_ = WelcomeResult::DECLINED;
+  // Set the appropriate decline result, based on whether or not the user
+  // attempted to sign in.
+  result_ = (result_ == WelcomeResult::ATTEMPTED)
+                ? WelcomeResult::ATTEMPTED_DECLINED
+                : result_ = WelcomeResult::DECLINED;
   GoToNewTabPage();
 }
 

@@ -38024,8 +38024,10 @@ from previous Chrome versions.
 
 <enum name="WelcomeSignInPromptOutcome" type="int">
   <int value="0" label="User navigated away from page"/>
-  <int value="1" label="User declined prompt"/>
-  <int value="2" label="User completed sign in flow"/>
+  <int value="1" label="User clicked the No Thanks button"/>
+  <int value="2" label="User completed sign-in flow"/>
+  <int value="3" label="User attempted sign-in flow, then navigated away"/>
+  <int value="4" label="User attempted sign-in flow, then clicked No Thanks"/>
 </enum>
 
 <enum name="WhitelistedDownloadType" type="int">

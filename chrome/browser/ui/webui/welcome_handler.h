@@ -28,9 +28,16 @@ class WelcomeHandler : public content::WebUIMessageHandler,
 
  private:
   enum WelcomeResult {
-    DEFAULT = 0,    // User navigated away from the page.
-    DECLINED = 1,   // User clicked the "No Thanks" button.
-    SIGNED_IN = 2,  // User clicked the "Sign In" button and completed sign-in.
+    // User navigated away from page.
+    DEFAULT = 0,
+    // User clicked the "No Thanks" button.
+    DECLINED = 1,
+    // User completed sign-in flow.
+    SIGNED_IN = 2,
+    // User attempted sign-in flow, then navigated away.
+    ATTEMPTED = 3,
+    // User attempted sign-in flow, then clicked "No Thanks."
+    ATTEMPTED_DECLINED = 4,
 
     // New results must be added before this line, and should correspond to
     // values in tools/metrics/histograms/histograms.xml.
