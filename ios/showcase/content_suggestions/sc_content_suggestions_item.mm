@@ -42,6 +42,13 @@
   [cell setAdditionalInformationWithPublisherName:self.publisher
                                              date:self.publicationDate
                               offlineAvailability:self.availableOffline];
+  cell.isAccessibilityElement = YES;
+  cell.accessibilityLabel = self.title;
+  cell.accessibilityIdentifier = self.title;
+}
+
+- (NSString*)description {
+  return self.title;
 }
 
 @end

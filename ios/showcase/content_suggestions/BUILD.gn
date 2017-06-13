@@ -35,11 +35,13 @@ source_set("eg_tests") {
     "sc_content_suggestions_egtest.mm",
   ]
   deps = [
+    ":content_suggestions",
     "//components/strings",
     "//ios/chrome/app/strings",
     "//ios/chrome/test/earl_grey:test_support",
     "//ios/showcase/test",
     "//ios/third_party/earl_grey",
+    "//ui/base",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }
