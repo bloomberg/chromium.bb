@@ -166,7 +166,6 @@ def BuildBootfs(output_directory, runtime_deps_path, test_name, gtest_filter,
                '--target=boot', os.path.join(SDK_ROOT, 'bootdata.bin'),
                '--target=system', manifest_file.name,
               ])
-  print 'Wrote bootfs to', bootfs_name
   return bootfs_name
 
 
@@ -196,17 +195,36 @@ def main():
 
   qemu_path = os.path.join(SDK_ROOT, 'qemu', 'bin', 'qemu-system-x86_64')
 
-  if int(os.environ.get('CHROME_HEADLESS', 0)) == 0:
-    args_for_kvm_and_cpu = ['-enable-kvm', '-cpu', 'host,migratable=no']
-  else:
-    args_for_kvm_and_cpu = ['-cpu', 'Haswell,+smap,-check']
-  RunAndCheck(args.dry_run,
-      [qemu_path, '-m', '2048', '-nographic', '-net', 'none', '-smp', '4',
+  qemu_command = [qemu_path,
+       '-m', '2048',
+       '-nographic',
+       '-net', 'none',
+       '-smp', '4',
        '-machine', 'q35',
        '-kernel', os.path.join(SDK_ROOT, 'kernel', 'magenta.bin'),
        '-initrd', bootfs,
-       '-append', 'TERM=xterm-256color kernel.halt_on_panic=true'] +
-       args_for_kvm_and_cpu)
+       '-append', 'TERM=xterm-256color kernel.halt_on_panic=true']
+  if int(os.environ.get('CHROME_HEADLESS', 0)) == 0:
+    qemu_command += ['-enable-kvm', '-cpu', 'host,migratable=no']
+  else:
+    qemu_command += ['-cpu', 'Haswell,+smap,-check']
+
+  if args.dry_run:
+    print 'Run:', qemu_command
+  else:
+    qemu_popen = subprocess.Popen(qemu_command, stdout=subprocess.PIPE)
+    success = False
+    # TODO(scottmg): Pipe through magenta/scripts/symbolize too, once that's
+    # available in the SDK.
+    while True:
+      line = qemu_popen.stdout.readline()
+      if not line:
+        break
+      if 'SUCCESS: all tests passed.' in line:
+        success = True
+      print line,
+    qemu_popen.wait()
+    return 0 if success else 1
 
   return 0
 
