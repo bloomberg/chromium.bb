@@ -1085,8 +1085,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   HostContentSettingsMap* settings_map =
       HostContentSettingsMapFactory::GetForProfile(browser()->profile());
   settings_map->SetContentSettingDefaultScope(
-      url, url, ContentSettingsType::CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER,
-      std::string(), CONTENT_SETTING_ALLOW);
+      url, url, ContentSettingsType::CONTENT_SETTINGS_TYPE_ADS, std::string(),
+      CONTENT_SETTING_ALLOW);
 
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_TRUE(WasParsedScriptElementLoaded(web_contents()->GetMainFrame()));
@@ -1110,8 +1110,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   HostContentSettingsMap* settings_map =
       HostContentSettingsMapFactory::GetForProfile(browser()->profile());
   settings_map->SetContentSettingDefaultScope(
-      url, url, ContentSettingsType::CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER,
-      std::string(), CONTENT_SETTING_BLOCK);
+      url, url, ContentSettingsType::CONTENT_SETTINGS_TYPE_ADS, std::string(),
+      CONTENT_SETTING_BLOCK);
 
   // Setting the site to "allow" should not activate filtering.
   ui_test_utils::NavigateToURL(browser(), url);

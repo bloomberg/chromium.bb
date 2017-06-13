@@ -169,6 +169,9 @@ public class WebsitePermissionsFetcher {
             if (address == null) continue;
             Website site = findOrCreateSite(address, null);
             switch (contentSettingsType) {
+                case ContentSettingsType.CONTENT_SETTINGS_TYPE_ADS:
+                    site.setAdsException(exception);
+                    break;
                 case ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOPLAY:
                     site.setAutoplayException(exception);
                     break;
@@ -183,9 +186,6 @@ public class WebsitePermissionsFetcher {
                     break;
                 case ContentSettingsType.CONTENT_SETTINGS_TYPE_POPUPS:
                     site.setPopupException(exception);
-                    break;
-                case ContentSettingsType.CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER:
-                    site.setAdsException(exception);
                     break;
                 default:
                     assert false : "Unexpected content setting type received: "
@@ -264,7 +264,7 @@ public class WebsitePermissionsFetcher {
     private class AdsExceptionInfoFetcher extends Task {
         @Override
         public void run() {
-            setException(ContentSettingsType.CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER);
+            setException(ContentSettingsType.CONTENT_SETTINGS_TYPE_ADS);
         }
     }
 

@@ -274,7 +274,7 @@ void ContentSettingsRegistry::Init() {
                WebsiteSettingsRegistry::PLATFORM_ANDROID,
            ContentSettingsInfo::INHERIT_IF_LESS_PERMISSIVE);
 
-  Register(CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER, "subresource-filter",
+  Register(CONTENT_SETTINGS_TYPE_ADS, "subresource-filter",
            CONTENT_SETTING_BLOCK, WebsiteSettingsInfo::UNSYNCABLE,
            WhitelistedSchemes(),
            ValidSettings(CONTENT_SETTING_ALLOW, CONTENT_SETTING_BLOCK),

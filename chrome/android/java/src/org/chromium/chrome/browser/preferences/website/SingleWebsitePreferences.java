@@ -588,7 +588,7 @@ public class SingleWebsitePreferences extends PreferenceFragment
     private int getContentSettingsTypeFromPreferenceKey(String preferenceKey) {
         switch (preferenceKey) {
             case PREF_ADS_PERMISSION:
-                return ContentSettingsType.CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER;
+                return ContentSettingsType.CONTENT_SETTINGS_TYPE_ADS;
             case PREF_AUTOPLAY_PERMISSION:
                 return ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOPLAY;
             case PREF_BACKGROUND_SYNC_PERMISSION:

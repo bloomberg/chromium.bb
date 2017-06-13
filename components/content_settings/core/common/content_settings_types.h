@@ -48,11 +48,11 @@ enum ContentSettingsType {
   CONTENT_SETTINGS_TYPE_PROMPT_NO_DECISION_COUNT,
   CONTENT_SETTINGS_TYPE_IMPORTANT_SITE_INFO,
   CONTENT_SETTINGS_TYPE_PERMISSION_AUTOBLOCKER_DATA,
-  CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER,
+  CONTENT_SETTINGS_TYPE_ADS,
 
   // Website setting which stores metadata for the subresource filter to aid in
   // decisions for whether or not to show the UI.
-  CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER_DATA,
+  CONTENT_SETTINGS_TYPE_ADS_DATA,
 
   // This is special-cased in the permissions layer to always allow, and as
   // such doesn't have associated prefs data.

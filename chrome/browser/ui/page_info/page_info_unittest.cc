@@ -776,7 +776,7 @@ TEST_F(PageInfoTest, SubresourceFilterSetting_MatchesActivation) {
       subresource_filter::kSafeBrowsingSubresourceFilterExperimentalUI);
   auto showing_setting = [](const PermissionInfoList& permissions) {
     for (const auto& permission : permissions) {
-      if (permission.type == CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER)
+      if (permission.type == CONTENT_SETTINGS_TYPE_ADS)
         return true;
     }
     return false;
@@ -798,8 +798,8 @@ TEST_F(PageInfoTest, SubresourceFilterSetting_MatchesActivation) {
   HostContentSettingsMap* content_settings =
       HostContentSettingsMapFactory::GetForProfile(profile());
   content_settings->SetWebsiteSettingDefaultScope(
-      url(), GURL(), CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER_DATA,
-      std::string(), base::MakeUnique<base::DictionaryValue>());
+      url(), GURL(), CONTENT_SETTINGS_TYPE_ADS_DATA, std::string(),
+      base::MakeUnique<base::DictionaryValue>());
   page_info();
   EXPECT_TRUE(showing_setting(last_permission_info_list()));
 }

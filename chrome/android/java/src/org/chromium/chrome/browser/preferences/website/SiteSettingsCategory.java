@@ -86,7 +86,7 @@ public class SiteSettingsCategory {
         }
         if (CATEGORY_ADS.equals(category) && adsCategoryEnabled()) {
             return new SiteSettingsCategory(
-                    CATEGORY_ADS, "", ContentSettingsType.CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER);
+                    CATEGORY_ADS, "", ContentSettingsType.CONTENT_SETTINGS_TYPE_ADS);
         }
         if (CATEGORY_AUTOPLAY.equals(category)) {
             return new SiteSettingsCategory(CATEGORY_AUTOPLAY, "",
@@ -148,7 +148,7 @@ public class SiteSettingsCategory {
      * fromString().
      */
     public static SiteSettingsCategory fromContentSettingsType(int contentSettingsType) {
-        if (contentSettingsType == ContentSettingsType.CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER) {
+        if (contentSettingsType == ContentSettingsType.CONTENT_SETTINGS_TYPE_ADS) {
             return fromString(CATEGORY_ADS);
         }
         if (contentSettingsType == ContentSettingsType.CONTENT_SETTINGS_TYPE_AUTOPLAY) {
@@ -207,7 +207,7 @@ public class SiteSettingsCategory {
      * Returns whether this category is the Ads category.
      */
     public boolean showAdsSites() {
-        return mContentSettingsType == ContentSettingsType.CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER;
+        return mContentSettingsType == ContentSettingsType.CONTENT_SETTINGS_TYPE_ADS;
     }
 
     /**

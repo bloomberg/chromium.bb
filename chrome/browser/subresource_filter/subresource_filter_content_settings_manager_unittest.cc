@@ -61,8 +61,8 @@ class SubresourceFilterContentSettingsManagerTest : public testing::Test {
   ContentSetting GetContentSettingMatchingUrlWithEmptyPath(const GURL& url) {
     ContentSettingsForOneType host_settings;
     GetSettingsMap()->GetSettingsForOneType(
-        ContentSettingsType::CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER,
-        std::string(), &host_settings);
+        ContentSettingsType::CONTENT_SETTINGS_TYPE_ADS, std::string(),
+        &host_settings);
     GURL url_with_empty_path = url.GetWithEmptyPath();
     for (const auto& it : host_settings) {
       // Need GURL conversion to get rid of unnecessary default ports.
@@ -117,17 +117,17 @@ TEST_F(SubresourceFilterContentSettingsManagerTest, IrrelevantSetting) {
 
 TEST_F(SubresourceFilterContentSettingsManagerTest, DefaultSetting) {
   // Setting to an existing value should not log any metrics.
-  GetSettingsMap()->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER, CONTENT_SETTING_BLOCK);
+  GetSettingsMap()->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_ADS,
+                                             CONTENT_SETTING_BLOCK);
   histogram_tester().ExpectTotalCount(kActionsHistogram, 0);
 
-  GetSettingsMap()->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER, CONTENT_SETTING_ALLOW);
+  GetSettingsMap()->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_ADS,
+                                             CONTENT_SETTING_ALLOW);
   histogram_tester().ExpectBucketCount(kActionsHistogram,
                                        kActionContentSettingsAllowedGlobal, 1);
 
-  GetSettingsMap()->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER, CONTENT_SETTING_BLOCK);
+  GetSettingsMap()->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_ADS,
+                                             CONTENT_SETTING_BLOCK);
   histogram_tester().ExpectTotalCount(kActionsHistogram, 2);
   histogram_tester().ExpectBucketCount(kActionsHistogram,
                                        kActionContentSettingsBlockedGlobal, 1);
@@ -137,13 +137,13 @@ TEST_F(SubresourceFilterContentSettingsManagerTest, UrlSetting) {
   GURL url("https://www.example.test/");
 
   GetSettingsMap()->SetContentSettingDefaultScope(
-      url, url, CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER, std::string(),
+      url, url, CONTENT_SETTINGS_TYPE_ADS, std::string(),
       CONTENT_SETTING_ALLOW);
   histogram_tester().ExpectBucketCount(kActionsHistogram,
                                        kActionContentSettingsAllowed, 1);
 
   GetSettingsMap()->SetContentSettingDefaultScope(
-      url, url, CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER, std::string(),
+      url, url, CONTENT_SETTINGS_TYPE_ADS, std::string(),
       CONTENT_SETTING_BLOCK);
   histogram_tester().ExpectTotalCount(kActionsHistogram, 2);
   histogram_tester().ExpectBucketCount(kActionsHistogram,
@@ -156,16 +156,14 @@ TEST_F(SubresourceFilterContentSettingsManagerTest, WildcardUpdate) {
   ContentSettingsPattern secondary_pattern = ContentSettingsPattern::Wildcard();
 
   GetSettingsMap()->SetContentSettingCustomScope(
-      primary_pattern, secondary_pattern,
-      CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER, std::string(),
-      CONTENT_SETTING_ALLOW);
+      primary_pattern, secondary_pattern, CONTENT_SETTINGS_TYPE_ADS,
+      std::string(), CONTENT_SETTING_ALLOW);
   histogram_tester().ExpectBucketCount(kActionsHistogram,
                                        kActionContentSettingsWildcardUpdate, 1);
 
   GetSettingsMap()->SetContentSettingCustomScope(
-      primary_pattern, secondary_pattern,
-      CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER, std::string(),
-      CONTENT_SETTING_BLOCK);
+      primary_pattern, secondary_pattern, CONTENT_SETTINGS_TYPE_ADS,
+      std::string(), CONTENT_SETTING_BLOCK);
   histogram_tester().ExpectTotalCount(kActionsHistogram, 2);
   histogram_tester().ExpectBucketCount(kActionsHistogram,
                                        kActionContentSettingsWildcardUpdate, 2);
@@ -219,7 +217,7 @@ TEST_F(SubresourceFilterContentSettingsManagerTest,
   // settings UI. i.e. the setting should be non-default.
   EXPECT_EQ(CONTENT_SETTING_BLOCK, settings_manager()->GetSitePermission(url));
   GetSettingsMap()->SetContentSettingDefaultScope(
-      url, GURL(), CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER, std::string(),
+      url, GURL(), CONTENT_SETTINGS_TYPE_ADS, std::string(),
       CONTENT_SETTING_ALLOW);
 
   histogram_tester().ExpectBucketCount(kActionsHistogram,
@@ -255,7 +253,7 @@ TEST_F(SubresourceFilterContentSettingsManagerTest,
 
   GURL url2("https://example.test2/");
   GetSettingsMap()->SetContentSettingDefaultScope(
-      url2, GURL(), CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER, std::string(),
+      url2, GURL(), CONTENT_SETTINGS_TYPE_ADS, std::string(),
       CONTENT_SETTING_ALLOW);
   histogram_tester().ExpectBucketCount(kActionsHistogram,
                                        kActionContentSettingsAllowed, 1);
@@ -267,13 +265,13 @@ TEST_F(SubresourceFilterContentSettingsManagerTest,
        IgnoreDuplicateGlobalSettings) {
   histogram_tester().ExpectTotalCount(kActionsHistogram, 0);
 
-  GetSettingsMap()->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER, CONTENT_SETTING_ALLOW);
+  GetSettingsMap()->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_ADS,
+                                             CONTENT_SETTING_ALLOW);
   histogram_tester().ExpectBucketCount(kActionsHistogram,
                                        kActionContentSettingsAllowedGlobal, 1);
 
-  GetSettingsMap()->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER, CONTENT_SETTING_BLOCK);
+  GetSettingsMap()->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_ADS,
+                                             CONTENT_SETTING_BLOCK);
   histogram_tester().ExpectBucketCount(kActionsHistogram,
                                        kActionContentSettingsBlockedGlobal, 1);
 }

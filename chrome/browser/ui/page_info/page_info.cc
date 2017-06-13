@@ -107,7 +107,7 @@ ContentSettingsType kPermissionType[] = {
     CONTENT_SETTINGS_TYPE_IMAGES,
 #endif
     CONTENT_SETTINGS_TYPE_POPUPS,
-    CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER,
+    CONTENT_SETTINGS_TYPE_ADS,
     CONTENT_SETTINGS_TYPE_BACKGROUND_SYNC,
     CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS,
     CONTENT_SETTINGS_TYPE_AUTOPLAY,
@@ -125,7 +125,7 @@ bool ShouldShowPermission(ContentSettingsType type,
     return false;
 #endif
 
-  if (type == CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER) {
+  if (type == CONTENT_SETTINGS_TYPE_ADS) {
     if (!base::FeatureList::IsEnabled(
             subresource_filter::kSafeBrowsingSubresourceFilterExperimentalUI)) {
       return false;
@@ -134,8 +134,8 @@ bool ShouldShowPermission(ContentSettingsType type,
     // The setting for subresource filtering should not show up if the site is
     // not activated, both on android and desktop platforms.
     return content_settings->GetWebsiteSetting(
-               site_url, GURL(), CONTENT_SETTINGS_TYPE_SUBRESOURCE_FILTER_DATA,
-               std::string(), nullptr) != nullptr;
+               site_url, GURL(), CONTENT_SETTINGS_TYPE_ADS_DATA, std::string(),
+               nullptr) != nullptr;
   }
 
   return true;
