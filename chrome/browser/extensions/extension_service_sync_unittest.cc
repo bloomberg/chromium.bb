@@ -20,6 +20,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/webstore_private/webstore_private_api.h"
+#include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_service_test_with_install.h"
@@ -93,6 +94,31 @@ const char good_crx[] = "ldnnhddmnhbkjipkidpdiheffobcpfmf";
 const char page_action[] = "obcimlgaoabeegjmmpldobjndiealpln";
 const char permissions_increase[] = "pgdpcfcocojkjfbgpiianjngphoopgmo";
 const char theme2_crx[] = "pjpgmfcmabopnnfonnhmdjglfpjjfkbf";
+
+ExtensionSyncData GetDisableSyncData(const Extension& extension,
+                                     int disable_reasons) {
+  bool enabled = false;
+  bool incognito_enabled = false;
+  bool remote_install = false;
+  bool installed_by_custodian = false;
+  ExtensionSyncData::OptionalBoolean has_all_urls =
+      ExtensionSyncData::BOOLEAN_UNSET;
+  return ExtensionSyncData(extension, enabled, disable_reasons,
+                           incognito_enabled, remote_install, has_all_urls,
+                           installed_by_custodian);
+}
+
+ExtensionSyncData GetEnableSyncData(const Extension& extension) {
+  bool enabled = true;
+  bool incognito_enabled = false;
+  bool remote_install = false;
+  bool installed_by_custodian = false;
+  ExtensionSyncData::OptionalBoolean has_all_urls =
+      ExtensionSyncData::BOOLEAN_UNSET;
+  return ExtensionSyncData(extension, enabled, Extension::DISABLE_NONE,
+                           incognito_enabled, remote_install, has_all_urls,
+                           installed_by_custodian);
+}
 
 SyncChangeList MakeSyncChangeList(const std::string& id,
                                   const sync_pb::EntitySpecifics& specifics,
@@ -198,6 +224,22 @@ class ExtensionServiceSyncTest
         type, syncer::SyncDataList(),
         base::MakeUnique<syncer::FakeSyncChangeProcessor>(),
         base::MakeUnique<syncer::SyncErrorFactoryMock>());
+  }
+
+  void DisableExtensionFromSync(const Extension& extension,
+                                int disable_reasons) {
+    ExtensionSyncData disable_extension =
+        GetDisableSyncData(extension, Extension::DISABLE_USER_ACTION);
+    SyncChangeList list(
+        1, disable_extension.GetSyncChange(SyncChange::ACTION_UPDATE));
+    extension_sync_service()->ProcessSyncChanges(FROM_HERE, list);
+  }
+
+  void EnableExtensionFromSync(const Extension& extension) {
+    ExtensionSyncData enable_extension = GetEnableSyncData(extension);
+    SyncChangeList list(
+        1, enable_extension.GetSyncChange(SyncChange::ACTION_UPDATE));
+    extension_sync_service()->ProcessSyncChanges(FROM_HERE, list);
   }
 
  protected:
@@ -338,6 +380,144 @@ TEST_F(ExtensionServiceSyncTest, DisableExtensionFromSync) {
   extension_sync_service()->ProcessSyncChanges(FROM_HERE, list);
 
   ASSERT_FALSE(service()->IsExtensionEnabled(good0));
+}
+
+// Test that sync can enable and disable installed extensions.
+TEST_F(ExtensionServiceSyncTest, ReenableDisabledExtensionFromSync) {
+  InitializeEmptyExtensionService();
+
+  // Enable sync.
+  browser_sync::ProfileSyncService* sync_service =
+      ProfileSyncServiceFactory::GetForProfile(profile());
+  sync_service->SetFirstSetupComplete();
+
+  service()->Init();
+
+  // Load up a simple extension.
+  extensions::ChromeTestExtensionLoader extension_loader(profile());
+  extension_loader.set_pack_extension(true);
+  scoped_refptr<const Extension> extension = extension_loader.LoadExtension(
+      data_dir().AppendASCII("simple_with_file"));
+  ASSERT_TRUE(extension);
+  const std::string kExtensionId = extension->id();
+  ASSERT_TRUE(registry()->enabled_extensions().GetByID(kExtensionId));
+
+  syncer::FakeSyncChangeProcessor* processor_raw = nullptr;
+  {
+    auto processor = base::MakeUnique<syncer::FakeSyncChangeProcessor>();
+    processor_raw = processor.get();
+    extension_sync_service()->MergeDataAndStartSyncing(
+        syncer::EXTENSIONS, syncer::SyncDataList(), std::move(processor),
+        base::MakeUnique<syncer::SyncErrorFactoryMock>());
+  }
+  processor_raw->changes().clear();
+
+  DisableExtensionFromSync(*extension, Extension::DISABLE_USER_ACTION);
+
+  // The extension should be disabled.
+  EXPECT_TRUE(registry()->disabled_extensions().GetByID(kExtensionId));
+  EXPECT_EQ(Extension::DISABLE_USER_ACTION,
+            ExtensionPrefs::Get(profile())->GetDisableReasons(kExtensionId));
+  EXPECT_TRUE(processor_raw->changes().empty());
+
+  // Enable the extension. Sync should push the new state.
+  service()->EnableExtension(kExtensionId);
+  {
+    ASSERT_EQ(1u, processor_raw->changes().size());
+    const SyncChange& change = processor_raw->changes()[0];
+    EXPECT_EQ(SyncChange::ACTION_UPDATE, change.change_type());
+    std::unique_ptr<ExtensionSyncData> data =
+        ExtensionSyncData::CreateFromSyncData(change.sync_data());
+    EXPECT_EQ(kExtensionId, data->id());
+    EXPECT_EQ(0, data->disable_reasons());
+    EXPECT_TRUE(data->enabled());
+  }
+
+  // Disable the extension again. Sync should push the new state.
+  processor_raw->changes().clear();
+  service()->DisableExtension(kExtensionId, Extension::DISABLE_USER_ACTION);
+  EXPECT_TRUE(registry()->disabled_extensions().GetByID(kExtensionId));
+  {
+    ASSERT_EQ(1u, processor_raw->changes().size());
+    const SyncChange& change = processor_raw->changes()[0];
+    EXPECT_EQ(SyncChange::ACTION_UPDATE, change.change_type());
+    std::unique_ptr<ExtensionSyncData> data =
+        ExtensionSyncData::CreateFromSyncData(change.sync_data());
+    EXPECT_EQ(kExtensionId, data->id());
+    EXPECT_EQ(Extension::DISABLE_USER_ACTION, data->disable_reasons());
+    EXPECT_FALSE(data->enabled());
+  }
+  processor_raw->changes().clear();
+
+  // Enable the extension via sync.
+  EnableExtensionFromSync(*extension);
+
+  // The extension should be enabled.
+  EXPECT_TRUE(registry()->enabled_extensions().GetByID(kExtensionId));
+  EXPECT_TRUE(processor_raw->changes().empty());
+}
+
+// Tests that default-installed extensions won't be affected by incoming sync
+// data. (It's feasible to have a sync entry for an extension that could be
+// default installed, since one installation may be default-installed while
+// another may not be).
+TEST_F(ExtensionServiceSyncTest,
+       DefaultInstalledExtensionsAreNotReenabledOrDisabledBySync) {
+  InitializeEmptyExtensionService();
+
+  // Enable sync.
+  browser_sync::ProfileSyncService* sync_service =
+      ProfileSyncServiceFactory::GetForProfile(profile());
+  sync_service->SetFirstSetupComplete();
+
+  service()->Init();
+
+  // Load up an extension that's considered default installed.
+  extensions::ChromeTestExtensionLoader extension_loader(profile());
+  extension_loader.set_pack_extension(true);
+  extension_loader.add_creation_flag(Extension::WAS_INSTALLED_BY_DEFAULT);
+  scoped_refptr<const Extension> extension = extension_loader.LoadExtension(
+      data_dir().AppendASCII("simple_with_file"));
+  ASSERT_TRUE(extension);
+
+  // The extension shouldn't sync.
+  EXPECT_FALSE(extensions::util::ShouldSync(extension.get(), profile()));
+  const std::string kExtensionId = extension->id();
+  ASSERT_TRUE(registry()->enabled_extensions().GetByID(kExtensionId));
+
+  syncer::FakeSyncChangeProcessor* processor_raw = nullptr;
+  {
+    auto processor = base::MakeUnique<syncer::FakeSyncChangeProcessor>();
+    processor_raw = processor.get();
+    extension_sync_service()->MergeDataAndStartSyncing(
+        syncer::EXTENSIONS, syncer::SyncDataList(), std::move(processor),
+        base::MakeUnique<syncer::SyncErrorFactoryMock>());
+  }
+  processor_raw->changes().clear();
+
+  // Sync state says the extension is disabled (e.g. on another machine).
+  DisableExtensionFromSync(*extension, Extension::DISABLE_USER_ACTION);
+
+  // The extension should still be enabled, since it's default-installed.
+  EXPECT_TRUE(registry()->enabled_extensions().GetByID(kExtensionId));
+  EXPECT_TRUE(processor_raw->changes().empty());
+
+  // Now disable the extension locally. Sync should *not* push new state.
+  service()->DisableExtension(kExtensionId, Extension::DISABLE_USER_ACTION);
+  EXPECT_TRUE(registry()->disabled_extensions().GetByID(kExtensionId));
+  EXPECT_TRUE(processor_raw->changes().empty());
+
+  // Sync state says the extension is enabled.
+  EnableExtensionFromSync(*extension);
+
+  // As above, the extension should not have been affected by sync.
+  EXPECT_TRUE(registry()->disabled_extensions().GetByID(kExtensionId));
+  EXPECT_TRUE(processor_raw->changes().empty());
+
+  // And re-enabling the extension should not push new state to sync.
+  service()->EnableExtension(kExtensionId);
+  EXPECT_TRUE(registry()->enabled_extensions().GetByID(kExtensionId));
+  EXPECT_TRUE(processor_raw->changes().empty());
 }
 
 TEST_F(ExtensionServiceSyncTest, IgnoreSyncChangesWhenLocalStateIsMoreRecent) {
@@ -1362,6 +1542,13 @@ TEST_F(ExtensionServiceSyncTest, ProcessSyncDataEnableDisable) {
 }
 
 TEST_F(ExtensionServiceSyncTest, ProcessSyncDataDeferredEnable) {
+  // The permissions_increase test extension has a different update URL.
+  // In order to make it syncable, we have to pretend it syncs from the
+  // webstore.
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kAppsGalleryUpdateURL,
+      "http://localhost/autoupdate/updates.xml");
+
   InitializeEmptyExtensionService();
   extension_sync_service()->MergeDataAndStartSyncing(
       syncer::EXTENSIONS, syncer::SyncDataList(),

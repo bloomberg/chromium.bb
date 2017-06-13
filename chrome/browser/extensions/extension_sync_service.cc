@@ -317,6 +317,19 @@ ExtensionSyncData ExtensionSyncService::CreateSyncData(
 
 void ExtensionSyncService::ApplySyncData(
     const ExtensionSyncData& extension_sync_data) {
+  const std::string& id = extension_sync_data.id();
+  // Note: |extension| may be null if it hasn't been installed yet.
+  const Extension* extension =
+      ExtensionRegistry::Get(profile_)->GetInstalledExtension(id);
+  // If there is an existing extension that shouldn't be sync'd, don't
+  // apply this sync data. This can happen if the local version of an
+  // extension is default-installed, but the sync server has data from another
+  // (non-default-installed) installation. We can't apply the sync data because
+  // it would always override the local state (which would never get sync'd).
+  // See crbug.com/731824.
+  if (extension && !ShouldSync(*extension))
+    return;
+
   // Ignore any pref change notifications etc. while we're applying incoming
   // sync data, so that we don't end up notifying ourselves.
   base::AutoReset<bool> ignore_updates(&ignore_updates_, true);
@@ -328,12 +341,8 @@ void ExtensionSyncService::ApplySyncData(
 
   syncer::ModelType type = extension_sync_data.is_app() ? syncer::APPS
                                                         : syncer::EXTENSIONS;
-  const std::string& id = extension_sync_data.id();
   SyncBundle* bundle = GetSyncBundle(type);
   DCHECK(bundle->IsSyncing());
-  // Note: |extension| may be null if it hasn't been installed yet.
-  const Extension* extension =
-      ExtensionRegistry::Get(profile_)->GetInstalledExtension(id);
   if (extension && !IsCorrectSyncType(*extension, type)) {
     // The installed item isn't the same type as the sync data item, so we need
     // to remove the sync data item; otherwise it will be a zombie that will
