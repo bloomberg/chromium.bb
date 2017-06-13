@@ -36,7 +36,8 @@ class ExternalPolicyDataFetcherBackend;
 class ResourceCache;
 class SchemaMap;
 
-// Manages cloud policy for components.
+// Manages cloud policy for components (currently used for device local accounts
+// and policy for extensions --> go/cros-ent-p4ext-dd).
 //
 // This class takes care of fetching, validating, storing and updating policy
 // for components.
