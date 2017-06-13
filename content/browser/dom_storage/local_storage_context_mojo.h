@@ -143,6 +143,8 @@ class CONTENT_EXPORT LocalStorageContextMojo
   file::mojom::FileSystemPtr file_system_;
   filesystem::mojom::DirectoryPtr directory_;
 
+  base::trace_event::MemoryAllocatorDumpGuid memory_dump_id_;
+
   leveldb::mojom::LevelDBServicePtr leveldb_service_;
   leveldb::mojom::LevelDBDatabaseAssociatedPtr database_;
   bool tried_to_recreate_ = false;

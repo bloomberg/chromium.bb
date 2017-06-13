@@ -16,6 +16,7 @@ mojom("common_custom_types") {
   sources = [
     "file.mojom",
     "file_path.mojom",
+    "memory_allocator_dump_cross_process_uid.mojom",
     "process_id.mojom",
     "string16.mojom",
     "text_direction.mojom",

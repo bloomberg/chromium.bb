@@ -4,12 +4,16 @@
 
 #include "components/leveldb/leveldb_database_impl.h"
 
+#include <inttypes.h>
 #include <map>
 #include <string>
 #include <utility>
 
 #include "base/optional.h"
 #include "base/rand_util.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
+#include "base/trace_event/memory_dump_manager.h"
 #include "components/leveldb/env_mojo.h"
 #include "components/leveldb/public/cpp/util.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
@@ -37,10 +41,18 @@ leveldb::Status ForEachWithPrefix(leveldb::DB* db,
 
 LevelDBDatabaseImpl::LevelDBDatabaseImpl(
     std::unique_ptr<leveldb::Env> environment,
-    std::unique_ptr<leveldb::DB> db)
-    : environment_(std::move(environment)), db_(std::move(db)) {}
+    std::unique_ptr<leveldb::DB> db,
+    base::Optional<base::trace_event::MemoryAllocatorDumpGuid> memory_dump_id)
+    : environment_(std::move(environment)),
+      db_(std::move(db)),
+      memory_dump_id_(memory_dump_id) {
+  base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      this, "MojoLevelDB", base::ThreadTaskRunnerHandle::Get());
+}
 
 LevelDBDatabaseImpl::~LevelDBDatabaseImpl() {
+  base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+      this);
   for (auto& p : iterator_map_)
     delete p.second;
   for (auto& p : snapshot_map_)
@@ -268,6 +280,42 @@ void LevelDBDatabaseImpl::IteratorPrev(const base::UnguessableToken& iterator,
   it->second->Prev();
 
   ReplyToIteratorMessage(it->second, std::move(callback));
+}
+
+bool LevelDBDatabaseImpl::OnMemoryDump(
+    const base::trace_event::MemoryDumpArgs& args,
+    base::trace_event::ProcessMemoryDump* pmd) {
+  auto* mad = pmd->CreateAllocatorDump(base::StringPrintf(
+      "leveldb/mojo/0x%" PRIXPTR, reinterpret_cast<uintptr_t>(db_.get())));
+
+  uint64_t memory_usage = 0;
+  std::string memory_usage_string;
+  bool got_memory_usage =
+      db_->GetProperty("leveldb.approximate-memory-usage",
+                       &memory_usage_string) &&
+      base::StringToUint64(memory_usage_string, &memory_usage);
+  DCHECK(got_memory_usage);
+  mad->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                 base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                 memory_usage);
+
+  const char* system_allocator_name =
+      base::trace_event::MemoryDumpManager::GetInstance()
+          ->system_allocator_pool_name();
+  if (system_allocator_name)
+    pmd->AddSuballocation(mad->guid(), system_allocator_name);
+
+  if (memory_dump_id_) {
+    auto* global_dump = pmd->CreateSharedGlobalAllocatorDump(*memory_dump_id_);
+    pmd->AddOwnershipEdge(global_dump->guid(), mad->guid());
+    // Add size to global dump to propagate the size of the database to the
+    // client's dump.
+    global_dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
+                           base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                           memory_usage);
+  }
+
+  return true;
 }
 
 void LevelDBDatabaseImpl::ReplyToIteratorMessage(
