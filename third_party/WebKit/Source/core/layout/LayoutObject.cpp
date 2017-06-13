@@ -685,11 +685,13 @@ LayoutFlowThread* LayoutObject::LocateFlowThreadContainingBlock() const {
   DCHECK(IsInsideFlowThread());
 
   // See if we have the thread cached because we're in the middle of layout.
-  if (LayoutState* layout_state = View()->GetLayoutState()) {
-    // TODO(mstensho): We should really just return whatever
-    // layoutState->flowThread() returns here, also if the value is nullptr.
-    if (LayoutFlowThread* flow_thread = layout_state->FlowThread())
-      return flow_thread;
+  if (LayoutView* view = View()) {
+    if (LayoutState* layout_state = view->GetLayoutState()) {
+      // TODO(mstensho): We should really just return whatever
+      // layoutState->flowThread() returns here, also if the value is nullptr.
+      if (LayoutFlowThread* flow_thread = layout_state->FlowThread())
+        return flow_thread;
+    }
   }
 
   // Not in the middle of layout so have to find the thread the slow way.
