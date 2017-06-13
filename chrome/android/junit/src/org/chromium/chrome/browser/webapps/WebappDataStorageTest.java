@@ -18,7 +18,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowLooper;
@@ -194,11 +193,10 @@ public class WebappDataStorageTest {
         storage.updateLastUsedTime();
         assertTrue(storage.wasLaunchedRecently());
 
-        long lastUsedTime = mSharedPreferences.getLong(WebappDataStorage.KEY_LAST_USED,
-                WebappDataStorage.LAST_USED_INVALID);
+        long lastUsedTime = mSharedPreferences.getLong(
+                WebappDataStorage.KEY_LAST_USED, WebappDataStorage.TIMESTAMP_INVALID);
 
-        assertTrue(lastUsedTime != WebappDataStorage.LAST_USED_UNSET);
-        assertTrue(lastUsedTime != WebappDataStorage.LAST_USED_INVALID);
+        assertTrue(lastUsedTime != WebappDataStorage.TIMESTAMP_INVALID);
 
         // Move the last used time one day in the past.
         mSharedPreferences.edit()

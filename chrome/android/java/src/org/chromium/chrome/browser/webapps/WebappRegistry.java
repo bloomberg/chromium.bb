@@ -112,13 +112,20 @@ public class WebappRegistry {
             protected final WebappDataStorage doInBackground(Void... nothing) {
                 // Create the WebappDataStorage on the background thread, as this must create and
                 // open a new SharedPreferences.
-                return WebappDataStorage.open(webappId);
+                WebappDataStorage storage = WebappDataStorage.open(webappId);
+                // Access the WebappDataStorage to force it to finish loading. A strict mode
+                // exception is thrown if the WebappDataStorage is accessed on the UI thread prior
+                // to the storage being fully loaded.
+                storage.getLastUsedTime();
+                return storage;
             }
 
             @Override
             protected final void onPostExecute(WebappDataStorage storage) {
-                // Guarantee that last used time != WebappDataStorage.LAST_USED_INVALID. Must be
-                // run on the main thread as SharedPreferences.Editor.apply() is called.
+                // Update the last used time in order to prevent
+                // {@link WebappRegistry@unregisterOldWebapps()} from deleting the
+                // WebappDataStorage. Must be run on the main thread as
+                // SharedPreferences.Editor.apply() is called.
                 mStorages.put(webappId, storage);
                 mPreferences.edit().putStringSet(KEY_WEBAPP_SET, mStorages.keySet()).apply();
                 storage.updateLastUsedTime();
