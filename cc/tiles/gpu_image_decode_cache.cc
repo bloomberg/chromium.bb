@@ -601,22 +601,19 @@ void GpuImageDecodeCache::SetShouldAggressivelyFreeResources(
 
 void GpuImageDecodeCache::ClearCache() {
   base::AutoLock lock(lock_);
-  for (auto it = persistent_cache_.begin(); it != persistent_cache_.end();) {
-    if (it->second->decode.ref_count != 0 ||
-        it->second->upload.ref_count != 0) {
-      ++it;
-      continue;
+  for (auto& entry : persistent_cache_) {
+    if (entry.second->decode.ref_count != 0 ||
+        entry.second->upload.ref_count != 0) {
+      // Orphan the entry so it will be deleted once no longer in use.
+      entry.second->is_orphaned = true;
+    } else if (entry.second->upload.image()) {
+      bytes_used_ -= entry.second->size;
+      images_pending_deletion_.push_back(entry.second->upload.image());
+      entry.second->upload.SetImage(nullptr);
+      entry.second->upload.budgeted = false;
     }
-
-    if (it->second->upload.image()) {
-      bytes_used_ -= it->second->size;
-      images_pending_deletion_.push_back(it->second->upload.image());
-      it->second->upload.SetImage(nullptr);
-      it->second->upload.budgeted = false;
-    }
-
-    it = persistent_cache_.Erase(it);
   }
+  persistent_cache_.Clear();
 }
 
 size_t GpuImageDecodeCache::GetMaximumMemoryLimitBytes() const {
