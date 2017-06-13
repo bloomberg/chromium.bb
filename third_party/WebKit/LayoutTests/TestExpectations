@@ -2503,10 +2503,6 @@ crbug.com/707359 [ Mac ] fast/css-grid-layout/grid-self-baseline-vertical-rl-03.
 crbug.com/707359 [ Mac ] fast/css-grid-layout/grid-self-baseline-vertical-rl-04.html [ Failure ]
 crbug.com/707359 [ Mac ] fast/css-grid-layout/grid-self-baseline-vertical-rl-05.html [ Failure ]
 
-# Results are incorrect, needs debugging.
-# TODO(ccameron): Fix this
-crbug.com/730821 virtual/exotic-color-space/images/color-profile-layer-filter.html [ Failure ]
-
 # TODO(ccameron): Fix in progress.
 crbug.com/731783 fast/media/mq-color-gamut-api.html [ Failure Timeout ]
 crbug.com/731783 fast/media/mq-color-gamut-picture.html [ Failure Timeout ]
