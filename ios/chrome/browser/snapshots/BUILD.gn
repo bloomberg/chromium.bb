@@ -36,6 +36,7 @@ source_set("snapshots") {
 }
 
 source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "lru_cache_unittest.mm",
