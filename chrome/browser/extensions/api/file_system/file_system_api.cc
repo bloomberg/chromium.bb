@@ -79,8 +79,9 @@ using apps::SavedFileEntry;
 using apps::SavedFilesService;
 using storage::IsolatedContext;
 
-const char kInvalidCallingPage[] = "Invalid calling page. This function can't "
-    "be called from a background page.";
+const char kInvalidCallingPage[] =
+    "Invalid calling page. "
+    "This function can't be called from a background page.";
 const char kUserCancelled[] = "User cancelled";
 const char kWritableFileErrorFormat[] = "Error opening %s";
 const char kRequiresFileSystemWriteError[] =
@@ -183,11 +184,9 @@ bool GetFileTypesFromAcceptOption(
 const char kLastChooseEntryDirectory[] = "last_choose_file_directory";
 
 const int kGraylistedPaths[] = {
-  base::DIR_HOME,
+    base::DIR_HOME,
 #if defined(OS_WIN)
-  base::DIR_PROGRAM_FILES,
-  base::DIR_PROGRAM_FILESX86,
-  base::DIR_WINDOWS,
+    base::DIR_PROGRAM_FILES, base::DIR_PROGRAM_FILESX86, base::DIR_WINDOWS,
 #endif
 };
 
@@ -215,8 +214,8 @@ content::WebContents* GetWebContentsForRenderFrameHost(
       content::WebContents::FromRenderFrameHost(render_frame_host);
   // Check if there is an app window associated with the web contents; if not,
   // return null.
-  return AppWindowRegistry::Get(profile)
-                 ->GetAppWindowForWebContents(web_contents)
+  return AppWindowRegistry::Get(profile)->GetAppWindowForWebContents(
+             web_contents)
              ? web_contents
              : nullptr;
 }
@@ -248,8 +247,7 @@ base::FilePath GetLastChooseEntryDirectory(const ExtensionPrefs* prefs,
                                            const std::string& extension_id) {
   base::FilePath path;
   std::string string_path;
-  if (prefs->ReadPrefAsString(extension_id,
-                              kLastChooseEntryDirectory,
+  if (prefs->ReadPrefAsString(extension_id, kLastChooseEntryDirectory,
                               &string_path)) {
     path = base::FilePath::FromUTF8Unsafe(string_path);
   }
@@ -360,11 +358,8 @@ void FileSystemEntryFunction::AddEntryToResult(const base::FilePath& path,
                                                const std::string& id_override,
                                                base::DictionaryValue* result) {
   GrantedFileEntry file_entry = app_file_handler_util::CreateFileEntry(
-      GetProfile(),
-      extension(),
-      render_frame_host()->GetProcess()->GetID(),
-      path,
-      is_directory_);
+      GetProfile(), extension(), render_frame_host()->GetProcess()->GetID(),
+      path, is_directory_);
   base::ListValue* entries;
   bool success = result->GetList("entries", &entries);
   DCHECK(success);
@@ -416,9 +411,8 @@ bool FileSystemGetWritableEntryFunction::RunAsync() {
 
 void FileSystemGetWritableEntryFunction::CheckPermissionAndSendResponse() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (is_directory_ &&
-      !extension_->permissions_data()->HasAPIPermission(
-          APIPermission::kFileSystemDirectory)) {
+  if (is_directory_ && !extension_->permissions_data()->HasAPIPermission(
+                           APIPermission::kFileSystemDirectory)) {
     error_ = kRequiresFileSystemDirectoryError;
     SendResponse(false);
   }
@@ -446,8 +440,7 @@ ExtensionFunction::ResponseAction FileSystemIsWritableEntryFunction::Run() {
   content::ChildProcessSecurityPolicy* policy =
       content::ChildProcessSecurityPolicy::GetInstance();
   int renderer_id = render_frame_host()->GetProcess()->GetID();
-  bool is_writable = policy->CanReadWriteFileSystem(renderer_id,
-                                                    filesystem_id);
+  bool is_writable = policy->CanReadWriteFileSystem(renderer_id, filesystem_id);
 
   return RespondNow(OneArgument(base::MakeUnique<base::Value>(is_writable)));
 }
@@ -465,9 +458,9 @@ class FileSystemChooseEntryFunction::FilePicker
       : function_(function) {
     select_file_dialog_ = ui::SelectFileDialog::Create(
         this, new ChromeSelectFilePolicy(web_contents));
-    gfx::NativeWindow owning_window = web_contents ?
-        platform_util::GetTopLevel(web_contents->GetNativeView()) :
-        NULL;
+    gfx::NativeWindow owning_window =
+        web_contents ? platform_util::GetTopLevel(web_contents->GetNativeView())
+                     : NULL;
 
     if (g_skip_picker_for_test) {
       if (g_use_suggested_path_for_test) {
@@ -501,14 +494,9 @@ class FileSystemChooseEntryFunction::FilePicker
       return;
     }
 
-    select_file_dialog_->SelectFile(picker_type,
-                                    base::string16(),
-                                    suggested_name,
-                                    &file_type_info,
-                                    0,
-                                    base::FilePath::StringType(),
-                                    owning_window,
-                                    NULL);
+    select_file_dialog_->SelectFile(
+        picker_type, base::string16(), suggested_name, &file_type_info, 0,
+        base::FilePath::StringType(), owning_window, NULL);
   }
 
   ~FilePicker() override {}
@@ -587,8 +575,8 @@ void FileSystemChooseEntryFunction::ShowPicker(
   // its destruction (and subsequent sending of the function response) until the
   // user has selected a file or cancelled the picker. At that point, the picker
   // will delete itself, which will also free the function instance.
-  new FilePicker(
-      this, web_contents, initial_path_, file_type_info, picker_type);
+  new FilePicker(this, web_contents, initial_path_, file_type_info,
+                 picker_type);
 }
 
 // static
@@ -647,15 +635,14 @@ void FileSystemChooseEntryFunction::StopSkippingDirectoryConfirmationForTest() {
 
 // static
 void FileSystemChooseEntryFunction::RegisterTempExternalFileSystemForTest(
-    const std::string& name, const base::FilePath& path) {
+    const std::string& name,
+    const base::FilePath& path) {
   // For testing on Chrome OS, where to deal with remote and local paths
   // smoothly, all accessed paths need to be registered in the list of
   // external mount points.
   storage::ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
-      name,
-      storage::kFileSystemTypeNativeLocal,
-      storage::FileSystemMountOption(),
-      path);
+      name, storage::kFileSystemTypeNativeLocal,
+      storage::FileSystemMountOption(), path);
 }
 
 void FileSystemChooseEntryFunction::FilesSelected(
@@ -668,8 +655,7 @@ void FileSystemChooseEntryFunction::FilesSelected(
     last_choose_directory = paths[0].DirName();
   }
   file_system_api::SetLastChooseEntryDirectory(
-      ExtensionPrefs::Get(GetProfile()),
-      extension()->id(),
+      ExtensionPrefs::Get(GetProfile()), extension()->id(),
       last_choose_directory);
   if (is_directory_) {
     // Get the WebContents for the app window to be the parent window of the
@@ -778,8 +764,8 @@ void FileSystemChooseEntryFunction::BuildFileTypeInfo(
   if (acceptsAllTypes)
     file_type_info->include_all_files = *acceptsAllTypes;
 
-  bool need_suggestion = !file_type_info->include_all_files &&
-                         !suggested_extension.empty();
+  bool need_suggestion =
+      !file_type_info->include_all_files && !suggested_extension.empty();
 
   if (accepts) {
     for (const file_system::AcceptOption& option : *accepts) {
@@ -794,8 +780,9 @@ void FileSystemChooseEntryFunction::BuildFileTypeInfo(
 
       // If we still need to find suggested_extension, hunt for it inside the
       // extensions returned from GetFileTypesFromAcceptOption.
-      if (need_suggestion && std::find(extensions.begin(),
-              extensions.end(), suggested_extension) != extensions.end()) {
+      if (need_suggestion &&
+          std::find(extensions.begin(), extensions.end(),
+                    suggested_extension) != extensions.end()) {
         need_suggestion = false;
       }
     }
@@ -808,7 +795,7 @@ void FileSystemChooseEntryFunction::BuildFileTypeInfo(
 }
 
 void FileSystemChooseEntryFunction::BuildSuggestion(
-    const std::string *opt_name,
+    const std::string* opt_name,
     base::FilePath* suggested_name,
     base::FilePath::StringType* suggested_extension) {
   if (opt_name) {
@@ -895,10 +882,10 @@ bool FileSystemChooseEntryFunction::RunAsync() {
 
     base::FilePath::StringType suggested_extension;
     BuildSuggestion(options->suggested_name.get(), &suggested_name,
-        &suggested_extension);
+                    &suggested_extension);
 
     BuildFileTypeInfo(&file_type_info, suggested_extension,
-        options->accepts.get(), options->accepts_all_types.get());
+                      options->accepts.get(), options->accepts_all_types.get());
   }
 
   file_type_info.allowed_paths = ui::SelectFileDialog::FileTypeInfo::ANY_PATH;
@@ -959,8 +946,7 @@ bool FileSystemRetainEntryFunction::RunAsync() {
         content::BrowserContext::GetStoragePartitionForSite(GetProfile(), site)
             ->GetFileSystemContext();
     const storage::FileSystemURL url = context->CreateCrackedFileSystemURL(
-        site,
-        storage::kFileSystemTypeIsolated,
+        site, storage::kFileSystemTypeIsolated,
         IsolatedContext::GetInstance()
             ->CreateVirtualRootPath(filesystem_id)
             .Append(base::FilePath::FromUTF8Unsafe(filesystem_path)));
@@ -994,8 +980,8 @@ void FileSystemRetainEntryFunction::RetainFileEntry(
   }
 
   SavedFilesService* saved_files_service = SavedFilesService::Get(GetProfile());
-  saved_files_service->RegisterFileEntry(
-      extension_->id(), entry_id, path, file_info->is_directory);
+  saved_files_service->RegisterFileEntry(extension_->id(), entry_id, path,
+                                         file_info->is_directory);
   saved_files_service->EnqueueFileEntry(extension_->id(), entry_id);
   SendResponse(true);
 }
@@ -1013,8 +999,9 @@ bool FileSystemRestoreEntryFunction::RunAsync() {
   bool needs_new_entry;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &entry_id));
   EXTENSION_FUNCTION_VALIDATE(args_->GetBoolean(1, &needs_new_entry));
-  const SavedFileEntry* file_entry = SavedFilesService::Get(
-      GetProfile())->GetFileEntry(extension_->id(), entry_id);
+  const SavedFileEntry* file_entry =
+      SavedFilesService::Get(GetProfile())
+          ->GetFileEntry(extension_->id(), entry_id);
   if (!file_entry) {
     error_ = kUnknownIdError;
     return false;
@@ -1068,11 +1055,9 @@ ExtensionFunction::ResponseAction FileSystemGetVolumeListFunction::Run() {
 #else
 
 FileSystemRequestFileSystemFunction::FileSystemRequestFileSystemFunction()
-    : chrome_details_(this) {
-}
+    : chrome_details_(this) {}
 
-FileSystemRequestFileSystemFunction::~FileSystemRequestFileSystemFunction() {
-}
+FileSystemRequestFileSystemFunction::~FileSystemRequestFileSystemFunction() {}
 
 ExtensionFunction::ResponseAction FileSystemRequestFileSystemFunction::Run() {
   using api::file_system::RequestFileSystem::Params;
@@ -1110,7 +1095,8 @@ ExtensionFunction::ResponseAction FileSystemRequestFileSystemFunction::Run() {
       util::GetSiteForExtensionId(extension_id(), chrome_details_.GetProfile());
   scoped_refptr<storage::FileSystemContext> file_system_context =
       content::BrowserContext::GetStoragePartitionForSite(
-          chrome_details_.GetProfile(), site)->GetFileSystemContext();
+          chrome_details_.GetProfile(), site)
+          ->GetFileSystemContext();
   storage::ExternalFileSystemBackend* const backend =
       file_system_context->external_backend();
   DCHECK(backend);
@@ -1164,7 +1150,8 @@ void FileSystemRequestFileSystemFunction::OnConsentReceived(
       util::GetSiteForExtensionId(extension_id(), chrome_details_.GetProfile());
   scoped_refptr<storage::FileSystemContext> file_system_context =
       content::BrowserContext::GetStoragePartitionForSite(
-          chrome_details_.GetProfile(), site)->GetFileSystemContext();
+          chrome_details_.GetProfile(), site)
+          ->GetFileSystemContext();
   storage::ExternalFileSystemBackend* const backend =
       file_system_context->external_backend();
   DCHECK(backend);
@@ -1233,11 +1220,9 @@ void FileSystemRequestFileSystemFunction::OnConsentReceived(
 }
 
 FileSystemGetVolumeListFunction::FileSystemGetVolumeListFunction()
-    : chrome_details_(this) {
-}
+    : chrome_details_(this) {}
 
-FileSystemGetVolumeListFunction::~FileSystemGetVolumeListFunction() {
-}
+FileSystemGetVolumeListFunction::~FileSystemGetVolumeListFunction() {}
 
 ExtensionFunction::ResponseAction FileSystemGetVolumeListFunction::Run() {
   // Only kiosk apps in kiosk sessions can use this API.
