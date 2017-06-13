@@ -622,14 +622,16 @@ bool ChromeContentBrowserClientExtensionsPart::ShouldAllowOpenURL(
     return true;
   }
 
-  // Navigations from chrome:// or chrome-search:// pages need to be allowed,
-  // even if |to_url| is not web-accessible.  See https://crbug.com/662602.
+  // Navigations from chrome://, chrome-search:// and chrome-devtools:// pages
+  // need to be allowed, even if |to_url| is not web-accessible. See
+  // https://crbug.com/662602.
   //
   // Note that this is intentionally done after the check for blob: and
   // filesystem: URLs above, for consistency with the renderer-side checks
   // which already disallow navigations from chrome URLs to blob/filesystem
   // URLs.
   if (site_url.SchemeIs(content::kChromeUIScheme) ||
+      site_url.SchemeIs(content::kChromeDevToolsScheme) ||
       site_url.SchemeIs(chrome::kChromeSearchScheme)) {
     *result = true;
     return true;
