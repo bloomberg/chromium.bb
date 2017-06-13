@@ -4,7 +4,6 @@
 
 #include "components/feature_engagement_tracker/public/feature_list.h"
 
-#include "base/feature_list.h"
 #include "components/feature_engagement_tracker/public/feature_constants.h"
 
 namespace feature_engagement_tracker {
@@ -14,8 +13,14 @@ namespace {
 // DEFINE_VARIATION_PARAM below, and also added to the
 // |kIPHDemoModeChoiceVariations| array.
 const base::Feature* kAllFeatures[] = {
-    &kIPHDataSaverPreviewFeature, &kIPHDataSaverDetailFeature,
-    &kIPHDownloadPageFeature, &kIPHDownloadHomeFeature};
+    &kIPHDummyFeature,  // Ensures non-empty array for all platforms.
+#if defined(OS_ANDROID)
+    &kIPHDataSaverPreviewFeature,
+    &kIPHDataSaverDetailFeature,
+    &kIPHDownloadPageFeature,
+    &kIPHDownloadHomeFeature,
+#endif  // OS_ANDROID
+};
 }  // namespace
 
 const char kIPHDemoModeFeatureChoiceParam[] = "chosen_feature";
