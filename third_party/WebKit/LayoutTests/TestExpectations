@@ -1559,6 +1559,23 @@ crbug.com/501659 http/tests/security/xss-DENIED-xml-external-entity.xhtml [ Fail
 crbug.com/501659 virtual/mojo-loading/http/tests/security/xss-DENIED-xml-external-entity.xhtml [ Failure ]
 crbug.com/501659 fast/css/stylesheet-candidate-nodes-crash.xhtml [ Failure ]
 
+
+# Change to higher precision for exotic blend modes
+crbug.com/732829 css3/blending/background-blend-mode-crossfade-image-gradient.html [ NeedsManualRebaseline ]
+crbug.com/732829 css3/blending/background-blend-mode-gif-color-2.html [ NeedsManualRebaseline ]
+crbug.com/732829 css3/blending/background-blend-mode-gif-color.html [ NeedsManualRebaseline ]
+crbug.com/732829 css3/blending/background-blend-mode-svg-color.html [ NeedsManualRebaseline ]
+crbug.com/732829 css3/blending/mix-blend-mode-isolated-group-1.html [ NeedsManualRebaseline ]
+crbug.com/732829 css3/blending/mix-blend-mode-isolated-group-2.html [ NeedsManualRebaseline ]
+crbug.com/732829 css3/blending/mix-blend-mode-isolated-group-3.html [ NeedsManualRebaseline ]
+crbug.com/732829 css3/blending/mix-blend-mode-simple-text.html [ NeedsManualRebaseline ]
+crbug.com/732829 css3/blending/svg-blend-color.html [ NeedsRebaseline ]
+crbug.com/732829 css3/blending/svg-blend-hue.html [ NeedsRebaseline ]
+crbug.com/732829 css3/blending/svg-blend-luminosity.html [ NeedsRebaseline ]
+crbug.com/732829 css3/blending/svg-blend-saturation.html [ NeedsRebaseline ]
+crbug.com/732829 svg/filters/feBlend-all-modes.html [ NeedsManualRebaseline ]
+
+
 # Mac10.10-specific failures that still need triaging.
 # Form controls need rebaseline because of the default font change.
 # If you see wider INPUT elements or narrower TEXTAREA elements, you may do just
@@ -2834,7 +2851,8 @@ crbug.com/727505 [ Linux Mac Win ] virtual/threaded/fast/compositorworker/reques
 crbug.com/727991 [ Linux Mac Win ] virtual/threaded/fast/compositorworker/visual-update.html [ Pass Failure Timeout Crash ]
 crbug.com/728036 [ Linux Mac Win ] virtual/threaded/fast/compositorworker/compositor-proxy-supports.html [ Pass Failure Timeout Crash ]
 
-crbug.com/729075 [ Mac10.11 Retina ] css3/blending/background-blend-mode-gif-color-2.html [ Failure Pass ]
+# Renable this after rebaselines land for crbug.com/732829
+#crbug.com/729075 [ Mac10.11 Retina ] css3/blending/background-blend-mode-gif-color-2.html [ Failure Pass ]
 
 crbug.com/729836 [ Win ] fast/workers/worker-document-leak.html [ Pass Failure ]
 
