@@ -6,10 +6,8 @@
 
 #include <stddef.h>
 
-#import "base/ios/weak_nsobject.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_block.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/password_generator.h"
@@ -30,6 +28,10 @@
 #include "ios/web/public/web_state/web_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -133,10 +135,10 @@ bool IsTextField(const autofill::FormFieldData& field) {
   std::unique_ptr<autofill::FormFieldData> _passwordGenerationField;
 
   // Wrapper for suggestion JavaScript. Used for form navigation.
-  base::scoped_nsobject<JsSuggestionManager> _JSSuggestionManager;
+  JsSuggestionManager* _suggestionManager;
 
   // Wrapper for passwords JavaScript. Used for form filling.
-  base::scoped_nsobject<JsPasswordManager> _JSPasswordManager;
+  JsPasswordManager* _javaScriptPasswordManager;
 
   // Driver that is passed to PasswordManager when a password is generated.
   password_manager::PasswordManagerDriver* _passwordManagerDriver;
@@ -146,14 +148,13 @@ bool IsTextField(const autofill::FormFieldData& field) {
 
   // Callback to update the custom keyboard accessory view. Will be non-nil when
   // this PasswordGenerationAgent controls the keyboard accessory view.
-  base::mac::ScopedBlock<AccessoryViewReadyCompletion>
-      _accessoryViewReadyCompletion;
+  AccessoryViewReadyCompletion _accessoryViewReadyCompletion;
 
   // The delegate for controlling the password generation UI.
-  base::scoped_nsprotocol<id<PasswordsUiDelegate>> _passwords_ui_delegate;
+  id<PasswordsUiDelegate> _passwords_ui_delegate;
 
   // The password that was generated and accepted by the user.
-  base::scoped_nsobject<NSString> _generatedPassword;
+  NSString* _generatedPassword;
 }
 
 - (instancetype)init {
@@ -162,32 +163,32 @@ bool IsTextField(const autofill::FormFieldData& field) {
 }
 
 - (instancetype)
-         initWithWebState:(web::WebState*)webState
-          passwordManager:(password_manager::PasswordManager*)passwordManager
-    passwordManagerDriver:(password_manager::PasswordManagerDriver*)driver
-      passwordsUiDelegate:(id<PasswordsUiDelegate>)UIDelegate {
-  JsPasswordManager* JSPasswordManager =
+     initWithWebState:(web::WebState*)webState
+      passwordManager:(password_manager::PasswordManager*)passwordManager
+passwordManagerDriver:(password_manager::PasswordManagerDriver*)driver
+  passwordsUiDelegate:(id<PasswordsUiDelegate>)delegate {
+  JsPasswordManager* javaScriptPasswordManager =
       base::mac::ObjCCast<JsPasswordManager>([webState->GetJSInjectionReceiver()
           instanceOfClass:[JsPasswordManager class]]);
-  JsSuggestionManager* JSSuggestionManager =
+  JsSuggestionManager* suggestionManager =
       base::mac::ObjCCast<JsSuggestionManager>(
           [webState->GetJSInjectionReceiver()
               instanceOfClass:[JsSuggestionManager class]]);
   return [self initWithWebState:webState
                 passwordManager:passwordManager
           passwordManagerDriver:driver
-              JSPasswordManager:JSPasswordManager
-            JSSuggestionManager:JSSuggestionManager
-            passwordsUiDelegate:UIDelegate];
+              JSPasswordManager:javaScriptPasswordManager
+            JSSuggestionManager:suggestionManager
+            passwordsUiDelegate:delegate];
 }
 
 - (instancetype)
-         initWithWebState:(web::WebState*)webState
-          passwordManager:(password_manager::PasswordManager*)passwordManager
-    passwordManagerDriver:(password_manager::PasswordManagerDriver*)driver
-        JSPasswordManager:(JsPasswordManager*)JSPasswordManager
-      JSSuggestionManager:(JsSuggestionManager*)JSSuggestionManager
-      passwordsUiDelegate:(id<PasswordsUiDelegate>)UIDelegate {
+     initWithWebState:(web::WebState*)webState
+      passwordManager:(password_manager::PasswordManager*)passwordManager
+passwordManagerDriver:(password_manager::PasswordManagerDriver*)driver
+    JSPasswordManager:(JsPasswordManager*)javaScriptPasswordManager
+  JSSuggestionManager:(JsSuggestionManager*)suggestionManager
+  passwordsUiDelegate:(id<PasswordsUiDelegate>)delegate {
   DCHECK([NSThread isMainThread]);
   DCHECK(webState);
   DCHECK_EQ([self class], [PasswordGenerationAgent class]);
@@ -195,18 +196,17 @@ bool IsTextField(const autofill::FormFieldData& field) {
   if (self) {
     _passwordManager = passwordManager;
     _passwordManagerDriver = driver;
-    _JSPasswordManager.reset([JSPasswordManager retain]);
-    _JSSuggestionManager.reset([JSSuggestionManager retain]);
+    _javaScriptPasswordManager = javaScriptPasswordManager;
+    _suggestionManager = suggestionManager;
     _webStateObserverBridge.reset(
         new web::WebStateObserverBridge(webState, self));
-    _passwords_ui_delegate.reset([UIDelegate retain]);
+    _passwords_ui_delegate = delegate;
   }
   return self;
 }
 
 - (void)dealloc {
   DCHECK([NSThread isMainThread]);
-  [super dealloc];
 }
 
 - (autofill::PasswordForm*)possibleAccountCreationForm {
@@ -227,7 +227,7 @@ bool IsTextField(const autofill::FormFieldData& field) {
   _possibleAccountCreationForm.reset();
   _passwordFields.clear();
   _passwordGenerationField.reset();
-  _generatedPassword.reset();
+  _generatedPassword = nil;
 }
 
 - (BOOL)formHasGAIARealm:(const autofill::PasswordForm&)form {
@@ -325,10 +325,9 @@ bool IsTextField(const autofill::FormFieldData& field) {
 
 - (UIView*)currentAccessoryView {
   return [_generatedPassword length] > 0
-             ? [[[PasswordGenerationEditView alloc]
-                   initWithPassword:_generatedPassword] autorelease]
-             : [[[PasswordGenerationOfferView alloc] initWithDelegate:self]
-                   autorelease];
+             ? [[PasswordGenerationEditView alloc]
+                   initWithPassword:_generatedPassword]
+             : [[PasswordGenerationOfferView alloc] initWithDelegate:self];
 }
 
 #pragma mark -
@@ -348,35 +347,33 @@ bool IsTextField(const autofill::FormFieldData& field) {
 
 - (void)acceptPasswordGeneration:(id)sender {
   [self hideAlert];
-  base::WeakNSObject<PasswordGenerationAgent> weakSelf(self);
+  __weak PasswordGenerationAgent* weakSelf = self;
   id completionHandler = ^(BOOL success) {
     if (!success)
       return;
-    base::scoped_nsobject<PasswordGenerationAgent> strongSelf(
-        [weakSelf retain]);
+    PasswordGenerationAgent* strongSelf = weakSelf;
     if (!strongSelf)
       return;
-    if (strongSelf.get()->_passwordManager) {
+    if (strongSelf->_passwordManager) {
       // Might be null in tests.
-      strongSelf.get()->_passwordManager->SetHasGeneratedPasswordForForm(
-          strongSelf.get()->_passwordManagerDriver,
-          *strongSelf.get()->_possibleAccountCreationForm, true);
+      strongSelf->_passwordManager->SetHasGeneratedPasswordForForm(
+          strongSelf->_passwordManagerDriver,
+          *strongSelf->_possibleAccountCreationForm, true);
     }
-    if (strongSelf.get()->_accessoryViewReadyCompletion) {
-      strongSelf.get()->_accessoryViewReadyCompletion.get()(
+    if (strongSelf->_accessoryViewReadyCompletion) {
+      strongSelf->_accessoryViewReadyCompletion(
           [strongSelf currentAccessoryView], strongSelf);
     }
   };
-  [_JSPasswordManager fillPasswordForm:[self passwordGenerationFormName]
-                 withGeneratedPassword:_generatedPassword
-                     completionHandler:completionHandler];
+  [_javaScriptPasswordManager fillPasswordForm:[self passwordGenerationFormName]
+                         withGeneratedPassword:_generatedPassword
+                             completionHandler:completionHandler];
 }
 
 - (void)showSavedPasswords:(id)sender {
   [self hideAlert];
-  base::scoped_nsobject<GenericChromeCommand> command(
-      [[GenericChromeCommand alloc]
-          initWithTag:IDC_SHOW_SAVE_PASSWORDS_SETTINGS]);
+  GenericChromeCommand* command = [[GenericChromeCommand alloc]
+      initWithTag:IDC_SHOW_SAVE_PASSWORDS_SETTINGS];
   [command executeOnMainWindow];
 }
 
@@ -384,8 +381,8 @@ bool IsTextField(const autofill::FormFieldData& field) {
 #pragma mark PasswordGenerationOfferDelegate
 
 - (void)generatePassword {
-  _generatedPassword.reset([base::SysUTF8ToNSString(
-      autofill::PasswordGenerator(kGeneratedPasswordLength).Generate()) copy]);
+  _generatedPassword = [base::SysUTF8ToNSString(
+      autofill::PasswordGenerator(kGeneratedPasswordLength).Generate()) copy];
   [_passwords_ui_delegate showGenerationAlertWithPassword:_generatedPassword
                                         andPromptDelegate:self];
 }
@@ -423,21 +420,21 @@ bool IsTextField(const autofill::FormFieldData& field) {
                      (AccessoryViewReadyCompletion)accessoryViewUpdateBlock {
   DCHECK(!_accessoryViewReadyCompletion);
   if ([_generatedPassword length] > 0)
-    _generatedPassword.reset([base::SysUTF8ToNSString(value) copy]);
+    _generatedPassword = [base::SysUTF8ToNSString(value) copy];
   accessoryViewUpdateBlock([self currentAccessoryView], self);
-  _accessoryViewReadyCompletion.reset([accessoryViewUpdateBlock copy]);
+  _accessoryViewReadyCompletion = [accessoryViewUpdateBlock copy];
 }
 
 - (void)inputAccessoryViewControllerDidReset:
     (FormInputAccessoryViewController*)controller {
   [self hideAlert];
   DCHECK(_accessoryViewReadyCompletion);
-  _accessoryViewReadyCompletion.reset();
+  _accessoryViewReadyCompletion = nil;
 }
 
 - (void)resizeAccessoryView {
   DCHECK(_accessoryViewReadyCompletion);
-  _accessoryViewReadyCompletion.get()([self currentAccessoryView], self);
+  _accessoryViewReadyCompletion([self currentAccessoryView], self);
 }
 
 - (BOOL)getLogKeyboardAccessoryMetrics {

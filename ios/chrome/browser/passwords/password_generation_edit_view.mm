@@ -6,8 +6,11 @@
 
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
-#include "base/mac/scoped_nsobject.h"
 #include "ios/chrome/browser/passwords/password_generation_utils.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 // Constants for the edit view.
@@ -15,7 +18,7 @@ const CGFloat kEditViewFontSize = 15;
 }  // namespace
 
 @implementation PasswordGenerationEditView {
-  base::scoped_nsobject<UITextField> _textField;
+  UITextField* _textField;
 }
 
 - (instancetype)initWithPassword:(NSString*)password {
@@ -23,7 +26,7 @@ const CGFloat kEditViewFontSize = 15;
   const CGRect defaultFrameSize = CGRectMake(0, 0, 100, 30);
   self = [super initWithFrame:defaultFrameSize];
   if (self) {
-    _textField.reset([[UITextField alloc] init]);
+    _textField = [[UITextField alloc] init];
     [_textField setText:password];
     [_textField setFont:[UIFont systemFontOfSize:kEditViewFontSize]];
     [_textField setBackgroundColor:[UIColor clearColor]];

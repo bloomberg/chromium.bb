@@ -11,6 +11,10 @@
 #include "components/password_manager/core/browser/password_manager.h"
 #import "ios/chrome/browser/passwords/password_generation_agent.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 using password_manager::PasswordAutofillManager;
 using password_manager::PasswordGenerationManager;
 using password_manager::PasswordManager;

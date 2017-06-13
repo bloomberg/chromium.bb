@@ -5,6 +5,7 @@
 import("//ios/web/js_compile.gni")
 
 source_set("passwords") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "ios_chrome_password_manager_client.h",
     "ios_chrome_password_manager_client.mm",
