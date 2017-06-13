@@ -4668,7 +4668,6 @@
             "caroline"
         ],
         "buildslave_type": "baremetal",
-        "important": false,
         "manifest": "official.xml"
     },
     "caroline-chromium-pfq": {
