@@ -72,6 +72,18 @@ class SingleLogSourceTest : public ::testing::Test {
                               input.data(), input.size());
   }
 
+  // Moves source file to destination path, then creates an empty file at the
+  // path of the original source file.
+  //
+  // |src_relative_path|: Source file path relative to |log_dir_|.
+  // |dest_relative_path|: Destination path relative to |log_dir_|.
+  bool RotateFile(const base::FilePath& src_relative_path,
+                  const base::FilePath& dest_relative_path) {
+    return base::Move(log_dir_.GetPath().Append(src_relative_path),
+                      log_dir_.GetPath().Append(dest_relative_path)) &&
+           WriteFile(src_relative_path, "");
+  }
+
   // Calls source_.Fetch() to start a logs fetch operation. Passes in
   // OnFileRead() as a callback. Runs until Fetch() has completed.
   void FetchFromSource() {
@@ -277,6 +289,45 @@ TEST_F(SingleLogSourceTest, Anonymize) {
 
   EXPECT_EQ(3, num_callback_calls());
   EXPECT_EQ("Your MAC address is: ab:88:cd:00:00:02\n", latest_response());
+}
+
+TEST_F(SingleLogSourceTest, HandleLogFileRotation) {
+  InitializeSource(SingleLogSource::SupportedSource::kMessages);
+
+  EXPECT_TRUE(AppendToFile(base::FilePath("messages"), "1st log file\n"));
+  FetchFromSource();
+  EXPECT_EQ(1, num_callback_calls());
+  EXPECT_EQ("1st log file\n", latest_response());
+
+  // Rotate file. Make sure the rest of the old file and the contents of the new
+  // file are both read.
+  EXPECT_TRUE(AppendToFile(base::FilePath("messages"), "More 1st log file\n"));
+  EXPECT_TRUE(
+      RotateFile(base::FilePath("messages"), base::FilePath("messages.1")));
+  EXPECT_TRUE(AppendToFile(base::FilePath("messages"), "2nd log file\n"));
+
+  FetchFromSource();
+  EXPECT_EQ(2, num_callback_calls());
+  EXPECT_EQ("More 1st log file\n2nd log file\n", latest_response());
+
+  // Rotate again, but this time omit the newline before rotating.
+  EXPECT_TRUE(AppendToFile(base::FilePath("messages"), "No newline here..."));
+  EXPECT_TRUE(
+      RotateFile(base::FilePath("messages"), base::FilePath("messages.1")));
+  EXPECT_TRUE(AppendToFile(base::FilePath("messages"), "3rd log file\n"));
+  EXPECT_TRUE(AppendToFile(base::FilePath("messages"), "Also no newline here"));
+
+  FetchFromSource();
+  EXPECT_EQ(3, num_callback_calls());
+  // Make sure the rotation didn't break anything: the last part of the new file
+  // does not end with a newline; thus the new file should not be read.
+  EXPECT_EQ("No newline here...3rd log file\n", latest_response());
+
+  // Finish the previous read attempt by adding the missing newline.
+  EXPECT_TRUE(AppendToFile(base::FilePath("messages"), "...yet\n"));
+  FetchFromSource();
+  EXPECT_EQ(4, num_callback_calls());
+  EXPECT_EQ("Also no newline here...yet\n", latest_response());
 }
 
 }  // namespace system_logs

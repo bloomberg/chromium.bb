@@ -13,7 +13,8 @@ namespace system_logs {
 
 namespace {
 
-const char kDefaultSystemLogDirPath[] = "/var/log";
+constexpr char kDefaultSystemLogDirPath[] = "/var/log";
+constexpr int kMaxNumAllowedLogRotationsDuringFileRead = 3;
 
 // Converts a logs source type to the corresponding file path, relative to the
 // base system log directory path. In the future, if non-file source types are
@@ -28,6 +29,15 @@ base::FilePath GetLogFileSourceRelativeFilePath(
   }
   NOTREACHED();
   return base::FilePath();
+}
+
+// Returns the inode value of file at |path|, or 0 if it doesn't exist or is
+// otherwise unable to be accessed for file system info.
+ino_t GetInodeValue(const base::FilePath& path) {
+  struct stat file_stats;
+  if (stat(path.value().c_str(), &file_stats) != 0)
+    return 0;
+  return file_stats.st_ino;
 }
 
 // Attempts to store a string |value| in |*response| under |key|. If there is
@@ -49,6 +59,7 @@ SingleLogSource::SingleLogSource(SupportedSource source)
     : SystemLogsSource(GetLogFileSourceRelativeFilePath(source).value()),
       log_file_dir_path_(kDefaultSystemLogDirPath),
       num_bytes_read_(0),
+      file_inode_(0),
       weak_ptr_factory_(this) {}
 
 SingleLogSource::~SingleLogSource() {}
@@ -62,17 +73,24 @@ void SingleLogSource::Fetch(const SysLogsSourceCallback& callback) {
       FROM_HERE,
       base::TaskTraits(base::MayBlock(), base::TaskPriority::BACKGROUND),
       base::Bind(&SingleLogSource::ReadFile, weak_ptr_factory_.GetWeakPtr(),
-                 response),
+                 kMaxNumAllowedLogRotationsDuringFileRead, response),
       base::Bind(callback, base::Owned(response)));
 }
 
-void SingleLogSource::ReadFile(SystemLogsResponse* result) {
+base::FilePath SingleLogSource::GetLogFilePath() const {
+  return base::FilePath(log_file_dir_path_).Append(source_name());
+}
+
+void SingleLogSource::ReadFile(size_t num_rotations_allowed,
+                               SystemLogsResponse* result) {
   // Attempt to open the file if it was not previously opened.
   if (!file_.IsValid()) {
-    file_.Initialize(base::FilePath(log_file_dir_path_).Append(source_name()),
+    file_.Initialize(GetLogFilePath(),
                      base::File::FLAG_OPEN | base::File::FLAG_READ);
     if (!file_.IsValid())
       return;
+
+    file_inode_ = GetInodeValue(GetLogFilePath());
   }
 
   // Check for file size reset.
@@ -89,8 +107,15 @@ void SingleLogSource::ReadFile(SystemLogsResponse* result) {
   size_t size_read = file_.ReadAtCurrentPos(&result_string[0], size_to_read);
   result_string.resize(size_read);
 
-  // The reader may only read complete lines.
-  if (result_string.empty() || result_string.back() != '\n') {
+  const bool file_was_rotated = file_inode_ != GetInodeValue(GetLogFilePath());
+  const bool should_handle_file_rotation =
+      file_was_rotated && num_rotations_allowed > 0;
+
+  // The reader may only read complete lines. The exception is when there is a
+  // rotation, in which case all the remaining contents of the old log file
+  // should be read before moving on to read the new log file.
+  if ((result_string.empty() || result_string.back() != '\n') &&
+      !should_handle_file_rotation) {
     // If an incomplete line was read, return only the part that includes whole
     // lines.
     size_t last_newline_pos = result_string.find_last_of('\n');
@@ -114,6 +139,15 @@ void SingleLogSource::ReadFile(SystemLogsResponse* result) {
   // Pass it back to the callback.
   AppendToSystemLogsResponse(result, source_name(),
                              anonymizer_.Anonymize(result_string));
+
+  // If the file was rotated, close the file handle and call this function
+  // again, to read from the new file.
+  if (should_handle_file_rotation) {
+    file_.Close();
+    num_bytes_read_ = 0;
+    file_inode_ = 0;
+    ReadFile(num_rotations_allowed - 1, result);
+  }
 }
 
 }  // namespace system_logs
