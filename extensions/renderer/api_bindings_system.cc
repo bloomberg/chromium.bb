@@ -22,7 +22,7 @@ APIBindingsSystem::APIBindingsSystem(
     : type_reference_map_(base::Bind(&APIBindingsSystem::InitializeType,
                                      base::Unretained(this))),
       request_handler_(send_request, call_js, std::move(last_error)),
-      event_handler_(call_js, event_listeners_changed),
+      event_handler_(call_js, call_js_sync, event_listeners_changed),
       call_js_(call_js),
       call_js_sync_(call_js_sync),
       get_api_schema_(get_api_schema),

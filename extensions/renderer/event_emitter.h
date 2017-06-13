@@ -26,7 +26,8 @@ class EventEmitter final : public gin::Wrappable<EventEmitter> {
  public:
   EventEmitter(bool supports_filters,
                std::unique_ptr<APIEventListeners> listeners,
-               const binding::RunJSFunction& run_js);
+               const binding::RunJSFunction& run_js,
+               const binding::RunJSFunctionSync& run_js_sync);
   ~EventEmitter() override;
 
   static gin::WrapperInfo kWrapperInfo;
@@ -55,6 +56,15 @@ class EventEmitter final : public gin::Wrappable<EventEmitter> {
   bool HasListeners();
   void Dispatch(gin::Arguments* arguments);
 
+  // Notifies the listeners of an event with the given |args|. If |run_sync| is
+  // true, runs JS synchronously and populates |out_values| with the results of
+  // the listeners.
+  void DispatchImpl(v8::Local<v8::Context> context,
+                    std::vector<v8::Local<v8::Value>>* args,
+                    const EventFilteringInfo* filter,
+                    bool run_sync,
+                    std::vector<v8::Global<v8::Value>>* out_values);
+
   // Whether or not this object is still valid; false upon context release.
   // When invalid, no listeners can be added or removed.
   bool valid_ = true;
@@ -65,6 +75,7 @@ class EventEmitter final : public gin::Wrappable<EventEmitter> {
   std::unique_ptr<APIEventListeners> listeners_;
 
   binding::RunJSFunction run_js_;
+  binding::RunJSFunctionSync run_js_sync_;
 
   DISALLOW_COPY_AND_ASSIGN(EventEmitter);
 };

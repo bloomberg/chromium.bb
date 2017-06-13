@@ -39,6 +39,7 @@ class APIEventHandler {
                           v8::Local<v8::Context>)>;
 
   APIEventHandler(const binding::RunJSFunction& call_js,
+                  const binding::RunJSFunctionSync& call_js_sync,
                   const EventListenersChangedMethod& listeners_changed);
   ~APIEventHandler();
 
@@ -96,6 +97,7 @@ class APIEventHandler {
  private:
   // Method to run a given v8::Function. Curried in for testing.
   binding::RunJSFunction call_js_;
+  binding::RunJSFunctionSync call_js_sync_;
 
   EventListenersChangedMethod listeners_changed_;
 

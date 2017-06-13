@@ -40,6 +40,7 @@ class APIEventHandlerTest : public APIBindingTest {
     APIBindingTest::SetUp();
     handler_ = base::MakeUnique<APIEventHandler>(
         base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
+        base::Bind(&RunFunctionOnGlobalAndReturnHandle),
         base::Bind(&DoNothingOnEventListenersChanged));
   }
 
@@ -556,6 +557,7 @@ TEST_F(APIEventHandlerTest, TestEventListenersThrowingExceptions) {
 
   SetHandler(base::MakeUnique<APIEventHandler>(
       base::Bind(run_js_and_expect_error),
+      base::Bind(&RunFunctionOnGlobalAndReturnHandle),
       base::Bind(&DoNothingOnEventListenersChanged)));
 
   v8::HandleScope handle_scope(isolate());
@@ -627,7 +629,8 @@ TEST_F(APIEventHandlerTest, TestEventListenersThrowingExceptions) {
 TEST_F(APIEventHandlerTest, CallbackNotifications) {
   MockEventChangeHandler change_handler;
   SetHandler(base::MakeUnique<APIEventHandler>(
-      base::Bind(&RunFunctionOnGlobalAndIgnoreResult), change_handler.Get()));
+      base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
+      base::Bind(&RunFunctionOnGlobalAndReturnHandle), change_handler.Get()));
 
   v8::HandleScope handle_scope(isolate());
 
@@ -914,6 +917,7 @@ TEST_F(APIEventHandlerTest, TestCreateCustomEvent) {
 
   MockEventChangeHandler change_handler;
   APIEventHandler handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
+                          base::Bind(&RunFunctionOnGlobalAndReturnHandle),
                           change_handler.Get());
 
   v8::Local<v8::Object> event = handler.CreateAnonymousEventInstance(context);
@@ -962,6 +966,7 @@ TEST_F(APIEventHandlerTest, TestCreateCustomEventWithCyclicDependency) {
 
   MockEventChangeHandler change_handler;
   APIEventHandler handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
+                          base::Bind(&RunFunctionOnGlobalAndReturnHandle),
                           change_handler.Get());
 
   v8::Local<v8::Object> event = handler.CreateAnonymousEventInstance(context);
@@ -988,6 +993,7 @@ TEST_F(APIEventHandlerTest, TestUnmanagedEvents) {
          v8::Local<v8::Context> context) { ADD_FAILURE(); };
 
   APIEventHandler handler(base::Bind(&RunFunctionOnGlobalAndIgnoreResult),
+                          base::Bind(&RunFunctionOnGlobalAndReturnHandle),
                           base::Bind(fail_on_notified));
 
   const char kEventName[] = "alpha";

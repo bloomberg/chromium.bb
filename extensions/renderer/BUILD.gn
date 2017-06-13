@@ -326,6 +326,7 @@ source_set("unit_tests") {
     "argument_spec_builder.h",
     "argument_spec_unittest.cc",
     "declarative_event_unittest.cc",
+    "event_emitter_unittest.cc",
     "event_unittest.cc",
     "gc_callback_unittest.cc",
     "json_schema_unittest.cc",
