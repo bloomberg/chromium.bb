@@ -40,6 +40,7 @@ class FakeProxy : public Proxy {
   void UpdateBrowserControlsState(BrowserControlsState constraints,
                                   BrowserControlsState current,
                                   bool animate) override {}
+  void RequestBeginMainFrameNotExpected(bool new_state) override {}
 
  private:
   LayerTreeHost* layer_tree_host_;

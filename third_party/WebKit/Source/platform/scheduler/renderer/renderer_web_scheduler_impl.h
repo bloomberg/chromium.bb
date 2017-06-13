@@ -23,7 +23,8 @@ class PLATFORM_EXPORT RendererWebSchedulerImpl : public WebSchedulerImpl {
   void SuspendTimerQueue() override;
   void ResumeTimerQueue() override;
   std::unique_ptr<WebViewScheduler> CreateWebViewScheduler(
-      InterventionReporter* intervention_reporter) override;
+      InterventionReporter* intervention_reporter,
+      WebViewScheduler::WebViewSchedulerDelegate* delegate) override;
 
   RendererScheduler* GetRendererSchedulerForTest() override;
 

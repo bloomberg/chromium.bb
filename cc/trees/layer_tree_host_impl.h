@@ -131,6 +131,8 @@ class LayerTreeHostImplClient {
   // Called when a requested image decode completes.
   virtual void NotifyImageDecodeRequestFinished() = 0;
 
+  virtual void RequestBeginMainFrameNotExpected(bool new_state) = 0;
+
  protected:
   virtual ~LayerTreeHostImplClient() {}
 };

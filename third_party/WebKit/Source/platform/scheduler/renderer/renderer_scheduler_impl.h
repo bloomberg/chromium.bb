@@ -323,6 +323,8 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   void OnIdlePeriodStarted() override;
   void OnIdlePeriodEnded() override;
 
+  void OnPendingTasksChanged(bool has_tasks) override;
+
   void EndIdlePeriod();
 
   // Returns the serialized scheduler state for tracing.
@@ -504,6 +506,7 @@ class PLATFORM_EXPORT RendererSchedulerImpl
     bool in_idle_period_for_testing;
     bool use_virtual_time;
     bool is_audio_playing;
+    bool compositor_will_send_main_frame_not_expected;
     bool virtual_time_paused;
     bool has_navigated;
     std::unique_ptr<base::SingleSampleMetric> max_queueing_time_metric;

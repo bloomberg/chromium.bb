@@ -57,6 +57,8 @@ class CC_EXPORT ProxyImpl : public NON_EXPORTED_BASE(LayerTreeHostImplClient),
   void MainFrameWillHappenOnImplForTesting(CompletionEvent* completion,
                                            bool* main_frame_will_happen);
 
+  void RequestBeginMainFrameNotExpected(bool new_state) override;
+
   NOINLINE void DumpForBeginMainFrameHang();
 
  private:

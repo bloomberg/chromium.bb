@@ -606,6 +606,11 @@ void Scheduler::SetDeferCommits(bool defer_commits) {
   ProcessScheduledActions();
 }
 
+void Scheduler::SetMainThreadWantsBeginMainFrameNotExpected(bool new_state) {
+  state_machine_.SetMainThreadWantsBeginMainFrameNotExpectedMessages(new_state);
+  ProcessScheduledActions();
+}
+
 void Scheduler::ProcessScheduledActions() {
   // Do not perform actions during compositor shutdown.
   if (stopped_)
@@ -637,6 +642,7 @@ void Scheduler::ProcessScheduledActions() {
         client_->ScheduledActionSendBeginMainFrame(begin_main_frame_args_);
         break;
       case SchedulerStateMachine::ACTION_NOTIFY_BEGIN_MAIN_FRAME_NOT_SENT:
+        // TODO(delphick): what if frame_time is in the past?
         state_machine_.WillNotifyBeginMainFrameNotSent();
         BeginMainFrameNotExpectedUntil(begin_main_frame_args_.frame_time +
                                        begin_main_frame_args_.interval);

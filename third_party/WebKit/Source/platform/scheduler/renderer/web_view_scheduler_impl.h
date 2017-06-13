@@ -35,6 +35,7 @@ class PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
  public:
   WebViewSchedulerImpl(
       WebScheduler::InterventionReporter* intervention_reporter,
+      WebViewScheduler::WebViewSchedulerDelegate* delegate,
       RendererSchedulerImpl* renderer_scheduler,
       bool disable_background_timer_throttling);
 
@@ -53,6 +54,7 @@ class PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
       std::unique_ptr<WTF::Closure> budget_exhausted_callback) override;
   void AudioStateChanged(bool is_audio_playing) override;
   bool HasActiveConnectionForTest() const override;
+  void RequestBeginMainFrameNotExpected(bool new_state) override;
 
   // Virtual for testing.
   virtual void ReportIntervention(const std::string& message);
@@ -124,6 +126,7 @@ class PLATFORM_EXPORT WebViewSchedulerImpl : public WebViewScheduler {
   bool has_active_connection_;
   CPUTimeBudgetPool* background_time_budget_pool_;  // Not owned.
   CancelableClosureHolder delayed_background_throttling_enabler_;
+  WebViewScheduler::WebViewSchedulerDelegate* delegate_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(WebViewSchedulerImpl);
 };

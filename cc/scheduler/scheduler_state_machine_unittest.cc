@@ -297,19 +297,18 @@ TEST(SchedulerStateMachineTest, BeginFrameNeeded) {
 TEST(SchedulerStateMachineTest, TestNextActionNotifyBeginMainFrameNotSent) {
   SchedulerSettings default_scheduler_settings;
   StateMachine state(default_scheduler_settings);
+  state.SetMainThreadWantsBeginMainFrameNotExpectedMessages(true);
   state.SetVisible(true);
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_BEGIN_COMPOSITOR_FRAME_SINK_CREATION);
   state.IssueNextBeginImplFrame();
   state.CreateAndInitializeCompositorFrameSinkWithActivatedCommit();
-  // A main frame was not requested so short idle work is scheduled instead.
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_NOTIFY_BEGIN_MAIN_FRAME_NOT_SENT);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
   state.SetNeedsRedraw(true);
   state.SetNeedsBeginMainFrame();
-  // Now a main frame is requested no short idle work is scheduled.
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
@@ -334,8 +333,6 @@ TEST(SchedulerStateMachineTest, TestNextActionBeginsMainFrameIfNeeded) {
     EXPECT_FALSE(state.NeedsCommit());
 
     state.IssueNextBeginImplFrame();
-    EXPECT_ACTION_UPDATE_STATE(
-        SchedulerStateMachine::ACTION_NOTIFY_BEGIN_MAIN_FRAME_NOT_SENT);
     EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
     state.OnBeginImplFrameDeadline();
@@ -485,8 +482,6 @@ TEST(SchedulerStateMachineTest,
 
   // Start a frame.
   state.IssueNextBeginImplFrame();
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_NOTIFY_BEGIN_MAIN_FRAME_NOT_SENT);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   EXPECT_FALSE(state.CommitPending());
 
@@ -524,8 +519,6 @@ TEST(SchedulerStateMachineTest, FailedDrawForMissingHighResNeedsCommit) {
 
   // Start a frame.
   state.IssueNextBeginImplFrame();
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_NOTIFY_BEGIN_MAIN_FRAME_NOT_SENT);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   EXPECT_FALSE(state.CommitPending());
 
@@ -562,8 +555,6 @@ TEST(SchedulerStateMachineTest, FailedDrawForMissingHighResNeedsCommit) {
 
   // Verify we draw with the new frame.
   state.IssueNextBeginImplFrame();
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_NOTIFY_BEGIN_MAIN_FRAME_NOT_SENT);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   state.OnBeginImplFrameDeadline();
   state.SetDrawResultForTest(DRAW_SUCCESS);
@@ -697,8 +688,6 @@ TEST(SchedulerStateMachineTest, TestFailedDrawIsRetriedInNextBeginImplFrame) {
   state.SetNeedsRedraw(true);
   EXPECT_TRUE(state.BeginFrameNeeded());
   state.IssueNextBeginImplFrame();
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_NOTIFY_BEGIN_MAIN_FRAME_NOT_SENT);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   state.OnBeginImplFrameDeadline();
   EXPECT_TRUE(state.RedrawPending());
@@ -735,8 +724,6 @@ TEST(SchedulerStateMachineTest, TestDoestDrawTwiceInSameFrame) {
   // Draw the first frame.
   EXPECT_TRUE(state.BeginFrameNeeded());
   state.IssueNextBeginImplFrame();
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_NOTIFY_BEGIN_MAIN_FRAME_NOT_SENT);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
   state.OnBeginImplFrameDeadline();
@@ -753,8 +740,6 @@ TEST(SchedulerStateMachineTest, TestDoestDrawTwiceInSameFrame) {
   // Move to another frame. This should now draw.
   EXPECT_TRUE(state.BeginFrameNeeded());
   state.IssueNextBeginImplFrame();
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_NOTIFY_BEGIN_MAIN_FRAME_NOT_SENT);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   state.OnBeginImplFrameDeadline();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE);
@@ -1439,8 +1424,6 @@ TEST(SchedulerStateMachineTest, TestAbortBeginMainFrameBecauseCommitNotNeeded) {
   EXPECT_MAIN_FRAME_STATE(SchedulerStateMachine::BEGIN_MAIN_FRAME_STATE_IDLE);
 
   state.IssueNextBeginImplFrame();
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_NOTIFY_BEGIN_MAIN_FRAME_NOT_SENT);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   state.OnBeginImplFrameDeadline();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
@@ -1465,8 +1448,6 @@ TEST(SchedulerStateMachineTest, TestFirstContextCreation) {
 
   // Check that the first init does not SetNeedsBeginMainFrame.
   state.IssueNextBeginImplFrame();
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_NOTIFY_BEGIN_MAIN_FRAME_NOT_SENT);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   state.OnBeginImplFrameDeadline();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
@@ -1521,8 +1502,6 @@ TEST(SchedulerStateMachineTest,
 
   // Once context recreation begins, nothing should happen.
   state.IssueNextBeginImplFrame();
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_NOTIFY_BEGIN_MAIN_FRAME_NOT_SENT);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   state.OnBeginImplFrameDeadline();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
@@ -1573,8 +1552,6 @@ TEST(SchedulerStateMachineTest,
   // automatically cause a redraw.
   EXPECT_TRUE(state.RedrawPending());
   state.IssueNextBeginImplFrame();
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_NOTIFY_BEGIN_MAIN_FRAME_NOT_SENT);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   state.OnBeginImplFrameDeadline();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE);
@@ -1583,8 +1560,6 @@ TEST(SchedulerStateMachineTest,
 
   // Next frame as no work to do.
   state.IssueNextBeginImplFrame();
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_NOTIFY_BEGIN_MAIN_FRAME_NOT_SENT);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   state.OnBeginImplFrameDeadline();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
@@ -1593,8 +1568,6 @@ TEST(SchedulerStateMachineTest,
   // SetCanDraw if waiting on first draw after activate.
   state.SetNeedsRedraw(true);
   state.IssueNextBeginImplFrame();
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_NOTIFY_BEGIN_MAIN_FRAME_NOT_SENT);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   state.OnBeginImplFrameDeadline();
   EXPECT_ACTION(SchedulerStateMachine::ACTION_DRAW_IF_POSSIBLE);
@@ -1687,8 +1660,6 @@ TEST(SchedulerStateMachineTest, TestContextLostWhileCommitInProgress) {
   state.OnBeginImplFrame(0, 11);
   EXPECT_IMPL_FRAME_STATE(
       SchedulerStateMachine::BEGIN_IMPL_FRAME_STATE_INSIDE_BEGIN_FRAME);
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_NOTIFY_BEGIN_MAIN_FRAME_NOT_SENT);
   EXPECT_ACTION(SchedulerStateMachine::ACTION_NONE);
   EXPECT_SEQUENCE_NUMBERS(11u, 10u, 10u, 10u,
                           BeginFrameArgs::kInvalidFrameNumber);
@@ -2046,8 +2017,7 @@ TEST(SchedulerStateMachineTest,
 }
 
 void FinishPreviousCommitAndDrawWithoutExitingDeadline(
-    StateMachine* state_ptr,
-    bool expect_begin_main_frame_not_sent_before_impl_frame_deadline) {
+    StateMachine* state_ptr) {
   // Gross, but allows us to use macros below.
   StateMachine& state = *state_ptr;
 
@@ -2060,10 +2030,6 @@ void FinishPreviousCommitAndDrawWithoutExitingDeadline(
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
   state.IssueNextBeginImplFrame();
-  if (expect_begin_main_frame_not_sent_before_impl_frame_deadline) {
-    EXPECT_ACTION_UPDATE_STATE(
-        SchedulerStateMachine::ACTION_NOTIFY_BEGIN_MAIN_FRAME_NOT_SENT);
-  }
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
   EXPECT_TRUE(state.ShouldTriggerBeginImplFrameDeadlineImmediately());
@@ -2103,7 +2069,7 @@ TEST(SchedulerStateMachineTest, TestImplLatencyTakesPriority) {
 
   // Request a new commit and finish the previous one.
   state.SetNeedsBeginMainFrame();
-  FinishPreviousCommitAndDrawWithoutExitingDeadline(&state, false);
+  FinishPreviousCommitAndDrawWithoutExitingDeadline(&state);
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_SEND_BEGIN_MAIN_FRAME);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
@@ -2111,7 +2077,7 @@ TEST(SchedulerStateMachineTest, TestImplLatencyTakesPriority) {
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
   // Finish the previous commit and draw it.
-  FinishPreviousCommitAndDrawWithoutExitingDeadline(&state, true);
+  FinishPreviousCommitAndDrawWithoutExitingDeadline(&state);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
   // Verify we do not send another BeginMainFrame if was are submit-frame
@@ -2292,8 +2258,6 @@ TEST(SchedulerStateMachineTest, ImplSideInvalidationOnlyInsideDeadline) {
 
   state.SetNeedsImplSideInvalidation();
   state.IssueNextBeginImplFrame();
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_NOTIFY_BEGIN_MAIN_FRAME_NOT_SENT);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   state.OnBeginImplFrameDeadline();
   EXPECT_ACTION_UPDATE_STATE(
@@ -2317,8 +2281,6 @@ TEST(SchedulerStateMachineTest,
   state.SetNeedsImplSideInvalidation();
   state.IssueNextBeginImplFrame();
   state.OnBeginImplFrameDeadline();
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_NOTIFY_BEGIN_MAIN_FRAME_NOT_SENT);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
   // Initializing the CompositorFrameSink puts us in a state waiting for the
@@ -2413,8 +2375,6 @@ TEST(SchedulerStateMachineTest,
   state.OnBeginImplFrameDeadline();
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_PERFORM_IMPL_SIDE_INVALIDATION);
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_NOTIFY_BEGIN_MAIN_FRAME_NOT_SENT);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
   // Request another invalidation, which should wait until the pending tree is
@@ -2463,8 +2423,6 @@ TEST(SchedulerStateMachineTest, ImplSideInvalidationsThrottledOnDraw) {
   state.SetNeedsImplSideInvalidation();
   state.IssueNextBeginImplFrame();
   state.OnBeginImplFrameDeadline();
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_NOTIFY_BEGIN_MAIN_FRAME_NOT_SENT);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 
   // Ack the previous frame and begin impl frame, which should perform the
@@ -2513,8 +2471,6 @@ TEST(SchedulerStateMachineTest, PrepareTilesWaitForImplSideInvalidation) {
   EXPECT_ACTION_UPDATE_STATE(
       SchedulerStateMachine::ACTION_PERFORM_IMPL_SIDE_INVALIDATION);
   state.DidPrepareTiles();
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_NOTIFY_BEGIN_MAIN_FRAME_NOT_SENT);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
 }
 
@@ -2541,8 +2497,6 @@ TEST(SchedulerStateMachineTest, TestBeginFrameFreshnessWithoutUpdates) {
 
   // OnBeginImplFrame() updates the sequence number.
   state.OnBeginImplFrame(0, 10);
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_NOTIFY_BEGIN_MAIN_FRAME_NOT_SENT);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   EXPECT_SEQUENCE_NUMBERS(10u, BeginFrameArgs::kInvalidFrameNumber,
                           BeginFrameArgs::kInvalidFrameNumber,
@@ -2570,8 +2524,6 @@ TEST(SchedulerStateMachineTest, TestBeginFrameFreshnessWithImplFrameUpdates) {
 
   // OnBeginImplFrame() updates the sequence number.
   state.OnBeginImplFrame(0, 10);
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_NOTIFY_BEGIN_MAIN_FRAME_NOT_SENT);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   EXPECT_SEQUENCE_NUMBERS(10u, BeginFrameArgs::kInvalidFrameNumber,
                           BeginFrameArgs::kInvalidFrameNumber,
@@ -2655,8 +2607,6 @@ TEST(SchedulerStateMachineTest, TestBeginFrameFreshnessWithMainFrameUpdates) {
   // If no further BeginMainFrame is needed, OnBeginFrameImplDeadline()
   // updates the pending tree's frame number.
   state.OnBeginImplFrame(0, 12);
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_NOTIFY_BEGIN_MAIN_FRAME_NOT_SENT);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   EXPECT_SEQUENCE_NUMBERS(12u, 10u, 10u, BeginFrameArgs::kInvalidFrameNumber,
                           BeginFrameArgs::kInvalidFrameNumber);
@@ -2718,8 +2668,6 @@ TEST(SchedulerStateMachineTest, TestBeginFrameFreshnessWithMainFrameUpdates) {
   // When no updates are required, OnBeginImplFrameDeadline() updates active
   // tree and compositor frame freshness.
   state.OnBeginImplFrame(0, 15);
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_NOTIFY_BEGIN_MAIN_FRAME_NOT_SENT);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   state.OnBeginImplFrameDeadline();
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
@@ -2749,8 +2697,6 @@ TEST(SchedulerStateMachineTest, TestBeginFrameFreshnessWithMainFrameUpdates) {
   // When the source changes, the current frame number is updated and frame
   // numbers for freshness are reset to invalid numbers.
   state.OnBeginImplFrame(1, 5);
-  EXPECT_ACTION_UPDATE_STATE(
-      SchedulerStateMachine::ACTION_NOTIFY_BEGIN_MAIN_FRAME_NOT_SENT);
   EXPECT_ACTION_UPDATE_STATE(SchedulerStateMachine::ACTION_NONE);
   EXPECT_SEQUENCE_NUMBERS(5u, BeginFrameArgs::kInvalidFrameNumber,
                           BeginFrameArgs::kInvalidFrameNumber,

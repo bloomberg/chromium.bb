@@ -66,6 +66,7 @@ class IdleCanceledDelayedTaskSweeperTest : public testing::Test,
   void IsNotQuiescent() override {}
   void OnIdlePeriodStarted() override {}
   void OnIdlePeriodEnded() override {}
+  void OnPendingTasksChanged(bool has_tasks) {}
 
  protected:
   std::unique_ptr<base::SimpleTestTickClock> clock_;

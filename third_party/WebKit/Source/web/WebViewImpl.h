@@ -98,7 +98,8 @@ class WEB_EXPORT WebViewImpl final
     : NON_EXPORTED_BASE(public WebViewBase),
       NON_EXPORTED_BASE(public WebGestureCurveTarget),
       public PageWidgetEventHandler,
-      public WebScheduler::InterventionReporter {
+      public WebScheduler::InterventionReporter,
+      public WebViewScheduler::WebViewSchedulerDelegate {
  public:
   static WebViewBase* Create(WebViewClient*, WebPageVisibilityState);
 
@@ -244,6 +245,7 @@ class WEB_EXPORT WebViewImpl final
   // WebScheduler::InterventionReporter implementation:
   void ReportIntervention(const WebString& message) override;
 
+  void RequestBeginMainFrameNotExpected(bool new_state) override;
   void DidUpdateFullscreenSize() override;
 
   float DefaultMinimumPageScaleFactor() const override;

@@ -174,6 +174,7 @@ class IdleHelperForTest : public IdleHelper, public IdleHelper::Delegate {
   MOCK_METHOD0(IsNotQuiescent, void());
   MOCK_METHOD0(OnIdlePeriodStarted, void());
   MOCK_METHOD0(OnIdlePeriodEnded, void());
+  MOCK_METHOD1(OnPendingTasksChanged, void(bool has_tasks));
 };
 
 class BaseIdleHelperTest : public testing::Test {
@@ -208,6 +209,7 @@ class BaseIdleHelperTest : public testing::Test {
     EXPECT_CALL(*idle_helper_, CanEnterLongIdlePeriod(_, _))
         .Times(AnyNumber())
         .WillRepeatedly(Return(true));
+    EXPECT_CALL(*idle_helper_, OnPendingTasksChanged(_)).Times(AnyNumber());
   }
 
   void TearDown() override {
@@ -1112,6 +1114,71 @@ TEST_F(IdleHelperTest, TestPostDelayedIdleTask) {
   RunUntilIdle();
 
   EXPECT_EQ(1, run_count);
+  EXPECT_EQ(expected_deadline, deadline_in_task);
+}
+
+// Tests that the OnPendingTasksChanged callback is called once when the idle
+// queue becomes non-empty and again when it becomes empty.
+TEST_F(IdleHelperTest, OnPendingTasksChanged) {
+  int run_count = 0;
+  base::TimeTicks expected_deadline =
+      clock_->NowTicks() + base::TimeDelta::FromMilliseconds(2300);
+  base::TimeTicks deadline_in_task;
+
+  {
+    testing::InSequence dummy;
+    // This will be called once. I.e when the one and only task is posted.
+    EXPECT_CALL(*idle_helper_, OnPendingTasksChanged(true)).Times(1);
+    // This will be called once. I.e when the one and only task completes.
+    EXPECT_CALL(*idle_helper_, OnPendingTasksChanged(false)).Times(1);
+  }
+
+  clock_->Advance(base::TimeDelta::FromMilliseconds(100));
+  idle_task_runner_->PostIdleTask(
+      FROM_HERE, base::Bind(&IdleTestTask, &run_count, &deadline_in_task));
+
+  RunUntilIdle();
+  EXPECT_EQ(0, run_count);
+
+  idle_helper_->StartIdlePeriod(
+      IdleHelper::IdlePeriodState::IN_SHORT_IDLE_PERIOD, clock_->NowTicks(),
+      expected_deadline);
+  RunUntilIdle();
+  EXPECT_EQ(1, run_count);
+  EXPECT_EQ(expected_deadline, deadline_in_task);
+}
+
+// Tests that the OnPendingTasksChanged callback is still only called once
+// with false despite there being two idle tasks posted.
+TEST_F(IdleHelperTest, OnPendingTasksChanged_TwoTasksAtTheSameTime) {
+  int run_count = 0;
+  base::TimeTicks expected_deadline =
+      clock_->NowTicks() + base::TimeDelta::FromMilliseconds(2300);
+  base::TimeTicks deadline_in_task;
+
+  {
+    testing::InSequence dummy;
+    // This will be called 3 times. I.e when T1 and T2 are posted and when T1
+    // completes.
+    EXPECT_CALL(*idle_helper_, OnPendingTasksChanged(true)).Times(3);
+    // This will be called once. I.e when T2 completes.
+    EXPECT_CALL(*idle_helper_, OnPendingTasksChanged(false)).Times(1);
+  }
+
+  clock_->Advance(base::TimeDelta::FromMilliseconds(100));
+  idle_task_runner_->PostIdleTask(
+      FROM_HERE, base::Bind(&IdleTestTask, &run_count, &deadline_in_task));
+  idle_task_runner_->PostIdleTask(
+      FROM_HERE, base::Bind(&IdleTestTask, &run_count, &deadline_in_task));
+
+  RunUntilIdle();
+  EXPECT_EQ(0, run_count);
+
+  idle_helper_->StartIdlePeriod(
+      IdleHelper::IdlePeriodState::IN_SHORT_IDLE_PERIOD, clock_->NowTicks(),
+      expected_deadline);
+  RunUntilIdle();
+  EXPECT_EQ(2, run_count);
   EXPECT_EQ(expected_deadline, deadline_in_task);
 }
 

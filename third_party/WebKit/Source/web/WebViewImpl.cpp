@@ -381,7 +381,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
       scheduler_(Platform::Current()
                      ->CurrentThread()
                      ->Scheduler()
-                     ->CreateWebViewScheduler(this)),
+                     ->CreateWebViewScheduler(this, this)),
       last_frame_time_monotonic_(0),
       override_compositor_visibility_(false) {
   Page::PageClients page_clients;
@@ -1110,6 +1110,12 @@ void WebViewImpl::ReportIntervention(const WebString& message) {
     return;
   WebConsoleMessage console_message(WebConsoleMessage::kLevelWarning, message);
   MainFrameImpl()->AddMessageToConsole(console_message);
+}
+
+void WebViewImpl::RequestBeginMainFrameNotExpected(bool new_state) {
+  if (layer_tree_view_) {
+    layer_tree_view_->RequestBeginMainFrameNotExpected(new_state);
+  }
 }
 
 WebInputEventResult WebViewImpl::HandleKeyEvent(const WebKeyboardEvent& event) {

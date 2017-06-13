@@ -63,6 +63,9 @@ class PLATFORM_EXPORT IdleHelper : public base::MessageLoop::TaskObserver,
     // Signals that we have finished an Idle Period.
     virtual void OnIdlePeriodEnded() = 0;
 
+    // Signals that the task list has changed.
+    virtual void OnPendingTasksChanged(bool has_tasks) = 0;
+
    private:
     DISALLOW_COPY_AND_ASSIGN(Delegate);
   };

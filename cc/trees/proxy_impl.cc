@@ -230,6 +230,14 @@ void ProxyImpl::MainFrameWillHappenOnImplForTesting(
   completion->Signal();
 }
 
+void ProxyImpl::RequestBeginMainFrameNotExpected(bool new_state) {
+  DCHECK(IsImplThread());
+  DCHECK(scheduler_);
+  TRACE_EVENT1("cc", "ProxyImpl::RequestBeginMainFrameNotExpected", "new_state",
+               new_state);
+  scheduler_->SetMainThreadWantsBeginMainFrameNotExpected(new_state);
+}
+
 // TODO(sunnyps): Remove this code once crbug.com/668892 is fixed.
 NOINLINE void ProxyImpl::DumpForBeginMainFrameHang() {
   DCHECK(IsImplThread());

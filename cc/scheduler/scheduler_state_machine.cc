@@ -196,6 +196,8 @@ void SchedulerStateMachine::AsValueInto(
                     did_send_begin_main_frame_for_current_frame_);
   state->SetBoolean("did_notify_begin_main_frame_not_sent",
                     did_notify_begin_main_frame_not_sent_);
+  state->SetBoolean("wants_begin_main_frame_not_expected",
+                    wants_begin_main_frame_not_expected_);
   state->SetBoolean("did_commit_during_frame", did_commit_during_frame_);
   state->SetBoolean("did_invalidate_compositor_frame_sink",
                     did_invalidate_compositor_frame_sink_);
@@ -386,6 +388,9 @@ bool SchedulerStateMachine::ShouldNotifyBeginMainFrameNotSent() const {
   // This method returns true if most of the conditions for sending a
   // BeginMainFrame are met, but one is not actually requested. This gives the
   // main thread the chance to do something else.
+
+  if (!wants_begin_main_frame_not_expected_)
+    return false;
 
   // Don't notify if a BeginMainFrame has already been requested or is in
   // progress.
@@ -839,6 +844,11 @@ void SchedulerStateMachine::DidDraw(DrawResult draw_result) {
 
 void SchedulerStateMachine::SetNeedsImplSideInvalidation() {
   needs_impl_side_invalidation_ = true;
+}
+
+void SchedulerStateMachine::SetMainThreadWantsBeginMainFrameNotExpectedMessages(
+    bool new_state) {
+  wants_begin_main_frame_not_expected_ = new_state;
 }
 
 void SchedulerStateMachine::AbortDraw() {

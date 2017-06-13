@@ -73,6 +73,8 @@ class CC_EXPORT Proxy {
                                           BrowserControlsState current,
                                           bool animate) = 0;
 
+  virtual void RequestBeginMainFrameNotExpected(bool new_state) = 0;
+
   // Testing hooks
   virtual bool MainFrameWillHappenForTesting() = 0;
 };

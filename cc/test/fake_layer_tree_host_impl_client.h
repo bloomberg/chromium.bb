@@ -36,6 +36,7 @@ class FakeLayerTreeHostImplClient : public LayerTreeHostImplClient {
   void DidCompletePageScaleAnimationOnImplThread() override {}
   void OnDrawForCompositorFrameSink(bool resourceless_software_draw) override {}
   void NeedsImplSideInvalidation() override;
+  void RequestBeginMainFrameNotExpected(bool new_state) override {}
   void NotifyImageDecodeRequestFinished() override {}
 
   void reset_did_request_impl_side_invalidation() {
