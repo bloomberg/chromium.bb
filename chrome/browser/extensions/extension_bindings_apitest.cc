@@ -97,6 +97,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest,
 // Regression test for http://crbug.com/436593.
 IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest, EventOverriding) {
   ASSERT_TRUE(RunExtensionTest("bindings/event_overriding")) << message_;
+  // The extension test removes a window and, during window removal, sends the
+  // success message. Make sure we flush all pending tasks.
+  base::RunLoop().RunUntilIdle();
 }
 
 // Tests the effectiveness of the 'nocompile' feature file property.
