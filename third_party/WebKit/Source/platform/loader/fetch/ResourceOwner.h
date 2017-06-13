@@ -56,9 +56,7 @@ class ResourceOwner : public C {
  protected:
   ResourceOwner() {}
 
-  void SetResource(
-      ResourceType*,
-      Resource::PreloadReferencePolicy = Resource::kMarkAsReferenced);
+  void SetResource(ResourceType*);
   void ClearResource() { SetResource(nullptr); }
 
  private:
@@ -66,9 +64,7 @@ class ResourceOwner : public C {
 };
 
 template <class R, class C>
-inline void ResourceOwner<R, C>::SetResource(
-    R* new_resource,
-    Resource::PreloadReferencePolicy preload_reference_policy) {
+inline void ResourceOwner<R, C>::SetResource(R* new_resource) {
   if (new_resource == resource_)
     return;
 
@@ -79,7 +75,7 @@ inline void ResourceOwner<R, C>::SetResource(
 
   if (new_resource) {
     resource_ = new_resource;
-    resource_->AddClient(this, preload_reference_policy);
+    resource_->AddClient(this);
   }
 }
 

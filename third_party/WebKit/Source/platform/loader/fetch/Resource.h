@@ -52,6 +52,7 @@ namespace blink {
 class FetchParameters;
 class ResourceClient;
 class ResourceFetcher;
+class ResourceFinishObserver;
 class ResourceTimingInfo;
 class ResourceLoader;
 class SecurityOrigin;
@@ -156,6 +157,10 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   // resource clients that simply observe the resource.
   void AddClient(ResourceClient*, PreloadReferencePolicy = kMarkAsReferenced);
   void RemoveClient(ResourceClient*);
+
+  void AddFinishObserver(ResourceFinishObserver*,
+                         PreloadReferencePolicy = kMarkAsReferenced);
+  void RemoveFinishObserver(ResourceFinishObserver*);
 
   enum PreloadResult {
     kPreloadNotReferenced,
@@ -363,7 +368,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   virtual bool HasClientsOrObservers() const {
     return !clients_.IsEmpty() || !clients_awaiting_callback_.IsEmpty() ||
-           !finished_clients_.IsEmpty();
+           !finished_clients_.IsEmpty() || !finish_observers_.IsEmpty();
   }
   virtual void DestroyDecodedDataForFailedRevalidation() {}
 
@@ -412,6 +417,8 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   SharedBuffer* Data() const { return data_.Get(); }
   void ClearData();
+
+  void TriggerNotificationForFinishObservers();
 
  private:
   class CachedMetadataHandlerImpl;
@@ -474,6 +481,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   HeapHashCountedSet<WeakMember<ResourceClient>> clients_;
   HeapHashCountedSet<WeakMember<ResourceClient>> clients_awaiting_callback_;
   HeapHashCountedSet<WeakMember<ResourceClient>> finished_clients_;
+  HeapHashSet<WeakMember<ResourceFinishObserver>> finish_observers_;
 
   ResourceLoaderOptions options_;
 

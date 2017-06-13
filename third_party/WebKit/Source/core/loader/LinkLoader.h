@@ -34,10 +34,8 @@
 
 #include "core/CoreExport.h"
 #include "core/loader/LinkLoaderClient.h"
-#include "core/loader/resource/LinkPreloadResourceClients.h"
 #include "platform/CrossOriginAttributeValue.h"
 #include "platform/PrerenderClient.h"
-#include "platform/loader/fetch/ResourceClient.h"
 #include "platform/loader/fetch/ResourceOwner.h"
 #include "platform/wtf/Optional.h"
 
@@ -54,7 +52,6 @@ struct ViewportDescriptionWrapper;
 // prerender.
 class CORE_EXPORT LinkLoader final
     : public GarbageCollectedFinalized<LinkLoader>,
-      public ResourceOwner<Resource, ResourceClient>,
       public PrerenderClient {
   USING_GARBAGE_COLLECTED_MIXIN(LinkLoader);
 
@@ -64,19 +61,13 @@ class CORE_EXPORT LinkLoader final
   }
   ~LinkLoader() override;
 
-  // from ResourceClient
-  void NotifyFinished(Resource*) override;
-  String DebugName() const override { return "LinkLoader"; }
-
   // from PrerenderClient
   void DidStartPrerender() override;
   void DidStopPrerender() override;
   void DidSendLoadForPrerender() override;
   void DidSendDOMContentLoadedForPrerender() override;
 
-  void TriggerEvents(const Resource*);
-
-  void Released();
+  void Abort();
   bool LoadLink(const LinkRelAttribute&,
                 CrossOriginAttributeValue,
                 const String& type,
@@ -105,24 +96,20 @@ class CORE_EXPORT LinkLoader final
   static WTF::Optional<Resource::Type> GetResourceTypeFromAsAttribute(
       const String& as);
 
-  Resource* LinkPreloadedResourceForTesting();
+  Resource* GetResourceForTesting();
 
   DECLARE_TRACE();
 
  private:
+  class FinishObserver;
   LinkLoader(LinkLoaderClient*, RefPtr<WebTaskRunner>);
 
-  void LinkLoadTimerFired(TimerBase*);
-  void LinkLoadingErrorTimerFired(TimerBase*);
-  void CreateLinkPreloadResourceClient(Resource*);
+  void NotifyFinished();
 
+  Member<FinishObserver> finish_observer_;
   Member<LinkLoaderClient> client_;
 
-  TaskRunnerTimer<LinkLoader> link_load_timer_;
-  TaskRunnerTimer<LinkLoader> link_loading_error_timer_;
-
   Member<PrerenderHandle> prerender_;
-  Member<LinkPreloadResourceClient> link_preload_resource_client_;
 };
 
 }  // namespace blink
