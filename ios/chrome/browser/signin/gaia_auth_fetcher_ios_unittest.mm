@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#import "base/mac/scoped_nsobject.h"
 #include "base/run_loop.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "ios/chrome/browser/signin/gaia_auth_fetcher_ios_private.h"
@@ -20,6 +19,10 @@
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/gtest_support.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 class FakeGaiaAuthFetcherIOSBridge : public GaiaAuthFetcherIOSBridge {
@@ -31,12 +34,11 @@ class FakeGaiaAuthFetcherIOSBridge : public GaiaAuthFetcherIOSBridge {
  private:
   WKWebView* BuildWKWebView() override {
     if (!mock_web_view_) {
-      mock_web_view_.reset(
-          [[OCMockObject niceMockForClass:[WKWebView class]] retain]);
+      mock_web_view_ = [OCMockObject niceMockForClass:[WKWebView class]];
     }
     return mock_web_view_;
   }
-  base::scoped_nsobject<id> mock_web_view_;
+  id mock_web_view_;
 };
 
 class MockGaiaConsumer : public GaiaAuthConsumer {
