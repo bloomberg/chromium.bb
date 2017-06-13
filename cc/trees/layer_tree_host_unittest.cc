@@ -2734,6 +2734,69 @@ class LayerTreeHostTestStartPageScaleAnimation : public LayerTreeHostTest {
 // Single thread proxy does not support impl-side page scale changes.
 MULTI_THREAD_TEST_F(LayerTreeHostTestStartPageScaleAnimation);
 
+class ViewportDeltasAppliedDuringPinch : public LayerTreeHostTest {
+ protected:
+  ViewportDeltasAppliedDuringPinch() : sent_gesture_(false) {}
+
+  void SetupTree() override {
+    scoped_refptr<Layer> root_clip = Layer::Create();
+    root_clip->SetBounds(gfx::Size(500, 500));
+    scoped_refptr<Layer> page_scale_layer = Layer::Create();
+    page_scale_layer->SetBounds(gfx::Size(500, 500));
+
+    scoped_refptr<Layer> pinch = Layer::Create();
+    pinch->SetBounds(gfx::Size(500, 500));
+    pinch->SetScrollClipLayerId(root_clip->id());
+    pinch->SetIsContainerForFixedPositionLayers(true);
+    page_scale_layer->AddChild(pinch);
+    root_clip->AddChild(page_scale_layer);
+
+    LayerTreeHost::ViewportLayers viewport_layers;
+    viewport_layers.page_scale = page_scale_layer;
+    viewport_layers.inner_viewport_container = root_clip;
+    viewport_layers.inner_viewport_scroll = pinch;
+    layer_tree_host()->RegisterViewportLayers(viewport_layers);
+    layer_tree_host()->SetPageScaleFactorAndLimits(1.f, 1.f, 4.f);
+    layer_tree_host()->SetRootLayer(root_clip);
+    LayerTreeHostTest::SetupTree();
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void DrawLayersOnThread(LayerTreeHostImpl* host_impl) override {
+    if (!sent_gesture_) {
+      host_impl->PinchGestureBegin();
+      host_impl->PinchGestureUpdate(2, gfx::Point(100, 100));
+      host_impl->PinchGestureEnd();
+      sent_gesture_ = true;
+    }
+  }
+
+  void ApplyViewportDeltas(const gfx::Vector2dF& inner,
+                           const gfx::Vector2dF& outer,
+                           const gfx::Vector2dF& elastic_overscroll_delta,
+                           float scale_delta,
+                           float top_controls_delta) override {
+    EXPECT_TRUE(sent_gesture_);
+    EXPECT_EQ(gfx::Vector2dF(50, 50), inner);
+    EXPECT_EQ(2, scale_delta);
+  }
+
+  void DidCommit() override {
+    if (!sent_gesture_)
+      return;
+    auto* scroll_layer = layer_tree_host()->inner_viewport_scroll_layer();
+    EXPECT_EQ(gfx::ScrollOffset(50, 50), scroll_layer->scroll_offset());
+    EndTest();
+  }
+
+  void AfterTest() override { EXPECT_TRUE(sent_gesture_); }
+
+  bool sent_gesture_;
+};
+
+MULTI_THREAD_TEST_F(ViewportDeltasAppliedDuringPinch);
+
 class LayerTreeHostTestSetVisible : public LayerTreeHostTest {
  public:
   LayerTreeHostTestSetVisible() : num_draws_(0) {}
