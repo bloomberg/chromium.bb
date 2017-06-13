@@ -59,6 +59,7 @@ public class ChildProcessServiceImpl {
     private static boolean sCreateCalled;
 
     private final Object mBinderLock = new Object();
+    private final Object mLibraryInitializedLock = new Object();
 
     @GuardedBy("mBinderLock")
     private boolean mBindToCallerCheck;
@@ -81,6 +82,7 @@ public class ChildProcessServiceImpl {
     // Child library process type.
     private int mLibraryProcessType;
 
+    @GuardedBy("mLibraryInitializedLock")
     private boolean mLibraryInitialized;
 
     /**
@@ -253,9 +255,11 @@ public class ChildProcessServiceImpl {
                             .registerRendererProcessHistogram(requestedSharedRelro,
                                     loadAtFixedAddressFailed);
                     LibraryLoader.get(mLibraryProcessType).initialize();
-                    synchronized (mMainThread) {
+                    synchronized (mLibraryInitializedLock) {
                         mLibraryInitialized = true;
-                        mMainThread.notifyAll();
+                        mLibraryInitializedLock.notifyAll();
+                    }
+                    synchronized (mMainThread) {
                         while (mFdInfos == null) {
                             mMainThread.wait();
                         }
@@ -300,12 +304,12 @@ public class ChildProcessServiceImpl {
             System.exit(0);
             return;
         }
-        synchronized (mMainThread) {
+        synchronized (mLibraryInitializedLock) {
             try {
                 while (!mLibraryInitialized) {
                     // Avoid a potential race in calling through to native code before the library
                     // has loaded.
-                    mMainThread.wait();
+                    mLibraryInitializedLock.wait();
                 }
             } catch (InterruptedException e) {
                 // Ignore
