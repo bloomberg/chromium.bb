@@ -48,9 +48,10 @@ class DataPack;
 // safety between the writing thread and the UI thread is ensured by having the
 // data be immutable.
 //
-// BrowserThemePacks are always deleted on the file thread because in the
-// common case, they are backed by mmapped data and the unmmapping operation
-// will trip our IO on the UI thread detector.
+// BrowserThemePacks are always deleted on a sequence with I/O allowed because
+// in the common case, they are backed by mmapped data and the unmmapping
+// operation will trip our IO on the UI thread detector.
+// See CustomThemeSupplier constructor more more details.
 class BrowserThemePack : public CustomThemeSupplier {
  public:
   // Builds the theme from |extension| into |pack|. This may be done on a

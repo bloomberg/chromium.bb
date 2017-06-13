@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/ref_counted_delete_on_sequence.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/layout.h"
@@ -26,8 +27,8 @@ class Image;
 // A representation of a theme. All theme properties can be accessed through the
 // public methods. Subclasses are expected to override all methods which should
 // provide non-default values.
-class CustomThemeSupplier : public base::RefCountedThreadSafe<
-    CustomThemeSupplier, content::BrowserThread::DeleteOnFileThread> {
+class CustomThemeSupplier
+    : public base::RefCountedDeleteOnSequence<CustomThemeSupplier> {
  public:
   enum ThemeType {
     EXTENSION,
@@ -72,8 +73,7 @@ class CustomThemeSupplier : public base::RefCountedThreadSafe<
   virtual ~CustomThemeSupplier();
 
  private:
-  friend struct content::BrowserThread::DeleteOnThread<
-      content::BrowserThread::FILE>;
+  friend class base::RefCountedDeleteOnSequence<CustomThemeSupplier>;
   friend class base::DeleteHelper<CustomThemeSupplier>;
 
   ThemeType theme_type_;
