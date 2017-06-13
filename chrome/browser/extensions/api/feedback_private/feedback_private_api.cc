@@ -4,7 +4,6 @@
 
 #include "chrome/browser/extensions/api/feedback_private/feedback_private_api.h"
 
-#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -37,6 +36,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/extensions/api/feedback_private/log_source_access_manager.h"
 #endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_WIN)
@@ -72,9 +72,10 @@ namespace extensions {
 
 namespace feedback_private = api::feedback_private;
 
-using feedback_private::SystemInformation;
 using feedback_private::FeedbackInfo;
 using feedback_private::FeedbackFlow;
+using feedback_private::LogSource;
+using feedback_private::SystemInformation;
 
 using SystemInformationList =
     std::vector<api::feedback_private::SystemInformation>;
@@ -89,17 +90,26 @@ FeedbackPrivateAPI::GetFactoryInstance() {
 }
 
 FeedbackPrivateAPI::FeedbackPrivateAPI(content::BrowserContext* context)
-    : browser_context_(context), service_(new FeedbackService()) {
+    : browser_context_(context),
+#if !defined(OS_CHROMEOS)
+      service_(new FeedbackService()) {
+#else
+      service_(new FeedbackService()),
+      log_source_access_manager_(new LogSourceAccessManager(context)){
+#endif  // defined(OS_CHROMEOS)
 }
 
-FeedbackPrivateAPI::~FeedbackPrivateAPI() {
-  delete service_;
-  service_ = NULL;
-}
+FeedbackPrivateAPI::~FeedbackPrivateAPI() {}
 
 FeedbackService* FeedbackPrivateAPI::GetService() const {
-  return service_;
+  return service_.get();
 }
+
+#if defined(OS_CHROMEOS)
+LogSourceAccessManager* FeedbackPrivateAPI::GetLogSourceAccessManager() const {
+  return log_source_access_manager_.get();
+}
+#endif
 
 void FeedbackPrivateAPI::RequestFeedback(
     const std::string& description_template,
@@ -264,6 +274,38 @@ void FeedbackPrivateGetSystemInformationFunction::OnCompleted(
   Respond(ArgumentList(
       feedback_private::GetSystemInformation::Results::Create(sys_info_list)));
 }
+
+ExtensionFunction::ResponseAction FeedbackPrivateReadLogSourceFunction::Run() {
+#if defined(OS_CHROMEOS)
+  using Params = feedback_private::ReadLogSource::Params;
+  std::unique_ptr<Params> api_params = Params::Create(*args_);
+
+  LogSourceAccessManager* log_source_manager =
+      FeedbackPrivateAPI::GetFactoryInstance()
+          ->Get(browser_context())
+          ->GetLogSourceAccessManager();
+
+  if (!log_source_manager->FetchFromSource(
+          api_params->params, extension_id(),
+          base::Bind(&FeedbackPrivateReadLogSourceFunction::OnCompleted,
+                     this))) {
+    return RespondNow(Error("Unable to initiate fetch from log source."));
+  }
+
+  return RespondLater();
+#else
+  NOTREACHED() << "API function is not supported on this platform.";
+  return RespondNow(Error("API function is not supported on this platform."));
+#endif  // defined(OS_CHROMEOS)
+}
+
+#if defined(OS_CHROMEOS)
+void FeedbackPrivateReadLogSourceFunction::OnCompleted(
+    const feedback_private::ReadLogSourceResult& result) {
+  Respond(
+      ArgumentList(feedback_private::ReadLogSource::Results::Create(result)));
+}
+#endif  // defined(OS_CHROMEOS)
 
 bool FeedbackPrivateSendFeedbackFunction::RunAsync() {
   std::unique_ptr<feedback_private::SendFeedback::Params> params(

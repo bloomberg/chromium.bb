@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_FEEDBACK_PRIVATE_FEEDBACK_PRIVATE_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_FEEDBACK_PRIVATE_FEEDBACK_PRIVATE_API_H_
 
+#include <memory>
+
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/browser/feedback/system_logs/system_logs_fetcher.h"
 #include "chrome/common/extensions/api/feedback_private.h"
@@ -15,6 +17,9 @@
 namespace extensions {
 
 class FeedbackService;
+#if defined(OS_CHROMEOS)
+class LogSourceAccessManager;
+#endif  // defined(OS_CHROMEOS)
 
 class FeedbackPrivateAPI : public BrowserContextKeyedAPI {
  public:
@@ -22,6 +27,10 @@ class FeedbackPrivateAPI : public BrowserContextKeyedAPI {
   ~FeedbackPrivateAPI() override;
 
   FeedbackService* GetService() const;
+
+#if defined(OS_CHROMEOS)
+  LogSourceAccessManager* GetLogSourceAccessManager() const;
+#endif  // defined(OS_CHROMEOS)
 
   void RequestFeedback(const std::string& description_template,
                        const std::string& category_tag,
@@ -47,7 +56,13 @@ class FeedbackPrivateAPI : public BrowserContextKeyedAPI {
   static const bool kServiceHasOwnInstanceInIncognito = true;
 
   content::BrowserContext* const browser_context_;
-  FeedbackService* service_;
+  std::unique_ptr<FeedbackService> service_;
+
+#if defined(OS_CHROMEOS)
+  std::unique_ptr<LogSourceAccessManager> log_source_access_manager_;
+#endif  // defined(OS_CHROMEOS)
+
+  DISALLOW_COPY_AND_ASSIGN(FeedbackPrivateAPI);
 };
 
 // Feedback strings.
@@ -93,6 +108,23 @@ class FeedbackPrivateGetSystemInformationFunction
 
  private:
   void OnCompleted(std::unique_ptr<system_logs::SystemLogsResponse> sys_info);
+};
+
+// This function only reads from actual log sources on Chrome OS. On other
+// platforms, it just returns EmptyResponse().
+class FeedbackPrivateReadLogSourceFunction : public UIThreadExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("feedbackPrivate.readLogSource",
+                             FEEDBACKPRIVATE_READLOGSOURCE);
+
+ protected:
+  ~FeedbackPrivateReadLogSourceFunction() override {}
+  ResponseAction Run() override;
+
+#if defined(OS_CHROMEOS)
+ private:
+  void OnCompleted(const api::feedback_private::ReadLogSourceResult& result);
+#endif  // defined(OS_CHROMEOS)
 };
 
 class FeedbackPrivateSendFeedbackFunction

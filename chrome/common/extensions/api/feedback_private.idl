@@ -95,11 +95,56 @@ namespace feedbackPrivate {
     closed
   };
 
+  // Allowed log sources on Chrome OS.
+  enum LogSource {
+    // Chrome OS system messages.
+    messages,
+
+    // Latest Chrome OS UI logs.
+    uiLatest
+  };
+
+  // Input parameters for a readLogSource() call.
+  dictionary ReadLogSourceParams {
+    // The log source from which to read.
+    LogSource source;
+
+    // For file-based log sources, read from source without closing the file
+    // handle. The next time $(ref:readLogSource) is called, the file read will
+    // continue where it left off. $(ref:readLogSource) can be called with
+    // <code>incremental=true</code> repeatedly. To subsequently close the file
+    // handle, pass in <code>incremental=false</code>.
+    boolean incremental;
+
+    // To read from an existing file handle, set this to a valid
+    // <code>readerId</code> value that was returned from a previous
+    // $(ref:readLogSource) call. The reader must previously have been created
+    // for the same value of <code>source</code>. If no <code>readerId</code> is
+    // provided, $(ref:readLogSource) will attempt to open a new log source
+    // reader handle.
+    long? readerId;
+  };
+
+  // Result returned from a $(ref:readLogSource) call.
+  dictionary ReadLogSourceResult {
+    // The ID of the log source reader that was created to read from the log
+    // source. If the reader was destroyed at the end of a read by passing in
+    // <code>incremental=false</code>, this is always set to 0. If the call was
+    // to use an existing reader with an existing ID, this will be set to the
+    // same <code>readerId</code> that was passed into $(ref:readLogSource).
+    long readerId;
+
+    // Each DOMString in this array represents one line of logging that was
+    // fetched from the log source.
+    DOMString[] logLines;
+  };
+
   callback GetUserEmailCallback = void(DOMString email);
   callback GetSystemInformationCallback =
       void(SystemInformation[] systemInformation);
   callback SendFeedbackCallback = void(Status status);
   callback GetStringsCallback = void(object result);
+  callback ReadLogSourceCallback = void (ReadLogSourceResult result);
 
   interface Functions {
     // Returns the email of the currently active or logged in user.
@@ -120,6 +165,34 @@ namespace feedbackPrivate {
     // Logs whether the user accepted a prompt to try the Software Removal
     // Tool.
     static void logSrtPromptResult(SrtPromptResult result);
+
+    // Reads from a log source indicated by <code>source</code>.
+    // <p>If <code>incremental</code> is false:
+    // <ul>
+    //   <li>Returns the entire contents of the log file.</li>
+    //   <li>Returns <code>readerId</code> value of 0 to callback.</li>
+    // </ul>
+    // If <code>incremental</code> is true, and no <code>readerId</code> is
+    // provided:
+    // <ul>
+    //   <li>Returns the entire contents of the log file.</li>
+    //   <li>Starts tracking the file read handle, which is returned as a
+    //       nonzero <code>readerId</code> value in the callback.
+    //       </li>
+    //   <li>If can't create a new file handle, returns <code>readerId</code>
+    //       value of 0 in the callback.
+    //       </li>
+    // </ul>
+    // If <code>incremental</code> is true, and a valid non-zero
+    // <code>readerId</code> is provided:
+    // <ul>
+    //   <li>Returns new lines written to the file since the last time this
+    //       function was called for the same file and <code>readerId</code>.
+    //       </li>
+    //   <li>Returns the same <code>readerId</code> value to the callback.</li>
+    // </ul>
+    static void readLogSource(ReadLogSourceParams params,
+                              ReadLogSourceCallback callback);
   };
 
   interface Events {
