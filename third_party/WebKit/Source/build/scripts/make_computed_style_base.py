@@ -73,6 +73,10 @@ class Group(object):
         # Recursively get all the fields in the subgroups as well
         self.all_fields = _flatten_list(subgroup.all_fields for subgroup in subgroups) + fields
 
+        # Link group
+        for field in fields:
+            field.group = self
+
 
 class DiffGroup(object):
     """Represents a group of expressions and subgroups that need to be diffed
@@ -85,6 +89,7 @@ class DiffGroup(object):
     def __init__(self, group_name):
         self.group_name = group_name
         self.subgroups = []
+        self.fields = []
         self.expressions = []
         self.predicates = []
 
@@ -114,13 +119,12 @@ class Field(object):
         wrapper_pointer_name: Name of the pointer type that wraps this field (e.g. RefPtr).
         field_template: Determines the interface generated for the field. Can be one of:
            keyword, flag, or monotonic_flag.
-        field_group: The name of the group that this field is inside.
         size: Number of bits needed for storage.
         default_value: Default value for this field when it is first initialized.
     """
 
     def __init__(self, field_role, name_for_methods, property_name, type_name, wrapper_pointer_name,
-                 field_template, field_group, size, default_value, custom_copy, custom_compare,
+                 field_template, size, default_value, custom_copy, custom_compare,
                  getter_method_name, setter_method_name, initial_method_name, **kwargs):
         """Creates a new field."""
         self.name = class_member_name(name_for_methods)
@@ -129,12 +133,11 @@ class Field(object):
         self.wrapper_pointer_name = wrapper_pointer_name
         self.alignment_type = self.wrapper_pointer_name or self.type_name
         self.field_template = field_template
-        self.group_name = field_group
-        self.group_member_name = class_member_name(join_name(field_group, 'data')) if field_group else None
         self.size = size
         self.default_value = default_value
         self.custom_copy = custom_copy
         self.custom_compare = custom_compare
+        self.group = None
 
         # Field role: one of these must be true
         self.is_property = field_role == 'property'
@@ -158,10 +161,6 @@ class Field(object):
         self.internal_setter_method_name = method_name(join_name(setter_method_name, 'Internal'))
         self.initial_method_name = initial_method_name
         self.resetter_method_name = method_name(join_name('Reset', name_for_methods))
-        if self.group_name:
-            self.getter_expression = self.group_member_name + '->' + class_member_name(self.name)
-        else:
-            self.getter_expression = class_member_name(self.name)
 
         # If the size of the field is not None, it means it is a bit field
         self.is_bit_field = self.size is not None
@@ -179,11 +178,11 @@ def _get_include_paths(properties):
     return list(sorted(include_paths))
 
 
-def _group_fields(fields):
+def _create_groups(properties):
     """Groups a list of fields by their group_name and returns the root group."""
     groups = defaultdict(list)
-    for field in fields:
-        groups[field.group_name].append(field)
+    for property_ in properties:
+        groups[property_['field_group']].extend(_create_fields(property_))
 
     no_group = groups.pop(None)
     subgroups = [Group(group_name, [], _reorder_fields(fields)) for group_name, fields in groups.items()]
@@ -214,7 +213,7 @@ def _create_diff_groups(fields_to_diff, methods_to_diff, predicates_to_test, roo
     for entry in fields_to_diff:
         for field in root_group.fields:
             if not field.is_inherited_flag and entry == field.property_name:
-                diff_group.expressions.append(field.getter_expression)
+                diff_group.fields.append(field)
     for entry in methods_to_diff:
         for field in root_group.fields:
             if not field.is_inherited_flag and field.property_name in entry['field_dependencies']:
@@ -296,7 +295,6 @@ def _create_property_field(property_):
         type_name=type_name,
         wrapper_pointer_name=property_['wrapper_pointer_name'],
         field_template=property_['field_template'],
-        field_group=property_['field_group'],
         size=size,
         default_value=default_value,
         custom_copy=property_['custom_copy'],
@@ -320,7 +318,6 @@ def _create_inherited_flag_field(property_):
         type_name='bool',
         wrapper_pointer_name=None,
         field_template='primitive',
-        field_group=property_['field_group'],
         size=1,
         default_value='true',
         custom_copy=False,
@@ -331,20 +328,19 @@ def _create_inherited_flag_field(property_):
     )
 
 
-def _create_fields(properties):
+def _create_fields(property_):
     """
-    Create ComputedStyle fields from properties and return a list of Field objects.
+    Create ComputedStyle fields from a property and return a list of Field objects.
     """
     fields = []
-    for property_ in properties:
-        # Only generate properties that have a field template
-        if property_['field_template'] is not None:
-            # If the property is independent, add the single-bit sized isInherited flag
-            # to the list of Fields as well.
-            if property_['independent']:
-                fields.append(_create_inherited_flag_field(property_))
+    # Only generate properties that have a field template
+    if property_['field_template'] is not None:
+        # If the property is independent, add the single-bit sized isInherited flag
+        # to the list of Fields as well.
+        if property_['independent']:
+            fields.append(_create_inherited_flag_field(property_))
 
-            fields.append(_create_property_field(property_))
+        fields.append(_create_property_field(property_))
 
     return fields
 
@@ -430,11 +426,9 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
 
         self._generated_enums = _create_enums(all_properties)
 
-        all_fields = _create_fields(all_properties)
-
         # Organise fields into a tree structure where the root group
         # is ComputedStyleBase.
-        self._root_group = _group_fields(all_fields)
+        self._root_group = _create_groups(all_properties)
         self._diff_functions_map = _create_diff_groups_map(json5_generator.Json5File.load_from_files(
             [json5_file_paths[2]]
         ).name_dictionaries, self._root_group)

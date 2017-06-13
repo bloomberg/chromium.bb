@@ -15,23 +15,23 @@ static_cast<{{field.type_name}}>({{value}})
 {% endmacro %}
 
 {% macro getter_expression(field) %}
-{% if field.group_member_name -%}
-{{field.group_member_name}}->{{field.name}}
+{% if field.group.name -%}
+{{field.group.member_name}}->{{field.name}}
 {%- else -%}
 {{field.name}}
 {%- endif %}
 {% endmacro %}
 
 {% macro setter_expression(field) %}
-{% if field.group_member_name -%}
-{{field.group_member_name}}.Access()->{{field.name}}
+{% if field.group.name -%}
+{{field.group.member_name}}.Access()->{{field.name}}
 {%- else -%}
 {{field.name}}
 {%- endif %}
 {% endmacro %}
 
 {% macro set_if_changed(field, value) %}
-{% if field.group_member_name -%}
+{% if field.group.name -%}
 if (!({{getter_expression(field)}} == {{value}}))
   {{setter_expression(field)}} = {{value}};
 {%- else -%}
@@ -126,6 +126,10 @@ unsigned {{field.name}} : {{field.size}}; // {{field.type_name}}
 if (a.{{group.group_name}}.Get() != b.{{group.group_name}}.Get()) {
 {{fieldwise_diff(group)|indent(2, true)}}
 }
+{% endfor %}
+{% for field in group_to_diff.fields %}
+if (a.{{getter_expression(field)}} != b.{{getter_expression(field)}})
+  return true;
 {% endfor %}
 {% for expression in group_to_diff.expressions %}
 if (a.{{expression}} != b.{{expression}})
