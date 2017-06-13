@@ -11,6 +11,10 @@
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace ios_internal {
 
 AlertCoordinator* ErrorCoordinator(NSError* error,
@@ -51,10 +55,10 @@ AlertCoordinator* ErrorCoordinatorNoItem(NSError* error,
     // |error.localizedDescription| contains the error domain and code.
     errorMessage = error.localizedDescription;
   }
-  AlertCoordinator* alertCoordinator = [[[AlertCoordinator alloc]
-      initWithBaseViewController:viewController
-                           title:title
-                         message:errorMessage] autorelease];
+  AlertCoordinator* alertCoordinator =
+      [[AlertCoordinator alloc] initWithBaseViewController:viewController
+                                                     title:title
+                                                   message:errorMessage];
   return alertCoordinator;
 }
 

@@ -37,7 +37,7 @@ class ChromeIdentityServiceObserverBridge
   void OnProfileUpdate(ChromeIdentity* identity) override;
   void OnChromeIdentityServiceWillBeDestroyed() override;
 
-  id<ChromeIdentityServiceObserver> observer_;  // Weak. |observer_| owns this.
+  __unsafe_unretained id<ChromeIdentityServiceObserver> observer_;  // Weak.
   ScopedObserver<ios::ChromeIdentityService,
                  ChromeIdentityServiceObserverBridge> scoped_observer_;
 

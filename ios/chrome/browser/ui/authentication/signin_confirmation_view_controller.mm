@@ -4,9 +4,7 @@
 
 #include "ios/chrome/browser/ui/authentication/signin_confirmation_view_controller.h"
 
-#import "base/ios/weak_nsobject.h"
 #import "base/mac/foundation_util.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/metrics/user_metrics.h"
 #import "base/strings/sys_string_conversions.h"
 #include "components/google/core/browser/google_util.h"
@@ -30,6 +28,10 @@
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #import "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 const CGFloat kAccountImageDimension = 64.;
@@ -75,12 +77,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @interface SigninConfirmationViewController ()<
     ChromeIdentityServiceObserver,
     CollectionViewFooterLinkDelegate> {
-  base::scoped_nsobject<ChromeIdentity> _identity;
+  ChromeIdentity* _identity;
   std::unique_ptr<ChromeIdentityServiceObserverBridge> _identityServiceObserver;
-  base::WeakNSObject<UIImage> _oldImage;
-  base::scoped_nsobject<UIImageView> _imageView;
-  base::scoped_nsobject<UILabel> _titleLabel;
-  base::scoped_nsobject<UILabel> _emailLabel;
+  __weak UIImage* _oldImage;
+  UIImageView* _imageView;
+  UILabel* _titleLabel;
+  UILabel* _emailLabel;
 }
 @end
 
@@ -91,7 +93,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (instancetype)initWithIdentity:(ChromeIdentity*)identity {
   self = [super initWithStyle:CollectionViewControllerStyleAppBar];
   if (self) {
-    _identity.reset([identity retain]);
+    _identity = identity;
     _identityServiceObserver.reset(
         new ChromeIdentityServiceObserverBridge(self));
   }
@@ -145,35 +147,31 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (UIView*)contentViewWithFrame:(CGRect)frame {
-  base::scoped_nsobject<UIView> contentView(
-      [[UIView alloc] initWithFrame:frame]);
-  contentView.get().autoresizingMask =
+  UIView* contentView = [[UIView alloc] initWithFrame:frame];
+  contentView.autoresizingMask =
       (UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight);
-  contentView.get().clipsToBounds = YES;
-  _imageView.reset([[UIImageView alloc] init]);
-  _imageView.get().translatesAutoresizingMaskIntoConstraints = NO;
+  contentView.clipsToBounds = YES;
+  _imageView = [[UIImageView alloc] init];
+  _imageView.translatesAutoresizingMaskIntoConstraints = NO;
 
-  _titleLabel.reset([[UILabel alloc] initWithFrame:CGRectZero]);
-  _titleLabel.get().textColor = [[MDCPalette greyPalette] tint900];
-  _titleLabel.get().font = [MDCTypography headlineFont];
-  _titleLabel.get().translatesAutoresizingMaskIntoConstraints = NO;
+  _titleLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+  _titleLabel.textColor = [[MDCPalette greyPalette] tint900];
+  _titleLabel.font = [MDCTypography headlineFont];
+  _titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
 
-  _emailLabel.reset([[UILabel alloc] initWithFrame:CGRectZero]);
-  _emailLabel.get().textColor = [[MDCPalette greyPalette] tint700];
-  _emailLabel.get().font = [MDCTypography body1Font];
-  _emailLabel.get().translatesAutoresizingMaskIntoConstraints = NO;
+  _emailLabel = [[UILabel alloc] initWithFrame:CGRectZero];
+  _emailLabel.textColor = [[MDCPalette greyPalette] tint700];
+  _emailLabel.font = [MDCTypography body1Font];
+  _emailLabel.translatesAutoresizingMaskIntoConstraints = NO;
 
   [self updateViewWithIdentity:_identity];
 
-  base::scoped_nsobject<UIView> divider(
-      [[UIView alloc] initWithFrame:CGRectZero]);
-  divider.get().backgroundColor = [[MDCPalette greyPalette] tint300];
-  divider.get().translatesAutoresizingMaskIntoConstraints = NO;
+  UIView* divider = [[UIView alloc] initWithFrame:CGRectZero];
+  divider.backgroundColor = [[MDCPalette greyPalette] tint300];
+  divider.translatesAutoresizingMaskIntoConstraints = NO;
 
-  base::scoped_nsobject<UILayoutGuide> layoutGuide1(
-      [[UILayoutGuide alloc] init]);
-  base::scoped_nsobject<UILayoutGuide> layoutGuide2(
-      [[UILayoutGuide alloc] init]);
+  UILayoutGuide* layoutGuide1 = [[UILayoutGuide alloc] init];
+  UILayoutGuide* layoutGuide2 = [[UILayoutGuide alloc] init];
 
   [contentView addSubview:_imageView];
   [contentView addSubview:_titleLabel];
@@ -198,7 +196,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     @"H:|[divider]|",
   ];
   ApplyVisualConstraints(constraints, views);
-  return contentView.autorelease();
+  return contentView;
 }
 
 - (void)viewWillLayoutSubviews {
@@ -211,22 +209,22 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)updateViewWithIdentity:(ChromeIdentity*)identity {
   UIImage* identityImage = GetImageForIdentity(identity);
-  if (_oldImage.get() != identityImage) {
-    _oldImage.reset(identityImage);
+  if (_oldImage != identityImage) {
+    _oldImage = identityImage;
     identityImage =
         ResizeImage(identityImage,
                     CGSizeMake(kAccountImageDimension, kAccountImageDimension),
                     ProjectionMode::kAspectFit);
     identityImage =
         CircularImageFromImage(identityImage, kAccountImageDimension);
-    _imageView.get().image = identityImage;
+    _imageView.image = identityImage;
   }
 
-  _titleLabel.get().text = l10n_util::GetNSStringF(
+  _titleLabel.text = l10n_util::GetNSStringF(
       IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_TITLE,
       base::SysNSStringToUTF16([identity userFullName]));
 
-  _emailLabel.get().text = [identity userEmail];
+  _emailLabel.text = [identity userEmail];
 }
 
 #pragma mark - Model
@@ -247,7 +245,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (CollectionViewItem*)syncItem {
   AccountControlItem* item =
-      [[[AccountControlItem alloc] initWithType:ItemTypeSync] autorelease];
+      [[AccountControlItem alloc] initWithType:ItemTypeSync];
   item.text = l10n_util::GetNSString(
       IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_SYNC_TITLE);
   item.detailText = l10n_util::GetNSString(
@@ -259,8 +257,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (CollectionViewItem*)googleServicesItem {
-  AccountControlItem* item = [[[AccountControlItem alloc]
-      initWithType:ItemTypeGoogleServices] autorelease];
+  AccountControlItem* item =
+      [[AccountControlItem alloc] initWithType:ItemTypeGoogleServices];
   item.text = l10n_util::GetNSString(
       IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_SERVICES_TITLE);
   item.detailText = l10n_util::GetNSString(
@@ -272,8 +270,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (CollectionViewItem*)openSettingsItem {
-  CollectionViewFooterItem* item = [[[CollectionViewFooterItem alloc]
-      initWithType:ItemTypeFooter] autorelease];
+  CollectionViewFooterItem* item =
+      [[CollectionViewFooterItem alloc] initWithType:ItemTypeFooter];
   item.text = l10n_util::GetNSString(
       IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_OPEN_SETTINGS);
   item.linkURL = google_util::AppendGoogleLocaleParam(
@@ -343,13 +341,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
           base::mac::ObjCCastStrict<CollectionViewFooterCell>(cell);
       // TODO(crbug.com/664648): Must use atomic text formatting operation due
       // to LabelLinkController bug.
-      footerCell.textLabel.attributedText = [[[NSAttributedString alloc]
+      footerCell.textLabel.attributedText = [[NSAttributedString alloc]
           initWithString:footerCell.textLabel.text
               attributes:@{
                 NSFontAttributeName : [MDCTypography body1Font],
                 NSForegroundColorAttributeName :
                     [[MDCPalette greyPalette] tint700]
-              }] autorelease];
+              }];
       footerCell.horizontalPadding = 16;
       break;
     }

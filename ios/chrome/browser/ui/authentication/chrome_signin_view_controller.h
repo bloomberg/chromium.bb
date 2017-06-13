@@ -60,7 +60,7 @@ class ChromeBrowserState;
 // sign-in UI flow.
 @interface ChromeSigninViewController : UIViewController
 
-@property(nonatomic, assign) id<ChromeSigninViewControllerDelegate> delegate;
+@property(nonatomic, weak) id<ChromeSigninViewControllerDelegate> delegate;
 
 // Data clearing policy to use during the authentication.
 // It is valid to set this in the |willStartSignIn:| method of the delegate.

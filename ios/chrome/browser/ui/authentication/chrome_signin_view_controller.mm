@@ -13,9 +13,7 @@
 
 #import "base/ios/block_types.h"
 #import "base/ios/ios_util.h"
-#import "base/ios/weak_nsobject.h"
 #import "base/mac/bind_objc_block.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/metrics/user_metrics.h"
 #import "base/strings/sys_string_conversions.h"
 #include "base/timer/elapsed_timer.h"
@@ -55,6 +53,10 @@
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #import "ui/base/l10n/l10n_util.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -132,19 +134,19 @@ void HideButton(UIButton* button) {
     SigninAccountSelectorViewControllerDelegate,
     SigninConfirmationViewControllerDelegate,
     MDCActivityIndicatorDelegate>
-@property(nonatomic, retain) ChromeIdentity* selectedIdentity;
+@property(nonatomic, strong) ChromeIdentity* selectedIdentity;
 
 @end
 
 @implementation ChromeSigninViewController {
   ios::ChromeBrowserState* _browserState;  // weak
-  base::WeakNSProtocol<id<ChromeSigninViewControllerDelegate>> _delegate;
+  __weak id<ChromeSigninViewControllerDelegate> _delegate;
   std::unique_ptr<ChromeIdentityServiceObserverBridge> _identityServiceObserver;
-  base::scoped_nsobject<ChromeIdentity> _selectedIdentity;
+  ChromeIdentity* _selectedIdentity;
 
   // Authentication
-  base::scoped_nsobject<AlertCoordinator> _alertCoordinator;
-  base::scoped_nsobject<AuthenticationFlow> _authenticationFlow;
+  AlertCoordinator* _alertCoordinator;
+  AuthenticationFlow* _authenticationFlow;
   BOOL _addedAccount;
   BOOL _autoSignIn;
   BOOL _didSignIn;
@@ -153,19 +155,19 @@ void HideButton(UIButton* button) {
   BOOL _isPresentedOnSettings;
   signin_metrics::AccessPoint _accessPoint;
   signin_metrics::PromoAction _promoAction;
-  base::scoped_nsobject<ChromeIdentityInteractionManager> _interactionManager;
+  ChromeIdentityInteractionManager* _interactionManager;
 
   // Basic state.
   AuthenticationState _currentState;
   BOOL _ongoingStateChange;
-  base::scoped_nsobject<MDCActivityIndicator> _activityIndicator;
-  base::scoped_nsobject<MDCButton> _primaryButton;
-  base::scoped_nsobject<MDCButton> _secondaryButton;
-  base::scoped_nsobject<UIView> _gradientView;
-  base::scoped_nsobject<CAGradientLayer> _gradientLayer;
+  MDCActivityIndicator* _activityIndicator;
+  MDCButton* _primaryButton;
+  MDCButton* _secondaryButton;
+  UIView* _gradientView;
+  CAGradientLayer* _gradientLayer;
 
   // Identity picker state.
-  base::scoped_nsobject<SigninAccountSelectorViewController> _accountSelectorVC;
+  SigninAccountSelectorViewController* _accountSelectorVC;
 
   // Signin pending state.
   AuthenticationState _activityIndicatorNextState;
@@ -173,10 +175,11 @@ void HideButton(UIButton* button) {
   std::unique_ptr<base::Timer> _leavingPendingStateTimer;
 
   // Identity selected state.
-  base::scoped_nsobject<SigninConfirmationViewController> _confirmationVC;
+  SigninConfirmationViewController* _confirmationVC;
   BOOL _hasConfirmationScreenReachedBottom;
 }
 
+@synthesize delegate = _delegate;
 @synthesize shouldClearData = _shouldClearData;
 
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
@@ -214,7 +217,6 @@ void HideButton(UIButton* button) {
                           action:@selector(onSecondaryButtonPressed:)
                 forControlEvents:UIControlEventTouchDown];
   [[NSNotificationCenter defaultCenter] removeObserver:self];
-  [super dealloc];
 }
 
 - (void)cancel {
@@ -291,10 +293,6 @@ void HideButton(UIButton* button) {
   return _delegate;
 }
 
-- (void)setDelegate:(id<ChromeSigninViewControllerDelegate>)delegate {
-  _delegate.reset(delegate);
-}
-
 - (UIColor*)backgroundColor {
   return [[MDCPalette greyPalette] tint50];
 }
@@ -322,7 +320,7 @@ void HideButton(UIButton* button) {
 
 - (void)setSelectedIdentity:(ChromeIdentity*)identity {
   DCHECK(identity || (IDENTITY_PICKER_STATE == _currentState));
-  _selectedIdentity.reset([identity retain]);
+  _selectedIdentity = identity;
 }
 
 - (ChromeIdentity*)selectedIdentity {
@@ -336,21 +334,20 @@ void HideButton(UIButton* button) {
   if (!ShouldHandleSigninError(error)) {
     return;
   }
-  _alertCoordinator.reset(
-      [ios_internal::ErrorCoordinator(error, nil, self) retain]);
+  _alertCoordinator = ios_internal::ErrorCoordinator(error, nil, self);
   [_alertCoordinator start];
 }
 
 - (void)signIntoIdentity:(ChromeIdentity*)identity {
   [_delegate willStartSignIn:self];
   DCHECK(!_authenticationFlow);
-  _authenticationFlow.reset([[AuthenticationFlow alloc]
-          initWithBrowserState:_browserState
-                      identity:identity
-               shouldClearData:_shouldClearData
-              postSignInAction:POST_SIGNIN_ACTION_NONE
-      presentingViewController:self]);
-  base::WeakNSObject<ChromeSigninViewController> weakSelf(self);
+  _authenticationFlow =
+      [[AuthenticationFlow alloc] initWithBrowserState:_browserState
+                                              identity:identity
+                                       shouldClearData:_shouldClearData
+                                      postSignInAction:POST_SIGNIN_ACTION_NONE
+                              presentingViewController:self];
+  __weak ChromeSigninViewController* weakSelf = self;
   [_authenticationFlow startSignInWithCompletion:^(BOOL success) {
     [weakSelf onAccountSigninCompletion:success];
   }];
@@ -362,22 +359,21 @@ void HideButton(UIButton* button) {
       ios::GetChromeBrowserProvider()
           ->GetChromeIdentityService()
           ->NewChromeIdentityInteractionManager(_browserState, self);
-  base::WeakNSObject<ChromeSigninViewController> weakSelf(self);
+  __weak ChromeSigninViewController* weakSelf = self;
   SigninCompletionCallback completion =
       ^(ChromeIdentity* identity, NSError* error) {
-        base::scoped_nsobject<ChromeSigninViewController> strongSelf(
-            [weakSelf retain]);
-        if (!strongSelf || !strongSelf.get()->_interactionManager)
+        ChromeSigninViewController* strongSelf = weakSelf;
+        if (!strongSelf || !strongSelf->_interactionManager)
           return;
         // The ChromeIdentityInteractionManager is not used anymore at this
         // point.
-        strongSelf.get()->_interactionManager.reset();
+        strongSelf->_interactionManager = nil;
 
         if (error) {
           [strongSelf handleAuthenticationError:error];
           return;
         }
-        strongSelf.get()->_addedAccount = YES;
+        strongSelf->_addedAccount = YES;
         [strongSelf onIdentityListChanged];
         [strongSelf setSelectedIdentity:identity];
         [strongSelf changeToState:SIGNIN_PENDING_STATE];
@@ -387,7 +383,7 @@ void HideButton(UIButton* button) {
 }
 
 - (void)onAccountSigninCompletion:(BOOL)success {
-  _authenticationFlow.reset();
+  _authenticationFlow = nil;
   if (success) {
     DCHECK(!_didSignIn);
     _didSignIn = YES;
@@ -493,13 +489,12 @@ void HideButton(UIButton* button) {
   [self setSelectedIdentity:nil];
 
   // Add the account selector view controller.
-  _accountSelectorVC.reset([[SigninAccountSelectorViewController alloc] init]);
-  _accountSelectorVC.get().delegate = self;
+  _accountSelectorVC = [[SigninAccountSelectorViewController alloc] init];
+  _accountSelectorVC.delegate = self;
   [_accountSelectorVC willMoveToParentViewController:self];
   [self addChildViewController:_accountSelectorVC];
-  _accountSelectorVC.get().view.frame = self.view.bounds;
-  [self.view insertSubview:_accountSelectorVC.get().view
-              belowSubview:_primaryButton];
+  _accountSelectorVC.view.frame = self.view.bounds;
+  [self.view insertSubview:_accountSelectorVC.view belowSubview:_primaryButton];
   [_accountSelectorVC didMoveToParentViewController:self];
 
   // Update the button title.
@@ -534,7 +529,7 @@ void HideButton(UIButton* button) {
         [_accountSelectorVC willMoveToParentViewController:nil];
         [[_accountSelectorVC view] removeFromSuperview];
         [_accountSelectorVC removeFromParentViewController];
-        _accountSelectorVC.reset();
+        _accountSelectorVC = nil;
         [self enterState:nextState];
       }];
 }
@@ -572,7 +567,7 @@ void HideButton(UIButton* button) {
   }
 
   _activityIndicatorNextState = nextState;
-  _activityIndicator.get().delegate = self;
+  _activityIndicator.delegate = self;
 
   base::TimeDelta remainingTime =
       base::TimeDelta::FromMilliseconds(kMinimunPendingStateDurationMs) -
@@ -585,34 +580,32 @@ void HideButton(UIButton* button) {
     // If the signin pending state is too fast, the screen will appear to
     // flicker. Make sure to animate for at least
     // |kMinimunPendingStateDurationMs| milliseconds.
-    base::WeakNSObject<ChromeSigninViewController> weakSelf(self);
+    __weak ChromeSigninViewController* weakSelf = self;
     ProceduralBlock completionBlock = ^{
-      base::scoped_nsobject<ChromeSigninViewController> strongSelf(
-          [weakSelf retain]);
+      ChromeSigninViewController* strongSelf = weakSelf;
       if (!strongSelf)
         return;
-      [strongSelf.get()->_activityIndicator stopAnimating];
-      strongSelf.get()->_leavingPendingStateTimer.reset();
+      [strongSelf->_activityIndicator stopAnimating];
+      strongSelf->_leavingPendingStateTimer.reset();
     };
     _leavingPendingStateTimer.reset(new base::Timer(false, false));
     _leavingPendingStateTimer->Start(FROM_HERE, remainingTime,
-                                     base::BindBlock(completionBlock));
+                                     base::BindBlockArc(completionBlock));
   }
 }
 
 #pragma mark - IdentitySelectedState
 
 - (void)enterIdentitySelectedState {
-  _confirmationVC.reset([[SigninConfirmationViewController alloc]
-      initWithIdentity:self.selectedIdentity]);
-  _confirmationVC.get().delegate = self;
+  _confirmationVC = [[SigninConfirmationViewController alloc]
+      initWithIdentity:self.selectedIdentity];
+  _confirmationVC.delegate = self;
 
   _hasConfirmationScreenReachedBottom = NO;
   [_confirmationVC willMoveToParentViewController:self];
   [self addChildViewController:_confirmationVC];
-  _confirmationVC.get().view.frame = self.view.bounds;
-  [self.view insertSubview:_confirmationVC.get().view
-              belowSubview:_primaryButton];
+  _confirmationVC.view.frame = self.view.bounds;
+  [self.view insertSubview:_confirmationVC.view belowSubview:_primaryButton];
   [_confirmationVC didMoveToParentViewController:self];
 
   [self setSecondaryButtonStyling:_primaryButton];
@@ -651,7 +644,7 @@ void HideButton(UIButton* button) {
   [_confirmationVC willMoveToParentViewController:nil];
   [[_confirmationVC view] removeFromSuperview];
   [_confirmationVC removeFromParentViewController];
-  _confirmationVC.reset();
+  _confirmationVC = nil;
   [self setPrimaryButtonStyling:_primaryButton];
   HideButton(_primaryButton);
   HideButton(_secondaryButton);
@@ -665,7 +658,7 @@ void HideButton(UIButton* button) {
   [super viewDidLoad];
   self.view.backgroundColor = self.backgroundColor;
 
-  _primaryButton.reset([[MDCFlatButton alloc] init]);
+  _primaryButton = [[MDCFlatButton alloc] init];
   [self setPrimaryButtonStyling:_primaryButton];
   [_primaryButton addTarget:self
                      action:@selector(onPrimaryButtonPressed:)
@@ -673,7 +666,7 @@ void HideButton(UIButton* button) {
   HideButton(_primaryButton);
   [self.view addSubview:_primaryButton];
 
-  _secondaryButton.reset([[MDCFlatButton alloc] init]);
+  _secondaryButton = [[MDCFlatButton alloc] init];
   [self setSecondaryButtonStyling:_secondaryButton];
   [_secondaryButton addTarget:self
                        action:@selector(onSecondaryButtonPressed:)
@@ -682,18 +675,17 @@ void HideButton(UIButton* button) {
   HideButton(_secondaryButton);
   [self.view addSubview:_secondaryButton];
 
-  _activityIndicator.reset(
-      [[MDCActivityIndicator alloc] initWithFrame:CGRectZero]);
+  _activityIndicator = [[MDCActivityIndicator alloc] initWithFrame:CGRectZero];
   [_activityIndicator setDelegate:self];
   [_activityIndicator setStrokeWidth:3];
   [_activityIndicator
       setCycleColors:@[ [[MDCPalette cr_bluePalette] tint500] ]];
   [self.view addSubview:_activityIndicator];
 
-  _gradientView.reset([[UIView alloc] initWithFrame:CGRectZero]);
-  _gradientLayer.reset([[CAGradientLayer layer] retain]);
+  _gradientView = [[UIView alloc] initWithFrame:CGRectZero];
+  _gradientLayer = [CAGradientLayer layer];
   [_gradientView setUserInteractionEnabled:NO];
-  _gradientLayer.get().colors = [NSArray
+  _gradientLayer.colors = [NSArray
       arrayWithObjects:(id)[[UIColor colorWithWhite:1 alpha:0] CGColor],
                        (id)[self.backgroundColor CGColor], nil];
   [[_gradientView layer] insertSublayer:_gradientLayer atIndex:0];
@@ -819,12 +811,12 @@ void HideButton(UIButton* button) {
 
   CGSize viewSize = self.view.bounds.size;
   CGFloat collectionViewHeight = viewSize.height -
-                                 _primaryButton.get().frame.size.height -
+                                 _primaryButton.frame.size.height -
                                  constants.ButtonVerticalPadding;
   CGRect collectionViewFrame =
       CGRectMake(0, 0, viewSize.width, collectionViewHeight);
-  [_accountSelectorVC.get().view setFrame:collectionViewFrame];
-  [_confirmationVC.get().view setFrame:collectionViewFrame];
+  [_accountSelectorVC.view setFrame:collectionViewFrame];
+  [_confirmationVC.view setFrame:collectionViewFrame];
 
   // Layout the gradient view right above the buttons.
   CGFloat gradientOriginY = CGRectGetHeight(self.view.bounds) -
@@ -931,8 +923,8 @@ void HideButton(UIButton* button) {
     (SigninConfirmationViewController*)controller {
   DCHECK_EQ(_confirmationVC, controller);
 
-  base::scoped_nsobject<GenericChromeCommand> command(
-      [[GenericChromeCommand alloc] initWithTag:IDC_SHOW_ACCOUNTS_SETTINGS]);
+  GenericChromeCommand* command =
+      [[GenericChromeCommand alloc] initWithTag:IDC_SHOW_ACCOUNTS_SETTINGS];
   [self acceptSignInAndExecuteCommand:command];
 }
 
