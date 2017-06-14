@@ -10,6 +10,7 @@
 /**
  * @typedef {{
  *   printerAddress: string,
+ *   printerAutoconf: boolean,
  *   printerDescription: string,
  *   printerId: string,
  *   printerManufacturer: string,
@@ -45,6 +46,22 @@ var ManufacturersInfo;
  * }}
  */
 var ModelsInfo;
+
+/**
+ * @typedef {{
+ *   manufacturer: string,
+ *   model: string,
+ *   autoconf: boolean
+ * }}
+ */
+var PrinterMakeModel;
+
+/**
+ * @typedef {{
+ *   message: string
+ * }}
+ */
+var QueryFailure;
 
 cr.define('settings', function() {
   /** @interface */
@@ -93,6 +110,12 @@ cr.define('settings', function() {
      * @return {!Promise<!ModelsInfo>}
      */
     getCupsPrinterModelsList: function(manufacturer) {},
+
+    /**
+     * @param {!CupsPrinterInfo} newPrinter
+     * @return {!Promise<!PrinterMakeModel>}
+     */
+    getPrinterInfo: function(newPrinter) {},
   };
 
   /**
@@ -146,6 +169,11 @@ cr.define('settings', function() {
     /** @override */
     getCupsPrinterModelsList: function(manufacturer) {
       return cr.sendWithPromise('getCupsPrinterModelsList', manufacturer);
+    },
+
+    /** @override */
+    getPrinterInfo: function(newPrinter) {
+      return cr.sendWithPromise('getPrinterInfo', newPrinter);
     },
   };
 

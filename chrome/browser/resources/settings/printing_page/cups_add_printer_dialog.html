@@ -205,7 +205,7 @@
           <div class="start">
             <div class="label">$i18n{printerQueue}</div>
             <div class="secondary">
-              <paper-input no-label-float label="ipp/print" 
+              <paper-input no-label-float label="ipp/print"
                   value="{{newPrinter.printerQueue}}">
               </paper-input>
             </div>
@@ -228,7 +228,7 @@
           <paper-button class="secondary-button"
               on-tap="switchToDiscoveryDialog_">
             $i18n{discoverPrintersButtonText}
-          </paper-button> 
+          </paper-button>
         </div>
         <div>  <!-- Right group -->
           <paper-button class="cancel-button secondary-button"
@@ -236,7 +236,7 @@
             $i18n{cancelButtonText}
           </paper-button>
           <paper-button class="action-button"
-              on-tap="switchToManufacturerDialog_"
+              on-tap="addPressed_"
               disabled="[[!newPrinter.printerName]]">
             $i18n{addPrinterButtonText}
           </paper-button>
