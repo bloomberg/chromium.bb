@@ -250,10 +250,9 @@ TEST_F(CastTransportTest, TestWriteFailureAsync) {
   RunPendingTasks();
   socket_cbs.Pop(net::ERR_CONNECTION_RESET);
   RunPendingTasks();
-  EXPECT_EQ(ChannelEvent::SOCKET_WRITE,
-            logger_->GetLastError(kChannelId).channel_event);
+  EXPECT_EQ(proto::SOCKET_WRITE, logger_->GetLastErrors(kChannelId).event_type);
   EXPECT_EQ(net::ERR_CONNECTION_RESET,
-            logger_->GetLastError(kChannelId).net_return_value);
+            logger_->GetLastErrors(kChannelId).net_return_value);
 }
 
 // ----------------------------------------------------------------------------
@@ -311,10 +310,9 @@ TEST_F(CastTransportTest, TestWriteFailureSync) {
       message,
       base::Bind(&CompleteHandler::Complete, base::Unretained(&write_handler)));
   RunPendingTasks();
-  EXPECT_EQ(ChannelEvent::SOCKET_WRITE,
-            logger_->GetLastError(kChannelId).channel_event);
+  EXPECT_EQ(proto::SOCKET_WRITE, logger_->GetLastErrors(kChannelId).event_type);
   EXPECT_EQ(net::ERR_CONNECTION_RESET,
-            logger_->GetLastError(kChannelId).net_return_value);
+            logger_->GetLastErrors(kChannelId).net_return_value);
 }
 
 // ----------------------------------------------------------------------------
@@ -430,10 +428,9 @@ TEST_F(CastTransportTest, TestReadErrorInHeaderAsync) {
   transport_->Start();
   // Header read failure.
   socket_cbs.Pop(net::ERR_CONNECTION_RESET);
-  EXPECT_EQ(ChannelEvent::SOCKET_READ,
-            logger_->GetLastError(kChannelId).channel_event);
+  EXPECT_EQ(proto::SOCKET_READ, logger_->GetLastErrors(kChannelId).event_type);
   EXPECT_EQ(net::ERR_CONNECTION_RESET,
-            logger_->GetLastError(kChannelId).net_return_value);
+            logger_->GetLastErrors(kChannelId).net_return_value);
 }
 
 TEST_F(CastTransportTest, TestReadErrorInBodyAsync) {
@@ -471,10 +468,9 @@ TEST_F(CastTransportTest, TestReadErrorInBodyAsync) {
   socket_cbs.Pop(MessageFramer::MessageHeader::header_size());
   // Body read fails.
   socket_cbs.Pop(net::ERR_CONNECTION_RESET);
-  EXPECT_EQ(ChannelEvent::SOCKET_READ,
-            logger_->GetLastError(kChannelId).channel_event);
+  EXPECT_EQ(proto::SOCKET_READ, logger_->GetLastErrors(kChannelId).event_type);
   EXPECT_EQ(net::ERR_CONNECTION_RESET,
-            logger_->GetLastError(kChannelId).net_return_value);
+            logger_->GetLastErrors(kChannelId).net_return_value);
 }
 
 TEST_F(CastTransportTest, TestReadCorruptedMessageAsync) {
@@ -642,10 +638,9 @@ TEST_F(CastTransportTest, TestReadErrorInBodySync) {
       .RetiresOnSaturation();
   EXPECT_CALL(*delegate_, OnError(ChannelError::CAST_SOCKET_ERROR));
   transport_->Start();
-  EXPECT_EQ(ChannelEvent::SOCKET_READ,
-            logger_->GetLastError(kChannelId).channel_event);
+  EXPECT_EQ(proto::SOCKET_READ, logger_->GetLastErrors(kChannelId).event_type);
   EXPECT_EQ(net::ERR_CONNECTION_RESET,
-            logger_->GetLastError(kChannelId).net_return_value);
+            logger_->GetLastErrors(kChannelId).net_return_value);
 }
 
 TEST_F(CastTransportTest, TestReadCorruptedMessageSync) {

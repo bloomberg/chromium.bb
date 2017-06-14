@@ -36,7 +36,7 @@ using ::cast_channel::CastTransport;
 using ::cast_channel::ChannelAuthType;
 using ::cast_channel::ChannelError;
 using ::cast_channel::CreateIPEndPointForTest;
-using ::cast_channel::LastError;
+using ::cast_channel::LastErrors;
 using ::cast_channel::Logger;
 using ::cast_channel::MockCastSocket;
 using ::cast_channel::MockCastTransport;
@@ -155,9 +155,9 @@ class CastChannelAPITest : public ExtensionApiTest {
 
   // Logs some bogus error details and calls the OnError handler.
   void DoCallOnError(extensions::CastChannelAPI* api) {
-    api->GetLogger()->LogSocketEventWithRv(
-        mock_cast_socket_->id(), ::cast_channel::ChannelEvent::SOCKET_WRITE,
-        net::ERR_FAILED);
+    api->GetLogger()->LogSocketEventWithRv(mock_cast_socket_->id(),
+                                           ::cast_channel::proto::SOCKET_WRITE,
+                                           net::ERR_FAILED);
     message_delegate_->OnError(ChannelError::CONNECT_ERROR);
   }
 
@@ -212,7 +212,7 @@ class CastChannelAPITest : public ExtensionApiTest {
   MockCastSocket* mock_cast_socket_;
   base::MockTimer* timeout_timer_;
   net::IPEndPoint ip_endpoint_;
-  LastError last_error_;
+  LastErrors last_errors_;
   CastTransport::Delegate* message_delegate_;
   net::TestNetLog capturing_net_log_;
   int channel_id_;

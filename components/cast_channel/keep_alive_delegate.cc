@@ -10,10 +10,10 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/values.h"
-#include "components/cast_channel/cast_channel_enum.h"
 #include "components/cast_channel/cast_socket.h"
 #include "components/cast_channel/logger.h"
 #include "components/cast_channel/proto/cast_channel.pb.h"
+#include "components/cast_channel/proto/logging.pb.h"
 #include "net/base/net_errors.h"
 
 namespace cast_channel {
@@ -145,8 +145,7 @@ void KeepAliveDelegate::SendKeepAliveMessageComplete(const char* message_type,
   if (rv != net::OK) {
     // An error occurred while sending the ping response.
     VLOG(1) << "Error sending " << message_type;
-    logger_->LogSocketEventWithRv(socket_->id(), ChannelEvent::PING_WRITE_ERROR,
-                                  rv);
+    logger_->LogSocketEventWithRv(socket_->id(), proto::PING_WRITE_ERROR, rv);
     OnError(ChannelError::CAST_SOCKET_ERROR);
   }
 }
