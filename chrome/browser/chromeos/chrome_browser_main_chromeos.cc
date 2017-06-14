@@ -278,12 +278,6 @@ class DBusServices {
         DBusThreadManager::Get()->GetPowerManagerClient());
 
     CrosDBusService::ServiceProviderList service_providers;
-    // TODO(derat): Remove this provider once all callers are using
-    // |proxy_resolution_service_| instead: http://crbug.com/703217
-    service_providers.push_back(
-        base::MakeUnique<ProxyResolutionServiceProvider>(
-            kLibCrosServiceInterface, kResolveNetworkProxy,
-            base::MakeUnique<ChromeProxyResolutionServiceProviderDelegate>()));
     if (GetAshConfig() == ash::Config::CLASSIC) {
       // TODO(crbug.com/629707): revisit this with mustash dbus work.
       service_providers.push_back(base::MakeUnique<DisplayPowerServiceProvider>(
@@ -313,8 +307,6 @@ class DBusServices {
         kNetworkProxyServiceName, dbus::ObjectPath(kNetworkProxyServicePath),
         CrosDBusService::CreateServiceProviderList(
             base::MakeUnique<ProxyResolutionServiceProvider>(
-                kNetworkProxyServiceInterface,
-                kNetworkProxyServiceResolveProxyMethod,
                 base::MakeUnique<
                     ChromeProxyResolutionServiceProviderDelegate>())));
 

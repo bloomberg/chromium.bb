@@ -26,7 +26,6 @@ namespace chromeos {
 
 struct ProxyResolutionServiceProvider::Request {
  public:
-  // Constructor for returning proxy info via an asynchronous D-Bus response.
   Request(const std::string& source_url,
           std::unique_ptr<dbus::Response> response,
           const dbus::ExportedObject::ResponseSender& response_sender,
@@ -38,37 +37,14 @@ struct ProxyResolutionServiceProvider::Request {
     DCHECK(this->response);
     DCHECK(!response_sender.is_null());
   }
-
-  // Constructor for returning proxy info via a D-Bus signal.
-  Request(const std::string& source_url,
-          const std::string& signal_interface,
-          const std::string& signal_name,
-          scoped_refptr<net::URLRequestContextGetter> context_getter)
-      : source_url(source_url),
-        signal_interface(signal_interface),
-        signal_name(signal_name),
-        context_getter(context_getter) {
-    DCHECK(!signal_interface.empty());
-    DCHECK(!signal_name.empty());
-  }
-
   ~Request() = default;
 
   // URL being resolved.
   const std::string source_url;
 
   // D-Bus response and callback for returning data on resolution completion.
-  // Either these two members or |signal_interface|/|signal_name| must be
-  // supplied, but not both.
   std::unique_ptr<dbus::Response> response;
   const dbus::ExportedObject::ResponseSender response_sender;
-
-  // D-Bus interface and name for emitting result signal after resolution is
-  // complete.
-  // TODO(derat): Remove these and associated code after all callers use async
-  // responses instead of signals: http://crbug.com/446115
-  const std::string signal_interface;
-  const std::string signal_name;
 
   // Used to get the network context associated with the profile used to run
   // this request.
@@ -85,12 +61,8 @@ struct ProxyResolutionServiceProvider::Request {
 };
 
 ProxyResolutionServiceProvider::ProxyResolutionServiceProvider(
-    const std::string& dbus_interface,
-    const std::string& dbus_method_name,
     std::unique_ptr<Delegate> delegate)
-    : dbus_interface_(dbus_interface),
-      dbus_method_name_(dbus_method_name),
-      delegate_(std::move(delegate)),
+    : delegate_(std::move(delegate)),
       origin_thread_(base::ThreadTaskRunnerHandle::Get()),
       weak_ptr_factory_(this) {}
 
@@ -104,7 +76,7 @@ void ProxyResolutionServiceProvider::Start(
   exported_object_ = exported_object;
   VLOG(1) << "ProxyResolutionServiceProvider started";
   exported_object_->ExportMethod(
-      dbus_interface_, dbus_method_name_,
+      kNetworkProxyServiceInterface, kNetworkProxyServiceResolveProxyMethod,
       base::Bind(&ProxyResolutionServiceProvider::ResolveProxy,
                  weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&ProxyResolutionServiceProvider::OnExported,
@@ -140,33 +112,13 @@ void ProxyResolutionServiceProvider::ResolveProxy(
     return;
   }
 
-  // The signal interface and name arguments are optional but must be supplied
-  // together.
-  std::string signal_interface, signal_name;
-  if (reader.HasMoreData() &&
-      (!reader.PopString(&signal_interface) || signal_interface.empty() ||
-       !reader.PopString(&signal_name) || signal_name.empty())) {
-    LOG(ERROR) << "Method call has invalid interface/name args: "
-               << method_call->ToString();
-    response_sender.Run(dbus::ErrorResponse::FromMethodCall(
-        method_call, DBUS_ERROR_INVALID_ARGS, "Invalid interface/name args"));
-    return;
-  }
-
   std::unique_ptr<dbus::Response> response =
       dbus::Response::FromMethodCall(method_call);
   scoped_refptr<net::URLRequestContextGetter> context_getter =
       delegate_->GetRequestContext();
 
-  // If signal information was supplied, emit a signal instead of including
-  // proxy information in the response.
-  std::unique_ptr<Request> request =
-      !signal_interface.empty()
-          ? base::MakeUnique<Request>(source_url, signal_interface, signal_name,
-                                      context_getter)
-          : base::MakeUnique<Request>(source_url, std::move(response),
-                                      response_sender, context_getter);
-
+  std::unique_ptr<Request> request = base::MakeUnique<Request>(
+      source_url, std::move(response), response_sender, context_getter);
   NotifyCallback notify_callback =
       base::Bind(&ProxyResolutionServiceProvider::NotifyProxyResolved,
                  weak_ptr_factory_.GetWeakPtr());
@@ -180,11 +132,6 @@ void ProxyResolutionServiceProvider::ResolveProxy(
       base::Bind(&ProxyResolutionServiceProvider::ResolveProxyOnNetworkThread,
                  base::Passed(std::move(request)), origin_thread_,
                  notify_callback));
-
-  // If we didn't already pass the response to the Request object because we're
-  // returning data via a signal, send an empty response immediately.
-  if (response)
-    response_sender.Run(std::move(response));
 }
 
 // static
@@ -240,22 +187,11 @@ void ProxyResolutionServiceProvider::NotifyProxyResolved(
     std::unique_ptr<Request> request) {
   DCHECK(OnOriginThread());
 
-  if (request->response) {
-    // Reply to the original D-Bus method call.
-    dbus::MessageWriter writer(request->response.get());
-    writer.AppendString(request->proxy_info.ToPacString());
-    writer.AppendString(request->error);
-    request->response_sender.Run(std::move(request->response));
-  } else {
-    // Send a signal to the client.
-    dbus::Signal signal(request->signal_interface, request->signal_name);
-    dbus::MessageWriter writer(&signal);
-    writer.AppendString(request->source_url);
-    writer.AppendString(request->proxy_info.ToPacString());
-    writer.AppendString(request->error);
-    exported_object_->SendSignal(&signal);
-    VLOG(1) << "Sending signal: " << signal.ToString();
-  }
+  // Reply to the original D-Bus method call.
+  dbus::MessageWriter writer(request->response.get());
+  writer.AppendString(request->proxy_info.ToPacString());
+  writer.AppendString(request->error);
+  request->response_sender.Run(std::move(request->response));
 }
 
 }  // namespace chromeos
