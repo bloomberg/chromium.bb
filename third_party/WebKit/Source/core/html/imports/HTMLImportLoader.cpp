@@ -55,7 +55,6 @@ void HTMLImportLoader::Dispose() {
   if (document_) {
     if (document_->Parser())
       document_->Parser()->RemoveClient(this);
-    document_->ClearImportsController();
     document_.Clear();
   }
   ClearResource();
