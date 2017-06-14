@@ -191,22 +191,24 @@ def ToGNString(value, allow_dicts = True):
 class Hook(object):
   """Descriptor of command ran before/after sync or on demand."""
 
-  def __init__(self, action, pattern=None, name=None):
+  def __init__(self, action, pattern=None, name=None, cwd=None):
     """Constructor.
 
     Arguments:
       action (list of basestring): argv of the command to run
       pattern (basestring regex): noop with git; deprecated
       name (basestring): optional name; no effect on operation
+      cwd (basestring): working directory to use
     """
     self._action = gclient_utils.freeze(action)
     self._pattern = pattern
     self._name = name
+    self._cwd = cwd
 
   @staticmethod
   def from_dict(d):
     """Creates a Hook instance from a dict like in the DEPS file."""
-    return Hook(d['action'], d.get('pattern'), d.get('name'))
+    return Hook(d['action'], d.get('pattern'), d.get('name'), d.get('cwd'))
 
   @property
   def action(self):
@@ -235,10 +237,14 @@ class Hook(object):
       # Python script.  Run it by starting a new copy of the same
       # interpreter.
       cmd[0] = sys.executable
+
+    cwd = root
+    if self._cwd:
+      cwd = os.path.join(cwd, self._cwd)
     try:
       start_time = time.time()
       gclient_utils.CheckCallAndFilterAndHeader(
-          cmd, cwd=root, always=True)
+          cmd, cwd=cwd, always=True)
     except (gclient_utils.Error, subprocess2.CalledProcessError) as e:
       # Use a discrete exit status code of 2 to indicate that a hook action
       # failed.  Users of this script may wish to treat hook action failures
@@ -1833,8 +1839,7 @@ def _FlattenDep(dep, deps, deps_os, hooks, pre_deps_hooks, unpinned_deps):
 
   # TODO(phajdan.jr): also handle hooks_os.
   hooks.extend([(dep, hook) for hook in dep.deps_hooks])
-  pre_deps_hooks.extend(
-      [(dep, {'action': hook}) for hook in dep.pre_deps_hooks])
+  pre_deps_hooks.extend([(dep, hook) for hook in dep.pre_deps_hooks])
 
 
 def _FlattenRecurse(dep, deps, deps_os, hooks, pre_deps_hooks, unpinned_deps):
@@ -1929,9 +1934,9 @@ def _HooksToLines(name, hooks):
       s.append('    "name": "%s",' % hook.name)
     if hook.pattern is not None:
       s.append('    "pattern": "%s",' % hook.pattern)
-    # TODO(phajdan.jr): actions may contain paths that need to be adjusted,
-    # i.e. they may be relative to the dependency path, not solution root.
     s.extend(
+        # Hooks run in the parent directory of their dep.
+        ['    "cwd": "%s"' % os.path.normpath(os.path.dirname(dep.name))] +
         ['    "action": ['] +
         ['        "%s",' % arg for arg in hook.action] +
         ['    ]', '  },', '']

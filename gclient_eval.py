@@ -20,6 +20,9 @@ _GCLIENT_HOOKS_SCHEMA = [{
     # only when files matching the pattern have changed. In practice, with git,
     # gclient runs all the hooks regardless of this field.
     schema.Optional('pattern'): basestring,
+
+    # Working directory where to execute the hook.
+    schema.Optional('cwd'): basestring,
 }]
 
 _GCLIENT_SCHEMA = schema.Schema({
