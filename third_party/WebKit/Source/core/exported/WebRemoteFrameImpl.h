@@ -44,7 +44,6 @@ class CORE_EXPORT WebRemoteFrameImpl final
   WebView* View() const override;
   WebDocument GetDocument() const override;
   WebPerformance Performance() const override;
-  void DispatchUnloadEvent() override;
   void Reload(WebFrameLoadType) override;
   void ReloadWithOverrideURL(const WebURL& override_url,
                              WebFrameLoadType) override;

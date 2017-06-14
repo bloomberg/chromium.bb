@@ -5,7 +5,9 @@
 #ifndef WebLocalFrame_h
 #define WebLocalFrame_h
 
+#include <memory>
 #include <set>
+
 #include "WebCompositionUnderline.h"
 #include "WebFrame.h"
 #include "WebFrameLoadType.h"
@@ -60,7 +62,7 @@ struct WebSourceLocation;
 // FIXME: Move lots of methods from WebFrame in here.
 class WebLocalFrame : public WebFrame {
  public:
-  // Creates a WebFrame. Delete this WebFrame by calling WebFrame::close().
+  // Creates a WebFrame. Delete this WebFrame by calling WebFrame::Close().
   // WebFrameClient may not be null.
   BLINK_EXPORT static WebLocalFrame* Create(WebTreeScopeType,
                                             WebFrameClient*,
@@ -122,6 +124,11 @@ class WebLocalFrame : public WebFrame {
   virtual WebDevToolsAgent* DevToolsAgent() = 0;
   virtual void SetSharedWorkerRepositoryClient(
       WebSharedWorkerRepositoryClient*) = 0;
+
+  // Closing -------------------------------------------------------------
+
+  // Runs unload handlers for this frame.
+  virtual void DispatchUnloadEvent() = 0;
 
   // Basic properties ---------------------------------------------------
 
