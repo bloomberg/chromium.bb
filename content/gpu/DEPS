@@ -1,11 +1,13 @@
 include_rules = [
   "+components/tracing",
+  "+components/viz",
   "+content/child",
   "+content/public/gpu",
   "+libEGL",
   "+libGLESv2",
   "+services/service_manager",
   "+services/shape_detection",
+  "+services/ui/common",
   "+services/ui/gpu",
   "+sandbox",
   "+skia",

@@ -4,7 +4,7 @@
 
 #include "content/browser/compositor/reflector_texture.h"
 
-#include "components/viz/display_compositor/gl_helper.h"
+#include "components/viz/service/display_compositor/gl_helper.h"
 #include "content/browser/compositor/owned_mailbox.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"

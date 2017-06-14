@@ -8,7 +8,6 @@
 
 #include "cc/surfaces/surface_info.h"
 #include "cc/surfaces/surface_manager.h"
-#include "components/viz/frame_sinks/mojo_frame_sink_manager.h"
 
 namespace viz {
 
@@ -63,29 +62,6 @@ void FrameSinkManagerHost::OnSurfaceCreated(
     const cc::SurfaceInfo& surface_info) {
   for (auto& observer : observers_)
     observer.OnSurfaceCreated(surface_info);
-}
-
-// static
-void FrameSinkManagerHost::ConnectWithInProcessFrameSinkManager(
-    FrameSinkManagerHost* host,
-    MojoFrameSinkManager* manager) {
-  // A mojo pointer to |host| which is the FrameSinkManager's client.
-  cc::mojom::FrameSinkManagerClientPtr host_mojo;
-  // A mojo pointer to |manager|.
-  cc::mojom::FrameSinkManagerPtr manager_mojo;
-
-  // A request to bind to each of the above interfaces.
-  cc::mojom::FrameSinkManagerClientRequest host_mojo_request =
-      mojo::MakeRequest(&host_mojo);
-  cc::mojom::FrameSinkManagerRequest manager_mojo_request =
-      mojo::MakeRequest(&manager_mojo);
-
-  // Sets |manager_mojo| which is given to the |host|.
-  manager->BindPtrAndSetClient(std::move(manager_mojo_request),
-                               std::move(host_mojo));
-  // Sets |host_mojo| which was given to the |manager|.
-  host->BindManagerClientAndSetManagerPtr(std::move(host_mojo_request),
-                                          std::move(manager_mojo));
 }
 
 }  // namespace viz

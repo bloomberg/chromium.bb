@@ -55,7 +55,7 @@ source_set("lib") {
     "//cc/surfaces",
     "//components/discardable_memory/public/interfaces",
     "//components/discardable_memory/service",
-    "//components/viz/display_compositor",
+    "//components/viz/service",
     "//mojo/common:common_base",
     "//services/catalog/public/cpp",
     "//services/catalog/public/interfaces:constants",

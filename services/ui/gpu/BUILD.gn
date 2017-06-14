@@ -21,7 +21,7 @@ source_set("gpu") {
 
   deps = [
     "//cc",
-    "//components/viz",
+    "//components/viz/service",
     "//gpu/ipc:command_buffer",
     "//gpu/ipc/common",
     "//gpu/ipc/service",

@@ -20,7 +20,7 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "cc/resources/shared_bitmap_manager.h"
-#include "components/viz/display_compositor/host_shared_bitmap_manager.h"
+#include "components/viz/service/display_compositor/host_shared_bitmap_manager.h"
 #include "content/common/cache_storage/cache_storage_types.h"
 #include "content/common/render_message_filter.mojom.h"
 #include "content/public/browser/browser_associated_interface.h"

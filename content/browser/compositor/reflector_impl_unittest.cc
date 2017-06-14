@@ -15,7 +15,7 @@
 #include "cc/scheduler/delay_based_time_source.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_web_graphics_context_3d.h"
-#include "components/viz/display_compositor/compositor_overlay_candidate_validator.h"
+#include "components/viz/service/display_compositor/compositor_overlay_candidate_validator.h"
 #include "content/browser/compositor/browser_compositor_output_surface.h"
 #include "content/browser/compositor/reflector_texture.h"
 #include "content/browser/compositor/test/no_transport_image_transport_factory.h"
@@ -25,7 +25,7 @@
 #include "ui/compositor/test/context_factories_for_test.h"
 
 #if defined(USE_OZONE)
-#include "components/viz/display_compositor/compositor_overlay_candidate_validator_ozone.h"
+#include "components/viz/service/display_compositor/compositor_overlay_candidate_validator_ozone.h"
 #include "ui/ozone/public/overlay_candidates_ozone.h"
 #endif  // defined(USE_OZONE)
 

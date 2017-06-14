@@ -16,7 +16,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
 #include "build/build_config.h"
-#include "components/viz/display_compositor/gl_helper.h"
+#include "components/viz/service/display_compositor/gl_helper.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/common/video_capture.mojom.h"

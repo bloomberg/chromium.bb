@@ -1,0 +1,198 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/ui.gni")
+import("//testing/test.gni")
+
+config("viz_service_implementation") {
+}
+
+component("service") {
+  sources = [
+    "display_compositor/buffer_queue.cc",
+    "display_compositor/buffer_queue.h",
+    "display_compositor/compositor_overlay_candidate_validator.h",
+    "display_compositor/display_output_surface.cc",
+    "display_compositor/display_output_surface.h",
+    "display_compositor/display_provider.h",
+    "display_compositor/gl_helper.cc",
+    "display_compositor/gl_helper.h",
+    "display_compositor/gl_helper_readback_support.cc",
+    "display_compositor/gl_helper_readback_support.h",
+    "display_compositor/gl_helper_scaling.cc",
+    "display_compositor/gl_helper_scaling.h",
+    "display_compositor/gpu_display_provider.cc",
+    "display_compositor/gpu_display_provider.h",
+    "display_compositor/host_shared_bitmap_manager.cc",
+    "display_compositor/host_shared_bitmap_manager.h",
+    "frame_sinks/frame_eviction_manager.cc",
+    "frame_sinks/frame_eviction_manager.h",
+    "frame_sinks/frame_evictor.cc",
+    "frame_sinks/frame_evictor.h",
+    "frame_sinks/gpu_compositor_frame_sink.cc",
+    "frame_sinks/gpu_compositor_frame_sink.h",
+    "frame_sinks/gpu_compositor_frame_sink_delegate.h",
+    "frame_sinks/gpu_root_compositor_frame_sink.cc",
+    "frame_sinks/gpu_root_compositor_frame_sink.h",
+    "frame_sinks/mojo_frame_sink_manager.cc",
+    "frame_sinks/mojo_frame_sink_manager.h",
+    "viz_service_export.h",
+  ]
+
+  defines = [ "VIZ_SERVICE_IMPLEMENTATION" ]
+
+  configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
+
+  public_deps = [
+    "//base",
+    "//cc",
+    "//cc/ipc:interfaces",
+    "//cc/surfaces",
+    "//gpu/command_buffer/client",
+    "//gpu/command_buffer/client:gles2_interface",
+    "//gpu/command_buffer/common",
+    "//gpu/ipc:command_buffer",
+    "//gpu/ipc/common:surface_handle_type",
+    "//skia",
+    "//ui/display/types",
+    "//ui/gfx",
+  ]
+
+  if (is_mac) {
+    sources += [
+      "display_compositor/compositor_overlay_candidate_validator_mac.h",
+      "display_compositor/compositor_overlay_candidate_validator_mac.mm",
+    ]
+  }
+
+  if (is_android) {
+    sources += [
+      "display_compositor/compositor_overlay_candidate_validator_android.cc",
+      "display_compositor/compositor_overlay_candidate_validator_android.h",
+    ]
+  }
+
+  if (use_ozone) {
+    sources += [
+      "display_compositor/compositor_overlay_candidate_validator_ozone.cc",
+      "display_compositor/compositor_overlay_candidate_validator_ozone.h",
+      "display_compositor/display_output_surface_ozone.cc",
+      "display_compositor/display_output_surface_ozone.h",
+    ]
+
+    public_deps += [ "//ui/ozone" ]
+  }
+
+  if (is_win) {
+    sources += [
+      "display_compositor/compositor_overlay_candidate_validator_win.cc",
+      "display_compositor/compositor_overlay_candidate_validator_win.h",
+    ]
+  }
+}
+
+# These are part of the components_unittests build target.
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "display_compositor/buffer_queue_unittest.cc",
+    "display_compositor/host_shared_bitmap_manager_unittest.cc",
+  ]
+
+  if (!use_aura && !is_mac) {
+    sources -= [ "display_compositor/buffer_queue_unittest.cc" ]
+  }
+
+  configs += [
+    "//build/config/compiler:no_size_t_to_int_warning",
+    "//third_party/khronos:khronos_headers",
+  ]
+
+  deps = [
+    ":service",
+    "//base",
+    "//base/test:test_support",
+    "//cc:test_support",
+    "//gpu/command_buffer/client",
+    "//gpu/command_buffer/client:gles2_implementation",
+    "//gpu/ipc:gl_in_process_context",
+    "//media",
+    "//skia",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//ui/display/types",
+    "//ui/gl:test_support",
+  ]
+
+  data_deps = [
+    "//third_party/mesa:osmesa",
+  ]
+}
+
+test("display_compositor_gl_tests") {
+  sources = [
+    "display_compositor/display_compositor_test_suite.cc",
+    "display_compositor/display_compositor_test_suite.h",
+    "display_compositor/gl_helper_unittest.cc",
+    "display_compositor/run_all_unittests.cc",
+    "display_compositor/yuv_readback_unittest.cc",
+  ]
+
+  configs += [
+    "//build/config/compiler:no_size_t_to_int_warning",
+    "//third_party/khronos:khronos_headers",
+  ]
+
+  deps = [
+    ":service",
+    "//base",
+    "//base/test:test_support",
+    "//cc:test_support",
+    "//gpu/command_buffer/client",
+    "//gpu/command_buffer/client:gles2_implementation",
+    "//gpu/ipc:gl_in_process_context",
+    "//media",
+    "//skia",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//ui/gl:test_support",
+  ]
+
+  data_deps = [
+    "//third_party/mesa:osmesa",
+  ]
+}
+
+test("display_compositor_benchmark") {
+  sources = [
+    "display_compositor/display_compositor_test_suite.cc",
+    "display_compositor/display_compositor_test_suite.h",
+    "display_compositor/gl_helper_benchmark.cc",
+    "display_compositor/run_all_unittests.cc",
+  ]
+
+  configs += [
+    "//build/config/compiler:no_size_t_to_int_warning",
+    "//third_party/khronos:khronos_headers",
+  ]
+
+  deps = [
+    ":service",
+    "//base",
+    "//base/test:test_support",
+    "//cc:test_support",
+    "//gpu/command_buffer/client",
+    "//gpu/command_buffer/client:gles2_implementation",
+    "//gpu/ipc:gl_in_process_context",
+    "//media",
+    "//skia",
+    "//testing/gmock",
+    "//testing/gtest",
+    "//ui/gl:test_support",
+  ]
+
+  data_deps = [
+    "//third_party/mesa:osmesa",
+  ]
+}

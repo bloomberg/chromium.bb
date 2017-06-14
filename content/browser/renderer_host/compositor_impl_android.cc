@@ -46,11 +46,12 @@
 #include "cc/surfaces/frame_sink_id_allocator.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
-#include "components/viz/display_compositor/compositor_overlay_candidate_validator_android.h"
-#include "components/viz/display_compositor/gl_helper.h"
-#include "components/viz/display_compositor/host_shared_bitmap_manager.h"
-#include "components/viz/frame_sinks/mojo_frame_sink_manager.h"
 #include "components/viz/host/frame_sink_manager_host.h"
+#include "components/viz/service/display_compositor/compositor_overlay_candidate_validator_android.h"
+#include "components/viz/service/display_compositor/gl_helper.h"
+#include "components/viz/service/display_compositor/host_shared_bitmap_manager.h"
+#include "components/viz/service/frame_sinks/mojo_frame_sink_manager.h"
+#include "content/browser/compositor/surface_utils.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
 #include "content/browser/gpu/browser_gpu_memory_buffer_manager.h"
 #include "content/browser/gpu/compositor_util.h"
@@ -102,7 +103,7 @@ struct CompositorDependencies {
     // Gpu process, instead get the mojo pointer from the Gpu process.
     frame_sink_manager =
         base::MakeUnique<viz::MojoFrameSinkManager>(false, nullptr);
-    viz::FrameSinkManagerHost::ConnectWithInProcessFrameSinkManager(
+    surface_utils::ConnectWithInProcessFrameSinkManager(
         &frame_sink_manager_host, frame_sink_manager.get());
   }
 

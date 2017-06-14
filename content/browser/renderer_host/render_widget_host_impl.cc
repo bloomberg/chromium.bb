@@ -31,7 +31,7 @@
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "cc/output/compositor_frame.h"
-#include "components/viz/display_compositor/host_shared_bitmap_manager.h"
+#include "components/viz/service/display_compositor/host_shared_bitmap_manager.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"

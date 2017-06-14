@@ -52,11 +52,12 @@
 #include "components/tracing/common/trace_config_file.h"
 #include "components/tracing/common/trace_to_console.h"
 #include "components/tracing/common/tracing_switches.h"
-#include "components/viz/display_compositor/host_shared_bitmap_manager.h"
-#include "components/viz/frame_sinks/mojo_frame_sink_manager.h"
 #include "components/viz/host/frame_sink_manager_host.h"
+#include "components/viz/service/display_compositor/host_shared_bitmap_manager.h"
+#include "components/viz/service/frame_sinks/mojo_frame_sink_manager.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/compositor/surface_utils.h"
 #include "content/browser/dom_storage/dom_storage_area.h"
 #include "content/browser/download/download_resource_handler.h"
 #include "content/browser/download/save_file_manager.h"
@@ -1435,7 +1436,7 @@ int BrowserMainLoop::BrowserThreadsStarted() {
     // Gpu process, instead get the mojo pointer from the Gpu process.
     frame_sink_manager_ =
         base::MakeUnique<viz::MojoFrameSinkManager>(false, nullptr);
-    viz::FrameSinkManagerHost::ConnectWithInProcessFrameSinkManager(
+    surface_utils::ConnectWithInProcessFrameSinkManager(
         frame_sink_manager_host_.get(), frame_sink_manager_.get());
   }
 #endif

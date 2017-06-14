@@ -16,6 +16,5 @@ component("host") {
     "//base",
     "//cc/ipc:interfaces",
     "//cc/surfaces",
-    "//components/viz/frame_sinks",
   ]
 }

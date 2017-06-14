@@ -20,7 +20,6 @@ class SurfaceManager;
 }
 
 namespace viz {
-class MojoFrameSinkManager;
 
 // Browser side implementation of mojom::FrameSinkManager, to be used from the
 // UI thread. Manages frame sinks and is intended to replace SurfaceManager.
@@ -49,10 +48,6 @@ class VIZ_HOST_EXPORT FrameSinkManagerHost
                                   const cc::FrameSinkId& child_frame_sink_id);
   void UnregisterFrameSinkHierarchy(const cc::FrameSinkId& parent_frame_sink_id,
                                     const cc::FrameSinkId& child_frame_sink_id);
-
-  static void ConnectWithInProcessFrameSinkManager(
-      FrameSinkManagerHost* host,
-      MojoFrameSinkManager* manager);
 
  private:
   // cc::mojom::FrameSinkManagerClient:

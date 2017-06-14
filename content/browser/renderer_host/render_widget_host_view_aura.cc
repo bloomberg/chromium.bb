@@ -23,7 +23,7 @@
 #include "cc/output/copy_output_result.h"
 #include "cc/resources/texture_mailbox.h"
 #include "cc/trees/layer_tree_settings.h"
-#include "components/viz/display_compositor/gl_helper.h"
+#include "components/viz/service/display_compositor/gl_helper.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/bad_message.h"

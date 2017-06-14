@@ -14,7 +14,7 @@
 #include "cc/output/copy_output_result.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/compositor_frame_sink_support_client.h"
-#include "components/viz/frame_sinks/frame_evictor.h"
+#include "components/viz/service/frame_sinks/frame_evictor.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/compositor/owned_mailbox.h"
 #include "content/browser/renderer_host/dip_util.h"

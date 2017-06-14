@@ -10,8 +10,9 @@
 #include "build/build_config.h"
 #include "cc/output/copy_output_result.h"
 #include "cc/resources/single_release_callback.h"
-#include "components/viz/display_compositor/gl_helper.h"
 #include "components/viz/host/frame_sink_manager_host.h"
+#include "components/viz/service/display_compositor/gl_helper.h"
+#include "components/viz/service/frame_sinks/mojo_frame_sink_manager.h"
 #include "content/browser/browser_main_loop.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -210,5 +211,30 @@ void CopyFromCompositingSurfaceHasResult(
   PrepareBitmapCopyOutputResult(output_size_in_pixel, color_type, callback,
                                 std::move(result));
 }
+
+namespace surface_utils {
+
+void ConnectWithInProcessFrameSinkManager(viz::FrameSinkManagerHost* host,
+                                          viz::MojoFrameSinkManager* manager) {
+  // A mojo pointer to |host| which is the FrameSinkManager's client.
+  cc::mojom::FrameSinkManagerClientPtr host_mojo;
+  // A mojo pointer to |manager|.
+  cc::mojom::FrameSinkManagerPtr manager_mojo;
+
+  // A request to bind to each of the above interfaces.
+  cc::mojom::FrameSinkManagerClientRequest host_mojo_request =
+      mojo::MakeRequest(&host_mojo);
+  cc::mojom::FrameSinkManagerRequest manager_mojo_request =
+      mojo::MakeRequest(&manager_mojo);
+
+  // Sets |manager_mojo| which is given to the |host|.
+  manager->BindPtrAndSetClient(std::move(manager_mojo_request),
+                               std::move(host_mojo));
+  // Sets |host_mojo| which was given to the |manager|.
+  host->BindManagerClientAndSetManagerPtr(std::move(host_mojo_request),
+                                          std::move(manager_mojo));
+}
+
+}  // namespace surface_utils
 
 }  // namespace content

@@ -11,7 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "cc/output/copy_output_request.h"
 #include "cc/output/copy_output_result.h"
-#include "components/viz/display_compositor/gl_helper.h"
+#include "components/viz/service/display_compositor/gl_helper.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "content/browser/media/capture/desktop_capture_device_uma_types.h"
 #include "content/public/browser/browser_thread.h"
