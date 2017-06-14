@@ -4947,6 +4947,10 @@ void Document::setDomain(const String& raw_domain,
   }
 
   if (frame_) {
+    UseCounter::Count(*this,
+                      GetSecurityOrigin()->Port() == 0
+                          ? WebFeature::kDocumentDomainSetWithDefaultPort
+                          : WebFeature::kDocumentDomainSetWithNonDefaultPort);
     bool was_cross_domain = frame_->IsCrossOriginSubframe();
     GetSecurityOrigin()->SetDomainFromDOM(new_domain);
     if (View() && (was_cross_domain != frame_->IsCrossOriginSubframe()))
