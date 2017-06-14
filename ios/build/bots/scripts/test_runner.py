@@ -580,7 +580,7 @@ class SimulatorTestRunner(TestRunner):
         # iossim doesn't support inverted filters for XCTests.
         if not invert:
           for test in test_filter:
-            cmd.extend(['-o', test])
+            cmd.extend(['-t', test])
       else:
         kif_filter = get_kif_test_filter(test_filter, invert=invert)
         gtest_filter = get_gtest_filter(test_filter, invert=invert)
