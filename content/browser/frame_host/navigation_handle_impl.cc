@@ -7,6 +7,7 @@
 #include <iterator>
 
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
 #include "content/browser/appcache/appcache_service_impl.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -706,6 +707,18 @@ void NavigationHandleImpl::ReadyToCommitNavigation(
   DCHECK(!render_frame_host_ || render_frame_host_ == render_frame_host);
   render_frame_host_ = render_frame_host;
   state_ = READY_TO_COMMIT;
+  ready_to_commit_time_ = base::TimeTicks::Now();
+
+  // For back-forward navigations, record metrics.
+  if (transition_ & ui::PAGE_TRANSITION_FORWARD_BACK) {
+    bool is_same_process =
+        render_frame_host_->GetProcess()->GetID() ==
+        frame_tree_node_->current_frame_host()->GetProcess()->GetID();
+    UMA_HISTOGRAM_BOOLEAN("Navigation.BackForward.IsSameProcess",
+                          is_same_process);
+    UMA_HISTOGRAM_TIMES("Navigation.BackForward.TimeToReadyToCommit",
+                        ready_to_commit_time_ - navigation_start_);
+  }
 
   if (IsBrowserSideNavigationEnabled())
     SetExpectedProcess(render_frame_host->GetProcess());
@@ -735,6 +748,13 @@ void NavigationHandleImpl::DidCommitNavigation(
   base_url_ = params.base_url;
   socket_address_ = params.socket_address;
   navigation_type_ = navigation_type;
+
+  // For back-forward navigations, record metrics.
+  if ((transition_ & ui::PAGE_TRANSITION_FORWARD_BACK) &&
+      !ready_to_commit_time_.is_null()) {
+    UMA_HISTOGRAM_TIMES("Navigation.BackForward.ReadyToCommitUntilCommit",
+                        base::TimeTicks::Now() - ready_to_commit_time_);
+  }
 
   DCHECK(!IsInMainFrame() || navigation_entry_committed)
       << "Only subframe navigations can get here without changing the "

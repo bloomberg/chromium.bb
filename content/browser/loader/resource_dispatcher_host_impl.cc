@@ -272,6 +272,42 @@ void HandleSyncLoadResult(base::WeakPtr<ResourceMessageFilter> filter,
   filter->Send(sync_result.release());
 }
 
+// Used to log the cache flags for back-forward navigation requests.
+// Because this enum is used to back a histogrma, DO NOT REMOVE OR RENAME VALUES
+// in this enum. Instead, add a new one at the end.
+// TODO(clamy): Remove this once we know the reason behind PlzNavigate's
+// regression on PLT for back forward navigations.
+enum HistogramCacheFlag {
+  HISTOGRAM_VALIDATE_CACHE,
+  HISTOGRAM_BYPASS_CACHE,
+  HISTOGRAM_SKIP_CACHE_VALIDATION,
+  HISTOGRAM_ONLY_FROM_CACHE,
+  HISTOGRAM_DISABLE_CACHE,
+  HISTOGRAM_CACHE_FLAG_MAX = HISTOGRAM_DISABLE_CACHE,
+};
+
+void RecordCacheFlags(HistogramCacheFlag flag) {
+  UMA_HISTOGRAM_ENUMERATION("Navigation.BackForward.CacheFlags", flag,
+                            HISTOGRAM_CACHE_FLAG_MAX);
+}
+
+void LogBackForwardNavigationFlagsHistogram(int load_flags) {
+  if (load_flags & net::LOAD_VALIDATE_CACHE)
+    RecordCacheFlags(HISTOGRAM_VALIDATE_CACHE);
+
+  if (load_flags & net::LOAD_BYPASS_CACHE)
+    RecordCacheFlags(HISTOGRAM_BYPASS_CACHE);
+
+  if (load_flags & net::LOAD_SKIP_CACHE_VALIDATION)
+    RecordCacheFlags(HISTOGRAM_SKIP_CACHE_VALIDATION);
+
+  if (load_flags & net::LOAD_ONLY_FROM_CACHE)
+    RecordCacheFlags(HISTOGRAM_ONLY_FROM_CACHE);
+
+  if (load_flags & net::LOAD_DISABLE_CACHE)
+    RecordCacheFlags(HISTOGRAM_DISABLE_CACHE);
+}
+
 }  // namespace
 
 ResourceDispatcherHostImpl::LoadInfo::LoadInfo() {}
@@ -2199,6 +2235,14 @@ void ResourceDispatcherHostImpl::BeginRequestInternal(
   DCHECK(!request->is_pending());
   ResourceRequestInfoImpl* info =
       ResourceRequestInfoImpl::ForRequest(request.get());
+
+  // Log metrics for back-forward navigations.
+  // TODO(clamy): Remove this once we understand the reason behind the
+  // back-forward PLT regression with PlzNavigate
+  if ((info->GetPageTransition() & ui::PAGE_TRANSITION_FORWARD_BACK) &&
+      IsResourceTypeFrame(info->GetResourceType())) {
+    LogBackForwardNavigationFlagsHistogram(request->load_flags());
+  }
 
   if ((TimeTicks::Now() - last_user_gesture_time_) <
       TimeDelta::FromMilliseconds(kUserGestureWindowMs)) {

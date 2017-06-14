@@ -25219,6 +25219,14 @@ from previous Chrome versions.
   <int value="3" label="Behind a Non-Symmetric NAT."/>
 </enum>
 
+<enum name="NavigationCacheEnum" type="int">
+  <int value="0" label="Validate cache"/>
+  <int value="1" label="Bypass cache"/>
+  <int value="2" label="Skip cache validation"/>
+  <int value="3" label="Only from cache"/>
+  <int value="4" label="Disable cache"/>
+</enum>
+
 <enum name="NavigationDirection" type="int">
   <obsolete>
     Deprecated as of Chrome 59 in favour of OverscrollNavigationType.
@@ -25236,6 +25244,11 @@ from previous Chrome versions.
   <int value="3" label="Navigation not intercepted"/>
 </enum>
 
+<enum name="NavigationIsSameProcess" type="int">
+  <int value="0" label="Cross process navigation"/>
+  <int value="1" label="Same process navigation"/>
+</enum>
+
 <enum name="NavigationScheme" type="int">
   <int value="0" label="(Unknown)"/>
   <int value="1" label="http"/>
@@ -25248,6 +25261,11 @@ from previous Chrome versions.
   <int value="8" label="chrome"/>
   <int value="9" label="blob"/>
   <int value="10" label="filesystem"/>
+</enum>
+
+<enum name="NavigationWasServedFromCache" type="int">
+  <int value="0" label="Navigation wasn't served from cache"/>
+  <int value="1" label="Navigation was served from cache"/>
 </enum>
 
 <enum name="NavigatorVibrationType" type="int">
