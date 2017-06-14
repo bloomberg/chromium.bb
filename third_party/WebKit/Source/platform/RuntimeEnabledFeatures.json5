@@ -116,6 +116,10 @@
       status: "test",
     },
     {
+      name: "BlockCredentialedSubresources",
+      status: "stable",
+    },
+    {
       name: "BlockLegacySubresources",
       status: "stable",
     },

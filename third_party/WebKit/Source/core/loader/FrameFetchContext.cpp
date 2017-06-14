@@ -949,7 +949,11 @@ bool FrameFetchContext::ShouldBlockFetchAsCredentialedSubresource(
             GetSecurityOrigin())) {
       CountDeprecation(
           WebFeature::kRequestedSubresourceWithEmbeddedCredentials);
-      return true;
+
+      // TODO(mkwst): Remove the runtime check one way or the other once we're
+      // sure it's going to stick (or that it's not).
+      if (RuntimeEnabledFeatures::BlockCredentialedSubresourcesEnabled())
+        return true;
     }
   }
   return false;
