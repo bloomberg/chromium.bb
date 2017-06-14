@@ -129,8 +129,7 @@ class ArcVideoDecodeAccelerator {
       PortType port,
       uint32_t index,
       base::ScopedFD dmabuf_fd,
-      const std::vector<::arc::ArcVideoAcceleratorDmabufPlane>&
-          dmabuf_planes) = 0;
+      const std::vector<::arc::VideoFramePlane>& planes) = 0;
 
   // Passes a buffer to the accelerator. For input buffer, the accelerator
   // will process it. For output buffer, the accelerator will output content

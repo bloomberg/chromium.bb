@@ -198,12 +198,11 @@ void ChromeArcVideoDecodeAccelerator::BindSharedMemory(PortType port,
 
 bool ChromeArcVideoDecodeAccelerator::VerifyDmabuf(
     const base::ScopedFD& dmabuf_fd,
-    const std::vector<::arc::ArcVideoAcceleratorDmabufPlane>& dmabuf_planes)
-    const {
+    const std::vector<::arc::VideoFramePlane>& planes) const {
   size_t num_planes = media::VideoFrame::NumPlanes(output_pixel_format_);
-  if (dmabuf_planes.size() != num_planes) {
-    DLOG(ERROR) << "Invalid number of dmabuf planes passed: "
-                << dmabuf_planes.size() << ", expected: " << num_planes;
+  if (planes.size() != num_planes) {
+    DLOG(ERROR) << "Invalid number of dmabuf planes passed: " << planes.size()
+                << ", expected: " << num_planes;
     return false;
   }
 
@@ -215,7 +214,7 @@ bool ChromeArcVideoDecodeAccelerator::VerifyDmabuf(
   }
 
   size_t i = 0;
-  for (const auto& plane : dmabuf_planes) {
+  for (const auto& plane : planes) {
     DVLOG(4) << "Plane " << i << ", offset: " << plane.offset
              << ", stride: " << plane.stride;
 
@@ -239,7 +238,7 @@ void ChromeArcVideoDecodeAccelerator::BindDmabuf(
     PortType port,
     uint32_t index,
     base::ScopedFD dmabuf_fd,
-    const std::vector<::arc::ArcVideoAcceleratorDmabufPlane>& dmabuf_planes) {
+    const std::vector<::arc::VideoFramePlane>& planes) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (!vda_) {
@@ -256,14 +255,14 @@ void ChromeArcVideoDecodeAccelerator::BindDmabuf(
     arc_client_->OnError(INVALID_ARGUMENT);
     return;
   }
-  if (!VerifyDmabuf(dmabuf_fd, dmabuf_planes)) {
+  if (!VerifyDmabuf(dmabuf_fd, planes)) {
     arc_client_->OnError(INVALID_ARGUMENT);
     return;
   }
 
   OutputBufferInfo& info = buffers_pending_import_[index];
   info.handle = std::move(dmabuf_fd);
-  info.planes = dmabuf_planes;
+  info.planes = planes;
 }
 
 void ChromeArcVideoDecodeAccelerator::UseBuffer(

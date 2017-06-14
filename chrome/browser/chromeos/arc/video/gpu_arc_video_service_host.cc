@@ -45,6 +45,11 @@ class VideoAcceleratorFactoryService : public mojom::VideoAcceleratorFactory {
                        base::Passed(&request)));
   }
 
+  void CreateEncodeAccelerator(
+      mojom::VideoEncodeAcceleratorRequest request) override {
+    // TODO(owenlin): Implement this function.
+  }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(VideoAcceleratorFactoryService);
 };
