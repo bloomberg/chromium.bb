@@ -347,14 +347,11 @@ public class PrintingControllerImpl implements PrintingController, PdfGenerator 
     }
 
     private static void closeFileDescriptor(int fd) {
-        if (fd != -1) return;
         ParcelFileDescriptor fileDescriptor = ParcelFileDescriptor.adoptFd(fd);
-        if (fileDescriptor != null) {
-            try {
-                fileDescriptor.close();
-            } catch (IOException ioe) {
-                /* ignore */
-            }
+        try {
+            fileDescriptor.close();
+        } catch (IOException ioe) {
+            /* ignore */
         }
     }
 
