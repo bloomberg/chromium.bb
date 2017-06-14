@@ -936,6 +936,27 @@ class PreCQCompletionStage(generic_stages.BuilderStage):
       self.sync_stage.pool.HandleValidationFailure([message])
 
 
+class UpdateChromeosLKGMStage(generic_stages.BuilderStage):
+  """Update the CHROMEOS_LKGM file in the chromium repository."""
+
+  def __init__(self, builder_run, **kwargs):
+    """Constructor.
+
+    Args:
+      builder_run: BuilderRun object.
+    """
+    super(UpdateChromeosLKGMStage, self).__init__(builder_run, **kwargs)
+
+  def PerformStage(self):
+    manager = self._run.attrs.manifest_manager
+    cmd = ['chrome_chromeos_lkgm', '--version=%s' % manager.current_version]
+    # Always do a dryrun for now so that we can check the output and ensure it
+    # is doing the correct thing.
+    # TODO(stevenjb): if self._run.options.debug:
+    cmd.append('--dryrun')
+    commands.RunBuildScript(self._build_root, cmd, chromite_cmd=True)
+
+
 class PublishUprevChangesStage(generic_stages.BuilderStage):
   """Makes uprev changes from pfq live for developers."""
 
