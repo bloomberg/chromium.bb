@@ -161,7 +161,11 @@ bool WorkerFetchContext::ShouldBlockFetchAsCredentialedSubresource(
     if (Url().User() != url.User() || Url().Pass() != url.Pass()) {
       CountDeprecation(
           WebFeature::kRequestedSubresourceWithEmbeddedCredentials);
-      return true;
+
+      // TODO(mkwst): Remove the runtime check one way or the other once we're
+      // sure it's going to stick (or that it's not).
+      if (RuntimeEnabledFeatures::BlockCredentialedSubresourcesEnabled())
+        return true;
     }
   }
   return false;
