@@ -91,14 +91,118 @@ source_set("cdm_api") {
   ]
 }
 
+# TODO(jrummell): This should be in media/filters/BUILD.gn (which doesn't
+# currently exist). http://crbug.com/613033
+source_set("filters_common") {
+  sources = [
+    "filters/file_data_source.h",
+  ]
+  if (media_use_ffmpeg) {
+    sources += [
+      "filters/blocking_url_protocol.h",
+      "filters/ffmpeg_glue.h",
+    ]
+  }
+}
+
 # TODO(jrummell): Each subdirectory should have it's own BUILD.gn, and then
 # this component can depend on them.  http://crbug.com/613033
 component("media") {
   sources = [
+    "cdm/aes_decryptor.cc",
+    "cdm/aes_decryptor.h",
+    "cdm/cdm_adapter.cc",
+    "cdm/cdm_adapter.h",
+    "cdm/cdm_allocator.cc",
+    "cdm/cdm_allocator.h",
+    "cdm/cdm_file_io.cc",
+    "cdm/cdm_file_io.h",
+    "cdm/cdm_helpers.cc",
+    "cdm/cdm_helpers.h",
+    "cdm/cdm_wrapper.h",
+    "cdm/default_cdm_factory.cc",
+    "cdm/default_cdm_factory.h",
+    "cdm/json_web_key.cc",
+    "cdm/json_web_key.h",
+    "cdm/player_tracker_impl.cc",
+    "cdm/player_tracker_impl.h",
+    "cdm/supported_cdm_versions.cc",
+    "cdm/supported_cdm_versions.h",
     "device_monitors/device_monitor_mac.h",
     "device_monitors/device_monitor_mac.mm",
     "device_monitors/system_message_window_win.cc",
     "device_monitors/system_message_window_win.h",
+    "filters/audio_clock.cc",
+    "filters/audio_clock.h",
+    "filters/audio_renderer_algorithm.cc",
+    "filters/audio_renderer_algorithm.h",
+    "filters/audio_timestamp_validator.cc",
+    "filters/audio_timestamp_validator.h",
+    "filters/chunk_demuxer.cc",
+    "filters/chunk_demuxer.h",
+    "filters/context_3d.h",
+    "filters/decoder_selector.cc",
+    "filters/decoder_selector.h",
+    "filters/decoder_stream.cc",
+    "filters/decoder_stream.h",
+    "filters/decoder_stream_traits.cc",
+    "filters/decoder_stream_traits.h",
+    "filters/decrypting_audio_decoder.cc",
+    "filters/decrypting_audio_decoder.h",
+    "filters/decrypting_demuxer_stream.cc",
+    "filters/decrypting_demuxer_stream.h",
+    "filters/decrypting_video_decoder.cc",
+    "filters/decrypting_video_decoder.h",
+    "filters/file_data_source.cc",
+    "filters/frame_processor.cc",
+    "filters/frame_processor.h",
+    "filters/gpu_video_decoder.cc",
+    "filters/gpu_video_decoder.h",
+    "filters/h264_bit_reader.cc",
+    "filters/h264_bit_reader.h",
+    "filters/h264_parser.cc",
+    "filters/h264_parser.h",
+    "filters/ivf_parser.cc",
+    "filters/ivf_parser.h",
+    "filters/jpeg_parser.cc",
+    "filters/jpeg_parser.h",
+    "filters/memory_data_source.cc",
+    "filters/memory_data_source.h",
+    "filters/opus_constants.cc",
+    "filters/opus_constants.h",
+    "filters/pipeline_controller.cc",
+    "filters/pipeline_controller.h",
+    "filters/source_buffer_range.cc",
+    "filters/source_buffer_range.h",
+    "filters/source_buffer_state.cc",
+    "filters/source_buffer_state.h",
+    "filters/source_buffer_stream.cc",
+    "filters/source_buffer_stream.h",
+    "filters/stream_parser_factory.cc",
+    "filters/stream_parser_factory.h",
+    "filters/video_cadence_estimator.cc",
+    "filters/video_cadence_estimator.h",
+    "filters/video_renderer_algorithm.cc",
+    "filters/video_renderer_algorithm.h",
+    "filters/vp8_bool_decoder.cc",
+    "filters/vp8_bool_decoder.h",
+    "filters/vp8_parser.cc",
+    "filters/vp8_parser.h",
+    "filters/vp9_bool_decoder.cc",
+    "filters/vp9_bool_decoder.h",
+    "filters/vp9_compressed_header_parser.cc",
+    "filters/vp9_compressed_header_parser.h",
+    "filters/vp9_parser.cc",
+    "filters/vp9_parser.h",
+    "filters/vp9_raw_bits_reader.cc",
+    "filters/vp9_raw_bits_reader.h",
+    "filters/vp9_uncompressed_header_parser.cc",
+    "filters/vp9_uncompressed_header_parser.h",
+    "filters/webvtt_util.h",
+    "filters/wsola_internals.cc",
+    "filters/wsola_internals.h",
+    "muxers/webm_muxer.cc",
+    "muxers/webm_muxer.h",
     "renderers/audio_renderer_impl.cc",
     "renderers/audio_renderer_impl.h",
     "renderers/default_renderer_factory.cc",
@@ -112,6 +216,22 @@ component("media") {
     "renderers/video_overlay_factory.h",
     "renderers/video_renderer_impl.cc",
     "renderers/video_renderer_impl.h",
+    "video/fake_video_encode_accelerator.cc",
+    "video/fake_video_encode_accelerator.h",
+    "video/gpu_memory_buffer_video_frame_pool.cc",
+    "video/gpu_memory_buffer_video_frame_pool.h",
+    "video/h264_poc.cc",
+    "video/h264_poc.h",
+    "video/half_float_maker.cc",
+    "video/half_float_maker.h",
+    "video/jpeg_decode_accelerator.cc",
+    "video/jpeg_decode_accelerator.h",
+    "video/picture.cc",
+    "video/picture.h",
+    "video/video_decode_accelerator.cc",
+    "video/video_decode_accelerator.h",
+    "video/video_encode_accelerator.cc",
+    "video/video_encode_accelerator.h",
   ]
 
   configs += [
@@ -135,9 +255,12 @@ component("media") {
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
     "//cc/paint",
+    "//crypto",
     "//crypto:platform",
     "//gpu/command_buffer/client:gles2_interface",
     "//gpu/command_buffer/common",
+    "//skia",
+    "//third_party/libwebm",
     "//third_party/libyuv",
     "//ui/events:events_base",
     "//ui/gfx",
@@ -148,17 +271,94 @@ component("media") {
 
   public_configs = [ "//third_party/libwebm:libwebm_config" ]
   public_deps = [
+    ":filters_common",
     ":media_features",
     ":shared_memory_support",
-    "//media/filters",
+    "//media/audio",
     "//media/formats",
     "//ui/gfx:color_space",
   ]
 
   include_dirs = [ "." ]
+  if (media_use_ffmpeg) {
+    public_deps += [ "//media/ffmpeg" ]
+    deps += [
+      "//third_party/ffmpeg",
+      "//third_party/ffmpeg:ffmpeg_features",
+      "//third_party/opus",
+    ]
+    sources += [
+      "filters/audio_file_reader.cc",
+      "filters/audio_file_reader.h",
+      "filters/blocking_url_protocol.cc",
+      "filters/ffmpeg_audio_decoder.cc",
+      "filters/ffmpeg_audio_decoder.h",
+      "filters/ffmpeg_bitstream_converter.h",
+      "filters/ffmpeg_demuxer.cc",
+      "filters/ffmpeg_demuxer.h",
+      "filters/ffmpeg_glue.cc",
+      "filters/in_memory_url_protocol.cc",
+      "filters/in_memory_url_protocol.h",
+    ]
+    if (!disable_ffmpeg_video_decoders) {
+      sources += [
+        "filters/ffmpeg_video_decoder.cc",
+        "filters/ffmpeg_video_decoder.h",
+      ]
+    }
+    if (proprietary_codecs) {
+      sources += [
+        "filters/ffmpeg_aac_bitstream_converter.cc",
+        "filters/ffmpeg_aac_bitstream_converter.h",
+        "filters/ffmpeg_h264_to_annex_b_bitstream_converter.cc",
+        "filters/ffmpeg_h264_to_annex_b_bitstream_converter.h",
+      ]
+    }
+  }
+
+  if (proprietary_codecs && enable_hevc_demuxing) {
+    sources += [
+      "filters/h265_parser.cc",
+      "filters/h265_parser.h",
+    ]
+    if (media_use_ffmpeg) {
+      sources += [
+        "filters/ffmpeg_h265_to_annex_b_bitstream_converter.cc",
+        "filters/ffmpeg_h265_to_annex_b_bitstream_converter.h",
+      ]
+    }
+  }
 
   if (current_cpu == "arm" && arm_use_neon) {
     defines += [ "USE_NEON" ]
+  }
+
+  if (media_use_libvpx) {
+    sources += [
+      "filters/vpx_video_decoder.cc",
+      "filters/vpx_video_decoder.h",
+    ]
+    deps += [ "//third_party/libvpx" ]
+  }
+
+  if (is_android) {
+    sources -= [
+      "filters/decrypting_audio_decoder.cc",
+      "filters/decrypting_audio_decoder.h",
+      "filters/decrypting_video_decoder.cc",
+      "filters/decrypting_video_decoder.h",
+    ]
+    sources += [
+      "filters/android/media_codec_audio_decoder.cc",
+      "filters/android/media_codec_audio_decoder.h",
+    ]
+  }
+
+  if (current_cpu != "arm" && is_chromeos) {
+    sources += [
+      "filters/h264_bitstream_buffer.cc",
+      "filters/h264_bitstream_buffer.h",
+    ]
   }
 
   if (is_mac) {
@@ -176,6 +376,27 @@ component("media") {
 
   if (is_win) {
     deps += [ "//media/base/win" ]
+  }
+
+  if (proprietary_codecs) {
+    sources += [
+      "cdm/cenc_utils.cc",
+      "cdm/cenc_utils.h",
+      "filters/h264_to_annex_b_bitstream_converter.cc",
+      "filters/h264_to_annex_b_bitstream_converter.h",
+    ]
+  }
+
+  if (use_low_memory_buffer) {
+    sources += [
+      "filters/source_buffer_platform.h",
+      "filters/source_buffer_platform_lowmem.cc",
+    ]
+  } else {
+    sources += [
+      "filters/source_buffer_platform.cc",
+      "filters/source_buffer_platform.h",
+    ]
   }
 
   if (use_udev) {
