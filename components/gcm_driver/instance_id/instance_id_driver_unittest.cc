@@ -13,14 +13,15 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/test/scoped_task_environment.h"
+#include "components/gcm_driver/gcm_build_features.h"
 #include "components/gcm_driver/instance_id/fake_gcm_driver_for_instance_id.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(USE_GCM_FROM_PLATFORM)
 #include "components/gcm_driver/instance_id/instance_id_android.h"
 #include "components/gcm_driver/instance_id/scoped_use_fake_instance_id_android.h"
-#endif  // OS_ANDROID
+#endif  // BUILDFLAG(USE_GCM_FROM_PLATFORM)
 
 namespace instance_id {
 
@@ -91,10 +92,10 @@ class InstanceIDDriverTest : public testing::Test {
   std::unique_ptr<FakeGCMDriverForInstanceID> gcm_driver_;
   std::unique_ptr<InstanceIDDriver> driver_;
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(USE_GCM_FROM_PLATFORM)
   InstanceIDAndroid::ScopedBlockOnAsyncTasksForTesting block_async_;
   ScopedUseFakeInstanceIDAndroid use_fake_;
-#endif  // OS_ANDROID
+#endif  // BUILDFLAG(USE_GCM_FROM_PLATFORM)
 
   std::string id_;
   base::Time creation_time_;

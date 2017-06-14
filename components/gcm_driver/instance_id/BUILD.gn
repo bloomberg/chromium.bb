@@ -2,10 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//components/gcm_driver/config.gni")
+
 static_library("instance_id") {
   sources = [
-    "android/component_jni_registrar.cc",
-    "android/component_jni_registrar.h",
     "instance_id.cc",
     "instance_id.h",
     "instance_id_driver.cc",
@@ -19,12 +19,14 @@ static_library("instance_id") {
     "//crypto",
   ]
 
-  if (is_android) {
+  if (use_gcm_from_platform) {
     sources -= [
       "instance_id_impl.cc",
       "instance_id_impl.h",
     ]
     sources += [
+      "android/component_jni_registrar.cc",
+      "android/component_jni_registrar.h",
       "instance_id_android.cc",
       "instance_id_android.h",
     ]
@@ -65,6 +67,7 @@ source_set("unit_tests") {
     ":instance_id",
     ":test_support",
     "//base",
+    "//components/gcm_driver:gcm_build_features",
     "//google_apis/gcm",
     "//net:test_support",
     "//testing/gtest",
