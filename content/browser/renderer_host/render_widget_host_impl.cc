@@ -492,11 +492,6 @@ void RenderWidgetHostImpl::SendScreenRects() {
   waiting_for_screen_rects_ack_ = true;
 }
 
-void RenderWidgetHostImpl::OnBeginFrame() {
-  if (begin_frame_callback_)
-    std::move(begin_frame_callback_).Run();
-}
-
 void RenderWidgetHostImpl::Init() {
   DCHECK(process_->HasConnection());
 
@@ -2546,13 +2541,6 @@ void RenderWidgetHostImpl::RequestMojoCompositorFrameSink(
   if (view_)
     view_->DidCreateNewRendererCompositorFrameSink(client.get());
   renderer_compositor_frame_sink_ = std::move(client);
-}
-
-void RenderWidgetHostImpl::RequestBeginFrameForSynthesizedInput(
-    base::OnceClosure begin_frame_callback) {
-  DCHECK(view_);
-  begin_frame_callback_ = std::move(begin_frame_callback);
-  view_->OnSetNeedsFlushInput();
 }
 
 bool RenderWidgetHostImpl::HasGestureStopped() {

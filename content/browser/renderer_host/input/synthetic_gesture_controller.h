@@ -32,11 +32,6 @@ class CONTENT_EXPORT SyntheticGestureController {
    public:
     virtual ~Delegate() {}
 
-    // Requests a single begin frame. The passed callback is run on the next
-    // begin frame message.
-    virtual void RequestBeginFrameForSynthesizedInput(
-        base::OnceClosure callback) = 0;
-
     // Returns whether any gesture created by dispatched input events has
     // completed or not.
     virtual bool HasGestureStopped() = 0;

@@ -484,8 +484,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Update the renderer's cache of the screen rect of the view and window.
   void SendScreenRects();
 
-  void OnBeginFrame();
-
   // Indicates whether the renderer drives the RenderWidgetHosts's size or the
   // other way around.
   bool auto_resize_enabled() { return auto_resize_enabled_; }
@@ -586,9 +584,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
     return last_frame_metadata_;
   }
 
-  // SyntheticGestureController::Delegate:
-  void RequestBeginFrameForSynthesizedInput(
-      base::OnceClosure begin_frame_callback) override;
   bool HasGestureStopped() override;
 
   // cc::mojom::MojoCompositorFrameSink implementation.
@@ -993,8 +988,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // List of all swap messages that their corresponding frames have not arrived.
   // Sorted by frame token.
   std::queue<std::pair<uint32_t, std::vector<IPC::Message>>> queued_messages_;
-
-  base::OnceClosure begin_frame_callback_;
 
   base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_;
 

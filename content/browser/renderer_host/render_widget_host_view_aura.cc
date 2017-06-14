@@ -390,7 +390,6 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host,
       has_composition_text_(false),
       background_color_(SK_ColorWHITE),
       needs_begin_frames_(false),
-      needs_flush_input_(false),
       added_frame_observer_(false),
       cursor_visibility_state_in_renderer_(UNKNOWN),
 #if defined(OS_WIN)
@@ -650,14 +649,7 @@ void RenderWidgetHostViewAura::SetNeedsBeginFrames(bool needs_begin_frames) {
   UpdateNeedsBeginFramesInternal();
 }
 
-void RenderWidgetHostViewAura::OnSetNeedsFlushInput() {
-  needs_flush_input_ = true;
-  UpdateNeedsBeginFramesInternal();
-}
-
 void RenderWidgetHostViewAura::OnBeginFrame() {
-  needs_flush_input_ = false;
-  host_->OnBeginFrame();
   UpdateNeedsBeginFramesInternal();
 }
 
@@ -2431,8 +2423,7 @@ void RenderWidgetHostViewAura::SetPopupChild(
 void RenderWidgetHostViewAura::UpdateNeedsBeginFramesInternal() {
   if (!delegated_frame_host_)
     return;
-  delegated_frame_host_->SetNeedsBeginFrames(needs_begin_frames_ ||
-                                             needs_flush_input_);
+  delegated_frame_host_->SetNeedsBeginFrames(needs_begin_frames_);
 }
 
 }  // namespace content

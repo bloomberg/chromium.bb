@@ -323,7 +323,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   bool LockMouse() override;
   void UnlockMouse() override;
-  void OnSetNeedsFlushInput() override;
   void GestureEventAck(const blink::WebGestureEvent& event,
                        InputEventAckState ack_result) override;
 
@@ -567,9 +566,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // Whether a request for begin frames has been issued.
   bool needs_begin_frames_;
-
-  // Whether a request to flush input has been issued.
-  bool needs_flush_input_;
 
   // The background color of the web content. This color will be drawn when the
   // web content is not able to draw in time.

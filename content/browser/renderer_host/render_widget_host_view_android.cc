@@ -1750,11 +1750,6 @@ InputEventAckState RenderWidgetHostViewAndroid::FilterInputEvent(
   return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
 }
 
-void RenderWidgetHostViewAndroid::OnSetNeedsFlushInput() {
-  TRACE_EVENT0("input", "RenderWidgetHostViewAndroid::OnSetNeedsFlushInput");
-  AddBeginFrameRequest(FLUSH_INPUT);
-}
-
 BrowserAccessibilityManager*
     RenderWidgetHostViewAndroid::CreateBrowserAccessibilityManager(
         BrowserAccessibilityDelegate* delegate, bool for_root_frame) {
@@ -2137,18 +2132,8 @@ void RenderWidgetHostViewAndroid::OnBeginFrame(const cc::BeginFrameArgs& args) {
 
   // Update |last_begin_frame_args_| before handling
   // |outstanding_begin_frame_requests_| to prevent the BeginFrameSource from
-  // sending the same MISSED args in infinite recursion. This may otherwise
-  // happen if |host_->OnBeginFrame()| causes a synchronous
-  // OnSetNeedsFlushInput() which can lead to
-  // |begin_frame_source_->AddObserver()| and OnBeginFrame(). By setting
-  // |last_begin_frame_args_|, we indicate to the source not to send the same
-  // args during |AddObserver()| again.
+  // sending the same MISSED args in infinite recursion.
   last_begin_frame_args_ = args;
-
-  if (outstanding_begin_frame_requests_ & FLUSH_INPUT) {
-    ClearBeginFrameRequest(FLUSH_INPUT);
-    host_->OnBeginFrame();
-  }
 
   if ((outstanding_begin_frame_requests_ & BEGIN_FRAME) ||
       (outstanding_begin_frame_requests_ & PERSISTENT_BEGIN_FRAME)) {
