@@ -136,15 +136,14 @@ void MediaStreamRemoteVideoSource::RemoteVideoSourceDelegate::OnFrame(
     // the data.
     // TODO(magjed): Update media::VideoFrame to support const data so we don't
     // need to const cast here.
+    rtc::scoped_refptr<const webrtc::I420BufferInterface> i420_buffer =
+        buffer->ToI420();
     video_frame = media::VideoFrame::WrapExternalYuvData(
         media::PIXEL_FORMAT_YV12, size, gfx::Rect(size), size,
-        buffer->StrideY(),
-        buffer->StrideU(),
-        buffer->StrideV(),
-        const_cast<uint8_t*>(buffer->DataY()),
-        const_cast<uint8_t*>(buffer->DataU()),
-        const_cast<uint8_t*>(buffer->DataV()),
-        elapsed_timestamp);
+        i420_buffer->StrideY(), i420_buffer->StrideU(), i420_buffer->StrideV(),
+        const_cast<uint8_t*>(i420_buffer->DataY()),
+        const_cast<uint8_t*>(i420_buffer->DataU()),
+        const_cast<uint8_t*>(i420_buffer->DataV()), elapsed_timestamp);
     if (!video_frame)
       return;
     // The bind ensures that we keep a reference to the underlying buffer.

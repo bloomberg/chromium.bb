@@ -33,17 +33,6 @@ class WebRtcVideoFrameAdapter : public webrtc::VideoFrameBuffer {
   int width() const override;
   int height() const override;
 
-  // TODO(magjed): Remove Data, Stride, and native_handle() functions.
-  const uint8_t* DataY() const override;
-  const uint8_t* DataU() const override;
-  const uint8_t* DataV() const override;
-
-  int StrideY() const override;
-  int StrideU() const override;
-  int StrideV() const override;
-
-  void* native_handle() const override;
-
   rtc::scoped_refptr<webrtc::I420BufferInterface> ToI420() override;
 
   friend class rtc::RefCountedObject<WebRtcVideoFrameAdapter>;
