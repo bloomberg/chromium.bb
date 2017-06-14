@@ -315,11 +315,7 @@ void LayoutSelection::ClearSelection() {
   if (paint_range_.IsNull())
     return;
 
-  const SelectedMap& old_selected_map = CollectSelectedMap(
-      paint_range_, CollectSelectedMapOption::kNotCollectBlock);
-  // Clear SelectionState and invalidation.
-  // TODO(yoichio): Iterate with *this directrly.
-  for (auto layout_object : old_selected_map.object_map.Keys()) {
+  for (auto layout_object : paint_range_) {
     const SelectionState old_state = layout_object->GetSelectionState();
     layout_object->SetSelectionStateIfNeeded(SelectionState::kNone);
     if (layout_object->GetSelectionState() == old_state)
