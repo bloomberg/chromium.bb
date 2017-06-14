@@ -130,6 +130,7 @@
 #include "platform/scroll/ScrollbarTheme.h"
 #include "platform/scroll/ScrollerSizeMetrics.h"
 #include "platform/text/TextStream.h"
+#include "platform/wtf/CheckedNumeric.h"
 #include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/StdLibExtras.h"
@@ -2209,14 +2210,15 @@ void LocalFrameView::HandleLoadCompleted() {
     PaintLayerScrollableArea* paint_layer_scrollable_area =
         ToPaintLayerScrollableArea(scrollable_area);
     if (paint_layer_scrollable_area->ScrollsOverflow() &&
-        !paint_layer_scrollable_area->Layer()->IsRootLayer()) {
-      DEFINE_STATIC_LOCAL(
-          CustomCountHistogram, scrollable_area_size_histogram,
-          ("Event.Scroll.ScrollerSize.OnLoad", 1, kScrollerSizeLargestBucket,
-           kScrollerSizeBucketCount));
-      scrollable_area_size_histogram.Count(
-          paint_layer_scrollable_area->VisibleContentRect().Width() *
-          paint_layer_scrollable_area->VisibleContentRect().Height());
+        !paint_layer_scrollable_area->Layer()->IsRootLayer() &&
+        paint_layer_scrollable_area->VisibleContentRect().Size().Area() > 0) {
+      CheckedNumeric<int> size =
+          paint_layer_scrollable_area->VisibleContentRect().Width();
+      size *= paint_layer_scrollable_area->VisibleContentRect().Height();
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Event.Scroll.ScrollerSize.OnLoad",
+          size.ValueOrDefault(std::numeric_limits<int>::max()), 1,
+          kScrollerSizeLargestBucket, kScrollerSizeBucketCount);
     }
   }
 }

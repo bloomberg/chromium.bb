@@ -25,6 +25,7 @@
 #include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/scroll/ScrollerSizeMetrics.h"
+#include "platform/wtf/CheckedNumeric.h"
 #include "platform/wtf/PtrUtil.h"
 
 namespace blink {
@@ -200,7 +201,8 @@ void ScrollManager::CustomizedScroll(const Node& start_node,
 
 void ScrollManager::ComputeScrollRelatedMetrics(
     uint32_t* non_composited_main_thread_scrolling_reasons,
-    int* scroller_size) {
+    int* scroller_size,
+    bool* scroller_size_updated) {
   // When scrolling on the main thread, the scrollableArea may or may not be
   // composited. Either way, we have recorded either the reasons stored in
   // its layer or the reason NonFastScrollableRegion from the compositor
@@ -211,8 +213,7 @@ void ScrollManager::ComputeScrollRelatedMetrics(
 
   // When recording the size of the scroller, we only need to record the
   // first scrollable area that we find during the walk up.
-  bool set_scroller_size = false;
-
+  *scroller_size_updated = false;
   for (auto* cur_box =
            scroll_gesture_handling_node_->GetLayoutObject()->EnclosingBox();
        cur_box; cur_box = cur_box->ContainingBlock()) {
@@ -221,10 +222,11 @@ void ScrollManager::ComputeScrollRelatedMetrics(
     if (!scrollable_area || !scrollable_area->ScrollsOverflow())
       continue;
 
-    if (!set_scroller_size && !cur_box->Layer()->IsRootLayer()) {
-      *scroller_size = scrollable_area->VisibleContentRect().Width() *
-                       scrollable_area->VisibleContentRect().Height();
-      set_scroller_size = true;
+    if (!*scroller_size_updated && !cur_box->Layer()->IsRootLayer()) {
+      CheckedNumeric<int> size = scrollable_area->VisibleContentRect().Width();
+      size *= scrollable_area->VisibleContentRect().Height();
+      *scroller_size = size.ValueOrDefault(std::numeric_limits<int>::max());
+      *scroller_size_updated = true;
     }
 
     DCHECK(!scrollable_area->UsesCompositedScrolling() ||
@@ -240,23 +242,21 @@ void ScrollManager::RecordScrollRelatedMetrics(const WebGestureDevice device) {
     return;
   }
 
-  int scroller_size = -1;
+  int scroller_size = 0;
+  bool scroller_size_updated = false;
   uint32_t non_composited_main_thread_scrolling_reasons = 0;
   ComputeScrollRelatedMetrics(&non_composited_main_thread_scrolling_reasons,
-                              &scroller_size);
-  if (scroller_size >= 0) {
+                              &scroller_size, &scroller_size_updated);
+  if (scroller_size_updated) {
+    DCHECK_GT(scroller_size, 0);
     if (device == kWebGestureDeviceTouchpad) {
-      DEFINE_STATIC_LOCAL(
-          CustomCountHistogram, size_histogram_wheel,
-          ("Event.Scroll.ScrollerSize.OnScroll_Wheel", 1,
-           kScrollerSizeLargestBucket, kScrollerSizeBucketCount));
-      size_histogram_wheel.Count(scroller_size);
+      UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Scroll.ScrollerSize.OnScroll_Wheel",
+                                  scroller_size, 1, kScrollerSizeLargestBucket,
+                                  kScrollerSizeBucketCount);
     } else {
-      DEFINE_STATIC_LOCAL(
-          CustomCountHistogram, size_histogram_touch,
-          ("Event.Scroll.ScrollerSize.OnScroll_Touch", 1,
-           kScrollerSizeLargestBucket, kScrollerSizeBucketCount));
-      size_histogram_touch.Count(scroller_size);
+      UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Scroll.ScrollerSize.OnScroll_Touch",
+                                  scroller_size, 1, kScrollerSizeLargestBucket,
+                                  kScrollerSizeBucketCount);
     }
   }
 
