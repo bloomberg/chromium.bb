@@ -43,6 +43,12 @@ function MetadataBoxController(
    * @private
    */
   this.fileMetadataFormatter_ = fileMetadataFormatter;
+
+  /**
+   * @type {Entry}
+   * @private
+   */
+  this.previousEntry_ = null;
 }
 
 /**
@@ -82,15 +88,18 @@ MetadataBoxController.prototype.updateView_ = function() {
   if (!this.quickView_.metadataBoxActive) {
     return;
   }
-  this.metadataBox_.clear();
   var entry = this.quickViewModel_.getSelectedEntry();
+  var isSameEntry = util.isSameEntry(entry, this.previousEntry_);
+  this.previousEntry_ = entry;
+  // Do not clear isSizeLoading and size fields when the entry is not changed.
+  this.metadataBox_.clear(isSameEntry);
   if (!entry)
     return;
   this.metadataModel_
-      .get(
-          [entry], MetadataBoxController.GENERAL_METADATA_NAME.concat(
-                       ['hosted', 'externalFileUrl']))
-      .then(this.onGeneralMetadataLoaded_.bind(this, entry));
+      .get([entry], MetadataBoxController.GENERAL_METADATA_NAME.concat([
+        'hosted', 'externalFileUrl'
+      ]))
+      .then(this.onGeneralMetadataLoaded_.bind(this, entry, isSameEntry));
 };
 
 /**
@@ -98,22 +107,25 @@ MetadataBoxController.prototype.updateView_ = function() {
  * Then retrieve file specific metadata if any.
  *
  * @param {!Entry} entry
+ * @param {boolean} isSameEntry if the entry is not changed from the last time.
  * @param {!Array<!MetadataItem>} items
  *
  * @private
  */
 MetadataBoxController.prototype.onGeneralMetadataLoaded_ = function(
-    entry, items) {
+    entry, isSameEntry, items) {
   var type = FileType.getType(entry).type;
   var item = items[0];
 
   this.metadataBox_.type = type;
-  if (item.size) {
+  // For directory, item.size is always -1.
+  if (item.size && !entry.isDirectory) {
     this.metadataBox_.size =
         this.fileMetadataFormatter_.formatSize(item.size, item.hosted);
   }
   if (entry.isDirectory) {
-    this.setDirectorySize_( /** @type {!DirectoryEntry} */ (entry));
+    this.setDirectorySize_(
+        /** @type {!DirectoryEntry} */ (entry), isSameEntry);
   }
   if (item.modificationTime) {
     this.metadataBox_.modificationTime =
@@ -177,14 +189,18 @@ MetadataBoxController.prototype.onGeneralMetadataLoaded_ = function(
  * Set a current directory's size in metadata box.
  *
  * @param {!DirectoryEntry} entry
+ * @param {boolean} isSameEntry
+ *     if the entry is not changed from the last time.
  *
  * @private
  */
-MetadataBoxController.prototype.setDirectorySize_ = function(entry) {
+MetadataBoxController.prototype.setDirectorySize_ = function(
+    entry, isSameEntry) {
   if (!entry.isDirectory)
     return;
 
-  this.metadataBox_.isSizeLoading = true;
+  // false if the entry is same. true if the entry is changed.
+  this.metadataBox_.isSizeLoading = !isSameEntry;
   chrome.fileManagerPrivate.getDirectorySize(entry,
       function(size) {
         if(this.quickViewModel_.getSelectedEntry() != entry) {
