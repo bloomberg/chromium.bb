@@ -51,9 +51,8 @@ void TextDetector::OnDetectText(
   for (const auto& text : text_detection_results) {
     detected_text.push_back(DetectedText::Create(
         text->raw_value,
-        DOMRect::Create(text->bounding_box->x, text->bounding_box->y,
-                        text->bounding_box->width,
-                        text->bounding_box->height)));
+        DOMRect::Create(text->bounding_box.x, text->bounding_box.y,
+                        text->bounding_box.width, text->bounding_box.height)));
   }
 
   resolver->Resolve(detected_text);

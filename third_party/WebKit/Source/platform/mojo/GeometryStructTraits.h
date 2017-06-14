@@ -5,10 +5,28 @@
 #ifndef GeometryStructTraits_h
 #define GeometryStructTraits_h
 
+#include "third_party/WebKit/public/platform/WebFloatPoint.h"
+#include "third_party/WebKit/public/platform/WebFloatRect.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "ui/gfx/geometry/mojo/geometry.mojom-shared.h"
 
 namespace mojo {
+
+template <>
+struct StructTraits<gfx::mojom::PointFDataView, ::blink::WebFloatPoint> {
+  static float x(const ::blink::WebFloatPoint& point) { return point.x; }
+  static float y(const ::blink::WebFloatPoint& point) { return point.y; }
+  static bool Read(gfx::mojom::PointFDataView, ::blink::WebFloatPoint* out);
+};
+
+template <>
+struct StructTraits<gfx::mojom::RectFDataView, ::blink::WebFloatRect> {
+  static float x(const ::blink::WebFloatRect& rect) { return rect.x; }
+  static float y(const ::blink::WebFloatRect& rect) { return rect.y; }
+  static float width(const ::blink::WebFloatRect& rect) { return rect.width; }
+  static float height(const ::blink::WebFloatRect& rect) { return rect.height; }
+  static bool Read(gfx::mojom::RectFDataView, ::blink::WebFloatRect* out);
+};
 
 template <>
 struct StructTraits<gfx::mojom::SizeDataView, ::blink::WebSize> {
