@@ -6,8 +6,13 @@ package org.chromium.chrome.browser.suggestions;
 
 import android.support.v7.widget.RecyclerView;
 
+import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.chrome.browser.ntp.NewTabPage;
+import org.chromium.chrome.browser.ntp.snippets.CategoryInt;
+import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.tab.Tab;
 
 /**
  * Exposes methods to report suggestions related events, for UMA or Fetch scheduling purposes.
@@ -58,6 +63,25 @@ public abstract class SuggestionsMetrics {
 
     public static void recordActionViewAll() {
         RecordUserAction.record("Suggestions.Category.ViewAll");
+    }
+
+    /**
+     * Records metrics for the visit to the provided content suggestion, such as the time spent on
+     * the website, or if the user comes back to the starting point.
+     */
+    public static void recordVisit(Tab tab, SnippetArticle suggestion) {
+        @CategoryInt
+        final int category = suggestion.mCategory;
+        NavigationRecorder.record(tab, new Callback<NavigationRecorder.VisitData>() {
+            @Override
+            public void onResult(NavigationRecorder.VisitData visit) {
+                if (NewTabPage.isNTPUrl(visit.endUrl)) {
+                    RecordUserAction.record("MobileNTP.Snippets.VisitEndBackInNTP");
+                }
+                RecordUserAction.record("MobileNTP.Snippets.VisitEnd");
+                SuggestionsEventReporterBridge.onSuggestionTargetVisited(category, visit.duration);
+            }
+        });
     }
 
     /**
