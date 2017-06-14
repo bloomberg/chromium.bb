@@ -8,6 +8,5 @@ proto_library("cast_channel_proto") {
   sources = [
     "authority_keys.proto",
     "cast_channel.proto",
-    "logging.proto",
   ]
 }
