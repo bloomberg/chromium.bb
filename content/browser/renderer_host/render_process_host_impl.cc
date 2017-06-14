@@ -3103,6 +3103,9 @@ RenderProcessHost* RenderProcessHostImpl::GetProcessHostForSiteInstance(
     case SiteInstanceImpl::ProcessReusePolicy::REUSE_PENDING_OR_COMMITTED_SITE:
       render_process_host =
           FindReusableProcessHostForSite(browser_context, site_url);
+      UMA_HISTOGRAM_BOOLEAN(
+          "SiteIsolation.ReusePendingOrCommittedSite.CouldReuse",
+          render_process_host != nullptr);
       break;
     default:
       break;

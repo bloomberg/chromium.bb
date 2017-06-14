@@ -31486,6 +31486,11 @@ from previous Chrome versions.
   <int value="1" label="Cached StyleSheetContents was reused"/>
 </enum>
 
+<enum name="ReusePendingOrCommittedSiteEnum" type="int">
+  <int value="0" label="Had to create a new RenderProcessHost"/>
+  <int value="1" label="Could reuse an existing RenderProcessHost"/>
+</enum>
+
 <enum name="RevalidationPolicy" type="int">
   <int value="0" label="Use"/>
   <int value="1" label="Revalidate"/>
