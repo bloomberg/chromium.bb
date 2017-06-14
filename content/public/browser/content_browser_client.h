@@ -320,6 +320,10 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Returns the default favicon.  The callee doesn't own the given bitmap.
   virtual const gfx::ImageSkia* GetDefaultFavicon();
 
+  // Returns the fully qualified path to the log file name, or an empty path.
+  // This function is used by the sandbox to allow write access to the log.
+  virtual base::FilePath GetLoggingFileName();
+
   // Allow the embedder to control if an AppCache can be used for the given url.
   // This is called on the IO thread.
   virtual bool AllowAppCache(const GURL& manifest_url,

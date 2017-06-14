@@ -151,6 +151,10 @@ const gfx::ImageSkia* ContentBrowserClient::GetDefaultFavicon() {
   return empty;
 }
 
+base::FilePath ContentBrowserClient::GetLoggingFileName() {
+  return base::FilePath();
+}
+
 bool ContentBrowserClient::AllowAppCache(const GURL& manifest_url,
                                          const GURL& first_party,
                                          ResourceContext* context) {

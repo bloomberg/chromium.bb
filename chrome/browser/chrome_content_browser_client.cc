@@ -3432,6 +3432,10 @@ void ChromeContentBrowserClient::
   task_scheduler_util::MaybePerformBrowserTaskSchedulerRedirection();
 }
 
+base::FilePath ChromeContentBrowserClient::GetLoggingFileName() {
+  return logging::GetLogFileName();
+}
+
 // static
 void ChromeContentBrowserClient::SetDefaultQuotaSettingsForTesting(
     const storage::QuotaSettings* settings) {
