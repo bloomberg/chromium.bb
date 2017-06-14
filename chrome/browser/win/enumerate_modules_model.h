@@ -159,14 +159,12 @@ class ModuleEnumerator {
   // entries in |enumerated_modules_| with a populated |location| field.
   void EnumerateShellExtensions();
 
+  // Callback for ShellExtensionEnumerator::EnumerateShellExtensionPaths().
+  void OnShellExtensionEnumerated(const base::FilePath& shell_extension);
+
   // Enumerate all registered Winsock LSP modules. Creates empty
   // entries in |enumerated_modules_| with a populated |location| field.
   void EnumerateWinsockModules();
-
-  // Reads the registered shell extensions found under |parent| key in the
-  // registry. Creates empty entries in |enumerated_modules_| with a populated
-  // |location| field.
-  void ReadShellExtensions(HKEY parent);
 
   // Given a |module|, initializes the structure and loads additional
   // information using the location field of the module.

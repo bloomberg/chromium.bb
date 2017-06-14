@@ -66,6 +66,12 @@ class ModuleDatabase {
                         uint64_t creation_time,
                         content::ProcessType process_type);
 
+  // Indicates that a new registered shell extension was found. Must be called
+  // in the same sequence as |task_runner_|.
+  void OnShellExtensionEnumerated(const base::FilePath& path,
+                                  uint32_t size_of_image,
+                                  uint32_t time_date_stamp);
+
   // Indicates that a module has been loaded. The data passed to this function
   // is taken as gospel, so if it originates from a remote process it should be
   // independently validated first. (In practice, see ModuleEventSinkImpl for

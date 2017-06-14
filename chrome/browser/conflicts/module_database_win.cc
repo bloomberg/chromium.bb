@@ -49,7 +49,7 @@ void ModuleDatabase::SetInstance(
     std::unique_ptr<ModuleDatabase> module_database) {
   DCHECK_EQ(nullptr, g_instance);
   // This is deliberately leaked. It can be cleaned up by manually deleting the
-  // ModuleDatabase
+  // ModuleDatabase.
   g_instance = module_database.release();
 }
 
@@ -58,6 +58,15 @@ void ModuleDatabase::OnProcessStarted(uint32_t process_id,
                                       content::ProcessType process_type) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
   CreateProcessInfo(process_id, creation_time, process_type);
+}
+
+void ModuleDatabase::OnShellExtensionEnumerated(const base::FilePath& path,
+                                                uint32_t size_of_image,
+                                                uint32_t time_date_stamp) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  auto* module_info =
+      FindOrCreateModuleInfo(path, size_of_image, time_date_stamp);
+  module_info->second.module_types |= ModuleInfoData::kTypeShellExtension;
 }
 
 void ModuleDatabase::OnModuleLoad(uint32_t process_id,
@@ -88,6 +97,8 @@ void ModuleDatabase::OnModuleLoad(uint32_t process_id,
 
   auto* module_info =
       FindOrCreateModuleInfo(module_path, module_size, module_time_date_stamp);
+
+  module_info->second.module_types |= ModuleInfoData::kTypeLoadedModule;
 
   // Update the list of process types that this module has been seen in.
   module_info->second.process_types |=

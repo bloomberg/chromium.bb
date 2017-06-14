@@ -37,6 +37,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/conflicts/module_database_win.h"
 #include "chrome/browser/conflicts/module_event_sink_impl_win.h"
+#include "chrome/browser/conflicts/shell_extension_enumerator_win.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/install_verification/win/install_verification.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -207,8 +208,10 @@ void OnModuleEvent(uint32_t process_id,
 }
 
 // Helper function for initializing the module database subsystem. Populates
-// the provided |module_watcher|.
-void SetupModuleDatabase(std::unique_ptr<ModuleWatcher>* module_watcher) {
+// the provided |module_watcher| and |shell_extension_enumerator|.
+void SetupModuleDatabase(
+    std::unique_ptr<ModuleWatcher>* module_watcher,
+    std::unique_ptr<ShellExtensionEnumerator>* shell_extension_enumerator_) {
   uint64_t creation_time = 0;
   ModuleEventSinkImpl::GetProcessCreationTime(::GetCurrentProcess(),
                                               &creation_time);
@@ -226,6 +229,9 @@ void SetupModuleDatabase(std::unique_ptr<ModuleWatcher>* module_watcher) {
                                     content::PROCESS_TYPE_BROWSER);
   *module_watcher = ModuleWatcher::Create(
       base::Bind(&OnModuleEvent, process_id, creation_time));
+  *shell_extension_enumerator_ = base::MakeUnique<ShellExtensionEnumerator>(
+      base::Bind(&ModuleDatabase::OnShellExtensionEnumerated,
+                 base::Unretained(module_database)));
 }
 
 }  // namespace
@@ -357,7 +363,7 @@ void ChromeBrowserMainPartsWin::PostProfileInit() {
   // needs to be done before any child processes are initialized as the
   // ModuleDatabase is an endpoint for IPC from child processes.
   if (base::FeatureList::IsEnabled(features::kModuleDatabase))
-    SetupModuleDatabase(&module_watcher_);
+    SetupModuleDatabase(&module_watcher_, &shell_extension_enumerator_);
 }
 
 void ChromeBrowserMainPartsWin::PostBrowserStart() {
