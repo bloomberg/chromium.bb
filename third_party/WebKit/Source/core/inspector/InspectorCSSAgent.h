@@ -217,12 +217,6 @@ class CORE_EXPORT InspectorCSSAgent final
   CSSStyleDeclaration* FindEffectiveDeclaration(
       CSSPropertyID,
       const HeapVector<Member<CSSStyleDeclaration>>& styles);
-  protocol::Response getLayoutTreeAndStyles(
-      std::unique_ptr<protocol::Array<String>> style_whitelist,
-      std::unique_ptr<protocol::Array<protocol::CSS::LayoutTreeNode>>*
-          layout_tree_nodes,
-      std::unique_ptr<protocol::Array<protocol::CSS::ComputedStyle>>*
-          computed_styles) override;
 
   HeapVector<Member<CSSStyleDeclaration>> MatchingStyles(Element*);
   String StyleSheetId(CSSStyleSheet*);
@@ -307,27 +301,6 @@ class CORE_EXPORT InspectorCSSAgent final
   void StyleSheetChanged(InspectorStyleSheetBase*) override;
 
   void ResetPseudoStates();
-
-  struct VectorStringHashTraits;
-  using ComputedStylesMap = WTF::HashMap<Vector<String>,
-                                         int,
-                                         VectorStringHashTraits,
-                                         VectorStringHashTraits>;
-
-  void VisitLayoutTreeNodes(
-      Node*,
-      protocol::Array<protocol::CSS::LayoutTreeNode>& layout_tree_nodes,
-      const Vector<std::pair<String, CSSPropertyID>>& css_property_whitelist,
-      ComputedStylesMap& style_to_index_map,
-      protocol::Array<protocol::CSS::ComputedStyle>& computed_styles);
-
-  // A non-zero index corresponds to a style in |computedStyles|, -1 means an
-  // empty style.
-  int GetStyleIndexForNode(
-      Node*,
-      const Vector<std::pair<String, CSSPropertyID>>& css_property_whitelist,
-      ComputedStylesMap& style_to_index_map,
-      protocol::Array<protocol::CSS::ComputedStyle>& computed_styles);
 
   Member<InspectorDOMAgent> dom_agent_;
   Member<InspectedFrames> inspected_frames_;
