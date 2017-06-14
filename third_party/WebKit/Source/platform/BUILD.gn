@@ -301,7 +301,6 @@ component("platform") {
     "PlatformFrameView.h",
     "PluginScriptForbiddenScope.cpp",
     "PluginScriptForbiddenScope.h",
-    "PopupMenu.h",
     "Prerender.cpp",
     "Prerender.h",
     "PrerenderClient.h",
