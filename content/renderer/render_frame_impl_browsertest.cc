@@ -488,6 +488,38 @@ TEST_F(RenderFrameImplTest, PreviewsStateAfterWillSendRequest) {
   }
 }
 
+TEST_F(RenderFrameImplTest, IsClientLoFiActiveForFrame) {
+  const struct {
+    PreviewsState frame_previews_state;
+    bool expected_is_client_lo_fi_active_for_frame;
+  } tests[] = {
+      // With no previews enabled for the frame, no previews should be
+      // activated.
+      {PREVIEWS_UNSPECIFIED, false},
+
+      // Server Lo-Fi should not make Client Lo-Fi active.
+      {SERVER_LOFI_ON, false},
+
+      // PREVIEWS_NO_TRANSFORM and PREVIEWS_OFF should
+      // take precedence over Client Lo-Fi.
+      {CLIENT_LOFI_ON | PREVIEWS_NO_TRANSFORM, false},
+      {CLIENT_LOFI_ON | PREVIEWS_OFF, false},
+
+      // Otherwise, if Client Lo-Fi is enabled on its own or with
+      // SERVER_LOFI_ON, then it is active for the frame.
+      {CLIENT_LOFI_ON, true},
+      {CLIENT_LOFI_ON | SERVER_LOFI_ON, true},
+  };
+
+  for (const auto& test : tests) {
+    SetPreviewsState(frame(), test.frame_previews_state);
+
+    EXPECT_EQ(test.expected_is_client_lo_fi_active_for_frame,
+              frame()->IsClientLoFiActiveForFrame())
+        << (&test - tests);
+  }
+}
+
 TEST_F(RenderFrameImplTest, ShouldUseClientLoFiForRequest) {
   const struct {
     PreviewsState frame_previews_state;

@@ -211,5 +211,26 @@ class LoFi(IntegrationTest):
       # Verify that Lo-Fi responses were seen.
       self.assertNotEqual(0, lofi_responses)
 
+  # Checks that Client LoFi resource requests have the Intervention header
+  # (in case page has https images that may not be fully loaded).
+  def testClientLoFiInterventionHeader(self):
+    with TestDriver() as test_driver:
+      test_driver.AddChromeArg('--enable-spdy-proxy-auth')
+      test_driver.AddChromeArg('--force-fieldtrials='
+                               'PreviewsClientLoFi/Enabled')
+      test_driver.AddChromeArg('--force-fieldtrial-params='
+                               'PreviewsClientLoFi.Enabled:'
+                               'max_allowed_effective_connection_type/4G')
+
+      test_driver.LoadURL('http://check.googlezip.net/static/index.html')
+
+      intervention_headers = 0
+      for response in test_driver.GetHTTPResponses():
+        if not response.url.endswith('html'):
+          self.assertIn('intervention', response.request_headers)
+          intervention_headers = intervention_headers + 1
+
+      self.assertNotEqual(0, intervention_headers)
+
 if __name__ == '__main__':
   IntegrationTest.RunAllTests()

@@ -220,6 +220,8 @@ class LocalFrameClientImpl final : public LocalFrameClient {
 
   WebEffectiveConnectionType GetEffectiveConnectionType() override;
 
+  bool IsClientLoFiActiveForFrame() override;
+
   bool ShouldUseClientLoFiForRequest(const ResourceRequest&) override;
 
   KURL OverrideFlashEmbedWithHTML(const KURL&) override;

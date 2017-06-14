@@ -584,6 +584,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void DidChangeThemeColor() override;
   void DispatchLoad() override;
   blink::WebEffectiveConnectionType GetEffectiveConnectionType() override;
+  bool IsClientLoFiActiveForFrame() override;
   bool ShouldUseClientLoFiForRequest(const blink::WebURLRequest&) override;
   void AbortClientNavigation() override;
   void DidChangeSelection(bool is_empty_selection) override;

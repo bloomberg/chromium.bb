@@ -322,6 +322,10 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
     return WebEffectiveConnectionType::kTypeUnknown;
   }
 
+  // Returns whether or not Client Lo-Fi is enabled for the frame
+  // (and so image requests may be replaced with a placeholder).
+  virtual bool IsClientLoFiActiveForFrame() { return false; }
+
   // Returns whether or not the requested image should be replaced with a
   // placeholder as part of the Client Lo-Fi previews feature.
   virtual bool ShouldUseClientLoFiForRequest(const ResourceRequest&) {

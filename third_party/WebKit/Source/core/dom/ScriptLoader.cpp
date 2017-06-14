@@ -705,7 +705,7 @@ bool ScriptLoader::FetchClassicScript(
   // [Intervention]
   if (document_write_intervention_ ==
       DocumentWriteIntervention::kFetchDocWrittenScriptDeferIdle) {
-    resource_request.SetHTTPHeaderField(
+    resource_request.AddHTTPHeaderField(
         "Intervention",
         "<https://www.chromestatus.com/feature/5718547946799104>");
     defer = FetchParameters::kIdleLoad;

@@ -88,6 +88,8 @@ class MockLocalFrameClient : public EmptyLocalFrameClient {
   MOCK_METHOD2(DispatchDidLoadResourceFromMemoryCache,
                void(const ResourceRequest&, const ResourceResponse&));
   MOCK_METHOD0(UserAgent, String());
+  MOCK_METHOD0(MayUseClientLoFiForImageRequests, bool());
+  MOCK_METHOD0(IsClientLoFiActiveForFrame, bool());
 };
 
 class FixedPolicySubresourceFilter : public WebDocumentSubresourceFilter {
@@ -1276,6 +1278,40 @@ TEST_F(FrameFetchContextTest, ArchiveWhenDetached) {
   child_frame = nullptr;
 
   EXPECT_EQ(nullptr, child_fetch_context->Archive());
+}
+
+// Tests if "Intervention" header is added for frame with Client Lo-Fi enabled.
+TEST_F(FrameFetchContextMockedLocalFrameClientTest,
+       ClientLoFiInterventionHeader) {
+  // Verify header not added if Lo-Fi not active.
+  EXPECT_CALL(*client, IsClientLoFiActiveForFrame())
+      .WillRepeatedly(testing::Return(false));
+  ResourceRequest resource_request("http://www.example.com/style.css");
+  fetch_context->AddAdditionalRequestHeaders(resource_request,
+                                             kFetchMainResource);
+  EXPECT_EQ(g_null_atom, resource_request.HttpHeaderField("Intervention"));
+
+  // Verify header is added if Lo-Fi is active.
+  EXPECT_CALL(*client, IsClientLoFiActiveForFrame())
+      .WillRepeatedly(testing::Return(true));
+  fetch_context->AddAdditionalRequestHeaders(resource_request,
+                                             kFetchSubresource);
+  EXPECT_EQ(
+      "<https://www.chromestatus.com/features/6072546726248448>; "
+      "level=\"warning\"",
+      resource_request.HttpHeaderField("Intervention"));
+
+  // Verify appended to an existing "Intervention" header value.
+  ResourceRequest resource_request2("http://www.example.com/getad.js");
+  resource_request2.SetHTTPHeaderField("Intervention",
+                                       "<https://otherintervention.org>");
+  fetch_context->AddAdditionalRequestHeaders(resource_request2,
+                                             kFetchSubresource);
+  EXPECT_EQ(
+      "<https://otherintervention.org>, "
+      "<https://www.chromestatus.com/features/6072546726248448>; "
+      "level=\"warning\"",
+      resource_request2.HttpHeaderField("Intervention"));
 }
 
 }  // namespace blink
