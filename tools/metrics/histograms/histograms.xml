@@ -27563,7 +27563,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Media.ArcGpuVideoDecodeAccelerator.InitializeResult"
-    enum="ArcVideoAcceleratorResult">
+    enum="ArcVideoDecodeAcceleratorResult">
+  <obsolete>
+    Deprecated as of June 12, 2017. Replaced by
+    Media.ChromeArcVideoDecodeAccelerator.InitializeResult.
+  </obsolete>
   <owner>johnylin@chromium.org</owner>
   <summary>
     Counts of status values returned from calls to
@@ -28393,6 +28397,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>scherkus@chromium.org</owner>
   <summary>
     Whether a media response might be used to satisfy a future request.
+  </summary>
+</histogram>
+
+<histogram name="Media.ChromeArcVideoDecodeAccelerator.InitializeResult"
+    enum="ArcVideoDecodeAcceleratorResult">
+  <owner>johnylin@chromium.org</owner>
+  <summary>
+    Counts of status values returned from calls to
+    ChromeArcVideoDecodeAccelerator::Initialize().
   </summary>
 </histogram>
 

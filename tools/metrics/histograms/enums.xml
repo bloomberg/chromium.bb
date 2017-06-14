@@ -1275,8 +1275,8 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="19" label="Network is unavailable"/>
 </enum>
 
-<enum name="ArcVideoAcceleratorResult" type="int">
-  <summary>Defines ArcVideoAccelerator initialization status</summary>
+<enum name="ArcVideoDecodeAcceleratorResult" type="int">
+  <summary>Defines ArcVideoDecodeAccelerator initialization status</summary>
   <int value="0" label="SUCCESS"/>
   <int value="1" label="ILLEGAL_STATE"/>
   <int value="2" label="INVALID_ARGUMENT"/>
