@@ -5,6 +5,7 @@
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_manager_atomic.h"
 
 #include "base/bind.h"
+#include "base/stl_util.h"
 #include "ui/ozone/platform/drm/gpu/crtc_controller.h"
 #include "ui/ozone/platform/drm/gpu/drm_device.h"
 #include "ui/ozone/platform/drm/gpu/hardware_display_plane_atomic.h"
@@ -37,10 +38,7 @@ bool HardwareDisplayPlaneManagerAtomic::Commit(
     HardwareDisplayPlaneList* plane_list,
     bool test_only) {
   for (HardwareDisplayPlane* plane : plane_list->old_plane_list) {
-    bool found =
-        std::find(plane_list->plane_list.begin(), plane_list->plane_list.end(),
-                  plane) != plane_list->plane_list.end();
-    if (!found) {
+    if (!base::ContainsValue(plane_list->plane_list, plane)) {
       // This plane is being released, so we need to zero it.
       plane->set_in_use(false);
       HardwareDisplayPlaneAtomic* atomic_plane =
