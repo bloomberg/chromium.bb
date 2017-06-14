@@ -5,6 +5,8 @@
 #ifndef NET_HTTP_HTTP_PROXY_CLIENT_SOCKET_POOL_H_
 #define NET_HTTP_HTTP_PROXY_CLIENT_SOCKET_POOL_H_
 
+#include <stdint.h>
+
 #include <memory>
 #include <string>
 
@@ -226,6 +228,9 @@ class NET_EXPORT_PRIVATE HttpProxyClientSocketPool
     TransportClientSocketPool* const transport_pool_;
     SSLClientSocketPool* const ssl_pool_;
     NetworkQualityProvider* network_quality_provider_;
+    const int32_t transport_rtt_multiplier_;
+    const base::TimeDelta min_proxy_connection_timeout_;
+    const base::TimeDelta max_proxy_connection_timeout_;
     NetLog* net_log_;
 
     DISALLOW_COPY_AND_ASSIGN(HttpProxyConnectJobFactory);

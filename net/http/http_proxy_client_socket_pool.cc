@@ -5,11 +5,17 @@
 #include "net/http/http_proxy_client_socket_pool.h"
 
 #include <algorithm>
+#include <map>
+#include <string>
 #include <utility>
 
 #include "base/compiler_specific.h"
 #include "base/memory/ptr_util.h"
-#include "base/time/time.h"
+#include "base/metrics/field_trial.h"
+#include "base/metrics/field_trial_params.h"
+#include "base/optional.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/values.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -18,6 +24,7 @@
 #include "net/http/http_proxy_client_socket_wrapper.h"
 #include "net/log/net_log_source_type.h"
 #include "net/log/net_log_with_source.h"
+#include "net/nqe/network_quality_provider.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/client_socket_pool_base.h"
@@ -44,6 +51,28 @@ static const int kHttpProxyConnectJobTimeoutInSeconds = 10;
 #else
 static const int kHttpProxyConnectJobTimeoutInSeconds = 30;
 #endif
+
+static const char kNetAdaptiveProxyConnectionTimeout[] =
+    "NetAdaptiveProxyConnectionTimeout";
+
+bool IsInNetAdaptiveProxyConnectionTimeoutFieldTrial() {
+  // Field trial is enabled if the group name starts with "Enabled".
+  return base::FieldTrialList::FindFullName(kNetAdaptiveProxyConnectionTimeout)
+             .find("Enabled") == 0;
+}
+
+// Return the value of the parameter |param_name| for the field trial
+// |kNetAdaptiveProxyConnectionTimeout|. If the value of the parameter is
+// unavailable, then |default_value| is available.
+int32_t GetInt32Param(const std::string& param_name, int32_t default_value) {
+  int32_t param;
+  if (!base::StringToInt(base::GetFieldTrialParamValue(
+                             kNetAdaptiveProxyConnectionTimeout, param_name),
+                         &param)) {
+    return default_value;
+  }
+  return param;
+}
 
 }  // namespace
 
@@ -162,7 +191,17 @@ HttpProxyClientSocketPool::HttpProxyConnectJobFactory::
     : transport_pool_(transport_pool),
       ssl_pool_(ssl_pool),
       network_quality_provider_(network_quality_provider),
-      net_log_(net_log) {}
+      transport_rtt_multiplier_(GetInt32Param("transport_rtt_multiplier", 5)),
+      min_proxy_connection_timeout_(base::TimeDelta::FromSeconds(
+          GetInt32Param("min_proxy_connection_timeout_seconds", 8))),
+      max_proxy_connection_timeout_(base::TimeDelta::FromSeconds(
+          GetInt32Param("max_proxy_connection_timeout_seconds", 60))),
+      net_log_(net_log) {
+  DCHECK_LT(0, transport_rtt_multiplier_);
+  DCHECK_LE(base::TimeDelta(), min_proxy_connection_timeout_);
+  DCHECK_LE(base::TimeDelta(), max_proxy_connection_timeout_);
+  DCHECK_LE(min_proxy_connection_timeout_, max_proxy_connection_timeout_);
+}
 
 std::unique_ptr<ConnectJob>
 HttpProxyClientSocketPool::HttpProxyConnectJobFactory::NewConnectJob(
@@ -176,11 +215,25 @@ HttpProxyClientSocketPool::HttpProxyConnectJobFactory::NewConnectJob(
 }
 
 base::TimeDelta
-HttpProxyClientSocketPool::HttpProxyConnectJobFactory::ConnectionTimeout(
-    ) const {
-  // TODO(tbansal): https://crbug.com/704339. Use |network_quality_provider_|
-  // and field trial to determine the connection timeout.
-  ALLOW_UNUSED_LOCAL(network_quality_provider_);
+HttpProxyClientSocketPool::HttpProxyConnectJobFactory::ConnectionTimeout()
+    const {
+  if (IsInNetAdaptiveProxyConnectionTimeoutFieldTrial() &&
+      network_quality_provider_) {
+    base::Optional<base::TimeDelta> transport_rtt_estimate =
+        network_quality_provider_->GetTransportRTT();
+    if (transport_rtt_estimate) {
+      base::TimeDelta timeout = base::TimeDelta::FromMilliseconds(
+          transport_rtt_multiplier_ *
+          transport_rtt_estimate.value().InMilliseconds());
+      // Ensure that connection timeout is between
+      // |min_proxy_connection_timeout_| and |max_proxy_connection_timeout_|.
+      if (timeout < min_proxy_connection_timeout_)
+        return min_proxy_connection_timeout_;
+      if (timeout > max_proxy_connection_timeout_)
+        return max_proxy_connection_timeout_;
+      return timeout;
+    }
+  }
 
   // Return the default proxy connection timeout.
   base::TimeDelta max_pool_timeout = base::TimeDelta();
