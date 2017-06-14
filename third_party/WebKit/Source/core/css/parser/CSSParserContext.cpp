@@ -162,7 +162,7 @@ KURL CSSParserContext::CompleteURL(const String& url) const {
     return KURL();
   if (Charset().IsEmpty())
     return KURL(BaseURL(), url);
-  return KURL(BaseURL(), url, Charset());
+  return KURL(BaseURL(), url, WTF::TextEncoding(Charset()));
 }
 
 void CSSParserContext::Count(WebFeature feature) const {

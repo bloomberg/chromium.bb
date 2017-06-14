@@ -104,7 +104,7 @@ TextResourceDecoderBuilder::CreateDecoderInstance(Document* document) {
       const WTF::TextEncoding hint_encoding =
           encoding_from_domain.IsValid()
               ? encoding_from_domain
-              : settings->GetDefaultTextEncodingName();
+              : WTF::TextEncoding(settings->GetDefaultTextEncodingName());
       // Disable autodetection for XML to honor the default encoding (UTF-8) for
       // unlabelled documents.
       if (DOMImplementation::IsXMLMIMEType(mime_type_))
@@ -126,7 +126,7 @@ inline void TextResourceDecoderBuilder::SetupEncoding(
     parent_frame = ToLocalFrame(frame->Tree().Parent());
 
   if (!encoding_.IsEmpty()) {
-    decoder->SetEncoding(encoding_.GetString(),
+    decoder->SetEncoding(WTF::TextEncoding(encoding_.GetString()),
                          TextResourceDecoder::kEncodingFromHTTPHeader);
   }
 

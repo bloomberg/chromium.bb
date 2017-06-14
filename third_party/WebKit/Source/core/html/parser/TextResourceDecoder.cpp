@@ -114,7 +114,7 @@ static WTF::TextEncoding FindTextEncoding(const char* encoding_name,
   Vector<char, 64> buffer(length + 1);
   memcpy(buffer.data(), encoding_name, length);
   buffer[length] = '\0';
-  return buffer.data();
+  return WTF::TextEncoding(buffer.data());
 }
 
 TextResourceDecoder::ContentType TextResourceDecoder::DetermineContentType(
@@ -190,7 +190,7 @@ void TextResourceDecoder::SetEncoding(const WTF::TextEncoding& encoding,
   // XHR), treat x-user-defined as windows-1252 (bug 18270)
   if (source == kEncodingFromMetaTag &&
       !strcasecmp(encoding.GetName(), "x-user-defined"))
-    encoding_ = "windows-1252";
+    encoding_ = WTF::TextEncoding("windows-1252");
   else if (source == kEncodingFromMetaTag || source == kEncodingFromXMLHeader ||
            source == kEncodingFromCSSCharset)
     encoding_ = encoding.ClosestByteBasedEquivalent();
