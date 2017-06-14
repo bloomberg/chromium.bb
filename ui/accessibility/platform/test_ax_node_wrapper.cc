@@ -125,10 +125,6 @@ bool TestAXNodeWrapper::AccessibilityPerformAction(
   return true;
 }
 
-bool TestAXNodeWrapper::ShouldIgnoreHoveredStateForTesting() {
-  return true;
-}
-
 TestAXNodeWrapper::TestAXNodeWrapper(AXTree* tree, AXNode* node)
     : tree_(tree),
       node_(node),
