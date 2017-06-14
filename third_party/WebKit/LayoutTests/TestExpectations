@@ -2505,9 +2505,7 @@ crbug.com/707359 [ Mac ] fast/css-grid-layout/grid-self-baseline-vertical-rl-04.
 crbug.com/707359 [ Mac ] fast/css-grid-layout/grid-self-baseline-vertical-rl-05.html [ Failure ]
 
 # TODO(ccameron): Fix in progress.
-crbug.com/731783 fast/media/mq-color-gamut-api.html [ Failure Timeout ]
 crbug.com/731783 fast/media/mq-color-gamut-picture.html [ Failure Timeout ]
-
 # Flakily timing out or failing.
 # TODO(ccameron): Investigate this.
 crbug.com/731211 virtual/exotic-color-space/images/color-profile-munsell-adobe-to-srgb.html [ Pass Failure Timeout ]

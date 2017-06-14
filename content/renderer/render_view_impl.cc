@@ -2472,16 +2472,6 @@ void RenderViewImpl::SetDeviceScaleFactorForTesting(float factor) {
 
 void RenderViewImpl::SetDeviceColorProfileForTesting(
     const gfx::ICCProfile& icc_profile) {
-  // TODO(ccameron): Remove this call when color correct rendering is the
-  // default.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableColorCorrectRendering)) {
-    return;
-  }
-
-  if (webview())
-    webview()->SetDeviceColorProfile(icc_profile);
-
   ResizeParams params;
   params.screen_info = screen_info_;
   params.screen_info.icc_profile = icc_profile;
