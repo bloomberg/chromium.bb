@@ -60,7 +60,14 @@ void StackedTabStripLayout::SetWidth(int width) {
     ResetToIdealState();
     return;
   }
-  SetActiveBoundsAndLayoutFromActiveTab();
+
+  // TODO(tdanderson): Audit other places in this class which make a similar
+  // pattern of calls to this in order to re-layout the tabs, and refactor
+  // into a helper function as appropriate.
+  SetIdealBoundsAt(active_index(), ConstrainActiveX(ideal_x(active_index())));
+  LayoutByTabOffsetBefore(active_index());
+  LayoutByTabOffsetAfter(active_index());
+  AdjustStackedTabs();
 }
 
 void StackedTabStripLayout::SetActiveIndex(int index) {
@@ -195,6 +202,11 @@ void StackedTabStripLayout::RemoveTab(int index, int start_x, int old_x) {
     for (int i = pinned_tab_count_; i < tab_count(); ++i)
       SetIdealBoundsAt(i, ideal_x(i) + delta);
   }
+
+  // TODO(tdanderson): Investigate whether the call to
+  // SetActiveBoundsAndLayoutFromActiveTab() should be replaced by
+  // LayoutByTabOffsetBefore() / LayoutByTabOffsetAfter() similar to the
+  // behavior in other stacked tab operations.
   SetActiveBoundsAndLayoutFromActiveTab();
   AdjustStackedTabs();
 }
