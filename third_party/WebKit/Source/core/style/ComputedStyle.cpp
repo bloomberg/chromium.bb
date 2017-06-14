@@ -647,7 +647,8 @@ bool ComputedStyle::DiffNeedsPaintInvalidationObject(
     return true;
 
   if (!BorderVisuallyEqual(other) || !RadiiEqual(other) ||
-      *background_data_ != *other.background_data_)
+      (BackgroundInternal() != other.BackgroundInternal() ||
+       BackgroundColorInternal() != other.BackgroundColorInternal()))
     return true;
 
   if (rare_non_inherited_data_->paint_images_) {
@@ -735,25 +736,17 @@ void ComputedStyle::UpdatePropertySpecificDifferences(
                                                                          other))
     diff.SetBackdropFilterChanged();
 
-  if (!diff.NeedsFullPaintInvalidation()) {
-    if ((inherited_data_->color_ != other.inherited_data_->color_ ||
-         inherited_data_->visited_link_color_ !=
-             other.inherited_data_->visited_link_color_ ||
-         HasSimpleUnderlineInternal() != other.HasSimpleUnderlineInternal() ||
-         visual_data_->text_decoration_ !=
-             other.visual_data_->text_decoration_) ||
-        ComputedStyleBase::
-            UpdatePropertySpecificDifferencesTextDecorationOrColor(*this,
-                                                                   other)) {
-      diff.SetTextDecorationOrColorChanged();
-    }
+  if (!diff.NeedsFullPaintInvalidation() &&
+      ComputedStyleBase::UpdatePropertySpecificDifferencesTextDecorationOrColor(
+          *this, other)) {
+    diff.SetTextDecorationOrColorChanged();
   }
 
-  bool has_clip = HasOutOfFlowPosition() && !visual_data_->has_auto_clip_;
+  bool has_clip = HasOutOfFlowPosition() && !HasAutoClipInternal();
   bool other_has_clip =
-      other.HasOutOfFlowPosition() && !other.visual_data_->has_auto_clip_;
+      other.HasOutOfFlowPosition() && !other.HasAutoClipInternal();
   if (has_clip != other_has_clip ||
-      (has_clip && visual_data_->clip_ != other.visual_data_->clip_))
+      (has_clip && ClipInternal() != other.ClipInternal()))
     diff.SetCSSClipChanged();
 }
 
