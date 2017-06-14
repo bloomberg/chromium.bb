@@ -28,6 +28,7 @@ namespace device {
 
 class BluetoothAdapterMac;
 class BluetoothRemoteGattServiceMac;
+class BluetoothRemoteGattCharacteristicMac;
 class BluetoothRemoteGattDescriptorMac;
 
 class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyDeviceMac
@@ -131,6 +132,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLowEnergyDeviceMac
   // Returns BluetoothRemoteGattServiceMac based on the CBService.
   BluetoothRemoteGattServiceMac* GetBluetoothRemoteGattServiceMac(
       CBService* service) const;
+
+  // Returns BluetoothRemoteGattCharacteristicMac based on the CBCharacteristic.
+  BluetoothRemoteGattCharacteristicMac* GetBluetoothRemoteGattCharacteristicMac(
+      CBCharacteristic* cb_characteristic) const;
 
   // Returns BluetoothRemoteGattDescriptorMac based on the CBDescriptor.
   BluetoothRemoteGattDescriptorMac* GetBluetoothRemoteGattDescriptorMac(
