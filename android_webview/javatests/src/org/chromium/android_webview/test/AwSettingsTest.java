@@ -1776,9 +1776,7 @@ public class AwSettingsTest extends AwTestBase {
             loadUrlSync(awContents,
                         contentClient.getOnPageFinishedHelper(),
                         url);
-            String userAgent = maybeStripDoubleQuotes(JSUtils.executeJavaScriptAndWaitForResult(
-                    this, awContents, contentClient.getOnEvaluateJavaScriptResultHelper(),
-                    "document.body.textContent"));
+            String userAgent = getJavaScriptResultBodyTextContent(awContents, contentClient);
             assertEquals(customUserAgentString, userAgent);
         } finally {
             testServer.stopAndDestroyServer();

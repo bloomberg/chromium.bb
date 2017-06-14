@@ -107,6 +107,7 @@ instrumentation_test_apk("webview_instrumentation_test_apk") {
     "//android_webview:android_webview_crash_services_java",
     "//android_webview:android_webview_java",
     "//android_webview:android_webview_platform_services_java",
+    "//android_webview/test/embedded_test_server:aw_net_java_test_support",
     "//base:base_java",
     "//base:base_java_test_support",
     "//components/minidump_uploader:minidump_uploader_java",
@@ -223,7 +224,10 @@ instrumentation_test_apk("webview_instrumentation_test_apk") {
   data = [
     "data/",
   ]
-  additional_apks = [ "//net/android:net_test_support_apk" ]
+  additional_apks = [
+    "//android_webview/test/embedded_test_server:aw_net_test_support_apk",
+    "//net/android:net_test_support_apk",
+  ]
 }
 
 test("android_webview_unittests") {

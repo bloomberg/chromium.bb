@@ -452,9 +452,7 @@ public class AwContentsTest extends AwTestBase {
             extraHeaders.put("X-foo", "bar");
             loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(), url, extraHeaders);
 
-            String xfoo = maybeStripDoubleQuotes(JSUtils.executeJavaScriptAndWaitForResult(this,
-                    awContents, mContentsClient.getOnEvaluateJavaScriptResultHelper(),
-                    "document.body.textContent"));
+            String xfoo = getJavaScriptResultBodyTextContent(awContents, mContentsClient);
             assertEquals("bar", xfoo);
 
             url = testServer.getURL("/echoheader?Referer");
@@ -463,9 +461,7 @@ public class AwContentsTest extends AwTestBase {
             extraHeaders.put("Referer", "http://www.example.com/");
             loadUrlSync(awContents, mContentsClient.getOnPageFinishedHelper(), url, extraHeaders);
 
-            String referer = maybeStripDoubleQuotes(JSUtils.executeJavaScriptAndWaitForResult(this,
-                    awContents, mContentsClient.getOnEvaluateJavaScriptResultHelper(),
-                    "document.body.textContent"));
+            String referer = getJavaScriptResultBodyTextContent(awContents, mContentsClient);
             assertEquals("http://www.example.com/", referer);
         } finally {
             testServer.stopAndDestroyServer();

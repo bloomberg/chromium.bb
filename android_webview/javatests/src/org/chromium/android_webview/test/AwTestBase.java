@@ -572,6 +572,17 @@ public class AwTestBase
     }
 
     /**
+     * Executes JavaScript code within the given ContentView to get the text content in
+     * document body. Returns the result string without double quotes.
+     */
+    protected String getJavaScriptResultBodyTextContent(
+            final AwContents awContents, final TestAwContentsClient viewClient) throws Exception {
+        String raw = executeJavaScriptAndWaitForResult(
+                awContents, viewClient, "document.body.textContent");
+        return maybeStripDoubleQuotes(raw);
+    }
+
+    /**
      * Wrapper around CriteriaHelper.pollInstrumentationThread. This uses AwTestBase-specifc
      * timeouts and treats timeouts and exceptions as test failures automatically.
      */
