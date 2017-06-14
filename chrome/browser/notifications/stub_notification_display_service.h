@@ -51,7 +51,6 @@ class StubNotificationDisplayService : public NotificationDisplayService {
   using NotificationData = std::pair<NotificationCommon::Type, Notification>;
 
   std::vector<NotificationData> notifications_;
-  Profile* profile_;
 
   DISALLOW_COPY_AND_ASSIGN(StubNotificationDisplayService);
 };

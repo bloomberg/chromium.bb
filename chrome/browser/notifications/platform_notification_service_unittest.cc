@@ -17,11 +17,11 @@
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/notifications/message_center_display_service.h"
+#include "chrome/browser/notifications/native_notification_delegate.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/notifications/notification_test_util.h"
 #include "chrome/browser/notifications/platform_notification_service_impl.h"
 #include "chrome/browser/notifications/stub_notification_platform_bridge.h"
-#include "chrome/browser/notifications/web_notification_delegate.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -351,13 +351,11 @@ TEST_F(PlatformNotificationServiceTest, CreateNotificationFromData) {
   PlatformNotificationData notification_data;
   notification_data.title = base::ASCIIToUTF16("My Notification");
   notification_data.body = base::ASCIIToUTF16("Hello, world!");
-  GURL origin("https://chrome.com/");
 
   Notification notification = service()->CreateNotificationFromData(
-      profile(), GURL() /* service_worker_scope */, origin, notification_data,
-      NotificationResources(),
-      new WebNotificationDelegate(NotificationCommon::PERSISTENT, profile(),
-                                  "id", origin));
+      profile(), GURL() /* service_worker_scope */, GURL("https://chrome.com/"),
+      notification_data, NotificationResources(),
+      new NativeNotificationDelegate("hello"));
   EXPECT_TRUE(notification.context_message().empty());
 
   // Create a mocked extension.
@@ -380,8 +378,7 @@ TEST_F(PlatformNotificationServiceTest, CreateNotificationFromData) {
       profile(), GURL() /* service_worker_scope */,
       GURL("chrome-extension://honijodknafkokifofgiaalefdiedpko/main.html"),
       notification_data, NotificationResources(),
-      new WebNotificationDelegate(NotificationCommon::EXTENSION, profile(),
-                                  "id", origin));
+      new NativeNotificationDelegate("hello"));
   EXPECT_EQ("NotificationTest",
             base::UTF16ToUTF8(notification.context_message()));
 }

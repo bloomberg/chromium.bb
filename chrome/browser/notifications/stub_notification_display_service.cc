@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/memory/ptr_util.h"
-#include "chrome/browser/notifications/notification_handler.h"
 #include "chrome/browser/profiles/profile.h"
 
 // static
@@ -18,7 +17,7 @@ std::unique_ptr<KeyedService> StubNotificationDisplayService::FactoryForTests(
 }
 
 StubNotificationDisplayService::StubNotificationDisplayService(Profile* profile)
-    : NotificationDisplayService(profile), profile_(profile) {}
+    : NotificationDisplayService(profile) {}
 
 StubNotificationDisplayService::~StubNotificationDisplayService() = default;
 
@@ -36,22 +35,20 @@ void StubNotificationDisplayService::RemoveNotification(
   if (iter == notifications_.end())
     return;
 
-  NotificationHandler* handler = GetNotificationHandler(notification_type);
-  DCHECK(handler);
-  handler->OnClose(profile_, iter->second.origin_url().spec(), notification_id,
-                   by_user);
+  // TODO(peter): Invoke the handlers when that has been generalized.
+  iter->second.delegate()->Close(by_user);
+
   notifications_.erase(iter);
 }
 
 void StubNotificationDisplayService::RemoveAllNotifications(
     NotificationCommon::Type notification_type,
     bool by_user) {
-  NotificationHandler* handler = GetNotificationHandler(notification_type);
-  DCHECK(handler);
   for (auto iter = notifications_.begin(); iter != notifications_.end();) {
     if (iter->first == notification_type) {
-      handler->OnClose(profile_, iter->second.origin_url().spec(),
-                       iter->second.id(), by_user);
+      // TODO(peter): Invoke the handlers when that has been generalized.
+      iter->second.delegate()->Close(by_user);
+
       iter = notifications_.erase(iter);
     } else {
       iter++;
