@@ -394,7 +394,10 @@ class BackRenderbuffer {
   void Create();
 
   // Set the initial size and format of a render buffer or resize it.
-  bool AllocateStorage(const gfx::Size& size, GLenum format, GLsizei samples);
+  bool AllocateStorage(const FeatureInfo* feature_info,
+                       const gfx::Size& size,
+                       GLenum format,
+                       GLsizei samples);
 
   // Destroy the render buffer. This must be explicitly called before destroying
   // this object.
@@ -628,17 +631,13 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   void EnsureRenderbufferBound();
 
   // Helpers to facilitate calling into compatible extensions.
-  void RenderbufferStorageMultisampleWithWorkaround(GLenum target,
-                                                    GLsizei samples,
-                                                    GLenum internal_format,
-                                                    GLsizei width,
-                                                    GLsizei height);
-  void RenderbufferStorageMultisampleHelper(GLenum target,
-                                            GLsizei samples,
-                                            GLenum internal_format,
-                                            GLsizei width,
-                                            GLsizei height);
-  bool RegenerateRenderbufferIfNeeded(Renderbuffer* renderbuffer);
+  static void RenderbufferStorageMultisampleHelper(
+      const FeatureInfo* feature_info,
+      GLenum target,
+      GLsizei samples,
+      GLenum internal_format,
+      GLsizei width,
+      GLsizei height);
 
   void BlitFramebufferHelper(GLint srcX0,
                              GLint srcY0,
@@ -2909,7 +2908,8 @@ void BackRenderbuffer::Create() {
   glGenRenderbuffersEXT(1, &id_);
 }
 
-bool BackRenderbuffer::AllocateStorage(const gfx::Size& size,
+bool BackRenderbuffer::AllocateStorage(const FeatureInfo* feature_info,
+                                       const gfx::Size& size,
                                        GLenum format,
                                        GLsizei samples) {
   ScopedGLErrorSuppressor suppressor("BackRenderbuffer::AllocateStorage",
@@ -2926,25 +2926,18 @@ bool BackRenderbuffer::AllocateStorage(const gfx::Size& size,
     return false;
   }
 
-  // TODO(kainino): "samples <= 1" is technically incorrect (it should be
-  // "samples == 0"), but it causes framebuffer incompleteness in some
-  // situations. Once this is fixed, this entire arm is no longer necessary -
-  // RenderbufferStorageMultisampleHelper implements it. http://crbug.com/731286
   if (samples <= 1) {
     glRenderbufferStorageEXT(GL_RENDERBUFFER,
                              format,
                              size.width(),
                              size.height());
   } else {
-    // TODO(kainino): This path will not perform RegenerateRenderbufferIfNeeded
-    // on devices where multisample_renderbuffer_resize_emulation is needed.
-    // Thus any code using this path (pepper?) could encounter issues on those
-    // devices. RenderbufferStorageMultisampleWithWorkaround should be used
-    // instead, but can only be used if BackRenderbuffer tracks its
-    // renderbuffers in the renderbuffer manager instead of manually.
-    // http://crbug.com/731287
-    decoder_->RenderbufferStorageMultisampleHelper(
-        GL_RENDERBUFFER, samples, format, size.width(), size.height());
+    GLES2DecoderImpl::RenderbufferStorageMultisampleHelper(feature_info,
+                                                           GL_RENDERBUFFER,
+                                                           samples,
+                                                           format,
+                                                           size.width(),
+                                                           size.height());
   }
 
   bool alpha_channel_needs_clear =
@@ -5059,8 +5052,8 @@ bool GLES2DecoderImpl::ResizeOffscreenFramebuffer(const gfx::Size& size) {
   DCHECK(offscreen_target_color_format_);
   if (IsOffscreenBufferMultisampled()) {
     if (!offscreen_target_color_render_buffer_->AllocateStorage(
-            offscreen_size_, offscreen_target_color_format_,
-            offscreen_target_samples_)) {
+            feature_info_.get(), offscreen_size_,
+            offscreen_target_color_format_, offscreen_target_samples_)) {
       LOG(ERROR) << "GLES2DecoderImpl::ResizeOffscreenFramebuffer failed "
                  << "to allocate storage for offscreen target color buffer.";
       return false;
@@ -5075,7 +5068,9 @@ bool GLES2DecoderImpl::ResizeOffscreenFramebuffer(const gfx::Size& size) {
   }
   if (offscreen_target_depth_format_ &&
       !offscreen_target_depth_render_buffer_->AllocateStorage(
-          offscreen_size_, offscreen_target_depth_format_,
+          feature_info_.get(),
+          offscreen_size_,
+          offscreen_target_depth_format_,
           offscreen_target_samples_)) {
     LOG(ERROR) << "GLES2DecoderImpl::ResizeOffscreenFramebuffer failed "
                << "to allocate storage for offscreen target depth buffer.";
@@ -5083,7 +5078,9 @@ bool GLES2DecoderImpl::ResizeOffscreenFramebuffer(const gfx::Size& size) {
   }
   if (offscreen_target_stencil_format_ &&
       !offscreen_target_stencil_render_buffer_->AllocateStorage(
-          offscreen_size_, offscreen_target_stencil_format_,
+          feature_info_.get(),
+          offscreen_size_,
+          offscreen_target_stencil_format_,
           offscreen_target_samples_)) {
     LOG(ERROR) << "GLES2DecoderImpl::ResizeOffscreenFramebuffer failed "
                << "to allocate storage for offscreen target stencil buffer.";
@@ -5766,7 +5763,6 @@ void GLES2DecoderImpl::DoBindFramebuffer(GLenum target, GLuint client_id) {
 }
 
 void GLES2DecoderImpl::DoBindRenderbuffer(GLenum target, GLuint client_id) {
-  DCHECK_EQ(target, (GLenum)GL_RENDERBUFFER);
   Renderbuffer* renderbuffer = NULL;
   GLuint service_id = 0;
   if (client_id != 0) {
@@ -8390,38 +8386,19 @@ void GLES2DecoderImpl::EnsureRenderbufferBound() {
   }
 }
 
-void GLES2DecoderImpl::RenderbufferStorageMultisampleWithWorkaround(
-    GLenum target,
-    GLsizei samples,
-    GLenum internal_format,
-    GLsizei width,
-    GLsizei height) {
-  RegenerateRenderbufferIfNeeded(state_.bound_renderbuffer.get());
-  EnsureRenderbufferBound();
-  RenderbufferStorageMultisampleHelper(target, samples, internal_format, width,
-                                       height);
-}
-
 void GLES2DecoderImpl::RenderbufferStorageMultisampleHelper(
+    const FeatureInfo* feature_info,
     GLenum target,
     GLsizei samples,
     GLenum internal_format,
     GLsizei width,
     GLsizei height) {
-  if (samples == 0) {
-    glRenderbufferStorageEXT(target, internal_format, width, height);
-    return;
-  }
-
   // TODO(sievers): This could be resolved at the GL binding level, but the
   // binding process is currently a bit too 'brute force'.
-  if (features().use_img_for_multisampled_render_to_texture) {
-    glRenderbufferStorageMultisampleIMG(target, samples, internal_format, width,
-                                        height);
-  } else if (features().use_core_framebuffer_multisample) {
+  if (feature_info->feature_flags().use_core_framebuffer_multisample) {
     glRenderbufferStorageMultisample(
         target, samples, internal_format, width, height);
-  } else if (features().angle_framebuffer_multisample) {
+  } else if (feature_info->feature_flags().angle_framebuffer_multisample) {
     // This is ES2 only.
     glRenderbufferStorageMultisampleANGLE(
         target, samples, internal_format, width, height);
@@ -8429,26 +8406,6 @@ void GLES2DecoderImpl::RenderbufferStorageMultisampleHelper(
     glRenderbufferStorageMultisampleEXT(
         target, samples, internal_format, width, height);
   }
-}
-
-bool GLES2DecoderImpl::RegenerateRenderbufferIfNeeded(
-    Renderbuffer* renderbuffer) {
-  if (!workarounds().multisample_renderbuffer_resize_emulation) {
-    return false;
-  }
-
-  if (!renderbuffer->RegenerateAndBindBackingObjectIfNeeded()) {
-    return false;
-  }
-
-  if (renderbuffer != state_.bound_renderbuffer.get()) {
-    // The renderbuffer bound in the driver has changed to the new
-    // renderbuffer->service_id(). If that isn't state_.bound_renderbuffer,
-    // then state_.bound_renderbuffer is no longer bound in the driver.
-    state_.bound_renderbuffer_valid = false;
-  }
-
-  return true;
 }
 
 void GLES2DecoderImpl::BlitFramebufferHelper(GLint srcX0,
@@ -8531,13 +8488,14 @@ void GLES2DecoderImpl::DoRenderbufferStorageMultisampleCHROMIUM(
     return;
   }
 
+  EnsureRenderbufferBound();
   GLenum impl_format =
       renderbuffer_manager()->InternalRenderbufferFormatToImplFormat(
           internalformat);
   LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER(
       "glRenderbufferStorageMultisampleCHROMIUM");
-  RenderbufferStorageMultisampleWithWorkaround(target, samples, impl_format,
-                                               width, height);
+  RenderbufferStorageMultisampleHelper(
+      feature_info_.get(), target, samples, impl_format, width, height);
   GLenum error =
       LOCAL_PEEK_GL_ERROR("glRenderbufferStorageMultisampleCHROMIUM");
   if (error == GL_NO_ERROR) {
@@ -8573,12 +8531,18 @@ void GLES2DecoderImpl::DoRenderbufferStorageMultisampleEXT(
     return;
   }
 
+  EnsureRenderbufferBound();
   GLenum impl_format =
       renderbuffer_manager()->InternalRenderbufferFormatToImplFormat(
           internalformat);
   LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glRenderbufferStorageMultisampleEXT");
-  RenderbufferStorageMultisampleWithWorkaround(target, samples, impl_format,
-                                               width, height);
+  if (features().use_img_for_multisampled_render_to_texture) {
+    glRenderbufferStorageMultisampleIMG(
+        target, samples, impl_format, width, height);
+  } else {
+    glRenderbufferStorageMultisampleEXT(
+        target, samples, impl_format, width, height);
+  }
   GLenum error = LOCAL_PEEK_GL_ERROR("glRenderbufferStorageMultisampleEXT");
   if (error == GL_NO_ERROR) {
     renderbuffer_manager()->SetInfoAndInvalidate(renderbuffer, samples,
@@ -8722,12 +8686,14 @@ void GLES2DecoderImpl::DoRenderbufferStorage(
     return;
   }
 
+  EnsureRenderbufferBound();
   LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glRenderbufferStorage");
-  RenderbufferStorageMultisampleWithWorkaround(
-      target, 0,
+  glRenderbufferStorageEXT(
+      target,
       renderbuffer_manager()->InternalRenderbufferFormatToImplFormat(
           internalformat),
-      width, height);
+      width,
+      height);
   GLenum error = LOCAL_PEEK_GL_ERROR("glRenderbufferStorage");
   if (error == GL_NO_ERROR) {
     renderbuffer_manager()->SetInfoAndInvalidate(renderbuffer, 0,
