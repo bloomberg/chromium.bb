@@ -10,6 +10,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "components/infobars/core/infobar.h"
+#include "components/metrics/proto/translate_event.pb.h"
 #include "components/translate/core/browser/translate_client.h"
 #include "components/translate/core/browser/translate_driver.h"
 #include "components/translate/core/browser/translate_prefs.h"
@@ -36,6 +37,7 @@ class MockTranslateClient : public TranslateClient {
 
   MOCK_METHOD0(GetTranslateAcceptLanguages, TranslateAcceptLanguages*());
   MOCK_CONST_METHOD0(GetInfobarIconID, int());
+  MOCK_METHOD1(RecordTranslateEvent, void(const metrics::TranslateEventProto&));
 
 #if !defined(USE_AURA)
   MOCK_CONST_METHOD1(CreateInfoBarMock,

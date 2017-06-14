@@ -43,6 +43,7 @@
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/common/language_detection_details.h"
 #include "components/translate/core/common/language_detection_logging_helper.h"
+#include "components/translate/core/common/translation_logging_helper.h"
 #include "components/variations/service/variations_service.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
@@ -51,25 +52,28 @@
 #include "url/gurl.h"
 
 namespace {
+using metrics::TranslateEventProto;
 
-metrics::TranslateEventProto::EventType BubbleResultToTranslateEvent(
+TranslateEventProto::EventType BubbleResultToTranslateEvent(
     ShowTranslateBubbleResult result) {
   switch (result) {
     case ShowTranslateBubbleResult::BROWSER_WINDOW_NOT_VALID:
-      return metrics::TranslateEventProto::BROWSER_WINDOW_IS_INVALID;
+      return TranslateEventProto::BROWSER_WINDOW_IS_INVALID;
     case ShowTranslateBubbleResult::BROWSER_WINDOW_MINIMIZED:
-      return metrics::TranslateEventProto::BROWSER_WINDOW_IS_MINIMIZED;
+      return TranslateEventProto::BROWSER_WINDOW_IS_MINIMIZED;
     case ShowTranslateBubbleResult::BROWSER_WINDOW_NOT_ACTIVE:
-      return metrics::TranslateEventProto::BROWSER_WINDOW_NOT_ACTIVE;
+      return TranslateEventProto::BROWSER_WINDOW_NOT_ACTIVE;
     case ShowTranslateBubbleResult::WEB_CONTENTS_NOT_ACTIVE:
-      return metrics::TranslateEventProto::WEB_CONTENTS_NOT_ACTIVE;
+      return TranslateEventProto::WEB_CONTENTS_NOT_ACTIVE;
     case ShowTranslateBubbleResult::EDITABLE_FIELD_IS_ACTIVE:
-      return metrics::TranslateEventProto::EDITABLE_FIELD_IS_ACTIVE;
+      return TranslateEventProto::EDITABLE_FIELD_IS_ACTIVE;
     default:
       NOTREACHED();
       return metrics::TranslateEventProto::UNKNOWN;
   }
 }
+
+// ========== LOG LANGUAGE DETECTION EVENT ==============
 
 void LogLanguageDetectionEvent(
     const content::WebContents* const web_contents,
@@ -89,6 +93,36 @@ void LogLanguageDetectionEvent(
   if (entry != nullptr) {
     user_event_service->RecordUserEvent(
         translate::ConstructLanguageDetectionEvent(details));
+  }
+}
+
+// ========== LOG TRANSLATE EVENT ==============
+
+void LogTranslateEvent(const content::WebContents* const web_contents,
+                       const metrics::TranslateEventProto& translate_event) {
+  DCHECK(web_contents);
+  auto* const profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+
+  syncer::UserEventService* const user_event_service =
+      browser_sync::UserEventServiceFactory::GetForProfile(profile);
+
+  const auto* const entry =
+      web_contents->GetController().GetLastCommittedEntry();
+
+  // If entry is null, we don't record the page.
+  // The navigation entry can be null in situations like download or initial
+  // blank page.
+  if (entry == nullptr)
+    return;
+
+  auto specifics = base::MakeUnique<sync_pb::UserEventSpecifics>();
+  // We only log the event we care about.
+  const bool needs_logging = translate::ConstructTranslateEvent(
+      entry->GetTimestamp().ToInternalValue(), translate_event,
+      specifics.get());
+  if (needs_logging) {
+    user_event_service->RecordUserEvent(std::move(specifics));
   }
 }
 
@@ -194,6 +228,11 @@ void ChromeTranslateClient::GetTranslateLanguages(
 
   *target =
       translate::TranslateManager::GetTargetLanguage(translate_prefs.get());
+}
+
+void ChromeTranslateClient::RecordTranslateEvent(
+    const TranslateEventProto& translate_event) {
+  LogTranslateEvent(web_contents(), translate_event);
 }
 
 // static

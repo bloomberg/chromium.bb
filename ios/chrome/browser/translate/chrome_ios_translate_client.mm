@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "components/infobars/core/infobar.h"
+#include "components/metrics/proto/translate_event.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/translate/core/browser/page_translated_details.h"
 #include "components/translate/core/browser/translate_accept_languages.h"
@@ -98,6 +99,11 @@ std::unique_ptr<infobars::InfoBar> ChromeIOSTranslateClient::CreateInfoBar(
   infobar->SetController(controller);
   // TODO(crbug.com/703565): remove std::move() once Xcode 9.0+ is required.
   return std::move(infobar);
+}
+
+void ChromeIOSTranslateClient::RecordTranslateEvent(
+    const metrics::TranslateEventProto&) {
+  // TODO(crbug.com/728491): Implementing gaia-keyed logging.
 }
 
 void ChromeIOSTranslateClient::ShowTranslateUI(

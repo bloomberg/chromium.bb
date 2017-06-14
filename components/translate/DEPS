@@ -3,6 +3,7 @@ include_rules = [
   "+components/grit/components_resources.h",
   "+components/infobars",
   "+components/language_usage_metrics",
+  "+components/metrics/proto",
   "+components/pref_registry",
   "+components/prefs",
   "+components/strings/grit/components_strings.h",
