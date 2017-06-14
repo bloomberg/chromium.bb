@@ -7,3 +7,14 @@ include_rules = [
     "+modules/serviceworkers",
     "+mojo/public/cpp/system/data_pipe.h",
 ]
+
+specific_include_rules = {
+    "ServiceWorkerGlobalScopeProxy\.cpp": [
+        "+modules/background_fetch",
+        "+modules/background_sync",
+        "+modules/exported",
+        "+modules/notifications",
+        "+modules/payments",
+        "+modules/push_messaging",
+    ],
+}

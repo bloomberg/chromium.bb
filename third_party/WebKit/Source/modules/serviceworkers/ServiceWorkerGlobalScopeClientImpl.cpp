@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "web/ServiceWorkerGlobalScopeClientImpl.h"
+#include "modules/serviceworkers/ServiceWorkerGlobalScopeClientImpl.h"
 
 #include <memory>
 #include <utility>

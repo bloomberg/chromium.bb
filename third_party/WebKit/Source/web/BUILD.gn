@@ -51,10 +51,6 @@ component("web") {
     "PageOverlay.h",
     "PrerendererClientImpl.cpp",
     "PrerendererClientImpl.h",
-    "ServiceWorkerGlobalScopeClientImpl.cpp",
-    "ServiceWorkerGlobalScopeClientImpl.h",
-    "ServiceWorkerGlobalScopeProxy.cpp",
-    "ServiceWorkerGlobalScopeProxy.h",
     "StorageClientImpl.cpp",
     "StorageClientImpl.h",
     "StorageQuotaClientImpl.cpp",
@@ -63,8 +59,6 @@ component("web") {
     "WebDevToolsAgentImpl.h",
     "WebDevToolsFrontendImpl.cpp",
     "WebDevToolsFrontendImpl.h",
-    "WebEmbeddedWorkerImpl.cpp",
-    "WebEmbeddedWorkerImpl.h",
     "WebExport.h",
     "WebFactoryImpl.cpp",
     "WebFactoryImpl.h",
@@ -153,7 +147,6 @@ test("webkit_unit_tests") {
     "WebAssociatedURLLoaderImplTest.cpp",
     "WebDragDataTest.cpp",
     "WebElementTest.cpp",
-    "WebEmbeddedWorkerImplTest.cpp",
     "WebNodeTest.cpp",
 
     # FIXME: Move the tests from web/tests/ to appropriate places.

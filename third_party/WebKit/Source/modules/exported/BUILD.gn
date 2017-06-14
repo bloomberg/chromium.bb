@@ -10,6 +10,8 @@ blink_modules_sources("exported") {
     "WebDOMFileSystem.cpp",
     "WebDOMMediaStreamTrack.cpp",
     "WebDatabase.cpp",
+    "WebEmbeddedWorkerImpl.cpp",
+    "WebEmbeddedWorkerImpl.h",
     "WebMediaDeviceChangeObserver.cpp",
     "WebMediaDevicesRequest.cpp",
     "WebMediaStreamRegistry.cpp",

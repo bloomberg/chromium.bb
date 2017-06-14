@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "web/WebEmbeddedWorkerImpl.h"
+#include "modules/exported/WebEmbeddedWorkerImpl.h"
 
 #include <memory>
 #include "bindings/core/v8/SourceLocation.h"
@@ -36,6 +36,8 @@
 #include "core/dom/SecurityContext.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/exported/WebDataSourceImpl.h"
+#include "core/exported/WebFactory.h"
+#include "core/exported/WebViewBase.h"
 #include "core/frame/WebLocalFrameBase.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/ConsoleMessage.h"
@@ -52,6 +54,8 @@
 #include "core/workers/WorkerThreadStartupData.h"
 #include "modules/indexeddb/IndexedDBClientImpl.h"
 #include "modules/serviceworkers/ServiceWorkerContainerClient.h"
+#include "modules/serviceworkers/ServiceWorkerGlobalScopeClientImpl.h"
+#include "modules/serviceworkers/ServiceWorkerGlobalScopeProxy.h"
 #include "modules/serviceworkers/ServiceWorkerThread.h"
 #include "platform/Histogram.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -75,8 +79,6 @@
 #include "public/web/WebSettings.h"
 #include "public/web/WebView.h"
 #include "public/web/modules/serviceworker/WebServiceWorkerContextClient.h"
-#include "web/ServiceWorkerGlobalScopeClientImpl.h"
-#include "web/ServiceWorkerGlobalScopeProxy.h"
 
 namespace blink {
 
@@ -225,9 +227,10 @@ void WebEmbeddedWorkerImpl::DispatchDevToolsMessage(int session_id,
   if (asked_to_terminate_)
     return;
   WebDevToolsAgent* devtools_agent = main_frame_->DevToolsAgent();
-  if (devtools_agent)
+  if (devtools_agent) {
     devtools_agent->DispatchOnInspectorBackend(session_id, call_id, method,
                                                message);
+  }
 }
 
 void WebEmbeddedWorkerImpl::AddMessageToConsole(
@@ -270,7 +273,8 @@ void WebEmbeddedWorkerImpl::PrepareShadowPageForLoader() {
   // This code, and probably most of the code in this class should be shared
   // with SharedWorker.
   DCHECK(!web_view_);
-  web_view_ = WebView::Create(nullptr, kWebPageVisibilityStateVisible);
+  web_view_ = WebFactory::GetInstance().CreateWebViewBase(
+      nullptr, kWebPageVisibilityStateVisible);
   WebSettings* settings = web_view_->GetSettings();
   // FIXME: http://crbug.com/363843. This needs to find a better way to
   // not create graphics layers.
@@ -281,8 +285,8 @@ void WebEmbeddedWorkerImpl::PrepareShadowPageForLoader() {
   settings->SetStrictMixedContentChecking(true);
   settings->SetAllowRunningOfInsecureContent(false);
   settings->SetDataSaverEnabled(worker_start_data_.data_saver_enabled);
-  main_frame_ = ToWebLocalFrameBase(WebLocalFrame::Create(
-      WebTreeScopeType::kDocument, this, nullptr, nullptr));
+  main_frame_ = WebFactory::GetInstance().CreateWebLocalFrameBase(
+      WebTreeScopeType::kDocument, this, nullptr, nullptr);
   web_view_->SetMainFrame(main_frame_.Get());
   main_frame_->SetDevToolsAgentClient(this);
 
