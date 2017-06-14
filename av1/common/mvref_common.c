@@ -840,17 +840,21 @@ void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 #endif  // CONFIG_EXT_INTER
 
 #if CONFIG_GLOBAL_MOTION
-  av1_set_ref_frame(rf, ref_frame);
-  zeromv[0].as_int = gm_get_motion_vector(&cm->global_motion[rf[0]],
-                                          cm->allow_high_precision_mv, bsize,
-                                          mi_col, mi_row, 0)
-                         .as_int;
-  zeromv[1].as_int = (rf[1] != NONE_FRAME)
-                         ? gm_get_motion_vector(&cm->global_motion[rf[1]],
-                                                cm->allow_high_precision_mv,
-                                                bsize, mi_col, mi_row, 0)
-                               .as_int
-                         : 0;
+  if (!CONFIG_INTRABC || ref_frame != INTRA_FRAME) {
+    av1_set_ref_frame(rf, ref_frame);
+    zeromv[0].as_int = gm_get_motion_vector(&cm->global_motion[rf[0]],
+                                            cm->allow_high_precision_mv, bsize,
+                                            mi_col, mi_row, 0)
+                           .as_int;
+    zeromv[1].as_int = (rf[1] != NONE_FRAME)
+                           ? gm_get_motion_vector(&cm->global_motion[rf[1]],
+                                                  cm->allow_high_precision_mv,
+                                                  bsize, mi_col, mi_row, 0)
+                                 .as_int
+                           : 0;
+  } else {
+    zeromv[0].as_int = zeromv[1].as_int = 0;
+  }
 #else
   zeromv[0].as_int = zeromv[1].as_int = 0;
 #endif  // CONFIG_GLOBAL_MOTION
