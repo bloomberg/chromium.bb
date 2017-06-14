@@ -118,9 +118,9 @@ class AnimationCompositorAnimationsTest : public ::testing::Test {
                                   CompositorAnimations::CompositorTiming& out) {
     return CompositorAnimations::ConvertTimingForCompositor(t, 0, out, 1);
   }
-  bool IsCandidateForAnimationOnCompositor(const Timing& timing,
-                                           const EffectModel& effect) {
-    return CompositorAnimations::IsCandidateForAnimationOnCompositor(
+  bool CanStartEffectOnCompositor(const Timing& timing,
+                                  const EffectModel& effect) {
+    return CompositorAnimations::CanStartEffectOnCompositor(
         timing, *element_.Get(), nullptr, effect, 1);
   }
   void GetAnimationOnCompositor(
@@ -154,7 +154,7 @@ class AnimationCompositorAnimationsTest : public ::testing::Test {
 
     frames.push_back(frame);
     frames.push_back(ToAnimatableValueKeyframe(second.Get()));
-    return IsCandidateForAnimationOnCompositor(
+    return CanStartEffectOnCompositor(
         timing_, *AnimatableValueKeyframeEffectModel::Create(frames));
   }
 
@@ -321,7 +321,7 @@ class LayoutObjectProxy : public LayoutObject {
 // -----------------------------------------------------------------------
 
 TEST_F(AnimationCompositorAnimationsTest,
-       isCandidateForAnimationOnCompositorKeyframeMultipleCSSProperties) {
+       CanStartEffectOnCompositorKeyframeMultipleCSSProperties) {
   RefPtr<AnimatableValueKeyframe> keyframe_good_multiple =
       CreateDefaultKeyframe(CSSPropertyOpacity, EffectModel::kCompositeReplace);
   keyframe_good_multiple->SetPropertyValue(
@@ -368,7 +368,7 @@ TEST_F(AnimationCompositorAnimationsTest,
 }
 
 TEST_F(AnimationCompositorAnimationsTest,
-       isCandidateForAnimationOnCompositorKeyframeEffectModel) {
+       CanStartEffectOnCompositorKeyframeEffectModel) {
   AnimatableValueKeyframeVector frames_same;
   frames_same.push_back(CreateDefaultKeyframe(CSSPropertyColor,
                                               EffectModel::kCompositeReplace,
@@ -378,7 +378,7 @@ TEST_F(AnimationCompositorAnimationsTest,
                                               EffectModel::kCompositeReplace,
                                               1.0)
                             .Get());
-  EXPECT_FALSE(IsCandidateForAnimationOnCompositor(
+  EXPECT_FALSE(CanStartEffectOnCompositor(
       timing_, *AnimatableValueKeyframeEffectModel::Create(frames_same)));
 
   AnimatableValueKeyframeVector frames_mixed_properties;
@@ -392,7 +392,7 @@ TEST_F(AnimationCompositorAnimationsTest,
   keyframe->SetPropertyValue(CSSPropertyColor, AnimatableDouble::Create(1));
   keyframe->SetPropertyValue(CSSPropertyOpacity, AnimatableDouble::Create(1));
   frames_mixed_properties.push_back(keyframe.Release());
-  EXPECT_FALSE(IsCandidateForAnimationOnCompositor(
+  EXPECT_FALSE(CanStartEffectOnCompositor(
       timing_,
       *AnimatableValueKeyframeEffectModel::Create(frames_mixed_properties)));
 }
@@ -574,58 +574,57 @@ TEST_F(AnimationCompositorAnimationsTest,
 }
 
 TEST_F(AnimationCompositorAnimationsTest,
-       isCandidateForAnimationOnCompositorTimingFunctionLinear) {
+       CanStartEffectOnCompositorTimingFunctionLinear) {
   timing_.timing_function = linear_timing_function_;
-  EXPECT_TRUE(IsCandidateForAnimationOnCompositor(
-      timing_, *keyframe_animation_effect2_));
-  EXPECT_TRUE(IsCandidateForAnimationOnCompositor(
-      timing_, *keyframe_animation_effect5_));
+  EXPECT_TRUE(
+      CanStartEffectOnCompositor(timing_, *keyframe_animation_effect2_));
+  EXPECT_TRUE(
+      CanStartEffectOnCompositor(timing_, *keyframe_animation_effect5_));
 }
 
 TEST_F(AnimationCompositorAnimationsTest,
-       isCandidateForAnimationOnCompositorTimingFunctionCubic) {
+       CanStartEffectOnCompositorTimingFunctionCubic) {
   timing_.timing_function = cubic_ease_timing_function_;
-  EXPECT_TRUE(IsCandidateForAnimationOnCompositor(
-      timing_, *keyframe_animation_effect2_));
-  EXPECT_TRUE(IsCandidateForAnimationOnCompositor(
-      timing_, *keyframe_animation_effect5_));
+  EXPECT_TRUE(
+      CanStartEffectOnCompositor(timing_, *keyframe_animation_effect2_));
+  EXPECT_TRUE(
+      CanStartEffectOnCompositor(timing_, *keyframe_animation_effect5_));
 
   timing_.timing_function = cubic_custom_timing_function_;
-  EXPECT_TRUE(IsCandidateForAnimationOnCompositor(
-      timing_, *keyframe_animation_effect2_));
-  EXPECT_TRUE(IsCandidateForAnimationOnCompositor(
-      timing_, *keyframe_animation_effect5_));
+  EXPECT_TRUE(
+      CanStartEffectOnCompositor(timing_, *keyframe_animation_effect2_));
+  EXPECT_TRUE(
+      CanStartEffectOnCompositor(timing_, *keyframe_animation_effect5_));
 }
 
 TEST_F(AnimationCompositorAnimationsTest,
-       isCandidateForAnimationOnCompositorTimingFunctionSteps) {
+       CanStartEffectOnCompositorTimingFunctionSteps) {
   timing_.timing_function = step_timing_function_;
-  EXPECT_TRUE(IsCandidateForAnimationOnCompositor(
-      timing_, *keyframe_animation_effect2_));
-  EXPECT_TRUE(IsCandidateForAnimationOnCompositor(
-      timing_, *keyframe_animation_effect5_));
+  EXPECT_TRUE(
+      CanStartEffectOnCompositor(timing_, *keyframe_animation_effect2_));
+  EXPECT_TRUE(
+      CanStartEffectOnCompositor(timing_, *keyframe_animation_effect5_));
 }
 
 TEST_F(AnimationCompositorAnimationsTest,
-       isCandidateForAnimationOnCompositorTimingFunctionFrames) {
+       CanStartEffectOnCompositorTimingFunctionFrames) {
   timing_.timing_function = frames_timing_function_;
-  EXPECT_TRUE(IsCandidateForAnimationOnCompositor(
-      timing_, *keyframe_animation_effect2_));
-  EXPECT_TRUE(IsCandidateForAnimationOnCompositor(
-      timing_, *keyframe_animation_effect5_));
+  EXPECT_TRUE(
+      CanStartEffectOnCompositor(timing_, *keyframe_animation_effect2_));
+  EXPECT_TRUE(
+      CanStartEffectOnCompositor(timing_, *keyframe_animation_effect5_));
 }
 
 TEST_F(AnimationCompositorAnimationsTest,
-       isCandidateForAnimationOnCompositorTimingFunctionChainedLinear) {
-  EXPECT_TRUE(IsCandidateForAnimationOnCompositor(
-      timing_, *keyframe_animation_effect2_));
-  EXPECT_TRUE(IsCandidateForAnimationOnCompositor(
-      timing_, *keyframe_animation_effect5_));
+       CanStartEffectOnCompositorTimingFunctionChainedLinear) {
+  EXPECT_TRUE(
+      CanStartEffectOnCompositor(timing_, *keyframe_animation_effect2_));
+  EXPECT_TRUE(
+      CanStartEffectOnCompositor(timing_, *keyframe_animation_effect5_));
 }
 
-TEST_F(
-    AnimationCompositorAnimationsTest,
-    isCandidateForAnimationOnCompositorNonLinearTimingFunctionOnFirstOrLastFrame) {
+TEST_F(AnimationCompositorAnimationsTest,
+       CanStartEffectOnCompositorNonLinearTimingFunctionOnFirstOrLastFrame) {
   (*keyframe_vector2_)[0]->SetEasing(cubic_ease_timing_function_.Get());
   keyframe_animation_effect2_ =
       AnimatableValueKeyframeEffectModel::Create(*keyframe_vector2_);
@@ -635,32 +634,31 @@ TEST_F(
       AnimatableValueKeyframeEffectModel::Create(*keyframe_vector5_);
 
   timing_.timing_function = cubic_ease_timing_function_;
-  EXPECT_TRUE(IsCandidateForAnimationOnCompositor(
-      timing_, *keyframe_animation_effect2_));
-  EXPECT_TRUE(IsCandidateForAnimationOnCompositor(
-      timing_, *keyframe_animation_effect5_));
+  EXPECT_TRUE(
+      CanStartEffectOnCompositor(timing_, *keyframe_animation_effect2_));
+  EXPECT_TRUE(
+      CanStartEffectOnCompositor(timing_, *keyframe_animation_effect5_));
 
   timing_.timing_function = cubic_custom_timing_function_;
-  EXPECT_TRUE(IsCandidateForAnimationOnCompositor(
-      timing_, *keyframe_animation_effect2_));
-  EXPECT_TRUE(IsCandidateForAnimationOnCompositor(
-      timing_, *keyframe_animation_effect5_));
+  EXPECT_TRUE(
+      CanStartEffectOnCompositor(timing_, *keyframe_animation_effect2_));
+  EXPECT_TRUE(
+      CanStartEffectOnCompositor(timing_, *keyframe_animation_effect5_));
 }
 
-TEST_F(
-    AnimationCompositorAnimationsTest,
-    isCandidateForAnimationOnCompositorTimingFunctionChainedCubicMatchingOffsets) {
+TEST_F(AnimationCompositorAnimationsTest,
+       CanStartEffectOnCompositorTimingFunctionChainedCubicMatchingOffsets) {
   (*keyframe_vector2_)[0]->SetEasing(cubic_ease_timing_function_.Get());
   keyframe_animation_effect2_ =
       AnimatableValueKeyframeEffectModel::Create(*keyframe_vector2_);
-  EXPECT_TRUE(IsCandidateForAnimationOnCompositor(
-      timing_, *keyframe_animation_effect2_));
+  EXPECT_TRUE(
+      CanStartEffectOnCompositor(timing_, *keyframe_animation_effect2_));
 
   (*keyframe_vector2_)[0]->SetEasing(cubic_custom_timing_function_.Get());
   keyframe_animation_effect2_ =
       AnimatableValueKeyframeEffectModel::Create(*keyframe_vector2_);
-  EXPECT_TRUE(IsCandidateForAnimationOnCompositor(
-      timing_, *keyframe_animation_effect2_));
+  EXPECT_TRUE(
+      CanStartEffectOnCompositor(timing_, *keyframe_animation_effect2_));
 
   (*keyframe_vector5_)[0]->SetEasing(cubic_ease_timing_function_.Get());
   (*keyframe_vector5_)[1]->SetEasing(cubic_custom_timing_function_.Get());
@@ -668,35 +666,35 @@ TEST_F(
   (*keyframe_vector5_)[3]->SetEasing(cubic_custom_timing_function_.Get());
   keyframe_animation_effect5_ =
       AnimatableValueKeyframeEffectModel::Create(*keyframe_vector5_);
-  EXPECT_TRUE(IsCandidateForAnimationOnCompositor(
-      timing_, *keyframe_animation_effect5_));
+  EXPECT_TRUE(
+      CanStartEffectOnCompositor(timing_, *keyframe_animation_effect5_));
 }
 
 TEST_F(AnimationCompositorAnimationsTest,
-       isCandidateForAnimationOnCompositorTimingFunctionMixedGood) {
+       CanStartEffectOnCompositorTimingFunctionMixedGood) {
   (*keyframe_vector5_)[0]->SetEasing(linear_timing_function_.Get());
   (*keyframe_vector5_)[1]->SetEasing(cubic_ease_timing_function_.Get());
   (*keyframe_vector5_)[2]->SetEasing(cubic_ease_timing_function_.Get());
   (*keyframe_vector5_)[3]->SetEasing(linear_timing_function_.Get());
   keyframe_animation_effect5_ =
       AnimatableValueKeyframeEffectModel::Create(*keyframe_vector5_);
-  EXPECT_TRUE(IsCandidateForAnimationOnCompositor(
-      timing_, *keyframe_animation_effect5_));
+  EXPECT_TRUE(
+      CanStartEffectOnCompositor(timing_, *keyframe_animation_effect5_));
 }
 
 TEST_F(AnimationCompositorAnimationsTest,
-       isCandidateForAnimationOnCompositorTimingFunctionWithStepOrFrameOkay) {
+       CanStartEffectOnCompositorTimingFunctionWithStepOrFrameOkay) {
   (*keyframe_vector2_)[0]->SetEasing(step_timing_function_.Get());
   keyframe_animation_effect2_ =
       AnimatableValueKeyframeEffectModel::Create(*keyframe_vector2_);
-  EXPECT_TRUE(IsCandidateForAnimationOnCompositor(
-      timing_, *keyframe_animation_effect2_));
+  EXPECT_TRUE(
+      CanStartEffectOnCompositor(timing_, *keyframe_animation_effect2_));
 
   (*keyframe_vector2_)[0]->SetEasing(frames_timing_function_.Get());
   keyframe_animation_effect2_ =
       AnimatableValueKeyframeEffectModel::Create(*keyframe_vector2_);
-  EXPECT_TRUE(IsCandidateForAnimationOnCompositor(
-      timing_, *keyframe_animation_effect2_));
+  EXPECT_TRUE(
+      CanStartEffectOnCompositor(timing_, *keyframe_animation_effect2_));
 
   (*keyframe_vector5_)[0]->SetEasing(step_timing_function_.Get());
   (*keyframe_vector5_)[1]->SetEasing(linear_timing_function_.Get());
@@ -704,8 +702,8 @@ TEST_F(AnimationCompositorAnimationsTest,
   (*keyframe_vector5_)[3]->SetEasing(frames_timing_function_.Get());
   keyframe_animation_effect5_ =
       AnimatableValueKeyframeEffectModel::Create(*keyframe_vector5_);
-  EXPECT_TRUE(IsCandidateForAnimationOnCompositor(
-      timing_, *keyframe_animation_effect5_));
+  EXPECT_TRUE(
+      CanStartEffectOnCompositor(timing_, *keyframe_animation_effect5_));
 
   (*keyframe_vector5_)[0]->SetEasing(frames_timing_function_.Get());
   (*keyframe_vector5_)[1]->SetEasing(step_timing_function_.Get());
@@ -713,8 +711,8 @@ TEST_F(AnimationCompositorAnimationsTest,
   (*keyframe_vector5_)[3]->SetEasing(linear_timing_function_.Get());
   keyframe_animation_effect5_ =
       AnimatableValueKeyframeEffectModel::Create(*keyframe_vector5_);
-  EXPECT_TRUE(IsCandidateForAnimationOnCompositor(
-      timing_, *keyframe_animation_effect5_));
+  EXPECT_TRUE(
+      CanStartEffectOnCompositor(timing_, *keyframe_animation_effect5_));
 
   (*keyframe_vector5_)[0]->SetEasing(linear_timing_function_.Get());
   (*keyframe_vector5_)[1]->SetEasing(frames_timing_function_.Get());
@@ -722,11 +720,11 @@ TEST_F(AnimationCompositorAnimationsTest,
   (*keyframe_vector5_)[3]->SetEasing(step_timing_function_.Get());
   keyframe_animation_effect5_ =
       AnimatableValueKeyframeEffectModel::Create(*keyframe_vector5_);
-  EXPECT_TRUE(IsCandidateForAnimationOnCompositor(
-      timing_, *keyframe_animation_effect5_));
+  EXPECT_TRUE(
+      CanStartEffectOnCompositor(timing_, *keyframe_animation_effect5_));
 }
 
-TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositor) {
+TEST_F(AnimationCompositorAnimationsTest, CanStartEffectOnCompositor) {
   AnimatableValueKeyframeVector basic_frames_vector;
   basic_frames_vector.push_back(
       CreateDefaultKeyframe(CSSPropertyOpacity, EffectModel::kCompositeReplace,
@@ -754,20 +752,20 @@ TEST_F(AnimationCompositorAnimationsTest, isCandidateForAnimationOnCompositor) {
   basic_frames_vector[0]->SetEasing(linear_timing_function_.Get());
   AnimatableValueKeyframeEffectModel* basic_frames =
       AnimatableValueKeyframeEffectModel::Create(basic_frames_vector);
-  EXPECT_TRUE(IsCandidateForAnimationOnCompositor(timing_, *basic_frames));
+  EXPECT_TRUE(CanStartEffectOnCompositor(timing_, *basic_frames));
 
   basic_frames_vector[0]->SetEasing(CubicBezierTimingFunction::Preset(
       CubicBezierTimingFunction::EaseType::EASE_IN));
   basic_frames =
       AnimatableValueKeyframeEffectModel::Create(basic_frames_vector);
-  EXPECT_TRUE(IsCandidateForAnimationOnCompositor(timing_, *basic_frames));
+  EXPECT_TRUE(CanStartEffectOnCompositor(timing_, *basic_frames));
 
   non_basic_frames_vector[0]->SetEasing(linear_timing_function_.Get());
   non_basic_frames_vector[1]->SetEasing(CubicBezierTimingFunction::Preset(
       CubicBezierTimingFunction::EaseType::EASE_IN));
   AnimatableValueKeyframeEffectModel* non_basic_frames =
       AnimatableValueKeyframeEffectModel::Create(non_basic_frames_vector);
-  EXPECT_TRUE(IsCandidateForAnimationOnCompositor(timing_, *non_basic_frames));
+  EXPECT_TRUE(CanStartEffectOnCompositor(timing_, *non_basic_frames));
 }
 
 // -----------------------------------------------------------------------
@@ -1216,7 +1214,7 @@ TEST_F(AnimationCompositorAnimationsTest,
   KeyframeEffect* keyframe_effect1 =
       KeyframeEffect::Create(element.Get(), animation_effect1, timing);
   Animation* animation1 = timeline_->Play(keyframe_effect1);
-  EXPECT_TRUE(CompositorAnimations::IsCandidateForAnimationOnCompositor(
+  EXPECT_TRUE(CompositorAnimations::CanStartEffectOnCompositor(
       timing, *element.Get(), animation1, *animation_effect1, 1));
 
   // simulate KeyframeEffect::maybeStartAnimationOnCompositor
@@ -1230,7 +1228,7 @@ TEST_F(AnimationCompositorAnimationsTest,
   KeyframeEffect* keyframe_effect2 =
       KeyframeEffect::Create(element.Get(), animation_effect2, timing);
   Animation* animation2 = timeline_->Play(keyframe_effect2);
-  EXPECT_FALSE(CompositorAnimations::IsCandidateForAnimationOnCompositor(
+  EXPECT_FALSE(CompositorAnimations::CanStartEffectOnCompositor(
       timing, *element.Get(), animation2, *animation_effect2, 1));
   EXPECT_FALSE(animation2->HasActiveAnimationsOnCompositor());
 
@@ -1272,7 +1270,7 @@ void UpdateDummyEffectNode(ObjectPaintProperties& properties,
 }  // namespace
 
 TEST_F(AnimationCompositorAnimationsTest,
-       canStartAnimationOnCompositorTransformSPv2) {
+       canStartElementOnCompositorTransformSPv2) {
   Persistent<Element> element = document_->createElement("shared");
   LayoutObjectProxy* layout_object = LayoutObjectProxy::Create(element.Get());
   element->SetLayoutObject(layout_object);
@@ -1284,22 +1282,22 @@ TEST_F(AnimationCompositorAnimationsTest,
   // Add a transform with a compositing reason, which should allow starting
   // animation.
   UpdateDummyTransformNode(properties, kCompositingReasonActiveAnimation);
-  EXPECT_TRUE(CompositorAnimations::CanStartAnimationOnCompositor(*element));
+  EXPECT_TRUE(CompositorAnimations::CanStartElementOnCompositor(*element));
 
   // Setting to CompositingReasonNone should produce false.
   UpdateDummyTransformNode(properties, kCompositingReasonNone);
-  EXPECT_FALSE(CompositorAnimations::CanStartAnimationOnCompositor(*element));
+  EXPECT_FALSE(CompositorAnimations::CanStartElementOnCompositor(*element));
 
   // Clearing the transform node entirely should also produce false.
   properties.ClearTransform();
-  EXPECT_FALSE(CompositorAnimations::CanStartAnimationOnCompositor(*element));
+  EXPECT_FALSE(CompositorAnimations::CanStartElementOnCompositor(*element));
 
   element->SetLayoutObject(nullptr);
   LayoutObjectProxy::Dispose(layout_object);
 }
 
 TEST_F(AnimationCompositorAnimationsTest,
-       canStartAnimationOnCompositorEffectSPv2) {
+       canStartElementOnCompositorEffectSPv2) {
   Persistent<Element> element = document_->createElement("shared");
   LayoutObjectProxy* layout_object = LayoutObjectProxy::Create(element.Get());
   element->SetLayoutObject(layout_object);
@@ -1311,15 +1309,15 @@ TEST_F(AnimationCompositorAnimationsTest,
   // Add an effect with a compositing reason, which should allow starting
   // animation.
   UpdateDummyEffectNode(properties, kCompositingReasonActiveAnimation);
-  EXPECT_TRUE(CompositorAnimations::CanStartAnimationOnCompositor(*element));
+  EXPECT_TRUE(CompositorAnimations::CanStartElementOnCompositor(*element));
 
   // Setting to CompositingReasonNone should produce false.
   UpdateDummyEffectNode(properties, kCompositingReasonNone);
-  EXPECT_FALSE(CompositorAnimations::CanStartAnimationOnCompositor(*element));
+  EXPECT_FALSE(CompositorAnimations::CanStartElementOnCompositor(*element));
 
   // Clearing the effect node entirely should also produce false.
   properties.ClearEffect();
-  EXPECT_FALSE(CompositorAnimations::CanStartAnimationOnCompositor(*element));
+  EXPECT_FALSE(CompositorAnimations::CanStartElementOnCompositor(*element));
 
   element->SetLayoutObject(nullptr);
   LayoutObjectProxy::Dispose(layout_object);

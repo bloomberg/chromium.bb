@@ -261,37 +261,35 @@ void KeyframeEffectReadOnly::NotifySampledEffectRemovedFromEffectStack() {
   sampled_effect_ = nullptr;
 }
 
-bool KeyframeEffectReadOnly::IsCandidateForAnimationOnCompositor(
+bool KeyframeEffectReadOnly::CanStartAnimationOnCompositor(
     double animation_playback_rate) const {
   // Do not put transforms on compositor if more than one of them are defined
   // in computed style because they need to be explicitly ordered
   if (!Model() || !target_ ||
       (target_->GetComputedStyle() &&
        target_->GetComputedStyle()->HasOffset()) ||
-      HasMultipleTransformProperties())
+      HasMultipleTransformProperties()) {
     return false;
+  }
 
-  return CompositorAnimations::IsCandidateForAnimationOnCompositor(
+  return CompositorAnimations::CanStartAnimationOnCompositor(
       SpecifiedTiming(), *target_, GetAnimation(), *Model(),
       animation_playback_rate);
 }
 
-bool KeyframeEffectReadOnly::MaybeStartAnimationOnCompositor(
+void KeyframeEffectReadOnly::StartAnimationOnCompositor(
     int group,
     double start_time,
     double current_time,
     double animation_playback_rate) {
   DCHECK(!HasActiveAnimationsOnCompositor());
-  if (!IsCandidateForAnimationOnCompositor(animation_playback_rate))
-    return false;
-  if (!CompositorAnimations::CanStartAnimationOnCompositor(*target_))
-    return false;
+  DCHECK(CanStartAnimationOnCompositor(animation_playback_rate));
+
   CompositorAnimations::StartAnimationOnCompositor(
       *target_, group, start_time, current_time, SpecifiedTiming(),
       *GetAnimation(), *Model(), compositor_animation_ids_,
       animation_playback_rate);
   DCHECK(!compositor_animation_ids_.IsEmpty());
-  return true;
 }
 
 bool KeyframeEffectReadOnly::HasActiveAnimationsOnCompositor() const {

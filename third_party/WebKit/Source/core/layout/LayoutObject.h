@@ -1809,9 +1809,9 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     friend class PaintPropertyTreeBuilder;
     friend class PrePaintTreeWalk;
     FRIEND_TEST_ALL_PREFIXES(AnimationCompositorAnimationsTest,
-                             canStartAnimationOnCompositorTransformSPv2);
+                             canStartElementOnCompositorTransformSPv2);
     FRIEND_TEST_ALL_PREFIXES(AnimationCompositorAnimationsTest,
-                             canStartAnimationOnCompositorEffectSPv2);
+                             canStartElementOnCompositorEffectSPv2);
     FRIEND_TEST_ALL_PREFIXES(PrePaintTreeWalkTest, ClipRects);
 
     // The following non-const functions for ObjectPaintProperties should only
