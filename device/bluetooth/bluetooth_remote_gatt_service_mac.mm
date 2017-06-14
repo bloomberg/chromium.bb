@@ -174,33 +174,6 @@ void BluetoothRemoteGattServiceMac::SendNotificationIfComplete() {
   }
 }
 
-void BluetoothRemoteGattServiceMac::DidUpdateValue(
-    CBCharacteristic* characteristic,
-    NSError* error) {
-  BluetoothRemoteGattCharacteristicMac* gatt_characteristic =
-      GetBluetoothRemoteGattCharacteristicMac(characteristic);
-  DCHECK(gatt_characteristic);
-  gatt_characteristic->DidUpdateValue(error);
-}
-
-void BluetoothRemoteGattServiceMac::DidWriteValue(
-    CBCharacteristic* characteristic,
-    NSError* error) {
-  BluetoothRemoteGattCharacteristicMac* gatt_characteristic =
-      GetBluetoothRemoteGattCharacteristicMac(characteristic);
-  DCHECK(gatt_characteristic);
-  gatt_characteristic->DidWriteValue(error);
-}
-
-void BluetoothRemoteGattServiceMac::DidUpdateNotificationState(
-    CBCharacteristic* characteristic,
-    NSError* error) {
-  BluetoothRemoteGattCharacteristicMac* gatt_characteristic =
-      GetBluetoothRemoteGattCharacteristicMac(characteristic);
-  DCHECK(gatt_characteristic);
-  gatt_characteristic->DidUpdateNotificationState(error);
-}
-
 bool BluetoothRemoteGattServiceMac::IsDiscoveryComplete() const {
   return is_discovery_complete_;
 }

@@ -60,16 +60,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattServiceMac
   // Sends notification if this service is ready with all characteristics
   // discovered.
   void SendNotificationIfComplete();
-  // Called by the BluetoothLowEnergyDeviceMac instance when the
-  // characteristics value has been read.
-  void DidUpdateValue(CBCharacteristic* characteristic, NSError* error);
-  // Called by the BluetoothLowEnergyDeviceMac instance when the
-  // characteristics value has been written.
-  void DidWriteValue(CBCharacteristic* characteristic, NSError* error);
-  // Called by the BluetoothLowEnergyDeviceMac instance when the notify session
-  // has been started or failed.
-  void DidUpdateNotificationState(CBCharacteristic* characteristic,
-                                  NSError* error);
   // Returns true if the characteristics has been discovered.
   bool IsDiscoveryComplete() const;
 
