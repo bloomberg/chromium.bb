@@ -218,7 +218,9 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
   const int ctx0 = ctx;
   /* Record the r-d cost */
   int64_t accu_rate = 0;
-  int64_t accu_error = 0;
+  // Initialized to the worst possible error for the largest transform size.
+  // This ensures that it never goes negative.
+  int64_t accu_error = ((int64_t)1) << 50;
 
   rate0 = get_token_bit_costs(*(token_costs_ptr + band_translate[0]), 0, ctx0,
                               EOB_TOKEN);
@@ -413,6 +415,7 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
 
         token_cache[rc] = av1_pt_energy_class[t0];
       }
+      assert(accu_error >= 0);
 
       x_prev = qcoeff[rc];
 
