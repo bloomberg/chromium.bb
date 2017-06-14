@@ -16,12 +16,14 @@ TextResource::TextResource(const ResourceRequest& resource_request,
                            const String& mime_type,
                            const String& charset)
     : Resource(resource_request, type, options),
-      decoder_(TextResourceDecoder::Create(mime_type, charset)) {}
+      decoder_(
+          TextResourceDecoder::Create(mime_type, WTF::TextEncoding(charset))) {}
 
 TextResource::~TextResource() {}
 
 void TextResource::SetEncoding(const String& chs) {
-  decoder_->SetEncoding(chs, TextResourceDecoder::kEncodingFromHTTPHeader);
+  decoder_->SetEncoding(WTF::TextEncoding(chs),
+                        TextResourceDecoder::kEncodingFromHTTPHeader);
 }
 
 String TextResource::Encoding() const {

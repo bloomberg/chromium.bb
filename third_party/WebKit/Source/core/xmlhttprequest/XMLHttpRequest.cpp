@@ -1710,10 +1710,12 @@ void XMLHttpRequest::ParseDocumentChunk(const char* data, unsigned len) {
 
 std::unique_ptr<TextResourceDecoder> XMLHttpRequest::CreateDecoder() const {
   if (response_type_code_ == kResponseTypeJSON)
-    return TextResourceDecoder::Create("application/json", "UTF-8");
+    return TextResourceDecoder::Create("application/json", UTF8Encoding());
 
-  if (!final_response_charset_.IsEmpty())
-    return TextResourceDecoder::Create("text/plain", final_response_charset_);
+  if (!final_response_charset_.IsEmpty()) {
+    return TextResourceDecoder::Create(
+        "text/plain", WTF::TextEncoding(final_response_charset_));
+  }
 
   // allow TextResourceDecoder to look inside the m_response if it's XML or HTML
   if (ResponseIsXML()) {
@@ -1728,9 +1730,9 @@ std::unique_ptr<TextResourceDecoder> XMLHttpRequest::CreateDecoder() const {
   }
 
   if (ResponseIsHTML())
-    return TextResourceDecoder::Create("text/html", "UTF-8");
+    return TextResourceDecoder::Create("text/html", UTF8Encoding());
 
-  return TextResourceDecoder::Create("text/plain", "UTF-8");
+  return TextResourceDecoder::Create("text/plain", UTF8Encoding());
 }
 
 void XMLHttpRequest::DidReceiveData(const char* data, unsigned len) {

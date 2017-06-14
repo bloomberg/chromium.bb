@@ -8,6 +8,7 @@
 #include "core/html/parser/TextResourceDecoder.h"
 
 #include "platform/testing/FuzzedDataProvider.h"
+#include "platform/wtf/text/TextEncoding.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
@@ -25,7 +26,8 @@ class TextResourceDecoderForFuzzing : public TextResourceDecoder {
   TextResourceDecoderForFuzzing(FuzzedDataProvider& fuzzed_data)
       : TextResourceDecoder(
             String::FromUTF8(fuzzed_data.ConsumeBytesInRange(0, 32)),
-            String::FromUTF8(fuzzed_data.ConsumeBytesInRange(0, 32)),
+            WTF::TextEncoding(
+                String::FromUTF8(fuzzed_data.ConsumeBytesInRange(0, 32))),
             FuzzedOption(fuzzed_data),
             KURL()) {}
 

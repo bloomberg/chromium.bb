@@ -39,8 +39,8 @@ class WTF_EXPORT TextEncoding final {
 
  public:
   TextEncoding() : name_(0) {}
-  TextEncoding(const char* name);
-  TextEncoding(const String& name);
+  explicit TextEncoding(const char* name);
+  explicit TextEncoding(const String& name);
 
   bool IsValid() const { return name_; }
   const char* GetName() const { return name_; }
