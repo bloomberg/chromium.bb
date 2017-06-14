@@ -17,6 +17,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/subresource_filter/content/browser/async_document_subresource_filter_test_utils.h"
 #include "components/subresource_filter/core/common/load_policy.h"
+#include "components/subresource_filter/core/common/memory_mapped_ruleset.h"
 #include "components/subresource_filter/core/common/proto/rules.pb.h"
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
 #include "components/subresource_filter/core/common/test_ruleset_utils.h"
@@ -240,6 +241,119 @@ TEST_F(AsyncDocumentSubresourceFilterTest, FirstDisallowedLoadIsReported) {
   filter->ReportDisallowedLoad();
   EXPECT_EQ(1, first_disallowed_load_receiver.callback_count());
   RunUntilIdle();
+}
+
+// Tests for ComputeActivationState:
+
+class SubresourceFilterComputeActivationStateTest : public ::testing::Test {
+ public:
+  SubresourceFilterComputeActivationStateTest() {}
+
+ protected:
+  void SetUp() override {
+    constexpr int32_t kDocument = proto::ACTIVATION_TYPE_DOCUMENT;
+    constexpr int32_t kGenericBlock = proto::ACTIVATION_TYPE_GENERICBLOCK;
+
+    std::vector<proto::UrlRule> rules;
+    rules.push_back(testing::CreateWhitelistRuleForDocument(
+        "child1.com", kDocument, {"parent1.com", "parent2.com"}));
+    rules.push_back(testing::CreateWhitelistRuleForDocument(
+        "child2.com", kGenericBlock, {"parent1.com", "parent2.com"}));
+    rules.push_back(testing::CreateWhitelistRuleForDocument(
+        "child3.com", kDocument | kGenericBlock,
+        {"parent1.com", "parent2.com"}));
+
+    testing::TestRulesetPair test_ruleset_pair;
+    ASSERT_NO_FATAL_FAILURE(test_ruleset_creator_.CreateRulesetWithRules(
+        rules, &test_ruleset_pair));
+    ruleset_ = new MemoryMappedRuleset(
+        testing::TestRuleset::Open(test_ruleset_pair.indexed));
+  }
+
+  static ActivationState MakeState(
+      bool filtering_disabled_for_document,
+      bool generic_blocking_rules_disabled = false,
+      ActivationLevel activation_level = ActivationLevel::ENABLED) {
+    ActivationState activation_state(activation_level);
+    activation_state.filtering_disabled_for_document =
+        filtering_disabled_for_document;
+    activation_state.generic_blocking_rules_disabled =
+        generic_blocking_rules_disabled;
+    return activation_state;
+  }
+
+  const MemoryMappedRuleset* ruleset() { return ruleset_.get(); }
+
+ private:
+  testing::TestRulesetCreator test_ruleset_creator_;
+  scoped_refptr<const MemoryMappedRuleset> ruleset_;
+
+  DISALLOW_COPY_AND_ASSIGN(SubresourceFilterComputeActivationStateTest);
+};
+
+TEST_F(SubresourceFilterComputeActivationStateTest,
+       ActivationBitsCorrectlyPropagateToChildDocument) {
+  // Make sure that the |generic_blocking_rules_disabled| flag is disregarded
+  // when |filtering_disabled_for_document| is true.
+  ASSERT_EQ(MakeState(true, false), MakeState(true, true));
+
+  // TODO(pkalinnikov): Find a short way to express all these tests.
+  const struct {
+    const char* document_url;
+    const char* parent_document_origin;
+    ActivationState parent_activation;
+    ActivationState expected_activation_state;
+  } kTestCases[] = {
+      {"http://example.com", "http://example.com", MakeState(false, false),
+       MakeState(false, false)},
+      {"http://example.com", "http://example.com", MakeState(false, true),
+       MakeState(false, true)},
+      {"http://example.com", "http://example.com", MakeState(true, false),
+       MakeState(true)},
+      {"http://example.com", "http://example.com", MakeState(true, true),
+       MakeState(true)},
+
+      {"http://child1.com", "http://parrrrent1.com", MakeState(false, false),
+       MakeState(false, false)},
+      {"http://child1.com", "http://parent1.com", MakeState(false, false),
+       MakeState(true, false)},
+      {"http://child1.com", "http://parent2.com", MakeState(false, false),
+       MakeState(true, false)},
+      {"http://child1.com", "http://parent2.com", MakeState(true, false),
+       MakeState(true)},
+      {"http://child1.com", "http://parent2.com", MakeState(false, true),
+       MakeState(true)},
+
+      {"http://child2.com", "http://parent1.com", MakeState(false, false),
+       MakeState(false, true)},
+      {"http://child2.com", "http://parent1.com", MakeState(false, true),
+       MakeState(false, true)},
+      {"http://child2.com", "http://parent1.com", MakeState(true, false),
+       MakeState(true)},
+      {"http://child2.com", "http://parent1.com", MakeState(true, true),
+       MakeState(true)},
+
+      {"http://child3.com", "http://parent1.com", MakeState(false, false),
+       MakeState(true)},
+      {"http://child3.com", "http://parent1.com", MakeState(false, true),
+       MakeState(true)},
+      {"http://child3.com", "http://parent1.com", MakeState(true, false),
+       MakeState(true)},
+      {"http://child3.com", "http://parent1.com", MakeState(true, true),
+       MakeState(true)},
+  };
+
+  for (size_t i = 0, size = arraysize(kTestCases); i != size; ++i) {
+    SCOPED_TRACE(::testing::Message() << "Test number: " << i);
+    const auto& test_case = kTestCases[i];
+
+    GURL document_url(test_case.document_url);
+    url::Origin parent_document_origin(GURL(test_case.parent_document_origin));
+    ActivationState activation_state =
+        ComputeActivationState(document_url, parent_document_origin,
+                               test_case.parent_activation, ruleset());
+    EXPECT_EQ(test_case.expected_activation_state, activation_state);
+  }
 }
 
 }  // namespace subresource_filter

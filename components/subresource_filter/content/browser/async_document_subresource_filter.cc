@@ -13,8 +13,39 @@
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/subresource_filter/core/common/memory_mapped_ruleset.h"
+#include "components/subresource_filter/core/common/time_measurements.h"
 
 namespace subresource_filter {
+
+ActivationState ComputeActivationState(
+    const GURL& document_url,
+    const url::Origin& parent_document_origin,
+    const ActivationState& parent_activation_state,
+    const MemoryMappedRuleset* ruleset) {
+  DCHECK(ruleset);
+  SCOPED_UMA_HISTOGRAM_MICRO_TIMER(
+      "SubresourceFilter.DocumentLoad.Activation.WallDuration");
+  SCOPED_UMA_HISTOGRAM_MICRO_THREAD_TIMER(
+      "SubresourceFilter.DocumentLoad.Activation.CPUDuration");
+
+  IndexedRulesetMatcher matcher(ruleset->data(), ruleset->length());
+  ActivationState activation_state = parent_activation_state;
+  if (activation_state.filtering_disabled_for_document)
+    return activation_state;
+
+  // TODO(pkalinnikov): Match several activation types in a batch.
+  if (matcher.ShouldDisableFilteringForDocument(
+          document_url, parent_document_origin,
+          proto::ACTIVATION_TYPE_DOCUMENT)) {
+    activation_state.filtering_disabled_for_document = true;
+  } else if (!activation_state.generic_blocking_rules_disabled &&
+             matcher.ShouldDisableFilteringForDocument(
+                 document_url, parent_document_origin,
+                 proto::ACTIVATION_TYPE_GENERICBLOCK)) {
+    activation_state.generic_blocking_rules_disabled = true;
+  }
+  return activation_state;
+}
 
 // AsyncDocumentSubresourceFilter::InitializationParams ------------------------
 
