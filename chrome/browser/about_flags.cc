@@ -2992,6 +2992,24 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(switches::kShowCertLink)},
 #endif
 
+    {"omnibox-ui-hide-suggestion-url-path",
+     flag_descriptions::kOmniboxUIHideSuggestionUrlPathName,
+     flag_descriptions::kOmniboxUIHideSuggestionUrlPathDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(omnibox::kUIExperimentHideSuggestionUrlPath)},
+
+    {"omnibox-ui-hide-suggestion-url-scheme",
+     flag_descriptions::kOmniboxUIHideSuggestionUrlSchemeName,
+     flag_descriptions::kOmniboxUIHideSuggestionUrlSchemeDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(omnibox::kUIExperimentHideSuggestionUrlScheme)},
+
+    {"omnibox-ui-hide-suggestion-url-trivial-subdomains",
+     flag_descriptions::kOmniboxUIHideSuggestionUrlTrivialSubdomainsName,
+     flag_descriptions::kOmniboxUIHideSuggestionUrlTrivialSubdomainsDescription,
+     kOsDesktop,
+     FEATURE_VALUE_TYPE(
+         omnibox::kUIExperimentHideSuggestionUrlTrivialSubdomains)},
+
     {"omnibox-ui-max-autocomplete-matches",
      flag_descriptions::kOmniboxUIMaxAutocompleteMatchesName,
      flag_descriptions::kOmniboxUIMaxAutocompleteMatchesDescription, kOsDesktop,

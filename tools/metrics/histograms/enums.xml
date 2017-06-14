@@ -21990,6 +21990,8 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-1940806558" label="enable-syncfs-directory-operation"/>
   <int value="-1940377152" label="MacRTL:enabled"/>
   <int value="-1940291343" label="SpeculativeResourcePrefetching:enabled"/>
+  <int value="-1939016096"
+      label="OmniboxUIExperimentHideSuggestionUrlTrivialSubdomains:enabled"/>
   <int value="-1938263248" label="enable-extension-info-dialog"/>
   <int value="-1937077699" label="http-form-warning"/>
   <int value="-1934673791" label="gl-composited-texture-quad-border"/>
@@ -22195,10 +22197,6 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="-1212273428" label="enable-experimental-app-list"/>
   <int value="-1212167260" label="disable-app-window-cycling"/>
   <int value="-1208501269" label="AutofillScanThemeDialog:enabled"/>
-  <int value="-1203955801" label="enable-password-change-support:disabled"/>
-  <int value="-1203742042" label="enable-gesture-selection"/>
-  <int value="-1201183153" label="enable-centered-app-list"/>
-  <int value="-1197035323" label="ZeroSuggestRedirectToChrome:disabled"/>
 <!--
 Values in LoginCustomFlags are:  value=(uint32_t)MD5(label).
 This enum is verified by AboutFlagsHistogramTest unit test.
@@ -22210,6 +22208,12 @@ from previous Chrome versions.
 -->
 
   <summary>Chrome flags that lead to chrome restart on ChromeOS.</summary>
+  <int value="-1206337150"
+      label="OmniboxUIExperimentHideSuggestionUrlScheme:disabled"/>
+  <int value="-1203955801" label="enable-password-change-support:disabled"/>
+  <int value="-1203742042" label="enable-gesture-selection"/>
+  <int value="-1201183153" label="enable-centered-app-list"/>
+  <int value="-1197035323" label="ZeroSuggestRedirectToChrome:disabled"/>
   <int value="-1195194959" label="XGEOVisibleNetworks:disabled"/>
   <int value="-1190174011" label="enable-hdr"/>
   <int value="-1184904651" label="enable-npapi"/>
@@ -22423,6 +22427,8 @@ from previous Chrome versions.
   <int value="-418868128" label="enable-experimental-web-platform-features"/>
   <int value="-410852857" label="ImprovedA2HS:disabled"/>
   <int value="-405380243" label="enable-encryption-migration"/>
+  <int value="-401170566"
+      label="OmniboxUIExperimentHideSuggestionUrlPath:disabled"/>
   <int value="-400584764" label="ChromeHomeNtpRedesign:enabled"/>
   <int value="-396994784" label="enable-vr-shell"/>
   <int value="-396496344" label="ViewsTaskManager:enabled"/>
@@ -22470,6 +22476,8 @@ from previous Chrome versions.
   <int value="-279493876" label="WebVRExperimentalRendering:enabled"/>
   <int value="-278347667" label="default-tile-height"/>
   <int value="-277144896" label="enable-viewport-meta"/>
+  <int value="-275870837"
+      label="OmniboxUIExperimentHideSuggestionUrlPath:enabled"/>
   <int value="-275164173" label="QuickUnlockPinSignin:enabled"/>
   <int value="-268357961" label="enable-feature-policy"/>
   <int value="-254887599" label="google-profile-info"/>
@@ -22534,6 +22542,8 @@ from previous Chrome versions.
   <int value="-16824589" label="ash-shelf-color"/>
   <int value="-13918890" label="disable-download-notification"/>
   <int value="-11260186" label="enable-offline-pages-as-saved-pages"/>
+  <int value="-10709540"
+      label="OmniboxUIExperimentHideSuggestionUrlScheme:enabled"/>
   <int value="-5052940" label="enable-simplified-fullscreen"/>
   <int value="-2953333" label="AndroidHistoryManager:disabled"/>
   <int value="-2371418" label="disable-display-list-2d-canvas"/>
@@ -22928,6 +22938,8 @@ from previous Chrome versions.
   <int value="1382500494" label="disable-drive-apps-in-app-list"/>
   <int value="1383591631" label="enable-gesture-typing"/>
   <int value="1384614036" label="disable-unified-media-pipeline"/>
+  <int value="1386300777"
+      label="OmniboxUIExperimentHideSuggestionUrlTrivialSubdomains:disabled"/>
   <int value="1389729816" label="data-reduction-proxy-lo-fi"/>
   <int value="1405459667" label="enable-fast-text-autosizing"/>
   <int value="1406354320" label="MacViewsWebUIDialogs:enabled"/>

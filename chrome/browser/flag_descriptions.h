@@ -501,6 +501,15 @@ extern const char kOffMainThreadFetchDescription[];
 extern const char kOmniboxDisplayTitleForCurrentUrlName[];
 extern const char kOmniboxDisplayTitleForCurrentUrlDescription[];
 
+extern const char kOmniboxUIHideSuggestionUrlPathName[];
+extern const char kOmniboxUIHideSuggestionUrlPathDescription[];
+
+extern const char kOmniboxUIHideSuggestionUrlSchemeName[];
+extern const char kOmniboxUIHideSuggestionUrlSchemeDescription[];
+
+extern const char kOmniboxUIHideSuggestionUrlTrivialSubdomainsName[];
+extern const char kOmniboxUIHideSuggestionUrlTrivialSubdomainsDescription[];
+
 extern const char kOmniboxUIMaxAutocompleteMatchesName[];
 extern const char kOmniboxUIMaxAutocompleteMatchesDescription[];
 
