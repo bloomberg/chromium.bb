@@ -34,7 +34,7 @@ class PluginData;
 
 class DOMMimeTypeArray final : public GarbageCollected<DOMMimeTypeArray>,
                                public ScriptWrappable,
-                               public ContextClient {
+                               public ContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(DOMMimeTypeArray);
 
@@ -53,6 +53,7 @@ class DOMMimeTypeArray final : public GarbageCollected<DOMMimeTypeArray>,
  private:
   explicit DOMMimeTypeArray(LocalFrame*);
   PluginData* GetPluginData() const;
+  void ContextDestroyed(ExecutionContext*) override;
 
   HeapVector<Member<DOMMimeType>> dom_mime_types_;
 };

@@ -20,6 +20,7 @@
 
 #include "modules/plugins/DOMPluginArray.h"
 
+#include "core/dom/Document.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Navigator.h"
@@ -33,12 +34,13 @@
 
 namespace blink {
 
-DOMPluginArray::DOMPluginArray(LocalFrame* frame) : ContextClient(frame) {
+DOMPluginArray::DOMPluginArray(LocalFrame* frame)
+    : ContextLifecycleObserver(frame ? frame->GetDocument() : nullptr) {
   UpdatePluginData();
 }
 
 DEFINE_TRACE(DOMPluginArray) {
-  ContextClient::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
   visitor->Trace(dom_plugins_);
 }
 
@@ -47,11 +49,12 @@ unsigned DOMPluginArray::length() const {
 }
 
 DOMPlugin* DOMPluginArray::item(unsigned index) {
+  if (index >= dom_plugins_.size())
+    return nullptr;
+
   // TODO(lfg): Temporary to track down https://crbug.com/731239.
   CHECK(main_frame_origin_->IsSameSchemeHostPort(GetPluginData()->Origin()));
 
-  if (index >= dom_plugins_.size())
-    return nullptr;
   if (!dom_plugins_[index]) {
     dom_plugins_[index] =
         DOMPlugin::Create(GetFrame(), *GetPluginData()->Plugins()[index]);
@@ -126,6 +129,10 @@ void DOMPluginArray::UpdatePluginData() {
       }
     }
   }
+}
+
+void DOMPluginArray::ContextDestroyed(ExecutionContext*) {
+  dom_plugins_.clear();
 }
 
 }  // namespace blink

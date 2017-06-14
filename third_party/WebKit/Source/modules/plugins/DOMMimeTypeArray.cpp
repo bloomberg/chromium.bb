@@ -20,6 +20,7 @@
 
 #include "modules/plugins/DOMMimeTypeArray.h"
 
+#include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "core/page/Page.h"
 #include "platform/plugins/PluginData.h"
@@ -28,12 +29,13 @@
 
 namespace blink {
 
-DOMMimeTypeArray::DOMMimeTypeArray(LocalFrame* frame) : ContextClient(frame) {
+DOMMimeTypeArray::DOMMimeTypeArray(LocalFrame* frame)
+    : ContextLifecycleObserver(frame ? frame->GetDocument() : nullptr) {
   UpdatePluginData();
 }
 
 DEFINE_TRACE(DOMMimeTypeArray) {
-  ContextClient::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
   visitor->Trace(dom_mime_types_);
 }
 
@@ -94,6 +96,10 @@ void DOMMimeTypeArray::UpdatePluginData() {
       }
     }
   }
+}
+
+void DOMMimeTypeArray::ContextDestroyed(ExecutionContext*) {
+  dom_mime_types_.clear();
 }
 
 }  // namespace blink
