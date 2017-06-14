@@ -87,6 +87,8 @@ NSString* const kSessionStorageKey = @"sessionStorage";
 - (void)updateNavigationAvailability;
 // Updates the URLs exposed through |lastCommittedURL| and |visibleURL|.
 - (void)updateCurrentURLs;
+// Updates |title| property.
+- (void)updateTitle;
 
 @end
 
@@ -239,7 +241,7 @@ static NSString* gUserAgentProduct = nil;
 }
 
 - (void)webStateDidChangeTitle:(web::WebState*)webState {
-  self.title = base::SysUTF16ToNSString(_webState->GetTitle());
+  [self updateTitle];
 }
 
 - (void)renderProcessGoneForWebState:(web::WebState*)webState {
@@ -373,6 +375,12 @@ static NSString* gUserAgentProduct = nil;
   _translationController.webState = _webState.get();
 
   [self addInternalWebViewAsSubview];
+
+  [self updateNavigationAvailability];
+  [self updateCurrentURLs];
+  [self updateTitle];
+  self.loading = NO;
+  self.estimatedProgress = 0.0;
 }
 
 // Adds the web view provided by |_webState| as a subview unless it has already.
@@ -396,6 +404,10 @@ static NSString* gUserAgentProduct = nil;
 - (void)updateCurrentURLs {
   self.lastCommittedURL = net::NSURLWithGURL(_webState->GetLastCommittedURL());
   self.visibleURL = net::NSURLWithGURL(_webState->GetVisibleURL());
+}
+
+- (void)updateTitle {
+  self.title = base::SysUTF16ToNSString(_webState->GetTitle());
 }
 
 @end
