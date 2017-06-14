@@ -8,8 +8,6 @@
 #include "base/macros.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_attributes_entry.h"
-#include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_statistics_aggregator.h"
 
@@ -28,7 +26,7 @@ void ProfileStatistics::GatherStatistics(
   DCHECK(!profile_->IsOffTheRecord() && !profile_->IsSystemProfile());
 
   if (!aggregator_) {
-    aggregator_ = new ProfileStatisticsAggregator(
+    aggregator_ = base::MakeUnique<ProfileStatisticsAggregator>(
         profile_, base::Bind(&ProfileStatistics::DeregisterAggregator,
                              weak_ptr_factory_.GetWeakPtr()));
   }

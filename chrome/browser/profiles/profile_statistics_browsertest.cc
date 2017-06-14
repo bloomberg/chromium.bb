@@ -35,21 +35,20 @@ std::set<std::string> stats_categories() {
   categories.insert(profiles::kProfileStatisticsBrowsingHistory);
   categories.insert(profiles::kProfileStatisticsPasswords);
   categories.insert(profiles::kProfileStatisticsBookmarks);
-  categories.insert(profiles::kProfileStatisticsSettings);
+  categories.insert(profiles::kProfileStatisticsAutofill);
   EXPECT_EQ(4u, categories.size());
   return categories;
 }
 
 bool IsProfileCategoryStatEqual(const profiles::ProfileCategoryStat& a,
                                 const profiles::ProfileCategoryStat& b) {
-  return a.category == b.category && a.count == b.count &&
-         a.success == b.success;
+  return a.category == b.category && a.count == b.count;
 }
 
 std::string ProfileCategoryStatToString(
     const profiles::ProfileCategoryStat& a) {
-  return base::StringPrintf("category = %s, count = %d, success = %s",
-      a.category.c_str(), a.count, a.success ? "true" : "false");
+  return base::StringPrintf("category = %s, count = %d", a.category.c_str(),
+                            a.count);
 }
 
 ::testing::AssertionResult AssertionProfileCategoryStatEqual(
@@ -118,7 +117,6 @@ class ProfileStatisticsAggregatorState {
   }
 
   profiles::ProfileCategoryStats GetStats() const { return stats_; }
-  int GetNumOfFails() const { return num_of_fails_; }
 
   void StatsCallback(profiles::ProfileCategoryStats stats_return) {
     size_t newCount = stats_return.size();
@@ -134,16 +132,12 @@ class ProfileStatisticsAggregatorState {
                           stats_[i], stats_return[i]);
     }
 
-    num_of_fails_ = 0;
     for (size_t i = 0u; i < newCount; i++) {
       // The category must be a valid category.
       EXPECT_EQ(1u, stats_categories_.count(stats_return[i].category));
       // The categories in |stats_return| must all different.
       for (size_t j = 0u; j < i; j++)
         EXPECT_NE(stats_return[i].category, stats_return[j].category);
-      // Count the number of statistics failures.
-      if (!stats_return[i].success)
-        num_of_fails_++;
     }
     stats_ = stats_return;
 
@@ -159,7 +153,6 @@ class ProfileStatisticsAggregatorState {
   std::unique_ptr<base::RunLoop> run_loop_;
 
   profiles::ProfileCategoryStats stats_;
-  int num_of_fails_ = 0;
 };
 
 }  // namespace
@@ -193,11 +186,8 @@ IN_PROC_BROWSER_TEST_F(ProfileStatisticsBrowserTest, GatherStatistics) {
                  base::Unretained(&state)));
   state.WaitForStats();
 
-  EXPECT_EQ(0, state.GetNumOfFails());
-
   profiles::ProfileCategoryStats stats = state.GetStats();
   for (const auto& stat : stats) {
-    if (stat.category != profiles::kProfileStatisticsSettings)
       EXPECT_EQ(0, stat.count);
   }
 }
@@ -224,8 +214,6 @@ IN_PROC_BROWSER_TEST_F(ProfileStatisticsBrowserTest,
                  base::Unretained(&state2)));
   state1.WaitForStats();
   state2.WaitForStats();
-
-  EXPECT_EQ(0, state1.GetNumOfFails());
 
   EXPECT_PRED_FORMAT2(AssertionProfileCategoryStatsEqual,
       state1.GetStats(), state2.GetStats());
