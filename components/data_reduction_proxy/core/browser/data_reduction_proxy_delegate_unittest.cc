@@ -225,9 +225,14 @@ TEST(DataReductionProxyDelegate, IsTrustedSpdyProxy) {
         test_context->io_data()->net_log());
 
     base::FieldTrialList field_trial_list(nullptr);
-    base::FieldTrialList::CreateFieldTrial(
-        params::GetTrustedSpdyProxyFieldTrialName(),
-        test.is_in_trusted_spdy_proxy_field_trial ? "Enabled" : "Control");
+    EXPECT_TRUE(params::IsIncludedInTrustedSpdyProxyFieldTrial());
+    if (!test.is_in_trusted_spdy_proxy_field_trial) {
+      // Trusted Spdy proxy field trial experiment is enabled by default.
+      base::FieldTrialList::CreateFieldTrial(
+          params::GetTrustedSpdyProxyFieldTrialName(), "Control");
+    }
+    EXPECT_EQ(test.is_in_trusted_spdy_proxy_field_trial,
+              params::IsIncludedInTrustedSpdyProxyFieldTrial());
 
     EXPECT_EQ(test.expect_proxy_is_trusted,
               delegate.IsTrustedSpdyProxy(first_proxy) ||
