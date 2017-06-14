@@ -215,11 +215,6 @@ void LayerAnimator::StartAnimation(LayerAnimationSequence* animation) {
       case REPLACE_QUEUED_ANIMATIONS:
         ReplaceQueuedAnimations(animation);
         break;
-      case BLEND_WITH_CURRENT_ANIMATION: {
-        // TODO(vollick) Add support for blended sequences and use them here.
-        NOTIMPLEMENTED();
-        break;
-      }
     }
   }
   FinishAnyAnimationWithZeroDuration();
