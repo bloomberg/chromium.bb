@@ -285,42 +285,6 @@ v8::Local<v8::Value> ModuleSystem::RequireForJsInner(
   return handle_scope.Escape(exports);
 }
 
-v8::Local<v8::Value> ModuleSystem::CallModuleMethod(
-    const std::string& module_name,
-    const std::string& method_name,
-    int argc,
-    v8::Local<v8::Value> argv[]) {
-  TRACE_EVENT2("v8",
-               "v8.callModuleMethod",
-               "module_name",
-               module_name,
-               "method_name",
-               method_name);
-
-  v8::EscapableHandleScope handle_scope(GetIsolate());
-  v8::Local<v8::Context> v8_context = context()->v8_context();
-  v8::Context::Scope context_scope(v8_context);
-
-  v8::Local<v8::Function> function =
-      GetModuleFunction(module_name, method_name);
-  if (function.IsEmpty()) {
-    NOTREACHED() << "GetModuleFunction() returns empty function handle";
-    return handle_scope.Escape(v8::Undefined(GetIsolate()));
-  }
-
-  v8::Local<v8::Value> result;
-  {
-    v8::TryCatch try_catch(GetIsolate());
-    try_catch.SetCaptureMessage(true);
-    result = context_->CallFunction(function, argc, argv);
-    if (try_catch.HasCaught()) {
-      HandleException(try_catch);
-      result = v8::Undefined(GetIsolate());
-    }
-  }
-  return handle_scope.Escape(result);
-}
-
 void ModuleSystem::CallModuleMethodSafe(const std::string& module_name,
                                         const std::string& method_name) {
   v8::HandleScope handle_scope(GetIsolate());

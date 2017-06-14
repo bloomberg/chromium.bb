@@ -84,15 +84,10 @@ class ModuleSystem : public ObjectBackedNativeHandler,
                                  v8::Local<v8::String> name);
 
   // Calls the specified method exported by the specified module. This is
-  // equivalent to calling require('module_name').method_name() from JS.
-  // DEPRECATED: see crbug.com/629431
-  // TODO(devlin): Remove these.
-  v8::Local<v8::Value> CallModuleMethod(const std::string& module_name,
-                                        const std::string& method_name,
-                                        int argc,
-                                        v8::Local<v8::Value> argv[]);
-
-  // Same as the above, but allows for blocking execution.
+  // equivalent to calling require('module_name').method_name() from JS. Note:
+  // this may result in asynchronous execution if javascript is presently
+  // disabled.
+  // TODO(devlin): Rename this to just CallModuleMethod()?
   void CallModuleMethodSafe(const std::string& module_name,
                             const std::string& method_name);
   void CallModuleMethodSafe(const std::string& module_name,
