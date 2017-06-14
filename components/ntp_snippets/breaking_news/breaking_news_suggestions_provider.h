@@ -13,6 +13,10 @@ namespace ntp_snippets {
 class ContentSuggestionsGCMAppHandler;
 }
 
+namespace base {
+class Clock;
+}
+
 namespace ntp_snippets {
 
 // Receives breaking news suggestions via GCM push messages, stores them and
@@ -21,7 +25,8 @@ class BreakingNewsSuggestionsProvider : public ContentSuggestionsProvider {
  public:
   BreakingNewsSuggestionsProvider(
       ContentSuggestionsProvider::Observer* observer,
-      std::unique_ptr<ContentSuggestionsGCMAppHandler> gcm_app_handler);
+      std::unique_ptr<ContentSuggestionsGCMAppHandler> gcm_app_handler,
+      std::unique_ptr<base::Clock> clock);
   ~BreakingNewsSuggestionsProvider() override;
 
   // Starts the underlying GCM handler and registers the callback when GCM
@@ -53,6 +58,7 @@ class BreakingNewsSuggestionsProvider : public ContentSuggestionsProvider {
   void OnNewContentSuggestion(std::unique_ptr<base::Value> content);
 
   std::unique_ptr<ContentSuggestionsGCMAppHandler> gcm_app_handler_;
+  std::unique_ptr<base::Clock> clock_;
   const Category provided_category_;
   CategoryStatus category_status_;
 
