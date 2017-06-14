@@ -2359,10 +2359,10 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EIsolation i)
     : CSSValue(kIdentifierClass) {
   switch (i) {
-    case kIsolationAuto:
+    case EIsolation::kAuto:
       value_id_ = CSSValueAuto;
       break;
-    case kIsolationIsolate:
+    case EIsolation::kIsolate:
       value_id_ = CSSValueIsolate;
       break;
   }
@@ -2372,15 +2372,15 @@ template <>
 inline EIsolation CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueAuto:
-      return kIsolationAuto;
+      return EIsolation::kAuto;
     case CSSValueIsolate:
-      return kIsolationIsolate;
+      return EIsolation::kIsolate;
     default:
       break;
   }
 
   NOTREACHED();
-  return kIsolationAuto;
+  return EIsolation::kAuto;
 }
 
 template <>

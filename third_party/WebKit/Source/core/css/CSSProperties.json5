@@ -1369,7 +1369,7 @@
       field_template: "storage_only",
       field_group: "rare-non-inherited",
       field_size: 1,
-      default_value: "kIsolationAuto",
+      default_value: "EIsolation::kAuto",
     },
     {
       name: "justify-content",

@@ -1020,12 +1020,12 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // isolation
-  static EIsolation InitialIsolation() { return kIsolationAuto; }
+  static EIsolation InitialIsolation() { return EIsolation::kAuto; }
   EIsolation Isolation() const {
     return static_cast<EIsolation>(rare_non_inherited_data_->isolation_);
   }
   void SetIsolation(EIsolation v) {
-    rare_non_inherited_data_.Access()->isolation_ = v;
+    rare_non_inherited_data_.Access()->isolation_ = static_cast<unsigned>(v);
   }
 
   // -webkit-margin-before-collapse (aka -webkit-margin-top-collapse)
@@ -2970,7 +2970,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   bool IsDisplayFlexibleBox() const { return IsDisplayFlexibleBox(Display()); }
 
   // Isolation utility functions.
-  bool HasIsolation() const { return Isolation() != kIsolationAuto; }
+  bool HasIsolation() const { return Isolation() != EIsolation::kAuto; }
 
   // Content utility functions.
   bool HasContent() const { return GetContentData(); }
