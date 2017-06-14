@@ -105,6 +105,10 @@ class ASH_EXPORT WmToplevelWindowEventHandler : public WmDisplayObserver {
   // touched the screen. |first_finger_hittest_| is one of ui/base/hit_test.h
   int first_finger_hittest_;
 
+  // The point for the first finger at the time that it initially touched the
+  // screen.
+  gfx::Point first_finger_touch_point_;
+
   // The window bounds when the drag was started. When a window is minimized,
   // maximized or snapped via a swipe/fling gesture, the restore bounds should
   // be set to the bounds of the window when the drag was started.
