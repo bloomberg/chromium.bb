@@ -1383,6 +1383,14 @@ static const aom_cdf_prob
 static const aom_prob default_comp_inter_p[COMP_INTER_CONTEXTS] = {
   239, 183, 119, 96, 41
 };
+#if CONFIG_NEW_MULTISYMBOL
+static const aom_cdf_prob default_comp_inter_cdf[COMP_INTER_CONTEXTS][CDF_SIZE(
+    2)] = { { AOM_ICDF(239 * 128), AOM_ICDF(32768), 0 },
+            { AOM_ICDF(183 * 128), AOM_ICDF(32768), 0 },
+            { AOM_ICDF(119 * 128), AOM_ICDF(32768), 0 },
+            { AOM_ICDF(96 * 128), AOM_ICDF(32768), 0 },
+            { AOM_ICDF(41 * 128), AOM_ICDF(32768), 0 } };
+#endif
 
 #if CONFIG_EXT_REFS
 static const aom_prob default_comp_ref_p[REF_CONTEXTS][FWD_REFS - 1] = {
@@ -4523,6 +4531,9 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->partition_prob, default_partition_probs);
   av1_copy(fc->intra_inter_prob, default_intra_inter_p);
   av1_copy(fc->comp_inter_prob, default_comp_inter_p);
+#if CONFIG_NEW_MULTISYMBOL
+  av1_copy(fc->comp_inter_cdf, default_comp_inter_cdf);
+#endif
   av1_copy(fc->comp_ref_prob, default_comp_ref_p);
 #if CONFIG_LV_MAP
   av1_copy(fc->txb_skip, default_txb_skip);

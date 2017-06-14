@@ -1238,11 +1238,13 @@ static void write_ref_frames(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     // does the feature use compound prediction or not
     // (if not specified at the frame/segment level)
     if (cm->reference_mode == REFERENCE_MODE_SELECT) {
-#if SUB8X8_COMP_REF
-      aom_write(w, is_compound, av1_get_reference_mode_prob(cm, xd));
-#else
+#if !SUB8X8_COMP_REF
       if (mbmi->sb_type != BLOCK_4X4)
-        aom_write(w, is_compound, av1_get_reference_mode_prob(cm, xd));
+#endif
+#if CONFIG_NEW_MULTISYMBOL
+        aom_write_symbol(w, is_compound, av1_get_reference_mode_cdf(cm, xd), 2);
+#else
+      aom_write(w, is_compound, av1_get_reference_mode_prob(cm, xd));
 #endif
     } else {
       assert((!is_compound) == (cm->reference_mode == SINGLE_REFERENCE));
@@ -5019,6 +5021,7 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
                                 counts->intra_inter[i], probwt);
 #endif
 
+#if !CONFIG_NEW_MULTISYMBOL
     if (cpi->allow_comp_inter_inter) {
       const int use_hybrid_pred = cm->reference_mode == REFERENCE_MODE_SELECT;
       if (use_hybrid_pred)
@@ -5026,6 +5029,7 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
           av1_cond_prob_diff_update(header_bc, &fc->comp_inter_prob[i],
                                     counts->comp_inter[i], probwt);
     }
+#endif
 
     if (cm->reference_mode != COMPOUND_REFERENCE) {
       for (i = 0; i < REF_CONTEXTS; i++) {

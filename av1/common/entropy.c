@@ -5690,7 +5690,9 @@ void av1_average_tile_inter_cdfs(AV1_COMMON *cm, FRAME_CONTEXT *fc,
 
   aom_cdf_prob *fc_cdf_ptr;
 
-// FIXME: comp_inter_cdf not defined
+#if CONFIG_NEW_MULTISYMBOL
+  AVERAGE_TILE_CDFS(comp_inter_cdf)
+#endif
 
 // FIXME: comp_ref_cdf and comp_bwd_ref not defined
 
