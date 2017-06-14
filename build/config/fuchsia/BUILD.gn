@@ -32,6 +32,13 @@ config("compiler") {
     rebase_path(fuchsia_sdk, root_build_dir) + "/toolchain_libs/clang/5.0.0",
   ]
 
+  ldflags += [
+    # The stack defaults to 80k on Fuchsia, but on other platforms it's much
+    # higher, so a variety of code assumes more will be available. Raise to 8M
+    # which matches e.g. macOS.
+    "-Wl,-z,stack-size=0x800000",
+  ]
+
   libs = [
     "mxio",
     "magenta",
