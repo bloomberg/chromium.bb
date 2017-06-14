@@ -544,4 +544,22 @@ public class SafeBrowsingTest extends AwTestBase {
                         != GraphicsTestUtils.getPixelColorAtCenterOfView(
                                    mAwContents, mContainerView));
     }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    @CommandLineFlags.Add(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
+    public void testSafeBrowsingProceedQuietInterstitial() throws Throwable {
+        mAwContents.setCanShowBigInterstitial(false);
+        int interstitialCount =
+                mWebContentsObserver.getAttachedInterstitialPageHelper().getCallCount();
+        int pageFinishedCount = mContentsClient.getOnPageFinishedHelper().getCallCount();
+        final String responseUrl = mTestServer.getURL(PHISHING_HTML_PATH);
+        loadUrlAsync(mAwContents, responseUrl);
+        mWebContentsObserver.getAttachedInterstitialPageHelper().waitForCallback(interstitialCount);
+        proceedThroughInterstitial();
+        mContentsClient.getOnPageFinishedHelper().waitForCallback(pageFinishedCount);
+        waitForVisualStateCallback(mAwContents);
+        assertEquals("Target page should be visible", MALWARE_PAGE_BACKGROUND_COLOR,
+                GraphicsTestUtils.getPixelColorAtCenterOfView(mAwContents, mContainerView));
+    }
 }
