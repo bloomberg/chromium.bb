@@ -26,7 +26,11 @@ class ApiClass(namedtuple('ApiClass', 'index,classname,property_ids,methods_for_
 def get_classname(property):
     if property['api_class'] is True:
         # This property had the generated_api_class flag set in CSSProperties.json5.
-        return 'CSSPropertyAPI' + property['upper_camel_name']
+        if property['longhands']:
+            api_prefix = 'CSSShorthandPropertyAPI'
+        else:
+            api_prefix = 'CSSPropertyAPI'
+        return api_prefix + property['upper_camel_name']
     # This property has a specified class name.
     assert isinstance(property['api_class'], str), \
         ("api_class value for " + property['api_class'] + " should be None, True or a string")

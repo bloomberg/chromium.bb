@@ -3,13 +3,15 @@
 // found in the LICENSE file.
 
 #include "core/CSSPropertyNames.h"
+#include "platform/heap/HeapAllocator.h"
 
 namespace blink {
 
-class CSSValue;
 class CSSParserTokenRange;
 class CSSParserContext;
 class CSSParserLocalContext;
+class CSSProperty;
+class CSSValue;
 
 // Stores function pointers matching those declared in CSSPropertyAPI.
 struct CSSPropertyDescriptor {
