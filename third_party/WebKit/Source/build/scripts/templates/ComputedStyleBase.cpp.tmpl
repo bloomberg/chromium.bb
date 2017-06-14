@@ -1,4 +1,4 @@
-{% from 'macros.tmpl' import license, print_if %}
+{% from 'macros.tmpl' import license %}
 {% from 'fields/field.tmpl' import encode, getter_expression, setter_expression, fieldwise_copy, fieldwise_diff %}
 {% from 'fields/group.tmpl' import define_field_group_class %}
 {{license()}}
@@ -27,8 +27,9 @@ ASSERT_SIZE(ComputedStyleBase, SameSizeAsComputedStyleBase);
 // Constructor and destructor are protected so that only the parent class ComputedStyle
 // can instantiate this class.
 ComputedStyleBase::ComputedStyleBase() :
+{% set comma = joiner(", ") %}
 {% for field in computed_style.fields %}
-    {{field.name}}({{encode(field, field.default_value)}}){{print_if(not loop.last, ',')}}
+    {{comma()}}{{field.name}}({{encode(field, field.default_value)}})
 {% endfor %}
 {
   {% for subgroup in computed_style.subgroups %}

@@ -74,20 +74,21 @@ unsigned {{field.name}} : {{field.size}}; // {{field.type_name}}
 {# Given a group and a list of fields to compare, this generates a set of
    equality comparisons on those fields. The generated comparisons take
    advantage of group sharing. #}
-{% macro fieldwise_compare(group, fields_to_compare) %}
+{% macro fieldwise_compare(group, fields_to_compare, boolean_and=None) %}
+{% set boolean_and = boolean_and or joiner('&& ') %}
 {% for subgroup in group.subgroups %}
   {# If every field in this subgroup is to be compared, we can compare the
      group pointer instead. #}
   {% if subgroup.all_fields|rejectattr("custom_compare")|reject("in", fields_to_compare)|list|length == 0 -%}
-    {{subgroup.member_name}} == o.{{subgroup.member_name}} &&
+    {{boolean_and()}}{{subgroup.member_name}} == o.{{subgroup.member_name}}
   {# Otherwise, we would have to recursively generate comparison operations
      on fields in the subgroup. #}
   {% elif subgroup.fields|rejectattr("custom_compare")|select("in", fields_to_compare)|list|length > 0 -%}
-    {{fieldwise_compare(subgroup, fields_to_compare)}}
+    {{fieldwise_compare(subgroup, fields_to_compare, boolean_and)}}
   {% endif %}
 {% endfor %}
 {% for field in group.fields|rejectattr("custom_compare")|select("in", fields_to_compare) -%}
-  {{compare(field.wrapper_pointer_name, getter_expression(field), "o")}} &&
+  {{boolean_and()}}{{compare(field.wrapper_pointer_name, getter_expression(field), "o")}}
 {% endfor %}
 {% endmacro %}
 
@@ -104,20 +105,21 @@ unsigned {{field.name}} : {{field.size}}; // {{field.type_name}}
 {% endfor %}
 {% endmacro %}
 
-{% macro fieldwise_pointer_compare_inherited(group) %}
+{% macro fieldwise_pointer_compare_inherited(group, boolean_and=None) %}
+{% set boolean_and = boolean_and or joiner('&& ') %}
 {% for subgroup in group.subgroups %}
   {# If every field in this subgroup is inherited, we directly compare the
      group pointer instead. #}
   {% if subgroup.all_fields|rejectattr("is_inherited")|list|length == 0 -%}
-    {{subgroup.member_name}}.Get() == o.{{subgroup.member_name}}.Get() &&
+    {{boolean_and()}}{{subgroup.member_name}}.Get() == o.{{subgroup.member_name}}.Get()
   {# Otherwise, we would have to recursively generate comparison operations
      on fields in the subgroup. #}
   {% elif subgroup.fields|selectattr("is_inherited")|list|length > 0 -%}
-    {{fieldwise_pointer_compare_inherited(fields_to_compare)}}
+    {{fieldwise_pointer_compare_inherited(fields_to_compare, boolean_and)}}
   {% endif %}
 {% endfor %}
 {% for field in group.fields if field.is_inherited -%}
-  {{getter_expression(field)}} == o.{{getter_expression(field)}} &&
+  {{boolean_and()}}{{getter_expression(field)}} == o.{{getter_expression(field)}}
 {% endfor %}
 {% endmacro %}
 

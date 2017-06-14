@@ -1,5 +1,5 @@
 {% from 'fields/field.tmpl' import encode, declare_storage, compare %}
-{% from 'macros.tmpl' import print_if %}
+
 {% macro declare_field_group_class(group): -%}
 class {{group.type_name}} : public RefCounted<{{group.type_name}}> {
  public:
@@ -12,8 +12,9 @@ class {{group.type_name}} : public RefCounted<{{group.type_name}}> {
 
   bool operator==(const {{group.type_name}}& other) const {
     return (
+    {% set boolean_and = joiner("&& ") %}
     {% for field in group.fields if not field.custom_compare %}
-      {{compare(field.wrapper_pointer_name, field.name, "other")}}{{print_if(not loop.last, ' &&')}}
+      {{boolean_and()}}{{compare(field.wrapper_pointer_name, field.name, "other")}}
     {% endfor %}
     );
   }
@@ -31,17 +32,19 @@ class {{group.type_name}} : public RefCounted<{{group.type_name}}> {
 
 {% macro define_field_group_class(group): -%}
 ComputedStyleBase::{{group.type_name}}::{{group.type_name}}() :
+  {% set comma = joiner(", ") %}
   {% for field in group.fields %}
-      {{field.name}}({{encode(field, field.default_value)}}){{print_if(not loop.last, ',')}}
+      {{comma()}}{{field.name}}({{encode(field, field.default_value)}})
   {% endfor %}
   {}
 
 ComputedStyleBase::{{group.type_name}}::{{group.type_name}}(const {{group.type_name}}& other) :
+  {% set comma = joiner(", ") %}
   {% for field in group.fields %}
     {% if field.wrapper_pointer_name %}
-      {{field.name}}(MemberCopy(other.{{field.name}})){{print_if(not loop.last, ',')}}
+      {{comma()}}{{field.name}}(MemberCopy(other.{{field.name}}))
     {% else %}
-      {{field.name}}(other.{{field.name}}){{print_if(not loop.last, ',')}}
+      {{comma()}}{{field.name}}(other.{{field.name}})
      {% endif %}
   {% endfor %}
   {}
