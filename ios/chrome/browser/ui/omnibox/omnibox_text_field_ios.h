@@ -62,9 +62,6 @@ typedef enum {
 // |text|.
 - (void)setText:(NSAttributedString*)text userTextLength:(size_t)userTextLength;
 
-// Sets |chipText_|.
-- (void)setChipText:(NSString*)text;
-
 // Returns YES if the omnibox is currently showing a query refinement chip.
 - (BOOL)isShowingQueryRefinementChip;
 

@@ -594,16 +594,6 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   [self setTextInternal:text autocompleteLength:autocompleteLength];
 }
 
-- (void)setChipText:(NSString*)chipName {
-  // TODO(crbug.com/527473): This method no longer sets the |_chipText| ivar,
-  // but the call to |updateLeftView| has been left in place because it was not
-  // immediately clear whether callers were relying on that update, even if they
-  // weren't setting any chip text.  Verify that callers do not need the call to
-  // |updateLeftView| and then delete this function entirely.
-  DCHECK_EQ(0U, [chipName length]);
-  [self updateLeftView];
-}
-
 - (BOOL)hasAutocompleteText {
   return !!_selection;
 }
