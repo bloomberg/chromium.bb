@@ -4,84 +4,88 @@
 
 #include "components/browser_watcher/stability_debugging.h"
 
-#include "base/files/file_enumerator.h"
+#include <windows.h>
+
+#include "base/command_line.h"
+#include "base/debug/activity_tracker.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/process/process.h"
 #include "base/test/multiprocess_test.h"
-#include "components/browser_watcher/stability_paths.h"
+#include "base/test/test_timeouts.h"
+#include "components/browser_watcher/stability_report.pb.h"
+#include "components/browser_watcher/stability_report_extractor.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
 
 namespace browser_watcher {
 
-class StabilityDebuggingWinMultiProcTest : public base::MultiProcessTest {};
+using base::debug::GlobalActivityTracker;
 
-MULTIPROCESS_TEST_MAIN(DummyProcess) {
-  return 0;
-}
+const int kMemorySize = 1 << 20;  // 1MiB
+const uint32_t exception_code = 42U;
+const uint32_t exception_flag_continuable = 0U;
 
-TEST_F(StabilityDebuggingWinMultiProcTest, GetStabilityFileForProcessTest) {
-  const base::FilePath empty_path;
-
-  // Get the path for the current process.
-  base::FilePath stability_path;
-  ASSERT_TRUE(GetStabilityFileForProcess(base::Process::Current(), empty_path,
-                                         &stability_path));
-
-  // Ensure requesting a second time produces the same.
-  base::FilePath stability_path_two;
-  ASSERT_TRUE(GetStabilityFileForProcess(base::Process::Current(), empty_path,
-                                         &stability_path_two));
-  EXPECT_EQ(stability_path, stability_path_two);
-
-  // Ensure a different process has a different stability path.
-  base::SpawnChildResult spawn_result = SpawnChild("DummyProcess");
-  base::FilePath stability_path_other;
-  ASSERT_TRUE(GetStabilityFileForProcess(spawn_result.process, empty_path,
-                                         &stability_path_other));
-  EXPECT_NE(stability_path, stability_path_other);
-}
-
-TEST(StabilityDebuggingWinTest,
-     GetStabilityFilePatternMatchesGetStabilityFileForProcessResult) {
-  // GetStabilityFileForProcess file names must match GetStabilityFilePattern
-  // according to
-  // FileEnumerator's algorithm. We test this by writing out some files and
-  // validating what is matched.
-
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  base::FilePath user_data_dir = temp_dir.GetPath();
-
-  // Create the stability directory.
-  base::FilePath stability_dir = GetStabilityDir(user_data_dir);
-  ASSERT_TRUE(base::CreateDirectory(stability_dir));
-
-  // Write a stability file.
-  base::FilePath stability_file;
-  ASSERT_TRUE(GetStabilityFileForProcess(base::Process::Current(),
-                                         user_data_dir, &stability_file));
-  {
-    base::ScopedFILE file(base::OpenFile(stability_file, "w"));
-    ASSERT_TRUE(file.get());
+class StabilityDebuggingTest : public testing::Test {
+ public:
+  StabilityDebuggingTest() {}
+  ~StabilityDebuggingTest() override {
+    GlobalActivityTracker* global_tracker = GlobalActivityTracker::Get();
+    if (global_tracker) {
+      global_tracker->ReleaseTrackerForCurrentThreadForTesting();
+      delete global_tracker;
+    }
   }
 
-  // Write a file that shouldn't match.
-  base::FilePath non_matching_file =
-      stability_dir.AppendASCII("non_matching.foo");
-  {
-    base::ScopedFILE file(base::OpenFile(non_matching_file, "w"));
-    ASSERT_TRUE(file.get());
+  void SetUp() override {
+    testing::Test::SetUp();
+
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    debug_path_ = temp_dir_.GetPath().AppendASCII("debug.pma");
+
+    GlobalActivityTracker::CreateWithFile(debug_path_, kMemorySize, 0ULL, "",
+                                          3);
   }
 
-  // Validate only the stability file matches.
-  base::FileEnumerator enumerator(stability_dir, false /* recursive */,
-                                  base::FileEnumerator::FILES,
-                                  GetStabilityFilePattern());
-  ASSERT_EQ(stability_file, enumerator.Next());
-  ASSERT_TRUE(enumerator.Next().empty());
+  const base::FilePath& debug_path() { return debug_path_; }
+
+ private:
+  base::ScopedTempDir temp_dir_;
+  base::FilePath debug_path_;
+};
+
+TEST_F(StabilityDebuggingTest, CrashingTest) {
+  RegisterStabilityVEH();
+
+  // Raise an exception, then continue.
+  __try {
+    ::RaiseException(exception_code, exception_flag_continuable, 0U, nullptr);
+  } __except (EXCEPTION_CONTINUE_EXECUTION) {
+  }
+
+  // Collect the report.
+  StabilityReport report;
+  ASSERT_EQ(SUCCESS, Extract(debug_path(), &report));
+
+  // Validate expectations.
+  ASSERT_EQ(1, report.process_states_size());
+  const ProcessState& process_state = report.process_states(0);
+  ASSERT_EQ(1, process_state.threads_size());
+
+  bool thread_found = false;
+  for (const ThreadState& thread : process_state.threads()) {
+    if (thread.thread_id() == ::GetCurrentThreadId()) {
+      thread_found = true;
+      ASSERT_TRUE(thread.has_exception());
+      const Exception& exception = thread.exception();
+      EXPECT_EQ(exception_code, exception.code());
+      EXPECT_NE(0ULL, exception.program_counter());
+      EXPECT_NE(0ULL, exception.exception_address());
+      EXPECT_NE(0LL, exception.time());
+    }
+  }
+  ASSERT_TRUE(thread_found);
 }
 
 }  // namespace browser_watcher

@@ -181,6 +181,15 @@ void CollectActivity(const base::debug::Activity& recorded,
   }
 }
 
+void CollectException(const base::debug::Activity& recorded,
+                      Exception* collected) {
+  DCHECK(collected);
+  collected->set_code(recorded.data.exception.code);
+  collected->set_program_counter(recorded.calling_address);
+  collected->set_exception_address(recorded.origin_address);
+  collected->set_time(recorded.time_internal);
+}
+
 void CollectThread(
     const base::debug::ThreadActivityAnalyzer::Snapshot& snapshot,
     ThreadState* thread_state) {
@@ -189,6 +198,12 @@ void CollectThread(
   thread_state->set_thread_name(snapshot.thread_name);
   thread_state->set_thread_id(snapshot.thread_id);
   thread_state->set_activity_count(snapshot.activity_stack_depth);
+
+  if (snapshot.last_exception.activity_type ==
+      base::debug::Activity::ACT_EXCEPTION) {
+    CollectException(snapshot.last_exception,
+                     thread_state->mutable_exception());
+  }
 
   for (size_t i = 0; i < snapshot.activity_stack.size(); ++i) {
     Activity* collected = thread_state->add_activities();

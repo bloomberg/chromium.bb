@@ -142,8 +142,17 @@ message Activity {
   map<string, TypedValue> user_data = 9;
 }
 
-// The state of a thread.
+// Details about an exception.
 // Next id: 5
+message Exception {
+  optional uint32 code = 1;
+  optional uint64 program_counter = 2;
+  optional uint64 exception_address = 3;
+  optional int64 time = 4;
+}
+
+// The state of a thread.
+// Next id: 6
 message ThreadState {
   // The name of the thread, up to a maxiumum length.
   optional string thread_name = 1;
@@ -155,6 +164,10 @@ message ThreadState {
   // stack and |activities| holds the base of the stack (up to a maximum size).
   optional int32 activity_count = 3;
   repeated Activity activities = 4;
+
+  // The last exception to be successfully captured. Note this exception may
+  // have been recovered from.
+  optional Exception exception = 5;
 }
 
 // The state of a process.

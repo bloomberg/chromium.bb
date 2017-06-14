@@ -34,6 +34,7 @@
 #include "chrome/install_static/install_util.h"
 #include "components/browser_watcher/features.h"
 #include "components/browser_watcher/stability_data_names.h"
+#include "components/browser_watcher/stability_debugging.h"
 #include "components/browser_watcher/stability_metrics.h"
 #include "components/browser_watcher/stability_paths.h"
 #endif
@@ -188,6 +189,8 @@ void SetupStabilityDebugging() {
     // of this, there is no need to flush it here.
     metrics::GlobalPersistentSystemProfile::GetInstance()
         ->RegisterPersistentAllocator(global_tracker->allocator());
+
+    browser_watcher::RegisterStabilityVEH();
   }
 }
 #endif  // defined(OS_WIN)

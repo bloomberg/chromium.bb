@@ -15,6 +15,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/persistent_memory_allocator.h"
 #include "base/stl_util.h"
+#include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/crashpad/crashpad/client/crash_report_database.h"
 
@@ -119,6 +120,22 @@ class StabilityReportExtractorThreadTrackerTest : public testing::Test {
     return WrapUnique(new ThreadActivityTracker(mem_base, tracker_mem_size));
   }
 
+  void PerformBasicReportValidation(const StabilityReport& report) {
+    // One report with one thread that has the expected name and id.
+    ASSERT_EQ(1, report.process_states_size());
+    const ProcessState& process_state = report.process_states(0);
+    EXPECT_EQ(base::GetCurrentProcId(), process_state.process_id());
+    ASSERT_EQ(1, process_state.threads_size());
+    const ThreadState& thread_state = process_state.threads(0);
+    EXPECT_EQ(base::PlatformThread::GetName(), thread_state.thread_name());
+#if defined(OS_WIN)
+    EXPECT_EQ(base::PlatformThread::CurrentId(), thread_state.thread_id());
+#elif defined(OS_POSIX)
+    EXPECT_EQ(base::PlatformThread::CurrentHandle().platform_handle(),
+              thread_state.thread_id());
+#endif
+  }
+
   const FilePath& debug_file_path() const { return debug_file_path_; }
 
  protected:
@@ -163,19 +180,8 @@ TEST_F(StabilityReportExtractorThreadTrackerTest, CollectSuccess) {
   ASSERT_EQ(SUCCESS, Extract(debug_file_path(), &report));
 
   // Validate the report.
-  ASSERT_EQ(1, report.process_states_size());
-  const ProcessState& process_state = report.process_states(0);
-  EXPECT_EQ(base::GetCurrentProcId(), process_state.process_id());
-  ASSERT_EQ(1, process_state.threads_size());
-
-  const ThreadState& thread_state = process_state.threads(0);
-  EXPECT_EQ(base::PlatformThread::GetName(), thread_state.thread_name());
-#if defined(OS_WIN)
-  EXPECT_EQ(base::PlatformThread::CurrentId(), thread_state.thread_id());
-#elif defined(OS_POSIX)
-  EXPECT_EQ(base::PlatformThread::CurrentHandle().platform_handle(),
-            thread_state.thread_id());
-#endif
+  ASSERT_NO_FATAL_FAILURE(PerformBasicReportValidation(report));
+  const ThreadState& thread_state = report.process_states(0).threads(0);
 
   EXPECT_EQ(7, thread_state.activity_count());
   ASSERT_EQ(6, thread_state.activities_size());
@@ -221,6 +227,48 @@ TEST_F(StabilityReportExtractorThreadTrackerTest, CollectSuccess) {
     EXPECT_EQ(kGenericData, activity.generic_data());
     EXPECT_EQ(0U, activity.user_data().size());
   }
+}
+
+TEST_F(StabilityReportExtractorThreadTrackerTest, CollectException) {
+  const void* expected_pc = reinterpret_cast<void*>(0xCAFE);
+  const void* expected_address = nullptr;
+  const uint32_t expected_code = 42U;
+
+  // Record an exception.
+  const int64_t timestamp = base::Time::Now().ToInternalValue();
+  tracker_->RecordExceptionActivity(expected_pc, expected_address,
+                                    base::debug::Activity::ACT_EXCEPTION,
+                                    ActivityData::ForException(expected_code));
+
+  // Collect report and validate.
+  StabilityReport report;
+  ASSERT_EQ(SUCCESS, Extract(debug_file_path(), &report));
+
+  // Validate the presence of the exception.
+  ASSERT_NO_FATAL_FAILURE(PerformBasicReportValidation(report));
+  const ThreadState& thread_state = report.process_states(0).threads(0);
+  ASSERT_TRUE(thread_state.has_exception());
+  const Exception& exception = thread_state.exception();
+  EXPECT_EQ(expected_code, exception.code());
+  EXPECT_EQ(expected_pc, reinterpret_cast<void*>(exception.program_counter()));
+  EXPECT_EQ(expected_address,
+            reinterpret_cast<void*>(exception.exception_address()));
+  const int64_t tolerance_us = 1000ULL;
+  EXPECT_LE(std::abs(timestamp - exception.time()), tolerance_us);
+}
+
+TEST_F(StabilityReportExtractorThreadTrackerTest, CollectNoException) {
+  // Record something.
+  tracker_->PushActivity(reinterpret_cast<void*>(kTaskOrigin),
+                         base::debug::Activity::ACT_TASK_RUN,
+                         ActivityData::ForTask(kTaskSequenceNum));
+
+  // Collect report and validate there is no exception.
+  StabilityReport report;
+  ASSERT_EQ(SUCCESS, Extract(debug_file_path(), &report));
+  ASSERT_NO_FATAL_FAILURE(PerformBasicReportValidation(report));
+  const ThreadState& thread_state = report.process_states(0).threads(0);
+  ASSERT_FALSE(thread_state.has_exception());
 }
 
 // Tests stability report extraction.
