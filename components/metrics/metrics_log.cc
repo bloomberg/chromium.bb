@@ -123,7 +123,12 @@ MetricsLog::MetricsLog(const std::string& client_id,
   if (product != uma_proto_.product())
     uma_proto_.set_product(product);
 
-  RecordCoreSystemProfile(client_, uma_proto_.mutable_system_profile());
+  SystemProfileProto* system_profile = uma_proto()->mutable_system_profile();
+  RecordCoreSystemProfile(client_, system_profile);
+  if (log_type_ == ONGOING_LOG) {
+    GlobalPersistentSystemProfile::GetInstance()->SetSystemProfile(
+        *system_profile, /*complete=*/false);
+  }
 }
 
 MetricsLog::~MetricsLog() {
@@ -338,8 +343,10 @@ std::string MetricsLog::RecordEnvironment(
   std::string serialized_proto =
       recorder.SerializeAndRecordEnvironmentToPrefs(*system_profile);
 
-  GlobalPersistentSystemProfile::GetInstance()->SetSystemProfile(
-      serialized_proto);
+  if (log_type_ == ONGOING_LOG) {
+    GlobalPersistentSystemProfile::GetInstance()->SetSystemProfile(
+        serialized_proto, /*complete=*/true);
+  }
 
   return serialized_proto;
 }

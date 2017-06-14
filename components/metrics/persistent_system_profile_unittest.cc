@@ -91,7 +91,7 @@ TEST_F(PersistentSystemProfileTest, ProfileStorage) {
   trial->set_name_id(123);
   trial->set_group_id(456);
 
-  persistent_profile()->SetSystemProfile(proto1);
+  persistent_profile()->SetSystemProfile(proto1, false);
 
   SystemProfileProto proto2;
   ASSERT_TRUE(PersistentSystemProfile::HasSystemProfile(*memory_allocator()));
@@ -107,7 +107,23 @@ TEST_F(PersistentSystemProfileTest, ProfileStorage) {
   trial->set_name_id(78);
   trial->set_group_id(90);
 
-  persistent_profile()->SetSystemProfile(proto1);
+  persistent_profile()->SetSystemProfile(proto1, true);
+
+  ASSERT_TRUE(
+      PersistentSystemProfile::GetSystemProfile(*memory_allocator(), &proto2));
+  ASSERT_EQ(2, proto2.field_trial_size());
+  EXPECT_EQ(123U, proto2.field_trial(0).name_id());
+  EXPECT_EQ(456U, proto2.field_trial(0).group_id());
+  EXPECT_EQ(78U, proto2.field_trial(1).name_id());
+  EXPECT_EQ(90U, proto2.field_trial(1).group_id());
+
+  // Check that the profile won't be overwritten by a new non-complete profile.
+
+  trial = proto1.add_field_trial();
+  trial->set_name_id(0xC0DE);
+  trial->set_group_id(0xFEED);
+
+  persistent_profile()->SetSystemProfile(proto1, false);
 
   ASSERT_TRUE(
       PersistentSystemProfile::GetSystemProfile(*memory_allocator(), &proto2));

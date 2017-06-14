@@ -496,7 +496,7 @@ TEST_P(FileMetricsProviderTest, AccessEmbeddedProfileMetricsWithProfile) {
         PersistentSystemProfile persistent_profile;
         persistent_profile.RegisterPersistentAllocator(
             allocator->memory_allocator());
-        persistent_profile.SetSystemProfile(profile_proto);
+        persistent_profile.SetSystemProfile(profile_proto, true);
       });
 
   // Register the file and allow the "checker" task to run.
@@ -567,7 +567,7 @@ TEST_P(FileMetricsProviderTest, AccessEmbeddedFallbackMetricsWithProfile) {
         PersistentSystemProfile persistent_profile;
         persistent_profile.RegisterPersistentAllocator(
             allocator->memory_allocator());
-        persistent_profile.SetSystemProfile(profile_proto);
+        persistent_profile.SetSystemProfile(profile_proto, true);
       });
 
   // Register the file and allow the "checker" task to run.
