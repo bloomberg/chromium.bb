@@ -910,7 +910,9 @@ TEST_F(OfflinePageMetadataStoreTest, UpdateOfflinePage) {
   EXPECT_EQ(offline_page, offline_pages_[0]);
 }
 
-TEST_F(OfflinePageMetadataStoreTest, ClearAllOfflinePages) {
+// In current implementation Reset is a no-op. No pages are erased.
+// See bug 725122 for more info.
+TEST_F(OfflinePageMetadataStoreTest, ResetStoreDoesNotErase) {
   std::unique_ptr<OfflinePageMetadataStore> store(BuildStore());
 
   // Add 2 offline pages.
@@ -945,7 +947,6 @@ TEST_F(OfflinePageMetadataStoreTest, ClearAllOfflinePages) {
   EXPECT_EQ(LOAD, last_called_callback_);
   EXPECT_EQ(2U, offline_pages_.size());
 
-  // Clear all records from the store.
   store->Reset(base::Bind(&OfflinePageMetadataStoreTest::ResetCallback,
                           base::Unretained(this)));
   PumpLoop();
@@ -960,8 +961,9 @@ TEST_F(OfflinePageMetadataStoreTest, ClearAllOfflinePages) {
                  base::Unretained(this)));
   PumpLoop();
 
+  // Verify the store still loads with original content.
   EXPECT_EQ(LOAD, last_called_callback_);
-  ASSERT_EQ(0U, offline_pages_.size());
+  ASSERT_EQ(2U, offline_pages_.size());
 }
 
 TEST_F(OfflinePageMetadataStoreTest, ResetStore) {

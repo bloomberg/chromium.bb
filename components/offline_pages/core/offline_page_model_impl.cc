@@ -42,6 +42,12 @@ namespace {
 const base::TimeDelta kStorageManagerStartingDelay =
     base::TimeDelta::FromSeconds(20);
 
+// Number of times to try to initialize the underlying database.
+// TODO(dimich): Replace with a schema that eventually obliterates the database
+// if it has permanent damage. Note this DB contains data saved by user, so
+// need to be gentle.
+const int kInitializeAttemptsMax = 3;
+
 int64_t GenerateOfflineId() {
   return base::RandGenerator(std::numeric_limits<int64_t>::max()) + 1;
 }
@@ -306,6 +312,11 @@ void ReportPageHistogramsAfterAccess(const OfflinePageItem& offline_page_item,
       base::HistogramBase::kUmaTargetedHistogramFlag);
   histogram->Add(
       (access_time - offline_page_item.last_access_time).InMinutes());
+}
+
+void ReportInitializationAttemptsSpent(int attempts_spent) {
+  UMA_HISTOGRAM_EXACT_LINEAR("OfflinePages.Model.InitAttemptsSpent",
+                             attempts_spent, kInitializeAttemptsMax);
 }
 
 }  // namespace
@@ -658,6 +669,12 @@ void OfflinePageModelImpl::GetPagesByURLWhenLoadDone(
 }
 
 void OfflinePageModelImpl::CheckMetadataConsistency() {
+  DCHECK(is_loaded_);
+
+  // Avoid consistency check if disk store couldn't load.
+  if (store_->state() != StoreState::LOADED)
+    return;
+
   archive_manager_->GetAllArchives(
       base::Bind(&OfflinePageModelImpl::CheckMetadataConsistencyForArchivePaths,
                  weak_ptr_factory_.GetWeakPtr()));
@@ -778,17 +795,18 @@ void OfflinePageModelImpl::OnEnsureArchivesDirCreatedDone(
   UMA_HISTOGRAM_TIMES("OfflinePages.Model.ArchiveDirCreationTime",
                       base::TimeTicks::Now() - start_time);
 
-  const int kResetAttemptsLeft = 1;
   store_->Initialize(base::Bind(&OfflinePageModelImpl::OnStoreInitialized,
-                                weak_ptr_factory_.GetWeakPtr(), start_time,
-                                kResetAttemptsLeft));
+                                weak_ptr_factory_.GetWeakPtr(), start_time, 0));
 }
 
 void OfflinePageModelImpl::OnStoreInitialized(const base::TimeTicks& start_time,
-                                              int reset_attempts_left,
+                                              int init_attempts_spent,
                                               bool success) {
+  init_attempts_spent++;
+
   if (success) {
     DCHECK_EQ(store_->state(), StoreState::LOADED);
+    ReportInitializationAttemptsSpent(init_attempts_spent);
     store_->GetOfflinePages(
         base::Bind(&OfflinePageModelImpl::OnInitialGetOfflinePagesDone,
                    weak_ptr_factory_.GetWeakPtr(), start_time));
@@ -796,31 +814,29 @@ void OfflinePageModelImpl::OnStoreInitialized(const base::TimeTicks& start_time,
   }
 
   DCHECK_EQ(store_->state(), StoreState::FAILED_LOADING);
-  // If there are no more reset attempts left, stop here.
-  if (reset_attempts_left == 0) {
+  // If there are no more init attempts left, stop here.
+  if (init_attempts_spent >= kInitializeAttemptsMax) {
     FinalizeModelLoad();
     return;
   }
 
-  // Otherwise reduce the remaining attempts counter and reset store.
-  store_->Reset(base::Bind(&OfflinePageModelImpl::OnStoreResetDone,
-                           weak_ptr_factory_.GetWeakPtr(), start_time,
-                           reset_attempts_left - 1));
+  // The DB failed to load. If this is a transient condition (locks not
+  // yet released etc) chances are that a retry with a delay will succeed.
+  const base::TimeDelta delay = base::TimeDelta::FromMilliseconds(100);
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&OfflinePageModelImpl::RetryDbInitialization,
+                 weak_ptr_factory_.GetWeakPtr(), start_time,
+                 init_attempts_spent),
+      delay);
 }
 
-void OfflinePageModelImpl::OnStoreResetDone(const base::TimeTicks& start_time,
-                                            int reset_attempts_left,
-                                            bool success) {
-  if (success) {
-    DCHECK_EQ(store_->state(), StoreState::NOT_LOADED);
-    store_->Initialize(base::Bind(&OfflinePageModelImpl::OnStoreInitialized,
-                                  weak_ptr_factory_.GetWeakPtr(), start_time,
-                                  reset_attempts_left));
-    return;
-  }
-
-  DCHECK_EQ(store_->state(), StoreState::FAILED_RESET);
-  FinalizeModelLoad();
+void OfflinePageModelImpl::RetryDbInitialization(
+    const base::TimeTicks& start_time,
+    int init_attempts_spent) {
+  store_->Initialize(base::Bind(&OfflinePageModelImpl::OnStoreInitialized,
+                                weak_ptr_factory_.GetWeakPtr(), start_time,
+                                init_attempts_spent));
 }
 
 void OfflinePageModelImpl::OnInitialGetOfflinePagesDone(
@@ -843,6 +859,9 @@ void OfflinePageModelImpl::FinalizeModelLoad() {
 
   // All actions below are meant to be taken regardless of successful load of
   // the store.
+
+  UMA_HISTOGRAM_BOOLEAN("OfflinePages.Model.FinalLoadSuccessful",
+                        store_->state() == StoreState::LOADED);
 
   // Inform observers the load is done.
   for (Observer& observer : observers_)
