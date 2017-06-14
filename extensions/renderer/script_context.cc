@@ -178,29 +178,6 @@ content::RenderFrame* ScriptContext::GetRenderFrame() const {
   return NULL;
 }
 
-v8::Local<v8::Value> ScriptContext::CallFunction(
-    const v8::Local<v8::Function>& function,
-    int argc,
-    v8::Local<v8::Value> argv[]) const {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  v8::EscapableHandleScope handle_scope(isolate());
-  v8::Context::Scope scope(v8_context());
-
-  v8::MicrotasksScope microtasks(
-      isolate(), v8::MicrotasksScope::kDoNotRunMicrotasks);
-  if (!is_valid_) {
-    return handle_scope.Escape(
-        v8::Local<v8::Primitive>(v8::Undefined(isolate())));
-  }
-
-  v8::Local<v8::Object> global = v8_context()->Global();
-  if (!web_frame_)
-    return handle_scope.Escape(function->Call(global, argc, argv));
-  return handle_scope.Escape(
-      v8::Local<v8::Value>(web_frame_->CallFunctionEvenIfScriptDisabled(
-          function, global, argc, argv)));
-}
-
 void ScriptContext::SafeCallFunction(const v8::Local<v8::Function>& function,
                                      int argc,
                                      v8::Local<v8::Value> argv[]) {
@@ -525,6 +502,29 @@ v8::Local<v8::Value> ScriptContext::Runner::Call(
 gin::ContextHolder* ScriptContext::Runner::GetContextHolder() {
   v8::HandleScope handle_scope(context_->isolate());
   return gin::PerContextData::From(context_->v8_context())->context_holder();
+}
+
+v8::Local<v8::Value> ScriptContext::CallFunction(
+    const v8::Local<v8::Function>& function,
+    int argc,
+    v8::Local<v8::Value> argv[]) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  v8::EscapableHandleScope handle_scope(isolate());
+  v8::Context::Scope scope(v8_context());
+
+  v8::MicrotasksScope microtasks(isolate(),
+                                 v8::MicrotasksScope::kDoNotRunMicrotasks);
+  if (!is_valid_) {
+    return handle_scope.Escape(
+        v8::Local<v8::Primitive>(v8::Undefined(isolate())));
+  }
+
+  v8::Local<v8::Object> global = v8_context()->Global();
+  if (!web_frame_)
+    return handle_scope.Escape(function->Call(global, argc, argv));
+  return handle_scope.Escape(
+      v8::Local<v8::Value>(web_frame_->CallFunctionEvenIfScriptDisabled(
+          function, global, argc, argv)));
 }
 
 }  // namespace extensions
