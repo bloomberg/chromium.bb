@@ -98,6 +98,7 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   views::View* image_container_ = nullptr;
   ProportionalImageView* image_view_ = nullptr;
   std::vector<views::LabelButton*> action_buttons_;
+  std::vector<views::View*> item_views_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationViewMD);
 };

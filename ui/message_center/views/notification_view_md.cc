@@ -90,6 +90,41 @@ const gfx::ImageSkia GetProductIcon() {
   return gfx::CreateVectorIcon(kProductIcon, kSmallImageColor);
 }
 
+// ItemView ////////////////////////////////////////////////////////////////////
+
+// ItemViews are responsible for drawing each list notification item's title and
+// message next to each other within a single column.
+class ItemView : public views::View {
+ public:
+  explicit ItemView(const message_center::NotificationItem& item);
+  ~ItemView() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ItemView);
+};
+
+ItemView::ItemView(const message_center::NotificationItem& item) {
+  SetLayoutManager(
+      new views::BoxLayout(views::BoxLayout::kHorizontal, gfx::Insets(),
+                           message_center::kItemTitleToMessagePadding));
+
+  views::Label* title = new views::Label(item.title);
+  title->set_collapse_when_hidden(true);
+  title->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  title->SetEnabledColor(message_center::kRegularTextColor);
+  title->SetBackgroundColor(message_center::kDimTextBackgroundColor);
+  AddChildView(title);
+
+  views::Label* message = new views::Label(item.message);
+  message->set_collapse_when_hidden(true);
+  message->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  message->SetEnabledColor(message_center::kDimTextColor);
+  message->SetBackgroundColor(message_center::kDimTextBackgroundColor);
+  AddChildView(message);
+}
+
+ItemView::~ItemView() {}
+
 }  // anonymous namespace
 
 // ////////////////////////////////////////////////////////////
@@ -347,6 +382,8 @@ void NotificationViewMD::CreateOrUpdateMessageView(
   } else {
     message_view_->SetText(text);
   }
+
+  message_view_->SetVisible(notification.items().empty());
 }
 
 void NotificationViewMD::CreateOrUpdateProgressBarView(
@@ -356,7 +393,21 @@ void NotificationViewMD::CreateOrUpdateProgressBarView(
 
 void NotificationViewMD::CreateOrUpdateListItemViews(
     const Notification& notification) {
-  // TODO(yoshiki): Implement this.
+  for (auto* item_view : item_views_)
+    delete item_view;
+  item_views_.clear();
+
+  const std::vector<NotificationItem>& items = notification.items();
+
+  for (size_t i = 0; i < items.size() && i < kNotificationMaximumItems; ++i) {
+    ItemView* item_view = new ItemView(items[i]);
+    item_views_.push_back(item_view);
+    left_content_->AddChildView(item_view);
+  }
+
+  // Needed when CreateOrUpdateViews is called for update.
+  if (!item_views_.empty())
+    left_content_->InvalidateLayout();
 }
 
 void NotificationViewMD::CreateOrUpdateIconView(
@@ -485,6 +536,10 @@ bool NotificationViewMD::IsExpandable() {
   if (image_view_)
     return true;
 
+  // Expandable if there are multiple list items.
+  if (item_views_.size() > 1)
+    return true;
+
   // TODO(fukino): Expandable if both progress bar and message exist.
 
   return false;
@@ -507,6 +562,9 @@ void NotificationViewMD::UpdateViewForExpandedState(bool expanded) {
   if (image_container_)
     image_container_->SetVisible(expanded);
   actions_row_->SetVisible(expanded && actions_row_->has_children());
+  for (size_t i = 1; i < item_views_.size(); ++i) {
+    item_views_[i]->SetVisible(expanded);
+  }
 }
 
 void NotificationViewMD::UpdateControlButtonsVisibility() {
