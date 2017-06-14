@@ -37056,20 +37056,20 @@ from previous Chrome versions.
   <int value="3" label="Day changed"/>
 </enum>
 
-<enum name="VariationsSeedEmpty" type="int">
-  <int value="0" label="Seed Not Empty"/>
+<enum name="VariationsSeedExpiry" type="int">
+  <int value="0" label="Not Expired"/>
+  <int value="1" label="Fetch Time Missing"/>
+  <int value="2" label="Expired"/>
+</enum>
+
+<enum name="VariationsSeedLoadResult" type="int">
+  <int value="0" label="Seed Loaded Successfully"/>
   <int value="1" label="Seed Empty"/>
   <int value="2" label="Seed Corrupt (Obsolete)"/>
   <int value="3" label="Seed Signature Verification Failed"/>
   <int value="4" label="Seed Corrupt Base64 Data"/>
   <int value="5" label="Seed Corrupt Protobuf"/>
   <int value="6" label="Seed Corrupt Gzip Data"/>
-</enum>
-
-<enum name="VariationsSeedExpiry" type="int">
-  <int value="0" label="Not Expired"/>
-  <int value="1" label="Fetch Time Missing"/>
-  <int value="2" label="Expired"/>
 </enum>
 
 <enum name="VariationsSeedStoreResult" type="int">
