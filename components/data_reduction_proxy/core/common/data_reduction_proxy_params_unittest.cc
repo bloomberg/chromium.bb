@@ -373,6 +373,27 @@ TEST_F(DataReductionProxyParamsTest, LoFiPreviewFieldTrial) {
   }
 }
 
+TEST_F(DataReductionProxyParamsTest, TrustedSpdyProxyFieldTrial) {
+  const struct {
+    std::string trial_group_name;
+    bool expected_enabled;
+  } tests[] = {
+      {"Enabled", true},     {"Enabled_Control", true}, {"Control", false},
+      {"Disabled", false},   {"enabled", true},         {"Enabled", true},
+      {std::string(), true},
+  };
+
+  for (const auto& test : tests) {
+    variations::testing::ClearAllVariationParams();
+    base::FieldTrialList field_trial_list(nullptr);
+    base::FieldTrialList::CreateFieldTrial(
+        params::GetTrustedSpdyProxyFieldTrialName(), test.trial_group_name);
+
+    EXPECT_EQ(test.expected_enabled,
+              params::IsIncludedInTrustedSpdyProxyFieldTrial());
+  }
+}
+
 // Tests if the QUIC field trial is set correctly.
 TEST_F(DataReductionProxyParamsTest, QuicFieldTrial) {
   const struct {

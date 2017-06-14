@@ -120,7 +120,18 @@ const char* GetTrustedSpdyProxyFieldTrialName() {
 }
 
 bool IsIncludedInTrustedSpdyProxyFieldTrial() {
-  return IsIncludedInFieldTrial(GetTrustedSpdyProxyFieldTrialName());
+  if (base::StartsWith(
+          FieldTrialList::FindFullName(GetTrustedSpdyProxyFieldTrialName()),
+          kControl, base::CompareCase::SENSITIVE)) {
+    return false;
+  }
+  if (base::StartsWith(
+          FieldTrialList::FindFullName(GetTrustedSpdyProxyFieldTrialName()),
+          kDisabled, base::CompareCase::SENSITIVE)) {
+    return false;
+  }
+  // Trusted SPDY proxy experiment is enabled by default.
+  return true;
 }
 
 const char* GetLoFiFieldTrialName() {
