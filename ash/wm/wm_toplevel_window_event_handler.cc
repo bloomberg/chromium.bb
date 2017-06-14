@@ -258,6 +258,9 @@ void WmToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event,
     }
     case ui::ET_GESTURE_BEGIN: {
       if (event->details().touch_points() == 1) {
+        first_finger_touch_point_ = event->location();
+        aura::Window::ConvertPointToTarget(target, target->parent(),
+                                           &first_finger_touch_point_);
         first_finger_hittest_ =
             GetNonClientComponent(target, event->location());
       } else if (window_resizer_.get()) {
@@ -275,9 +278,7 @@ void WmToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event,
             GetNonClientComponent(target, event->location());
         if (CanStartTwoFingerMove(target, first_finger_hittest_,
                                   second_finger_hittest)) {
-          gfx::Point location_in_parent =
-              event->details().bounding_box().CenterPoint();
-          AttemptToStartDrag(target, location_in_parent, HTCAPTION,
+          AttemptToStartDrag(target, first_finger_touch_point_, HTCAPTION,
                              ::wm::WINDOW_MOVE_SOURCE_TOUCH, EndClosure());
           event->StopPropagation();
         }

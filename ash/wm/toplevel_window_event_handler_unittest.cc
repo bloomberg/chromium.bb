@@ -540,6 +540,146 @@ TEST_F(ToplevelWindowEventHandlerTest,
   EXPECT_FALSE(wm::GetWindowState(target.get())->IsMinimized());
 }
 
+TEST_F(ToplevelWindowEventHandlerTest, TwoFingerDragDifferentDelta) {
+  std::unique_ptr<aura::Window> target(CreateWindow(HTCAPTION));
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                     target.get());
+
+  const int kSteps = 10;
+  const int kTouchPoints = 2;
+  gfx::Point points[kTouchPoints] = {
+      gfx::Point(5, 5),   // Within caption.
+      gfx::Point(55, 5),  // Within caption.
+  };
+  gfx::Vector2d delta[kTouchPoints] = {
+      gfx::Vector2d(80, 80), gfx::Vector2d(20, 20),
+  };
+  int delay_adding_finger_ms[kTouchPoints] = {0, 0};
+  int delay_releasing_finger_ms[kTouchPoints] = {150, 150};
+
+  gfx::Rect bounds = target->bounds();
+  // Swipe right and down starting with two fingers. Two fingers have different
+  // moving deltas. The window position should move along the average vector of
+  // these two fingers.
+  generator.GestureMultiFingerScrollWithDelays(
+      kTouchPoints, points, delta, delay_adding_finger_ms,
+      delay_releasing_finger_ms, 15, kSteps);
+  bounds += gfx::Vector2d(50, 50);
+  EXPECT_EQ(bounds.ToString(), target->bounds().ToString());
+}
+
+TEST_F(ToplevelWindowEventHandlerTest, TwoFingerDragDelayAddFinger) {
+  std::unique_ptr<aura::Window> target(CreateWindow(HTCAPTION));
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                     target.get());
+
+  const int kSteps = 10;
+  const int kTouchPoints = 2;
+  gfx::Point points[kTouchPoints] = {
+      gfx::Point(5, 5),   // Within caption.
+      gfx::Point(55, 5),  // Within caption.
+  };
+  gfx::Vector2d delta[kTouchPoints] = {
+      gfx::Vector2d(50, 50), gfx::Vector2d(50, 50),
+  };
+  int delay_adding_finger_ms[kTouchPoints] = {0, 90};
+  int delay_releasing_finger_ms[kTouchPoints] = {150, 150};
+
+  gfx::Rect bounds = target->bounds();
+  // Swipe right and down starting with one fingers. Add another finger at 90ms
+  // and continue dragging. The drag should continue without interrupt.
+  generator.GestureMultiFingerScrollWithDelays(
+      kTouchPoints, points, delta, delay_adding_finger_ms,
+      delay_releasing_finger_ms, 15, kSteps);
+  bounds += gfx::Vector2d(50, 50);
+  EXPECT_EQ(bounds.ToString(), target->bounds().ToString());
+}
+
+TEST_F(ToplevelWindowEventHandlerTest, TwoFingerDragDelayReleaseFinger) {
+  std::unique_ptr<aura::Window> target(CreateWindow(HTCAPTION));
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                     target.get());
+
+  const int kSteps = 10;
+  const int kTouchPoints = 2;
+  gfx::Point points[kTouchPoints] = {
+      gfx::Point(5, 5),   // Within caption.
+      gfx::Point(55, 5),  // Within caption.
+  };
+  gfx::Vector2d delta[kTouchPoints] = {
+      gfx::Vector2d(50, 50), gfx::Vector2d(50, 50),
+  };
+  int delay_adding_finger_ms[kTouchPoints] = {0, 0};
+  int delay_releasing_finger_ms[kTouchPoints] = {150, 90};
+
+  gfx::Rect bounds = target->bounds();
+  // Swipe right and down starting with two fingers. Remove one finger at 90ms
+  // and continue dragging. The drag should continue without interrupt.
+  generator.GestureMultiFingerScrollWithDelays(
+      kTouchPoints, points, delta, delay_adding_finger_ms,
+      delay_releasing_finger_ms, 15, kSteps);
+  bounds += gfx::Vector2d(50, 50);
+  EXPECT_EQ(bounds.ToString(), target->bounds().ToString());
+}
+
+TEST_F(ToplevelWindowEventHandlerTest,
+       TwoFingerDragDelayAdd2ndAndRelease2ndFinger) {
+  std::unique_ptr<aura::Window> target(CreateWindow(HTCAPTION));
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                     target.get());
+
+  const int kSteps = 10;
+  const int kTouchPoints = 2;
+  gfx::Point points[kTouchPoints] = {
+      gfx::Point(5, 5),   // Within caption.
+      gfx::Point(55, 5),  // Within caption.
+  };
+  gfx::Vector2d delta[kTouchPoints] = {
+      gfx::Vector2d(50, 50), gfx::Vector2d(50, 50),
+  };
+  int delay_adding_finger_ms[kTouchPoints] = {0, 30};
+  int delay_releasing_finger_ms[kTouchPoints] = {150, 120};
+
+  gfx::Rect bounds = target->bounds();
+  // Swipe right and down starting with one fingers. Add second finger at 30ms,
+  // continue dragging, release second finger at 120ms and continue dragging.
+  // The drag should continue without interrupt.
+  generator.GestureMultiFingerScrollWithDelays(
+      kTouchPoints, points, delta, delay_adding_finger_ms,
+      delay_releasing_finger_ms, 15, kSteps);
+  bounds += gfx::Vector2d(50, 50);
+  EXPECT_EQ(bounds.ToString(), target->bounds().ToString());
+}
+
+TEST_F(ToplevelWindowEventHandlerTest,
+       TwoFingerDragDelayAdd2ndAndRelease1stFinger) {
+  std::unique_ptr<aura::Window> target(CreateWindow(HTCAPTION));
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
+                                     target.get());
+
+  const int kSteps = 10;
+  const int kTouchPoints = 2;
+  gfx::Point points[kTouchPoints] = {
+      gfx::Point(5, 5),   // Within caption.
+      gfx::Point(55, 5),  // Within caption.
+  };
+  gfx::Vector2d delta[kTouchPoints] = {
+      gfx::Vector2d(50, 50), gfx::Vector2d(50, 50),
+  };
+  int delay_adding_finger_ms[kTouchPoints] = {0, 30};
+  int delay_releasing_finger_ms[kTouchPoints] = {120, 150};
+
+  gfx::Rect bounds = target->bounds();
+  // Swipe right and down starting with one fingers. Add second finger at 30ms,
+  // continue dragging, release first finger at 120ms and continue dragging.
+  // The drag should continue without interrupt.
+  generator.GestureMultiFingerScrollWithDelays(
+      kTouchPoints, points, delta, delay_adding_finger_ms,
+      delay_releasing_finger_ms, 15, kSteps);
+  bounds += gfx::Vector2d(50, 50);
+  EXPECT_EQ(bounds.ToString(), target->bounds().ToString());
+}
+
 TEST_F(ToplevelWindowEventHandlerTest, GestureDragToRestore) {
   std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithDelegate(
       new TestWindowDelegate(HTCAPTION), 0, gfx::Rect(10, 20, 30, 40)));

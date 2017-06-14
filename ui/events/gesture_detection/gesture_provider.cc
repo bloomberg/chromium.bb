@@ -327,6 +327,9 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
           ET_GESTURE_SCROLL_BEGIN, -raw_distance_x, -raw_distance_y);
       scroll_details.set_device_type(GestureDeviceType::DEVICE_TOUCHSCREEN);
 
+      // Scroll focus point always starts with the first touch down point.
+      scroll_focus_point_.SetPoint(e1.GetX(), e1.GetY());
+
       // Use the co-ordinates from the touch down, as these co-ordinates are
       // used to determine which layer the scroll should affect.
       Send(CreateGesture(scroll_details, e2.GetPointerId(), e2.GetToolType(),
@@ -336,18 +339,20 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
                          e2.GetFlags()));
       DCHECK(scroll_event_sent_);
     }
+    scroll_focus_point_.SetPoint(scroll_focus_point_.x() - raw_distance_x,
+                                 scroll_focus_point_.y() - raw_distance_y);
 
     GestureEventDetails scroll_details(ET_GESTURE_SCROLL_UPDATE, -distance_x,
                                        -distance_y);
     scroll_details.set_device_type(GestureDeviceType::DEVICE_TOUCHSCREEN);
     const gfx::RectF bounding_box = GetBoundingBox(e2, scroll_details.type());
-    const gfx::PointF center = bounding_box.CenterPoint();
     const gfx::PointF raw_center =
-        center + gfx::Vector2dF(e2.GetRawOffsetX(), e2.GetRawOffsetY());
+        scroll_focus_point_ +
+        gfx::Vector2dF(e2.GetRawOffsetX(), e2.GetRawOffsetY());
     Send(CreateGesture(scroll_details, e2.GetPointerId(), e2.GetToolType(),
-                       e2.GetEventTime(), center.x(), center.y(),
-                       raw_center.x(), raw_center.y(), e2.GetPointerCount(),
-                       bounding_box, e2.GetFlags()));
+                       e2.GetEventTime(), scroll_focus_point_.x(),
+                       scroll_focus_point_.y(), raw_center.x(), raw_center.y(),
+                       e2.GetPointerCount(), bounding_box, e2.GetFlags()));
 
     return true;
   }
@@ -747,6 +752,9 @@ class GestureProvider::GestureListenerImpl : public ScaleGestureListener,
   // sequence.
   bool show_press_event_sent_;
 
+  // The scroll focus point is set to the first touch down point when scroll
+  // begins and is later updated based on the delta of touch points.
+  gfx::PointF scroll_focus_point_;
   DISALLOW_COPY_AND_ASSIGN(GestureListenerImpl);
 };
 
