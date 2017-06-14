@@ -14,6 +14,11 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/views/animation/flood_fill_ink_drop_ripple.h"
+#include "ui/views/animation/ink_drop_highlight.h"
+#include "ui/views/animation/ink_drop_impl.h"
+#include "ui/views/animation/ink_drop_mask.h"
+#include "ui/views/animation/ink_drop_painted_layer_delegates.h"
 #include "ui/views/controls/button/custom_button.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -21,103 +26,137 @@ namespace app_list {
 
 namespace {
 
-const int kPreferredWidth = 58;
+constexpr int kNormalButtonRadius = 3;
+constexpr int kSelectedButtonRadius = 4;
+constexpr int kInkDropRadius = 8;
+// The padding on top/bottom side of each button.
+constexpr int kButtonPadding = 12;
+// The padding of a list of buttons as a button strip.
+constexpr int kButtonStripPadding = 24;
+constexpr int kMaxButtonRadius = 8;
+constexpr int kPreferredButtonStripWidth =
+    kMaxButtonRadius * 2 + kButtonStripPadding * 2;
 
-const int kMaxButtonSpacing = 18;
-const int kMinButtonSpacing = 4;
-const int kMaxButtonHeight = 68;
-const int kMinButtonHeight = 28;
-const int kButtonWidth = 6;
-const int kButtonCornerRadius = 2;
-const int kButtonStripPadding = 20;
+// The selected button color.
+constexpr SkColor kSelectedButtonColor = SK_ColorWHITE;
+// The normal button color (54% white).
+constexpr SkColor kNormalColor = SkColorSetA(SK_ColorWHITE, 138);
+constexpr SkColor kInkDropBaseColor = SK_ColorWHITE;
+constexpr SkColor kInkDropRippleColor = SkColorSetA(kInkDropBaseColor, 20);
+constexpr SkColor kInkDropHighlightColor = SkColorSetA(kInkDropBaseColor, 15);
+
+constexpr SkScalar kStrokeWidth = SkIntToScalar(1);
 
 class PageSwitcherButton : public views::CustomButton {
  public:
   explicit PageSwitcherButton(views::ButtonListener* listener)
-      : views::CustomButton(listener),
-        button_height_(kMaxButtonHeight),
-        selected_range_(0) {}
-  ~PageSwitcherButton() override {}
-
-  void SetSelectedRange(double selected_range) {
-    if (selected_range_ == selected_range)
-      return;
-
-    selected_range_ = selected_range;
-    SchedulePaint();
+      : views::CustomButton(listener) {
+    SetInkDropMode(InkDropMode::ON);
   }
 
-  void set_button_height(int button_height) { button_height_ = button_height; }
+  ~PageSwitcherButton() override {}
+
+  void SetSelected(bool selected) {
+    if (selected == selected_)
+      return;
+
+    selected_ = selected;
+    SchedulePaint();
+  }
 
   // Overridden from views::View:
   gfx::Size CalculatePreferredSize() const override {
-    return gfx::Size(kButtonWidth, button_height_);
+    return gfx::Size(kMaxButtonRadius * 2, kMaxButtonRadius * 2);
   }
 
   void PaintButtonContents(gfx::Canvas* canvas) override {
-    if (state() == STATE_HOVERED)
-      PaintButton(canvas, kPagerHoverColor);
-    else
-      PaintButton(canvas, kPagerNormalColor);
+    PaintButton(canvas, BuildPaintButtonInfo());
   }
 
-  void OnGestureEvent(ui::GestureEvent* event) override {
-    CustomButton::OnGestureEvent(event);
+ protected:
+  bool IsTriggerableEvent(const ui::Event& event) override {
+    return event.IsMouseEvent() &&
+           (triggerable_event_flags() & event.flags()) != 0;
+  }
 
-    if (event->type() == ui::ET_GESTURE_TAP_DOWN)
-      SetState(views::CustomButton::STATE_HOVERED);
-    else if (event->type() == ui::ET_GESTURE_TAP_CANCEL ||
-             event->type() == ui::ET_GESTURE_TAP)
-      SetState(views::CustomButton::STATE_NORMAL);
-    SchedulePaint();
+  std::unique_ptr<views::InkDrop> CreateInkDrop() override {
+    std::unique_ptr<views::InkDropImpl> ink_drop =
+        CustomButton::CreateDefaultInkDropImpl();
+    ink_drop->SetShowHighlightOnHover(false);
+    ink_drop->SetAutoHighlightMode(
+        views::InkDropImpl::AutoHighlightMode::SHOW_ON_RIPPLE);
+    return std::move(ink_drop);
+  }
+
+  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
+    return base::MakeUnique<views::CircleInkDropMask>(
+        size(), GetLocalBounds().CenterPoint(), kMaxButtonRadius);
+  }
+
+  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
+    gfx::Point center = GetLocalBounds().CenterPoint();
+    gfx::Rect bounds(center.x() - kMaxButtonRadius,
+                     center.y() - kMaxButtonRadius, 2 * kMaxButtonRadius,
+                     2 * kMaxButtonRadius);
+    return base::MakeUnique<views::FloodFillInkDropRipple>(
+        size(), GetLocalBounds().InsetsFrom(bounds),
+        GetInkDropCenterBasedOnLastEvent(), kInkDropRippleColor, 1.0f);
+  }
+
+  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
+      const override {
+    return base::MakeUnique<views::InkDropHighlight>(
+        gfx::PointF(GetLocalBounds().CenterPoint()),
+        base::MakeUnique<views::CircleLayerDelegate>(kInkDropHighlightColor,
+                                                     kInkDropRadius));
+  }
+
+  void NotifyClick(const ui::Event& event) override {
+    CustomButton::NotifyClick(event);
+    GetInkDrop()->AnimateToState(views::InkDropState::ACTION_TRIGGERED);
   }
 
  private:
-  // Paints a button that has two rounded corner at bottom.
-  void PaintButton(gfx::Canvas* canvas, SkColor base_color) {
-    gfx::Rect rect(GetContentsBounds());
-    rect.ClampToCenteredSize(gfx::Size(kButtonWidth, button_height_));
+  // Stores the information of how to paint the button.
+  struct PaintButtonInfo {
+    SkColor color;
+    cc::PaintFlags::Style style;
+    SkScalar radius;
+    SkScalar stroke_width;
+  };
 
+  // Returns the information of how to paint selected/normal button.
+  PaintButtonInfo BuildPaintButtonInfo() {
+    PaintButtonInfo info;
+    if (selected_) {
+      info.color = kSelectedButtonColor;
+      info.style = cc::PaintFlags::kFill_Style;
+      info.radius = SkIntToScalar(kSelectedButtonRadius);
+      info.stroke_width = SkIntToScalar(0);
+    } else {
+      info.color = kNormalColor;
+      info.style = cc::PaintFlags::kStroke_Style;
+      info.radius = SkIntToScalar(kNormalButtonRadius);
+      info.stroke_width = kStrokeWidth;
+    }
+    return info;
+  }
+
+  // Paints a button based on the |info|.
+  void PaintButton(gfx::Canvas* canvas, PaintButtonInfo info) {
+    gfx::Rect rect(GetContentsBounds());
     SkPath path;
-    path.addRoundRect(gfx::RectToSkRect(rect),
-                      SkIntToScalar(kButtonCornerRadius),
-                      SkIntToScalar(kButtonCornerRadius));
+    path.addCircle(rect.CenterPoint().x(), rect.CenterPoint().y(), info.radius);
 
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
-    flags.setStyle(cc::PaintFlags::kFill_Style);
-    flags.setColor(base_color);
+    flags.setStyle(info.style);
+    flags.setColor(info.color);
     canvas->DrawPath(path, flags);
-
-    int selected_start_y = 0;
-    int selected_height = 0;
-    if (selected_range_ > 0) {
-      selected_height = selected_range_ * rect.height();
-    } else if (selected_range_ < 0) {
-      selected_height = -selected_range_ * rect.height();
-      selected_start_y = rect.bottom() - selected_height;
-    }
-
-    if (selected_height) {
-      gfx::Rect selected_rect(rect);
-      selected_rect.set_y(selected_start_y);
-      selected_rect.set_height(selected_height);
-
-      SkPath selected_path;
-      selected_path.addRoundRect(gfx::RectToSkRect(selected_rect),
-                                 SkIntToScalar(kButtonCornerRadius),
-                                 SkIntToScalar(kButtonCornerRadius));
-      flags.setColor(kPagerSelectedColor);
-      canvas->DrawPath(selected_path, flags);
-    }
   }
 
-  int button_height_;
-
-  // [-1, 1] range that represents the portion of the button that should be
-  // painted with kSelectedColor. Positive range starts from top side and
-  // negative range starts from the bottom side.
-  double selected_range_;
+  // If this button is selected, set to true. By default, set to false;
+  bool selected_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(PageSwitcherButton);
 };
@@ -131,6 +170,10 @@ PageSwitcherButton* GetButtonByIndex(views::View* buttons, int index) {
 
 PageSwitcherVertical::PageSwitcherVertical(PaginationModel* model)
     : model_(model), buttons_(new views::View) {
+  buttons_->SetLayoutManager(new views::BoxLayout(
+      views::BoxLayout::kVertical,
+      gfx::Insets(kButtonStripPadding, kButtonStripPadding), kButtonPadding));
+
   AddChildView(buttons_);
 
   TotalPagesChanged();
@@ -179,13 +222,12 @@ void PageSwitcherVertical::UpdateUIForDragPoint(const gfx::Point& point) {
 gfx::Size PageSwitcherVertical::CalculatePreferredSize() const {
   // Always return a size with correct width so that container resize is not
   // needed when more pages are added.
-  return gfx::Size(kPreferredWidth, buttons_->GetPreferredSize().height());
+  return gfx::Size(kPreferredButtonStripWidth,
+                   buttons_->GetPreferredSize().height());
 }
 
 void PageSwitcherVertical::Layout() {
   gfx::Rect rect(GetContentsBounds());
-
-  CalculateButtonHeightAndSpacing(rect.height());
 
   // Makes |buttons_| vertically center and horizontally fill.
   gfx::Size buttons_size(buttons_->GetPreferredSize());
@@ -193,38 +235,6 @@ void PageSwitcherVertical::Layout() {
                            rect.CenterPoint().y() - buttons_size.height() / 2,
                            rect.width(), buttons_size.height());
   buttons_->SetBoundsRect(gfx::IntersectRects(rect, buttons_bounds));
-}
-
-void PageSwitcherVertical::CalculateButtonHeightAndSpacing(
-    int contents_height) {
-  const int button_count = buttons_->child_count();
-  if (!button_count)
-    return;
-
-  contents_height -= 2 * kButtonStripPadding;
-
-  int button_height = kMinButtonHeight;
-  int button_spacing = kMinButtonSpacing;
-  if (button_count > 1) {
-    button_spacing =
-        (contents_height - button_height * button_count) / (button_count - 1);
-    button_spacing = std::min(kMaxButtonSpacing,
-                              std::max(kMinButtonSpacing, button_spacing));
-  }
-
-  button_height =
-      (contents_height - (button_count - 1) * button_spacing) / button_count;
-  button_height =
-      std::min(kMaxButtonHeight, std::max(kMinButtonHeight, button_height));
-
-  buttons_->SetLayoutManager(new views::BoxLayout(
-      views::BoxLayout::kVertical, gfx::Insets(kButtonStripPadding, 0),
-      button_spacing));
-  for (int i = 0; i < button_count; ++i) {
-    PageSwitcherButton* button =
-        static_cast<PageSwitcherButton*>(buttons_->child_at(i));
-    button->set_button_height(button_height);
-  }
 }
 
 void PageSwitcherVertical::ButtonPressed(views::Button* sender,
@@ -241,7 +251,7 @@ void PageSwitcherVertical::TotalPagesChanged() {
   buttons_->RemoveAllChildViews(true);
   for (int i = 0; i < model_->total_pages(); ++i) {
     PageSwitcherButton* button = new PageSwitcherButton(this);
-    button->SetSelectedRange(i == model_->selected_page() ? 1 : 0);
+    button->SetSelected(i == model_->selected_page() ? true : false);
     buttons_->AddChildView(button);
   }
   buttons_->SetVisible(model_->total_pages() > 1);
@@ -251,28 +261,13 @@ void PageSwitcherVertical::TotalPagesChanged() {
 void PageSwitcherVertical::SelectedPageChanged(int old_selected,
                                                int new_selected) {
   if (old_selected >= 0 && old_selected < buttons_->child_count())
-    GetButtonByIndex(buttons_, old_selected)->SetSelectedRange(0);
+    GetButtonByIndex(buttons_, old_selected)->SetSelected(false);
   if (new_selected >= 0 && new_selected < buttons_->child_count())
-    GetButtonByIndex(buttons_, new_selected)->SetSelectedRange(1);
+    GetButtonByIndex(buttons_, new_selected)->SetSelected(true);
 }
 
 void PageSwitcherVertical::TransitionStarted() {}
 
-void PageSwitcherVertical::TransitionChanged() {
-  const int current_page = model_->selected_page();
-  const int target_page = model_->transition().target_page;
-
-  double progress = model_->transition().progress;
-  double remaining = progress - 1;
-
-  if (current_page > target_page) {
-    remaining = -remaining;
-    progress = -progress;
-  }
-
-  GetButtonByIndex(buttons_, current_page)->SetSelectedRange(remaining);
-  if (model_->is_valid_page(target_page))
-    GetButtonByIndex(buttons_, target_page)->SetSelectedRange(progress);
-}
+void PageSwitcherVertical::TransitionChanged() {}
 
 }  // namespace app_list
