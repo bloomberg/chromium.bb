@@ -21,7 +21,6 @@ import android.graphics.drawable.Icon;
 import android.os.Build;
 
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.notifications.channels.ChannelDefinitions;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 
 import java.util.ArrayList;
@@ -127,8 +126,7 @@ public abstract class NotificationBuilderBase {
     protected int mPriority;
     private Bitmap mLargeIcon;
 
-    public NotificationBuilderBase(
-            Resources resources, @ChannelDefinitions.ChannelId String channelId) {
+    public NotificationBuilderBase(Resources resources, String channelId) {
         mLargeIconWidthPx =
                 resources.getDimensionPixelSize(android.R.dimen.notification_large_icon_width);
         mLargeIconHeightPx =

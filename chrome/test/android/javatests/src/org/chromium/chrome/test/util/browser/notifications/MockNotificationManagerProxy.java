@@ -136,6 +136,14 @@ public class MockNotificationManagerProxy implements NotificationManagerProxy {
         mMutationCount++;
     }
 
+    @Override
+    public Channel getNotificationChannel(String channelId) {
+        for (Channel channel : mChannels) {
+            if (channel.getId().equals(channelId)) return channel;
+        }
+        return null;
+    }
+
     private static String makeKey(int id, @Nullable String tag) {
         String key = Integer.toString(id);
         if (tag != null) key += KEY_SEPARATOR + tag;

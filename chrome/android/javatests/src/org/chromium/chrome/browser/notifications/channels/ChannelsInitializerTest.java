@@ -42,7 +42,7 @@ import java.util.List;
  */
 @RunWith(BaseJUnit4ClassRunner.class)
 public class ChannelsInitializerTest {
-    private static final String MISCELLANEOUS_CHANNEL_ID = "miscellaneous";
+    static final String MISCELLANEOUS_CHANNEL_ID = "miscellaneous";
     private ChannelsInitializer mChannelsInitializer;
     private NotificationManagerProxy mNotificationManagerProxy;
     private Context mContext;

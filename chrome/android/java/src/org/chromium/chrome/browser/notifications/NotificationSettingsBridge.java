@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.notifications;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.chrome.browser.notifications.channels.SiteChannelsManager;
 
 /**
  * Interface for native code to interact with Android notification channels.
@@ -23,47 +24,46 @@ public class NotificationSettingsBridge {
      * @param origin The site origin to be used as the channel name.
      * @param enabled True if the channel should be initially enabled, false if
      *                it should start off as blocked.
-     * @return true if the channel was successfully created, false otherwise.
      */
     @CalledByNative
-    static boolean createChannel(String origin, boolean enabled) {
-        // TODO(crbug.com/700377) Actually construct a channel.
-        return false;
+    static void createChannel(String origin, boolean enabled) {
+        SiteChannelsManager.getInstance().createSiteChannel(origin, enabled);
     }
 
     @CalledByNative
     static @NotificationChannelStatus int getChannelStatus(String origin) {
-        // TODO(crbug.com/700377) Actually check channel status.
-        return NotificationChannelStatus.UNAVAILABLE;
+        return SiteChannelsManager.getInstance().getChannelStatus(origin);
     }
 
     @CalledByNative
     static SiteChannel[] getSiteChannels() {
-        // TODO(crbug.com/700377) Actually get site channels.
-        return new SiteChannel[] {};
+        return SiteChannelsManager.getInstance().getSiteChannels();
     }
 
     @CalledByNative
     static void deleteChannel(String origin) {
-        // TODO(crbug.com/700377) Actually delete channel.
+        SiteChannelsManager.getInstance().deleteSiteChannel(origin);
     }
 
-    static class SiteChannel {
+    /**
+     * Helper type for passing site channel objects across the JNI.
+     */
+    public static class SiteChannel {
         private final String mOrigin;
         private final @NotificationChannelStatus int mStatus;
 
-        private SiteChannel(String origin, @NotificationChannelStatus int status) {
+        public SiteChannel(String origin, @NotificationChannelStatus int status) {
             mOrigin = origin;
             mStatus = status;
         }
 
         @CalledByNative("SiteChannel")
-        private String getOrigin() {
+        public String getOrigin() {
             return mOrigin;
         }
 
         @CalledByNative("SiteChannel")
-        private @NotificationChannelStatus int getStatus() {
+        public @NotificationChannelStatus int getStatus() {
             return mStatus;
         }
     }

@@ -43,14 +43,18 @@ public class ChannelsInitializer {
 
     /**
      * Ensures the given channel has been created on the notification manager so a notification
-     * can be safely posted to it. This should only be used for channels that are predefined in
-     * {@link ChannelDefinitions.PredefinedChannels}.
+     * can be safely posted to it. This should only be used for channel ids with an entry in
+     * {@link ChannelDefinitions.PredefinedChannels}, or that start with a known prefix.
      *
      * Calling this is a (potentially lengthy) no-op if the channel has already been created.
      *
      * @param channelId The ID of the channel to be initialized.
      */
-    public void ensureInitialized(@ChannelDefinitions.ChannelId String channelId) {
+    public void ensureInitialized(String channelId) {
+        if (channelId.startsWith(ChannelDefinitions.CHANNEL_ID_PREFIX_SITES)) {
+            // TODO(crbug.com/700377): Ensure site channels are initialized too, via native.
+            return;
+        }
         ChannelDefinitions.PredefinedChannel predefinedChannel =
                 ChannelDefinitions.getChannelFromId(channelId);
         if (predefinedChannel == null) {
@@ -58,7 +62,7 @@ public class ChannelsInitializer {
         }
         // Channel group must be created before the channel.
         mNotificationManager.createNotificationChannelGroup(
-                ChannelDefinitions.getChannelGroupFromId(predefinedChannel));
+                ChannelDefinitions.getChannelGroupForChannel(predefinedChannel));
         mNotificationManager.createNotificationChannel(predefinedChannel.toChannel(mResources));
     }
 }
