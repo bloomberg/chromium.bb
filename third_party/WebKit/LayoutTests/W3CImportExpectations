@@ -398,7 +398,7 @@ external/wpt/tools [ Skip ]
 ## Owners: bsheedy@chromium.org
 # external/wpt/webvr [ Pass ]
 external/wpt/wai-aria [ Skip ]
-## Owners: suzyh@chromium.org
+## Owners: meade@chromium.org
 # external/wpt/web-animations [ Pass ]
 ## Owners: hongchan@chromium.org, rtoy@chromium.org
 # external/wpt/webaudio [ Pass ]
