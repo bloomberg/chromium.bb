@@ -9,6 +9,10 @@
 #import "ios/web/test/wk_web_view_crash_utils.h"
 #include "testing/gtest/include/gtest/gtest-spi.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 // Fixture to test that the WebTest fixture properly fails tests when the render
@@ -17,15 +21,15 @@ class WebTestFixtureTest : public web::WebTestWithWebController {
  protected:
   void SetUp() override {
     web::WebTestWithWebController::SetUp();
-    web_view_.reset([web::BuildTerminatedWKWebView() retain]);
-    base::scoped_nsobject<TestWebViewContentView> web_view_content_view(
+    web_view_ = web::BuildTerminatedWKWebView();
+    TestWebViewContentView* web_view_content_view =
         [[TestWebViewContentView alloc]
             initWithMockWebView:web_view_
-                     scrollView:[web_view_ scrollView]]);
+                     scrollView:[web_view_ scrollView]];
     [web_controller() injectWebViewContentView:web_view_content_view];
   }
 
-  base::scoped_nsobject<WKWebView> web_view_;
+  WKWebView* web_view_;
 };
 
 // Tests that the WebTest fixture triggers a test failure when a render process
