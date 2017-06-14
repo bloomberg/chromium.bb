@@ -30,16 +30,6 @@ namespace subresource_filter {
 class FirstPartyOrigin;
 class MemoryMappedRuleset;
 
-// Computes whether/how subresource filtering should be activated while loading
-// |document_url| in a frame, based on the parent document's |activation_state|,
-// the |parent_document_origin|, as well as any applicable deactivation rules in
-// non-null |ruleset|.
-ActivationState ComputeActivationState(
-    const GURL& document_url,
-    const url::Origin& parent_document_origin,
-    const ActivationState& parent_activation_state,
-    const MemoryMappedRuleset* ruleset);
-
 // Performs filtering of subresource loads in the scope of a given document.
 class DocumentSubresourceFilter {
  public:

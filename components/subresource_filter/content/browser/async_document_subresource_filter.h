@@ -22,6 +22,18 @@
 
 namespace subresource_filter {
 
+class MemoryMappedRuleset;
+
+// Computes whether/how subresource filtering should be activated while loading
+// |document_url| in a frame, based on the parent document's |activation_state|,
+// the |parent_document_origin|, as well as any applicable deactivation rules in
+// non-null |ruleset|.
+ActivationState ComputeActivationState(
+    const GURL& document_url,
+    const url::Origin& parent_document_origin,
+    const ActivationState& parent_activation_state,
+    const MemoryMappedRuleset* ruleset);
+
 // An asynchronous wrapper around DocumentSubresourceFilter (DSF).
 //
 // It is accessed on the UI thread and owns a DSF living on a dedicated
