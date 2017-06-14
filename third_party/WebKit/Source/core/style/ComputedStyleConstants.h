@@ -288,7 +288,7 @@ enum DraggableRegionMode {
   kDraggableRegionNoDrag
 };
 
-enum EIsolation { kIsolationAuto, kIsolationIsolate };
+enum class EIsolation { kAuto, kIsolate };
 
 static const size_t kContainmentBits = 4;
 enum Containment {
