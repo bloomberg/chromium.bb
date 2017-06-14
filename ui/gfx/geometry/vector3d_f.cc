@@ -10,6 +10,7 @@
 
 namespace {
 const float kRadiansToDegrees = 180.0f / 3.14159265f;
+const double kEpsilon = 1.0e-6;
 }
 
 namespace gfx {
@@ -59,6 +60,15 @@ void Vector3dF::Cross(const Vector3dF& other) {
   x_ = x;
   y_ = y;
   z_ = z;
+}
+
+bool Vector3dF::GetNormalized(Vector3dF* out) const {
+  double length_squared = LengthSquared();
+  *out = *this;
+  if (length_squared < kEpsilon * kEpsilon)
+    return false;
+  out->Scale(1 / sqrt(length_squared));
+  return true;
 }
 
 float DotProduct(const Vector3dF& lhs, const Vector3dF& rhs) {

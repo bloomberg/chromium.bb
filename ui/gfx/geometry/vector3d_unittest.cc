@@ -318,4 +318,30 @@ TEST(Vector3dTest, ClockwiseAngleBetweenVectorsInDegress) {
   }
 }
 
+TEST(Vector3dTest, GetNormalized) {
+  const struct {
+    bool expected;
+    gfx::Vector3dF v;
+    gfx::Vector3dF normalized;
+  } tests[] = {
+      {false, gfx::Vector3dF(0, 0, 0), gfx::Vector3dF(0, 0, 0)},
+      {false,
+       gfx::Vector3dF(std::numeric_limits<float>::min(),
+                      std::numeric_limits<float>::min(),
+                      std::numeric_limits<float>::min()),
+       gfx::Vector3dF(std::numeric_limits<float>::min(),
+                      std::numeric_limits<float>::min(),
+                      std::numeric_limits<float>::min())},
+      {true, gfx::Vector3dF(1, 0, 0), gfx::Vector3dF(1, 0, 0)},
+      {true, gfx::Vector3dF(std::numeric_limits<float>::max(), 0, 0),
+       gfx::Vector3dF(1, 0, 0)},
+  };
+
+  for (size_t i = 0; i < arraysize(tests); ++i) {
+    gfx::Vector3dF n;
+    EXPECT_EQ(tests[i].expected, tests[i].v.GetNormalized(&n));
+    EXPECT_EQ(tests[i].normalized.ToString(), n.ToString());
+  }
+}
+
 }  // namespace gfx
