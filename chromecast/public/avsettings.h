@@ -21,6 +21,7 @@ class AvSettings {
  public:
   // Defines whether or not the cast receiver is the current active source of
   // the screen. If the device is connected to HDMI sinks, it may be unknown.
+  // GENERATED_JAVA_ENUM_PACKAGE: com.google.android.apps.mediashell.avsettings
   enum ActiveState {
     UNKNOWN,
     STANDBY,   // Screen is off
@@ -29,6 +30,7 @@ class AvSettings {
   };
 
   // Audio codec supported by the device (or HDMI sink).
+  // GENERATED_JAVA_ENUM_PACKAGE: com.google.android.apps.mediashell.avsettings
   enum AudioCodec {
     AC3 = 1 << 0,
     DTS = 1 << 1,
@@ -63,6 +65,7 @@ class AvSettings {
     WAKE_ON_CAST_ENABLED,
   };
 
+  // GENERATED_JAVA_ENUM_PACKAGE: com.google.android.apps.mediashell.avsettings
   enum Event {
     // This event shall be fired whenever the active state is changed including
     // when the screen turned on, when the cast receiver (or the device where

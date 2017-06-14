@@ -28,3 +28,13 @@ source_set("public") {
 
   public_configs = [ ":public_config" ]
 }
+
+if (is_android) {
+  import("//build/config/android/rules.gni")
+
+  java_cpp_enum("java_enums") {
+    sources = [
+      "avsettings.h",
+    ]
+  }
+}
