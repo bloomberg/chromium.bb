@@ -29,6 +29,7 @@
 #include "components/prefs/in_memory_pref_store.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/pref_service_factory.h"
+#include "components/safe_browsing/triggers/trigger_manager.h"
 #include "components/url_formatter/url_fixer.h"
 #include "components/user_prefs/user_prefs.h"
 #include "components/visitedlink/browser/visitedlink_master.h"
@@ -206,9 +207,13 @@ void AwBrowserContext::PreMainMessageLoopRun() {
   web_restriction_provider_->SetAuthority(
       user_pref_service_->GetString(prefs::kWebRestrictionsAuthority));
 
-  safe_browsing_ui_manager_ = new AwSafeBrowsingUIManager();
+  safe_browsing_ui_manager_ =
+      new AwSafeBrowsingUIManager(GetAwURLRequestContext());
   safe_browsing_db_manager_ =
       new safe_browsing::RemoteSafeBrowsingDatabaseManager();
+  safe_browsing_trigger_manager_ =
+      base::MakeUnique<safe_browsing::TriggerManager>(
+          safe_browsing_ui_manager_.get());
 }
 
 void AwBrowserContext::OnWebRestrictionsAuthorityChanged() {
@@ -393,6 +398,12 @@ AwBrowserContext::GetSafeBrowsingDBManager() {
     safe_browsing_db_manager_started_ = true;
   }
   return safe_browsing_db_manager_.get();
+}
+
+safe_browsing::TriggerManager* AwBrowserContext::GetSafeBrowsingTriggerManager()
+    const {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  return safe_browsing_trigger_manager_.get();
 }
 
 void AwBrowserContext::RebuildTable(

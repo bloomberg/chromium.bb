@@ -42,6 +42,10 @@ namespace visitedlink {
 class VisitedLinkMaster;
 }
 
+namespace safe_browsing {
+class TriggerManager;
+}  // namespace safe_browsing
+
 namespace android_webview {
 
 class AwFormDatabaseService;
@@ -117,6 +121,7 @@ class AwBrowserContext : public content::BrowserContext,
 
   AwSafeBrowsingUIManager* GetSafeBrowsingUIManager();
   safe_browsing::RemoteSafeBrowsingDatabaseManager* GetSafeBrowsingDBManager();
+  safe_browsing::TriggerManager* GetSafeBrowsingTriggerManager() const;
 
  private:
   void InitUserPrefService();
@@ -150,6 +155,7 @@ class AwBrowserContext : public content::BrowserContext,
   PrefChangeRegistrar pref_change_registrar_;
 
   scoped_refptr<AwSafeBrowsingUIManager> safe_browsing_ui_manager_;
+  std::unique_ptr<safe_browsing::TriggerManager> safe_browsing_trigger_manager_;
   scoped_refptr<safe_browsing::RemoteSafeBrowsingDatabaseManager>
       safe_browsing_db_manager_;
   bool safe_browsing_db_manager_started_ = false;
