@@ -21,8 +21,8 @@ class ScopedKeyWindow {
   UIWindow* Get() { return current_key_window_; }
 
  private:
-  UIWindow* current_key_window_;
-  UIWindow* original_key_window_;
+  __strong UIWindow* current_key_window_;
+  __strong UIWindow* original_key_window_;
 };
 
 #endif  // IOS_CHROME_TEST_SCOPED_KEY_WINDOW_H_
