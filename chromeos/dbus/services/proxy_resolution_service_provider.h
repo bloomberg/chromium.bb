@@ -30,30 +30,18 @@ class URLRequestContextGetter;
 
 namespace chromeos {
 
-// This class provides proxy resolution service for CrosDBusService.
-// It processes proxy resolution requests for ChromeOS clients.
+// This class processes proxy resolution requests for Chrome OS clients.
 //
 // The following method is exported:
 //
-// Interface: org.chromium.LibCrosServiceInterface (kLibCrosServiceInterface)
-// Method: ResolveNetworkProxy (kResolveNetworkProxy)
+// Interface: org.chromium.NetworkProxyServiceInterface
+//            (kNetworkProxyServiceInterface)
+// Method: ResolveProxy (kNetworkProxyServiceResolveProxyMethod)
 // Parameters: string:source_url
-//             string:signal_interface (optional)
-//             string:signal_name (optional)
 //
-//   Resolves the proxy for |source_url|. If |signal_interface| and
-//   |signal_name| are supplied, returns an empty reply immediately and
-//   asynchronously emits a D-Bus signal to the requested destination.
-//   Otherwise, returns proxy information an asynchronous response without
-//   emitting a signal.
+//   Resolves the proxy for |source_url| and returns proxy information via an
+//   asynchronous response containing two values:
 //
-//   The signal (if requested) will contain three values:
-//   - string:source_url - requested source URL.
-//   - string:proxy_info - proxy info for the source URL in PAC format
-//                         like "PROXY cache.example.com:12345"
-//   - string:error_message - error message. Empty if successful.
-//
-//   The method call response (if requested) will contain just two values:
 //   - string:proxy_info - proxy info for the source URL in PAC format
 //                         like "PROXY cache.example.com:12345"
 //   - string:error_message - error message. Empty if successful.
@@ -61,9 +49,9 @@ namespace chromeos {
 // This service can be manually tested using dbus-send:
 //
 //   % dbus-send --system --type=method_call --print-reply
-//       --dest=org.chromium.LibCrosService
-//       /org/chromium/LibCrosService
-//       org.chromium.LibCrosServiceInterface.ResolveNetworkProxy
+//       --dest=org.chromium.NetworkProxyService
+//       /org/chromium/NetworkProxyService
+//       org.chromium.NetworkProxyServiceInterface.ResolveProxy
 //       string:https://www.google.com/
 //
 class CHROMEOS_EXPORT ProxyResolutionServiceProvider
@@ -80,9 +68,7 @@ class CHROMEOS_EXPORT ProxyResolutionServiceProvider
     virtual scoped_refptr<net::URLRequestContextGetter> GetRequestContext() = 0;
   };
 
-  ProxyResolutionServiceProvider(const std::string& dbus_interface,
-                                 const std::string& dbus_method_name,
-                                 std::unique_ptr<Delegate> delegate);
+  explicit ProxyResolutionServiceProvider(std::unique_ptr<Delegate> delegate);
   ~ProxyResolutionServiceProvider() override;
 
   // CrosDBusService::ServiceProviderInterface:
@@ -131,8 +117,6 @@ class CHROMEOS_EXPORT ProxyResolutionServiceProvider
   // information to the client over D-Bus.
   void NotifyProxyResolved(std::unique_ptr<Request> request);
 
-  const std::string dbus_interface_;
-  const std::string dbus_method_name_;
   std::unique_ptr<Delegate> delegate_;
   scoped_refptr<dbus::ExportedObject> exported_object_;
   scoped_refptr<base::SingleThreadTaskRunner> origin_thread_;

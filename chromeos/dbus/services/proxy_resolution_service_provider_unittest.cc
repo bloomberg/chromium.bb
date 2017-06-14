@@ -31,14 +31,6 @@ namespace chromeos {
 
 namespace {
 
-// ProxyResolutionServiceProvider will return the proxy info as a D-Bus
-// signal, to the following signal interface and the signal name.
-const char kReturnSignalInterface[] = "org.chromium.TestInterface";
-const char kReturnSignalName[] = "TestSignal";
-
-// Maximum time to wait for D-Bus signals to be received, in seconds.
-int kSignalTimeoutSec = 60;
-
 // Runs pending, non-delayed tasks on |task_runner|. Note that delayed tasks or
 // additional tasks posted by pending tests will not be run.
 void RunPendingTasks(scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
@@ -196,7 +188,6 @@ class ProxyResolutionServiceProviderTest : public testing::Test {
     proxy_resolver_ =
         base::MakeUnique<TestProxyResolver>(network_thread_.task_runner());
     service_provider_ = base::MakeUnique<ProxyResolutionServiceProvider>(
-        kNetworkProxyServiceInterface, kNetworkProxyServiceResolveProxyMethod,
         base::MakeUnique<TestDelegate>(network_thread_.task_runner(),
                                        proxy_resolver_.get()));
     test_helper_.SetUp(
@@ -217,93 +208,18 @@ class ProxyResolutionServiceProviderTest : public testing::Test {
   }
 
  protected:
-  // Arguments extracted from a D-Bus signal.
-  struct SignalInfo {
-    std::string source_url;
-    std::string proxy_info;
-    std::string error_message;
-  };
-
-  // Called when a signal is received.
-  void OnSignalReceived(dbus::Signal* signal) {
-    EXPECT_EQ(kReturnSignalInterface, signal->GetInterface());
-    EXPECT_EQ(kReturnSignalName, signal->GetMember());
-
-    ASSERT_FALSE(signal_);
-    signal_ = base::MakeUnique<SignalInfo>();
-
-    // The signal should contain three strings.
-    dbus::MessageReader reader(signal);
-    EXPECT_TRUE(reader.PopString(&signal_->source_url));
-    EXPECT_TRUE(reader.PopString(&signal_->proxy_info));
-    EXPECT_TRUE(reader.PopString(&signal_->error_message));
-
-    // Stop the message loop.
-    ASSERT_FALSE(quit_closure_.is_null()) << "Unexpected D-Bus signal";
-    quit_closure_.Run();
-    quit_closure_.Reset();
-  }
-
-  // Called when connected to a signal.
-  void OnConnectedToSignal(const std::string& signal_interface,
-                           const std::string& signal_name,
-                           bool success){
-    EXPECT_EQ(kReturnSignalInterface, signal_interface);
-    EXPECT_EQ(kReturnSignalName, signal_name);
-    EXPECT_TRUE(success);
-  }
-
-  // Makes a D-Bus call to |service_provider_|'s ResolveProxy method. If
-  // |request_signal| is true, requests that the proxy information be returned
-  // via a signal; otherwise it should be included in the response.
-  // |response_out| is updated to hold the response, and |signal_out| is updated
-  // to hold information about the emitted signal, if any.
-  void CallMethod(const std::string& source_url,
-                  bool request_signal,
-                  std::unique_ptr<dbus::Response>* response_out,
-                  std::unique_ptr<SignalInfo>* signal_out) {
+  // Makes a D-Bus call to |service_provider_|'s ResolveProxy method and returns
+  // the response.
+  std::unique_ptr<dbus::Response> CallMethod(const std::string& source_url) {
     dbus::MethodCall method_call(kNetworkProxyServiceInterface,
                                  kNetworkProxyServiceResolveProxyMethod);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(source_url);
-    if (request_signal) {
-      writer.AppendString(kReturnSignalInterface);
-      writer.AppendString(kReturnSignalName);
-
-      // Connect to the signal that will be sent to kReturnSignalInterface and
-      // kReturnSignalName.
-      test_helper_.SetUpReturnSignal(
-          kReturnSignalInterface, kReturnSignalName,
-          base::Bind(&ProxyResolutionServiceProviderTest::OnSignalReceived,
-                     base::Unretained(this)),
-          base::Bind(&ProxyResolutionServiceProviderTest::OnConnectedToSignal,
-                     base::Unretained(this)));
-    }
-
-    *response_out = test_helper_.CallMethod(&method_call);
-
-    // If a signal is being emitted, run the main message loop until it's
-    // received or we get tired of waiting.
-    if (request_signal) {
-      base::RunLoop run_loop;
-      quit_closure_ = run_loop.QuitClosure();
-      base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-          FROM_HERE, quit_closure_,
-          base::TimeDelta::FromSeconds(kSignalTimeoutSec));
-      run_loop.Run();
-    }
-
-    *signal_out = std::move(signal_);
+    return test_helper_.CallMethod(&method_call);
   }
 
   // Thread used to perform network operations.
   base::Thread network_thread_;
-
-  // Information about the last D-Bus signal received by OnSignalReceived().
-  std::unique_ptr<SignalInfo> signal_;
-
-  // Closure used to stop the message loop after receiving a D-Bus signal.
-  base::Closure quit_closure_;
 
   std::unique_ptr<TestProxyResolver> proxy_resolver_;
   std::unique_ptr<ProxyResolutionServiceProvider> service_provider_;
@@ -312,52 +228,9 @@ class ProxyResolutionServiceProviderTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(ProxyResolutionServiceProviderTest);
 };
 
-// Tests that synchronously-resolved proxy information is returned via a signal.
-TEST_F(ProxyResolutionServiceProviderTest, SignalSync) {
+TEST_F(ProxyResolutionServiceProviderTest, Sync) {
   const char kSourceURL[] = "http://www.gmail.com/";
-
-  std::unique_ptr<dbus::Response> response;
-  std::unique_ptr<SignalInfo> signal;
-  CallMethod(kSourceURL, true /* request_signal */, &response, &signal);
-
-  // An empty response should be returned.
-  ASSERT_TRUE(response);
-  EXPECT_FALSE(dbus::MessageReader(response.get()).HasMoreData());
-
-  // Confirm that the signal is received successfully.
-  ASSERT_TRUE(signal);
-  EXPECT_EQ(kSourceURL, signal->source_url);
-  EXPECT_EQ(proxy_resolver_->proxy_info().ToPacString(), signal->proxy_info);
-  EXPECT_EQ("", signal->error_message);
-}
-
-// Tests that asynchronously-resolved proxy information is returned via a
-// signal.
-TEST_F(ProxyResolutionServiceProviderTest, SignalAsync) {
-  const char kSourceURL[] = "http://www.gmail.com/";
-  proxy_resolver_->set_async(true);
-  proxy_resolver_->mutable_proxy_info()->UseNamedProxy("http://localhost:8080");
-
-  std::unique_ptr<dbus::Response> response;
-  std::unique_ptr<SignalInfo> signal;
-  CallMethod(kSourceURL, true /* request_signal */, &response, &signal);
-
-  // An empty response should be returned.
-  ASSERT_TRUE(response);
-  EXPECT_FALSE(dbus::MessageReader(response.get()).HasMoreData());
-
-  // Confirm that the signal is received successfully.
-  ASSERT_TRUE(signal);
-  EXPECT_EQ(kSourceURL, signal->source_url);
-  EXPECT_EQ(proxy_resolver_->proxy_info().ToPacString(), signal->proxy_info);
-  EXPECT_EQ("", signal->error_message);
-}
-
-TEST_F(ProxyResolutionServiceProviderTest, ResponseSync) {
-  const char kSourceURL[] = "http://www.gmail.com/";
-  std::unique_ptr<dbus::Response> response;
-  std::unique_ptr<SignalInfo> signal;
-  CallMethod(kSourceURL, false /* request_signal */, &response, &signal);
+  std::unique_ptr<dbus::Response> response = CallMethod(kSourceURL);
 
   // The response should contain the proxy info and an empty error.
   ASSERT_TRUE(response);
@@ -367,18 +240,13 @@ TEST_F(ProxyResolutionServiceProviderTest, ResponseSync) {
   EXPECT_TRUE(reader.PopString(&error));
   EXPECT_EQ(proxy_resolver_->proxy_info().ToPacString(), proxy_info);
   EXPECT_EQ("", error);
-
-  // No signal should've been emitted.
-  EXPECT_FALSE(signal);
 }
 
-TEST_F(ProxyResolutionServiceProviderTest, ResponseAsync) {
+TEST_F(ProxyResolutionServiceProviderTest, Async) {
   const char kSourceURL[] = "http://www.gmail.com/";
   proxy_resolver_->set_async(true);
   proxy_resolver_->mutable_proxy_info()->UseNamedProxy("http://localhost:8080");
-  std::unique_ptr<dbus::Response> response;
-  std::unique_ptr<SignalInfo> signal;
-  CallMethod(kSourceURL, false /* request_signal */, &response, &signal);
+  std::unique_ptr<dbus::Response> response = CallMethod(kSourceURL);
 
   // The response should contain the proxy info and an empty error.
   ASSERT_TRUE(response);
@@ -388,17 +256,12 @@ TEST_F(ProxyResolutionServiceProviderTest, ResponseAsync) {
   EXPECT_TRUE(reader.PopString(&error));
   EXPECT_EQ(proxy_resolver_->proxy_info().ToPacString(), proxy_info);
   EXPECT_EQ("", error);
-
-  // No signal should've been emitted.
-  EXPECT_FALSE(signal);
 }
 
-TEST_F(ProxyResolutionServiceProviderTest, ResponseError) {
+TEST_F(ProxyResolutionServiceProviderTest, Error) {
   const char kSourceURL[] = "http://www.gmail.com/";
   proxy_resolver_->set_result(net::ERR_FAILED);
-  std::unique_ptr<dbus::Response> response;
-  std::unique_ptr<SignalInfo> signal;
-  CallMethod(kSourceURL, false /* request_signal */, &response, &signal);
+  std::unique_ptr<dbus::Response> response = CallMethod(kSourceURL);
 
   // The response should contain empty proxy info and a "mandatory proxy config
   // failed" error (which the error from the resolver will be mapped to).
@@ -410,9 +273,6 @@ TEST_F(ProxyResolutionServiceProviderTest, ResponseError) {
   EXPECT_EQ("DIRECT", proxy_info);
   EXPECT_EQ(net::ErrorToString(net::ERR_MANDATORY_PROXY_CONFIGURATION_FAILED),
             error);
-
-  // No signal should've been emitted.
-  EXPECT_FALSE(signal);
 }
 
 }  // namespace chromeos
