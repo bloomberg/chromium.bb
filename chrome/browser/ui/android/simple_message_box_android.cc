@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/simple_message_box.h"
 
+#include <utility>
+
+#include "base/callback.h"
 #include "base/logging.h"
 
 namespace chrome {
@@ -21,12 +24,14 @@ MessageBoxResult ShowQuestionMessageBox(gfx::NativeWindow parent,
   return MESSAGE_BOX_RESULT_NO;
 }
 
-bool ShowWarningMessageBoxWithCheckbox(gfx::NativeWindow parent,
-                                       const base::string16& title,
-                                       const base::string16& message,
-                                       const base::string16& checkbox_text) {
+void ShowWarningMessageBoxWithCheckbox(
+    gfx::NativeWindow parent,
+    const base::string16& title,
+    const base::string16& message,
+    const base::string16& checkbox_text,
+    base::OnceCallback<void(bool checked)> callback) {
   NOTIMPLEMENTED();
-  return false;
+  std::move(callback).Run(false);
 }
 
 }  // namespace chrome

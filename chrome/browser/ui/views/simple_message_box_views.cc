@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/simple_message_box.h"
 
+#include <utility>
+
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -33,6 +36,9 @@ namespace {
 
 class SimpleMessageBoxViews : public views::DialogDelegate {
  public:
+  using MessageBoxResultCallback =
+      base::OnceCallback<void(MessageBoxResult result)>;
+
   SimpleMessageBoxViews(const base::string16& title,
                         const base::string16& message,
                         MessageBoxType type,
@@ -42,7 +48,7 @@ class SimpleMessageBoxViews : public views::DialogDelegate {
                         bool is_system_modal);
   ~SimpleMessageBoxViews() override;
 
-  MessageBoxResult RunDialogAndGetResult();
+  void Run(MessageBoxResultCallback result_callback);
 
   // Overridden from views::DialogDelegate:
   int GetDialogButtons() const override;
@@ -59,16 +65,15 @@ class SimpleMessageBoxViews : public views::DialogDelegate {
   const views::Widget* GetWidget() const override;
 
  private:
-  // This terminates the nested message-loop.
   void Done();
 
   const base::string16 window_title_;
   const MessageBoxType type_;
   base::string16 yes_text_;
   base::string16 no_text_;
-  MessageBoxResult* result_;
+  MessageBoxResult result_;
   views::MessageBoxView* message_box_view_;
-  base::Closure quit_runloop_;
+  MessageBoxResultCallback result_callback_;
   bool is_system_modal_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleMessageBoxViews);
@@ -92,7 +97,7 @@ SimpleMessageBoxViews::SimpleMessageBoxViews(
       type_(type),
       yes_text_(yes_text),
       no_text_(no_text),
-      result_(NULL),
+      result_(MESSAGE_BOX_RESULT_NO),
       message_box_view_(new views::MessageBoxView(
           views::MessageBoxView::InitParams(message))),
       is_system_modal_(is_system_modal) {
@@ -114,19 +119,9 @@ SimpleMessageBoxViews::SimpleMessageBoxViews(
 SimpleMessageBoxViews::~SimpleMessageBoxViews() {
 }
 
-MessageBoxResult SimpleMessageBoxViews::RunDialogAndGetResult() {
+void SimpleMessageBoxViews::Run(MessageBoxResultCallback result_callback) {
   g_current_message_box = this;
-  MessageBoxResult result = MESSAGE_BOX_RESULT_NO;
-  result_ = &result;
-  // TODO(pkotwicz): Exit message loop when the dialog is closed by some other
-  // means than |Cancel| or |Accept|. crbug.com/404385
-  base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
-  base::MessageLoopForUI::ScopedNestableTaskAllower allow_nested(loop);
-  base::RunLoop run_loop;
-  quit_runloop_ = run_loop.QuitClosure();
-  run_loop.Run();
-  g_current_message_box = nullptr;
-  return result;
+  result_callback_ = std::move(result_callback);
 }
 
 int SimpleMessageBoxViews::GetDialogButtons() const {
@@ -144,7 +139,7 @@ base::string16 SimpleMessageBoxViews::GetDialogButtonLabel(
 }
 
 bool SimpleMessageBoxViews::Cancel() {
-  *result_ = MESSAGE_BOX_RESULT_NO;
+  result_ = MESSAGE_BOX_RESULT_NO;
   Done();
   return true;
 }
@@ -152,9 +147,9 @@ bool SimpleMessageBoxViews::Cancel() {
 bool SimpleMessageBoxViews::Accept() {
   if (!message_box_view_->HasCheckBox() ||
       message_box_view_->IsCheckBoxSelected()) {
-    *result_ = MESSAGE_BOX_RESULT_YES;
+    result_ = MESSAGE_BOX_RESULT_YES;
   } else {
-    *result_ = MESSAGE_BOX_RESULT_NO;
+    result_ = MESSAGE_BOX_RESULT_NO;
   }
 
   Done();
@@ -189,8 +184,9 @@ const views::Widget* SimpleMessageBoxViews::GetWidget() const {
 // SimpleMessageBoxViews, private:
 
 void SimpleMessageBoxViews::Done() {
-  CHECK(!quit_runloop_.is_null());
-  quit_runloop_.Run();
+  CHECK(!result_callback_.is_null());
+  std::move(result_callback_).Run(result_);
+  g_current_message_box = nullptr;
 }
 
 #if defined(OS_WIN)
@@ -207,16 +203,20 @@ UINT GetMessageBoxFlagsFromType(MessageBoxType type) {
 }
 #endif
 
-MessageBoxResult ShowMessageBoxImpl(gfx::NativeWindow parent,
-                                    const base::string16& title,
-                                    const base::string16& message,
-                                    MessageBoxType type,
-                                    const base::string16& yes_text,
-                                    const base::string16& no_text,
-                                    const base::string16& checkbox_text) {
+void ShowMessageBoxAsyncImpl(
+    gfx::NativeWindow parent,
+    const base::string16& title,
+    const base::string16& message,
+    MessageBoxType type,
+    const base::string16& yes_text,
+    const base::string16& no_text,
+    const base::string16& checkbox_text,
+    SimpleMessageBoxViews::MessageBoxResultCallback callback) {
   startup_metric_utils::SetNonBrowserUIDisplayed();
-  if (internal::g_should_skip_message_box_for_test)
-    return MESSAGE_BOX_RESULT_YES;
+  if (internal::g_should_skip_message_box_for_test) {
+    std::move(callback).Run(MESSAGE_BOX_RESULT_YES);
+    return;
+  }
 
   // Views dialogs cannot be shown outside the UI thread message loop or if the
   // ResourceBundle is not initialized yet.
@@ -228,15 +228,18 @@ MessageBoxResult ShowMessageBoxImpl(gfx::NativeWindow parent,
     LOG_IF(ERROR, !checkbox_text.empty()) << "Dialog checkbox won't be shown";
     int result = ui::MessageBox(views::HWNDForNativeWindow(parent), message,
                                 title, GetMessageBoxFlagsFromType(type));
-    return (result == IDYES || result == IDOK) ?
-        MESSAGE_BOX_RESULT_YES : MESSAGE_BOX_RESULT_NO;
+    std::move(callback).Run((result == IDYES || result == IDOK)
+                                ? MESSAGE_BOX_RESULT_YES
+                                : MESSAGE_BOX_RESULT_NO);
+    return;
   }
 #else
   if (!base::MessageLoopForUI::IsCurrent() ||
       !ResourceBundle::HasSharedInstance()) {
     LOG(ERROR) << "Unable to show a dialog outside the UI thread message loop: "
                << title << " - " << message;
-    return MESSAGE_BOX_RESULT_NO;
+    std::move(callback).Run(MESSAGE_BOX_RESULT_NO);
+    return;
   }
 #endif
 
@@ -245,9 +248,36 @@ MessageBoxResult ShowMessageBoxImpl(gfx::NativeWindow parent,
                                 checkbox_text, !parent /* is_system_modal */);
   constrained_window::CreateBrowserModalDialogViews(dialog, parent)->Show();
 
-  // NOTE: |dialog| may have been deleted by the time |RunDialogAndGetResult()|
-  // returns.
-  return dialog->RunDialogAndGetResult();
+  dialog->Run(std::move(callback));
+}
+
+MessageBoxResult ShowMessageBoxImpl(gfx::NativeWindow parent,
+                                    const base::string16& title,
+                                    const base::string16& message,
+                                    MessageBoxType type,
+                                    const base::string16& yes_text,
+                                    const base::string16& no_text,
+                                    const base::string16& checkbox_text) {
+  MessageBoxResult result = MESSAGE_BOX_RESULT_NO;
+
+  // TODO(pkotwicz): Exit message loop when the dialog is closed by some other
+  // means than |Cancel| or |Accept|. crbug.com/404385
+  base::MessageLoopForUI* loop = base::MessageLoopForUI::current();
+  base::MessageLoopForUI::ScopedNestableTaskAllower allow_nested(loop);
+  base::RunLoop run_loop;
+
+  ShowMessageBoxAsyncImpl(
+      parent, title, message, type, yes_text, no_text, checkbox_text,
+      base::Bind(
+          [](base::RunLoop* run_loop, MessageBoxResult* out_result,
+             MessageBoxResult messagebox_result) {
+            *out_result = messagebox_result;
+            run_loop->Quit();
+          },
+          &run_loop, &result));
+
+  run_loop.Run();
+  return result;
 }
 
 }  // namespace
@@ -270,13 +300,22 @@ void ShowWarningMessageBox(gfx::NativeWindow parent,
                      base::string16(), base::string16(), base::string16());
 }
 
-bool ShowWarningMessageBoxWithCheckbox(gfx::NativeWindow parent,
-                                       const base::string16& title,
-                                       const base::string16& message,
-                                       const base::string16& checkbox_text) {
-  return ShowMessageBoxImpl(parent, title, message, MESSAGE_BOX_TYPE_WARNING,
-                            base::string16(), base::string16(),
-                            checkbox_text) == MESSAGE_BOX_RESULT_YES;
+void ShowWarningMessageBoxWithCheckbox(
+    gfx::NativeWindow parent,
+    const base::string16& title,
+    const base::string16& message,
+    const base::string16& checkbox_text,
+    base::OnceCallback<void(bool checked)> callback) {
+  ShowMessageBoxAsyncImpl(
+      parent, title, message, MESSAGE_BOX_TYPE_WARNING, base::string16(),
+      base::string16(), checkbox_text,
+      base::Bind(
+          [](base::OnceCallback<void(bool checked)> callback,
+             MessageBoxResult message_box_result) {
+            std::move(callback).Run(message_box_result ==
+                                    MESSAGE_BOX_RESULT_YES);
+          },
+          base::Passed(std::move(callback))));
 }
 
 MessageBoxResult ShowQuestionMessageBox(gfx::NativeWindow parent,

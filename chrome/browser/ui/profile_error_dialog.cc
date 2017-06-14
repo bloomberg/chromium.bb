@@ -4,8 +4,8 @@
 
 #include "chrome/browser/ui/profile_error_dialog.h"
 
-#include "base/auto_reset.h"
 #include "base/base_switches.h"
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
@@ -18,6 +18,30 @@ namespace {
 
 #if !defined(OS_ANDROID)
 constexpr char kProfileErrorFeedbackCategory[] = "FEEDBACK_PROFILE_ERROR";
+
+bool g_is_showing_profile_error_dialog = false;
+
+void OnProfileErrorDialogDismissed(const std::string& diagnostics,
+                                   bool needs_feedback) {
+  g_is_showing_profile_error_dialog = false;
+
+  if (!needs_feedback)
+    return;
+
+  std::string feedback_description =
+      l10n_util::GetStringUTF8(IDS_PROFILE_ERROR_FEEDBACK_DESCRIPTION);
+  if (!diagnostics.empty()) {
+    // TODO(afakhry): Add support to inject diagnostics to the feedback
+    // reports without adding them to the description. crbug.com/708511.
+    feedback_description +=
+        "\n\n" +
+        l10n_util::GetStringUTF8(IDS_PROFILE_ERROR_FEEDBACK_DIAGNOSTICS_LINE) +
+        diagnostics;
+  }
+
+  chrome::ShowFeedbackPage(nullptr, chrome::kFeedbackSourceProfileErrorDialog,
+                           feedback_description, kProfileErrorFeedbackCategory);
+}
 #endif  // !defined(OS_ANDROID)
 
 }  // namespace
@@ -35,29 +59,14 @@ void ShowProfileErrorDialog(ProfileErrorType type,
     return;
   }
 
-  static bool is_showing_profile_error_dialog = false;
-  if (is_showing_profile_error_dialog)
+  if (g_is_showing_profile_error_dialog)
     return;
 
-  base::AutoReset<bool> resetter(&is_showing_profile_error_dialog, true);
-  if (chrome::ShowWarningMessageBoxWithCheckbox(
-          nullptr, l10n_util::GetStringUTF16(IDS_PROFILE_ERROR_DIALOG_TITLE),
-          l10n_util::GetStringUTF16(message_id),
-          l10n_util::GetStringUTF16(IDS_PROFILE_ERROR_DIALOG_CHECKBOX))) {
-    std::string feedback_description =
-        l10n_util::GetStringUTF8(IDS_PROFILE_ERROR_FEEDBACK_DESCRIPTION);
-    if (!diagnostics.empty()) {
-      // TODO(afakhry): Add support to inject diagnostics to the feedback
-      // reports without adding them to the description. crbug.com/708511.
-      feedback_description += "\n\n" +
-                              l10n_util::GetStringUTF8(
-                                  IDS_PROFILE_ERROR_FEEDBACK_DIAGNOSTICS_LINE) +
-                              diagnostics;
-    }
-
-    chrome::ShowFeedbackPage(nullptr, chrome::kFeedbackSourceProfileErrorDialog,
-                             feedback_description,
-                             kProfileErrorFeedbackCategory);
-  }
+  g_is_showing_profile_error_dialog = true;
+  chrome::ShowWarningMessageBoxWithCheckbox(
+      nullptr, l10n_util::GetStringUTF16(IDS_PROFILE_ERROR_DIALOG_TITLE),
+      l10n_util::GetStringUTF16(message_id),
+      l10n_util::GetStringUTF16(IDS_PROFILE_ERROR_DIALOG_CHECKBOX),
+      base::Bind(&OnProfileErrorDialogDismissed, diagnostics));
 #endif
 }
