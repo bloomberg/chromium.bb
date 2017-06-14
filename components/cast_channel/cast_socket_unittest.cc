@@ -27,6 +27,7 @@
 #include "components/cast_channel/cast_transport.h"
 #include "components/cast_channel/logger.h"
 #include "components/cast_channel/proto/cast_channel.pb.h"
+#include "components/cast_channel/proto/logging.pb.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
 #include "net/log/test_net_log.h"
@@ -525,7 +526,7 @@ TEST_F(CastSocketTest, TestConnectTcpSocketTimeoutError) {
   EXPECT_EQ(ReadyState::CLOSED, socket_->ready_state());
   EXPECT_EQ(ChannelError::CONNECT_TIMEOUT, socket_->error_state());
   EXPECT_EQ(net::ERR_CONNECTION_TIMED_OUT,
-            logger_->GetLastError(socket_->id()).net_return_value);
+            logger_->GetLastErrors(socket_->id()).net_return_value);
 }
 
 // Test connection error - SSL connect fails (async)
@@ -561,7 +562,7 @@ TEST_F(CastSocketTest, TestConnectSslConnectErrorSync) {
   EXPECT_EQ(ReadyState::CLOSED, socket_->ready_state());
   EXPECT_EQ(ChannelError::AUTHENTICATION_ERROR, socket_->error_state());
   EXPECT_EQ(net::ERR_FAILED,
-            logger_->GetLastError(socket_->id()).net_return_value);
+            logger_->GetLastErrors(socket_->id()).net_return_value);
 }
 
 // Test connection error - SSL connect times out (sync)
@@ -580,7 +581,7 @@ TEST_F(CastSocketTest, TestConnectSslConnectTimeoutSync) {
   EXPECT_EQ(ReadyState::CLOSED, socket_->ready_state());
   EXPECT_EQ(ChannelError::CONNECT_TIMEOUT, socket_->error_state());
   EXPECT_EQ(net::ERR_CONNECTION_TIMED_OUT,
-            logger_->GetLastError(socket_->id()).net_return_value);
+            logger_->GetLastErrors(socket_->id()).net_return_value);
 }
 
 // Test connection error - SSL connect times out (async)

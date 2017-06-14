@@ -14,6 +14,7 @@
 #include "base/threading/thread_checker.h"
 #include "components/cast_channel/cast_channel_enum.h"
 #include "components/cast_channel/logger.h"
+#include "components/cast_channel/proto/logging.pb.h"
 #include "net/base/completion_callback.h"
 #include "net/base/ip_endpoint.h"
 
@@ -35,6 +36,8 @@ class CastTransport {
   // Object to be informed of incoming messages and read errors.
   class Delegate {
    public:
+    using ChannelError = ::cast_channel::ChannelError;
+
     virtual ~Delegate() {}
 
     // Called once Transport is successfully initialized and started.
@@ -95,6 +98,27 @@ class CastTransportImpl : public CastTransport {
   void SetReadDelegate(std::unique_ptr<Delegate> delegate) override;
 
  private:
+  // Internal write states.
+  enum WriteState {
+    WRITE_STATE_UNKNOWN,
+    WRITE_STATE_WRITE,
+    WRITE_STATE_WRITE_COMPLETE,
+    WRITE_STATE_DO_CALLBACK,
+    WRITE_STATE_HANDLE_ERROR,
+    WRITE_STATE_ERROR,
+    WRITE_STATE_IDLE,
+  };
+
+  // Internal read states.
+  enum ReadState {
+    READ_STATE_UNKNOWN,
+    READ_STATE_READ,
+    READ_STATE_READ_COMPLETE,
+    READ_STATE_DO_CALLBACK,
+    READ_STATE_HANDLE_ERROR,
+    READ_STATE_ERROR,
+  };
+
   // Holds a message to be written to the socket. |callback| is invoked when the
   // message is fully written or an error occurrs.
   struct WriteRequest {
@@ -113,6 +137,10 @@ class CastTransportImpl : public CastTransport {
     scoped_refptr<net::DrainableIOBuffer> io_buffer;
   };
 
+  static proto::ReadState ReadStateToProto(CastTransportImpl::ReadState state);
+  static proto::WriteState WriteStateToProto(
+      CastTransportImpl::WriteState state);
+  static proto::ErrorState ErrorStateToProto(ChannelError state);
   static bool IsTerminalReadState(ReadState read_state);
   static bool IsTerminalWriteState(WriteState write_state);
 

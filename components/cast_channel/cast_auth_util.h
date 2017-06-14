@@ -9,7 +9,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
-#include "components/cast_channel/proto/cast_channel.pb.h"
 
 namespace cast_certificate {
 enum class CRLPolicy;

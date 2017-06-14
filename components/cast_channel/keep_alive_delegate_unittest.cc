@@ -124,10 +124,10 @@ TEST_F(KeepAliveDelegateTest, TestPingFailed) {
   keep_alive_->Start();
   ping_timer_->Fire();
   RunPendingTasks();
-  EXPECT_EQ(ChannelEvent::PING_WRITE_ERROR,
-            logger_->GetLastError(socket_.id()).channel_event);
+  EXPECT_EQ(proto::PING_WRITE_ERROR,
+            logger_->GetLastErrors(socket_.id()).event_type);
   EXPECT_EQ(net::ERR_CONNECTION_RESET,
-            logger_->GetLastError(socket_.id()).net_return_value);
+            logger_->GetLastErrors(socket_.id()).net_return_value);
 }
 
 TEST_F(KeepAliveDelegateTest, TestPingAndLivenessTimeout) {

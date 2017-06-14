@@ -18,7 +18,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "components/cast_channel/cast_channel_enum.h"
 #include "components/cast_channel/cast_message_util.h"
 #include "components/cast_channel/cast_socket.h"
 #include "components/cast_channel/cast_socket_service.h"
@@ -26,6 +25,7 @@
 #include "components/cast_channel/keep_alive_delegate.h"
 #include "components/cast_channel/logger.h"
 #include "components/cast_channel/proto/cast_channel.pb.h"
+#include "components/cast_channel/proto/logging.pb.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/api/cast_channel/cast_channel_enum_util.h"
 #include "extensions/browser/api/cast_channel/cast_message_util.h"
@@ -56,7 +56,7 @@ using cast_channel::CastSocket;
 using cast_channel::CastSocketImpl;
 using cast_channel::CastTransport;
 using cast_channel::KeepAliveDelegate;
-using cast_channel::LastError;
+using cast_channel::LastErrors;
 using cast_channel::Logger;
 
 using content::BrowserThread;
@@ -89,21 +89,20 @@ void FillChannelInfo(const CastSocket& socket, ChannelInfo* channel_info) {
   channel_info->audio_only = socket.audio_only();
 }
 
-// Fills |error_info| from |error_state| and |last_error|.
+// Fills |error_info| from |error_state| and |last_errors|.
 void FillErrorInfo(api::cast_channel::ChannelError error_state,
-                   const LastError& last_error,
+                   const LastErrors& last_errors,
                    ErrorInfo* error_info) {
   error_info->error_state = error_state;
-  if (last_error.channel_event != cast_channel::ChannelEvent::UNKNOWN)
-    error_info->event_type.reset(
-        new int(cast_channel::AsInteger(last_error.channel_event)));
-  if (last_error.challenge_reply_error !=
-      cast_channel::ChallengeReplyError::NONE) {
+  if (last_errors.event_type != cast_channel::proto::EVENT_TYPE_UNKNOWN)
+    error_info->event_type.reset(new int(last_errors.event_type));
+  if (last_errors.challenge_reply_error_type !=
+      cast_channel::proto::CHALLENGE_REPLY_ERROR_NONE) {
     error_info->challenge_reply_error_type.reset(
-        new int(cast_channel::AsInteger(last_error.challenge_reply_error)));
+        new int(last_errors.challenge_reply_error_type));
   }
-  if (last_error.net_return_value <= 0)
-    error_info->net_return_value.reset(new int(last_error.net_return_value));
+  if (last_errors.net_return_value <= 0)
+    error_info->net_return_value.reset(new int(last_errors.net_return_value));
 }
 
 bool IsValidConnectInfoPort(const ConnectInfo& connect_info) {
@@ -335,7 +334,7 @@ void CastChannelOpenFunction::OnOpen(ChannelError result) {
   VLOG(1) << "Connect finished, OnOpen invoked.";
   // TODO: If we failed to open the CastSocket, we may want to clean up here,
   // rather than relying on the extension to call close(). This can be done by
-  // calling RemoveSocket() and api_->GetLogger()->ClearLastError(channel_id).
+  // calling RemoveSocket() and api_->GetLogger()->ClearLastErrors(channel_id).
   if (result != ChannelError::UNKNOWN) {
     CastSocket* socket = cast_socket_service_->GetSocket(new_channel_id_);
     CHECK(socket);
@@ -451,7 +450,7 @@ void CastChannelCloseFunction::OnClose(int result) {
     SetResultFromSocket(*socket);
     // This will delete |socket|.
     cast_socket_service_->RemoveSocket(channel_id);
-    api_->GetLogger()->ClearLastError(channel_id);
+    api_->GetLogger()->ClearLastErrors(channel_id);
   }
   AsyncWorkCompleted();
 }
@@ -476,7 +475,7 @@ void CastChannelOpenFunction::CastMessageHandler::OnError(
   FillChannelInfo(*socket_, &channel_info);
   channel_info.error_state = api::cast_channel::ToChannelError(error_state);
   ErrorInfo error_info;
-  FillErrorInfo(channel_info.error_state, logger_->GetLastError(socket_->id()),
+  FillErrorInfo(channel_info.error_state, logger_->GetLastErrors(socket_->id()),
                 &error_info);
 
   std::unique_ptr<base::ListValue> results =

@@ -18,62 +18,78 @@
 namespace cast_channel {
 
 using net::IPEndPoint;
+using proto::EventType;
+using proto::Log;
+using proto::SocketEvent;
 
 namespace {
 
-ChallengeReplyError AuthErrorToChallengeReplyError(
+proto::ChallengeReplyErrorType ChallegeReplyErrorToProto(
     AuthResult::ErrorType error_type) {
   switch (error_type) {
     case AuthResult::ERROR_NONE:
-      return ChallengeReplyError::NONE;
+      return proto::CHALLENGE_REPLY_ERROR_NONE;
     case AuthResult::ERROR_PEER_CERT_EMPTY:
-      return ChallengeReplyError::PEER_CERT_EMPTY;
+      return proto::CHALLENGE_REPLY_ERROR_PEER_CERT_EMPTY;
     case AuthResult::ERROR_WRONG_PAYLOAD_TYPE:
-      return ChallengeReplyError::WRONG_PAYLOAD_TYPE;
+      return proto::CHALLENGE_REPLY_ERROR_WRONG_PAYLOAD_TYPE;
     case AuthResult::ERROR_NO_PAYLOAD:
-      return ChallengeReplyError::NO_PAYLOAD;
+      return proto::CHALLENGE_REPLY_ERROR_NO_PAYLOAD;
     case AuthResult::ERROR_PAYLOAD_PARSING_FAILED:
-      return ChallengeReplyError::PAYLOAD_PARSING_FAILED;
+      return proto::CHALLENGE_REPLY_ERROR_PAYLOAD_PARSING_FAILED;
     case AuthResult::ERROR_MESSAGE_ERROR:
-      return ChallengeReplyError::MESSAGE_ERROR;
+      return proto::CHALLENGE_REPLY_ERROR_MESSAGE_ERROR;
     case AuthResult::ERROR_NO_RESPONSE:
-      return ChallengeReplyError::NO_RESPONSE;
+      return proto::CHALLENGE_REPLY_ERROR_NO_RESPONSE;
     case AuthResult::ERROR_FINGERPRINT_NOT_FOUND:
-      return ChallengeReplyError::FINGERPRINT_NOT_FOUND;
+      return proto::CHALLENGE_REPLY_ERROR_FINGERPRINT_NOT_FOUND;
     case AuthResult::ERROR_CERT_PARSING_FAILED:
-      return ChallengeReplyError::CERT_PARSING_FAILED;
+      return proto::CHALLENGE_REPLY_ERROR_CERT_PARSING_FAILED;
     case AuthResult::ERROR_CERT_NOT_SIGNED_BY_TRUSTED_CA:
-      return ChallengeReplyError::CERT_NOT_SIGNED_BY_TRUSTED_CA;
+      return proto::CHALLENGE_REPLY_ERROR_CERT_NOT_SIGNED_BY_TRUSTED_CA;
     case AuthResult::ERROR_CANNOT_EXTRACT_PUBLIC_KEY:
-      return ChallengeReplyError::CANNOT_EXTRACT_PUBLIC_KEY;
+      return proto::CHALLENGE_REPLY_ERROR_CANNOT_EXTRACT_PUBLIC_KEY;
     case AuthResult::ERROR_SIGNED_BLOBS_MISMATCH:
-      return ChallengeReplyError::SIGNED_BLOBS_MISMATCH;
+      return proto::CHALLENGE_REPLY_ERROR_SIGNED_BLOBS_MISMATCH;
     case AuthResult::ERROR_TLS_CERT_VALIDITY_PERIOD_TOO_LONG:
-      return ChallengeReplyError::TLS_CERT_VALIDITY_PERIOD_TOO_LONG;
+      return proto::CHALLENGE_REPLY_ERROR_TLS_CERT_VALIDITY_PERIOD_TOO_LONG;
     case AuthResult::ERROR_TLS_CERT_VALID_START_DATE_IN_FUTURE:
-      return ChallengeReplyError::TLS_CERT_VALID_START_DATE_IN_FUTURE;
+      return proto::CHALLENGE_REPLY_ERROR_TLS_CERT_VALID_START_DATE_IN_FUTURE;
     case AuthResult::ERROR_TLS_CERT_EXPIRED:
-      return ChallengeReplyError::TLS_CERT_EXPIRED;
+      return proto::CHALLENGE_REPLY_ERROR_TLS_CERT_EXPIRED;
     case AuthResult::ERROR_CRL_INVALID:
-      return ChallengeReplyError::CRL_INVALID;
+      return proto::CHALLENGE_REPLY_ERROR_CRL_INVALID;
     case AuthResult::ERROR_CERT_REVOKED:
-      return ChallengeReplyError::CERT_REVOKED;
-    case AuthResult::ERROR_SENDER_NONCE_MISMATCH:
-      return ChallengeReplyError::SENDER_NONCE_MISMATCH;
+      return proto::CHALLENGE_REPLY_ERROR_CERT_REVOKED;
     default:
       NOTREACHED();
-      return ChallengeReplyError::NONE;
+      return proto::CHALLENGE_REPLY_ERROR_NONE;
+  }
+}
+
+// Propagate any error fields set in |event| to |last_errors|.  If any error
+// field in |event| is set, then also set |last_errors->event_type|.
+void MaybeSetLastErrors(const SocketEvent& event, LastErrors* last_errors) {
+  if (event.has_net_return_value() &&
+      event.net_return_value() < net::ERR_IO_PENDING) {
+    last_errors->net_return_value = event.net_return_value();
+    last_errors->event_type = event.type();
+  }
+  if (event.has_challenge_reply_error_type()) {
+    last_errors->challenge_reply_error_type =
+        event.challenge_reply_error_type();
+    last_errors->event_type = event.type();
   }
 }
 
 }  // namespace
 
-LastError::LastError()
-    : channel_event(ChannelEvent::UNKNOWN),
-      challenge_reply_error(ChallengeReplyError::NONE),
+LastErrors::LastErrors()
+    : event_type(proto::EVENT_TYPE_UNKNOWN),
+      challenge_reply_error_type(proto::CHALLENGE_REPLY_ERROR_NONE),
       net_return_value(net::OK) {}
 
-LastError::~LastError() {}
+LastErrors::~LastErrors() {}
 
 Logger::Logger() {
   // Logger may not be necessarily be created on the IO thread, but logging
@@ -84,50 +100,52 @@ Logger::Logger() {
 Logger::~Logger() {}
 
 void Logger::LogSocketEventWithRv(int channel_id,
-                                  ChannelEvent channel_event,
+                                  EventType event_type,
                                   int rv) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  MaybeSetLastError(channel_id, channel_event, rv, ChallengeReplyError::NONE);
+
+  SocketEvent event = CreateEvent(event_type);
+  event.set_net_return_value(rv);
+
+  LogSocketEvent(channel_id, event);
 }
 
 void Logger::LogSocketChallengeReplyEvent(int channel_id,
                                           const AuthResult& auth_result) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  MaybeSetLastError(channel_id, ChannelEvent::AUTH_CHALLENGE_REPLY, net::OK,
-                    AuthErrorToChallengeReplyError(auth_result.error_type));
+
+  SocketEvent event = CreateEvent(proto::AUTH_CHALLENGE_REPLY);
+  event.set_challenge_reply_error_type(
+      ChallegeReplyErrorToProto(auth_result.error_type));
+
+  LogSocketEvent(channel_id, event);
 }
 
-LastError Logger::GetLastError(int channel_id) const {
-  const auto it = last_errors_.find(channel_id);
+LastErrors Logger::GetLastErrors(int channel_id) const {
+  LastErrorsMap::const_iterator it = last_errors_.find(channel_id);
   if (it != last_errors_.end()) {
     return it->second;
   } else {
-    return LastError();
+    return LastErrors();
   }
 }
 
-void Logger::ClearLastError(int channel_id) {
+void Logger::ClearLastErrors(int channel_id) {
   last_errors_.erase(channel_id);
 }
 
-void Logger::MaybeSetLastError(int channel_id,
-                               ChannelEvent channel_event,
-                               int rv,
-                               ChallengeReplyError challenge_reply_error) {
-  auto it = last_errors_.find(channel_id);
+SocketEvent Logger::CreateEvent(EventType event_type) {
+  SocketEvent event;
+  event.set_type(event_type);
+  return event;
+}
+
+void Logger::LogSocketEvent(int channel_id, const SocketEvent& socket_event) {
+  LastErrorsMap::iterator it = last_errors_.find(channel_id);
   if (it == last_errors_.end())
-    last_errors_[channel_id] = LastError();
+    last_errors_[channel_id] = LastErrors();
 
-  LastError* last_error = &last_errors_[channel_id];
-  if (rv < net::ERR_IO_PENDING) {
-    last_error->net_return_value = rv;
-    last_error->channel_event = channel_event;
-  }
-
-  if (challenge_reply_error != ChallengeReplyError::NONE) {
-    last_error->challenge_reply_error = challenge_reply_error;
-    last_error->channel_event = channel_event;
-  }
+  MaybeSetLastErrors(socket_event, &last_errors_[channel_id]);
 }
 
 }  // namespace cast_channel
