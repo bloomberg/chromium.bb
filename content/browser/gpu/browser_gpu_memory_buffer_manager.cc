@@ -130,8 +130,10 @@ void BrowserGpuMemoryBufferManager::AllocateGpuMemoryBufferForChildProcess(
     return;
   }
 
-  callback.Run(gpu::GpuMemoryBufferImplSharedMemory::CreateGpuMemoryBuffer(
-      id, size, format));
+  auto handle = gpu::GpuMemoryBufferImplSharedMemory::CreateGpuMemoryBuffer(
+      id, size, format);
+  buffers.find(id)->second.shared_memory_guid = handle.handle.GetGUID();
+  callback.Run(handle);
 }
 
 void BrowserGpuMemoryBufferManager::SetDestructionSyncToken(
