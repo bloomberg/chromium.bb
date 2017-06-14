@@ -3180,8 +3180,6 @@ bool CSSPropertyParser::ParseShorthand(CSSPropertyID unresolved_property,
                         important);
       return true;
     }
-    case CSSPropertyFlex:
-      return ConsumeFlex(important);
     case CSSPropertyFlexFlow:
       return ConsumeShorthandGreedily(flexFlowShorthand(), important);
     case CSSPropertyColumnRule:

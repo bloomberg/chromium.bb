@@ -3276,6 +3276,8 @@
     {
       name: "flex",
       longhands: "flex-grow;flex-shrink;flex-basis",
+      api_class: true,
+      api_methods: ["parseShorthand"],
     },
     {
       name: "flex-flow",

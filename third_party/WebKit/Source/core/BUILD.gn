@@ -569,6 +569,8 @@ css_properties("make_core_generated_css_property_apis") {
     "$blink_core_output_dir/css/properties/CSSPropertyAPIZoom.h",
     "$blink_core_output_dir/css/properties/CSSPropertyDescriptor.cpp",
     "$blink_core_output_dir/css/properties/CSSPropertyDescriptor.h",
+    "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIFlex.h",
+    "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPITextDecoration.h",
   ]
 }
 
