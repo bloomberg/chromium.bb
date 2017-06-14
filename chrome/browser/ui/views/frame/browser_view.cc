@@ -2163,9 +2163,8 @@ void BrowserView::LoadingAnimationCallback() {
 
 void BrowserView::OnLoadCompleted() {
 #if defined(OS_WIN)
-  // Ensure that this browser's Profile has a JumpList so that the JumpList is
-  // kept up to date.
-  JumpListFactory::GetForProfile(browser_->profile());
+  DCHECK(!jumplist_.get());
+  jumplist_ = JumpListFactory::GetForProfile(browser_->profile());
 #endif
 }
 
