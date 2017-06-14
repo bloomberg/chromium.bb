@@ -1704,7 +1704,7 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   [container addSubview:manageUsersButton];
 
   // Create a guest profile button.
-  if (!isGuestSession_) {
+  if (!isGuestSession_ && !browser_->profile()->IsSupervised()) {
     PrefService* service = g_browser_process->local_state();
     DCHECK(service);
     if (service->GetBoolean(prefs::kBrowserGuestModeEnabled)) {
