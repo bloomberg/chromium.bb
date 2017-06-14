@@ -11,6 +11,30 @@
 
 namespace blink {
 
+void CSSSkew::setAx(CSSNumericValue* value, ExceptionState& exception_state) {
+  if (value->GetType() != CSSStyleValue::StyleValueType::kAngleType) {
+    exception_state.ThrowTypeError("Must specify an angle unit");
+    return;
+  }
+  if (value->IsCalculated()) {
+    exception_state.ThrowTypeError("Calculated angles are not supported yet");
+    return;
+  }
+  ax_ = value;
+}
+
+void CSSSkew::setAy(CSSNumericValue* value, ExceptionState& exception_state) {
+  if (value->GetType() != CSSStyleValue::StyleValueType::kAngleType) {
+    exception_state.ThrowTypeError("Must specify an angle unit");
+    return;
+  }
+  if (value->IsCalculated()) {
+    exception_state.ThrowTypeError("Calculated angles are not supported yet");
+    return;
+  }
+  ay_ = value;
+}
+
 CSSSkew* CSSSkew::FromCSSValue(const CSSFunctionValue& value) {
   return nullptr;
   // TODO(meade): Re-enable this code once numbers and units types have been

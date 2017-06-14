@@ -10,6 +10,6 @@
     Exposed=(Window,PaintWorklet),
     RuntimeEnabled=CSSTypedOM
 ] interface CSSSkew : CSSTransformComponent {
-    readonly attribute CSSNumericValue ax;
-    readonly attribute CSSNumericValue ay;
+    [RaisesException=Setter] attribute CSSNumericValue ax;
+    [RaisesException=Setter] attribute CSSNumericValue ay;
 };

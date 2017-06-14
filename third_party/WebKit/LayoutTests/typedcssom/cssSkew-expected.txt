@@ -4,5 +4,8 @@ PASS is2D values for CSSSkew are correct.
 FAIL toString for CSSSkew is correct. assert_equals: expected "skew(0deg, 0deg)" but got ""
 PASS Invalid arguments for CSSSkew throws an exception. 
 FAIL asMatrix is constructed correctly for CSSSkew. Cannot read property 'is2D' of null
+PASS Setting ax and ay for CSSSkew with valid CSSUnitValues 
+PASS Setting ax with invalid values 
+PASS Setting ay with invalid values 
 Harness: the test ran to completion.
 

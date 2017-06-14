@@ -11,27 +11,27 @@
 
 namespace blink {
 
+// Represents a skew value in a CSSTransformValue used for properties like
+// "transform".
+// See CSSSkew.idl for more documentation about this class.
 class CORE_EXPORT CSSSkew final : public CSSTransformComponent {
   WTF_MAKE_NONCOPYABLE(CSSSkew);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static CSSSkew* Create(const CSSNumericValue* ax, const CSSNumericValue* ay) {
+  // Constructor defined in the IDL.
+  static CSSSkew* Create(CSSNumericValue* ax, CSSNumericValue* ay) {
     return new CSSSkew(ax, ay);
   }
 
+  // Internal ways of creating CSSSkews.
   static CSSSkew* FromCSSValue(const CSSFunctionValue&);
 
-  // Bindings requires returning non-const pointers. This is safe because
-  // CSSNumericValues are immutable.
-  CSSNumericValue* ax() const {
-    return const_cast<CSSNumericValue*>(ax_.Get());
-  }
-  CSSNumericValue* ay() const {
-    return const_cast<CSSNumericValue*>(ay_.Get());
-  }
-
-  TransformComponentType GetType() const override { return kSkewType; }
+  // Getters and setters for the ax and ay attributes defined in the IDL.
+  CSSNumericValue* ax() const { return ax_.Get(); }
+  CSSNumericValue* ay() const { return ay_.Get(); }
+  void setAx(CSSNumericValue*, ExceptionState&);
+  void setAy(CSSNumericValue*, ExceptionState&);
 
   CSSMatrixComponent* asMatrix() const override {
     return nullptr;
@@ -40,6 +40,8 @@ class CORE_EXPORT CSSSkew final : public CSSTransformComponent {
     // return CSSMatrixComponent::Skew(ax_->degrees(), ay_->degrees());
   }
 
+  // Internal methods - from CSSTransformComponent.
+  TransformComponentType GetType() const override { return kSkewType; }
   CSSFunctionValue* ToCSSValue() const override;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
@@ -49,11 +51,11 @@ class CORE_EXPORT CSSSkew final : public CSSTransformComponent {
   }
 
  private:
-  CSSSkew(const CSSNumericValue* ax, const CSSNumericValue* ay)
+  CSSSkew(CSSNumericValue* ax, CSSNumericValue* ay)
       : CSSTransformComponent(), ax_(ax), ay_(ay) {}
 
-  Member<const CSSNumericValue> ax_;
-  Member<const CSSNumericValue> ay_;
+  Member<CSSNumericValue> ax_;
+  Member<CSSNumericValue> ay_;
 };
 
 }  // namespace blink
