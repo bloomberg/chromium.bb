@@ -4023,7 +4023,7 @@ Node* Document::cloneNode(bool deep, ExceptionState&) {
 }
 
 Document* Document::CloneDocumentWithoutChildren() {
-  DocumentInit init(Url());
+  DocumentInit init = DocumentInit::FromContext(ContextDocument(), Url());
   if (IsXMLDocument()) {
     if (IsXHTMLDocument())
       return XMLDocument::CreateXHTML(
