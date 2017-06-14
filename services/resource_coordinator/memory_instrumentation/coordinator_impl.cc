@@ -201,18 +201,36 @@ void CoordinatorImpl::OnProcessMemoryDumpResponse(
   if (queued_memory_dump_requests_.empty() ||
       queued_memory_dump_requests_.front().args.dump_guid != dump_guid ||
       it == pending_clients_for_current_dump_.end()) {
-    VLOG(1) << "Received unexpected memory dump response: " << dump_guid;
+    VLOG(1) << "Unexpected memory dump response, dump-id:" << dump_guid;
     return;
   }
+
+  auto iter = clients_.find(client_process);
+  if (iter == clients_.end()) {
+    VLOG(1) << "Received a memory dump response from an unregistered client";
+    return;
+  }
+
   if (process_memory_dump) {
+    const service_manager::Identity& client_identity = iter->second->identity;
     base::ProcessId pid = base::kNullProcessId;
-    auto it = clients_.find(client_process);
-    if (it != clients_.end()) {
-      pid = process_map_->GetProcessId(it->second->identity);
+
+    // TODO(primiano): the browser process registers bypassing mojo and ends up
+    // with an invalid identity. Fix that (crbug.com/733165) and remove the
+    // special case in the else branch below.
+    if (client_identity.IsValid()) {
+      pid = process_map_->GetProcessId(client_identity);
+    } else {
+      pid = base::GetCurrentProcId();
     }
 
-    queued_memory_dump_requests_.front().process_memory_dumps.push_back(
-        std::make_pair(pid, std::move(process_memory_dump)));
+    if (pid != base::kNullProcessId) {
+      queued_memory_dump_requests_.front().process_memory_dumps.push_back(
+          std::make_pair(pid, std::move(process_memory_dump)));
+    } else {
+      VLOG(1) << "Couldn't find a PID for client \"" << client_identity.name()
+              << "." << client_identity.instance() << "\"";
+    }
   }
 
   pending_clients_for_current_dump_.erase(it);
@@ -240,7 +258,8 @@ void CoordinatorImpl::FinalizeGlobalMemoryDumpIfAllManagersReplied() {
   // opening /proc pseudo files.
   std::map<base::ProcessId, mojom::ProcessMemoryDumpPtr> finalized_pmds;
   for (auto& result : request.process_memory_dumps) {
-    mojom::ProcessMemoryDumpPtr& pmd = finalized_pmds[result.first];
+    const base::ProcessId pid = result.first;
+    mojom::ProcessMemoryDumpPtr& pmd = finalized_pmds[pid];
     if (!pmd)
       pmd = mojom::ProcessMemoryDump::New();
     pmd->chrome_dump = result.second->chrome_dump;
@@ -252,12 +271,12 @@ void CoordinatorImpl::FinalizeGlobalMemoryDumpIfAllManagersReplied() {
     }
 
     for (auto& pair : result.second->extra_processes_dump) {
-      base::ProcessId pid = pair.first;
-      mojom::ProcessMemoryDumpPtr& pmd = finalized_pmds[pid];
+      const base::ProcessId extra_pid = pair.first;
+      mojom::ProcessMemoryDumpPtr& pmd = finalized_pmds[extra_pid];
       if (!pmd)
         pmd = mojom::ProcessMemoryDump::New();
       DCHECK_EQ(0u, pmd->os_dump.resident_set_kb);
-      pmd->os_dump = result.second->extra_processes_dump[pid];
+      pmd->os_dump = result.second->extra_processes_dump[extra_pid];
     }
 
     pmd->process_type = result.second->process_type;
