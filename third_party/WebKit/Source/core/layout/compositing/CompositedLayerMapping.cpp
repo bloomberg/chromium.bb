@@ -461,13 +461,13 @@ void CompositedLayerMapping::UpdateContentsOpaque() {
 }
 
 void CompositedLayerMapping::UpdateRasterizationPolicy() {
-  bool allow_transformed_rasterization =
-      !RequiresCompositing(owning_layer_.GetCompositingReasons() &
-                           ~kCompositingReasonSquashingDisallowed);
-  graphics_layer_->ContentLayer()->SetAllowTransformedRasterization(
-      allow_transformed_rasterization);
+  bool transformed_rasterization_allowed =
+      !(owning_layer_.GetCompositingReasons() &
+        kCompositingReasonComboAllDirectReasons);
+  graphics_layer_->ContentLayer()->SetTransformedRasterizationAllowed(
+      transformed_rasterization_allowed);
   if (squashing_layer_)
-    squashing_layer_->ContentLayer()->SetAllowTransformedRasterization(true);
+    squashing_layer_->ContentLayer()->SetTransformedRasterizationAllowed(true);
 }
 
 void CompositedLayerMapping::UpdateCompositedBounds() {

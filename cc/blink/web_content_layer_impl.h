@@ -30,7 +30,8 @@ class WebContentLayerImpl : public blink::WebContentLayer,
 
   // WebContentLayer implementation.
   blink::WebLayer* Layer() override;
-  void SetAllowTransformedRasterization(bool) override;
+  void SetTransformedRasterizationAllowed(bool) override;
+  bool TransformedRasterizationAllowed() const override;
 
  protected:
   // ContentLayerClient implementation.
