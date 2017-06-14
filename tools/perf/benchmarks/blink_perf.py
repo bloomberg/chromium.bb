@@ -67,8 +67,7 @@ def CreateStorySetFromPath(path, skipped_file,
   else:
     _AddPage(path)
   ps = story.StorySet(base_dir=os.getcwd() + os.sep,
-                      serving_dirs=serving_dirs,
-                      verify_names=True)
+                      serving_dirs=serving_dirs)
 
   all_urls = [p.rstrip('/') for p in page_urls]
   common_prefix = os.path.dirname(os.path.commonprefix(all_urls))

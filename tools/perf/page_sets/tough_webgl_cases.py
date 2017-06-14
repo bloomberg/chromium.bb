@@ -46,8 +46,7 @@ class ToughWebglCasesPageSet(story.StorySet):
   def __init__(self):
     super(ToughWebglCasesPageSet, self).__init__(
       archive_data_file='data/tough_webgl_cases.json',
-      cloud_storage_bucket=story.PUBLIC_BUCKET,
-      verify_names=True)
+      cloud_storage_bucket=story.PUBLIC_BUCKET)
 
     urls_list = [
       # pylint: disable=line-too-long

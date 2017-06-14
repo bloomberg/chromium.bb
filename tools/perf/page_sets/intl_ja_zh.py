@@ -25,8 +25,7 @@ class IntlJaZhPageSet(story.StorySet):
   def __init__(self, cache_temperatures=None):
     super(IntlJaZhPageSet, self).__init__(
       archive_data_file='data/intl_ja_zh.json',
-      cloud_storage_bucket=story.PARTNER_BUCKET,
-      verify_names=True)
+      cloud_storage_bucket=story.PARTNER_BUCKET)
     if cache_temperatures is None:
       cache_temperatures = [cache_temperature_module.ANY]
 

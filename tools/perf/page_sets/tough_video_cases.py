@@ -395,8 +395,7 @@ class ToughVideoCasesPageSet(story.StorySet):
   """
   def __init__(self, measure_memory=False):
     super(ToughVideoCasesPageSet, self).__init__(
-            cloud_storage_bucket=story.PARTNER_BUCKET,
-            verify_names=True)
+            cloud_storage_bucket=story.PARTNER_BUCKET)
 
     self.measure_memory = measure_memory
 

@@ -25,8 +25,7 @@ class IntlKoThViPageSet(story.StorySet):
   def __init__(self, cache_temperatures=None):
     super(IntlKoThViPageSet, self).__init__(
       archive_data_file='data/intl_ko_th_vi.json',
-      cloud_storage_bucket=story.PARTNER_BUCKET,
-      verify_names=True)
+      cloud_storage_bucket=story.PARTNER_BUCKET)
     if cache_temperatures is None:
       cache_temperatures = [cache_temperature_module.ANY]
 

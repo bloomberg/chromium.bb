@@ -28,8 +28,7 @@ class ToughPathRenderingCasesPageSet(story.StorySet):
   def __init__(self):
     super(ToughPathRenderingCasesPageSet, self).__init__(
       archive_data_file='data/tough_path_rendering_cases.json',
-      cloud_storage_bucket=story.PARTNER_BUCKET,
-      verify_names=True)
+      cloud_storage_bucket=story.PARTNER_BUCKET)
 
     page_list = [
       ('GUIMark Vector Chart Test',

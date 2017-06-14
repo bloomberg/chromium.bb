@@ -67,8 +67,7 @@ class _Top10MobilePageSet(story.StorySet):
   """ Base class for Top 10 mobile sites """
 
   def __init__(self, run_no_page_interactions=False,
-               collect_memory_dumps=False, cache_temperatures=None,
-               verify_names=True):
+               collect_memory_dumps=False, cache_temperatures=None):
     super(_Top10MobilePageSet, self).__init__(
       archive_data_file='data/top_10_mobile.json',
       cloud_storage_bucket=story.PARTNER_BUCKET)

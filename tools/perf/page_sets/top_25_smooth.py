@@ -114,8 +114,7 @@ class Top25SmoothPageSet(story.StorySet):
   def __init__(self, techcrunch=True):
     super(Top25SmoothPageSet, self).__init__(
         archive_data_file='data/top_25_smooth.json',
-        cloud_storage_bucket=story.PARTNER_BUCKET,
-        verify_names=True)
+        cloud_storage_bucket=story.PARTNER_BUCKET)
 
     desktop_state_class = shared_page_state.SharedDesktopPageState
 

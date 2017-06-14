@@ -31,8 +31,7 @@ class ToughImageDecodeCasesPageSet(story.StorySet):
   def __init__(self):
     super(ToughImageDecodeCasesPageSet, self).__init__(
       archive_data_file='data/tough_image_decode_cases.json',
-      cloud_storage_bucket=story.PUBLIC_BUCKET,
-      verify_names=True)
+      cloud_storage_bucket=story.PUBLIC_BUCKET)
 
     page_name_list = [
       'http://localhost:9000/cats-unscaled.html',

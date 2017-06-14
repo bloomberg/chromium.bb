@@ -43,8 +43,7 @@ class ToughCanvasCasesPageSet(story.StorySet):
   def __init__(self):
     super(ToughCanvasCasesPageSet, self).__init__(
       archive_data_file='data/tough_canvas_cases.json',
-      cloud_storage_bucket=story.PARTNER_BUCKET,
-      verify_names=True)
+      cloud_storage_bucket=story.PARTNER_BUCKET)
 
     # Crashes on Galaxy Nexus. crbug.com/314131
     # self.AddStory(MicrosofFirefliesPage(self))

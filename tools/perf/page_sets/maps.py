@@ -42,7 +42,6 @@ class MapsPageSet(story.StorySet):
   def __init__(self):
     super(MapsPageSet, self).__init__(
         archive_data_file='data/maps.json',
-        cloud_storage_bucket=story.PUBLIC_BUCKET,
-        verify_names=True)
+        cloud_storage_bucket=story.PUBLIC_BUCKET)
 
     self.AddStory(MapsPage(self))

@@ -51,8 +51,7 @@ class Typical10MobilePageSet(story.StorySet):
   def __init__(self):
     super(Typical10MobilePageSet, self).__init__(
         archive_data_file='data/typical_10_mobile.json',
-        cloud_storage_bucket=story.PARTNER_BUCKET,
-        verify_names=True)
+        cloud_storage_bucket=story.PARTNER_BUCKET)
 
     for url in urls_list:
       self.AddStory(Typical10MobilePage(url, self, name=url))

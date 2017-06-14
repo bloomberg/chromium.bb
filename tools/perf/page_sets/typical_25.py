@@ -37,8 +37,7 @@ class Typical25PageSet(story.StorySet):
                cache_temperatures=None):
     super(Typical25PageSet, self).__init__(
       archive_data_file='data/typical_25.json',
-      cloud_storage_bucket=story.PARTNER_BUCKET,
-      verify_names=True)
+      cloud_storage_bucket=story.PARTNER_BUCKET)
     if cache_temperatures is None:
       cache_temperatures = [cache_temperature_module.ANY]
 

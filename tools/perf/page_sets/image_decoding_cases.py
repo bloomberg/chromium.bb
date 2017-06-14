@@ -19,7 +19,7 @@ class ImageDecodingCasesPageSet(story.StorySet):
   """ A directed benchmark of accelerated jpeg image decoding performance """
 
   def __init__(self):
-    super(ImageDecodingCasesPageSet, self).__init__(verify_names=True)
+    super(ImageDecodingCasesPageSet, self).__init__()
 
     urls_list = [
       ('file://image_decoding_cases/yuv_decoding.html', 'yuv_decoding.html')

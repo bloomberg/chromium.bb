@@ -218,8 +218,7 @@ class ToughPinchZoomCasesPageSet(story.StorySet):
   def __init__(self, target_scale_factor):
     super(ToughPinchZoomCasesPageSet, self).__init__(
       archive_data_file='data/tough_pinch_zoom_cases.json',
-      cloud_storage_bucket=story.PARTNER_BUCKET,
-      verify_names=True)
+      cloud_storage_bucket=story.PARTNER_BUCKET)
 
     self.target_scale_factor = target_scale_factor
 

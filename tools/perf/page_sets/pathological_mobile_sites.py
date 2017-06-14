@@ -26,8 +26,7 @@ class PathologicalMobileSitesPageSet(story.StorySet):
   def __init__(self):
     super(PathologicalMobileSitesPageSet, self).__init__(
         archive_data_file='data/pathological_mobile_sites.json',
-        cloud_storage_bucket=story.PARTNER_BUCKET,
-        verify_names=True)
+        cloud_storage_bucket=story.PARTNER_BUCKET)
 
     sites = ['http://edition.cnn.com',
              'http://m.espn.go.com/nhl/rankings',
