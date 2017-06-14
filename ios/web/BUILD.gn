@@ -702,6 +702,7 @@ source_set("ios_web_web_state_js_unittests") {
 }
 
 source_set("ios_web_web_state_ui_unittests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   deps = [
     ":core",

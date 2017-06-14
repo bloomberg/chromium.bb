@@ -9,8 +9,7 @@
 #include <utility>
 
 #include "base/ios/ios_util.h"
-#import "base/ios/weak_nsobject.h"
-#import "base/mac/scoped_nsobject.h"
+#include "base/mac/foundation_util.h"
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #import "ios/testing/ocmock_complex_type_helper.h"
@@ -48,6 +47,10 @@
 #include "third_party/ocmock/gtest_support.h"
 #include "third_party/ocmock/ocmock_extensions.h"
 #import "ui/base/test/ios/ui_view_test_utils.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 using web::NavigationManagerImpl;
 
@@ -119,14 +122,14 @@ class CRWWebControllerTest : public web::WebTestWithWebController {
  protected:
   void SetUp() override {
     web::WebTestWithWebController::SetUp();
-    mock_web_view_.reset([CreateMockWebView() retain]);
-    scroll_view_.reset([[UIScrollView alloc] init]);
-    [[[mock_web_view_ stub] andReturn:scroll_view_.get()] scrollView];
+    mock_web_view_ = CreateMockWebView();
+    scroll_view_ = [[UIScrollView alloc] init];
+    [[[mock_web_view_ stub] andReturn:scroll_view_] scrollView];
 
-    base::scoped_nsobject<TestWebViewContentView> webViewContentView(
+    TestWebViewContentView* web_view_content_view =
         [[TestWebViewContentView alloc] initWithMockWebView:mock_web_view_
-                                                 scrollView:scroll_view_]);
-    [web_controller() injectWebViewContentView:webViewContentView];
+                                                 scrollView:scroll_view_];
+    [web_controller() injectWebViewContentView:web_view_content_view];
   }
 
   void TearDown() override {
@@ -156,7 +159,7 @@ class CRWWebControllerTest : public web::WebTestWithWebController {
     [[result stub] backForwardList];
     [[[result stub] andReturn:[NSURL URLWithString:@(kTestURLString)]] URL];
     [[result stub] setNavigationDelegate:[OCMArg checkWithBlock:^(id delegate) {
-                     navigation_delegate_.reset(delegate);
+                     navigation_delegate_ = delegate;
                      return YES;
                    }]];
     [[result stub] setUIDelegate:OCMOCK_ANY];
@@ -170,9 +173,9 @@ class CRWWebControllerTest : public web::WebTestWithWebController {
     return result;
   }
 
-  base::WeakNSProtocol<id<WKNavigationDelegate>> navigation_delegate_;
-  base::scoped_nsobject<UIScrollView> scroll_view_;
-  base::scoped_nsobject<id> mock_web_view_;
+  __weak id<WKNavigationDelegate> navigation_delegate_;
+  UIScrollView* scroll_view_;
+  id mock_web_view_;
 };
 
 // Tests that AllowCertificateError is called with correct arguments if
@@ -201,10 +204,10 @@ TEST_F(CRWWebControllerTest, SslCertError) {
                           code:NSURLErrorServerCertificateHasUnknownRoot
                       userInfo:@{
                         web::kNSErrorPeerCertificateChainKey :
-                            static_cast<NSArray*>(chain.get()),
+                            base::mac::CFToNSCast(chain.get()),
                         web::kNSErrorFailingURLKey : net::NSURLWithGURL(url),
                       }];
-  base::scoped_nsobject<NSObject> navigation([[NSObject alloc] init]);
+  NSObject* navigation = [[NSObject alloc] init];
   [navigation_delegate_ webView:mock_web_view_
       didStartProvisionalNavigation:static_cast<WKNavigation*>(navigation)];
   [navigation_delegate_ webView:mock_web_view_
@@ -649,7 +652,7 @@ class CRWWebControllerNativeContentTest : public web::WebTestWithWebController {
  protected:
   void SetUp() override {
     web::WebTestWithWebController::SetUp();
-    mock_native_provider_.reset([[TestNativeContentProvider alloc] init]);
+    mock_native_provider_ = [[TestNativeContentProvider alloc] init];
     [web_controller() setNativeProvider:mock_native_provider_];
   }
 
@@ -663,14 +666,14 @@ class CRWWebControllerNativeContentTest : public web::WebTestWithWebController {
     [web_controller() loadCurrentURL];
   }
 
-  base::scoped_nsobject<TestNativeContentProvider> mock_native_provider_;
+  TestNativeContentProvider* mock_native_provider_;
 };
 
 // Tests WebState and NavigationManager correctly return native content URL.
 TEST_F(CRWWebControllerNativeContentTest, NativeContentURL) {
   GURL url_to_load(kTestAppSpecificURL);
-  base::scoped_nsobject<TestNativeContent> content(
-      [[TestNativeContent alloc] initWithURL:url_to_load virtualURL:GURL()]);
+  TestNativeContent* content =
+      [[TestNativeContent alloc] initWithURL:url_to_load virtualURL:GURL()];
   [mock_native_provider_ setController:content forURL:url_to_load];
   Load(url_to_load);
   web::URLVerificationTrustLevel trust_level = web::kNone;
@@ -692,9 +695,9 @@ TEST_F(CRWWebControllerNativeContentTest, NativeContentURL) {
 TEST_F(CRWWebControllerNativeContentTest, NativeContentVirtualURL) {
   GURL url_to_load(kTestAppSpecificURL);
   GURL virtual_url(kTestURLString);
-  base::scoped_nsobject<TestNativeContent> content([[TestNativeContent alloc]
-      initWithURL:virtual_url
-       virtualURL:virtual_url]);
+  TestNativeContent* content =
+      [[TestNativeContent alloc] initWithURL:virtual_url
+                                  virtualURL:virtual_url];
   [mock_native_provider_ setController:content forURL:url_to_load];
   Load(url_to_load);
   web::URLVerificationTrustLevel trust_level = web::kNone;
@@ -717,8 +720,7 @@ typedef web::WebTestWithWebController CRWWebControllerObserversTest;
 
 // Tests that CRWWebControllerObservers are called.
 TEST_F(CRWWebControllerObserversTest, Observers) {
-  base::scoped_nsobject<CountingObserver> observer(
-      [[CountingObserver alloc] init]);
+  CountingObserver* observer = [[CountingObserver alloc] init];
   EXPECT_EQ(0u, [web_controller() observerCount]);
   [web_controller() addObserver:observer];
   EXPECT_EQ(1u, [web_controller() observerCount]);
@@ -876,8 +878,8 @@ class ScriptExecutionTest : public web::WebTestWithWebController {
     [web_controller()
         executeUserJavaScript:java_script
             completionHandler:^(id local_result, NSError* local_error) {
-              script_result = [local_result retain];
-              script_error = [local_error retain];
+              script_result = local_result;
+              script_error = local_error;
               script_executed = true;
             }];
 
@@ -888,8 +890,7 @@ class ScriptExecutionTest : public web::WebTestWithWebController {
     if (error) {
       *error = script_error;
     }
-    [script_error autorelease];
-    return [script_result autorelease];
+    return script_result;
   }
 };
 
@@ -932,17 +933,16 @@ class CRWWebControllerWebProcessTest : public web::WebTestWithWebController {
  protected:
   void SetUp() override {
     web::WebTestWithWebController::SetUp();
-    webView_.reset([web::BuildTerminatedWKWebView() retain]);
-    base::scoped_nsobject<TestWebViewContentView> webViewContentView(
-        [[TestWebViewContentView alloc]
-            initWithMockWebView:webView_
-                     scrollView:[webView_ scrollView]]);
+    webView_ = web::BuildTerminatedWKWebView();
+    TestWebViewContentView* webViewContentView = [[TestWebViewContentView alloc]
+        initWithMockWebView:webView_
+                 scrollView:[webView_ scrollView]];
     [web_controller() injectWebViewContentView:webViewContentView];
 
     // This test intentionally crashes the render process.
     SetIgnoreRenderProcessCrashesDuringTesting(true);
   }
-  base::scoped_nsobject<WKWebView> webView_;
+  WKWebView* webView_;
 };
 
 // Tests that WebStateDelegate::RenderProcessGone is called when WKWebView web

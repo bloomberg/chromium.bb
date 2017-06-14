@@ -4,13 +4,16 @@
 
 #import "ios/web/web_state/ui/crw_web_controller_container_view.h"
 
-#import "base/mac/scoped_nsobject.h"
 #import "ios/web/web_state/ui/crw_web_view_proxy_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 // The frame of CRWWebControllerContainerViewTest's |container_view_|.
@@ -32,7 +35,7 @@ const CGFloat kTestToolbarViewHeight = 50.0f;
 // Test CRWWebControllerContainerViewDelegate implementation.
 @interface TestWebControllerContainerViewDelegate
     : NSObject<CRWWebControllerContainerViewDelegate> {
-  base::scoped_nsobject<CRWWebViewProxyImpl> _proxy;
+  CRWWebViewProxyImpl* _proxy;
 }
 - (instancetype)initWithContentViewProxy:(CRWWebViewProxyImpl*)proxy;
 @end
@@ -41,13 +44,13 @@ const CGFloat kTestToolbarViewHeight = 50.0f;
 
 - (instancetype)initWithContentViewProxy:(CRWWebViewProxyImpl*)proxy {
   if ((self = [super init]))
-    _proxy.reset([proxy retain]);
+    _proxy = proxy;
   return self;
 }
 
 - (CRWWebViewProxyImpl*)contentViewProxyForContainerView:
         (CRWWebControllerContainerView*)containerView {
-  return _proxy.get();
+  return _proxy;
 }
 
 - (CGFloat)headerHeightForContainerView:
@@ -65,26 +68,25 @@ class CRWWebControllerContainerViewTest : public PlatformTest {
     PlatformTest::SetUp();
     CRWWebViewProxyImpl* proxy =
         [OCMockObject niceMockForClass:[CRWWebViewProxyImpl class]];
-    delegate_.reset([[TestWebControllerContainerViewDelegate alloc]
-        initWithContentViewProxy:proxy]);
-    container_view_.reset(
-        [[CRWWebControllerContainerView alloc] initWithDelegate:delegate_]);
+    delegate_ = [[TestWebControllerContainerViewDelegate alloc]
+        initWithContentViewProxy:proxy];
+    container_view_ =
+        [[CRWWebControllerContainerView alloc] initWithDelegate:delegate_];
     [container_view_ setFrame:kContainerViewFrame];
   }
 
   // The CRWWebControllerContainerViewDelegate (required for designated
   // initializer).
-  base::scoped_nsobject<TestWebControllerContainerViewDelegate> delegate_;
+  TestWebControllerContainerViewDelegate* delegate_;
   // The container view being tested.
-  base::scoped_nsobject<CRWWebControllerContainerView> container_view_;
+  CRWWebControllerContainerView* container_view_;
 };
 
 // Tests that |-addToolbar:| will successfully add the passed-in toolbar to the
 // container view and will correctly reset its frame to be bottom-aligned with
 // the container's width.
 TEST_F(CRWWebControllerContainerViewTest, AddToolbar) {
-  base::scoped_nsobject<TestToolbarView> toolbar(
-      [[TestToolbarView alloc] initWithFrame:CGRectZero]);
+  TestToolbarView* toolbar = [[TestToolbarView alloc] initWithFrame:CGRectZero];
   [container_view_ addToolbar:toolbar];
   [container_view_ layoutIfNeeded];
   // Check that the toolbar has been added to the container view.
