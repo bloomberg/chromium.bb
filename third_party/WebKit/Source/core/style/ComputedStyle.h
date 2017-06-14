@@ -1019,32 +1019,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     SetRespectImageOrientationInternal(v);
   }
 
-  // -webkit-margin-before-collapse (aka -webkit-margin-top-collapse)
-  static EMarginCollapse InitialMarginBeforeCollapse() {
-    return EMarginCollapse::kCollapse;
-  }
-  EMarginCollapse MarginAfterCollapse() const {
-    return static_cast<EMarginCollapse>(
-        rare_non_inherited_data_->margin_after_collapse_);
-  }
-  void SetMarginBeforeCollapse(EMarginCollapse c) {
-    SET_VAR(rare_non_inherited_data_, margin_before_collapse_,
-            static_cast<unsigned>(c));
-  }
-
-  // -webkit-margin-after-collapse (aka -webkit-margin-bottom-collapse)
-  static EMarginCollapse InitialMarginAfterCollapse() {
-    return EMarginCollapse::kCollapse;
-  }
-  EMarginCollapse MarginBeforeCollapse() const {
-    return static_cast<EMarginCollapse>(
-        rare_non_inherited_data_->margin_before_collapse_);
-  }
-  void SetMarginAfterCollapse(EMarginCollapse c) {
-    SET_VAR(rare_non_inherited_data_, margin_after_collapse_,
-            static_cast<unsigned>(c));
-  }
-
   // mix-blend-mode
   static WebBlendMode InitialBlendMode() { return kWebBlendModeNormal; }
   WebBlendMode BlendMode() const {

@@ -874,39 +874,6 @@ inline EFloat CSSIdentifierValue::ConvertTo() const {
 }
 
 template <>
-inline CSSIdentifierValue::CSSIdentifierValue(EMarginCollapse e)
-    : CSSValue(kIdentifierClass) {
-  switch (e) {
-    case EMarginCollapse::kCollapse:
-      value_id_ = CSSValueCollapse;
-      break;
-    case EMarginCollapse::kSeparate:
-      value_id_ = CSSValueSeparate;
-      break;
-    case EMarginCollapse::kDiscard:
-      value_id_ = CSSValueDiscard;
-      break;
-  }
-}
-
-template <>
-inline EMarginCollapse CSSIdentifierValue::ConvertTo() const {
-  switch (value_id_) {
-    case CSSValueCollapse:
-      return EMarginCollapse::kCollapse;
-    case CSSValueSeparate:
-      return EMarginCollapse::kSeparate;
-    case CSSValueDiscard:
-      return EMarginCollapse::kDiscard;
-    default:
-      break;
-  }
-
-  NOTREACHED();
-  return EMarginCollapse::kCollapse;
-}
-
-template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EPosition e)
     : CSSValue(kIdentifierClass) {
   switch (e) {

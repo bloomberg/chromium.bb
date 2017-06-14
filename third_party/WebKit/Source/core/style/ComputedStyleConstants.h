@@ -97,8 +97,6 @@ enum ColumnSpan { kColumnSpanNone = 0, kColumnSpanAll };
 
 enum OutlineIsAuto { kOutlineIsAutoOff = 0, kOutlineIsAutoOn };
 
-enum class EMarginCollapse { kCollapse, kSeparate, kDiscard };
-
 // Random visual rendering model attributes. Not inherited.
 
 enum class EVerticalAlign : unsigned {
