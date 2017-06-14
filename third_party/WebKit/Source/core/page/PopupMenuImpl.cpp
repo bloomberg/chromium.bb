@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/page/PopupMenu.h"
+#include "core/page/PopupMenuImpl.h"
 
 #include "core/HTMLNames.h"
 #include "core/css/CSSFontSelector.h"
@@ -144,7 +144,7 @@ DEFINE_TRACE(PopupMenuCSSFontSelector) {
 
 // ----------------------------------------------------------------
 
-class PopupMenu::ItemIterationContext {
+class PopupMenuImpl::ItemIterationContext {
   STACK_ALLOCATED();
 
  public:
@@ -236,28 +236,29 @@ class PopupMenu::ItemIterationContext {
 
 // ----------------------------------------------------------------
 
-PopupMenu* PopupMenu::Create(ChromeClient* chrome_client,
-                             HTMLSelectElement& owner_element) {
-  return new PopupMenu(chrome_client, owner_element);
+PopupMenuImpl* PopupMenuImpl::Create(ChromeClient* chrome_client,
+                                     HTMLSelectElement& owner_element) {
+  return new PopupMenuImpl(chrome_client, owner_element);
 }
 
-PopupMenu::PopupMenu(ChromeClient* chrome_client,
-                     HTMLSelectElement& owner_element)
+PopupMenuImpl::PopupMenuImpl(ChromeClient* chrome_client,
+                             HTMLSelectElement& owner_element)
     : chrome_client_(chrome_client),
       owner_element_(owner_element),
       popup_(nullptr),
       needs_update_(false) {}
 
-PopupMenu::~PopupMenu() {
+PopupMenuImpl::~PopupMenuImpl() {
   DCHECK(!popup_);
 }
 
-DEFINE_TRACE(PopupMenu) {
+DEFINE_TRACE(PopupMenuImpl) {
   visitor->Trace(chrome_client_);
   visitor->Trace(owner_element_);
+  PopupMenu::Trace(visitor);
 }
 
-void PopupMenu::WriteDocument(SharedBuffer* data) {
+void PopupMenuImpl::WriteDocument(SharedBuffer* data) {
   HTMLSelectElement& owner_element = *owner_element_;
   IntRect anchor_rect_in_screen = chrome_client_->ViewportToScreen(
       owner_element.VisibleBoundsInVisualViewport(),
@@ -327,8 +328,8 @@ void PopupMenu::WriteDocument(SharedBuffer* data) {
   PagePopupClient::AddString("</script></body>\n", data);
 }
 
-void PopupMenu::AddElementStyle(ItemIterationContext& context,
-                                HTMLElement& element) {
+void PopupMenuImpl::AddElementStyle(ItemIterationContext& context,
+                                    HTMLElement& element) {
   const ComputedStyle* style = owner_element_->ItemComputedStyle(element);
   DCHECK(style);
   SharedBuffer* data = context.buffer_;
@@ -395,8 +396,8 @@ void PopupMenu::AddElementStyle(ItemIterationContext& context,
   PagePopupClient::AddString("},\n", data);
 }
 
-void PopupMenu::AddOption(ItemIterationContext& context,
-                          HTMLOptionElement& element) {
+void PopupMenuImpl::AddOption(ItemIterationContext& context,
+                              HTMLOptionElement& element) {
   SharedBuffer* data = context.buffer_;
   PagePopupClient::AddString("{", data);
   AddProperty("label", element.DisplayLabel(), data);
@@ -413,8 +414,8 @@ void PopupMenu::AddOption(ItemIterationContext& context,
   PagePopupClient::AddString("},", data);
 }
 
-void PopupMenu::AddOptGroup(ItemIterationContext& context,
-                            HTMLOptGroupElement& element) {
+void PopupMenuImpl::AddOptGroup(ItemIterationContext& context,
+                                HTMLOptGroupElement& element) {
   SharedBuffer* data = context.buffer_;
   PagePopupClient::AddString("{\n", data);
   PagePopupClient::AddString("type: \"optgroup\",\n", data);
@@ -428,8 +429,8 @@ void PopupMenu::AddOptGroup(ItemIterationContext& context,
   // We should call ItemIterationContext::finishGroupIfNecessary() later.
 }
 
-void PopupMenu::AddSeparator(ItemIterationContext& context,
-                             HTMLHRElement& element) {
+void PopupMenuImpl::AddSeparator(ItemIterationContext& context,
+                                 HTMLHRElement& element) {
   SharedBuffer* data = context.buffer_;
   PagePopupClient::AddString("{\n", data);
   PagePopupClient::AddString("type: \"separator\",\n", data);
@@ -441,14 +442,14 @@ void PopupMenu::AddSeparator(ItemIterationContext& context,
   PagePopupClient::AddString("},\n", data);
 }
 
-void PopupMenu::SelectFontsFromOwnerDocument(Document& document) {
+void PopupMenuImpl::SelectFontsFromOwnerDocument(Document& document) {
   Document& owner_document = OwnerElement().GetDocument();
   document.GetStyleEngine().SetFontSelector(PopupMenuCSSFontSelector::Create(
       &document, owner_document.GetStyleEngine().FontSelector()));
 }
 
-void PopupMenu::SetValueAndClosePopup(int num_value,
-                                      const String& string_value) {
+void PopupMenuImpl::SetValueAndClosePopup(int num_value,
+                                          const String& string_value) {
   DCHECK(popup_);
   DCHECK(owner_element_);
   if (!string_value.IsEmpty()) {
@@ -479,7 +480,7 @@ void PopupMenu::SetValueAndClosePopup(int num_value,
   }
 }
 
-void PopupMenu::SetValue(const String& value) {
+void PopupMenuImpl::SetValue(const String& value) {
   DCHECK(owner_element_);
   bool success;
   int list_index = value.ToInt(&success);
@@ -487,53 +488,53 @@ void PopupMenu::SetValue(const String& value) {
   owner_element_->ProvisionalSelectionChanged(list_index);
 }
 
-void PopupMenu::DidClosePopup() {
+void PopupMenuImpl::DidClosePopup() {
   // Clearing m_popup first to prevent from trying to close the popup again.
   popup_ = nullptr;
   if (owner_element_)
     owner_element_->PopupDidHide();
 }
 
-Element& PopupMenu::OwnerElement() {
+Element& PopupMenuImpl::OwnerElement() {
   return *owner_element_;
 }
 
-Locale& PopupMenu::GetLocale() {
+Locale& PopupMenuImpl::GetLocale() {
   return Locale::DefaultLocale();
 }
 
-void PopupMenu::ClosePopup() {
+void PopupMenuImpl::ClosePopup() {
   if (popup_)
     chrome_client_->ClosePagePopup(popup_);
   if (owner_element_)
     owner_element_->PopupDidCancel();
 }
 
-void PopupMenu::Dispose() {
+void PopupMenuImpl::Dispose() {
   if (popup_)
     chrome_client_->ClosePagePopup(popup_);
 }
 
-void PopupMenu::Show() {
+void PopupMenuImpl::Show() {
   DCHECK(!popup_);
   popup_ = chrome_client_->OpenPagePopup(this);
 }
 
-void PopupMenu::Hide() {
+void PopupMenuImpl::Hide() {
   ClosePopup();
 }
 
-void PopupMenu::UpdateFromElement(UpdateReason) {
+void PopupMenuImpl::UpdateFromElement(UpdateReason) {
   if (needs_update_)
     return;
   needs_update_ = true;
   TaskRunnerHelper::Get(TaskType::kUserInteraction,
                         &OwnerElement().GetDocument())
       ->PostTask(BLINK_FROM_HERE,
-                 WTF::Bind(&PopupMenu::Update, WrapPersistent(this)));
+                 WTF::Bind(&PopupMenuImpl::Update, WrapPersistent(this)));
 }
 
-void PopupMenu::Update() {
+void PopupMenuImpl::Update() {
   if (!popup_ || !owner_element_)
     return;
   OwnerElement().GetDocument().UpdateStyleAndLayoutTree();
@@ -580,7 +581,7 @@ void PopupMenu::Update() {
   popup_->PostMessage(String::FromUTF8(data->Data(), data->size()));
 }
 
-void PopupMenu::DisconnectClient() {
+void PopupMenuImpl::DisconnectClient() {
   owner_element_ = nullptr;
   // Cannot be done during finalization, so instead done when the
   // layout object is destroyed and disconnected.
