@@ -40400,6 +40400,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.SSL_EVCertificateInWhitelist" enum="Boolean">
+  <obsolete>
+    Removed 06/2017 with the deprecation of the EV certificate whitelist after
+    all certificates expired.
+  </obsolete>
   <owner>eranm@chromium.org</owner>
   <owner>rsleevi@chromium.org</owner>
   <summary>
@@ -40410,6 +40414,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.SSL_EVCTCompliance" enum="EVCTCompliance">
+  <obsolete>
+    Removed 06/2017 with the deprecation of distinct EV and !EV CT policies.
+  </obsolete>
   <owner>eranm@chromium.org</owner>
   <owner>rsleevi@chromium.org</owner>
   <summary>
@@ -40425,6 +40432,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.SSL_EVWhitelistValidityForNonCompliantCert"
     enum="EVWhitelistStatus">
+  <obsolete>
+    Removed 06/2017 with the deprecation of the EV certificate whitelist after
+    all certificates expired.
+  </obsolete>
   <owner>eranm@chromium.org</owner>
   <owner>rsleevi@chromium.org</owner>
   <summary>

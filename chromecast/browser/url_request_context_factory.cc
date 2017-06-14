@@ -63,14 +63,6 @@ class IgnoresCTPolicyEnforcer : public net::CTPolicyEnforcer {
       const net::NetLogWithSource& net_log) override {
     return net::ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS;
   }
-
-  net::ct::EVPolicyCompliance DoesConformToCTEVPolicy(
-      net::X509Certificate* cert,
-      const net::ct::EVCertsWhitelist* ev_whitelist,
-      const net::SCTList& verified_scts,
-      const net::NetLogWithSource& net_log) override {
-    return net::ct::EVPolicyCompliance::EV_POLICY_DOES_NOT_APPLY;
-  }
 };
 
 bool IgnoreCertificateErrors() {

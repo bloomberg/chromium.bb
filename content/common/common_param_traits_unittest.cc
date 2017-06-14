@@ -194,8 +194,6 @@ TEST(IPCMessageTest, SSLInfo) {
           sct, net::ct::SCT_STATUS_LOG_UNKNOWN));
 
   in.ct_compliance_details_available = true;
-  in.ct_ev_policy_compliance =
-      net::ct::EVPolicyCompliance::EV_POLICY_COMPLIES_VIA_WHITELIST;
   in.ct_cert_policy_compliance =
       net::ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS;
   in.ocsp_result.response_status = net::OCSPVerifyResult::PROVIDED;
@@ -251,7 +249,6 @@ TEST(IPCMessageTest, SSLInfo) {
 
   ASSERT_EQ(in.ct_compliance_details_available,
             out.ct_compliance_details_available);
-  ASSERT_EQ(in.ct_ev_policy_compliance, out.ct_ev_policy_compliance);
   ASSERT_EQ(in.ct_cert_policy_compliance, out.ct_cert_policy_compliance);
   ASSERT_EQ(in.ocsp_result, out.ocsp_result);
 }

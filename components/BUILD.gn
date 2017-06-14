@@ -202,7 +202,6 @@ test("components_unittests") {
       "//components/offline_pages/core/background:unit_tests",
       "//components/offline_pages/core/downloads:unit_tests",
       "//components/offline_pages/core/request_header:unit_tests",
-      "//components/packed_ct_ev_whitelist:unit_tests",
       "//components/password_manager/content/browser:unit_tests",
       "//components/payments/content:unit_tests",
       "//components/payments/content/utility:unit_tests",
