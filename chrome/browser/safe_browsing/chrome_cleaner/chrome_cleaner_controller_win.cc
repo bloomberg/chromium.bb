@@ -4,6 +4,8 @@
 
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_controller_win.h"
 
+#include <windows.h>
+
 #include <utility>
 
 #include "base/bind.h"
@@ -13,7 +15,6 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/singleton.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/task_traits.h"
 #include "base/threading/thread_restrictions.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_fetcher_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_runner_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_client_info_win.h"
+#include "chrome/installer/util/scoped_token_privilege.h"
 #include "components/chrome_cleaner/public/constants/constants.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "content/public/browser/browser_thread.h"
@@ -117,8 +119,11 @@ bool ChromeCleanerControllerDelegate::IsMetricsAndCrashReportingEnabled() {
 // static
 ChromeCleanerController* ChromeCleanerController::GetInstance() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  static ChromeCleanerController* const kInstance =
+      new ChromeCleanerController();
   g_instance_exists = true;
-  return base::Singleton<ChromeCleanerController>::get();
+  return kInstance;
 }
 
 // static
@@ -165,6 +170,8 @@ void ChromeCleanerController::Scan(
   reporter_invocation_ =
       base::MakeUnique<SwReporterInvocation>(reporter_invocation);
   SetStateAndNotifyObservers(State::kScanning);
+  // base::Unretained is safe because the ChromeCleanerController instance is
+  // guaranteed to outlive the UI thread.
   delegate_->FetchAndVerifyChromeCleaner(base::BindOnce(
       &ChromeCleanerController::OnChromeCleanerFetchedAndVerified,
       base::Unretained(this)));
@@ -172,7 +179,7 @@ void ChromeCleanerController::Scan(
 
 void ChromeCleanerController::ReplyWithUserResponse(
     UserResponse user_response) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(prompt_user_callback_);
 
   if (state() != State::kInfected)
@@ -203,11 +210,20 @@ void ChromeCleanerController::ReplyWithUserResponse(
   SetStateAndNotifyObservers(new_state);
 }
 
+void ChromeCleanerController::Reboot() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  if (state() != State::kRebootRequired)
+    return;
+
+  InitiateReboot();
+}
+
 ChromeCleanerController::ChromeCleanerController()
     : real_delegate_(base::MakeUnique<ChromeCleanerControllerDelegate>()),
       delegate_(real_delegate_.get()),
       weak_factory_(this) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
 ChromeCleanerController::~ChromeCleanerController() = default;
@@ -248,6 +264,8 @@ void ChromeCleanerController::SetStateAndNotifyObservers(State state) {
 }
 
 void ChromeCleanerController::ResetCleanerDataAndInvalidateWeakPtrs() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
   weak_factory_.InvalidateWeakPtrs();
   reporter_invocation_.reset();
   files_to_delete_.reset();
@@ -386,6 +404,20 @@ void ChromeCleanerController::OnCleanerProcessDone(
 
   idle_reason_ = IdleReason::kCleaningFailed;
   SetStateAndNotifyObservers(State::kIdle);
+}
+
+void ChromeCleanerController::InitiateReboot() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  installer::ScopedTokenPrivilege scoped_se_shutdown_privilege(
+      SE_SHUTDOWN_NAME);
+  if (!scoped_se_shutdown_privilege.is_enabled() ||
+      !::ExitWindowsEx(EWX_REBOOT, SHTDN_REASON_MAJOR_SOFTWARE |
+                                       SHTDN_REASON_MINOR_OTHER |
+                                       SHTDN_REASON_FLAG_PLANNED)) {
+    for (auto& observer : observer_list_)
+      observer.OnRebootFailed();
+  }
 }
 
 }  // namespace safe_browsing
