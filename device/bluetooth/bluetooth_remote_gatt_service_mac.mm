@@ -192,20 +192,33 @@ CBService* BluetoothRemoteGattServiceMac::GetService() const {
 
 BluetoothRemoteGattCharacteristicMac*
 BluetoothRemoteGattServiceMac::GetBluetoothRemoteGattCharacteristicMac(
-    CBCharacteristic* characteristic) const {
+    CBCharacteristic* cb_characteristic) const {
   auto found = std::find_if(
       gatt_characteristic_macs_.begin(), gatt_characteristic_macs_.end(),
-      [characteristic](
+      [cb_characteristic](
           const std::pair<
               const std::string,
               std::unique_ptr<BluetoothRemoteGattCharacteristicMac>>& pair) {
-        return pair.second->GetCBCharacteristic() == characteristic;
+        return pair.second->GetCBCharacteristic() == cb_characteristic;
       });
   if (found == gatt_characteristic_macs_.end()) {
     return nullptr;
   } else {
     return found->second.get();
   }
+}
+
+BluetoothRemoteGattDescriptorMac*
+BluetoothRemoteGattServiceMac::GetBluetoothRemoteGattDescriptorMac(
+    CBDescriptor* cb_descriptor) const {
+  CBCharacteristic* cb_characteristic = [cb_descriptor characteristic];
+  BluetoothRemoteGattCharacteristicMac* gatt_characteristic_mac =
+      GetBluetoothRemoteGattCharacteristicMac(cb_characteristic);
+  if (!gatt_characteristic_mac) {
+    return nullptr;
+  }
+  return gatt_characteristic_mac->GetBluetoothRemoteGattDescriptorMac(
+      cb_descriptor);
 }
 
 DEVICE_BLUETOOTH_EXPORT std::ostream& operator<<(
