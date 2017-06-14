@@ -17,8 +17,6 @@ enum ChromeDistanceMetric {
   DISTANCE_BUTTON_MINIMUM_WIDTH = views::VIEWS_DISTANCE_END,
   // Vertical spacing between a list of multiple controls in one column.
   DISTANCE_CONTROL_LIST_VERTICAL,
-  // Spacing between a dialog button and the content above it.
-  DISTANCE_DIALOG_BUTTON_TOP,
   // Smaller horizontal spacing between other controls that are logically
   // related.
   DISTANCE_RELATED_CONTROL_HORIZONTAL_SMALL,

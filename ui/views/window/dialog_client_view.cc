@@ -342,17 +342,6 @@ void DialogClientView::SetupLayout() {
   if (std::count(views.begin(), views.end(), nullptr) == kNumButtons)
     return;
 
-  gfx::Insets insets = button_row_insets_;
-  LayoutProvider* const layout_provider = LayoutProvider::Get();
-  // Support dialogs that clear |button_row_insets_| to do their own layout.
-  // They expect GetDialogRelatedControlVerticalSpacing() in this case.
-  if (insets.top() == 0 &&
-      !ui::MaterialDesignController::IsSecondaryUiMaterial()) {
-    const int top =
-        layout_provider->GetDistanceMetric(DISTANCE_RELATED_CONTROL_VERTICAL);
-    insets.Set(top, insets.left(), insets.bottom(), insets.right());
-  }
-
   // The |resize_percent| constants. There's only one stretchy column (padding
   // to the left of ok/cancel buttons).
   constexpr float kFixed = 0.f;
@@ -361,6 +350,7 @@ void DialogClientView::SetupLayout() {
   // Button row is [ extra <pad+stretchy> second <pad> third ]. Ensure the <pad>
   // column is zero width if there isn't a button on either side.
   // GetExtraViewSpacing() handles <pad+stretchy>.
+  LayoutProvider* const layout_provider = LayoutProvider::Get();
   const int button_spacing = (ok_button_ && cancel_button_)
                                  ? layout_provider->GetDistanceMetric(
                                        DISTANCE_RELATED_BUTTON_HORIZONTAL)
@@ -371,7 +361,7 @@ void DialogClientView::SetupLayout() {
 
   // Rather than giving |button_row_container_| a Border, incorporate the insets
   // into the layout. This simplifies min/max size calculations.
-  column_set->AddPaddingColumn(kFixed, insets.left());
+  column_set->AddPaddingColumn(kFixed, button_row_insets_.left());
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, kFixed,
                         GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(kStretchy, GetExtraViewSpacing());
@@ -380,14 +370,15 @@ void DialogClientView::SetupLayout() {
   column_set->AddPaddingColumn(kFixed, button_spacing);
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, kFixed,
                         GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(kFixed, insets.right());
+  column_set->AddPaddingColumn(kFixed, button_row_insets_.right());
 
   // Track which columns to link sizes under MD.
   constexpr int kViewToColumnIndex[] = {1, 3, 5};
   int link[] = {-1, -1, -1};
   size_t link_index = 0;
 
-  layout->StartRowWithPadding(kFixed, kButtonRowId, kFixed, insets.top());
+  layout->StartRowWithPadding(kFixed, kButtonRowId, kFixed,
+                              button_row_insets_.top());
   for (size_t view_index = 0; view_index < kNumButtons; ++view_index) {
     if (views[view_index]) {
       layout->AddView(views[view_index]);
@@ -411,7 +402,7 @@ void DialogClientView::SetupLayout() {
   else
     column_set->LinkColumnSizes(link[0], link[1], link[2], -1);
 
-  layout->AddPaddingRow(kFixed, insets.bottom());
+  layout->AddPaddingRow(kFixed, button_row_insets_.bottom());
 
   // The default focus is lost when child views are added back into the dialog.
   // This restores focus if the button is still available.

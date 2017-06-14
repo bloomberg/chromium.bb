@@ -30,8 +30,6 @@ int ChromeLayoutProvider::GetDistanceMetric(int metric) const {
       return views::kMinimumButtonWidth;
     case DISTANCE_CONTROL_LIST_VERTICAL:
       return GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL);
-    case DISTANCE_DIALOG_BUTTON_TOP:
-      return 0;
     case DISTANCE_RELATED_CONTROL_HORIZONTAL_SMALL:
       return views::kRelatedControlSmallHorizontalSpacing;
     case DISTANCE_RELATED_CONTROL_VERTICAL_SMALL:
