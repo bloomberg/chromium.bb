@@ -10,6 +10,10 @@
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace web {
 
 // Tests that ValueResultFromWKResult converts nil value to nullptr.
@@ -133,7 +137,7 @@ TEST(WebViewJsUtilsTest, ValueResultFromDictionaryWithDepthCheckWKResult) {
   test_dictionary_2[obj_c_key] = test_dictionary;
 
   // Break the retain cycle so that the dictionaries are freed.
-  base::ScopedClosureRunner runner(base::BindBlock(^{
+  base::ScopedClosureRunner runner(base::BindBlockArc(^{
     [test_dictionary_2 removeAllObjects];
   }));
 
@@ -166,7 +170,7 @@ TEST(WebViewJsUtilsTest, ValueResultFromArrayWithDepthCheckWKResult) {
   test_array_2[0] = test_array;
 
   // Break the retain cycle so that the arrays are freed.
-  base::ScopedClosureRunner runner(base::BindBlock(^{
+  base::ScopedClosureRunner runner(base::BindBlockArc(^{
     [test_array removeAllObjects];
   }));
 

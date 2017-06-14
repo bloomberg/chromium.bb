@@ -6,12 +6,15 @@
 
 #import <WebKit/WebKit.h>
 
-#import "base/mac/scoped_nsobject.h"
 #import "ios/web/web_state/navigation_context_impl.h"
 #include "net/http/http_response_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "url/gurl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 const char kTestUrl1[] = "https://test1.test/";
@@ -30,10 +33,10 @@ class CRWWKNavigationStatesTest : public PlatformTest {
         states_([[CRWWKNavigationStates alloc] init]) {}
 
  protected:
-  base::scoped_nsobject<WKNavigation> navigation1_;
-  base::scoped_nsobject<WKNavigation> navigation2_;
-  base::scoped_nsobject<WKNavigation> navigation3_;
-  base::scoped_nsobject<CRWWKNavigationStates> states_;
+  WKNavigation* navigation1_;
+  WKNavigation* navigation2_;
+  WKNavigation* navigation3_;
+  CRWWKNavigationStates* states_;
 };
 
 // Tests |removeNavigation:| method.
@@ -103,7 +106,7 @@ TEST_F(CRWWKNavigationStatesTest, Context) {
       NavigationContextImpl::CreateNavigationContext(
           nullptr /*web_state*/, GURL(kTestUrl2),
           ui::PageTransition::PAGE_TRANSITION_GENERATED);
-  NSError* error = [[[NSError alloc] init] autorelease];
+  NSError* error = [[NSError alloc] init];
   context2->SetError(error);
   [states_ setContext:std::move(context2) forNavigation:navigation1_];
   EXPECT_FALSE([states_ contextForNavigation:navigation2_]);

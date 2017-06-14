@@ -7,28 +7,30 @@
 #import <UIKit/UIKit.h>
 
 #include "base/compiler_specific.h"
-#import "base/mac/scoped_nsobject.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
 class CRWWebViewScrollViewProxyTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    mockScrollView_.reset(
-        [[OCMockObject niceMockForClass:[UIScrollView class]] retain]);
-    webViewScrollViewProxy_.reset([[CRWWebViewScrollViewProxy alloc] init]);
+    mockScrollView_ = [OCMockObject niceMockForClass:[UIScrollView class]];
+    webViewScrollViewProxy_ = [[CRWWebViewScrollViewProxy alloc] init];
   }
-  base::scoped_nsobject<id> mockScrollView_;
-  base::scoped_nsobject<CRWWebViewScrollViewProxy> webViewScrollViewProxy_;
+  id mockScrollView_;
+  CRWWebViewScrollViewProxy* webViewScrollViewProxy_;
 };
 
 // Tests that the UIScrollViewDelegate is set correctly.
 TEST_F(CRWWebViewScrollViewProxyTest, testDelegate) {
   [static_cast<UIScrollView*>([mockScrollView_ expect])
-      setDelegate:webViewScrollViewProxy_.get()];
+      setDelegate:webViewScrollViewProxy_];
   [webViewScrollViewProxy_ setScrollView:mockScrollView_];
   EXPECT_OCMOCK_VERIFY(mockScrollView_);
 }
@@ -36,24 +38,21 @@ TEST_F(CRWWebViewScrollViewProxyTest, testDelegate) {
 // Tests that setting 2 scroll views consecutively, clears the delegate of the
 // previous scroll view.
 TEST_F(CRWWebViewScrollViewProxyTest, testMultipleScrollView) {
-  base::scoped_nsobject<UIScrollView> mockScrollView1(
-      [[UIScrollView alloc] init]);
-  base::scoped_nsobject<UIScrollView> mockScrollView2(
-      [[UIScrollView alloc] init]);
+  UIScrollView* mockScrollView1 = [[UIScrollView alloc] init];
+  UIScrollView* mockScrollView2 = [[UIScrollView alloc] init];
   [webViewScrollViewProxy_ setScrollView:mockScrollView1];
   [webViewScrollViewProxy_ setScrollView:mockScrollView2];
   EXPECT_FALSE([mockScrollView1 delegate]);
-  EXPECT_EQ(webViewScrollViewProxy_.get(), [mockScrollView2 delegate]);
+  EXPECT_EQ(webViewScrollViewProxy_, [mockScrollView2 delegate]);
   [webViewScrollViewProxy_ setScrollView:nil];
 }
 
 // Tests that when releasing a scroll view from the CRWWebViewScrollViewProxy,
 // the UIScrollView's delegate is also cleared.
 TEST_F(CRWWebViewScrollViewProxyTest, testDelegateClearingUp) {
-  base::scoped_nsobject<UIScrollView> mockScrollView1(
-      [[UIScrollView alloc] init]);
+  UIScrollView* mockScrollView1 = [[UIScrollView alloc] init];
   [webViewScrollViewProxy_ setScrollView:mockScrollView1];
-  EXPECT_EQ(webViewScrollViewProxy_.get(), [mockScrollView1 delegate]);
+  EXPECT_EQ(webViewScrollViewProxy_, [mockScrollView1 delegate]);
   [webViewScrollViewProxy_ setScrollView:nil];
   EXPECT_FALSE([mockScrollView1 delegate]);
 }
@@ -163,12 +162,12 @@ TEST_F(CRWWebViewScrollViewProxyTest, testReleasingAScrollView) {
 TEST_F(CRWWebViewScrollViewProxyTest, testMultipleWebViewScrollViewProxies) {
   [webViewScrollViewProxy_ setScrollView:mockScrollView_];
 
-  base::scoped_nsobject<CRWWebViewScrollViewProxy> webViewScrollViewProxy1(
-      [[CRWWebViewScrollViewProxy alloc] init]);
+  CRWWebViewScrollViewProxy* webViewScrollViewProxy1 =
+      [[CRWWebViewScrollViewProxy alloc] init];
   [webViewScrollViewProxy1 setScrollView:mockScrollView_];
 
-  base::scoped_nsobject<CRWWebViewScrollViewProxy> webViewScrollViewProxy2(
-      [[CRWWebViewScrollViewProxy alloc] init]);
+  CRWWebViewScrollViewProxy* webViewScrollViewProxy2 =
+      [[CRWWebViewScrollViewProxy alloc] init];
   [webViewScrollViewProxy2 setScrollView:mockScrollView_];
 
   // Arbitrary point.

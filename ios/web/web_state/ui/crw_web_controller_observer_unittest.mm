@@ -4,9 +4,12 @@
 
 #import "ios/web/public/web_state/crw_web_controller_observer.h"
 
-#import "base/mac/scoped_nsobject.h"
 #import "ios/web/test/crw_fake_web_controller_observer.h"
 #import "ios/web/test/web_test_with_web_controller.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace web {
 
@@ -15,19 +18,17 @@ class CRWWebControllerObserverTest : public web::WebTestWithWebController {
  protected:
   void SetUp() override {
     web::WebTestWithWebController::SetUp();
-    fake_web_controller_observer_.reset(
-        [[CRWFakeWebControllerObserver alloc] init]);
+    fake_web_controller_observer_ = [[CRWFakeWebControllerObserver alloc] init];
     [web_controller() addObserver:fake_web_controller_observer_];
   }
 
   void TearDown() override {
     [web_controller() removeObserver:fake_web_controller_observer_];
-    fake_web_controller_observer_.reset();
+    fake_web_controller_observer_ = nil;
     web::WebTestWithWebController::TearDown();
   }
 
-  base::scoped_nsobject<CRWFakeWebControllerObserver>
-      fake_web_controller_observer_;
+  CRWFakeWebControllerObserver* fake_web_controller_observer_;
 };
 
 TEST_F(CRWWebControllerObserverTest, PageLoaded) {

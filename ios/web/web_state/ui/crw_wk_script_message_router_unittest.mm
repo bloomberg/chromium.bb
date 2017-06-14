@@ -5,7 +5,6 @@
 #import "ios/web/web_state/ui/crw_wk_script_message_router.h"
 
 #include "base/mac/scoped_block.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
 #import "ios/web/public/test/fakes/test_web_client.h"
@@ -14,6 +13,10 @@
 #import "ios/web/public/web_view_creation_util.h"
 #include "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -35,28 +38,28 @@ class CRWWKScriptMessageRouterTest : public web::WebTest {
   void SetUp() override {
     web::WebTest::SetUp();
     // Mock WKUserContentController object.
-    controller_mock_.reset(
-        [[OCMockObject mockForClass:[WKUserContentController class]] retain]);
+    controller_mock_ =
+        [OCMockObject mockForClass:[WKUserContentController class]];
     [controller_mock_ setExpectationOrderMatters:YES];
 
     // Create testable CRWWKScriptMessageRouter.
-    router_.reset(static_cast<id<WKScriptMessageHandler>>(
+    router_ = static_cast<id<WKScriptMessageHandler>>(
         [[CRWWKScriptMessageRouter alloc]
-            initWithUserContentController:controller_mock_]));
+            initWithUserContentController:controller_mock_]);
 
     // Prepare test data.
-    handler1_.reset([^{
-    } copy]);
-    handler2_.reset([^{
-    } copy]);
-    handler3_.reset([^{
-    } copy]);
-    name1_.reset([@"name1" copy]);
-    name2_.reset([@"name2" copy]);
-    name3_.reset([@"name3" copy]);
-    web_view1_.reset([web::BuildWKWebView(CGRectZero, &browser_state_) retain]);
-    web_view2_.reset([web::BuildWKWebView(CGRectZero, &browser_state_) retain]);
-    web_view3_.reset([web::BuildWKWebView(CGRectZero, &browser_state_) retain]);
+    handler1_ = [^{
+    } copy];
+    handler2_ = [^{
+    } copy];
+    handler3_ = [^{
+    } copy];
+    name1_ = [@"name1" copy];
+    name2_ = [@"name2" copy];
+    name3_ = [@"name3" copy];
+    web_view1_ = web::BuildWKWebView(CGRectZero, &browser_state_);
+    web_view2_ = web::BuildWKWebView(CGRectZero, &browser_state_);
+    web_view3_ = web::BuildWKWebView(CGRectZero, &browser_state_);
   }
   void TearDown() override {
     EXPECT_OCMOCK_VERIFY(controller_mock_);
@@ -64,22 +67,22 @@ class CRWWKScriptMessageRouterTest : public web::WebTest {
   }
 
   // WKUserContentController mock used to create testable router.
-  base::scoped_nsobject<id> controller_mock_;
+  id controller_mock_;
 
   // CRWWKScriptMessageRouter set up for testing.
-  base::scoped_nsobject<id> router_;
+  id router_;
 
   // Tests data.
   typedef void (^WKScriptMessageHandler)(WKScriptMessage*);
-  base::mac::ScopedBlock<WKScriptMessageHandler> handler1_;
-  base::mac::ScopedBlock<WKScriptMessageHandler> handler2_;
-  base::mac::ScopedBlock<WKScriptMessageHandler> handler3_;
-  base::scoped_nsobject<NSString> name1_;
-  base::scoped_nsobject<NSString> name2_;
-  base::scoped_nsobject<NSString> name3_;
-  base::scoped_nsobject<WKWebView> web_view1_;
-  base::scoped_nsobject<WKWebView> web_view2_;
-  base::scoped_nsobject<WKWebView> web_view3_;
+  WKScriptMessageHandler handler1_;
+  WKScriptMessageHandler handler2_;
+  WKScriptMessageHandler handler3_;
+  NSString* name1_;
+  NSString* name2_;
+  NSString* name3_;
+  WKWebView* web_view1_;
+  WKWebView* web_view2_;
+  WKWebView* web_view3_;
 
  private:
   // WebClient and BrowserState for testing.

@@ -6,7 +6,6 @@
 
 #import <WebKit/WebKit.h>
 
-#import "base/ios/weak_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
 #include "ios/web/public/test/scoped_testing_web_client.h"
@@ -16,6 +15,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace web {
 namespace {
@@ -81,10 +84,10 @@ TEST_F(WKWebViewConfigurationProviderTest, OffTheRecordConfiguration) {
 TEST_F(WKWebViewConfigurationProviderTest, ConfigurationProtection) {
   WKWebViewConfigurationProvider& provider = GetProvider(&browser_state_);
   WKWebViewConfiguration* config = provider.GetWebViewConfiguration();
-  base::scoped_nsobject<WKProcessPool> pool([[config processPool] retain]);
-  base::scoped_nsobject<WKPreferences> prefs([[config preferences] retain]);
-  base::scoped_nsobject<WKUserContentController> userContentController(
-      [[config userContentController] retain]);
+  WKProcessPool* pool = [config processPool];
+  WKPreferences* prefs = [config preferences];
+  WKUserContentController* userContentController =
+      [config userContentController];
 
   // Change the properties of returned configuration object.
   TestBrowserState other_browser_state;
@@ -98,11 +101,11 @@ TEST_F(WKWebViewConfigurationProviderTest, ConfigurationProtection) {
 
   // Make sure that the properties of internal configuration were not changed.
   EXPECT_TRUE(provider.GetWebViewConfiguration().processPool);
-  EXPECT_EQ(pool.get(), provider.GetWebViewConfiguration().processPool);
+  EXPECT_EQ(pool, provider.GetWebViewConfiguration().processPool);
   EXPECT_TRUE(provider.GetWebViewConfiguration().preferences);
-  EXPECT_EQ(prefs.get(), provider.GetWebViewConfiguration().preferences);
+  EXPECT_EQ(prefs, provider.GetWebViewConfiguration().preferences);
   EXPECT_TRUE(provider.GetWebViewConfiguration().userContentController);
-  EXPECT_EQ(userContentController.get(),
+  EXPECT_EQ(userContentController,
             provider.GetWebViewConfiguration().userContentController);
 }
 
@@ -116,11 +119,11 @@ TEST_F(WKWebViewConfigurationProviderTest, ScriptMessageRouter) {
 // Tests that both configuration and script message router are deallocated after
 // |Purge| call.
 TEST_F(WKWebViewConfigurationProviderTest, Purge) {
-  base::WeakNSObject<id> config;
-  base::WeakNSObject<id> router;
+  __weak id config;
+  __weak id router;
   @autoreleasepool {  // Make sure that resulting copy is deallocated.
-    config.reset(GetProvider().GetWebViewConfiguration());
-    router.reset(GetProvider().GetScriptMessageRouter());
+    config = GetProvider().GetWebViewConfiguration();
+    router = GetProvider().GetScriptMessageRouter();
     ASSERT_TRUE(config);
     ASSERT_TRUE(router);
   }
