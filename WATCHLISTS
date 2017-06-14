@@ -271,7 +271,6 @@
     },
     'certificate_transparency': {
       'filepath': 'components/certificate_transparency/'\
-                  '|components/packed_ct_ev_whitelist/'\
                   '|net/cert/ct_'\
                   '|net/cert/multi_log_ct_verifier'\
                   '|net/cert/sct_status_flags.h'\

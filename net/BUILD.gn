@@ -536,7 +536,6 @@ component("net") {
       "cert/cert_verify_proc_win.h",
       "cert/crl_set_storage.cc",
       "cert/crl_set_storage.h",
-      "cert/ct_ev_whitelist.h",
       "cert/ct_log_response_parser.cc",
       "cert/ct_log_response_parser.h",
       "cert/ct_log_verifier.cc",

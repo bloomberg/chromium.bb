@@ -62,7 +62,6 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/chromeos/tether/tether_service.h"
-#include "chrome/browser/component_updater/ev_whitelist_component_installer.h"
 #include "chrome/browser/component_updater/sth_set_component_installer.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/google/google_brand_chromeos.h"
@@ -1509,8 +1508,6 @@ void UserSessionManager::InitializeCertificateTransparencyComponents(
   if (!username_hash.empty() && cus) {
     const base::FilePath path =
         ProfileHelper::GetProfilePathByUserIdHash(username_hash);
-    // EV whitelist.
-    RegisterEVWhitelistComponent(cus, path);
     // STH set fetcher.
     RegisterSTHSetComponent(cus, path);
   }

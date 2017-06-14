@@ -10957,6 +10957,9 @@ uploading your change for review.  These are checked by presubmit scripts.
 </enum>
 
 <enum name="EVCTCompliance" type="int">
+  <obsolete>
+    Deprecated 06/2017.
+  </obsolete>
   <int value="0" label="EV policy does not apply"/>
   <int value="1" label="Compliant because certificate is whitelisted"/>
   <int value="2" label="Compliant because SCTs satisfy CT policy"/>
@@ -11011,6 +11014,9 @@ uploading your change for review.  These are checked by presubmit scripts.
 </enum>
 
 <enum name="EVWhitelistStatus" type="int">
+  <obsolete>
+    Deprecated 06/2017.
+  </obsolete>
   <int value="0" label="Not present"/>
   <int value="1" label="Invalid"/>
   <int value="2" label="Valid"/>

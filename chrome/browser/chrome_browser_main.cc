@@ -53,7 +53,6 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
-#include "chrome/browser/component_updater/ev_whitelist_component_installer.h"
 #include "chrome/browser/component_updater/file_type_policies_component_installer.h"
 #include "chrome/browser/component_updater/origin_trials_component_installer.h"
 #include "chrome/browser/component_updater/pepper_flash_component_installer.h"
@@ -512,10 +511,6 @@ void RegisterComponentsForUpdate() {
     // network.
     // For Chrome OS this registration is delayed until user login.
     g_browser_process->crl_set_fetcher()->StartInitialLoad(cus, path);
-    // Registration of the EV Whitelist component here is not necessary for:
-    // 1. Android: Because it currently does not have the EV indicator.
-    // 2. Chrome OS: On Chrome OS this registration is delayed until user login.
-    RegisterEVWhitelistComponent(cus, path);
 
     // Registration of the STH set fetcher here is not done for:
     // Android: Because the story around CT on Mobile is not finalized yet.

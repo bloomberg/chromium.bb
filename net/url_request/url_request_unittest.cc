@@ -9953,14 +9953,6 @@ class HTTPSOCSPTest : public HTTPSRequestTest {
         const NetLogWithSource& net_log) override {
       return ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS;
     }
-
-    ct::EVPolicyCompliance DoesConformToCTEVPolicy(
-        X509Certificate* cert,
-        const ct::EVCertsWhitelist* ev_whitelist,
-        const SCTList& verified_scts,
-        const NetLogWithSource& net_log) override {
-      return ct::EVPolicyCompliance::EV_POLICY_COMPLIES_VIA_SCTS;
-    }
   };
   // SetupContext configures the URLRequestContext that will be used for making
   // connetions to testserver. This can be overridden in test subclasses for
