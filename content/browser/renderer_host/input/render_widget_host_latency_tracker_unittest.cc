@@ -146,6 +146,7 @@ class RenderWidgetHostLatencyTrackerTest
                                                const char* metric_name) {
     const ukm::TestUkmRecorder* ukm_recoder =
         test_browser_client_.GetTestUkmRecorder();
+
     size_t actual_event_count = 0;
     for (size_t i = 0; i < ukm_recoder->entries_count(); ++i) {
       const ukm::mojom::UkmEntry* entry = ukm_recoder->GetEntry(i);
@@ -226,6 +227,7 @@ class RenderWidgetHostLatencyTrackerTest
 
 TEST_F(RenderWidgetHostLatencyTrackerTest, TestWheelToFirstScrollHistograms) {
   const GURL url(kUrl);
+  size_t total_ukm_entry_count = 0;
   contents()->NavigateAndCommit(url);
   for (bool rendering_on_main : {false, true}) {
     ResetHistograms();
@@ -250,6 +252,10 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestWheelToFirstScrollHistograms) {
                                  INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
       tracker()->OnGpuSwapBuffersCompleted(wheel_latency);
 
+      // UKM metrics.
+      total_ukm_entry_count++;
+      EXPECT_TRUE(AssertUkmReported("Event.ScrollBegin.Wheel",
+                                    "TimeToScrollUpdateSwapBegin"));
       // Rappor metrics.
       EXPECT_TRUE(
           RapporSampleAssert("Event.Latency.ScrollUpdate.Touch."
@@ -316,8 +322,8 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestWheelToFirstScrollHistograms) {
 
       ukm::TestUkmRecorder* test_ukm_recorder =
           test_browser_client_.GetTestUkmRecorder();
-      EXPECT_EQ(0U, test_ukm_recorder->sources_count());
-      EXPECT_EQ(0U, test_ukm_recorder->entries_count());
+      EXPECT_EQ(1U, test_ukm_recorder->sources_count());
+      EXPECT_EQ(total_ukm_entry_count, test_ukm_recorder->entries_count());
     }
   }
 }
@@ -398,6 +404,7 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestWheelToScrollHistograms) {
 TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToFirstScrollHistograms) {
   const GURL url(kUrl);
   contents()->NavigateAndCommit(url);
+  size_t total_ukm_entry_count = 0;
   for (bool rendering_on_main : {false, true}) {
     ResetHistograms();
     {
@@ -443,6 +450,10 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToFirstScrollHistograms) {
       tracker()->OnGpuSwapBuffersCompleted(touch_latency);
     }
 
+    // UKM metrics.
+    total_ukm_entry_count++;
+    EXPECT_TRUE(AssertUkmReported("Event.ScrollBegin.Touch",
+                                  "TimeToScrollUpdateSwapBegin"));
     // Rappor metrics.
     EXPECT_TRUE(
         RapporSampleAssert("Event.Latency.ScrollUpdate.Touch."
@@ -511,8 +522,8 @@ TEST_F(RenderWidgetHostLatencyTrackerTest, TestTouchToFirstScrollHistograms) {
 
     ukm::TestUkmRecorder* test_ukm_recorder =
         test_browser_client_.GetTestUkmRecorder();
-    EXPECT_EQ(0U, test_ukm_recorder->sources_count());
-    EXPECT_EQ(0U, test_ukm_recorder->entries_count());
+    EXPECT_EQ(1U, test_ukm_recorder->sources_count());
+    EXPECT_EQ(total_ukm_entry_count, test_ukm_recorder->entries_count());
   }
 }
 

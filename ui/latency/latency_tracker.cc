@@ -159,6 +159,10 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
                                   ".TimeToScrollUpdateSwapBegin2",
                               original_component, gpu_swap_begin_component);
 
+    ReportUkmScrollLatency("Event.ScrollBegin." + input_modality,
+                           "TimeToScrollUpdateSwapBegin", original_component,
+                           gpu_swap_begin_component);
+
     // TODO(lanwei): Will remove them when M56 is stable, see
     // https://crbug.com/669618.
     UMA_HISTOGRAM_INPUT_LATENCY_HIGH_RESOLUTION_MICROSECONDS(
@@ -179,6 +183,7 @@ void LatencyTracker::ComputeEndToEndLatencyHistograms(
       ReportRapporScrollLatency(
           "Event.Latency.ScrollUpdate.Touch.TimeToScrollUpdateSwapBegin2",
           original_component, gpu_swap_begin_component);
+
       ReportUkmScrollLatency("Event.ScrollUpdate.Touch",
                              "TimeToScrollUpdateSwapBegin", original_component,
                              gpu_swap_begin_component);
