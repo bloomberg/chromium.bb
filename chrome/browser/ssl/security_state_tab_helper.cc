@@ -15,6 +15,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/security_state/content/content_utils.h"
 #include "components/ssl_config/ssl_config_prefs.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -39,7 +40,14 @@ using safe_browsing::SafeBrowsingUIManager;
 SecurityStateTabHelper::SecurityStateTabHelper(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      logged_http_warning_on_current_navigation_(false) {}
+      logged_http_warning_on_current_navigation_(false),
+      is_incognito_(false) {
+  content::BrowserContext* context = web_contents->GetBrowserContext();
+  if (context->IsOffTheRecord() &&
+      !Profile::FromBrowserContext(context)->IsGuestSession()) {
+    is_incognito_ = true;
+  }
+}
 
 SecurityStateTabHelper::~SecurityStateTabHelper() {}
 
@@ -113,12 +121,24 @@ void SecurityStateTabHelper::DidStartNavigation(
 
 void SecurityStateTabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  if (navigation_handle->IsInMainFrame() &&
-      !navigation_handle->IsSameDocument()) {
-    // Only reset the console message flag for main-frame navigations,
-    // and not for same-document navigations like reference fragments and
-    // pushState.
-    logged_http_warning_on_current_navigation_ = false;
+  // Ignore subframe navigations, same-document navigations, and navigations
+  // that did not commit (e.g. HTTP/204 or file downloads).
+  if (!navigation_handle->IsInMainFrame() ||
+      navigation_handle->IsSameDocument() ||
+      !navigation_handle->HasCommitted()) {
+    return;
+  }
+
+  logged_http_warning_on_current_navigation_ = false;
+
+  security_state::SecurityInfo security_info;
+  GetSecurityInfo(&security_info);
+  if (security_info.incognito_downgraded_security_level) {
+    web_contents()->GetMainFrame()->AddMessageToConsole(
+        content::CONSOLE_MESSAGE_LEVEL_WARNING,
+        "This page was loaded non-securely in an incognito mode browser. A "
+        "warning has been added to the URL bar. For more information, see "
+        "https://goo.gl/y8SRRv.");
   }
 }
 
@@ -198,6 +218,8 @@ SecurityStateTabHelper::GetVisibleSecurityState() const {
   // Malware status might already be known even if connection security
   // information is still being initialized, thus no need to check for that.
   state->malicious_content_status = GetMaliciousContentStatus();
+
+  state->is_incognito = is_incognito_;
 
   return state;
 }

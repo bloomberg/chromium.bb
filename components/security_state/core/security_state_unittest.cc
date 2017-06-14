@@ -5,11 +5,14 @@
 #include "components/security_state/core/security_state.h"
 
 #include <stdint.h>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_command_line.h"
+#include "components/security_state/core/switches.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
@@ -49,7 +52,8 @@ class TestSecurityStateHelper {
         ran_mixed_content_(false),
         malicious_content_status_(MALICIOUS_CONTENT_STATUS_NONE),
         displayed_password_field_on_http_(false),
-        displayed_credit_card_field_on_http_(false) {}
+        displayed_credit_card_field_on_http_(false),
+        is_incognito_(false) {}
   virtual ~TestSecurityStateHelper() {}
 
   void SetCertificate(scoped_refptr<net::X509Certificate> cert) {
@@ -85,6 +89,7 @@ class TestSecurityStateHelper {
       bool displayed_credit_card_field_on_http) {
     displayed_credit_card_field_on_http_ = displayed_credit_card_field_on_http;
   }
+  void set_is_incognito(bool is_incognito) { is_incognito_ = is_incognito; }
 
   void SetUrl(const GURL& url) { url_ = url; }
 
@@ -103,6 +108,7 @@ class TestSecurityStateHelper {
     state->displayed_password_field_on_http = displayed_password_field_on_http_;
     state->displayed_credit_card_field_on_http =
         displayed_credit_card_field_on_http_;
+    state->is_incognito = is_incognito_;
     return state;
   }
 
@@ -124,6 +130,7 @@ class TestSecurityStateHelper {
   MaliciousContentStatus malicious_content_status_;
   bool displayed_password_field_on_http_;
   bool displayed_credit_card_field_on_http_;
+  bool is_incognito_;
 };
 
 }  // namespace
@@ -353,6 +360,30 @@ TEST(SecurityStateTest, PrivateUserDataNotSetOnPseudoUrls) {
   }
 }
 
+// Tests that |incognito_downgraded_security_level| is set only when the
+// corresponding VisibleSecurityState flag is set and the HTTPBad Phase 2
+// experiment is enabled.
+TEST(SecurityStateTest, IncognitoFlagPropagates) {
+  TestSecurityStateHelper helper;
+  helper.SetUrl(GURL(kHttpUrl));
+  SecurityInfo security_info;
+  helper.GetSecurityInfo(&security_info);
+  EXPECT_FALSE(security_info.incognito_downgraded_security_level);
+
+  helper.set_is_incognito(true);
+  helper.GetSecurityInfo(&security_info);
+  EXPECT_FALSE(security_info.incognito_downgraded_security_level);
+  {
+    // Enable the "non-secure-while-incognito" configuration.
+    base::test::ScopedCommandLine scoped_command_line;
+    scoped_command_line.GetProcessCommandLine()->AppendSwitchASCII(
+        security_state::switches::kMarkHttpAs,
+        security_state::switches::kMarkHttpAsNonSecureWhileIncognito);
+    helper.GetSecurityInfo(&security_info);
+    EXPECT_TRUE(security_info.incognito_downgraded_security_level);
+  }
+}
+
 // Tests that SSL.MarkHttpAsStatus histogram is updated when security state is
 // computed for a page.
 TEST(SecurityStateTest, MarkHttpAsStatusHistogram) {
@@ -367,12 +398,70 @@ TEST(SecurityStateTest, MarkHttpAsStatusHistogram) {
   SecurityInfo security_info;
   histograms.ExpectTotalCount(kHistogramName, 0);
   helper.GetSecurityInfo(&security_info);
-  histograms.ExpectUniqueSample(kHistogramName, 2 /* HTTP_SHOW_WARNING */, 1);
+  histograms.ExpectUniqueSample(
+      kHistogramName, 2 /* HTTP_SHOW_WARNING_ON_SENSITIVE_FIELDS */, 1);
 
   // Ensure histogram recorded correctly even without a password input.
   helper.set_displayed_password_field_on_http(false);
   helper.GetSecurityInfo(&security_info);
-  histograms.ExpectUniqueSample(kHistogramName, 2 /* HTTP_SHOW_WARNING */, 2);
+  histograms.ExpectUniqueSample(
+      kHistogramName, 2 /* HTTP_SHOW_WARNING_ON_SENSITIVE_FIELDS */, 2);
+
+  {
+    // Test the "non-secure-while-incognito" configuration.
+    base::test::ScopedCommandLine scoped_command_line;
+    scoped_command_line.GetProcessCommandLine()->AppendSwitchASCII(
+        security_state::switches::kMarkHttpAs,
+        security_state::switches::kMarkHttpAsNonSecureWhileIncognito);
+
+    base::HistogramTester histograms;
+    TestSecurityStateHelper helper;
+    helper.SetUrl(GURL(kHttpUrl));
+
+    // Ensure histogram recorded correctly when the Incognito flag is present.
+    helper.set_is_incognito(true);
+    SecurityInfo security_info;
+    histograms.ExpectTotalCount(kHistogramName, 0);
+    helper.GetSecurityInfo(&security_info);
+    EXPECT_TRUE(security_info.incognito_downgraded_security_level);
+    histograms.ExpectUniqueSample(kHistogramName,
+                                  4 /* NON_SECURE_WHILE_INCOGNITO */, 1);
+
+    // Ensure histogram recorded correctly even without the Incognito flag.
+    helper.set_is_incognito(false);
+    helper.GetSecurityInfo(&security_info);
+    EXPECT_FALSE(security_info.incognito_downgraded_security_level);
+    histograms.ExpectUniqueSample(kHistogramName,
+                                  4 /* NON_SECURE_WHILE_INCOGNITO */, 2);
+  }
+
+  {
+    // Test the "non-secure-while-incognito-or-editing" configuration.
+    base::test::ScopedCommandLine scoped_command_line;
+    scoped_command_line.GetProcessCommandLine()->AppendSwitchASCII(
+        security_state::switches::kMarkHttpAs,
+        security_state::switches::kMarkHttpAsNonSecureWhileIncognitoOrEditing);
+
+    base::HistogramTester histograms;
+    TestSecurityStateHelper helper;
+    helper.SetUrl(GURL(kHttpUrl));
+
+    // Ensure histogram recorded correctly when the Incognito flag is present.
+    helper.set_is_incognito(true);
+    SecurityInfo security_info;
+    histograms.ExpectTotalCount(kHistogramName, 0);
+    helper.GetSecurityInfo(&security_info);
+    EXPECT_TRUE(security_info.incognito_downgraded_security_level);
+    histograms.ExpectUniqueSample(
+        kHistogramName, 5 /* NON_SECURE_WHILE_INCOGNITO_OR_EDITING */, 1);
+
+    // Ensure histogram recorded correctly even without the Incognito flag.
+    helper.set_is_incognito(false);
+    helper.GetSecurityInfo(&security_info);
+    EXPECT_FALSE(security_info.incognito_downgraded_security_level);
+    histograms.ExpectUniqueSample(
+        kHistogramName, 5 /* NON_SECURE_WHILE_INCOGNITO_OR_EDITING */, 2);
+  }
 }
 
 TEST(SecurityStateTest, DetectSubjectAltName) {

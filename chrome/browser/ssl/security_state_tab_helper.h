@@ -50,9 +50,9 @@ class SecurityStateTabHelper
   std::unique_ptr<security_state::VisibleSecurityState>
   GetVisibleSecurityState() const;
 
-  // True if a console message has been logged about an omnibox warning that
-  // will be shown in future versions of Chrome for insecure HTTP pages. This
-  // message should only be logged once per main-frame navigation.
+  // True if a console message has been logged about an omnibox warning shown
+  // when sensitive input fields are shown on insecure HTTP pages. This message
+  // should only be logged once per main-frame navigation.
   bool logged_http_warning_on_current_navigation_;
 
   // The time that a console or omnibox warning was shown for insecure
@@ -61,6 +61,9 @@ class SecurityStateTabHelper
   // warning triggers on that navigation) and is used for UMA
   // histogramming.
   base::Time time_of_http_warning_on_current_navigation_;
+
+  // True if this browser tab is in non-guest Incognito mode.
+  bool is_incognito_;
 
   DISALLOW_COPY_AND_ASSIGN(SecurityStateTabHelper);
 };

@@ -7,6 +7,12 @@
   <message name="IDS_PRIVATE_USER_DATA_INPUT_DESCRIPTION" desc="Description of a security problem where the site collects private user data on an insecure page, which results in an omnibox warning." translateable="false">
     This page includes a password or credit card input over HTTP. A warning has been added to the URL bar.
   </message>
+  <message name="IDS_INCOGNITO_NONSECURE" desc="Summary phrase for a security problem where the site is non-secure (HTTP) and the user is browsing Incognito." translateable="false">
+    Non-secure page loaded in incognito mode
+  </message>
+  <message name="IDS_INCOGNITO_NONSECURE_DESCRIPTION" desc="Description of a security problem where the site is non-secure (HTTP) and the user is browsing Incognito, which results in an omnibox warning." translateable="false">
+    This page was loaded non-securely in an incognito window. A warning has been added to the URL bar.
+  </message>
   <message name="IDS_SAFEBROWSING_WARNING" desc="Summary phrase for a security problem where the site is deemed unsafe by the SafeBrowsing service." translateable="false">
     This page is dangerous (flagged by Google Safe Browsing).
   </message>
