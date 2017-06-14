@@ -1779,6 +1779,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/omaha/VersionNumberTest.java",
   "junit/src/org/chromium/chrome/browser/omnibox/AutocompleteEditTextTest.java",
   "junit/src/org/chromium/chrome/browser/omnibox/KeyboardHideHelperUnitTest.java",
+  "junit/src/org/chromium/chrome/browser/omnibox/LocationBarLayoutTest.java",
   "junit/src/org/chromium/chrome/browser/omnibox/geo/GeolocationHeaderTest.java",
   "junit/src/org/chromium/chrome/browser/omnibox/geo/VisibleNetworksTest.java",
   "junit/src/org/chromium/chrome/browser/omnibox/geo/VisibleNetworksTrackerTest.java",

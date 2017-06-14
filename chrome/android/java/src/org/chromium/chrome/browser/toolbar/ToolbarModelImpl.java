@@ -21,7 +21,6 @@ import org.chromium.chrome.browser.toolbar.ToolbarModel.ToolbarModelDelegate;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.components.dom_distiller.core.DomDistillerService;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
-import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.WebContents;
 
 /**
@@ -119,8 +118,7 @@ class ToolbarModelImpl extends ToolbarModel implements ToolbarDataProvider, Tool
                 displayText =
                         DomDistillerTabUtils.getFormattedUrlFromOriginalDistillerUrl(originalUrl);
             }
-        } else if (OfflinePageUtils.isOfflinePage(mTab)
-                && mTab.getSecurityLevel() == ConnectionSecurityLevel.NONE) {
+        } else if (OfflinePageUtils.isOfflinePage(mTab)) {
             String originalUrl = mTab.getOriginalUrl();
             displayText = OfflinePageUtils.stripSchemeFromOnlineUrl(
                   DomDistillerTabUtils.getFormattedUrlFromOriginalDistillerUrl(originalUrl));

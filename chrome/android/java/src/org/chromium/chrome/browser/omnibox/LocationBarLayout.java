@@ -1282,8 +1282,15 @@ public class LocationBarLayout extends FrameLayout
     }
 
     private int getSecurityLevel() {
-        if (getCurrentTab() == null) return ConnectionSecurityLevel.NONE;
-        return getCurrentTab().getSecurityLevel();
+        boolean isOfflinePage =
+                getCurrentTab() != null && OfflinePageUtils.isOfflinePage(getCurrentTab());
+        return getSecurityLevel(getCurrentTab(), isOfflinePage);
+    }
+
+    @VisibleForTesting
+    static int getSecurityLevel(Tab tab, boolean isOfflinePage) {
+        if (tab == null || isOfflinePage) return ConnectionSecurityLevel.NONE;
+        return tab.getSecurityLevel();
     }
 
     /**
@@ -1291,15 +1298,12 @@ public class LocationBarLayout extends FrameLayout
      * @param securityLevel The security level for which the resource will be returned.
      * @param isSmallDevice Whether the device form factor is small (like a phone) or large
      * (like a tablet).
+     * @param isOfflinePage Whether the page for which the icon is shown is an offline page.
      * @return The resource ID of the icon that should be displayed, 0 if no icon should show.
      */
     public static int getSecurityIconResource(
             int securityLevel, boolean isSmallDevice, boolean isOfflinePage) {
-        // Both conditions should be met, because isOfflinePage might take longer to be cleared.
-        // HTTP_SHOW_WARNING added because of field trail causing http://crbug.com/671453.
-        if ((securityLevel == ConnectionSecurityLevel.NONE
-                    || securityLevel == ConnectionSecurityLevel.HTTP_SHOW_WARNING)
-                && isOfflinePage) {
+        if (isOfflinePage) {
             return R.drawable.offline_pin_round;
         }
         switch (securityLevel) {
