@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/manifest/manifest_icon_downloader.h"
+#include "content/public/browser/manifest_icon_downloader.h"
 
 #include <string>
 #include <vector>
@@ -11,7 +11,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
-class ManifestIconDownloaderTest : public testing::Test  {
+namespace content {
+
+class ManifestIconDownloaderTest : public testing::Test {
  protected:
   ManifestIconDownloaderTest() = default;
   ~ManifestIconDownloaderTest() override = default;
@@ -140,3 +142,5 @@ TEST_F(ManifestIconDownloaderTest, NonSquareBelowMinimumIsNotPicked) {
 
   ASSERT_EQ(-1, FindBitmap(15, 11, bitmaps));
 }
+
+}  // namespace content

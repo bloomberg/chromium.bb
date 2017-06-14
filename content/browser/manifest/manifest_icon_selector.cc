@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/manifest/manifest_icon_selector.h"
+#include "content/public/browser/manifest_icon_selector.h"
 
 #include <limits>
 
@@ -10,12 +10,14 @@
 #include "base/strings/utf_string_conversions.h"
 #include "components/mime_util/mime_util.h"
 
+namespace content {
+
 // static
 GURL ManifestIconSelector::FindBestMatchingIcon(
-    const std::vector<content::Manifest::Icon>& icons,
+    const std::vector<Manifest::Icon>& icons,
     int ideal_icon_size_in_px,
     int minimum_icon_size_in_px,
-    content::Manifest::Icon::IconPurpose purpose) {
+    Manifest::Icon::IconPurpose purpose) {
   DCHECK(minimum_icon_size_in_px <= ideal_icon_size_in_px);
 
   // Icon with exact matching size has priority over icon with size "any", which
@@ -80,3 +82,5 @@ GURL ManifestIconSelector::FindBestMatchingIcon(
   else
     return GURL();
 }
+
+}  // namespace content

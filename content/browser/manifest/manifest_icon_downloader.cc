@@ -2,19 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/manifest/manifest_icon_downloader.h"
+#include "content/public/browser/manifest_icon_downloader.h"
 
 #include <stddef.h>
 
 #include <limits>
 
-#include "chrome/browser/manifest/manifest_icon_selector.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/manifest_icon_selector.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/console_message_level.h"
 #include "skia/ext/image_operations.h"
+
+namespace content {
 
 // DevToolsConsoleHelper is a class that holds a WebContents in order to be able
 // to send a message to the WebContents' main frame. It is used so
@@ -22,22 +24,20 @@
 // |web_contents| lifetime. If the |web_contents| is invalidated before the
 // message can be sent, the message will simply be ignored.
 class ManifestIconDownloader::DevToolsConsoleHelper
-    : public content::WebContentsObserver {
+    : public WebContentsObserver {
  public:
-  explicit DevToolsConsoleHelper(content::WebContents* web_contents);
+  explicit DevToolsConsoleHelper(WebContents* web_contents);
   ~DevToolsConsoleHelper() override = default;
 
-  void AddMessage(content::ConsoleMessageLevel level,
-                  const std::string& message);
+  void AddMessage(ConsoleMessageLevel level, const std::string& message);
 };
 
 ManifestIconDownloader::DevToolsConsoleHelper::DevToolsConsoleHelper(
-    content::WebContents* web_contents)
-    : WebContentsObserver(web_contents) {
-}
+    WebContents* web_contents)
+    : WebContentsObserver(web_contents) {}
 
 void ManifestIconDownloader::DevToolsConsoleHelper::AddMessage(
-    content::ConsoleMessageLevel level,
+    ConsoleMessageLevel level,
     const std::string& message) {
   if (!web_contents())
     return;
@@ -45,7 +45,7 @@ void ManifestIconDownloader::DevToolsConsoleHelper::AddMessage(
 }
 
 bool ManifestIconDownloader::Download(
-    content::WebContents* web_contents,
+    WebContents* web_contents,
     const GURL& icon_url,
     int ideal_icon_size_in_px,
     int minimum_icon_size_in_px,
@@ -56,11 +56,10 @@ bool ManifestIconDownloader::Download(
 
   web_contents->DownloadImage(
       icon_url,
-      false, // is_favicon
-      0,     // max_bitmap_size - 0 means no maximum size.
-      false, // bypass_cache
-      base::Bind(&ManifestIconDownloader::OnIconFetched,
-                 ideal_icon_size_in_px,
+      false,  // is_favicon
+      0,      // max_bitmap_size - 0 means no maximum size.
+      false,  // bypass_cache
+      base::Bind(&ManifestIconDownloader::OnIconFetched, ideal_icon_size_in_px,
                  minimum_icon_size_in_px,
                  base::Owned(new DevToolsConsoleHelper(web_contents)),
                  callback));
@@ -77,13 +76,13 @@ void ManifestIconDownloader::OnIconFetched(
     const GURL& url,
     const std::vector<SkBitmap>& bitmaps,
     const std::vector<gfx::Size>& sizes) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (bitmaps.empty()) {
     console_helper->AddMessage(
-        content::CONSOLE_MESSAGE_LEVEL_ERROR,
-        "Error while trying to use the following icon from the Manifest: "
-            + url.spec() + " (Download error or resource isn't a valid image)");
+        CONSOLE_MESSAGE_LEVEL_ERROR,
+        "Error while trying to use the following icon from the Manifest: " +
+            url.spec() + " (Download error or resource isn't a valid image)");
 
     callback.Run(SkBitmap());
     return;
@@ -94,10 +93,10 @@ void ManifestIconDownloader::OnIconFetched(
 
   if (closest_index == -1) {
     console_helper->AddMessage(
-        content::CONSOLE_MESSAGE_LEVEL_ERROR,
-        "Error while trying to use the following icon from the Manifest: "
-            + url.spec()
-            + " (Resource size is not correct - typo in the Manifest?)");
+        CONSOLE_MESSAGE_LEVEL_ERROR,
+        "Error while trying to use the following icon from the Manifest: " +
+            url.spec() +
+            " (Resource size is not correct - typo in the Manifest?)");
 
     callback.Run(SkBitmap());
     return;
@@ -110,8 +109,8 @@ void ManifestIconDownloader::OnIconFetched(
   // webapp storage system as well.
   if (chosen.height() > ideal_icon_size_in_px ||
       chosen.width() > ideal_icon_size_in_px) {
-    content::BrowserThread::PostTask(
-        content::BrowserThread::IO, FROM_HERE,
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
         base::BindOnce(&ManifestIconDownloader::ScaleIcon,
                        ideal_icon_size_in_px, chosen, callback));
     return;
@@ -124,16 +123,14 @@ void ManifestIconDownloader::ScaleIcon(
     int ideal_icon_size_in_px,
     const SkBitmap& bitmap,
     const ManifestIconDownloader::IconFetchCallback& callback) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   const SkBitmap& scaled = skia::ImageOperations::Resize(
-      bitmap,
-      skia::ImageOperations::RESIZE_BEST,
-      ideal_icon_size_in_px,
+      bitmap, skia::ImageOperations::RESIZE_BEST, ideal_icon_size_in_px,
       ideal_icon_size_in_px);
 
-  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
-                                   base::BindOnce(callback, scaled));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::BindOnce(callback, scaled));
 }
 
 int ManifestIconDownloader::FindClosestBitmapIndex(
@@ -187,3 +184,5 @@ int ManifestIconDownloader::FindClosestBitmapIndex(
 
   return best_index;
 }
+
+}  // namespace content

@@ -139,6 +139,8 @@ source_set("browser_sources") {
     "keyboard_event_processing_result.h",
     "load_notification_details.h",
     "local_storage_usage_info.h",
+    "manifest_icon_downloader.h",
+    "manifest_icon_selector.h",
     "media_capture_devices.h",
     "media_device_id.cc",
     "media_device_id.h",

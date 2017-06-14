@@ -1207,6 +1207,8 @@ test("content_unittests") {
     "../browser/loader/upload_progress_tracker_unittest.cc",
     "../browser/loader/url_loader_factory_impl_unittest.cc",
     "../browser/mach_broker_mac_unittest.cc",
+    "../browser/manifest/manifest_icon_downloader_unittest.cc",
+    "../browser/manifest/manifest_icon_selector_unittest.cc",
     "../browser/media/audible_metrics_unittest.cc",
     "../browser/media/audio_stream_monitor_unittest.cc",
     "../browser/media/capture/audio_mirroring_manager_unittest.cc",
