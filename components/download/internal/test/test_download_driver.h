@@ -25,6 +25,9 @@ class TestDownloadDriver : public DownloadDriver {
   // data initialization.
   void MakeReady();
 
+  // Adds driver entries data that will be returned
+  void AddTestData(const std::vector<DriverEntry>& entries);
+
   // Simulates download events from content layer.
   void NotifyDownloadUpdate(const DriverEntry& entry);
   void NotifyDownloadFailed(const DriverEntry& entry, int reason);
@@ -35,9 +38,10 @@ class TestDownloadDriver : public DownloadDriver {
   void Initialize(DownloadDriver::Client* client) override;
   bool IsReady() const override;
   void Start(
-      const DownloadParams& params,
+      const RequestParams& params,
+      const std::string& guid,
       const net::NetworkTrafficAnnotationTag& traffic_annotation) override;
-  void Cancel(const std::string& guid) override;
+  void Remove(const std::string& guid) override;
   void Pause(const std::string& guid) override;
   void Resume(const std::string& guid) override;
   base::Optional<DriverEntry> Find(const std::string& guid) override;

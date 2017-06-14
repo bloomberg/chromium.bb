@@ -15,6 +15,8 @@
 
 namespace download {
 
+class ClientSet;
+
 // Scheduler implementation that
 // 1. Creates platform background task based on the states of download entries.
 // 2. Polls the next entry to be processed by the service mainly according to
@@ -24,8 +26,10 @@ namespace download {
 class SchedulerImpl : public Scheduler {
  public:
   SchedulerImpl(PlatformTaskScheduler* platform_scheduler,
+                const ClientSet* clients);
+  SchedulerImpl(PlatformTaskScheduler* platform_scheduler,
                 const std::vector<DownloadClient>& clients);
-  ~SchedulerImpl();
+  ~SchedulerImpl() override;
 
   // Scheduler implementation.
   void Reschedule(const Model::EntryList& entries) override;

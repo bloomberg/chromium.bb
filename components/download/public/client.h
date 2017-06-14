@@ -58,7 +58,7 @@ class Client {
   // DownloadParams::cancel_after timeout.
   virtual void OnDownloadTimedOut(const std::string& guid) = 0;
 
-  // Called when the download has been aborted after reaching a treshold where
+  // Called when the download has been aborted after reaching a threshold where
   // we decide it is not worth attempting to start again.  This could be either
   // due to a specific number of failed retry attempts or a specific number of
   // wasted bytes due to the download restarting.

@@ -67,6 +67,8 @@ struct SchedulingParams {
   SchedulingParams(const SchedulingParams& other) = default;
   ~SchedulingParams() = default;
 
+  bool operator==(const SchedulingParams& rhs) const;
+
   // Cancel the download after this time.  Will cancel in-progress downloads.
   base::Time cancel_time;
 

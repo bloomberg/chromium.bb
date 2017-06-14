@@ -4,11 +4,31 @@
 
 #include "components/download/internal/scheduler/scheduler_impl.h"
 
+#include "components/download/internal/client_set.h"
 #include "components/download/internal/entry_utils.h"
 #include "components/download/internal/scheduler/device_status.h"
 #include "components/download/public/download_params.h"
 
 namespace download {
+
+namespace {
+
+// Returns a vector of elements contained in the |set|.
+template <typename T>
+std::vector<T> ToList(const std::set<T>& set) {
+  std::vector<T> list;
+  for (const auto& element : set) {
+    list.push_back(element);
+  }
+  return list;
+}
+
+}  // namespace
+
+SchedulerImpl::SchedulerImpl(PlatformTaskScheduler* platform_scheduler,
+                             const ClientSet* clients)
+    : SchedulerImpl(platform_scheduler,
+                    ToList<DownloadClient>(clients->GetRegisteredClients())) {}
 
 SchedulerImpl::SchedulerImpl(PlatformTaskScheduler* platform_scheduler,
                              const std::vector<DownloadClient>& clients)
@@ -61,7 +81,6 @@ Entry* SchedulerImpl::Next(const Model::EntryList& entries,
     // are UI priority entries for other clients.
     if (!entry || ui_priority) {
       entry = candidate;
-      DCHECK(entry);
 
       // Load balancing between clients.
       current_client_index_ = (index + i + 1) % download_clients_.size();
@@ -94,11 +113,7 @@ std::map<DownloadClient, Entry*> SchedulerImpl::FindCandidates(
 
     // Find the most appropriate download based on priority and cancel time.
     Entry* candidate = candidates[entry->client];
-    if (!candidate ||
-        (current_params.priority > candidate->scheduling_params.priority ||
-         (current_params.priority == candidate->scheduling_params.priority &&
-          entry->scheduling_params.cancel_time <
-              candidate->scheduling_params.cancel_time))) {
+    if (!candidate || util::EntryBetterThan(*entry, *candidate)) {
       candidates[entry->client] = entry;
     }
   }

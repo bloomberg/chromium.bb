@@ -6,8 +6,10 @@
 #define COMPONENTS_DOWNLOAD_INTERNAL_DRIVER_ENTRY_H_
 
 #include <string>
+#include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "url/gurl.h"
 
 namespace net {
 class HttpResponseHeaders;
@@ -54,6 +56,10 @@ struct DriverEntry {
 
   // The response headers for the most recent download request.
   scoped_refptr<const net::HttpResponseHeaders> response_headers;
+
+  // The url chain of the download. Download may encounter redirects, and
+  // fetches the content from the last url in the chain.
+  std::vector<GURL> url_chain;
 };
 
 }  // namespace download
