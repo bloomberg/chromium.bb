@@ -130,10 +130,10 @@ def get_fyi_waterfall_config():
        'android_devices': '1',
        'pool': 'Chrome-perf',
        'device_ids': [
-           'build243-m1--device1', 'build243-m1--device2',
-           'build243-m1--device3', 'build243-m1--device4',
-           'build243-m1--device5', 'build243-m1--device6',
-           'build243-m1--device7',
+           'build243-m4--device1', 'build243-m4--device2',
+           'build243-m4--device3', 'build243-m4--device4',
+           'build243-m4--device5', 'build243-m4--device6',
+           'build243-m4--device7',
           ],
        'perf_tests': [
          # TODO(martiniss): implement these isolate targets
