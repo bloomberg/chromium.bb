@@ -216,8 +216,8 @@ Polymer({
 
     // Focus the password input box if password is needed to start sync.
     if (this.syncPrefs.passphraseRequired) {
-      // Async to allow the dom-if templates to render first.
-      this.async(function() {
+      // Wait for the dom-if templates to render and subpage to become visible.
+      listenOnce(document, 'show-container', function() {
         var input = /** @type {!PaperInputElement} */ (
             this.$$('#existingPassphraseInput'));
         input.inputElement.focus();
