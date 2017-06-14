@@ -8,11 +8,15 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @implementation OCMockObject (BreakpadControllerTesting)
 
 - (void)cr_expectGetCrashReportCount:(int)crashReportCount {
   id invocationBlock = ^(NSInvocation* invocation) {
-    void (^block)(int);
+    __unsafe_unretained void (^block)(int);
     [invocation getArgument:&block atIndex:2];
     if (!block) {
       ADD_FAILURE();
