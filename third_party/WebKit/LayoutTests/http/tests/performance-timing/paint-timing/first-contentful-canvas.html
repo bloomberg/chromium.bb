@@ -1,46 +1,31 @@
 <!DOCTYPE html>
 <head>
-<title>Performance Paint Timing Test</title>
+<title>Performance Paint Timing Test: FCP due to canvas</title>
 </head>
 <body>
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script>
+    <canvas id="canvas" width="200" height="200" ></canvas>
+
     <script>
     async_test(function (t) {
-        var observer = new PerformanceObserver(
-            t.step_func(function (entryList) {
-                var entries = entryList.getEntries();
-                assert_equals(entries.length, 2,
-                    "There should be two paint timing instances.");
-                assert_equals(entries[0].entryType, "paint",
-                    "Expected entryType to be: paint.");
-                assert_equals(entries[0].duration, 0,
-                    "Expected duration to be: 0.");
+        const c = document.getElementById("canvas");
+        const ctx = c.getContext("2d");
+        ctx.beginPath();
+        ctx.moveTo(0,0);
+        ctx.lineTo(300,150);
+        ctx.stroke();
 
-                assert_equals(entries[1].entryType, "paint",
-                    "Expected entryType to be: paint.");
-                assert_equals(entries[1].duration, 0,
-                    "Expected duration to be: 0.");
-                observer.disconnect();
-                t.done();
-            })
-        );
-        observer.observe({entryTypes: ["paint"]});
+        testRunner.capturePixelsAsyncThen(t.step_func_done(function() {
+            const bufferedEntries = performance.getEntriesByType('paint');
+            assert_equals(bufferedEntries.length, 2, "There should be two paint timing instances.");
+            assert_equals(bufferedEntries[0].entryType, "paint");
+            assert_equals(bufferedEntries[0].name, "first-paint");
+            assert_equals(bufferedEntries[1].entryType, "paint");
+            assert_equals(bufferedEntries[1].name, "first-contentful-paint");
+        }));
 
     }, "First contentful paint fires due to canvas render.");
     </script>
-
-    <script>
-      window.onload = function() {
-          var c=document.getElementById("canvas");
-          var ctx=c.getContext("2d");
-          ctx.beginPath();
-          ctx.moveTo(0,0);
-          ctx.lineTo(300,150);
-          ctx.stroke();
-      }
-    </script>
-
-    <canvas id="canvas" width="200" height="200" ></canvas>
 </body>
 </html>
