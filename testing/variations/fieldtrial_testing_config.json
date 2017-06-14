@@ -1375,7 +1375,10 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled",
+                    "name": "EnableAppNap",
+                    "params": {
+                        "app_nap": "true"
+                    },
                     "enable_features": [
                         "MacAllowBackgroundingProcesses"
                     ]
