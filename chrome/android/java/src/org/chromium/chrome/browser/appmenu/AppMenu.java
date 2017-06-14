@@ -361,9 +361,14 @@ public class AppMenu implements OnItemClickListener, OnKeyListener {
             offsets[1] = -mNegativeSoftwareVerticalOffset;
 
             // If the anchor is at the bottom of the screen, align the popup with the bottom of the
-            // anchor. The anchor may not be fully visible, so (appRect.bottom - anchorViewY) is
-            // used to determine the visible bottom edge of the anchor view.
-            if (anchorAtBottom) offsets[1] += appRect.bottom - anchorViewY - popupHeight;
+            // anchor. The anchor may not be fully visible, so
+            // (appRect.bottom - anchorViewLocationOnScreenY) is used to determine the visible
+            // bottom edge of the anchor view.
+            if (anchorAtBottom) {
+                anchorView.getLocationOnScreen(mTempLocation);
+                int anchorViewLocationOnScreenY = mTempLocation[1];
+                offsets[1] += appRect.bottom - anchorViewLocationOnScreenY - popupHeight;
+            }
 
             if (!ApiCompatibilityUtils.isLayoutRtl(anchorView.getRootView())) {
                 offsets[0] = anchorView.getWidth() - popupWidth;
