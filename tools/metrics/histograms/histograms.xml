@@ -90209,7 +90209,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram
       name="ServiceWorker.ActivatedWorkerPreparationForMainFrame.Time"/>
   <affected-histogram
-      name="ServiceWorker.ActivatedWorkerPreparationForMainFrame.Time_StartWorkerExistingProcess"/>
+      name="ServiceWorker.ActivatedWorkerPreparationForMainFrame.Time_StartWorkerExistingProcess">
+    <obsolete>
+      Deprecated as of June 2017, in favor of
+      ServiceWorker.ActivatedWorkerPreparationForMainFrame.Time_WorkerStartOccurred_NavigationPreloadEnabled.
+    </obsolete>
+  </affected-histogram>
+  <affected-histogram
+      name="ServiceWorker.ActivatedWorkerPreparationForMainFrame.Time_WorkerStartOccurred"/>
   <suffix name="NavigationPreloadEnabled" label="Navigation preload occurred."/>
   <affected-histogram
       name="ServiceWorker.ActivatedWorkerPreparationForMainFrame.Type"/>
@@ -94903,6 +94910,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="ServiceWorker.EventDispatchingDelay_UNKNOWN"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="ServiceWorkerStartOccurred" separator="_">
+  <suffix name="WorkerStartOccurred"
+      label="The worker was not already running. Worker startup occurred."/>
+  <affected-histogram
+      name="ServiceWorker.ActivatedWorkerPreparationForMainFrame.Time"/>
+  <affected-histogram name="ServiceWorker.NavPreload.ConcurrentTime_MainFrame"/>
+  <affected-histogram name="ServiceWorker.NavPreload.FinishedFirst_MainFrame"/>
+  <affected-histogram name="ServiceWorker.NavPreload.ResponseTime_MainFrame"/>
+  <affected-histogram name="ServiceWorker.NavPreload.WorkerWaitTime_MainFrame"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="SessionRestoreTabCountMemoryPressure" separator="_">
   <suffix name="MemoryPressure"
       label="Total tabs involved in session restore that encountered memory
@@ -95312,6 +95330,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram_suffixes>
 
 <histogram_suffixes name="StartWorkerExistingProcess2" separator="_">
+  <obsolete>
+    Deprecated as of June 2017.
+  </obsolete>
   <suffix name="StartWorkerExistingProcess"
       label="The worker started up in an existing process"/>
   <affected-histogram name="ServiceWorker.NavPreload.ConcurrentTime_MainFrame"/>

@@ -515,13 +515,11 @@ void ServiceWorkerMetrics::RecordActivatedWorkerPreparationForMainFrame(
         "ServiceWorker.ActivatedWorkerPreparationForMainFrame.Time_"
         "NavigationPreloadEnabled",
         time);
-    // We're mostly interested in when the worker needed to start up. To avoid
-    // using too much memory, just log the the common case of startup in an
-    // existing process.
-    if (preparation == WorkerPreparationType::START_IN_EXISTING_PROCESS) {
+    // We're mostly interested in when the worker needed to start up.
+    if (initial_worker_status != EmbeddedWorkerStatus::RUNNING) {
       UMA_HISTOGRAM_MEDIUM_TIMES(
           "ServiceWorker.ActivatedWorkerPreparationForMainFrame.Time_"
-          "StartWorkerExistingProcess_NavigationPreloadEnabled",
+          "WorkerStartOccurred_NavigationPreloadEnabled",
           time);
     }
   }
@@ -849,7 +847,6 @@ void ServiceWorkerMetrics::RecordNavigationPreloadResponse(
     base::TimeDelta worker_start,
     base::TimeDelta response_start,
     EmbeddedWorkerStatus initial_worker_status,
-    StartSituation start_situation,
     ResourceType resource_type) {
   DCHECK_GE(worker_start.ToInternalValue(), 0);
   DCHECK_GE(response_start.ToInternalValue(), 0);
@@ -860,10 +857,6 @@ void ServiceWorkerMetrics::RecordNavigationPreloadResponse(
   if (!is_main_frame) {
     return;
   }
-  const bool existing_process_startup =
-      (initial_worker_status == EmbeddedWorkerStatus::STOPPED &&
-       start_situation ==
-           ServiceWorkerMetrics::StartSituation::EXISTING_PROCESS);
   const bool nav_preload_finished_first = response_start < worker_start;
   const base::TimeDelta concurrent_time =
       nav_preload_finished_first ? response_start : worker_start;
@@ -883,23 +876,25 @@ void ServiceWorkerMetrics::RecordNavigationPreloadResponse(
         "ServiceWorker.NavPreload.WorkerWaitTime_MainFrame", worker_wait_time);
   }
 
-  if (existing_process_startup) {
+  const bool worker_start_occurred =
+      initial_worker_status != EmbeddedWorkerStatus::RUNNING;
+  if (worker_start_occurred) {
     UMA_HISTOGRAM_MEDIUM_TIMES(
         "ServiceWorker.NavPreload.ResponseTime_MainFrame_"
-        "StartWorkerExistingProcess",
+        "WorkerStartOccurred",
         response_start);
     UMA_HISTOGRAM_BOOLEAN(
         "ServiceWorker.NavPreload.FinishedFirst_MainFrame_"
-        "StartWorkerExistingProcess",
+        "WorkerStartOccurred",
         nav_preload_finished_first);
     UMA_HISTOGRAM_MEDIUM_TIMES(
         "ServiceWorker.NavPreload.ConcurrentTime_MainFrame_"
-        "StartWorkerExistingProcess",
+        "WorkerStartOccurred",
         concurrent_time);
     if (nav_preload_finished_first) {
       UMA_HISTOGRAM_MEDIUM_TIMES(
           "ServiceWorker.NavPreload.WorkerWaitTime_MainFrame_"
-          "StartWorkerExistingProcess",
+          "WorkerStartOccurred",
           worker_wait_time);
     }
   }
