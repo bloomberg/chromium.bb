@@ -342,3 +342,11 @@ TEST_F(InstantNTPURLRewriteTest, UberURLHandler_InstantExtendedNewTabPage) {
 
 }  // namespace content
 #endif  // !defined(OS_ANDROID)
+
+class ChromeContentBrowserClientGetLoggingFileTest : public testing::Test {};
+
+TEST_F(ChromeContentBrowserClientGetLoggingFileTest, GetLoggingFile) {
+  ChromeContentBrowserClient client;
+  base::FilePath log_file_name;
+  EXPECT_FALSE(client.GetLoggingFileName().empty());
+}
