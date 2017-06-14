@@ -339,10 +339,15 @@
     },
     {
         name: "UpdatePropertySpecificDifferencesTextDecorationOrColor",
-        fields_to_diff: ["text-decoration-style", "text-decoration-color",
-        "VisitedLinkTextDecorationColor", "TextEmphasisFill",
-        "text-underline-position", "text-decoration-skip", "AppliedTextDecorations"],
+        fields_to_diff: ["color", "VisitedLinkColor", "TextDecoration",
+                "text-decoration-style", "text-decoration-color",
+                "VisitedLinkTextDecorationColor", "TextEmphasisFill",
+                "text-underline-position", "text-decoration-skip", "AppliedTextDecorations"],
         methods_to_diff: [
+          {
+            method: "HasSimpleUnderlineInternal()",
+            field_dependencies: ["HasSimpleUnderline"]
+          },
           {
             method: "TextFillColor()",
             field_dependencies: ["-webkit-text-fill-color"]
