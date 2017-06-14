@@ -2,17 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_MANIFEST_MANIFEST_ICON_SELECTOR_H_
-#define CHROME_BROWSER_MANIFEST_MANIFEST_ICON_SELECTOR_H_
+#ifndef CONTENT_PUBLIC_BROWSER_MANIFEST_ICON_SELECTOR_H_
+#define CONTENT_PUBLIC_BROWSER_MANIFEST_ICON_SELECTOR_H_
 
 #include "base/macros.h"
 #include "content/public/common/manifest.h"
 #include "url/gurl.h"
 
+namespace content {
+
 // Selects the square icon with the supported image MIME types and the specified
 // icon purpose that most closely matches the size constraints.
 // This follows very basic heuristics -- improvements are welcome.
-class ManifestIconSelector {
+class CONTENT_EXPORT ManifestIconSelector {
  public:
   // Runs the algorithm to find the best matching icon in the icons listed in
   // the Manifest. Size is defined in pixels.
@@ -33,4 +35,6 @@ class ManifestIconSelector {
   DISALLOW_IMPLICIT_CONSTRUCTORS(ManifestIconSelector);
 };
 
-#endif  // CHROME_BROWSER_MANIFEST_MANIFEST_ICON_SELECTOR_H_
+}  // namespace content
+
+#endif  // CONTENT_PUBLIC_BROWSER_MANIFEST_ICON_SELECTOR_H_

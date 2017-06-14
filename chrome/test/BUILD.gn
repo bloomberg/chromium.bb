@@ -3085,8 +3085,6 @@ test("unit_tests") {
     "../browser/logging_chrome_unittest.cc",
     "../browser/mac/exception_processor_unittest.mm",
     "../browser/mac/keystone_glue_unittest.mm",
-    "../browser/manifest/manifest_icon_downloader_unittest.cc",
-    "../browser/manifest/manifest_icon_selector_unittest.cc",
     "../browser/media/android/router/media_router_android_unittest.cc",
     "../browser/media/cast_remoting_connector_unittest.cc",
     "../browser/media/media_engagement_contents_observer_unittest.cc",

@@ -19,9 +19,9 @@
 #include "chrome/browser/android/webapk/chrome_webapk_host.h"
 #include "chrome/browser/android/webapk/webapk_install_service.h"
 #include "chrome/browser/android/webapk/webapk_metrics.h"
-#include "chrome/browser/manifest/manifest_icon_downloader.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/manifest_icon_downloader.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/ShortcutHelper_jni.h"
 #include "ui/gfx/android/java_bitmap.h"
@@ -209,7 +209,7 @@ void ShortcutHelper::FetchSplashScreenImage(
     const std::string& webapp_id) {
   // This is a fire and forget task. It is not vital for the splash screen image
   // to be downloaded so if the downloader returns false there is no fallback.
-  ManifestIconDownloader::Download(
+  content::ManifestIconDownloader::Download(
       web_contents, image_url, ideal_splash_image_size_in_px,
       minimum_splash_image_size_in_px,
       base::Bind(&ShortcutHelper::StoreWebappSplashImage, webapp_id));

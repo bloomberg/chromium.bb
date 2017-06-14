@@ -17,8 +17,8 @@
 #include "chrome/browser/android/webapk/webapk_web_manifest_checker.h"
 #include "chrome/browser/banners/app_banner_metrics.h"
 #include "chrome/browser/banners/app_banner_settings_helper.h"
-#include "chrome/browser/manifest/manifest_icon_downloader.h"
-#include "chrome/browser/manifest/manifest_icon_selector.h"
+#include "content/public/browser/manifest_icon_downloader.h"
+#include "content/public/browser/manifest_icon_selector.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
 #include "jni/AppBannerManager_jni.h"
@@ -56,10 +56,11 @@ std::unique_ptr<ShortcutInfo> CreateShortcutInfo(
       ShortcutHelper::GetIdealSplashImageSizeInPx();
   shortcut_info->minimum_splash_image_size_in_px =
       ShortcutHelper::GetMinimumSplashImageSizeInPx();
-  shortcut_info->splash_image_url = ManifestIconSelector::FindBestMatchingIcon(
-      manifest.icons, shortcut_info->ideal_splash_image_size_in_px,
-      shortcut_info->minimum_splash_image_size_in_px,
-      content::Manifest::Icon::IconPurpose::ANY);
+  shortcut_info->splash_image_url =
+      content::ManifestIconSelector::FindBestMatchingIcon(
+          manifest.icons, shortcut_info->ideal_splash_image_size_in_px,
+          shortcut_info->minimum_splash_image_size_in_px,
+          content::Manifest::Icon::IconPurpose::ANY);
 
   return shortcut_info;
 }
@@ -118,7 +119,7 @@ bool AppBannerManagerAndroid::OnAppDetailsRetrieved(
   if (!CheckIfShouldShowBanner())
     return false;
 
-  return ManifestIconDownloader::Download(
+  return content::ManifestIconDownloader::Download(
       web_contents(), primary_icon_url_, GetIdealPrimaryIconSizeInPx(),
       GetMinimumPrimaryIconSizeInPx(),
       base::Bind(&AppBannerManager::OnAppIconFetched, GetWeakPtr()));

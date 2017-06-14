@@ -7,13 +7,13 @@
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/manifest/manifest_icon_downloader.h"
-#include "chrome/browser/manifest/manifest_icon_selector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "components/security_state/core/security_state.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/manifest_icon_downloader.h"
+#include "content/public/browser/manifest_icon_selector.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -532,14 +532,14 @@ void InstallableManager::CheckAndFetchBestIcon(const IconParams& params) {
   IconProperty& icon = icons_[params];
   icon.fetched = true;
 
-  GURL icon_url = ManifestIconSelector::FindBestMatchingIcon(
+  GURL icon_url = content::ManifestIconSelector::FindBestMatchingIcon(
       manifest().icons, ideal_icon_size_in_px, minimum_icon_size_in_px,
       icon_purpose);
 
   if (icon_url.is_empty()) {
     icon.error = NO_ACCEPTABLE_ICON;
   } else {
-    bool can_download_icon = ManifestIconDownloader::Download(
+    bool can_download_icon = content::ManifestIconDownloader::Download(
         GetWebContents(), icon_url, ideal_icon_size_in_px,
         minimum_icon_size_in_px,
         base::Bind(&InstallableManager::OnIconFetched,

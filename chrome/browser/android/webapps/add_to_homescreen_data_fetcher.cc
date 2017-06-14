@@ -17,7 +17,6 @@
 #include "chrome/browser/android/webapk/webapk_web_manifest_checker.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/installable/installable_manager.h"
-#include "chrome/browser/manifest/manifest_icon_selector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/render_messages.h"
@@ -26,6 +25,7 @@
 #include "components/favicon/core/favicon_service.h"
 #include "components/favicon_base/favicon_types.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/manifest_icon_selector.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/manifest.h"
@@ -236,10 +236,11 @@ void AddToHomescreenDataFetcher::OnDidPerformInstallableCheck(
   }
 
   // Save the splash screen URL for the later download.
-  shortcut_info_.splash_image_url = ManifestIconSelector::FindBestMatchingIcon(
-      data.manifest.icons, ideal_splash_image_size_in_px_,
-      minimum_splash_image_size_in_px_,
-      content::Manifest::Icon::IconPurpose::ANY);
+  shortcut_info_.splash_image_url =
+      content::ManifestIconSelector::FindBestMatchingIcon(
+          data.manifest.icons, ideal_splash_image_size_in_px_,
+          minimum_splash_image_size_in_px_,
+          content::Manifest::Icon::IconPurpose::ANY);
   shortcut_info_.ideal_splash_image_size_in_px = ideal_splash_image_size_in_px_;
   shortcut_info_.minimum_splash_image_size_in_px =
       minimum_splash_image_size_in_px_;

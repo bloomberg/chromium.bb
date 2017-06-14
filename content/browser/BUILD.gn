@@ -945,6 +945,8 @@ source_set("browser") {
     "loader_delegate_impl.h",
     "mach_broker_mac.h",
     "mach_broker_mac.mm",
+    "manifest/manifest_icon_downloader.cc",
+    "manifest/manifest_icon_selector.cc",
     "manifest/manifest_manager_host.cc",
     "manifest/manifest_manager_host.h",
     "media/android/browser_media_player_manager.cc",
