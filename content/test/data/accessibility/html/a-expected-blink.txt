@@ -1,5 +1,5 @@
 rootWebArea
 ++genericContainer
-++++link name='normal link'
-++++++staticText name='normal link'
+++++link linked name='normal link'
+++++++staticText linked name='normal link'
 ++++++++inlineTextBox name='normal link'

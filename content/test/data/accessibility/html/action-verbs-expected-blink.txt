@@ -10,14 +10,13 @@ rootWebArea name='Action verbs'
 ++++staticText name='Link' defaultActionVerb=3
 ++++++inlineTextBox name='Link'
 ++textField
-++checkBox defaultActionVerb=2
-++checkBox defaultActionVerb=8
-++radioButton defaultActionVerb=7
-++switch name='ARIA Switch' defaultActionVerb=2
-++popUpButton defaultActionVerb=5
-++++menuListPopup
-++++++menuListOption name='Pop-up button' defaultActionVerb=3
+++checkBox defaultActionVerb=2 checkedState=1
+++checkBox defaultActionVerb=8 checkedState=2
+++radioButton defaultActionVerb=7 checkedState=3
+++switch name='ARIA Switch' defaultActionVerb=2 checkedState=1
+++popUpButton collapsed haspopup defaultActionVerb=5
+++++menuListPopup invisible
+++++++menuListOption selectable selected name='Pop-up button' defaultActionVerb=3
 ++genericContainer defaultActionVerb=3
 ++++staticText name='Div with click handler' defaultActionVerb=3
 ++++++inlineTextBox name='Div with click handler'
-<-- End-of-file -->
