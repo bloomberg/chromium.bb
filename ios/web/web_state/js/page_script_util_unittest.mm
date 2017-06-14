@@ -7,7 +7,6 @@
 #import <UIKit/UIKit.h>
 #import <WebKit/WebKit.h>
 
-#import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
@@ -16,6 +15,10 @@
 #include "ios/web/public/test/web_test.h"
 #import "ios/web/public/web_view_creation_util.h"
 #import "testing/gtest_mac.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace web {
 namespace {

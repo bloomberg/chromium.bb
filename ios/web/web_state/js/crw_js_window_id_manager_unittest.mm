@@ -12,6 +12,10 @@
 #import "testing/gtest_mac.h"
 #import "testing/platform_test.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace web {
 
 // Test fixture for testing CRWJSWindowIDManager class.
@@ -24,21 +28,21 @@ class JSWindowIDManagerTest : public PlatformTest {
 // window ID.
 TEST_F(JSWindowIDManagerTest, WindowIDDifferentManager) {
   // Inject the first manager.
-  WKWebView* web_view = [[[WKWebView alloc] init] autorelease];
+  WKWebView* web_view = [[WKWebView alloc] init];
   ExecuteJavaScript(web_view, GetEarlyPageScript(&browser_state_));
 
   CRWJSWindowIDManager* manager =
-      [[[CRWJSWindowIDManager alloc] initWithWebView:web_view] autorelease];
+      [[CRWJSWindowIDManager alloc] initWithWebView:web_view];
   [manager inject];
   EXPECT_NSEQ([manager windowID],
               ExecuteJavaScript(web_view, @"window.__gCrWeb.windowId"));
 
   // Inject the second manager.
-  WKWebView* web_view2 = [[[WKWebView alloc] init] autorelease];
+  WKWebView* web_view2 = [[WKWebView alloc] init];
   ExecuteJavaScript(web_view2, GetEarlyPageScript(&browser_state_));
 
   CRWJSWindowIDManager* manager2 =
-      [[[CRWJSWindowIDManager alloc] initWithWebView:web_view2] autorelease];
+      [[CRWJSWindowIDManager alloc] initWithWebView:web_view2];
   [manager2 inject];
   EXPECT_NSEQ([manager2 windowID],
               ExecuteJavaScript(web_view2, @"window.__gCrWeb.windowId"));
@@ -49,12 +53,12 @@ TEST_F(JSWindowIDManagerTest, WindowIDDifferentManager) {
 
 // Tests that injecting multiple times creates a new window ID.
 TEST_F(JSWindowIDManagerTest, MultipleInjections) {
-  WKWebView* web_view = [[[WKWebView alloc] init] autorelease];
+  WKWebView* web_view = [[WKWebView alloc] init];
   ExecuteJavaScript(web_view, GetEarlyPageScript(&browser_state_));
 
   // First injection.
   CRWJSWindowIDManager* manager =
-      [[[CRWJSWindowIDManager alloc] initWithWebView:web_view] autorelease];
+      [[CRWJSWindowIDManager alloc] initWithWebView:web_view];
   [manager inject];
   NSString* windowID = [manager windowID];
   EXPECT_NSEQ(windowID,
@@ -70,10 +74,10 @@ TEST_F(JSWindowIDManagerTest, MultipleInjections) {
 
 // Tests that injection will retry if |window.__gCrWeb| is not present.
 TEST_F(JSWindowIDManagerTest, InjectionRetry) {
-  WKWebView* web_view = [[[WKWebView alloc] init] autorelease];
+  WKWebView* web_view = [[WKWebView alloc] init];
 
   CRWJSWindowIDManager* manager =
-      [[[CRWJSWindowIDManager alloc] initWithWebView:web_view] autorelease];
+      [[CRWJSWindowIDManager alloc] initWithWebView:web_view];
   [manager inject];
   EXPECT_TRUE([manager windowID]);
   EXPECT_FALSE(ExecuteJavaScript(web_view, @"window.__gCrWeb"));

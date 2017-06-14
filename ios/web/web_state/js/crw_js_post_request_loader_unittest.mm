@@ -7,7 +7,6 @@
 #import <WebKit/WebKit.h>
 
 #import "base/mac/foundation_util.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "ios/web/public/test/web_test.h"
@@ -15,6 +14,10 @@
 #import "ios/web/web_state/ui/crw_wk_script_message_router.h"
 #import "testing/gtest_mac.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace base {
 namespace {
@@ -40,16 +43,15 @@ NSString* const kBlobToBase64StringScript =
 #else
 #define MAYBE_LoadsCorrectHTML DISABLED_LoadsCorrectHTML
 #endif
+
 TEST_F(CRWJSPOSTRequestLoaderTest, MAYBE_LoadsCorrectHTML) {
   // Set up necessary objects.
-  scoped_nsobject<CRWJSPOSTRequestLoader> loader(
-      [[CRWJSPOSTRequestLoader alloc] init]);
+  CRWJSPOSTRequestLoader* loader = [[CRWJSPOSTRequestLoader alloc] init];
   WKWebView* web_view = web::BuildWKWebView(CGRectZero, GetBrowserState());
   WKUserContentController* contentController =
       web_view.configuration.userContentController;
-  scoped_nsobject<CRWWKScriptMessageRouter> messageRouter(
-      [[CRWWKScriptMessageRouter alloc]
-          initWithUserContentController:contentController]);
+  CRWWKScriptMessageRouter* messageRouter = [[CRWWKScriptMessageRouter alloc]
+      initWithUserContentController:contentController];
 
   // Override XMLHttpRequest.send() to call kBlobToBase64StringScript.
   __block BOOL overrideSuccessfull = NO;
