@@ -76,8 +76,8 @@ NotificationHeaderView::NotificationHeaderView(views::ButtonListener* listener)
   // Spacer between left-aligned views and right-aligned views
   views::View* spacer = new views::View;
   spacer->SetPreferredSize(gfx::Size(1, kHeaderHeight));
-  layout->SetFlexForView(spacer, 1);
   AddChildView(spacer);
+  layout->SetFlexForView(spacer, 1);
 
   // Settings button view
   settings_button_ = new PaddedButton(listener);

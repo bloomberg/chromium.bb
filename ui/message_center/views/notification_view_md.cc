@@ -201,8 +201,8 @@ NotificationViewMD::NotificationViewMD(MessageCenterController* controller,
   left_content_ = new views::View();
   left_content_->SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kVertical, gfx::Insets(), 0));
-  content_row_layout->SetFlexForView(left_content_, 1);
   content_row_->AddChildView(left_content_);
+  content_row_layout->SetFlexForView(left_content_, 1);
 
   // |right_content_| contains notification icon and small image.
   right_content_ = new views::View();
@@ -438,9 +438,15 @@ void NotificationViewMD::CreateOrUpdateImageView(
   // specified in advance and images will be scaled to fit including a border if
   // necessary.
   if (notification.image().IsEmpty()) {
-    left_content_->RemoveChildView(image_container_);
-    image_container_ = NULL;
-    image_view_ = NULL;
+    if (image_container_) {
+      DCHECK(image_view_);
+
+      left_content_->RemoveChildView(image_container_);
+      image_container_ = NULL;
+      image_view_ = NULL;
+    } else {
+      DCHECK(!image_view_);
+    }
     return;
   }
 
@@ -455,6 +461,7 @@ void NotificationViewMD::CreateOrUpdateImageView(
     image_container_->SetBackground(
         views::CreateSolidBackground(message_center::kImageBackgroundColor));
 
+    DCHECK(!image_view_);
     image_view_ = new message_center::ProportionalImageView(ideal_size);
     image_container_->AddChildView(image_view_);
     // Insert the created image container just after the |content_row_|.
