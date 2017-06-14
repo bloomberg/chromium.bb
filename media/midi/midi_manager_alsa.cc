@@ -28,6 +28,7 @@
 #include "crypto/sha2.h"
 #include "media/midi/midi_port_info.h"
 #include "media/midi/midi_service.h"
+#include "media/midi/task_service.h"
 
 namespace midi {
 
@@ -36,15 +37,17 @@ namespace {
 using mojom::PortState;
 using mojom::Result;
 
-// TODO(toyoshim): use constexpr for following const values.
-const int kEventTaskRunner = 0;
-const int kSendTaskRunner = 1;
+enum {
+  kDefaultRunnerNotUsedOnAlsa = TaskService::kDefaultRunnerId,
+  kEventTaskRunner,
+  kSendTaskRunner
+};
 
 // Per-output buffer. This can be smaller, but then large sysex messages
 // will be (harmlessly) split across multiple seq events. This should
 // not have any real practical effect, except perhaps to slightly reorder
 // realtime messages with respect to sysex.
-const size_t kSendBufferSize = 256;
+constexpr size_t kSendBufferSize = 256;
 
 // Minimum client id for which we will have ALSA card devices for. When we
 // are searching for card devices (used to get the path, id, and manufacturer),
@@ -52,7 +55,7 @@ const size_t kSendBufferSize = 256;
 // See seq_clientmgr.c in the ALSA code for this.
 // TODO(agoode): Add proper client -> card export from the kernel to avoid
 //               hardcoding.
-const int kMinimumClientIdForCards = 16;
+constexpr int kMinimumClientIdForCards = 16;
 
 // ALSA constants.
 const char kAlsaHw[] = "hw";
@@ -83,36 +86,17 @@ const char kCardSyspath[] = "/card";
 
 // Constants for the capabilities we search for in inputs and outputs.
 // See http://www.alsa-project.org/alsa-doc/alsa-lib/seq.html.
-const unsigned int kRequiredInputPortCaps =
+constexpr unsigned int kRequiredInputPortCaps =
     SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_SUBS_READ;
-const unsigned int kRequiredOutputPortCaps =
+constexpr unsigned int kRequiredOutputPortCaps =
     SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_SUBS_WRITE;
 
-const unsigned int kCreateOutputPortCaps =
+constexpr unsigned int kCreateOutputPortCaps =
     SND_SEQ_PORT_CAP_READ | SND_SEQ_PORT_CAP_NO_EXPORT;
-const unsigned int kCreateInputPortCaps =
+constexpr unsigned int kCreateInputPortCaps =
     SND_SEQ_PORT_CAP_WRITE | SND_SEQ_PORT_CAP_NO_EXPORT;
-const unsigned int kCreatePortType =
+constexpr unsigned int kCreatePortType =
     SND_SEQ_PORT_TYPE_MIDI_GENERIC | SND_SEQ_PORT_TYPE_APPLICATION;
-
-// Global variables to identify MidiManagerAlsa instance.
-const int kInvalidInstanceId = -1;
-int g_active_instance_id = kInvalidInstanceId;
-int g_next_instance_id = 0;
-
-struct MidiManagerLockHelper {
-  base::Lock instance_id_lock;
-
-  // Prevent current instance from quiting Finalize() while tasks run on
-  // external TaskRunners.
-  base::Lock event_task_lock;
-  base::Lock send_task_lock;
-};
-
-MidiManagerLockHelper* GetLockHelper() {
-  static MidiManagerLockHelper* lock_helper = new MidiManagerLockHelper();
-  return lock_helper;
-}
 
 int AddrToInt(int client, int port) {
   return (client << 8) | port;
@@ -180,33 +164,19 @@ void SetStringIfNonEmpty(base::DictionaryValue* value,
 MidiManagerAlsa::MidiManagerAlsa(MidiService* service) : MidiManager(service) {}
 
 MidiManagerAlsa::~MidiManagerAlsa() {
-  // Take lock to ensure that the members initialized on the IO thread
-  // are not destructed here.
-  base::AutoLock lock(lazy_init_member_lock_);
-
   // Extra CHECK to verify all members are already reset.
-  CHECK(!initialization_thread_checker_);
   CHECK(!in_client_);
   CHECK(!out_client_);
   CHECK(!decoder_);
   CHECK(!udev_);
   CHECK(!udev_monitor_);
-
-  base::AutoLock instance_id_lock(GetLockHelper()->instance_id_lock);
-  CHECK_EQ(kInvalidInstanceId, g_active_instance_id);
 }
 
 void MidiManagerAlsa::StartInitialization() {
-  {
-    base::AutoLock lock(GetLockHelper()->instance_id_lock);
-    CHECK_EQ(kInvalidInstanceId, g_active_instance_id);
-    instance_id_ = g_next_instance_id++;
-    g_active_instance_id = instance_id_;
+  if (!service()->task_service()->BindInstance()) {
+    NOTREACHED();
+    return CompleteInitialization(Result::INITIALIZATION_ERROR);
   }
-
-  base::AutoLock lock(lazy_init_member_lock_);
-
-  initialization_thread_checker_.reset(new base::ThreadChecker());
 
   // Create client handles.
   snd_seq_t* tmp_seq = nullptr;
@@ -318,43 +288,27 @@ void MidiManagerAlsa::StartInitialization() {
 
   // Start processing events. Don't do this before enumeration of both
   // ALSA and udev.
-  service()
-      ->GetTaskRunner(kEventTaskRunner)
-      ->PostTask(FROM_HERE, base::Bind(&MidiManagerAlsa::EventLoop,
-                                       base::Unretained(this), instance_id_));
+  service()->task_service()->PostBoundTask(
+      kEventTaskRunner,
+      base::BindOnce(&MidiManagerAlsa::EventLoop, base::Unretained(this)));
 
   CompleteInitialization(Result::OK);
 }
 
 void MidiManagerAlsa::Finalize() {
-  base::AutoLock lock(lazy_init_member_lock_);
-  DCHECK(initialization_thread_checker_->CalledOnValidThread());
-
-  // Tell tasks running on TaskRunners it will soon be time to shut down. This
-  // gives us assurance a task running on kEventTaskRunner will stop in case the
-  // SND_SEQ_EVENT_CLIENT_EXIT message is lost.
-  {
-    base::AutoLock lock(GetLockHelper()->instance_id_lock);
-    CHECK_EQ(instance_id_, g_active_instance_id);
-    g_active_instance_id = kInvalidInstanceId;
-  }
-
-  // Ensure that no tasks run on kSendTaskRunner.
-  base::AutoLock send_runner_lock(GetLockHelper()->send_task_lock);
-
   // Close the out client. This will trigger the event thread to stop,
   // because of SND_SEQ_EVENT_CLIENT_EXIT.
   out_client_.reset();
 
-  // Ensure that no tasks run on kEventTaskRunner.
-  base::AutoLock event_runner_lock(GetLockHelper()->event_task_lock);
+  // Ensure that no task is running any more.
+  bool result = service()->task_service()->UnbindInstance();
+  CHECK(result);
 
   // Destruct the other stuff we initialized in StartInitialization().
   udev_monitor_.reset();
   udev_.reset();
   decoder_.reset();
   in_client_.reset();
-  initialization_thread_checker_.reset();
 }
 
 void MidiManagerAlsa::DispatchSendMidiData(MidiManagerClient* client,
@@ -369,13 +323,11 @@ void MidiManagerAlsa::DispatchSendMidiData(MidiManagerClient* client,
     delay = std::max(time_to_send - base::TimeTicks::Now(), base::TimeDelta());
   }
 
-  service()
-      ->GetTaskRunner(kSendTaskRunner)
-      ->PostDelayedTask(
-          FROM_HERE,
-          base::Bind(&MidiManagerAlsa::SendMidiData, base::Unretained(this),
-                     instance_id_, client, port_index, data),
-          delay);
+  service()->task_service()->PostBoundDelayedTask(
+      kSendTaskRunner,
+      base::BindOnce(&MidiManagerAlsa::SendMidiData, base::Unretained(this),
+                     client, port_index, data),
+      delay);
 }
 
 MidiManagerAlsa::MidiPort::Id::Id() = default;
@@ -892,23 +844,9 @@ std::string MidiManagerAlsa::AlsaCard::ExtractManufacturerString(
   return "";
 }
 
-void MidiManagerAlsa::SendMidiData(int instance_id,
-                                   MidiManagerClient* client,
+void MidiManagerAlsa::SendMidiData(MidiManagerClient* client,
                                    uint32_t port_index,
                                    const std::vector<uint8_t>& data) {
-  DCHECK(service()->GetTaskRunner(kSendTaskRunner)->BelongsToCurrentThread());
-
-  // Obtain the lock so that the instance could not be destructed while this
-  // method is running on the kSendTaskRunner.
-  base::AutoLock lock(GetLockHelper()->send_task_lock);
-  {
-    // Check if Finalize() already runs. After this check, we can access |this|
-    // safely on the kEventTaskRunner.
-    base::AutoLock instance_id_lock(GetLockHelper()->instance_id_lock);
-    if (instance_id != g_active_instance_id)
-      return;
-  }
-
   snd_midi_event_t* encoder;
   snd_midi_event_new(kSendBufferSize, &encoder);
   for (const auto datum : data) {
@@ -932,18 +870,7 @@ void MidiManagerAlsa::SendMidiData(int instance_id,
   AccumulateMidiBytesSent(client, data.size());
 }
 
-void MidiManagerAlsa::EventLoop(int instance_id) {
-  // Obtain the lock so that the instance could not be destructed while this
-  // method is running on the kEventTaskRunner.
-  base::AutoLock lock(GetLockHelper()->event_task_lock);
-  {
-    // Check if Finalize() already runs. After this check, we can access |this|
-    // safely on the kEventTaskRunner.
-    base::AutoLock instance_id_lock(GetLockHelper()->instance_id_lock);
-    if (instance_id != g_active_instance_id)
-      return;
-  }
-
+void MidiManagerAlsa::EventLoop() {
   bool loop_again = true;
 
   struct pollfd pfd[2];
@@ -1020,10 +947,9 @@ void MidiManagerAlsa::EventLoop(int instance_id) {
 
   // Do again.
   if (loop_again) {
-    service()
-        ->GetTaskRunner(kEventTaskRunner)
-        ->PostTask(FROM_HERE, base::Bind(&MidiManagerAlsa::EventLoop,
-                                         base::Unretained(this), instance_id));
+    service()->task_service()->PostBoundTask(
+        kEventTaskRunner,
+        base::BindOnce(&MidiManagerAlsa::EventLoop, base::Unretained(this)));
   }
 }
 
