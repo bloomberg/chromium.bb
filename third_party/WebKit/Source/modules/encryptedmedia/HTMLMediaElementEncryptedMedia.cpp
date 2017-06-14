@@ -352,18 +352,18 @@ ScriptPromise HTMLMediaElementEncryptedMedia::setMediaKeys(
 
   // From http://w3c.github.io/encrypted-media/#setMediaKeys
 
-  // 1. If mediaKeys and the mediaKeys attribute are the same object,
-  //    return a resolved promise.
-  if (this_element.media_keys_ == media_keys)
-    return ScriptPromise::CastUndefined(script_state);
-
-  // 2. If this object's attaching media keys value is true, return a
+  // 1. If this object's attaching media keys value is true, return a
   //    promise rejected with an InvalidStateError.
   if (this_element.is_attaching_media_keys_) {
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(kInvalidStateError,
                                            "Another request is in progress."));
   }
+
+  // 2. If mediaKeys and the mediaKeys attribute are the same object,
+  //    return a resolved promise.
+  if (this_element.media_keys_ == media_keys)
+    return ScriptPromise::CastUndefined(script_state);
 
   // 3. Let this object's attaching media keys value be true.
   this_element.is_attaching_media_keys_ = true;
