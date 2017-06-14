@@ -88,9 +88,9 @@ std::unique_ptr<SearchController> CreateSearchController(
       webstore_group_id,
       base::MakeUnique<WebstoreProvider>(profile, list_controller));
   if (features::IsAnswerCardEnabled()) {
-    controller->AddProvider(
-        answer_card_group_id,
-        base::MakeUnique<AnswerCardSearchProvider>(profile, model));
+    controller->AddProvider(answer_card_group_id,
+                            base::MakeUnique<AnswerCardSearchProvider>(
+                                profile, model, list_controller));
   }
   if (IsSuggestionsSearchProviderEnabled()) {
     size_t suggestions_group_id =

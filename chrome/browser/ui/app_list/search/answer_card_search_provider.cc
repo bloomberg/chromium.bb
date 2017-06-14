@@ -9,6 +9,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/app_list/search/answer_card_result.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "content/public/browser/navigation_handle.h"
@@ -19,11 +20,9 @@
 #include "content/public/common/renderer_preferences.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
-#include "third_party/WebKit/public/platform/WebMouseEvent.h"
 #include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/search_box_model.h"
-#include "ui/app_list/search_result.h"
 #include "ui/views/controls/webview/web_contents_set_background_color.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/widget/widget.h"
@@ -76,87 +75,15 @@ class SearchAnswerWebView : public views::WebView {
   DISALLOW_COPY_AND_ASSIGN(SearchAnswerWebView);
 };
 
-class SearchAnswerResult : public SearchResult,
-                           public content::WebContentsObserver {
- public:
-  SearchAnswerResult(Profile* profile,
-                     const std::string& result_url,
-                     const base::string16& result_title,
-                     views::View* web_view,
-                     content::WebContents* web_contents)
-      : WebContentsObserver(web_contents),
-        profile_(profile),
-        mouse_event_callback_(base::Bind(&SearchAnswerResult::HandleMouseEvent,
-                                         base::Unretained(this))) {
-    set_display_type(DISPLAY_CARD);
-    set_id(result_url);
-    set_relevance(1);
-    set_view(web_view);
-    set_title(result_title);
-    // web_contents may be null if the result is being duplicated after the
-    // search provider's WebContents was destroyed.
-    if (web_contents) {
-      content::RenderViewHost* const rvh = web_contents->GetRenderViewHost();
-      if (rvh) {
-        rvh->GetWidget()->AddMouseEventCallback(mouse_event_callback_);
-      }
-    }
-  }
-
-  ~SearchAnswerResult() override {
-    // WebContentsObserver::web_contents() returns nullptr after destruction of
-    // WebContents.
-    if (web_contents()) {
-      content::RenderViewHost* const rvh = web_contents()->GetRenderViewHost();
-      if (rvh) {
-        rvh->GetWidget()->RemoveMouseEventCallback(mouse_event_callback_);
-      }
-    }
-  }
-
-  // SearchResult overrides:
-  std::unique_ptr<SearchResult> Duplicate() const override {
-    return base::MakeUnique<SearchAnswerResult>(profile_, id(), title(), view(),
-                                                web_contents());
-  }
-
-  void Open(int event_flags) override {
-    chrome::NavigateParams params(profile_, GURL(id()),
-                                  ui::PAGE_TRANSITION_GENERATED);
-    params.disposition = ui::DispositionFromEventFlags(event_flags);
-    chrome::Navigate(&params);
-  }
-
- private:
-  bool HandleMouseEvent(const blink::WebMouseEvent& event) {
-    switch (event.GetType()) {
-      case blink::WebInputEvent::kMouseMove:
-      case blink::WebInputEvent::kMouseEnter:
-        if (!is_mouse_in_view())
-          SetIsMouseInView(true);
-        break;
-      case blink::WebInputEvent::kMouseLeave:
-        if (is_mouse_in_view())
-          SetIsMouseInView(false);
-        break;
-      default:
-        break;
-    }
-
-    return false;
-  }
-
-  Profile* const profile_;
-  const content::RenderWidgetHost::MouseEventCallback mouse_event_callback_;
-};
-
 }  // namespace
 
 AnswerCardSearchProvider::AnswerCardSearchProvider(
     Profile* profile,
-    app_list::AppListModel* model)
+    app_list::AppListModel* model,
+    AppListControllerDelegate* list_controller)
     : profile_(profile),
       model_(model),
+      list_controller_(list_controller),
       web_view_(base::MakeUnique<SearchAnswerWebView>(profile)),
       web_contents_(
           content::WebContents::Create(content::WebContents::CreateParams(
@@ -356,9 +283,10 @@ void AnswerCardSearchProvider::OnResultAvailable(bool is_available) {
   SearchProvider::Results results;
   if (is_available) {
     results.reserve(1);
-    results.emplace_back(base::MakeUnique<SearchAnswerResult>(
-        profile_, result_url_, base::UTF8ToUTF16(result_title_),
-        web_view_.get(), web_contents_.get()));
+    results.emplace_back(base::MakeUnique<AnswerCardResult>(
+        profile_, list_controller_, result_url_,
+        base::UTF8ToUTF16(result_title_), web_view_.get(),
+        web_contents_.get()));
   }
   SwapResults(&results);
 }

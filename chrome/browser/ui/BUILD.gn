@@ -3289,6 +3289,8 @@ split_static_library("ui") {
       "app_list/profile_loader.cc",
       "app_list/profile_loader.h",
       "app_list/profile_store.h",
+      "app_list/search/answer_card_result.cc",
+      "app_list/search/answer_card_result.h",
       "app_list/search/answer_card_search_provider.cc",
       "app_list/search/answer_card_search_provider.h",
       "app_list/search/app_result.cc",
