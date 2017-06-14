@@ -5,15 +5,15 @@ Page reloaded.
 Started extension.
 Running tests...
 RUNNING TEST: extension_testGetHAR
-resource: .../tests/inspector/extensions-network-test.js
-resource: .../tests/inspector/extensions-test.js
-resource: .../tests/inspector/inspector-test.js
-resource: .../inspector/extensions/extensions-network.html
-resource: .../inspector/extensions/extensions-network.html
-resource: .../extensions/resources/abe.png
-resource: .../extensions/resources/audits-style1.css
-resource: .../extensions/resources/missing-image.png
-resource: .../LayoutTests/resources/Ahem.ttf
+resource: http://127.0.0.1:8000/inspector/extensions-network-test.js
+resource: http://127.0.0.1:8000/inspector/extensions-test.js
+resource: http://127.0.0.1:8000/inspector/extensions/extensions-network.html
+resource: http://127.0.0.1:8000/inspector/extensions/extensions-network.html
+resource: http://127.0.0.1:8000/inspector/extensions/resources/abe.png
+resource: http://127.0.0.1:8000/inspector/extensions/resources/audits-style1.css
+resource: http://127.0.0.1:8000/inspector/extensions/resources/missing-image.png
+resource: http://127.0.0.1:8000/inspector/inspector-test.js
+resource: http://127.0.0.1:8000/resources/Ahem.ttf
 RUNNING TEST: extension_testGetRequestContent
 {
     0 : ".some-style {

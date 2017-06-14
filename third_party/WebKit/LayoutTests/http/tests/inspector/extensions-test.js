@@ -9,8 +9,14 @@ function extensionFunctions()
     return functions;
 }
 
+var extensionsOrigin = "http://devtools-extensions.test:8000";
+
 var initialize_ExtensionsTest = function()
 {
+
+var extensionsHost = "devtools-extensions.test";
+var extensionsOrigin = `http://${extensionsHost}:8000`;
+
 Extensions.extensionServer._registerHandler("evaluateForTestInFrontEnd", onEvaluate);
 
 Extensions.extensionServer._extensionAPITestHook = function(extensionServerClient, coreAPI)
@@ -56,7 +62,8 @@ InspectorTest.runExtensionTests = async function()
     var extensionURL = (/^https?:/.test(pageURL) ?
         pageURL.replace(/^(https?:\/\/[^/]*\/).*$/,"$1") :
         pageURL.replace(/\/inspector\/extensions\/[^/]*$/, "/http/tests")) +
-        "/inspector/resources/extension-main.html";
+        "inspector/resources/extension-main.html";
+    extensionURL = extensionURL.replace("127.0.0.1", extensionsHost);
     InspectorFrontendAPI.addExtensions([{ startPage: extensionURL, name: "test extension", exposeWebInspectorNamespace: true }]);
     Extensions.extensionServer.initializeExtensions();
 }

@@ -1,15 +1,15 @@
 <html>
 <head>
-<script src="../../http/tests/inspector/inspector-test.js"></script>
-<script src="../../http/tests/inspector/extensions-test.js"></script>
-<script src="../audits/audits-test.js"></script>
+<script src="../inspector-test.js"></script>
+<script src="../extensions-test.js"></script>
+<script src="../audits-test.js"></script>
 <script src="extensions-audits-tests.js"></script>
 
 <script type="text/javascript">
 
 window.whereAmI = "main world";
 
-testRunner.setIsolatedWorldSecurityOrigin(632, "file:///");
+testRunner.setIsolatedWorldSecurityOrigin(632, extensionsOrigin);
 testRunner.evaluateScriptInIsolatedWorld(632, "window.whereAmI = 'brave new world'");
 
 function extension_testAudits(nextTest)

@@ -1,9 +1,9 @@
 <html>
 <head>
-<script src="../../http/tests/inspector/inspector-test.js"></script>
-<script src="../../http/tests/inspector/extensions-test.js"></script>
-<script src="../../http/tests/inspector/debugger-test.js"></script>
-<script src="../sources/debugger/resources/edit-me.js"></script>
+<script src="../inspector-test.js"></script>
+<script src="../extensions-test.js"></script>
+<script src="../debugger-test.js"></script>
+<script src="../../../inspector/sources/debugger/resources/edit-me.js"></script>
 <script type="text/javascript">
 
 function initialize_extensionsSidebarTest()
@@ -49,7 +49,7 @@ function extension_testOnRequestFinished(nextTest)
         nextTest();
     }
     webInspector.network.onRequestFinished.addListener(onRequestFinished);
-    webInspector.inspectedWindow.eval("var xhr = new XMLHttpRequest(); xhr.open('GET', '" + location.href + "', false); xhr.send(null);");
+    webInspector.inspectedWindow.eval("var xhr = new XMLHttpRequest(); xhr.open('GET', location.href, false); xhr.send(null);");
 }
 
 function extension_testOnNavigated(nextTest)

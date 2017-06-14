@@ -11,6 +11,8 @@ function extension_getRequestByUrl(urls, callback)
                 }
             }
         }
+        output("no item found");
+        callback(null);
     }
     webInspector.network.getHAR(onHAR);
 }
