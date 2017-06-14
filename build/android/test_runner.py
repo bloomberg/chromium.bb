@@ -41,6 +41,7 @@ from pylib.base import test_run_factory
 from pylib.results import json_results
 from pylib.results import report_results
 from pylib.utils import logdog_helper
+from pylib.utils import logging_utils
 
 from py_utils import contextlib_ext
 
@@ -187,7 +188,11 @@ def AddCommonOptions(parser):
 
 def ProcessCommonOptions(args):
   """Processes and handles all common options."""
-  run_tests_helper.SetLogLevel(args.verbose_count)
+  run_tests_helper.SetLogLevel(args.verbose_count, add_handler=False)
+  handler = logging_utils.ColorStreamHandler()
+  handler.setFormatter(run_tests_helper.CustomFormatter())
+  logging.getLogger().addHandler(handler)
+
   constants.SetBuildType(args.build_type)
   if args.output_directory:
     constants.SetOutputDirectory(args.output_directory)
