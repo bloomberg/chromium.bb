@@ -1,6 +1,5 @@
 <html>
 <head>
-<link rel="stylesheet" href="resources/audits-style1.css" type="text/css">
 <style>
 @font-face {
     font-family: 'test';
@@ -10,9 +9,10 @@
 p { font-family: 'test'; }
 </style>
 
-<script src="../../http/tests/inspector/inspector-test.js"></script>
-<script src="../../http/tests/inspector/extensions-test.js"></script>
-<script src="../../http/tests/inspector/extensions-network-test.js"></script>
+<script src="../inspector-test.js"></script>
+<script src="../extensions-test.js"></script>
+<script src="../extensions-network-test.js"></script>
+<link rel="stylesheet" href="resources/audits-style1.css" type="text/css">
 <script type="text/javascript">
 
 function extension_testGetHAR(nextTest)
@@ -27,7 +27,7 @@ function extension_testGetHAR(nextTest)
         result.entries.sort(compareEntries);
 
         for (var i = 0; i < result.entries.length; ++i)
-            output("resource: " + result.entries[i].request.url.replace(/.*((\/[^/]*){3}$)/,"...$1"));
+            output("resource: " + result.entries[i].request.url);
     }
     extension_doXHR(function() {
         webInspector.network.getHAR(callbackAndNextTest(onHAR, nextTest));
@@ -36,14 +36,20 @@ function extension_testGetHAR(nextTest)
 
 function doXHR()
 {
-    var xhr = new XMLHttpRequest();
-    xhr.open("GET", "", false);
-    xhr.send(null);
+    return new Promise((fulfill) => {
+        var xhr = new XMLHttpRequest();
+        xhr.open("GET", "", true);
+        xhr.send(null);
+        xhr.onreadystatechange = () => {
+          if (xhr.readyState == 4 && xhr.status == 200)
+            fulfill();
+        };
+    });
 }
 
 function extension_doXHR(callback)
 {
-    webInspector.inspectedWindow.eval("doXHR()", callback);
+    invokePageFunctionAsync("doXHR", callback);
 }
 
 function extension_testRequestNotification(nextTest)

@@ -1,11 +1,11 @@
 <html>
 <head>
-<script src="../../http/tests/inspector/inspector-test.js"></script>
-<script src="../../http/tests/inspector/console-test.js"></script>
-<script src="../../http/tests/inspector/network-test.js"></script>
-<script src="../../http/tests/inspector/sources-test.js"></script>
-<script src="../../http/tests/inspector/resources-test.js"></script>
-<script src="../../http/tests/inspector/extensions-test.js"></script>
+<script src="../inspector-test.js"></script>
+<script src="../console-test.js"></script>
+<script src="../network-test.js"></script>
+<script src="../sources-test.js"></script>
+<script src="../resources-test.js"></script>
+<script src="../extensions-test.js"></script>
 <script type="text/javascript">
 function logMessage()
 {
@@ -225,7 +225,7 @@ function extension_testSearch(nextTest)
 
         function performSearch(query)
         {
-            UI.inspectorView.panel("file://TestPanelforsearch").then(panel => {
+            UI.inspectorView.panel(extensionsOrigin + "TestPanelforsearch").then(panel => {
                 panel.searchableView().showSearchField();
                 panel.searchableView()._searchInputElement.value = query;
                 panel.searchableView()._performSearch(true, true);

@@ -63,7 +63,7 @@ function output(message)
 function onError(event)
 {
     window.removeEventListener("error", onError);
-    output("Uncaught exception in extension context: " + event.message + " [" + event.filename + ":" + event.lineno + "]");
+    output("Uncaught exception in extension context: " + event.message + " [" + event.filename + ":" + event.lineno + "]\n");
     evaluateOnFrontend("InspectorTest.completeTest();");
 }
 
