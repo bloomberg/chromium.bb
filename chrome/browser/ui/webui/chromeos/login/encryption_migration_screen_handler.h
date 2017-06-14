@@ -14,11 +14,8 @@
 #include "chromeos/cryptohome/cryptohome_parameters.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/login/auth/user_context.h"
+#include "device/wake_lock/public/interfaces/wake_lock.mojom.h"
 #include "third_party/cros_system_api/dbus/cryptohome/dbus-constants.h"
-
-namespace device {
-class PowerSaveBlocker;
-}  // namespace device
 
 namespace chromeos {
 
@@ -83,8 +80,6 @@ class EncryptionMigrationScreenHandler : public EncryptionMigrationScreenView,
   void OnMountExistingVault(bool success,
                             cryptohome::MountError return_code,
                             const std::string& mount_hash);
-  void StartBlockingPowerSave();
-  void StopBlockingPowerSave();
   // Removes cryptohome and shows the error screen after the removal finishes.
   void RemoveCryptohome();
   void OnRemoveCryptohome(bool success, cryptohome::MountError return_code);
@@ -100,6 +95,8 @@ class EncryptionMigrationScreenHandler : public EncryptionMigrationScreenView,
 
   // Records UMA about visible screen after delay.
   void OnDelayedRecordVisibleScreen(UIState state);
+
+  device::mojom::WakeLock* GetWakeLock();
 
   Delegate* delegate_ = nullptr;
   bool show_on_init_ = false;
@@ -127,7 +124,7 @@ class EncryptionMigrationScreenHandler : public EncryptionMigrationScreenView,
   // The battery level at the timing that the migration starts.
   double initial_battery_percent_ = 0.0;
 
-  std::unique_ptr<device::PowerSaveBlocker> power_save_blocker_;
+  device::mojom::WakeLockPtr wake_lock_;
 
   std::unique_ptr<LoginFeedback> login_feedback_;
 
