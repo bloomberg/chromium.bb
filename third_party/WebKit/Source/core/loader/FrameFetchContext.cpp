@@ -284,6 +284,13 @@ void FrameFetchContext::AddAdditionalRequestHeaders(ResourceRequest& request,
   if (GetFrame()->GetSettings() &&
       GetFrame()->GetSettings()->GetDataSaverEnabled())
     request.SetHTTPHeaderField("Save-Data", "on");
+
+  if (GetLocalFrameClient()->IsClientLoFiActiveForFrame()) {
+    request.AddHTTPHeaderField(
+        "Intervention",
+        "<https://www.chromestatus.com/features/6072546726248448>; "
+        "level=\"warning\"");
+  }
 }
 
 // TODO(toyoshim, arthursonzogni): PlzNavigate doesn't use this function to set

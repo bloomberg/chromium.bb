@@ -1006,6 +1006,12 @@ WebEffectiveConnectionType LocalFrameClientImpl::GetEffectiveConnectionType() {
   return WebEffectiveConnectionType::kTypeUnknown;
 }
 
+bool LocalFrameClientImpl::IsClientLoFiActiveForFrame() {
+  if (web_frame_->Client())
+    return web_frame_->Client()->IsClientLoFiActiveForFrame();
+  return false;
+}
+
 bool LocalFrameClientImpl::ShouldUseClientLoFiForRequest(
     const ResourceRequest& request) {
   if (web_frame_->Client()) {

@@ -4064,17 +4064,23 @@ bool RenderFrameImpl::ShouldUseClientLoFiForRequest(
   if (request.GetPreviewsState() != WebURLRequest::kPreviewsUnspecified)
     return request.GetPreviewsState() & WebURLRequest::kClientLoFiOn;
 
-  if (!(previews_state_ & CLIENT_LOFI_ON))
+  if (!IsClientLoFiActiveForFrame())
     return false;
-  if (previews_state_ & (PREVIEWS_OFF | PREVIEWS_NO_TRANSFORM)) {
-    return false;
-  }
 
   // Even if this frame is using Server Lo-Fi, https:// images won't be handled
   // by Server Lo-Fi since their requests won't be sent to the Data Saver proxy,
   // so use Client Lo-Fi instead.
   if (previews_state_ & SERVER_LOFI_ON)
     return request.Url().ProtocolIs("https");
+  return true;
+}
+
+bool RenderFrameImpl::IsClientLoFiActiveForFrame() {
+  if (!(previews_state_ & CLIENT_LOFI_ON))
+    return false;
+  if (previews_state_ & (PREVIEWS_OFF | PREVIEWS_NO_TRANSFORM)) {
+    return false;
+  }
   return true;
 }
 

@@ -128,7 +128,7 @@ bool MaybeDisallowFetchForDocWrittenScript(ResourceRequest& request,
   }
 
   EmitWarningForDocWriteScripts(request.Url().GetString(), document);
-  request.SetHTTPHeaderField("Intervention",
+  request.AddHTTPHeaderField("Intervention",
                              "<https://www.chromestatus.com/feature/"
                              "5718547946799104>; level=\"warning\"");
 
