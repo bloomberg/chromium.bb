@@ -216,6 +216,7 @@ typedef struct frame_contexts {
   aom_prob comp_inter_prob[COMP_INTER_CONTEXTS];
 #if CONFIG_NEW_MULTISYMBOL
   aom_cdf_prob comp_inter_cdf[COMP_INTER_CONTEXTS][CDF_SIZE(2)];
+  aom_cdf_prob single_ref_cdf[REF_CONTEXTS][SINGLE_REFS - 1][CDF_SIZE(2)];
 #endif
   aom_prob single_ref_prob[REF_CONTEXTS][SINGLE_REFS - 1];
 #if CONFIG_EXT_REFS

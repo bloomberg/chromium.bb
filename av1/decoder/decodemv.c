@@ -1280,6 +1280,14 @@ static REFERENCE_MODE read_block_reference_mode(AV1_COMMON *cm,
   }
 }
 
+#if CONFIG_NEW_MULTISYMBOL
+#define READ_REF_BIT(pname) \
+  aom_read_symbol(r, av1_get_pred_cdf_##pname(xd), 2, ACCT_STR)
+#else
+#define READ_REF_BIT(pname) \
+  aom_read(r, av1_get_pred_prob_##pname(cm, xd), ACCT_STR)
+#endif
+
 // Read the referncence frame
 static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
                             aom_reader *r, int segment_id,
@@ -1377,11 +1385,11 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
       // Test need to explicitly code (L,L2,L3,G) vs (BWD,ALT) branch node in
       // tree
       if ((L_OR_L2(cm) || L3_OR_G(cm)) && BWD_OR_ALT(cm))
-        bit0 = aom_read(r, fc->single_ref_prob[ctx0][0], ACCT_STR);
+        bit0 = READ_REF_BIT(single_ref_p1);
       else
         bit0 = BWD_OR_ALT(cm);
 #else   // !CONFIG_VAR_REFS
-      const int bit0 = aom_read(r, fc->single_ref_prob[ctx0][0], ACCT_STR);
+      const int bit0 = READ_REF_BIT(single_ref_p1);
 #endif  // CONFIG_VAR_REFS
       if (counts) ++counts->single_ref[ctx0][0][bit0];
 
@@ -1391,11 +1399,11 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
         int bit1;
         // Test need to explicitly code (BWD) vs (ALT) branch node in tree
         if (BWD_AND_ALT(cm))
-          bit1 = aom_read(r, fc->single_ref_prob[ctx1][1], ACCT_STR);
+          bit1 = READ_REF_BIT(single_ref_p2);
         else
           bit1 = ALTREF_IS_VALID(cm);
-#else   // !CONFIG_VAR_REFS
-        const int bit1 = aom_read(r, fc->single_ref_prob[ctx1][1], ACCT_STR);
+#else  // !CONFIG_VAR_REFS
+        const int bit1 = READ_REF_BIT(single_ref_p2);
 #endif  // CONFIG_VAR_REFS
         if (counts) ++counts->single_ref[ctx1][1][bit1];
         ref_frame[0] = bit1 ? ALTREF_FRAME : BWDREF_FRAME;
@@ -1405,11 +1413,11 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
         int bit2;
         // Test need to explicitly code (L,L2) vs (L3,G) branch node in tree
         if (L_OR_L2(cm) && L3_OR_G(cm))
-          bit2 = aom_read(r, fc->single_ref_prob[ctx2][2], ACCT_STR);
+          bit2 = READ_REF_BIT(single_ref_p3);
         else
           bit2 = L3_OR_G(cm);
-#else   // !CONFIG_VAR_REFS
-        const int bit2 = aom_read(r, fc->single_ref_prob[ctx2][2], ACCT_STR);
+#else  // !CONFIG_VAR_REFS
+        const int bit2 = READ_REF_BIT(single_ref_p3);
 #endif  // CONFIG_VAR_REFS
         if (counts) ++counts->single_ref[ctx2][2][bit2];
         if (bit2) {
@@ -1418,11 +1426,11 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
           int bit4;
           // Test need to explicitly code (L3) vs (G) branch node in tree
           if (L3_AND_G(cm))
-            bit4 = aom_read(r, fc->single_ref_prob[ctx4][4], ACCT_STR);
+            bit4 = READ_REF_BIT(single_ref_p5);
           else
             bit4 = GOLDEN_IS_VALID(cm);
-#else   // !CONFIG_VAR_REFS
-          const int bit4 = aom_read(r, fc->single_ref_prob[ctx4][4], ACCT_STR);
+#else  // !CONFIG_VAR_REFS
+          const int bit4 = READ_REF_BIT(single_ref_p5);
 #endif  // CONFIG_VAR_REFS
           if (counts) ++counts->single_ref[ctx4][4][bit4];
           ref_frame[0] = bit4 ? GOLDEN_FRAME : LAST3_FRAME;
@@ -1432,11 +1440,11 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
           int bit3;
           // Test need to explicitly code (L) vs (L2) branch node in tree
           if (L_AND_L2(cm))
-            bit3 = aom_read(r, fc->single_ref_prob[ctx3][3], ACCT_STR);
+            bit3 = READ_REF_BIT(single_ref_p4);
           else
             bit3 = LAST2_IS_VALID(cm);
-#else   // !CONFIG_VAR_REFS
-          const int bit3 = aom_read(r, fc->single_ref_prob[ctx3][3], ACCT_STR);
+#else  // !CONFIG_VAR_REFS
+          const int bit3 = READ_REF_BIT(single_ref_p4);
 #endif  // CONFIG_VAR_REFS
           if (counts) ++counts->single_ref[ctx3][3][bit3];
           ref_frame[0] = bit3 ? LAST2_FRAME : LAST_FRAME;
@@ -1444,12 +1452,12 @@ static void read_ref_frames(AV1_COMMON *const cm, MACROBLOCKD *const xd,
       }
 #else   // !CONFIG_EXT_REFS
       const int ctx0 = av1_get_pred_context_single_ref_p1(xd);
-      const int bit0 = aom_read(r, fc->single_ref_prob[ctx0][0], ACCT_STR);
+      const int bit0 = READ_REF_BIT(single_ref_p1);
       if (counts) ++counts->single_ref[ctx0][0][bit0];
 
       if (bit0) {
         const int ctx1 = av1_get_pred_context_single_ref_p2(xd);
-        const int bit1 = aom_read(r, fc->single_ref_prob[ctx1][1], ACCT_STR);
+        const int bit1 = READ_REF_BIT(single_ref_p2);
         if (counts) ++counts->single_ref[ctx1][1][bit1];
         ref_frame[0] = bit1 ? ALTREF_FRAME : GOLDEN_FRAME;
       } else {

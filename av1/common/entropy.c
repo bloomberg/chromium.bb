@@ -5696,9 +5696,9 @@ void av1_average_tile_inter_cdfs(AV1_COMMON *cm, FRAME_CONTEXT *fc,
 
 // FIXME: comp_ref_cdf and comp_bwd_ref not defined
 
-// FIXME: single_ref_cdf not defined
-
 #if CONFIG_NEW_MULTISYMBOL
+  AVERAGE_TILE_CDFS(single_ref_cdf)
+
   AVERAGE_TILE_CDFS(newmv_cdf)
   AVERAGE_TILE_CDFS(zeromv_cdf)
   AVERAGE_TILE_CDFS(refmv_cdf)

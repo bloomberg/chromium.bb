@@ -1221,6 +1221,14 @@ static void write_segment_id(aom_writer *w, const struct segmentation *seg,
   }
 }
 
+#if CONFIG_NEW_MULTISYMBOL
+#define WRITE_REF_BIT(bname, pname) \
+  aom_write_symbol(w, bname, av1_get_pred_cdf_##pname(xd), 2)
+#else
+#define WRITE_REF_BIT(bname, pname) \
+  aom_write(w, bname, av1_get_pred_prob_##pname(cm, xd))
+#endif
+
 // This function encodes the reference frame
 static void write_ref_frames(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                              aom_writer *w) {
@@ -1305,7 +1313,7 @@ static void write_ref_frames(const AV1_COMMON *cm, const MACROBLOCKD *xd,
       // tree
       if ((L_OR_L2(cm) || L3_OR_G(cm)) && BWD_OR_ALT(cm))
 #endif  // CONFIG_VAR_REFS
-        aom_write(w, bit0, av1_get_pred_prob_single_ref_p1(cm, xd));
+        WRITE_REF_BIT(bit0, single_ref_p1);
 
       if (bit0) {
 #if CONFIG_VAR_REFS
@@ -1313,7 +1321,7 @@ static void write_ref_frames(const AV1_COMMON *cm, const MACROBLOCKD *xd,
         if (BWD_AND_ALT(cm)) {
 #endif  // CONFIG_VAR_REFS
           const int bit1 = mbmi->ref_frame[0] == ALTREF_FRAME;
-          aom_write(w, bit1, av1_get_pred_prob_single_ref_p2(cm, xd));
+          WRITE_REF_BIT(bit1, single_ref_p2);
 #if CONFIG_VAR_REFS
         }
 #endif  // CONFIG_VAR_REFS
@@ -1324,7 +1332,7 @@ static void write_ref_frames(const AV1_COMMON *cm, const MACROBLOCKD *xd,
         // Test need to explicitly code (L,L2) vs (L3,G) branch node in tree
         if (L_OR_L2(cm) && L3_OR_G(cm))
 #endif  // CONFIG_VAR_REFS
-          aom_write(w, bit2, av1_get_pred_prob_single_ref_p3(cm, xd));
+          WRITE_REF_BIT(bit2, single_ref_p3);
 
         if (!bit2) {
 #if CONFIG_VAR_REFS
@@ -1332,7 +1340,7 @@ static void write_ref_frames(const AV1_COMMON *cm, const MACROBLOCKD *xd,
           if (L_AND_L2(cm)) {
 #endif  // CONFIG_VAR_REFS
             const int bit3 = mbmi->ref_frame[0] != LAST_FRAME;
-            aom_write(w, bit3, av1_get_pred_prob_single_ref_p4(cm, xd));
+            WRITE_REF_BIT(bit3, single_ref_p4);
 #if CONFIG_VAR_REFS
           }
 #endif  // CONFIG_VAR_REFS
@@ -1342,7 +1350,7 @@ static void write_ref_frames(const AV1_COMMON *cm, const MACROBLOCKD *xd,
           if (L3_AND_G(cm)) {
 #endif  // CONFIG_VAR_REFS
             const int bit4 = mbmi->ref_frame[0] != LAST3_FRAME;
-            aom_write(w, bit4, av1_get_pred_prob_single_ref_p5(cm, xd));
+            WRITE_REF_BIT(bit4, single_ref_p5);
 #if CONFIG_VAR_REFS
           }
 #endif  // CONFIG_VAR_REFS
@@ -1350,11 +1358,11 @@ static void write_ref_frames(const AV1_COMMON *cm, const MACROBLOCKD *xd,
       }
 #else   // !CONFIG_EXT_REFS
       const int bit0 = mbmi->ref_frame[0] != LAST_FRAME;
-      aom_write(w, bit0, av1_get_pred_prob_single_ref_p1(cm, xd));
+      WRITE_REF_BIT(bit0, single_ref_p1);
 
       if (bit0) {
         const int bit1 = mbmi->ref_frame[0] != GOLDEN_FRAME;
-        aom_write(w, bit1, av1_get_pred_prob_single_ref_p2(cm, xd));
+        WRITE_REF_BIT(bit1, single_ref_p2);
       }
 #endif  // CONFIG_EXT_REFS
     }
@@ -5029,7 +5037,6 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
           av1_cond_prob_diff_update(header_bc, &fc->comp_inter_prob[i],
                                     counts->comp_inter[i], probwt);
     }
-#endif
 
     if (cm->reference_mode != COMPOUND_REFERENCE) {
       for (i = 0; i < REF_CONTEXTS; i++) {
@@ -5039,6 +5046,7 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
         }
       }
     }
+#endif
     if (cm->reference_mode != SINGLE_REFERENCE) {
       for (i = 0; i < REF_CONTEXTS; i++) {
 #if CONFIG_EXT_REFS

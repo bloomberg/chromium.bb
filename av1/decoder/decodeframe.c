@@ -279,7 +279,6 @@ static void read_frame_reference_mode_probs(AV1_COMMON *cm, aom_reader *r) {
   if (cm->reference_mode == REFERENCE_MODE_SELECT)
     for (i = 0; i < COMP_INTER_CONTEXTS; ++i)
       av1_diff_update_prob(r, &fc->comp_inter_prob[i], ACCT_STR);
-#endif
 
   if (cm->reference_mode != COMPOUND_REFERENCE) {
     for (i = 0; i < REF_CONTEXTS; ++i) {
@@ -288,6 +287,7 @@ static void read_frame_reference_mode_probs(AV1_COMMON *cm, aom_reader *r) {
       }
     }
   }
+#endif
 
   if (cm->reference_mode != SINGLE_REFERENCE) {
     for (i = 0; i < REF_CONTEXTS; ++i) {
