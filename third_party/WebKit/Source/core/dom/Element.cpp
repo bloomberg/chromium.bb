@@ -528,10 +528,14 @@ void Element::scrollIntoViewWithOptions(const ScrollIntoViewOptions& options) {
   ScrollAlignment align_y =
       ToPhysicalAlignment(options, kVerticalScroll, is_horizontal_writing_mode);
 
+  GetDocument().GetPage()->GetSmoothScrollSequencer()->AbortAnimations();
   LayoutRect bounds = BoundingBox();
   GetLayoutObject()->ScrollRectToVisible(
       bounds, align_x, align_y, kProgrammaticScroll,
       make_visible_in_visual_viewport, behavior);
+
+  if (behavior == kScrollBehaviorSmooth)
+    GetDocument().GetPage()->GetSmoothScrollSequencer()->RunQueuedAnimations();
 
   GetDocument().SetSequentialFocusNavigationStartingPoint(this);
 }
