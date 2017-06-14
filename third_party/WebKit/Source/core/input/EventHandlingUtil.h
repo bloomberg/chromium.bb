@@ -43,6 +43,10 @@ MouseEventWithHitTestResults PerformMouseEventHitTest(LocalFrame*,
                                                       const HitTestRequest&,
                                                       const WebMouseEvent&);
 
+LocalFrame* SubframeForHitTestResult(const MouseEventWithHitTestResults&);
+
+LocalFrame* SubframeForTargetNode(Node*);
+
 class PointerEventTarget {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 

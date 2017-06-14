@@ -22,6 +22,8 @@ blink_core_sources("input") {
     "KeyboardEventManager.h",
     "MouseEventManager.cpp",
     "MouseEventManager.h",
+    "MouseWheelEventManager.cpp",
+    "MouseWheelEventManager.h",
     "PointerEventManager.cpp",
     "PointerEventManager.h",
     "ScrollManager.cpp",
