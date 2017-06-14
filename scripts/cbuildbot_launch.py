@@ -34,6 +34,7 @@ from chromite.scripts import cbuildbot
 BUILDROOT_BUILDROOT_LAYOUT = 2
 
 # Metrics reported to Monarch.
+METRIC_ACTIVE = 'chromeos/chromite/cbuildbot_launch/active'
 METRIC_INVOKED = 'chromeos/chromite/cbuildbot_launch/invoked'
 METRIC_COMPLETED = 'chromeos/chromite/cbuildbot_launch/completed'
 METRIC_PREP = 'chromeos/chromite/cbuildbot_launch/prep_completed'
@@ -285,7 +286,8 @@ def _main(argv):
   }
 
   # Does the entire build pass or fail.
-  with metrics.SuccessCounter(METRIC_COMPLETED, metrics_fields) as s_fields:
+  with metrics.Presence(METRIC_ACTIVE, metrics_fields), \
+       metrics.SuccessCounter(METRIC_COMPLETED, metrics_fields) as s_fields:
 
     # Preliminary set, mostly command line parsing.
     with metrics.SuccessCounter(METRIC_INVOKED, metrics_fields):
