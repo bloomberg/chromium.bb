@@ -3092,6 +3092,22 @@ const char kOmniboxDisplayTitleForCurrentUrlDescription[] =
     "the current page is provided as the first suggestion without a title. "
     "Enabling this flag causes the title to be displayed.";
 
+const char kOmniboxUIHideSuggestionUrlPathName[] =
+    "Omnibox UI Hide Suggestion URL Path";
+const char kOmniboxUIHideSuggestionUrlPathDescription[] =
+    "Elides the paths of suggested URLs in the Omnibox dropdown.";
+
+const char kOmniboxUIHideSuggestionUrlSchemeName[] =
+    "Omnibox UI Hide Suggestion URL Scheme";
+const char kOmniboxUIHideSuggestionUrlSchemeDescription[] =
+    "Elides the schemes of suggested URLs in the Omnibox dropdown.";
+
+const char kOmniboxUIHideSuggestionUrlTrivialSubdomainsName[] =
+    "Omnibox UI Hide Suggestion URL Trivial Subdomains";
+const char kOmniboxUIHideSuggestionUrlTrivialSubdomainsDescription[] =
+    "Elides trivially informative subdomains from suggested URLs in the "
+    "Omnibox dropdown (e.g. www. and m.).";
+
 const char kOmniboxUIMaxAutocompleteMatchesName[] =
     "Omnibox UI Max Autocomplete Matches";
 
