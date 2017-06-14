@@ -24,14 +24,18 @@ namespace blink {
 // This is a Slimming Paint v2 class.
 struct PaintChunk {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+
+  using Id = DisplayItem::Id;
+
   PaintChunk()
       : begin_index(0),
         end_index(0),
         outset_for_raster_effects(0),
         known_to_be_opaque(false) {}
+
   PaintChunk(size_t begin,
              size_t end,
-             const DisplayItem::Id* chunk_id,
+             const Id* chunk_id,
              const PaintChunkProperties& props)
       : begin_index(begin),
         end_index(end),
@@ -50,10 +54,14 @@ struct PaintChunk {
   // Check if a new PaintChunk (this) created in the latest paint matches an old
   // PaintChunk created in the previous paint.
   bool Matches(const PaintChunk& old) const {
+    return Matches(old.id ? &*old.id : nullptr);
+  }
+
+  bool Matches(const Id* other_id) const {
     // A PaintChunk without an id doesn't match any other PaintChunks.
-    if (!id || !old.id)
+    if (!id || !other_id)
       return false;
-    if (*id != *old.id)
+    if (*id != *other_id)
       return false;
 #if DCHECK_IS_ON()
     DCHECK(id->client.IsAlive());
@@ -79,7 +87,6 @@ struct PaintChunk {
   // PaintController is skipping the cache, normally because display items can't
   // be uniquely identified), |id| is nullopt so that the chunk won't match any
   // other chunk.
-  using Id = DisplayItem::Id;
   Optional<Id> id;
 
   // The paint properties which apply to this chunk.
