@@ -4,7 +4,6 @@
 
 #import "ios/web/public/crw_session_storage.h"
 
-#import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_item_storage_test_util.h"
@@ -17,6 +16,10 @@
 #include "testing/platform_test.h"
 #include "third_party/ocmock/gtest_support.h"
 #include "ui/base/page_transition_types.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 // Checks for equality between the item storages in |items1| and |items2|.
@@ -64,8 +67,8 @@ class CRWNSessionStorageTest : public PlatformTest {
     [session_storage_ setLastCommittedItemIndex:4];
     [session_storage_ setPreviousItemIndex:3];
     // Create an item storage.
-    base::scoped_nsobject<CRWNavigationItemStorage> item_storage(
-        [[CRWNavigationItemStorage alloc] init]);
+    CRWNavigationItemStorage* item_storage =
+        [[CRWNavigationItemStorage alloc] init];
     [item_storage setVirtualURL:GURL("http://init.test")];
     [item_storage setReferrer:web::Referrer(GURL("http://referrer.url"),
                                             web::ReferrerPolicyDefault)];
@@ -85,7 +88,7 @@ class CRWNSessionStorageTest : public PlatformTest {
   }
 
  protected:
-  base::scoped_nsobject<CRWSessionStorage> session_storage_;
+  CRWSessionStorage* session_storage_;
 };
 
 // Tests that unarchiving CRWSessionStorage data results in an equivalent

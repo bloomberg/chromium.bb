@@ -9,7 +9,6 @@
 
 #include <utility>
 
-#import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_item_storage_test_util.h"
@@ -20,6 +19,10 @@
 #include "testing/platform_test.h"
 #include "third_party/ocmock/gtest_support.h"
 #include "ui/base/page_transition_types.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 class CRWNavigationItemStorageTest : public PlatformTest {
  protected:
@@ -43,7 +46,7 @@ class CRWNavigationItemStorageTest : public PlatformTest {
   CRWNavigationItemStorage* item_storage() { return item_storage_; }
 
  protected:
-  base::scoped_nsobject<CRWNavigationItemStorage> item_storage_;
+  CRWNavigationItemStorage* item_storage_;
 };
 
 // Tests initializing with the legacy keys.
@@ -55,9 +58,9 @@ TEST_F(CRWNavigationItemStorageTest, InitWithCoderLegacy) {
   item_storage().timestamp = base::Time::FromCFAbsoluteTime(0);
 
   // Set up archiver and unarchiver.
-  base::scoped_nsobject<NSMutableData> data([[NSMutableData alloc] init]);
-  base::scoped_nsobject<NSKeyedArchiver> archiver(
-      [[NSKeyedArchiver alloc] initForWritingWithMutableData:data]);
+  NSMutableData* data = [[NSMutableData alloc] init];
+  NSKeyedArchiver* archiver =
+      [[NSKeyedArchiver alloc] initForWritingWithMutableData:data];
   [archiver encodeObject:virtualURL
                   forKey:web::kNavigationItemStorageURLDeperecatedKey];
   [archiver encodeObject:referrerURL
@@ -81,13 +84,13 @@ TEST_F(CRWNavigationItemStorageTest, InitWithCoderLegacy) {
       encodeBool:skip_repost_form_confirmation
           forKey:web::kNavigationItemStorageSkipRepostFormConfirmationKey];
   [archiver finishEncoding];
-  base::scoped_nsobject<NSKeyedUnarchiver> unarchiver(
-      [[NSKeyedUnarchiver alloc] initForReadingWithData:data]);
+  NSKeyedUnarchiver* unarchiver =
+      [[NSKeyedUnarchiver alloc] initForReadingWithData:data];
 
   // Create a CRWNavigationItemStorage and verify that it is equivalent.
-  base::scoped_nsobject<CRWNavigationItemStorage> new_storage(
-      [[CRWNavigationItemStorage alloc] initWithCoder:unarchiver]);
-  EXPECT_TRUE(web::ItemStoragesAreEqual(item_storage(), new_storage.get()));
+  CRWNavigationItemStorage* new_storage =
+      [[CRWNavigationItemStorage alloc] initWithCoder:unarchiver];
+  EXPECT_TRUE(web::ItemStoragesAreEqual(item_storage(), new_storage));
 }
 
 // Tests that unarchiving CRWNavigationItemStorage data results in an equivalent
