@@ -126,7 +126,6 @@ ALWAYS_INLINE ComputedStyle::ComputedStyle()
   rare_non_inherited_data_.Access()->flexible_box_data_.Init();
   rare_non_inherited_data_.Access()->multi_col_data_.Init();
   rare_non_inherited_data_.Access()->transform_data_.Init();
-  rare_non_inherited_data_.Access()->will_change_data_.Init();
   rare_non_inherited_data_.Access()->grid_data_.Init();
   rare_non_inherited_data_.Access()->grid_item_data_.Init();
   rare_non_inherited_data_.Access()->scroll_snap_data_.Init();

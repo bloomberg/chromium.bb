@@ -12,7 +12,7 @@
 {% endif %}
 {% if not field.is_bit_field -%}
 void {{field.internal_setter_method_name}}({{field.type_name}}&& v) {
-{% if field.group %}
+{% if field.group.parent %}
   if (!({{getter_expression(field)}} == v))
     {{setter_expression(field)}} = std::move(v);
 {% else %}

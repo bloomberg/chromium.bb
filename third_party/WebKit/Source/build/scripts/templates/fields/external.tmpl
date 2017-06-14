@@ -6,7 +6,7 @@
 {{base.decl_getter_method(field)}}
 {{base.decl_setter_method(field)}}
 void {{field.setter_method_name}}({{field.type_name}}&& v) {
-{% if field.group %}
+{% if field.group.parent %}
   if (!({{getter_expression(field)}} == v))
     {{setter_expression(field)}} = std::move(v);
 {% else %}

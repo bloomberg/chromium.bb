@@ -15,20 +15,18 @@ static_cast<{{field.type_name}}>({{value}})
 {% endmacro %}
 
 {% macro getter_expression(field) %}
-{% if field.group.name -%}
-{{field.group.member_name}}->{{field.name}}
-{%- else -%}
+{% for group in field.group.path_without_root() -%}
+{{group.member_name}}->
+{%- endfor -%}
 {{field.name}}
-{%- endif %}
-{% endmacro %}
+{%- endmacro %}
 
 {% macro setter_expression(field) %}
-{% if field.group.name -%}
-{{field.group.member_name}}.Access()->{{field.name}}
-{%- else -%}
+{% for group in field.group.path_without_root() -%}
+{{group.member_name}}.Access()->
+{%- endfor -%}
 {{field.name}}
-{%- endif %}
-{% endmacro %}
+{%- endmacro %}
 
 {% macro set_if_changed(field, value) %}
 {% if field.group.name -%}
