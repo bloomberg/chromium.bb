@@ -176,10 +176,6 @@ base::TimeDelta IOSChromeMetricsServiceClient::GetStandardUploadInterval() {
   return metrics::GetUploadInterval();
 }
 
-base::string16 IOSChromeMetricsServiceClient::GetRegistryBackupKey() {
-  return base::string16();
-}
-
 void IOSChromeMetricsServiceClient::OnRendererProcessCrash() {
   stability_metrics_provider_->LogRendererCrash();
 }
