@@ -126,14 +126,8 @@ void ModuleTreeLinker::AdvanceState(State new_state) {
     case State::kFetchingDependencies:
       CHECK(new_state == State::kInstantiating ||
             new_state == State::kFinished);
-      DCHECK(!num_incomplete_descendants_ || !descendants_module_script_)
-          << num_incomplete_descendants_
-          << " outstanding descendant loads found, but the descendant module "
-             "script load procedure unexpectedly finished with "
-          << (descendants_module_script_ ? "success." : "failure.");
       break;
     case State::kInstantiating:
-      CHECK(num_incomplete_descendants_ == 0u || !descendants_module_script_);
       CHECK_EQ(new_state, State::kFinished);
       break;
     case State::kFinished:
@@ -231,6 +225,13 @@ class ModuleTreeLinker::DependencyModuleClient
 void ModuleTreeLinker::FetchDescendants() {
   CHECK(module_script_);
   AdvanceState(State::kFetchingDependencies);
+
+  // [nospec] Abort the steps if the browsing context is discarded.
+  if (!modulator_->HasValidContext()) {
+    descendants_module_script_ = nullptr;
+    AdvanceState(State::kFinished);
+    return;
+  }
 
   // https://html.spec.whatwg.org/multipage/webappapis.html#fetch-the-descendants-of-and-instantiate-a-module-script
   // Step 1. If ancestor list was not given, let it be the empty list.
@@ -355,7 +356,7 @@ void ModuleTreeLinker::DependencyModuleClient::NotifyModuleTreeLoadFinished(
 
 void ModuleTreeLinker::NotifyOneDescendantFinished(
     ModuleScript* module_script) {
-  if (state_ == State::kFinished) {
+  if (state_ != State::kFetchingDependencies) {
     // We may reach here if one of the descendant failed to load, and the other
     // descendants fetches were in flight.
     return;
