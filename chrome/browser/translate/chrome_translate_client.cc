@@ -90,9 +90,12 @@ void LogLanguageDetectionEvent(
   // If entry is null, we don't record the page.
   // The navigation entry can be null in situations like download or initial
   // blank page.
-  if (entry != nullptr) {
+  DCHECK(web_contents);
+  if (entry != nullptr &&
+      TranslateService::IsTranslatableURL(entry->GetVirtualURL())) {
     user_event_service->RecordUserEvent(
-        translate::ConstructLanguageDetectionEvent(details));
+        translate::ConstructLanguageDetectionEvent(
+            entry->GetTimestamp().ToInternalValue(), details));
   }
 }
 

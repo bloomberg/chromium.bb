@@ -14,13 +14,14 @@
 namespace translate {
 
 std::unique_ptr<sync_pb::UserEventSpecifics> ConstructLanguageDetectionEvent(
+    const int64_t navigation_id,
     const LanguageDetectionDetails& details) {
   auto specifics = base::MakeUnique<sync_pb::UserEventSpecifics>();
   specifics->set_event_time_usec(base::Time::Now().ToInternalValue());
 
   // TODO(renjieliu): Revisit this field when the best way to identify
   // navigations is determined.
-  specifics->set_navigation_id(base::Time::Now().ToInternalValue());
+  specifics->set_navigation_id(navigation_id);
 
   sync_pb::LanguageDetection lang_detection;
   auto* const lang = lang_detection.add_detected_languages();
@@ -33,4 +34,5 @@ std::unique_ptr<sync_pb::UserEventSpecifics> ConstructLanguageDetectionEvent(
   *specifics->mutable_language_detection() = lang_detection;
   return specifics;
 }
+
 }  // namespace translate
