@@ -98,7 +98,11 @@ bool BubbleDialogDelegateView::ShouldShowCloseButton() const {
 
 ClientView* BubbleDialogDelegateView::CreateClientView(Widget* widget) {
   DialogClientView* client = new DialogClientView(widget, GetContentsView());
-  client->SetButtonRowInsets(gfx::Insets());
+  LayoutProvider* provider = LayoutProvider::Get();
+  // The other three sides are taken care of by the |margins_| given to
+  // BubbleFrameView in CreateNonClientFrameView().
+  client->SetButtonRowInsets(gfx::Insets(
+      provider->GetDistanceMetric(DISTANCE_BUBBLE_BUTTON_TOP_MARGIN), 0, 0, 0));
   widget->non_client_view()->set_mirror_client_in_rtl(mirror_arrow_in_rtl_);
   return client;
 }

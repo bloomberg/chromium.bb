@@ -86,6 +86,7 @@ int LayoutProvider::GetDistanceMetric(int metric) const {
       return kRelatedButtonHSpacing;
     case DistanceMetric::DISTANCE_RELATED_CONTROL_HORIZONTAL:
       return kRelatedControlHorizontalSpacing;
+    case DistanceMetric::DISTANCE_BUBBLE_BUTTON_TOP_MARGIN:
     case DistanceMetric::DISTANCE_RELATED_CONTROL_VERTICAL:
       return kRelatedControlVerticalSpacing;
     case DISTANCE_DIALOG_BUTTON_BOTTOM_MARGIN:

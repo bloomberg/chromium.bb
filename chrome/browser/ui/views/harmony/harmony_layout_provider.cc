@@ -17,6 +17,7 @@ gfx::Insets HarmonyLayoutProvider::GetInsetsMetric(int metric) const {
 int HarmonyLayoutProvider::GetDistanceMetric(int metric) const {
   DCHECK_GE(metric, views::VIEWS_INSETS_MAX);
   switch (metric) {
+    case views::DISTANCE_BUBBLE_BUTTON_TOP_MARGIN:
     case views::DISTANCE_BUBBLE_CONTENTS_HORIZONTAL_MARGIN:
     case views::DISTANCE_BUBBLE_CONTENTS_VERTICAL_MARGIN:
     case views::DISTANCE_DIALOG_CONTENTS_HORIZONTAL_MARGIN:
@@ -41,8 +42,6 @@ int HarmonyLayoutProvider::GetDistanceMetric(int metric) const {
     case DISTANCE_RELATED_CONTROL_VERTICAL_SMALL:
       return kHarmonyLayoutUnit / 2;
     case views::DISTANCE_DIALOG_BUTTON_BOTTOM_MARGIN:
-      return kHarmonyLayoutUnit;
-    case DISTANCE_DIALOG_BUTTON_TOP:
       return kHarmonyLayoutUnit;
     case views::DISTANCE_DIALOG_BUTTON_MINIMUM_WIDTH:
     case DISTANCE_BUTTON_MINIMUM_WIDTH:

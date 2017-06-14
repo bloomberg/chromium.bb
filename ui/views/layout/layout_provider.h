@@ -49,8 +49,11 @@ enum DistanceMetric {
   // two types have not been interchanged.
   VIEWS_DISTANCE_START = VIEWS_INSETS_MAX,
 
+  // If a bubble has buttons, this is the margin between them and the rest of
+  // the content.
+  DISTANCE_BUBBLE_BUTTON_TOP_MARGIN = VIEWS_DISTANCE_START,
   // Margin on the left and right of the contents of a bubble.
-  DISTANCE_BUBBLE_CONTENTS_HORIZONTAL_MARGIN = VIEWS_DISTANCE_START,
+  DISTANCE_BUBBLE_CONTENTS_HORIZONTAL_MARGIN,
   // Margin on the top and bottom of the contents of a bubble.
   DISTANCE_BUBBLE_CONTENTS_VERTICAL_MARGIN,
   // The default padding to add on each side of a button's label.
