@@ -148,8 +148,16 @@ void RawResource::DidAddClient(ResourceClient* c) {
     client->ResponseReceived(this, GetResponse(), nullptr);
   if (!HasClient(c))
     return;
-  if (Data())
-    client->DataReceived(this, Data()->Data(), Data()->size());
+  if (Data()) {
+    Data()->ForEachSegment([this, &client](const char* segment,
+                                           size_t segment_size,
+                                           size_t segment_offset) -> bool {
+      client->DataReceived(this, segment, segment_size);
+
+      // Stop pushing data if the client removed itself.
+      return HasClient(client);
+    });
+  }
   if (!HasClient(c))
     return;
   Resource::DidAddClient(client);

@@ -1139,8 +1139,9 @@ void DocumentThreadableLoader::LoadRequestSync(
 
   if (RefPtr<const SharedBuffer> data = resource->ResourceBuffer()) {
     data->ForEachSegment([this](const char* segment, size_t segment_size,
-                                size_t segment_offset) {
+                                size_t segment_offset) -> bool {
       HandleReceivedData(segment, segment_size);
+      return true;
     });
   }
 
