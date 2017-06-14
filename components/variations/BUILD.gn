@@ -26,6 +26,8 @@ static_library("variations") {
     "entropy_provider.h",
     "experiment_labels.cc",
     "experiment_labels.h",
+    "metrics.cc",
+    "metrics.h",
     "metrics_util.cc",
     "metrics_util.h",
     "pref_names.cc",

@@ -81179,11 +81179,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Variations.SeedEmpty" enum="VariationsSeedEmpty">
+<histogram name="Variations.SeedEmpty" enum="VariationsSeedLoadResult">
+  <obsolete>
+    Deprecated in M61, and replaced by Variations.SeedLoadResult. This histogram
+    incorrectly conflated failures from loading the seed with failures while
+    attempting to store seeds with delta compression.
+  </obsolete>
   <owner>asvitkine@chromium.org</owner>
   <summary>
-    Records whether the variations seed in local state is empty (does not exist)
-    on startup.
+    Records whether the variations seed was successfully read from local state
+    on startup. Records a detailed reason on read failure.
   </summary>
 </histogram>
 
@@ -81212,6 +81217,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The time interval between when the variations seed was last downloaded and
     when it was used.
+  </summary>
+</histogram>
+
+<histogram name="Variations.SeedLoadResult" enum="VariationsSeedLoadResult">
+  <owner>asvitkine@chromium.org</owner>
+  <summary>
+    Records whether the variations seed was successfully read from local state
+    on startup. Records a detailed reason on read failure.
   </summary>
 </histogram>
 
