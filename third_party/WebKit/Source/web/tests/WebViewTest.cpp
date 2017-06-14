@@ -30,7 +30,9 @@
 
 #include "public/web/WebView.h"
 
+#include <limits>
 #include <memory>
+#include <string>
 
 #include "bindings/core/v8/V8Document.h"
 #include "core/dom/Document.h"
@@ -3675,7 +3677,7 @@ TEST_P(WebViewTest, AddFrameInCloseURLUnload) {
   RegisterMockedHttpURLLoad("add_frame_in_unload.html");
   web_view_helper_.InitializeAndLoad(base_url_ + "add_frame_in_unload.html",
                                      true, &frame_client);
-  web_view_helper_.WebView()->MainFrame()->DispatchUnloadEvent();
+  web_view_helper_.WebView()->MainFrameImpl()->DispatchUnloadEvent();
   EXPECT_EQ(0, frame_client.Count());
   web_view_helper_.Reset();
 }

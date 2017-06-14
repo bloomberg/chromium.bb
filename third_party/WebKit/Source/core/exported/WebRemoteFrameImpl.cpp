@@ -143,10 +143,6 @@ WebPerformance WebRemoteFrameImpl::Performance() const {
   return WebPerformance();
 }
 
-void WebRemoteFrameImpl::DispatchUnloadEvent() {
-  NOTREACHED();
-}
-
 void WebRemoteFrameImpl::Reload(WebFrameLoadType) {
   NOTREACHED();
 }

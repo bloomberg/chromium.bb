@@ -200,11 +200,6 @@ class BLINK_EXPORT WebFrame {
 
   virtual WebPerformance Performance() const = 0;
 
-  // Closing -------------------------------------------------------------
-
-  // Runs unload handlers for this frame.
-  virtual void DispatchUnloadEvent() = 0;
-
   // Scripting ----------------------------------------------------------
 
   // Returns the global proxy object.

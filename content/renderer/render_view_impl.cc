@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cmath>
 #include <memory>
+#include <utility>
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
@@ -2089,6 +2090,9 @@ void RenderViewImpl::OnPluginActionAt(const gfx::Point& location,
 }
 
 void RenderViewImpl::OnClosePage() {
+  // ViewMsg_ClosePage should only be sent to active, non-swapped-out views.
+  DCHECK(webview()->MainFrame()->IsWebLocalFrame());
+
   // TODO(creis): We'd rather use webview()->Close() here, but that currently
   // sets the WebView's delegate_ to NULL, preventing any JavaScript dialogs
   // in the onunload handler from appearing.  For now, we're bypassing that and
@@ -2096,7 +2100,7 @@ void RenderViewImpl::OnClosePage() {
   // revisited to avoid having two ways to close a page.  Having a single way
   // to close that can run onunload is also useful for fixing
   // http://b/issue?id=753080.
-  webview()->MainFrame()->DispatchUnloadEvent();
+  webview()->MainFrame()->ToWebLocalFrame()->DispatchUnloadEvent();
 
   Send(new ViewHostMsg_ClosePage_ACK(GetRoutingID()));
 }
