@@ -73,8 +73,9 @@ class BASE_EXPORT SequenceLocalStorageMap {
 // Within the scope of this object,
 // SequenceLocalStorageMap::GetForCurrentThread() will return a reference to
 // the SequenceLocalStorageMap object passed to the constructor.
-// There can only be one ScopedSetSequenceLocalStorageMapForCurrentThread
-// instance per thread at a time.
+// TODO(jeffreyhe): Remove |old_sequence_local_storage_| and only allow one
+// ScopedSetSequenceLocalStorageMapForCurrentThread per thread at a time
+// once ScopedTaskScheduler is removed.
 class BASE_EXPORT ScopedSetSequenceLocalStorageMapForCurrentThread {
  public:
   ScopedSetSequenceLocalStorageMapForCurrentThread(
@@ -83,6 +84,8 @@ class BASE_EXPORT ScopedSetSequenceLocalStorageMapForCurrentThread {
   ~ScopedSetSequenceLocalStorageMapForCurrentThread();
 
  private:
+  SequenceLocalStorageMap* const old_sequence_local_storage_;
+
   DISALLOW_COPY_AND_ASSIGN(ScopedSetSequenceLocalStorageMapForCurrentThread);
 };
 }  // namespace internal
