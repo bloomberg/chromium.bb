@@ -269,7 +269,7 @@ void RunApplication(NSString* app_path,
     [testTargetName setObject:@[ cmd_args ] forKey:@"CommandLineArguments"];
   }
 
-  if (only_testing_tests) {
+  if ([only_testing_tests count] > 0) {
     [testTargetName setObject:only_testing_tests forKey:@"OnlyTestIdentifiers"];
   }
 
