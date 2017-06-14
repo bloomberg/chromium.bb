@@ -213,20 +213,22 @@ struct VideoFrame {
   // Natural size of the frame.
   gfx.mojom.Size natural_size;
 
-  // True if end of stream.
-  bool end_of_stream;
-
   // Timestamp in microseconds of the associated frame.
   mojo.common.mojom.TimeDelta timestamp;
 
-  // Contents of the video frame. Will be null for end of stream frames.
-  VideoFrameData? data;
+  // Contents of the video frame (or EOS marker).
+  VideoFrameData data;
 };
 
 // Possible choices for storing VideoFrame data.
 union VideoFrameData {
+  EosVideoFrameData eos_data;
   SharedBufferVideoFrameData shared_buffer_data;
   MailboxVideoFrameData mailbox_data;
+};
+
+// A marker for EOS frames.
+struct EosVideoFrameData {
 };
 
 // This defines video frame data stored in a Mojo shared buffer.

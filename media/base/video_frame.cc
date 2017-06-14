@@ -23,6 +23,16 @@
 
 namespace media {
 
+namespace {
+
+// Helper to privide gfx::Rect::Intersect() as an expression.
+gfx::Rect Intersection(gfx::Rect a, const gfx::Rect& b) {
+  a.Intersect(b);
+  return a;
+}
+
+}  // namespace
+
 // Static POD class for generating unique identifiers for each VideoFrame.
 static base::StaticAtomicSequenceNumber g_unique_id_generator;
 
@@ -923,13 +933,16 @@ VideoFrame::VideoFrame(VideoPixelFormat format,
     : format_(format),
       storage_type_(storage_type),
       coded_size_(coded_size),
-      visible_rect_(visible_rect),
+      visible_rect_(Intersection(visible_rect, gfx::Rect(coded_size))),
       natural_size_(natural_size),
       shared_memory_offset_(0),
       timestamp_(timestamp),
       unique_id_(g_unique_id_generator.GetNext()) {
   DCHECK(IsValidConfig(format_, storage_type, coded_size_, visible_rect_,
                        natural_size_));
+  DCHECK(visible_rect_ == visible_rect)
+      << "visible_rect " << visible_rect.ToString() << " exceeds coded_size "
+      << coded_size.ToString();
   memset(&mailbox_holders_, 0, sizeof(mailbox_holders_));
   memset(&strides_, 0, sizeof(strides_));
   memset(&data_, 0, sizeof(data_));

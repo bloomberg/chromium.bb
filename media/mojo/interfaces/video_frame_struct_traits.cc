@@ -16,9 +16,10 @@ namespace {
 
 media::mojom::VideoFrameDataPtr MakeVideoFrameData(
     const scoped_refptr<media::VideoFrame>& input) {
-  // EOS frames contain no data.
-  if (input->metadata()->IsTrue(media::VideoFrameMetadata::END_OF_STREAM))
-    return nullptr;
+  if (input->metadata()->IsTrue(media::VideoFrameMetadata::END_OF_STREAM)) {
+    return media::mojom::VideoFrameData::NewEosData(
+        media::mojom::EosVideoFrameData::New());
+  }
 
   if (input->storage_type() == media::VideoFrame::STORAGE_MOJO_SHARED_BUFFER) {
     media::MojoSharedBufferVideoFrame* mojo_frame =
@@ -86,8 +87,7 @@ bool StructTraits<media::mojom::VideoFrameDataView,
   media::mojom::VideoFrameDataDataView data;
   input.GetDataDataView(&data);
 
-  DCHECK_EQ(input.end_of_stream(), data.is_null());
-  if (input.end_of_stream()) {
+  if (data.is_eos_data()) {
     *output = media::VideoFrame::CreateEOSFrame();
     return !!*output;
   }
@@ -104,11 +104,8 @@ bool StructTraits<media::mojom::VideoFrameDataView,
   if (!input.ReadVisibleRect(&visible_rect))
     return false;
 
-  // Coded size must contain the visible rect.
-  if (visible_rect.right() > coded_size.width() ||
-      visible_rect.bottom() > coded_size.height()) {
+  if (!gfx::Rect(coded_size).Contains(visible_rect))
     return false;
-  }
 
   gfx::Size natural_size;
   if (!input.ReadNaturalSize(&natural_size))
