@@ -267,10 +267,6 @@ public class ReaderModePanel extends OverlayPanel {
         } else if (mTimerRunning && !animatingToOpenState) {
             onTimerEnded();
         }
-
-        if (getPanelState() == PanelState.PEEKED) {
-            mManagerDelegate.onPeek();
-        }
     }
 
     @Override
@@ -321,10 +317,6 @@ public class ReaderModePanel extends OverlayPanel {
         if (width != getWidth()) destroyReaderModeBarControl();
 
         super.onLayoutChanged(width, height, visibleViewportOffsetY);
-
-        if (mManagerDelegate != null) {
-            mManagerDelegate.onLayoutChanged();
-        }
     }
 
     @Override

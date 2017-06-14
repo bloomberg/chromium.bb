@@ -13,13 +13,17 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.compositor.bottombar.readermode.ReaderModePanel;
+import org.chromium.chrome.browser.infobar.InfoBar;
+import org.chromium.chrome.browser.infobar.InfoBarContainer;
+import org.chromium.chrome.browser.infobar.InfoBarContainer.InfoBarContainerObserver;
+import org.chromium.chrome.browser.infobar.ReaderModeInfoBar;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeRestriction;
@@ -55,13 +59,26 @@ public class DistillabilityServiceTest {
     @Feature({"Distillability-Service"})
     @MediumTest
     @Restriction(ChromeRestriction.RESTRICTION_TYPE_PHONE)
-    @DisabledTest
     public void testServiceAliveAfterNativePage() throws InterruptedException, TimeoutException {
         EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartServer(
                 InstrumentationRegistry.getInstrumentation().getContext());
 
-        final ReaderModePanel panel =
-                mActivityTestRule.getActivity().getReaderModeManager().getPanelForTesting();
+        final CallbackHelper readerShownCallbackHelper = new CallbackHelper();
+
+        Tab tab = mActivityTestRule.getActivity().getActivityTab();
+        tab.getInfoBarContainer().addObserver(new InfoBarContainerObserver() {
+            @Override
+            public void onAddInfoBar(InfoBarContainer container, InfoBar infoBar, boolean isFirst) {
+                if (infoBar instanceof ReaderModeInfoBar) readerShownCallbackHelper.notifyCalled();
+            }
+
+            @Override
+            public void onRemoveInfoBar(
+                    InfoBarContainer container, InfoBar infoBar, boolean isLast) {}
+
+            @Override
+            public void onInfoBarContainerAttachedToWindow(boolean hasInfobars) {}
+        });
 
         TestWebContentsObserver observer = new TestWebContentsObserver(
                 mActivityTestRule.getActivity().getActivityTab().getWebContents());
@@ -71,12 +88,12 @@ public class DistillabilityServiceTest {
         int curCallCount = finishHelper.getCallCount();
         mActivityTestRule.loadUrl("chrome://history");
         finishHelper.waitForCallback(curCallCount, 1);
-        Assert.assertFalse(panel.isShowing());
+        Assert.assertEquals(0, readerShownCallbackHelper.getCallCount());
 
         // Navigate to a normal page.
-        curCallCount = finishHelper.getCallCount();
+        curCallCount = readerShownCallbackHelper.getCallCount();
         mActivityTestRule.loadUrl(testServer.getURL(TEST_PAGE));
-        finishHelper.waitForCallback(curCallCount, 1);
-        Assert.assertTrue(panel.isShowing());
+        readerShownCallbackHelper.waitForCallback(curCallCount, 1);
+        Assert.assertEquals(1, readerShownCallbackHelper.getCallCount());
     }
 }
