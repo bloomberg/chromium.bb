@@ -477,18 +477,6 @@ TEST(HTTPParsersTest, ParseMultipartHeadersContentCharset) {
   EXPECT_EQ("utf-8", response.TextEncodingName());
 }
 
-TEST(HTTPParsersTest, CheckDoubleQuotedString) {
-  EXPECT_EQ(CheckDoubleQuotedString(""), "");
-  EXPECT_EQ(CheckDoubleQuotedString("\""), "\"");
-  EXPECT_EQ(CheckDoubleQuotedString("\"\""), "");
-  EXPECT_EQ(CheckDoubleQuotedString("foo"), "foo");
-  EXPECT_EQ(CheckDoubleQuotedString("\"foo"), "\"foo");
-  EXPECT_EQ(CheckDoubleQuotedString("foo\""), "foo\"");
-  EXPECT_EQ(CheckDoubleQuotedString("\"foo\""), "foo");
-  EXPECT_EQ(CheckDoubleQuotedString("\"foo\"bar\""), "foo\"bar");
-  EXPECT_EQ(CheckDoubleQuotedString("\"foo\\bar\""), "foobar");
-}
-
 void testServerTimingHeader(const char* headerValue,
                             Vector<Vector<String>> expectedResults) {
   std::unique_ptr<ServerTimingHeaderVector> results =
@@ -974,6 +962,13 @@ TEST(HTTPParsersTest, ParseServerTimingHeader) {
       {{"metric1", "12.3", "description1"},
        {"metric2", "45.6", "description2"},
        {"metric3", "78.9", "description3"}});
+
+  // quoted-string
+  testServerTimingHeader("metric;\"\"", {{"metric", "0", ""}});
+  testServerTimingHeader("metric;\"\"\"", {{"metric", "0", ""}});
+  testServerTimingHeader("metric;\"\\\"\"", {{"metric", "0", "\""}});
+  testServerTimingHeader("metric;\"\\\\\"\"", {{"metric", "0", "\\"}});
+  testServerTimingHeader("metric;\"\\\\\\\"\"", {{"metric", "0", "\\\""}});
 }
 
 }  // namespace blink

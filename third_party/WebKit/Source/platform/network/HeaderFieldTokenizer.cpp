@@ -118,6 +118,8 @@ bool HeaderFieldTokenizer::ConsumeTokenOrQuotedString(Mode mode,
 }
 
 void HeaderFieldTokenizer::SkipSpaces() {
+  // TODO(cvazac) skip tabs, per:
+  // https://tools.ietf.org/html/rfc7230#section-3.2.3
   while (!IsConsumed() && input_[index_] == ' ')
     ++index_;
 }
