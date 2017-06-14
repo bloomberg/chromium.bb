@@ -143,7 +143,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 370
+#   For your editing convenience: highest ID currently used: 371
 #   And don't forget to also update the EnterprisePolicies enum of
 #   histograms.xml (run 'python tools/metrics/histograms/update_policies.py').
 #
@@ -1710,6 +1710,64 @@
 
       If this policy is not set the default size will be used and the user will be able to override it with the --media-cache-size flag.''',
       'label': '''Set media disk cache size''',
+    },
+    {
+      'name': 'DownloadRestrictions',
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 0, 1, 2, 3 ],
+      },
+      'items': [
+        {
+          'name': 'DefaultDownloadSecurity',
+          'value': 0,
+          'caption': '''No special restrictions''',
+        },
+        {
+          'name': 'BlockDangerousDownloads',
+          'value': 1,
+          'caption': '''Block dangerous downloads''',
+        },
+        {
+          'name': 'BlockPotentiallyDangerousDownloads',
+          'value': 2,
+          'caption': '''Block potentially dangerous downloads''',
+        },
+        {
+          'name': 'BlockAllDownloads',
+          'value': 3,
+          'caption': '''Block all downloads''',
+        },
+      ],
+      'supported_on': ['chrome.*:61-', 'chrome_os:61-'],
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': 2,
+      'id': 371,
+      'caption': '''Allow download restrictions''',
+      'tags': ['local-data-access'],
+      'desc': '''Configures the type of downloads that <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will completely block, without letting users override the security decision.
+
+      If you set this policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will prevent certain types of downloads, and won't let user bypass the security warnings.
+
+      When the 'Block dangerous downloads' option is chosen, all downloads are allowed, except for those that carry SafeBrowsing warnings.
+
+      When the 'Block potentially dangerous downloads' option is chosen, all downloads allowed, except for those that carry SafeBrowsing warnings of potentially dangerous downloads.
+
+      When the 'Block all downloads' option is chosen, all downloads are blocked.
+
+      When this policy is not set, (or the 'No special restrictions' option is chosen), the dowloads will go through the usual security restrictions based on SafeBrowsing analysis results.
+
+      Note that these restrictions apply to downloads triggered from web page content, as well as the 'download link...' context menu option.
+
+      These restrictions do not apply to the save / download of the currently displayed page, nor does it apply to saving as PDF from the printing options.
+
+      See https://developers.google.com/safe-browsing for  more info on SafeBrowsing.''',
+      'label': '''Download restrictions''',
     },
     {
       'name': 'DownloadDirectory',

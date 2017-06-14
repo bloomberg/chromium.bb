@@ -7,6 +7,9 @@
 
 #include <stdint.h>
 
+#include <string>
+#include <vector>
+
 #include "base/callback.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
@@ -104,7 +107,8 @@ class MockDownloadItem : public DownloadItem {
   MOCK_CONST_METHOD0(IsTransient, bool());
   MOCK_CONST_METHOD0(GetBrowserContext, BrowserContext*());
   MOCK_CONST_METHOD0(GetWebContents, WebContents*());
-  MOCK_METHOD1(OnContentCheckCompleted, void(DownloadDangerType));
+  MOCK_METHOD2(OnContentCheckCompleted,
+               void(DownloadDangerType, DownloadInterruptReason));
   MOCK_METHOD1(SetOpenWhenComplete, void(bool));
   MOCK_METHOD1(SetOpened, void(bool));
   MOCK_METHOD1(SetLastAccessTime, void(base::Time));

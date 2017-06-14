@@ -73,6 +73,12 @@ class ByteStreamReader;
 
 namespace {
 
+// Matches a DownloadCreateInfo* that points to the same object as |info| and
+// has a |default_download_directory| that matches |download_directory|.
+MATCHER_P2(DownloadCreateInfoWithDefaultPath, info, download_directory, "") {
+  return arg == info && arg->default_download_directory == download_directory;
+}
+
 class MockDownloadManagerDelegate : public DownloadManagerDelegate {
  public:
   MockDownloadManagerDelegate();

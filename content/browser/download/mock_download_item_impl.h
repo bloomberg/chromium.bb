@@ -5,6 +5,10 @@
 #ifndef CONTENT_BROWSER_DOWNLOAD_MOCK_DOWNLOAD_ITEM_IMPL_H_
 #define CONTENT_BROWSER_DOWNLOAD_MOCK_DOWNLOAD_ITEM_IMPL_H_
 
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "base/macros.h"
 #include "content/browser/download/download_create_info.h"
 #include "content/browser/download/download_file.h"
@@ -67,7 +71,8 @@ class MockDownloadItemImpl : public DownloadItemImpl {
   MOCK_CONST_METHOD0(GetFullPath, const base::FilePath&());
   MOCK_CONST_METHOD0(GetTargetFilePath, const base::FilePath&());
   MOCK_CONST_METHOD0(GetTargetDisposition, TargetDisposition());
-  MOCK_METHOD1(OnContentCheckCompleted, void(DownloadDangerType));
+  MOCK_METHOD2(OnContentCheckCompleted,
+               void(DownloadDangerType, DownloadInterruptReason));
   MOCK_CONST_METHOD0(GetState, DownloadState());
   MOCK_CONST_METHOD0(GetUrlChain, const std::vector<GURL>&());
   MOCK_METHOD1(SetTotalBytes, void(int64_t));

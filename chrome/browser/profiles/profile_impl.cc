@@ -399,6 +399,8 @@ void ProfileImpl::RegisterProfilePrefs(
                                home_page_flags);
   registry->RegisterStringPref(prefs::kNewTabPageLocationOverride,
                                std::string());
+  registry->RegisterIntegerPref(prefs::kDownloadRestrictions, 0);
+
 #if BUILDFLAG(ENABLE_PRINTING)
   registry->RegisterBooleanPref(prefs::kPrintingEnabled, true);
 #endif

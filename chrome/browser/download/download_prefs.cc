@@ -156,6 +156,7 @@ DownloadPrefs::DownloadPrefs(Profile* profile) : profile_(profile) {
   download_path_.Init(prefs::kDownloadDefaultDirectory, prefs);
   save_file_path_.Init(prefs::kSaveFileDefaultDirectory, prefs);
   save_file_type_.Init(prefs::kSaveFileType, prefs);
+  download_restriction_.Init(prefs::kDownloadRestrictions, prefs);
 
   // We store any file extension that should be opened automatically at
   // download completion in this pref.

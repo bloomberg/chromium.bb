@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/files/file_path.h"
@@ -61,8 +62,8 @@ class CONTENT_EXPORT DownloadItemImpl
                 const std::string& remote_address,
                 base::Time start_time);
     RequestInfo();
-    RequestInfo(const RequestInfo& other);
-    RequestInfo(const GURL& url);
+    explicit RequestInfo(const RequestInfo& other);
+    explicit RequestInfo(const GURL& url);
     ~RequestInfo();
 
     // The chain of redirects that leading up to and including the final URL.
@@ -111,8 +112,8 @@ class CONTENT_EXPORT DownloadItemImpl
                     const std::string& hash,
                     base::Time end_time);
     DestinationInfo();
-    DestinationInfo(TargetDisposition target_disposition);
-    DestinationInfo(const DestinationInfo& other);
+    explicit DestinationInfo(TargetDisposition target_disposition);
+    explicit DestinationInfo(const DestinationInfo& other);
     ~DestinationInfo();
 
     // Whether the target should be overwritten, uniquified or prompted for.
@@ -278,7 +279,8 @@ class CONTENT_EXPORT DownloadItemImpl
   bool IsTransient() const override;
   BrowserContext* GetBrowserContext() const override;
   WebContents* GetWebContents() const override;
-  void OnContentCheckCompleted(DownloadDangerType danger_type) override;
+  void OnContentCheckCompleted(DownloadDangerType danger_type,
+                               DownloadInterruptReason reason) override;
   void SetOpenWhenComplete(bool open) override;
   void SetOpened(bool opened) override;
   void SetLastAccessTime(base::Time last_access_time) override;

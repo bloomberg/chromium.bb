@@ -26,6 +26,12 @@ class PrefRegistrySyncable;
 // Stores all download-related preferences.
 class DownloadPrefs {
  public:
+  enum class DownloadRestriction {
+    NONE = 0,
+    DANGEROUS_FILES = 1,
+    POTENTIALLY_DANGEROUS_FILES = 2,
+    ALL_FILES = 3,
+  };
   explicit DownloadPrefs(Profile* profile);
   ~DownloadPrefs();
 
@@ -50,6 +56,9 @@ class DownloadPrefs {
   void SetSaveFilePath(const base::FilePath& path);
   int save_file_type() const { return *save_file_type_; }
   void SetSaveFileType(int type);
+  DownloadRestriction download_restriction() const {
+    return static_cast<DownloadRestriction>(*download_restriction_);
+  }
 
   // Returns true if the prompt_for_download preference has been set and the
   // download location is not managed (which means the user shouldn't be able
@@ -99,6 +108,7 @@ class DownloadPrefs {
   FilePathPrefMember download_path_;
   FilePathPrefMember save_file_path_;
   IntegerPrefMember save_file_type_;
+  IntegerPrefMember download_restriction_;
 
   // Set of file extensions to open at download completion.
   struct AutoOpenCompareFunctor {

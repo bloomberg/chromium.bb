@@ -540,6 +540,15 @@
     ]
   },
 
+  "DownloadRestrictions": {
+    "os": ["win", "mac", "linux", "chromeos"],
+    "can_be_recommended": true,
+    "test_policy": { "DownloadRestrictions": 3 },
+    "pref_mappings": [
+      { "pref": "download_restrictions" }
+    ]
+  },
+
   "DownloadDirectory.0": {
     "os": ["win", "mac", "linux", "chromeos"],
     "can_be_recommended": true,
