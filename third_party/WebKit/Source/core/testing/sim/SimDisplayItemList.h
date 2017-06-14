@@ -5,10 +5,10 @@
 #ifndef SimDisplayItemList_h
 #define SimDisplayItemList_h
 
+#include "core/testing/sim/SimCanvas.h"
 #include "platform/graphics/paint/PaintRecord.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebDisplayItemList.h"
-#include "web/tests/sim/SimCanvas.h"
 
 namespace blink {
 

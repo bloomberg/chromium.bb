@@ -2,6 +2,8 @@
 // Use of this source code if governed by a BSD-style license that can be
 // found in LICENSE file.
 
+#include "core/testing/sim/SimRequest.h"
+#include "core/testing/sim/SimTest.h"
 #include "platform/scheduler/child/web_scheduler.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
@@ -9,8 +11,6 @@
 #include "public/platform/WebThread.h"
 #include "public/platform/scheduler/renderer/renderer_scheduler.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "web/tests/sim/SimRequest.h"
-#include "web/tests/sim/SimTest.h"
 
 using testing::ElementsAre;
 

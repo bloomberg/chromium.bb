@@ -4,13 +4,13 @@
 
 #include "core/dom/AccessibleNode.h"
 #include "core/html/HTMLBodyElement.h"
+#include "core/testing/sim/SimRequest.h"
+#include "core/testing/sim/SimTest.h"
 #include "modules/accessibility/AXObjectCacheImpl.h"
 #include "modules/accessibility/AXTable.h"
 #include "modules/accessibility/AXTableCell.h"
 #include "modules/accessibility/AXTableRow.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
-#include "web/tests/sim/SimRequest.h"
-#include "web/tests/sim/SimTest.h"
 
 namespace blink {
 

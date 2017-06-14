@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "web/tests/sim/SimWebFrameClient.h"
+#include "core/testing/sim/SimWebFrameClient.h"
 
+#include "core/testing/sim/SimTest.h"
 #include "public/web/WebConsoleMessage.h"
-#include "web/tests/sim/SimTest.h"
 
 namespace blink {
 

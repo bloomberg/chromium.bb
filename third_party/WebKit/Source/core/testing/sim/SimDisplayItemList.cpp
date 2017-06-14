@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "web/tests/sim/SimDisplayItemList.h"
+#include "core/testing/sim/SimDisplayItemList.h"
 
 #include "core/css/parser/CSSParser.h"
 #include "platform/graphics/LoggingCanvas.h"

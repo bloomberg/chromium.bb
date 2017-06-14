@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "web/tests/sim/SimRequest.h"
+#include "core/testing/sim/SimRequest.h"
 
+#include "core/testing/sim/SimNetwork.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURLLoaderClient.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
-#include "web/tests/sim/SimNetwork.h"
 
 namespace blink {
 
