@@ -249,8 +249,8 @@ using std::tr1::make_tuple;
 #if HAVE_AVX2
 const QuantizeParam kQParamArrayAvx2[] = {
   make_tuple(&av1_quantize_fp_c, &av1_quantize_fp_avx2, TX_16X16, AOM_BITS_8),
-  // make_tuple(&av1_quantize_fp_32x32_c, &av1_quantize_fp_32x32_avx2, TX_32X32,
-  //            AOM_BITS_8)
+  make_tuple(&av1_quantize_fp_32x32_c, &av1_quantize_fp_32x32_avx2, TX_32X32,
+             AOM_BITS_8),
 };
 
 INSTANTIATE_TEST_CASE_P(AVX2, QuantizeTest,
