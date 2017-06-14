@@ -256,21 +256,6 @@ struct ExtraRequestCompleteInfo {
   int net_error;
 };
 
-// Container for various information about a started request within a page load.
-struct ExtraRequestStartInfo {
-  explicit ExtraRequestStartInfo(content::ResourceType type);
-
-  ExtraRequestStartInfo(const ExtraRequestStartInfo& other);
-
-  ~ExtraRequestStartInfo();
-
-  // The type of the request as gleaned from the DOM or the file extension. This
-  // may be less accurate than the type at request completion time, which has
-  // access to mime-type headers.  During XHRs, we sometimes see resources come
-  // back as a different type than we expected.
-  const content::ResourceType resource_type;
-};
-
 // Interface for PageLoadMetrics observers. All instances of this class are
 // owned by the PageLoadTracker tracking a page load.
 class PageLoadMetricsObserver {
@@ -458,10 +443,6 @@ class PageLoadMetricsObserver {
   virtual void OnFailedProvisionalLoad(
       const FailedProvisionalLoadInfo& failed_provisional_load_info,
       const PageLoadExtraInfo& extra_info) {}
-
-  // Called whenever a request load begins.
-  virtual void OnStartedResource(
-      const ExtraRequestStartInfo& extra_request_start_info) {}
 
   // Called whenever a request is loaded for this page load. This comes
   // unfiltered from the ResourceDispatcherHost and may include blob requests

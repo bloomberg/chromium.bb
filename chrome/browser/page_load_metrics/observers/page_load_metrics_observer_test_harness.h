@@ -56,9 +56,6 @@ class PageLoadMetricsObserverTestHarness
                                        const mojom::PageLoadMetadata& metadata);
 
   // Simulates a loaded resource.
-  void SimulateStartedResource(const ExtraRequestStartInfo& info);
-
-  // Simulates a loaded resource.
   void SimulateLoadedResource(const ExtraRequestCompleteInfo& info);
 
   // Simulates a user input.

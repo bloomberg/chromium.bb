@@ -418,13 +418,6 @@ void PageLoadTracker::NotifyClientRedirectTo(
   }
 }
 
-void PageLoadTracker::OnStartedResource(
-    const ExtraRequestStartInfo& extra_request_start_info) {
-  for (const auto& observer : observers_) {
-    observer->OnStartedResource(extra_request_start_info);
-  }
-}
-
 void PageLoadTracker::OnLoadedResource(
     const ExtraRequestCompleteInfo& extra_request_complete_info) {
   for (const auto& observer : observers_) {
