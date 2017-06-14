@@ -80,7 +80,6 @@ from __future__ import print_function
 
 __version__ = '0.7'
 
-import ast
 import collections
 import copy
 import json
@@ -105,57 +104,6 @@ from third_party.repo.progress import Progress
 import subcommand
 import subprocess2
 import setup_color
-
-CHROMIUM_SRC_URL = 'https://chromium.googlesource.com/chromium/src.git'
-
-
-def ast_dict_index(dnode, key):
-  """Search an ast.Dict for the argument key, and return its index."""
-  idx = [i for i in range(len(dnode.keys)) if (
-      type(dnode.keys[i]) is ast.Str and dnode.keys[i].s == key)]
-  if not idx:
-    return -1
-  elif len(idx) > 1:
-    raise gclient_utils.Error('Multiple dict entries with same key in AST')
-  return idx[-1]
-
-def ast2str(node, indent=0):
-  """Return a pretty-printed rendition of an ast.Node."""
-  t = type(node)
-  if t is ast.Module:
-    return '\n'.join([ast2str(x, indent) for x in node.body])
-  elif t is ast.Assign:
-    return (('  ' * indent) +
-            ' = '.join([ast2str(x) for x in node.targets] +
-                       [ast2str(node.value, indent)]) + '\n')
-  elif t is ast.Name:
-    return node.id
-  elif t is ast.List:
-    if not node.elts:
-      return '[]'
-    elif len(node.elts) == 1:
-      return '[' + ast2str(node.elts[0], indent) + ']'
-    return ('[\n' + ('  ' * (indent + 1)) +
-            (',\n' + ('  ' * (indent + 1))).join(
-                [ast2str(x, indent + 1) for x in node.elts]) +
-            '\n' + ('  ' * indent) + ']')
-  elif t is ast.Dict:
-    if not node.keys:
-      return '{}'
-    elif len(node.keys) == 1:
-      return '{%s: %s}' % (ast2str(node.keys[0]),
-                           ast2str(node.values[0], indent + 1))
-    return ('{\n' + ('  ' * (indent + 1)) +
-            (',\n' + ('  ' * (indent + 1))).join(
-                ['%s: %s' % (ast2str(node.keys[i]),
-                             ast2str(node.values[i], indent + 1))
-                 for i in range(len(node.keys))]) +
-            '\n' + ('  ' * indent) + '}')
-  elif t is ast.Str:
-    return "'%s'" % node.s
-  else:
-    raise gclient_utils.Error("Unexpected AST node at line %d, column %d: %s"
-                              % (node.lineno, node.col_offset, t))
 
 
 class GNException(Exception):
