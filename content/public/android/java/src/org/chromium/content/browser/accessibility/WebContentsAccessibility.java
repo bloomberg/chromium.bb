@@ -157,8 +157,8 @@ public class WebContentsAccessibility {
     /**
      * @see AccessibilityNodeProvider#createAccessibilityNodeInfo(int)
      */
-    protected AccessibilityNodeInfo createAccessibilityNodeInfo(int virtualViewId) {
-        if (!mAccessibilityManager.isEnabled() || mNativeObj == 0) {
+    private AccessibilityNodeInfo createAccessibilityNodeInfo(int virtualViewId) {
+        if (!mAccessibilityManager.isEnabled()) {
             return null;
         }
         int rootId = nativeGetRootId(mNativeObj);
@@ -190,12 +190,12 @@ public class WebContentsAccessibility {
     /**
      * @see AccessibilityNodeProvider#findAccessibilityNodeInfosByText(String, int)
      */
-    protected List<AccessibilityNodeInfo> findAccessibilityNodeInfosByText(
+    private List<AccessibilityNodeInfo> findAccessibilityNodeInfosByText(
             String text, int virtualViewId) {
         return new ArrayList<AccessibilityNodeInfo>();
     }
 
-    protected static boolean isValidMovementGranularity(int granularity) {
+    private static boolean isValidMovementGranularity(int granularity) {
         switch (granularity) {
             case AccessibilityNodeInfo.MOVEMENT_GRANULARITY_CHARACTER:
             case AccessibilityNodeInfo.MOVEMENT_GRANULARITY_WORD:
@@ -208,11 +208,10 @@ public class WebContentsAccessibility {
     /**
      * @see AccessibilityNodeProvider#performAction(int, int, Bundle)
      */
-    protected boolean performAction(int virtualViewId, int action, Bundle arguments) {
+    private boolean performAction(int virtualViewId, int action, Bundle arguments) {
         // We don't support any actions on the host view or nodes
         // that are not (any longer) in the tree.
-        if (!mAccessibilityManager.isEnabled() || mNativeObj == 0
-                || !nativeIsNodeValid(mNativeObj, virtualViewId)) {
+        if (!mAccessibilityManager.isEnabled() || !nativeIsNodeValid(mNativeObj, virtualViewId)) {
             return false;
         }
 
@@ -353,21 +352,21 @@ public class WebContentsAccessibility {
     }
 
     public void onAutofillPopupDisplayed(View autofillPopupView) {
-        if (mAccessibilityManager.isEnabled() && mNativeObj != 0) {
+        if (mAccessibilityManager.isEnabled()) {
             mAutofillPopupView = autofillPopupView;
             nativeOnAutofillPopupDisplayed(mNativeObj);
         }
     }
 
     public void onAutofillPopupDismissed() {
-        if (mAccessibilityManager.isEnabled() && mNativeObj != 0) {
+        if (mAccessibilityManager.isEnabled()) {
             nativeOnAutofillPopupDismissed(mNativeObj);
             mAutofillPopupView = null;
         }
     }
 
     public void onAutofillPopupAccessibilityFocusCleared() {
-        if (mAccessibilityManager.isEnabled() && mNativeObj != 0) {
+        if (mAccessibilityManager.isEnabled()) {
             int id = nativeGetIdForElementAfterElementHostingAutofillPopup(mNativeObj);
             if (id == 0) return;
 
@@ -380,7 +379,7 @@ public class WebContentsAccessibility {
      * @see View#onHoverEvent(MotionEvent)
      */
     public boolean onHoverEvent(MotionEvent event) {
-        if (!mAccessibilityManager.isEnabled() || mNativeObj == 0) {
+        if (!mAccessibilityManager.isEnabled()) {
             return false;
         }
 
@@ -475,8 +474,6 @@ public class WebContentsAccessibility {
     @CalledByNative
     private void finishGranularityMove(String text, boolean extendSelection, int itemStartIndex,
             int itemEndIndex, boolean forwards) {
-        if (mNativeObj == 0) return;
-
         // Prepare to send both a selection and a traversal event in sequence.
         AccessibilityEvent selectionEvent = buildAccessibilityEvent(
                 mAccessibilityFocusId, AccessibilityEvent.TYPE_VIEW_TEXT_SELECTION_CHANGED);
@@ -589,8 +586,6 @@ public class WebContentsAccessibility {
      */
     @CalledByNative
     private void sendDelayedWindowContentChangedEvent() {
-        if (mNativeObj == 0) return;
-
         if (mSendWindowContentChangedRunnable != null) return;
 
         mSendWindowContentChangedRunnable = new Runnable() {
@@ -604,9 +599,6 @@ public class WebContentsAccessibility {
     }
 
     private void sendWindowContentChangedOnView() {
-        // This can be called from a timeout, so we need to make sure we're still valid.
-        if (mNativeObj == 0 || mView == null) return;
-
         if (mSendWindowContentChangedRunnable != null) {
             mView.removeCallbacks(mSendWindowContentChangedRunnable);
             mSendWindowContentChangedRunnable = null;
@@ -636,7 +628,7 @@ public class WebContentsAccessibility {
         // If we don't have any frame info, then the virtual hierarchy
         // doesn't exist in the view of the Android framework, so should
         // never send any events.
-        if (!mAccessibilityManager.isEnabled() || mNativeObj == 0 || !isFrameInfoInitialized()) {
+        if (!mAccessibilityManager.isEnabled() || !isFrameInfoInitialized()) {
             return null;
         }
 
@@ -714,51 +706,43 @@ public class WebContentsAccessibility {
 
     @CalledByNative
     private void handlePageLoaded(int id) {
-        if (mNativeObj == 0) return;
         if (mUserHasTouchExplored) return;
         moveAccessibilityFocusToIdAndRefocusIfNeeded(id);
     }
 
     @CalledByNative
     private void handleFocusChanged(int id) {
-        if (mNativeObj == 0) return;
         sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_FOCUSED);
         moveAccessibilityFocusToId(id);
     }
 
     @CalledByNative
     private void handleCheckStateChanged(int id) {
-        if (mNativeObj == 0) return;
         sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_CLICKED);
     }
 
     @CalledByNative
     private void handleClicked(int id) {
-        if (mNativeObj == 0) return;
         sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_CLICKED);
     }
 
     @CalledByNative
     private void handleTextSelectionChanged(int id) {
-        if (mNativeObj == 0) return;
         sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_TEXT_SELECTION_CHANGED);
     }
 
     @CalledByNative
     private void handleEditableTextChanged(int id) {
-        if (mNativeObj == 0) return;
         sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED);
     }
 
     @CalledByNative
     private void handleSliderChanged(int id) {
-        if (mNativeObj == 0) return;
         sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_SCROLLED);
     }
 
     @CalledByNative
     private void handleContentChanged(int id) {
-        if (mNativeObj == 0) return;
         int rootId = nativeGetRootId(mNativeObj);
         if (rootId != mCurrentRootId) {
             mCurrentRootId = rootId;
@@ -770,7 +754,6 @@ public class WebContentsAccessibility {
 
     @CalledByNative
     private void handleNavigate() {
-        if (mNativeObj == 0) return;
         mAccessibilityFocusId = View.NO_ID;
         mAccessibilityFocusRect = null;
         mUserHasTouchExplored = false;
@@ -780,19 +763,16 @@ public class WebContentsAccessibility {
 
     @CalledByNative
     private void handleScrollPositionChanged(int id) {
-        if (mNativeObj == 0) return;
         sendAccessibilityEvent(id, AccessibilityEvent.TYPE_VIEW_SCROLLED);
     }
 
     @CalledByNative
     private void handleScrolledToAnchor(int id) {
-        if (mNativeObj == 0) return;
         moveAccessibilityFocusToId(id);
     }
 
     @CalledByNative
     private void handleHover(int id) {
-        if (mNativeObj == 0) return;
         if (mLastHoverId == id) return;
         if (!mIsHovering) return;
 
@@ -859,7 +839,7 @@ public class WebContentsAccessibility {
     }
 
     @CalledByNative
-    protected void addAccessibilityNodeInfoActions(AccessibilityNodeInfo node, int virtualViewId,
+    private void addAccessibilityNodeInfoActions(AccessibilityNodeInfo node, int virtualViewId,
             boolean canScrollForward, boolean canScrollBackward, boolean canScrollUp,
             boolean canScrollDown, boolean canScrollLeft, boolean canScrollRight, boolean clickable,
             boolean editableText, boolean enabled, boolean focusable, boolean focused,
