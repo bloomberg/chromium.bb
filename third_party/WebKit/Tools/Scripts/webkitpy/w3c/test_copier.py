@@ -92,9 +92,7 @@ class TestCopier(object):
             cur_dir = root.replace(self.dir_above_repo + '/', '') + '/'
             _log.debug('Scanning %s...', cur_dir)
 
-            # Files in 'tools' are not for browser testing, so we skip them.
-            # See: http://web-platform-tests.org/writing-tests/general-guidelines.html#tools
-            dirs_to_skip = ('.git', 'test-plan', 'tools')
+            dirs_to_skip = ('.git', 'test-plan')
 
             if dirs:
                 for name in dirs_to_skip:
