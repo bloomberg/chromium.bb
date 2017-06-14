@@ -1684,7 +1684,7 @@ def _CheckIpcOwners(input_api, output_api):
       files.extend(['  %s' % f.LocalPath() for f in entry['files']])
     if missing_lines:
       errors.append(
-          '%s is missing the following lines:\n\n%s\n\nfor changed files:\n%s' %
+          '%s needs the following lines added:\n\n%s\n\nfor files:\n%s' %
           (owners_file, '\n'.join(missing_lines), '\n'.join(files)))
 
   results = []
@@ -1694,7 +1694,8 @@ def _CheckIpcOwners(input_api, output_api):
     else:
       output = output_api.PresubmitPromptWarning
     results.append(output(
-        'Found changes to IPC files without a security OWNER!',
+        'Found OWNERS files that need to be updated for IPC security ' +
+        'review coverage.\nPlease update the OWNERS files below:',
         long_text='\n\n'.join(errors)))
 
   return results
