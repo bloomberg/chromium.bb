@@ -82,9 +82,7 @@ public class AcceptLanguageTest extends AwTestBase {
         loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
 
         String[] acceptLanguages = getAcceptLanguages(
-                JSUtils.executeJavaScriptAndWaitForResult(
-                        this, mAwContents, mContentsClient.getOnEvaluateJavaScriptResultHelper(),
-                        "document.body.textContent"));
+                getJavaScriptResultBodyTextContent(mAwContents, mContentsClient));
         assertEquals(LocaleUtils.getDefaultLocaleString(), acceptLanguages[0]);
 
         String[] acceptLanguagesJs = getAcceptLanguages(
@@ -104,9 +102,7 @@ public class AcceptLanguageTest extends AwTestBase {
         loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
 
         acceptLanguages = getAcceptLanguages(
-                JSUtils.executeJavaScriptAndWaitForResult(
-                        this, mAwContents, mContentsClient.getOnEvaluateJavaScriptResultHelper(),
-                        "document.body.textContent"));
+                getJavaScriptResultBodyTextContent(mAwContents, mContentsClient));
         assertEquals(LocaleUtils.getDefaultLocaleString(), acceptLanguages[0]);
     }
 
@@ -127,9 +123,8 @@ public class AcceptLanguageTest extends AwTestBase {
         String url = mTestServer.getURL("/echoheader?Accept-Language");
         loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
 
-        String[] acceptLanguages = getAcceptLanguages(JSUtils.executeJavaScriptAndWaitForResult(
-                this, mAwContents, mContentsClient.getOnEvaluateJavaScriptResultHelper(),
-                "document.body.textContent"));
+        String[] acceptLanguages = getAcceptLanguages(
+                getJavaScriptResultBodyTextContent(mAwContents, mContentsClient));
         assertEquals(
                 LocaleUtils.getDefaultLocaleListString(), TextUtils.join(",", acceptLanguages));
 
@@ -148,9 +143,8 @@ public class AcceptLanguageTest extends AwTestBase {
 
         loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
 
-        acceptLanguages = getAcceptLanguages(JSUtils.executeJavaScriptAndWaitForResult(this,
-                mAwContents, mContentsClient.getOnEvaluateJavaScriptResultHelper(),
-                "document.body.textContent"));
+        acceptLanguages = getAcceptLanguages(
+                getJavaScriptResultBodyTextContent(mAwContents, mContentsClient));
         assertEquals(
                 LocaleUtils.getDefaultLocaleListString(), TextUtils.join(",", acceptLanguages));
 
@@ -161,9 +155,8 @@ public class AcceptLanguageTest extends AwTestBase {
 
         loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
 
-        acceptLanguages = getAcceptLanguages(JSUtils.executeJavaScriptAndWaitForResult(this,
-                mAwContents, mContentsClient.getOnEvaluateJavaScriptResultHelper(),
-                "document.body.textContent"));
+        acceptLanguages = getAcceptLanguages(
+                getJavaScriptResultBodyTextContent(mAwContents, mContentsClient));
         assertEquals(
                 LocaleUtils.getDefaultLocaleListString(), TextUtils.join(",", acceptLanguages));
 
@@ -174,9 +167,8 @@ public class AcceptLanguageTest extends AwTestBase {
 
         loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
 
-        acceptLanguages = getAcceptLanguages(JSUtils.executeJavaScriptAndWaitForResult(this,
-                mAwContents, mContentsClient.getOnEvaluateJavaScriptResultHelper(),
-                "document.body.textContent"));
+        acceptLanguages = getAcceptLanguages(
+                getJavaScriptResultBodyTextContent(mAwContents, mContentsClient));
         String[] acceptLangs = Arrays.copyOfRange(acceptLanguages, 0, acceptLanguages.length - 1);
         assertEquals(LocaleUtils.getDefaultLocaleListString(), TextUtils.join(",", acceptLangs));
     }
