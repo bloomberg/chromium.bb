@@ -360,6 +360,9 @@ void ArcNotificationContentView::SetSurface(exo::NotificationSurface* surface) {
   if (surface_ && surface_->window()) {
     surface_->window()->RemoveObserver(this);
     surface_->window()->RemovePreTargetHandler(event_forwarder_.get());
+
+    if (GetWidget())
+      Detach();
   }
 
   surface_ = surface;
@@ -437,6 +440,8 @@ void ArcNotificationContentView::UpdateSnapshot() {
 }
 
 void ArcNotificationContentView::AttachSurface() {
+  DCHECK(!native_view());
+
   if (!GetWidget())
     return;
 
@@ -512,6 +517,8 @@ void ArcNotificationContentView::ViewHierarchyChanged(
   if (!widget || !surface_ || !details.is_add)
     return;
 
+  if (native_view())
+    Detach();
   AttachSurface();
 }
 
