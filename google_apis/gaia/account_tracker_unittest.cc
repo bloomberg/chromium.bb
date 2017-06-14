@@ -769,47 +769,4 @@ TEST_F(IdentityAccountTrackerTest,
   EXPECT_EQ(0ul, ids.size());
 }
 
-TEST_F(IdentityAccountTrackerTest, FindAccountIdsByGaiaIdPrimary) {
-  SetupPrimaryLogin();
-
-  AccountIds ids = account_tracker()->FindAccountIdsByGaiaId(
-      AccountKeyToObfuscatedId(kPrimaryAccountKey));
-  EXPECT_EQ(kPrimaryAccountKey, ids.account_key);
-  EXPECT_EQ(kPrimaryAccountKey, ids.email);
-  EXPECT_EQ(AccountKeyToObfuscatedId(kPrimaryAccountKey), ids.gaia);
-}
-
-TEST_F(IdentityAccountTrackerTest, FindAccountIdsByGaiaIdNotFound) {
-  SetupPrimaryLogin();
-
-  AccountIds ids = account_tracker()->FindAccountIdsByGaiaId(
-      AccountKeyToObfuscatedId("notfound@example.com"));
-  EXPECT_TRUE(ids.account_key.empty());
-  EXPECT_TRUE(ids.email.empty());
-  EXPECT_TRUE(ids.gaia.empty());
-}
-
-TEST_F(IdentityAccountTrackerTest,
-       FindAccountIdsByGaiaIdReturnEmptyWhenPrimarySignedOut) {
-  SetupPrimaryLogin();
-
-  NotifyTokenAvailable("zeta@example.com");
-  ReturnOAuthUrlFetchSuccess("zeta@example.com");
-  NotifyTokenAvailable("alpha@example.com");
-  ReturnOAuthUrlFetchSuccess("alpha@example.com");
-
-  NotifyTokenRevoked(kPrimaryAccountKey);
-
-  AccountIds ids =
-      account_tracker()->FindAccountIdsByGaiaId(kPrimaryAccountKey);
-  EXPECT_TRUE(ids.account_key.empty());
-  EXPECT_TRUE(ids.email.empty());
-  EXPECT_TRUE(ids.gaia.empty());
-
-  ids = account_tracker()->FindAccountIdsByGaiaId("alpha@example.com");
-  EXPECT_TRUE(ids.account_key.empty());
-  EXPECT_TRUE(ids.email.empty());
-  EXPECT_TRUE(ids.gaia.empty());
-}
-
 }  // namespace gaia

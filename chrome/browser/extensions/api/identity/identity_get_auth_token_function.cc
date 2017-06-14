@@ -8,10 +8,12 @@
 #include "chrome/browser/extensions/api/identity/identity_api.h"
 #include "chrome/browser/extensions/api/identity/identity_constants.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/account_tracker_service_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/common/extensions/api/identity.h"
+#include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "components/signin/core/common/profile_management_switches.h"
@@ -110,9 +112,9 @@ bool IdentityGetAuthTokenFunction::RunAsync() {
   if (params->details.get()) {
     if (params->details->account.get()) {
       std::string detail_key =
-          extensions::IdentityAPI::GetFactoryInstance()
-              ->Get(GetProfile())
-              ->FindAccountKeyByGaiaId(params->details->account->id);
+          AccountTrackerServiceFactory::GetForProfile(GetProfile())
+              ->FindAccountInfoByGaiaId(params->details->account->id)
+              .account_id;
 
       if (detail_key != account_key) {
         if (detail_key.empty() || !switches::IsExtensionsMultiAccount()) {

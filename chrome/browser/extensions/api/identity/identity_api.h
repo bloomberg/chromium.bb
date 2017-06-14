@@ -95,7 +95,6 @@ class IdentityAPI : public BrowserContextKeyedAPI,
 
   // Account queries.
   std::vector<std::string> GetAccounts() const;
-  std::string FindAccountKeyByGaiaId(const std::string& gaia_id);
 
   // BrowserContextKeyedAPI implementation.
   void Shutdown() override;

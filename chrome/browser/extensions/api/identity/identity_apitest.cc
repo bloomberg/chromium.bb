@@ -664,9 +664,10 @@ class GetAuthTokenFunctionTest
         base::Time::Now() + base::TimeDelta::FromSeconds(3600));
   }
 
-  void SetAccountState(gaia::AccountIds ids, bool is_signed_in) {
-    IdentityAPI::GetFactoryInstance()->Get(profile())->SetAccountStateForTest(
-        ids, is_signed_in);
+  void SeedAccountInfo(const std::string& account_key) {
+    AccountTrackerService* account_tracker =
+        AccountTrackerServiceFactory::GetForProfile(profile());
+    account_tracker->SeedAccountInfo(account_key, account_key);
   }
 
  protected:
@@ -1461,8 +1462,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest, ManuallyIssueTokenFailure) {
 IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
                        MultiDefaultUserManuallyIssueToken) {
   SignIn("primary@example.com");
-  SetAccountState(CreateIds("primary@example.com", "1"), true);
-  SetAccountState(CreateIds("secondary@example.com", "2"), true);
+  SeedAccountInfo("secondary@example.com");
 
   scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
   scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
@@ -1490,8 +1490,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
                        MultiPrimaryUserManuallyIssueToken) {
   SignIn("primary@example.com");
   IssueLoginRefreshTokenForAccount("secondary@example.com");
-  SetAccountState(CreateIds("primary@example.com", "1"), true);
-  SetAccountState(CreateIds("secondary@example.com", "2"), true);
+  SeedAccountInfo("secondary@example.com");
 
   scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
   scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
@@ -1501,7 +1500,8 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
 
   base::RunLoop run_loop;
   on_access_token_requested_ = run_loop.QuitClosure();
-  RunFunctionAsync(func.get(), "[{\"account\": { \"id\": \"1\" } }]");
+  RunFunctionAsync(func.get(),
+                   "[{\"account\": { \"id\": \"primary@example.com\" } }]");
   run_loop.Run();
 
   IssueLoginAccessTokenForAccount("primary@example.com");
@@ -1519,8 +1519,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
                        MultiSecondaryUserManuallyIssueToken) {
   SignIn("primary@example.com");
   IssueLoginRefreshTokenForAccount("secondary@example.com");
-  SetAccountState(CreateIds("primary@example.com", "1"), true);
-  SetAccountState(CreateIds("secondary@example.com", "2"), true);
+  SeedAccountInfo("secondary@example.com");
 
   scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
   scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
@@ -1530,7 +1529,8 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
 
   base::RunLoop run_loop;
   on_access_token_requested_ = run_loop.QuitClosure();
-  RunFunctionAsync(func.get(), "[{\"account\": { \"id\": \"2\" } }]");
+  RunFunctionAsync(func.get(),
+                   "[{\"account\": { \"id\": \"secondary@example.com\" } }]");
   run_loop.Run();
 
   IssueLoginAccessTokenForAccount("secondary@example.com");
@@ -1548,8 +1548,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
                        MultiUnknownUserGetTokenFromTokenServiceFailure) {
   SignIn("primary@example.com");
   IssueLoginRefreshTokenForAccount("secondary@example.com");
-  SetAccountState(CreateIds("primary@example.com", "1"), true);
-  SetAccountState(CreateIds("secondary@example.com", "2"), true);
+  SeedAccountInfo("secondary@example.com");
 
   scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
   scoped_refptr<const Extension> extension(CreateExtension(CLIENT_ID | SCOPES));
@@ -1557,7 +1556,8 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   func->set_auto_login_access_token(false);
 
   std::string error = utils::RunFunctionAndReturnError(
-      func.get(), "[{\"account\": { \"id\": \"3\" } }]", browser());
+      func.get(), "[{\"account\": { \"id\": \"unknown@example.com\" } }]",
+      browser());
   EXPECT_EQ(std::string(errors::kUserNotSignedIn), error);
 }
 
@@ -1565,14 +1565,14 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
                        MultiSecondaryNonInteractiveMintFailure) {
   SignIn("primary@example.com");
   IssueLoginRefreshTokenForAccount("secondary@example.com");
-  SetAccountState(CreateIds("primary@example.com", "1"), true);
-  SetAccountState(CreateIds("secondary@example.com", "2"), true);
+  SeedAccountInfo("secondary@example.com");
 
   scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
   func->set_extension(CreateExtension(CLIENT_ID | SCOPES));
   func->set_mint_token_result(TestOAuth2MintTokenFlow::MINT_TOKEN_FAILURE);
   std::string error = utils::RunFunctionAndReturnError(
-      func.get(), "[{\"account\": { \"id\": \"2\" } }]", browser());
+      func.get(), "[{\"account\": { \"id\": \"secondary@example.com\" } }]",
+      browser());
   EXPECT_TRUE(base::StartsWith(error, errors::kAuthFailure,
                                base::CompareCase::INSENSITIVE_ASCII));
   EXPECT_FALSE(func->login_ui_shown());
@@ -1583,14 +1583,14 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
                        MultiSecondaryNonInteractiveLoginAccessTokenFailure) {
   SignIn("primary@example.com");
   IssueLoginRefreshTokenForAccount("secondary@example.com");
-  SetAccountState(CreateIds("primary@example.com", "1"), true);
-  SetAccountState(CreateIds("secondary@example.com", "2"), true);
+  SeedAccountInfo("secondary@example.com");
 
   scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
   func->set_extension(CreateExtension(CLIENT_ID | SCOPES));
   func->set_login_access_token_result(false);
   std::string error = utils::RunFunctionAndReturnError(
-      func.get(), "[{\"account\": { \"id\": \"2\" } }]", browser());
+      func.get(), "[{\"account\": { \"id\": \"secondary@example.com\" } }]",
+      browser());
   EXPECT_TRUE(base::StartsWith(error, errors::kAuthFailure,
                                base::CompareCase::INSENSITIVE_ASCII));
 }
@@ -1599,8 +1599,7 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
                        MultiSecondaryInteractiveApprovalAborted) {
   SignIn("primary@example.com");
   IssueLoginRefreshTokenForAccount("secondary@example.com");
-  SetAccountState(CreateIds("primary@example.com", "1"), true);
-  SetAccountState(CreateIds("secondary@example.com", "2"), true);
+  SeedAccountInfo("secondary@example.com");
 
   scoped_refptr<FakeGetAuthTokenFunction> func(new FakeGetAuthTokenFunction());
   func->set_extension(CreateExtension(CLIENT_ID | SCOPES));
@@ -1608,7 +1607,8 @@ IN_PROC_BROWSER_TEST_F(GetAuthTokenFunctionTest,
   func->set_scope_ui_failure(GaiaWebAuthFlow::WINDOW_CLOSED);
   std::string error = utils::RunFunctionAndReturnError(
       func.get(),
-      "[{\"account\": { \"id\": \"2\" }, \"interactive\": true}]",
+      "[{\"account\": { \"id\": \"secondary@example.com\" }, \"interactive\": "
+      "true}]",
       browser());
   EXPECT_EQ(std::string(errors::kUserRejected), error);
   EXPECT_FALSE(func->login_ui_shown());
