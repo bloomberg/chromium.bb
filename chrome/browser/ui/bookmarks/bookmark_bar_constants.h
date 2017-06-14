@@ -20,9 +20,9 @@ const int kNTPBookmarkBarHeight = 39;
 // points) because of the visual overlap with the main toolbar. When using this
 // to compute values other than the actual height of the toolbar, be sure to add
 // |kVisualHeightOffset|.
-const int kMinimumBookmarkBarHeight = 25;
+const int kMinimumBookmarkBarHeight = 26;
 #elif defined(TOOLKIT_VIEWS)
-const int kMinimumBookmarkBarHeight = 27;
+const int kMinimumBookmarkBarHeight = 28;
 #endif
 
 }  // namespace chrome
