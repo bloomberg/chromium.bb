@@ -17,6 +17,7 @@ test("ios_web_view_inttests") {
   testonly = true
   sources = [
     "chrome_web_view_kvo_inttest.mm",
+    "chrome_web_view_restorable_state_inttest.mm",
     "chrome_web_view_test.h",
     "chrome_web_view_test.mm",
     "observer.h",
