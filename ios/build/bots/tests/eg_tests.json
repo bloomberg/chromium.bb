@@ -1,0 +1,8 @@
+{
+  "tests": [
+    {
+      "app": "ios_chrome_integration_egtests",
+      "xctest": true
+    }
+  ]
+}
