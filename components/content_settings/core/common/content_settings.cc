@@ -57,6 +57,7 @@ HistogramValue kHistogramValue[] = {
     {CONTENT_SETTINGS_TYPE_PERMISSION_AUTOBLOCKER_DATA, 31},
     {CONTENT_SETTINGS_TYPE_ADS, 32},
     {CONTENT_SETTINGS_TYPE_ADS_DATA, 33},
+    {CONTENT_SETTINGS_TYPE_PASSWORD_PROTECTION, 34},
 };
 
 int ContentSettingTypeToHistogramValue(ContentSettingsType content_setting,
