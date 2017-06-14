@@ -71,6 +71,10 @@ class GFX_EXPORT Vector3dF {
   // Take the cross product of this vector with |other| and become the result.
   void Cross(const Vector3dF& other);
 
+  // |out| is assigned a unit-length vector in the direction of |this| iff
+  // this function returns true. It can return false if |this| is too short.
+  bool GetNormalized(Vector3dF* out) const;
+
   std::string ToString() const;
 
  private:
