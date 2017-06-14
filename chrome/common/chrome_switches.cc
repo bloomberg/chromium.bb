@@ -569,13 +569,6 @@ const char kMakeDefaultBrowser[]            = "make-default-browser";
 // Forces the maximum disk space to be used by the media cache, in bytes.
 const char kMediaCacheSize[]                = "media-cache-size";
 
-// Enables the recording of metrics reports but disables reporting. In contrast
-// to kDisableMetrics, this executes all the code that a normal client would
-// use for reporting, except the report is dropped rather than sent to the
-// server. This is useful for finding issues in the metrics code during UI and
-// performance tests.
-const char kMetricsRecordingOnly[]          = "metrics-recording-only";
-
 // Allows setting a different destination ID for connection-monitoring GCM
 // messages. Useful when running against a non-prod management server.
 const char kMonitoringDestinationID[]       = "monitoring-destination-id";

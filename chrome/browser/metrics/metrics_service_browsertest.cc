@@ -19,11 +19,11 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/metrics/metrics_pref_names.h"
+#include "components/metrics/metrics_switches.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/base/filename_util.h"
@@ -72,7 +72,7 @@ class MetricsServiceBrowserTest : public InProcessBrowserTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     // Enable the metrics service for testing (in recording-only mode).
-    command_line->AppendSwitch(switches::kMetricsRecordingOnly);
+    command_line->AppendSwitch(metrics::switches::kMetricsRecordingOnly);
   }
 
   // Open three tabs then navigate to |crashy_url| and wait for the renderer to
