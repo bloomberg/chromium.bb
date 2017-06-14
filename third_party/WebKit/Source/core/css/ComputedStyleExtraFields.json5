@@ -854,6 +854,30 @@
       field_size: 1,
       default_value: "false",
     },
+    {
+      name: "WillChangeProperties",
+      field_template: "storage_only",
+      type_name: "Vector<CSSPropertyID>",
+      field_group: "rare-non-inherited->will-change",
+      default_value: "Vector<CSSPropertyID>()",
+      include_paths: ["platform/wtf/Vector.h", "core/CSSPropertyNames.h"],
+    },
+    {
+      name: "WillChangeContents",
+      field_template: "storage_only",
+      type_name: "unsigned",
+      field_group: "rare-non-inherited->will-change",
+      default_value: "false",
+      field_size: 1,
+    },
+    {
+      name: "WillChangeScrollPosition",
+      field_template: "storage_only",
+      type_name: "unsigned",
+      field_group: "rare-non-inherited->will-change",
+      default_value: "false",
+      field_size: 1,
+    },
     // TODO(shend): These are subgroups and should be removed when we can
     // generate them propertly.
     {
@@ -891,15 +915,6 @@
       default_value: "",
       wrapper_pointer_name: "DataRef",
       include_paths: ["core/style/StyleTransformData.h"],
-    },
-    {
-      name: "WillChangeData",
-      field_template: "storage_only",
-      type_name: "StyleWillChangeData",
-      field_group: "rare-non-inherited",
-      default_value: "",
-      wrapper_pointer_name: "DataRef",
-      include_paths: ["core/style/StyleWillChangeData.h"],
     },
     {
       name: "GridData",

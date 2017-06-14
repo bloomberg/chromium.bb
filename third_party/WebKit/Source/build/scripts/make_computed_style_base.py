@@ -27,7 +27,7 @@ ALIGNMENT_ORDER = [
     # Aligns like double
     'double',
     # Aligns like a pointer (can be 32 or 64 bits)
-    'AtomicString', 'DataRef', 'RefPtr', 'DataPersistent', 'Persistent', 'std::unique_ptr',
+    'Vector<CSSPropertyID>', 'AtomicString', 'DataRef', 'RefPtr', 'DataPersistent', 'Persistent', 'std::unique_ptr',
     'Vector<String>', 'Font', 'FillLayer', 'NinePieceImage',
     # Aligns like float
     'LengthBox', 'LengthSize', 'FloatSize', 'LengthPoint', 'Length', 'TextSizeAdjust', 'TabSize', 'float',
@@ -67,11 +67,14 @@ class Group(object):
         name: The name of the group as a string.
         subgroups: List of Group instances that are stored as subgroups under this group.
         fields: List of Field instances stored directly under this group.
+        parent: The parent group, or None if this is the root group.
     """
     def __init__(self, name, subgroups, fields):
         self.name = name
         self.subgroups = subgroups
         self.fields = fields
+        self.parent = None
+
         self.type_name = class_name(join_name('style', name, 'data'))
         self.member_name = class_member_name(join_name(name, 'data'))
         self.num_32_bit_words_for_bit_fields = _num_32_bit_words_for_bit_fields(
@@ -81,9 +84,25 @@ class Group(object):
         # Recursively get all the fields in the subgroups as well
         self.all_fields = _flatten_list(subgroup.all_fields for subgroup in subgroups) + fields
 
-        # Link group
+        # Ensure that all fields/subgroups on this group link to it
         for field in fields:
             field.group = self
+
+        for subgroup in subgroups:
+            subgroup.parent = self
+
+    def path_without_root(self):
+        """Return list of ancestor groups, excluding the root group.
+
+        The first item is the current group, second item is the parent, third is the grandparent
+        and so on.
+        """
+        group_path = []
+        current_group = self
+        while current_group.name:
+            group_path.insert(0, current_group)
+            current_group = current_group.parent
+        return group_path
 
 
 class DiffGroup(object):
@@ -187,14 +206,41 @@ def _get_include_paths(properties):
 
 
 def _create_groups(properties):
-    """Groups a list of fields by their group_name and returns the root group."""
-    groups = defaultdict(list)
-    for property_ in properties:
-        groups[property_['field_group']].extend(_create_fields(property_))
+    """Create a tree of groups from a list of properties.
 
-    no_group = groups.pop(None)
-    subgroups = [Group(group_name, [], _reorder_fields(fields)) for group_name, fields in groups.items()]
-    return Group('', subgroups=subgroups, fields=_reorder_fields(no_group))
+    Returns:
+        Group: The root group of the tree. The name of the group is set to None.
+    """
+    # We first convert properties into a dictionary structure. Each dictionary
+    # represents a group. The None key corresponds to the fields directly stored
+    # on that group. The other keys map from group name to another dictionary.
+    # For example:
+    # {
+    #   None: [field1, field2, ...]
+    #   'groupA': { None: [field3] },
+    #   'groupB': {
+    #      None: [],
+    #      'groupC': { None: [field4] },
+    #   },
+    # }
+    #
+    # We then recursively convert this dictionary into a tree of Groups.
+    # TODO(shend): Skip the first step by changing Group attributes into methods.
+    def _dict_to_group(name, group_dict):
+        fields_in_current_group = group_dict.pop(None)
+        subgroups = [_dict_to_group(subgroup_name, subgroup_dict) for subgroup_name, subgroup_dict in group_dict.items()]
+        return Group(name, subgroups, _reorder_fields(fields_in_current_group))
+
+    root_group_dict = {None: []}
+    for property_ in properties:
+        current_group_dict = root_group_dict
+        if property_['field_group']:
+            for group_name in property_['field_group'].split('->'):
+                current_group_dict[group_name] = current_group_dict.get(group_name, {None: []})
+                current_group_dict = current_group_dict[group_name]
+        current_group_dict[None].extend(_create_fields(property_))
+
+    return _dict_to_group(None, root_group_dict)
 
 
 def _create_diff_groups_map(diff_function_inputs, root_group):

@@ -62,7 +62,6 @@
 #include "core/style/StyleReflection.h"
 #include "core/style/StyleSelfAlignmentData.h"
 #include "core/style/StyleTransformData.h"
-#include "core/style/StyleWillChangeData.h"
 #include "core/style/TextSizeAdjust.h"
 #include "core/style/TransformOrigin.h"
 #include "platform/Length.h"
