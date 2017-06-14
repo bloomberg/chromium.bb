@@ -5,16 +5,28 @@
 #include "chrome/browser/extensions/api/notifications/extension_notification_handler.h"
 
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/nullable_string16.h"
 #include "base/strings/string_piece.h"
 #include "chrome/browser/extensions/api/notifications/extension_notification_display_helper.h"
 #include "chrome/browser/extensions/api/notifications/extension_notification_display_helper_factory.h"
+#include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/notifications.h"
+#include "chrome/common/features.h"
+#include "extensions/browser/app_window/app_window.h"
+#include "extensions/browser/app_window/app_window_registry.h"
+#include "extensions/browser/app_window/native_app_window.h"
 #include "extensions/common/constants.h"
+#include "ui/message_center/notifier_settings.h"
 #include "url/gurl.h"
 
 namespace extensions {
+
+namespace notifications = api::notifications;
+
+const base::Feature kAllowFullscreenAppNotificationsFeature{
+    "FSNotificationsApp", base::FEATURE_ENABLED_BY_DEFAULT};
 
 namespace {
 
@@ -97,6 +109,37 @@ void ExtensionNotificationHandler::OnClick(
 void ExtensionNotificationHandler::OpenSettings(Profile* profile) {
   // Extension notifications don't display a settings button.
   NOTREACHED();
+}
+
+// Should only display when fullscreen if this app is the source of the
+// fullscreen window.
+bool ExtensionNotificationHandler::ShouldDisplayOnFullScreen(
+    Profile* profile,
+    const std::string& origin) {
+  DCHECK(profile);
+  DCHECK(!GetExtensionId(origin).empty());
+  AppWindowRegistry::AppWindowList windows =
+      AppWindowRegistry::Get(profile)->GetAppWindowsForApp(
+          GetExtensionId(origin));
+  for (auto* window : windows) {
+    // Window must be fullscreen and visible
+    if (window->IsFullscreen() && window->GetBaseWindow()->IsActive()) {
+      bool enabled =
+          base::FeatureList::IsEnabled(kAllowFullscreenAppNotificationsFeature);
+      if (enabled) {
+        UMA_HISTOGRAM_ENUMERATION("Notifications.Display_Fullscreen.Shown",
+                                  message_center::NotifierId::APPLICATION,
+                                  message_center::NotifierId::SIZE);
+      } else {
+        UMA_HISTOGRAM_ENUMERATION("Notifications.Display_Fullscreen.Suppressed",
+                                  message_center::NotifierId::APPLICATION,
+                                  message_center::NotifierId::SIZE);
+      }
+      return enabled;
+    }
+  }
+
+  return false;
 }
 
 void ExtensionNotificationHandler::SendEvent(

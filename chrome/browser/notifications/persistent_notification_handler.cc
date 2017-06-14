@@ -45,3 +45,9 @@ void PersistentNotificationHandler::OnClick(
 void PersistentNotificationHandler::OpenSettings(Profile* profile) {
   NotificationCommon::OpenNotificationSettings(profile);
 }
+
+bool PersistentNotificationHandler::ShouldDisplayOnFullScreen(
+    Profile* profile,
+    const std::string& origin) {
+  return NotificationCommon::ShouldDisplayOnFullScreen(profile, GURL(origin));
+}

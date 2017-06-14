@@ -10,6 +10,7 @@
 #include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/persistent_notification_handler.h"
 #include "extensions/features/features.h"
+#include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 #include "chrome/browser/extensions/api/notifications/extension_notification_handler.h"
@@ -70,4 +71,12 @@ void NotificationDisplayService::ProcessNotificationOperation(
       handler->OpenSettings(profile_);
       break;
   }
+}
+
+bool NotificationDisplayService::ShouldDisplayOverFullscreen(
+    const GURL& origin,
+    NotificationCommon::Type notification_type) {
+  NotificationHandler* handler = GetNotificationHandler(notification_type);
+  DCHECK(handler);
+  return handler->ShouldDisplayOnFullScreen(profile_, origin.spec());
 }

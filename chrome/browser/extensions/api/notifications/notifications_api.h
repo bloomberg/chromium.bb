@@ -18,8 +18,6 @@ class Notification;
 
 namespace extensions {
 
-extern const base::Feature kAllowFullscreenAppNotificationsFeature;
-
 class ExtensionNotificationDisplayHelper;
 
 class NotificationsApiFunction : public ChromeAsyncExtensionFunction {
