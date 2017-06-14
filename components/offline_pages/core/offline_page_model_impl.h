@@ -146,11 +146,10 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
 
   // Callback for loading pages from the offline page metadata store.
   void OnStoreInitialized(const base::TimeTicks& start_time,
-                          int reset_attempts_left,
+                          int init_attempts_spent,
                           bool success);
-  void OnStoreResetDone(const base::TimeTicks& start_time,
-                        int reset_attempts_left,
-                        bool success);
+  void RetryDbInitialization(const base::TimeTicks& start_time,
+                             int init_attempts_spent);
   void OnInitialGetOfflinePagesDone(
       const base::TimeTicks& start_time,
       const std::vector<OfflinePageItem>& offline_pages);

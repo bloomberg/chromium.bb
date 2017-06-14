@@ -61,11 +61,14 @@ class OfflinePageTestStore : public OfflinePageMetadataStore {
 
   void set_test_scenario(TestScenario scenario) { scenario_ = scenario; };
 
+  int initialize_attempts_count() const { return initialize_attempts_count_; }
+
  private:
   OfflinePageItem last_saved_page_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   TestScenario scenario_;
   StoreState store_state_;
+  int initialize_attempts_count_;
 
   std::map<int64_t, OfflinePageItem> offline_pages_;
 

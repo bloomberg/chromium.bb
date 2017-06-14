@@ -47035,6 +47035,23 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="OfflinePages.Model.FinalLoadSuccessful" enum="Boolean">
+  <owner>dimich@chromium.org</owner>
+  <summary>
+    Whether the metadata database was successfully loaded, after possibly
+    several retries.
+  </summary>
+</histogram>
+
+<histogram name="OfflinePages.Model.InitAttemptsSpent" units="attempts">
+  <owner>dimich@chromium.org</owner>
+  <summary>
+    The count of attempts spent to open the metadata database. In the best case,
+    it's 1. There is a small upper limit. This is recorded only at success.
+    Failures are counted by OfflinePages.Model.FinalLoadSuccessful.
+  </summary>
+</histogram>
+
 <histogram name="OfflinePages.OfflinePageCount">
   <obsolete>
     Deprecated 5/2016. This was the dup of OfflinePages.SavedPageCount.
@@ -47199,6 +47216,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Whether an offline page is shown, instead of error page, when the network is
     disconnected or poor condition.
+  </summary>
+</histogram>
+
+<histogram name="OfflinePages.SQLStorage.CreateDirectoryResult"
+    enum="PlatformFileError">
+  <owner>dimich@chromium.org</owner>
+  <summary>
+    If the directory to store the SQLite database file does not exist, it is
+    created. This is recorded only if creation fails.
   </summary>
 </histogram>
 

@@ -76,9 +76,8 @@ class OfflinePageMetadataStoreSQL : public OfflinePageMetadataStore {
   void SetStateForTesting(StoreState state, bool reset_db);
 
  private:
-  // Used to conclude opening/resetting DB connection.
-  void OnOpenConnectionDone(const InitializeCallback& callback, bool success);
-  void OnResetDone(const ResetCallback& callback, bool success);
+  // Used as callback to set state from open / initial read operations.
+  void SetState(StoreState state);
 
   // Checks whether a valid DB connection is present and store state is LOADED.
   bool CheckDb() const;

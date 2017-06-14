@@ -16,17 +16,24 @@ OfflinePageTestStore::OfflinePageTestStore(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
     : task_runner_(task_runner),
       scenario_(TestScenario::SUCCESSFUL),
-      store_state_(StoreState::NOT_LOADED) {}
+      store_state_(StoreState::NOT_LOADED),
+      initialize_attempts_count_(0) {}
 
+// This ctor is used in tests to 'reload' the model. Therefore it starts
+// from NOT_LOADED and 0 attampts, to be able to verify those directly and not
+// accumulate form previous load. However, the set of test pages is preserved.
 OfflinePageTestStore::OfflinePageTestStore(
     const OfflinePageTestStore& other_store)
     : task_runner_(other_store.task_runner_),
       scenario_(other_store.scenario_),
+      store_state_(StoreState::NOT_LOADED),
+      initialize_attempts_count_(0),
       offline_pages_(other_store.offline_pages_) {}
 
 OfflinePageTestStore::~OfflinePageTestStore() {}
 
 void OfflinePageTestStore::Initialize(const InitializeCallback& callback) {
+  initialize_attempts_count_++;
   if (scenario_ == TestScenario::LOAD_FAILED_RESET_FAILED ||
       scenario_ == TestScenario::LOAD_FAILED_RESET_SUCCESS) {
     store_state_ = StoreState::FAILED_LOADING;
