@@ -20,6 +20,7 @@
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_response_type.h"
+#include "content/browser/service_worker/service_worker_url_job_wrapper.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_status_code.h"
@@ -56,32 +57,7 @@ class ServiceWorkerVersion;
 
 class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
  public:
-  class CONTENT_EXPORT Delegate {
-   public:
-    virtual ~Delegate() {}
-
-    // Will be invoked before the request is restarted. The caller
-    // can use this opportunity to grab state from the
-    // ServiceWorkerURLRequestJob to determine how it should behave when the
-    // request is restarted.
-    virtual void OnPrepareToRestart() = 0;
-
-    // Returns the ServiceWorkerVersion fetch events for this request job should
-    // be dispatched to. If no appropriate worker can be determined, returns
-    // nullptr and sets |*result| to an appropriate error.
-    virtual ServiceWorkerVersion* GetServiceWorkerVersion(
-        ServiceWorkerMetrics::URLRequestJobResult* result) = 0;
-
-    // Called after dispatching the fetch event to determine if processing of
-    // the request should still continue, or if processing should be aborted.
-    // When false is returned, this sets |*result| to an appropriate error.
-    virtual bool RequestStillValid(
-        ServiceWorkerMetrics::URLRequestJobResult* result);
-
-    // Called to signal that loading failed, and that the resource being loaded
-    // was a main resource.
-    virtual void MainResourceLoadFailed() {}
-  };
+  using Delegate = ServiceWorkerURLJobWrapper::Delegate;
 
   ServiceWorkerURLRequestJob(
       net::URLRequest* request,

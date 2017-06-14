@@ -4,6 +4,8 @@
 
 #include "content/browser/service_worker/service_worker_url_loader_job.h"
 
+#include "base/strings/stringprintf.h"
+#include "content/browser/blob_storage/blob_url_loader_factory.h"
 #include "content/browser/service_worker/service_worker_fetch_dispatcher.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/service_worker/service_worker_utils.h"
@@ -11,6 +13,7 @@
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/content_switches.h"
 #include "net/base/io_buffer.h"
+#include "net/http/http_util.h"
 #include "storage/browser/blob/blob_reader.h"
 #include "storage/browser/blob/blob_storage_context.h"
 
@@ -25,6 +28,7 @@ ServiceWorkerURLLoaderJob::ServiceWorkerURLLoaderJob(
       delegate_(delegate),
       resource_request_(resource_request),
       blob_storage_context_(blob_storage_context),
+      blob_client_binding_(this),
       binding_(this),
       weak_factory_(this) {
   DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
@@ -71,24 +75,30 @@ void ServiceWorkerURLLoaderJob::FailDueToLostController() {
 }
 
 void ServiceWorkerURLLoaderJob::Cancel() {
-  canceled_ = true;
+  url_loader_client_.reset();
+  status_ = Status::kCancelled;
   weak_factory_.InvalidateWeakPtrs();
-  blob_reader_.reset();
   blob_storage_context_.reset();
   fetch_dispatcher_.reset();
 }
 
 bool ServiceWorkerURLLoaderJob::WasCanceled() const {
-  return canceled_;
+  return status_ == Status::kCancelled;
 }
 
 void ServiceWorkerURLLoaderJob::StartRequest() {
   DCHECK_EQ(FORWARD_TO_SERVICE_WORKER, response_type_);
+  DCHECK_EQ(Status::kNotStarted, status_);
+  status_ = Status::kStarted;
 
   ServiceWorkerMetrics::URLRequestJobResult result =
       ServiceWorkerMetrics::REQUEST_JOB_ERROR_BAD_DELEGATE;
   ServiceWorkerVersion* active_worker =
       delegate_->GetServiceWorkerVersion(&result);
+  if (!active_worker) {
+    DeliverErrorResponse();
+    return;
+  }
 
   fetch_dispatcher_.reset(new ServiceWorkerFetchDispatcher(
       CreateFetchRequest(resource_request_), active_worker,
@@ -98,6 +108,7 @@ void ServiceWorkerURLLoaderJob::StartRequest() {
                  weak_factory_.GetWeakPtr(), active_worker),
       base::Bind(&ServiceWorkerURLLoaderJob::DidDispatchFetchEvent,
                  weak_factory_.GetWeakPtr())));
+  // TODO(kinuko): Handle navigation preload.
   fetch_dispatcher_->Run();
 }
 
@@ -127,6 +138,75 @@ ServiceWorkerURLLoaderJob::CreateFetchRequest(const ResourceRequest& request) {
   return new_request;
 }
 
+void ServiceWorkerURLLoaderJob::SaveResponseInfo(
+    const ServiceWorkerResponse& response) {
+  response_head_.was_fetched_via_service_worker = true;
+  response_head_.was_fetched_via_foreign_fetch = false;
+  response_head_.was_fallback_required_by_service_worker = false;
+  response_head_.url_list_via_service_worker = response.url_list;
+  response_head_.response_type_via_service_worker = response.response_type;
+  response_head_.is_in_cache_storage = response.is_in_cache_storage;
+  response_head_.cache_storage_cache_name = response.cache_storage_cache_name;
+  response_head_.cors_exposed_header_names = response.cors_exposed_header_names;
+  response_head_.did_service_worker_navigation_preload =
+      did_navigation_preload_;
+}
+
+void ServiceWorkerURLLoaderJob::SaveResponseHeaders(
+    int status_code,
+    const std::string& status_text,
+    const ServiceWorkerHeaderMap& headers) {
+  // Build a string instead of using HttpResponseHeaders::AddHeader on
+  // each header, since AddHeader has O(n^2) performance.
+  std::string buf(base::StringPrintf("HTTP/1.1 %d %s\r\n", status_code,
+                                     status_text.c_str()));
+  for (const auto& item : headers) {
+    buf.append(item.first);
+    buf.append(": ");
+    buf.append(item.second);
+    buf.append("\r\n");
+  }
+  buf.append("\r\n");
+
+  response_head_.headers = new net::HttpResponseHeaders(
+      net::HttpUtil::AssembleRawHeaders(buf.c_str(), buf.size()));
+  if (response_head_.mime_type.empty()) {
+    std::string mime_type;
+    response_head_.headers->GetMimeType(&mime_type);
+    if (mime_type.empty())
+      mime_type = "text/plain";
+    response_head_.mime_type = mime_type;
+  }
+}
+
+void ServiceWorkerURLLoaderJob::CommitResponseHeaders() {
+  DCHECK_EQ(Status::kStarted, status_);
+  status_ = Status::kSentHeader;
+  url_loader_client_->OnReceiveResponse(
+      response_head_, base::nullopt /* TODO(scottmg): ssl info */,
+      mojom::DownloadedTempFilePtr());
+}
+
+void ServiceWorkerURLLoaderJob::CommitCompleted(int error_code) {
+  DCHECK_LT(status_, Status::kCompleted);
+  status_ = Status::kCompleted;
+  ResourceRequestCompletionStatus completion_status;
+  completion_status.error_code = error_code;
+  completion_status.completion_time = base::TimeTicks::Now();
+  url_loader_client_->OnComplete(completion_status);
+}
+
+void ServiceWorkerURLLoaderJob::DeliverErrorResponse() {
+  DCHECK_GT(status_, Status::kNotStarted);
+  DCHECK_LT(status_, Status::kCompleted);
+  if (status_ < Status::kSentHeader) {
+    SaveResponseHeaders(500, "Service Worker Response Error",
+                        ServiceWorkerHeaderMap());
+    CommitResponseHeaders();
+  }
+  CommitCompleted(net::ERR_FAILED);
+}
+
 void ServiceWorkerURLLoaderJob::DidPrepareFetchEvent(
     scoped_refptr<ServiceWorkerVersion> version) {}
 
@@ -136,11 +216,37 @@ void ServiceWorkerURLLoaderJob::DidDispatchFetchEvent(
     const ServiceWorkerResponse& response,
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
     const scoped_refptr<ServiceWorkerVersion>& version) {
-  if (fetch_result == SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK) {
-    std::move(loader_callback_).Run(StartLoaderCallback());
+  if (!did_navigation_preload_)
+    fetch_dispatcher_.reset();
+
+  ServiceWorkerMetrics::URLRequestJobResult result =
+      ServiceWorkerMetrics::REQUEST_JOB_ERROR_BAD_DELEGATE;
+  if (!delegate_->RequestStillValid(&result)) {
+    DeliverErrorResponse();
     return;
   }
+
+  if (status != SERVICE_WORKER_OK) {
+    delegate_->MainResourceLoadFailed();
+    FallbackToNetwork();
+    return;
+  }
+
+  if (fetch_result == SERVICE_WORKER_FETCH_EVENT_RESULT_FALLBACK) {
+    // TODO(kinuko): Check if this needs to fallback to the renderer.
+    FallbackToNetwork();
+    return;
+  }
+
   DCHECK_EQ(fetch_result, SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE);
+
+  // A response with status code 0 is Blink telling us to respond with
+  // network error.
+  if (response.status_code == 0) {
+    DeliverErrorResponse();
+    return;
+  }
+
   std::move(loader_callback_)
       .Run(base::Bind(&ServiceWorkerURLLoaderJob::StartResponse,
                       weak_factory_.GetWeakPtr(), response,
@@ -158,57 +264,37 @@ void ServiceWorkerURLLoaderJob::StartResponse(
       base::Bind(&ServiceWorkerURLLoaderJob::Cancel, base::Unretained(this)));
   url_loader_client_ = std::move(client);
 
-  ResourceResponseHead head;
-  // TODO(scottmg): More fields in |head| required?
-  head.headers = new net::HttpResponseHeaders("");
-  for (const auto& kv : response.headers)
-    head.headers->AddHeader(kv.first + ": " + kv.second);
-  head.url_list_via_service_worker = response.url_list;
-  head.mime_type = "text/html";  // TODO(scottmg): No idea where to get this.
-  head.was_fetched_via_service_worker = true;
-  head.cors_exposed_header_names = response.cors_exposed_header_names;
-  url_loader_client_->OnReceiveResponse(
-      head, base::nullopt /* TODO(scottmg): ssl info */,
-      mojom::DownloadedTempFilePtr());
+  SaveResponseInfo(response);
+  SaveResponseHeaders(response.status_code, response.status_text,
+                      response.headers);
+
+  // TODO(kinuko): Set the script's HTTP response info via
+  // version->GetMainScriptHttpResponseInfo() for HTTPS padlock.
 
   // Ideally, we would always get a data pipe fom SWFetchDispatcher and use
   // this case. See:
   // https://docs.google.com/a/google.com/document/d/1_ROmusFvd8ATwIZa29-P6Ls5yyLjfld0KvKchVfA84Y/edit?usp=drive_web
   if (!body_as_stream.is_null() && body_as_stream->stream.is_valid()) {
+    CommitResponseHeaders();
     url_loader_client_->OnStartLoadingResponseBody(
         std::move(body_as_stream->stream));
-  } else {
-    // TODO(scottmg): This is temporary way to load the blob right here and
-    // turn it into a data pipe to respond with, until we are always able to
-    // take the above path.
-    if (!response.blob_uuid.empty() && blob_storage_context_) {
-      std::unique_ptr<storage::BlobDataHandle> blob_data_handle =
-          blob_storage_context_->GetBlobDataFromUUID(response.blob_uuid);
-      blob_reader_ = blob_data_handle->CreateReader(
-          nullptr /* file system context */,
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE).get());
-      CHECK(storage::BlobReader::Status::DONE ==
-            blob_reader_->CalculateSize(net::CompletionCallback()));
-      blob_reader_->SetReadRange(0, blob_reader_->total_size());
-      scoped_refptr<net::IOBuffer> buffer(
-          new net::IOBuffer(static_cast<size_t>(blob_reader_->total_size())));
+    CommitCompleted(net::OK);
+    return;
+  }
 
-      int bytes_read;
-      blob_reader_->Read(buffer.get(), blob_reader_->total_size(), &bytes_read,
-                         base::Bind(&ServiceWorkerURLLoaderJob::AfterRead,
-                                    weak_factory_.GetWeakPtr(), buffer));
-    }
+  if (!response.blob_uuid.empty() && blob_storage_context_) {
+    std::unique_ptr<storage::BlobDataHandle> blob_data_handle =
+        blob_storage_context_->GetBlobDataFromUUID(response.blob_uuid);
+    mojom::URLLoaderAssociatedRequest request;
+    mojom::URLLoaderClientPtr client;
+    blob_client_binding_.Bind(mojo::MakeRequest(&client));
+    BlobURLLoaderFactory::CreateLoaderAndStart(
+        std::move(request), resource_request_, std::move(client),
+        std::move(blob_data_handle), nullptr /* file_system_context */);
   }
 }
 
-void ServiceWorkerURLLoaderJob::AfterRead(scoped_refptr<net::IOBuffer> buffer,
-                                          int bytes) {
-  uint32_t bytes_written = static_cast<uint32_t>(bytes);
-  mojo::WriteDataRaw(data_pipe_.producer_handle.get(), buffer->data(),
-                     &bytes_written, MOJO_WRITE_DATA_FLAG_NONE);
-  url_loader_client_->OnStartLoadingResponseBody(
-      std::move(data_pipe_.consumer_handle));
-}
+// URLLoader implementation----------------------------------------
 
 void ServiceWorkerURLLoaderJob::FollowRedirect() {
   NOTIMPLEMENTED();
@@ -217,6 +303,61 @@ void ServiceWorkerURLLoaderJob::FollowRedirect() {
 void ServiceWorkerURLLoaderJob::SetPriority(net::RequestPriority priority,
                                             int32_t intra_priority_value) {
   NOTIMPLEMENTED();
+}
+
+// Blob URLLoaderClient implementation for blob reading ------------
+
+void ServiceWorkerURLLoaderJob::OnReceiveResponse(
+    const ResourceResponseHead& response_head,
+    const base::Optional<net::SSLInfo>& ssl_info,
+    mojom::DownloadedTempFilePtr downloaded_file) {
+  DCHECK_EQ(Status::kStarted, status_);
+  status_ = Status::kSentHeader;
+  if (response_head.headers->response_code() >= 400)
+    response_head_.headers = response_head.headers;
+  DeliverErrorResponse();
+  url_loader_client_->OnReceiveResponse(response_head_, ssl_info,
+                                        std::move(downloaded_file));
+}
+
+void ServiceWorkerURLLoaderJob::OnReceiveRedirect(
+    const net::RedirectInfo& redirect_info,
+    const ResourceResponseHead& response_head) {
+  NOTREACHED();
+}
+
+void ServiceWorkerURLLoaderJob::OnDataDownloaded(int64_t data_len,
+                                                 int64_t encoded_data_len) {
+  NOTREACHED();
+}
+
+void ServiceWorkerURLLoaderJob::OnUploadProgress(
+    int64_t current_position,
+    int64_t total_size,
+    OnUploadProgressCallback ack_callback) {
+  NOTREACHED();
+}
+
+void ServiceWorkerURLLoaderJob::OnReceiveCachedMetadata(
+    const std::vector<uint8_t>& data) {
+  NOTREACHED();
+}
+
+void ServiceWorkerURLLoaderJob::OnTransferSizeUpdated(
+    int32_t transfer_size_diff) {
+  NOTREACHED();
+}
+
+void ServiceWorkerURLLoaderJob::OnStartLoadingResponseBody(
+    mojo::ScopedDataPipeConsumerHandle body) {
+  url_loader_client_->OnStartLoadingResponseBody(std::move(body));
+}
+
+void ServiceWorkerURLLoaderJob::OnComplete(
+    const ResourceRequestCompletionStatus& status) {
+  DCHECK_EQ(Status::kSentHeader, status_);
+  status_ = Status::kCompleted;
+  url_loader_client_->OnComplete(status);
 }
 
 }  // namespace content

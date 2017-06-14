@@ -14,6 +14,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 
 namespace storage {
+class BlobDataHandle;
 class BlobStorageContext;
 class FileSystemContext;
 }
@@ -36,6 +37,17 @@ class BlobURLLoaderFactory
   // Creates a URLLoaderFactory interface pointer for serving blob requests.
   // Called on the UI thread.
   void HandleRequest(mojom::URLLoaderFactoryRequest request);
+
+  // Creates a URLLoader for given Blob UUID. This method is supposed to
+  // be called on the IO thread.
+  // Note that given |request|'s URL is not referenced, but only method and
+  // range headers are used.
+  static void CreateLoaderAndStart(
+      mojom::URLLoaderAssociatedRequest url_loader_request,
+      const ResourceRequest& request,
+      mojom::URLLoaderClientPtr client,
+      std::unique_ptr<storage::BlobDataHandle> blob_handle,
+      storage::FileSystemContext* file_system_context);
 
   // mojom::URLLoaderFactory implementation:
   void CreateLoaderAndStart(mojom::URLLoaderAssociatedRequest loader,

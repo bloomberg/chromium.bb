@@ -163,11 +163,9 @@ void ServiceWorkerControlleeRequestHandler::MaybeCreateLoader(
     const ResourceRequest& resource_request,
     ResourceContext* resource_context,
     LoaderCallback callback) {
+  DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
   DCHECK(is_main_resource_load_);
   ClearJob();
-
-  // TODO(kinuko): Keep ServiceWorkerResponseInfo somewhere around
-  // and reset the data every time we restart.
 
   if (!context_ || !provider_host_) {
     // We can't do anything other than to fall back to network.
