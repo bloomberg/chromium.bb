@@ -3067,8 +3067,10 @@ bool CSSPropertyParser::ParseShorthand(CSSPropertyID unresolved_property,
   // statement.
   const CSSPropertyDescriptor& css_property_desc =
       CSSPropertyDescriptor::Get(property);
-  if (css_property_desc.parseShorthand)
-    return css_property_desc.parseShorthand(important, range_, context_);
+  if (css_property_desc.parseShorthand) {
+    return css_property_desc.parseShorthand(important, range_, context_,
+                                            *parsed_properties_);
+  }
 
   switch (property) {
     case CSSPropertyWebkitMarginCollapse: {

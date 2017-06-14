@@ -454,7 +454,6 @@ blink_core_sources("css") {
     "properties/CSSPropertyAPIStrokeMiterlimit.cpp",
     "properties/CSSPropertyAPIStrokeOrLength.cpp",
     "properties/CSSPropertyAPITabSize.cpp",
-    "properties/CSSPropertyAPITextDecoration.cpp",
     "properties/CSSPropertyAPITextDecorationColor.cpp",
     "properties/CSSPropertyAPITextDecorationLine.cpp",
     "properties/CSSPropertyAPITextDecorationSkip.cpp",

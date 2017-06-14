@@ -534,7 +534,6 @@ css_properties("make_core_generated_css_property_apis") {
     "$blink_core_output_dir/css/properties/CSSPropertyAPIStrokeMiterlimit.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPIStrokeOrLength.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPITabSize.h",
-    "$blink_core_output_dir/css/properties/CSSPropertyAPITextDecoration.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPITextDecorationColor.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPITextDecorationLine.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPITextDecorationSkip.h",

@@ -9,6 +9,26 @@ from name_utilities import (
 )
 
 
+# Check properties parameters are valid.
+# TODO(jiameng): add more flag checks later.
+def check_property_parameters(property_to_check):
+    # Only longhand properties can be interpolable.
+    if property_to_check['longhands']:
+        assert not(property_to_check['interpolable']), \
+            'Shorthand property (' + property_to_check['name'] + ') ' \
+            'cannot be interpolable'
+    if property_to_check['api_class'] is not None:
+        if property_to_check['longhands']:
+            assert 'parseSingleValue' not in property_to_check['api_methods'], \
+                'Shorthand property (' + property_to_check['name'] + ') ' \
+                'should not implement parseSingleValue'
+        else:
+            assert 'parseShorthand' not in property_to_check['api_methods'], \
+                'Longhand property (' + property_to_check['name'] + ') ' \
+                'should not implement parseShorthand'
+
+
+
 class CSSProperties(json5_generator.Writer):
     def __init__(self, file_paths):
         json5_generator.Writer.__init__(self, file_paths)
@@ -17,6 +37,7 @@ class CSSProperties(json5_generator.Writer):
 
         # Sort properties by priority, then alphabetically.
         for property in properties:
+            check_property_parameters(property)
             # This order must match the order in CSSPropertyPriority.h.
             priority_numbers = {'Animation': 0, 'High': 1, 'Low': 2}
             priority = priority_numbers[property['priority']]
