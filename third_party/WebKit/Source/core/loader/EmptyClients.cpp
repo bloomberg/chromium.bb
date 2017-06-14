@@ -35,6 +35,7 @@
 #include "core/html/forms/ColorChooser.h"
 #include "core/html/forms/DateTimeChooser.h"
 #include "core/loader/DocumentLoader.h"
+#include "core/page/PopupMenu.h"
 #include "platform/FileChooser.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
@@ -62,6 +63,8 @@ void FillWithEmptyClients(Page::PageClients& page_clients) {
 
 class EmptyPopupMenu : public PopupMenu {
  public:
+  EmptyPopupMenu(ChromeClient* chrome_client, HTMLSelectElement& owner_element)
+      : PopupMenu(chrome_client, owner_element) {}
   void Show() override {}
   void Hide() override {}
   void UpdateFromElement(UpdateReason) override {}
@@ -99,8 +102,9 @@ RefPtr<WebTaskRunner> EmptyFrameScheduler::UnthrottledButBlockableTaskRunner() {
   return Platform::Current()->MainThread()->GetWebTaskRunner();
 }
 
-PopupMenu* EmptyChromeClient::OpenPopupMenu(LocalFrame&, HTMLSelectElement&) {
-  return new EmptyPopupMenu();
+PopupMenu* EmptyChromeClient::OpenPopupMenu(LocalFrame& frame,
+                                            HTMLSelectElement& element) {
+  return new EmptyPopupMenu(&frame.GetChromeClient(), element);
 }
 
 ColorChooser* EmptyChromeClient::OpenColorChooser(LocalFrame*,
