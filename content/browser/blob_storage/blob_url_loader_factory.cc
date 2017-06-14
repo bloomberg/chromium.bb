@@ -41,26 +41,23 @@ class BlobURLLoader : public mojom::URLLoader {
   BlobURLLoader(mojom::URLLoaderAssociatedRequest url_loader_request,
                 const ResourceRequest& request,
                 mojom::URLLoaderClientPtr client,
-                storage::BlobStorageContext* blob_storage_context,
-                scoped_refptr<storage::FileSystemContext> file_system_context)
+                std::unique_ptr<storage::BlobDataHandle> blob_handle,
+                storage::FileSystemContext* file_system_context)
       : binding_(this, std::move(url_loader_request)),
-        request_(request),
         client_(std::move(client)),
+        blob_handle_(std::move(blob_handle)),
         writable_handle_watcher_(FROM_HERE,
                                  mojo::SimpleWatcher::ArmingPolicy::MANUAL),
         peer_closed_handle_watcher_(FROM_HERE,
                                     mojo::SimpleWatcher::ArmingPolicy::MANUAL),
         weak_factory_(this) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    if (blob_storage_context) {
-      blob_handle_ =
-          blob_storage_context->GetBlobDataFromPublicURL(request.url);
-    }
 
     // PostTask since it might destruct.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&BlobURLLoader::Start, weak_factory_.GetWeakPtr(),
-                              request, file_system_context));
+        FROM_HERE,
+        base::Bind(&BlobURLLoader::Start, weak_factory_.GetWeakPtr(), request,
+                   make_scoped_refptr(file_system_context)));
   }
 
   void Start(const ResourceRequest& request,
@@ -145,6 +142,11 @@ class BlobURLLoader : public mojom::URLLoader {
       client_->OnReceiveResponse(response, base::nullopt, nullptr);
     }
     ResourceRequestCompletionStatus request_complete_data;
+    // TODO(kinuko): We should probably set the error_code here,
+    // while it makes existing tests fail. crbug.com/732750
+    request_complete_data.completion_time = base::TimeTicks::Now();
+    request_complete_data.encoded_body_length = total_written_bytes_;
+    request_complete_data.decoded_body_length = total_written_bytes_;
     client_->OnComplete(request_complete_data);
 
     DeleteIfNeeded();
@@ -293,6 +295,7 @@ class BlobURLLoader : public mojom::URLLoader {
           std::move(response_body_consumer_handle_));
     }
     response_body_stream_ = pending_write_->Complete(num_bytes);
+    total_written_bytes_ += num_bytes;
     pending_write_ = nullptr;
     if (completed_synchronously) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -323,7 +326,6 @@ class BlobURLLoader : public mojom::URLLoader {
   }
 
   mojo::AssociatedBinding<mojom::URLLoader> binding_;
-  ResourceRequest request_;
   mojom::URLLoaderClientPtr client_;
 
   bool byte_range_set_ = false;
@@ -340,6 +342,7 @@ class BlobURLLoader : public mojom::URLLoader {
   scoped_refptr<NetToMojoPendingBuffer> pending_write_;
   mojo::SimpleWatcher writable_handle_watcher_;
   mojo::SimpleWatcher peer_closed_handle_watcher_;
+  int64_t total_written_bytes_ = 0;
 
   base::WeakPtrFactory<BlobURLLoader> weak_factory_;
 
@@ -380,6 +383,17 @@ void BlobURLLoaderFactory::BindOnIO(mojom::URLLoaderFactoryRequest request) {
   loader_factory_bindings_.AddBinding(this, std::move(request));
 }
 
+// static
+void BlobURLLoaderFactory::CreateLoaderAndStart(
+    mojom::URLLoaderAssociatedRequest loader,
+    const ResourceRequest& request,
+    mojom::URLLoaderClientPtr client,
+    std::unique_ptr<storage::BlobDataHandle> blob_handle,
+    storage::FileSystemContext* file_system_context) {
+  new BlobURLLoader(std::move(loader), request, std::move(client),
+                    std::move(blob_handle), file_system_context);
+}
+
 void BlobURLLoaderFactory::CreateLoaderAndStart(
     mojom::URLLoaderAssociatedRequest loader,
     int32_t routing_id,
@@ -389,8 +403,12 @@ void BlobURLLoaderFactory::CreateLoaderAndStart(
     mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  new BlobURLLoader(std::move(loader), request, std::move(client),
-                    blob_storage_context_.get(), file_system_context_);
+  std::unique_ptr<storage::BlobDataHandle> blob_handle;
+  if (blob_storage_context_) {
+    blob_handle = blob_storage_context_->GetBlobDataFromPublicURL(request.url);
+  }
+  CreateLoaderAndStart(std::move(loader), request, std::move(client),
+                       std::move(blob_handle), file_system_context_.get());
 }
 
 void BlobURLLoaderFactory::SyncLoad(int32_t routing_id,

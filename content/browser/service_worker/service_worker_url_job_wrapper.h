@@ -7,12 +7,14 @@
 
 #include "base/macros.h"
 #include "content/browser/loader/url_loader_request_handler.h"
-#include "storage/browser/blob/blob_reader.h"
+#include "content/browser/service_worker/service_worker_metrics.h"
+#include "content/common/content_export.h"
 
 namespace content {
 
 class ServiceWorkerURLRequestJob;
 class ServiceWorkerURLLoaderJob;
+class ServiceWorkerVersion;
 
 // This class is a helper to support having
 // ServiceWorkerControlleeRequestHandler work with both URLRequestJobs and
@@ -21,6 +23,35 @@ class ServiceWorkerURLLoaderJob;
 // URLLoader and forwards to the underlying implementation.
 class ServiceWorkerURLJobWrapper {
  public:
+  // A helper used by the ServiceWorkerURLLoaderJob or
+  // ServiceWorkerURLRequestJob.
+  class CONTENT_EXPORT Delegate {
+   public:
+    virtual ~Delegate() {}
+
+    // Will be invoked before the request is restarted. The caller
+    // can use this opportunity to grab state from the
+    // ServiceWorkerURLLoaderJob or ServiceWorkerURLRequestJob to determine
+    // how it should behave when the request is restarted.
+    virtual void OnPrepareToRestart() = 0;
+
+    // Returns the ServiceWorkerVersion fetch events for this request job should
+    // be dispatched to. If no appropriate worker can be determined, returns
+    // nullptr and sets |*result| to an appropriate error.
+    virtual ServiceWorkerVersion* GetServiceWorkerVersion(
+        ServiceWorkerMetrics::URLRequestJobResult* result) = 0;
+
+    // Called after dispatching the fetch event to determine if processing of
+    // the request should still continue, or if processing should be aborted.
+    // When false is returned, this sets |*result| to an appropriate error.
+    virtual bool RequestStillValid(
+        ServiceWorkerMetrics::URLRequestJobResult* result);
+
+    // Called to signal that loading failed, and that the resource being loaded
+    // was a main resource.
+    virtual void MainResourceLoadFailed() {}
+  };
+
   // Non-network service case.
   explicit ServiceWorkerURLJobWrapper(
       base::WeakPtr<ServiceWorkerURLRequestJob> url_request_job);

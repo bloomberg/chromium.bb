@@ -36,10 +36,11 @@ class ServiceWorkerVersion;
 
 // A request handler derivative used to handle requests from
 // controlled documents.
+// Note that in IsServicificationEnabled cases this is used only for
+// main resource fetch during navigation.
 class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
     : public ServiceWorkerRequestHandler,
-      public ServiceWorkerURLRequestJob::Delegate,
-      public NON_EXPORTED_BASE(ServiceWorkerURLLoaderJob::Delegate) {
+      public ServiceWorkerURLJobWrapper::Delegate {
  public:
   ServiceWorkerControlleeRequestHandler(
       base::WeakPtr<ServiceWorkerContextCore> context,
@@ -63,7 +64,8 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
       net::NetworkDelegate* network_delegate,
       ResourceContext* resource_context) override;
 
-  // Used only for PlzNavigate and --enable-network-service cases.
+  // Used only for IsServicificationEnabled (PlzNavigate and
+  // --enable-network-service) cases.
   // This will replace MaybeCreateJob() once NetworkService is enabled.
   // This could get called multiple times during the lifetime in redirect
   // cases. (In fallback-to-network cases we basically forward the request
@@ -100,7 +102,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
   // For sub resource case.
   void PrepareForSubResource();
 
-  // ServiceWorkerURLRequestJob::Delegate implementation:
+  // ServiceWorkerURLJobWrapper::Delegate implementation:
 
   // Called just before the request is restarted. Makes sure the next request
   // goes over the network.

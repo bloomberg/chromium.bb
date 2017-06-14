@@ -777,9 +777,6 @@ void ServiceWorkerURLRequestJob::CreateResponseHeader(
     int status_code,
     const std::string& status_text,
     const ServiceWorkerHeaderMap& headers) {
-  // TODO(kinuko): If the response has an identifier to on-disk cache entry,
-  // pull response header from the disk.
-
   // Build a string instead of using HttpResponseHeaders::AddHeader on
   // each header, since AddHeader has O(n^2) performance.
   std::string buf(base::StringPrintf("HTTP/1.1 %d %s\r\n", status_code,
