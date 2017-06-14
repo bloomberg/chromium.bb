@@ -458,6 +458,18 @@ void LocalFrame::Detach(FrameDetachType type) {
   // Notify ScriptController that the frame is closing, since its cleanup ends
   // up calling back to LocalFrameClient via WindowProxy.
   GetScriptController().ClearForClose();
+
+  // TODO(crbug.com/729196): Trace why LocalFrameView::DetachFromLayout crashes.
+  // It seems to crash because Frame is detached before LocalFrameView.
+  // Verify here that any LocalFrameView has been detached by now.
+  CHECK(!view_->IsAttached());
+  if (HTMLFrameOwnerElement* owner = DeprecatedLocalOwner()) {
+    if (EmbeddedContentView* owner_view = owner->OwnedEmbeddedContentView()) {
+      CHECK(!owner_view->IsAttached());
+      CHECK_EQ(owner_view, view_);
+    }
+  }
+
   SetView(nullptr);
 
   page_->GetEventHandlerRegistry().DidRemoveAllEventHandlers(*DomWindow());
