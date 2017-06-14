@@ -1090,4 +1090,33 @@ TEST_P(PaintLayerTest, NeedsRepaintOnSelfPaintingStatusChange) {
   GetDocument().View()->UpdateAllLifecyclePhases();
 }
 
+TEST_P(PaintLayerTest, NeedsRepaintOnRemovingStackedLayer) {
+  EnableCompositing();
+  SetBodyInnerHTML(
+      "<style>body {margin-top: 200px; backface-visibility: hidden}</style>"
+      "<div id='target' style='position: absolute; top: 0'>Text</div>");
+
+  auto* body = GetDocument().body();
+  auto* body_layer = body->GetLayoutBox()->Layer();
+  auto* target_element = GetDocument().getElementById("target");
+  auto* target_object = target_element->GetLayoutObject();
+  auto* target_layer = ToLayoutBoxModelObject(target_object)->Layer();
+
+  // |container| is not the CompositingContainer of |target| because |target|
+  // is stacked but |container| is not a stacking context.
+  EXPECT_TRUE(target_layer->StackingNode()->IsStacked());
+  EXPECT_NE(body_layer, target_layer->CompositingContainer());
+  auto* old_compositing_container = target_layer->CompositingContainer();
+
+  body->setAttribute(HTMLNames::styleAttr, "margin-top: 0");
+  target_element->setAttribute(HTMLNames::styleAttr, "top: 0");
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+
+  EXPECT_FALSE(target_object->HasLayer());
+  EXPECT_TRUE(body_layer->NeedsRepaint());
+  EXPECT_TRUE(old_compositing_container->NeedsRepaint());
+
+  GetDocument().View()->UpdateAllLifecyclePhases();
+}
+
 }  // namespace blink
