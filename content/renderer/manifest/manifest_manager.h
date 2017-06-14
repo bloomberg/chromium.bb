@@ -38,16 +38,15 @@ class ManifestFetcher;
 class ManifestManager : public RenderFrameObserver,
                         public blink::mojom::ManifestManager {
  public:
-  typedef base::Callback<void(const GURL&,
-                              const Manifest&,
-                              const ManifestDebugInfo&)> GetManifestCallback;
+  using GetManifestCallback = base::OnceCallback<
+      void(const GURL&, const Manifest&, const ManifestDebugInfo&)>;
 
   explicit ManifestManager(RenderFrame* render_frame);
   ~ManifestManager() override;
 
   // Will call the given |callback| with the Manifest associated with the
   // RenderFrame if any. Will pass an empty Manifest in case of error.
-  void GetManifest(const GetManifestCallback& callback);
+  void GetManifest(GetManifestCallback callback);
 
   // RenderFrameObserver implementation.
   void DidChangeManifest() override;
@@ -66,10 +65,10 @@ class ManifestManager : public RenderFrameObserver,
   void OnDestruct() override;
 
   // blink::mojom::ManifestManager implementation.
-  void RequestManifest(const RequestManifestCallback& callback) override;
+  void RequestManifest(RequestManifestCallback callback) override;
 
   // Called when receiving a RequestManifest() call from the browser process.
-  void OnRequestManifestComplete(const RequestManifestCallback& callback,
+  void OnRequestManifestComplete(RequestManifestCallback callback,
                                  const GURL& url,
                                  const Manifest& manifest,
                                  const ManifestDebugInfo& debug_info);

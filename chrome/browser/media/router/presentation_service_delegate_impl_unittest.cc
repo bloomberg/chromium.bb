@@ -29,10 +29,11 @@
 #include "url/origin.h"
 
 using ::testing::_;
+using ::testing::Invoke;
 using ::testing::Mock;
 using ::testing::Return;
-using ::testing::SaveArg;
 using ::testing::StrictMock;
+using ::testing::WithArgs;
 
 namespace {
 
@@ -437,8 +438,12 @@ TEST_F(PresentationServiceDelegateImplTest, ListenForConnnectionStateChange) {
 
   // Set up a PresentationConnection so we can listen to it.
   std::vector<MediaRouteResponseCallback> route_response_callbacks;
-  EXPECT_CALL(router_, JoinRoute(_, _, _, _, _, _, false))
-      .WillOnce(SaveArg<4>(&route_response_callbacks));
+  EXPECT_CALL(router_, JoinRouteInternal(_, _, _, _, _, _, false))
+      .WillOnce(WithArgs<4>(
+          Invoke([&route_response_callbacks](
+                     std::vector<MediaRouteResponseCallback>& callbacks) {
+            route_response_callbacks = std::move(callbacks);
+          })));
 
   const std::string kPresentationId("pid");
   presentation_urls_.push_back(GURL(kPresentationUrl3));
@@ -464,8 +469,8 @@ TEST_F(PresentationServiceDelegateImplTest, ListenForConnnectionStateChange) {
       MediaRoute("routeId", source1_, "mediaSinkId", "description", true, "",
                  true),
       kPresentationId);
-  for (const auto& route_response_callback : route_response_callbacks)
-    route_response_callback.Run(*result);
+  for (auto& route_response_callback : route_response_callbacks)
+    std::move(route_response_callback).Run(*result);
 
   base::MockCallback<content::PresentationConnectionStateChangedCallback>
       mock_callback;
@@ -648,7 +653,8 @@ TEST_F(PresentationServiceDelegateImplTest, AutoJoinRequest) {
 
   // Auto-join requests should be rejected.
   EXPECT_CALL(mock_create_connection_callbacks, OnCreateConnectionError(_));
-  EXPECT_CALL(router_, JoinRoute(_, kPresentationId, _, _, _, _, _)).Times(0);
+  EXPECT_CALL(router_, JoinRouteInternal(_, kPresentationId, _, _, _, _, _))
+      .Times(0);
   delegate_impl_->ReconnectPresentation(
       main_frame_process_id_, main_frame_routing_id_, presentation_urls_,
       kPresentationId,
@@ -667,7 +673,8 @@ TEST_F(PresentationServiceDelegateImplTest, AutoJoinRequest) {
   }
 
   // Auto-join requests should now go through.
-  EXPECT_CALL(router_, JoinRoute(_, kPresentationId, _, _, _, _, _)).Times(1);
+  EXPECT_CALL(router_, JoinRouteInternal(_, kPresentationId, _, _, _, _, _))
+      .Times(1);
   delegate_impl_->ReconnectPresentation(
       main_frame_process_id_, main_frame_routing_id_, presentation_urls_,
       kPresentationId,
@@ -709,7 +716,8 @@ TEST_F(PresentationServiceDelegateImplIncognitoTest, AutoJoinRequest) {
 
   // Auto-join requests should be rejected.
   EXPECT_CALL(mock_create_connection_callbacks, OnCreateConnectionError(_));
-  EXPECT_CALL(router_, JoinRoute(_, kPresentationId, _, _, _, _, _)).Times(0);
+  EXPECT_CALL(router_, JoinRouteInternal(_, kPresentationId, _, _, _, _, _))
+      .Times(0);
   delegate_impl_->ReconnectPresentation(
       main_frame_process_id_, main_frame_routing_id_, presentation_urls_,
       kPresentationId,
@@ -728,7 +736,8 @@ TEST_F(PresentationServiceDelegateImplIncognitoTest, AutoJoinRequest) {
   }
 
   // Auto-join requests should now go through.
-  EXPECT_CALL(router_, JoinRoute(_, kPresentationId, _, _, _, _, _)).Times(1);
+  EXPECT_CALL(router_, JoinRouteInternal(_, kPresentationId, _, _, _, _, _))
+      .Times(1);
   delegate_impl_->ReconnectPresentation(
       main_frame_process_id_, main_frame_routing_id_, presentation_urls_,
       kPresentationId,

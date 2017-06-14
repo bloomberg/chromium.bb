@@ -62,11 +62,10 @@ class CONTENT_EXPORT BackgroundFetchContext
   // Starts a Background Fetch for the |registration_id|. The |requests| will be
   // asynchronously fetched. The |callback| will be invoked when the fetch has
   // been registered, or an error occurred that avoids it from doing so.
-  void StartFetch(
-      const BackgroundFetchRegistrationId& registration_id,
-      const std::vector<ServiceWorkerFetchRequest>& requests,
-      const BackgroundFetchOptions& options,
-      const blink::mojom::BackgroundFetchService::FetchCallback& callback);
+  void StartFetch(const BackgroundFetchRegistrationId& registration_id,
+                  const std::vector<ServiceWorkerFetchRequest>& requests,
+                  const BackgroundFetchOptions& options,
+                  blink::mojom::BackgroundFetchService::FetchCallback callback);
 
   // Returns a vector with the tags of the active fetches for the given |origin|
   // and |service_worker_registration_id|.
@@ -101,7 +100,7 @@ class CONTENT_EXPORT BackgroundFetchContext
   void DidCreateRegistration(
       const BackgroundFetchRegistrationId& registration_id,
       const BackgroundFetchOptions& options,
-      const blink::mojom::BackgroundFetchService::FetchCallback& callback,
+      blink::mojom::BackgroundFetchService::FetchCallback callback,
       blink::mojom::BackgroundFetchError error,
       std::vector<scoped_refptr<BackgroundFetchRequestInfo>> initial_requests);
 

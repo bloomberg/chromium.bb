@@ -67,11 +67,11 @@ void HyphenationImpl::Create(const service_manager::BindSourceInfo& source_info,
 }
 
 void HyphenationImpl::OpenDictionary(const std::string& locale,
-                                     const OpenDictionaryCallback& callback) {
+                                     OpenDictionaryCallback callback) {
   if (IsValidLocale(locale))
-    callback.Run(GetDictionaryFile(locale));
+    std::move(callback).Run(GetDictionaryFile(locale));
   else
-    callback.Run(base::File());
+    std::move(callback).Run(base::File());
 }
 
 }  // namespace hyphenation
