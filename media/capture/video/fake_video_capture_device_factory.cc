@@ -93,6 +93,12 @@ FakeVideoCaptureDeviceSettings::~FakeVideoCaptureDeviceSettings() = default;
 FakeVideoCaptureDeviceSettings::FakeVideoCaptureDeviceSettings(
     const FakeVideoCaptureDeviceSettings& other) = default;
 
+constexpr char
+    FakeVideoCaptureDeviceFactory::kDeviceConfigForGetPhotoStateFails[];
+constexpr char
+    FakeVideoCaptureDeviceFactory::kDeviceConfigForSetPhotoOptionsFails[];
+constexpr char FakeVideoCaptureDeviceFactory::kDeviceConfigForTakePhotoFails[];
+
 FakeVideoCaptureDeviceFactory::FakeVideoCaptureDeviceFactory() {
   // The default |devices_config_| is the one obtained from an empty options
   // string.
@@ -103,13 +109,12 @@ FakeVideoCaptureDeviceFactory::~FakeVideoCaptureDeviceFactory() = default;
 
 // static
 std::unique_ptr<VideoCaptureDevice>
-FakeVideoCaptureDeviceFactory::CreateDeviceWithSupportedFormats(
-    FakeVideoCaptureDevice::DeliveryMode delivery_mode,
-    const VideoCaptureFormats& formats) {
-  if (formats.empty())
+FakeVideoCaptureDeviceFactory::CreateDeviceWithSettings(
+    const FakeVideoCaptureDeviceSettings& settings) {
+  if (settings.supported_formats.empty())
     return CreateErrorDevice();
 
-  for (const auto& entry : formats) {
+  for (const auto& entry : settings.supported_formats) {
     bool pixel_format_supported = false;
     for (const auto& supported_pixel_format : kSupportedPixelFormats) {
       if (entry.pixel_format == supported_pixel_format) {
@@ -124,18 +129,19 @@ FakeVideoCaptureDeviceFactory::CreateDeviceWithSupportedFormats(
     }
   }
 
-  const VideoCaptureFormat& initial_format = formats.front();
+  const VideoCaptureFormat& initial_format = settings.supported_formats.front();
   auto device_state = base::MakeUnique<FakeDeviceState>(
       kInitialZoom, initial_format.frame_rate, initial_format.pixel_format);
 
   auto photo_frame_painter = base::MakeUnique<PacmanFramePainter>(
       PacmanFramePainter::Format::SK_N32, device_state.get());
   auto photo_device = base::MakeUnique<FakePhotoDevice>(
-      std::move(photo_frame_painter), device_state.get());
+      std::move(photo_frame_painter), device_state.get(),
+      settings.photo_device_config);
 
   return base::MakeUnique<FakeVideoCaptureDevice>(
-      formats,
-      base::MakeUnique<FrameDelivererFactory>(delivery_mode,
+      settings.supported_formats,
+      base::MakeUnique<FrameDelivererFactory>(settings.delivery_mode,
                                               device_state.get()),
       std::move(photo_device), std::move(device_state));
 }
@@ -146,10 +152,12 @@ FakeVideoCaptureDeviceFactory::CreateDeviceWithDefaultResolutions(
     VideoPixelFormat pixel_format,
     FakeVideoCaptureDevice::DeliveryMode delivery_mode,
     float frame_rate) {
-  VideoCaptureFormats formats;
+  FakeVideoCaptureDeviceSettings settings;
+  settings.delivery_mode = delivery_mode;
   for (const gfx::Size& resolution : kDefaultResolutions)
-    formats.emplace_back(resolution, frame_rate, pixel_format);
-  return CreateDeviceWithSupportedFormats(delivery_mode, formats);
+    settings.supported_formats.emplace_back(resolution, frame_rate,
+                                            pixel_format);
+  return CreateDeviceWithSettings(settings);
 }
 
 // static
@@ -177,8 +185,7 @@ std::unique_ptr<VideoCaptureDevice> FakeVideoCaptureDeviceFactory::CreateDevice(
   for (const auto& entry : devices_config_) {
     if (device_descriptor.device_id != entry.device_id)
       continue;
-    return CreateDeviceWithSupportedFormats(entry.delivery_mode,
-                                            entry.supported_formats);
+    return CreateDeviceWithSettings(entry);
   }
   return nullptr;
 }
@@ -278,6 +285,34 @@ void FakeVideoCaptureDeviceFactory::ParseFakeDevicesConfigFromOptionsString(
             kFakeCaptureMaxDeviceCount,
             std::max(kFakeCaptureMinDeviceCount, static_cast<int>(count)));
       }
+    } else if (base::EqualsCaseInsensitiveASCII(param.front(), "config")) {
+      const int device_index = 0;
+      std::vector<VideoPixelFormat> pixel_formats;
+      pixel_formats.push_back(GetPixelFormatFromDeviceIndex(device_index));
+      FakeVideoCaptureDeviceSettings settings;
+      settings.delivery_mode = delivery_mode;
+      settings.device_id =
+          base::StringPrintf(kDefaultDeviceIdMask, device_index);
+      AppendAllCombinationsToFormatsContainer(
+          pixel_formats, resolutions, frame_rates, &settings.supported_formats);
+
+      if (param.back() == kDeviceConfigForGetPhotoStateFails) {
+        settings.photo_device_config.should_fail_get_photo_capabilities = true;
+        config->push_back(settings);
+        return;
+      }
+      if (param.back() == kDeviceConfigForSetPhotoOptionsFails) {
+        settings.photo_device_config.should_fail_set_photo_options = true;
+        config->push_back(settings);
+        return;
+      }
+      if (param.back() == kDeviceConfigForTakePhotoFails) {
+        settings.photo_device_config.should_fail_take_photo = true;
+        config->push_back(settings);
+        return;
+      }
+      LOG(WARNING) << "Unknown config " << param.back();
+      return;
     }
   }
 
