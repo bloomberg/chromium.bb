@@ -714,6 +714,10 @@ void CompositorTimingHistory::DidDraw(bool used_new_active_tree,
     base::TimeDelta main_and_impl_delta =
         impl_frame_time - active_tree_main_frame_time_;
     DCHECK_GE(main_and_impl_delta, base::TimeDelta());
+    TRACE_EVENT2(TRACE_DISABLED_BY_DEFAULT("cc.debug.scheduler.frames"),
+                 "CompositorTimingHistory::DidDraw",
+                 "active_tree_main_frame_time", active_tree_main_frame_time_,
+                 "impl_frame_time", impl_frame_time);
     uma_reporter_->AddMainAndImplFrameTimeDelta(main_and_impl_delta);
     active_tree_main_frame_time_ = base::TimeTicks();
 
