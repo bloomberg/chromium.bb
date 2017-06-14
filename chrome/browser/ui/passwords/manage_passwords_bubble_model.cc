@@ -461,7 +461,7 @@ bool ManagePasswordsBubbleModel::ReplaceToShowPromotionIfNeeded() {
 #if defined(OS_WIN)
   // Desktop to mobile promotion only enabled on windows.
   if (desktop_ios_promotion::IsEligibleForIOSPromotion(
-          prefs, sync_service,
+          GetProfile(),
           desktop_ios_promotion::PromotionEntryPoint::SAVE_PASSWORD_BUBBLE)) {
     interaction_keeper_->ReportInteractions(this);
     title_brand_link_range_ = gfx::Range();

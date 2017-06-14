@@ -34,10 +34,8 @@
 #include "ui/views/window/dialog_client_view.h"
 
 #if defined(OS_WIN)
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/views/desktop_ios_promotion/desktop_ios_promotion_bubble_view.h"
 #include "chrome/browser/ui/views/desktop_ios_promotion/desktop_ios_promotion_footnote_view.h"
-#include "components/browser_sync/profile_sync_service.h"
 #endif
 
 using base::UserMetricsAction;
@@ -202,7 +200,8 @@ bool BookmarkBubbleView::GetExtraViewPadding(int* padding) {
 views::View* BookmarkBubbleView::CreateFootnoteView() {
 #if defined(OS_WIN)
   if (!is_showing_ios_promotion_ &&
-      IsIOSPromotionEligible(
+      desktop_ios_promotion::IsEligibleForIOSPromotion(
+          profile_,
           desktop_ios_promotion::PromotionEntryPoint::BOOKMARKS_FOOTNOTE)) {
     footnote_view_ = new DesktopIOSPromotionFootnoteView(profile_, this);
     return footnote_view_;
@@ -230,7 +229,8 @@ bool BookmarkBubbleView::Cancel() {
 bool BookmarkBubbleView::Accept() {
 #if defined(OS_WIN)
   using desktop_ios_promotion::PromotionEntryPoint;
-  if (IsIOSPromotionEligible(PromotionEntryPoint::BOOKMARKS_BUBBLE)) {
+  if (desktop_ios_promotion::IsEligibleForIOSPromotion(
+          profile_, PromotionEntryPoint::BOOKMARKS_BUBBLE)) {
     ShowIOSPromotion(PromotionEntryPoint::BOOKMARKS_BUBBLE);
     return false;
   }
@@ -416,16 +416,6 @@ void BookmarkBubbleView::ApplyEdits() {
 }
 
 #if defined(OS_WIN)
-
-bool BookmarkBubbleView::IsIOSPromotionEligible(
-    desktop_ios_promotion::PromotionEntryPoint entry_point) {
-  PrefService* prefs = profile_->GetPrefs();
-  const browser_sync::ProfileSyncService* sync_service =
-      ProfileSyncServiceFactory::GetForProfile(profile_);
-  return desktop_ios_promotion::IsEligibleForIOSPromotion(prefs, sync_service,
-                                                          entry_point);
-}
-
 void BookmarkBubbleView::ShowIOSPromotion(
     desktop_ios_promotion::PromotionEntryPoint entry_point) {
   DCHECK(!is_showing_ios_promotion_);
