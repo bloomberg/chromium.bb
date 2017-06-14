@@ -35,6 +35,11 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
 
 @property(nonatomic, strong) ContactInfoSelectionMediator* mediator;
 
+// Initializes and starts the ContactInfoEditCoordinator. Sets |profile| as the
+// profile to be edited.
+- (void)startContactInfoEditCoordinatorWithProfile:
+    (autofill::AutofillProfile*)profile;
+
 // Called when the user selects a contact profile. The cell is checked, the
 // UI is locked so that the user can't interact with it, then the delegate is
 // notified.
@@ -96,23 +101,41 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
 
 - (void)paymentRequestSelectorViewControllerDidSelectAddItem:
     (PaymentRequestSelectorViewController*)controller {
-  self.contactInfoEditCoordinator = [[ContactInfoEditCoordinator alloc]
-      initWithBaseViewController:self.viewController];
-  self.contactInfoEditCoordinator.paymentRequest = self.paymentRequest;
-  self.contactInfoEditCoordinator.delegate = self;
-  [self.contactInfoEditCoordinator start];
+  [self startContactInfoEditCoordinatorWithProfile:nil];
+}
+
+- (void)paymentRequestSelectorViewControllerDidToggleEditingMode:
+    (PaymentRequestSelectorViewController*)controller {
+  [self.viewController loadModel];
+  [self.viewController.collectionView reloadData];
+}
+
+- (void)paymentRequestSelectorViewController:
+            (PaymentRequestSelectorViewController*)controller
+              didSelectItemAtIndexForEditing:(NSUInteger)index {
+  DCHECK(index < self.paymentRequest->contact_profiles().size());
+  [self startContactInfoEditCoordinatorWithProfile:
+            self.paymentRequest->contact_profiles()[index]];
 }
 
 #pragma mark - ContactInfoEditCoordinatorDelegate
 
 - (void)contactInfoEditCoordinator:(ContactInfoEditCoordinator*)coordinator
            didFinishEditingProfile:(autofill::AutofillProfile*)profile {
+  // Update the data source with the new data.
+  [self.mediator loadItems];
+
+  [self.viewController loadModel];
+  [self.viewController.collectionView reloadData];
+
   [self.contactInfoEditCoordinator stop];
   self.contactInfoEditCoordinator = nil;
 
-  // Inform |self.delegate| that |profile| has been selected.
-  [self.delegate contactInfoSelectionCoordinator:self
-                         didSelectContactProfile:profile];
+  if (self.mediator.state != PaymentRequestSelectorStateEdit) {
+    // Inform |self.delegate| that |profile| has been selected.
+    [self.delegate contactInfoSelectionCoordinator:self
+                           didSelectContactProfile:profile];
+  }
 }
 
 - (void)contactInfoEditCoordinatorDidCancel:
@@ -122,6 +145,16 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
 }
 
 #pragma mark - Helper methods
+
+- (void)startContactInfoEditCoordinatorWithProfile:
+    (autofill::AutofillProfile*)profile {
+  self.contactInfoEditCoordinator = [[ContactInfoEditCoordinator alloc]
+      initWithBaseViewController:self.viewController];
+  self.contactInfoEditCoordinator.paymentRequest = self.paymentRequest;
+  self.contactInfoEditCoordinator.profile = profile;
+  self.contactInfoEditCoordinator.delegate = self;
+  [self.contactInfoEditCoordinator start];
+}
 
 - (void)delayedNotifyDelegateOfSelection:
     (autofill::AutofillProfile*)contactProfile {

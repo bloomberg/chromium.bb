@@ -14,7 +14,13 @@ class PaymentRequest;
     : NSObject<PaymentRequestSelectorViewControllerDataSource>
 
 // Redefined to be read-write.
+@property(nonatomic, readwrite, assign) PaymentRequestSelectorState state;
+
+// Redefined to be read-write.
 @property(nonatomic, readwrite, assign) NSUInteger selectedItemIndex;
+
+// Creates and stores the selectable items to display in the collection.
+- (void)loadItems;
 
 // Initializes this object with an instance of PaymentRequest which has a copy
 // of web::PaymentRequest as provided by the page invoking the Payment Request

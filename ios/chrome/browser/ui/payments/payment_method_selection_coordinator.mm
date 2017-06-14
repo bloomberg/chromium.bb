@@ -29,6 +29,11 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
 
 @property(nonatomic, strong) PaymentMethodSelectionMediator* mediator;
 
+// Initializes and starts the CreditCardEditCoordinator. Sets |creditCard| as
+// the credit card to be edited.
+- (void)startCreditCardEditCoordinatorWithCreditCard:
+    (autofill::CreditCard*)creditCard;
+
 // Called when the user selects a payment method. The cell is checked, the
 // UI is locked so that the user can't interact with it, then the delegate is
 // notified. The delay is here to let the user get a visual feedback of the
@@ -89,23 +94,41 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
 
 - (void)paymentRequestSelectorViewControllerDidSelectAddItem:
     (PaymentRequestSelectorViewController*)controller {
-  self.creditCardEditCoordinator = [[CreditCardEditCoordinator alloc]
-      initWithBaseViewController:self.viewController];
-  self.creditCardEditCoordinator.paymentRequest = self.paymentRequest;
-  self.creditCardEditCoordinator.delegate = self;
-  [self.creditCardEditCoordinator start];
+  [self startCreditCardEditCoordinatorWithCreditCard:nil];
+}
+
+- (void)paymentRequestSelectorViewControllerDidToggleEditingMode {
+  [self.viewController loadModel];
+  [self.viewController.collectionView reloadData];
+}
+
+- (void)paymentRequestSelectorViewController:
+            (PaymentRequestSelectorViewController*)controller
+              didSelectItemAtIndexForEditing:(NSUInteger)index {
+  DCHECK(index < self.paymentRequest->credit_cards().size());
+  [self
+      startCreditCardEditCoordinatorWithCreditCard:self.paymentRequest
+                                                       ->credit_cards()[index]];
 }
 
 #pragma mark - CreditCardEditCoordinatorDelegate
 
 - (void)creditCardEditCoordinator:(CreditCardEditCoordinator*)coordinator
        didFinishEditingCreditCard:(autofill::CreditCard*)creditCard {
+  // Update the data source with the new data.
+  [self.mediator loadItems];
+
+  [self.viewController loadModel];
+  [self.viewController.collectionView reloadData];
+
   [self.creditCardEditCoordinator stop];
   self.creditCardEditCoordinator = nil;
 
-  // Inform |self.delegate| that this card has been selected.
-  [self.delegate paymentMethodSelectionCoordinator:self
-                            didSelectPaymentMethod:creditCard];
+  if (self.mediator.state != PaymentRequestSelectorStateEdit) {
+    // Inform |self.delegate| that this card has been selected.
+    [self.delegate paymentMethodSelectionCoordinator:self
+                              didSelectPaymentMethod:creditCard];
+  }
 }
 
 - (void)creditCardEditCoordinatorDidCancel:
@@ -115,6 +138,16 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
 }
 
 #pragma mark - Helper methods
+
+- (void)startCreditCardEditCoordinatorWithCreditCard:
+    (autofill::CreditCard*)creditCard {
+  self.creditCardEditCoordinator = [[CreditCardEditCoordinator alloc]
+      initWithBaseViewController:self.viewController];
+  self.creditCardEditCoordinator.paymentRequest = self.paymentRequest;
+  self.creditCardEditCoordinator.creditCard = creditCard;
+  self.creditCardEditCoordinator.delegate = self;
+  [self.creditCardEditCoordinator start];
+}
 
 - (void)delayedNotifyDelegateOfSelection:(autofill::CreditCard*)paymentMethod {
   self.viewController.view.userInteractionEnabled = NO;

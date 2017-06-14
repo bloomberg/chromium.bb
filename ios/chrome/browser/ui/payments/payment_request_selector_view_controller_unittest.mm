@@ -42,6 +42,10 @@
 
 #pragma mark - PaymentRequestSelectorViewControllerDataSource
 
+- (BOOL)allowsEditMode {
+  return NO;
+}
+
 - (CollectionViewItem*)headerItem {
   return [[CollectionViewItem alloc] init];
 }

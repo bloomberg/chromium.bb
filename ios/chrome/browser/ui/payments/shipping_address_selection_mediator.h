@@ -17,11 +17,14 @@ class PaymentRequest;
 // nil.
 @property(nonatomic, copy) NSString* headerText;
 
-// The current state of the view controller.
+// Redefined to be read-write.
 @property(nonatomic, readwrite, assign) PaymentRequestSelectorState state;
 
-// Index for the currently selected item or NSUIntegerMax if there is none.
+// Redefined to be read-write.
 @property(nonatomic, readwrite, assign) NSUInteger selectedItemIndex;
+
+// Creates and stores the selectable items to display in the collection.
+- (void)loadItems;
 
 // Initializes this object with an instance of PaymentRequest which has a copy
 // of web::PaymentRequest as provided by the page invoking the Payment Request

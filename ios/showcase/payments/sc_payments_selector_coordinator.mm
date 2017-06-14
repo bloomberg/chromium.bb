@@ -69,6 +69,10 @@
 
 #pragma mark - PaymentRequestSelectorViewControllerDataSource
 
+- (BOOL)allowsEditMode {
+  return NO;
+}
+
 - (CollectionViewItem*)headerItem {
   return [self createItemWithText:@"Header item"];
 }
