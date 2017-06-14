@@ -65,10 +65,14 @@ class PaintArtifactCompositor::ContentLayerClientImpl
   USING_FAST_MALLOC(ContentLayerClientImpl);
 
  public:
-  ContentLayerClientImpl(DisplayItem::Id paint_chunk_id)
+  ContentLayerClientImpl(PaintChunk::Id paint_chunk_id)
       : id_(paint_chunk_id),
         debug_name_(paint_chunk_id.client.DebugName()),
         cc_picture_layer_(cc::PictureLayer::Create(this)) {}
+
+  ~ContentLayerClientImpl() {
+    CcLayersRasterInvalidationTrackingMap().Remove(cc_picture_layer_.get());
+  }
 
   void SetDisplayList(scoped_refptr<cc::DisplayItemList> cc_display_item_list) {
     cc_display_item_list_ = std::move(cc_display_item_list);
@@ -147,7 +151,7 @@ class PaintArtifactCompositor::ContentLayerClientImpl
   scoped_refptr<cc::PictureLayer> CcPictureLayer() { return cc_picture_layer_; }
 
   bool Matches(const PaintChunk& paint_chunk) {
-    return paint_chunk.id && id_ == *paint_chunk.id;
+    return paint_chunk.Matches(&id_);
   }
 
   const String& DebugName() const { return debug_name_; }
