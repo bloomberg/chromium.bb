@@ -5,12 +5,12 @@
 #ifndef PaymentInstruments_h
 #define PaymentInstruments_h
 
-#include "components/payments/mojom/payment_app.mojom-blink.h"
 #include "modules/ModulesExport.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/text/WTFString.h"
+#include "public/platform/modules/payments/payment_app.mojom-blink.h"
 
 namespace blink {
 

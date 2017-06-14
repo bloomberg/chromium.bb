@@ -10,9 +10,9 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "components/payments/mojom/payment_app.mojom.h"
 #include "content/browser/payments/payment_app_database.h"
 #include "content/common/content_export.h"
+#include "third_party/WebKit/public/platform/modules/payments/payment_app.mojom.h"
 
 namespace service_manager {
 struct BindSourceInfo;

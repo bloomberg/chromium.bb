@@ -19,7 +19,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "components/payments/mojom/payment_app.mojom.h"
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/service_worker/embedded_worker.mojom.h"
 #include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
@@ -28,6 +27,7 @@
 #include "ipc/ipc_listener.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/WebKit/public/platform/WebMessagePortChannel.h"
+#include "third_party/WebKit/public/platform/modules/payments/payment_app.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerError.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_event_status.mojom.h"
 #include "third_party/WebKit/public/web/modules/serviceworker/WebServiceWorkerContextClient.h"
@@ -302,8 +302,8 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
       const PlatformNotificationData& notification_data);
 
   void OnDidGetClient(int request_id, const ServiceWorkerClientInfo& client);
-  void OnDidGetClients(
-      int request_id, const std::vector<ServiceWorkerClientInfo>& clients);
+  void OnDidGetClients(int request_id,
+                       const std::vector<ServiceWorkerClientInfo>& clients);
   void OnOpenWindowResponse(int request_id,
                             const ServiceWorkerClientInfo& client);
   void OnOpenWindowError(int request_id, const std::string& message);

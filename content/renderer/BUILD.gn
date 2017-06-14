@@ -442,7 +442,6 @@ target(link_target_type, "renderer") {
     "//components/discardable_memory/client",
     "//components/metrics",
     "//components/metrics:single_sample_metrics",
-    "//components/payments/mojom:mojom_payment_app",
     "//components/ukm/public",
     "//components/url_formatter",
     "//components/variations",

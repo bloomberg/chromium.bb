@@ -639,7 +639,6 @@ mojom("mojo_bindings") {
 
   public_deps = [
     "//components/leveldb/public/interfaces",
-    "//components/payments/mojom:mojom_payment_app",
     "//content/public/common:interfaces",
     "//ipc:mojom",
     "//media/capture/mojo:capture_types",

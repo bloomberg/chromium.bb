@@ -701,7 +701,10 @@ grit("image_resources") {
 }
 
 mojom("mojo_bindings") {
-  visibility = [ "//content/*" ]
+  visibility = [
+    "//components/payments/content/*",
+    "//content/*",
+  ]
   visibility_blink = [
     "//content/common:mojo_bindings_blink",
     "//third_party/WebKit/Source/platform",
@@ -722,6 +725,7 @@ mojom("mojo_bindings") {
     "platform/modules/manifest/manifest_manager.mojom",
     "platform/modules/notifications/notification.mojom",
     "platform/modules/notifications/notification_service.mojom",
+    "platform/modules/payments/payment_app.mojom",
     "platform/modules/permissions/permission.mojom",
     "platform/modules/permissions/permission_status.mojom",
     "platform/modules/presentation/presentation.mojom",
@@ -775,10 +779,10 @@ mojom("android_mojo_bindings") {
     "platform/modules/installedapp/installed_app_provider.mojom",
     "platform/modules/installedapp/related_application.mojom",
     "platform/modules/mediasession/media_session.mojom",
+    "platform/modules/payments/payment_request.mojom",
     "platform/modules/webshare/webshare.mojom",
   ]
   public_deps = [
-    "//components/payments/mojom",
     "//mojo/common:common_custom_types",
     "//ui/gfx/geometry/mojo",
     "//url/mojo:url_mojom_gurl",

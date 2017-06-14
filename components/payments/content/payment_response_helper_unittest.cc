@@ -18,8 +18,8 @@
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/core/autofill_payment_instrument.h"
 #include "components/payments/core/test_payment_request_delegate.h"
-#include "components/payments/mojom/payment_request.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/modules/payments/payment_request.mojom.h"
 
 namespace payments {
 

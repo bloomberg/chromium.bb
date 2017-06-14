@@ -4,8 +4,8 @@
 
 module payments.mojom;
 
-import "components/payments/mojom/payment_request.mojom";
 import "mojo/common/time.mojom";
+import "third_party/WebKit/public/platform/modules/payments/payment_request.mojom";
 import "url/mojo/url.mojom";
 
 enum PaymentHandlerStatus {

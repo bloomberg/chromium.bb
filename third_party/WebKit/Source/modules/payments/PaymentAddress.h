@@ -6,13 +6,13 @@
 #define PaymentAddress_h
 
 #include "bindings/core/v8/ScriptValue.h"
-#include "components/payments/mojom/payment_request.mojom-blink.h"
 #include "modules/ModulesExport.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
+#include "public/platform/modules/payments/payment_request.mojom-blink.h"
 
 namespace blink {
 

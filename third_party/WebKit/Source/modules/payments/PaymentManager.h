@@ -6,10 +6,10 @@
 #define PaymentManager_h
 
 #include "bindings/core/v8/ScriptPromise.h"
-#include "components/payments/mojom/payment_app.mojom-blink.h"
 #include "modules/ModulesExport.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
+#include "public/platform/modules/payments/payment_app.mojom-blink.h"
 
 namespace blink {
 

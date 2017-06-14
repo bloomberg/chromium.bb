@@ -101,6 +101,7 @@ include_rules = [
   "+third_party/WebKit/public/platform/modules/notifications/notification.mojom.h",
   "+third_party/WebKit/public/platform/modules/notifications/notification_service.mojom.h",
   "+third_party/WebKit/public/platform/modules/offscreencanvas/offscreen_canvas_surface.mojom.h",
+  "+third_party/WebKit/public/platform/modules/payments/payment_app.mojom.h",
   "+third_party/WebKit/public/platform/modules/permissions/permission.mojom.h",
   "+third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h",
   "+third_party/WebKit/public/platform/modules/presentation/presentation.mojom.h",

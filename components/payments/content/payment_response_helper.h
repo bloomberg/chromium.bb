@@ -9,7 +9,7 @@
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/payments/core/address_normalizer.h"
 #include "components/payments/core/payment_instrument.h"
-#include "components/payments/mojom/payment_request.mojom.h"
+#include "third_party/WebKit/public/platform/modules/payments/payment_request.mojom.h"
 
 namespace payments {
 

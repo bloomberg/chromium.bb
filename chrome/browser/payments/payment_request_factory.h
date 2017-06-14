@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_PAYMENTS_PAYMENT_REQUEST_FACTORY_H_
 #define CHROME_BROWSER_PAYMENTS_PAYMENT_REQUEST_FACTORY_H_
 
-#include "components/payments/mojom/payment_request.mojom.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
+#include "third_party/WebKit/public/platform/modules/payments/payment_request.mojom.h"
 
 namespace content {
 class RenderFrameHost;

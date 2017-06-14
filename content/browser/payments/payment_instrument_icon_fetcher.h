@@ -10,11 +10,11 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "components/payments/mojom/payment_app.mojom.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "third_party/WebKit/public/platform/modules/payments/payment_app.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace content {

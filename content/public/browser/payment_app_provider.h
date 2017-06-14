@@ -11,9 +11,9 @@
 #include <vector>
 
 #include "base/callback_forward.h"
-#include "components/payments/mojom/payment_app.mojom.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/stored_payment_instrument.h"
+#include "third_party/WebKit/public/platform/modules/payments/payment_app.mojom.h"
 
 namespace content {
 

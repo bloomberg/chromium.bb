@@ -1564,8 +1564,6 @@ split_static_library("browser") {
     "//components/password_manager/core/browser",
     "//components/password_manager/core/common",
     "//components/password_manager/sync/browser",
-    "//components/payments/mojom",
-    "//components/payments/mojom:mojom_payment_app",
     "//components/physical_web/eddystone",
     "//components/policy:generated",
     "//components/policy/core/browser",
