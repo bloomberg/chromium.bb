@@ -69,10 +69,12 @@ var FilesMetadataBox = Polymer({
     hasFileSpecificInfo_: Boolean,
   },
 
-  // Clears fields.
-  clear: function() {
+  /**
+   * Clears fields.
+   * @param {boolean} keepSizeFields do not clear size and isSizeLoading fields.
+   */
+  clear: function(keepSizeFields) {
     this.type = '';
-    this.size = '';
     this.modiifcationTime = '';
     this.mediaMimeType = '';
     this.filePath = '';
@@ -88,7 +90,10 @@ var FilesMetadataBox = Polymer({
     this.mediaYearRecorded = '';
     this.ifd = null;
 
-    this.isSizeLoading = false;
+    if (!keepSizeFields) {
+      this.size = '';
+      this.isSizeLoading = false;
+    }
   },
 
   /**
@@ -97,7 +102,9 @@ var FilesMetadataBox = Polymer({
    *
    * @private
    */
-  isImage_: function(type) { return type === 'image'; },
+  isImage_: function(type) {
+    return type === 'image';
+  },
 
   /**
    * @param {string} type
@@ -105,7 +112,9 @@ var FilesMetadataBox = Polymer({
    *
    * @private
    */
-  isVideo_: function(type) { return type === 'video'; },
+  isVideo_: function(type) {
+    return type === 'video';
+  },
 
   /**
    * @param {string} type
@@ -113,7 +122,9 @@ var FilesMetadataBox = Polymer({
    *
    * @private
    */
-  isAudio_: function(type) { return type === 'audio'; },
+  isAudio_: function(type) {
+    return type === 'audio';
+  },
 
   /**
    * Update private properties computed from metadata.
