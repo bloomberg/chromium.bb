@@ -29,6 +29,37 @@ print_preview.LocalDestinationInfo;
 /**
  * @typedef {{
  *   printerId: string,
+ *   printerName: string,
+ *   printerDescription: string,
+ *   cupsEnterprisePrinter: (boolean | undefined),
+ *   capabilities: !print_preview.Cdd,
+ * }}
+ */
+print_preview.PrinterCapabilitiesResponse;
+
+/**
+ * @typedef {{
+ *   serviceName: string,
+ *   name: string,
+ *   hasLocalPrinting: boolean,
+ *   isUnregistered: boolean,
+ *   cloudID: string,
+ * }}
+ * @see PrintPreviewHandler::FillPrinterDescription in print_preview_handler.cc
+ */
+print_preview.PrivetPrinterDescription;
+
+/**
+ * @typedef {{
+ *   printer: !print_preview.PrivetPrinterDescription,
+ *   capabilities: !print_preview.Cdd,
+ * }}
+ */
+print_preview.PrivetPrinterCapabilitiesResponse;
+
+/**
+ * @typedef {{
+ *   printerId: string,
  *   success: boolean,
  *   capabilities: Object,
  * }}
@@ -45,14 +76,6 @@ cr.define('print_preview', function() {
   function NativeLayer() {
     // Bind global handlers
     global.setUseCloudPrint = this.onSetUseCloudPrint_.bind(this);
-    global.updateWithPrinterCapabilities =
-        this.onUpdateWithPrinterCapabilities_.bind(this);
-    global.failedToGetPrinterCapabilities =
-        this.onFailedToGetPrinterCapabilities_.bind(this);
-    global.failedToGetPrivetPrinterCapabilities =
-      this.onFailedToGetPrivetPrinterCapabilities_.bind(this);
-    global.failedToGetExtensionPrinterCapabilities =
-        this.onFailedToGetExtensionPrinterCapabilities_.bind(this);
     global.reloadPrintersList = this.onReloadPrintersList_.bind(this);
     global.printToCloud = this.onPrintToCloud_.bind(this);
     global.fileSelectionCancelled =
@@ -69,11 +92,7 @@ cr.define('print_preview', function() {
     global.onDidPreviewPage = this.onDidPreviewPage_.bind(this);
     global.updatePrintPreview = this.onUpdatePrintPreview_.bind(this);
     global.onDidGetAccessToken = this.onDidGetAccessToken_.bind(this);
-    global.onPrivetCapabilitiesSet =
-        this.onPrivetCapabilitiesSet_.bind(this);
     global.onPrivetPrintFailed = this.onPrivetPrintFailed_.bind(this);
-    global.onExtensionCapabilitiesSet =
-        this.onExtensionCapabilitiesSet_.bind(this);
     global.onEnableManipulateSettingsForTest =
         this.onEnableManipulateSettingsForTest_.bind(this);
     global.printPresetOptionsFromDocument =
@@ -115,14 +134,12 @@ cr.define('print_preview', function() {
    */
   NativeLayer.EventType = {
     ACCESS_TOKEN_READY: 'print_preview.NativeLayer.ACCESS_TOKEN_READY',
-    CAPABILITIES_SET: 'print_preview.NativeLayer.CAPABILITIES_SET',
     CLOUD_PRINT_ENABLE: 'print_preview.NativeLayer.CLOUD_PRINT_ENABLE',
     DESTINATIONS_RELOAD: 'print_preview.NativeLayer.DESTINATIONS_RELOAD',
     DISABLE_SCALING: 'print_preview.NativeLayer.DISABLE_SCALING',
     FILE_SELECTION_CANCEL: 'print_preview.NativeLayer.FILE_SELECTION_CANCEL',
     FILE_SELECTION_COMPLETE:
         'print_preview.NativeLayer.FILE_SELECTION_COMPLETE',
-    GET_CAPABILITIES_FAIL: 'print_preview.NativeLayer.GET_CAPABILITIES_FAIL',
     MANIPULATE_SETTINGS_FOR_TEST:
         'print_preview.NativeLayer.MANIPULATE_SETTINGS_FOR_TEST',
     PAGE_COUNT_READY: 'print_preview.NativeLayer.PAGE_COUNT_READY',
@@ -134,12 +151,7 @@ cr.define('print_preview', function() {
         'print_preview.NativeLayer.PREVIEW_GENERATION_FAIL',
     PRINT_TO_CLOUD: 'print_preview.NativeLayer.PRINT_TO_CLOUD',
     SETTINGS_INVALID: 'print_preview.NativeLayer.SETTINGS_INVALID',
-    PRIVET_PRINTER_CHANGED: 'print_preview.NativeLayer.PRIVET_PRINTER_CHANGED',
-    PRIVET_CAPABILITIES_SET:
-        'print_preview.NativeLayer.PRIVET_CAPABILITIES_SET',
     PRIVET_PRINT_FAILED: 'print_preview.NativeLayer.PRIVET_PRINT_FAILED',
-    EXTENSION_CAPABILITIES_SET:
-        'print_preview.NativeLayer.EXTENSION_CAPABILITIES_SET',
     PRINT_PRESET_OPTIONS: 'print_preview.NativeLayer.PRINT_PRESET_OPTIONS',
     PROVISIONAL_DESTINATION_RESOLVED:
         'print_preview.NativeLayer.PROVISIONAL_DESTINATION_RESOLVED'
@@ -241,15 +253,6 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * Requests the privet destination's printing capabilities. A
-     * PRIVET_CAPABILITIES_SET event will be dispatched in response.
-     * @param {string} destinationId ID of the destination.
-     */
-    startGetPrivetDestinationCapabilities: function(destinationId) {
-      chrome.send('getPrivetPrinterCapabilities', [destinationId]);
-    },
-
-    /**
      * Request a list of extension printers. Printers are reported as they are
      * found by a series of 'extension-printers-added' events.
      * @return {!Promise} Will be resolved when all extension managed printers
@@ -260,22 +263,37 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * Requests an extension destination's printing capabilities. A
-     * EXTENSION_CAPABILITIES_SET event will be dispatched in response.
-     * @param {string} destinationId The ID of the destination whose
-     *     capabilities are requested.
+     * Requests the destination's printing capabilities. Returns a promise that
+     * will be resolved with the capabilities if they are obtained successfully.
+     * @param {string} destinationId ID of the destination.
+     * @return {!Promise<!print_preview.PrinterCapabilitiesResponse>}
      */
-    startGetExtensionDestinationCapabilities: function(destinationId) {
-      chrome.send('getExtensionPrinterCapabilities', [destinationId]);
+    getPrinterCapabilities: function(destinationId) {
+      return cr.sendWithPromise('getPrinterCapabilities', destinationId);
     },
 
     /**
-     * Requests the destination's printing capabilities. A CAPABILITIES_SET
-     * event will be dispatched in response.
+     * Requests the privet destination's printing capabilities. Returns a
+     * promise that will be resolved with capabilities and printer information
+     * if capabilities are obtained successfully.
      * @param {string} destinationId ID of the destination.
+     * @return {!Promise<!print_preview.PrivetPrinterCapabilitiesResponse>}
      */
-    startGetLocalDestinationCapabilities: function(destinationId) {
-      chrome.send('getPrinterCapabilities', [destinationId]);
+    getPrivetPrinterCapabilities: function(destinationId) {
+      return cr.sendWithPromise('getPrivetPrinterCapabilities', destinationId);
+    },
+
+    /**
+     * Requests the extension destination's printing capabilities. Returns a
+     * promise that will be resolved with the ID and capabilities if
+     * capabilities are obtained successfully.
+     * @param {string} destinationId The ID of the destination whose
+     *     capabilities are requested.
+     * @return {!Promise<!print_preview.Cdd>}
+     */
+    getExtensionPrinterCapabilities: function(destinationId) {
+      return cr.sendWithPromise('getExtensionPrinterCapabilities',
+                                destinationId);
     },
 
     /**
@@ -549,65 +567,6 @@ cr.define('print_preview', function() {
       this.eventTarget_.dispatchEvent(cloudPrintEnableEvent);
     },
 
-    /**
-     * Called when native layer gets settings information for a requested local
-     * destination.
-     * @param {Object} settingsInfo printer setting information.
-     * @private
-     */
-    onUpdateWithPrinterCapabilities_: function(settingsInfo) {
-      assert(settingsInfo.capabilities,
-          'Capabilities update without capabilites');
-      var capsSetEvent = new Event(NativeLayer.EventType.CAPABILITIES_SET);
-      capsSetEvent.settingsInfo = settingsInfo;
-      this.eventTarget_.dispatchEvent(capsSetEvent);
-    },
-
-    /**
-     * Called when native layer gets settings information for a requested local
-     * destination.
-     * @param {string} destinationId Printer affected by error.
-     * @private
-     */
-    onFailedToGetPrinterCapabilities_: function(destinationId) {
-      var getCapsFailEvent = new Event(
-          NativeLayer.EventType.GET_CAPABILITIES_FAIL);
-      getCapsFailEvent.destinationId = destinationId;
-      getCapsFailEvent.destinationOrigin =
-          print_preview.DestinationOrigin.LOCAL;
-      this.eventTarget_.dispatchEvent(getCapsFailEvent);
-    },
-
-    /**
-     * Called when native layer gets settings information for a requested privet
-     * destination.
-     * @param {string} destinationId Printer affected by error.
-     * @private
-     */
-    onFailedToGetPrivetPrinterCapabilities_: function(destinationId) {
-      var getCapsFailEvent = new Event(
-          NativeLayer.EventType.GET_CAPABILITIES_FAIL);
-      getCapsFailEvent.destinationId = destinationId;
-      getCapsFailEvent.destinationOrigin =
-          print_preview.DestinationOrigin.PRIVET;
-      this.eventTarget_.dispatchEvent(getCapsFailEvent);
-    },
-
-    /**
-     * Called when native layer fails to get settings information for a
-     * requested extension destination.
-     * @param {string} destinationId Printer affected by error.
-     * @private
-     */
-    onFailedToGetExtensionPrinterCapabilities_: function(destinationId) {
-      var getCapsFailEvent = new Event(
-          NativeLayer.EventType.GET_CAPABILITIES_FAIL);
-      getCapsFailEvent.destinationId = destinationId;
-      getCapsFailEvent.destinationOrigin =
-          print_preview.DestinationOrigin.EXTENSION;
-      this.eventTarget_.dispatchEvent(getCapsFailEvent);
-    },
-
     /** Reloads the printer list. */
     onReloadPrintersList_: function() {
       cr.dispatchSimpleEvent(this.eventTarget_,
@@ -774,19 +733,6 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * @param {Object} printer Specifies information about the printer that was
-     *    added.
-     * @private
-     */
-    onPrivetCapabilitiesSet_: function(printer, capabilities) {
-      var privetCapabilitiesSetEvent =
-            new Event(NativeLayer.EventType.PRIVET_CAPABILITIES_SET);
-      privetCapabilitiesSetEvent.printer = printer;
-      privetCapabilitiesSetEvent.capabilities = capabilities;
-      this.eventTarget_.dispatchEvent(privetCapabilitiesSetEvent);
-    },
-
-    /**
      * @param {string} http_error The HTTP response code or -1 if not an HTTP
      *    error.
      * @private
@@ -796,20 +742,6 @@ cr.define('print_preview', function() {
             new Event(NativeLayer.EventType.PRIVET_PRINT_FAILED);
       privetPrintFailedEvent.httpError = http_error;
       this.eventTarget_.dispatchEvent(privetPrintFailedEvent);
-    },
-
-    /**
-     * Called when an extension responds to a request for an extension printer
-     * capabilities.
-     * @param {string} printerId The printer's ID.
-     * @param {!Object} capabilities The reported printer capabilities.
-     */
-    onExtensionCapabilitiesSet_: function(printerId,
-                                          capabilities) {
-      var event = new Event(NativeLayer.EventType.EXTENSION_CAPABILITIES_SET);
-      event.printerId = printerId;
-      event.capabilities = capabilities;
-      this.eventTarget_.dispatchEvent(event);
     },
 
     /**

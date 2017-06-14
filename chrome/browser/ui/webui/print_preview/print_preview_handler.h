@@ -230,6 +230,7 @@ class PrintPreviewHandler
   // printer capabilities information. If |settings_info| is empty, sends
   // error notification to the Web UI instead.
   void SendPrinterCapabilities(
+      const std::string& callback_id,
       const std::string& printer_name,
       std::unique_ptr<base::DictionaryValue> settings_info);
 
@@ -285,8 +286,10 @@ class PrintPreviewHandler
   void StartPrivetLister(const scoped_refptr<
       local_discovery::ServiceDiscoverySharedClient>& client);
   void StopPrivetLister();
-  void OnPrivetCapabilities(const base::DictionaryValue* capabilities);
+  void OnPrivetCapabilities(const std::string& callback_id,
+                            const base::DictionaryValue* capabilities);
   void PrivetCapabilitiesUpdateClient(
+      const std::string& callback_id,
       std::unique_ptr<cloud_print::PrivetHTTPClient> http_client);
   void PrivetLocalPrintUpdateClient(
       std::string print_ticket,
@@ -294,6 +297,7 @@ class PrintPreviewHandler
       gfx::Size page_size,
       std::unique_ptr<cloud_print::PrivetHTTPClient> http_client);
   bool PrivetUpdateClient(
+      const std::string& callback_id,
       std::unique_ptr<cloud_print::PrivetHTTPClient> http_client);
   void StartPrivetLocalPrint(const std::string& print_ticket,
                              const std::string& capabilities,
@@ -337,10 +341,10 @@ class PrintPreviewHandler
 
   // Called when an extension reports the set of print capabilites for a
   // printer.
-  // |printer_id|: The id of the printer whose capabilities are reported.
+  // |callback_id|: The Javascript callback to reject or resolve
   // |capabilities|: The printer capabilities.
   void OnGotExtensionPrinterCapabilities(
-      const std::string& printer_id,
+      const std::string& callback_id,
       const base::DictionaryValue& capabilities);
 
   // Called when an extension print job is completed.
