@@ -422,7 +422,7 @@ class EditableProfilePhoto : public views::LabelButton {
   DISALLOW_COPY_AND_ASSIGN(EditableProfilePhoto);
 };
 
-// A title card with one back button right aligned and one label center aligned.
+// A title card with one back button left aligned and one label center aligned.
 class TitleCard : public views::View {
  public:
   TitleCard(const base::string16& message, views::ButtonListener* listener,
@@ -478,15 +478,25 @@ class TitleCard : public views::View {
 
  private:
   void Layout() override {
-    int back_button_width = back_button_->GetPreferredSize().width();
+    // The back button is left-aligned.
+    const int back_button_width = back_button_->GetPreferredSize().width();
     back_button_->SetBounds(0, 0, back_button_width, height());
-    int label_padding =
-        back_button_width + ChromeLayoutProvider::Get()
-                                ->GetInsetsMetric(views::INSETS_DIALOG_CONTENTS)
-                                .left();
-    int label_width = width() - 2 * label_padding;
+
+    // The title is in the same row as the button positioned with a minimum
+    // amount of space between them.
+    const int button_to_title_min_spacing =
+        ChromeLayoutProvider::Get()->GetDistanceMetric(
+            ChromeDistanceMetric::DISTANCE_UNRELATED_CONTROL_HORIZONTAL);
+    const int unavailable_leading_space =
+        back_button_width + button_to_title_min_spacing;
+
+    // Because the title is centered, the unavailable space to the left is also
+    // unavailable to right of the title.
+    const int unavailable_space = 2 * unavailable_leading_space;
+    const int label_width = width() - unavailable_space;
     DCHECK_GT(label_width, 0);
-    title_label_->SetBounds(label_padding, 0, label_width, height());
+    title_label_->SetBounds(unavailable_leading_space, 0, label_width,
+                            height());
   }
 
   gfx::Size CalculatePreferredSize() const override {
