@@ -33,8 +33,7 @@ class PageReloadCasesPageSet(story.StorySet):
   def __init__(self):
     super(PageReloadCasesPageSet, self).__init__(
         archive_data_file='data/top_25.json',
-        cloud_storage_bucket=story.PARTNER_BUCKET,
-        verify_names=True)
+        cloud_storage_bucket=story.PARTNER_BUCKET)
 
     shared_desktop_state = shared_page_state.SharedDesktopPageState
 

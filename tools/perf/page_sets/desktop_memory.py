@@ -50,7 +50,7 @@ class DesktopMemoryPageSet(story.StorySet):
   """ Desktop sites with interesting memory characteristics """
 
   def __init__(self):
-    super(DesktopMemoryPageSet, self).__init__(verify_names=True)
+    super(DesktopMemoryPageSet, self).__init__()
 
     urls_list = [
       'http://www.google.com',

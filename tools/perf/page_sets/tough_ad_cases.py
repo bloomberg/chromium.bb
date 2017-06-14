@@ -119,8 +119,7 @@ class SyntheticToughAdCasesPageSet(story.StorySet):
   def __init__(self):
     super(SyntheticToughAdCasesPageSet, self).__init__(
         archive_data_file='data/tough_ad_cases.json',
-        cloud_storage_bucket=story.INTERNAL_BUCKET,
-        verify_names=True)
+        cloud_storage_bucket=story.INTERNAL_BUCKET)
 
     base_url = 'http://localhost:8000'
 
@@ -150,8 +149,7 @@ class SyntheticToughWebglAdCasesPageSet(story.StorySet):
   def __init__(self):
     super(SyntheticToughWebglAdCasesPageSet, self).__init__(
         archive_data_file='data/tough_ad_cases.json',
-        cloud_storage_bucket=story.INTERNAL_BUCKET,
-        verify_names=True)
+        cloud_storage_bucket=story.INTERNAL_BUCKET)
 
     base_url = 'http://localhost:8000'
 
@@ -181,8 +179,7 @@ class ToughAdCasesPageSet(story.StorySet):
   def __init__(self, scroll=False):
     super(ToughAdCasesPageSet, self).__init__(
         archive_data_file='data/tough_ad_cases.json',
-        cloud_storage_bucket=story.INTERNAL_BUCKET,
-        verify_names=True)
+        cloud_storage_bucket=story.INTERNAL_BUCKET)
 
     self.AddStory(AdPage('file://tough_ad_cases/'
         'swiffy_collection.html', self, make_javascript_deterministic=False,

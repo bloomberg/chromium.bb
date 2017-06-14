@@ -26,6 +26,6 @@ class BlankPageSet(story.StorySet):
   """A single blank page."""
 
   def __init__(self):
-    super(BlankPageSet, self).__init__(verify_names=True)
+    super(BlankPageSet, self).__init__()
     self.AddStory(BlankPage('file://blank_page/blank_page.html',
                             self, 'blank_page.html'))

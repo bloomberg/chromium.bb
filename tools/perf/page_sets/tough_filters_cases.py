@@ -34,8 +34,7 @@ class ToughFiltersCasesPageSet(story.StorySet):
   def __init__(self):
     super(ToughFiltersCasesPageSet, self).__init__(
       archive_data_file='data/tough_filters_cases.json',
-      cloud_storage_bucket=story.PARTNER_BUCKET,
-      verify_names=True)
+      cloud_storage_bucket=story.PARTNER_BUCKET)
 
     urls_list = [
       ('http://rawgit.com/WebKit/webkit/master/PerformanceTests/Animometer/developer.html?test-interval=20&display=minimal&controller=fixed&frame-rate=50&kalman-process-error=1&kalman-measurement-error=4&time-measurement=performance&suite-name=Animometer&test-name=Focus&complexity=100', # pylint: disable=line-too-long

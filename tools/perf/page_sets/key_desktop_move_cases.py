@@ -118,8 +118,7 @@ class KeyDesktopMoveCasesPageSet(story.StorySet):
   def __init__(self):
     super(KeyDesktopMoveCasesPageSet, self).__init__(
       archive_data_file='data/key_desktop_move_cases.json',
-      cloud_storage_bucket=story.PARTNER_BUCKET,
-      verify_names=True)
+      cloud_storage_bucket=story.PARTNER_BUCKET)
 
     self.AddStory(GmailMouseScrollPage(self))
     self.AddStory(GoogleMapsPage(self))

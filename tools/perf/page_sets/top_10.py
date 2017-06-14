@@ -94,8 +94,7 @@ class Top10PageSet(story.StorySet):
   def __init__(self):
     super(Top10PageSet, self).__init__(
       archive_data_file='data/top_10.json',
-      cloud_storage_bucket=story.PARTNER_BUCKET,
-      verify_names=True)
+      cloud_storage_bucket=story.PARTNER_BUCKET)
 
     # top google property; a google tab is often open
     self.AddStory(Google(self))

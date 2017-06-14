@@ -27,7 +27,7 @@ class ToughTextureUploadCasesPageSet(story.StorySet):
   """
 
   def __init__(self):
-    super(ToughTextureUploadCasesPageSet, self).__init__(verify_names=True)
+    super(ToughTextureUploadCasesPageSet, self).__init__()
 
     urls_list = [
       'file://tough_texture_upload_cases/background_color_animation.html',

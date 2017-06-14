@@ -20,5 +20,5 @@ class DummyPage(page_module.Page):
 class DummyStorySet(story.StorySet):
 
   def __init__(self):
-    super(DummyStorySet, self).__init__(verify_names=True)
+    super(DummyStorySet, self).__init__()
     self.AddStory(DummyPage(self))
