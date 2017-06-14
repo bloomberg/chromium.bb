@@ -15,7 +15,8 @@ InterstitialPageNavigatorImpl::InterstitialPageNavigatorImpl(
     InterstitialPageImpl* interstitial,
     NavigationControllerImpl* navigation_controller)
     : interstitial_(interstitial),
-      controller_(navigation_controller) {}
+      controller_(navigation_controller),
+      enabled_(true) {}
 
 InterstitialPageNavigatorImpl::~InterstitialPageNavigatorImpl() {}
 
@@ -32,6 +33,10 @@ void InterstitialPageNavigatorImpl::DidStartProvisionalLoad(
     const GURL& url,
     const std::vector<GURL>& redirect_chain,
     const base::TimeTicks& navigation_start) {
+  // Do not proceed if the interstitial itself has been disabled.
+  if (!enabled_)
+    return;
+
   // The interstitial page should only navigate once.
   DCHECK(!render_frame_host->navigation_handle());
   render_frame_host->SetNavigationHandle(NavigationHandleImpl::Create(
@@ -50,6 +55,10 @@ void InterstitialPageNavigatorImpl::DidNavigate(
     RenderFrameHostImpl* render_frame_host,
     const FrameHostMsg_DidCommitProvisionalLoad_Params& input_params,
     std::unique_ptr<NavigationHandleImpl> navigation_handle) {
+  // Do not proceed if the interstitial itself has been disabled.
+  if (!enabled_)
+    return;
+
   navigation_handle->DidCommitNavigation(
       input_params, true, false, GURL(), NAVIGATION_TYPE_NEW_PAGE,
       render_frame_host);
@@ -59,6 +68,13 @@ void InterstitialPageNavigatorImpl::DidNavigate(
   // to the interstitial page code.
   interstitial_->DidNavigate(render_frame_host->render_view_host(),
                              input_params);
+}
+
+void InterstitialPageNavigatorImpl::Disable() {
+  enabled_ = false;
+
+  // This is no longer safe to access.
+  controller_ = nullptr;
 }
 
 }  // namespace content

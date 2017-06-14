@@ -12,6 +12,7 @@
 #include "build/build_config.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
+#include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/media/audio_stream_monitor.h"
@@ -2163,6 +2164,49 @@ TEST_F(WebContentsImplTest, ShowInterstitialThenCloseAndShutdown) {
   // simulate quitting the browser.  This goes through all processes and
   // tells them to destruct.
   rfh->GetProcess()->SimulateCrash();
+
+  RunAllPendingInMessageLoop();
+  EXPECT_TRUE(deleted);
+}
+
+// Test for https://crbug.com/730592, where deleting a WebContents while its
+// interstitial is navigating could lead to a crash.
+TEST_F(WebContentsImplTest, CreateInterstitialForClosingTab) {
+  // Navigate to a page.
+  GURL url1("http://www.google.com");
+  main_test_rfh()->NavigateAndCommitRendererInitiated(true, url1);
+  EXPECT_EQ(1, controller().GetEntryCount());
+
+  // Initiate a browser navigation that will trigger an interstitial.
+  controller().LoadURL(GURL("http://www.evil.com"), Referrer(),
+                       ui::PAGE_TRANSITION_TYPED, std::string());
+
+  // Show an interstitial.
+  TestInterstitialPage::InterstitialState state = TestInterstitialPage::INVALID;
+  bool deleted = false;
+  GURL url2("http://interstitial");
+  TestInterstitialPage* interstitial =
+      new TestInterstitialPage(contents(), true, url2, &state, &deleted);
+  TestInterstitialPageStateGuard state_guard(interstitial);
+  interstitial->Show();
+  RenderFrameHostImpl* interstitial_rfh =
+      static_cast<RenderFrameHostImpl*>(interstitial->GetMainFrame());
+  // The interstitial should not show until its navigation has committed.
+  EXPECT_FALSE(interstitial->is_showing());
+  EXPECT_FALSE(contents()->ShowingInterstitialPage());
+  EXPECT_EQ(nullptr, contents()->GetInterstitialPage());
+
+  // Close the tab before the interstitial commits.
+  DeleteContents();
+  EXPECT_EQ(TestInterstitialPage::CANCELED, state);
+
+  // The interstitial page triggers a DidStartNavigation after the tab is gone,
+  // but before the interstitial page itself is deleted.  This should not crash.
+  Navigator* interstitial_navigator =
+      interstitial_rfh->frame_tree_node()->navigator();
+  interstitial_navigator->DidStartProvisionalLoad(
+      interstitial_rfh, url2, std::vector<GURL>(), base::TimeTicks::Now());
+  EXPECT_FALSE(deleted);
 
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(deleted);
