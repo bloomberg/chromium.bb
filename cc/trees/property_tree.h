@@ -102,62 +102,8 @@ class CC_EXPORT PropertyTree {
 
   void AsValueInto(base::trace_event::TracedValue* value) const;
 
-  T* UpdateNodeFromOwningLayerId(int id) {
-#if DCHECK_IS_ON()
-    DCHECK(SupportsNodeLookupFromOwningLayerId());
-#endif
-    int index = FindNodeIndexFromOwningLayerId(id);
-    if (index == kInvalidNodeId) {
-      DCHECK(property_trees()->is_main_thread);
-      property_trees()->needs_rebuild = true;
-    }
-
-    return Node(index);
-  }
-
-  void SetOwningLayerIdForNode(const T* node, int id) {
-#if DCHECK_IS_ON()
-    DCHECK(SupportsNodeLookupFromOwningLayerId());
-#endif
-    if (!node) {
-      owning_layer_id_to_node_index_[id] = kInvalidNodeId;
-      return;
-    }
-
-    DCHECK(node == Node(node->id));
-    owning_layer_id_to_node_index_[id] = node->id;
-  }
-
  protected:
-#if DCHECK_IS_ON()
-  virtual bool SupportsNodeLookupFromOwningLayerId() const { return true; }
-#endif
-
- private:
-  const T* FindNodeFromOwningLayerId(int id) const {
-#if DCHECK_IS_ON()
-    DCHECK(SupportsNodeLookupFromOwningLayerId());
-#endif
-    return Node(FindNodeIndexFromOwningLayerId(id));
-  }
-  int FindNodeIndexFromOwningLayerId(int id) const {
-#if DCHECK_IS_ON()
-    DCHECK(SupportsNodeLookupFromOwningLayerId());
-#endif
-    auto iter = owning_layer_id_to_node_index_.find(id);
-    if (iter == owning_layer_id_to_node_index_.end())
-      return kInvalidNodeId;
-    else
-      return iter->second;
-  }
-
   std::vector<T> nodes_;
-
-  // Maps from layer id to the property tree node index. This container is
-  // typically very small and the memory overhead of unordered_map will
-  // dominate so use a flat_map. See http://crbug.com/709243
-  base::flat_map<int, int> owning_layer_id_to_node_index_;
-
   bool needs_update_;
   PropertyTrees* property_trees_;
 };
@@ -422,11 +368,6 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
   bool CreateOrReuseRenderSurfaces(
       std::vector<std::unique_ptr<RenderSurfaceImpl>>* old_render_surfaces,
       LayerTreeImpl* layer_tree_impl);
-
- protected:
-#if DCHECK_IS_ON()
-  bool SupportsNodeLookupFromOwningLayerId() const override;
-#endif
 
  private:
   void UpdateOpacities(EffectNode* node, EffectNode* parent_node);
@@ -701,7 +642,6 @@ class CC_EXPORT PropertyTrees final {
   void SetInnerViewportContainerBoundsDelta(gfx::Vector2dF bounds_delta);
   void SetOuterViewportContainerBoundsDelta(gfx::Vector2dF bounds_delta);
   void SetInnerViewportScrollBoundsDelta(gfx::Vector2dF bounds_delta);
-  void RemoveIdFromIdToIndexMaps(int id);
   void UpdateChangeTracking();
   void PushChangeTrackingTo(PropertyTrees* tree);
   void ResetAllChangeTracking();

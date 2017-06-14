@@ -543,13 +543,13 @@ void LayerImpl::SetViewportBoundsDelta(const gfx::Vector2dF& bounds_delta) {
 
   if (masks_to_bounds()) {
     // If layer is clipping, then update the clip node using the new bounds.
-    if (ClipNode* clip_node =
-            property_trees->clip_tree.UpdateNodeFromOwningLayerId(id())) {
-      DCHECK_EQ(clip_node->id, clip_tree_index());
-      clip_node->clip = gfx::RectF(gfx::PointF() + offset_to_transform_parent(),
-                                   gfx::SizeF(bounds()));
-      property_trees->clip_tree.set_needs_update(true);
-    }
+    ClipNode* clip_node = property_trees->clip_tree.Node(clip_tree_index());
+    CHECK(clip_node);
+    DCHECK_EQ(clip_node->id, clip_tree_index());
+    clip_node->clip = gfx::RectF(gfx::PointF() + offset_to_transform_parent(),
+                                 gfx::SizeF(bounds()));
+    property_trees->clip_tree.set_needs_update(true);
+
     property_trees->full_tree_damaged = true;
     layer_tree_impl()->set_needs_update_draw_properties();
   } else {
