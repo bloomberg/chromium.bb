@@ -87,11 +87,9 @@ ScopedStubInstallAttributes::CreateActiveDirectoryManaged(
   return ScopedStubInstallAttributes();
 }
 
-ScopedStubInstallAttributes::ScopedStubInstallAttributes() {
-}
-
 ScopedStubInstallAttributes::~ScopedStubInstallAttributes() {
-  policy::BrowserPolicyConnectorChromeOS::RemoveInstallAttributesForTesting();
+  if (cleanup_)
+    policy::BrowserPolicyConnectorChromeOS::RemoveInstallAttributesForTesting();
 }
 
 }  // namespace chromeos

@@ -21,13 +21,13 @@ class StubInstallAttributes : public InstallAttributes {
   // Setup as not-yet enrolled.
   void Clear();
 
-  // Setup as consumer owned device.  (Clears existing configuration.)
+  // Setup as consumer owned device. (Clears existing configuration.)
   void SetConsumerOwned();
 
-  // Setup as managed by Google cloud.  (Clears existing configuration.)
+  // Setup as managed by Google cloud. (Clears existing configuration.)
   void SetCloudManaged(const std::string& domain, const std::string& device_id);
 
-  // Setup as managed by Active Directory server.  (Clears existing
+  // Setup as managed by Active Directory server. (Clears existing
   // configuration.)
   void SetActiveDirectoryManaged(const std::string& realm,
                                  const std::string& device_id);
@@ -36,9 +36,21 @@ class StubInstallAttributes : public InstallAttributes {
   DISALLOW_COPY_AND_ASSIGN(StubInstallAttributes);
 };
 
-// Helper class to set install attributes in the scope of a test.
+// Helper class to set install attributes in tests. Using one of the Create*
+// methods injects the generated StubInstallAttributes into the next
+// instantiation of BrowserPolicyConnectorChromeOS. Scoping ensures that the
+// generated StubInstallAttributes are not leaked in case there is no
+// instantiation of BrowserPolicyConnectorChromeOS.
 class ScopedStubInstallAttributes {
  public:
+  // Setting |cleanup_| to false in the moved-from object ensures that the
+  // StubInstallAttributes are not deleted prematurely when the return value of
+  // a Create* method is move-assigned to the scoping variable.
+  ScopedStubInstallAttributes(ScopedStubInstallAttributes&& other) {
+    cleanup_ = other.cleanup_;
+    other.cleanup_ = false;
+  }
+
   ~ScopedStubInstallAttributes();
 
   // Factory for empty (unset) ScopedStubInstallAttributes.
@@ -58,7 +70,13 @@ class ScopedStubInstallAttributes {
       const std::string& device_id);
 
  private:
-  ScopedStubInstallAttributes();
+  ScopedStubInstallAttributes() = default;
+
+  // Whether the destructor should call into BrowserPolicyConnectorChromeOS to
+  // delete the StubInstallAttributes.
+  bool cleanup_ = true;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedStubInstallAttributes);
 };
 
 }  // namespace chromeos
