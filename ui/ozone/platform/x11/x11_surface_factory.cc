@@ -7,127 +7,23 @@
 #include <X11/Xlib.h>
 
 #include "base/memory/ptr_util.h"
-#include "third_party/khronos/EGL/egl.h"
 #include "ui/gfx/x/x11_types.h"
-#include "ui/gl/egl_util.h"
 #include "ui/gl/gl_surface_egl.h"
 #include "ui/ozone/common/egl_util.h"
 #include "ui/ozone/common/gl_ozone_egl.h"
 #include "ui/ozone/common/gl_ozone_osmesa.h"
 #include "ui/ozone/platform/x11/gl_ozone_glx.h"
+#include "ui/ozone/platform/x11/gl_surface_egl_ozone_x11.h"
 
 namespace ui {
-
 namespace {
-
-// GLSurface implementation for Ozone X11 EGL.
-class GLSurfaceEGLOzoneX11 : public gl::NativeViewGLSurfaceEGL {
- public:
-  explicit GLSurfaceEGLOzoneX11(EGLNativeWindowType window);
-
-  // gl::NativeViewGLSurfaceEGL:
-  EGLConfig GetConfig() override;
-  bool Resize(const gfx::Size& size,
-              float scale_factor,
-              bool has_alpha) override;
-
- private:
-  ~GLSurfaceEGLOzoneX11() override;
-
-  DISALLOW_COPY_AND_ASSIGN(GLSurfaceEGLOzoneX11);
-};
-
-GLSurfaceEGLOzoneX11::GLSurfaceEGLOzoneX11(EGLNativeWindowType window)
-    : NativeViewGLSurfaceEGL(window, nullptr) {}
-
-EGLConfig GLSurfaceEGLOzoneX11::GetConfig() {
-  // Try matching the window depth with an alpha channel, because we're worried
-  // the destination alpha width could constrain blending precision.
-  const int kBufferSizeOffset = 1;
-  const int kAlphaSizeOffset = 3;
-  EGLint config_attribs[] = {EGL_BUFFER_SIZE,
-                             ~0,  // To be replaced.
-                             EGL_ALPHA_SIZE,
-                             8,
-                             EGL_BLUE_SIZE,
-                             8,
-                             EGL_GREEN_SIZE,
-                             8,
-                             EGL_RED_SIZE,
-                             8,
-                             EGL_RENDERABLE_TYPE,
-                             EGL_OPENGL_ES2_BIT,
-                             EGL_SURFACE_TYPE,
-                             EGL_WINDOW_BIT,
-                             EGL_NONE};
-
-  // Get the depth of XWindow for surface.
-  XWindowAttributes win_attribs;
-  if (XGetWindowAttributes(gfx::GetXDisplay(), window_, &win_attribs)) {
-    config_attribs[kBufferSizeOffset] = win_attribs.depth;
-  }
-
-  EGLDisplay display = GetDisplay();
-
-  EGLConfig config;
-  EGLint num_configs;
-  if (!eglChooseConfig(display, config_attribs, &config, 1, &num_configs)) {
-    LOG(ERROR) << "eglChooseConfig failed with error "
-               << GetLastEGLErrorString();
-    return nullptr;
-  }
-
-  if (num_configs > 0) {
-    EGLint config_depth;
-    if (!eglGetConfigAttrib(display, config, EGL_BUFFER_SIZE, &config_depth)) {
-      LOG(ERROR) << "eglGetConfigAttrib failed with error "
-                 << GetLastEGLErrorString();
-      return nullptr;
-    }
-    if (config_depth == config_attribs[kBufferSizeOffset]) {
-      return config;
-    }
-  }
-
-  // Try without an alpha channel.
-  config_attribs[kAlphaSizeOffset] = 0;
-  if (!eglChooseConfig(display, config_attribs, &config, 1, &num_configs)) {
-    LOG(ERROR) << "eglChooseConfig failed with error "
-               << GetLastEGLErrorString();
-    return nullptr;
-  }
-
-  if (num_configs == 0) {
-    LOG(ERROR) << "No suitable EGL configs found.";
-    return nullptr;
-  }
-  return config;
-}
-
-bool GLSurfaceEGLOzoneX11::Resize(const gfx::Size& size,
-                                  float scale_factor,
-                                  bool has_alpha) {
-  if (size == GetSize())
-    return true;
-
-  size_ = size;
-
-  eglWaitGL();
-  XResizeWindow(gfx::GetXDisplay(), window_, size.width(), size.height());
-  eglWaitNative(EGL_CORE_NATIVE_ENGINE);
-
-  return true;
-}
-
-GLSurfaceEGLOzoneX11::~GLSurfaceEGLOzoneX11() {
-  Destroy();
-}
 
 class GLOzoneEGLX11 : public GLOzoneEGL {
  public:
-  GLOzoneEGLX11() {}
-  ~GLOzoneEGLX11() override {}
+  GLOzoneEGLX11() = default;
+  ~GLOzoneEGLX11() override = default;
 
+  // GLOzone:
   scoped_refptr<gl::GLSurface> CreateViewGLSurface(
       gfx::AcceleratedWidget window) override {
     return gl::InitializeGLSurface(new GLSurfaceEGLOzoneX11(window));
@@ -139,6 +35,7 @@ class GLOzoneEGLX11 : public GLOzoneEGL {
   }
 
  protected:
+  // GLOzoneEGL:
   intptr_t GetNativeDisplay() override {
     return reinterpret_cast<intptr_t>(gfx::GetXDisplay());
   }
