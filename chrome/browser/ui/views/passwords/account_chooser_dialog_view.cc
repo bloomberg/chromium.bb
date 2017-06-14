@@ -24,6 +24,7 @@
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/grid_layout.h"
+#include "ui/views/layout/layout_provider.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/widget/widget.h"
 
@@ -41,20 +42,19 @@ enum ColumnSetType {
 // Construct a |type| ColumnSet and add it to |layout|.
 void BuildColumnSet(ColumnSetType type, views::GridLayout* layout) {
   views::ColumnSet* column_set = layout->AddColumnSet(type);
-  const int horizontal_padding =
+  const gfx::Insets horizontal_insets =
       type == SINGLE_VIEW_COLUMN_SET
-          ? ChromeLayoutProvider::Get()
-                ->GetInsetsMetric(views::INSETS_DIALOG_CONTENTS)
-                .left()
-          : 0;
-  column_set->AddPaddingColumn(0, horizontal_padding);
+          ? ChromeLayoutProvider::Get()->GetInsetsMetric(
+                views::INSETS_DIALOG_TITLE)
+          : gfx::Insets();
+  column_set->AddPaddingColumn(0, horizontal_insets.left());
   column_set->AddColumn(views::GridLayout::FILL,
                         views::GridLayout::FILL,
                         1,
                         views::GridLayout::USE_PREF,
                         0,
                         0);
-  column_set->AddPaddingColumn(0, horizontal_padding);
+  column_set->AddPaddingColumn(0, horizontal_insets.right());
 }
 
 views::StyledLabel::RangeStyleInfo GetLinkStyle() {
