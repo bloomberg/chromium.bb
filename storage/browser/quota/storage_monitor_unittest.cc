@@ -532,17 +532,17 @@ TEST_F(StorageTypeObserversTest, AddRemoveObservers) {
   EXPECT_EQ(2, GetObserverCount(*type_observers.GetHostObservers(host1)));
   EXPECT_EQ(3, GetObserverCount(*type_observers.GetHostObservers(host2)));
 
-  // Remove an observer for a specific filter.
-  type_observers.RemoveObserverForFilter(&mock_observer1, params1.filter);
+  // Remove all instances of observer1.
+  type_observers.RemoveObserver(&mock_observer1);
   ASSERT_TRUE(type_observers.GetHostObservers(host1));
   ASSERT_TRUE(type_observers.GetHostObservers(host2));
   EXPECT_EQ(1, GetObserverCount(*type_observers.GetHostObservers(host1)));
-  EXPECT_EQ(3, GetObserverCount(*type_observers.GetHostObservers(host2)));
+  EXPECT_EQ(2, GetObserverCount(*type_observers.GetHostObservers(host2)));
 
-  // Remove all instances of an observer.
+  // Remove all instances of observer2.
   type_observers.RemoveObserver(&mock_observer2);
   ASSERT_TRUE(type_observers.GetHostObservers(host2));
-  EXPECT_EQ(2, GetObserverCount(*type_observers.GetHostObservers(host2)));
+  EXPECT_EQ(1, GetObserverCount(*type_observers.GetHostObservers(host2)));
   // Observers of host1 has been deleted as it is empty.
   EXPECT_FALSE(type_observers.GetHostObservers(host1));
 }
@@ -634,12 +634,6 @@ TEST_F(StorageMonitorTest, EventDispatch) {
 TEST_F(StorageMonitorTest, RemoveObserver) {
   storage_monitor_->RemoveObserver(&mock_observer1_);
   CheckObserverCount(1, 2);
-}
-
-// Test removing an observer for a specific filter.
-TEST_F(StorageMonitorTest, RemoveObserverForFilter) {
-  storage_monitor_->RemoveObserverForFilter(&mock_observer1_, params2_.filter);
-  CheckObserverCount(2, 2);
 }
 
 // Integration test for QuotaManager and StorageMonitor:

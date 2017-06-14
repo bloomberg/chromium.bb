@@ -224,8 +224,6 @@ class STORAGE_EXPORT QuotaManager
   void AddStorageObserver(StorageObserver* observer,
                           const StorageObserver::MonitorParams& params);
   void RemoveStorageObserver(StorageObserver* observer);
-  void RemoveStorageObserverForFilter(StorageObserver* observer,
-                                      const StorageObserver::Filter& filter);
 
   static const int64_t kPerHostPersistentQuotaLimit;
   static const char kDatabaseName[];

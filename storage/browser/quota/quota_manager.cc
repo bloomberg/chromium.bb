@@ -1109,12 +1109,6 @@ void QuotaManager::RemoveStorageObserver(StorageObserver* observer) {
   storage_monitor_->RemoveObserver(observer);
 }
 
-void QuotaManager::RemoveStorageObserverForFilter(
-    StorageObserver* observer, const StorageObserver::Filter& filter) {
-  DCHECK(observer);
-  storage_monitor_->RemoveObserverForFilter(observer, filter);
-}
-
 QuotaManager::~QuotaManager() {
   proxy_->manager_ = NULL;
   for (auto* client : clients_)
