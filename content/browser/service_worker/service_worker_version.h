@@ -687,11 +687,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   void OnStoppedInternal(EmbeddedWorkerStatus old_status);
 
-  // Called at the beginning of each Dispatch*Event function: records
-  // the time elapsed since idle (generally the time since the previous
-  // event ended).
-  void OnBeginEvent();
-
   // Fires and clears all start callbacks.
   void FinishStartWorker(ServiceWorkerStatusCode status);
 

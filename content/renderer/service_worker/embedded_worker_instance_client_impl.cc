@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/child/scoped_child_process_reference.h"
 #include "content/common/service_worker/embedded_worker_messages.h"
@@ -42,12 +41,6 @@ void EmbeddedWorkerInstanceClientImpl::WorkerContextDestroyed() {
   TRACE_EVENT0("ServiceWorker",
                "EmbeddedWorkerInstanceClientImpl::WorkerContextDestroyed");
 
-  if (stop_worker_time_) {
-    UMA_HISTOGRAM_MEDIUM_TIMES(
-        "ServiceWorker.TerminateThread.Time",
-        base::TimeTicks::Now() - stop_worker_time_.value());
-    stop_worker_time_.reset();
-  }
   wrapper_.reset();
 }
 
@@ -57,7 +50,6 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
     mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host) {
   DCHECK(ChildThreadImpl::current());
   DCHECK(!wrapper_);
-  DCHECK(!stop_worker_time_.has_value());
   TRACE_EVENT0("ServiceWorker",
                "EmbeddedWorkerInstanceClientImpl::StartWorker");
 
@@ -73,10 +65,8 @@ void EmbeddedWorkerInstanceClientImpl::StopWorker() {
   // StopWorker must be called after StartWorker is called.
   DCHECK(ChildThreadImpl::current());
   DCHECK(wrapper_);
-  DCHECK(!stop_worker_time_.has_value());
 
   TRACE_EVENT0("ServiceWorker", "EmbeddedWorkerInstanceClientImpl::StopWorker");
-  stop_worker_time_ = base::TimeTicks::Now();
   wrapper_->worker()->TerminateWorkerContext();
 }
 

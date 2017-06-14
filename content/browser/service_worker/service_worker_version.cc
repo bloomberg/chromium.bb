@@ -539,7 +539,6 @@ int ServiceWorkerVersion::StartRequestWithCustomTimeout(
     const StatusCallback& error_callback,
     const base::TimeDelta& timeout,
     TimeoutBehavior timeout_behavior) {
-  OnBeginEvent();
   DCHECK_EQ(EmbeddedWorkerStatus::RUNNING, running_status())
       << "Can only start a request with a running worker.";
   DCHECK(event_type == ServiceWorkerMetrics::EventType::INSTALL ||
@@ -1840,17 +1839,6 @@ void ServiceWorkerVersion::OnStoppedInternal(EmbeddedWorkerStatus old_status) {
     for (auto& observer : listeners_)
       observer.OnNoWork(this);
   }
-}
-
-void ServiceWorkerVersion::OnBeginEvent() {
-  if (running_status() != EmbeddedWorkerStatus::RUNNING ||
-      idle_time_.is_null()) {
-    return;
-  }
-  if (ServiceWorkerMetrics::ShouldExcludeSiteFromHistogram(site_for_uma_))
-    return;
-  ServiceWorkerMetrics::RecordTimeBetweenEvents(tick_clock_->NowTicks() -
-                                                idle_time_);
 }
 
 void ServiceWorkerVersion::FinishStartWorker(ServiceWorkerStatusCode status) {

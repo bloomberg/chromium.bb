@@ -718,10 +718,6 @@ void ServiceWorkerMetrics::RecordFallbackedRequestMode(FetchRequestMode mode) {
                             mode, FETCH_REQUEST_MODE_LAST + 1);
 }
 
-void ServiceWorkerMetrics::RecordTimeBetweenEvents(base::TimeDelta time) {
-  UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.TimeBetweenEvents", time);
-}
-
 void ServiceWorkerMetrics::RecordProcessCreated(bool is_new_process) {
   UMA_HISTOGRAM_BOOLEAN("EmbeddedWorkerInstance.ProcessCreated",
                         is_new_process);
