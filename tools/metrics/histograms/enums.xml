@@ -36211,26 +36211,41 @@ from previous Chrome versions.
 
 <enum name="TranslateCompactUIEvent" type="int">
   <int value="0" label="Infobar impression"/>
-  <int value="1" label="Tab language clicked"/>
-  <int value="2" label="Translate services declined"/>
+  <int value="1" label="Translation accepted by clicking on tab language"/>
+  <int value="2"
+      label="X is clicked without a prior translation and without a choice of
+             never translate"/>
   <int value="3" label="Options menu clicked"/>
   <int value="4" label="More languages clicked"/>
-  <int value="5" label="Language picked from more languages"/>
+  <int value="5"
+      label="Translation accepted by clicking on language in more languages"/>
   <int value="6" label="Page not in language clicked"/>
-  <int value="7" label="Always translate clicked"/>
-  <int value="8" label="Never translate clicked"/>
-  <int value="9" label="Never translate site clicked"/>
+  <int value="7" label="Always translate clicked in the options menu"/>
+  <int value="8" label="Never translate clicked in the options menu"/>
+  <int value="9" label="Never translate site clicked in the options menu"/>
   <int value="10" label="Infobar hidden on scroll"/>
   <int value="11" label="Infobar shown on scroll"/>
   <int value="12" label="Show original language clicked"/>
-  <int value="13" label="Always translate snackbar impression"/>
-  <int value="14" label="Never translate snackbar impression"/>
-  <int value="15" label="Never translate site snackbar impression"/>
-  <int value="16" label="Cancel clicked on always translate snackbar"/>
-  <int value="17" label="Cancel clicked on never translate this site snackbar"/>
-  <int value="18" label="Cancel clicked on never translate snackbar"/>
-  <int value="19" label="Undo always translate"/>
-  <int value="20" label="Infobar closed"/>
+  <int value="13"
+      label="Always translate snackbar impression when triggered from the
+             options menu"/>
+  <int value="14"
+      label="Never translate snackbar impression when triggered from the
+             options menu"/>
+  <int value="15"
+      label="Never translate site snackbar impression when triggered from the
+             options menu"/>
+  <int value="16"
+      label="Cancel clicked on always translate snackbar when triggered from
+             the options menu"/>
+  <int value="17"
+      label="Cancel clicked on never translate this site snackbar when
+             triggered from the options menu"/>
+  <int value="18"
+      label="Cancel clicked on never translate snackbar when triggered from
+             the options menu"/>
+  <int value="19" label="Undo always translate clicked in the options menu"/>
+  <int value="20" label="[Deprecated] X clicked to close infobar"/>
   <int value="21" label="Auto-always translate snackbar impression"/>
   <int value="22" label="Auto-never translate snackbar impression"/>
   <int value="23" label="Cancel clicked on auto-always translate snackbar"/>

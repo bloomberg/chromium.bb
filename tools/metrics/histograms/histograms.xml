@@ -78148,8 +78148,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <histogram name="Translate.InfobarShown" enum="BooleanHit">
   <owner>ramyasharma@google.com</owner>
   <summary>
-    The number of times the translate infobar was shown in the UI on Android.
-    Only true is recorded.
+    The number of times the translate infobar was shown in the old translate UI
+    on Android. Only true is recorded.
   </summary>
 </histogram>
 
