@@ -29,6 +29,7 @@ extern const base::Feature kAutofillCreditCardAssist;
 extern const base::Feature kAutofillScanCardholderName;
 extern const base::Feature kAutofillCreditCardPopupLayout;
 extern const base::Feature kAutofillCreditCardLastUsedDateDisplay;
+extern const base::Feature kAutofillOfferLocalSaveIfServerCardManuallyEntered;
 extern const base::Feature kAutofillUpstreamRequestCvcIfMissing;
 extern const base::Feature kAutofillUpstreamUseAutofillProfileComparator;
 extern const base::Feature kAutofillUpstreamUseNotRecentlyUsedAutofillProfile;
@@ -103,6 +104,12 @@ void ModifyAutofillCreditCardSuggestion(struct Suggestion* suggestion);
 // if the margin isn't configured in an experiment to tweak autofill popup
 // layout.
 unsigned int GetPopupMargin();
+
+// Returns whether the experiment is enabled where if Chrome Autofill has a
+// server card synced down from Payments but the user manually enters its card
+// number into a checkout form anyway, the option to locally save the card is
+// offered.
+bool IsAutofillOfferLocalSaveIfServerCardManuallyEnteredExperimentEnabled();
 
 // Returns whether the experiment is enabled where Chrome Upstream requests CVC
 // in the offer to save bubble if it was not detected during the checkout flow.

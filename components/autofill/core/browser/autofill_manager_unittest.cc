@@ -1072,6 +1072,11 @@ class AutofillManagerTest : public testing::Test {
         security_state::kHttpFormWarningFeature);
   }
 
+  void EnableAutofillOfferLocalSaveIfServerCardManuallyEnteredExperiment() {
+    scoped_feature_list_.InitAndEnableFeature(
+        kAutofillOfferLocalSaveIfServerCardManuallyEntered);
+  }
+
   void EnableAutofillUpstreamRequestCvcIfMissingExperiment() {
     scoped_feature_list_.InitAndEnableFeature(
         kAutofillUpstreamRequestCvcIfMissing);
@@ -6397,6 +6402,8 @@ TEST_F(AutofillManagerTest, UploadCreditCard_UploadDetailsFails) {
 }
 
 TEST_F(AutofillManagerTest, DuplicateMaskedCreditCard) {
+  EnableAutofillOfferLocalSaveIfServerCardManuallyEnteredExperiment();
+
   personal_data_.ClearAutofillProfiles();
   autofill_manager_->set_credit_card_upload_enabled(true);
   autofill_manager_->set_app_locale("en-US");
@@ -6410,7 +6417,7 @@ TEST_F(AutofillManagerTest, DuplicateMaskedCreditCard) {
   FormSubmitted(address_form);
 
   // Add a masked credit card whose |TypeAndLastFourDigits| matches what we will
-  // below.
+  // enter below.
   CreditCard credit_card(CreditCard::MASKED_SERVER_CARD, "a123");
   test::SetCreditCardInfo(&credit_card, "Flo Master", "1111", "11", "2017",
                           "1");
@@ -6429,10 +6436,49 @@ TEST_F(AutofillManagerTest, DuplicateMaskedCreditCard) {
   credit_card_form.fields[3].value = ASCIIToUTF16("2017");
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
-  // The save prompt should be shown.
+  // The local save prompt should be shown.
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _));
   FormSubmitted(credit_card_form);
   EXPECT_FALSE(autofill_manager_->credit_card_was_uploaded());
+}
+
+TEST_F(AutofillManagerTest, DuplicateMaskedCreditCard_ExperimentOff) {
+  personal_data_.ClearAutofillProfiles();
+  autofill_manager_->set_credit_card_upload_enabled(true);
+  autofill_manager_->set_app_locale("en-US");
+
+  // Create, fill and submit an address form in order to establish a recent
+  // profile which can be selected for the upload request.
+  FormData address_form;
+  test::CreateTestAddressFormData(&address_form);
+  FormsSeen(std::vector<FormData>(1, address_form));
+  ManuallyFillAddressForm("Flo", "Master", "77401", "US", &address_form);
+  FormSubmitted(address_form);
+
+  // Add a masked credit card whose |TypeAndLastFourDigits| matches what we will
+  // enter below.
+  CreditCard credit_card(CreditCard::MASKED_SERVER_CARD, "a123");
+  test::SetCreditCardInfo(&credit_card, "Flo Master", "1111", "11", "2017",
+                          "1");
+  credit_card.SetNetworkForMaskedCard(kVisaCard);
+  personal_data_.AddServerCreditCard(credit_card);
+
+  // Set up our credit card form data.
+  FormData credit_card_form;
+  CreateTestCreditCardFormData(&credit_card_form, true, false);
+  FormsSeen(std::vector<FormData>(1, credit_card_form));
+
+  // Edit the data, and submit.
+  credit_card_form.fields[0].value = ASCIIToUTF16("Flo Master");
+  credit_card_form.fields[1].value = ASCIIToUTF16("4111111111111111");
+  credit_card_form.fields[2].value = ASCIIToUTF16("11");
+  credit_card_form.fields[3].value = ASCIIToUTF16("2017");
+  credit_card_form.fields[4].value = ASCIIToUTF16("123");
+
+  // The local save prompt should not be shown because the experiment is off.
+  EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
+  FormSubmitted(credit_card_form);
+  EXPECT_TRUE(autofill_manager_->credit_card_was_uploaded());
 }
 
 // Verify that typing "gmail" will match "theking@gmail.com" and
