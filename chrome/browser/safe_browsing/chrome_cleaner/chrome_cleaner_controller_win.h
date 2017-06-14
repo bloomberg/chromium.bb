@@ -17,11 +17,6 @@
 #include "chrome/browser/safe_browsing/chrome_cleaner/reporter_runner_win.h"
 #include "components/chrome_cleaner/public/interfaces/chrome_prompt.mojom.h"
 
-namespace base {
-template <typename T>
-struct DefaultSingletonTraits;
-}
-
 namespace safe_browsing {
 
 // Delegate class that provides services to the ChromeCleanerController class
@@ -104,16 +99,17 @@ class ChromeCleanerController {
     virtual void OnInfected(const std::set<base::FilePath>& files_to_delete) {}
     virtual void OnCleaning(const std::set<base::FilePath>& files_to_delete) {}
     virtual void OnRebootRequired() {}
+    virtual void OnRebootFailed() {}
 
    protected:
     virtual ~Observer() = default;
   };
 
-  // Returns the singleton controller object.
+  // Returns the global controller object.
   static ChromeCleanerController* GetInstance();
 
   // Returns whether the Cleanup card in settings should be displayed.
-  // Static to prevent instantiation of the singleton.
+  // Static to prevent instantiation of the global controller object.
   static bool ShouldShowCleanupInSettingsUI();
 
   State state() const { return state_; }
@@ -150,14 +146,23 @@ class ChromeCleanerController {
   // "Cleanup" button multiple times.
   void ReplyWithUserResponse(UserResponse user_response);
 
+  // If the controller is in the kRebootRequired state, initiates a reboot of
+  // the computer. Call this after obtaining permission from the user to
+  // reboot.
+  //
+  // If initiating the reboot fails, observers will be notified via a call to
+  // OnRebootFailed().
+  //
+  // Note that there are no guarantees that the reboot will in fact happen even
+  // if the system calls to initiate a reboot return success.
+  void Reboot();
+
   // Passing in a nullptr as |delegate| resets the delegate to a default
   // production version.
   void SetDelegateForTesting(ChromeCleanerControllerDelegate* delegate);
   void DismissRebootForTesting();
 
  private:
-  friend struct base::DefaultSingletonTraits<ChromeCleanerController>;
-
   ChromeCleanerController();
   ~ChromeCleanerController();
 
@@ -191,6 +196,7 @@ class ChromeCleanerController {
                         prompt_user_callback);
   void OnConnectionClosed();
   void OnCleanerProcessDone(ChromeCleanerRunner::ProcessStatus process_status);
+  void InitiateReboot();
 
   std::unique_ptr<ChromeCleanerControllerDelegate> real_delegate_;
   // Pointer to either real_delegate_ or one set by tests.
