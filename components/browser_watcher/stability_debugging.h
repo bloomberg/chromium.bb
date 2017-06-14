@@ -15,6 +15,10 @@ namespace browser_watcher {
 void SetStabilityDataBool(base::StringPiece name, bool value);
 void SetStabilityDataInt(base::StringPiece name, int64_t value);
 
+// Registers a vectored exception handler that stores exception details to the
+// stability file.
+void RegisterStabilityVEH();
+
 }  // namespace browser_watcher
 
 #endif  // COMPONENTS_BROWSER_WATCHER_STABILITY_DEBUGGING_H_
