@@ -563,8 +563,7 @@ TEST_F(ServiceWorkerURLRequestJobTest,
   histogram_tester.ExpectUniqueSample(
       "ServiceWorker.NavPreload.FinishedFirst_MainFrame", false, 1);
   histogram_tester.ExpectUniqueSample(
-      "ServiceWorker.NavPreload.FinishedFirst_MainFrame_"
-      "StartWorkerExistingProcess",
+      "ServiceWorker.NavPreload.FinishedFirst_MainFrame_WorkerStartOccurred",
       false, 1);
 }
 
@@ -591,8 +590,7 @@ TEST_F(ServiceWorkerURLRequestJobTest,
   histogram_tester.ExpectUniqueSample(
       "ServiceWorker.NavPreload.FinishedFirst_MainFrame", true, 1);
   histogram_tester.ExpectUniqueSample(
-      "ServiceWorker.NavPreload.FinishedFirst_MainFrame_"
-      "StartWorkerExistingProcess",
+      "ServiceWorker.NavPreload.FinishedFirst_MainFrame_WorkerStartOccurred",
       true, 1);
 }
 
