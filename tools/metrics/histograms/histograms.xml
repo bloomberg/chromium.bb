@@ -46581,6 +46581,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="OfflinePages.Background.LoadingErrorStatusCode"
+    enum="CombinedHttpResponseAndNetErrorCode">
+  <owner>chili@chromium.org</owner>
+  <summary>
+    The combined http and net error codes that caused a page load failure.
+  </summary>
+</histogram>
+
 <histogram name="OfflinePages.Background.OfflinerRequestStatus"
     enum="OfflinePagesBackgroundOfflinerRequestStatus">
   <owner>dougarnett@chromium.org</owner>
@@ -92088,8 +92096,6 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram_suffixes>
 
 <histogram_suffixes name="OfflinePagesNamespace" separator=".">
-  <affected-histogram
-      name="OfflinePages.Background.BackgroundLoadingFailedCode"/>
   <suffix name="bookmark" label="Offline bookmark cache"/>
   <suffix name="last_n" label="Offline recent pages"/>
   <suffix name="async_loading" label="Offline async loaded pages"/>
@@ -92097,10 +92103,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="download" label="Offline downloaded pages"/>
   <suffix name="ntp_suggestions" label="Offline ntp suggestions"/>
   <affected-histogram
+      name="OfflinePages.Background.BackgroundLoadingFailedCode"/>
+  <affected-histogram
       name="OfflinePages.Background.EffectiveConnectionType.OffliningStartType"/>
   <affected-histogram
       name="OfflinePages.Background.EffectiveConnectionType.SavePageLater"/>
   <affected-histogram name="OfflinePages.Background.FinalSavePageResult"/>
+  <affected-histogram name="OfflinePages.Background.LoadingErrorStatusCode"/>
   <affected-histogram name="OfflinePages.Background.OfflinerRequestStatus"/>
   <affected-histogram name="OfflinePages.Background.TimeToCanceled"/>
   <affected-histogram name="OfflinePages.Background.TimeToSaved"/>

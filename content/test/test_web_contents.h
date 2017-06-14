@@ -25,6 +25,10 @@ namespace gfx {
 class Size;
 }
 
+namespace net {
+class HttpResponseHeaders;
+}
+
 namespace content {
 
 class NavigationData;
@@ -135,6 +139,10 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
   void SetNavigationData(
       NavigationHandle* navigation_handle,
       std::unique_ptr<NavigationData> navigation_data) override;
+
+  void SetHttpResponseHeaders(
+      NavigationHandle* navigation_handle,
+      scoped_refptr<net::HttpResponseHeaders> response_headers) override;
 
  protected:
   // The deprecated WebContentsTester still needs to subclass this.

@@ -370,6 +370,13 @@ void TestWebContents::SetNavigationData(
       ->set_navigation_data(std::move(navigation_data));
 }
 
+void TestWebContents::SetHttpResponseHeaders(
+    NavigationHandle* navigation_handle,
+    scoped_refptr<net::HttpResponseHeaders> response_headers) {
+  static_cast<NavigationHandleImpl*>(navigation_handle)
+      ->set_response_headers_for_testing(response_headers);
+}
+
 void TestWebContents::CreateNewWindow(
     RenderFrameHost* opener,
     int32_t route_id,
