@@ -1,5 +1,4 @@
 include_rules = [
-  "+components/payments/mojom/payment_app.mojom.h",
   "+content/common/input/input_handler.mojom.h",
   "+device/screen_orientation/public/interfaces",
   "+device/wake_lock/public/interfaces",

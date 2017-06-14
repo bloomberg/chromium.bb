@@ -8,9 +8,9 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/payments/mojom/payment_request.mojom.h"
 #include "components/strings/grit/components_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/modules/payments/payment_request.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace payments {

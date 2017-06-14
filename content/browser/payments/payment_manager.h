@@ -9,9 +9,9 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "components/payments/mojom/payment_app.mojom.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "third_party/WebKit/public/platform/modules/payments/payment_app.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -36,18 +36,21 @@ class CONTENT_EXPORT PaymentManager
   void Init(const std::string& scope) override;
   void DeletePaymentInstrument(
       const std::string& instrument_key,
-      DeletePaymentInstrumentCallback callback) override;
-  void GetPaymentInstrument(const std::string& instrument_key,
-                            GetPaymentInstrumentCallback callback) override;
+      const DeletePaymentInstrumentCallback& callback) override;
+  void GetPaymentInstrument(
+      const std::string& instrument_key,
+      const GetPaymentInstrumentCallback& callback) override;
   void KeysOfPaymentInstruments(
-      KeysOfPaymentInstrumentsCallback callback) override;
-  void HasPaymentInstrument(const std::string& instrument_key,
-                            HasPaymentInstrumentCallback callback) override;
-  void SetPaymentInstrument(const std::string& instrument_key,
-                            payments::mojom::PaymentInstrumentPtr details,
-                            SetPaymentInstrumentCallback callback) override;
+      const KeysOfPaymentInstrumentsCallback& callback) override;
+  void HasPaymentInstrument(
+      const std::string& instrument_key,
+      const HasPaymentInstrumentCallback& callback) override;
+  void SetPaymentInstrument(
+      const std::string& instrument_key,
+      payments::mojom::PaymentInstrumentPtr details,
+      const SetPaymentInstrumentCallback& callback) override;
   void ClearPaymentInstruments(
-      ClearPaymentInstrumentsCallback callback) override;
+      const ClearPaymentInstrumentsCallback& callback) override;
 
   // Called when an error is detected on binding_.
   void OnConnectionError();

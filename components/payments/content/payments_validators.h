@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "components/payments/mojom/payment_request.mojom.h"
+#include "third_party/WebKit/public/platform/modules/payments/payment_request.mojom.h"
 
 namespace payments {
 

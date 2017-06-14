@@ -7,7 +7,6 @@
 
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptValue.h"
-#include "components/payments/mojom/payment_request.mojom-blink.h"
 #include "core/dom/ContextLifecycleObserver.h"
 #include "core/events/EventTarget.h"
 #include "modules/ModulesExport.h"
@@ -24,6 +23,7 @@
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
+#include "public/platform/modules/payments/payment_request.mojom-blink.h"
 
 namespace blink {
 

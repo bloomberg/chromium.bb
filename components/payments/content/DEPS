@@ -10,6 +10,7 @@ include_rules = [
   "+content/public",
   "+mojo/public/cpp",
   "+net",
+  "+third_party/WebKit/public/platform/modules/payments",
   "+third_party/libphonenumber",
   "+third_party/re2",
   "+ui/base",

@@ -5,10 +5,10 @@
 #ifndef PaymentsValidators_h
 #define PaymentsValidators_h
 
-#include "components/payments/mojom/payment_request.mojom-blink.h"
 #include "modules/ModulesExport.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/text/WTFString.h"
+#include "public/platform/modules/payments/payment_request.mojom-blink.h"
 
 namespace blink {
 

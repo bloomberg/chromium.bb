@@ -15,7 +15,7 @@
 #include "base/strings/string16.h"
 #include "components/payments/core/currency_formatter.h"
 #include "components/payments/core/payment_options_provider.h"
-#include "components/payments/mojom/payment_request.mojom.h"
+#include "third_party/WebKit/public/platform/modules/payments/payment_request.mojom.h"
 
 namespace payments {
 

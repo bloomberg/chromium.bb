@@ -9,7 +9,7 @@
 #include <string>
 
 #include "base/strings/string16.h"
-#include "components/payments/mojom/payment_request.mojom.h"
+#include "third_party/WebKit/public/platform/modules/payments/payment_request.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/text_constants.h"

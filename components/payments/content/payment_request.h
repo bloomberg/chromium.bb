@@ -13,9 +13,9 @@
 #include "components/payments/content/payment_request_state.h"
 #include "components/payments/core/journey_logger.h"
 #include "components/payments/core/payment_request_delegate.h"
-#include "components/payments/mojom/payment_request.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "third_party/WebKit/public/platform/modules/payments/payment_request.mojom.h"
 #include "url/gurl.h"
 
 namespace content {

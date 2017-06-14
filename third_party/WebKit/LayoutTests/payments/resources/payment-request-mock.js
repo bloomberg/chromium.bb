@@ -5,11 +5,10 @@
 "use strict";
 
 let paymentRequestMock = loadMojoModules(
-    'paymentRequestMock',
-    ['components/payments/mojom/payment_request.mojom',
-     'mojo/public/js/bindings',
-    ]).then(mojo => {
-  let [paymentRequest, bindings] =  mojo.modules;
+  'paymentRequestMock', ['third_party/WebKit/public/platform/modules/payments/payment_request.mojom',
+    'mojo/public/js/bindings',
+  ]).then(mojo => {
+  let [paymentRequest, bindings] = mojo.modules;
 
   class PaymentRequestMock {
     constructor(interfaceProvider) {
@@ -31,14 +30,11 @@ let paymentRequestMock = loadMojoModules(
       }
     }
 
-    show() {
-    }
+    show() {}
 
-    updateWith(details) {
-    }
+    updateWith(details) {}
 
-    complete(success) {
-    }
+    complete(success) {}
 
     onPaymentResponse(data) {
       if (!this.client_) {

@@ -15,7 +15,7 @@
 #include "components/payments/content/payment_response_helper.h"
 #include "components/payments/core/address_normalizer.h"
 #include "components/payments/core/payments_profile_comparator.h"
-#include "components/payments/mojom/payment_request.mojom.h"
+#include "third_party/WebKit/public/platform/modules/payments/payment_request.mojom.h"
 
 namespace autofill {
 class AutofillProfile;

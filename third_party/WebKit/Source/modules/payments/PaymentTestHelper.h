@@ -7,7 +7,6 @@
 
 #include "bindings/core/v8/ScriptFunction.h"
 #include "bindings/core/v8/V8DOMException.h"
-#include "components/payments/mojom/payment_request.mojom-blink.h"
 #include "modules/payments/PaymentDetailsInit.h"
 #include "modules/payments/PaymentDetailsUpdate.h"
 #include "modules/payments/PaymentItem.h"
@@ -17,6 +16,7 @@
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
+#include "public/platform/modules/payments/payment_request.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace blink {
