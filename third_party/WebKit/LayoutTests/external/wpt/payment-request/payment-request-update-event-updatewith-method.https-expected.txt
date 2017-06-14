@@ -1,0 +1,10 @@
+This is a testharness.js-based test.
+PASS Let target be the request which is dispatching the event. 
+FAIL Calling .updateWith() with an undispatched untrusted event throws "InvalidStateError" assert_throws: untrusted event of type "just a test" must throw "InvalidStateError" function "() => {
+        ev.updateWith(Promise.resolve());
+      }" did not throw
+FAIL Calling .updateWith() with a dispatched, untrusted event, throws "InvalidStateError" assert_throws: untrusted event of type "just a test" must throw "InvalidStateError" function "() => {
+        ev.updateWith(Promise.resolve())
+      }" did not throw
+Harness: the test ran to completion.
+
