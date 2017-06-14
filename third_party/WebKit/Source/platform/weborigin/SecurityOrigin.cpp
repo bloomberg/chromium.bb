@@ -260,8 +260,12 @@ bool SecurityOrigin::CanAccess(const SecurityOrigin* other) const {
       if (host_ == other->host_ && port_ == other->port_)
         can_access = true;
     } else if (domain_was_set_in_dom_ && other->domain_was_set_in_dom_) {
-      if (domain_ == other->domain_)
+      // TODO(mkwst): If/when we ship this behavior, change this to check
+      // IsNull() rather than relying on string comparison.
+      // https://crbug.com/733150
+      if (domain_ == other->domain_ && domain_ != "null") {
         can_access = true;
+      }
     }
   }
 

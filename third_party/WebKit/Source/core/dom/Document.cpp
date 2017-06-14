@@ -4930,20 +4930,27 @@ void Document::setDomain(const String& raw_domain,
     return;
   }
 
-  OriginAccessEntry access_entry(GetSecurityOrigin()->Protocol(), new_domain,
-                                 OriginAccessEntry::kAllowSubdomains);
-  OriginAccessEntry::MatchResult result =
-      access_entry.MatchesOrigin(*GetSecurityOrigin());
-  if (result == OriginAccessEntry::kDoesNotMatchOrigin) {
-    exception_state.ThrowSecurityError(
-        "'" + new_domain + "' is not a suffix of '" + domain() + "'.");
-    return;
-  }
+  // TODO(mkwst): If we decide to ship this, change the IDL file to make the
+  // value nullable (via `TreatNullAs=NullString`, for example). For the moment,
+  // just rely on JavaScript's inherent nuttiness for implicit conversion to the
+  // string "null". https://crbug.com/733150
+  if (!RuntimeEnabledFeatures::NullableDocumentDomainEnabled() ||
+      new_domain != "null") {
+    OriginAccessEntry access_entry(GetSecurityOrigin()->Protocol(), new_domain,
+                                   OriginAccessEntry::kAllowSubdomains);
+    OriginAccessEntry::MatchResult result =
+        access_entry.MatchesOrigin(*GetSecurityOrigin());
+    if (result == OriginAccessEntry::kDoesNotMatchOrigin) {
+      exception_state.ThrowSecurityError(
+          "'" + new_domain + "' is not a suffix of '" + domain() + "'.");
+      return;
+    }
 
-  if (result == OriginAccessEntry::kMatchesOriginButIsPublicSuffix) {
-    exception_state.ThrowSecurityError("'" + new_domain +
-                                       "' is a top-level domain.");
-    return;
+    if (result == OriginAccessEntry::kMatchesOriginButIsPublicSuffix) {
+      exception_state.ThrowSecurityError("'" + new_domain +
+                                         "' is a top-level domain.");
+      return;
+    }
   }
 
   if (frame_) {
