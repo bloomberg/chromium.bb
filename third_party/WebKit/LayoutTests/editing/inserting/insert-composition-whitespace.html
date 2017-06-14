@@ -1,95 +1,77 @@
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
-<html>
-<head>
-<script src="../../resources/js-test.js"></script>
-</head>
-<body>
-<p id="description"></p>
-<div id="console"></div>
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
-
-var sel = document.getSelection();
-var root = document.createElement("root");
-document.body.appendChild(root);
-
-
-function createEditable(tagName, text) {
-    var node = document.createElement(tagName);
-    node.contentEditable = true;
-    node.innerHTML = text;
-    return node;
+function assertMarkedText(tagName, compositionText, expected) {
+  assert_selection(
+    `<${tagName} contenteditable id="sample">^X|</${tagName}>`,
+    selection => {
+      selection.document.execCommand('delete');
+      textInputController.setMarkedText(compositionText, 0,
+                                        compositionText.length);
+      const sample = selection.document.getElementById('sample');
+      assert_equals(sample.firstChild.textContent, expected);
+      textInputController.unmarkText();
+    },
+    `<${tagName} contenteditable id="sample">^${expected}|</${tagName}>`);
 }
 
-function test(tagName, compositionText, expected) {
-    var node = createEditable(tagName, "X");
-    root.appendChild(node);
+test(() => {
+ assert_exists(window, 'textInputController',
+               'this test requires window.textInputController.');
 
-    var textNode = node.firstChild;
-    sel.setBaseAndExtent(textNode, 0, textNode, textNode.data.length);
-    document.execCommand("Delete", false);
+  assertMarkedText('div', 'AB', 'AB');
+  assertMarkedText('div', 'A B', 'A B');
+  assertMarkedText('div', 'A  B', 'A \xA0B');
+  assertMarkedText('div', 'A   B', 'A \xA0 B');
+  assertMarkedText('div', 'A    B', 'A \xA0 \xA0B'); 
 
-    textInputController.setMarkedText(compositionText, 0, compositionText.length);
-    compositingText = node.innerText;
-    textInputController.unmarkText();
-    confirmedText = node.innerText;
+  assertMarkedText('div', ' AB', '\xA0AB');
+  assertMarkedText('div', '  AB', '\xA0 AB');
+  assertMarkedText('div', '   AB', '\xA0 \xA0AB');
+  assertMarkedText('div', '    AB', '\xA0 \xA0 AB');
+  assertMarkedText('div', '     AB', '\xA0 \xA0 \xA0AB');
+  assertMarkedText('div', '      AB', '\xA0 \xA0 \xA0 AB');
+  assertMarkedText('div', '       AB', '\xA0 \xA0 \xA0 \xA0AB');
+  assertMarkedText('div', 'AB  ', 'AB \xA0');
+  assertMarkedText('div', 'AB   ', 'AB \xA0\xA0');
+  assertMarkedText('div', 'AB    ', 'AB \xA0 \xA0');
+  assertMarkedText('div', 'AB     ', 'AB \xA0 \xA0\xA0');
+  assertMarkedText('div', 'AB      ', 'AB \xA0 \xA0 \xA0');
+  assertMarkedText('div', 'AB       ', 'AB \xA0 \xA0 \xA0\xA0');
 
-    shouldBe("compositingText", "'" + expected + "'");
-    shouldBe("confirmedText", "'" + expected + "'");
-}
+  assertMarkedText('div', '  A  B  ', '\xA0 A \xA0B \xA0');
+  assertMarkedText('div', '\t\tA\t\tB\t\t', '\xA0 A \xA0B \xA0');
 
-test("div", "AB", "AB");
-test("div", "A B", "A B");
-test("div", "A  B", "A \xA0B");
-test("div", "A   B", "A \xA0 B");
-test("div", "A    B", "A \xA0 \xA0B"); 
+  assertMarkedText('div', ' ', '\xA0');
+  assertMarkedText('div', '  ', '\xA0\xA0');
+  assertMarkedText('div', '   ', '\xA0 \xA0');
 
-test("div", " AB", "\xA0AB");
-test("div", "  AB", "\xA0 AB");
-test("div", "   AB", "\xA0 \xA0AB");
-test("div", "    AB", "\xA0 \xA0 AB");
-test("div", "     AB", "\xA0 \xA0 \xA0AB");
-test("div", "      AB", "\xA0 \xA0 \xA0 AB");
-test("div", "       AB", "\xA0 \xA0 \xA0 \xA0AB");
-test("div", "AB  ", "AB \xA0");
-test("div", "AB   ", "AB \xA0\xA0");
-test("div", "AB    ", "AB \xA0 \xA0");
-test("div", "AB     ", "AB \xA0 \xA0\xA0");
-test("div", "AB      ", "AB \xA0 \xA0 \xA0");
-test("div", "AB       ", "AB \xA0 \xA0 \xA0\xA0");
+  assertMarkedText('pre', 'AB', 'AB');
+  assertMarkedText('pre', 'A B', 'A B');
+  assertMarkedText('pre', 'A  B', 'A  B');
+  assertMarkedText('pre', 'A   B', 'A   B');
+  assertMarkedText('pre', 'A    B', 'A    B');
+  assertMarkedText('pre', 'AB  ', 'AB  ');
+  assertMarkedText('pre', 'AB   ', 'AB   ');
+  assertMarkedText('pre', 'AB    ', 'AB    ');
+  assertMarkedText('pre', 'AB     ', 'AB     ');
+  assertMarkedText('pre', 'AB      ', 'AB      ');
+  assertMarkedText('pre', 'AB       ', 'AB       ');
+  assertMarkedText('pre', '  AB', '  AB');
+  assertMarkedText('pre', '   AB', '   AB');
+  assertMarkedText('pre', '    AB', '    AB');
+  assertMarkedText('pre', '     AB', '     AB');
+  assertMarkedText('pre', '      AB', '      AB');
+  assertMarkedText('pre', '       AB', '       AB');
 
-test("div", "  A  B  ", "\xA0 A \xA0B \xA0");
-test("div", "\t\tA\t\tB\t\t", "\xA0 A \xA0B \xA0");
-
-test("div", " ", "\xA0");
-test("div", "  ", "\xA0\xA0");
-test("div", "   ", "\xA0 \xA0");
-
-test("pre", "AB", "AB");
-test("pre", "A B", "A B");
-test("pre", "A  B", "A  B");
-test("pre", "A   B", "A   B");
-test("pre", "A    B", "A    B");
-test("pre", "AB  ", "AB  ");
-test("pre", "AB   ", "AB   ");
-test("pre", "AB    ", "AB    ");
-test("pre", "AB     ", "AB     ");
-test("pre", "AB      ", "AB      ");
-test("pre", "AB       ", "AB       ");
-test("pre", "  AB", "  AB");
-test("pre", "   AB", "   AB");
-test("pre", "    AB", "    AB");
-test("pre", "     AB", "     AB");
-test("pre", "      AB", "      AB");
-test("pre", "       AB", "       AB");
-
-test("pre", "  A  B  ", "  A  B  ");
-test("pre", "\t\tA\t\tB\t\t", "\t\tA\t\tB\t\t");
-test("pre", " ", " ");
-test("pre", "  ", "  ");
-test("pre", "   ", "   ");
-
-root.style.display = "none";
-
+  assertMarkedText('pre', '  A  B  ', '  A  B  ');
+  assertMarkedText('pre', '\t\tA\t\tB\t\t', '\t\tA\t\tB\t\t');
+  assertMarkedText('pre', ' ', ' ');
+  assertMarkedText('pre', '  ', '  ');
+  assertMarkedText('pre', '   ', '   ');
+}, 'Insert space and TAB via TextInputController');
 </script>
 </body>
 </html>
