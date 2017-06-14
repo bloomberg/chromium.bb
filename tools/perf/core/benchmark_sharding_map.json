@@ -681,7 +681,7 @@
     }
   },
   "Android Nexus5X WebView Perf": {
-    "build243-m1--device1": {
+    "build243-m4--device1": {
       "benchmarks": [
         "system_health.memory_desktop",
         "thread_times.polymer",
@@ -690,7 +690,7 @@
         "v8.runtimestats.browsing_mobile"
       ]
     },
-    "build243-m1--device2": {
+    "build243-m4--device2": {
       "benchmarks": [
         "loading.desktop",
         "rasterize_and_record_micro.polymer",
@@ -703,7 +703,7 @@
         "v8.browsing_mobile"
       ]
     },
-    "build243-m1--device3": {
+    "build243-m4--device3": {
       "benchmarks": [
         "blink_perf.events",
         "blink_perf.svg",
@@ -727,7 +727,7 @@
         "thread_times.key_noop_cases"
       ]
     },
-    "build243-m1--device4": {
+    "build243-m4--device4": {
       "benchmarks": [
         "blink_perf.bindings",
         "blink_perf.dom",
@@ -750,7 +750,7 @@
         "v8.infinite_scroll_tbmv2"
       ]
     },
-    "build243-m1--device5": {
+    "build243-m4--device5": {
       "benchmarks": [
         "battor.trivial_pages",
         "blink_perf.css",
@@ -777,7 +777,7 @@
         "v8.runtimestats.browsing_desktop"
       ]
     },
-    "build243-m1--device6": {
+    "build243-m4--device6": {
       "benchmarks": [
         "blink_perf.layout",
         "blink_perf.shadow_dom",
@@ -799,7 +799,7 @@
         "v8.detached_context_age_in_gc"
       ]
     },
-    "build243-m1--device7": {
+    "build243-m4--device7": {
       "benchmarks": [
         "battor.steady_state",
         "blink_perf.canvas",
