@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/android/vr_shell/ui_elements/ui_element.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_bindings.h"
 
 class SkSurface;
@@ -27,7 +28,7 @@ class TexturedElement : public UiElement {
 
   // UiElement interface.
   void Render(UiElementRenderer* renderer,
-              vr::Mat4f view_proj_matrix) const final;
+              gfx::Transform view_proj_matrix) const final;
 
  protected:
   virtual UiTexture* GetTexture() const = 0;

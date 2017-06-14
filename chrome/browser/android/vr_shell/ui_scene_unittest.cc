@@ -118,7 +118,7 @@ TEST(UiScene, ParentTransformAppliesToChild) {
   element->set_id(0);
   element->set_size({1000, 1000, 1});
   element->set_scale({3, 3, 1});
-  element->set_rotation({0, 0, 1, M_PI / 2});
+  element->set_rotation(gfx::Quaternion(gfx::Vector3dF(0, 0, 1), M_PI / 2));
   element->set_translation({6, 1, 0});
   scene.AddUiElement(std::move(element));
 
@@ -128,7 +128,7 @@ TEST(UiScene, ParentTransformAppliesToChild) {
   element->set_parent_id(0);
   element->set_size({1, 1, 1});
   element->set_scale({2, 2, 1});
-  element->set_rotation({0, 0, 1, M_PI / 2});
+  element->set_rotation(gfx::Quaternion(gfx::Vector3dF(0, 0, 1), M_PI / 2));
   element->set_translation({3, 0, 0});
   scene.AddUiElement(std::move(element));
   const UiElement* child = scene.GetUiElementById(1);
@@ -137,8 +137,10 @@ TEST(UiScene, ParentTransformAppliesToChild) {
   const gfx::Vector3dF point(1, 0, 0);
 
   scene.OnBeginFrame(usToTicks(0));
-  auto new_origin = vr::MatrixVectorMul(child->TransformMatrix(), origin);
-  auto new_point = vr::MatrixVectorMul(child->TransformMatrix(), point);
+  auto new_origin =
+      vr::MatrixVectorMul(vr::ToMat4F(child->TransformMatrix()), origin);
+  auto new_point =
+      vr::MatrixVectorMul(vr::ToMat4F(child->TransformMatrix()), point);
   EXPECT_VEC3F_NEAR(gfx::Vector3dF(6, 10, 0), new_origin);
   EXPECT_VEC3F_NEAR(gfx::Vector3dF(0, 10, 0), new_point);
 }

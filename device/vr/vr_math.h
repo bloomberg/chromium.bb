@@ -9,6 +9,7 @@
 #include "device/vr/vr_types.h"
 
 #include "ui/gfx/geometry/quaternion.h"
+#include "ui/gfx/transform.h"
 
 namespace vr {
 
@@ -88,6 +89,10 @@ float DEVICE_VR_EXPORT Clampf(float value, float min, float max);
 Quatf DEVICE_VR_EXPORT ToVRQuatF(const gfx::Quaternion& q);
 
 gfx::Quaternion DEVICE_VR_EXPORT ToQuaternion(const vr::Quatf& q);
+
+Mat4f DEVICE_VR_EXPORT ToMat4F(const gfx::Transform& t);
+
+gfx::Transform DEVICE_VR_EXPORT ToTransform(const vr::Mat4f& m);
 
 }  // namespace vr
 

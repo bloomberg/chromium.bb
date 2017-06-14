@@ -9,7 +9,6 @@
 #include "base/macros.h"
 #include "chrome/browser/android/vr_shell/animation.h"
 #include "chrome/browser/android/vr_shell/easing.h"
-#include "device/vr/vr_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #define EXPECT_VEC3F_EQ(a, b)    \
@@ -23,11 +22,11 @@
   EXPECT_FLOAT_EQ(a.width(), b.width()); \
   EXPECT_FLOAT_EQ(a.height(), b.height());
 
-#define EXPECT_ROTATION(a, b) \
-  EXPECT_FLOAT_EQ(a.x, b.x);  \
-  EXPECT_FLOAT_EQ(a.y, b.y);  \
-  EXPECT_FLOAT_EQ(a.z, b.z);  \
-  EXPECT_FLOAT_EQ(a.angle, b.angle);
+#define EXPECT_ROTATION(a, b)    \
+  EXPECT_FLOAT_EQ(a.x(), b.x()); \
+  EXPECT_FLOAT_EQ(a.y(), b.y()); \
+  EXPECT_FLOAT_EQ(a.z(), b.z()); \
+  EXPECT_FLOAT_EQ(a.w(), b.w());
 
 namespace vr_shell {
 
@@ -74,19 +73,19 @@ TEST(UiElements, AnimateTranslation) {
 
 TEST(UiElements, AnimateRotation) {
   UiElement rect;
-  rect.set_rotation({10, 100, 1000, 10000});
+  gfx::Quaternion from(gfx::Vector3dF(10, 100, 1000), 10000);
+  gfx::Quaternion to(gfx::Vector3dF(20, 200, 2000), 20000);
+  rect.set_rotation(from);
   std::unique_ptr<Animation> animation(
       new Animation(0, Animation::Property::ROTATION,
                     std::unique_ptr<easing::Easing>(new easing::Linear()),
-                    std::vector<float>(), {20, 200, 2000, 20000},
+                    std::vector<float>(), {to.x(), to.y(), to.z(), to.w()},
                     usToTicks(50000), usToDelta(10000)));
   rect.animations().emplace_back(std::move(animation));
   rect.Animate(usToTicks(50000));
-  EXPECT_ROTATION(vr::RotationAxisAngle({10, 100, 1000, 10000}),
-                  rect.rotation());
+  EXPECT_ROTATION(from, rect.rotation());
   rect.Animate(usToTicks(60000));
-  EXPECT_ROTATION(vr::RotationAxisAngle({20, 200, 2000, 20000}),
-                  rect.rotation());
+  EXPECT_ROTATION(to, rect.rotation());
 }
 
 TEST(UiElements, AnimationHasNoEffectBeforeScheduledStart) {

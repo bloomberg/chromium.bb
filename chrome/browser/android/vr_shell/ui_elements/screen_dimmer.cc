@@ -8,6 +8,8 @@
 #include "chrome/browser/android/vr_shell/ui_element_renderer.h"
 #include "device/vr/vr_math.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/geometry/quaternion.h"
+#include "ui/gfx/transform.h"
 
 namespace vr_shell {
 
@@ -24,15 +26,14 @@ void ScreenDimmer::Initialize() {
 }
 
 void ScreenDimmer::Render(UiElementRenderer* renderer,
-                          vr::Mat4f view_proj_matrix) const {
-  vr::Mat4f m;
-  vr::SetIdentityM(&m);
-  vr::ScaleM(m, {2.0f, 2.0f, 1.0f}, &m);
+                          gfx::Transform view_proj_matrix) const {
+  gfx::Transform m;
+  m.Scale3d(2.0f, 2.0f, 1.0f);
 
   // Always use normal scheme for dimmer.
   const ColorScheme& color_scheme =
       ColorScheme::GetColorScheme(ColorScheme::kModeNormal);
-  renderer->DrawGradientQuad(m, color_scheme.dimmer_outer,
+  renderer->DrawGradientQuad(vr::ToMat4F(m), color_scheme.dimmer_outer,
                              color_scheme.dimmer_inner, kDimmerOpacity);
 }
 
