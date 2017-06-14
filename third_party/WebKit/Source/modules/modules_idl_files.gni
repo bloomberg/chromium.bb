@@ -477,6 +477,7 @@ modules_dictionary_idl_files =
                     "payments/AndroidPayMethodData.idl",
                     "payments/AndroidPayTokenization.idl",
                     "payments/BasicCardRequest.idl",
+                    "payments/ImageObject.idl",
                     "payments/PaymentAppResponse.idl",
                     "payments/PaymentRequestEventInit.idl",
                     "payments/PaymentCurrencyAmount.idl",

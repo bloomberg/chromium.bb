@@ -14,14 +14,26 @@ enum PaymentHandlerStatus {
   NOT_FOUND,
   NO_ACTIVE_WORKER,
   STORAGE_OPERATION_FAILED,
+  FETCH_INSTRUMENT_ICON_FAILED,
 };
 
+// This struct is provided to hold an image object from render side
+// (ImageObject.idl).
+struct ImageObject {
+  url.mojom.Url src;
+};
+
+// This struct is provided to hold a payment instrument from render
+// side (PaymentInstrument.idl).
 struct PaymentInstrument {
   string name;
+  array<ImageObject> icons;
   array<string> enabled_methods;
   string stringified_capabilities;
 };
 
+// This interface provides implementation of PaymentInstruments.idl
+// in render side.
 interface PaymentManager {
   Init(string service_worker_scope);
   DeletePaymentInstrument(string instrument_key)
@@ -38,6 +50,8 @@ interface PaymentManager {
       => (PaymentHandlerStatus status);
 };
 
+// This struct is provided to send payment request data to render side
+// (PaymentRequestEvent.idl).
 struct PaymentRequestEventData {
   url.mojom.Url top_level_origin;
   url.mojom.Url payment_request_origin;
@@ -48,6 +62,8 @@ struct PaymentRequestEventData {
   string instrument_key;
 };
 
+// This struct is provided to receive payment app response from render
+// side (PaymentAppResponse.idl).
 struct PaymentAppResponse {
   string method_name;
   string stringified_details;

@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "components/payments/mojom/payment_app.mojom.h"
+#include "content/browser/payments/payment_instrument_icon_fetcher.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/common/content_export.h"
@@ -122,11 +123,20 @@ class CONTENT_EXPORT PaymentAppDatabase {
   void DidFindRegistrationToWritePaymentInstrument(
       const std::string& instrument_key,
       payments::mojom::PaymentInstrumentPtr instrument,
+      const std::string& decoded_instrument_icon,
       WritePaymentInstrumentCallback callback,
       ServiceWorkerStatusCode status,
       scoped_refptr<ServiceWorkerRegistration> registration);
   void DidWritePaymentInstrument(WritePaymentInstrumentCallback callback,
                                  ServiceWorkerStatusCode status);
+
+  // PaymentInstrumentIconFetcherCallback.
+  void DidFetchedPaymentInstrumentIcon(
+      const GURL& scope,
+      const std::string& instrument_key,
+      payments::mojom::PaymentInstrumentPtr instrument,
+      WritePaymentInstrumentCallback callback,
+      const std::string& icon);
 
   // ClearPaymentInstruments callbacks
   void DidFindRegistrationToClearPaymentInstruments(
@@ -142,6 +152,7 @@ class CONTENT_EXPORT PaymentAppDatabase {
   void DidClearPaymentInstruments(ClearPaymentInstrumentsCallback callback,
                                   ServiceWorkerStatusCode status);
 
+  scoped_refptr<PaymentInstrumentIconFetcher> instrument_icon_fetcher_;
   scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
   base::WeakPtrFactory<PaymentAppDatabase> weak_ptr_factory_;
 

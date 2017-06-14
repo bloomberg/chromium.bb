@@ -4,8 +4,13 @@
 
 package org.chromium.chrome.browser.payments;
 
+import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentItem;
@@ -62,13 +67,19 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
 
     @CalledByNative
     private static void addInstrument(List<PaymentInstrument> instruments, WebContents webContents,
-            long swRegistrationId, String instrumentId, String label, String[] methodNameArray) {
+            long swRegistrationId, String instrumentId, String label, String[] methodNameArray,
+            Bitmap icon) {
+        Context context = ChromeActivity.fromWebContents(webContents);
+        if (context == null) return;
+
         Set<String> methodNames = new HashSet<String>();
         for (int i = 0; i < methodNameArray.length; i++) {
             methodNames.add(methodNameArray[i]);
         }
-        instruments.add(new ServiceWorkerPaymentInstrument(
-                webContents, swRegistrationId, instrumentId, label, methodNames));
+
+        instruments.add(
+                new ServiceWorkerPaymentInstrument(webContents, swRegistrationId, instrumentId,
+                        label, methodNames, new BitmapDrawable(context.getResources(), icon)));
     }
 
     @CalledByNative

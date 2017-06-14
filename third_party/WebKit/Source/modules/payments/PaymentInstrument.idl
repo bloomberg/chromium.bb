@@ -2,15 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://w3c.github.io/webpayments-payment-apps-api/#payment-instrument
+// https://w3c.github.io/payment-handler/#paymentinstrument-dictionary
 
 dictionary PaymentInstrument {
     required DOMString name;
-    // TODO(zino): PaymentInstrument should have icons attribute.
-    // The spec[1] defines it as a sequence of ImageObject but its definition
-    // is not clear yet.
-    // Please see: https://github.com/w3c/webpayments-payment-apps-api/issues/69
-    // sequence<ImageObject> icons;
+    sequence<ImageObject> icons;
     sequence<DOMString> enabledMethods;
     object capabilities;
 };

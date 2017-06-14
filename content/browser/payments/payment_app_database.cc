@@ -7,6 +7,7 @@
 #include <map>
 #include <utility>
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/optional.h"
@@ -16,6 +17,8 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/public/browser/browser_thread.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/image/image.h"
 
 namespace content {
 namespace {
@@ -58,6 +61,10 @@ PaymentInstrumentPtr ToPaymentInstrumentForMojo(const std::string& input) {
 
   PaymentInstrumentPtr instrument = PaymentInstrument::New();
   instrument->name = instrument_proto.name();
+  for (const auto& icon : instrument_proto.icons()) {
+    instrument->icons.emplace_back(
+        payments::mojom::ImageObject::New(GURL(icon.src())));
+  }
   for (const auto& method : instrument_proto.enabled_methods())
     instrument->enabled_methods.push_back(method);
   instrument->stringified_capabilities =
@@ -78,6 +85,18 @@ std::unique_ptr<StoredPaymentInstrument> ToStoredPaymentInstrument(
   instrument->instrument_key = instrument_proto.instrument_key();
   instrument->origin = GURL(instrument_proto.origin());
   instrument->name = instrument_proto.name();
+
+  if (!instrument_proto.decoded_instrument_icon().empty()) {
+    std::string icon_raw_data;
+    base::Base64Decode(instrument_proto.decoded_instrument_icon(),
+                       &icon_raw_data);
+    // Note that the icon has been decoded to PNG raw data regardless of the
+    // original icon format that was downloaded.
+    gfx::Image icon_image = gfx::Image::CreateFrom1xPNGBytes(
+        reinterpret_cast<const unsigned char*>(icon_raw_data.data()),
+        icon_raw_data.size());
+    instrument->icon = base::MakeUnique<SkBitmap>(icon_image.AsBitmap());
+  }
   for (const auto& method : instrument_proto.enabled_methods())
     instrument->enabled_methods.push_back(method);
 
@@ -166,12 +185,46 @@ void PaymentAppDatabase::WritePaymentInstrument(
     WritePaymentInstrumentCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
+  if (instrument->icons.size() > 0) {
+    instrument_icon_fetcher_ =
+        base::MakeRefCounted<PaymentInstrumentIconFetcher>();
+    instrument_icon_fetcher_->Start(
+        instrument->icons, service_worker_context_,
+        base::Bind(&PaymentAppDatabase::DidFetchedPaymentInstrumentIcon,
+                   weak_ptr_factory_.GetWeakPtr(), scope, instrument_key,
+                   base::Passed(std::move(instrument)),
+                   base::Passed(std::move(callback))));
+  } else {
+    service_worker_context_->FindReadyRegistrationForPattern(
+        scope,
+        base::Bind(
+            &PaymentAppDatabase::DidFindRegistrationToWritePaymentInstrument,
+            weak_ptr_factory_.GetWeakPtr(), instrument_key,
+            base::Passed(std::move(instrument)), std::string(),
+            base::Passed(std::move(callback))));
+  }
+}
+
+void PaymentAppDatabase::DidFetchedPaymentInstrumentIcon(
+    const GURL& scope,
+    const std::string& instrument_key,
+    payments::mojom::PaymentInstrumentPtr instrument,
+    WritePaymentInstrumentCallback callback,
+    const std::string& icon) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  instrument_icon_fetcher_ = nullptr;
+  if (icon.empty()) {
+    std::move(callback).Run(PaymentHandlerStatus::FETCH_INSTRUMENT_ICON_FAILED);
+    return;
+  }
+
   service_worker_context_->FindReadyRegistrationForPattern(
       scope,
       base::Bind(
           &PaymentAppDatabase::DidFindRegistrationToWritePaymentInstrument,
           weak_ptr_factory_.GetWeakPtr(), instrument_key,
-          base::Passed(std::move(instrument)),
+          base::Passed(std::move(instrument)), icon,
           base::Passed(std::move(callback))));
 }
 
@@ -371,6 +424,7 @@ void PaymentAppDatabase::DidHasPaymentInstrument(
 void PaymentAppDatabase::DidFindRegistrationToWritePaymentInstrument(
     const std::string& instrument_key,
     PaymentInstrumentPtr instrument,
+    const std::string& decoded_instrument_icon,
     WritePaymentInstrumentCallback callback,
     ServiceWorkerStatusCode status,
     scoped_refptr<ServiceWorkerRegistration> registration) {
@@ -381,12 +435,18 @@ void PaymentAppDatabase::DidFindRegistrationToWritePaymentInstrument(
   }
 
   StoredPaymentInstrumentProto instrument_proto;
+  instrument_proto.set_decoded_instrument_icon(decoded_instrument_icon);
   instrument_proto.set_registration_id(registration->id());
   instrument_proto.set_instrument_key(instrument_key);
   instrument_proto.set_origin(registration->pattern().GetOrigin().spec());
   instrument_proto.set_name(instrument->name);
   for (const auto& method : instrument->enabled_methods) {
     instrument_proto.add_enabled_methods(method);
+  }
+  for (const auto& image_object : instrument->icons) {
+    StoredPaymentInstrumentImageObject* image_object_proto =
+        instrument_proto.add_icons();
+    image_object_proto->set_src(image_object->src.spec());
   }
   instrument_proto.set_stringified_capabilities(
       instrument->stringified_capabilities);

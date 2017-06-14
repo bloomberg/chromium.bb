@@ -65,16 +65,18 @@ public class PaymentRequestServiceWorkerPaymentAppTest {
                             instruments.add(new ServiceWorkerPaymentInstrument(webContents,
                                     0 /* swRegistrationId */, "new" /* instrumentId */,
                                     "Create BobPay account" /* label */,
-                                    new HashSet<String>(Arrays.asList("https://bobpay.com",
-                                            "basic-card")) /* methodNames */));
+                                    new HashSet<String>(Arrays.asList(
+                                            "https://bobpay.com", "basic-card")) /* methodNames */,
+                                    null /* icon*/));
                         }
 
                         if (instrumentPresence == TWO_OPTIONS) {
                             instruments.add(new ServiceWorkerPaymentInstrument(webContents,
                                     0 /* swRegistrationId */, "existing" /* instrumentId */,
                                     "Existing BobPay account" /* label */,
-                                    new HashSet<String>(Arrays.asList("https://bobpay.com",
-                                            "basic-card")) /* methodNames */));
+                                    new HashSet<String>(Arrays.asList(
+                                            "https://bobpay.com", "basic-card")) /* methodNames */,
+                                    null /* icon */));
                         }
 
                         callback.onPaymentAppCreated(
