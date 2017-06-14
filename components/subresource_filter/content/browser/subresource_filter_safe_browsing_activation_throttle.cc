@@ -97,6 +97,12 @@ SubresourceFilterSafeBrowsingActivationThrottle::WillRedirectRequest() {
 
 content::NavigationThrottle::ThrottleCheckResult
 SubresourceFilterSafeBrowsingActivationThrottle::WillProcessResponse() {
+  // Non-null |database_client_| implies that by this time we have made a
+  // database request. This is guaranteed because with a valid
+  // |database_client_|, we always populate |check_results_| in
+  // WillStartRequest.
+  CHECK(!database_client_ || !check_results_.empty());
+
   // No need to defer the navigation if the check already happened.
   if (!database_client_ || check_results_.back().finished) {
     NotifyResult();
