@@ -68327,6 +68327,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ServiceWorker.TerminateThread.Time" units="ms">
+  <obsolete>
+    Deprecated in June 2017.
+  </obsolete>
   <owner>falken@chromium.org</owner>
   <summary>
     The time taken in the renderer process between the main thread asking the
@@ -68335,6 +68338,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="ServiceWorker.TimeBetweenEvents" units="ms">
+  <obsolete>
+    Deprecated in June 2017.
+  </obsolete>
   <owner>falken@chromium.org</owner>
   <summary>
     Called at the beginning of each ServiceWorkerVersion::Dispatch*Event

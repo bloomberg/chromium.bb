@@ -8,8 +8,6 @@
 #include <memory>
 
 #include "base/id_map.h"
-#include "base/optional.h"
-#include "base/time/time.h"
 #include "content/child/child_thread_impl.h"
 #include "content/child/scoped_child_process_reference.h"
 #include "content/common/service_worker/embedded_worker.mojom.h"
@@ -95,8 +93,6 @@ class EmbeddedWorkerInstanceClientImpl
 
   // nullptr means the worker is not running.
   std::unique_ptr<WorkerWrapper> wrapper_;
-
-  base::Optional<base::TimeTicks> stop_worker_time_;
 
   DISALLOW_COPY_AND_ASSIGN(EmbeddedWorkerInstanceClientImpl);
 };
