@@ -79,12 +79,8 @@ YV12_BUFFER_CONFIG *av1_scale_if_required(AV1_COMMON *cm,
                                           YV12_BUFFER_CONFIG *unscaled,
                                           YV12_BUFFER_CONFIG *scaled);
 
+void av1_calculate_scaled_size(int *width, int *height, int num, int den);
 #if CONFIG_FRAME_SUPERRES
-// This is the size after superress scaling, which could be 1:1.
-// Superres scaling happens after regular downscaling.
-// TODO(afergs): Limit overall reduction to 1/2 of the original size
-void av1_calculate_superres_size(const AV1_COMMON *cm, int *width, int *height);
-
 void av1_superres_upscale(AV1_COMMON *cm, BufferPool *const pool);
 
 // Returns 1 if a superres upscaled frame is unscaled and 0 otherwise.

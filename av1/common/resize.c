@@ -882,13 +882,12 @@ YV12_BUFFER_CONFIG *av1_scale_if_required(AV1_COMMON *cm,
   }
 }
 
-#if CONFIG_FRAME_SUPERRES
-void av1_calculate_superres_size(const AV1_COMMON *cm, int *width,
-                                 int *height) {
-  *width = *width * cm->superres_scale_numerator / SUPERRES_SCALE_DENOMINATOR;
-  *height = *height * cm->superres_scale_numerator / SUPERRES_SCALE_DENOMINATOR;
+void av1_calculate_scaled_size(int *width, int *height, int num, int den) {
+  *width = *width * num / den;
+  *height = *height * num / den;
 }
 
+#if CONFIG_FRAME_SUPERRES
 // TODO(afergs): Look for in-place upscaling
 // TODO(afergs): aom_ vs av1_ functions? Which can I use?
 // Upscale decoded image.

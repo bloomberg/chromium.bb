@@ -271,16 +271,10 @@ static const arg_def_t *global_args[] = {
 
 static const arg_def_t dropframe_thresh =
     ARG_DEF(NULL, "drop-frame", 1, "Temporal resampling threshold (buf %)");
-static const arg_def_t resize_allowed =
-    ARG_DEF(NULL, "resize-allowed", 1, "Spatial resampling enabled (bool)");
-static const arg_def_t resize_width =
-    ARG_DEF(NULL, "resize-width", 1, "Width of encoded frame");
-static const arg_def_t resize_height =
-    ARG_DEF(NULL, "resize-height", 1, "Height of encoded frame");
-static const arg_def_t resize_up_thresh =
-    ARG_DEF(NULL, "resize-up", 1, "Upscale threshold (buf %)");
-static const arg_def_t resize_down_thresh =
-    ARG_DEF(NULL, "resize-down", 1, "Downscale threshold (buf %)");
+static const arg_def_t resize_mode =
+    ARG_DEF(NULL, "resize-mode", 1, "Frame resize mode");
+static const arg_def_t resize_numerator =
+    ARG_DEF(NULL, "resize-numerator", 1, "Frame resize numerator");
 static const struct arg_enum_list end_usage_enum[] = { { "vbr", AOM_VBR },
                                                        { "cbr", AOM_CBR },
                                                        { "cq", AOM_CQ },
@@ -310,9 +304,8 @@ static const arg_def_t buf_initial_sz =
     ARG_DEF(NULL, "buf-initial-sz", 1, "Client initial buffer size (ms)");
 static const arg_def_t buf_optimal_sz =
     ARG_DEF(NULL, "buf-optimal-sz", 1, "Client optimal buffer size (ms)");
-static const arg_def_t *rc_args[] = { &dropframe_thresh, &resize_allowed,
-                                      &resize_width,     &resize_height,
-                                      &resize_up_thresh, &resize_down_thresh,
+static const arg_def_t *rc_args[] = { &dropframe_thresh, &resize_mode,
+                                      &resize_numerator,
 #if CONFIG_FRAME_SUPERRES
                                       &superres_mode,    &superres_numerator,
 #endif  // CONFIG_FRAME_SUPERRES
@@ -1012,16 +1005,10 @@ static int parse_stream_params(struct AvxEncoderConfig *global,
       config->cfg.g_lag_in_frames = arg_parse_uint(&arg);
     } else if (arg_match(&arg, &dropframe_thresh, argi)) {
       config->cfg.rc_dropframe_thresh = arg_parse_uint(&arg);
-    } else if (arg_match(&arg, &resize_allowed, argi)) {
-      config->cfg.rc_resize_allowed = arg_parse_uint(&arg);
-    } else if (arg_match(&arg, &resize_width, argi)) {
-      config->cfg.rc_scaled_width = arg_parse_uint(&arg);
-    } else if (arg_match(&arg, &resize_height, argi)) {
-      config->cfg.rc_scaled_height = arg_parse_uint(&arg);
-    } else if (arg_match(&arg, &resize_up_thresh, argi)) {
-      config->cfg.rc_resize_up_thresh = arg_parse_uint(&arg);
-    } else if (arg_match(&arg, &resize_down_thresh, argi)) {
-      config->cfg.rc_resize_down_thresh = arg_parse_uint(&arg);
+    } else if (arg_match(&arg, &resize_mode, argi)) {
+      config->cfg.rc_resize_mode = arg_parse_uint(&arg);
+    } else if (arg_match(&arg, &resize_numerator, argi)) {
+      config->cfg.rc_resize_numerator = arg_parse_uint(&arg);
 #if CONFIG_FRAME_SUPERRES
     } else if (arg_match(&arg, &superres_mode, argi)) {
       config->cfg.rc_superres_mode = arg_parse_uint(&arg);
@@ -1233,11 +1220,8 @@ static void show_stream_config(struct stream_state *stream,
   SHOW(g_pass);
   SHOW(g_lag_in_frames);
   SHOW(rc_dropframe_thresh);
-  SHOW(rc_resize_allowed);
-  SHOW(rc_scaled_width);
-  SHOW(rc_scaled_height);
-  SHOW(rc_resize_up_thresh);
-  SHOW(rc_resize_down_thresh);
+  SHOW(rc_resize_mode);
+  SHOW(rc_resize_numerator);
 #if CONFIG_FRAME_SUPERRES
   SHOW(rc_superres_mode);
   SHOW(rc_superres_numerator);

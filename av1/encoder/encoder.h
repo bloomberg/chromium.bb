@@ -129,7 +129,7 @@ typedef enum {
   RESIZE_NONE = 0,    // No frame resizing allowed.
   RESIZE_FIXED = 1,   // All frames are coded at the specified dimension.
   RESIZE_DYNAMIC = 2  // Coded size of each frame is determined by the codec.
-} RESIZE_TYPE;
+} RESIZE_MODE;
 #if CONFIG_FRAME_SUPERRES
 typedef enum {
   SUPERRES_NONE = 0,
@@ -207,9 +207,8 @@ typedef struct AV1EncoderConfig {
   unsigned int disable_tempmv;
 #endif
   // Internal frame size scaling.
-  RESIZE_TYPE resize_mode;
-  int scaled_frame_width;
-  int scaled_frame_height;
+  RESIZE_MODE resize_mode;
+  uint8_t resize_scale_numerator;
 
 #if CONFIG_FRAME_SUPERRES
   // Frame Super-Resolution size scaling.

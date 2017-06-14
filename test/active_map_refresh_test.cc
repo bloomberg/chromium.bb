@@ -108,7 +108,7 @@ TEST_P(ActiveMapRefreshTest, Test) {
   cfg_.g_lag_in_frames = 0;
   cfg_.g_profile = 1;
   cfg_.rc_target_bitrate = 600;
-  cfg_.rc_resize_allowed = 0;
+  cfg_.rc_resize_mode = 0;
   cfg_.rc_min_quantizer = 8;
   cfg_.rc_max_quantizer = 30;
   cfg_.g_pass = AOM_RC_ONE_PASS;

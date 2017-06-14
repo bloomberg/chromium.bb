@@ -1669,44 +1669,35 @@ static unsigned int lcg_rand16(unsigned int *state) {
   return *state / 65536 % 32768;
 }
 
-void av1_calculate_next_scaled_size(AV1_COMP *cpi, int *width, int *height) {
+uint8_t av1_calculate_next_resize_scale(const AV1_COMP *cpi) {
   static unsigned int seed = 56789;
-  AV1EncoderConfig *oxcf = &cpi->oxcf;
-  // TODO(afergs): Get width from frame instead?
-  *width = oxcf->width;
-  *height = oxcf->height;
-  if (oxcf->pass == 1) return;
+  const AV1EncoderConfig *oxcf = &cpi->oxcf;
+  if (oxcf->pass == 1) return RESIZE_SCALE_DENOMINATOR;
+  uint8_t new_num = RESIZE_SCALE_DENOMINATOR;
 
-  if (oxcf->resize_mode == RESIZE_FIXED) {
-    *width = oxcf->scaled_frame_width;
-    *height = oxcf->scaled_frame_height;
-    return;
+  switch (oxcf->resize_mode) {
+    case RESIZE_NONE: new_num = RESIZE_SCALE_DENOMINATOR; break;
+    case RESIZE_FIXED: new_num = oxcf->resize_scale_numerator; break;
+    case RESIZE_DYNAMIC:
+      // RESIZE_DYNAMIC: Just random for now.
+      new_num = lcg_rand16(&seed) % 4 + 13;
+      break;
+    default: assert(0);
   }
-  if (oxcf->resize_mode == RESIZE_DYNAMIC) {
-    // NOTE: RESIZE_DYNAMIC defaults to random now.
-    if (oxcf->pass == 2 || oxcf->pass == 0) {
-      int scale_num = lcg_rand16(&seed) % 4 + 13;
-      int scale_den = 16;
-      if (!(cpi->oxcf.width * scale_num / scale_den * 2 < oxcf->width ||
-            cpi->oxcf.height * scale_num / scale_den * 2 < oxcf->height)) {
-        *width = cpi->oxcf.width * scale_num / scale_den;
-        *height = cpi->oxcf.height * scale_num / scale_den;
-      }
-    }
-  }
+  return new_num;
 }
 
 #if CONFIG_FRAME_SUPERRES
 // TODO(afergs): Rename av1_rc_update_superres_scale(...)?
-int av1_calculate_next_superres_scale(const AV1_COMP *cpi, int width,
-                                      int height) {
+uint8_t av1_calculate_next_superres_scale(const AV1_COMP *cpi, int width,
+                                          int height) {
   static unsigned int seed = 34567;
   const AV1EncoderConfig *oxcf = &cpi->oxcf;
   if (oxcf->pass == 1) return SUPERRES_SCALE_DENOMINATOR;
-  uint8_t new_num = cpi->common.superres_scale_numerator;
+  uint8_t new_num = SUPERRES_SCALE_DENOMINATOR;
 
   switch (oxcf->superres_mode) {
-    case SUPERRES_NONE: return SUPERRES_SCALE_DENOMINATOR; break;
+    case SUPERRES_NONE: new_num = SUPERRES_SCALE_DENOMINATOR; break;
     case SUPERRES_FIXED: new_num = oxcf->superres_scale_numerator; break;
     case SUPERRES_DYNAMIC:
       // SUPERRES_DYNAMIC: Just random for now.

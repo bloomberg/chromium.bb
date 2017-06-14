@@ -243,10 +243,7 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
   RANGE_CHECK_HI(cfg, rc_overshoot_pct, 100);
   RANGE_CHECK_HI(cfg, rc_2pass_vbr_bias_pct, 100);
   RANGE_CHECK(cfg, kf_mode, AOM_KF_DISABLED, AOM_KF_AUTO);
-  RANGE_CHECK_BOOL(cfg, rc_resize_allowed);
   RANGE_CHECK_HI(cfg, rc_dropframe_thresh, 100);
-  RANGE_CHECK_HI(cfg, rc_resize_up_thresh, 100);
-  RANGE_CHECK_HI(cfg, rc_resize_down_thresh, 100);
   RANGE_CHECK(cfg, g_pass, AOM_RC_ONE_PASS, AOM_RC_LAST_PASS);
   RANGE_CHECK_HI(extra_cfg, min_gf_interval, MAX_LAG_BUFFERS - 1);
   RANGE_CHECK_HI(extra_cfg, max_gf_interval, MAX_LAG_BUFFERS - 1);
@@ -258,11 +255,9 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
                 (MAX_LAG_BUFFERS - 1));
   }
 
-  if (cfg->rc_resize_allowed == 1) {
-    RANGE_CHECK_HI(cfg, rc_scaled_width, cfg->g_w);
-    RANGE_CHECK_HI(cfg, rc_scaled_height, cfg->g_h);
-  }
-
+  RANGE_CHECK_HI(cfg, rc_resize_mode, RESIZE_DYNAMIC);
+  RANGE_CHECK(cfg, rc_resize_numerator, RESIZE_SCALE_DENOMINATOR / 2,
+              RESIZE_SCALE_DENOMINATOR);
 #if CONFIG_FRAME_SUPERRES
   RANGE_CHECK_HI(cfg, rc_superres_mode, SUPERRES_DYNAMIC);
   RANGE_CHECK(cfg, rc_superres_numerator, SUPERRES_SCALE_DENOMINATOR / 2,
@@ -493,22 +488,11 @@ static aom_codec_err_t set_encoder_config(
   oxcf->under_shoot_pct = cfg->rc_undershoot_pct;
   oxcf->over_shoot_pct = cfg->rc_overshoot_pct;
 
-  oxcf->scaled_frame_width = cfg->rc_scaled_width;
-  oxcf->scaled_frame_height = cfg->rc_scaled_height;
-  if (cfg->rc_resize_allowed == 1) {
-    oxcf->resize_mode =
-        (oxcf->scaled_frame_width == 0 || oxcf->scaled_frame_height == 0)
-            ? RESIZE_DYNAMIC
-            : RESIZE_FIXED;
-  } else {
+  oxcf->resize_mode = (RESIZE_MODE)cfg->rc_resize_mode;
+  oxcf->resize_scale_numerator = (uint8_t)cfg->rc_resize_numerator;
+  if (oxcf->resize_mode == RESIZE_FIXED &&
+      oxcf->resize_scale_numerator == RESIZE_SCALE_DENOMINATOR)
     oxcf->resize_mode = RESIZE_NONE;
-  }
-
-  // Initialize to input resolution if not specified.
-  if (oxcf->resize_mode != RESIZE_FIXED) {
-    oxcf->scaled_frame_width = oxcf->width;
-    oxcf->scaled_frame_height = oxcf->height;
-  }
 
 #if CONFIG_FRAME_SUPERRES
   oxcf->superres_mode = (SUPERRES_MODE)cfg->rc_superres_mode;
@@ -1599,12 +1583,9 @@ static aom_codec_enc_cfg_map_t encoder_usage_cfg_map[] = {
 
         25,  // g_lag_in_frames
 
-        0,   // rc_dropframe_thresh
-        0,   // rc_resize_allowed
-        0,   // rc_scaled_width
-        0,   // rc_scaled_height
-        60,  // rc_resize_down_thresold
-        30,  // rc_resize_up_thresold
+        0,                         // rc_dropframe_thresh
+        RESIZE_NONE,               // rc_resize_mode
+        RESIZE_SCALE_DENOMINATOR,  // rc_resize_numerator
 
         0,                           // rc_superres_mode
         SUPERRES_SCALE_DENOMINATOR,  // rc_superres_numerator

@@ -2459,8 +2459,8 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
   av1_loop_filter_init(cm);
 #if CONFIG_FRAME_SUPERRES
   cm->superres_scale_numerator = SUPERRES_SCALE_DENOMINATOR;
-  cm->superres_upscaled_width = oxcf->scaled_frame_width;
-  cm->superres_upscaled_height = oxcf->scaled_frame_height;
+  cm->superres_upscaled_width = oxcf->width;
+  cm->superres_upscaled_height = oxcf->height;
 #endif  // CONFIG_FRAME_SUPERRES
 #if CONFIG_LOOP_RESTORATION
   av1_loop_restoration_precal();
@@ -3845,21 +3845,22 @@ static void set_frame_size(AV1_COMP *cpi, int width, int height) {
 }
 
 static void setup_frame_size(AV1_COMP *cpi) {
-  int encode_width;
-  int encode_height;
+  int encode_width = cpi->oxcf.width;
+  int encode_height = cpi->oxcf.height;
 
-  av1_calculate_next_scaled_size(cpi, &encode_width, &encode_height);
-  printf("encode size: %dx%d ", encode_width, encode_height);
+  uint8_t resize_num = av1_calculate_next_resize_scale(cpi);
+  av1_calculate_scaled_size(&encode_width, &encode_height, resize_num,
+                            RESIZE_SCALE_DENOMINATOR);
 
 #if CONFIG_FRAME_SUPERRES
   AV1_COMMON *cm = &cpi->common;
   cm->superres_upscaled_width = encode_width;
   cm->superres_upscaled_height = encode_height;
-  cm->superres_scale_numerator = (uint8_t)av1_calculate_next_superres_scale(
-      cpi, encode_width, encode_width);
-  av1_calculate_superres_size(cm, &encode_width, &encode_height);
-  // printf("Resize/superres %d x %d -> %d x %d\n", encode_width, encode_height,
-  //        cm->superres_upscaled_width, cm->superres_upscaled_height);
+  cm->superres_scale_numerator =
+      av1_calculate_next_superres_scale(cpi, encode_width, encode_width);
+  av1_calculate_scaled_size(&encode_width, &encode_height,
+                            cm->superres_scale_numerator,
+                            SUPERRES_SCALE_DENOMINATOR);
   printf("superres numerator: %02d ", cm->superres_scale_numerator);
 #endif  // CONFIG_FRAME_SUPERRES
   printf("Final encode size: %dx%d\n", encode_width, encode_height);

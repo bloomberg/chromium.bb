@@ -363,44 +363,22 @@ typedef struct aom_codec_enc_cfg {
    */
   unsigned int rc_dropframe_thresh;
 
-  /*!\brief Enable/disable spatial resampling, if supported by the codec.
+  /*!\brief Mode for spatial resampling, if supported by the codec.
    *
    * Spatial resampling allows the codec to compress a lower resolution
-   * version of the frame, which is then upscaled by the encoder to the
+   * version of the frame, which is then upscaled by the decoder to the
    * correct presentation resolution. This increases visual quality at
    * low data rates, at the expense of CPU time on the encoder/decoder.
    */
-  unsigned int rc_resize_allowed;
+  unsigned int rc_resize_mode;
 
-  /*!\brief Internal coded frame width.
+  /*!\brief Frame resize numerator.
    *
-   * If spatial resampling is enabled this specifies the width of the
-   * encoded frame.
-   */
-  unsigned int rc_scaled_width;
-
-  /*!\brief Internal coded frame height.
+   * The numerator for resize to use, assuming 16 as the denominator.
    *
-   * If spatial resampling is enabled this specifies the height of the
-   * encoded frame.
+   * Valid numerators are  8 - 16 for now.
    */
-  unsigned int rc_scaled_height;
-
-  /*!\brief Spatial resampling up watermark.
-   *
-   * This threshold is described as a percentage of the target data buffer.
-   * When the data buffer rises above this percentage of fullness, the
-   * encoder will step up to a higher resolution version of the frame.
-   */
-  unsigned int rc_resize_up_thresh;
-
-  /*!\brief Spatial resampling down watermark.
-   *
-   * This threshold is described as a percentage of the target data buffer.
-   * When the data buffer falls below this percentage of fullness, the
-   * encoder will step down to a lower resolution version of the frame.
-   */
-  unsigned int rc_resize_down_thresh;
+  unsigned int rc_resize_numerator;
 
   /*!\brief Frame super-resolution scaling mode.
    *
