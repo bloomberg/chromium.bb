@@ -4,10 +4,9 @@
 
 #include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
 
-#include <algorithm>
-
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/dbus/session_manager_client.h"
 
@@ -76,8 +75,7 @@ void ServerBackedStateKeysBroker::StoreStateKeys(
   initial_retrieval_completed_ = true;
   if (state_keys.empty()) {
     LOG(WARNING) << "Failed to obtain server-backed state keys.";
-  } else if (state_keys.end() !=
-             std::find(state_keys.begin(), state_keys.end(), std::string())) {
+  } else if (base::ContainsValue(state_keys, std::string())) {
     LOG(WARNING) << "Bad state keys.";
   } else {
     send_notification |= state_keys_ != state_keys;

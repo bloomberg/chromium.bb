@@ -8,6 +8,7 @@
 
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/browser_process.h"
@@ -267,8 +268,7 @@ void NetworkScreen::SetInputMethod(const std::string& input_method) {
           ->GetActiveIMEState()
           ->GetActiveInputMethodIds();
   if (input_method.empty() ||
-      std::find(input_methods.begin(), input_methods.end(), input_method) ==
-          input_methods.end()) {
+      !base::ContainsValue(input_methods, input_method)) {
     LOG(WARNING) << "The input method is empty or ineligible!";
     return;
   }

@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/extensions/quick_unlock_private/quick_unlock_private_api.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -66,7 +67,7 @@ bool AreModesEqual(const QuickUnlockModeList& a, const QuickUnlockModeList& b) {
   // This is a slow comparison algorithm, but the number of entries in |a| and
   // |b| will always be very low (0-3 items) so it doesn't matter.
   for (size_t i = 0; i < a.size(); ++i) {
-    if (std::find(b.begin(), b.end(), a[i]) == b.end())
+    if (!base::ContainsValue(b, a[i]))
       return false;
   }
 
