@@ -29,6 +29,7 @@
 
 #include "web/WebPagePopupImpl.h"
 
+#include "core/dom/AXObjectCacheBase.h"
 #include "core/dom/ContextFeatures.h"
 #include "core/events/MessageEvent.h"
 #include "core/events/WebInputEventConversion.h"
@@ -48,8 +49,6 @@
 #include "core/page/Page.h"
 #include "core/page/PagePopupClient.h"
 #include "core/page/PagePopupSupplement.h"
-#include "modules/accessibility/AXObjectCacheImpl.h"
-#include "modules/accessibility/AXObjectImpl.h"
 #include "platform/EventDispatchForbiddenScope.h"
 #include "platform/LayoutTestSupport.h"
 #include "platform/ScriptForbiddenScope.h"
@@ -350,7 +349,7 @@ AXObject* WebPagePopupImpl::RootAXObject() {
     return 0;
   AXObjectCache* cache = document->AxObjectCache();
   DCHECK(cache);
-  return ToAXObjectCacheImpl(cache)->GetOrCreate(ToLayoutView(
+  return ToAXObjectCacheBase(cache)->GetOrCreate(ToLayoutView(
       LayoutAPIShim::LayoutObjectFrom(document->GetLayoutViewItem())));
 }
 
