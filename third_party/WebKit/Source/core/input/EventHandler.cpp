@@ -51,7 +51,6 @@
 #include "core/events/PointerEvent.h"
 #include "core/events/TextEvent.h"
 #include "core/events/TouchEvent.h"
-#include "core/events/WheelEvent.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/LocalFrame.h"
@@ -69,7 +68,6 @@
 #include "core/input/TouchActionUtil.h"
 #include "core/layout/HitTestRequest.h"
 #include "core/layout/HitTestResult.h"
-#include "core/layout/LayoutEmbeddedContent.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/loader/DocumentLoader.h"
@@ -192,6 +190,8 @@ EventHandler::EventHandler(LocalFrame& frame)
       should_only_fire_drag_over_event_(false),
       scroll_manager_(new ScrollManager(frame)),
       mouse_event_manager_(new MouseEventManager(frame, *scroll_manager_)),
+      mouse_wheel_event_manager_(
+          new MouseWheelEventManager(frame, *scroll_manager_)),
       keyboard_event_manager_(
           new KeyboardEventManager(frame, *scroll_manager_)),
       pointer_event_manager_(
@@ -216,6 +216,7 @@ DEFINE_TRACE(EventHandler) {
   visitor->Trace(frame_set_being_resized_);
   visitor->Trace(scroll_manager_);
   visitor->Trace(mouse_event_manager_);
+  visitor->Trace(mouse_wheel_event_manager_);
   visitor->Trace(keyboard_event_manager_);
   visitor->Trace(pointer_event_manager_);
   visitor->Trace(gesture_manager_);
@@ -332,29 +333,6 @@ IntPoint EventHandler::DragDataTransferLocationForTesting() {
         .drag_data_transfer_->DragLocation();
 
   return IntPoint();
-}
-
-static LocalFrame* SubframeForTargetNode(Node* node) {
-  if (!node)
-    return nullptr;
-
-  LayoutObject* layout_object = node->GetLayoutObject();
-  if (!layout_object || !layout_object->IsLayoutEmbeddedContent())
-    return nullptr;
-
-  LocalFrameView* frame_view =
-      ToLayoutEmbeddedContent(layout_object)->ChildFrameView();
-  if (!frame_view)
-    return nullptr;
-
-  return &frame_view->GetFrame();
-}
-
-static LocalFrame* SubframeForHitTestResult(
-    const MouseEventWithHitTestResults& hit_test_result) {
-  if (!hit_test_result.IsOverEmbeddedContentView())
-    return nullptr;
-  return SubframeForTargetNode(hit_test_result.InnerNode());
 }
 
 static bool IsSubmitImage(Node* node) {
@@ -618,7 +596,7 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
   frame_->GetDocument()->SetSequentialFocusNavigationStartingPoint(
       mev.InnerNode());
 
-  LocalFrame* subframe = SubframeForHitTestResult(mev);
+  LocalFrame* subframe = EventHandlingUtil::SubframeForHitTestResult(mev);
   if (subframe) {
     WebInputEventResult result = PassMousePressEventToSubframe(mev, subframe);
     // Start capturing future events for this frame.  We only do this if we
@@ -868,10 +846,10 @@ WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
   }
 
   WebInputEventResult event_result = WebInputEventResult::kNotHandled;
-  LocalFrame* new_subframe =
-      capturing_mouse_events_node_.Get()
-          ? SubframeForTargetNode(capturing_mouse_events_node_.Get())
-          : SubframeForHitTestResult(mev);
+  LocalFrame* new_subframe = capturing_mouse_events_node_.Get()
+                                 ? EventHandlingUtil::SubframeForTargetNode(
+                                       capturing_mouse_events_node_.Get())
+                                 : EventHandlingUtil::SubframeForHitTestResult(mev);
 
   // We want mouseouts to happen first, from the inside out.  First send a move
   // event to the last subframe so that it will fire mouseouts.
@@ -967,10 +945,10 @@ WebInputEventResult EventHandler::HandleMouseReleaseEvent(
   MouseEventWithHitTestResults mev =
       EventHandlingUtil::PerformMouseEventHitTest(frame_, request, mouse_event);
   Element* mouse_release_target = mev.InnerElement();
-  LocalFrame* subframe =
-      capturing_mouse_events_node_.Get()
-          ? SubframeForTargetNode(capturing_mouse_events_node_.Get())
-          : SubframeForHitTestResult(mev);
+  LocalFrame* subframe = capturing_mouse_events_node_.Get()
+                             ? EventHandlingUtil::SubframeForTargetNode(
+                                   capturing_mouse_events_node_.Get())
+                             : EventHandlingUtil::SubframeForHitTestResult(mev);
   if (event_handler_will_reset_capturing_mouse_events_node_)
     capturing_mouse_events_node_ = nullptr;
   if (subframe)
@@ -1265,62 +1243,7 @@ WebInputEventResult EventHandler::UpdatePointerTargetAndDispatchEvents(
 
 WebInputEventResult EventHandler::HandleWheelEvent(
     const WebMouseWheelEvent& event) {
-#if OS(MACOSX)
-  // Filter Mac OS specific phases, usually with a zero-delta.
-  // https://crbug.com/553732
-  // TODO(chongz): EventSender sends events with
-  // |WebMouseWheelEvent::PhaseNone|,
-  // but it shouldn't.
-  const int kWheelEventPhaseNoEventMask = WebMouseWheelEvent::kPhaseEnded |
-                                          WebMouseWheelEvent::kPhaseCancelled |
-                                          WebMouseWheelEvent::kPhaseMayBegin;
-  if ((event.phase & kWheelEventPhaseNoEventMask) ||
-      (event.momentum_phase & kWheelEventPhaseNoEventMask))
-    return WebInputEventResult::kNotHandled;
-#endif
-  Document* doc = frame_->GetDocument();
-
-  if (doc->GetLayoutViewItem().IsNull())
-    return WebInputEventResult::kNotHandled;
-
-  LocalFrameView* view = frame_->View();
-  if (!view)
-    return WebInputEventResult::kNotHandled;
-
-  LayoutPoint v_point =
-      view->RootFrameToContents(FlooredIntPoint(event.PositionInRootFrame()));
-
-  HitTestRequest request(HitTestRequest::kReadOnly);
-  HitTestResult result(request, v_point);
-  doc->GetLayoutViewItem().HitTest(result);
-
-  Node* node = result.InnerNode();
-  // Wheel events should not dispatch to text nodes.
-  if (node && node->IsTextNode())
-    node = FlatTreeTraversal::Parent(*node);
-
-  // If we're over the frame scrollbar, scroll the document.
-  if (!node && result.GetScrollbar())
-    node = doc->documentElement();
-
-  LocalFrame* subframe = SubframeForTargetNode(node);
-  if (subframe) {
-    WebInputEventResult result =
-        subframe->GetEventHandler().HandleWheelEvent(event);
-    if (result != WebInputEventResult::kNotHandled)
-      scroll_manager_->SetFrameWasScrolledByUser();
-    return result;
-  }
-
-  if (node) {
-    WheelEvent* dom_event =
-        WheelEvent::Create(event, node->GetDocument().domWindow());
-    DispatchEventResult dom_event_result = node->DispatchEvent(dom_event);
-    if (dom_event_result != DispatchEventResult::kNotCanceled)
-      return EventHandlingUtil::ToWebInputEventResult(dom_event_result);
-  }
-
-  return WebInputEventResult::kNotHandled;
+  return mouse_wheel_event_manager_->HandleWheelEvent(event);
 }
 
 WebInputEventResult EventHandler::HandleGestureEvent(

@@ -32,6 +32,7 @@
 #include "core/input/GestureManager.h"
 #include "core/input/KeyboardEventManager.h"
 #include "core/input/MouseEventManager.h"
+#include "core/input/MouseWheelEventManager.h"
 #include "core/input/PointerEventManager.h"
 #include "core/input/ScrollManager.h"
 #include "core/layout/HitTestRequest.h"
@@ -372,6 +373,7 @@ class CORE_EXPORT EventHandler final
 
   Member<ScrollManager> scroll_manager_;
   Member<MouseEventManager> mouse_event_manager_;
+  Member<MouseWheelEventManager> mouse_wheel_event_manager_;
   Member<KeyboardEventManager> keyboard_event_manager_;
   Member<PointerEventManager> pointer_event_manager_;
   Member<GestureManager> gesture_manager_;
