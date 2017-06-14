@@ -392,7 +392,6 @@ void OmniboxViewIOS::OnDidBeginEditing() {
 void OmniboxViewIOS::OnDidEndEditing() {
   CloseOmniboxPopup();
   [field_ enableLeftViewButton:YES];
-  [field_ setChipText:@""];
   model()->OnWillKillFocus();
   model()->OnKillFocus();
   if ([field_ isPreEditing])
@@ -723,9 +722,6 @@ void OmniboxViewIOS::UpdateAppearance() {
     RevertAll();
   } else if (!model()->has_focus() &&
              !ShouldIgnoreUserInputDueToPendingVoiceSearch()) {
-    // Only update the chip text if the omnibox is not currently focused.
-    [field_ setChipText:@""];
-
     // Even if the change wasn't "user visible" to the model, it still may be
     // necessary to re-color to the URL string.  Only do this if the omnibox is
     // not currently focused.
@@ -786,7 +782,6 @@ void OmniboxViewIOS::ClearText() {
 }
 
 void OmniboxViewIOS::RemoveQueryRefinementChip() {
-  [field_ setChipText:nil];
   controller_->OnChanged();
 }
 
