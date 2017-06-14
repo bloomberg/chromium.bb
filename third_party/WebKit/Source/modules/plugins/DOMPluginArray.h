@@ -35,7 +35,7 @@ class PluginData;
 
 class DOMPluginArray final : public GarbageCollectedFinalized<DOMPluginArray>,
                              public ScriptWrappable,
-                             public ContextClient {
+                             public ContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(DOMPluginArray);
 
@@ -56,6 +56,7 @@ class DOMPluginArray final : public GarbageCollectedFinalized<DOMPluginArray>,
  private:
   explicit DOMPluginArray(LocalFrame*);
   PluginData* GetPluginData() const;
+  void ContextDestroyed(ExecutionContext*) override;
 
   HeapVector<Member<DOMPlugin>> dom_plugins_;
 
