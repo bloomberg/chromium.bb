@@ -94,8 +94,6 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 #pragma mark OmniboxTextFieldIOS
 
 @implementation OmniboxTextFieldIOS {
-  // Currently selected chip text. Nil if no chip.
-  NSString* _chipText;
   UILabel* _selection;
   UILabel* _preEditStaticLabel;
   UIFont* _font;
@@ -384,7 +382,7 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 }
 
 - (BOOL)isShowingQueryRefinementChip {
-  return (_chipText && ([self isFirstResponder] || [self isPreEditing]));
+  return NO;
 }
 
 - (void)updateLeftView {
@@ -394,7 +392,7 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   UIButton* leftViewButton = (UIButton*)self.leftView;
   // Only set the chip image if the omnibox is in focus.
   if ([self isShowingQueryRefinementChip]) {
-    [leftViewButton setTitle:_chipText forState:UIControlStateNormal];
+    [leftViewButton setTitle:nil forState:UIControlStateNormal];
     [leftViewButton setImage:nil forState:UIControlStateNormal];
     [leftViewButton
         setTitleEdgeInsets:UIEdgeInsetsMake(kChipTextTopInset,
@@ -429,7 +427,7 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
     [leftViewButton setTintColor:tint];
   } else {
     // Reset the chip text.
-    [leftViewButton setTitle:_chipText forState:UIControlStateNormal];
+    [leftViewButton setTitle:nil forState:UIControlStateNormal];
   }
   // Normally this isn't needed, but there is a bug in iOS 7.1+ where setting
   // the image while disabled doesn't always honor UIControlStateNormal.
@@ -597,12 +595,12 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 }
 
 - (void)setChipText:(NSString*)chipName {
-  _chipText = nil;
-  if ([chipName length]) {
-    if ([self bestAlignmentForText:chipName] == NSTextAlignmentLeft)
-      chipName = [chipName stringByAppendingString:@":"];
-    _chipText = [chipName copy];
-  }
+  // TODO(crbug.com/527473): This method no longer sets the |_chipText| ivar,
+  // but the call to |updateLeftView| has been left in place because it was not
+  // immediately clear whether callers were relying on that update, even if they
+  // weren't setting any chip text.  Verify that callers do not need the call to
+  // |updateLeftView| and then delete this function entirely.
+  DCHECK_EQ(0U, [chipName length]);
   [self updateLeftView];
 }
 
