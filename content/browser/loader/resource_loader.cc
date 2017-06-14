@@ -646,6 +646,16 @@ void ResourceLoader::CompleteResponseStarted() {
 
   delegate_->DidReceiveResponse(this, response.get());
 
+  // For back-forward navigations, record metrics.
+  // TODO(clamy): Remove once we understand the root cause behind the regression
+  // of PLT for b/f navigations in PlzNavigate.
+  if ((info->GetPageTransition() & ui::PAGE_TRANSITION_FORWARD_BACK) &&
+      IsResourceTypeFrame(info->GetResourceType()) &&
+      !request_->url().SchemeIsBlob()) {
+    UMA_HISTOGRAM_BOOLEAN("Navigation.BackForward.WasCached",
+                          request_->was_cached());
+  }
+
   read_deferral_start_time_ = base::TimeTicks::Now();
   // Using a ScopedDeferral here would result in calling ReadMore(true) on sync
   // success. Calling PrepareToReadMore(false) here instead allows small

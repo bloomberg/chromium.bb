@@ -33339,6 +33339,42 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Navigation.BackForward.CacheFlags" enum="NavigationCacheEnum">
+  <owner>clamy@chromium.org</owner>
+  <summary>The cache flags set on back-forward navigations.</summary>
+</histogram>
+
+<histogram name="Navigation.BackForward.IsSameProcess"
+    enum="NavigationIsSameProcess">
+  <owner>clamy@chromium.org</owner>
+  <summary>
+    Whether the back-forward navigation lead to a change of process or not.
+  </summary>
+</histogram>
+
+<histogram name="Navigation.BackForward.ReadyToCommitUntilCommit" units="ms">
+  <owner>clamy@chromium.org</owner>
+  <summary>
+    The time needed to commit a back forward-navigation once it is ready to
+    commit. This is the time between ReadyToCommit and DidFinishNavigation (for
+    a navigation that commits).
+  </summary>
+</histogram>
+
+<histogram name="Navigation.BackForward.TimeToReadyToCommit" units="ms">
+  <owner>clamy@chromium.org</owner>
+  <summary>
+    The time delta between the start of a back-forward navigation and the time
+    it was ready to commit.
+  </summary>
+</histogram>
+
+<histogram name="Navigation.BackForward.WasCached"
+    enum="NavigationWasServedFromCache">
+  <owner>clamy@chromium.org</owner>
+  <summary>Whether the back-forward navigation was served from cache.</summary>
+</histogram>
+
 <histogram name="Navigation.ClearSiteData.Duration" units="ms">
   <owner>msramek@chromium.org</owner>
   <summary>

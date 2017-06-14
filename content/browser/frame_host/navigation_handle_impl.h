@@ -486,6 +486,9 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   // The time this navigation started.
   const base::TimeTicks navigation_start_;
 
+  // The time this naviagtion was ready to commit.
+  base::TimeTicks ready_to_commit_time_;
+
   // The unique id of the corresponding NavigationEntry.
   int pending_nav_entry_id_;
 
