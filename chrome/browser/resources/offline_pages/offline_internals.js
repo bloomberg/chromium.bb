@@ -178,6 +178,14 @@ cr.define('offlineInternals', function() {
     browserProxy.getRequestQueue().then(fillRequestQueue);
   }
 
+   /**
+   * Callback for prefetch actions.
+   * @param {string} info The result of performing the prefetch actions.
+   */
+  function setPrefetchResult(info) {
+    $('prefetch-actions-info').textContent = info;
+  }
+
   /**
    * Downloads all the stored page and request queue information into a file.
    * TODO(chili): Create a CSV writer that can abstract out the line joining.
@@ -317,10 +325,18 @@ cr.define('offlineInternals', function() {
       }
     };
     $('schedule-nwake').onclick = function() {
-      browserProxy.scheduleNwake();
+      browserProxy.scheduleNwake().then(setPrefetchResult);
     };
     $('cancel-nwake').onclick = function() {
-      browserProxy.cancelNwake();
+      browserProxy.cancelNwake().then(setPrefetchResult);
+    };
+    $('generate-page-bundle').onclick = function() {
+      browserProxy.generatePageBundle($('generate-urls').value).
+          then(setPrefetchResult);
+    };
+    $('get-operation').onclick = function() {
+      browserProxy.getOperation($('operation-name').value).
+          then(setPrefetchResult);
     };
     if (!incognito)
       refreshAll();

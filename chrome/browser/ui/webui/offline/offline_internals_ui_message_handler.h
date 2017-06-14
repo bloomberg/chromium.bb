@@ -15,11 +15,14 @@
 #include "components/offline_pages/core/background/save_page_request.h"
 #include "components/offline_pages/core/offline_page_model.h"
 #include "components/offline_pages/core/offline_store_types.h"
+#include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
 namespace offline_pages {
 class PrefetchService;
 enum class GetRequestsResult;
+class GeneratePageBundleRequest;
+class GetOperationRequest;
 }
 
 namespace offline_internals {
@@ -73,6 +76,12 @@ class OfflineInternalsUIMessageHandler : public content::WebUIMessageHandler {
   // Cancels an NWake signal.
   void HandleCancelNwake(const base::ListValue* args);
 
+  // Sends and processes the request to generate page bundle.
+  void HandleGeneratePageBundle(const base::ListValue* args);
+
+  // Sends and processes a request to get the info about an operation.
+  void HandleGetOperation(const base::ListValue* args);
+
   // Callback for async GetAllPages calls.
   void HandleStoredPagesCallback(
       std::string callback_id,
@@ -93,16 +102,18 @@ class OfflineInternalsUIMessageHandler : public content::WebUIMessageHandler {
       std::string callback_id,
       const offline_pages::MultipleItemStatuses& results);
 
-  // Turns a DeletePageResult enum into logical string.
-  std::string GetStringFromDeletePageResult(
-      offline_pages::DeletePageResult value);
+  // Callback for GeneratePageBundle/GetOperation request calls.
+  void HandlePrefetchRequestCallback(
+      std::string callback_id,
+      offline_pages::PrefetchRequestStatus status,
+      const std::string& operation_name,
+      const std::vector<offline_pages::RenderPageInfo>& pages);
 
-  // Summarizes the MultipleItemStatuses vector with a string.
-  std::string GetStringFromDeleteRequestResults(
-      const offline_pages::MultipleItemStatuses& result);
-
-  // Turns a SavePageRequest::Status into logical string.
-  std::string GetStringFromSavePageStatus();
+  // Callback for GetOperation calls.
+  void HandleGetOperationCallback(
+      std::string callback_id,
+      offline_pages::PrefetchRequestStatus status,
+      const std::vector<offline_pages::RenderPageInfo>& pages);
 
   // Offline page model to call methods on.
   offline_pages::OfflinePageModel* offline_page_model_;
@@ -112,6 +123,10 @@ class OfflineInternalsUIMessageHandler : public content::WebUIMessageHandler {
 
   // Prefetch service for prefetching service logs and actions.
   offline_pages::PrefetchService* prefetch_service_;
+
+  std::unique_ptr<offline_pages::GeneratePageBundleRequest>
+      generate_page_bundle_request_;
+  std::unique_ptr<offline_pages::GetOperationRequest> get_operation_request_;
 
   // Factory for creating references in callbacks.
   base::WeakPtrFactory<OfflineInternalsUIMessageHandler> weak_ptr_factory_;

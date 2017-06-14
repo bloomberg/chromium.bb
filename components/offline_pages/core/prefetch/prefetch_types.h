@@ -106,6 +106,7 @@ enum class PrefetchItemErrorCode {
 // Callback invoked upon completion of a prefetch request.
 using PrefetchRequestFinishedCallback =
     base::Callback<void(PrefetchRequestStatus status,
+                        const std::string& operation_name,
                         const std::vector<RenderPageInfo>& pages)>;
 
 // Holds information about a new URL to be prefetched.
