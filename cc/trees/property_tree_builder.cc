@@ -285,8 +285,6 @@ void AddClipNodeIfNeeded(const DataForRecursion<LayerType>& data_from_ancestor,
     }
     data_for_children->clip_tree_parent =
         data_for_children->property_trees->clip_tree.Insert(node, parent_id);
-    data_for_children->property_trees->clip_tree.SetOwningLayerIdForNode(
-        data_for_children->property_trees->clip_tree.back(), layer->id());
   }
 
   layer->SetClipTreeIndex(data_for_children->clip_tree_parent);
@@ -431,8 +429,6 @@ bool AddTransformNodeIfNeeded(
   TransformNode* node =
       data_for_children->property_trees->transform_tree.back();
   layer->SetTransformTreeIndex(node->id);
-  data_for_children->property_trees->transform_tree.SetOwningLayerIdForNode(
-      node, layer->id());
 
   // For animation subsystem purposes, if this layer has a compositor element
   // id, we build a map from that id to this transform node.
@@ -1002,6 +998,16 @@ static inline bool UserScrollableVertical(LayerImpl* layer) {
   return layer->test_properties()->user_scrollable_vertical;
 }
 
+void SetHasTransformNode(LayerImpl* layer, bool val) {}
+void SetHasTransformNode(Layer* layer, bool val) {
+  layer->SetHasTransformNode(val);
+}
+
+void SetHasScrollNode(LayerImpl* layer, bool val) {}
+void SetHasScrollNode(Layer* layer, bool val) {
+  layer->SetHasScrollNode(val);
+}
+
 template <typename LayerType>
 void AddScrollNodeIfNeeded(
     const DataForRecursion<LayerType>& data_from_ancestor,
@@ -1033,6 +1039,7 @@ void AddScrollNodeIfNeeded(
   if (!requires_node) {
     node_id = parent_id;
     data_for_children->scroll_tree_parent = node_id;
+    SetHasScrollNode(layer, false);
   } else {
     ScrollNode node;
     node.owning_layer_id = layer->id();
@@ -1074,8 +1081,6 @@ void AddScrollNodeIfNeeded(
         node.main_thread_scrolling_reasons;
     data_for_children->scroll_tree_parent_created_by_uninheritable_criteria =
         scroll_node_uninheritable_criteria;
-    data_for_children->property_trees->scroll_tree.SetOwningLayerIdForNode(
-        data_for_children->property_trees->scroll_tree.back(), layer->id());
     // For animation subsystem purposes, if this layer has a compositor element
     // id, we build a map from that id to this scroll node.
     if (layer->element_id()) {
@@ -1087,6 +1092,7 @@ void AddScrollNodeIfNeeded(
       data_for_children->property_trees->scroll_tree.SetBaseScrollOffset(
           layer->element_id(), layer->CurrentScrollOffset());
     }
+    SetHasScrollNode(layer, true);
   }
 
   layer->SetScrollTreeIndex(node_id);
@@ -1166,6 +1172,7 @@ void BuildPropertyTreesInternal(
 
   bool created_transform_node = AddTransformNodeIfNeeded(
       data_from_parent, layer, created_render_surface, &data_for_children);
+  SetHasTransformNode(layer, created_transform_node);
   AddClipNodeIfNeeded(data_from_parent, layer, created_transform_node,
                       &data_for_children);
 

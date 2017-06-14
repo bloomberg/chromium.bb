@@ -41,8 +41,6 @@ std::unique_ptr<LayerImpl> LayerImplTestProperties::RemoveChild(
   auto it = std::find(children.begin(), children.end(), child);
   if (it != children.end())
     children.erase(it);
-  owning_layer->layer_tree_impl()->property_trees()->RemoveIdFromIdToIndexMaps(
-      child->id());
   auto layer = owning_layer->layer_tree_impl()->RemoveLayer(child->id());
   owning_layer->layer_tree_impl()->BuildLayerListForTesting();
   return layer;

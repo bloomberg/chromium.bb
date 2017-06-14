@@ -78,7 +78,6 @@ void PropertyTreeManager::SetupRootTransformNode() {
   // until we can remove animation subsystem dependency on layer
   // references. http://crbug.com/709137
   transform_node.owning_layer_id = root_layer_->id();
-  transform_tree.SetOwningLayerIdForNode(&transform_node, root_layer_->id());
 
   // TODO(jaydasika): We shouldn't set ToScreen and FromScreen of root
   // transform node here. They should be set while updating transform tree in
@@ -112,7 +111,6 @@ void PropertyTreeManager::SetupRootClipNode() {
   clip_node.clip = gfx::RectF(
       gfx::SizeF(root_layer_->layer_tree_host()->device_viewport_size()));
   clip_node.transform_id = kRealRootNodeId;
-  clip_tree.SetOwningLayerIdForNode(&clip_node, clip_node.owning_layer_id);
 
   clip_node_map_.Set(ClipPaintPropertyNode::Root(), clip_node.id);
   root_layer_->SetClipTreeIndex(clip_node.id);
@@ -146,8 +144,6 @@ void PropertyTreeManager::SetupRootScrollNode() {
   DCHECK_EQ(scroll_node.id, kSecondaryRootNodeId);
   scroll_node.owning_layer_id = root_layer_->id();
   scroll_node.transform_id = kSecondaryRootNodeId;
-  scroll_tree.SetOwningLayerIdForNode(&scroll_node,
-                                      scroll_node.owning_layer_id);
 
   scroll_node_map_.Set(ScrollPaintPropertyNode::Root(), scroll_node.id);
   root_layer_->SetScrollTreeIndex(scroll_node.id);
@@ -174,8 +170,6 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
   // until we can remove animation subsystem dependency on layer
   // references. http://crbug.com/709137
   compositor_node.owning_layer_id = dummy_layer->id();
-  GetTransformTree().SetOwningLayerIdForNode(&compositor_node,
-                                             compositor_node.owning_layer_id);
 
   FloatPoint3D origin = transform_node->Origin();
   compositor_node.pre_local.matrix().setTranslate(-origin.X(), -origin.Y(),
@@ -229,8 +223,6 @@ int PropertyTreeManager::EnsureCompositorClipNode(
 
   cc::ClipNode& compositor_node = *GetClipTree().Node(id);
   compositor_node.owning_layer_id = dummy_layer->id();
-  GetClipTree().SetOwningLayerIdForNode(&compositor_node,
-                                        compositor_node.owning_layer_id);
 
   // TODO(jbroman): Don't discard rounded corners.
   compositor_node.clip = clip_node->ClipRect().Rect();
@@ -329,8 +321,6 @@ void PropertyTreeManager::UpdateLayerScrollMapping(
   layer->SetScrollTreeIndex(scroll_node_id);
   int layer_id = layer->id();
   auto& compositor_scroll_node = *GetScrollTree().Node(scroll_node_id);
-
-  GetScrollTree().SetOwningLayerIdForNode(&compositor_scroll_node, layer_id);
 
   if (!transform->IsScrollTranslation())
     return;

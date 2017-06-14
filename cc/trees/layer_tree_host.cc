@@ -1378,10 +1378,7 @@ void LayerTreeHost::SetElementTransformMutated(
   DCHECK(layer);
   layer->OnTransformAnimated(transform);
 
-  if (TransformNode* node =
-          property_trees_.transform_tree.UpdateNodeFromOwningLayerId(
-              layer->id())) {
-    DCHECK_EQ(layer->transform_tree_index(), node->id);
+  if (TransformNode* node = layer->GetTransformNode()) {
     if (node->local == transform)
       return;
 

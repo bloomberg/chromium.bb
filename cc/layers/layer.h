@@ -174,6 +174,8 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     return inputs_.sticky_position_constraint;
   }
 
+  TransformNode* GetTransformNode() const;
+
   void SetTransform(const gfx::Transform& transform);
   const gfx::Transform& transform() const { return inputs_.transform; }
 
@@ -427,6 +429,10 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   // Called on the scroll layer to trigger showing the overlay scrollbars.
   void ShowScrollbars() { needs_show_scrollbars_ = true; }
 
+  bool has_transform_node() { return has_transform_node_; }
+  void SetHasTransformNode(bool val) { has_transform_node_ = val; }
+  void SetHasScrollNode(bool val) { has_scroll_node_ = val; }
+
  protected:
   friend class LayerImpl;
   friend class TreeSynchronizer;
@@ -630,6 +636,10 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   bool may_contain_video_ : 1;
   bool is_scroll_clip_layer_ : 1;
   bool needs_show_scrollbars_ : 1;
+  // Whether the nodes referred to by *_tree_index_
+  // "belong" to this layer. Only applicable if use_layer_lists is false.
+  bool has_transform_node_ : 1;
+  bool has_scroll_node_ : 1;
   // This value is valid only when LayerTreeHost::has_copy_request() is true
   bool subtree_has_copy_request_ : 1;
   SkColor safe_opaque_background_color_;
