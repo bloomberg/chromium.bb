@@ -922,66 +922,44 @@ void Range::insertNode(Node* new_node, ExceptionState& exception_state) {
     return;
 
   EventQueueScope scope;
-  bool collapsed = start_ == end_;
+  // 7. If range's start node is a Text node, set referenceNode to the result of
+  // splitting it with offset range’s start offset.
   if (start_is_text) {
-    Text* new_text =
+    reference_node =
         ToText(start_node).splitText(start_.Offset(), exception_state);
     if (exception_state.HadException())
       return;
+  }
 
-    start_.Container().parentNode()->InsertBefore(new_node, new_text,
-                                                  exception_state);
+  // 8. If node is referenceNode, set referenceNode to its next sibling.
+  if (new_node == reference_node)
+    reference_node = reference_node->nextSibling();
+
+  // 9. If node's parent is not null, remove node from its parent.
+  if (new_node->parentNode()) {
+    new_node->remove(exception_state);
     if (exception_state.HadException())
       return;
-
-    if (collapsed) {
-      // Some types of events don't support EventQueueScope.  Given
-      // circumstance may mutate the tree so newText->parentNode() may
-      // become null.
-      if (!new_text->parentNode()) {
-        exception_state.ThrowDOMException(
-            kHierarchyRequestError,
-            "This operation would set range's end to parent with new offset, "
-            "but there's no parent into which to continue.");
-        return;
-      }
-      end_.SetToBeforeChild(*new_text);
-    }
-  } else {
-    const int num_new_children =
-        new_node->IsDocumentFragment() ? LengthOfContents(new_node) : 1;
-
-    const Node::NodeType new_node_type = new_node->getNodeType();
-    Node* last_child = (new_node_type == Node::kDocumentFragmentNode)
-                           ? ToDocumentFragment(new_node)->lastChild()
-                           : new_node;
-    if (last_child && last_child == start_.ChildBefore()) {
-      // The insertion will do nothing, but we need to extend the range to
-      // include the inserted nodes.
-      Node* first_child = (new_node_type == Node::kDocumentFragmentNode)
-                              ? ToDocumentFragment(new_node)->firstChild()
-                              : new_node;
-      DCHECK(first_child);
-      start_.SetToBeforeChild(*first_child);
-      return;
-    }
-
-    // TODO(tkent): The following check must be unnecessary if we follow the
-    // algorithm defined in the specification.
-    // https://dom.spec.whatwg.org/#concept-range-insert
-    if (new_node != reference_node) {
-      start_node.insertBefore(new_node, reference_node, exception_state);
-      if (exception_state.HadException())
-        return;
-    }
-
-    // Note that m_start.offset() may have changed as a result of
-    // container->insertBefore, when the node we are inserting comes before the
-    // range in the same container.
-    if (collapsed && num_new_children)
-      end_.Set(start_.Container(), start_.Offset() + num_new_children,
-               last_child);
   }
+
+  // 10. Let newOffset be parent's length if referenceNode is null, and
+  // referenceNode's index otherwise.
+  unsigned new_offset =
+      reference_node ? reference_node->NodeIndex() : LengthOfContents(&parent);
+
+  // 11. Increase newOffset by node's length if node is a DocumentFragment node,
+  // and one otherwise.
+  new_offset += new_node->IsDocumentFragment() ? LengthOfContents(new_node) : 1;
+
+  // 12. Pre-insert node into parent before referenceNode.
+  parent.insertBefore(new_node, reference_node, exception_state);
+  if (exception_state.HadException())
+    return;
+
+  // 13. If range's start and end are the same, set range's end to (parent,
+  // newOffset).
+  if (start_ == end_)
+    setEnd(&parent, new_offset, exception_state);
 }
 
 String Range::toString() const {
