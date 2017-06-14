@@ -32,6 +32,10 @@ bool IsRunningOnIOS10OrLater() {
   return IsRunningOnOrLater(10, 0, 0);
 }
 
+bool IsRunningOnIOS11OrLater() {
+  return IsRunningOnOrLater(11, 0, 0);
+}
+
 bool IsRunningOnOrLater(int32_t major, int32_t minor, int32_t bug_fix) {
   static const int32_t* current_version = OSVersionAsArray();
   int32_t version[] = {major, minor, bug_fix};
