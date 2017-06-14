@@ -27,6 +27,8 @@ class PersistentNotificationHandler : public NotificationHandler {
                int action_index,
                const base::NullableString16& reply) override;
   void OpenSettings(Profile* profile) override;
+  bool ShouldDisplayOnFullScreen(Profile* profile,
+                                 const std::string& origin) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PersistentNotificationHandler);

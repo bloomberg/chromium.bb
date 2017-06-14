@@ -28,6 +28,8 @@ class NonPersistentNotificationHandler : public NotificationHandler {
                const base::NullableString16& reply) override;
 
   void OpenSettings(Profile* profile) override;
+  bool ShouldDisplayOnFullScreen(Profile* profile,
+                                 const std::string& origin) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NonPersistentNotificationHandler);
