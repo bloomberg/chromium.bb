@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "content/common/content_export.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -31,6 +32,9 @@ struct CONTENT_EXPORT StoredPaymentInstrument {
 
   // Label for this payment instrument.
   std::string name;
+
+  // Decoded icon for this payment instrument.
+  std::unique_ptr<SkBitmap> icon;
 
   // A list of one or more payment method identifiers of the payment methods
   // supported by this payment instrument.

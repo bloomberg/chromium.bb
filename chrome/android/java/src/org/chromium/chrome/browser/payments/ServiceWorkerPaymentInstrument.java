@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.payments;
 
+import android.graphics.drawable.Drawable;
+
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.payments.mojom.PaymentDetailsModifier;
 import org.chromium.payments.mojom.PaymentItem;
@@ -39,11 +41,12 @@ public class ServiceWorkerPaymentInstrument extends PaymentInstrument {
      * @param instrumentId      The unique id of the payment instrument.
      * @param label             The label of the payment instrument.
      * @param methodNames       A set of payment method names supported by the payment instrument.
+     * @param icon              The drawable icon of the payment instrument.
      */
     public ServiceWorkerPaymentInstrument(WebContents webContents, long swRegistrationId,
-            String instrumentId, String label, Set<String> methodNames) {
+            String instrumentId, String label, Set<String> methodNames, Drawable icon) {
         super(Long.toString(swRegistrationId) + "#" + instrumentId, label, null /* sublabel */,
-                null /* icon */);
+                icon);
         mWebContents = webContents;
         mSWRegistrationId = swRegistrationId;
         mInstrumentId = instrumentId;

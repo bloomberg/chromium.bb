@@ -16,6 +16,7 @@
 #include "content/public/browser/stored_payment_instrument.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/ServiceWorkerPaymentAppBridge_jni.h"
+#include "ui/gfx/android/java_bitmap.h"
 
 namespace {
 
@@ -49,7 +50,8 @@ void OnGotAllPaymentApps(const JavaRef<jobject>& jweb_contents,
           env, java_instruments, jweb_contents, instrument->registration_id,
           ConvertUTF8ToJavaString(env, instrument->instrument_key),
           ConvertUTF8ToJavaString(env, instrument->name),
-          ToJavaArrayOfStrings(env, instrument->enabled_methods));
+          ToJavaArrayOfStrings(env, instrument->enabled_methods),
+          gfx::ConvertToJavaBitmap(instrument->icon.get()));
     }
     Java_ServiceWorkerPaymentAppBridge_onPaymentAppCreated(
         env, java_instruments, jweb_contents, jcallback);
