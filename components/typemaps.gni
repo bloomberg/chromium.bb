@@ -4,6 +4,7 @@
 
 typemaps = [
   "//components/autofill/content/common/autofill_types.typemap",
+  "//components/chrome_cleaner/public/typemaps/chrome_prompt.typemap",
   "//components/content_settings/core/common/content_settings.typemap",
   "//components/nacl/common/nacl.typemap",
   "//components/password_manager/content/common/credential_manager.typemap",
