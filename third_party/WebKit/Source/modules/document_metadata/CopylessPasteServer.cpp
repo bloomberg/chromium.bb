@@ -23,12 +23,13 @@ void CopylessPasteServer::BindMojoRequest(
                           std::move(request));
 }
 
-void CopylessPasteServer::GetEntities(const GetEntitiesCallback& callback) {
+void CopylessPasteServer::GetEntities(GetEntitiesCallback callback) {
   if (!frame_ || !frame_->GetDocument()) {
-    callback.Run(nullptr);
+    std::move(callback).Run(nullptr);
     return;
   }
-  callback.Run(CopylessPasteExtractor::extract(*frame_->GetDocument()));
+  std::move(callback).Run(
+      CopylessPasteExtractor::extract(*frame_->GetDocument()));
 }
 
 }  // namespace blink

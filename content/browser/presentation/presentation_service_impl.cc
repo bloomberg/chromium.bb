@@ -32,12 +32,13 @@ int GetNextRequestId() {
 }
 
 void InvokeNewPresentationCallbackWithError(
-    const PresentationServiceImpl::NewPresentationCallback& callback) {
-  callback.Run(base::nullopt,
-               PresentationError(
-                   PRESENTATION_ERROR_PREVIOUS_START_IN_PROGRESS,
-                   "There is already an unsettled Promise from a previous call "
-                   "to start."));
+    PresentationServiceImpl::NewPresentationCallback callback) {
+  std::move(callback).Run(
+      base::nullopt,
+      PresentationError(
+          PRESENTATION_ERROR_PREVIOUS_START_IN_PROGRESS,
+          "There is already an unsettled Promise from a previous call "
+          "to start."));
 }
 
 }  // namespace
@@ -158,25 +159,26 @@ void PresentationServiceImpl::StopListeningForScreenAvailability(
 
 void PresentationServiceImpl::StartPresentation(
     const std::vector<GURL>& presentation_urls,
-    const NewPresentationCallback& callback) {
+    NewPresentationCallback callback) {
   DVLOG(2) << "StartPresentation";
   if (!controller_delegate_) {
-    callback.Run(base::nullopt,
-                 PresentationError(PRESENTATION_ERROR_NO_AVAILABLE_SCREENS,
-                                   "No screens found."));
+    std::move(callback).Run(
+        base::nullopt,
+        PresentationError(PRESENTATION_ERROR_NO_AVAILABLE_SCREENS,
+                          "No screens found."));
     return;
   }
 
   // There is a StartPresentation request in progress. To avoid queueing up
   // requests, the incoming request is rejected.
   if (start_presentation_request_id_ != kInvalidRequestId) {
-    InvokeNewPresentationCallbackWithError(callback);
+    InvokeNewPresentationCallbackWithError(std::move(callback));
     return;
   }
 
   start_presentation_request_id_ = GetNextRequestId();
   pending_start_presentation_cb_.reset(
-      new NewPresentationCallbackWrapper(callback));
+      new NewPresentationCallbackWrapper(std::move(callback)));
   controller_delegate_->StartPresentation(
       render_process_id_, render_frame_id_, presentation_urls,
       base::Bind(&PresentationServiceImpl::OnStartPresentationSucceeded,
@@ -188,18 +190,19 @@ void PresentationServiceImpl::StartPresentation(
 void PresentationServiceImpl::ReconnectPresentation(
     const std::vector<GURL>& presentation_urls,
     const base::Optional<std::string>& presentation_id,
-    const NewPresentationCallback& callback) {
+    NewPresentationCallback callback) {
   DVLOG(2) << "ReconnectPresentation";
   if (!controller_delegate_) {
-    callback.Run(base::nullopt,
-                 PresentationError(PRESENTATION_ERROR_NO_PRESENTATION_FOUND,
-                                   "Error joining route: No matching route"));
+    std::move(callback).Run(
+        base::nullopt,
+        PresentationError(PRESENTATION_ERROR_NO_PRESENTATION_FOUND,
+                          "Error joining route: No matching route"));
     return;
   }
 
-  int request_id = RegisterReconnectPresentationCallback(callback);
+  int request_id = RegisterReconnectPresentationCallback(&callback);
   if (request_id == kInvalidRequestId) {
-    InvokeNewPresentationCallbackWithError(callback);
+    InvokeNewPresentationCallbackWithError(std::move(callback));
     return;
   }
   controller_delegate_->ReconnectPresentation(
@@ -212,13 +215,14 @@ void PresentationServiceImpl::ReconnectPresentation(
 }
 
 int PresentationServiceImpl::RegisterReconnectPresentationCallback(
-    const NewPresentationCallback& callback) {
+    NewPresentationCallback* callback) {
   if (pending_reconnect_presentation_cbs_.size() >= kMaxQueuedRequests)
     return kInvalidRequestId;
 
   int request_id = GetNextRequestId();
   pending_reconnect_presentation_cbs_[request_id].reset(
-      new NewPresentationCallbackWrapper(callback));
+      new NewPresentationCallbackWrapper(std::move(*callback)));
+  DCHECK_NE(kInvalidRequestId, request_id);
   return request_id;
 }
 
@@ -504,21 +508,20 @@ void PresentationServiceImpl::ScreenAvailabilityListenerImpl
 }
 
 PresentationServiceImpl::NewPresentationCallbackWrapper::
-    NewPresentationCallbackWrapper(const NewPresentationCallback& callback)
-    : callback_(callback) {}
+    NewPresentationCallbackWrapper(NewPresentationCallback callback)
+    : callback_(std::move(callback)) {}
 
 PresentationServiceImpl::NewPresentationCallbackWrapper::
     ~NewPresentationCallbackWrapper() {
   if (!callback_.is_null())
-    InvokeNewPresentationCallbackWithError(callback_);
+    InvokeNewPresentationCallbackWithError(std::move(callback_));
 }
 
 void PresentationServiceImpl::NewPresentationCallbackWrapper::Run(
     const base::Optional<PresentationInfo>& presentation_info,
     const base::Optional<PresentationError>& error) {
   DCHECK(!callback_.is_null());
-  callback_.Run(presentation_info, error);
-  callback_.Reset();
+  std::move(callback_).Run(presentation_info, error);
 }
 
 }  // namespace content

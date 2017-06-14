@@ -19,10 +19,11 @@ class MockMimeRegistry : public mojom::blink::MimeRegistry {
 
   void GetMimeTypeFromExtension(
       const String& ext,
-      const GetMimeTypeFromExtensionCallback& callback) override {
+      GetMimeTypeFromExtensionCallback callback) override {
     std::string mime_type;
     net::GetMimeTypeFromExtension(WebStringToFilePath(ext).value(), &mime_type);
-    callback.Run(String::FromUTF8(mime_type.data(), mime_type.length()));
+    std::move(callback).Run(
+        String::FromUTF8(mime_type.data(), mime_type.length()));
   }
 };
 

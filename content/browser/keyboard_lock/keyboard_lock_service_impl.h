@@ -27,7 +27,7 @@ class CONTENT_EXPORT KeyboardLockServiceImpl
 
   // blink::mojom::KeyboardLockService implementations.
   void RequestKeyboardLock(const std::vector<std::string>& key_codes,
-                      const RequestKeyboardLockCallback& callback) override;
+                           RequestKeyboardLockCallback callback) override;
   void CancelKeyboardLock() override;
 };
 
