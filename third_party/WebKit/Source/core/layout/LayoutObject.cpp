@@ -256,10 +256,6 @@ bool LayoutObject::IsHR() const {
   return isHTMLHRElement(GetNode());
 }
 
-bool LayoutObject::IsLegend() const {
-  return isHTMLLegendElement(GetNode());
-}
-
 void LayoutObject::SetIsInsideFlowThreadIncludingDescendants(
     bool inside_flow_thread) {
   LayoutObject* next;
