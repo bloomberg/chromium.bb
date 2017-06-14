@@ -22,7 +22,6 @@ namespace shell_integration_linux {
 // Get the path to write user-specific application data files to, as specified
 // in the XDG Base Directory Specification:
 // http://standards.freedesktop.org/basedir-spec/latest/
-// Called on the FILE thread.
 base::FilePath GetDataWriteLocation(base::Environment* env);
 
 // Get the list of paths to search for application data files, in order of
