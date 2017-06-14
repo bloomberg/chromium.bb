@@ -2025,7 +2025,7 @@ crbug.com/626703 external/wpt/media-source/mediasource-appendbuffer-quota-exceed
 crbug.com/626703 external/wpt/media-source/mediasource-avtracks.html [ Failure Crash ]
 crbug.com/626703 external/wpt/media-source/mediasource-duration.html [ Failure ]
 crbug.com/626703 external/wpt/media-source/mediasource-getvideoplaybackquality.html [ Timeout Failure ]
-crbug.com/626703 external/wpt/mediacapture-streams/MediaStreamTrack-end-manual.https.html [ Timeout ]
+crbug.com/626703 external/wpt/mediacapture-streams/MediaStreamTrack-end-manual.https.html [ Timeout Failure ]
 crbug.com/626703 external/wpt/notifications/constructor-basic.html [ Timeout ]
 crbug.com/626703 external/wpt/notifications/constructor-invalid.html [ Timeout ]
 crbug.com/626703 external/wpt/notifications/event-onclose.html [ Timeout ]
