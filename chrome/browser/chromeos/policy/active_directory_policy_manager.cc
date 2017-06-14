@@ -22,10 +22,6 @@ namespace {
 // https://technet.microsoft.com/en-us/library/cc940895.aspx
 constexpr base::TimeDelta kRefreshInterval = base::TimeDelta::FromMinutes(90);
 
-// After startup, delay initial policy fetch to keep authpolicyd free for more
-// important tasks like user auth.
-constexpr base::TimeDelta kInitialFetchDelay = base::TimeDelta::FromSeconds(60);
-
 // Retry delay in case of |refresh_in_progress_|.
 constexpr base::TimeDelta kBusyRetryInterval = base::TimeDelta::FromSeconds(1);
 
@@ -154,7 +150,7 @@ void ActiveDirectoryPolicyManager::ScheduleAutomaticRefresh() {
     interval = kBusyRetryInterval;
   } else if (last_refresh_ == base::TimeTicks()) {
     baseline = startup_;
-    interval = kInitialFetchDelay;
+    interval = base::TimeDelta();
   } else {
     baseline = last_refresh_;
     interval = kRefreshInterval;
