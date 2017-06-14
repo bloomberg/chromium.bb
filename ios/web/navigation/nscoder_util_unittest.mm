@@ -5,11 +5,14 @@
 #import <Foundation/Foundation.h>
 #include <stddef.h>
 
-#import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #import "ios/web/navigation/nscoder_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace web {
 namespace {
@@ -29,13 +32,13 @@ TEST_F(NSCoderStdStringTest, encodeDecode) {
   for (size_t i = 0; i < arraysize(testStrings); ++i) {
     NSMutableData* data = [NSMutableData data];
 
-    base::scoped_nsobject<NSKeyedArchiver> archiver(
-        [[NSKeyedArchiver alloc] initForWritingWithMutableData:data]);
+    NSKeyedArchiver* archiver =
+        [[NSKeyedArchiver alloc] initForWritingWithMutableData:data];
     nscoder_util::EncodeString(archiver, @"test", testStrings[i]);
     [archiver finishEncoding];
 
-    base::scoped_nsobject<NSKeyedUnarchiver> unarchiver(
-        [[NSKeyedUnarchiver alloc] initForReadingWithData:data]);
+    NSKeyedUnarchiver* unarchiver =
+        [[NSKeyedUnarchiver alloc] initForReadingWithData:data];
     const std::string decoded = nscoder_util::DecodeString(unarchiver, @"test");
 
     EXPECT_EQ(decoded, testStrings[i]);
@@ -45,12 +48,12 @@ TEST_F(NSCoderStdStringTest, encodeDecode) {
 TEST_F(NSCoderStdStringTest, decodeEmpty) {
   NSMutableData* data = [NSMutableData data];
 
-  base::scoped_nsobject<NSKeyedArchiver> archiver(
-      [[NSKeyedArchiver alloc] initForWritingWithMutableData:data]);
+  NSKeyedArchiver* archiver =
+      [[NSKeyedArchiver alloc] initForWritingWithMutableData:data];
   [archiver finishEncoding];
 
-  base::scoped_nsobject<NSKeyedUnarchiver> unarchiver(
-      [[NSKeyedUnarchiver alloc] initForReadingWithData:data]);
+  NSKeyedUnarchiver* unarchiver =
+      [[NSKeyedUnarchiver alloc] initForReadingWithData:data];
   const std::string decoded = nscoder_util::DecodeString(unarchiver, @"test");
 
   EXPECT_EQ(decoded, "");

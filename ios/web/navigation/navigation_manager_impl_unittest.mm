@@ -6,7 +6,6 @@
 
 #include "base/logging.h"
 #include "base/mac/bind_objc_block.h"
-#import "base/mac/scoped_nsobject.h"
 #import "ios/web/navigation/crw_session_controller+private_constructors.h"
 #import "ios/web/navigation/navigation_manager_delegate.h"
 #include "ios/web/public/navigation_item.h"
@@ -16,6 +15,10 @@
 #include "testing/platform_test.h"
 #include "url/scheme_host_port.h"
 #include "url/url_util.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace web {
 namespace {
@@ -63,11 +66,11 @@ class NavigationManagerTest : public PlatformTest {
 
     manager_->SetDelegate(&delegate_);
     manager_->SetBrowserState(&browser_state_);
-    controller_.reset(
-        [[CRWSessionController alloc] initWithBrowserState:&browser_state_]);
-    manager_->SetSessionController(controller_.get());
+    controller_ =
+        [[CRWSessionController alloc] initWithBrowserState:&browser_state_];
+    manager_->SetSessionController(controller_);
   }
-  CRWSessionController* session_controller() { return controller_.get(); }
+  CRWSessionController* session_controller() { return controller_; }
   NavigationManagerImpl* navigation_manager() { return manager_.get(); }
   TestNavigationManagerDelegate navigation_manager_delegate() {
     return delegate_;
@@ -77,7 +80,7 @@ class NavigationManagerTest : public PlatformTest {
   TestBrowserState browser_state_;
   TestNavigationManagerDelegate delegate_;
   std::unique_ptr<NavigationManagerImpl> manager_;
-  base::scoped_nsobject<CRWSessionController> controller_;
+  CRWSessionController* controller_;
 };
 
 // Tests state of an empty navigation manager.
