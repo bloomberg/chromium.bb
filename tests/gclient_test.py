@@ -260,7 +260,9 @@ class GclientTest(trial_dir.TestCase):
     for s in client.dependencies:
       work_queue.enqueue(s)
     work_queue.flush({}, None, [], options=options)
-    self.assertEqual(client.GetHooks(options), [x['action'] for x in hooks])
+    self.assertEqual(
+        [h.action for h in client.GetHooks(options)],
+        [tuple(x['action']) for x in hooks])
 
   def testCustomHooks(self):
     topdir = self.root_dir
@@ -309,8 +311,9 @@ class GclientTest(trial_dir.TestCase):
     for s in client.dependencies:
       work_queue.enqueue(s)
     work_queue.flush({}, None, [], options=options)
-    self.assertEqual(client.GetHooks(options),
-                     [x['action'] for x in hooks + extra_hooks + sub_hooks])
+    self.assertEqual(
+        [h.action for h in client.GetHooks(options)],
+        [tuple(x['action']) for x in hooks + extra_hooks + sub_hooks])
 
   def testTargetOS(self):
     """Verifies that specifying a target_os pulls in all relevant dependencies.
@@ -501,12 +504,12 @@ class GclientTest(trial_dir.TestCase):
     obj = gclient.GClient.LoadCurrentConfig(options)
     obj.RunOnDeps('None', args)
     self.assertEqual(['zippy'], sorted(obj.enforced_os))
-    all_hooks = obj.GetHooks(options)
+    all_hooks = [h.action for h in obj.GetHooks(options)]
     self.assertEquals(
         [('.', 'svn://example.com/'),],
         sorted(self._get_processed()))
     self.assertEquals(all_hooks,
-                      [['/usr/bin/python', 'do_a']])
+                      [('python', 'do_a')])
 
     # Test for OS that has extra hooks in hooks_os.
     parser = gclient.OptionParser()
@@ -516,13 +519,13 @@ class GclientTest(trial_dir.TestCase):
     obj = gclient.GClient.LoadCurrentConfig(options)
     obj.RunOnDeps('None', args)
     self.assertEqual(['blorp'], sorted(obj.enforced_os))
-    all_hooks = obj.GetHooks(options)
+    all_hooks = [h.action for h in obj.GetHooks(options)]
     self.assertEquals(
         [('.', 'svn://example.com/'),],
         sorted(self._get_processed()))
     self.assertEquals(all_hooks,
-                      [['/usr/bin/python', 'do_a'],
-                       ['/usr/bin/python', 'do_b']])
+                      [('python', 'do_a'),
+                       ('python', 'do_b')])
 
 
   def testUpdateWithOsDeps(self):

@@ -188,6 +188,70 @@ def ToGNString(value, allow_dicts = True):
   raise GNException("Unsupported type when printing to GN.")
 
 
+class Hook(object):
+  """Descriptor of command ran before/after sync or on demand."""
+
+  def __init__(self, action, pattern=None, name=None):
+    """Constructor.
+
+    Arguments:
+      action (list of basestring): argv of the command to run
+      pattern (basestring regex): noop with git; deprecated
+      name (basestring): optional name; no effect on operation
+    """
+    self._action = gclient_utils.freeze(action)
+    self._pattern = pattern
+    self._name = name
+
+  @staticmethod
+  def from_dict(d):
+    """Creates a Hook instance from a dict like in the DEPS file."""
+    return Hook(d['action'], d.get('pattern'), d.get('name'))
+
+  @property
+  def action(self):
+    return self._action
+
+  @property
+  def pattern(self):
+    return self._pattern
+
+  @property
+  def name(self):
+    return self._name
+
+  def matches(self, file_list):
+    """Returns true if the pattern matches any of files in the list."""
+    if not self._pattern:
+      return True
+    pattern = re.compile(self._pattern)
+    return bool([f for f in file_list if pattern.search(f)])
+
+  def run(self, root):
+    """Executes the hook's command."""
+    cmd = list(self._action)
+    if cmd[0] == 'python':
+      # If the hook specified "python" as the first item, the action is a
+      # Python script.  Run it by starting a new copy of the same
+      # interpreter.
+      cmd[0] = sys.executable
+    try:
+      start_time = time.time()
+      gclient_utils.CheckCallAndFilterAndHeader(
+          cmd, cwd=root, always=True)
+    except (gclient_utils.Error, subprocess2.CalledProcessError) as e:
+      # Use a discrete exit status code of 2 to indicate that a hook action
+      # failed.  Users of this script may wish to treat hook action failures
+      # differently from VC failures.
+      print('Error: %s' % str(e), file=sys.stderr)
+      sys.exit(2)
+    finally:
+      elapsed_time = time.time() - start_time
+      if elapsed_time > 10:
+        print("Hook '%s' took %.2f secs" % (
+            gclient_utils.CommandToStr(cmd), elapsed_time))
+
+
 class GClientKeywords(object):
   class VarImpl(object):
     def __init__(self, custom_vars, local_scope):
@@ -772,7 +836,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         hooks_to_run.append(hook)
 
     if self.recursion_limit:
-      self._pre_deps_hooks = [self.GetHookAction(hook) for hook in
+      self._pre_deps_hooks = [Hook.from_dict(hook) for hook in
                               local_scope.get('pre_deps_hooks', [])]
 
     self.add_dependencies_and_close(
@@ -793,7 +857,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         self.add_dependency(dep)
     for dep in (orig_deps_to_add or deps_to_add):
       self.add_orig_dependency(dep)
-    self._mark_as_parsed(hooks)
+    self._mark_as_parsed([Hook.from_dict(h) for h in hooks])
 
   def findDepsFromNotAllowedHosts(self):
     """Returns a list of depenecies from not allowed hosts.
@@ -940,18 +1004,6 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     self._parsed_url = parsed_url
     self._processed = True
 
-  @staticmethod
-  def GetHookAction(hook_dict):
-    """Turns a parsed 'hook' dict into an executable command."""
-    logging.debug(hook_dict)
-    command = hook_dict['action'][:]
-    if command[0] == 'python':
-      # If the hook specified "python" as the first item, the action is a
-      # Python script.  Run it by starting a new copy of the same
-      # interpreter.
-      command[0] = sys.executable
-    return command
-
   def GetHooks(self, options):
     """Evaluates all hooks, and return them in a flat list.
 
@@ -970,18 +1022,11 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       if (options.force or
           gclient_scm.GetScmName(self.parsed_url) in ('git', None) or
           os.path.isdir(os.path.join(self.root.root_dir, self.name, '.git'))):
-        for hook_dict in self.deps_hooks:
-          result.append(self.GetHookAction(hook_dict))
+        result.extend(self.deps_hooks)
       else:
-        # Run hooks on the basis of whether the files from the gclient operation
-        # match each hook's pattern.
-        for hook_dict in self.deps_hooks:
-          pattern = re.compile(hook_dict['pattern'])
-          matching_file_list = [
-              f for f in self.file_list_and_children if pattern.search(f)
-          ]
-          if matching_file_list:
-            result.append(self.GetHookAction(hook_dict))
+        for hook in self.deps_hooks:
+          if hook.matches(self.file_list_and_children):
+            result.append(hook)
     for s in self.dependencies:
       result.extend(s.GetHooks(options))
     return result
@@ -990,21 +1035,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     assert self.hooks_ran == False
     self._hooks_ran = True
     for hook in self.GetHooks(options):
-      try:
-        start_time = time.time()
-        gclient_utils.CheckCallAndFilterAndHeader(
-            hook, cwd=self.root.root_dir, always=True)
-      except (gclient_utils.Error, subprocess2.CalledProcessError) as e:
-        # Use a discrete exit status code of 2 to indicate that a hook action
-        # failed.  Users of this script may wish to treat hook action failures
-        # differently from VC failures.
-        print('Error: %s' % str(e), file=sys.stderr)
-        sys.exit(2)
-      finally:
-        elapsed_time = time.time() - start_time
-        if elapsed_time > 10:
-          print("Hook '%s' took %.2f secs" % (
-              gclient_utils.CommandToStr(hook), elapsed_time))
+      hook.run(self.root.root_dir)
 
   def RunPreDepsHooks(self):
     assert self.processed
@@ -1015,21 +1046,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       assert not s.processed
     self._pre_deps_hooks_ran = True
     for hook in self.pre_deps_hooks:
-      try:
-        start_time = time.time()
-        gclient_utils.CheckCallAndFilterAndHeader(
-            hook, cwd=self.root.root_dir, always=True)
-      except (gclient_utils.Error, subprocess2.CalledProcessError) as e:
-        # Use a discrete exit status code of 2 to indicate that a hook action
-        # failed.  Users of this script may wish to treat hook action failures
-        # differently from VC failures.
-        print('Error: %s' % str(e), file=sys.stderr)
-        sys.exit(2)
-      finally:
-        elapsed_time = time.time() - start_time
-        if elapsed_time > 10:
-          print("Hook '%s' took %.2f secs" % (
-              gclient_utils.CommandToStr(hook), elapsed_time))
+      hook.run(self.root.root_dir)
 
 
   def subtree(self, include_all):
@@ -1908,15 +1925,15 @@ def _HooksToLines(name, hooks):
         '  # %s' % dep.hierarchy(include_url=False),
         '  {',
     ])
-    if 'name' in hook:
-      s.append('    "name": "%s",' % hook['name'])
-    if 'pattern' in hook:
-      s.append('    "pattern": "%s",' % hook['pattern'])
+    if hook.name is not None:
+      s.append('    "name": "%s",' % hook.name)
+    if hook.pattern is not None:
+      s.append('    "pattern": "%s",' % hook.pattern)
     # TODO(phajdan.jr): actions may contain paths that need to be adjusted,
     # i.e. they may be relative to the dependency path, not solution root.
     s.extend(
         ['    "action": ['] +
-        ['        "%s",' % arg for arg in hook['action']] +
+        ['        "%s",' % arg for arg in hook.action] +
         ['    ]', '  },', '']
     )
   s.extend([']', ''])
