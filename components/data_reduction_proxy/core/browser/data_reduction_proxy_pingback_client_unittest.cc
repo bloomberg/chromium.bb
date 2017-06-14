@@ -216,7 +216,7 @@ TEST_F(DataReductionProxyPingbackClientTest, VerifyPingbackContent) {
   EXPECT_EQ(
       PageloadMetrics_EffectiveConnectionType_EFFECTIVE_CONNECTION_TYPE_OFFLINE,
       pageload_metrics.effective_connection_type());
-  EXPECT_FALSE(pageload_metrics.holdback());
+  EXPECT_EQ(std::string(), pageload_metrics.holdback_group());
   test_fetcher->delegate()->OnURLFetchComplete(test_fetcher);
   histogram_tester().ExpectUniqueSample(kHistogramSucceeded, true, 1);
   EXPECT_FALSE(factory()->GetFetcherByID(0));
@@ -240,7 +240,7 @@ TEST_F(DataReductionProxyPingbackClientTest, VerifyHoldback) {
   batched_request.ParseFromString(test_fetcher->upload_data());
   EXPECT_EQ(batched_request.pageloads_size(), 1);
   PageloadMetrics pageload_metrics = batched_request.pageloads(0);
-  EXPECT_TRUE(pageload_metrics.holdback());
+  EXPECT_EQ("Enabled", pageload_metrics.holdback_group());
   test_fetcher->delegate()->OnURLFetchComplete(test_fetcher);
   histogram_tester().ExpectUniqueSample(kHistogramSucceeded, true, 1);
   EXPECT_FALSE(factory()->GetFetcherByID(0));

@@ -23,8 +23,6 @@
 #include "base/android/build_info.h"
 #endif
 
-using base::FieldTrialList;
-
 namespace {
 
 const char kEnabled[] = "Enabled";
@@ -66,7 +64,7 @@ const char kServerExperimentsFieldTrial[] =
 const char kLitePageBlackListVersion[] = "lite-page-blacklist-version";
 
 bool IsIncludedInFieldTrial(const std::string& name) {
-  return base::StartsWith(FieldTrialList::FindFullName(name), kEnabled,
+  return base::StartsWith(base::FieldTrialList::FindFullName(name), kEnabled,
                           base::CompareCase::SENSITIVE);
 }
 
@@ -115,19 +113,23 @@ bool IsIncludedInHoldbackFieldTrial() {
   return IsIncludedInFieldTrial("DataCompressionProxyHoldback");
 }
 
+std::string HoldbackFieldTrialGroup() {
+  return base::FieldTrialList::FindFullName("DataCompressionProxyHoldback");
+}
+
 const char* GetTrustedSpdyProxyFieldTrialName() {
   return kTrustedSpdyProxyFieldTrialName;
 }
 
 bool IsIncludedInTrustedSpdyProxyFieldTrial() {
-  if (base::StartsWith(
-          FieldTrialList::FindFullName(GetTrustedSpdyProxyFieldTrialName()),
-          kControl, base::CompareCase::SENSITIVE)) {
+  if (base::StartsWith(base::FieldTrialList::FindFullName(
+                           GetTrustedSpdyProxyFieldTrialName()),
+                       kControl, base::CompareCase::SENSITIVE)) {
     return false;
   }
-  if (base::StartsWith(
-          FieldTrialList::FindFullName(GetTrustedSpdyProxyFieldTrialName()),
-          kDisabled, base::CompareCase::SENSITIVE)) {
+  if (base::StartsWith(base::FieldTrialList::FindFullName(
+                           GetTrustedSpdyProxyFieldTrialName()),
+                       kDisabled, base::CompareCase::SENSITIVE)) {
     return false;
   }
   // Trusted SPDY proxy experiment is enabled by default.
@@ -149,27 +151,29 @@ bool IsIncludedInLoFiEnabledFieldTrial() {
 
 bool IsIncludedInLoFiControlFieldTrial() {
   return !IsLoFiOnViaFlags() && !IsLoFiDisabledViaFlags() &&
-         base::StartsWith(FieldTrialList::FindFullName(GetLoFiFieldTrialName()),
-                          kControl, base::CompareCase::SENSITIVE);
+         base::StartsWith(
+             base::FieldTrialList::FindFullName(GetLoFiFieldTrialName()),
+             kControl, base::CompareCase::SENSITIVE);
 }
 
 bool IsIncludedInLitePageFieldTrial() {
   return !IsLoFiOnViaFlags() && !IsLoFiDisabledViaFlags() &&
-         base::StartsWith(FieldTrialList::FindFullName(GetLoFiFieldTrialName()),
-                          kLitePage, base::CompareCase::SENSITIVE);
+         base::StartsWith(
+             base::FieldTrialList::FindFullName(GetLoFiFieldTrialName()),
+             kLitePage, base::CompareCase::SENSITIVE);
 }
 
 bool IsIncludedInServerExperimentsFieldTrial() {
   return !base::CommandLine::ForCurrentProcess()->HasSwitch(
              data_reduction_proxy::switches::
                  kDataReductionProxyServerExperimentsDisabled) &&
-         FieldTrialList::FindFullName(kServerExperimentsFieldTrial)
+         base::FieldTrialList::FindFullName(kServerExperimentsFieldTrial)
                  .find(kDisabled) != 0;
 }
 bool IsIncludedInTamperDetectionExperiment() {
   return IsIncludedInServerExperimentsFieldTrial() &&
          base::StartsWith(
-             FieldTrialList::FindFullName(kServerExperimentsFieldTrial),
+             base::FieldTrialList::FindFullName(kServerExperimentsFieldTrial),
              "TamperDetection_Enabled", base::CompareCase::SENSITIVE);
 }
 
@@ -177,8 +181,8 @@ bool FetchWarmupURLEnabled() {
   // Fetching of the warmup URL can be enabled only for Enabled* and Control*
   // groups.
   if (!IsIncludedInQuicFieldTrial() &&
-      !base::StartsWith(FieldTrialList::FindFullName(kQuicFieldTrial), kControl,
-                        base::CompareCase::SENSITIVE)) {
+      !base::StartsWith(base::FieldTrialList::FindFullName(kQuicFieldTrial),
+                        kControl, base::CompareCase::SENSITIVE)) {
     return false;
   }
 
@@ -248,12 +252,12 @@ bool WarnIfNoDataReductionProxy() {
 }
 
 bool IsIncludedInQuicFieldTrial() {
-  if (base::StartsWith(FieldTrialList::FindFullName(kQuicFieldTrial), kControl,
-                       base::CompareCase::SENSITIVE)) {
+  if (base::StartsWith(base::FieldTrialList::FindFullName(kQuicFieldTrial),
+                       kControl, base::CompareCase::SENSITIVE)) {
     return false;
   }
-  if (base::StartsWith(FieldTrialList::FindFullName(kQuicFieldTrial), kDisabled,
-                       base::CompareCase::SENSITIVE)) {
+  if (base::StartsWith(base::FieldTrialList::FindFullName(kQuicFieldTrial),
+                       kDisabled, base::CompareCase::SENSITIVE)) {
     return false;
   }
   // QUIC is enabled by default.

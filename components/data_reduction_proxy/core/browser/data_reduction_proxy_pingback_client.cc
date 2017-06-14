@@ -42,7 +42,7 @@ void AddDataToPageloadMetrics(const DataReductionProxyData& request_data,
                               PageloadMetrics* request,
                               bool opted_out) {
   request->set_session_key(request_data.session_key());
-  request->set_holdback(params::IsIncludedInHoldbackFieldTrial());
+  request->set_holdback_group(params::HoldbackFieldTrialGroup());
   // For the timing events, any of them could be zero. Fill the message as a
   // best effort.
   request->set_allocated_first_request_time(
