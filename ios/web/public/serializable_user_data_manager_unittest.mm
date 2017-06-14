@@ -4,10 +4,13 @@
 
 #import "ios/web/public/serializable_user_data_manager.h"
 
-#import "base/mac/scoped_nsobject.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 // User Data and Key to use for tests.
@@ -40,15 +43,15 @@ TEST_F(SerializableUserDataManagerTest, EncodeDecode) {
       manager()->CreateSerializableUserData();
 
   // Archive the serializable user data.
-  base::scoped_nsobject<NSMutableData> data([[NSMutableData alloc] init]);
-  base::scoped_nsobject<NSKeyedArchiver> archiver(
-      [[NSKeyedArchiver alloc] initForWritingWithMutableData:data]);
+  NSMutableData* data = [[NSMutableData alloc] init];
+  NSKeyedArchiver* archiver =
+      [[NSKeyedArchiver alloc] initForWritingWithMutableData:data];
   user_data->Encode(archiver);
   [archiver finishEncoding];
 
   // Create a new SerializableUserData by unarchiving.
-  base::scoped_nsobject<NSKeyedUnarchiver> unarchiver(
-      [[NSKeyedUnarchiver alloc] initForReadingWithData:data]);
+  NSKeyedUnarchiver* unarchiver =
+      [[NSKeyedUnarchiver alloc] initForReadingWithData:data];
   std::unique_ptr<web::SerializableUserData> decoded_data =
       web::SerializableUserData::Create();
   decoded_data->Decode(unarchiver);
