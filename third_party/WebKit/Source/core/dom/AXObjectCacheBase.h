@@ -10,7 +10,9 @@
 
 namespace blink {
 
+class LayoutObject;
 class Node;
+class AXObject;
 class AXObjectImpl;
 
 // AXObjectCacheBase is a temporary class that sits between AXObjectCache and
@@ -25,7 +27,8 @@ class CORE_EXPORT AXObjectCacheBase : public AXObjectCache {
  public:
   virtual ~AXObjectCacheBase();
 
-  virtual AXObjectImpl* Get(const Node*) = 0;
+  virtual AXObject* Get(const Node*) = 0;
+  virtual AXObject* GetOrCreate(LayoutObject*) = 0;
 
  protected:
   AXObjectCacheBase();

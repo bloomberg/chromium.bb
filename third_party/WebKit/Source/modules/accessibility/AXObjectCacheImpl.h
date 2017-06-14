@@ -125,7 +125,7 @@ class MODULES_EXPORT AXObjectCacheImpl : public AXObjectCacheBase {
 
   // used for objects without backing elements
   AXObjectImpl* GetOrCreate(AccessibilityRole);
-  AXObjectImpl* GetOrCreate(LayoutObject*);
+  AXObjectImpl* GetOrCreate(LayoutObject*) override;
   AXObjectImpl* GetOrCreate(Node*);
   AXObjectImpl* GetOrCreate(AbstractInlineTextBox*);
 
