@@ -738,6 +738,8 @@ interface CSSSkew : CSSTransformComponent
     getter ax
     getter ay
     method constructor
+    setter ax
+    setter ay
 interface CSSStyleDeclaration
     attribute @@toStringTag
     getter cssFloat
