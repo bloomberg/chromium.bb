@@ -510,6 +510,12 @@ bool HTMLCanvasElement::PaintsIntoCanvasBuffer() const {
   return true;
 }
 
+CanvasColorParams HTMLCanvasElement::GetCanvasColorParams() const {
+  if (context_)
+    return context_->color_params();
+  return CanvasColorParams();
+}
+
 void HTMLCanvasElement::NotifyListenersCanvasChanged() {
   if (listeners_.size() == 0)
     return;
@@ -872,7 +878,7 @@ bool HTMLCanvasElement::ShouldUseDisplayList() {
   // Rasterization of web contents will blend in the output space. Only embed
   // the canvas as a display list if it intended to do output space blending as
   // well.
-  if (!context_->color_params().UsesOutputSpaceBlending())
+  if (!GetCanvasColorParams().UsesOutputSpaceBlending())
     return false;
 
   if (RuntimeEnabledFeatures::ForceDisplayList2dCanvasEnabled())
@@ -894,7 +900,7 @@ HTMLCanvasElement::CreateWebGLImageBufferSurface(OpacityMode opacity_mode) {
   // then make a non-accelerated ImageBuffer. This means copying the internal
   // Image will require a pixel readback, but that is unavoidable in this case.
   auto surface = WTF::MakeUnique<AcceleratedImageBufferSurface>(
-      Size(), opacity_mode, context_->color_params());
+      Size(), opacity_mode, GetCanvasColorParams());
   if (surface->IsValid())
     return std::move(surface);
   return nullptr;
@@ -923,7 +929,7 @@ HTMLCanvasElement::CreateAcceleratedImageBufferSurface(OpacityMode opacity_mode,
 
   auto surface = WTF::MakeUnique<Canvas2DImageBufferSurface>(
       std::move(context_provider), Size(), *msaa_sample_count, opacity_mode,
-      Canvas2DLayerBridge::kEnableAcceleration, context_->color_params());
+      Canvas2DLayerBridge::kEnableAcceleration, GetCanvasColorParams());
   if (!surface->IsValid()) {
     CanvasMetrics::CountCanvasContextUsage(
         CanvasMetrics::kGPUAccelerated2DCanvasImageBufferCreationFailed);
@@ -944,7 +950,7 @@ HTMLCanvasElement::CreateUnacceleratedImageBufferSurface(
   if (ShouldUseDisplayList()) {
     auto surface = WTF::MakeUnique<RecordingImageBufferSurface>(
         Size(), RecordingImageBufferSurface::kAllowFallback, opacity_mode,
-        context_->color_params());
+        GetCanvasColorParams());
     if (surface->IsValid()) {
       CanvasMetrics::CountCanvasContextUsage(
           CanvasMetrics::kDisplayList2DCanvasImageBufferCreated);
@@ -955,7 +961,7 @@ HTMLCanvasElement::CreateUnacceleratedImageBufferSurface(
   }
 
   auto surface = WTF::MakeUnique<UnacceleratedImageBufferSurface>(
-      Size(), opacity_mode, kInitializeImagePixels, context_->color_params());
+      Size(), opacity_mode, kInitializeImagePixels, GetCanvasColorParams());
   if (surface->IsValid()) {
     CanvasMetrics::CountCanvasContextUsage(
         CanvasMetrics::kUnaccelerated2DCanvasImageBufferCreated);
