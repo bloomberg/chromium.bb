@@ -315,7 +315,6 @@ void ServiceWorkerURLLoaderJob::OnReceiveResponse(
   status_ = Status::kSentHeader;
   if (response_head.headers->response_code() >= 400)
     response_head_.headers = response_head.headers;
-  DeliverErrorResponse();
   url_loader_client_->OnReceiveResponse(response_head_, ssl_info,
                                         std::move(downloaded_file));
 }
