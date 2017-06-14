@@ -88,7 +88,6 @@ source_set("api") {
     "//base:i18n",
     "//components/keyed_service/content:content",
     "//extensions/browser:browser_sources",
-    "//extensions/browser/guest_view",
     "//extensions/common/api",
     "//extensions/strings",
   ]
