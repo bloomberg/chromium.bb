@@ -16,6 +16,10 @@
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/paint/PaintLayer.h"
+#include "core/testing/sim/SimCompositor.h"
+#include "core/testing/sim/SimDisplayItemList.h"
+#include "core/testing/sim/SimRequest.h"
+#include "core/testing/sim/SimTest.h"
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/testing/URLTestHelpers.h"
@@ -26,10 +30,6 @@
 #include "public/web/WebHitTestResult.h"
 #include "public/web/WebSettings.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "web/tests/sim/SimCompositor.h"
-#include "web/tests/sim/SimDisplayItemList.h"
-#include "web/tests/sim/SimRequest.h"
-#include "web/tests/sim/SimTest.h"
 
 using testing::_;
 

@@ -4,6 +4,8 @@
 
 #include "core/exported/WebViewBase.h"
 #include "core/frame/WebLocalFrameBase.h"
+#include "core/testing/sim/SimRequest.h"
+#include "core/testing/sim/SimTest.h"
 #include "platform/scheduler/renderer/web_view_scheduler.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "platform/wtf/PtrUtil.h"
@@ -14,8 +16,6 @@
 #include "public/platform/WebRTCSessionDescription.h"
 #include "public/web/WebScriptSource.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "web/tests/sim/SimRequest.h"
-#include "web/tests/sim/SimTest.h"
 
 using testing::_;
 

@@ -7,11 +7,11 @@
 
 #include <gtest/gtest.h>
 #include "core/frame/FrameTestHelpers.h"
-#include "web/tests/sim/SimCompositor.h"
-#include "web/tests/sim/SimNetwork.h"
-#include "web/tests/sim/SimPage.h"
-#include "web/tests/sim/SimWebFrameClient.h"
-#include "web/tests/sim/SimWebViewClient.h"
+#include "core/testing/sim/SimCompositor.h"
+#include "core/testing/sim/SimNetwork.h"
+#include "core/testing/sim/SimPage.h"
+#include "core/testing/sim/SimWebFrameClient.h"
+#include "core/testing/sim/SimWebViewClient.h"
 
 namespace blink {
 

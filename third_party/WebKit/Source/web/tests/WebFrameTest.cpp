@@ -88,6 +88,9 @@
 #include "core/page/ScopedPageSuspender.h"
 #include "core/paint/PaintLayer.h"
 #include "core/testing/NullExecutionContext.h"
+#include "core/testing/sim/SimDisplayItemList.h"
+#include "core/testing/sim/SimRequest.h"
+#include "core/testing/sim/SimTest.h"
 #include "modules/mediastream/MediaStream.h"
 #include "modules/mediastream/MediaStreamRegistry.h"
 #include "platform/Cursor.h"
@@ -157,9 +160,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"
 #include "web/WebViewImpl.h"
-#include "web/tests/sim/SimDisplayItemList.h"
-#include "web/tests/sim/SimRequest.h"
-#include "web/tests/sim/SimTest.h"
 
 using blink::URLTestHelpers::ToKURL;
 using blink::testing::RunPendingTasks;

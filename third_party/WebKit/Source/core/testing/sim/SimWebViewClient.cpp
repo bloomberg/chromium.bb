@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "web/tests/sim/SimWebViewClient.h"
+#include "core/testing/sim/SimWebViewClient.h"
 
 #include "public/platform/WebLayerTreeView.h"
 #include "public/web/WebLocalFrame.h"

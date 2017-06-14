@@ -4,9 +4,9 @@
 
 #include "core/dom/Document.h"
 #include "core/html/HTMLLinkElement.h"
+#include "core/testing/sim/SimRequest.h"
+#include "core/testing/sim/SimTest.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "web/tests/sim/SimRequest.h"
-#include "web/tests/sim/SimTest.h"
 
 namespace blink {
 

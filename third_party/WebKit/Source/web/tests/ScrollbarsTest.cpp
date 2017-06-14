@@ -6,15 +6,15 @@
 #include "core/frame/WebLocalFrameBase.h"
 #include "core/layout/LayoutView.h"
 #include "core/paint/PaintLayerScrollableArea.h"
+#include "core/testing/sim/SimDisplayItemList.h"
+#include "core/testing/sim/SimRequest.h"
+#include "core/testing/sim/SimTest.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/WebThemeEngine.h"
 #include "public/web/WebScriptSource.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "web/tests/sim/SimDisplayItemList.h"
-#include "web/tests/sim/SimRequest.h"
-#include "web/tests/sim/SimTest.h"
 
 namespace blink {
 

@@ -7,10 +7,10 @@
 #include "core/dom/Document.h"
 #include "core/frame/UseCounter.h"
 #include "core/page/Page.h"
+#include "core/testing/sim/SimRequest.h"
+#include "core/testing/sim/SimTest.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "web/tests/sim/SimRequest.h"
-#include "web/tests/sim/SimTest.h"
 
 namespace blink {
 

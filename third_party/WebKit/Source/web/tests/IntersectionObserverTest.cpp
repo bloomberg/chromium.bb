@@ -8,12 +8,12 @@
 #include "core/dom/IntersectionObserverInit.h"
 #include "core/exported/WebViewBase.h"
 #include "core/frame/LocalFrameView.h"
+#include "core/testing/sim/SimCompositor.h"
+#include "core/testing/sim/SimDisplayItemList.h"
+#include "core/testing/sim/SimRequest.h"
+#include "core/testing/sim/SimTest.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/wtf/CurrentTime.h"
-#include "web/tests/sim/SimCompositor.h"
-#include "web/tests/sim/SimDisplayItemList.h"
-#include "web/tests/sim/SimRequest.h"
-#include "web/tests/sim/SimTest.h"
 
 namespace blink {
 

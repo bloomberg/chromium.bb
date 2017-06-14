@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "web/tests/sim/SimCompositor.h"
+#include "core/testing/sim/SimCompositor.h"
 
 #include "core/exported/WebViewBase.h"
 #include "core/frame/LocalFrame.h"
@@ -12,11 +12,11 @@
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/paint/PaintLayer.h"
+#include "core/testing/sim/SimDisplayItemList.h"
 #include "platform/graphics/ContentLayerDelegate.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/wtf/CurrentTime.h"
 #include "public/platform/WebRect.h"
-#include "web/tests/sim/SimDisplayItemList.h"
 
 namespace blink {
 

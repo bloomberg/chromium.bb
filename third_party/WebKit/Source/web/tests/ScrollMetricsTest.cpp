@@ -8,14 +8,14 @@
 #include "core/input/EventHandler.h"
 #include "core/layout/LayoutView.h"
 #include "core/paint/PaintLayerScrollableArea.h"
+#include "core/testing/sim/SimDisplayItemList.h"
+#include "core/testing/sim/SimRequest.h"
+#include "core/testing/sim/SimTest.h"
 #include "platform/scroll/MainThreadScrollingReason.h"
 #include "platform/scroll/ScrollerSizeMetrics.h"
 #include "platform/testing/HistogramTester.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "platform/testing/UnitTestHelpers.h"
-#include "web/tests/sim/SimDisplayItemList.h"
-#include "web/tests/sim/SimRequest.h"
-#include "web/tests/sim/SimTest.h"
 
 #define EXPECT_WHEEL_BUCKET(reason, count)     \
   histogram_tester.ExpectBucketCount(          \

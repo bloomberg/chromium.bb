@@ -5,9 +5,9 @@
 #include "core/dom/shadow/ElementShadow.h"
 #include "core/dom/shadow/ElementShadowV0.h"
 #include "core/html/HTMLBodyElement.h"
-#include "web/tests/sim/SimDisplayItemList.h"
-#include "web/tests/sim/SimRequest.h"
-#include "web/tests/sim/SimTest.h"
+#include "core/testing/sim/SimDisplayItemList.h"
+#include "core/testing/sim/SimRequest.h"
+#include "core/testing/sim/SimTest.h"
 
 namespace blink {
 
