@@ -303,9 +303,7 @@ TEST_F(VisibleUnitsTest, ComputeInlineBoxPositionMixedEditable) {
       Position::LastPositionInNode(sample), TextAffinity::kDownstream);
   // Should not be in infinite-loop
   EXPECT_EQ(nullptr, actual.inline_box);
-  // TODO(editing-dev): We should return 0 for |InlineBoxPosition| when
-  // |inline_box| is null.
-  EXPECT_EQ(2, actual.offset_in_box);
+  EXPECT_EQ(0, actual.offset_in_box);
 }
 
 TEST_F(VisibleUnitsTest, endOfDocument) {

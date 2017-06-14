@@ -804,15 +804,17 @@ static InlineBoxPosition ComputeInlineBoxPositionTemplate(
           UpstreamIgnoringEditingBoundaries(position);
       if (upstream_equivalent == position ||
           DownstreamIgnoringEditingBoundaries(upstream_equivalent) == position)
-        return InlineBoxPosition(inline_box, caret_offset);
+        return InlineBoxPosition();
 
       return ComputeInlineBoxPosition(
           upstream_equivalent, TextAffinity::kUpstream, primary_direction);
     }
     if (layout_object->IsBox()) {
       inline_box = ToLayoutBox(layout_object)->InlineBoxWrapper();
-      if (!inline_box || (caret_offset > inline_box->CaretMinOffset() &&
-                          caret_offset < inline_box->CaretMaxOffset()))
+      if (!inline_box)
+        return InlineBoxPosition();
+      if ((caret_offset > inline_box->CaretMinOffset() &&
+           caret_offset < inline_box->CaretMaxOffset()))
         return InlineBoxPosition(inline_box, caret_offset);
     }
   } else {
@@ -849,7 +851,7 @@ static InlineBoxPosition ComputeInlineBoxPositionTemplate(
   }
 
   if (!inline_box)
-    return InlineBoxPosition(inline_box, caret_offset);
+    return InlineBoxPosition();
   return AdjustInlineBoxPositionForTextDirection(
       inline_box, caret_offset, layout_object->Style()->GetUnicodeBidi(),
       primary_direction);
@@ -1033,7 +1035,11 @@ LocalCaretRect LocalCaretRectOfPositionTemplate(
             box_position.inline_box->GetLineLayoutItem()),
         box_position);
   }
-  return ComputeLocalCaretRect(layout_object, box_position);
+  // DeleteSelectionCommandTest.deleteListFromTable goes here.
+  return LocalCaretRect(
+      layout_object,
+      layout_object->LocalCaretRect(
+          nullptr, position.GetPosition().ComputeEditingOffset()));
 }
 
 // This function was added because the caret rect that is calculated by
