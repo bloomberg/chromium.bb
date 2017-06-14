@@ -30,6 +30,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/web_contents_tester.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_response_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
@@ -264,15 +265,6 @@ void BackgroundLoaderOfflinerTest::OnCancel(const SavePageRequest& request) {
   DCHECK(!cancel_callback_called_);
   cancel_callback_called_ = true;
 }
-
-// Two tests crash roughly 20% of runs on Android.  http://crbug.com/722556.
-#if defined(OS_ANDROID)
-#define MAYBE_FailsOnErrorPage DISABLED_FailsOnErrorPage
-#define MAYBE_NoNextOnInternetDisconnected DISABLED_NoNextOnInternetDisconnected
-#else
-#define MAYBE_FailsOnErrorPage FailsOnErrorPage
-#define MAYBE_NoNextOnInternetDisconnected NoNextOnInternetDisconnected
-#endif
 
 TEST_F(BackgroundLoaderOfflinerTest, LoadTerminationListenerSetup) {
   // Verify that back pointer to offliner is set up in the listener.
@@ -522,7 +514,7 @@ TEST_F(BackgroundLoaderOfflinerTest, ReturnsOnWebContentsDestroyed) {
   EXPECT_EQ(Offliner::RequestStatus::LOADING_FAILED, request_status());
 }
 
-TEST_F(BackgroundLoaderOfflinerTest, MAYBE_FailsOnErrorPage) {
+TEST_F(BackgroundLoaderOfflinerTest, FailsOnErrorPage) {
   base::Time creation_time = base::Time::Now();
   SavePageRequest request(kRequestId, kHttpUrl, kClientId, creation_time,
                           kUserRequested);
@@ -537,8 +529,8 @@ TEST_F(BackgroundLoaderOfflinerTest, MAYBE_FailsOnErrorPage) {
   // NavigationHandle destruction will trigger DidFinishNavigation code.
   handle.reset();
   histograms().ExpectBucketCount(
-      "OfflinePages.Background.BackgroundLoadingFailedCode.async_loading",
-      105,  // ERR_NAME_NOT_RESOLVED
+      "OfflinePages.Background.LoadingErrorStatusCode.async_loading",
+      -105,  // ERR_NAME_NOT_RESOLVED
       1);
   CompleteLoading();
   PumpLoop();
@@ -547,7 +539,7 @@ TEST_F(BackgroundLoaderOfflinerTest, MAYBE_FailsOnErrorPage) {
   EXPECT_EQ(Offliner::RequestStatus::LOADING_FAILED, request_status());
 }
 
-TEST_F(BackgroundLoaderOfflinerTest, MAYBE_NoNextOnInternetDisconnected) {
+TEST_F(BackgroundLoaderOfflinerTest, NoNextOnInternetDisconnected) {
   base::Time creation_time = base::Time::Now();
   SavePageRequest request(kRequestId, kHttpUrl, kClientId, creation_time,
                           kUserRequested);
@@ -590,6 +582,12 @@ TEST_F(BackgroundLoaderOfflinerTest, OffliningPreviewsStatusOffHistogram) {
       content::PreviewsTypes::PREVIEWS_NO_TRANSFORM);
   std::unique_ptr<content::NavigationData> navigation_data(
       chrome_navigation_data.release());
+  offliner()->web_contents_tester()->SetNavigationData(
+      handle.get(), std::move(navigation_data));
+  scoped_refptr<net::HttpResponseHeaders> header(
+      new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
+  offliner()->web_contents_tester()->SetHttpResponseHeaders(handle.get(),
+                                                            header);
   // Call DidFinishNavigation with handle.
   offliner()->DidFinishNavigation(handle.get());
 
@@ -620,6 +618,10 @@ TEST_F(BackgroundLoaderOfflinerTest, OffliningPreviewsStatusOnHistogram) {
       chrome_navigation_data.release());
   offliner()->web_contents_tester()->SetNavigationData(
       handle.get(), std::move(navigation_data));
+  scoped_refptr<net::HttpResponseHeaders> header(
+      new net::HttpResponseHeaders("HTTP/1.1 200 OK"));
+  offliner()->web_contents_tester()->SetHttpResponseHeaders(handle.get(),
+                                                            header);
   // Call DidFinishNavigation with handle.
   offliner()->DidFinishNavigation(handle.get());
 

@@ -28,6 +28,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "content/public/common/previews_state.h"
+#include "net/http/http_response_headers.h"
 
 namespace offline_pages {
 
@@ -70,11 +71,11 @@ std::string AddHistogramSuffix(const ClientId& client_id,
   return adjusted_histogram_name;
 }
 
-void RecordErrorCauseUMA(const ClientId& client_id, net::Error error_code) {
+void RecordErrorCauseUMA(const ClientId& client_id, int error_code) {
   UMA_HISTOGRAM_SPARSE_SLOWLY(
       AddHistogramSuffix(client_id,
-                         "OfflinePages.Background.BackgroundLoadingFailedCode"),
-      std::abs(error_code));
+                         "OfflinePages.Background.LoadingErrorStatusCode"),
+      error_code);
 }
 
 void RecordOffliningPreviewsUMA(const ClientId& client_id,
@@ -332,13 +333,24 @@ void BackgroundLoaderOffliner::DidFinishNavigation(
   // Mark as error page. Resetting here causes RecordNavigationMetrics to crash.
   if (navigation_handle->IsErrorPage()) {
     RecordErrorCauseUMA(pending_request_->client_id(),
-                        navigation_handle->GetNetErrorCode());
+                        static_cast<int>(navigation_handle->GetNetErrorCode()));
     switch (navigation_handle->GetNetErrorCode()) {
       case net::ERR_INTERNET_DISCONNECTED:
         page_load_state_ = DELAY_RETRY;
         break;
       default:
         page_load_state_ = RETRIABLE;
+    }
+  } else {
+    int status_code = navigation_handle->GetResponseHeaders()->response_code();
+    // 2XX and 3XX are ok because they indicate success or redirection.
+    // We track 301 because it's MOVED_PERMANENTLY and usually accompanies an
+    // error page with new address.
+    // 400+ codes are client and server errors.
+    // We skip 418 because it's a teapot.
+    if (status_code == 301 || (status_code >= 400 && status_code != 418)) {
+      RecordErrorCauseUMA(pending_request_->client_id(), status_code);
+      page_load_state_ = RETRIABLE;
     }
   }
 
@@ -494,7 +506,14 @@ void BackgroundLoaderOffliner::DeleteOfflinePageCallback(
 
 void BackgroundLoaderOffliner::ResetState() {
   pending_request_.reset();
-  snapshot_controller_.reset();
+  // Stop snapshot controller from triggering any more events.
+  snapshot_controller_->Stop();
+  // Delete the snapshot controller after stack unwinds, so we don't
+  // corrupt stack in some edge cases. Deleting it soon should be safe because
+  // we check against pending_request_ with every action, and snapshot
+  // controller is configured to only call StartSnapshot once for BGL.
+  base::ThreadTaskRunnerHandle::Get()->DeleteSoon(
+      FROM_HERE, snapshot_controller_.release());
   page_load_state_ = SUCCESS;
   network_bytes_ = 0LL;
   is_low_bar_met_ = false;
