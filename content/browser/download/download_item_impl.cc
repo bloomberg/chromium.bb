@@ -890,7 +890,8 @@ WebContents* DownloadItemImpl::GetWebContents() const {
   return nullptr;
 }
 
-void DownloadItemImpl::OnContentCheckCompleted(DownloadDangerType danger_type) {
+void DownloadItemImpl::OnContentCheckCompleted(DownloadDangerType danger_type,
+                                               DownloadInterruptReason reason) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(AllDataSaved());
 
@@ -904,6 +905,10 @@ void DownloadItemImpl::OnContentCheckCompleted(DownloadDangerType danger_type) {
   DVLOG(20) << __func__ << "() danger_type=" << danger_type
             << " download=" << DebugString(true);
   SetDangerType(danger_type);
+  if (reason != DOWNLOAD_INTERRUPT_REASON_NONE) {
+    InterruptAndDiscardPartialState(reason);
+    DCHECK_EQ(RESUME_MODE_INVALID, GetResumeMode());
+  }
   UpdateObservers();
 }
 
@@ -999,7 +1004,7 @@ DownloadItemImpl::ResumeMode DownloadItemImpl::GetResumeMode() const {
   bool user_action_required =
       (auto_resume_count_ >= kMaxAutoResumeAttempts || IsPaused());
 
-  switch(last_reason_) {
+  switch (last_reason_) {
     case DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR:
     case DOWNLOAD_INTERRUPT_REASON_NETWORK_TIMEOUT:
     case DOWNLOAD_INTERRUPT_REASON_SERVER_CONTENT_LENGTH_MISMATCH:

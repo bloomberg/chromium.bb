@@ -38,6 +38,7 @@ extern const char kArcVoiceInteractionValuePropAccepted[];
 extern const char kChildAccountStatusKnown[];
 extern const char kDefaultApps[];
 extern const char kDisableScreenshots[];
+extern const char kDownloadRestrictions[];
 extern const char kForceEphemeralProfiles[];
 extern const char kHomePageIsNewTabPage[];
 extern const char kHomePage[];

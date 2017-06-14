@@ -409,7 +409,8 @@ WebContents* FakeDownloadItem::GetWebContents() const {
   return nullptr;
 }
 
-void FakeDownloadItem::OnContentCheckCompleted(DownloadDangerType danger_type) {
+void FakeDownloadItem::OnContentCheckCompleted(DownloadDangerType danger_type,
+                                               DownloadInterruptReason reason) {
   NOTREACHED();
 }
 

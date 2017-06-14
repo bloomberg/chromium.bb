@@ -12,6 +12,7 @@
 #include <memory>
 #include <queue>
 #include <utility>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/callback_helpers.h"
@@ -523,7 +524,8 @@ TEST_F(DownloadItemTest, NotificationAfterOnContentCheckCompleted) {
 
   safe_item->OnAllDataSaved(0, std::unique_ptr<crypto::SecureHash>());
   EXPECT_TRUE(safe_observer.CheckAndResetDownloadUpdated());
-  safe_item->OnContentCheckCompleted(DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS);
+  safe_item->OnContentCheckCompleted(DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+                                     DOWNLOAD_INTERRUPT_REASON_NONE);
   EXPECT_TRUE(safe_observer.CheckAndResetDownloadUpdated());
   CleanupItem(safe_item, download_file, DownloadItem::IN_PROGRESS);
 
@@ -535,7 +537,8 @@ TEST_F(DownloadItemTest, NotificationAfterOnContentCheckCompleted) {
 
   unsafeurl_item->OnAllDataSaved(0, std::unique_ptr<crypto::SecureHash>());
   EXPECT_TRUE(unsafeurl_observer.CheckAndResetDownloadUpdated());
-  unsafeurl_item->OnContentCheckCompleted(DOWNLOAD_DANGER_TYPE_DANGEROUS_URL);
+  unsafeurl_item->OnContentCheckCompleted(DOWNLOAD_DANGER_TYPE_DANGEROUS_URL,
+                                          DOWNLOAD_INTERRUPT_REASON_NONE);
   EXPECT_TRUE(unsafeurl_observer.CheckAndResetDownloadUpdated());
 
   EXPECT_CALL(*mock_delegate(), ShouldCompleteDownload(_, _))
@@ -552,7 +555,8 @@ TEST_F(DownloadItemTest, NotificationAfterOnContentCheckCompleted) {
 
   unsafefile_item->OnAllDataSaved(0, std::unique_ptr<crypto::SecureHash>());
   EXPECT_TRUE(unsafefile_observer.CheckAndResetDownloadUpdated());
-  unsafefile_item->OnContentCheckCompleted(DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE);
+  unsafefile_item->OnContentCheckCompleted(DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
+                                           DOWNLOAD_INTERRUPT_REASON_NONE);
   EXPECT_TRUE(unsafefile_observer.CheckAndResetDownloadUpdated());
 
   EXPECT_CALL(*mock_delegate(), ShouldCompleteDownload(_, _))
@@ -1758,8 +1762,8 @@ TEST_F(DownloadItemTest, CompleteDelegate_SetDanger) {
   copy_delegate_callback = delegate_callback;
   delegate_callback.Reset();
   EXPECT_FALSE(item->IsDangerous());
-  item->OnContentCheckCompleted(
-      content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE);
+  item->OnContentCheckCompleted(content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
+                                DOWNLOAD_INTERRUPT_REASON_NONE);
   EXPECT_EQ(DownloadItem::IN_PROGRESS, item->GetState());
   copy_delegate_callback.Run();
   ASSERT_TRUE(delegate_callback.is_null());

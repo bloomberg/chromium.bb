@@ -75,6 +75,14 @@ const char kDefaultApps[] = "default_apps";
 // handling code reads local state, while extension APIs use profile pref.
 const char kDisableScreenshots[] = "disable_screenshots";
 
+// Prevents certain types of downloads based on integer value, which corresponds
+// to DownloadPrefs::DownloadRestriction.
+// 0 - No special restrictions (default)
+// 1 - Block dangerous downloads
+// 2 - Block potentially dangerous downloads
+// 3 - Block all downloads
+const char kDownloadRestrictions[] = "download_restrictions";
+
 // If set to true profiles are created in ephemeral mode and do not store their
 // data in the profile folder on disk but only in memory.
 const char kForceEphemeralProfiles[] = "profile.ephemeral_mode";

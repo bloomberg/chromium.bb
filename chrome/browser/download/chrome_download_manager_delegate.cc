@@ -49,6 +49,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
+#include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_item.h"
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/notification_source.h"
@@ -368,8 +369,17 @@ bool ChromeDownloadManagerDelegate::IsDownloadReadyForCompletion(
              content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT)) {
       DVLOG(2) << __func__
                << "() SB service disabled. Marking download as DANGEROUS FILE";
-      item->OnContentCheckCompleted(
-          content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE);
+      if (ShouldBlockFile(content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE)) {
+        item->OnContentCheckCompleted(
+            // Specifying a dangerous type here would take precendence over the
+            // blocking of the file.
+            content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+            content::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED);
+      } else {
+        item->OnContentCheckCompleted(
+            content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE,
+            content::DOWNLOAD_INTERRUPT_REASON_NONE);
+      }
       UMA_HISTOGRAM_ENUMERATION("Download.DangerousFile.Reason",
                                 SB_NOT_AVAILABLE, DANGEROUS_FILE_REASON_MAX);
       content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
@@ -723,8 +733,7 @@ void ChromeDownloadManagerDelegate::CheckDownloadUrl(
     DVLOG(2) << __func__ << "() Start SB URL check for download = "
              << download->DebugString(false);
     service->CheckDownloadUrl(download,
-                              base::Bind(&CheckDownloadUrlDone,
-                                         callback,
+                              base::Bind(&CheckDownloadUrlDone, callback,
                                          is_content_check_supported));
     return;
   }
@@ -795,8 +804,18 @@ void ChromeDownloadManagerDelegate::CheckClientDownloadDone(
     DCHECK_NE(danger_type,
               content::DOWNLOAD_DANGER_TYPE_MAYBE_DANGEROUS_CONTENT);
 
-    if (danger_type != content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS)
-      item->OnContentCheckCompleted(danger_type);
+    if (danger_type != content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS) {
+      if (ShouldBlockFile(danger_type)) {
+        item->OnContentCheckCompleted(
+            // Specifying a dangerous type here would take precendence over the
+            // blocking of the file.
+            content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+            content::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED);
+      } else {
+        item->OnContentCheckCompleted(danger_type,
+                                      content::DOWNLOAD_INTERRUPT_REASON_NONE);
+      }
+    }
   }
 
   SafeBrowsingState* state = static_cast<SafeBrowsingState*>(
@@ -843,6 +862,12 @@ void ChromeDownloadManagerDelegate::OnDownloadTargetDetermined(
 
     DownloadItemModel(item).SetDangerLevel(target_info->danger_level);
   }
+  if (ShouldBlockFile(target_info->danger_type)) {
+    target_info->result = content::DOWNLOAD_INTERRUPT_REASON_FILE_BLOCKED;
+    // A dangerous type would take precendence over the blocking of the file.
+    target_info->danger_type = content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS;
+  }
+
   callback.Run(target_info->target_path, target_info->target_disposition,
                target_info->danger_type, target_info->intermediate_path,
                target_info->result);
@@ -875,5 +900,33 @@ bool ChromeDownloadManagerDelegate::IsOpenInBrowserPreferreredForFile(
     return true;
   }
 #endif
+  return false;
+}
+
+bool ChromeDownloadManagerDelegate::ShouldBlockFile(
+    content::DownloadDangerType danger_type) const {
+  DownloadPrefs::DownloadRestriction download_restriction =
+      download_prefs_->download_restriction();
+
+  switch (download_restriction) {
+    case (DownloadPrefs::DownloadRestriction::NONE):
+      return false;
+
+    case (DownloadPrefs::DownloadRestriction::POTENTIALLY_DANGEROUS_FILES):
+      return danger_type != content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS;
+
+    case (DownloadPrefs::DownloadRestriction::DANGEROUS_FILES): {
+      return (danger_type == content::DOWNLOAD_DANGER_TYPE_DANGEROUS_CONTENT ||
+              danger_type == content::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE ||
+              danger_type == content::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL);
+    }
+
+    case (DownloadPrefs::DownloadRestriction::ALL_FILES):
+      return true;
+
+    default:
+      LOG(ERROR) << "Invalid download restruction value: "
+                 << static_cast<int>(download_restriction);
+  }
   return false;
 }
