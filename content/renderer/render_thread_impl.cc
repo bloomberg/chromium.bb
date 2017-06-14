@@ -1696,6 +1696,23 @@ void RenderThreadImpl::OnProcessBackgrounded(bool backgrounded) {
   if (backgrounded) {
     renderer_scheduler_->OnRendererBackgrounded();
     needs_to_record_first_active_paint_ = false;
+    GetRendererScheduler()->DefaultTaskRunner()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&RenderThreadImpl::RecordMemoryUsageAfterBackgrounded,
+                   base::Unretained(this), "5min", process_foregrounded_count_),
+        base::TimeDelta::FromMinutes(5));
+    GetRendererScheduler()->DefaultTaskRunner()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&RenderThreadImpl::RecordMemoryUsageAfterBackgrounded,
+                   base::Unretained(this), "10min",
+                   process_foregrounded_count_),
+        base::TimeDelta::FromMinutes(10));
+    GetRendererScheduler()->DefaultTaskRunner()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&RenderThreadImpl::RecordMemoryUsageAfterBackgrounded,
+                   base::Unretained(this), "15min",
+                   process_foregrounded_count_),
+        base::TimeDelta::FromMinutes(15));
   } else {
     renderer_scheduler_->OnRendererForegrounded();
     process_foregrounded_count_++;
@@ -1827,6 +1844,47 @@ bool RenderThreadImpl::GetRendererMemoryMetrics(
       total_allocated / render_view_count / 1024 / 1024;
 
   return true;
+}
+
+static void RecordMemoryUsageAfterBackgroundedMB(const char* basename,
+                                                 const char* suffix,
+                                                 int memory_usage) {
+  std::string histogram_name = base::StringPrintf("%s.%s", basename, suffix);
+  base::UmaHistogramMemoryLargeMB(histogram_name, memory_usage);
+}
+
+void RenderThreadImpl::RecordMemoryUsageAfterBackgrounded(
+    const char* suffix,
+    int foregrounded_count) {
+  // If this renderer is resumed, we should not update UMA.
+  if (!RendererIsHidden())
+    return;
+  // If this renderer was not kept backgrounded for 5/10/15 minutes,
+  // we should not record current memory usage.
+  if (foregrounded_count != process_foregrounded_count_)
+    return;
+
+  RendererMemoryMetrics memory_metrics;
+  if (!GetRendererMemoryMetrics(&memory_metrics))
+    return;
+  RecordMemoryUsageAfterBackgroundedMB(
+      "Memory.Experimental.Renderer.PartitionAlloc.AfterBackgrounded", suffix,
+      memory_metrics.partition_alloc_kb / 1024);
+  RecordMemoryUsageAfterBackgroundedMB(
+      "Memory.Experimental.Renderer.BlinkGC.AfterBackgrounded", suffix,
+      memory_metrics.blink_gc_kb / 1024);
+  RecordMemoryUsageAfterBackgroundedMB(
+      "Memory.Experimental.Renderer.Malloc.AfterBackgrounded", suffix,
+      memory_metrics.malloc_mb);
+  RecordMemoryUsageAfterBackgroundedMB(
+      "Memory.Experimental.Renderer.Discardable.AfterBackgrounded", suffix,
+      memory_metrics.discardable_kb / 1024);
+  RecordMemoryUsageAfterBackgroundedMB(
+      "Memory.Experimental.Renderer.V8MainThreaIsolate.AfterBackgrounded",
+      suffix, memory_metrics.v8_main_thread_isolate_mb);
+  RecordMemoryUsageAfterBackgroundedMB(
+      "Memory.Experimental.Renderer.TotalAllocated.AfterBackgrounded", suffix,
+      memory_metrics.total_allocated_mb);
 }
 
 #define GET_MEMORY_GROWTH(current, previous, allocator) \

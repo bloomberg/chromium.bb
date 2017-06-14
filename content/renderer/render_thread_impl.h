@@ -590,6 +590,8 @@ class CONTENT_EXPORT RenderThreadImpl
   void OnRendererHidden();
   void OnRendererVisible();
 
+  void RecordMemoryUsageAfterBackgrounded(const char* suffix,
+                                          int foregrounded_count);
   void RecordPurgeAndSuspendMemoryGrowthMetrics(
       const char* suffix,
       int foregrounded_count_when_purged);

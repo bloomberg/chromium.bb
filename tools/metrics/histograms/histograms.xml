@@ -31013,7 +31013,10 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 <!-- Name completed by histogram_suffixes name="RendererMemoryAllocator" -->
 
   <owner>keishi@chromium.org</owner>
-  <summary>The renderer process's memory usage after a page load.</summary>
+  <summary>
+    The renderer process's memory usage at the specific timing, i.e. after a
+    page load and 5/10/15minutes after backgrounded.
+  </summary>
 </histogram>
 
 <histogram name="Memory.Experimental.Renderer.LoadsInMainFrameDuringUptime"
@@ -93985,6 +93988,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
              within the page."/>
   <suffix name="MainFrameDidFinishLoad"
       label="Recorded when DidFinishLoad is called for the main frame."/>
+  <suffix name="AfterBackgrounded.5min"
+      label="Recorded 5 minutes after backgrounded."/>
+  <suffix name="AfterBackgrounded.10min"
+      label="Recorded 10 minutes after backgrounded."/>
+  <suffix name="AfterBackgrounded.15min"
+      label="Recorded 15 minutes after backgrounded."/>
   <affected-histogram name="Memory.Experimental.Renderer.BlinkGC"/>
   <affected-histogram name="Memory.Experimental.Renderer.Discardable"/>
   <affected-histogram name="Memory.Experimental.Renderer.Malloc"/>
