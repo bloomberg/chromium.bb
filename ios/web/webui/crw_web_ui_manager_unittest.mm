@@ -9,7 +9,6 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
@@ -28,6 +27,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace web {
 
@@ -79,14 +82,13 @@ class MockURLFetcherBlockAdapter : public URLFetcherBlockAdapter {
       favicon_path = favicon_path.AppendASCII(kFaviconPath);
       NSData* favicon = [NSData
           dataWithContentsOfFile:base::SysUTF8ToNSString(favicon_path.value())];
-      completion_handler_.get()(favicon, this);
+      completion_handler_(favicon, this);
     } else if (url_.path().find(kMojoModuleName) != std::string::npos) {
-      completion_handler_.get()(
-          [kMojoModule dataUsingEncoding:NSUTF8StringEncoding], this);
+      completion_handler_([kMojoModule dataUsingEncoding:NSUTF8StringEncoding],
+                          this);
 
     } else if (url_.scheme().find("test") != std::string::npos) {
-      completion_handler_.get()([kHtml dataUsingEncoding:NSUTF8StringEncoding],
-                                this);
+      completion_handler_([kHtml dataUsingEncoding:NSUTF8StringEncoding], this);
     } else {
       NOTREACHED();
     }
@@ -96,7 +98,7 @@ class MockURLFetcherBlockAdapter : public URLFetcherBlockAdapter {
   // The URL to fetch.
   const GURL url_;
   // Callback for resource load.
-  base::mac::ScopedBlock<URLFetcherBlockAdapterCompletion> completion_handler_;
+  URLFetcherBlockAdapterCompletion completion_handler_;
 };
 
 }  // namespace web
@@ -128,8 +130,8 @@ class CRWWebUIManagerTest : public web::WebTest {
     test_browser_state_.reset(new TestBrowserState());
     WebState::CreateParams params(test_browser_state_.get());
     web_state_impl_.reset(new MockWebStateImpl(params));
-    web_ui_manager_.reset(
-        [[CRWTestWebUIManager alloc] initWithWebState:web_state_impl_.get()]);
+    web_ui_manager_ =
+        [[CRWTestWebUIManager alloc] initWithWebState:web_state_impl_.get()];
   }
 
   // TestBrowserState for creation of WebStateImpl.
@@ -138,7 +140,7 @@ class CRWWebUIManagerTest : public web::WebTest {
   // calls.
   std::unique_ptr<MockWebStateImpl> web_state_impl_;
   // WebUIManager for testing.
-  base::scoped_nsobject<CRWTestWebUIManager> web_ui_manager_;
+  CRWTestWebUIManager* web_ui_manager_;
 };
 
 // Tests that CRWWebUIManager observes provisional navigation and invokes an

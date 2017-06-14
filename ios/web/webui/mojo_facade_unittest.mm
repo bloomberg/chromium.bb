@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#import "base/mac/scoped_nsobject.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
@@ -20,6 +19,10 @@
 #import "testing/gtest_mac.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace web {
 
 namespace {
@@ -28,9 +31,9 @@ namespace {
 std::string GetJson(id object) {
   NSData* json_as_data =
       [NSJSONSerialization dataWithJSONObject:object options:0 error:nil];
-  base::scoped_nsobject<NSString> json_as_string([[NSString alloc]
-      initWithData:json_as_data
-          encoding:NSUTF8StringEncoding]);
+  NSString* json_as_string =
+      [[NSString alloc] initWithData:json_as_data
+                            encoding:NSUTF8StringEncoding];
   return base::SysNSStringToUTF8(json_as_string);
 }
 
@@ -52,14 +55,14 @@ class MojoFacadeTest : public WebTest {
     interface_provider_ = base::MakeUnique<WebStateInterfaceProvider>();
     interface_provider_->registry()->AddInterface(base::Bind(
         &MojoFacadeTest::BindTestUIHandlerMojoRequest, base::Unretained(this)));
-    evaluator_.reset([[OCMockObject
-        mockForProtocol:@protocol(CRWJSInjectionEvaluator)] retain]);
-    facade_.reset(new MojoFacade(
+    evaluator_ =
+        [OCMockObject mockForProtocol:@protocol(CRWJSInjectionEvaluator)];
+    facade_ = base::MakeUnique<MojoFacade>(
         interface_provider_.get(),
-        static_cast<id<CRWJSInjectionEvaluator>>(evaluator_.get())));
+        static_cast<id<CRWJSInjectionEvaluator>>(evaluator_));
   }
 
-  OCMockObject* evaluator() { return evaluator_.get(); }
+  OCMockObject* evaluator() { return evaluator_; }
   MojoFacade* facade() { return facade_.get(); }
 
  private:
@@ -68,7 +71,7 @@ class MojoFacadeTest : public WebTest {
       TestUIHandlerMojoRequest request) {}
 
   std::unique_ptr<WebStateInterfaceProvider> interface_provider_;
-  base::scoped_nsobject<OCMockObject> evaluator_;
+  OCMockObject* evaluator_;
   std::unique_ptr<MojoFacade> facade_;
 };
 
