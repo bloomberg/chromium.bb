@@ -277,18 +277,6 @@ void StorageTypeObservers::RemoveObserver(StorageObserver* observer) {
   }
 }
 
-void StorageTypeObservers::RemoveObserverForFilter(
-    StorageObserver* observer, const StorageObserver::Filter& filter) {
-  std::string host = net::GetHostOrSpecFromURL(filter.origin);
-  auto it = host_observers_map_.find(host);
-  if (it == host_observers_map_.end())
-    return;
-
-  it->second->RemoveObserver(observer);
-  if (!it->second->ContainsObservers())
-    host_observers_map_.erase(it);
-}
-
 const HostStorageObservers* StorageTypeObservers::GetHostObservers(
     const std::string& host) const {
   auto it = host_observers_map_.find(host);
@@ -344,15 +332,6 @@ void StorageMonitor::RemoveObserver(StorageObserver* observer) {
        it != storage_type_observers_map_.end(); ++it) {
     it->second->RemoveObserver(observer);
   }
-}
-
-void StorageMonitor::RemoveObserverForFilter(
-    StorageObserver* observer, const StorageObserver::Filter& filter) {
-  auto it = storage_type_observers_map_.find(filter.storage_type);
-  if (it == storage_type_observers_map_.end())
-    return;
-
-  it->second->RemoveObserverForFilter(observer, filter);
 }
 
 const StorageTypeObservers* StorageMonitor::GetStorageTypeObservers(

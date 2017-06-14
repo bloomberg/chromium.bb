@@ -32,7 +32,7 @@ namespace extensions {
 class Extension;
 class ExtensionPrefs;
 class ExtensionRegistry;
-class StorageEventObserver;
+class ExtensionStorageMonitorIOHelper;
 
 // ExtensionStorageMonitor monitors the storage usage of extensions and apps
 // that are granted unlimited storage and displays notifications when high
@@ -139,8 +139,9 @@ class ExtensionStorageMonitor : public KeyedService,
                  extensions::ExtensionRegistryObserver>
       extension_registry_observer_;
 
-  // StorageEventObserver monitors storage for extensions on the IO thread.
-  scoped_refptr<StorageEventObserver> storage_observer_;
+  // ExtensionStorageMonitorIOHelper maintains, on the IO thread, an instance of
+  // SingleExtensionStorageObserver for each extension.
+  scoped_refptr<ExtensionStorageMonitorIOHelper> io_helper_;
 
   // Modal dialog used to confirm removal of an extension.
   std::unique_ptr<ExtensionUninstallDialog> uninstall_dialog_;
@@ -151,7 +152,7 @@ class ExtensionStorageMonitor : public KeyedService,
 
   base::WeakPtrFactory<ExtensionStorageMonitor> weak_ptr_factory_;
 
-  friend class StorageEventObserver;
+  friend class SingleExtensionStorageObserver;
   friend class ExtensionStorageMonitorTest;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionStorageMonitor);

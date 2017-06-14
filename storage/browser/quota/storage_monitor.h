@@ -131,8 +131,6 @@ class STORAGE_EXPORT StorageTypeObservers {
   void AddObserver(StorageObserver* observer,
                    const StorageObserver::MonitorParams& params);
   void RemoveObserver(StorageObserver* observer);
-  void RemoveObserverForFilter(StorageObserver* observer,
-                               const StorageObserver::Filter& filter);
 
   // Returns the observers of a specific host.
   const HostStorageObservers* GetHostObservers(const std::string& host) const;
