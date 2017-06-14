@@ -100,7 +100,8 @@ static int i915_add_combinations(struct driver *drv)
 		return ret;
 
 	ret = drv_add_combinations(drv, tileable_texture_source_formats,
-				   ARRAY_SIZE(texture_source_formats), &metadata, texture_flags);
+				   ARRAY_SIZE(tileable_texture_source_formats), &metadata,
+				   texture_flags);
 	if (ret)
 		return ret;
 
