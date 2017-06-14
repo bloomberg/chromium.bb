@@ -14,7 +14,6 @@
 #include "base/threading/thread_checker.h"
 #include "components/cast_channel/cast_channel_enum.h"
 #include "components/cast_channel/cast_socket.h"
-#include "components/cast_channel/proto/logging.pb.h"
 #include "extensions/browser/api/async_api_function.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "extensions/common/api/cast_channel.h"

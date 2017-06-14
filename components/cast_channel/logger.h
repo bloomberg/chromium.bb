@@ -15,63 +15,62 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
-#include "components/cast_channel/proto/logging.pb.h"
+#include "components/cast_channel/cast_channel_enum.h"
 
 namespace cast_channel {
 
 struct AuthResult;
 
-// Holds the most recent errors encountered by a CastSocket.
-struct LastErrors {
+// Holds the most recent error encountered by a CastSocket.
+struct LastError {
  public:
-  LastErrors();
-  ~LastErrors();
+  LastError();
+  ~LastError();
 
   // The most recent event that occurred at the time of the error.
-  proto::EventType event_type;
+  ChannelEvent channel_event;
 
-  // The most recent ChallengeReplyErrorType logged for the socket.
-  proto::ChallengeReplyErrorType challenge_reply_error_type;
+  // The most recent ChallengeReplyError logged for the socket.
+  // NOTE(mfoltz): AuthResult::ErrorType is zero-indexed and ChallengeReplyError
+  // is one-indexed, so we can't use AuthResult::ErrorType here.
+  ChallengeReplyError challenge_reply_error;
 
   // The most recent net_return_value logged for the socket.
   int net_return_value;
 };
 
 // Called with events that occur on a Cast Channel and remembers any that
-// warrant reporting to the caller in LastErrors.
+// warrant reporting to the caller in LastError.
 class Logger : public base::RefCountedThreadSafe<Logger> {
  public:
   Logger();
 
   // For events that involves socket / crypto operations that returns a value.
-  void LogSocketEventWithRv(int channel_id,
-                            proto::EventType event_type,
-                            int rv);
+  void LogSocketEventWithRv(int channel_id, ChannelEvent channel_event, int rv);
 
   // For AUTH_CHALLENGE_REPLY event.
   void LogSocketChallengeReplyEvent(int channel_id,
                                     const AuthResult& auth_result);
 
   // Returns the last errors logged for |channel_id|.
-  LastErrors GetLastErrors(int channel_id) const;
+  LastError GetLastError(int channel_id) const;
 
-  // Removes a LastErrors entry for |channel_id| if one exists.
-  void ClearLastErrors(int channel_id);
+  // Removes a LastError entry for |channel_id| if one exists.
+  void ClearLastError(int channel_id);
 
  private:
   friend class base::RefCountedThreadSafe<Logger>;
   ~Logger();
 
-  using LastErrorsMap = std::map<int, LastErrors>;
+  // Propagate any error values in |rv| or |challenge_reply_error| to the
+  // LastError for |channel_id|.
+  void MaybeSetLastError(int channel_id,
+                         ChannelEvent channel_event,
+                         int rv,
+                         ChallengeReplyError challenge_reply_error);
 
-  // Returns a SocketEvent proto with common fields (EventType, timestamp)
-  // populated.
-  proto::SocketEvent CreateEvent(proto::EventType event_type);
-
-  // Uses |event| associated with |channel_id| to update its LastErrors.
-  void LogSocketEvent(int channel_id, const proto::SocketEvent& socket_event);
-
-  LastErrorsMap last_errors_;
+  // Maps channel_id to the LastError for the channel.
+  std::map<int, LastError> last_errors_;
 
   THREAD_CHECKER(thread_checker_);
 
