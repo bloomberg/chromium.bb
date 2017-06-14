@@ -147,7 +147,7 @@ vr::Quatf VrController::Orientation() const {
 }
 
 void VrController::GetTransform(vr::Mat4f* out) const {
-  QuatToMatrix(elbow_model_->GetControllerRotation(), out);
+  QuatToMatrix(vr::ToVRQuatF(elbow_model_->GetControllerRotation()), out);
   auto position = elbow_model_->GetControllerPosition();
   vr::TranslateM(*out, vr::ToVector(position), out);
 }
@@ -215,7 +215,7 @@ void VrController::UpdateState(const gfx::Vector3dF& head_direction) {
   }
 
   const gvr::Vec3f& gvr_gyro = controller_state_->GetGyro();
-  elbow_model_->Update({IsConnected(), Orientation(),
+  elbow_model_->Update({IsConnected(), vr::ToQuaternion(Orientation()),
                         gfx::Vector3dF(gvr_gyro.x, gvr_gyro.y, gvr_gyro.z),
                         head_direction,
                         DeltaTimeSeconds(last_timestamp_nanos_)});

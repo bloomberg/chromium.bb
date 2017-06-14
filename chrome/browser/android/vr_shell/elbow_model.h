@@ -8,8 +8,11 @@
 #ifndef CHROME_BROWSER_ANDROID_VR_SHELL_ELBOW_MODEL_H_
 #define CHROME_BROWSER_ANDROID_VR_SHELL_ELBOW_MODEL_H_
 
-#include "device/vr/vr_types.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
+#include "ui/gfx/geometry/point3_f.h"
+#include "ui/gfx/geometry/quaternion.h"
+#include "ui/gfx/geometry/vector3d_f.h"
+#include "ui/gfx/transform.h"
 
 namespace vr_shell {
 
@@ -17,7 +20,7 @@ class ElbowModel {
  public:
   struct UpdateData {
     bool connected;
-    vr::Quatf orientation;
+    gfx::Quaternion orientation;
     gfx::Vector3dF gyro;
     gfx::Vector3dF head_direction;
     float delta_time_seconds;
@@ -27,7 +30,9 @@ class ElbowModel {
   ~ElbowModel();
 
   const gfx::Point3F& GetControllerPosition() const { return wrist_position_; }
-  const vr::Quatf& GetControllerRotation() const { return wrist_rotation_; }
+  const gfx::Quaternion& GetControllerRotation() const {
+    return wrist_rotation_;
+  }
   float GetAlphaValue() const { return alpha_value_; }
 
   void Update(const UpdateData& update);
@@ -42,13 +47,13 @@ class ElbowModel {
   gvr::ControllerHandedness handedness_;
 
   gfx::Point3F wrist_position_;
-  vr::Quatf wrist_rotation_;
+  gfx::Quaternion wrist_rotation_;
   float alpha_value_;
 
   gfx::Point3F elbow_position_;
-  vr::Quatf elbow_rotation_;
+  gfx::Quaternion elbow_rotation_;
   gfx::Point3F shoulder_position_;
-  vr::Quatf shoulder_rotation_;
+  gfx::Quaternion shoulder_rotation_;
   gfx::Vector3dF torso_direction_;
   gfx::Vector3dF handed_multiplier_;
 };

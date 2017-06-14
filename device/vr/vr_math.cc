@@ -180,8 +180,7 @@ void QuatToMatrix(const Quatf& quat, Mat4f* out) {
            {{0.0f, 0.0f, 0.0f, 1.0f}}}};
 }
 
-vr::Quatf GetVectorRotation(const gfx::Vector3dF& from,
-                            const gfx::Vector3dF& to) {
+Quatf GetVectorRotation(const gfx::Vector3dF& from, const gfx::Vector3dF& to) {
   float dot = gfx::DotProduct(from, to);
   float norm = sqrt(from.LengthSquared() * to.LengthSquared());
   float real = norm + dot;
@@ -194,35 +193,35 @@ vr::Quatf GetVectorRotation(const gfx::Vector3dF& from,
   } else {
     w = gfx::CrossProduct(from, to);
   }
-  vr::Quatf result{w.x(), w.y(), w.z(), real};
+  Quatf result{w.x(), w.y(), w.z(), real};
   NormalizeQuat(&result);
   return result;
 }
 
-vr::Quatf QuatSum(const vr::Quatf& a, const vr::Quatf& b) {
+Quatf QuatSum(const Quatf& a, const Quatf& b) {
   return {a.qx + b.qx, a.qy + b.qy, a.qz + b.qz, a.qw + b.qw};
 }
 
-vr::Quatf QuatProduct(const vr::Quatf& a, const vr::Quatf& b) {
+Quatf QuatProduct(const Quatf& a, const Quatf& b) {
   return {a.qw * b.qx + a.qx * b.qw + a.qy * b.qz - a.qz * b.qy,
           a.qw * b.qy - a.qx * b.qz + a.qy * b.qw + a.qz * b.qx,
           a.qw * b.qz + a.qx * b.qy - a.qy * b.qx + a.qz * b.qw,
           a.qw * b.qw - a.qx * b.qx - a.qy * b.qy - a.qz * b.qz};
 }
 
-vr::Quatf ScaleQuat(const vr::Quatf& q, float s) {
+Quatf ScaleQuat(const Quatf& q, float s) {
   return {q.qx * s, q.qy * s, q.qz * s, q.qw * s};
 }
 
-vr::Quatf InvertQuat(const vr::Quatf& quat) {
+Quatf InvertQuat(const Quatf& quat) {
   return {-quat.qx, -quat.qy, -quat.qz, quat.qw};
 }
 
-float QuatAngleDegrees(const vr::Quatf& a, const vr::Quatf& b) {
+float QuatAngleDegrees(const Quatf& a, const Quatf& b) {
   return QuatProduct(b, InvertQuat(a)).qw;
 }
 
-vr::Quatf QuatLerp(const vr::Quatf& a, const vr::Quatf& b, float t) {
+Quatf QuatLerp(const Quatf& a, const Quatf& b, float t) {
   auto result = QuatSum(ScaleQuat(a, 1.0f - t), ScaleQuat(b, t));
   NormalizeQuat(&result);
   return result;
@@ -287,6 +286,14 @@ float Clampf(float value, float min, float max) {
   if (value > max)
     return max;
   return value;
+}
+
+Quatf ToVRQuatF(const gfx::Quaternion& q) {
+  return {q.x(), q.y(), q.z(), q.w()};
+}
+
+gfx::Quaternion ToQuaternion(const vr::Quatf& q) {
+  return {q.qx, q.qy, q.qz, q.qw};
 }
 
 }  // namespace vr
