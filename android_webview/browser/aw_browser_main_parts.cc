@@ -8,6 +8,7 @@
 #include "android_webview/browser/aw_browser_terminator.h"
 #include "android_webview/browser/aw_content_browser_client.h"
 #include "android_webview/browser/aw_result_codes.h"
+#include "android_webview/browser/aw_safe_browsing_config_helper.h"
 #include "android_webview/browser/deferred_gpu_command_service.h"
 #include "android_webview/browser/net/aw_network_change_notifier_factory.h"
 #include "android_webview/common/aw_descriptors.h"
@@ -130,6 +131,15 @@ int AwBrowserMainParts::PreCreateThreads() {
       breakpad::CrashDumpObserver::GetInstance()->RegisterClient(
           base::MakeUnique<breakpad::CrashDumpManager>(
               crash_dir, kAndroidMinidumpDescriptor));
+    }
+  }
+
+  if (AwSafeBrowsingConfigHelper::GetSafeBrowsingEnabled()) {
+    base::FilePath safe_browsing_dir;
+    if (PathService::Get(android_webview::DIR_SAFE_BROWSING,
+                         &safe_browsing_dir)) {
+      if (!base::PathExists(safe_browsing_dir))
+        base::CreateDirectory(safe_browsing_dir);
     }
   }
 

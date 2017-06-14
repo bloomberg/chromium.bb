@@ -4,7 +4,9 @@
 
 #include "android_webview/browser/aw_safe_browsing_blocking_page.h"
 
+#include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_safe_browsing_ui_manager.h"
+#include "android_webview/browser/net/aw_url_request_context_getter.h"
 #include "components/security_interstitials/content/security_interstitial_controller_client.h"
 #include "components/security_interstitials/content/unsafe_resource.h"
 #include "components/security_interstitials/core/base_safe_browsing_error_ui.h"
@@ -43,6 +45,10 @@ AwSafeBrowsingBlockingPage::AwSafeBrowsingBlockingPage(
         ui_manager->app_locale(), base::Time::NowFromSystemTime(), controller(),
         errorUiType == ErrorUiType::QUIET_GIANT));
   }
+
+  // TODO(timvolodine): invoke TriggerManager::StartCollectingThreatDetails(),
+  // (via AwBrowserContext, e.g.
+  // AwBrowserContext::FromWebContents(web_contents)), crbug.com/731747.
 }
 
 // static

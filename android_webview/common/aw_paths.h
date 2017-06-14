@@ -15,6 +15,9 @@ enum {
 
   DIR_CRASH_DUMPS = PATH_START,  // Directory where crash dumps are written.
 
+  DIR_SAFE_BROWSING,  // Directory where safe browsing related cookies are
+                      // stored.
+
   PATH_END
 };
 
