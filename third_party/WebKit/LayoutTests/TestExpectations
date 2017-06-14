@@ -2871,3 +2871,6 @@ crbug.com/732103 [ Mac ] http/tests/shapedetection/shapedetection-cross-origin.h
 crbug.com/732103 [ Mac ] virtual/mojo-loading/http/tests/shapedetection/shapedetection-cross-origin.html [ Failure Pass Timeout ]
 # Sheriff failures 2017-06-10
 crbug.com/732839 [ Win ] external/wpt/payment-request/payment-request-constructor-crash.https.html [ Pass Timeout ]
+
+# Sheriff failures 2017-06-14
+crbug.com/733357 [ Win Mac ] inspector/elements/styles-4/styles-history.html [ Failure Pass ]
