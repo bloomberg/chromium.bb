@@ -46,3 +46,9 @@ void NonPersistentNotificationHandler::OnClick(
 void NonPersistentNotificationHandler::OpenSettings(Profile* profile) {
   NotificationCommon::OpenNotificationSettings(profile);
 }
+
+bool NonPersistentNotificationHandler::ShouldDisplayOnFullScreen(
+    Profile* profile,
+    const std::string& origin) {
+  return NotificationCommon::ShouldDisplayOnFullScreen(profile, GURL(origin));
+}

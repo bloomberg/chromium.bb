@@ -21,6 +21,7 @@ class NotificationHandler {
  public:
   virtual ~NotificationHandler() {}
 
+  // Called after displaying a toast in case the caller needs some processing.
   virtual void OnShow(Profile* profile, const std::string& notification_id) = 0;
 
   // Process notification close events.
@@ -39,6 +40,12 @@ class NotificationHandler {
 
   // Open notification settings.
   virtual void OpenSettings(Profile* profile) = 0;
+
+  // Whether a notification should be displayed if in full screen. This is
+  // ignored by native notifications since the decision is made by the
+  // underlying OS in that case.
+  virtual bool ShouldDisplayOnFullScreen(Profile* profile,
+                                         const std::string& origin) = 0;
 };
 
 #endif  // CHROME_BROWSER_NOTIFICATIONS_NOTIFICATION_HANDLER_H_

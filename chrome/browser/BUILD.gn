@@ -762,8 +762,6 @@ split_static_library("browser") {
     "notifications/login_state_notification_blocker_chromeos.h",
     "notifications/message_center_display_service.cc",
     "notifications/message_center_display_service.h",
-    "notifications/native_notification_delegate.cc",
-    "notifications/native_notification_delegate.h",
     "notifications/native_notification_display_service.cc",
     "notifications/native_notification_display_service.h",
     "notifications/non_persistent_notification_handler.cc",
