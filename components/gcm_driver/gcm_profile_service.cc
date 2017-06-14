@@ -15,7 +15,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(USE_GCM_FROM_PLATFORM)
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "components/gcm_driver/gcm_driver_android.h"
@@ -36,7 +36,7 @@
 
 namespace gcm {
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(USE_GCM_FROM_PLATFORM)
 // Identity observer only has actual work to do when the user is actually signed
 // in. It ensures that account tracker is taking
 class GCMProfileService::IdentityObserver : public IdentityProvider::Observer {
@@ -117,18 +117,18 @@ void GCMProfileService::IdentityObserver::StartAccountTracker(
   gcm_account_tracker_->Start();
 }
 
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(USE_GCM_FROM_PLATFORM)
 
 // static
 bool GCMProfileService::IsGCMEnabled(PrefService* prefs) {
-#if defined(OS_ANDROID)
+#if BUILDFLAG(USE_GCM_FROM_PLATFORM)
   return true;
 #else
   return prefs->GetBoolean(gcm::prefs::kGCMChannelStatus);
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(USE_GCM_FROM_PLATFORM)
 }
 
-#if defined(OS_ANDROID)
+#if BUILDFLAG(USE_GCM_FROM_PLATFORM)
 GCMProfileService::GCMProfileService(
     base::FilePath path,
     scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner) {
@@ -158,16 +158,16 @@ GCMProfileService::GCMProfileService(
   identity_observer_.reset(new IdentityObserver(
       profile_identity_provider_.get(), request_context_, driver_.get()));
 }
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(USE_GCM_FROM_PLATFORM)
 
 GCMProfileService::GCMProfileService() {}
 
 GCMProfileService::~GCMProfileService() {}
 
 void GCMProfileService::Shutdown() {
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(USE_GCM_FROM_PLATFORM)
   identity_observer_.reset();
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(USE_GCM_FROM_PLATFORM)
   if (driver_) {
     driver_->Shutdown();
     driver_.reset();
@@ -176,12 +176,12 @@ void GCMProfileService::Shutdown() {
 
 void GCMProfileService::SetDriverForTesting(GCMDriver* driver) {
   driver_.reset(driver);
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(USE_GCM_FROM_PLATFORM)
   if (identity_observer_) {
     identity_observer_.reset(new IdentityObserver(
         profile_identity_provider_.get(), request_context_, driver));
   }
-#endif  // !defined(OS_ANDROID)
+#endif  // !BUILDFLAG(USE_GCM_FROM_PLATFORM)
 }
 
 }  // namespace gcm

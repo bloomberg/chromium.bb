@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
+#include "components/gcm_driver/gcm_build_features.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/core/browser/profile_identity_provider.h"
 #include "components/version_info/version_info.h"
@@ -36,7 +37,7 @@ class GCMDriver;
 // Providing GCM service, via GCMDriver.
 class GCMProfileService : public KeyedService {
  public:
-#if defined(OS_ANDROID)
+#if BUILDFLAG(USE_GCM_FROM_PLATFORM)
   GCMProfileService(
       base::FilePath path,
       scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner);
@@ -74,7 +75,7 @@ class GCMProfileService : public KeyedService {
   std::unique_ptr<ProfileIdentityProvider> profile_identity_provider_;
   std::unique_ptr<GCMDriver> driver_;
 
-#if !defined(OS_ANDROID)
+#if !BUILDFLAG(USE_GCM_FROM_PLATFORM)
   net::URLRequestContextGetter* request_context_ = nullptr;
 
   // Used for both account tracker and GCM.UserSignedIn UMA.
