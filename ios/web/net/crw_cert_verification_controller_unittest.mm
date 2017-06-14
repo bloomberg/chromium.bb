@@ -5,7 +5,7 @@
 #import "ios/web/net/crw_cert_verification_controller.h"
 
 #import "base/mac/bind_objc_block.h"
-#import "base/mac/scoped_nsobject.h"
+#include "base/mac/foundation_util.h"
 #include "base/message_loop/message_loop.h"
 #import "base/test/ios/wait_util.h"
 #include "ios/web/public/test/web_test.h"
@@ -15,6 +15,10 @@
 #include "net/cert/x509_util_ios_and_mac.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace web {
 
@@ -31,8 +35,8 @@ class CRWCertVerificationControllerTest : public web::WebTest {
   void SetUp() override {
     web::WebTest::SetUp();
 
-    controller_.reset([[CRWCertVerificationController alloc]
-        initWithBrowserState:GetBrowserState()]);
+    controller_ = [[CRWCertVerificationController alloc]
+        initWithBrowserState:GetBrowserState()];
     cert_ =
         net::ImportCertFromFile(net::GetTestCertsDirectory(), kCertFileName);
     ASSERT_TRUE(cert_);
@@ -42,10 +46,10 @@ class CRWCertVerificationControllerTest : public web::WebTest {
             cert_.get()));
     ASSERT_TRUE(chain);
     valid_trust_ = web::CreateServerTrustFromChain(
-        static_cast<NSArray*>(chain.get()), kHostName);
+        base::mac::CFToNSCast(chain.get()), kHostName);
     web::EnsureFutureTrustEvaluationSucceeds(valid_trust_.get());
     invalid_trust_ = web::CreateServerTrustFromChain(
-        static_cast<NSArray*>(chain.get()), kHostName);
+        base::mac::CFToNSCast(chain.get()), kHostName);
   }
 
   // Synchronously returns result of
@@ -96,7 +100,7 @@ class CRWCertVerificationControllerTest : public web::WebTest {
   scoped_refptr<net::X509Certificate> cert_;
   base::ScopedCFTypeRef<SecTrustRef> valid_trust_;
   base::ScopedCFTypeRef<SecTrustRef> invalid_trust_;
-  base::scoped_nsobject<CRWCertVerificationController> controller_;
+  CRWCertVerificationController* controller_;
 };
 
 // Tests cert policy with a valid trust.

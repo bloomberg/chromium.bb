@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/logging.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
@@ -37,13 +36,17 @@
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface RequestTrackerNotificationReceiverTest
     : NSObject<CRWRequestTrackerDelegate> {
  @public
   float value_;
   float max_;
  @private
-  base::scoped_nsobject<NSString> error_;
+  NSString* error_;
   scoped_refptr<net::HttpResponseHeaders> headers_;
 }
 
@@ -65,9 +68,8 @@
 - (void)updatedProgress:(float)progress {
   if (progress > 0.0f) {
     if (progress < value_) {
-      error_.reset(
-          [[NSString stringWithFormat:
-              @"going down from %f to %f", value_, progress] retain]);
+      error_ = [NSString
+          stringWithFormat:@"going down from %f to %f", value_, progress];
     }
     value_ = progress;
   } else {
@@ -138,10 +140,9 @@ class RequestTrackerTest : public PlatformTest {
 
   void SetUp() override {
     DCHECK_CURRENTLY_ON(web::WebThread::UI);
-    request_group_id_.reset(
-        [[NSString stringWithFormat:@"test%d", g_count++] retain]);
+    request_group_id_ = [NSString stringWithFormat:@"test%d", g_count++];
 
-    receiver_.reset([[RequestTrackerNotificationReceiverTest alloc] init]);
+    receiver_ = [[RequestTrackerNotificationReceiverTest alloc] init];
     tracker_ = web::RequestTrackerImpl::CreateTrackerForRequestGroupID(
         request_group_id_,
         &browser_state_,
@@ -158,9 +159,9 @@ class RequestTrackerTest : public PlatformTest {
   web::TestWebThread ui_thread_;
   web::TestWebThread io_thread_;
 
-  base::scoped_nsobject<RequestTrackerNotificationReceiverTest> receiver_;
+  RequestTrackerNotificationReceiverTest* receiver_;
   scoped_refptr<web::RequestTrackerImpl> tracker_;
-  base::scoped_nsobject<NSString> request_group_id_;
+  NSString* request_group_id_;
   web::TestBrowserState browser_state_;
   std::vector<std::unique_ptr<net::URLRequestContext>> contexts_;
   std::vector<std::unique_ptr<net::URLRequest>> requests_;
@@ -204,26 +205,26 @@ class RequestTrackerTest : public PlatformTest {
 
   NSString* CheckActive() {
     NSString* message = WaitUntilLoop(^{
-      return (receiver_.get()->value_ > 0.0f);
+      return (receiver_->value_ > 0.0f);
     });
 
-    if (!message && (receiver_.get()->max_ == 0.0f))
+    if (!message && (receiver_->max_ == 0.0f))
       message = @"Max should be greater than 0.0";
     return message;
   }
 
   void TrimRequest(NSString* tab_id, const GURL& url) {
     DCHECK_CURRENTLY_ON(web::WebThread::UI);
-    receiver_.get()->value_ = 0.0f;
-    receiver_.get()->max_ = 0.0f;
+    receiver_->value_ = 0.0f;
+    receiver_->max_ = 0.0f;
     tracker_->StartPageLoad(url, nil);
   }
 
   void EndPage(NSString* tab_id, const GURL& url) {
     DCHECK_CURRENTLY_ON(web::WebThread::UI);
     tracker_->FinishPageLoad(url, false);
-    receiver_.get()->value_ = 0.0f;
-    receiver_.get()->max_ = 0.0f;
+    receiver_->value_ = 0.0f;
+    receiver_->max_ = 0.0f;
     base::RunLoop().RunUntilIdle();
   }
 
