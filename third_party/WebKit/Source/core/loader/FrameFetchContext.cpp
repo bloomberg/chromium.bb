@@ -185,7 +185,6 @@ struct FrameFetchContext::FrozenState final
               float device_pixel_ratio,
               const String& user_agent,
               bool is_main_frame,
-              bool should_bypass_main_world_csp,
               bool is_svg_image_chrome_client)
       : referrer_policy(referrer_policy),
         outgoing_referrer(outgoing_referrer),
@@ -201,7 +200,6 @@ struct FrameFetchContext::FrozenState final
         device_pixel_ratio(device_pixel_ratio),
         user_agent(user_agent),
         is_main_frame(is_main_frame),
-        should_bypass_main_world_csp(should_bypass_main_world_csp),
         is_svg_image_chrome_client(is_svg_image_chrome_client) {}
 
   const ReferrerPolicy referrer_policy;
@@ -218,7 +216,6 @@ struct FrameFetchContext::FrozenState final
   const float device_pixel_ratio;
   const String user_agent;
   const bool is_main_frame;
-  const bool should_bypass_main_world_csp;
   const bool is_svg_image_chrome_client;
 
   DEFINE_INLINE_TRACE() { visitor->Trace(content_security_policy); }
@@ -905,7 +902,7 @@ void FrameFetchContext::DispatchDidBlockRequest(
 
 bool FrameFetchContext::ShouldBypassMainWorldCSP() const {
   if (IsDetached())
-    return frozen_state_->should_bypass_main_world_csp;
+    return false;
 
   return GetFrame()->GetScriptController().ShouldBypassMainWorldCSP();
 }
@@ -1092,7 +1089,7 @@ void FrameFetchContext::Detach() {
         GetContentSecurityPolicy(), GetFirstPartyForCookies(),
         GetRequestorOrigin(), GetRequestorOriginForFrameLoading(),
         GetClientHintsPreferences(), GetDevicePixelRatio(), GetUserAgent(),
-        IsMainFrame(), ShouldBypassMainWorldCSP(), IsSVGImageChromeClient());
+        IsMainFrame(), IsSVGImageChromeClient());
   } else {
     // Some getters are unavailable in this case.
     frozen_state_ = new FrozenState(
@@ -1101,7 +1098,7 @@ void FrameFetchContext::Detach() {
         GetContentSecurityPolicy(), GetFirstPartyForCookies(),
         SecurityOrigin::CreateUnique(), SecurityOrigin::CreateUnique(),
         GetClientHintsPreferences(), GetDevicePixelRatio(), GetUserAgent(),
-        IsMainFrame(), ShouldBypassMainWorldCSP(), IsSVGImageChromeClient());
+        IsMainFrame(), IsSVGImageChromeClient());
   }
 
   // This is needed to break a reference cycle in which off-heap
