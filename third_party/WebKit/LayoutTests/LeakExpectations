@@ -45,10 +45,6 @@ crbug.com/506754 virtual/off-main-thread-fetch/http/tests/serviceworker/chromium
 crbug.com/506754 http/tests/serviceworker/chromium/window-close-during-registration.html [ Leak ]
 crbug.com/506754 virtual/mojo-loading/http/tests/serviceworker/chromium/window-close-during-registration.html [ Leak ]
 crbug.com/506754 virtual/off-main-thread-fetch/http/tests/serviceworker/chromium/window-close-during-registration.html [ Leak ]
-crbug.com/506754 virtual/service-worker-navigation-preload/http/tests/serviceworker/chromium/resolve-after-window-close.html [ Leak ]
-crbug.com/506754 virtual/service-worker-navigation-preload/http/tests/serviceworker/chromium/window-close-during-registration.html [ Leak ]
-crbug.com/506754 virtual/service-worker-navigation-preload-disabled/http/tests/serviceworker/chromium/resolve-after-window-close.html [ Leak ]
-crbug.com/506754 virtual/service-worker-navigation-preload-disabled/http/tests/serviceworker/chromium/window-close-during-registration.html [ Leak ]
 
 # -----------------------------------------------------------------
 # Leaks in external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/*
@@ -56,7 +52,6 @@ crbug.com/506754 virtual/service-worker-navigation-preload-disabled/http/tests/s
 crbug.com/594309 [ Linux ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-align-self-baseline-vert-001.html [ Failure Pass Leak ]
 crbug.com/594309 [ Linux ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-empty-001a.html [ Leak ]
 crbug.com/594309 [ Linux ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-empty-001b.html [ Leak ]
-crbug.com/594309 [ Linux ] external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-baseline-multi-item-vert-001.html [ Leak ]
 
 crbug.com/664874 http/tests/xmlhttprequest/workers/xmlhttprequest-allowed-with-disabled-web-security.html [ Leak ]
 crbug.com/664874 virtual/mojo-loading/http/tests/xmlhttprequest/workers/xmlhttprequest-allowed-with-disabled-web-security.html [ Leak ]
