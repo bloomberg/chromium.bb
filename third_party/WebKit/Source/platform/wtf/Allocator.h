@@ -11,6 +11,11 @@
 
 namespace WTF {
 
+namespace internal {
+// A dummy class used in following macros.
+class __thisIsHereToForceASemicolonAfterThisMacro;
+}
+
 // Classes that contain references to garbage-collected objects but aren't
 // themselves garbaged allocated, have some extra macros available which
 // allows their use to be restricted to cases where the garbage collector
@@ -34,12 +39,9 @@ namespace WTF {
 // collections.
 //
 #define DISALLOW_NEW()                                    \
- private:                                                 \
   void* operator new(size_t) = delete;                    \
   void* operator new(size_t, NotNullTag, void*) = delete; \
-  void* operator new(size_t, void*) = delete;             \
-                                                          \
- public:
+  void* operator new(size_t, void*) = delete
 
 #define DISALLOW_NEW_EXCEPT_PLACEMENT_NEW()                                   \
  public:                                                                      \
@@ -50,34 +52,31 @@ namespace WTF {
  private:                                                                     \
   void* operator new(size_t) = delete;                                        \
                                                                               \
- public:
+ public:                                                                      \
+  friend class ::WTF::internal::__thisIsHereToForceASemicolonAfterThisMacro
 
 #define STATIC_ONLY(Type)                                 \
- private:                                                 \
   Type() = delete;                                        \
   Type(const Type&) = delete;                             \
   Type& operator=(const Type&) = delete;                  \
   void* operator new(size_t) = delete;                    \
   void* operator new(size_t, NotNullTag, void*) = delete; \
-  void* operator new(size_t, void*) = delete;             \
-                                                          \
- public:
+  void* operator new(size_t, void*) = delete
 
 #define IS_GARBAGE_COLLECTED_TYPE()         \
  public:                                    \
   using IsGarbageCollectedTypeMarker = int; \
                                             \
- private:
+ private:                                   \
+  friend class ::WTF::internal::__thisIsHereToForceASemicolonAfterThisMacro
 
 #if COMPILER(CLANG)
 #define STACK_ALLOCATED()                                                \
- private:                                                                \
   __attribute__((annotate("blink_stack_allocated"))) void* operator new( \
       size_t) = delete;                                                  \
   void* operator new(size_t, NotNullTag, void*) = delete;                \
-  void* operator new(size_t, void*) = delete;                            \
-                                                                         \
- public:
+  void* operator new(size_t, void*) = delete
+
 #else
 #define STACK_ALLOCATED() DISALLOW_NEW()
 #endif
@@ -123,7 +122,7 @@ namespace WTF {
   }                                                                   \
                                                                       \
  private:                                                             \
-  typedef int __thisIsHereToForceASemicolonAfterThisMacro
+  friend class ::WTF::internal::__thisIsHereToForceASemicolonAfterThisMacro
 
 // In official builds, do not include type info string literals to avoid
 // bloating the binary.

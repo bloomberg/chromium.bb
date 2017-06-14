@@ -15,6 +15,7 @@ class CSSValue;
 class CSSPropertyAlignmentUtils {
   STATIC_ONLY(CSSPropertyAlignmentUtils);
 
+ public:
   static CSSValue* ConsumeSelfPositionOverflowPosition(CSSParserTokenRange&);
   static CSSValue* ConsumeSimplifiedItemPosition(CSSParserTokenRange&);
   static CSSValue* ConsumeContentDistributionOverflowPosition(

@@ -94,7 +94,8 @@ class TestCustomElementDefinition : public CustomElementDefinition {
 };
 
 class CreateElement {
-  STACK_ALLOCATED()
+  STACK_ALLOCATED();
+
  public:
   CreateElement(const AtomicString& local_name)
       : namespace_uri_(HTMLNames::xhtmlNamespaceURI), local_name_(local_name) {}

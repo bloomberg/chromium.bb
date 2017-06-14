@@ -15,6 +15,7 @@ class CSSValue;
 class CSSPropertyCounterUtils {
   STATIC_ONLY(CSSPropertyCounterUtils);
 
+ public:
   static const int kResetDefaultValue = 0;
   static const int kIncrementDefaultValue = 1;
 

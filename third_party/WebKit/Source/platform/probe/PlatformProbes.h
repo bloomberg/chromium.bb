@@ -16,7 +16,7 @@ class PlatformProbeSink;
 namespace probe {
 
 class PLATFORM_EXPORT ProbeBase {
-  STACK_ALLOCATED()
+  STACK_ALLOCATED();
 
  public:
   double CaptureStartTime() const;

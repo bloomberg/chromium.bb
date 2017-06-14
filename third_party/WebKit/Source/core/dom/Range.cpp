@@ -63,6 +63,8 @@ namespace blink {
 
 class RangeUpdateScope {
   STACK_ALLOCATED();
+
+ public:
   explicit RangeUpdateScope(Range* range) {
     DCHECK(range);
     if (++scope_count_ == 1) {

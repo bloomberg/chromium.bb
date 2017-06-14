@@ -17,6 +17,7 @@ class CSSParserTokenRange;
 class CSSPropertyShapeUtils {
   STATIC_ONLY(CSSPropertyShapeUtils);
 
+ public:
   static CSSValue* ConsumeBasicShape(CSSParserTokenRange&,
                                      const CSSParserContext&);
   static bool ConsumeRadii(CSSValue* horizontal_radii[4],

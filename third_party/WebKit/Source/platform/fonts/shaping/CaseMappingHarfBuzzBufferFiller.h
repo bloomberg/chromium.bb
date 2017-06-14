@@ -16,7 +16,7 @@ namespace blink {
 enum class CaseMapIntend { kKeepSameCase, kUpperCase, kLowerCase };
 
 class CaseMappingHarfBuzzBufferFiller {
-  STACK_ALLOCATED()
+  STACK_ALLOCATED();
 
  public:
   CaseMappingHarfBuzzBufferFiller(CaseMapIntend,
