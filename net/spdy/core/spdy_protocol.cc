@@ -381,4 +381,14 @@ SpdyFrameType SpdyPriorityIR::frame_type() const {
   return SpdyFrameType::PRIORITY;
 }
 
+void SpdyUnknownIR::Visit(SpdyFrameVisitor* visitor) const {
+  return visitor->VisitUnknown(*this);
+}
+
+SpdyFrameType SpdyUnknownIR::frame_type() const {
+  // TODO(birenroy): Remove the fake EXTENSION value from the SpdyFrameType
+  // enum.
+  return SpdyFrameType::EXTENSION;
+}
+
 }  // namespace net
