@@ -52,10 +52,6 @@ struct StructTraits<media::mojom::VideoFrameDataView,
     return input->natural_size();
   }
 
-  static bool end_of_stream(const scoped_refptr<media::VideoFrame>& input) {
-    return input->metadata()->IsTrue(media::VideoFrameMetadata::END_OF_STREAM);
-  }
-
   static base::TimeDelta timestamp(
       const scoped_refptr<media::VideoFrame>& input) {
     return input->timestamp();

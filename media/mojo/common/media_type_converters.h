@@ -19,7 +19,6 @@ class DecoderBuffer;
 class DecryptConfig;
 class EncryptionScheme;
 class VideoDecoderConfig;
-class VideoFrame;
 struct CdmConfig;
 struct CdmKeyInformation;
 }
@@ -125,19 +124,6 @@ struct TypeConverter<scoped_refptr<media::AudioBuffer>,
                      media::mojom::AudioBufferPtr> {
   static scoped_refptr<media::AudioBuffer> Convert(
       const media::mojom::AudioBufferPtr& input);
-};
-
-template <>
-struct TypeConverter<media::mojom::VideoFramePtr,
-                     scoped_refptr<media::VideoFrame>> {
-  static media::mojom::VideoFramePtr Convert(
-      const scoped_refptr<media::VideoFrame>& input);
-};
-template <>
-struct TypeConverter<scoped_refptr<media::VideoFrame>,
-                     media::mojom::VideoFramePtr> {
-  static scoped_refptr<media::VideoFrame> Convert(
-      const media::mojom::VideoFramePtr& input);
 };
 
 }  // namespace mojo
