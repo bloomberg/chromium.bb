@@ -102,31 +102,6 @@ TEST_F('PrintPreviewDestinationSearchTest', 'Select', function() {
       });
     };
 
-    function mockSetupCall(destId, nativeLayerMock) {
-      assert (!cr.isChromeOS);
-      nativeLayerMock.setDestinationToWatch(destId);
-      var resolver = new PromiseResolver();
-
-      resolver.promise.then(
-          function(result) {
-            // Simulate the native layer dispatching capabilities.
-            var capsSetEvent =
-                new Event(print_preview.NativeLayer.EventType.CAPABILITIES_SET);
-            capsSetEvent.settingsInfo = result;
-            destinationStore_.onLocalDestinationCapabilitiesSet_(capsSetEvent);
-            expectTrue(nativeLayerMock.didGetCapabilitiesOnce(destId));
-          }.bind(this),
-          function() {
-            var failEvent = new Event(
-                print_preview.NativeLayer.EventType.GET_CAPABILITIES_FAIL);
-            failEvent.destinationId = destId;
-            destinationStore_.onGetCapabilitiesFail_(failEvent);
-            expectTrue(nativeLayerMock.didGetCapabilitiesOnce(destId));
-          }.bind(this));
-
-      return resolver;
-    };
-
     function requestSetup(destId, destinationSearch) {
       var origin = cr.isChromeOS ? print_preview.DestinationOrigin.CROS :
                                    print_preview.DestinationOrigin.LOCAL;
@@ -176,16 +151,17 @@ TEST_F('PrintPreviewDestinationSearchTest', 'Select', function() {
       if (cr.isChromeOS) {
         nativeLayer_.setSetupPrinterResponse(true, { printerId: destId,
                                                      success: false,});
-        requestSetup(destId, destinationSearch_);
-        return nativeLayer_.whenCalled('setupPrinter').then(
-            function(actualDestId) {
-              assertEquals(destId, actualDestId);
-            });
       } else {
-        var resolver = mockSetupCall(destId, nativeLayer_);
-        requestSetup(destId, destinationSearch_);
-        resolver.reject(destId);
+        nativeLayer_.setLocalDestinationCapabilities({printerId: destId,
+                                                      capabilities: getCaps()},
+                                                     true);
       }
+      requestSetup(destId, destinationSearch_);
+      var callback = cr.isChromeOS ? 'setupPrinter' : 'getPrinterCapabilities';
+      return nativeLayer_.whenCalled(callback).then(
+          function(actualDestId) {
+            assertEquals(destId, actualDestId);
+          });
     });
 
     test('ReceiveSuccessfulSetup', function() {
@@ -197,32 +173,22 @@ TEST_F('PrintPreviewDestinationSearchTest', 'Select', function() {
       };
       if (cr.isChromeOS)
         nativeLayer_.setSetupPrinterResponse(false, response);
+      else
+        nativeLayer_.setLocalDestinationCapabilities({printerId: destId,
+                                                      capabilities: getCaps()});
 
       var waiter = waitForEvent(
           destinationStore_,
           print_preview.DestinationStore.EventType.DESTINATION_SELECT);
-      if (cr.isChromeOS) {
-        requestSetup(destId, destinationSearch_);
-        return Promise.all([
-            nativeLayer_.whenCalled('setupPrinter'), waiter
-        ]).then(function(results) {
-          assertEquals(destId, results[0]);
-
-          // after setup succeeds and event arrives, the destination should
-          // be selected.
-          assertNotEquals(null, destinationStore_.selectedDestination);
-          assertEquals(destId, destinationStore_.selectedDestination.id);
-        });
-      } else { //!cr.isChromeOS
-        var resolver = mockSetupCall(destId, nativeLayer_);
-        requestSetup(destId, destinationSearch_);
-        resolver.resolve(response);
-        return waiter.then(function() {
-          // after setup succeeds, the destination should be selected.
-          assertNotEquals(null, destinationStore_.selectedDestination);
-          assertEquals(destId, destinationStore_.selectedDestination.id);
-        });
-      }
+      requestSetup(destId, destinationSearch_);
+      var callback = cr.isChromeOS ? 'setupPrinter' : 'getPrinterCapabilities';
+      return Promise.all([nativeLayer_.whenCalled(callback), waiter]).then(
+          function(results) {
+            assertEquals(destId, results[0]);
+            // after setup succeeds, the destination should be selected.
+            assertNotEquals(null, destinationStore_.selectedDestination);
+            assertEquals(destId, destinationStore_.selectedDestination.id);
+          });
     });
 
     if (cr.isChromeOS) {

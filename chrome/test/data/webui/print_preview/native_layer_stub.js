@@ -14,6 +14,7 @@ cr.define('print_preview', function() {
         'getPrinters',
         'getExtensionPrinters',
         'getPrivetPrinters',
+        'getPrinterCapabilities',
         'setupPrinter'
       ]);
 
@@ -46,6 +47,14 @@ cr.define('print_preview', function() {
     this.localDestinationInfos_ = [];
 
     /**
+     * @private {!Map<string,
+     *                !Promise<!print_preview.PrinterCapabilitiesResponse>}
+     *     A map from destination IDs to the responses to be sent when
+     *     |getPrinterCapabilities| is called for the ID.
+     */
+    this.localDestinationCapabilities_ = new Map();
+
+    /**
      * @private {!print_preview.PrinterSetupResponse} The response to be sent
      *     on a |setupPrinter| call.
      */
@@ -55,18 +64,6 @@ cr.define('print_preview', function() {
      * @private {boolean} Whether the printer setup request should be rejected.
      */
     this.shouldRejectPrinterSetup_ = false;
-
-    /**
-     * @private {string} The destination id to watch for counting calls to
-     *     |getLocalDestinationCapabilities|.
-     */
-    this.destinationToWatch_ = '';
-
-    /**
-     * @private {number} The number of calls to
-     *     |getLocalDestinationCapabilities| with id = |destinationToWatch_|.
-     */
-    this.getLocalDestinationCapabilitiesCallCount_ = 0;
   }
 
   NativeLayerStub.prototype = {
@@ -97,6 +94,12 @@ cr.define('print_preview', function() {
     },
 
     /** @override */
+    getPrinterCapabilities: function(printerId) {
+      this.methodCalled('getPrinterCapabilities', printerId);
+      return this.localDestinationCapabilities_.get(printerId);
+    },
+
+    /** @override */
     setupPrinter: function(printerId) {
       this.methodCalled('setupPrinter', printerId);
       return this.shouldRejectPrinterSetup_ ?
@@ -106,10 +109,7 @@ cr.define('print_preview', function() {
 
     /** Stubs for |print_preview.NativeLayer| methods that call C++ handlers. */
     previewReadyForTest: function() {},
-    startGetLocalDestinationCapabilities: function(destinationId) {
-      if (destinationId == this.destinationToWatch_)
-        this.getLocalDestinationCapabilitiesCallCount_++;
-    },
+
     startGetPreview: function(destination, printTicketStore, documentInfo,
                               generateDraft, requestId) {
       this.generateDraft_ = generateDraft;
@@ -125,30 +125,11 @@ cr.define('print_preview', function() {
       this.eventTarget_ = eventTarget;
     },
 
-    /**
-     * @return {boolean} Whether capabilities have been requested exactly once
-     *     for |destinationToWatch_|.
-     */
-    didGetCapabilitiesOnce: function(destinationId) {
-      return (destinationId == this.destinationToWatch_ &&
-              this.getLocalDestinationCapabilitiesCallCount_ == 1);
-    },
-
     /** @return {boolean} Whether a new draft was requested for preview. */
     generateDraft: function() { return this.generateDraft_; },
 
     /** @return {boolean} Whether a print request has been issued. */
     isPrintStarted: function() { return this.printStarted_; },
-
-    /**
-     * @param {string} destinationId The destination ID to watch for
-     *     |getLocalDestinationCapabilities| calls.
-     * Resets |getLocalDestinationCapabilitiesCallCount_|.
-     */
-    setDestinationToWatch: function(destinationId) {
-      this.destinationToWatch_ = destinationId;
-      this.getLocalDestinationCapabilitiesCallCount_ = 0;
-    },
 
     /**
      * @param {!print_preview.NativeInitialSettings} settings The settings
@@ -164,6 +145,18 @@ cr.define('print_preview', function() {
      */
     setLocalDestinations: function(localDestinations) {
       this.localDestinationInfos_ = localDestinations;
+    },
+
+    /**
+     * @param {!print_preview.PrinterCapabilitiesResponse} response The
+     *     response to send for the destination whose ID is in the response.
+     * @param {boolean?} opt_reject Whether to reject the callback for this
+     *     destination. Defaults to false (will resolve callback) if not
+     *     provided.
+     */
+    setLocalDestinationCapabilities: function(response, opt_reject) {
+      this.localDestinationCapabilities_.set(response.printerId,
+          opt_reject ? Promise.reject() : Promise.resolve(response));
     },
 
     /**

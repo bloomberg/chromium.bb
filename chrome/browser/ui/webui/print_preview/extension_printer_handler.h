@@ -102,7 +102,6 @@ class ExtensionPrinterHandler : public PrinterHandler {
       bool done);
   void WrapGetCapabilityCallback(
       const PrinterHandler::GetCapabilityCallback& callback,
-      const std::string& destination_id,
       const base::DictionaryValue& capability);
   void WrapPrintCallback(const PrinterHandler::PrintCallback& callback,
                          bool success,

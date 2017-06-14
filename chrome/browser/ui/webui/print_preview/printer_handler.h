@@ -35,8 +35,7 @@ class PrinterHandler {
   using GetPrintersCallback =
       base::Callback<void(const base::ListValue& printers, bool done)>;
   using GetCapabilityCallback =
-      base::Callback<void(const std::string& printer_id,
-                          const base::DictionaryValue& capability)>;
+      base::Callback<void(const base::DictionaryValue& capability)>;
   using PrintCallback =
       base::Callback<void(bool success, const std::string& error)>;
   using GetPrinterInfoCallback =

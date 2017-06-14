@@ -673,7 +673,11 @@ cr.define('print_preview', function() {
 
       if (origin == print_preview.DestinationOrigin.LOCAL ||
           origin == print_preview.DestinationOrigin.CROS) {
-        this.nativeLayer_.startGetLocalDestinationCapabilities(id);
+        this.nativeLayer_.getPrinterCapabilities(id).then(
+            this.onLocalDestinationCapabilitiesSet_.bind(this),
+            this.onGetCapabilitiesFail_.bind(this,
+                /** @type {print_preview.DestinationOrigin} */ (origin),
+                id));
         return true;
       }
 
@@ -959,17 +963,26 @@ cr.define('print_preview', function() {
       // Notify about selected destination change.
       cr.dispatchSimpleEvent(
           this, DestinationStore.EventType.DESTINATION_SELECT);
-      // Request destination capabilities, of not known yet.
+      // Request destination capabilities from backend, since they are not
+      // known yet.
       if (destination.capabilities == null) {
         if (destination.isPrivet) {
-          this.nativeLayer_.startGetPrivetDestinationCapabilities(
-              destination.id);
+          this.nativeLayer_.getPrivetPrinterCapabilities(destination.id).then(
+              this.onPrivetCapabilitiesSet_.bind(this),
+              this.onGetCapabilitiesFail_.bind(this, destination.origin,
+                                               destination.id));
         } else if (destination.isExtension) {
-          this.nativeLayer_.startGetExtensionDestinationCapabilities(
-              destination.id);
+          this.nativeLayer_.getExtensionPrinterCapabilities(destination.id)
+              .then(
+                  this.onExtensionCapabilitiesSet_.bind(this, destination.id),
+                  this.onGetCapabilitiesFail_.bind(this, destination.origin,
+                                                   destination.id)
+              );
         } else if (destination.isLocal) {
-          this.nativeLayer_.startGetLocalDestinationCapabilities(
-              destination.id);
+          this.nativeLayer_.getPrinterCapabilities(destination.id).then(
+              this.onLocalDestinationCapabilitiesSet_.bind(this),
+              this.onGetCapabilitiesFail_.bind(this, destination.origin,
+                                               destination.id));
         } else {
           assert(this.cloudPrintInterface_ != null,
                  'Cloud destination selected, but GCP is not enabled');
@@ -1337,24 +1350,8 @@ cr.define('print_preview', function() {
       var nativeLayerEventTarget = this.nativeLayer_.getEventTarget();
       this.tracker_.add(
           nativeLayerEventTarget,
-          print_preview.NativeLayer.EventType.CAPABILITIES_SET,
-          this.onLocalDestinationCapabilitiesSet_.bind(this));
-      this.tracker_.add(
-          nativeLayerEventTarget,
-          print_preview.NativeLayer.EventType.GET_CAPABILITIES_FAIL,
-          this.onGetCapabilitiesFail_.bind(this));
-      this.tracker_.add(
-          nativeLayerEventTarget,
           print_preview.NativeLayer.EventType.DESTINATIONS_RELOAD,
           this.onDestinationsReload_.bind(this));
-      this.tracker_.add(
-          nativeLayerEventTarget,
-          print_preview.NativeLayer.EventType.PRIVET_CAPABILITIES_SET,
-          this.onPrivetCapabilitiesSet_.bind(this));
-      this.tracker_.add(
-          nativeLayerEventTarget,
-          print_preview.NativeLayer.EventType.EXTENSION_CAPABILITIES_SET,
-          this.onExtensionCapabilitiesSet_.bind(this));
       this.tracker_.add(
           nativeLayerEventTarget,
           print_preview.NativeLayer.EventType.PROVISIONAL_DESTINATION_RESOLVED,
@@ -1419,14 +1416,14 @@ cr.define('print_preview', function() {
      * local destination. Updates the destination with new capabilities if the
      * destination already exists, otherwise it creates a new destination and
      * then updates its capabilities.
-     * @param {Event} event Contains the capabilities of the local print
-     *     destination.
+     * @param {print_preview.PrinterCapabilitiesResponse} settingsInfo Contains
+     *     information about and capabilities of the local print destination.
      * @private
      */
-    onLocalDestinationCapabilitiesSet_: function(event) {
-      var destinationId = event.settingsInfo['printerId'];
-      var printerName = event.settingsInfo['printerName'];
-      var printerDescription = event.settingsInfo['printerDescription'];
+    onLocalDestinationCapabilitiesSet_: function(settingsInfo) {
+      var destinationId = settingsInfo['printerId'];
+      var printerName = settingsInfo['printerName'];
+      var printerDescription = settingsInfo['printerDescription'];
       // PDF is special since we don't need to query the device for
       // capabilities.
       var origin = destinationId ==
@@ -1438,7 +1435,7 @@ cr.define('print_preview', function() {
           '');
       var destination = this.destinationMap_[key];
       var capabilities = DestinationStore.localizeCapabilities_(
-          event.settingsInfo.capabilities);
+          settingsInfo.capabilities);
       // Special case for PDF printer (until local printers capabilities are
       // reported in CDD format too).
       if (destinationId ==
@@ -1455,7 +1452,7 @@ cr.define('print_preview', function() {
           }
           destination.capabilities = capabilities;
         } else {
-          var isEnterprisePrinter = event.settingsInfo['cupsEnterprisePrinter'];
+          var isEnterprisePrinter = settingsInfo['cupsEnterprisePrinter'];
           destination = print_preview.LocalDestinationParser.parse(
               {deviceName: destinationId,
                printerName: printerName,
@@ -1477,15 +1474,17 @@ cr.define('print_preview', function() {
      * Called when a request to get a local destination's print capabilities
      * fails. If the destination is the initial destination, auto-select another
      * destination instead.
-     * @param {Event} event Contains the destination ID that failed.
+     * @param {print_preview.DestinationOrigin} origin The origin type of the
+     *     failed destination.
+     * @param {string} destinationId The destination ID that failed.
      * @private
      */
-    onGetCapabilitiesFail_: function(event) {
+    onGetCapabilitiesFail_: function(origin, destinationId) {
       console.warn('Failed to get print capabilities for printer ' +
-                    event.destinationId);
+                   destinationId);
       if (this.autoSelectMatchingDestination_ &&
           this.autoSelectMatchingDestination_.matchIdAndOrigin(
-              event.destinationId, event.destinationOrigin)) {
+              destinationId, origin)) {
         this.selectDefaultDestination_();
       }
     },
@@ -1575,14 +1574,15 @@ cr.define('print_preview', function() {
 
     /**
      * Called when capabilities for a privet printer are set.
-     * @param {Object} event Contains the capabilities and printer ID.
+     * @param {!print_preview.PrivetPrinterCapabilitiesResponse} printerInfo
+     *     Contains the privet printer's description and capabilities.
      * @private
      */
-    onPrivetCapabilitiesSet_: function(event) {
+    onPrivetCapabilitiesSet_: function(printerInfo) {
       var destinations =
-          print_preview.PrivetDestinationParser.parse(event.printer);
+          print_preview.PrivetDestinationParser.parse(printerInfo.printer);
       destinations.forEach(function(dest) {
-        dest.capabilities = event.capabilities;
+        dest.capabilities = printerInfo.capabilities;
         this.updateDestination_(dest);
       }, this);
     },
@@ -1617,18 +1617,19 @@ cr.define('print_preview', function() {
 
     /**
      * Called when capabilities for an extension managed printer are set.
-     * @param {Object} event Contains the printer's capabilities and ID.
+     * @param {string} printerId The printer Id.
+     * @param {!print_preview.Cdd} capabilities The printer's capabilities.
      * @private
      */
-    onExtensionCapabilitiesSet_: function(event) {
+    onExtensionCapabilitiesSet_: function(printerId, capabilities) {
       var destinationKey = this.getDestinationKey_(
           print_preview.DestinationOrigin.EXTENSION,
-          event.printerId,
+          printerId,
           '' /* account */);
       var destination = this.destinationMap_[destinationKey];
       if (!destination)
         return;
-      destination.capabilities = event.capabilities;
+      destination.capabilities = capabilities;
       this.updateDestination_(destination);
     },
 
