@@ -1,3 +1,5 @@
+{% from 'macros.tmpl' import print_if %}
+
 {% macro encode(field, value) %}
 {% if field.is_bit_field -%}
 static_cast<unsigned>({{value}})
@@ -51,6 +53,12 @@ if (!({{getter_expression(field)}} == {{value}}))
 {%- else -%}
 const {{field.type_name}}&
 {%- endif %}
+{% endmacro %}
+
+{% macro group_getter_expression(group) %}
+{% for group in group.path_without_root() -%}
+{{group.member_name}}{{print_if(not loop.last, "->")}}
+{%- endfor -%}
 {% endmacro %}
 
 {% macro declare_storage(field) %}
@@ -122,9 +130,9 @@ unsigned {{field.name}} : {{field.size}}; // {{field.type_name}}
 {% endmacro %}
 
 {% macro fieldwise_diff(group_to_diff) %}
-{% for group in group_to_diff.subgroups %}
-if (a.{{group.group_name}}.Get() != b.{{group.group_name}}.Get()) {
-{{fieldwise_diff(group)|indent(2, true)}}
+{% for diff_group in group_to_diff.subgroups %}
+if (a.{{group_getter_expression(diff_group.group)}}.Get() != b.{{group_getter_expression(diff_group.group)}}.Get()) {
+{{fieldwise_diff(diff_group)|indent(2, true)}}
 }
 {% endfor %}
 {% for field in group_to_diff.fields %}
