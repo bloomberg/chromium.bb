@@ -71,8 +71,20 @@ void AndroidUiGestureTarget::DispatchWebInputEvent(
       SetPointer(env, mouse->PositionInWidget().x, mouse->PositionInWidget().y);
       Inject(env, Action::HoverExit, gesture->TimeStampSeconds());
       break;
+    case blink::WebMouseEvent::kMouseDown:
+      // Mouse down events are translated into touch events on Android anyways,
+      // so we can just send touch events.
+      // We intentionally don't support long press or drags/swipes with mouse
+      // input as this could trigger long press and open 2D popups.
+      SetPointer(env, mouse->PositionInWidget().x, mouse->PositionInWidget().y);
+      Inject(env, Action::Start, gesture->TimeStampSeconds());
+      Inject(env, Action::End, gesture->TimeStampSeconds());
+      break;
+    case blink::WebMouseEvent::kMouseUp:
+      // No need to do anything for mouseUp as mouseDown already handled up.
+      break;
     default:
-      NOTREACHED();
+      NOTREACHED() << "Unsupported event type sent to Android UI.";
       break;
   }
 }
