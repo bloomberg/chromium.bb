@@ -6,7 +6,6 @@
   "gn_args": [
     "additional_target_cpus=[\"x86\"]",
     "goma_dir=\"$(goma_dir)\"",
-    "ios_enable_code_signing=false",
     "is_component_build=false",
     "is_debug=true",
     "target_cpu=\"x64\"",
@@ -59,6 +58,12 @@
       "include": "common_tests.json",
       "device type": "iPad Air 2",
       "os": "9.0",
+      "xcode version": "8.0"
+    },
+    {
+      "include": "eg_tests.json",
+      "device type": "iPhone 6s",
+      "os": "10.0",
       "xcode version": "8.0"
     }
   ]
