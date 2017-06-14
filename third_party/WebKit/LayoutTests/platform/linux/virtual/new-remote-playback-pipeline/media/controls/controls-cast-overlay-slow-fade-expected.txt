@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Test that the overlay cast button fades at the right time (neither too soon nor too late). assert_true: button should exist expected true got false
+Harness: the test ran to completion.
+

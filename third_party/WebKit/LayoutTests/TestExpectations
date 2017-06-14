@@ -1949,6 +1949,9 @@ crbug.com/723826 virtual/mojo-loading/http/tests/security/w3c/cross-origin-objec
 crbug.com/724251 virtual/threaded/animations/svg-attribute-interpolation/svg-startOffset-interpolation.html [ Failure Pass ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/webrtc/RTCDataChannel-bufferedAmount.html [ Timeout ]
+crbug.com/626703 external/wpt/webrtc/RTCDataChannel-send.html [ Timeout ]
+crbug.com/626703 external/wpt/webrtc/RTCPeerConnection-ondatachannel.html [ Timeout ]
 crbug.com/626703 external/wpt/wasm/wasm_indexeddb_test.html [ Timeout ]
 crbug.com/626703 external/wpt/wasm/wasm_local_iframe_test.html [ Failure ]
 crbug.com/626703 external/wpt/wasm/wasm_serialization_tests.html [ Failure ]
@@ -2859,7 +2862,6 @@ crbug.com/731018 [ Mac ] sensor/magnetometer.html [ Failure Pass ]
 crbug.com/731018 [ Mac ] sensor/orientation-sensor.html [ Failure Pass ]
 
 crbug.com/731035 [ Linux Win Mac ] virtual/new-remote-playback-pipeline/media/controls/video-controls-overflow-menu-hide-on-click-panel.html [ Failure Pass ]
-crbug.com/731035 [ Win ] virtual/new-remote-playback-pipeline/media/controls/controls-cast-overlay-slow-fade.html [ Failure Pass ]
 
 # More flaky tests on Mac
 crbug.com/731111 [ Mac ] http/tests/media/progress-events-generated-correctly.html [ Failure Pass Timeout ]
