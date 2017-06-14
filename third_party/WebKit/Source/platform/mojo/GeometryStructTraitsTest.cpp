@@ -33,9 +33,9 @@ class GeometryStructTraitsTest
     NOTREACHED();
   }
 
-  void EchoPointF(gfx::mojom::blink::PointFPtr, EchoPointFCallback) override {
-    // The type map is not specified.
-    NOTREACHED();
+  void EchoPointF(const WebFloatPoint& p,
+                  EchoPointFCallback callback) override {
+    std::move(callback).Run(p);
   }
 
   void EchoSize(const WebSize& s, EchoSizeCallback callback) override {
@@ -52,9 +52,8 @@ class GeometryStructTraitsTest
     NOTREACHED();
   }
 
-  void EchoRectF(gfx::mojom::blink::RectFPtr, EchoRectFCallback) override {
-    // The type map is not specified.
-    NOTREACHED();
+  void EchoRectF(const WebFloatRect& r, EchoRectFCallback callback) override {
+    std::move(callback).Run(r);
   }
 
   void EchoInsets(gfx::mojom::blink::InsetsPtr, EchoInsetsCallback) override {
@@ -97,6 +96,28 @@ TEST_F(GeometryStructTraitsTest, Size) {
   gfx::mojom::blink::GeometryTraitsTestServicePtr proxy = GetTraitsTestProxy();
   WebSize output;
   proxy->EchoSize(input, &output);
+  EXPECT_EQ(input, output);
+}
+
+TEST_F(GeometryStructTraitsTest, PointF) {
+  const float kX = 1.234;
+  const float kY = 5.678;
+  WebFloatPoint input(kX, kY);
+  gfx::mojom::blink::GeometryTraitsTestServicePtr proxy = GetTraitsTestProxy();
+  WebFloatPoint output;
+  proxy->EchoPointF(input, &output);
+  EXPECT_EQ(input, output);
+}
+
+TEST_F(GeometryStructTraitsTest, RectF) {
+  const float kX = 1.234;
+  const float kY = 2.345;
+  const float kWidth = 3.456;
+  const float kHeight = 4.567;
+  WebFloatRect input(kX, kY, kWidth, kHeight);
+  gfx::mojom::blink::GeometryTraitsTestServicePtr proxy = GetTraitsTestProxy();
+  WebFloatRect output;
+  proxy->EchoRectF(input, &output);
   EXPECT_EQ(input, output);
 }
 

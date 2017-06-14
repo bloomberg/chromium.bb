@@ -65,8 +65,8 @@ void FaceDetector::OnDetectFaces(
     HeapVector<Landmark> landmarks;
     for (const auto& landmark : face->landmarks) {
       Point2D location;
-      location.setX(landmark->location->x);
-      location.setY(landmark->location->y);
+      location.setX(landmark->location.x);
+      location.setY(landmark->location.y);
       Landmark web_landmark;
       web_landmark.setLocation(location);
       if (landmark->type == shape_detection::mojom::blink::LandmarkType::EYE) {
@@ -79,8 +79,8 @@ void FaceDetector::OnDetectFaces(
     }
 
     detected_faces.push_back(DetectedFace::Create(
-        DOMRect::Create(face->bounding_box->x, face->bounding_box->y,
-                        face->bounding_box->width, face->bounding_box->height),
+        DOMRect::Create(face->bounding_box.x, face->bounding_box.y,
+                        face->bounding_box.width, face->bounding_box.height),
         landmarks));
   }
 

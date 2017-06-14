@@ -7,6 +7,28 @@
 namespace mojo {
 
 // static
+bool StructTraits<gfx::mojom::RectFDataView, ::blink::WebFloatRect>::Read(
+    gfx::mojom::RectFDataView data,
+    ::blink::WebFloatRect* out) {
+  if (data.width() < 0 || data.height() < 0)
+    return false;
+  out->x = data.x();
+  out->y = data.y();
+  out->width = data.width();
+  out->height = data.height();
+  return true;
+}
+
+// static
+bool StructTraits<gfx::mojom::PointFDataView, ::blink::WebFloatPoint>::Read(
+    gfx::mojom::PointFDataView data,
+    ::blink::WebFloatPoint* out) {
+  out->x = data.x();
+  out->y = data.y();
+  return true;
+}
+
+// static
 bool StructTraits<gfx::mojom::SizeDataView, ::blink::WebSize>::Read(
     gfx::mojom::SizeDataView data,
     ::blink::WebSize* out) {
