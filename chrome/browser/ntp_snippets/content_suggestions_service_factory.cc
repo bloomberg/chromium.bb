@@ -404,7 +404,7 @@ void SubscribeForGCMPushUpdates(PrefService* pref_service,
       base::Bind(&safe_json::SafeJsonParser::Parse));
 
   auto provider = base::MakeUnique<BreakingNewsSuggestionsProvider>(
-      service, std::move(handler));
+      service, std::move(handler), base::MakeUnique<base::DefaultClock>());
   provider->Start();
   service->RegisterProvider(std::move(provider));
 }
