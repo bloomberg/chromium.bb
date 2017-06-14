@@ -7,13 +7,13 @@
 
 #include <stdint.h>
 
-#include <algorithm>
 #include <memory>
 #include <stack>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -238,10 +238,8 @@ class AXPosition {
       case AXPositionKind::TEXT_POSITION: {
         const std::vector<int32_t> word_starts =
             text_position->GetWordStartOffsets();
-        auto iterator =
-            std::find(word_starts.begin(), word_starts.end(),
-                      static_cast<int32_t>(text_position->text_offset_));
-        return iterator != word_starts.end();
+        return base::ContainsValue(
+            word_starts, static_cast<int32_t>(text_position->text_offset_));
       }
     }
     return false;
@@ -258,10 +256,8 @@ class AXPosition {
       case AXPositionKind::TEXT_POSITION: {
         const std::vector<int32_t> word_ends =
             text_position->GetWordEndOffsets();
-        auto iterator =
-            std::find(word_ends.begin(), word_ends.end(),
-                      static_cast<int32_t>(text_position->text_offset_));
-        return iterator != word_ends.end();
+        return base::ContainsValue(
+            word_ends, static_cast<int32_t>(text_position->text_offset_));
       }
     }
     return false;

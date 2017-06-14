@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -523,11 +524,9 @@ TEST(AXTreeTest, ReparentingDoesNotTriggerNodeCreated) {
       fake_delegate.subtree_reparented_finished_ids();
   std::vector<int> node_reparented =
       fake_delegate.node_reparented_finished_ids();
-  ASSERT_EQ(std::find(created.begin(), created.end(), 3), created.end());
-  ASSERT_NE(std::find(subtree_reparented.begin(), subtree_reparented.end(), 3),
-            subtree_reparented.end());
-  ASSERT_EQ(std::find(node_reparented.begin(), node_reparented.end(), 3),
-            node_reparented.end());
+  ASSERT_FALSE(base::ContainsValue(created, 3));
+  ASSERT_TRUE(base::ContainsValue(subtree_reparented, 3));
+  ASSERT_FALSE(base::ContainsValue(node_reparented, 3));
 }
 
 TEST(AXTreeTest, TreeDelegateIsNotCalledForReparenting) {

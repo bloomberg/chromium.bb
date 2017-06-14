@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/stl_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gl/gl_surface_egl.h"
 
@@ -17,8 +18,7 @@ TEST(EGLInitializationDisplaysTest, DisableD3D11) {
   // D3D11.
   command_line->AppendSwitch(switches::kDisableD3D11);
   GetEGLInitDisplays(true, true, true, command_line.get(), &displays);
-  EXPECT_EQ(std::find(displays.begin(), displays.end(), gl::ANGLE_D3D11),
-            displays.end());
+  EXPECT_FALSE(base::ContainsValue(displays, gl::ANGLE_D3D11));
 
   // Specifically requesting D3D11 should always return it if the extension is
   // available
@@ -26,16 +26,14 @@ TEST(EGLInitializationDisplaysTest, DisableD3D11) {
                                   gl::kANGLEImplementationD3D11Name);
   displays.clear();
   GetEGLInitDisplays(true, true, true, command_line.get(), &displays);
-  EXPECT_NE(std::find(displays.begin(), displays.end(), gl::ANGLE_D3D11),
-            displays.end());
+  EXPECT_TRUE(base::ContainsValue(displays, gl::ANGLE_D3D11));
   EXPECT_EQ(displays.size(), 1u);
 
   // Specifically requesting D3D11 should not return D3D11 if the extension is
   // not available
   displays.clear();
   GetEGLInitDisplays(false, true, true, command_line.get(), &displays);
-  EXPECT_EQ(std::find(displays.begin(), displays.end(), gl::ANGLE_D3D11),
-            displays.end());
+  EXPECT_FALSE(base::ContainsValue(displays, gl::ANGLE_D3D11));
 }
 
 TEST(EGLInitializationDisplaysTest, SwiftShader) {
@@ -49,8 +47,7 @@ TEST(EGLInitializationDisplaysTest, SwiftShader) {
                                   gl::kGLImplementationSwiftShaderForWebGLName);
   displays.clear();
   GetEGLInitDisplays(true, true, true, command_line.get(), &displays);
-  EXPECT_NE(std::find(displays.begin(), displays.end(), gl::SWIFT_SHADER),
-            displays.end());
+  EXPECT_TRUE(base::ContainsValue(displays, gl::SWIFT_SHADER));
   EXPECT_EQ(displays.size(), 1u);
 
   // Even if there are other flags, swiftshader should take prescedence
@@ -58,8 +55,7 @@ TEST(EGLInitializationDisplaysTest, SwiftShader) {
                                   gl::kANGLEImplementationD3D11Name);
   displays.clear();
   GetEGLInitDisplays(true, true, true, command_line.get(), &displays);
-  EXPECT_NE(std::find(displays.begin(), displays.end(), gl::SWIFT_SHADER),
-            displays.end());
+  EXPECT_TRUE(base::ContainsValue(displays, gl::SWIFT_SHADER));
   EXPECT_EQ(displays.size(), 1u);
 }
 
@@ -96,8 +92,7 @@ TEST(EGLInitializationDisplaysTest, NonDefaultRenderers) {
                                   gl::kANGLEImplementationOpenGLName);
   displays.clear();
   GetEGLInitDisplays(true, true, true, command_line.get(), &displays);
-  EXPECT_NE(std::find(displays.begin(), displays.end(), gl::ANGLE_OPENGL),
-            displays.end());
+  EXPECT_TRUE(base::ContainsValue(displays, gl::ANGLE_OPENGL));
   EXPECT_EQ(displays.size(), 1u);
 
   // OpenGLES
@@ -105,8 +100,7 @@ TEST(EGLInitializationDisplaysTest, NonDefaultRenderers) {
                                   gl::kANGLEImplementationOpenGLESName);
   displays.clear();
   GetEGLInitDisplays(true, true, true, command_line.get(), &displays);
-  EXPECT_NE(std::find(displays.begin(), displays.end(), gl::ANGLE_OPENGLES),
-            displays.end());
+  EXPECT_TRUE(base::ContainsValue(displays, gl::ANGLE_OPENGLES));
   EXPECT_EQ(displays.size(), 1u);
 
   // Null
@@ -114,8 +108,7 @@ TEST(EGLInitializationDisplaysTest, NonDefaultRenderers) {
                                   gl::kANGLEImplementationNullName);
   displays.clear();
   GetEGLInitDisplays(true, true, true, command_line.get(), &displays);
-  EXPECT_NE(std::find(displays.begin(), displays.end(), gl::ANGLE_NULL),
-            displays.end());
+  EXPECT_TRUE(base::ContainsValue(displays, gl::ANGLE_NULL));
   EXPECT_EQ(displays.size(), 1u);
 }
 
@@ -126,8 +119,7 @@ TEST(EGLInitializationDisplaysTest, NoExtensions) {
   // With no angle platform extensions, only DEFAULT should be available
   std::vector<gl::DisplayType> displays;
   GetEGLInitDisplays(false, false, false, command_line.get(), &displays);
-  EXPECT_NE(std::find(displays.begin(), displays.end(), gl::DEFAULT),
-            displays.end());
+  EXPECT_TRUE(base::ContainsValue(displays, gl::DEFAULT));
   EXPECT_EQ(displays.size(), 1u);
 }
 
