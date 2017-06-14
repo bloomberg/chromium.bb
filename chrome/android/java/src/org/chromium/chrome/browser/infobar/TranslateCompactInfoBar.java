@@ -71,7 +71,7 @@ public class TranslateCompactInfoBar extends InfoBar
      * INFOBAR_HISTOGRAM_BOUNDARY should be the last.
      */
     private static final int INFOBAR_IMPRESSION = 0;
-    private static final int INFOBAR_TRANSLATE = 1;
+    private static final int INFOBAR_TARGET_TAB_TRANSLATE = 1;
     private static final int INFOBAR_DECLINE = 2;
     private static final int INFOBAR_OPTIONS = 3;
     private static final int INFOBAR_MORE_LANGUAGES = 4;
@@ -90,7 +90,7 @@ public class TranslateCompactInfoBar extends InfoBar
     private static final int INFOBAR_SNACKBAR_CANCEL_NEVER_SITE = 17;
     private static final int INFOBAR_SNACKBAR_CANCEL_NEVER = 18;
     private static final int INFOBAR_ALWAYS_TRANSLATE_UNDO = 19;
-    private static final int INFOBAR_CLOSE = 20;
+    private static final int INFOBAR_CLOSE_DEPRECATED = 20;
     private static final int INFOBAR_SNACKBAR_AUTO_ALWAYS_IMPRESSION = 21;
     private static final int INFOBAR_SNACKBAR_AUTO_NEVER_IMPRESSION = 22;
     private static final int INFOBAR_SNACKBAR_CANCEL_AUTO_ALWAYS = 23;
@@ -105,6 +105,7 @@ public class TranslateCompactInfoBar extends InfoBar
 
     private boolean mMenuExpanded;
     private boolean mIsFirstLayout = true;
+    private boolean mUserInteracted;
 
     /** The controller for translate UI snackbars. */
     class TranslateSnackbarController implements SnackbarController {
@@ -184,6 +185,7 @@ public class TranslateCompactInfoBar extends InfoBar
         if (mInitialStep == TRANSLATING_INFOBAR) {
             mTabLayout.getTabAt(TARGET_TAB_INDEX).select();
             mTabLayout.showProgressBarOnTab(TARGET_TAB_INDEX);
+            mUserInteracted = true;
         }
 
         mTabLayout.addOnTabSelectedListener(this);
@@ -252,6 +254,7 @@ public class TranslateCompactInfoBar extends InfoBar
             // Already on the target tab.
             mTabLayout.showProgressBarOnTab(TARGET_TAB_INDEX);
             onButtonClicked(ActionType.TRANSLATE);
+            mUserInteracted = true;
         } else {
             mTabLayout.getTabAt(TARGET_TAB_INDEX).select();
         }
@@ -293,6 +296,10 @@ public class TranslateCompactInfoBar extends InfoBar
     }
 
     private void closeInfobar(boolean explicitly) {
+        if (!mUserInteracted) {
+            recordInfobarAction(INFOBAR_DECLINE);
+        }
+
         // Check if we should trigger the auto "never translate" if infobar is closed explicitly.
         if (explicitly && mNativeTranslateInfoBarPtr != 0
                 && nativeShouldAutoNeverTranslate(mNativeTranslateInfoBarPtr, mMenuExpanded)) {
@@ -304,7 +311,6 @@ public class TranslateCompactInfoBar extends InfoBar
             // perform the action.
             return;
         }
-        recordInfobarAction(INFOBAR_CLOSE);
         // This line will dismiss this infobar.
         super.onCloseButtonClicked();
     }
@@ -324,7 +330,7 @@ public class TranslateCompactInfoBar extends InfoBar
                 onButtonClicked(ActionType.TRANSLATE_SHOW_ORIGINAL);
                 return;
             case TARGET_TAB_INDEX:
-                recordInfobarAction(INFOBAR_TRANSLATE);
+                recordInfobarAction(INFOBAR_TARGET_TAB_TRANSLATE);
                 recordInfobarLanguageData(
                         INFOBAR_HISTOGRAM_TRANSLATE_LANGUAGE, mOptions.targetLanguageCode());
                 startTranslating(TARGET_TAB_INDEX);
@@ -392,6 +398,7 @@ public class TranslateCompactInfoBar extends InfoBar
     public void onTargetMenuItemClicked(String code) {
         // Reset target code in both UI and native.
         if (mNativeTranslateInfoBarPtr != 0 && mOptions.setTargetLanguage(code)) {
+            recordInfobarAction(INFOBAR_MORE_LANGUAGES_TRANSLATE);
             recordInfobarLanguageData(
                     INFOBAR_HISTOGRAM_MORE_LANGUAGES_LANGUAGE, mOptions.targetLanguageCode());
             nativeApplyStringTranslateOption(
@@ -499,11 +506,13 @@ public class TranslateCompactInfoBar extends InfoBar
                 return;
             case ACTION_OVERFLOW_NEVER_LANGUAGE:
             case ACTION_AUTO_NEVER_LANGUAGE:
+                mUserInteracted = true;
                 // After applying this option, the infobar will dismiss.
                 nativeApplyBoolTranslateOption(
                         mNativeTranslateInfoBarPtr, TranslateOption.NEVER_TRANSLATE, true);
                 return;
             case ACTION_OVERFLOW_NEVER_SITE:
+                mUserInteracted = true;
                 // After applying this option, the infobar will dismiss.
                 nativeApplyBoolTranslateOption(
                         mNativeTranslateInfoBarPtr, TranslateOption.NEVER_TRANSLATE_SITE, true);
