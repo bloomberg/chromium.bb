@@ -75,6 +75,7 @@ bool ModuleInfoKey::operator<(const ModuleInfoKey& mik) const {
 }
 
 // ModuleInspectionResult ------------------------------------------------------
+
 ModuleInspectionResult::ModuleInspectionResult() = default;
 
 ModuleInspectionResult::~ModuleInspectionResult() = default;

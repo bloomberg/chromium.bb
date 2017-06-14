@@ -77754,6 +77754,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ThirdPartyModules.ShellExtensionsCount" units="counts">
+  <owner>pmonette@chromium.org</owner>
+  <summary>
+    The number of registered shell extensions found on the user's machine.
+  </summary>
+</histogram>
+
 <histogram name="ThirdPartyModules.Uninstallable" enum="BooleanUninstallable">
   <owner>pmonette@chromium.org</owner>
   <summary>

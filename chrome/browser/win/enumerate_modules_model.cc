@@ -35,9 +35,9 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "base/version.h"
-#include "base/win/registry.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/windows_version.h"
+#include "chrome/browser/conflicts/shell_extension_enumerator_win.h"
 #include "chrome/browser/net/service_providers_win.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/crash_keys.h"
@@ -46,10 +46,6 @@
 #include "ui/base/l10n/l10n_util.h"
 
 using content::BrowserThread;
-
-// The path to the Shell Extension key in the Windows registry.
-static const wchar_t kRegPath[] =
-    L"Software\\Microsoft\\Windows\\CurrentVersion\\Shell Extensions\\Approved";
 
 // A sort method that sorts by bad modules first, then by full name (including
 // path).
@@ -310,34 +306,18 @@ void ModuleEnumerator::EnumerateLoadedModules() {
 }
 
 void ModuleEnumerator::EnumerateShellExtensions() {
-  ReadShellExtensions(HKEY_LOCAL_MACHINE);
-  ReadShellExtensions(HKEY_CURRENT_USER);
+  // The callback is executed synchronously, so the use of base::Unretained is
+  // safe.
+  ShellExtensionEnumerator::EnumerateShellExtensionPaths(base::Bind(
+      &ModuleEnumerator::OnShellExtensionEnumerated, base::Unretained(this)));
 }
 
-void ModuleEnumerator::ReadShellExtensions(HKEY parent) {
-  base::win::RegistryValueIterator registration(parent, kRegPath);
-  while (registration.Valid()) {
-    std::wstring key(std::wstring(L"CLSID\\") + registration.Name() +
-        L"\\InProcServer32");
-    base::win::RegKey clsid;
-    if (clsid.Open(HKEY_CLASSES_ROOT, key.c_str(), KEY_READ) != ERROR_SUCCESS) {
-      ++registration;
-      continue;
-    }
-    base::string16 dll;
-    if (clsid.ReadValue(L"", &dll) != ERROR_SUCCESS) {
-      ++registration;
-      continue;
-    }
-    clsid.Close();
-
-    Module entry;
-    entry.type = SHELL_EXTENSION;
-    entry.location = dll;
-    AddToListWithoutDuplicating(entry);
-
-    ++registration;
-  }
+void ModuleEnumerator::OnShellExtensionEnumerated(
+    const base::FilePath& shell_extension) {
+  Module entry;
+  entry.type = SHELL_EXTENSION;
+  entry.location = shell_extension.value();
+  AddToListWithoutDuplicating(entry);
 }
 
 void ModuleEnumerator::EnumerateWinsockModules() {
