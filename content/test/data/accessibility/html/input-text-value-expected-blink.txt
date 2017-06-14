@@ -1,0 +1,32 @@
+rootWebArea
+++genericContainer
+++++labelText
+++++++staticText name='l1'
+++++++++inlineTextBox name='l1'
+++++textField name='l1'
+++++labelText
+++++++staticText name='l2'
+++++++++inlineTextBox name='l2'
+++++textField name='l2'
+++++++genericContainer
+++++++++staticText name='value'
+++++++++++inlineTextBox name='value'
+++++textField name='l2'
+++++textField name='l2'
+++++++genericContainer
+++++++++staticText name='value'
+++++++++++inlineTextBox name='value'
+++++labelText
+++++++staticText name='Email'
+++++++++inlineTextBox name='Email'
+++++genericContainer
+++++textField name='Email'
+++++textField name='Email'
+++++++genericContainer
+++++++++staticText name='value'
+++++++++++inlineTextBox name='value'
+++++textField name='l5'
+++++textField name='l6'
+++++++genericContainer
+++++++++staticText name='Value'
+++++++++++inlineTextBox name='Value'

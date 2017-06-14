@@ -55,15 +55,11 @@ typedef AccessibilityTreeFormatter::Filter Filter;
 //    exactly match.
 class DumpAccessibilityTreeTest : public DumpAccessibilityTestBase {
  public:
-  void AddDefaultFilters(std::vector<Filter>* filters) override {
-    filters->push_back(Filter(base::ASCIIToUTF16("FOCUSABLE"), Filter::ALLOW));
-    filters->push_back(Filter(base::ASCIIToUTF16("READONLY"), Filter::ALLOW));
-    filters->push_back(Filter(base::ASCIIToUTF16("roleDescription=*"),
-                              Filter::ALLOW));
-    filters->push_back(Filter(base::ASCIIToUTF16("*=''"), Filter::DENY));
-    // After denying empty values, because we want to allow name=''
-    filters->push_back(
-        Filter(base::ASCIIToUTF16("name=*"), Filter::ALLOW_EMPTY));
+  void AddDefaultFilters(std::vector<Filter>* filters) override;
+  void AddFilter(std::vector<Filter>* filters,
+                 std::string filter,
+                 Filter::Type type = Filter::ALLOW) {
+    filters->push_back(Filter(base::ASCIIToUTF16(filter), type));
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -136,6 +132,95 @@ class DumpAccessibilityTreeTest : public DumpAccessibilityTestBase {
         base::KEEP_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
   }
 };
+
+void DumpAccessibilityTreeTest::AddDefaultFilters(
+    std::vector<Filter>* filters) {
+  // TODO(aleventhal) Each platform deserves separate default filters.
+
+  //
+  // Windows
+  //
+
+  // Too noisy: HOTTRACKED, LINKED, SELECTABLE, IA2_STATE_EDITABLE,
+  //            IA2_STATE_OPAQUE, IA2_STATE_SELECTAbLE_TEXT,
+  //            IA2_STATE_SINGLE_LINE, IA2_STATE_VERTICAL.
+  // Too unpredictible: OFFSCREEN
+  // Windows states to log by default:
+  AddFilter(filters, "ALERT*");
+  AddFilter(filters, "ANIMATED*");
+  AddFilter(filters, "BUSY");
+  AddFilter(filters, "CHECKED");
+  AddFilter(filters, "COLLAPSED");
+  AddFilter(filters, "DEFAULT");
+  AddFilter(filters, "EXPANDED");
+  AddFilter(filters, "FLOATING");
+  AddFilter(filters, "FOCUS*");
+  AddFilter(filters, "HASPOPUP");
+  AddFilter(filters, "INVISIBLE");
+  AddFilter(filters, "MARQUEED");
+  AddFilter(filters, "MIXED");
+  AddFilter(filters, "MOVEABLE");
+  AddFilter(filters, "MULTISELECTABLE");
+  AddFilter(filters, "READONLY");
+  AddFilter(filters, "PRESSED");
+  AddFilter(filters, "PROTECTED");
+  AddFilter(filters, "SELECTED");
+  AddFilter(filters, "SIZEABLE");
+  AddFilter(filters, "TRAVERSED");
+  AddFilter(filters, "UNAVAILABLE");
+  AddFilter(filters, "IA2_STATE_ACTIVE");
+  AddFilter(filters, "IA2_STATE_ARMED");
+  AddFilter(filters, "IA2_STATE_CHECKABLE");
+  AddFilter(filters, "IA2_STATE_DEFUNCT");
+  AddFilter(filters, "IA2_STATE_HORIZONTAL");
+  AddFilter(filters, "IA2_STATE_ICONIFIED");
+  AddFilter(filters, "IA2_STATE_INVALID_ENTRY");
+  AddFilter(filters, "IA2_STATE_MODAL");
+  AddFilter(filters, "IA2_STATE_MULTI_LINE");
+  AddFilter(filters, "IA2_STATE_PINNED");
+  AddFilter(filters, "IA2_STATE_REQUIRED");
+  AddFilter(filters, "IA2_STATE_STALE");
+  AddFilter(filters, "IA2_STATE_TRANSIENT");
+
+  //
+  // Blink
+  //
+
+  // Noisy, perhaps add later:
+  //   editable, focus*, horizontal, linked, richlyEditable, vertical
+  // Too flaky: hovered, offscreen
+  AddFilter(filters, "check*");
+  AddFilter(filters, "descript*");
+  AddFilter(filters, "invalid");
+  AddFilter(filters, "busy");
+  AddFilter(filters, "collapsed");
+  AddFilter(filters, "default");
+  AddFilter(filters, "haspopup");
+  AddFilter(filters, "horizontal");
+  AddFilter(filters, "invisible");
+  // TODO(aleventhal) multiline
+  AddFilter(filters, "multiselectable");
+  AddFilter(filters, "protected");
+  // TODO(aleventhal) Add readonly support back after control mode refactor
+  AddFilter(filters, "required");
+  AddFilter(filters, "select*");
+  AddFilter(filters, "visited");
+
+  //
+  // OS X
+  //
+
+  AddFilter(filters, "roleDescription=*");
+
+  //
+  // General
+  //
+
+  // Deny most empty values
+  AddFilter(filters, "*=''", Filter::DENY);
+  // After denying empty values, because we want to allow name=''
+  AddFilter(filters, "name=*", Filter::ALLOW_EMPTY);
+}
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityCSSColor) {
   RunCSSTest(FILE_PATH_LITERAL("color.html"));

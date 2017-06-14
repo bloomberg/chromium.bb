@@ -1,0 +1,3 @@
+rootWebArea
+++progressIndicator
+++progressIndicator value='three'
