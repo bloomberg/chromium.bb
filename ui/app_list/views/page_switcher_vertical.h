@@ -33,8 +33,6 @@ class PageSwitcherVertical : public PageSwitcher,
   void Layout() override;
 
  private:
-  void CalculateButtonHeightAndSpacing(int contents_height);
-
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
