@@ -49,6 +49,11 @@ class TraceMessageFilter : public BrowserMessageFilter {
   void OnTriggerBackgroundTrace(const std::string& histogram_name);
   void OnAbortBackgroundTrace();
 
+  // For registering/unregistering the filter to different tracing
+  // managers/controllers.
+  void Register();
+  void Unregister();
+
   // ChildTraceMessageFilter exists:
   bool has_child_;
 

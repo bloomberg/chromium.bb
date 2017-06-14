@@ -141,8 +141,9 @@ class NamedTriggerRule : public BackgroundTracingRule {
   std::string named_event_;
 };
 
-class HistogramRule : public BackgroundTracingRule,
-                      public TracingControllerImpl::TraceMessageFilterObserver {
+class HistogramRule
+    : public BackgroundTracingRule,
+      public BackgroundTracingManagerImpl::TraceMessageFilterObserver {
  private:
   HistogramRule(const std::string& histogram_name,
                 int histogram_lower_value,
@@ -186,8 +187,8 @@ class HistogramRule : public BackgroundTracingRule,
 
   ~HistogramRule() override {
     base::StatisticsRecorder::ClearCallback(histogram_name_);
-    TracingControllerImpl::GetInstance()->RemoveTraceMessageFilterObserver(
-        this);
+    BackgroundTracingManagerImpl::GetInstance()
+        ->RemoveTraceMessageFilterObserver(this);
   }
 
   // BackgroundTracingRule implementation
@@ -198,7 +199,8 @@ class HistogramRule : public BackgroundTracingRule,
                    base::Unretained(this), histogram_name_,
                    histogram_lower_value_, histogram_upper_value_, repeat_));
 
-    TracingControllerImpl::GetInstance()->AddTraceMessageFilterObserver(this);
+    BackgroundTracingManagerImpl::GetInstance()->AddTraceMessageFilterObserver(
+        this);
   }
 
   void IntoDict(base::DictionaryValue* dict) const override {
@@ -231,7 +233,7 @@ class HistogramRule : public BackgroundTracingRule,
             base::Unretained(BackgroundTracingManagerImpl::GetInstance())));
   }
 
-  // TracingControllerImpl::TraceMessageFilterObserver implementation
+  // BackgroundTracingManagerImpl::TraceMessageFilterObserver implementation
   void OnTraceMessageFilterAdded(TraceMessageFilter* filter) override {
     filter->Send(
         new TracingMsg_SetUMACallback(histogram_name_, histogram_lower_value_,
