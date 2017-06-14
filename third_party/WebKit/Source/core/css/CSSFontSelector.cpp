@@ -53,8 +53,7 @@ CSSFontSelector::CSSFontSelector(Document* document)
   DCHECK(document_);
   DCHECK(document_->GetFrame());
   FontCache::GetFontCache()->AddClient(this);
-  FontFaceSet::From(*document)->AddFontFacesToFontFaceCache(&font_face_cache_,
-                                                            this);
+  FontFaceSet::From(*document)->AddFontFacesToFontFaceCache(&font_face_cache_);
 }
 
 CSSFontSelector::~CSSFontSelector() {}

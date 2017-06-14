@@ -36,7 +36,6 @@
 namespace blink {
 
 class FontFace;
-class CSSFontSelector;
 class CSSSegmentedFontFace;
 class FontDescription;
 class StyleRuleFontFace;
@@ -47,13 +46,11 @@ class FontFaceCache final {
  public:
   FontFaceCache();
 
-  // FIXME: Remove CSSFontSelector as argument. Passing CSSFontSelector here is
-  // a result of egregious spaghettification in FontFace/FontFaceSet.
-  void Add(CSSFontSelector*, const StyleRuleFontFace*, FontFace*);
+  void Add(const StyleRuleFontFace*, FontFace*);
   void Remove(const StyleRuleFontFace*);
   void ClearCSSConnected();
   void ClearAll();
-  void AddFontFace(CSSFontSelector*, FontFace*, bool css_connected);
+  void AddFontFace(FontFace*, bool css_connected);
   void RemoveFontFace(FontFace*, bool css_connected);
 
   // FIXME: It's sort of weird that add/remove uses StyleRuleFontFace* as key,

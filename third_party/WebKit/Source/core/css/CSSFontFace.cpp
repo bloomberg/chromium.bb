@@ -183,7 +183,8 @@ void CSSFontFace::SetLoadStatus(FontFace::LoadStatusType new_status) {
 
   if (!segmented_font_face_)
     return;
-  Document* document = segmented_font_face_->FontSelector()->GetDocument();
+  CHECK(font_face_->GetExecutionContext()->IsDocument());
+  Document* document = ToDocument(font_face_->GetExecutionContext());
   if (document && new_status == FontFace::kLoading)
     FontFaceSet::From(*document)->BeginFontLoading(font_face_);
 }
