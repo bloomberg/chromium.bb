@@ -196,10 +196,6 @@ bool SpellCheckMessageFilterPlatform::OnMessageReceived(
                         OnCheckSpelling)
     IPC_MESSAGE_HANDLER(SpellCheckHostMsg_FillSuggestionList,
                         OnFillSuggestionList)
-    IPC_MESSAGE_HANDLER(SpellCheckHostMsg_ShowSpellingPanel,
-                        OnShowSpellingPanel)
-    IPC_MESSAGE_HANDLER(SpellCheckHostMsg_UpdateSpellingPanelWithMisspelledWord,
-                        OnUpdateSpellingPanelWithMisspelledWord)
     IPC_MESSAGE_HANDLER(SpellCheckHostMsg_RequestTextCheck,
                         OnRequestTextCheck)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -247,15 +243,6 @@ void SpellCheckMessageFilterPlatform::OnFillSuggestionList(
     const base::string16& word,
     std::vector<base::string16>* suggestions) {
   spellcheck_platform::FillSuggestionList(word, suggestions);
-}
-
-void SpellCheckMessageFilterPlatform::OnShowSpellingPanel(bool show) {
-  spellcheck_platform::ShowSpellingPanel(show);
-}
-
-void SpellCheckMessageFilterPlatform::OnUpdateSpellingPanelWithMisspelledWord(
-    const base::string16& word) {
-  spellcheck_platform::UpdateSpellingPanelWithMisspelledWord(word);
 }
 
 void SpellCheckMessageFilterPlatform::OnRequestTextCheck(

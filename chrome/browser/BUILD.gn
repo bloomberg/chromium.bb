@@ -2045,6 +2045,14 @@ split_static_library("browser") {
       "spellchecker/spellcheck_service.cc",
       "spellchecker/spellcheck_service.h",
     ]
+
+    if (has_spellcheck_panel) {
+      sources += [
+        "spellchecker/spell_check_panel_host_impl.cc",
+        "spellchecker/spell_check_panel_host_impl.h",
+      ]
+    }
+
     deps += [
       "//components/spellcheck/browser",
       "//components/spellcheck/common:common",

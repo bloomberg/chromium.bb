@@ -15,6 +15,7 @@
           "mojom::ModuleEventSink",
           "rappor::mojom::RapporRecorder",
           "spellcheck::mojom::SpellCheckHost",
+          "spellcheck::mojom::SpellCheckPanelHost",
           "startup_metric_utils::mojom::StartupMetricHost",
           "translate::mojom::ContentTranslateDriver",
           "ukm::mojom::UkmRecorderInterface"

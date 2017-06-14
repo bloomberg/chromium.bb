@@ -18,12 +18,14 @@
 #include "components/prefs/pref_service.h"
 #include "components/spellcheck/browser/pref_names.h"
 #include "components/spellcheck/browser/spellcheck_platform.h"
-#include "components/spellcheck/common/spellcheck_messages.h"
+#include "components/spellcheck/common/spellcheck_panel.mojom.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 
 using content::RenderViewHost;
 
@@ -172,8 +174,14 @@ using content::RenderViewHost;
 // catch this and advance to the next word for you. Thanks Apple.
 // This is also called from the Edit -> Spelling -> Check Spelling menu item.
 - (void)checkSpelling:(id)sender {
-  renderWidgetHost_->Send(new SpellCheckMsg_AdvanceToNextMisspelling(
-      renderWidgetHost_->GetRoutingID()));
+  content::WebContents* webContents = content::WebContents::FromRenderViewHost(
+      RenderViewHost::From(renderWidgetHost_));
+  DCHECK(webContents && webContents->GetFocusedFrame());
+
+  spellcheck::mojom::SpellCheckPanelPtr focused_spell_check_panel_client;
+  webContents->GetFocusedFrame()->GetRemoteInterfaces()->GetInterface(
+      &focused_spell_check_panel_client);
+  focused_spell_check_panel_client->AdvanceToNextMisspelling();
 }
 
 // This message is sent by the spelling panel whenever a word is ignored.
@@ -188,9 +196,16 @@ using content::RenderViewHost;
 }
 
 - (void)showGuessPanel:(id)sender {
-  renderWidgetHost_->Send(new SpellCheckMsg_ToggleSpellPanel(
-      renderWidgetHost_->GetRoutingID(),
-      spellcheck_platform::SpellingPanelVisible()));
+  const bool visible = spellcheck_platform::SpellingPanelVisible();
+
+  content::WebContents* webContents = content::WebContents::FromRenderViewHost(
+      RenderViewHost::From(renderWidgetHost_));
+  DCHECK(webContents && webContents->GetFocusedFrame());
+
+  spellcheck::mojom::SpellCheckPanelPtr focused_spell_check_panel_client;
+  webContents->GetFocusedFrame()->GetRemoteInterfaces()->GetInterface(
+      &focused_spell_check_panel_client);
+  focused_spell_check_panel_client->ToggleSpellPanel(visible);
 }
 
 - (void)toggleContinuousSpellChecking:(id)sender {
