@@ -27,6 +27,8 @@ enum class NetworkStatus {
 // Contains battery and network status.
 struct DeviceStatus {
   DeviceStatus();
+  DeviceStatus(BatteryStatus battery, NetworkStatus network);
+
   struct Result {
     Result();
     bool MeetsRequirements() const;

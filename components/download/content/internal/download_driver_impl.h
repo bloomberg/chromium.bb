@@ -36,9 +36,10 @@ class DownloadDriverImpl : public DownloadDriver,
   void Initialize(DownloadDriver::Client* client) override;
   bool IsReady() const override;
   void Start(
-      const DownloadParams& params,
+      const RequestParams& request_params,
+      const std::string& guid,
       const net::NetworkTrafficAnnotationTag& traffic_annotation) override;
-  void Cancel(const std::string& guid) override;
+  void Remove(const std::string& guid) override;
   void Pause(const std::string& guid) override;
   void Resume(const std::string& guid) override;
   base::Optional<DriverEntry> Find(const std::string& guid) override;

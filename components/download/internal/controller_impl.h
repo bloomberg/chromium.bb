@@ -12,6 +12,7 @@
 #include "base/optional.h"
 #include "components/download/internal/controller.h"
 #include "components/download/internal/download_driver.h"
+#include "components/download/internal/entry.h"
 #include "components/download/internal/model.h"
 #include "components/download/internal/scheduler/device_status_listener.h"
 #include "components/download/internal/startup_status.h"
@@ -24,6 +25,7 @@ namespace download {
 class ClientSet;
 class DownloadDriver;
 class Model;
+class Scheduler;
 
 struct Configuration;
 struct SchedulingParams;
@@ -41,6 +43,7 @@ class ControllerImpl : public Controller,
                  std::unique_ptr<DownloadDriver> driver,
                  std::unique_ptr<Model> model,
                  std::unique_ptr<DeviceStatusListener> device_status_listener,
+                 std::unique_ptr<Scheduler> scheduler,
                  std::unique_ptr<TaskScheduler> task_scheduler);
   ~ControllerImpl() override;
 
@@ -94,6 +97,14 @@ class ControllerImpl : public Controller,
   // resolve state issues during startup.
   void ResolveInitialRequestStates();
 
+  // Updates the driver states based on the states of entries in download
+  // service.
+  void UpdateDriverStates();
+
+  // Processes the download based on the state of |entry|. May start, pause
+  // or resume a download accordingly.
+  void UpdateDriverState(const Entry& entry);
+
   // Notifies all Client in |clients_| that this controller is initialized and
   // lets them know which download requests we are aware of for their
   // DownloadClient.
@@ -120,6 +131,12 @@ class ControllerImpl : public Controller,
                           bool needs_reschedule,
                           stats::ScheduledTaskStatus status);
 
+  void HandleCompleteDownload(CompletionType type, const std::string& guid);
+
+  // Find more available entries to download, until the number of active entries
+  // reached maximum.
+  void ActivateMoreDownloads();
+
   std::unique_ptr<ClientSet> clients_;
   std::unique_ptr<Configuration> config_;
 
@@ -127,6 +144,7 @@ class ControllerImpl : public Controller,
   std::unique_ptr<DownloadDriver> driver_;
   std::unique_ptr<Model> model_;
   std::unique_ptr<DeviceStatusListener> device_status_listener_;
+  std::unique_ptr<Scheduler> scheduler_;
   std::unique_ptr<TaskScheduler> task_scheduler_;
 
   // Internal state.

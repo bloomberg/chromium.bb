@@ -26,6 +26,8 @@ class Scheduler {
   // The sequence of polling on entries with exactly same states is undefined.
   virtual Entry* Next(const Model::EntryList& entries,
                       const DeviceStatus& device_status) = 0;
+
+  virtual ~Scheduler() {}
 };
 
 // Interface to schedule platform dependent background tasks that can run after
@@ -34,6 +36,7 @@ class PlatformTaskScheduler {
  public:
   virtual void ScheduleDownloadTask(const Criteria& criteria) = 0;
   virtual void CancelDownloadTask() = 0;
+  virtual ~PlatformTaskScheduler() {}
 };
 
 }  // namespace download

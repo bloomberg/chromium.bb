@@ -47,6 +47,7 @@ DriverEntry DownloadDriverImpl::CreateDriverEntry(
   entry.bytes_downloaded = item->GetReceivedBytes();
   entry.expected_total_size = item->GetTotalBytes();
   entry.response_headers = item->GetResponseHeaders();
+  entry.url_chain = item->GetUrlChain();
   return entry;
 }
 
@@ -78,40 +79,44 @@ void DownloadDriverImpl::Initialize(DownloadDriver::Client* client) {
 }
 
 bool DownloadDriverImpl::IsReady() const {
-  return client_ && download_manager_;
+  return client_ && download_manager_ &&
+         download_manager_->IsManagerInitialized();
 }
 
 void DownloadDriverImpl::Start(
-    const DownloadParams& params,
+    const RequestParams& request_params,
+    const std::string& guid,
     const net::NetworkTrafficAnnotationTag& traffic_annotation) {
-  DCHECK(!params.request_params.url.is_empty());
-  DCHECK(!params.guid.empty());
+  DCHECK(!request_params.url.is_empty());
+  DCHECK(!guid.empty());
   if (!download_manager_)
     return;
 
   content::StoragePartition* storage_partition =
       content::BrowserContext::GetStoragePartitionForSite(
-          download_manager_->GetBrowserContext(), params.request_params.url);
+          download_manager_->GetBrowserContext(), request_params.url);
   DCHECK(storage_partition);
 
   std::unique_ptr<content::DownloadUrlParameters> download_url_params(
       new content::DownloadUrlParameters(
-          params.request_params.url, storage_partition->GetURLRequestContext(),
+          request_params.url, storage_partition->GetURLRequestContext(),
           traffic_annotation));
 
-  // TODO(xingliu): Handle the request headers from |params|, need to tweak
-  // download network stack.
-  // Make content::DownloadManager handle potential guid collision and return
-  // an error to fail the download cleanly.
-  download_url_params->set_guid(params.guid);
+  // TODO(xingliu): Make content::DownloadManager handle potential guid
+  // collision and return an error to fail the download cleanly.
+  for (net::HttpRequestHeaders::Iterator it(request_params.request_headers);
+       it.GetNext();) {
+    download_url_params->add_request_header(it.name(), it.value());
+  }
+  download_url_params->set_guid(guid);
   download_url_params->set_transient(true);
-  download_url_params->set_method(params.request_params.method);
-  download_url_params->set_file_path(file_dir_.AppendASCII(params.guid));
+  download_url_params->set_method(request_params.method);
+  download_url_params->set_file_path(file_dir_.AppendASCII(guid));
 
   download_manager_->DownloadUrl(std::move(download_url_params));
 }
 
-void DownloadDriverImpl::Cancel(const std::string& guid) {
+void DownloadDriverImpl::Remove(const std::string& guid) {
   if (!download_manager_)
     return;
   content::DownloadItem* item = download_manager_->GetDownloadByGuid(guid);
@@ -173,7 +178,11 @@ void DownloadDriverImpl::OnDownloadCreated(content::DownloadManager* manager,
   item->AddObserver(this);
   DCHECK(client_);
   DriverEntry entry = CreateDriverEntry(item);
-  client_->OnDownloadCreated(entry);
+
+  // Only notifies the client about new downloads. Exsting download data will be
+  // loaded before the driver is ready.
+  if (IsReady())
+    client_->OnDownloadCreated(entry);
 }
 
 void DownloadDriverImpl::OnManagerInitialized() {

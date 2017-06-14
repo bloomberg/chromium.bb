@@ -17,6 +17,7 @@
 #include "components/download/internal/config.h"
 #include "components/download/internal/entry.h"
 #include "components/download/internal/model_impl.h"
+#include "components/download/internal/scheduler/scheduler.h"
 #include "components/download/internal/test/entry_utils.h"
 #include "components/download/internal/test/mock_client.h"
 #include "components/download/internal/test/test_device_status_listener.h"
@@ -41,14 +42,27 @@ class MockTaskScheduler : public TaskScheduler {
   MOCK_METHOD1(CancelTask, void(DownloadTaskType));
 };
 
+class MockScheduler : public Scheduler {
+ public:
+  MockScheduler() = default;
+  ~MockScheduler() override = default;
+
+  MOCK_METHOD1(Reschedule, void(const Model::EntryList&));
+  MOCK_METHOD2(Next, Entry*(const Model::EntryList&, const DeviceStatus&));
+};
+
 class DownloadServiceControllerImplTest : public testing::Test {
  public:
   DownloadServiceControllerImplTest()
       : task_runner_(new base::TestSimpleTaskRunner),
         handle_(task_runner_),
+        controller_(nullptr),
         client_(nullptr),
         driver_(nullptr),
-        store_(nullptr) {
+        store_(nullptr),
+        model_(nullptr),
+        device_status_listener_(nullptr),
+        scheduler_(nullptr) {
     start_callback_ =
         base::Bind(&DownloadServiceControllerImplTest::StartCallback,
                    base::Unretained(this));
@@ -71,13 +85,19 @@ class DownloadServiceControllerImplTest : public testing::Test {
     clients->insert(std::make_pair(DownloadClient::TEST, std::move(client)));
     auto client_set = base::MakeUnique<ClientSet>(std::move(clients));
     auto model = base::MakeUnique<ModelImpl>(std::move(store));
-    auto device_status_listener = base::MakeUnique<TestDeviceStatusListener>();
+    auto device_status_listener =
+        base::MakeUnique<test::TestDeviceStatusListener>();
+    auto scheduler = base::MakeUnique<MockScheduler>();
     auto task_scheduler = base::MakeUnique<MockTaskScheduler>();
+
+    model_ = model.get();
+    device_status_listener_ = device_status_listener.get();
+    scheduler_ = scheduler.get();
 
     controller_ = base::MakeUnique<ControllerImpl>(
         std::move(client_set), std::move(config), std::move(driver),
         std::move(model), std::move(device_status_listener),
-        std::move(task_scheduler));
+        std::move(scheduler), std::move(task_scheduler));
   }
 
  protected:
@@ -100,6 +120,9 @@ class DownloadServiceControllerImplTest : public testing::Test {
   test::MockClient* client_;
   test::TestDownloadDriver* driver_;
   test::TestStore* store_;
+  ModelImpl* model_;
+  test::TestDeviceStatusListener* device_status_listener_;
+  MockScheduler* scheduler_;
 
   DownloadParams::StartCallback start_callback_;
 
@@ -122,6 +145,8 @@ TEST_F(DownloadServiceControllerImplTest, SuccessfulInitModelFirst) {
   EXPECT_TRUE(controller_->GetStartupStatus()->model_ok.value());
 
   EXPECT_CALL(*client_, OnServiceInitialized(_)).Times(1);
+  EXPECT_CALL(*scheduler_, Next(_, _)).Times(1);
+  EXPECT_CALL(*scheduler_, Reschedule(_)).Times(1);
 
   driver_->MakeReady();
   EXPECT_TRUE(controller_->GetStartupStatus()->Complete());
@@ -144,6 +169,8 @@ TEST_F(DownloadServiceControllerImplTest, SuccessfulInitDriverFirst) {
   EXPECT_TRUE(controller_->GetStartupStatus()->driver_ok.value());
 
   EXPECT_CALL(*client_, OnServiceInitialized(_)).Times(1);
+  EXPECT_CALL(*scheduler_, Next(_, _)).Times(1);
+  EXPECT_CALL(*scheduler_, Reschedule(_)).Times(1);
 
   store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>());
   EXPECT_TRUE(controller_->GetStartupStatus()->Complete());
@@ -165,6 +192,8 @@ TEST_F(DownloadServiceControllerImplTest, SuccessfulInitWithExistingDownload) {
   EXPECT_CALL(
       *client_,
       OnServiceInitialized(testing::UnorderedElementsAreArray(expected_guids)));
+  EXPECT_CALL(*scheduler_, Next(_, _)).Times(1);
+  EXPECT_CALL(*scheduler_, Reschedule(_)).Times(1);
 
   controller_->Initialize();
   driver_->MakeReady();
@@ -188,6 +217,8 @@ TEST_F(DownloadServiceControllerImplTest, GetOwnerOfDownload) {
   std::vector<Entry> entries = {entry};
 
   EXPECT_CALL(*client_, OnServiceInitialized(_)).Times(1);
+  EXPECT_CALL(*scheduler_, Next(_, _)).Times(1);
+  EXPECT_CALL(*scheduler_, Reschedule(_)).Times(1);
 
   controller_->Initialize();
   driver_->MakeReady();
@@ -202,6 +233,8 @@ TEST_F(DownloadServiceControllerImplTest, GetOwnerOfDownload) {
 
 TEST_F(DownloadServiceControllerImplTest, AddDownloadAccepted) {
   EXPECT_CALL(*client_, OnServiceInitialized(_)).Times(1);
+  EXPECT_CALL(*scheduler_, Next(_, _)).Times(1);
+  EXPECT_CALL(*scheduler_, Reschedule(_)).Times(1);
 
   // Set up the Controller.
   controller_->Initialize();
@@ -214,6 +247,8 @@ TEST_F(DownloadServiceControllerImplTest, AddDownloadAccepted) {
   EXPECT_CALL(*this,
               StartCallback(params.guid, DownloadParams::StartResult::ACCEPTED))
       .Times(1);
+  EXPECT_CALL(*scheduler_, Next(_, _)).Times(1);
+  EXPECT_CALL(*scheduler_, Reschedule(_)).Times(1);
   controller_->StartDownload(params);
 
   // TODO(dtrainor): Compare the full DownloadParams with the full Entry.
@@ -224,6 +259,8 @@ TEST_F(DownloadServiceControllerImplTest, AddDownloadAccepted) {
 
 TEST_F(DownloadServiceControllerImplTest, AddDownloadFailsWithBackoff) {
   EXPECT_CALL(*client_, OnServiceInitialized(_)).Times(1);
+  EXPECT_CALL(*scheduler_, Next(_, _)).Times(1);
+  EXPECT_CALL(*scheduler_, Reschedule(_)).Times(1);
 
   Entry entry = test::BuildBasicEntry();
   std::vector<Entry> entries = {entry};
@@ -252,6 +289,8 @@ TEST_F(DownloadServiceControllerImplTest, AddDownloadFailsWithBackoff) {
 TEST_F(DownloadServiceControllerImplTest,
        AddDownloadFailsWithDuplicateGuidInModel) {
   EXPECT_CALL(*client_, OnServiceInitialized(_)).Times(1);
+  EXPECT_CALL(*scheduler_, Next(_, _)).Times(1);
+  EXPECT_CALL(*scheduler_, Reschedule(_)).Times(1);
 
   Entry entry = test::BuildBasicEntry();
   std::vector<Entry> entries = {entry};
@@ -280,6 +319,10 @@ TEST_F(DownloadServiceControllerImplTest, AddDownloadFailsWithDuplicateCall) {
   testing::InSequence sequence;
 
   EXPECT_CALL(*client_, OnServiceInitialized(_)).Times(1);
+  EXPECT_CALL(*scheduler_, Next(_, _)).Times(1);
+  EXPECT_CALL(*scheduler_, Reschedule(_)).Times(1);
+  EXPECT_CALL(*scheduler_, Next(_, _)).Times(1);
+  EXPECT_CALL(*scheduler_, Reschedule(_)).Times(1);
 
   // Set up the Controller.
   controller_->Initialize();
@@ -305,6 +348,8 @@ TEST_F(DownloadServiceControllerImplTest, AddDownloadFailsWithDuplicateCall) {
 
 TEST_F(DownloadServiceControllerImplTest, AddDownloadFailsWithBadClient) {
   EXPECT_CALL(*client_, OnServiceInitialized(_)).Times(1);
+  EXPECT_CALL(*scheduler_, Next(_, _)).Times(1);
+  EXPECT_CALL(*scheduler_, Reschedule(_)).Times(1);
 
   // Set up the Controller.
   controller_->Initialize();
@@ -326,6 +371,8 @@ TEST_F(DownloadServiceControllerImplTest, AddDownloadFailsWithBadClient) {
 
 TEST_F(DownloadServiceControllerImplTest, AddDownloadFailsWithClientCancel) {
   EXPECT_CALL(*client_, OnServiceInitialized(_)).Times(1);
+  EXPECT_CALL(*scheduler_, Next(_, _)).Times(1);
+  EXPECT_CALL(*scheduler_, Reschedule(_)).Times(1);
 
   // Set up the Controller.
   controller_->Initialize();
@@ -349,6 +396,8 @@ TEST_F(DownloadServiceControllerImplTest, AddDownloadFailsWithClientCancel) {
 
 TEST_F(DownloadServiceControllerImplTest, AddDownloadFailsWithInternalError) {
   EXPECT_CALL(*client_, OnServiceInitialized(_)).Times(1);
+  EXPECT_CALL(*scheduler_, Next(_, _)).Times(1);
+  EXPECT_CALL(*scheduler_, Reschedule(_)).Times(1);
 
   // Set up the Controller.
   controller_->Initialize();
@@ -366,6 +415,184 @@ TEST_F(DownloadServiceControllerImplTest, AddDownloadFailsWithInternalError) {
   store_->TriggerUpdate(false);
 
   task_runner_->RunUntilIdle();
+}
+
+TEST_F(DownloadServiceControllerImplTest, Pause) {
+  // Setup download service test data.
+  Entry entry1 = test::BuildBasicEntry();
+  Entry entry2 = test::BuildBasicEntry();
+  Entry entry3 = test::BuildBasicEntry();
+  entry1.state = Entry::State::AVAILABLE;
+  entry2.state = Entry::State::ACTIVE;
+  entry3.state = Entry::State::COMPLETE;
+  std::vector<Entry> entries = {entry1, entry2, entry3};
+
+  EXPECT_CALL(*client_, OnServiceInitialized(_)).Times(1);
+  EXPECT_CALL(*scheduler_, Next(_, _)).Times(3);
+  EXPECT_CALL(*scheduler_, Reschedule(_)).Times(3);
+
+  // Set the network status to disconnected so no entries will be polled from
+  // the scheduler.
+  controller_->Initialize();
+  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+  driver_->MakeReady();
+
+  // Setup download driver test data.
+  DriverEntry driver_entry1, driver_entry2, driver_entry3;
+  driver_entry1.guid = entry1.guid;
+  driver_entry1.state = DriverEntry::State::IN_PROGRESS;
+  driver_entry2.guid = entry2.guid;
+  driver_entry2.state = DriverEntry::State::IN_PROGRESS;
+  driver_entry3.guid = entry3.guid;
+  driver_->AddTestData(
+      std::vector<DriverEntry>{driver_entry1, driver_entry2, driver_entry3});
+
+  // Pause in progress available entry.
+  EXPECT_EQ(Entry::State::AVAILABLE, model_->Get(entry1.guid)->state);
+  controller_->PauseDownload(entry1.guid);
+  EXPECT_TRUE(driver_->Find(entry1.guid)->paused);
+  EXPECT_EQ(Entry::State::PAUSED, model_->Get(entry1.guid)->state);
+
+  // Pause in progress active entry.
+  controller_->PauseDownload(entry2.guid);
+  EXPECT_TRUE(driver_->Find(entry2.guid)->paused);
+  EXPECT_EQ(Entry::State::PAUSED, model_->Get(entry2.guid)->state);
+
+  // Entries in complete states can't be paused.
+  controller_->PauseDownload(entry3.guid);
+  EXPECT_FALSE(driver_->Find(entry3.guid)->paused);
+  EXPECT_EQ(Entry::State::COMPLETE, model_->Get(entry3.guid)->state);
+
+  task_runner_->RunUntilIdle();
+}
+
+TEST_F(DownloadServiceControllerImplTest, Resume) {
+  // Setupd download service test data.
+  Entry entry1 = test::BuildBasicEntry();
+  Entry entry2 = test::BuildBasicEntry();
+  entry1.state = Entry::State::PAUSED;
+  entry2.state = Entry::State::ACTIVE;
+  std::vector<Entry> entries = {entry1, entry2};
+
+  EXPECT_CALL(*client_, OnServiceInitialized(_)).Times(1);
+  EXPECT_CALL(*scheduler_, Next(_, _)).Times(2);
+  EXPECT_CALL(*scheduler_, Reschedule(_)).Times(2);
+
+  controller_->Initialize();
+  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+  driver_->MakeReady();
+
+  // Setup download driver test data.
+  DriverEntry driver_entry1, driver_entry2;
+  driver_entry1.guid = entry1.guid;
+  driver_entry1.paused = true;
+  driver_entry2.guid = entry2.guid;
+  driver_entry2.paused = false;
+  driver_->AddTestData(std::vector<DriverEntry>{driver_entry1, driver_entry2});
+
+  // Resume the paused download.
+  device_status_listener_->SetDeviceStatus(
+      DeviceStatus(BatteryStatus::CHARGING, NetworkStatus::UNMETERED));
+  EXPECT_EQ(Entry::State::PAUSED, model_->Get(entry1.guid)->state);
+  controller_->ResumeDownload(entry1.guid);
+  EXPECT_FALSE(driver_->Find(entry1.guid)->paused);
+  EXPECT_EQ(Entry::State::ACTIVE, model_->Get(entry1.guid)->state);
+
+  // Entries in paused state can't be resumed.
+  controller_->ResumeDownload(entry2.guid);
+  EXPECT_EQ(Entry::State::ACTIVE, model_->Get(entry2.guid)->state);
+  EXPECT_FALSE(driver_->Find(entry2.guid)->paused);
+
+  task_runner_->RunUntilIdle();
+}
+
+TEST_F(DownloadServiceControllerImplTest, Cancel) {
+  Entry entry = test::BuildBasicEntry();
+  entry.state = Entry::State::ACTIVE;
+  std::vector<Entry> entries = {entry};
+
+  EXPECT_CALL(*client_, OnServiceInitialized(_)).Times(1);
+  EXPECT_CALL(*scheduler_, Next(_, _)).Times(2);
+  EXPECT_CALL(*scheduler_, Reschedule(_)).Times(2);
+
+  controller_->Initialize();
+  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+  driver_->MakeReady();
+
+  DriverEntry driver_entry;
+  driver_entry.guid = entry.guid;
+  driver_->AddTestData(std::vector<DriverEntry>{driver_entry});
+
+  controller_->CancelDownload(entry.guid);
+  EXPECT_EQ(Entry::State::COMPLETE, model_->Get(entry.guid)->state);
+
+  task_runner_->RunUntilIdle();
+}
+
+TEST_F(DownloadServiceControllerImplTest, OnDownloadFailed) {
+  Entry entry = test::BuildBasicEntry();
+  entry.state = Entry::State::ACTIVE;
+  std::vector<Entry> entries = {entry};
+
+  EXPECT_CALL(*client_, OnServiceInitialized(_)).Times(1);
+  EXPECT_CALL(*scheduler_, Next(_, _)).Times(2);
+  EXPECT_CALL(*scheduler_, Reschedule(_)).Times(2);
+
+  controller_->Initialize();
+  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+  driver_->MakeReady();
+
+  DriverEntry driver_entry;
+  driver_entry.guid = entry.guid;
+
+  driver_->NotifyDownloadFailed(driver_entry, 1);
+  EXPECT_EQ(Entry::State::COMPLETE, model_->Get(entry.guid)->state);
+}
+
+TEST_F(DownloadServiceControllerImplTest, OnDownloadSucceeded) {
+  Entry entry = test::BuildBasicEntry();
+  entry.state = Entry::State::ACTIVE;
+  std::vector<Entry> entries = {entry};
+
+  EXPECT_CALL(*client_, OnServiceInitialized(_)).Times(1);
+  EXPECT_CALL(*scheduler_, Next(_, _)).Times(2);
+  EXPECT_CALL(*scheduler_, Reschedule(_)).Times(2);
+
+  controller_->Initialize();
+  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+  driver_->MakeReady();
+
+  DriverEntry driver_entry;
+  driver_entry.guid = entry.guid;
+  driver_entry.bytes_downloaded = 1024;
+  base::FilePath path = base::FilePath::FromUTF8Unsafe("123");
+
+  driver_->NotifyDownloadSucceeded(driver_entry, path);
+  EXPECT_EQ(Entry::State::COMPLETE, model_->Get(entry.guid)->state);
+}
+
+TEST_F(DownloadServiceControllerImplTest, OnDownloadUpdated) {
+  Entry entry = test::BuildBasicEntry();
+  entry.state = Entry::State::ACTIVE;
+  std::vector<Entry> entries = {entry};
+
+  EXPECT_CALL(*client_, OnServiceInitialized(_)).Times(1);
+  EXPECT_CALL(*scheduler_, Next(_, _)).Times(1);
+  EXPECT_CALL(*scheduler_, Reschedule(_)).Times(1);
+
+  controller_->Initialize();
+  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+  driver_->MakeReady();
+
+  DriverEntry driver_entry;
+  driver_entry.state = DriverEntry::State::IN_PROGRESS;
+  driver_entry.guid = entry.guid;
+  driver_entry.bytes_downloaded = 1024;
+
+  EXPECT_CALL(*client_,
+              OnDownloadUpdated(entry.guid, driver_entry.bytes_downloaded));
+  driver_->NotifyDownloadUpdate(driver_entry);
+  EXPECT_EQ(Entry::State::ACTIVE, model_->Get(entry.guid)->state);
 }
 
 }  // namespace download

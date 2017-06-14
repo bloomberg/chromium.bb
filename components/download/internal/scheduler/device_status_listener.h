@@ -40,6 +40,9 @@ class DeviceStatusListener
   // The observer that listens to device status change events.
   Observer* observer_;
 
+  // If we are actively listening to network and battery change events.
+  bool listening_;
+
  private:
   // net::NetworkChangeNotifier implementation.
   void OnConnectionTypeChanged(
@@ -50,9 +53,6 @@ class DeviceStatusListener
 
   // Notifies |observers_| about device status change.
   void NotifyStatusChange();
-
-  // If we are actively listening to network and battery change events.
-  bool listening_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceStatusListener);
 };

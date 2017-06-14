@@ -52,5 +52,12 @@ Criteria GetSchedulingCriteria(const Model::EntryList& entries) {
   return criteria;
 }
 
+bool EntryBetterThan(const Entry& lhs, const Entry& rhs) {
+  return lhs.scheduling_params.priority > rhs.scheduling_params.priority ||
+         (lhs.scheduling_params.priority == rhs.scheduling_params.priority &&
+          lhs.scheduling_params.cancel_time <
+              rhs.scheduling_params.cancel_time);
+}
+
 }  // namespace util
 }  // namespace download

@@ -33,9 +33,13 @@ std::map<DownloadClient, std::vector<std::string>> MapEntriesToClients(
     const std::set<DownloadClient>& clients,
     const std::vector<Entry*>& entries);
 
-// Get the least strict scheduling criteria from |entries|, the criteria is used
-// to schedule platform background tasks.
+// Gets the least strict scheduling criteria from |entries|, the criteria is
+// used to schedule platform background tasks.
 Criteria GetSchedulingCriteria(const Model::EntryList& entries);
+
+// Returns if |lhs| entry is a better candidate to be the next download than
+// |rhs| based on their priority and cancel time.
+bool EntryBetterThan(const Entry& lhs, const Entry& rhs);
 
 }  // namespace util
 }  // namespace download

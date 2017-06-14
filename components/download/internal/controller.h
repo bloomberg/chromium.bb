@@ -18,6 +18,23 @@ struct DownloadParams;
 struct SchedulingParams;
 struct StartupStatus;
 
+// The type of completion when the download entry transits to complete state.
+// TODO(xingliu): Implement timeout and unknown failure types.
+enum class CompletionType {
+  // The download is successfully finished.
+  SUCCEED = 0,
+  // The download is interrupted and failed.
+  FAIL = 1,
+  // The download is aborted by the client.
+  ABORT = 2,
+  // The download is timed out and the connection is closed.
+  TIMEOUT = 3,
+  // The download is failed for unknown reasons.
+  UNKNOWN = 4,
+  // The download is cancelled.
+  CANCEL = 5,
+};
+
 // The core Controller responsible for gluing various DownloadService components
 // together to manage the active downloads.
 class Controller {

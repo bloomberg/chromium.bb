@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_DOWNLOAD_INTERNAL_STATS_H_
 #define COMPONENTS_DOWNLOAD_INTERNAL_STATS_H_
 
+#include "components/download/internal/controller.h"
 #include "components/download/public/clients.h"
 #include "components/download/public/download_params.h"
 #include "components/download/public/download_task_types.h"
@@ -91,6 +92,9 @@ void LogModelOperationResult(ModelAction action, bool success);
 // Log statistics about the status of a TaskFinishedCallback.
 void LogScheduledTaskStatus(DownloadTaskType task_type,
                             ScheduledTaskStatus status);
+
+// Logs download completion event.
+void LogDownloadCompletion(CompletionType type);
 
 }  // namespace stats
 }  // namespace download

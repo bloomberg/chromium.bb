@@ -17,7 +17,7 @@ class FilePath;
 
 namespace download {
 
-struct DownloadParams;
+struct RequestParams;
 
 // The interface that includes all the operations to interact with low level
 // download library functionalities.
@@ -52,19 +52,20 @@ class DownloadDriver {
   // Initialize the driver to receive download updates.
   virtual void Initialize(Client* client) = 0;
 
-  // Returns if the driver is ready. Returns false when the driver is not
-  // initialized by the client, or low level download library has been shut
-  // down.
+  // Returns if the driver is ready after the low level library has loaded all
+  // the data. Returns false when the driver is not initialized by the client,
+  // or low level download library has been shut down.
   virtual bool IsReady() const = 0;
 
   // Starts a new download.
   virtual void Start(
-      const DownloadParams& params,
+      const RequestParams& request_params,
+      const std::string& guid,
       const net::NetworkTrafficAnnotationTag& traffic_annotation) = 0;
 
   // Cancels an existing download, all data associated with this download should
   // be removed.
-  virtual void Cancel(const std::string& guid) = 0;
+  virtual void Remove(const std::string& guid) = 0;
 
   // Pauses the download.
   virtual void Pause(const std::string& guid) = 0;
@@ -72,7 +73,7 @@ class DownloadDriver {
   // Resumes the download
   virtual void Resume(const std::string& guid) = 0;
 
-  // Find a download record from low level download library.
+  // Finds a download record from low level download library.
   virtual base::Optional<DriverEntry> Find(const std::string& guid) = 0;
 };
 
