@@ -562,8 +562,6 @@ base::FilePath GetChromeExePath() {
 }  // namespace
 
 base::FilePath GetDataWriteLocation(base::Environment* env) {
-  base::ThreadRestrictions::AssertIOAllowed();
-
   return base::nix::GetXDGDirectory(env, "XDG_DATA_HOME", ".local/share");
 }
 

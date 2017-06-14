@@ -55,6 +55,10 @@
 #include "storage/browser/blob/blob_url_request_job_factory.h"
 #include "url/origin.h"
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+#include "base/nix/xdg_util.h"
+#endif
+
 namespace content {
 namespace {
 
@@ -173,6 +177,13 @@ class DownloadItemFactoryImpl : public DownloadItemFactory {
                                 std::move(request_handle), net_log);
   }
 };
+
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+base::FilePath GetTemporaryDownloadDirectory() {
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
+  return base::nix::GetXDGDirectory(env.get(), "XDG_DATA_HOME", ".local/share");
+}
+#endif
 
 }  // namespace
 
@@ -359,12 +370,20 @@ void DownloadManagerImpl::StartDownloadWithId(
   }
 
   base::FilePath default_download_directory;
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  // TODO(thomasanderson): Remove this when all Linux distros with
+  // versions of GTK lower than 3.14.7 are no longer supported.  This
+  // should happen when support for Ubuntu Trusty and Debian Jessie
+  // are removed.
+  default_download_directory = GetTemporaryDownloadDirectory();
+#else
   if (delegate_) {
     base::FilePath website_save_directory;  // Unused
     bool skip_dir_check = false;            // Unused
     delegate_->GetSaveDir(GetBrowserContext(), &website_save_directory,
                           &default_download_directory, &skip_dir_check);
   }
+#endif
 
   std::unique_ptr<DownloadFile> download_file;
 
