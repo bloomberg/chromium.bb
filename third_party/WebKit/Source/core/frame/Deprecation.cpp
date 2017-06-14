@@ -424,8 +424,8 @@ String Deprecation::DeprecationMessage(WebFeature feature) {
           "Passing 'PasswordCredential' objects into 'fetch(..., { "
           "credentials: ... })' is deprecated, and will be removed in %s. See "
           "https://www.chromestatus.com/features/5689327799500800 for more "
-          "details and https://www.chromium.org/developers/"
-          "recent-changes-credential-management-api for migration suggestions.",
+          "details and https://developers.google.com/web/updates/2017/06/"
+          "credential-management-updates for migration suggestions.",
           milestoneString(M62));
     case WebFeature::kPaymentRequestNetworkNameInSupportedMethods:
       return replacedWillBeRemoved(
