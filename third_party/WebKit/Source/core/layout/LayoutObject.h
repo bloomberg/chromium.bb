@@ -585,7 +585,6 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return GetNode() && GetNode()->HasTagName(HTMLNames::bodyTag);
   }
   bool IsHR() const;
-  bool IsLegend() const;
 
   bool IsTablePart() const {
     return IsTableCell() || IsLayoutTableCol() || IsTableCaption() ||
