@@ -343,9 +343,8 @@ WebContents* TabWebContentsDelegateAndroid::OpenURLFromTab(
        params.disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB ||
        params.disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB ||
        params.disposition == WindowOpenDisposition::NEW_WINDOW) &&
-      !params.user_gesture &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisablePopupBlocking)) {
+      PopupBlockerTabHelper::ConsiderForPopupBlocking(source,
+                                                      params.user_gesture)) {
     if (popup_blocker_helper->MaybeBlockPopup(nav_params,
                                               blink::mojom::WindowFeatures())) {
       return nullptr;

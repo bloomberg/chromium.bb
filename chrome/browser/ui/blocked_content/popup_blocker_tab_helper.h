@@ -30,6 +30,11 @@ class PopupBlockerTabHelper
   // Mapping from popup IDs to blocked popup requests.
   typedef std::map<int32_t, GURL> PopupIdMap;
 
+  // Returns true if a popup with |user_gesture| should be considered for
+  // blocking from |web_contents|.
+  static bool ConsiderForPopupBlocking(content::WebContents* web_contents,
+                                       bool user_gesture);
+
   ~PopupBlockerTabHelper() override;
 
   // Returns true if the popup request defined by |params| should be blocked.

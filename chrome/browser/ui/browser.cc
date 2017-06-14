@@ -1456,22 +1456,18 @@ WebContents* Browser::OpenURLFromTab(WebContents* source,
     nav_params.window_action = chrome::NavigateParams::SHOW_WINDOW;
   nav_params.user_gesture = params.user_gesture;
 
-  PopupBlockerTabHelper* popup_blocker_helper = NULL;
-  if (source)
-    popup_blocker_helper = PopupBlockerTabHelper::FromWebContents(source);
-
-  if (popup_blocker_helper) {
-    if ((params.disposition == WindowOpenDisposition::NEW_POPUP ||
-         params.disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB ||
-         params.disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB ||
-         params.disposition == WindowOpenDisposition::NEW_WINDOW) &&
-        !params.user_gesture &&
-        !base::CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kDisablePopupBlocking)) {
-      if (popup_blocker_helper->MaybeBlockPopup(
-              nav_params, blink::mojom::WindowFeatures())) {
-        return NULL;
-      }
+  PopupBlockerTabHelper* popup_blocker_helper =
+      source ? PopupBlockerTabHelper::FromWebContents(source) : nullptr;
+  if ((params.disposition == WindowOpenDisposition::NEW_POPUP ||
+       params.disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB ||
+       params.disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB ||
+       params.disposition == WindowOpenDisposition::NEW_WINDOW) &&
+      popup_blocker_helper &&
+      PopupBlockerTabHelper::ConsiderForPopupBlocking(source,
+                                                      params.user_gesture)) {
+    if (popup_blocker_helper->MaybeBlockPopup(nav_params,
+                                              blink::mojom::WindowFeatures())) {
+      return nullptr;
     }
   }
 

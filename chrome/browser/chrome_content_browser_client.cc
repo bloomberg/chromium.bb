@@ -152,7 +152,6 @@
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/spellcheck/spellcheck_build_features.h"
 #include "components/startup_metric_utils/browser/startup_metric_host_impl.h"
-#include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
 #include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
 #include "components/task_scheduler_util/browser/initialization.h"
 #include "components/task_scheduler_util/common/variations_util.h"
@@ -2412,15 +2411,8 @@ bool ChromeContentBrowserClient::CanCreateWindow(
   }
 #endif
 
-  auto* driver_factory = subresource_filter::
-      ContentSubresourceFilterDriverFactory::FromWebContents(web_contents);
-  const bool popup_block_candidate =
-      !user_gesture ||
-      (driver_factory &&
-       driver_factory->throttle_manager()->ShouldDisallowNewWindow());
-  if (popup_block_candidate &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisablePopupBlocking)) {
+  if (PopupBlockerTabHelper::ConsiderForPopupBlocking(web_contents,
+                                                      user_gesture)) {
     if (content_settings->GetContentSetting(
             opener_top_level_frame_url, opener_top_level_frame_url,
             CONTENT_SETTINGS_TYPE_POPUPS,
