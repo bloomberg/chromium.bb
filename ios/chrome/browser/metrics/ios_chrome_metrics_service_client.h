@@ -78,7 +78,6 @@ class IOSChromeMetricsServiceClient
       const metrics::MetricsLogUploader::UploadCallback& on_upload_complete)
       override;
   base::TimeDelta GetStandardUploadInterval() override;
-  base::string16 GetRegistryBackupKey() override;
   void OnRendererProcessCrash() override;
   bool IsHistorySyncEnabledOnAllProfiles() override;
 
