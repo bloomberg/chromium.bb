@@ -46,6 +46,7 @@ source_set("ocmock_support") {
 }
 
 test("ocmock_support_unittest") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   deps = [
     ":ocmock_support",
     "//base/test:run_all_unittests",

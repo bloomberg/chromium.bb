@@ -5,10 +5,13 @@
 #import "ios/testing/ocmock_complex_type_helper.h"
 
 #include "base/logging.h"
-#import "base/mac/scoped_nsobject.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 // A complex type to test with..
 struct SampleComplexType {
@@ -49,9 +52,9 @@ class OCMockComplexTypeHelperTest : public PlatformTest {
  protected:
   void SetUp() override {
     PlatformTest::SetUp();
-    helped_mock_.reset([[MockClass alloc]
-        initWithRepresentedObject:
-            [OCMockObject mockForProtocol:@protocol(TestedProtocol)]]);
+    OCMockObject* protocol_mock =
+        [OCMockObject mockForProtocol:@protocol(TestedProtocol)];
+    helped_mock_ = [[MockClass alloc] initWithRepresentedObject:protocol_mock];
   }
 
   void TearDown() override {
@@ -59,7 +62,7 @@ class OCMockComplexTypeHelperTest : public PlatformTest {
     PlatformTest::TearDown();
   }
 
-  base::scoped_nsobject<id> helped_mock_;
+  id helped_mock_;
 };
 
 TEST_F(OCMockComplexTypeHelperTest, nilObjectStillWorks) {
@@ -68,7 +71,7 @@ TEST_F(OCMockComplexTypeHelperTest, nilObjectStillWorks) {
 }
 
 TEST_F(OCMockComplexTypeHelperTest, anyObjectStillWorks) {
-  base::scoped_nsobject<id> someObject([[NSObject alloc] init]);
+  id someObject = [[NSObject alloc] init];
   [[helped_mock_ expect] passObject:OCMOCK_ANY];
   [helped_mock_ passObject:someObject];
 }
