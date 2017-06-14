@@ -6,6 +6,9 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <utility>
+
+#include "base/callback.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/simple_message_box_internal.h"
@@ -68,13 +71,15 @@ void ShowWarningMessageBox(gfx::NativeWindow parent,
                  MESSAGE_BOX_TYPE_WARNING);
 }
 
-bool ShowWarningMessageBoxWithCheckbox(gfx::NativeWindow parent,
-                                       const base::string16& title,
-                                       const base::string16& message,
-                                       const base::string16& checkbox_text) {
+void ShowWarningMessageBoxWithCheckbox(
+    gfx::NativeWindow parent,
+    const base::string16& title,
+    const base::string16& message,
+    const base::string16& checkbox_text,
+    base::OnceCallback<void(bool checked)> callback) {
   ShowMessageBox(parent, title, message, checkbox_text,
                  MESSAGE_BOX_TYPE_WARNING);
-  return false;
+  std::move(callback).Run(false);
 }
 
 MessageBoxResult ShowQuestionMessageBox(gfx::NativeWindow parent,
