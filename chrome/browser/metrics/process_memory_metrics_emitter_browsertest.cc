@@ -121,9 +121,6 @@ class ProcessMemoryMetricsEmitterTest : public InProcessBrowserTest {
 
 #if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
 #define MAYBE_FetchAndEmitMetrics DISABLED_FetchAndEmitMetrics
-#elif defined(OS_MACOSX)
-// Flaky on Mac. http://crbug.com/732501.
-#define MAYBE_FetchAndEmitMetrics DISABLED_FetchAndEmitMetrics
 #else
 #define MAYBE_FetchAndEmitMetrics FetchAndEmitMetrics
 #endif
@@ -150,9 +147,13 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
   CheckAllMemoryMetrics(histogram_tester, 1);
 }
 
-// Flaky or failing everywhere, http://crbug.com/732927.
+#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
+#define MAYBE_FetchDuringTrace DISABLED_FetchDuringTrace
+#else
+#define MAYBE_FetchDuringTrace FetchDuringTrace
+#endif
 IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
-                       DISABLED_FetchDuringTrace) {
+                       MAYBE_FetchDuringTrace) {
   GURL url1("about:blank");
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), url1, WindowOpenDisposition::NEW_FOREGROUND_TAB,
@@ -200,9 +201,12 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
   CheckAllMemoryMetrics(histogram_tester, 1);
 }
 
-// Flaky or failing everywhere, http://crbug.com/732927.
-IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
-                       DISABLED_FetchThreeTimes) {
+#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
+#define MAYBE_FetchThreeTimes DISABLED_FetchThreeTimes
+#else
+#define MAYBE_FetchThreeTimes FetchThreeTimes
+#endif
+IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest, MAYBE_FetchThreeTimes) {
   GURL url1("about:blank");
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), url1, WindowOpenDisposition::NEW_FOREGROUND_TAB,

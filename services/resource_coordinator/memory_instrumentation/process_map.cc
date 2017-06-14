@@ -37,14 +37,15 @@ void ProcessMap::OnInit(std::vector<RunningServiceInfoPtr> instances) {
 void ProcessMap::OnServiceCreated(RunningServiceInfoPtr instance) {
   if (instance->pid == base::kNullProcessId)
     return;
-
   const service_manager::Identity& identity = instance->identity;
-  DCHECK(instances_.find(identity) == instances_.end());
+  DCHECK_EQ(0u, instances_.count(identity));
   instances_.emplace(identity, instance->pid);
 }
 
 void ProcessMap::OnServiceStarted(const service_manager::Identity& identity,
                                   uint32_t pid) {
+  if (pid == base::kNullProcessId)
+    return;
   instances_[identity] = pid;
 }
 

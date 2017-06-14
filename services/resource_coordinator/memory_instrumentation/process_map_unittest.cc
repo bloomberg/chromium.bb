@@ -32,10 +32,8 @@ TEST(ProcessMapTest, TypicalCase) {
   process_map.OnInit(std::vector<RunningServiceInfoPtr>());
   EXPECT_EQ(base::kNullProcessId, process_map.GetProcessId(id1));
 
-  // In some platforms The OnServiceCreated() reports a null pid, and the real
-  // pid comes only in the OnServiceStarted() callback.
-  process_map.OnServiceCreated(MakeTestServiceInfo(id1, 0 /* pid */));
   process_map.OnServiceCreated(MakeTestServiceInfo(id1, 1 /* pid */));
+  process_map.OnServiceStarted(id1, 1 /* pid */);
   EXPECT_EQ(static_cast<base::ProcessId>(1), process_map.GetProcessId(id1));
 
   // Adding a separate service with a different identity should have no effect
@@ -68,6 +66,59 @@ TEST(ProcessMapTest, PresentInInit) {
   process_map.OnServiceStopped(ids[1]);
   EXPECT_EQ(base::kNullProcessId, process_map.GetProcessId(ids[1]));
   EXPECT_EQ(static_cast<base::ProcessId>(3), process_map.GetProcessId(ids[3]));
+}
+
+// Test that the PID for a given service is still recorded if we miss the
+// OnServiceCreated.
+TEST(ProcessMapTest, MissedOnServiceCreated) {
+  ProcessMap process_map(nullptr);
+
+  service_manager::Identity id1("id1");
+  service_manager::Identity id2("id2");
+
+  process_map.OnServiceCreated(MakeTestServiceInfo(id1, 0 /* pid */));
+  process_map.OnServiceStarted(id1, 1 /* pid */);
+
+  process_map.OnServiceStarted(id2, 2 /* pid */);
+
+  EXPECT_EQ(static_cast<base::ProcessId>(1), process_map.GetProcessId(id1));
+  EXPECT_EQ(static_cast<base::ProcessId>(2), process_map.GetProcessId(id2));
+}
+
+// In some platforms The OnServiceCreated() reports a null pid, and the real
+// pid comes only in the OnServiceStarted() callback.
+TEST(ProcessMapTest, ZeroPidOnCreate_NonZeroOnStart) {
+  ProcessMap process_map(nullptr);
+
+  service_manager::Identity id1("id1");
+  service_manager::Identity id2("id2");
+
+  process_map.OnServiceCreated(MakeTestServiceInfo(id1, 0 /* pid */));
+  process_map.OnServiceStarted(id1, 1 /* pid */);
+
+  process_map.OnServiceCreated(MakeTestServiceInfo(id2, 0 /* pid */));
+  process_map.OnServiceStarted(id2, 2 /* pid */);
+
+  EXPECT_EQ(static_cast<base::ProcessId>(1), process_map.GetProcessId(id1));
+  EXPECT_EQ(static_cast<base::ProcessId>(2), process_map.GetProcessId(id2));
+}
+
+// In the opposite case, instead, test that the valid PID seen in
+// OnServiceCreated() is preserved.
+TEST(ProcessMapTest, NonZeroPidOnCreate_ZeroOnStart) {
+  ProcessMap process_map(nullptr);
+
+  service_manager::Identity id1("id1");
+  service_manager::Identity id2("id2");
+
+  process_map.OnServiceCreated(MakeTestServiceInfo(id1, 1 /* pid */));
+  process_map.OnServiceStarted(id1, 0 /* pid */);
+
+  process_map.OnServiceCreated(MakeTestServiceInfo(id2, 2 /* pid */));
+  process_map.OnServiceStarted(id2, 0 /* pid */);
+
+  EXPECT_EQ(static_cast<base::ProcessId>(1), process_map.GetProcessId(id1));
+  EXPECT_EQ(static_cast<base::ProcessId>(2), process_map.GetProcessId(id2));
 }
 
 }  // namespace memory_instrumentation

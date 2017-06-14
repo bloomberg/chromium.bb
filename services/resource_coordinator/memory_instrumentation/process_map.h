@@ -37,6 +37,9 @@ class ProcessMap : public service_manager::mojom::ServiceManagerListener {
  private:
   FRIEND_TEST_ALL_PREFIXES(ProcessMapTest, TypicalCase);
   FRIEND_TEST_ALL_PREFIXES(ProcessMapTest, PresentInInit);
+  FRIEND_TEST_ALL_PREFIXES(ProcessMapTest, MissedOnServiceCreated);
+  FRIEND_TEST_ALL_PREFIXES(ProcessMapTest, ZeroPidOnCreate_NonZeroOnStart);
+  FRIEND_TEST_ALL_PREFIXES(ProcessMapTest, NonZeroPidOnCreate_ZeroOnStart);
 
   using Identity = service_manager::Identity;
   using RunningServiceInfoPtr = service_manager::mojom::RunningServiceInfoPtr;
