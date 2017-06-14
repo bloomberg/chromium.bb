@@ -191,7 +191,7 @@ bool ChromeVirtualKeyboardDelegate::SetRequestedKeyboardState(int state_enum) {
   if (is_enabled)
     ash::Shell::Get()->CreateKeyboard();
   else
-    ash::Shell::Get()->DeactivateKeyboard();
+    ash::Shell::Get()->DestroyKeyboard();
   return true;
 }
 

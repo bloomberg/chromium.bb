@@ -802,7 +802,7 @@ void AccessibilityManager::UpdateVirtualKeyboardFromPref() {
     if (keyboard::IsKeyboardEnabled())
       ash::Shell::Get()->CreateKeyboard();
     else
-      ash::Shell::Get()->DeactivateKeyboard();
+      ash::Shell::Get()->DestroyKeyboard();
   } else {
     // TODO(mash): Support on-screen keyboard. See http://crbug.com/646565
     NOTIMPLEMENTED();

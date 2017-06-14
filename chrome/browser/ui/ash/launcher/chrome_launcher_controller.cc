@@ -1048,7 +1048,7 @@ void ChromeLauncherController::SetVirtualKeyboardBehaviorFromPrefs() {
   if (!ash_util::IsRunningInMash()) {
     const bool is_enabled = keyboard::IsKeyboardEnabled();
     if (was_enabled && !is_enabled)
-      ash::Shell::Get()->DeactivateKeyboard();
+      ash::Shell::Get()->DestroyKeyboard();
     else if (is_enabled && !was_enabled)
       ash::Shell::Get()->CreateKeyboard();
   }
