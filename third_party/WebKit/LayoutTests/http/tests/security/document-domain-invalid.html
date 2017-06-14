@@ -9,15 +9,6 @@
             assert_equals(document.domain, '127.0.0.1');
             assert_throws('SecurityError',
                           function () {
-                            document.domain = null;
-                          });
-            assert_equals(document.domain, '127.0.0.1');
-        }, 'Setting `document.domain` to null fails.');
-
-        test(function () {
-            assert_equals(document.domain, '127.0.0.1');
-            assert_throws('SecurityError',
-                          function () {
                             document.domain = '';
                           });
             assert_equals(document.domain, '127.0.0.1');

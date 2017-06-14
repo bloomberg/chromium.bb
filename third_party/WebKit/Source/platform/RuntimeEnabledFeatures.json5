@@ -725,6 +725,10 @@
       status: "stable",
     },
     {
+      name: "NullableDocumentDomain",
+      status: "experimental",
+    },
+    {
       name: "OffMainThreadFetch",
     },
     {
