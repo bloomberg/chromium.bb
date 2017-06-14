@@ -12,6 +12,8 @@
 #error "This file requires ARC support."
 #endif
 
+using testing::WaitUntilConditionOrTimeout;
+
 namespace ios_web_view {
 namespace test {
 
@@ -27,19 +29,37 @@ bool TapChromeWebViewElementWithId(CWVWebView* web_view, NSString* element_id) {
                         "  return false;"
                         "})();",
                        element_id];
+  return [EvaluateJavaScript(web_view, script, nil) boolValue];
+}
+
+id EvaluateJavaScript(CWVWebView* web_view, NSString* script, NSError** error) {
   __block bool did_complete = false;
-  __block bool element_found = false;
+  __block id evaluation_result = nil;
+  __block id evaluation_error = nil;
   [web_view evaluateJavaScript:script
-             completionHandler:^(id result, NSError*) {
+             completionHandler:^(id local_result, NSError* local_error) {
                did_complete = true;
-               element_found = [result boolValue];
+               evaluation_result = [local_result copy];
+               evaluation_error = [local_error copy];
              }];
 
-  testing::WaitUntilConditionOrTimeout(testing::kWaitForJSCompletionTimeout, ^{
+  WaitUntilConditionOrTimeout(testing::kWaitForJSCompletionTimeout, ^{
     return did_complete;
   });
 
-  return element_found;
+  if (error)
+    *error = evaluation_error;
+
+  return evaluation_result;
+}
+
+bool WaitForWebViewContainingTextOrTimeout(CWVWebView* web_view,
+                                           NSString* text) {
+  return WaitUntilConditionOrTimeout(testing::kWaitForUIElementTimeout, ^{
+    id body = ios_web_view::test::EvaluateJavaScript(
+        web_view, @"document.body ? document.body.textContent : null", nil);
+    return [body isKindOfClass:[NSString class]] && [body containsString:text];
+  });
 }
 
 }  // namespace test

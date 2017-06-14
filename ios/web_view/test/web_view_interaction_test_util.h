@@ -5,8 +5,9 @@
 #ifndef IOS_WEB_VIEW_TEST_WEB_VIEW_INTERACTION_TEST_UTIL_H_
 #define IOS_WEB_VIEW_TEST_WEB_VIEW_INTERACTION_TEST_UTIL_H_
 
+#import <Foundation/Foundation.h>
+
 @class CWVWebView;
-@class NSString;
 
 namespace ios_web_view {
 namespace test {
@@ -14,6 +15,15 @@ namespace test {
 // Returns whether the element with |element_id| in the passed |web_view| has
 // been tapped using a JavaScript click() event.
 bool TapChromeWebViewElementWithId(CWVWebView* web_view, NSString* element_id);
+
+// Waits until |script| is executed and synchronously returns the evaluation
+// result.
+id EvaluateJavaScript(CWVWebView* web_view, NSString* script, NSError** error);
+
+// Waits for |web_view| to contain |text|. Returns false if the condition is not
+// met within a timeout.
+bool WaitForWebViewContainingTextOrTimeout(CWVWebView* web_view,
+                                           NSString* text);
 
 }  // namespace test
 }  // namespace ios_web_view
