@@ -12,6 +12,8 @@ import android.widget.TextView;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
+import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.dom_distiller.ReaderModeManager;
 import org.chromium.chrome.browser.tab.Tab;
 
@@ -49,17 +51,17 @@ public class ReaderModeInfoBar extends InfoBar {
         prompt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // TODO(mdjones): Trigger navigation from manager.
+                sManager.navigateToReaderMode();
             }
         });
 
         layout.addContent(prompt, 1f);
     }
 
+    @Override
     public void onCloseButtonClicked() {
         super.onCloseButtonClicked();
-
-        // TODO(mdjones): Notifiy the manager that the infobar was closed.
+        sManager.onClosed(StateChangeReason.CLOSE_BUTTON);
     }
 
     /**

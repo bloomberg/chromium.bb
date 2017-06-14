@@ -769,10 +769,6 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
         if (ReaderModeManager.isEnabled(this)) {
             mReaderModeManager = new ReaderModeManager(getTabModelSelector(), this);
-            if (mToolbarManager != null) {
-                mToolbarManager.addFindToolbarObserver(
-                        mReaderModeManager.getFindToolbarObserver());
-            }
         }
 
         TraceEvent.end("ChromeActivity:CompositorInitialization");
@@ -1348,11 +1344,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
      * @return Whether the app menu should be shown.
      */
     public boolean shouldShowAppMenu() {
-        // Do not show the menu if Contextual Search or Reader Mode panel is opened.
-        // TODO(mdjones): This could potentially be handled by the OverlayPanelManager or as
-        // an event if the panels were SceneOverlays.
-        if ((mContextualSearchManager != null && mContextualSearchManager.isSearchPanelOpened())
-                || (mReaderModeManager != null && mReaderModeManager.isPanelOpened())) {
+        // Do not show the menu if Contextual Search panel is opened.
+        if (mContextualSearchManager != null && mContextualSearchManager.isSearchPanelOpened()) {
             return false;
         }
 
@@ -1660,8 +1653,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         mCompositorViewHolder.setFullscreenHandler(getFullscreenManager());
         mCompositorViewHolder.setUrlBar(urlBar);
         mCompositorViewHolder.onFinishNativeInitialization(getTabModelSelector(), this,
-                getTabContentManager(), contentContainer, mContextualSearchManager,
-                mReaderModeManager);
+                getTabContentManager(), contentContainer, mContextualSearchManager);
 
         if (controlContainer != null
                 && DeviceClassManager.enableToolbarSwipe()) {

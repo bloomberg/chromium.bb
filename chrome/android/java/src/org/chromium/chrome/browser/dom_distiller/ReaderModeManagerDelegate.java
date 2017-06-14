@@ -6,18 +6,12 @@ package org.chromium.chrome.browser.dom_distiller;
 
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
-import org.chromium.chrome.browser.compositor.bottombar.readermode.ReaderModePanel;
 import org.chromium.content_public.browser.WebContents;
 
 /**
  * Delegate for the panel to call into the manager.
  */
 public interface ReaderModeManagerDelegate {
-    /**
-     * @param panel The panel to be managed.
-     */
-    void setReaderModePanel(ReaderModePanel panel);
-
     /**
      * Load a URL in a new tab.
      * @param url The URL to load in the tab.
@@ -33,11 +27,6 @@ public interface ReaderModeManagerDelegate {
      * Notify the manager that the panel has completely closed.
      */
     void onClosed(StateChangeReason reason);
-
-    /**
-     * Notify the manager that the panel has entered the peeking state.
-     */
-    void onPeek();
 
     /**
      * Get the WebContents of the page that is being distilled.
@@ -63,9 +52,4 @@ public interface ReaderModeManagerDelegate {
      * @param timeInMs The amount of time spent in ms.
      */
     void recordTimeSpentInReader(long timeInMs);
-
-    /**
-     * Notification that the layout has changed.
-     */
-    void onLayoutChanged();
 }

@@ -13900,6 +13900,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DomDistiller.BarCloseButtonUsage" enum="BooleanPanelWasOpen">
+  <obsolete>
+    UI rewrite to be an InfoBar makes this metric irrelevant as of 05/2017.
+  </obsolete>
   <owner>mdjones@chromium.org</owner>
   <summary>
     Records if the close button was used before or after opening and viewing
@@ -13935,6 +13938,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Whether the perceived quality of the distillation of a web page was good.
   </summary>
+</histogram>
+
+<histogram name="DomDistiller.InfoBarUsage" enum="BooleanUsage">
+  <owner>mdjones@chromium.org</owner>
+  <summary>Records if the infobar was used or closed.</summary>
 </histogram>
 
 <histogram name="DomDistiller.LongArticleScoreNMF.Negative" units="score">
@@ -14077,6 +14085,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="DomDistiller.Time.SwipeToPaint" units="ms">
+  <obsolete>
+    UI rewrite to be an InfoBar makes this metric irrelevant as of 05/2017.
+  </obsolete>
   <owner>wychen@chromium.org</owner>
   <summary>
     Records the time from a swipe-up gesture on ReaderModePanel to the first
@@ -14091,7 +14102,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="DomDistiller.Time.ViewingReaderModePage" units="ms">
+  <owner>mdjones@chromium.org</owner>
+  <summary>
+    Records the amount of time a user spent on a Reader Mode Page.
+  </summary>
+</histogram>
+
 <histogram name="DomDistiller.Time.ViewingReaderModePanel" units="ms">
+  <obsolete>
+    UI rewrite to be an InfoBar makes this metric irrelevant as of 05/2017.
+  </obsolete>
   <owner>mdjones@chromium.org</owner>
   <summary>
     Records the amount of time between the Reader Mode panel opening and it
