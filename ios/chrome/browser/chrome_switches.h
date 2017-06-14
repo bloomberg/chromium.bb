@@ -38,7 +38,6 @@ extern const char kEnableIOSPhysicalWeb[];
 extern const char kEnableSuggestionsUI[];
 
 extern const char kIOSForceVariationIds[];
-extern const char kIOSMetricsRecordingOnly[];
 extern const char kUserAgent[];
 
 extern const char kIOSHostResolverRules[];

@@ -6,10 +6,12 @@
 
 #include <utility>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/metrics_service_client.h"
 #include "components/metrics/metrics_state_manager.h"
+#include "components/metrics/metrics_switches.h"
 #include "components/metrics_services_manager/metrics_services_manager_client.h"
 #include "components/rappor/rappor_service_impl.h"
 #include "components/ukm/ukm_service.h"
@@ -103,7 +105,8 @@ void MetricsServicesManager::UpdateRunningServices() {
   DCHECK(thread_checker_.CalledOnValidThread());
   metrics::MetricsService* metrics = GetMetricsService();
 
-  if (client_->OnlyDoMetricsRecording()) {
+  const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
+  if (cmdline->HasSwitch(metrics::switches::kMetricsRecordingOnly)) {
     metrics->StartRecordingForTests();
     GetRapporServiceImpl()->Update(true, false);
     return;

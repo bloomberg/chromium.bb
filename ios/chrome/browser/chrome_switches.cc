@@ -98,13 +98,6 @@ const char kEnableSuggestionsUI[] = "enable-suggestions-ui";
 // prefixed with the character "t" will be treated as Trigger Variation Ids.
 const char kIOSForceVariationIds[] = "force-variation-ids";
 
-// Enables the recording of metrics reports but disables reporting. In contrast
-// to kDisableMetrics, this executes all the code that a normal client would
-// use for reporting, except the report is dropped rather than sent to the
-// server. This is useful for finding issues in the metrics code during UI and
-// performance tests.
-const char kIOSMetricsRecordingOnly[] = "metrics-recording-only";
-
 // A string used to override the default user agent with a custom one.
 const char kUserAgent[] = "user-agent";
 
