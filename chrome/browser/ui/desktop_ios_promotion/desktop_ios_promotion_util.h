@@ -10,16 +10,12 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image_skia.h"
 
-namespace syncer {
-class SyncService;
-}
-
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
 class PrefRegistrySimple;
-class PrefService;
+class Profile;
 
 namespace desktop_ios_promotion {
 
@@ -71,8 +67,7 @@ const char* const kEntryPointLocalPrefs[5][2] = {
     {prefs::kNumberHistoryPageIOSPromoShown,
      prefs::kHistoryPageIOSPromoDismissed}};
 
-bool IsEligibleForIOSPromotion(PrefService* prefs,
-                               const syncer::SyncService* sync_service,
+bool IsEligibleForIOSPromotion(Profile* profile,
                                PromotionEntryPoint entry_point);
 
 // Returns the SMS ID to be used with send SMS API call.

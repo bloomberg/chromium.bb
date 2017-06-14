@@ -12,6 +12,9 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profiles_state.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/chromium_strings.h"
@@ -20,6 +23,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/core/browser/signin_error_controller.h"
 #include "third_party/libphonenumber/phonenumber_api.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/color_utils.h"
@@ -75,14 +79,22 @@ const int kBubbleTitleTextId[3][3] = {
      IDS_BOOKMARK_BUBBLE_DESKTOP_TO_IOS_PROMO_TITLE_V3}};
 
 bool IsEligibleForIOSPromotion(
-    PrefService* prefs,
-    const syncer::SyncService* sync_service,
+    Profile* profile,
     desktop_ios_promotion::PromotionEntryPoint entry_point) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kForceDesktopIOSPromotion)) {
     return true;
   }
 
+  // Don't show promotion if there has been authentication error, because this
+  // will prevent the recovery phone number from showing.
+  const SigninErrorController* signin_error_controller =
+      profiles::GetSigninErrorController(profile);
+  if (signin_error_controller && signin_error_controller->HasError())
+    return false;
+
+  const browser_sync::ProfileSyncService* sync_service =
+      ProfileSyncServiceFactory::GetForProfile(profile);
   // Promotion should only show for english locale.
   PrefService* local_state = g_browser_process->local_state();
   std::string locale = base::i18n::GetConfiguredLocale();
@@ -111,6 +123,7 @@ bool IsEligibleForIOSPromotion(
   if (is_dismissed || show_count >= impression_cap)
     return false;
 
+  PrefService* prefs = profile->GetPrefs();
   // Don't show the promotion if the user have used any entry point to recieve
   // SMS on the last 7 days.
   double last_impression = prefs->GetDouble(prefs::kIOSPromotionLastImpression);
