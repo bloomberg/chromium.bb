@@ -56,18 +56,19 @@ GeneratePageBundleRequest::~GeneratePageBundleRequest() {}
 void GeneratePageBundleRequest::OnCompleted(PrefetchRequestStatus status,
                                             const std::string& data) {
   if (status != PrefetchRequestStatus::SUCCESS) {
-    callback_.Run(status, std::vector<RenderPageInfo>());
+    callback_.Run(status, std::string(), std::vector<RenderPageInfo>());
     return;
   }
 
   std::vector<RenderPageInfo> pages;
-  if (!ParseOperationResponse(data, &pages)) {
+  std::string operation_name = ParseOperationResponse(data, &pages);
+  if (operation_name.empty()) {
     callback_.Run(PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF,
-                  std::vector<RenderPageInfo>());
+                  std::string(), std::vector<RenderPageInfo>());
     return;
   }
 
-  callback_.Run(PrefetchRequestStatus::SUCCESS, pages);
+  callback_.Run(PrefetchRequestStatus::SUCCESS, operation_name, pages);
 }
 
 }  // offline_pages

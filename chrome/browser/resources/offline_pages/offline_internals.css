@@ -50,3 +50,8 @@ li:nth-child(2n) {
 #current-status {
   font-size: 15px;
 }
+
+.dump {
+  font-family: monospace;
+  white-space: pre-wrap;
+}

@@ -77,12 +77,15 @@ TEST_F(GeneratePageBundleRequestTest, EmptyResponse) {
       CreateRequest(callback.Get()));
 
   PrefetchRequestStatus status;
+  std::string operation_name;
   std::vector<RenderPageInfo> pages;
-  EXPECT_CALL(callback, Run(_, _))
-      .WillOnce(DoAll(SaveArg<0>(&status), SaveArg<1>(&pages)));
+  EXPECT_CALL(callback, Run(_, _, _))
+      .WillOnce(DoAll(SaveArg<0>(&status), SaveArg<1>(&operation_name),
+                      SaveArg<2>(&pages)));
   RespondWithData("");
 
   EXPECT_EQ(PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF, status);
+  EXPECT_TRUE(operation_name.empty());
   EXPECT_TRUE(pages.empty());
 }
 
@@ -92,12 +95,15 @@ TEST_F(GeneratePageBundleRequestTest, InvalidResponse) {
       CreateRequest(callback.Get()));
 
   PrefetchRequestStatus status;
+  std::string operation_name;
   std::vector<RenderPageInfo> pages;
-  EXPECT_CALL(callback, Run(_, _))
-      .WillOnce(DoAll(SaveArg<0>(&status), SaveArg<1>(&pages)));
+  EXPECT_CALL(callback, Run(_, _, _))
+      .WillOnce(DoAll(SaveArg<0>(&status), SaveArg<1>(&operation_name),
+                      SaveArg<2>(&pages)));
   RespondWithData("Some invalid data");
 
   EXPECT_EQ(PrefetchRequestStatus::SHOULD_RETRY_WITH_BACKOFF, status);
+  EXPECT_TRUE(operation_name.empty());
   EXPECT_TRUE(pages.empty());
 }
 

@@ -123,18 +123,19 @@ bool ParsePendingOperationResponse(const proto::Operation& operation,
 
 }  // namespace
 
-bool ParseOperationResponse(const std::string& data,
-                            std::vector<RenderPageInfo>* pages) {
+std::string ParseOperationResponse(const std::string& data,
+                                   std::vector<RenderPageInfo>* pages) {
   proto::Operation operation;
   if (!operation.ParseFromString(data)) {
     DVLOG(1) << "Failed to parse operation";
-    return false;
+    return std::string();
   }
 
-  if (operation.done())
-    return ParseDoneOperationResponse(operation, pages);
-  else
-    return ParsePendingOperationResponse(operation, pages);
+  std::string name = operation.name();
+  bool success = operation.done()
+                     ? ParseDoneOperationResponse(operation, pages)
+                     : ParsePendingOperationResponse(operation, pages);
+  return success ? name : std::string();
 }
 
 }  // namespace offline_pages

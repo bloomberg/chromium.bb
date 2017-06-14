@@ -60,7 +60,7 @@
       </thead>
       <tbody id="stored-pages"> </tbody>
     </table>
-    <div id="page-actions-info"></div>
+    <div id="page-actions-info" class="dump"></div>
 
     <h2>Request Queue</h2>
     <div>
@@ -78,7 +78,7 @@
       </thead>
       <tbody id="request-queue"> </tbody>
     </table>
-    <div id="request-queue-actions-info"></div>
+    <div id="request-queue-actions-info" class="dump"></div>
     <input id="url" type="url"
         placeholder="http://www.url1.com, http://www.url2.com, ...">
     <button id="add-to-queue">Load in background</button>
@@ -90,6 +90,17 @@
         <button id="schedule-nwake">Schedule NWake</button>
         <button id="cancel-nwake">Cancel NWake</button>
       </div>
+      <div>
+        <input id="generate-urls" type="text"
+            placeholder="http://www.url1.com, http://www.url2.com, ...">
+        <button id="generate-page-bundle">Generate Page Bundle</button>
+      </div>
+      <div>
+        <input id="operation-name" type="text"
+            placeholder="operations/1234-5678">
+        <button id="get-operation">Get Operation</button>
+      </div>
     </div>
+    <div id="prefetch-actions-info" class="dump"></div>
   </body>
 </html>

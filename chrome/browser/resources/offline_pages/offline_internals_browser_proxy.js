@@ -131,6 +131,20 @@ cr.define('offlineInternals', function() {
      * @return {!Promise} A promise firing when the task has been cancelled.
      */
     cancelNwake: function() {},
+
+    /**
+     * Sends and processes a request to generate page bundle.
+     * @param {string} urls A list of comma-separated URLs.
+     * @return {!Promise<string>} A string describing the result.
+     */
+    generatePageBundle: function(urls) {},
+
+    /**
+     * Sends and processes a request to get operation.
+     * @param {string} name Name of operation.
+     * @return {!Promise<string>} A string describing the result.
+     */
+    getOperation: function(name) {},
   };
 
   /**
@@ -204,6 +218,16 @@ cr.define('offlineInternals', function() {
     /** @override */
     cancelNwake: function() {
       return cr.sendWithPromise('cancelNwake');
+    },
+
+    /** @override */
+    generatePageBundle: function(urls) {
+      return cr.sendWithPromise('generatePageBundle', urls);
+    },
+
+    /** @override */
+    getOperation: function(name) {
+      return cr.sendWithPromise('getOperation', name);
     },
   };
 
