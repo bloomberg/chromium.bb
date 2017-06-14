@@ -212,7 +212,7 @@ void VirtualKeyboardController::SetKeyboardEnabled(bool enabled) {
   if (is_enabled) {
     Shell::Get()->CreateKeyboard();
   } else {
-    Shell::Get()->DeactivateKeyboard();
+    Shell::Get()->DestroyKeyboard();
   }
 }
 

@@ -288,8 +288,8 @@ class ASH_EXPORT Shell : public SessionObserver,
   // controller. Destroys the old keyboard controller if it already exists.
   void CreateKeyboard();
 
-  // Deactivates the virtual keyboard.
-  void DeactivateKeyboard();
+  // Destroys the virtual keyboard.
+  void DestroyKeyboard();
 
   // Test if MaximizeModeWindowManager is not enabled, and if
   // MaximizeModeController is not currently setting a display rotation. Or if
