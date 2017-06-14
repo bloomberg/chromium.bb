@@ -1279,11 +1279,6 @@ const aom_tree_index av1_intra_mode_tree[TREE_SIZE(INTRA_MODES)] = {
 };
 #endif  // CONFIG_ALT_INTRA
 
-const aom_tree_index av1_inter_mode_tree[TREE_SIZE(INTER_MODES)] = {
-  -INTER_OFFSET(ZEROMV), 2, -INTER_OFFSET(NEARESTMV), 4, -INTER_OFFSET(NEARMV),
-  -INTER_OFFSET(NEWMV)
-};
-
 #if CONFIG_EXT_INTER
 /* clang-format off */
 #if CONFIG_INTERINTRA

@@ -482,7 +482,6 @@ extern const aom_prob av1_default_palette_uv_color_index_prob
 #endif  // CONFIG_PALETTE
 
 extern const aom_tree_index av1_intra_mode_tree[TREE_SIZE(INTRA_MODES)];
-extern const aom_tree_index av1_inter_mode_tree[TREE_SIZE(INTER_MODES)];
 extern int av1_intra_mode_ind[INTRA_MODES];
 extern int av1_intra_mode_inv[INTRA_MODES];
 #if CONFIG_EXT_TX
