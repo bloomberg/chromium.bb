@@ -67,6 +67,30 @@ TEST_F('CrSettingsFocusRowBehavior', 'FocusTest', function() {
 
 
 /**
+ * Test fixture for Sync Page.
+ * @constructor
+ * @extends {CrSettingsInteractiveUITest}
+ */
+function CrSettingsSyncPageTest() {}
+
+CrSettingsSyncPageTest.prototype = {
+  __proto__: CrSettingsInteractiveUITest.prototype,
+
+  /** @override */
+  browsePreload: 'chrome://md-settings/people_page/sync_page.html',
+
+  /** @override */
+  extraLibraries: CrSettingsInteractiveUITest.prototype.extraLibraries.concat([
+    'people_page_sync_page_interactive_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsSyncPageTest', 'All', function() {
+  mocha.run();
+});
+
+
+/**
  * @constructor
  * @extends {CrSettingsInteractiveUITest}
  */
