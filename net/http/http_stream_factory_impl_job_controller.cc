@@ -769,7 +769,7 @@ int HttpStreamFactoryImpl::JobController::DoCreateJobs() {
   GURL origin_url = ApplyHostMappingRules(request_info_.url, &destination);
 
   // Create an alternative job if alternative service is set up for this domain.
-  const AlternativeService alternative_service =
+  alternative_service_ =
       GetAlternativeServiceInfoFor(request_info_, delegate_, stream_type_)
           .alternative_service();
 
@@ -778,15 +778,15 @@ int HttpStreamFactoryImpl::JobController::DoCreateJobs() {
     // priority currently makes sense for preconnects. The priority for
     // preconnects is currently ignored (see RequestSocketsForPool()), but could
     // be used at some point for proxy resolution or something.
-    if (alternative_service.protocol != kProtoUnknown) {
+    if (alternative_service_.protocol != kProtoUnknown) {
       HostPortPair alternative_destination(
-          alternative_service.host_port_pair());
+          alternative_service_.host_port_pair());
       ignore_result(
           ApplyHostMappingRules(request_info_.url, &alternative_destination));
       main_job_ = job_factory_->CreateAltSvcJob(
           this, PRECONNECT, session_, request_info_, IDLE, proxy_info_,
           server_ssl_config_, proxy_ssl_config_, alternative_destination,
-          origin_url, alternative_service, enable_ip_based_pooling_,
+          origin_url, alternative_service_.protocol, enable_ip_based_pooling_,
           session_->net_log());
     } else {
       main_job_ = job_factory_->CreateMainJob(
@@ -803,21 +803,22 @@ int HttpStreamFactoryImpl::JobController::DoCreateJobs() {
       enable_ip_based_pooling_, net_log_.net_log());
   // Alternative Service can only be set for HTTPS requests while Alternative
   // Proxy is set for HTTP requests.
-  if (alternative_service.protocol != kProtoUnknown) {
+  if (alternative_service_.protocol != kProtoUnknown) {
     // Never share connection with other jobs for FTP requests.
     DVLOG(1) << "Selected alternative service (host: "
-             << alternative_service.host_port_pair().host()
-             << " port: " << alternative_service.host_port_pair().port() << ")";
+             << alternative_service_.host_port_pair().host()
+             << " port: " << alternative_service_.host_port_pair().port()
+             << ")";
 
     DCHECK(!request_info_.url.SchemeIs(url::kFtpScheme));
-    HostPortPair alternative_destination(alternative_service.host_port_pair());
+    HostPortPair alternative_destination(alternative_service_.host_port_pair());
     ignore_result(
         ApplyHostMappingRules(request_info_.url, &alternative_destination));
 
     alternative_job_ = job_factory_->CreateAltSvcJob(
         this, ALTERNATIVE, session_, request_info_, priority_, proxy_info_,
         server_ssl_config_, proxy_ssl_config_, alternative_destination,
-        origin_url, alternative_service, enable_ip_based_pooling_,
+        origin_url, alternative_service_.protocol, enable_ip_based_pooling_,
         net_log_.net_log());
 
     main_job_is_blocked_ = true;
@@ -945,10 +946,9 @@ void HttpStreamFactoryImpl::JobController::OnAlternativeServiceJobFailed(
     int net_error) {
   DCHECK_EQ(alternative_job_->job_type(), ALTERNATIVE);
   DCHECK_NE(OK, net_error);
-  DCHECK_NE(kProtoUnknown, alternative_job_->alternative_service().protocol);
+  DCHECK_NE(kProtoUnknown, alternative_service_.protocol);
 
   alternative_job_net_error_ = net_error;
-  failed_alternative_service_ = alternative_job_->alternative_service();
 
   if (IsJobOrphaned(alternative_job_.get())) {
     // If |request_| is gone then it must have been successfully served by
@@ -974,7 +974,7 @@ void HttpStreamFactoryImpl::JobController::OnAlternativeProxyJobFailed(
 }
 
 void HttpStreamFactoryImpl::JobController::ReportBrokenAlternativeService() {
-  DCHECK(failed_alternative_service_.protocol != kProtoUnknown);
+  DCHECK(alternative_service_.protocol != kProtoUnknown);
   DCHECK_NE(OK, alternative_job_net_error_);
 
   int error_to_report = alternative_job_net_error_;
@@ -990,7 +990,7 @@ void HttpStreamFactoryImpl::JobController::ReportBrokenAlternativeService() {
   HistogramBrokenAlternateProtocolLocation(
       BROKEN_ALTERNATE_PROTOCOL_LOCATION_HTTP_STREAM_FACTORY_IMPL_JOB_ALT);
   session_->http_server_properties()->MarkAlternativeServiceBroken(
-      failed_alternative_service_);
+      alternative_service_);
 }
 
 void HttpStreamFactoryImpl::JobController::MaybeNotifyFactoryOfCompletion() {
