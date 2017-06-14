@@ -1629,9 +1629,14 @@ bool DXVAVideoDecodeAccelerator::CheckDecoderDxvaSupport() {
     }
   }
 
+  // Each picture buffer can store a sample, plus one in
+  // pending_output_samples_. The decoder adds this number to the number of
+  // reference pictures it expects to need and uses that to determine the
+  // array size of the output texture.
+  const int kMaxOutputSamples = kNumPictureBuffers + 1;
   attributes->SetUINT32(MF_SA_MINIMUM_OUTPUT_SAMPLE_COUNT_PROGRESSIVE,
-                        kNumPictureBuffers);
-  attributes->SetUINT32(MF_SA_MINIMUM_OUTPUT_SAMPLE_COUNT, kNumPictureBuffers);
+                        kMaxOutputSamples);
+  attributes->SetUINT32(MF_SA_MINIMUM_OUTPUT_SAMPLE_COUNT, kMaxOutputSamples);
 
   auto* gl_context = get_gl_context_cb_.Run();
   RETURN_ON_FAILURE(gl_context, "Couldn't get GL context", false);
