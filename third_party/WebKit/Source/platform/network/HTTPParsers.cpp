@@ -38,6 +38,7 @@
 #include "platform/HTTPNames.h"
 #include "platform/json/JSONParser.h"
 #include "platform/loader/fetch/ResourceResponse.h"
+#include "platform/network/HeaderFieldTokenizer.h"
 #include "platform/weborigin/Suborigin.h"
 #include "platform/wtf/DateMath.h"
 #include "platform/wtf/MathExtras.h"
@@ -864,41 +865,6 @@ bool ParseContentRangeHeaderFor206(const String& content_range,
       last_byte_position, instance_length);
 }
 
-template <typename CharType>
-inline bool IsNotServerTimingHeaderDelimiter(CharType c) {
-  return c != '=' && c != ';' && c != ',';
-}
-
-const LChar* ParseServerTimingToken(const LChar* begin,
-                                    const LChar* end,
-                                    String& result) {
-  const LChar* position = begin;
-  skipWhile<LChar, IsNotServerTimingHeaderDelimiter>(position, end);
-  result = String(begin, position - begin).StripWhiteSpace();
-  return position;
-}
-
-String CheckDoubleQuotedString(const String& value) {
-  if (value.length() < 2 || value[0] != '"' ||
-      value[value.length() - 1] != '"') {
-    return value;
-  }
-
-  StringBuilder out;
-  unsigned pos = 1;                   // Begin after the opening DQUOTE.
-  unsigned len = value.length() - 1;  // End before the closing DQUOTE.
-
-  // Skip past backslashes, but include everything else.
-  while (pos < len) {
-    if (value[pos] == '\\')
-      pos++;
-    if (pos < len)
-      out.Append(value[pos++]);
-  }
-
-  return out.ToString();
-}
-
 std::unique_ptr<ServerTimingHeaderVector> ParseServerTimingHeader(
     const String& headerValue) {
   std::unique_ptr<ServerTimingHeaderVector> headers =
@@ -907,21 +873,31 @@ std::unique_ptr<ServerTimingHeaderVector> ParseServerTimingHeader(
   if (!headerValue.IsNull()) {
     DCHECK(headerValue.Is8Bit());
 
-    const LChar* position = headerValue.Characters8();
-    const LChar* end = position + headerValue.length();
-    while (position < end) {
-      String metric, value, description = "";
-      position = ParseServerTimingToken(position, end, metric);
-      if (position != end && *position == '=') {
-        position = ParseServerTimingToken(position + 1, end, value);
+    HeaderFieldTokenizer tokenizer(headerValue);
+    while (!tokenizer.IsConsumed()) {
+      StringView metric;
+      if (!tokenizer.ConsumeToken(Mode::kNormal, metric)) {
+        break;
       }
-      if (position != end && *position == ';') {
-        position = ParseServerTimingToken(position + 1, end, description);
+
+      double duration = 0.0;
+      String description = "";
+      if (tokenizer.Consume('=')) {
+        StringView durationOutput;
+        if (tokenizer.ConsumeToken(Mode::kNormal, durationOutput)) {
+          duration = durationOutput.ToString().ToDouble();
+        }
       }
-      position++;
+      if (tokenizer.Consume(';')) {
+        tokenizer.ConsumeTokenOrQuotedString(Mode::kNormal, description);
+      }
 
       headers->push_back(WTF::MakeUnique<ServerTimingHeader>(
-          metric, value.ToDouble(), CheckDoubleQuotedString(description)));
+          metric.ToString(), duration, description));
+
+      if (!tokenizer.Consume(',')) {
+        break;
+      }
     }
   }
   return headers;
