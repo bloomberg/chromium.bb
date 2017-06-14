@@ -68,8 +68,8 @@
 #include "core/page/AutoscrollController.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
+#include "core/page/PopupMenu.h"
 #include "core/page/SpatialNavigation.h"
-#include "platform/PopupMenu.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/text/PlatformLocale.h"
 
