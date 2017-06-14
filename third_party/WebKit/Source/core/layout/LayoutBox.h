@@ -1575,13 +1575,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
       const Length& margin_logical_bottom,
       LogicalExtentComputedValues&) const;
 
-  void ScrollRectToVisibleRecursive(const LayoutRect&,
-                                    const ScrollAlignment& align_x,
-                                    const ScrollAlignment& align_y,
-                                    ScrollType = kProgrammaticScroll,
-                                    bool make_visible_in_visual_viewport = true,
-                                    ScrollBehavior = kScrollBehaviorAuto);
-
   LayoutUnit FillAvailableMeasure(LayoutUnit available_logical_width) const;
   LayoutUnit FillAvailableMeasure(LayoutUnit available_logical_width,
                                   LayoutUnit& margin_start,
