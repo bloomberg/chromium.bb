@@ -322,13 +322,13 @@ bool Animation::PreCommit(
   if (should_start) {
     compositor_group_ = compositor_group;
     if (start_on_compositor) {
-      if (IsCandidateForAnimationOnCompositor(composited_element_ids))
+      if (CanStartAnimationOnCompositor(composited_element_ids)) {
         CreateCompositorPlayer();
-
-      if (MaybeStartAnimationOnCompositor(composited_element_ids))
+        StartAnimationOnCompositor(composited_element_ids);
         compositor_state_ = WTF::WrapUnique(new CompositorState(*this));
-      else
+      } else {
         CancelIncompatibleAnimationsOnCompositor();
+      }
     }
   }
 
@@ -757,6 +757,13 @@ void Animation::ForceServiceOnNextFrame() {
 
 bool Animation::CanStartAnimationOnCompositor(
     const Optional<CompositorElementIdSet>& composited_element_ids) const {
+  return CanStartAnimationOnCompositorInternal(composited_element_ids) &&
+         ToKeyframeEffectReadOnly(content_.Get())
+             ->CanStartAnimationOnCompositor(playback_rate_);
+}
+
+bool Animation::CanStartAnimationOnCompositorInternal(
+    const Optional<CompositorElementIdSet>& composited_element_ids) const {
   if (is_composited_animation_disabled_for_testing_ || EffectSuppressed())
     return false;
 
@@ -791,22 +798,16 @@ bool Animation::CanStartAnimationOnCompositor(
     }
   }
 
-  return Playing();
-}
-
-bool Animation::IsCandidateForAnimationOnCompositor(
-    const Optional<CompositorElementIdSet>& composited_element_ids) const {
-  if (!CanStartAnimationOnCompositor(composited_element_ids))
+  if (!Playing()) {
     return false;
+  }
 
-  return ToKeyframeEffectReadOnly(content_.Get())
-      ->IsCandidateForAnimationOnCompositor(playback_rate_);
+  return true;
 }
 
-bool Animation::MaybeStartAnimationOnCompositor(
+void Animation::StartAnimationOnCompositor(
     const Optional<CompositorElementIdSet>& composited_element_ids) {
-  if (!CanStartAnimationOnCompositor(composited_element_ids))
-    return false;
+  DCHECK(CanStartAnimationOnCompositor(composited_element_ids));
 
   bool reversed = playback_rate_ < 0;
 
@@ -822,9 +823,9 @@ bool Animation::MaybeStartAnimationOnCompositor(
     time_offset = time_offset / fabs(playback_rate_);
   }
   DCHECK_NE(compositor_group_, 0);
-  return ToKeyframeEffectReadOnly(content_.Get())
-      ->MaybeStartAnimationOnCompositor(compositor_group_, start_time,
-                                        time_offset, playback_rate_);
+  ToKeyframeEffectReadOnly(content_.Get())
+      ->StartAnimationOnCompositor(compositor_group_, start_time, time_offset,
+                                   playback_rate_);
 }
 
 void Animation::SetCompositorPending(bool effect_changed) {

@@ -169,9 +169,7 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
 
   bool CanStartAnimationOnCompositor(
       const Optional<CompositorElementIdSet>& composited_element_ids) const;
-  bool IsCandidateForAnimationOnCompositor(
-      const Optional<CompositorElementIdSet>& composited_element_ids) const;
-  bool MaybeStartAnimationOnCompositor(
+  void StartAnimationOnCompositor(
       const Optional<CompositorElementIdSet>& composited_element_ids);
   void CancelAnimationOnCompositor();
   void RestartAnimationOnCompositor();
@@ -233,6 +231,8 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   void BeginUpdatingState();
   void EndUpdatingState();
 
+  bool CanStartAnimationOnCompositorInternal(
+      const Optional<CompositorElementIdSet>&) const;
   void CreateCompositorPlayer();
   void DestroyCompositorPlayer();
   void AttachCompositorTimeline();
@@ -365,6 +365,9 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   bool state_is_being_updated_;
 
   bool effect_suppressed_;
+
+  FRIEND_TEST_ALL_PREFIXES(AnimationAnimationTest,
+                           NoCompositeWithoutCompositedElementId);
 };
 
 }  // namespace blink

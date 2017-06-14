@@ -824,9 +824,9 @@ TEST_F(AnimationAnimationTest, NoCompositeWithoutCompositedElementId) {
       timeline->Play(keyframe_effect_not_composited);
 
   SimulateFrame(0, composited_element_ids);
-  EXPECT_TRUE(animation_composited->CanStartAnimationOnCompositor(
+  EXPECT_TRUE(animation_composited->CanStartAnimationOnCompositorInternal(
       composited_element_ids));
-  EXPECT_FALSE(animation_not_composited->CanStartAnimationOnCompositor(
+  EXPECT_FALSE(animation_not_composited->CanStartAnimationOnCompositorInternal(
       composited_element_ids));
 }
 

@@ -54,16 +54,14 @@ class CORE_EXPORT CompositorAnimations {
   static bool IsCompositableProperty(CSSPropertyID);
   static const CSSPropertyID kCompositableProperties[7];
 
-  static bool IsCandidateForAnimationOnCompositor(
-      const Timing&,
-      const Element&,
-      const Animation*,
-      const EffectModel&,
-      double animation_playback_rate);
+  static bool CanStartAnimationOnCompositor(const Timing&,
+                                            const Element&,
+                                            const Animation*,
+                                            const EffectModel&,
+                                            double animation_playback_rate);
   static void CancelIncompatibleAnimationsOnCompositor(const Element&,
                                                        const Animation&,
                                                        const EffectModel&);
-  static bool CanStartAnimationOnCompositor(const Element&);
   static void StartAnimationOnCompositor(const Element&,
                                          int group,
                                          double start_time,
@@ -111,6 +109,22 @@ class CORE_EXPORT CompositorAnimations {
       const KeyframeEffectModelBase&,
       Vector<std::unique_ptr<CompositorAnimation>>& animations,
       double animation_playback_rate);
+
+ private:
+  static bool CanStartEffectOnCompositor(const Timing&,
+                                         const Element&,
+                                         const Animation*,
+                                         const EffectModel&,
+                                         double animation_playback_rate);
+  static bool CanStartElementOnCompositor(const Element&);
+
+  friend class AnimationCompositorAnimationsTest;
+  FRIEND_TEST_ALL_PREFIXES(AnimationCompositorAnimationsTest,
+                           canStartElementOnCompositorTransformSPv2);
+  FRIEND_TEST_ALL_PREFIXES(AnimationCompositorAnimationsTest,
+                           canStartElementOnCompositorEffectSPv2);
+  FRIEND_TEST_ALL_PREFIXES(AnimationCompositorAnimationsTest,
+                           cancelIncompatibleCompositorAnimations);
 };
 
 }  // namespace blink
