@@ -546,6 +546,7 @@ source_set("ios_web_navigation_unittests") {
 }
 
 source_set("ios_web_net_unittests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   deps = [
     ":core",

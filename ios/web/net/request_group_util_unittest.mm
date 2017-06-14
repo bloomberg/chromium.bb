@@ -7,13 +7,16 @@
 #import <Foundation/Foundation.h>
 #include <stddef.h>
 
-#import "base/mac/scoped_nsobject.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 // Checks that all newly generated groupID are unique and that there are no
 // duplicates.
 TEST(RequestGroupUtilTest, RequestGroupID) {
-  base::scoped_nsobject<NSMutableSet> set([[NSMutableSet alloc] init]);
+  NSMutableSet* set = [[NSMutableSet alloc] init];
   const size_t kGenerated = 2000;
   for (size_t i = 0; i < kGenerated; ++i)
     [set addObject:web::GenerateNewRequestGroupID()];
