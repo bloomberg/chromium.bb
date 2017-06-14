@@ -284,8 +284,8 @@ class ASH_EXPORT Shell : public SessionObserver,
   // Called when a root window is created.
   void OnRootWindowAdded(aura::Window* root_window);
 
-  // Creates a virtual keyboard. Deletes the old virtual keyboard if it already
-  // exists.
+  // Creates a keyboard controller and associate it with the primary root window
+  // controller. Destroys the old keyboard controller if it already exists.
   void CreateKeyboard();
 
   // Deactivates the virtual keyboard.
@@ -622,9 +622,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   ~Shell() override;
 
   void Init(const ShellInitParams& init_params);
-
-  // Initializes virtual keyboard controller.
-  void InitKeyboard();
 
   // Initializes the root window so that it can host browser windows.
   void InitRootWindow(aura::Window* root_window);

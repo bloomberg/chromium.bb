@@ -740,7 +740,7 @@ void RootWindowController::Init(RootWindowType root_window_type) {
   root_window_layout_manager_->OnWindowResized();
   if (root_window_type == RootWindowType::PRIMARY) {
     if (Shell::GetAshConfig() != Config::MASH)
-      shell->InitKeyboard();
+      shell->CreateKeyboard();
   } else {
     window_tree_host_->Show();
 
