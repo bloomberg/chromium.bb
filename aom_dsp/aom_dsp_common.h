@@ -54,13 +54,6 @@ extern "C" {
 #define UNLIKELY(v) (v)
 #endif
 
-#define AOM_SWAP(type, a, b) \
-  do {                       \
-    type c = (b);            \
-    b = a;                   \
-    a = c;                   \
-  } while (0)
-
 #if CONFIG_AOM_QM
 typedef uint16_t qm_val_t;
 #define AOM_QM_BITS 5
