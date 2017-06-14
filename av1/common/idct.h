@@ -33,6 +33,12 @@ typedef struct fwd_txfm_param {
   TX_SIZE tx_size;
   int lossless;
   int bd;
+#if CONFIG_LGT
+  int is_inter;
+  int stride;
+  PREDICTION_MODE mode;
+  uint8_t *dst;
+#endif
 } FWD_TXFM_PARAM;
 
 typedef struct inv_txfm_param {
@@ -44,6 +50,12 @@ typedef struct inv_txfm_param {
   int eob;
   int lossless;
   int bd;
+#if CONFIG_LGT
+  int is_inter;
+  int stride;
+  PREDICTION_MODE mode;
+  uint8_t *dst;
+#endif
 } INV_TXFM_PARAM;
 
 typedef void (*transform_1d)(const tran_low_t *, tran_low_t *);
@@ -71,9 +83,12 @@ void av1_idct4x4_add(const tran_low_t *input, uint8_t *dest, int stride,
 void av1_inv_txfm_add(const tran_low_t *input, uint8_t *dest, int stride,
                       INV_TXFM_PARAM *inv_txfm_param);
 void av1_inverse_transform_block(const MACROBLOCKD *xd,
-                                 const tran_low_t *dqcoeff, TX_TYPE tx_type,
-                                 TX_SIZE tx_size, uint8_t *dst, int stride,
-                                 int eob);
+                                 const tran_low_t *dqcoeff,
+#if CONFIG_LGT
+                                 PREDICTION_MODE mode,
+#endif
+                                 TX_TYPE tx_type, TX_SIZE tx_size, uint8_t *dst,
+                                 int stride, int eob);
 void av1_inverse_transform_block_facade(MACROBLOCKD *xd, int plane, int block,
                                         int blk_row, int blk_col, int eob);
 

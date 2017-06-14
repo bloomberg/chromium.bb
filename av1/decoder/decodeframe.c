@@ -354,12 +354,19 @@ static void read_mv_probs(nmv_context *ctx, int allow_hp, aom_reader *r) {
 }
 
 static void inverse_transform_block(MACROBLOCKD *xd, int plane,
+#if CONFIG_LGT
+                                    PREDICTION_MODE mode,
+#endif
                                     const TX_TYPE tx_type,
                                     const TX_SIZE tx_size, uint8_t *dst,
                                     int stride, int16_t scan_line, int eob) {
   struct macroblockd_plane *const pd = &xd->plane[plane];
   tran_low_t *const dqcoeff = pd->dqcoeff;
-  av1_inverse_transform_block(xd, dqcoeff, tx_type, tx_size, dst, stride, eob);
+  av1_inverse_transform_block(xd, dqcoeff,
+#if CONFIG_LGT
+                              mode,
+#endif
+                              tx_type, tx_size, dst, stride, eob);
   memset(dqcoeff, 0, (scan_line + 1) * sizeof(dqcoeff[0]));
 }
 
@@ -508,6 +515,11 @@ static int av1_pvq_decode_helper2(AV1_COMMON *cm, MACROBLOCKD *const xd,
     fwd_txfm_param.tx_type = tx_type;
     fwd_txfm_param.tx_size = tx_size;
     fwd_txfm_param.lossless = xd->lossless[seg_id];
+#if CONFIG_LGT
+    fwd_txfm_param.is_inter = is_inter_block(mbmi);
+    fwd_txfm_param.dst = dst;
+    fwd_txfm_param.mode = get_prediction_mode(xd->mi[0], plane, tx_size, block);
+#endif
 
 #if CONFIG_HIGHBITDEPTH
     if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
@@ -525,7 +537,11 @@ static int av1_pvq_decode_helper2(AV1_COMMON *cm, MACROBLOCKD *const xd,
     eob = av1_pvq_decode_helper(xd, pvq_ref_coeff, dqcoeff, quant, plane,
                                 tx_size, tx_type, xdec, ac_dc_coded);
 
-    inverse_transform_block(xd, plane, tx_type, tx_size, dst, pd->dst.stride,
+    inverse_transform_block(xd, plane,
+#if CONFIG_LGT
+                            fwd_txfm_param.mode,
+#endif
+                            tx_type, tx_size, dst, pd->dst.stride,
                             max_scan_line, eob);
   }
 
@@ -709,27 +725,30 @@ static void predict_and_reconstruct_intra_block(
     if (eob) {
       uint8_t *dst =
           &pd->dst.buf[(row * pd->dst.stride + col) << tx_size_wide_log2[0]];
+#if CONFIG_DPCM_INTRA || CONFIG_LGT
+      const PREDICTION_MODE mode =
+          get_prediction_mode(xd->mi[0], plane, tx_size, block_idx);
 #if CONFIG_DPCM_INTRA
-      const int block_raster_idx =
-          av1_block_index_to_raster_order(tx_size, block_idx);
-      const PREDICTION_MODE mode = (plane == 0)
-                                       ? get_y_mode(xd->mi[0], block_raster_idx)
-                                       : mbmi->uv_mode;
       if (av1_use_dpcm_intra(plane, mode, tx_type, mbmi)) {
         inverse_transform_block_dpcm(xd, plane, mode, tx_size, tx_type, dst,
                                      pd->dst.stride, max_scan_line);
       } else {
 #endif  // CONFIG_DPCM_INTRA
-        inverse_transform_block(xd, plane, tx_type, tx_size, dst,
-                                pd->dst.stride, max_scan_line, eob);
+#endif  // CONFIG_DPCM_INTRA || CONFIG_LGT
+        inverse_transform_block(xd, plane,
+#if CONFIG_LGT
+                                mode,
+#endif
+                                tx_type, tx_size, dst, pd->dst.stride,
+                                max_scan_line, eob);
 #if CONFIG_DPCM_INTRA
       }
 #endif  // CONFIG_DPCM_INTRA
     }
-#else
+#else   // !CONFIG_PVQ
     TX_TYPE tx_type = get_tx_type(plane_type, xd, block_idx, tx_size);
     av1_pvq_decode_helper2(cm, xd, mbmi, plane, row, col, tx_size, tx_type);
-#endif
+#endif  // !CONFIG_PVQ
   }
 #if CONFIG_CFL
   if (plane == AOM_PLANE_Y) {
@@ -785,7 +804,11 @@ static void decode_reconstruct_tx(AV1_COMMON *cm, MACROBLOCKD *const xd,
         cm, xd, plane, sc, blk_col, blk_row, plane_tx_size, tx_type,
         &max_scan_line, r, mbmi->segment_id);
 #endif  // CONFIG_LV_MAP
-    inverse_transform_block(xd, plane, tx_type, plane_tx_size,
+    inverse_transform_block(xd, plane,
+#if CONFIG_LGT
+                            mbmi->mode,
+#endif
+                            tx_type, plane_tx_size,
                             &pd->dst.buf[(blk_row * pd->dst.stride + blk_col)
                                          << tx_size_wide_log2[0]],
                             pd->dst.stride, max_scan_line, eob);
@@ -850,7 +873,11 @@ static int reconstruct_inter_block(AV1_COMMON *cm, MACROBLOCKD *const xd,
   uint8_t *dst =
       &pd->dst.buf[(row * pd->dst.stride + col) << tx_size_wide_log2[0]];
   if (eob)
-    inverse_transform_block(xd, plane, tx_type, tx_size, dst, pd->dst.stride,
+    inverse_transform_block(xd, plane,
+#if CONFIG_LGT
+                            xd->mi[0]->mbmi.mode,
+#endif
+                            tx_type, tx_size, dst, pd->dst.stride,
                             max_scan_line, eob);
 #else
   TX_TYPE tx_type = get_tx_type(plane_type, xd, block_idx, tx_size);

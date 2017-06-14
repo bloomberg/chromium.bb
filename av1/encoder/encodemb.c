@@ -534,13 +534,15 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
 
   FWD_TXFM_PARAM fwd_txfm_param;
 
-#if CONFIG_PVQ || CONFIG_DAALA_DIST
+#if CONFIG_PVQ || CONFIG_DAALA_DIST || CONFIG_LGT
   uint8_t *dst;
-  int16_t *pred;
   const int dst_stride = pd->dst.stride;
+#if CONFIG_PVQ || CONFIG_DAALA_DIST
+  int16_t *pred;
   const int txw = tx_size_wide[tx_size];
   const int txh = tx_size_high[tx_size];
   int i, j;
+#endif
 #endif
 
 #if !CONFIG_PVQ
@@ -595,8 +597,9 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
 #endif  // CONFIG_HIGHBITDEPTH
 #endif
 
-#if CONFIG_PVQ || CONFIG_DAALA_DIST
+#if CONFIG_PVQ || CONFIG_DAALA_DIST || CONFIG_LGT
   dst = &pd->dst.buf[(blk_row * dst_stride + blk_col) << tx_size_wide_log2[0]];
+#if CONFIG_PVQ || CONFIG_DAALA_DIST
   pred = &pd->pred[(blk_row * diff_stride + blk_col) << tx_size_wide_log2[0]];
 
 // copy uint8 orig and predicted block to int16 buffer
@@ -615,13 +618,20 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
 #if CONFIG_HIGHBITDEPTH
   }
 #endif  // CONFIG_HIGHBITDEPTH
-#endif
+#endif  // CONFIG_PVQ || CONFIG_DAALA_DIST
+#endif  // CONFIG_PVQ || CONFIG_DAALA_DIST || CONFIG_LGT
 
   (void)ctx;
 
   fwd_txfm_param.tx_type = tx_type;
   fwd_txfm_param.tx_size = tx_size;
   fwd_txfm_param.lossless = xd->lossless[mbmi->segment_id];
+#if CONFIG_LGT
+  fwd_txfm_param.is_inter = is_inter_block(mbmi);
+  fwd_txfm_param.dst = dst;
+  fwd_txfm_param.stride = dst_stride;
+  fwd_txfm_param.mode = get_prediction_mode(xd->mi[0], plane, tx_size, block);
+#endif
 
 #if !CONFIG_PVQ
   fwd_txfm_param.bd = xd->bd;
@@ -743,8 +753,14 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   if (x->pvq_skip[plane]) return;
 #endif
   TX_TYPE tx_type = get_tx_type(pd->plane_type, xd, block, tx_size);
+#if CONFIG_LGT
+  PREDICTION_MODE mode = get_prediction_mode(xd->mi[0], plane, tx_size, block);
+  av1_inverse_transform_block(xd, dqcoeff, mode, tx_type, tx_size, dst,
+                              pd->dst.stride, p->eobs[block]);
+#else
   av1_inverse_transform_block(xd, dqcoeff, tx_type, tx_size, dst,
                               pd->dst.stride, p->eobs[block]);
+#endif
 }
 
 #if CONFIG_VAR_TX
@@ -1362,11 +1378,11 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
   av1_predict_intra_block_facade(xd, plane, block, blk_col, blk_row, tx_size);
 #endif
 
-#if CONFIG_DPCM_INTRA
-  const int block_raster_idx = av1_block_index_to_raster_order(tx_size, block);
-  const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
+#if CONFIG_DPCM_INTRA || CONFIG_LGT
   const PREDICTION_MODE mode =
-      (plane == 0) ? get_y_mode(xd->mi[0], block_raster_idx) : mbmi->uv_mode;
+      get_prediction_mode(xd->mi[0], plane, tx_size, block);
+#if CONFIG_DPCM_INTRA
+  const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   if (av1_use_dpcm_intra(plane, mode, tx_type, mbmi)) {
     av1_encode_block_intra_dpcm(cm, x, mode, plane, block, blk_row, blk_col,
                                 plane_bsize, tx_size, tx_type, args->ta,
@@ -1374,6 +1390,7 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
     return;
   }
 #endif  // CONFIG_DPCM_INTRA
+#endif  // CONFIG_DPCM_INTRA || CONFIG_LGT
 
   av1_subtract_txb(x, plane, plane_bsize, blk_col, blk_row, tx_size);
 
@@ -1395,8 +1412,11 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
 
   if (x->pvq_skip[plane]) return;
 #endif  // CONFIG_PVQ
-  av1_inverse_transform_block(xd, dqcoeff, tx_type, tx_size, dst, dst_stride,
-                              *eob);
+  av1_inverse_transform_block(xd, dqcoeff,
+#if CONFIG_LGT
+                              mode,
+#endif
+                              tx_type, tx_size, dst, dst_stride, *eob);
 #if !CONFIG_PVQ
   if (*eob) *(args->skip) = 0;
 #else

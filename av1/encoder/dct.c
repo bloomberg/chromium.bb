@@ -727,33 +727,7 @@ static void fdct32(const tran_low_t *input, tran_low_t *output) {
 
 #ifndef AV1_DCT_GTEST
 
-#if CONFIG_LGT
-static void flgt4(const tran_low_t *input, tran_low_t *output) {
-  if (!(input[0] | input[1] | input[2] | input[3])) {
-    output[0] = output[1] = output[2] = output[3] = 0;
-    return;
-  }
-
-  tran_high_t s[4] = { 0 };
-  for (int i = 0; i < 4; ++i)
-    for (int j = 0; j < 4; ++j) s[j] += lgtbasis4[j][i] * input[i];
-
-  for (int i = 0; i < 4; ++i) output[i] = (tran_low_t)fdct_round_shift(s[i]);
-}
-
-static void flgt8(const tran_low_t *input, tran_low_t *output) {
-  tran_high_t s[8] = { 0 };
-  for (int i = 0; i < 8; ++i)
-    for (int j = 0; j < 8; ++j) s[j] += lgtbasis8[j][i] * input[i];
-
-  for (int i = 0; i < 8; ++i) output[i] = (tran_low_t)fdct_round_shift(s[i]);
-}
-#endif  // CONFIG_LGT
-
 static void fadst4(const tran_low_t *input, tran_low_t *output) {
-#if CONFIG_LGT
-  flgt4(input, output);
-#else
   tran_high_t x0, x1, x2, x3;
   tran_high_t s0, s1, s2, s3, s4, s5, s6, s7;
 
@@ -791,13 +765,9 @@ static void fadst4(const tran_low_t *input, tran_low_t *output) {
   output[1] = (tran_low_t)fdct_round_shift(s1);
   output[2] = (tran_low_t)fdct_round_shift(s2);
   output[3] = (tran_low_t)fdct_round_shift(s3);
-#endif  // CONFIG_LGT
 }
 
 static void fadst8(const tran_low_t *input, tran_low_t *output) {
-#if CONFIG_LGT
-  flgt8(input, output);
-#else
   tran_high_t s0, s1, s2, s3, s4, s5, s6, s7;
 
   tran_high_t x0 = input[7];
@@ -866,7 +836,6 @@ static void fadst8(const tran_low_t *input, tran_low_t *output) {
   output[5] = (tran_low_t)-x7;
   output[6] = (tran_low_t)x5;
   output[7] = (tran_low_t)-x1;
-#endif  // CONFIG_LGT
 }
 
 static void fadst16(const tran_low_t *input, tran_low_t *output) {
@@ -1052,6 +1021,56 @@ static void fhalfright32(const tran_low_t *input, tran_low_t *output) {
   // Note overall scaling factor is 4 times orthogonal
 }
 
+#if CONFIG_LGT
+static void flgt4(const tran_low_t *input, tran_low_t *output,
+                  const tran_high_t *lgtmtx) {
+  if (!(input[0] | input[1] | input[2] | input[3])) {
+    output[0] = output[1] = output[2] = output[3] = 0;
+    return;
+  }
+
+  // evaluate s[j] = sum of all lgtmtx[j][i]*input[i] over i=1,...,4
+  tran_high_t s[4] = { 0 };
+  for (int i = 0; i < 4; ++i)
+    for (int j = 0; j < 4; ++j) s[j] += lgtmtx[j * 4 + i] * input[i];
+
+  for (int i = 0; i < 4; ++i) output[i] = (tran_low_t)fdct_round_shift(s[i]);
+}
+
+static void flgt8(const tran_low_t *input, tran_low_t *output,
+                  const tran_high_t *lgtmtx) {
+  // evaluate s[j] = sum of all lgtmtx[j][i]*input[i] over i=1,...,8
+  tran_high_t s[8] = { 0 };
+  for (int i = 0; i < 8; ++i)
+    for (int j = 0; j < 8; ++j) s[j] += lgtmtx[j * 8 + i] * input[i];
+
+  for (int i = 0; i < 8; ++i) output[i] = (tran_low_t)fdct_round_shift(s[i]);
+}
+
+// The get_fwd_lgt functions return 1 if LGT is chosen to apply, and 0 otherwise
+int get_fwd_lgt4(transform_1d tx_orig, FWD_TXFM_PARAM *fwd_txfm_param,
+                 const tran_high_t *lgtmtx[], int ntx) {
+  // inter/intra split
+  if (tx_orig == &fadst4) {
+    for (int i = 0; i < ntx; ++i)
+      lgtmtx[i] = fwd_txfm_param->is_inter ? &lgt4_170[0][0] : &lgt4_140[0][0];
+    return 1;
+  }
+  return 0;
+}
+
+int get_fwd_lgt8(transform_1d tx_orig, FWD_TXFM_PARAM *fwd_txfm_param,
+                 const tran_high_t *lgtmtx[], int ntx) {
+  // inter/intra split
+  if (tx_orig == &fadst8) {
+    for (int i = 0; i < ntx; ++i)
+      lgtmtx[i] = fwd_txfm_param->is_inter ? &lgt8_170[0][0] : &lgt8_150[0][0];
+    return 1;
+  }
+  return 0;
+}
+#endif  // CONFIG_LGT
+
 #if CONFIG_EXT_TX
 // TODO(sarahparker) these functions will be removed once the highbitdepth
 // codepath works properly for rectangular transforms. They have almost
@@ -1198,7 +1217,7 @@ void av1_fht4x4_c(const int16_t *input, tran_low_t *output, int stride,
       { fidtx4, fadst4 },  // H_ADST
       { fadst4, fidtx4 },  // V_FLIPADST
       { fidtx4, fadst4 },  // H_FLIPADST
-#endif                     // CONFIG_EXT_TX
+#endif
     };
     const transform_2d ht = FHT[tx_type];
     tran_low_t out[4 * 4];
@@ -1210,18 +1229,37 @@ void av1_fht4x4_c(const int16_t *input, tran_low_t *output, int stride,
     maybe_flip_input(&input, &stride, 4, 4, flipped_input, tx_type);
 #endif
 
+#if CONFIG_LGT
+    // Choose LGT adaptive to the prediction. We may apply different LGTs for
+    // different rows/columns, indicated by the pointers to 2D arrays
+    const tran_high_t *lgtmtx_col[4];
+    const tran_high_t *lgtmtx_row[4];
+    int use_lgt_col = get_fwd_lgt4(ht.cols, fwd_txfm_param, lgtmtx_col, 4);
+    int use_lgt_row = get_fwd_lgt4(ht.rows, fwd_txfm_param, lgtmtx_row, 4);
+#endif
+
     // Columns
     for (i = 0; i < 4; ++i) {
       for (j = 0; j < 4; ++j) temp_in[j] = input[j * stride + i] * 16;
       if (i == 0 && temp_in[0]) temp_in[0] += 1;
-      ht.cols(temp_in, temp_out);
+#if CONFIG_LGT
+      if (use_lgt_col)
+        flgt4(temp_in, temp_out, lgtmtx_col[i]);
+      else
+#endif
+        ht.cols(temp_in, temp_out);
       for (j = 0; j < 4; ++j) out[j * 4 + i] = temp_out[j];
     }
 
     // Rows
     for (i = 0; i < 4; ++i) {
       for (j = 0; j < 4; ++j) temp_in[j] = out[j + i * 4];
-      ht.rows(temp_in, temp_out);
+#if CONFIG_LGT
+      if (use_lgt_row)
+        flgt4(temp_in, temp_out, lgtmtx_row[i]);
+      else
+#endif
+        ht.rows(temp_in, temp_out);
       for (j = 0; j < 4; ++j) output[j + i * 4] = (temp_out[j] + 1) >> 2;
     }
   }
@@ -1261,19 +1299,36 @@ void av1_fht4x8_c(const int16_t *input, tran_low_t *output, int stride,
   maybe_flip_input(&input, &stride, n2, n, flipped_input, tx_type);
 #endif
 
+#if CONFIG_LGT
+  const tran_high_t *lgtmtx_col[4];
+  const tran_high_t *lgtmtx_row[8];
+  int use_lgt_col = get_fwd_lgt8(ht.cols, fwd_txfm_param, lgtmtx_col, 4);
+  int use_lgt_row = get_fwd_lgt4(ht.rows, fwd_txfm_param, lgtmtx_row, 8);
+#endif
+
   // Rows
   for (i = 0; i < n2; ++i) {
     for (j = 0; j < n; ++j)
       temp_in[j] =
           (tran_low_t)fdct_round_shift(input[i * stride + j] * 4 * Sqrt2);
-    ht.rows(temp_in, temp_out);
+#if CONFIG_LGT
+    if (use_lgt_row)
+      flgt4(temp_in, temp_out, lgtmtx_row[i]);
+    else
+#endif
+      ht.rows(temp_in, temp_out);
     for (j = 0; j < n; ++j) out[j * n2 + i] = temp_out[j];
   }
 
   // Columns
   for (i = 0; i < n; ++i) {
     for (j = 0; j < n2; ++j) temp_in[j] = out[j + i * n2];
-    ht.cols(temp_in, temp_out);
+#if CONFIG_LGT
+    if (use_lgt_col)
+      flgt8(temp_in, temp_out, lgtmtx_col[i]);
+    else
+#endif
+      ht.cols(temp_in, temp_out);
     for (j = 0; j < n2; ++j)
       output[i + j * n] = (temp_out[j] + (temp_out[j] < 0)) >> 1;
   }
@@ -1314,19 +1369,36 @@ void av1_fht8x4_c(const int16_t *input, tran_low_t *output, int stride,
   maybe_flip_input(&input, &stride, n, n2, flipped_input, tx_type);
 #endif
 
+#if CONFIG_LGT
+  const tran_high_t *lgtmtx_col[8];
+  const tran_high_t *lgtmtx_row[4];
+  int use_lgt_col = get_fwd_lgt4(ht.cols, fwd_txfm_param, lgtmtx_col, 8);
+  int use_lgt_row = get_fwd_lgt8(ht.rows, fwd_txfm_param, lgtmtx_row, 4);
+#endif
+
   // Columns
   for (i = 0; i < n2; ++i) {
     for (j = 0; j < n; ++j)
       temp_in[j] =
           (tran_low_t)fdct_round_shift(input[j * stride + i] * 4 * Sqrt2);
-    ht.cols(temp_in, temp_out);
+#if CONFIG_LGT
+    if (use_lgt_col)
+      flgt4(temp_in, temp_out, lgtmtx_col[i]);
+    else
+#endif
+      ht.cols(temp_in, temp_out);
     for (j = 0; j < n; ++j) out[j * n2 + i] = temp_out[j];
   }
 
   // Rows
   for (i = 0; i < n; ++i) {
     for (j = 0; j < n2; ++j) temp_in[j] = out[j + i * n2];
-    ht.rows(temp_in, temp_out);
+#if CONFIG_LGT
+    if (use_lgt_row)
+      flgt8(temp_in, temp_out, lgtmtx_row[i]);
+    else
+#endif
+      ht.rows(temp_in, temp_out);
     for (j = 0; j < n2; ++j)
       output[j + i * n2] = (temp_out[j] + (temp_out[j] < 0)) >> 1;
   }
@@ -1367,10 +1439,20 @@ void av1_fht4x16_c(const int16_t *input, tran_low_t *output, int stride,
   maybe_flip_input(&input, &stride, n4, n, flipped_input, tx_type);
 #endif
 
+#if CONFIG_LGT
+  const tran_high_t *lgtmtx_row[16];
+  int use_lgt_row = get_fwd_lgt4(ht.rows, fwd_txfm_param, lgtmtx_row, 16);
+#endif
+
   // Rows
   for (i = 0; i < n4; ++i) {
     for (j = 0; j < n; ++j) temp_in[j] = input[i * stride + j] * 4;
-    ht.rows(temp_in, temp_out);
+#if CONFIG_LGT
+    if (use_lgt_row)
+      flgt4(temp_in, temp_out, lgtmtx_row[i]);
+    else
+#endif
+      ht.rows(temp_in, temp_out);
     for (j = 0; j < n; ++j) out[j * n4 + i] = temp_out[j];
   }
 
@@ -1418,10 +1500,20 @@ void av1_fht16x4_c(const int16_t *input, tran_low_t *output, int stride,
   maybe_flip_input(&input, &stride, n, n4, flipped_input, tx_type);
 #endif
 
+#if CONFIG_LGT
+  const tran_high_t *lgtmtx_col[16];
+  int use_lgt_col = get_fwd_lgt4(ht.cols, fwd_txfm_param, lgtmtx_col, 16);
+#endif
+
   // Columns
   for (i = 0; i < n4; ++i) {
     for (j = 0; j < n; ++j) temp_in[j] = input[j * stride + i] * 4;
-    ht.cols(temp_in, temp_out);
+#if CONFIG_LGT
+    if (use_lgt_col)
+      flgt4(temp_in, temp_out, lgtmtx_col[i]);
+    else
+#endif
+      ht.cols(temp_in, temp_out);
     for (j = 0; j < n; ++j) out[j * n4 + i] = temp_out[j];
   }
 
@@ -1469,12 +1561,22 @@ void av1_fht8x16_c(const int16_t *input, tran_low_t *output, int stride,
   maybe_flip_input(&input, &stride, n2, n, flipped_input, tx_type);
 #endif
 
+#if CONFIG_LGT
+  const tran_high_t *lgtmtx_row[16];
+  int use_lgt_row = get_fwd_lgt8(ht.rows, fwd_txfm_param, lgtmtx_row, 16);
+#endif
+
   // Rows
   for (i = 0; i < n2; ++i) {
     for (j = 0; j < n; ++j)
       temp_in[j] =
           (tran_low_t)fdct_round_shift(input[i * stride + j] * 4 * Sqrt2);
-    ht.rows(temp_in, temp_out);
+#if CONFIG_LGT
+    if (use_lgt_row)
+      flgt8(temp_in, temp_out, lgtmtx_row[i]);
+    else
+#endif
+      ht.rows(temp_in, temp_out);
     for (j = 0; j < n; ++j)
       out[j * n2 + i] = ROUND_POWER_OF_TWO_SIGNED(temp_out[j], 2);
   }
@@ -1522,12 +1624,22 @@ void av1_fht16x8_c(const int16_t *input, tran_low_t *output, int stride,
   maybe_flip_input(&input, &stride, n, n2, flipped_input, tx_type);
 #endif
 
+#if CONFIG_LGT
+  const tran_high_t *lgtmtx_col[16];
+  int use_lgt_col = get_fwd_lgt8(ht.cols, fwd_txfm_param, lgtmtx_col, 16);
+#endif
+
   // Columns
   for (i = 0; i < n2; ++i) {
     for (j = 0; j < n; ++j)
       temp_in[j] =
           (tran_low_t)fdct_round_shift(input[j * stride + i] * 4 * Sqrt2);
-    ht.cols(temp_in, temp_out);
+#if CONFIG_LGT
+    if (use_lgt_col)
+      flgt8(temp_in, temp_out, lgtmtx_col[i]);
+    else
+#endif
+      ht.cols(temp_in, temp_out);
     for (j = 0; j < n; ++j)
       out[j * n2 + i] = ROUND_POWER_OF_TWO_SIGNED(temp_out[j], 2);
   }
@@ -1575,10 +1687,20 @@ void av1_fht8x32_c(const int16_t *input, tran_low_t *output, int stride,
   maybe_flip_input(&input, &stride, n4, n, flipped_input, tx_type);
 #endif
 
+#if CONFIG_LGT
+  const tran_high_t *lgtmtx_row[32];
+  int use_lgt_row = get_fwd_lgt8(ht.rows, fwd_txfm_param, lgtmtx_row, 32);
+#endif
+
   // Rows
   for (i = 0; i < n4; ++i) {
     for (j = 0; j < n; ++j) temp_in[j] = input[i * stride + j] * 4;
-    ht.rows(temp_in, temp_out);
+#if CONFIG_LGT
+    if (use_lgt_row)
+      flgt8(temp_in, temp_out, lgtmtx_row[i]);
+    else
+#endif
+      ht.rows(temp_in, temp_out);
     for (j = 0; j < n; ++j) out[j * n4 + i] = temp_out[j];
   }
 
@@ -1626,10 +1748,20 @@ void av1_fht32x8_c(const int16_t *input, tran_low_t *output, int stride,
   maybe_flip_input(&input, &stride, n, n4, flipped_input, tx_type);
 #endif
 
+#if CONFIG_LGT
+  const tran_high_t *lgtmtx_col[32];
+  int use_lgt_col = get_fwd_lgt8(ht.cols, fwd_txfm_param, lgtmtx_col, 32);
+#endif
+
   // Columns
   for (i = 0; i < n4; ++i) {
     for (j = 0; j < n; ++j) temp_in[j] = input[j * stride + i] * 4;
-    ht.cols(temp_in, temp_out);
+#if CONFIG_LGT
+    if (use_lgt_col)
+      flgt8(temp_in, temp_out, lgtmtx_col[i]);
+    else
+#endif
+      ht.cols(temp_in, temp_out);
     for (j = 0; j < n; ++j) out[j * n4 + i] = temp_out[j];
   }
 
@@ -1898,7 +2030,7 @@ void av1_fht8x8_c(const int16_t *input, tran_low_t *output, int stride,
       { fidtx8, fadst8 },  // H_ADST
       { fadst8, fidtx8 },  // V_FLIPADST
       { fidtx8, fadst8 },  // H_FLIPADST
-#endif                     // CONFIG_EXT_TX
+#endif
     };
     const transform_2d ht = FHT[tx_type];
     tran_low_t out[64];
@@ -1910,17 +2042,34 @@ void av1_fht8x8_c(const int16_t *input, tran_low_t *output, int stride,
     maybe_flip_input(&input, &stride, 8, 8, flipped_input, tx_type);
 #endif
 
+#if CONFIG_LGT
+    const tran_high_t *lgtmtx_col[8];
+    const tran_high_t *lgtmtx_row[8];
+    int use_lgt_col = get_fwd_lgt8(ht.cols, fwd_txfm_param, lgtmtx_col, 8);
+    int use_lgt_row = get_fwd_lgt8(ht.rows, fwd_txfm_param, lgtmtx_row, 8);
+#endif
+
     // Columns
     for (i = 0; i < 8; ++i) {
       for (j = 0; j < 8; ++j) temp_in[j] = input[j * stride + i] * 4;
-      ht.cols(temp_in, temp_out);
+#if CONFIG_LGT
+      if (use_lgt_col)
+        flgt8(temp_in, temp_out, lgtmtx_col[i]);
+      else
+#endif
+        ht.cols(temp_in, temp_out);
       for (j = 0; j < 8; ++j) out[j * 8 + i] = temp_out[j];
     }
 
     // Rows
     for (i = 0; i < 8; ++i) {
       for (j = 0; j < 8; ++j) temp_in[j] = out[j + i * 8];
-      ht.rows(temp_in, temp_out);
+#if CONFIG_LGT
+      if (use_lgt_row)
+        flgt8(temp_in, temp_out, lgtmtx_row[i]);
+      else
+#endif
+        ht.rows(temp_in, temp_out);
       for (j = 0; j < 8; ++j)
         output[j + i * 8] = (temp_out[j] + (temp_out[j] < 0)) >> 1;
     }
@@ -2004,9 +2153,8 @@ void av1_fht16x16_c(const int16_t *input, tran_low_t *output, int stride,
     { fidtx16, fadst16 },  // H_ADST
     { fadst16, fidtx16 },  // V_FLIPADST
     { fidtx16, fadst16 },  // H_FLIPADST
-#endif                     // CONFIG_EXT_TX
+#endif
   };
-
   const transform_2d ht = FHT[tx_type];
   tran_low_t out[256];
   int i, j;
@@ -2158,6 +2306,7 @@ void av1_fht64x64_c(const int16_t *input, tran_low_t *output, int stride,
   int16_t flipped_input[64 * 64];
   maybe_flip_input(&input, &stride, 64, 64, flipped_input, tx_type);
 #endif
+
   // Columns
   for (i = 0; i < 64; ++i) {
     for (j = 0; j < 64; ++j) temp_in[j] = input[j * stride + i];

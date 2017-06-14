@@ -1694,8 +1694,11 @@ void av1_dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
         const PLANE_TYPE plane_type = get_plane_type(plane);
         TX_TYPE tx_type = get_tx_type(plane_type, xd, block, tx_size);
 
-        av1_inverse_transform_block(xd, dqcoeff, tx_type, tx_size, recon,
-                                    MAX_TX_SIZE, eob);
+        av1_inverse_transform_block(xd, dqcoeff,
+#if CONFIG_LGT
+                                    xd->mi[0]->mbmi.mode,
+#endif
+                                    tx_type, tx_size, recon, MAX_TX_SIZE, eob);
 
 #if CONFIG_DAALA_DIST
         if (plane == 0 && (bsw < 8 || bsh < 8)) {
@@ -3102,6 +3105,9 @@ static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
             if (!skip)
 #endif
               av1_inverse_transform_block(xd, BLOCK_OFFSET(pd->dqcoeff, block),
+#if CONFIG_LGT
+                                          mode,
+#endif
                                           DCT_DCT, tx_size, dst, dst_stride,
                                           p->eobs[block]);
           } else {
@@ -3151,6 +3157,9 @@ static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
             if (!skip)
 #endif
               av1_inverse_transform_block(xd, BLOCK_OFFSET(pd->dqcoeff, block),
+#if CONFIG_LGT
+                                          mode,
+#endif
                                           tx_type, tx_size, dst, dst_stride,
                                           p->eobs[block]);
             cpi->fn_ptr[sub_bsize].vf(src, src_stride, dst, dst_stride, &tmp);
@@ -3334,6 +3343,9 @@ static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
           if (!skip)
 #endif  // CONFIG_PVQ
             av1_inverse_transform_block(xd, BLOCK_OFFSET(pd->dqcoeff, block),
+#if CONFIG_LGT
+                                        mode,
+#endif
                                         tx_type, tx_size, dst, dst_stride,
                                         p->eobs[block]);
           unsigned int tmp;
@@ -3349,6 +3361,9 @@ static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
           if (!skip)
 #endif  // CONFIG_PVQ
             av1_inverse_transform_block(xd, BLOCK_OFFSET(pd->dqcoeff, block),
+#if CONFIG_LGT
+                                        mode,
+#endif
                                         DCT_DCT, tx_size, dst, dst_stride,
                                         p->eobs[block]);
         }
@@ -4254,8 +4269,14 @@ void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
   rd_stats->sse += tmp * 16;
   const int eob = p->eobs[block];
 
+#if CONFIG_LGT
+  PREDICTION_MODE mode = get_prediction_mode(xd->mi[0], plane, tx_size, block);
+  av1_inverse_transform_block(xd, dqcoeff, mode, tx_type, tx_size, rec_buffer,
+                              MAX_TX_SIZE, eob);
+#else
   av1_inverse_transform_block(xd, dqcoeff, tx_type, tx_size, rec_buffer,
                               MAX_TX_SIZE, eob);
+#endif
   if (eob > 0) {
 #if CONFIG_DAALA_DIST
     if (plane == 0 && (bw < 8 && bh < 8)) {
