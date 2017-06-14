@@ -12,6 +12,7 @@ enum EventType {
   kOnRendererFrameCreated,
   kOnProcessAudioStarted,
   kOnProcessAudioStopped,
+  kOnLocalFrameNetworkIdle,
 };
 
 struct Event {

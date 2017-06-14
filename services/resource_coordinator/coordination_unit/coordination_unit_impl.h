@@ -81,6 +81,7 @@ class CoordinationUnitImpl : public mojom::CoordinationUnit {
     kTestState,
     kTabVisible,
     kAudioPlaying,
+    kNetworkIdle,
     kNumStateFlags
   };
   bool SelfOrParentHasFlagSet(StateFlags state);

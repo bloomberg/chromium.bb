@@ -48,6 +48,8 @@ blink_core_sources("loader") {
     "NavigationScheduler.cpp",
     "NavigationScheduler.h",
     "NetworkHintsInterface.h",
+    "NetworkQuietDetector.cpp",
+    "NetworkQuietDetector.h",
     "PingLoader.cpp",
     "PingLoader.h",
     "PrerendererClient.cpp",
