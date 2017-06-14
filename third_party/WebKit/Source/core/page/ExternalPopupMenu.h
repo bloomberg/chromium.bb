@@ -51,7 +51,7 @@ struct WebPopupMenuInfo;
 
 // The ExternalPopupMenu connects the actual implementation of the popup menu
 // to the WebCore popup menu.
-class CORE_EXPORT ExternalPopupMenu final : NON_EXPORTED_BASE(public PopupMenu),
+class CORE_EXPORT ExternalPopupMenu final : public PopupMenu,
                                             public WebExternalPopupMenuClient {
  public:
   ExternalPopupMenu(LocalFrame&, HTMLSelectElement&, WebView&);
@@ -84,7 +84,7 @@ class CORE_EXPORT ExternalPopupMenu final : NON_EXPORTED_BASE(public PopupMenu),
   void DispatchEvent(TimerBase*);
   void Update();
 
-  Member<HTMLSelectElement> owner_element_;
+  // TODO(sashab): Merge this with PopupMenu::chrome_client_.
   Member<LocalFrame> local_frame_;
   WebView& web_view_;
   std::unique_ptr<WebMouseEvent> synthetic_event_;
