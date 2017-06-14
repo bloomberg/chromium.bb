@@ -2077,6 +2077,9 @@ void DXVAVideoDecodeAccelerator::StopDecoderThread() {
     base::AutoLock lock(decoder_lock_);
     sample_count = pending_output_samples_.size();
   }
+  size_t stale_output_picture_buffers_size =
+      stale_output_picture_buffers_.size();
+  PictureBufferMechanism mechanism = GetPictureBufferMechanism();
 
   base::debug::Alias(&last_exception_code);
   base::debug::Alias(&last_unhandled_error);
@@ -2086,6 +2089,8 @@ void DXVAVideoDecodeAccelerator::StopDecoderThread() {
   base::debug::Alias(&perf_frequency.QuadPart);
   base::debug::Alias(&output_array_size);
   base::debug::Alias(&sample_count);
+  base::debug::Alias(&stale_output_picture_buffers_size);
+  base::debug::Alias(&mechanism);
   decoder_thread_.Stop();
 }
 
