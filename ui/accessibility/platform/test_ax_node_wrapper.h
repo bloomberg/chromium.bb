@@ -39,7 +39,6 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegate {
   gfx::NativeViewAccessible GetFocus() override;
   gfx::AcceleratedWidget GetTargetForNativeAccessibilityEvent() override;
   bool AccessibilityPerformAction(const ui::AXActionData& data) override;
-  bool ShouldIgnoreHoveredStateForTesting() override;
 
  private:
   TestAXNodeWrapper(AXTree* tree, AXNode* node);
