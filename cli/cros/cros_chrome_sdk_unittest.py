@@ -409,37 +409,6 @@ class VersionTest(cros_test_lib.MockTempDirTestCase):
     self.sdk = cros_chrome_sdk.SDKFetcher(
         os.path.join(self.tempdir, 'cache'), self.BOARD)
 
-  def SetUpDefaultVersion(self, current, target, newest):
-    self.PatchObject(cros_chrome_sdk.SDKFetcher, 'GetDefaultVersion',
-                     return_value=current)
-    self.PatchObject(cros_chrome_sdk.SDKFetcher, '_GetRepoCheckoutVersion',
-                     return_value=target)
-    self.PatchObject(cros_chrome_sdk.SDKFetcher, '_GetNewestManifestVersion',
-                     return_value=newest)
-    return self.sdk.UpdateDefaultVersion()
-
-  def testUpdateDefaultVersionNormal(self):
-    """Updating default version with no cached default version."""
-    self.sdk_mock.UnMockAttr('UpdateDefaultVersion')
-    target, updated = self.SetUpDefaultVersion(None, self.VERSION, '3544.0.0')
-    self.assertEquals(target, self.VERSION)
-    self.assertEquals(updated, True)
-
-  def testUpdateDefaultVersionTooNew(self):
-    """Version in chromeos_version.sh isn't uploaded yet."""
-    self.sdk_mock.UnMockAttr('UpdateDefaultVersion')
-    target, updated = self.SetUpDefaultVersion(None, '3543.10.0', self.VERSION)
-    self.assertEquals(target, self.VERSION)
-    self.assertEquals(updated, True)
-
-  def testUpdateDefaultVersionNoUpdate(self):
-    """Nothing to update because the target version did not change."""
-    self.sdk_mock.UnMockAttr('UpdateDefaultVersion')
-    target, updated = self.SetUpDefaultVersion(self.VERSION, self.VERSION,
-                                               None)
-    self.assertEquals(target, self.VERSION)
-    self.assertEquals(updated, False)
-
   def testUpdateDefaultChromeVersion(self):
     """We pick up the right LKGM version from the Chrome tree."""
     dir_struct = [

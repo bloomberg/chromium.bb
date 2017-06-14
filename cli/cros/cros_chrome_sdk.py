@@ -12,7 +12,6 @@ import contextlib
 import glob
 import json
 import os
-import distutils.version
 
 from chromite.cli import command
 from chromite.lib import cache
@@ -43,6 +42,18 @@ def Log(*args, **kwargs):
   level = logging.DEBUG if silent else logging.INFO
   logging.log(level, *args, **kwargs)
 
+
+class NoChromiumSrcDir(Exception):
+  """Error thrown when no chromium src dir is found."""
+
+  def __init__(self, path):
+    Exception.__init__(self, 'No chromium src dir found in: ' % (path))
+
+class MissingLKGMFile(Exception):
+  """Error thrown when we cannot get the version from CHROMEOS_LKGM."""
+
+  def __init__(self, path):
+    Exception.__init__(self, 'Cannot parse CHROMEOS_LKGM file: %s' % (path))
 
 class MissingSDK(Exception):
   """Error thrown when we cannot find an SDK."""
@@ -168,18 +179,6 @@ class SDKFetcher(object):
                   constants.PATH_TO_CHROME_LKGM, version)
     return version
 
-  def _GetRepoCheckoutVersion(self, repo_root):
-    """Get the version specified in chromeos_version.sh.
-
-    Returns:
-      Version number in format '3929.0.0'.
-    """
-    chromeos_version_sh = os.path.join(repo_root, constants.VERSION_FILE)
-    sourced_env = osutils.SourceEnvironment(
-        chromeos_version_sh, ['CHROMEOS_VERSION_STRING'],
-        env={'CHROMEOS_OFFICIAL': '1'})
-    return sourced_env['CHROMEOS_VERSION_STRING']
-
   def _GetNewestFullVersion(self, version=None):
     """Gets the full version number of the latest build for the given |version|.
 
@@ -199,15 +198,6 @@ class SDKFetcher(object):
       return full_version
     except gs.GSNoSuchKey:
       return None
-
-  def _GetNewestManifestVersion(self):
-    """Gets the latest uploaded SDK version.
-
-    Returns:
-      Version number in the format '3929.0.0'.
-    """
-    full_version = self._GetNewestFullVersion()
-    return None if full_version is None else full_version.split('-')[1]
 
   def GetDefaultVersion(self):
     """Get the default SDK version to use.
@@ -247,24 +237,13 @@ class SDKFetcher(object):
     checkout_dir = self.chrome_src if self.chrome_src else os.getcwd()
     checkout = path_util.DetermineCheckout(checkout_dir)
     current = self.GetDefaultVersion() or '0'
-    if checkout.chrome_src_dir:
-      target = self._GetChromeLKGM(checkout.chrome_src_dir)
-    elif checkout.type == path_util.CHECKOUT_TYPE_REPO:
-      target = self._GetRepoCheckoutVersion(checkout.root)
-      if target != current:
-        lv_cls = distutils.version.LooseVersion
-        if lv_cls(target) > lv_cls(current):
-          # Hit the network for the newest uploaded version for the branch.
-          newest = self._GetNewestManifestVersion()
-          # The SDK for the version of the checkout has not been uploaded yet,
-          # so fall back to the latest uploaded SDK.
-          if newest is not None and lv_cls(target) > lv_cls(newest):
-            target = newest
-    else:
-      target = self._GetNewestManifestVersion()
 
+    if not checkout.chrome_src_dir:
+      raise NoChromiumSrcDir(checkout_dir)
+
+    target = self._GetChromeLKGM(checkout.chrome_src_dir)
     if target is None:
-      raise MissingSDK(self.board)
+      raise MissingLKGMFile(checkout.chrome_src_dir)
 
     self._SetDefaultVersion(target)
     return target, target != current
