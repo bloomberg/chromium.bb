@@ -131,6 +131,20 @@ class ProfileChooserControllerTest : public CocoaProfileTest {
   ProfileChooserController* controller() { return controller_; }
   AvatarMenu* menu() { return menu_; }
 
+  void ExpectGuestButton(NSButton* guest_button) {
+    ASSERT_TRUE(guest_button);
+    EXPECT_EQ(@selector(switchToGuest:), [guest_button action]);
+    EXPECT_EQ(controller(), [guest_button target]);
+    EXPECT_TRUE([guest_button isEnabled]);
+  }
+
+  void ExpectManagePeopleButton(NSButton* manage_people_button) {
+    ASSERT_TRUE(manage_people_button);
+    EXPECT_EQ(@selector(showUserManager:), [manage_people_button action]);
+    EXPECT_EQ(controller(), [manage_people_button target]);
+    EXPECT_TRUE([manage_people_button isEnabled]);
+  }
+
  private:
   base::scoped_nsobject<ProfileChooserController> controller_;
   browser_sync::ProfileSyncServiceMock* mock_sync_service_ = nullptr;
@@ -429,4 +443,39 @@ TEST_F(ProfileChooserControllerTest, SignedInProfileLockEnabled) {
   EXPECT_EQ(@selector(lockProfile:), [lockButton action]);
   EXPECT_EQ(controller(), [lockButton target]);
   EXPECT_TRUE([lockButton isEnabled]);
+}
+
+TEST_F(ProfileChooserControllerTest, RegularProfileWithManagePeopleAndGuest) {
+  StartProfileChooserController();
+  NSArray* subviews = [[[controller() window] contentView] subviews];
+  ASSERT_EQ(2U, [subviews count]);
+  subviews = [[subviews objectAtIndex:0] subviews];
+
+  NSArray* buttonSubviews = [[subviews objectAtIndex:0] subviews];
+  ASSERT_EQ(2U, [buttonSubviews count]);
+
+  NSButton* manage_people_button =
+      base::mac::ObjCCast<NSButton>([buttonSubviews objectAtIndex:0]);
+  ExpectManagePeopleButton(manage_people_button);
+
+  NSButton* guest_button =
+      base::mac::ObjCCast<NSButton>([buttonSubviews objectAtIndex:1]);
+  ExpectGuestButton(guest_button);
+}
+
+TEST_F(ProfileChooserControllerTest, SupervisedProfileWithManagePeopleOnly) {
+  TestingProfile* test = static_cast<TestingProfile*>(browser()->profile());
+  test->SetSupervisedUserId(kSecondaryGaiaId);
+
+  StartProfileChooserController();
+  NSArray* subviews = [[[controller() window] contentView] subviews];
+  ASSERT_EQ(2U, [subviews count]);
+  subviews = [[subviews objectAtIndex:0] subviews];
+
+  NSArray* buttonSubviews = [[subviews objectAtIndex:0] subviews];
+  ASSERT_EQ(1U, [buttonSubviews count]);
+
+  NSButton* manage_people_button =
+      base::mac::ObjCCast<NSButton>([buttonSubviews objectAtIndex:0]);
+  ExpectManagePeopleButton(manage_people_button);
 }
