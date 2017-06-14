@@ -40,6 +40,7 @@ var kPrinterListFullHeight = 350;
 function getEmptyPrinter_() {
   return {
     printerAddress: '',
+    printerAutoconf: false,
     printerDescription: '',
     printerId: '',
     printerManufacturer: '',
@@ -169,13 +170,13 @@ Polymer({
   },
 
   /** @private */
-  switchToManufacturerDialog_: function() {
+  addPressed_: function() {
     // Set the default printer queue to be "ipp/print".
-    if (!this.newPrinter.printerQueue)
+    if (!this.newPrinter.printerQueue) {
       this.set('newPrinter.printerQueue', 'ipp/print');
-
+    }
     this.$$('add-printer-dialog').close();
-    this.fire('open-manufacturer-model-dialog');
+    this.fire('open-configuring-printer-dialog');
   },
 
   /** @private */
@@ -416,6 +417,46 @@ Polymer({
   },
 
   /** @private */
+  addPrinter_: function() {
+    settings.CupsPrintersBrowserProxyImpl.getInstance().
+       addCupsPrinter(this.newPrinter);
+  },
+
+  /** @private */
+  switchToManufacturerDialog_: function() {
+    this.$$('add-printer-configuring-dialog').close();
+    this.fire('open-manufacturer-model-dialog');
+  },
+
+  /**
+   * Handler for getPrinterInfo success.
+   * @param {!PrinterMakeModel} info
+   * @private
+   * */
+  onPrinterFound_: function(info) {
+    this.newPrinter.printerAutoconf = info.autoconf;
+    this.newPrinter.printerManufacturer = info.manufacturer;
+    this.newPrinter.printerModel = info.model;
+
+    // Add the printer if it's configurable. Otherwise, forward to the
+    // manufacturer dialog.
+    if (this.newPrinter.printerAutoconf) {
+      this.addPrinter_();
+    } else {
+      this.switchToManufacturerDialog_();
+    }
+  },
+
+  /**
+   * Handler for getPrinterInfo failure.
+   * @param {*} rejected
+   * @private
+   */
+  infoFailed_: function(rejected) {
+    this.switchToManufacturerDialog_();
+  },
+
+  /** @private */
   openConfiguringPrinterDialog_: function() {
     this.switchDialog_(
         this.currentDialog_, AddPrinterDialogs.CONFIGURING,
@@ -423,13 +464,25 @@ Polymer({
     if (this.previousDialog_ == AddPrinterDialogs.DISCOVERY) {
       this.configuringDialogTitle =
           loadTimeData.getString('addPrintersNearbyTitle');
-      settings.CupsPrintersBrowserProxyImpl.getInstance().addCupsPrinter(
-          this.newPrinter);
-    } else if (this.previousDialog_ == AddPrinterDialogs.MANUFACTURER) {
+      this.addPrinter_();
+    } else if (
+        this.previousDialog_ == AddPrinterDialogs.MANUFACTURER) {
       this.configuringDialogTitle =
           loadTimeData.getString('addPrintersManuallyTitle');
-      settings.CupsPrintersBrowserProxyImpl.getInstance().addCupsPrinter(
-          this.newPrinter);
+      this.addPrinter_();
+    } else if (this.previousDialog_ == AddPrinterDialogs.MANUALLY) {
+      this.configuringDialogTitle =
+          loadTimeData.getString('addPrintersManuallyTitle');
+      if (this.newPrinter.printerProtocol == 'ipp' ||
+          this.newPrinter.printerProtocol == 'ipps') {
+        settings.CupsPrintersBrowserProxyImpl.getInstance().
+            getPrinterInfo(this.newPrinter).
+            then(
+                this.onPrinterFound_.bind(this), this.infoFailed_.bind(this));
+      } else {
+        // Defer the switch until all the elements are drawn.
+        this.async(this.switchToManufacturerDialog_.bind(this));
+      }
     }
   },
 

@@ -49,6 +49,23 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
   void HandleUpdateCupsPrinter(const base::ListValue* args);
   void HandleRemoveCupsPrinter(const base::ListValue* args);
 
+  // For a CupsPrinterInfo in |args|, retrieves the relevant PrinterInfo object
+  // using an IPP call to the printer.
+  void HandleGetPrinterInfo(const base::ListValue* args);
+
+  // Handles the callback for HandleGetPrinterInfo. |callback_id| is the
+  // identifier to resolve the correct Promise. |success| indicates if the
+  // query was successful. |make| is the detected printer manufacturer.
+  // |model| is the detected model. |ipp_everywhere| indicates if configuration
+  // using the CUPS IPP Everywhere driver should be attempted. If |success| is
+  // false, the values of |make|, |model| and |ipp_everywhere| are not
+  // specified.
+  void OnPrinterInfo(const std::string& callback_id,
+                     bool success,
+                     const std::string& make,
+                     const std::string& model,
+                     bool ipp_everywhere);
+
   void HandleAddCupsPrinter(const base::ListValue* args);
   void OnAddedPrinter(std::unique_ptr<Printer> printer,
                       chromeos::PrinterSetupResult result);
