@@ -111,6 +111,9 @@ void CoordinationUnitImpl::SendEvent(mojom::EventPtr event) {
     case mojom::EventType::kOnProcessAudioStopped:
       state_flags_[kAudioPlaying] = false;
       break;
+    case mojom::EventType::kOnLocalFrameNetworkIdle:
+      state_flags_[kNetworkIdle] = true;
+      break;
     case mojom::EventType::kTestEvent:
       state_flags_[kTestState] = true;
       break;

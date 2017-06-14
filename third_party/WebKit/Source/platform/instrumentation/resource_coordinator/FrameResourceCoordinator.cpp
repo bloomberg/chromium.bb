@@ -43,6 +43,15 @@ FrameResourceCoordinator::FrameResourceCoordinator(
 
 FrameResourceCoordinator::~FrameResourceCoordinator() = default;
 
+void FrameResourceCoordinator::SendEvent(
+    const resource_coordinator::mojom::blink::EventType& event_type) {
+  resource_coordinator::mojom::blink::EventPtr event =
+      resource_coordinator::mojom::blink::Event::New();
+  event->type = event_type;
+
+  service_->SendEvent(std::move(event));
+}
+
 DEFINE_TRACE(FrameResourceCoordinator) {}
 
 }  // namespace blink

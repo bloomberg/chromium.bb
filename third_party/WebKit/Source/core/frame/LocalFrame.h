@@ -238,6 +238,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   ContentSettingsClient* GetContentSettingsClient();
   FrameResourceCoordinator* GetFrameResourceCoordinator() {
+    // can be null
     return frame_resource_coordinator_;
   }
 
