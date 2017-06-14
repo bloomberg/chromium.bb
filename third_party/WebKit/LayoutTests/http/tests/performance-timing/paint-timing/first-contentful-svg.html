@@ -1,43 +1,28 @@
 <!DOCTYPE html>
 <head>
-<title>Performance Paint Timing Test</title>
+<title>Performance Paint Timing Test: FCP due to SVG</title>
 </head>
 <body>
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script>
+    <div id="svg"></div>
+
     <script>
     async_test(function (t) {
-        var observer = new PerformanceObserver(
-            t.step_func(function (entryList) {
-                var entries = entryList.getEntries();
-                assert_equals(entries.length, 2,
-                    "There should be two paint timing instances.");
-                assert_equals(entries[0].entryType, "paint",
-                    "Expected entryType to be: paint.");
-                assert_equals(entries[0].duration, 0,
-                    "Expected duration to be: 0.");
-
-                assert_equals(entries[1].entryType, "paint",
-                    "Expected entryType to be: paint.");
-                assert_equals(entries[1].duration, 0,
-                    "Expected duration to be: 0.");
-                observer.disconnect();
-                t.done();
-            })
-        );
-        observer.observe({entryTypes: ["paint"]});
-
+        const img = document.createElement("IMG");
+        img.src = "resources/circle.svg";
+        img.onload = function() {
+            testRunner.capturePixelsAsyncThen(t.step_func_done(function() {
+                const bufferedEntries = performance.getEntriesByType('paint');
+                assert_equals(bufferedEntries.length, 2, "There should be two paint timing instances.");
+                assert_equals(bufferedEntries[0].entryType, "paint");
+                assert_equals(bufferedEntries[0].name, "first-paint");
+                assert_equals(bufferedEntries[1].entryType, "paint");
+                assert_equals(bufferedEntries[1].name, "first-contentful-paint");
+            }));
+        };
+        document.getElementById('svg').appendChild(img);
     }, "First contentful paint fires due to svg.");
     </script>
-
-    <script>
-      window.onload = function() {
-          var img = document.createElement("IMG");
-          img.src = "resources/circle.svg";
-          document.getElementById('svg').appendChild(img);
-    }
-    </script>
-
-    <div id="svg"></div>
 </body>
 </html>

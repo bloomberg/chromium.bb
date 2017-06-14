@@ -141,10 +141,6 @@ void PaintTiming::SetFirstPaint(double stamp) {
   if (first_paint_ != 0.0)
     return;
   first_paint_ = stamp;
-  Performance* performance = GetPerformanceInstance(GetFrame());
-  if (performance)
-    performance->AddFirstPaintTiming(first_paint_);
-
   TRACE_EVENT_INSTANT1("loading,rail,devtools.timeline", "firstPaint",
                        TRACE_EVENT_SCOPE_PROCESS, "frame", GetFrame());
   RegisterNotifySwapTime(PaintEvent::kFirstPaint);
@@ -155,10 +151,6 @@ void PaintTiming::SetFirstContentfulPaint(double stamp) {
     return;
   SetFirstPaint(stamp);
   first_contentful_paint_ = stamp;
-  Performance* performance = GetPerformanceInstance(GetFrame());
-  if (performance)
-    performance->AddFirstContentfulPaintTiming(first_contentful_paint_);
-
   TRACE_EVENT_INSTANT1("loading,rail,devtools.timeline", "firstContentfulPaint",
                        TRACE_EVENT_SCOPE_PROCESS, "frame", GetFrame());
   RegisterNotifySwapTime(PaintEvent::kFirstContentfulPaint);
@@ -184,12 +176,17 @@ void PaintTiming::ReportSwapTime(PaintEvent event,
                                  double timestamp) {
   if (!did_swap)
     return;
+  Performance* performance = GetPerformanceInstance(GetFrame());
   switch (event) {
     case PaintEvent::kFirstPaint:
       first_paint_swap_ = timestamp;
+      if (performance)
+        performance->AddFirstPaintTiming(first_paint_);
       return;
     case PaintEvent::kFirstContentfulPaint:
       first_contentful_paint_swap_ = timestamp;
+      if (performance)
+        performance->AddFirstContentfulPaintTiming(first_contentful_paint_);
       return;
     case PaintEvent::kFirstMeaningfulPaint:
       first_meaningful_paint_swap_ = timestamp;
