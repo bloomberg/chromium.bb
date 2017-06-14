@@ -31,10 +31,10 @@
 #ifndef ServiceWorkerGlobalScopeClientImpl_h
 #define ServiceWorkerGlobalScopeClientImpl_h
 
+#include <memory>
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerClientsInfo.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerSkipWaitingCallbacks.h"
-#include <memory>
 
 namespace blink {
 

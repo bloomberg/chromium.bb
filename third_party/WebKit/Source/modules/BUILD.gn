@@ -298,6 +298,7 @@ source_set("unit_tests") {
     "push_messaging/PushMessageDataTest.cpp",
     "remoteplayback/RemotePlaybackTest.cpp",
     "serviceworkers/ServiceWorkerContainerTest.cpp",
+    "serviceworkers/WebEmbeddedWorkerImplTest.cpp",
     "webaudio/AudioBasicProcessorHandlerTest.cpp",
     "webaudio/AudioContextTest.cpp",
     "webaudio/AudioWorkletGlobalScopeTest.cpp",

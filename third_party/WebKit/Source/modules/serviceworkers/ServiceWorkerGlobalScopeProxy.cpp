@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "web/ServiceWorkerGlobalScopeProxy.h"
+#include "modules/serviceworkers/ServiceWorkerGlobalScopeProxy.h"
 
 #include <memory>
 #include <utility>
@@ -50,6 +50,7 @@
 #include "modules/background_fetch/BackgroundFetchedEvent.h"
 #include "modules/background_fetch/BackgroundFetchedEventInit.h"
 #include "modules/background_sync/SyncEvent.h"
+#include "modules/exported/WebEmbeddedWorkerImpl.h"
 #include "modules/fetch/Headers.h"
 #include "modules/notifications/Notification.h"
 #include "modules/notifications/NotificationEvent.h"
@@ -80,7 +81,6 @@
 #include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
 #include "public/web/WebSerializedScriptValue.h"
 #include "public/web/modules/serviceworker/WebServiceWorkerContextClient.h"
-#include "web/WebEmbeddedWorkerImpl.h"
 
 namespace blink {
 
