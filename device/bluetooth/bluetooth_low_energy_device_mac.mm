@@ -490,15 +490,13 @@ BluetoothLowEnergyDeviceMac::GetBluetoothRemoteGattCharacteristicMac(
 BluetoothRemoteGattDescriptorMac*
 BluetoothLowEnergyDeviceMac::GetBluetoothRemoteGattDescriptorMac(
     CBDescriptor* cb_descriptor) const {
-  CBCharacteristic* cb_characteristic = cb_descriptor.characteristic;
-  BluetoothRemoteGattServiceMac* gatt_service =
-      GetBluetoothRemoteGattServiceMac(cb_characteristic.service);
-  DCHECK(gatt_service);
-  BluetoothRemoteGattCharacteristicMac* gatt_characteristic =
-      gatt_service->GetBluetoothRemoteGattCharacteristicMac(cb_characteristic);
-  DCHECK(gatt_characteristic);
-  return gatt_characteristic->GetBluetoothRemoteGattDescriptorMac(
-      cb_descriptor);
+  CBService* cb_service = [[cb_descriptor characteristic] service];
+  BluetoothRemoteGattServiceMac* gatt_service_mac =
+      GetBluetoothRemoteGattServiceMac(cb_service);
+  if (!gatt_service_mac) {
+    return nullptr;
+  }
+  return gatt_service_mac->GetBluetoothRemoteGattDescriptorMac(cb_descriptor);
 }
 
 void BluetoothLowEnergyDeviceMac::DidDisconnectPeripheral(NSError* error) {

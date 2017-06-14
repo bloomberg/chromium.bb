@@ -14,6 +14,7 @@
 #include "device/bluetooth/bluetooth_remote_gatt_service.h"
 
 @class CBCharacteristic;
+@class CBDescriptor;
 @class CBPeripheral;
 @class CBService;
 
@@ -22,6 +23,7 @@ namespace device {
 class BluetoothAdapterMac;
 class BluetoothDevice;
 class BluetoothRemoteGattCharacteristicMac;
+class BluetoothRemoteGattDescriptorMac;
 class BluetoothLowEnergyDeviceMac;
 
 class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattServiceMac
@@ -71,7 +73,10 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattServiceMac
   CBService* GetService() const;
   // Returns a remote characteristic based on the CBCharacteristic.
   BluetoothRemoteGattCharacteristicMac* GetBluetoothRemoteGattCharacteristicMac(
-      CBCharacteristic* characteristic) const;
+      CBCharacteristic* cb_characteristic) const;
+  // Returns a remote descriptor based on the CBDescriptor.
+  BluetoothRemoteGattDescriptorMac* GetBluetoothRemoteGattDescriptorMac(
+      CBDescriptor* cb_descriptor) const;
 
   // bluetooth_device_mac_ owns instances of this class.
   BluetoothLowEnergyDeviceMac* bluetooth_device_mac_;
