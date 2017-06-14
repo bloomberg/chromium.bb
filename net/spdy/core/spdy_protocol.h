@@ -791,6 +791,33 @@ class SPDY_EXPORT_PRIVATE SpdyPriorityIR : public SpdyFrameIR {
   DISALLOW_COPY_AND_ASSIGN(SpdyPriorityIR);
 };
 
+// Represents a frame of unrecognized type.
+class SPDY_EXPORT_PRIVATE SpdyUnknownIR : public SpdyFrameIR {
+ public:
+  SpdyUnknownIR(SpdyStreamId stream_id,
+                uint8_t type,
+                uint8_t flags,
+                SpdyString payload)
+      : SpdyFrameIR(stream_id),
+        type_(type),
+        flags_(flags),
+        payload_(std::move(payload)) {}
+  uint8_t type() const { return type_; }
+  uint8_t flags() const { return flags_; }
+  const SpdyString& payload() const { return payload_; }
+
+  void Visit(SpdyFrameVisitor* visitor) const override;
+
+  SpdyFrameType frame_type() const override;
+
+ private:
+  uint8_t type_;
+  uint8_t flags_;
+  const SpdyString payload_;
+
+  DISALLOW_COPY_AND_ASSIGN(SpdyUnknownIR);
+};
+
 class SpdySerializedFrame {
  public:
   SpdySerializedFrame()
@@ -886,6 +913,9 @@ class SpdyFrameVisitor {
   virtual void VisitAltSvc(const SpdyAltSvcIR& altsvc) = 0;
   virtual void VisitPriority(const SpdyPriorityIR& priority) = 0;
   virtual void VisitData(const SpdyDataIR& data) = 0;
+  virtual void VisitUnknown(const SpdyUnknownIR& unknown) {
+    // TODO(birenroy): make abstract.
+  }
 
  protected:
   SpdyFrameVisitor() {}
