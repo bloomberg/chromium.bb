@@ -164,9 +164,13 @@ MockPlatformNotificationService::CheckPermissionOnIOThread(
 void MockPlatformNotificationService::Close(
     const std::string& notification_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  NotificationEventDispatcher::GetInstance()->DispatchNonPersistentCloseEvent(
-      notification_id);
-  non_persistent_notifications_.erase(notification_id);
+  const auto non_persistent_iter =
+      non_persistent_notifications_.find(notification_id);
+  if (non_persistent_iter == non_persistent_notifications_.end()) {
+    NotificationEventDispatcher::GetInstance()->DispatchNonPersistentCloseEvent(
+        notification_id);
+    non_persistent_notifications_.erase(non_persistent_iter);
+  }
 }
 
 void MockPlatformNotificationService::ReplaceNotificationIfNeeded(

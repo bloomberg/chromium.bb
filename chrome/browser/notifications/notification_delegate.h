@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/memory/ref_counted.h"
 #include "ui/message_center/notification_delegate.h"
 
 // Delegate for a notification. This class has two roles: to implement callback

@@ -34,6 +34,7 @@ class WebNotificationDelegate : public NotificationDelegate {
   bool SettingsClick() override;
   bool ShouldDisplaySettingsButton() override;
   bool ShouldDisplayOverFullscreen() const override;
+  void Display() override;
   void Close(bool by_user) override;
   void Click() override;
   void ButtonClick(int button_index) override;

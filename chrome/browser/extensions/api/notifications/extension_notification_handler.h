@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_NOTIFICATIONS_EXTENSION_NOTIFICATION_HANDLER_H_
 #define CHROME_BROWSER_EXTENSIONS_API_NOTIFICATIONS_EXTENSION_NOTIFICATION_HANDLER_H_
 
-#include "base/feature_list.h"
 #include "base/macros.h"
 #include "chrome/browser/notifications/notification_handler.h"
 #include "extensions/browser/event_router.h"
@@ -13,10 +12,6 @@
 class Profile;
 
 namespace extensions {
-
-// Exposed publicly for tests.
-// TODO(miguelg) we can probably get rid of this now.
-extern const base::Feature kAllowFullscreenAppNotificationsFeature;
 
 // Handler for notifications shown by extensions. Will be created and owned by
 // the NativeNotificationDisplayService.
@@ -37,8 +32,6 @@ class ExtensionNotificationHandler : public NotificationHandler {
                int action_index,
                const base::NullableString16& reply) override;
   void OpenSettings(Profile* profile) override;
-  bool ShouldDisplayOnFullScreen(Profile* profile,
-                                 const std::string& origin) override;
 
  protected:
   // Overriden in unit tests.

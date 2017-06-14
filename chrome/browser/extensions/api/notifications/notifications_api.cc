@@ -22,14 +22,16 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/notifications/extension_notification_display_helper.h"
 #include "chrome/browser/extensions/api/notifications/extension_notification_display_helper_factory.h"
+#include "chrome/browser/notifications/native_notification_delegate.h"
 #include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_delegate.h"
 #include "chrome/browser/notifications/notifier_state_tracker.h"
 #include "chrome/browser/notifications/notifier_state_tracker_factory.h"
-#include "chrome/browser/notifications/web_notification_delegate.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/notifications/notification_style.h"
+#include "chrome/common/features.h"
 #include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
 #include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
 #include "content/public/browser/render_process_host.h"
@@ -42,6 +44,7 @@
 #include "extensions/browser/extension_system_provider.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/features/feature.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/image/image.h"
@@ -58,6 +61,10 @@ using message_center::NotifierId;
 namespace extensions {
 
 namespace notifications = api::notifications;
+
+const base::Feature kAllowFullscreenAppNotificationsFeature{
+  "FSNotificationsApp", base::FEATURE_ENABLED_BY_DEFAULT
+};
 
 namespace {
 
@@ -182,6 +189,159 @@ bool NotificationBitmapToGfxImage(
   *return_image = gfx::Image(skia);
   return true;
 }
+
+class ShutdownNotifierFactory
+    : public BrowserContextKeyedServiceShutdownNotifierFactory {
+ public:
+  static ShutdownNotifierFactory* GetInstance() {
+    return base::Singleton<ShutdownNotifierFactory>::get();
+  }
+
+ private:
+  friend struct base::DefaultSingletonTraits<ShutdownNotifierFactory>;
+
+  ShutdownNotifierFactory()
+      : BrowserContextKeyedServiceShutdownNotifierFactory(
+            "NotificationsApiDelegate") {
+    DependsOn(ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
+  }
+  ~ShutdownNotifierFactory() override {}
+
+  DISALLOW_COPY_AND_ASSIGN(ShutdownNotifierFactory);
+};
+
+// Message center based notification delegate with all the functionality.
+class NotificationApiDelegate : public NotificationDelegate {
+ public:
+  NotificationApiDelegate(ChromeAsyncExtensionFunction* api_function,
+                          Profile* profile,
+                          const std::string& extension_id,
+                          const std::string& id)
+      : api_function_(api_function),
+        event_router_(EventRouter::Get(profile)),
+        display_helper_(
+            ExtensionNotificationDisplayHelperFactory::GetForProfile(profile)),
+        extension_id_(extension_id),
+        scoped_id_(CreateScopedIdentifier(extension_id, id)) {
+    DCHECK(api_function_);
+    DCHECK(display_helper_);
+
+    shutdown_notifier_subscription_ =
+        ShutdownNotifierFactory::GetInstance()->Get(profile)->Subscribe(
+            base::Bind(&NotificationApiDelegate::Shutdown,
+                       base::Unretained(this)));
+  }
+
+  void Close(bool by_user) override {
+    EventRouter::UserGestureState gesture =
+        by_user ? EventRouter::USER_GESTURE_ENABLED
+                : EventRouter::USER_GESTURE_NOT_ENABLED;
+    std::unique_ptr<base::ListValue> args(CreateBaseEventArgs());
+    args->AppendBoolean(by_user);
+    SendEvent(events::NOTIFICATIONS_ON_CLOSED,
+              notifications::OnClosed::kEventName, gesture, std::move(args));
+
+    DCHECK(display_helper_);
+    display_helper_->EraseDataForNotificationId(scoped_id_);
+  }
+
+  void Click() override {
+    std::unique_ptr<base::ListValue> args(CreateBaseEventArgs());
+    SendEvent(events::NOTIFICATIONS_ON_CLICKED,
+              notifications::OnClicked::kEventName,
+              EventRouter::USER_GESTURE_ENABLED, std::move(args));
+  }
+
+  bool HasClickedListener() override {
+    if (!event_router_)
+      return false;
+
+    return event_router_->HasEventListener(
+        notifications::OnClicked::kEventName);
+  }
+
+  void ButtonClick(int index) override {
+    std::unique_ptr<base::ListValue> args(CreateBaseEventArgs());
+    args->AppendInteger(index);
+    SendEvent(events::NOTIFICATIONS_ON_BUTTON_CLICKED,
+              notifications::OnButtonClicked::kEventName,
+              EventRouter::USER_GESTURE_ENABLED, std::move(args));
+  }
+
+  std::string id() const override { return scoped_id_; }
+
+  // Should only display when fullscreen if this app is the source of the
+  // fullscreen window.
+  bool ShouldDisplayOverFullscreen() const override {
+    AppWindowRegistry::AppWindowList windows = AppWindowRegistry::Get(
+        api_function_->GetProfile())->GetAppWindowsForApp(extension_id_);
+    for (auto* window : windows) {
+      // Window must be fullscreen and visible
+      if (window->IsFullscreen() && window->GetBaseWindow()->IsActive()) {
+        bool enabled = base::FeatureList::IsEnabled(
+            kAllowFullscreenAppNotificationsFeature);
+        if (enabled) {
+          UMA_HISTOGRAM_ENUMERATION("Notifications.Display_Fullscreen.Shown",
+                                    NotifierId::APPLICATION,
+                                    NotifierId::SIZE);
+        } else {
+          UMA_HISTOGRAM_ENUMERATION(
+              "Notifications.Display_Fullscreen.Suppressed",
+              NotifierId::APPLICATION,
+              NotifierId::SIZE);
+
+        }
+        return enabled;
+      }
+    }
+
+    return false;
+  }
+
+ private:
+  ~NotificationApiDelegate() override {}
+
+  void SendEvent(events::HistogramValue histogram_value,
+                 const std::string& name,
+                 EventRouter::UserGestureState user_gesture,
+                 std::unique_ptr<base::ListValue> args) {
+    if (!event_router_)
+      return;
+
+    std::unique_ptr<Event> event(
+        new Event(histogram_value, name, std::move(args)));
+    event->user_gesture = user_gesture;
+    event_router_->DispatchEventToExtension(extension_id_, std::move(event));
+  }
+
+  void Shutdown() {
+    shutdown_notifier_subscription_.reset();
+    event_router_ = nullptr;
+    display_helper_ = nullptr;
+  }
+
+  std::unique_ptr<base::ListValue> CreateBaseEventArgs() {
+    std::unique_ptr<base::ListValue> args(new base::ListValue());
+    args->AppendString(StripScopeFromIdentifier(extension_id_, scoped_id_));
+    return args;
+  }
+
+  scoped_refptr<ChromeAsyncExtensionFunction> api_function_;
+
+  // Since this class is refcounted it may outlive the profile.  We listen for
+  // profile-keyed service shutdown events and reset to nullptr at that time,
+  // so make sure to check for a valid pointer before use.
+  EventRouter* event_router_;
+  ExtensionNotificationDisplayHelper* display_helper_;
+
+  const std::string extension_id_;
+  const std::string scoped_id_;
+
+  std::unique_ptr<KeyedServiceShutdownNotifier::Subscription>
+      shutdown_notifier_subscription_;
+
+  DISALLOW_COPY_AND_ASSIGN(NotificationApiDelegate);
+};
 
 }  // namespace
 
@@ -337,9 +497,20 @@ bool NotificationsApiFunction::CreateNotification(
     optional_fields.clickable = *options->is_clickable;
 
   // Create the notification api delegate. Ownership passed to the notification.
-  NotificationDelegate* api_delegate = new WebNotificationDelegate(
-      NotificationCommon::EXTENSION, GetProfile(),
-      CreateScopedIdentifier(extension_->id(), id), extension_->url());
+  NotificationDelegate* api_delegate;
+#if BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
+  if (base::FeatureList::IsEnabled(features::kNativeNotifications) &&
+      g_browser_process->notification_platform_bridge()) {
+    api_delegate = new NativeNotificationDelegate(
+        CreateScopedIdentifier(extension_->id(), id));
+  } else {
+    api_delegate =
+        new NotificationApiDelegate(this, GetProfile(), extension_->id(), id);
+  }
+#else
+  api_delegate =
+      new NotificationApiDelegate(this, GetProfile(), extension_->id(), id);
+#endif  // BUILDFLAG(ENABLE_NATIVE_NOTIFICATIONS)
 
   Notification notification(
       type, title, message, icon,
