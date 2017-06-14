@@ -95,6 +95,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest,
 // Tests that we don't override events when bindings are re-injected.
 // Regression test for http://crbug.com/269149.
 // Regression test for http://crbug.com/436593.
+// http://crbug.com/733064
+#if defined(OS_MACOSX)
+#define MAYBE_EventOverriding DISABLED_EventOverriding
+#else
+#define MAYBE_EventOverriding EventOverriding
+#endif
 IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest, EventOverriding) {
   ASSERT_TRUE(RunExtensionTest("bindings/event_overriding")) << message_;
   // The extension test removes a window and, during window removal, sends the
