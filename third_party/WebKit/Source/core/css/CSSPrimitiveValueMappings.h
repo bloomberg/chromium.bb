@@ -2356,34 +2356,6 @@ inline TouchAction CSSIdentifierValue::ConvertTo() const {
 }
 
 template <>
-inline CSSIdentifierValue::CSSIdentifierValue(EIsolation i)
-    : CSSValue(kIdentifierClass) {
-  switch (i) {
-    case EIsolation::kAuto:
-      value_id_ = CSSValueAuto;
-      break;
-    case EIsolation::kIsolate:
-      value_id_ = CSSValueIsolate;
-      break;
-  }
-}
-
-template <>
-inline EIsolation CSSIdentifierValue::ConvertTo() const {
-  switch (value_id_) {
-    case CSSValueAuto:
-      return EIsolation::kAuto;
-    case CSSValueIsolate:
-      return EIsolation::kIsolate;
-    default:
-      break;
-  }
-
-  NOTREACHED();
-  return EIsolation::kAuto;
-}
-
-template <>
 inline CSSIdentifierValue::CSSIdentifierValue(CSSBoxType css_box)
     : CSSValue(kIdentifierClass) {
   switch (css_box) {

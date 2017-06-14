@@ -1019,15 +1019,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     SetRespectImageOrientationInternal(v);
   }
 
-  // isolation
-  static EIsolation InitialIsolation() { return EIsolation::kAuto; }
-  EIsolation Isolation() const {
-    return static_cast<EIsolation>(rare_non_inherited_data_->isolation_);
-  }
-  void SetIsolation(EIsolation v) {
-    rare_non_inherited_data_.Access()->isolation_ = static_cast<unsigned>(v);
-  }
-
   // -webkit-margin-before-collapse (aka -webkit-margin-top-collapse)
   static EMarginCollapse InitialMarginBeforeCollapse() {
     return kMarginCollapseCollapse;
