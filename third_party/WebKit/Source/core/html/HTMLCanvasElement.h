@@ -56,6 +56,7 @@
 namespace blink {
 
 class AffineTransform;
+class CanvasColorParams;
 class CanvasContextCreationAttributes;
 class CanvasRenderingContext;
 class CanvasRenderingContextFactory;
@@ -304,6 +305,7 @@ class CORE_EXPORT HTMLCanvasElement final
   void SetSurfaceSize(const IntSize&);
 
   bool PaintsIntoCanvasBuffer() const;
+  CanvasColorParams GetCanvasColorParams() const;
 
   ImageData* ToImageData(SourceDrawingBuffer, SnapshotReason) const;
 
