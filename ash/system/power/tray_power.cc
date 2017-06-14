@@ -127,6 +127,7 @@ class PowerTrayView : public TrayItemView {
     gfx::ImageSkiaRep GetImageForScale(float scale) override {
       return PowerStatus::Get()->GetBatteryImage(info_, scale);
     }
+
     bool HasRepresentationAtAllScales() const override { return true; }
 
     const PowerStatus::BatteryImageInfo& info() const { return info_; }

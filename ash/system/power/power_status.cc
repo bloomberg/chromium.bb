@@ -20,9 +20,13 @@
 #include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/scoped_canvas.h"
+#include "ui/gfx/skia_util.h"
 
 namespace ash {
 namespace {
@@ -343,9 +347,29 @@ gfx::ImageSkiaRep PowerStatus::GetBatteryImage(const BatteryImageInfo& info,
 
   gfx::Canvas canvas(GetBatteryImageSizeInDip(), scale, false /* opaque */);
 
+  // Routine to paint the icon image, aligned to pixel boundaries no matter what
+  // the scale factor.
+  auto paint_icon = [&canvas](SkColor color) {
+    cc::PaintFlags flags;
+    flags.setAntiAlias(true);
+    flags.setStyle(cc::PaintFlags::kFill_Style);
+    flags.setColor(color);
+
+    SkPath path;
+    gfx::ScopedCanvas scoped(&canvas);
+    const float dsf = canvas.UndoDeviceScaleFactor();
+    gfx::RectF bottom(4.5f, 3, 7, 11);
+    bottom.Scale(dsf);
+    path.addRoundRect(gfx::RectToSkRect(gfx::ToEnclosingRect(bottom)), 1, 1);
+
+    gfx::RectF top(6.5f, 2, 3, 1);
+    top.Scale(dsf);
+    path.addRect(gfx::RectToSkRect(gfx::ToEnclosingRect(top)));
+    canvas.DrawPath(path, flags);
+  };
+
   // Paint the battery's base (background) color.
-  PaintVectorIcon(&canvas, kSystemTrayBatteryIcon, kBatteryCanvasSize,
-                  kBatteryBaseColor);
+  paint_icon(kBatteryBaseColor);
 
   // Paint the charged portion of the battery. Note that |charge_height| adjusts
   // for the 2dp of padding between the bottom of the battery icon and the
@@ -355,8 +379,7 @@ gfx::ImageSkiaRep PowerStatus::GetBatteryImage(const BatteryImageInfo& info,
                       charge_height);
   canvas.Save();
   canvas.ClipRect(clip_rect);
-  PaintVectorIcon(&canvas, kSystemTrayBatteryIcon, kBatteryCanvasSize,
-                  charge_color);
+  paint_icon(charge_color);
   canvas.Restore();
 
   // Paint the badge over top of the battery, if applicable.
