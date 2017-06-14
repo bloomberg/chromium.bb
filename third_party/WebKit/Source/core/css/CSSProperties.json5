@@ -1366,10 +1366,11 @@
     {
       name: "isolation",
       type_name: "EIsolation",
-      field_template: "storage_only",
+      field_template: "keyword",
+      keywords: ["auto", "isolate"],
       field_group: "rare-non-inherited",
       field_size: 1,
-      default_value: "EIsolation::kAuto",
+      default_value: "auto",
     },
     {
       name: "justify-content",
