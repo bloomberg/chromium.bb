@@ -145,6 +145,7 @@ class VIEWS_EXPORT TrayBubbleView : public BubbleDialogDelegateView,
  protected:
   // Overridden from views::BubbleDialogDelegateView.
   int GetDialogButtons() const override;
+  void SizeToContents() override;
 
   // Overridden from views::View.
   void ChildPreferredSizeChanged(View* child) override;

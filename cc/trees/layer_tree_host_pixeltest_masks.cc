@@ -149,41 +149,6 @@ TEST_P(LayerTreeHostMasksPixelTest, MaskOfClippedLayer) {
       base::FilePath(FILE_PATH_LITERAL("mask_of_clipped_layer.png")));
 }
 
-TEST_P(LayerTreeHostMasksPixelTest, MaskOfLargerLayer) {
-  scoped_refptr<SolidColorLayer> background =
-      CreateSolidColorLayer(gfx::Rect(100, 100), SK_ColorWHITE);
-
-  scoped_refptr<SolidColorLayer> green = CreateSolidColorLayerWithBorder(
-      gfx::Rect(0, 0, 100, 100), kCSSGreen, 1, SK_ColorBLACK);
-  background->AddChild(green);
-
-  gfx::Size mask_bounds(50, 50);
-  MaskContentLayerClient client(mask_bounds);
-  scoped_refptr<PictureLayer> mask = PictureLayer::Create(&client);
-  mask->SetBounds(mask_bounds);
-  mask->SetIsDrawable(true);
-  mask->SetLayerMaskType(mask_type_);
-  green->SetMaskLayer(mask.get());
-
-  if (raster_buffer_provider_type_ == RASTER_BUFFER_PROVIDER_TYPE_BITMAP) {
-    // Bitmap produces a sharper (but equivalent sized) mask.
-    float percentage_pixels_large_error = 40.0f;
-    float percentage_pixels_small_error = 0.0f;
-    float average_error_allowed_in_bad_pixels = 65.0f;
-    int large_error_allowed = 120;
-    int small_error_allowed = 0;
-    pixel_comparator_.reset(new FuzzyPixelComparator(
-        true,  // discard_alpha
-        percentage_pixels_large_error, percentage_pixels_small_error,
-        average_error_allowed_in_bad_pixels, large_error_allowed,
-        small_error_allowed));
-  }
-
-  RunPixelResourceTest(
-      background,
-      base::FilePath(FILE_PATH_LITERAL("mask_of_larger_layer.png")));
-}
-
 TEST_P(LayerTreeHostMasksPixelTest, MaskOfLayerNonExactTextureSize) {
   scoped_refptr<SolidColorLayer> background =
       CreateSolidColorLayer(gfx::Rect(100, 100), SK_ColorWHITE);

@@ -265,6 +265,11 @@ int TrayBubbleView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
 }
 
+void TrayBubbleView::SizeToContents() {
+  BubbleDialogDelegateView::SizeToContents();
+  bubble_content_mask_->layer()->SetBounds(layer()->bounds());
+}
+
 void TrayBubbleView::OnBeforeBubbleWidgetInit(Widget::InitParams* params,
                                               Widget* bubble_widget) const {
   // Apply a WM-provided shadow (see ui/wm/core/).

@@ -55,7 +55,6 @@ class PermissionsBubbleDialogDelegateView
   ~PermissionsBubbleDialogDelegateView() override;
 
   void CloseBubble();
-  void SizeToContents();
 
   // BubbleDialogDelegateView:
   bool ShouldShowCloseButton() const override;
@@ -69,6 +68,7 @@ class PermissionsBubbleDialogDelegateView
   int GetDefaultDialogButton() const override;
   int GetDialogButtons() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
+  void SizeToContents() override;
 
   // Updates the anchor's arrow and view. Also repositions the bubble so it's
   // displayed in the correct location.

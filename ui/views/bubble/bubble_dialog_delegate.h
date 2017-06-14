@@ -148,7 +148,7 @@ class VIEWS_EXPORT BubbleDialogDelegateView : public DialogDelegateView,
   void SetAnchorRect(const gfx::Rect& rect);
 
   // Resize and potentially move the bubble to fit the content's preferred size.
-  void SizeToContents();
+  virtual void SizeToContents();
 
   BubbleFrameView* GetBubbleFrameView() const;
 
