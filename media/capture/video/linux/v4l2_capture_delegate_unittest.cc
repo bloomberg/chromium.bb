@@ -9,6 +9,7 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "media/capture/video/linux/v4l2_capture_delegate.h"
 #include "media/capture/video/video_capture_device.h"
 #include "media/capture/video/video_capture_device_descriptor.h"
@@ -230,7 +231,14 @@ class V4L2CaptureDelegateTest : public ::testing::Test {
 
 }  // anonymous namespace
 
-TEST_F(V4L2CaptureDelegateTest, CreateAndDestroyAndVerifyControls) {
+// Fails on Linux, see crbug/732355
+#if defined(OS_LINUX)
+#define MAYBE_CreateAndDestroyAndVerifyControls \
+  DISABLED_CreateAndDestroyAndVerifyControls
+#else
+#define MAYBE_CrashingTest CreateAndDestroyAndVerifyControls
+#endif
+TEST_F(V4L2CaptureDelegateTest, MAYBE_CreateAndDestroyAndVerifyControls) {
   // Check that there is at least a video device, otherwise bail.
   const base::FilePath path("/dev/");
   base::FileEnumerator enumerator(path, false, base::FileEnumerator::FILES,
