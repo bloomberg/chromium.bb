@@ -113,6 +113,10 @@ class ChromeTranslateClient
  private:
   explicit ChromeTranslateClient(content::WebContents* web_contents);
   friend class content::WebContentsUserData<ChromeTranslateClient>;
+  FRIEND_TEST_ALL_PREFIXES(ChromeTranslateClientTest,
+                           LanguageEventShouldRecord);
+  FRIEND_TEST_ALL_PREFIXES(ChromeTranslateClientTest,
+                           LanguageEventShouldNotRecord);
 
   // content::WebContentsObserver implementation.
   void WebContentsDestroyed() override;

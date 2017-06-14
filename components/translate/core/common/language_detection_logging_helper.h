@@ -15,7 +15,10 @@ namespace translate {
 
 struct LanguageDetectionDetails;
 
+// Construct language detection based on navigation_id and language detection
+// details.
 std::unique_ptr<sync_pb::UserEventSpecifics> ConstructLanguageDetectionEvent(
+    int64_t navigation_id,
     const LanguageDetectionDetails& details);
 
 }  // namespace translate

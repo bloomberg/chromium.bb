@@ -24,8 +24,11 @@ TEST(LanguageDetectionLoggingHelperTest, ConstructUserEventSpecifics) {
   lang->set_language_code(details.cld_language);
   lang->set_is_reliable(details.is_cld_reliable);
   lang_detection.set_adopted_language_code(details.adopted_language);
+  const int64_t navigation_id = 1000000000000000LL;
   const std::unique_ptr<sync_pb::UserEventSpecifics> user_event =
-      ConstructLanguageDetectionEvent(details);
+      ConstructLanguageDetectionEvent(navigation_id, details);
+  // Expect the navigation id is correctly set.
+  EXPECT_EQ(user_event->navigation_id(), navigation_id);
   EXPECT_EQ(user_event->language_detection().SerializeAsString(),
             lang_detection.SerializeAsString());
 }
@@ -43,7 +46,9 @@ TEST(LanguageDetectionLoggingHelperTest, DontSetAdoptedLanguage) {
   lang->set_language_code(details.cld_language);
   lang->set_is_reliable(details.is_cld_reliable);
   const std::unique_ptr<sync_pb::UserEventSpecifics> user_event =
-      ConstructLanguageDetectionEvent(details);
+      ConstructLanguageDetectionEvent(100, details);
+  // Expect the navigation id is correctly set.
+  EXPECT_EQ(user_event->navigation_id(), 100);
   EXPECT_EQ(user_event->language_detection().SerializeAsString(),
             lang_detection.SerializeAsString());
 }
