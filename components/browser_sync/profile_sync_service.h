@@ -437,7 +437,7 @@ class ProfileSyncService : public syncer::SyncServiceBase,
 
   // Whether sync is currently blocked from starting because the sync
   // confirmation dialog hasn't been confirmed.
-  bool IsSyncConfirmationNeeded() const;
+  virtual bool IsSyncConfirmationNeeded() const;
 
   // Returns whether sync is managed, i.e. controlled by configuration
   // management. If so, the user is not allowed to configure sync.

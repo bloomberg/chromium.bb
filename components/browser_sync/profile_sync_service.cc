@@ -788,7 +788,7 @@ void ProfileSyncService::SetFirstSetupComplete() {
 
 bool ProfileSyncService::IsSyncConfirmationNeeded() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return !IsFirstSetupInProgress() && !IsFirstSetupComplete() &&
+  return IsSignedIn() && !IsFirstSetupInProgress() && !IsFirstSetupComplete() &&
          IsSyncRequested();
 }
 
