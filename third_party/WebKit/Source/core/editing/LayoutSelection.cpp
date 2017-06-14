@@ -186,13 +186,7 @@ struct SelectedMap {
   DISALLOW_COPY_AND_ASSIGN(SelectedMap);
 };
 
-enum class CollectSelectedMapOption {
-  kCollectBlock,
-  kNotCollectBlock,
-};
-
-static SelectedMap CollectSelectedMap(const SelectionPaintRange& range,
-                                      CollectSelectedMapOption option) {
+static SelectedMap CollectSelectedMap(const SelectionPaintRange& range) {
   if (range.IsNull())
     return SelectedMap();
 
@@ -205,15 +199,13 @@ static SelectedMap CollectSelectedMap(const SelectionPaintRange& range,
     // Blocks are responsible for painting line gaps and margin gaps.  They
     // must be examined as well.
     selected_map.object_map.Set(runner, runner->GetSelectionState());
-    if (option == CollectSelectedMapOption::kCollectBlock) {
-      LayoutBlock* containing_block = runner->ContainingBlock();
-      while (containing_block && !containing_block->IsLayoutView()) {
-        SelectedBlockMap::AddResult result = selected_map.block_map.insert(
-            containing_block, containing_block->GetSelectionState());
-        if (!result.is_new_entry)
-          break;
-        containing_block = containing_block->ContainingBlock();
-      }
+    for (LayoutBlock* containing_block = runner->ContainingBlock();
+         containing_block && !containing_block->IsLayoutView();
+         containing_block = containing_block->ContainingBlock()) {
+      SelectedBlockMap::AddResult result = selected_map.block_map.insert(
+          containing_block, containing_block->GetSelectionState());
+      if (!result.is_new_entry)
+        break;
     }
   }
   return selected_map;
@@ -244,8 +236,7 @@ static void SetSelectionState(const SelectionPaintRange& range) {
 // comparing them in |new_range| and |old_range|.
 static void UpdateLayoutObjectState(const SelectionPaintRange& new_range,
                                     const SelectionPaintRange& old_range) {
-  SelectedMap old_selected_map =
-      CollectSelectedMap(old_range, CollectSelectedMapOption::kCollectBlock);
+  const SelectedMap& old_selected_map = CollectSelectedMap(old_range);
 
   // Now clear the selection.
   for (auto layout_object : old_selected_map.object_map.Keys())
@@ -258,8 +249,7 @@ static void UpdateLayoutObjectState(const SelectionPaintRange& new_range,
   // TODO(editing-dev): |new_selected_map| doesn't really need to store the
   // SelectionState, it's just more convenient to have it use the same data
   // structure as |old_selected_map|.
-  SelectedMap new_selected_map =
-      CollectSelectedMap(new_range, CollectSelectedMapOption::kCollectBlock);
+  SelectedMap new_selected_map = CollectSelectedMap(new_range);
 
   // Have any of the old selected objects changed compared to the new selection?
   for (const auto& pair : old_selected_map.object_map) {
