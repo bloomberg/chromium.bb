@@ -1571,6 +1571,10 @@ crbug.com/732829 css3/blending/mix-blend-mode-isolated-group-2.html [ NeedsManua
 crbug.com/732829 css3/blending/mix-blend-mode-isolated-group-3.html [ NeedsManualRebaseline ]
 crbug.com/732829 css3/blending/mix-blend-mode-simple-text.html [ NeedsManualRebaseline ]
 crbug.com/732829 svg/filters/feBlend-all-modes.html [ NeedsManualRebaseline ]
+crbug.com/732829 css3/blending/svg-blend-color.html [ NeedsManualRebaseline ]
+crbug.com/732829 css3/blending/svg-blend-hue.html [ NeedsManualRebaseline ]
+crbug.com/732829 css3/blending/svg-blend-luminosity.html [ NeedsManualRebaseline ]
+crbug.com/732829 css3/blending/svg-blend-saturation.html [ NeedsManualRebaseline ]
 
 
 # Mac10.10-specific failures that still need triaging.
