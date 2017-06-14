@@ -1428,17 +1428,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   IncognitoModePrefs::InitializePlatformParentalControls();
 #endif
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  if (!variations::GetVariationParamValue(
-      "LightSpeed", "EarlyInitStartup").empty()) {
-    // Try to compute this early on another thread so that we don't spend time
-    // during profile load initializing the extensions APIs.
-    BrowserThread::PostTask(BrowserThread::FILE_USER_BLOCKING, FROM_HERE,
-                            base::BindOnce(base::IgnoreResult(
-                                &extensions::FeatureProvider::GetAPIFeatures)));
-  }
-#endif
-
   // Android updates the metrics service dynamically depending on whether the
   // application is in the foreground or not. Do not start here.
 #if !defined(OS_ANDROID)
