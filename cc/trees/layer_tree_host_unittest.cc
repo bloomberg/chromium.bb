@@ -2776,11 +2776,7 @@ class ViewportDeltasAppliedDuringPinch : public LayerTreeHostTest {
     EXPECT_TRUE(sent_gesture_);
     EXPECT_EQ(gfx::Vector2dF(50, 50), inner);
     EXPECT_EQ(2, scale_delta);
-  }
 
-  void DidCommit() override {
-    if (!sent_gesture_)
-      return;
     auto* scroll_layer = layer_tree_host()->inner_viewport_scroll_layer();
     EXPECT_EQ(gfx::ScrollOffset(50, 50), scroll_layer->scroll_offset());
     EndTest();
@@ -2791,8 +2787,7 @@ class ViewportDeltasAppliedDuringPinch : public LayerTreeHostTest {
   bool sent_gesture_;
 };
 
-// Disabled for flakiness, http://crbug.com/733001
-// MULTI_THREAD_TEST_F(ViewportDeltasAppliedDuringPinch);
+MULTI_THREAD_TEST_F(ViewportDeltasAppliedDuringPinch);
 
 class LayerTreeHostTestSetVisible : public LayerTreeHostTest {
  public:
