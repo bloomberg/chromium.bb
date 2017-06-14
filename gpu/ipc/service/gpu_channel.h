@@ -46,7 +46,6 @@ class SyncPointManager;
 class GpuChannelManager;
 class GpuChannelMessageFilter;
 class GpuChannelMessageQueue;
-class GpuWatchdogThread;
 
 class GPU_EXPORT FilteredSender : public IPC::Sender {
  public:
@@ -84,10 +83,7 @@ class GPU_EXPORT GpuChannel : public IPC::Listener, public FilteredSender {
   GpuChannel(GpuChannelManager* gpu_channel_manager,
              Scheduler* scheduler,
              SyncPointManager* sync_point_manager,
-             GpuWatchdogThread* watchdog,
              scoped_refptr<gl::GLShareGroup> share_group,
-             scoped_refptr<gles2::MailboxManager> mailbox_manager,
-             ServiceDiscardableManager* discardable_manager_,
              scoped_refptr<PreemptionFlag> preempting_flag,
              scoped_refptr<PreemptionFlag> preempted_flag,
              scoped_refptr<base::SingleThreadTaskRunner> task_runner,
@@ -114,13 +110,7 @@ class GPU_EXPORT GpuChannel : public IPC::Listener, public FilteredSender {
 
   SyncPointManager* sync_point_manager() const { return sync_point_manager_; }
 
-  GpuWatchdogThread* watchdog() const { return watchdog_; }
-
   gles2::ImageManager* image_manager() const { return image_manager_.get(); }
-
-  const scoped_refptr<gles2::MailboxManager>& mailbox_manager() const {
-    return mailbox_manager_;
-  }
 
   const scoped_refptr<base::SingleThreadTaskRunner>& task_runner() const {
     return task_runner_;
@@ -156,10 +146,6 @@ class GPU_EXPORT GpuChannel : public IPC::Listener, public FilteredSender {
   void OnCommandBufferDescheduled(GpuCommandBufferStub* stub);
 
   gl::GLShareGroup* share_group() const { return share_group_.get(); }
-
-  ServiceDiscardableManager* discardable_manager() const {
-    return discardable_manager_;
-  }
 
   GpuCommandBufferStub* LookupCommandBuffer(int32_t route_id);
 
@@ -275,13 +261,7 @@ class GPU_EXPORT GpuChannel : public IPC::Listener, public FilteredSender {
   // process use.
   scoped_refptr<gl::GLShareGroup> share_group_;
 
-  scoped_refptr<gles2::MailboxManager> mailbox_manager_;
-
   std::unique_ptr<gles2::ImageManager> image_manager_;
-
-  GpuWatchdogThread* const watchdog_;
-
-  ServiceDiscardableManager* discardable_manager_;
 
   const bool is_gpu_host_;
 

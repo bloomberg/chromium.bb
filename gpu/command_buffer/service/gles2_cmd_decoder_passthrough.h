@@ -357,7 +357,7 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
   ClientServiceMap<GLuint, GLuint> vertex_array_id_map_;
 
   // Mailboxes
-  scoped_refptr<MailboxManager> mailbox_manager_;
+  MailboxManager* mailbox_manager_;
 
   // State tracking of currently bound 2D textures (client IDs)
   size_t active_texture_unit_;

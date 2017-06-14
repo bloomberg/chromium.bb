@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/gpu_service_test.h"
@@ -33,14 +34,14 @@ class MailboxManagerTest : public GpuServiceTest {
   void SetUp() override {
     GpuServiceTest::SetUp();
     feature_info_ = new FeatureInfo;
-    manager_ = new MailboxManagerImpl;
+    manager_ = base::MakeUnique<MailboxManagerImpl>();
     DCHECK(!manager_->UsesSync());
   }
 
   virtual void SetUpWithSynchronizer() {
     GpuServiceTest::SetUp();
     feature_info_ = new FeatureInfo;
-    manager_ = new MailboxManagerSync();
+    manager_ = base::MakeUnique<MailboxManagerSync>();
     DCHECK(manager_->UsesSync());
   }
 
@@ -82,7 +83,7 @@ class MailboxManagerTest : public GpuServiceTest {
 
   void DestroyTexture(TextureBase* texture) { delete texture; }
 
-  scoped_refptr<MailboxManager> manager_;
+  std::unique_ptr<MailboxManager> manager_;
 
  private:
   scoped_refptr<FeatureInfo> feature_info_;
@@ -195,7 +196,7 @@ class MailboxManagerSyncTest : public MailboxManagerTest {
  protected:
   void SetUp() override {
     MailboxManagerTest::SetUpWithSynchronizer();
-    manager2_ = new MailboxManagerSync();
+    manager2_ = base::MakeUnique<MailboxManagerSync>();
     context_ = new gl::GLContextStub();
     surface_ = new gl::GLSurfaceStub();
     context_->MakeCurrent(surface_.get());
@@ -250,7 +251,7 @@ class MailboxManagerSyncTest : public MailboxManagerTest {
     MailboxManagerTest::TearDown();
   }
 
-  scoped_refptr<MailboxManager> manager2_;
+  std::unique_ptr<MailboxManager> manager2_;
   scoped_refptr<gl::GLContext> context_;
   scoped_refptr<gl::GLSurface> surface_;
 

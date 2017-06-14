@@ -29,6 +29,8 @@
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
+#include "gpu/command_buffer/service/image_manager.h"
+#include "gpu/command_buffer/service/service_discardable_manager.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/gpu_export.h"
 #include "gpu/ipc/service/image_transport_surface_delegate.h"
@@ -187,7 +189,7 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   // The serializer interface to the GPU service (i.e. thread).
   class Service {
    public:
-    Service(const gpu::GpuPreferences& gpu_preferences);
+    explicit Service(const gpu::GpuPreferences& gpu_preferences);
     Service(gles2::MailboxManager* mailbox_manager,
             scoped_refptr<gl::GLShareGroup> share_group);
 
@@ -204,30 +206,42 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
     virtual void ScheduleDelayedWork(const base::Closure& task) = 0;
 
     virtual bool UseVirtualizedGLContexts() = 0;
-    virtual scoped_refptr<gles2::ShaderTranslatorCache>
-    shader_translator_cache() = 0;
-    virtual scoped_refptr<gles2::FramebufferCompletenessCache>
-    framebuffer_completeness_cache() = 0;
     virtual SyncPointManager* sync_point_manager() = 0;
+    virtual bool BlockThreadOnWaitSyncToken() const = 0;
+
     const GpuPreferences& gpu_preferences();
     const GpuDriverBugWorkarounds& gpu_driver_bug_workarounds();
     scoped_refptr<gl::GLShareGroup> share_group();
-    scoped_refptr<gles2::MailboxManager> mailbox_manager();
+    gles2::MailboxManager* mailbox_manager() { return mailbox_manager_; }
     gles2::ProgramCache* program_cache();
-    gles2::ImageManager* image_manager();
-    ServiceDiscardableManager* discardable_manager();
-    virtual bool BlockThreadOnWaitSyncToken() const = 0;
+    gles2::ImageManager* image_manager() { return &image_manager_; }
+    ServiceDiscardableManager* discardable_manager() {
+      return &discardable_manager_;
+    }
+    gles2::ShaderTranslatorCache* shader_translator_cache() {
+      return &shader_translator_cache_;
+    }
+    gles2::FramebufferCompletenessCache* framebuffer_completeness_cache() {
+      return &framebuffer_completeness_cache_;
+    }
 
    protected:
+    Service(const gpu::GpuPreferences& gpu_preferences,
+            gles2::MailboxManager* mailbox_manager,
+            scoped_refptr<gl::GLShareGroup> share_group);
+
     const GpuPreferences gpu_preferences_;
     const GpuDriverBugWorkarounds gpu_driver_bug_workarounds_;
-    scoped_refptr<gles2::MailboxManager> mailbox_manager_;
+    std::unique_ptr<gles2::MailboxManager> owned_mailbox_manager_;
+    gles2::MailboxManager* mailbox_manager_ = nullptr;
     scoped_refptr<gl::GLShareGroup> share_group_;
     std::unique_ptr<gles2::ProgramCache> program_cache_;
     // No-op default initialization is used in in-process mode.
     GpuProcessActivityFlags activity_flags_;
-    std::unique_ptr<gles2::ImageManager> image_manager_;
-    std::unique_ptr<ServiceDiscardableManager> discardable_manager_;
+    gles2::ImageManager image_manager_;
+    ServiceDiscardableManager discardable_manager_;
+    gles2::ShaderTranslatorCache shader_translator_cache_;
+    gles2::FramebufferCompletenessCache framebuffer_completeness_cache_;
   };
 
  private:

@@ -30,10 +30,6 @@ class GPU_EXPORT GpuInProcessThreadService
   void ScheduleTask(const base::Closure& task) override;
   void ScheduleDelayedWork(const base::Closure& task) override;
   bool UseVirtualizedGLContexts() override;
-  scoped_refptr<gpu::gles2::ShaderTranslatorCache> shader_translator_cache()
-      override;
-  scoped_refptr<gpu::gles2::FramebufferCompletenessCache>
-  framebuffer_completeness_cache() override;
   gpu::SyncPointManager* sync_point_manager() override;
   void AddRef() const override;
   void Release() const override;
@@ -47,9 +43,6 @@ class GPU_EXPORT GpuInProcessThreadService
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   gpu::SyncPointManager* sync_point_manager_;  // Non-owning.
-  scoped_refptr<gpu::gles2::ShaderTranslatorCache> shader_translator_cache_;
-  scoped_refptr<gpu::gles2::FramebufferCompletenessCache>
-      framebuffer_completeness_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuInProcessThreadService);
 };

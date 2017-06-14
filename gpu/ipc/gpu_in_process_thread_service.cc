@@ -30,24 +30,6 @@ bool GpuInProcessThreadService::UseVirtualizedGLContexts() {
   return true;
 }
 
-scoped_refptr<gpu::gles2::ShaderTranslatorCache>
-GpuInProcessThreadService::shader_translator_cache() {
-  if (!shader_translator_cache_) {
-    shader_translator_cache_ = make_scoped_refptr(
-        new gpu::gles2::ShaderTranslatorCache(gpu_preferences()));
-  }
-  return shader_translator_cache_;
-}
-
-scoped_refptr<gpu::gles2::FramebufferCompletenessCache>
-GpuInProcessThreadService::framebuffer_completeness_cache() {
-  if (!framebuffer_completeness_cache_.get()) {
-    framebuffer_completeness_cache_ =
-        make_scoped_refptr(new gpu::gles2::FramebufferCompletenessCache);
-  }
-  return framebuffer_completeness_cache_;
-}
-
 gpu::SyncPointManager* GpuInProcessThreadService::sync_point_manager() {
   return sync_point_manager_;
 }

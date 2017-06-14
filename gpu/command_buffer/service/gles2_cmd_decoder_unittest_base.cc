@@ -126,7 +126,8 @@ GLES2DecoderTestBase::GLES2DecoderTestBase()
       cached_depth_mask_(true),
       cached_stencil_front_mask_(static_cast<GLuint>(-1)),
       cached_stencil_back_mask_(static_cast<GLuint>(-1)),
-      shader_language_version_(100) {
+      shader_language_version_(100),
+      shader_translator_cache_(gpu_preferences_) {
   memset(immediate_buffer_, 0xEE, sizeof(immediate_buffer_));
 }
 
@@ -208,9 +209,8 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
   }
 
   group_ = scoped_refptr<ContextGroup>(new ContextGroup(
-      gpu_preferences_, nullptr /* mailbox_manager */, memory_tracker_,
-      new ShaderTranslatorCache(gpu_preferences_),
-      new FramebufferCompletenessCache, feature_info,
+      gpu_preferences_, &mailbox_manager_, memory_tracker_,
+      &shader_translator_cache_, &framebuffer_completeness_cache_, feature_info,
       normalized_init.bind_generates_resource, &image_manager_,
       nullptr /* image_factory */, nullptr /* progress_reporter */,
       GpuFeatureInfo(), &discardable_manager_));

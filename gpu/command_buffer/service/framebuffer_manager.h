@@ -317,10 +317,10 @@ struct DecoderFramebufferState {
 // so we can correctly clear them.
 class GPU_EXPORT FramebufferManager {
  public:
-  FramebufferManager(uint32_t max_draw_buffers,
-                     uint32_t max_color_attachments,
-                     const scoped_refptr<FramebufferCompletenessCache>&
-                         framebuffer_combo_complete_cache);
+  FramebufferManager(
+      uint32_t max_draw_buffers,
+      uint32_t max_color_attachments,
+      FramebufferCompletenessCache* framebuffer_combo_complete_cache);
   ~FramebufferManager();
 
   // Must call before destruction.
@@ -360,7 +360,7 @@ class GPU_EXPORT FramebufferManager {
   void StopTracking(Framebuffer* framebuffer);
 
   FramebufferCompletenessCache* GetFramebufferComboCompleteCache() {
-    return framebuffer_combo_complete_cache_.get();
+    return framebuffer_combo_complete_cache_;
   }
 
   // Info for each framebuffer in the system.
@@ -381,7 +381,7 @@ class GPU_EXPORT FramebufferManager {
   uint32_t max_draw_buffers_;
   uint32_t max_color_attachments_;
 
-  scoped_refptr<FramebufferCompletenessCache> framebuffer_combo_complete_cache_;
+  FramebufferCompletenessCache* framebuffer_combo_complete_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(FramebufferManager);
 };

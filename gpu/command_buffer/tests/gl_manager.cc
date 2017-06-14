@@ -31,7 +31,6 @@
 #include "gpu/command_buffer/service/gl_context_virtual.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
-#include "gpu/command_buffer/service/mailbox_manager_impl.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -257,11 +256,12 @@ void GLManager::InitializeWithCommandLine(
   InitializeGpuPreferencesForTestingFromCommandLine(command_line,
                                                     &gpu_preferences_);
 
-  gles2::MailboxManager* mailbox_manager = NULL;
   if (options.share_mailbox_manager) {
-    mailbox_manager = options.share_mailbox_manager->mailbox_manager();
+    mailbox_manager_ = options.share_mailbox_manager->mailbox_manager();
   } else if (options.share_group_manager) {
-    mailbox_manager = options.share_group_manager->mailbox_manager();
+    mailbox_manager_ = options.share_group_manager->mailbox_manager();
+  } else {
+    mailbox_manager_ = &owned_mailbox_manager_;
   }
 
   gl::GLShareGroup* share_group = NULL;
@@ -285,8 +285,6 @@ void GLManager::InitializeWithCommandLine(
     real_gl_context = options.virtual_manager->context();
   }
 
-  mailbox_manager_ =
-      mailbox_manager ? mailbox_manager : new gles2::MailboxManagerImpl;
   share_group_ = share_group ? share_group : new gl::GLShareGroup;
 
   gles2::ContextCreationAttribHelper attribs;
@@ -305,15 +303,16 @@ void GLManager::InitializeWithCommandLine(
   attribs.offscreen_framebuffer_size = options.size;
   attribs.buffer_preserved = options.preserve_backbuffer;
   attribs.bind_generates_resource = options.bind_generates_resource;
+  translator_cache_ =
+      base::MakeUnique<gles2::ShaderTranslatorCache>(gpu_preferences_);
 
   if (!context_group) {
     GpuDriverBugWorkarounds gpu_driver_bug_workaround(&command_line);
     scoped_refptr<gles2::FeatureInfo> feature_info =
         new gles2::FeatureInfo(command_line, gpu_driver_bug_workaround);
     context_group = new gles2::ContextGroup(
-        gpu_preferences_, mailbox_manager_.get(), nullptr /* memory_tracker */,
-        new gpu::gles2::ShaderTranslatorCache(gpu_preferences_),
-        new gpu::gles2::FramebufferCompletenessCache, feature_info,
+        gpu_preferences_, mailbox_manager_, nullptr /* memory_tracker */,
+        translator_cache_.get(), &completeness_cache_, feature_info,
         options.bind_generates_resource, &image_manager_, options.image_factory,
         nullptr /* progress_reporter */, GpuFeatureInfo(),
         &discardable_manager_);

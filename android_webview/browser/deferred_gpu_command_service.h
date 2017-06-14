@@ -48,10 +48,6 @@ class DeferredGpuCommandService
   void ScheduleTask(const base::Closure& task) override;
   void ScheduleDelayedWork(const base::Closure& task) override;
   bool UseVirtualizedGLContexts() override;
-  scoped_refptr<gpu::gles2::ShaderTranslatorCache> shader_translator_cache()
-      override;
-  scoped_refptr<gpu::gles2::FramebufferCompletenessCache>
-  framebuffer_completeness_cache() override;
   gpu::SyncPointManager* sync_point_manager() override;
 
   void RunTasks();
@@ -82,9 +78,6 @@ class DeferredGpuCommandService
   std::queue<std::pair<base::Time, base::Closure> > idle_tasks_;
 
   std::unique_ptr<gpu::SyncPointManager> sync_point_manager_;
-  scoped_refptr<gpu::gles2::ShaderTranslatorCache> shader_translator_cache_;
-  scoped_refptr<gpu::gles2::FramebufferCompletenessCache>
-      framebuffer_completeness_cache_;
   DISALLOW_COPY_AND_ASSIGN(DeferredGpuCommandService);
 };
 

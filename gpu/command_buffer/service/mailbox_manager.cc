@@ -5,6 +5,7 @@
 #include "gpu/command_buffer/service/mailbox_manager.h"
 
 #include "base/command_line.h"
+#include "base/memory/ptr_util.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/command_buffer/service/mailbox_manager_impl.h"
 #include "gpu/command_buffer/service/mailbox_manager_sync.h"
@@ -13,11 +14,11 @@ namespace gpu {
 namespace gles2 {
 
 // static
-scoped_refptr<MailboxManager> MailboxManager::Create(
+std::unique_ptr<MailboxManager> MailboxManager::Create(
     const GpuPreferences& gpu_preferences) {
   if (gpu_preferences.enable_threaded_texture_mailboxes)
-    return scoped_refptr<MailboxManager>(new MailboxManagerSync);
-  return scoped_refptr<MailboxManager>(new MailboxManagerImpl);
+    return base::MakeUnique<MailboxManagerSync>();
+  return base::MakeUnique<MailboxManagerImpl>();
 }
 
 }  // namespage gles2

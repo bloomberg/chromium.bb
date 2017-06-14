@@ -119,7 +119,7 @@ class FramebufferInfoTestBase : public GpuServiceTest {
       : context_type_(context_type),
         manager_(kMaxDrawBuffers,
                  kMaxColorAttachments,
-                 new FramebufferCompletenessCache),
+                 &framebuffer_completeness_cache_),
         feature_info_(new FeatureInfo()) {
     texture_manager_.reset(new TextureManager(
         nullptr, feature_info_.get(), kMaxTextureSize, kMaxCubemapSize,
@@ -158,6 +158,7 @@ class FramebufferInfoTestBase : public GpuServiceTest {
   }
 
   ContextType context_type_;
+  FramebufferCompletenessCache framebuffer_completeness_cache_;
   FramebufferManager manager_;
   Framebuffer* framebuffer_;
   scoped_refptr<FeatureInfo> feature_info_;
