@@ -177,7 +177,7 @@ void MDnsAPI::OnDnsSdEvent(const std::string& service_type,
   auto event = base::MakeUnique<Event>(events::MDNS_ON_SERVICE_LIST,
                                        mdns::OnServiceList::kEventName,
                                        std::move(results), browser_context_);
-  event->filter_info.SetServiceType(service_type);
+  event->filter_info.service_type = service_type;
 
   // TODO(justinlin): To avoid having listeners without filters getting all
   // events, modify API to have this event require filters.

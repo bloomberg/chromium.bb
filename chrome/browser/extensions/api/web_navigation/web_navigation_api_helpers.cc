@@ -50,7 +50,7 @@ void DispatchEvent(content::BrowserContext* browser_context,
                    std::unique_ptr<Event> event,
                    const GURL& url) {
   EventFilteringInfo info;
-  info.SetURL(url);
+  info.url = url;
 
   Profile* profile = Profile::FromBrowserContext(browser_context);
   EventRouter* event_router = EventRouter::Get(profile);
@@ -85,7 +85,7 @@ std::unique_ptr<Event> CreateOnBeforeNavigateEvent(
       navigation_handle->GetWebContents()->GetBrowserContext());
 
   EventFilteringInfo info;
-  info.SetURL(navigation_handle->GetURL());
+  info.url = navigation_handle->GetURL();
   event->filter_info = info;
 
   return event;

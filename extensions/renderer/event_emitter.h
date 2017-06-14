@@ -17,7 +17,7 @@ class Arguments;
 
 namespace extensions {
 class APIEventListeners;
-class EventFilteringInfo;
+struct EventFilteringInfo;
 
 // A gin::Wrappable Event object. One is expected to be created per event, per
 // context. Note: this object *does not* clear any events, so it must be

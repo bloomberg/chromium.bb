@@ -733,7 +733,7 @@ void MenuManager::ExecuteCommand(content::BrowserContext* context,
         std::move(args), context);
     event->user_gesture = EventRouter::USER_GESTURE_ENABLED;
     if (webview_guest)
-      event->filter_info.SetInstanceID(webview_guest->view_instance_id());
+      event->filter_info.instance_id = webview_guest->view_instance_id();
     event_router->DispatchEventToExtension(item->extension_id(),
                                            std::move(event));
   }

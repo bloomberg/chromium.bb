@@ -11,8 +11,7 @@
 #include "base/values.h"
 
 namespace extensions {
-
-class EventFilteringInfo;
+struct EventFilteringInfo;
 
 extern const char kEventFilterServiceTypeKey[];
 
