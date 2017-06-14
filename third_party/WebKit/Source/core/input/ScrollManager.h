@@ -114,7 +114,8 @@ class CORE_EXPORT ScrollManager
   // scroller_size is set only when scrolling non root scroller.
   void ComputeScrollRelatedMetrics(
       uint32_t* non_composited_main_thread_scrolling_reasons,
-      int* scroller_size);
+      int* scroller_size,
+      bool* scroller_size_updated);
   void RecordScrollRelatedMetrics(const WebGestureDevice);
 
   // NOTE: If adding a new field to this class please ensure that it is
