@@ -191,9 +191,6 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client {
 
   void NotifyClientRedirectTo(const PageLoadTracker& destination);
 
-  void OnStartedResource(
-      const ExtraRequestStartInfo& extra_request_started_info);
-
   void OnLoadedResource(
       const ExtraRequestCompleteInfo& extra_request_complete_info);
 

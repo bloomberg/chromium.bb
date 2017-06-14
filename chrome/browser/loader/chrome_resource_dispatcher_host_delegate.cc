@@ -349,28 +349,6 @@ void LogMainFrameMetricsOnUIThread(const GURL& url,
   }
 }
 
-void NotifyUIThreadOfRequestStarted(
-    const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
-    const content::GlobalRequestID& request_id,
-    ResourceType resource_type,
-    bool is_download,
-    base::TimeTicks request_creation_time) {
-  content::WebContents* web_contents = web_contents_getter.Run();
-  if (!web_contents)
-    return;
-
-  if (!is_download) {
-    page_load_metrics::MetricsWebContentsObserver* metrics_observer =
-        page_load_metrics::MetricsWebContentsObserver::FromWebContents(
-            web_contents);
-
-    if (metrics_observer) {
-      metrics_observer->OnRequestStarted(request_id, resource_type,
-                                         request_creation_time);
-    }
-  }
-}
-
 void NotifyUIThreadOfRequestComplete(
     const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
     const content::ResourceRequestInfo::FrameTreeNodeIdGetter&
@@ -479,16 +457,6 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
     safe_browsing_->OnResourceRequest(request);
 
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
-
-  // TODO(petewil): Unify the safe browsing request and the metrics observer
-  // request if possible so we only have to cross to the main thread once.
-  // http://crbug.com/712312.
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&NotifyUIThreadOfRequestStarted,
-                 info->GetWebContentsGetterForRequest(),
-                 info->GetGlobalRequestID(), info->GetResourceType(),
-                 info->IsDownload(), request->creation_time()));
 
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(
       resource_context);

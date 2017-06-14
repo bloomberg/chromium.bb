@@ -90,12 +90,6 @@ void PageLoadMetricsObserverTestHarness::SimulateTimingAndMetadataUpdate(
     mock_timer->Fire();
 }
 
-void PageLoadMetricsObserverTestHarness::SimulateStartedResource(
-    const ExtraRequestStartInfo& info) {
-  observer_->OnRequestStarted(content::GlobalRequestID(), info.resource_type,
-                              base::TimeTicks::Now());
-}
-
 void PageLoadMetricsObserverTestHarness::SimulateLoadedResource(
     const ExtraRequestCompleteInfo& info) {
   observer_->OnRequestComplete(

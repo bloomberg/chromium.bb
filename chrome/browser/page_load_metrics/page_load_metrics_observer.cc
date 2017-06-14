@@ -81,14 +81,6 @@ ExtraRequestCompleteInfo::ExtraRequestCompleteInfo(
 
 ExtraRequestCompleteInfo::~ExtraRequestCompleteInfo() {}
 
-ExtraRequestStartInfo::ExtraRequestStartInfo(content::ResourceType found_type)
-    : resource_type(found_type) {}
-
-ExtraRequestStartInfo::ExtraRequestStartInfo(
-    const ExtraRequestStartInfo& other) = default;
-
-ExtraRequestStartInfo::~ExtraRequestStartInfo() {}
-
 FailedProvisionalLoadInfo::FailedProvisionalLoadInfo(base::TimeDelta interval,
                                                      net::Error error)
     : time_to_failed_provisional_load(interval), error(error) {}
