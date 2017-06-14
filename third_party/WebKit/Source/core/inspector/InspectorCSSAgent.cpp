@@ -54,12 +54,10 @@
 #include "core/css/resolver/StyleResolver.h"
 #include "core/css/resolver/StyleRuleUsageTracker.h"
 #include "core/dom/DOMException.h"
-#include "core/dom/DOMNodeIds.h"
 #include "core/dom/Node.h"
 #include "core/dom/StyleChangeReason.h"
 #include "core/dom/StyleEngine.h"
 #include "core/dom/Text.h"
-#include "core/dom/shadow/ElementShadow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLFrameOwnerElement.h"
@@ -293,16 +291,6 @@ bool GetColorsFromRect(LayoutRect rect,
   return found_opaque_color;
 }
 
-std::unique_ptr<protocol::DOM::Rect> BuildRectForFloatRect(
-    const FloatRect& rect) {
-  return protocol::DOM::Rect::create()
-      .setX(rect.X())
-      .setY(rect.Y())
-      .setWidth(rect.Width())
-      .setHeight(rect.Height())
-      .build();
-}
-
 }  // namespace
 
 namespace CSSAgentState {
@@ -358,42 +346,6 @@ class InspectorCSSAgent::StyleSheetAction : public InspectorHistory::Action {
   virtual std::unique_ptr<protocol::CSS::CSSStyle> TakeSerializedStyle() {
     return nullptr;
   }
-};
-
-struct InspectorCSSAgent::VectorStringHashTraits
-    : public WTF::GenericHashTraits<Vector<String>> {
-  static unsigned GetHash(const Vector<String>& vec) {
-    unsigned h = DefaultHash<size_t>::Hash::GetHash(vec.size());
-    for (size_t i = 0; i < vec.size(); i++) {
-      h = WTF::HashInts(h, DefaultHash<String>::Hash::GetHash(vec[i]));
-    }
-    return h;
-  }
-
-  static bool Equal(const Vector<String>& a, const Vector<String>& b) {
-    if (a.size() != b.size())
-      return false;
-    for (size_t i = 0; i < a.size(); i++) {
-      if (a[i] != b[i])
-        return false;
-    }
-    return true;
-  }
-
-  static void ConstructDeletedValue(Vector<String>& vec, bool) {
-    vec.clear();
-    vec.push_back(String(WTF::kHashTableDeletedValue));
-  }
-
-  static bool IsDeletedValue(const Vector<String>& vec) {
-    return !vec.IsEmpty() && vec[0].IsHashTableDeletedValue();
-  }
-
-  static bool IsEmptyValue(const Vector<String>& vec) { return vec.IsEmpty(); }
-
-  static const bool kEmptyValueIsZero = false;
-  static const bool safe_to_compare_to_empty_or_deleted = false;
-  static const bool kHasIsEmptyValueFunction = true;
 };
 
 class InspectorCSSAgent::SetStyleSheetTextAction final
@@ -2325,160 +2277,6 @@ Response InspectorCSSAgent::getBackgroundColors(
   for (auto color : colors)
     result->fromJust()->addItem(color.SerializedAsCSSComponentValue());
   return Response::OK();
-}
-
-Response InspectorCSSAgent::getLayoutTreeAndStyles(
-    std::unique_ptr<protocol::Array<String>> style_whitelist,
-    std::unique_ptr<protocol::Array<protocol::CSS::LayoutTreeNode>>*
-        layout_tree_nodes,
-    std::unique_ptr<protocol::Array<protocol::CSS::ComputedStyle>>*
-        computed_styles) {
-  dom_agent_->GetDocument()->UpdateStyleAndLayoutTree();
-
-  // Look up the CSSPropertyIDs for each entry in |styleWhitelist|.
-  Vector<std::pair<String, CSSPropertyID>> css_property_whitelist;
-  for (size_t i = 0; i < style_whitelist->length(); i++) {
-    CSSPropertyID property_id = cssPropertyID(style_whitelist->get(i));
-    if (property_id == CSSPropertyInvalid)
-      continue;
-    css_property_whitelist.push_back(
-        std::make_pair(style_whitelist->get(i), property_id));
-  }
-
-  *layout_tree_nodes = protocol::Array<protocol::CSS::LayoutTreeNode>::create();
-  *computed_styles = protocol::Array<protocol::CSS::ComputedStyle>::create();
-
-  ComputedStylesMap style_to_index_map;
-  VisitLayoutTreeNodes(dom_agent_->GetDocument(), *layout_tree_nodes->get(),
-                       css_property_whitelist, style_to_index_map,
-                       *computed_styles->get());
-  return Response::OK();
-}
-
-int InspectorCSSAgent::GetStyleIndexForNode(
-    Node* node,
-    const Vector<std::pair<String, CSSPropertyID>>& css_property_whitelist,
-    ComputedStylesMap& style_to_index_map,
-    protocol::Array<protocol::CSS::ComputedStyle>& computed_styles) {
-  CSSComputedStyleDeclaration* computed_style_info =
-      CSSComputedStyleDeclaration::Create(node, true);
-
-  Vector<String> style;
-  bool all_properties_empty = true;
-  for (const auto& pair : css_property_whitelist) {
-    String value = computed_style_info->GetPropertyValue(pair.second);
-    if (!value.IsEmpty())
-      all_properties_empty = false;
-    style.push_back(value);
-  }
-
-  // -1 means an empty style.
-  if (all_properties_empty)
-    return -1;
-
-  ComputedStylesMap::iterator it = style_to_index_map.find(style);
-  if (it != style_to_index_map.end())
-    return it->value;
-
-  // It's a distinct style, so append to |computedStyles|.
-  std::unique_ptr<protocol::Array<protocol::CSS::CSSComputedStyleProperty>>
-      style_properties =
-          protocol::Array<protocol::CSS::CSSComputedStyleProperty>::create();
-
-  for (size_t i = 0; i < style.size(); i++) {
-    if (style[i].IsEmpty())
-      continue;
-    style_properties->addItem(protocol::CSS::CSSComputedStyleProperty::create()
-                                  .setName(css_property_whitelist[i].first)
-                                  .setValue(style[i])
-                                  .build());
-  }
-  computed_styles.addItem(protocol::CSS::ComputedStyle::create()
-                              .setProperties(std::move(style_properties))
-                              .build());
-
-  size_t index = style_to_index_map.size();
-  style_to_index_map.insert(std::move(style), index);
-  return index;
-}
-
-void InspectorCSSAgent::VisitLayoutTreeNodes(
-    Node* node,
-    protocol::Array<protocol::CSS::LayoutTreeNode>& layout_tree_nodes,
-    const Vector<std::pair<String, CSSPropertyID>>& css_property_whitelist,
-    ComputedStylesMap& style_to_index_map,
-    protocol::Array<protocol::CSS::ComputedStyle>& computed_styles) {
-  for (; node; node = NodeTraversal::Next(*node)) {
-    // Visit shadow dom nodes.
-    if (node->IsElementNode()) {
-      const Element* element = ToElement(node);
-      ElementShadow* element_shadow = element->Shadow();
-      if (element_shadow) {
-        VisitLayoutTreeNodes(&element_shadow->YoungestShadowRoot(),
-                             layout_tree_nodes, css_property_whitelist,
-                             style_to_index_map, computed_styles);
-      }
-    }
-
-    // Pierce iframe boundaries.
-    if (node->IsFrameOwnerElement()) {
-      Document* content_document =
-          ToHTMLFrameOwnerElement(node)->contentDocument();
-      if (content_document) {
-        content_document->UpdateStyleAndLayoutTree();
-        VisitLayoutTreeNodes(content_document->documentElement(),
-                             layout_tree_nodes, css_property_whitelist,
-                             style_to_index_map, computed_styles);
-      }
-    }
-
-    LayoutObject* layout_object = node->GetLayoutObject();
-    if (!layout_object)
-      continue;
-
-    int node_id = dom_agent_->BoundNodeId(node);
-    if (!node_id)
-      continue;
-
-    std::unique_ptr<protocol::CSS::LayoutTreeNode> layout_tree_node =
-        protocol::CSS::LayoutTreeNode::create()
-            .setNodeId(node_id)
-            .setBoundingBox(BuildRectForFloatRect(
-                node->IsElementNode()
-                    ? FloatRect(ToElement(node)->BoundsInViewport())
-                    : layout_object->AbsoluteBoundingBoxRect()))
-            .build();
-    int style_index = GetStyleIndexForNode(node, css_property_whitelist,
-                                           style_to_index_map, computed_styles);
-    if (style_index != -1)
-      layout_tree_node->setStyleIndex(style_index);
-
-    if (layout_object->IsText()) {
-      LayoutText* layout_text = ToLayoutText(layout_object);
-      layout_tree_node->setLayoutText(layout_text->GetText());
-      if (layout_text->HasTextBoxes()) {
-        std::unique_ptr<protocol::Array<protocol::CSS::InlineTextBox>>
-            inline_text_nodes =
-                protocol::Array<protocol::CSS::InlineTextBox>::create();
-        for (const InlineTextBox* text_box : InlineTextBoxesOf(*layout_text)) {
-          FloatRect local_coords_text_box_rect(text_box->FrameRect());
-          FloatRect absolute_coords_text_box_rect =
-              layout_object->LocalToAbsoluteQuad(local_coords_text_box_rect)
-                  .BoundingBox();
-          inline_text_nodes->addItem(
-              protocol::CSS::InlineTextBox::create()
-                  .setStartCharacterIndex(text_box->Start())
-                  .setNumCharacters(text_box->Len())
-                  .setBoundingBox(
-                      BuildRectForFloatRect(absolute_coords_text_box_rect))
-                  .build());
-        }
-        layout_tree_node->setInlineTextNodes(std::move(inline_text_nodes));
-      }
-    }
-
-    layout_tree_nodes.addItem(std::move(layout_tree_node));
-  }
 }
 
 void InspectorCSSAgent::SetCoverageEnabled(bool enabled) {
