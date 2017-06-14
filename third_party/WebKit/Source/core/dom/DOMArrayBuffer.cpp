@@ -88,10 +88,12 @@ DOMArrayBuffer* DOMArrayBuffer::Create(PassRefPtr<SharedBuffer> shared_buffer) {
   if (UNLIKELY(!data))
     OOM_CRASH();
 
-  shared_buffer->ForEachSegment(
-      [&data](const char* segment, size_t segment_size, size_t segment_offset) {
-        memcpy(data + segment_offset, segment, segment_size);
-      });
+  shared_buffer->ForEachSegment([&data](const char* segment,
+                                        size_t segment_size,
+                                        size_t segment_offset) -> bool {
+    memcpy(data + segment_offset, segment, segment_size);
+    return true;
+  });
 
   return Create(ArrayBuffer::Create(contents));
 }

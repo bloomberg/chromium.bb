@@ -132,13 +132,21 @@ class PLATFORM_EXPORT SharedBuffer : public RefCounted<SharedBuffer> {
 
   void OnMemoryDump(const String& dump_prefix, WebProcessMemoryDump*) const;
 
+  // Helper for applying a lambda to all data segments, sequentially:
+  //
+  //   bool func(const char* segment, size_t segment_size,
+  //             size_t segment_offset);
+  //
+  // The iterator stops early when the lambda returns |false|.
+  //
   template <typename Func>
   void ForEachSegment(Func&& func) const {
     const char* segment;
     size_t pos = 0;
 
     while (size_t length = GetSomeData(segment, pos)) {
-      func(segment, length, pos);
+      if (!func(segment, length, pos))
+        break;
       pos += length;
     }
   }

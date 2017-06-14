@@ -145,8 +145,9 @@ Vector<char> SharedBuffer::Copy() const {
   buffer.ReserveInitialCapacity(size_);
 
   ForEachSegment([&buffer](const char* segment, size_t segment_size,
-                           size_t segment_offset) {
+                           size_t segment_offset) -> bool {
     buffer.Append(segment, segment_size);
+    return true;
   });
 
   DCHECK_EQ(buffer.size(), size_);
