@@ -107,7 +107,6 @@ public class PrintingControllerTest {
     @TargetApi(Build.VERSION_CODES.KITKAT)
     @LargeTest
     @Feature({"Printing"})
-    @DisabledTest(message = "crbug.com/733002")
     public void testNormalPrintingFlow() throws Throwable {
         if (!ApiCompatibilityUtils.isPrintingSupported()) return;
 
@@ -161,8 +160,8 @@ public class PrintingControllerTest {
             String preamble = new String(b);
             Assert.assertEquals(PDF_PREAMBLE, preamble);
         } finally {
-            callFinishOnUiThread(printingController);
             if (in != null) in.close();
+            callFinishOnUiThread(printingController);
             // Close the descriptor, if not closed already.
             fileDescriptor.close();
             TestFileUtil.deleteFile(tempFile.getAbsolutePath());
