@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("ocmock") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "OCMockObject+BreakpadControllerTesting.h",
