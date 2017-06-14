@@ -14,6 +14,7 @@
 #include "ui/app_list/search_provider.h"
 #include "url/gurl.h"
 
+class AppListControllerDelegate;
 class Profile;
 
 namespace app_list {
@@ -36,7 +37,9 @@ class AnswerCardSearchProvider : public SearchProvider,
                                  public content::WebContentsDelegate,
                                  public content::WebContentsObserver {
  public:
-  AnswerCardSearchProvider(Profile* profile, app_list::AppListModel* model);
+  AnswerCardSearchProvider(Profile* profile,
+                           app_list::AppListModel* model,
+                           AppListControllerDelegate* list_controller);
 
   ~AnswerCardSearchProvider() override;
 
@@ -76,6 +79,9 @@ class AnswerCardSearchProvider : public SearchProvider,
 
   // Unowned pointer to app list model.
   app_list::AppListModel* const model_;
+
+  // Unowned pointer to app list controller.
+  AppListControllerDelegate* const list_controller_;
 
   // Web view for the web contents managed by this class.
   const std::unique_ptr<views::WebView> web_view_;
