@@ -31,9 +31,12 @@ class PersistentSystemProfile {
       base::PersistentMemoryAllocator* memory_allocator);
 
   // Stores a complete system profile. Use the version taking the serialized
-  // version if available to avoid multiple serialization actions.
-  void SetSystemProfile(const std::string& serialized_profile);
-  void SetSystemProfile(const SystemProfileProto& profile);
+  // version if available to avoid multiple serialization actions. The
+  // |complete| flag indicates that this profile contains all known information
+  // and can replace whatever exists. If the flag is false, the profile will be
+  // stored only if there is nothing else already present.
+  void SetSystemProfile(const std::string& serialized_profile, bool complete);
+  void SetSystemProfile(const SystemProfileProto& profile, bool complete);
 
   // Tests if a persistent memory allocator contains an system profile.
   static bool HasSystemProfile(
@@ -76,6 +79,9 @@ class PersistentSystemProfile {
 
     base::PersistentMemoryAllocator* allocator() { return allocator_; }
 
+    bool has_complete_profile() { return has_complete_profile_; }
+    void set_complete_profile() { has_complete_profile_ = true; }
+
    private:
     // Advance to the next record segment in the memory allocator.
     bool NextSegment() const;
@@ -97,6 +103,9 @@ class PersistentSystemProfile {
     // This never changes but can't be "const" because vector calls operator=().
     base::PersistentMemoryAllocator* allocator_;  // Storage location.
 
+    // Indicates if a complete profile has been stored.
+    bool has_complete_profile_;
+
     // These change even though the underlying data may be "const".
     mutable uint32_t alloc_reference_;  // Last storage block.
     mutable size_t alloc_size_;         // Size of the block.
@@ -108,6 +117,9 @@ class PersistentSystemProfile {
   // The list of registered persistent allocators, described by RecordAllocator
   // instances.
   std::vector<RecordAllocator> allocators_;
+
+  // Indicates if a complete profile has been stored to all allocators.
+  bool all_have_complete_profile_ = false;
 
   THREAD_CHECKER(thread_checker_);
 

@@ -46,6 +46,7 @@ PersistentSystemProfile::RecordAllocator::RecordAllocator(
     base::PersistentMemoryAllocator* memory_allocator,
     size_t min_size)
     : allocator_(memory_allocator),
+      has_complete_profile_(false),
       alloc_reference_(0),
       alloc_size_(0),
       end_offset_(0) {
@@ -75,6 +76,7 @@ void PersistentSystemProfile::RecordAllocator::Reset() {
   }
 
   // Reset member variables.
+  has_complete_profile_ = false;
   alloc_reference_ = 0;
   alloc_size_ = 0;
   end_offset_ = 0;
@@ -264,6 +266,7 @@ void PersistentSystemProfile::RegisterPersistentAllocator(
   // block is reserved now.
   RecordAllocator allocator(memory_allocator, 1);
   allocators_.push_back(std::move(allocator));
+  all_have_complete_profile_ = false;
 }
 
 void PersistentSystemProfile::DeregisterPersistentAllocator(
@@ -278,26 +281,42 @@ void PersistentSystemProfile::DeregisterPersistentAllocator(
 }
 
 void PersistentSystemProfile::SetSystemProfile(
-    const std::string& serialized_profile) {
+    const std::string& serialized_profile,
+    bool complete) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (allocators_.empty() || serialized_profile.empty())
     return;
 
   for (auto& allocator : allocators_) {
+    // Don't overwrite a complete profile with an incomplete one.
+    if (!complete && allocator.has_complete_profile())
+      continue;
     // A full system profile always starts fresh.
     allocator.Reset();
     // Write out the serialized profile.
     allocator.Write(kSystemProfileProto, serialized_profile);
+    // Indicate if this is a complete profile.
+    if (complete)
+      allocator.set_complete_profile();
   }
+
+  if (complete)
+    all_have_complete_profile_ = true;
 }
 
 void PersistentSystemProfile::SetSystemProfile(
-    const SystemProfileProto& profile) {
+    const SystemProfileProto& profile,
+    bool complete) {
+  // Avoid serialization if passed profile is not complete and all allocators
+  // already have complete ones.
+  if (!complete && all_have_complete_profile_)
+    return;
+
   std::string serialized_profile;
   if (!profile.SerializeToString(&serialized_profile))
     return;
-  SetSystemProfile(serialized_profile);
+  SetSystemProfile(serialized_profile, complete);
 }
 
 // static
