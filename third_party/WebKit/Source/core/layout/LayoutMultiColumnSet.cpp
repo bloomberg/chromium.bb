@@ -86,23 +86,25 @@ LayoutMultiColumnSet::FragmentainerGroupAtVisualPoint(
 }
 
 LayoutUnit LayoutMultiColumnSet::PageLogicalHeightForOffset(
-    LayoutUnit offset_in_flow_thread) const {
+    LayoutUnit offset) const {
   DCHECK(IsPageLogicalHeightKnown());
   const MultiColumnFragmentainerGroup& last_row = LastFragmentainerGroup();
-  if (offset_in_flow_thread >= last_row.LogicalTopInFlowThread() +
-                                   FragmentainerGroupCapacity(last_row)) {
-    // The offset is outside the bounds of the fragmentainer groups that we have
-    // established at this point. If we're nested inside another fragmentation
-    // context, we need to calculate the height on our own.
+  if (offset >= last_row.LogicalTopInFlowThread() +
+                    FragmentainerGroupCapacity(last_row)) {
+    // The offset is outside the bounds of the fragmentainer groups that we
+    // have established at this point. If we're nested inside another
+    // fragmentation context, and are allowed to create additional rows, we
+    // need to calculate the height on our own.
     const LayoutMultiColumnFlowThread* flow_thread = MultiColumnFlowThread();
     FragmentationContext* enclosing_fragmentation_context =
         flow_thread->EnclosingFragmentationContext();
     if (enclosing_fragmentation_context &&
+        NeedsNewFragmentainerGroupAt(offset, kAssociateWithLatterPage) &&
         enclosing_fragmentation_context->IsFragmentainerLogicalHeightKnown()) {
-      // We'd ideally like to translate |offset_in_flow_thread| to an offset in
-      // the coordinate space of the enclosing fragmentation context here, but
-      // that's hard, since the offset is out of bounds. So just use the bottom
-      // we have found so far.
+      // We'd ideally like to translate |offset| to an offset in the coordinate
+      // space of the enclosing fragmentation context here, but that's hard,
+      // since the offset is out of bounds. So just use the bottom we have
+      // found so far.
       LayoutUnit enclosing_context_bottom =
           last_row.BlockOffsetInEnclosingFragmentationContext() +
           last_row.GroupLogicalHeight();
@@ -121,8 +123,7 @@ LayoutUnit LayoutMultiColumnSet::PageLogicalHeightForOffset(
       return extra_row_height.ClampNegativeToZero();
     }
   }
-  return FragmentainerGroupAtFlowThreadOffset(offset_in_flow_thread,
-                                              kAssociateWithLatterPage)
+  return FragmentainerGroupAtFlowThreadOffset(offset, kAssociateWithLatterPage)
       .ColumnLogicalHeight();
 }
 
