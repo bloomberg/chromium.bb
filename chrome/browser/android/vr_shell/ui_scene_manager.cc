@@ -152,7 +152,8 @@ void UiSceneManager::CreateSecurityWarnings() {
   element->set_translation(
       gfx::Vector3dF(0, kWarningDistance * sin(kWarningAngleRadians),
                      -kWarningDistance * cos(kWarningAngleRadians)));
-  element->set_rotation({1.0f, 0, 0, kWarningAngleRadians});
+  element->set_rotation(
+      gfx::Quaternion(gfx::Vector3dF(1, 0, 0), kWarningAngleRadians));
   element->set_visible(false);
   element->set_hit_testable(false);
   element->set_lock_to_fov(true);
@@ -269,7 +270,7 @@ void UiSceneManager::CreateBackground() {
   element->set_id(AllocateId());
   element->set_size({kSceneSize, kSceneSize, 1.0});
   element->set_translation({0.0, -kSceneHeight / 2, 0.0});
-  element->set_rotation({1.0, 0.0, 0.0, -M_PI / 2.0});
+  element->set_rotation(gfx::Quaternion(gfx::Vector3dF(1, 0, 0), -M_PI / 2));
   element->set_fill(vr_shell::Fill::GRID_GRADIENT);
   element->set_draw_phase(0);
   element->set_gridline_count(kFloorGridlineCount);
@@ -283,7 +284,7 @@ void UiSceneManager::CreateBackground() {
   element->set_id(AllocateId());
   element->set_size({kSceneSize, kSceneSize, 1.0});
   element->set_translation({0.0, kSceneHeight / 2, 0.0});
-  element->set_rotation({1.0, 0.0, 0.0, M_PI / 2});
+  element->set_rotation(gfx::Quaternion(gfx::Vector3dF(1, 0, 0), M_PI / 2));
   element->set_fill(vr_shell::Fill::OPAQUE_GRADIENT);
   element->set_draw_phase(0);
   ceiling_ = element.get();
@@ -304,7 +305,8 @@ void UiSceneManager::CreateUrlBar() {
   url_bar->set_debug_id(kUrlBar);
   url_bar->set_id(AllocateId());
   url_bar->set_translation({0, kUrlBarVerticalOffset, -kUrlBarDistance});
-  url_bar->set_rotation({1.0, 0.0, 0.0, kUrlBarRotationRad});
+  url_bar->set_rotation(
+      gfx::Quaternion(gfx::Vector3dF(1, 0, 0), kUrlBarRotationRad));
   url_bar->set_size({kUrlBarWidth, kUrlBarHeight, 1});
   url_bar_ = url_bar.get();
   control_elements_.push_back(url_bar.get());

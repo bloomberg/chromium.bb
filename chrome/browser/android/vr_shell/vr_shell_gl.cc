@@ -1247,7 +1247,8 @@ void VrShellGl::DrawElements(const vr::Mat4f& view_proj_matrix,
 void VrShellGl::DrawElement(const vr::Mat4f& view_proj_matrix,
                             const UiElement& element) {
   vr::Mat4f transform;
-  vr::MatrixMul(view_proj_matrix, element.TransformMatrix(), &transform);
+  vr::MatrixMul(view_proj_matrix, vr::ToMat4F(element.TransformMatrix()),
+                &transform);
 
   switch (element.fill()) {
     case Fill::OPAQUE_GRADIENT: {
@@ -1271,7 +1272,7 @@ void VrShellGl::DrawElement(const vr::Mat4f& view_proj_matrix,
       break;
     }
     case Fill::SELF: {
-      element.Render(vr_shell_renderer_.get(), transform);
+      element.Render(vr_shell_renderer_.get(), vr::ToTransform(transform));
       break;
     }
     default:
@@ -1295,8 +1296,13 @@ std::vector<const UiElement*> VrShellGl::GetElementsInDrawOrder(
               if (first->draw_phase() != second->draw_phase()) {
                 return first->draw_phase() < second->draw_phase();
               } else {
-                return vr::GetTranslation(first->TransformMatrix()).z() <
-                       vr::GetTranslation(second->TransformMatrix()).z();
+                const float first_depth =
+                    vr::GetTranslation(vr::ToMat4F(first->TransformMatrix()))
+                        .z();
+                const float second_depth =
+                    vr::GetTranslation(vr::ToMat4F(second->TransformMatrix()))
+                        .z();
+                return first_depth < second_depth;
               }
             });
 

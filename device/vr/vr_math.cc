@@ -296,4 +296,24 @@ gfx::Quaternion ToQuaternion(const vr::Quatf& q) {
   return {q.qx, q.qy, q.qz, q.qw};
 }
 
+Mat4f ToMat4F(const gfx::Transform& t) {
+  Mat4f result;
+  for (int i = 0; i < 4; ++i) {
+    for (int j = 0; j < 4; ++j) {
+      result[i][j] = t.matrix().get(i, j);
+    }
+  }
+  return result;
+}
+
+gfx::Transform DEVICE_VR_EXPORT ToTransform(const vr::Mat4f& m) {
+  gfx::Transform result;
+  for (int i = 0; i < 4; ++i) {
+    for (int j = 0; j < 4; ++j) {
+      result.matrix().set(i, j, m[i][j]);
+    }
+  }
+  return result;
+}
+
 }  // namespace vr

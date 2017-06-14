@@ -12,8 +12,11 @@
 #include "base/macros.h"
 #include "chrome/browser/android/vr_shell/color_scheme.h"
 #include "chrome/browser/android/vr_shell/ui_elements/ui_element_debug_id.h"
-#include "device/vr/vr_types.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/geometry/point3_f.h"
+#include "ui/gfx/geometry/quaternion.h"
+#include "ui/gfx/geometry/vector3d_f.h"
+#include "ui/gfx/transform.h"
 
 namespace base {
 class TimeTicks;
@@ -57,17 +60,16 @@ struct Transform {
   explicit Transform(const Transform& other);
 
   void MakeIdentity();
-  void Rotate(const vr::Quatf& quat);
-  void Rotate(const vr::RotationAxisAngle& axis_angle);
+  void Rotate(const gfx::Quaternion& quat);
   void Translate(const gfx::Vector3dF& translation);
   void Scale(const gfx::Vector3dF& scale);
 
-  vr::Mat4f to_world;
+  gfx::Transform to_world;
 };
 
 class WorldRectangle {
  public:
-  const vr::Mat4f& TransformMatrix() const;
+  const gfx::Transform& TransformMatrix() const;
   Transform* mutable_transform() { return &transform_; }
 
   gfx::Point3F GetCenter() const;
@@ -108,7 +110,7 @@ class UiElement : public WorldRectangle {
   bool IsHitTestable() const;
 
   virtual void Render(UiElementRenderer* renderer,
-                      vr::Mat4f view_proj_matrix) const;
+                      gfx::Transform view_proj_matrix) const;
 
   virtual void Initialize();
 
@@ -167,10 +169,8 @@ class UiElement : public WorldRectangle {
   void set_scale(const gfx::Vector3dF& scale) { scale_ = scale; }
 
   // The rotation of the object, and its children.
-  vr::RotationAxisAngle rotation() const { return rotation_; }
-  void set_rotation(const vr::RotationAxisAngle& rotation) {
-    rotation_ = rotation;
-  }
+  gfx::Quaternion rotation() const { return rotation_; }
+  void set_rotation(const gfx::Quaternion& rotation) { rotation_ = rotation; }
 
   // The translation of the object, and its children.  Translation is applied
   // after rotation and scaling.
@@ -227,11 +227,13 @@ class UiElement : public WorldRectangle {
   void set_draw_phase(int draw_phase) { draw_phase_ = draw_phase; }
 
   // This transform can be used by children to derive position of its parent.
-  Transform& inheritable_transform() { return inheritable_transform_; }
-  const Transform& inheritable_transform() const {
+  vr_shell::Transform& inheritable_transform() {
     return inheritable_transform_;
   }
-  void set_inheritable_transform(const Transform& transform) {
+  const vr_shell::Transform& inheritable_transform() const {
+    return inheritable_transform_;
+  }
+  void set_inheritable_transform(const vr_shell::Transform& transform) {
     inheritable_transform_ = transform;
   }
 
@@ -285,7 +287,7 @@ class UiElement : public WorldRectangle {
   gfx::Vector3dF scale_ = {1.0f, 1.0f, 1.0f};
 
   // The rotation of the object, and its children.
-  vr::RotationAxisAngle rotation_ = {1.0f, 0.0f, 0.0f, 0.0f};
+  gfx::Quaternion rotation_;
 
   // The translation of the object, and its children.  Translation is applied
   // after rotation and scaling.
@@ -317,7 +319,7 @@ class UiElement : public WorldRectangle {
   int draw_phase_ = 1;
 
   // This transform can be used by children to derive position of its parent.
-  Transform inheritable_transform_;
+  vr_shell::Transform inheritable_transform_;
 
   // A flag usable during transformation calculates to avoid duplicate work.
   bool dirty_ = false;
@@ -325,7 +327,7 @@ class UiElement : public WorldRectangle {
   // An identifier used for testing and debugging, in lieu of a string.
   UiElementDebugId debug_id_ = UiElementDebugId::kNone;
 
-  Transform transform_;
+  vr_shell::Transform transform_;
 
   ColorScheme::Mode mode_ = ColorScheme::kModeNormal;
 

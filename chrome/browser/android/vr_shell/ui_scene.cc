@@ -251,16 +251,17 @@ void UiScene::ApplyRecursiveTransforms(UiElement* element) {
     ApplyAnchoring(*parent, element->x_anchoring(), element->y_anchoring(),
                    inheritable);
     ApplyRecursiveTransforms(parent);
-    vr::MatrixMul(parent->inheritable_transform().to_world,
-                  inheritable->to_world, &inheritable->to_world);
+    vr::Mat4f product;
+    vr::MatrixMul(vr::ToMat4F(parent->inheritable_transform().to_world),
+                  vr::ToMat4F(inheritable->to_world), &product);
+    inheritable->to_world = vr::ToTransform(product);
 
     element->set_computed_opacity(element->computed_opacity() *
                                   parent->opacity());
     element->set_computed_lock_to_fov(parent->lock_to_fov());
   }
 
-  vr::MatrixMul(inheritable->to_world, transform->to_world,
-                &transform->to_world);
+  transform->to_world = inheritable->to_world * transform->to_world;
   element->set_dirty(false);
 }
 

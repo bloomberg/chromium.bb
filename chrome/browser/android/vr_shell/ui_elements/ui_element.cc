@@ -10,7 +10,6 @@
 #include "base/time/time.h"
 #include "chrome/browser/android/vr_shell/animation.h"
 #include "chrome/browser/android/vr_shell/easing.h"
-#include "device/vr/vr_math.h"
 
 namespace vr_shell {
 
@@ -41,61 +40,59 @@ Transform::Transform(const Transform& other) {
 }
 
 void Transform::MakeIdentity() {
-  vr::SetIdentityM(&to_world);
+  to_world.MakeIdentity();
 }
 
-void Transform::Rotate(const vr::Quatf& quat) {
+void Transform::Rotate(const gfx::Quaternion& q) {
   // TODO(klausw): use specialized rotation code? Constructing the matrix
   // via axis-angle quaternion is inefficient.
-  vr::Mat4f forward;
-  vr::QuatToMatrix(quat, &forward);
-  vr::MatrixMul(forward, to_world, &to_world);
-}
-
-void Transform::Rotate(const vr::RotationAxisAngle& axis_angle) {
-  Rotate(vr::QuatFromAxisAngle(axis_angle));
+  to_world.ConcatTransform(gfx::Transform(q));
 }
 
 void Transform::Translate(const gfx::Vector3dF& translation) {
-  vr::TranslateM(to_world, translation, &to_world);
+  to_world.matrix().postTranslate(translation.x(), translation.y(),
+                                  translation.z());
 }
 
 void Transform::Scale(const gfx::Vector3dF& scale) {
-  vr::ScaleM(to_world, scale, &to_world);
+  to_world.matrix().postScale(scale.x(), scale.y(), scale.z());
 }
 
-const vr::Mat4f& WorldRectangle::TransformMatrix() const {
+const gfx::Transform& WorldRectangle::TransformMatrix() const {
   return transform_.to_world;
 }
 
 gfx::Point3F WorldRectangle::GetCenter() const {
-  const gfx::Point3F kOrigin(0.0f, 0.0f, 0.0f);
-  return kOrigin + vr::GetTranslation(transform_.to_world);
+  gfx::Point3F center;
+  transform_.to_world.TransformPoint(&center);
+  return center;
 }
 
 gfx::PointF WorldRectangle::GetUnitRectangleCoordinates(
     const gfx::Point3F& world_point) const {
   // TODO(acondor): Simplify the math in this function.
-  const vr::Mat4f& transform = transform_.to_world;
-  gfx::Vector3dF origin =
-      vr::MatrixVectorMul(transform, gfx::Vector3dF(0, 0, 0));
-  gfx::Vector3dF x_axis =
-      vr::MatrixVectorMul(transform, gfx::Vector3dF(1, 0, 0));
-  gfx::Vector3dF y_axis =
-      vr::MatrixVectorMul(transform, gfx::Vector3dF(0, 1, 0));
-  x_axis.Subtract(origin);
-  y_axis.Subtract(origin);
-  gfx::Point3F point = world_point - origin;
-  gfx::Vector3dF v_point(point.x(), point.y(), point.z());
-
-  float x = gfx::DotProduct(v_point, x_axis) / gfx::DotProduct(x_axis, x_axis);
-  float y = gfx::DotProduct(v_point, y_axis) / gfx::DotProduct(y_axis, y_axis);
+  gfx::Point3F origin(0, 0, 0);
+  gfx::Vector3dF x_axis(1, 0, 0);
+  gfx::Vector3dF y_axis(0, 1, 0);
+  transform_.to_world.TransformPoint(&origin);
+  transform_.to_world.TransformVector(&x_axis);
+  transform_.to_world.TransformVector(&y_axis);
+  gfx::Vector3dF origin_to_world = world_point - origin;
+  float x = gfx::DotProduct(origin_to_world, x_axis) /
+            gfx::DotProduct(x_axis, x_axis);
+  float y = gfx::DotProduct(origin_to_world, y_axis) /
+            gfx::DotProduct(y_axis, y_axis);
   return gfx::PointF(x, y);
 }
 
 gfx::Vector3dF WorldRectangle::GetNormal() const {
-  const gfx::Vector3dF kNormalOrig = {0.0f, 0.0f, -1.0f};
-  return vr::MatrixVectorRotate(transform_.to_world, kNormalOrig);
+  gfx::Vector3dF x_axis(1, 0, 0);
+  gfx::Vector3dF y_axis(0, 1, 0);
+  transform_.to_world.TransformVector(&x_axis);
+  transform_.to_world.TransformVector(&y_axis);
+  gfx::Vector3dF normal = CrossProduct(y_axis, x_axis);
+  normal.GetNormalized(&normal);
+  return normal;
 }
 
 bool WorldRectangle::GetRayDistance(const gfx::Point3F& ray_origin,
@@ -105,12 +102,12 @@ bool WorldRectangle::GetRayDistance(const gfx::Point3F& ray_origin,
                              distance);
 }
 
-UiElement::UiElement() = default;
+UiElement::UiElement() : rotation_(gfx::Vector3dF(1, 0, 0), 0) {}
 
 UiElement::~UiElement() = default;
 
 void UiElement::Render(UiElementRenderer* renderer,
-                       vr::Mat4f view_proj_matrix) const {
+                       gfx::Transform view_proj_matrix) const {
   NOTREACHED();
 }
 
@@ -147,10 +144,10 @@ void UiElement::Animate(const base::TimeTicks& time) {
           animation.from.push_back(scale_.z());
           break;
         case Animation::ROTATION:
-          animation.from.push_back(rotation_.x);
-          animation.from.push_back(rotation_.y);
-          animation.from.push_back(rotation_.z);
-          animation.from.push_back(rotation_.angle);
+          animation.from.push_back(rotation_.x());
+          animation.from.push_back(rotation_.y());
+          animation.from.push_back(rotation_.z());
+          animation.from.push_back(rotation_.w());
           break;
         case Animation::TRANSLATION:
           animation.from.push_back(translation_.x());
@@ -189,10 +186,10 @@ void UiElement::Animate(const base::TimeTicks& time) {
         break;
       case Animation::ROTATION:
         CHECK_EQ(animation.from.size(), 4u);
-        rotation_.x = values[0];
-        rotation_.y = values[1];
-        rotation_.z = values[2];
-        rotation_.angle = values[3];
+        rotation_.set_x(values[0]);
+        rotation_.set_y(values[1]);
+        rotation_.set_z(values[2]);
+        rotation_.set_w(values[3]);
         break;
       case Animation::TRANSLATION:
         CHECK_EQ(animation.from.size(), 3u);

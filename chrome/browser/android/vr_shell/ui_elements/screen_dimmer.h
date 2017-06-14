@@ -19,7 +19,7 @@ class ScreenDimmer : public UiElement {
 
   // UiElement interface.
   void Render(UiElementRenderer* renderer,
-              vr::Mat4f view_proj_matrix) const final;
+              gfx::Transform view_proj_matrix) const final;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenDimmer);
 };
