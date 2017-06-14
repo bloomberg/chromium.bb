@@ -36,6 +36,7 @@
 #include "platform/bindings/ScopedPersistent.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/RefPtr.h"
+#include "platform/wtf/debug/StackTrace.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -257,6 +258,10 @@ class WindowProxy : public GarbageCollectedFinalized<WindowProxy> {
   // to be destroyed.
   ScopedPersistent<v8::Object> global_proxy_;
   Lifecycle lifecycle_;
+
+  // TODO(dcheng): Remove this temporary code for debugging
+  // https://crbug.com/728693.
+  WTF::debug::StackTrace initialization_stack_;
 };
 
 }  // namespace blink
