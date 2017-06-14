@@ -17,10 +17,9 @@ group("all_tests") {
 }
 
 source_set("test_support") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
-    "block_cleanup_test.h",
-    "block_cleanup_test.mm",
     "ios_chrome_scoped_testing_chrome_browser_provider.h",
     "ios_chrome_scoped_testing_chrome_browser_provider.mm",
     "ios_chrome_scoped_testing_chrome_browser_state_manager.cc",
@@ -32,6 +31,10 @@ source_set("test_support") {
     "scoped_key_window.h",
     "testing_application_context.h",
     "testing_application_context.mm",
+  ]
+
+  public_deps = [
+    ":block_cleanup_test",
   ]
 
   deps = [
@@ -54,6 +57,21 @@ source_set("test_support") {
     "//testing/gtest",
     "//ui/base",
     "//url",
+  ]
+}
+
+source_set("block_cleanup_test") {
+  # TODO(crbug.com/733237): Replace this comment with an explicit disable_arc config.
+  # The files in this target depend on non-ARC memeory management.
+  testonly = true
+  sources = [
+    "block_cleanup_test.h",
+    "block_cleanup_test.mm",
+  ]
+
+  deps = [
+    "//base",
+    "//testing/gtest",
   ]
 }
 
