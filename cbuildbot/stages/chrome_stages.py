@@ -244,12 +244,9 @@ class TestSimpleChromeWorkflowStage(generic_stages.BoardSpecificBuilderStage,
 
   def _ShouldEnableGoma(self):
     # Enable goma if 1) Chrome actually needs to be built, 2) goma is
-    # available, 3) AFDO is not enabled, and 4) config says goma should be used
-    # to build Chrome.
-    # TODO(hidehiko): goma executor crashed on server if AFDO was used.
-    # The fix should have been in, so enable AFDO after extra testing.
+    # available, and 3) config says goma should be used to build Chrome.
     return (self._run.options.managed_chrome and self._run.options.goma_dir and
-            not self._run.config.afdo_use and self._run.config.chrome_sdk_goma)
+            self._run.config.chrome_sdk_goma)
 
   def _BuildChrome(self, sdk_cmd, goma):
     """Use the generated SDK to build Chrome."""

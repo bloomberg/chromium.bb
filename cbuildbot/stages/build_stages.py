@@ -325,7 +325,6 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
   option_name = 'build'
   def __init__(self, builder_run, board, suffix=None, afdo_generate_min=False,
                afdo_use=False, update_metadata=False, **kwargs):
-    self._afdo_use = afdo_use
     if afdo_use:
       suffix = self.UpdateSuffix(constants.USE_AFDO_USE, suffix)
     super(BuildPackagesStage, self).__init__(builder_run, board, suffix=suffix,
@@ -403,12 +402,9 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
       self.board_runattrs.SetParallel('packages_under_test', set(deps.keys()))
 
   def _ShouldEnableGoma(self):
-    # Enable goma if 1) chrome actually needs to be built, 2) goma is available
-    # and 3) AFDO is not enabled.
-    # TODO(hidehiko): goma executor crashed on server if AFDO was used.
-    # The fix should have been in, so enable AFDO after extra testing.
-    return (self._run.options.managed_chrome and self._run.options.goma_dir and
-            not self._afdo_use)
+    # Enable goma if 1) chrome actually needs to be built and 2) goma is
+    # available.
+    return self._run.options.managed_chrome and self._run.options.goma_dir
 
   def _SetupGomaIfNecessary(self):
     """Sets up goma envs if necessary.
