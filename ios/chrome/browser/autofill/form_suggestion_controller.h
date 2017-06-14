@@ -46,8 +46,8 @@ class WebState;
 - (void)detachFromWebState;
 
 // Provides an input accessory view for form suggestions.
-@property(nonatomic, readonly)
-    id<FormInputAccessoryViewProvider> accessoryViewProvider;
+@property(nonatomic, readonly) id<FormInputAccessoryViewProvider>
+    accessoryViewProvider;
 
 @end
 

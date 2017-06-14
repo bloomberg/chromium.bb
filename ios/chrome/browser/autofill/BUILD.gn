@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("autofill") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "form_input_accessory_view.h",
     "form_input_accessory_view.mm",

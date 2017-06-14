@@ -10,7 +10,6 @@
 #include "base/ios/ios_util.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_block.h"
-#include "base/mac/scoped_nsobject.h"
 #import "components/autofill/core/browser/keyboard_accessory_metrics_logger.h"
 #import "components/autofill/ios/browser/js_suggestion_manager.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view.h"
@@ -23,6 +22,10 @@
 #include "ios/web/public/web_state/url_verification_constants.h"
 #include "ios/web/public/web_state/web_state.h"
 #include "url/gurl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace autofill {
 NSString* const kFormSuggestionAssistButtonPreviousElement = @"previousTap";
@@ -98,13 +101,12 @@ NSArray* FindDescendantToolbarItemsForActionName(
     NSString* actionName) {
   NSMutableArray* toolbarItems = [NSMutableArray array];
 
-  base::scoped_nsobject<NSMutableArray> buttonGroupsGroup(
-      [[NSMutableArray alloc] init]);
+  NSMutableArray* buttonGroupsGroup = [[NSMutableArray alloc] init];
   if (inputAssistantItem.leadingBarButtonGroups)
     [buttonGroupsGroup addObject:inputAssistantItem.leadingBarButtonGroups];
   if (inputAssistantItem.trailingBarButtonGroups)
     [buttonGroupsGroup addObject:inputAssistantItem.trailingBarButtonGroups];
-  for (NSArray* buttonGroups in buttonGroupsGroup.get()) {
+  for (NSArray* buttonGroups in buttonGroupsGroup) {
     for (UIBarButtonItemGroup* group in buttonGroups) {
       NSArray* items = group.barButtonItems;
       for (UIBarButtonItem* item in items) {
@@ -200,24 +202,24 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
   CGRect _keyboardFrame;
 
   // The custom view that should be shown in the input accessory view.
-  base::scoped_nsobject<UIView> _customAccessoryView;
+  UIView* _customAccessoryView;
 
   // The JS manager for interacting with the underlying form.
-  base::scoped_nsobject<JsSuggestionManager> _JSSuggestionManager;
+  JsSuggestionManager* _JSSuggestionManager;
 
   // The original subviews in keyboard accessory view that were originally not
   // hidden but were hidden when showing Autofill suggestions.
-  base::scoped_nsobject<NSMutableArray> _hiddenOriginalSubviews;
+  NSMutableArray* _hiddenOriginalSubviews;
 
   // The objects that can provide a custom input accessory view while filling
   // forms.
-  base::scoped_nsobject<NSArray> _providers;
+  NSArray* _providers;
 
   // Whether suggestions have previously been shown.
   BOOL _suggestionsHaveBeenShown;
 
   // The object that manages the currently-shown custom accessory view.
-  base::WeakNSProtocol<id<FormInputAccessoryViewProvider>> _currentProvider;
+  __weak id<FormInputAccessoryViewProvider> _currentProvider;
 
   // Logs UMA metrics for the keyboard accessory.
   std::unique_ptr<autofill::KeyboardAccessoryMetricsLogger>
@@ -240,11 +242,11 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
                        providers:(NSArray*)providers {
   self = [super init];
   if (self) {
-    _JSSuggestionManager.reset([JSSuggestionManager retain]);
-    _hiddenOriginalSubviews.reset([[NSMutableArray alloc] init]);
+    _JSSuggestionManager = JSSuggestionManager;
+    _hiddenOriginalSubviews = [[NSMutableArray alloc] init];
     _webStateObserverBridge.reset(
         new web::WebStateObserverBridge(webState, self));
-    _providers.reset([providers copy]);
+    _providers = [providers copy];
     _suggestionsHaveBeenShown = NO;
     _keyboardAccessoryMetricsLogger.reset(
         new autofill::KeyboardAccessoryMetricsLogger());
@@ -292,7 +294,6 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
 
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
-  [super dealloc];
 }
 
 - (web::WebState*)webState {
@@ -324,7 +325,7 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
     if (CGRectIntersection([UIScreen mainScreen].bounds, _keyboardFrame)
                 .size.height == 0 ||
         CGRectEqualToRect(_keyboardFrame, CGRectZero)) {
-      _customAccessoryView.reset();
+      _customAccessoryView = nil;
       return;
     }
 
@@ -335,7 +336,7 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
     if (formSuggestionView) {
       int numSuggestions = [[formSuggestionView suggestions] count];
       if (!_suggestionsHaveBeenShown && numSuggestions == 0) {
-        _customAccessoryView.reset();
+        _customAccessoryView = nil;
         return;
       }
     }
@@ -345,8 +346,8 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
     CGRect contentFrame = self.webViewProxy.frame;
     CGRect frame = CGRectMake(contentFrame.origin.x, -height,
                               contentFrame.size.width, height);
-    _customAccessoryView.reset(
-        [[FormInputAccessoryView alloc] initWithFrame:frame customView:view]);
+    _customAccessoryView =
+        [[FormInputAccessoryView alloc] initWithFrame:frame customView:view];
     UIView* keyboardView = [self getKeyboardView];
     DCHECK(keyboardView);
     [keyboardView addSubview:_customAccessoryView];
@@ -360,12 +361,12 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
     if (ComputeFramesOfKeyboardParts(inputAccessoryView, &leftFrame,
                                      &rightFrame)) {
       [self hideSubviewsInOriginalAccessoryView:inputAccessoryView];
-      _customAccessoryView.reset([[FormInputAccessoryView alloc]
-          initWithFrame:inputAccessoryView.frame
-               delegate:self
-             customView:view
-              leftFrame:leftFrame
-             rightFrame:rightFrame]);
+      _customAccessoryView =
+          [[FormInputAccessoryView alloc] initWithFrame:inputAccessoryView.frame
+                                               delegate:self
+                                             customView:view
+                                              leftFrame:leftFrame
+                                             rightFrame:rightFrame];
       [inputAccessoryView addSubview:_customAccessoryView];
     }
   }
@@ -373,8 +374,8 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
 
 - (void)restoreDefaultInputAccessoryView {
   [_customAccessoryView removeFromSuperview];
-  _customAccessoryView.reset();
-  for (UIView* subview in _hiddenOriginalSubviews.get()) {
+  _customAccessoryView = nil;
+  for (UIView* subview in _hiddenOriginalSubviews) {
     subview.hidden = NO;
   }
   [_hiddenOriginalSubviews removeAllObjects];
@@ -418,7 +419,10 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
     return NO;
 
   UIBarButtonItem* item = descendants[0];
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
   [[item target] performSelector:[item action] withObject:item];
+#pragma clang diagnostic pop
   return YES;
 }
 
@@ -507,7 +511,7 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
 - (void)reset {
   if (_currentProvider) {
     [_currentProvider inputAccessoryViewControllerDidReset:self];
-    _currentProvider.reset();
+    _currentProvider = nil;
   }
   [self restoreDefaultInputAccessoryView];
 
@@ -520,7 +524,7 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
                                value:(const std::string&)value
                                 type:(const std::string&)type
                             webState:(web::WebState*)webState {
-  base::WeakNSObject<FormInputAccessoryViewController> weakSelf(self);
+  __weak FormInputAccessoryViewController* weakSelf = self;
   std::string strongFormName = formName;
   std::string strongFieldName = fieldName;
   std::string strongValue = value;
@@ -529,37 +533,33 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
   // Build a block for each provider that will invoke its completion with YES
   // if the provider can provide an accessory view for the specified form/field
   // and NO otherwise.
-  base::scoped_nsobject<NSMutableArray> findProviderBlocks(
-      [[NSMutableArray alloc] init]);
+  NSMutableArray* findProviderBlocks = [[NSMutableArray alloc] init];
   for (NSUInteger i = 0; i < [_providers count]; i++) {
-    base::mac::ScopedBlock<passwords::PipelineBlock> block(
+    passwords::PipelineBlock block =
         ^(void (^completion)(BOOL success)) {
           // Access all the providers through |self| to guarantee that both
           // |self| and all the providers exist when the block is executed.
           // |_providers| is immutable, so the subscripting is always valid.
-          base::scoped_nsobject<FormInputAccessoryViewController> strongSelf(
-              [weakSelf retain]);
+          FormInputAccessoryViewController* strongSelf = weakSelf;
           if (!strongSelf)
             return;
           id<FormInputAccessoryViewProvider> provider =
-              strongSelf.get()->_providers[i];
+              strongSelf->_providers[i];
           [provider checkIfAccessoryViewIsAvailableForFormNamed:strongFormName
                                                       fieldName:strongFieldName
                                                        webState:webState
                                               completionHandler:completion];
-        },
-        base::scoped_policy::RETAIN);
+        };
     [findProviderBlocks addObject:block];
   }
 
   // Once the view is retrieved, update the UI.
   AccessoryViewReadyCompletion readyCompletion =
       ^(UIView* accessoryView, id<FormInputAccessoryViewProvider> provider) {
-        base::scoped_nsobject<FormInputAccessoryViewController> strongSelf(
-            [weakSelf retain]);
-        if (!strongSelf || !strongSelf.get()->_currentProvider)
+        FormInputAccessoryViewController* strongSelf = weakSelf;
+        if (!strongSelf || !strongSelf->_currentProvider)
           return;
-        DCHECK_EQ(strongSelf.get()->_currentProvider.get(), provider);
+        DCHECK_EQ(strongSelf->_currentProvider, provider);
         [provider setAccessoryViewDelegate:strongSelf];
         [strongSelf showCustomInputAccessoryView:accessoryView];
       };
@@ -571,16 +571,15 @@ bool ComputeFramesOfKeyboardParts(UIView* inputAccessoryView,
           [weakSelf reset];
           return;
         }
-        base::scoped_nsobject<FormInputAccessoryViewController> strongSelf(
-            [weakSelf retain]);
+        FormInputAccessoryViewController* strongSelf = weakSelf;
         if (!strongSelf || ![strongSelf webState])
           return;
         id<FormInputAccessoryViewProvider> provider =
-            strongSelf.get()->_providers[providerIndex];
-        [strongSelf.get()->_currentProvider
+            strongSelf->_providers[providerIndex];
+        [strongSelf->_currentProvider
             inputAccessoryViewControllerDidReset:self];
-        strongSelf.get()->_currentProvider.reset(provider);
-        [strongSelf.get()->_currentProvider
+        strongSelf->_currentProvider = provider;
+        [strongSelf->_currentProvider
             retrieveAccessoryViewForFormNamed:strongFormName
                                     fieldName:strongFieldName
                                         value:strongValue

@@ -5,10 +5,13 @@
 #import "ios/chrome/browser/autofill/form_suggestion_view.h"
 
 #include "base/i18n/rtl.h"
-#include "base/mac/scoped_nsobject.h"
 #import "components/autofill/ios/browser/form_suggestion.h"
 #import "ios/chrome/browser/autofill/form_suggestion_label.h"
 #import "ios/chrome/browser/autofill/form_suggestion_view_client.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -24,7 +27,7 @@ const CGFloat kSuggestionHorizontalMargin = 6;
 
 @implementation FormSuggestionView {
   // The FormSuggestions that are displayed by this view.
-  base::scoped_nsobject<NSArray> _suggestions;
+  NSArray* _suggestions;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame
@@ -32,7 +35,7 @@ const CGFloat kSuggestionHorizontalMargin = 6;
                   suggestions:(NSArray*)suggestions {
   self = [super initWithFrame:frame];
   if (self) {
-    _suggestions.reset([suggestions copy]);
+    _suggestions = [suggestions copy];
 
     self.showsVerticalScrollIndicator = NO;
     self.showsHorizontalScrollIndicator = NO;
@@ -50,12 +53,12 @@ const CGFloat kSuggestionHorizontalMargin = 6;
           // the width.
           CGRect proposedFrame =
               CGRectMake(currentX, kSuggestionVerticalMargin, 0, labelHeight);
-          base::scoped_nsobject<UIView> label([[FormSuggestionLabel alloc]
+          UIView* label = [[FormSuggestionLabel alloc]
               initWithSuggestion:suggestion
                    proposedFrame:proposedFrame
                            index:idx
                   numSuggestions:[_suggestions count]
-                          client:client]);
+                          client:client];
           [self addSubview:label];
           currentX +=
               CGRectGetWidth([label frame]) + kSuggestionHorizontalMargin;
@@ -97,7 +100,7 @@ const CGFloat kSuggestionHorizontalMargin = 6;
 }
 
 - (NSArray*)suggestions {
-  return _suggestions.get();
+  return _suggestions;
 }
 
 @end

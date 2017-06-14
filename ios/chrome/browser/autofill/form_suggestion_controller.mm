@@ -7,10 +7,8 @@
 #include <memory>
 
 #include "base/ios/ios_util.h"
-#include "base/ios/weak_nsobject.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/scoped_block.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/autofill/core/browser/autofill_popup_delegate.h"
@@ -24,6 +22,10 @@
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
 #import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
 #import "ios/web/public/web_state/web_state.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -39,7 +41,7 @@ struct AutofillSuggestionState {
   // The user-typed value in the field.
   std::string typed_value;
   // The suggestions for the form field. An array of |FormSuggestion|.
-  base::scoped_nsobject<NSArray> suggestions;
+  NSArray* suggestions;
 };
 
 AutofillSuggestionState::AutofillSuggestionState(const std::string& form_name,
@@ -52,21 +54,20 @@ AutofillSuggestionState::AutofillSuggestionState(const std::string& form_name,
 
 @interface FormSuggestionController () <FormInputAccessoryViewProvider> {
   // Form navigation delegate.
-  base::WeakNSProtocol<id<FormInputAccessoryViewDelegate>> _delegate;
+  __weak id<FormInputAccessoryViewDelegate> _delegate;
 
   // Callback to update the accessory view.
-  base::mac::ScopedBlock<AccessoryViewReadyCompletion>
-      accessoryViewUpdateBlock_;
+  AccessoryViewReadyCompletion accessoryViewUpdateBlock_;
 
   // Autofill suggestion state.
   std::unique_ptr<AutofillSuggestionState> _suggestionState;
 
   // Providers for suggestions, sorted according to the order in which
   // they should be asked for suggestions, with highest priority in front.
-  base::scoped_nsobject<NSArray> _suggestionProviders;
+  NSArray* _suggestionProviders;
 
   // Access to WebView from the CRWWebController.
-  base::scoped_nsprotocol<id<CRWWebViewProxy>> _webViewProxy;
+  id<CRWWebViewProxy> _webViewProxy;
 }
 
 // Returns an autoreleased input accessory view that shows |suggestions|.
@@ -88,7 +89,7 @@ AutofillSuggestionState::AutofillSuggestionState(const std::string& form_name,
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserverBridge;
 
   // Manager for FormSuggestion JavaScripts.
-  base::scoped_nsobject<JsSuggestionManager> _jsSuggestionManager;
+  JsSuggestionManager* _jsSuggestionManager;
 
   // The provider for the current set of suggestions.
   __unsafe_unretained id<FormSuggestionProvider> _provider;  // weak
@@ -101,9 +102,9 @@ AutofillSuggestionState::AutofillSuggestionState(const std::string& form_name,
   if (self) {
     _webStateObserverBridge.reset(
         new web::WebStateObserverBridge(webState, self));
-    _webViewProxy.reset([webState->GetWebViewProxy() retain]);
-    _jsSuggestionManager.reset([jsSuggestionManager retain]);
-    _suggestionProviders.reset([providers copy]);
+    _webViewProxy = webState->GetWebViewProxy();
+    _jsSuggestionManager = jsSuggestionManager;
+    _suggestionProviders = [providers copy];
   }
   return self;
 }
@@ -153,49 +154,43 @@ AutofillSuggestionState::AutofillSuggestionState(const std::string& form_name,
 }
 
 - (void)setWebViewProxy:(id<CRWWebViewProxy>)webViewProxy {
-  _webViewProxy.reset([webViewProxy retain]);
+  _webViewProxy = webViewProxy;
 }
 
 - (void)retrieveSuggestionsForFormNamed:(const std::string&)formName
                               fieldName:(const std::string&)fieldName
                                    type:(const std::string&)type
                                webState:(web::WebState*)webState {
-  base::WeakNSObject<FormSuggestionController> weakSelf(self);
-  base::scoped_nsobject<NSString> strongFormName(
-      [base::SysUTF8ToNSString(formName) copy]);
-  base::scoped_nsobject<NSString> strongFieldName(
-      [base::SysUTF8ToNSString(fieldName) copy]);
-  base::scoped_nsobject<NSString> strongType(
-      [base::SysUTF8ToNSString(type) copy]);
-  base::scoped_nsobject<NSString> strongValue(
-      [base::SysUTF8ToNSString(_suggestionState.get()->typed_value) copy]);
+  __weak FormSuggestionController* weakSelf = self;
+  NSString* strongFormName = [base::SysUTF8ToNSString(formName) copy];
+  NSString* strongFieldName = [base::SysUTF8ToNSString(fieldName) copy];
+  NSString* strongType = [base::SysUTF8ToNSString(type) copy];
+  NSString* strongValue =
+      [base::SysUTF8ToNSString(_suggestionState.get()->typed_value) copy];
 
   // Build a block for each provider that will invoke its completion with YES
   // if the provider can provide suggestions for the specified form/field/type
   // and NO otherwise.
-  base::scoped_nsobject<NSMutableArray> findProviderBlocks(
-      [[NSMutableArray alloc] init]);
+  NSMutableArray* findProviderBlocks = [[NSMutableArray alloc] init];
   for (NSUInteger i = 0; i < [_suggestionProviders count]; i++) {
-    base::mac::ScopedBlock<passwords::PipelineBlock> block(
+    passwords::PipelineBlock block =
         ^(void (^completion)(BOOL success)) {
           // Access all the providers through |self| to guarantee that both
           // |self| and all the providers exist when the block is executed.
           // |_suggestionProviders| is immutable, so the subscripting is
           // always valid.
-          base::scoped_nsobject<FormSuggestionController> strongSelf(
-              [weakSelf retain]);
+          FormSuggestionController* strongSelf = weakSelf;
           if (!strongSelf)
             return;
           id<FormSuggestionProvider> provider =
-              strongSelf.get()->_suggestionProviders[i];
+              strongSelf->_suggestionProviders[i];
           [provider checkIfSuggestionsAvailableForForm:strongFormName
                                                  field:strongFieldName
                                                   type:strongType
                                             typedValue:strongValue
                                               webState:webState
                                      completionHandler:completion];
-        },
-        base::scoped_policy::RETAIN);
+        };
     [findProviderBlocks addObject:block];
   }
 
@@ -211,12 +206,11 @@ AutofillSuggestionState::AutofillSuggestionState(const std::string& form_name,
       [weakSelf onNoSuggestionsAvailable];
       return;
     }
-    base::scoped_nsobject<FormSuggestionController> strongSelf(
-        [weakSelf retain]);
+    FormSuggestionController* strongSelf = weakSelf;
     if (!strongSelf)
       return;
     id<FormSuggestionProvider> provider =
-        strongSelf.get()->_suggestionProviders[providerIndex];
+        strongSelf->_suggestionProviders[providerIndex];
     [provider retrieveSuggestionsForForm:strongFormName
                                    field:strongFieldName
                                     type:strongType
@@ -244,7 +238,7 @@ AutofillSuggestionState::AutofillSuggestionState(const std::string& form_name,
   }
 
   _provider = provider;
-  _suggestionState->suggestions.reset([suggestions copy]);
+  _suggestionState->suggestions = [suggestions copy];
   [self updateKeyboard:_suggestionState.get()];
 }
 
@@ -257,14 +251,14 @@ AutofillSuggestionState::AutofillSuggestionState(const std::string& form_name,
   // Note that other parts of the suggestionsState are not reset.
   if (!_suggestionState.get())
     return;
-  _suggestionState->suggestions.reset([[NSArray alloc] init]);
+  _suggestionState->suggestions = [[NSArray alloc] init];
   [self updateKeyboard:_suggestionState.get()];
 }
 
 - (void)updateKeyboard:(AutofillSuggestionState*)suggestionState {
   if (!suggestionState) {
     if (accessoryViewUpdateBlock_)
-      accessoryViewUpdateBlock_.get()(nil, self);
+      accessoryViewUpdateBlock_(nil, self);
   } else {
     [self updateKeyboardWithSuggestions:suggestionState->suggestions];
   }
@@ -272,8 +266,8 @@ AutofillSuggestionState::AutofillSuggestionState(const std::string& form_name,
 
 - (void)updateKeyboardWithSuggestions:(NSArray*)suggestions {
   if (accessoryViewUpdateBlock_) {
-    accessoryViewUpdateBlock_.get()(
-        [self suggestionViewWithSuggestions:suggestions], self);
+    accessoryViewUpdateBlock_([self suggestionViewWithSuggestions:suggestions],
+                              self);
   }
 }
 
@@ -284,11 +278,11 @@ AutofillSuggestionState::AutofillSuggestionState(const std::string& form_name,
   if (IsIPadIdiom()) {
     frame.size.height = autofill::kInputAccessoryHeight;
   }
-  base::scoped_nsobject<FormSuggestionView> view([[FormSuggestionView alloc]
-      initWithFrame:frame
-             client:self
-        suggestions:suggestions]);
-  return view.autorelease();
+  FormSuggestionView* view =
+      [[FormSuggestionView alloc] initWithFrame:frame
+                                         client:self
+                                    suggestions:suggestions];
+  return view;
 }
 
 - (void)didSelectSuggestion:(FormSuggestion*)suggestion {
@@ -297,7 +291,7 @@ AutofillSuggestionState::AutofillSuggestionState(const std::string& form_name,
 
   // Send the suggestion to the provider. Upon completion advance the cursor
   // for single-field Autofill, or close the keyboard for full-form Autofill.
-  base::WeakNSObject<FormSuggestionController> weakSelf(self);
+  __weak FormSuggestionController* weakSelf = self;
   [_provider
       didSelectSuggestion:suggestion
                  forField:base::SysUTF8ToNSString(_suggestionState->field_name)
@@ -315,11 +309,11 @@ AutofillSuggestionState::AutofillSuggestionState(const std::string& form_name,
 #pragma mark FormInputAccessoryViewProvider
 
 - (id<FormInputAccessoryViewDelegate>)accessoryViewDelegate {
-  return _delegate.get();
+  return _delegate;
 }
 
 - (void)setAccessoryViewDelegate:(id<FormInputAccessoryViewDelegate>)delegate {
-  _delegate.reset(delegate);
+  _delegate = delegate;
 }
 
 - (void)
@@ -343,7 +337,7 @@ AutofillSuggestionState::AutofillSuggestionState(const std::string& form_name,
   _suggestionState.reset(
       new AutofillSuggestionState(formName, fieldName, value));
   accessoryViewUpdateBlock([self suggestionViewWithSuggestions:@[]], self);
-  accessoryViewUpdateBlock_.reset([accessoryViewUpdateBlock copy]);
+  accessoryViewUpdateBlock_ = [accessoryViewUpdateBlock copy];
   [self retrieveSuggestionsForFormNamed:formName
                               fieldName:fieldName
                                    type:type
@@ -352,7 +346,7 @@ AutofillSuggestionState::AutofillSuggestionState(const std::string& form_name,
 
 - (void)inputAccessoryViewControllerDidReset:
         (FormInputAccessoryViewController*)controller {
-  accessoryViewUpdateBlock_.reset();
+  accessoryViewUpdateBlock_ = nil;
   [self resetSuggestionState];
 }
 
