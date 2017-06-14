@@ -9,7 +9,6 @@
 #include <memory>
 
 #include "base/mac/bind_objc_block.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/strings/utf_string_conversions.h"
 #import "ios/web/public/test/crw_mock_web_state_delegate.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
@@ -17,6 +16,10 @@
 #include "testing/platform_test.h"
 #import "third_party/ocmock/gtest_support.h"
 #include "ui/base/page_transition_types.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 // Class which conforms to CRWWebStateDelegate protocol, but does not implement
 // any optional methods.
@@ -35,13 +38,12 @@ class WebStateDelegateBridgeTest : public PlatformTest {
 
     id originalMockDelegate =
         [OCMockObject niceMockForProtocol:@protocol(CRWWebStateDelegate)];
-    delegate_.reset([[CRWMockWebStateDelegate alloc]
-        initWithRepresentedObject:originalMockDelegate]);
-    empty_delegate_.reset([[TestEmptyWebStateDelegate alloc] init]);
+    delegate_ = [[CRWMockWebStateDelegate alloc]
+        initWithRepresentedObject:originalMockDelegate];
+    empty_delegate_ = [[TestEmptyWebStateDelegate alloc] init];
 
-    bridge_.reset(new WebStateDelegateBridge(delegate_.get()));
-    empty_delegate_bridge_.reset(
-        new WebStateDelegateBridge(empty_delegate_.get()));
+    bridge_.reset(new WebStateDelegateBridge(delegate_));
+    empty_delegate_bridge_.reset(new WebStateDelegateBridge(empty_delegate_));
   }
 
   void TearDown() override {
@@ -49,8 +51,8 @@ class WebStateDelegateBridgeTest : public PlatformTest {
     PlatformTest::TearDown();
   }
 
-  base::scoped_nsprotocol<id> delegate_;
-  base::scoped_nsprotocol<id> empty_delegate_;
+  id delegate_;
+  id empty_delegate_;
   std::unique_ptr<WebStateDelegateBridge> bridge_;
   std::unique_ptr<WebStateDelegateBridge> empty_delegate_bridge_;
   web::TestWebState test_web_state_;
@@ -142,7 +144,7 @@ TEST_F(WebStateDelegateBridgeTest, ShowRepostFormWarningDialog) {
 TEST_F(WebStateDelegateBridgeTest, ShowRepostFormWarningWithNoDelegateMethod) {
   __block bool callback_called = false;
   empty_delegate_bridge_->ShowRepostFormWarningDialog(
-      nullptr, base::BindBlock(^(bool should_repost) {
+      nullptr, base::BindBlockArc(^(bool should_repost) {
         EXPECT_TRUE(should_repost);
         callback_called = true;
       }));
@@ -160,13 +162,11 @@ TEST_F(WebStateDelegateBridgeTest, GetJavaScriptDialogPresenter) {
 TEST_F(WebStateDelegateBridgeTest, OnAuthRequired) {
   EXPECT_FALSE([delegate_ authenticationRequested]);
   EXPECT_FALSE([delegate_ webState]);
-  base::scoped_nsobject<NSURLProtectionSpace> protection_space(
-      [[NSURLProtectionSpace alloc] init]);
-  base::scoped_nsobject<NSURLCredential> credential(
-      [[NSURLCredential alloc] init]);
+  NSURLProtectionSpace* protection_space = [[NSURLProtectionSpace alloc] init];
+  NSURLCredential* credential = [[NSURLCredential alloc] init];
   WebStateDelegate::AuthCallback callback;
-  bridge_->OnAuthRequired(&test_web_state_, protection_space.get(),
-                          credential.get(), callback);
+  bridge_->OnAuthRequired(&test_web_state_, protection_space, credential,
+                          callback);
   EXPECT_TRUE([delegate_ authenticationRequested]);
   EXPECT_EQ(&test_web_state_, [delegate_ webState]);
 }

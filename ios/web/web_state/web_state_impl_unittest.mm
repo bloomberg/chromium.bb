@@ -35,6 +35,10 @@
 #import "testing/gtest_mac.h"
 #include "url/gurl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 using testing::_;
 using testing::Assign;
 using testing::AtMost;
@@ -499,7 +503,7 @@ TEST_F(WebStateImplTest, DelegateTest) {
 
   __block bool callback_called = false;
   web_state_->RunJavaScriptDialog(GURL(), JAVASCRIPT_DIALOG_TYPE_ALERT, @"",
-                                  nil, base::BindBlock(^(bool, NSString*) {
+                                  nil, base::BindBlockArc(^(bool, NSString*) {
                                     callback_called = true;
                                   }));
 
@@ -513,20 +517,16 @@ TEST_F(WebStateImplTest, DelegateTest) {
 
   // Test that OnAuthRequired() is called.
   EXPECT_FALSE(delegate.last_authentication_request());
-  base::scoped_nsobject<NSURLProtectionSpace> protection_space(
-      [[NSURLProtectionSpace alloc] init]);
-  base::scoped_nsobject<NSURLCredential> credential(
-      [[NSURLCredential alloc] init]);
+  NSURLProtectionSpace* protection_space = [[NSURLProtectionSpace alloc] init];
+  NSURLCredential* credential = [[NSURLCredential alloc] init];
   WebStateDelegate::AuthCallback callback;
-  web_state_->OnAuthRequired(protection_space.get(), credential.get(),
-                             callback);
+  web_state_->OnAuthRequired(protection_space, credential, callback);
   ASSERT_TRUE(delegate.last_authentication_request());
   EXPECT_EQ(delegate.last_authentication_request()->web_state,
             web_state_.get());
   EXPECT_EQ(delegate.last_authentication_request()->protection_space,
-            protection_space.get());
-  EXPECT_EQ(delegate.last_authentication_request()->credential,
-            credential.get());
+            protection_space);
+  EXPECT_EQ(delegate.last_authentication_request()->credential, credential);
 }
 
 // Verifies that GlobalWebStateObservers are called when expected.

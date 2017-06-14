@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "base/mac/foundation_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "crypto/rsa_private_key.h"
 #include "net/cert/x509_cert_types.h"
@@ -19,6 +20,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace web {
 namespace {
@@ -42,8 +47,7 @@ NSArray* MakeTestCertChain(const std::string& subject) {
           reinterpret_cast<const uint8_t*>(der_cert.data()), der_cert.size()));
   if (!cert)
     return nullptr;
-  NSArray* result = @[ reinterpret_cast<id>(cert.get()) ];
-  return result;
+  return @[ (__bridge id)cert.get() ];
 }
 
 // Returns an autoreleased dictionary, which represents NSError's user info for
@@ -58,7 +62,8 @@ NSDictionary* MakeTestSSLCertErrorUserInfo() {
 base::ScopedCFTypeRef<SecTrustRef> CreateTestTrust(NSArray* cert_chain) {
   base::ScopedCFTypeRef<SecPolicyRef> policy(SecPolicyCreateBasicX509());
   SecTrustRef trust = nullptr;
-  SecTrustCreateWithCertificates(cert_chain, policy, &trust);
+  SecTrustCreateWithCertificates(base::mac::NSToCFCast(cert_chain), policy,
+                                 &trust);
   return base::ScopedCFTypeRef<SecTrustRef>(trust);
 }
 

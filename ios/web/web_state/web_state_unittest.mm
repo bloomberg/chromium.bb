@@ -10,6 +10,10 @@
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace web {
 
 // Test fixture for web::WebTest class.
@@ -25,11 +29,12 @@ TEST_F(WebStateTest, ScriptExecution) {
   // Execute script with callback.
   __block std::unique_ptr<base::Value> execution_result;
   __block bool execution_complete = false;
-  web_state()->ExecuteJavaScript(base::UTF8ToUTF16("window.foo"),
-                                 base::BindBlock(^(const base::Value* value) {
-                                   execution_result = value->CreateDeepCopy();
-                                   execution_complete = true;
-                                 }));
+  web_state()->ExecuteJavaScript(
+      base::UTF8ToUTF16("window.foo"),
+      base::BindBlockArc(^(const base::Value* value) {
+        execution_result = value->CreateDeepCopy();
+        execution_complete = true;
+      }));
   WaitForCondition(^{
     return execution_complete;
   });
@@ -54,8 +59,8 @@ TEST_F(WebStateTest, LoadingProgress) {
 TEST_F(WebStateTest, OverridingWebKitObject) {
   // Add a script command handler.
   __block bool message_received = false;
-  const web::WebState::ScriptCommandCallback callback =
-      base::BindBlock(^bool(const base::DictionaryValue&, const GURL&, bool) {
+  const web::WebState::ScriptCommandCallback callback = base::BindBlockArc(
+      ^bool(const base::DictionaryValue&, const GURL&, bool) {
         message_received = true;
         return true;
       });

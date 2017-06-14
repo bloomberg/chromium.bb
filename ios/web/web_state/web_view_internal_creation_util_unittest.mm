@@ -7,7 +7,6 @@
 #import <CoreGraphics/CoreGraphics.h>
 #import <WebKit/WebKit.h>
 
-#import "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
 #import "ios/web/public/test/fakes/test_web_client.h"
@@ -17,6 +16,10 @@
 #import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #import "testing/gtest_mac.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 

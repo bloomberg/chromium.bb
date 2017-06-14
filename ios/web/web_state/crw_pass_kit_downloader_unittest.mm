@@ -8,7 +8,6 @@
 
 #include <memory>
 
-#import "base/mac/scoped_nsobject.h"
 #include "ios/web/public/test/web_test.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
@@ -17,6 +16,10 @@
 #include "net/url_request/url_request_test_util.h"
 #import "testing/gtest_mac.h"
 #include "url/gurl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 using net::HttpResponseHeaders;
 using net::URLRequestStatus;
@@ -38,14 +41,14 @@ class CRWPassKitDownloaderTest : public WebTest {
     WebTest::SetUp();
     completion_handler_success_ = false;
     fetcher_factory_.reset(new net::TestURLFetcherFactory());
-    downloader_.reset([[CRWPassKitDownloader alloc]
+    downloader_ = [[CRWPassKitDownloader alloc]
         initWithContextGetter:GetBrowserState()->GetRequestContext()
             completionHandler:^(NSData* data) {
               NSData* expected_data =
                   [NSData dataWithBytes:kExpectedString
                                  length:strlen(kExpectedString)];
               completion_handler_success_ = [data isEqualToData:expected_data];
-            }]);
+            }];
   }
 
   // Sets up |fetcher|'s request status, HTTP response code, HTTP headers, and
@@ -67,7 +70,7 @@ class CRWPassKitDownloaderTest : public WebTest {
   std::unique_ptr<net::TestURLFetcherFactory> fetcher_factory_;
 
   // The CRWPassKitDownloader that is being tested.
-  base::scoped_nsobject<CRWPassKitDownloader> downloader_;
+  CRWPassKitDownloader* downloader_;
 
   // Indicates whether or not the downloader successfully downloaded data. It is
   // set from the completion handler based on whether actual data is equal to

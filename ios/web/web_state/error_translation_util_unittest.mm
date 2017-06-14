@@ -6,12 +6,16 @@
 
 #import <Foundation/Foundation.h>
 
-#import "base/mac/scoped_nsobject.h"
+#include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 // Test fixture for error translation testing.
 typedef PlatformTest ErrorTranslationUtilTest;
@@ -25,8 +29,7 @@ NSString* GetNetErrorDomain() {
 
 // Tests translation of an error with empty domain and no underlying error.
 TEST_F(ErrorTranslationUtilTest, MalformedError) {
-  base::scoped_nsobject<NSError> error(
-      [[NSError alloc] initWithDomain:@"" code:0 userInfo:nil]);
+  NSError* error = [[NSError alloc] initWithDomain:@"" code:0 userInfo:nil];
   NSError* net_error = web::NetErrorFromError(error);
 
   // Top level error should be the same as the original error.
@@ -44,10 +47,10 @@ TEST_F(ErrorTranslationUtilTest, MalformedError) {
 // Tests translation of unknown CFNetwork error, which does not have an
 // underlying error.
 TEST_F(ErrorTranslationUtilTest, UnknownCFNetworkError) {
-  base::scoped_nsobject<NSError> error([[NSError alloc]
-      initWithDomain:static_cast<NSString*>(kCFErrorDomainCFNetwork)
+  NSError* error = [[NSError alloc]
+      initWithDomain:base::mac::CFToNSCast(kCFErrorDomainCFNetwork)
                 code:kCFURLErrorUnknown
-            userInfo:nil]);
+            userInfo:nil];
   NSError* net_error = web::NetErrorFromError(error);
 
   // Top level error should be the same as the original error.
@@ -65,10 +68,10 @@ TEST_F(ErrorTranslationUtilTest, UnknownCFNetworkError) {
 // Tests translation of kCFURLErrorCannotFindHost CFNetwork error, which has an
 // underlying error with NSURLError domain.
 TEST_F(ErrorTranslationUtilTest, CanNotFindHostError) {
-  base::scoped_nsobject<NSError> underlying_error([[NSError alloc]
-      initWithDomain:NSURLErrorDomain
-                code:kCFURLErrorCannotFindHost
-            userInfo:nil]);
+  NSError* underlying_error =
+      [[NSError alloc] initWithDomain:NSURLErrorDomain
+                                 code:kCFURLErrorCannotFindHost
+                             userInfo:nil];
 
   NSError* error =
       [[NSError alloc] initWithDomain:NSURLErrorDomain
@@ -100,10 +103,10 @@ TEST_F(ErrorTranslationUtilTest, CanNotFindHostError) {
 // Tests translation of kCFURLErrorSecureConnectionFailed CFNetwork error, by
 // specifying different net error code.
 TEST_F(ErrorTranslationUtilTest, CertError) {
-  base::scoped_nsobject<NSError> underlying_error([[NSError alloc]
-      initWithDomain:NSURLErrorDomain
-                code:kCFURLErrorSecureConnectionFailed
-            userInfo:nil]);
+  NSError* underlying_error =
+      [[NSError alloc] initWithDomain:NSURLErrorDomain
+                                 code:kCFURLErrorSecureConnectionFailed
+                             userInfo:nil];
 
   NSError* error =
       [[NSError alloc] initWithDomain:NSURLErrorDomain

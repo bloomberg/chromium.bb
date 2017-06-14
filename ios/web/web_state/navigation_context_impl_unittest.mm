@@ -9,6 +9,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace web {
 namespace {
 const char kRawResponseHeaders[] =
@@ -74,7 +78,7 @@ TEST_F(NavigationContextImplTest, Setters) {
   EXPECT_NE(response_headers_.get(), context->GetResponseHeaders());
 
   // SetErrorPage
-  NSError* error = [[[NSError alloc] init] autorelease];
+  NSError* error = [[NSError alloc] init];
   context->SetError(error);
   EXPECT_TRUE(context->IsSameDocument());
   ASSERT_TRUE(context->IsPost());
