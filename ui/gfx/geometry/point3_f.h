@@ -110,6 +110,10 @@ inline Point3F ScalePoint(const Point3F& p,
   return Point3F(p.x() * x_scale, p.y() * y_scale, p.z() * z_scale);
 }
 
+inline Point3F ScalePoint(const Point3F& p, const Vector3dF& v) {
+  return Point3F(p.x() * v.x(), p.y() * v.y(), p.z() * v.z());
+}
+
 inline Point3F ScalePoint(const Point3F& p, float scale) {
   return ScalePoint(p, scale, scale, scale);
 }
