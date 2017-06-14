@@ -92,7 +92,6 @@ const char kLibCrosServiceName[] = "org.chromium.LibCrosService";
 const char kLibCrosServicePath[] = "/org/chromium/LibCrosService";
 const char kLibCrosServiceInterface[] = "org.chromium.LibCrosServiceInterface";
 // Methods
-const char kResolveNetworkProxy[] = "ResolveNetworkProxy";
 // TODO(teravest): Remove this once CheckLiveness is removed from
 // LibCrosService.
 const char kCheckLiveness[] = "CheckLiveness";
