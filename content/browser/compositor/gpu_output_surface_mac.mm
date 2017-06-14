@@ -6,7 +6,7 @@
 
 #include "cc/output/output_surface_client.h"
 #include "cc/output/output_surface_frame.h"
-#include "components/viz/display_compositor/compositor_overlay_candidate_validator.h"
+#include "components/viz/service/display_compositor/compositor_overlay_candidate_validator.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/ipc/client/gpu_process_hosted_ca_layer_tree_params.h"
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"

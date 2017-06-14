@@ -22,7 +22,7 @@
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_hittest.h"
 #include "cc/surfaces/surface_manager.h"
-#include "components/viz/display_compositor/gl_helper.h"
+#include "components/viz/service/display_compositor/gl_helper.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/compositor_resize_lock.h"

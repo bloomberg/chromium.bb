@@ -8,9 +8,9 @@
 
 #include "cc/output/output_surface_client.h"
 #include "cc/output/output_surface_frame.h"
-#include "components/viz/display_compositor/buffer_queue.h"
-#include "components/viz/display_compositor/compositor_overlay_candidate_validator.h"
-#include "components/viz/display_compositor/gl_helper.h"
+#include "components/viz/service/display_compositor/buffer_queue.h"
+#include "components/viz/service/display_compositor/compositor_overlay_candidate_validator.h"
+#include "components/viz/service/display_compositor/gl_helper.h"
 #include "content/browser/compositor/reflector_impl.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"

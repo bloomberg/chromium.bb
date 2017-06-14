@@ -21,7 +21,7 @@
 #include "cc/input/selection.h"
 #include "cc/output/begin_frame_args.h"
 #include "cc/scheduler/begin_frame_source.h"
-#include "components/viz/frame_sinks/frame_evictor.h"
+#include "components/viz/service/frame_sinks/frame_evictor.h"
 #include "content/browser/android/content_view_core_impl_observer.h"
 #include "content/browser/renderer_host/input/mouse_wheel_phase_handler.h"
 #include "content/browser/renderer_host/input/stylus_text_selector.h"

@@ -10,8 +10,8 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "cc/surfaces/surface_manager.h"
-#include "components/viz/frame_sinks/mojo_frame_sink_manager.h"
 #include "components/viz/host/frame_sink_manager_host.h"
+#include "components/viz/service/frame_sinks/mojo_frame_sink_manager.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "ui/compositor/test/in_process_context_factory.h"
 

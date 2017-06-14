@@ -22,7 +22,7 @@
 #include "build/build_config.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/test/test_web_graphics_context_3d.h"
-#include "components/viz/display_compositor/buffer_queue.h"
+#include "components/viz/service/display_compositor/buffer_queue.h"
 #include "content/browser/renderer_host/media/video_capture_controller.h"
 #include "media/base/video_frame.h"
 #include "media/capture/video/video_capture_buffer_pool_impl.h"

@@ -20,6 +20,7 @@ class SurfaceManager;
 
 namespace viz {
 class FrameSinkManagerHost;
+class MojoFrameSinkManager;
 }
 
 namespace content {
@@ -35,6 +36,14 @@ void CopyFromCompositingSurfaceHasResult(
     const SkColorType color_type,
     const ReadbackRequestCallback& callback,
     std::unique_ptr<cc::CopyOutputResult> result);
+
+namespace surface_utils {
+
+CONTENT_EXPORT void ConnectWithInProcessFrameSinkManager(
+    viz::FrameSinkManagerHost* host,
+    viz::MojoFrameSinkManager* manager);
+
+}  // namespace surface_utils
 
 }  // namespace content
 
