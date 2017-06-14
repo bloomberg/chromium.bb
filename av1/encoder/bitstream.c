@@ -1078,7 +1078,8 @@ static void pack_txb_tokens(aom_writer *w,
     uint16_t eob = x->mbmi_ext->eobs[plane][block];
     TXB_CTX txb_ctx = { x->mbmi_ext->txb_skip_ctx[plane][block],
                         x->mbmi_ext->dc_sign_ctx[plane][block] };
-    av1_write_coeffs_txb(cm, xd, w, block, plane, tcoeff, eob, &txb_ctx);
+    av1_write_coeffs_txb(cm, xd, w, block, plane, tx_size, tcoeff, eob,
+                         &txb_ctx);
 #else
     pack_pvq_tokens(w, x, xd, plane, bsize, tx_size);
 #endif

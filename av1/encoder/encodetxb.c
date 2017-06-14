@@ -70,14 +70,13 @@ static void write_golomb(aom_writer *w, int level) {
 }
 
 void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
-                          aom_writer *w, int block, int plane,
+                          aom_writer *w, int block, int plane, TX_SIZE tx_size,
                           const tran_low_t *tcoeff, uint16_t eob,
                           TXB_CTX *txb_ctx) {
   aom_prob *nz_map;
   aom_prob *eob_flag;
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   const PLANE_TYPE plane_type = get_plane_type(plane);
-  const TX_SIZE tx_size = get_tx_size(plane, xd);
   const TX_SIZE txs_ctx = get_txsize_context(tx_size);
   const TX_TYPE tx_type = get_tx_type(plane_type, xd, block, tx_size);
   const SCAN_ORDER *const scan_order =
@@ -210,7 +209,8 @@ void av1_write_coeffs_mb(const AV1_COMMON *const cm, MACROBLOCK *x,
       uint16_t eob = x->mbmi_ext->eobs[plane][block];
       TXB_CTX txb_ctx = { x->mbmi_ext->txb_skip_ctx[plane][block],
                           x->mbmi_ext->dc_sign_ctx[plane][block] };
-      av1_write_coeffs_txb(cm, xd, w, block, plane, tcoeff, eob, &txb_ctx);
+      av1_write_coeffs_txb(cm, xd, w, block, plane, tx_size, tcoeff, eob,
+                           &txb_ctx);
       block += step;
     }
   }
@@ -287,10 +287,9 @@ static INLINE int get_base_cost(tran_low_t abs_qc, int ctx,
 }
 
 int av1_cost_coeffs_txb(const AV1_COMP *const cpi, MACROBLOCK *x, int plane,
-                        int block, TXB_CTX *txb_ctx) {
+                        int block, TX_SIZE tx_size, TXB_CTX *txb_ctx) {
   const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
-  const TX_SIZE tx_size = get_tx_size(plane, xd);
   TX_SIZE txs_ctx = get_txsize_context(tx_size);
   const PLANE_TYPE plane_type = get_plane_type(plane);
   const TX_TYPE tx_type = get_tx_type(plane_type, xd, block, tx_size);

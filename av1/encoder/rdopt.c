@@ -1222,7 +1222,7 @@ int av1_cost_coeffs(const AV1_COMP *const cpi, MACROBLOCK *x, int plane,
 
   TXB_CTX txb_ctx;
   get_txb_ctx(plane_bsize, tx_size, plane, a, l, &txb_ctx);
-  return av1_cost_coeffs_txb(cpi, x, plane, block, &txb_ctx);
+  return av1_cost_coeffs_txb(cpi, x, plane, block, tx_size, &txb_ctx);
 #endif  // !CONFIG_LV_MAP
 }
 #endif  // !CONFIG_PVQ || CONFIG_VAR_TX

@@ -467,6 +467,7 @@ int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int block,
   assert((mb->qindex == 0) ^ (xd->lossless[xd->mi[0]->mbmi.segment_id] == 0));
   if (eob == 0) return eob;
   if (xd->lossless[xd->mi[0]->mbmi.segment_id]) return eob;
+
 #if CONFIG_PVQ
   (void)cm;
   (void)tx_size;

@@ -44,9 +44,8 @@ static int read_golomb(MACROBLOCKD *xd, aom_reader *r) {
 uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
                             aom_reader *r, int block, int plane,
                             tran_low_t *tcoeffs, TXB_CTX *txb_ctx,
-                            int16_t *max_scan_line, int *eob) {
+                            TX_SIZE tx_size, int16_t *max_scan_line, int *eob) {
   FRAME_COUNTS *counts = xd->counts;
-  TX_SIZE tx_size = get_tx_size(plane, xd);
   TX_SIZE txs_ctx = get_txsize_context(tx_size);
   PLANE_TYPE plane_type = get_plane_type(plane);
   aom_prob *nz_map = cm->fc->nz_map[txs_ctx][plane_type];
@@ -213,7 +212,8 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 uint8_t av1_read_coeffs_txb_facade(AV1_COMMON *cm, MACROBLOCKD *xd,
                                    aom_reader *r, int row, int col, int block,
                                    int plane, tran_low_t *tcoeffs,
-                                   int16_t *max_scan_line, int *eob) {
+                                   TX_SIZE tx_size, int16_t *max_scan_line,
+                                   int *eob) {
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   struct macroblockd_plane *pd = &xd->plane[plane];
 
@@ -230,12 +230,11 @@ uint8_t av1_read_coeffs_txb_facade(AV1_COMMON *cm, MACROBLOCKD *xd,
       get_plane_block_size(AOMMAX(BLOCK_8X8, bsize), pd);
 #endif  // CONFIG_CB4X4
 
-  TX_SIZE tx_size = get_tx_size(plane, xd);
   TXB_CTX txb_ctx;
   get_txb_ctx(plane_bsize, tx_size, plane, pd->above_context + col,
               pd->left_context + row, &txb_ctx);
-  uint8_t cul_level = av1_read_coeffs_txb(cm, xd, r, block, plane, tcoeffs,
-                                          &txb_ctx, max_scan_line, eob);
+  uint8_t cul_level = av1_read_coeffs_txb(
+      cm, xd, r, block, plane, tcoeffs, &txb_ctx, tx_size, max_scan_line, eob);
 #if CONFIG_ADAPT_SCAN
   PLANE_TYPE plane_type = get_plane_type(plane);
   TX_TYPE tx_type = get_tx_type(plane_type, xd, block, tx_size);
