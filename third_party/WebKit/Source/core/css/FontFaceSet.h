@@ -46,7 +46,6 @@
 
 namespace blink {
 
-class CSSFontSelector;
 class ExceptionState;
 class Font;
 class FontFaceCache;
@@ -107,7 +106,7 @@ class CORE_EXPORT FontFaceSet final : public EventTargetWithInlineData,
 
   static const char* SupplementName() { return "FontFaceSet"; }
 
-  void AddFontFacesToFontFaceCache(FontFaceCache*, CSSFontSelector*);
+  void AddFontFacesToFontFaceCache(FontFaceCache*);
 
   DECLARE_VIRTUAL_TRACE();
 

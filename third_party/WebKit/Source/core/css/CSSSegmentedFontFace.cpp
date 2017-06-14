@@ -36,10 +36,8 @@
 
 namespace blink {
 
-CSSSegmentedFontFace::CSSSegmentedFontFace(CSSFontSelector* font_selector,
-                                           FontTraits traits)
-    : font_selector_(font_selector),
-      traits_(traits),
+CSSSegmentedFontFace::CSSSegmentedFontFace(FontTraits traits)
+    : traits_(traits),
       first_non_css_connected_face_(font_faces_.end()),
       approximate_character_count_(0) {}
 
@@ -192,7 +190,6 @@ void CSSSegmentedFontFace::Match(const String& text,
 }
 
 DEFINE_TRACE(CSSSegmentedFontFace) {
-  visitor->Trace(font_selector_);
   visitor->Trace(first_non_css_connected_face_);
   visitor->Trace(font_faces_);
 }

@@ -38,7 +38,6 @@
 
 namespace blink {
 
-class CSSFontSelector;
 class FontData;
 class FontDescription;
 class FontFace;
@@ -47,13 +46,11 @@ class SegmentedFontData;
 class CSSSegmentedFontFace final
     : public GarbageCollectedFinalized<CSSSegmentedFontFace> {
  public:
-  static CSSSegmentedFontFace* Create(CSSFontSelector* selector,
-                                      FontTraits traits) {
-    return new CSSSegmentedFontFace(selector, traits);
+  static CSSSegmentedFontFace* Create(FontTraits traits) {
+    return new CSSSegmentedFontFace(traits);
   }
   ~CSSSegmentedFontFace();
 
-  CSSFontSelector* FontSelector() const { return font_selector_; }
   FontTraits Traits() const { return traits_; }
 
   // Called when status of a FontFace has changed (e.g. loaded or timed out)
@@ -77,14 +74,13 @@ class CSSSegmentedFontFace final
   DECLARE_TRACE();
 
  private:
-  CSSSegmentedFontFace(CSSFontSelector*, FontTraits);
+  CSSSegmentedFontFace(FontTraits);
 
   void PruneTable();
   bool IsValid() const;
 
   using FontFaceList = HeapListHashSet<Member<FontFace>>;
 
-  Member<CSSFontSelector> font_selector_;
   FontTraits traits_;
   HashMap<FontCacheKey,
           RefPtr<SegmentedFontData>,

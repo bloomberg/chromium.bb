@@ -26,7 +26,6 @@
 
 #include "core/css/FontFaceCache.h"
 
-#include "core/css/CSSFontSelector.h"
 #include "core/css/CSSSegmentedFontFace.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/FontFace.h"
@@ -44,17 +43,14 @@ static unsigned g_version = 0;
 
 FontFaceCache::FontFaceCache() : version_(0) {}
 
-void FontFaceCache::Add(CSSFontSelector* css_font_selector,
-                        const StyleRuleFontFace* font_face_rule,
+void FontFaceCache::Add(const StyleRuleFontFace* font_face_rule,
                         FontFace* font_face) {
   if (!style_rule_to_font_face_.insert(font_face_rule, font_face).is_new_entry)
     return;
-  AddFontFace(css_font_selector, font_face, true);
+  AddFontFace(font_face, true);
 }
 
-void FontFaceCache::AddFontFace(CSSFontSelector* css_font_selector,
-                                FontFace* font_face,
-                                bool css_connected) {
+void FontFaceCache::AddFontFace(FontFace* font_face, bool css_connected) {
   FamilyToTraitsMap::AddResult traits_result =
       font_faces_.insert(font_face->family(), nullptr);
   if (!traits_result.stored_value->value)
@@ -63,9 +59,10 @@ void FontFaceCache::AddFontFace(CSSFontSelector* css_font_selector,
   TraitsMap::AddResult segmented_font_face_result =
       traits_result.stored_value->value->insert(font_face->Traits().Bitfield(),
                                                 nullptr);
-  if (!segmented_font_face_result.stored_value->value)
+  if (!segmented_font_face_result.stored_value->value) {
     segmented_font_face_result.stored_value->value =
-        CSSSegmentedFontFace::Create(css_font_selector, font_face->Traits());
+        CSSSegmentedFontFace::Create(font_face->Traits());
+  }
 
   segmented_font_face_result.stored_value->value->AddFontFace(font_face,
                                                               css_connected);
