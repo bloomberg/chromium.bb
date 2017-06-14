@@ -431,22 +431,82 @@ TEST_F(StackedTabStripLayoutTest, SetWidth) {
     CommonTestData common_data;
     int new_width;
   } test_data[] = {
-    { { 0, 500, 100, 10, 2, 0, 4, "0 90 180 270 360 400",
-                                  "0 90 180 196 198 200"}, 300 },
 
-    // Verifies a bug in AdjustTrailingStackedTabs().
+    // No change in layout if SetWidth() is called with current width.
+    { { 0, 500, 100, 10, 2, 0, 4, "", "0 90 180 270 360 400"}, 500 },
+
+    // No change in layout if stacking is initially not required and the tab
+    // strip width is increased.
+    { { 0, 500, 100, 10, 2, 0, 2, "", "0 90 180"}, 550 },
+
+    // For an initially non-stacked tab strip whose width is being decreased,
+    // only start to stack once the width becomes narrow enough.
+    { { 0, 500, 100, 10, 2, 0, 2, "", "0 90 180"}, 400 },
+    { { 0, 500, 100, 10, 2, 0, 2, "0 90 180", "0 10 100"}, 200 },
+
+    // Increase a stacked tabstrip width enough so that stacking is no longer
+    // required.
+    { { 0, 200, 100, 10, 2, 0, 2, "0 10 100", "0 90 180"}, 400 },
+
+    // Verifies a bug in AdjustTrailingStackedTabs(). See crbug.com/125127.
     { { 0, 103, 100, 10, 2, 0, 0, "", "0 2"}, 102 },
 
-    { { 8, 250, 100, 10, 2, 2, 2, "0 4 8 98 148 150", "0 4 8 98 160 250"},
+    // Tests with pinned tabs.
+    { { 8, 250, 100, 10, 2, 2, 2, "0 4 8 98 148 150", "0 4 8 98 188 250"},
       350 },
     { { 8, 250, 100, 10, 2, 2, 2, "0 4 8 98 148 150", "0 4 8 96 98 100"}, 200 },
 
-    { { 0, 250, 100, 10, 2, 0, 2, "0 40 90 120 150", "0 40 90 98 100"}, 200 },
-    { { 0, 250, 100, 10, 2, 0, 2, "0 2 60 150", "0 2 60 100"}, 200 },
-    { { 0, 250, 100, 10, 2, 0, 2, "0 40 120 150", "0 40 98 100"}, 200 },
+    // Decrease the width of the tabstrip by a small enough amount such that
+    // tabs to the right of the active tab form a stack and the positions of
+    // all other tabs remain the same.
+    { { 0, 500, 100, 10, 2, 0, 4, "0 90 180 270 360 400",
+                                  "0 90 180 270 360 390"}, 490},
+    { { 0, 500, 100, 10, 2, 0, 0, "0 90 180 270 360 400",
+                                  "0 90 180 196 198 200"}, 300},
+    { { 0, 500, 100, 10, 2, 0, 2, "0 90 180 270 360 400",
+                                  "0 90 180 270 298 300"}, 400},
 
-    { { 0, 200, 100, 10, 2, 0, 2, "0 2 10 100", "0 2 60 150"}, 250 },
-    { { 0, 200, 100, 10, 2, 0, 2, "0 2 4 10 100", "0 2 20 110 200"}, 300 },
+    // Decrease the width of the tabstrip by a large enough amount such that
+    // all tabs to the right of the active tab stack, the active tab changes
+    // position, and the tabs to the left of the active tab start to stack.
+    { { 0, 500, 100, 10, 2, 0, 4, "0 90 180 270 360 400",
+                                  "0 2 18 108 198 200"}, 300 },
+    { { 0, 500, 100, 10, 2, 0, 5, "0 90 180 270 360 400",
+                                  "0 2 18 108 198 288"}, 388 },
+    { { 0, 500, 100, 10, 2, 0, 2, "0 90 180 270 360 400",
+                                  "0 54 144 146 148 150"}, 250 },
+
+    // Increase the width of the tabstrip by a small enough amount such that
+    // the tabs to the right of the active start to become exposed and the rest
+    // of the tabs do not change position.
+    { { 0, 350, 100, 10, 2, 0, 2, "0 20 110 200 250",
+                                  "0 20 110 200 260"}, 360 },
+    { { 0, 350, 100, 10, 2, 0, 2, "0 20 110 200 250",
+                                  "0 20 110 200 290"}, 390 },
+    { { 0, 110, 100, 10, 2, 0, 3, "0 2 4 6 8 10",
+                                  "0 2 4 6 48 50"}, 150 },
+    { { 0, 110, 100, 10, 2, 0, 3, "0 2 4 6 8 10",
+                                  "0 2 4 6 96 110"}, 210 },
+
+    // Increase the width of the tabstrip by a large enough amount such that
+    // all tabs to the right of the active tab are fully exposed, the active
+    // tab changes position, and the tabs to the left of the active tab start
+    // to become exposed.
+    { { 0, 350, 100, 10, 2, 0, 2, "0 20 110 200 250",
+                                  "0 30 120 210 300"}, 400 },
+    { { 0, 110, 100, 10, 2, 0, 3, "0 2 4 6 8 10",
+                                  "0 2 4 94 184 274"}, 374 },
+    { { 0, 110, 100, 10, 2, 0, 3, "0 2 4 6 8 10",
+                                  "0 2 5 95 185 275"}, 375 },
+    { { 0, 110, 100, 10, 2, 0, 3, "0 2 4 6 8 10",
+                                  "0 40 130 220 310 400"}, 500 },
+
+    // If a stack has formed somewhere other than at the very beginning or
+    // very end of the tabstrip (possible as a result of a gesture overscroll),
+    // then re-adjust stacking to the ends of the tabstrip upon a tabstrip
+    // width change.
+    { { 0, 200, 100, 10, 2, 0, 2, "0 90 92 100", "0 2 78 80"}, 180 },
+
   };
   for (size_t i = 0; i < arraysize(test_data); ++i) {
     CreateLayout(test_data[i].common_data);
