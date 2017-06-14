@@ -755,6 +755,20 @@ static InlineBoxPosition AdjustInlineBoxPositionForTextDirection(InlineBox*,
                                                                  UnicodeBidi,
                                                                  TextDirection);
 
+// Returns true if |caret_offset| is at edge of |box| based on |affinity|.
+// |caret_offset| must be either |box.CaretMinOffset()| or
+// |box.CaretMaxOffset()|.
+static bool IsCaretAtEdgeOfInlineTextBox(int caret_offset,
+                                         const InlineTextBox& box,
+                                         TextAffinity affinity) {
+  if (caret_offset == box.CaretMinOffset())
+    return affinity == TextAffinity::kDownstream;
+  DCHECK_EQ(caret_offset, box.CaretMaxOffset());
+  if (affinity == TextAffinity::kUpstream)
+    return true;
+  return box.NextLeafChild() && box.NextLeafChild()->IsLineBreak();
+}
+
 template <typename Strategy>
 static InlineBoxPosition ComputeInlineBoxPositionTemplate(
     const PositionTemplate<Strategy>& position,
@@ -817,12 +831,7 @@ static InlineBoxPosition ComputeInlineBoxPositionTemplate(
       if (caret_offset > caret_min_offset && caret_offset < caret_max_offset)
         return InlineBoxPosition(box, caret_offset);
 
-      if (((caret_offset == caret_max_offset) ^
-           (affinity == TextAffinity::kDownstream)) ||
-          ((caret_offset == caret_min_offset) ^
-           (affinity == TextAffinity::kUpstream)) ||
-          (caret_offset == caret_max_offset && box->NextLeafChild() &&
-           box->NextLeafChild()->IsLineBreak())) {
+      if (IsCaretAtEdgeOfInlineTextBox(caret_offset, *box, affinity)) {
         inline_box = box;
         break;
       }
