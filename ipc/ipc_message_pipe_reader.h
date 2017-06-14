@@ -74,7 +74,7 @@ class IPC_EXPORT MessagePipeReader : public NON_EXPORTED_BASE(mojom::Channel) {
   void Close();
 
   // Return true if the MessagePipe is alive.
-  bool IsValid() { return sender_; }
+  bool IsValid() { return sender_.is_bound(); }
 
   // Sends an IPC::Message to the other end of the pipe. Safe to call from any
   // thread.

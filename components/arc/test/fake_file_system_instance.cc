@@ -100,7 +100,7 @@ FakeFileSystemInstance::~FakeFileSystemInstance() {
 }
 
 bool FakeFileSystemInstance::InitCalled() {
-  return host_;
+  return host_.is_bound();
 }
 
 void FakeFileSystemInstance::AddFile(const File& file) {

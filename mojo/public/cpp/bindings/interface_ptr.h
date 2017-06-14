@@ -199,26 +199,10 @@ class InterfacePtr {
     return &internal_state_;
   }
 
-  // Allow InterfacePtr<> to be used in boolean expressions, but not
-  // implicitly convertible to a real bool (which is dangerous).
- private:
-  // TODO(dcheng): Use an explicit conversion operator.
-  typedef internal::InterfacePtrState<Interface> InterfacePtr::*Testable;
-
- public:
-  operator Testable() const {
-    return internal_state_.is_bound() ? &InterfacePtr::internal_state_
-                                      : nullptr;
-  }
+  // Allow InterfacePtr<> to be used in boolean expressions.
+  explicit operator bool() const { return internal_state_.is_bound(); }
 
  private:
-  // Forbid the == and != operators explicitly, otherwise InterfacePtr will be
-  // converted to Testable to do == or != comparison.
-  template <typename T>
-  bool operator==(const InterfacePtr<T>& other) const = delete;
-  template <typename T>
-  bool operator!=(const InterfacePtr<T>& other) const = delete;
-
   typedef internal::InterfacePtrState<Interface> State;
   mutable State internal_state_;
 

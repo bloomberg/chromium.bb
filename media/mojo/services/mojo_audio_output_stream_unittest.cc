@@ -152,7 +152,7 @@ class MojoAudioOutputStreamTest : public Test {
                        base::Unretained(&mock_delegate_factory_)),
         base::Bind(&MockClient::Initialized, base::Unretained(&client_)),
         base::BindOnce(&MockDeleter::Finished, base::Unretained(&deleter_)));
-    EXPECT_NE(nullptr, p);
+    EXPECT_TRUE(p.is_bound());
     return p;
   }
 
