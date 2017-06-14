@@ -357,8 +357,8 @@ bool LayoutBlockFlow::CheckIfIsSelfCollapsingBlock() const {
 
   if (LogicalHeight() > LayoutUnit() || BorderAndPaddingLogicalHeight() ||
       Style()->LogicalMinHeight().IsPositive() ||
-      Style()->MarginBeforeCollapse() == kMarginCollapseSeparate ||
-      Style()->MarginAfterCollapse() == kMarginCollapseSeparate)
+      Style()->MarginBeforeCollapse() == EMarginCollapse::kSeparate ||
+      Style()->MarginAfterCollapse() == EMarginCollapse::kSeparate)
     return false;
 
   Length logical_height_length = Style()->LogicalHeight();
@@ -1544,7 +1544,7 @@ MarginInfo::MarginInfo(LayoutBlockFlow* block_flow,
 
   can_collapse_margin_before_with_children_ =
       can_collapse_with_children_ && !before_border_padding &&
-      block_style.MarginBeforeCollapse() != kMarginCollapseSeparate;
+      block_style.MarginBeforeCollapse() != EMarginCollapse::kSeparate;
 
   // If any height other than auto is specified in CSS, then we don't collapse
   // our bottom margins with our children's margins. To do otherwise would be to
@@ -1555,7 +1555,7 @@ MarginInfo::MarginInfo(LayoutBlockFlow* block_flow,
       can_collapse_with_children_ && !after_border_padding &&
       (block_style.LogicalHeight().IsAuto() &&
        !block_style.LogicalHeight().Value()) &&
-      block_style.MarginAfterCollapse() != kMarginCollapseSeparate;
+      block_style.MarginAfterCollapse() != EMarginCollapse::kSeparate;
 
   quirk_container_ = block_flow->IsTableCell() || block_flow->IsBody();
 
@@ -1988,7 +1988,7 @@ LayoutUnit LayoutBlockFlow::ClearFloatsIfNeeded(LayoutBox& child,
     // In case the child discarded the before margin of the block we need to
     // reset the mustDiscardMarginBefore flag to the initial value.
     SetMustDiscardMarginBefore(Style()->MarginBeforeCollapse() ==
-                               kMarginCollapseDiscard);
+                               EMarginCollapse::kDiscard);
   }
 
   return y_pos + height_increase;
@@ -2036,13 +2036,13 @@ void LayoutBlockFlow::MarginBeforeEstimateForChild(
   // FIXME: Use writing mode independent accessor for marginBeforeCollapse.
   if ((GetDocument().InQuirksMode() && HasMarginBeforeQuirk(&child) &&
        (IsTableCell() || IsBody())) ||
-      child.Style()->MarginBeforeCollapse() == kMarginCollapseSeparate)
+      child.Style()->MarginBeforeCollapse() == EMarginCollapse::kSeparate)
     return;
 
   // The margins are discarded by a child that specified
   // -webkit-margin-collapse: discard.
   // FIXME: Use writing mode independent accessor for marginBeforeCollapse.
-  if (child.Style()->MarginBeforeCollapse() == kMarginCollapseDiscard) {
+  if (child.Style()->MarginBeforeCollapse() == EMarginCollapse::kDiscard) {
     positive_margin_before = LayoutUnit();
     negative_margin_before = LayoutUnit();
     discard_margin_before = true;
@@ -2257,7 +2257,7 @@ void LayoutBlockFlow::HandleAfterSideOfBlock(LayoutBox* last_child,
 }
 
 void LayoutBlockFlow::SetMustDiscardMarginBefore(bool value) {
-  if (Style()->MarginBeforeCollapse() == kMarginCollapseDiscard) {
+  if (Style()->MarginBeforeCollapse() == EMarginCollapse::kDiscard) {
     DCHECK(value);
     return;
   }
@@ -2272,7 +2272,7 @@ void LayoutBlockFlow::SetMustDiscardMarginBefore(bool value) {
 }
 
 void LayoutBlockFlow::SetMustDiscardMarginAfter(bool value) {
-  if (Style()->MarginAfterCollapse() == kMarginCollapseDiscard) {
+  if (Style()->MarginAfterCollapse() == EMarginCollapse::kDiscard) {
     DCHECK(value);
     return;
   }
@@ -2287,28 +2287,30 @@ void LayoutBlockFlow::SetMustDiscardMarginAfter(bool value) {
 }
 
 bool LayoutBlockFlow::MustDiscardMarginBefore() const {
-  return Style()->MarginBeforeCollapse() == kMarginCollapseDiscard ||
+  return Style()->MarginBeforeCollapse() == EMarginCollapse::kDiscard ||
          (rare_data_ && rare_data_->discard_margin_before_);
 }
 
 bool LayoutBlockFlow::MustDiscardMarginAfter() const {
-  return Style()->MarginAfterCollapse() == kMarginCollapseDiscard ||
+  return Style()->MarginAfterCollapse() == EMarginCollapse::kDiscard ||
          (rare_data_ && rare_data_->discard_margin_after_);
 }
 
 bool LayoutBlockFlow::MustDiscardMarginBeforeForChild(
     const LayoutBox& child) const {
   DCHECK(!child.SelfNeedsLayout());
-  if (!child.IsWritingModeRoot())
+  if (!child.IsWritingModeRoot()) {
     return child.IsLayoutBlockFlow()
                ? ToLayoutBlockFlow(&child)->MustDiscardMarginBefore()
                : (child.Style()->MarginBeforeCollapse() ==
-                  kMarginCollapseDiscard);
-  if (child.IsHorizontalWritingMode() == IsHorizontalWritingMode())
+                  EMarginCollapse::kDiscard);
+  }
+  if (child.IsHorizontalWritingMode() == IsHorizontalWritingMode()) {
     return child.IsLayoutBlockFlow()
                ? ToLayoutBlockFlow(&child)->MustDiscardMarginAfter()
                : (child.Style()->MarginAfterCollapse() ==
-                  kMarginCollapseDiscard);
+                  EMarginCollapse::kDiscard);
+  }
 
   // FIXME: We return false here because the implementation is not geometrically
   // complete. We have values only for before/after, not start/end.
@@ -2320,16 +2322,18 @@ bool LayoutBlockFlow::MustDiscardMarginBeforeForChild(
 bool LayoutBlockFlow::MustDiscardMarginAfterForChild(
     const LayoutBox& child) const {
   DCHECK(!child.SelfNeedsLayout());
-  if (!child.IsWritingModeRoot())
+  if (!child.IsWritingModeRoot()) {
     return child.IsLayoutBlockFlow()
                ? ToLayoutBlockFlow(&child)->MustDiscardMarginAfter()
                : (child.Style()->MarginAfterCollapse() ==
-                  kMarginCollapseDiscard);
-  if (child.IsHorizontalWritingMode() == IsHorizontalWritingMode())
+                  EMarginCollapse::kDiscard);
+  }
+  if (child.IsHorizontalWritingMode() == IsHorizontalWritingMode()) {
     return child.IsLayoutBlockFlow()
                ? ToLayoutBlockFlow(&child)->MustDiscardMarginBefore()
                : (child.Style()->MarginBeforeCollapse() ==
-                  kMarginCollapseDiscard);
+                  EMarginCollapse::kDiscard);
+  }
 
   // FIXME: See |mustDiscardMarginBeforeForChild| above.
   return false;
@@ -2362,9 +2366,9 @@ bool LayoutBlockFlow::MustSeparateMarginBeforeForChild(
   DCHECK(!child.SelfNeedsLayout());
   const ComputedStyle& child_style = child.StyleRef();
   if (!child.IsWritingModeRoot())
-    return child_style.MarginBeforeCollapse() == kMarginCollapseSeparate;
+    return child_style.MarginBeforeCollapse() == EMarginCollapse::kSeparate;
   if (child.IsHorizontalWritingMode() == IsHorizontalWritingMode())
-    return child_style.MarginAfterCollapse() == kMarginCollapseSeparate;
+    return child_style.MarginAfterCollapse() == EMarginCollapse::kSeparate;
 
   // FIXME: See |mustDiscardMarginBeforeForChild| above.
   return false;
@@ -2375,9 +2379,9 @@ bool LayoutBlockFlow::MustSeparateMarginAfterForChild(
   DCHECK(!child.SelfNeedsLayout());
   const ComputedStyle& child_style = child.StyleRef();
   if (!child.IsWritingModeRoot())
-    return child_style.MarginAfterCollapse() == kMarginCollapseSeparate;
+    return child_style.MarginAfterCollapse() == EMarginCollapse::kSeparate;
   if (child.IsHorizontalWritingMode() == IsHorizontalWritingMode())
-    return child_style.MarginBeforeCollapse() == kMarginCollapseSeparate;
+    return child_style.MarginBeforeCollapse() == EMarginCollapse::kSeparate;
 
   // FIXME: See |mustDiscardMarginBeforeForChild| above.
   return false;

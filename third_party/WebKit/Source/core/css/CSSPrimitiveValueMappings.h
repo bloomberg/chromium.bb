@@ -877,13 +877,13 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EMarginCollapse e)
     : CSSValue(kIdentifierClass) {
   switch (e) {
-    case kMarginCollapseCollapse:
+    case EMarginCollapse::kCollapse:
       value_id_ = CSSValueCollapse;
       break;
-    case kMarginCollapseSeparate:
+    case EMarginCollapse::kSeparate:
       value_id_ = CSSValueSeparate;
       break;
-    case kMarginCollapseDiscard:
+    case EMarginCollapse::kDiscard:
       value_id_ = CSSValueDiscard;
       break;
   }
@@ -893,17 +893,17 @@ template <>
 inline EMarginCollapse CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueCollapse:
-      return kMarginCollapseCollapse;
+      return EMarginCollapse::kCollapse;
     case CSSValueSeparate:
-      return kMarginCollapseSeparate;
+      return EMarginCollapse::kSeparate;
     case CSSValueDiscard:
-      return kMarginCollapseDiscard;
+      return EMarginCollapse::kDiscard;
     default:
       break;
   }
 
   NOTREACHED();
-  return kMarginCollapseCollapse;
+  return EMarginCollapse::kCollapse;
 }
 
 template <>
