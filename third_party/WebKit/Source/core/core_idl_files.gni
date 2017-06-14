@@ -62,7 +62,6 @@ core_idl_files = get_path_info([
                                  "css/StyleMedia.idl",
                                  "css/StyleSheet.idl",
                                  "css/StyleSheetList.idl",
-                                 "css/WebKitCSSMatrix.idl",
                                  "css/cssom/CSSImageValue.idl",
                                  "css/cssom/CSSKeywordValue.idl",
                                  "css/cssom/CSSMatrixComponent.idl",
