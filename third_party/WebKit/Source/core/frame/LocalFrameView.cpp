@@ -1627,6 +1627,7 @@ void LocalFrameView::ViewportSizeChanged(bool width_changed,
     // clamp the scroll offset here.
     if (GetFrame().IsMainFrame()) {
       if (root_layer_scrolling_enabled) {
+        layout_view->Layer()->UpdateSize();
         layout_view->GetScrollableArea()
             ->ClampScrollOffsetAfterOverflowChange();
       } else {

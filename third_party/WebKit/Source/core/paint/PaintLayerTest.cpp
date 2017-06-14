@@ -97,6 +97,28 @@ TEST_P(PaintLayerTest, RootLayerCompositedBounds) {
             GetLayoutView().Layer()->BoundingBoxForCompositing());
 }
 
+TEST_P(PaintLayerTest, RootLayerScrollBounds) {
+  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled())
+    return;
+  RuntimeEnabledFeatures::SetOverlayScrollbarsEnabled(false);
+
+  SetBodyInnerHTML(
+      "<style> body { width: 1000px; height: 1000px; margin: 0 } </style>");
+  PaintLayerScrollableArea* plsa = GetLayoutView().Layer()->GetScrollableArea();
+
+  int scrollbarThickness = plsa->VerticalScrollbarWidth();
+  EXPECT_EQ(scrollbarThickness, plsa->HorizontalScrollbarHeight());
+  EXPECT_GT(scrollbarThickness, 0);
+
+  EXPECT_EQ(ScrollOffset(200 + scrollbarThickness, 400 + scrollbarThickness),
+            plsa->MaximumScrollOffset());
+
+  EXPECT_EQ(IntRect(0, 0, 800 - scrollbarThickness, 600 - scrollbarThickness),
+            plsa->VisibleContentRect());
+  EXPECT_EQ(IntRect(0, 0, 800, 600),
+            plsa->VisibleContentRect(kIncludeScrollbars));
+}
+
 TEST_P(PaintLayerTest, PaintingExtentReflection) {
   SetBodyInnerHTML(
       "<div id='target' style='background-color: blue; position: absolute;"
