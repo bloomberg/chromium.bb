@@ -35,7 +35,11 @@
 #include "components/login/localized_values_builder.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
-#include "device/power_save_blocker/power_save_blocker.h"
+#include "content/public/common/service_manager_connection.h"
+#include "device/wake_lock/public/interfaces/wake_lock_provider.mojom.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
+#include "services/device/public/interfaces/constants.mojom.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/text/bytes_formatting.h"
 
 namespace {
@@ -348,12 +352,13 @@ void EncryptionMigrationScreenHandler::UpdateUIState(UIState state) {
   if (state == UIState::READY)
     DBusThreadManager::Get()->GetPowerManagerClient()->RequestStatusUpdate();
 
-  // We should block power save and not shut down on lid close during migration.
+  // We should request wake lock and not shut down on lid close during
+  // migration.
   if (state == UIState::MIGRATING) {
-    StartBlockingPowerSave();
+    GetWakeLock()->RequestWakeLock();
     PowerPolicyController::Get()->SetEncryptionMigrationActive(true);
   } else {
-    StopBlockingPowerSave();
+    GetWakeLock()->CancelWakeLock();
     PowerPolicyController::Get()->SetEncryptionMigrationActive(false);
   }
 
@@ -444,23 +449,31 @@ void EncryptionMigrationScreenHandler::OnMountExistingVault(
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void EncryptionMigrationScreenHandler::StartBlockingPowerSave() {
-  if (!power_save_blocker_) {
-    power_save_blocker_.reset(new device::PowerSaveBlocker(
-        device::PowerSaveBlocker::kPowerSaveBlockPreventAppSuspension,
-        device::PowerSaveBlocker::kReasonOther,
-        "Encryption migration is in progress...",
-        content::BrowserThread::GetTaskRunnerForThread(
-            content::BrowserThread::UI),
-        content::BrowserThread::GetTaskRunnerForThread(
-            content::BrowserThread::FILE)));
-  }
-}
+device::mojom::WakeLock* EncryptionMigrationScreenHandler::GetWakeLock() {
+  // |wake_lock_| is lazy bound and reused, even after a connection error.
+  if (wake_lock_)
+    return wake_lock_.get();
 
-void EncryptionMigrationScreenHandler::StopBlockingPowerSave() {
-  if (power_save_blocker_.get()) {
-    power_save_blocker_.reset();
-  }
+  device::mojom::WakeLockRequest request = mojo::MakeRequest(&wake_lock_);
+
+  // Service manager connection might be not initialized in some testing
+  // contexts.
+  if (!content::ServiceManagerConnection::GetForProcess())
+    return wake_lock_.get();
+
+  service_manager::Connector* connector =
+      content::ServiceManagerConnection::GetForProcess()->GetConnector();
+  DCHECK(connector);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  device::mojom::WakeLockProviderPtr wake_lock_provider;
+  connector->BindInterface(device::mojom::kServiceName,
+                           mojo::MakeRequest(&wake_lock_provider));
+  wake_lock_provider->GetWakeLockWithoutContext(
+      device::mojom::WakeLockType::PreventAppSuspension,
+      device::mojom::WakeLockReason::ReasonOther,
+      "Encryption migration is in progress...", std::move(request));
+  return wake_lock_.get();
 }
 
 void EncryptionMigrationScreenHandler::RemoveCryptohome() {
