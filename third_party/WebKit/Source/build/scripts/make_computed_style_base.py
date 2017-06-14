@@ -113,8 +113,8 @@ class DiffGroup(object):
         subgroups: List of DiffGroup instances that are stored as subgroups under this group.
         expressions: List of expression that are on this group that need to be diffed.
     """
-    def __init__(self, group_name):
-        self.group_name = group_name
+    def __init__(self, group):
+        self.group = group
         self.subgroups = []
         self.fields = []
         self.expressions = []
@@ -259,7 +259,7 @@ def _list_field_dependencies(entries_with_field_dependencies):
 
 
 def _create_diff_groups(fields_to_diff, methods_to_diff, predicates_to_test, root_group):
-    diff_group = DiffGroup(root_group.member_name)
+    diff_group = DiffGroup(root_group)
     field_dependencies = _list_field_dependencies(methods_to_diff + predicates_to_test)
     for subgroup in root_group.subgroups:
         if any(field.property_name in (fields_to_diff + field_dependencies) for field in subgroup.all_fields):
