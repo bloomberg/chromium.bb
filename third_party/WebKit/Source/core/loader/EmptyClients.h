@@ -412,7 +412,7 @@ class EmptyEditorClient final : public EditorClient {
   USING_FAST_MALLOC(EmptyEditorClient);
 
  public:
-  EmptyEditorClient() {}
+  EmptyEditorClient() : EditorClient() {}
   ~EmptyEditorClient() override {}
 
   void RespondToChangedContents() override {}

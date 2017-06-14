@@ -339,7 +339,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
       spell_check_client_(nullptr),
       chrome_client_(WebFactory::GetInstance().CreateChromeClient(this)),
       context_menu_client_(*this),
-      editor_client_impl_(this),
+      editor_client_(*this),
       spell_checker_client_impl_(this),
       storage_client_impl_(this),
       should_auto_resize_(false),
@@ -387,7 +387,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
   Page::PageClients page_clients;
   page_clients.chrome_client = chrome_client_.Get();
   page_clients.context_menu_client = &context_menu_client_;
-  page_clients.editor_client = &editor_client_impl_;
+  page_clients.editor_client = &editor_client_;
   page_clients.spell_checker_client = &spell_checker_client_impl_;
 
   page_ = Page::CreateOrdinary(page_clients);
