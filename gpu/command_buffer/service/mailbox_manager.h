@@ -5,8 +5,9 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_MAILBOX_MANAGER_H_
 #define GPU_COMMAND_BUFFER_SERVICE_MAILBOX_MANAGER_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/gpu_export.h"
 
@@ -20,10 +21,9 @@ namespace gles2 {
 class TextureBase;
 
 // Manages resources scoped beyond the context or context group level.
-class GPU_EXPORT MailboxManager : public base::RefCounted<MailboxManager> {
+class GPU_EXPORT MailboxManager {
  public:
-  static scoped_refptr<MailboxManager> Create(
-      const GpuPreferences& gpu_preferences);
+  virtual ~MailboxManager() {}
 
   // Look up the texture definition from the named mailbox.
   virtual TextureBase* ConsumeTexture(const Mailbox& mailbox) = 0;
@@ -41,14 +41,8 @@ class GPU_EXPORT MailboxManager : public base::RefCounted<MailboxManager> {
   // Destroy any mailbox that reference the given texture.
   virtual void TextureDeleted(TextureBase* texture) = 0;
 
- protected:
-  MailboxManager() {}
-  virtual ~MailboxManager() {}
-
- private:
-  friend class base::RefCounted<MailboxManager>;
-
-  DISALLOW_COPY_AND_ASSIGN(MailboxManager);
+  static std::unique_ptr<MailboxManager> Create(
+      const GpuPreferences& gpu_preferences);
 };
 
 }  // namespage gles2

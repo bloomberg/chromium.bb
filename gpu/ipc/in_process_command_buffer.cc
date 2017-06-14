@@ -32,12 +32,10 @@
 #include "gpu/command_buffer/service/gl_context_virtual.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/command_buffer/service/image_factory.h"
-#include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_program_cache.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/query_manager.h"
-#include "gpu/command_buffer/service/service_discardable_manager.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
@@ -126,15 +124,28 @@ scoped_refptr<InProcessCommandBuffer::Service> GetInitialService(
 }  // anonyous namespace
 
 InProcessCommandBuffer::Service::Service(const GpuPreferences& gpu_preferences)
-    : gpu_preferences_(gpu_preferences),
-      gpu_driver_bug_workarounds_(base::CommandLine::ForCurrentProcess()) {}
+    : Service(gpu_preferences, nullptr, nullptr) {}
 
 InProcessCommandBuffer::Service::Service(
     gpu::gles2::MailboxManager* mailbox_manager,
     scoped_refptr<gl::GLShareGroup> share_group)
-    : gpu_driver_bug_workarounds_(base::CommandLine::ForCurrentProcess()),
+    : Service(GpuPreferences(), mailbox_manager, share_group) {}
+
+InProcessCommandBuffer::Service::Service(
+    const GpuPreferences& gpu_preferences,
+    gpu::gles2::MailboxManager* mailbox_manager,
+    scoped_refptr<gl::GLShareGroup> share_group)
+    : gpu_preferences_(gpu_preferences),
+      gpu_driver_bug_workarounds_(base::CommandLine::ForCurrentProcess()),
       mailbox_manager_(mailbox_manager),
-      share_group_(share_group) {}
+      share_group_(share_group),
+      shader_translator_cache_(gpu_preferences_) {
+  if (!mailbox_manager_) {
+    // TODO(piman): have embedders own the mailbox manager.
+    owned_mailbox_manager_ = gles2::MailboxManager::Create(gpu_preferences_);
+    mailbox_manager_ = owned_mailbox_manager_.get();
+  }
+}
 
 InProcessCommandBuffer::Service::~Service() {}
 
@@ -153,14 +164,6 @@ scoped_refptr<gl::GLShareGroup> InProcessCommandBuffer::Service::share_group() {
   return share_group_;
 }
 
-scoped_refptr<gles2::MailboxManager>
-InProcessCommandBuffer::Service::mailbox_manager() {
-  if (!mailbox_manager_.get()) {
-    mailbox_manager_ = gles2::MailboxManager::Create(gpu_preferences());
-  }
-  return mailbox_manager_;
-}
-
 gpu::gles2::ProgramCache* InProcessCommandBuffer::Service::program_cache() {
   if (!program_cache_.get() &&
       (gl::g_current_gl_driver->ext.b_GL_ARB_get_program_binary ||
@@ -176,20 +179,6 @@ gpu::gles2::ProgramCache* InProcessCommandBuffer::Service::program_cache() {
         &activity_flags_));
   }
   return program_cache_.get();
-}
-
-gles2::ImageManager* InProcessCommandBuffer::Service::image_manager() {
-  if (!image_manager_)
-    image_manager_.reset(new gles2::ImageManager());
-  return image_manager_.get();
-}
-
-ServiceDiscardableManager*
-InProcessCommandBuffer::Service::discardable_manager() {
-  if (!discardable_manager_) {
-    discardable_manager_.reset(new ServiceDiscardableManager());
-  }
-  return discardable_manager_.get();
 }
 
 InProcessCommandBuffer::InProcessCommandBuffer(

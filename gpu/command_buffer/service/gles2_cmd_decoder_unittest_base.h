@@ -22,6 +22,7 @@
 #include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/command_buffer/service/image_manager.h"
+#include "gpu/command_buffer/service/mailbox_manager_impl.h"
 #include "gpu/command_buffer/service/program_manager.h"
 #include "gpu/command_buffer/service/query_manager.h"
 #include "gpu/command_buffer/service/renderbuffer_manager.h"
@@ -767,7 +768,10 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool>,
   void SetupInitStateManualExpectationsForDoLineWidth(GLfloat width);
 
   GpuPreferences gpu_preferences_;
-  gles2::ImageManager image_manager_;
+  MailboxManagerImpl mailbox_manager_;
+  ShaderTranslatorCache shader_translator_cache_;
+  FramebufferCompletenessCache framebuffer_completeness_cache_;
+  ImageManager image_manager_;
   ServiceDiscardableManager discardable_manager_;
   scoped_refptr<ContextGroup> group_;
   MockGLStates gl_states_;

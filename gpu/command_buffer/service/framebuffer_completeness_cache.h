@@ -9,7 +9,6 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "gpu/gpu_export.h"
 
 namespace gpu {
@@ -18,20 +17,15 @@ namespace gles2 {
 // Refcounted wrapper for a hash_set of framebuffer format signatures
 // representing framebuffer configurations that are reported by the GL
 // driver as complete according to glCheckFramebufferStatusEXT.
-class GPU_EXPORT FramebufferCompletenessCache
-    : public base::RefCounted<FramebufferCompletenessCache> {
+class GPU_EXPORT FramebufferCompletenessCache {
  public:
   FramebufferCompletenessCache();
+  ~FramebufferCompletenessCache();
 
   bool IsComplete(const std::string& signature) const;
   void SetComplete(const std::string& signature);
 
- protected:
-  virtual ~FramebufferCompletenessCache();
-
  private:
-  friend class base::RefCounted<FramebufferCompletenessCache>;
-
   typedef base::hash_set<std::string> Map;
 
   Map cache_;

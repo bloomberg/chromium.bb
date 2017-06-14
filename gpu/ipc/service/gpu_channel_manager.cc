@@ -21,7 +21,6 @@
 #include "gpu/command_buffer/service/memory_program_cache.h"
 #include "gpu/command_buffer/service/preemption_flag.h"
 #include "gpu/command_buffer/service/scheduler.h"
-#include "gpu/command_buffer/service/shader_translator_cache.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "gpu/ipc/service/gpu_channel.h"
@@ -67,6 +66,7 @@ GpuChannelManager::GpuChannelManager(
       gpu_memory_manager_(this),
       scheduler_(scheduler),
       sync_point_manager_(sync_point_manager),
+      shader_translator_cache_(gpu_preferences_),
       gpu_memory_buffer_factory_(gpu_memory_buffer_factory),
       gpu_feature_info_(gpu_feature_info),
       exiting_for_lost_context_(false),
@@ -102,21 +102,6 @@ gles2::ProgramCache* GpuChannelManager::program_cache() {
   return program_cache_.get();
 }
 
-gles2::ShaderTranslatorCache* GpuChannelManager::shader_translator_cache() {
-  if (!shader_translator_cache_.get()) {
-    shader_translator_cache_ =
-        new gles2::ShaderTranslatorCache(gpu_preferences_);
-  }
-  return shader_translator_cache_.get();
-}
-
-gles2::FramebufferCompletenessCache*
-GpuChannelManager::framebuffer_completeness_cache() {
-  if (!framebuffer_completeness_cache_.get())
-    framebuffer_completeness_cache_ = new gles2::FramebufferCompletenessCache;
-  return framebuffer_completeness_cache_.get();
-}
-
 void GpuChannelManager::RemoveChannel(int client_id) {
   delegate_->DidDestroyChannel(client_id);
   gpu_channels_.erase(client_id);
@@ -131,8 +116,7 @@ GpuChannel* GpuChannelManager::EstablishChannel(int client_id,
                                                 uint64_t client_tracing_id,
                                                 bool is_gpu_host) {
   std::unique_ptr<GpuChannel> gpu_channel = base::MakeUnique<GpuChannel>(
-      this, scheduler_, sync_point_manager_, watchdog_, share_group_,
-      mailbox_manager_, &discardable_manager_,
+      this, scheduler_, sync_point_manager_, share_group_,
       is_gpu_host ? preemption_flag_ : nullptr,
       is_gpu_host ? nullptr : preemption_flag_, task_runner_, io_task_runner_,
       client_id, client_tracing_id, is_gpu_host);

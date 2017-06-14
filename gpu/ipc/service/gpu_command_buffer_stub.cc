@@ -570,7 +570,7 @@ bool GpuCommandBufferStub::Initialize(
     gpu::GpuMemoryBufferFactory* gmb_factory =
         channel_->gpu_channel_manager()->gpu_memory_buffer_factory();
     context_group_ = new gles2::ContextGroup(
-        manager->gpu_preferences(), channel_->mailbox_manager(),
+        manager->gpu_preferences(), manager->mailbox_manager(),
         new GpuCommandBufferMemoryTracker(
             channel_, command_buffer_id_.GetUnsafeValue(),
             init_params.attribs.context_type, channel_->task_runner()),
@@ -578,8 +578,8 @@ bool GpuCommandBufferStub::Initialize(
         manager->framebuffer_completeness_cache(), feature_info,
         init_params.attribs.bind_generates_resource, channel_->image_manager(),
         gmb_factory ? gmb_factory->AsImageFactory() : nullptr,
-        channel_->watchdog() /* progress_reporter */,
-        manager->gpu_feature_info(), channel_->discardable_manager());
+        manager->watchdog() /* progress_reporter */,
+        manager->gpu_feature_info(), manager->discardable_manager());
   }
 
 #if defined(OS_MACOSX)
@@ -595,7 +595,7 @@ bool GpuCommandBufferStub::Initialize(
 
   // MailboxManagerSync synchronization correctness currently depends on having
   // only a single context. See crbug.com/510243 for details.
-  use_virtualized_gl_context_ |= channel_->mailbox_manager()->UsesSync();
+  use_virtualized_gl_context_ |= manager->mailbox_manager()->UsesSync();
 
   bool offscreen = (surface_handle_ == kNullSurfaceHandle);
   gl::GLSurface* default_surface = manager->GetDefaultOffscreenSurface();
@@ -838,8 +838,9 @@ void GpuCommandBufferStub::OnReturnFrontBuffer(const Mailbox& mailbox,
 
 CommandBufferServiceClient::CommandBatchProcessedResult
 GpuCommandBufferStub::OnCommandBatchProcessed() {
-  if (channel_->watchdog())
-    channel_->watchdog()->CheckArmed();
+  GpuWatchdogThread* watchdog = channel_->gpu_channel_manager()->watchdog();
+  if (watchdog)
+    watchdog->CheckArmed();
   bool pause = false;
   if (channel_->scheduler()) {
     pause = channel_->scheduler()->ShouldYield(sequence_id_);

@@ -14,7 +14,6 @@
 #include "gpu/command_buffer/client/transfer_buffer.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/image_manager.h"
-#include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/service_discardable_manager.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
@@ -54,7 +53,8 @@ Context::Context(Display* display, const Config* config)
       config_(config),
       is_current_in_some_thread_(false),
       is_destroyed_(false),
-      gpu_driver_bug_workarounds_(base::CommandLine::ForCurrentProcess()) {}
+      gpu_driver_bug_workarounds_(base::CommandLine::ForCurrentProcess()),
+      translator_cache_(gpu::GpuPreferences()) {}
 
 Context::~Context() {
   // We might not have a surface, so we must lose the context.  Cleanup will
@@ -258,10 +258,8 @@ bool Context::CreateService(gl::GLSurface* gl_surface) {
   scoped_refptr<gpu::gles2::FeatureInfo> feature_info(
       new gpu::gles2::FeatureInfo(gpu_driver_bug_workarounds_));
   scoped_refptr<gpu::gles2::ContextGroup> group(new gpu::gles2::ContextGroup(
-      gpu_preferences_, nullptr /* mailbox_manager */,
-      nullptr /* memory_tracker */,
-      new gpu::gles2::ShaderTranslatorCache(gpu_preferences_),
-      new gpu::gles2::FramebufferCompletenessCache, feature_info, true,
+      gpu::GpuPreferences(), &mailbox_manager_, nullptr /* memory_tracker */,
+      &translator_cache_, &completeness_cache_, feature_info, true,
       &image_manager_, nullptr /* image_factory */,
       nullptr /* progress_reporter */, gpu::GpuFeatureInfo(),
       &discardable_manager_));

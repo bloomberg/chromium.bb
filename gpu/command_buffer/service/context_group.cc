@@ -16,7 +16,6 @@
 #include "gpu/command_buffer/service/framebuffer_manager.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_passthrough.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
-#include "gpu/command_buffer/service/mailbox_manager_impl.h"
 #include "gpu/command_buffer/service/path_manager.h"
 #include "gpu/command_buffer/service/program_manager.h"
 #include "gpu/command_buffer/service/progress_reporter.h"
@@ -62,11 +61,10 @@ DisallowedFeatures AdjustDisallowedFeatures(
 
 ContextGroup::ContextGroup(
     const GpuPreferences& gpu_preferences,
-    const scoped_refptr<MailboxManager>& mailbox_manager,
+    MailboxManager* mailbox_manager,
     const scoped_refptr<MemoryTracker>& memory_tracker,
-    const scoped_refptr<ShaderTranslatorCache>& shader_translator_cache,
-    const scoped_refptr<FramebufferCompletenessCache>&
-        framebuffer_completeness_cache,
+    ShaderTranslatorCache* shader_translator_cache,
+    FramebufferCompletenessCache* framebuffer_completeness_cache,
     const scoped_refptr<FeatureInfo>& feature_info,
     bool bind_generates_resource,
     ImageManager* image_manager,
@@ -118,8 +116,7 @@ ContextGroup::ContextGroup(
       discardable_manager_(discardable_manager) {
   DCHECK(discardable_manager);
   DCHECK(feature_info_);
-  if (!mailbox_manager_.get())
-    mailbox_manager_ = new MailboxManagerImpl;
+  DCHECK(mailbox_manager_);
   transfer_buffer_manager_ =
       base::MakeUnique<TransferBufferManager>(memory_tracker_.get());
 }

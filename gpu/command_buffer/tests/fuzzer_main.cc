@@ -90,12 +90,21 @@ static const char kExtensions[] =
     "GL_OES_texture_half_float_linear";
 #endif
 
+GpuPreferences GetGpuPreferences() {
+  GpuPreferences preferences;
+#if defined(GPU_FUZZER_USE_PASSTHROUGH_CMD_DECODER)
+  preferences.use_passthrough_cmd_decoder = true;
+#endif
+  return preferences;
+}
+
 class CommandBufferSetup {
  public:
   CommandBufferSetup()
       : atexit_manager_(),
-        mailbox_manager_(new gles2::MailboxManagerImpl),
-        share_group_(new gl::GLShareGroup) {
+        gpu_preferences_(GetGpuPreferences()),
+        share_group_(new gl::GLShareGroup),
+        translator_cache_(gpu_preferences_) {
     logging::SetMinLogLevel(logging::LOG_FATAL);
     base::CommandLine::Init(0, NULL);
 
@@ -104,7 +113,6 @@ class CommandBufferSetup {
 
 #if defined(GPU_FUZZER_USE_PASSTHROUGH_CMD_DECODER)
     command_line->AppendSwitch(switches::kUsePassthroughCmdDecoder);
-    gpu_preferences_.use_passthrough_cmd_decoder = true;
     recreate_context_ = true;
 #endif
 
@@ -133,9 +141,6 @@ class CommandBufferSetup {
     InitContext();
     gl::GLSurfaceTestSupport::InitializeOneOffWithMockBindings();
 #endif  // defined(GPU_FUZZER_USE_STUB)
-
-    translator_cache_ = new gles2::ShaderTranslatorCache(gpu_preferences_);
-    completeness_cache_ = new gles2::FramebufferCompletenessCache;
   }
 
   void InitDecoder() {
@@ -147,8 +152,8 @@ class CommandBufferSetup {
     scoped_refptr<gles2::FeatureInfo> feature_info =
         new gles2::FeatureInfo();
     scoped_refptr<gles2::ContextGroup> context_group = new gles2::ContextGroup(
-        gpu_preferences_, mailbox_manager_.get(), nullptr /* memory_tracker */,
-        translator_cache_, completeness_cache_, feature_info,
+        gpu_preferences_, &mailbox_manager_, nullptr /* memory_tracker */,
+        &translator_cache_, &completeness_cache_, feature_info,
         true /* bind_generates_resource */, &image_manager_,
         nullptr /* image_factory */, nullptr /* progress_reporter */,
         GpuFeatureInfo(), &discardable_manager_);
@@ -264,7 +269,7 @@ class CommandBufferSetup {
 
   GpuPreferences gpu_preferences_;
 
-  scoped_refptr<gles2::MailboxManager> mailbox_manager_;
+  gles2::MailboxManagerImpl mailbox_manager_;
   scoped_refptr<gl::GLShareGroup> share_group_;
   SyncPointManager sync_point_manager_;
   gles2::ImageManager image_manager_;
@@ -274,8 +279,8 @@ class CommandBufferSetup {
   scoped_refptr<gl::GLSurface> surface_;
   scoped_refptr<gl::GLContext> context_;
 
-  scoped_refptr<gles2::ShaderTranslatorCache> translator_cache_;
-  scoped_refptr<gles2::FramebufferCompletenessCache> completeness_cache_;
+  gles2::ShaderTranslatorCache translator_cache_;
+  gles2::FramebufferCompletenessCache completeness_cache_;
 
   std::unique_ptr<CommandBufferDirect> command_buffer_;
 

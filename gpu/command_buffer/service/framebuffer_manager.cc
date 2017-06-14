@@ -318,8 +318,7 @@ class TextureAttachment
 FramebufferManager::FramebufferManager(
     uint32_t max_draw_buffers,
     uint32_t max_color_attachments,
-    const scoped_refptr<FramebufferCompletenessCache>&
-        framebuffer_combo_complete_cache)
+    FramebufferCompletenessCache* framebuffer_combo_complete_cache)
     : framebuffer_state_change_count_(1),
       framebuffer_count_(0),
       have_context_(true),

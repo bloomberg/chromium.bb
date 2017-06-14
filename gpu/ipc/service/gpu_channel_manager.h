@@ -22,6 +22,7 @@
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/command_buffer/service/service_discardable_manager.h"
+#include "gpu/command_buffer/service/shader_translator_cache.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/config/gpu_feature_info.h"
 #include "gpu/gpu_export.h"
@@ -43,10 +44,8 @@ class Scheduler;
 class SyncPointManager;
 struct SyncToken;
 namespace gles2 {
-class FramebufferCompletenessCache;
 class MailboxManager;
 class ProgramCache;
-class ShaderTranslatorCache;
 }
 }
 
@@ -75,6 +74,7 @@ class GPU_EXPORT GpuChannelManager {
   ~GpuChannelManager();
 
   GpuChannelManagerDelegate* delegate() const { return delegate_; }
+  GpuWatchdogThread* watchdog() const { return watchdog_; }
 
   GpuChannel* EstablishChannel(int client_id,
                                uint64_t client_tracing_id,
@@ -100,9 +100,16 @@ class GPU_EXPORT GpuChannelManager {
     return gpu_driver_bug_workarounds_;
   }
   const GpuFeatureInfo& gpu_feature_info() const { return gpu_feature_info_; }
+  ServiceDiscardableManager* discardable_manager() {
+    return &discardable_manager_;
+  }
   gles2::ProgramCache* program_cache();
-  gles2::ShaderTranslatorCache* shader_translator_cache();
-  gles2::FramebufferCompletenessCache* framebuffer_completeness_cache();
+  gles2::ShaderTranslatorCache* shader_translator_cache() {
+    return &shader_translator_cache_;
+  }
+  gles2::FramebufferCompletenessCache* framebuffer_completeness_cache() {
+    return &framebuffer_completeness_cache_;
+  }
 
   GpuMemoryManager* gpu_memory_manager() { return &gpu_memory_manager_; }
 
@@ -120,9 +127,7 @@ class GPU_EXPORT GpuChannelManager {
 
   bool is_exiting_for_lost_context() { return exiting_for_lost_context_; }
 
-  gles2::MailboxManager* mailbox_manager() const {
-    return mailbox_manager_.get();
-  }
+  gles2::MailboxManager* mailbox_manager() { return mailbox_manager_.get(); }
 
   gl::GLShareGroup* share_group() const { return share_group_.get(); }
 
@@ -156,15 +161,14 @@ class GPU_EXPORT GpuChannelManager {
 
   scoped_refptr<PreemptionFlag> preemption_flag_;
 
-  scoped_refptr<gles2::MailboxManager> mailbox_manager_;
+  std::unique_ptr<gles2::MailboxManager> mailbox_manager_;
   GpuMemoryManager gpu_memory_manager_;
   Scheduler* scheduler_;
   // SyncPointManager guaranteed to outlive running MessageLoop.
   SyncPointManager* sync_point_manager_;
   std::unique_ptr<gles2::ProgramCache> program_cache_;
-  scoped_refptr<gles2::ShaderTranslatorCache> shader_translator_cache_;
-  scoped_refptr<gles2::FramebufferCompletenessCache>
-      framebuffer_completeness_cache_;
+  gles2::ShaderTranslatorCache shader_translator_cache_;
+  gles2::FramebufferCompletenessCache framebuffer_completeness_cache_;
   scoped_refptr<gl::GLSurface> default_offscreen_surface_;
   GpuMemoryBufferFactory* const gpu_memory_buffer_factory_;
   GpuFeatureInfo gpu_feature_info_;

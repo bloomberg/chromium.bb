@@ -13,10 +13,8 @@
 #include "base/trace_event/trace_event.h"
 #include "content/public/browser/gpu_utils.h"
 #include "content/public/common/content_switches.h"
-#include "gpu/command_buffer/service/framebuffer_completeness_cache.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
-#include "gpu/command_buffer/service/shader_translator_cache.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/config/gpu_switches.h"
 #include "ui/gl/gl_switches.h"
@@ -155,24 +153,6 @@ void DeferredGpuCommandService::PerformAllIdleWork() {
 }
 
 bool DeferredGpuCommandService::UseVirtualizedGLContexts() { return true; }
-
-scoped_refptr<gpu::gles2::ShaderTranslatorCache>
-DeferredGpuCommandService::shader_translator_cache() {
-  if (!shader_translator_cache_.get()) {
-    shader_translator_cache_ =
-        new gpu::gles2::ShaderTranslatorCache(gpu_preferences());
-  }
-  return shader_translator_cache_;
-}
-
-scoped_refptr<gpu::gles2::FramebufferCompletenessCache>
-DeferredGpuCommandService::framebuffer_completeness_cache() {
-  if (!framebuffer_completeness_cache_.get()) {
-    framebuffer_completeness_cache_ =
-        new gpu::gles2::FramebufferCompletenessCache;
-  }
-  return framebuffer_completeness_cache_;
-}
 
 gpu::SyncPointManager* DeferredGpuCommandService::sync_point_manager() {
   return sync_point_manager_.get();
