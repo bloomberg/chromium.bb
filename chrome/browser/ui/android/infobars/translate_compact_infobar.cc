@@ -71,6 +71,13 @@ void TranslateCompactInfoBar::ProcessButton(int action) {
       JNIEnv* env = base::android::AttachCurrentThread();
       Java_TranslateCompactInfoBar_setAutoAlwaysTranslate(env,
                                                           GetJavaInfoBar());
+
+      // Auto-always is triggered by the line above.  Need to increment the
+      // auto-always counter.
+      delegate->IncrementTranslationAutoAlwaysCount();
+      // Reset translateAcceptedCount so that auto-always could be triggered
+      // again.
+      delegate->ResetTranslationAcceptedCount();
     }
   } else if (action == InfoBarAndroid::ACTION_TRANSLATE_SHOW_ORIGINAL) {
     action_flags_ |= FLAG_REVERT;
@@ -137,7 +144,8 @@ void TranslateCompactInfoBar::ApplyBoolTranslateOption(
 
 bool TranslateCompactInfoBar::ShouldAutoAlwaysTranslate() {
   translate::TranslateInfoBarDelegate* delegate = GetDelegate();
-  return (delegate->GetTranslationAcceptedCount() == kAcceptCountThreshold);
+  return (delegate->GetTranslationAcceptedCount() == kAcceptCountThreshold &&
+          delegate->GetTranslationAutoAlwaysCount() < kMaxNumberOfAutoAlways);
 }
 
 jboolean TranslateCompactInfoBar::ShouldAutoNeverTranslate(
@@ -157,7 +165,24 @@ jboolean TranslateCompactInfoBar::ShouldAutoNeverTranslate(
       !delegate->IsTranslatableLanguageByPrefs())
     return false;
 
-  return (delegate->GetTranslationDeniedCount() == kDeniedCountThreshold);
+  int auto_never_count = delegate->GetTranslationAutoNeverCount();
+
+  // At the beginning (auto_never_count == 0), deniedCount starts at 0 and is
+  // off-by-one (because this checking is done before increment). However, after
+  // auto-never is triggered once (auto_never_count > 0), deniedCount starts at
+  // 1.  So there is no off-by-one by then.
+  int off_by_one = auto_never_count == 0 ? 1 : 0;
+
+  bool never_translate = (delegate->GetTranslationDeniedCount() + off_by_one ==
+                              kDeniedCountThreshold &&
+                          auto_never_count < kMaxNumberOfAutoNever);
+  if (never_translate) {
+    // Auto-never will be triggered.  Need to increment the auto-never counter.
+    delegate->IncrementTranslationAutoNeverCount();
+    // Reset translateDeniedCount so that auto-never could be triggered again.
+    delegate->ResetTranslationDeniedCount();
+  }
+  return never_translate;
 }
 
 translate::TranslateInfoBarDelegate* TranslateCompactInfoBar::GetDelegate() {

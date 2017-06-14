@@ -310,6 +310,32 @@ int TranslateInfoBarDelegate::GetTranslationDeniedCount() {
   return prefs_->GetTranslationDeniedCount(original_language_code());
 }
 
+void TranslateInfoBarDelegate::ResetTranslationAcceptedCount() {
+  prefs_->ResetTranslationAcceptedCount(original_language_code());
+}
+
+void TranslateInfoBarDelegate::ResetTranslationDeniedCount() {
+  prefs_->ResetTranslationDeniedCount(original_language_code());
+}
+
+#if defined(OS_ANDROID)
+int TranslateInfoBarDelegate::GetTranslationAutoAlwaysCount() {
+  return prefs_->GetTranslationAutoAlwaysCount(original_language_code());
+}
+
+int TranslateInfoBarDelegate::GetTranslationAutoNeverCount() {
+  return prefs_->GetTranslationAutoNeverCount(original_language_code());
+}
+
+void TranslateInfoBarDelegate::IncrementTranslationAutoAlwaysCount() {
+  prefs_->IncrementTranslationAutoAlwaysCount(original_language_code());
+}
+
+void TranslateInfoBarDelegate::IncrementTranslationAutoNeverCount() {
+  prefs_->IncrementTranslationAutoNeverCount(original_language_code());
+}
+#endif
+
 // static
 void TranslateInfoBarDelegate::GetAfterTranslateStrings(
     std::vector<base::string16>* strings,

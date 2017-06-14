@@ -87,6 +87,10 @@ class TranslatePrefs {
   static const char kPrefTranslateBlockedLanguages[];
   static const char kPrefTranslateLastDeniedTimeForLanguage[];
   static const char kPrefTranslateTooOftenDeniedForLanguage[];
+#if defined(OS_ANDROID)
+  static const char kPrefTranslateAutoAlwaysCount[];
+  static const char kPrefTranslateAutoNeverCount[];
+#endif
 
   // |preferred_languages_pref| is only used on Chrome OS, other platforms must
   // pass NULL.
@@ -148,6 +152,20 @@ class TranslatePrefs {
   int GetTranslationAcceptedCount(const std::string& language) const;
   void IncrementTranslationAcceptedCount(const std::string& language);
   void ResetTranslationAcceptedCount(const std::string& language);
+
+#if defined(OS_ANDROID)
+  // These methods are used to track how many times the auto-always translation
+  // has been triggered for a specific language.
+  int GetTranslationAutoAlwaysCount(const std::string& language) const;
+  void IncrementTranslationAutoAlwaysCount(const std::string& language);
+  void ResetTranslationAutoAlwaysCount(const std::string& language);
+
+  // These methods are used to track how many times the auto-never translation
+  // has been triggered for a specific language.
+  int GetTranslationAutoNeverCount(const std::string& language) const;
+  void IncrementTranslationAutoNeverCount(const std::string& language);
+  void ResetTranslationAutoNeverCount(const std::string& language);
+#endif
 
   // Update the last time on closing the Translate UI without translation.
   void UpdateLastDeniedTime(const std::string& language);

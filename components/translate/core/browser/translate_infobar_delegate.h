@@ -153,6 +153,17 @@ class TranslateInfoBarDelegate : public infobars::InfoBarDelegate {
   int GetTranslationAcceptedCount();
   int GetTranslationDeniedCount();
 
+  void ResetTranslationAcceptedCount();
+  void ResetTranslationDeniedCount();
+
+#if defined(OS_ANDROID)
+  int GetTranslationAutoAlwaysCount();
+  int GetTranslationAutoNeverCount();
+
+  void IncrementTranslationAutoAlwaysCount();
+  void IncrementTranslationAutoNeverCount();
+#endif
+
   // The following methods are called by the infobar that displays the status
   // while translating and also the one displaying the error message.
   base::string16 GetMessageInfoBarText();
