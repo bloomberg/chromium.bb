@@ -20,6 +20,10 @@
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 // The button corner radius.
@@ -64,7 +68,7 @@ const IconImageMap kCreditCardIconImageMap[] = {
 // Creates a label with the given |text| and |alpha| suitable for use in a
 // suggestion button in the keyboard accessory view.
 UILabel* TextLabel(NSString* text, CGFloat alpha, BOOL bold) {
-  base::scoped_nsobject<UILabel> label([[UILabel alloc] init]);
+  UILabel* label = [[UILabel alloc] init];
   [label setText:text];
   CGFloat fontSize = IsIPadIdiom() ? kIpadFontSize : kIphoneFontSize;
   UIFont* font = bold ? [UIFont boldSystemFontOfSize:fontSize]
@@ -73,7 +77,7 @@ UILabel* TextLabel(NSString* text, CGFloat alpha, BOOL bold) {
   [label setTextColor:[UIColor colorWithWhite:0.0f alpha:alpha]];
   [label setBackgroundColor:[UIColor clearColor]];
   [label sizeToFit];
-  return label.autorelease();
+  return label;
 }
 
 }  // namespace
@@ -86,8 +90,8 @@ UILabel* TextLabel(NSString* text, CGFloat alpha, BOOL bold) {
 
 @implementation FormSuggestionLabel {
   // Client of this view.
-  base::WeakNSProtocol<id<FormSuggestionViewClient>> client_;
-  base::scoped_nsobject<FormSuggestion> suggestion_;
+  __weak id<FormSuggestionViewClient> client_;
+  FormSuggestion* suggestion_;
 }
 
 - (id)initWithSuggestion:(FormSuggestion*)suggestion
@@ -99,8 +103,8 @@ UILabel* TextLabel(NSString* text, CGFloat alpha, BOOL bold) {
   // layout in those methods instead of in the designated initializer.
   self = [super initWithFrame:CGRectZero];
   if (self) {
-    suggestion_.reset([suggestion retain]);
-    client_.reset(client);
+    suggestion_ = suggestion;
+    client_ = client;
 
     const CGFloat frameHeight = CGRectGetHeight(proposedFrame);
     CGFloat currentX = kBorderWidth;
@@ -113,8 +117,7 @@ UILabel* TextLabel(NSString* text, CGFloat alpha, BOOL bold) {
     if (iconImageName)
       iconImage = [UIImage imageNamed:iconImageName];
     if (iconImage) {
-      UIImageView* iconView =
-          [[[UIImageView alloc] initWithImage:iconImage] autorelease];
+      UIImageView* iconView = [[UIImageView alloc] initWithImage:iconImage];
       const CGFloat iconY =
           std::floor((frameHeight - iconImage.size.height) / 2.0f);
       iconView.frame = CGRectMake(currentX, iconY, iconImage.size.width,

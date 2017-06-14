@@ -7,13 +7,16 @@
 #import <QuartzCore/QuartzCore.h>
 
 #include "base/i18n/rtl.h"
-#include "base/ios/weak_nsobject.h"
-#include "base/mac/scoped_nsobject.h"
+#include "base/logging.h"
 #import "ios/chrome/browser/autofill/form_input_accessory_view_delegate.h"
 #import "ios/chrome/browser/ui/image_util.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -97,10 +100,10 @@ CGFloat GetNavigationViewWidth() {
 
 @implementation FormInputAccessoryView {
   // The custom view that is displayed in the input accessory view.
-  base::scoped_nsobject<UIView> _customView;
+  UIView* _customView;
 
   // Delegate of this view.
-  base::WeakNSProtocol<id<FormInputAccessoryViewDelegate>> _delegate;
+  __weak id<FormInputAccessoryViewDelegate> _delegate;
 }
 
 - (instancetype)initWithFrame:(CGRect)frame
@@ -111,8 +114,8 @@ CGFloat GetNavigationViewWidth() {
   DCHECK(delegate);
   self = [super initWithFrame:frame];
   if (self) {
-    _delegate.reset(delegate);
-    _customView.reset([customView retain]);
+    _delegate = delegate;
+    _customView = customView;
     [self initializeViewWithCustomView:_customView
                              leftFrame:leftFrame
                             rightFrame:rightFrame];
@@ -123,7 +126,7 @@ CGFloat GetNavigationViewWidth() {
 - (instancetype)initWithFrame:(CGRect)frame customView:(UIView*)customView {
   self = [super initWithFrame:frame];
   if (self) {
-    _customView.reset([customView retain]);
+    _customView = customView;
     customView.frame =
         CGRectMake(0, 0, CGRectGetWidth(frame), CGRectGetHeight(frame));
     [self addSubview:customView];
@@ -147,9 +150,9 @@ CGFloat GetNavigationViewWidth() {
 - (void)initializeViewWithCustomView:(UIView*)customView
                            leftFrame:(CGRect)leftFrame
                           rightFrame:(CGRect)rightFrame {
-  UIView* customViewContainer = [[[UIView alloc] init] autorelease];
+  UIView* customViewContainer = [[UIView alloc] init];
   [self addSubview:customViewContainer];
-  UIView* navView = [[[UIView alloc] init] autorelease];
+  UIView* navView = [[UIView alloc] init];
   [self addSubview:navView];
 
   bool splitKeyboard = CGRectGetWidth(rightFrame) != 0;
@@ -233,7 +236,7 @@ UIImage* ButtonImage(NSString* name) {
 }
 
 - (UIView*)viewForNavigationButtonsInFrame:(CGRect)frame {
-  UIView* navView = [[[UIView alloc] initWithFrame:frame] autorelease];
+  UIView* navView = [[UIView alloc] initWithFrame:frame];
 
   BOOL isRTL = base::i18n::IsRTL();
 
@@ -374,7 +377,7 @@ UIImage* ButtonImage(NSString* name) {
   UIImage* backgroundImage = StretchableImageNamed(imageName);
 
   UIImageView* backgroundImageView =
-      [[[UIImageView alloc] initWithFrame:view.bounds] autorelease];
+      [[UIImageView alloc] initWithFrame:view.bounds];
   [backgroundImageView setImage:backgroundImage];
   [backgroundImageView setAlpha:kBackgroundColorAlpha];
   [view addSubview:backgroundImageView];
@@ -388,8 +391,7 @@ UIImage* ButtonImage(NSString* name) {
                            inView:(UIView*)view {
   UIImage* image =
       StretchableImageFromUIImage([UIImage imageNamed:imageName], 0, 0);
-  base::scoped_nsobject<UIImageView> imageView(
-      [[UIImageView alloc] initWithImage:image]);
+  UIImageView* imageView = [[UIImageView alloc] initWithImage:image];
   [imageView setFrame:CGRectMake(originX, originY, width,
                                  CGRectGetHeight(view.bounds) - originY)];
   [view addSubview:imageView];
