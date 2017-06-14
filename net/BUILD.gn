@@ -369,6 +369,7 @@ component("net") {
     ":traffic_annotation",
     "//crypto",
     "//crypto:platform",
+    "//third_party/boringssl",
   ]
 
   if (!is_nacl) {
