@@ -100,7 +100,6 @@
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
           "args": [
-            "--debug",
             "--verbose",
             "--results-json-override-with-build-property",
             "build_number",
