@@ -85,6 +85,10 @@ class TranslateCompactInfoBar
   // If number of consecutive denied is equal to this number, infobar will
   // automatically trigger "Never Translate Language".
   const int kDeniedCountThreshold = 7;
+  // Maximum number of times to trigger "Always Translate" automatically.
+  const int kMaxNumberOfAutoAlways = 2;
+  // Maximum number of times to trigger "Never Translate" automatically.
+  const int kMaxNumberOfAutoNever = 2;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateCompactInfoBar);
 };
