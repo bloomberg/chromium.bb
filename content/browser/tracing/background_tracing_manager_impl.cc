@@ -17,6 +17,7 @@
 #include "base/time/time.h"
 #include "content/browser/tracing/background_memory_tracing_observer.h"
 #include "content/browser/tracing/background_tracing_rule.h"
+#include "content/browser/tracing/trace_message_filter.h"
 #include "content/browser/tracing/tracing_controller_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -189,7 +190,7 @@ bool BackgroundTracingManagerImpl::SetActiveScenario(
   }
 
   // Notify observers before starting tracing.
-  for (auto* observer : background_tracing_observer_list_)
+  for (auto* observer : background_tracing_observers_)
     observer->OnScenarioActivated(config_.get());
 
   StartTracingIfConfigNeedsIt();
@@ -203,25 +204,57 @@ bool BackgroundTracingManagerImpl::HasActiveScenario() {
 
 void BackgroundTracingManagerImpl::OnStartTracingDone(
     BackgroundTracingConfigImpl::CategoryPreset preset) {
-  DCHECK(BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  for (auto* observer : background_tracing_observer_list_)
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  for (auto* observer : background_tracing_observers_)
     observer->OnTracingEnabled(preset);
 }
 
 void BackgroundTracingManagerImpl::AddEnabledStateObserver(
     EnabledStateObserver* observer) {
-  DCHECK(BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  background_tracing_observer_list_.push_back(observer);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  background_tracing_observers_.insert(observer);
 }
 
 void BackgroundTracingManagerImpl::RemoveEnabledStateObserver(
     EnabledStateObserver* observer) {
-  DCHECK(BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  std::vector<EnabledStateObserver*>::iterator it =
-      std::find(background_tracing_observer_list_.begin(),
-                background_tracing_observer_list_.end(), observer);
-  if (it != background_tracing_observer_list_.end())
-    background_tracing_observer_list_.erase(it);
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  background_tracing_observers_.erase(observer);
+}
+
+void BackgroundTracingManagerImpl::AddTraceMessageFilter(
+    TraceMessageFilter* trace_message_filter) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  trace_message_filters_.insert(trace_message_filter);
+
+  for (auto* observer : trace_message_filter_observers_)
+    observer->OnTraceMessageFilterAdded(trace_message_filter);
+}
+
+void BackgroundTracingManagerImpl::RemoveTraceMessageFilter(
+    TraceMessageFilter* trace_message_filter) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  for (auto* observer : trace_message_filter_observers_)
+    observer->OnTraceMessageFilterRemoved(trace_message_filter);
+
+  trace_message_filters_.erase(trace_message_filter);
+}
+
+void BackgroundTracingManagerImpl::AddTraceMessageFilterObserver(
+    TraceMessageFilterObserver* observer) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  trace_message_filter_observers_.insert(observer);
+
+  for (auto& filter : trace_message_filters_)
+    observer->OnTraceMessageFilterAdded(filter.get());
+}
+
+void BackgroundTracingManagerImpl::RemoveTraceMessageFilterObserver(
+    TraceMessageFilterObserver* observer) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  trace_message_filter_observers_.erase(observer);
+
+  for (auto& filter : trace_message_filters_)
+    observer->OnTraceMessageFilterRemoved(filter.get());
 }
 
 bool BackgroundTracingManagerImpl::IsTracingForTesting() {

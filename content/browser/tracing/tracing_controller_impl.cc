@@ -30,6 +30,7 @@
 #include "content/browser/tracing/tracing_ui.h"
 #include "content/common/child_process_messages.h"
 #include "content/public/browser/browser_message_filter.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/tracing_delegate.h"
@@ -407,14 +408,7 @@ bool TracingControllerImpl::IsTracing() const {
 
 void TracingControllerImpl::AddTraceMessageFilter(
     TraceMessageFilter* trace_message_filter) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&TracingControllerImpl::AddTraceMessageFilter,
-                   base::Unretained(this),
-                   base::RetainedRef(trace_message_filter)));
-    return;
-  }
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
 #if defined(OS_LINUX)
   // On Linux the browser process dumps process metrics for child process due to
@@ -428,21 +422,11 @@ void TracingControllerImpl::AddTraceMessageFilter(
     trace_message_filter->SendBeginTracing(
         TraceLog::GetInstance()->GetCurrentTraceConfig());
   }
-
-  for (auto& observer : trace_message_filter_observers_)
-    observer.OnTraceMessageFilterAdded(trace_message_filter);
 }
 
 void TracingControllerImpl::RemoveTraceMessageFilter(
     TraceMessageFilter* trace_message_filter) {
-  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::Bind(&TracingControllerImpl::RemoveTraceMessageFilter,
-                   base::Unretained(this),
-                   base::RetainedRef(trace_message_filter)));
-    return;
-  }
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
 #if defined(OS_LINUX)
   tracing::ProcessMetricsMemoryDumpProvider::UnregisterForProcess(
@@ -922,24 +906,6 @@ TracingControllerImpl::GenerateTracingMetadataDict() const {
   metadata_dict->SetString("trace-capture-datetime", time_string);
 
   return metadata_dict;
-}
-
-void TracingControllerImpl::AddTraceMessageFilterObserver(
-    TraceMessageFilterObserver* observer) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  trace_message_filter_observers_.AddObserver(observer);
-
-  for (auto& filter : trace_message_filters_)
-    observer->OnTraceMessageFilterAdded(filter.get());
-}
-
-void TracingControllerImpl::RemoveTraceMessageFilterObserver(
-    TraceMessageFilterObserver* observer) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  trace_message_filter_observers_.RemoveObserver(observer);
-
-  for (auto& filter : trace_message_filters_)
-    observer->OnTraceMessageFilterRemoved(filter.get());
 }
 
 }  // namespace content
