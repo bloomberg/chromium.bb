@@ -305,10 +305,14 @@ target(link_target_type, "base") {
         "media_file_checker.cc",
         "media_file_checker.h",
       ]
-      deps += [ "//media:filters_common" ]
+      deps += [ "//media/filters:filters_common" ]
     }
 
     deps += [ "//third_party/ffmpeg" ]
+  }
+
+  if (media_use_libvpx) {
+    deps += [ "//third_party/libvpx" ]
   }
 
   if (is_android) {
