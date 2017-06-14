@@ -81,6 +81,7 @@
 #include "core/layout/TextAutosizer.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
+#include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/FrameLoaderStateMachine.h"
@@ -3283,6 +3284,14 @@ void WebViewImpl::ResetScrollAndScaleState() {
 
     if (!scrollable_area->GetScrollOffset().IsZero())
       scrollable_area->SetScrollOffset(ScrollOffset(), kProgrammaticScroll);
+  }
+
+  if (Document* document =
+          ToLocalFrame(GetPage()->MainFrame())->GetDocument()) {
+    if (DocumentLoader* loader = document->Loader()) {
+      if (HistoryItem* item = loader->GetHistoryItem())
+        item->SetDidSaveScrollOrScaleState(false);
+    }
   }
 
   GetPageScaleConstraintsSet().SetNeedsReset(true);

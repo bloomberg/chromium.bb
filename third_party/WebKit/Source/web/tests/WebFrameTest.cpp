@@ -4273,20 +4273,15 @@ TEST_F(WebFrameTest, ReloadWithOverrideURLPreservesState) {
       WebSize(kPageWidth / 4, kPageHeight / 4));
   web_view_helper.WebView()->SetPageScaleFactor(kPageScaleFactor);
 
-  WebSize previous_offset =
-      web_view_helper.WebView()->MainFrame()->GetScrollOffset();
-  float previous_scale = web_view_helper.WebView()->PageScaleFactor();
-
-  // Reload the page and end up at the same url. State should be propagated.
+  // Reload the page and end up at the same url. State should not be propagated.
   web_view_helper.WebView()->MainFrame()->ReloadWithOverrideURL(
       ToKURL(base_url_ + first_url), WebFrameLoadType::kReload);
   FrameTestHelpers::PumpPendingRequestsForFrameToLoad(
       web_view_helper.WebView()->MainFrame());
-  EXPECT_EQ(previous_offset.width,
-            web_view_helper.WebView()->MainFrame()->GetScrollOffset().width);
-  EXPECT_EQ(previous_offset.height,
+  EXPECT_EQ(0, web_view_helper.WebView()->MainFrame()->GetScrollOffset().width);
+  EXPECT_EQ(0,
             web_view_helper.WebView()->MainFrame()->GetScrollOffset().height);
-  EXPECT_EQ(previous_scale, web_view_helper.WebView()->PageScaleFactor());
+  EXPECT_EQ(1.0f, web_view_helper.WebView()->PageScaleFactor());
 
   // Reload the page using the cache. State should not be propagated.
   web_view_helper.WebView()->MainFrame()->ReloadWithOverrideURL(
