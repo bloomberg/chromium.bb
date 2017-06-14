@@ -494,6 +494,7 @@ TEST_F(DataReductionProxyParamsTest, HoldbackEnabledFieldTrial) {
 
     ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
         "DataCompressionProxyHoldback", test.trial_group_name));
+    EXPECT_EQ(test.trial_group_name, params::HoldbackFieldTrialGroup());
     EXPECT_EQ(test.expected_enabled, params::IsIncludedInHoldbackFieldTrial())
         << test.trial_group_name;
   }

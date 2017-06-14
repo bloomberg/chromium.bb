@@ -38,6 +38,10 @@ bool IsIncludedInPromoFieldTrial();
 // is in effect.
 bool IsIncludedInHoldbackFieldTrial();
 
+// The name of the Holdback experiment group, this can return an empty string if
+// not included in a group.
+std::string HoldbackFieldTrialGroup();
+
 // Returns the name of the trusted SPDY/HTTP2 proxy field trial.
 const char* GetTrustedSpdyProxyFieldTrialName();
 
