@@ -40,6 +40,14 @@ const base::Feature kSyncClearDataOnPassphraseEncryption{
 const base::Feature kSyncUserEvents{"SyncUserEvents",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Gates registration for user language detection events.
+const base::Feature kSyncUserLanguageDetectionEvents{
+    "SyncUserLanguageDetectionEvents", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Gates registration for user translation events.
+const base::Feature kSyncUserTranslationEvents{
+    "SyncUserTranslationEvents", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables USS implementation of Autocomplete datatype.
 const base::Feature kSyncUSSAutocomplete{"SyncUSSAutocomplete",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
