@@ -1144,6 +1144,24 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     SET_VAR(rare_non_inherited_data_, opacity_, v);
   }
 
+  bool OpacityChangedStackingContext(const ComputedStyle& other) const {
+    // We only need do layout for opacity changes if adding or losing opacity
+    // could trigger a change
+    // in us being a stacking context.
+    if (IsStackingContext() == other.IsStackingContext() ||
+        HasOpacity() == other.HasOpacity()) {
+      // FIXME: We would like to use SimplifiedLayout here, but we can't quite
+      // do that yet.  We need to make sure SimplifiedLayout can operate
+      // correctly on LayoutInlines (we will need to add a
+      // selfNeedsSimplifiedLayout bit in order to not get confused and taint
+      // every line).  In addition we need to solve the floating object issue
+      // when layers come and go. Right now a full layout is necessary to keep
+      // floating object lists sane.
+      return true;
+    }
+    return false;
+  }
+
   // order (aka -webkit-order)
   static int InitialOrder() { return 0; }
   int Order() const { return rare_non_inherited_data_->order_; }
@@ -1155,6 +1173,12 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // Outline properties.
+
+  bool OutlineVisuallyEqual(const ComputedStyle& other) const {
+    return rare_non_inherited_data_->outline_.VisuallyEqual(
+        other.rare_non_inherited_data_->outline_);
+  }
+
   // outline-color
   void SetOutlineColor(const StyleColor& v) {
     SET_BORDERVALUE_COLOR(rare_non_inherited_data_, outline_, v);
@@ -3418,17 +3442,44 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   StyleColor VisitedLinkBorderLeftColor() const {
     return rare_non_inherited_data_->visited_link_border_left_color_;
   }
+  bool VisitedLinkBorderLeftColorHasNotChanged(
+      const ComputedStyle& other) const {
+    return (VisitedLinkBorderLeftColor() ==
+                other.VisitedLinkBorderLeftColor() ||
+            !BorderLeftWidth());
+  }
   StyleColor VisitedLinkBorderRightColor() const {
     return rare_non_inherited_data_->visited_link_border_right_color_;
+  }
+  bool VisitedLinkBorderRightColorHasNotChanged(
+      const ComputedStyle& other) const {
+    return (VisitedLinkBorderRightColor() ==
+                other.VisitedLinkBorderRightColor() ||
+            !BorderRightWidth());
   }
   StyleColor VisitedLinkBorderBottomColor() const {
     return rare_non_inherited_data_->visited_link_border_bottom_color_;
   }
+  bool VisitedLinkBorderBottomColorHasNotChanged(
+      const ComputedStyle& other) const {
+    return (VisitedLinkBorderBottomColor() ==
+                other.VisitedLinkBorderBottomColor() ||
+            !BorderBottomWidth());
+  }
   StyleColor VisitedLinkBorderTopColor() const {
     return rare_non_inherited_data_->visited_link_border_top_color_;
   }
+  bool VisitedLinkBorderTopColorHasNotChanged(
+      const ComputedStyle& other) const {
+    return (VisitedLinkBorderTopColor() == other.VisitedLinkBorderTopColor() ||
+            !BorderTopWidth());
+  }
   StyleColor VisitedLinkOutlineColor() const {
     return rare_non_inherited_data_->visited_link_outline_color_;
+  }
+  bool VisitedLinkOutlineColorHasNotChanged(const ComputedStyle& other) const {
+    return (VisitedLinkOutlineColor() == other.VisitedLinkOutlineColor() ||
+            !OutlineWidth());
   }
   StyleColor VisitedLinkColumnRuleColor() const {
     return rare_non_inherited_data_->multi_col_data_

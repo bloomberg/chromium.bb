@@ -45,8 +45,11 @@
     {
         name: "DiffNeedsFullLayoutAndPaintInvalidation",
         fields_to_diff: ["padding-top", "padding-left", "padding-right", 
-                "padding-bottom", "-webkit-highlight", "text-indent", 
-                "text-align-last", "TextIndentLine", "EffectiveZoom", 
+                "padding-bottom", "-webkit-appearance",
+                "-webkit-margin-before-collapse",
+                "-webkit-margin-after-collapse", "-webkit-line-clamp",
+                "text-overflow", "shape-margin", "order", "-webkit-highlight",
+                "text-indent", "text-align-last", "TextIndentLine", "EffectiveZoom", 
                 "word-break", "overflow-wrap", "-webkit-line-break", 
                 "-webkit-text-security", "hyphens", "HyphenationLimitBefore", 
                 "HyphenationLimitAfter", "-webkit-hyphenate-character", 
@@ -74,6 +77,10 @@
           {
             method: "BorderRightWidth()",
             field_dependencies: ["border-right-width"]
+          },
+          {
+            method: "HasFilters()",
+            field_dependencies: ["Filter"]
           },
           {
             method: "FontInternal().LoadingCustomFonts()",
@@ -145,6 +152,10 @@
             predicate: "a.QuotesDataEquivalent(b)",
             field_dependencies: ["quotes"]
           },
+          {
+            predicate: "a.OpacityChangedStackingContext(b)",
+            field_dependencies: ["IsStackingContext", "opacity"]
+          },
         ]
     },
     {
@@ -183,11 +194,30 @@
     },
     {
         name: "DiffNeedsFullLayout",
-        fields_to_diff: ["width", "min-width", "max-width", "height", "min-height", "max-height", "box-sizing"]
+        fields_to_diff: ["width", "min-width", "max-width", "height", "min-height",
+                "max-height", "VerticalAlignLength", "box-sizing", "align-content",
+                "align-items", "align-self", "justify-content", "justify-items",
+                "justify-self", "contain"],
+        methods_to_diff: [
+          {
+            method: "VerticalAlign()",
+            field_dependencies: ["VerticalAlign"]
+          },
+          {
+            method: "GetPosition()",
+            field_dependencies: ["position"]
+          },
+        ]
     },
     {
+        name: "DiffNeedsPaintInvalidationSubtree",
+        fields_to_diff: ["EffectiveBlendMode", "isolation", "Mask", "MaskBoxImage"],
+    },
+
+    {
         name: "DiffNeedsPaintInvalidationObject",
-        fields_to_diff: ["-webkit-user-modify", "user-select", "image-rendering"],
+        fields_to_diff: ["-webkit-user-modify", "user-select", "image-rendering",
+                "-webkit-user-drag", "object-fit", "object-position"],
         methods_to_diff: [
           {
             method: "Visibility()",
@@ -200,7 +230,53 @@
           {
             method: "InsideLink()",
             field_dependencies: ["InsideLink"]
-          }
+          },
+          {
+            method: "VisitedLinkBackgroundColor()",
+            field_dependencies: ["VisitedLinkBackgroundColor"]
+          },
+          {
+            method: "Resize()",
+            field_dependencies: ["resize"]
+          },
+        ],
+        predicates_to_test: [
+          {
+            predicate: "a.BoxShadowDataEquivalent(b)",
+            field_dependencies: ["box-shadow"]
+          },
+          {
+            predicate: "a.ShapeOutsideDataEquivalent(b)",
+            field_dependencies: ["shape-outside"]
+          },
+          {
+            predicate: "a.ClipPathDataEquivalent(b)",
+            field_dependencies: ["clip-path"]
+          },
+          {
+            predicate: "a.OutlineVisuallyEqual(b)",
+            field_dependencies: ["Outline"]
+          },
+          {
+            predicate: "a.VisitedLinkBorderLeftColorHasNotChanged(b)",
+            field_dependencies: ["VisitedLinkBorderLeftColor"]
+          },
+          {
+            predicate: "a.VisitedLinkBorderRightColorHasNotChanged(b)",
+            field_dependencies: ["VisitedLinkBorderRightColor"]
+          },
+          {
+            predicate: "a.VisitedLinkBorderBottomColorHasNotChanged(b)",
+            field_dependencies: ["VisitedLinkBorderBottomColor"]
+          },
+          {
+            predicate: "a.VisitedLinkBorderTopColorHasNotChanged(b)",
+            field_dependencies: ["VisitedLinkBorderTopColor"]
+          },
+          {
+            predicate: "a.VisitedLinkOutlineColorHasNotChanged(b)",
+            field_dependencies: ["VisitedLinkOutlineColor"]
+          },
         ]
     },
     {
@@ -209,12 +285,63 @@
           {
             method: "Visibility()",
             field_dependencies: ["visibility"]
-          }
+          },
+          {
+            method: "Resize()",
+            field_dependencies: ["resize"]
+          },
         ]
     },
     {
+        name: "UpdatePropertySpecificDifferencesZIndex",
+        fields_to_diff: ["z-index"],
+        methods_to_diff: [
+          {
+            method: "IsStackingContext()",
+            field_dependencies: ["IsStackingContext"]
+          },
+        ]
+    },
+    {
+        name: "UpdatePropertySpecificDifferencesOpacity",
+        fields_to_diff: ["opacity"],
+    },
+    {
+        name: "UpdatePropertySpecificDifferencesFilter",
+        fields_to_diff: ["Filter"],
+        predicates_to_test: [
+          {
+            predicate: "a.ReflectionDataEquivalent(b)",
+            field_dependencies: ["-webkit-box-reflect"]
+          },
+        ]
+    },
+    {
+        name: "UpdatePropertySpecificDifferencesNeedsRecomputeOverflow",
+        predicates_to_test: [
+          {
+            predicate: "a.BoxShadowDataEquivalent(b)",
+            field_dependencies: ["box-shadow"]
+          },
+          {
+            predicate: "a.OutlineVisuallyEqual(b)",
+            field_dependencies: ["Outline"]
+          },
+          {
+            predicate: "a.BorderVisualOverflowEqual(b)",
+            field_dependencies: ["border-image"]
+          },
+        ]
+    },
+    {
+        name: "UpdatePropertySpecificDifferencesBackdropFilter",
+        fields_to_diff: ["BackdropFilter"],
+    },
+    {
         name: "UpdatePropertySpecificDifferencesTextDecorationOrColor",
-        fields_to_diff: ["TextEmphasisFill", "text-underline-position", "text-decoration-skip", "AppliedTextDecorations"],
+        fields_to_diff: ["text-decoration-style", "text-decoration-color",
+        "VisitedLinkTextDecorationColor", "TextEmphasisFill",
+        "text-underline-position", "text-decoration-skip", "AppliedTextDecorations"],
         methods_to_diff: [
           {
             method: "TextFillColor()",

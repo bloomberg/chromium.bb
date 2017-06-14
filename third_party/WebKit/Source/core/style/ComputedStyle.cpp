@@ -547,23 +547,6 @@ bool ComputedStyle::DiffNeedsFullLayoutAndPaintInvalidation(
     return true;
 
   if (rare_non_inherited_data_.Get() != other.rare_non_inherited_data_.Get()) {
-    if (rare_non_inherited_data_->appearance_ !=
-            other.rare_non_inherited_data_->appearance_ ||
-        rare_non_inherited_data_->margin_before_collapse_ !=
-            other.rare_non_inherited_data_->margin_before_collapse_ ||
-        rare_non_inherited_data_->margin_after_collapse_ !=
-            other.rare_non_inherited_data_->margin_after_collapse_ ||
-        rare_non_inherited_data_->line_clamp_ !=
-            other.rare_non_inherited_data_->line_clamp_ ||
-        rare_non_inherited_data_->text_overflow_ !=
-            other.rare_non_inherited_data_->text_overflow_ ||
-        rare_non_inherited_data_->shape_margin_ !=
-            other.rare_non_inherited_data_->shape_margin_ ||
-        rare_non_inherited_data_->order_ !=
-            other.rare_non_inherited_data_->order_ ||
-        HasFilters() != other.HasFilters())
-      return true;
-
     if (rare_non_inherited_data_->grid_data_.Get() !=
             other.rare_non_inherited_data_->grid_data_.Get() &&
         *rare_non_inherited_data_->grid_data_.Get() !=
@@ -604,21 +587,6 @@ bool ComputedStyle::DiffNeedsFullLayoutAndPaintInvalidation(
         other.rare_non_inherited_data_->counter_directives_.get();
     if (!(map_a == map_b || (map_a && map_b && *map_a == *map_b)))
       return true;
-
-    // We only need do layout for opacity changes if adding or losing opacity
-    // could trigger a change
-    // in us being a stacking context.
-    if (IsStackingContext() != other.IsStackingContext() &&
-        HasOpacity() != other.HasOpacity()) {
-      // FIXME: We would like to use SimplifiedLayout here, but we can't quite
-      // do that yet.  We need to make sure SimplifiedLayout can operate
-      // correctly on LayoutInlines (we will need to add a
-      // selfNeedsSimplifiedLayout bit in order to not get confused and taint
-      // every line).  In addition we need to solve the floating object issue
-      // when layers come and go. Right now a full layout is necessary to keep
-      // floating object lists sane.
-      return true;
-    }
   }
 
   if (IsDisplayTableType(Display())) {
@@ -665,57 +633,12 @@ bool ComputedStyle::DiffNeedsFullLayoutAndPaintInvalidation(
 }
 
 bool ComputedStyle::DiffNeedsFullLayout(const ComputedStyle& other) const {
-  if (ComputedStyleBase::DiffNeedsFullLayout(*this, other))
-    return true;
-
-  if (box_data_.Get() != other.box_data_.Get()) {
-    if (box_data_->vertical_align_length_ !=
-        other.box_data_->vertical_align_length_)
-      return true;
-  }
-
-  if (VerticalAlign() != other.VerticalAlign() ||
-      GetPosition() != other.GetPosition())
-    return true;
-
-  if (rare_non_inherited_data_.Get() != other.rare_non_inherited_data_.Get()) {
-    if (rare_non_inherited_data_->align_content_ !=
-            other.rare_non_inherited_data_->align_content_ ||
-        rare_non_inherited_data_->align_items_ !=
-            other.rare_non_inherited_data_->align_items_ ||
-        rare_non_inherited_data_->align_self_ !=
-            other.rare_non_inherited_data_->align_self_ ||
-        rare_non_inherited_data_->justify_content_ !=
-            other.rare_non_inherited_data_->justify_content_ ||
-        rare_non_inherited_data_->justify_items_ !=
-            other.rare_non_inherited_data_->justify_items_ ||
-        rare_non_inherited_data_->justify_self_ !=
-            other.rare_non_inherited_data_->justify_self_ ||
-        rare_non_inherited_data_->contain_ !=
-            other.rare_non_inherited_data_->contain_)
-      return true;
-  }
-
-  return false;
+  return ComputedStyleBase::DiffNeedsFullLayout(*this, other);
 }
 
 bool ComputedStyle::DiffNeedsPaintInvalidationSubtree(
     const ComputedStyle& other) const {
-  if (rare_non_inherited_data_.Get() != other.rare_non_inherited_data_.Get()) {
-    if (rare_non_inherited_data_->effective_blend_mode_ !=
-            other.rare_non_inherited_data_->effective_blend_mode_ ||
-        rare_non_inherited_data_->isolation_ !=
-            other.rare_non_inherited_data_->isolation_)
-      return true;
-
-    if (rare_non_inherited_data_->mask_ !=
-            other.rare_non_inherited_data_->mask_ ||
-        rare_non_inherited_data_->mask_box_image_ !=
-            other.rare_non_inherited_data_->mask_box_image_)
-      return true;
-  }
-
-  return false;
+  return ComputedStyleBase::DiffNeedsPaintInvalidationSubtree(*this, other);
 }
 
 bool ComputedStyle::DiffNeedsPaintInvalidationObject(
@@ -725,35 +648,6 @@ bool ComputedStyle::DiffNeedsPaintInvalidationObject(
 
   if (!BorderVisuallyEqual(other) || !RadiiEqual(other) ||
       *background_data_ != *other.background_data_)
-    return true;
-
-  if (rare_non_inherited_data_.Get() != other.rare_non_inherited_data_.Get()) {
-    if (rare_non_inherited_data_->user_drag_ !=
-            other.rare_non_inherited_data_->user_drag_ ||
-        rare_non_inherited_data_->object_fit_ !=
-            other.rare_non_inherited_data_->object_fit_ ||
-        rare_non_inherited_data_->object_position_ !=
-            other.rare_non_inherited_data_->object_position_ ||
-        !BoxShadowDataEquivalent(other) || !ShapeOutsideDataEquivalent(other) ||
-        !ClipPathDataEquivalent(other) ||
-        !rare_non_inherited_data_->outline_.VisuallyEqual(
-            other.rare_non_inherited_data_->outline_) ||
-        (VisitedLinkBorderLeftColor() != other.VisitedLinkBorderLeftColor() &&
-         BorderLeftWidth()) ||
-        (VisitedLinkBorderRightColor() != other.VisitedLinkBorderRightColor() &&
-         BorderRightWidth()) ||
-        (VisitedLinkBorderBottomColor() !=
-             other.VisitedLinkBorderBottomColor() &&
-         BorderBottomWidth()) ||
-        (VisitedLinkBorderTopColor() != other.VisitedLinkBorderTopColor() &&
-         BorderTopWidth()) ||
-        (VisitedLinkOutlineColor() != other.VisitedLinkOutlineColor() &&
-         OutlineWidth()) ||
-        (VisitedLinkBackgroundColor() != other.VisitedLinkBackgroundColor()))
-      return true;
-  }
-
-  if (Resize() != other.Resize())
     return true;
 
   if (rare_non_inherited_data_->paint_images_) {
@@ -803,22 +697,15 @@ bool ComputedStyle::DiffNeedsPaintInvalidationObjectForPaintImage(
 // which implies visual rect update.
 bool ComputedStyle::DiffNeedsVisualRectUpdate(
     const ComputedStyle& other) const {
-  // Visual rect is empty if visibility is hidden.
-  if (ComputedStyleBase::DiffNeedsVisualRectUpdate(*this, other))
-    return true;
-
-  // Need to update visual rect of the resizer.
-  if (Resize() != other.Resize())
-    return true;
-
-  return false;
+  // Visual rect is empty if visibility is hidden. Also need to update visual
+  // rect of the resizer.
+  return ComputedStyleBase::DiffNeedsVisualRectUpdate(*this, other);
 }
 
 void ComputedStyle::UpdatePropertySpecificDifferences(
     const ComputedStyle& other,
     StyleDifference& diff) const {
-  if (box_data_->z_index_ != other.box_data_->z_index_ ||
-      IsStackingContext() != other.IsStackingContext())
+  if (ComputedStyleBase::UpdatePropertySpecificDifferencesZIndex(*this, other))
     diff.SetZIndexChanged();
 
   if (rare_non_inherited_data_.Get() != other.rare_non_inherited_data_.Get()) {
@@ -834,34 +721,19 @@ void ComputedStyle::UpdatePropertySpecificDifferences(
       diff.SetTransformChanged();
   }
 
-  if (rare_non_inherited_data_.Get() != other.rare_non_inherited_data_.Get()) {
-    if (rare_non_inherited_data_->opacity_ !=
-        other.rare_non_inherited_data_->opacity_)
-      diff.SetOpacityChanged();
-  }
+  if (ComputedStyleBase::UpdatePropertySpecificDifferencesOpacity(*this, other))
+    diff.SetOpacityChanged();
 
-  if (rare_non_inherited_data_.Get() != other.rare_non_inherited_data_.Get()) {
-    if ((rare_non_inherited_data_->filter_ !=
-         other.rare_non_inherited_data_->filter_) ||
-        !ReflectionDataEquivalent(other))
-      diff.SetFilterChanged();
-  }
+  if (ComputedStyleBase::UpdatePropertySpecificDifferencesFilter(*this, other))
+    diff.SetFilterChanged();
 
-  if (rare_non_inherited_data_.Get() != other.rare_non_inherited_data_.Get()) {
-    if (!BoxShadowDataEquivalent(other) ||
-        !rare_non_inherited_data_->outline_.VisuallyEqual(
-            other.rare_non_inherited_data_->outline_))
-      diff.SetNeedsRecomputeOverflow();
-  }
-
-  if (!BorderVisualOverflowEqual(other))
+  if (ComputedStyleBase::
+          UpdatePropertySpecificDifferencesNeedsRecomputeOverflow(*this, other))
     diff.SetNeedsRecomputeOverflow();
 
-  if (rare_non_inherited_data_.Get() != other.rare_non_inherited_data_.Get()) {
-    if (rare_non_inherited_data_->backdrop_filter_ !=
-        other.rare_non_inherited_data_->backdrop_filter_)
-      diff.SetBackdropFilterChanged();
-  }
+  if (ComputedStyleBase::UpdatePropertySpecificDifferencesBackdropFilter(*this,
+                                                                         other))
+    diff.SetBackdropFilterChanged();
 
   if (!diff.NeedsFullPaintInvalidation()) {
     if ((inherited_data_->color_ != other.inherited_data_->color_ ||
@@ -870,15 +742,6 @@ void ComputedStyle::UpdatePropertySpecificDifferences(
          HasSimpleUnderlineInternal() != other.HasSimpleUnderlineInternal() ||
          visual_data_->text_decoration_ !=
              other.visual_data_->text_decoration_) ||
-        (rare_non_inherited_data_.Get() !=
-             other.rare_non_inherited_data_.Get() &&
-         (rare_non_inherited_data_->text_decoration_style_ !=
-              other.rare_non_inherited_data_->text_decoration_style_ ||
-          rare_non_inherited_data_->text_decoration_color_ !=
-              other.rare_non_inherited_data_->text_decoration_color_ ||
-          rare_non_inherited_data_->visited_link_text_decoration_color_ !=
-              other.rare_non_inherited_data_
-                  ->visited_link_text_decoration_color_)) ||
         ComputedStyleBase::
             UpdatePropertySpecificDifferencesTextDecorationOrColor(*this,
                                                                    other)) {
