@@ -61,11 +61,6 @@ crbug.com/672740 virtual/mojo-loading/http/tests/security/mixedContent/websocket
 crbug.com/672740 http/tests/security/mixedContent/websocket/insecure-websocket-in-secure-page-worker.html [ Leak Pass ]
 crbug.com/672740 virtual/mojo-loading/http/tests/security/mixedContent/websocket/insecure-websocket-in-secure-page-worker.html [ Leak Pass ]
 
-# Flaky crashes, but bot build logs do not show the failure, at least
-# as linked by the flakiness dashboard.
-crbug.com/674858 [ Linux ] virtual/threaded/printing/offscreencanvas-2d-printing.html [ Pass Crash ]
-crbug.com/674858 [ Linux ] virtual/threaded/printing/offscreencanvas-webgl-printing.html [ Pass Crash ]
-
 # New tests revealed existing leak
 crbug.com/726218 [ Linux ] fast/dom/inert/inert-node-is-uneditable.html [ Leak ]
 crbug.com/726218 [ Linux ] fast/dom/inert/inert-inlines.html [ Leak ]
