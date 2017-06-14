@@ -64,7 +64,6 @@ class AccountTracker : public OAuth2TokenService::Observer,
   // have been fetched. The primary account for the profile will be first
   // in the vector. Additional accounts will be in order of their gaia IDs.
   std::vector<AccountIds> GetAccounts() const;
-  AccountIds FindAccountIdsByGaiaId(const std::string& gaia_id);
 
   // OAuth2TokenService::Observer implementation.
   void OnRefreshTokenAvailable(const std::string& account_key) override;

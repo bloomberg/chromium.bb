@@ -173,10 +173,6 @@ std::vector<std::string> IdentityAPI::GetAccounts() const {
   return gaia_ids;
 }
 
-std::string IdentityAPI::FindAccountKeyByGaiaId(const std::string& gaia_id) {
-  return account_tracker_.FindAccountIdsByGaiaId(gaia_id).account_key;
-}
-
 void IdentityAPI::Shutdown() {
   if (get_auth_token_function_)
     get_auth_token_function_->Shutdown();

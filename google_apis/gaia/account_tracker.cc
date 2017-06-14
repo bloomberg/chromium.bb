@@ -71,20 +71,6 @@ std::vector<AccountIds> AccountTracker::GetAccounts() const {
   return accounts;
 }
 
-AccountIds AccountTracker::FindAccountIdsByGaiaId(const std::string& gaia_id) {
-  for (std::map<std::string, AccountState>::const_iterator it =
-           accounts_.begin();
-       it != accounts_.end();
-       ++it) {
-    const AccountState& state = it->second;
-    if (state.ids.gaia == gaia_id) {
-      return state.ids;
-    }
-  }
-
-  return AccountIds();
-}
-
 void AccountTracker::OnRefreshTokenAvailable(const std::string& account_id) {
   // TODO(robliao): Remove ScopedTracker below once https://crbug.com/422460 is
   // fixed.
