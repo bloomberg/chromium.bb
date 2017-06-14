@@ -37,15 +37,7 @@ function drawImageToCanvas(image) {
   canvas.getContext('2d').drawImage(image, 0, 0);
 
   if (window.testRunner)
-    runAfterLayoutAndPaint(setWhackedColorProfile);
-}
-
-function setWhackedColorProfile() {
-  window.testRunner.setColorProfile('colorSpin', done);
-}
-
-function done() {
-  setTimeout(function() { window.testRunner.notifyDone() }, 0);
+    setTimeout(function() { window.testRunner.notifyDone() }, 0);
 }
 
 if (window.testRunner) {
