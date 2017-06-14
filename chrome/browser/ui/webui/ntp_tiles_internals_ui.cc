@@ -34,7 +34,10 @@ class ChromeNTPTilesInternalsMessageHandlerClient
     : public content::WebUIMessageHandler,
       public ntp_tiles::NTPTilesInternalsMessageHandlerClient {
  public:
-  ChromeNTPTilesInternalsMessageHandlerClient() {}
+  // |favicon_service| must not be null and must outlive this object.
+  explicit ChromeNTPTilesInternalsMessageHandlerClient(
+      favicon::FaviconService* favicon_service)
+      : handler_(favicon_service) {}
 
  private:
   // content::WebUIMessageHandler:
@@ -122,10 +125,12 @@ content::WebUIDataSource* CreateNTPTilesInternalsHTMLSource() {
 
 NTPTilesInternalsUI::NTPTilesInternalsUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
-  content::WebUIDataSource::Add(Profile::FromWebUI(web_ui),
-                                CreateNTPTilesInternalsHTMLSource());
+  Profile* profile = Profile::FromWebUI(web_ui);
+  content::WebUIDataSource::Add(profile, CreateNTPTilesInternalsHTMLSource());
   web_ui->AddMessageHandler(
-      base::MakeUnique<ChromeNTPTilesInternalsMessageHandlerClient>());
+      base::MakeUnique<ChromeNTPTilesInternalsMessageHandlerClient>(
+          FaviconServiceFactory::GetForProfile(
+              profile, ServiceAccessType::EXPLICIT_ACCESS)));
 }
 
 NTPTilesInternalsUI::~NTPTilesInternalsUI() {}
