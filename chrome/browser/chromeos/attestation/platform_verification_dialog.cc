@@ -18,6 +18,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/extension_registry.h"
@@ -45,6 +46,16 @@ views::Widget* PlatformVerificationDialog::ShowDialog(
     content::WebContents* web_contents,
     const GURL& requesting_origin,
     const ConsentCallback& callback) {
+  // This could happen when the permission is requested from an extension. See
+  // http://crbug.com/728534
+  // TODO(wittman): Remove this check after ShowWebModalDialogViews() API is
+  // improved/fixed. See http://crbug.com/733355
+  if (!web_modal::WebContentsModalDialogManager::FromWebContents(
+          web_contents)) {
+    DVLOG(1) << "WebContentsModalDialogManager not registered for WebContents.";
+    return nullptr;
+  }
+
   // In the case of an extension or hosted app, the origin of the request is
   // best described by the extension / app name.
   const extensions::Extension* extension =

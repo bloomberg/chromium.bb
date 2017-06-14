@@ -82,6 +82,14 @@ void ProtectedMediaIdentifierPermissionContext::DecidePermission(
                      OnPlatformVerificationConsentResponse,
                  weak_factory_.GetWeakPtr(), web_contents, id,
                  requesting_origin, embedding_origin, callback));
+
+  // This could happen when the permission is requested from an extension. See
+  // http://crbug.com/728534
+  if (!widget) {
+    callback.Run(CONTENT_SETTING_ASK);
+    return;
+  }
+
   pending_requests_.insert(
       std::make_pair(web_contents, std::make_pair(widget, id)));
 }
