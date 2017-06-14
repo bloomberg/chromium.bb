@@ -24,6 +24,7 @@ blink_core_sources("page") {
     "DragData.h",
     "DragSession.h",
     "DragState.h",
+    "EditorClient.cpp",
     "EditorClient.h",
     "EventWithHitTestResults.h",
     "ExternalPopupMenu.cpp",

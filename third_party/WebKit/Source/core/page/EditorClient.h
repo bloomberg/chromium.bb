@@ -27,24 +27,33 @@
 #ifndef EditorClient_h
 #define EditorClient_h
 
+#include "core/CoreExport.h"
 #include "core/editing/SelectionType.h"
 #include "platform/wtf/Forward.h"
 
 namespace blink {
 
 class LocalFrame;
+class WebViewBase;
 
-class EditorClient {
+class CORE_EXPORT EditorClient {
  public:
-  virtual ~EditorClient() {}
+  explicit EditorClient(WebViewBase&);
+  virtual ~EditorClient();
 
-  virtual void RespondToChangedContents() = 0;
-  virtual void RespondToChangedSelection(LocalFrame*, SelectionType) = 0;
+  virtual void RespondToChangedContents();
+  virtual void RespondToChangedSelection(LocalFrame*, SelectionType);
 
-  virtual bool CanCopyCut(LocalFrame*, bool default_value) const = 0;
-  virtual bool CanPaste(LocalFrame*, bool default_value) const = 0;
+  virtual bool CanCopyCut(LocalFrame*, bool default_value) const;
+  virtual bool CanPaste(LocalFrame*, bool default_value) const;
 
-  virtual bool HandleKeyboardEvent(LocalFrame*) = 0;
+  virtual bool HandleKeyboardEvent(LocalFrame*);
+
+ protected:
+  EditorClient(){};
+
+ private:
+  WebViewBase* web_view_;
 };
 
 }  // namespace blink

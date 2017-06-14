@@ -38,6 +38,7 @@
 #include "core/page/ChromeClient.h"
 #include "core/page/ContextMenuClient.h"
 #include "core/page/ContextMenuProvider.h"
+#include "core/page/EditorClient.h"
 #include "core/page/EventWithHitTestResults.h"
 #include "core/page/PageWidgetDelegate.h"
 #include "platform/animation/CompositorAnimationTimeline.h"
@@ -64,7 +65,6 @@
 #include "public/platform/WebVector.h"
 #include "public/web/WebNavigationPolicy.h"
 #include "public/web/WebPageImportanceSignals.h"
-#include "web/EditorClientImpl.h"
 #include "web/MediaKeysClientImpl.h"
 #include "web/StorageClientImpl.h"
 #include "web/WebExport.h"
@@ -596,7 +596,7 @@ class WEB_EXPORT WebViewImpl final
 
   Persistent<ChromeClient> chrome_client_;
   ContextMenuClient context_menu_client_;
-  EditorClientImpl editor_client_impl_;
+  EditorClient editor_client_;
   SpellCheckerClientImpl spell_checker_client_impl_;
   StorageClientImpl storage_client_impl_;
 

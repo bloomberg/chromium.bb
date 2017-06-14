@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "web/EditorClientImpl.h"
+#include "core/page/EditorClient.h"
 
 #include "core/editing/SelectionType.h"
 #include "core/exported/WebViewBase.h"
@@ -35,37 +35,37 @@
 
 namespace blink {
 
-EditorClientImpl::EditorClientImpl(WebViewBase* webview) : web_view_(webview) {}
+EditorClient::EditorClient(WebViewBase& webview) : web_view_(&webview) {}
 
-EditorClientImpl::~EditorClientImpl() {}
+EditorClient::~EditorClient() {}
 
-void EditorClientImpl::RespondToChangedSelection(LocalFrame* frame,
-                                                 SelectionType selection_type) {
+void EditorClient::RespondToChangedSelection(LocalFrame* frame,
+                                             SelectionType selection_type) {
   WebLocalFrameBase* web_frame = WebLocalFrameBase::FromFrame(frame);
   if (web_frame->Client())
     web_frame->Client()->DidChangeSelection(selection_type != kRangeSelection);
 }
 
-void EditorClientImpl::RespondToChangedContents() {
+void EditorClient::RespondToChangedContents() {
   if (web_view_->Client())
     web_view_->Client()->DidChangeContents();
 }
 
-bool EditorClientImpl::CanCopyCut(LocalFrame* frame, bool default_value) const {
+bool EditorClient::CanCopyCut(LocalFrame* frame, bool default_value) const {
   if (!frame->GetContentSettingsClient())
     return default_value;
   return frame->GetContentSettingsClient()->AllowWriteToClipboard(
       default_value);
 }
 
-bool EditorClientImpl::CanPaste(LocalFrame* frame, bool default_value) const {
+bool EditorClient::CanPaste(LocalFrame* frame, bool default_value) const {
   if (!frame->GetContentSettingsClient())
     return default_value;
   return frame->GetContentSettingsClient()->AllowReadFromClipboard(
       default_value);
 }
 
-bool EditorClientImpl::HandleKeyboardEvent(LocalFrame* frame) {
+bool EditorClient::HandleKeyboardEvent(LocalFrame* frame) {
   WebLocalFrameBase* web_frame = WebLocalFrameBase::FromFrame(frame);
   return web_frame->Client()->HandleCurrentKeyboardEvent();
 }
