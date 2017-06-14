@@ -1505,7 +1505,7 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
   int64_t rd1, rd2, rd;
   RD_STATS this_rd_stats;
 
-#if !CONFIG_SUPERTX
+#if !CONFIG_SUPERTX && !CONFIG_VAR_TX
   assert(tx_size == get_tx_size(plane, xd));
 #endif  // !CONFIG_SUPERTX
 
