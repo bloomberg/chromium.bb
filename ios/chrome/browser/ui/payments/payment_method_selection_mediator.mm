@@ -36,7 +36,7 @@ using ::payment_request_util::GetBillingAddressLabelFromAutofillProfile;
 @property(nonatomic, assign) PaymentRequest* paymentRequest;
 
 // The selectable items to display in the collection.
-@property(nonatomic, strong) NSArray<PaymentMethodItem*>* items;
+@property(nonatomic, strong) NSMutableArray<PaymentMethodItem*>* items;
 
 @end
 
@@ -52,12 +52,16 @@ using ::payment_request_util::GetBillingAddressLabelFromAutofillProfile;
   if (self) {
     _paymentRequest = paymentRequest;
     _selectedItemIndex = NSUIntegerMax;
-    _items = [self createItems];
+    [self loadItems];
   }
   return self;
 }
 
 #pragma mark - PaymentRequestSelectorViewControllerDataSource
+
+- (BOOL)allowsEditMode {
+  return YES;
+}
 
 - (CollectionViewItem*)headerItem {
   return nil;
@@ -74,13 +78,12 @@ using ::payment_request_util::GetBillingAddressLabelFromAutofillProfile;
   return addButtonItem;
 }
 
-#pragma mark - Helper methods
+#pragma mark - Public methods
 
-- (NSArray<PaymentMethodItem*>*)createItems {
+- (void)loadItems {
   const std::vector<autofill::CreditCard*>& paymentMethods =
       _paymentRequest->credit_cards();
-  NSMutableArray<PaymentMethodItem*>* items =
-      [NSMutableArray arrayWithCapacity:paymentMethods.size()];
+  _items = [NSMutableArray arrayWithCapacity:paymentMethods.size()];
   for (size_t index = 0; index < paymentMethods.size(); ++index) {
     autofill::CreditCard* paymentMethod = paymentMethods[index];
     DCHECK(paymentMethod);
@@ -108,9 +111,8 @@ using ::payment_request_util::GetBillingAddressLabelFromAutofillProfile;
     if (_paymentRequest->selected_credit_card() == paymentMethod)
       _selectedItemIndex = index;
 
-    [items addObject:item];
+    [_items addObject:item];
   }
-  return items;
 }
 
 @end

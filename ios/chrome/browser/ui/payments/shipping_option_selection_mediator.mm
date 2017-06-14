@@ -27,7 +27,10 @@
 @property(nonatomic, assign) PaymentRequest* paymentRequest;
 
 // The selectable items to display in the collection.
-@property(nonatomic, strong) NSArray<PaymentsTextItem*>* items;
+@property(nonatomic, strong) NSMutableArray<PaymentsTextItem*>* items;
+
+// Creates and stores the selectable items to display in the collection.
+- (void)loadItems;
 
 @end
 
@@ -44,12 +47,16 @@
   if (self) {
     _paymentRequest = paymentRequest;
     _selectedItemIndex = NSUIntegerMax;
-    _items = [self createItems];
+    [self loadItems];
   }
   return self;
 }
 
 #pragma mark - PaymentRequestSelectorViewControllerDataSource
+
+- (BOOL)allowsEditMode {
+  return NO;
+}
 
 - (CollectionViewItem*)headerItem {
   if (!self.headerText.length)
@@ -72,11 +79,10 @@
 
 #pragma mark - Helper methods
 
-- (NSArray<PaymentsTextItem*>*)createItems {
+- (void)loadItems {
   const std::vector<web::PaymentShippingOption*>& shippingOptions =
       _paymentRequest->shipping_options();
-  NSMutableArray<PaymentsTextItem*>* items =
-      [NSMutableArray arrayWithCapacity:shippingOptions.size()];
+  _items = [NSMutableArray arrayWithCapacity:shippingOptions.size()];
   for (size_t index = 0; index < shippingOptions.size(); ++index) {
     web::PaymentShippingOption* shippingOption = shippingOptions[index];
     DCHECK(shippingOption);
@@ -89,9 +95,8 @@
     if (_paymentRequest->selected_shipping_option() == shippingOption)
       _selectedItemIndex = index;
 
-    [items addObject:item];
+    [_items addObject:item];
   }
-  return items;
 }
 
 @end

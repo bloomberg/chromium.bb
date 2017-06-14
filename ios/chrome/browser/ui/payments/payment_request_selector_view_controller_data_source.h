@@ -15,6 +15,8 @@
 typedef NS_ENUM(NSUInteger, PaymentRequestSelectorState) {
   // The view controller is in normal state.
   PaymentRequestSelectorStateNormal,
+  // The view controller is in edit state.
+  PaymentRequestSelectorStateEdit,
   // The view controller is in pending state.
   PaymentRequestSelectorStatePending,
   // The view controller is in error state.
@@ -31,6 +33,9 @@ typedef NS_ENUM(NSUInteger, PaymentRequestSelectorState) {
 
 // Index for the currently selected item or NSUIntegerMax if there is none.
 @property(nonatomic, readonly) NSUInteger selectedItemIndex;
+
+// Whether or not the view controller supports edit mode.
+- (BOOL)allowsEditMode;
 
 // The header item to display in the collection, if any.
 - (CollectionViewItem*)headerItem;

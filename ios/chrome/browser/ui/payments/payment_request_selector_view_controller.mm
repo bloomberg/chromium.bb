@@ -48,15 +48,21 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @interface PaymentRequestSelectorViewController ()<
     PaymentRequestSelectorViewControllerActions>
 
+// Whether or not the editor is in the editing mode.
+@property(nonatomic, assign, getter=isEditing) BOOL editing;
+
 @end
 
 @implementation PaymentRequestSelectorViewController
 
 @synthesize delegate = _delegate;
 @synthesize dataSource = _dataSource;
+@synthesize editing = _editing;
 
 - (instancetype)init {
   if ((self = [super initWithStyle:CollectionViewControllerStyleAppBar])) {
+    _editing = NO;
+
     // Set up leading (back) button.
     UIBarButtonItem* backButton =
         [ChromeIcon templateBarButtonItemWithImage:[ChromeIcon backIcon]
@@ -66,6 +72,36 @@ typedef NS_ENUM(NSInteger, ItemType) {
     self.navigationItem.leftBarButtonItem = backButton;
   }
   return self;
+}
+
+// Returns a custom edit bar button item.
+- (UIBarButtonItem*)editButton {
+  UIBarButtonItem* button = [[UIBarButtonItem alloc]
+      initWithTitle:l10n_util::GetNSString(IDS_IOS_NAVIGATION_BAR_EDIT_BUTTON)
+              style:UIBarButtonItemStyleDone
+             target:self
+             action:@selector(editButtonPressed)];
+  return button;
+}
+
+// Returns a custom done bar button item.
+- (UIBarButtonItem*)doneButton {
+  return [[UIBarButtonItem alloc]
+      initWithTitle:l10n_util::GetNSString(IDS_IOS_NAVIGATION_BAR_DONE_BUTTON)
+              style:UIBarButtonItemStyleDone
+             target:self
+             action:@selector(editButtonPressed)];
+}
+
+- (void)editButtonPressed {
+  // Toggle the editing mode and notify the delegate.
+  self.editing = !self.editing;
+  if ([self.delegate
+          respondsToSelector:@selector
+          (paymentRequestSelectorViewControllerDidToggleEditingMode:)]) {
+    [self.delegate
+        paymentRequestSelectorViewControllerDidToggleEditingMode:self];
+  }
 }
 
 #pragma mark - PaymentRequestSelectorViewControllerActions
@@ -80,6 +116,15 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [super loadModel];
   CollectionViewModel* model = self.collectionViewModel;
 
+  // Set up trailing (edit or done) button.
+  if (self.dataSource.state == PaymentRequestSelectorStateNormal &&
+      [self.dataSource allowsEditMode]) {
+    self.navigationItem.rightBarButtonItem =
+        self.editing ? [self doneButton] : [self editButton];
+  } else {
+    self.navigationItem.rightBarButtonItem = nil;
+  }
+
   [model addSectionWithIdentifier:SectionIdentifierItems];
 
   // If the view controller is in the pending state, only display a spinner and
@@ -92,10 +137,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
     return;
   }
 
-  CollectionViewItem* headerItem = [self.dataSource headerItem];
-  if (headerItem) {
-    headerItem.type = ItemTypeHeader;
-    [model addItem:headerItem toSectionWithIdentifier:SectionIdentifierItems];
+  if (!self.editing) {
+    CollectionViewItem* headerItem = [self.dataSource headerItem];
+    if (headerItem) {
+      headerItem.type = ItemTypeHeader;
+      [model addItem:headerItem toSectionWithIdentifier:SectionIdentifierItems];
+    }
   }
 
   [[self.dataSource selectableItems]
@@ -105,18 +152,25 @@ typedef NS_ENUM(NSInteger, ItemType) {
         DCHECK([item respondsToSelector:@selector(accessoryType)]);
         item.type = ItemTypeSelectableItem;
         item.accessibilityTraits |= UIAccessibilityTraitButton;
-        item.accessoryType = (index == self.dataSource.selectedItemIndex)
-                                 ? MDCCollectionViewCellAccessoryCheckmark
-                                 : MDCCollectionViewCellAccessoryNone;
+        if (self.editing) {
+          item.accessoryType =
+              MDCCollectionViewCellAccessoryDisclosureIndicator;
+        } else {
+          item.accessoryType = (index == self.dataSource.selectedItemIndex)
+                                   ? MDCCollectionViewCellAccessoryCheckmark
+                                   : MDCCollectionViewCellAccessoryNone;
+        }
         [model addItem:item toSectionWithIdentifier:SectionIdentifierItems];
       }];
 
-  CollectionViewItem* addButtonItem = [self.dataSource addButtonItem];
-  if (addButtonItem) {
-    addButtonItem.type = ItemTypeAddItem;
-    addButtonItem.accessibilityTraits |= UIAccessibilityTraitButton;
-    [model addItem:addButtonItem
-        toSectionWithIdentifier:SectionIdentifierItems];
+  if (!self.editing) {
+    CollectionViewItem* addButtonItem = [self.dataSource addButtonItem];
+    if (addButtonItem) {
+      addButtonItem.type = ItemTypeAddItem;
+      addButtonItem.accessibilityTraits |= UIAccessibilityTraitButton;
+      [model addItem:addButtonItem
+          toSectionWithIdentifier:SectionIdentifierItems];
+    }
   }
 }
 
@@ -189,6 +243,23 @@ typedef NS_ENUM(NSInteger, ItemType) {
   CollectionViewModel* model = self.collectionViewModel;
 
   CollectionViewItem* item = [model itemAtIndexPath:indexPath];
+
+  if (self.editing) {
+    DCHECK(item.type == ItemTypeSelectableItem);
+    // Notify the delegate of the selection.
+    NSUInteger index =
+        [self.collectionViewModel indexInItemTypeForIndexPath:indexPath];
+    DCHECK(index < [[self.dataSource selectableItems] count]);
+    if ([self.delegate
+            respondsToSelector:@selector
+            (paymentRequestSelectorViewController:didSelectItemAtIndexForEditing
+                                                    :)]) {
+      [self.delegate paymentRequestSelectorViewController:self
+                           didSelectItemAtIndexForEditing:index];
+    }
+    return;
+  }
+
   switch (item.type) {
     case ItemTypeSelectableItem: {
       // Update the currently selected cell, if any.

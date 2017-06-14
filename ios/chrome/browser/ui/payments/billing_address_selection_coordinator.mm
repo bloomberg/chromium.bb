@@ -29,6 +29,11 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
 
 @property(nonatomic, strong) BillingAddressSelectionMediator* mediator;
 
+// Initializes and starts the AddressEditCoordinator. Sets |address| as the
+// address to be edited.
+- (void)startAddressEditCoordinatorWithAddress:
+    (autofill::AutofillProfile*)address;
+
 // Called when the user selects a billing address. The cell is checked, the
 // UI is locked so that the user can't interact with it, then the delegate is
 // notified. The delay is here to let the user get a visual feedback of the
@@ -93,23 +98,41 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
 
 - (void)paymentRequestSelectorViewControllerDidSelectAddItem:
     (PaymentRequestSelectorViewController*)controller {
-  self.addressEditCoordinator = [[AddressEditCoordinator alloc]
-      initWithBaseViewController:self.viewController];
-  self.addressEditCoordinator.paymentRequest = self.paymentRequest;
-  self.addressEditCoordinator.delegate = self;
-  [self.addressEditCoordinator start];
+  [self startAddressEditCoordinatorWithAddress:nil];
+}
+
+- (void)paymentRequestSelectorViewControllerDidToggleEditingMode:
+    (PaymentRequestSelectorViewController*)controller {
+  [self.viewController loadModel];
+  [self.viewController.collectionView reloadData];
+}
+
+- (void)paymentRequestSelectorViewController:
+            (PaymentRequestSelectorViewController*)controller
+              didSelectItemAtIndexForEditing:(NSUInteger)index {
+  DCHECK(index < self.paymentRequest->billing_profiles().size());
+  [self startAddressEditCoordinatorWithAddress:self.paymentRequest
+                                                   ->billing_profiles()[index]];
 }
 
 #pragma mark - AddressEditCoordinatorDelegate
 
 - (void)addressEditCoordinator:(AddressEditCoordinator*)coordinator
        didFinishEditingAddress:(autofill::AutofillProfile*)address {
+  // Update the data source with the new data.
+  [self.mediator loadItems];
+
+  [self.viewController loadModel];
+  [self.viewController.collectionView reloadData];
+
   [self.addressEditCoordinator stop];
   self.addressEditCoordinator = nil;
 
-  // Inform |self.delegate| that |address| has been selected.
-  [self.delegate billingAddressSelectionCoordinator:self
-                            didSelectBillingAddress:address];
+  if (self.mediator.state != PaymentRequestSelectorStateEdit) {
+    // Inform |self.delegate| that |address| has been selected.
+    [self.delegate billingAddressSelectionCoordinator:self
+                              didSelectBillingAddress:address];
+  }
 }
 
 - (void)addressEditCoordinatorDidCancel:(AddressEditCoordinator*)coordinator {
@@ -118,6 +141,16 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
 }
 
 #pragma mark - Helper methods
+
+- (void)startAddressEditCoordinatorWithAddress:
+    (autofill::AutofillProfile*)address {
+  self.addressEditCoordinator = [[AddressEditCoordinator alloc]
+      initWithBaseViewController:self.viewController];
+  self.addressEditCoordinator.paymentRequest = self.paymentRequest;
+  self.addressEditCoordinator.address = address;
+  self.addressEditCoordinator.delegate = self;
+  [self.addressEditCoordinator start];
+}
 
 - (void)delayedNotifyDelegateOfSelection:
     (autofill::AutofillProfile*)billingAddress {

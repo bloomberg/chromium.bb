@@ -35,7 +35,7 @@ using ::payment_request_util::GetPhoneNumberLabelFromAutofillProfile;
 @property(nonatomic, assign) PaymentRequest* paymentRequest;
 
 // The selectable items to display in the collection.
-@property(nonatomic, strong) NSArray<AutofillProfileItem*>* items;
+@property(nonatomic, strong) NSMutableArray<AutofillProfileItem*>* items;
 
 @end
 
@@ -51,12 +51,16 @@ using ::payment_request_util::GetPhoneNumberLabelFromAutofillProfile;
   if (self) {
     _paymentRequest = paymentRequest;
     _selectedItemIndex = NSUIntegerMax;
-    _items = [self createItems];
+    [self loadItems];
   }
   return self;
 }
 
 #pragma mark - PaymentRequestSelectorViewControllerDataSource
+
+- (BOOL)allowsEditMode {
+  return YES;
+}
 
 - (CollectionViewItem*)headerItem {
   return nil;
@@ -74,14 +78,13 @@ using ::payment_request_util::GetPhoneNumberLabelFromAutofillProfile;
   return addButtonItem;
 }
 
-#pragma mark - Helper methods
+#pragma mark - Public methods
 
-- (NSArray<AutofillProfileItem*>*)createItems {
+- (void)loadItems {
   const std::vector<autofill::AutofillProfile*>& contactProfiles =
       _paymentRequest->contact_profiles();
 
-  NSMutableArray<AutofillProfileItem*>* items =
-      [NSMutableArray arrayWithCapacity:contactProfiles.size()];
+  _items = [NSMutableArray arrayWithCapacity:contactProfiles.size()];
   for (size_t index = 0; index < contactProfiles.size(); ++index) {
     autofill::AutofillProfile* contactProfile = contactProfiles[index];
     DCHECK(contactProfile);
@@ -92,9 +95,8 @@ using ::payment_request_util::GetPhoneNumberLabelFromAutofillProfile;
     if (_paymentRequest->selected_contact_profile() == contactProfile)
       _selectedItemIndex = index;
 
-    [items addObject:item];
+    [_items addObject:item];
   }
-  return items;
 }
 
 @end
