@@ -23,10 +23,6 @@
 #include "media/midi/midi_export.h"
 #include "media/midi/midi_manager.h"
 
-namespace base {
-class ThreadChecker;
-}
-
 namespace midi {
 
 class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
@@ -373,12 +369,11 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
       std::unique_ptr<snd_midi_event_t, SndMidiEventDeleter>;
 
   // An internal callback that runs on MidiSendThread.
-  void SendMidiData(int instance_id,
-                    MidiManagerClient* client,
+  void SendMidiData(MidiManagerClient* client,
                     uint32_t port_index,
                     const std::vector<uint8_t>& data);
 
-  void EventLoop(int instance_id);
+  void EventLoop();
   void ProcessSingleEvent(snd_seq_event_t* event, double timestamp);
   void ProcessClientStartEvent(int client_id);
   void ProcessPortStartEvent(const snd_seq_addr_t& addr);
@@ -422,16 +417,6 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
   // wait for our information from ALSA and udev to get back in sync.
   int alsa_card_midi_count_ = 0;
 
-  // This lock is needed to ensure that members destroyed in Finalize
-  // will be visibly destroyed before the destructor is run in the
-  // other thread. Otherwise, the same objects may have their destructors
-  // run multiple times in different threads.
-  base::Lock lazy_init_member_lock_;  // guards members below
-
-  // Members initialized in StartInitialization() are below.
-  // Make sure to destroy these in Finalize()!
-  std::unique_ptr<base::ThreadChecker> initialization_thread_checker_;
-
   // ALSA seq handles and ids.
   ScopedSndSeqPtr in_client_;
   int in_client_id_;
@@ -445,8 +430,6 @@ class MIDI_EXPORT MidiManagerAlsa final : public MidiManager {
   // udev, for querying hardware devices.
   device::ScopedUdevPtr udev_;
   device::ScopedUdevMonitorPtr udev_monitor_;
-
-  int instance_id_;
 
   DISALLOW_COPY_AND_ASSIGN(MidiManagerAlsa);
 };
