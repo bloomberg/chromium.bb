@@ -42,7 +42,8 @@ class WebContentLayer {
   // origin aligned to local layer space, optionally with a uniform scale.
   // With this flag set to true, the compositor may raster contents in any
   // space, e.g. device pixel space.
-  virtual void SetAllowTransformedRasterization(bool) = 0;
+  virtual void SetTransformedRasterizationAllowed(bool) = 0;
+  virtual bool TransformedRasterizationAllowed() const = 0;
 };
 
 }  // namespace blink

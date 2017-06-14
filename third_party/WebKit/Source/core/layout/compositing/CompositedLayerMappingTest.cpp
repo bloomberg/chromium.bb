@@ -1811,4 +1811,66 @@ TEST_P(CompositedLayerMappingTest,
   EXPECT_FLOAT_EQ(100, main_graphics_layer->GetPosition().Y());
 }
 
+TEST_P(CompositedLayerMappingTest,
+       TransformedRasterizationDisallowedForDirectReasons) {
+  // This test verifies layers with direct compositing reasons won't have
+  // transformed rasterization, i.e. should raster in local space.
+  SetBodyInnerHTML(
+      "<div id='target1' style='transform:translateZ(0);'>foo</div>"
+      "<div id='target2' style='will-change:opacity;'>bar</div>"
+      "<div id='target3' style='backface-visibility:hidden;'>ham</div>");
+
+  {
+    LayoutObject* target = GetLayoutObjectByElementId("target1");
+    ASSERT_TRUE(target && target->IsBox());
+    PaintLayer* target_layer = ToLayoutBox(target)->Layer();
+    GraphicsLayer* target_graphics_layer =
+        target_layer ? target_layer->GraphicsLayerBacking() : nullptr;
+    ASSERT_TRUE(target_graphics_layer);
+    EXPECT_FALSE(target_graphics_layer->ContentLayer()
+                     ->TransformedRasterizationAllowed());
+  }
+  {
+    LayoutObject* target = GetLayoutObjectByElementId("target2");
+    ASSERT_TRUE(target && target->IsBox());
+    PaintLayer* target_layer = ToLayoutBox(target)->Layer();
+    GraphicsLayer* target_graphics_layer =
+        target_layer ? target_layer->GraphicsLayerBacking() : nullptr;
+    ASSERT_TRUE(target_graphics_layer);
+    EXPECT_FALSE(target_graphics_layer->ContentLayer()
+                     ->TransformedRasterizationAllowed());
+  }
+  {
+    LayoutObject* target = GetLayoutObjectByElementId("target3");
+    ASSERT_TRUE(target && target->IsBox());
+    PaintLayer* target_layer = ToLayoutBox(target)->Layer();
+    GraphicsLayer* target_graphics_layer =
+        target_layer ? target_layer->GraphicsLayerBacking() : nullptr;
+    ASSERT_TRUE(target_graphics_layer);
+    EXPECT_FALSE(target_graphics_layer->ContentLayer()
+                     ->TransformedRasterizationAllowed());
+  }
+}
+
+TEST_P(CompositedLayerMappingTest, TransformedRasterizationForInlineTransform) {
+  // This test verifies we allow layers that are indirectly composited due to
+  // an inline transform (but no direct reason otherwise) to raster in the
+  // device space for higher quality.
+  SetBodyInnerHTML(
+      "<div style='will-change:transform; width:500px; "
+      "height:20px;'>composited</div>"
+      "<div id='target' style='transform:translate(1.5px,-10.5px); "
+      "width:500px; height:20px;'>indirectly composited due to inline "
+      "transform</div>");
+
+  LayoutObject* target = GetLayoutObjectByElementId("target");
+  ASSERT_TRUE(target && target->IsBox());
+  PaintLayer* target_layer = ToLayoutBox(target)->Layer();
+  GraphicsLayer* target_graphics_layer =
+      target_layer ? target_layer->GraphicsLayerBacking() : nullptr;
+  ASSERT_TRUE(target_graphics_layer);
+  EXPECT_TRUE(
+      target_graphics_layer->ContentLayer()->TransformedRasterizationAllowed());
+}
+
 }  // namespace blink

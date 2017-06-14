@@ -207,11 +207,11 @@ void PictureLayer::SetNearestNeighbor(bool nearest_neighbor) {
   SetNeedsCommit();
 }
 
-void PictureLayer::SetAllowTransformedRasterization(bool allowed) {
-  if (picture_layer_inputs_.allow_transformed_rasterization == allowed)
+void PictureLayer::SetTransformedRasterizationAllowed(bool allowed) {
+  if (picture_layer_inputs_.transformed_rasterization_allowed == allowed)
     return;
 
-  picture_layer_inputs_.allow_transformed_rasterization = allowed;
+  picture_layer_inputs_.transformed_rasterization_allowed = allowed;
   SetNeedsCommit();
 }
 
@@ -249,7 +249,7 @@ void PictureLayer::DropRecordingSourceContentIfInvalid() {
 }
 
 bool PictureLayer::ShouldUseTransformedRasterization() const {
-  if (!picture_layer_inputs_.allow_transformed_rasterization)
+  if (!picture_layer_inputs_.transformed_rasterization_allowed)
     return false;
 
   // Background color overfill is undesirable with transformed rasterization.
