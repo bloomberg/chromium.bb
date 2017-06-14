@@ -602,7 +602,7 @@ struct CaseInsensitiveCompare {
 
 // Applies a forced text rendering direction if specified by a command-line
 // switch.
-void CheckForcedDirection(UBiDiLevel* level) {
+void ApplyForcedDirection(UBiDiLevel* level) {
   static bool has_switch = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kForceTextDirection);
   if (!has_switch)
@@ -1396,7 +1396,7 @@ void RenderTextHarfBuzz::ItemizeTextToRuns(
     int32_t script_item_break = 0;
     bidi_iterator.GetLogicalRun(run_break, &script_item_break, &run->level);
     CHECK_GT(static_cast<size_t>(script_item_break), run_break);
-    CheckForcedDirection(&run->level);
+    ApplyForcedDirection(&run->level);
     // Odd BiDi embedding levels correspond to RTL runs.
     run->is_rtl = (run->level % 2) == 1;
     // Find the length and script of this script run.
