@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_root.h"
 
-#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
@@ -12,6 +11,7 @@
 #include "base/files/file.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
@@ -54,8 +54,7 @@ base::FilePath::StringType GetFileNameForDocument(
   std::vector<base::FilePath::StringType> possible_extensions =
       GetExtensionsForArcMimeType(document->mime_type);
   if (!possible_extensions.empty() &&
-      std::find(possible_extensions.begin(), possible_extensions.end(),
-                extension) == possible_extensions.end()) {
+      !base::ContainsValue(possible_extensions, extension)) {
     filename =
         base::FilePath(filename).AddExtension(possible_extensions[0]).value();
   }

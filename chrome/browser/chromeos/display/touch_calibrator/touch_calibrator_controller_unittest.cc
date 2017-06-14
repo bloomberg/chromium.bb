@@ -4,11 +4,11 @@
 
 #include "chrome/browser/chromeos/display/touch_calibrator/touch_calibrator_controller.h"
 
-#include <algorithm>
 #include <vector>
 
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "base/stl_util.h"
 #include "chrome/browser/chromeos/display/touch_calibrator/touch_calibrator_view.h"
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
@@ -77,9 +77,7 @@ TEST_F(TouchCalibratorControllerTest, StartCalibration) {
 
   ui::EventTargetTestApi test_api(ash::Shell::Get());
   const ui::EventHandlerList& handlers = test_api.pre_target_handlers();
-  ui::EventHandlerList::const_iterator event_target =
-      std::find(handlers.begin(), handlers.end(), &touch_calibrator_controller);
-  EXPECT_NE(event_target, handlers.end());
+  EXPECT_TRUE(base::ContainsValue(handlers, &touch_calibrator_controller));
 }
 
 TEST_F(TouchCalibratorControllerTest, KeyEventIntercept) {

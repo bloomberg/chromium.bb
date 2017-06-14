@@ -22,6 +22,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -72,12 +73,6 @@ ash::mojom::ImeInfo GetAshImeInfo(const InputMethodDescriptor& ime,
   info.short_name = util.GetInputMethodShortName(ime);
   info.third_party = extension_ime_util::IsExtensionIME(ime.id());
   return info;
-}
-
-bool Contains(const std::vector<std::string>& container,
-              const std::string& value) {
-  return std::find(container.begin(), container.end(), value) !=
-      container.end();
 }
 
 enum InputMethodCategory {
@@ -300,7 +295,8 @@ void InputMethodManagerImpl::StateImpl::EnableLoginLayouts(
     const std::string& candidate = candidates[i];
     // Not efficient, but should be fine, as the two vectors are very
     // short (2-5 items).
-    if (!Contains(layouts, candidate) && manager_->IsLoginKeyboard(candidate) &&
+    if (!base::ContainsValue(layouts, candidate) &&
+        manager_->IsLoginKeyboard(candidate) &&
         IsInputMethodAllowed(candidate)) {
       layouts.push_back(candidate);
     }
@@ -375,7 +371,7 @@ bool InputMethodManagerImpl::StateImpl::EnableInputMethodImpl(
     return false;
   }
 
-  if (!Contains(*new_active_input_method_ids, input_method_id))
+  if (!base::ContainsValue(*new_active_input_method_ids, input_method_id))
     new_active_input_method_ids->push_back(input_method_id);
 
   return true;
@@ -473,9 +469,11 @@ bool InputMethodManagerImpl::StateImpl::IsInputMethodAllowed(
   if (!manager_->util_.IsKeyboardLayout(input_method_id))
     return true;
 
-  return Contains(allowed_keyboard_layout_input_method_ids, input_method_id) ||
-         Contains(allowed_keyboard_layout_input_method_ids,
-                  manager_->util_.MigrateInputMethod(input_method_id));
+  return base::ContainsValue(allowed_keyboard_layout_input_method_ids,
+                             input_method_id) ||
+         base::ContainsValue(
+             allowed_keyboard_layout_input_method_ids,
+             manager_->util_.MigrateInputMethod(input_method_id));
 }
 
 void InputMethodManagerImpl::StateImpl::ChangeInputMethod(
@@ -546,8 +544,8 @@ void InputMethodManagerImpl::StateImpl::AddInputMethodExtension(
     const InputMethodDescriptor& descriptor = descriptors[i];
     const std::string& id = descriptor.id();
     extra_input_methods[id] = descriptor;
-    if (Contains(enabled_extension_imes, id)) {
-      if (!Contains(active_input_method_ids, id)) {
+    if (base::ContainsValue(enabled_extension_imes, id)) {
+      if (!base::ContainsValue(active_input_method_ids, id)) {
         active_input_method_ids.push_back(id);
       } else {
         DVLOG(1) << "AddInputMethodExtension: already added: " << id << ", "
@@ -645,7 +643,8 @@ void InputMethodManagerImpl::StateImpl::SetEnabledExtensionImes(
                   extra_iter->first);
 
     bool active = active_iter != active_input_method_ids.end();
-    bool enabled = Contains(enabled_extension_imes, extra_iter->first);
+    bool enabled =
+        base::ContainsValue(enabled_extension_imes, extra_iter->first);
 
     if (active && !enabled)
       active_input_method_ids.erase(active_iter);
@@ -866,7 +865,7 @@ void InputMethodManagerImpl::StateImpl::GetCandidateInputMethodsForAccelerator(
   // active_input_method_ids.
   for (size_t i = 0; i < input_method_ids_to_switch.size(); ++i) {
     const std::string& id = input_method_ids_to_switch[i];
-    if (Contains(active_input_method_ids, id))
+    if (base::ContainsValue(active_input_method_ids, id))
       out_candidate_ids->push_back(id);
   }
 }
@@ -881,7 +880,7 @@ InputMethodDescriptor InputMethodManagerImpl::StateImpl::GetCurrentInputMethod()
 
 bool InputMethodManagerImpl::StateImpl::InputMethodIsActivated(
     const std::string& input_method_id) const {
-  return Contains(active_input_method_ids, input_method_id);
+  return base::ContainsValue(active_input_method_ids, input_method_id);
 }
 
 // ------------------------ InputMethodManagerImpl

@@ -6,10 +6,9 @@
 
 #include "chrome/browser/chromeos/extensions/quick_unlock_private/quick_unlock_private_api.h"
 
-#include <algorithm>
-
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_factory.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_storage.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
@@ -142,13 +141,6 @@ class QuickUnlockPrivateUnitTest : public ExtensionApiUnittest {
     return modes;
   }
 
-  // Returns true if |problem| is contained in |problems|.
-  bool HasProblem(CredentialProblem problem,
-                  const std::vector<CredentialProblem> problems) {
-    return std::find(problems.begin(), problems.end(), problem) !=
-           problems.end();
-  }
-
   bool HasFlag(int outcome, int flag) { return (outcome & flag) != 0; }
 
   // Helper function for checking whether |IsCredentialUsableUsingPin| will
@@ -161,22 +153,22 @@ class QuickUnlockPrivateUnitTest : public ExtensionApiUnittest {
     // A pin is considered good if it emits no errors or warnings.
     EXPECT_EQ(HasFlag(expected_outcome, PIN_GOOD),
               errors.empty() && warnings.empty());
-    EXPECT_EQ(
-        HasFlag(expected_outcome, PIN_TOO_SHORT),
-        HasProblem(CredentialProblem::CREDENTIAL_PROBLEM_TOO_SHORT, errors));
-    EXPECT_EQ(
-        HasFlag(expected_outcome, PIN_TOO_LONG),
-        HasProblem(CredentialProblem::CREDENTIAL_PROBLEM_TOO_LONG, errors));
-    EXPECT_EQ(
-        HasFlag(expected_outcome, PIN_WEAK_WARNING),
-        HasProblem(CredentialProblem::CREDENTIAL_PROBLEM_TOO_WEAK, warnings));
-    EXPECT_EQ(
-        HasFlag(expected_outcome, PIN_WEAK_ERROR),
-        HasProblem(CredentialProblem::CREDENTIAL_PROBLEM_TOO_WEAK, errors));
+    EXPECT_EQ(HasFlag(expected_outcome, PIN_TOO_SHORT),
+              base::ContainsValue(
+                  errors, CredentialProblem::CREDENTIAL_PROBLEM_TOO_SHORT));
+    EXPECT_EQ(HasFlag(expected_outcome, PIN_TOO_LONG),
+              base::ContainsValue(
+                  errors, CredentialProblem::CREDENTIAL_PROBLEM_TOO_LONG));
+    EXPECT_EQ(HasFlag(expected_outcome, PIN_WEAK_WARNING),
+              base::ContainsValue(
+                  warnings, CredentialProblem::CREDENTIAL_PROBLEM_TOO_WEAK));
+    EXPECT_EQ(HasFlag(expected_outcome, PIN_WEAK_ERROR),
+              base::ContainsValue(
+                  errors, CredentialProblem::CREDENTIAL_PROBLEM_TOO_WEAK));
     EXPECT_EQ(
         HasFlag(expected_outcome, PIN_CONTAINS_NONDIGIT),
-        HasProblem(CredentialProblem::CREDENTIAL_PROBLEM_CONTAINS_NONDIGIT,
-                   errors));
+        base::ContainsValue(
+            errors, CredentialProblem::CREDENTIAL_PROBLEM_CONTAINS_NONDIGIT));
   }
 
   CredentialCheck CheckCredentialUsingPin(const std::string& pin) {

@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include <algorithm>
 #include <utility>
 
 #include "base/bind.h"
@@ -15,6 +14,7 @@
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
@@ -181,9 +181,7 @@ void MobileConfig::Carrier::InitFromDictionary(
       if (deals_list->GetDictionary(i, &deal_dict)) {
         std::unique_ptr<CarrierDeal> deal(new CarrierDeal(deal_dict));
         // Filter out deals by initial_locale right away.
-        auto iter = std::find(deal->locales().begin(), deal->locales().end(),
-                              initial_locale);
-        if (iter != deal->locales().end()) {
+        if (base::ContainsValue(deal->locales(), initial_locale)) {
           const std::string& deal_id = deal->deal_id();
           deals_[deal_id] = std::move(deal);
         }
