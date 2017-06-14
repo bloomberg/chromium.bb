@@ -40,7 +40,7 @@ class SensorProviderProxy final
   explicit SensorProviderProxy(LocalFrame&);
   static const char* SupplementName();
   void InitializeIfNeeded();
-  bool IsInitialized() const { return sensor_provider_; }
+  bool IsInitialized() const { return sensor_provider_.is_bound(); }
 
   device::mojom::blink::SensorProvider* GetSensorProvider() const {
     return sensor_provider_.get();

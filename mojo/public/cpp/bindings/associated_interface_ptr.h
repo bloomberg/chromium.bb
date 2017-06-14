@@ -166,27 +166,10 @@ class AssociatedInterfacePtr {
     return &internal_state_;
   }
 
-  // Allow AssociatedInterfacePtr<> to be used in boolean expressions, but not
-  // implicitly convertible to a real bool (which is dangerous).
- private:
-  // TODO(dcheng): Use an explicit conversion operator.
-  typedef internal::AssociatedInterfacePtrState<Interface>
-      AssociatedInterfacePtr::*Testable;
-
- public:
-  operator Testable() const {
-    return internal_state_.is_bound() ? &AssociatedInterfacePtr::internal_state_
-                                      : nullptr;
-  }
+  // Allow AssociatedInterfacePtr<> to be used in boolean expressions.
+  explicit operator bool() const { return internal_state_.is_bound(); }
 
  private:
-  // Forbid the == and != operators explicitly, otherwise AssociatedInterfacePtr
-  // will be converted to Testable to do == or != comparison.
-  template <typename T>
-  bool operator==(const AssociatedInterfacePtr<T>& other) const = delete;
-  template <typename T>
-  bool operator!=(const AssociatedInterfacePtr<T>& other) const = delete;
-
   typedef internal::AssociatedInterfacePtrState<Interface> State;
   mutable State internal_state_;
 
