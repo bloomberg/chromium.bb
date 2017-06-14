@@ -69,11 +69,7 @@ bool HardwareDisplayPlaneAtomic::Property::Initialize(
       break;
     }
   }
-  if (!id) {
-    LOG(ERROR) << "Could not find property " << name;
-    return false;
-  }
-  return true;
+  return !!id;
 }
 
 HardwareDisplayPlaneAtomic::HardwareDisplayPlaneAtomic(uint32_t plane_id,
@@ -90,6 +86,9 @@ bool HardwareDisplayPlaneAtomic::SetPlaneData(
     const gfx::Rect& crtc_rect,
     const gfx::Rect& src_rect,
     const gfx::OverlayTransform transform) {
+  if (transform != gfx::OVERLAY_TRANSFORM_NONE && !rotation_prop_.id)
+    return false;
+
   int plane_set_succeeded =
       drmModeAtomicAddProperty(property_set, plane_id_, crtc_prop_.id,
                                crtc_id) &&
@@ -110,10 +109,15 @@ bool HardwareDisplayPlaneAtomic::SetPlaneData(
       drmModeAtomicAddProperty(property_set, plane_id_, src_w_prop_.id,
                                src_rect.width()) &&
       drmModeAtomicAddProperty(property_set, plane_id_, src_h_prop_.id,
-                               src_rect.height()) &&
-      drmModeAtomicAddProperty(
-          property_set, plane_id_, rotation_prop_.id,
-          OverlayTransformToDrmRotationPropertyValue(transform));
+                               src_rect.height());
+
+  if (rotation_prop_.id) {
+    plane_set_succeeded =
+        plane_set_succeeded &&
+        drmModeAtomicAddProperty(
+            property_set, plane_id_, rotation_prop_.id,
+            OverlayTransformToDrmRotationPropertyValue(transform));
+  }
   if (!plane_set_succeeded) {
     PLOG(ERROR) << "Failed to set plane data";
     return false;
@@ -124,24 +128,23 @@ bool HardwareDisplayPlaneAtomic::SetPlaneData(
 bool HardwareDisplayPlaneAtomic::InitializeProperties(
     DrmDevice* drm,
     const ScopedDrmObjectPropertyPtr& plane_props) {
-  bool props_init =
-      crtc_prop_.Initialize(drm, kCrtcPropName, plane_props) &&
-      fb_prop_.Initialize(drm, kFbPropName, plane_props) &&
-      crtc_x_prop_.Initialize(drm, kCrtcXPropName, plane_props) &&
-      crtc_y_prop_.Initialize(drm, kCrtcYPropName, plane_props) &&
-      crtc_w_prop_.Initialize(drm, kCrtcWPropName, plane_props) &&
-      crtc_h_prop_.Initialize(drm, kCrtcHPropName, plane_props) &&
-      src_x_prop_.Initialize(drm, kSrcXPropName, plane_props) &&
-      src_y_prop_.Initialize(drm, kSrcYPropName, plane_props) &&
-      src_w_prop_.Initialize(drm, kSrcWPropName, plane_props) &&
-      src_h_prop_.Initialize(drm, kSrcHPropName, plane_props) &&
-      rotation_prop_.Initialize(drm, kRotationPropName, plane_props);
+  bool props_init = crtc_prop_.Initialize(drm, kCrtcPropName, plane_props) &&
+                    fb_prop_.Initialize(drm, kFbPropName, plane_props) &&
+                    crtc_x_prop_.Initialize(drm, kCrtcXPropName, plane_props) &&
+                    crtc_y_prop_.Initialize(drm, kCrtcYPropName, plane_props) &&
+                    crtc_w_prop_.Initialize(drm, kCrtcWPropName, plane_props) &&
+                    crtc_h_prop_.Initialize(drm, kCrtcHPropName, plane_props) &&
+                    src_x_prop_.Initialize(drm, kSrcXPropName, plane_props) &&
+                    src_y_prop_.Initialize(drm, kSrcYPropName, plane_props) &&
+                    src_w_prop_.Initialize(drm, kSrcWPropName, plane_props) &&
+                    src_h_prop_.Initialize(drm, kSrcHPropName, plane_props);
 
   if (!props_init) {
     LOG(ERROR) << "Unable to get plane properties.";
     return false;
   }
-
+  // "rotation" property is optional.
+  rotation_prop_.Initialize(drm, kRotationPropName, plane_props);
   return true;
 }
 
