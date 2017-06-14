@@ -20,7 +20,6 @@ import os
 
 from chromite.cbuildbot import repository
 from chromite.cbuildbot.stages import sync_stages
-from chromite.lib import commandline
 from chromite.lib import config_lib
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -84,8 +83,6 @@ def field(fields, **kwargs):
 def PreParseArguments(argv):
   """Extract the branch name from cbuildbot command line arguments.
 
-  Ignores all arguments, other than the branch name.
-
   Args:
     argv: The command line arguments to parse.
 
@@ -93,14 +90,16 @@ def PreParseArguments(argv):
     Branch as a string ('master' if nothing is specified).
   """
   parser = cbuildbot.CreateParser()
-  options, args = cbuildbot.ParseCommandLine(parser, argv)
+  options, _ = cbuildbot.ParseCommandLine(parser, argv)
+  options.Freeze()
 
   # This option isn't required for cbuildbot, but is for us.
   if not options.buildroot:
     cros_build_lib.Die('--buildroot is a required option.')
 
-  # Save off the build targets, in a mirror of cbuildbot code.
-  options.build_targets = args
+  if len(options.build_targets) != 1:
+    cros_build_lib.Die('Exactly one build target required, got: %s',
+                       ', '.join(options.build_targets) or 'None')
 
   return options
 
@@ -214,33 +213,34 @@ def InitialCheckout(repo):
 
 
 @StageDecorator
-def RunCbuildbot(buildroot, options):
+def RunCbuildbot(buildroot, argv):
   """Start cbuildbot in specified directory with all arguments.
 
   Args:
     buildroot: Directory to be passed to cbuildbot with --buildroot.
-    options: Parse command line options.
+    argv: Command line options passed to cbuildbot_launch.
 
   Returns:
     Return code of cbuildbot as an integer.
   """
   logging.info('Bootstrap cbuildbot in: %s', buildroot)
-  cbuildbot_path = os.path.join(
-      buildroot, 'chromite', 'bin', 'cbuildbot')
 
-  # This updates the buildroot location used by cbuildbot to be a sub directory
-  # of what cbuildbot_launcher is using.
-  def filter_buildroot(a):
-    if a.opt_str in ('-r', '--buildroot'):
-      a = commandline.PassedOption(a.opt_inst, a.opt_str, [buildroot])
-    return a
-  options.parsed_args = [filter_buildroot(a) for a in options.parsed_args]
+  # Fixup buildroot parameter.
+  argv = argv[:]
+  for i in xrange(len(argv)):
+    if argv[i] in ('-r', '--buildroot'):
+      argv[i+1] = buildroot
 
+  # This filters out command line arguments not supported by older versions
+  # of cbuildbot.
+  parser = cbuildbot.CreateParser()
+  options, _ = cbuildbot.ParseCommandLine(parser, argv)
+  cbuildbot_path = os.path.join(buildroot, 'chromite', 'bin', 'cbuildbot')
   cmd = sync_stages.BootstrapStage.FilterArgsForTargetCbuildbot(
       buildroot, cbuildbot_path, options)
 
-  result = cros_build_lib.RunCommand(cmd, error_code_ok=True,
-                                     cwd=buildroot)
+  # Actually run cbuildbot with the fixed up command line options.
+  result = cros_build_lib.RunCommand(cmd, error_code_ok=True, cwd=buildroot)
   return result.returncode
 
 
@@ -271,27 +271,26 @@ def _main(argv):
   Returns:
     Return code of cbuildbot as an integer.
   """
-  metrics_fields = {'branch_name': 'unknown'}
+  options = PreParseArguments(argv)
+
+  branchname = options.branch or 'master'
+  root = options.buildroot
+  buildroot = os.path.join(root, 'repository')
+  build_config = options.build_targets[0]
+
+  metrics_fields = {
+      'branch_name': branchname,
+      'build_config': build_config,
+      'tryjob': options.remote_trybot,
+  }
 
   # Does the entire build pass or fail.
-  with metrics.SuccessCounter(METRIC_COMPLETED, metrics_fields) as c_fields:
+  with metrics.SuccessCounter(METRIC_COMPLETED, metrics_fields) as s_fields:
 
     # Preliminary set, mostly command line parsing.
-    with metrics.SuccessCounter(METRIC_INVOKED, metrics_fields) as i_fields:
+    with metrics.SuccessCounter(METRIC_INVOKED, metrics_fields):
       logging.EnableBuildbotMarkers()
       ConfigureGlobalEnvironment()
-
-      options = PreParseArguments(argv)
-
-      branchname = options.branch or 'master'
-      root = options.buildroot
-      buildroot = os.path.join(root, 'repository')
-      git_cache_dir = options.git_cache_dir
-
-      # Update metrics fields after parsing command line arguments.
-      metrics_fields['branch_name'] = branchname
-      i_fields.update(metrics_fields)
-      c_fields.update(metrics_fields)
 
     # Prepare the buildroot with source for the build.
     with metrics.SuccessCounter(METRIC_PREP, metrics_fields):
@@ -299,7 +298,7 @@ def _main(argv):
       manifest_url = site_config.params['MANIFEST_INT_URL']
       repo = repository.RepoRepository(manifest_url, buildroot,
                                        branch=branchname,
-                                       git_cache_dir=git_cache_dir)
+                                       git_cache_dir=options.git_cache_dir)
 
       # Clean up the buildroot to a safe state.
       with metrics.SecondsTimer(METRIC_CLEAN, fields=metrics_fields):
@@ -311,8 +310,8 @@ def _main(argv):
 
     # Run cbuildbot inside the full ChromeOS checkout, on the specified branch.
     with metrics.SecondsTimer(METRIC_CBUILDBOT, fields=metrics_fields):
-      result = RunCbuildbot(buildroot, options)
-      c_fields['success'] = (result == 0)
+      result = RunCbuildbot(buildroot, argv)
+      s_fields['success'] = (result == 0)
       return result
 
 

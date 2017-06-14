@@ -99,13 +99,11 @@ class RunTests(cros_build_lib_unittest.RunCommandTestCase):
 
   def verifyRunCbuildbot(self, args, expected_cmd, version):
     """Ensure we invoke cbuildbot correctly."""
-    options = cbuildbot_launch.PreParseArguments(args)
-
     self.PatchObject(
         cros_build_lib, 'GetTargetChromiteApiVersion', autospec=True,
         return_value=version)
 
-    cbuildbot_launch.RunCbuildbot('/cbuildbot_buildroot', options)
+    cbuildbot_launch.RunCbuildbot('/cbuildbot_buildroot', args)
 
     self.assertCommandCalled(
         expected_cmd, cwd='/cbuildbot_buildroot', error_code_ok=True)
@@ -158,7 +156,12 @@ class RunTests(cros_build_lib_unittest.RunCommandTestCase):
 
     # Ensure we clean, as expected.
     self.assertEqual(mock_clean.mock_calls, [
-        mock.call('/root', mock_repo, {'branch_name': 'master'})])
+        mock.call('/root', mock_repo,
+                  {
+                      'branch_name': 'master',
+                      'tryjob': False,
+                      'build_config': 'config',
+                  })])
 
     # Ensure we checkout, as expected.
     self.assertEqual(mock_checkout.mock_calls,
@@ -191,6 +194,7 @@ class RunTests(cros_build_lib_unittest.RunCommandTestCase):
     cbuildbot_launch._main(['--buildroot', '/root',
                             '--branch', 'branch',
                             '--git-cache-dir', '/git-cache',
+                            '--remote-trybot',
                             'config'])
 
     # Did we create the repo instance correctly?
@@ -200,7 +204,13 @@ class RunTests(cros_build_lib_unittest.RunCommandTestCase):
 
     # Ensure we clean, as expected.
     self.assertEqual(mock_clean.mock_calls, [
-        mock.call('/root', mock_repo, {'branch_name': 'branch'})])
+        mock.call('/root',
+                  mock_repo,
+                  {
+                      'branch_name': 'branch',
+                      'tryjob': True,
+                      'build_config': 'config',
+                  })])
 
     # Ensure we checkout, as expected.
     self.assertEqual(mock_checkout.mock_calls,
@@ -212,7 +222,8 @@ class RunTests(cros_build_lib_unittest.RunCommandTestCase):
          'config',
          '--buildroot', '/root/repository',
          '--branch', 'branch',
-         '--git-cache-dir', '/git-cache'],
+         '--git-cache-dir', '/git-cache',
+         '--remote-trybot'],
         cwd='/root/repository',
         error_code_ok=True)
 
