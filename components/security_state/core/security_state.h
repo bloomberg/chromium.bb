@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_SECURITY_STATE_SECURITY_STATE_H_
-#define COMPONENTS_SECURITY_STATE_SECURITY_STATE_H_
+#ifndef COMPONENTS_SECURITY_STATE_CORE_SECURITY_STATE_H_
+#define COMPONENTS_SECURITY_STATE_CORE_SECURITY_STATE_H_
 
 #include <stdint.h>
 #include <memory>
@@ -141,6 +141,9 @@ struct SecurityInfo {
   // True if the server's certificate does not contain a
   // subjectAltName extension with a domain name or IP address.
   bool cert_missing_subject_alt_name;
+  // True if the |security_level| was downgraded to HTTP_SHOW_WARNING because
+  // the page was loaded while Incognito.
+  bool incognito_downgraded_security_level;
 };
 
 // Contains the security state relevant to computing the SecurityInfo
@@ -181,6 +184,8 @@ struct VisibleSecurityState {
   bool displayed_password_field_on_http;
   // True if the page was an HTTP page that displayed a credit card field.
   bool displayed_credit_card_field_on_http;
+  // True if the page was displayed in an Incognito context.
+  bool is_incognito;
 };
 
 // These security levels describe the treatment given to pages that
@@ -209,6 +214,10 @@ void GetSecurityInfo(
 // |kHttpFormWarningFeature| feature.
 bool IsHttpWarningInFormEnabled();
 
+// Returns true if the MarkHttpAs setting indicates that a warning
+// should be shown for HTTP pages loaded while in Incognito mode.
+bool IsHttpWarningForIncognitoEnabled();
+
 }  // namespace security_state
 
-#endif  // COMPONENTS_SECURITY_STATE_SECURITY_STATE_H_
+#endif  // COMPONENTS_SECURITY_STATE_CORE_SECURITY_STATE_H_

@@ -10,6 +10,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/security_state/core/security_state.h"
+#include "ios/web/public/browser_state.h"
 #include "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #import "ios/web/public/origin_util.h"
@@ -62,5 +63,7 @@ IOSSecurityStateTabHelper::GetVisibleSecurityState() const {
       (ssl.content_status & web::SSLStatus::DISPLAYED_CREDIT_CARD_FIELD_ON_HTTP)
           ? true
           : false;
+  state->is_incognito = web_state_->GetBrowserState()->IsOffTheRecord();
+
   return state;
 }

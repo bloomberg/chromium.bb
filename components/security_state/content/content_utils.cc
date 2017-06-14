@@ -182,16 +182,23 @@ blink::WebSecurityStyle GetSecurityStyle(
   const blink::WebSecurityStyle security_style =
       SecurityLevelToSecurityStyle(security_info.security_level);
 
-  // The HTTP_SHOW_WARNING state may occur if the page is served as a data: URI
-  // or if it is served non-securely AND contains a sensitive form field.
-  if (security_info.security_level == security_state::HTTP_SHOW_WARNING &&
-      (security_info.displayed_password_field_on_http ||
-       security_info.displayed_credit_card_field_on_http)) {
-    security_style_explanations->neutral_explanations.push_back(
-        content::SecurityStyleExplanation(
-            l10n_util::GetStringUTF8(IDS_PRIVATE_USER_DATA_INPUT),
-            l10n_util::GetStringUTF8(IDS_PRIVATE_USER_DATA_INPUT_DESCRIPTION)));
+  if (security_info.security_level == security_state::HTTP_SHOW_WARNING) {
+    if (security_info.displayed_password_field_on_http ||
+        security_info.displayed_credit_card_field_on_http) {
+      security_style_explanations->neutral_explanations.push_back(
+          content::SecurityStyleExplanation(
+              l10n_util::GetStringUTF8(IDS_PRIVATE_USER_DATA_INPUT),
+              l10n_util::GetStringUTF8(
+                  IDS_PRIVATE_USER_DATA_INPUT_DESCRIPTION)));
+    }
+    if (security_info.incognito_downgraded_security_level) {
+      security_style_explanations->neutral_explanations.push_back(
+          content::SecurityStyleExplanation(
+              l10n_util::GetStringUTF8(IDS_INCOGNITO_NONSECURE),
+              l10n_util::GetStringUTF8(IDS_INCOGNITO_NONSECURE_DESCRIPTION)));
+    }
   }
+
   security_style_explanations->ran_insecure_content_style =
       SecurityLevelToSecurityStyle(security_state::kRanInsecureContentLevel);
   security_style_explanations->displayed_insecure_content_style =

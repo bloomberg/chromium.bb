@@ -4,6 +4,8 @@
 
 #include "components/security_state/content/content_utils.h"
 
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/test/histogram_tester.h"
 #include "components/security_state/core/security_state.h"
@@ -253,6 +255,15 @@ TEST(SecurityStateContentUtilsTest, HTTPWarning) {
   EXPECT_EQ(blink::kWebSecurityStyleNeutral, security_style);
   // Verify only one explanation was shown when Form Not Secure is triggered.
   EXPECT_EQ(1u, explanations.neutral_explanations.size());
+
+  // Verify that two explanations are shown when the Incognito and
+  // FormNotSecure flags are both set.
+  explanations.neutral_explanations.clear();
+  security_info.displayed_credit_card_field_on_http = true;
+  security_info.incognito_downgraded_security_level = true;
+  security_style = GetSecurityStyle(security_info, &explanations);
+  EXPECT_EQ(blink::kWebSecurityStyleNeutral, security_style);
+  EXPECT_EQ(2u, explanations.neutral_explanations.size());
 }
 
 // Tests that an explanation is provided if a certificate is missing a
