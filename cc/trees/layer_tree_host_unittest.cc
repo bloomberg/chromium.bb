@@ -1685,6 +1685,7 @@ class LayerTreeHostTestSwitchMaskLayer : public LayerTreeHostTest {
     scoped_refptr<Layer> root = Layer::Create();
     root->SetBounds(gfx::Size(10, 10));
     child_layer_ = make_scoped_refptr(new UpdateCountingLayer);
+    child_layer_->SetBounds(gfx::Size(10, 10));
     mask_layer_ = make_scoped_refptr(new UpdateCountingLayer);
     mask_layer_->SetBounds(gfx::Size(10, 10));
     child_layer_->SetMaskLayer(mask_layer_.get());
@@ -6991,12 +6992,12 @@ class LayerTreeTestMaskLayerForSurfaceWithClippedLayer : public LayerTreeTest {
     content_layer->AddChild(content_child_layer);
 
     std::unique_ptr<RecordingSource> recording_source =
-        FakeRecordingSource::CreateFilledRecordingSource(gfx::Size(100, 100));
+        FakeRecordingSource::CreateFilledRecordingSource(gfx::Size(50, 50));
     PaintFlags paint1, paint2;
     static_cast<FakeRecordingSource*>(recording_source.get())
-        ->add_draw_rect_with_flags(gfx::Rect(0, 0, 100, 90), paint1);
+        ->add_draw_rect_with_flags(gfx::Rect(0, 0, 50, 40), paint1);
     static_cast<FakeRecordingSource*>(recording_source.get())
-        ->add_draw_rect_with_flags(gfx::Rect(0, 90, 100, 10), paint2);
+        ->add_draw_rect_with_flags(gfx::Rect(0, 40, 50, 10), paint2);
     client_.set_fill_with_nonsolid_color(true);
     static_cast<FakeRecordingSource*>(recording_source.get())->Rerecord();
 
@@ -7023,7 +7024,7 @@ class LayerTreeTestMaskLayerForSurfaceWithClippedLayer : public LayerTreeTest {
     content_child_layer->SetBounds(child_size);
     content_child_layer->SetPosition(gfx::PointF(20.f, 0.f));
 
-    gfx::Size mask_size(100, 100);
+    gfx::Size mask_size(50, 50);
     mask_layer->SetBounds(mask_size);
     mask_layer->SetLayerMaskType(Layer::LayerMaskType::MULTI_TEXTURE_MASK);
     mask_layer_id_ = mask_layer->id();
@@ -7240,131 +7241,6 @@ class LayerTreeTestMultiTextureMaskLayerWithScaling
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeTestMultiTextureMaskLayerWithScaling);
-
-class LayerTreeTestMaskLayerWithDifferentBounds : public LayerTreeTest {
- protected:
-  void SetupTree() override {
-    // The mask layer has bounds 100x100 but is attached to a layer with bounds
-    // 50x50.
-
-    scoped_refptr<Layer> root = Layer::Create();
-
-    scoped_refptr<FakePictureLayer> content_layer =
-        FakePictureLayer::Create(&client_);
-    root->AddChild(content_layer);
-
-    std::unique_ptr<RecordingSource> recording_source =
-        FakeRecordingSource::CreateFilledRecordingSource(gfx::Size(100, 100));
-    PaintFlags paint1, paint2;
-    static_cast<FakeRecordingSource*>(recording_source.get())
-        ->add_draw_rect_with_flags(gfx::Rect(0, 0, 100, 90), paint1);
-    static_cast<FakeRecordingSource*>(recording_source.get())
-        ->add_draw_rect_with_flags(gfx::Rect(0, 90, 100, 10), paint2);
-    client_.set_fill_with_nonsolid_color(true);
-    static_cast<FakeRecordingSource*>(recording_source.get())->Rerecord();
-
-    scoped_refptr<FakePictureLayer> mask_layer =
-        FakePictureLayer::CreateWithRecordingSource(
-            &client_, std::move(recording_source));
-    content_layer->SetMaskLayer(mask_layer.get());
-
-    gfx::Size root_size(100, 100);
-    root->SetBounds(root_size);
-
-    gfx::Size layer_size(50, 50);
-    content_layer->SetBounds(layer_size);
-
-    gfx::Size mask_size(100, 100);
-    mask_layer->SetBounds(mask_size);
-    mask_layer->SetLayerMaskType(Layer::LayerMaskType::MULTI_TEXTURE_MASK);
-
-    layer_tree_host()->SetRootLayer(root);
-    LayerTreeTest::SetupTree();
-    client_.set_bounds(root->bounds());
-  }
-
-  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
-
-  DrawResult PrepareToDrawOnThread(LayerTreeHostImpl* host_impl,
-                                   LayerTreeHostImpl::FrameData* frame_data,
-                                   DrawResult draw_result) override {
-    EXPECT_EQ(2u, frame_data->render_passes.size());
-    RenderPass* root_pass = frame_data->render_passes.back().get();
-    EXPECT_EQ(2u, root_pass->quad_list.size());
-
-    // There's a solid color quad under everything.
-    EXPECT_EQ(DrawQuad::SOLID_COLOR, root_pass->quad_list.back()->material);
-
-    EXPECT_EQ(DrawQuad::RENDER_PASS, root_pass->quad_list.front()->material);
-    const RenderPassDrawQuad* render_pass_quad =
-        RenderPassDrawQuad::MaterialCast(root_pass->quad_list.front());
-    switch (host_impl->active_tree()->source_frame_number()) {
-      case 0:
-        // Check that the mask fills the surface.
-        EXPECT_EQ(gfx::Rect(0, 0, 50, 50).ToString(),
-                  render_pass_quad->rect.ToString());
-        if (host_impl->settings().enable_mask_tiling) {
-          EXPECT_EQ(gfx::RectF(0.f, 0.f, 50.f / 128.f, 50.f / 128.f).ToString(),
-                    render_pass_quad->mask_uv_rect.ToString());
-        } else {
-          EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
-                    render_pass_quad->mask_uv_rect.ToString());
-        }
-        break;
-      case 1:
-        // Applying a DSF should change the render surface size, but won't
-        // affect which part of the mask is used.
-        EXPECT_EQ(gfx::Rect(0, 0, 100, 100).ToString(),
-                  render_pass_quad->rect.ToString());
-        if (host_impl->settings().enable_mask_tiling) {
-          EXPECT_EQ(gfx::RectF(0.f, 0.f, 50.f / 128.f, 50.f / 128.f).ToString(),
-                    render_pass_quad->mask_uv_rect.ToString());
-        } else {
-          EXPECT_EQ(gfx::RectF(0.f, 0.f, 1.f, 1.f).ToString(),
-                    render_pass_quad->mask_uv_rect.ToString());
-        }
-        EndTest();
-        break;
-    }
-    return draw_result;
-  }
-
-  void DidCommit() override {
-    switch (layer_tree_host()->SourceFrameNumber()) {
-      case 1:
-        gfx::Size double_root_size(200, 200);
-        layer_tree_host()->SetViewportSize(double_root_size);
-        layer_tree_host()->SetDeviceScaleFactor(2.f);
-        break;
-    }
-  }
-
-  void AfterTest() override {}
-
-  FakeContentLayerClient client_;
-};
-
-class LayerTreeTestSingleTextureMaskLayerWithDifferentBounds
-    : public LayerTreeTestMaskLayerWithDifferentBounds {
- public:
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->enable_mask_tiling = false;
-  }
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeTestSingleTextureMaskLayerWithDifferentBounds);
-
-class LayerTreeTestMultiTextureMaskLayerWithDifferentBounds
-    : public LayerTreeTestMaskLayerWithDifferentBounds {
- public:
-  void InitializeSettings(LayerTreeSettings* settings) override {
-    settings->enable_mask_tiling = true;
-  }
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(
-    LayerTreeTestMultiTextureMaskLayerWithDifferentBounds);
 
 class LayerTreeTestMaskWithNonExactTextureSize : public LayerTreeTest {
  protected:

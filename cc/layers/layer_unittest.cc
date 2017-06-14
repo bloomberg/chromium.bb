@@ -324,8 +324,9 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
   // Should be a different size than previous call, to ensure it marks tree
   // changed.
   gfx::Size arbitrary_size = gfx::Size(111, 222);
-  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(2);
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetBounds(arbitrary_size));
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(dummy_layer1->SetBounds(arbitrary_size));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
       root->PushPropertiesTo(root_impl.get());
       child->PushPropertiesTo(child_impl.get());
