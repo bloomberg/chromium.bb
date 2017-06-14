@@ -17,7 +17,8 @@ MessagePumpFuchsia::FileDescriptorWatcher::FileDescriptorWatcher(
 
 MessagePumpFuchsia::FileDescriptorWatcher::~FileDescriptorWatcher() {
   StopWatchingFileDescriptor();
-  __mxio_release(io_);
+  if (io_)
+    __mxio_release(io_);
   if (was_destroyed_) {
     DCHECK(!*was_destroyed_);
     *was_destroyed_ = true;
@@ -68,11 +69,14 @@ bool MessagePumpFuchsia::WatchFileDescriptor(int fd,
       return false;
   }
 
+  controller->io_ = __mxio_fd_to_io(fd);
+  if (!controller->io_)
+    return false;
+
   controller->watcher_ = delegate;
   controller->fd_ = fd;
   controller->desired_events_ = events;
 
-  controller->io_ = __mxio_fd_to_io(fd);
   uint32_t signals;
   __mxio_wait_begin(controller->io_, events, &controller->handle_, &signals);
   if (controller->handle_ == MX_HANDLE_INVALID)
