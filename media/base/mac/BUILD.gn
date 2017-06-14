@@ -9,7 +9,10 @@ source_set("mac") {
   # build, if other component targets also depend on it, multiple copies of
   # the ObjC classes declared in the files below will cause warnings at
   # run-time.
-  visibility = [ "//media" ]
+  visibility = [
+    "//media",
+    "//media/filters",
+  ]
 
   set_sources_assignment_filter([])
   sources = [
