@@ -17,7 +17,6 @@ from chromite.cli import command
 from chromite.lib import cache
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
-from chromite.lib import git
 from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import path_util
@@ -82,6 +81,10 @@ class SDKFetcher(object):
   MISC_CACHE = 'misc'
 
   TARGET_TOOLCHAIN_KEY = 'target_toolchain'
+
+  CANARIES_PER_DAY = 3
+  DAYS_TO_CONSIDER = 14
+  VERSIONS_TO_CONSIDER = DAYS_TO_CONSIDER * CANARIES_PER_DAY
 
   def __init__(self, cache_dir, board, clear_cache=False, chrome_src=None,
                sdk_path=None, toolchain_path=None, silent=False,
@@ -179,25 +182,59 @@ class SDKFetcher(object):
                   constants.PATH_TO_CHROME_LKGM, version)
     return version
 
-  def _GetNewestFullVersion(self, version=None):
-    """Gets the full version number of the latest build for the given |version|.
+  def _GetFullVersionFromRecentLatest(self, version):
+    """Gets the full version number from a recent LATEST- file.
+
+    If LATEST-{version} does not exist, we need to look for a recent
+    LATEST- file to get a valid full version from.
 
     Args:
-      version: The version number or branch to look at. By default, look at
-        builds on the current branch.
+      version: The version number to look backwards from. If version is not a
+      canary version (ending in .0.0), returns None.
 
     Returns:
-      Version number in the format 'R30-3929.0.0'.
+      Version number in the format 'R30-3929.0.0' or None.
     """
-    if version is None:
-      version = git.GetChromiteTrackingBranch()
+
+    # If version does not end in .0.0 it is not a canary so fail.
+    if not version.endswith('.0.0'):
+      return None
+    version_base = int(version.split('.')[0])
+    version_base_min = version_base - self.VERSIONS_TO_CONSIDER
+
+    for v in xrange(version_base - 1, version_base_min, -1):
+      version_file = '%s/LATEST-%d.0.0' % (self.gs_base, v)
+      logging.info('Trying: %s', version_file)
+      try:
+        full_version = self.gs_ctx.Cat(version_file)
+        assert full_version.startswith('R')
+        logging.warning(
+            'Using cros version from most recent LATEST file: %s -> %s',
+            version_file, full_version)
+        return full_version
+      except gs.GSNoSuchKey:
+        pass
+    logging.warning('No recent LATEST file found from %d.0.0 to %d.0.0: ',
+                    version_base_min, version_base)
+    return None
+
+  def _GetFullVersionFromLatest(self, version):
+    """Gets the full version number from the LATEST-{version} file.
+
+    Args:
+      version: The version number or branch to look at.
+
+    Returns:
+      Version number in the format 'R30-3929.0.0' or None.
+    """
     version_file = '%s/LATEST-%s' % (self.gs_base, version)
     try:
       full_version = self.gs_ctx.Cat(version_file)
       assert full_version.startswith('R')
       return full_version
     except gs.GSNoSuchKey:
-      return None
+      logging.warning('No LATEST file matching SDK version %s', version)
+      return self._GetFullVersionFromRecentLatest(version)
 
   def GetDefaultVersion(self):
     """Get the default SDK version to use.
@@ -268,8 +305,7 @@ class SDKFetcher(object):
       if ref.Exists(lock=True):
         return osutils.ReadFile(ref.path).strip()
       else:
-        # Find out the newest version from the LATEST (or LATEST-%s) file.
-        full_version = self._GetNewestFullVersion(version=version)
+        full_version = self._GetFullVersionFromLatest(version)
 
         if full_version is None:
           raise MissingSDK(self.board, version)

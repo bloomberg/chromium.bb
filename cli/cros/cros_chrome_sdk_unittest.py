@@ -411,8 +411,13 @@ class GomaTest(cros_test_lib.MockTempDirTestCase,
 class VersionTest(cros_test_lib.MockTempDirTestCase):
   """Tests the determination of which SDK version to use."""
 
-  VERSION = '3543.2.0'
+  VERSION = '3543.0.0'
   FULL_VERSION = 'R55-%s' % VERSION
+  RECENT_VERSION_MISSING = '3542.0.0'
+  RECENT_VERSION_FOUND = '3541.0.0'
+  FULL_VERSION_RECENT = 'R55-%s' % RECENT_VERSION_FOUND
+  NON_CANARY_VERSION = '3543.2.1'
+  FULL_VERSION_NON_CANARY = 'R55-%s' % NON_CANARY_VERSION
   BOARD = 'lumpy'
 
   VERSION_BASE = ('gs://chromeos-image-archive/%s-release/LATEST-%s'
@@ -448,6 +453,35 @@ class VersionTest(cros_test_lib.MockTempDirTestCase):
     self.assertEquals(self.sdk.GetDefaultVersion(),
                       self.VERSION)
 
+  def testFullVersion(self):
+    """Test full version calculation."""
+    self.sdk_mock.UnMockAttr('GetFullVersion')
+    self.gs_mock.AddCmdResult(
+        partial_mock.ListRegex('cat .*/LATEST-%s' % self.VERSION),
+        output=self.FULL_VERSION)
+    self.assertEquals(
+        self.FULL_VERSION,
+        self.sdk.GetFullVersion(self.VERSION))
+
+  def testFullVersionFromRecentLatest(self):
+    """Test full version calculation when there is no matching LATEST- file."""
+    def _RaiseGSNoSuchKey(*_args, **_kwargs):
+      raise gs.GSNoSuchKey('file does not exist')
+    self.sdk_mock.UnMockAttr('GetFullVersion')
+    self.gs_mock.AddCmdResult(
+        partial_mock.ListRegex('cat .*/LATEST-%s' % self.VERSION),
+        side_effect=_RaiseGSNoSuchKey)
+    self.gs_mock.AddCmdResult(
+        partial_mock.ListRegex(
+            'cat .*/LATEST-%s' % self.RECENT_VERSION_MISSING),
+        side_effect=_RaiseGSNoSuchKey)
+    self.gs_mock.AddCmdResult(
+        partial_mock.ListRegex('cat .*/LATEST-%s' % self.RECENT_VERSION_FOUND),
+        output=self.FULL_VERSION_RECENT)
+    self.assertEquals(
+        self.FULL_VERSION_RECENT,
+        self.sdk.GetFullVersion(self.VERSION))
+
   def testFullVersionCaching(self):
     """Test full version calculation and caching."""
     def RaiseException(*_args, **_kwargs):
@@ -476,17 +510,39 @@ class VersionTest(cros_test_lib.MockTempDirTestCase):
         self.FULL_VERSION + '2',
         self.sdk.GetFullVersion(self.VERSION))
 
-  def testBadVersion(self):
-    """We raise an exception for a bad version."""
+  def testNoLatestVersion(self):
+    """We raise an exception when there is no recent latest version."""
     self.sdk_mock.UnMockAttr('GetFullVersion')
     self.gs_mock.AddCmdResult(
-        partial_mock.ListRegex('cat .*/LATEST-%s' % self.VERSION),
+        partial_mock.ListRegex('cat .*/LATEST-*'),
         output='', error=self.CAT_ERROR, returncode=1)
     self.gs_mock.AddCmdResult(
         partial_mock.ListRegex('ls .*%s' % self.VERSION),
         output='', error=self.LS_ERROR, returncode=1)
     self.assertRaises(cros_chrome_sdk.MissingSDK, self.sdk.GetFullVersion,
                       self.VERSION)
+
+  def testNonCanaryFullVersion(self):
+    """Test full version calculation for a non canary version."""
+    self.sdk_mock.UnMockAttr('GetFullVersion')
+    self.gs_mock.AddCmdResult(
+        partial_mock.ListRegex('cat .*/LATEST-%s' % self.NON_CANARY_VERSION),
+        output=self.FULL_VERSION_NON_CANARY)
+    self.assertEquals(
+        self.FULL_VERSION_NON_CANARY,
+        self.sdk.GetFullVersion(self.NON_CANARY_VERSION))
+
+  def testNonCanaryNoLatestVersion(self):
+    """We raise an exception when there is no matching latest non canary."""
+    self.sdk_mock.UnMockAttr('GetFullVersion')
+    self.gs_mock.AddCmdResult(
+        partial_mock.ListRegex('cat .*/LATEST-%s' % self.NON_CANARY_VERSION),
+        output='', error=self.CAT_ERROR, returncode=1)
+    # Set any other query to return a valid version, but we don't expect that
+    # to occur for non canary versions.
+    self.gs_mock.SetDefaultCmdResult(output=self.FULL_VERSION_NON_CANARY)
+    self.assertRaises(cros_chrome_sdk.MissingSDK, self.sdk.GetFullVersion,
+                      self.NON_CANARY_VERSION)
 
   def testDefaultEnvBadBoard(self):
     """We don't use the version in the environment if board doesn't match."""
