@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
 
+#include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
@@ -11,8 +12,11 @@
 #include "chrome/browser/ui/blocked_content/blocked_window_params.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/render_messages.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/subresource_filter/content/browser/content_subresource_filter_driver_factory.h"
+#include "components/subresource_filter/content/browser/content_subresource_filter_throttle_manager.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
@@ -35,6 +39,26 @@ struct PopupBlockerTabHelper::BlockedRequest {
   chrome::NavigateParams params;
   blink::mojom::WindowFeatures window_features;
 };
+
+bool PopupBlockerTabHelper::ConsiderForPopupBlocking(
+    content::WebContents* web_contents,
+    bool user_gesture) {
+  DCHECK(web_contents);
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisablePopupBlocking)) {
+    return false;
+  }
+
+  if (!user_gesture)
+    return true;
+
+  // The subresource_filter triggers an extra aggressive popup blocker on
+  // pages where ads are being blocked, even if there is a user gesture.
+  auto* driver_factory = subresource_filter::
+      ContentSubresourceFilterDriverFactory::FromWebContents(web_contents);
+  return driver_factory &&
+         driver_factory->throttle_manager()->ShouldDisallowNewWindow();
+}
 
 PopupBlockerTabHelper::PopupBlockerTabHelper(
     content::WebContents* web_contents)

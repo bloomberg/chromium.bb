@@ -1067,6 +1067,47 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, BlockCreatingNewWindows) {
                    ->IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));
 }
 
+IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, BlockOpenURLFromTab) {
+  base::HistogramTester tester;
+  const char kWindowOpenPath[] =
+      "/subresource_filter/window_open_spoof_click.html";
+  GURL a_url(embedded_test_server()->GetURL("a.com", kWindowOpenPath));
+  GURL b_url(embedded_test_server()->GetURL("b.com", kWindowOpenPath));
+  // Only configure |a_url| as a phishing URL.
+  ConfigureAsPhishingURL(a_url);
+
+  // Only necessary so we have a valid ruleset.
+  ASSERT_NO_FATAL_FAILURE(SetRulesetWithRules(std::vector<proto::UrlRule>()));
+
+  // Navigate to a_url, should trigger the popup blocker.
+  ui_test_utils::NavigateToURL(browser(), a_url);
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(content::ExecuteScript(web_contents, "openWindow()"));
+  // Do not force the UI if the popup was the only thing disallowed. The popup
+  // UI is good enough.
+  tester.ExpectBucketCount(kSubresourceFilterActionsHistogram, kActionUIShown,
+                           0);
+
+  // Make sure the popup UI was shown.
+  EXPECT_TRUE(TabSpecificContentSettings::FromWebContents(web_contents)
+                  ->IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));
+
+  // Navigate to |b_url|, which should successfully open the popup.
+
+  ui_test_utils::NavigateToURL(browser(), b_url);
+
+  content::TestNavigationObserver navigation_observer(nullptr, 1);
+  navigation_observer.StartWatchingNewWebContents();
+  EXPECT_TRUE(content::ExecuteScript(web_contents, "openWindow()"));
+  navigation_observer.Wait();
+
+  // Popup UI should not be shown.
+  EXPECT_FALSE(TabSpecificContentSettings::FromWebContents(web_contents)
+                   ->IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));
+}
+
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
                        ContentSettingsWhitelist_DoNotActivate) {
   ASSERT_NO_FATAL_FAILURE(

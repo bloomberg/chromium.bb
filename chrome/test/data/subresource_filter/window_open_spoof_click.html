@@ -1,0 +1,12 @@
+<a href = "https://www.google.com" id='target'>target</a>
+<script>
+function openWindow() {
+  var evt = new MouseEvent("click", {
+    view : window,
+    bubbles : true,
+    cancelable : true,
+    shiftKey : true,
+  });
+  document.getElementById('target').dispatchEvent(evt);
+}
+</script>
