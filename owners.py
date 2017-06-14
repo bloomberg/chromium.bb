@@ -185,7 +185,7 @@ class Database(object):
 
   def _check_reviewers(self, reviewers):
     _assert_is_collection(reviewers)
-    assert all(self.email_regexp.match(r) for r in reviewers)
+    assert all(self.email_regexp.match(r) for r in reviewers), reviewers
 
   def _is_obj_covered_by(self, objname, reviewers):
     reviewers = list(reviewers) + [EVERYONE]
