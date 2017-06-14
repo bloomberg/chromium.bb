@@ -478,7 +478,7 @@ static double search_sgrproj(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
                                (1 << plane));
     // #bits when a tile is not restored
     bits = av1_cost_bit(RESTORE_NONE_SGRPROJ_PROB, 0);
-    cost_norestore = RDCOST_DBL(x->rdmult, x->rddiv, (bits >> 4), err);
+    cost_norestore = RDCOST_DBL(x->rdmult, (bits >> 4), err);
     best_tile_cost[tile_idx] = DBL_MAX;
     search_selfguided_restoration(
         dgd_buffer + v_start * dgd_stride + h_start, h_end - h_start,
@@ -498,7 +498,7 @@ static double search_sgrproj(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
                               &ref_sgrproj_info)
            << AV1_PROB_COST_SHIFT;
     bits += av1_cost_bit(RESTORE_NONE_SGRPROJ_PROB, 1);
-    cost_sgrproj = RDCOST_DBL(x->rdmult, x->rddiv, (bits >> 4), err);
+    cost_sgrproj = RDCOST_DBL(x->rdmult, (bits >> 4), err);
     if (cost_sgrproj >= cost_norestore) {
       type[tile_idx] = RESTORE_NONE;
     } else {
@@ -531,7 +531,7 @@ static double search_sgrproj(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
   }
   err = try_restoration_frame(src, cpi, rsi, (1 << plane), partial_frame,
                               dst_frame);
-  cost_sgrproj = RDCOST_DBL(x->rdmult, x->rddiv, (bits >> 4), err);
+  cost_sgrproj = RDCOST_DBL(x->rdmult, (bits >> 4), err);
 
   return cost_sgrproj;
 }
@@ -1039,7 +1039,7 @@ static double search_wiener(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
                                (1 << plane));
     // #bits when a tile is not restored
     bits = av1_cost_bit(RESTORE_NONE_WIENER_PROB, 0);
-    cost_norestore = RDCOST_DBL(x->rdmult, x->rddiv, (bits >> 4), err);
+    cost_norestore = RDCOST_DBL(x->rdmult, (bits >> 4), err);
     best_tile_cost[tile_idx] = DBL_MAX;
 
     av1_get_rest_tile_limits(tile_idx, 0, 0, nhtiles, nvtiles, tile_width,
@@ -1081,7 +1081,7 @@ static double search_wiener(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
         count_wiener_bits(&rsi[plane].wiener_info[tile_idx], &ref_wiener_info)
         << AV1_PROB_COST_SHIFT;
     bits += av1_cost_bit(RESTORE_NONE_WIENER_PROB, 1);
-    cost_wiener = RDCOST_DBL(x->rdmult, x->rddiv, (bits >> 4), err);
+    cost_wiener = RDCOST_DBL(x->rdmult, (bits >> 4), err);
     if (cost_wiener >= cost_norestore) {
       type[tile_idx] = RESTORE_NONE;
     } else {
@@ -1114,7 +1114,7 @@ static double search_wiener(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
   }
   err = try_restoration_frame(src, cpi, rsi, 1 << plane, partial_frame,
                               dst_frame);
-  cost_wiener = RDCOST_DBL(x->rdmult, x->rddiv, (bits >> 4), err);
+  cost_wiener = RDCOST_DBL(x->rdmult, (bits >> 4), err);
 
   return cost_wiener;
 }
@@ -1160,7 +1160,7 @@ static double search_norestore(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
   // RD cost associated with no restoration
   err = sse_restoration_frame(cm, src, cm->frame_to_show, (1 << plane));
   bits = frame_level_restore_bits[RESTORE_NONE] << AV1_PROB_COST_SHIFT;
-  cost_norestore = RDCOST_DBL(x->rdmult, x->rddiv, (bits >> 4), err);
+  cost_norestore = RDCOST_DBL(x->rdmult, (bits >> 4), err);
   return cost_norestore;
 }
 
@@ -1192,11 +1192,11 @@ static double search_switchable_restoration(
   rsi->frame_restoration_type = RESTORE_SWITCHABLE;
   bits = frame_level_restore_bits[rsi->frame_restoration_type]
          << AV1_PROB_COST_SHIFT;
-  cost_switchable = RDCOST_DBL(x->rdmult, x->rddiv, bits >> 4, 0);
+  cost_switchable = RDCOST_DBL(x->rdmult, bits >> 4, 0);
   for (tile_idx = 0; tile_idx < ntiles; ++tile_idx) {
-    double best_cost = RDCOST_DBL(
-        x->rdmult, x->rddiv, (cpi->switchable_restore_cost[RESTORE_NONE] >> 4),
-        tile_cost[RESTORE_NONE][tile_idx]);
+    double best_cost =
+        RDCOST_DBL(x->rdmult, (cpi->switchable_restore_cost[RESTORE_NONE] >> 4),
+                   tile_cost[RESTORE_NONE][tile_idx]);
     rsi->restoration_type[tile_idx] = RESTORE_NONE;
     for (r = 1; r < RESTORE_SWITCHABLE_TYPES; r++) {
       if (force_restore_type != 0)
@@ -1210,8 +1210,8 @@ static double search_switchable_restoration(
             count_sgrproj_bits(&rsi->sgrproj_info[tile_idx], &ref_sgrproj_info);
       tilebits <<= AV1_PROB_COST_SHIFT;
       tilebits += cpi->switchable_restore_cost[r];
-      double cost = RDCOST_DBL(x->rdmult, x->rddiv, tilebits >> 4,
-                               tile_cost[r][tile_idx]);
+      double cost =
+          RDCOST_DBL(x->rdmult, tilebits >> 4, tile_cost[r][tile_idx]);
 
       if (cost < best_cost) {
         rsi->restoration_type[tile_idx] = r;

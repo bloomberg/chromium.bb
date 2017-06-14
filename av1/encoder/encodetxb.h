@@ -39,7 +39,6 @@ typedef struct TxbInfo {
   const SCAN_ORDER *scan_order;
   TXB_CTX *txb_ctx;
   int64_t rdmult;
-  int64_t rddiv;
 } TxbInfo;
 
 typedef struct TxbCache {

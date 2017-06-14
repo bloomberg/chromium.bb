@@ -30,12 +30,13 @@ extern "C" {
 #define RDDIV_BITS 7
 #define RD_EPB_SHIFT 6
 
-#define RDCOST(RM, DM, R, D) \
-  (ROUND_POWER_OF_TWO(((int64_t)R) * (RM), AV1_PROB_COST_SHIFT) + (D << DM))
+#define RDCOST(RM, R, D)                                          \
+  (ROUND_POWER_OF_TWO(((int64_t)R) * (RM), AV1_PROB_COST_SHIFT) + \
+   (D << RDDIV_BITS))
 
-#define RDCOST_DBL(RM, DM, R, D)                                   \
+#define RDCOST_DBL(RM, R, D)                                       \
   (((((double)(R)) * (RM)) / (double)(1 << AV1_PROB_COST_SHIFT)) + \
-   ((double)(D) * (1 << (DM))))
+   ((double)(D) * (1 << RDDIV_BITS)))
 
 #define QIDX_SKIP_THRESH 115
 
@@ -381,7 +382,6 @@ typedef struct RD_OPT {
   int64_t prediction_type_threshes[TOTAL_REFS_PER_FRAME][REFERENCE_MODES];
 
   int RDMULT;
-  int RDDIV;
 } RD_OPT;
 
 static INLINE void av1_init_rd_stats(RD_STATS *rd_stats) {

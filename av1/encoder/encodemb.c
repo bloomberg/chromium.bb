@@ -119,10 +119,10 @@ static const int plane_rd_mult[REF_TYPES][PLANE_TYPES] = {
 #endif
 };
 
-#define UPDATE_RD_COST()                             \
-  {                                                  \
-    rd_cost0 = RDCOST(rdmult, rddiv, rate0, error0); \
-    rd_cost1 = RDCOST(rdmult, rddiv, rate1, error1); \
+#define UPDATE_RD_COST()                      \
+  {                                           \
+    rd_cost0 = RDCOST(rdmult, rate0, error0); \
+    rd_cost1 = RDCOST(rdmult, rate1, error1); \
   }
 
 static INLINE unsigned int get_token_bit_costs(
@@ -175,7 +175,6 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
   const dequant_val_type_nuq *dequant_val = pd->dequant_val_nuq[dq];
 #endif  // CONFIG_NEW_QUANT
   int sz = 0;
-  const int64_t rddiv = mb->rddiv;
   int64_t rd_cost0, rd_cost1;
   int16_t t0, t1;
   int i, final_eob;
@@ -224,7 +223,7 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
 
   rate0 = get_token_bit_costs(*(token_costs_ptr + band_translate[0]), 0, ctx0,
                               EOB_TOKEN);
-  int64_t best_block_rd_cost = RDCOST(rdmult, rddiv, rate0, accu_error);
+  int64_t best_block_rd_cost = RDCOST(rdmult, rate0, accu_error);
 
   // int64_t best_block_rd_cost_all0 = best_block_rd_cost;
 
@@ -361,16 +360,16 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
         }
       }
 
-      rd_cost0 = RDCOST(rdmult, rddiv, (rate0 + next_bits0), d2);
-      rd_cost1 = RDCOST(rdmult, rddiv, (rate1 + next_bits1), d2_a);
+      rd_cost0 = RDCOST(rdmult, (rate0 + next_bits0), d2);
+      rd_cost1 = RDCOST(rdmult, (rate1 + next_bits1), d2_a);
 
       best_x = (rd_cost1 < rd_cost0);
 
-      eob_cost0 = RDCOST(rdmult, rddiv, (accu_rate + rate0 + next_eob_bits0),
+      eob_cost0 = RDCOST(rdmult, (accu_rate + rate0 + next_eob_bits0),
                          (accu_error + d2 - d0));
       eob_cost1 = eob_cost0;
       if (x_a != 0) {
-        eob_cost1 = RDCOST(rdmult, rddiv, (accu_rate + rate1 + next_eob_bits1),
+        eob_cost1 = RDCOST(rdmult, (accu_rate + rate1 + next_eob_bits1),
                            (accu_error + d2_a - d0));
         best_eob_x = (eob_cost1 < eob_cost0);
       } else {
@@ -1587,7 +1586,7 @@ static int cfl_compute_alpha_ind(MACROBLOCK *const x, const CFL_CTX *const cfl,
 
   dist = sse[CFL_PRED_U][0] + sse[CFL_PRED_V][0];
   dist *= 16;
-  best_cost = RDCOST(x->rdmult, x->rddiv, cfl->costs[0], dist);
+  best_cost = RDCOST(x->rdmult, cfl->costs[0], dist);
 
   for (int c = 1; c < CFL_ALPHABET_SIZE; c++) {
     const int idx_u = cfl_alpha_codes[c][CFL_PRED_U];
@@ -1597,7 +1596,7 @@ static int cfl_compute_alpha_ind(MACROBLOCK *const x, const CFL_CTX *const cfl,
         dist = sse[CFL_PRED_U][idx_u + (sign_u == CFL_SIGN_NEG)] +
                sse[CFL_PRED_V][idx_v + (sign_v == CFL_SIGN_NEG)];
         dist *= 16;
-        cost = RDCOST(x->rdmult, x->rddiv, cfl->costs[c], dist);
+        cost = RDCOST(x->rdmult, cfl->costs[c], dist);
         if (cost < best_cost) {
           best_cost = cost;
           ind = c;

@@ -351,7 +351,6 @@ void av1_initialize_rd_consts(AV1_COMP *cpi) {
 
   aom_clear_system_state();
 
-  rd->RDDIV = RDDIV_BITS;  // In bits (to multiply D by 128).
   rd->RDMULT = av1_compute_rd_mult(cpi, cm->base_qindex + cm->y_dc_delta_q);
 
   set_error_per_bit(x, rd->RDMULT);

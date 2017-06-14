@@ -1360,8 +1360,7 @@ void try_level_down_facade(LevelDownStats *stats, int scan_idx,
     test_level_down(coeff_idx, txb_cache, txb_probs, txb_info);
 #endif
   }
-  stats->rd_diff = RDCOST(txb_info->rdmult, txb_info->rddiv, stats->cost_diff,
-                          stats->dist_diff);
+  stats->rd_diff = RDCOST(txb_info->rdmult, stats->cost_diff, stats->dist_diff);
   if (stats->rd_diff < 0) stats->update = 1;
   return;
 }
@@ -1507,11 +1506,11 @@ int av1_optimize_txb(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
   const int shift = av1_get_tx_scale(tx_size);
   const int64_t rdmult =
       (x->rdmult * plane_rd_mult[is_inter][plane_type] + 2) >> 2;
-  const int64_t rddiv = x->rddiv;
 
-  TxbInfo txb_info = { qcoeff,     dqcoeff, tcoeff, dequant, shift, tx_size,
-                       txs_ctx,    bwl,     stride, height,  eob,   seg_eob,
-                       scan_order, txb_ctx, rdmult, rddiv };
+  TxbInfo txb_info = { qcoeff,  dqcoeff, tcoeff,     dequant, shift,
+                       tx_size, txs_ctx, bwl,        stride,  height,
+                       eob,     seg_eob, scan_order, txb_ctx, rdmult };
+
   TxbCache txb_cache;
   gen_txb_cache(&txb_cache, &txb_info);
 
@@ -1900,8 +1899,7 @@ int64_t av1_search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
         get_scan(cm, tx_size, tx_type, is_inter_block(mbmi));
     this_rd_stats.rate = av1_cost_coeffs(
         cpi, x, plane, block, tx_size, scan_order, a, l, use_fast_coef_costing);
-    int rd =
-        RDCOST(x->rdmult, x->rddiv, this_rd_stats.rate, this_rd_stats.dist);
+    int rd = RDCOST(x->rdmult, this_rd_stats.rate, this_rd_stats.dist);
     if (rd < best_rd) {
       best_rd = rd;
       *rd_stats = this_rd_stats;

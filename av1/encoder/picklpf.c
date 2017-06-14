@@ -154,8 +154,7 @@ int av1_search_filter_level(const YV12_BUFFER_CONFIG *sd, AV1_COMP *cpi,
   // Update best error
   best_err = ss_err[filt_best];
 
-  if (best_cost_ret)
-    *best_cost_ret = RDCOST_DBL(x->rdmult, x->rddiv, 0, best_err);
+  if (best_cost_ret) *best_cost_ret = RDCOST_DBL(x->rdmult, 0, best_err);
   return filt_best;
 }
 
