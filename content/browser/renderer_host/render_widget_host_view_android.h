@@ -138,7 +138,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
                               InputEventAckState ack_result) override;
   InputEventAckState FilterInputEvent(
       const blink::WebInputEvent& input_event) override;
-  void OnSetNeedsFlushInput() override;
   void GestureEventAck(const blink::WebGestureEvent& event,
                        InputEventAckState ack_result) override;
   BrowserAccessibilityManager* CreateBrowserAccessibilityManager(
@@ -328,9 +327,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void OnLostResources();
 
   enum BeginFrameRequestType {
-    FLUSH_INPUT = 1 << 0,
-    BEGIN_FRAME = 1 << 1,
-    PERSISTENT_BEGIN_FRAME = 1 << 2
+    BEGIN_FRAME = 1 << 0,
+    PERSISTENT_BEGIN_FRAME = 1 << 1
   };
   void AddBeginFrameRequest(BeginFrameRequestType request);
   void ClearBeginFrameRequest(BeginFrameRequestType request);

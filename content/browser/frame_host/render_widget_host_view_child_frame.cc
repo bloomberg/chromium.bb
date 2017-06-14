@@ -758,10 +758,6 @@ InputEventAckState RenderWidgetHostViewChildFrame::FilterChildGestureEvent(
   return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
 }
 
-void RenderWidgetHostViewChildFrame::OnSetNeedsFlushInput() {
-  NOTIMPLEMENTED();
-}
-
 BrowserAccessibilityManager*
 RenderWidgetHostViewChildFrame::CreateBrowserAccessibilityManager(
     BrowserAccessibilityDelegate* delegate, bool for_root_frame) {

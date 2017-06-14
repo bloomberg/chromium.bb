@@ -672,8 +672,6 @@ class DummySyntheticGestureControllerDelegate
 
  private:
   // SyntheticGestureController::Delegate:
-  void RequestBeginFrameForSynthesizedInput(
-      base::OnceClosure callback) override {}
   bool HasGestureStopped() override { return true; }
 
   DISALLOW_COPY_AND_ASSIGN(DummySyntheticGestureControllerDelegate);
