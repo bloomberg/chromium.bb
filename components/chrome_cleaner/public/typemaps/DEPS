@@ -1,0 +1,4 @@
+# Allow the typemaps to access their dependencies.
+include_rules = [
+  '+base/files/file_path.h',
+]
