@@ -33,7 +33,7 @@ class NavigatorContentUtilsClientMock final
   virtual void UnregisterProtocolHandler(const String& scheme, const KURL&);
 
  private:
-  NavigatorContentUtilsClientMock() {}
+  NavigatorContentUtilsClientMock() : NavigatorContentUtilsClient(nullptr) {}
 
   typedef struct {
     String scheme;

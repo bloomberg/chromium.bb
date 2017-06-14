@@ -8,8 +8,7 @@ blink_modules_sources("navigatorcontentutils") {
   sources = [
     "NavigatorContentUtils.cpp",
     "NavigatorContentUtils.h",
+    "NavigatorContentUtilsClient.cpp",
     "NavigatorContentUtilsClient.h",
-    "NavigatorContentUtilsClientImpl.cpp",
-    "NavigatorContentUtilsClientImpl.h",
   ]
 }

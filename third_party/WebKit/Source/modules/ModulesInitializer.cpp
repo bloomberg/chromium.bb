@@ -38,7 +38,7 @@
 #include "modules/mediastream/UserMediaClientImpl.h"
 #include "modules/mediastream/UserMediaController.h"
 #include "modules/navigatorcontentutils/NavigatorContentUtils.h"
-#include "modules/navigatorcontentutils/NavigatorContentUtilsClientImpl.h"
+#include "modules/navigatorcontentutils/NavigatorContentUtilsClient.h"
 #include "modules/offscreencanvas2d/OffscreenCanvasRenderingContext2D.h"
 #include "modules/presentation/PresentationController.h"
 #include "modules/push_messaging/PushController.h"
@@ -127,7 +127,7 @@ void ModulesInitializer::Initialize() {
     ProvideLocalFileSystemTo(frame, LocalFileSystemClient::Create());
     NavigatorContentUtils::ProvideTo(
         *frame.DomWindow()->navigator(),
-        NavigatorContentUtilsClientImpl::Create(web_frame));
+        NavigatorContentUtilsClient::Create(web_frame));
 
     ScreenOrientationControllerImpl::ProvideTo(
         frame, client->GetWebScreenOrientationClient());
