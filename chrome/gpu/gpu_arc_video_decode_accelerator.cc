@@ -217,7 +217,7 @@ void GpuArcVideoDecodeAccelerator::BindDmabuf(
     ::arc::mojom::PortType port,
     uint32_t index,
     mojo::ScopedHandle dmabuf_handle,
-    std::vector<::arc::ArcVideoAcceleratorDmabufPlane> dmabuf_planes) {
+    std::vector<::arc::VideoFramePlane> planes) {
   DVLOG(2) << "BindDmabuf port=" << port << ", index=" << index;
 
   base::ScopedFD fd = UnwrapFdFromMojoHandle(std::move(dmabuf_handle));
@@ -225,7 +225,7 @@ void GpuArcVideoDecodeAccelerator::BindDmabuf(
     return;
 
   accelerator_->BindDmabuf(static_cast<PortType>(port), index, std::move(fd),
-                           std::move(dmabuf_planes));
+                           std::move(planes));
 }
 
 void GpuArcVideoDecodeAccelerator::UseBuffer(

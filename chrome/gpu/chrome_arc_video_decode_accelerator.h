@@ -45,8 +45,7 @@ class ChromeArcVideoDecodeAccelerator
   void BindDmabuf(PortType port,
                   uint32_t index,
                   base::ScopedFD dmabuf_fd,
-                  const std::vector<::arc::ArcVideoAcceleratorDmabufPlane>&
-                      dmabuf_planes) override;
+                  const std::vector<::arc::VideoFramePlane>& planes) override;
   void UseBuffer(PortType port,
                  uint32_t index,
                  const BufferMetadata& metadata) override;
@@ -99,7 +98,7 @@ class ChromeArcVideoDecodeAccelerator
   // The information about the dmabuf used as an output buffer.
   struct OutputBufferInfo {
     base::ScopedFD handle;
-    std::vector<::arc::ArcVideoAcceleratorDmabufPlane> planes;
+    std::vector<::arc::VideoFramePlane> planes;
 
     OutputBufferInfo();
     OutputBufferInfo(OutputBufferInfo&& other);
@@ -114,10 +113,9 @@ class ChromeArcVideoDecodeAccelerator
   // Helper function to validate |port| and |index|.
   bool ValidatePortAndIndex(PortType port, uint32_t index) const;
 
-  // Return true if |dmabuf_planes| is valid for a dmabuf |fd|.
+  // Return true if |planes| is valid for a dmabuf |fd|.
   bool VerifyDmabuf(const base::ScopedFD& fd,
-                    const std::vector<::arc::ArcVideoAcceleratorDmabufPlane>&
-                        dmabuf_planes) const;
+                    const std::vector<::arc::VideoFramePlane>& planes) const;
 
   // Creates an InputRecord for the given |bitstream_buffer_id|. The
   // |buffer_index| is the index of the associated input buffer. The |timestamp|

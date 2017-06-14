@@ -7,26 +7,40 @@
 
 #include "components/arc/common/video_decode_accelerator.mojom.h"
 #include "components/arc/video_accelerator/video_accelerator.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace mojo {
 
 template <>
-struct StructTraits<arc::mojom::ArcVideoAcceleratorDmabufPlaneDataView,
-                    arc::ArcVideoAcceleratorDmabufPlane> {
-  static uint32_t offset(const arc::ArcVideoAcceleratorDmabufPlane& r) {
+struct StructTraits<arc::mojom::VideoFramePlaneDataView, arc::VideoFramePlane> {
+  static int32_t offset(const arc::VideoFramePlane& r) {
     DCHECK_GE(r.offset, 0);
     return r.offset;
   }
 
-  static uint32_t stride(const arc::ArcVideoAcceleratorDmabufPlane& r) {
+  static int32_t stride(const arc::VideoFramePlane& r) {
     DCHECK_GE(r.stride, 0);
     return r.stride;
   }
 
-  static bool Read(arc::mojom::ArcVideoAcceleratorDmabufPlaneDataView data,
-                   arc::ArcVideoAcceleratorDmabufPlane* out);
+  static bool Read(arc::mojom::VideoFramePlaneDataView data,
+                   arc::VideoFramePlane* out);
 };
 
+template <>
+struct StructTraits<arc::mojom::SizeDataView, gfx::Size> {
+  static int width(const gfx::Size& r) {
+    DCHECK_GE(r.width(), 0);
+    return r.width();
+  }
+
+  static int height(const gfx::Size& r) {
+    DCHECK_GE(r.height(), 0);
+    return r.height();
+  }
+
+  static bool Read(arc::mojom::SizeDataView data, gfx::Size* out);
+};
 }  // namespace mojo
 
 #endif  // COMPONENTS_ARC_VIDEO_ACCELERATOR_VIDEO_ACCELERATOR_STRUCT_TRAITS_H_

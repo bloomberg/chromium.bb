@@ -7,7 +7,7 @@
 
 namespace arc {
 
-struct ArcVideoAcceleratorDmabufPlane {
+struct VideoFramePlane {
   int32_t offset;  // in bytes
   int32_t stride;  // in bytes
 };

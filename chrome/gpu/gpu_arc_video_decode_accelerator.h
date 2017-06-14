@@ -53,8 +53,7 @@ class GpuArcVideoDecodeAccelerator
   void BindDmabuf(::arc::mojom::PortType port,
                   uint32_t index,
                   mojo::ScopedHandle dmabuf_handle,
-                  std::vector<::arc::ArcVideoAcceleratorDmabufPlane>
-                      dmabuf_planes) override;
+                  std::vector<::arc::VideoFramePlane> planes) override;
   void UseBuffer(::arc::mojom::PortType port,
                  uint32_t index,
                  ::arc::mojom::BufferMetadataPtr metadata) override;

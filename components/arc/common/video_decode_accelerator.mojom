@@ -7,6 +7,8 @@
 
 module arc.mojom;
 
+import "video_common.mojom";
+
 [Extensible]
 enum HalPixelFormatExtension {
   HAL_PIXEL_FORMAT_YCbCr_420_888 = 0x23,
@@ -51,11 +53,6 @@ struct VideoDecodeAcceleratorConfig {
   uint32 input_pixel_format;
 };
 
-struct ArcVideoAcceleratorDmabufPlane {
-  int32 offset;
-  int32 stride;
-};
-
 // Next MinVersion: 4
 // Deprecated method IDs: 2, 7
 // Next method ID: 10
@@ -78,7 +75,7 @@ interface VideoDecodeAccelerator {
 
   [MinVersion=3]
   BindDmabuf@9(PortType port, uint32 index, handle dmabuf_fd,
-               array<ArcVideoAcceleratorDmabufPlane> dmabuf_planes);
+               array<VideoFramePlane> planes);
 
   UseBuffer@3(PortType port, uint32 index, BufferMetadata metadata);
 

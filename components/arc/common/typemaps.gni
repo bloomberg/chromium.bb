@@ -9,5 +9,5 @@ typemaps = [
   "//components/arc/common/file_system.typemap",
   "//components/arc/common/ime.typemap",
   "//components/arc/common/intent_helper.typemap",
-  "//components/arc/common/video_accelerator.typemap",
+  "//components/arc/common/video_common.typemap",
 ]
