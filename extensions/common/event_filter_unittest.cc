@@ -24,10 +24,10 @@ namespace extensions {
 class EventFilterUnittest : public testing::Test {
  public:
   EventFilterUnittest() {
-    google_event_.SetURL(GURL("http://google.com"));
-    yahoo_event_.SetURL(GURL("http://yahoo.com"));
-    random_url_event_.SetURL(GURL("http://www.something-else.com"));
-    empty_url_event_.SetURL(GURL());
+    google_event_.url = GURL("http://google.com");
+    yahoo_event_.url = GURL("http://yahoo.com");
+    random_url_event_.url = GURL("http://www.something-else.com");
+    empty_url_event_.url = GURL();
   }
 
  protected:
@@ -100,7 +100,7 @@ TEST_F(EventFilterUnittest, DoMatchAgainstMatchersForSameEvent) {
 
 TEST_F(EventFilterUnittest, DontMatchUnlessMatcherMatches) {
   EventFilteringInfo info;
-  info.SetURL(GURL("http://www.yahoo.com"));
+  info.url = GURL("http://www.yahoo.com");
   event_filter_.AddEventMatcher("event1", HostSuffixMatcher("google.com"));
   std::set<int> matches = event_filter_.MatchEvent(
       "event1", info, MSG_ROUTING_NONE);
@@ -128,7 +128,7 @@ TEST_F(EventFilterUnittest, MultipleEventMatches) {
 
 TEST_F(EventFilterUnittest, TestURLMatching) {
   EventFilteringInfo info;
-  info.SetURL(GURL("http://www.google.com"));
+  info.url = GURL("http://www.google.com");
   int id = event_filter_.AddEventMatcher("event1",
                                          HostSuffixMatcher("google.com"));
   std::set<int> matches = event_filter_.MatchEvent(

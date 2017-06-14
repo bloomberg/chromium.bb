@@ -27,33 +27,34 @@ EventMatcher::~EventMatcher() {
 
 bool EventMatcher::MatchNonURLCriteria(
     const EventFilteringInfo& event_info) const {
-  if (event_info.has_instance_id()) {
-    return event_info.instance_id() == GetInstanceID();
+  if (event_info.instance_id) {
+    return *event_info.instance_id == GetInstanceID();
   }
 
-  if (event_info.has_window_type()) {
+  if (event_info.window_type) {
     int window_type_count = GetWindowTypeCount();
     for (int i = 0; i < window_type_count; i++) {
       std::string window_type;
       if (GetWindowType(i, &window_type) &&
-          window_type == event_info.window_type()) {
+          window_type == *event_info.window_type) {
         return true;
       }
     }
     return false;
   }
 
-  if (event_info.has_window_exposed_by_default()) {
+  if (event_info.window_exposed_by_default) {
     // An event with a |window_exposed_by_default| set is only
     // relevant to the listener if no window type filter is set.
     if (HasWindowTypes())
       return false;
-    return event_info.window_exposed_by_default();
+    return *event_info.window_exposed_by_default;
   }
 
   const std::string& service_type_filter = GetServiceTypeFilter();
   return service_type_filter.empty() ||
-         service_type_filter == event_info.service_type();
+         (event_info.service_type &&
+          service_type_filter == *event_info.service_type);
 }
 
 int EventMatcher::GetURLFilterCount() const {

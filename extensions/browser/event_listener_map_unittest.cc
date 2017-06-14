@@ -68,7 +68,7 @@ class EventListenerMapTest : public testing::Test {
   std::unique_ptr<Event> CreateEvent(const std::string& event_name,
                                      const GURL& url) {
     EventFilteringInfo info;
-    info.SetURL(url);
+    info.url = url;
     return base::MakeUnique<Event>(
         events::FOR_TEST, event_name, base::MakeUnique<ListValue>(), nullptr,
         GURL(), EventRouter::USER_GESTURE_UNKNOWN, info);
@@ -132,7 +132,7 @@ TEST_F(EventListenerMapTest, FilteredEventsGoToAllMatchingListeners) {
       kEvent1Name, kExt1Id, nullptr, base::MakeUnique<DictionaryValue>()));
 
   std::unique_ptr<Event> event(CreateNamedEvent(kEvent1Name));
-  event->filter_info.SetURL(GURL("http://www.google.com"));
+  event->filter_info.url = GURL("http://www.google.com");
   std::set<const EventListener*> targets(listeners_->GetEventListeners(*event));
   ASSERT_EQ(2u, targets.size());
 }
@@ -144,7 +144,7 @@ TEST_F(EventListenerMapTest, FilteredEventsOnlyGoToMatchingListeners) {
       kEvent1Name, kExt1Id, nullptr, CreateHostSuffixFilter("yahoo.com")));
 
   std::unique_ptr<Event> event(CreateNamedEvent(kEvent1Name));
-  event->filter_info.SetURL(GURL("http://www.google.com"));
+  event->filter_info.url = GURL("http://www.google.com");
   std::set<const EventListener*> targets(listeners_->GetEventListeners(*event));
   ASSERT_EQ(1u, targets.size());
 }
@@ -160,7 +160,7 @@ TEST_F(EventListenerMapTest, LazyAndUnlazyListenersGetReturned) {
                                   CreateHostSuffixFilter("google.com")));
 
   std::unique_ptr<Event> event(CreateNamedEvent(kEvent1Name));
-  event->filter_info.SetURL(GURL("http://www.google.com"));
+  event->filter_info.url = GURL("http://www.google.com");
   std::set<const EventListener*> targets(listeners_->GetEventListeners(*event));
   ASSERT_EQ(2u, targets.size());
 }
@@ -176,7 +176,7 @@ void EventListenerMapTest::TestRemovingByProcess(
   listeners_->RemoveListenersForProcess(process_.get());
 
   std::unique_ptr<Event> event(CreateNamedEvent(kEvent1Name));
-  event->filter_info.SetURL(GURL("http://www.google.com"));
+  event->filter_info.url = GURL("http://www.google.com");
   ASSERT_EQ(1u, listeners_->GetEventListeners(*event).size());
 }
 
@@ -201,7 +201,7 @@ void EventListenerMapTest::TestRemovingByListener(
   listeners_->RemoveListener(listener.get());
 
   std::unique_ptr<Event> event(CreateNamedEvent(kEvent1Name));
-  event->filter_info.SetURL(GURL("http://www.google.com"));
+  event->filter_info.url = GURL("http://www.google.com");
   ASSERT_EQ(1u, listeners_->GetEventListeners(*event).size());
 }
 
@@ -224,7 +224,7 @@ TEST_F(EventListenerMapTest, TestLazyDoubleAddIsUndoneByRemove) {
   listeners_->RemoveListener(listener.get());
 
   std::unique_ptr<Event> event(CreateNamedEvent(kEvent1Name));
-  event->filter_info.SetURL(GURL("http://www.google.com"));
+  event->filter_info.url = GURL("http://www.google.com");
   std::set<const EventListener*> targets(listeners_->GetEventListeners(*event));
   ASSERT_EQ(0u, targets.size());
 }
@@ -246,13 +246,13 @@ TEST_F(EventListenerMapTest, RemoveListenersForExtension) {
   listeners_->RemoveListenersForExtension(kExt1Id);
 
   std::unique_ptr<Event> event1(CreateNamedEvent(kEvent1Name));
-  event1->filter_info.SetURL(GURL("http://www.google.com"));
+  event1->filter_info.url = GURL("http://www.google.com");
   std::set<const EventListener*> targets(
       listeners_->GetEventListeners(*event1));
   ASSERT_EQ(0u, targets.size());
 
   std::unique_ptr<Event> event2(CreateNamedEvent(kEvent2Name));
-  event2->filter_info.SetURL(GURL("http://www.google.com"));
+  event2->filter_info.url = GURL("http://www.google.com");
   targets = listeners_->GetEventListeners(*event2);
   ASSERT_EQ(0u, targets.size());
 }

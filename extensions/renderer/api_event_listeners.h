@@ -20,7 +20,7 @@ class DictionaryValue;
 
 namespace extensions {
 class EventFilter;
-class EventFilteringInfo;
+struct EventFilteringInfo;
 
 // A base class to hold listeners for a given event. This allows for adding,
 // removing, and querying listeners in the list, and calling a callback when

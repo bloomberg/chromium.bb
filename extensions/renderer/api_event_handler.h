@@ -19,7 +19,7 @@ class ListValue;
 }
 
 namespace extensions {
-class EventFilteringInfo;
+struct EventFilteringInfo;
 
 // The object to handle API events. This includes vending v8::Objects for the
 // event; handling adding, removing, and querying listeners; and firing events

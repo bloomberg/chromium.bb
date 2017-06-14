@@ -64,11 +64,12 @@ bool WillDispatchWindowEvent(WindowController* window_controller,
   event->filter_info = EventFilteringInfo();
   // Only set the window type if the listener has set a filter.
   // Otherwise we set the window visibility relative to the extension.
-  if (has_filter)
-    event->filter_info.SetWindowType(window_controller->GetWindowTypeText());
-  else
-    event->filter_info.SetWindowExposedByDefault(
-        window_controller->IsVisibleToExtension(extension));
+  if (has_filter) {
+    event->filter_info.window_type = window_controller->GetWindowTypeText();
+  } else {
+    event->filter_info.window_exposed_by_default =
+        window_controller->IsVisibleToExtension(extension);
+  }
   return true;
 }
 
@@ -96,12 +97,13 @@ bool WillDispatchWindowFocusedEvent(
   // otherwise set the visibility to true (if the window is not
   // supposed to be visible by the extension, we will clear out the
   // window id later).
-  if (has_filter)
-    event->filter_info.SetWindowType(
+  if (has_filter) {
+    event->filter_info.window_type =
         window_controller ? window_controller->GetWindowTypeText()
-                          : keys::kWindowTypeValueNormal);
-  else
-    event->filter_info.SetWindowExposedByDefault(true);
+                          : keys::kWindowTypeValueNormal;
+  } else {
+    event->filter_info.window_exposed_by_default = true;
+  }
 
   // When switching between windows in the default and incognito profiles,
   // dispatch WINDOW_ID_NONE to extensions whose profile lost focus that

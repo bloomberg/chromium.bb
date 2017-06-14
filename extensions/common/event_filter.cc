@@ -144,7 +144,7 @@ std::set<EventFilter::MatcherID> EventFilter::MatchEvent(
 
   const EventMatcherMap& matcher_map = it->second;
   const GURL& url_to_match_against =
-      event_info.has_url() ? event_info.url() : GURL::EmptyGURL();
+      event_info.url ? *event_info.url : GURL::EmptyGURL();
   std::set<URLMatcherConditionSet::ID> matching_condition_set_ids =
       url_matcher_.MatchURL(url_to_match_against);
   for (const auto& id_key : matching_condition_set_ids) {
@@ -167,7 +167,7 @@ std::set<EventFilter::MatcherID> EventFilter::MatchEvent(
       continue;
     }
     if (event_matcher->MatchNonURLCriteria(event_info)) {
-      CHECK(!event_matcher->HasURLFilters() || event_info.has_url());
+      CHECK(!event_matcher->HasURLFilters() || event_info.url);
       matchers.insert(id);
     }
   }

@@ -43,7 +43,7 @@ void ExtensionsGuestViewManagerDelegate::DispatchEvent(
     GuestViewBase* guest,
     int instance_id) {
   EventFilteringInfo info;
-  info.SetInstanceID(instance_id);
+  info.instance_id = instance_id;
   std::unique_ptr<base::ListValue> event_args(new base::ListValue());
   event_args->Append(std::move(args));
 
