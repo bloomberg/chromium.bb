@@ -496,7 +496,7 @@ void SetFontFeatures(const Font* font, FeaturesVector* features) {
 }
 
 class CapsFeatureSettingsScopedOverlay final {
-  STACK_ALLOCATED()
+  STACK_ALLOCATED();
 
  public:
   CapsFeatureSettingsScopedOverlay(FeaturesVector*,

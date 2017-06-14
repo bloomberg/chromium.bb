@@ -19,6 +19,7 @@ class CSSValueList;
 class CSSPropertyFontUtils {
   STATIC_ONLY(CSSPropertyFontUtils);
 
+ public:
   static CSSValue* ConsumeFontSize(
       CSSParserTokenRange&,
       CSSParserMode,

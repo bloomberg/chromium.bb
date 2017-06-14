@@ -13,7 +13,7 @@ namespace blink {
 
 // https://html.spec.whatwg.org/multipage/dom.html#html-element-constructors
 class CORE_EXPORT V8HTMLConstructor {
-  STATIC_ONLY(V8HTMLConstructor)
+  STATIC_ONLY(V8HTMLConstructor);
 
  public:
   static void HtmlConstructor(const v8::FunctionCallbackInfo<v8::Value>&,

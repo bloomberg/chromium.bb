@@ -13,6 +13,7 @@ namespace blink {
 class CSSPropertyWebkitBorderWidthUtils {
   STATIC_ONLY(CSSPropertyWebkitBorderWidthUtils);
 
+ public:
   static CSSValue* ConsumeBorderWidth(CSSParserTokenRange&,
                                       CSSParserMode,
                                       CSSPropertyParserHelpers::UnitlessQuirk);

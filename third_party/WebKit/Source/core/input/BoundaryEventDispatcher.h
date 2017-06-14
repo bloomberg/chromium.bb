@@ -13,7 +13,8 @@ namespace blink {
 // crossing action and sending boundary events. The subclasses of this class
 // must define what events should be sent in every case.
 class BoundaryEventDispatcher {
-  STACK_ALLOCATED()
+  STACK_ALLOCATED();
+
  public:
   BoundaryEventDispatcher() {}
   virtual ~BoundaryEventDispatcher() {}

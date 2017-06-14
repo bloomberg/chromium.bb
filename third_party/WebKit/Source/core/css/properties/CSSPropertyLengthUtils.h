@@ -17,6 +17,7 @@ class CSSValue;
 class CSSPropertyLengthUtils {
   STATIC_ONLY(CSSPropertyLengthUtils);
 
+ public:
   static CSSValue* ConsumeMaxWidthOrHeight(
       CSSParserTokenRange&,
       const CSSParserContext&,

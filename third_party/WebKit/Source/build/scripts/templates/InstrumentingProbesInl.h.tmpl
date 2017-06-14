@@ -36,7 +36,8 @@ namespace probe {
 
 
 class {{export_symbol}} {{probe.name}} : public ProbeBase {
-  STACK_ALLOCATED()
+  STACK_ALLOCATED();
+
  public:
   explicit {{probe.name}}({{ params_decl(probe) }});
   ~{{probe.name}}();

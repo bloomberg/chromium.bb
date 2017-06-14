@@ -22,7 +22,8 @@ class LayoutObject;
 // If the root argument to the constructor is null, computes the intersection
 // of the target with the top-level frame viewport (AKA the "implicit root").
 class IntersectionGeometry {
-  STACK_ALLOCATED()
+  STACK_ALLOCATED();
+
  public:
   IntersectionGeometry(Element* root,
                        Element& target,

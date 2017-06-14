@@ -13,6 +13,7 @@ namespace blink {
 class CSSPropertyMarginUtils {
   STATIC_ONLY(CSSPropertyMarginUtils);
 
+ public:
   static CSSValue* ConsumeMarginOrOffset(
       CSSParserTokenRange&,
       CSSParserMode,

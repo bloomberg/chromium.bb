@@ -16,6 +16,7 @@ class CSSValue;
 class CSSPropertyBorderImageUtils {
   STATIC_ONLY(CSSPropertyBorderImageUtils);
 
+ public:
   static CSSValue* ConsumeWebkitBorderImage(CSSParserTokenRange&,
                                             const CSSParserContext*);
   static bool ConsumeBorderImageComponents(CSSParserTokenRange&,

@@ -16,6 +16,7 @@ class CSSValue;
 class CSSPropertyAnimationNameUtils {
   STATIC_ONLY(CSSPropertyAnimationNameUtils);
 
+ public:
   static CSSValue* ConsumeAnimationName(CSSParserTokenRange&,
                                         const CSSParserContext*,
                                         bool allow_quoted_name);

@@ -17,6 +17,7 @@ class CSSValue;
 class CSSPropertyPositionUtils {
   STATIC_ONLY(CSSPropertyPositionUtils);
 
+ public:
   template <CSSValueID start, CSSValueID end>
   static CSSValue* ConsumePositionLonghand(CSSParserTokenRange& range,
                                            CSSParserMode css_parser_mode) {
