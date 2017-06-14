@@ -1305,7 +1305,7 @@ views::View* ProfileChooserView::CreateOptionsView(bool display_lock,
   }
 
   // Add the "Guest" button for browsing as guest
-  if (!is_guest) {
+  if (!is_guest && !browser_->profile()->IsSupervised()) {
     PrefService* service = g_browser_process->local_state();
     DCHECK(service);
     if (service->GetBoolean(prefs::kBrowserGuestModeEnabled)) {
