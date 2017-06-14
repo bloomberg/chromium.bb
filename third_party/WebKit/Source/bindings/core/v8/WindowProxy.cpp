@@ -38,6 +38,7 @@
 #include "core/frame/Frame.h"
 #include "platform/bindings/V8DOMWrapper.h"
 #include "platform/wtf/Assertions.h"
+#include "platform/wtf/debug/Alias.h"
 #include "v8/include/v8.h"
 
 namespace blink {
@@ -95,6 +96,8 @@ v8::Local<v8::Object> WindowProxy::ReleaseGlobalProxy() {
 void WindowProxy::SetGlobalProxy(v8::Local<v8::Object> global_proxy) {
   DCHECK_EQ(lifecycle_, Lifecycle::kContextIsUninitialized);
 
+  WTF::debug::StackTrace initialization_stack = initialization_stack_;
+  WTF::debug::Alias(&initialization_stack);
   CHECK(global_proxy_.IsEmpty());
   global_proxy_.Set(isolate_, global_proxy);
 
@@ -146,6 +149,7 @@ void WindowProxy::InitializeIfNeeded() {
   if (lifecycle_ == Lifecycle::kContextIsUninitialized ||
       lifecycle_ == Lifecycle::kGlobalObjectIsDetached) {
     Initialize();
+    initialization_stack_ = WTF::debug::StackTrace();
   }
 }
 
