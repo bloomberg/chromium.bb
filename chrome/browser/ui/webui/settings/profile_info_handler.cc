@@ -140,11 +140,6 @@ void ProfileInfoHandler::PushProfileStatsCount(
     profiles::ProfileCategoryStats stats) {
   int count = 0;
   for (const auto& item : stats) {
-    std::unique_ptr<base::DictionaryValue> stat(new base::DictionaryValue);
-    if (!item.success) {
-      count = 0;
-      break;
-    }
     count += item.count;
   }
   // PushProfileStatsCount gets invoked multiple times as each stat becomes

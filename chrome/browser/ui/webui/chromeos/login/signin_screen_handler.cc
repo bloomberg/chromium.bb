@@ -421,7 +421,7 @@ void SigninScreenHandler::DeclareLocalizedValues(
   builder->Add("removeUserWarningTextHistory", base::string16());
   builder->Add("removeUserWarningTextPasswords", base::string16());
   builder->Add("removeUserWarningTextBookmarks", base::string16());
-  builder->Add("removeUserWarningTextSettings", base::string16());
+  builder->Add("removeUserWarningTextAutofill", base::string16());
   builder->Add("removeUserWarningTextCalculating", base::string16());
   builder->Add("removeUserWarningTextSyncNoStats", base::string16());
   builder->Add("removeUserWarningTextSyncCalculating", base::string16());

@@ -97,8 +97,9 @@ class ProfileStatisticsTest : public testing::Test {
 TEST_F(ProfileStatisticsTest, WaitOrCountBookmarks) {
   TestingProfile* profile = manager()->CreateTestingProfile("Test 1");
   ASSERT_TRUE(profile);
-  // We need a history service and a password store for the test to succeed.
+  // We need history, autofill and password services for the test to succeed.
   ASSERT_TRUE(profile->CreateHistoryService(true, false));
+  profile->CreateWebDataService();
   PasswordStoreFactory::GetInstance()->SetTestingFactory(
       profile,
       password_manager::BuildPasswordStore<
@@ -112,10 +113,9 @@ TEST_F(ProfileStatisticsTest, WaitOrCountBookmarks) {
   BookmarkStatHelper bookmark_stat_helper;
   base::RunLoop run_loop_aggregator_done;
 
-  scoped_refptr<ProfileStatisticsAggregator> aggregator =
-      new ProfileStatisticsAggregator(profile,
-                                      run_loop_aggregator_done.QuitClosure());
-  aggregator->AddCallbackAndStartAggregator(
+  ProfileStatisticsAggregator aggregator(
+      profile, run_loop_aggregator_done.QuitClosure());
+  aggregator.AddCallbackAndStartAggregator(
       base::Bind(&BookmarkStatHelper::StatsCallback,
                  base::Unretained(&bookmark_stat_helper)));
 
@@ -125,7 +125,7 @@ TEST_F(ProfileStatisticsTest, WaitOrCountBookmarks) {
   EXPECT_EQ(0, bookmark_stat_helper.GetNumOfTimesCalled());
 
   // Run ProfileStatisticsAggregator::WaitOrCountBookmarks again.
-  aggregator->AddCallbackAndStartAggregator(
+  aggregator.AddCallbackAndStartAggregator(
       profiles::ProfileStatisticsCallback());
   // Wait until ProfileStatisticsAggregator::WaitOrCountBookmarks is run.
   base::RunLoop run_loop2;

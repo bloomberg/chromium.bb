@@ -1139,8 +1139,8 @@ cr.define('login', function() {
               this.querySelector('.action-box-remove-user-warning-passwords'),
           'Bookmarks':
               this.querySelector('.action-box-remove-user-warning-bookmarks'),
-          'Settings':
-              this.querySelector('.action-box-remove-user-warning-settings')
+          'Autofill':
+              this.querySelector('.action-box-remove-user-warning-autofill')
       }
     },
 
