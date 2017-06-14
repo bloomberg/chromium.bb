@@ -20,7 +20,8 @@
           "chrome::mojom::InsecureContentRenderer",
           "chrome::mojom::ThumbnailCapturer",
           "contextual_search::mojom::OverlayPageNotifierService",
-          "dom_distiller::mojom::DistillerPageNotifierService"
+          "dom_distiller::mojom::DistillerPageNotifierService",
+          "spellcheck::mojom::SpellCheckPanel"
         ]
       }
     }

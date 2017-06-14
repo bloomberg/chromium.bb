@@ -53,6 +53,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebFocusType.h"
 #include "public/platform/WebScreenInfo.h"
+#include "public/platform/WebSpellCheckPanelHostClient.h"
 #include "public/platform/WebURLLoader.h"
 #include "v8/include/v8.h"
 
@@ -360,6 +361,10 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
 
   WebCookieJar* CookieJar() const override { return 0; }
 
+  WebSpellCheckPanelHostClient* SpellCheckPanelHostClient() const override {
+    return nullptr;
+  }
+
   std::unique_ptr<WebServiceWorkerProvider> CreateServiceWorkerProvider()
       override;
   ContentSettingsClient& GetContentSettingsClient() override;
@@ -402,9 +407,18 @@ class EmptySpellCheckerClient : public SpellCheckerClient {
 
   bool IsSpellCheckingEnabled() override { return false; }
   void ToggleSpellCheckingEnabled() override {}
-  void UpdateSpellingUIWithMisspelledWord(const String&) override {}
+};
+
+class EmptySpellCheckPanelHostClient : public WebSpellCheckPanelHostClient {
+  WTF_MAKE_NONCOPYABLE(EmptySpellCheckPanelHostClient);
+  USING_FAST_MALLOC(EmptySpellCheckPanelHostClient);
+
+ public:
+  EmptySpellCheckPanelHostClient() {}
+
   void ShowSpellingUI(bool) override {}
-  bool SpellingUIIsShowing() override { return false; }
+  bool IsShowingSpellingUI() override { return false; }
+  void UpdateSpellingUIWithMisspelledWord(const WebString&) override {}
 };
 
 class EmptyEditorClient final : public EditorClient {

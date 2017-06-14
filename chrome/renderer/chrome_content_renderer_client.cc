@@ -586,6 +586,9 @@ void ChromeContentRendererClient::RenderFrameCreated(
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
   new SpellCheckProvider(render_frame, spellcheck_.get());
+#if BUILDFLAG(HAS_SPELLCHECK_PANEL)
+  new SpellCheckPanel(render_frame);
+#endif  // BUILDFLAG(HAS_SPELLCHECK_PANEL)
 #endif
 }
 
@@ -594,6 +597,7 @@ void ChromeContentRendererClient::RenderViewCreated(
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   ChromeExtensionsRendererClient::GetInstance()->RenderViewCreated(render_view);
 #endif
+
 #if BUILDFLAG(ENABLE_SPELLCHECK)
   // This is a workaround keeping the behavior that, the Blink side spellcheck
   // enabled state is initialized on RenderView creation.
@@ -602,18 +606,14 @@ void ChromeContentRendererClient::RenderViewCreated(
   if (SpellCheckProvider* provider =
           SpellCheckProvider::Get(render_view->GetMainRenderFrame()))
     provider->EnableSpellcheck(spellcheck_->IsSpellcheckEnabled());
-
-#if BUILDFLAG(HAS_SPELLCHECK_PANEL)
-  new SpellCheckPanel(render_view);
-#endif  // BUILDFLAG(HAS_SPELLCHECK_PANEL)
 #endif  // BUILDFLAG(ENABLE_SPELLCHECK)
+
   new prerender::PrerendererClient(render_view);
 
   new ChromeRenderViewObserver(render_view, web_cache_impl_.get());
 
   new password_manager::CredentialManagerClient(render_view);
 }
-
 
 SkBitmap* ChromeContentRendererClient::GetSadPluginBitmap() {
   return const_cast<SkBitmap*>(ResourceBundle::GetSharedInstance().

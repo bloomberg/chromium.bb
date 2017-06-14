@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//components/spellcheck/spellcheck_build_features.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
 source_set("common") {
@@ -35,6 +36,10 @@ mojom("interfaces") {
   sources = [
     "spellcheck.mojom",
   ]
+
+  if (has_spellcheck_panel) {
+    sources += [ "spellcheck_panel.mojom" ]
+  }
 
   public_deps = [
     "//mojo/common:common_custom_types",

@@ -57,6 +57,8 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/text/TextBreakIterator.h"
 #include "platform/text/TextCheckerClient.h"
+#include "public/platform/WebSpellCheckPanelHostClient.h"
+#include "public/platform/WebString.h"
 
 namespace blink {
 
@@ -146,6 +148,19 @@ SpellCheckerClient& SpellChecker::GetSpellCheckerClient() const {
   if (Page* page = GetFrame().GetPage())
     return page->GetSpellCheckerClient();
   return GetEmptySpellCheckerClient();
+}
+
+static WebSpellCheckPanelHostClient& GetEmptySpellCheckPanelHostClient() {
+  DEFINE_STATIC_LOCAL(EmptySpellCheckPanelHostClient, client, ());
+  return client;
+}
+
+WebSpellCheckPanelHostClient& SpellChecker::SpellCheckPanelHostClient() const {
+  WebSpellCheckPanelHostClient* spell_check_panel_host_client =
+      GetFrame().Client()->SpellCheckPanelHostClient();
+  if (!spell_check_panel_host_client)
+    return GetEmptySpellCheckPanelHostClient();
+  return *spell_check_panel_host_client;
 }
 
 TextCheckerClient& SpellChecker::TextChecker() const {
@@ -344,19 +359,20 @@ void SpellChecker::AdvanceToNextMisspelling(bool start_before_selection) {
                                             .SetBaseAndExtent(misspelling_range)
                                             .Build());
     GetFrame().Selection().RevealSelection();
-    GetSpellCheckerClient().UpdateSpellingUIWithMisspelledWord(misspelled_word);
+    SpellCheckPanelHostClient().UpdateSpellingUIWithMisspelledWord(
+        misspelled_word);
     GetFrame().GetDocument()->Markers().AddSpellingMarker(misspelling_range);
   }
 }
 
 void SpellChecker::ShowSpellingGuessPanel() {
-  if (GetSpellCheckerClient().SpellingUIIsShowing()) {
-    GetSpellCheckerClient().ShowSpellingUI(false);
+  if (SpellCheckPanelHostClient().IsShowingSpellingUI()) {
+    SpellCheckPanelHostClient().ShowSpellingUI(false);
     return;
   }
 
   AdvanceToNextMisspelling(true);
-  GetSpellCheckerClient().ShowSpellingUI(true);
+  SpellCheckPanelHostClient().ShowSpellingUI(true);
 }
 
 void SpellChecker::MarkMisspellingsForMovingParagraphs(

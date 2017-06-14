@@ -118,8 +118,6 @@ class WebViewBase : public WebView, public RefCounted<WebViewBase> {
   virtual void SetLastHiddenPagePopup(WebPagePopupImpl*) = 0;
   virtual WebInputEventResult SendContextMenuEvent(const WebKeyboardEvent&) = 0;
 
-  virtual WebSpellCheckClient* SpellCheckClient() = 0;
-
   virtual CompositorAnimationTimeline* LinkHighlightsTimeline() const = 0;
 
   virtual WebSettingsImpl* SettingsImpl() = 0;

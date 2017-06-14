@@ -157,7 +157,6 @@ class WEB_EXPORT WebViewImpl final
   void SetMainFrame(WebFrame*) override;
   void SetCredentialManagerClient(WebCredentialManagerClient*) override;
   void SetPrerendererClient(WebPrerendererClient*) override;
-  void SetSpellCheckClient(WebSpellCheckClient*) override;
   WebSettings* GetSettings() override;
   WebString PageEncoding() const override;
   bool TabsToLinks() const override;
@@ -282,10 +281,6 @@ class WEB_EXPORT WebViewImpl final
   Element* FocusedElement() const override;
 
   WebViewClient* Client() override { return client_; }
-
-  WebSpellCheckClient* SpellCheckClient() override {
-    return spell_check_client_;
-  }
 
   // Returns the page object associated with this view. This may be null when
   // the page is shutting down, but will be valid at all other times.
@@ -592,7 +587,6 @@ class WEB_EXPORT WebViewImpl final
   CompositorMutatorImpl& Mutator();
 
   WebViewClient* client_;  // Can be 0 (e.g. unittests, shared workers, etc.)
-  WebSpellCheckClient* spell_check_client_;
 
   Persistent<ChromeClient> chrome_client_;
   ContextMenuClient context_menu_client_;

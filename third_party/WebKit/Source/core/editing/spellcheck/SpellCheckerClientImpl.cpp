@@ -32,7 +32,6 @@
 #include "core/exported/WebViewBase.h"
 #include "core/frame/LocalFrame.h"
 #include "core/page/Page.h"
-#include "public/web/WebSpellCheckClient.h"
 
 namespace blink {
 
@@ -105,25 +104,6 @@ void SpellCheckerClientImpl::ToggleSpellCheckingEnabled() {
       }
     }
   }
-}
-
-void SpellCheckerClientImpl::UpdateSpellingUIWithMisspelledWord(
-    const String& misspelled_word) {
-  if (web_view_->SpellCheckClient()) {
-    web_view_->SpellCheckClient()->UpdateSpellingUIWithMisspelledWord(
-        WebString(misspelled_word));
-  }
-}
-
-void SpellCheckerClientImpl::ShowSpellingUI(bool show) {
-  if (web_view_->SpellCheckClient())
-    web_view_->SpellCheckClient()->ShowSpellingUI(show);
-}
-
-bool SpellCheckerClientImpl::SpellingUIIsShowing() {
-  if (web_view_->SpellCheckClient())
-    return web_view_->SpellCheckClient()->IsShowingSpellingUI();
-  return false;
 }
 
 }  // namespace blink

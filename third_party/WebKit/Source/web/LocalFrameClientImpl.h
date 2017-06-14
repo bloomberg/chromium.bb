@@ -44,6 +44,7 @@ namespace blink {
 
 class WebDevToolsAgentImpl;
 class WebLocalFrameBase;
+class WebSpellCheckPanelHostClient;
 
 class LocalFrameClientImpl final : public LocalFrameClient {
  public:
@@ -231,6 +232,8 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   void SetDevToolsFrameId(const String& devtools_frame_id) override;
 
   void AbortClientNavigation() override;
+
+  WebSpellCheckPanelHostClient* SpellCheckPanelHostClient() const override;
 
   TextCheckerClient& GetTextCheckerClient() const override;
 

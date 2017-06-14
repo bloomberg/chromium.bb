@@ -62,15 +62,6 @@ void SpellCheckMessageFilterPlatform::OnFillSuggestionList(
   NOTREACHED();
 }
 
-void SpellCheckMessageFilterPlatform::OnShowSpellingPanel(bool show) {
-  NOTREACHED();
-}
-
-void SpellCheckMessageFilterPlatform::OnUpdateSpellingPanelWithMisspelledWord(
-    const base::string16& word) {
-  NOTREACHED();
-}
-
 void SpellCheckMessageFilterPlatform::OnRequestTextCheck(
     int route_id,
     int identifier,

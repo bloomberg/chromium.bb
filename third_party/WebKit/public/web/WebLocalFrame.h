@@ -42,6 +42,7 @@ class WebRange;
 class WebSecurityOrigin;
 class WebScriptExecutionCallback;
 class WebSharedWorkerRepositoryClient;
+class WebSpellCheckPanelHostClient;
 class WebTextCheckClient;
 class WebURLLoader;
 enum class WebCachePolicy;
@@ -511,6 +512,8 @@ class WebLocalFrame : public WebFrame {
 
   // Spell-checking support -------------------------------------------------
   virtual void SetTextCheckClient(WebTextCheckClient*) = 0;
+  virtual void SetSpellCheckPanelHostClient(WebSpellCheckPanelHostClient*) = 0;
+  virtual WebSpellCheckPanelHostClient* SpellCheckPanelHostClient() const = 0;
   virtual void ReplaceMisspelledRange(const WebString&) = 0;
   virtual void EnableSpellChecking(bool) = 0;
   virtual bool IsSpellCheckingEnabled() const = 0;
