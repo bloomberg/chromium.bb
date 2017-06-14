@@ -40,18 +40,25 @@ ServiceWorkerReadFromCacheJob::ServiceWorkerReadFromCacheJob(
   DCHECK(resource_type_ == RESOURCE_TYPE_SCRIPT ||
          (resource_type_ == RESOURCE_TYPE_SERVICE_WORKER &&
           version_->script_url() == request_->url()));
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("ServiceWorker",
+                                    "ServiceWorkerReadFromCacheJob", this,
+                                    "URL", request_->url().spec());
 }
 
 ServiceWorkerReadFromCacheJob::~ServiceWorkerReadFromCacheJob() {
+  TRACE_EVENT_NESTABLE_ASYNC_END0("ServiceWorker",
+                                  "ServiceWorkerReadFromCacheJob", this);
 }
 
 void ServiceWorkerReadFromCacheJob::Start() {
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ServiceWorker", "ReadInfo", this);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&ServiceWorkerReadFromCacheJob::StartAsync,
                             weak_factory_.GetWeakPtr()));
 }
 
 void ServiceWorkerReadFromCacheJob::Kill() {
+  TRACE_EVENT_NESTABLE_ASYNC_INSTANT0("ServiceWorker", "Kill", this);
   if (has_been_killed_)
     return;
   weak_factory_.InvalidateWeakPtrs();
@@ -108,10 +115,8 @@ int ServiceWorkerReadFromCacheJob::ReadRawData(net::IOBuffer* buf,
                                                int buf_size) {
   DCHECK_NE(buf_size, 0);
   DCHECK(!reader_->IsReadPending());
-  TRACE_EVENT_ASYNC_BEGIN1("ServiceWorker",
-                           "ServiceWorkerReadFromCacheJob::ReadRawData",
-                           this,
-                           "URL", request_->url().spec());
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("ServiceWorker", "ReadRawData", this,
+                                    "buf_size", buf_size);
   reader_->ReadData(buf, buf_size,
                     base::Bind(&ServiceWorkerReadFromCacheJob::OnReadComplete,
                                weak_factory_.GetWeakPtr()));
@@ -119,9 +124,7 @@ int ServiceWorkerReadFromCacheJob::ReadRawData(net::IOBuffer* buf,
 }
 
 void ServiceWorkerReadFromCacheJob::StartAsync() {
-  TRACE_EVENT_ASYNC_BEGIN1("ServiceWorker",
-                           "ServiceWorkerReadFromCacheJob::ReadInfo", this,
-                           "URL", request_->url().spec());
+  TRACE_EVENT_NESTABLE_ASYNC_INSTANT0("ServiceWorker", "StartAsync", this);
   if (!context_) {
     // NotifyStartError is not safe to call synchronously in Start.
     NotifyStartError(
@@ -166,10 +169,8 @@ void ServiceWorkerReadFromCacheJob::OnReadInfoComplete(int result) {
   http_info_io_buffer_ = nullptr;
   if (is_main_script())
     version_->SetMainScriptHttpResponseInfo(*http_info_);
-  TRACE_EVENT_ASYNC_END1("ServiceWorker",
-                         "ServiceWorkerReadFromCacheJob::ReadInfo",
-                         this,
-                         "Result", result);
+  TRACE_EVENT_NESTABLE_ASYNC_END1("ServiceWorker", "ReadInfo", this, "Result",
+                                  result);
   NotifyHeadersComplete();
 }
 
@@ -223,12 +224,10 @@ void ServiceWorkerReadFromCacheJob::OnReadComplete(int result) {
     Done(net::URLRequestStatus(net::URLRequestStatus::FAILED, result));
   }
 
+  TRACE_EVENT_NESTABLE_ASYNC_END1("ServiceWorker", "ReadRawData", this,
+                                  "Result", result);
   ServiceWorkerMetrics::CountReadResponseResult(check_result);
   ReadRawDataComplete(result);
-  TRACE_EVENT_ASYNC_END1("ServiceWorker",
-                         "ServiceWorkerReadFromCacheJob::ReadRawData",
-                         this,
-                         "Result", result);
 }
 
 }  // namespace content
