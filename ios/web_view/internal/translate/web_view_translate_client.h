@@ -20,6 +20,10 @@
 
 class PrefService;
 
+namespace metrics {
+class TranslateEventProto;
+}  // namespace metrics
+
 namespace translate {
 class TranslateAcceptLanguages;
 class TranslatePrefs;
@@ -28,7 +32,7 @@ class TranslateManager;
 
 namespace web {
 class WebState;
-}
+}  // namespace web
 
 namespace ios_web_view {
 
@@ -60,6 +64,7 @@ class WebViewTranslateClient
   std::unique_ptr<translate::TranslatePrefs> GetTranslatePrefs() override;
   translate::TranslateAcceptLanguages* GetTranslateAcceptLanguages() override;
   int GetInfobarIconID() const override;
+  void RecordTranslateEvent(const metrics::TranslateEventProto&) override;
   std::unique_ptr<infobars::InfoBar> CreateInfoBar(
       std::unique_ptr<translate::TranslateInfoBarDelegate> delegate)
       const override;

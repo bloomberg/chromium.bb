@@ -17,10 +17,13 @@ static_library("common") {
     "translate_switches.h",
     "translate_util.cc",
     "translate_util.h",
+    "translation_logging_helper.cc",
+    "translation_logging_helper.h",
   ]
 
   deps = [
     "//base",
+    "//components/metrics/proto",
     "//components/sync/protocol",
     "//url",
   ]
@@ -32,10 +35,12 @@ source_set("unit_tests") {
     "language_detection_logging_helper_unittest.cc",
     "translate_metrics_unittest.cc",
     "translate_util_unittest.cc",
+    "translation_logging_helper_unittest.cc",
   ]
   deps = [
     ":common",
     "//base",
+    "//components/metrics/proto",
     "//components/sync/protocol",
     "//testing/gtest",
     "//url",
