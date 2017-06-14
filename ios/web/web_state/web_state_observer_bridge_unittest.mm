@@ -4,7 +4,6 @@
 
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 
-#import "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "ios/web/public/favicon_url.h"
 #import "ios/web/public/test/fakes/crw_test_web_state_observer.h"
@@ -13,6 +12,10 @@
 #import "ios/web/web_state/navigation_context_impl.h"
 #include "net/http/http_response_headers.h"
 #include "testing/platform_test.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace web {
 namespace {
@@ -28,12 +31,12 @@ class WebStateObserverBridgeTest : public PlatformTest {
   WebStateObserverBridgeTest()
       : observer_([[CRWTestWebStateObserver alloc] init]),
         bridge_(base::MakeUnique<WebStateObserverBridge>(&test_web_state_,
-                                                         observer_.get())),
+                                                         observer_)),
         response_headers_(new net::HttpResponseHeaders(
             std::string(kRawResponseHeaders, sizeof(kRawResponseHeaders)))) {}
 
   web::TestWebState test_web_state_;
-  base::scoped_nsobject<CRWTestWebStateObserver> observer_;
+  CRWTestWebStateObserver* observer_;
   std::unique_ptr<WebStateObserverBridge> bridge_;
   scoped_refptr<net::HttpResponseHeaders> response_headers_;
 };

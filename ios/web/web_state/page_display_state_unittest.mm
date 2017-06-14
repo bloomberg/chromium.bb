@@ -4,10 +4,13 @@
 
 #import "ios/web/public/web_state/page_display_state.h"
 
-#import "base/mac/scoped_nsobject.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #define EXPECT_NAN(value) EXPECT_NE(value, value)
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 // Tests that the empty constructor creates an invalid PageDisplayState with all
 // NAN values.
@@ -58,8 +61,6 @@ TEST(PageDisplayStateTest, ValuesConstructor) {
 // Tests converting between a PageDisplayState, its serialization, and back.
 TEST(PageDisplayStateTest, Serialization) {
   web::PageDisplayState state(0.0, 1.0, 1.0, 5.0, 1.0);
-  base::scoped_nsobject<NSDictionary> serialization(
-      [state.GetSerialization() retain]);
-  web::PageDisplayState new_state(serialization);
+  web::PageDisplayState new_state(state.GetSerialization());
   EXPECT_EQ(state, new_state);
 }
