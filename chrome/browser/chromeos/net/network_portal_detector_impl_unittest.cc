@@ -206,6 +206,9 @@ class NetworkPortalDetectorImplTest
   bool is_state_checking_for_portal() {
     return (NetworkPortalDetectorImpl::STATE_CHECKING_FOR_PORTAL == state());
   }
+  bool is_state_behind_portal_idle() {
+    return (NetworkPortalDetectorImpl::STATE_BEHIND_PORTAL_IDLE == state());
+  }
 
   const base::TimeDelta& next_attempt_delay() {
     return network_portal_detector()->next_attempt_delay_for_testing();
@@ -508,7 +511,7 @@ TEST_F(NetworkPortalDetectorImplTest, NetworkStateChanged) {
 
   CompleteURLFetch(net::OK, 200, nullptr);
 
-  ASSERT_FALSE(is_state_idle());
+  ASSERT_TRUE(is_state_behind_portal_idle());
   CheckPortalState(
       NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL, 200, kStubWireless1);
 
@@ -526,7 +529,7 @@ TEST_F(NetworkPortalDetectorImplTest, NetworkStateChanged) {
 
   CompleteURLFetch(net::OK, 200, nullptr);
 
-  ASSERT_FALSE(is_state_idle());
+  ASSERT_TRUE(is_state_behind_portal_idle());
   CheckPortalState(
       NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_PORTAL, 200, kStubWireless1);
 
