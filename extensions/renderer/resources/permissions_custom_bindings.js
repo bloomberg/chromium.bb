@@ -4,9 +4,31 @@
 
 // Custom binding for the Permissions API.
 
-var binding = require('binding').Binding.create('permissions');
+var binding = apiBridge || require('binding').Binding.create('permissions');
 
-var Event = require('event_bindings').Event;
+var registerArgumentMassager = bindingUtil ?
+    $Function.bind(bindingUtil.registerEventArgumentMassager, bindingUtil) :
+    require('event_bindings').registerArgumentMassager;
+
+function maybeConvertToObject(str) {
+  var parts = $String.split(str, '|');
+  if (parts.length != 2)
+    return str;
+
+  var ret = {};
+  ret[parts[0]] = $JSON.parse(parts[1]);
+  return ret;
+}
+
+function massager(args, dispatch) {
+  // Convert complex permissions back to objects for events.
+  for (var i = 0; i < args[0].permissions.length; ++i)
+    args[0].permissions[i] = maybeConvertToObject(args[0].permissions[i]);
+  dispatch(args);
+}
+
+registerArgumentMassager('permissions.onAdded', massager);
+registerArgumentMassager('permissions.onRemoved', massager);
 
 // These custom binding are only necessary because it is not currently
 // possible to have a union of types as the type of the items in an array.
@@ -19,16 +41,6 @@ binding.registerCustomHook(function(api) {
   var apiFunctions = api.apiFunctions;
   var permissions = api.compiledApi;
 
-  function maybeConvertToObject(str) {
-    var parts = $String.split(str, '|');
-    if (parts.length != 2)
-      return str;
-
-    var ret = {};
-    ret[parts[0]] = JSON.parse(parts[1]);
-    return ret;
-  }
-
   function convertObjectPermissionsToStrings() {
     if (arguments.length < 1)
       return arguments;
@@ -37,15 +49,15 @@ binding.registerCustomHook(function(api) {
     if (!args)
       return arguments;
 
-    for (var i = 0; i < args.length; i += 1) {
-      if (typeof(args[i]) == 'object') {
+    for (var i = 0; i < args.length; ++i) {
+      if (typeof args[i] == 'object') {
         var a = args[i];
         var keys = $Object.keys(a);
         if (keys.length != 1) {
-          throw new Error("Too many keys in object-style permission.");
+          throw new Error('Too many keys in object-style permission.');
         }
-        arguments[0].permissions[i] = keys[0] + '|' +
-            JSON.stringify(a[keys[0]]);
+        arguments[0].permissions[i] =
+            keys[0] + '|' + $JSON.stringify(a[keys[0]]);
       }
     }
 
@@ -74,19 +86,7 @@ binding.registerCustomHook(function(api) {
         if (callback)
           callback(response);
       });
-
-  // Also convert complex permissions back to objects for events.  The
-  // dispatchToListener call happens after argument validation, which works
-  // around the problem that Permissions.permissions is supposed to be a list
-  // of strings.
-  permissions.onAdded.dispatchToListener = function(callback, args) {
-    for (var i = 0; i < args[0].permissions.length; i += 1) {
-      args[0].permissions[i] = maybeConvertToObject(args[0].permissions[i]);
-    }
-    $Function.call(Event.prototype.dispatchToListener, this, callback, args);
-  };
-  permissions.onRemoved.dispatchToListener =
-      permissions.onAdded.dispatchToListener;
 });
 
-exports.$set('binding', binding.generate());
+if (!apiBridge)
+  exports.$set('binding', binding.generate());
