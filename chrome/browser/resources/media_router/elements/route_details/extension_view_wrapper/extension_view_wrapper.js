@@ -38,13 +38,6 @@ Polymer({
   },
 
   /**
-   * Called by Polymer when this module has loaded.
-   */
-  ready: function() {
-    this.maybeLoadExtensionView_();
-  },
-
-  /**
    * @return {?string}
    */
   getCustomControllerPath_: function() {
