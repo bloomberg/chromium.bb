@@ -2870,36 +2870,39 @@ static void scale_and_extend_frame(const YV12_BUFFER_CONFIG *src,
   int x, y, i;
 
   assert(planes <= 3);
+  assert(src->subsampling_x == dst->subsampling_x);
+  assert(src->subsampling_y == dst->subsampling_y);
   for (y = 0; y < dst_h; y += 16) {
     for (x = 0; x < dst_w; x += 16) {
       for (i = 0; i < planes; ++i) {
-        const int factor = (i == 0 || i == 3 ? 1 : 2);
-        const int x_q4 = x * (16 / factor) * src_w / dst_w;
-        const int y_q4 = y * (16 / factor) * src_h / dst_h;
+        int ss_x = i == AOM_PLANE_Y ? 0 : src->subsampling_x;
+        int ss_y = i == AOM_PLANE_Y ? 0 : src->subsampling_y;
+        const int x_q4 = x * (16 >> ss_x) * src_w / dst_w;
+        const int y_q4 = y * (16 >> ss_y) * src_h / dst_h;
         const int src_stride = src_strides[i];
         const int dst_stride = dst_strides[i];
         const uint8_t *src_ptr = srcs[i] +
-                                 (y / factor) * src_h / dst_h * src_stride +
-                                 (x / factor) * src_w / dst_w;
-        uint8_t *dst_ptr = dsts[i] + (y / factor) * dst_stride + (x / factor);
+                                 (y >> ss_y) * src_h / dst_h * src_stride +
+                                 (x >> ss_x) * src_w / dst_w;
+        uint8_t *dst_ptr = dsts[i] + (y >> ss_y) * dst_stride + (x >> ss_x);
 
 #if CONFIG_HIGHBITDEPTH
         if (src->flags & YV12_FLAG_HIGHBITDEPTH) {
           aom_highbd_convolve8(src_ptr, src_stride, dst_ptr, dst_stride,
                                &kernel[(x_q4 & 0xf) * taps], 16 * src_w / dst_w,
                                &kernel[(y_q4 & 0xf) * taps], 16 * src_h / dst_h,
-                               16 / factor, 16 / factor, bd);
+                               16 >> ss_x, 16 >> ss_y, bd);
         } else {
           aom_scaled_2d(src_ptr, src_stride, dst_ptr, dst_stride,
                         &kernel[(x_q4 & 0xf) * taps], 16 * src_w / dst_w,
                         &kernel[(y_q4 & 0xf) * taps], 16 * src_h / dst_h,
-                        16 / factor, 16 / factor);
+                        16 >> ss_x, 16 >> ss_y);
         }
 #else
         aom_scaled_2d(src_ptr, src_stride, dst_ptr, dst_stride,
                       &kernel[(x_q4 & 0xf) * taps], 16 * src_w / dst_w,
                       &kernel[(y_q4 & 0xf) * taps], 16 * src_h / dst_h,
-                      16 / factor, 16 / factor);
+                      16 >> ss_x, 16 >> ss_y);
 #endif  // CONFIG_HIGHBITDEPTH
       }
     }
