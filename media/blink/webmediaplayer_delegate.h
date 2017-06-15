@@ -94,6 +94,9 @@ class WebMediaPlayerDelegate {
   // Notify that the size of the media player is changed.
   virtual void DidPlayerSizeChange(int delegate_id, const gfx::Size& size) = 0;
 
+  // Notify that the muted status of the media player has changed.
+  virtual void DidPlayerMutedStatusChange(int delegate_id, bool muted) = 0;
+
   // Notify that playback is stopped. This will drop wake locks and remove any
   // external controls.
   //

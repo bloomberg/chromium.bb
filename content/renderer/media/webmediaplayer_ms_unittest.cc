@@ -64,6 +64,10 @@ class FakeWebMediaPlayerDelegate
     is_gone_ = false;
   }
 
+  void DidPlayerMutedStatusChange(int delegate_id, bool muted) override {
+    EXPECT_EQ(delegate_id_, delegate_id);
+  }
+
   void DidPause(int delegate_id) override {
     EXPECT_EQ(delegate_id_, delegate_id);
     EXPECT_TRUE(playing_);
