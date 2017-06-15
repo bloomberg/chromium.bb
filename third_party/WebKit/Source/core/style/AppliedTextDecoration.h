@@ -15,11 +15,11 @@ class AppliedTextDecoration {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  AppliedTextDecoration(TextDecoration, TextDecorationStyle, Color);
+  AppliedTextDecoration(TextDecoration, ETextDecorationStyle, Color);
 
   TextDecoration Lines() const { return static_cast<TextDecoration>(lines_); }
-  TextDecorationStyle Style() const {
-    return static_cast<TextDecorationStyle>(style_);
+  ETextDecorationStyle Style() const {
+    return static_cast<ETextDecorationStyle>(style_);
   }
   Color GetColor() const { return color_; }
   void SetColor(Color color) { color_ = color; }
@@ -31,7 +31,7 @@ class AppliedTextDecoration {
 
  private:
   unsigned lines_ : kTextDecorationBits;
-  unsigned style_ : 3;  // TextDecorationStyle
+  unsigned style_ : 3;  // ETextDecorationStyle
   Color color_;
 };
 

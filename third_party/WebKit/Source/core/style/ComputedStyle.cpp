@@ -1420,7 +1420,7 @@ const Vector<AppliedTextDecoration>& ComputedStyle::AppliedTextDecorations()
     DEFINE_STATIC_LOCAL(
         Vector<AppliedTextDecoration>, underline,
         (1, AppliedTextDecoration(
-                TextDecoration::kUnderline, kTextDecorationStyleSolid,
+                TextDecoration::kUnderline, ETextDecorationStyle::kSolid,
                 VisitedDependentColor(CSSPropertyTextDecorationColor))));
     // Since we only have one of these in memory, just update the color before
     // returning.
@@ -1715,7 +1715,7 @@ void ComputedStyle::ApplyTextDecorations(
        current_text_decoration_color != parent_text_decoration_color)) {
     SetHasSimpleUnderlineInternal(false);
     AddAppliedTextDecoration(AppliedTextDecoration(
-        TextDecoration::kUnderline, kTextDecorationStyleSolid,
+        TextDecoration::kUnderline, ETextDecorationStyle::kSolid,
         parent_text_decoration_color));
   }
   if (override_existing_colors && AppliedTextDecorationsInternal())
@@ -1726,9 +1726,9 @@ void ComputedStyle::ApplyTextDecorations(
   // To save memory, we don't use AppliedTextDecoration objects in the common
   // case of a single simple underline of currentColor.
   TextDecoration decoration_lines = GetTextDecoration();
-  TextDecorationStyle decoration_style = GetTextDecorationStyle();
+  ETextDecorationStyle decoration_style = TextDecorationStyle();
   bool is_simple_underline = decoration_lines == TextDecoration::kUnderline &&
-                             decoration_style == kTextDecorationStyleSolid &&
+                             decoration_style == ETextDecorationStyle::kSolid &&
                              TextDecorationColor().IsCurrentColor();
   if (is_simple_underline && !AppliedTextDecorationsInternal()) {
     SetHasSimpleUnderlineInternal(true);

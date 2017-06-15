@@ -219,9 +219,9 @@ static ResolvedUnderlinePosition ResolveUnderlinePosition(
 
 static bool ShouldSetDecorationAntialias(const ComputedStyle& style) {
   for (const auto& decoration : style.AppliedTextDecorations()) {
-    TextDecorationStyle decoration_style = decoration.Style();
-    if (decoration_style == kTextDecorationStyleDotted ||
-        decoration_style == kTextDecorationStyleDashed)
+    ETextDecorationStyle decoration_style = decoration.Style();
+    if (decoration_style == ETextDecorationStyle::kDotted ||
+        decoration_style == ETextDecorationStyle::kDashed)
       return true;
   }
   return false;

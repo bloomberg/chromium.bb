@@ -11,22 +11,22 @@ namespace blink {
 namespace {
 
 static StrokeStyle TextDecorationStyleToStrokeStyle(
-    TextDecorationStyle decoration_style) {
+    ETextDecorationStyle decoration_style) {
   StrokeStyle stroke_style = kSolidStroke;
   switch (decoration_style) {
-    case kTextDecorationStyleSolid:
+    case ETextDecorationStyle::kSolid:
       stroke_style = kSolidStroke;
       break;
-    case kTextDecorationStyleDouble:
+    case ETextDecorationStyle::kDouble:
       stroke_style = kDoubleStroke;
       break;
-    case kTextDecorationStyleDotted:
+    case ETextDecorationStyle::kDotted:
       stroke_style = kDottedStroke;
       break;
-    case kTextDecorationStyleDashed:
+    case ETextDecorationStyle::kDashed:
       stroke_style = kDashedStroke;
       break;
-    case kTextDecorationStyleWavy:
+    case ETextDecorationStyle::kWavy:
       stroke_style = kWavyStroke;
       break;
   }
@@ -77,18 +77,18 @@ FloatRect AppliedDecorationPainter::Bounds() {
   stroke_data.SetThickness(decoration_info_.thickness);
 
   switch (decoration_.Style()) {
-    case kTextDecorationStyleDotted:
-    case kTextDecorationStyleDashed: {
+    case ETextDecorationStyle::kDotted:
+    case ETextDecorationStyle::kDashed: {
       stroke_data.SetStyle(
           TextDecorationStyleToStrokeStyle(decoration_.Style()));
       return PrepareDottedDashedStrokePath().StrokeBoundingRect(
           stroke_data, Path::BoundsType::kExact);
     }
-    case kTextDecorationStyleWavy:
+    case ETextDecorationStyle::kWavy:
       return PrepareWavyStrokePath().StrokeBoundingRect(
           stroke_data, Path::BoundsType::kExact);
       break;
-    case kTextDecorationStyleDouble:
+    case ETextDecorationStyle::kDouble:
       if (double_offset_ > 0) {
         return FloatRect(start_point_.X(), start_point_.Y(),
                          decoration_info_.width,
@@ -98,7 +98,7 @@ FloatRect AppliedDecorationPainter::Bounds() {
                        decoration_info_.width,
                        -double_offset_ + decoration_info_.thickness);
       break;
-    case kTextDecorationStyleSolid:
+    case ETextDecorationStyle::kSolid:
       return FloatRect(start_point_.X(), start_point_.Y(),
                        decoration_info_.width, decoration_info_.thickness);
     default:
@@ -114,17 +114,17 @@ void AppliedDecorationPainter::Paint() {
   context_.SetStrokeColor(decoration_.GetColor());
 
   switch (decoration_.Style()) {
-    case kTextDecorationStyleWavy:
+    case ETextDecorationStyle::kWavy:
       StrokeWavyTextDecoration();
       break;
-    case kTextDecorationStyleDotted:
-    case kTextDecorationStyleDashed:
+    case ETextDecorationStyle::kDotted:
+    case ETextDecorationStyle::kDashed:
       context_.SetShouldAntialias(decoration_info_.antialias);
     // Fall through
     default:
       context_.DrawLineForText(start_point_, decoration_info_.width);
 
-      if (decoration_.Style() == kTextDecorationStyleDouble) {
+      if (decoration_.Style() == ETextDecorationStyle::kDouble) {
         context_.DrawLineForText(start_point_ + FloatPoint(0, double_offset_),
                                  decoration_info_.width);
       }
