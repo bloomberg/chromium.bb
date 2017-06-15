@@ -79,13 +79,6 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_release_crypto_stream_buffer,
           true)
 
-// If true, do not override a connection in global map if exists. Only create
-// QUIC session if it is successfully inserted to the global map. Toss the
-// packet if insertion fails.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_create_session_after_insertion,
-          true)
-
 // If true, v33 QUIC client uses 1 bit to specify 8-byte connection id in
 // public flag.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_remove_v33_hacks2, false)
