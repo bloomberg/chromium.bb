@@ -2084,6 +2084,8 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       'veyron_minnie',
   ])
   _nyc_no_hwtest_boards = frozenset([
+      'bob',
+      'hana',
       'reef',
   ])
 
