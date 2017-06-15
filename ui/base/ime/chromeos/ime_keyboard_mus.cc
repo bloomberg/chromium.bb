@@ -19,6 +19,7 @@ ImeKeyboardMus::~ImeKeyboardMus() = default;
 
 bool ImeKeyboardMus::SetCurrentKeyboardLayoutByName(
     const std::string& layout_name) {
+  ImeKeyboard::SetCurrentKeyboardLayoutByName(layout_name);
   last_layout_ = layout_name;
   input_device_controller_client_->SetKeyboardLayoutByName(layout_name);
   return true;

@@ -63,6 +63,10 @@ source_set("wayland") {
       "//third_party/wayland-protocols:linux_dmabuf_protocol",
     ]
     configs += [ ":libdrm" ]
+
+    if (is_chromeos) {
+      deps += [ "//ui/events/ozone:events_ozone_layout" ]
+    }
   }
 
   if (use_xkbcommon) {

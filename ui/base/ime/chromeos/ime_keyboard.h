@@ -39,6 +39,9 @@ class UI_BASE_IME_EXPORT ImeKeyboard {
    public:
     // Called when the caps lock state has changed.
     virtual void OnCapsLockChanged(bool enabled) = 0;
+
+    // Called when the layout state is changing.
+    virtual void OnLayoutChanging(const std::string& layout_name) = 0;
   };
 
   ImeKeyboard();
@@ -49,8 +52,12 @@ class UI_BASE_IME_EXPORT ImeKeyboard {
 
   // Sets the current keyboard layout to |layout_name|. This function does not
   // change the current mapping of the modifier keys. Returns true on success.
-  virtual bool SetCurrentKeyboardLayoutByName(
-      const std::string& layout_name) = 0;
+  virtual bool SetCurrentKeyboardLayoutByName(const std::string& layout_name);
+
+  // Gets the current keyboard layout name.
+  const std::string& GetCurrentKeyboardLayoutName() const {
+    return last_layout_;
+  }
 
   // Sets the current keyboard layout again. We have to call the function every
   // time when "XI_HierarchyChanged" XInput2 event is sent to Chrome. See
