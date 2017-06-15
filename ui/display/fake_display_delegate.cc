@@ -28,7 +28,7 @@ namespace {
 const uint16_t kReservedManufacturerID = 1 << 15;
 
 // A random product name hash.
-const uint32_t kProductCodeHash = base::Hash("Very Generic Display");
+constexpr uint32_t kProductCodeHash = 3692486807;
 
 // Delay for Configure() in milliseconds.
 constexpr int64_t kConfigureDisplayDelayMs = 200;
