@@ -1044,41 +1044,6 @@ inline TextDecorationSkip CSSIdentifierValue::ConvertTo() const {
 }
 
 template <>
-inline CSSIdentifierValue::CSSIdentifierValue(EUserDrag e)
-    : CSSValue(kIdentifierClass) {
-  switch (e) {
-    case EUserDrag::kAuto:
-      value_id_ = CSSValueAuto;
-      break;
-    case EUserDrag::kNone:
-      value_id_ = CSSValueNone;
-      break;
-    case EUserDrag::kElement:
-      value_id_ = CSSValueElement;
-      break;
-    default:
-      break;
-  }
-}
-
-template <>
-inline EUserDrag CSSIdentifierValue::ConvertTo() const {
-  switch (value_id_) {
-    case CSSValueAuto:
-      return EUserDrag::kAuto;
-    case CSSValueNone:
-      return EUserDrag::kNone;
-    case CSSValueElement:
-      return EUserDrag::kElement;
-    default:
-      break;
-  }
-
-  NOTREACHED();
-  return EUserDrag::kAuto;
-}
-
-template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EVerticalAlign a)
     : CSSValue(kIdentifierClass) {
   switch (a) {
