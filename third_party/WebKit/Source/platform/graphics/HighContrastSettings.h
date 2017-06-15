@@ -16,10 +16,18 @@ enum class HighContrastMode {
   kInvertLightness,
 };
 
+enum class HighContrastImagePolicy {
+  // Apply high-contrast filter to all images.
+  kFilterAll,
+  // Never apply high-contrast filter to any images.
+  kFilterNone,
+};
+
 struct HighContrastSettings {
   HighContrastMode mode = HighContrastMode::kOff;
   bool grayscale = false;
   float contrast = 0.0;  // Valid range from -1.0 to 1.0
+  HighContrastImagePolicy image_policy = HighContrastImagePolicy::kFilterAll;
 };
 
 }  // namespace blink

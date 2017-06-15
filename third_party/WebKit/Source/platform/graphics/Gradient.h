@@ -113,6 +113,8 @@ class PLATFORM_EXPORT Gradient : public RefCounted<Gradient> {
   std::unique_ptr<PaintShader> CreateShaderInternal(
       const SkMatrix& local_matrix);
 
+  sk_sp<SkColorFilter> color_filter_;
+
   void SortStopsIfNecessary();
   void FillSkiaStops(ColorBuffer&, OffsetBuffer&) const;
 

@@ -948,6 +948,11 @@
       name: "highContrastContrast",
       initial: 0,
       type: "double",
+    },
+    {
+      name: "highContrastImagePolicy",
+      initial: "HighContrastImagePolicy::kFilterAll",
+      type: "HighContrastImagePolicy",
     }
   ],
 }

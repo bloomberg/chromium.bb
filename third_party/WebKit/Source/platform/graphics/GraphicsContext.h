@@ -438,6 +438,7 @@ class PLATFORM_EXPORT GraphicsContext {
 
   const SkMetaData& MetaData() const { return meta_data_; }
 
+  bool ShouldApplyHighContrastFilterToImage(const Image&) const;
   Color ApplyHighContrastFilter(const Color& input) const;
   PaintFlags ApplyHighContrastFilter(const PaintFlags* input) const;
 

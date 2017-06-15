@@ -497,7 +497,12 @@
   },
   {
     "prefix": "high-contrast-mode",
-    "base": "paint/high-contrast-mode",
-    "args": ["--blink-settings=highContrastMode=3"]
+    "base": "paint/high-contrast-mode/image-filter-all",
+    "args": ["--blink-settings=highContrastMode=3,highContrastImagePolicy=0"]
+  },
+  {
+    "prefix": "high-contrast-mode",
+    "base": "paint/high-contrast-mode/image-filter-none",
+    "args": ["--blink-settings=highContrastMode=3,highContrastImagePolicy=1"]
   }
 ]
