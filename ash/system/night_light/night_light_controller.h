@@ -8,12 +8,14 @@
 #include <memory>
 
 #include "ash/ash_export.h"
+#include "ash/public/interfaces/night_light_controller.mojom.h"
 #include "ash/session/session_observer.h"
 #include "ash/system/night_light/time_of_day.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "mojo/public/cpp/bindings/binding.h"
 
 class PrefRegistrySimple;
 class PrefService;
@@ -24,20 +26,11 @@ class SessionController;
 
 // Controls the NightLight feature that adjusts the color temperature of the
 // screen.
-class ASH_EXPORT NightLightController : public SessionObserver {
+class ASH_EXPORT NightLightController
+    : public NON_EXPORTED_BASE(mojom::NightLightController),
+      public SessionObserver {
  public:
-  enum class ScheduleType : int {
-    // Automatic toggling of NightLight is turned off.
-    kNone = 0,
-
-    // Turned automatically on at the user's local sunset time, and off at the
-    // user's local sunrise time.
-    kSunsetToSunrise = 1,
-
-    // Toggled automatically based on the custom set start and end times
-    // selected by the user from the system settings.
-    kCustom = 2,
-  };
+  using ScheduleType = mojom::NightLightController::ScheduleType;
 
   enum class AnimationDuration {
     // Short animation (2 seconds) used for manual changes of NightLight status
@@ -64,6 +57,10 @@ class ASH_EXPORT NightLightController : public SessionObserver {
     // Gets the sunset and sunrise times.
     virtual base::Time GetSunsetTime() const = 0;
     virtual base::Time GetSunriseTime() const = 0;
+
+    // Provides the delegate with the geoposition so that it can be used to
+    // calculate sunset and sunrise times.
+    virtual void SetGeoposition(mojom::SimpleGeopositionPtr position) = 0;
   };
 
   class Observer {
@@ -89,6 +86,8 @@ class ASH_EXPORT NightLightController : public SessionObserver {
   }
   const base::OneShotTimer& timer() const { return timer_; }
 
+  void BindRequest(mojom::NightLightControllerRequest request);
+
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
@@ -113,6 +112,10 @@ class ASH_EXPORT NightLightController : public SessionObserver {
   // ash::SessionObserver:
   void OnActiveUserSessionChanged(const AccountId& account_id) override;
 
+  // ash::mojom::NightLightController:
+  void SetCurrentGeoposition(mojom::SimpleGeopositionPtr position) override;
+  void SetClient(mojom::NightLightClientPtr client) override;
+
   void SetDelegateForTesting(std::unique_ptr<Delegate> delegate);
 
  private:
@@ -124,15 +127,20 @@ class ASH_EXPORT NightLightController : public SessionObserver {
 
   void NotifyStatusChanged();
 
+  void NotifyClientWithScheduleChange();
+
   // Called when the user pref for the enabled status of NightLight is changed.
   void OnEnabledPrefChanged();
 
   // Called when the user pref for the color temperature is changed.
   void OnColorTemperaturePrefChanged();
 
-  // Called when any of the schedule related prefs (schedule type, custom start
-  // and end times) are changed.
-  void OnScheduleParamsPrefsChanged();
+  // Called when the user pref for the schedule type is changed.
+  void OnScheduleTypePrefChanged();
+
+  // Called when either of the custom schedule prefs (custom start or end times)
+  // are changed.
+  void OnCustomSchedulePrefsChanged();
 
   // Refreshes the state of NightLight according to the currently set
   // parameters. |did_schedule_change| is true when Refresh() is called as a
@@ -181,6 +189,10 @@ class ASH_EXPORT NightLightController : public SessionObserver {
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
   base::ObserverList<Observer> observers_;
+
+  mojo::Binding<mojom::NightLightController> binding_;
+
+  mojom::NightLightClientPtr client_;
 
   DISALLOW_COPY_AND_ASSIGN(NightLightController);
 };

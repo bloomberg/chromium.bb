@@ -14,6 +14,7 @@
           "ash::mojom::LockScreen",
           "ash::mojom::MediaController",
           "ash::mojom::NewWindowController",
+          "ash::mojom::NightLightController",
           "ash::mojom::SessionController",
           "ash::mojom::ShelfController",
           "ash::mojom::ShutdownController",

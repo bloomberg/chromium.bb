@@ -19,6 +19,7 @@
 #include "ash/shutdown_controller.h"
 #include "ash/system/locale/locale_notification_controller.h"
 #include "ash/system/network/vpn_list.h"
+#include "ash/system/night_light/night_light_controller.h"
 #include "ash/system/tray/system_tray_controller.h"
 #include "ash/tray_action/tray_action.h"
 #include "ash/wallpaper/wallpaper_controller.h"
@@ -80,6 +81,12 @@ void BindNewWindowControllerRequestOnMainThread(
     const service_manager::BindSourceInfo& source_info,
     mojom::NewWindowControllerRequest request) {
   Shell::Get()->new_window_controller()->BindRequest(std::move(request));
+}
+
+void BindNightLightControllerRequestOnMainThread(
+    const service_manager::BindSourceInfo& source_info,
+    mojom::NightLightControllerRequest request) {
+  Shell::Get()->night_light_controller()->BindRequest(std::move(request));
 }
 
 void BindSessionControllerRequestOnMainThread(
@@ -157,6 +164,11 @@ void RegisterInterfaces(
   registry->AddInterface(
       base::Bind(&BindNewWindowControllerRequestOnMainThread),
       main_thread_task_runner);
+  if (NightLightController::IsFeatureEnabled()) {
+    registry->AddInterface(
+        base::Bind(&BindNightLightControllerRequestOnMainThread),
+        main_thread_task_runner);
+  }
   registry->AddInterface(base::Bind(&BindSessionControllerRequestOnMainThread),
                          main_thread_task_runner);
   registry->AddInterface(base::Bind(&BindShelfRequestOnMainThread),
