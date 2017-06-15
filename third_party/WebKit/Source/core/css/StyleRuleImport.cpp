@@ -69,7 +69,7 @@ void StyleRuleImport::SetCSSStyleSheet(
     const String& href,
     const KURL& base_url,
     ReferrerPolicy referrer_policy,
-    const String& charset,
+    const WTF::TextEncoding& charset,
     const CSSStyleSheetResource* cached_style_sheet) {
   if (style_sheet_)
     style_sheet_->ClearOwnerRule();
@@ -81,7 +81,7 @@ void StyleRuleImport::SetCSSStyleSheet(
     context = parent_style_sheet_->ParserContext();
   }
   context = CSSParserContext::Create(context, base_url, referrer_policy,
-                                     charset, document);
+                                     String(charset.GetName()), document);
 
   style_sheet_ = StyleSheetContents::Create(this, href, context);
 

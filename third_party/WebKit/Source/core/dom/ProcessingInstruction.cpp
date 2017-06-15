@@ -194,7 +194,7 @@ void ProcessingInstruction::SetCSSStyleSheet(
     const String& href,
     const KURL& base_url,
     ReferrerPolicy referrer_policy,
-    const String& charset,
+    const WTF::TextEncoding& charset,
     const CSSStyleSheetResource* sheet) {
   if (!isConnected()) {
     DCHECK(!sheet_);
@@ -203,7 +203,7 @@ void ProcessingInstruction::SetCSSStyleSheet(
 
   DCHECK(is_css_);
   CSSParserContext* parser_context = CSSParserContext::Create(
-      GetDocument(), base_url, referrer_policy, charset);
+      GetDocument(), base_url, referrer_policy, String(charset.GetName()));
 
   StyleSheetContents* new_sheet =
       StyleSheetContents::Create(href, parser_context);

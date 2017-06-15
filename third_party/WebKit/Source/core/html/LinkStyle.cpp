@@ -61,7 +61,7 @@ void LinkStyle::SetCSSStyleSheet(
     const String& href,
     const KURL& base_url,
     ReferrerPolicy referrer_policy,
-    const String& charset,
+    const WTF::TextEncoding& charset,
     const CSSStyleSheetResource* cached_style_sheet) {
   if (!owner_->isConnected()) {
     // While the stylesheet is asynchronously loading, the owner can be
@@ -115,7 +115,7 @@ void LinkStyle::SetCSSStyleSheet(
   }
 
   CSSParserContext* parser_context = CSSParserContext::Create(
-      GetDocument(), base_url, referrer_policy, charset);
+      GetDocument(), base_url, referrer_policy, String(charset.GetName()));
 
   if (StyleSheetContents* restored_sheet =
           const_cast<CSSStyleSheetResource*>(cached_style_sheet)

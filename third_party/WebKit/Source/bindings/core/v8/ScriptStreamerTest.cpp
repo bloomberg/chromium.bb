@@ -347,7 +347,7 @@ TEST_F(ScriptStreamingTest, EncodingChanges) {
   // It's possible that the encoding of the Resource changes after we start
   // loading it.
   V8TestingScope scope;
-  resource_->SetEncoding("windows-1252");
+  resource_->SetEncodingForTest("windows-1252");
 
   ScriptStreamer::StartStreaming(
       GetPendingScript(), ScriptStreamer::kParsingBlocking, settings_.get(),
@@ -355,7 +355,7 @@ TEST_F(ScriptStreamingTest, EncodingChanges) {
   TestPendingScriptClient* client = new TestPendingScriptClient;
   GetPendingScript()->WatchForLoad(client);
 
-  resource_->SetEncoding("UTF-8");
+  resource_->SetEncodingForTest("UTF-8");
   // \xec\x92\x81 are the raw bytes for \uc481.
   AppendData(
       "function foo() { var foob\xec\x92\x81r = 13; return foob\xec\x92\x81r; "
@@ -384,7 +384,9 @@ TEST_F(ScriptStreamingTest, EncodingFromBOM) {
   // Byte order marks should be removed before giving the data to V8. They
   // will also affect encoding detection.
   V8TestingScope scope;
-  resource_->SetEncoding("windows-1252");  // This encoding is wrong on purpose.
+
+  // This encoding is wrong on purpose.
+  resource_->SetEncodingForTest("windows-1252");
 
   ScriptStreamer::StartStreaming(
       GetPendingScript(), ScriptStreamer::kParsingBlocking, settings_.get(),
