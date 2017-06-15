@@ -287,6 +287,7 @@ test("app_list_unittests") {
       "views/folder_header_view_unittest.cc",
       "views/image_shadow_animator_unittest.cc",
       "views/search_box_view_unittest.cc",
+      "views/search_result_answer_card_view_unittest.cc",
       "views/search_result_list_view_unittest.cc",
       "views/search_result_page_view_unittest.cc",
       "views/speech_view_unittest.cc",
@@ -294,6 +295,7 @@ test("app_list_unittests") {
       "views/test/apps_grid_view_test_api.h",
     ]
     deps += [
+      "//ui/accessibility",
       "//ui/views",
       "//ui/views:test_support",
     ]
