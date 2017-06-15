@@ -22,6 +22,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if defined(OS_ANDROID)
+#include "base/sys_info.h"
+#endif
+
 namespace data_reduction_proxy {
 class DataReductionProxyParamsTest : public testing::Test {
  public:
@@ -518,6 +522,55 @@ TEST_F(DataReductionProxyParamsTest, PromoFieldTrial) {
         "DataCompressionProxyPromoVisibility", test.trial_group_name));
     EXPECT_EQ(test.expected_enabled, params::IsIncludedInPromoFieldTrial())
         << test.trial_group_name;
+  }
+}
+
+TEST_F(DataReductionProxyParamsTest, FREPromoFieldTrial) {
+  const struct {
+    std::string trial_group_name;
+    bool expected_enabled;
+  } tests[] = {
+      {"Enabled", true},
+      {"Enabled_Control", true},
+      {"Disabled", false},
+      {"enabled", false},
+  };
+
+  for (const auto& test : tests) {
+    base::FieldTrialList field_trial_list(nullptr);
+
+    ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+        "DataReductionProxyFREPromo", test.trial_group_name));
+    EXPECT_EQ(test.expected_enabled, params::IsIncludedInFREPromoFieldTrial())
+        << test.trial_group_name;
+  }
+}
+
+TEST_F(DataReductionProxyParamsTest, LowMemoryPromoFieldTrial) {
+  const struct {
+    std::string trial_group_name;
+    bool expected_in_field_trial;
+  } tests[] = {
+      {"Enabled", true},
+      {"Enabled_Control", true},
+      {"Disabled", false},
+      {"enabled", false},
+  };
+
+  for (const auto& test : tests) {
+    base::FieldTrialList field_trial_list(nullptr);
+
+    EXPECT_TRUE(base::FieldTrialList::CreateFieldTrial(
+        "DataReductionProxyLowMemoryDevicePromo", test.trial_group_name));
+#if defined(OS_ANDROID)
+    EXPECT_EQ(test.expected_in_field_trial && base::SysInfo::IsLowEndDevice(),
+              params::IsIncludedInPromoFieldTrial());
+    EXPECT_EQ(test.expected_in_field_trial && base::SysInfo::IsLowEndDevice(),
+              params::IsIncludedInFREPromoFieldTrial());
+#else
+    EXPECT_FALSE(params::IsIncludedInPromoFieldTrial());
+    EXPECT_FALSE(params::IsIncludedInFREPromoFieldTrial());
+#endif
   }
 }
 

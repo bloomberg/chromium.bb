@@ -46,6 +46,9 @@ class DataReductionProxySettingsAndroid {
   jboolean IsDataReductionProxyPromoAllowed(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
+  jboolean IsDataReductionProxyFREPromoAllowed(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
   jboolean IsDataReductionProxyEnabled(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);

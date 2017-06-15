@@ -27,9 +27,13 @@ class DataReductionProxyServer;
 // by field trials and command line switches.
 namespace params {
 
-// Returns true if this client is part of the field trial that should display
+// Returns true if this client is part of a field trial that should display
 // a promotion for the data reduction proxy.
 bool IsIncludedInPromoFieldTrial();
+
+// Returns true if this client is part of a field trial that should display
+// a FRE promotion for the data reduction proxy.
+bool IsIncludedInFREPromoFieldTrial();
 
 // Returns true if this client is part of a field trial that runs a holdback
 // experiment. A holdback experiment is one in which a fraction of browser
