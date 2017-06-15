@@ -10,12 +10,19 @@
 
 namespace download {
 
-DownloadServiceImpl::DownloadServiceImpl(std::unique_ptr<Controller> controller)
-    : controller_(std::move(controller)) {
+DownloadServiceImpl::DownloadServiceImpl(std::unique_ptr<Configuration> config,
+                                         std::unique_ptr<Controller> controller)
+    : config_(std::move(config)),
+      controller_(std::move(controller)),
+      service_config_(config_.get()) {
   controller_->Initialize();
 }
 
 DownloadServiceImpl::~DownloadServiceImpl() = default;
+
+const ServiceConfig& DownloadServiceImpl::GetConfig() {
+  return service_config_;
+}
 
 void DownloadServiceImpl::OnStartScheduledTask(
     DownloadTaskType task_type,

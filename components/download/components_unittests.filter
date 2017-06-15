@@ -8,3 +8,4 @@ DownloadServiceModelImplTest.*
 DownloadStoreTest.*
 NetworkListenerTest.*
 ProtoConversionsTest.*
+ServiceConfigImplTest.*

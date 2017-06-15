@@ -36,15 +36,15 @@ void TransitTo(Entry* entry, Entry::State new_state, Model* model) {
 }  // namespace
 
 ControllerImpl::ControllerImpl(
+    Configuration* config,
     std::unique_ptr<ClientSet> clients,
-    std::unique_ptr<Configuration> config,
     std::unique_ptr<DownloadDriver> driver,
     std::unique_ptr<Model> model,
     std::unique_ptr<DeviceStatusListener> device_status_listener,
     std::unique_ptr<Scheduler> scheduler,
     std::unique_ptr<TaskScheduler> task_scheduler)
-    : clients_(std::move(clients)),
-      config_(std::move(config)),
+    : config_(config),
+      clients_(std::move(clients)),
       driver_(std::move(driver)),
       model_(std::move(model)),
       device_status_listener_(std::move(device_status_listener)),

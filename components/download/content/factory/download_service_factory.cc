@@ -46,10 +46,10 @@ DownloadService* CreateDownloadService(
   auto scheduler = base::MakeUnique<SchedulerImpl>(nullptr, client_set.get());
 
   auto controller = base::MakeUnique<ControllerImpl>(
-      std::move(client_set), std::move(config), std::move(driver),
-      std::move(model), std::move(device_status_listener), std::move(scheduler),
+      config.get(), std::move(client_set), std::move(driver), std::move(model),
+      std::move(device_status_listener), std::move(scheduler),
       std::move(task_scheduler));
-  return new DownloadServiceImpl(std::move(controller));
+  return new DownloadServiceImpl(std::move(config), std::move(controller));
 }
 
 }  // namespace download
