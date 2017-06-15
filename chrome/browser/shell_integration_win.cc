@@ -749,9 +749,9 @@ void MigrateTaskbarPins() {
   // This needs to happen (e.g. so that the appid is fixed and the
   // run-time Chrome icon is merged with the taskbar shortcut), but it is not an
   // urgent task.
-  base::PostTaskWithTraits(FROM_HERE,
-                           {base::MayBlock(), base::TaskPriority::BACKGROUND},
-                           base::Bind(&MigrateTaskbarPinsCallback));
+  base::CreateCOMSTATaskRunnerWithTraits(
+      {base::MayBlock(), base::TaskPriority::BACKGROUND})
+      ->PostTask(FROM_HERE, base::Bind(&MigrateTaskbarPinsCallback));
 }
 
 void GetIsPinnedToTaskbarState(
