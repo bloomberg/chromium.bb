@@ -25,13 +25,39 @@
 namespace {
 using libaom_test::ACMRandom;
 
-typedef void (*QuantizeFunc)(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
-                             int skip_block, const int16_t *zbin_ptr,
-                             const int16_t *round_ptr, const int16_t *quant_ptr,
-                             const int16_t *quant_shift_ptr,
-                             tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr,
-                             const int16_t *dequant_ptr, uint16_t *eob_ptr,
-                             const int16_t *scan, const int16_t *iscan);
+#define QUAN_PARAM_LIST                                                   \
+  const tran_low_t *coeff_ptr, intptr_t n_coeffs, int skip_block,         \
+      const int16_t *zbin_ptr, const int16_t *round_ptr,                  \
+      const int16_t *quant_ptr, const int16_t *quant_shift_ptr,           \
+      tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr,                    \
+      const int16_t *dequant_ptr, uint16_t *eob_ptr, const int16_t *scan, \
+      const int16_t *iscan
+
+typedef void (*QuantizeFunc)(QUAN_PARAM_LIST);
+typedef void (*QuantizeFuncHbd)(QUAN_PARAM_LIST, int log_scale);
+
+#define HBD_QUAN_FUNC                                                      \
+  fn(coeff_ptr, n_coeffs, skip_block, zbin_ptr, round_ptr, quant_ptr,      \
+     quant_shift_ptr, qcoeff_ptr, dqcoeff_ptr, dequant_ptr, eob_ptr, scan, \
+     iscan, log_scale)
+
+template <QuantizeFuncHbd fn>
+void highbd_quan16x16_wrapper(QUAN_PARAM_LIST) {
+  const int log_scale = 0;
+  HBD_QUAN_FUNC;
+}
+
+template <QuantizeFuncHbd fn>
+void highbd_quan32x32_wrapper(QUAN_PARAM_LIST) {
+  const int log_scale = 1;
+  HBD_QUAN_FUNC;
+}
+
+template <QuantizeFuncHbd fn>
+void highbd_quan64x64_wrapper(QUAN_PARAM_LIST) {
+  const int log_scale = 2;
+  HBD_QUAN_FUNC;
+}
 
 typedef std::tr1::tuple<QuantizeFunc, QuantizeFunc, TX_SIZE, aom_bit_depth_t>
     QuantizeParam;
@@ -171,7 +197,16 @@ class QuantizeTest : public ::testing::TestWithParam<QuantizeParam> {
   }
 
   tran_low_t GetRandomCoeff() {
-    return clamp(static_cast<int16_t>(rnd_.Rand16()), INT16_MIN + 1, INT16_MAX);
+    tran_low_t coeff;
+    if (bd_ == AOM_BITS_8) {
+      coeff =
+          clamp(static_cast<int16_t>(rnd_.Rand16()), INT16_MIN + 1, INT16_MAX);
+    } else {
+      tran_low_t min = -(1 << (7 + bd_));
+      tran_low_t max = -min - 1;
+      coeff = clamp(static_cast<tran_low_t>(rnd_.Rand31()), min, max);
+    }
+    return coeff;
   }
 
   ACMRandom rnd_;
@@ -251,11 +286,42 @@ const QuantizeParam kQParamArrayAvx2[] = {
   make_tuple(&av1_quantize_fp_c, &av1_quantize_fp_avx2, TX_16X16, AOM_BITS_8),
   make_tuple(&av1_quantize_fp_32x32_c, &av1_quantize_fp_32x32_avx2, TX_32X32,
              AOM_BITS_8),
+#if CONFIG_HIGHBITDEPTH
+  make_tuple(&highbd_quan16x16_wrapper<av1_highbd_quantize_fp_c>,
+             &highbd_quan16x16_wrapper<av1_highbd_quantize_fp_avx2>, TX_16X16,
+             AOM_BITS_8),
+  make_tuple(&highbd_quan16x16_wrapper<av1_highbd_quantize_fp_c>,
+             &highbd_quan16x16_wrapper<av1_highbd_quantize_fp_avx2>, TX_16X16,
+             AOM_BITS_10),
+  make_tuple(&highbd_quan16x16_wrapper<av1_highbd_quantize_fp_c>,
+             &highbd_quan16x16_wrapper<av1_highbd_quantize_fp_avx2>, TX_16X16,
+             AOM_BITS_12),
+  make_tuple(&highbd_quan32x32_wrapper<av1_highbd_quantize_fp_c>,
+             &highbd_quan32x32_wrapper<av1_highbd_quantize_fp_avx2>, TX_32X32,
+             AOM_BITS_8),
+  make_tuple(&highbd_quan32x32_wrapper<av1_highbd_quantize_fp_c>,
+             &highbd_quan32x32_wrapper<av1_highbd_quantize_fp_avx2>, TX_32X32,
+             AOM_BITS_10),
+  make_tuple(&highbd_quan32x32_wrapper<av1_highbd_quantize_fp_c>,
+             &highbd_quan32x32_wrapper<av1_highbd_quantize_fp_avx2>, TX_32X32,
+             AOM_BITS_12),
+#if CONFIG_TX64X64
+  make_tuple(&highbd_quan64x64_wrapper<av1_highbd_quantize_fp_c>,
+             &highbd_quan64x64_wrapper<av1_highbd_quantize_fp_avx2>, TX_64X64,
+             AOM_BITS_8),
+  make_tuple(&highbd_quan64x64_wrapper<av1_highbd_quantize_fp_c>,
+             &highbd_quan64x64_wrapper<av1_highbd_quantize_fp_avx2>, TX_64X64,
+             AOM_BITS_10),
+  make_tuple(&highbd_quan64x64_wrapper<av1_highbd_quantize_fp_c>,
+             &highbd_quan64x64_wrapper<av1_highbd_quantize_fp_avx2>, TX_64X64,
+             AOM_BITS_12),
+#endif  // CONFIG_TX64X64
+#endif  // CONFIG_HIGHBITDEPTH
 };
 
 INSTANTIATE_TEST_CASE_P(AVX2, QuantizeTest,
                         ::testing::ValuesIn(kQParamArrayAvx2));
-#endif
+#endif  // HAVE_AVX2
 
 #if HAVE_SSE2
 const QuantizeParam kQParamArraySSE2[] = { make_tuple(

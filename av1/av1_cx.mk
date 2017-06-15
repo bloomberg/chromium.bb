@@ -125,6 +125,7 @@ AV1_CX_SRCS-$(HAVE_AVX2) += encoder/x86/av1_quantize_avx2.c
 AV1_CX_SRCS-$(HAVE_SSE2) += encoder/x86/temporal_filter_apply_sse2.asm
 ifeq ($(CONFIG_HIGHBITDEPTH),yes)
 AV1_CX_SRCS-$(HAVE_SSE2) += encoder/x86/highbd_block_error_intrin_sse2.c
+AV1_CX_SRCS-$(HAVE_AVX2) += encoder/x86/av1_highbd_quantize_avx2.c
 endif
 
 AV1_CX_SRCS-$(HAVE_SSE2) += encoder/x86/dct_sse2.asm
