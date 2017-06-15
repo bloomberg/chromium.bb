@@ -46,6 +46,8 @@ static_library("internal") {
     "scheduler/scheduler.h",
     "scheduler/scheduler_impl.cc",
     "scheduler/scheduler_impl.h",
+    "service_config_impl.cc",
+    "service_config_impl.h",
     "startup_status.cc",
     "startup_status.h",
     "stats.cc",
@@ -75,6 +77,7 @@ source_set("unit_tests") {
     "proto_conversions_unittest.cc",
     "scheduler/device_status_listener_unittest.cc",
     "scheduler/scheduler_impl_unittest.cc",
+    "service_config_impl_unittest.cc",
   ]
 
   deps = [

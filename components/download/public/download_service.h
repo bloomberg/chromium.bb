@@ -22,6 +22,7 @@ namespace download {
 class Client;
 struct DownloadParams;
 struct SchedulingParams;
+class ServiceConfig;
 
 using TaskFinishedCallback = base::Callback<void(bool)>;
 
@@ -50,6 +51,9 @@ class DownloadService : public KeyedService {
     // error on some internal component like the persistence layer.
     UNAVAILABLE = 2,
   };
+
+  // Returns useful configuration information about the DownloadService.
+  virtual const ServiceConfig& GetConfig() = 0;
 
   // Callback method to run by the service when a pre-scheduled task starts.
   // This method is invoked on main thread and while it is running, the system

@@ -26,12 +26,14 @@ class DownloadServiceImplTest : public testing::Test {
   ~DownloadServiceImplTest() override = default;
 
   void SetUp() override {
+    auto config = base::MakeUnique<Configuration>();
     auto controller = base::MakeUnique<test::MockController>();
     controller_ = controller.get();
 
     EXPECT_CALL(*controller_, Initialize()).Times(1);
 
-    service_ = base::MakeUnique<DownloadServiceImpl>(std::move(controller));
+    service_ = base::MakeUnique<DownloadServiceImpl>(std::move(config),
+                                                     std::move(controller));
   }
 
  protected:

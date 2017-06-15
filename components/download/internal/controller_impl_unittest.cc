@@ -74,12 +74,11 @@ class DownloadServiceControllerImplTest : public testing::Test {
     auto client = base::MakeUnique<test::MockClient>();
     auto driver = base::MakeUnique<test::TestDownloadDriver>();
     auto store = base::MakeUnique<test::TestStore>();
-    auto config = base::MakeUnique<Configuration>();
+    config_ = base::MakeUnique<Configuration>();
 
     client_ = client.get();
     driver_ = driver.get();
     store_ = store.get();
-    config_ = config.get();
 
     auto clients = base::MakeUnique<DownloadClientMap>();
     clients->insert(std::make_pair(DownloadClient::TEST, std::move(client)));
@@ -95,7 +94,7 @@ class DownloadServiceControllerImplTest : public testing::Test {
     scheduler_ = scheduler.get();
 
     controller_ = base::MakeUnique<ControllerImpl>(
-        std::move(client_set), std::move(config), std::move(driver),
+        config_.get(), std::move(client_set), std::move(driver),
         std::move(model), std::move(device_status_listener),
         std::move(scheduler), std::move(task_scheduler));
   }
@@ -116,7 +115,7 @@ class DownloadServiceControllerImplTest : public testing::Test {
   base::ThreadTaskRunnerHandle handle_;
 
   std::unique_ptr<ControllerImpl> controller_;
-  Configuration* config_;
+  std::unique_ptr<Configuration> config_;
   test::MockClient* client_;
   test::TestDownloadDriver* driver_;
   test::TestStore* store_;
