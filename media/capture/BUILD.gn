@@ -186,25 +186,6 @@ component("capture_lib") {
       "video/blob_utils.h",
     ]
   }
-
-  if (is_chromeos) {
-    sources += [
-      "video/chromeos/camera_device_context.cc",
-      "video/chromeos/camera_device_delegate.cc",
-      "video/chromeos/camera_hal_delegate.cc",
-      "video/chromeos/camera_metadata_utils.cc",
-      "video/chromeos/display_rotation_observer.cc",
-      "video/chromeos/pixel_format_utils.cc",
-      "video/chromeos/stream_buffer_manager.cc",
-      "video/chromeos/video_capture_device_arc_chromeos.cc",
-      "video/chromeos/video_capture_device_factory_chromeos.cc",
-    ]
-    deps += [
-      "//media/capture/video/chromeos/mojo:arc_camera3",
-      "//mojo/edk/system",
-      "//third_party/libsync",
-    ]
-  }
 }
 
 test("capture_unittests") {
@@ -243,20 +224,5 @@ test("capture_unittests") {
   if (is_win) {
     # TODO(jschuh): https://crbug.com/167187 fix size_t to int truncations.
     configs += [ "//build/config/compiler:no_size_t_to_int_warning" ]
-  }
-
-  if (is_chromeos) {
-    sources += [
-      "video/chromeos/camera_device_delegate_unittest.cc",
-      "video/chromeos/camera_hal_delegate_unittest.cc",
-      "video/chromeos/mock_camera_module.cc",
-      "video/chromeos/mock_video_capture_client.cc",
-      "video/chromeos/stream_buffer_manager_unittest.cc",
-    ]
-    deps += [
-      "//media/capture/video/chromeos/mojo:arc_camera3",
-      "//mojo/edk/system",
-      "//third_party/libsync",
-    ]
   }
 }
