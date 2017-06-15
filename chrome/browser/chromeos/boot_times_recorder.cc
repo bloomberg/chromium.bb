@@ -337,15 +337,12 @@ void BootTimesRecorder::LoginDone(bool is_user_new) {
         content::NOTIFICATION_RENDER_WIDGET_HOST_DID_UPDATE_BACKING_STORE,
         content::NotificationService::AllSources());
   }
-  // Don't swamp the FILE thread right away.
-  BrowserThread::PostDelayedTask(
-      BrowserThread::FILE,
-      FROM_HERE,
-      base::Bind(&WriteTimes,
-                 kLoginTimes,
-                 (is_user_new ? kUmaLoginNewUser : kUmaLogin),
-                 kUmaLoginPrefix,
-                 login_time_markers_),
+  // Don't swamp the background thread right away.
+  base::PostDelayedTaskWithTraits(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      base::BindOnce(&WriteTimes, kLoginTimes,
+                     (is_user_new ? kUmaLoginNewUser : kUmaLogin),
+                     kUmaLoginPrefix, login_time_markers_),
       base::TimeDelta::FromMilliseconds(kLoginTimeWriteDelayMs));
 }
 
