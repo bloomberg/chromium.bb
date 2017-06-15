@@ -251,6 +251,8 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   gfx::Size webvr_surface_size_ = {0, 0};
 
   std::vector<vr::Mat4f> webvr_head_pose_;
+  std::vector<base::TimeTicks> webvr_time_pose_;
+  std::vector<base::TimeTicks> webvr_time_js_submit_;
   bool web_vr_mode_;
   bool ready_to_draw_ = false;
   bool surfaceless_rendering_;
