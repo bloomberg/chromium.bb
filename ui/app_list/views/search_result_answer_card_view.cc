@@ -37,6 +37,11 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
     SetLayoutManager(answer_container_layout);
   }
 
+  ~SearchAnswerContainerView() override {
+    if (search_result_)
+      search_result_->RemoveObserver(this);
+  }
+
   void SetSelected(bool selected) {
     if (selected == selected_)
       return;
@@ -60,7 +65,7 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
 
     if (search_result_)
       search_result_->RemoveObserver(this);
-    search_result_ = search_result ? search_result->Duplicate() : nullptr;
+    search_result_ = search_result;
     if (search_result_) {
       search_result_->AddObserver(this);
       SetAccessibleName(search_result_->title());
@@ -77,13 +82,14 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
   // views::ButtonListener overrides:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
     DCHECK(sender == this);
-    DCHECK(search_result_);
-    view_delegate_->OpenSearchResult(search_result_.get(), false,
-                                     event.flags());
+    if (search_result_)
+      view_delegate_->OpenSearchResult(search_result_, false, event.flags());
   }
 
   // SearchResultObserver overrides:
   void OnViewHoverStateChanged() override { UpdateBackgroundColor(); }
+
+  void OnResultDestroying() override { search_result_ = nullptr; }
 
  private:
   void UpdateBackgroundColor() {
@@ -101,7 +107,7 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
 
   AppListViewDelegate* const view_delegate_;  // Not owned.
   bool selected_ = false;
-  std::unique_ptr<SearchResult> search_result_;
+  SearchResult* search_result_ = nullptr;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(SearchAnswerContainerView);
 };

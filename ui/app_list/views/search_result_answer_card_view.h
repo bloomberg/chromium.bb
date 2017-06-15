@@ -18,9 +18,6 @@ class APP_LIST_EXPORT SearchResultAnswerCardView
   explicit SearchResultAnswerCardView(AppListViewDelegate* view_delegate);
   ~SearchResultAnswerCardView() override;
 
- private:
-  class SearchAnswerContainerView;
-
   // Overridden from views::View:
   const char* GetClassName() const override;
 
@@ -33,6 +30,9 @@ class APP_LIST_EXPORT SearchResultAnswerCardView
   void UpdateSelectedIndex(int old_selected, int new_selected) override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+
+ private:
+  class SearchAnswerContainerView;
 
   // Pointer to the container of the search answer; owned by the view hierarchy.
   // It's visible iff we have a search answer result.
