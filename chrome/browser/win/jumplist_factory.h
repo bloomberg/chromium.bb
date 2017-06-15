@@ -6,12 +6,14 @@
 #define CHROME_BROWSER_WIN_JUMPLIST_FACTORY_H_
 
 #include "base/memory/singleton.h"
-#include "chrome/browser/win/jumplist.h"
-#include "components/keyed_service/content/refcounted_browser_context_keyed_service_factory.h"
+#include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
-class JumpListFactory : public RefcountedBrowserContextKeyedServiceFactory {
+class Profile;
+class JumpList;
+
+class JumpListFactory : public BrowserContextKeyedServiceFactory {
  public:
-  static scoped_refptr<JumpList> GetForProfile(Profile* profile);
+  static JumpList* GetForProfile(Profile* profile);
 
   static JumpListFactory* GetInstance();
 
@@ -21,7 +23,7 @@ class JumpListFactory : public RefcountedBrowserContextKeyedServiceFactory {
   ~JumpListFactory() override;
 
   // BrowserContextKeyedServiceFactory:
-  scoped_refptr<RefcountedKeyedService> BuildServiceInstanceFor(
+  KeyedService* BuildServiceInstanceFor(
       content::BrowserContext* context) const override;
 };
 
