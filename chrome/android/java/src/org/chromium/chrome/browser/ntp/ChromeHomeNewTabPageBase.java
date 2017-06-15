@@ -37,7 +37,7 @@ public abstract class ChromeHomeNewTabPageBase implements NativePage {
     final OverviewModeObserver mOverviewModeObserver;
     @Nullable
     final LayoutManagerChrome mLayoutManager;
-    final BottomSheet mBottomSheet;
+    BottomSheet mBottomSheet;
     final String mTitle;
 
     private boolean mShowOverviewOnClose;
@@ -96,9 +96,12 @@ public abstract class ChromeHomeNewTabPageBase implements NativePage {
                 // If the NTP is loading, the sheet state will be set to SHEET_STATE_HALF.
                 if (TextUtils.equals(tab.getUrl(), getUrl())) return;
 
-                mBottomSheet.getBottomSheetMetrics().setSheetCloseReason(
-                        BottomSheetMetrics.CLOSED_BY_NAVIGATION);
-                mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_PEEK, true);
+                mBottomSheet = mTab.getActivity().getBottomSheet();
+                if (mBottomSheet != null) {
+                    mBottomSheet.getBottomSheetMetrics().setSheetCloseReason(
+                            BottomSheetMetrics.CLOSED_BY_NAVIGATION);
+                    mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_PEEK, true);
+                }
             }
         };
         mTab.addObserver(mTabObserver);
@@ -108,9 +111,11 @@ public abstract class ChromeHomeNewTabPageBase implements NativePage {
         boolean tabAlreadyShowing = mTabModelSelector.getCurrentTab() == mTab;
         if (tabAlreadyShowing) onNewTabPageShown();
 
-        mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_HALF, true);
-        mBottomSheet.getBottomSheetMetrics().recordSheetOpenReason(
-                BottomSheetMetrics.OPENED_BY_NEW_TAB_CREATION);
+        if (mBottomSheet != null) {
+            mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_HALF, true);
+            mBottomSheet.getBottomSheetMetrics().recordSheetOpenReason(
+                    BottomSheetMetrics.OPENED_BY_NEW_TAB_CREATION);
+        }
 
         // TODO(twellington): disallow moving the NTP to the other window in Android N+
         //                    multi-window mode.
@@ -168,9 +173,13 @@ public abstract class ChromeHomeNewTabPageBase implements NativePage {
         mCloseButton.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                mBottomSheet.getBottomSheetMetrics().setSheetCloseReason(
-                        BottomSheetMetrics.CLOSED_BY_NTP_CLOSE_BUTTON);
-                mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_PEEK, true);
+                mBottomSheet = mTab.getActivity().getBottomSheet();
+                if (mBottomSheet != null) {
+                    mBottomSheet.getBottomSheetMetrics().setSheetCloseReason(
+                            BottomSheetMetrics.CLOSED_BY_NTP_CLOSE_BUTTON);
+                    mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_PEEK, true);
+                }
+
                 if (mShowOverviewOnClose && getLayoutManager() != null) {
                     getLayoutManager().showOverview(false);
                 }
