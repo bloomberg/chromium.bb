@@ -1516,15 +1516,16 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // text-decoration-style
-  static TextDecorationStyle InitialTextDecorationStyle() {
-    return kTextDecorationStyleSolid;
+  static ETextDecorationStyle InitialTextDecorationStyle() {
+    return ETextDecorationStyle::kSolid;
   }
-  TextDecorationStyle GetTextDecorationStyle() const {
-    return static_cast<TextDecorationStyle>(
+  ETextDecorationStyle TextDecorationStyle() const {
+    return static_cast<ETextDecorationStyle>(
         rare_non_inherited_data_->text_decoration_style_);
   }
-  void SetTextDecorationStyle(TextDecorationStyle v) {
-    SET_VAR(rare_non_inherited_data_, text_decoration_style_, v);
+  void SetTextDecorationStyle(ETextDecorationStyle v) {
+    SET_VAR(rare_non_inherited_data_, text_decoration_style_,
+            static_cast<unsigned>(v));
   }
 
   // text-decoration-skip

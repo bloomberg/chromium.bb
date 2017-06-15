@@ -193,13 +193,7 @@ inline TextDecoration& operator^=(TextDecoration& a, TextDecoration b) {
                                          static_cast<unsigned>(b));
 }
 
-enum TextDecorationStyle {
-  kTextDecorationStyleSolid,
-  kTextDecorationStyleDouble,
-  kTextDecorationStyleDotted,
-  kTextDecorationStyleDashed,
-  kTextDecorationStyleWavy
-};
+enum class ETextDecorationStyle { kSolid, kDouble, kDotted, kDashed, kWavy };
 
 static const size_t kTextDecorationSkipBits = 3;
 enum class TextDecorationSkip { kNone = 0x0, kObjects = 0x1, kInk = 0x2 };

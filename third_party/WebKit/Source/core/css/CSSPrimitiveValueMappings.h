@@ -1008,24 +1008,24 @@ inline TextDecoration CSSIdentifierValue::ConvertTo() const {
 }
 
 template <>
-inline TextDecorationStyle CSSIdentifierValue::ConvertTo() const {
+inline ETextDecorationStyle CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueSolid:
-      return kTextDecorationStyleSolid;
+      return ETextDecorationStyle::kSolid;
     case CSSValueDouble:
-      return kTextDecorationStyleDouble;
+      return ETextDecorationStyle::kDouble;
     case CSSValueDotted:
-      return kTextDecorationStyleDotted;
+      return ETextDecorationStyle::kDotted;
     case CSSValueDashed:
-      return kTextDecorationStyleDashed;
+      return ETextDecorationStyle::kDashed;
     case CSSValueWavy:
-      return kTextDecorationStyleWavy;
+      return ETextDecorationStyle::kWavy;
     default:
       break;
   }
 
   NOTREACHED();
-  return kTextDecorationStyleSolid;
+  return ETextDecorationStyle::kSolid;
 }
 
 template <>

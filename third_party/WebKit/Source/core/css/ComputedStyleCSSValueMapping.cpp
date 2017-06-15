@@ -1147,17 +1147,17 @@ static CSSValue* RenderTextDecorationFlagsToCSSValue(
 }
 
 static CSSValue* ValueForTextDecorationStyle(
-    TextDecorationStyle text_decoration_style) {
+    ETextDecorationStyle text_decoration_style) {
   switch (text_decoration_style) {
-    case kTextDecorationStyleSolid:
+    case ETextDecorationStyle::kSolid:
       return CSSIdentifierValue::Create(CSSValueSolid);
-    case kTextDecorationStyleDouble:
+    case ETextDecorationStyle::kDouble:
       return CSSIdentifierValue::Create(CSSValueDouble);
-    case kTextDecorationStyleDotted:
+    case ETextDecorationStyle::kDotted:
       return CSSIdentifierValue::Create(CSSValueDotted);
-    case kTextDecorationStyleDashed:
+    case ETextDecorationStyle::kDashed:
       return CSSIdentifierValue::Create(CSSValueDashed);
-    case kTextDecorationStyleWavy:
+    case ETextDecorationStyle::kWavy:
       return CSSIdentifierValue::Create(CSSValueWavy);
   }
 
@@ -2877,7 +2877,7 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
     case CSSPropertyTextDecorationSkip:
       return ValueForTextDecorationSkip(style.GetTextDecorationSkip());
     case CSSPropertyTextDecorationStyle:
-      return ValueForTextDecorationStyle(style.GetTextDecorationStyle());
+      return ValueForTextDecorationStyle(style.TextDecorationStyle());
     case CSSPropertyTextDecorationColor:
       return CurrentColorOrValidColor(style, style.TextDecorationColor());
     case CSSPropertyTextJustify:
