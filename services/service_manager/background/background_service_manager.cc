@@ -40,7 +40,7 @@ void CallCallbackWithIdentity(
 }  // namespace
 
 BackgroundServiceManager::BackgroundServiceManager(
-    service_manager::ServiceProcessLauncher::Delegate* launcher_delegate,
+    service_manager::ServiceProcessLauncherDelegate* launcher_delegate,
     std::unique_ptr<base::Value> catalog_contents)
     : background_thread_("service_manager") {
   background_thread_.Start();
@@ -106,7 +106,7 @@ void BackgroundServiceManager::SetInstanceQuitCallbackOnBackgroundThread(
 }
 
 void BackgroundServiceManager::InitializeOnBackgroundThread(
-    service_manager::ServiceProcessLauncher::Delegate* launcher_delegate,
+    service_manager::ServiceProcessLauncherDelegate* launcher_delegate,
     std::unique_ptr<base::Value> catalog_contents) {
   context_ =
       base::MakeUnique<Context>(launcher_delegate, std::move(catalog_contents));

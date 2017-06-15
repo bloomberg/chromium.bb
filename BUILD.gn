@@ -86,6 +86,8 @@ group("gn_all") {
   if (!is_fuchsia) {
     deps += [
       "//components:components_unittests",
+      "//services:services_unittests",
+      "//services/service_manager/public/cpp",
       "//skia:skia_unittests",
       "//tools/metrics:metrics_metadata",
       "//ui/base:ui_base_unittests",
@@ -177,8 +179,6 @@ group("gn_all") {
       "//mojo/edk/test:mojo_public_bindings_unittests",
       "//mojo/edk/test:mojo_public_system_unittests",
       "//net:net_perftests",
-      "//services:services_unittests",
-      "//services/service_manager/public/cpp",
       "//storage:storage_unittests",
       "//third_party/WebKit/Source/platform:blink_platform_unittests",
       "//third_party/WebKit/Source/platform/heap:blink_heap_unittests",

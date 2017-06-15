@@ -79,14 +79,14 @@ namespace {
 constexpr size_t kMaximumMojoMessageSize = 128 * 1024 * 1024;
 
 class ServiceProcessLauncherDelegateImpl
-    : public service_manager::ServiceProcessLauncher::Delegate {
+    : public service_manager::ServiceProcessLauncherDelegate {
  public:
   explicit ServiceProcessLauncherDelegateImpl(MainDelegate* main_delegate)
       : main_delegate_(main_delegate) {}
   ~ServiceProcessLauncherDelegateImpl() override {}
 
  private:
-  // service_manager::ServiceProcessLauncher::Delegate:
+  // service_manager::ServiceProcessLauncherDelegate:
   void AdjustCommandLineArgumentsForTarget(
       const service_manager::Identity& target,
       base::CommandLine* command_line) override {

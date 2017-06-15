@@ -14,7 +14,11 @@
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/interfaces/connector.mojom.h"
 #include "services/service_manager/public/interfaces/service.mojom.h"
+#include "services/service_manager/runner/host/service_process_launcher_delegate.h"
+
+#if !defined(OS_IOS)
 #include "services/service_manager/runner/host/service_process_launcher.h"
+#endif
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -32,7 +36,7 @@ class ServiceManager;
 class BackgroundServiceManager {
  public:
   BackgroundServiceManager(
-      service_manager::ServiceProcessLauncher::Delegate* launcher_delegate,
+      service_manager::ServiceProcessLauncherDelegate* launcher_delegate,
       std::unique_ptr<base::Value> catalog_contents);
   ~BackgroundServiceManager();
 
@@ -57,7 +61,7 @@ class BackgroundServiceManager {
 
  private:
   void InitializeOnBackgroundThread(
-      service_manager::ServiceProcessLauncher::Delegate* launcher_delegate,
+      service_manager::ServiceProcessLauncherDelegate* launcher_delegate,
       std::unique_ptr<base::Value> catalog_contents);
   void ShutDownOnBackgroundThread(base::WaitableEvent* done_event);
   void StartServiceOnBackgroundThread(const Identity& identity);

@@ -62,29 +62,27 @@ component("cpp_types") {
   defines = [ "SERVICE_MANAGER_PUBLIC_CPP_TYPES_IMPL" ]
 }
 
-if (!is_ios) {
-  static_library("service_test_support") {
-    testonly = true
-    sources = [
-      "service_test.cc",
-      "service_test.h",
-    ]
+static_library("service_test_support") {
+  testonly = true
+  sources = [
+    "service_test.cc",
+    "service_test.h",
+  ]
 
-    public_deps = [
-      ":cpp",
-      "//testing/gtest",
-    ]
+  public_deps = [
+    ":cpp",
+    "//testing/gtest",
+  ]
 
-    deps = [
-      "//base",
-      "//base/test:test_support",
-      "//mojo/edk/system",
-      "//mojo/public/cpp/bindings",
-      "//mojo/public/cpp/system",
-      "//services/service_manager/background:lib",
-      "//services/service_manager/public/interfaces",
-    ]
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//mojo/edk/system",
+    "//mojo/public/cpp/bindings",
+    "//mojo/public/cpp/system",
+    "//services/service_manager/background:lib",
+    "//services/service_manager/public/interfaces",
+  ]
 
-    data_deps = []
-  }
+  data_deps = []
 }
