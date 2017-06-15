@@ -102,6 +102,9 @@ class MutableProfileOAuth2TokenServiceDelegate
                            PersistenceDBUpgrade);
   FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceDelegateTest,
                            FetchPersistentError);
+  FRIEND_TEST_ALL_PREFIXES(
+      MutableProfileOAuth2TokenServiceDelegateTest,
+      PersistenceLoadCredentialsEmptyPrimaryAccountId_DiceEnabled);
   FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceDelegateTest,
                            PersistenceLoadCredentials);
   FRIEND_TEST_ALL_PREFIXES(MutableProfileOAuth2TokenServiceDelegateTest,

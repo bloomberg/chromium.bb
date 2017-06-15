@@ -32,6 +32,10 @@ bool IsAccountConsistencyMirrorEnabled() {
   return GetAccountConsistencyMethod() == AccountConsistencyMethod::kMirror;
 }
 
+bool IsAccountConsistencyDiceEnabled() {
+  return GetAccountConsistencyMethod() == AccountConsistencyMethod::kDice;
+}
+
 bool IsExtensionsMultiAccount() {
 #if defined(OS_ANDROID) || defined(OS_IOS)
   NOTREACHED() << "Extensions are not enabled on Android or iOS";
