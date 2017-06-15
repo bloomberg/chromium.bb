@@ -803,7 +803,7 @@ Node* DragController::DraggableNode(const LocalFrame* src,
     }
     if (node->IsElementNode()) {
       EUserDrag drag_mode = layout_object->Style()->UserDrag();
-      if (drag_mode == DRAG_NONE)
+      if (drag_mode == EUserDrag::kNone)
         continue;
       // Even if the image is part of a selection, we always only drag the image
       // in this case.
@@ -813,7 +813,7 @@ Node* DragController::DraggableNode(const LocalFrame* src,
         return node;
       }
       // Other draggable elements are considered unselectable.
-      if (drag_mode == DRAG_ELEMENT) {
+      if (drag_mode == EUserDrag::kElement) {
         candidate_drag_type = kDragSourceActionDHTML;
         break;
       }
