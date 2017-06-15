@@ -447,7 +447,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   UINavigationController* settingsDetails =
       ios::GetChromeBrowserProvider()
           ->GetChromeIdentityService()
-          ->CreateWebAndAppSettingDetailsController(
+          ->NewWebAndAppSettingDetails(
               [self authService]->GetAuthenticatedIdentity(), self);
   UIImage* closeIcon = [ChromeIcon closeIcon];
   SEL action = @selector(closeGoogleActivitySettings:);
@@ -509,10 +509,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)showAccountDetails:(ChromeIdentity*)identity {
   if ([_alertCoordinator isVisible])
     return;
-  UIViewController* accountDetails =
-      ios::GetChromeBrowserProvider()
-          ->GetChromeIdentityService()
-          ->CreateAccountDetailsController(identity, self);
+  UIViewController* accountDetails = ios::GetChromeBrowserProvider()
+                                         ->GetChromeIdentityService()
+                                         ->NewAccountDetails(identity, self);
   if (!accountDetails) {
     // Failed to create a new account details. Ignored.
     return;
