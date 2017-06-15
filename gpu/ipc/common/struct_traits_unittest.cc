@@ -31,58 +31,54 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
  private:
   // TraitsTestService:
   void EchoDxDiagNode(const DxDiagNode& d,
-                      const EchoDxDiagNodeCallback& callback) override {
-    callback.Run(d);
+                      EchoDxDiagNodeCallback callback) override {
+    std::move(callback).Run(d);
   }
 
   void EchoGpuDevice(const GPUInfo::GPUDevice& g,
-                     const EchoGpuDeviceCallback& callback) override {
-    callback.Run(g);
+                     EchoGpuDeviceCallback callback) override {
+    std::move(callback).Run(g);
   }
 
-  void EchoGpuInfo(const GPUInfo& g,
-                   const EchoGpuInfoCallback& callback) override {
-    callback.Run(g);
+  void EchoGpuInfo(const GPUInfo& g, EchoGpuInfoCallback callback) override {
+    std::move(callback).Run(g);
   }
 
-  void EchoMailbox(const Mailbox& m,
-                   const EchoMailboxCallback& callback) override {
-    callback.Run(m);
+  void EchoMailbox(const Mailbox& m, EchoMailboxCallback callback) override {
+    std::move(callback).Run(m);
   }
 
   void EchoMailboxHolder(const MailboxHolder& r,
-                         const EchoMailboxHolderCallback& callback) override {
-    callback.Run(r);
+                         EchoMailboxHolderCallback callback) override {
+    std::move(callback).Run(r);
   }
 
   void EchoSyncToken(const SyncToken& s,
-                     const EchoSyncTokenCallback& callback) override {
-    callback.Run(s);
+                     EchoSyncTokenCallback callback) override {
+    std::move(callback).Run(s);
   }
 
   void EchoVideoDecodeAcceleratorSupportedProfile(
       const VideoDecodeAcceleratorSupportedProfile& v,
-      const EchoVideoDecodeAcceleratorSupportedProfileCallback& callback)
-      override {
-    callback.Run(v);
+      EchoVideoDecodeAcceleratorSupportedProfileCallback callback) override {
+    std::move(callback).Run(v);
   }
 
   void EchoVideoDecodeAcceleratorCapabilities(
       const VideoDecodeAcceleratorCapabilities& v,
-      const EchoVideoDecodeAcceleratorCapabilitiesCallback& callback) override {
-    callback.Run(v);
+      EchoVideoDecodeAcceleratorCapabilitiesCallback callback) override {
+    std::move(callback).Run(v);
   }
 
   void EchoVideoEncodeAcceleratorSupportedProfile(
       const VideoEncodeAcceleratorSupportedProfile& v,
-      const EchoVideoEncodeAcceleratorSupportedProfileCallback& callback)
-      override {
-    callback.Run(v);
+      EchoVideoEncodeAcceleratorSupportedProfileCallback callback) override {
+    std::move(callback).Run(v);
   }
 
   void EchoGpuPreferences(const GpuPreferences& prefs,
-                          const EchoGpuPreferencesCallback& callback) override {
-    callback.Run(prefs);
+                          EchoGpuPreferencesCallback callback) override {
+    std::move(callback).Run(prefs);
   }
 
   base::MessageLoop loop_;

@@ -152,9 +152,6 @@ mojom("interfaces") {
     "//ui/gfx/geometry/mojo",
   ]
 
-  # TODO(crbug.com/714018): Convert the implementation to use OnceCallback.
-  use_once_callback = false
-
   # TODO(crbug.com/699569): Convert to use the new JS bindings.
   use_new_js_bindings = false
 }
@@ -168,9 +165,6 @@ mojom("test_interfaces") {
   public_deps = [
     ":interfaces",
   ]
-
-  # TODO(crbug.com/714018): Convert the implementation to use OnceCallback.
-  use_once_callback = false
 }
 
 source_set("struct_traits") {
