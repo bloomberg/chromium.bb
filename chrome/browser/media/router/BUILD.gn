@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 #
 
+import("//extensions/features/features.gni")
 import("//testing/test.gni")
 
 static_library("router") {
@@ -63,7 +64,7 @@ static_library("router") {
     "route_message_observer.h",
   ]
 
-  if (!is_android) {
+  if (enable_extensions) {
     deps += [
       "discovery",
       "//extensions/browser",
@@ -102,7 +103,7 @@ static_library("test_support") {
     "test_helper.h",
   ]
 
-  if (!is_android) {
+  if (enable_extensions) {
     deps += [
       "//chrome/common/media_router/mojo:media_router",
       "//chrome/common/media_router/mojo:media_router_test_interfaces",

@@ -382,7 +382,6 @@ if (!is_android) {
         "//content/test:test_support",
         "//crypto:platform",
         "//crypto:test_support",
-        "//extensions/features",
         "//google_apis:test_support",
         "//net",
         "//net:net_resources",
@@ -398,6 +397,9 @@ if (!is_android) {
         "//ui/resources:ui_test_pak",
         "//ui/web_dialogs:test_support",
       ]
+      if (enable_extensions) {
+        deps += [ "//extensions/features" ]
+      }
     }
   }
 
@@ -2318,14 +2320,18 @@ test("browser_tests") {
       }
     } else {  # !is_chromeos
       sources -= [
-        "../browser/extensions/api/enterprise_device_attributes/enterprise_device_attributes_apitest.cc",
-        "../browser/extensions/api/enterprise_platform_keys/enterprise_platform_keys_apitest_nss.cc",
-        "../browser/extensions/api/platform_keys/platform_keys_apitest_nss.cc",
-        "../browser/extensions/api/terminal/terminal_private_apitest.cc",
         "../browser/invalidation/profile_invalidation_provider_factory_browsertest.cc",
         "../browser/net/nss_context_chromeos_browsertest.cc",
         "data/webui/certificate_viewer_ui_test-inl.h",
       ]
+      if (enable_extensions) {
+        sources -= [
+          "../browser/extensions/api/enterprise_device_attributes/enterprise_device_attributes_apitest.cc",
+          "../browser/extensions/api/enterprise_platform_keys/enterprise_platform_keys_apitest_nss.cc",
+          "../browser/extensions/api/platform_keys/platform_keys_apitest_nss.cc",
+          "../browser/extensions/api/terminal/terminal_private_apitest.cc",
+        ]
+      }
       if (toolkit_views) {
         sources -= [ "../browser/ui/views/select_file_dialog_extension_browsertest.cc" ]
       }
@@ -2571,7 +2577,7 @@ test("browser_tests") {
     }
     if (use_brlapi) {
       deps += [ "//build/linux/libbrlapi" ]
-    } else {
+    } else if (enable_extensions) {
       sources -= [ "../browser/extensions/api/braille_display_private/braille_display_private_apitest.cc" ]
     }
     if (is_chrome_branded && safe_browsing_mode == 1 && !is_mac) {

@@ -13,6 +13,8 @@ import("//chrome/process_version_rc_template.gni")  # For branding_file_path.
 
 assert(is_desktop_linux)
 assert(current_cpu == "x64")
+assert(enable_extensions,
+       "Cannot depend on extensions because enable_extensions=false.")
 
 # The packages list the exact versions of each library used. The versions used
 # on the bots are likely different than those on your workstation, so you'll

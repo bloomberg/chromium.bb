@@ -7,47 +7,47 @@ import("//build/config/ui.gni")
 import("//extensions/features/features.gni")
 
 assert(!is_android && !is_ios)
+assert(enable_extensions,
+       "Cannot depend on extensions because enable_extensions=false.")
 
 static_library("apps") {
   sources = []
 
-  if (enable_extensions) {
-    sources += [
-      "app_lifetime_monitor.cc",
-      "app_lifetime_monitor.h",
-      "app_lifetime_monitor_factory.cc",
-      "app_lifetime_monitor_factory.h",
-      "app_restore_service.cc",
-      "app_restore_service.h",
-      "app_restore_service_factory.cc",
-      "app_restore_service_factory.h",
-      "browser_context_keyed_service_factories.cc",
-      "browser_context_keyed_service_factories.h",
-      "launcher.cc",
-      "launcher.h",
-      "metrics_names.h",
-      "saved_files_service.cc",
-      "saved_files_service.h",
-      "saved_files_service_factory.cc",
-      "saved_files_service_factory.h",
-      "switches.cc",
-      "switches.h",
-    ]
+  sources += [
+    "app_lifetime_monitor.cc",
+    "app_lifetime_monitor.h",
+    "app_lifetime_monitor_factory.cc",
+    "app_lifetime_monitor_factory.h",
+    "app_restore_service.cc",
+    "app_restore_service.h",
+    "app_restore_service_factory.cc",
+    "app_restore_service_factory.h",
+    "browser_context_keyed_service_factories.cc",
+    "browser_context_keyed_service_factories.h",
+    "launcher.cc",
+    "launcher.h",
+    "metrics_names.h",
+    "saved_files_service.cc",
+    "saved_files_service.h",
+    "saved_files_service_factory.cc",
+    "saved_files_service_factory.h",
+    "switches.cc",
+    "switches.h",
+  ]
 
-    configs += [ "//build/config/compiler:wexit_time_destructors" ]
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
 
-    deps = [
-      "//components/keyed_service/content",
-      "//content/public/browser",
-      "//content/public/common",
-      "//extensions/browser",
-      "//extensions/common",
-      "//extensions/common/api",
-    ]
+  deps = [
+    "//components/keyed_service/content",
+    "//content/public/browser",
+    "//content/public/common",
+    "//extensions/browser",
+    "//extensions/common",
+    "//extensions/common/api",
+  ]
 
-    if (is_chromeos) {
-      deps += [ "//components/user_manager" ]
-    }
+  if (is_chromeos) {
+    deps += [ "//components/user_manager" ]
   }
 
   # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.

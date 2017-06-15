@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//extensions/features/features.gni")
+
 if (!is_android) {
   import("//build/config/features.gni")
   import("//chrome/common/features.gni")
@@ -73,7 +75,6 @@ static_library("devtools") {
       "//chrome:strings",
       "//chrome/app/theme:theme_resources",
       "//chrome/common",
-      "//chrome/common/extensions/api",
       "//net:http_server",
       "//skia",
       "//third_party/icu",
@@ -143,5 +144,9 @@ static_library("devtools") {
         "device/cast_device_provider.h",
       ]
     }
+  }
+
+  if (enable_extensions) {
+    deps += [ "//chrome/common/extensions/api" ]
   }
 }

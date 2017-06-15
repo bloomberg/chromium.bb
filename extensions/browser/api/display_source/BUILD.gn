@@ -5,6 +5,9 @@
 import("//build/config/features.gni")
 import("//extensions/features/features.gni")
 
+assert(enable_extensions,
+       "Cannot depend on extensions because enable_extensions=false.")
+
 source_set("display_source") {
   sources = [
     "display_source_api.cc",
