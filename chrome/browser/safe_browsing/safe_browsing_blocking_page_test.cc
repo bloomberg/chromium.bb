@@ -35,6 +35,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/google/core/browser/google_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/browser/threat_details.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
@@ -43,6 +44,7 @@
 #include "components/safe_browsing_db/util.h"
 #include "components/security_interstitials/core/controller_client.h"
 #include "components/security_interstitials/core/metrics_helper.h"
+#include "components/security_interstitials/core/urls.h"
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/interstitial_page.h"
@@ -469,6 +471,15 @@ class SafeBrowsingBlockingPageBrowserTest
     return url;
   }
 
+  GURL GetWhitePaperUrl() {
+    return google_util::AppendGoogleLocaleParam(
+        GURL(security_interstitials::kSafeBrowsingWhitePaperUrl),
+        factory_.test_safe_browsing_service()
+            ->ui_manager()
+            .get()
+            ->app_locale());
+  }
+
   void SendCommand(
       security_interstitials::SecurityInterstitialCommands command) {
     WebContents* contents =
@@ -778,6 +789,17 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, DontProceed) {
 
   AssertNoInterstitial(false);   // Assert the interstitial is gone
   EXPECT_EQ(GURL(url::kAboutBlankURL),  // Back to "about:blank"
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+}
+
+IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, VisitWhitePaper) {
+  SetupWarningAndNavigate(browser());
+
+  EXPECT_EQ(VISIBLE, GetVisibility("whitepaper-link"));
+  EXPECT_TRUE(ClickAndWaitForDetach("whitepaper-link"));
+
+  AssertNoInterstitial(false);  // Assert the interstitial is gone
+  EXPECT_EQ(GetWhitePaperUrl(),
             browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
 }
 

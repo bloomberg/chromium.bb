@@ -35,7 +35,7 @@ function setupExtendedReportingCheckbox() {
 
   if ($('whitepaper-link')) {
     $('whitepaper-link').addEventListener('click', function(event) {
-      sendCommand(CMD_OPEN_WHITEPAPER);
+      sendCommand(SecurityInterstitialCommandId.CMD_OPEN_WHITEPAPER);
     });
   }
 
