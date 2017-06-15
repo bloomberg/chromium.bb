@@ -101,7 +101,7 @@ ChromeCleanerFetcher::ChromeCleanerFetcher(
     ChromeCleanerFetchedCallback fetched_callback)
     : fetched_callback_(std::move(fetched_callback)),
       url_fetcher_(net::URLFetcher::Create(0,
-                                           GURL(GetSRTDownloadURL()),
+                                           GetSRTDownloadURL(),
                                            net::URLFetcher::GET,
                                            this)),
       blocking_task_runner_(base::CreateSequencedTaskRunnerWithTraits(

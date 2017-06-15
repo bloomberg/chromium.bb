@@ -95,7 +95,7 @@ class ChromeCleanerFetcherTest : public ::testing::Test,
 };
 
 TEST_F(ChromeCleanerFetcherTest, FetchSuccess) {
-  EXPECT_EQ(GURL(fetcher_->GetOriginalURL()), GURL(GetSRTDownloadURL()));
+  EXPECT_EQ(GURL(fetcher_->GetOriginalURL()), GetSRTDownloadURL());
 
   // Set up the fetcher to return success.
   fetcher_->set_status(net::URLRequestStatus{});

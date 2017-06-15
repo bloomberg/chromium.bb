@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/feature_list.h"
+#include "url/gurl.h"
 
 namespace safe_browsing {
 
@@ -42,7 +43,7 @@ bool SRTPromptNeedsElevationIcon();
 bool IsSwReporterEnabled();
 
 // Returns the correct SRT download URL for the current field trial.
-const char* GetSRTDownloadURL();
+GURL GetSRTDownloadURL();
 
 // Returns the value of the incoming SRT seed.
 std::string GetIncomingSRTSeed();
