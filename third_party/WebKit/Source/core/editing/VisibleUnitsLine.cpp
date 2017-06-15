@@ -86,12 +86,11 @@ ContainerNode* HighestEditableRoot(const Position& position,
 }
 
 Node* PreviousLeafWithSameEditability(Node* node, EditableType editable_type) {
-  bool editable = HasEditableStyle(*node, editable_type);
-  node = PreviousAtomicLeafNode(*node);
-  while (node) {
-    if (editable == HasEditableStyle(*node, editable_type))
-      return node;
-    node = PreviousAtomicLeafNode(*node);
+  const bool editable = HasEditableStyle(*node, editable_type);
+  for (Node* runner = PreviousAtomicLeafNode(*node); runner;
+       runner = PreviousAtomicLeafNode(*runner)) {
+    if (editable == HasEditableStyle(*runner, editable_type))
+      return runner;
   }
   return nullptr;
 }
