@@ -2224,6 +2224,8 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'eve',
       'lakitu-gpu', # crbug.com/732942
       'lakitu-st',
+      'sentry',
+      'wizpig',
   ])
 
   # Paladin configs that exist and should stay as experimental until further

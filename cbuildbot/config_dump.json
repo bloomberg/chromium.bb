@@ -14759,6 +14759,7 @@
             "reef-paladin",
             "samus-paladin",
             "scarlet-paladin",
+            "sentry-paladin",
             "smaug-paladin",
             "stout-paladin",
             "stumpy-paladin",
@@ -14773,6 +14774,7 @@
             "veyron_tiger-paladin",
             "whirlwind-paladin",
             "winky-paladin",
+            "wizpig-paladin",
             "wolf-paladin",
             "wolf-tot-paladin",
             "wooten-paladin"
@@ -21469,6 +21471,7 @@
     },
     "sentry-paladin": {
         "_template": "paladin",
+        "active_waterfall": "chromeos",
         "boards": [
             "sentry"
         ],
@@ -27587,6 +27590,7 @@
     },
     "wizpig-paladin": {
         "_template": "paladin",
+        "active_waterfall": "chromeos",
         "boards": [
             "wizpig"
         ],
