@@ -134,6 +134,18 @@ class TestPlugin : public FakeWebPlugin {
 };
 
 class TestPluginWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
+  WebLocalFrame* CreateChildFrame(
+      WebLocalFrame* parent,
+      WebTreeScopeType scope,
+      const WebString& name,
+      const WebString& fallback_name,
+      WebSandboxFlags sandbox_flags,
+      const WebParsedFeaturePolicy& container_policy,
+      const WebFrameOwnerProperties&) {
+    return CreateLocalChild(parent, scope,
+                            WTF::MakeUnique<TestPluginWebFrameClient>());
+  }
+
   WebPlugin* CreatePlugin(const WebPluginParams& params) override {
     if (params.mime_type == "application/x-webkit-test-webplugin" ||
         params.mime_type == "application/pdf")
@@ -945,7 +957,6 @@ TEST_F(WebPluginContainerTest, ClippedRectsForIframedElement) {
   DCHECK(plugin_container_impl);
 
   IntRect window_rect, clip_rect, unobscured_rect;
-  Vector<IntRect> cut_out_rects;
   CalculateGeometry(plugin_container_impl, window_rect, clip_rect,
                     unobscured_rect);
   EXPECT_RECT_EQ(IntRect(20, 220, 40, 40), window_rect);
@@ -979,8 +990,6 @@ TEST_F(WebPluginContainerTest, ClippedRectsForSubpixelPositionedPlugin) {
   DCHECK(plugin_container_impl);
 
   IntRect window_rect, clip_rect, unobscured_rect;
-  Vector<IntRect> cut_out_rects;
-
   CalculateGeometry(plugin_container_impl, window_rect, clip_rect,
                     unobscured_rect);
   EXPECT_RECT_EQ(IntRect(0, 0, 40, 40), window_rect);

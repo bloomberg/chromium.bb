@@ -62,22 +62,18 @@ class LocalFrameClientImplTest : public ::testing::Test {
     ON_CALL(web_frame_client_, UserAgentOverride())
         .WillByDefault(Return(WebString()));
 
-    FrameTestHelpers::TestWebViewClient web_view_client;
-    web_view_ =
-        WebView::Create(&web_view_client, kWebPageVisibilityStateVisible);
+    helper_.Initialize(true, &web_frame_client_);
     // FIXME: http://crbug.com/363843. This needs to find a better way to
     // not create graphics layers.
-    web_view_->GetSettings()->SetAcceleratedCompositingEnabled(false);
-    main_frame_ = WebLocalFrame::Create(WebTreeScopeType::kDocument,
-                                        &web_frame_client_, nullptr, nullptr);
-    web_view_->SetMainFrame(main_frame_);
+    helper_.WebView()->GetSettings()->SetAcceleratedCompositingEnabled(false);
   }
 
   void TearDown() override {
-    // web_view_->Close() will call UserAgentOverride() in order to store
-    // the information for detached requests.
+    // Tearing down the WebView by resetting the helper will call
+    // UserAgentOverride() in order to store the information for detached
+    // requests.
     EXPECT_CALL(WebFrameClient(), UserAgentOverride());
-    web_view_->Close();
+    helper_.Reset();
   }
 
   WebString UserAgent() {
@@ -86,24 +82,16 @@ class LocalFrameClientImplTest : public ::testing::Test {
     return WebString::FromUTF8(user_agent.data(), user_agent.length());
   }
 
-  WebLocalFrameBase* MainFrame() {
-    return ToWebLocalFrameBase(web_view_->MainFrame());
-  }
-  Document& GetDocument() {
-    return *ToWebLocalFrameBase(main_frame_)->GetFrame()->GetDocument();
-  }
+  WebLocalFrameBase* MainFrame() { return helper_.LocalMainFrame(); }
+  Document& GetDocument() { return *MainFrame()->GetFrame()->GetDocument(); }
   MockWebFrameClient& WebFrameClient() { return web_frame_client_; }
   LocalFrameClient& GetLocalFrameClient() {
-    return *ToLocalFrameClientImpl(ToWebLocalFrameBase(web_view_->MainFrame())
-                                       ->GetFrame()
-                                       ->Loader()
-                                       .Client());
+    return *ToLocalFrameClientImpl(MainFrame()->GetFrame()->Loader().Client());
   }
 
  private:
   MockWebFrameClient web_frame_client_;
-  WebView* web_view_;
-  WebLocalFrame* main_frame_;
+  FrameTestHelpers::WebViewHelper helper_;
 };
 
 TEST_F(LocalFrameClientImplTest, UserAgentOverride) {

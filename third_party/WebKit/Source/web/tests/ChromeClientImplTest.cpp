@@ -82,21 +82,16 @@ class ViewCreatingClient : public FrameTestHelpers::TestWebViewClient {
 class CreateWindowTest : public testing::Test {
  protected:
   void SetUp() override {
-    web_view_ = static_cast<WebViewBase*>(
-        WebViewBase::Create(&web_view_client_, kWebPageVisibilityStateVisible));
-    main_frame_ = WebLocalFrame::Create(WebTreeScopeType::kDocument,
-                                        &web_frame_client_, nullptr, nullptr);
-    web_view_->SetMainFrame(main_frame_);
+    web_view_ = helper_.Initialize(false, nullptr, &web_view_client_);
+    main_frame_ = helper_.LocalMainFrame();
     chrome_client_impl_ =
         ToChromeClientImpl(&web_view_->GetPage()->GetChromeClient());
   }
 
-  void TearDown() override { web_view_->Close(); }
-
   ViewCreatingClient web_view_client_;
+  FrameTestHelpers::WebViewHelper helper_;
   WebViewBase* web_view_;
   WebLocalFrame* main_frame_;
-  FrameTestHelpers::TestWebFrameClient web_frame_client_;
   Persistent<ChromeClientImpl> chrome_client_impl_;
 };
 
@@ -170,7 +165,7 @@ class PagePopupSuppressionTest : public testing::Test {
   PagePopupSuppressionTest() {}
 
   bool CanOpenColorChooser() {
-    LocalFrame* frame = ToWebLocalFrameBase(main_frame_)->GetFrame();
+    LocalFrame* frame = main_frame_->GetFrame();
     Color color;
     return !!chrome_client_impl_->OpenColorChooser(frame, color_chooser_client_,
                                                    color);
@@ -184,25 +179,22 @@ class PagePopupSuppressionTest : public testing::Test {
   }
 
   bool CanOpenPopupMenu() {
-    LocalFrame* frame = ToWebLocalFrameBase(main_frame_)->GetFrame();
+    LocalFrame* frame = main_frame_->GetFrame();
     return !!chrome_client_impl_->OpenPopupMenu(*frame, *select_);
   }
 
   Settings* GetSettings() {
-    LocalFrame* frame = ToWebLocalFrameBase(main_frame_)->GetFrame();
+    LocalFrame* frame = main_frame_->GetFrame();
     return frame->GetDocument()->GetSettings();
   }
 
  protected:
   void SetUp() override {
-    web_view_ = static_cast<WebViewBase*>(
-        WebViewBase::Create(&web_view_client_, kWebPageVisibilityStateVisible));
-    main_frame_ = WebLocalFrame::Create(WebTreeScopeType::kDocument,
-                                        &web_frame_client_, nullptr, nullptr);
-    web_view_->SetMainFrame(main_frame_);
+    web_view_ = helper_.Initialize();
+    main_frame_ = helper_.LocalMainFrame();
     chrome_client_impl_ =
         ToChromeClientImpl(&web_view_->GetPage()->GetChromeClient());
-    LocalFrame* frame = ToWebLocalFrameBase(main_frame_)->GetFrame();
+    LocalFrame* frame = helper_.LocalMainFrame()->GetFrame();
     color_chooser_client_ =
         new FakeColorChooserClient(frame->GetDocument()->documentElement());
     date_time_chooser_client_ =
@@ -210,13 +202,10 @@ class PagePopupSuppressionTest : public testing::Test {
     select_ = HTMLSelectElement::Create(*(frame->GetDocument()));
   }
 
-  void TearDown() override { web_view_->Close(); }
-
  protected:
-  FrameTestHelpers::TestWebViewClient web_view_client_;
-  WebViewBase* web_view_ = nullptr;
-  WebLocalFrame* main_frame_ = nullptr;
-  FrameTestHelpers::TestWebFrameClient web_frame_client_;
+  FrameTestHelpers::WebViewHelper helper_;
+  WebViewBase* web_view_;
+  Persistent<WebLocalFrameBase> main_frame_;
   Persistent<ChromeClientImpl> chrome_client_impl_;
   Persistent<FakeColorChooserClient> color_chooser_client_;
   Persistent<FakeDateTimeChooserClient> date_time_chooser_client_;
