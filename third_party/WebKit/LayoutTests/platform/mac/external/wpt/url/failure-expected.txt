@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 231 tests; 92 PASS, 139 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 241 tests; 98 PASS, 143 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Loading data… 
 FAIL URL's href: file://example:1/ should throw assert_throws: function "() => url.href = test.input" did not throw
 PASS XHR: file://example:1/ should throw 
@@ -181,6 +181,16 @@ PASS XHR: https://example.com%A0/ should throw
 PASS sendBeacon(): https://example.com%A0/ should throw 
 FAIL Location's href: https://example.com%A0/ should throw assert_throws: function "() => self[0].location = test.input" threw object "SyntaxError: Failed to set the 'href' property on 'Location': 'https://example.com%A0/' is not a valid URL." ("SyntaxError") expected object "TypeError" ("TypeError")
 PASS window.open(): https://example.com%A0/ should throw 
+FAIL URL's href: https://0x100000000/test should throw assert_throws: function "() => url.href = test.input" did not throw
+PASS XHR: https://0x100000000/test should throw 
+PASS sendBeacon(): https://0x100000000/test should throw 
+FAIL Location's href: https://0x100000000/test should throw assert_throws: function "() => self[0].location = test.input" threw object "SyntaxError: Failed to set the 'href' property on 'Location': 'https://0x100000000/test' is not a valid URL." ("SyntaxError") expected object "TypeError" ("TypeError")
+PASS window.open(): https://0x100000000/test should throw 
+FAIL URL's href: https://256.0.0.1/test should throw assert_throws: function "() => url.href = test.input" did not throw
+PASS XHR: https://256.0.0.1/test should throw 
+PASS sendBeacon(): https://256.0.0.1/test should throw 
+FAIL Location's href: https://256.0.0.1/test should throw assert_throws: function "() => self[0].location = test.input" threw object "SyntaxError: Failed to set the 'href' property on 'Location': 'https://256.0.0.1/test' is not a valid URL." ("SyntaxError") expected object "TypeError" ("TypeError")
+PASS window.open(): https://256.0.0.1/test should throw 
 FAIL URL's href: https://[0::0::0] should throw assert_throws: function "() => url.href = test.input" did not throw
 PASS XHR: https://[0::0::0] should throw 
 PASS sendBeacon(): https://[0::0::0] should throw 

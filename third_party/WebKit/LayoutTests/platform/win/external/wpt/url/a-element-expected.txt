@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 475 tests; 304 PASS, 171 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 477 tests; 306 PASS, 171 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Loading data… 
 PASS Parsing: <http://example	.
 org> against <http://example.org/foo/bar> 
@@ -394,6 +394,8 @@ FAIL Parsing: <http://0xffffffff1> against <http://other.com/> assert_equals: fa
 FAIL Parsing: <http://256.256.256.256> against <http://other.com/> assert_equals: failure should set href to input expected "http://256.256.256.256" but got "http://256.256.256.256/"
 PASS Parsing: <http://256.256.256.256.256> against <http://other.com/> 
 PASS Parsing: <https://0x.0x.0> against <about:blank> 
+PASS Parsing: <https://0x100000000/test> against <about:blank> 
+PASS Parsing: <https://256.0.0.1/test> against <about:blank> 
 PASS Parsing: <file:///C%3A/> against <about:blank> 
 PASS Parsing: <file:///C%7C/> against <about:blank> 
 PASS Parsing: <pix/submit.gif> against <file:///C:/Users/Domenic/Dropbox/GitHub/tmpvar/jsdom/test/level2/html/files/anchor.html> 
