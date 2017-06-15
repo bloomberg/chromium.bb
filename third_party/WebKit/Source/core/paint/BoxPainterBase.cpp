@@ -12,6 +12,7 @@
 #include "core/style/ShadowList.h"
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/LayoutRect.h"
+#include "platform/geometry/LayoutRectOutsets.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 
 namespace blink {
@@ -352,6 +353,37 @@ BoxPainterBase::FillLayerInfo::FillLayerInfo(
   should_paint_color =
       is_bottom_layer && color.Alpha() &&
       (!should_paint_image || !layer.ImageOccludesNextLayers(doc, style));
+}
+
+FloatRoundedRect BoxPainterBase::RoundedBorderRectForClip(
+    const ComputedStyle& style,
+    const BoxPainterBase::FillLayerInfo info,
+    const FillLayer& bg_layer,
+    const LayoutRect& rect,
+    BackgroundBleedAvoidance bleed_avoidance,
+    bool has_line_box_sibling,
+    const LayoutSize& box_size,
+    LayoutRectOutsets border_padding_insets) {
+  FloatRoundedRect border =
+      info.is_border_fill
+          ? BackgroundRoundedRectAdjustedForBleedAvoidance(
+                style, rect, bleed_avoidance, has_line_box_sibling, box_size,
+                info.include_left_edge, info.include_right_edge)
+          : GetBackgroundRoundedRect(style, rect, has_line_box_sibling,
+                                     box_size, info.include_left_edge,
+                                     info.include_right_edge);
+
+  // Clip to the padding or content boxes as necessary.
+  if (bg_layer.Clip() == kContentFillBox) {
+    border = style.GetRoundedInnerBorderFor(
+        LayoutRect(border.Rect()), border_padding_insets,
+        info.include_left_edge, info.include_right_edge);
+  } else if (bg_layer.Clip() == kPaddingFillBox) {
+    border = style.GetRoundedInnerBorderFor(LayoutRect(border.Rect()),
+                                            info.include_left_edge,
+                                            info.include_right_edge);
+  }
+  return border;
 }
 
 }  // namespace blink

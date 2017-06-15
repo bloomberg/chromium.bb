@@ -4,15 +4,15 @@
 
 #include "core/paint/RoundedInnerRectClipper.h"
 
-#include "core/layout/LayoutObject.h"
 #include "core/paint/PaintInfo.h"
 #include "platform/graphics/paint/ClipDisplayItem.h"
+#include "platform/graphics/paint/DisplayItemClient.h"
 #include "platform/graphics/paint/PaintController.h"
 
 namespace blink {
 
 RoundedInnerRectClipper::RoundedInnerRectClipper(
-    const LayoutObject& layout_object,
+    const DisplayItemClient& layout_object,
     const PaintInfo& paint_info,
     const LayoutRect& rect,
     const FloatRoundedRect& clip_rect,
