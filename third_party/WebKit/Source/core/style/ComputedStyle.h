@@ -2057,39 +2057,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
             b);
   }
 
-  bool IsRunningOpacityAnimationOnCompositor() const {
-    return rare_non_inherited_data_->running_opacity_animation_on_compositor_;
-  }
-  void SetIsRunningOpacityAnimationOnCompositor(bool b = true) {
-    SET_VAR(rare_non_inherited_data_, running_opacity_animation_on_compositor_,
-            b);
-  }
-
-  bool IsRunningTransformAnimationOnCompositor() const {
-    return rare_non_inherited_data_->running_transform_animation_on_compositor_;
-  }
-  void SetIsRunningTransformAnimationOnCompositor(bool b = true) {
-    SET_VAR(rare_non_inherited_data_,
-            running_transform_animation_on_compositor_, b);
-  }
-
-  bool IsRunningFilterAnimationOnCompositor() const {
-    return rare_non_inherited_data_->running_filter_animation_on_compositor_;
-  }
-  void SetIsRunningFilterAnimationOnCompositor(bool b = true) {
-    SET_VAR(rare_non_inherited_data_, running_filter_animation_on_compositor_,
-            b);
-  }
-
-  bool IsRunningBackdropFilterAnimationOnCompositor() const {
-    return rare_non_inherited_data_
-        ->running_backdrop_filter_animation_on_compositor_;
-  }
-  void SetIsRunningBackdropFilterAnimationOnCompositor(bool b = true) {
-    SET_VAR(rare_non_inherited_data_,
-            running_backdrop_filter_animation_on_compositor_, b);
-  }
-
   // Column utility functions.
   void ClearMultiCol();
   bool SpecifiesColumns() const {
