@@ -380,6 +380,9 @@ void VrShellGl::SubmitWebVRFrame(int16_t frame_index,
   DCHECK(submit_client_.get());
   TRACE_EVENT0("gpu", "VrShellGl::SubmitWebVRFrame");
 
+  webvr_time_js_submit_[frame_index % kPoseRingBufferSize] =
+      base::TimeTicks::Now();
+
   // Swapping twice on a Surface without calling updateTexImage in
   // between can lose frames, so don't draw+swap if we already have
   // a pending frame we haven't consumed yet.
@@ -450,6 +453,8 @@ void VrShellGl::InitializeRenderer() {
   vr::Mat4f head_pose;
   device::GvrDelegate::GetGvrPoseWithNeckModel(gvr_api_.get(), &head_pose);
   webvr_head_pose_.assign(kPoseRingBufferSize, head_pose);
+  webvr_time_pose_.assign(kPoseRingBufferSize, base::TimeTicks());
+  webvr_time_js_submit_.assign(kPoseRingBufferSize, base::TimeTicks());
 
   std::vector<gvr::BufferSpec> specs;
   // For kFramePrimaryBuffer (primary VrShell and WebVR content)
@@ -1105,6 +1110,20 @@ void VrShellGl::DrawFrameSubmitWhenReady(int16_t frame_index,
     submit_client_->OnSubmitFrameRendered();
   }
 
+  if (ShouldDrawWebVr()) {
+    base::TimeTicks now = base::TimeTicks::Now();
+    base::TimeTicks pose_time =
+        webvr_time_pose_[frame_index % kPoseRingBufferSize];
+    base::TimeTicks js_submit_time =
+        webvr_time_js_submit_[frame_index % kPoseRingBufferSize];
+    int64_t pose_to_js_submit_us =
+        (js_submit_time - pose_time).InMicroseconds();
+    webvr_js_time_->AddSample(pose_to_js_submit_us);
+    int64_t js_submit_to_gvr_submit_us =
+        (now - js_submit_time).InMicroseconds();
+    webvr_render_time_->AddSample(js_submit_to_gvr_submit_us);
+  }
+
   // After saving the timestamp, fps will be available via GetFPS().
   // TODO(vollick): enable rendering of this framerate in a HUD.
   fps_meter_->AddFrame(base::TimeTicks::Now());
@@ -1591,6 +1610,7 @@ void VrShellGl::SendVSync(base::TimeDelta time, GetVSyncCallback callback) {
                                                      prediction_nanos);
 
   webvr_head_pose_[frame_index % kPoseRingBufferSize] = head_mat;
+  webvr_time_pose_[frame_index % kPoseRingBufferSize] = base::TimeTicks::Now();
 
   std::move(callback).Run(std::move(pose), time, frame_index,
                           device::mojom::VRVSyncProvider::Status::SUCCESS);
