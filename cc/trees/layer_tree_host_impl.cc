@@ -907,8 +907,10 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
     } else if (it.state() ==
                EffectTreeLayerListIterator::State::CONTRIBUTING_SURFACE) {
       RenderSurfaceImpl* render_surface = it.current_render_surface();
-      if (render_surface->contributes_to_drawn_surface())
-        render_surface->AppendQuads(target_render_pass, &append_quads_data);
+      if (render_surface->contributes_to_drawn_surface()) {
+        render_surface->AppendQuads(draw_mode, target_render_pass,
+                                    &append_quads_data);
+      }
     } else if (it.state() == EffectTreeLayerListIterator::State::LAYER &&
                !it.current_layer()->visible_layer_rect().IsEmpty()) {
       LayerImpl* layer = it.current_layer();

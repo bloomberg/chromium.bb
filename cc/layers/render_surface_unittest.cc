@@ -131,7 +131,8 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectSharedQuadState) {
   std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData append_quads_data;
 
-  render_surface->AppendQuads(render_pass.get(), &append_quads_data);
+  render_surface->AppendQuads(DRAW_MODE_HARDWARE, render_pass.get(),
+                              &append_quads_data);
 
   ASSERT_EQ(1u, render_pass->shared_quad_state_list.size());
   SharedQuadState* shared_quad_state =

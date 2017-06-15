@@ -13,6 +13,7 @@
 
 #include "base/macros.h"
 #include "cc/cc_export.h"
+#include "cc/layers/draw_mode.h"
 #include "cc/layers/layer_collections.h"
 #include "cc/quads/render_pass.h"
 #include "cc/quads/shared_quad_state.h"
@@ -163,7 +164,9 @@ class CC_EXPORT RenderSurfaceImpl {
   gfx::Rect GetDamageRect() const;
 
   std::unique_ptr<RenderPass> CreateRenderPass();
-  void AppendQuads(RenderPass* render_pass, AppendQuadsData* append_quads_data);
+  void AppendQuads(DrawMode draw_mode,
+                   RenderPass* render_pass,
+                   AppendQuadsData* append_quads_data);
 
   int TransformTreeIndex() const;
   int ClipTreeIndex() const;

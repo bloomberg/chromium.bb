@@ -14,7 +14,6 @@
 #include "cc/base/math_util.h"
 #include "cc/debug/debug_colors.h"
 #include "cc/layers/append_quads_data.h"
-#include "cc/layers/layer_impl.h"
 #include "cc/quads/content_draw_quad_base.h"
 #include "cc/quads/debug_border_draw_quad.h"
 #include "cc/quads/render_pass.h"
@@ -361,7 +360,8 @@ std::unique_ptr<RenderPass> RenderSurfaceImpl::CreateRenderPass() {
   return pass;
 }
 
-void RenderSurfaceImpl::AppendQuads(RenderPass* render_pass,
+void RenderSurfaceImpl::AppendQuads(DrawMode draw_mode,
+                                    RenderPass* render_pass,
                                     AppendQuadsData* append_quads_data) {
   gfx::Rect visible_layer_rect =
       occlusion_in_content_space().GetUnoccludedContentRect(content_rect());
@@ -394,8 +394,9 @@ void RenderSurfaceImpl::AppendQuads(RenderPass* render_pass,
   gfx::Vector2dF surface_contents_scale =
       OwningEffectNode()->surface_contents_scale;
   PictureLayerImpl* mask_layer = static_cast<PictureLayerImpl*>(MaskLayer());
-  if (mask_layer && mask_layer->DrawsContent() &&
-      !mask_layer->bounds().IsEmpty()) {
+  // Resourceless mode does not support masks.
+  if (draw_mode != DRAW_MODE_RESOURCELESS_SOFTWARE && mask_layer &&
+      mask_layer->DrawsContent() && !mask_layer->bounds().IsEmpty()) {
     // The software renderer applies mask layer and blending in the wrong
     // order but kDstIn doesn't commute with masking. It is okay to not
     // support this configuration because kDstIn was introduced to replace

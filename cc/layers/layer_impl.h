@@ -23,6 +23,7 @@
 #include "cc/cc_export.h"
 #include "cc/debug/layer_tree_debug_state.h"
 #include "cc/input/input_handler.h"
+#include "cc/layers/draw_mode.h"
 #include "cc/layers/draw_properties.h"
 #include "cc/layers/layer_collections.h"
 #include "cc/layers/layer_impl_test_properties.h"
@@ -61,14 +62,6 @@ class RenderPass;
 class ScrollbarLayerImplBase;
 class SimpleEnclosedRegion;
 class Tile;
-
-
-enum DrawMode {
-  DRAW_MODE_NONE,
-  DRAW_MODE_HARDWARE,
-  DRAW_MODE_SOFTWARE,
-  DRAW_MODE_RESOURCELESS_SOFTWARE
-};
 
 enum ViewportLayerType {
   NOT_VIEWPORT_LAYER,
