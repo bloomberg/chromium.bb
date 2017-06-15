@@ -57,31 +57,6 @@ api::cast_channel::ChannelError ToChannelError(
   return CHANNEL_ERROR_NONE;
 }
 
-api::cast_channel::ChannelAuthType ToChannelAuthType(
-    ::cast_channel::ChannelAuthType channel_auth) {
-  switch (channel_auth) {
-    case ::cast_channel::ChannelAuthType::NONE:
-      return CHANNEL_AUTH_TYPE_NONE;
-    case ::cast_channel::ChannelAuthType::SSL_VERIFIED:
-      return CHANNEL_AUTH_TYPE_SSL_VERIFIED;
-  }
-  NOTREACHED() << "Unknown channel_auth "
-               << ChannelAuthTypeToString(channel_auth);
-  return CHANNEL_AUTH_TYPE_NONE;
-}
-
-::cast_channel::ChannelAuthType ToChannelAuthTypeInternal(
-    api::cast_channel::ChannelAuthType channel_auth) {
-  switch (channel_auth) {
-    case CHANNEL_AUTH_TYPE_NONE:
-      return ::cast_channel::ChannelAuthType::NONE;
-    case CHANNEL_AUTH_TYPE_SSL_VERIFIED:
-      return ::cast_channel::ChannelAuthType::SSL_VERIFIED;
-  }
-  NOTREACHED() << "Unknown channel_auth " << channel_auth;
-  return ::cast_channel::ChannelAuthType::NONE;
-}
-
 }  // namespace cast_channel
 }  // namespace api
 }  // namespace extensions

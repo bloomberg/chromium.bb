@@ -180,7 +180,6 @@ class CastChannelOpenFunction : public CastChannelAsyncApiFunction {
   int new_channel_id_;
   CastChannelAPI* api_;
   std::unique_ptr<net::IPEndPoint> ip_endpoint_;
-  cast_channel::ChannelAuthType channel_auth_;
   base::TimeDelta liveness_timeout_;
   base::TimeDelta ping_interval_;
 

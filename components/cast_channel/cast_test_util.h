@@ -77,7 +77,6 @@ class MockCastSocket : public CastSocket {
   MOCK_CONST_METHOD0(ip_endpoint, const net::IPEndPoint&());
   MOCK_CONST_METHOD0(id, int());
   MOCK_METHOD1(set_id, void(int id));
-  MOCK_CONST_METHOD0(channel_auth, ChannelAuthType());
   MOCK_CONST_METHOD0(ready_state, ReadyState());
   MOCK_CONST_METHOD0(error_state, ChannelError());
   MOCK_CONST_METHOD0(keep_alive, bool(void));

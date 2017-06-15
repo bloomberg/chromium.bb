@@ -47,20 +47,6 @@ TEST(CastChannelEnumUtilTest, TestToChannelError) {
             ToChannelError(::cast_channel::ChannelError::UNKNOWN));
 }
 
-TEST(CastChannelEnumUtilTest, TestToChannelAuthType) {
-  EXPECT_EQ(CHANNEL_AUTH_TYPE_NONE,
-            ToChannelAuthType(::cast_channel::ChannelAuthType::NONE));
-  EXPECT_EQ(CHANNEL_AUTH_TYPE_SSL_VERIFIED,
-            ToChannelAuthType(::cast_channel::ChannelAuthType::SSL_VERIFIED));
-}
-
-TEST(CastChannelEnumUtilTest, TestToChannelAuthTypeInternal) {
-  EXPECT_EQ(::cast_channel::ChannelAuthType::NONE,
-            ToChannelAuthTypeInternal(CHANNEL_AUTH_TYPE_NONE));
-  EXPECT_EQ(::cast_channel::ChannelAuthType::SSL_VERIFIED,
-            ToChannelAuthTypeInternal(CHANNEL_AUTH_TYPE_SSL_VERIFIED));
-}
-
 }  // namespace
 }  // namespace cast_channel
 }  // namespace api

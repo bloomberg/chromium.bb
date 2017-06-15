@@ -50,9 +50,8 @@
 // Helper for logging data with remote host IP and authentication state.
 // Assumes |ip_endpoint_| of type net::IPEndPoint and |channel_auth_| of enum
 // type ChannelAuthType are available in the current scope.
-#define CONNECTION_INFO()                                                    \
-  "[" << ip_endpoint_.ToString()                                             \
-      << ", auth=" << ::cast_channel::ChannelAuthTypeToString(channel_auth_) \
+#define CONNECTION_INFO()                                 \
+  "[" << ip_endpoint_.ToString() << ", auth=SSL_VERIFIED" \
       << "] "
 #define VLOG_WITH_CONNECTION(level) VLOG(level) << CONNECTION_INFO()
 #define LOG_WITH_CONNECTION(level) LOG(level) << CONNECTION_INFO()
@@ -86,21 +85,13 @@ class FakeCertVerifier : public net::CertVerifier {
 
 }  // namespace
 
-using ChannelError = ::cast_channel::ChannelError;
-using ChannelAuthType = ::cast_channel::ChannelAuthType;
-using ReadyState = ::cast_channel::ReadyState;
-
-CastSocketImpl::CastSocketImpl(const std::string& owner_extension_id,
-                               const net::IPEndPoint& ip_endpoint,
-                               ChannelAuthType channel_auth,
+CastSocketImpl::CastSocketImpl(const net::IPEndPoint& ip_endpoint,
                                net::NetLog* net_log,
                                const base::TimeDelta& timeout,
                                bool keep_alive,
                                const scoped_refptr<Logger>& logger,
                                uint64_t device_capabilities)
-    : CastSocketImpl(owner_extension_id,
-                     ip_endpoint,
-                     channel_auth,
+    : CastSocketImpl(ip_endpoint,
                      net_log,
                      timeout,
                      keep_alive,
@@ -108,9 +99,7 @@ CastSocketImpl::CastSocketImpl(const std::string& owner_extension_id,
                      device_capabilities,
                      AuthContext::Create()) {}
 
-CastSocketImpl::CastSocketImpl(const std::string& owner_extension_id,
-                               const net::IPEndPoint& ip_endpoint,
-                               ChannelAuthType channel_auth,
+CastSocketImpl::CastSocketImpl(const net::IPEndPoint& ip_endpoint,
                                net::NetLog* net_log,
                                const base::TimeDelta& timeout,
                                bool keep_alive,
@@ -119,7 +108,6 @@ CastSocketImpl::CastSocketImpl(const std::string& owner_extension_id,
                                const AuthContext& auth_context)
     : channel_id_(0),
       ip_endpoint_(ip_endpoint),
-      channel_auth_(channel_auth),
       net_log_(net_log),
       keep_alive_(keep_alive),
       logger_(logger),
@@ -165,10 +153,6 @@ int CastSocketImpl::id() const {
 
 void CastSocketImpl::set_id(int id) {
   channel_id_ = id;
-}
-
-ChannelAuthType CastSocketImpl::channel_auth() const {
-  return channel_auth_;
 }
 
 bool CastSocketImpl::keep_alive() const {
@@ -432,8 +416,7 @@ int CastSocketImpl::DoSslConnectComplete(int result) {
       // Create a channel transport if one wasn't already set (e.g. by test
       // code).
       transport_.reset(new CastTransportImpl(this->socket_.get(), channel_id_,
-                                             ip_endpoint_, channel_auth_,
-                                             logger_));
+                                             ip_endpoint_, logger_));
     }
     auth_delegate_ = new AuthTransportDelegate(this);
     transport_->SetReadDelegate(base::WrapUnique(auth_delegate_));
