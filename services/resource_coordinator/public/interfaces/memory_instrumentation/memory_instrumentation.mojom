@@ -19,6 +19,15 @@ enum LevelOfDetail {
   DETAILED
 };
 
+enum ProcessType {
+  OTHER,
+  BROWSER,
+  RENDERER,
+  GPU,
+  UTILITY,
+  PLUGIN
+};
+
 struct RequestArgs {
   uint64 dump_guid;
   DumpType dump_type;
@@ -50,19 +59,20 @@ struct ChromeMemDump {
   uint32 v8_total_kb = 0;
 };
 
-enum ProcessType {
-  OTHER,
-  BROWSER,
-  RENDERER,
-  GPU,
-  UTILITY,
-  PLUGIN
+// This struct is used for internal communication between the memory
+// service (Coordinator) and the client library (ClientProcessImpl).
+struct RawProcessMemoryDump {
+  ProcessType process_type;
+  OSMemDump os_dump;
+  ChromeMemDump chrome_dump;
+
+  // This is used only on Linux/CrOS to get around sandboxing.
+  // See crbug.com/461788.
+  map<mojo.common.mojom.ProcessId, OSMemDump> extra_processes_dumps;
 };
 
-// This struct is used both for:
-// 1) The internal communication between the memory service (Coordinator) and
-//    the client library (ProcessLocalDumpManager).
-// 2) The public-facing API Coordinator::RequestGlobalMemoryDump().
+// This struct is used for the public-facing API
+// Coordinator::RequestGlobalMemoryDump().
 struct ProcessMemoryDump {
   ProcessType process_type;
   OSMemDump os_dump;
@@ -71,10 +81,6 @@ struct ProcessMemoryDump {
   // This is roughly private, anonymous, non-discardable, resident or swapped
   // memory in kilobytes. For more details, see https://goo.gl/3kPb9S.
   uint32 private_footprint = 0;
-
-  // This is used only in the use-case (1) and only on Linux/CrOS to get
-  // around sandboxing. See crbug.com/461788 .
-  map<mojo.common.mojom.ProcessId, OSMemDump> extra_processes_dump;
 };
 
 
@@ -92,7 +98,7 @@ interface ClientProcess {
   // buffer of the target process and an ACK. A summary of the dump is also
   // returned in case of success.
   RequestProcessMemoryDump(RequestArgs args) =>
-      (uint64 dump_guid, bool success, ProcessMemoryDump? process_memory_dump);
+      (uint64 dump_guid, bool success, RawProcessMemoryDump? process_memory_dump);
 };
 
 // The memory-infra service implements this interface. There is one instance for

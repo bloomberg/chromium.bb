@@ -99,7 +99,7 @@ struct BASE_EXPORT MemoryDumpCallbackResult {
 
   // In some cases, OS stats can only be dumped from a privileged process to
   // get around to sandboxing/selinux restrictions (see crbug.com/461788).
-  std::map<ProcessId, OSMemDump> extra_processes_dump;
+  std::map<ProcessId, OSMemDump> extra_processes_dumps;
 
   MemoryDumpCallbackResult();
   MemoryDumpCallbackResult(const MemoryDumpCallbackResult&);

@@ -69,18 +69,18 @@ void ClientProcessImpl::OnProcessMemoryDumpDone(
     uint64_t dump_guid,
     bool success,
     const base::Optional<base::trace_event::MemoryDumpCallbackResult>& result) {
-  mojom::ProcessMemoryDumpPtr process_memory_dump(
-      mojom::ProcessMemoryDump::New());
+  mojom::RawProcessMemoryDumpPtr process_memory_dump(
+      mojom::RawProcessMemoryDump::New());
   process_memory_dump->process_type = config_.process_type();
   if (result) {
     process_memory_dump->os_dump = result->os_dump;
     process_memory_dump->chrome_dump = result->chrome_dump;
-    for (const auto& kv : result->extra_processes_dump) {
+    for (const auto& kv : result->extra_processes_dumps) {
       const base::ProcessId pid = kv.first;
       const base::trace_event::MemoryDumpCallbackResult::OSMemDump&
           os_mem_dump = kv.second;
-      DCHECK_EQ(0u, process_memory_dump->extra_processes_dump.count(pid));
-      process_memory_dump->extra_processes_dump[pid] = os_mem_dump;
+      DCHECK_EQ(0u, process_memory_dump->extra_processes_dumps.count(pid));
+      process_memory_dump->extra_processes_dumps[pid] = os_mem_dump;
     }
   }
   callback.Run(dump_guid, success, std::move(process_memory_dump));
