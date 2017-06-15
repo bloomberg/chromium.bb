@@ -40,6 +40,7 @@ class HTMLSummaryElement final : public HTMLElement {
 
   LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
   void DefaultEventHandler(Event*) override;
+  bool HasActivationBehavior() const override;
   void DidAddUserAgentShadowRoot(ShadowRoot&) override;
   HTMLDetailsElement* DetailsElement() const;
 

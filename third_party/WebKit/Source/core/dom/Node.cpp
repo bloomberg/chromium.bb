@@ -2366,6 +2366,10 @@ void Node::DefaultEventHandler(Event* event) {
 
 void Node::WillCallDefaultEventHandler(const Event&) {}
 
+bool Node::HasActivationBehavior() const {
+  return false;
+}
+
 bool Node::WillRespondToMouseMoveEvents() {
   if (IsDisabledFormControl(this))
     return false;

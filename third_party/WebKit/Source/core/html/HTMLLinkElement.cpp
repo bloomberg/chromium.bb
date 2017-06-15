@@ -237,6 +237,11 @@ void HTMLLinkElement::FinishParsingChildren() {
   HTMLElement::FinishParsingChildren();
 }
 
+bool HTMLLinkElement::HasActivationBehavior() const {
+  // TODO(tkent): Implement activation behavior. crbug.com/422732.
+  return false;
+}
+
 bool HTMLLinkElement::StyleSheetIsLoading() const {
   return GetLinkStyle() && GetLinkStyle()->StyleSheetIsLoading();
 }

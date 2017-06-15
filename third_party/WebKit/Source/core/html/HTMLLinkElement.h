@@ -139,6 +139,7 @@ class CORE_EXPORT HTMLLinkElement final : public HTMLElement,
       LoadedSheetErrorStatus) override;
   void StartLoadingDynamicSheet() override;
   void FinishParsingChildren() override;
+  bool HasActivationBehavior() const override;
 
   // From LinkLoaderClient
   void LinkLoaded() override;

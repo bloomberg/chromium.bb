@@ -171,6 +171,10 @@ void HTMLAnchorElement::DefaultEventHandler(Event* event) {
   HTMLElement::DefaultEventHandler(event);
 }
 
+bool HTMLAnchorElement::HasActivationBehavior() const {
+  return true;
+}
+
 void HTMLAnchorElement::SetActive(bool down) {
   if (HasEditableStyle(*this))
     return;

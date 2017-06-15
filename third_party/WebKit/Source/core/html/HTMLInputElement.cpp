@@ -1301,6 +1301,10 @@ void HTMLInputElement::DefaultEventHandler(Event* evt) {
     TextControlElement::DefaultEventHandler(evt);
 }
 
+bool HTMLInputElement::HasActivationBehavior() const {
+  return true;
+}
+
 bool HTMLInputElement::WillRespondToMouseClickEvents() {
   // FIXME: Consider implementing willRespondToMouseClickEvents() in InputType
   // if more accurate results are necessary.

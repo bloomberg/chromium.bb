@@ -56,6 +56,7 @@ class HTMLButtonElement final : public HTMLFormControlElement {
   void ParseAttribute(const AttributeModificationParams&) override;
   bool IsPresentationAttribute(const QualifiedName&) const override;
   void DefaultEventHandler(Event*) override;
+  bool HasActivationBehavior() const override;
 
   void AppendToFormData(FormData&) override;
 

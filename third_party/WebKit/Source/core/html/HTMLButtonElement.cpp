@@ -148,6 +148,10 @@ void HTMLButtonElement::DefaultEventHandler(Event* event) {
   HTMLFormControlElement::DefaultEventHandler(event);
 }
 
+bool HTMLButtonElement::HasActivationBehavior() const {
+  return true;
+}
+
 bool HTMLButtonElement::WillRespondToMouseClickEvents() {
   if (!IsDisabledFormControl() && Form() && (type_ == SUBMIT || type_ == RESET))
     return true;

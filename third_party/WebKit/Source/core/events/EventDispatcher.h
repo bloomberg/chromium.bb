@@ -70,11 +70,13 @@ class EventDispatcher {
   EventDispatcher(Node&, Event*);
 
   EventDispatchContinuation DispatchEventPreProcess(
+      Node* activation_target,
       EventDispatchHandlingState*&);
   EventDispatchContinuation DispatchEventAtCapturing();
   EventDispatchContinuation DispatchEventAtTarget();
   void DispatchEventAtBubbling();
-  void DispatchEventPostProcess(EventDispatchHandlingState*);
+  void DispatchEventPostProcess(Node* activation_target,
+                                EventDispatchHandlingState*);
 
   Member<Node> node_;
   Member<Event> event_;

@@ -139,6 +139,10 @@ void HTMLSummaryElement::DefaultEventHandler(Event* event) {
   HTMLElement::DefaultEventHandler(event);
 }
 
+bool HTMLSummaryElement::HasActivationBehavior() const {
+  return true;
+}
+
 bool HTMLSummaryElement::WillRespondToMouseClickEvents() {
   return IsMainSummary() || HTMLElement::WillRespondToMouseClickEvents();
 }
