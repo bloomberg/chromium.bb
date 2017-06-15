@@ -17,9 +17,12 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
+#include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/third_party/icu/icu_utf.h"
 #include "build/build_config.h"
 #include "chrome/common/chrome_paths.h"
@@ -82,7 +85,6 @@ class DownloadItemObserver : public DownloadItem::Observer,
 
 // Returns true if the given path is in use by a path reservation.
 bool IsPathReserved(const base::FilePath& path) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   // No reservation map => no reservations.
   if (g_reservation_map == NULL)
     return false;
@@ -99,9 +101,9 @@ bool IsPathReserved(const base::FilePath& path) {
 }
 
 // Returns true if the given path is in use by any path reservation or the
-// file system. Called on the FILE thread.
+// file system. Called on the task runner returned by
+// DownloadPathReservationTracker::GetTaskRunner().
 bool IsPathInUse(const base::FilePath& path) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   // If there is a reservation, then the path is in use.
   if (IsPathReserved(path))
     return true;
@@ -245,7 +247,9 @@ PathValidationResult ValidatePathAndResolveConflicts(
   return PathValidationResult::SUCCESS;
 }
 
-// Called on the FILE thread to reserve a download path. This method:
+// Called on the task runner returned by
+// DownloadPathReservationTracker::GetTaskRunner() to reserve a download path.
+// This method:
 // - Creates directory |default_download_path| if it doesn't exist.
 // - Verifies that the parent directory of |suggested_path| exists and is
 //   writeable.
@@ -256,7 +260,6 @@ PathValidationResult ValidatePathAndResolveConflicts(
 // - Returns the result of creating the path reservation.
 PathValidationResult CreateReservation(const CreateReservationInfo& info,
                                        base::FilePath* reserved_path) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(info.suggested_path.IsAbsolute());
 
   // Create a reservation map if one doesn't exist. It will be automatically
@@ -295,17 +298,16 @@ PathValidationResult CreateReservation(const CreateReservationInfo& info,
   return result;
 }
 
-// Called on the FILE thread to update the path of the reservation associated
-// with |key| to |new_path|.
+// Called on a background thread to update the path of the reservation
+// associated with |key| to |new_path|.
 void UpdateReservation(ReservationKey key, const base::FilePath& new_path) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(g_reservation_map != NULL);
   ReservationMap::iterator iter = g_reservation_map->find(key);
   if (iter != g_reservation_map->end()) {
     iter->second = new_path;
   } else {
     // This would happen if an UpdateReservation() notification was scheduled on
-    // the FILE thread before ReserveInternal(), or after a Revoke()
+    // the SequencedTaskRunner before ReserveInternal(), or after a Revoke()
     // call. Neither should happen.
     NOTREACHED();
   }
@@ -314,7 +316,6 @@ void UpdateReservation(ReservationKey key, const base::FilePath& new_path) {
 // Called on the FILE thread to remove the path reservation associated with
 // |key|.
 void RevokeReservation(ReservationKey key) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   DCHECK(g_reservation_map != NULL);
   DCHECK(base::ContainsKey(*g_reservation_map, key));
   g_reservation_map->erase(key);
@@ -354,8 +355,8 @@ void DownloadItemObserver::OnDownloadUpdated(DownloadItem* download) {
       // Update the reservation.
       base::FilePath new_target_path = download->GetTargetFilePath();
       if (new_target_path != last_target_path_) {
-        BrowserThread::PostTask(
-            BrowserThread::FILE, FROM_HERE,
+        DownloadPathReservationTracker::GetTaskRunner()->PostTask(
+            FROM_HERE,
             base::BindOnce(&UpdateReservation, download, new_target_path));
         last_target_path_ = new_target_path;
       }
@@ -374,9 +375,8 @@ void DownloadItemObserver::OnDownloadUpdated(DownloadItem* download) {
       // The download filename will need to be re-generated when the download is
       // restarted. Holding on to the reservation now would prevent the name
       // from being used for a subsequent retry attempt.
-
-      BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                              base::BindOnce(&RevokeReservation, download));
+      DownloadPathReservationTracker::GetTaskRunner()->PostTask(
+          FROM_HERE, base::BindOnce(&RevokeReservation, download));
       download->RemoveUserData(&kUserDataKey);
       break;
 
@@ -389,8 +389,8 @@ void DownloadItemObserver::OnDownloadUpdated(DownloadItem* download) {
 void DownloadItemObserver::OnDownloadDestroyed(DownloadItem* download) {
   // Items should be COMPLETE/INTERRUPTED/CANCELLED before being destroyed.
   NOTREACHED();
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          base::BindOnce(&RevokeReservation, download));
+  DownloadPathReservationTracker::GetTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(&RevokeReservation, download));
 }
 
 // static
@@ -424,15 +424,29 @@ void DownloadPathReservationTracker::GetReservedPath(
                                 conflict_action,
                                 callback};
 
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&CreateReservation, info, reserved_path),
-      base::Bind(&RunGetReservedPathCallback, callback,
-                 base::Owned(reserved_path)));
+  base::PostTaskAndReplyWithResult(
+      GetTaskRunner().get(), FROM_HERE,
+      base::BindOnce(&CreateReservation, info, reserved_path),
+      base::BindOnce(&RunGetReservedPathCallback, callback,
+                     base::Owned(reserved_path)));
 }
 
 // static
 bool DownloadPathReservationTracker::IsPathInUseForTesting(
     const base::FilePath& path) {
   return IsPathInUse(path);
+}
+
+// static
+scoped_refptr<base::SequencedTaskRunner>
+DownloadPathReservationTracker::GetTaskRunner() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  static scoped_refptr<base::SequencedTaskRunner>* task_runner = nullptr;
+
+  if (!task_runner) {
+    task_runner = new scoped_refptr<base::SequencedTaskRunner>(
+        base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()}));
+  }
+
+  return *task_runner;
 }
