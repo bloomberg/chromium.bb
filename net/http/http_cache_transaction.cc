@@ -149,6 +149,7 @@ static bool HeaderMatches(const HttpRequestHeaders& headers,
 
 HttpCache::Transaction::Transaction(RequestPriority priority, HttpCache* cache)
     : next_state_(STATE_NONE),
+      initial_request_(nullptr),
       request_(NULL),
       priority_(priority),
       cache_(cache->GetWeakPtr()),
@@ -270,7 +271,8 @@ int HttpCache::Transaction::Start(const HttpRequestInfo* request,
   if (!cache_.get())
     return ERR_UNEXPECTED;
 
-  SetRequest(net_log, request);
+  initial_request_ = request;
+  SetRequest(net_log);
 
   // We have to wait until the backend is initialized so we start the SM.
   next_state_ = STATE_GET_BACKEND;
@@ -984,9 +986,6 @@ int HttpCache::Transaction::DoGetBackendComplete(int result) {
   // This is only set if we have something to do with the response.
   range_requested_ = (partial_.get() != NULL);
 
-  // mode_ may change later, save the initial mode in case we need to restart
-  // this request.
-  restart_info_.mode = mode_;
   return OK;
 }
 
@@ -1822,13 +1821,14 @@ int HttpCache::Transaction::DoHeadersPhaseCannotProceed() {
   // If its the Start state machine and it cannot proceed due to a cache
   // failure, restart this transaction.
   DCHECK(!reading_);
-  TransitionToState(STATE_INIT_ENTRY);
-  cache_entry_status_ = restart_info_.cache_entry_status;
+
+  SetRequest(net_log_);
+
   entry_ = nullptr;
-  mode_ = restart_info_.mode;
   if (network_trans_)
     network_trans_.reset();
 
+  TransitionToState(STATE_GET_BACKEND);
   return OK;
 }
 
@@ -2053,10 +2053,17 @@ int HttpCache::Transaction::DoCacheWriteTruncatedResponseComplete(int result) {
 
 //-----------------------------------------------------------------------------
 
-void HttpCache::Transaction::SetRequest(const NetLogWithSource& net_log,
-                                        const HttpRequestInfo* request) {
+void HttpCache::Transaction::SetRequest(const NetLogWithSource& net_log) {
+  // Reset the variables that might get set in this function. This is done
+  // because this function can be invoked multiple times for a transaction.
+  cache_entry_status_ = CacheEntryStatus::ENTRY_UNDEFINED;
+  external_validation_.Reset();
+  range_requested_ = false;
+  partial_.reset();
+  custom_request_.reset();
+
   net_log_ = net_log;
-  request_ = request;
+  request_ = initial_request_;
   effective_load_flags_ = request_->load_flags;
   method_ = request_->method;
 
@@ -2152,7 +2159,6 @@ void HttpCache::Transaction::SetRequest(const NetLogWithSource& net_log,
       partial_.reset(NULL);
     }
   }
-  restart_info_.cache_entry_status = cache_entry_status_;
 }
 
 bool HttpCache::Transaction::ShouldPassThrough() {

@@ -183,6 +183,11 @@ class HttpCache::Transaction : public HttpTransaction {
     ValidationHeaders() : initialized(false) {}
 
     std::string values[kNumValidationHeaders];
+    void Reset() {
+      initialized = false;
+      for (auto& value : values)
+        value.clear();
+    }
     bool initialized;
   };
 
@@ -320,8 +325,7 @@ class HttpCache::Transaction : public HttpTransaction {
   int DoCacheWriteTruncatedResponseComplete(int result);
 
   // Sets request_ and fields derived from it.
-  void SetRequest(const NetLogWithSource& net_log,
-                  const HttpRequestInfo* request);
+  void SetRequest(const NetLogWithSource& net_log);
 
   // Returns true if the request should be handled exclusively by the network
   // layer (skipping the cache entirely).
@@ -465,7 +469,12 @@ class HttpCache::Transaction : public HttpTransaction {
   void TransitionToState(State state);
 
   State next_state_;
+
+  // Initial request with which Start() was invoked.
+  const HttpRequestInfo* initial_request_;
+
   const HttpRequestInfo* request_;
+
   std::string method_;
   RequestPriority priority_;
   NetLogWithSource net_log_;
@@ -541,12 +550,6 @@ class HttpCache::Transaction : public HttpTransaction {
 
   // True if the Transaction is currently processing the DoLoop.
   bool in_do_loop_;
-
-  // Used to restore some members when the state machine is restarted after it
-  // has already been added to an entry e.g after |this| has completed
-  // validation and the writer transaction fails to completely write the
-  // response to the cache.
-  RestartInfo restart_info_;
 
   base::WeakPtrFactory<Transaction> weak_factory_;
 

@@ -907,7 +907,7 @@ void HttpCache::DoneWithEntry(ActiveEntry* entry,
       if (!transaction->entry())
         return;
     }
-    if (success && did_truncate) {
+    if (success && (did_truncate || is_partial)) {
       entry->writer = nullptr;
       // Restart already validated transactions so that they are able to read
       // the truncated status of the entry.

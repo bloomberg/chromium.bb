@@ -1492,15 +1492,15 @@ TEST(HttpCache, RangeGET_ParallelValidationDifferentRanges) {
 
   // Let 1st transaction complete headers phase for ranges 40-49.
   std::string first_read;
+  MockHttpRequest request1(transaction);
   {
-    MockHttpRequest request(transaction);
     auto& c = context_list[0];
     c->result = cache.CreateTransaction(&c->trans);
     ASSERT_THAT(c->result, IsOk());
     EXPECT_EQ(LOAD_STATE_IDLE, c->trans->GetLoadState());
 
     c->result =
-        c->trans->Start(&request, c->callback.callback(), NetLogWithSource());
+        c->trans->Start(&request1, c->callback.callback(), NetLogWithSource());
     base::RunLoop().RunUntilIdle();
 
     // Start writing to the cache so that MockDiskEntry::CouldBeSparse() returns
@@ -1518,16 +1518,16 @@ TEST(HttpCache, RangeGET_ParallelValidationDifferentRanges) {
   }
 
   // 2nd transaction requests ranges 30-39.
+  transaction.request_headers = "Range: bytes = 30-39\r\n" EXTRA_HEADER;
+  MockHttpRequest request2(transaction);
   {
-    transaction.request_headers = "Range: bytes = 30-39\r\n" EXTRA_HEADER;
-    MockHttpRequest request(transaction);
     auto& c = context_list[1];
     c->result = cache.CreateTransaction(&c->trans);
     ASSERT_THAT(c->result, IsOk());
     EXPECT_EQ(LOAD_STATE_IDLE, c->trans->GetLoadState());
 
     c->result =
-        c->trans->Start(&request, c->callback.callback(), NetLogWithSource());
+        c->trans->Start(&request2, c->callback.callback(), NetLogWithSource());
     base::RunLoop().RunUntilIdle();
 
     EXPECT_EQ(LOAD_STATE_IDLE, c->trans->GetLoadState());
@@ -1590,15 +1590,15 @@ TEST(HttpCache, RangeGET_ParallelValidationOverlappingRanges) {
 
   // Let 1st transaction complete headers phase for ranges 40-49.
   std::string first_read;
+  MockHttpRequest request1(transaction);
   {
-    MockHttpRequest request(transaction);
     auto& c = context_list[0];
     c->result = cache.CreateTransaction(&c->trans);
     ASSERT_THAT(c->result, IsOk());
     EXPECT_EQ(LOAD_STATE_IDLE, c->trans->GetLoadState());
 
     c->result =
-        c->trans->Start(&request, c->callback.callback(), NetLogWithSource());
+        c->trans->Start(&request1, c->callback.callback(), NetLogWithSource());
     base::RunLoop().RunUntilIdle();
 
     // Start writing to the cache so that MockDiskEntry::CouldBeSparse() returns
@@ -1616,16 +1616,16 @@ TEST(HttpCache, RangeGET_ParallelValidationOverlappingRanges) {
   }
 
   // 2nd transaction requests ranges 30-49.
+  transaction.request_headers = "Range: bytes = 30-49\r\n" EXTRA_HEADER;
+  MockHttpRequest request2(transaction);
   {
-    transaction.request_headers = "Range: bytes = 30-49\r\n" EXTRA_HEADER;
-    MockHttpRequest request(transaction);
     auto& c = context_list[1];
     c->result = cache.CreateTransaction(&c->trans);
     ASSERT_THAT(c->result, IsOk());
     EXPECT_EQ(LOAD_STATE_IDLE, c->trans->GetLoadState());
 
     c->result =
-        c->trans->Start(&request, c->callback.callback(), NetLogWithSource());
+        c->trans->Start(&request2, c->callback.callback(), NetLogWithSource());
     base::RunLoop().RunUntilIdle();
 
     EXPECT_EQ(LOAD_STATE_IDLE, c->trans->GetLoadState());
@@ -1671,6 +1671,102 @@ TEST(HttpCache, RangeGET_ParallelValidationOverlappingRanges) {
 
   EXPECT_EQ(2, cache.network_layer()->transaction_count());
   EXPECT_EQ(0, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+}
+
+// Tests parallel validation on range requests with overlapping ranges and the
+// impact of deleting the writer on transactions that have validated.
+TEST(HttpCache, RangeGET_ParallelValidationRestartDoneHeaders) {
+  MockHttpCache cache;
+
+  ScopedMockTransaction transaction(kRangeGET_TransactionOK);
+
+  std::vector<std::unique_ptr<Context>> context_list;
+  const int kNumTransactions = 2;
+
+  for (int i = 0; i < kNumTransactions; ++i) {
+    context_list.push_back(base::MakeUnique<Context>());
+  }
+
+  // Let 1st transaction complete headers phase for ranges 40-59.
+  std::string first_read;
+  transaction.request_headers = "Range: bytes = 40-59\r\n" EXTRA_HEADER;
+  MockHttpRequest request1(transaction);
+  {
+    auto& c = context_list[0];
+    c->result = cache.CreateTransaction(&c->trans);
+    ASSERT_THAT(c->result, IsOk());
+    EXPECT_EQ(LOAD_STATE_IDLE, c->trans->GetLoadState());
+
+    c->result =
+        c->trans->Start(&request1, c->callback.callback(), NetLogWithSource());
+    base::RunLoop().RunUntilIdle();
+
+    // Start writing to the cache so that MockDiskEntry::CouldBeSparse() returns
+    // true.
+    const int kBufferSize = 10;
+    scoped_refptr<IOBuffer> buffer(new IOBuffer(kBufferSize));
+    ReleaseBufferCompletionCallback cb(buffer.get());
+    c->result = c->trans->Read(buffer.get(), kBufferSize, cb.callback());
+    EXPECT_EQ(kBufferSize, cb.GetResult(c->result));
+
+    std::string data_read(buffer->data(), kBufferSize);
+    first_read = data_read;
+
+    EXPECT_EQ(LOAD_STATE_READING_RESPONSE, c->trans->GetLoadState());
+  }
+
+  // 2nd transaction requests ranges 30-59.
+  transaction.request_headers = "Range: bytes = 30-59\r\n" EXTRA_HEADER;
+  MockHttpRequest request2(transaction);
+  {
+    auto& c = context_list[1];
+    c->result = cache.CreateTransaction(&c->trans);
+    ASSERT_THAT(c->result, IsOk());
+    EXPECT_EQ(LOAD_STATE_IDLE, c->trans->GetLoadState());
+
+    c->result =
+        c->trans->Start(&request2, c->callback.callback(), NetLogWithSource());
+    base::RunLoop().RunUntilIdle();
+
+    EXPECT_EQ(LOAD_STATE_IDLE, c->trans->GetLoadState());
+  }
+
+  EXPECT_TRUE(cache.IsWriterPresent(kRangeGET_TransactionOK.url));
+  EXPECT_EQ(1, cache.GetCountDoneHeadersQueue(kRangeGET_TransactionOK.url));
+
+  EXPECT_EQ(2, cache.network_layer()->transaction_count());
+  EXPECT_EQ(0, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+
+  // Delete the writer transaction.
+  context_list[0].reset();
+
+  base::RunLoop().RunUntilIdle();
+
+  transaction.data = "rg: 30-39 rg: 40-49 rg: 50-59 ";
+  ReadAndVerifyTransaction(context_list[1]->trans.get(), transaction);
+
+  // Create another network transaction since the 2nd transaction is restarted.
+  // 30-39 will be read from network, 40-49 from the cache and 50-59 from the
+  // network.
+  EXPECT_EQ(4, cache.network_layer()->transaction_count());
+  EXPECT_EQ(0, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+
+  // Fetch from the cache to check that ranges 30-49 have been successfully
+  // cached.
+  {
+    MockTransaction transaction(kRangeGET_TransactionOK);
+    transaction.request_headers = "Range: bytes = 30-49\r\n" EXTRA_HEADER;
+    transaction.data = "rg: 30-39 rg: 40-49 ";
+    std::string headers;
+    RunTransactionTestWithResponse(cache.http_cache(), transaction, &headers);
+    Verify206Response(headers, 30, 49);
+  }
+
+  EXPECT_EQ(4, cache.network_layer()->transaction_count());
+  EXPECT_EQ(1, cache.disk_cache()->open_count());
   EXPECT_EQ(1, cache.disk_cache()->create_count());
 }
 
