@@ -50,22 +50,6 @@ class SerializableUserDataManagerWrapper : public base::SupportsUserData::Data {
   // The SerializableUserDataManagerWrapper owned by this object.
   SerializableUserDataManagerImpl manager_;
 };
-
-// Returns a dictionary mapping old CRWSessionStorage serialised properties to
-// the corresponding key in the serialised user data. When adding a mapping to
-// this dictionary, create a new crbug to track its removal and mark it with a
-// release at least one year after the introduction of the mapping.
-NSDictionary* GetLegacyKeyConversion() {
-  NSMutableDictionary* legacy_key_conversion = [NSMutableDictionary dictionary];
-  // TODO(crbug.com/661633): those mappings where introduced between M57 and
-  // M58, so remove them after M67 has shipped to stable.
-  [legacy_key_conversion addEntriesFromDictionary:@{
-    @"tabId" : @"TabID",
-    @"openerId" : @"OpenerID",
-    @"openerNavigationIndex" : @"OpenerNavigationIndex",
-  }];
-  return [legacy_key_conversion copy];
-}
 }  // namespace
 
 // static
@@ -73,12 +57,12 @@ std::unique_ptr<SerializableUserData> SerializableUserData::Create() {
   return base::MakeUnique<SerializableUserDataImpl>();
 }
 
-SerializableUserDataImpl::SerializableUserDataImpl()
-    : data_(@{}), legacy_key_conversions_(GetLegacyKeyConversion()) {}
+SerializableUserDataImpl::SerializableUserDataImpl() : data_(@{}) {}
 
 SerializableUserDataImpl::~SerializableUserDataImpl() {}
 
-SerializableUserDataImpl::SerializableUserDataImpl(NSDictionary* data)
+SerializableUserDataImpl::SerializableUserDataImpl(
+    NSDictionary<NSString*, id<NSCoding>>* data)
     : data_([data copy]) {
   DCHECK(data_);
 }
@@ -88,7 +72,7 @@ void SerializableUserDataImpl::Encode(NSCoder* coder) {
 }
 
 void SerializableUserDataImpl::Decode(NSCoder* coder) {
-  NSMutableDictionary* data =
+  NSMutableDictionary<NSString*, id<NSCoding>>* data =
       [[coder decodeObjectForKey:kSerializedUserDataKey] mutableCopy];
   if (!data) {
     // Sessions saved with version M-57 or ealier do not have a serialized
@@ -102,11 +86,27 @@ void SerializableUserDataImpl::Decode(NSCoder* coder) {
   DCHECK(data_);
 }
 
-NSDictionary* SerializableUserDataImpl::GetDecodedLegacyValues(NSCoder* coder) {
-  NSMutableDictionary* legacy_values = [[NSMutableDictionary alloc] init];
-  for (NSString* legacy_key in [legacy_key_conversions_ allKeys]) {
+// static
+NSDictionary<NSString*, NSString*>*
+SerializableUserDataImpl::GetLegacyKeyConversion() {
+  // TODO(crbug.com/661633): those mappings where introduced between M57 and
+  // M58, so remove them after M67 has shipped to stable.
+  return @{
+    @"tabId" : @"TabID",
+    @"openerId" : @"OpenerID",
+    @"openerNavigationIndex" : @"OpenerNavigationIndex",
+  };
+}
+
+NSDictionary<NSString*, id<NSCoding>>*
+SerializableUserDataImpl::GetDecodedLegacyValues(NSCoder* coder) {
+  NSMutableDictionary<NSString*, id<NSCoding>>* legacy_values =
+      [[NSMutableDictionary alloc] init];
+  NSDictionary<NSString*, NSString*>* legacy_key_conversion =
+      GetLegacyKeyConversion();
+  for (NSString* legacy_key in [legacy_key_conversion allKeys]) {
     id<NSCoding> value = [coder decodeObjectForKey:legacy_key];
-    NSString* new_key = [legacy_key_conversions_ objectForKey:legacy_key];
+    NSString* new_key = [legacy_key_conversion objectForKey:legacy_key];
     legacy_values[new_key] = value;
   }
   return [legacy_values copy];

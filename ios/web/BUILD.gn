@@ -507,6 +507,7 @@ source_set("ios_web_navigation_unittests") {
     "navigation/navigation_manager_impl_unittest.mm",
     "navigation/navigation_manager_util_unittest.mm",
     "navigation/nscoder_util_unittest.mm",
+    "navigation/serializable_user_data_manager_impl_unittest.mm",
   ]
 }
 
