@@ -8,6 +8,8 @@ Call stack:
   * 0) Framework.appendChild (framework.js:72)
     1) appendElement (frameworks-dom-xhr-event-breakpoints.html:14)
     2)  (:1)
+    [setTimeout]
+    0)  (:1)
 Paused on subtree modificationsdiv#rootElementChild div#rootElement added
 
 Running: testXHRBreakpoint
@@ -15,6 +17,8 @@ Call stack:
   * 0) Framework.sendXHR (framework.js:79)
     1) sendXHR (frameworks-dom-xhr-event-breakpoints.html:19)
     2)  (:1)
+    [setTimeout]
+    0)  (:1)
 Paused on XMLHttpRequestfile:///foo?a=b
 
 Running: testEventListenerBreakpoint
@@ -24,6 +28,8 @@ Call stack:
   * 2) Framework_eventListener (framework.js:86)
     3) addListenerAndClick (frameworks-dom-xhr-event-breakpoints.html:37)
     4)  (:1)
+    [setTimeout]
+    0)  (:1)
 
 Executing Resume...
 Call stack:
@@ -32,6 +38,8 @@ Call stack:
   * 2) Framework_eventListener (framework.js:86)
     3) addListenerAndClick (frameworks-dom-xhr-event-breakpoints.html:43)
     4)  (:1)
+    [setTimeout]
+    0)  (:1)
 
 Executing Resume...
 
@@ -40,11 +48,15 @@ Executing StepOver...
 Call stack:
     0) addListenerAndClick (frameworks-dom-xhr-event-breakpoints.html:33)
     1)  (:1)
+    [setTimeout]
+    0)  (:1)
 
 Executing StepOver...
 Call stack:
     0) addListenerAndClick (frameworks-dom-xhr-event-breakpoints.html:34)
     1)  (:1)
+    [setTimeout]
+    0)  (:1)
 
 Executing StepOver...
 Executing StepOver...
@@ -55,6 +67,8 @@ Call stack:
   * 2) Framework_eventListener (framework.js:86)
     3) addListenerAndClick (frameworks-dom-xhr-event-breakpoints.html:37)
     4)  (:1)
+    [setTimeout]
+    0)  (:1)
 
 Executing StepOut...
 Executing StepOver...
@@ -67,6 +81,8 @@ Call stack:
   * 2) Framework_eventListener (framework.js:86)
     3) addListenerAndClick (frameworks-dom-xhr-event-breakpoints.html:43)
     4)  (:1)
+    [setTimeout]
+    0)  (:1)
 
 Executing StepOver...
 Executing StepOver...
@@ -74,6 +90,8 @@ Executing StepOver...
 Call stack:
     0) addListenerAndClick (frameworks-dom-xhr-event-breakpoints.html:44)
     1)  (:1)
+    [setTimeout]
+    0)  (:1)
 
 Executing Resume...
 
@@ -85,6 +103,8 @@ Call stack:
   * 2) Framework_eventListener (framework.js:86)
     3) addListenerAndClick (frameworks-dom-xhr-event-breakpoints.html:37)
     4)  (:1)
+    [setTimeout]
+    0)  (:1)
 
 Executing StepOut...
 Executing StepOut...
@@ -94,11 +114,15 @@ Call stack:
   * 2) Framework_eventListener (framework.js:86)
     3) addListenerAndClick (frameworks-dom-xhr-event-breakpoints.html:43)
     4)  (:1)
+    [setTimeout]
+    0)  (:1)
 
 Executing StepOut...
 Call stack:
     0) addListenerAndClick (frameworks-dom-xhr-event-breakpoints.html:44)
     1)  (:1)
+    [setTimeout]
+    0)  (:1)
 
 Executing Resume...
 
@@ -113,17 +137,23 @@ Call stack:
     5) inner (frameworks-dom-xhr-event-breakpoints.html:64)
     6) addFewBlackboxedListenersAndClick (frameworks-dom-xhr-event-breakpoints.html:70)
     7)  (:1)
+    [setTimeout]
+    0)  (:1)
 
 Executing StepOut...
 Call stack:
     0) inner (frameworks-dom-xhr-event-breakpoints.html:65)
     1) addFewBlackboxedListenersAndClick (frameworks-dom-xhr-event-breakpoints.html:70)
     2)  (:1)
+    [setTimeout]
+    0)  (:1)
 
 Executing StepOut...
 Call stack:
     0) addFewBlackboxedListenersAndClick (frameworks-dom-xhr-event-breakpoints.html:71)
     1)  (:1)
+    [setTimeout]
+    0)  (:1)
 
 Executing Resume...
 
