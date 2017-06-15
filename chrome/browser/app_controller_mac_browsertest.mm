@@ -23,7 +23,9 @@
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -46,8 +48,10 @@
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/navigation_controller.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/repeated_notification_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "extensions/common/extension.h"
@@ -56,7 +60,7 @@
 
 namespace {
 
-GURL g_open_shortcut_url = GURL::EmptyGURL();
+GURL g_open_shortcut_url = GURL("https://localhost");
 
 // Returns an Apple Event that instructs the application to open |url|.
 NSAppleEventDescriptor* AppleEventToOpenUrl(const GURL& url) {
@@ -103,9 +107,6 @@ void RunClosureWhenProfileInitialized(const base::Closure& closure,
 @implementation TestOpenShortcutOnStartup
 
 - (void)applicationWillFinishLaunching:(NSNotification*)notification {
-  if (!g_open_shortcut_url.is_valid())
-    return;
-
   SendAppleEventToOpenUrlToAppController(g_open_shortcut_url);
 }
 
@@ -380,9 +381,6 @@ class AppControllerOpenShortcutBrowserTest : public InProcessBrowserTest {
     ASSERT_TRUE(destination != NULL);
 
     method_exchangeImplementations(original, destination);
-
-    ASSERT_TRUE(embedded_test_server()->Start());
-    g_open_shortcut_url = embedded_test_server()->GetURL("/simple.html");
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -400,6 +398,206 @@ IN_PROC_BROWSER_TEST_F(AppControllerOpenShortcutBrowserTest,
       browser()->tab_strip_model()->GetActiveWebContents()
           ->GetLastCommittedURL());
 }
+
+const char kSessionURL[] = "https://example.com/session.html";
+const char kPresetURL[] = "https://example.com/preset.html";
+const char kUrlToOpen[] = "https://example.com/shortcut.html";
+
+class AppControllerOpenShortcutOnStartupBrowserTest
+    : public AppControllerOpenShortcutBrowserTest,
+      public testing::WithParamInterface<SessionStartupPref::Type> {
+ public:
+  AppControllerOpenShortcutOnStartupBrowserTest()
+      : session_startup_pref_(GetParam()) {}
+  virtual ~AppControllerOpenShortcutOnStartupBrowserTest() {}
+
+  void SetUpInProcessBrowserTestFixture() override {
+    // Don't open URL via AppControllerOpenShortcutBrowserTest in PRE test,
+    // PRE test should only prepare session-to-restore.
+    if (!base::StartsWith(
+            testing::UnitTest::GetInstance()->current_test_info()->name(),
+            "PRE_", base::CompareCase::SENSITIVE)) {
+      AppControllerOpenShortcutBrowserTest::SetUpInProcessBrowserTestFixture();
+    }
+  }
+
+  void SetUpOnMainThread() override {
+    ASSERT_TRUE(embedded_test_server()->Start());
+    SessionStartupPref pref(GetParam());
+    pref.urls.push_back(GURL(kPresetURL));
+    SessionStartupPref::SetStartupPref(browser()->profile(), pref);
+    InProcessBrowserTest::SetUpOnMainThread();
+  }
+
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    set_open_about_blank_on_browser_launch(false);
+    // Skip AppControllerOpenShortcutBrowserTest::SetUpCommandLine, which adds
+    // startup URL.
+    InProcessBrowserTest::SetUpCommandLine(command_line);
+  }
+
+  SessionStartupPref::Type GetSessionStartupPref() {
+    return session_startup_pref_;
+  }
+
+ private:
+  SessionStartupPref::Type session_startup_pref_;
+
+  DISALLOW_COPY_AND_ASSIGN(AppControllerOpenShortcutOnStartupBrowserTest);
+};
+
+IN_PROC_BROWSER_TEST_P(AppControllerOpenShortcutOnStartupBrowserTest,
+                       PRE_OpenURL) {
+  // Prepare a session to restore in main test body.
+  ui_test_utils::NavigateToURL(browser(), GURL(kSessionURL));
+  ASSERT_EQ(1, browser()->tab_strip_model()->count());
+}
+
+// This test checks that when AppleEvent on opening URL is received during
+// browser starup, that URL is opened and located properly alongside restored
+// session or startup URLs.
+// Emulates opening local file or URL from other application when chromium
+// application is not started.
+IN_PROC_BROWSER_TEST_P(AppControllerOpenShortcutOnStartupBrowserTest, OpenURL) {
+  TabStripModel* tab_strip = browser()->tab_strip_model();
+  if (GetSessionStartupPref() == SessionStartupPref::DEFAULT) {
+    // Open NTP startup setting - tab opened via shortcut should replace NTP.
+    EXPECT_EQ(1, tab_strip->count());
+  } else if (GetSessionStartupPref() == SessionStartupPref::LAST) {
+    // Restore sesion on startup - expect tab of that session.
+    EXPECT_EQ(2, tab_strip->count());
+    EXPECT_EQ(kSessionURL, tab_strip->GetWebContentsAt(0)->GetURL().spec());
+  } else if (GetSessionStartupPref() == SessionStartupPref::URLS) {
+    // Open specific set of pages startup setting - expect that set of pages.
+    EXPECT_EQ(2, tab_strip->count());
+    EXPECT_EQ(kPresetURL, tab_strip->GetWebContentsAt(0)->GetURL().spec());
+  } else {
+    NOTREACHED() << "Unknown session startup pref, not covered by test.";
+  }
+  // Tab opened via shortcut should be the last tab and shold be active.
+  EXPECT_EQ(
+      g_open_shortcut_url.spec(),
+      tab_strip->GetWebContentsAt(tab_strip->count() - 1)->GetURL().spec());
+  EXPECT_EQ(tab_strip->count() - 1, tab_strip->active_index());
+}
+
+INSTANTIATE_TEST_CASE_P(AppControllerOpenShortcutOnStartupPrefsAny,
+                        AppControllerOpenShortcutOnStartupBrowserTest,
+                        testing::Values(SessionStartupPref::DEFAULT,
+                                        SessionStartupPref::LAST,
+                                        SessionStartupPref::URLS));
+
+class AppControllerOpenShortcutInBrowserTest
+    : public InProcessBrowserTest,
+      public testing::WithParamInterface<SessionStartupPref::Type> {
+ public:
+  AppControllerOpenShortcutInBrowserTest()
+      : session_startup_pref_(GetParam()) {}
+
+ protected:
+  SessionStartupPref::Type GetSessionStartupPref() {
+    return session_startup_pref_;
+  }
+
+  void SetUpOnMainThread() override {
+    SessionStartupPref pref(session_startup_pref_);
+    pref.urls.push_back(GURL(kPresetURL));
+    SessionStartupPref::SetStartupPref(browser()->profile(), pref);
+    InProcessBrowserTest::SetUpOnMainThread();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    set_open_about_blank_on_browser_launch(false);
+  }
+
+ private:
+  SessionStartupPref::Type session_startup_pref_;
+
+  DISALLOW_COPY_AND_ASSIGN(AppControllerOpenShortcutInBrowserTest);
+};
+
+IN_PROC_BROWSER_TEST_P(AppControllerOpenShortcutInBrowserTest,
+                       PRE_OpenShortcutInBrowserWithWindow) {
+  // Prepare a session to restore in main test body.
+  ui_test_utils::NavigateToURL(browser(), GURL(kSessionURL));
+  ASSERT_EQ(1, browser()->tab_strip_model()->count());
+}
+
+// This test checks that when AppleEvent on opening URL is received by already
+// started browser with window, that URL opens in a tab next to existing tabs.
+// This needs to be TEST_P (with SessionStartupPref::Type) parameter to
+// ensure that opening URL logic will not by mistake restore sesiion or open
+// startup URLs.
+IN_PROC_BROWSER_TEST_P(AppControllerOpenShortcutInBrowserTest,
+                       OpenShortcutInBrowserWithWindow) {
+  ui_test_utils::NavigateToURL(browser(), GURL(kSessionURL));
+  ASSERT_EQ(1, browser()->tab_strip_model()->count());
+  SendAppleEventToOpenUrlToAppController(GURL(kUrlToOpen));
+  content::TestNavigationObserver event_navigation_observer(
+      browser()->tab_strip_model()->GetActiveWebContents());
+  event_navigation_observer.Wait();
+
+  ASSERT_EQ(2, browser()->tab_strip_model()->count());
+  TabStripModel* tab_strip = browser()->tab_strip_model();
+  EXPECT_EQ(kUrlToOpen, tab_strip->GetWebContentsAt(1)->GetURL().spec());
+  EXPECT_EQ(1, tab_strip->active_index());
+}
+
+IN_PROC_BROWSER_TEST_P(AppControllerOpenShortcutInBrowserTest,
+                       PRE_OpenShortcutInBrowserWithoutWindow) {
+  // Prepare a session to restore in main test body.
+  ui_test_utils::NavigateToURL(browser(), GURL(kSessionURL));
+  ASSERT_EQ(1, browser()->tab_strip_model()->count());
+}
+
+// This test checks that when AppleEvent on opening URL is received by
+// chromium application withot windows, that URL is opened, alongside with
+// restored session if corresponding setting is enabled.
+IN_PROC_BROWSER_TEST_P(AppControllerOpenShortcutInBrowserTest,
+                       OpenShortcutInBrowserWithoutWindow) {
+  ui_test_utils::NavigateToURL(browser(), GURL(kSessionURL));
+  content::RepeatedNotificationObserver close_observer(
+      chrome::NOTIFICATION_BROWSER_CLOSED, 1);
+  browser()->window()->Close();
+  close_observer.Wait();
+
+  content::RepeatedNotificationObserver open_observer(
+      chrome::NOTIFICATION_TAB_ADDED, 1);
+  SendAppleEventToOpenUrlToAppController(GURL(kUrlToOpen));
+
+  open_observer.Wait();
+
+  Browser* browser = BrowserList::GetInstance()->GetLastActive();
+  TabStripModel* tab_strip = browser->tab_strip_model();
+
+  if (GetSessionStartupPref() == SessionStartupPref::DEFAULT) {
+    // Open NTP startup setting - tab opened via shortcut should replace NTP.
+    ASSERT_EQ(1, tab_strip->count());
+  } else if (GetSessionStartupPref() == SessionStartupPref::LAST) {
+    // Restore sesion on startup - expect tab of that session.
+    ASSERT_EQ(2, tab_strip->count());
+    EXPECT_EQ(kSessionURL, tab_strip->GetWebContentsAt(0)->GetURL().spec());
+  } else if (GetSessionStartupPref() == SessionStartupPref::URLS) {
+    // Open specific set of pages startup setting - when Chromium application
+    // is already started, do NOT expect these pages to be opened.
+    ASSERT_EQ(1, tab_strip->count());
+  } else {
+    NOTREACHED() << "Unknown session startup pref, not covered by test.";
+  }
+
+  // Tab opened via shortcut should be the last tab and shold be active.
+  EXPECT_EQ(
+      kUrlToOpen,
+      tab_strip->GetWebContentsAt(tab_strip->count() - 1)->GetURL().spec());
+  EXPECT_EQ(tab_strip->count() - 1, tab_strip->active_index());
+}
+
+INSTANTIATE_TEST_CASE_P(AppControllerOpenShortcutInBrowserPrefsAny,
+                        AppControllerOpenShortcutInBrowserTest,
+                        testing::Values(SessionStartupPref::DEFAULT,
+                                        SessionStartupPref::LAST,
+                                        SessionStartupPref::URLS));
 
 class AppControllerReplaceNTPBrowserTest : public InProcessBrowserTest {
  protected:

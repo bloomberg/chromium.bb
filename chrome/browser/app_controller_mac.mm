@@ -209,6 +209,10 @@ bool IsProfileSignedOut(Profile* profile) {
 // Opens a tab for each GURL in |urls|.
 - (void)openUrls:(const std::vector<GURL>&)urls;
 
+// Creates StartupBrowserCreator and opens |urls| with it.
+- (void)openUrlsViaStartupBrowserCreator:(const std::vector<GURL>&)urls
+                               inBrowser:(Browser*)browser;
+
 // This class cannot open urls until startup has finished. The urls that cannot
 // be opened are cached in |startupUrls_|. This method must be called exactly
 // once after startup has completed. It opens the urls in |startupUrls_|, and
@@ -1275,6 +1279,16 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer {
          prefs->GetBoolean(prefs::kBrowserGuestModeEnabled);
 }
 
+- (void)openUrlsViaStartupBrowserCreator:(const std::vector<GURL>&)urls
+                               inBrowser:(Browser*)browser {
+  base::CommandLine dummy(base::CommandLine::NO_PROGRAM);
+  chrome::startup::IsFirstRun first_run =
+      first_run::IsChromeFirstRun() ? chrome::startup::IS_FIRST_RUN
+                                    : chrome::startup::IS_NOT_FIRST_RUN;
+  StartupBrowserCreatorImpl launch(base::FilePath(), dummy, first_run);
+  launch.OpenURLsInBrowser(browser, false, urls);
+}
+
 // Various methods to open URLs that we get in a native fashion. We use
 // StartupBrowserCreator here because on the other platforms, URLs to open come
 // through the ProcessSingleton, and it calls StartupBrowserCreator. It's best
@@ -1285,19 +1299,36 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer {
     return;
   }
 
-  Browser* browser = chrome::GetLastActiveBrowser();
-  // if no browser window exists then create one with no tabs to be filled in
-  if (!browser) {
-    browser = new Browser(
-        Browser::CreateParams([self safeLastProfileForNewWindows], true));
-    browser->window()->Show();
-  }
+  Profile* profile = [self safeLastProfileForNewWindows];
+  SessionStartupPref pref = StartupBrowserCreator::GetSessionStartupPref(
+      *base::CommandLine::ForCurrentProcess(), profile);
 
-  base::CommandLine dummy(base::CommandLine::NO_PROGRAM);
-  chrome::startup::IsFirstRun first_run = first_run::IsChromeFirstRun() ?
-      chrome::startup::IS_FIRST_RUN : chrome::startup::IS_NOT_FIRST_RUN;
-  StartupBrowserCreatorImpl launch(base::FilePath(), dummy, first_run);
-  launch.OpenURLsInBrowser(browser, false, urls);
+  if (pref.type == SessionStartupPref::LAST) {
+    if (SessionRestore::IsRestoring(profile)) {
+      // In case of session restore, remember |urls|, so they will be opened
+      // after session is resored, in the tabs next to it.
+      SessionRestore::AddURLsToOpen(profile, urls);
+    } else {
+      Browser* browser = chrome::GetLastActiveBrowser();
+      if (!browser) {
+        // This behavior is needed for the case when chromium app is launched,
+        // but there are no open indows.
+        browser = new Browser(Browser::CreateParams(profile, true));
+        browser->window()->Show();
+        SessionRestore::AddURLsToOpen(profile, urls);
+      } else {
+        [self openUrlsViaStartupBrowserCreator:urls inBrowser:browser];
+      }
+    }
+  } else {
+    Browser* browser = chrome::GetLastActiveBrowser();
+    // If no browser window exists then create one with no tabs to be filled in.
+    if (!browser) {
+      browser = new Browser(Browser::CreateParams(profile, true));
+      browser->window()->Show();
+    }
+    [self openUrlsViaStartupBrowserCreator:urls inBrowser:browser];
+  }
 }
 
 - (void)getUrl:(NSAppleEventDescriptor*)event

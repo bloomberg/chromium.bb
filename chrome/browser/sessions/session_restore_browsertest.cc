@@ -4,6 +4,7 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <set>
 #include <vector>
 
@@ -211,6 +212,9 @@ class SessionRestoreTest : public InProcessBrowserTest {
   GURL url3_;
 
   const BrowserList* active_browser_list_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SessionRestoreTest);
 };
 
 // Activates the smart restore behaviour and tracks the loading of tabs.
@@ -1621,4 +1625,49 @@ IN_PROC_BROWSER_TEST_F(SmartSessionRestoreTest, MAYBE_CorrectLoadingOrder) {
                 web_contents()[i]->GetLastActiveTime());
     }
   }
+}
+
+namespace {
+
+const char kStartupURL[] = "http://example.com/";
+const char kSessionURL[] = "http://localhost/";
+
+}  // namespace
+
+class SessionRestoreWithStartupURLTest : public SessionRestoreTest {
+ public:
+  SessionRestoreWithStartupURLTest() {}
+
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // Add startup URL to command line, but only in main test body in order
+    // to prevent that URL from beng opened twice.
+    if (!base::StartsWith(
+            testing::UnitTest::GetInstance()->current_test_info()->name(),
+            "PRE_", base::CompareCase::SENSITIVE)) {
+      command_line->AppendArg(kStartupURL);
+    }
+    SessionRestoreTest::SetUpCommandLine(command_line);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(SessionRestoreWithStartupURLTest);
+};
+
+IN_PROC_BROWSER_TEST_F(SessionRestoreWithStartupURLTest,
+                       PRE_StartupURLsWithSessionRestore) {
+  // Prepare a session to restore in main test body.
+  ui_test_utils::NavigateToURL(browser(), GURL(kSessionURL));
+}
+
+IN_PROC_BROWSER_TEST_F(SessionRestoreWithStartupURLTest,
+                       StartupURLsWithSessionRestore) {
+  // Check that browser is started with restored session and
+  // tab with startup URL next to it.
+  TabStripModel* tab_strip = browser()->tab_strip_model();
+  ASSERT_EQ(2, tab_strip->count());
+  EXPECT_EQ(kSessionURL,
+            tab_strip->GetWebContentsAt(0)->GetURL().possibly_invalid_spec());
+  EXPECT_EQ(kStartupURL,
+            tab_strip->GetWebContentsAt(1)->GetURL().possibly_invalid_spec());
 }
