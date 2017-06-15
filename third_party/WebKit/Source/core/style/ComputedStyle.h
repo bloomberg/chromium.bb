@@ -1056,12 +1056,12 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // object-fit
-  static ObjectFit InitialObjectFit() { return kObjectFitFill; }
-  ObjectFit GetObjectFit() const {
-    return static_cast<ObjectFit>(rare_non_inherited_data_->object_fit_);
+  static EObjectFit InitialObjectFit() { return EObjectFit::kFill; }
+  EObjectFit GetObjectFit() const {
+    return static_cast<EObjectFit>(rare_non_inherited_data_->object_fit_);
   }
-  void SetObjectFit(ObjectFit f) {
-    SET_VAR(rare_non_inherited_data_, object_fit_, f);
+  void SetObjectFit(EObjectFit f) {
+    SET_VAR(rare_non_inherited_data_, object_fit_, static_cast<unsigned>(f));
   }
 
   // object-position

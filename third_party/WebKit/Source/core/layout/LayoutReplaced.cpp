@@ -583,9 +583,9 @@ void LayoutReplaced::ComputePositionedLogicalHeight(
 LayoutRect LayoutReplaced::ComputeObjectFit(
     const LayoutSize* overridden_intrinsic_size) const {
   LayoutRect content_rect = ContentBoxRect();
-  ObjectFit object_fit = Style()->GetObjectFit();
+  EObjectFit object_fit = Style()->GetObjectFit();
 
-  if (object_fit == kObjectFitFill &&
+  if (object_fit == EObjectFit::kFill &&
       Style()->ObjectPosition() == ComputedStyle::InitialObjectPosition()) {
     return content_rect;
   }
@@ -603,21 +603,21 @@ LayoutRect LayoutReplaced::ComputeObjectFit(
 
   LayoutRect final_rect = content_rect;
   switch (object_fit) {
-    case kObjectFitContain:
-    case kObjectFitScaleDown:
-    case kObjectFitCover:
+    case EObjectFit::kContain:
+    case EObjectFit::kScaleDown:
+    case EObjectFit::kCover:
       final_rect.SetSize(final_rect.Size().FitToAspectRatio(
-          intrinsic_size, object_fit == kObjectFitCover
+          intrinsic_size, object_fit == EObjectFit::kCover
                               ? kAspectRatioFitGrow
                               : kAspectRatioFitShrink));
-      if (object_fit != kObjectFitScaleDown ||
+      if (object_fit != EObjectFit::kScaleDown ||
           final_rect.Width() <= intrinsic_size.Width())
         break;
     // fall through
-    case kObjectFitNone:
+    case EObjectFit::kNone:
       final_rect.SetSize(intrinsic_size);
       break;
-    case kObjectFitFill:
+    case EObjectFit::kFill:
       break;
     default:
       NOTREACHED();

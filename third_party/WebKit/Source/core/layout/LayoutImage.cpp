@@ -239,8 +239,8 @@ bool LayoutImage::ForegroundIsKnownToBeOpaqueInRect(
   if (Style()->ObjectPosition() != ComputedStyle::InitialObjectPosition())
     return false;
   // Object-fit may leave parts of the content box empty.
-  ObjectFit object_fit = Style()->GetObjectFit();
-  if (object_fit != kObjectFitFill && object_fit != kObjectFitCover)
+  EObjectFit object_fit = Style()->GetObjectFit();
+  if (object_fit != EObjectFit::kFill && object_fit != EObjectFit::kCover)
     return false;
   // Check for image with alpha.
   TRACE_EVENT1(
