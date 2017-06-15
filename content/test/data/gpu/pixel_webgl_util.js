@@ -121,6 +121,6 @@ function drawSomeFramesUtil()
   } else {
     g_swapsBeforeAckUtil--;
     drawTriangle(g_glUtil);
-    window.webkitRequestAnimationFrame(drawSomeFramesUtil);
+    window.requestAnimationFrame(drawSomeFramesUtil);
   }
 }

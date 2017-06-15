@@ -18,7 +18,7 @@ function waitForFinish()
   } else {
     g_swapsBeforeAck--;
     document.getElementById('paths').style.zIndex = g_swapsBeforeAck + 1;
-    window.webkitRequestAnimationFrame(waitForFinish);
+    window.requestAnimationFrame(waitForFinish);
   }
 }
 </script>

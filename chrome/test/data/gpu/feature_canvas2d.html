@@ -19,7 +19,7 @@ function init() {
 function runTest() {
   init();
   if (context)
-    window.webkitRequestAnimationFrame(draw);
+    window.requestAnimationFrame(draw);
   else
     endTest();
 }
@@ -30,7 +30,7 @@ function draw() {
   if (frameCount == 6) {
     endTest();
   } else {
-    window.webkitRequestAnimationFrame(draw);
+    window.requestAnimationFrame(draw);
   }
 }
 

@@ -30,7 +30,7 @@ function waitForFinish()
   } else {
     g_swapsBeforeAck--;
     document.getElementById('plugin').style.zIndex = g_swapsBeforeAck + 1;
-    window.webkitRequestAnimationFrame(waitForFinish);
+    window.requestAnimationFrame(waitForFinish);
   }
 }
 </script>
