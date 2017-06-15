@@ -222,7 +222,7 @@ inline TextDecorationSkip& operator|=(TextDecorationSkip& a,
   return a = a | b;
 }
 
-enum ETransformStyle3D { kTransformStyle3DFlat, kTransformStyle3DPreserve3D };
+enum class ETransformStyle3D { kFlat, kPreserve3D };
 
 enum OffsetRotationType { kOffsetRotationAuto, kOffsetRotationFixed };
 

@@ -2611,7 +2611,7 @@
       name_for_methods: "TransformStyle3D",
       field_template: "storage_only",
       field_group: "rare-non-inherited",
-      default_value: "kTransformStyle3DFlat",
+      default_value: "ETransformStyle3D::kFlat",
       field_size: 1,
     },
     {

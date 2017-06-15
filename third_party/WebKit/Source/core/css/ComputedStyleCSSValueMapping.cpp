@@ -3290,7 +3290,7 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
     }
     case CSSPropertyTransformStyle:
       return CSSIdentifierValue::Create(
-          (style.TransformStyle3D() == kTransformStyle3DPreserve3D)
+          (style.TransformStyle3D() == ETransformStyle3D::kPreserve3D)
               ? CSSValuePreserve3d
               : CSSValueFlat);
     case CSSPropertyTransitionDelay:

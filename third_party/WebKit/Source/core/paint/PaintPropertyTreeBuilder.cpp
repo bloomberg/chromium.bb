@@ -355,7 +355,7 @@ static CompositingReasons CompositingReasonsForTransform(const LayoutBox& box) {
   if (box.HasLayer() && box.Layer()->Has3DTransformedDescendant()) {
     if (style.HasPerspective())
       compositing_reasons |= kCompositingReasonPerspectiveWith3DDescendants;
-    if (style.UsedTransformStyle3D() == kTransformStyle3DPreserve3D)
+    if (style.UsedTransformStyle3D() == ETransformStyle3D::kPreserve3D)
       compositing_reasons |= kCompositingReasonPreserve3DWith3DDescendants;
   }
 
