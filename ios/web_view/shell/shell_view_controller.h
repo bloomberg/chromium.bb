@@ -5,6 +5,7 @@
 #ifndef IOS_WEB_VIEW_SHELL_SHELL_VIEW_CONTROLLER_H_
 #define IOS_WEB_VIEW_SHELL_SHELL_VIEW_CONTROLLER_H_
 
+#import <ChromeWebView/ChromeWebView.h>
 #import <UIKit/UIKit.h>
 
 // Accessibility label added to the back button.
@@ -20,6 +21,9 @@ extern NSString* const
 // Implements the main UI for web_view_shell, including the toolbar and web
 // view.
 @interface ShellViewController : UIViewController
+
+// CWV view which renders the web page.
+@property(nonatomic, strong) CWVWebView* webView;
 
 @end
 
