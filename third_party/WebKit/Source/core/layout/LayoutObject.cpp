@@ -3156,7 +3156,7 @@ void LayoutObject::AddAnnotatedRegions(Vector<AnnotatedRegionValue>& regions) {
   if (Style()->Visibility() != EVisibility::kVisible || !IsBox())
     return;
 
-  if (Style()->GetDraggableRegionMode() == kDraggableRegionNone)
+  if (Style()->DraggableRegionMode() == EDraggableRegionMode::kNone)
     return;
 
   LayoutBox* box = ToLayoutBox(this);
@@ -3164,7 +3164,8 @@ void LayoutObject::AddAnnotatedRegions(Vector<AnnotatedRegionValue>& regions) {
   FloatRect abs_bounds = LocalToAbsoluteQuad(local_bounds).BoundingBox();
 
   AnnotatedRegionValue region;
-  region.draggable = Style()->GetDraggableRegionMode() == kDraggableRegionDrag;
+  region.draggable =
+      Style()->DraggableRegionMode() == EDraggableRegionMode::kDrag;
   region.bounds = LayoutRect(abs_bounds);
   regions.push_back(region);
 }

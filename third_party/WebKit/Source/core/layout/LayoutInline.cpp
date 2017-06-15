@@ -1522,11 +1522,12 @@ void LayoutInline::AddAnnotatedRegions(Vector<AnnotatedRegionValue>& regions) {
   if (Style()->Visibility() != EVisibility::kVisible)
     return;
 
-  if (Style()->GetDraggableRegionMode() == kDraggableRegionNone)
+  if (Style()->DraggableRegionMode() == EDraggableRegionMode::kNone)
     return;
 
   AnnotatedRegionValue region;
-  region.draggable = Style()->GetDraggableRegionMode() == kDraggableRegionDrag;
+  region.draggable =
+      Style()->DraggableRegionMode() == EDraggableRegionMode::kDrag;
   region.bounds = LayoutRect(LinesBoundingBox());
 
   LayoutObject* container = ContainingBlock();

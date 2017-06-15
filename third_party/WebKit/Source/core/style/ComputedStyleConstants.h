@@ -252,11 +252,7 @@ enum GridAutoFlow {
       kInternalAutoFlowAlgorithmDense | kInternalAutoFlowDirectionColumn
 };
 
-enum DraggableRegionMode {
-  kDraggableRegionNone,
-  kDraggableRegionDrag,
-  kDraggableRegionNoDrag
-};
+enum class EDraggableRegionMode : unsigned { kNone, kDrag, kNoDrag };
 
 static const size_t kContainmentBits = 4;
 enum Containment {
