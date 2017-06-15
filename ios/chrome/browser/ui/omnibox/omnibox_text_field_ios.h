@@ -62,9 +62,6 @@ typedef enum {
 // |text|.
 - (void)setText:(NSAttributedString*)text userTextLength:(size_t)userTextLength;
 
-// Returns YES if the omnibox is currently showing a query refinement chip.
-- (BOOL)isShowingQueryRefinementChip;
-
 // Inserts the given |text| into the text field.  The text replaces the current
 // selection, if there is one; otherwise the text is inserted at the current
 // cursor position.  This method should only be called while editing.

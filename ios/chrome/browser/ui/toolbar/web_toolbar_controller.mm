@@ -2062,25 +2062,23 @@ CGRect RectShiftedDownAndResizedForStatusBar(CGRect rect) {
   if (growOmnibox) {
     [self fadeOutNavigationControls];
     [self fadeInOmniboxTrailingView];
-    if (![_omniBox isShowingQueryRefinementChip]) {
-      // Don't animate the query refinement chip.
-      if (_locationBar.get()->IsShowingPlaceholderWhileCollapsed())
-        [self fadeOutOmniboxLeadingView];
-      else
-        [_omniBox leftView].alpha = 0;
-    }
+
+    if (_locationBar.get()->IsShowingPlaceholderWhileCollapsed())
+      [self fadeOutOmniboxLeadingView];
+    else
+      [_omniBox leftView].alpha = 0;
+
     if (_incognito)
       [self fadeInIncognitoIcon];
   } else {
     [self fadeInNavigationControls];
     [self fadeOutOmniboxTrailingView];
-    if (![_omniBox isShowingQueryRefinementChip]) {
-      // Don't animate the query refinement chip.
-      if (_locationBar.get()->IsShowingPlaceholderWhileCollapsed())
-        [self fadeInOmniboxLeadingView];
-      else
-        [_omniBox leftView].alpha = 1;
-    }
+
+    if (_locationBar.get()->IsShowingPlaceholderWhileCollapsed())
+      [self fadeInOmniboxLeadingView];
+    else
+      [_omniBox leftView].alpha = 1;
+
     if (_incognito)
       [self fadeOutIncognitoIcon];
   }
