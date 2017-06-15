@@ -7,6 +7,7 @@
 #import <CoreText/CoreText.h>
 
 #include "base/command_line.h"
+#include "base/ios/ios_util.h"
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
 
@@ -554,15 +555,19 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 
   NSTextAlignment alignment = [self bestTextAlignment];
   [self setTextAlignment:alignment];
-  UITextWritingDirection writingDirection =
-      alignment == NSTextAlignmentLeft ? UITextWritingDirectionLeftToRight
-                                       : UITextWritingDirectionRightToLeft;
-  [self
-      setBaseWritingDirection:writingDirection
-                     forRange:[self
-                                  textRangeFromPosition:[self
-                                                            beginningOfDocument]
-                                             toPosition:[self endOfDocument]]];
+  if (!base::ios::IsRunningOnIOS11OrLater()) {
+    // TODO(crbug.com/730461): Remove this entire block once it's been tested
+    // on trunk.
+    UITextWritingDirection writingDirection =
+        alignment == NSTextAlignmentLeft ? UITextWritingDirectionLeftToRight
+                                         : UITextWritingDirectionRightToLeft;
+    [self
+        setBaseWritingDirection:writingDirection
+                       forRange:
+                           [self
+                               textRangeFromPosition:[self beginningOfDocument]
+                                          toPosition:[self endOfDocument]]];
+  }
 }
 
 - (void)setPlaceholder:(NSString*)placeholder {
