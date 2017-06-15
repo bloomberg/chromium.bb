@@ -72,8 +72,6 @@ component("web") {
     "WebHelperPluginImpl.cpp",
     "WebHelperPluginImpl.h",
     "WebHitTestResult.cpp",
-    "WebIDBKey.cpp",
-    "WebIDBKeyRange.cpp",
     "WebInputEvent.cpp",
     "WebKit.cpp",
     "WebLeakDetector.cpp",

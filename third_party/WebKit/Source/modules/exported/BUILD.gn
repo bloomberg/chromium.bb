@@ -12,6 +12,8 @@ blink_modules_sources("exported") {
     "WebDatabase.cpp",
     "WebEmbeddedWorkerImpl.cpp",
     "WebEmbeddedWorkerImpl.h",
+    "WebIDBKey.cpp",
+    "WebIDBKeyRange.cpp",
     "WebMediaDeviceChangeObserver.cpp",
     "WebMediaDevicesRequest.cpp",
     "WebMediaStreamRegistry.cpp",
