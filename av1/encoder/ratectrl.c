@@ -1717,8 +1717,8 @@ uint8_t av1_calculate_next_superres_scale(const AV1_COMP *cpi, int width,
   }
 
   // Make sure overall reduction is no more than 1/2 of the source size.
-  if (new_num * width / SCALE_DENOMINATOR * 2 < oxcf->width ||
-      new_num * height / SCALE_DENOMINATOR * 2 < oxcf->height)
+  av1_calculate_scaled_size(&width, &height, new_num);
+  if (width * 2 < oxcf->width || height * 2 < oxcf->height)
     new_num = SCALE_DENOMINATOR;
 
   return new_num;
