@@ -86,7 +86,6 @@ class AddToHomescreenDataFetcher
 
   // Accessors, etc.
   void set_weak_observer(Observer* observer) { weak_observer_ = observer; }
-  bool is_ready() const { return is_ready_; }
   const SkBitmap& badge_icon() const { return badge_icon_; }
   const SkBitmap& primary_icon() const { return primary_icon_; }
   ShortcutInfo& shortcut_info() { return shortcut_info_; }
@@ -146,7 +145,6 @@ class AddToHomescreenDataFetcher
   bool is_waiting_for_web_application_info_;
   bool is_installable_check_complete_;
   bool is_icon_saved_;
-  bool is_ready_;
 
   DISALLOW_COPY_AND_ASSIGN(AddToHomescreenDataFetcher);
 };
