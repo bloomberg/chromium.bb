@@ -15,14 +15,11 @@ import org.chromium.chrome.browser.ResourceId;
 import org.chromium.ui.widget.ButtonCompat;
 
 /**
- * This infobar appears when the user proceeds through a Safe Browsing warning interstitial that is
- * displayed when the site ahead contains deceptive embedded content. It explains to the user that
- * some subresources were filtered and presents the "Details" link. If the link is pressed, the full
- * infobar with detailed text, toggle, and action button appears. The toggle gives the user an
- * ability to reload the page with the content we've blocked previously.
+ * This infobar appears when ads are being blocked on the page. This occurs after proceeding through
+ * an interstitial warning that the site shows deceptive content, or when the site is known to show
+ * intrusive ads.
  */
-public class SubresourceFilterExperimentalInfoBar
-        extends ConfirmInfoBar implements OnCheckedChangeListener {
+public class AdsBlockedInfoBar extends ConfirmInfoBar implements OnCheckedChangeListener {
     private final String mMessage;
     private final String mFollowUpMessage;
     private final String mOKButtonText;
@@ -35,14 +32,12 @@ public class SubresourceFilterExperimentalInfoBar
     @CalledByNative
     private static InfoBar show(int enumeratedIconId, String message, String oKButtonText,
             String reloadButtonText, String toggleText, String followUpMessage) {
-        return new SubresourceFilterExperimentalInfoBar(
-                ResourceId.mapToDrawableId(enumeratedIconId), message, oKButtonText,
-                reloadButtonText, toggleText, followUpMessage);
+        return new AdsBlockedInfoBar(ResourceId.mapToDrawableId(enumeratedIconId), message,
+                oKButtonText, reloadButtonText, toggleText, followUpMessage);
     }
 
-    private SubresourceFilterExperimentalInfoBar(int iconDrawbleId, String message,
-            String oKButtonText, String reloadButtonText, String toggleText,
-            String followUpMessage) {
+    private AdsBlockedInfoBar(int iconDrawbleId, String message, String oKButtonText,
+            String reloadButtonText, String toggleText, String followUpMessage) {
         super(iconDrawbleId, null, message, null, null, null); //, oKButtonText, reloadButtonText);
         mFollowUpMessage = followUpMessage;
         mMessage = message;
