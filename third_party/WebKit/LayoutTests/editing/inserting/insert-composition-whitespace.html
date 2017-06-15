@@ -23,9 +23,9 @@ test(() => {
 
   assertMarkedText('div', 'AB', 'AB');
   assertMarkedText('div', 'A B', 'A B');
-  assertMarkedText('div', 'A  B', 'A \xA0B');
-  assertMarkedText('div', 'A   B', 'A \xA0 B');
-  assertMarkedText('div', 'A    B', 'A \xA0 \xA0B'); 
+  assertMarkedText('div', 'A  B', 'A\xA0 B');
+  assertMarkedText('div', 'A   B', 'A\xA0 \xA0B');
+  assertMarkedText('div', 'A    B', 'A\xA0 \xA0 B');
 
   assertMarkedText('div', ' AB', '\xA0AB');
   assertMarkedText('div', '  AB', '\xA0 AB');
@@ -34,15 +34,15 @@ test(() => {
   assertMarkedText('div', '     AB', '\xA0 \xA0 \xA0AB');
   assertMarkedText('div', '      AB', '\xA0 \xA0 \xA0 AB');
   assertMarkedText('div', '       AB', '\xA0 \xA0 \xA0 \xA0AB');
-  assertMarkedText('div', 'AB  ', 'AB \xA0');
-  assertMarkedText('div', 'AB   ', 'AB \xA0\xA0');
-  assertMarkedText('div', 'AB    ', 'AB \xA0 \xA0');
-  assertMarkedText('div', 'AB     ', 'AB \xA0 \xA0\xA0');
-  assertMarkedText('div', 'AB      ', 'AB \xA0 \xA0 \xA0');
-  assertMarkedText('div', 'AB       ', 'AB \xA0 \xA0 \xA0\xA0');
+  assertMarkedText('div', 'AB  ', 'AB\xA0\xA0');
+  assertMarkedText('div', 'AB   ', 'AB\xA0 \xA0');
+  assertMarkedText('div', 'AB    ', 'AB\xA0 \xA0\xA0');
+  assertMarkedText('div', 'AB     ', 'AB\xA0 \xA0 \xA0');
+  assertMarkedText('div', 'AB      ', 'AB\xA0 \xA0 \xA0\xA0');
+  assertMarkedText('div', 'AB       ', 'AB\xA0 \xA0 \xA0 \xA0');
 
-  assertMarkedText('div', '  A  B  ', '\xA0 A \xA0B \xA0');
-  assertMarkedText('div', '\t\tA\t\tB\t\t', '\xA0 A \xA0B \xA0');
+  assertMarkedText('div', '  A  B  ', '\xA0 A\xA0 B\xA0\xA0');
+  assertMarkedText('div', '\t\tA\t\tB\t\t', '\xA0 A\xA0 B\xA0\xA0');
 
   assertMarkedText('div', ' ', '\xA0');
   assertMarkedText('div', '  ', '\xA0\xA0');

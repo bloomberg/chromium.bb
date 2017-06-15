@@ -33,21 +33,21 @@ test(() => {
         'One space');
 
     assert_selection(
-        '<div contenteditable>|x \u{00A0}y^</div>',
+        '<div contenteditable>|x\u{00A0} y^</div>',
         cutAndPaste,
-        '<div contenteditable>x \u{00A0}y|</div>',
+        '<div contenteditable>x\u{00A0} y|</div>',
         'Two spaces');
 
     assert_selection(
-        '<div contenteditable>|x \u{00A0} y^</div>',
+        '<div contenteditable>|x\u{00A0} \u{00A0}y^</div>',
         cutAndPaste,
-        '<div contenteditable>x \u{00A0} y|</div>',
+        '<div contenteditable>x\u{00A0} \u{00A0}y|</div>',
         'Three spaces');
 
     assert_selection(
-        '<div contenteditable>|x \u{00A0} \u{00A0}y^</div>',
+        '<div contenteditable>|x\u{00A0} \u{00A0} y^</div>',
         cutAndPaste,
-        '<div contenteditable>x \u{00A0} \u{00A0}y|</div>',
+        '<div contenteditable>x\u{00A0} \u{00A0} y|</div>',
         'Four spaces');
 }, 'paste with spaces:');
 </script>

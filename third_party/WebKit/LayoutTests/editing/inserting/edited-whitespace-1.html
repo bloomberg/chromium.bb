@@ -18,7 +18,7 @@ test(() => assert_selection(
   },
   [
     '<div contenteditable>',
-      '\u00A0Hello \u00A0 \u00A0 World\u00A0',
+      '\u00A0Hello\u00A0 \u00A0 \u00A0World\u00A0',
     '|</div>',
   ].join('')),
   'insert " Hello     World " with extra whitespaces');

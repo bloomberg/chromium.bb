@@ -104,6 +104,34 @@ InputEvent::EventCancelable InputTypeIsCancelable(
   }
 }
 
+UChar WhitespaceRebalancingCharToAppend(const String& string,
+                                        bool start_is_start_of_paragraph,
+                                        bool should_emit_nbsp_before_end,
+                                        size_t index,
+                                        UChar previous) {
+  DCHECK_LT(index, string.length());
+
+  if (!IsWhitespace(string[index]))
+    return string[index];
+
+  if (!index && start_is_start_of_paragraph)
+    return kNoBreakSpaceCharacter;
+  if (index + 1 == string.length() && should_emit_nbsp_before_end)
+    return kNoBreakSpaceCharacter;
+
+  // Generally, alternate between space and no-break space.
+  if (previous == ' ')
+    return kNoBreakSpaceCharacter;
+  if (previous == kNoBreakSpaceCharacter)
+    return ' ';
+
+  // Run of two or more spaces starts with a no-break space (crbug.com/453042).
+  if (index + 1 < string.length() && IsWhitespace(string[index + 1]))
+    return kNoBreakSpaceCharacter;
+
+  return ' ';
+}
+
 }  // namespace
 
 bool NeedsLayoutTreeUpdate(const Node& node) {
@@ -1034,23 +1062,12 @@ String StringWithRebalancedWhitespace(const String& string,
   StringBuilder rebalanced_string;
   rebalanced_string.ReserveCapacity(length);
 
-  bool previous_character_was_space = false;
-  for (size_t i = 0; i < length; i++) {
-    UChar c = string[i];
-    if (!IsWhitespace(c)) {
-      rebalanced_string.Append(c);
-      previous_character_was_space = false;
-      continue;
-    }
-
-    if (previous_character_was_space || (!i && start_is_start_of_paragraph) ||
-        (i + 1 == length && should_emit_nbs_pbefore_end)) {
-      rebalanced_string.Append(kNoBreakSpaceCharacter);
-      previous_character_was_space = false;
-    } else {
-      rebalanced_string.Append(' ');
-      previous_character_was_space = true;
-    }
+  UChar char_to_append = 0;
+  for (size_t index = 0; index < length; index++) {
+    char_to_append = WhitespaceRebalancingCharToAppend(
+        string, start_is_start_of_paragraph, should_emit_nbs_pbefore_end, index,
+        char_to_append);
+    rebalanced_string.Append(char_to_append);
   }
 
   DCHECK_EQ(rebalanced_string.length(), length);

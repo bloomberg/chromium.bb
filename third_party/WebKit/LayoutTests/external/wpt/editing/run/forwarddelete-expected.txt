@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 6409 tests; 6274 PASS, 135 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 6409 tests; 6277 PASS, 132 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS [["forwarddelete",""]] "foo[]": execCommand("forwarddelete", false, "") return value 
 PASS [["forwarddelete",""]] "foo[]" checks for modifications to non-editable content 
 PASS [["forwarddelete",""]] "foo[]" compare innerHTML 
@@ -996,7 +996,7 @@ PASS [["forwarddelete",""]] "foo[]  bar" queryCommandState("forwarddelete") afte
 PASS [["forwarddelete",""]] "foo[]  bar" queryCommandValue("forwarddelete") after 
 PASS [["forwarddelete",""]] "foo[] &nbsp; bar": execCommand("forwarddelete", false, "") return value 
 PASS [["forwarddelete",""]] "foo[] &nbsp; bar" checks for modifications to non-editable content 
-FAIL [["forwarddelete",""]] "foo[] &nbsp; bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo&nbsp; bar" but got "foo &nbsp;bar"
+PASS [["forwarddelete",""]] "foo[] &nbsp; bar" compare innerHTML 
 PASS [["forwarddelete",""]] "foo[] &nbsp; bar" queryCommandIndeterm("forwarddelete") before 
 PASS [["forwarddelete",""]] "foo[] &nbsp; bar" queryCommandState("forwarddelete") before 
 PASS [["forwarddelete",""]] "foo[] &nbsp; bar" queryCommandValue("forwarddelete") before 
@@ -1005,7 +1005,7 @@ PASS [["forwarddelete",""]] "foo[] &nbsp; bar" queryCommandState("forwarddelete"
 PASS [["forwarddelete",""]] "foo[] &nbsp; bar" queryCommandValue("forwarddelete") after 
 PASS [["forwarddelete",""]] "foo []&nbsp; bar": execCommand("forwarddelete", false, "") return value 
 PASS [["forwarddelete",""]] "foo []&nbsp; bar" checks for modifications to non-editable content 
-FAIL [["forwarddelete",""]] "foo []&nbsp; bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo&nbsp; bar" but got "foo &nbsp;bar"
+PASS [["forwarddelete",""]] "foo []&nbsp; bar" compare innerHTML 
 PASS [["forwarddelete",""]] "foo []&nbsp; bar" queryCommandIndeterm("forwarddelete") before 
 PASS [["forwarddelete",""]] "foo []&nbsp; bar" queryCommandState("forwarddelete") before 
 PASS [["forwarddelete",""]] "foo []&nbsp; bar" queryCommandValue("forwarddelete") before 
@@ -1014,7 +1014,7 @@ PASS [["forwarddelete",""]] "foo []&nbsp; bar" queryCommandState("forwarddelete"
 PASS [["forwarddelete",""]] "foo []&nbsp; bar" queryCommandValue("forwarddelete") after 
 PASS [["forwarddelete",""]] "foo &nbsp;[] bar": execCommand("forwarddelete", false, "") return value 
 PASS [["forwarddelete",""]] "foo &nbsp;[] bar" checks for modifications to non-editable content 
-FAIL [["forwarddelete",""]] "foo &nbsp;[] bar" compare innerHTML assert_equals: Unexpected innerHTML (after normalizing inline style) expected "foo&nbsp; bar" but got "foo &nbsp;bar"
+PASS [["forwarddelete",""]] "foo &nbsp;[] bar" compare innerHTML 
 PASS [["forwarddelete",""]] "foo &nbsp;[] bar" queryCommandIndeterm("forwarddelete") before 
 PASS [["forwarddelete",""]] "foo &nbsp;[] bar" queryCommandState("forwarddelete") before 
 PASS [["forwarddelete",""]] "foo &nbsp;[] bar" queryCommandValue("forwarddelete") before 
