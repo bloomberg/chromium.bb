@@ -82,7 +82,8 @@ class TestUrlBarTexture : public UrlBarTexture {
 };
 
 TestUrlBarTexture::TestUrlBarTexture()
-    : UrlBarTexture(base::Bind(&TestUrlBarTexture::OnUnsupportedFeature,
+    : UrlBarTexture(false,
+                    base::Bind(&TestUrlBarTexture::OnUnsupportedFeature,
                                base::Unretained(this))),
       texture_size_(kUrlWidth, kUrlHeight),
       bounds_(kUrlWidth, kUrlHeight) {

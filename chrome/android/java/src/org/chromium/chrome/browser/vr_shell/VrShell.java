@@ -16,7 +16,8 @@ public interface VrShell {
     /**
      * Performs native VrShell initialization.
      */
-    void initializeNative(Tab currentTab, boolean forWebVr, boolean inCct);
+    void initializeNative(
+            Tab currentTab, boolean forWebVr, boolean webVrAutopresented, boolean inCct);
 
     /**
      * Pauses VrShell.
@@ -36,7 +37,7 @@ public interface VrShell {
     /**
      * Sets whether we're presenting WebVR content or not.
      */
-    void setWebVrModeEnabled(boolean enabled);
+    void setWebVrModeEnabled(boolean enabled, boolean autoPresented);
 
     /**
      * Returns true if we're presenting WebVR content.

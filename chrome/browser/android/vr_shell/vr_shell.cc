@@ -94,6 +94,7 @@ VrShell::VrShell(JNIEnv* env,
                  jobject obj,
                  ui::WindowAndroid* window,
                  bool for_web_vr,
+                 bool web_vr_autopresented,
                  bool in_cct,
                  VrShellDelegate* delegate,
                  gvr_context* gvr_api,
@@ -113,7 +114,8 @@ VrShell::VrShell(JNIEnv* env,
 
   gl_thread_ = base::MakeUnique<VrGLThread>(
       weak_ptr_factory_.GetWeakPtr(), main_thread_task_runner_, gvr_api,
-      for_web_vr, in_cct, reprojected_rendering_, HasDaydreamSupport(env));
+      for_web_vr, web_vr_autopresented, in_cct, reprojected_rendering_,
+      HasDaydreamSupport(env));
   ui_ = gl_thread_.get();
 
   base::Thread::Options options(base::MessageLoop::TYPE_DEFAULT, 0);
@@ -335,14 +337,15 @@ void VrShell::SetSurface(JNIEnv* env,
 
 void VrShell::SetWebVrMode(JNIEnv* env,
                            const JavaParamRef<jobject>& obj,
-                           bool enabled) {
+                           bool enabled,
+                           bool auto_presented) {
   webvr_mode_ = enabled;
   if (metrics_helper_)
     metrics_helper_->SetWebVREnabled(enabled);
   WaitForGlThread();
   PostToGlThread(FROM_HERE, base::Bind(&VrShellGl::SetWebVrMode,
                                        gl_thread_->GetVrShellGl(), enabled));
-  ui_->SetWebVrMode(enabled);
+  ui_->SetWebVrMode(enabled, auto_presented);
 }
 
 void VrShell::OnFullscreenChanged(bool enabled) {
@@ -730,12 +733,13 @@ jlong Init(JNIEnv* env,
            const JavaParamRef<jobject>& delegate,
            jlong window_android,
            jboolean for_web_vr,
+           jboolean web_vr_autopresented,
            jboolean in_cct,
            jlong gvr_api,
            jboolean reprojected_rendering) {
   return reinterpret_cast<intptr_t>(new VrShell(
       env, obj, reinterpret_cast<ui::WindowAndroid*>(window_android),
-      for_web_vr, in_cct,
+      for_web_vr, web_vr_autopresented, in_cct,
       VrShellDelegate::GetNativeVrShellDelegate(env, delegate),
       reinterpret_cast<gvr_context*>(gvr_api), reprojected_rendering));
 }

@@ -17,6 +17,7 @@
 namespace vr_shell {
 
 class LoadingIndicator;
+class TransientUrlBar;
 class UiBrowserInterface;
 class UiElement;
 class UiScene;
@@ -27,7 +28,8 @@ class UiSceneManager {
   UiSceneManager(UiBrowserInterface* browser,
                  UiScene* scene,
                  bool in_cct,
-                 bool in_web_vr);
+                 bool in_web_vr,
+                 bool web_vr_autopresented);
   ~UiSceneManager();
 
   base::WeakPtr<UiSceneManager> GetWeakPtr();
@@ -36,7 +38,7 @@ class UiSceneManager {
   void SetIncognito(bool incognito);
   void SetURL(const GURL& gurl);
   void SetWebVrSecureOrigin(bool secure);
-  void SetWebVrMode(bool web_vr);
+  void SetWebVrMode(bool web_vr, bool auto_presented);
   void SetSecurityLevel(security_state::SecurityLevel level);
   void SetLoading(bool loading);
   void SetLoadProgress(float progress);
@@ -61,14 +63,17 @@ class UiSceneManager {
   void CreateContentQuad();
   void CreateBackground();
   void CreateUrlBar();
+  void CreateTransientUrlBar();
   void CreateCloseButton();
   void CreateExitPrompt();
 
   void ConfigureScene();
   void ConfigureSecurityWarnings();
+  void ConfigureTransientUrlBar();
   void UpdateBackgroundColor();
   void CloseExitPrompt();
   void OnSecurityWarningTimer();
+  void OnTransientUrlBarTimer();
   void OnBackButtonClicked();
   void OnSecurityIconClicked();
   void OnExitPromptPrimaryButtonClicked();
@@ -98,10 +103,12 @@ class UiSceneManager {
   UiElement* floor_ = nullptr;
   UiElement* close_button_ = nullptr;
   UrlBar* url_bar_ = nullptr;
+  TransientUrlBar* transient_url_bar_ = nullptr;
   LoadingIndicator* loading_indicator_ = nullptr;
 
   bool in_cct_;
   bool web_vr_mode_;
+  bool web_vr_autopresented_ = false;
   bool secure_origin_ = false;
   bool fullscreen_ = false;
   bool incognito_ = false;
@@ -116,6 +123,7 @@ class UiSceneManager {
   std::vector<UiElement*> control_elements_;
 
   base::OneShotTimer security_warning_timer_;
+  base::OneShotTimer transient_url_bar_timer_;
 
   base::WeakPtrFactory<UiSceneManager> weak_ptr_factory_;
 

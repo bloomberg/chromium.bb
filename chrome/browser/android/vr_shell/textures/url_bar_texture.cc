@@ -102,8 +102,10 @@ gfx::PointF percentToMeters(const gfx::PointF& percent) {
 }  // namespace
 
 UrlBarTexture::UrlBarTexture(
+    bool web_vr,
     const base::Callback<void(UiUnsupportedMode)>& failure_callback)
     : security_level_(SecurityLevel::DANGEROUS),
+      has_back_button_(!web_vr),
       failure_callback_(failure_callback) {}
 
 UrlBarTexture::~UrlBarTexture() = default;
@@ -144,10 +146,16 @@ bool UrlBarTexture::HitsUrlBar(const gfx::PointF& position) const {
 }
 
 gfx::PointF UrlBarTexture::SecurityIconPositionMeters() const {
-  float x = kBackButtonWidth + kSeparatorWidth + kSecurityFieldWidth / 2 -
-            kSecurityIconHeight / 2;
+  float x = has_back_button_ ? kBackButtonWidth + kSeparatorWidth : 0.0f;
+  x += kSecurityFieldWidth / 2 - kSecurityIconHeight / 2;
   float y = kHeight / 2 - kSecurityIconHeight / 2;
   return gfx::PointF(x, y);
+}
+
+gfx::PointF UrlBarTexture::UrlBarPositionMeters() const {
+  float x = has_back_button_ ? kBackButtonWidth + kSeparatorWidth : 0.0f;
+  x += kSecurityFieldWidth;
+  return gfx::PointF(x, 0);
 }
 
 bool UrlBarTexture::HitsSecurityIcon(const gfx::PointF& position) const {
@@ -167,16 +175,27 @@ bool UrlBarTexture::HitsTransparentRegion(const gfx::PointF& meters,
   return (meters - circle_center).LengthSquared() > radius * radius;
 }
 
-void UrlBarTexture::SetHovered(bool hovered) {
-  if (hovered_ != hovered)
+void UrlBarTexture::SetBackButtonHovered(bool hovered) {
+  if (back_hovered_ != hovered)
     set_dirty();
-  hovered_ = hovered;
+  back_hovered_ = hovered;
 }
 
-void UrlBarTexture::SetPressed(bool pressed) {
-  if (pressed_ != pressed)
+void UrlBarTexture::SetBackButtonPressed(bool pressed) {
+  if (back_pressed_ != pressed)
     set_dirty();
-  pressed_ = pressed;
+  back_pressed_ = pressed;
+}
+
+SkColor UrlBarTexture::GetLeftCornerColor() const {
+  SkColor color = color_scheme().element_background;
+  if (has_back_button_ && can_go_back_) {
+    if (back_pressed_)
+      color = color_scheme().element_background_down;
+    else if (back_hovered_)
+      color = color_scheme().element_background_hover;
+  }
+  return color;
 }
 
 void UrlBarTexture::OnSetMode() {
@@ -194,20 +213,13 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
   cc::SkiaPaintCanvas paint_canvas(canvas);
   gfx::Canvas gfx_canvas(&paint_canvas, 1.0f);
 
-  // Back button area.
+  // Left rounded corner of URL bar.
   SkRRect round_rect;
   SkVector rounded_corner = {kHeight / 2, kHeight / 2};
   SkVector left_corners[4] = {rounded_corner, {0, 0}, {0, 0}, rounded_corner};
   round_rect.setRectRadii({0, 0, kHeight, kHeight}, left_corners);
-  SkColor color = color_scheme().element_background;
-  if (can_go_back_) {
-    if (pressed_)
-      color = color_scheme().element_background_down;
-    else if (hovered_)
-      color = color_scheme().element_background_hover;
-  }
   SkPaint paint;
-  paint.setColor(color);
+  paint.setColor(GetLeftCornerColor());
   canvas->drawRRect(round_rect, paint);
 
   // URL area.
@@ -216,22 +228,24 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
   round_rect.setRectRadii({kHeight, 0, kWidth, kHeight}, right_corners);
   canvas->drawRRect(round_rect, paint);
 
-  // Back button / URL separator vertical line.
-  paint.setColor(color_scheme().separator);
-  canvas->drawRect(SkRect::MakeXYWH(kHeight, 0, kSeparatorWidth, kHeight),
-                   paint);
+  if (has_back_button_) {
+    // Back button / URL separator vertical line.
+    paint.setColor(color_scheme().separator);
+    canvas->drawRect(SkRect::MakeXYWH(kHeight, 0, kSeparatorWidth, kHeight),
+                     paint);
 
-  // Back button icon.
-  canvas->save();
-  canvas->translate(kHeight / 2 + kBackIconOffset, kHeight / 2);
-  canvas->translate(-kBackIconHeight / 2, -kBackIconHeight / 2);
-  int icon_default_height = GetDefaultSizeOfVectorIcon(ui::kBackArrowIcon);
-  float icon_scale = kBackIconHeight / icon_default_height;
-  canvas->scale(icon_scale, icon_scale);
-  PaintVectorIcon(&gfx_canvas, ui::kBackArrowIcon,
-                  can_go_back_ ? color_scheme().element_foreground
-                               : color_scheme().disabled);
-  canvas->restore();
+    // Back button icon.
+    canvas->save();
+    canvas->translate(kHeight / 2 + kBackIconOffset, kHeight / 2);
+    canvas->translate(-kBackIconHeight / 2, -kBackIconHeight / 2);
+    float icon_scale =
+        kBackIconHeight / GetDefaultSizeOfVectorIcon(ui::kBackArrowIcon);
+    canvas->scale(icon_scale, icon_scale);
+    PaintVectorIcon(&gfx_canvas, ui::kBackArrowIcon,
+                    can_go_back_ ? color_scheme().element_foreground
+                                 : color_scheme().disabled);
+    canvas->restore();
+  }
 
   // Site security state icon.
   if (!gurl_.is_empty()) {
@@ -239,11 +253,10 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
     gfx::PointF icon_position = SecurityIconPositionMeters();
     canvas->translate(icon_position.x(), icon_position.y());
     const gfx::VectorIcon& icon = getSecurityIcon(security_level_);
-    icon_default_height = GetDefaultSizeOfVectorIcon(icon);
-    icon_scale = kSecurityIconHeight / icon_default_height;
-    SkColor icon_color = getSchemeColor(security_level_, color_scheme());
+    float icon_scale = kSecurityIconHeight / GetDefaultSizeOfVectorIcon(icon);
     canvas->scale(icon_scale, icon_scale);
-    PaintVectorIcon(&gfx_canvas, icon, icon_color);
+    PaintVectorIcon(&gfx_canvas, icon,
+                    getSchemeColor(security_level_, color_scheme()));
     canvas->restore();
   }
 
@@ -252,10 +265,11 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
   if (!gurl_.is_empty()) {
     if (last_drawn_gurl_ != gurl_ ||
         last_drawn_security_level_ != security_level_) {
-      float url_x = kBackButtonWidth + kSeparatorWidth + kSecurityFieldWidth;
-      float url_width = kWidth - url_x - kUrlRightMargin;
-      gfx::Rect text_bounds(ToPixels(url_x), 0, ToPixels(url_width),
-                            ToPixels(kHeight));
+      gfx::PointF url_position = UrlBarPositionMeters();
+      gfx::Rect text_bounds(
+          ToPixels(url_position.x()), ToPixels(url_position.y()),
+          ToPixels(kWidth - url_position.x() - kUrlRightMargin),
+          ToPixels(kHeight));
       RenderUrl(texture_size, text_bounds);
       last_drawn_gurl_ = gurl_;
       last_drawn_security_level_ = security_level_;
