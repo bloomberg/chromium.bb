@@ -220,7 +220,8 @@ AppsGridView::AppsGridView(AppsGridViewDelegate* delegate)
       page_flip_delay_in_ms_(kPageFlipDelayInMs),
       bounds_animator_(this),
       activated_folder_item_view_(NULL),
-      dragging_for_reparent_item_(false) {
+      dragging_for_reparent_item_(false),
+      is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()) {
   SetPaintToLayer();
   // Clip any icons that are outside the grid view's bounds. These icons would
   // otherwise be visible to the user when the grid view is off screen.
@@ -232,7 +233,7 @@ AppsGridView::AppsGridView(AppsGridViewDelegate* delegate)
 
   pagination_model_.AddObserver(this);
 
-  if (features::IsFullscreenAppListEnabled()) {
+  if (is_fullscreen_app_list_enabled_) {
     page_switcher_view_ = new PageSwitcherVertical(&pagination_model_);
     pagination_controller_.reset(new PaginationController(
         &pagination_model_, PaginationController::SCROLL_AXIS_VERTICAL));
@@ -640,7 +641,7 @@ bool AppsGridView::IsAnimatingView(AppListItemView* view) {
 gfx::Size AppsGridView::CalculatePreferredSize() const {
   const gfx::Insets insets(GetInsets());
   gfx::Size size = GetTileGridSize();
-  if (features::IsFullscreenAppListEnabled()) {
+  if (is_fullscreen_app_list_enabled_) {
     // If we are in a folder, ignore the page switcher for width calculations.
     int page_switcher_width =
         folder_delegate_ ? 0 : page_switcher_view_->GetPreferredSize().width();
@@ -683,7 +684,7 @@ void AppsGridView::Layout() {
   views::ViewModelUtils::SetViewBoundsToIdealBounds(pulsing_blocks_model_);
 
   gfx::Rect rect(GetContentsBounds());
-  if (features::IsFullscreenAppListEnabled()) {
+  if (is_fullscreen_app_list_enabled_) {
     const int page_switcher_width =
         page_switcher_view_->GetPreferredSize().width();
     rect.set_x(rect.right() - page_switcher_width);
