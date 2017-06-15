@@ -1519,6 +1519,29 @@ test("ash_unittests") {
   ]
 }
 
+test("ash_perftests") {
+  sources = [
+    "perftests/ash_background_filter_blur_perftest.cc",
+    "test/ash_perftests.cc",
+    "test/ash_test_suite.cc",
+    "test/ash_test_suite.h",
+  ]
+
+  deps = [
+    "//ash/public/cpp:ash_public_cpp",
+    "//ash/test:test_support_without_content",
+    "//base/test:test_support",
+    "//cc/base",
+    "//mojo/edk/embedder:headers",
+    "//testing/gtest",
+    "//testing/perf",
+    "//ui/aura",
+    "//ui/base",
+    "//ui/compositor:test_support",
+    "//ui/gl:test_support",
+  ]
+}
+
 executable("ash_shell_with_content") {
   testonly = true
   sources = [
