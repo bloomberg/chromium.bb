@@ -1451,6 +1451,7 @@ Bug(none) external/wpt/streams/writable-streams/reentrant-strategy.serviceworker
 Bug(none) external/wpt/streams/writable-streams/start.serviceworker.https.html [ Failure Timeout ]
 Bug(none) external/wpt/streams/writable-streams/write.serviceworker.https.html [ Failure Timeout ]
 Bug(none) external/wpt/url/failure.html [ Failure Timeout ]
+Bug(none) external/wpt/web-animations/interfaces/AnimationTimeline/document-timeline.html [ Failure ]
 Bug(none) external/wpt/webaudio/the-audio-api/the-audiobuffer-interface/idl-test.html [ Failure Timeout ]
 Bug(none) external/wpt/webaudio/the-audio-api/the-audiodestinationnode-interface/idl-test.html [ Failure Timeout ]
 Bug(none) external/wpt/webaudio/the-audio-api/the-audioparam-interface/idl-test.html [ Failure Timeout ]
