@@ -70,11 +70,6 @@ class CONTENT_EXPORT OffscreenCanvasSurfaceImpl
   blink::mojom::OffscreenCanvasSurfaceClientPtr client_;
   mojo::Binding<blink::mojom::OffscreenCanvasSurface> binding_;
 
-  // Private connection for the CompositorFrameSink. The CompositorFrameSink
-  // will not be destroyed until both private and offscreen canvas client
-  // connections are closed.
-  cc::mojom::MojoCompositorFrameSinkPrivatePtr compositor_frame_sink_private_;
-
   // To be called if |binding_| is closed.
   DestroyCallback destroy_callback_;
 
