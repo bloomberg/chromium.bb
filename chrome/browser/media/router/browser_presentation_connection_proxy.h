@@ -39,7 +39,7 @@ class MediaRouter;
 class BrowserPresentationConnectionProxy
     : public NON_EXPORTED_BASE(blink::mojom::PresentationConnection) {
  public:
-  using OnMessageCallback = base::Callback<void(bool)>;
+  using OnMessageCallback = base::OnceCallback<void(bool)>;
 
   // |router|: media router instance not owned by this class;
   // |route_id|: underlying media route. |target_connection_ptr_| sends message
@@ -57,7 +57,7 @@ class BrowserPresentationConnectionProxy
 
   // blink::mojom::PresentationConnection implementation
   void OnMessage(content::PresentationConnectionMessage message,
-                 const OnMessageCallback& on_message_callback) override;
+                 OnMessageCallback on_message_callback) override;
 
   // Underlying media route is always connected. Media route class does not
   // support state change.

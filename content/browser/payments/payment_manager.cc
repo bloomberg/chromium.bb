@@ -41,7 +41,7 @@ void PaymentManager::Init(const std::string& scope) {
 
 void PaymentManager::DeletePaymentInstrument(
     const std::string& instrument_key,
-    const PaymentManager::DeletePaymentInstrumentCallback& callback) {
+    PaymentManager::DeletePaymentInstrumentCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   payment_app_context_->payment_app_database()->DeletePaymentInstrument(
@@ -50,7 +50,7 @@ void PaymentManager::DeletePaymentInstrument(
 
 void PaymentManager::GetPaymentInstrument(
     const std::string& instrument_key,
-    const PaymentManager::GetPaymentInstrumentCallback& callback) {
+    PaymentManager::GetPaymentInstrumentCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   payment_app_context_->payment_app_database()->ReadPaymentInstrument(
@@ -58,7 +58,7 @@ void PaymentManager::GetPaymentInstrument(
 }
 
 void PaymentManager::KeysOfPaymentInstruments(
-    const PaymentManager::KeysOfPaymentInstrumentsCallback& callback) {
+    PaymentManager::KeysOfPaymentInstrumentsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   payment_app_context_->payment_app_database()->KeysOfPaymentInstruments(
@@ -67,7 +67,7 @@ void PaymentManager::KeysOfPaymentInstruments(
 
 void PaymentManager::HasPaymentInstrument(
     const std::string& instrument_key,
-    const PaymentManager::HasPaymentInstrumentCallback& callback) {
+    PaymentManager::HasPaymentInstrumentCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   payment_app_context_->payment_app_database()->HasPaymentInstrument(
@@ -77,7 +77,7 @@ void PaymentManager::HasPaymentInstrument(
 void PaymentManager::SetPaymentInstrument(
     const std::string& instrument_key,
     payments::mojom::PaymentInstrumentPtr details,
-    const PaymentManager::SetPaymentInstrumentCallback& callback) {
+    PaymentManager::SetPaymentInstrumentCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   payment_app_context_->payment_app_database()->WritePaymentInstrument(
@@ -85,7 +85,7 @@ void PaymentManager::SetPaymentInstrument(
 }
 
 void PaymentManager::ClearPaymentInstruments(
-    const ClearPaymentInstrumentsCallback& callback) {
+    ClearPaymentInstrumentsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   payment_app_context_->payment_app_database()->ClearPaymentInstruments(

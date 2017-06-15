@@ -28,9 +28,8 @@ class BlinkNotificationServiceImpl : public blink::mojom::NotificationService {
   ~BlinkNotificationServiceImpl() override;
 
   // blink::mojom::NotificationService implementation.
-  void GetPermissionStatus(
-      const std::string& origin,
-      const GetPermissionStatusCallback& callback) override;
+  void GetPermissionStatus(const std::string& origin,
+                           GetPermissionStatusCallback callback) override;
 
  private:
   // Called when an error is detected on binding_.

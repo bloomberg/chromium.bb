@@ -27,12 +27,12 @@ void MimeRegistryImpl::Create(
 
 void MimeRegistryImpl::GetMimeTypeFromExtension(
     const std::string& extension,
-    const GetMimeTypeFromExtensionCallback& callback) {
+    GetMimeTypeFromExtensionCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::FILE);
   std::string mime_type;
   net::GetMimeTypeFromExtension(
       base::FilePath::FromUTF8Unsafe(extension).value(), &mime_type);
-  callback.Run(mime_type);
+  std::move(callback).Run(mime_type);
 }
 
 }  // namespace content

@@ -762,9 +762,6 @@ mojom("mojo_bindings") {
   export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
   export_header_blink = "third_party/WebKit/public/platform/WebCommon.h"
 
-  # TODO(crbug.com/714018): Convert the implementation to use OnceCallback.
-  use_once_callback = false
-
   # TODO(crbug.com/699569): Convert to use the new JS bindings.
   use_new_js_bindings = false
 }
@@ -796,9 +793,6 @@ mojom("android_mojo_bindings") {
   export_class_attribute_blink = "BLINK_PLATFORM_EXPORT"
   export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
   export_header_blink = "third_party/WebKit/public/platform/WebCommon.h"
-
-  # TODO(crbug.com/714018): Convert the implementation to use OnceCallback.
-  use_once_callback = false
 
   # TODO(crbug.com/699569): Convert to use the new JS bindings.
   use_new_js_bindings = false

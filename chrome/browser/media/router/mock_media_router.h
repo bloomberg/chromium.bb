@@ -27,56 +27,107 @@ class MockMediaRouter : public MediaRouterBase {
   MockMediaRouter();
   ~MockMediaRouter() override;
 
-  MOCK_METHOD7(CreateRoute,
+  // TODO(crbug.com/729950): Use MOCK_METHOD directly once GMock gets the
+  // move-only type support.
+  void CreateRoute(const MediaSource::Id& source,
+                   const MediaSink::Id& sink_id,
+                   const url::Origin& origin,
+                   content::WebContents* web_contents,
+                   std::vector<MediaRouteResponseCallback> callbacks,
+                   base::TimeDelta timeout,
+                   bool incognito) {
+    CreateRouteInternal(source, sink_id, origin, web_contents, callbacks,
+                        timeout, incognito);
+  }
+  MOCK_METHOD7(CreateRouteInternal,
                void(const MediaSource::Id& source,
                     const MediaSink::Id& sink_id,
                     const url::Origin& origin,
                     content::WebContents* web_contents,
-                    const std::vector<MediaRouteResponseCallback>& callbacks,
+                    std::vector<MediaRouteResponseCallback>& callbacks,
                     base::TimeDelta timeout,
                     bool incognito));
-  MOCK_METHOD7(JoinRoute,
+
+  void JoinRoute(const MediaSource::Id& source,
+                 const std::string& presentation_id,
+                 const url::Origin& origin,
+                 content::WebContents* web_contents,
+                 std::vector<MediaRouteResponseCallback> callbacks,
+                 base::TimeDelta timeout,
+                 bool incognito) {
+    JoinRouteInternal(source, presentation_id, origin, web_contents, callbacks,
+                      timeout, incognito);
+  }
+  MOCK_METHOD7(JoinRouteInternal,
                void(const MediaSource::Id& source,
                     const std::string& presentation_id,
                     const url::Origin& origin,
                     content::WebContents* web_contents,
-                    const std::vector<MediaRouteResponseCallback>& callbacks,
+                    std::vector<MediaRouteResponseCallback>& callbacks,
                     base::TimeDelta timeout,
                     bool incognito));
-  MOCK_METHOD7(ConnectRouteByRouteId,
+
+  void ConnectRouteByRouteId(const MediaSource::Id& source,
+                             const MediaRoute::Id& route_id,
+                             const url::Origin& origin,
+                             content::WebContents* web_contents,
+                             std::vector<MediaRouteResponseCallback> callbacks,
+                             base::TimeDelta timeout,
+                             bool incognito) {
+    ConnectRouteByRouteIdInternal(source, route_id, origin, web_contents,
+                                  callbacks, timeout, incognito);
+  }
+  MOCK_METHOD7(ConnectRouteByRouteIdInternal,
                void(const MediaSource::Id& source,
                     const MediaRoute::Id& route_id,
                     const url::Origin& origin,
                     content::WebContents* web_contents,
-                    const std::vector<MediaRouteResponseCallback>& callbacks,
+                    std::vector<MediaRouteResponseCallback>& callbacks,
                     base::TimeDelta timeout,
                     bool incognito));
+
   MOCK_METHOD1(DetachRoute, void(const MediaRoute::Id& route_id));
   MOCK_METHOD1(TerminateRoute, void(const MediaRoute::Id& route_id));
-  MOCK_METHOD3(SendRouteMessage,
+
+  void SendRouteMessage(const MediaRoute::Id& route_id,
+                        const std::string& message,
+                        SendRouteMessageCallback callback) {
+    SendRouteMessageInternal(route_id, message, callback);
+  }
+  MOCK_METHOD3(SendRouteMessageInternal,
                void(const MediaRoute::Id& route_id,
                     const std::string& message,
-                    const SendRouteMessageCallback& callback));
-  void SendRouteBinaryMessage(
-      const MediaRoute::Id& route_id,
-      std::unique_ptr<std::vector<uint8_t>> data,
-      const SendRouteMessageCallback& callback) override {
+                    SendRouteMessageCallback& callback));
+
+  void SendRouteBinaryMessage(const MediaRoute::Id& route_id,
+                              std::unique_ptr<std::vector<uint8_t>> data,
+                              SendRouteMessageCallback callback) override {
     SendRouteBinaryMessageInternal(route_id, data.get(), callback);
   }
   MOCK_METHOD3(SendRouteBinaryMessageInternal,
                void(const MediaRoute::Id& route_id,
                     std::vector<uint8_t>* data,
-                    const SendRouteMessageCallback& callback));
+                    SendRouteMessageCallback& callback));
+
   MOCK_METHOD1(AddIssue, void(const IssueInfo& issue));
   MOCK_METHOD1(ClearIssue, void(const Issue::Id& issue_id));
   MOCK_METHOD0(OnUserGesture, void());
-  MOCK_METHOD5(
-      SearchSinks,
-      void(const MediaSink::Id& sink_id,
-           const MediaSource::Id& source_id,
-           const std::string& search_input,
-           const std::string& domain,
-           const MediaSinkSearchResponseCallback& sink_callback));
+
+  void SearchSinks(const MediaSink::Id& sink_id,
+                   const MediaSource::Id& source_id,
+                   const std::string& search_input,
+                   const std::string& domain,
+                   MediaSinkSearchResponseCallback sink_callback) {
+    SearchSinksInternal(sink_id, source_id, search_input, domain,
+                        sink_callback);
+  }
+  MOCK_METHOD5(SearchSinksInternal,
+               void(const MediaSink::Id& sink_id,
+                    const MediaSource::Id& source_id,
+                    const std::string& search_input,
+                    const std::string& domain,
+                    MediaSinkSearchResponseCallback& sink_callback));
+
   MOCK_METHOD2(ProvideSinks,
                void(const std::string&, std::vector<MediaSinkInternal>));
   MOCK_METHOD1(OnPresentationSessionDetached,
