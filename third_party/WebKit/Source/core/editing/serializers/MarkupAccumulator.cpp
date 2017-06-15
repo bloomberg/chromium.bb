@@ -151,6 +151,11 @@ bool MarkupAccumulator::SerializeAsHTMLDocument(const Node& node) const {
   return formatter_.SerializeAsHTMLDocument(node);
 }
 
+std::pair<Node*, Element*> MarkupAccumulator::GetAuxiliaryDOMTree(
+    const Element& element) const {
+  return std::pair<Node*, Element*>();
+}
+
 template <typename Strategy>
 static void SerializeNodesWithNamespaces(MarkupAccumulator& accumulator,
                                          Node& target_node,
@@ -177,6 +182,25 @@ static void SerializeNodesWithNamespaces(MarkupAccumulator& accumulator,
     for (; current; current = Strategy::NextSibling(*current))
       SerializeNodesWithNamespaces<Strategy>(accumulator, *current,
                                              kIncludeNode, &namespace_hash);
+
+    // Traverses other DOM tree, i.e., shadow tree.
+    if (target_node.IsElementNode()) {
+      std::pair<Node*, Element*> auxiliary_pair =
+          accumulator.GetAuxiliaryDOMTree(ToElement(target_node));
+      Node* auxiliary_tree = auxiliary_pair.first;
+      Element* enclosing_element = auxiliary_pair.second;
+      if (auxiliary_tree) {
+        if (auxiliary_pair.second)
+          accumulator.AppendStartTag(*enclosing_element);
+        current = Strategy::FirstChild(*auxiliary_tree);
+        for (; current; current = Strategy::NextSibling(*current)) {
+          SerializeNodesWithNamespaces<Strategy>(accumulator, *current,
+                                                 kIncludeNode, &namespace_hash);
+        }
+        if (enclosing_element)
+          accumulator.AppendEndTag(*enclosing_element);
+      }
+    }
   }
 
   if ((!children_only && target_node.IsElementNode()) &&

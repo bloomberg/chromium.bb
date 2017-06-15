@@ -102,21 +102,26 @@ class WebFrameSerializerSanitizationTest : public ::testing::Test {
   }
 
   String GenerateMHTMLFromHtml(const String& url, const String& file_name) {
-    return GenerateMHTML(url, file_name, "text/html", false);
+    LoadFrame(url, file_name, "text/html");
+    return GenerateMHTML(false);
   }
 
   String GenerateMHTMLPartsFromPng(const String& url, const String& file_name) {
-    return GenerateMHTML(url, file_name, "image/png", true);
+    LoadFrame(url, file_name, "image/png");
+    return GenerateMHTML(true);
   }
 
-  String GenerateMHTML(const String& url,
-                       const String& file_name,
-                       const String& mime_type,
-                       const bool only_body_parts) {
+  void LoadFrame(const String& url,
+                 const String& file_name,
+                 const String& mime_type) {
     KURL parsed_url(kParsedURLString, url);
     String file_path("frameserialization/" + file_name);
     RegisterMockedFileURLLoad(parsed_url, file_path, mime_type);
     FrameTestHelpers::LoadFrame(MainFrameImpl(), url.Utf8().data());
+    MainFrameImpl()->GetFrame()->View()->UpdateAllLifecyclePhases();
+  }
+
+  String GenerateMHTML(const bool only_body_parts) {
     // Boundaries are normally randomly generated but this one is predefined for
     // simplicity and as good as any other. Plus it gets used in almost all the
     // examples in the MHTML spec - RFC 2557.
@@ -148,6 +153,21 @@ class WebFrameSerializerSanitizationTest : public ::testing::Test {
           << "Generated MHTML is not well formed";
     }
     return mhtml_string;
+  }
+
+  ShadowRoot* SetShadowContent(TreeScope& scope,
+                               const char* host,
+                               ShadowRootType shadow_type,
+                               const char* shadow_content,
+                               bool delegates_focus = false) {
+    ShadowRoot* shadow_root =
+        scope.getElementById(AtomicString::FromUTF8(host))
+            ->CreateShadowRootInternal(shadow_type, ASSERT_NO_EXCEPTION);
+    shadow_root->SetDelegatesFocus(delegates_focus);
+    shadow_root->setInnerHTML(String::FromUTF8(shadow_content),
+                              ASSERT_NO_EXCEPTION);
+    scope.GetDocument().View()->UpdateAllLifecyclePhases();
+    return shadow_root;
   }
 
   void SetRemovePopupOverlay(bool remove_popup_overlay) {
@@ -345,6 +365,27 @@ TEST_F(WebFrameSerializerSanitizationTest, RemoveElements) {
   // If an element is removed, its children should also be skipped.
   EXPECT_EQ(WTF::kNotFound, mhtml.Find("<select"));
   EXPECT_EQ(WTF::kNotFound, mhtml.Find("<option"));
+}
+
+TEST_F(WebFrameSerializerSanitizationTest, ShadowDOM) {
+  LoadFrame("http://www.test.com", "shadow_dom.html", "text/html");
+  Document* document = MainFrameImpl()->GetFrame()->GetDocument();
+  SetShadowContent(*document, "h1", ShadowRootType::V0, "V0 shadow");
+  ShadowRoot* shadowRoot =
+      SetShadowContent(*document, "h2", ShadowRootType::kOpen,
+                       "Parent shadow\n<p id=\"h3\">Foo</p>", true);
+  SetShadowContent(*shadowRoot, "h3", ShadowRootType::kClosed, "Nested shadow");
+  String mhtml = GenerateMHTML(false);
+
+  // Template with special attribute should be created for each shadow DOM tree.
+  EXPECT_NE(WTF::kNotFound, mhtml.Find("<template shadowmode=3D\"v0\">"));
+  EXPECT_NE(WTF::kNotFound,
+            mhtml.Find("<template shadowmode=3D\"open\" shadowdelegatesfocus"));
+  EXPECT_NE(WTF::kNotFound, mhtml.Find("<template shadowmode=3D\"closed\">"));
+
+  // The special attribute present in the original page should be removed.
+  EXPECT_EQ(WTF::kNotFound, mhtml.Find("shadowmode=3D\"foo\">"));
+  EXPECT_EQ(WTF::kNotFound, mhtml.Find("shadowdelegatesfocus=3D\"bar\">"));
 }
 
 }  // namespace blink

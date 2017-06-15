@@ -102,6 +102,7 @@ class SerializerMarkupAccumulator : public MarkupAccumulator {
                        Namespaces*) override;
   void AppendStartTag(Node&, Namespaces* = nullptr) override;
   void AppendEndTag(const Element&) override;
+  std::pair<Node*, Element*> GetAuxiliaryDOMTree(const Element&) const override;
 
  private:
   void AppendAttributeValue(StringBuilder& out, const String& attribute_value);
@@ -230,6 +231,11 @@ void SerializerMarkupAccumulator::AppendStartTag(Node& node,
 
 void SerializerMarkupAccumulator::AppendEndTag(const Element& element) {
   MarkupAccumulator::AppendEndTag(element);
+}
+
+std::pair<Node*, Element*> SerializerMarkupAccumulator::GetAuxiliaryDOMTree(
+    const Element& element) const {
+  return delegate_.GetAuxiliaryDOMTree(element);
 }
 
 void SerializerMarkupAccumulator::AppendAttributeValue(

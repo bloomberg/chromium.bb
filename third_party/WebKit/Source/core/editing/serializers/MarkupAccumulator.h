@@ -75,6 +75,15 @@ class MarkupAccumulator {
 
   EntityMask EntityMaskForText(const Text&) const;
 
+  // Returns an auxiliary DOM tree, i.e. shadow tree, that needs also to be
+  // serialized. The root of auxiliary DOM tree is returned as an 1st element
+  // in the pair. It can be null if no auxiliary DOM tree exists. An additional
+  // element used to enclose the serialized content of auxiliary DOM tree
+  // can be returned as 2nd element in the pair. It can be null if this is not
+  // needed. For shadow tree, a <template> element is needed to wrap the shadow
+  // tree content.
+  virtual std::pair<Node*, Element*> GetAuxiliaryDOMTree(const Element&) const;
+
  private:
   MarkupFormatter formatter_;
   StringBuilder markup_;
