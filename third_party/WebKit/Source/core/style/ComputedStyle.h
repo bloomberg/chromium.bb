@@ -1618,30 +1618,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     SetVerticalAlignLengthInternal(length);
   }
 
-  // will-change
-  const Vector<CSSPropertyID>& WillChangeProperties() const {
-    return rare_non_inherited_data_->will_change_data_->will_change_properties_;
-  }
-  bool WillChangeContents() const {
-    return rare_non_inherited_data_->will_change_data_->will_change_contents_;
-  }
-  bool WillChangeScrollPosition() const {
-    return rare_non_inherited_data_->will_change_data_
-        ->will_change_scroll_position_;
-  }
-  void SetWillChangeProperties(const Vector<CSSPropertyID>& properties) {
-    SET_NESTED_VAR(rare_non_inherited_data_, will_change_data_,
-                   will_change_properties_, properties);
-  }
-  void SetWillChangeContents(bool b) {
-    SET_NESTED_VAR(rare_non_inherited_data_, will_change_data_,
-                   will_change_contents_, b);
-  }
-  void SetWillChangeScrollPosition(bool b) {
-    SET_NESTED_VAR(rare_non_inherited_data_, will_change_data_,
-                   will_change_scroll_position_, b);
-  }
-
   // z-index
   int ZIndex() const { return ZIndexInternal(); }
   bool HasAutoZIndex() const { return HasAutoZIndexInternal(); }

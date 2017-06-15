@@ -856,7 +856,7 @@
     },
     {
       name: "WillChangeProperties",
-      field_template: "storage_only",
+      field_template: "external",
       type_name: "Vector<CSSPropertyID>",
       field_group: "rare-non-inherited->will-change",
       default_value: "Vector<CSSPropertyID>()",
@@ -864,19 +864,17 @@
     },
     {
       name: "WillChangeContents",
-      field_template: "storage_only",
-      type_name: "unsigned",
+      field_template: "primitive",
+      type_name: "bool",
       field_group: "rare-non-inherited->will-change",
       default_value: "false",
-      field_size: 1,
     },
     {
       name: "WillChangeScrollPosition",
-      field_template: "storage_only",
-      type_name: "unsigned",
+      field_template: "primitive",
+      type_name: "bool",
       field_group: "rare-non-inherited->will-change",
       default_value: "false",
-      field_size: 1,
     },
     {
       name: "ColumnRule",
