@@ -72,7 +72,7 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
     const RequestGlobalMemoryDumpCallback callback;
 
     // Collects the data received from OnProcessMemoryDumpResponse().
-    std::vector<std::pair<base::ProcessId, mojom::ProcessMemoryDumpPtr>>
+    std::vector<std::pair<base::ProcessId, mojom::RawProcessMemoryDumpPtr>>
         process_memory_dumps;
   };
 
@@ -85,12 +85,12 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
     const mojom::ClientProcessPtr client;
   };
 
-  // Callback of RequestProcessMemoryDump.
+  // Callback of RequestProcessMemoryInternalDump.
   void OnProcessMemoryDumpResponse(
       mojom::ClientProcess*,
       uint64_t dump_guid,
       bool success,
-      mojom::ProcessMemoryDumpPtr process_memory_dump);
+      mojom::RawProcessMemoryDumpPtr process_memory_dump);
 
   void PerformNextQueuedGlobalMemoryDump();
   void FinalizeGlobalMemoryDumpIfAllManagersReplied();

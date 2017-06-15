@@ -92,7 +92,7 @@ class MockClientProcess : public mojom::ClientProcess {
       const base::trace_event::MemoryDumpRequestArgs& args,
       const RequestProcessMemoryDumpCallback& callback) override {
     expected_calls_--;
-    callback.Run(args.dump_guid, true, mojom::ProcessMemoryDumpPtr());
+    callback.Run(args.dump_guid, true, mojom::RawProcessMemoryDumpPtr());
   }
 
  private:

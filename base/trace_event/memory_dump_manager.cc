@@ -781,7 +781,7 @@ void MemoryDumpManager::FinalizeDumpAndAddToTrace(
           GetDumpsSumKb("blink_gc", process_memory_dump);
       FillOsDumpFromProcessMemoryDump(process_memory_dump, &result->os_dump);
     } else {
-      auto& os_dump = result->extra_processes_dump[pid];
+      auto& os_dump = result->extra_processes_dumps[pid];
       FillOsDumpFromProcessMemoryDump(process_memory_dump, &os_dump);
     }
   }

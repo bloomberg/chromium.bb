@@ -194,7 +194,7 @@ void CoordinatorImpl::OnProcessMemoryDumpResponse(
     mojom::ClientProcess* client_process,
     uint64_t dump_guid,
     bool success,
-    mojom::ProcessMemoryDumpPtr process_memory_dump) {
+    mojom::RawProcessMemoryDumpPtr process_memory_dump) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   auto it = pending_clients_for_current_dump_.find(client_process);
 
@@ -270,13 +270,13 @@ void CoordinatorImpl::FinalizeGlobalMemoryDumpIfAllManagersReplied() {
       pmd->os_dump = result.second->os_dump;
     }
 
-    for (auto& pair : result.second->extra_processes_dump) {
+    for (auto& pair : result.second->extra_processes_dumps) {
       const base::ProcessId extra_pid = pair.first;
       mojom::ProcessMemoryDumpPtr& pmd = finalized_pmds[extra_pid];
       if (!pmd)
         pmd = mojom::ProcessMemoryDump::New();
       DCHECK_EQ(0u, pmd->os_dump.resident_set_kb);
-      pmd->os_dump = result.second->extra_processes_dump[extra_pid];
+      pmd->os_dump = result.second->extra_processes_dumps[extra_pid];
     }
 
     pmd->process_type = result.second->process_type;
