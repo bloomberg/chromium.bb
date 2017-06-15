@@ -769,6 +769,13 @@ static bool IsCaretAtEdgeOfInlineTextBox(int caret_offset,
   return box.NextLeafChild() && box.NextLeafChild()->IsLineBreak();
 }
 
+// TODO(yosin): We have a forward declaration here to reduce patch size. We'll
+// replace this with an implementation once review finished.
+static InlineBoxPosition ComputeInlineBoxPositionForTextNode(LayoutObject*,
+                                                             int caret_offset,
+                                                             TextAffinity,
+                                                             TextDirection);
+
 template <typename Strategy>
 static InlineBoxPosition ComputeInlineBoxPositionTemplate(
     const PositionTemplate<Strategy>& position,
@@ -821,6 +828,17 @@ static InlineBoxPosition ComputeInlineBoxPositionTemplate(
         primary_direction);
   }
 
+  return ComputeInlineBoxPositionForTextNode(layout_object, caret_offset,
+                                             affinity, primary_direction);
+}
+
+// TODO(yosin): We should make |ComputeInlineBoxPositionForTextNode()| to take
+// |const LayoutText&|.
+static InlineBoxPosition ComputeInlineBoxPositionForTextNode(
+    LayoutObject* layout_object,
+    int caret_offset,
+    TextAffinity affinity,
+    TextDirection primary_direction) {
   // TODO(yosin): We should move this code fragment to another function to
   // remove the scope.
   InlineBox* inline_box = nullptr;
