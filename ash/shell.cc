@@ -840,7 +840,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   // Shelf, and WallPaper could be created by the factory.
   views::FocusManagerFactory::Install(new AshFocusManagerFactory);
 
-  wallpaper_controller_ = base::MakeUnique<WallpaperController>(blocking_pool_);
+  wallpaper_controller_ = base::MakeUnique<WallpaperController>();
 
   // Start devtools server
   devtools_server_ = ui::devtools::UiDevToolsServer::Create(nullptr);

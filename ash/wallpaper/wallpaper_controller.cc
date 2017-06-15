@@ -21,7 +21,8 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/task_runner.h"
+#include "base/sequenced_task_runner.h"
+#include "base/task_scheduler/post_task.h"
 #include "components/wallpaper/wallpaper_color_calculator.h"
 #include "components/wallpaper/wallpaper_resizer.h"
 #include "ui/display/manager/managed_display_info.h"
@@ -89,13 +90,15 @@ void GetProminentColorProfile(color_utils::LumaRange* luma,
 
 }  // namespace
 
-WallpaperController::WallpaperController(
-    const scoped_refptr<base::TaskRunner>& task_runner)
+WallpaperController::WallpaperController()
     : locked_(false),
       wallpaper_mode_(WALLPAPER_NONE),
       prominent_color_(kInvalidColor),
       wallpaper_reload_delay_(kWallpaperReloadDelayMs),
-      task_runner_(task_runner),
+      sequenced_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+          {base::TaskPriority::USER_VISIBLE,
+           // Don't need to finish resize or color extraction during shutdown.
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
       scoped_session_observer_(this) {
   ShellPort::Get()->AddDisplayObserver(this);
   Shell::Get()->AddShellObserver(this);
@@ -154,7 +157,7 @@ void WallpaperController::SetWallpaperImage(const gfx::ImageSkia& image,
   }
 
   current_wallpaper_.reset(new wallpaper::WallpaperResizer(
-      image, GetMaxDisplaySizeInNative(), layout, task_runner_));
+      image, GetMaxDisplaySizeInNative(), layout, sequenced_task_runner_));
   current_wallpaper_->AddObserver(this);
   current_wallpaper_->StartResize();
 
@@ -382,7 +385,7 @@ void WallpaperController::CalculateWallpaperColors() {
   GetProminentColorProfile(&luma, &saturation);
 
   color_calculator_ = base::MakeUnique<wallpaper::WallpaperColorCalculator>(
-      GetWallpaper(), luma, saturation, task_runner_);
+      GetWallpaper(), luma, saturation, sequenced_task_runner_);
   color_calculator_->AddObserver(this);
   if (!color_calculator_->StartCalculation())
     SetProminentColor(kInvalidColor);

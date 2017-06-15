@@ -24,7 +24,7 @@
 #include "ui/gfx/image/image_skia.h"
 
 namespace base {
-class TaskRunner;
+class SequencedTaskRunner;
 }
 
 namespace wallpaper {
@@ -58,8 +58,7 @@ class ASH_EXPORT WallpaperController
   // is disabled (e.g. command line, lock/login screens).
   static constexpr SkColor kInvalidColor = SK_ColorTRANSPARENT;
 
-  explicit WallpaperController(
-      const scoped_refptr<base::TaskRunner>& task_runner);
+  WallpaperController();
   ~WallpaperController() override;
 
   // Binds the mojom::WallpaperController interface request to this object.
@@ -208,7 +207,7 @@ class ASH_EXPORT WallpaperController
 
   int wallpaper_reload_delay_;
 
-  scoped_refptr<base::TaskRunner> task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
 
   ScopedSessionObserver scoped_session_observer_;
 
