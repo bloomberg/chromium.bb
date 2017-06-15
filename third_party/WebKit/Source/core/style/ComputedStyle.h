@@ -1196,19 +1196,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
                    o);
   }
 
-  // transform-style (aka -webkit-transform-style)
-  static ETransformStyle3D InitialTransformStyle3D() {
-    return ETransformStyle3D::kFlat;
-  }
-  ETransformStyle3D TransformStyle3D() const {
-    return static_cast<ETransformStyle3D>(
-        rare_non_inherited_data_->transform_style_3d_);
-  }
-  void SetTransformStyle3D(ETransformStyle3D b) {
-    SET_VAR(rare_non_inherited_data_, transform_style_3d_,
-            static_cast<unsigned>(b));
-  }
-
   // -webkit-transform-origin-x
   static Length InitialTransformOriginX() { return Length(50.0, kPercent); }
   const Length& TransformOriginX() const { return GetTransformOrigin().X(); }

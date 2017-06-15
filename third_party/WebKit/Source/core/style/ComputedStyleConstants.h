@@ -218,8 +218,6 @@ inline TextDecorationSkip& operator|=(TextDecorationSkip& a,
   return a = a | b;
 }
 
-enum class ETransformStyle3D { kFlat, kPreserve3D };
-
 enum OffsetRotationType { kOffsetRotationAuto, kOffsetRotationFixed };
 
 enum EBackfaceVisibility {

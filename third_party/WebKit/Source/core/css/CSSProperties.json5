@@ -2609,9 +2609,10 @@
     {
       name: "transform-style",
       name_for_methods: "TransformStyle3D",
-      field_template: "storage_only",
+      field_template: "keyword",
+      keywords: ["flat", "preserve-3d"],
       field_group: "rare-non-inherited",
-      default_value: "ETransformStyle3D::kFlat",
+      default_value: "flat",
       field_size: 1,
     },
     {

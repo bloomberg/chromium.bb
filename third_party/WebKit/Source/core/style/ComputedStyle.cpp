@@ -822,7 +822,7 @@ void ComputedStyle::UpdateIsStackingContext(bool is_document_element,
   // ComputedStyle::HasGroupingProperty().
   // This is legacy behavior that is left ambiguous in the official specs.
   // See crbug.com/663650 for more details."
-  if (TransformStyle3D() == ETransformStyle3D::kPreserve3D) {
+  if (TransformStyle3D() == ETransformStyle3D::kPreserve3d) {
     SetIsStackingContext(true);
     return;
   }
