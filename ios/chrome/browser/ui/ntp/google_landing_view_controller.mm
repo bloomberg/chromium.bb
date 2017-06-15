@@ -144,6 +144,8 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
   base::scoped_nsobject<NSMutableArray> _supplementaryViews;
   base::scoped_nsobject<NewTabPageHeaderView> _headerView;
   base::scoped_nsobject<WhatsNewHeaderView> _promoHeaderView;
+  base::WeakNSProtocol<id<GoogleLandingDataSource>> _dataSource;
+  base::WeakNSProtocol<id<UrlLoader, OmniboxFocuser>> _dispatcher;
 }
 
 // Redeclare the |view| property to be the GoogleLandingView subclass instead of
@@ -234,10 +236,8 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
 
 @dynamic view;
 @synthesize logoVendor = _logoVendor;
-@synthesize dataSource = _dataSource;
 // Property declared in NewTabPagePanelProtocol.
 @synthesize delegate = _delegate;
-@synthesize dispatcher = _dispatcher;
 @synthesize isOffTheRecord = _isOffTheRecord;
 @synthesize logoIsShowing = _logoIsShowing;
 @synthesize promoText = _promoText;
@@ -320,6 +320,24 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
   [_mostVisitedView setDataSource:nil];
   [_overscrollActionsController invalidate];
   [super dealloc];
+}
+
+#pragma mark - Properties
+
+- (id<GoogleLandingDataSource>)dataSource {
+  return _dataSource;
+}
+
+- (void)setDataSource:(id<GoogleLandingDataSource>)dataSource {
+  _dataSource.reset(dataSource);
+}
+
+- (id<UrlLoader, OmniboxFocuser>)dispatcher {
+  return _dispatcher;
+}
+
+- (void)setDispatcher:(id<UrlLoader, OmniboxFocuser>)dispatcher {
+  _dispatcher.reset(dispatcher);
 }
 
 #pragma mark - Private
