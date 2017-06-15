@@ -421,7 +421,8 @@ void FrameSerializer::SerializeCSSStyleSheet(CSSStyleSheet& style_sheet,
   if (!is_inline_css) {
     StringBuilder css_text;
     css_text.Append("@charset \"");
-    css_text.Append(style_sheet.Contents()->Charset().DeprecatedLower());
+    css_text.Append(
+        String(style_sheet.Contents()->Charset().GetName()).DeprecatedLower());
     css_text.Append("\";\n\n");
 
     for (unsigned i = 0; i < style_sheet.length(); ++i) {

@@ -93,7 +93,9 @@ class CORE_EXPORT StyleSheetContents
   // if there are none.
   Document* AnyOwnerDocument() const;
 
-  const String& Charset() const { return parser_context_->Charset(); }
+  const WTF::TextEncoding& Charset() const {
+    return parser_context_->Charset();
+  }
 
   bool LoadCompleted() const;
   bool HasFailedOrCanceledSubresources() const;

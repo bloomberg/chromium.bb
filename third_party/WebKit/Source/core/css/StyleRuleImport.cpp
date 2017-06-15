@@ -81,7 +81,7 @@ void StyleRuleImport::SetCSSStyleSheet(
     context = parent_style_sheet_->ParserContext();
   }
   context = CSSParserContext::Create(context, base_url, referrer_policy,
-                                     String(charset.GetName()), document);
+                                     charset, document);
 
   style_sheet_ = StyleSheetContents::Create(this, href, context);
 
@@ -135,7 +135,7 @@ void StyleRuleImport::RequestStyleSheet() {
                                 kClientRequestedCredentials);
   options.initiator_info.name = FetchInitiatorTypeNames::css;
   FetchParameters params(ResourceRequest(abs_url), options);
-  params.SetCharset(parent_style_sheet_->Charset());
+  params.SetCharset(String(parent_style_sheet_->Charset().GetName()));
   resource_ = CSSStyleSheetResource::Fetch(params, fetcher);
   if (resource_) {
     // if the import rule is issued dynamically, the sheet may be

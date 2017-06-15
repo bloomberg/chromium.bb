@@ -203,7 +203,7 @@ void ProcessingInstruction::SetCSSStyleSheet(
 
   DCHECK(is_css_);
   CSSParserContext* parser_context = CSSParserContext::Create(
-      GetDocument(), base_url, referrer_policy, String(charset.GetName()));
+      GetDocument(), base_url, referrer_policy, charset);
 
   StyleSheetContents* new_sheet =
       StyleSheetContents::Create(href, parser_context);

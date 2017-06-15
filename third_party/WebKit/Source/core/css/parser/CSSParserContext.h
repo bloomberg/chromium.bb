@@ -40,7 +40,7 @@ class CORE_EXPORT CSSParserContext
   static CSSParserContext* Create(const CSSParserContext* other,
                                   const KURL& base_url_override,
                                   ReferrerPolicy referrer_policy_override,
-                                  const String& charset_override,
+                                  const WTF::TextEncoding& charset_override,
                                   const Document* use_counter_document);
 
   static CSSParserContext* Create(
@@ -48,11 +48,12 @@ class CORE_EXPORT CSSParserContext
       SelectorProfile = kDynamicProfile,
       const Document* use_counter_document = nullptr);
   static CSSParserContext* Create(const Document&);
-  static CSSParserContext* Create(const Document&,
-                                  const KURL& base_url_override,
-                                  ReferrerPolicy referrer_policy_override,
-                                  const String& charset = g_empty_string,
-                                  SelectorProfile = kDynamicProfile);
+  static CSSParserContext* Create(
+      const Document&,
+      const KURL& base_url_override,
+      ReferrerPolicy referrer_policy_override,
+      const WTF::TextEncoding& charset = WTF::TextEncoding(),
+      SelectorProfile = kDynamicProfile);
 
   bool operator==(const CSSParserContext&) const;
   bool operator!=(const CSSParserContext& other) const {
@@ -62,7 +63,7 @@ class CORE_EXPORT CSSParserContext
   CSSParserMode Mode() const { return mode_; }
   CSSParserMode MatchMode() const { return match_mode_; }
   const KURL& BaseURL() const { return base_url_; }
-  const String& Charset() const { return charset_; }
+  const WTF::TextEncoding& Charset() const { return charset_; }
   const Referrer& GetReferrer() const { return referrer_; }
   bool IsHTMLDocument() const { return is_html_document_; }
   bool IsDynamicProfile() const { return profile_ == kDynamicProfile; }
@@ -96,7 +97,7 @@ class CORE_EXPORT CSSParserContext
 
  private:
   CSSParserContext(const KURL& base_url,
-                   const String& charset,
+                   const WTF::TextEncoding& charset,
                    CSSParserMode,
                    CSSParserMode match_mode,
                    SelectorProfile,
@@ -107,7 +108,7 @@ class CORE_EXPORT CSSParserContext
                    const Document* use_counter_document);
 
   KURL base_url_;
-  String charset_;
+  WTF::TextEncoding charset_;
   CSSParserMode mode_;
   CSSParserMode match_mode_;
   SelectorProfile profile_ = kDynamicProfile;

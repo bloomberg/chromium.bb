@@ -109,7 +109,7 @@ CSSStyleSheet* CSSStyleSheet::CreateInline(StyleSheetContents* sheet,
 CSSStyleSheet* CSSStyleSheet::CreateInline(Node& owner_node,
                                            const KURL& base_url,
                                            const TextPosition& start_position,
-                                           const String& encoding) {
+                                           const WTF::TextEncoding& encoding) {
   CSSParserContext* parser_context = CSSParserContext::Create(
       owner_node.GetDocument(), owner_node.GetDocument().BaseURL(),
       owner_node.GetDocument().GetReferrerPolicy(), encoding);
