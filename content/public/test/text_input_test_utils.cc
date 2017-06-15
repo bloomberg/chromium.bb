@@ -71,6 +71,10 @@ class TextInputManagerTester::InternalObserver
     on_text_selection_changed_callback_ = callback;
   }
 
+  const gfx::Range* last_composition_range() const {
+    return last_composition_range_.get();
+  }
+
   RenderWidgetHostView* GetUpdatedView() const { return updated_view_; }
 
   bool text_input_state_changed() const { return text_input_state_changed_; }
@@ -101,6 +105,10 @@ class TextInputManagerTester::InternalObserver
       TextInputManager* text_input_manager,
       RenderWidgetHostViewBase* updated_view) override {
     updated_view_ = updated_view;
+    const gfx::Range* range =
+        text_input_manager_->GetCompositionRangeForTesting();
+    DCHECK(range);
+    last_composition_range_.reset(new gfx::Range(range->start(), range->end()));
     if (!on_ime_composition_range_changed_callback_.is_null())
       on_ime_composition_range_changed_callback_.Run();
   }
@@ -119,6 +127,7 @@ class TextInputManagerTester::InternalObserver
   TextInputManager* text_input_manager_;
   RenderWidgetHostViewBase* updated_view_;
   bool text_input_state_changed_;
+  std::unique_ptr<gfx::Range> last_composition_range_;
   base::Closure update_text_input_state_callback_;
   base::Closure on_selection_bounds_changed_callback_;
   base::Closure on_ime_composition_range_changed_callback_;
@@ -279,6 +288,25 @@ void SendImeCommitTextToWidget(
       text, web_composition_underlines, replacement_range, relative_cursor_pos);
 }
 
+void SendImeSetCompositionTextToWidget(
+    RenderWidgetHost* rwh,
+    const base::string16& text,
+    const std::vector<ui::CompositionUnderline>& underlines,
+    const gfx::Range& replacement_range,
+    int selection_start,
+    int selection_end) {
+  std::vector<blink::WebCompositionUnderline> web_composition_underlines;
+  for (auto underline : underlines) {
+    web_composition_underlines.emplace_back(
+        static_cast<int>(underline.start_offset),
+        static_cast<int>(underline.end_offset), underline.color,
+        underline.thick, underline.background_color);
+  }
+  RenderWidgetHostImpl::From(rwh)->ImeSetComposition(
+      text, web_composition_underlines, replacement_range, selection_start,
+      selection_end);
+}
+
 size_t GetRegisteredViewsCountFromTextInputManager(WebContents* web_contents) {
   std::unordered_set<RenderWidgetHostView*> views;
   TextInputManager* manager =
@@ -353,6 +381,13 @@ bool TextInputManagerTester::GetCurrentTextSelectionLength(size_t* length) {
     return false;
 
   *length = observer_->text_input_manager()->GetTextSelection()->text().size();
+  return true;
+}
+
+bool TextInputManagerTester::GetLastCompositionRangeLength(uint32_t* length) {
+  if (!observer_->last_composition_range())
+    return false;
+  *length = observer_->last_composition_range()->length();
   return true;
 }
 

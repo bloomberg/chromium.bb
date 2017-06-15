@@ -224,6 +224,7 @@ class CONTENT_EXPORT TextInputManager {
   size_t GetRegisteredViewsCountForTesting();
   ui::TextInputType GetTextInputTypeForViewForTesting(
       RenderWidgetHostViewBase* view);
+  const gfx::Range* GetCompositionRangeForTesting() const;
 
  private:
   // This class is used to create maps which hold specific IME state for a

@@ -4,6 +4,8 @@
 
 #include <stddef.h>
 
+#include <limits>
+
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
@@ -562,11 +564,55 @@ class WebViewInteractiveTest : public WebViewInteractiveTestBase,
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
+class WebViewImeInteractiveTest : public WebViewInteractiveTest {
+ protected:
+  // This class observes all the composition range updates associated with the
+  // TextInputManager of the provided WebContents. The WebContents should be an
+  // outer most WebContents.
+  class CompositionRangeUpdateObserver {
+   public:
+    explicit CompositionRangeUpdateObserver(content::WebContents* web_contents)
+        : tester_(web_contents) {
+      tester_.SetOnImeCompositionRangeChangedCallback(
+          base::Bind(&CompositionRangeUpdateObserver::OnCompositionRangeUpdated,
+                     base::Unretained(this)));
+    }
+    ~CompositionRangeUpdateObserver() {}
+
+    // Wait until a composition range update with a range length equal to
+    // |length| is received.
+    void WaitForCompositionRangeLength(uint32_t length) {
+      if (last_composition_range_length_.has_value() &&
+          last_composition_range_length_.value() == length)
+        return;
+      expected_length_ = length;
+      run_loop_.reset(new base::RunLoop());
+      run_loop_->Run();
+    }
+
+   private:
+    void OnCompositionRangeUpdated() {
+      uint32_t length = std::numeric_limits<uint32_t>::max();
+      if (tester_.GetLastCompositionRangeLength(&length)) {
+        last_composition_range_length_ = length;
+      }
+      if (last_composition_range_length_.value() == expected_length_)
+        run_loop_->Quit();
+    }
+
+    content::TextInputManagerTester tester_;
+    std::unique_ptr<base::RunLoop> run_loop_;
+    base::Optional<uint32_t> last_composition_range_length_;
+    uint32_t expected_length_ = 0;
+
+    DISALLOW_COPY_AND_ASSIGN(CompositionRangeUpdateObserver);
+  };
+};
+
 class WebViewDragDropInteractiveTest : public WebViewInteractiveTest {};
 class WebViewNewWindowInteractiveTest : public WebViewInteractiveTest {};
 class WebViewFocusInteractiveTest : public WebViewInteractiveTest {};
 class WebViewPointerLockInteractiveTest : public WebViewInteractiveTest {};
-class WebViewImeInteractiveTest : public WebViewInteractiveTest {};
 
 // The tests below aren't needed in --use-cross-process-frames-for-guests.
 class WebViewContextMenuInteractiveTest : public WebViewInteractiveTestBase {};
@@ -1653,6 +1699,8 @@ IN_PROC_BROWSER_TEST_P(WebViewImeInteractiveTest,
           ? guest_web_contents
           : guest_view::GuestViewBase::FromWebContents(guest_web_contents)
                 ->embedder_web_contents();
+
+  // The guest page has a large input box and (50, 50) lies inside the box.
   content::SimulateMouseClickAt(target_web_contents, 0,
                                 blink::WebMouseEvent::Button::kLeft,
                                 gfx::Point(50, 50));
@@ -1689,3 +1737,60 @@ IN_PROC_BROWSER_TEST_P(WebViewImeInteractiveTest,
   EXPECT_EQ("A B C D", value);
 }
 #endif  //  OS_MACOSX
+
+// This test verifies that focusing an input inside a <webview> will put the
+// guest process's render widget into a monitoring mode for composition range
+// changes.
+IN_PROC_BROWSER_TEST_P(WebViewImeInteractiveTest, CompositionRangeUpdates) {
+  ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
+  LoadAndLaunchPlatformApp("web_view/ime", "WebViewImeTest.Launched");
+  ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(GetPlatformAppWindow()));
+
+  // Flush any pending events to make sure we start with a clean slate.
+  content::RunAllPendingInMessageLoop();
+
+  content::WebContents* guest_web_contents =
+      GetGuestViewManager()->GetLastGuestCreated();
+
+  // Click the <input> element inside the <webview>. In its focus handle, the
+  // <input> inside the <webview> initializes its value to "A B X D".
+  ExtensionTestMessageListener focus_listener("WebViewImeTest.InputFocused",
+                                              false);
+  content::WebContents* embedder_web_contents =
+      guest_view::GuestViewBase::FromWebContents(guest_web_contents)
+          ->embedder_web_contents();
+
+  // Event routing in OOPIF and non-OOPIF <webview> is different. With OOPIF,
+  // input is directly routed to the guest process as opposed to the non OOPIF
+  // mode where input is always sent to the embedder process first (then hops
+  // back to the browser and then to the guest).
+  content::WebContents* target_web_contents =
+      GetParam() ? guest_web_contents : embedder_web_contents;
+
+  // The guest page has a large input box and (50, 50) lies inside the box.
+  content::SimulateMouseClickAt(target_web_contents, 0,
+                                blink::WebMouseEvent::Button::kLeft,
+                                gfx::Point(50, 50));
+  focus_listener.WaitUntilSatisfied();
+
+  // Clear the string as it already contains some text. Then verify the text in
+  // the <input> is empty.
+  std::string value;
+  ASSERT_TRUE(ExecuteScriptAndExtractString(
+      guest_web_contents,
+      "var input = document.querySelector('input');"
+      "input.value = '';"
+      "window.domAutomationController.send("
+      "    document.querySelector('input').value)",
+      &value));
+  EXPECT_EQ("", value);
+
+  // Now set some composition text which should lead to an update in composition
+  // range information.
+  CompositionRangeUpdateObserver observer(embedder_web_contents);
+  content::SendImeSetCompositionTextToWidget(
+      target_web_contents->GetRenderWidgetHostView()->GetRenderWidgetHost(),
+      base::UTF8ToUTF16("ABC"), std::vector<ui::CompositionUnderline>(),
+      gfx::Range::InvalidRange(), 0, 3);
+  observer.WaitForCompositionRangeLength(3U);
+}

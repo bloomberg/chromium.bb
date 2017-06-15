@@ -650,8 +650,21 @@ void BrowserPluginGuest::SendTextInputTypeChangedToView(
     return;
   }
 
-  if (last_text_input_state_.get())
+  if (last_text_input_state_.get()) {
     guest_rwhv->TextInputStateChanged(*last_text_input_state_);
+    if (auto* rwh =
+            RenderWidgetHostImpl::From(guest_rwhv->GetRenderWidgetHost())) {
+      // We need composition range information for some IMEs. To get the
+      // updates, we need to explicitly ask the renderer to monitor and send the
+      // composition information changes. RenderWidgetHostView of the page will
+      // send the request to its process but the machinery for forwarding it to
+      // BrowserPlugin is not there. Therefore, we send a direct request to the
+      // guest process to start monitoring the state (see
+      // https://crbug.com/714771).
+      rwh->RequestCompositionUpdates(
+          false, last_text_input_state_->type != ui::TEXT_INPUT_TYPE_NONE);
+    }
+  }
 }
 
 void BrowserPluginGuest::DidFinishNavigation(

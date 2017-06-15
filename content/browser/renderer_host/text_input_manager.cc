@@ -293,6 +293,12 @@ ui::TextInputType TextInputManager::GetTextInputTypeForViewForTesting(
   return text_input_state_map_[view].type;
 }
 
+const gfx::Range* TextInputManager::GetCompositionRangeForTesting() const {
+  if (auto* info = GetCompositionRangeInfo())
+    return &info->range;
+  return nullptr;
+}
+
 void TextInputManager::NotifyObserversAboutInputStateUpdate(
     RenderWidgetHostViewBase* updated_view,
     bool did_update_state) {

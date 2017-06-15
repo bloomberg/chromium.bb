@@ -78,6 +78,16 @@ void SendImeCommitTextToWidget(
     const gfx::Range& replacement_range,
     int relative_cursor_pos);
 
+// Sends a request to RenderWidget corresponding to |rwh| to set the given
+// composition text and update the corresponding IME params.
+void SendImeSetCompositionTextToWidget(
+    RenderWidgetHost* rwh,
+    const base::string16& text,
+    const std::vector<ui::CompositionUnderline>& underlines,
+    const gfx::Range& replacement_range,
+    int selection_start,
+    int selection_end);
+
 // This class provides the necessary API for accessing the state of and also
 // observing the TextInputManager for WebContents.
 class TextInputManagerTester {
@@ -112,6 +122,13 @@ class TextInputManagerTester {
   // Returns true if there is a focused <input> and populates |length| with the
   // length of the selected text range in the focused view.
   bool GetCurrentTextSelectionLength(size_t* length);
+
+  // This method sets |output| to the last value of composition range length
+  // reported by a renderer corresponding to WebContents. If no such update have
+  // been received, the method will leave |output| untouched and returns false.
+  // Returning true means an update has been received and the value of |output|
+  // has been updated accordingly.
+  bool GetLastCompositionRangeLength(uint32_t* output);
 
   // Returns the RenderWidgetHostView with a focused <input> element or nullptr
   // if none exists.
