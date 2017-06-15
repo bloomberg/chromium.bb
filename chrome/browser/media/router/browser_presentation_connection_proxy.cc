@@ -33,16 +33,16 @@ BrowserPresentationConnectionProxy::~BrowserPresentationConnectionProxy() {}
 
 void BrowserPresentationConnectionProxy::OnMessage(
     content::PresentationConnectionMessage message,
-    OnMessageCallback on_message_callback) {
+    const OnMessageCallback& on_message_callback) {
   DVLOG(2) << "BrowserPresentationConnectionProxy::OnMessage";
   if (message.is_binary()) {
     router_->SendRouteBinaryMessage(
         route_id_,
         base::MakeUnique<std::vector<uint8_t>>(std::move(message.data.value())),
-        std::move(on_message_callback));
+        on_message_callback);
   } else {
     router_->SendRouteMessage(route_id_, message.message.value(),
-                              std::move(on_message_callback));
+                              on_message_callback);
   }
 }
 

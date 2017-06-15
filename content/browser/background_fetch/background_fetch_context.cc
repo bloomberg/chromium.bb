@@ -73,23 +73,23 @@ void BackgroundFetchContext::StartFetch(
     const BackgroundFetchRegistrationId& registration_id,
     const std::vector<ServiceWorkerFetchRequest>& requests,
     const BackgroundFetchOptions& options,
-    blink::mojom::BackgroundFetchService::FetchCallback callback) {
+    const blink::mojom::BackgroundFetchService::FetchCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   data_manager_->CreateRegistration(
       registration_id, requests, options,
       base::BindOnce(&BackgroundFetchContext::DidCreateRegistration, this,
-                     registration_id, options, std::move(callback)));
+                     registration_id, options, callback));
 }
 
 void BackgroundFetchContext::DidCreateRegistration(
     const BackgroundFetchRegistrationId& registration_id,
     const BackgroundFetchOptions& options,
-    blink::mojom::BackgroundFetchService::FetchCallback callback,
+    const blink::mojom::BackgroundFetchService::FetchCallback& callback,
     blink::mojom::BackgroundFetchError error,
     std::vector<scoped_refptr<BackgroundFetchRequestInfo>> initial_requests) {
   RecordRegistrationCreatedError(error);
   if (error != blink::mojom::BackgroundFetchError::NONE) {
-    std::move(callback).Run(error, base::nullopt /* registration */);
+    callback.Run(error, base::nullopt /* registration */);
     return;
   }
 
@@ -104,8 +104,7 @@ void BackgroundFetchContext::DidCreateRegistration(
   registration.title = options.title;
   registration.total_download_size = options.total_download_size;
 
-  std::move(callback).Run(blink::mojom::BackgroundFetchError::NONE,
-                          registration);
+  callback.Run(blink::mojom::BackgroundFetchError::NONE, registration);
 }
 
 std::vector<std::string>

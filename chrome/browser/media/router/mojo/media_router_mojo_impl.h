@@ -76,39 +76,42 @@ class MediaRouterMojoImpl : public MediaRouterBase,
                    const MediaSink::Id& sink_id,
                    const url::Origin& origin,
                    content::WebContents* web_contents,
-                   std::vector<MediaRouteResponseCallback> callbacks,
+                   const std::vector<MediaRouteResponseCallback>& callbacks,
                    base::TimeDelta timeout,
                    bool incognito) override;
   void JoinRoute(const MediaSource::Id& source_id,
                  const std::string& presentation_id,
                  const url::Origin& origin,
                  content::WebContents* web_contents,
-                 std::vector<MediaRouteResponseCallback> callbacks,
+                 const std::vector<MediaRouteResponseCallback>& callbacks,
                  base::TimeDelta timeout,
                  bool incognito) override;
-  void ConnectRouteByRouteId(const MediaSource::Id& source,
-                             const MediaRoute::Id& route_id,
-                             const url::Origin& origin,
-                             content::WebContents* web_contents,
-                             std::vector<MediaRouteResponseCallback> callbacks,
-                             base::TimeDelta timeout,
-                             bool incognito) override;
+  void ConnectRouteByRouteId(
+      const MediaSource::Id& source,
+      const MediaRoute::Id& route_id,
+      const url::Origin& origin,
+      content::WebContents* web_contents,
+      const std::vector<MediaRouteResponseCallback>& callbacks,
+      base::TimeDelta timeout,
+      bool incognito) override;
   void TerminateRoute(const MediaRoute::Id& route_id) override;
   void DetachRoute(const MediaRoute::Id& route_id) override;
   void SendRouteMessage(const MediaRoute::Id& route_id,
                         const std::string& message,
-                        SendRouteMessageCallback callback) override;
-  void SendRouteBinaryMessage(const MediaRoute::Id& route_id,
-                              std::unique_ptr<std::vector<uint8_t>> data,
-                              SendRouteMessageCallback callback) override;
+                        const SendRouteMessageCallback& callback) override;
+  void SendRouteBinaryMessage(
+      const MediaRoute::Id& route_id,
+      std::unique_ptr<std::vector<uint8_t>> data,
+      const SendRouteMessageCallback& callback) override;
   void AddIssue(const IssueInfo& issue_info) override;
   void ClearIssue(const Issue::Id& issue_id) override;
   void OnUserGesture() override;
-  void SearchSinks(const MediaSink::Id& sink_id,
-                   const MediaSource::Id& source_id,
-                   const std::string& search_input,
-                   const std::string& domain,
-                   MediaSinkSearchResponseCallback sink_callback) override;
+  void SearchSinks(
+      const MediaSink::Id& sink_id,
+      const MediaSource::Id& source_id,
+      const std::string& search_input,
+      const std::string& domain,
+      const MediaSinkSearchResponseCallback& sink_callback) override;
   void ProvideSinks(const std::string& provider_name,
                     std::vector<MediaSinkInternal> sinks) override;
   scoped_refptr<MediaRouteController> GetRouteController(
@@ -259,14 +262,14 @@ class MediaRouterMojoImpl : public MediaRouterBase,
                      const MediaSink::Id& sink_id,
                      const url::Origin& origin,
                      int tab_id,
-                     std::vector<MediaRouteResponseCallback> callbacks,
+                     const std::vector<MediaRouteResponseCallback>& callbacks,
                      base::TimeDelta timeout,
                      bool incognito);
   void DoJoinRoute(const MediaSource::Id& source_id,
                    const std::string& presentation_id,
                    const url::Origin& origin,
                    int tab_id,
-                   std::vector<MediaRouteResponseCallback> callbacks,
+                   const std::vector<MediaRouteResponseCallback>& callbacks,
                    base::TimeDelta timeout,
                    bool incognito);
   void DoConnectRouteByRouteId(
@@ -274,28 +277,29 @@ class MediaRouterMojoImpl : public MediaRouterBase,
       const MediaRoute::Id& route_id,
       const url::Origin& origin,
       int tab_id,
-      std::vector<MediaRouteResponseCallback> callbacks,
+      const std::vector<MediaRouteResponseCallback>& callbacks,
       base::TimeDelta timeout,
       bool incognito);
   void DoTerminateRoute(const MediaRoute::Id& route_id);
   void DoDetachRoute(const MediaRoute::Id& route_id);
   void DoSendSessionMessage(const MediaRoute::Id& route_id,
                             const std::string& message,
-                            SendRouteMessageCallback callback);
+                            const SendRouteMessageCallback& callback);
   void DoSendSessionBinaryMessage(const MediaRoute::Id& route_id,
                                   std::unique_ptr<std::vector<uint8_t>> data,
-                                  SendRouteMessageCallback callback);
+                                  const SendRouteMessageCallback& callback);
   void DoStartListeningForRouteMessages(const MediaRoute::Id& route_id);
   void DoStopListeningForRouteMessages(const MediaRoute::Id& route_id);
   void DoStartObservingMediaSinks(const MediaSource::Id& source_id);
   void DoStopObservingMediaSinks(const MediaSource::Id& source_id);
   void DoStartObservingMediaRoutes(const MediaSource::Id& source_id);
   void DoStopObservingMediaRoutes(const MediaSource::Id& source_id);
-  void DoSearchSinks(const MediaSink::Id& sink_id,
-                     const MediaSource::Id& source_id,
-                     const std::string& search_input,
-                     const std::string& domain,
-                     MediaSinkSearchResponseCallback sink_callback);
+  void DoSearchSinks(
+      const MediaSink::Id& sink_id,
+      const MediaSource::Id& source_id,
+      const std::string& search_input,
+      const std::string& domain,
+      const MediaSinkSearchResponseCallback& sink_callback);
   void DoCreateMediaRouteController(
       const MediaRoute::Id& route_id,
       mojom::MediaControllerRequest mojo_media_controller_request,
@@ -351,13 +355,14 @@ class MediaRouterMojoImpl : public MediaRouterBase,
 
   // Converts the callback result of calling Mojo CreateRoute()/JoinRoute()
   // into a local callback.
-  void RouteResponseReceived(const std::string& presentation_id,
-                             bool is_incognito,
-                             std::vector<MediaRouteResponseCallback> callbacks,
-                             bool is_join,
-                             const base::Optional<MediaRoute>& media_route,
-                             const base::Optional<std::string>& error_text,
-                             RouteRequestResult::ResultCode result_code);
+  void RouteResponseReceived(
+      const std::string& presentation_id,
+      bool is_incognito,
+      const std::vector<MediaRouteResponseCallback>& callbacks,
+      bool is_join,
+      const base::Optional<MediaRoute>& media_route,
+      const base::Optional<std::string>& error_text,
+      RouteRequestResult::ResultCode result_code);
 
   // Callback invoked by |event_page_tracker_| after an attempt to wake the
   // component extension. If |success| is false, the pending request queue is

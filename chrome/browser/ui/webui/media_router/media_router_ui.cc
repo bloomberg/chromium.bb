@@ -495,7 +495,7 @@ bool MediaRouterUI::CreateRoute(const MediaSink::Id& sink_id,
   }
 
   router_->CreateRoute(source_id, sink_id, origin, initiator_,
-                       std::move(route_response_callbacks), timeout, incognito);
+                       route_response_callbacks, timeout, incognito);
   return true;
 }
 
@@ -594,8 +594,7 @@ bool MediaRouterUI::ConnectRoute(const MediaSink::Id& sink_id,
     return false;
   }
   router_->ConnectRouteByRouteId(source_id, route_id, origin, initiator_,
-                                 std::move(route_response_callbacks), timeout,
-                                 incognito);
+                                 route_response_callbacks, timeout, incognito);
   return true;
 }
 
@@ -771,7 +770,7 @@ void MediaRouterUI::OnSearchSinkResponseReceived(
     return;
   }
   router_->CreateRoute(source_id, found_sink_id, origin, initiator_,
-                       std::move(route_response_callbacks), timeout, incognito);
+                       route_response_callbacks, timeout, incognito);
 }
 
 void MediaRouterUI::SendIssueForRouteTimeout(

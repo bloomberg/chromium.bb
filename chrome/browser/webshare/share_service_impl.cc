@@ -176,7 +176,7 @@ ShareServiceImpl::GetTargetsWithSufficientEngagement(
 void ShareServiceImpl::Share(const std::string& title,
                              const std::string& text,
                              const GURL& share_url,
-                             ShareCallback callback) {
+                             const ShareCallback& callback) {
   std::unique_ptr<base::DictionaryValue> share_targets;
 
   share_targets = GetPrefService()
@@ -190,7 +190,7 @@ void ShareServiceImpl::Share(const std::string& title,
       sufficiently_engaged_targets,
       base::BindOnce(&ShareServiceImpl::OnPickerClosed,
                      weak_factory_.GetWeakPtr(), base::Passed(&share_targets),
-                     title, text, share_url, std::move(callback)));
+                     title, text, share_url, callback));
 }
 
 void ShareServiceImpl::OnPickerClosed(
@@ -198,10 +198,10 @@ void ShareServiceImpl::OnPickerClosed(
     const std::string& title,
     const std::string& text,
     const GURL& share_url,
-    ShareCallback callback,
+    const ShareCallback& callback,
     const base::Optional<std::string>& result) {
   if (!result.has_value()) {
-    std::move(callback).Run(blink::mojom::ShareError::CANCELED);
+    callback.Run(blink::mojom::ShareError::CANCELED);
     return;
   }
 
@@ -214,7 +214,7 @@ void ShareServiceImpl::OnPickerClosed(
     // TODO(mgiuca): This error should not be possible at share time, because
     // targets with invalid templates should not be chooseable. Fix
     // https://crbug.com/694380 and replace this with a DCHECK.
-    std::move(callback).Run(blink::mojom::ShareError::INTERNAL_ERROR);
+    callback.Run(blink::mojom::ShareError::INTERNAL_ERROR);
     return;
   }
 
@@ -233,5 +233,5 @@ void ShareServiceImpl::OnPickerClosed(
   DCHECK(target.is_valid());
   OpenTargetURL(target);
 
-  std::move(callback).Run(blink::mojom::ShareError::OK);
+  callback.Run(blink::mojom::ShareError::OK);
 }

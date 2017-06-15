@@ -908,14 +908,13 @@ void PresentationServiceDelegateImpl::ReconnectPresentation(
     const GURL& presentation_url = presentation_urls[0];
     bool incognito = web_contents_->GetBrowserContext()->IsOffTheRecord();
     std::vector<MediaRouteResponseCallback> route_response_callbacks;
-    route_response_callbacks.push_back(base::BindOnce(
+    route_response_callbacks.push_back(base::Bind(
         &PresentationServiceDelegateImpl::OnJoinRouteResponse,
         weak_factory_.GetWeakPtr(), render_process_id, render_frame_id,
         presentation_url, presentation_id, success_cb, error_cb));
     router_->JoinRoute(MediaSourceForPresentationUrl(presentation_url).id(),
                        presentation_id, origin, web_contents_,
-                       std::move(route_response_callbacks), base::TimeDelta(),
-                       incognito);
+                       route_response_callbacks, base::TimeDelta(), incognito);
   }
 }
 
@@ -978,13 +977,13 @@ void PresentationServiceDelegateImpl::SendMessage(
     int render_frame_id,
     const content::PresentationInfo& presentation_info,
     content::PresentationConnectionMessage message,
-    SendMessageCallback send_message_cb) {
+    const SendMessageCallback& send_message_cb) {
   const MediaRoute::Id& route_id = frame_manager_->GetRouteId(
       RenderFrameHostId(render_process_id, render_frame_id),
       presentation_info.presentation_id);
   if (route_id.empty()) {
     DVLOG(1) << "No active route for  " << presentation_info.presentation_id;
-    std::move(send_message_cb).Run(false);
+    send_message_cb.Run(false);
     return;
   }
 
@@ -992,10 +991,10 @@ void PresentationServiceDelegateImpl::SendMessage(
     router_->SendRouteBinaryMessage(
         route_id,
         base::MakeUnique<std::vector<uint8_t>>(std::move(message.data.value())),
-        std::move(send_message_cb));
+        send_message_cb);
   } else {
     router_->SendRouteMessage(route_id, message.message.value(),
-                              std::move(send_message_cb));
+                              send_message_cb);
   }
 }
 

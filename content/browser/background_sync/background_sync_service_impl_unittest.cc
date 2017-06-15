@@ -193,15 +193,15 @@ class BackgroundSyncServiceImplTest : public testing::Test {
   // Helpers for testing BackgroundSyncServiceImpl methods
   void Register(
       blink::mojom::SyncRegistrationPtr sync,
-      blink::mojom::BackgroundSyncService::RegisterCallback callback) {
-    service_impl_->Register(std::move(sync), sw_registration_id_,
-                            std::move(callback));
+      const blink::mojom::BackgroundSyncService::RegisterCallback& callback) {
+    service_impl_->Register(std::move(sync), sw_registration_id_, callback);
     base::RunLoop().RunUntilIdle();
   }
 
   void GetRegistrations(
-      blink::mojom::BackgroundSyncService::GetRegistrationsCallback callback) {
-    service_impl_->GetRegistrations(sw_registration_id_, std::move(callback));
+      const blink::mojom::BackgroundSyncService::GetRegistrationsCallback&
+          callback) {
+    service_impl_->GetRegistrations(sw_registration_id_, callback);
     base::RunLoop().RunUntilIdle();
   }
 

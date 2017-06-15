@@ -23,12 +23,12 @@ class BudgetServiceImpl : public blink::mojom::BudgetService {
 
   // blink::mojom::BudgetService implementation.
   void GetCost(blink::mojom::BudgetOperationType operation,
-               GetCostCallback callback) override;
+               const GetCostCallback& callback) override;
   void GetBudget(const url::Origin& origin,
-                 GetBudgetCallback callback) override;
+                 const GetBudgetCallback& callback) override;
   void Reserve(const url::Origin& origin,
                blink::mojom::BudgetOperationType operation,
-               ReserveCallback callback) override;
+               const ReserveCallback& callback) override;
 
  private:
   // Render process ID is used to get the browser context.

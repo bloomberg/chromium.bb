@@ -37,8 +37,7 @@ class RouteRequestResult;
 class CreatePresentationConnectionRequest {
  public:
   using PresentationConnectionCallback =
-      base::OnceCallback<void(const content::PresentationInfo&,
-                              const MediaRoute&)>;
+      base::Callback<void(const content::PresentationInfo&, const MediaRoute&)>;
   using PresentationConnectionErrorCallback =
       content::PresentationConnectionErrorCallback;
   // |presentation_url|: The presentation URL of the request. Must be a valid
@@ -51,8 +50,8 @@ class CreatePresentationConnectionRequest {
       const RenderFrameHostId& render_frame_host_id,
       const std::vector<GURL>& presentation_urls,
       const url::Origin& frame_origin,
-      PresentationConnectionCallback success_cb,
-      PresentationConnectionErrorCallback error_cb);
+      const PresentationConnectionCallback& success_cb,
+      const PresentationConnectionErrorCallback& error_cb);
   ~CreatePresentationConnectionRequest();
 
   const PresentationRequest& presentation_request() const {

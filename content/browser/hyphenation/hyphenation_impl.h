@@ -25,7 +25,7 @@ class HyphenationImpl : public blink::mojom::Hyphenation {
 
   // Hyphenation:
   void OpenDictionary(const std::string& locale,
-                      OpenDictionaryCallback callback) override;
+                      const OpenDictionaryCallback& callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HyphenationImpl);

@@ -43,9 +43,9 @@ namespace {
 
 void RunRouteRequestCallbacks(
     std::unique_ptr<RouteRequestResult> result,
-    std::vector<MediaRouteResponseCallback> callbacks) {
-  for (MediaRouteResponseCallback& callback : callbacks)
-    std::move(callback).Run(*result);
+    const std::vector<MediaRouteResponseCallback>& callbacks) {
+  for (const MediaRouteResponseCallback& callback : callbacks)
+    callback.Run(*result);
 }
 
 }  // namespace
@@ -243,7 +243,7 @@ void MediaRouterMojoImpl::OnRoutesUpdated(
 void MediaRouterMojoImpl::RouteResponseReceived(
     const std::string& presentation_id,
     bool is_incognito,
-    std::vector<MediaRouteResponseCallback> callbacks,
+    const std::vector<MediaRouteResponseCallback>& callbacks,
     bool is_join,
     const base::Optional<MediaRoute>& media_route,
     const base::Optional<std::string>& error_text,
@@ -270,7 +270,7 @@ void MediaRouterMojoImpl::RouteResponseReceived(
   else
     MediaRouterMojoMetrics::RecordCreateRouteResultCode(result->result_code());
 
-  RunRouteRequestCallbacks(std::move(result), std::move(callbacks));
+  RunRouteRequestCallbacks(std::move(result), callbacks);
 }
 
 void MediaRouterMojoImpl::CreateRoute(
@@ -278,7 +278,7 @@ void MediaRouterMojoImpl::CreateRoute(
     const MediaSink::Id& sink_id,
     const url::Origin& origin,
     content::WebContents* web_contents,
-    std::vector<MediaRouteResponseCallback> callbacks,
+    const std::vector<MediaRouteResponseCallback>& callbacks,
     base::TimeDelta timeout,
     bool incognito) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -287,7 +287,7 @@ void MediaRouterMojoImpl::CreateRoute(
   int tab_id = SessionTabHelper::IdForTab(web_contents);
   RunOrDefer(base::BindOnce(&MediaRouterMojoImpl::DoCreateRoute,
                             base::Unretained(this), source_id, sink_id, origin,
-                            tab_id, std::move(callbacks), timeout, incognito));
+                            tab_id, callbacks, timeout, incognito));
 }
 
 void MediaRouterMojoImpl::JoinRoute(
@@ -295,7 +295,7 @@ void MediaRouterMojoImpl::JoinRoute(
     const std::string& presentation_id,
     const url::Origin& origin,
     content::WebContents* web_contents,
-    std::vector<MediaRouteResponseCallback> callbacks,
+    const std::vector<MediaRouteResponseCallback>& callbacks,
     base::TimeDelta timeout,
     bool incognito) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -305,7 +305,7 @@ void MediaRouterMojoImpl::JoinRoute(
     std::unique_ptr<RouteRequestResult> result = RouteRequestResult::FromError(
         "Route not found", RouteRequestResult::ROUTE_NOT_FOUND);
     MediaRouterMojoMetrics::RecordJoinRouteResultCode(result->result_code());
-    RunRouteRequestCallbacks(std::move(result), std::move(callbacks));
+    RunRouteRequestCallbacks(std::move(result), callbacks);
     return;
   }
 
@@ -313,8 +313,7 @@ void MediaRouterMojoImpl::JoinRoute(
   int tab_id = SessionTabHelper::IdForTab(web_contents);
   RunOrDefer(base::BindOnce(&MediaRouterMojoImpl::DoJoinRoute,
                             base::Unretained(this), source_id, presentation_id,
-                            origin, tab_id, std::move(callbacks), timeout,
-                            incognito));
+                            origin, tab_id, callbacks, timeout, incognito));
 }
 
 void MediaRouterMojoImpl::ConnectRouteByRouteId(
@@ -322,7 +321,7 @@ void MediaRouterMojoImpl::ConnectRouteByRouteId(
     const MediaRoute::Id& route_id,
     const url::Origin& origin,
     content::WebContents* web_contents,
-    std::vector<MediaRouteResponseCallback> callbacks,
+    const std::vector<MediaRouteResponseCallback>& callbacks,
     base::TimeDelta timeout,
     bool incognito) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -331,7 +330,7 @@ void MediaRouterMojoImpl::ConnectRouteByRouteId(
   int tab_id = SessionTabHelper::IdForTab(web_contents);
   RunOrDefer(base::BindOnce(&MediaRouterMojoImpl::DoConnectRouteByRouteId,
                             base::Unretained(this), source_id, route_id, origin,
-                            tab_id, std::move(callbacks), timeout, incognito));
+                            tab_id, callbacks, timeout, incognito));
 }
 
 void MediaRouterMojoImpl::TerminateRoute(const MediaRoute::Id& route_id) {
@@ -350,27 +349,28 @@ void MediaRouterMojoImpl::DetachRoute(const MediaRoute::Id& route_id) {
                             base::Unretained(this), route_id));
 }
 
-void MediaRouterMojoImpl::SendRouteMessage(const MediaRoute::Id& route_id,
-                                           const std::string& message,
-                                           SendRouteMessageCallback callback) {
+void MediaRouterMojoImpl::SendRouteMessage(
+    const MediaRoute::Id& route_id,
+    const std::string& message,
+    const SendRouteMessageCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   SetWakeReason(MediaRouteProviderWakeReason::SEND_SESSION_MESSAGE);
   RunOrDefer(base::BindOnce(&MediaRouterMojoImpl::DoSendSessionMessage,
                             base::Unretained(this), route_id, message,
-                            std::move(callback)));
+                            callback));
 }
 
 void MediaRouterMojoImpl::SendRouteBinaryMessage(
     const MediaRoute::Id& route_id,
     std::unique_ptr<std::vector<uint8_t>> data,
-    SendRouteMessageCallback callback) {
+    const SendRouteMessageCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   SetWakeReason(MediaRouteProviderWakeReason::SEND_SESSION_BINARY_MESSAGE);
   RunOrDefer(base::BindOnce(&MediaRouterMojoImpl::DoSendSessionBinaryMessage,
-                            base::Unretained(this), route_id, std::move(data),
-                            std::move(callback)));
+                            base::Unretained(this), route_id,
+                            base::Passed(std::move(data)), callback));
 }
 
 void MediaRouterMojoImpl::AddIssue(const IssueInfo& issue_info) {
@@ -398,13 +398,13 @@ void MediaRouterMojoImpl::SearchSinks(
     const MediaSource::Id& source_id,
     const std::string& search_input,
     const std::string& domain,
-    MediaSinkSearchResponseCallback sink_callback) {
+    const MediaSinkSearchResponseCallback& sink_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   SetWakeReason(MediaRouteProviderWakeReason::SEARCH_SINKS);
   RunOrDefer(base::BindOnce(&MediaRouterMojoImpl::DoSearchSinks,
                             base::Unretained(this), sink_id, source_id,
-                            search_input, domain, std::move(sink_callback)));
+                            search_input, domain, sink_callback));
 }
 
 scoped_refptr<MediaRouteController> MediaRouterMojoImpl::GetRouteController(
@@ -652,7 +652,7 @@ void MediaRouterMojoImpl::DoCreateRoute(
     const MediaSink::Id& sink_id,
     const url::Origin& origin,
     int tab_id,
-    std::vector<MediaRouteResponseCallback> callbacks,
+    const std::vector<MediaRouteResponseCallback>& callbacks,
     base::TimeDelta timeout,
     bool incognito) {
   std::string presentation_id = MediaRouterBase::CreatePresentationId();
@@ -661,8 +661,8 @@ void MediaRouterMojoImpl::DoCreateRoute(
   media_route_provider_->CreateRoute(
       source_id, sink_id, presentation_id, origin, tab_id, timeout, incognito,
       base::Bind(&MediaRouterMojoImpl::RouteResponseReceived,
-                 base::Unretained(this), presentation_id, incognito,
-                 base::Passed(&callbacks), false));
+                 base::Unretained(this), presentation_id, incognito, callbacks,
+                 false));
 }
 
 void MediaRouterMojoImpl::DoJoinRoute(
@@ -670,7 +670,7 @@ void MediaRouterMojoImpl::DoJoinRoute(
     const std::string& presentation_id,
     const url::Origin& origin,
     int tab_id,
-    std::vector<MediaRouteResponseCallback> callbacks,
+    const std::vector<MediaRouteResponseCallback>& callbacks,
     base::TimeDelta timeout,
     bool incognito) {
   DVLOG_WITH_INSTANCE(1) << "DoJoinRoute " << source_id
@@ -679,8 +679,8 @@ void MediaRouterMojoImpl::DoJoinRoute(
   media_route_provider_->JoinRoute(
       source_id, presentation_id, origin, tab_id, timeout, incognito,
       base::Bind(&MediaRouterMojoImpl::RouteResponseReceived,
-                 base::Unretained(this), presentation_id, incognito,
-                 base::Passed(&callbacks), true));
+                 base::Unretained(this), presentation_id, incognito, callbacks,
+                 true));
 }
 
 void MediaRouterMojoImpl::DoConnectRouteByRouteId(
@@ -688,7 +688,7 @@ void MediaRouterMojoImpl::DoConnectRouteByRouteId(
     const MediaRoute::Id& route_id,
     const url::Origin& origin,
     int tab_id,
-    std::vector<MediaRouteResponseCallback> callbacks,
+    const std::vector<MediaRouteResponseCallback>& callbacks,
     base::TimeDelta timeout,
     bool incognito) {
   std::string presentation_id = MediaRouterBase::CreatePresentationId();
@@ -699,8 +699,8 @@ void MediaRouterMojoImpl::DoConnectRouteByRouteId(
   media_route_provider_->ConnectRouteByRouteId(
       source_id, route_id, presentation_id, origin, tab_id, timeout, incognito,
       base::Bind(&MediaRouterMojoImpl::RouteResponseReceived,
-                 base::Unretained(this), presentation_id, incognito,
-                 base::Passed(&callbacks), true));
+                 base::Unretained(this), presentation_id, incognito, callbacks,
+                 true));
 }
 
 void MediaRouterMojoImpl::DoTerminateRoute(const MediaRoute::Id& route_id) {
@@ -719,19 +719,17 @@ void MediaRouterMojoImpl::DoDetachRoute(const MediaRoute::Id& route_id) {
 void MediaRouterMojoImpl::DoSendSessionMessage(
     const MediaRoute::Id& route_id,
     const std::string& message,
-    SendRouteMessageCallback callback) {
+    const SendRouteMessageCallback& callback) {
   DVLOG_WITH_INSTANCE(1) << "SendRouteMessage " << route_id;
-  media_route_provider_->SendRouteMessage(route_id, message,
-                                          std::move(callback));
+  media_route_provider_->SendRouteMessage(route_id, message, callback);
 }
 
 void MediaRouterMojoImpl::DoSendSessionBinaryMessage(
     const MediaRoute::Id& route_id,
     std::unique_ptr<std::vector<uint8_t>> data,
-    SendRouteMessageCallback callback) {
+    const SendRouteMessageCallback& callback) {
   DVLOG_WITH_INSTANCE(1) << "SendRouteBinaryMessage " << route_id;
-  media_route_provider_->SendRouteBinaryMessage(route_id, *data,
-                                                std::move(callback));
+  media_route_provider_->SendRouteBinaryMessage(route_id, *data, callback);
 }
 
 void MediaRouterMojoImpl::DoStartListeningForRouteMessages(
@@ -751,14 +749,13 @@ void MediaRouterMojoImpl::DoSearchSinks(
     const MediaSource::Id& source_id,
     const std::string& search_input,
     const std::string& domain,
-    MediaSinkSearchResponseCallback sink_callback) {
+    const MediaSinkSearchResponseCallback& sink_callback) {
   DVLOG_WITH_INSTANCE(1) << "SearchSinks";
   auto sink_search_criteria = mojom::SinkSearchCriteria::New();
   sink_search_criteria->input = search_input;
   sink_search_criteria->domain = domain;
-  media_route_provider_->SearchSinks(sink_id, source_id,
-                                     std::move(sink_search_criteria),
-                                     std::move(sink_callback));
+  media_route_provider_->SearchSinks(
+      sink_id, source_id, std::move(sink_search_criteria), sink_callback);
 }
 
 void MediaRouterMojoImpl::DoProvideSinks(const std::string& provider_name,

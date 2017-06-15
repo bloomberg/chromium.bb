@@ -23,13 +23,13 @@ namespace content {
 class PresentationScreenAvailabilityListener;
 
 using PresentationConnectionCallback =
-    base::RepeatingCallback<void(const PresentationInfo&)>;
+    base::Callback<void(const PresentationInfo&)>;
 using PresentationConnectionErrorCallback =
-    base::RepeatingCallback<void(const PresentationError&)>;
+    base::Callback<void(const PresentationError&)>;
 
 // Param: a vector of messages that are received.
-using PresentationConnectionMessageCallback = base::RepeatingCallback<void(
-    std::vector<content::PresentationConnectionMessage>)>;
+using PresentationConnectionMessageCallback =
+    base::Callback<void(std::vector<content::PresentationConnectionMessage>)>;
 
 struct PresentationConnectionStateChangeInfo {
   explicit PresentationConnectionStateChangeInfo(
@@ -46,16 +46,16 @@ struct PresentationConnectionStateChangeInfo {
 };
 
 using PresentationConnectionStateChangedCallback =
-    base::RepeatingCallback<void(const PresentationConnectionStateChangeInfo&)>;
+    base::Callback<void(const PresentationConnectionStateChangeInfo&)>;
 
 using PresentationConnectionPtr = blink::mojom::PresentationConnectionPtr;
 using PresentationConnectionRequest =
     blink::mojom::PresentationConnectionRequest;
 
 using ReceiverConnectionAvailableCallback =
-    base::RepeatingCallback<void(const content::PresentationInfo&,
-                                 PresentationConnectionPtr,
-                                 PresentationConnectionRequest)>;
+    base::Callback<void(const content::PresentationInfo&,
+                        PresentationConnectionPtr,
+                        PresentationConnectionRequest)>;
 
 // Base class for ControllerPresentationServiceDelegate and
 // ReceiverPresentationServiceDelegate.
@@ -99,7 +99,7 @@ class CONTENT_EXPORT PresentationServiceDelegate {
 class CONTENT_EXPORT ControllerPresentationServiceDelegate
     : public PresentationServiceDelegate {
  public:
-  using SendMessageCallback = base::OnceCallback<void(bool)>;
+  using SendMessageCallback = base::Callback<void(bool)>;
 
   // Registers |listener| to continuously listen for
   // availability updates for a presentation URL, originated from the frame
@@ -201,7 +201,7 @@ class CONTENT_EXPORT ControllerPresentationServiceDelegate
                            int render_frame_id,
                            const content::PresentationInfo& presentation_info,
                            PresentationConnectionMessage message,
-                           SendMessageCallback send_message_cb) = 0;
+                           const SendMessageCallback& send_message_cb) = 0;
 
   // Continuously listen for state changes for a PresentationConnection in a
   // frame.

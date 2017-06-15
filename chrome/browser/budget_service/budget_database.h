@@ -49,13 +49,14 @@ class BudgetDatabase {
 
   // Get the full budget expectation for the origin. This will return a
   // sequence of time points and the expected budget at those times.
-  void GetBudgetDetails(const url::Origin& origin, GetBudgetCallback callback);
+  void GetBudgetDetails(const url::Origin& origin,
+                        const GetBudgetCallback& callback);
 
   // Spend a particular amount of budget for an origin. The callback indicates
   // whether there was an error and if the origin had enough budget.
   void SpendBudget(const url::Origin& origin,
                    double amount,
-                   SpendBudgetCallback callback);
+                   const SpendBudgetCallback& callback);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BudgetDatabaseTest,
@@ -95,9 +96,9 @@ class BudgetDatabase {
   };
 
   // Callback for writing budget values to the database.
-  using StoreBudgetCallback = base::OnceCallback<void(bool success)>;
+  using StoreBudgetCallback = base::Callback<void(bool success)>;
 
-  using CacheCallback = base::OnceCallback<void(bool success)>;
+  using CacheCallback = base::Callback<void(bool success)>;
 
   void OnDatabaseInit(bool success);
 
@@ -106,27 +107,27 @@ class BudgetDatabase {
   double GetBudget(const url::Origin& origin) const;
 
   void AddToCache(const url::Origin& origin,
-                  CacheCallback callback,
+                  const CacheCallback& callback,
                   bool success,
                   std::unique_ptr<budget_service::Budget> budget);
 
   void GetBudgetAfterSync(const url::Origin& origin,
-                          GetBudgetCallback callback,
+                          const GetBudgetCallback& callback,
                           bool success);
 
   void SpendBudgetAfterSync(const url::Origin& origin,
                             double amount,
-                            SpendBudgetCallback callback,
+                            const SpendBudgetCallback& callback,
                             bool success);
 
-  void SpendBudgetAfterWrite(SpendBudgetCallback callback, bool success);
+  void SpendBudgetAfterWrite(const SpendBudgetCallback& callback, bool success);
 
   void WriteCachedValuesToDatabase(const url::Origin& origin,
-                                   StoreBudgetCallback callback);
+                                   const StoreBudgetCallback& callback);
 
-  void SyncCache(const url::Origin& origin, CacheCallback callback);
+  void SyncCache(const url::Origin& origin, const CacheCallback& callback);
   void SyncLoadedCache(const url::Origin& origin,
-                       CacheCallback callback,
+                       const CacheCallback& callback,
                        bool success);
 
   // Add budget based on engagement with an origin. The method queries for the

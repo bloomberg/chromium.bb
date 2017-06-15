@@ -89,9 +89,9 @@ class FakeMediaRouter : public media_router::MockMediaRouter {
     } else {
       // Cancel delivery of all messages in both directions.
       inbound_messages_.clear();
-      for (auto& entry : outbound_messages_) {
+      for (const auto& entry : outbound_messages_) {
         BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                                base::BindOnce(std::move(entry.second), false));
+                                base::BindOnce(entry.second, false));
       }
       outbound_messages_.clear();
     }
@@ -124,13 +124,13 @@ class FakeMediaRouter : public media_router::MockMediaRouter {
   void TakeMessagesSentToProvider(RouteMessage::Type type,
                                   std::vector<RouteMessage>* messages) {
     decltype(outbound_messages_) untaken_messages;
-    for (auto& entry : outbound_messages_) {
+    for (const auto& entry : outbound_messages_) {
       if (entry.first.type == type) {
         messages->push_back(entry.first);
         BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                                base::BindOnce(std::move(entry.second), true));
+                                base::BindOnce(entry.second, true));
       } else {
-        untaken_messages.push_back(std::move(entry));
+        untaken_messages.push_back(entry);
       }
     }
     outbound_messages_.swap(untaken_messages);
@@ -164,25 +164,26 @@ class FakeMediaRouter : public media_router::MockMediaRouter {
 
   void SendRouteMessage(const MediaRoute::Id& route_id,
                         const std::string& text,
-                        SendRouteMessageCallback callback) final {
+                        const SendRouteMessageCallback& callback) final {
     EXPECT_EQ(message_observer_->route_id(), route_id);
     ASSERT_FALSE(callback.is_null());
     RouteMessage message;
     message.type = RouteMessage::TEXT;
     message.text = text;
-    outbound_messages_.push_back(std::make_pair(message, std::move(callback)));
+    outbound_messages_.push_back(std::make_pair(message, callback));
   }
 
-  void SendRouteBinaryMessage(const MediaRoute::Id& route_id,
-                              std::unique_ptr<std::vector<uint8_t>> data,
-                              SendRouteMessageCallback callback) final {
+  void SendRouteBinaryMessage(
+      const MediaRoute::Id& route_id,
+      std::unique_ptr<std::vector<uint8_t>> data,
+      const SendRouteMessageCallback& callback) final {
     EXPECT_EQ(message_observer_->route_id(), route_id);
     ASSERT_TRUE(!!data);
     ASSERT_FALSE(callback.is_null());
     RouteMessage message;
     message.type = RouteMessage::BINARY;
     message.binary = std::move(*data);
-    outbound_messages_.push_back(std::make_pair(message, std::move(callback)));
+    outbound_messages_.push_back(std::make_pair(message, callback));
   }
 
  private:

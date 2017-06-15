@@ -34,39 +34,39 @@ class BudgetManager : public KeyedService {
 
   using GetBudgetCallback = blink::mojom::BudgetService::GetBudgetCallback;
   using ReserveCallback = blink::mojom::BudgetService::ReserveCallback;
-  using ConsumeCallback = base::OnceCallback<void(bool success)>;
+  using ConsumeCallback = base::Callback<void(bool success)>;
 
   // Get the budget associated with the origin. This is passed to the
   // callback. Budget will be a sequence of points describing the time and
   // the budget at that time.
-  void GetBudget(const url::Origin& origin, GetBudgetCallback callback);
+  void GetBudget(const url::Origin& origin, const GetBudgetCallback& callback);
 
   // Spend enough budget to cover the cost of the desired action and create
   // a reservation for that action. If this returns true to the callback, then
   // the next action will consume that reservation and not cost any budget.
   void Reserve(const url::Origin& origin,
                blink::mojom::BudgetOperationType type,
-               ReserveCallback callback);
+               const ReserveCallback& callback);
 
   // Spend budget, first consuming a reservation if one exists, or spend
   // directly from the budget.
   void Consume(const url::Origin& origin,
                blink::mojom::BudgetOperationType type,
-               ConsumeCallback callback);
+               const ConsumeCallback& callback);
 
  private:
   friend class BudgetManagerTest;
 
-  void DidGetBudget(GetBudgetCallback callback,
+  void DidGetBudget(const GetBudgetCallback& callback,
                     blink::mojom::BudgetServiceErrorType error,
                     std::vector<blink::mojom::BudgetStatePtr> budget);
 
-  void DidConsume(ConsumeCallback callback,
+  void DidConsume(const ConsumeCallback& callback,
                   blink::mojom::BudgetServiceErrorType error,
                   bool success);
 
   void DidReserve(const url::Origin& origin,
-                  ReserveCallback callback,
+                  const ReserveCallback& callback,
                   blink::mojom::BudgetServiceErrorType error,
                   bool success);
 

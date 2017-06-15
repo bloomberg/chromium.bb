@@ -24,10 +24,10 @@ namespace media_router {
 MediaRouterAndroid::MediaRouteRequest::MediaRouteRequest(
     const MediaSource& source,
     const std::string& presentation_id,
-    std::vector<MediaRouteResponseCallback> callbacks)
+    const std::vector<MediaRouteResponseCallback>& callbacks)
     : media_source(source),
       presentation_id(presentation_id),
-      callbacks(std::move(callbacks)) {}
+      callbacks(callbacks) {}
 
 MediaRouterAndroid::MediaRouteRequest::~MediaRouteRequest() {}
 
@@ -51,7 +51,7 @@ void MediaRouterAndroid::CreateRoute(
     const MediaSink::Id& sink_id,
     const url::Origin& origin,
     content::WebContents* web_contents,
-    std::vector<MediaRouteResponseCallback> callbacks,
+    const std::vector<MediaRouteResponseCallback>& callbacks,
     base::TimeDelta timeout,
     bool incognito) {
   // TODO(avayvod): Implement timeouts (crbug.com/583036).
@@ -68,7 +68,7 @@ void MediaRouterAndroid::CreateRoute(
 
   int route_request_id =
       route_requests_.Add(base::MakeUnique<MediaRouteRequest>(
-          MediaSource(source_id), presentation_id, std::move(callbacks)));
+          MediaSource(source_id), presentation_id, callbacks));
   bridge_->CreateRoute(source_id, sink_id, presentation_id, origin, tab_id,
                        is_incognito, route_request_id);
 }
@@ -78,7 +78,7 @@ void MediaRouterAndroid::ConnectRouteByRouteId(
     const MediaRoute::Id& route_id,
     const url::Origin& origin,
     content::WebContents* web_contents,
-    std::vector<MediaRouteResponseCallback> callbacks,
+    const std::vector<MediaRouteResponseCallback>& callbacks,
     base::TimeDelta timeout,
     bool incognito) {
   NOTIMPLEMENTED();
@@ -89,7 +89,7 @@ void MediaRouterAndroid::JoinRoute(
     const std::string& presentation_id,
     const url::Origin& origin,
     content::WebContents* web_contents,
-    std::vector<MediaRouteResponseCallback> callbacks,
+    const std::vector<MediaRouteResponseCallback>& callbacks,
     base::TimeDelta timeout,
     bool incognito) {
   // TODO(avayvod): Implement timeouts (crbug.com/583036).
@@ -103,7 +103,7 @@ void MediaRouterAndroid::JoinRoute(
            << origin.GetURL().spec() << ", " << tab_id;
 
   int request_id = route_requests_.Add(base::MakeUnique<MediaRouteRequest>(
-      MediaSource(source_id), presentation_id, std::move(callbacks)));
+      MediaSource(source_id), presentation_id, callbacks));
   bridge_->JoinRoute(source_id, presentation_id, origin, tab_id, request_id);
 }
 
@@ -111,20 +111,21 @@ void MediaRouterAndroid::TerminateRoute(const MediaRoute::Id& route_id) {
   bridge_->TerminateRoute(route_id);
 }
 
-void MediaRouterAndroid::SendRouteMessage(const MediaRoute::Id& route_id,
-                                          const std::string& message,
-                                          SendRouteMessageCallback callback) {
+void MediaRouterAndroid::SendRouteMessage(
+    const MediaRoute::Id& route_id,
+    const std::string& message,
+    const SendRouteMessageCallback& callback) {
   int callback_id = message_callbacks_.Add(
-      base::MakeUnique<SendRouteMessageCallback>(std::move(callback)));
+      base::MakeUnique<SendRouteMessageCallback>(callback));
   bridge_->SendRouteMessage(route_id, message, callback_id);
 }
 
 void MediaRouterAndroid::SendRouteBinaryMessage(
     const MediaRoute::Id& route_id,
     std::unique_ptr<std::vector<uint8_t>> data,
-    SendRouteMessageCallback callback) {
+    const SendRouteMessageCallback& callback) {
   // Binary messaging is not supported on Android.
-  std::move(callback).Run(false);
+  callback.Run(false);
 }
 
 void MediaRouterAndroid::AddIssue(const IssueInfo& issue_info) {
@@ -143,7 +144,7 @@ void MediaRouterAndroid::SearchSinks(
     const MediaSource::Id& source_id,
     const std::string& search_input,
     const std::string& domain,
-    MediaSinkSearchResponseCallback sink_callback) {
+    const MediaSinkSearchResponseCallback& sink_callback) {
   NOTIMPLEMENTED();
 }
 
@@ -265,8 +266,8 @@ void MediaRouterAndroid::OnRouteCreated(const MediaRoute::Id& route_id,
 
   std::unique_ptr<RouteRequestResult> result =
       RouteRequestResult::FromSuccess(route, request->presentation_id);
-  for (MediaRouteResponseCallback& callback : request->callbacks)
-    std::move(callback).Run(*result);
+  for (const MediaRouteResponseCallback& callback : request->callbacks)
+    callback.Run(*result);
 
   route_requests_.Remove(route_request_id);
 
@@ -284,8 +285,8 @@ void MediaRouterAndroid::OnRouteRequestError(const std::string& error_text,
   // TODO(imcheng): Provide a more specific result code.
   std::unique_ptr<RouteRequestResult> result = RouteRequestResult::FromError(
       error_text, RouteRequestResult::UNKNOWN_ERROR);
-  for (MediaRouteResponseCallback& callback : request->callbacks)
-    std::move(callback).Run(*result);
+  for (const MediaRouteResponseCallback& callback : request->callbacks)
+    callback.Run(*result);
 
   route_requests_.Remove(route_request_id);
 }
@@ -307,7 +308,7 @@ void MediaRouterAndroid::OnRouteClosedWithError(const MediaRoute::Id& route_id,
 
 void MediaRouterAndroid::OnMessageSentResult(bool success, int callback_id) {
   SendRouteMessageCallback* callback = message_callbacks_.Lookup(callback_id);
-  std::move(*callback).Run(success);
+  callback->Run(success);
   message_callbacks_.Remove(callback_id);
 }
 
