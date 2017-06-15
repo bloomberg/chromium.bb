@@ -481,7 +481,7 @@ const CGFloat kSpinnerButtonPadding = 18;
   [spinner setHidesWhenStopped:NO];
   [spinner startAnimating];
 
-  return leftBarButtonItem = nil;
+  return leftBarButtonItem;
 }
 
 - (void)stopObserving {

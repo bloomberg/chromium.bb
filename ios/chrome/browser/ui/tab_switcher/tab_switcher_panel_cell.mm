@@ -314,7 +314,7 @@ CGFloat tabSwitcherLocalSessionCellTopBarHeight() {
                 target:self
               selector:@selector(closeButtonPressed)];
   [customActions addObject:customAction = nil];
-  return customActions = nil;
+  return customActions;
 }
 
 @end

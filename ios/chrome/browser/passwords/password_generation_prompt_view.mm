@@ -200,7 +200,7 @@ const CGFloat kDescriptionLabelTopPadding = 10.0f;
   [titleLabel setAttributedText:string];
   [titleLabel setNumberOfLines:0];
   [titleLabel sizeToFit];
-  return titleLabel = nil;
+  return titleLabel;
 }
 
 - (UILabel*)passwordLabel:(NSString*)password {
@@ -211,7 +211,7 @@ const CGFloat kDescriptionLabelTopPadding = 10.0f;
                              regularFontOfSize:kPasswordLabelFontSize]];
   [passwordLabel setNumberOfLines:1];
   [passwordLabel sizeToFit];
-  return passwordLabel = nil;
+  return passwordLabel;
 }
 
 - (UITextView*)description {
