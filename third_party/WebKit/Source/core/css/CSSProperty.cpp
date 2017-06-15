@@ -227,6 +227,30 @@ CSSPropertyID CSSProperty::ResolveDirectionAwareProperty(
     case CSSPropertyWebkitBorderAfterWidth:
       return ResolveToPhysicalProperty(direction, writing_mode, kAfterSide,
                                        borderWidthShorthand());
+    case CSSPropertyScrollPaddingInlineStart:
+      return ResolveToPhysicalProperty(direction, writing_mode, kStartSide,
+                                       scrollPaddingShorthand());
+    case CSSPropertyScrollPaddingInlineEnd:
+      return ResolveToPhysicalProperty(direction, writing_mode, kEndSide,
+                                       scrollPaddingShorthand());
+    case CSSPropertyScrollPaddingBlockStart:
+      return ResolveToPhysicalProperty(direction, writing_mode, kBeforeSide,
+                                       scrollPaddingShorthand());
+    case CSSPropertyScrollPaddingBlockEnd:
+      return ResolveToPhysicalProperty(direction, writing_mode, kAfterSide,
+                                       scrollPaddingShorthand());
+    case CSSPropertyScrollSnapMarginInlineStart:
+      return ResolveToPhysicalProperty(direction, writing_mode, kStartSide,
+                                       scrollSnapMarginShorthand());
+    case CSSPropertyScrollSnapMarginInlineEnd:
+      return ResolveToPhysicalProperty(direction, writing_mode, kEndSide,
+                                       scrollSnapMarginShorthand());
+    case CSSPropertyScrollSnapMarginBlockStart:
+      return ResolveToPhysicalProperty(direction, writing_mode, kBeforeSide,
+                                       scrollSnapMarginShorthand());
+    case CSSPropertyScrollSnapMarginBlockEnd:
+      return ResolveToPhysicalProperty(direction, writing_mode, kAfterSide,
+                                       scrollSnapMarginShorthand());
     case CSSPropertyInlineSize:
     case CSSPropertyWebkitLogicalWidth: {
       const CSSPropertyID kProperties[2] = {CSSPropertyWidth,

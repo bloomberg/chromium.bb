@@ -1311,60 +1311,193 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     SET_VAR(rare_non_inherited_data_, scroll_behavior_, b);
   }
 
-  // scroll-snap-coordinate
-  static Vector<LengthPoint> InitialScrollSnapCoordinate() {
-    return Vector<LengthPoint>();
-  }
-  const Vector<LengthPoint>& ScrollSnapCoordinate() const {
-    return rare_non_inherited_data_->scroll_snap_data_->coordinates_;
-  }
-  void SetScrollSnapCoordinate(const Vector<LengthPoint>& b) {
-    SET_NESTED_VAR(rare_non_inherited_data_, scroll_snap_data_, coordinates_,
-                   b);
-  }
-
-  // scroll-snap-destination
-  static LengthPoint InitialScrollSnapDestination() {
-    return LengthPoint(Length(0, kFixed), Length(0, kFixed));
-  }
-  const LengthPoint& ScrollSnapDestination() const {
-    return rare_non_inherited_data_->scroll_snap_data_->destination_;
-  }
-  void SetScrollSnapDestination(const LengthPoint& b) {
-    SET_NESTED_VAR(rare_non_inherited_data_, scroll_snap_data_, destination_,
-                   b);
-  }
-
-  // scroll-snap-points-x
-  static ScrollSnapPoints InitialScrollSnapPointsX() {
-    return ScrollSnapPoints();
-  }
-  const ScrollSnapPoints& ScrollSnapPointsX() const {
-    return rare_non_inherited_data_->scroll_snap_data_->x_points_;
-  }
-  void SetScrollSnapPointsX(const ScrollSnapPoints& b) {
-    SET_NESTED_VAR(rare_non_inherited_data_, scroll_snap_data_, x_points_, b);
-  }
-
-  // scroll-snap-points-y
-  static ScrollSnapPoints InitialScrollSnapPointsY() {
-    return ScrollSnapPoints();
-  }
-  const ScrollSnapPoints& ScrollSnapPointsY() const {
-    return rare_non_inherited_data_->scroll_snap_data_->y_points_;
-  }
-  void SetScrollSnapPointsY(const ScrollSnapPoints& b) {
-    SET_NESTED_VAR(rare_non_inherited_data_, scroll_snap_data_, y_points_, b);
-  }
-
   // scroll-snap-type
-  static ScrollSnapType InitialScrollSnapType() { return kScrollSnapTypeNone; }
+  static ScrollSnapType InitialScrollSnapType() { return ScrollSnapType(); }
   ScrollSnapType GetScrollSnapType() const {
-    return static_cast<ScrollSnapType>(
-        rare_non_inherited_data_->scroll_snap_type_);
+    return rare_non_inherited_data_->scroll_snap_data_->type_;
   }
-  void SetScrollSnapType(ScrollSnapType b) {
-    SET_VAR(rare_non_inherited_data_, scroll_snap_type_, b);
+  void SetScrollSnapType(const ScrollSnapType& b) {
+    SET_NESTED_VAR(rare_non_inherited_data_, scroll_snap_data_, type_, b);
+  }
+
+  // Scroll Padding properties
+  static Length InitialScrollPadding() { return Length(); }
+
+  // scroll-padding-top
+  const Length& ScrollPaddingTop() const {
+    return rare_non_inherited_data_->scroll_snap_data_->padding_.top;
+  }
+  void SetScrollPaddingTop(const Length& v) {
+    SET_NESTED_VAR(rare_non_inherited_data_, scroll_snap_data_, padding_.top,
+                   v);
+  }
+
+  // scroll-padding-bottom
+  const Length& ScrollPaddingBottom() const {
+    return rare_non_inherited_data_->scroll_snap_data_->padding_.bottom;
+  }
+  void SetScrollPaddingBottom(const Length& v) {
+    SET_NESTED_VAR(rare_non_inherited_data_, scroll_snap_data_, padding_.bottom,
+                   v);
+  }
+
+  // scroll-padding-left
+  const Length& ScrollPaddingLeft() const {
+    return rare_non_inherited_data_->scroll_snap_data_->padding_.left;
+  }
+  void SetScrollPaddingLeft(const Length& v) {
+    SET_NESTED_VAR(rare_non_inherited_data_, scroll_snap_data_, padding_.left,
+                   v);
+  }
+
+  // scroll-padding-right
+  const Length& ScrollPaddingRight() const {
+    return rare_non_inherited_data_->scroll_snap_data_->padding_.right;
+  }
+  void SetScrollPaddingRight(const Length& v) {
+    SET_NESTED_VAR(rare_non_inherited_data_, scroll_snap_data_, padding_.right,
+                   v);
+  }
+
+  // scroll-padding-block-start
+  const Length& ScrollPaddingBlockStart() const {
+    return IsHorizontalWritingMode() ? ScrollPaddingTop() : ScrollPaddingLeft();
+  }
+  void SetScrollPaddingBlockStart(const Length& v) {
+    if (IsHorizontalWritingMode())
+      SetScrollPaddingTop(v);
+    else
+      SetScrollPaddingLeft(v);
+  }
+
+  // scroll-padding-block-end
+  const Length& ScrollPaddingBlockEnd() const {
+    return IsHorizontalWritingMode() ? ScrollPaddingBottom()
+                                     : ScrollPaddingRight();
+  }
+  void SetScrollPaddingBlockEnd(const Length& v) {
+    if (IsHorizontalWritingMode())
+      SetScrollPaddingBottom(v);
+    else
+      SetScrollPaddingRight(v);
+  }
+
+  // scroll-padding-inline-start
+  const Length& ScrollPaddingInlineStart() const {
+    return IsHorizontalWritingMode() ? ScrollPaddingLeft() : ScrollPaddingTop();
+  }
+  void SetScrollPaddingInlineStart(const Length& v) {
+    if (IsHorizontalWritingMode())
+      SetScrollPaddingLeft(v);
+    else
+      SetScrollPaddingTop(v);
+  }
+
+  // scroll-padding-inline-end
+  const Length& ScrollPaddingInlineEnd() const {
+    return IsHorizontalWritingMode() ? ScrollPaddingRight()
+                                     : ScrollPaddingBottom();
+  }
+  void SetScrollPaddingInlineEnd(const Length& v) {
+    if (IsHorizontalWritingMode())
+      SetScrollPaddingRight(v);
+    else
+      SetScrollPaddingBottom(v);
+  }
+
+  // scroll-snap-margin
+  static Length InitialScrollSnapMargin() { return Length(); }
+
+  // scroll-snap-margin-top
+  const Length& ScrollSnapMarginTop() const {
+    return rare_non_inherited_data_->scroll_snap_data_->margin_.top;
+  }
+  void SetScrollSnapMarginTop(const Length& v) {
+    SET_NESTED_VAR(rare_non_inherited_data_, scroll_snap_data_, margin_.top, v);
+  }
+
+  // scroll-snap-margin-bottom
+  const Length& ScrollSnapMarginBottom() const {
+    return rare_non_inherited_data_->scroll_snap_data_->margin_.bottom;
+  }
+  void SetScrollSnapMarginBottom(const Length& v) {
+    SET_NESTED_VAR(rare_non_inherited_data_, scroll_snap_data_, margin_.bottom,
+                   v);
+  }
+
+  // scroll-snap-margin-left
+  const Length& ScrollSnapMarginLeft() const {
+    return rare_non_inherited_data_->scroll_snap_data_->margin_.left;
+  }
+  void SetScrollSnapMarginLeft(const Length& v) {
+    SET_NESTED_VAR(rare_non_inherited_data_, scroll_snap_data_, margin_.left,
+                   v);
+  }
+
+  // scroll-snap-margin-right
+  const Length& ScrollSnapMarginRight() const {
+    return rare_non_inherited_data_->scroll_snap_data_->margin_.right;
+  }
+  void SetScrollSnapMarginRight(const Length& v) {
+    SET_NESTED_VAR(rare_non_inherited_data_, scroll_snap_data_, margin_.right,
+                   v);
+  }
+
+  // scroll-snap-margin-block-start
+  const Length& ScrollSnapMarginBlockStart() const {
+    return IsHorizontalWritingMode() ? ScrollSnapMarginTop()
+                                     : ScrollSnapMarginLeft();
+  }
+  void SetScrollSnapMarginBlockStart(const Length& v) {
+    if (IsHorizontalWritingMode())
+      SetScrollSnapMarginTop(v);
+    else
+      SetScrollSnapMarginLeft(v);
+  }
+
+  // scroll-snap-margin-block-end
+  const Length& ScrollSnapMarginBlockEnd() const {
+    return IsHorizontalWritingMode() ? ScrollSnapMarginBottom()
+                                     : ScrollSnapMarginRight();
+  }
+  void SetScrollSnapMarginBlockEnd(const Length& v) {
+    if (IsHorizontalWritingMode())
+      SetScrollSnapMarginBottom(v);
+    else
+      SetScrollSnapMarginRight(v);
+  }
+
+  // scroll-snap-margin-inline-start
+  const Length& ScrollSnapMarginInlineStart() const {
+    return IsHorizontalWritingMode() ? ScrollSnapMarginLeft()
+                                     : ScrollSnapMarginTop();
+  }
+  void SetScrollSnapMarginInlineStart(const Length& v) {
+    if (IsHorizontalWritingMode())
+      SetScrollSnapMarginLeft(v);
+    else
+      SetScrollSnapMarginTop(v);
+  }
+
+  // scroll-snap-margin-inline-end
+  const Length& ScrollSnapMarginInlineEnd() const {
+    return IsHorizontalWritingMode() ? ScrollSnapMarginRight()
+                                     : ScrollSnapMarginBottom();
+  }
+  void SetScrollSnapMarginInlineEnd(const Length& v) {
+    if (IsHorizontalWritingMode())
+      SetScrollSnapMarginRight(v);
+    else
+      SetScrollSnapMarginBottom(v);
+  }
+
+  // scroll-snap-align
+  static ScrollSnapAlign InitialScrollSnapAlign() { return ScrollSnapAlign(); }
+  ScrollSnapAlign GetScrollSnapAlign() const {
+    return rare_non_inherited_data_->scroll_snap_data_->align_;
+  }
+  void SetScrollSnapAlign(const ScrollSnapAlign& b) {
+    SET_NESTED_VAR(rare_non_inherited_data_, scroll_snap_data_, align_, b);
   }
 
   // shape-image-threshold (aka -webkit-shape-image-threshold)

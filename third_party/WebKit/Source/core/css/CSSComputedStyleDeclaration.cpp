@@ -173,10 +173,8 @@ const CSSPropertyID kComputedPropertyArray[] = {
     CSSPropertyDominantBaseline, CSSPropertyTextAnchor, CSSPropertyWritingMode,
     CSSPropertyVectorEffect, CSSPropertyPaintOrder, CSSPropertyD, CSSPropertyCx,
     CSSPropertyCy, CSSPropertyX, CSSPropertyY, CSSPropertyR, CSSPropertyRx,
-    CSSPropertyRy, CSSPropertyScrollSnapType, CSSPropertyScrollSnapPointsX,
-    CSSPropertyScrollSnapPointsY, CSSPropertyScrollSnapCoordinate,
-    CSSPropertyScrollSnapDestination, CSSPropertyTranslate, CSSPropertyRotate,
-    CSSPropertyScale, CSSPropertyCaretColor};
+    CSSPropertyRy, CSSPropertyTranslate, CSSPropertyRotate, CSSPropertyScale,
+    CSSPropertyCaretColor};
 
 CSSValueID CssIdentifierForFontSizeKeyword(int keyword_size) {
   DCHECK_NE(keyword_size, 0);

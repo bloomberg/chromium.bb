@@ -2583,35 +2583,109 @@ inline ScrollBehavior CSSIdentifierValue::ConvertTo() const {
 }
 
 template <>
-inline CSSIdentifierValue::CSSIdentifierValue(ScrollSnapType snap_type)
+inline CSSIdentifierValue::CSSIdentifierValue(SnapAxis axis)
     : CSSValue(kIdentifierClass) {
-  switch (snap_type) {
-    case kScrollSnapTypeNone:
-      value_id_ = CSSValueNone;
+  switch (axis) {
+    case kSnapAxisX:
+      value_id_ = CSSValueX;
       break;
-    case kScrollSnapTypeMandatory:
-      value_id_ = CSSValueMandatory;
+    case kSnapAxisY:
+      value_id_ = CSSValueY;
       break;
-    case kScrollSnapTypeProximity:
-      value_id_ = CSSValueProximity;
+    case kSnapAxisBlock:
+      value_id_ = CSSValueBlock;
+      break;
+    case kSnapAxisInline:
+      value_id_ = CSSValueInline;
+      break;
+    case kSnapAxisBoth:
+      value_id_ = CSSValueBoth;
       break;
   }
 }
 
 template <>
-inline ScrollSnapType CSSIdentifierValue::ConvertTo() const {
+inline SnapAxis CSSIdentifierValue::ConvertTo() const {
   switch (GetValueID()) {
-    case CSSValueNone:
-      return kScrollSnapTypeNone;
-    case CSSValueMandatory:
-      return kScrollSnapTypeMandatory;
-    case CSSValueProximity:
-      return kScrollSnapTypeProximity;
+    case CSSValueX:
+      return kSnapAxisX;
+    case CSSValueY:
+      return kSnapAxisY;
+    case CSSValueBlock:
+      return kSnapAxisBlock;
+    case CSSValueInline:
+      return kSnapAxisInline;
+    case CSSValueBoth:
+      return kSnapAxisBoth;
     default:
       break;
   }
   NOTREACHED();
-  return kScrollSnapTypeNone;
+  return kSnapAxisBoth;
+}
+
+template <>
+inline CSSIdentifierValue::CSSIdentifierValue(SnapStrictness strictness)
+    : CSSValue(kIdentifierClass) {
+  switch (strictness) {
+    case kSnapStrictnessProximity:
+      value_id_ = CSSValueProximity;
+      break;
+    case kSnapStrictnessMandatory:
+      value_id_ = CSSValueMandatory;
+      break;
+  }
+}
+
+template <>
+inline SnapStrictness CSSIdentifierValue::ConvertTo() const {
+  switch (GetValueID()) {
+    case CSSValueProximity:
+      return kSnapStrictnessProximity;
+    case CSSValueMandatory:
+      return kSnapStrictnessMandatory;
+    default:
+      break;
+  }
+  NOTREACHED();
+  return kSnapStrictnessProximity;
+}
+
+template <>
+inline CSSIdentifierValue::CSSIdentifierValue(SnapAlignment alignment)
+    : CSSValue(kIdentifierClass) {
+  switch (alignment) {
+    case kSnapAlignmentNone:
+      value_id_ = CSSValueNone;
+      break;
+    case kSnapAlignmentStart:
+      value_id_ = CSSValueStart;
+      break;
+    case kSnapAlignmentEnd:
+      value_id_ = CSSValueEnd;
+      break;
+    case kSnapAlignmentCenter:
+      value_id_ = CSSValueCenter;
+      break;
+  }
+}
+
+template <>
+inline SnapAlignment CSSIdentifierValue::ConvertTo() const {
+  switch (GetValueID()) {
+    case CSSValueNone:
+      return kSnapAlignmentNone;
+    case CSSValueStart:
+      return kSnapAlignmentStart;
+    case CSSValueEnd:
+      return kSnapAlignmentEnd;
+    case CSSValueCenter:
+      return kSnapAlignmentCenter;
+    default:
+      break;
+  }
+  NOTREACHED();
+  return kSnapAlignmentNone;
 }
 
 template <>

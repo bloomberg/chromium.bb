@@ -807,24 +807,6 @@ static CSSValue* ConsumePerspective(CSSParserTokenRange& range,
   return nullptr;
 }
 
-static CSSValue* ConsumeScrollSnapPoints(CSSParserTokenRange& range,
-                                         CSSParserMode css_parser_mode) {
-  if (range.Peek().Id() == CSSValueNone)
-    return ConsumeIdent(range);
-  if (range.Peek().FunctionId() == CSSValueRepeat) {
-    CSSParserTokenRange args = ConsumeFunction(range);
-    CSSPrimitiveValue* parsed_value =
-        ConsumeLengthOrPercent(args, css_parser_mode, kValueRangeNonNegative);
-    if (args.AtEnd() && parsed_value &&
-        (parsed_value->IsCalculated() || parsed_value->GetDoubleValue() > 0)) {
-      CSSFunctionValue* result = CSSFunctionValue::Create(CSSValueRepeat);
-      result->Append(*parsed_value);
-      return result;
-    }
-  }
-  return nullptr;
-}
-
 static CSSValue* ConsumeReflect(CSSParserTokenRange& range,
                                 const CSSParserContext* context) {
   CSSIdentifierValue* direction =
@@ -1534,10 +1516,6 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
     case CSSPropertyWebkitLogicalWidth:
     case CSSPropertyWebkitLogicalHeight:
       return CSSPropertyLengthUtils::ConsumeWidthOrHeight(range_, *context_);
-    case CSSPropertyScrollSnapDestination:
-      // TODO(crbug.com/724912): Retire scroll-snap-destination
-      return ConsumePosition(range_, *context_, UnitlessQuirk::kForbid,
-                             Optional<WebFeature>());
     case CSSPropertyObjectPosition:
       return ConsumePosition(range_, *context_, UnitlessQuirk::kForbid,
                              WebFeature::kThreeValuedPositionObjectPosition);
@@ -1654,9 +1632,6 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
       return ConsumePerspective(
           range_, context_,
           unresolved_property == CSSPropertyAliasWebkitPerspective);
-    case CSSPropertyScrollSnapPointsX:
-    case CSSPropertyScrollSnapPointsY:
-      return ConsumeScrollSnapPoints(range_, context_->Mode());
     case CSSPropertyBorderImageRepeat:
     case CSSPropertyWebkitMaskBoxImageRepeat:
       return CSSPropertyBorderImageUtils::ConsumeBorderImageRepeat(range_);
@@ -2339,6 +2314,23 @@ bool CSSPropertyParser::ConsumeBorder(bool important) {
   AddExpandedPropertyForValue(CSSPropertyBorderColor, *color, important);
   AddExpandedPropertyForValue(CSSPropertyBorderImage,
                               *CSSInitialValue::Create(), important);
+
+  return range_.AtEnd();
+}
+
+bool CSSPropertyParser::Consume2Values(const StylePropertyShorthand& shorthand,
+                                       bool important) {
+  DCHECK_EQ(shorthand.length(), 2u);
+  const CSSPropertyID* longhands = shorthand.properties();
+  const CSSValue* start = ParseSingleValue(longhands[0], shorthand.id());
+  if (!start)
+    return false;
+
+  const CSSValue* end = ParseSingleValue(longhands[1], shorthand.id());
+  if (!end)
+    end = start;
+  AddParsedProperty(longhands[0], shorthand.id(), *start, important);
+  AddParsedProperty(longhands[1], shorthand.id(), *end, important);
 
   return range_.AtEnd();
 }
@@ -3286,6 +3278,18 @@ bool CSSPropertyParser::ParseShorthand(CSSPropertyID unresolved_property,
       return ConsumePlaceItemsShorthand(important);
     case CSSPropertyPlaceSelf:
       return ConsumePlaceSelfShorthand(important);
+    case CSSPropertyScrollPadding:
+      return Consume4Values(scrollPaddingShorthand(), important);
+    case CSSPropertyScrollPaddingBlock:
+      return Consume2Values(scrollPaddingBlockShorthand(), important);
+    case CSSPropertyScrollPaddingInline:
+      return Consume2Values(scrollPaddingInlineShorthand(), important);
+    case CSSPropertyScrollSnapMargin:
+      return Consume4Values(scrollSnapMarginShorthand(), important);
+    case CSSPropertyScrollSnapMarginBlock:
+      return Consume2Values(scrollSnapMarginBlockShorthand(), important);
+    case CSSPropertyScrollSnapMarginInline:
+      return Consume2Values(scrollSnapMarginInlineShorthand(), important);
     default:
       return false;
   }

@@ -451,20 +451,20 @@ void LayoutBox::UpdateScrollSnapMappingAfterStyleChange(
       GetNode() != GetDocument().ViewportDefiningElement();
 
   ScrollSnapType old_snap_type =
-      old_style ? old_style->GetScrollSnapType() : kScrollSnapTypeNone;
+      old_style ? old_style->GetScrollSnapType() : ScrollSnapType();
   ScrollSnapType new_snap_type = new_style && allows_snap_container
                                      ? new_style->GetScrollSnapType()
-                                     : kScrollSnapTypeNone;
+                                     : ScrollSnapType();
   if (old_snap_type != new_snap_type)
     snap_coordinator->SnapContainerDidChange(*this, new_snap_type);
 
-  Vector<LengthPoint> empty_vector;
-  const Vector<LengthPoint>& old_snap_coordinate =
-      old_style ? old_style->ScrollSnapCoordinate() : empty_vector;
-  const Vector<LengthPoint>& new_snap_coordinate =
-      new_style ? new_style->ScrollSnapCoordinate() : empty_vector;
-  if (old_snap_coordinate != new_snap_coordinate)
-    snap_coordinator->SnapAreaDidChange(*this, new_snap_coordinate);
+  ScrollSnapAlign old_snap_align =
+      old_style ? old_style->GetScrollSnapAlign() : ScrollSnapAlign();
+  ScrollSnapAlign new_snap_align = new_style && allows_snap_container
+                                       ? new_style->GetScrollSnapAlign()
+                                       : ScrollSnapAlign();
+  if (old_snap_align != new_snap_align)
+    snap_coordinator->SnapAreaDidChange(*this, new_snap_align);
 }
 
 void LayoutBox::AddScrollSnapMapping() {

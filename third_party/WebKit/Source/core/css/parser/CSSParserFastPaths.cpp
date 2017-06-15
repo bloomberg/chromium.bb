@@ -40,6 +40,22 @@ static inline bool IsSimpleLengthPropertyID(CSSPropertyID property_id,
     case CSSPropertyPaddingLeft:
     case CSSPropertyPaddingRight:
     case CSSPropertyPaddingTop:
+    case CSSPropertyScrollPaddingTop:
+    case CSSPropertyScrollPaddingRight:
+    case CSSPropertyScrollPaddingBottom:
+    case CSSPropertyScrollPaddingLeft:
+    case CSSPropertyScrollPaddingBlockStart:
+    case CSSPropertyScrollPaddingBlockEnd:
+    case CSSPropertyScrollPaddingInlineStart:
+    case CSSPropertyScrollPaddingInlineEnd:
+    case CSSPropertyScrollSnapMarginTop:
+    case CSSPropertyScrollSnapMarginRight:
+    case CSSPropertyScrollSnapMarginBottom:
+    case CSSPropertyScrollSnapMarginLeft:
+    case CSSPropertyScrollSnapMarginBlockStart:
+    case CSSPropertyScrollSnapMarginBlockEnd:
+    case CSSPropertyScrollSnapMarginInlineStart:
+    case CSSPropertyScrollSnapMarginInlineEnd:
     case CSSPropertyWebkitLogicalWidth:
     case CSSPropertyWebkitLogicalHeight:
     case CSSPropertyWebkitMinLogicalWidth:
@@ -841,10 +857,9 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
     case CSSPropertyWordBreak:
       return value_id == CSSValueNormal || value_id == CSSValueBreakAll ||
              value_id == CSSValueKeepAll || value_id == CSSValueBreakWord;
-    case CSSPropertyScrollSnapType:
+    case CSSPropertyScrollSnapStop:
       DCHECK(RuntimeEnabledFeatures::CSSScrollSnapPointsEnabled());
-      return value_id == CSSValueNone || value_id == CSSValueMandatory ||
-             value_id == CSSValueProximity;
+      return value_id == CSSValueNormal || value_id == CSSValueAlways;
     default:
       NOTREACHED();
       return false;
@@ -957,7 +972,7 @@ bool CSSParserFastPaths::IsKeywordPropertyID(CSSPropertyID property_id) {
     case CSSPropertyWordBreak:
     case CSSPropertyWordWrap:
     case CSSPropertyWritingMode:
-    case CSSPropertyScrollSnapType:
+    case CSSPropertyScrollSnapStop:
       return true;
     case CSSPropertyJustifyContent:
     case CSSPropertyAlignContent:

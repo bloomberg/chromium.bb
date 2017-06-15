@@ -178,12 +178,8 @@ class StyleBuilderConverter {
       const OrderedNamedGridLines&,
       NamedGridLinesMap&);
 
-  static ScrollSnapPoints ConvertSnapPoints(StyleResolverState&,
-                                            const CSSValue&);
-  static Vector<LengthPoint> ConvertSnapCoordinates(StyleResolverState&,
-                                                    const CSSValue&);
-  static LengthPoint ConvertSnapDestination(StyleResolverState&,
-                                            const CSSValue&);
+  static ScrollSnapType ConvertSnapType(StyleResolverState&, const CSSValue&);
+  static ScrollSnapAlign ConvertSnapAlign(StyleResolverState&, const CSSValue&);
   static PassRefPtr<TranslateTransformOperation> ConvertTranslate(
       StyleResolverState&,
       const CSSValue&);

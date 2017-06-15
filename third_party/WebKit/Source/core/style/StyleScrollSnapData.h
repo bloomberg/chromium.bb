@@ -26,13 +26,65 @@
 #ifndef StyleScrollSnapData_h
 #define StyleScrollSnapData_h
 
-#include "core/style/ScrollSnapPoints.h"
+#include "core/style/ComputedStyleConstants.h"
+#include "core/style/QuadLengthValue.h"
 #include "platform/LengthPoint.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/RefCounted.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {
+
+using ScrollPadding = QuadLengthValue;
+using ScrollSnapMargin = QuadLengthValue;
+
+struct ScrollSnapType {
+  DISALLOW_NEW();
+
+  ScrollSnapType()
+      : is_none(true),
+        axis(kSnapAxisBoth),
+        strictness(kSnapStrictnessProximity) {}
+
+  ScrollSnapType(const ScrollSnapType& other)
+      : is_none(other.is_none),
+        axis(other.axis),
+        strictness(other.strictness) {}
+
+  bool operator==(const ScrollSnapType& other) const {
+    return is_none == other.is_none && axis == other.axis &&
+           strictness == other.strictness;
+  }
+
+  bool operator!=(const ScrollSnapType& other) const {
+    return !(*this == other);
+  }
+
+  bool is_none;
+  SnapAxis axis;
+  SnapStrictness strictness;
+};
+
+struct ScrollSnapAlign {
+  DISALLOW_NEW();
+
+  ScrollSnapAlign()
+      : alignmentX(kSnapAlignmentNone), alignmentY(kSnapAlignmentNone) {}
+
+  ScrollSnapAlign(const ScrollSnapAlign& other)
+      : alignmentX(other.alignmentX), alignmentY(other.alignmentY) {}
+
+  bool operator==(const ScrollSnapAlign& other) const {
+    return alignmentX == other.alignmentX && alignmentY == other.alignmentY;
+  }
+
+  bool operator!=(const ScrollSnapAlign& other) const {
+    return !(*this == other);
+  }
+
+  SnapAlignment alignmentX;
+  SnapAlignment alignmentY;
+};
 
 class StyleScrollSnapData : public RefCounted<StyleScrollSnapData> {
  public:
@@ -43,14 +95,14 @@ class StyleScrollSnapData : public RefCounted<StyleScrollSnapData> {
     return AdoptRef(new StyleScrollSnapData(*this));
   }
 
-  ScrollSnapPoints x_points_;
-  ScrollSnapPoints y_points_;
-  LengthPoint destination_;
-  Vector<LengthPoint> coordinates_;
+  ScrollSnapType type_;
+  ScrollSnapAlign align_;
+  ScrollPadding padding_;
+  ScrollSnapMargin margin_;
 
  private:
   StyleScrollSnapData();
-  StyleScrollSnapData(const StyleScrollSnapData&);
+  StyleScrollSnapData(const StyleScrollSnapData& other);
 };
 
 bool operator==(const StyleScrollSnapData&, const StyleScrollSnapData&);

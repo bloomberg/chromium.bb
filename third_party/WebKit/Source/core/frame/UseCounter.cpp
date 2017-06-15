@@ -46,7 +46,7 @@ int totalPagesMeasuredCSSSampleId() {
 }
 
 // Make sure update_use_counter_css.py was run which updates histograms.xml.
-constexpr int kMaximumCSSSampleId = 560;
+constexpr int kMaximumCSSSampleId = 584;
 
 }  // namespace
 
@@ -963,14 +963,10 @@ int UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(
       return 498;
     case CSSPropertyScrollSnapType:
       return 499;
-    case CSSPropertyScrollSnapPointsX:
-      return 500;
-    case CSSPropertyScrollSnapPointsY:
-      return 501;
-    case CSSPropertyScrollSnapCoordinate:
-      return 502;
-    case CSSPropertyScrollSnapDestination:
-      return 503;
+    // CSSPropertyScrollSnapPointsX was 500.
+    // CSSPropertyScrollSnapPointsY was 501.
+    // CSSPropertyScrollSnapCoordinate was 502.
+    // CSSPropertyScrollSnapDestination was 503.
     case CSSPropertyTranslate:
       return 504;
     case CSSPropertyRotate:
@@ -1084,6 +1080,54 @@ int UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(
       return 559;
     case CSSPropertyPlaceSelf:
       return 560;
+    case CSSPropertyScrollSnapAlign:
+      return 561;
+    case CSSPropertyScrollPadding:
+      return 562;
+    case CSSPropertyScrollPaddingTop:
+      return 563;
+    case CSSPropertyScrollPaddingRight:
+      return 564;
+    case CSSPropertyScrollPaddingBottom:
+      return 565;
+    case CSSPropertyScrollPaddingLeft:
+      return 566;
+    case CSSPropertyScrollPaddingBlock:
+      return 567;
+    case CSSPropertyScrollPaddingBlockStart:
+      return 568;
+    case CSSPropertyScrollPaddingBlockEnd:
+      return 569;
+    case CSSPropertyScrollPaddingInline:
+      return 570;
+    case CSSPropertyScrollPaddingInlineStart:
+      return 571;
+    case CSSPropertyScrollPaddingInlineEnd:
+      return 572;
+    case CSSPropertyScrollSnapMargin:
+      return 573;
+    case CSSPropertyScrollSnapMarginTop:
+      return 574;
+    case CSSPropertyScrollSnapMarginRight:
+      return 575;
+    case CSSPropertyScrollSnapMarginBottom:
+      return 576;
+    case CSSPropertyScrollSnapMarginLeft:
+      return 577;
+    case CSSPropertyScrollSnapMarginBlock:
+      return 578;
+    case CSSPropertyScrollSnapMarginBlockStart:
+      return 579;
+    case CSSPropertyScrollSnapMarginBlockEnd:
+      return 580;
+    case CSSPropertyScrollSnapMarginInline:
+      return 581;
+    case CSSPropertyScrollSnapMarginInlineStart:
+      return 582;
+    case CSSPropertyScrollSnapMarginInlineEnd:
+      return 583;
+    case CSSPropertyScrollSnapStop:
+      return 584;
     // 1. Add new features above this line (don't change the assigned numbers of
     // the existing items).
     // 2. Update kMaximumCSSSampleId with the new maximum value.

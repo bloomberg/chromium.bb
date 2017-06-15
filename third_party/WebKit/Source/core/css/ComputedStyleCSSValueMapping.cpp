@@ -1653,6 +1653,27 @@ static CSSValueList* ValuesForSidesShorthand(
   return list;
 }
 
+static CSSValuePair* ValuesForInlineBlockShorthand(
+    const StylePropertyShorthand& shorthand,
+    const ComputedStyle& style,
+    const LayoutObject* layout_object,
+    Node* styled_node,
+    bool allow_visited_style) {
+  const CSSValue* start_value = ComputedStyleCSSValueMapping::Get(
+      shorthand.properties()[0], style, layout_object, styled_node,
+      allow_visited_style);
+  const CSSValue* end_value = ComputedStyleCSSValueMapping::Get(
+      shorthand.properties()[1], style, layout_object, styled_node,
+      allow_visited_style);
+  // Both properties must be specified.
+  if (!start_value || !end_value)
+    return nullptr;
+
+  CSSValuePair* pair = CSSValuePair::Create(start_value, end_value,
+                                            CSSValuePair::kDropIdenticalValues);
+  return pair;
+}
+
 static CSSValueList* ValueForBorderRadiusShorthand(const ComputedStyle& style) {
   CSSValueList* list = CSSValueList::CreateSlashSeparated();
 
@@ -1968,42 +1989,21 @@ CSSValue* ComputedStyleCSSValueMapping::ValueForFont(
   return list;
 }
 
-static CSSValue* ValueForScrollSnapDestination(const LengthPoint& destination,
-                                               const ComputedStyle& style) {
-  CSSValueList* list = CSSValueList::CreateSpaceSeparated();
-  list->Append(*ZoomAdjustedPixelValueForLength(destination.X(), style));
-  list->Append(*ZoomAdjustedPixelValueForLength(destination.Y(), style));
-  return list;
-}
-
-static CSSValue* ValueForScrollSnapPoints(const ScrollSnapPoints& points,
-                                          const ComputedStyle& style) {
-  if (points.has_repeat) {
-    CSSFunctionValue* repeat = CSSFunctionValue::Create(CSSValueRepeat);
-    repeat->Append(
-        *ZoomAdjustedPixelValueForLength(points.repeat_offset, style));
-    return repeat;
+static CSSValue* ValueForScrollSnapType(const ScrollSnapType& type,
+                                        const ComputedStyle& style) {
+  if (!type.is_none) {
+    return CSSValuePair::Create(CSSIdentifierValue::Create(type.axis),
+                                CSSIdentifierValue::Create(type.strictness),
+                                CSSValuePair::kDropIdenticalValues);
   }
-
   return CSSIdentifierValue::Create(CSSValueNone);
 }
 
-static CSSValue* ValueForScrollSnapCoordinate(
-    const Vector<LengthPoint>& coordinates,
-    const ComputedStyle& style) {
-  if (coordinates.IsEmpty())
-    return CSSIdentifierValue::Create(CSSValueNone);
-
-  CSSValueList* list = CSSValueList::CreateCommaSeparated();
-
-  for (auto& coordinate : coordinates) {
-    auto pair = CSSValueList::CreateSpaceSeparated();
-    pair->Append(*ZoomAdjustedPixelValueForLength(coordinate.X(), style));
-    pair->Append(*ZoomAdjustedPixelValueForLength(coordinate.Y(), style));
-    list->Append(*pair);
-  }
-
-  return list;
+static CSSValue* ValueForScrollSnapAlign(const ScrollSnapAlign& align,
+                                         const ComputedStyle& style) {
+  return CSSValuePair::Create(CSSIdentifierValue::Create(align.alignmentX),
+                              CSSIdentifierValue::Create(align.alignmentY),
+                              CSSValuePair::kDropIdenticalValues);
 }
 
 // Returns a suitable value for the page-break-(before|after) property, given
@@ -3460,6 +3460,30 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
     case CSSPropertyPadding:
       return ValuesForSidesShorthand(paddingShorthand(), style, layout_object,
                                      styled_node, allow_visited_style);
+    case CSSPropertyScrollPadding:
+      return ValuesForSidesShorthand(scrollPaddingShorthand(), style,
+                                     layout_object, styled_node,
+                                     allow_visited_style);
+    case CSSPropertyScrollPaddingBlock:
+      return ValuesForInlineBlockShorthand(scrollPaddingBlockShorthand(), style,
+                                           layout_object, styled_node,
+                                           allow_visited_style);
+    case CSSPropertyScrollPaddingInline:
+      return ValuesForInlineBlockShorthand(scrollPaddingInlineShorthand(),
+                                           style, layout_object, styled_node,
+                                           allow_visited_style);
+    case CSSPropertyScrollSnapMargin:
+      return ValuesForSidesShorthand(scrollSnapMarginShorthand(), style,
+                                     layout_object, styled_node,
+                                     allow_visited_style);
+    case CSSPropertyScrollSnapMarginBlock:
+      return ValuesForInlineBlockShorthand(scrollSnapMarginBlockShorthand(),
+                                           style, layout_object, styled_node,
+                                           allow_visited_style);
+    case CSSPropertyScrollSnapMarginInline:
+      return ValuesForInlineBlockShorthand(scrollSnapMarginInlineShorthand(),
+                                           style, layout_object, styled_node,
+                                           allow_visited_style);
     // Individual properties not part of the spec.
     case CSSPropertyBackgroundRepeatX:
     case CSSPropertyBackgroundRepeatY:
@@ -3690,16 +3714,56 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
     case CSSPropertyRy:
       return ZoomAdjustedPixelValueForLength(svg_style.Ry(), style);
     case CSSPropertyScrollSnapType:
-      return CSSIdentifierValue::Create(style.GetScrollSnapType());
-    case CSSPropertyScrollSnapPointsX:
-      return ValueForScrollSnapPoints(style.ScrollSnapPointsX(), style);
-    case CSSPropertyScrollSnapPointsY:
-      return ValueForScrollSnapPoints(style.ScrollSnapPointsY(), style);
-    case CSSPropertyScrollSnapCoordinate:
-      return ValueForScrollSnapCoordinate(style.ScrollSnapCoordinate(), style);
-    case CSSPropertyScrollSnapDestination:
-      return ValueForScrollSnapDestination(style.ScrollSnapDestination(),
-                                           style);
+      return ValueForScrollSnapType(style.GetScrollSnapType(), style);
+    case CSSPropertyScrollSnapAlign:
+      return ValueForScrollSnapAlign(style.GetScrollSnapAlign(), style);
+    case CSSPropertyScrollSnapStop:
+      return CSSIdentifierValue::Create(style.ScrollSnapStop());
+    case CSSPropertyScrollPaddingTop:
+      return ZoomAdjustedPixelValueForLength(style.ScrollPaddingTop(), style);
+    case CSSPropertyScrollPaddingRight:
+      return ZoomAdjustedPixelValueForLength(style.ScrollPaddingRight(), style);
+    case CSSPropertyScrollPaddingBottom:
+      return ZoomAdjustedPixelValueForLength(style.ScrollPaddingBottom(),
+                                             style);
+    case CSSPropertyScrollPaddingLeft:
+      return ZoomAdjustedPixelValueForLength(style.ScrollPaddingLeft(), style);
+    case CSSPropertyScrollPaddingBlockStart:
+      return ZoomAdjustedPixelValueForLength(style.ScrollPaddingBlockStart(),
+                                             style);
+    case CSSPropertyScrollPaddingBlockEnd:
+      return ZoomAdjustedPixelValueForLength(style.ScrollPaddingBlockEnd(),
+                                             style);
+    case CSSPropertyScrollPaddingInlineStart:
+      return ZoomAdjustedPixelValueForLength(style.ScrollPaddingInlineStart(),
+                                             style);
+    case CSSPropertyScrollPaddingInlineEnd:
+      return ZoomAdjustedPixelValueForLength(style.ScrollPaddingInlineEnd(),
+                                             style);
+    case CSSPropertyScrollSnapMarginTop:
+      return ZoomAdjustedPixelValueForLength(style.ScrollSnapMarginTop(),
+                                             style);
+    case CSSPropertyScrollSnapMarginRight:
+      return ZoomAdjustedPixelValueForLength(style.ScrollSnapMarginRight(),
+                                             style);
+    case CSSPropertyScrollSnapMarginBottom:
+      return ZoomAdjustedPixelValueForLength(style.ScrollSnapMarginBottom(),
+                                             style);
+    case CSSPropertyScrollSnapMarginLeft:
+      return ZoomAdjustedPixelValueForLength(style.ScrollSnapMarginLeft(),
+                                             style);
+    case CSSPropertyScrollSnapMarginBlockStart:
+      return ZoomAdjustedPixelValueForLength(style.ScrollSnapMarginBlockStart(),
+                                             style);
+    case CSSPropertyScrollSnapMarginBlockEnd:
+      return ZoomAdjustedPixelValueForLength(style.ScrollSnapMarginBlockEnd(),
+                                             style);
+    case CSSPropertyScrollSnapMarginInlineStart:
+      return ZoomAdjustedPixelValueForLength(
+          style.ScrollSnapMarginInlineStart(), style);
+    case CSSPropertyScrollSnapMarginInlineEnd:
+      return ZoomAdjustedPixelValueForLength(style.ScrollSnapMarginInlineEnd(),
+                                             style);
     case CSSPropertyTranslate: {
       if (!style.Translate())
         return CSSIdentifierValue::Create(CSSValueNone);
