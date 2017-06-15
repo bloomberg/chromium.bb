@@ -17,7 +17,6 @@ function loadScriptWithSyntaxError()
 
 function test()
 {
-    InspectorTest.completeTest(); // NeedsManualRebaseline
     var panel = UI.panels.sources;
 
     InspectorTest.runDebuggerTestSuite([
@@ -123,7 +122,7 @@ function test()
 
             function breakpointAdded()
             {
-                replaceInSource(panel.visibleView, "function f()", "function newFunctionCreatedWithLiveEdit()\n{\n}\nfunction f()", didEditScriptSource);
+                replaceInSource(panel.visibleView, "function f()", "var a = 1;\nfunction f()", didEditScriptSource);
             }
 
             function didEditScriptSource()

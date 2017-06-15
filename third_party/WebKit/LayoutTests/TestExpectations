@@ -1803,7 +1803,6 @@ crbug.com/688854 external/wpt/hr-time/window-worker-time-origin.html [ Failure ]
 crbug.com/626703 external/wpt/resource-timing/resource_TAO_space.htm [ Pass Failure ]
 crbug.com/626703 [ Mac ] external/wpt/web-animations/interfaces/AnimationTimeline/document-timeline.html [ Failure ]
 
-crbug.com/698077 inspector/sources/debugger/live-edit.html [ NeedsManualRebaseline ]
 crbug.com/698077 inspector/sources/debugger/debug-inlined-scripts.html [ NeedsManualRebaseline ]
 
 # Working on getting the CSP tests going:
