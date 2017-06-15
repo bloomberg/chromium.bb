@@ -36698,12 +36698,14 @@ from previous Chrome versions.
   <int value="727478" label="metrics_report_ukm"/>
   <int value="727528" label="metrics_report_uma"/>
   <int value="1313982" label="safe_browsing_client_side_phishing_detector"/>
-  <int value="3556498" label="test"/>
+  <int value="3556498" label="tests"/>
   <int value="3989826" label="dom_distiller"/>
   <int value="4300475" label="gaia_cookie_manager_external_cc_result"/>
+  <int value="4598626" label="gaia_auth_check_connection_info"/>
   <int value="5021348" label="sync_stop_reporter"/>
   <int value="5151071" label="extension_manifest_fetcher"/>
   <int value="5492492" label="google_url_tracker"/>
+  <int value="5637379" label="gaia_oauth_client_get_tokens"/>
   <int value="6019475" label="safe_browsing_module_loader"/>
   <int value="7687691" label="omnibox_zerosuggest"/>
   <int value="8250451" label="data_reduction_proxy_warmup"/>
@@ -36712,7 +36714,9 @@ from previous Chrome versions.
   <int value="13211343" label="suggestions_image_manager"/>
   <int value="14257952" label="supervised_user_url_filter"/>
   <int value="15418154" label="ntp_snippets_fetch"/>
+  <int value="16653985" label="content_suggestion_get_favicon"/>
   <int value="17188928" label="websocket_stream"/>
+  <int value="17400350" label="web_history_query"/>
   <int value="18300705" label="gcm_channel_status_request"/>
   <int value="18670926" label="CRD_telemetry_log"/>
   <int value="19185953" label="offline_prefetch"/>
@@ -36726,21 +36730,27 @@ from previous Chrome versions.
   <int value="25790702" label="appcache_update_job"/>
   <int value="25921771" label="webstore_install_helper"/>
   <int value="26096088" label="speech_recognition_downstream"/>
+  <int value="26216847" label="gaia_auth_merge_sessions"/>
   <int value="26302604" label="webstore_data_fetcher"/>
   <int value="26372521" label="sync_attachment_downloader"/>
+  <int value="27915688" label="oauth2_access_token_fetcher"/>
   <int value="29865866" label="headless_url_request"/>
   <int value="30913825" label="family_info"/>
   <int value="32030464" label="persist_blob_to_indexed_db"/>
+  <int value="32585152" label="gaia_oauth_client_get_token_info"/>
   <int value="35370363" label="suggestions_service"/>
+  <int value="35565745" label="gaia_auth_list_accounts"/>
   <int value="36859107" label="logo_tracker"/>
   <int value="37531401" label="proxy_script_fetcher"/>
-  <int value="40534770" label="favicon_component"/>
+  <int value="39877119" label="gaia_auth_exchange_device_id"/>
+  <int value="40534770" label="obsolete_favicon_component"/>
   <int value="41154842" label="doodle_service"/>
   <int value="42848942" label="safe_browsing_extended_reporting"/>
   <int value="43206794" label="permission_request_creator"/>
+  <int value="44494884" label="icon_catcher_get_large_icon"/>
   <int value="44583821" label="safe_browsing_feedback"/>
   <int value="44606780" label="rappor_report"/>
-  <int value="45578882" label="undefined"/>
+  <int value="45578882" label="no_annotation"/>
   <int value="46188932" label="network_time_component"/>
   <int value="47152935" label="sdch_dictionary_fetch"/>
   <int value="47815025" label="omnibox_suggest"/>
@@ -36753,11 +36763,13 @@ from previous Chrome versions.
   <int value="50816767" label="lib_address_input"/>
   <int value="51164680" label="profile_avatar"/>
   <int value="53695122" label="credenential_avatar"/>
+  <int value="56434025" label="gcm_subscription"/>
   <int value="57144960" label="sync_http_bridge"/>
   <int value="57276415" label="chrome_expect_ct_reporter"/>
   <int value="58963098" label="resource_dispather_host"/>
   <int value="59592717" label="extension_blacklist"/>
   <int value="60921996" label="ocsp_start_url_request"/>
+  <int value="60946824" label="web_history_expire"/>
   <int value="61656965" label="gcm_registration"/>
   <int value="61684939" label="omnibox_navigation_observer"/>
   <int value="62443804" label="webrtc_log_upload"/>
@@ -36765,6 +36777,7 @@ from previous Chrome versions.
   <int value="65442685" label="wifi_prefetch_sites_from_network"/>
   <int value="65957842" label="gcm_checkin"/>
   <int value="66322287" label="password_protection_request"/>
+  <int value="66590631" label="safe_browsing_certificate_error_reporting"/>
   <int value="66846958" label="speech_recognition_upstream"/>
   <int value="68561428" label="data_reduction_proxy_pingback"/>
   <int value="68745894" label="safe_browsing_get_full_hash"/>
@@ -36779,15 +36792,22 @@ from previous Chrome versions.
   <int value="78544924" label="supervised_users_blacklist"/>
   <int value="78917933" label="one_google_bar_service"/>
   <int value="79957943" label="safe_browsing_chunk_backup_request"/>
+  <int value="80832574" label="history_notice_utils_popup"/>
+  <int value="82167736" label="gaia_auth_get_user_info"/>
+  <int value="82462683" label="gaia_oauth_client_refresh_token"/>
+  <int value="83476155" label="gaia_oauth_client_get_user_info"/>
   <int value="84045030" label="payment_manifest_downloader"/>
   <int value="84212388" label="omnibox_suggest_deletion"/>
   <int value="84575287" label="background_performance_tracer"/>
   <int value="88754904" label="captive_portal_service"/>
   <int value="88863520" label="autofill_query"/>
+  <int value="91597383" label="gaia_auth_login"/>
   <int value="95588446" label="payments_sync_cards"/>
   <int value="97199008" label="doodle_fetcher"/>
+  <int value="97978464" label="gaia_auth_fetch_for_uber"/>
   <int value="100545943" label="webui_content_scripts_download"/>
   <int value="101725581" label="cros_recovery_image_download"/>
+  <int value="102595701" label="history_notice_utils_notice"/>
   <int value="102819690" label="sync_file_system"/>
   <int value="102935425" label="safe_browsing_client_side_malware_detector"/>
   <int value="103133150" label="icon_cacher"/>
@@ -36800,6 +36820,7 @@ from previous Chrome versions.
   <int value="109200878" label="omnibox_prefetch_image"/>
   <int value="109679553" label="brandcode_config"/>
   <int value="109891200" label="reporting"/>
+  <int value="110307337" label="web_history_service"/>
   <int value="110815970" label="resource_prefetch"/>
   <int value="111565057" label="devtools_hard_coded_data_source"/>
   <int value="111712433" label="cloud_print"/>
@@ -36810,14 +36831,17 @@ from previous Chrome versions.
   <int value="114468207" label="ssl_name_mismatch_lookup"/>
   <int value="115188287" label="chrome_variations_service"/>
   <int value="115907811" label="safe_browsing_cache_collector"/>
+  <int value="116426676" label="gaia_auth_log_out"/>
   <int value="117649486" label="spellcheck_hunspell_dictionary"/>
   <int value="117782019" label="device_management_service"/>
+  <int value="117963307" label="service_worker_write_to_cache_job"/>
   <int value="118389509" label="url_prevision_fetcher"/>
   <int value="119542033" label="gcm_unregistration"/>
   <int value="119677115" label="safe_search_url_reporter"/>
   <int value="124950347" label="safe_browsing_incident"/>
   <int value="125522256" label="client_download_request"/>
   <int value="125596241" label="component_updater_utils"/>
+  <int value="126122632" label="web_history_expire_between_dates"/>
   <int value="129652775" label="devtools_network_resource"/>
   <int value="131236802" label="data_reduction_proxy_secure_proxy_check"/>
   <int value="131741641" label="permission_reporting"/>
@@ -36825,12 +36849,15 @@ from previous Chrome versions.
   <int value="132546306" label="wifi_prefetch_from_cache"/>
   <int value="132553989" label="spellcheck_lookup"/>
   <int value="132657055" label="sync_attachment_uploader"/>
+  <int value="133982351" label="gaia_auth_revoke_token"/>
+  <int value="134289752" label="gaia_auth_exchange_cookies"/>
   <int value="134729048" label="chrome_feedback_report_app"/>
   <int value="135251783" label="thumbnail_source"/>
   <int value="135636011" label="devtools_handle_front_end_messages"/>
   <int value="135967426" label="ppapi_download_request"/>
   <int value="136117054" label="supervised_user_refresh_token_fetcher"/>
   <int value="137116619" label="translate_url_fetcher"/>
+  <int value="137457845" label="web_history_counter"/>
 </enum>
 
 <enum name="UrlResolutionResult" type="int">
