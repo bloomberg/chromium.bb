@@ -28,14 +28,6 @@
 
 namespace chromeos {
 
-namespace {
-
-static const char kServiceScopeGetUserInfo[] =
-    "https://www.googleapis.com/auth/userinfo.email";
-static const int kMaxRetries = 5;
-
-}  // namespace
-
 OAuth2LoginManager::OAuth2LoginManager(Profile* user_profile)
     : user_profile_(user_profile),
       restore_strategy_(RESTORE_FROM_COOKIE_JAR),
@@ -103,7 +95,7 @@ void OAuth2LoginManager::RestoreSessionFromSavedTokens() {
     return;
 
   ProfileOAuth2TokenService* token_service = GetTokenService();
-  const std::string& primary_account_id = GetPrimaryAccountId();
+  const std::string primary_account_id = GetPrimaryAccountId();
   if (token_service->RefreshTokenIsAvailable(primary_account_id)) {
     VLOG(1) << "OAuth2 refresh token is already loaded.";
     FireRefreshTokensLoaded();
@@ -170,34 +162,17 @@ ProfileOAuth2TokenService* OAuth2LoginManager::GetTokenService() {
   return ProfileOAuth2TokenServiceFactory::GetForProfile(user_profile_);
 }
 
-const std::string& OAuth2LoginManager::GetPrimaryAccountId() {
+std::string OAuth2LoginManager::GetPrimaryAccountId() {
   SigninManagerBase* signin_manager =
       SigninManagerFactory::GetForProfile(user_profile_);
-  return signin_manager->GetAuthenticatedAccountId();
+  const std::string primary_account_id =
+      signin_manager->GetAuthenticatedAccountId();
+  LOG_IF(ERROR, primary_account_id.empty()) << "Primary account id is empty.";
+  return primary_account_id;
 }
 
 void OAuth2LoginManager::StoreOAuth2Token() {
-  const std::string& primary_account_id = GetPrimaryAccountId();
-  if (primary_account_id.empty()) {
-    GetAccountInfoOfRefreshToken(refresh_token_);
-    return;
-  }
-
-  UpdateCredentials(primary_account_id);
-}
-
-void OAuth2LoginManager::GetAccountInfoOfRefreshToken(
-    const std::string& refresh_token) {
-  gaia::OAuthClientInfo client_info;
-  GaiaUrls* gaia_urls = GaiaUrls::GetInstance();
-  client_info.client_id = gaia_urls->oauth2_chrome_client_id();
-  client_info.client_secret = gaia_urls->oauth2_chrome_client_secret();
-
-  account_info_fetcher_.reset(new gaia::GaiaOAuthClient(
-      auth_request_context_.get()));
-  account_info_fetcher_->RefreshToken(client_info, refresh_token,
-      std::vector<std::string>(1, kServiceScopeGetUserInfo), kMaxRetries,
-      this);
+  UpdateCredentials(GetPrimaryAccountId());
 }
 
 void OAuth2LoginManager::UpdateCredentials(const std::string& account_id) {
@@ -214,39 +189,6 @@ void OAuth2LoginManager::UpdateCredentials(const std::string& account_id) {
 void OAuth2LoginManager::FireRefreshTokensLoaded() {
   // TODO(570218): Figure out the right way to plumb this.
   GetTokenService()->LoadCredentials(std::string());
-}
-
-void OAuth2LoginManager::OnRefreshTokenResponse(
-    const std::string& access_token,
-    int expires_in_seconds) {
-  account_info_fetcher_->GetUserInfo(access_token, kMaxRetries, this);
-}
-
-void OAuth2LoginManager::OnGetUserInfoResponse(
-    std::unique_ptr<base::DictionaryValue> user_info) {
-  account_info_fetcher_.reset();
-
-  std::string gaia_id;
-  std::string email;
-  user_info->GetString("id", &gaia_id);
-  user_info->GetString("email", &email);
-
-  AccountTrackerService* account_tracker =
-      AccountTrackerServiceFactory::GetForProfile(user_profile_);
-  account_tracker->SeedAccountInfo(gaia_id, email);
-  UpdateCredentials(account_tracker->PickAccountIdForAccount(gaia_id, email));
-}
-
-void OAuth2LoginManager::OnOAuthError() {
-  account_info_fetcher_.reset();
-  LOG(ERROR) << "Account info fetch failed!";
-  SetSessionRestoreState(OAuth2LoginManager::SESSION_RESTORE_FAILED);
-}
-
-void OAuth2LoginManager::OnNetworkError(int response_code) {
-  account_info_fetcher_.reset();
-  LOG(ERROR) << "Account info fetch failed! response_code=" << response_code;
-  SetSessionRestoreState(OAuth2LoginManager::SESSION_RESTORE_FAILED);
 }
 
 void OAuth2LoginManager::FetchOAuth2Tokens() {
