@@ -350,7 +350,7 @@ class WebURLRequest {
   BLINK_PLATFORM_EXPORT void SetInputPerfMetricReportPolicy(
       WebURLRequest::InputToLoadPerfMetricReportPolicy);
 
-  // https://mikewest.github.io/cors-rfc1918/#external-request
+  // https://wicg.github.io/cors-rfc1918/#external-request
   BLINK_PLATFORM_EXPORT bool IsExternalRequest() const;
 
   BLINK_PLATFORM_EXPORT LoadingIPCType GetLoadingIPCType() const;

@@ -5792,7 +5792,7 @@ void Document::InitSecurityContext(const DocumentInit& initializer) {
 
   // Set the address space before setting up CSP, as the latter may override
   // the former via the 'treat-as-public-address' directive (see
-  // https://mikewest.github.io/cors-rfc1918/#csp).
+  // https://wicg.github.io/cors-rfc1918/#csp).
   if (initializer.IsHostedInReservedIPRange()) {
     SetAddressSpace(GetSecurityOrigin()->IsLocalhost()
                         ? kWebAddressSpaceLocal

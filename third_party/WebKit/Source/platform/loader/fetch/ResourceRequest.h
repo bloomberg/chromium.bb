@@ -298,7 +298,7 @@ class PLATFORM_EXPORT ResourceRequest final {
     ui_start_time_ = ui_start_time_seconds;
   }
 
-  // https://mikewest.github.io/cors-rfc1918/#external-request
+  // https://wicg.github.io/cors-rfc1918/#external-request
   bool IsExternalRequest() const { return is_external_request_; }
   void SetExternalRequestStateFromRequestorAddressSpace(WebAddressSpace);
 
