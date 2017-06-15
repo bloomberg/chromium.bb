@@ -524,6 +524,11 @@ public class SingleWebsitePreferences extends PreferenceFragment
      * 2. The BLOCK string is custom.
      */
     private void setUpAdsPreference(Preference preference) {
+        // Do not show the setting if the category is not enabled.
+        if (!SiteSettingsCategory.adsCategoryEnabled()) {
+            setUpListPreference(preference, null);
+            return;
+        }
         // If the ad blocker is activated, then this site will have ads blocked unless there is an
         // explicit permission disallowing the blocking.
         boolean activated =
