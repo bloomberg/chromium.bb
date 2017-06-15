@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_filter.h"
@@ -73,6 +74,19 @@ void FakeCentral::SetNextGATTDiscoveryResponse(
       static_cast<FakePeripheral*>(device_iter->second.get());
   fake_peripheral->SetNextGATTDiscoveryResponse(code);
   std::move(callback).Run(true);
+}
+
+void FakeCentral::AddFakeService(const std::string& peripheral_address,
+                                 const device::BluetoothUUID& service_uuid,
+                                 AddFakeServiceCallback callback) {
+  auto device_iter = devices_.find(peripheral_address);
+  if (device_iter == devices_.end()) {
+    std::move(callback).Run(base::nullopt);
+  }
+
+  FakePeripheral* fake_peripheral =
+      static_cast<FakePeripheral*>(device_iter->second.get());
+  std::move(callback).Run(fake_peripheral->AddFakeService(service_uuid));
 }
 
 std::string FakeCentral::GetAddress() const {

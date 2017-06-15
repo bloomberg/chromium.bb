@@ -2,27 +2,26 @@
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script src="../../../resources/bluetooth/web-bluetooth-test.js"></script>
+<script src="../../../resources/mojo-helpers.js"></script>
 <script>
 'use strict';
-promise_test(function() {
-  return setBluetoothFakeAdapter('TwoHeartRateServicesAdapter')
-    .then(() => requestDeviceWithKeyDown({
-      filters: [{services: ['heart_rate']}]}))
-    .then(device => device.gatt.connect())
-    .then(gattServer => Promise.all([
-      gattServer.getPrimaryServices(heart_rate.alias),
-      gattServer.getPrimaryServices(heart_rate.name),
-      gattServer.getPrimaryServices(heart_rate.uuid)]))
+promise_test(() => {
+  return getHealthThermometerDevice({
+    filters: [{services: ['health_thermometer']}]})
+    .then(([device]) => Promise.all([
+      device.gatt.getPrimaryServices(health_thermometer.alias),
+      device.gatt.getPrimaryServices(health_thermometer.name),
+      device.gatt.getPrimaryServices(health_thermometer.uuid)]))
     .then(services_arrays => {
       services_arrays.forEach(services => {
         assert_equals(services.length, 2);
-        assert_equals(services[0].uuid,
-                      BluetoothUUID.getService('heart_rate'));
-        assert_equals(services[1].uuid,
-                      BluetoothUUID.getService('heart_rate'));
-        assert_true(services[0].isPrimary);
-        assert_true(services[1].isPrimary);
+        services.forEach(service => {
+          assert_equals(service.uuid,
+                        BluetoothUUID.getService('health_thermometer'));
+          assert_true(service.isPrimary);
+        });
       });
     });
-}, 'Request for services. Should return right services');
+}, 'Request for services. Should return right number of services.');
 </script>
