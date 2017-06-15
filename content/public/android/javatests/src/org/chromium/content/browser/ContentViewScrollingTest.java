@@ -87,7 +87,7 @@ public class ContentViewScrollingTest extends ContentShellTestBase {
         }
     }
 
-    private void assertWaitForScroll(final boolean hugLeft, final boolean hugTop) {
+    private void waitForScroll(final boolean hugLeft, final boolean hugTop) {
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -102,6 +102,15 @@ public class ContentViewScrollingTest extends ContentShellTestBase {
                         ? getContentViewCore().getNativeScrollYForTest() < minThreshold
                         : getContentViewCore().getNativeScrollYForTest() > maxThreshold;
                 return xCorrect && yCorrect;
+            }
+        });
+    }
+
+    private void waitForViewportInitialization() {
+        CriteriaHelper.pollInstrumentationThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return getContentViewCore().getLastFrameViewportWidthCss() != 0;
             }
         });
     }
@@ -156,6 +165,7 @@ public class ContentViewScrollingTest extends ContentShellTestBase {
 
         launchContentShellWithUrl(LARGE_PAGE);
         waitForActiveShellToBeDoneLoading();
+        waitForViewportInitialization();
 
         assertEquals(0, getContentViewCore().getNativeScrollXForTest());
         assertEquals(0, getContentViewCore().getNativeScrollYForTest());
@@ -173,23 +183,23 @@ public class ContentViewScrollingTest extends ContentShellTestBase {
 
         // Vertical fling to lower-left.
         fling(0, -velocity);
-        assertWaitForScroll(true, false);
+        waitForScroll(true, false);
 
         // Horizontal fling to lower-right.
         fling(-velocity, 0);
-        assertWaitForScroll(false, false);
+        waitForScroll(false, false);
 
         // Vertical fling to upper-right.
         fling(0, velocity);
-        assertWaitForScroll(false, true);
+        waitForScroll(false, true);
 
         // Horizontal fling to top-left.
         fling(velocity, 0);
-        assertWaitForScroll(true, true);
+        waitForScroll(true, true);
 
         // Diagonal fling to bottom-right.
         fling(-velocity, -velocity);
-        assertWaitForScroll(false, false);
+        waitForScroll(false, false);
     }
 
     @SmallTest
@@ -199,23 +209,23 @@ public class ContentViewScrollingTest extends ContentShellTestBase {
     public void testScrollTo() throws Throwable {
         // Vertical scroll to lower-left.
         scrollTo(0, 2500);
-        assertWaitForScroll(true, false);
+        waitForScroll(true, false);
 
         // Horizontal scroll to lower-right.
         scrollTo(2500, 2500);
-        assertWaitForScroll(false, false);
+        waitForScroll(false, false);
 
         // Vertical scroll to upper-right.
         scrollTo(2500, 0);
-        assertWaitForScroll(false, true);
+        waitForScroll(false, true);
 
         // Horizontal scroll to top-left.
         scrollTo(0, 0);
-        assertWaitForScroll(true, true);
+        waitForScroll(true, true);
 
         // Diagonal scroll to bottom-right.
         scrollTo(2500, 2500);
-        assertWaitForScroll(false, false);
+        waitForScroll(false, false);
     }
 
     @SmallTest
@@ -224,59 +234,59 @@ public class ContentViewScrollingTest extends ContentShellTestBase {
     @RetryOnFailure
     public void testScrollBy() throws Throwable {
         scrollTo(0, 0);
-        assertWaitForScroll(true, true);
+        waitForScroll(true, true);
 
         // No scroll
         scrollBy(0, 0);
-        assertWaitForScroll(true, true);
+        waitForScroll(true, true);
 
         // Vertical scroll to lower-left.
         scrollBy(0, 2500);
-        assertWaitForScroll(true, false);
+        waitForScroll(true, false);
 
         // Horizontal scroll to lower-right.
         scrollBy(2500, 0);
-        assertWaitForScroll(false, false);
+        waitForScroll(false, false);
 
         // Vertical scroll to upper-right.
         scrollBy(0, -2500);
-        assertWaitForScroll(false, true);
+        waitForScroll(false, true);
 
         // Horizontal scroll to top-left.
         scrollBy(-2500, 0);
-        assertWaitForScroll(true, true);
+        waitForScroll(true, true);
 
         // Diagonal scroll to bottom-right.
         scrollBy(2500, 2500);
-        assertWaitForScroll(false, false);
+        waitForScroll(false, false);
     }
 
     @SmallTest
     @Feature({"Main"})
     public void testJoystickScroll() throws Throwable {
         scrollTo(0, 0);
-        assertWaitForScroll(true, true);
+        waitForScroll(true, true);
 
         // Scroll with X axis in deadzone and the Y axis active.
         // Only the Y axis should have an effect, arriving at lower-left.
         scrollWithJoystick(0.1f, 1f);
-        assertWaitForScroll(true, false);
+        waitForScroll(true, false);
 
         // Scroll with Y axis in deadzone and the X axis active.
         scrollWithJoystick(1f, -0.1f);
-        assertWaitForScroll(false, false);
+        waitForScroll(false, false);
 
         // Vertical scroll to upper-right.
         scrollWithJoystick(0, -0.75f);
-        assertWaitForScroll(false, true);
+        waitForScroll(false, true);
 
         // Horizontal scroll to top-left.
         scrollWithJoystick(-0.75f, 0);
-        assertWaitForScroll(true, true);
+        waitForScroll(true, true);
 
         // Diagonal scroll to bottom-right.
         scrollWithJoystick(1f, 1f);
-        assertWaitForScroll(false, false);
+        waitForScroll(false, false);
     }
 
     /**
@@ -290,23 +300,23 @@ public class ContentViewScrollingTest extends ContentShellTestBase {
     public void testOverScroll() throws Throwable {
         // Overscroll lower-left.
         scrollTo(-10000, 10000);
-        assertWaitForScroll(true, false);
+        waitForScroll(true, false);
 
         // Overscroll lower-right.
         scrollTo(10000, 10000);
-        assertWaitForScroll(false, false);
+        waitForScroll(false, false);
 
         // Overscroll upper-right.
         scrollTo(10000, -10000);
-        assertWaitForScroll(false, true);
+        waitForScroll(false, true);
 
         // Overscroll top-left.
         scrollTo(-10000, -10000);
-        assertWaitForScroll(true, true);
+        waitForScroll(true, true);
 
         // Diagonal overscroll lower-right.
         scrollTo(10000, 10000);
-        assertWaitForScroll(false, false);
+        waitForScroll(false, false);
     }
 
     /**
@@ -328,7 +338,7 @@ public class ContentViewScrollingTest extends ContentShellTestBase {
             }
         });
         scrollTo(scrollToX, scrollToY);
-        assertWaitForScroll(false, false);
+        waitForScroll(false, false);
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {

@@ -216,6 +216,7 @@ class InputHandlerProxy
 #endif
   bool gesture_scroll_on_impl_thread_;
   bool gesture_pinch_on_impl_thread_;
+  bool scroll_sequence_ignored_;
   // This is always false when there are no flings on the main thread, but
   // conservative in the sense that we might not be actually flinging when it is
   // true.

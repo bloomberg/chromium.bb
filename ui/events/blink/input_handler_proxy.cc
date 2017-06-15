@@ -258,6 +258,7 @@ InputHandlerProxy::InputHandlerProxy(
 #endif
       gesture_scroll_on_impl_thread_(false),
       gesture_pinch_on_impl_thread_(false),
+      scroll_sequence_ignored_(false),
       fling_may_be_active_on_main_thread_(false),
       disallow_horizontal_fling_scroll_(false),
       disallow_vertical_fling_scroll_(false),
@@ -856,6 +857,7 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollBegin(
       result = DID_NOT_HANDLE;
       break;
     case cc::InputHandler::SCROLL_IGNORED:
+      scroll_sequence_ignored_ = true;
       result = DROP_EVENT;
       break;
   }
@@ -872,6 +874,10 @@ InputHandlerProxy::HandleGestureScrollUpdate(
 #ifndef NDEBUG
   DCHECK(expect_scroll_update_end_);
 #endif
+
+  if (scroll_sequence_ignored_)
+    return DROP_EVENT;
+
   if (!gesture_scroll_on_impl_thread_ && !gesture_pinch_on_impl_thread_)
     return DID_NOT_HANDLE;
 
@@ -933,6 +939,12 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureScrollEnd(
     cc::ScrollState scroll_state = CreateScrollStateForGesture(gesture_event);
     input_handler_->ScrollEnd(&scroll_state);
   }
+
+  if (scroll_sequence_ignored_) {
+    scroll_sequence_ignored_ = false;
+    return DROP_EVENT;
+  }
+
   if (!gesture_scroll_on_impl_thread_)
     return DID_NOT_HANDLE;
 
