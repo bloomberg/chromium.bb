@@ -31,40 +31,9 @@ bool GetRayPlaneDistance(const gfx::Point3F& ray_origin,
 
 }  // namespace
 
-Transform::Transform() {
-  MakeIdentity();
-}
-
-Transform::Transform(const Transform& other) {
-  to_world = other.to_world;
-}
-
-void Transform::MakeIdentity() {
-  to_world.MakeIdentity();
-}
-
-void Transform::Rotate(const gfx::Quaternion& q) {
-  // TODO(klausw): use specialized rotation code? Constructing the matrix
-  // via axis-angle quaternion is inefficient.
-  to_world.ConcatTransform(gfx::Transform(q));
-}
-
-void Transform::Translate(const gfx::Vector3dF& translation) {
-  to_world.matrix().postTranslate(translation.x(), translation.y(),
-                                  translation.z());
-}
-
-void Transform::Scale(const gfx::Vector3dF& scale) {
-  to_world.matrix().postScale(scale.x(), scale.y(), scale.z());
-}
-
-const gfx::Transform& WorldRectangle::TransformMatrix() const {
-  return transform_.to_world;
-}
-
 gfx::Point3F WorldRectangle::GetCenter() const {
   gfx::Point3F center;
-  transform_.to_world.TransformPoint(&center);
+  transform_.TransformPoint(&center);
   return center;
 }
 
@@ -74,9 +43,9 @@ gfx::PointF WorldRectangle::GetUnitRectangleCoordinates(
   gfx::Point3F origin(0, 0, 0);
   gfx::Vector3dF x_axis(1, 0, 0);
   gfx::Vector3dF y_axis(0, 1, 0);
-  transform_.to_world.TransformPoint(&origin);
-  transform_.to_world.TransformVector(&x_axis);
-  transform_.to_world.TransformVector(&y_axis);
+  transform_.TransformPoint(&origin);
+  transform_.TransformVector(&x_axis);
+  transform_.TransformVector(&y_axis);
   gfx::Vector3dF origin_to_world = world_point - origin;
   float x = gfx::DotProduct(origin_to_world, x_axis) /
             gfx::DotProduct(x_axis, x_axis);
@@ -88,8 +57,8 @@ gfx::PointF WorldRectangle::GetUnitRectangleCoordinates(
 gfx::Vector3dF WorldRectangle::GetNormal() const {
   gfx::Vector3dF x_axis(1, 0, 0);
   gfx::Vector3dF y_axis(0, 1, 0);
-  transform_.to_world.TransformVector(&x_axis);
-  transform_.to_world.TransformVector(&y_axis);
+  transform_.TransformVector(&x_axis);
+  transform_.TransformVector(&y_axis);
   gfx::Vector3dF normal = CrossProduct(y_axis, x_axis);
   normal.GetNormalized(&normal);
   return normal;
