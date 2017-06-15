@@ -225,9 +225,11 @@ void TargetHandler::TargetDestroyedInternal(
 
 bool TargetHandler::AttachToTargetInternal(
     DevToolsAgentHost* host, bool waiting_for_debugger) {
-  if (!host->AttachClient(this))
-    return false;
   attached_hosts_[host->GetId()] = host;
+  if (!host->AttachClient(this)) {
+    attached_hosts_.erase(host->GetId());
+    return false;
+  }
   frontend_->AttachedToTarget(CreateInfo(host), waiting_for_debugger);
   return true;
 }
@@ -417,6 +419,8 @@ bool TargetHandler::ShouldForceDevToolsAgentHostCreation() {
 }
 
 void TargetHandler::DevToolsAgentHostCreated(DevToolsAgentHost* agent_host) {
+  if (agent_host->GetType() == "node" && agent_host->IsAttached())
+    return;
   // If we start discovering late, all existing agent hosts will be reported,
   // but we could have already attached to some.
   TargetCreatedInternal(agent_host);
@@ -425,6 +429,22 @@ void TargetHandler::DevToolsAgentHostCreated(DevToolsAgentHost* agent_host) {
 void TargetHandler::DevToolsAgentHostDestroyed(DevToolsAgentHost* agent_host) {
   DCHECK(attached_hosts_.find(agent_host->GetId()) == attached_hosts_.end());
   TargetDestroyedInternal(agent_host);
+}
+
+void TargetHandler::DevToolsAgentHostAttached(DevToolsAgentHost* host) {
+  if (host->GetType() == "node" &&
+      reported_hosts_.find(host->GetId()) != reported_hosts_.end() &&
+      attached_hosts_.find(host->GetId()) == attached_hosts_.end()) {
+    TargetDestroyedInternal(host);
+  }
+}
+
+void TargetHandler::DevToolsAgentHostDetached(DevToolsAgentHost* host) {
+  if (host->GetType() == "node" &&
+      reported_hosts_.find(host->GetId()) == reported_hosts_.end() &&
+      attached_hosts_.find(host->GetId()) == attached_hosts_.end()) {
+    TargetCreatedInternal(host);
+  }
 }
 
 // -------- ServiceWorkerDevToolsManager::Observer ----------
