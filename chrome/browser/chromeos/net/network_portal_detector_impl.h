@@ -84,6 +84,8 @@ class NetworkPortalDetectorImpl : public NetworkPortalDetector,
     STATE_PORTAL_CHECK_PENDING,
     // Portal check is in progress.
     STATE_CHECKING_FOR_PORTAL,
+    // No portal check when successfully behind portal.
+    STATE_BEHIND_PORTAL_IDLE,
   };
 
   struct DetectionAttemptCompletedReport {
@@ -169,6 +171,9 @@ class NetworkPortalDetectorImpl : public NetworkPortalDetector,
   }
   bool is_checking_for_portal() const {
     return state_ == STATE_CHECKING_FOR_PORTAL;
+  }
+  bool is_behind_portal_idle() const {
+    return state_ == STATE_BEHIND_PORTAL_IDLE;
   }
 
   int same_detection_result_count_for_testing() const {

@@ -498,7 +498,18 @@ void NetworkPortalDetectorImpl::OnAttemptCompleted(
     attempt_completed_report_.Report();
   }
 
-  state_ = STATE_IDLE;
+  // If Chrome portal detection successfully returns portal state, mark the
+  // state so that Chrome won't schedule detection actively by self.
+  // The exception is when portal side session expires, shill doesn't report
+  // network connection state changed from online to portal. Thus we enable
+  // Chrome's detection by still marking |state_| to STATE_IDLE.
+  if (result == captive_portal::RESULT_BEHIND_CAPTIVE_PORTAL &&
+      response_code == 200 &&
+      (!network || network->connection_state() != shill::kStateOnline)) {
+    state_ = STATE_BEHIND_PORTAL_IDLE;
+  } else {
+    state_ = STATE_IDLE;
+  }
   attempt_timeout_.Cancel();
 
   CaptivePortalState state;
