@@ -88,8 +88,7 @@ public class WatcherImplTest extends MojoTestCase {
             this.mResult = result;
 
             if (result == MojoResult.OK && mReadPipe != null) {
-                mReadPipe.readMessage(
-                        null, 0, MessagePipeHandle.ReadFlags.none().setMayDiscard(true));
+                mReadPipe.readMessage(MessagePipeHandle.ReadFlags.NONE);
             }
         }
 

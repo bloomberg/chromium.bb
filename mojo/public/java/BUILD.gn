@@ -21,6 +21,10 @@ android_library("system_java") {
     "system/src/org/chromium/mojo/system/RunLoop.java",
     "system/src/org/chromium/mojo/system/Watcher.java",
   ]
+
+  deps = [
+    "//base:base_java",
+  ]
 }
 
 android_library("bindings_java") {

@@ -9,11 +9,13 @@
 
 #include "base/android/base_jni_registrar.h"
 #include "base/android/jni_android.h"
+#include "base/android/jni_array.h"
 #include "base/android/jni_registrar.h"
 #include "base/android/library_loader/library_loader_hooks.h"
 #include "base/android/scoped_java_ref.h"
 #include "jni/CoreImpl_jni.h"
 #include "mojo/public/c/system/core.h"
+#include "mojo/public/cpp/system/message_pipe.h"
 
 namespace mojo {
 namespace android {
@@ -127,36 +129,52 @@ static jint WriteMessage(JNIEnv* env,
     num_handles = env->GetDirectBufferCapacity(handles_buffer) / 4;
   }
   // Java code will handle invalidating handles if the write succeeded.
-  return MojoWriteMessage(
-      mojo_handle, buffer_start, buffer_size, handles, num_handles, flags);
+  return WriteMessageRaw(
+      MessagePipeHandle(static_cast<MojoHandle>(mojo_handle)), buffer_start,
+      buffer_size, handles, num_handles, flags);
 }
 
 static ScopedJavaLocalRef<jobject> ReadMessage(
     JNIEnv* env,
     const JavaParamRef<jobject>& jcaller,
     jint mojo_handle,
-    const JavaParamRef<jobject>& bytes,
-    const JavaParamRef<jobject>& handles_buffer,
     jint flags) {
-  void* buffer_start = 0;
-  uint32_t buffer_size = 0;
-  if (bytes) {
-    buffer_start = env->GetDirectBufferAddress(bytes);
-    DCHECK(buffer_start);
-    buffer_size = env->GetDirectBufferCapacity(bytes);
+  ScopedMessageHandle message;
+  MojoResult result =
+      ReadMessageNew(MessagePipeHandle(mojo_handle), &message, flags);
+  if (result != MOJO_RESULT_OK)
+    return Java_CoreImpl_newReadMessageResult(env, result, nullptr, nullptr);
+  DCHECK(message.is_valid());
+
+  result = MojoSerializeMessage(message->value());
+  if (result != MOJO_RESULT_OK && result != MOJO_RESULT_FAILED_PRECONDITION) {
+    return Java_CoreImpl_newReadMessageResult(env, MOJO_RESULT_ABORTED, nullptr,
+                                              nullptr);
   }
-  MojoHandle* handles = 0;
+
+  uint32_t num_bytes;
+  void* buffer;
   uint32_t num_handles = 0;
-  if (handles_buffer) {
-    handles =
-        static_cast<MojoHandle*>(env->GetDirectBufferAddress(handles_buffer));
-    num_handles = env->GetDirectBufferCapacity(handles_buffer) / 4;
+  std::vector<MojoHandle> handles;
+  result = MojoGetSerializedMessageContents(
+      message->value(), &buffer, &num_bytes, nullptr, &num_handles,
+      MOJO_GET_SERIALIZED_MESSAGE_CONTENTS_FLAG_NONE);
+  if (result == MOJO_RESULT_RESOURCE_EXHAUSTED) {
+    handles.resize(num_handles);
+    result = MojoGetSerializedMessageContents(
+        message->value(), &buffer, &num_bytes, handles.data(), &num_handles,
+        MOJO_GET_SERIALIZED_MESSAGE_CONTENTS_FLAG_NONE);
   }
-  MojoResult result = MojoReadMessage(
-      mojo_handle, buffer_start, &buffer_size, handles, &num_handles, flags);
-  // Jave code will handle taking ownership of any received handle.
-  return Java_CoreImpl_newReadMessageResult(env, result, buffer_size,
-                                            num_handles);
+
+  if (result != MOJO_RESULT_OK)
+    return Java_CoreImpl_newReadMessageResult(env, result, nullptr, nullptr);
+
+  return Java_CoreImpl_newReadMessageResult(
+      env, result,
+      base::android::ToJavaByteArray(env, static_cast<uint8_t*>(buffer),
+                                     num_bytes),
+      base::android::ToJavaIntArray(
+          env, reinterpret_cast<jint*>(handles.data()), num_handles));
 }
 
 static ScopedJavaLocalRef<jobject> ReadData(
