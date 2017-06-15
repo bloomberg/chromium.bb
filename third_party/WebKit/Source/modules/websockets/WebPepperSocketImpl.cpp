@@ -30,6 +30,7 @@
 
 #include "modules/websockets/WebPepperSocketImpl.h"
 
+#include <stddef.h>
 #include <memory>
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/Document.h"
@@ -39,7 +40,6 @@
 #include "modules/websockets/WebSocketChannel.h"
 #include "platform/wtf/text/CString.h"
 #include "platform/wtf/text/WTFString.h"
-#include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "public/web/WebArrayBuffer.h"
 #include "public/web/WebDocument.h"
