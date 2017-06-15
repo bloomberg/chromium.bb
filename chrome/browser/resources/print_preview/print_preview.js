@@ -341,6 +341,14 @@ cr.define('print_preview', function() {
           this.onInitialSettingsSet_.bind(this));
       print_preview.PrintPreviewFocusManager.getInstance().initialize();
       cr.ui.FocusOutlineManager.forDocument(document);
+      this.listenerTracker.add('print-failed',
+                               this.onPrintFailed_.bind(this));
+      this.listenerTracker.add('privet-printer-added',
+          this.destinationStore_.onPrivetPrinterAdded_.bind(
+              this.destinationStore_));
+      this.listenerTracker.add('extension-printers-added',
+          this.destinationStore_.onExtensionPrintersAdded_.bind(
+              this.destinationStore_));
     },
 
     /** @override */
@@ -375,10 +383,6 @@ cr.define('print_preview', function() {
           nativeLayerEventTarget,
           print_preview.NativeLayer.EventType.PAGE_COUNT_READY,
           this.onPageCountReady_.bind(this));
-      this.tracker.add(
-          nativeLayerEventTarget,
-          print_preview.NativeLayer.EventType.PRIVET_PRINT_FAILED,
-          this.onPrivetPrintFailed_.bind(this));
       this.tracker.add(
           nativeLayerEventTarget,
           print_preview.NativeLayer.EventType.MANIPULATE_SETTINGS_FOR_TEST,
@@ -1033,13 +1037,13 @@ cr.define('print_preview', function() {
     },
 
     /**
-     * Called when privet printing fails.
-     * @param {Event} event Event object representing the failure.
+     * Called when printing to a privet or extension printer fails.
+     * @param {number | string} httpError The HTTP error code, or -1 if not an
+     *     HTTP error.
      * @private
      */
-    onPrivetPrintFailed_: function(event) {
-      console.error('Privet printing failed with error code ' +
-                    event.httpError);
+    onPrintFailed_: function(httpError) {
+      console.error('Privet printing failed with error code ' + httpError);
       this.printHeader_.setErrorMessage(
           loadTimeData.getString('couldNotPrint'));
     },

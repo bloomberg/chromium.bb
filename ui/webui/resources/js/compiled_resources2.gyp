@@ -25,6 +25,13 @@
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
     {
+      'target_name': 'webui_listener_tracker',
+      'dependencies': [
+        'cr',
+      ],
+      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
       'target_name': 'icon',
       'dependencies': [
         'cr',

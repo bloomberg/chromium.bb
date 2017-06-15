@@ -917,9 +917,7 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
         !settings->GetInteger(printing::kSettingPageHeight, &height) ||
         width <= 0 || height <= 0) {
       NOTREACHED();
-      base::Value http_code_value(-1);
-      web_ui()->CallJavascriptFunctionUnsafe("onPrivetPrintFailed",
-                                             http_code_value);
+      FireWebUIListener("print-failed", base::Value(-1));
       return;
     }
 
@@ -1608,9 +1606,7 @@ bool PrintPreviewHandler::PrivetUpdateClient(
   if (!http_client) {
     if (callback_id.empty()) {
       // This was an attempt to print to a privet printer and has failed.
-      base::Value http_code_value(-1);
-      web_ui()->CallJavascriptFunctionUnsafe("onPrivetPrintFailed",
-                                             http_code_value);
+      FireWebUIListener("print-failed", base::Value(-1));
     } else {  // Capabilities update failed
       RejectJavascriptCallback(base::Value(callback_id), base::Value());
     }
@@ -1652,9 +1648,7 @@ void PrintPreviewHandler::StartPrivetLocalPrint(const std::string& print_ticket,
   base::string16 title;
 
   if (!GetPreviewDataAndTitle(&data, &title)) {
-    base::Value http_code_value(-1);
-    web_ui()->CallJavascriptFunctionUnsafe("onPrivetPrintFailed",
-                                           http_code_value);
+    FireWebUIListener("print-failed", base::Value(-1));
     return;
   }
 
@@ -1716,9 +1710,7 @@ void PrintPreviewHandler::PrintToPrivetPrinter(const std::string& device_name,
           base::Bind(&PrintPreviewHandler::PrivetLocalPrintUpdateClient,
                      weak_factory_.GetWeakPtr(), ticket, capabilities,
                      page_size))) {
-    base::Value http_code_value(-1);
-    web_ui()->CallJavascriptFunctionUnsafe("onPrivetPrintFailed",
-                                           http_code_value);
+    FireWebUIListener("print-failed", base::Value(-1));
   }
 }
 
@@ -1749,9 +1741,7 @@ void PrintPreviewHandler::OnPrivetPrintingDone(
 void PrintPreviewHandler::OnPrivetPrintingError(
     const cloud_print::PrivetLocalPrintOperation* print_operation,
     int http_code) {
-  base::Value http_code_value(http_code);
-  web_ui()->CallJavascriptFunctionUnsafe("onPrivetPrintFailed",
-                                         http_code_value);
+  FireWebUIListener("print-failed", base::Value(http_code));
 }
 
 void PrintPreviewHandler::FillPrinterDescription(
@@ -1821,11 +1811,7 @@ void PrintPreviewHandler::OnExtensionPrintResult(bool success,
     ClosePreviewDialog();
     return;
   }
-
-  // TODO(tbarzic): This function works for extension printers case too, but it
-  // should be renamed to something more generic.
-  web_ui()->CallJavascriptFunctionUnsafe("onPrivetPrintFailed",
-                                         base::Value(status));
+  FireWebUIListener("print-failed", base::Value(status));
 }
 
 void PrintPreviewHandler::RegisterForGaiaCookieChanges() {
