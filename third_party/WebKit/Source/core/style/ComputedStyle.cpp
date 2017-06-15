@@ -123,7 +123,6 @@ ALWAYS_INLINE ComputedStyle::ComputedStyle()
     : ComputedStyleBase(), RefCounted<ComputedStyle>() {
   // TODO(shend): Generate these.
   rare_non_inherited_data_.Access()->grid_data_.Init();
-  rare_non_inherited_data_.Access()->grid_item_data_.Init();
   rare_non_inherited_data_.Access()->scroll_snap_data_.Init();
   svg_style_.Init();
 }

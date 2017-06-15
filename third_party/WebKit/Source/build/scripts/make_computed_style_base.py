@@ -27,8 +27,8 @@ ALIGNMENT_ORDER = [
     # Aligns like double
     'ScaleTransformOperation', 'RotateTransformOperation', 'TranslateTransformOperation', 'double',
     # Aligns like a pointer (can be 32 or 64 bits)
-    'StyleMotionData', 'TransformOperations', 'Vector<CSSPropertyID>', 'AtomicString', 'DataRef', 'RefPtr',
-    'DataPersistent', 'Persistent', 'std::unique_ptr',
+    'StyleMotionData', 'TransformOperations', 'Vector<CSSPropertyID>', 'GridPosition', 'AtomicString',
+    'DataRef', 'RefPtr', 'DataPersistent', 'Persistent', 'std::unique_ptr',
     'Vector<String>', 'Font', 'FillLayer', 'NinePieceImage',
     # Aligns like float
     'TransformOrigin', 'LengthBox', 'LengthSize', 'FloatSize', 'LengthPoint', 'Length',
