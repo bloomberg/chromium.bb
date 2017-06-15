@@ -4,7 +4,6 @@
 
 #import "ios/web_view/shell/shell_view_controller.h"
 
-#import <ChromeWebView/ChromeWebView.h>
 #import <MobileCoreServices/MobileCoreServices.h>
 
 #import "ios/web_view/shell/shell_translation_delegate.h"
@@ -33,8 +32,6 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
 @property(nonatomic, strong) UIButton* forwardButton;
 // Toolbar containing navigation buttons and |field|.
 @property(nonatomic, strong) UIToolbar* toolbar;
-// CWV view which renders the web page.
-@property(nonatomic, strong) CWVWebView* webView;
 // Handles the translation of the content displayed in |webView|.
 @property(nonatomic, strong) ShellTranslationDelegate* translationDelegate;
 
@@ -274,10 +271,6 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
              forKeyPath:@"canGoForward"
                 options:NSKeyValueObservingOptionNew
                 context:nil];
-
-  NSURLRequest* request = [NSURLRequest
-      requestWithURL:[NSURL URLWithString:@"https://www.google.com/"]];
-  [_webView loadRequest:request];
 }
 
 - (void)removeWebView {
