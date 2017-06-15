@@ -113,17 +113,17 @@ class BLINK_PLATFORM_EXPORT RendererScheduler : public ChildScheduler {
   // a fling). Called by the compositor (impl) thread.
   virtual void DidAnimateForInputOnCompositorThread() = 0;
 
-  // Tells the scheduler that the renderer process has been backgrounded, i.e.,
-  // there are no critical, user facing activities (visual, audio, etc...)
-  // driven by this process. A stricter condition than |OnRendererHidden()|, the
-  // process is assumed to be foregrounded when the scheduler is constructed.
+  // Tells the scheduler about the change of renderer visibility status (e.g.
+  // "all widgets are hidden" condition). Used mostly for metric purposes.
   // Must be called on the main thread.
-  virtual void OnRendererBackgrounded() = 0;
+  virtual void SetRendererHidden(bool hidden) = 0;
 
-  // Tells the scheduler that the renderer process has been foregrounded.
-  // This is the assumed state when the scheduler is constructed.
-  // Must be called on the main thread.
-  virtual void OnRendererForegrounded() = 0;
+  // Tells the scheduler about the change of renderer background status, i.e.,
+  // there are no critical, user facing activities (visual, audio, etc...)
+  // driven by this process. A stricter condition than |SetRendererHidden()|,
+  // the process is assumed to be foregrounded when the scheduler is
+  // constructed. Must be called on the main thread.
+  virtual void SetRendererBackgrounded(bool backgrounded) = 0;
 
   // Tells the scheduler that the render process should be suspended. This can
   // only be done when the renderer is backgrounded. The renderer will be
@@ -180,7 +180,7 @@ class BLINK_PLATFORM_EXPORT RendererScheduler : public ChildScheduler {
   virtual void VirtualTimeResumed() = 0;
 
   // Sets whether to allow suspension of timers after the backgrounded signal is
-  // received via OnRendererBackgrounded. Defaults to disabled.
+  // received via SetRendererBackgrounded(true). Defaults to disabled.
   virtual void SetTimerQueueSuspensionWhenBackgroundedEnabled(bool enabled) = 0;
 
   // Sets the default blame context to which top level work should be

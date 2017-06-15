@@ -94155,6 +94155,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="Time spent in tasks of a particular type starting from the first
              minute after backgrounding the renderer. The renderer is
              expected to be mostly idle during this period."/>
+  <suffix name="Hidden"
+      label="Time spent in tasks of a particular type when the renderer is
+             hidden."/>
+  <suffix name="Visible"
+      label="Time spent in tasks of a particular type when the renderer is
+             visible."/>
+  <suffix name="HiddenMusic"
+      label="Time spent in tasks of a particular type when the renderer is
+             hidden and is playing audible sound."/>
   <affected-histogram name="RendererScheduler.TaskDurationPerQueueType2"/>
 </histogram_suffixes>
 

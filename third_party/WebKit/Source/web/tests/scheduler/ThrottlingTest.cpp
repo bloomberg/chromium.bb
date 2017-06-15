@@ -56,7 +56,7 @@ TEST_F(DisableBackgroundThrottlingIsRespectedTest,
       ->CurrentThread()
       ->Scheduler()
       ->GetRendererSchedulerForTest()
-      ->OnRendererBackgrounded();
+      ->SetRendererBackgrounded(true);
 
   // Run delayed tasks for 1 second. All tasks should be completed
   // with throttling disabled.
@@ -88,7 +88,7 @@ TEST_F(BackgroundRendererThrottlingTest,
       ->CurrentThread()
       ->Scheduler()
       ->GetRendererSchedulerForTest()
-      ->OnRendererBackgrounded();
+      ->SetRendererBackgrounded(true);
 
   // Make sure that we run a task once a second.
   for (int i = 0; i < 3; ++i) {
