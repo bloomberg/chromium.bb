@@ -1890,9 +1890,9 @@ public class LocationBarLayout extends FrameLayout
         if (getCurrentTab() != null) {
             mAutocomplete.start(
                     getCurrentTab().getProfile(), getCurrentTab().getUrl(), query, false);
-        } else if (mBottomSheet != null && !mToolbarDataProvider.isIncognito()) {
-            mAutocomplete.start(Profile.getLastUsedProfile().getOriginalProfile(),
-                    UrlConstants.NTP_URL, query, false);
+        } else if (mBottomSheet != null) {
+            mAutocomplete.start(
+                    mToolbarDataProvider.getProfile(), UrlConstants.NTP_URL, query, false);
         }
         post(new Runnable() {
             @Override
