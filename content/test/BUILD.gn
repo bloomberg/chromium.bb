@@ -98,6 +98,8 @@ static_library("test_support") {
     "../public/test/ppapi_test_utils.h",
     "../public/test/render_view_test.cc",
     "../public/test/render_view_test.h",
+    "../public/test/repeated_notification_observer.cc",
+    "../public/test/repeated_notification_observer.h",
     "../public/test/test_browser_context.cc",
     "../public/test/test_browser_context.h",
     "../public/test/test_browser_thread.cc",
