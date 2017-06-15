@@ -95,7 +95,6 @@ class WebContentsDelegateAndroid : public content::WebContentsDelegate {
       const GURL& target_url,
       const std::string& partition_id,
       content::SessionStorageNamespace* session_storage_namespace) override;
-  bool OnGoToEntryOffset(int offset) override;
   void CloseContents(content::WebContents* source) override;
   void MoveContents(content::WebContents* source,
                     const gfx::Rect& pos) override;
