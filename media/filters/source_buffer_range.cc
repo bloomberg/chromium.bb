@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/memory/ptr_util.h"
 #include "media/base/timestamp_constants.h"
 
 namespace media {
@@ -177,7 +178,8 @@ void SourceBufferRange::SeekToStart() {
   next_buffer_index_ = 0;
 }
 
-SourceBufferRange* SourceBufferRange::SplitRange(DecodeTimestamp timestamp) {
+std::unique_ptr<SourceBufferRange> SourceBufferRange::SplitRange(
+    DecodeTimestamp timestamp) {
   CHECK(!buffers_.empty());
 
   // Find the first keyframe at or after |timestamp|.
@@ -209,10 +211,10 @@ SourceBufferRange* SourceBufferRange::SplitRange(DecodeTimestamp timestamp) {
   FreeBufferRange(starting_point, buffers_.end());
 
   // Create a new range with |removed_buffers|.
-  SourceBufferRange* split_range =
-      new SourceBufferRange(
-          gap_policy_, removed_buffers, new_range_start_timestamp,
-          interbuffer_distance_cb_);
+  std::unique_ptr<SourceBufferRange> split_range =
+      base::MakeUnique<SourceBufferRange>(gap_policy_, removed_buffers,
+                                          new_range_start_timestamp,
+                                          interbuffer_distance_cb_);
 
   // If the next buffer position is now in |split_range|, update the state of
   // this range and |split_range| accordingly.
