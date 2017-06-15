@@ -466,7 +466,7 @@ void ShapeResult::CopyRange(unsigned start_offset,
 
     if (start_offset < run_end && end_offset > run_start) {
       unsigned start = start_offset > run_start ? start_offset - run_start : 0;
-      unsigned end = std::min(end_offset - run_start, run_end);
+      unsigned end = std::min(end_offset, run_end) - run_start;
       DCHECK(end > start);
 
       auto sub_run = (*run).CreateSubRun(start, end);
@@ -477,6 +477,9 @@ void ShapeResult::CopyRange(unsigned start_offset,
     }
   }
 
+  DCHECK_EQ(index - target->num_characters_,
+            std::min(end_offset, EndIndexForResult()) -
+                std::max(start_offset, StartIndexForResult()));
   target->num_characters_ = index;
 }
 
