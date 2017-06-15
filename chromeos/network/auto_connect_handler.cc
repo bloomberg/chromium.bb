@@ -4,6 +4,7 @@
 
 #include "chromeos/network/auto_connect_handler.h"
 
+#include <sstream>
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -24,6 +25,26 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 namespace chromeos {
+
+namespace {
+
+void DisconnectErrorCallback(
+    const std::string& network_path,
+    const std::string& error_name,
+    std::unique_ptr<base::DictionaryValue> error_data) {
+  std::stringstream error_data_ss;
+  if (error_data)
+    error_data_ss << *error_data;
+  else
+    error_data_ss << "<none>";
+
+  NET_LOG(ERROR) << "AutoConnectHandler.Disconnect failed. "
+                 << "Path: \"" << network_path << "\", "
+                 << "Error name: \"" << error_name << "\", "
+                 << "Error data: " << error_data_ss.str();
+}
+
+}  // namespace
 
 AutoConnectHandler::AutoConnectHandler()
     : client_cert_resolver_(nullptr),
@@ -246,11 +267,9 @@ void AutoConnectHandler::DisconnectFromUnmanagedSharedWiFiNetworks() {
       continue;
 
     NET_LOG_EVENT("Disconnect Forced by Policy", network->path());
-    DBusThreadManager::Get()->GetShillServiceClient()->Disconnect(
-        dbus::ObjectPath(network->path()), base::Bind(&base::DoNothing),
-        base::Bind(&network_handler::ShillErrorCallbackFunction,
-                   "AutoConnectHandler.Disconnect failed", network->path(),
-                   network_handler::ErrorCallback()));
+    network_connection_handler_->DisconnectNetwork(
+        network->path(), base::Bind(&base::DoNothing),
+        base::Bind(&DisconnectErrorCallback, network->path()));
   }
 }
 

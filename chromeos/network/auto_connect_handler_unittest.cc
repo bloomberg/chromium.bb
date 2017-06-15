@@ -7,6 +7,8 @@
 #include <memory>
 #include <string>
 
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
@@ -19,6 +21,7 @@
 #include "chromeos/network/client_cert_resolver.h"
 #include "chromeos/network/managed_network_configuration_handler_impl.h"
 #include "chromeos/network/network_configuration_handler.h"
+#include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state_test.h"
 #include "components/onc/onc_constants.h"
@@ -52,6 +55,42 @@ class TestCertResolveObserver : public ClientCertResolver::Observer {
  private:
   bool changed_network_properties_;
   ClientCertResolver* cert_resolver_;
+};
+
+class TestNetworkConnectionHandler : public NetworkConnectionHandler {
+ public:
+  TestNetworkConnectionHandler(
+      const base::Callback<void(const std::string&)>& disconnect_handler)
+      : NetworkConnectionHandler(), disconnect_handler_(disconnect_handler) {}
+  ~TestNetworkConnectionHandler() override {}
+
+  // NetworkConnectionHandler:
+  void DisconnectNetwork(
+      const std::string& service_path,
+      const base::Closure& success_callback,
+      const network_handler::ErrorCallback& error_callback) override {
+    disconnect_handler_.Run(service_path);
+    success_callback.Run();
+  }
+
+  void ConnectToNetwork(const std::string& service_path,
+                        const base::Closure& success_callback,
+                        const network_handler::ErrorCallback& error_callback,
+                        bool check_error_state) override {}
+
+  bool HasConnectingNetwork(const std::string& service_path) override {
+    return false;
+  }
+
+  bool HasPendingConnectRequest() override { return false; }
+
+  void Init(NetworkStateHandler* network_state_handler,
+            NetworkConfigurationHandler* network_configuration_handler,
+            ManagedNetworkConfigurationHandler*
+                managed_network_configuration_handler) override {}
+
+ private:
+  base::Callback<void(const std::string&)> disconnect_handler_;
 };
 
 }  // namespace
@@ -91,15 +130,18 @@ class AutoConnectHandlerTest : public NetworkStateTest {
         network_config_handler_.get(), nullptr /* network_device_handler */,
         nullptr /* prohibited_technologies_handler */);
 
+    test_network_connection_handler_.reset(
+        new TestNetworkConnectionHandler(base::Bind(
+            &AutoConnectHandlerTest::SetDisconnected, base::Unretained(this))));
+
     client_cert_resolver_.reset(new ClientCertResolver());
     client_cert_resolver_->Init(network_state_handler(),
                                 managed_config_handler_.get());
 
     auto_connect_handler_.reset(new AutoConnectHandler());
-    auto_connect_handler_->Init(client_cert_resolver_.get(),
-                                nullptr,  // no connection handler
-                                network_state_handler(),
-                                managed_config_handler_.get());
+    auto_connect_handler_->Init(
+        client_cert_resolver_.get(), test_network_connection_handler_.get(),
+        network_state_handler(), managed_config_handler_.get());
 
     base::RunLoop().RunUntilIdle();
   }
@@ -121,6 +163,11 @@ class AutoConnectHandlerTest : public NetworkStateTest {
   }
 
  protected:
+  void SetDisconnected(const std::string& service_path) {
+    SetServiceProperty(service_path, shill::kStateProperty,
+                       base::Value(shill::kStateIdle));
+  }
+
   std::string GetServiceState(const std::string& service_path) {
     return GetServiceStringProperty(service_path, shill::kStateProperty);
   }
@@ -194,6 +241,8 @@ class AutoConnectHandlerTest : public NetworkStateTest {
   std::unique_ptr<NetworkConfigurationHandler> network_config_handler_;
   std::unique_ptr<ManagedNetworkConfigurationHandlerImpl>
       managed_config_handler_;
+  std::unique_ptr<TestNetworkConnectionHandler>
+      test_network_connection_handler_;
   std::unique_ptr<NetworkProfileHandler> network_profile_handler_;
   crypto::ScopedTestNSSDB test_nssdb_;
   std::unique_ptr<net::NSSCertDatabaseChromeOS> test_nsscertdb_;

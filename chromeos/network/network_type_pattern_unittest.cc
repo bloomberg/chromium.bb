@@ -57,21 +57,21 @@ TEST_F(NetworkTypePatternTest, MatchesType) {
   EXPECT_FALSE(mobile_.MatchesType(shill::kTypeEthernet));
   EXPECT_FALSE(mobile_.MatchesType(shill::kTypeVPN));
 
-  // Wireless contains Wifi, Cellular, and Wimax.
+  // Wireless contains Wifi, Cellular, Wimax, and Tether.
   EXPECT_TRUE(wireless_.MatchesType(shill::kTypeWifi));
   EXPECT_TRUE(wireless_.MatchesType(shill::kTypeCellular));
   EXPECT_TRUE(wireless_.MatchesType(shill::kTypeWimax));
+  EXPECT_TRUE(wireless_.MatchesType(kTypeTether));
   EXPECT_FALSE(wireless_.MatchesType(shill::kTypeEthernet));
   EXPECT_FALSE(wireless_.MatchesType(shill::kTypeVPN));
-  EXPECT_FALSE(wireless_.MatchesType(kTypeTether));
 
-  // Non-virtual contains everything except VPN and Tether.
+  // Non-virtual contains everything except VPN.
   EXPECT_TRUE(non_virtual_.MatchesType(shill::kTypeCellular));
   EXPECT_TRUE(non_virtual_.MatchesType(shill::kTypeWifi));
   EXPECT_TRUE(non_virtual_.MatchesType(shill::kTypeEthernet));
   EXPECT_TRUE(non_virtual_.MatchesType(shill::kTypeWimax));
+  EXPECT_TRUE(non_virtual_.MatchesType(kTypeTether));
   EXPECT_FALSE(non_virtual_.MatchesType(shill::kTypeVPN));
-  EXPECT_FALSE(non_virtual_.MatchesType(kTypeTether));
 
   EXPECT_TRUE(wimax_.MatchesType(shill::kTypeWimax));
   EXPECT_FALSE(wimax_.MatchesType(kTypeTether));
@@ -94,8 +94,8 @@ TEST_F(NetworkTypePatternTest, MatchesPattern) {
   EXPECT_TRUE(MatchesPattern(non_virtual_, ethernet_));
   EXPECT_FALSE(MatchesPattern(cellular_, ethernet_));
 
-  EXPECT_FALSE(MatchesPattern(tether_, wireless_));
-  EXPECT_FALSE(MatchesPattern(tether_, non_virtual_));
+  EXPECT_TRUE(MatchesPattern(tether_, wireless_));
+  EXPECT_TRUE(MatchesPattern(tether_, non_virtual_));
 
   // Default matches anything.
   EXPECT_TRUE(MatchesPattern(default_, default_));
