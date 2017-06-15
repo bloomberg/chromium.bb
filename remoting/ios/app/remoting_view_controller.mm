@@ -69,17 +69,17 @@ static CGFloat kHostInset = 5.f;
     self.navigationItem.title = @"Chrome Remote Desktop";
 
     UIBarButtonItem* menuButton =
-        [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"ic_menu"]
+        [[UIBarButtonItem alloc] initWithImage:RemotingTheme.menuIcon
                                          style:UIBarButtonItemStyleDone
                                         target:self
                                         action:@selector(didSelectMenu)];
     self.navigationItem.leftBarButtonItem = menuButton;
 
-    UIBarButtonItem* refreshButton = [[UIBarButtonItem alloc]
-        initWithImage:[UIImage imageNamed:@"ic_refresh"]
-                style:UIBarButtonItemStyleDone
-               target:self
-               action:@selector(didSelectRefresh)];
+    UIBarButtonItem* refreshButton =
+        [[UIBarButtonItem alloc] initWithImage:RemotingTheme.refreshIcon
+                                         style:UIBarButtonItemStyleDone
+                                        target:self
+                                        action:@selector(didSelectRefresh)];
     self.navigationItem.rightBarButtonItem = refreshButton;
 
     _appBar.headerViewController.headerView.backgroundColor =

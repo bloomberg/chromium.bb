@@ -75,9 +75,10 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
     // TODO(yuweih): This logic may be reused by other views.
     UIButton* cancelButton = [UIButton buttonWithType:UIButtonTypeSystem];
     [cancelButton setTitle:@"CANCEL" forState:UIControlStateNormal];
-    [cancelButton setImage:[[UIImage imageNamed:@"Back"]
-                               imageFlippedForRightToLeftLayoutDirection]
-                  forState:UIControlStateNormal];
+    [cancelButton
+        setImage:[RemotingTheme
+                         .backIcon imageFlippedForRightToLeftLayoutDirection]
+        forState:UIControlStateNormal];
     [cancelButton addTarget:self
                      action:@selector(didTapCancel:)
            forControlEvents:UIControlEventTouchUpInside];
@@ -136,7 +137,7 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
   _iconView.backgroundColor = RemotingTheme.onlineHostColor;
   _iconView.layer.cornerRadius = kIconRadius;
   _iconView.layer.masksToBounds = YES;
-  _iconView.image = [UIImage imageNamed:@"ic_desktop"];
+  _iconView.image = RemotingTheme.desktopIcon;
 
   _activityIndicator.radius = kActivityIndicatorRadius;
   _activityIndicator.trackEnabled = YES;

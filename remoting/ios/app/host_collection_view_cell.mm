@@ -130,7 +130,7 @@ static const CGFloat kHostCardIconSize = 45.f;
 
   _titleLabel.text = _hostInfo.hostName;
 
-  _imageView.image = [UIImage imageNamed:@"ic_desktop"];
+  _imageView.image = RemotingTheme.desktopIcon;
 
   if ([_hostInfo.status isEqualToString:@"ONLINE"]) {
     _imageView.backgroundColor = RemotingTheme.onlineHostColor;
