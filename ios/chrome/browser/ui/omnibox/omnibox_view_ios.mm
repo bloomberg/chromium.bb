@@ -10,7 +10,6 @@
 #include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/ios/device_util.h"
-#include "base/ios/ios_util.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -189,7 +188,6 @@ OmniboxViewIOS::OmniboxViewIOS(OmniboxTextFieldIOS* field,
   [field_ addTarget:field_delegate_
                 action:@selector(textFieldDidChange:)
       forControlEvents:UIControlEventEditingChanged];
-  use_strikethrough_workaround_ = base::ios::IsRunningOnOrLater(10, 3, 0);
 }
 
 OmniboxViewIOS::~OmniboxViewIOS() {
@@ -677,15 +675,6 @@ void OmniboxViewIOS::UpdateSchemeStyle(const gfx::Range& range) {
   DCHECK_NE(security_state::SECURE_WITH_POLICY_INSTALLED_CERT, security_level);
 
   if (security_level == security_state::DANGEROUS) {
-    if (use_strikethrough_workaround_) {
-      // Workaround: Add extra attribute to allow strikethough to apply on iOS
-      // 10.3+. See https://crbug.com/699702 for discussion.
-      [attributing_display_string_
-          addAttribute:NSBaselineOffsetAttributeName
-                 value:@0
-                 range:NSMakeRange(0, [attributing_display_string_ length])];
-    }
-
     // Add a strikethrough through the scheme.
     [attributing_display_string_
         addAttribute:NSStrikethroughStyleAttributeName
