@@ -3,7 +3,7 @@
 <script src="../inspector-test.js"></script>
 <script src="../network-test.js"></script>
 <script>
-function test()
+async function test()
 {
     function createNetworkRequest(mimeType, content, statusCode)
     {
@@ -11,7 +11,7 @@ function test()
         var request = new SDK.NetworkRequest(SDK.targetManager.mainTarget(), 0, 'http://localhost');
         InspectorTest.addResult("Content: " + content.replace(/\0/g, "**NULL**"));
         request.mimeType = mimeType;
-        request._content = content;
+        request._contentData = Promise.resolve({error: null, content: content, encoded: false});
         if (statusCode !== undefined)
             request.statusCode = statusCode;
         return request;
@@ -26,59 +26,43 @@ function test()
         return previewer.contentElement.className;
     }
 
-    function testPreviewer(request, callback)
-    {
-        var previewView = new Network.RequestPreviewView(request, new Network.RequestResponseView(request));
-
-        previewView._createPreviewView(function(previewer) {
-            InspectorTest.addResult("Its previewer type: " + getViewName(previewer));
-            callback();
-        });
-    }
-
-    function testType(contentType, content, statusCode, callback)
+    async function testPreviewer(contentType, content, statusCode)
     {
         var request = createNetworkRequest(contentType, content, statusCode);
-        testPreviewer(request, callback);
-    }
-    InspectorTest.runTestSuite([
-        function testSimpleJSON(next)
-        {
-            testType("application/json", "[533,3223]", 200, next);
-        },
-        function testMimeJSON(next)
-        {
-            testType("application/vnd.document+json", "{foo0foo: 123}", 200, next);
-        },
-        function testSimpleXML(next)
-        {
-            testType("text/xml", "<bar><foo/></bar>", 200, next);
-        },
-        function testXMLMimeButJSON(next)
-        {
-            testType("text/xml", "{foo0: 'barr', 'barr': 'fooo'}", 200, next);
-        },
-        function testXMLWithUnknownMime(next)
-        {
-            testType("text/foobar", "<bar><foo/></bar>", 200, next);
-        },
-        function testXMLWithError500(next)
-        {
-            testType("text/xml", "<bar><foo/></bar>", 500, next);
-        },
-        function testUnknownMimeTextWithError500(next)
-        {
-            testType("text/foobar", "Foo Bar", 500, next);
-        },
-        function testBinaryImageFile(next)
-        {
-            testType("image/png", "Bin\0ary\1 File\0\0", 200, next);
-        },
-        function testBinaryBlankImageFile(next)
-        {
-            testType("image/png", "", 200, next);
-        },
-    ]);
+        var previewView = new Network.RequestPreviewView(request, new Network.RequestResponseView(request));
+        var previewerPromise = InspectorTest.addSnifferPromise(previewView, "_previewViewHandledForTest");
+        previewView.wasShown();
+        InspectorTest.addResult("Its previewer type: " + getViewName(await previewerPromise));
+    } 
+
+    InspectorTest.addResult("Simple JSON");
+    await testPreviewer("application/json", "[533,3223]", 200);
+
+    InspectorTest.addResult("MIME JSON");
+    await testPreviewer("application/vnd.document+json", "{foo0foo: 123}", 200);
+
+    InspectorTest.addResult("Simple XML");
+    await testPreviewer("text/xml", "<bar><foo/></bar>", 200);
+
+    InspectorTest.addResult("XML MIME But JSON");
+    await testPreviewer("text/xml", "{foo0: 'barr', 'barr': 'fooo'}", 200);
+
+    InspectorTest.addResult("XML With Unknown MIME");
+    await testPreviewer("text/foobar", "<bar><foo/></bar>", 200);
+
+    InspectorTest.addResult("XML With Error 500");
+    await testPreviewer("text/xml", "<bar><foo/></bar>", 500);
+
+    InspectorTest.addResult("Unknown MIME Text With Error 500");
+    await testPreviewer("text/foobar", "Foo Bar", 500);
+
+    InspectorTest.addResult("Binary Image File");
+    await testPreviewer("image/png", "Bin\0ary\1 File\0\0", 200);
+
+    InspectorTest.addResult("Binary Blank Image File");
+    await testPreviewer("image/png", "", 200);
+
+    InspectorTest.completeTest();
 }
 </script>
 </head>

@@ -9,20 +9,17 @@ function test()
     InspectorTest.recordNetwork();
     InspectorTest.makeSimpleXHR("GET", "resources/binary.data", true, step2);
 
-    function step2()
+    async function step2()
     {
         var request = InspectorTest.networkRequests().pop();
         InspectorTest.addResult("request.type: " + request.resourceType());
         InspectorTest.addResult("request.mimeType: " + request.mimeType);
-        request.requestContent().then(step3);
-    }
 
-    function step3()
-    {
-        var request = InspectorTest.networkRequests().pop();
-        InspectorTest.addResult("request.contentEncoded: " + request.contentEncoded);
-        InspectorTest.addResult("request.content: " + request.content);
-        var raw = window.atob(request.content);
+        var contentData = await request.contentData();
+
+        InspectorTest.addResult("request.contentEncoded: " + contentData.encoded);
+        InspectorTest.addResult("request.content: " + contentData.content);
+        var raw = window.atob(contentData.content);
         var bytes = [];
         for (var i = 0; i < raw.length; ++i)
             bytes.push(raw.charCodeAt(i));

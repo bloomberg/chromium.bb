@@ -8,22 +8,20 @@ function test()
     InspectorTest.recordNetwork();
     InspectorTest.makeFetch("resources/resource.php", {}, step2);
 
-    function step2()
+    async function step2()
     {
         var request1 = InspectorTest.networkRequests().pop();
         InspectorTest.addResult(request1.url());
         InspectorTest.addResult("resource.type: " + request1.resourceType());
-        InspectorTest.addResult("resource.content before requesting content: " + request1.content);
         InspectorTest.assertTrue(!request1.failed, "Resource loading failed.");
-        request1.requestContent().then(step3);
+
+        var content = await request1.requestContent();
+        InspectorTest.addResult("resource.content after requesting content: " + content);
+        InspectorTest.completeTest();
     }
 
     function step3()
     {
-        var request1 = InspectorTest.networkRequests().pop();
-        InspectorTest.addResult("resource.content after requesting content: " + request1.content);
-
-        InspectorTest.completeTest();
     }
 }
 </script>

@@ -10,21 +10,18 @@ function test()
         InspectorTest.addResult("Creating a NetworkRequest with type: " + type);
         var request = new SDK.NetworkRequest(SDK.targetManager.mainTarget(), 0, 'http://localhost');
         request.mimeType = type;
-        request._content = '{"number": 42}';
+        request._contentData = Promise.resolve({ error: null, content: '{"number": 42}', encoded: false });
         return request;
     }
 
-    function testPreviewer(request)
+    async function testPreviewer(request)
     {
-        return new Promise(function(done) {
-            var previewView = new Network.RequestPreviewView(request, null);
-
-            previewView._createPreviewView(function(previewer) {
-                InspectorTest.addResult("Its previewer is searchable: " + (previewer && previewer instanceof UI.SearchableView));
-                InspectorTest.addResult("Its previewer is the JSON previewer: " + (previewer && previewer._searchProvider && previewer._searchProvider instanceof Network.JSONView));
-                done();
-            });
-        });
+        var previewView = new Network.RequestPreviewView(request, null);
+        var previewerPromise = InspectorTest.addSnifferPromise(previewView, "_previewViewHandledForTest");
+        previewView.wasShown();
+        var previewer = await previewerPromise;
+        InspectorTest.addResult("Its previewer is searchable: " + (previewer && previewer instanceof UI.SearchableView));
+        InspectorTest.addResult("Its previewer is the JSON previewer: " + (previewer && previewer._searchProvider && previewer._searchProvider instanceof Network.JSONView));
     }
 
     function testType(contentType, callback)

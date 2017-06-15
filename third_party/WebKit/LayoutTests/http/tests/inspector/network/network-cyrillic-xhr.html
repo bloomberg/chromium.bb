@@ -11,9 +11,9 @@ function test()
             return callback();
         InspectorTest.addResult(request.url());
 
-        function contentLoaded()
+        function contentLoaded(content)
         {
-            InspectorTest.addResult("resource.content: " + request.content);
+            InspectorTest.addResult("resource.content: " + content);
             callback();
         }
 

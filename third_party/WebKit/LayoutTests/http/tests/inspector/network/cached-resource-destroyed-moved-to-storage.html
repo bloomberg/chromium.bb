@@ -40,13 +40,13 @@ function test()
     }
 
     var originalContentLength;
-    function step3()
+    function step3(content)
     {
         InspectorTest.addResult(imageRequest.url());
         InspectorTest.addResult("request.type: " + imageRequest.resourceType());
-        InspectorTest.addResult("request.content.length after requesting content: " + imageRequest.content.length);
-        originalContentLength = imageRequest.content.length;
-        InspectorTest.assertTrue(imageRequest.content.length > 0, "No content before destroying CachedResource.");
+        InspectorTest.addResult("request.content.length after requesting content: " + content.length);
+        originalContentLength = content.length;
+        InspectorTest.assertTrue(content.length > 0, "No content before destroying CachedResource.");
 
         InspectorTest.addResult("Releasing cached resource.");
         // Loading another image to the same image element so that the original image cached resource is released.
@@ -68,15 +68,14 @@ function test()
     function step6()
     {
         // Re-request content now that CachedResource should have been destroyed.
-        delete imageRequest._content;
+        delete imageRequest._contentData;
         imageRequest.requestContent().then(step7);
     }
 
-    function step7()
+    function step7(content)
     {
-        InspectorTest.addResult("request.content.length after requesting content: " + imageRequest.content.length);
-        originalContentLength = imageRequest.content.length;
-        InspectorTest.assertTrue(imageRequest.content.length === originalContentLength, "Content changed after cached resource was destroyed");
+        InspectorTest.addResult("request.content.length after requesting content: " + content.length);
+        InspectorTest.assertTrue(content.length === originalContentLength, "Content changed after cached resource was destroyed");
         InspectorTest.completeTest();
     }
 }

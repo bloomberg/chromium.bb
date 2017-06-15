@@ -12,10 +12,17 @@ function test()
     {
         await InspectorTest.NetworkAgent.disable();
         var request1 = InspectorTest.networkRequests().pop();
-        await request1.requestContent();
-        var request1 = InspectorTest.networkRequests().pop();
-        InspectorTest.addResult("resource.content after disabling network domain: " + request1.content);
-        await InspectorTest.NetworkAgent.enable();
+        request1.requestContent().then(step4);
+    }
+
+    function step4(content)
+    {
+        InspectorTest.addResult("resource.content after disabling network domain: " + content);
+        InspectorTest.NetworkAgent.enable().then(step5);
+    }
+
+    function step5()
+    {
         InspectorTest.completeTest();
     }
 }

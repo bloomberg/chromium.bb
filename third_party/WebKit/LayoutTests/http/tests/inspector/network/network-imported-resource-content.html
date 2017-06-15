@@ -21,15 +21,13 @@ function test()
         var request = InspectorTest.networkRequests().pop();
         InspectorTest.addResult(request.url());
         InspectorTest.addResult("resource.type: " + request.resourceType());
-        InspectorTest.addResult("resource.content before requesting content: " + request.content);
         InspectorTest.assertTrue(!request.failed, "Resource loading failed.");
         request.requestContent().then(step3);
     }
 
-    function step3()
+    function step3(content)
     {
-        var request = InspectorTest.networkRequests().pop();
-        InspectorTest.addResult("resource.content after requesting content: " + request.content);
+        InspectorTest.addResult("resource.content after requesting content: " + content);
         InspectorTest.completeTest();
     }
 }
