@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("ntp_tiles") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "ios_most_visited_sites_factory.cc",
     "ios_most_visited_sites_factory.h",
