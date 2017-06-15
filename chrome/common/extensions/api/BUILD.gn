@@ -112,7 +112,6 @@ if (is_chromeos) {
     "input_ime.json",
     "input_method_private.json",
     "launcher_search_provider.idl",
-    "log_private.idl",
     "platform_keys.idl",
     "platform_keys_internal.idl",
     "quick_unlock_private.idl",

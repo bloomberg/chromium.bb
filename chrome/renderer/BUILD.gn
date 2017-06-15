@@ -308,7 +308,6 @@ static_library("renderer") {
       "resources/extensions/identity_custom_bindings.js",
       "resources/extensions/image_writer_private_custom_bindings.js",
       "resources/extensions/input.ime_custom_bindings.js",
-      "resources/extensions/log_private_custom_bindings.js",
       "resources/extensions/notifications_custom_bindings.js",
       "resources/extensions/omnibox_custom_bindings.js",
       "resources/extensions/page_action_custom_bindings.js",

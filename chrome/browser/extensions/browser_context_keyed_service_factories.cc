@@ -62,7 +62,6 @@
 #include "chrome/browser/chromeos/extensions/input_method_api.h"
 #include "chrome/browser/chromeos/extensions/media_player_api.h"
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
-#include "chrome/browser/extensions/api/log_private/log_private_api.h"
 #elif defined(OS_LINUX) || defined(OS_WIN)
 #include "chrome/browser/extensions/api/input_ime/input_ime_api.h"
 #endif
@@ -111,9 +110,6 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::InputImeAPI::GetFactoryInstance();
 #endif
   extensions::LanguageSettingsPrivateDelegateFactory::GetInstance();
-#if defined(OS_CHROMEOS)
-  extensions::LogPrivateAPI::GetFactoryInstance();
-#endif
 #if BUILDFLAG(ENABLE_SERVICE_DISCOVERY)
   extensions::MDnsAPI::GetFactoryInstance();
 #endif

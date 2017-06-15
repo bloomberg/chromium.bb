@@ -1575,7 +1575,6 @@ source_set("unit_tests") {
     "../download/notification/download_item_notification_unittest.cc",
     "../extensions/api/enterprise_platform_keys/enterprise_platform_keys_api_unittest.cc",
     "../extensions/api/enterprise_platform_keys_private/enterprise_platform_keys_private_api_unittest.cc",
-    "../extensions/api/log_private/syslog_parser_unittest.cc",
     "../extensions/updater/local_extension_cache_unittest.cc",
     "../memory/memory_kills_monitor_unittest.cc",
     "../metrics/chromeos_metrics_provider_unittest.cc",
