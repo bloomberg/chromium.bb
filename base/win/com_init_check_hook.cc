@@ -212,6 +212,15 @@ class HookManager {
                                                     DWORD dwClsContext,
                                                     REFIID riid,
                                                     void** ppv) {
+    // Chrome COM callers need to make sure that their thread is configured to
+    // process COM objects to avoid creating an implicit MTA or silently failing
+    // STA object creation call due to the SUCCEEDED() pattern for COM calls.
+    //
+    // If you hit this assert as part of migrating to the Task Scheduler,
+    // evaluate your threading guarantees and dispatch your work with
+    // base::CreateCOMSTATaskRunnerWithTraits().
+    //
+    // If you need MTA support, ping //base/task_scheduler/OWNERS.
     AssertComInitialized();
     return original_co_create_instance_body_function_(rclsid, pUnkOuter,
                                                       dwClsContext, riid, ppv);
