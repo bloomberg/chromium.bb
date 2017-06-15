@@ -20,10 +20,29 @@ Recorder::Recorder(
       data_is_array_(data_is_array),
       on_data_change_callback_(on_data_change_callback),
       background_task_runner_(background_task_runner),
-      binding_(this, std::move(request)),
-      weak_factory_(this) {
+      binding_(this, std::move(request)) {
+  // A recorder should be deleted only if |is_recording_| is false to ensure
+  // that:
+  //
+  // 1- |OnConnectionError| is already executed and so using Unretained(this) is
+  // safe here.
+  //
+  // 2- The task possibly posted by |OnConnectionError| is already executed and
+  // so using Unretained(this) is safe in that PostTask.
+  //
+  // 3- Since the connection is closed, the tasks posted by |AddChunk| are
+  // already executed and so using Unretained(this) is safe in the PostTask in
+  // |AddChunk|.
+  //
+  // We cannot use a weak pointer factory here since the weak pointers should be
+  // dereferenced on the same SequencedTaskRunner. We could use two weak pointer
+  // factories but that increases the complexity of the code since each factory
+  // should be created on the correct thread and we should deal with cases that
+  // one of the factories is not created, yet.
+  //
+  // The tracing coordinator deletes a recorder when |is_recording_| is false.
   binding_.set_connection_error_handler(base::BindRepeating(
-      &Recorder::OnConnectionError, weak_factory_.GetWeakPtr()));
+      &Recorder::OnConnectionError, base::Unretained(this)));
 }
 
 Recorder::~Recorder() = default;
@@ -34,7 +53,7 @@ void Recorder::AddChunk(const std::string& chunk) {
   if (!background_task_runner_->RunsTasksOnCurrentThread()) {
     background_task_runner_->PostTask(
         FROM_HERE, base::BindRepeating(&Recorder::AddChunk,
-                                       weak_factory_.GetWeakPtr(), chunk));
+                                       base::Unretained(this), chunk));
     return;
   }
   if (data_is_array_ && !data_.empty())
@@ -48,8 +67,14 @@ void Recorder::AddMetadata(std::unique_ptr<base::DictionaryValue> metadata) {
 }
 
 void Recorder::OnConnectionError() {
+  if (!background_task_runner_->RunsTasksOnCurrentThread()) {
+    background_task_runner_->PostTask(
+        FROM_HERE, base::BindRepeating(&Recorder::OnConnectionError,
+                                       base::Unretained(this)));
+    return;
+  }
   is_recording_ = false;
-  background_task_runner_->PostTask(FROM_HERE, on_data_change_callback_);
+  on_data_change_callback_.Run();
 }
 
 }  // namespace tracing

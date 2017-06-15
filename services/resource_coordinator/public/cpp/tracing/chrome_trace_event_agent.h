@@ -27,20 +27,20 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT ChromeTraceEventAgent
 
   static ChromeTraceEventAgent* GetInstance();
 
+  explicit ChromeTraceEventAgent(mojom::AgentRegistryPtr agent_registry);
+
   void AddMetadataGeneratorFunction(MetadataGeneratorFunction generator);
 
  private:
   friend std::default_delete<ChromeTraceEventAgent>;  // For Testing
   friend class ChromeTraceEventAgentTest;             // For Testing
 
-  explicit ChromeTraceEventAgent(mojom::AgentRegistryPtr agent_registry);
   ~ChromeTraceEventAgent() override;
 
   // mojom::Agent
   void StartTracing(const std::string& config,
-                    mojom::RecorderPtr recorder,
                     const StartTracingCallback& callback) override;
-  void StopAndFlush() override;
+  void StopAndFlush(mojom::RecorderPtr recorder) override;
   void RequestClockSyncMarker(
       const std::string& sync_id,
       const RequestClockSyncMarkerCallback& callback) override;

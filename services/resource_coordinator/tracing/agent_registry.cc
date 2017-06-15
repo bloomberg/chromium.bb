@@ -37,25 +37,30 @@ AgentRegistry::AgentEntry::AgentEntry(size_t id,
 
 AgentRegistry::AgentEntry::~AgentEntry() = default;
 
-void AgentRegistry::AgentEntry::SetDisconnectClosure(
+void AgentRegistry::AgentEntry::AddDisconnectClosure(
+    const void* closure_name,
     base::OnceClosure closure) {
-  DCHECK(closure_.is_null());
-  closure_ = std::move(closure);
+  DCHECK_EQ(0u, closures_.count(closure_name));
+  closures_[closure_name] = std::move(closure);
 }
 
-bool AgentRegistry::AgentEntry::RemoveDisconnectClosure() {
-  bool closure_was_set = !closure_.is_null();
-  closure_.Reset();
-  return closure_was_set;
+bool AgentRegistry::AgentEntry::RemoveDisconnectClosure(
+    const void* closure_name) {
+  return closures_.erase(closure_name) > 0;
+}
+
+bool AgentRegistry::AgentEntry::HasDisconnectClosure(const void* closure_name) {
+  return closures_.count(closure_name) > 0;
 }
 
 void AgentRegistry::AgentEntry::OnConnectionError() {
-  // Run the disconnect closure if it is set. We should mark |closure_| as
-  // movable so that the version of |Run| that takes an rvalue reference is
+  // Run disconnect closures if there is any. We should mark |key_value.second|
+  // as movable so that the version of |Run| that takes an rvalue reference is
   // selected not the version that takes a const reference. The former is for
   // once callbacks and the latter is for repeating callbacks.
-  if (!closure_.is_null())
-    std::move(closure_).Run();
+  for (auto& key_value : closures_) {
+    std::move(key_value.second).Run();
+  }
   agent_registry_->UnregisterAgent(id_);
 }
 
@@ -93,6 +98,15 @@ void AgentRegistry::SetAgentInitializationCallback(
 void AgentRegistry::RemoveAgentInitializationCallback() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   agent_initialization_callback_.Reset();
+}
+
+bool AgentRegistry::HasDisconnectClosure(const void* closure_name) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  for (const auto& key_value : agents_) {
+    if (key_value.second->HasDisconnectClosure(closure_name))
+      return true;
+  }
+  return false;
 }
 
 void AgentRegistry::RegisterAgent(mojom::AgentPtr agent,
