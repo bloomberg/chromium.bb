@@ -13,7 +13,6 @@
 #include "base/time/time.h"
 #include "cc/base/math_util.h"
 #include "chrome/browser/android/vr_shell/elbow_model.h"
-#include "device/vr/vr_math.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"
@@ -111,7 +110,7 @@ device::GvrGamepadData VrController::GetGamepadData() {
   pad.timestamp = controller_state_->GetLastOrientationTimestamp();
   pad.touch_pos.set_x(TouchPosX());
   pad.touch_pos.set_y(TouchPosY());
-  pad.orientation = vr::ToVRQuatF(Orientation());
+  pad.orientation = Orientation();
 
   // Use orientation to rotate acceleration/gyro into seated space.
   gfx::Transform pose_mat(Orientation());

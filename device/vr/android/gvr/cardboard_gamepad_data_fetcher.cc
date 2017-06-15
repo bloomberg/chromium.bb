@@ -8,7 +8,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "device/gamepad/public/cpp/gamepads.h"
 #include "device/vr/android/gvr/cardboard_gamepad_data_provider.h"
-#include "device/vr/vr_types.h"
 
 namespace device {
 

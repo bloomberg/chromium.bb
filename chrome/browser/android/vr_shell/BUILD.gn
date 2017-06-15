@@ -100,7 +100,6 @@ static_library("vr_common") {
     "//components/toolbar:vector_icons",
     "//components/url_formatter",
     "//components/vector_icons",
-    "//device/vr",
     "//skia",
     "//ui/base",
     "//ui/display",

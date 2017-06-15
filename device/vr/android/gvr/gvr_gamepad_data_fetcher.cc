@@ -8,7 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "device/gamepad/public/cpp/gamepads.h"
 #include "device/vr/android/gvr/gvr_gamepad_data_provider.h"
-#include "device/vr/vr_types.h"
+#include "ui/gfx/geometry/quaternion.h"
 
 namespace device {
 
@@ -118,12 +118,12 @@ void GvrGamepadDataFetcher::GetGamepadData(bool devices_changed_hint) {
   pad.pose.has_orientation = true;
   pad.pose.has_position = false;
 
-  vr::Quatf orientation = provided_data.orientation;
+  gfx::Quaternion orientation = provided_data.orientation;
   pad.pose.orientation.not_null = true;
-  pad.pose.orientation.x = orientation.qx;
-  pad.pose.orientation.y = orientation.qy;
-  pad.pose.orientation.z = orientation.qz;
-  pad.pose.orientation.w = orientation.qw;
+  pad.pose.orientation.x = orientation.x();
+  pad.pose.orientation.y = orientation.y();
+  pad.pose.orientation.z = orientation.z();
+  pad.pose.orientation.w = orientation.w();
 
   gfx::Vector3dF accel = provided_data.accel;
   pad.pose.linear_acceleration.not_null = true;

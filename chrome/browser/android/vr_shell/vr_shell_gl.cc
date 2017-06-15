@@ -29,7 +29,6 @@
 #include "device/vr/android/gvr/gvr_delegate.h"
 #include "device/vr/android/gvr/gvr_device.h"
 #include "device/vr/android/gvr/gvr_gamepad_data_provider.h"
-#include "device/vr/vr_math.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/platform/WebMouseEvent.h"
@@ -461,9 +460,7 @@ void VrShellGl::GvrInit(gvr_context* gvr_api) {
 void VrShellGl::InitializeRenderer() {
   gvr_api_->InitializeGl();
   gfx::Transform head_pose;
-  vr::Mat4f from_gvr;
-  device::GvrDelegate::GetGvrPoseWithNeckModel(gvr_api_.get(), &from_gvr);
-  head_pose = vr::ToTransform(from_gvr);
+  device::GvrDelegate::GetGvrPoseWithNeckModel(gvr_api_.get(), &head_pose);
   webvr_head_pose_.assign(kPoseRingBufferSize, head_pose);
   webvr_time_pose_.assign(kPoseRingBufferSize, base::TimeTicks());
   webvr_time_js_submit_.assign(kPoseRingBufferSize, base::TimeTicks());
@@ -1050,9 +1047,7 @@ void VrShellGl::DrawFrame(int16_t frame_index) {
                   "kPoseRingBufferSize must be a power of 2");
     head_pose = webvr_head_pose_[frame_index % kPoseRingBufferSize];
   } else {
-    vr::Mat4f from_gvr;
-    device::GvrDelegate::GetGvrPoseWithNeckModel(gvr_api_.get(), &from_gvr);
-    head_pose = vr::ToTransform(from_gvr);
+    device::GvrDelegate::GetGvrPoseWithNeckModel(gvr_api_.get(), &head_pose);
   }
 
   // Update the render position of all UI elements (including desktop).
@@ -1603,11 +1598,9 @@ void VrShellGl::SendVSync(base::TimeDelta time, GetVSyncCallback callback) {
   int64_t prediction_nanos = GetPredictedFrameTimeNanos();
 
   gfx::Transform head_mat;
-  vr::Mat4f from_gvr;
   device::mojom::VRPosePtr pose =
-      device::GvrDelegate::GetVRPosePtrWithNeckModel(gvr_api_.get(), &from_gvr,
+      device::GvrDelegate::GetVRPosePtrWithNeckModel(gvr_api_.get(), &head_mat,
                                                      prediction_nanos);
-  head_mat = vr::ToTransform(from_gvr);
 
   webvr_head_pose_[frame_index % kPoseRingBufferSize] = head_mat;
   webvr_time_pose_[frame_index % kPoseRingBufferSize] = base::TimeTicks::Now();
