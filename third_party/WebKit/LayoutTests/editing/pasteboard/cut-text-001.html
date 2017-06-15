@@ -10,6 +10,6 @@
                 'This test requires window.internals to access clipboard');
             selection.document.execCommand('cut');
         },
-        '<div contenteditable>foo |\u{00A0}baz</div>'),
+        '<div contenteditable>foo\u{00A0}| baz</div>'),
         'cut command');
 </script>

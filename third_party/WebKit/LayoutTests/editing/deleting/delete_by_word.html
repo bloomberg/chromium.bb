@@ -7,7 +7,7 @@
     const kDeleteWordModifiers = isMac ? ['altKey'] : ['ctrlKey'];
 
     test(() => {
-        assert_not_equals(window.eventSender, undefined, 'This test requires eventSender.'); 
+        assert_not_equals(window.eventSender, undefined, 'This test requires eventSender.');
         assert_selection(
             [
                 '<div contenteditable>',
@@ -21,13 +21,13 @@
             },
             [
                 '<div contenteditable>',
-                    'one two \u{00A0} cha|cha cha three four cha cha cha',
+                    'one two\u{00A0} \u{00A0}cha|cha cha three four cha cha cha',
                 '</div>',
             ].join(''));
         }, 'Delete word');
 
     test(() => {
-        assert_not_equals(window.eventSender, undefined, 'This test requires eventSender.'); 
+        assert_not_equals(window.eventSender, undefined, 'This test requires eventSender.');
         assert_selection(
             [
                 '<div contenteditable>',

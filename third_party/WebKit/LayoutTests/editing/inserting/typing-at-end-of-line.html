@@ -16,8 +16,8 @@ test(() => assert_selection(
   [
     `<div contenteditable style="${style}">`,
       'and Anna, you can do your regular weekly report run, and I\'ll extract ',
-      'the key sections into this. Andrew and Mark, I\'d like to ',
-      '\u00A0have|include any new bits you',
+      'the key sections into this. Andrew and Mark, I\'d like to\u00A0',
+      ' have|include any new bits you',
     '</div>',
   ].join('')),
   'Text does not split on white space when typing to the edge of window');

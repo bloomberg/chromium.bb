@@ -7,7 +7,7 @@ test(() => {
     assert_selection(
         '<div contenteditable><span>foo    ^bar|   \nbaz</span></div>',
         'delete',
-        '<div contenteditable><span>foo |\u{00A0}baz</span></div>',
+        '<div contenteditable><span>foo\u{00A0}| baz</span></div>',
         'foo');
 }, 'Delete collapses whitespaces into U+00A0');
 </script>
