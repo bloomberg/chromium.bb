@@ -28,35 +28,39 @@ void StartCrashController() {
 
 int main(int argc, char* argv[]) {
   IOSChromeMain::InitStartTime();
-  @autoreleasepool {
-    NSUserDefaults* standardDefaults = [NSUserDefaults standardUserDefaults];
+  NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
 
-    // Set NSUserDefaults keys to force pseudo-RTL if needed.
-    if ([standardDefaults boolForKey:@"EnablePseudoRTL"]) {
-      NSDictionary* pseudoDict = @{ @"YES" : @"AppleTextDirection" };
-      [standardDefaults registerDefaults:pseudoDict];
-    }
+  NSUserDefaults* standardDefaults = [NSUserDefaults standardUserDefaults];
 
-    // Create this here since it's needed to start the crash handler.
-    base::AtExitManager at_exit;
-
-    // The Crash Controller is started here even if the user opted out since we
-    // don't have yet preferences. Later on it is stopped if the user opted out.
-    // In any case reports are not sent if the user opted out.
-    StartCrashController();
-
-    // Always ignore SIGPIPE.  We check the return value of write().
-    CHECK_NE(SIG_ERR, signal(SIGPIPE, SIG_IGN));
+  // Set NSUserDefaults keys to force pseudo-RTL if needed.
+  if ([standardDefaults boolForKey:@"EnablePseudoRTL"]) {
+    NSDictionary* pseudoDict = @{ @"YES" : @"AppleTextDirection" };
+    [standardDefaults registerDefaults:pseudoDict];
   }
 
-  @autoreleasepool {
-    // Part of code that requires us to specify which UIApplication delegate
-    // class to use by adding "UIApplicationDelegate" key to Info.plist file.
-    NSString* delegateClassName = [[NSBundle mainBundle]
-        objectForInfoDictionaryKey:kUIApplicationDelegateInfoKey];
-    CHECK(delegateClassName);
+  // Create this here since it's needed to start the crash handler.
+  base::AtExitManager at_exit;
 
-    int retVal = UIApplicationMain(argc, argv, nil, delegateClassName);
-    return retVal;
-  }
+  // The Crash Controller is started here even if the user opted out since we
+  // don't have yet preferences. Later on it is stopped if the user opted out.
+  // In any case reports are not sent if the user opted out.
+  StartCrashController();
+
+  // Always ignore SIGPIPE.  We check the return value of write().
+  CHECK_NE(SIG_ERR, signal(SIGPIPE, SIG_IGN));
+
+  // Purging the pool to prevent autorelease objects created by the previous
+  // calls to live forever.
+  [pool release];
+  pool = [[NSAutoreleasePool alloc] init];
+
+  // Part of code that requires us to specify which UIApplication delegate class
+  // to use by adding "UIApplicationDelegate" key to Info.plist file.
+  NSString* delegateClassName = [[NSBundle mainBundle]
+      objectForInfoDictionaryKey:kUIApplicationDelegateInfoKey];
+  CHECK(delegateClassName);
+
+  int retVal = UIApplicationMain(argc, argv, nil, delegateClassName);
+  [pool release];
+  return retVal;
 }
