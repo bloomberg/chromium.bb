@@ -35,7 +35,7 @@ class MergeSessionObserverBridge : public GaiaCookieManagerService::Observer {
       const GoogleServiceAuthError& error) override;
 
  private:
-  id<MergeSessionObserverBridgeDelegate> delegate_;
+  __weak id<MergeSessionObserverBridgeDelegate> delegate_;
   GaiaCookieManagerService* cookie_manager_service_;
 
   DISALLOW_COPY_AND_ASSIGN(MergeSessionObserverBridge);

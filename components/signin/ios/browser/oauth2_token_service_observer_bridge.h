@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
+#import "base/ios/weak_nsobject.h"
 #include "base/macros.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 
@@ -49,7 +50,7 @@ class OAuth2TokenServiceObserverBridge : public OAuth2TokenService::Observer {
 
  private:
   OAuth2TokenService* token_service_;  // weak
-  id<OAuth2TokenServiceObserverBridgeDelegate> delegate_;
+  base::WeakNSProtocol<id<OAuth2TokenServiceObserverBridgeDelegate>> delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(OAuth2TokenServiceObserverBridge);
 };

@@ -7,6 +7,10 @@
 #include "base/logging.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 MergeSessionObserverBridge::MergeSessionObserverBridge(
     id<MergeSessionObserverBridgeDelegate> delegate,
     GaiaCookieManagerService* cookie_manager_service)
