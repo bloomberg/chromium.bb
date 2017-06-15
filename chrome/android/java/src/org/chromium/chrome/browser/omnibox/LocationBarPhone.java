@@ -22,7 +22,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.WindowDelegate;
 import org.chromium.chrome.browser.ntp.NewTabPage;
-import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
@@ -292,8 +291,8 @@ public class LocationBarPhone extends LocationBarLayout {
     public void updateVisualsForState() {
         super.updateVisualsForState();
 
-        Tab tab = getCurrentTab();
-        boolean isIncognito = tab != null && tab.isIncognito();
+        boolean isIncognito =
+                getToolbarDataProvider() != null && getToolbarDataProvider().isIncognito();
         mIncognitoBadge.setVisibility(isIncognito ? VISIBLE : GONE);
         updateIncognitoBadgePadding();
     }

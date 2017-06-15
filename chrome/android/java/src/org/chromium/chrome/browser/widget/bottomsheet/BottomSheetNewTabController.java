@@ -4,8 +4,9 @@
 
 package org.chromium.chrome.browser.widget.bottomsheet;
 
+import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChrome;
-import org.chromium.chrome.browser.omnibox.LocationBarPhone;
+import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.BottomToolbarPhone;
 
@@ -17,12 +18,13 @@ import org.chromium.chrome.browser.toolbar.BottomToolbarPhone;
 public class BottomSheetNewTabController extends EmptyBottomSheetObserver {
     private final BottomSheet mBottomSheet;
     private final BottomToolbarPhone mToolbar;
-    private final LocationBarPhone mLocationBar;
 
     private LayoutManagerChrome mLayoutManager;
+    private OverviewModeObserver mOverviewModeObserver;
     private TabModelSelector mTabModelSelector;
 
     private boolean mIsShowingNewTabUi;
+    private boolean mIsShowingNormalToolbar;
 
     /**
      * Creates a new {@link BottomSheetNewTabController}.
@@ -34,7 +36,6 @@ public class BottomSheetNewTabController extends EmptyBottomSheetObserver {
         mBottomSheet = bottomSheet;
         mBottomSheet.addObserver(this);
         mToolbar = toolbar;
-        mLocationBar = (LocationBarPhone) toolbar.getLocationBar();
     }
 
     /**
@@ -48,7 +49,23 @@ public class BottomSheetNewTabController extends EmptyBottomSheetObserver {
      * @param layoutManager The {@link LayoutManagerChrome} used to show and hide overview mode.
      */
     public void setLayoutManagerChrome(LayoutManagerChrome layoutManager) {
+        assert mLayoutManager == null;
+
         mLayoutManager = layoutManager;
+
+        mOverviewModeObserver = new EmptyOverviewModeObserver() {
+            @Override
+            public void onOverviewModeStartedHiding(boolean showToolbar, boolean delayAnimation) {
+                if (!mIsShowingNewTabUi
+                        || mBottomSheet.getTargetSheetState() == BottomSheet.SHEET_STATE_PEEK) {
+                    return;
+                }
+
+                // Close the bottom sheet to hide the new tab UI.
+                mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_PEEK, true);
+            }
+        };
+        mLayoutManager.addOverviewModeObserver(mOverviewModeObserver);
     }
 
     /**
@@ -68,9 +85,6 @@ public class BottomSheetNewTabController extends EmptyBottomSheetObserver {
             mBottomSheet.endTransitionAnimations();
         }
 
-        // Update the loading status so that the location bar will update its contents.
-        mLocationBar.updateLoadingState(true);
-
         // Show the tab switcher if needed. The overview should be shown before the sheet is opened
         // to ensure the toolbar ends up in the correct state.
         if (!mLayoutManager.overviewVisible()) mLayoutManager.showOverview(true);
@@ -85,9 +99,11 @@ public class BottomSheetNewTabController extends EmptyBottomSheetObserver {
                     true);
             mBottomSheet.getBottomSheetMetrics().recordSheetOpenReason(
                     BottomSheetMetrics.OPENED_BY_NEW_TAB_CREATION);
-        } else {
-            finishShowingNewTabUi();
         }
+
+        // Transition from the tab switcher toolbar to the normal toolbar.
+        mToolbar.showNormalToolbar();
+        mIsShowingNormalToolbar = true;
     }
 
     /**
@@ -108,19 +124,28 @@ public class BottomSheetNewTabController extends EmptyBottomSheetObserver {
     }
 
     @Override
-    public void onSheetOpened() {
-        if (!mIsShowingNewTabUi) return;
-
-        finishShowingNewTabUi();
-    }
-
-    @Override
     public void onSheetReleased() {
         if (!mIsShowingNewTabUi) return;
 
         // Start transitioning back to the tab switcher toolbar when the sheet is released to help
         // smooth out animations.
-        if (mBottomSheet.getTargetSheetState() == BottomSheet.SHEET_STATE_PEEK) {
+        if (mBottomSheet.getTargetSheetState() == BottomSheet.SHEET_STATE_PEEK
+                && mIsShowingNormalToolbar) {
+            mIsShowingNormalToolbar = false;
+            mToolbar.showTabSwitcherToolbar();
+        }
+    }
+
+    @Override
+    public void onSheetOffsetChanged(float heightFraction) {
+        if (!mIsShowingNewTabUi) return;
+
+        // Start transitioning to the tab switcher toolbar when the sheet is close to the bottom
+        // of the screen.
+        if (mIsShowingNormalToolbar && heightFraction < 0.2f
+                && mBottomSheet.getTargetSheetState() == BottomSheet.SHEET_STATE_PEEK
+                && mLayoutManager.overviewVisible()) {
+            mIsShowingNormalToolbar = false;
             mToolbar.showTabSwitcherToolbar();
         }
     }
@@ -128,6 +153,8 @@ public class BottomSheetNewTabController extends EmptyBottomSheetObserver {
     @Override
     public void onSheetClosed() {
         if (!mIsShowingNewTabUi) return;
+
+        mIsShowingNewTabUi = false;
 
         // If the incognito tab model is showing, but has no tabs, this indicates that the model
         // was switched during the creation of an incognito ntp and the user closed the sheet
@@ -137,26 +164,12 @@ public class BottomSheetNewTabController extends EmptyBottomSheetObserver {
             mTabModelSelector.selectModel(false);
         }
 
-        // Transition back to the tab switcher toolbar if the tab switcher is sill visible.
-        if (mLayoutManager.overviewVisible()) mToolbar.showTabSwitcherToolbar();
-
         onNewTabUiHidden();
-
-        mIsShowingNewTabUi = false;
     }
 
     /** Called after the new tab UI is hidden. Resets properties on the tab models. */
     private void onNewTabUiHidden() {
         mTabModelSelector.getModel(false).setIsPendingTabAdd(false);
         mTabModelSelector.getModel(true).setIsPendingTabAdd(false);
-    }
-
-    private void finishShowingNewTabUi() {
-        // Transition from the tab switcher toolbar to the normal toolbar.
-        mToolbar.showNormalToolbar();
-
-        // ToolbarPhone makes the url bar unfocusable while in the tab switcher; make sure it is
-        // focusable when the sheet is open.
-        mLocationBar.setUrlBarFocusable(true);
     }
 }

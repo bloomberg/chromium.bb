@@ -224,6 +224,12 @@ public class BottomToolbarPhone extends ToolbarPhone {
     public void showNormalToolbar() {
         // TODO(twellington): Add animation.
         setTabSwitcherMode(false, true, false, false);
+
+        // Typically #onTabSwitcherTransitionFinished() is called when the tab switcher is finished
+        // hiding. In this scenario, however, we are showing the normal toolbar without hiding
+        // the tab switcher. Call #onTabSwitcherTransitionFinished() directly so that ToolbarPhone
+        // updates its state.
+        onTabSwitcherTransitionFinished();
     }
 
     @Override
