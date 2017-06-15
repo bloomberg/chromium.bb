@@ -69,9 +69,9 @@ void LayoutImage::StyleDidChange(StyleDifference diff,
                                  const ComputedStyle* old_style) {
   LayoutReplaced::StyleDidChange(diff, old_style);
 
-  RespectImageOrientationEnum old_orientation =
-      old_style ? old_style->RespectImageOrientation()
-                : ComputedStyle::InitialRespectImageOrientation();
+  bool old_orientation = old_style
+                             ? old_style->RespectImageOrientation()
+                             : ComputedStyle::InitialRespectImageOrientation();
   if (Style() && Style()->RespectImageOrientation() != old_orientation)
     IntrinsicSizeChanged();
 }

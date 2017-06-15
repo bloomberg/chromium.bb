@@ -53,7 +53,7 @@
                 "word-break", "overflow-wrap", "-webkit-line-break", 
                 "-webkit-text-security", "hyphens", "HyphenationLimitBefore", 
                 "HyphenationLimitAfter", "-webkit-hyphenate-character", 
-                "RespectImageOrientation", "-webkit-ruby-position", 
+                "image-orientation", "-webkit-ruby-position", 
                 "TextEmphasisMark", "TextEmphasisPosition", 
                 "TextEmphasisCustomMark", "text-justify", "text-orientation", 
                 "text-combine-upright", "tab-size", "text-size-adjust", 

@@ -1003,18 +1003,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
                    lengths);
   }
 
-  // image-orientation
-  static RespectImageOrientationEnum InitialRespectImageOrientation() {
-    return kDoNotRespectImageOrientation;
-  }
-  RespectImageOrientationEnum RespectImageOrientation() const {
-    return static_cast<RespectImageOrientationEnum>(
-        RespectImageOrientationInternal());
-  }
-  void SetRespectImageOrientation(RespectImageOrientationEnum v) {
-    SetRespectImageOrientationInternal(v);
-  }
-
   // mix-blend-mode
   static WebBlendMode InitialBlendMode() { return kWebBlendModeNormal; }
   WebBlendMode BlendMode() const {

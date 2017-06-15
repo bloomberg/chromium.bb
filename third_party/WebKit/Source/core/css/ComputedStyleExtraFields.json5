@@ -481,15 +481,6 @@
       field_size: 1,
       field_group: "rare-inherited",
     },
-    {
-      name: "RespectImageOrientation",
-      inherited: true,
-      field_template: "storage_only",
-      type_name: "bool",
-      default_value: "false",
-      field_size: 1,
-      field_group: "rare-inherited",
-    },
     // Though position: sticky is not itself an inherited property, being a
     // descendent of a sticky element changes some document lifecycle logic.
     {
