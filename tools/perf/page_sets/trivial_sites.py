@@ -153,3 +153,8 @@ class TrivialSitesStorySet(story.StorySet):
         self, shared_state, wait_in_seconds, measure_memory))
     self.AddStory(TrivialAnimationPage(
         self, shared_state, wait_in_seconds, measure_memory))
+
+
+class TrivialStoryExpectations(story.expectations.StoryExpectations):
+  def SetExpectations(self):
+    pass # No tests are disabled.
