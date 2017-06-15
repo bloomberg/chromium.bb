@@ -120,7 +120,7 @@ bool NavigatorBeacon::SendBeaconImpl(
                                data.getAsArrayBufferView().View(), beacon_size);
   } else if (data.isBlob()) {
     Blob* blob = data.getAsBlob();
-    if (!FetchUtils::IsSimpleContentType(AtomicString(blob->type()))) {
+    if (!FetchUtils::IsCORSSafelistedContentType(AtomicString(blob->type()))) {
       UseCounter::Count(context,
                         WebFeature::kSendBeaconWithNonSimpleContentType);
       if (RuntimeEnabledFeatures::

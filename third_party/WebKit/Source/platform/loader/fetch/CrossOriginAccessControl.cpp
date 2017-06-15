@@ -59,8 +59,8 @@ static AtomicString CreateAccessControlRequestHeadersHeader(
     const HTTPHeaderMap& headers) {
   Vector<String> filtered_headers;
   for (const auto& header : headers) {
-    if (FetchUtils::IsSimpleHeader(header.key, header.value)) {
-      // Exclude simple headers.
+    if (FetchUtils::IsCORSSafelistedHeader(header.key, header.value)) {
+      // Exclude CORS-safelisted headers.
       continue;
     }
     if (DeprecatedEqualIgnoringCase(header.key, "referer")) {

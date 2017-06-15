@@ -327,9 +327,9 @@ Request* Request::CreateRequestWithRequestOrString(
   r->request_->HeaderList()->ClearList();
   // "If |r|'s request's mode is "no-cors", run these substeps:
   if (r->GetRequest()->Mode() == WebURLRequest::kFetchRequestModeNoCORS) {
-    // "If |r|'s request's method is not a simple method, throw a
+    // "If |r|'s request's method is not a CORS-safelisted method, throw a
     // TypeError."
-    if (!FetchUtils::IsSimpleMethod(r->GetRequest()->Method())) {
+    if (!FetchUtils::IsCORSSafelistedMethod(r->GetRequest()->Method())) {
       exception_state.ThrowTypeError("'" + r->GetRequest()->Method() +
                                      "' is unsupported in no-cors mode.");
       return nullptr;

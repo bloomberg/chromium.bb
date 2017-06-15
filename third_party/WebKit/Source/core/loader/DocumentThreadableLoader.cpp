@@ -378,17 +378,27 @@ void DocumentThreadableLoader::MakeCrossOriginAccessRequest(
           ? WebURLRequest::kFetchCredentialsModeInclude
           : WebURLRequest::kFetchCredentialsModeOmit);
 
-  // We use isSimpleOrForbiddenRequest() here since |request| may have been
-  // modified in the process of loading (not from the user's input). For
-  // example, referrer. We need to accept them. For security, we must reject
-  // forbidden headers/methods at the point we accept user's input. Not here.
+  bool skip_preflight = false;
+  if (options_.preflight_policy == kPreventPreflight) {
+    skip_preflight = true;
+  } else {
+    DCHECK_EQ(options_.preflight_policy, kConsiderPreflight);
+
+    // We use ContainsOnlyCORSSafelistedOrForbiddenHeaders() here since
+    // |request| may have been modified in the process of loading (not from the
+    // user's input). For example, referrer. We need to accept them. For
+    // security, we must reject forbidden headers/methods at the point we
+    // accept user's input. Not here.
+    if (FetchUtils::IsCORSSafelistedMethod(request.HttpMethod()) &&
+        FetchUtils::ContainsOnlyCORSSafelistedOrForbiddenHeaders(
+            request.HttpHeaderFields()))
+      skip_preflight = true;
+  }
+
   if (!request.IsExternalRequest() &&
       options_.fetch_request_mode !=
           WebURLRequest::kFetchRequestModeCORSWithForcedPreflight &&
-      ((options_.preflight_policy == kConsiderPreflight &&
-        FetchUtils::IsSimpleOrForbiddenRequest(request.HttpMethod(),
-                                               request.HttpHeaderFields())) ||
-       options_.preflight_policy == kPreventPreflight)) {
+      skip_preflight) {
     PrepareCrossOriginRequest(cross_origin_request);
     LoadRequest(cross_origin_request, cross_origin_options);
     return;

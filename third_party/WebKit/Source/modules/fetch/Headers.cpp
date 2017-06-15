@@ -101,10 +101,10 @@ void Headers::append(const String& name,
   if (guard_ == kRequestGuard && FetchUtils::IsForbiddenHeaderName(name))
     return;
   // "5. Otherwise, if guard is |request-no-CORS| and |name|/|value| is not a
-  //     simple header, return."
+  //     CORS-safelisted header, return."
   if (guard_ == kRequestNoCORSGuard &&
-      !FetchUtils::IsSimpleHeader(AtomicString(name),
-                                  AtomicString(normalized_value)))
+      !FetchUtils::IsCORSSafelistedHeader(AtomicString(name),
+                                          AtomicString(normalized_value)))
     return;
   // "6. Otherwise, if guard is |response| and |name| is a forbidden response
   //     header name, return."
@@ -132,9 +132,9 @@ void Headers::remove(const String& name, ExceptionState& exception_state) {
   if (guard_ == kRequestGuard && FetchUtils::IsForbiddenHeaderName(name))
     return;
   // "4. Otherwise, if guard is |request-no-CORS| and |name|/`invalid` is not
-  //     a simple header, return."
+  //     a CORS-safelisted header, return."
   if (guard_ == kRequestNoCORSGuard &&
-      !FetchUtils::IsSimpleHeader(AtomicString(name), "invalid"))
+      !FetchUtils::IsCORSSafelistedHeader(AtomicString(name), "invalid"))
     return;
   // "5. Otherwise, if guard is |response| and |name| is a forbidden response
   //     header name, return."
@@ -198,10 +198,10 @@ void Headers::set(const String& name,
   if (guard_ == kRequestGuard && FetchUtils::IsForbiddenHeaderName(name))
     return;
   // "5. Otherwise, if guard is |request-no-CORS| and |name|/|value| is not a
-  //     simple header, return."
+  //     CORS-safelisted header, return."
   if (guard_ == kRequestNoCORSGuard &&
-      !FetchUtils::IsSimpleHeader(AtomicString(name),
-                                  AtomicString(normalized_value)))
+      !FetchUtils::IsCORSSafelistedHeader(AtomicString(name),
+                                          AtomicString(normalized_value)))
     return;
   // "6. Otherwise, if guard is |response| and |name| is a forbidden response
   //     header name, return."
