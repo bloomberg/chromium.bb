@@ -2775,6 +2775,8 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBeginImpl(
       MainThreadScrollingReason::kNotScrollingOnMain;
   if (!scrolling_node) {
     scroll_status.thread = SCROLL_IGNORED;
+    if (settings_.is_layer_tree_for_subframe)
+      scroll_status.thread = SCROLL_UNKNOWN;
     scroll_status.main_thread_scrolling_reasons =
         MainThreadScrollingReason::kNoScrollingLayer;
     return scroll_status;

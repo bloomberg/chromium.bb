@@ -750,7 +750,9 @@ TEST_P(InputHandlerProxyTest, GestureScrollIgnored) {
   gesture_.SetType(WebInputEvent::kGestureScrollBegin);
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 
-  expected_disposition_ = InputHandlerProxy::DID_NOT_HANDLE;
+  // GSB is dropped and not sent to the main thread, GSE shouldn't get sent to
+  // the main thread, either.
+  expected_disposition_ = InputHandlerProxy::DROP_EVENT;
   gesture_.SetType(WebInputEvent::kGestureScrollEnd);
   EXPECT_CALL(mock_input_handler_, ScrollEnd(testing::_))
       .WillOnce(testing::Return());
