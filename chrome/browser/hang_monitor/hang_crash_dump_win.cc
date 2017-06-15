@@ -96,31 +96,3 @@ void CrashDumpAndTerminateHungChildProcess(
   TerminateProcess(hprocess, content::RESULT_CODE_HUNG);
   WaitForSingleObject(hprocess, kTerminateTimeoutMS);
 }
-
-void CrashDumpForHangDebugging(HANDLE hprocess) {
-  if (hprocess == GetCurrentProcess()) {
-    typedef void (__cdecl *DumpFunction)();
-    DumpFunction request_dump = reinterpret_cast<DumpFunction>(GetProcAddress(
-        GetModuleHandle(chrome::kChromeElfDllName), "DumpProcessWithoutCrash"));
-    DCHECK(request_dump) << "Failed loading DumpProcessWithoutCrash: error " <<
-        GetLastError();
-    if (request_dump)
-      request_dump();
-  } else {
-    typedef HANDLE (__cdecl *DumpFunction)(HANDLE);
-    DumpFunction request_dump = reinterpret_cast<DumpFunction>(
-        GetProcAddress(GetModuleHandle(chrome::kChromeElfDllName),
-                       "InjectDumpForHangDebugging"));
-    DCHECK(request_dump) << "Failed loading InjectDumpForHangDebugging: error "
-                         << GetLastError();
-    if (request_dump) {
-      HANDLE remote_thread = request_dump(hprocess);
-      DCHECK(remote_thread) << "Failed creating remote thread: error " <<
-          GetLastError();
-      if (remote_thread) {
-        WaitForSingleObject(remote_thread, kGenerateDumpTimeoutMS);
-        CloseHandle(remote_thread);
-      }
-    }
-  }
-}

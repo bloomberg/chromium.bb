@@ -17,8 +17,4 @@ void CrashDumpAndTerminateHungChildProcess(
     HANDLE hprocess,
     const base::StringPairs& additional_crash_keys);
 
-// TODO(yzshen): Remove when enough information is collected and the hang rate
-// of pepper/renderer processes is reduced.
-void CrashDumpForHangDebugging(HANDLE hprocess);
-
 #endif  // CHROME_BROWSER_HANG_MONITOR_HANG_CRASH_DUMP_WIN_H_

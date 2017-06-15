@@ -10,7 +10,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/process/process.h"
-#include "base/rand_util.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -20,76 +19,22 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
-#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_child_process_host_iterator.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/plugin_service.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/result_codes.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN)
-#include "base/win/scoped_handle.h"
 #include "chrome/browser/hang_monitor/hang_crash_dump_win.h"
 #endif
 
 
 namespace {
-
-#if defined(OS_WIN)
-
-// OwnedHandleVector ----------------------------------------------------------
-
-class OwnedHandleVector {
- public:
-  typedef std::vector<HANDLE> Handles;
-  OwnedHandleVector();
-  ~OwnedHandleVector();
-
-  Handles* data() { return &data_; }
-
- private:
-  Handles data_;
-
-  DISALLOW_COPY_AND_ASSIGN(OwnedHandleVector);
-};
-
-OwnedHandleVector::OwnedHandleVector() {
-}
-
-OwnedHandleVector::~OwnedHandleVector() {
-  for (Handles::iterator iter = data_.begin(); iter != data_.end(); ++iter)
-    ::CloseHandle(*iter);
-}
-
-
-// Helpers --------------------------------------------------------------------
-
-const char kDumpChildProcessesSequenceName[] = "DumpChildProcesses";
-
-void DumpBrowserInBlockingPool() {
-  CrashDumpForHangDebugging(::GetCurrentProcess());
-}
-
-void DumpRenderersInBlockingPool(OwnedHandleVector* renderer_handles) {
-  for (OwnedHandleVector::Handles::const_iterator iter =
-           renderer_handles->data()->begin();
-       iter != renderer_handles->data()->end(); ++iter) {
-    CrashDumpForHangDebugging(*iter);
-  }
-}
-
-void DumpAndTerminatePluginInBlockingPool(
-    base::win::ScopedHandle* plugin_handle) {
-  base::StringPairs crash_keys = {{crash_keys::kHungRendererReason, "plugin"}};
-  CrashDumpAndTerminateHungChildProcess(plugin_handle->Get(), crash_keys);
-}
-
-#endif  // defined(OS_WIN)
 
 // Called on the I/O thread to actually kill the plugin with the given child
 // ID. We specifically don't want this to be a member function since if the
@@ -105,16 +50,9 @@ void KillPluginOnIOThread(int child_id) {
     const content::ChildProcessData& data = iter.GetData();
     if (data.id == child_id) {
 #if defined(OS_WIN)
-      HANDLE handle = NULL;
-      HANDLE current_process = ::GetCurrentProcess();
-      ::DuplicateHandle(current_process, data.handle, current_process, &handle,
-                        0, FALSE, DUPLICATE_SAME_ACCESS);
-      // Run it in blocking pool so that it won't block the I/O thread. Besides,
-      // we would like to make sure that it happens after dumping renderers.
-      content::BrowserThread::PostBlockingPoolSequencedTask(
-          kDumpChildProcessesSequenceName, FROM_HERE,
-          base::Bind(&DumpAndTerminatePluginInBlockingPool,
-                     base::Owned(new base::win::ScopedHandle(handle))));
+      base::StringPairs crash_keys = {
+          {crash_keys::kHungRendererReason, "plugin"}};
+      CrashDumpAndTerminateHungChildProcess(data.handle, crash_keys);
 #else
       base::Process process =
           base::Process::DeprecatedGetProcessFromHandle(data.handle);
@@ -360,43 +298,6 @@ void HungPluginTabHelper::Observe(
 }
 
 void HungPluginTabHelper::KillPlugin(int child_id) {
-#if defined(OS_WIN)
-  // Dump renderers that are sending or receiving pepper messages, in order to
-  // diagnose inter-process deadlocks.
-  // Only do that on the Canary channel, for 20% of pepper plugin hangs.
-  if (base::RandInt(0, 100) < 20) {
-    version_info::Channel channel = chrome::GetChannel();
-    if (channel == version_info::Channel::CANARY) {
-      std::unique_ptr<OwnedHandleVector> renderer_handles(
-          new OwnedHandleVector);
-      HANDLE current_process = ::GetCurrentProcess();
-      content::RenderProcessHost::iterator renderer_iter =
-          content::RenderProcessHost::AllHostsIterator();
-      for (; !renderer_iter.IsAtEnd(); renderer_iter.Advance()) {
-        content::RenderProcessHost* host = renderer_iter.GetCurrentValue();
-        HANDLE handle = NULL;
-        ::DuplicateHandle(current_process, host->GetHandle(), current_process,
-                          &handle, 0, FALSE, DUPLICATE_SAME_ACCESS);
-        renderer_handles->data()->push_back(handle);
-      }
-      // If there are a lot of renderer processes, it is likely that we will
-      // generate too many crash dumps. They might not all be uploaded/recorded
-      // due to our crash dump uploading restrictions. So we just don't generate
-      // renderer crash dumps in that case.
-      if (renderer_handles->data()->size() > 0 &&
-          renderer_handles->data()->size() < 4) {
-        content::BrowserThread::PostBlockingPoolSequencedTask(
-            kDumpChildProcessesSequenceName, FROM_HERE,
-            base::Bind(&DumpBrowserInBlockingPool));
-        content::BrowserThread::PostBlockingPoolSequencedTask(
-            kDumpChildProcessesSequenceName, FROM_HERE,
-            base::Bind(&DumpRenderersInBlockingPool,
-                       base::Owned(renderer_handles.release())));
-      }
-    }
-  }
-#endif
-
   PluginStateMap::iterator found = hung_plugins_.find(child_id);
   DCHECK(found != hung_plugins_.end());
 
