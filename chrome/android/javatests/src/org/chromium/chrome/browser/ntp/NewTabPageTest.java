@@ -79,9 +79,12 @@ public class NewTabPageTest {
 
     private static final String TEST_PAGE = "/chrome/test/data/android/navigate/simple.html";
 
-    private static final String[] FAKE_MOST_VISITED_TITLES = new String[] { "Simple" };
-    private static final String[] FAKE_MOST_VISITED_WHITELIST_ICON_PATHS = new String[] { "" };
-    private static final int[] FAKE_MOST_VISITED_SOURCES = new int[] {TileSource.TOP_SITES};
+    private static final String[] FAKE_MOST_VISITED_TITLES =
+            new String[] {"TOP_SITES", "WHITELIST"};
+    private static final String[] FAKE_MOST_VISITED_WHITELIST_ICON_PATHS =
+            new String[] {"", "/test.png"};
+    private static final int[] FAKE_MOST_VISITED_SOURCES =
+            new int[] {TileSource.TOP_SITES, TileSource.WHITELIST};
 
     private Tab mTab;
     private NewTabPage mNtp;
@@ -95,7 +98,12 @@ public class NewTabPageTest {
     public void setUp() throws Exception {
         mTestServer = EmbeddedTestServer.createAndStartServer(
                 InstrumentationRegistry.getInstrumentation().getContext());
-        mSiteSuggestionUrls = new String[] {mTestServer.getURL(TEST_PAGE)};
+
+        // The URLs may not contain duplicates.
+        mSiteSuggestionUrls = new String[FAKE_MOST_VISITED_TITLES.length];
+        for (int i = 0; i < mSiteSuggestionUrls.length; i++) {
+            mSiteSuggestionUrls[i] = mTestServer.getURL(TEST_PAGE) + "#" + i;
+        }
 
         mMostVisitedSites = new FakeMostVisitedSites();
         mMostVisitedSites.setTileSuggestions(FAKE_MOST_VISITED_TITLES, mSiteSuggestionUrls,
@@ -444,7 +452,7 @@ public class NewTabPageTest {
         // and the placeholder has not been inflated yet.
         Assert.assertEquals(View.VISIBLE, logoView.getVisibility());
         Assert.assertEquals(View.VISIBLE, searchBoxView.getVisibility());
-        Assert.assertEquals(1, mTileGridLayout.getChildCount());
+        Assert.assertEquals(2, mTileGridLayout.getChildCount());
         Assert.assertNull(ntpView.getPlaceholder());
 
         // When the search provider has no logo and there are no tile suggestions, the placeholder

@@ -10,6 +10,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
+import android.os.AsyncTask;
 import android.support.annotation.Nullable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
 import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
@@ -326,9 +327,7 @@ public class TileGroup implements MostVisitedSites.Observer {
         // modify them as there is no guarantee that the same tile would be used to update the view.
         LargeIconCallback iconCallback = new LargeIconCallbackImpl(tile.getUrl(), trackLoadTask);
         if (trackLoadTask) mObserver.onLoadTaskAdded();
-        if (!loadWhitelistIcon(tile, iconCallback)) {
-            mUiDelegate.getLargeIconForUrl(tile.getUrl(), mMinIconSize, iconCallback);
-        }
+        loadWhitelistIcon(tile, iconCallback);
 
         TileInteractionDelegate delegate = new TileInteractionDelegate(tile.getUrl());
         tileView.setOnClickListener(delegate);
@@ -337,17 +336,32 @@ public class TileGroup implements MostVisitedSites.Observer {
         return tileView;
     }
 
-    private boolean loadWhitelistIcon(Tile tile, LargeIconCallback iconCallback) {
-        if (tile.getWhitelistIconPath().isEmpty()) return false;
-
-        // TODO(mvanouwerkerk): Consider using an AsyncTask to reduce rendering jank.
-        Bitmap bitmap = BitmapFactory.decodeFile(tile.getWhitelistIconPath());
-        if (bitmap == null) {
-            Log.d(TAG, "Image decoding failed: %s", tile.getWhitelistIconPath());
-            return false;
+    private void loadWhitelistIcon(final Tile tile, final LargeIconCallback iconCallback) {
+        if (tile.getWhitelistIconPath().isEmpty()) {
+            mUiDelegate.getLargeIconForUrl(tile.getUrl(), mMinIconSize, iconCallback);
+            return;
         }
-        iconCallback.onLargeIconAvailable(bitmap, Color.BLACK, false);
-        return true;
+
+        AsyncTask<Void, Void, Bitmap> task = new AsyncTask<Void, Void, Bitmap>() {
+            @Override
+            protected Bitmap doInBackground(Void... params) {
+                Bitmap bitmap = BitmapFactory.decodeFile(tile.getWhitelistIconPath());
+                if (bitmap == null) {
+                    Log.d(TAG, "Image decoding failed: %s", tile.getWhitelistIconPath());
+                }
+                return bitmap;
+            }
+
+            @Override
+            protected void onPostExecute(Bitmap icon) {
+                if (icon == null) {
+                    mUiDelegate.getLargeIconForUrl(tile.getUrl(), mMinIconSize, iconCallback);
+                } else {
+                    iconCallback.onLargeIconAvailable(icon, Color.BLACK, false);
+                }
+            }
+        };
+        task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     /** Loads tile data from {@link #mPendingTiles} and clears it afterwards. */
