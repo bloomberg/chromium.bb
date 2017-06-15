@@ -11,11 +11,12 @@
 // 1. Remove all implementaiton, only keep definition.
 // 2. Use absolute path instead of relative path.
 // 3. Removed all helper functions such as: Create.
-// 4. Replace all nativeHandle to handle. This is because jni_generator.py
+// 4. Removed external functions that don't have implementation in shim file.
+// 5. Replace all nativeHandle to handle. This is because jni_generator.py
 // require jni functions start with "native" prefix. So we add the prefix to
 // generate the file. But the real jni functions in the static library
 // doesn't have the prefix.
-// 5. Added function RegisterNativeCallbacksNatives at the end of this file.
+// 6. Added function RegisterNativeCallbacksNatives at the end of this file.
 
 #ifndef com_google_vr_internal_controller_NativeCallbacks_JNI
 #define com_google_vr_internal_controller_NativeCallbacks_JNI
@@ -43,10 +44,9 @@ base::subtle::AtomicWord g_NativeCallbacks_clazz __attribute__((unused)) = 0;
 }  // namespace
 
 namespace NativeCallbacks {
-
 // Step 2: method stubs.
 
-extern "C" __attribute__((visibility("default"))) void
+JNI_GENERATOR_EXPORT void
 Java_com_google_vr_internal_controller_NativeCallbacks_handleStateChanged(
     JNIEnv* env,
     jobject jcaller,
@@ -54,7 +54,7 @@ Java_com_google_vr_internal_controller_NativeCallbacks_handleStateChanged(
     jint controllerId,
     jint newState);
 
-extern "C" __attribute__((visibility("default"))) void
+JNI_GENERATOR_EXPORT void
 Java_com_google_vr_internal_controller_NativeCallbacks_handleControllerRecentered(
     JNIEnv* env,
     jobject jcaller,
@@ -65,7 +65,7 @@ Java_com_google_vr_internal_controller_NativeCallbacks_handleControllerRecentere
     jfloat qz,
     jfloat qw);
 
-extern "C" __attribute__((visibility("default"))) void
+JNI_GENERATOR_EXPORT void
 Java_com_google_vr_internal_controller_NativeCallbacks_handleTouchEvent(
     JNIEnv* env,
     jobject jcaller,
@@ -75,7 +75,7 @@ Java_com_google_vr_internal_controller_NativeCallbacks_handleTouchEvent(
     jfloat x,
     jfloat y);
 
-extern "C" __attribute__((visibility("default"))) void
+JNI_GENERATOR_EXPORT void
 Java_com_google_vr_internal_controller_NativeCallbacks_handleOrientationEvent(
     JNIEnv* env,
     jobject jcaller,
@@ -86,7 +86,7 @@ Java_com_google_vr_internal_controller_NativeCallbacks_handleOrientationEvent(
     jfloat qz,
     jfloat qw);
 
-extern "C" __attribute__((visibility("default"))) void
+JNI_GENERATOR_EXPORT void
 Java_com_google_vr_internal_controller_NativeCallbacks_handleButtonEvent(
     JNIEnv* env,
     jobject jcaller,
@@ -95,7 +95,7 @@ Java_com_google_vr_internal_controller_NativeCallbacks_handleButtonEvent(
     jint buttonCode,
     jboolean down);
 
-extern "C" __attribute__((visibility("default"))) void
+JNI_GENERATOR_EXPORT void
 Java_com_google_vr_internal_controller_NativeCallbacks_handleAccelEvent(
     JNIEnv* env,
     jobject jcaller,
@@ -105,7 +105,7 @@ Java_com_google_vr_internal_controller_NativeCallbacks_handleAccelEvent(
     jfloat y,
     jfloat z);
 
-extern "C" __attribute__((visibility("default"))) void
+JNI_GENERATOR_EXPORT void
 Java_com_google_vr_internal_controller_NativeCallbacks_handleGyroEvent(
     JNIEnv* env,
     jobject jcaller,
@@ -115,36 +115,56 @@ Java_com_google_vr_internal_controller_NativeCallbacks_handleGyroEvent(
     jfloat y,
     jfloat z);
 
-extern "C" __attribute__((visibility("default"))) void
+JNI_GENERATOR_EXPORT void
 Java_com_google_vr_internal_controller_NativeCallbacks_handleServiceInitFailed(
     JNIEnv* env,
     jobject jcaller,
     jlong userData,
     jint failureReason);
 
-extern "C" __attribute__((visibility("default"))) void
+JNI_GENERATOR_EXPORT void
 Java_com_google_vr_internal_controller_NativeCallbacks_handleServiceFailed(
     JNIEnv* env,
     jobject jcaller,
     jlong userData);
 
-extern "C" __attribute__((visibility("default"))) void
+JNI_GENERATOR_EXPORT void
 Java_com_google_vr_internal_controller_NativeCallbacks_handleServiceUnavailable(
     JNIEnv* env,
     jobject jcaller,
     jlong userData);
-extern "C" __attribute__((visibility("default"))) void
+
+JNI_GENERATOR_EXPORT void
 Java_com_google_vr_internal_controller_NativeCallbacks_handleServiceConnected(
     JNIEnv* env,
     jobject jcaller,
     jlong userData,
     jint flags);
 
-extern "C" __attribute__((visibility("default"))) void
+JNI_GENERATOR_EXPORT void
 Java_com_google_vr_internal_controller_NativeCallbacks_handleServiceDisconnected(
     JNIEnv* env,
     jobject jcaller,
     jlong userData);
+
+JNI_GENERATOR_EXPORT void
+Java_com_google_vr_internal_controller_NativeCallbacks_handlePositionEvent(
+    JNIEnv* env,
+    jobject jcaller,
+    jlong userData,
+    jlong timestampNanos,
+    jfloat x,
+    jfloat y,
+    jfloat z);
+
+JNI_GENERATOR_EXPORT void
+Java_com_google_vr_internal_controller_NativeCallbacks_handleBatteryEvent(
+    JNIEnv* env,
+    jobject jcaller,
+    jlong userData,
+    jlong timestampNanos,
+    jboolean isCharging,
+    jint batteryLevelBucket);
 
 // Step 3: RegisterNatives.
 
@@ -262,6 +282,27 @@ static const JNINativeMethod kMethodsNativeCallbacks[] = {
      "V",
      reinterpret_cast<void*>(
          Java_com_google_vr_internal_controller_NativeCallbacks_handleServiceDisconnected)},
+    {"handlePositionEvent",
+     "("
+     "J"
+     "J"
+     "F"
+     "F"
+     "F"
+     ")"
+     "V",
+     reinterpret_cast<void*>(
+         Java_com_google_vr_internal_controller_NativeCallbacks_handlePositionEvent)},
+    {"handleBatteryEvent",
+     "("
+     "J"
+     "J"
+     "Z"
+     "I"
+     ")"
+     "V",
+     reinterpret_cast<void*>(
+         Java_com_google_vr_internal_controller_NativeCallbacks_handleBatteryEvent)},
 };
 
 static bool RegisterNativesImpl(JNIEnv* env) {
