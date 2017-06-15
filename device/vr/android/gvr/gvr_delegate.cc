@@ -5,9 +5,9 @@
 #include "device/vr/android/gvr/gvr_delegate.h"
 
 #include "base/trace_event/trace_event.h"
-#include "device/vr/vr_math.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
+#include "ui/gfx/geometry/vector3d_f.h"
 #include "ui/gfx/transform.h"
 #include "ui/gfx/transform_util.h"
 
@@ -30,16 +30,15 @@ static constexpr int64_t kPredictionTimeWithoutVsyncNanos = 50000000;
 // less than a frame.
 static constexpr int64_t kAngularVelocityEpsilonNanos = 1000000;
 
-void GvrMatToMatf(const gvr::Mat4f& in, vr::Mat4f* out) {
-  // If our std::array implementation doesn't have any non-data members, we can
-  // just cast the gvr matrix to an std::array.
-  static_assert(sizeof(in) == sizeof(*out),
-                "Cannot reinterpret gvr::Mat4f as vr::Matf");
-  *out = *reinterpret_cast<vr::Mat4f*>(const_cast<gvr::Mat4f*>(&in));
+void GvrMatToTransform(const gvr::Mat4f& in, gfx::Transform* out) {
+  *out = gfx::Transform(in.m[0][0], in.m[0][1], in.m[0][2], in.m[0][3],
+                        in.m[1][0], in.m[1][1], in.m[1][2], in.m[1][3],
+                        in.m[2][0], in.m[2][1], in.m[2][2], in.m[2][3],
+                        in.m[3][0], in.m[3][1], in.m[3][2], in.m[3][3]);
 }
 
-gfx::Vector3dF GetAngularVelocityFromPoses(vr::Mat4f head_mat,
-                                           vr::Mat4f head_mat_2,
+gfx::Vector3dF GetAngularVelocityFromPoses(gfx::Transform head_mat,
+                                           gfx::Transform head_mat_2,
                                            double epsilon_seconds) {
   // The angular velocity is a 3-element vector pointing along the rotation
   // axis with magnitude equal to rotation speed in radians/second, expressed
@@ -58,8 +57,8 @@ gfx::Vector3dF GetAngularVelocityFromPoses(vr::Mat4f head_mat,
   // See:
   // https://en.wikipedia.org/wiki/Angular_velocity#Calculation_from_the_orientation_matrix
 
-  vr::Mat4f delta_mat;
-  vr::Mat4f inverse_head_mat;
+  gfx::Transform delta_mat;
+  gfx::Transform inverse_head_mat;
   // Calculate difference matrix, and inverse head matrix rotation.
   // For the inverse rotation, just transpose the 3x3 subsection.
   //
@@ -67,35 +66,38 @@ gfx::Vector3dF GetAngularVelocityFromPoses(vr::Mat4f head_mat,
   // provided by the caller.
   for (int j = 0; j < 3; ++j) {
     for (int i = 0; i < 3; ++i) {
-      delta_mat[j][i] = (head_mat_2[j][i] - head_mat[j][i]) / epsilon_seconds;
-      inverse_head_mat[j][i] = head_mat[i][j];
+      delta_mat.matrix().set(j, i,
+                             head_mat_2.matrix().get(j, i) -
+                                 head_mat.matrix().get(j, i) / epsilon_seconds);
+      inverse_head_mat.matrix().set(j, i, head_mat.matrix().get(i, j));
     }
-    delta_mat[j][3] = delta_mat[3][j] = 0.0;
-    inverse_head_mat[j][3] = inverse_head_mat[3][j] = 0.0;
+    delta_mat.matrix().set(j, 3, 0);
+    delta_mat.matrix().set(3, j, 0);
+    inverse_head_mat.matrix().set(j, 3, 0);
+    inverse_head_mat.matrix().set(3, j, 0);
   }
-  delta_mat[3][3] = 1.0;
-  inverse_head_mat[3][3] = 1.0;
-  vr::Mat4f omega_mat;
-  vr::MatrixMul(delta_mat, inverse_head_mat, &omega_mat);
-  gfx::Vector3dF omega_vec(-omega_mat[2][1], omega_mat[2][0], -omega_mat[1][0]);
+  delta_mat.matrix().set(3, 3, 1);
+  inverse_head_mat.matrix().set(3, 3, 1);
+  gfx::Transform omega_mat = delta_mat * inverse_head_mat;
+  gfx::Vector3dF omega_vec(-omega_mat.matrix().get(2, 1),
+                           omega_mat.matrix().get(2, 0),
+                           -omega_mat.matrix().get(1, 0));
 
   // Rotate by inverse head matrix to bring into seated space.
-  return vr::MatrixVectorRotate(inverse_head_mat, omega_vec);
+  inverse_head_mat.TransformVector(&omega_vec);
+  return omega_vec;
 }
 
 }  // namespace
 
 /* static */
-mojom::VRPosePtr GvrDelegate::VRPosePtrFromGvrPose(const vr::Mat4f& head_mat) {
+mojom::VRPosePtr GvrDelegate::VRPosePtrFromGvrPose(
+    const gfx::Transform& head_mat) {
   mojom::VRPosePtr pose = mojom::VRPose::New();
 
   pose->orientation.emplace(4);
 
-  gfx::Transform inv_transform(
-      head_mat[0][0], head_mat[0][1], head_mat[0][2], head_mat[0][3],
-      head_mat[1][0], head_mat[1][1], head_mat[1][2], head_mat[1][3],
-      head_mat[2][0], head_mat[2][1], head_mat[2][2], head_mat[2][3],
-      head_mat[3][0], head_mat[3][1], head_mat[3][2], head_mat[3][3]);
+  gfx::Transform inv_transform(head_mat);
 
   gfx::Transform transform;
   if (inv_transform.GetInverse(&transform)) {
@@ -118,7 +120,7 @@ mojom::VRPosePtr GvrDelegate::VRPosePtrFromGvrPose(const vr::Mat4f& head_mat) {
 
 /* static */
 void GvrDelegate::GetGvrPoseWithNeckModel(gvr::GvrApi* gvr_api,
-                                          vr::Mat4f* out,
+                                          gfx::Transform* out,
                                           int64_t prediction_time) {
   gvr::ClockTimePoint target_time = gvr::GvrApi::GetTimePointNow();
   target_time.monotonic_system_time_nanos += prediction_time;
@@ -126,19 +128,19 @@ void GvrDelegate::GetGvrPoseWithNeckModel(gvr::GvrApi* gvr_api,
   gvr::Mat4f head_mat = gvr_api->ApplyNeckModel(
       gvr_api->GetHeadSpaceFromStartSpaceRotation(target_time), 1.0f);
 
-  GvrMatToMatf(head_mat, out);
+  GvrMatToTransform(head_mat, out);
 }
 
 /* static */
 void GvrDelegate::GetGvrPoseWithNeckModel(gvr::GvrApi* gvr_api,
-                                          vr::Mat4f* out) {
+                                          gfx::Transform* out) {
   GetGvrPoseWithNeckModel(gvr_api, out, kPredictionTimeWithoutVsyncNanos);
 }
 
 /* static */
 mojom::VRPosePtr GvrDelegate::GetVRPosePtrWithNeckModel(
     gvr::GvrApi* gvr_api,
-    vr::Mat4f* head_mat_out,
+    gfx::Transform* head_mat_out,
     int64_t prediction_time) {
   gvr::ClockTimePoint target_time = gvr::GvrApi::GetTimePointNow();
   target_time.monotonic_system_time_nanos += prediction_time;
@@ -146,11 +148,11 @@ mojom::VRPosePtr GvrDelegate::GetVRPosePtrWithNeckModel(
   gvr::Mat4f gvr_head_mat = gvr_api->ApplyNeckModel(
       gvr_api->GetHeadSpaceFromStartSpaceRotation(target_time), 1.0f);
 
-  vr::Mat4f* head_mat_ptr = head_mat_out;
-  vr::Mat4f head_mat;
+  gfx::Transform* head_mat_ptr = head_mat_out;
+  gfx::Transform head_mat;
   if (!head_mat_ptr)
     head_mat_ptr = &head_mat;
-  GvrMatToMatf(gvr_head_mat, head_mat_ptr);
+  GvrMatToTransform(gvr_head_mat, head_mat_ptr);
 
   mojom::VRPosePtr pose = GvrDelegate::VRPosePtrFromGvrPose(*head_mat_ptr);
 
@@ -158,8 +160,8 @@ mojom::VRPosePtr GvrDelegate::GetVRPosePtrWithNeckModel(
   target_time.monotonic_system_time_nanos += kAngularVelocityEpsilonNanos;
   gvr::Mat4f gvr_head_mat_2 =
       gvr_api->GetHeadSpaceFromStartSpaceRotation(target_time);
-  vr::Mat4f head_mat_2;
-  GvrMatToMatf(gvr_head_mat_2, &head_mat_2);
+  gfx::Transform head_mat_2;
+  GvrMatToTransform(gvr_head_mat_2, &head_mat_2);
 
   // Add headset angular velocity to the pose.
   pose->angularVelocity.emplace(3);
@@ -176,7 +178,7 @@ mojom::VRPosePtr GvrDelegate::GetVRPosePtrWithNeckModel(
 /* static */
 mojom::VRPosePtr GvrDelegate::GetVRPosePtrWithNeckModel(
     gvr::GvrApi* gvr_api,
-    vr::Mat4f* head_mat_out) {
+    gfx::Transform* head_mat_out) {
   return GetVRPosePtrWithNeckModel(gvr_api, head_mat_out,
                                    kPredictionTimeWithoutVsyncNanos);
 }

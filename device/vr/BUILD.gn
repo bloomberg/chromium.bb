@@ -29,11 +29,8 @@ if (enable_vr) {
       "vr_device_provider.h",
       "vr_display_impl.cc",
       "vr_display_impl.h",
-      "vr_math.cc",
-      "vr_math.h",
       "vr_service_impl.cc",
       "vr_service_impl.h",
-      "vr_types.h",
     ]
 
     deps += [

@@ -5,7 +5,9 @@
 #ifndef DEVICE_VR_ANDROID_GVR_GAMEPAD_DATA_PROVIDER_H
 #define DEVICE_VR_ANDROID_GVR_GAMEPAD_DATA_PROVIDER_H
 
-#include "device/vr/vr_types.h"
+#include "ui/gfx/geometry/quaternion.h"
+#include "ui/gfx/geometry/vector2d_f.h"
+#include "ui/gfx/geometry/vector3d_f.h"
 
 namespace device {
 
@@ -16,7 +18,7 @@ class GvrGamepadDataFetcher;
 struct GvrGamepadData {
   int64_t timestamp;
   gfx::Vector2dF touch_pos;
-  vr::Quatf orientation;
+  gfx::Quaternion orientation;
   gfx::Vector3dF accel;
   gfx::Vector3dF gyro;
   bool is_touching;

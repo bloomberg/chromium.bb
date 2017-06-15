@@ -5,8 +5,6 @@
 #ifndef DEVICE_VR_ANDROID_CARDBOARD_GAMEPAD_DATA_PROVIDER_H
 #define DEVICE_VR_ANDROID_CARDBOARD_GAMEPAD_DATA_PROVIDER_H
 
-#include "device/vr/vr_types.h"
-
 namespace device {
 
 class CardboardGamepadDataFetcher;
