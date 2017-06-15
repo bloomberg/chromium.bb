@@ -18,6 +18,7 @@ MockHardwareDisplayPlaneManager::MockHardwareDisplayPlaneManager(
     const std::vector<uint32_t>& crtcs,
     uint32_t planes_per_crtc) {
   const int kPlaneBaseId = 50;
+  const struct drm_format_modifier linear_modifier { 0x1, DRM_FORMAT_MOD_NONE };
   drm_ = drm;
   crtcs_ = crtcs;
   for (size_t crtc_idx = 0; crtc_idx < crtcs_.size(); crtc_idx++) {
@@ -25,7 +26,7 @@ MockHardwareDisplayPlaneManager::MockHardwareDisplayPlaneManager(
       std::unique_ptr<HardwareDisplayPlane> plane(
           new HardwareDisplayPlane(kPlaneBaseId + i, 1 << crtc_idx));
       plane->Initialize(drm, std::vector<uint32_t>(1, DRM_FORMAT_XRGB8888),
-                        std::vector<drm_format_modifier>(),  // modifiers
+                        std::vector<drm_format_modifier>(1, linear_modifier),
                         false, true);
       planes_.push_back(std::move(plane));
     }
