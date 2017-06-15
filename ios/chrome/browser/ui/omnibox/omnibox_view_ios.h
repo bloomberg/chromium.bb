@@ -176,10 +176,6 @@ class OmniboxViewIOS : public OmniboxView {
   // popup, and then remove this hack.  b/5877366.
   BOOL ignore_popup_updates_;
 
-  // iOS 10.3 fails to apply the strikethrough style unless an extra style is
-  // also applied. See https://crbug.com/699702 for discussion.
-  BOOL use_strikethrough_workaround_;
-
   // Bridges delegate method calls from |field_| to C++ land.
   base::scoped_nsobject<AutocompleteTextFieldDelegate> field_delegate_;
 
