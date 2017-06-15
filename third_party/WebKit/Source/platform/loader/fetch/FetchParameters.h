@@ -33,7 +33,7 @@
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/wtf/Allocator.h"
-#include "platform/wtf/text/AtomicString.h"
+#include "platform/wtf/text/TextEncoding.h"
 
 namespace blink {
 class SecurityOrigin;
@@ -87,8 +87,8 @@ class PLATFORM_EXPORT FetchParameters {
     resource_request_.SetRequestContext(context);
   }
 
-  const String& Charset() const { return charset_; }
-  void SetCharset(const String& charset) { charset_ = charset; }
+  String Charset() const { return String(charset_.GetName()); }
+  void SetCharset(const WTF::TextEncoding& charset) { charset_ = charset; }
 
   const ResourceLoaderOptions& Options() const { return options_; }
 
@@ -164,7 +164,7 @@ class PLATFORM_EXPORT FetchParameters {
 
  private:
   ResourceRequest resource_request_;
-  String charset_;
+  WTF::TextEncoding charset_;
   ResourceLoaderOptions options_;
   SpeculativePreloadType speculative_preload_type_;
   double preload_discovery_time_;

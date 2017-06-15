@@ -159,8 +159,8 @@ void ProcessingInstruction::Process(const String& href, const String& charset) {
     if (RuntimeEnabledFeatures::XSLTEnabled())
       resource = XSLStyleSheetResource::Fetch(params, GetDocument().Fetcher());
   } else {
-    params.SetCharset(charset.IsEmpty() ? GetDocument().characterSet()
-                                        : charset);
+    params.SetCharset(charset.IsEmpty() ? GetDocument().Encoding()
+                                        : WTF::TextEncoding(charset));
     resource = CSSStyleSheetResource::Fetch(params, GetDocument().Fetcher());
   }
 

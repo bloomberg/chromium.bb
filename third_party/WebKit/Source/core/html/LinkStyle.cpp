@@ -281,7 +281,7 @@ void LinkStyle::SetCrossOriginStylesheetStatus(CSSStyleSheet* sheet) {
 // TODO(yoav): move that logic to LinkLoader
 LinkStyle::LoadReturnValue LinkStyle::LoadStylesheetIfNeeded(
     const KURL& url,
-    const AtomicString& charset,
+    const WTF::TextEncoding& charset,
     const String& type) {
   if (disabled_state_ == kDisabled || !owner_->RelAttribute().IsStyleSheet() ||
       !StyleSheetTypeIsSupported(type) || !ShouldLoadResource() ||
@@ -377,7 +377,7 @@ void LinkStyle::Process() {
   String media = owner_->Media().DeprecatedLower();
 
   const KURL& href = owner_->GetNonEmptyURLAttribute(hrefAttr);
-  AtomicString charset = GetCharset();
+  WTF::TextEncoding charset = GetCharset();
 
   if (owner_->RelAttribute().GetIconType() != kInvalidIcon && href.IsValid() &&
       !href.IsEmpty()) {

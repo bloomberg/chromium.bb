@@ -68,7 +68,7 @@ class LinkStyle final : public LinkResource, ResourceOwner<StyleSheetResource> {
   String DebugName() const override { return "LinkStyle"; }
   enum LoadReturnValue { kLoaded, kNotNeeded, kBail };
   LoadReturnValue LoadStylesheetIfNeeded(const KURL&,
-                                         const AtomicString&,
+                                         const WTF::TextEncoding&,
                                          const String& type);
 
   enum DisabledState { kUnset, kEnabledViaScript, kDisabled };

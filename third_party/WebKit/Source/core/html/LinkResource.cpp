@@ -58,11 +58,11 @@ Document& LinkResource::GetDocument() {
   return owner_->GetDocument();
 }
 
-AtomicString LinkResource::GetCharset() const {
+WTF::TextEncoding LinkResource::GetCharset() const {
   AtomicString charset = owner_->getAttribute(HTMLNames::charsetAttr);
   if (charset.IsEmpty() && owner_->GetDocument().GetFrame())
-    charset = owner_->GetDocument().characterSet();
-  return charset;
+    return owner_->GetDocument().Encoding();
+  return WTF::TextEncoding(charset);
 }
 
 DEFINE_TRACE(LinkResource) {

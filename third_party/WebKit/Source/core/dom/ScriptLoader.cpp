@@ -395,11 +395,11 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
       //      be the same as the encoding of the script element's node
       //      document."
       // TODO(hiroshige): Should we handle failure in getting an encoding?
-      String encoding;
+      WTF::TextEncoding encoding;
       if (!element_->CharsetAttributeValue().IsEmpty())
-        encoding = element_->CharsetAttributeValue();
+        encoding = WTF::TextEncoding(element_->CharsetAttributeValue());
       else
-        encoding = element_document.characterSet();
+        encoding = element_document.Encoding();
 
       // 18. "If the script element has an integrity attribute,
       //      then let integrity metadata be that attribute's value.
@@ -691,7 +691,7 @@ bool ScriptLoader::FetchClassicScript(
     ParserDisposition parser_state,
     CrossOriginAttributeValue cross_origin,
     SecurityOrigin* security_origin,
-    const String& encoding) {
+    const WTF::TextEncoding& encoding) {
   // https://html.spec.whatwg.org/#prepare-a-script
   // 21.6, "classic":
   // "Fetch a classic script given url, settings, ..."
