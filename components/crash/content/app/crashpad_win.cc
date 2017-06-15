@@ -170,20 +170,12 @@ extern "C" void __declspec(dllexport) __cdecl DumpProcessWithoutCrash() {
 
 namespace {
 
-// We need to prevent ICF from folding DumpForHangDebuggingThread(),
-// DumpProcessForHungInputThread(), DumpProcessForHungInputNoCrashKeysThread()
-// and DumpProcessWithoutCrashThread() together, since that makes them
+// We need to prevent ICF from folding DumpProcessForHungInputThread(),
+// DumpProcessForHungInputNoCrashKeysThread() together, since that makes them
 // indistinguishable in crash dumps. We do this by making the function
 // bodies unique, and prevent optimization from shuffling things around.
 MSVC_DISABLE_OPTIMIZE()
 MSVC_PUSH_DISABLE_WARNING(4748)
-
-// Note that this function must be in a namespace for the [Renderer hang]
-// annotations to work on the crash server.
-DWORD WINAPI DumpProcessWithoutCrashThread(void*) {
-  DumpProcessWithoutCrash();
-  return 0;
-}
 
 // TODO(dtapuska): Remove when enough information is gathered where the crash
 // reports without crash keys come from.
@@ -213,14 +205,6 @@ DWORD WINAPI DumpProcessForHungInputNoCrashKeysThread(void* reason) {
   return 0;
 }
 
-// TODO(yzshen): Remove when enough information is collected and the hang rate
-// of pepper/renderer processes is reduced.
-DWORD WINAPI DumpForHangDebuggingThread(void*) {
-  DumpProcessWithoutCrash();
-  VLOG(1) << "dumped for hang debugging";
-  return 0;
-}
-
 MSVC_POP_WARNING()
 MSVC_ENABLE_OPTIMIZE()
 
@@ -241,15 +225,6 @@ int __declspec(dllexport) CrashForException(
     EXCEPTION_POINTERS* info) {
   crash_reporter::GetCrashpadClient().DumpAndCrash(info);
   return EXCEPTION_CONTINUE_SEARCH;
-}
-
-// Injects a thread into a remote process to dump state when there is no crash.
-HANDLE __declspec(dllexport) __cdecl InjectDumpProcessWithoutCrash(
-    HANDLE process) {
-  return CreateRemoteThread(
-      process, nullptr, 0,
-      crash_reporter::internal::DumpProcessWithoutCrashThread, nullptr, 0,
-      nullptr);
 }
 
 // Injects a thread into a remote process to dump state when there is no crash.
@@ -276,13 +251,6 @@ HANDLE __declspec(dllexport) __cdecl InjectDumpForHungInputNoCrashKeys(
       process, nullptr, 0,
       crash_reporter::internal::DumpProcessForHungInputNoCrashKeysThread,
       reinterpret_cast<void*>(reason), 0, nullptr);
-}
-
-HANDLE __declspec(dllexport) __cdecl InjectDumpForHangDebugging(
-    HANDLE process) {
-  return CreateRemoteThread(
-      process, nullptr, 0, crash_reporter::internal::DumpForHangDebuggingThread,
-      0, 0, nullptr);
 }
 
 #if defined(ARCH_CPU_X86_64)
