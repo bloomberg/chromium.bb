@@ -272,6 +272,7 @@ Textfield::Textfield()
       selection_text_color_(SK_ColorWHITE),
       selection_background_color_(SK_ColorBLUE),
       placeholder_text_color_(kDefaultPlaceholderTextColor),
+      placeholder_text_draw_flags_(gfx::Canvas::DefaultCanvasTextAlignment()),
       invalid_(false),
       text_input_type_(ui::TEXT_INPUT_TYPE_TEXT),
       text_input_flags_(0),
@@ -1970,11 +1971,12 @@ void Textfield::PaintTextAndCursor(gfx::Canvas* canvas) {
   // Draw placeholder text if needed.
   gfx::RenderText* render_text = GetRenderText();
   if (text().empty() && !GetPlaceholderText().empty()) {
-    canvas->DrawStringRect(GetPlaceholderText(), GetFontList(),
-                           ui::MaterialDesignController::IsSecondaryUiMaterial()
-                               ? SkColorSetA(GetTextColor(), 0x83)
-                               : placeholder_text_color_,
-                           render_text->display_rect());
+    canvas->DrawStringRectWithFlags(
+        GetPlaceholderText(), GetFontList(),
+        ui::MaterialDesignController::IsSecondaryUiMaterial()
+            ? SkColorSetA(GetTextColor(), 0x83)
+            : placeholder_text_color_,
+        render_text->display_rect(), placeholder_text_draw_flags_);
   }
 
   render_text->Draw(canvas);
