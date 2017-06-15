@@ -21,7 +21,7 @@ namespace {
 void ApplyAnchoring(const UiElement& parent,
                     XAnchoring x_anchoring,
                     YAnchoring y_anchoring,
-                    Transform* transform) {
+                    gfx::Transform* transform) {
   // To anchor a child, use the parent's size to find its edge.
   float x_offset;
   switch (x_anchoring) {
@@ -47,7 +47,7 @@ void ApplyAnchoring(const UiElement& parent,
       y_offset = 0.0f;
       break;
   }
-  transform->Translate(gfx::Vector3dF(x_offset, y_offset, 0));
+  transform->matrix().postTranslate(x_offset, y_offset, 0);
 }
 
 }  // namespace
@@ -233,32 +233,36 @@ void UiScene::ApplyRecursiveTransforms(UiElement* element) {
     CHECK(parent != nullptr);
   }
 
-  Transform* transform = element->mutable_transform();
-  transform->MakeIdentity();
-  transform->Scale(element->size());
+  gfx::Transform transform;
+  transform.Scale3d(element->size().x(), element->size().y(),
+                    element->size().z());
   element->set_computed_opacity(element->opacity());
   element->set_computed_lock_to_fov(element->lock_to_fov());
 
   // Compute an inheritable transformation that can be applied to this element,
   // and it's children, if applicable.
-  Transform* inheritable = &element->inheritable_transform();
-  inheritable->MakeIdentity();
-  inheritable->Scale(element->scale());
-  inheritable->Rotate(element->rotation());
-  inheritable->Translate(element->translation());
+  gfx::Transform inheritable;
+  inheritable.matrix().postScale(element->scale().x(), element->scale().y(),
+                                 element->scale().z());
+  inheritable.ConcatTransform(gfx::Transform(element->rotation()));
+  inheritable.matrix().postTranslate(element->translation().x(),
+                                     element->translation().y(),
+                                     element->translation().z());
   if (parent) {
     ApplyAnchoring(*parent, element->x_anchoring(), element->y_anchoring(),
-                   inheritable);
+                   &inheritable);
     ApplyRecursiveTransforms(parent);
-    inheritable->to_world.ConcatTransform(
-        parent->inheritable_transform().to_world);
+    inheritable.ConcatTransform(parent->inheritable_transform());
 
     element->set_computed_opacity(element->computed_opacity() *
                                   parent->opacity());
     element->set_computed_lock_to_fov(parent->lock_to_fov());
   }
 
-  transform->to_world.ConcatTransform(inheritable->to_world);
+  transform.ConcatTransform(inheritable);
+
+  element->set_transform(transform);
+  element->set_inheritable_transform(inheritable);
   element->set_dirty(false);
 }
 

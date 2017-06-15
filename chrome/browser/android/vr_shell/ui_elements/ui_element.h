@@ -54,23 +54,12 @@ enum Fill {
   SELF = 4,
 };
 
-// TODO(vollick): use gfx::Transform crbug.com/718004
-struct Transform {
-  Transform();
-  explicit Transform(const Transform& other);
-
-  void MakeIdentity();
-  void Rotate(const gfx::Quaternion& quat);
-  void Translate(const gfx::Vector3dF& translation);
-  void Scale(const gfx::Vector3dF& scale);
-
-  gfx::Transform to_world;
-};
-
 class WorldRectangle {
  public:
-  const gfx::Transform& TransformMatrix() const;
-  Transform* mutable_transform() { return &transform_; }
+  const gfx::Transform& transform() const { return transform_; }
+  void set_transform(const gfx::Transform& transform) {
+    transform_ = transform;
+  }
 
   gfx::Point3F GetCenter() const;
   gfx::Vector3dF GetNormal() const;
@@ -91,7 +80,7 @@ class WorldRectangle {
       const gfx::Point3F& world_point) const;
 
  private:
-  Transform transform_;
+  gfx::Transform transform_;
 };
 
 class UiElement : public WorldRectangle {
@@ -227,13 +216,10 @@ class UiElement : public WorldRectangle {
   void set_draw_phase(int draw_phase) { draw_phase_ = draw_phase; }
 
   // This transform can be used by children to derive position of its parent.
-  vr_shell::Transform& inheritable_transform() {
+  const gfx::Transform& inheritable_transform() const {
     return inheritable_transform_;
   }
-  const vr_shell::Transform& inheritable_transform() const {
-    return inheritable_transform_;
-  }
-  void set_inheritable_transform(const vr_shell::Transform& transform) {
+  void set_inheritable_transform(const gfx::Transform& transform) {
     inheritable_transform_ = transform;
   }
 
@@ -319,7 +305,7 @@ class UiElement : public WorldRectangle {
   int draw_phase_ = 1;
 
   // This transform can be used by children to derive position of its parent.
-  vr_shell::Transform inheritable_transform_;
+  gfx::Transform inheritable_transform_;
 
   // A flag usable during transformation calculates to avoid duplicate work.
   bool dirty_ = false;
@@ -327,7 +313,7 @@ class UiElement : public WorldRectangle {
   // An identifier used for testing and debugging, in lieu of a string.
   UiElementDebugId debug_id_ = UiElementDebugId::kNone;
 
-  vr_shell::Transform transform_;
+  gfx::Transform transform_;
 
   ColorScheme::Mode mode_ = ColorScheme::kModeNormal;
 

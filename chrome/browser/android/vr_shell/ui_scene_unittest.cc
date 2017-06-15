@@ -135,8 +135,8 @@ TEST(UiScene, ParentTransformAppliesToChild) {
   gfx::Point3F point(1, 0, 0);
 
   scene.OnBeginFrame(usToTicks(0));
-  child->TransformMatrix().TransformPoint(&origin);
-  child->TransformMatrix().TransformPoint(&point);
+  child->transform().TransformPoint(&origin);
+  child->transform().TransformPoint(&point);
   EXPECT_VEC3F_NEAR(gfx::Point3F(6, 10, 0), origin);
   EXPECT_VEC3F_NEAR(gfx::Point3F(0, 10, 0), point);
 }
