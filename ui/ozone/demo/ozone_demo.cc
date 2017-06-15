@@ -199,6 +199,10 @@ RendererFactory::~RendererFactory() {
 }
 
 bool RendererFactory::Initialize() {
+  ui::OzonePlatform::InitParams params;
+  params.single_process = true;
+  ui::OzonePlatform::InitializeForGPU(params);
+
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(kDisableGpu) && gl::init::InitializeGLOneOff() &&
       gpu_helper_.Initialize(base::ThreadTaskRunnerHandle::Get(),
