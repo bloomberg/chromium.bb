@@ -93,6 +93,11 @@ crbug.com/309675 virtual/disable-spinvalidation/compositing/gestures/gesture-tap
 # when we swith to swiftshader.
 crbug.com/549742 [ Linux Mac Win ] virtual/gpu/fast/canvas/canvas-drawImage-video-imageSmoothingEnabled.html [ Failure ]
 
+crbug.com/733428 virtual/gpu-rasterization/images/color-profile-background-image-repeat.html [ NeedsManualRebaseline ]
+crbug.com/733428 virtual/gpu-rasterization/images/color-profile-border-image.html [ NeedsManualRebaseline ]
+crbug.com/733428 virtual/gpu-rasterization/images/color-profile-svg.html [ NeedsManualRebaseline ]
+crbug.com/733428 virtual/gpu/fast/canvas/image-object-in-canvas.html [ NeedsManualRebaseline ]
+
 crbug.com/602110 hittesting/border-hittest-with-image-fallback.html [ Failure ]
 
 # Fails consistently on WebKit Mac10.10, WebKit Mac10.11 (retina) and mac10.10_blink_rel tryserver, but not on other Mac bots.
