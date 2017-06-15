@@ -44,7 +44,7 @@ namespace app_list {
 
 namespace {
 
-constexpr int kPadding = 16;
+constexpr int kPadding = 12;
 constexpr int kInnerPadding = 24;
 constexpr int kPreferredWidth = 360;
 constexpr int kPreferredWidthFullscreen = 544;
@@ -53,7 +53,7 @@ constexpr int kPreferredHeight = 48;
 constexpr SkColor kHintTextColor = SkColorSetARGBMacro(0xFF, 0xA0, 0xA0, 0xA0);
 
 constexpr int kBackgroundBorderCornerRadius = 2;
-constexpr int kBackgroundBorderCornerRadiusFullscreen = 20;
+constexpr int kBackgroundBorderCornerRadiusFullscreen = 24;
 
 constexpr int kGoogleIconSize = 24;
 constexpr int kMicIconSize = 24;
@@ -180,6 +180,9 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
     content_container_->AddChildView(google_icon_);
 
     search_box_->set_placeholder_text_color(kDefaultSearchboxColor);
+    search_box_->set_placeholder_text_draw_flags(
+        gfx::Canvas::TEXT_ALIGN_CENTER);
+    search_box_->SetFontList(search_box_->GetFontList().DeriveWithSizeDelta(2));
   } else {
     back_button_ = new SearchBoxImageButton(this);
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
@@ -230,6 +233,9 @@ void SearchBoxView::ClearSearch() {
 }
 
 void SearchBoxView::SetShadow(const gfx::ShadowValue& shadow) {
+  if (is_fullscreen_app_list_enabled_)
+    return;
+
   SetBorder(base::MakeUnique<views::ShadowBorder>(shadow));
   Layout();
 }

@@ -162,6 +162,10 @@ class VIEWS_EXPORT Textfield : public View,
     placeholder_text_color_ = color;
   }
 
+  void set_placeholder_text_draw_flags(int flags) {
+    placeholder_text_draw_flags_ = flags;
+  }
+
   // Sets whether to indicate the textfield has invalid content.
   void SetInvalid(bool invalid);
   bool invalid() const { return invalid_; }
@@ -471,6 +475,9 @@ class VIEWS_EXPORT Textfield : public View,
   // Placeholder text color.
   // TODO(estade): remove this when Harmony/MD is default.
   SkColor placeholder_text_color_;
+
+  // The draw flags specified for |placeholder_text_|.
+  int placeholder_text_draw_flags_;
 
   // True when the contents are deemed unacceptable and should be indicated as
   // such.
