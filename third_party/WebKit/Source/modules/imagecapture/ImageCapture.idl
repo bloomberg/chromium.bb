@@ -16,6 +16,7 @@
     [ImplementedAs=videoStreamTrack] readonly attribute MediaStreamTrack track;
 
     [CallWith=ScriptState] Promise<PhotoCapabilities> getPhotoCapabilities();
+    [CallWith=ScriptState] Promise<PhotoSettings> getPhotoSettings();
     [CallWith=ScriptState] Promise<void> setOptions(PhotoSettings photoSettings);
     [CallWith=ScriptState] Promise<Blob> takePhoto(optional PhotoSettings photoSettings);
     [CallWith=ScriptState] Promise<ImageBitmap> grabFrame();

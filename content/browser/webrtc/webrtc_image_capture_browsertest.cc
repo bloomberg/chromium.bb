@@ -23,6 +23,7 @@ namespace content {
 #if defined(OS_WIN)
 // These tests are flaky on WebRTC Windows bots: https://crbug.com/633242.
 #define MAYBE_GetPhotoCapabilities DISABLED_GetPhotoCapabilities
+#define MAYBE_GetPhotoSettings DISABLED_GetPhotoSettings
 #define MAYBE_TakePhoto DISABLED_TakePhoto
 #define MAYBE_GrabFrame DISABLED_GrabFrame
 #define MAYBE_GetTrackCapabilities DISABLED_GetTrackCapabilities
@@ -30,6 +31,7 @@ namespace content {
 #define MAYBE_ManipulateZoom DISABLED_ManipulateZoom
 #else
 #define MAYBE_GetPhotoCapabilities GetPhotoCapabilities
+#define MAYBE_GetPhotoSettings GetPhotoSettings
 #define MAYBE_TakePhoto TakePhoto
 #define MAYBE_GrabFrame GrabFrame
 #define MAYBE_GetTrackCapabilities GetTrackCapabilities
@@ -122,6 +124,10 @@ IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureBrowserTest,
   ASSERT_TRUE(RunImageCaptureTestCase("testCreateAndGetPhotoCapabilities()"));
 }
 
+IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureBrowserTest, MAYBE_GetPhotoSettings) {
+  embedded_test_server()->StartAcceptingConnections();
+  ASSERT_TRUE(RunImageCaptureTestCase("testCreateAndGetPhotoSettings()"));
+}
 IN_PROC_BROWSER_TEST_P(WebRtcImageCaptureBrowserTest, MAYBE_TakePhoto) {
   embedded_test_server()->StartAcceptingConnections();
   ASSERT_TRUE(RunImageCaptureTestCase("testCreateAndTakePhoto()"));
