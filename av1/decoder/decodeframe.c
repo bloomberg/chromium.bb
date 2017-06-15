@@ -3087,11 +3087,10 @@ static void setup_superres(AV1_COMMON *const cm, struct aom_read_bit_buffer *rb,
     cm->superres_scale_numerator += SUPERRES_SCALE_NUMERATOR_MIN;
     // Don't edit cm->width or cm->height directly, or the buffers won't get
     // resized correctly
-    av1_calculate_scaled_size(width, height, cm->superres_scale_numerator,
-                              SUPERRES_SCALE_DENOMINATOR);
+    av1_calculate_scaled_size(width, height, cm->superres_scale_numerator);
   } else {
     // 1:1 scaling - ie. no scaling, scale not provided
-    cm->superres_scale_numerator = SUPERRES_SCALE_DENOMINATOR;
+    cm->superres_scale_numerator = SCALE_DENOMINATOR;
   }
 }
 #endif  // CONFIG_FRAME_SUPERRES

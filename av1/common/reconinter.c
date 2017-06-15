@@ -1041,7 +1041,7 @@ void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd, int plane,
             pre = pre_buf->buf + y * pre_buf->stride + x;
             scaled_mv.row = mv_q4.row;
             scaled_mv.col = mv_q4.col;
-            xs = ys = 16;
+            xs = ys = SCALE_DENOMINATOR;
           }
 
           subpel_x = scaled_mv.col & SUBPEL_MASK;
@@ -1146,8 +1146,8 @@ void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd, int plane,
         pre[ref] = pre_buf->buf + (y * pre_buf->stride + x);
         scaled_mv[ref].row = mv_q4.row;
         scaled_mv[ref].col = mv_q4.col;
-        subpel_params[ref].xs = 16;
-        subpel_params[ref].ys = 16;
+        subpel_params[ref].xs = SCALE_DENOMINATOR;
+        subpel_params[ref].ys = SCALE_DENOMINATOR;
       }
 
       subpel_params[ref].subpel_x = scaled_mv[ref].col & SUBPEL_MASK;
@@ -2983,7 +2983,7 @@ static void build_inter_predictors_single_buf(MACROBLOCKD *xd, int plane,
     pre = pre_buf->buf + (y * pre_buf->stride + x);
     scaled_mv.row = mv_q4.row;
     scaled_mv.col = mv_q4.col;
-    xs = ys = 16;
+    xs = ys = SCALE_DENOMINATOR;
   }
 
   subpel_x = scaled_mv.col & SUBPEL_MASK;

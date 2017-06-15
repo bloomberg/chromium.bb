@@ -1672,11 +1672,11 @@ static unsigned int lcg_rand16(unsigned int *state) {
 uint8_t av1_calculate_next_resize_scale(const AV1_COMP *cpi) {
   static unsigned int seed = 56789;
   const AV1EncoderConfig *oxcf = &cpi->oxcf;
-  if (oxcf->pass == 1) return RESIZE_SCALE_DENOMINATOR;
-  uint8_t new_num = RESIZE_SCALE_DENOMINATOR;
+  if (oxcf->pass == 1) return SCALE_DENOMINATOR;
+  uint8_t new_num = SCALE_DENOMINATOR;
 
   switch (oxcf->resize_mode) {
-    case RESIZE_NONE: new_num = RESIZE_SCALE_DENOMINATOR; break;
+    case RESIZE_NONE: new_num = SCALE_DENOMINATOR; break;
     case RESIZE_FIXED: new_num = oxcf->resize_scale_numerator; break;
     case RESIZE_DYNAMIC:
       // RESIZE_DYNAMIC: Just random for now.
@@ -1693,11 +1693,11 @@ uint8_t av1_calculate_next_superres_scale(const AV1_COMP *cpi, int width,
                                           int height) {
   static unsigned int seed = 34567;
   const AV1EncoderConfig *oxcf = &cpi->oxcf;
-  if (oxcf->pass == 1) return SUPERRES_SCALE_DENOMINATOR;
-  uint8_t new_num = SUPERRES_SCALE_DENOMINATOR;
+  if (oxcf->pass == 1) return SCALE_DENOMINATOR;
+  uint8_t new_num = SCALE_DENOMINATOR;
 
   switch (oxcf->superres_mode) {
-    case SUPERRES_NONE: new_num = SUPERRES_SCALE_DENOMINATOR; break;
+    case SUPERRES_NONE: new_num = SCALE_DENOMINATOR; break;
     case SUPERRES_FIXED: new_num = oxcf->superres_scale_numerator; break;
     case SUPERRES_DYNAMIC:
       // SUPERRES_DYNAMIC: Just random for now.
@@ -1707,9 +1707,9 @@ uint8_t av1_calculate_next_superres_scale(const AV1_COMP *cpi, int width,
   }
 
   // Make sure overall reduction is no more than 1/2 of the source size.
-  if (new_num * width / SUPERRES_SCALE_DENOMINATOR * 2 < oxcf->width ||
-      new_num * height / SUPERRES_SCALE_DENOMINATOR * 2 < oxcf->height)
-    new_num = SUPERRES_SCALE_DENOMINATOR;
+  if (new_num * width / SCALE_DENOMINATOR * 2 < oxcf->width ||
+      new_num * height / SCALE_DENOMINATOR * 2 < oxcf->height)
+    new_num = SCALE_DENOMINATOR;
 
   return new_num;
 }

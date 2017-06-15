@@ -79,13 +79,14 @@ YV12_BUFFER_CONFIG *av1_scale_if_required(AV1_COMMON *cm,
                                           YV12_BUFFER_CONFIG *unscaled,
                                           YV12_BUFFER_CONFIG *scaled);
 
-void av1_calculate_scaled_size(int *width, int *height, int num, int den);
+void av1_calculate_scaled_size(int *width, int *height, int num);
+
 #if CONFIG_FRAME_SUPERRES
 void av1_superres_upscale(AV1_COMMON *cm, BufferPool *const pool);
 
 // Returns 1 if a superres upscaled frame is unscaled and 0 otherwise.
 static INLINE int av1_superres_unscaled(const AV1_COMMON *cm) {
-  return (cm->superres_scale_numerator == SUPERRES_SCALE_DENOMINATOR);
+  return (cm->superres_scale_numerator == SCALE_DENOMINATOR);
 }
 #endif  // CONFIG_FRAME_SUPERRES
 

@@ -256,12 +256,12 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
   }
 
   RANGE_CHECK_HI(cfg, rc_resize_mode, RESIZE_DYNAMIC);
-  RANGE_CHECK(cfg, rc_resize_numerator, RESIZE_SCALE_DENOMINATOR / 2,
-              RESIZE_SCALE_DENOMINATOR);
+  RANGE_CHECK(cfg, rc_resize_numerator, SCALE_DENOMINATOR / 2,
+              SCALE_DENOMINATOR);
 #if CONFIG_FRAME_SUPERRES
   RANGE_CHECK_HI(cfg, rc_superres_mode, SUPERRES_DYNAMIC);
-  RANGE_CHECK(cfg, rc_superres_numerator, SUPERRES_SCALE_DENOMINATOR / 2,
-              SUPERRES_SCALE_DENOMINATOR);
+  RANGE_CHECK(cfg, rc_superres_numerator, SCALE_DENOMINATOR / 2,
+              SCALE_DENOMINATOR);
 #endif  // CONFIG_FRAME_SUPERRES
 
   // AV1 does not support a lower bound on the keyframe interval in
@@ -491,14 +491,14 @@ static aom_codec_err_t set_encoder_config(
   oxcf->resize_mode = (RESIZE_MODE)cfg->rc_resize_mode;
   oxcf->resize_scale_numerator = (uint8_t)cfg->rc_resize_numerator;
   if (oxcf->resize_mode == RESIZE_FIXED &&
-      oxcf->resize_scale_numerator == RESIZE_SCALE_DENOMINATOR)
+      oxcf->resize_scale_numerator == SCALE_DENOMINATOR)
     oxcf->resize_mode = RESIZE_NONE;
 
 #if CONFIG_FRAME_SUPERRES
   oxcf->superres_mode = (SUPERRES_MODE)cfg->rc_superres_mode;
   oxcf->superres_scale_numerator = (uint8_t)cfg->rc_superres_numerator;
   if (oxcf->superres_mode == SUPERRES_FIXED &&
-      oxcf->superres_scale_numerator == SUPERRES_SCALE_DENOMINATOR)
+      oxcf->superres_scale_numerator == SCALE_DENOMINATOR)
     oxcf->superres_mode = SUPERRES_NONE;
 #endif  // CONFIG_FRAME_SUPERRES
 
@@ -1583,12 +1583,12 @@ static aom_codec_enc_cfg_map_t encoder_usage_cfg_map[] = {
 
         25,  // g_lag_in_frames
 
-        0,                         // rc_dropframe_thresh
-        RESIZE_NONE,               // rc_resize_mode
-        RESIZE_SCALE_DENOMINATOR,  // rc_resize_numerator
+        0,                  // rc_dropframe_thresh
+        RESIZE_NONE,        // rc_resize_mode
+        SCALE_DENOMINATOR,  // rc_resize_numerator
 
-        0,                           // rc_superres_mode
-        SUPERRES_SCALE_DENOMINATOR,  // rc_superres_numerator
+        0,                  // rc_superres_mode
+        SCALE_DENOMINATOR,  // rc_superres_numerator
 
         AOM_VBR,      // rc_end_usage
         { NULL, 0 },  // rc_twopass_stats_in
