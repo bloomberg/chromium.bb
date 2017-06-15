@@ -25,6 +25,7 @@ class Vector2dF;
 
 namespace blink {
 
+class ContentLayerClientImpl;
 class JSONObject;
 class PaintArtifact;
 class WebLayer;
@@ -114,8 +115,6 @@ class PLATFORM_EXPORT PaintArtifactCompositor {
   };
 
   PaintArtifactCompositor();
-
-  class ContentLayerClientImpl;
 
   // Collects the PaintChunks into groups which will end up in the same
   // cc layer. This is the entry point of the layerization algorithm.
