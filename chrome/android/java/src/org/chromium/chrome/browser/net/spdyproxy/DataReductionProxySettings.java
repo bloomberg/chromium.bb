@@ -147,6 +147,11 @@ public class DataReductionProxySettings {
         return nativeIsDataReductionProxyPromoAllowed(mNativeDataReductionProxySettings);
     }
 
+    /** Returns true if the data saver proxy promo is allowed to be shown as part of FRE. */
+    public boolean isDataReductionProxyFREPromoAllowed() {
+        return nativeIsDataReductionProxyFREPromoAllowed(mNativeDataReductionProxySettings);
+    }
+
     /** Returns true if the snackbar promo is allowed to be shown. */
     public boolean isSnackbarPromoAllowed(String url) {
         return url.startsWith(UrlConstants.HTTP_URL_PREFIX) && isDataReductionProxyEnabled();
@@ -376,6 +381,8 @@ public class DataReductionProxySettings {
 
     private native long nativeInit();
     private native boolean nativeIsDataReductionProxyPromoAllowed(
+            long nativeDataReductionProxySettingsAndroid);
+    private native boolean nativeIsDataReductionProxyFREPromoAllowed(
             long nativeDataReductionProxySettingsAndroid);
     private native boolean nativeIsDataReductionProxyEnabled(
             long nativeDataReductionProxySettingsAndroid);

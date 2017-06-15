@@ -16,7 +16,6 @@ import android.text.TextUtils;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CommandLine;
-import org.chromium.base.FieldTrialList;
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -136,7 +135,7 @@ public abstract class FirstRunFlowSequencer  {
 
     protected boolean shouldShowDataReductionPage() {
         return !DataReductionProxySettings.getInstance().isDataReductionProxyManaged()
-                && FieldTrialList.findFullName("DataReductionProxyFREPromo").startsWith("Enabled");
+                && DataReductionProxySettings.getInstance().isDataReductionProxyFREPromoAllowed();
     }
 
     @VisibleForTesting

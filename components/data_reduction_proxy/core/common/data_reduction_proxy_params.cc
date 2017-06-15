@@ -21,6 +21,7 @@
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"
+#include "base/sys_info.h"
 #endif
 
 namespace {
@@ -86,6 +87,14 @@ bool IsIncludedInAndroidOnePromoFieldTrial(
   return build_fingerprint.find(kAndroidOneIdentifier) != std::string::npos;
 }
 
+bool IsIncludedInAndroidLowMemoryDevicePromoFieldTrial() {
+#if defined(OS_ANDROID)
+  return base::SysInfo::IsLowEndDevice() &&
+         IsIncludedInFieldTrial("DataReductionProxyLowMemoryDevicePromo");
+#endif
+  return false;
+}
+
 }  // namespace
 
 namespace data_reduction_proxy {
@@ -98,10 +107,23 @@ bool IsIncludedInPromoFieldTrial() {
 #if defined(OS_ANDROID)
   base::StringPiece android_build_fingerprint =
       base::android::BuildInfo::GetInstance()->android_build_fp();
-
-  return IsIncludedInAndroidOnePromoFieldTrial(android_build_fingerprint);
+  if (IsIncludedInAndroidOnePromoFieldTrial(android_build_fingerprint))
+    return true;
 #endif
-  return false;
+  return IsIncludedInAndroidLowMemoryDevicePromoFieldTrial();
+}
+
+bool IsIncludedInFREPromoFieldTrial() {
+  if (IsIncludedInFieldTrial("DataReductionProxyFREPromo"))
+    return true;
+
+#if defined(OS_ANDROID)
+  base::StringPiece android_build_fingerprint =
+      base::android::BuildInfo::GetInstance()->android_build_fp();
+  if (IsIncludedInAndroidOnePromoFieldTrial(android_build_fingerprint))
+    return true;
+#endif
+  return IsIncludedInAndroidLowMemoryDevicePromoFieldTrial();
 }
 
 bool IsIncludedInAndroidOnePromoFieldTrialForTesting(
