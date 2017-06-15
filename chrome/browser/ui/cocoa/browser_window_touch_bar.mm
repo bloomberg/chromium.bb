@@ -275,7 +275,7 @@ class HomePrefNotificationBridge {
                           IDS_TOUCH_BAR_STOP_RELOAD_CUSTOMIZATION_LABEL)];
   } else if ([identifier hasSuffix:kHomeTouchId]) {
     [touchBarItem setView:CreateTouchBarButton(kNavigateHomeIcon, self,
-                                               IDC_HOME, IDS_TOOLTIP_HOME)];
+                                               IDC_HOME, IDS_ACCNAME_HOME)];
     [touchBarItem
         setCustomizationLabel:l10n_util::GetNSString(
                                   IDS_TOUCH_BAR_HOME_CUSTOMIZATION_LABEL)];
@@ -404,12 +404,11 @@ class HomePrefNotificationBridge {
   NSArray* segments = [segmentElement
       accessibilityAttributeValue:NSAccessibilityChildrenAttribute];
   NSEnumerator* e = [segments objectEnumerator];
-  [[e nextObject] accessibilitySetOverrideValue:l10n_util::GetNSString(
-                                                    IDS_TOOLTIP_TOUCH_BAR_BACK)
-                                   forAttribute:NSAccessibilityTitleAttribute];
   [[e nextObject]
-      accessibilitySetOverrideValue:l10n_util::GetNSString(
-                                        IDS_TOOLTIP_TOUCH_BAR_FORWARD)
+      accessibilitySetOverrideValue:l10n_util::GetNSString(IDS_ACCNAME_BACK)
+                       forAttribute:NSAccessibilityTitleAttribute];
+  [[e nextObject]
+      accessibilitySetOverrideValue:l10n_util::GetNSString(IDS_ACCNAME_FORWARD)
                        forAttribute:NSAccessibilityTitleAttribute];
   return control;
 }
