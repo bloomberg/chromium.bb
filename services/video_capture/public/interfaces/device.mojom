@@ -5,7 +5,6 @@
 module video_capture.mojom;
 
 import "media/capture/mojo/video_capture_types.mojom";
-import "media/capture/mojo/image_capture.mojom";
 import "services/video_capture/public/interfaces/receiver.mojom";
 
 // Represents access to a video capture device available on the machine.
@@ -16,13 +15,4 @@ interface Device {
   Start(media.mojom.VideoCaptureParams requested_settings, Receiver receiver);
   OnReceiverReportingUtilization(int32 frame_feedback_id,
                                  double utilization);
-  RequestRefreshFrame();
-  MaybeSuspend();
-  Resume();
-  GetPhotoState()
-      => (media.mojom.PhotoState? capabilities);
-  SetPhotoOptions(media.mojom.PhotoSettings settings)
-      => (bool success);
-  TakePhoto()
-      => (media.mojom.Blob? blob);
 };

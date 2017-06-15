@@ -24,42 +24,35 @@ ServiceLaunchedVideoCaptureDevice::~ServiceLaunchedVideoCaptureDevice() {
 void ServiceLaunchedVideoCaptureDevice::GetPhotoState(
     media::VideoCaptureDevice::GetPhotoStateCallback callback) const {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-  device_->GetPhotoState(
-      base::Bind(&ServiceLaunchedVideoCaptureDevice::OnGetPhotoStateResponse,
-                 base::Unretained(this), base::Passed(&callback)));
+  NOTIMPLEMENTED();
 }
 
 void ServiceLaunchedVideoCaptureDevice::SetPhotoOptions(
     media::mojom::PhotoSettingsPtr settings,
     media::VideoCaptureDevice::SetPhotoOptionsCallback callback) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-  device_->SetPhotoOptions(
-      std::move(settings),
-      base::Bind(&ServiceLaunchedVideoCaptureDevice::OnSetPhotoOptionsResponse,
-                 base::Unretained(this), base::Passed(&callback)));
+  NOTIMPLEMENTED();
 }
 
 void ServiceLaunchedVideoCaptureDevice::TakePhoto(
     media::VideoCaptureDevice::TakePhotoCallback callback) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-  device_->TakePhoto(
-      base::Bind(&ServiceLaunchedVideoCaptureDevice::OnTakePhotoResponse,
-                 base::Unretained(this), base::Passed(&callback)));
+  NOTIMPLEMENTED();
 }
 
 void ServiceLaunchedVideoCaptureDevice::MaybeSuspendDevice() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-  device_->MaybeSuspend();
+  // Not yet implemented on service side. Do nothing here.
 }
 
 void ServiceLaunchedVideoCaptureDevice::ResumeDevice() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-  device_->Resume();
+  // Not yet implemented on service side. Do nothing here.
 }
 
 void ServiceLaunchedVideoCaptureDevice::RequestRefreshFrame() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-  device_->RequestRefreshFrame();
+  // Not yet implemented on service side. Do nothing here.
 }
 
 void ServiceLaunchedVideoCaptureDevice::SetDesktopCaptureWindowIdAsync(
@@ -81,30 +74,6 @@ void ServiceLaunchedVideoCaptureDevice::OnUtilizationReport(
 void ServiceLaunchedVideoCaptureDevice::OnLostConnectionToDevice() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   base::ResetAndReturn(&connection_lost_cb_).Run();
-}
-
-void ServiceLaunchedVideoCaptureDevice::OnGetPhotoStateResponse(
-    media::VideoCaptureDevice::GetPhotoStateCallback callback,
-    media::mojom::PhotoStatePtr capabilities) const {
-  if (!capabilities)
-    return;
-  callback.Run(std::move(capabilities));
-}
-
-void ServiceLaunchedVideoCaptureDevice::OnSetPhotoOptionsResponse(
-    media::VideoCaptureDevice::SetPhotoOptionsCallback callback,
-    bool success) {
-  if (!success)
-    return;
-  callback.Run(true);
-}
-
-void ServiceLaunchedVideoCaptureDevice::OnTakePhotoResponse(
-    media::VideoCaptureDevice::TakePhotoCallback callback,
-    media::mojom::BlobPtr blob) {
-  if (!blob)
-    return;
-  callback.Run(std::move(blob));
 }
 
 }  // namespace content
