@@ -11,38 +11,13 @@ android_aar_prebuilt("controller_test_api_java") {
 
 android_aar_prebuilt("gvr_common_java") {
   aar_path = "common_library.aar"
-  proguard_configs = [ "proguard-gvr-chromium.txt" ]
+  proguard_configs = [ "src/proguard-gvr.txt" ]
   ignore_manifest = true  # Ignored because manifest merging is not supported (http://crbug.com/643967)
   ignore_native_libraries = true
-
-  # Ignore unused auto generated classes. Proguard will not strip them automatically because they
-  # implemented an interface that is called by VrEvent.
-  jar_excluded_patterns = [
-    "*google/common/logging/nano/Vr\$VREvent\$VrStreaming*.class",
-    "*google/common/logging/nano/Vr\$VREvent\$VrHome*.class",
-    "*google/common/logging/nano/Vr\$VREvent\$VrCore*.class",
-    "*google/common/logging/nano/Vr\$VREvent\$TimeSeriesData*.class",
-    "*google/common/logging/nano/Vr\$VREvent\$StreetView*.class",
-    "*google/common/logging/nano/Vr\$VREvent\$SensorStats*.class",
-    "*google/common/logging/nano/Vr\$VREvent\$Renderer.class",
-    "*google/common/logging/nano/Vr\$VREvent\$QrCodeScan.class",
-    "*google/common/logging/nano/Vr\$VREvent\$Photos*.class",
-    "*google/common/logging/nano/Vr\$VREvent\$Lullaby*.class",
-    "*google/common/logging/nano/Vr\$VREvent\$Launcher.class",
-    "*google/common/logging/nano/Vr\$VREvent\$Keyboard*.class",
-    "*google/common/logging/nano/Vr\$VREvent\$JumpInspector*.class",
-    "*google/common/logging/nano/Vr\$VREvent\$GConfigUpdate*.class",
-    "*google/common/logging/nano/Vr\$VREvent\$EmbedVrWidget*.class",
-    "*google/common/logging/nano/Vr\$VREvent\$EarthVr*.class",
-    "*google/common/logging/nano/Vr\$VREvent\$DoublePrecisionTransform.class",
-    "*google/common/logging/nano/Vr\$VREvent\$Cyclops*.class",
-    "*google/common/logging/nano/Vr\$VREvent\$AudioStats.class",
-    "*google/common/logging/nano/Vr\$VREvent\$Application.class",
-  ]
 }
 
 android_aar_prebuilt("gvr_controller_java") {
-  aar_path = "src/libraries/sdk-controller-1.60.1.aar"
+  aar_path = "src/libraries/sdk-controller-1.10.0.aar"
 }
 
 config("libgvr_config") {
