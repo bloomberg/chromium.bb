@@ -313,6 +313,10 @@ class JpegDecodeAcceleratorTestEnvironment : public ::testing::Environment {
   // Read image from |filename| to |image_data|.
   void ReadTestJpegImage(base::FilePath& filename, TestImageFile* image_data);
 
+  // Returns a file path for a file in what name specified or media/test/data
+  // directory.  If the original file path is existed, returns it first.
+  base::FilePath GetOriginalOrTestDataFilePath(const std::string& name);
+
   // Parsed data of |test_1280x720_jpeg_file_|.
   std::unique_ptr<TestImageFile> image_data_1280x720_black_;
   // Parsed data of |test_640x368_jpeg_file_|.
@@ -359,7 +363,8 @@ void JpegDecodeAcceleratorTestEnvironment::SetUp() {
   ASSERT_NO_FATAL_FAILURE(ReadTestJpegImage(test_640x360_jpeg_file_,
                                             image_data_640x360_black_.get()));
 
-  base::FilePath default_jpeg_file = GetTestDataFilePath(kDefaultJpegFilename);
+  base::FilePath default_jpeg_file =
+      GetOriginalOrTestDataFilePath(kDefaultJpegFilename);
   image_data_1280x720_default_.reset(new TestImageFile(kDefaultJpegFilename));
   ASSERT_NO_FATAL_FAILURE(
       ReadTestJpegImage(default_jpeg_file, image_data_1280x720_default_.get()));
@@ -375,7 +380,7 @@ void JpegDecodeAcceleratorTestEnvironment::SetUp() {
       user_jpeg_filenames_, base::FilePath::StringType(1, ';'),
       base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   for (const auto& filename : filenames) {
-    base::FilePath input_file = GetTestDataFilePath(filename);
+    base::FilePath input_file = GetOriginalOrTestDataFilePath(filename);
     auto image_data = base::MakeUnique<TestImageFile>(filename);
     ASSERT_NO_FATAL_FAILURE(ReadTestJpegImage(input_file, image_data.get()));
     image_data_user_.push_back(std::move(image_data));
@@ -421,6 +426,19 @@ void JpegDecodeAcceleratorTestEnvironment::ReadTestJpegImage(
       image_data->parse_result.frame_header.visible_height);
   image_data->output_size =
       VideoFrame::AllocationSize(PIXEL_FORMAT_I420, image_data->visible_size);
+}
+
+base::FilePath
+JpegDecodeAcceleratorTestEnvironment::GetOriginalOrTestDataFilePath(
+    const std::string& name) {
+  base::FilePath original_file_path = base::FilePath(name);
+  base::FilePath return_file_path = GetTestDataFilePath(name);
+
+  if (PathExists(original_file_path))
+    return_file_path = original_file_path;
+
+  VLOG(3) << "Use file path " << return_file_path.value();
+  return return_file_path;
 }
 
 class JpegDecodeAcceleratorTest : public ::testing::Test {
