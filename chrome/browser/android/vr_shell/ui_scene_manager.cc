@@ -19,6 +19,7 @@
 #include "chrome/browser/android/vr_shell/ui_elements/screen_capture_indicator.h"
 #include "chrome/browser/android/vr_shell/ui_elements/screen_dimmer.h"
 #include "chrome/browser/android/vr_shell/ui_elements/transient_security_warning.h"
+#include "chrome/browser/android/vr_shell/ui_elements/transient_url_bar.h"
 #include "chrome/browser/android/vr_shell/ui_elements/ui_element.h"
 #include "chrome/browser/android/vr_shell/ui_elements/ui_element_debug_id.h"
 #include "chrome/browser/android/vr_shell/ui_elements/url_bar.h"
@@ -58,9 +59,12 @@ static constexpr float kExitPromptHeight = 0.2 * kContentDistance;
 static constexpr float kExitPromptVerticalOffset = -0.09 * kContentDistance;
 static constexpr float kExitPromptBackplaneSize = 1000.0;
 
+// Distance-independent milimeter size of the URL bar.
+static constexpr float kUrlBarWidthDMM = 0.672;
+static constexpr float kUrlBarHeightDMM = 0.088;
 static constexpr float kUrlBarDistance = 2.4;
-static constexpr float kUrlBarWidth = 0.672 * kUrlBarDistance;
-static constexpr float kUrlBarHeight = 0.088 * kUrlBarDistance;
+static constexpr float kUrlBarWidth = kUrlBarWidthDMM * kUrlBarDistance;
+static constexpr float kUrlBarHeight = kUrlBarHeightDMM * kUrlBarDistance;
 static constexpr float kUrlBarVerticalOffset = -0.516 * kUrlBarDistance;
 static constexpr float kUrlBarRotationRad = -0.175;
 
@@ -74,14 +78,25 @@ static constexpr float kAudioCaptureHorizontalOffset = -0.6;
 static constexpr float kVideoCaptureHorizontalOffset = 0;
 static constexpr float kScreenCaptureHorizontalOffset = 0.6;
 
+static constexpr float kTransientUrlBarDistance = 1.4;
+static constexpr float kTransientUrlBarWidth =
+    kUrlBarWidthDMM * kTransientUrlBarDistance;
+static constexpr float kTransientUrlBarHeight =
+    kUrlBarHeightDMM * kTransientUrlBarDistance;
+static constexpr float kTransientUrlBarVerticalOffset =
+    -0.2 * kTransientUrlBarDistance;
+static constexpr int kTransientUrlBarTimeoutSeconds = 6;
+
 static constexpr float kCloseButtonDistance = 2.4;
-static constexpr float kCloseButtonHeight = 0.088 * kCloseButtonDistance;
-static constexpr float kCloseButtonWidth = 0.088 * kCloseButtonDistance;
+static constexpr float kCloseButtonHeight =
+    kUrlBarHeightDMM * kCloseButtonDistance;
+static constexpr float kCloseButtonWidth =
+    kUrlBarHeightDMM * kCloseButtonDistance;
 static constexpr float kCloseButtonFullscreenDistance = 2.9;
 static constexpr float kCloseButtonFullscreenHeight =
-    0.088 * kCloseButtonDistance;
+    kUrlBarHeightDMM * kCloseButtonDistance;
 static constexpr float kCloseButtonFullscreenWidth =
-    0.088 * kCloseButtonDistance;
+    kUrlBarHeightDMM * kCloseButtonDistance;
 
 static constexpr float kLoadingIndicatorWidth = 0.24 * kUrlBarDistance;
 static constexpr float kLoadingIndicatorHeight = 0.008 * kUrlBarDistance;
@@ -104,23 +119,27 @@ static constexpr float kTextureOffset = 0.01;
 UiSceneManager::UiSceneManager(UiBrowserInterface* browser,
                                UiScene* scene,
                                bool in_cct,
-                               bool in_web_vr)
+                               bool in_web_vr,
+                               bool web_vr_autopresented)
     : browser_(browser),
       scene_(scene),
       in_cct_(in_cct),
       web_vr_mode_(in_web_vr),
+      web_vr_autopresented_(web_vr_autopresented),
       weak_ptr_factory_(this) {
   CreateBackground();
   CreateContentQuad();
   CreateSecurityWarnings();
   CreateSystemIndicators();
   CreateUrlBar();
+  CreateTransientUrlBar();
   CreateCloseButton();
   CreateScreenDimmer();
   CreateExitPrompt();
 
   ConfigureScene();
   ConfigureSecurityWarnings();
+  ConfigureTransientUrlBar();
 }
 
 UiSceneManager::~UiSceneManager() {}
@@ -325,6 +344,23 @@ void UiSceneManager::CreateUrlBar() {
   scene_->AddUiElement(std::move(indicator));
 }
 
+void UiSceneManager::CreateTransientUrlBar() {
+  auto url_bar = base::MakeUnique<TransientUrlBar>(
+      512,
+      base::Bind(&UiSceneManager::OnUnsupportedMode, base::Unretained(this)));
+  url_bar->set_debug_id(kTransientUrlBar);
+  url_bar->set_id(AllocateId());
+  url_bar->set_lock_to_fov(true);
+  url_bar->set_visible(false);
+  url_bar->set_hit_testable(false);
+  url_bar->set_translation(
+      {0, kTransientUrlBarVerticalOffset, -kTransientUrlBarDistance});
+  url_bar->set_rotation({1.0, 0.0, 0.0, kUrlBarRotationRad});
+  url_bar->set_size({kTransientUrlBarWidth, kTransientUrlBarHeight, 1});
+  transient_url_bar_ = url_bar.get();
+  scene_->AddUiElement(std::move(url_bar));
+}
+
 void UiSceneManager::CreateCloseButton() {
   std::unique_ptr<Button> element = base::MakeUnique<Button>(
       base::Bind(&UiSceneManager::OnCloseButtonClicked, base::Unretained(this)),
@@ -376,12 +412,14 @@ base::WeakPtr<UiSceneManager> UiSceneManager::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-void UiSceneManager::SetWebVrMode(bool web_vr) {
+void UiSceneManager::SetWebVrMode(bool web_vr, bool auto_presented) {
   if (web_vr_mode_ == web_vr)
     return;
   web_vr_mode_ = web_vr;
+  web_vr_autopresented_ = auto_presented;
   ConfigureScene();
   ConfigureSecurityWarnings();
+  ConfigureTransientUrlBar();
   audio_capture_indicator_->set_visible(!web_vr && audio_capturing_);
   video_capture_indicator_->set_visible(!web_vr && video_capturing_);
   screen_capture_indicator_->set_visible(!web_vr && screen_capturing_);
@@ -517,6 +555,22 @@ void UiSceneManager::OnSecurityWarningTimer() {
   transient_security_warning_->set_visible(false);
 }
 
+void UiSceneManager::ConfigureTransientUrlBar() {
+  bool enabled = web_vr_mode_ && web_vr_autopresented_;
+  transient_url_bar_->set_visible(enabled);
+  if (enabled) {
+    transient_url_bar_timer_.Start(
+        FROM_HERE, base::TimeDelta::FromSeconds(kTransientUrlBarTimeoutSeconds),
+        this, &UiSceneManager::OnTransientUrlBarTimer);
+  } else {
+    transient_url_bar_timer_.Stop();
+  }
+}
+
+void UiSceneManager::OnTransientUrlBarTimer() {
+  transient_url_bar_->set_visible(false);
+}
+
 void UiSceneManager::OnBackButtonClicked() {
   browser_->NavigateBack();
 }
@@ -557,10 +611,12 @@ void UiSceneManager::OnExitPromptSecondaryButtonClicked() {
 
 void UiSceneManager::SetURL(const GURL& gurl) {
   url_bar_->SetURL(gurl);
+  transient_url_bar_->SetURL(gurl);
 }
 
 void UiSceneManager::SetSecurityLevel(security_state::SecurityLevel level) {
   url_bar_->SetSecurityLevel(level);
+  transient_url_bar_->SetSecurityLevel(level);
 }
 
 void UiSceneManager::SetLoading(bool loading) {

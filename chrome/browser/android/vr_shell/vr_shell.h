@@ -73,6 +73,7 @@ class VrShell : public device::PresentingGvrDelegate,
           jobject obj,
           ui::WindowAndroid* window,
           bool for_web_vr,
+          bool web_vr_autopresented,
           bool in_cct,
           VrShellDelegate* delegate,
           gvr_context* gvr_api,
@@ -95,7 +96,8 @@ class VrShell : public device::PresentingGvrDelegate,
                   const base::android::JavaParamRef<jobject>& surface);
   void SetWebVrMode(JNIEnv* env,
                     const base::android::JavaParamRef<jobject>& obj,
-                    bool enabled);
+                    bool enabled,
+                    bool auto_presented);
   bool GetWebVrMode(JNIEnv* env,
                     const base::android::JavaParamRef<jobject>& obj);
   void OnFullscreenChanged(bool enabled);

@@ -32,7 +32,8 @@ class UrlBarTexture : public UiTexture {
     FLAG_BACK_DOWN = 1 << 1,
   };
 
-  explicit UrlBarTexture(
+  UrlBarTexture(
+      bool web_vr,
       const base::Callback<void(UiUnsupportedMode)>& failure_callback);
   ~UrlBarTexture() override;
   gfx::Size GetPreferredTextureSize(int width) const override;
@@ -46,8 +47,8 @@ class UrlBarTexture : public UiTexture {
   bool HitsUrlBar(const gfx::PointF& position) const;
   bool HitsSecurityIcon(const gfx::PointF& position) const;
 
-  void SetHovered(bool hovered);
-  void SetPressed(bool pressed);
+  void SetBackButtonHovered(bool hovered);
+  void SetBackButtonPressed(bool pressed);
 
   // Public for testability.
   static void ApplyUrlStyling(const base::string16& formatted_url,
@@ -63,10 +64,12 @@ class UrlBarTexture : public UiTexture {
   void RenderUrl(const gfx::Size& texture_size, const gfx::Rect& bounds);
   void OnSetMode() override;
   gfx::PointF SecurityIconPositionMeters() const;
+  gfx::PointF UrlBarPositionMeters() const;
+  SkColor GetLeftCornerColor() const;
 
   gfx::SizeF size_;
-  bool hovered_ = false;
-  bool pressed_ = false;
+  bool back_hovered_ = false;
+  bool back_pressed_ = false;
   bool can_go_back_ = false;
 
   GURL gurl_;
@@ -74,6 +77,7 @@ class UrlBarTexture : public UiTexture {
 
   std::unique_ptr<gfx::RenderText> url_render_text_;
   GURL last_drawn_gurl_;
+  bool has_back_button_ = true;
   security_state::SecurityLevel last_drawn_security_level_;
   base::Callback<void(UiUnsupportedMode)> failure_callback_;
 

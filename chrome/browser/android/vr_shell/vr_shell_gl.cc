@@ -73,7 +73,9 @@ static constexpr int kFrameHeadlockedBuffer = 1;
 // is currently sized to fit the WebVR "insecure transport" warnings,
 // adjust it as needed if there is additional content.
 static constexpr gfx::Size kHeadlockedBufferDimensions = {1024, 1024};
-static constexpr gvr::Rectf kHeadlockedBufferFov = {20.f, 20.f, 20.f, 20.f};
+// Represents the frame of view in degrees. 0 degrees is straight ahead, and the
+// rect represents bottom/left/right/top alway from the center line.
+static constexpr gvr::Rectf kHeadlockedBufferFov = {30.f, 20.f, 20.f, 20.f};
 
 // The GVR viewport list has two entries (left eye and right eye) for each
 // GVR buffer.

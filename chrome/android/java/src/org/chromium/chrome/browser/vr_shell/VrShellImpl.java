@@ -310,10 +310,12 @@ public class VrShellImpl
     }
 
     @Override
-    public void initializeNative(Tab currentTab, boolean forWebVr, boolean inCct) {
+    public void initializeNative(
+            Tab currentTab, boolean forWebVr, boolean webVrAutopresented, boolean inCct) {
         mContentVrWindowAndroid = new VrWindowAndroid(mActivity, mContentVirtualDisplay);
         mNativeVrShell = nativeInit(mDelegate, mContentVrWindowAndroid.getNativePointer(), forWebVr,
-                inCct, getGvrApi().getNativeGvrContext(), mReprojectedRendering);
+                webVrAutopresented, inCct, getGvrApi().getNativeGvrContext(),
+                mReprojectedRendering);
 
         // Set the UI and content sizes before we load the UI.
         updateWebVrDisplaySize(forWebVr);
@@ -519,9 +521,9 @@ public class VrShellImpl
     }
 
     @Override
-    public void setWebVrModeEnabled(boolean enabled) {
+    public void setWebVrModeEnabled(boolean enabled, boolean autoPresented) {
         mContentVrWindowAndroid.setVSyncPaused(enabled);
-        nativeSetWebVrMode(mNativeVrShell, enabled);
+        nativeSetWebVrMode(mNativeVrShell, enabled, autoPresented);
 
         updateWebVrDisplaySize(enabled);
     }
@@ -687,7 +689,8 @@ public class VrShellImpl
     }
 
     private native long nativeInit(VrShellDelegate delegate, long nativeWindowAndroid,
-            boolean forWebVR, boolean inCct, long gvrApi, boolean reprojectedRendering);
+            boolean forWebVR, boolean webVRAutopresented, boolean inCct, long gvrApi,
+            boolean reprojectedRendering);
     private native void nativeSetSurface(long nativeVrShell, Surface surface);
     private native void nativeSwapContents(
             long nativeVrShell, WebContents webContents, MotionEventSynthesizer eventSynthesizer);
@@ -700,7 +703,8 @@ public class VrShellImpl
             long nativeVrShell, WebContents webContents, int width, int height);
     private native void nativeContentPhysicalBoundsChanged(long nativeVrShell, int width,
             int height, float dpr);
-    private native void nativeSetWebVrMode(long nativeVrShell, boolean enabled);
+    private native void nativeSetWebVrMode(
+            long nativeVrShell, boolean enabled, boolean autoPresented);
     private native boolean nativeGetWebVrMode(long nativeVrShell);
     private native void nativeOnTabListCreated(long nativeVrShell, Tab[] mainTabs,
             Tab[] incognitoTabs);

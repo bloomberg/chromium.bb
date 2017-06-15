@@ -20,6 +20,7 @@ VrGLThread::VrGLThread(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner,
     gvr_context* gvr_api,
     bool initially_web_vr,
+    bool web_vr_autopresented,
     bool in_cct,
     bool reprojected_rendering,
     bool daydream_support)
@@ -28,6 +29,7 @@ VrGLThread::VrGLThread(
       main_thread_task_runner_(std::move(main_thread_task_runner)),
       gvr_api_(gvr_api),
       initially_web_vr_(initially_web_vr),
+      web_vr_autopresented_(web_vr_autopresented),
       in_cct_(in_cct),
       reprojected_rendering_(reprojected_rendering),
       daydream_support_(daydream_support) {}
@@ -41,8 +43,8 @@ void VrGLThread::Init() {
   vr_shell_gl_ = base::MakeUnique<VrShellGl>(this, gvr_api_, initially_web_vr_,
                                              reprojected_rendering_,
                                              daydream_support_, scene_.get());
-  scene_manager_ = base::MakeUnique<UiSceneManager>(this, scene_.get(), in_cct_,
-                                                    initially_web_vr_);
+  scene_manager_ = base::MakeUnique<UiSceneManager>(
+      this, scene_.get(), in_cct_, initially_web_vr_, web_vr_autopresented_);
 
   weak_vr_shell_gl_ = vr_shell_gl_->GetWeakPtr();
   weak_scene_manager_ = scene_manager_->GetWeakPtr();
@@ -181,10 +183,11 @@ void VrGLThread::SetURL(const GURL& gurl) {
                                                 weak_scene_manager_, gurl));
 }
 
-void VrGLThread::SetWebVrMode(bool enabled) {
+void VrGLThread::SetWebVrMode(bool enabled, bool auto_presented) {
   WaitUntilThreadStarted();
-  task_runner()->PostTask(FROM_HERE, base::Bind(&UiSceneManager::SetWebVrMode,
-                                                weak_scene_manager_, enabled));
+  task_runner()->PostTask(
+      FROM_HERE, base::Bind(&UiSceneManager::SetWebVrMode, weak_scene_manager_,
+                            enabled, auto_presented));
 }
 
 void VrGLThread::SetWebVrSecureOrigin(bool secure) {

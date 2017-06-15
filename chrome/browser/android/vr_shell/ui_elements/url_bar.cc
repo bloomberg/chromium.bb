@@ -24,7 +24,7 @@ UrlBar::UrlBar(int preferred_width,
                const base::Callback<void()>& security_icon_callback,
                const base::Callback<void(UiUnsupportedMode)>& failure_callback)
     : TexturedElement(preferred_width),
-      texture_(base::MakeUnique<UrlBarTexture>(failure_callback)),
+      texture_(base::MakeUnique<UrlBarTexture>(false, failure_callback)),
       back_button_callback_(back_button_callback),
       security_icon_callback_(security_icon_callback) {}
 
@@ -105,8 +105,8 @@ void UrlBar::OnStateUpdated(const gfx::PointF& position) {
   const bool hovered = texture_->HitsBackButton(position);
   const bool pressed = hovered ? down_ : false;
 
-  texture_->SetHovered(hovered);
-  texture_->SetPressed(pressed);
+  texture_->SetBackButtonHovered(hovered);
+  texture_->SetBackButtonPressed(pressed);
   UpdateTexture();
 }
 

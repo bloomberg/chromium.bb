@@ -55,10 +55,21 @@ class UiSceneManagerTest : public testing::Test {
     kInWebVr = true,
   };
 
+  enum WebVrAutopresented : bool {
+    kNotAutopresented = false,
+    kAutopresented = true,
+  };
+
   void MakeManager(InCct in_cct, InWebVr in_web_vr) {
     scene_ = base::MakeUnique<UiScene>();
-    manager_ = base::MakeUnique<UiSceneManager>(browser_.get(), scene_.get(),
-                                                in_cct, in_web_vr);
+    manager_ = base::MakeUnique<UiSceneManager>(
+        browser_.get(), scene_.get(), in_cct, in_web_vr, kNotAutopresented);
+  }
+
+  void MakeAutoPresentedManager() {
+    scene_ = base::MakeUnique<UiScene>();
+    manager_ = base::MakeUnique<UiSceneManager>(
+        browser_.get(), scene_.get(), kNotInCct, kInWebVr, kAutopresented);
   }
 
   bool IsVisible(UiElementDebugId debug_id) {
@@ -107,7 +118,7 @@ TEST_F(UiSceneManagerTest, WebVrWarningsShowWhenInitiallyInWebVr) {
   EXPECT_TRUE(IsVisible(kWebVrPermanentHttpSecurityWarning));
   EXPECT_TRUE(IsVisible(kWebVrTransientHttpSecurityWarning));
 
-  manager_->SetWebVrMode(false);
+  manager_->SetWebVrMode(false, false);
   EXPECT_FALSE(IsVisible(kWebVrPermanentHttpSecurityWarning));
   EXPECT_FALSE(IsVisible(kWebVrTransientHttpSecurityWarning));
 }
@@ -118,7 +129,7 @@ TEST_F(UiSceneManagerTest, WebVrWarningsDoNotShowWhenInitiallyOutsideWebVr) {
   EXPECT_FALSE(IsVisible(kWebVrPermanentHttpSecurityWarning));
   EXPECT_FALSE(IsVisible(kWebVrTransientHttpSecurityWarning));
 
-  manager_->SetWebVrMode(true);
+  manager_->SetWebVrMode(true, false);
   EXPECT_TRUE(IsVisible(kWebVrPermanentHttpSecurityWarning));
   EXPECT_TRUE(IsVisible(kWebVrTransientHttpSecurityWarning));
 }
@@ -141,7 +152,7 @@ TEST_F(UiSceneManagerTest, CloseButtonVisibleInCctFullscreen) {
   // Button should not be visible when in WebVR.
   MakeManager(kInCct, kInWebVr);
   EXPECT_FALSE(IsVisible(kCloseButton));
-  manager_->SetWebVrMode(false);
+  manager_->SetWebVrMode(false, false);
   EXPECT_TRUE(IsVisible(kCloseButton));
 
   // Button should be visible in Cct across transistions in fullscreen.
@@ -206,6 +217,27 @@ TEST_F(UiSceneManagerTest, UiUpdatesForIncognito) {
     SCOPED_TRACE("Exited Incognito");
     EXPECT_EQ(initial_background, scene_->GetWorldBackgroundColor());
   }
+}
+
+TEST_F(UiSceneManagerTest, WebVrAutopresentedInitially) {
+  MakeAutoPresentedManager();
+  manager_->SetWebVrSecureOrigin(true);
+  VerifyElementsVisible("Autopresented",
+                        std::set<UiElementDebugId>{kTransientUrlBar});
+}
+
+TEST_F(UiSceneManagerTest, WebVrAutopresented) {
+  MakeManager(kNotInCct, kNotInWebVr);
+
+  manager_->SetWebVrSecureOrigin(true);
+
+  // Initial state.
+  VerifyElementsVisible("Initial", kElementsVisibleInBrowsing);
+
+  // Enter WebVR with autopresentation.
+  manager_->SetWebVrMode(true, true);
+  VerifyElementsVisible("Autopresented",
+                        std::set<UiElementDebugId>{kTransientUrlBar});
 }
 
 TEST_F(UiSceneManagerTest, UiUpdatesForFullscreenChanges) {
@@ -291,7 +323,7 @@ TEST_F(UiSceneManagerTest, UiUpdateTransitionToWebVR) {
   manager_->SetScreenCapturingIndicator(true);
 
   // Transition to WebVR mode
-  manager_->SetWebVrMode(true);
+  manager_->SetWebVrMode(true, false);
   manager_->SetWebVrSecureOrigin(true);
 
   // All elements should be hidden.
@@ -312,12 +344,12 @@ TEST_F(UiSceneManagerTest, CaptureIndicatorsVisibility) {
   EXPECT_TRUE(IsVisible(kVideoCaptureIndicator));
   EXPECT_TRUE(IsVisible(kScreenCaptureIndicator));
 
-  manager_->SetWebVrMode(true);
+  manager_->SetWebVrMode(true, false);
   EXPECT_FALSE(IsVisible(kAudioCaptureIndicator));
   EXPECT_FALSE(IsVisible(kVideoCaptureIndicator));
   EXPECT_FALSE(IsVisible(kScreenCaptureIndicator));
 
-  manager_->SetWebVrMode(false);
+  manager_->SetWebVrMode(false, false);
   EXPECT_TRUE(IsVisible(kAudioCaptureIndicator));
   EXPECT_TRUE(IsVisible(kVideoCaptureIndicator));
   EXPECT_TRUE(IsVisible(kScreenCaptureIndicator));

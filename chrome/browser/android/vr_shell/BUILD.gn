@@ -76,6 +76,8 @@ static_library("vr_common") {
     "ui_elements/textured_element.h",
     "ui_elements/transient_security_warning.cc",
     "ui_elements/transient_security_warning.h",
+    "ui_elements/transient_url_bar.cc",
+    "ui_elements/transient_url_bar.h",
     "ui_elements/ui_element.cc",
     "ui_elements/ui_element.h",
     "ui_elements/ui_element_debug_id.h",
