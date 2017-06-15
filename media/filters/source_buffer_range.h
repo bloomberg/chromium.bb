@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include <map>
+#include <memory>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -125,7 +126,7 @@ class SourceBufferRange {
   // this range. If there is no keyframe at or after |timestamp|, SplitRange()
   // returns null and this range is unmodified. This range can become empty if
   // |timestamp| <= the DTS of the first buffer in this range.
-  SourceBufferRange* SplitRange(DecodeTimestamp timestamp);
+  std::unique_ptr<SourceBufferRange> SplitRange(DecodeTimestamp timestamp);
 
   // Deletes the buffers from this range starting at |timestamp|, exclusive if
   // |is_exclusive| is true, inclusive otherwise.
