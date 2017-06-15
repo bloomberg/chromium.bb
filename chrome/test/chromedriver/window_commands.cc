@@ -106,8 +106,12 @@ std::unique_ptr<base::DictionaryValue> CreateDictionaryFrom(
 
 Status GetVisibleCookies(WebView* web_view,
                          std::list<Cookie>* cookies) {
+  std::string current_page_url;
+  Status status = GetUrl(web_view, std::string(), &current_page_url);
+  if (status.IsError())
+    return status;
   std::unique_ptr<base::ListValue> internal_cookies;
-  Status status = web_view->GetCookies(&internal_cookies);
+  status = web_view->GetCookies(&internal_cookies, current_page_url);
   if (status.IsError())
     return status;
   std::list<Cookie> cookies_tmp;

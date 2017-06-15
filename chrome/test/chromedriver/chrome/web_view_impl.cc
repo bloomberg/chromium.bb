@@ -437,13 +437,26 @@ Status WebViewImpl::DispatchKeyEvents(const std::list<KeyEvent>& events) {
   return Status(kOk);
 }
 
-Status WebViewImpl::GetCookies(std::unique_ptr<base::ListValue>* cookies) {
+Status WebViewImpl::GetCookies(std::unique_ptr<base::ListValue>* cookies,
+                               const std::string& current_page_url) {
   base::DictionaryValue params;
   std::unique_ptr<base::DictionaryValue> result;
-  Status status = client_->SendCommandAndGetResult(
-      "Page.getCookies", params, &result);
-  if (status.IsError())
-    return status;
+
+  if (browser_info_->build_no >= 3029) {
+    base::ListValue url_list;
+    url_list.AppendString(current_page_url);
+    params.Set("urls", base::MakeUnique<base::Value>(url_list));
+    Status status =
+        client_->SendCommandAndGetResult("Network.getCookies", params, &result);
+    if (status.IsError())
+      return status;
+  } else {
+    Status status =
+        client_->SendCommandAndGetResult("Page.getCookies", params, &result);
+    if (status.IsError())
+      return status;
+  }
+
   base::ListValue* cookies_tmp;
   if (!result->GetList("cookies", &cookies_tmp))
     return Status(kUnknownError, "DevTools didn't return cookies");

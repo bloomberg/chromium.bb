@@ -132,7 +132,8 @@ class WebView {
   virtual Status DispatchKeyEvents(const std::list<KeyEvent>& events) = 0;
 
   // Return all the cookies visible to the current page.
-  virtual Status GetCookies(std::unique_ptr<base::ListValue>* cookies) = 0;
+  virtual Status GetCookies(std::unique_ptr<base::ListValue>* cookies,
+                            const std::string& current_page_url) = 0;
 
   // Delete the cookie with the given name.
   virtual Status DeleteCookie(const std::string& name,
