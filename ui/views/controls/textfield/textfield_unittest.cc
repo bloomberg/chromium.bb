@@ -3142,8 +3142,13 @@ TEST_F(TextfieldTest, AccessiblePasswordTest) {
   ui::AXNodeData node_data_protected;
   textfield_->GetAccessibleNodeData(&node_data_protected);
   EXPECT_EQ(ui::AX_ROLE_TEXT_FIELD, node_data_protected.role);
+#if defined(OS_MACOSX)
+  EXPECT_EQ(UTF8ToUTF16("••••••••"),
+            node_data_protected.GetString16Attribute(ui::AX_ATTR_VALUE));
+#else
   EXPECT_EQ(ASCIIToUTF16("********"),
             node_data_protected.GetString16Attribute(ui::AX_ATTR_VALUE));
+#endif
   EXPECT_TRUE(node_data_protected.HasState(ui::AX_STATE_PROTECTED));
 }
 
