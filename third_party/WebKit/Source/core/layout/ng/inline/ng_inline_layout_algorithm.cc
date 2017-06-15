@@ -255,7 +255,8 @@ bool NGInlineLayoutAlgorithm::PlaceItems(
   container_builder_.AddChild(line_box.ToLineBoxFragment(), offset);
 
   max_inline_size_ = std::max(max_inline_size_, inline_size);
-  content_size_ = line_bottom;
+  content_size_ = ComputeContentSize(*line_info, line_bottom);
+
   return true;
 }
 
@@ -330,6 +331,35 @@ void NGInlineLayoutAlgorithm::ApplyTextAlign(const ComputedStyle& line_style,
       // Refer to LayoutBlockFlow::UpdateLogicalWidthForAlignment().
       break;
   }
+}
+
+LayoutUnit NGInlineLayoutAlgorithm::ComputeContentSize(
+    const NGLineInfo& line_info,
+    LayoutUnit line_bottom) {
+  LayoutUnit content_size = line_bottom;
+
+  const Vector<NGInlineItem>& items = Node().Items();
+  const NGInlineItemResults& line_items = line_info.Results();
+  DCHECK(!line_items.IsEmpty());
+
+  // If the last item was a <br> we need to adjust the content_size to clear
+  // floats if specified. The <br> element must be at the back of the item
+  // result list as it forces a line to break.
+  const NGInlineItemResult& item_result = line_items.back();
+  const NGInlineItem& item = items[item_result.item_index];
+  const LayoutObject* layout_object = item.GetLayoutObject();
+
+  // layout_object may be null in certain cases, e.g. if it's a kBidiControl.
+  if (layout_object && layout_object->IsBR()) {
+    NGLogicalOffset bfc_offset =
+        ContainerBfcOffset() + NGLogicalOffset(LayoutUnit(), content_size);
+    AdjustToClearance(GetClearanceOffset(ConstraintSpace().Exclusions(),
+                                         item.Style()->Clear()),
+                      &bfc_offset);
+    content_size = bfc_offset.block_offset - ContainerBfcOffset().block_offset;
+  }
+
+  return content_size;
 }
 
 NGLayoutOpportunity NGInlineLayoutAlgorithm::FindLayoutOpportunityForLine() {
