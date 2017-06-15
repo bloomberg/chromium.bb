@@ -1,0 +1,50 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "VerticalScrollbar",
+          "rect": [185, 0, 15, 100],
+          "reason": "scroll control"
+        },
+        {
+          "object": "InlineTextBox 'a'",
+          "rect": [0, 5, 15, 15],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'z'",
+          "rect": [0, 5, 15, 15],
+          "reason": "appeared"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "VerticalScrollbar",
+      "reason": "scroll control"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='dynamic' class='content'",
+      "reason": "full"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "appeared"
+    },
+    {
+      "object": "InlineTextBox 'z'",
+      "reason": "appeared"
+    }
+  ]
+}
+

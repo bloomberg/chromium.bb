@@ -1,0 +1,39 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV id='square'",
+          "rect": [10, 10, 100, 100],
+          "reason": "disappeared"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='overlay'",
+          "rect": [35, 35, 50, 50],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='overlay'",
+          "rect": [35, 35, 50, 50],
+          "reason": "disappeared"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='square'",
+          "rect": [35, 35, 50, 50],
+          "reason": "appeared"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV id='square'",
+      "reason": "geometry"
+    }
+  ]
+}
+

@@ -1,0 +1,73 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV id='keep' class='item'",
+          "rect": [408, 88, 100, 100],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='to_remove' class='item'",
+          "rect": [408, 88, 100, 100],
+          "reason": "disappeared"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='keep' class='item'",
+          "rect": [208, 88, 100, 100],
+          "reason": "geometry"
+        },
+        {
+          "object": "InlineTextBox '\u00A0'",
+          "rect": [408, 88, 4, 19],
+          "reason": "geometry"
+        },
+        {
+          "object": "InlineTextBox '\u00A0'",
+          "rect": [408, 88, 4, 19],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox '\u00A0'",
+          "rect": [208, 88, 4, 19],
+          "reason": "geometry"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow (relative positioned) (floating) DIV id='keep_outer' class='outer'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='abs_pos'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutBlockFlow (relative positioned) (floating) DIV id='keep_inner' class='inner'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='keep' class='item'",
+      "reason": "geometry"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox '\u00A0'",
+      "reason": "geometry"
+    }
+  ]
+}
+

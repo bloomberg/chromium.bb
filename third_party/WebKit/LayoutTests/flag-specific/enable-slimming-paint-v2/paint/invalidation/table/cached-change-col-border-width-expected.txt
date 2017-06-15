@@ -1,0 +1,103 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "CollapsedBorderValues",
+          "rect": [8, 8, 113, 104],
+          "reason": "geometry"
+        },
+        {
+          "object": "CollapsedBorderValues",
+          "rect": [8, 8, 113, 104],
+          "reason": "geometry"
+        },
+        {
+          "object": "CollapsedBorderValues",
+          "rect": [8, 8, 113, 104],
+          "reason": "geometry"
+        },
+        {
+          "object": "CollapsedBorderValues",
+          "rect": [8, 8, 113, 104],
+          "reason": "geometry"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTable TABLE",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutTableCol COL id='col'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableSection TBODY",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutTableRow TR",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "geometry"
+    },
+    {
+      "object": "CollapsedBorderValues",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "geometry"
+    },
+    {
+      "object": "CollapsedBorderValues",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutTableRow TR",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "geometry"
+    },
+    {
+      "object": "CollapsedBorderValues",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "geometry"
+    },
+    {
+      "object": "CollapsedBorderValues",
+      "reason": "geometry"
+    }
+  ]
+}
+
