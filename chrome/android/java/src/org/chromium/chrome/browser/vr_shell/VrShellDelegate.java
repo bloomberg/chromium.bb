@@ -676,13 +676,12 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
     /**
      * This is called every time ChromeActivity gets a new intent.
      */
-    public static void onNewIntent(Intent intent) {
+    public static void onNewIntent(ChromeActivity activity, Intent intent) {
         if (IntentUtils.safeGetBooleanExtra(intent, DAYDREAM_VR_EXTRA, false)
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.WEBVR_AUTOPRESENT)
-                && activitySupportsAutopresentation(
-                           ApplicationStatus.getLastTrackedFocusedActivity())
+                && activitySupportsAutopresentation(activity)
                 && IntentHandler.isIntentFromTrustedApp(intent, DAYDREAM_HOME_PACKAGE)) {
-            VrShellDelegate instance = getInstance();
+            VrShellDelegate instance = getInstance(activity);
             if (instance == null) return;
             instance.onAutopresentIntent();
         }
