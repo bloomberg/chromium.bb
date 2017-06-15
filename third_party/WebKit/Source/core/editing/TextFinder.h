@@ -46,6 +46,7 @@
 
 namespace blink {
 
+class LocalFrame;
 class Range;
 class WebLocalFrameBase;
 
@@ -65,6 +66,7 @@ class CORE_EXPORT TextFinder final
             bool wrap_within_frame,
             bool* active_now = nullptr);
   void ClearActiveFindMatch();
+  void SetFindEndstateFocusAndSelection();
   void StopFindingAndClearSelection();
   void IncreaseMatchCount(int identifier, int count);
   int FindMatchMarkersVersion() const { return find_match_markers_version_; }
@@ -204,6 +206,8 @@ class CORE_EXPORT TextFinder final
 
   // Determines whether to invalidate the content area and scrollbar.
   void InvalidateIfNecessary();
+
+  LocalFrame* GetFrame() const;
 
   WebLocalFrameBase& OwnerFrame() const {
     DCHECK(owner_frame_);
