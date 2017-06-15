@@ -680,6 +680,7 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   // Initialize and set the main browser state.
   [self initializeBrowserState:chromeBrowserState];
   _mainBrowserState = chromeBrowserState;
+  [_browserViewWrangler shutdown];
   _browserViewWrangler =
       [[BrowserViewWrangler alloc] initWithBrowserState:_mainBrowserState
                                        tabModelObserver:self];
@@ -910,6 +911,7 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   [_spotlightManager shutdown];
   _spotlightManager = nil;
 
+  [_browserViewWrangler shutdown];
   _browserViewWrangler = nil;
 
   _chromeMain.reset();
@@ -2551,6 +2553,7 @@ enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
   // Create a BrowserViewWrangler with a null browser state. This will trigger
   // assertions if the BrowserViewWrangler is asked to create any BVC or
   // tabModel objects, but it will accept assignments to them.
+  [_browserViewWrangler shutdown];
   _browserViewWrangler =
       [[BrowserViewWrangler alloc] initWithBrowserState:nullptr
                                        tabModelObserver:self];
