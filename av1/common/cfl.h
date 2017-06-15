@@ -55,8 +55,8 @@ static const double cfl_alpha_mags[CFL_MAGS_SIZE] = {
 
 static const int cfl_alpha_codes[CFL_ALPHABET_SIZE][CFL_PRED_PLANES] = {
   // barrbrain's simple 1D quant ordered by subset 3 likelihood
-  { 0, 0 }, { 1, 1 }, { 3, 0 }, { 3, 1 }, { 1, 0 }, { 3, 3 },
-  { 0, 1 }, { 5, 5 }, { 5, 3 }, { 1, 3 }, { 5, 3 }, { 3, 5 },
+  { 0, 0 }, { 1, 1 }, { 3, 0 }, { 3, 3 }, { 1, 0 }, { 3, 1 },
+  { 5, 5 }, { 0, 1 }, { 5, 3 }, { 5, 0 }, { 3, 5 }, { 1, 3 },
   { 0, 3 }, { 5, 1 }, { 1, 5 }, { 0, 5 }
 };
 
