@@ -51,6 +51,12 @@ Entry BuildBasicEntry() {
   return BuildEntry(DownloadClient::TEST, base::GenerateGUID());
 }
 
+Entry BuildBasicEntry(Entry::State state) {
+  Entry entry = BuildBasicEntry();
+  entry.state = state;
+  return entry;
+}
+
 Entry BuildEntry(DownloadClient client, const std::string& guid) {
   Entry entry;
   entry.client = client;

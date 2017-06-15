@@ -28,10 +28,12 @@ uint32_t GetNumberOfEntriesForClient(DownloadClient client,
 // Effectively runs a map reduce to turn a list of Entry objects into a map of
 // [Client Id] -> List of entries.  Any Entry in |entries| that does not have a
 // matching DownloadClient in |clients| will be put in the
-// DownloadClient::INVALID bucket.
+// DownloadClient::INVALID bucket.  Any Entry in |entries| with an Entry::State
+// that is in |ignored_states| will not be included.
 std::map<DownloadClient, std::vector<std::string>> MapEntriesToClients(
     const std::set<DownloadClient>& clients,
-    const std::vector<Entry*>& entries);
+    const std::vector<Entry*>& entries,
+    const std::set<Entry::State>& ignored_states);
 
 // Gets the least strict scheduling criteria from |entries|, the criteria is
 // used to schedule platform background tasks.

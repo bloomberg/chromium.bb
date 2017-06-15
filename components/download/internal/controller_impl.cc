@@ -33,6 +33,29 @@ void TransitTo(Entry* entry, Entry::State new_state, Model* model) {
   model->Update(*entry);
 }
 
+// Helper function to move from a CompletionType to a Client::FailureReason.
+Client::FailureReason FailureReasonFromCompletionType(CompletionType type) {
+  // SUCCEED does not map to a FailureReason.
+  DCHECK_NE(CompletionType::SUCCEED, type);
+
+  switch (type) {
+    case CompletionType::FAIL:
+      return Client::FailureReason::NETWORK;
+    case CompletionType::ABORT:
+      return Client::FailureReason::ABORTED;
+    case CompletionType::TIMEOUT:
+      return Client::FailureReason::TIMEDOUT;
+    case CompletionType::UNKNOWN:
+      return Client::FailureReason::UNKNOWN;
+    case CompletionType::CANCEL:
+      return Client::FailureReason::CANCELLED;
+    default:
+      NOTREACHED();
+  }
+
+  return Client::FailureReason::UNKNOWN;
+}
+
 }  // namespace
 
 ControllerImpl::ControllerImpl(
@@ -103,7 +126,7 @@ void ControllerImpl::PauseDownload(const std::string& guid) {
 
   if (!entry || entry->state == Entry::State::PAUSED ||
       entry->state == Entry::State::COMPLETE ||
-      entry->state == Entry::State::WATCHDOG) {
+      entry->state == Entry::State::NEW) {
     return;
   }
 
@@ -140,7 +163,7 @@ void ControllerImpl::CancelDownload(const std::string& guid) {
   if (entry->state == Entry::State::NEW) {
     // Check if we're currently trying to add the download.
     DCHECK(start_callbacks_.find(entry->guid) != start_callbacks_.end());
-    HandleStartDownloadResponse(entry->client, entry->guid,
+    HandleStartDownloadResponse(entry->client, guid,
                                 DownloadParams::StartResult::CLIENT_CANCELLED);
     return;
   }
@@ -219,6 +242,8 @@ void ControllerImpl::HandleTaskFinished(DownloadTaskType task_type,
     base::ResetAndReturn(&task_finished_callbacks_[task_type])
         .Run(needs_reschedule);
   }
+  // TODO(dtrainor): It might be useful to log how many downloads we have
+  // running when we're asked to stop processing.
   stats::LogScheduledTaskStatus(task_type, status);
   task_finished_callbacks_.erase(task_type);
 }
@@ -246,10 +271,14 @@ void ControllerImpl::OnDownloadCreated(const DriverEntry& download) {
     HandleCompleteDownload(CompletionType::ABORT, entry->guid);
   }
 }
+
 void ControllerImpl::OnDownloadFailed(const DriverEntry& download, int reason) {
   Entry* entry = model_->Get(download.guid);
   if (!entry)
     return;
+
+  // TODO(dtrainor): Add retry logic here.  Connect to restart code for tracking
+  // number of retries.
 
   HandleCompleteDownload(CompletionType::FAIL, download.guid);
 }
@@ -304,8 +333,6 @@ void ControllerImpl::OnItemAdded(bool success,
   TransitTo(entry, Entry::State::AVAILABLE, model_.get());
 
   ActivateMoreDownloads();
-
-  // TODO(dtrainor): Make sure we're running all of the downloads we care about.
 }
 
 void ControllerImpl::OnItemUpdated(bool success,
@@ -313,16 +340,20 @@ void ControllerImpl::OnItemUpdated(bool success,
                                    const std::string& guid) {
   Entry* entry = model_->Get(guid);
   DCHECK(entry);
-  if (entry->state == Entry::State::COMPLETE ||
-      entry->state == Entry::State::WATCHDOG) {
+
+  // Now that we're sure that our state is set correctly, it is OK to remove the
+  // DriverEntry.  If we restart we'll see a COMPLETE state and handle it
+  // accordingly.
+  if (entry->state == Entry::State::COMPLETE)
     driver_->Remove(guid);
-  }
+
+  // TODO(dtrainor): If failed, clean up any download state accordingly.
 }
 
 void ControllerImpl::OnItemRemoved(bool success,
                                    DownloadClient client,
                                    const std::string& guid) {
-  // TODO(dtrainor): Fail and clean up the download if necessary.
+  // TODO(dtrainor): If failed, clean up any download state accordingly.
 }
 
 void ControllerImpl::OnDeviceStatusChanged(const DeviceStatus& device_status) {
@@ -347,9 +378,6 @@ void ControllerImpl::AttemptToFinalizeSetup() {
   ResolveInitialRequestStates();
   UpdateDriverStates();
   PullCurrentRequestStatus();
-
-  // TODO(dtrainor): Post this so that the initialization step is finalized
-  // before Clients can take action.
   NotifyClientsOfStartup();
   ProcessScheduledTasks();
 
@@ -417,7 +445,6 @@ void ControllerImpl::UpdateDriverState(const Entry& entry) {
     case Entry::State::AVAILABLE:
     case Entry::State::NEW:
     case Entry::State::COMPLETE:
-    case Entry::State::WATCHDOG:
       break;
     default:
       NOTREACHED();
@@ -429,8 +456,9 @@ void ControllerImpl::PullCurrentRequestStatus() {
 }
 
 void ControllerImpl::NotifyClientsOfStartup() {
-  auto categorized = util::MapEntriesToClients(clients_->GetRegisteredClients(),
-                                               model_->PeekEntries());
+  std::set<Entry::State> ignored_states = {Entry::State::COMPLETE};
+  auto categorized = util::MapEntriesToClients(
+      clients_->GetRegisteredClients(), model_->PeekEntries(), ignored_states);
 
   for (auto client_id : clients_->GetRegisteredClients()) {
     clients_->GetClient(client_id)->OnServiceInitialized(
@@ -454,8 +482,12 @@ void ControllerImpl::HandleStartDownloadResponse(
     const DownloadParams::StartCallback& callback) {
   stats::LogStartDownloadResult(client, result);
 
-  if (result != DownloadParams::StartResult::ACCEPTED) {
-    // TODO(dtrainor): Clean up any download state.
+  // UNEXPECTED_GUID means the guid was already in use.  Don't remove this entry
+  // from the model because it's there due to another request.
+  if (result != DownloadParams::StartResult::ACCEPTED &&
+      result != DownloadParams::StartResult::UNEXPECTED_GUID &&
+      model_->Get(guid) != nullptr) {
+    model_->Remove(guid);
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -468,14 +500,28 @@ void ControllerImpl::HandleCompleteDownload(CompletionType type,
   DCHECK(entry);
   stats::LogDownloadCompletion(type);
 
-  if (entry->state == Entry::State::COMPLETE ||
-      entry->state == Entry::State::WATCHDOG) {
+  if (entry->state == Entry::State::COMPLETE) {
     DVLOG(1) << "Download is already completed.";
     return;
   }
 
-  // TODO(xingliu): Notify the client based on completion type.
-  TransitTo(entry, Entry::State::COMPLETE, model_.get());
+  auto* client = clients_->GetClient(entry->client);
+  DCHECK(client);
+
+  if (type == CompletionType::SUCCEED) {
+    auto driver_entry = driver_->Find(guid);
+    DCHECK(driver_entry.has_value());
+    // TODO(dtrainor): Move the FilePath generation to the controller and store
+    // it in Entry.  Then pass it into the DownloadDriver.
+    // TODO(dtrainor): PostTask this instead of putting it inline.
+    client->OnDownloadSucceeded(guid, base::FilePath(),
+                                driver_entry->bytes_downloaded);
+    TransitTo(entry, Entry::State::COMPLETE, model_.get());
+  } else {
+    client->OnDownloadFailed(guid, FailureReasonFromCompletionType(type));
+    model_->Remove(guid);
+  }
+
   ActivateMoreDownloads();
 }
 

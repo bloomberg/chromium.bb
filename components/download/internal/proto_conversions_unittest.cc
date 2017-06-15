@@ -24,9 +24,9 @@ class ProtoConversionsTest : public testing::Test, public ProtoConversions {
 };
 
 TEST_F(ProtoConversionsTest, StateConversion) {
-  Entry::State states[] = {Entry::State::NEW,      Entry::State::AVAILABLE,
-                           Entry::State::ACTIVE,   Entry::State::PAUSED,
-                           Entry::State::COMPLETE, Entry::State::WATCHDOG};
+  Entry::State states[] = {Entry::State::NEW, Entry::State::AVAILABLE,
+                           Entry::State::ACTIVE, Entry::State::PAUSED,
+                           Entry::State::COMPLETE};
   for (auto state : states) {
     ASSERT_EQ(state, RequestStateFromProto(RequestStateToProto(state)));
   }

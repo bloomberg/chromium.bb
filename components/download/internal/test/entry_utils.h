@@ -23,6 +23,8 @@ bool CompareEntryList(const std::vector<Entry>& list1,
 
 Entry BuildBasicEntry();
 
+Entry BuildBasicEntry(Entry::State state);
+
 Entry BuildEntry(DownloadClient client, const std::string& guid);
 
 Entry BuildEntry(DownloadClient client,

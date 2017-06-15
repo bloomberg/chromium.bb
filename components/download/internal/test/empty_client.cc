@@ -20,11 +20,8 @@ Client::ShouldDownload EmptyClient::OnDownloadStarted(
 void EmptyClient::OnDownloadUpdated(const std::string& guid,
                                     uint64_t bytes_downloaded) {}
 
-void EmptyClient::OnDownloadFailed(const std::string& guid) {}
-
-void EmptyClient::OnDownloadTimedOut(const std::string& guid) {}
-
-void EmptyClient::OnDownloadAborted(const std::string& guid) {}
+void EmptyClient::OnDownloadFailed(const std::string& guid,
+                                   FailureReason reason) {}
 
 void EmptyClient::OnDownloadSucceeded(const std::string& guid,
                                       const base::FilePath& path,

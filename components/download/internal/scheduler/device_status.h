@@ -49,6 +49,7 @@ struct DeviceStatus {
 // The criteria when the background download task should start.
 struct Criteria {
   Criteria();
+  Criteria(bool requires_battery_charging, bool requires_unmetered_network);
   bool operator==(const Criteria& other) const;
   bool requires_battery_charging;
   bool requires_unmetered_network;
