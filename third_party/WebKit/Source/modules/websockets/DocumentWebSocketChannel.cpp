@@ -30,7 +30,6 @@
 
 #include "modules/websockets/DocumentWebSocketChannel.h"
 
-#include <memory>
 #include "core/dom/DOMArrayBuffer.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/TaskRunnerHelper.h"
@@ -38,12 +37,15 @@
 #include "core/fileapi/FileReaderLoaderClient.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameClient.h"
+#include "core/frame/WebLocalFrameBase.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoader.h"
 #include "core/loader/MixedContentChecker.h"
 #include "core/loader/SubresourceFilter.h"
 #include "core/loader/ThreadableLoadingContext.h"
+#include "core/page/ChromeClient.h"
+#include "core/page/Page.h"
 #include "core/probe/CoreProbes.h"
 #include "modules/websockets/InspectorWebSocketEvents.h"
 #include "modules/websockets/WebSocketChannelClient.h"
@@ -59,7 +61,9 @@
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebSocketHandshakeThrottle.h"
 #include "public/platform/WebTraceLocation.h"
+#include "public/platform/WebURL.h"
 
 namespace blink {
 
@@ -135,12 +139,44 @@ void DocumentWebSocketChannel::BlobLoader::DidFail(
   // |this| is deleted here.
 }
 
+struct DocumentWebSocketChannel::ConnectInfo {
+  ConnectInfo(const String& selected_protocol, const String& extensions)
+      : selected_protocol(selected_protocol), extensions(extensions) {}
+
+  const String selected_protocol;
+  const String extensions;
+};
+
+// static
+DocumentWebSocketChannel* DocumentWebSocketChannel::CreateForTesting(
+    Document* document,
+    WebSocketChannelClient* client,
+    std::unique_ptr<SourceLocation> location,
+    WebSocketHandle* handle,
+    std::unique_ptr<WebSocketHandshakeThrottle> handshake_throttle) {
+  return new DocumentWebSocketChannel(
+      ThreadableLoadingContext::Create(*document), client, std::move(location),
+      WTF::WrapUnique(handle), std::move(handshake_throttle));
+}
+
+// static
+DocumentWebSocketChannel* DocumentWebSocketChannel::Create(
+    ThreadableLoadingContext* loading_context,
+    WebSocketChannelClient* client,
+    std::unique_ptr<SourceLocation> location) {
+  return new DocumentWebSocketChannel(
+      loading_context, client, std::move(location),
+      WTF::MakeUnique<WebSocketHandleImpl>(),
+      Platform::Current()->CreateWebSocketHandshakeThrottle());
+}
+
 DocumentWebSocketChannel::DocumentWebSocketChannel(
     ThreadableLoadingContext* loading_context,
     WebSocketChannelClient* client,
     std::unique_ptr<SourceLocation> location,
-    WebSocketHandle* handle)
-    : handle_(WTF::WrapUnique(handle ? handle : new WebSocketHandleImpl())),
+    std::unique_ptr<WebSocketHandle> handle,
+    std::unique_ptr<WebSocketHandshakeThrottle> handshake_throttle)
+    : handle_(std::move(handle)),
       client_(client),
       identifier_(CreateUniqueIdentifier()),
       loading_context_(loading_context),
@@ -148,7 +184,9 @@ DocumentWebSocketChannel::DocumentWebSocketChannel(
       received_data_size_for_flow_control_(
           kReceivedDataSizeForFlowControlHighWaterMark * 2),  // initial quota
       sent_size_of_top_message_(0),
-      location_at_construction_(std::move(location)) {}
+      location_at_construction_(std::move(location)),
+      handshake_throttle_(std::move(handshake_throttle)),
+      throttle_passed_(false) {}
 
 DocumentWebSocketChannel::~DocumentWebSocketChannel() {
   DCHECK(!blob_loader_);
@@ -221,6 +259,22 @@ bool DocumentWebSocketChannel::Connect(const KURL& url,
   handle_->Connect(url, protocols, loading_context_->GetSecurityOrigin(),
                    loading_context_->FirstPartyForCookies(),
                    loading_context_->UserAgent(), this);
+
+  // TODO(ricea): Maybe lookup GetDocument()->GetFrame() less often?
+  if (handshake_throttle_ && GetDocument() && GetDocument()->GetFrame() &&
+      GetDocument()->GetFrame()->GetPage()) {
+    // TODO(ricea): We may need to do something special here for SharedWorkers
+    // and ServiceWorkers
+    // TODO(ricea): Figure out who owns this WebFrame object and how long it can
+    // be expected to live.
+    LocalFrame* frame = GetDocument()->GetFrame();
+    WebLocalFrame* web_frame =
+        frame->GetPage()->GetChromeClient().GetWebLocalFrameBase(frame);
+    handshake_throttle_->ThrottleHandshake(url, web_frame, this);
+  } else {
+    // Treat no throttle as success.
+    throttle_passed_ = true;
+  }
 
   FlowControlIfNecessary();
   TRACE_EVENT_INSTANT1("devtools.timeline", "WebSocketCreate",
@@ -343,6 +397,7 @@ void DocumentWebSocketChannel::Disconnect() {
   }
   connection_handle_for_scheduler_.reset();
   AbortAsyncOperations();
+  handshake_throttle_.reset();
   handle_.reset();
   client_ = nullptr;
   identifier_ = 0;
@@ -435,6 +490,7 @@ void DocumentWebSocketChannel::ProcessSendQueue() {
         // No message should be sent from now on.
         DCHECK_EQ(messages_.size(), 1u);
         DCHECK_EQ(sent_size_of_top_message_, 0u);
+        handshake_throttle_.reset();
         handle_->Close(message->code, message->reason);
         messages_.pop_front();
         break;
@@ -464,6 +520,7 @@ void DocumentWebSocketChannel::AbortAsyncOperations() {
 void DocumentWebSocketChannel::HandleDidClose(bool was_clean,
                                               unsigned short code,
                                               const String& reason) {
+  handshake_throttle_.reset();
   handle_.reset();
   AbortAsyncOperations();
   if (!client_) {
@@ -496,6 +553,13 @@ void DocumentWebSocketChannel::DidConnect(WebSocketHandle* handle,
   DCHECK(handle_);
   DCHECK_EQ(handle, handle_.get());
   DCHECK(client_);
+
+  if (!throttle_passed_) {
+    connect_info_ = WTF::MakeUnique<ConnectInfo>(selected_protocol, extensions);
+    return;
+  }
+
+  handshake_throttle_.reset();
 
   client_->DidConnect(selected_protocol, extensions);
 }
@@ -672,6 +736,25 @@ void DocumentWebSocketChannel::DidStartClosingHandshake(
     client_->DidStartClosingHandshake();
 }
 
+void DocumentWebSocketChannel::OnSuccess() {
+  DCHECK(!throttle_passed_);
+  DCHECK(handshake_throttle_);
+  throttle_passed_ = true;
+  handshake_throttle_ = nullptr;
+  if (connect_info_) {
+    client_->DidConnect(std::move(connect_info_->selected_protocol),
+                        std::move(connect_info_->extensions));
+    connect_info_.reset();
+  }
+}
+
+void DocumentWebSocketChannel::OnError(const WebString& console_message) {
+  DCHECK(!throttle_passed_);
+  DCHECK(handshake_throttle_);
+  handshake_throttle_ = nullptr;
+  FailAsError(console_message);
+}
+
 void DocumentWebSocketChannel::DidFinishLoadingBlob(DOMArrayBuffer* buffer) {
   blob_loader_.Clear();
   DCHECK(handle_);
@@ -699,6 +782,7 @@ void DocumentWebSocketChannel::DidFailLoadingBlob(
 void DocumentWebSocketChannel::TearDownFailedConnection() {
   // m_handle and m_client can be null here.
   connection_handle_for_scheduler_.reset();
+  handshake_throttle_.reset();
 
   if (client_)
     client_->DidError();

@@ -35,6 +35,8 @@
 #include <windows.h>
 #endif
 
+#include <memory>
+
 #include "BlameContext.h"
 #include "UserMetricsAction.h"
 #include "WebAudioDevice.h"
@@ -118,6 +120,7 @@ class WebSandboxSupport;
 class WebScrollbarBehavior;
 class WebSecurityOrigin;
 class WebServiceWorkerCacheStorage;
+class WebSocketHandshakeThrottle;
 class WebSpeechSynthesizer;
 class WebSpeechSynthesizerClient;
 class WebStorageNamespace;
@@ -569,6 +572,13 @@ class BLINK_PLATFORM_EXPORT Platform {
   // May return null if the functionality is not available.
   virtual std::unique_ptr<WebImageCaptureFrameGrabber>
   CreateImageCaptureFrameGrabber();
+
+  // WebSocket ----------------------------------------------------------
+
+  // If this method returns non-null the returned object will be used to
+  // determine if/when a new WebSocket connection can be exposed to Javascript.
+  virtual std::unique_ptr<WebSocketHandshakeThrottle>
+  CreateWebSocketHandshakeThrottle();
 
   // WebWorker ----------------------------------------------------------
 
