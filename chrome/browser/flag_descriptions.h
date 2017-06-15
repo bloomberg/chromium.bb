@@ -1196,6 +1196,9 @@ extern const char kHostedAppsInWindowsDescription[];
 extern const char kMacRTLName[];
 extern const char kMacRTLDescription[];
 
+extern const char kMacTouchBarName[];
+extern const char kMacTouchBarDescription[];
+
 extern const char kMacViewsNativeAppWindowsName[];
 extern const char kMacViewsNativeAppWindowsDescription[];
 
