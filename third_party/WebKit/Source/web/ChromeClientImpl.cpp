@@ -56,6 +56,8 @@
 #include "core/html/forms/DateTimeChooserClient.h"
 #include "core/html/forms/DateTimeChooserImpl.h"
 #include "core/html/forms/ExternalDateTimeChooser.h"
+#include "core/html/forms/ExternalPopupMenu.h"
+#include "core/html/forms/InternalPopupMenu.h"
 #include "core/inspector/DevToolsEmulator.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutEmbeddedContent.h"
@@ -63,9 +65,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoadRequest.h"
 #include "core/page/ChromeClient.h"
-#include "core/page/ExternalPopupMenu.h"
 #include "core/page/Page.h"
-#include "core/page/PopupMenuImpl.h"
 #include "core/page/PopupOpeningObserver.h"
 #include "platform/Cursor.h"
 #include "platform/FileChooser.h"
@@ -755,7 +755,7 @@ PopupMenu* ChromeClientImpl::OpenPopupMenu(LocalFrame& frame,
     return new ExternalPopupMenu(frame, select, *web_view_);
 
   DCHECK(RuntimeEnabledFeatures::PagePopupEnabled());
-  return PopupMenuImpl::Create(this, select);
+  return InternalPopupMenu::Create(this, select);
 }
 
 PagePopup* ChromeClientImpl::OpenPagePopup(PagePopupClient* client) {
