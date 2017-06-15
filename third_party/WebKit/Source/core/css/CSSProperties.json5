@@ -3190,11 +3190,10 @@
     },
     {
       name: "-webkit-user-drag",
-      field_template: "storage_only",
-      type_name: "EUserDrag",
+      field_template: "keyword",
       field_group: "rare-non-inherited",
-      default_value: "EUserDrag::kAuto",
-      field_size: 2,
+      default_value: "auto",
+      keywords: ["auto", "none", "element"],
     },
     {
       name: "-webkit-user-modify",

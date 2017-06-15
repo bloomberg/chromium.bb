@@ -165,10 +165,6 @@ enum EFlexDirection {
 };
 enum EFlexWrap { kFlexNoWrap, kFlexWrap, kFlexWrapReverse };
 
-// CSS3 User Drag Values
-
-enum class EUserDrag { kAuto, kNone, kElement };
-
 // CSS3 Image Values
 enum EResize { RESIZE_NONE, RESIZE_BOTH, RESIZE_HORIZONTAL, RESIZE_VERTICAL };
 
