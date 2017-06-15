@@ -4,20 +4,15 @@
 
 #include "chrome/browser/android/vr_shell/vr_gl_util.h"
 
+#include "ui/gfx/geometry/rect_f.h"
+#include "ui/gfx/transform.h"
+
 namespace vr_shell {
 
 // This code is adapted from the GVR Treasure Hunt demo source.
-std::array<float, 16> MatrixToGLArray(const vr::Mat4f& matrix) {
-  // Note that this performs a *transpose* to a column-major matrix array, as
-  // expected by GL. The input matrix has translation components at [i][3] for
-  // use with row vectors and premultiplied transforms. In the output, the
-  // translation elements are at the end at positions 3*4+i.
+std::array<float, 16> MatrixToGLArray(const gfx::Transform& transform) {
   std::array<float, 16> result;
-  for (int i = 0; i < 4; ++i) {
-    for (int j = 0; j < 4; ++j) {
-      result[j * 4 + i] = matrix[i][j];
-    }
-  }
+  transform.matrix().asColMajorf(result.data());
   return result;
 }
 

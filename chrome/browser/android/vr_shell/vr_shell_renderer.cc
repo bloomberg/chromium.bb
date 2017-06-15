@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/android/vr_shell/vr_gl_util.h"
+#include "ui/gfx/geometry/rect_f.h"
 
 namespace {
 
@@ -337,7 +338,7 @@ GLuint BaseQuadRenderer::vertex_buffer_ = 0;
 BaseQuadRenderer::~BaseQuadRenderer() = default;
 
 void BaseQuadRenderer::PrepareToDraw(GLuint view_proj_matrix_handle,
-                                     const vr::Mat4f& view_proj_matrix) {
+                                     const gfx::Transform& view_proj_matrix) {
   glUseProgram(program_handle_);
 
   // Pass in model view project matrix.
@@ -381,7 +382,7 @@ ExternalTexturedQuadRenderer::ExternalTexturedQuadRenderer()
 }
 
 void ExternalTexturedQuadRenderer::Draw(int texture_data_handle,
-                                        const vr::Mat4f& view_proj_matrix,
+                                        const gfx::Transform& view_proj_matrix,
                                         const gfx::RectF& copy_rect,
                                         float opacity) {
   PrepareToDraw(model_view_proj_matrix_handle_, view_proj_matrix);
@@ -419,7 +420,7 @@ TexturedQuadRenderer::TexturedQuadRenderer()
 }
 
 void TexturedQuadRenderer::AddQuad(int texture_data_handle,
-                                   const vr::Mat4f& view_proj_matrix,
+                                   const gfx::Transform& view_proj_matrix,
                                    const gfx::RectF& copy_rect,
                                    float opacity) {
   SkiaQuad quad;
@@ -562,7 +563,7 @@ ReticleRenderer::ReticleRenderer()
       glGetUniformLocation(program_handle_, "mid_ring_opacity");
 }
 
-void ReticleRenderer::Draw(const vr::Mat4f& view_proj_matrix) {
+void ReticleRenderer::Draw(const gfx::Transform& view_proj_matrix) {
   PrepareToDraw(model_view_proj_matrix_handle_, view_proj_matrix);
 
   glUniform4f(color_handle_, kReticleColor[0], kReticleColor[1],
@@ -604,7 +605,8 @@ LaserRenderer::LaserRenderer()
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 }
 
-void LaserRenderer::Draw(float opacity, const vr::Mat4f& view_proj_matrix) {
+void LaserRenderer::Draw(float opacity,
+                         const gfx::Transform& view_proj_matrix) {
   PrepareToDraw(model_view_proj_matrix_handle_, view_proj_matrix);
 
   // Link texture data with texture unit.
@@ -688,7 +690,7 @@ void ControllerRenderer::SetUp(std::unique_ptr<VrControllerModel> model) {
 
 void ControllerRenderer::Draw(VrControllerModel::State state,
                               float opacity,
-                              const vr::Mat4f& view_proj_matrix) {
+                              const gfx::Transform& view_proj_matrix) {
   glUseProgram(program_handle_);
 
   glUniform1f(opacity_handle_, opacity);
@@ -730,7 +732,7 @@ GradientQuadRenderer::GradientQuadRenderer()
   opacity_handle_ = glGetUniformLocation(program_handle_, "u_Opacity");
 }
 
-void GradientQuadRenderer::Draw(const vr::Mat4f& view_proj_matrix,
+void GradientQuadRenderer::Draw(const gfx::Transform& view_proj_matrix,
                                 SkColor edge_color,
                                 SkColor center_color,
                                 float opacity) {
@@ -765,7 +767,7 @@ GradientGridRenderer::GradientGridRenderer()
   lines_count_handle_ = glGetUniformLocation(program_handle_, "u_LinesCount");
 }
 
-void GradientGridRenderer::Draw(const vr::Mat4f& view_proj_matrix,
+void GradientGridRenderer::Draw(const gfx::Transform& view_proj_matrix,
                                 SkColor edge_color,
                                 SkColor center_color,
                                 SkColor grid_color,
@@ -807,14 +809,14 @@ VrShellRenderer::VrShellRenderer()
 VrShellRenderer::~VrShellRenderer() = default;
 
 void VrShellRenderer::DrawTexturedQuad(int texture_data_handle,
-                                       const vr::Mat4f& view_proj_matrix,
+                                       const gfx::Transform& view_proj_matrix,
                                        const gfx::RectF& copy_rect,
                                        float opacity) {
   GetTexturedQuadRenderer()->AddQuad(texture_data_handle, view_proj_matrix,
                                      copy_rect, opacity);
 }
 
-void VrShellRenderer::DrawGradientQuad(const vr::Mat4f& view_proj_matrix,
+void VrShellRenderer::DrawGradientQuad(const gfx::Transform& view_proj_matrix,
                                        const SkColor edge_color,
                                        const SkColor center_color,
                                        float opacity) {

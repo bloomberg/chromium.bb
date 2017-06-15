@@ -5,8 +5,12 @@
 #ifndef CHROME_BROWSER_ANDROID_VR_SHELL_UI_ELEMENT_RENDERER_H_
 #define CHROME_BROWSER_ANDROID_VR_SHELL_UI_ELEMENT_RENDERER_H_
 
-#include "device/vr/vr_types.h"
 #include "third_party/skia/include/core/SkColor.h"
+
+namespace gfx {
+class RectF;
+class Transform;
+}  // namespace gfx
 
 namespace vr_shell {
 
@@ -16,11 +20,11 @@ class UiElementRenderer {
   virtual ~UiElementRenderer() {}
 
   virtual void DrawTexturedQuad(int texture_data_handle,
-                                const vr::Mat4f& view_proj_matrix,
+                                const gfx::Transform& view_proj_matrix,
                                 const gfx::RectF& copy_rect,
                                 float opacity) = 0;
 
-  virtual void DrawGradientQuad(const vr::Mat4f& view_proj_matrix,
+  virtual void DrawGradientQuad(const gfx::Transform& view_proj_matrix,
                                 const SkColor edge_color,
                                 const SkColor center_color,
                                 float opacity) = 0;

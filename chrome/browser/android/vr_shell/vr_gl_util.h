@@ -8,12 +8,18 @@
 #include <array>
 #include <string>
 
-#include "device/vr/vr_types.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gl/gl_bindings.h"
+
+namespace gfx {
+class RectF;
+class Size;
+class Transform;
+}  // namespace gfx
 
 namespace vr_shell {
 
-std::array<float, 16> MatrixToGLArray(const vr::Mat4f& matrix);
+std::array<float, 16> MatrixToGLArray(const gfx::Transform& matrix);
 
 gfx::Rect CalculatePixelSpaceRect(const gfx::Size& texture_size,
                                   const gfx::RectF& texture_rect);

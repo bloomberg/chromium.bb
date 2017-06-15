@@ -11,12 +11,14 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
+#include "cc/base/math_util.h"
 #include "chrome/browser/android/vr_shell/elbow_model.h"
 #include "device/vr/vr_math.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_controller.h"
+#include "ui/gfx/transform.h"
 
 namespace vr_shell {
 
@@ -49,8 +51,8 @@ constexpr int kMaxNumOfExtrapolations = 2;
 constexpr float kLaserStartDisplacement = 0.045;
 
 void ClampTouchpadPosition(gfx::Vector2dF* position) {
-  position->set_x(vr::Clampf(position->x(), 0.0f, 1.0f));
-  position->set_y(vr::Clampf(position->y(), 0.0f, 1.0f));
+  position->set_x(cc::MathUtil::ClampToRange(position->x(), 0.0f, 1.0f));
+  position->set_y(cc::MathUtil::ClampToRange(position->y(), 0.0f, 1.0f));
 }
 
 float DeltaTimeSeconds(int64_t last_timestamp_nanos) {
@@ -109,17 +111,16 @@ device::GvrGamepadData VrController::GetGamepadData() {
   pad.timestamp = controller_state_->GetLastOrientationTimestamp();
   pad.touch_pos.set_x(TouchPosX());
   pad.touch_pos.set_y(TouchPosY());
-  pad.orientation = Orientation();
+  pad.orientation = vr::ToVRQuatF(Orientation());
 
   // Use orientation to rotate acceleration/gyro into seated space.
-  vr::Mat4f pose_mat;
-  vr::QuatToMatrix(pad.orientation, &pose_mat);
+  gfx::Transform pose_mat(Orientation());
   const gvr::Vec3f& accel = controller_state_->GetAccel();
   const gvr::Vec3f& gyro = controller_state_->GetGyro();
-  pad.accel =
-      vr::MatrixVectorMul(pose_mat, gfx::Vector3dF(accel.x, accel.y, accel.z));
-  pad.gyro =
-      vr::MatrixVectorMul(pose_mat, gfx::Vector3dF(gyro.x, gyro.y, gyro.z));
+  pad.accel = gfx::Vector3dF(accel.x, accel.y, accel.z);
+  pose_mat.TransformVector(&pad.accel);
+  pad.gyro = gfx::Vector3dF(gyro.x, gyro.y, gyro.z);
+  pose_mat.TransformVector(&pad.gyro);
 
   pad.is_touching = controller_state_->IsTouching();
   pad.controller_button_pressed =
@@ -141,15 +142,16 @@ float VrController::TouchPosY() {
   return controller_state_->GetTouchPos().y;
 }
 
-vr::Quatf VrController::Orientation() const {
+gfx::Quaternion VrController::Orientation() const {
   const gvr::Quatf& orientation = controller_state_->GetOrientation();
-  return *reinterpret_cast<vr::Quatf*>(const_cast<gvr::Quatf*>(&orientation));
+  return gfx::Quaternion(orientation.qx, orientation.qy, orientation.qz,
+                         orientation.qw);
 }
 
-void VrController::GetTransform(vr::Mat4f* out) const {
-  QuatToMatrix(vr::ToVRQuatF(elbow_model_->GetControllerRotation()), out);
-  auto position = elbow_model_->GetControllerPosition();
-  vr::TranslateM(*out, vr::ToVector(position), out);
+void VrController::GetTransform(gfx::Transform* out) const {
+  *out = gfx::Transform(elbow_model_->GetControllerRotation());
+  gfx::Point3F p = elbow_model_->GetControllerPosition();
+  out->matrix().postTranslate(p.x(), p.y(), p.z());
 }
 
 float VrController::GetOpacity() const {
@@ -157,12 +159,11 @@ float VrController::GetOpacity() const {
 }
 
 gfx::Point3F VrController::GetPointerStart() const {
-  auto controller_position = elbow_model_->GetControllerPosition();
+  gfx::Point3F controller_position = elbow_model_->GetControllerPosition();
   gfx::Vector3dF pointer_direction{0.0f, -sin(kErgoAngleOffset),
                                    -cos(kErgoAngleOffset)};
-  vr::Mat4f rotation_mat;
-  vr::QuatToMatrix(Orientation(), &rotation_mat);
-  pointer_direction = vr::MatrixVectorRotate(rotation_mat, pointer_direction);
+  gfx::Transform rotation_mat(Orientation());
+  rotation_mat.TransformVector(&pointer_direction);
   return controller_position +
          gfx::ScaleVector3d(pointer_direction, kLaserStartDisplacement);
 }
@@ -215,7 +216,7 @@ void VrController::UpdateState(const gfx::Vector3dF& head_direction) {
   }
 
   const gvr::Vec3f& gvr_gyro = controller_state_->GetGyro();
-  elbow_model_->Update({IsConnected(), vr::ToQuaternion(Orientation()),
+  elbow_model_->Update({IsConnected(), Orientation(),
                         gfx::Vector3dF(gvr_gyro.x, gvr_gyro.y, gvr_gyro.z),
                         head_direction,
                         DeltaTimeSeconds(last_timestamp_nanos_)});

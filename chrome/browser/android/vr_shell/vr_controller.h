@@ -11,11 +11,18 @@
 #include "base/macros.h"
 #include "chrome/browser/android/vr_shell/vr_controller_model.h"
 #include "device/vr/android/gvr/gvr_gamepad_data_provider.h"
-#include "device/vr/vr_types.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
+#include "ui/gfx/geometry/point3_f.h"
+#include "ui/gfx/geometry/quaternion.h"
+#include "ui/gfx/geometry/vector2d_f.h"
+#include "ui/gfx/geometry/vector3d_f.h"
 
 namespace blink {
 class WebGestureEvent;
+}
+
+namespace gfx {
+class Transform;
 }
 
 namespace gvr {
@@ -56,8 +63,8 @@ class VrController {
 
   float TouchPosY();
 
-  vr::Quatf Orientation() const;
-  void GetTransform(vr::Mat4f* out) const;
+  gfx::Quaternion Orientation() const;
+  void GetTransform(gfx::Transform* out) const;
   float GetOpacity() const;
   gfx::Point3F GetPointerStart() const;
 

@@ -13,7 +13,6 @@
 #include "chrome/browser/android/vr_shell/animation.h"
 #include "chrome/browser/android/vr_shell/easing.h"
 #include "chrome/browser/android/vr_shell/ui_elements/ui_element.h"
-#include "device/vr/vr_math.h"
 
 namespace vr_shell {
 
@@ -251,17 +250,15 @@ void UiScene::ApplyRecursiveTransforms(UiElement* element) {
     ApplyAnchoring(*parent, element->x_anchoring(), element->y_anchoring(),
                    inheritable);
     ApplyRecursiveTransforms(parent);
-    vr::Mat4f product;
-    vr::MatrixMul(vr::ToMat4F(parent->inheritable_transform().to_world),
-                  vr::ToMat4F(inheritable->to_world), &product);
-    inheritable->to_world = vr::ToTransform(product);
+    inheritable->to_world.ConcatTransform(
+        parent->inheritable_transform().to_world);
 
     element->set_computed_opacity(element->computed_opacity() *
                                   parent->opacity());
     element->set_computed_lock_to_fov(parent->lock_to_fov());
   }
 
-  transform->to_world = inheritable->to_world * transform->to_world;
+  transform->to_world.ConcatTransform(inheritable->to_world);
   element->set_dirty(false);
 }
 

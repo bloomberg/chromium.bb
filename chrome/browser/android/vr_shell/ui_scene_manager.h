@@ -13,7 +13,6 @@
 #include "chrome/browser/android/vr_shell/color_scheme.h"
 #include "chrome/browser/android/vr_shell/ui_interface.h"
 #include "chrome/browser/android/vr_shell/ui_unsupported_mode.h"
-#include "device/vr/vr_types.h"
 
 namespace vr_shell {
 

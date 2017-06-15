@@ -18,10 +18,11 @@
 #include "chrome/browser/android/vr_shell/vr_controller.h"
 #include "chrome/browser/android/vr_shell/vr_controller_model.h"
 #include "device/vr/vr_service.mojom.h"
-#include "device/vr/vr_types.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
+#include "ui/gfx/geometry/quaternion.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace blink {
@@ -117,26 +118,27 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   void DrawFrame(int16_t frame_index);
   void DrawFrameSubmitWhenReady(int16_t frame_index,
                                 gvr_frame* frame_ptr,
-                                const vr::Mat4f& head_pose,
+                                const gfx::Transform& head_pose,
                                 std::unique_ptr<gl::GLFence> fence);
-  void DrawWorldElements(const vr::Mat4f& head_pose);
-  void DrawOverlayElements(const vr::Mat4f& head_pose);
+  void DrawWorldElements(const gfx::Transform& head_pose);
+  void DrawOverlayElements(const gfx::Transform& head_pose);
   void DrawHeadLockedElements();
-  void DrawUiView(const vr::Mat4f& head_pose,
+  void DrawUiView(const gfx::Transform& head_pose,
                   const std::vector<const UiElement*>& elements,
                   const gfx::Size& render_size,
                   int viewport_offset,
                   bool draw_cursor);
-  void DrawElements(const vr::Mat4f& view_proj_matrix,
+  void DrawElements(const gfx::Transform& view_proj_matrix,
                     const std::vector<const UiElement*>& elements,
                     bool draw_cursor);
-  void DrawElement(const vr::Mat4f& view_proj_matrix, const UiElement& element);
+  void DrawElement(const gfx::Transform& view_proj_matrix,
+                   const UiElement& element);
   std::vector<const UiElement*> GetElementsInDrawOrder(
-      const vr::Mat4f& view_matrix,
+      const gfx::Transform& view_matrix,
       const std::vector<const UiElement*>& elements);
-  void DrawReticle(const vr::Mat4f& view_proj_matrix);
-  void DrawLaser(const vr::Mat4f& view_proj_matrix);
-  void DrawController(const vr::Mat4f& view_proj_matrix);
+  void DrawReticle(const gfx::Transform& view_proj_matrix);
+  void DrawLaser(const gfx::Transform& view_proj_matrix);
+  void DrawController(const gfx::Transform& view_proj_matrix);
   bool ShouldDrawWebVr();
   void DrawWebVr();
   bool WebVrPoseByteIsValid(int pose_index_byte);
@@ -229,7 +231,7 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
 
   bool cardboard_ = false;
   bool touch_pending_ = false;
-  vr::Quatf controller_quat_;
+  gfx::Quaternion controller_quat_;
 
   gfx::Point3F target_point_;
 
@@ -250,9 +252,11 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   gfx::Size content_tex_physical_size_ = {0, 0};
   gfx::Size webvr_surface_size_ = {0, 0};
 
-  std::vector<vr::Mat4f> webvr_head_pose_;
   std::vector<base::TimeTicks> webvr_time_pose_;
   std::vector<base::TimeTicks> webvr_time_js_submit_;
+
+  std::vector<gfx::Transform> webvr_head_pose_;
+
   bool web_vr_mode_;
   bool ready_to_draw_ = false;
   bool surfaceless_rendering_;
