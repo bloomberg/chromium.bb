@@ -101,12 +101,11 @@ Node* NextLeafWithSameEditability(
   if (!node)
     return nullptr;
 
-  bool editable = HasEditableStyle(*node, editable_type);
-  node = NextAtomicLeafNode(*node);
-  while (node) {
-    if (editable == HasEditableStyle(*node, editable_type))
-      return node;
-    node = NextAtomicLeafNode(*node);
+  const bool editable = HasEditableStyle(*node, editable_type);
+  for (Node* runner = NextAtomicLeafNode(*node); runner;
+       runner = NextAtomicLeafNode(*runner)) {
+    if (editable == HasEditableStyle(*runner, editable_type))
+      return runner;
   }
   return nullptr;
 }
