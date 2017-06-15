@@ -5792,7 +5792,13 @@ class LayerTreeHostTestWillBeginImplFrameHasDidFinishImplFrame
   LayerTreeHostTestWillBeginImplFrameHasDidFinishImplFrame()
       : will_begin_impl_frame_count_(0), did_finish_impl_frame_count_(0) {}
 
-  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+  void BeginTest() override {
+    // Test terminates when a main frame is no longer expected so request that
+    // this message is actually sent.
+    layer_tree_host()->RequestBeginMainFrameNotExpected(true);
+
+    PostSetNeedsCommitToMainThread();
+  }
 
   void WillBeginImplFrameOnThread(LayerTreeHostImpl* host_impl,
                                   const BeginFrameArgs& args) override {
@@ -5866,6 +5872,9 @@ class LayerTreeHostTestBeginMainFrameTimeIsAlsoImplTime
       : impl_frame_args_(), will_begin_impl_frame_count_(0) {}
 
   void BeginTest() override {
+    // Test terminates when a main frame is no longer expected so request that
+    // this message is actually sent.
+    layer_tree_host()->RequestBeginMainFrameNotExpected(true);
     // Kick off the test with a commit.
     PostSetNeedsCommitToMainThread();
   }
