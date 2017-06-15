@@ -72,7 +72,7 @@ class ViewCreatingClient : public FrameTestHelpers::TestWebViewClient {
                       const WebString& name,
                       WebNavigationPolicy,
                       bool) override {
-    return web_view_helper_.InitializeWithOpener(opener, true);
+    return web_view_helper_.InitializeWithOpener(opener);
   }
 
  private:
@@ -82,7 +82,7 @@ class ViewCreatingClient : public FrameTestHelpers::TestWebViewClient {
 class CreateWindowTest : public testing::Test {
  protected:
   void SetUp() override {
-    web_view_ = helper_.Initialize(false, nullptr, &web_view_client_);
+    web_view_ = helper_.Initialize(nullptr, &web_view_client_);
     main_frame_ = helper_.LocalMainFrame();
     chrome_client_impl_ =
         ToChromeClientImpl(&web_view_->GetPage()->GetChromeClient());

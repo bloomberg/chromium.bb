@@ -202,8 +202,8 @@ WebView* TouchActionTest::SetupTest(
                                                 testing::WebTestDataPath(),
                                                 WebString::FromUTF8(file));
   // Note that JavaScript must be enabled for shadow DOM tests.
-  WebView* web_view =
-      web_view_helper_.InitializeAndLoad(base_url_ + file, true, 0, 0, &client);
+  WebView* web_view = web_view_helper_.InitializeAndLoad(
+      base_url_ + file, nullptr, nullptr, &client);
 
   // Set size to enable hit testing, and avoid line wrapping for consistency
   // with browser.

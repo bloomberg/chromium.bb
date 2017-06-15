@@ -159,7 +159,7 @@ class RootScrollerTest : public ::testing::Test {
                                   FrameTestHelpers::TestWebViewClient* client) {
     RuntimeEnabledFeatures::SetSetRootScrollerEnabled(true);
 
-    helper_.InitializeAndLoad(url, true, nullptr, client, nullptr,
+    helper_.InitializeAndLoad(url, nullptr, client, nullptr,
                               &ConfigureSettings);
 
     // Initialize browser controls to be shown.

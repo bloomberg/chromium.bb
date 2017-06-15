@@ -167,7 +167,7 @@ TEST_F(DocumentLoaderTest, MultiChunkWithReentrancy) {
 
   ChildDelegate child_delegate;
   MainFrameClient main_frame_client(child_delegate);
-  web_view_helper_.Initialize(false, &main_frame_client);
+  web_view_helper_.Initialize(&main_frame_client);
 
   // This doesn't go through the mocked URL load path: it's just intended to
   // setup a situation where didReceiveData() can be invoked reentrantly.
@@ -188,7 +188,7 @@ TEST_F(DocumentLoaderTest, MultiChunkWithReentrancy) {
 
 TEST_F(DocumentLoaderTest, isCommittedButEmpty) {
   WebViewBase* web_view_impl =
-      web_view_helper_.InitializeAndLoad("about:blank", true);
+      web_view_helper_.InitializeAndLoad("about:blank");
   EXPECT_TRUE(ToLocalFrame(web_view_impl->GetPage()->MainFrame())
                   ->Loader()
                   .GetDocumentLoader()

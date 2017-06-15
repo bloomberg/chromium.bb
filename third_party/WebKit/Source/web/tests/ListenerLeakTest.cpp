@@ -87,11 +87,10 @@ class ListenerLeakTest : public ::testing::Test {
   void RunTest(const std::string& filename) {
     std::string base_url("http://www.example.com/");
     std::string file_name(filename);
-    bool execute_script = true;
     URLTestHelpers::RegisterMockedURLLoadFromBase(
         WebString::FromUTF8(base_url), blink::testing::WebTestDataPath(),
         WebString::FromUTF8(file_name));
-    web_view_helper.InitializeAndLoad(base_url + file_name, execute_script);
+    web_view_helper.InitializeAndLoad(base_url + file_name);
   }
 
   void TearDown() override {

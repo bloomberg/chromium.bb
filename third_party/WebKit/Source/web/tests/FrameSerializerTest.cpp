@@ -65,8 +65,8 @@ class FrameSerializerTest : public ::testing::Test,
 
  protected:
   void SetUp() override {
-    // We want the images to load and JavaScript to be on.
-    helper_.Initialize(true, nullptr, nullptr, nullptr, &ConfigureSettings);
+    // We want the images to load.
+    helper_.Initialize(nullptr, nullptr, nullptr, &ConfigureSettings);
   }
 
   void TearDown() override {

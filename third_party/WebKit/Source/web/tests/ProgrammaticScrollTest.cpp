@@ -44,8 +44,8 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithScale) {
   RegisterMockedHttpURLLoad("long_scroll.html");
 
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view = web_view_helper.InitializeAndLoad(
-      base_url_ + "long_scroll.html", true, 0, 0);
+  WebViewBase* web_view =
+      web_view_helper.InitializeAndLoad(base_url_ + "long_scroll.html");
   web_view->Resize(WebSize(1000, 1000));
   web_view->UpdateAllLifecyclePhases();
 
@@ -76,8 +76,8 @@ TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithoutScale) {
   RegisterMockedHttpURLLoad("long_scroll.html");
 
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view = web_view_helper.InitializeAndLoad(
-      base_url_ + "long_scroll.html", true, 0, 0);
+  WebViewBase* web_view =
+      web_view_helper.InitializeAndLoad(base_url_ + "long_scroll.html");
   web_view->Resize(WebSize(1000, 1000));
   web_view->UpdateAllLifecyclePhases();
 

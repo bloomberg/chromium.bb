@@ -120,7 +120,7 @@ TEST(WebInputEventConversionTest, InputEventsScaling) {
   RegisterMockedURL(base_url, file_name);
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebViewBase* web_view =
-      web_view_helper.InitializeAndLoad(base_url + file_name, true);
+      web_view_helper.InitializeAndLoad(base_url + file_name);
   web_view->GetSettings()->SetViewportEnabled(true);
   int page_width = 640;
   int page_height = 480;
@@ -347,7 +347,7 @@ TEST(WebInputEventConversionTest, InputEventsTransform) {
   RegisterMockedURL(base_url, file_name);
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebViewBase* web_view =
-      web_view_helper.InitializeAndLoad(base_url + file_name, true);
+      web_view_helper.InitializeAndLoad(base_url + file_name);
   web_view->GetSettings()->SetViewportEnabled(true);
   int page_width = 640;
   int page_height = 480;
@@ -618,7 +618,7 @@ TEST(WebInputEventConversionTest, InputEventsConversions) {
   RegisterMockedURL(base_url, file_name);
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebViewBase* web_view =
-      web_view_helper.InitializeAndLoad(base_url + file_name, true);
+      web_view_helper.InitializeAndLoad(base_url + file_name);
   int page_width = 640;
   int page_height = 480;
   web_view->Resize(WebSize(page_width, page_height));
@@ -657,7 +657,7 @@ TEST(WebInputEventConversionTest, VisualViewportOffset) {
   RegisterMockedURL(base_url, file_name);
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebViewBase* web_view =
-      web_view_helper.InitializeAndLoad(base_url + file_name, true);
+      web_view_helper.InitializeAndLoad(base_url + file_name);
   int page_width = 640;
   int page_height = 480;
   web_view->Resize(WebSize(page_width, page_height));
@@ -758,7 +758,7 @@ TEST(WebInputEventConversionTest, ElasticOverscroll) {
   RegisterMockedURL(base_url, file_name);
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebViewBase* web_view =
-      web_view_helper.InitializeAndLoad(base_url + file_name, true);
+      web_view_helper.InitializeAndLoad(base_url + file_name);
   int page_width = 640;
   int page_height = 480;
   web_view->Resize(WebSize(page_width, page_height));
@@ -834,7 +834,7 @@ TEST(WebInputEventConversionTest, ElasticOverscrollWithPageReload) {
   RegisterMockedURL(base_url, file_name);
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebViewBase* web_view =
-      web_view_helper.InitializeAndLoad(base_url + file_name, true);
+      web_view_helper.InitializeAndLoad(base_url + file_name);
   int page_width = 640;
   int page_height = 480;
   web_view->Resize(WebSize(page_width, page_height));

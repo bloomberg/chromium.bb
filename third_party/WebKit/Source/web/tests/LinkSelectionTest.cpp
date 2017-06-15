@@ -128,8 +128,7 @@ class LinkSelectionTest : public LinkSelectionTestBase {
         "foobar</a>"
         "<div id='page_text'>Lorem ipsum dolor sit amet</div>";
 
-    web_view_ = helper_.Initialize(false, &test_frame_client_, nullptr, nullptr,
-                                   [](WebSettings* settings) {});
+    web_view_ = helper_.Initialize(&test_frame_client_);
     main_frame_ = web_view_->MainFrameImpl();
     FrameTestHelpers::LoadHTMLString(
         main_frame_, kHTMLString, URLTestHelpers::ToKURL("http://foobar.com"));
@@ -267,7 +266,7 @@ class LinkSelectionClickEventsTest : public LinkSelectionTestBase {
         "<div id='empty_div' style='width: 100px; height: 100px;'></div>"
         "<span id='text_div'>Sometexttoshow</span>";
 
-    web_view_ = helper_.Initialize(false);
+    web_view_ = helper_.Initialize();
     main_frame_ = web_view_->MainFrameImpl();
     FrameTestHelpers::LoadHTMLString(
         main_frame_, kHTMLString, URLTestHelpers::ToKURL("http://foobar.com"));
