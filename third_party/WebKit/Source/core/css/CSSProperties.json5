@@ -1639,11 +1639,11 @@
     },
     {
       name: "object-fit",
-      type_name: "ObjectFit",
       field_template: "storage_only",
       field_group: "rare-non-inherited",
       field_size: 3,
-      default_value: "kObjectFitFill",
+      getter: "GetObjectFit",
+      default_value: "EObjectFit::kFill",
     },
     {
       name: "object-position",

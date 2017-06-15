@@ -172,13 +172,7 @@ enum EFlexWrap { kFlexNoWrap, kFlexWrap, kFlexWrapReverse };
 enum EUserDrag { DRAG_AUTO, DRAG_NONE, DRAG_ELEMENT };
 
 // CSS3 Image Values
-enum ObjectFit {
-  kObjectFitFill,
-  kObjectFitContain,
-  kObjectFitCover,
-  kObjectFitNone,
-  kObjectFitScaleDown
-};
+enum class EObjectFit { kFill, kContain, kCover, kNone, kScaleDown };
 
 enum EResize { RESIZE_NONE, RESIZE_BOTH, RESIZE_HORIZONTAL, RESIZE_VERTICAL };
 
