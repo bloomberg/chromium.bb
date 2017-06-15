@@ -131,7 +131,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     @"H:|[divider]|",
   ];
   ApplyVisualConstraints(constraints, views);
-  return contentView = nil;
+  return contentView;
 }
 
 - (void)viewWillLayoutSubviews {
