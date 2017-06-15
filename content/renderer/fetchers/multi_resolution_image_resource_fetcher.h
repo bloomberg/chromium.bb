@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "third_party/WebKit/public/platform/WebCachePolicy.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "url/gurl.h"
 
@@ -19,7 +20,6 @@ class SkBitmap;
 namespace blink {
 class WebFrame;
 class WebURLResponse;
-enum class WebCachePolicy;
 }
 
 namespace content {

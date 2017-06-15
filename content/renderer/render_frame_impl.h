@@ -62,6 +62,7 @@
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/interfaces/connector.mojom.h"
 #include "services/service_manager/public/interfaces/interface_provider.mojom.h"
+#include "third_party/WebKit/public/platform/WebCachePolicy.h"
 #include "third_party/WebKit/public/platform/WebEffectiveConnectionType.h"
 #include "third_party/WebKit/public/platform/WebFeaturePolicy.h"
 #include "third_party/WebKit/public/platform/WebFocusType.h"
@@ -98,7 +99,6 @@ class WebLocalFrame;
 class WebPresentationClient;
 class WebPushClient;
 class WebSecurityOrigin;
-enum class WebCachePolicy;
 struct WebCompositionUnderline;
 struct WebContextMenuData;
 struct WebCursorInfo;

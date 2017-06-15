@@ -15,7 +15,6 @@
 
 namespace blink {
 class WebDataSource;
-enum class WebCachePolicy;
 }
 
 namespace content {

@@ -40,7 +40,11 @@ class PLATFORM_EXPORT IntegrityMetadata {
   HashAlgorithm algorithm_;
 };
 
-enum class ResourceIntegrityDisposition { kNotChecked = 0, kFailed, kPassed };
+enum class ResourceIntegrityDisposition : uint8_t {
+  kNotChecked = 0,
+  kFailed,
+  kPassed
+};
 
 }  // namespace blink
 

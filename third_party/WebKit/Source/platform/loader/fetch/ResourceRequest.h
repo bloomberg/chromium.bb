@@ -39,11 +39,10 @@
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/wtf/RefCounted.h"
 #include "public/platform/WebAddressSpace.h"
+#include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebURLRequest.h"
 
 namespace blink {
-
-enum class WebCachePolicy;
 
 enum class ResourceRequestBlockedReason {
   CSP,
@@ -55,7 +54,7 @@ enum class ResourceRequestBlockedReason {
   kNone
 };
 
-enum InputToLoadPerfMetricReportPolicy {
+enum InputToLoadPerfMetricReportPolicy : uint8_t {
   kNoReport,    // Don't report metrics for this ResourceRequest.
   kReportLink,  // Report metrics for this request as initiated by a link click.
   kReportIntent,  // Report metrics for this request as initiated by an intent.
@@ -67,7 +66,7 @@ class PLATFORM_EXPORT ResourceRequest final {
   DISALLOW_NEW();
 
  public:
-  enum class RedirectStatus { kFollowedRedirect, kNoRedirect };
+  enum class RedirectStatus : uint8_t { kFollowedRedirect, kNoRedirect };
 
   class ExtraData : public RefCounted<ExtraData> {
    public:
@@ -335,7 +334,6 @@ class PLATFORM_EXPORT ResourceRequest final {
   bool NeedsHTTPOrigin() const;
 
   KURL url_;
-  WebCachePolicy cache_policy_;
   double timeout_interval_;  // 0 is a magic value for platform default on
                              // platforms that have one.
   KURL first_party_for_cookies_;
@@ -352,19 +350,20 @@ class PLATFORM_EXPORT ResourceRequest final {
   bool use_stream_on_response_ : 1;
   bool keepalive_ : 1;
   bool should_reset_app_cache_ : 1;
+  WebCachePolicy cache_policy_;
   WebURLRequest::ServiceWorkerMode service_worker_mode_;
   ResourceLoadPriority priority_;
   int intra_priority_value_;
   int requestor_id_;
   int requestor_process_id_;
   int app_cache_host_id_;
+  WebURLRequest::PreviewsState previews_state_;
   RefPtr<ExtraData> extra_data_;
   WebURLRequest::RequestContext request_context_;
   WebURLRequest::FrameType frame_type_;
   WebURLRequest::FetchRequestMode fetch_request_mode_;
   WebURLRequest::FetchCredentialsMode fetch_credentials_mode_;
   WebURLRequest::FetchRedirectMode fetch_redirect_mode_;
-  WebURLRequest::PreviewsState previews_state_;
   ReferrerPolicy referrer_policy_;
   bool did_set_http_referrer_;
   bool check_for_browser_side_navigation_;
@@ -373,12 +372,11 @@ class PLATFORM_EXPORT ResourceRequest final {
   WebURLRequest::LoadingIPCType loading_ipc_type_;
   bool is_same_document_navigation_;
   InputToLoadPerfMetricReportPolicy input_perf_metric_report_policy_;
+  RedirectStatus redirect_status_;
 
   mutable CacheControlHeader cache_control_header_cache_;
 
   static double default_timeout_interval_;
-
-  RedirectStatus redirect_status_;
 
   double navigation_start_ = 0;
 };

@@ -39,19 +39,19 @@
 
 namespace blink {
 
-enum DataBufferingPolicy { kBufferData, kDoNotBufferData };
+enum DataBufferingPolicy : uint8_t { kBufferData, kDoNotBufferData };
 
-enum ContentSecurityPolicyDisposition {
+enum ContentSecurityPolicyDisposition : uint8_t {
   kCheckContentSecurityPolicy,
   kDoNotCheckContentSecurityPolicy
 };
 
-enum RequestInitiatorContext {
+enum RequestInitiatorContext : uint8_t {
   kDocumentContext,
   kWorkerContext,
 };
 
-enum StoredCredentials {
+enum StoredCredentials : uint8_t {
   kAllowStoredCredentials,
   kDoNotAllowStoredCredentials
 };
@@ -59,22 +59,25 @@ enum StoredCredentials {
 // APIs like XMLHttpRequest and EventSource let the user decide whether to send
 // credentials, but they're always sent for same-origin requests. Additional
 // information is needed to handle cross-origin redirects correctly.
-enum CredentialRequest {
+enum CredentialRequest : uint8_t {
   kClientRequestedCredentials,
   kClientDidNotRequestCredentials
 };
 
-enum SynchronousPolicy { kRequestSynchronously, kRequestAsynchronously };
+enum SynchronousPolicy : uint8_t {
+  kRequestSynchronously,
+  kRequestAsynchronously
+};
 
 // A resource fetch can be marked as being CORS enabled. The loader must perform
 // an access check upon seeing the response.
-enum CORSEnabled { kNotCORSEnabled, kIsCORSEnabled };
+enum CORSEnabled : uint8_t { kNotCORSEnabled, kIsCORSEnabled };
 
 // Was the request generated from a "parser-inserted" element?
 // https://html.spec.whatwg.org/multipage/scripting.html#parser-inserted
-enum ParserDisposition { kParserInserted, kNotParserInserted };
+enum ParserDisposition : uint8_t { kParserInserted, kNotParserInserted };
 
-enum CacheAwareLoadingEnabled {
+enum CacheAwareLoadingEnabled : uint8_t {
   kNotCacheAwareLoadingEnabled,
   kIsCacheAwareLoadingEnabled
 };
@@ -112,6 +115,8 @@ struct ResourceLoaderOptions {
     // for.
   }
 
+  FetchInitiatorInfo initiator_info;
+
   // When adding members, CrossThreadResourceLoaderOptionsData should be
   // updated.
   DataBufferingPolicy data_buffering_policy;
@@ -123,7 +128,6 @@ struct ResourceLoaderOptions {
   CredentialRequest credentials_requested;
 
   ContentSecurityPolicyDisposition content_security_policy_option;
-  FetchInitiatorInfo initiator_info;
   RequestInitiatorContext request_initiator_context;
   SynchronousPolicy synchronous_policy;
 

@@ -7,7 +7,7 @@
 
 namespace blink {
 
-enum class WebCachePolicy {
+enum class WebCachePolicy : uint8_t {
   kUseProtocolCachePolicy,   // normal load
   kValidatingCacheData,      // reload
   kBypassingCache,           // end-to-end reload
@@ -15,7 +15,7 @@ enum class WebCachePolicy {
                              // data
   kReturnCacheDataDontLoad,  // results of a post - allow stale data and only
                              // use cache
-  kReturnCacheDataIfValid,  // for cache-aware loading - disallow stale data
+  kReturnCacheDataIfValid,   // for cache-aware loading - disallow stale data
   kBypassCacheLoadOnlyFromCache,  // for cache-only load when disable cache
                                   // is enabled. Results in a network error.
 };

@@ -70,7 +70,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   // |Type| enum values are used in UMAs, so do not change the values of
   // existing |Type|. When adding a new |Type|, append it at the end and update
   // |kLastResourceType|.
-  enum Type {
+  enum Type : uint8_t {
     kMainResource,
     kImage,
     kCSSStyleSheet,
@@ -162,7 +162,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
                          PreloadReferencePolicy = kMarkAsReferenced);
   void RemoveFinishObserver(ResourceFinishObserver*);
 
-  enum PreloadResult {
+  enum PreloadResult : uint8_t {
     kPreloadNotReferenced,
     kPreloadReferenced,
     kPreloadReferencedWhileLoading,
@@ -436,6 +436,10 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   // MemoryCoordinatorClient overrides:
   void OnPurgeMemory() override;
 
+  PreloadResult preload_result_;
+  Type type_;
+  ResourceStatus status_;
+
   Member<CachedMetadataHandlerImpl> cache_handler_;
   RefPtr<SecurityOrigin> fetcher_security_origin_;
 
@@ -444,6 +448,9 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   double load_finish_time_;
 
   unsigned long identifier_;
+
+  unsigned preload_count_;
+  double preload_discovery_time_;
 
   size_t encoded_size_;
   size_t encoded_size_memory_usage_;
@@ -455,15 +462,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   // and thus potential bugs. crbug.com/594644
   const size_t overhead_size_;
 
-  unsigned preload_count_;
-
-  double preload_discovery_time_;
-
   String cache_identifier_;
-
-  PreloadResult preload_result_;
-  Type type_;
-  ResourceStatus status_;
 
   bool needs_synchronous_cache_hit_;
   bool link_preload_;

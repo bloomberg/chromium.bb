@@ -36,6 +36,7 @@
 #include "platform/scroll/ScrollTypes.h"
 #include "platform/weborigin/Referrer.h"
 #include "platform/wtf/text/WTFString.h"
+#include "public/platform/WebCachePolicy.h"
 
 namespace blink {
 
@@ -43,7 +44,6 @@ class DocumentState;
 class EncodedFormData;
 class KURL;
 class ResourceRequest;
-enum class WebCachePolicy;
 
 class CORE_EXPORT HistoryItem final
     : public GarbageCollectedFinalized<HistoryItem> {

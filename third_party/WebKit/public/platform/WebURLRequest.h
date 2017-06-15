@@ -31,11 +31,12 @@
 #ifndef WebURLRequest_h
 #define WebURLRequest_h
 
+#include <memory>
 #include "WebAddressSpace.h"
+#include "WebCachePolicy.h"
 #include "WebCommon.h"
 #include "WebHTTPBody.h"
 #include "WebReferrerPolicy.h"
-#include <memory>
 
 namespace blink {
 
@@ -45,7 +46,6 @@ class WebHTTPHeaderVisitor;
 class WebSecurityOrigin;
 class WebString;
 class WebURL;
-enum class WebCachePolicy;
 
 class WebURLRequest {
  public:
@@ -60,7 +60,7 @@ class WebURLRequest {
 
   // Corresponds to Fetch's "context":
   // http://fetch.spec.whatwg.org/#concept-request-context
-  enum RequestContext {
+  enum RequestContext : uint8_t {
     kRequestContextUnspecified = 0,
     kRequestContextAudio,
     kRequestContextBeacon,
@@ -99,14 +99,14 @@ class WebURLRequest {
 
   // Corresponds to Fetch's "context frame type":
   // http://fetch.spec.whatwg.org/#concept-request-context-frame-type
-  enum FrameType {
+  enum FrameType : uint8_t {
     kFrameTypeAuxiliary,
     kFrameTypeNested,
     kFrameTypeNone,
     kFrameTypeTopLevel
   };
 
-  enum FetchRequestMode {
+  enum FetchRequestMode : uint8_t {
     kFetchRequestModeSameOrigin,
     kFetchRequestModeNoCORS,
     kFetchRequestModeCORS,
@@ -114,14 +114,14 @@ class WebURLRequest {
     kFetchRequestModeNavigate
   };
 
-  enum FetchCredentialsMode {
+  enum FetchCredentialsMode : uint8_t {
     kFetchCredentialsModeOmit,
     kFetchCredentialsModeSameOrigin,
     kFetchCredentialsModeInclude,
     kFetchCredentialsModePassword
   };
 
-  enum FetchRequestCacheMode {
+  enum FetchRequestCacheMode : uint8_t {
     kFetchRequestCacheModeDefault,
     kFetchRequestCacheModeNoStore,
     kFetchRequestCacheModeReload,
@@ -130,7 +130,7 @@ class WebURLRequest {
     kFetchRequestCacheModeOnlyIfCached
   };
 
-  enum FetchRedirectMode {
+  enum FetchRedirectMode : uint8_t {
     kFetchRedirectModeFollow,
     kFetchRedirectModeError,
     kFetchRedirectModeManual
@@ -139,7 +139,7 @@ class WebURLRequest {
   // Used to report performance metrics timed from the UI action that
   // triggered them (as opposed to navigation start time used in the
   // Navigation Timing API).
-  enum InputToLoadPerfMetricReportPolicy {
+  enum InputToLoadPerfMetricReportPolicy : uint8_t {
     kNoReport,      // Don't report metrics for this WebURLRequest.
     kReportLink,    // Report metrics with UI action link clicked.
     kReportIntent,  // Report metrics with UI action displayed intent.
@@ -170,7 +170,7 @@ class WebURLRequest {
   };
 
   // Indicates which service workers will receive fetch events for this request.
-  enum class ServiceWorkerMode {
+  enum class ServiceWorkerMode : uint8_t {
     // Relevant local and foreign service workers will get a fetch or
     // foreignfetch event for this request.
     kAll,
@@ -182,7 +182,7 @@ class WebURLRequest {
     kNone
   };
 
-  enum class LoadingIPCType {
+  enum class LoadingIPCType : uint8_t {
     kChromeIPC,
     kMojo,
   };

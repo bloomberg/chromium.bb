@@ -40,6 +40,7 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/scroll/ScrollbarTheme.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebMouseEvent.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURLRequest.h"
@@ -57,7 +58,6 @@ class WebLocalFrameBase;
 class WebRemoteFrameBase;
 class WebRemoteFrameImpl;
 class WebSettings;
-enum class WebCachePolicy;
 
 namespace FrameTestHelpers {
 

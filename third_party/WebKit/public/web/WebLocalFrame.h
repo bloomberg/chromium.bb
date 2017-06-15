@@ -45,7 +45,6 @@ class WebSharedWorkerRepositoryClient;
 class WebSpellCheckPanelHostClient;
 class WebTextCheckClient;
 class WebURLLoader;
-enum class WebCachePolicy;
 enum class WebSandboxFlags;
 enum class WebTreeScopeType;
 struct WebConsoleMessage;
