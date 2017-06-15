@@ -22,6 +22,260 @@
 
 #include "av1/common/seg_common.h"
 
+#if CONFIG_LPF_DIRECT
+static void pick_filter_pixel_left(uint8_t *const src, uint8_t *const line,
+                                   int *const orig_pos, int length, int row,
+                                   int col, int width, int height, int pitch,
+                                   int pivot, int direct) {
+  int i;
+  int pos = row * pitch + col;
+
+  for (i = 0; i < length; ++i) {
+    int dy = 0;
+    switch (direct) {
+      case VERT_HORZ: dy = 0; break;
+      case DEGREE_45: dy = 1; break;
+      case DEGREE_135: dy = -1; break;
+    }
+    col -= 1;
+    row += dy;
+    if (col >= 0 && col < width && row >= 0 && row < height) {
+      pos = row * pitch + col;
+      line[pivot - 1 - i] = src[pos];
+      orig_pos[pivot - 1 - i] = pos;
+    }
+  }
+}
+
+static void pick_filter_pixel_right(uint8_t *const src, uint8_t *const line,
+                                    int *const orig_pos, int length, int row,
+                                    int col, int width, int height, int pitch,
+                                    int pivot, int direct) {
+  int i;
+  int pos = row * pitch + col;
+
+  line[pivot] = src[pos];
+  orig_pos[pivot] = pos;
+
+  for (i = 1; i < length; ++i) {
+    int dy = 0;
+    switch (direct) {
+      case VERT_HORZ: dy = 0; break;
+      case DEGREE_45: dy = -1; break;
+      case DEGREE_135: dy = 1; break;
+    }
+    col += 1;
+    row += dy;
+    if (col >= 0 && col < width && row >= 0 && row < height) {
+      pos = row * pitch + col;
+      line[pivot + i] = src[pos];
+      orig_pos[pivot + i] = pos;
+    }
+  }
+}
+
+static void pick_filter_pixel_above(uint8_t *const src, uint8_t *const line,
+                                    int *const orig_pos, int length, int row,
+                                    int col, int width, int height, int pitch,
+                                    int pivot, int direct) {
+  int i;
+  int pos = row * pitch + col;
+
+  for (i = 0; i < length; ++i) {
+    int dx = 0;
+    switch (direct) {
+      case VERT_HORZ: dx = 0; break;
+      case DEGREE_45: dx = 1; break;
+      case DEGREE_135: dx = -1; break;
+    }
+    col += dx;
+    row -= 1;
+    if (col >= 0 && col < width && row >= 0 && row < height) {
+      pos = row * pitch + col;
+      line[pivot - 1 - i] = src[pos];
+      orig_pos[pivot - 1 - i] = pos;
+    }
+  }
+}
+
+static void pick_filter_pixel_bot(uint8_t *const src, uint8_t *const line,
+                                  int *const orig_pos, int length, int row,
+                                  int col, int width, int height, int pitch,
+                                  int pivot, int direct) {
+  int i;
+  int pos = row * pitch + col;
+
+  line[pivot] = src[pos];
+  orig_pos[pivot] = pos;
+
+  for (i = 1; i < length; ++i) {
+    int dx = 0;
+    switch (direct) {
+      case VERT_HORZ: dx = 0; break;
+      case DEGREE_45: dx = -1; break;
+      case DEGREE_135: dx = 1; break;
+    }
+    col += dx;
+    row += 1;
+    if (col >= 0 && col < width && row >= 0 && row < height) {
+      pos = row * pitch + col;
+      line[pivot + i] = src[pos];
+      orig_pos[pivot + i] = pos;
+    }
+  }
+}
+
+static void pick_filter_block_vert(uint8_t *const src, uint8_t *const block,
+                                   int *const orig_pos, int length, int row,
+                                   int col, int width, int height, int pitch,
+                                   int pivot, int line_length, int unit,
+                                   int direct) {
+  int i;
+  for (i = 0; i < 8 * unit; ++i) {
+    pick_filter_pixel_left(src, block + i * line_length,
+                           orig_pos + i * line_length, length, row + i, col,
+                           width, height, pitch, pivot, direct);
+    pick_filter_pixel_right(src, block + i * line_length,
+                            orig_pos + i * line_length, length, row + i, col,
+                            width, height, pitch, pivot, direct);
+  }
+}
+
+static void pick_filter_block_horz(uint8_t *const src, uint8_t *const block,
+                                   int *const orig_pos, int length, int row,
+                                   int col, int width, int height, int pitch,
+                                   int pivot, int line_length, int unit,
+                                   int direct) {
+  int i, j;
+  int num = 8 * unit;
+  for (i = 0; i < num; ++i) {
+    pick_filter_pixel_above(src, block + i * line_length,
+                            orig_pos + i * line_length, length, row, col + i,
+                            width, height, pitch, pivot, direct);
+    pick_filter_pixel_bot(src, block + i * line_length,
+                          orig_pos + i * line_length, length, row, col + i,
+                          width, height, pitch, pivot, direct);
+  }
+
+  // rearrange block
+  // TODO(chengchen): make it in-place or a stand alone function
+  uint8_t tmp_block[256];
+  int tmp_pos[256];
+  for (i = 0; i < 256; ++i) {
+    tmp_block[i] = 0;
+    tmp_pos[i] = -1;
+  }
+  for (i = 0; i < num; ++i) {
+    for (j = 0; j < line_length; ++j) {
+      tmp_block[j * line_length + i] = block[i * line_length + j];
+      tmp_pos[j * line_length + i] = orig_pos[i * line_length + j];
+    }
+  }
+  for (i = 0; i < 256; ++i) {
+    block[i] = tmp_block[i];
+    orig_pos[i] = tmp_pos[i];
+  }
+}
+
+static int compute_block_grad(uint8_t *const src, int length, int row, int col,
+                              int width, int height, int pitch, int unit,
+                              int vert_or_horz, int direct) {
+  int i, j;
+  int r0, c0, pos0, r1 = 0, c1 = 0, pos1;
+  int sum_grad = 0;
+  for (i = 0; i < 8 * unit; ++i) {
+    // vert_or_horz: 0 vertical edge, 1 horizontal edge
+    r0 = vert_or_horz ? row : row + i;
+    c0 = vert_or_horz ? col + i : col;
+    pos0 = r0 * pitch + c0;
+
+    for (j = 0; j < length; ++j) {
+      if (vert_or_horz == 0) {
+        switch (direct) {
+          case VERT_HORZ: r1 = r0; break;
+          case DEGREE_45: r1 = r0 + 1; break;
+          case DEGREE_135: r1 = r0 - 1; break;
+        }
+        c1 = c0 - 1;
+      } else {
+        r1 = r0 - 1;
+        switch (direct) {
+          case VERT_HORZ: c1 = c0; break;
+          case DEGREE_45: c1 = c0 + 1; break;
+          case DEGREE_135: c1 = c0 - 1; break;
+        }
+      }
+      pos1 = r1 * pitch + c1;
+
+      if (r0 >= 0 && r0 < height && c0 >= 0 && c0 < width && r1 >= 0 &&
+          r1 < height && c1 >= 0 && c1 < width) {
+        sum_grad += abs(src[pos1] - src[pos0]);
+      } else {
+        sum_grad += 255;  // penalize unreachable boundary
+      }
+      r0 = r1;
+      c0 = c1;
+      pos0 = pos1;
+    }
+
+    r0 = vert_or_horz ? row : row + i;
+    c0 = vert_or_horz ? col + i : col;
+    pos0 = r0 * pitch + c0;
+
+    for (j = 0; j < length - 1; ++j) {
+      if (vert_or_horz == 0) {
+        switch (direct) {
+          case VERT_HORZ: r1 = r0; break;
+          case DEGREE_45: r1 = r0 - 1; break;
+          case DEGREE_135: r1 = r0 + 1; break;
+        }
+        c1 = c0 + 1;
+      } else {
+        r1 = r0 + 1;
+        switch (direct) {
+          case VERT_HORZ: c1 = c0; break;
+          case DEGREE_45: c1 = c0 - 1; break;
+          case DEGREE_135: c1 = c0 + 1; break;
+        }
+      }
+      pos1 = r1 * pitch + c1;
+
+      if (r0 >= 0 && r0 < height && c0 >= 0 && c0 < width && r1 >= 0 &&
+          r1 < height && c1 >= 0 && c1 < width) {
+        sum_grad += abs(src[pos1] - src[pos0]);
+      } else {
+        sum_grad += 255;  // penalize unreachable boundary
+      }
+      r0 = r1;
+      c0 = c1;
+      pos0 = pos1;
+    }
+  }
+
+  return sum_grad;
+}
+
+static int pick_min_grad_direct(uint8_t *const src, int length, int row,
+                                int col, int width, int height, int pitch,
+                                int unit, int vert_or_horz) {
+  int direct = VERT_HORZ;
+  int min_grad = INT_MAX, sum_grad = 0;
+
+  int degree;
+  for (degree = 0; degree < FILTER_DEGREES; ++degree) {
+    // compute abs gradient along each line for the filter block
+    sum_grad = compute_block_grad(src, length, row, col, width, height, pitch,
+                                  unit, vert_or_horz, degree);
+    if (sum_grad < min_grad) {
+      min_grad = sum_grad;
+      direct = degree;
+    }
+  }
+
+  return direct;
+}
+#endif  // CONFIG_LPF_DIRECT
+
 #define PARALLEL_DEBLOCKING_15TAPLUMAONLY 1
 #define PARALLEL_DEBLOCKING_DISABLE_15TAP 0
 
@@ -633,9 +887,18 @@ static void highbd_filter_selectively_vert_row2(
 static void filter_selectively_horiz(
     uint8_t *s, int pitch, unsigned int mask_16x16, unsigned int mask_8x8,
     unsigned int mask_4x4, unsigned int mask_4x4_int,
-    const loop_filter_info_n *lfi_n, const uint8_t *lfl) {
+    const loop_filter_info_n *lfi_n, const uint8_t *lfl
+#if CONFIG_LPF_DIRECT
+    ,
+    uint8_t *const src, int mi_row, int mi_col, int idx_r, int col_step,
+    int width, int height, int ss_x, int ss_y
+#endif
+    ) {
   unsigned int mask;
   int count;
+#if CONFIG_LPF_DIRECT
+  int idx_c = 0;
+#endif
 
   for (mask = mask_16x16 | mask_8x8 | mask_4x4 | mask_4x4_int; mask;
        mask >>= count) {
@@ -643,6 +906,274 @@ static void filter_selectively_horiz(
 
     count = 1;
     if (mask & 1) {
+#if CONFIG_LPF_DIRECT
+      int i;
+      const int line_length = 16;
+      const int pivot = 8;
+      const int above_filt_len = mask_16x16 & 1 ? 8 : 4;
+      const int bot_filt_len = mask_16x16 & 1 ? 8 : 4;
+      uint8_t block[256];  // line_length * size_of(BLOCK_8X8) * two_blocks
+      int orig_pos[256];
+      int direct;
+
+      assert(above_filt_len == bot_filt_len);
+      (void)bot_filt_len;
+      for (i = 0; i < 256; ++i) {
+        block[i] = 0;
+        orig_pos[i] = -1;
+      }
+
+      // actual position for current pixel
+      const int row = (mi_row + idx_r) * MI_SIZE >> ss_y;
+      const int col = (mi_col + idx_c) * MI_SIZE >> ss_x;
+
+      // scale for u, v plane
+      width >>= ss_x;
+      height >>= ss_y;
+
+      // Next block's thresholds.
+      const loop_filter_thresh *lfin = lfi_n->lfthr + *(lfl + 1);
+
+      if (mask_16x16 & 1) {
+        if ((mask_16x16 & 3) == 3) {
+          // Could use asymmetric length in the future
+          direct = pick_min_grad_direct(src, above_filt_len, row, col, width,
+                                        height, pitch, 2, 1);
+
+          pick_filter_block_horz(src, block, orig_pos, above_filt_len, row, col,
+                                 width, height, pitch, pivot, line_length, 2,
+                                 direct);
+
+          aom_lpf_horizontal_edge_16(block + pivot * line_length, line_length,
+                                     lfi->mblim, lfi->lim, lfi->hev_thr);
+          count = 2;
+        } else {
+          direct = pick_min_grad_direct(src, above_filt_len, row, col, width,
+                                        height, pitch, 1, 1);
+
+          pick_filter_block_horz(src, block, orig_pos, above_filt_len, row, col,
+                                 width, height, pitch, pivot, line_length, 1,
+                                 direct);
+
+          aom_lpf_horizontal_edge_8(block + pivot * line_length, line_length,
+                                    lfi->mblim, lfi->lim, lfi->hev_thr);
+        }
+
+        for (i = 0; i < 256; ++i)
+          if (orig_pos[i] >= 0) src[orig_pos[i]] = block[i];
+      } else if (mask_8x8 & 1) {
+        if ((mask_8x8 & 3) == 3) {
+          count = 2;
+          direct = pick_min_grad_direct(src, above_filt_len, row, col, width,
+                                        height, pitch, 2, 1);
+
+          pick_filter_block_horz(src, block, orig_pos, above_filt_len, row, col,
+                                 width, height, pitch, pivot, line_length, 2,
+                                 direct);
+
+          aom_lpf_horizontal_8_dual(block + pivot * line_length, line_length,
+                                    lfi->mblim, lfi->lim, lfi->hev_thr,
+                                    lfin->mblim, lfin->lim, lfin->hev_thr);
+
+          for (i = 0; i < 256; ++i)
+            if (orig_pos[i] >= 0) src[orig_pos[i]] = block[i];
+
+          if ((mask_4x4_int & 3) == 3) {
+            for (i = 0; i < 256; ++i) {
+              block[i] = 0;
+              orig_pos[i] = -1;
+            }
+
+            direct = pick_min_grad_direct(src, 4, row, col, width, height,
+                                          pitch, 2, 1);
+
+            pick_filter_block_horz(src, block, orig_pos, 4, row + 4, col, width,
+                                   height, pitch, pivot, line_length, 2,
+                                   direct);
+
+            aom_lpf_horizontal_4_dual(block + pivot * line_length, line_length,
+                                      lfi->mblim, lfi->lim, lfi->hev_thr,
+                                      lfin->mblim, lfin->lim, lfin->hev_thr);
+
+            for (i = 0; i < 256; ++i)
+              if (orig_pos[i] >= 0) src[orig_pos[i]] = block[i];
+          } else {
+            for (i = 0; i < 256; ++i) {
+              block[i] = 0;
+              orig_pos[i] = -1;
+            }
+
+            if (mask_4x4_int & 1) {
+              direct = pick_min_grad_direct(src, 4, row, col, width, height,
+                                            pitch, 1, 1);
+
+              pick_filter_block_horz(src, block, orig_pos, 4, row + 4, col,
+                                     width, height, pitch, pivot, line_length,
+                                     1, direct);
+
+              aom_lpf_horizontal_4(block + pivot * line_length, line_length,
+                                   lfi->mblim, lfi->lim, lfi->hev_thr);
+            } else if (mask_4x4_int & 2) {
+              direct = pick_min_grad_direct(src, 4, row, col, width, height,
+                                            pitch, 1, 1);
+
+              pick_filter_block_horz(src, block, orig_pos, 4, row + 4, col + 8,
+                                     width, height, pitch, pivot, line_length,
+                                     1, direct);
+
+              aom_lpf_horizontal_4(block + pivot * line_length, line_length,
+                                   lfin->mblim, lfin->lim, lfin->hev_thr);
+            }
+
+            for (i = 0; i < 256; ++i)
+              if (orig_pos[i] >= 0) src[orig_pos[i]] = block[i];
+          }
+        } else {
+          direct = pick_min_grad_direct(src, above_filt_len, row, col, width,
+                                        height, pitch, 1, 1);
+
+          pick_filter_block_horz(src, block, orig_pos, above_filt_len, row, col,
+                                 width, height, pitch, pivot, line_length, 1,
+                                 direct);
+
+          aom_lpf_horizontal_8(block + pivot * line_length, line_length,
+                               lfi->mblim, lfi->lim, lfi->hev_thr);
+
+          for (i = 0; i < 256; ++i)
+            if (orig_pos[i] >= 0) src[orig_pos[i]] = block[i];
+
+          if (mask_4x4_int & 1) {
+            for (i = 0; i < 256; ++i) {
+              block[i] = 0;
+              orig_pos[i] = -1;
+            }
+            direct = pick_min_grad_direct(src, 4, row, col, width, height,
+                                          pitch, 1, 1);
+
+            pick_filter_block_horz(src, block, orig_pos, 4, row + 4, col, width,
+                                   height, pitch, pivot, line_length, 1,
+                                   direct);
+
+            aom_lpf_horizontal_4(block + pivot * line_length, line_length,
+                                 lfi->mblim, lfi->lim, lfi->hev_thr);
+
+            for (i = 0; i < 256; ++i)
+              if (orig_pos[i] >= 0) src[orig_pos[i]] = block[i];
+          }
+        }
+      } else if (mask_4x4 & 1) {
+        if ((mask_4x4 & 3) == 3) {
+          count = 2;
+          direct = pick_min_grad_direct(src, 4, row, col, width, height, pitch,
+                                        2, 1);
+
+          pick_filter_block_horz(src, block, orig_pos, 4, row, col, width,
+                                 height, pitch, pivot, line_length, 2, direct);
+
+          aom_lpf_horizontal_4_dual(block + pivot * line_length, line_length,
+                                    lfi->mblim, lfi->lim, lfi->hev_thr,
+                                    lfin->mblim, lfin->lim, lfin->hev_thr);
+
+          for (i = 0; i < 256; ++i)
+            if (orig_pos[i] >= 0) src[orig_pos[i]] = block[i];
+
+          if ((mask_4x4_int & 3) == 3) {
+            for (i = 0; i < 256; ++i) {
+              block[i] = 0;
+              orig_pos[i] = -1;
+            }
+
+            direct = pick_min_grad_direct(src, 4, row, col, width, height,
+                                          pitch, 2, 1);
+
+            pick_filter_block_horz(src, block, orig_pos, 4, row + 4, col, width,
+                                   height, pitch, pivot, line_length, 2,
+                                   direct);
+
+            aom_lpf_horizontal_4_dual(block + pivot * line_length, line_length,
+                                      lfi->mblim, lfi->lim, lfi->hev_thr,
+                                      lfin->mblim, lfin->lim, lfin->hev_thr);
+
+            for (i = 0; i < 256; ++i)
+              if (orig_pos[i] >= 0) src[orig_pos[i]] = block[i];
+          } else {
+            for (i = 0; i < 256; ++i) {
+              block[i] = 0;
+              orig_pos[i] = -1;
+            }
+
+            if (mask_4x4_int & 1) {
+              direct = pick_min_grad_direct(src, 4, row, col, width, height,
+                                            pitch, 1, 1);
+
+              pick_filter_block_horz(src, block, orig_pos, 4, row + 4, col,
+                                     width, height, pitch, pivot, line_length,
+                                     1, direct);
+
+              aom_lpf_horizontal_4(block + pivot * line_length, line_length,
+                                   lfi->mblim, lfi->lim, lfi->hev_thr);
+            } else if (mask_4x4_int & 2) {
+              direct = pick_min_grad_direct(src, 4, row, col, width, height,
+                                            pitch, 1, 1);
+
+              pick_filter_block_horz(src, block, orig_pos, 4, row + 4, col + 8,
+                                     width, height, pitch, pivot, line_length,
+                                     1, direct);
+
+              aom_lpf_horizontal_4(block + pivot * line_length, line_length,
+                                   lfin->mblim, lfin->lim, lfin->hev_thr);
+            }
+
+            for (i = 0; i < 256; ++i)
+              if (orig_pos[i] >= 0) src[orig_pos[i]] = block[i];
+          }
+        } else {
+          direct = pick_min_grad_direct(src, above_filt_len, row, col, width,
+                                        height, pitch, 1, 1);
+
+          pick_filter_block_horz(src, block, orig_pos, above_filt_len, row, col,
+                                 width, height, pitch, pivot, line_length, 1,
+                                 direct);
+
+          aom_lpf_horizontal_4(block + pivot * line_length, line_length,
+                               lfi->mblim, lfi->lim, lfi->hev_thr);
+
+          for (i = 0; i < 256; ++i)
+            if (orig_pos[i] >= 0) src[orig_pos[i]] = block[i];
+
+          if (mask_4x4_int & 1) {
+            for (i = 0; i < 256; ++i) {
+              block[i] = 0;
+              orig_pos[i] = -1;
+            }
+            direct = pick_min_grad_direct(src, above_filt_len, row, col, width,
+                                          height, pitch, 1, 1);
+
+            pick_filter_block_horz(src, block, orig_pos, 4, row + 4, col, width,
+                                   height, pitch, pivot, line_length, 1,
+                                   direct);
+
+            aom_lpf_horizontal_4(block + pivot * line_length, line_length,
+                                 lfi->mblim, lfi->lim, lfi->hev_thr);
+
+            for (i = 0; i < 256; ++i)
+              if (orig_pos[i] >= 0) src[orig_pos[i]] = block[i];
+          }
+        }
+      } else if (mask_4x4_int & 1) {
+        direct =
+            pick_min_grad_direct(src, 4, row, col, width, height, pitch, 1, 1);
+
+        pick_filter_block_horz(src, block, orig_pos, 4, row + 4, col, width,
+                               height, pitch, pivot, line_length, 1, direct);
+
+        aom_lpf_horizontal_4(block + pivot * line_length, line_length,
+                             lfi->mblim, lfi->lim, lfi->hev_thr);
+
+        for (i = 0; i < 256; ++i)
+          if (orig_pos[i] >= 0) src[orig_pos[i]] = block[i];
+      }
+#else   // CONFIG_LPF_DIRECT
       if (mask_16x16 & 1) {
         if ((mask_16x16 & 3) == 3) {
           aom_lpf_horizontal_edge_16(s, pitch, lfi->mblim, lfi->lim,
@@ -689,6 +1220,7 @@ static void filter_selectively_horiz(
           aom_lpf_horizontal_4_dual(s, pitch, lfi->mblim, lfi->lim,
                                     lfi->hev_thr, lfin->mblim, lfin->lim,
                                     lfin->hev_thr);
+
           if ((mask_4x4_int & 3) == 3) {
             aom_lpf_horizontal_4_dual(s + 4 * pitch, pitch, lfi->mblim,
                                       lfi->lim, lfi->hev_thr, lfin->mblim,
@@ -713,7 +1245,11 @@ static void filter_selectively_horiz(
         aom_lpf_horizontal_4(s + 4 * pitch, pitch, lfi->mblim, lfi->lim,
                              lfi->hev_thr);
       }
+#endif  // CONFIG_LPF_DIRECT
     }
+#if CONFIG_LPF_DIRECT
+    idx_c += col_step * count;
+#endif
     s += 8 * count;
     lfl += count;
     mask_16x16 >>= count;
@@ -1321,13 +1857,92 @@ void av1_setup_mask(AV1_COMMON *const cm, const int mi_row, const int mi_col,
 static void filter_selectively_vert(
     uint8_t *s, int pitch, unsigned int mask_16x16, unsigned int mask_8x8,
     unsigned int mask_4x4, unsigned int mask_4x4_int,
-    const loop_filter_info_n *lfi_n, const uint8_t *lfl) {
+    const loop_filter_info_n *lfi_n, const uint8_t *lfl
+#if CONFIG_LPF_DIRECT
+    ,
+    uint8_t *const src, int mi_row, int mi_col, int idx_r, int col_step,
+    int width, int height, int ss_x, int ss_y
+#endif
+    ) {
   unsigned int mask;
+#if CONFIG_LPF_DIRECT
+  int idx_c = 0;
+#endif
 
   for (mask = mask_16x16 | mask_8x8 | mask_4x4 | mask_4x4_int; mask;
        mask >>= 1) {
     const loop_filter_thresh *lfi = lfi_n->lfthr + *lfl;
 
+#if CONFIG_LPF_DIRECT
+    int i;
+    const int pivot = 8;
+    const int left_filt_len = mask_16x16 & 1 ? 8 : 4;
+    const int right_filt_len = mask_16x16 & 1 ? 8 : 4;
+    const int line_length = 16;
+    uint8_t block[128];
+    int orig_pos[128];
+
+    // actual position for current pixel
+    const int row = (mi_row + idx_r) * MI_SIZE >> ss_y;
+    const int col = (mi_col + idx_c) * MI_SIZE >> ss_x;
+
+    // scale for u, v plane
+    width >>= ss_x;
+    height >>= ss_y;
+
+    // Could use asymmetric length in the future
+    assert(left_filt_len == right_filt_len);
+    (void)right_filt_len;
+
+    if ((mask_16x16 & 1) || (mask_8x8 & 1) || (mask_4x4 & 1)) {
+      for (i = 0; i < 128; ++i) {
+        block[i] = 0;
+        orig_pos[i] = -1;
+      }
+
+      int direct = pick_min_grad_direct(src, left_filt_len, row, col, width,
+                                        height, pitch, 1, 0);
+
+      pick_filter_block_vert(src, block, orig_pos, left_filt_len, row, col,
+                             width, height, pitch, pivot, line_length, 1,
+                             direct);
+
+      // apply filtering
+      if (mask_16x16 & 1) {
+        aom_lpf_vertical_16(block + pivot, line_length, lfi->mblim, lfi->lim,
+                            lfi->hev_thr);
+      } else if (mask_8x8 & 1) {
+        aom_lpf_vertical_8(block + pivot, line_length, lfi->mblim, lfi->lim,
+                           lfi->hev_thr);
+      } else if (mask_4x4 & 1) {
+        aom_lpf_vertical_4(block + pivot, line_length, lfi->mblim, lfi->lim,
+                           lfi->hev_thr);
+      }
+
+      for (i = 0; i < 128; ++i)
+        if (orig_pos[i] >= 0) src[orig_pos[i]] = block[i];
+    }
+
+    // filter inner 4x4
+    if (mask_4x4_int & 1) {
+      for (i = 0; i < 128; ++i) {
+        block[i] = 0;
+        orig_pos[i] = -1;
+      }
+
+      int direct = pick_min_grad_direct(src, 4, row, col + 4, width, height,
+                                        pitch, 1, 0);
+
+      pick_filter_block_vert(src, block, orig_pos, 4, row, col + 4, width,
+                             height, pitch, pivot, line_length, 1, direct);
+
+      aom_lpf_vertical_4(block + pivot, line_length, lfi->mblim, lfi->lim,
+                         lfi->hev_thr);
+
+      for (i = 0; i < 128; ++i)
+        if (orig_pos[i] >= 0) src[orig_pos[i]] = block[i];
+    }
+#else
     if (mask & 1) {
       if (mask_16x16 & 1) {
         aom_lpf_vertical_16(s, pitch, lfi->mblim, lfi->lim, lfi->hev_thr);
@@ -1339,6 +1954,10 @@ static void filter_selectively_vert(
     }
     if (mask_4x4_int & 1)
       aom_lpf_vertical_4(s + 4, pitch, lfi->mblim, lfi->lim, lfi->hev_thr);
+#endif  // CONFIG_LPF_DIRECT
+#if CONFIG_LPF_DIRECT
+    idx_c += col_step;
+#endif
     s += 8;
     lfl += 1;
     mask_16x16 >>= 1;
@@ -1613,6 +2232,10 @@ void av1_filter_block_plane_non420_ver(AV1_COMMON *const cm,
                                        int pl) {
   const int ss_y = plane->subsampling_y;
   const int row_step = mi_size_high[BLOCK_8X8] << ss_y;
+#if CONFIG_LPF_DIRECT
+  const int ss_x = plane->subsampling_x;
+  const int col_step = mi_size_wide[BLOCK_8X8] << ss_x;
+#endif
   struct buf_2d *const dst = &plane->dst;
   uint8_t *const dst0 = dst->buf;
   uint8_t lfl[MAX_MIB_SIZE][MAX_MIB_SIZE] = { { 0 } };
@@ -1649,7 +2272,13 @@ void av1_filter_block_plane_non420_ver(AV1_COMMON *const cm,
       filter_selectively_vert(
           dst->buf, dst->stride, col_masks.m16x16 & border_mask,
           col_masks.m8x8 & border_mask, col_masks.m4x4 & border_mask,
-          mask_4x4_int, &cm->lf_info, &lfl[r][0]);
+          mask_4x4_int, &cm->lf_info, &lfl[r][0]
+#if CONFIG_LPF_DIRECT
+          ,
+          dst->buf0, mi_row, mi_col, idx_r, col_step, cm->width, cm->height,
+          ss_x, ss_y
+#endif  // CONFIG_LPF_DIRECT
+          );
     dst->buf += 8 * dst->stride;
   }
 
@@ -1663,6 +2292,10 @@ void av1_filter_block_plane_non420_hor(AV1_COMMON *const cm,
                                        int pl) {
   const int ss_y = plane->subsampling_y;
   const int row_step = mi_size_high[BLOCK_8X8] << ss_y;
+#if CONFIG_LPF_DIRECT
+  const int ss_x = plane->subsampling_x;
+  const int col_step = mi_size_wide[BLOCK_8X8] << ss_x;
+#endif
   struct buf_2d *const dst = &plane->dst;
   uint8_t *const dst0 = dst->buf;
   uint8_t lfl[MAX_MIB_SIZE][MAX_MIB_SIZE] = { { 0 } };
@@ -1698,7 +2331,13 @@ void av1_filter_block_plane_non420_hor(AV1_COMMON *const cm,
 #endif  // CONFIG_HIGHBITDEPTH
       filter_selectively_horiz(dst->buf, dst->stride, row_masks.m16x16,
                                row_masks.m8x8, row_masks.m4x4, mask_4x4_int,
-                               &cm->lf_info, &lfl[r][0]);
+                               &cm->lf_info, &lfl[r][0]
+#if CONFIG_LPF_DIRECT
+                               ,
+                               dst->buf0, mi_row, mi_col, idx_r, col_step,
+                               cm->width, cm->height, ss_x, ss_y
+#endif  // CONFIG_LPF_DIRECT
+                               );
     dst->buf += 8 * dst->stride;
   }
   dst->buf = dst0;
@@ -1784,9 +2423,11 @@ void av1_filter_block_plane_ss00_hor(AV1_COMMON *const cm,
           (int)cm->bit_depth);
     else
 #endif  // CONFIG_HIGHBITDEPTH
+#if !CONFIG_LPF_DIRECT
       filter_selectively_horiz(dst->buf, dst->stride, mask_16x16_r, mask_8x8_r,
                                mask_4x4_r, mask_4x4_int & 0xff, &cm->lf_info,
                                &lfm->lfl_y[r][0]);
+#endif  // CONFIG_LPF_DIRECT
 
     dst->buf += MI_SIZE * dst->stride;
     mask_16x16 >>= MI_SIZE;
@@ -1902,9 +2543,11 @@ void av1_filter_block_plane_ss11_hor(AV1_COMMON *const cm,
           (int)cm->bit_depth);
     else
 #endif  // CONFIG_HIGHBITDEPTH
+#if !CONFIG_LPF_DIRECT
       filter_selectively_horiz(dst->buf, dst->stride, mask_16x16_r, mask_8x8_r,
                                mask_4x4_r, mask_4x4_int_r, &cm->lf_info,
                                &lfm->lfl_uv[r >> 1][0]);
+#endif  // CONFIG_LPF_DIRECT
 
     dst->buf += MI_SIZE * dst->stride;
     mask_16x16 >>= MI_SIZE / 2;

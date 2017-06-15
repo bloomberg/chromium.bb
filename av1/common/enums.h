@@ -619,6 +619,19 @@ typedef enum {
 #define SUPERRES_SCALE_NUMERATOR_MIN 8
 #endif  // CONFIG_FRAME_SUPERRES
 
+#if CONFIG_LPF_DIRECT
+typedef enum {
+  VERT_HORZ,
+  DEGREE_30,
+  DEGREE_45,
+  DEGREE_60,
+  DEGREE_120,
+  DEGREE_135,
+  DEGREE_150,
+  FILTER_DEGREES,
+} FILTER_DEGREE;
+#endif  // CONFIG_LPF_DIRECT
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

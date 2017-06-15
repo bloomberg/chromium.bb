@@ -335,6 +335,7 @@ EXPERIMENT_LIST="
     bgsprite
     var_tx_no_tx_mode
     mrc_tx
+    lpf_direct
 "
 CONFIG_LIST="
     dependency_tracking
