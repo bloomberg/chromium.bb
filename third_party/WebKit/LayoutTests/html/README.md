@@ -31,6 +31,11 @@ Some areas have their own directories not under html/.
     [Document metadata elements](https://html.spec.whatwg.org/multipage/semantics.html#document-metadata);
     HEAD, TITLE, BASE, LINK, META, and STYLE.
 
+*   embedded_content/
+
+    [Embedded content](https://html.spec.whatwg.org/multipage/embedded-content.html#embedded-content);
+    PICTURE, SOURCE, IMG, IFRAME, EMBED, OBJECT, PARAM, MAP, and AREA.
+
 *   grouping_content/
 
     [Grouping content elmeents](https://html.spec.whatwg.org/multipage/semantics.html#grouping-content);

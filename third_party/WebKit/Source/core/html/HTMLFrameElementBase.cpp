@@ -188,6 +188,9 @@ void HTMLFrameElementBase::SetNameAndOpenURL() {
 Node::InsertionNotificationRequest HTMLFrameElementBase::InsertedInto(
     ContainerNode* insertion_point) {
   HTMLFrameOwnerElement::InsertedInto(insertion_point);
+  // We should never have a content frame at the point where we got inserted
+  // into a tree.
+  SECURITY_CHECK(!ContentFrame());
   return kInsertionShouldCallDidNotifySubtreeInsertions;
 }
 
@@ -198,11 +201,10 @@ void HTMLFrameElementBase::DidNotifySubtreeInsertionsToDocument() {
   if (!SubframeLoadingDisabler::CanLoadFrame(*this))
     return;
 
-  // We should never have a content frame at the point where we got inserted
-  // into a tree.
-  SECURITY_CHECK(!ContentFrame());
-
-  SetNameAndOpenURL();
+  // It's possible that we already have ContentFrame(). Arbitrary user code can
+  // run between InsertedInto() and DidNotifySubtreeInsertionsToDocument().
+  if (!ContentFrame())
+    SetNameAndOpenURL();
 }
 
 void HTMLFrameElementBase::AttachLayoutTree(const AttachContext& context) {
