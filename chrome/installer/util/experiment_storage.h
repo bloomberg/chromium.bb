@@ -18,9 +18,9 @@ struct ExperimentMetrics;
 
 // Manages the storage of experiment state on the machine.
 //
-// Participation is a per-install property evaluated one time to determine
-// whether or not the install as a whole participates in the study. It is
-// stored in the install's ClientState key.
+// Participation is a per-install property evaluated one time to determine which
+// study the client participates in. It is stored in the install's ClientState
+// key.
 //
 // ExperimentMetrics are stored in a per-install experiment_label, while the
 // fine-grained Experiment data are stored in a per-user key in Chrome's
@@ -38,15 +38,11 @@ struct ExperimentMetrics;
 // mutex is used for all reads and writes to ensure consistent state.
 class ExperimentStorage {
  public:
-  enum class Participation {
-    // No participation state was found for the install.
-    kNotEvaluated,
-
-    // The client is not participating in the study.
-    kNotParticipating,
-
-    // The client is participating in the study.
-    kIsParticipating,
+  // An identifier of which study the install participates in.
+  enum Study : uint32_t {
+    kNoStudySelected = 0,
+    kStudyOne = 1,
+    kStudyTwo = 2,
   };
 
   // Grants the holder exclusive access to the data in the registry. Consumers
@@ -56,12 +52,13 @@ class ExperimentStorage {
     ~Lock();
 
     // Reads the participation state for the install. Returns false in case of
-    // error.
-    bool ReadParticipation(Participation* participation);
+    // error. |participation| is set to kNotEvaluated if no value is present;
+    // otherwise, it is set to the value found.
+    bool ReadParticipation(Study* participation);
 
     // Writes the participation state for the install. Returns false if the
     // write failed.
-    bool WriteParticipation(Participation participation);
+    bool WriteParticipation(Study participation);
 
     // Loads the experiment metrics and data from the registry. Returns false if
     // the state in the registry corresponds to a different user or could not be

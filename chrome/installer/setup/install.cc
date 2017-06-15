@@ -11,11 +11,13 @@
 #include <memory>
 #include <string>
 
+#include "base/base_paths.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -29,6 +31,7 @@
 #include "chrome/installer/setup/setup_constants.h"
 #include "chrome/installer/setup/setup_util.h"
 #include "chrome/installer/setup/update_active_setup_version_work_item.h"
+#include "chrome/installer/setup/user_experiment.h"
 #include "chrome/installer/util/beacons.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/create_reg_key_work_item.h"
@@ -664,14 +667,14 @@ void HandleOsUpgradeForBrowser(const installer::InstallerState& installer_state,
 // be increased for Active Setup to invoke this again for all users of this
 // install. It may also be invoked again when a system-level chrome install goes
 // through an OS upgrade.
-void HandleActiveSetupForBrowser(const base::FilePath& installation_root,
-                                 const installer::Product& chrome,
+void HandleActiveSetupForBrowser(const InstallerState& installer_state,
                                  bool force) {
   std::unique_ptr<WorkItemList> cleanup_list(WorkItem::CreateWorkItemList());
   cleanup_list->set_log_message("Cleanup deprecated per-user registrations");
   cleanup_list->set_rollback_enabled(false);
   cleanup_list->set_best_effort(true);
-  AddCleanupDeprecatedPerUserRegistrationsWorkItems(chrome, cleanup_list.get());
+  AddCleanupDeprecatedPerUserRegistrationsWorkItems(installer_state.product(),
+                                                    cleanup_list.get());
   cleanup_list->Do();
 
   // Only create shortcuts on Active Setup if the first run sentinel is not
@@ -686,13 +689,28 @@ void HandleActiveSetupForBrowser(const base::FilePath& installation_root,
           ? INSTALL_SHORTCUT_REPLACE_EXISTING
           : INSTALL_SHORTCUT_CREATE_EACH_IF_NO_SYSTEM_LEVEL;
 
-  // Read master_preferences copied beside chrome.exe at install.
+  // Read master_preferences copied beside chrome.exe at install for the sake of
+  // creating/updating shortcuts.
+  const base::FilePath installation_root = installer_state.target_path();
   MasterPreferences prefs(installation_root.AppendASCII(kDefaultMasterPrefs));
   base::FilePath chrome_exe(installation_root.Append(kChromeExe));
-  CreateOrUpdateShortcuts(
-      chrome_exe, chrome, prefs, CURRENT_USER, install_operation);
+  CreateOrUpdateShortcuts(chrome_exe, installer_state.product(), prefs,
+                          CURRENT_USER, install_operation);
 
   UpdateDefaultBrowserBeaconForPath(chrome_exe);
+
+  // This install may have been selected into a study for a retention
+  // experiment following a successful update. In case the experiment was not
+  // able to run immediately after the update (e.g., no user was logged on at
+  // the time), try to run it now that the installer is running in the context
+  // of a user.
+  if (ShouldRunUserExperiment(installer_state)) {
+    base::FilePath setup_exe;
+    if (!base::PathService::Get(base::FILE_EXE, &setup_exe))
+      LOG(ERROR) << "Failed to get path to setup.exe.";
+    else
+      BeginUserExperiment(installer_state, setup_exe, true /* user_context */);
+  }
 }
 
 }  // namespace installer
