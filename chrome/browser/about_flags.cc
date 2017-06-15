@@ -3089,6 +3089,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kBrowserSideNavigationDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kBrowserSideNavigation)},
 
+#if defined(OS_MACOSX)
+    {"mac-touchbar", flag_descriptions::kMacTouchBarName,
+     flag_descriptions::kMacTouchBarDescription, kOsMac,
+     FEATURE_VALUE_TYPE(features::kBrowserTouchBar)},
+#endif  // defined(OS_MACOSX)
+
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms/enums.xml. See note in
     // enums.xml and don't forget to run AboutFlagsHistogramTest unit test.
