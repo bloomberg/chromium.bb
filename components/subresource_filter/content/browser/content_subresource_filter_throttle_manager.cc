@@ -27,6 +27,11 @@
 
 namespace subresource_filter {
 
+bool ContentSubresourceFilterThrottleManager::Delegate::
+    AllowStrongPopupBlocking() {
+  return false;
+}
+
 ContentSubresourceFilterThrottleManager::
     ContentSubresourceFilterThrottleManager(
         Delegate* delegate,
@@ -210,7 +215,8 @@ bool ContentSubresourceFilterThrottleManager::ShouldDisallowNewWindow() {
   // subresource filter specific UI here.
   return state.activation_level == ActivationLevel::ENABLED &&
          !state.filtering_disabled_for_document &&
-         !state.generic_blocking_rules_disabled;
+         !state.generic_blocking_rules_disabled &&
+         delegate_->AllowStrongPopupBlocking();
 }
 
 std::unique_ptr<SubframeNavigationFilteringThrottle>

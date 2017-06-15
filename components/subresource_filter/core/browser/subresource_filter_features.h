@@ -83,6 +83,9 @@ struct Configuration {
     // Whether to whitelist a site when a page loaded from that site is
     // reloaded.
     bool should_whitelist_site_on_reload = false;
+
+    // Whether to apply a more powerful popup blocker on pages with activation.
+    bool should_strengthen_popup_blocker = false;
   };
 
   // General settings that apply outside of the scope of a navigation.
@@ -200,6 +203,8 @@ extern const char kPerformanceMeasurementRateParameterName[];
 extern const char kSuppressNotificationsParameterName[];
 
 extern const char kWhitelistSiteOnReloadParameterName[];
+
+extern const char kStrengthenPopupBlockerParameterName[];
 
 extern const char kRulesetFlavorParameterName[];
 

@@ -101,6 +101,10 @@ void ContentSubresourceFilterDriverFactory::OnFirstSubresourceLoadDisallowed() {
                                         ActivationLevel::ENABLED);
 }
 
+bool ContentSubresourceFilterDriverFactory::AllowStrongPopupBlocking() {
+  return activation_options_.should_strengthen_popup_blocker;
+}
+
 void ContentSubresourceFilterDriverFactory::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
   if (navigation_handle->IsInMainFrame() &&
