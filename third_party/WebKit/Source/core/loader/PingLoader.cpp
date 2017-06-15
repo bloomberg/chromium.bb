@@ -231,7 +231,7 @@ class PingLoaderImpl : public GarbageCollectedFinalized<PingLoaderImpl>,
   AtomicString initiator_;
 
   RefPtr<SecurityOrigin> origin_;
-  CORSEnabled cors_mode_;
+  bool cors_enabled_;
 };
 
 PingLoaderImpl::PingLoaderImpl(LocalFrame* frame,
@@ -245,11 +245,11 @@ PingLoaderImpl::PingLoaderImpl(LocalFrame* frame,
       keep_alive_(this),
       initiator_(initiator),
       origin_(frame->GetDocument()->GetSecurityOrigin()),
-      cors_mode_(kIsCORSEnabled) {
+      cors_enabled_(true) {
   const AtomicString content_type = request.HttpContentType();
   if (!content_type.IsNull() && FetchUtils::IsCORSSafelistedHeader(
                                     AtomicString("content-type"), content_type))
-    cors_mode_ = kNotCORSEnabled;
+    cors_enabled_ = false;
 
   frame->Loader().Client()->DidDispatchPingLoader(request.Url());
 
@@ -298,7 +298,7 @@ void PingLoaderImpl::Dispose() {
 bool PingLoaderImpl::WillFollowRedirect(
     WebURLRequest& passed_new_request,
     const WebURLResponse& passed_redirect_response) {
-  if (cors_mode_ == kIsCORSEnabled) {
+  if (cors_enabled_) {
     DCHECK(passed_new_request.AllowStoredCredentials());
 
     ResourceRequest& new_request(passed_new_request.ToMutableResourceRequest());
