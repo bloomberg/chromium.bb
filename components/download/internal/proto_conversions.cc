@@ -23,8 +23,6 @@ protodb::Entry_State ProtoConversions::RequestStateToProto(Entry::State state) {
       return protodb::Entry_State_PAUSED;
     case Entry::State::COMPLETE:
       return protodb::Entry_State_COMPLETE;
-    case Entry::State::WATCHDOG:
-      return protodb::Entry_State_WATCHDOG;
   }
 
   NOTREACHED();
@@ -44,8 +42,6 @@ Entry::State ProtoConversions::RequestStateFromProto(
       return Entry::State::PAUSED;
     case protodb::Entry_State_COMPLETE:
       return Entry::State::COMPLETE;
-    case protodb::Entry_State_WATCHDOG:
-      return Entry::State::WATCHDOG;
   }
 
   NOTREACHED();

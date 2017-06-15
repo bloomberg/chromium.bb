@@ -33,7 +33,6 @@ message Entry {
     ACTIVE = 2;
     PAUSED = 3;
     COMPLETE = 4;
-    WATCHDOG = 5;
   }
 
   // Identification Parameters.

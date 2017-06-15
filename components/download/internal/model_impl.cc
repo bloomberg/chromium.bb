@@ -56,11 +56,14 @@ void ModelImpl::Remove(const std::string& guid) {
   const auto& it = entries_.find(guid);
   DCHECK(it != entries_.end());
 
+  // Pull out a separate guid and a DownloadClient so that when we destroy the
+  // entry we don't destroy the std::string that is backing the guid.
+  std::string standalone_guid = guid;
   DownloadClient client = it->second->client;
   entries_.erase(it);
-  store_->Remove(guid,
-                 base::BindOnce(&ModelImpl::OnRemoveFinished,
-                                weak_ptr_factory_.GetWeakPtr(), client, guid));
+  store_->Remove(standalone_guid, base::BindOnce(&ModelImpl::OnRemoveFinished,
+                                                 weak_ptr_factory_.GetWeakPtr(),
+                                                 client, standalone_guid));
 }
 
 Entry* ModelImpl::Get(const std::string& guid) {

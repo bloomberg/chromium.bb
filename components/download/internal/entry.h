@@ -33,13 +33,9 @@ struct Entry {
     // be run until it is resumed by the Client.
     PAUSED = 3,
 
-    // The download is 'complete' by some definition of that term (could have
-    // failed, could have succeeded, etc.).  It is ready to have UMA logs saved.
+    // The download is 'complete' and successful.  At this point we are leaving
+    // this entry around to make sure the files on disk are cleaned up.
     COMPLETE = 4,
-
-    // The download is finished.  We are leaving this entry around to make sure
-    // the files on disk are cleaned up.
-    WATCHDOG = 5,
   };
 
   Entry();

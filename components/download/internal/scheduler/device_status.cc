@@ -59,6 +59,11 @@ DeviceStatus::Result DeviceStatus::MeetsCondition(
 Criteria::Criteria()
     : requires_battery_charging(true), requires_unmetered_network(true) {}
 
+Criteria::Criteria(bool requires_battery_charging,
+                   bool requires_unmetered_network)
+    : requires_battery_charging(requires_battery_charging),
+      requires_unmetered_network(requires_unmetered_network) {}
+
 bool Criteria::operator==(const Criteria& other) const {
   return requires_battery_charging == other.requires_battery_charging &&
          requires_unmetered_network == other.requires_unmetered_network;

@@ -25,9 +25,7 @@ class MockClient : public Client {
                      const std::vector<GURL>&,
                      const scoped_refptr<const net::HttpResponseHeaders>&));
   MOCK_METHOD2(OnDownloadUpdated, void(const std::string&, uint64_t));
-  MOCK_METHOD1(OnDownloadFailed, void(const std::string&));
-  MOCK_METHOD1(OnDownloadTimedOut, void(const std::string&));
-  MOCK_METHOD1(OnDownloadAborted, void(const std::string&));
+  MOCK_METHOD2(OnDownloadFailed, void(const std::string&, FailureReason));
   MOCK_METHOD3(OnDownloadSucceeded,
                void(const std::string&, const base::FilePath&, uint64_t));
 

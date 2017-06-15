@@ -27,10 +27,18 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
+using testing::Return;
 
 namespace download {
 
 namespace {
+
+DriverEntry BuildDriverEntry(const Entry& entry, DriverEntry::State state) {
+  DriverEntry dentry;
+  dentry.guid = entry.guid;
+  dentry.state = state;
+  return dentry;
+}
 
 class MockTaskScheduler : public TaskScheduler {
  public:
@@ -511,6 +519,9 @@ TEST_F(DownloadServiceControllerImplTest, Cancel) {
   std::vector<Entry> entries = {entry};
 
   EXPECT_CALL(*client_, OnServiceInitialized(_)).Times(1);
+  EXPECT_CALL(*client_,
+              OnDownloadFailed(entry.guid, Client::FailureReason::CANCELLED))
+      .Times(1);
   EXPECT_CALL(*scheduler_, Next(_, _)).Times(2);
   EXPECT_CALL(*scheduler_, Reschedule(_)).Times(2);
 
@@ -523,7 +534,7 @@ TEST_F(DownloadServiceControllerImplTest, Cancel) {
   driver_->AddTestData(std::vector<DriverEntry>{driver_entry});
 
   controller_->CancelDownload(entry.guid);
-  EXPECT_EQ(Entry::State::COMPLETE, model_->Get(entry.guid)->state);
+  EXPECT_EQ(nullptr, model_->Get(entry.guid));
 
   task_runner_->RunUntilIdle();
 }
@@ -534,6 +545,9 @@ TEST_F(DownloadServiceControllerImplTest, OnDownloadFailed) {
   std::vector<Entry> entries = {entry};
 
   EXPECT_CALL(*client_, OnServiceInitialized(_)).Times(1);
+  EXPECT_CALL(*client_,
+              OnDownloadFailed(entry.guid, Client::FailureReason::NETWORK))
+      .Times(1);
   EXPECT_CALL(*scheduler_, Next(_, _)).Times(2);
   EXPECT_CALL(*scheduler_, Reschedule(_)).Times(2);
 
@@ -545,7 +559,9 @@ TEST_F(DownloadServiceControllerImplTest, OnDownloadFailed) {
   driver_entry.guid = entry.guid;
 
   driver_->NotifyDownloadFailed(driver_entry, 1);
-  EXPECT_EQ(Entry::State::COMPLETE, model_->Get(entry.guid)->state);
+  EXPECT_EQ(nullptr, model_->Get(entry.guid));
+
+  task_runner_->RunUntilIdle();
 }
 
 TEST_F(DownloadServiceControllerImplTest, OnDownloadSucceeded) {
@@ -554,6 +570,7 @@ TEST_F(DownloadServiceControllerImplTest, OnDownloadSucceeded) {
   std::vector<Entry> entries = {entry};
 
   EXPECT_CALL(*client_, OnServiceInitialized(_)).Times(1);
+  EXPECT_CALL(*client_, OnDownloadSucceeded(entry.guid, _, _)).Times(1);
   EXPECT_CALL(*scheduler_, Next(_, _)).Times(2);
   EXPECT_CALL(*scheduler_, Reschedule(_)).Times(2);
 
@@ -568,6 +585,8 @@ TEST_F(DownloadServiceControllerImplTest, OnDownloadSucceeded) {
 
   driver_->NotifyDownloadSucceeded(driver_entry, path);
   EXPECT_EQ(Entry::State::COMPLETE, model_->Get(entry.guid)->state);
+
+  task_runner_->RunUntilIdle();
 }
 
 TEST_F(DownloadServiceControllerImplTest, OnDownloadUpdated) {
@@ -592,6 +611,57 @@ TEST_F(DownloadServiceControllerImplTest, OnDownloadUpdated) {
               OnDownloadUpdated(entry.guid, driver_entry.bytes_downloaded));
   driver_->NotifyDownloadUpdate(driver_entry);
   EXPECT_EQ(Entry::State::ACTIVE, model_->Get(entry.guid)->state);
+}
+
+TEST_F(DownloadServiceControllerImplTest, DownloadCompletionTest) {
+  // TODO(dtrainor): Simulate a TIMEOUT once that is supported.
+  // TODO(dtrainor): Simulate a UNKNOWN once that is supported.
+
+  Entry entry1 = test::BuildBasicEntry(Entry::State::ACTIVE);
+  Entry entry2 = test::BuildBasicEntry(Entry::State::ACTIVE);
+  Entry entry3 = test::BuildBasicEntry(Entry::State::ACTIVE);
+
+  DriverEntry dentry1 =
+      BuildDriverEntry(entry1, DriverEntry::State::IN_PROGRESS);
+  // dentry2 will effectively be created by the test to simulate a start
+  // download.
+  DriverEntry dentry3 =
+      BuildDriverEntry(entry3, DriverEntry::State::IN_PROGRESS);
+
+  std::vector<Entry> entries = {entry1, entry2, entry3};
+  std::vector<DriverEntry> dentries = {dentry1, dentry3};
+
+  EXPECT_CALL(*client_, OnServiceInitialized(_)).Times(1);
+
+  // Set up the Controller.
+  driver_->AddTestData(dentries);
+  controller_->Initialize();
+  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+  driver_->MakeReady();
+  task_runner_->RunUntilIdle();
+
+  // Test FailureReason::CANCELLED.
+  EXPECT_CALL(*client_,
+              OnDownloadFailed(entry1.guid, Client::FailureReason::CANCELLED))
+      .Times(1);
+  controller_->CancelDownload(entry1.guid);
+
+  // Test FailureReason::ABORTED.
+  EXPECT_CALL(*client_, OnDownloadStarted(entry2.guid, _, _))
+      .Times(1)
+      .WillOnce(Return(Client::ShouldDownload::ABORT));
+  EXPECT_CALL(*client_,
+              OnDownloadFailed(entry2.guid, Client::FailureReason::ABORTED))
+      .Times(1);
+  driver_->Start(RequestParams(), entry2.guid, NO_TRAFFIC_ANNOTATION_YET);
+
+  // Test FailureReason::NETWORK.
+  EXPECT_CALL(*client_,
+              OnDownloadFailed(entry3.guid, Client::FailureReason::NETWORK))
+      .Times(1);
+  driver_->NotifyDownloadFailed(dentry3, 1);
+
+  task_runner_->RunUntilIdle();
 }
 
 }  // namespace download

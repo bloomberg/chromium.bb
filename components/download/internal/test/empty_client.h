@@ -25,9 +25,7 @@ class EmptyClient : public Client {
       const scoped_refptr<const net::HttpResponseHeaders>& headers) override;
   void OnDownloadUpdated(const std::string& guid,
                          uint64_t bytes_downloaded) override;
-  void OnDownloadFailed(const std::string& guid) override;
-  void OnDownloadTimedOut(const std::string& guid) override;
-  void OnDownloadAborted(const std::string& guid) override;
+  void OnDownloadFailed(const std::string& guid, FailureReason reason) override;
   void OnDownloadSucceeded(const std::string& guid,
                            const base::FilePath& path,
                            uint64_t size) override;

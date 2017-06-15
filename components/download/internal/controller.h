@@ -31,7 +31,7 @@ enum class CompletionType {
   TIMEOUT = 3,
   // The download is failed for unknown reasons.
   UNKNOWN = 4,
-  // The download is cancelled.
+  // The download is cancelled by the client.
   CANCEL = 5,
 };
 

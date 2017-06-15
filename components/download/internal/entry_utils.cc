@@ -21,10 +21,14 @@ uint32_t GetNumberOfEntriesForClient(DownloadClient client,
 
 std::map<DownloadClient, std::vector<std::string>> MapEntriesToClients(
     const std::set<DownloadClient>& clients,
-    const std::vector<Entry*>& entries) {
+    const std::vector<Entry*>& entries,
+    const std::set<Entry::State>& ignored_states) {
   std::map<DownloadClient, std::vector<std::string>> categorized;
 
   for (auto* entry : entries) {
+    if (ignored_states.find(entry->state) != ignored_states.end())
+      continue;
+
     DownloadClient client = entry->client;
     if (clients.find(client) == clients.end())
       client = DownloadClient::INVALID;
