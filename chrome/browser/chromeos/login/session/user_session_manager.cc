@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include <algorithm>
 #include <set>
 #include <string>
 #include <vector>
@@ -1094,6 +1095,8 @@ void UserSessionManager::InitProfilePreferences(
         SigninManagerFactory::GetForProfile(profile);
     signin_manager->SetAuthenticatedAccountInfo(
         gaia_id, user_context.GetAccountId().GetUserEmail());
+    VLOG(1) << "Seed SigninManagerBase with the authenticated account info"
+            << ", success=" << signin_manager->IsAuthenticated();
 
     // Backfill GAIA ID in user prefs stored in Local State.
     std::string tmp_gaia_id;

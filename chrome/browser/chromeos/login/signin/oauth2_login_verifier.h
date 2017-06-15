@@ -63,7 +63,7 @@ class OAuth2LoginVerifier : public GaiaCookieManagerService::Observer {
 
   OAuth2LoginVerifier::Delegate* delegate_;
   GaiaCookieManagerService* cookie_manager_service_;
-  const std::string& primary_account_id_;
+  const std::string primary_account_id_;
   const std::string access_token_;
 
   DISALLOW_COPY_AND_ASSIGN(OAuth2LoginVerifier);
