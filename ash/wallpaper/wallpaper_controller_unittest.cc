@@ -22,7 +22,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/task_scheduler.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/aura/window.h"
@@ -92,9 +92,9 @@ class TaskObserver : public base::MessageLoop::TaskObserver {
   DISALLOW_COPY_AND_ASSIGN(TaskObserver);
 };
 
-void RunAllBlockingPoolTasksUntilIdle(base::SequencedWorkerPool* pool) {
+void RunAllTasksUntilIdle() {
   while (true) {
-    pool->FlushForTesting();
+    base::TaskScheduler::GetInstance()->FlushForTesting();
 
     TaskObserver task_observer;
     base::MessageLoop::current()->AddTaskObserver(&task_observer);
@@ -382,7 +382,7 @@ TEST_F(WallpaperControllerTest, ResizeCustomWallpaper) {
   // that the resized image is the expected size.
   controller_->SetWallpaperImage(image, WALLPAPER_LAYOUT_STRETCH);
   EXPECT_TRUE(image.BackedBySameObjectAs(controller_->GetWallpaper()));
-  RunAllBlockingPoolTasksUntilIdle(Shell::Get()->blocking_pool().get());
+  RunAllTasksUntilIdle();
   gfx::ImageSkia resized_image = controller_->GetWallpaper();
   EXPECT_FALSE(image.BackedBySameObjectAs(resized_image));
   EXPECT_EQ(gfx::Size(320, 200).ToString(), resized_image.size().ToString());
@@ -391,7 +391,7 @@ TEST_F(WallpaperControllerTest, ResizeCustomWallpaper) {
   // previously-resized image instead of doing another resize
   // (http://crbug.com/321402).
   controller_->SetWallpaperImage(image, WALLPAPER_LAYOUT_STRETCH);
-  RunAllBlockingPoolTasksUntilIdle(Shell::Get()->blocking_pool().get());
+  RunAllTasksUntilIdle();
   EXPECT_TRUE(resized_image.BackedBySameObjectAs(controller_->GetWallpaper()));
 }
 

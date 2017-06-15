@@ -311,9 +311,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   AshDisplayController* ash_display_controller() {
     return ash_display_controller_.get();
   }
-  const scoped_refptr<base::SequencedWorkerPool>& blocking_pool() {
-    return blocking_pool_;
-  }
   BrightnessControlDelegate* brightness_control_delegate() {
     return brightness_control_delegate_.get();
   }
