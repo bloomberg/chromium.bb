@@ -282,10 +282,10 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   // ends at the same x coord as the blue selection box.
   CGSize textSize =
       [_preEditStaticLabel.text cr_pixelAlignedSizeWithFont:_font];
-  BOOL isLTR = [self bestTextAlignment] == NSTextAlignmentLeft;
+  // Note, this does not need to support RTL, as URLs are always LTR.
   return textSize.width < _preEditStaticLabel.frame.size.width
-             ? (isLTR ? NSTextAlignmentLeft : NSTextAlignmentRight)
-             : (isLTR ? NSTextAlignmentRight : NSTextAlignmentLeft);
+             ? NSTextAlignmentLeft
+             : NSTextAlignmentRight;
 }
 
 - (void)layoutSubviews {
