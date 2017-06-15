@@ -35,9 +35,9 @@ void AppBannerController::BannerPromptRequest(
     mojom::blink::AppBannerServicePtr service_ptr,
     mojom::blink::AppBannerEventRequest event_request,
     const Vector<String>& platforms,
-    const BannerPromptRequestCallback& callback) {
+    BannerPromptRequestCallback callback) {
   if (!frame_ || !frame_->GetDocument()) {
-    callback.Run(mojom::blink::AppBannerPromptReply::NONE, "");
+    std::move(callback).Run(mojom::blink::AppBannerPromptReply::NONE, "");
     return;
   }
 
@@ -54,7 +54,7 @@ void AppBannerController::BannerPromptRequest(
                               KURL(), frame_->GetDocument()->OutgoingReferrer())
                               .referrer;
 
-  callback.Run(reply, referrer.IsNull() ? g_empty_string : referrer);
+  std::move(callback).Run(reply, referrer.IsNull() ? g_empty_string : referrer);
 }
 
 }  // namespace blink

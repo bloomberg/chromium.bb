@@ -117,12 +117,15 @@ class MockPresentationServiceDelegate
                     int render_frame_id,
                     const PresentationInfo& presentation_info,
                     const PresentationConnectionMessageCallback& message_cb));
+
   // PresentationConnectionMessage is move-only.
+  // TODO(crbug.com/729950): Use MOCK_METHOD directly once GMock gets the
+  // move-only type support.
   void SendMessage(int render_process_id,
                    int render_frame_id,
                    const PresentationInfo& presentation_info,
                    PresentationConnectionMessage message,
-                   const SendMessageCallback& send_message_cb) {
+                   SendMessageCallback send_message_cb) {
     SendMessageInternal(render_process_id, render_frame_id, presentation_info,
                         message, send_message_cb);
   }
@@ -132,6 +135,7 @@ class MockPresentationServiceDelegate
                     const PresentationInfo& presentation_info,
                     const PresentationConnectionMessage& message,
                     const SendMessageCallback& send_message_cb));
+
   MOCK_METHOD4(
       ListenForConnectionStateChange,
       void(int render_process_id,
@@ -182,12 +186,12 @@ class MockPresentationConnection : public blink::mojom::PresentationConnection {
  public:
   // PresentationConnectionMessage is move-only.
   void OnMessage(PresentationConnectionMessage message,
-                 const base::Callback<void(bool)>& send_message_cb) {
+                 base::OnceCallback<void(bool)> send_message_cb) {
     OnMessageInternal(message, send_message_cb);
   }
   MOCK_METHOD2(OnMessageInternal,
                void(const PresentationConnectionMessage& message,
-                    const base::Callback<void(bool)>& send_message_cb));
+                    base::OnceCallback<void(bool)>& send_message_cb));
   MOCK_METHOD1(DidChangeState, void(PresentationConnectionState state));
   MOCK_METHOD0(OnClose, void());
 };

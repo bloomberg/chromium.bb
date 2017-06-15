@@ -68,8 +68,8 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
 
  private:
   friend class FrameConnectedBluetoothDevicesTest;
-  typedef base::Callback<void(device::BluetoothDevice*)>
-      PrimaryServicesRequestCallback;
+  using PrimaryServicesRequestCallback =
+      base::OnceCallback<void(device::BluetoothDevice*)>;
 
   // WebContentsObserver:
   // These functions should always check that the affected RenderFrameHost
@@ -99,52 +99,52 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
 
   // WebBluetoothService methods:
   void RequestDevice(blink::mojom::WebBluetoothRequestDeviceOptionsPtr options,
-                     const RequestDeviceCallback& callback) override;
+                     RequestDeviceCallback callback) override;
   void RemoteServerConnect(
       const WebBluetoothDeviceId& device_id,
       blink::mojom::WebBluetoothServerClientAssociatedPtrInfo client,
-      const RemoteServerConnectCallback& callback) override;
+      RemoteServerConnectCallback callback) override;
   void RemoteServerDisconnect(const WebBluetoothDeviceId& device_id) override;
   void RemoteServerGetPrimaryServices(
       const WebBluetoothDeviceId& device_id,
       blink::mojom::WebBluetoothGATTQueryQuantity quantity,
       const base::Optional<device::BluetoothUUID>& services_uuid,
-      const RemoteServerGetPrimaryServicesCallback& callback) override;
+      RemoteServerGetPrimaryServicesCallback callback) override;
   void RemoteServiceGetCharacteristics(
       const std::string& service_instance_id,
       blink::mojom::WebBluetoothGATTQueryQuantity quantity,
       const base::Optional<device::BluetoothUUID>& characteristics_uuid,
-      const RemoteServiceGetCharacteristicsCallback& callback) override;
+      RemoteServiceGetCharacteristicsCallback callback) override;
   void RemoteCharacteristicReadValue(
       const std::string& characteristic_instance_id,
-      const RemoteCharacteristicReadValueCallback& callback) override;
+      RemoteCharacteristicReadValueCallback callback) override;
   void RemoteCharacteristicWriteValue(
       const std::string& characteristic_instance_id,
       const std::vector<uint8_t>& value,
-      const RemoteCharacteristicWriteValueCallback& callback) override;
+      RemoteCharacteristicWriteValueCallback callback) override;
   void RemoteCharacteristicStartNotifications(
       const std::string& characteristic_instance_id,
       blink::mojom::WebBluetoothCharacteristicClientAssociatedPtrInfo client,
-      const RemoteCharacteristicStartNotificationsCallback& callback) override;
+      RemoteCharacteristicStartNotificationsCallback callback) override;
   void RemoteCharacteristicStopNotifications(
       const std::string& characteristic_instance_id,
-      const RemoteCharacteristicStopNotificationsCallback& callback) override;
+      RemoteCharacteristicStopNotificationsCallback callback) override;
   void RemoteCharacteristicGetDescriptors(
       const std::string& service_instance_id,
       blink::mojom::WebBluetoothGATTQueryQuantity quantity,
       const base::Optional<device::BluetoothUUID>& characteristics_uuid,
-      const RemoteCharacteristicGetDescriptorsCallback& callback) override;
+      RemoteCharacteristicGetDescriptorsCallback callback) override;
   void RemoteDescriptorReadValue(
       const std::string& characteristic_instance_id,
-      const RemoteDescriptorReadValueCallback& callback) override;
+      RemoteDescriptorReadValueCallback callback) override;
   void RemoteDescriptorWriteValue(
       const std::string& descriptor_instance_id,
       const std::vector<uint8_t>& value,
-      const RemoteDescriptorWriteValueCallback& callback) override;
+      RemoteDescriptorWriteValueCallback callback) override;
 
   void RequestDeviceImpl(
       blink::mojom::WebBluetoothRequestDeviceOptionsPtr options,
-      const RequestDeviceCallback& callback,
+      RequestDeviceCallback callback,
       device::BluetoothAdapter* adapter);
 
   // Should only be run after the services have been discovered for
@@ -153,15 +153,15 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
       const WebBluetoothDeviceId& device_id,
       blink::mojom::WebBluetoothGATTQueryQuantity quantity,
       const base::Optional<device::BluetoothUUID>& services_uuid,
-      const RemoteServerGetPrimaryServicesCallback& callback,
+      RemoteServerGetPrimaryServicesCallback callback,
       device::BluetoothDevice* device);
 
   // Callbacks for BluetoothDeviceChooserController::GetDevice.
   void OnGetDeviceSuccess(
-      const RequestDeviceCallback& callback,
+      RequestDeviceCallback callback,
       blink::mojom::WebBluetoothRequestDeviceOptionsPtr options,
       const std::string& device_id);
-  void OnGetDeviceFailed(const RequestDeviceCallback& callback,
+  void OnGetDeviceFailed(RequestDeviceCallback callback,
                          blink::mojom::WebBluetoothResult result);
 
   // Callbacks for BluetoothDevice::CreateGattConnection.
@@ -169,55 +169,54 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
       const WebBluetoothDeviceId& device_id,
       base::TimeTicks start_time,
       blink::mojom::WebBluetoothServerClientAssociatedPtr client,
-      const RemoteServerConnectCallback& callback,
+      RemoteServerConnectCallback callback,
       std::unique_ptr<device::BluetoothGattConnection> connection);
   void OnCreateGATTConnectionFailed(
       base::TimeTicks start_time,
-      const RemoteServerConnectCallback& callback,
+      RemoteServerConnectCallback callback,
       device::BluetoothDevice::ConnectErrorCode error_code);
 
   // Callbacks for BluetoothRemoteGattCharacteristic::ReadRemoteCharacteristic.
   void OnCharacteristicReadValueSuccess(
-      const RemoteCharacteristicReadValueCallback& callback,
+      RemoteCharacteristicReadValueCallback callback,
       const std::vector<uint8_t>& value);
   void OnCharacteristicReadValueFailed(
-      const RemoteCharacteristicReadValueCallback& callback,
+      RemoteCharacteristicReadValueCallback callback,
       device::BluetoothRemoteGattService::GattErrorCode error_code);
 
   // Callbacks for BluetoothRemoteGattCharacteristic::WriteRemoteCharacteristic.
   void OnCharacteristicWriteValueSuccess(
-      const RemoteCharacteristicWriteValueCallback& callback);
+      RemoteCharacteristicWriteValueCallback callback);
   void OnCharacteristicWriteValueFailed(
-      const RemoteCharacteristicWriteValueCallback& callback,
+      RemoteCharacteristicWriteValueCallback callback,
       device::BluetoothRemoteGattService::GattErrorCode error_code);
 
   // Callbacks for BluetoothRemoteGattCharacteristic::StartNotifySession.
   void OnStartNotifySessionSuccess(
       blink::mojom::WebBluetoothCharacteristicClientAssociatedPtr client,
-      const RemoteCharacteristicStartNotificationsCallback& callback,
+      RemoteCharacteristicStartNotificationsCallback callback,
       std::unique_ptr<device::BluetoothGattNotifySession> notify_session);
   void OnStartNotifySessionFailed(
-      const RemoteCharacteristicStartNotificationsCallback& callback,
+      RemoteCharacteristicStartNotificationsCallback callback,
       device::BluetoothRemoteGattService::GattErrorCode error_code);
 
   // Callback for BluetoothGattNotifySession::Stop.
   void OnStopNotifySessionComplete(
       const std::string& characteristic_instance_id,
-      const RemoteCharacteristicStopNotificationsCallback& callback);
+      RemoteCharacteristicStopNotificationsCallback callback);
 
   // Callbacks for BluetoothRemoteGattDescriptor::ReadRemoteDescriptor.
-  void OnDescriptorReadValueSuccess(
-      const RemoteDescriptorReadValueCallback& callback,
-      const std::vector<uint8_t>& value);
+  void OnDescriptorReadValueSuccess(RemoteDescriptorReadValueCallback callback,
+                                    const std::vector<uint8_t>& value);
   void OnDescriptorReadValueFailed(
-      const RemoteDescriptorReadValueCallback& callback,
+      RemoteDescriptorReadValueCallback callback,
       device::BluetoothRemoteGattService::GattErrorCode error_code);
 
   // Callbacks for BluetoothRemoteGattDescriptor::WriteRemoteDescriptor.
   void OnDescriptorWriteValueSuccess(
-      const RemoteDescriptorWriteValueCallback& callback);
+      RemoteDescriptorWriteValueCallback callback);
   void OnDescriptorWriteValueFailed(
-      const RemoteDescriptorWriteValueCallback& callback,
+      RemoteDescriptorWriteValueCallback callback,
       device::BluetoothRemoteGattService::GattErrorCode error_code);
 
   // Functions to query the platform cache for the bluetooth object.

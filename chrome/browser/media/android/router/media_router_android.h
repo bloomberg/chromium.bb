@@ -34,42 +34,39 @@ class MediaRouterAndroid : public MediaRouterBase {
                    const MediaSink::Id& sink_id,
                    const url::Origin& origin,
                    content::WebContents* web_contents,
-                   const std::vector<MediaRouteResponseCallback>& callbacks,
+                   std::vector<MediaRouteResponseCallback> callbacks,
                    base::TimeDelta timeout,
                    bool incognito) override;
   void JoinRoute(const MediaSource::Id& source,
                  const std::string& presentation_id,
                  const url::Origin& origin,
                  content::WebContents* web_contents,
-                 const std::vector<MediaRouteResponseCallback>& callbacks,
+                 std::vector<MediaRouteResponseCallback> callbacks,
                  base::TimeDelta timeout,
                  bool incognito) override;
-  void ConnectRouteByRouteId(
-      const MediaSource::Id& source,
-      const MediaRoute::Id& route_id,
-      const url::Origin& origin,
-      content::WebContents* web_contents,
-      const std::vector<MediaRouteResponseCallback>& callbacks,
-      base::TimeDelta timeout,
-      bool incognito) override;
+  void ConnectRouteByRouteId(const MediaSource::Id& source,
+                             const MediaRoute::Id& route_id,
+                             const url::Origin& origin,
+                             content::WebContents* web_contents,
+                             std::vector<MediaRouteResponseCallback> callbacks,
+                             base::TimeDelta timeout,
+                             bool incognito) override;
   void DetachRoute(const MediaRoute::Id& route_id) override;
   void TerminateRoute(const MediaRoute::Id& route_id) override;
   void SendRouteMessage(const MediaRoute::Id& route_id,
                         const std::string& message,
-                        const SendRouteMessageCallback& callback) override;
-  void SendRouteBinaryMessage(
-      const MediaRoute::Id& route_id,
-      std::unique_ptr<std::vector<uint8_t>> data,
-      const SendRouteMessageCallback& callback) override;
+                        SendRouteMessageCallback callback) override;
+  void SendRouteBinaryMessage(const MediaRoute::Id& route_id,
+                              std::unique_ptr<std::vector<uint8_t>> data,
+                              SendRouteMessageCallback callback) override;
   void AddIssue(const IssueInfo& issue_info) override;
   void ClearIssue(const Issue::Id& issue_id) override;
   void OnUserGesture() override;
-  void SearchSinks(
-      const MediaSink::Id& sink_id,
-      const MediaSource::Id& source_id,
-      const std::string& search_input,
-      const std::string& domain,
-      const MediaSinkSearchResponseCallback& sink_callback) override;
+  void SearchSinks(const MediaSink::Id& sink_id,
+                   const MediaSource::Id& source_id,
+                   const std::string& search_input,
+                   const std::string& domain,
+                   MediaSinkSearchResponseCallback sink_callback) override;
   void ProvideSinks(const std::string& provider_name,
                     std::vector<MediaSinkInternal> sinks) override;
 
@@ -135,10 +132,9 @@ class MediaRouterAndroid : public MediaRouterBase {
   base::ObserverList<MediaRoutesObserver> routes_observers_;
 
   struct MediaRouteRequest {
-    MediaRouteRequest(
-        const MediaSource& source,
-        const std::string& presentation_id,
-        const std::vector<MediaRouteResponseCallback>& callbacks);
+    MediaRouteRequest(const MediaSource& source,
+                      const std::string& presentation_id,
+                      std::vector<MediaRouteResponseCallback> callbacks);
     ~MediaRouteRequest();
 
     MediaSource media_source;

@@ -23,13 +23,15 @@ class MockPresentationConnectionProxy
     : public NON_EXPORTED_BASE(blink::mojom::PresentationConnection) {
  public:
   // PresentationConnectionMessage is move-only.
+  // TODO(crbug.com/729950): Use MOCK_METHOD directly once GMock gets the
+  // move-only type support.
   void OnMessage(content::PresentationConnectionMessage message,
-                 const OnMessageCallback& cb) {
+                 OnMessageCallback cb) {
     OnMessageInternal(message, cb);
   }
   MOCK_METHOD2(OnMessageInternal,
                void(const content::PresentationConnectionMessage&,
-                    const OnMessageCallback&));
+                    OnMessageCallback&));
   MOCK_METHOD1(DidChangeState,
                void(content::PresentationConnectionState state));
   MOCK_METHOD0(OnClose, void());
@@ -85,7 +87,8 @@ TEST_F(BrowserPresentationConnectionProxyTest, TestOnMessageTextMessage) {
   content::PresentationConnectionMessage connection_message(message);
 
   base::MockCallback<base::Callback<void(bool)>> mock_on_message_callback;
-  EXPECT_CALL(*mock_router(), SendRouteMessage(kMediaRouteId, message, _));
+  EXPECT_CALL(*mock_router(),
+              SendRouteMessageInternal(kMediaRouteId, message, _));
 
   browser_connection_proxy()->OnMessage(std::move(connection_message),
                                         mock_on_message_callback.Get());

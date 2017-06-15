@@ -17,21 +17,21 @@ CreatePresentationConnectionRequest::CreatePresentationConnectionRequest(
     const RenderFrameHostId& render_frame_host_id,
     const std::vector<GURL>& presentation_urls,
     const url::Origin& frame_origin,
-    const PresentationConnectionCallback& success_cb,
-    const PresentationConnectionErrorCallback& error_cb)
+    PresentationConnectionCallback success_cb,
+    PresentationConnectionErrorCallback error_cb)
     : presentation_request_(render_frame_host_id,
                             presentation_urls,
                             frame_origin),
-      success_cb_(success_cb),
-      error_cb_(error_cb),
+      success_cb_(std::move(success_cb)),
+      error_cb_(std::move(error_cb)),
       cb_invoked_(false) {
-  DCHECK(!success_cb.is_null());
-  DCHECK(!error_cb.is_null());
+  DCHECK(!success_cb_.is_null());
+  DCHECK(!error_cb_.is_null());
 }
 
 CreatePresentationConnectionRequest::~CreatePresentationConnectionRequest() {
   if (!cb_invoked_) {
-    error_cb_.Run(content::PresentationError(
+    std::move(error_cb_).Run(content::PresentationError(
         content::PRESENTATION_ERROR_UNKNOWN, "Unknown error."));
   }
 }
@@ -42,8 +42,9 @@ void CreatePresentationConnectionRequest::InvokeSuccessCallback(
     const MediaRoute& route) {
   DCHECK(!cb_invoked_);
   if (!cb_invoked_) {
-    success_cb_.Run(
-        content::PresentationInfo(presentation_url, presentation_id), route);
+    std::move(success_cb_)
+        .Run(content::PresentationInfo(presentation_url, presentation_id),
+             route);
     cb_invoked_ = true;
   }
 }
@@ -52,7 +53,7 @@ void CreatePresentationConnectionRequest::InvokeErrorCallback(
     const content::PresentationError& error) {
   DCHECK(!cb_invoked_);
   if (!cb_invoked_) {
-    error_cb_.Run(error);
+    std::move(error_cb_).Run(error);
     cb_invoked_ = true;
   }
 }
