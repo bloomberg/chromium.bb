@@ -557,9 +557,7 @@ ServiceWorkerRegistration* ServiceWorkerContextCore::GetLiveRegistration(
 
 void ServiceWorkerContextCore::AddLiveRegistration(
     ServiceWorkerRegistration* registration) {
-  // TODO(nhiroki): Change CHECK to DCHECK after https://crbug.com/619294 is
-  // fixed.
-  CHECK(!GetLiveRegistration(registration->id()));
+  DCHECK(!GetLiveRegistration(registration->id()));
   live_registrations_[registration->id()] = registration;
   if (observer_list_.get()) {
     observer_list_->Notify(
