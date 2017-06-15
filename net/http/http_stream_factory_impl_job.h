@@ -45,6 +45,11 @@ struct SSLConfig;
 // created for the StreamFactory.
 class HttpStreamFactoryImpl::Job {
  public:
+  // For jobs issued simultaneously to an HTTP/2 supported server, a delay is
+  // applied to avoid unnecessary socket connection establishments.
+  // crbug.com/718576
+  static const int kHTTP2ThrottleMs = 300;
+
   // Delegate to report Job's status to Request and HttpStreamFactory.
   class NET_EXPORT_PRIVATE Delegate {
    public:
@@ -264,6 +269,7 @@ class HttpStreamFactoryImpl::Job {
     STATE_WAIT,
     STATE_WAIT_COMPLETE,
 
+    STATE_EVALUATE_THROTTLE,
     STATE_INIT_CONNECTION,
     STATE_INIT_CONNECTION_COMPLETE,
     STATE_WAITING_USER_ACTION,
@@ -308,6 +314,7 @@ class HttpStreamFactoryImpl::Job {
   int DoStart();
   int DoWait();
   int DoWaitComplete(int result);
+  int DoEvaluateThrottle();
   int DoInitConnection();
   int DoInitConnectionComplete(int result);
   int DoWaitingUserAction(int result);
@@ -316,6 +323,7 @@ class HttpStreamFactoryImpl::Job {
   int DoRestartTunnelAuth();
   int DoRestartTunnelAuthComplete(int result);
 
+  void ResumeInitConnection();
   // Creates a SpdyHttpStream or a BidirectionalStreamImpl from the given values
   // and sets to |stream_| or |bidirectional_stream_impl_| respectively. Does
   // nothing if |stream_factory_| is for WebSockets.
@@ -478,6 +486,9 @@ class HttpStreamFactoryImpl::Job {
 
   // Type of stream that is requested.
   HttpStreamRequest::StreamType stream_type_;
+
+  // Whether Job has continued to DoInitConnection().
+  bool init_connection_already_resumed_;
 
   base::WeakPtrFactory<Job> ptr_factory_;
 
