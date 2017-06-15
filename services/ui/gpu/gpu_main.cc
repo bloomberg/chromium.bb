@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/power_monitor/power_monitor_device_source.h"
 #include "base/single_thread_task_runner.h"
+#include "components/viz/common/server_gpu_memory_buffer_manager.h"
 #include "components/viz/service/display_compositor/gpu_display_provider.h"
 #include "components/viz/service/frame_sinks/mojo_frame_sink_manager.h"
 #include "gpu/command_buffer/common/activity_flags.h"
@@ -16,7 +17,6 @@
 #include "gpu/ipc/gpu_in_process_thread_service.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
-#include "services/ui/common/server_gpu_memory_buffer_manager.h"
 #include "services/ui/gpu/gpu_service.h"
 
 #if defined(USE_OZONE)
@@ -202,8 +202,8 @@ void GpuMain::CreateFrameSinkManagerOnCompositorThread(
 
   display_provider_ = base::MakeUnique<viz::GpuDisplayProvider>(
       gpu_command_service_,
-      base::MakeUnique<ServerGpuMemoryBufferManager>(gpu_internal_.get(),
-                                                     1 /* client_id */),
+      base::MakeUnique<viz::ServerGpuMemoryBufferManager>(gpu_internal_.get(),
+                                                          1 /* client_id */),
       image_factory);
 
   frame_sink_manager_ = base::MakeUnique<viz::MojoFrameSinkManager>(

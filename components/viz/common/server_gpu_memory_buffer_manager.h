@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_COMMON_SERVER_GPU_MEMORY_BUFFER_MANAGER_H_
-#define SERVICES_UI_COMMON_SERVER_GPU_MEMORY_BUFFER_MANAGER_H_
+#ifndef COMPONENTS_VIZ_COMMON_SERVER_GPU_MEMORY_BUFFER_MANAGER_H_
+#define COMPONENTS_VIZ_COMMON_SERVER_GPU_MEMORY_BUFFER_MANAGER_H_
 
 #include <memory>
 
@@ -12,16 +12,22 @@
 #include "base/threading/thread_checker.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/ipc/host/gpu_memory_buffer_support.h"
-#include "services/ui/gpu/interfaces/gpu_service.mojom.h"
 
 namespace ui {
+namespace mojom {
+class GpuService;
+}
+}
 
-// This GpuMemoryBufferManager is for establishing a GpuChannelHost used by
-// mus locally.
+namespace viz {
+
+// This GpuMemoryBufferManager implementation is for [de]allocating gpu memory
+// from the gpu process over the mojom.GpuService api.
 class ServerGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager,
                                      public base::ThreadChecker {
  public:
-  ServerGpuMemoryBufferManager(mojom::GpuService* gpu_service, int client_id);
+  ServerGpuMemoryBufferManager(ui::mojom::GpuService* gpu_service,
+                               int client_id);
   ~ServerGpuMemoryBufferManager() override;
 
   void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
@@ -48,7 +54,7 @@ class ServerGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager,
                                const gpu::SyncToken& sync_token) override;
 
  private:
-  mojom::GpuService* gpu_service_;
+  ui::mojom::GpuService* gpu_service_;
   const int client_id_;
   int next_gpu_memory_id_ = 1;
 
@@ -63,6 +69,6 @@ class ServerGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager,
   DISALLOW_COPY_AND_ASSIGN(ServerGpuMemoryBufferManager);
 };
 
-}  // namespace ui
+}  // namespace viz
 
-#endif  // SERVICES_UI_COMMON_SERVER_GPU_MEMORY_BUFFER_MANAGER_H_
+#endif  // COMPONENTS_VIZ_COMMON_SERVER_GPU_MEMORY_BUFFER_MANAGER_H_

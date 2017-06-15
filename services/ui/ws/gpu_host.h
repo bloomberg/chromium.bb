@@ -18,9 +18,11 @@
 #include "services/ui/gpu/interfaces/gpu_service.mojom.h"
 #include "services/ui/public/interfaces/gpu.mojom.h"
 
-namespace ui {
-
+namespace viz {
 class ServerGpuMemoryBufferManager;
+}
+
+namespace ui {
 
 namespace ws {
 
@@ -93,7 +95,7 @@ class DefaultGpuHost : public GpuHost, public mojom::GpuHost {
   mojom::GpuServicePtr gpu_service_;
   mojo::Binding<mojom::GpuHost> gpu_host_binding_;
   gpu::GPUInfo gpu_info_;
-  std::unique_ptr<ServerGpuMemoryBufferManager> gpu_memory_buffer_manager_;
+  std::unique_ptr<viz::ServerGpuMemoryBufferManager> gpu_memory_buffer_manager_;
 
   mojom::GpuMainPtr gpu_main_;
 
