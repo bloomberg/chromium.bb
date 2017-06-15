@@ -35,6 +35,25 @@ function testCreateAndGetPhotoCapabilities() {
       });
 }
 
+// Runs an ImageCapture.getPhotoSettings().
+function testCreateAndGetPhotoSettings() {
+  navigator.mediaDevices.getUserMedia({"video" : CONSTRAINTS})
+      .then(stream => {
+        assertEquals('video', stream.getVideoTracks()[0].kind);
+        return new ImageCapture(stream.getVideoTracks()[0]);
+      })
+      .then(capturer => {
+        return capturer.getPhotoSettings();
+      })
+      .then(settings => {
+        // There's nothing to check here since |settings| vary per device.
+        reportTestSuccess();
+      })
+      .catch(err => {
+        return failTest(err.toString());
+      });
+}
+
 // Runs an ImageCapture.takePhoto().
 function testCreateAndTakePhoto() {
   navigator.mediaDevices.getUserMedia({"video" : CONSTRAINTS})

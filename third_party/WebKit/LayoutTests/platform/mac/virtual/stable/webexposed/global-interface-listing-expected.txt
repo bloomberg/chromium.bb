@@ -3157,6 +3157,7 @@ interface ImageCapture
     getter track
     method constructor
     method getPhotoCapabilities
+    method getPhotoSettings
     method grabFrame
     method setOptions
     method takePhoto
