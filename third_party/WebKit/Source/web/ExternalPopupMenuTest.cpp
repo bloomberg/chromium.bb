@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/page/ExternalPopupMenu.h"
+#include "core/html/forms/ExternalPopupMenu.h"
 
 #include <memory>
 #include "core/HTMLNames.h"
@@ -11,9 +11,9 @@
 #include "core/frame/VisualViewport.h"
 #include "core/frame/WebLocalFrameBase.h"
 #include "core/html/HTMLSelectElement.h"
+#include "core/html/forms/PopupMenu.h"
 #include "core/layout/LayoutMenuList.h"
 #include "core/page/Page.h"
-#include "core/page/PopupMenu.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"

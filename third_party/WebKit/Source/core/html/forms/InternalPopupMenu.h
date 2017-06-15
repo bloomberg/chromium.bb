@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PopupMenuImpl_h
-#define PopupMenuImpl_h
+#ifndef InternalPopupMenu_h
+#define InternalPopupMenu_h
 
 #include "core/CoreExport.h"
+#include "core/html/forms/PopupMenu.h"
 #include "core/page/PagePopupClient.h"
-#include "core/page/PopupMenu.h"
 
 namespace blink {
 
@@ -19,12 +19,11 @@ class HTMLOptGroupElement;
 class HTMLOptionElement;
 class HTMLSelectElement;
 
-// TODO(sashab): Merge this class with its parent (PopupMenu).
-class CORE_EXPORT PopupMenuImpl final : NON_EXPORTED_BASE(public PopupMenu),
-                                        public PagePopupClient {
+class CORE_EXPORT InternalPopupMenu final : NON_EXPORTED_BASE(public PopupMenu),
+                                            public PagePopupClient {
  public:
-  static PopupMenuImpl* Create(ChromeClient*, HTMLSelectElement&);
-  ~PopupMenuImpl() override;
+  static InternalPopupMenu* Create(ChromeClient*, HTMLSelectElement&);
+  ~InternalPopupMenu() override;
   DECLARE_VIRTUAL_TRACE();
 
   void Update();
@@ -32,7 +31,7 @@ class CORE_EXPORT PopupMenuImpl final : NON_EXPORTED_BASE(public PopupMenu),
   void Dispose();
 
  private:
-  PopupMenuImpl(ChromeClient*, HTMLSelectElement&);
+  InternalPopupMenu(ChromeClient*, HTMLSelectElement&);
 
   class ItemIterationContext;
   void AddOption(ItemIterationContext&, HTMLOptionElement&);
@@ -65,4 +64,4 @@ class CORE_EXPORT PopupMenuImpl final : NON_EXPORTED_BASE(public PopupMenu),
 
 }  // namespace blink
 
-#endif  // PopupMenuImpl_h
+#endif  // InternalPopupMenu_h
