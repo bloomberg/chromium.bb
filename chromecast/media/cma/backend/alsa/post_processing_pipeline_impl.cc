@@ -23,7 +23,7 @@ namespace {
 const int kNoSampleRate = -1;
 const char kSoCreateFunction[] = "AudioPostProcessorShlib_Create";
 const char kProcessorKey[] = "processor";
-
+const char kNameKey[] = "name";
 }  // namespace
 
 using CreatePostProcessor = AudioPostProcessor* (*)(const std::string&, int);
@@ -48,11 +48,22 @@ PostProcessingPipelineImpl::PostProcessingPipelineImpl(
     const base::DictionaryValue* processor_description_dict;
     CHECK(
         filter_description_list->GetDictionary(i, &processor_description_dict));
+
+    std::string processor_name;
+    processor_description_dict->GetString(kNameKey, &processor_name);
+    std::vector<PostProcessorInfo>::iterator it =
+        find_if(processors_.begin(), processors_.end(),
+                [&processor_name](PostProcessorInfo& p) {
+                  return p.name == processor_name;
+                });
+    LOG_IF(DFATAL, it != processors_.end())
+        << "Duplicate postprocessor name " << processor_name;
     std::string library_path;
     CHECK(processor_description_dict->GetString(kProcessorKey, &library_path));
     if (library_path == "null" || library_path == "none") {
       continue;
     }
+
     const base::Value* processor_config_val;
     CHECK(processor_description_dict->Get("config", &processor_config_val));
     CHECK(processor_config_val->is_dict() || processor_config_val->is_string());
@@ -69,8 +80,9 @@ PostProcessingPipelineImpl::PostProcessingPipelineImpl(
 
     CHECK(create) << "Could not find " << kSoCreateFunction << "() in "
                   << library_path;
-    processors_.push_back(
-        base::WrapUnique(create(*processor_config_string, channels)));
+    processors_.emplace_back(PostProcessorInfo{
+        base::WrapUnique(create(*processor_config_string, channels)),
+        processor_name});
   }
 }
 
@@ -95,7 +107,7 @@ int PostProcessingPipelineImpl::ProcessFrames(float* data,
   total_delay_frames_ = 0;
   for (auto& processor : processors_) {
     total_delay_frames_ +=
-        processor->ProcessFrames(data, num_frames, cast_volume_);
+        processor.ptr->ProcessFrames(data, num_frames, cast_volume_);
   }
   return total_delay_frames_;
 }
@@ -104,7 +116,7 @@ bool PostProcessingPipelineImpl::SetSampleRate(int sample_rate) {
   sample_rate_ = sample_rate;
   bool result = true;
   for (auto& processor : processors_) {
-    result &= processor->SetSampleRate(sample_rate_);
+    result &= processor.ptr->SetSampleRate(sample_rate_);
   }
   ringing_time_in_frames_ = GetRingingTimeInFrames();
   silence_frames_processed_ = 0;
@@ -118,7 +130,7 @@ bool PostProcessingPipelineImpl::IsRinging() {
 int PostProcessingPipelineImpl::GetRingingTimeInFrames() {
   int memory_frames = 0;
   for (auto& processor : processors_) {
-    memory_frames += processor->GetRingingTimeInFrames();
+    memory_frames += processor.ptr->GetRingingTimeInFrames();
   }
   return memory_frames;
 }
@@ -133,6 +145,21 @@ void PostProcessingPipelineImpl::UpdateCastVolume(float multiplier) {
   float dbfs = std::log10(multiplier) * 20;
   DCHECK(chromecast::media::VolumeControl::DbFSToVolume);
   cast_volume_ = chromecast::media::VolumeControl::DbFSToVolume(dbfs);
+}
+
+// Send string |config| to postprocessor |name|.
+void PostProcessingPipelineImpl::SetPostProcessorConfig(
+    const std::string& name,
+    const std::string& config) {
+  DCHECK(!name.empty());
+  std::vector<PostProcessorInfo>::iterator it =
+      find_if(processors_.begin(), processors_.end(),
+              [&name](PostProcessorInfo& p) { return p.name == name; });
+  if (it != processors_.end()) {
+    it->ptr->UpdateParameters(config);
+    LOG(INFO) << "Config string:\n"
+              << config << "\nwas delivered to postprocessor " << name;
+  }
 }
 
 }  // namespace media
