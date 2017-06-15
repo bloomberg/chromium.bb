@@ -15,6 +15,10 @@
 #include "headless/public/headless_shell.h"
 #include "ui/gfx/switches.h"
 
+#if BUILDFLAG(ENABLE_OOP_HEAP_PROFILING)
+#include "chrome/profiling/profiling_main.h"
+#endif
+
 #if BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
 #include "services/service_manager/runner/common/client_util.h"
 #endif
@@ -92,6 +96,7 @@ int ChromeMain(int argc, const char** argv) {
   const base::CommandLine* command_line(base::CommandLine::ForCurrentProcess());
   ALLOW_UNUSED_LOCAL(command_line);
 
+  // Chrome-specific process modes.
 #if defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
   if (command_line->HasSwitch(switches::kHeadless)) {
 #if defined(OS_MACOSX)
@@ -100,6 +105,13 @@ int ChromeMain(int argc, const char** argv) {
     return headless::HeadlessShellMain(params);
   }
 #endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
+
+#if BUILDFLAG(ENABLE_OOP_HEAP_PROFILING)
+  if (command_line->GetSwitchValueASCII(switches::kProcessType) ==
+      "profiling") {
+    return profiling::ProfilingMain(*command_line);
+  }
+#endif  // ENABLE_OOP_HEAP_PROFILING
 
 #if defined(OS_CHROMEOS) && BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
   if (service_manager::ServiceManagerIsRemote())
