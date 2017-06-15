@@ -112,7 +112,7 @@ class IMEDetailedView : public ImeListView {
   }
 
   void CreateExtraTitleRowButtons() override {
-    if (ime_controller_->IsImeManaged()) {
+    if (ime_controller_->managed_by_policy()) {
       controlled_setting_icon_ = TrayPopupUtils::CreateMainImageView();
       controlled_setting_icon_->SetImage(
           gfx::CreateVectorIcon(kSystemMenuBusinessIcon, kMenuIconColor));
@@ -180,14 +180,16 @@ void TrayIME::OnAccessibilityModeChanged(
 }
 
 void TrayIME::Update() {
-  UpdateTrayLabel(current_ime_, ime_list_.size());
+  size_t ime_count = ime_controller_->available_imes().size();
+  UpdateTrayLabel(ime_controller_->current_ime(), ime_count);
   if (default_) {
     default_->SetVisible(ShouldDefaultViewBeVisible());
-    default_->UpdateLabel(GetDefaultViewLabel(ime_list_.size() > 1));
+    default_->UpdateLabel(GetDefaultViewLabel(ime_count > 1));
   }
   if (detailed_) {
-    detailed_->Update(ime_list_, property_items_, ShouldShowKeyboardToggle(),
-                      GetSingleImeBehavior());
+    detailed_->Update(ime_controller_->available_imes(),
+                      ime_controller_->current_ime_menu_items(),
+                      ShouldShowKeyboardToggle(), GetSingleImeBehavior());
   }
 }
 
@@ -215,7 +217,7 @@ bool TrayIME::ShouldShowKeyboardToggle() {
 
 base::string16 TrayIME::GetDefaultViewLabel(bool show_ime_label) {
   if (show_ime_label) {
-    return ime_controller_->GetCurrentIme().name;
+    return ime_controller_->current_ime().name;
   } else {
     // Display virtual keyboard status instead.
     int id = keyboard::IsKeyboardEnabled()
@@ -239,7 +241,8 @@ views::View* TrayIME::CreateTrayView(LoginStatus status) {
 views::View* TrayIME::CreateDefaultView(LoginStatus status) {
   CHECK(default_ == nullptr);
   default_ = new tray::IMEDefaultView(
-      this, GetDefaultViewLabel(ShouldShowImeTrayItem(ime_list_.size())));
+      this, GetDefaultViewLabel(ShouldShowImeTrayItem(
+                ime_controller_->available_imes().size())));
   default_->SetVisible(ShouldDefaultViewBeVisible());
   return default_;
 }
@@ -264,30 +267,23 @@ void TrayIME::OnDetailedViewDestroyed() {
 }
 
 void TrayIME::OnIMERefresh() {
-  // Caches the current ime state.
-  current_ime_ = ime_controller_->GetCurrentIme();
-  property_items_ = ime_controller_->GetCurrentImeMenuItems();
-  ime_list_ = ime_controller_->GetAvailableImes();
-
   Update();
 }
 
 void TrayIME::OnIMEMenuActivationChanged(bool is_active) {
   is_visible_ = !is_active;
-  if (is_visible_)
-    OnIMERefresh();
-  else
-    Update();
+  Update();
 }
 
 bool TrayIME::IsIMEManaged() {
-  return ime_controller_->IsImeManaged();
+  return ime_controller_->managed_by_policy();
 }
 
 bool TrayIME::ShouldDefaultViewBeVisible() {
   return is_visible_ &&
-         (ShouldShowImeTrayItem(ime_list_.size()) ||
-          property_items_.size() > 1 || ShouldShowKeyboardToggle());
+         (ShouldShowImeTrayItem(ime_controller_->available_imes().size()) ||
+          ime_controller_->current_ime_menu_items().size() > 1 ||
+          ShouldShowKeyboardToggle());
 }
 
 bool TrayIME::ShouldShowImeTrayItem(size_t ime_count) {

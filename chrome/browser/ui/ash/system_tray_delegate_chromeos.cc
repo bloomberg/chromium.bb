@@ -99,10 +99,6 @@ SystemTrayDelegateChromeOS::SystemTrayDelegateChromeOS()
 }
 
 void SystemTrayDelegateChromeOS::Initialize() {
-  input_method::InputMethodManager::Get()->AddObserver(this);
-  input_method::InputMethodManager::Get()->AddImeMenuObserver(this);
-  ui::ime::InputMethodMenuManager::GetInstance()->AddObserver(this);
-
   BrowserList::AddObserver(this);
 
   DBusThreadManager::Get()->GetUpdateEngineClient()->AddObserver(this);
@@ -116,9 +112,6 @@ SystemTrayDelegateChromeOS::~SystemTrayDelegateChromeOS() {
 
   // Unregister a11y status subscription.
   accessibility_subscription_.reset();
-
-  input_method::InputMethodManager::Get()->RemoveObserver(this);
-  ui::ime::InputMethodMenuManager::GetInstance()->RemoveObserver(this);
 
   BrowserList::RemoveObserver(this);
   StopObservingAppWindowRegistry();
@@ -339,20 +332,6 @@ void SystemTrayDelegateChromeOS::UpdatePerformanceTracing() {
   GetSystemTrayNotifier()->NotifyTracingModeChanged(value);
 }
 
-// Overridden from InputMethodManager::Observer.
-void SystemTrayDelegateChromeOS::InputMethodChanged(
-    input_method::InputMethodManager* manager,
-    Profile* /* profile */,
-    bool show_message) {
-  GetSystemTrayNotifier()->NotifyRefreshIME();
-}
-
-// Overridden from InputMethodMenuManager::Observer.
-void SystemTrayDelegateChromeOS::InputMethodMenuItemChanged(
-    ui::ime::InputMethodMenuManager* manager) {
-  GetSystemTrayNotifier()->NotifyRefreshIME();
-}
-
 // Overridden from chrome::BrowserListObserver.
 void SystemTrayDelegateChromeOS::OnBrowserRemoved(Browser* browser) {
   NotifyIfLastWindowClosed();
@@ -371,16 +350,6 @@ void SystemTrayDelegateChromeOS::OnAccessibilityStatusChanged(
   else
     OnAccessibilityModeChanged(details.notify);
 }
-
-void SystemTrayDelegateChromeOS::ImeMenuActivationChanged(bool is_active) {
-  GetSystemTrayNotifier()->NotifyRefreshIMEMenu(is_active);
-}
-
-void SystemTrayDelegateChromeOS::ImeMenuListChanged() {}
-
-void SystemTrayDelegateChromeOS::ImeMenuItemsChanged(
-    const std::string& engine_id,
-    const std::vector<input_method::InputMethodManager::MenuItem>& items) {}
 
 void SystemTrayDelegateChromeOS::OnUpdateOverCellularTargetSet(bool success) {
   GetSystemTrayNotifier()->NotifyUpdateOverCellularTargetSet(success);

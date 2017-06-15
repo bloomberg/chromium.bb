@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/ash/cast_config_client_media_router.h"
 #include "chrome/browser/ui/ash/chrome_new_window_client.h"
 #include "chrome/browser/ui/ash/chrome_shell_content_state.h"
+#include "chrome/browser/ui/ash/ime_controller_client.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/lock_screen_client.h"
 #include "chrome/browser/ui/ash/media_client.h"
@@ -32,6 +33,7 @@
 #include "chrome/browser/ui/views/select_file_dialog_extension_factory.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/base/class_property.h"
+#include "ui/base/ime/chromeos/input_method_manager.h"
 #include "ui/keyboard/content/keyboard.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/views/mus/mus_client.h"
@@ -86,6 +88,11 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
 
   // Must be available at login screen, so initialize before profile.
   system_tray_client_ = base::MakeUnique<SystemTrayClient>();
+  // TODO(jamescook): Enable in mash once converted to mojo.
+  if (!ash_util::IsRunningInMash()) {
+    ime_controller_client_ = base::MakeUnique<ImeControllerClient>(
+        chromeos::input_method::InputMethodManager::Get());
+  }
   new_window_client_ = base::MakeUnique<ChromeNewWindowClient>();
   volume_controller_ = base::MakeUnique<VolumeController>();
   vpn_list_forwarder_ = base::MakeUnique<VpnListForwarder>();
@@ -131,6 +138,7 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
   vpn_list_forwarder_.reset();
   volume_controller_.reset();
   new_window_client_.reset();
+  ime_controller_client_.reset();
   system_tray_client_.reset();
   lock_screen_client_.reset();
   media_client_.reset();

@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "ash/ime/ime_controller.h"
 #include "ash/shell_delegate.h"
 #include "base/macros.h"
 
@@ -51,7 +50,6 @@ class TestShellDelegate : public ShellDelegate {
   void ShelfShutdown() override;
   void OpenUrlFromArc(const GURL& url) override;
   SystemTrayDelegate* CreateSystemTrayDelegate() override;
-  ImeController* GetImeController() override;
   std::unique_ptr<WallpaperDelegate> CreateWallpaperDelegate() override;
   AccessibilityDelegate* CreateAccessibilityDelegate() override;
   std::unique_ptr<PaletteDelegate> CreatePaletteDelegate() override;
@@ -82,7 +80,6 @@ class TestShellDelegate : public ShellDelegate {
   bool touchscreen_enabled_in_local_pref_ = true;
   bool media_sessions_suspended_ = false;
   std::unique_ptr<ShelfInitializer> shelf_initializer_;
-  ImeController stub_ime_controller_;
   PrefService* active_user_pref_service_ = nullptr;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(TestShellDelegate);

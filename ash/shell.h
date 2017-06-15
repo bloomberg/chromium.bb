@@ -324,7 +324,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   }
   ::wm::CompoundEventFilter* env_filter() { return env_filter_.get(); }
   FocusCycler* focus_cycler() { return focus_cycler_.get(); }
-  ImeController* ime_controller() { return ime_controller_; }
+  ImeController* ime_controller() { return ime_controller_.get(); }
   KeyboardBrightnessControlDelegate* keyboard_brightness_control_delegate() {
     return keyboard_brightness_control_delegate_.get();
   }
@@ -693,7 +693,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<CastConfigController> cast_config_;
   std::unique_ptr<DragDropController> drag_drop_controller_;
   std::unique_ptr<FocusCycler> focus_cycler_;
-  ImeController* const ime_controller_;
+  std::unique_ptr<ImeController> ime_controller_;
   std::unique_ptr<ImmersiveContextAsh> immersive_context_;
   std::unique_ptr<KeyboardBrightnessControlDelegate>
       keyboard_brightness_control_delegate_;

@@ -87,10 +87,6 @@ SystemTrayDelegate* ShellDelegateMus::CreateSystemTrayDelegate() {
   return new SystemTrayDelegateMus();
 }
 
-ImeController* ShellDelegateMus::GetImeController() {
-  return &stub_ime_controller_;
-}
-
 std::unique_ptr<WallpaperDelegate> ShellDelegateMus::CreateWallpaperDelegate() {
   return base::MakeUnique<WallpaperDelegateMus>();
 }

@@ -51,7 +51,9 @@ class MockInputMethodManagerImpl : public MockInputMethodManager {
 
   // MockInputMethodManager:
   void AddObserver(InputMethodManager::Observer* observer) override;
+  void AddImeMenuObserver(ImeMenuObserver* observer) override;
   void RemoveObserver(InputMethodManager::Observer* observer) override;
+  void RemoveImeMenuObserver(ImeMenuObserver* observer) override;
   std::unique_ptr<InputMethodDescriptors> GetSupportedInputMethods()
       const override;
   bool IsISOLevel5ShiftUsedByCurrentInputMethod() const override;
@@ -78,17 +80,22 @@ class MockInputMethodManagerImpl : public MockInputMethodManager {
   int add_observer_count() const { return add_observer_count_; }
   int remove_observer_count() const { return remove_observer_count_; }
 
+  int add_menu_observer_count() const { return add_menu_observer_count_; }
+  int remove_menu_observer_count() const { return remove_menu_observer_count_; }
+
  protected:
   scoped_refptr<State> state_;
 
  private:
   // TODO(yusukes): Add more variables for counting the numbers of the API calls
-  int add_observer_count_;
-  int remove_observer_count_;
+  int add_observer_count_ = 0;
+  int remove_observer_count_ = 0;
+  int add_menu_observer_count_ = 0;
+  int remove_menu_observer_count_ = 0;
   FakeInputMethodDelegate delegate_;  // used by util_
   std::unique_ptr<InputMethodUtil> util_;
   FakeImeKeyboard keyboard_;
-  bool mod3_used_;
+  bool mod3_used_ = false;
   std::unique_ptr<ComponentExtensionIMEManager> comp_ime_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(MockInputMethodManagerImpl);

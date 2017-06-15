@@ -103,7 +103,6 @@ class ASH_EXPORT ImeMenuTray : public TrayBackgroundView,
   ImeListView* ime_list_view_;
 
   views::Label* label_;
-  mojom::ImeInfo current_ime_;
   bool show_keyboard_;
   bool force_show_keyboard_;
   bool keyboard_suppressed_;

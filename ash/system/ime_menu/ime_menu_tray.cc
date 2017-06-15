@@ -412,8 +412,8 @@ bool ImeMenuTray::ShouldShowEmojiHandwritingVoiceButtons() const {
   // 4) password input client.
   return InputMethodManager::Get() &&
          InputMethodManager::Get()->IsEmojiHandwritingVoiceOnImeMenuEnabled() &&
-         !current_ime_.third_party && !IsInLoginOrLockScreen() &&
-         !IsInPasswordInputContext();
+         !ime_controller_->current_ime().third_party &&
+         !IsInLoginOrLockScreen() && !IsInPasswordInputContext();
 }
 
 bool ImeMenuTray::ShouldShowKeyboardToggle() const {
@@ -445,10 +445,8 @@ bool ImeMenuTray::PerformAction(const ui::Event& event) {
 void ImeMenuTray::OnIMERefresh() {
   UpdateTrayLabel();
   if (bubble_ && ime_list_view_) {
-    std::vector<mojom::ImeInfo> imes = ime_controller_->GetAvailableImes();
-    std::vector<mojom::ImeMenuItem> property_items =
-        ime_controller_->GetCurrentImeMenuItems();
-    ime_list_view_->Update(imes, property_items, false,
+    ime_list_view_->Update(ime_controller_->available_imes(),
+                           ime_controller_->current_ime_menu_items(), false,
                            ImeListView::SHOW_SINGLE_IME);
   }
 }
@@ -534,13 +532,13 @@ void ImeMenuTray::OnKeyboardSuppressionChanged(bool suppressed) {
 }
 
 void ImeMenuTray::UpdateTrayLabel() {
-  current_ime_ = ime_controller_->GetCurrentIme();
+  const mojom::ImeInfo& current_ime = ime_controller_->current_ime();
 
   // Updates the tray label based on the current input method.
-  if (current_ime_.third_party)
-    label_->SetText(current_ime_.short_name + base::UTF8ToUTF16("*"));
+  if (current_ime.third_party)
+    label_->SetText(current_ime.short_name + base::UTF8ToUTF16("*"));
   else
-    label_->SetText(current_ime_.short_name);
+    label_->SetText(current_ime.short_name);
 }
 
 void ImeMenuTray::DisableVirtualKeyboard() {

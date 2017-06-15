@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "ash/ime/ime_controller.h"
 #include "ash/shell_delegate.h"
 #include "base/macros.h"
 
@@ -39,7 +38,6 @@ class ShellDelegateImpl : public ShellDelegate {
   void ShelfInit() override;
   void ShelfShutdown() override;
   SystemTrayDelegate* CreateSystemTrayDelegate() override;
-  ImeController* GetImeController() override;
   std::unique_ptr<WallpaperDelegate> CreateWallpaperDelegate() override;
   AccessibilityDelegate* CreateAccessibilityDelegate() override;
   std::unique_ptr<PaletteDelegate> CreatePaletteDelegate() override;
@@ -55,8 +53,6 @@ class ShellDelegateImpl : public ShellDelegate {
   void UpdateTouchscreenStatusFromPrefs() override;
 
  private:
-  ImeController stub_ime_controller_;
-
   DISALLOW_COPY_AND_ASSIGN(ShellDelegateImpl);
 };
 

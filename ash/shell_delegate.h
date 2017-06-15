@@ -39,7 +39,6 @@ namespace ash {
 
 class AccessibilityDelegate;
 class GPUSupport;
-class ImeController;
 class PaletteDelegate;
 class Shelf;
 struct ShelfItem;
@@ -98,9 +97,6 @@ class ASH_EXPORT ShellDelegate {
 
   // Creates a system-tray delegate. Shell takes ownership of the delegate.
   virtual SystemTrayDelegate* CreateSystemTrayDelegate() = 0;
-
-  // TODO(jamescook): Remove in favor of chrome using a mojo interface on ash.
-  virtual ImeController* GetImeController() = 0;
 
   // Creates a wallpaper delegate. Shell takes ownership of the delegate.
   virtual std::unique_ptr<WallpaperDelegate> CreateWallpaperDelegate() = 0;

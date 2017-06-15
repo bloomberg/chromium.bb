@@ -196,10 +196,9 @@ ImeListView::~ImeListView() {}
 void ImeListView::Init(bool show_keyboard_toggle,
                        SingleImeBehavior single_ime_behavior) {
   ImeController* ime_controller = Shell::Get()->ime_controller();
-  std::vector<mojom::ImeInfo> list = ime_controller->GetAvailableImes();
-  std::vector<mojom::ImeMenuItem> property_items =
-      ime_controller->GetCurrentImeMenuItems();
-  Update(list, property_items, show_keyboard_toggle, single_ime_behavior);
+  Update(ime_controller->available_imes(),
+         ime_controller->current_ime_menu_items(), show_keyboard_toggle,
+         single_ime_behavior);
 }
 
 void ImeListView::Update(const std::vector<mojom::ImeInfo>& list,
