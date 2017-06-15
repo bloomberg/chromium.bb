@@ -2308,8 +2308,7 @@ const char kEnableZipArchiverOnFileManagerDescription[] =
 const char kCrOSComponentName[] = "Chrome OS Component";
 
 const char kCrOSComponentDescription[] =
-    "Enable the use of Chrome OS Component to download Chrome OS features "
-    "on-demand as components.";
+    "Enable the use of componentized escpr CUPS filter.";
 
 #endif  // defined(OS_CHROMEOS)
 
