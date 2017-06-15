@@ -326,8 +326,7 @@ void LocationBarControllerImpl::UpdateRightDecorations() {
     // omnibox animation is completed.
     if (IsIPadIdiom())
       [field_ setRightView:nil];
-  } else if ([field_ displayedText].empty() &&
-             ![field_ isShowingQueryRefinementChip]) {
+  } else if ([field_ displayedText].empty()) {
     [field_ setRightView:nil];
   } else {
     [field_ setRightView:clear_text_button_];

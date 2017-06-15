@@ -41,7 +41,6 @@ const CGFloat kFontSize = 16;
 const CGFloat kEditingRectX = 16;
 const CGFloat kEditingRectWidthInset = 10;
 const CGFloat kTextInset = 8;
-const CGFloat kTextInsetWithChip = 3;
 const CGFloat kTextInsetNoLeftView = 12;
 const CGFloat kImageInset = 9;
 const CGFloat kClearButtonRightMarginIphone = 7;
@@ -382,25 +381,12 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   [self hideTextAndCursor];
 }
 
-- (BOOL)isShowingQueryRefinementChip {
-  return NO;
-}
-
 - (void)updateLeftView {
-  const CGFloat kChipTextTopInset = 3.0;
-  const CGFloat kChipTextLeftInset = 3.0;
-
   UIButton* leftViewButton = (UIButton*)self.leftView;
-  // Only set the chip image if the omnibox is in focus.
-  if ([self isShowingQueryRefinementChip]) {
-    [leftViewButton setTitle:nil forState:UIControlStateNormal];
-    [leftViewButton setImage:nil forState:UIControlStateNormal];
-    [leftViewButton
-        setTitleEdgeInsets:UIEdgeInsetsMake(kChipTextTopInset,
-                                            kChipTextLeftInset, 0, 0)];
-    // For iPhone, the left view is only updated when not in editing mode (i.e.
-    // the text field is not first responder).
-  } else if (_leftViewImageId && (IsIPadIdiom() || ![self isFirstResponder])) {
+
+  // For iPhone, the left view is only updated when not in editing mode (i.e.
+  // the text field is not first responder).
+  if (_leftViewImageId && (IsIPadIdiom() || ![self isFirstResponder])) {
     UIImage* image = [NativeImage(_leftViewImageId)
         imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     UIImageView* imageView = [[UIImageView alloc] initWithImage:image];
@@ -438,14 +424,6 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   [leftViewButton sizeToFit];
   self.leftView.isAccessibilityElement =
       self.attributedText.length != 0 && leftViewButton.isEnabled;
-
-  // -sizeToFit doesn't take into account the left inset, so expand the width of
-  // the button by |kChipTextLeftInset|.
-  if ([self isShowingQueryRefinementChip]) {
-    CGRect frame = leftViewButton.frame;
-    frame.size.width += kChipTextLeftInset;
-    leftViewButton.frame = frame;
-  }
 }
 
 - (void)deleteBackward {
@@ -659,7 +637,7 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
       textRectLayout.size.width += self.rightView.bounds.size.width -
                                    kVoiceSearchButtonWidth - kStarButtonWidth;
     }
-  } else if (![self isShowingQueryRefinementChip] && self.leftView.alpha == 0) {
+  } else if (self.leftView.alpha == 0) {
     CGFloat xDiff = textRectLayout.position.leading - kEditingRectX;
     textRectLayout.position.leading = kEditingRectX;
     textRectLayout.size.width += xDiff;
@@ -681,8 +659,7 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
   LayoutRect editingRectLayout =
       LayoutRectForRectInBoundingRect(newBounds, bounds);
   editingRectLayout.position.leading += kTextAreaLeadingOffset;
-  editingRectLayout.position.leading +=
-      ([self isShowingQueryRefinementChip]) ? kTextInsetWithChip : kTextInset;
+  editingRectLayout.position.leading += kTextInset;
   editingRectLayout.size.width -= kTextInset + kEditingRectWidthInset;
   if (IsIPadIdiom()) {
     if (!IsCompactTablet() && !self.rightView) {
@@ -690,7 +667,7 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
       // isn't set, shrink behind the mic icons.
       editingRectLayout.size.width -= kVoiceSearchButtonWidth;
     }
-  } else if (![self isShowingQueryRefinementChip]) {
+  } else {
     CGFloat xDiff = editingRectLayout.position.leading - kEditingRectX;
     editingRectLayout.position.leading = kEditingRectX;
     editingRectLayout.size.width += xDiff;

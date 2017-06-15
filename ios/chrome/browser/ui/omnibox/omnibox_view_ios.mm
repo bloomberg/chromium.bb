@@ -318,7 +318,7 @@ bool OmniboxViewIOS::IsImeComposing() const {
 }
 
 bool OmniboxViewIOS::IsIndicatingQueryRefinement() const {
-  return [field_ isShowingQueryRefinementChip];
+  return false;
 }
 
 bool OmniboxViewIOS::IsSelectAll() const {
