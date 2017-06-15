@@ -4,11 +4,14 @@
 
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 
-#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/ui/ui_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -30,8 +33,8 @@ void ExpectInterpolatedColor(UIColor* firstColor,
 // are supported, and all orientations but Portrait Upside-Down on iPhone and
 // iPod Touch.
 TEST(UIKitUIUtilTest, UIViewControllerSupportedOrientationsTest) {
-  base::scoped_nsobject<UIViewController> viewController(
-      [[UIViewController alloc] initWithNibName:nil bundle:nil]);
+  UIViewController* viewController =
+      [[UIViewController alloc] initWithNibName:nil bundle:nil];
   if (IsIPadIdiom()) {
     EXPECT_EQ(UIInterfaceOrientationMaskAll,
               [viewController supportedInterfaceOrientations]);

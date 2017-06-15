@@ -6,9 +6,12 @@
 
 #import <UIKit/UIKit.h>
 
-#include "base/mac/scoped_nsobject.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -38,7 +41,7 @@ class NetworkActivityIndicatorManagerTest : public PlatformTest {
           isNetworkActivityIndicatorVisible]);
     }
   }
-  base::scoped_nsobject<NetworkActivityIndicatorManager> manager_;
+  NetworkActivityIndicatorManager* manager_;
 };
 
 TEST_F(NetworkActivityIndicatorManagerTest, TestNumNetworkTasksForGroup) {

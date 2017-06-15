@@ -11,6 +11,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 TEST(UIUtilTest, AlignToPixel) {
   CGFloat scale = [[UIScreen mainScreen] scale];
   // Pick a few interesting values: already aligned, aligned on retina, and

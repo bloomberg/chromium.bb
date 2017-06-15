@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/fullscreen_controller.h"
 
-#include "base/mac/scoped_nsobject.h"
 #import "ios/web/public/test/fakes/test_web_view_content_view.h"
 #import "ios/web/public/web_state/ui/crw_web_view_content_view.h"
 #import "ios/web/public/web_state/ui/crw_web_view_scroll_view_proxy.h"
@@ -13,6 +12,10 @@
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/ocmock_extensions.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -77,43 +80,42 @@ class FullscreenControllerTest : public PlatformTest {
     CGRect frame = CGRectMake(0.0, 0.0, 300.0, 900.0);
     PlatformTest::SetUp();
 
-    scrollview_.reset([[UIScrollView alloc] initWithFrame:frame]);
-    scrollview_.get().contentInset = UIEdgeInsetsZero;
+    scrollview_ = [[UIScrollView alloc] initWithFrame:frame];
+    scrollview_.contentInset = UIEdgeInsetsZero;
     [GetWindow() addSubview:scrollview_];
 
     CGRect contentSize = CGRectMake(0.0, 0.0, frame.size.width, kContentHeight);
-    scrollview_.get().contentSize = contentSize.size;
-    mockWebController_.reset(
-        [[OCMockObject niceMockForClass:[CRWWebController class]] retain]);
-    mockDelegate_.reset([[MockFullScreenControllerDelegate alloc] init]);
-    mockWebView_.reset([[UIView alloc] init]);
-    mockContentView_.reset([[TestWebViewContentView alloc]
-        initWithMockWebView:mockWebView_
-                 scrollView:scrollview_]);
-    webViewProxy_.reset(
-        [[CRWWebViewProxyImpl alloc] initWithWebController:mockWebController_]);
+    scrollview_.contentSize = contentSize.size;
+    mockWebController_ =
+        [OCMockObject niceMockForClass:[CRWWebController class]];
+    mockDelegate_ = [[MockFullScreenControllerDelegate alloc] init];
+    mockWebView_ = [[UIView alloc] init];
+    mockContentView_ =
+        [[TestWebViewContentView alloc] initWithMockWebView:mockWebView_
+                                                 scrollView:scrollview_];
+    webViewProxy_ =
+        [[CRWWebViewProxyImpl alloc] initWithWebController:mockWebController_];
     [webViewProxy_ setContentView:mockContentView_];
-    webViewScrollViewProxy_.reset([[webViewProxy_ scrollViewProxy] retain]);
-    controller_.reset([[FullScreenController alloc]
-         initWithDelegate:mockDelegate_
-        navigationManager:NULL
-                sessionID:kFakeSessionId]);
+    webViewScrollViewProxy_ = [webViewProxy_ scrollViewProxy];
+    controller_ =
+        [[FullScreenController alloc] initWithDelegate:mockDelegate_
+                                     navigationManager:NULL
+                                             sessionID:kFakeSessionId];
     DCHECK(controller_);
     [webViewScrollViewProxy_ addObserver:controller_];
     // Simulate a CRWWebControllerObserver callback.
     [controller_ setWebViewProxy:webViewProxy_ controller:mockWebController_];
     [controller_ moveHeaderToRestingPosition:YES];
 
-    base::scoped_nsobject<UIView> awesome_view(
-        [[UIView alloc] initWithFrame:contentSize]);
+    UIView* awesome_view = [[UIView alloc] initWithFrame:contentSize];
     [scrollview_ addSubview:awesome_view];
 
     EXPECT_TRUE(IsHeaderVisible());
-    EXPECT_EQ(0.0f, webViewScrollViewProxy_.get().contentOffset.y);
+    EXPECT_EQ(0.0f, webViewScrollViewProxy_.contentOffset.y);
   }
 
   void TearDown() override {
-    [webViewScrollViewProxy_.get() removeObserver:controller_];
+    [webViewScrollViewProxy_ removeObserver:controller_];
     [webViewScrollViewProxy_ setScrollView:nil];
     [scrollview_ removeFromSuperview];
     PlatformTest::TearDown();
@@ -122,13 +124,11 @@ class FullscreenControllerTest : public PlatformTest {
   void MoveMiddle() {
     // Move somewhere in the middle.
     CGFloat middle_point = kContentHeight / 2.0;
-    webViewScrollViewProxy_.get().contentOffset =
-        CGPointMake(0.0, middle_point);
+    webViewScrollViewProxy_.contentOffset = CGPointMake(0.0, middle_point);
   }
 
   void MoveTop() {
-    webViewScrollViewProxy_.get().contentOffset =
-        CGPointMake(0.0, -kHeaderHeight);
+    webViewScrollViewProxy_.contentOffset = CGPointMake(0.0, -kHeaderHeight);
   }
 
   void MoveMiddleAndHide() {
@@ -154,16 +154,16 @@ class FullscreenControllerTest : public PlatformTest {
   // Adds |view| as a sub view to the underlying |scrollview_|.
   void AddSubViewToScrollView(UIView* view) { [scrollview_ addSubview:view]; }
 
-  base::scoped_nsobject<FullScreenController> controller_;
-  base::scoped_nsobject<MockFullScreenControllerDelegate> mockDelegate_;
-  base::scoped_nsobject<CRWWebViewScrollViewProxy> webViewScrollViewProxy_;
-  base::scoped_nsobject<id> mockWebView_;
-  base::scoped_nsobject<id> mockWebController_;
-  base::scoped_nsobject<TestWebViewContentView> mockContentView_;
-  base::scoped_nsobject<CRWWebViewProxyImpl> webViewProxy_;
+  FullScreenController* controller_;
+  MockFullScreenControllerDelegate* mockDelegate_;
+  CRWWebViewScrollViewProxy* webViewScrollViewProxy_;
+  id mockWebView_;
+  id mockWebController_;
+  TestWebViewContentView* mockContentView_;
+  CRWWebViewProxyImpl* webViewProxy_;
 
  private:
-  base::scoped_nsobject<UIScrollView> scrollview_;
+  UIScrollView* scrollview_;
 };
 
 #pragma mark - Programmatic moves
@@ -171,7 +171,7 @@ class FullscreenControllerTest : public PlatformTest {
 TEST_F(FullscreenControllerTest, ForceHidden) {
   [controller_ moveHeaderToRestingPosition:NO];
   EXPECT_TRUE(IsHeaderHidden());
-  EXPECT_EQ(0.0, webViewScrollViewProxy_.get().contentOffset.y);
+  EXPECT_EQ(0.0, webViewScrollViewProxy_.contentOffset.y);
 }
 
 #pragma mark - Simulated user moves.
@@ -181,11 +181,10 @@ TEST_F(FullscreenControllerTest, LargeManualScrollUpHides) {
 
   [controller_ webViewScrollViewWillBeginDragging:webViewScrollViewProxy_];
 
-  CGFloat middle_point = webViewScrollViewProxy_.get().contentOffset.y;
+  CGFloat middle_point = webViewScrollViewProxy_.contentOffset.y;
   // Move up a bit, multiple times
   for (float i = 0.0; i < kHeaderHeight * 2.0; i++) {
-    webViewScrollViewProxy_.get().contentOffset =
-        CGPointMake(0.0, middle_point + i);
+    webViewScrollViewProxy_.contentOffset = CGPointMake(0.0, middle_point + i);
   }
   [controller_ webViewScrollViewDidEndDragging:webViewScrollViewProxy_
                                 willDecelerate:NO];
@@ -197,11 +196,10 @@ TEST_F(FullscreenControllerTest, PartialManualScrollUpHides) {
 
   [controller_ webViewScrollViewWillBeginDragging:webViewScrollViewProxy_];
 
-  CGFloat middle_point = webViewScrollViewProxy_.get().contentOffset.y;
+  CGFloat middle_point = webViewScrollViewProxy_.contentOffset.y;
   // Move up a bit, multiple times
   for (float i = 0.0; i < (kHeaderHeight * (2.0 / 3.0)); i++) {
-    webViewScrollViewProxy_.get().contentOffset =
-        CGPointMake(0.0, middle_point + i);
+    webViewScrollViewProxy_.contentOffset = CGPointMake(0.0, middle_point + i);
   }
   [controller_ webViewScrollViewDidEndDragging:webViewScrollViewProxy_
                                 willDecelerate:NO];
@@ -213,11 +211,10 @@ TEST_F(FullscreenControllerTest, SmallPartialManualScrollUpNoEffect) {
 
   [controller_ webViewScrollViewWillBeginDragging:webViewScrollViewProxy_];
 
-  CGFloat middle_point = webViewScrollViewProxy_.get().contentOffset.y;
+  CGFloat middle_point = webViewScrollViewProxy_.contentOffset.y;
   // Move up a bit, multiple times
   for (float i = 0.0; i < (kHeaderHeight / 3.0); i++) {
-    webViewScrollViewProxy_.get().contentOffset =
-        CGPointMake(0.0, middle_point + i);
+    webViewScrollViewProxy_.contentOffset = CGPointMake(0.0, middle_point + i);
   }
   [controller_ webViewScrollViewDidEndDragging:webViewScrollViewProxy_
                                 willDecelerate:NO];
@@ -229,11 +226,10 @@ TEST_F(FullscreenControllerTest, LargeManualScrollDownShows) {
 
   [controller_ webViewScrollViewWillBeginDragging:webViewScrollViewProxy_];
 
-  CGFloat middle_point = webViewScrollViewProxy_.get().contentOffset.y;
+  CGFloat middle_point = webViewScrollViewProxy_.contentOffset.y;
   // Move down a bit, multiple times
   for (float i = 0.0; i < kHeaderHeight * 2.0; i++) {
-    webViewScrollViewProxy_.get().contentOffset =
-        CGPointMake(0.0, middle_point - i);
+    webViewScrollViewProxy_.contentOffset = CGPointMake(0.0, middle_point - i);
   }
   [controller_ webViewScrollViewDidEndDragging:webViewScrollViewProxy_
                                 willDecelerate:NO];
@@ -245,11 +241,10 @@ TEST_F(FullscreenControllerTest, PartialManualScrollDownShows) {
 
   [controller_ webViewScrollViewWillBeginDragging:webViewScrollViewProxy_];
 
-  CGFloat middle_point = webViewScrollViewProxy_.get().contentOffset.y;
+  CGFloat middle_point = webViewScrollViewProxy_.contentOffset.y;
   // Move down a bit, multiple times
   for (float i = 0.0; i < (kHeaderHeight * (2.0 / 3.0)); i++) {
-    webViewScrollViewProxy_.get().contentOffset =
-        CGPointMake(0.0, middle_point - i);
+    webViewScrollViewProxy_.contentOffset = CGPointMake(0.0, middle_point - i);
   }
   [controller_ webViewScrollViewDidEndDragging:webViewScrollViewProxy_
                                 willDecelerate:NO];
@@ -261,11 +256,10 @@ TEST_F(FullscreenControllerTest, SmallPartialManualScrollDownNoEffect) {
 
   [controller_ webViewScrollViewWillBeginDragging:webViewScrollViewProxy_];
 
-  CGFloat middle_point = webViewScrollViewProxy_.get().contentOffset.y;
+  CGFloat middle_point = webViewScrollViewProxy_.contentOffset.y;
   // Move up a bit, multiple times
   for (float i = 0.0; i < (kHeaderHeight / 3.0); i++) {
-    webViewScrollViewProxy_.get().contentOffset =
-        CGPointMake(0.0, middle_point - i);
+    webViewScrollViewProxy_.contentOffset = CGPointMake(0.0, middle_point - i);
   }
   [controller_ webViewScrollViewDidEndDragging:webViewScrollViewProxy_
                                 willDecelerate:NO];
@@ -276,7 +270,7 @@ TEST_F(FullscreenControllerTest, SmallPartialManualScrollDownNoEffect) {
 
 TEST_F(FullscreenControllerTest, NoHideOnEnable) {
   [controller_ disableFullScreen];
-  webViewScrollViewProxy_.get().contentOffset = CGPointMake(0.0, 10.0);
+  webViewScrollViewProxy_.contentOffset = CGPointMake(0.0, 10.0);
   EXPECT_TRUE(IsHeaderVisible());
 
   [controller_ enableFullScreen];
@@ -286,11 +280,11 @@ TEST_F(FullscreenControllerTest, NoHideOnEnable) {
 
 TEST_F(FullscreenControllerTest, NoHideOnEnableDueToManualScroll) {
   [controller_ disableFullScreen];
-  webViewScrollViewProxy_.get().contentOffset = CGPointMake(0.0, 1.0);
+  webViewScrollViewProxy_.contentOffset = CGPointMake(0.0, 1.0);
   EXPECT_TRUE(IsHeaderVisible());
 
   [controller_ webViewScrollViewWillBeginDragging:webViewScrollViewProxy_];
-  webViewScrollViewProxy_.get().contentOffset = CGPointMake(0.0, 10.0);
+  webViewScrollViewProxy_.contentOffset = CGPointMake(0.0, 10.0);
   EXPECT_TRUE(IsHeaderVisible());
   [controller_ webViewScrollViewDidEndDragging:webViewScrollViewProxy_
                                 willDecelerate:NO];
@@ -304,7 +298,7 @@ TEST_F(FullscreenControllerTest, NoHideOnEnableDueToManualScroll) {
 
 TEST_F(FullscreenControllerTest, KeyboardAppearanceOnNonFullscreenPage) {
   // Add a textfield.
-  base::scoped_nsobject<UITextField> textField([[UITextField alloc] init]);
+  UITextField* textField = [[UITextField alloc] init];
   AddSubViewToScrollView(textField);
   EXPECT_TRUE(IsHeaderVisible());
 
@@ -330,7 +324,7 @@ TEST_F(FullscreenControllerTest, MAYBE_KeyboardAppearanceOnFullscreenPage) {
   MoveMiddleAndHide();
 
   // Add a textfield.
-  base::scoped_nsobject<UITextField> textField([[UITextField alloc] init]);
+  UITextField* textField = [[UITextField alloc] init];
   AddSubViewToScrollView(textField);
   EXPECT_TRUE(IsHeaderHidden());
 
@@ -356,7 +350,7 @@ TEST_F(FullscreenControllerTest, MAYBE_KeyboardAppearanceOnFullscreenPage) {
 TEST_F(FullscreenControllerTest,
        MAYBE_KeyboardStayOnUserScrollOnNonFullscreenPage) {
   // Add a textfield.
-  base::scoped_nsobject<UITextField> textField([[UITextField alloc] init]);
+  UITextField* textField = [[UITextField alloc] init];
   AddSubViewToScrollView(textField);
   EXPECT_TRUE(IsHeaderVisible());
 
@@ -366,7 +360,7 @@ TEST_F(FullscreenControllerTest,
 
   // Scroll.
   [controller_ webViewScrollViewWillBeginDragging:webViewScrollViewProxy_];
-  webViewScrollViewProxy_.get().contentOffset = CGPointMake(0.0, 100.0);
+  webViewScrollViewProxy_.contentOffset = CGPointMake(0.0, 100.0);
   [controller_ webViewScrollViewDidEndDragging:webViewScrollViewProxy_
                                 willDecelerate:NO];
   EXPECT_TRUE(IsHeaderVisible());

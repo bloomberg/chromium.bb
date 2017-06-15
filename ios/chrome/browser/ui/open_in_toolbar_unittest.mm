@@ -3,10 +3,13 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
-#include "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/open_in_toolbar.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 // A class that counts the number of times the |dummyMethod:| method is called.
 @interface DummyObserver : NSObject
@@ -46,11 +49,10 @@ class OpenInToolbarTest : public PlatformTest {
 };
 
 TEST_F(OpenInToolbarTest, TestButtonActionAndSelector) {
-  base::scoped_nsobject<DummyObserver> dummyObserver(
-      [[DummyObserver alloc] init]);
-  base::scoped_nsobject<OpenInToolbar> openInToolbar([[OpenInToolbar alloc]
-      initWithTarget:dummyObserver
-              action:@selector(dummyMethod:)]);
+  DummyObserver* dummyObserver = [[DummyObserver alloc] init];
+  OpenInToolbar* openInToolbar =
+      [[OpenInToolbar alloc] initWithTarget:dummyObserver
+                                     action:@selector(dummyMethod:)];
   UIButton* button = GetOpenInButtonInToolBar(openInToolbar);
   ASSERT_TRUE(button);
   EXPECT_EQ([dummyObserver dummyMethodCallCount], 0);
