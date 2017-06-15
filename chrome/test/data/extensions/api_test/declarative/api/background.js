@@ -80,7 +80,7 @@ chrome.test.runTests([
   },
   function testInvalidGetRules() {
     try {
-      testEvent.getRules(function() {});
+      testEvent.getRules(1, function() {});
       chrome.test.fail();
     } catch(e) {
       chrome.test.succeed();
@@ -88,7 +88,7 @@ chrome.test.runTests([
   },
   function testInvalidRemoveRules() {
     try {
-      testEvent.removeRules(function() {});
+      testEvent.removeRules(1, function() {});
       chrome.test.fail();
     } catch(e) {
       chrome.test.succeed();
@@ -113,8 +113,8 @@ chrome.test.runTests([
       chrome.test.assertNoLastError();
       // We are not given any gurantee on the order in which rules are returned.
       chrome.test.assertTrue(
-        chrome.test.checkDeepEq([outputRule0, outputRule1], rules) ||
-        chrome.test.checkDeepEq([outputRule1, outputRule0], rules));
+          chrome.test.checkDeepEq([outputRule0, outputRule1], rules) ||
+          chrome.test.checkDeepEq([outputRule1, outputRule0], rules));
       chrome.test.succeed();
     }
     testEvent.getRules(null, callback);
@@ -125,8 +125,8 @@ chrome.test.runTests([
       chrome.test.assertNoLastError();
       // We are not given any gurantee on the order in which rules are returned.
       chrome.test.assertTrue(
-        chrome.test.checkDeepEq([outputRule0, outputRule1], rules) ||
-        chrome.test.checkDeepEq([outputRule1, outputRule0], rules));
+          chrome.test.checkDeepEq([outputRule0, outputRule1], rules) ||
+          chrome.test.checkDeepEq([outputRule1, outputRule0], rules));
       chrome.test.succeed();
     }
     testEvent.getRules(undefined, callback);
@@ -135,13 +135,28 @@ chrome.test.runTests([
   function testGetRules3() {
     var callback = function(rules) {
       chrome.test.assertNoLastError();
-      // We are not given any gurantee on the order in which rules are returned.
       chrome.test.assertEq([], rules);
       chrome.test.succeed();
     }
     testEvent.getRules([], callback);
   },
-  // Check that getRules() returns all rules if rules are filtered by ID.
+  // TODO(devlin): The documentation for event.getRules() states that the
+  // filter parameter is optional. However, with JS bindings, we throw an error
+  // if it's omitted. This is fixed with native bindings.
+  // Check that getRules() returns all rules if the filter is omitted.
+  // function testGetRules4() {
+  //   var callback = function(rules) {
+  //     chrome.test.assertNoLastError();
+  //     // We are not given any gurantee on the order in which rules are
+  //     // returned.
+  //     chrome.test.assertTrue(
+  //         chrome.test.checkDeepEq([outputRule0, outputRule1], rules) ||
+  //         chrome.test.checkDeepEq([outputRule1, outputRule0], rules));
+  //     chrome.test.succeed();
+  //   }
+  //   testEvent.getRules(callback);
+  // },
+  // Check that getRules() returns matching rules if rules are filtered by ID.
   function testSelectiveGetRules() {
     var callback = function(rules) {
       chrome.test.assertNoLastError();
