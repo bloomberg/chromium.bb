@@ -15,6 +15,7 @@ mojom("interfaces_internal") {
     "memory_instrumentation/memory_instrumentation.mojom",
     "service_constants.mojom",
     "tracing/tracing.mojom",
+    "tracing/tracing_constants.mojom",
   ]
 
   public_deps = [
