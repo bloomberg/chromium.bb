@@ -1008,27 +1008,6 @@ inline TextDecoration CSSIdentifierValue::ConvertTo() const {
 }
 
 template <>
-inline ETextDecorationStyle CSSIdentifierValue::ConvertTo() const {
-  switch (value_id_) {
-    case CSSValueSolid:
-      return ETextDecorationStyle::kSolid;
-    case CSSValueDouble:
-      return ETextDecorationStyle::kDouble;
-    case CSSValueDotted:
-      return ETextDecorationStyle::kDotted;
-    case CSSValueDashed:
-      return ETextDecorationStyle::kDashed;
-    case CSSValueWavy:
-      return ETextDecorationStyle::kWavy;
-    default:
-      break;
-  }
-
-  NOTREACHED();
-  return ETextDecorationStyle::kSolid;
-}
-
-template <>
 inline TextDecorationSkip CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueObjects:

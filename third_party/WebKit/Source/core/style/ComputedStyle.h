@@ -1512,24 +1512,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
   void SetTextDecoration(TextDecoration v) { SetTextDecorationInternal(v); }
 
-  // text-decoration-color
-  void SetTextDecorationColor(const StyleColor& c) {
-    SET_VAR(rare_non_inherited_data_, text_decoration_color_, c);
-  }
-
-  // text-decoration-style
-  static ETextDecorationStyle InitialTextDecorationStyle() {
-    return ETextDecorationStyle::kSolid;
-  }
-  ETextDecorationStyle TextDecorationStyle() const {
-    return static_cast<ETextDecorationStyle>(
-        rare_non_inherited_data_->text_decoration_style_);
-  }
-  void SetTextDecorationStyle(ETextDecorationStyle v) {
-    SET_VAR(rare_non_inherited_data_, text_decoration_style_,
-            static_cast<unsigned>(v));
-  }
-
   // text-decoration-skip
   static TextDecorationSkip InitialTextDecorationSkip() {
     return TextDecorationSkip::kObjects;
@@ -3444,9 +3426,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   StyleColor VisitedLinkColumnRuleColor() const {
     return rare_non_inherited_data_->multi_col_data_
         ->visited_link_column_rule_color_;
-  }
-  StyleColor TextDecorationColor() const {
-    return rare_non_inherited_data_->text_decoration_color_;
   }
   StyleColor VisitedLinkTextDecorationColor() const {
     return rare_non_inherited_data_->visited_link_text_decoration_color_;
