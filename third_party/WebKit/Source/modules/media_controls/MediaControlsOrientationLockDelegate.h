@@ -8,6 +8,7 @@
 #include "core/events/EventListener.h"
 #include "device/screen_orientation/public/interfaces/screen_orientation.mojom-blink.h"
 #include "modules/ModulesExport.h"
+#include "platform/WebTaskRunner.h"
 #include "platform/wtf/Optional.h"
 #include "public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
 
@@ -114,6 +115,11 @@ class MediaControlsOrientationLockDelegate final : public EventListener {
 
   void MaybeUnlockIfDeviceOrientationMatchesVideo(DeviceOrientationEvent*);
 
+  // Delay before unlocking - see `MaybeUnlockIfDeviceOrientationMatchesVideo`.
+  // Emprically, 200ms is too short, but 250ms avoids glitches. 500ms gives us
+  // a 2x margin in case the device is running slow, without being noticeable.
+  static constexpr int kUnlockDelayMs = 500;
+
   // Current state of the object. See comment at the top of the file for a
   // detailed description.
   State state_ = State::kPendingFullscreen;
@@ -121,6 +127,8 @@ class MediaControlsOrientationLockDelegate final : public EventListener {
   // Which lock is currently applied by this delegate.
   WebScreenOrientationLockType locked_orientation_ =
       kWebScreenOrientationLockDefault /* unlocked */;
+
+  TaskHandle unlock_task_;
 
   device::mojom::blink::ScreenOrientationListenerPtr monitor_;
 
