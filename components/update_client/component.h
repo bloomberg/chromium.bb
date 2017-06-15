@@ -27,6 +27,7 @@
 
 namespace update_client {
 
+class ActionRunner;
 struct CrxUpdateItem;
 struct UpdateContext;
 
@@ -115,6 +116,8 @@ class Component {
   int diff_error_category() const { return diff_error_category_; }
   int diff_error_code() const { return diff_error_code_; }
   int diff_extra_code1() const { return diff_extra_code1_; }
+
+  std::string action_run() const { return action_run_; }
 
  private:
   friend class FakePingManagerImpl;
@@ -335,6 +338,24 @@ class Component {
     DISALLOW_COPY_AND_ASSIGN(StateUninstalled);
   };
 
+  class StateRun : public State {
+   public:
+    explicit StateRun(Component* component);
+    ~StateRun() override;
+
+   private:
+    // State overrides.
+    void DoHandle() override;
+
+    void ActionRunComplete(bool succeeded, int error_code, int extra_code1);
+
+    // Runs the action referred by the |action_run_| member of the Component
+    // class.
+    std::unique_ptr<ActionRunner> action_runner_;
+
+    DISALLOW_COPY_AND_ASSIGN(StateRun);
+  };
+
   // Returns true is the update payload for this component can be downloaded
   // by a downloader which can do bandwidth throttling on the client side.
   bool CanDoBackgroundDownload() const;
@@ -353,6 +374,7 @@ class Component {
   const std::string id_;
   CrxComponent crx_component_;
 
+  // The status of the updatecheck response.
   std::string status_;
 
   // Time when an update check for this CRX has happened.
@@ -375,7 +397,8 @@ class Component {
   std::string previous_fp_;
   std::string next_fp_;
 
-  // Contains the file name of the payload to run.
+  // Contains the file name of the payload to run. This member is set by
+  // the update response parser, when the update response includes a run action.
   std::string action_run_;
 
   // True if the update check response for this component includes an update.
@@ -410,6 +433,8 @@ class Component {
   const UpdateContext& update_context_;
 
   base::Closure update_check_complete_;
+
+  ComponentState previous_state_ = ComponentState::kLastStatus;
 
   DISALLOW_COPY_AND_ASSIGN(Component);
 };

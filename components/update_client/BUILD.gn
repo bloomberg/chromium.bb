@@ -6,6 +6,8 @@ import("//net/features.gni")
 
 static_library("update_client") {
   sources = [
+    "action_runner.cc",
+    "action_runner.h",
     "background_downloader_win.cc",
     "background_downloader_win.h",
     "component.cc",

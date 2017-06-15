@@ -71,6 +71,10 @@ std::string BuildUninstalledEventElement(const Component& component);
 std::string BuildDownloadCompleteEventElement(
     const CrxDownloader::DownloadMetrics& metrics);
 
+std::string BuildActionRunEventElement(bool succeeded,
+                                       int error_code,
+                                       int extra_code1);
+
 // An update protocol request starts with a common preamble which includes
 // version and platform information for Chrome and the operating system,
 // followed by a request body, which is the actual payload of the request.
@@ -108,4 +112,4 @@ std::string BuildProtocolRequest(
 
 }  // namespace update_client
 
-#endif  // COMPONENTS_UPDATE_CLIENT_PROTOCOL_PARSER_H_
+#endif  // COMPONENTS_UPDATE_CLIENT_PROTOCOL_BUILDER_H_

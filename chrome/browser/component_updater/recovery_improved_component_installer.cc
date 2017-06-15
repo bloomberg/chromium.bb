@@ -10,6 +10,8 @@
 #include "base/callback.h"
 #include "build/build_config.h"
 
+// This component is behind a Finch experiment. To enable the registration of
+// the component, run Chrome with --enable-features=ImprovedRecoveryComponent.
 namespace component_updater {
 
 // The SHA256 of the SubjectPublicKeyInfo used to sign the component CRX.

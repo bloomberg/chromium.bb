@@ -16,11 +16,13 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/test/scoped_path_override.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "base/version.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/update_client/component_unpacker.h"
 #include "components/update_client/crx_update_item.h"
 #include "components/update_client/persisted_data.h"
 #include "components/update_client/ping_manager.h"
@@ -106,8 +108,11 @@ class FakePingManagerImpl : public PingManager {
 
   const std::vector<PingData>& ping_data() const;
 
+  const std::vector<std::string>& events() const;
+
  private:
   std::vector<PingData> ping_data_;
+  std::vector<std::string> events_;
   DISALLOW_COPY_AND_ASSIGN(FakePingManagerImpl);
 };
 
@@ -130,12 +135,20 @@ bool FakePingManagerImpl::SendPing(const Component& component) {
   ping_data.diff_error_code = component.diff_error_code_;
   ping_data.diff_update_failed = component.diff_update_failed();
   ping_data_.push_back(ping_data);
+
+  const auto& events = component.events();
+  events_.insert(events_.end(), events.begin(), events.end());
+
   return true;
 }
 
 const std::vector<FakePingManagerImpl::PingData>&
 FakePingManagerImpl::ping_data() const {
   return ping_data_;
+}
+
+const std::vector<std::string>& FakePingManagerImpl::events() const {
+  return events_;
 }
 
 class UpdateClientTest : public testing::Test {
@@ -3007,6 +3020,315 @@ TEST_F(UpdateClientTest, OneCrxUpdateCheckFails) {
   RunThreads();
 
   update_client->RemoveObserver(&observer);
+}
+
+// Tests that a run action in invoked in the CRX install scenario.
+TEST_F(UpdateClientTest, ActionRun_Install) {
+  class FakeUpdateChecker : public UpdateChecker {
+   public:
+    static std::unique_ptr<UpdateChecker> Create(
+        const scoped_refptr<Configurator>& config,
+        PersistedData* metadata) {
+      return base::MakeUnique<FakeUpdateChecker>();
+    }
+
+    bool CheckForUpdates(
+        const std::vector<std::string>& ids_to_check,
+        const IdToComponentPtrMap& components,
+        const std::string& additional_attributes,
+        bool enabled_component_updates,
+        const UpdateCheckCallback& update_check_callback) override {
+      /*
+      Fake the following response:
+
+      <?xml version='1.0' encoding='UTF-8'?>
+      <response protocol='3.1'>
+        <app appid='nieaegbcncggjkpbaogejidgjnnfegoe'>
+          <updatecheck status='ok'>
+            <urls>
+              <url codebase='http://localhost/download/'/>
+            </urls>
+            <manifest version='1.0' prodversionmin='11.0.1.0'>
+              <packages>
+                <package name='runaction_test_win.crx3'
+                         hash_sha256='22deba85698e9ce1b923ad9839741adfd41db7ac35
+                                      8365664e47996dc8e83ec2'/>
+              </packages>
+            </manifest>
+            <actions>"
+             <action run='recovery.crx3'/>"
+            </actions>"
+          </updatecheck>
+        </app>
+      </response>
+      */
+      EXPECT_TRUE(enabled_component_updates);
+      EXPECT_EQ(1u, ids_to_check.size());
+
+      const std::string id = "nieaegbcncggjkpbaogejidgjnnfegoe";
+      EXPECT_EQ(id, ids_to_check[0]);
+      EXPECT_EQ(1u, components.count(id));
+
+      ProtocolParser::Result::Manifest::Package package;
+      package.name = "runaction_test_win.crx3";
+      package.hash_sha256 =
+          "22deba85698e9ce1b923ad9839741adfd41db7ac358365664e47996dc8e83ec2";
+
+      ProtocolParser::Result result;
+      result.extension_id = id;
+      result.status = "ok";
+      result.crx_urls.push_back(GURL("http://localhost/download/"));
+      result.manifest.version = "1.0";
+      result.manifest.browser_min_version = "11.0.1.0";
+      result.manifest.packages.push_back(package);
+      result.action_run = "recovery.crx3";
+
+      auto& component = components.at(id);
+      component->SetParseResult(result);
+
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(update_check_callback, 0, 0));
+      return true;
+    }
+  };
+
+  class FakeCrxDownloader : public CrxDownloader {
+   public:
+    static std::unique_ptr<CrxDownloader> Create(
+        bool is_background_download,
+        net::URLRequestContextGetter* context_getter,
+        const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
+      return base::MakeUnique<FakeCrxDownloader>();
+    }
+
+    FakeCrxDownloader()
+        : CrxDownloader(base::ThreadTaskRunnerHandle::Get(), nullptr) {}
+
+   private:
+    void DoStartDownload(const GURL& url) override {
+      DownloadMetrics download_metrics;
+      FilePath path;
+      Result result;
+      if (url.path() == "/download/runaction_test_win.crx3") {
+        download_metrics.url = url;
+        download_metrics.downloader = DownloadMetrics::kNone;
+        download_metrics.error = 0;
+        download_metrics.downloaded_bytes = 1843;
+        download_metrics.total_bytes = 1843;
+        download_metrics.download_time_ms = 1000;
+
+        EXPECT_TRUE(
+            MakeTestFile(TestFilePath("runaction_test_win.crx3"), &path));
+
+        result.error = 0;
+        result.response = path;
+        result.downloaded_bytes = 1843;
+        result.total_bytes = 1843;
+      } else {
+        NOTREACHED();
+      }
+
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::Bind(&FakeCrxDownloader::OnDownloadComplete,
+                     base::Unretained(this), true, result, download_metrics));
+    }
+  };
+
+  class FakePingManager : public FakePingManagerImpl {
+   public:
+    explicit FakePingManager(const scoped_refptr<Configurator>& config)
+        : FakePingManagerImpl(config) {}
+    ~FakePingManager() override {
+      const auto& events = FakePingManagerImpl::events();
+      EXPECT_EQ(3u, events.size());
+      EXPECT_STREQ(
+          "<event eventtype=\"14\" eventresult=\"1\" downloader=\"unknown\" "
+          "url=\"http://localhost/download/"
+          "runaction_test_win.crx3\" downloaded=\"1843\" "
+          "total=\"1843\" download_time_ms=\"1000\"/>",
+          events[0].c_str());
+      EXPECT_STREQ(
+          "<event eventtype=\"42\" eventresult=\"1\" errorcode=\"1\" "
+          "extracode1=\"2\"/>",
+          events[1].c_str());
+      EXPECT_STREQ("<event eventtype=\"3\" eventresult=\"1\"/>",
+                   events[2].c_str());
+    }
+  };
+
+  scoped_refptr<UpdateClient> update_client =
+      base::MakeRefCounted<UpdateClientImpl>(
+          config(), base::MakeUnique<FakePingManager>(config()),
+          &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
+
+  update_client->Install(
+      std::string("nieaegbcncggjkpbaogejidgjnnfegoe"),
+      base::Bind([](const std::vector<std::string>& ids,
+                    std::vector<CrxComponent>* components) {
+        CrxComponent crx;
+        crx.name = "test_niea";
+        crx.pk_hash.assign(niea_hash, niea_hash + arraysize(niea_hash));
+        crx.version = base::Version("0.0");
+        crx.installer = base::MakeRefCounted<VersionedTestInstaller>();
+        components->push_back(crx);
+      }),
+      base::Bind(
+          [](const base::Closure& quit_closure, Error error) {
+            EXPECT_EQ(Error::NONE, error);
+            quit_closure.Run();
+          },
+          quit_closure()));
+
+  RunThreads();
+}
+
+// Tests that a run action is invoked in an update scenario when there was
+// no update.
+TEST_F(UpdateClientTest, ActionRun_NoUpdate) {
+  class FakeUpdateChecker : public UpdateChecker {
+   public:
+    static std::unique_ptr<UpdateChecker> Create(
+        const scoped_refptr<Configurator>& config,
+        PersistedData* metadata) {
+      return base::MakeUnique<FakeUpdateChecker>();
+    }
+
+    bool CheckForUpdates(
+        const std::vector<std::string>& ids_to_check,
+        const IdToComponentPtrMap& components,
+        const std::string& additional_attributes,
+        bool enabled_component_updates,
+        const UpdateCheckCallback& update_check_callback) override {
+      /*
+      Fake the following response:
+
+      <?xml version='1.0' encoding='UTF-8'?>
+      <response protocol='3.1'>
+        <app appid='nieaegbcncggjkpbaogejidgjnnfegoe'>
+          <updatecheck status='noupdate'>
+            <actions>"
+             <action run='recovery.crx3'/>"
+            </actions>"
+          </updatecheck>
+        </app>
+      </response>
+      */
+      EXPECT_EQ(1u, ids_to_check.size());
+      const std::string id = "nieaegbcncggjkpbaogejidgjnnfegoe";
+      EXPECT_EQ(id, ids_to_check[0]);
+      EXPECT_EQ(1u, components.count(id));
+
+      auto& component = components.at(id);
+
+      ProtocolParser::Result result;
+      result.extension_id = id;
+      result.status = "noupdate";
+      result.action_run = "recovery.crx3";
+
+      component->SetParseResult(result);
+
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::Bind(update_check_callback, 0, 0));
+
+      return true;
+    }
+  };
+
+  class FakeCrxDownloader : public CrxDownloader {
+   public:
+    static std::unique_ptr<CrxDownloader> Create(
+        bool is_background_download,
+        net::URLRequestContextGetter* context_getter,
+        const scoped_refptr<base::SequencedTaskRunner>& task_runner) {
+      return base::MakeUnique<FakeCrxDownloader>();
+    }
+
+    FakeCrxDownloader()
+        : CrxDownloader(base::ThreadTaskRunnerHandle::Get(), nullptr) {}
+
+   private:
+    void DoStartDownload(const GURL& url) override { EXPECT_TRUE(false); }
+  };
+
+  class FakePingManager : public FakePingManagerImpl {
+   public:
+    explicit FakePingManager(const scoped_refptr<Configurator>& config)
+        : FakePingManagerImpl(config) {}
+    ~FakePingManager() override {
+      const auto& events = FakePingManagerImpl::events();
+      EXPECT_EQ(1u, events.size());
+      EXPECT_STREQ(
+          "<event eventtype=\"42\" eventresult=\"1\" errorcode=\"1\" "
+          "extracode1=\"2\"/>",
+          events[0].c_str());
+    }
+  };
+
+  // Unpack the CRX to mock an existing install to be updated. The payload to
+  // run is going to be picked up from this directory.
+  base::FilePath unpack_path;
+  {
+    base::RunLoop runloop;
+    base::Closure quit_closure = runloop.QuitClosure();
+
+    scoped_refptr<ComponentUnpacker> component_unpacker = new ComponentUnpacker(
+        std::vector<uint8_t>(std::begin(niea_hash), std::end(niea_hash)),
+        TestFilePath("runaction_test_win.crx3"), nullptr, nullptr,
+        config()->GetSequencedTaskRunner());
+
+    component_unpacker->Unpack(base::Bind(
+        [](base::FilePath* unpack_path, const base::Closure& quit_closure,
+           const ComponentUnpacker::Result& result) {
+          EXPECT_EQ(UnpackerError::kNone, result.error);
+          EXPECT_EQ(0, result.extended_error);
+          *unpack_path = result.unpack_path;
+          quit_closure.Run();
+        },
+        &unpack_path, runloop.QuitClosure()));
+
+    runloop.Run();
+  }
+
+  EXPECT_FALSE(unpack_path.empty());
+  EXPECT_TRUE(base::DirectoryExists(unpack_path));
+  int64_t file_size = 0;
+  EXPECT_TRUE(
+      base::GetFileSize(unpack_path.AppendASCII("recovery.crx3"), &file_size));
+  EXPECT_EQ(44565, file_size);
+
+  base::ScopedTempDir unpack_path_owner;
+  EXPECT_TRUE(unpack_path_owner.Set(unpack_path));
+
+  scoped_refptr<UpdateClient> update_client =
+      base::MakeRefCounted<UpdateClientImpl>(
+          config(), base::MakeUnique<FakePingManager>(config()),
+          &FakeUpdateChecker::Create, &FakeCrxDownloader::Create);
+
+  const std::vector<std::string> ids = {"nieaegbcncggjkpbaogejidgjnnfegoe"};
+  update_client->Update(
+      ids,
+      base::Bind(
+          [](const base::FilePath& unpack_path,
+             const std::vector<std::string>& ids,
+             std::vector<CrxComponent>* components) {
+            CrxComponent crx;
+            crx.name = "test_niea";
+            crx.pk_hash.assign(niea_hash, niea_hash + arraysize(niea_hash));
+            crx.version = base::Version("1.0");
+            crx.installer =
+                base::MakeRefCounted<ReadOnlyTestInstaller>(unpack_path);
+            components->push_back(crx);
+          },
+          unpack_path),
+      base::Bind(
+          [](const base::Closure& quit_closure, Error error) {
+            EXPECT_EQ(Error::NONE, error);
+            quit_closure.Run();
+          },
+          quit_closure()));
+
+  RunThreads();
 }
 
 }  // namespace update_client
