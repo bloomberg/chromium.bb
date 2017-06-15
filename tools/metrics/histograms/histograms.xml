@@ -36046,6 +36046,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.ErrAborted.CountPerUpload" units="aborts">
+  <obsolete>
+    Deprecated in favor of Net.ErrAborted.CountPerUpload2 which has a higher
+    upper bound
+  </obsolete>
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    The count of the ABORTED bucket in Net.ErrorCodesForMainFrame3 at the time
+    histograms are being uploaded.
+  </summary>
+</histogram>
+
+<histogram name="Net.ErrAborted.CountPerUpload2" units="aborts">
   <owner>csharrison@chromium.org</owner>
   <summary>
     The count of the ABORTED bucket in Net.ErrorCodesForMainFrame3 at the time
