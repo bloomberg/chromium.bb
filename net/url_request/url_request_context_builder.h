@@ -37,6 +37,7 @@
 #include "net/proxy/proxy_service.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/socket/next_proto.h"
+#include "net/ssl/ssl_config_service.h"
 #include "net/url_request/url_request_job_factory.h"
 
 namespace base {
@@ -152,6 +153,11 @@ class NET_EXPORT URLRequestContextBuilder {
   // default behavior.
   void set_proxy_service(std::unique_ptr<ProxyService> proxy_service) {
     proxy_service_ = std::move(proxy_service);
+  }
+
+  void set_ssl_config_service(
+      scoped_refptr<net::SSLConfigService> ssl_config_service) {
+    ssl_config_service_ = std::move(ssl_config_service);
   }
 
   // Call these functions to specify hard-coded Accept-Language
@@ -385,6 +391,7 @@ class NET_EXPORT URLRequestContextBuilder {
   bool pac_quick_check_enabled_;
   ProxyService::SanitizeUrlPolicy pac_sanitize_url_policy_;
   std::unique_ptr<ProxyService> proxy_service_;
+  scoped_refptr<net::SSLConfigService> ssl_config_service_;
   std::unique_ptr<NetworkDelegate> network_delegate_;
   std::unique_ptr<ProxyDelegate> proxy_delegate_;
   std::unique_ptr<CookieStore> cookie_store_;

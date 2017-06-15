@@ -350,7 +350,13 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
   }
   storage->set_host_resolver(std::move(host_resolver_));
 
-  storage->set_ssl_config_service(new SSLConfigServiceDefaults);
+  if (ssl_config_service_) {
+    // This takes a raw pointer, but |storage| will hold onto a reference to the
+    // service.
+    storage->set_ssl_config_service(ssl_config_service_.get());
+  } else {
+    storage->set_ssl_config_service(new SSLConfigServiceDefaults);
+  }
 
   if (!http_auth_handler_factory_) {
     http_auth_handler_factory_ =

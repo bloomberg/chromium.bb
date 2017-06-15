@@ -36,6 +36,7 @@
 #include "chrome/browser/data_usage/tab_id_annotator.h"
 #include "chrome/browser/data_use_measurement/chrome_data_use_ascriber.h"
 #include "chrome/browser/net/async_dns_field_trial.h"
+#include "chrome/browser/net/chrome_mojo_proxy_resolver_factory.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/dns_probe_service.h"
 #include "chrome/browser/net/proxy_service_factory.h"
@@ -62,7 +63,6 @@
 #include "components/variations/variations_associated_data.h"
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/cookie_store_factory.h"
 #include "content/public/browser/network_quality_observer_factory.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -82,15 +82,15 @@
 #include "net/cert/multi_threaded_cert_verifier.h"
 #include "net/cert/sth_distributor.h"
 #include "net/cert/sth_observer.h"
-#include "net/cookies/cookie_store.h"
 #include "net/dns/host_cache.h"
 #include "net/dns/host_resolver.h"
 #include "net/dns/mapped_host_resolver.h"
 #include "net/http/http_auth_filter.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_auth_preferences.h"
-#include "net/http/http_network_layer.h"
+#include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
+#include "net/http/http_transaction_factory.h"
 #include "net/net_features.h"
 #include "net/nqe/external_estimate_provider.h"
 #include "net/nqe/network_quality_estimator_params.h"
@@ -100,18 +100,11 @@
 #include "net/quic/chromium/quic_utils_chromium.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/socket/tcp_client_socket.h"
-#include "net/ssl/channel_id_service.h"
-#include "net/ssl/default_channel_id_store.h"
-#include "net/url_request/data_protocol_handler.h"
-#include "net/url_request/file_protocol_handler.h"
-#include "net/url_request/ftp_protocol_handler.h"
-#include "net/url_request/static_http_user_agent_settings.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
+#include "net/url_request/url_request_context_builder_mojo.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_context_storage.h"
-#include "net/url_request/url_request_job_factory_impl.h"
 #include "url/url_constants.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -135,6 +128,7 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/net/cert_verify_proc_chromeos.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chromeos/network/dhcp_proxy_script_fetcher_factory_chromeos.h"
 #include "chromeos/network/host_resolver_impl_chromeos.h"
 #endif
 
@@ -762,8 +756,9 @@ const net::HttpNetworkSession::Params& IOThread::NetworkSessionParams() const {
 void IOThread::DisableQuic() {
   session_params_.enable_quic = false;
 
-  if (globals_->system_request_context_storage)
-    globals_->system_request_context_storage->http_network_session()
+  if (globals_->system_request_context)
+    globals_->system_request_context->http_transaction_factory()
+        ->GetSession()
         ->DisableQuic();
 }
 
@@ -807,23 +802,14 @@ bool IOThread::PacHttpsUrlStrippingEnabled() const {
 void IOThread::ConstructSystemRequestContext() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
+  net::URLRequestContextBuilderMojo builder;
 
-  globals_->system_request_context =
-      base::MakeUnique<SystemURLRequestContext>();
-  net::URLRequestContext* context = globals_->system_request_context.get();
-  globals_->system_request_context_storage =
-      base::MakeUnique<net::URLRequestContextStorage>(context);
-  net::URLRequestContextStorage* context_storage =
-      globals_->system_request_context_storage.get();
-
-  context->set_network_quality_estimator(
+  builder.set_network_quality_estimator(
       globals_->network_quality_estimator.get());
-  context->set_enable_brotli(globals_->enable_brotli);
-  context->set_name("system");
+  builder.set_enable_brotli(globals_->enable_brotli);
+  builder.set_name("system");
 
-  context_storage->set_http_user_agent_settings(
-      base::MakeUnique<net::StaticHttpUserAgentSettings>(std::string(),
-                                                         GetUserAgent()));
+  builder.set_user_agent(GetUserAgent());
   std::unique_ptr<ChromeNetworkDelegate> chrome_network_delegate(
       new ChromeNetworkDelegate(extension_event_router_forwarder(),
                                 &system_enable_referrers_));
@@ -831,41 +817,27 @@ void IOThread::ConstructSystemRequestContext() {
   chrome_network_delegate->set_data_use_aggregator(
       globals_->data_use_aggregator.get(),
       true /* is_data_usage_off_the_record */);
-  context_storage->set_network_delegate(
+  builder.set_network_delegate(
       globals_->data_use_ascriber->CreateNetworkDelegate(
           std::move(chrome_network_delegate), GetMetricsDataUseForwarder()));
-  context->set_net_log(net_log_);
-  context_storage->set_host_resolver(CreateGlobalHostResolver(net_log_));
+  builder.set_net_log(net_log_);
+  std::unique_ptr<net::HostResolver> host_resolver(
+      CreateGlobalHostResolver(net_log_));
 
-  context_storage->set_ssl_config_service(GetSSLConfigService());
-  context_storage->set_http_auth_handler_factory(
-      CreateDefaultAuthHandlerFactory(context->host_resolver()));
+  builder.set_ssl_config_service(GetSSLConfigService());
+  builder.SetHttpAuthHandlerFactory(
+      CreateDefaultAuthHandlerFactory(host_resolver.get()));
 
-  // In-memory cookie store.
-  context_storage->set_cookie_store(
-      content::CreateCookieStore(content::CookieStoreConfig()));
-  // In-memory channel ID store.
-  context_storage->set_channel_id_service(
-      base::MakeUnique<net::ChannelIDService>(
-          new net::DefaultChannelIDStore(nullptr)));
-  context->cookie_store()->SetChannelIDServiceID(
-      context->channel_id_service()->GetUniqueID());
-
-  context_storage->set_transport_security_state(
-      base::MakeUnique<net::TransportSecurityState>());
-
-  context_storage->set_http_server_properties(
-      base::MakeUnique<net::HttpServerPropertiesImpl>());
+  builder.set_host_resolver(std::move(host_resolver));
 
 #if defined(OS_CHROMEOS)
   // Creates a CertVerifyProc that doesn't allow any profile-provided certs.
-  context_storage->set_cert_verifier(base::MakeUnique<net::CachingCertVerifier>(
+  builder.SetCertVerifier(base::MakeUnique<net::CachingCertVerifier>(
       base::MakeUnique<net::MultiThreadedCertVerifier>(
           new chromeos::CertVerifyProcChromeOS())));
 #else
-  context_storage->set_cert_verifier(
-      IgnoreErrorsCertVerifier::MaybeWrapCertVerifier(
-          command_line, net::CertVerifier::CreateDefault()));
+  builder.SetCertVerifier(IgnoreErrorsCertVerifier::MaybeWrapCertVerifier(
+      command_line, net::CertVerifier::CreateDefault()));
   UMA_HISTOGRAM_BOOLEAN(
       "Net.Certificate.IgnoreCertificateErrorsSPKIListPresent",
       command_line.HasSwitch(switches::kIgnoreCertificateErrorsSPKIList));
@@ -879,45 +851,40 @@ void IOThread::ConstructSystemRequestContext() {
   // Register the ct_tree_tracker_ as observer for verified SCTs.
   ct_verifier->SetObserver(ct_tree_tracker_.get());
 
-  context_storage->set_cert_transparency_verifier(std::move(ct_verifier));
+  builder.set_ct_verifier(std::move(ct_verifier));
 
-  context_storage->set_ct_policy_enforcer(
-      base::MakeUnique<net::CTPolicyEnforcer>());
+  // TODO(eroman): Figure out why this doesn't work in single-process mode.
+  // Should be possible now that a private isolate is used.
+  // http://crbug.com/474654
+  if (!command_line.HasSwitch(switches::kWinHttpProxyResolver)) {
+    if (command_line.HasSwitch(switches::kSingleProcess)) {
+      LOG(ERROR) << "Cannot use V8 Proxy resolver in single process mode.";
+    } else {
+      builder.set_mojo_proxy_resolver_factory(
+          ChromeMojoProxyResolverFactory::GetInstance());
+    }
+  }
 
-  context_storage->set_proxy_service(ProxyServiceFactory::CreateProxyService(
-      net_log_, context, context->network_delegate(),
-      std::move(system_proxy_config_service_), command_line,
-      WpadQuickCheckEnabled(), PacHttpsUrlStrippingEnabled()));
+  builder.set_pac_quick_check_enabled(WpadQuickCheckEnabled());
+  builder.set_pac_sanitize_url_policy(
+      PacHttpsUrlStrippingEnabled()
+          ? net::ProxyService::SanitizeUrlPolicy::SAFE
+          : net::ProxyService::SanitizeUrlPolicy::UNSAFE);
+#if defined(OS_CHROMEOS)
+  builder.set_dhcp_fetcher_factory(
+      base::MakeUnique<chromeos::DhcpProxyScriptFetcherFactoryChromeos>());
+#endif
+  builder.set_proxy_config_service(std::move(system_proxy_config_service_));
 
-  net::HttpNetworkSession::Context session_context;
-  net::URLRequestContextBuilder::SetHttpNetworkSessionComponents(
-      context, &session_context);
+  builder.set_http_network_session_params(session_params_);
 
-  context_storage->set_http_network_session(
-      base::MakeUnique<net::HttpNetworkSession>(session_params_,
-                                                session_context));
-  context_storage->set_http_transaction_factory(
-      base::MakeUnique<net::HttpNetworkLayer>(
-          context_storage->http_network_session()));
-
-  std::unique_ptr<net::URLRequestJobFactoryImpl> job_factory(
-      new net::URLRequestJobFactoryImpl());
-
-  job_factory->SetProtocolHandler(url::kDataScheme,
-                                  base::MakeUnique<net::DataProtocolHandler>());
-  job_factory->SetProtocolHandler(
-      url::kFileScheme,
-      base::MakeUnique<net::FileProtocolHandler>(
-          base::CreateTaskRunnerWithTraits(
-              {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
-               base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})));
+  builder.set_data_enabled(true);
+  builder.set_file_enabled(true);
 #if !BUILDFLAG(DISABLE_FTP_SUPPORT)
-  job_factory->SetProtocolHandler(
-      url::kFtpScheme,
-      net::FtpProtocolHandler::Create(context->host_resolver()));
+  builder.set_ftp_enabled(true);
 #endif
 
-  context_storage->set_job_factory(std::move(job_factory));
+  globals_->system_request_context = builder.Build();
 }
 
 // static
