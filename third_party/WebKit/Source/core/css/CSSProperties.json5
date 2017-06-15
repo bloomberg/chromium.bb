@@ -1994,6 +1994,11 @@
       converter: "ConvertSnapType",
       getter: "GetScrollSnapType",
       runtime_flag: "CSSScrollSnapPoints",
+      field_template: "storage_only",
+      type_name: "ScrollSnapType",
+      field_group: "rare-non-inherited->scroll-snap",
+      include_paths: ["core/style/ScrollSnap.h"],
+      default_value: "ScrollSnapType()",
     },
     {
       name: "scroll-snap-align",
@@ -2002,6 +2007,11 @@
       converter: "ConvertSnapAlign",
       getter: "GetScrollSnapAlign",
       runtime_flag: "CSSScrollSnapPoints",
+      field_template: "storage_only",
+      type_name: "ScrollSnapAlign",
+      field_group: "rare-non-inherited->scroll-snap",
+      default_value: "ScrollSnapAlign()",
+      include_paths: ["core/style/ScrollSnap.h"],
     },
     {
       name: "scroll-snap-stop",

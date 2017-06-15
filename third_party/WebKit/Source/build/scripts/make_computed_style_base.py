@@ -31,10 +31,11 @@ ALIGNMENT_ORDER = [
     'DataRef', 'RefPtr', 'DataPersistent', 'Persistent', 'std::unique_ptr',
     'Vector<String>', 'Font', 'FillLayer', 'NinePieceImage',
     # Aligns like float
-    'TransformOrigin', 'LengthBox', 'LengthSize', 'FloatSize', 'LengthPoint', 'Length',
-    'TextSizeAdjust', 'TabSize', 'float',
+    'TransformOrigin', 'ScrollPadding', 'ScrollSnapMargin', 'LengthBox', 'LengthSize', 'FloatSize',
+    'LengthPoint', 'Length', 'TextSizeAdjust', 'TabSize', 'float',
     # Aligns like int
-    'BorderValue', 'StyleColor', 'Color', 'LayoutUnit', 'LineClampValue', 'OutlineValue', 'unsigned', 'int',
+    'ScrollSnapType', 'ScrollSnapAlign', 'BorderValue', 'StyleColor', 'Color', 'LayoutUnit',
+    'LineClampValue', 'OutlineValue', 'unsigned', 'int',
     # Aligns like short
     'unsigned short', 'short',
     # Aligns like char

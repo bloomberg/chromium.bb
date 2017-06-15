@@ -38,7 +38,6 @@
 #include "core/style/ShadowList.h"
 #include "core/style/StyleOffsetRotation.h"
 #include "core/style/StyleReflection.h"
-#include "core/style/StyleScrollSnapData.h"
 #include "core/style/TransformOrigin.h"
 #include "platform/LengthSize.h"
 #include "platform/fonts/FontDescription.h"
