@@ -5338,6 +5338,30 @@ TEST_P(ParameterizedWebFrameTest, FindInPageJavaScriptUpdatesDOMProperOrdinal) {
   EXPECT_EQ(3, client.ActiveIndex());
 }
 
+TEST_P(ParameterizedWebFrameTest,
+       FindInPageStopFindActionKeepSelectionInAnotherDocument) {
+  RegisterMockedHttpURLLoad("find.html");
+  RegisterMockedHttpURLLoad("hello_world.html");
+  FrameTestHelpers::WebViewHelper web_view_helper;
+  web_view_helper.InitializeAndLoad(base_url_ + "find.html");
+  ASSERT_TRUE(web_view_helper.WebView()->MainFrameImpl());
+  WebLocalFrame* frame = web_view_helper.WebView()->MainFrameImpl();
+  const int kFindIdentifier = 12345;
+  WebFindOptions options;
+
+  // Set active match
+  ASSERT_TRUE(
+      frame->Find(kFindIdentifier, WebString::FromUTF8("foo"), options, false));
+  // Move to another page.
+  FrameTestHelpers::LoadFrame(frame, base_url_ + "hello_world.html");
+
+  // Stop Find-In-Page. |TextFinder::active_match_| still hold a |Range| in
+  // "find.html".
+  frame->StopFinding(WebLocalFrame::kStopFindActionKeepSelection);
+
+  // Pass if not crash. See http://crbug.com/719880 for details.
+}
+
 static WebPoint TopLeft(const WebRect& rect) {
   return WebPoint(rect.x, rect.y);
 }
