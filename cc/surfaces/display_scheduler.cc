@@ -314,6 +314,8 @@ void DisplayScheduler::OnSurfaceDamageExpected(const SurfaceId& surface_id,
     ScheduleBeginFrameDeadline();
 }
 
+void DisplayScheduler::OnSurfaceWillDraw(const SurfaceId& surface_id) {}
+
 base::TimeTicks DisplayScheduler::DesiredBeginFrameDeadlineTime() {
   if (output_surface_lost_) {
     TRACE_EVENT_INSTANT0("cc", "Lost output surface", TRACE_EVENT_SCOPE_THREAD);

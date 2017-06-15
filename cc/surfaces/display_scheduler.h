@@ -70,6 +70,7 @@ class CC_SURFACES_EXPORT DisplayScheduler : public BeginFrameObserverBase,
   void OnSurfaceDiscarded(const SurfaceId& surface_id) override;
   void OnSurfaceDamageExpected(const SurfaceId& surface_id,
                                const BeginFrameArgs& args) override;
+  void OnSurfaceWillDraw(const SurfaceId& surface_id) override;
 
  protected:
   base::TimeTicks DesiredBeginFrameDeadlineTime();

@@ -127,6 +127,12 @@ void SurfaceManager::DestroySurface(std::unique_ptr<Surface> surface) {
   GarbageCollectSurfaces();
 }
 
+void SurfaceManager::SurfaceWillDraw(const SurfaceId& surface_id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  for (auto& observer : observer_list_)
+    observer.OnSurfaceWillDraw(surface_id);
+}
+
 void SurfaceManager::RequireSequence(const SurfaceId& surface_id,
                                      const SurfaceSequence& sequence) {
   auto* surface = GetSurfaceForId(surface_id);

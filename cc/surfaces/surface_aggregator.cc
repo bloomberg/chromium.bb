@@ -762,8 +762,10 @@ gfx::Rect SurfaceAggregator::PrewalkTree(const SurfaceId& surface_id,
   CHECK(debug_weak_this.get());
   // TODO(staraz): It shouldn't need to call the callback when the damage is
   // from |surface| and not from |child_surfaces|.
-  if (!damage_rect.IsEmpty())
+  if (!damage_rect.IsEmpty()) {
     surface->RunWillDrawCallback(damage_rect);
+    manager_->SurfaceWillDraw(surface->surface_id());
+  }
 
   CHECK(debug_weak_this.get());
   for (const auto& render_pass : frame.render_pass_list) {
