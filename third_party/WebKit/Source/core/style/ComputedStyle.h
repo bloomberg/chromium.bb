@@ -52,7 +52,6 @@
 #include "core/style/StyleDifference.h"
 #include "core/style/StyleFilterData.h"
 #include "core/style/StyleGridData.h"
-#include "core/style/StyleGridItemData.h"
 #include "core/style/StyleImage.h"
 #include "core/style/StyleInheritedVariables.h"
 #include "core/style/StyleOffsetRotation.h"

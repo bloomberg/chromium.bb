@@ -946,15 +946,6 @@
       include_paths: ["core/style/StyleGridData.h"],
     },
     {
-      name: "GridItemData",
-      field_template: "storage_only",
-      type_name: "StyleGridItemData",
-      field_group: "rare-non-inherited",
-      default_value: "",
-      wrapper_pointer_name: "DataRef",
-      include_paths: ["core/style/StyleGridItemData.h"],
-    },
-    {
       name: "ScrollSnapData",
       field_template: "storage_only",
       type_name: "StyleScrollSnapData",
