@@ -719,11 +719,8 @@ QuicTimeWaitListManager* QuicDispatcher::CreateQuicTimeWaitListManager() {
 
 void QuicDispatcher::BufferEarlyPacket(QuicConnectionId connection_id) {
   bool is_new_connection = !buffered_packets_.HasBufferedPackets(connection_id);
-  if (FLAGS_quic_reloadable_flag_quic_create_session_after_insertion &&
-      is_new_connection &&
+  if (is_new_connection &&
       !ShouldCreateOrBufferPacketForConnection(connection_id)) {
-    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_create_session_after_insertion,
-                      1, 5);
     return;
   }
   EnqueuePacketResult rs = buffered_packets_.EnqueuePacket(
@@ -731,9 +728,6 @@ void QuicDispatcher::BufferEarlyPacket(QuicConnectionId connection_id) {
       current_client_address_, /*is_chlo=*/false, /*alpn=*/"");
   if (rs != EnqueuePacketResult::SUCCESS) {
     OnBufferPacketFailure(rs, connection_id);
-  } else if (!FLAGS_quic_reloadable_flag_quic_create_session_after_insertion &&
-             is_new_connection) {
-    ShouldCreateOrBufferPacketForConnection(connection_id);
   }
 }
 
@@ -750,11 +744,8 @@ void QuicDispatcher::ProcessChlo() {
                                             current_connection_id());
     return;
   }
-  if (FLAGS_quic_reloadable_flag_quic_create_session_after_insertion &&
-      !buffered_packets_.HasBufferedPackets(current_connection_id_) &&
+  if (!buffered_packets_.HasBufferedPackets(current_connection_id_) &&
       !ShouldCreateOrBufferPacketForConnection(current_connection_id_)) {
-    QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_create_session_after_insertion,
-                      2, 5);
     return;
   }
   if (FLAGS_quic_allow_chlo_buffering &&
@@ -762,17 +753,11 @@ void QuicDispatcher::ProcessChlo() {
       new_sessions_allowed_per_event_loop_ <= 0) {
     // Can't create new session any more. Wait till next event loop.
     QUIC_BUG_IF(buffered_packets_.HasChloForConnection(current_connection_id_));
-    bool is_new_connection =
-        !buffered_packets_.HasBufferedPackets(current_connection_id_);
     EnqueuePacketResult rs = buffered_packets_.EnqueuePacket(
         current_connection_id_, *current_packet_, current_server_address_,
         current_client_address_, /*is_chlo=*/true, current_alpn_);
     if (rs != EnqueuePacketResult::SUCCESS) {
       OnBufferPacketFailure(rs, current_connection_id_);
-    } else if (
-        !FLAGS_quic_reloadable_flag_quic_create_session_after_insertion &&
-        is_new_connection) {
-      ShouldCreateOrBufferPacketForConnection(current_connection_id_);
     }
     return;
   }
@@ -784,11 +769,7 @@ void QuicDispatcher::ProcessChlo() {
       std::make_pair(current_connection_id_, QuicWrapUnique(session)));
   std::list<BufferedPacket> packets =
       buffered_packets_.DeliverPackets(current_connection_id_).buffered_packets;
-  // Check if CHLO is the first packet arrived on this connection.
-  if (!FLAGS_quic_reloadable_flag_quic_create_session_after_insertion &&
-      packets.empty()) {
-    ShouldCreateOrBufferPacketForConnection(current_connection_id_);
-  }
+
   // Process CHLO at first.
   session->ProcessUdpPacket(current_server_address_, current_client_address_,
                             *current_packet_);

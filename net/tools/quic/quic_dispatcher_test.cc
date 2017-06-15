@@ -1302,18 +1302,7 @@ TEST_P(BufferedPacketStoreTest,
   for (size_t i = 1; i <= kNumConnections; ++i) {
     QuicSocketAddress client_address(QuicIpAddress::Loopback4(), i);
     QuicConnectionId conn_id = i;
-    if (FLAGS_quic_reloadable_flag_quic_create_session_after_insertion) {
-      EXPECT_CALL(*dispatcher_,
-                  ShouldCreateOrBufferPacketForConnection(conn_id));
-    } else {
-      if (i <= kNumConnections - 1) {
-        // As they are on different connection, they should trigger
-        // ShouldCreateOrBufferPacketForConnection(). The last packet should be
-        // dropped.
-        EXPECT_CALL(*dispatcher_,
-                    ShouldCreateOrBufferPacketForConnection(conn_id));
-      }
-    }
+    EXPECT_CALL(*dispatcher_, ShouldCreateOrBufferPacketForConnection(conn_id));
     ProcessPacket(client_address, conn_id, true,
                   QuicStrCat("data packet on connection ", i),
                   PACKET_8BYTE_CONNECTION_ID, PACKET_6BYTE_PACKET_NUMBER,
@@ -1332,11 +1321,7 @@ TEST_P(BufferedPacketStoreTest,
   for (size_t i = 1; i <= kNumConnections; ++i) {
     QuicSocketAddress client_address(QuicIpAddress::Loopback4(), i);
     QuicConnectionId conn_id = i;
-    if (FLAGS_quic_reloadable_flag_quic_create_session_after_insertion &&
-        conn_id == kNumConnections) {
-      // The last CHLO should trigger ShouldCreateOrBufferPacketForConnection()
-      // since it's the
-      // first packet arrives on that connection.
+    if (conn_id == kNumConnections) {
       EXPECT_CALL(*dispatcher_,
                   ShouldCreateOrBufferPacketForConnection(conn_id));
     }
@@ -1346,13 +1331,6 @@ TEST_P(BufferedPacketStoreTest,
             dispatcher_.get(), config_, conn_id, client_address, &mock_helper_,
             &mock_alarm_factory_, &crypto_config_,
             QuicDispatcherPeer::GetCache(dispatcher_.get()), &session1_)));
-    if (!FLAGS_quic_reloadable_flag_quic_create_session_after_insertion &&
-        conn_id == kNumConnections) {
-      // The last CHLO should trigger ShouldCreateOrBufferPacketForConnection()
-      // since it's the first packet arrives on that connection.
-      EXPECT_CALL(*dispatcher_,
-                  ShouldCreateOrBufferPacketForConnection(conn_id));
-    }
     // First |kNumConnections| - 1 connections should have buffered
     // a packet in store. The rest should have been dropped.
     size_t upper_limit =
@@ -1455,17 +1433,7 @@ TEST_P(BufferedPacketStoreTest, ProcessCHLOsUptoLimitAndBufferTheRest) {
   const size_t kNumCHLOs =
       kMaxNumSessionsToCreate + kDefaultMaxConnectionsInStore + 1;
   for (size_t conn_id = 1; conn_id <= kNumCHLOs; ++conn_id) {
-    if (FLAGS_quic_reloadable_flag_quic_create_session_after_insertion) {
-      EXPECT_CALL(*dispatcher_,
-                  ShouldCreateOrBufferPacketForConnection(conn_id));
-    }
-    if (!FLAGS_quic_reloadable_flag_quic_create_session_after_insertion &&
-        conn_id < kNumCHLOs) {
-      // Except the last connection, all connections for previous CHLOs should
-      // be regarded as newly added.
-      EXPECT_CALL(*dispatcher_,
-                  ShouldCreateOrBufferPacketForConnection(conn_id));
-    }
+    EXPECT_CALL(*dispatcher_, ShouldCreateOrBufferPacketForConnection(conn_id));
     if (conn_id <= kMaxNumSessionsToCreate) {
       EXPECT_CALL(*dispatcher_,
                   CreateQuicSession(conn_id, client_addr_, QuicStringPiece()))
@@ -1666,7 +1634,6 @@ class AsyncGetProofTest : public QuicDispatcherTest {
         signed_config_(new QuicSignedServerConfig) {
     FLAGS_quic_reloadable_flag_enable_quic_stateless_reject_support = true;
     FLAGS_quic_reloadable_flag_quic_use_cheap_stateless_rejects = true;
-    FLAGS_quic_reloadable_flag_quic_create_session_after_insertion = true;
   }
 
   void SetUp() override {
