@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/mac/bundle_locations.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "base/scoped_observer.h"
 #include "base/strings/sys_string_conversions.h"
@@ -28,6 +27,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 @interface UpgradeCenter ()
 // Creates infobars on all tabs.
@@ -141,7 +144,7 @@ class UpgradeInfoBarDismissObserver
     scoped_observer_.Add(infobar_manager);
     infobar_delegate_ = infobar_delegate;
     dismiss_delegate_ = dismiss_delegate;
-    tab_id_.reset([tab_id copy]);
+    tab_id_ = [tab_id copy];
   }
 
   UpgradeInfoBarDelegate* infobar_delegate() { return infobar_delegate_; }
@@ -150,7 +153,7 @@ class UpgradeInfoBarDismissObserver
   // infobars::InfoBarManager::Observer implementation.
   void OnInfoBarRemoved(infobars::InfoBar* infobar, bool animate) override {
     if (infobar->delegate() == infobar_delegate_) {
-      [dismiss_delegate_ dismissedInfoBar:tab_id_.get()
+      [dismiss_delegate_ dismissedInfoBar:tab_id_
                            performUpgrade:infobar_delegate_->AcceptPressed()];
     }
   }
@@ -161,8 +164,8 @@ class UpgradeInfoBarDismissObserver
   }
 
   UpgradeInfoBarDelegate* infobar_delegate_;
-  UpgradeCenter* dismiss_delegate_;
-  base::scoped_nsobject<NSString> tab_id_;
+  __weak UpgradeCenter* dismiss_delegate_;
+  __strong NSString* tab_id_;
   ScopedObserver<infobars::InfoBarManager, infobars::InfoBarManager::Observer>
       scoped_observer_;
 
@@ -210,12 +213,13 @@ class UpgradeInfoBarDismissObserver
   // YES if the infobars are currently visible.
   BOOL upgradeInfoBarIsVisible_;
   // Used to store the visible upgrade infobars, indexed by tabId.
-  base::scoped_nsobject<NSMutableDictionary> upgradeInfoBarDelegates_;
+  __strong NSMutableDictionary<NSString*, DelegateHolder*>*
+      upgradeInfoBarDelegates_;
   // Stores the clients of the upgrade center. These objectiveC objects are not
   // retained.
-  std::set<id<UpgradeCenterClientProtocol>> clients_;
+  __strong NSHashTable<id<UpgradeCenterClientProtocol>>* clients_;
 #ifndef NDEBUG
-  bool inCallback_;
+  BOOL inCallback_;
 #endif
 }
 
@@ -231,7 +235,7 @@ class UpgradeInfoBarDismissObserver
 - (instancetype)init {
   self = [super init];
   if (self) {
-    upgradeInfoBarDelegates_.reset([[NSMutableDictionary alloc] init]);
+    upgradeInfoBarDelegates_ = [[NSMutableDictionary alloc] init];
 
     // There is no dealloc and no unregister as this class is a never
     // deallocated singleton.
@@ -242,6 +246,7 @@ class UpgradeInfoBarDismissObserver
              object:nil];
 
     upgradeInfoBarIsVisible_ = [self shouldShowInfoBar];
+    clients_ = [NSHashTable weakObjectsHashTable];
   }
   return self;
 }
@@ -284,7 +289,7 @@ class UpgradeInfoBarDismissObserver
 }
 
 - (void)registerClient:(id<UpgradeCenterClientProtocol>)client {
-  clients_.insert(client);
+  [clients_ addObject:client];
   if (upgradeInfoBarIsVisible_)
     [client showUpgrade:self];
 }
@@ -293,7 +298,7 @@ class UpgradeInfoBarDismissObserver
 #ifndef NDEBUG
   DCHECK(!inCallback_);
 #endif
-  clients_.erase(client);
+  [clients_ removeObject:client];
 }
 
 - (void)addInfoBarToManager:(infobars::InfoBarManager*)infoBarManager
@@ -310,11 +315,11 @@ class UpgradeInfoBarDismissObserver
     return;
 
   auto infobarDelegate = base::MakeUnique<UpgradeInfoBarDelegate>();
-  base::scoped_nsobject<DelegateHolder> delegateHolder([[DelegateHolder alloc]
-      initWithInfoBarManager:infoBarManager
-             infoBarDelegate:infobarDelegate.get()
-               upgradeCenter:self
-                       tabId:tabId]);
+  DelegateHolder* delegateHolder =
+      [[DelegateHolder alloc] initWithInfoBarManager:infoBarManager
+                                     infoBarDelegate:infobarDelegate.get()
+                                       upgradeCenter:self
+                                               tabId:tabId];
 
   [upgradeInfoBarDelegates_ setObject:delegateHolder forKey:tabId];
   infoBarManager->AddInfoBar(
@@ -330,9 +335,9 @@ class UpgradeInfoBarDismissObserver
   // notification. In all likelyhood it was trigerred by calling
   // -hideUpgradeInfoBars. Or because a tab was closed without dismissing the
   // infobar.
-  base::scoped_nsobject<DelegateHolder> delegateHolder(
-      [[upgradeInfoBarDelegates_ objectForKey:tabId] retain]);
-  if (!delegateHolder.get())
+  DelegateHolder* delegateHolder =
+      [upgradeInfoBarDelegates_ objectForKey:tabId];
+  if (!delegateHolder)
     return;
 
   // Forget about this dismissed infobar.
@@ -353,8 +358,8 @@ class UpgradeInfoBarDismissObserver
 
     if (web::UrlHasWebScheme(url)) {
       // This URL can be opened in the application, just open in a new tab.
-      base::scoped_nsobject<OpenUrlCommand> command(
-          [[OpenUrlCommand alloc] initWithURLFromChrome:url]);
+      OpenUrlCommand* command =
+          [[OpenUrlCommand alloc] initWithURLFromChrome:url];
       UIWindow* main_window = [[UIApplication sharedApplication] keyWindow];
       DCHECK(main_window);
       [main_window chromeExecuteCommand:command];
@@ -374,9 +379,8 @@ class UpgradeInfoBarDismissObserver
   inCallback_ = YES;
 #endif
   upgradeInfoBarIsVisible_ = YES;
-  std::set<id<UpgradeCenterClientProtocol>>::iterator it;
-  for (it = clients_.begin(); it != clients_.end(); ++it)
-    [*it showUpgrade:self];
+  for (id<UpgradeCenterClientProtocol> upgradeClient in clients_)
+    [upgradeClient showUpgrade:self];
 #ifndef NDEBUG
   inCallback_ = NO;
 #endif
@@ -392,9 +396,9 @@ class UpgradeInfoBarDismissObserver
   for (NSString* tabId in [upgradeInfoBarDelegates_ allKeys]) {
     // It is important to retain the delegateHolder as otherwise it is
     // deallocated as soon as it is removed from the dictionary.
-    base::scoped_nsobject<DelegateHolder> delegateHolder(
-        [[upgradeInfoBarDelegates_ objectForKey:tabId] retain]);
-    if (delegateHolder.get()) {
+    DelegateHolder* delegateHolder =
+        [upgradeInfoBarDelegates_ objectForKey:tabId];
+    if (delegateHolder) {
       [upgradeInfoBarDelegates_ removeObjectForKey:tabId];
       UpgradeInfoBarDelegate* delegate = [delegateHolder infoBarDelegate];
       DCHECK(delegate);
@@ -446,7 +450,7 @@ class UpgradeInfoBarDismissObserver
   [defaults removeObjectForKey:kNextVersionKey];
   [defaults removeObjectForKey:kUpgradeURLKey];
   [defaults removeObjectForKey:kLastInfobarDisplayTimeKey];
-  clients_.clear();
+  [clients_ removeAllObjects];
 }
 
 - (void)setLastDisplayToPast {

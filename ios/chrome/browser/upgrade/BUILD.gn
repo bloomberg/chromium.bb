@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("upgrade") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "upgrade_center.h",
     "upgrade_center.mm",
