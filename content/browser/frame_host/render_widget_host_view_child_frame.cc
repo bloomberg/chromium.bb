@@ -35,6 +35,7 @@
 #include "content/public/browser/guest_mode.h"
 #include "content/public/browser/render_process_host.h"
 #include "gpu/ipc/common/gpu_messages.h"
+#include "services/service_manager/runner/common/client_util.h"
 #include "third_party/WebKit/public/platform/WebTouchEvent.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/geometry/size_f.h"
@@ -62,14 +63,18 @@ RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
       frame_connector_(nullptr),
       background_color_(SK_ColorWHITE),
       weak_factory_(this) {
-  GetSurfaceManager()->RegisterFrameSinkId(frame_sink_id_);
-  CreateCompositorFrameSinkSupport();
+  if (!service_manager::ServiceManagerIsRemote()) {
+    GetSurfaceManager()->RegisterFrameSinkId(frame_sink_id_);
+    CreateCompositorFrameSinkSupport();
+  }
 }
 
 RenderWidgetHostViewChildFrame::~RenderWidgetHostViewChildFrame() {
-  ResetCompositorFrameSinkSupport();
-  if (GetSurfaceManager())
-    GetSurfaceManager()->InvalidateFrameSinkId(frame_sink_id_);
+  if (!service_manager::ServiceManagerIsRemote()) {
+    ResetCompositorFrameSinkSupport();
+    if (GetSurfaceManager())
+      GetSurfaceManager()->InvalidateFrameSinkId(frame_sink_id_);
+  }
 }
 
 void RenderWidgetHostViewChildFrame::Init() {
@@ -99,7 +104,8 @@ void RenderWidgetHostViewChildFrame::SetCrossProcessFrameConnector(
     return;
 
   if (frame_connector_) {
-    if (parent_frame_sink_id_.is_valid()) {
+    if (parent_frame_sink_id_.is_valid() &&
+        !service_manager::ServiceManagerIsRemote()) {
       GetSurfaceManager()->UnregisterFrameSinkHierarchy(parent_frame_sink_id_,
                                                         frame_sink_id_);
     }
@@ -117,8 +123,10 @@ void RenderWidgetHostViewChildFrame::SetCrossProcessFrameConnector(
     if (parent_view) {
       parent_frame_sink_id_ = parent_view->GetFrameSinkId();
       DCHECK(parent_frame_sink_id_.is_valid());
-      GetSurfaceManager()->RegisterFrameSinkHierarchy(parent_frame_sink_id_,
-                                                      frame_sink_id_);
+      if (!service_manager::ServiceManagerIsRemote()) {
+        GetSurfaceManager()->RegisterFrameSinkHierarchy(parent_frame_sink_id_,
+                                                        frame_sink_id_);
+      }
     }
 
     auto* root_view = frame_connector_->GetRootRenderWidgetHostView();
@@ -442,6 +450,8 @@ void RenderWidgetHostViewChildFrame::ProcessCompositorFrame(
 }
 
 void RenderWidgetHostViewChildFrame::SendSurfaceInfoToEmbedder() {
+  if (service_manager::ServiceManagerIsRemote())
+    return;
   cc::SurfaceSequence sequence =
       cc::SurfaceSequence(frame_sink_id_, next_surface_sequence_++);
   cc::SurfaceManager* manager = GetSurfaceManager();
@@ -781,6 +791,9 @@ cc::SurfaceId RenderWidgetHostViewChildFrame::SurfaceIdForTesting() const {
 };
 
 void RenderWidgetHostViewChildFrame::CreateCompositorFrameSinkSupport() {
+  if (service_manager::ServiceManagerIsRemote())
+    return;
+
   DCHECK(!support_);
   constexpr bool is_root = false;
   constexpr bool handles_frame_sink_id_invalidation = false;
