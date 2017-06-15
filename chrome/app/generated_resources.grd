@@ -9152,11 +9152,7 @@ I don't think this site should be blocked!
         Send feedback to help us fix this issue.
       </message>
       <message name="IDS_PROFILE_ERROR_FEEDBACK_DESCRIPTION" desc="The prepopulated text filled in the feedback report reporting a profile error. The triple single quotes are needed to preserve the line break.">
-Tell us what happened exactly before you got the profile error message:
-'''
-      </message>
-      <message name="IDS_PROFILE_ERROR_FEEDBACK_DIAGNOSTICS_LINE" desc="The prepopulated text filled in the feedback report reporting a profile error, above any diagnostics information. The triple single quotes are needed to preserve the line break.">
-****Please do not change below this line****
+Please help our engineers fix this problem. Tell us what happened right before you got the profile error message:
 '''
       </message>
       <message name="IDS_COULDNT_STARTUP_PROFILE_ERROR" desc="Error displayed when Chrome cannot start because profiles were not opened correctly.">

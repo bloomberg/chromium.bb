@@ -54,10 +54,11 @@ class FeedbackTest : public ExtensionBrowserTest {
             extensions::api::feedback_private::OnFeedbackRequested::kEventName);
   }
 
-  void StartFeedbackUI(FeedbackFlow flow) {
+  void StartFeedbackUI(FeedbackFlow flow,
+                       const std::string& extra_diagnostics) {
     base::Closure callback = base::Bind(&StopMessageLoopCallback);
     extensions::FeedbackPrivateGetStringsFunction::set_test_callback(&callback);
-    InvokeFeedbackUI(flow);
+    InvokeFeedbackUI(flow, extra_diagnostics);
     content::RunMessageLoop();
     extensions::FeedbackPrivateGetStringsFunction::set_test_callback(NULL);
   }
@@ -73,12 +74,14 @@ class FeedbackTest : public ExtensionBrowserTest {
   }
 
  private:
-  void InvokeFeedbackUI(FeedbackFlow flow) {
+  void InvokeFeedbackUI(FeedbackFlow flow,
+                        const std::string& extra_diagnostics) {
     extensions::FeedbackPrivateAPI* api =
         extensions::FeedbackPrivateAPI::GetFactoryInstance()->Get(
             browser()->profile());
     api->RequestFeedbackForFlow("Test description", "Test tag",
-                                GURL("http://www.test.com"), flow);
+                                extra_diagnostics, GURL("http://www.test.com"),
+                                flow);
   }
 };
 
@@ -86,7 +89,7 @@ IN_PROC_BROWSER_TEST_F(FeedbackTest, ShowFeedback) {
   WaitForExtensionViewsToLoad();
 
   ASSERT_TRUE(IsFeedbackAppAvailable());
-  StartFeedbackUI(FeedbackFlow::FEEDBACK_FLOW_REGULAR);
+  StartFeedbackUI(FeedbackFlow::FEEDBACK_FLOW_REGULAR, std::string());
   VerifyFeedbackAppLaunch();
 }
 
@@ -94,7 +97,7 @@ IN_PROC_BROWSER_TEST_F(FeedbackTest, ShowLoginFeedback) {
   WaitForExtensionViewsToLoad();
 
   ASSERT_TRUE(IsFeedbackAppAvailable());
-  StartFeedbackUI(FeedbackFlow::FEEDBACK_FLOW_LOGIN);
+  StartFeedbackUI(FeedbackFlow::FEEDBACK_FLOW_LOGIN, std::string());
   VerifyFeedbackAppLaunch();
 
   AppWindow* const window =
@@ -118,7 +121,7 @@ IN_PROC_BROWSER_TEST_F(FeedbackTest, AnonymousUser) {
   WaitForExtensionViewsToLoad();
 
   ASSERT_TRUE(IsFeedbackAppAvailable());
-  StartFeedbackUI(FeedbackFlow::FEEDBACK_FLOW_REGULAR);
+  StartFeedbackUI(FeedbackFlow::FEEDBACK_FLOW_REGULAR, std::string());
   VerifyFeedbackAppLaunch();
 
   AppWindow* const window =
@@ -135,6 +138,39 @@ IN_PROC_BROWSER_TEST_F(FeedbackTest, AnonymousUser) {
       "      for (var option in options) {"
       "        if (options[option].value == 'anonymous_user')"
       "          return true;"
+      "      }"
+      "      return false;"
+      "    })()));",
+      &bool_result));
+
+  EXPECT_TRUE(bool_result);
+}
+
+// Ensures that when extra diagnostics are provided with feedback, they are
+// injected properly in the system information.
+IN_PROC_BROWSER_TEST_F(FeedbackTest, ExtraDiagnostics) {
+  WaitForExtensionViewsToLoad();
+
+  ASSERT_TRUE(IsFeedbackAppAvailable());
+  StartFeedbackUI(FeedbackFlow::FEEDBACK_FLOW_REGULAR, "Some diagnostics");
+  VerifyFeedbackAppLaunch();
+
+  AppWindow* const window =
+      PlatformAppBrowserTest::GetFirstAppWindowForBrowser(browser());
+  ASSERT_TRUE(window);
+  content::WebContents* const content = window->web_contents();
+
+  bool bool_result = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      content,
+      "domAutomationController.send("
+      "  ((function() {"
+      "      var sysInfo = feedbackInfo.systemInformation;"
+      "      for (var info in sysInfo) {"
+      "        if (sysInfo[info].key == 'EXTRA_DIAGNOSTICS' &&"
+      "            sysInfo[info].value == 'Some diagnostics') {"
+      "          return true;"
+      "        }"
       "      }"
       "      return false;"
       "    })()));",

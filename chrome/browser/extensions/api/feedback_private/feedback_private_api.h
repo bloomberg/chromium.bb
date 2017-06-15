@@ -34,10 +34,12 @@ class FeedbackPrivateAPI : public BrowserContextKeyedAPI {
 
   void RequestFeedback(const std::string& description_template,
                        const std::string& category_tag,
+                       const std::string& extra_diagnostics,
                        const GURL& page_url);
 
   void RequestFeedbackForFlow(const std::string& description_template,
                               const std::string& category_tag,
+                              const std::string& extra_diagnostics,
                               const GURL& page_url,
                               api::feedback_private::FeedbackFlow flow);
 

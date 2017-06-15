@@ -262,7 +262,8 @@ void SupervisedUserInterstitial::CommandReceived(const std::string& command) {
 #else
     chrome::ShowFeedbackPage(chrome::FindBrowserWithWebContents(web_contents_),
                              chrome::kFeedbackSourceSupervisedUserInterstitial,
-                             message, std::string() /* category_tag */);
+                             message, std::string() /* category_tag */,
+                             std::string() /* extra_diagnostics */);
 #endif
     return;
   }

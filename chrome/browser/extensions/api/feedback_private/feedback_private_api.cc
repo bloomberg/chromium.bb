@@ -114,6 +114,7 @@ LogSourceAccessManager* FeedbackPrivateAPI::GetLogSourceAccessManager() const {
 void FeedbackPrivateAPI::RequestFeedback(
     const std::string& description_template,
     const std::string& category_tag,
+    const std::string& extra_diagnostics,
     const GURL& page_url) {
 #if defined(OS_WIN)
   // Show prompt for Software Removal Tool if the Reporter component has found
@@ -121,18 +122,20 @@ void FeedbackPrivateAPI::RequestFeedback(
   if (base::FeatureList::IsEnabled(kSrtPromptOnFeedbackForm) &&
       safe_browsing::ReporterFoundUws() &&
       !safe_browsing::UserHasRunCleaner()) {
-    RequestFeedbackForFlow(description_template, category_tag, page_url,
+    RequestFeedbackForFlow(description_template, category_tag,
+                           extra_diagnostics, page_url,
                            FeedbackFlow::FEEDBACK_FLOW_SHOWSRTPROMPT);
     return;
   }
 #endif
-  RequestFeedbackForFlow(description_template, category_tag, page_url,
-                         FeedbackFlow::FEEDBACK_FLOW_REGULAR);
+  RequestFeedbackForFlow(description_template, category_tag, extra_diagnostics,
+                         page_url, FeedbackFlow::FEEDBACK_FLOW_REGULAR);
 }
 
 void FeedbackPrivateAPI::RequestFeedbackForFlow(
     const std::string& description_template,
     const std::string& category_tag,
+    const std::string& extra_diagnostics,
     const GURL& page_url,
     api::feedback_private::FeedbackFlow flow) {
   if (browser_context_ && EventRouter::Get(browser_context_)) {
@@ -140,10 +143,19 @@ void FeedbackPrivateAPI::RequestFeedbackForFlow(
     info.description = description_template;
     info.category_tag = base::MakeUnique<std::string>(category_tag);
     info.page_url = base::MakeUnique<std::string>(page_url.spec());
-    info.system_information.reset(new SystemInformationList);
+    info.system_information = base::MakeUnique<SystemInformationList>();
+
+    // Any extra diagnostics information should be added to the sys info.
+    if (!extra_diagnostics.empty()) {
+      SystemInformation extra_info;
+      extra_info.key = "EXTRA_DIAGNOSTICS";
+      extra_info.value = extra_diagnostics;
+      info.system_information->emplace_back(std::move(extra_info));
+    }
+
     // The manager is only available if tracing is enabled.
     if (TracingManager* manager = TracingManager::Get()) {
-      info.trace_id.reset(new int(manager->RequestTrace()));
+      info.trace_id = base::MakeUnique<int>(manager->RequestTrace());
     }
     info.flow = flow;
 #if defined(OS_MACOSX)
