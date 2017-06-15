@@ -36,12 +36,17 @@ function createCustomDeclarativeEvent(name, schema, options, webviewId) {
   return new jsEvent(name, schema, options, webviewId);
 }
 
+function createCustomEvent(name, schema, options) {
+  if (bindingUtil)
+    return bindingUtil.createCustomEvent(name, undefined, false);
+  if (!jsEvent)
+    jsEvent = require('event_bindings').Event;
+  return new jsEvent(name, schema, options);
+}
+
 function createOnMessageEvent(name, schema, options, webviewId) {
   var subEventName = name + '/' + IdGenerator.GetNextId();
-  var newEvent = createCustomDeclarativeEvent(subEventName,
-                                              schema,
-                                              options,
-                                              webviewId);
+  var newEvent = createCustomEvent(subEventName, schema, options);
 
   var view = GuestViewInternalNatives.GetViewFromID(webviewId || 0);
   if (view) {
