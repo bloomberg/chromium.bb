@@ -5,6 +5,7 @@
 #include "ash/system/network/network_list.h"
 
 #include <memory>
+#include <utility>
 
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
@@ -327,7 +328,6 @@ void NetworkListView::UpdateNetworkList() {
   }
 
   UpdateNetworkIcons();
-  OrderNetworks();
   UpdateNetworkListInternal();
 }
 
@@ -362,48 +362,6 @@ void NetworkListView::UpdateNetworks(
 
     network_list_.push_back(base::MakeUnique<NetworkInfo>(network->guid()));
   }
-}
-
-void NetworkListView::OrderNetworks() {
-  struct CompareNetwork {
-    explicit CompareNetwork(NetworkStateHandler* handler) : handler_(handler) {}
-
-    // Returns true if |network1| is less than (i.e. is ordered before)
-    // |network2|.
-    bool operator()(const std::unique_ptr<NetworkInfo>& network1,
-                    const std::unique_ptr<NetworkInfo>& network2) {
-      const int order1 =
-          GetOrder(handler_->GetNetworkStateFromGuid(network1->guid));
-      const int order2 =
-          GetOrder(handler_->GetNetworkStateFromGuid(network2->guid));
-      if (order1 != order2)
-        return order1 < order2;
-      if (network1->connected != network2->connected)
-        return network1->connected;
-      if (network1->connecting != network2->connecting)
-        return network1->connecting;
-      return network1->guid.compare(network2->guid) < 0;
-    }
-
-   private:
-    static int GetOrder(const chromeos::NetworkState* network) {
-      if (!network)
-        return 999;
-      if (network->Matches(NetworkTypePattern::Ethernet()))
-        return 0;
-      if (network->Matches(NetworkTypePattern::Cellular()))
-        return 1;
-      if (network->Matches(NetworkTypePattern::Mobile()))
-        return 2;
-      if (network->Matches(NetworkTypePattern::WiFi()))
-        return 3;
-      return 4;
-    }
-
-    NetworkStateHandler* handler_;
-  };
-  std::sort(network_list_.begin(), network_list_.end(),
-            CompareNetwork(NetworkHandler::Get()->network_state_handler()));
 }
 
 void NetworkListView::UpdateNetworkIcons() {
