@@ -84,8 +84,6 @@ blink_core_sources("rendering") {
     "StyleInvalidImage.h",
     "StyleMotionData.cpp",
     "StyleMotionData.h",
-    "StyleMultiColData.cpp",
-    "StyleMultiColData.h",
     "StyleNonInheritedVariables.cpp",
     "StyleNonInheritedVariables.h",
     "StyleOffsetRotation.h",

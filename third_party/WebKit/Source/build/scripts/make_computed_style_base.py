@@ -32,9 +32,9 @@ ALIGNMENT_ORDER = [
     # Aligns like float
     'LengthBox', 'LengthSize', 'FloatSize', 'LengthPoint', 'Length', 'TextSizeAdjust', 'TabSize', 'float',
     # Aligns like int
-    'StyleColor', 'Color', 'LayoutUnit', 'LineClampValue', 'OutlineValue', 'unsigned', 'int',
+    'BorderValue', 'StyleColor', 'Color', 'LayoutUnit', 'LineClampValue', 'OutlineValue', 'unsigned', 'int',
     # Aligns like short
-    'short',
+    'unsigned short', 'short',
     # Aligns like char
     'StyleSelfAlignmentData', 'StyleContentAlignmentData', 'uint8_t', 'char',
     # Aligns like bool
