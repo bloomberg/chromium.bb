@@ -58,7 +58,6 @@ class ScrollbarLayerInterface;
 class CC_EXPORT Layer : public base::RefCounted<Layer> {
  public:
   using LayerListType = LayerList;
-  using LayerIdMap = std::unordered_map<int, scoped_refptr<Layer>>;
 
   enum LayerIdLabels {
     INVALID_ID = -1,
