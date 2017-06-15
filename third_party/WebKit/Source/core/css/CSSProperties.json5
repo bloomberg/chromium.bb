@@ -3346,6 +3346,8 @@
     {
       name: "border-radius",
       longhands: "border-top-left-radius;border-top-right-radius;border-bottom-right-radius;border-bottom-left-radius",
+      api_class: true,
+      api_methods: ["parseShorthand"],
     },
     {
       name: "border-right",

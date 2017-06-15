@@ -50,7 +50,6 @@
 #include "core/css/properties/CSSPropertyMarginUtils.h"
 #include "core/css/properties/CSSPropertyOffsetPathUtils.h"
 #include "core/css/properties/CSSPropertyPositionUtils.h"
-#include "core/css/properties/CSSPropertyShapeUtils.h"
 #include "core/css/properties/CSSPropertyWebkitBorderWidthUtils.h"
 #include "core/frame/UseCounter.h"
 #include "core/layout/LayoutTheme.h"
@@ -1510,7 +1509,7 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
   if (css_property_desc.parseSingleValue) {
     return css_property_desc.parseSingleValue(
         range_, *context_,
-        CSSParserLocalContext(unresolved_property != property));
+        CSSParserLocalContext(isPropertyAlias(unresolved_property)));
   }
 
   switch (property) {
@@ -3068,8 +3067,10 @@ bool CSSPropertyParser::ParseShorthand(CSSPropertyID unresolved_property,
   const CSSPropertyDescriptor& css_property_desc =
       CSSPropertyDescriptor::Get(property);
   if (css_property_desc.parseShorthand) {
-    return css_property_desc.parseShorthand(important, range_, context_,
-                                            *parsed_properties_);
+    return css_property_desc.parseShorthand(
+        important, range_, context_,
+        CSSParserLocalContext(isPropertyAlias(unresolved_property)),
+        *parsed_properties_);
   }
 
   switch (property) {
@@ -3186,35 +3187,6 @@ bool CSSPropertyParser::ParseShorthand(CSSPropertyID unresolved_property,
       return ConsumeShorthandGreedily(columnRuleShorthand(), important);
     case CSSPropertyListStyle:
       return ConsumeShorthandGreedily(listStyleShorthand(), important);
-    case CSSPropertyBorderRadius: {
-      CSSValue* horizontal_radii[4] = {0};
-      CSSValue* vertical_radii[4] = {0};
-      if (!CSSPropertyShapeUtils::ConsumeRadii(
-              horizontal_radii, vertical_radii, range_, context_->Mode(),
-              unresolved_property == CSSPropertyAliasWebkitBorderRadius))
-        return false;
-      AddParsedProperty(
-          CSSPropertyBorderTopLeftRadius, CSSPropertyBorderRadius,
-          *CSSValuePair::Create(horizontal_radii[0], vertical_radii[0],
-                                CSSValuePair::kDropIdenticalValues),
-          important);
-      AddParsedProperty(
-          CSSPropertyBorderTopRightRadius, CSSPropertyBorderRadius,
-          *CSSValuePair::Create(horizontal_radii[1], vertical_radii[1],
-                                CSSValuePair::kDropIdenticalValues),
-          important);
-      AddParsedProperty(
-          CSSPropertyBorderBottomRightRadius, CSSPropertyBorderRadius,
-          *CSSValuePair::Create(horizontal_radii[2], vertical_radii[2],
-                                CSSValuePair::kDropIdenticalValues),
-          important);
-      AddParsedProperty(
-          CSSPropertyBorderBottomLeftRadius, CSSPropertyBorderRadius,
-          *CSSValuePair::Create(horizontal_radii[3], vertical_radii[3],
-                                CSSValuePair::kDropIdenticalValues),
-          important);
-      return true;
-    }
     case CSSPropertyBorderColor:
       return Consume4Values(borderColorShorthand(), important);
     case CSSPropertyBorderStyle:
