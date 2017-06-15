@@ -186,6 +186,12 @@ int GpuMain(const MainFunctionParams& parameters) {
       SEM_FAILCRITICALERRORS |
       SEM_NOGPFAULTERRORBOX |
       SEM_NOOPENFILEERRORBOX);
+
+  // COM is used by some Windows Media Foundation calls made on this thread and
+  // must be MTA so we don't have to worry about pumping messages to handle
+  // COM callbacks.
+  base::win::ScopedCOMInitializer com_initializer(
+      base::win::ScopedCOMInitializer::kMTA);
 #endif
 
   logging::SetLogMessageHandler(GpuProcessLogMessageHandler);
@@ -203,8 +209,8 @@ int GpuMain(const MainFunctionParams& parameters) {
         new base::MessageLoop(base::MessageLoop::TYPE_DEFAULT));
   } else {
 #if defined(OS_WIN)
-    // OK to use default non-UI message loop because all GPU windows run on
-    // dedicated thread.
+    // The GpuMain thread should not be pumping Windows messages because no UI
+    // is expected to run on this thread.
     main_message_loop.reset(
         new base::MessageLoop(base::MessageLoop::TYPE_DEFAULT));
 #elif defined(USE_X11)
