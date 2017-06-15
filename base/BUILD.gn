@@ -1237,6 +1237,12 @@ component("base") {
   }
 
   if (is_fuchsia) {
+    # These are files that are not expected to have equivalent implementations
+    # on Fuchsia.
+    sources -= [ "sync_socket_posix.cc" ]
+
+    # These files have Fuchsia-specific implementations in the sources += block
+    # below, rather than using the generic POSIX or Linux-y ones.
     sources -= [
       "debug/stack_trace_posix.cc",
       "message_loop/message_pump_libevent.cc",
@@ -2329,6 +2335,10 @@ test("base_unittests") {
       "//base/android/jni_generator:jni_generator_tests",
       "//base/test:test_support_java",
     ]
+  }
+
+  if (is_fuchsia) {
+    sources -= [ "sync_socket_unittest.cc" ]
   }
 
   if (is_ios) {
