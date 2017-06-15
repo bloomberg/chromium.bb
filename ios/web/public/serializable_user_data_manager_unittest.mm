@@ -65,3 +65,31 @@ TEST_F(SerializableUserDataManagerTest, EncodeDecode) {
       decoded_manager->GetValueForSerializationKey(kTestUserDataKey);
   EXPECT_NSEQ(decoded_value, kTestUserData);
 }
+
+// Check that if serialized data does not include user data, then restored
+// SerializableUserDataManager still allow reading and writing user data
+// (see http://crbug.com/699249 for details).
+TEST_F(SerializableUserDataManagerTest, DecodeNoData) {
+  NSMutableData* data = [[NSMutableData alloc] init];
+  NSKeyedArchiver* archiver =
+      [[NSKeyedArchiver alloc] initForWritingWithMutableData:data];
+  [archiver finishEncoding];
+
+  std::unique_ptr<web::SerializableUserData> user_data =
+      web::SerializableUserData::Create();
+  NSKeyedUnarchiver* unarchiver =
+      [[NSKeyedUnarchiver alloc] initForReadingWithData:data];
+  user_data->Decode(unarchiver);
+
+  web::TestWebState web_state;
+  web::SerializableUserDataManager* user_data_manager =
+      web::SerializableUserDataManager::FromWebState(&web_state);
+  user_data_manager->AddSerializableUserData(user_data.get());
+
+  id value = user_data_manager->GetValueForSerializationKey(kTestUserDataKey);
+  EXPECT_NSEQ(nil, value);
+
+  user_data_manager->AddSerializableData(kTestUserData, kTestUserDataKey);
+  value = user_data_manager->GetValueForSerializationKey(kTestUserDataKey);
+  EXPECT_NSEQ(kTestUserData, value);
+}
