@@ -31,15 +31,9 @@ class DeviceMediaToMojoAdapter : public mojom::Device {
              mojom::ReceiverPtr receiver) override;
   void OnReceiverReportingUtilization(int32_t frame_feedback_id,
                                       double utilization) override;
-  void RequestRefreshFrame() override;
-  void MaybeSuspend() override;
-  void Resume() override;
-  void GetPhotoState(const GetPhotoStateCallback& callback) override;
-  void SetPhotoOptions(media::mojom::PhotoSettingsPtr settings,
-                       const SetPhotoOptionsCallback& callback) override;
-  void TakePhoto(const TakePhotoCallback& callback) override;
 
   void Stop();
+
   void OnClientConnectionErrorOrClose();
 
   // Returns the fixed maximum number of buffers passed to the constructor

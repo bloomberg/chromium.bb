@@ -16,8 +16,8 @@ function delayedResolver(object, delayInMs) {
   });
 }
 
-// Runs an ImageCapture.getPhotoCapabilities() and expects it to succeed.
-function testCreateAndGetPhotoCapabilitiesSucceeds() {
+// Runs an ImageCapture.getPhotoCapabilities().
+function testCreateAndGetPhotoCapabilities() {
   navigator.mediaDevices.getUserMedia({"video" : CONSTRAINTS})
       .then(stream => {
         assertEquals('video', stream.getVideoTracks()[0].kind);
@@ -35,8 +35,8 @@ function testCreateAndGetPhotoCapabilitiesSucceeds() {
       });
 }
 
-// Runs an ImageCapture.takePhoto() and expects it to succeed.
-function testCreateAndTakePhotoSucceeds() {
+// Runs an ImageCapture.takePhoto().
+function testCreateAndTakePhoto() {
   navigator.mediaDevices.getUserMedia({"video" : CONSTRAINTS})
       .then(stream => {
         assertEquals('video', stream.getVideoTracks()[0].kind);
@@ -56,28 +56,8 @@ function testCreateAndTakePhotoSucceeds() {
       });
 }
 
-// Runs an ImageCapture.takePhoto() and expects it to get rejected.
-function testCreateAndTakePhotoIsRejected() {
-  navigator.mediaDevices.getUserMedia({"video" : CONSTRAINTS})
-      .then(stream => {
-        assertEquals('video', stream.getVideoTracks()[0].kind);
-        return new ImageCapture(stream.getVideoTracks()[0]);
-      })
-      .then(capturer => {
-        return capturer.takePhoto();
-      })
-      .then(blob => {
-        failTest('Expected promise to get rejected but it was fulfilled');
-      }, err => {
-        reportTestSuccess();
-      })
-      .catch(err => {
-        return failTest(err.toString());
-      });
-}
-
-// Runs an ImageCapture.grabFrame() and expects it to succeed.
-function testCreateAndGrabFrameSucceeds() {
+// Runs an ImageCapture.grabFrame().
+function testCreateAndGrabFrame() {
   navigator.mediaDevices.getUserMedia({"video" : CONSTRAINTS})
       .then(stream => {
         assertEquals('video', stream.getVideoTracks()[0].kind);
