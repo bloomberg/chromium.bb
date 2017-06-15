@@ -45,10 +45,6 @@ crbug.com/582176 virtual/mojo-loading/http/tests/inspector/console-cd.html [ Fai
 crbug.com/608015 http/tests/inspector-protocol/access-inspected-object.html [ Failure Timeout ]
 crbug.com/608015 virtual/mojo-loading/http/tests/inspector-protocol/access-inspected-object.html [ Failure Timeout ]
 
-# https://crbug.com/608023 - does injecting injections work with OOPIFs?
-crbug.com/608023 http/tests/inspector/injected-script-for-origin.html [ Failure ]
-crbug.com/608023 virtual/mojo-loading/http/tests/inspector/injected-script-for-origin.html [ Failure ]
-
 # https://crbug.com/716085 - Feature Policy tests failing when both
 # allowpaymentrequest and allow attribute enables payment feature.
 crbug.com/716085 http/tests/feature-policy/payment-allowed-by-container-policy-relocate.html [ Failure ]

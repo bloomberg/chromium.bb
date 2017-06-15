@@ -16808,7 +16808,6 @@ crbug.com/591099 http/tests/inspector/indexeddb/database-structure.html [ Failur
 crbug.com/591099 http/tests/inspector/indexeddb/resources-panel.html [ Failure ]
 crbug.com/591099 http/tests/inspector/indexeddb/transaction-promise-console.html [ Failure ]
 crbug.com/591099 http/tests/inspector/indexeddb/upgrade-events.html [ Failure ]
-crbug.com/591099 http/tests/inspector/injected-script-for-origin.html [ Failure ]
 crbug.com/591099 http/tests/inspector/inline-source-map-loading.html [ Crash Failure ]
 crbug.com/591099 http/tests/inspector/inspect-element.html [ Crash ]
 crbug.com/591099 http/tests/inspector/inspect-iframe-from-different-domain.html [ Crash ]

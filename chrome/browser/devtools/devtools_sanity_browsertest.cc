@@ -1044,17 +1044,25 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
 
   content::SiteInstance* devtools_instance =
       main_devtools_rfh->GetSiteInstance();
+  content::SiteInstance* extensions_instance =
+      devtools_extension_devtools_page_rfh->GetSiteInstance();
+
   EXPECT_TRUE(
       devtools_instance->GetSiteURL().SchemeIs(content::kChromeDevToolsScheme));
-  EXPECT_EQ(devtools_instance,
-            devtools_extension_devtools_page_rfh->GetSiteInstance());
-  EXPECT_EQ(devtools_instance, devtools_extension_panel_rfh->GetSiteInstance());
-  EXPECT_EQ(devtools_instance, panel_frame_rfh->GetSiteInstance());
-  EXPECT_EQ(devtools_instance, about_blank_frame_rfh->GetSiteInstance());
-  EXPECT_EQ(devtools_instance, data_frame_rfh->GetSiteInstance());
+  EXPECT_TRUE(
+      extensions_instance->GetSiteURL().SchemeIs(extensions::kExtensionScheme));
+
+  EXPECT_NE(devtools_instance, extensions_instance);
+  EXPECT_EQ(extensions_instance,
+            devtools_extension_panel_rfh->GetSiteInstance());
+  EXPECT_EQ(extensions_instance, panel_frame_rfh->GetSiteInstance());
+  EXPECT_EQ(extensions_instance, about_blank_frame_rfh->GetSiteInstance());
+  EXPECT_EQ(extensions_instance, data_frame_rfh->GetSiteInstance());
+
   EXPECT_EQ(web_url.host(),
             web_frame_rfh->GetSiteInstance()->GetSiteURL().host());
   EXPECT_NE(devtools_instance, web_frame_rfh->GetSiteInstance());
+  EXPECT_NE(extensions_instance, web_frame_rfh->GetSiteInstance());
 
   // Check that if the web iframe navigates itself to about:blank, it stays in
   // the web SiteInstance.
@@ -1071,6 +1079,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
   EXPECT_EQ(web_url.host(),
             web_frame_rfh->GetSiteInstance()->GetSiteURL().host());
   EXPECT_NE(devtools_instance, web_frame_rfh->GetSiteInstance());
+  EXPECT_NE(extensions_instance, web_frame_rfh->GetSiteInstance());
 
   // Check that if the web IFrame is navigated back to a devtools extension
   // page, it gets put back in the devtools process.
@@ -1093,7 +1102,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
 
   EXPECT_EQ(extension_simple_url,
             extension_simple_frame_rfh->GetLastCommittedURL());
-  EXPECT_EQ(devtools_instance, extension_simple_frame_rfh->GetSiteInstance());
+  EXPECT_EQ(extensions_instance, extension_simple_frame_rfh->GetSiteInstance());
 }
 
 // Tests that http Iframes within the sidebar pane page for the devtools
@@ -1148,22 +1157,24 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
 
   content::SiteInstance* devtools_instance =
       main_devtools_rfh->GetSiteInstance();
+  content::SiteInstance* extensions_instance =
+      devtools_extension_devtools_page_rfh->GetSiteInstance();
   EXPECT_TRUE(
       devtools_instance->GetSiteURL().SchemeIs(content::kChromeDevToolsScheme));
-  EXPECT_EQ(devtools_instance,
+  EXPECT_NE(devtools_instance, extensions_instance);
+  EXPECT_EQ(extensions_instance,
             devtools_extension_devtools_page_rfh->GetSiteInstance());
-  EXPECT_EQ(devtools_instance,
+  EXPECT_EQ(extensions_instance,
             devtools_sidebar_pane_extension_rfh->GetSiteInstance());
   EXPECT_EQ(web_url.host(),
             http_iframe_rfh->GetSiteInstance()->GetSiteURL().host());
   EXPECT_NE(devtools_instance, http_iframe_rfh->GetSiteInstance());
+  EXPECT_NE(extensions_instance, http_iframe_rfh->GetSiteInstance());
 }
 
 // Tests that http Iframes within the devtools background page, which is
 // different from the extension's background page, are rendered in their own
-// processes and not in the devtools process or the extension's process.  This
-// is tested because this is one of the extension pages with devtools access
-// (https://developer.chrome.com/extensions/devtools).  http://crbug.com/570483
+// processes and not in the devtools process or the extension's process.
 IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
                        HttpIframeInDevToolsExtensionDevtools) {
   ASSERT_TRUE(embedded_test_server()->Start());
@@ -1205,13 +1216,16 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
 
   content::SiteInstance* devtools_instance =
       main_devtools_rfh->GetSiteInstance();
+  content::SiteInstance* extensions_instance =
+      devtools_extension_devtools_page_rfh->GetSiteInstance();
+
   EXPECT_TRUE(
       devtools_instance->GetSiteURL().SchemeIs(content::kChromeDevToolsScheme));
-  EXPECT_EQ(devtools_instance,
-            devtools_extension_devtools_page_rfh->GetSiteInstance());
+  EXPECT_NE(devtools_instance, extensions_instance);
   EXPECT_EQ(web_url.host(),
             http_iframe_rfh->GetSiteInstance()->GetSiteURL().host());
   EXPECT_NE(devtools_instance, http_iframe_rfh->GetSiteInstance());
+  EXPECT_NE(extensions_instance, http_iframe_rfh->GetSiteInstance());
 }
 
 // Tests that iframes to a non-devtools extension embedded in a devtools
@@ -1272,14 +1286,17 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
   // process, not in devtools or |devtools_extension|'s process.
   content::SiteInstance* devtools_instance =
       main_devtools_rfh->GetSiteInstance();
+  content::SiteInstance* extensions_instance =
+      devtools_extension_devtools_page_rfh->GetSiteInstance();
   EXPECT_TRUE(
       devtools_instance->GetSiteURL().SchemeIs(content::kChromeDevToolsScheme));
-  EXPECT_EQ(devtools_instance,
-            devtools_extension_devtools_page_rfh->GetSiteInstance());
-  EXPECT_EQ(devtools_instance, devtools_extension_panel_rfh->GetSiteInstance());
+  EXPECT_NE(devtools_instance, extensions_instance);
+  EXPECT_EQ(extensions_instance,
+            devtools_extension_panel_rfh->GetSiteInstance());
   EXPECT_EQ(non_dt_extension_test_url.GetOrigin(),
             non_devtools_extension_rfh->GetSiteInstance()->GetSiteURL());
   EXPECT_NE(devtools_instance, non_devtools_extension_rfh->GetSiteInstance());
+  EXPECT_NE(extensions_instance, non_devtools_extension_rfh->GetSiteInstance());
 }
 
 // Tests that if a devtools extension's devtools panel page has a subframe to a
@@ -1351,24 +1368,29 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
   EXPECT_EQ(extension_b_page_url,
             devtools_extension_b_frame_rfh->GetLastCommittedURL());
 
-  // All frames should be in the devtools process.
+  // Main extension frame should be loaded in the extensions process. Nested
+  // iframes should be loaded consistently with any other extensions iframes
+  // (in or out of process).
   content::SiteInstance* devtools_instance =
       main_devtools_rfh->GetSiteInstance();
+  content::SiteInstance* extension_a_instance =
+      devtools_extension_a_devtools_rfh->GetSiteInstance();
+  content::SiteInstance* extension_b_instance =
+      devtools_extension_b_devtools_rfh->GetSiteInstance();
   EXPECT_TRUE(
       devtools_instance->GetSiteURL().SchemeIs(content::kChromeDevToolsScheme));
-  EXPECT_EQ(devtools_instance,
-            devtools_extension_a_devtools_rfh->GetSiteInstance());
-  EXPECT_EQ(devtools_instance,
-            devtools_extension_b_devtools_rfh->GetSiteInstance());
-  EXPECT_EQ(devtools_instance,
+  EXPECT_NE(devtools_instance, extension_a_instance);
+  EXPECT_NE(devtools_instance, extension_b_instance);
+  EXPECT_NE(extension_a_instance, extension_b_instance);
+  EXPECT_EQ(extension_a_instance,
             devtools_extension_a_panel_rfh->GetSiteInstance());
-  EXPECT_EQ(devtools_instance,
+  EXPECT_EQ(extension_b_instance,
             devtools_extension_b_frame_rfh->GetSiteInstance());
 }
 
 // Tests that a devtools extension can still have subframes to itself in a
-// "devtools page" and that they will be rendered within the devtools process as
-// well, not in the extension process.  http://crbug.com/570483
+// "devtools page" and that they will be rendered within the extension process
+// as well, not in some other process.
 IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest, DevToolsExtensionInItself) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
@@ -1402,7 +1424,7 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest, DevToolsExtensionInItself) {
   RenderFrameHost* devtools_extension_panel_frame_rfh =
       ChildFrameAt(devtools_extension_panel_rfh, 0);
 
-  // All frames should be in the devtools process, including
+  // Extension frames should be in the extensions process, including
   // simple_test_page.html
   EXPECT_TRUE(main_devtools_rfh->GetLastCommittedURL().SchemeIs(
       content::kChromeDevToolsScheme));
@@ -1415,12 +1437,13 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest, DevToolsExtensionInItself) {
 
   content::SiteInstance* devtools_instance =
       main_devtools_rfh->GetSiteInstance();
+  content::SiteInstance* extensions_instance =
+      devtools_extension_devtools_page_rfh->GetSiteInstance();
   EXPECT_TRUE(
       devtools_instance->GetSiteURL().SchemeIs(content::kChromeDevToolsScheme));
-  EXPECT_EQ(devtools_instance,
-            devtools_extension_devtools_page_rfh->GetSiteInstance());
-  EXPECT_EQ(devtools_instance, devtools_extension_panel_rfh->GetSiteInstance());
-  EXPECT_EQ(devtools_instance,
+  EXPECT_EQ(extensions_instance,
+            devtools_extension_panel_rfh->GetSiteInstance());
+  EXPECT_EQ(extensions_instance,
             devtools_extension_panel_frame_rfh->GetSiteInstance());
 }
 

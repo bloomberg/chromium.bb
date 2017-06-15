@@ -62,15 +62,10 @@ class WebDevToolsFrontendImpl final : public WebDevToolsFrontend,
                        float y,
                        ContextMenuProvider*) override;
 
-  void SetInjectedScriptForOrigin(const String& origin,
-                                  const String& source) override;
-
  private:
   Persistent<WebLocalFrameBase> web_frame_;
   WebDevToolsFrontendClient* client_;
   Persistent<DevToolsHost> devtools_host_;
-  typedef HashMap<String, String> InjectedScriptForOriginMap;
-  InjectedScriptForOriginMap injected_script_for_origin_;
 };
 
 }  // namespace blink

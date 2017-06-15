@@ -60,8 +60,6 @@ class CORE_EXPORT DevToolsHost final
 
   float ConvertLengthForEmbedder(float length);
 
-  void setInjectedScriptForOrigin(const String& origin, const String& script);
-
   void copyText(const String& text);
 
   void ShowContextMenu(LocalFrame* target_frame,

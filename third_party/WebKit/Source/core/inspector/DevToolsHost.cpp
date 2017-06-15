@@ -164,12 +164,6 @@ float DevToolsHost::zoomFactor() {
   return zoom_factor / window_to_viewport_ratio;
 }
 
-void DevToolsHost::setInjectedScriptForOrigin(const String& origin,
-                                              const String& script) {
-  if (client_)
-    client_->SetInjectedScriptForOrigin(origin, script);
-}
-
 void DevToolsHost::copyText(const String& text) {
   Pasteboard::GeneralPasteboard()->WritePlainText(
       text, Pasteboard::kCannotSmartReplace);
