@@ -918,17 +918,24 @@
       default_value: "true",
       field_size: 1,
     },
+    {
+      name: "TransformOperations",
+      field_template: "storage_only",
+      type_name: "TransformOperations",
+      field_group: "rare-non-inherited->transform",
+      default_value: "EmptyTransformOperations()",
+      include_paths: ["platform/transforms/TransformOperations.h"]
+    },
+    {
+      name: "Motion",
+      field_template: "storage_only",
+      type_name: "StyleMotionData",
+      field_group: "rare-non-inherited->transform",
+      default_value: "StyleMotionData(LengthPoint(Length(kAuto), Length(kAuto)), LengthPoint(Length(kAuto), Length(kAuto)), nullptr, Length(0, kFixed), StyleOffsetRotation(0, kOffsetRotationAuto))",
+      include_paths: ["core/style/StyleMotionData.h"],
+    },
     // TODO(shend): These are subgroups and should be removed when we can
     // generate them propertly.
-    {
-      name: "TransformData",
-      field_template: "storage_only",
-      type_name: "StyleTransformData",
-      field_group: "rare-non-inherited",
-      default_value: "",
-      wrapper_pointer_name: "DataRef",
-      include_paths: ["core/style/StyleTransformData.h"],
-    },
     {
       name: "GridData",
       field_template: "storage_only",

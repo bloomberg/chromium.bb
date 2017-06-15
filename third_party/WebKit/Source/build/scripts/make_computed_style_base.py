@@ -25,12 +25,14 @@ from itertools import chain
 # TODO(shend): Put alignment sizes into code form, rather than linking to a CL which may disappear.
 ALIGNMENT_ORDER = [
     # Aligns like double
-    'double',
+    'ScaleTransformOperation', 'RotateTransformOperation', 'TranslateTransformOperation', 'double',
     # Aligns like a pointer (can be 32 or 64 bits)
-    'Vector<CSSPropertyID>', 'AtomicString', 'DataRef', 'RefPtr', 'DataPersistent', 'Persistent', 'std::unique_ptr',
+    'StyleMotionData', 'TransformOperations', 'Vector<CSSPropertyID>', 'AtomicString', 'DataRef', 'RefPtr',
+    'DataPersistent', 'Persistent', 'std::unique_ptr',
     'Vector<String>', 'Font', 'FillLayer', 'NinePieceImage',
     # Aligns like float
-    'LengthBox', 'LengthSize', 'FloatSize', 'LengthPoint', 'Length', 'TextSizeAdjust', 'TabSize', 'float',
+    'TransformOrigin', 'LengthBox', 'LengthSize', 'FloatSize', 'LengthPoint', 'Length',
+    'TextSizeAdjust', 'TabSize', 'float',
     # Aligns like int
     'BorderValue', 'StyleColor', 'Color', 'LayoutUnit', 'LineClampValue', 'OutlineValue', 'unsigned', 'int',
     # Aligns like short
