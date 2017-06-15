@@ -13,7 +13,7 @@ var frameCount = 0;
 var totalRafs = 50;
 
 function runTest() {
-  window.webkitRequestAnimationFrame(draw);
+  window.requestAnimationFrame(draw);
 }
 function draw() {
   console.time("___RafWithNoDamage___");
@@ -22,7 +22,7 @@ function draw() {
     domAutomationController.setAutomationId(1);
     domAutomationController.send("FINISHED");
   } else {
-    window.webkitRequestAnimationFrame(draw);
+    window.requestAnimationFrame(draw);
   }
   console.timeEnd("___RafWithNoDamage___");
 }

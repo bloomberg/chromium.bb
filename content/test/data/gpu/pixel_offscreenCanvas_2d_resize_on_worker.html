@@ -51,7 +51,7 @@ function waitForFinish()
   } else {
     g_swapsBeforeAck--;
     document.getElementById('container').style.zIndex = g_swapsBeforeAck + 1;
-    window.webkitRequestAnimationFrame(waitForFinish);
+    window.requestAnimationFrame(waitForFinish);
   }
 }
 

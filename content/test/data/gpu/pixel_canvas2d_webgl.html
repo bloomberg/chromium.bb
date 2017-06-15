@@ -60,7 +60,7 @@ function waitForFinish()
     g_swapsBeforeAck--;
     document.getElementById('container').style.zIndex = g_swapsBeforeAck + 1;
     drawTriangle(gl);
-    window.webkitRequestAnimationFrame(waitForFinish);
+    window.requestAnimationFrame(waitForFinish);
   }
 }
 </script>
