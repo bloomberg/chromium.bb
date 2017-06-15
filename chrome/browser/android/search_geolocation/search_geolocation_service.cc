@@ -9,6 +9,7 @@
 #include "base/values.h"
 #include "chrome/browser/android/search_geolocation/search_geolocation_disclosure_tab_helper.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_engines/ui_thread_search_terms_data.h"
@@ -221,6 +222,9 @@ void SearchGeolocationService::OnDSEChanged() {
   PrefValue pref = GetDSEGeolocationPref();
   ContentSetting content_setting = GetCurrentContentSetting();
 
+  // Remove any geolocation embargo on the URL.
+  PermissionDecisionAutoBlocker::GetForProfile(profile_)->RemoveEmbargoByUrl(
+      delegate_->GetDSEOrigin().GetURL(), CONTENT_SETTINGS_TYPE_GEOLOCATION);
   if (content_setting == CONTENT_SETTING_BLOCK && pref.setting) {
     pref.setting = false;
   } else if (content_setting == CONTENT_SETTING_ALLOW && !pref.setting) {

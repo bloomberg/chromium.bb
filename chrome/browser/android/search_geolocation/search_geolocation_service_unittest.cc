@@ -13,6 +13,8 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/android/search_geolocation/search_geolocation_disclosure_tab_helper.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/permissions/permission_decision_auto_blocker.h"
+#include "chrome/browser/permissions/permission_result.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
@@ -373,4 +375,30 @@ TEST_F(SearchGeolocationServiceTest, DSEChangesAndDisclosure) {
   test_delegate()->SetDSEOrigin(kGoogleAusURL);
   EXPECT_TRUE(SearchGeolocationDisclosureTabHelper::IsDisclosureResetForTests(
       profile()));
+}
+
+TEST_F(SearchGeolocationServiceTest, Embargo) {
+  test_delegate()->SetDSEOrigin(kGoogleURL);
+
+  // Place another origin under embargo.
+  GURL google_aus_url(kGoogleAusURL);
+  PermissionDecisionAutoBlocker* auto_blocker =
+      PermissionDecisionAutoBlocker::GetForProfile(profile());
+  auto_blocker->RecordDismissAndEmbargo(google_aus_url,
+                                        CONTENT_SETTINGS_TYPE_GEOLOCATION);
+  auto_blocker->RecordDismissAndEmbargo(google_aus_url,
+                                        CONTENT_SETTINGS_TYPE_GEOLOCATION);
+  auto_blocker->RecordDismissAndEmbargo(google_aus_url,
+                                        CONTENT_SETTINGS_TYPE_GEOLOCATION);
+  PermissionResult result = auto_blocker->GetEmbargoResult(
+      GURL(kGoogleAusURL), CONTENT_SETTINGS_TYPE_GEOLOCATION);
+  EXPECT_EQ(result.source, PermissionStatusSource::MULTIPLE_DISMISSALS);
+  EXPECT_EQ(result.content_setting, CONTENT_SETTING_BLOCK);
+
+  // Now change the DSE to this origin and make sure the embargo is cleared.
+  test_delegate()->SetDSEOrigin(kGoogleAusURL);
+  result = auto_blocker->GetEmbargoResult(GURL(kGoogleAusURL),
+                                          CONTENT_SETTINGS_TYPE_GEOLOCATION);
+  EXPECT_EQ(result.source, PermissionStatusSource::UNSPECIFIED);
+  EXPECT_EQ(result.content_setting, CONTENT_SETTING_ASK);
 }
