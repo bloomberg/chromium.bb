@@ -70,7 +70,7 @@ TEST(ComputedStyleTest, FocusRingOutset) {
 
 TEST(ComputedStyleTest, Preserve3dForceStackingContext) {
   RefPtr<ComputedStyle> style = ComputedStyle::Create();
-  style->SetTransformStyle3D(ETransformStyle3D::kPreserve3D);
+  style->SetTransformStyle3D(ETransformStyle3D::kPreserve3d);
   style->SetOverflowX(EOverflow::kHidden);
   style->SetOverflowY(EOverflow::kHidden);
   style->UpdateIsStackingContext(false, false);

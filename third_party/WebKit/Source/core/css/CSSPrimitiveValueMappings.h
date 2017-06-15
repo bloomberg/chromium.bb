@@ -1847,34 +1847,6 @@ inline EAlignmentBaseline CSSIdentifierValue::ConvertTo() const {
 }
 
 template <>
-inline CSSIdentifierValue::CSSIdentifierValue(ETransformStyle3D e)
-    : CSSValue(kIdentifierClass) {
-  switch (e) {
-    case ETransformStyle3D::kFlat:
-      value_id_ = CSSValueFlat;
-      break;
-    case ETransformStyle3D::kPreserve3D:
-      value_id_ = CSSValuePreserve3d;
-      break;
-  }
-}
-
-template <>
-inline ETransformStyle3D CSSIdentifierValue::ConvertTo() const {
-  switch (value_id_) {
-    case CSSValueFlat:
-      return ETransformStyle3D::kFlat;
-    case CSSValuePreserve3d:
-      return ETransformStyle3D::kPreserve3D;
-    default:
-      break;
-  }
-
-  NOTREACHED();
-  return ETransformStyle3D::kFlat;
-}
-
-template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EBufferedRendering e)
     : CSSValue(kIdentifierClass) {
   switch (e) {
