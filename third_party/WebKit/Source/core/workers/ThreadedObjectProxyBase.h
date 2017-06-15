@@ -41,7 +41,8 @@ class CORE_EXPORT ThreadedObjectProxyBase : public WorkerReportingProxy {
 
  protected:
   explicit ThreadedObjectProxyBase(ParentFrameTaskRunners*);
-  virtual WeakPtr<ThreadedMessagingProxyBase> MessagingProxyWeakPtr() = 0;
+  virtual CrossThreadWeakPersistent<ThreadedMessagingProxyBase>
+  MessagingProxyWeakPtr() = 0;
   ParentFrameTaskRunners* GetParentFrameTaskRunners();
 
  private:

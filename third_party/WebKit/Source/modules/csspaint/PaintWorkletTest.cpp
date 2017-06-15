@@ -30,18 +30,18 @@ class PaintWorkletTest : public testing::Test {
   }
 
   PaintWorkletGlobalScopeProxy* GetProxy() {
-    return PaintWorkletGlobalScopeProxy::From(proxy_.get());
+    return PaintWorkletGlobalScopeProxy::From(proxy_.Get());
   }
 
   void Terminate() {
     page_.reset();
     proxy_->TerminateWorkletGlobalScope();
-    proxy_.reset();
+    proxy_ = nullptr;
   }
 
  private:
   std::unique_ptr<DummyPageHolder> page_;
-  std::unique_ptr<WorkletGlobalScopeProxy> proxy_;
+  Persistent<WorkletGlobalScopeProxy> proxy_;
 };
 
 TEST_F(PaintWorkletTest, GarbageCollectionOfCSSPaintDefinition) {

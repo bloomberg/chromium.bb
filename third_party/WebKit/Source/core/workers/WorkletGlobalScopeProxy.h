@@ -7,6 +7,7 @@
 
 #include "core/CoreExport.h"
 #include "platform/WebTaskRunner.h"
+#include "platform/heap/GarbageCollected.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebURLRequest.h"
 
@@ -17,7 +18,7 @@ class WorkletPendingTasks;
 // Abstracts communication from (Main/Threaded)Worklet on the main thread to
 // (Main/Threaded)WorkletGlobalScope so that Worklet class doesn't have to care
 // about the thread WorkletGlobalScope runs on.
-class CORE_EXPORT WorkletGlobalScopeProxy {
+class CORE_EXPORT WorkletGlobalScopeProxy : public GarbageCollectedMixin {
  public:
   virtual ~WorkletGlobalScopeProxy() {}
 
@@ -27,7 +28,7 @@ class CORE_EXPORT WorkletGlobalScopeProxy {
       const KURL& module_url_record,
       WebURLRequest::FetchCredentialsMode,
       RefPtr<WebTaskRunner> outside_settings_task_runner,
-      WorkletPendingTasks*) {}
+      WorkletPendingTasks*) = 0;
 
   // Terminates the worklet global scope from the main thread.
   virtual void TerminateWorkletGlobalScope() = 0;

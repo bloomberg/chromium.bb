@@ -56,6 +56,7 @@ WorkletGlobalScopeProxy* AnimationWorklet::GetWorkletGlobalScopeProxy() const {
 }
 
 DEFINE_TRACE(AnimationWorklet) {
+  visitor->Trace(worklet_messaging_proxy_);
   ThreadedWorklet::Trace(visitor);
 }
 

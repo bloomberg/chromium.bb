@@ -51,8 +51,8 @@ bool PaintWorklet::NeedsToCreateGlobalScope() {
   return !GetNumberOfGlobalScopes();
 }
 
-std::unique_ptr<WorkletGlobalScopeProxy> PaintWorklet::CreateGlobalScope() {
-  return WTF::MakeUnique<PaintWorkletGlobalScopeProxy>(
+WorkletGlobalScopeProxy* PaintWorklet::CreateGlobalScope() {
+  return new PaintWorkletGlobalScopeProxy(
       ToDocument(GetExecutionContext())->GetFrame(),
       pending_generator_registry_);
 }

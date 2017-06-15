@@ -37,7 +37,7 @@ class MODULES_EXPORT PaintWorklet final : public Worklet {
 
   // Implements Worklet.
   bool NeedsToCreateGlobalScope() final;
-  std::unique_ptr<WorkletGlobalScopeProxy> CreateGlobalScope() final;
+  WorkletGlobalScopeProxy* CreateGlobalScope() final;
 
   Member<PaintWorkletPendingGeneratorRegistry> pending_generator_registry_;
 

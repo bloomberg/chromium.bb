@@ -105,6 +105,7 @@ void InProcessWorkerBase::OnFinished() {
 }
 
 DEFINE_TRACE(InProcessWorkerBase) {
+  visitor->Trace(context_proxy_);
   AbstractWorker::Trace(visitor);
 }
 

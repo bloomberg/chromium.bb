@@ -16,6 +16,9 @@ class ThreadedWorkletMessagingProxy;
 class WorkletGlobalScopeProxy;
 
 class MODULES_EXPORT AnimationWorklet final : public ThreadedWorklet {
+  // Eager finalization is needed to notify parent object destruction of the
+  // GC-managed messaging proxy and to initiate worklet termination.
+  EAGERLY_FINALIZE();
   WTF_MAKE_NONCOPYABLE(AnimationWorklet);
 
  public:
@@ -32,9 +35,7 @@ class MODULES_EXPORT AnimationWorklet final : public ThreadedWorklet {
  private:
   explicit AnimationWorklet(LocalFrame*);
 
-  // The proxy outlives the worklet as it is used to perform thread shutdown,
-  // it deletes itself once this has occured.
-  ThreadedWorkletMessagingProxy* worklet_messaging_proxy_;
+  Member<ThreadedWorkletMessagingProxy> worklet_messaging_proxy_;
 };
 
 }  // namespace blink

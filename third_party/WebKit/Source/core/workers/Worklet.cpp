@@ -86,7 +86,7 @@ WorkletGlobalScopeProxy* Worklet::FindAvailableGlobalScope() const {
   DCHECK(IsMainThread());
   // TODO(nhiroki): Support the case where there are multiple global scopes.
   DCHECK_EQ(1u, GetNumberOfGlobalScopes());
-  return proxies_.begin()->get();
+  return proxies_.begin()->Get();
 }
 
 // Implementation of the second half of the "addModule(moduleURL, options)"
@@ -148,6 +148,7 @@ void Worklet::FetchAndInvokeScript(const KURL& module_url_record,
 }
 
 DEFINE_TRACE(Worklet) {
+  visitor->Trace(proxies_);
   ContextLifecycleObserver::Trace(visitor);
 }
 

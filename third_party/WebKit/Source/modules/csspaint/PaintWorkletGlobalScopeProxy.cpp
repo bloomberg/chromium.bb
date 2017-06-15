@@ -53,4 +53,8 @@ CSSPaintDefinition* PaintWorkletGlobalScopeProxy::FindDefinition(
   return global_scope_->FindDefinition(name);
 }
 
+DEFINE_TRACE(PaintWorkletGlobalScopeProxy) {
+  visitor->Trace(global_scope_);
+}
+
 }  // namespace blink

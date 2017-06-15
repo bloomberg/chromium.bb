@@ -47,6 +47,7 @@ WorkletGlobalScopeProxy* AudioWorklet::GetWorkletGlobalScopeProxy() const {
 }
 
 DEFINE_TRACE(AudioWorklet) {
+  visitor->Trace(worklet_messaging_proxy_);
   ThreadedWorklet::Trace(visitor);
 }
 

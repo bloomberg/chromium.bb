@@ -69,15 +69,12 @@ InProcessWorkerMessagingProxy::InProcessWorkerMessagingProxy(
     InProcessWorkerBase* worker_object,
     WorkerClients* worker_clients)
     : ThreadedMessagingProxyBase(execution_context, worker_clients),
-      worker_object_(worker_object),
-      weak_ptr_factory_(this) {
-  worker_object_proxy_ = InProcessWorkerObjectProxy::Create(
-      weak_ptr_factory_.CreateWeakPtr(), GetParentFrameTaskRunners());
+      worker_object_(worker_object) {
+  worker_object_proxy_ =
+      InProcessWorkerObjectProxy::Create(this, GetParentFrameTaskRunners());
 }
 
-InProcessWorkerMessagingProxy::~InProcessWorkerMessagingProxy() {
-  DCHECK(!worker_object_);
-}
+InProcessWorkerMessagingProxy::~InProcessWorkerMessagingProxy() = default;
 
 void InProcessWorkerMessagingProxy::StartWorkerGlobalScope(
     const KURL& script_url,
@@ -209,17 +206,6 @@ void InProcessWorkerMessagingProxy::WorkerThreadCreated() {
   queued_early_tasks_.clear();
 }
 
-void InProcessWorkerMessagingProxy::ParentObjectDestroyed() {
-  DCHECK(IsParentContextThread());
-
-  // parentObjectDestroyed() is called in InProcessWorkerBase's destructor.
-  // Thus it should be guaranteed that a weak pointer m_workerObject has been
-  // cleared before this method gets called.
-  DCHECK(!worker_object_);
-
-  ThreadedMessagingProxyBase::ParentObjectDestroyed();
-}
-
 void InProcessWorkerMessagingProxy::ConfirmMessageFromWorkerObject() {
   DCHECK(IsParentContextThread());
   if (AskedToTerminate())
@@ -238,6 +224,11 @@ void InProcessWorkerMessagingProxy::PendingActivityFinished() {
     return;
   }
   worker_global_scope_has_pending_activity_ = false;
+}
+
+DEFINE_TRACE(InProcessWorkerMessagingProxy) {
+  visitor->Trace(worker_object_);
+  ThreadedMessagingProxyBase::Trace(visitor);
 }
 
 bool InProcessWorkerMessagingProxy::HasPendingActivity() const {

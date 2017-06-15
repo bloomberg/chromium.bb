@@ -8,7 +8,6 @@
 #include <memory>
 #include "core/dom/AnimationWorkletProxyClient.h"
 #include "core/workers/ThreadedWorkletMessagingProxy.h"
-#include "platform/wtf/Allocator.h"
 
 namespace blink {
 
@@ -18,10 +17,10 @@ class WorkerThread;
 
 class AnimationWorkletMessagingProxy final
     : public ThreadedWorkletMessagingProxy {
-  USING_FAST_MALLOC(AnimationWorkletMessagingProxy);
-
  public:
   AnimationWorkletMessagingProxy(ExecutionContext*, WorkerClients*);
+
+  DECLARE_VIRTUAL_TRACE();
 
  private:
   ~AnimationWorkletMessagingProxy() override;

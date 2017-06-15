@@ -14,7 +14,6 @@ namespace blink {
 class CORE_EXPORT DedicatedWorkerMessagingProxy final
     : public InProcessWorkerMessagingProxy {
   WTF_MAKE_NONCOPYABLE(DedicatedWorkerMessagingProxy);
-  USING_FAST_MALLOC(DedicatedWorkerMessagingProxy);
 
  public:
   DedicatedWorkerMessagingProxy(InProcessWorkerBase*, WorkerClients*);
