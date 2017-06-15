@@ -602,7 +602,7 @@ CSSStyleSheet* StyleEngine::ParseSheet(Element& element,
                                        TextPosition start_position) {
   CSSStyleSheet* style_sheet = nullptr;
   style_sheet = CSSStyleSheet::CreateInline(element, KURL(), start_position,
-                                            GetDocument().characterSet());
+                                            GetDocument().Encoding());
   style_sheet->Contents()->ParseStringAtPosition(text, start_position);
   return style_sheet;
 }

@@ -46,7 +46,7 @@ CSSParserContext* CSSParserContext::Create(
     const CSSParserContext* other,
     const KURL& base_url,
     ReferrerPolicy referrer_policy,
-    const String& charset,
+    const WTF::TextEncoding& charset,
     const Document* use_counter_document) {
   return new CSSParserContext(
       base_url, charset, other->mode_, other->match_mode_, other->profile_,
@@ -62,15 +62,15 @@ CSSParserContext* CSSParserContext::Create(
     SelectorProfile profile,
     const Document* use_counter_document) {
   return new CSSParserContext(
-      KURL(), g_empty_string, mode, mode, profile, Referrer(), false, false,
-      kDoNotCheckContentSecurityPolicy, use_counter_document);
+      KURL(), WTF::TextEncoding(), mode, mode, profile, Referrer(), false,
+      false, kDoNotCheckContentSecurityPolicy, use_counter_document);
 }
 
 // static
 CSSParserContext* CSSParserContext::Create(const Document& document) {
   return CSSParserContext::Create(document, document.BaseURL(),
-                                  document.GetReferrerPolicy(), g_empty_string,
-                                  kDynamicProfile);
+                                  document.GetReferrerPolicy(),
+                                  WTF::TextEncoding(), kDynamicProfile);
 }
 
 // static
@@ -78,7 +78,7 @@ CSSParserContext* CSSParserContext::Create(
     const Document& document,
     const KURL& base_url_override,
     ReferrerPolicy referrer_policy_override,
-    const String& charset,
+    const WTF::TextEncoding& charset,
     SelectorProfile profile) {
   CSSParserMode mode =
       document.InQuirksMode() ? kHTMLQuirksMode : kHTMLStandardMode;
@@ -115,7 +115,7 @@ CSSParserContext* CSSParserContext::Create(
 
 CSSParserContext::CSSParserContext(
     const KURL& base_url,
-    const String& charset,
+    const WTF::TextEncoding& charset,
     CSSParserMode mode,
     CSSParserMode match_mode,
     SelectorProfile profile,
@@ -160,9 +160,9 @@ const CSSParserContext* StrictCSSParserContext() {
 KURL CSSParserContext::CompleteURL(const String& url) const {
   if (url.IsNull())
     return KURL();
-  if (Charset().IsEmpty())
+  if (!Charset().IsValid())
     return KURL(BaseURL(), url);
-  return KURL(BaseURL(), url, WTF::TextEncoding(Charset()));
+  return KURL(BaseURL(), url, Charset());
 }
 
 void CSSParserContext::Count(WebFeature feature) const {

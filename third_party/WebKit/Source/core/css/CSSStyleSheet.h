@@ -28,6 +28,7 @@
 #include "core/css/StyleSheet.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Noncopyable.h"
+#include "platform/wtf/text/TextEncoding.h"
 #include "platform/wtf/text/TextPosition.h"
 
 namespace blink {
@@ -56,7 +57,7 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
       Node&,
       const KURL&,
       const TextPosition& start_position = TextPosition::MinimumPosition(),
-      const String& encoding = String());
+      const WTF::TextEncoding& = WTF::TextEncoding());
   static CSSStyleSheet* CreateInline(
       StyleSheetContents*,
       Node& owner_node,

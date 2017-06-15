@@ -115,7 +115,7 @@ void LinkStyle::SetCSSStyleSheet(
   }
 
   CSSParserContext* parser_context = CSSParserContext::Create(
-      GetDocument(), base_url, referrer_policy, String(charset.GetName()));
+      GetDocument(), base_url, referrer_policy, charset);
 
   if (StyleSheetContents* restored_sheet =
           const_cast<CSSStyleSheetResource*>(cached_style_sheet)

@@ -69,7 +69,7 @@ TEST(SelectorQueryTest, NotMatchingPseudoElement) {
 
   CSSSelectorList selector_list = CSSParser::ParseSelector(
       CSSParserContext::Create(*document, KURL(), kReferrerPolicyDefault,
-                               g_empty_string,
+                               WTF::TextEncoding(),
                                CSSParserContext::kStaticProfile),
       nullptr, "span::before");
   std::unique_ptr<SelectorQuery> query =
@@ -79,7 +79,7 @@ TEST(SelectorQueryTest, NotMatchingPseudoElement) {
 
   selector_list = CSSParser::ParseSelector(
       CSSParserContext::Create(*document, KURL(), kReferrerPolicyDefault,
-                               g_empty_string,
+                               WTF::TextEncoding(),
                                CSSParserContext::kStaticProfile),
       nullptr, "span");
   query = SelectorQuery::Adopt(std::move(selector_list));
@@ -98,7 +98,7 @@ TEST(SelectorQueryTest, LastOfTypeNotFinishedParsing) {
 
   CSSSelectorList selector_list = CSSParser::ParseSelector(
       CSSParserContext::Create(*document, KURL(), kReferrerPolicyDefault,
-                               g_empty_string,
+                               WTF::TextEncoding(),
                                CSSParserContext::kStaticProfile),
       nullptr, "p:last-of-type");
   std::unique_ptr<SelectorQuery> query =
