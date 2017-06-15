@@ -306,8 +306,9 @@ PassRefPtr<ComputedStyle> LayoutTextControlSingleLine::CreateInnerEditorStyle(
 
   text_block_style->SetWhiteSpace(EWhiteSpace::kPre);
   text_block_style->SetOverflowWrap(EOverflowWrap::kNormal);
-  text_block_style->SetTextOverflow(
-      TextShouldBeTruncated() ? kTextOverflowEllipsis : kTextOverflowClip);
+  text_block_style->SetTextOverflow(TextShouldBeTruncated()
+                                        ? ETextOverflow::kEllipsis
+                                        : ETextOverflow::kClip);
 
   int computed_line_height =
       LineHeight(true, kHorizontalLine, kPositionOfInteriorLineBoxes).ToInt();
@@ -349,7 +350,7 @@ PassRefPtr<ComputedStyle> LayoutTextControlSingleLine::CreateInnerEditorStyle(
 
 bool LayoutTextControlSingleLine::TextShouldBeTruncated() const {
   return GetDocument().FocusedElement() != GetNode() &&
-         StyleRef().GetTextOverflow() == kTextOverflowEllipsis;
+         StyleRef().TextOverflow() == ETextOverflow::kEllipsis;
 }
 
 void LayoutTextControlSingleLine::Autoscroll(const IntPoint& position) {

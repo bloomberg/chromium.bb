@@ -2934,7 +2934,7 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
       return CSSIdentifierValue::Create(
           style.GetFontDescription().TextRendering());
     case CSSPropertyTextOverflow:
-      if (style.GetTextOverflow())
+      if (style.TextOverflow() != ETextOverflow::kClip)
         return CSSIdentifierValue::Create(CSSValueEllipsis);
       return CSSIdentifierValue::Create(CSSValueClip);
     case CSSPropertyWebkitTextSecurity:

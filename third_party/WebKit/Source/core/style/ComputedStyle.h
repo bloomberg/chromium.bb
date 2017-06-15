@@ -1524,12 +1524,13 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // text-overflow
-  static TextOverflow InitialTextOverflow() { return kTextOverflowClip; }
-  TextOverflow GetTextOverflow() const {
-    return static_cast<TextOverflow>(rare_non_inherited_data_->text_overflow_);
+  static ETextOverflow InitialTextOverflow() { return ETextOverflow::kClip; }
+  ETextOverflow TextOverflow() const {
+    return static_cast<ETextOverflow>(rare_non_inherited_data_->text_overflow_);
   }
-  void SetTextOverflow(TextOverflow overflow) {
-    SET_VAR(rare_non_inherited_data_, text_overflow_, overflow);
+  void SetTextOverflow(ETextOverflow overflow) {
+    SET_VAR(rare_non_inherited_data_, text_overflow_,
+            static_cast<unsigned>(overflow));
   }
 
   // touch-action

@@ -238,7 +238,7 @@ enum class TextEmphasisMark {
   kCustom
 };
 
-enum TextOverflow { kTextOverflowClip = 0, kTextOverflowEllipsis };
+enum class ETextOverflow : unsigned { kClip, kEllipsis };
 
 static const size_t kGridAutoFlowBits = 4;
 enum InternalGridAutoFlowAlgorithm {
