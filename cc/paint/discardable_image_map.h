@@ -51,6 +51,8 @@ class CC_PAINT_EXPORT DiscardableImageMap {
                                   std::vector<DrawImage>* images) const;
   gfx::Rect GetRectForImage(PaintImage::Id image_id) const;
 
+  void Reset();
+
  private:
   friend class ScopedMetadataGenerator;
   friend class DiscardableImageMapTest;

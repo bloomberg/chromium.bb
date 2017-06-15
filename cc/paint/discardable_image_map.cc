@@ -59,4 +59,10 @@ DiscardableImageMap::ScopedMetadataGenerator::~ScopedMetadataGenerator() {
   image_map_->EndGeneratingMetadata();
 }
 
+void DiscardableImageMap::Reset() {
+  all_images_.clear();
+  image_id_to_rect_.clear();
+  images_rtree_.Reset();
+}
+
 }  // namespace cc

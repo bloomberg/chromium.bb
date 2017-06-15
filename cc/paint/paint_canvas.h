@@ -15,7 +15,6 @@
 
 namespace cc {
 
-class DisplayItemList;
 class PaintFlags;
 class PaintOpBuffer;
 
@@ -164,9 +163,6 @@ class CC_PAINT_EXPORT PaintCanvas {
                             SkScalar x,
                             SkScalar y,
                             const PaintFlags& flags) = 0;
-
-  virtual void drawDisplayItemList(
-      scoped_refptr<DisplayItemList> display_item_list) = 0;
 
   // Unlike SkCanvas::drawPicture, this only plays back the PaintRecord and does
   // not add an additional clip.  This is closer to SkPicture::playback.

@@ -103,7 +103,7 @@ void PaintArtifact::Replay(const FloatRect& bounds,
   scoped_refptr<cc::DisplayItemList> display_item_list =
       PaintChunksToCcLayer::Convert(pointer_paint_chunks, replay_state,
                                     gfx::Vector2dF(), GetDisplayItemList());
-  canvas.drawDisplayItemList(display_item_list);
+  canvas.drawPicture(display_item_list->ReleaseAsRecord());
 }
 
 DISABLE_CFI_PERF

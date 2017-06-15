@@ -133,4 +133,10 @@ gfx::Rect RTree::GetBounds() const {
   return root_.bounds;
 }
 
+void RTree::Reset() {
+  num_data_elements_ = 0;
+  nodes_.clear();
+  root_.bounds = gfx::Rect();
+}
+
 }  // namespace cc

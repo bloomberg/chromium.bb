@@ -23,7 +23,6 @@
 // See: third_party/skia/src/core/SkLiteDL.h.
 
 namespace cc {
-class DisplayItemList;
 
 class CC_PAINT_EXPORT ThreadsafeMatrix : public SkMatrix {
  public:
@@ -48,7 +47,6 @@ enum class PaintOpType : uint8_t {
   DrawArc,
   DrawCircle,
   DrawColor,
-  DrawDisplayItemList,
   DrawDRRect,
   DrawImage,
   DrawImageRect,
@@ -362,26 +360,6 @@ struct CC_PAINT_EXPORT DrawColorOp final : PaintOp {
 
   SkColor color;
   SkBlendMode mode;
-};
-
-struct CC_PAINT_EXPORT DrawDisplayItemListOp final : PaintOp {
-  static constexpr PaintOpType kType = PaintOpType::DrawDisplayItemList;
-  static constexpr bool kIsDrawOp = true;
-  explicit DrawDisplayItemListOp(scoped_refptr<DisplayItemList> list);
-  // Windows wants to generate these when types are exported, so
-  // provide them here explicitly so that DisplayItemList doesn't have
-  // to be defined in this header.
-  DrawDisplayItemListOp(const DrawDisplayItemListOp& op);
-  DrawDisplayItemListOp& operator=(const DrawDisplayItemListOp& op);
-  ~DrawDisplayItemListOp();
-  static void Raster(const PaintOp* op,
-                     SkCanvas* canvas,
-                     const SkMatrix& original_ctm);
-  size_t AdditionalBytesUsed() const;
-  bool HasDiscardableImages() const;
-  int CountSlowPaths() const;
-
-  scoped_refptr<DisplayItemList> list;
 };
 
 struct CC_PAINT_EXPORT DrawDRRectOp final : PaintOpWithFlags {
@@ -781,7 +759,10 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
   static constexpr size_t PaintOpAlign = alignof(DrawDRRectOp);
 
   PaintOpBuffer();
+  PaintOpBuffer(PaintOpBuffer&& other);
   ~PaintOpBuffer() override;
+
+  void operator=(PaintOpBuffer&& other);
 
   void Reset();
 

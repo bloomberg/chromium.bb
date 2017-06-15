@@ -695,9 +695,11 @@ TEST_F(DiscardableImageMapTest, GathersDiscardableImagesFromNestedOps) {
   display_list->EndPaintOfUnpaired(gfx::Rect(100, 100, 100, 100));
   display_list->Finalize();
 
+  sk_sp<PaintRecord> record2 = display_list->ReleaseAsRecord();
+
   PaintOpBuffer root_buffer;
   root_buffer.push<DrawRecordOp>(internal_record);
-  root_buffer.push<DrawDisplayItemListOp>(display_list);
+  root_buffer.push<DrawRecordOp>(record2);
   DiscardableImageMap image_map_;
   {
     DiscardableImageMap::ScopedMetadataGenerator generator(&image_map_,

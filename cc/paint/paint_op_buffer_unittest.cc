@@ -26,46 +26,125 @@ TEST(PaintOpBufferTest, Empty) {
   EXPECT_EQ(buffer.size(), 0u);
   EXPECT_EQ(buffer.bytes_used(), sizeof(PaintOpBuffer));
   EXPECT_EQ(PaintOpBuffer::Iterator(&buffer), false);
+
+  PaintOpBuffer buffer2(std::move(buffer));
+  EXPECT_EQ(buffer.size(), 0u);
+  EXPECT_EQ(buffer.bytes_used(), sizeof(PaintOpBuffer));
+  EXPECT_EQ(PaintOpBuffer::Iterator(&buffer), false);
+  EXPECT_EQ(buffer2.size(), 0u);
+  EXPECT_EQ(buffer2.bytes_used(), sizeof(PaintOpBuffer));
+  EXPECT_EQ(PaintOpBuffer::Iterator(&buffer2), false);
 }
 
-TEST(PaintOpBufferTest, SimpleAppend) {
-  SkRect rect = SkRect::MakeXYWH(2, 3, 4, 5);
-  PaintFlags flags;
-  flags.setColor(SK_ColorMAGENTA);
-  flags.setAlpha(100);
-  SkColor draw_color = SK_ColorRED;
-  SkBlendMode blend = SkBlendMode::kSrc;
+class PaintOpAppendTest : public ::testing::Test {
+ public:
+  PaintOpAppendTest() {
+    rect_ = SkRect::MakeXYWH(2, 3, 4, 5);
+    flags_.setColor(SK_ColorMAGENTA);
+    flags_.setAlpha(100);
+  }
 
+  void PushOps(PaintOpBuffer* buffer) {
+    buffer->push<SaveLayerOp>(&rect_, &flags_);
+    buffer->push<SaveOp>();
+    buffer->push<DrawColorOp>(draw_color_, blend_);
+    buffer->push<RestoreOp>();
+    EXPECT_EQ(buffer->size(), 4u);
+  }
+
+  void VerifyOps(PaintOpBuffer* buffer) {
+    EXPECT_EQ(buffer->size(), 4u);
+
+    PaintOpBuffer::Iterator iter(buffer);
+    ASSERT_EQ(iter->GetType(), PaintOpType::SaveLayer);
+    SaveLayerOp* save_op = static_cast<SaveLayerOp*>(*iter);
+    EXPECT_EQ(save_op->bounds, rect_);
+    EXPECT_TRUE(save_op->flags == flags_);
+    ++iter;
+
+    ASSERT_EQ(iter->GetType(), PaintOpType::Save);
+    ++iter;
+
+    ASSERT_EQ(iter->GetType(), PaintOpType::DrawColor);
+    DrawColorOp* op = static_cast<DrawColorOp*>(*iter);
+    EXPECT_EQ(op->color, draw_color_);
+    EXPECT_EQ(op->mode, blend_);
+    ++iter;
+
+    ASSERT_EQ(iter->GetType(), PaintOpType::Restore);
+    ++iter;
+
+    EXPECT_FALSE(iter);
+  }
+
+ private:
+  SkRect rect_;
+  PaintFlags flags_;
+  SkColor draw_color_ = SK_ColorRED;
+  SkBlendMode blend_ = SkBlendMode::kSrc;
+};
+
+TEST_F(PaintOpAppendTest, SimpleAppend) {
   PaintOpBuffer buffer;
-  buffer.push<SaveLayerOp>(&rect, &flags);
-  buffer.push<SaveOp>();
-  buffer.push<DrawColorOp>(draw_color, blend);
-  buffer.push<RestoreOp>();
+  PushOps(&buffer);
+  VerifyOps(&buffer);
 
-  EXPECT_EQ(buffer.size(), 4u);
-
-  PaintOpBuffer::Iterator iter(&buffer);
-  ASSERT_EQ(iter->GetType(), PaintOpType::SaveLayer);
-  SaveLayerOp* save_op = static_cast<SaveLayerOp*>(*iter);
-  EXPECT_EQ(save_op->bounds, rect);
-  EXPECT_TRUE(save_op->flags == flags);
-  ++iter;
-
-  ASSERT_EQ(iter->GetType(), PaintOpType::Save);
-  ++iter;
-
-  ASSERT_EQ(iter->GetType(), PaintOpType::DrawColor);
-  DrawColorOp* op = static_cast<DrawColorOp*>(*iter);
-  EXPECT_EQ(op->color, draw_color);
-  EXPECT_EQ(op->mode, blend);
-  ++iter;
-
-  ASSERT_EQ(iter->GetType(), PaintOpType::Restore);
-  ++iter;
-
-  EXPECT_FALSE(iter);
+  buffer.Reset();
+  PushOps(&buffer);
+  VerifyOps(&buffer);
 }
 
+TEST_F(PaintOpAppendTest, MoveThenDestruct) {
+  PaintOpBuffer original;
+  PushOps(&original);
+  VerifyOps(&original);
+
+  PaintOpBuffer destination(std::move(original));
+  VerifyOps(&destination);
+
+  // Original should be empty, and safe to destruct.
+  EXPECT_EQ(original.size(), 0u);
+  EXPECT_EQ(original.bytes_used(), sizeof(PaintOpBuffer));
+  EXPECT_EQ(PaintOpBuffer::Iterator(&original), false);
+}
+
+TEST_F(PaintOpAppendTest, MoveThenDestructOperatorEq) {
+  PaintOpBuffer original;
+  PushOps(&original);
+  VerifyOps(&original);
+
+  PaintOpBuffer destination;
+  destination = std::move(original);
+  VerifyOps(&destination);
+
+  // Original should be empty, and safe to destruct.
+  EXPECT_EQ(original.size(), 0u);
+  EXPECT_EQ(original.bytes_used(), sizeof(PaintOpBuffer));
+  EXPECT_EQ(PaintOpBuffer::Iterator(&original), false);
+}
+
+TEST_F(PaintOpAppendTest, MoveThenReappend) {
+  PaintOpBuffer original;
+  PushOps(&original);
+
+  PaintOpBuffer destination(std::move(original));
+
+  // Should be possible to reappend to the original and get the same result.
+  PushOps(&original);
+  VerifyOps(&original);
+}
+
+TEST_F(PaintOpAppendTest, MoveThenReappendOperatorEq) {
+  PaintOpBuffer original;
+  PushOps(&original);
+
+  PaintOpBuffer destination;
+  destination = std::move(original);
+
+  // Should be possible to reappend to the original and get the same result.
+  PushOps(&original);
+  VerifyOps(&original);
+}
 
 // Verify that PaintOps with data are stored properly.
 TEST(PaintOpBufferTest, PaintOpData) {
@@ -341,28 +420,6 @@ TEST(PaintOpBufferTest, DiscardableImagesTracking_DrawImageRect) {
   EXPECT_TRUE(buffer.HasDiscardableImages());
 }
 
-TEST(PaintOpBufferTest, DiscardableImagesTracking_NestedDrawOp) {
-  sk_sp<PaintRecord> record = sk_make_sp<PaintRecord>();
-  PaintImage image = PaintImage(PaintImage::GetNextId(),
-                                CreateDiscardableImage(gfx::Size(100, 100)));
-  record->push<DrawImageOp>(image, SkIntToScalar(0), SkIntToScalar(0), nullptr);
-
-  PaintOpBuffer buffer;
-  buffer.push<DrawRecordOp>(record);
-  EXPECT_TRUE(buffer.HasDiscardableImages());
-
-  scoped_refptr<DisplayItemList> list = new DisplayItemList;
-  {
-    PaintOpBuffer* buffer = list->StartPaint();
-    buffer->push<DrawRecordOp>(record);
-    list->EndPaintOfUnpaired(gfx::Rect(100, 100));
-  }
-  list->Finalize();
-  PaintOpBuffer new_buffer;
-  new_buffer.push<DrawDisplayItemListOp>(list);
-  EXPECT_TRUE(new_buffer.HasDiscardableImages());
-}
-
 TEST(PaintOpBufferTest, DiscardableImagesTracking_OpWithFlags) {
   PaintOpBuffer buffer;
   PaintFlags flags;
@@ -424,27 +481,6 @@ TEST(PaintOpBufferTest, SlowPaths) {
   EXPECT_EQ(2, buffer2->numSlowPaths());
   buffer2->push<DrawRecordOp>(buffer);
   EXPECT_EQ(4, buffer2->numSlowPaths());
-
-  // Drawing an empty display item list doesn't change anything.
-  auto empty_list = base::MakeRefCounted<DisplayItemList>();
-  buffer2->push<DrawDisplayItemListOp>(empty_list);
-  EXPECT_EQ(4, buffer2->numSlowPaths());
-
-  // Drawing a display item list adds the items from that list.
-  auto slow_path_list = base::MakeRefCounted<DisplayItemList>();
-  {
-    PaintOpBuffer* display_list_buffer = slow_path_list->StartPaint();
-    EXPECT_EQ(0, display_list_buffer->numSlowPaths());
-    display_list_buffer->push<DrawRecordOp>(buffer);
-    EXPECT_EQ(2, display_list_buffer->numSlowPaths());
-    display_list_buffer->push<DrawRecordOp>(buffer);
-    EXPECT_EQ(4, display_list_buffer->numSlowPaths());
-    display_list_buffer->push<DrawRecordOp>(buffer);
-    EXPECT_EQ(6, display_list_buffer->numSlowPaths());
-    slow_path_list->EndPaintOfUnpaired(gfx::Rect(30, 30));
-  }
-  buffer2->push<DrawDisplayItemListOp>(slow_path_list);
-  EXPECT_EQ(10, buffer2->numSlowPaths());
 }
 
 TEST(PaintOpBufferTest, ContiguousRanges) {
