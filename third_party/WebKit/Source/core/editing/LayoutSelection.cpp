@@ -406,36 +406,19 @@ static LayoutRect SelectionRectForLayoutObject(const LayoutObject* object) {
 }
 
 IntRect LayoutSelection::SelectionBounds() {
-  // Now create a single bounding box rect that encloses the whole selection.
-  LayoutRect sel_rect;
-
-  typedef HashSet<const LayoutBlock*> VisitedContainingBlockSet;
-  VisitedContainingBlockSet visited_containing_blocks;
-
   Commit();
   if (paint_range_.IsNull())
     return IntRect();
 
-  // TODO(yoichio): Use CollectSelectedMap.
-  for (LayoutObject* runner : paint_range_) {
-    if (runner->GetSelectionState() == SelectionState::kNone)
-      continue;
+  // Create a single bounding box rect that encloses the whole selection.
+  LayoutRect selected_rect;
+  const SelectedMap& current_map = CollectSelectedMap(paint_range_);
+  for (auto layout_object : current_map.object_map.Keys())
+    selected_rect.Unite(SelectionRectForLayoutObject(layout_object));
+  for (auto layout_block : current_map.block_map.Keys())
+    selected_rect.Unite(SelectionRectForLayoutObject(layout_block));
 
-    // Blocks are responsible for painting line gaps and margin gaps. They
-    // must be examined as well.
-    sel_rect.Unite(SelectionRectForLayoutObject(runner));
-    const LayoutBlock* cb = runner->ContainingBlock();
-    while (cb && !cb->IsLayoutView()) {
-      sel_rect.Unite(SelectionRectForLayoutObject(cb));
-      VisitedContainingBlockSet::AddResult add_result =
-          visited_containing_blocks.insert(cb);
-      if (!add_result.is_new_entry)
-        break;
-      cb = cb->ContainingBlock();
-    }
-  }
-
-  return PixelSnappedIntRect(sel_rect);
+  return PixelSnappedIntRect(selected_rect);
 }
 
 void LayoutSelection::InvalidatePaintForSelection() {
