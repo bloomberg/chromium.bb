@@ -334,13 +334,7 @@ void BackgroundLoaderOffliner::DidFinishNavigation(
   if (navigation_handle->IsErrorPage()) {
     RecordErrorCauseUMA(pending_request_->client_id(),
                         static_cast<int>(navigation_handle->GetNetErrorCode()));
-    switch (navigation_handle->GetNetErrorCode()) {
-      case net::ERR_INTERNET_DISCONNECTED:
-        page_load_state_ = DELAY_RETRY;
-        break;
-      default:
-        page_load_state_ = RETRIABLE;
-    }
+    page_load_state_ = RETRIABLE;
   } else {
     int status_code = navigation_handle->GetResponseHeaders()->response_code();
     // 2XX and 3XX are ok because they indicate success or redirection.
@@ -397,9 +391,6 @@ void BackgroundLoaderOffliner::StartSnapshot() {
         break;
       case NONRETRIABLE:
         status = Offliner::RequestStatus::LOADING_FAILED_NO_RETRY;
-        break;
-      case DELAY_RETRY:
-        status = Offliner::RequestStatus::LOADING_FAILED_NO_NEXT;
         break;
       default:
         // We should've already checked for Success before entering here.
