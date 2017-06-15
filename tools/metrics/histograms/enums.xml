@@ -10694,6 +10694,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="369" label="RemoteAccessHostClientDomainList"/>
   <int value="370" label="NetworkTimeQueriesEnabled"/>
   <int value="371" label="DownloadRestrictions"/>
+  <int value="372" label="DeviceSecondFactorAuthentication"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

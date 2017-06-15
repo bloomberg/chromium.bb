@@ -143,7 +143,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 371
+#   For your editing convenience: highest ID currently used: 372
 #   And don't forget to also update the EnterprisePolicies enum of
 #   histograms.xml (run 'python tools/metrics/histograms/update_policies.py').
 #
@@ -9625,6 +9625,47 @@
       'caption': '''Allow queries to a Google time service''',
       'tags': [],
       'desc': '''Setting this policy to false stops <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> from occasionally sending queries to a Google server to retrieve an accurate timestamp. These queries will be enabled if this policy is set to True or is not set.''',
+    },
+    {
+      'name': 'DeviceSecondFactorAuthentication',
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 0, 1, 2 ],
+      },
+      'items': [
+        {
+          'name': 'Disabled',
+          'value': 0,
+          'caption': '''Second factor disabled''',
+        },
+        {
+          'name': 'U2F',
+          'value': 1,
+          'caption': '''U2F (Universal Second Factor)''',
+        },
+        {
+          'name': 'U2F_EXTENDED',
+          'value': 2,
+          'caption': '''U2F plus extensions for individual attestation''',
+        },
+      ],
+      'supported_on': ['chrome_os:61-'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': False,
+      },
+      'example_value': 1,
+      'id': 372,
+      'caption': '''Integrated second factor authentication mode''',
+      'tags': ['system-security'],
+      'desc': '''Specifies how the on-board secure element hardware can be used to provide a second-factor authentication if it is compatible with this feature. The machine power button is used to detect the user physical presence.
+
+      If 'Disabled' is selected or the policy is left unset, no second factor is provided.
+
+      If 'U2F' is selected, the integrated second factor will behave according the FIDO U2F specification.
+
+      If 'U2F_EXTENDED' is selected, the integrated second factor will provide the U2F functions plus some extensions for individual attestation.''',
     },
   ],
   'messages': {

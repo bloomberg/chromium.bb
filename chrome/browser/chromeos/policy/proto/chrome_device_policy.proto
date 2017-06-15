@@ -794,6 +794,22 @@ message DeviceEcryptfsMigrationStrategyProto {
   optional MigrationStrategy migration_strategy = 1;
 }
 
+// This setting controls how the on-board secure element hardware can be used
+// to provide a second-factor authentication in addition to the TPM
+// functionality.
+message DeviceSecondFactorAuthenticationProto {
+  enum U2fMode {
+    // Feature disabled.
+    DISABLED = 0;
+    // U2F as defined by the FIDO Alliance specification.
+    U2F = 1;
+    // U2F plus extensions for individual attestation certificate.
+    U2F_EXTENDED = 2;
+  };
+
+  optional U2fMode mode = 1 [default = DISABLED];
+}
+
 message ChromeDeviceSettingsProto {
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
   optional UserWhitelistProto user_whitelist = 2;
@@ -854,4 +870,6 @@ message ChromeDeviceSettingsProto {
   optional LoginScreenInputMethodsProto login_screen_input_methods = 50;
   optional DeviceEcryptfsMigrationStrategyProto
       device_ecryptfs_migration_strategy = 51;
+  optional DeviceSecondFactorAuthenticationProto
+      device_second_factor_authentication = 52;
 }

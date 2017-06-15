@@ -3097,6 +3097,10 @@
     ]
   },
 
+  "DeviceSecondFactorAuthentication": {
+    "os": ["chromeos"]
+  },
+
   "----- Chrome Frame policies -------------------------------------------": {},
 
   "ChromeFrameRendererSettings": {
