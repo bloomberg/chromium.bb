@@ -18,12 +18,12 @@
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/api_activity_monitor.h"
 #include "extensions/browser/event_router_factory.h"
+#include "extensions/browser/events/lazy_event_dispatcher.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
-#include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/browser/process_manager.h"
 #include "extensions/browser/process_map.h"
 #include "extensions/common/constants.h"
@@ -140,13 +140,28 @@ void EventRouter::DispatchEventToSender(IPC::Sender* ipc_sender,
                            info);
 }
 
+// static.
+bool EventRouter::CanDispatchEventToBrowserContext(BrowserContext* context,
+                                                   const Extension* extension,
+                                                   const Event& event) {
+  // Is this event from a different browser context than the renderer (ie, an
+  // incognito tab event sent to a normal process, or vice versa).
+  bool crosses_incognito = event.restrict_to_browser_context &&
+                           context != event.restrict_to_browser_context;
+  if (!crosses_incognito)
+    return true;
+  return ExtensionsBrowserClient::Get()->CanExtensionCrossIncognito(extension,
+                                                                    context);
+}
+
 EventRouter::EventRouter(BrowserContext* browser_context,
                          ExtensionPrefs* extension_prefs)
     : browser_context_(browser_context),
       extension_prefs_(extension_prefs),
       extension_registry_observer_(this),
       listeners_(this),
-      lazy_event_dispatch_util_(browser_context_) {
+      lazy_event_dispatch_util_(browser_context_),
+      weak_factory_(this) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
 }
 
@@ -431,7 +446,10 @@ void EventRouter::DispatchEventImpl(const std::string& restrict_to_extension_id,
   std::set<const EventListener*> listeners(
       listeners_.GetEventListeners(*event));
 
-  std::set<EventDispatchIdentifier> already_dispatched;
+  LazyEventDispatcher lazy_event_dispatcher(
+      browser_context_, event,
+      base::Bind(&EventRouter::DispatchPendingEvent,
+                 weak_factory_.GetWeakPtr()));
 
   // We dispatch events for lazy background pages first because attempting to do
   // so will cause those that are being suspended to cancel that suspension.
@@ -440,64 +458,31 @@ void EventRouter::DispatchEventImpl(const std::string& restrict_to_extension_id,
   // the event we are dispatching here, we dispatch to the lazy listeners here
   // first.
   for (const EventListener* listener : listeners) {
-    if (restrict_to_extension_id.empty() ||
-        restrict_to_extension_id == listener->extension_id()) {
-      // TODO(lazyboy): Support lazy listeners for extension SW events.
-      if (listener->IsLazy() && !listener->IsForServiceWorker()) {
-        DispatchLazyEvent(listener->extension_id(), event, &already_dispatched,
-                          listener->filter());
-      }
+    if (!restrict_to_extension_id.empty() &&
+        restrict_to_extension_id != listener->extension_id()) {
+      continue;
+    }
+    // TODO(lazyboy): Support lazy listeners for extension SW events.
+    if (listener->IsLazy() && !listener->IsForServiceWorker()) {
+      lazy_event_dispatcher.DispatchToEventPage(listener->extension_id(),
+                                                listener->filter());
     }
   }
 
   for (const EventListener* listener : listeners) {
-    if (restrict_to_extension_id.empty() ||
-        restrict_to_extension_id == listener->extension_id()) {
-      if (listener->process()) {
-        EventDispatchIdentifier dispatch_id(listener->GetBrowserContext(),
-                                            listener->extension_id(),
-                                            listener->worker_thread_id());
-        if (!base::ContainsKey(already_dispatched, dispatch_id)) {
-          DispatchEventToProcess(listener->extension_id(),
-                                 listener->listener_url(), listener->process(),
-                                 listener->worker_thread_id(), event,
-                                 listener->filter(), false /* did_enqueue */);
-        }
-      }
+    if (!restrict_to_extension_id.empty() &&
+        restrict_to_extension_id != listener->extension_id()) {
+      continue;
     }
-  }
-}
-
-void EventRouter::DispatchLazyEvent(
-    const std::string& extension_id,
-    const linked_ptr<Event>& event,
-    std::set<EventDispatchIdentifier>* already_dispatched,
-    const base::DictionaryValue* listener_filter) {
-  // Check both the original and the incognito browser context to see if we
-  // should load a lazy bg page to handle the event. The latter case
-  // occurs in the case of split-mode extensions.
-  const Extension* extension =
-      ExtensionRegistry::Get(browser_context_)->enabled_extensions().GetByID(
-          extension_id);
-  if (!extension)
-    return;
-
-  if (MaybeLoadLazyBackgroundPageToDispatchEvent(browser_context_, extension,
-                                                 event, listener_filter)) {
-    already_dispatched->insert(
-        std::make_tuple(browser_context_, extension_id, kNonWorkerThreadId));
-  }
-
-  ExtensionsBrowserClient* browser_client = ExtensionsBrowserClient::Get();
-  if (browser_client->HasOffTheRecordContext(browser_context_) &&
-      IncognitoInfo::IsSplitMode(extension)) {
-    BrowserContext* incognito_context =
-        browser_client->GetOffTheRecordContext(browser_context_);
-    if (MaybeLoadLazyBackgroundPageToDispatchEvent(incognito_context, extension,
-                                                   event, listener_filter)) {
-      already_dispatched->insert(
-          std::make_tuple(incognito_context, extension_id, kNonWorkerThreadId));
+    if (!listener->process())
+      continue;
+    if (lazy_event_dispatcher.HasAlreadyDispatched(
+            listener->process()->GetBrowserContext(), listener)) {
+      continue;
     }
+    DispatchEventToProcess(listener->extension_id(), listener->listener_url(),
+                           listener->process(), listener->worker_thread_id(),
+                           event, listener->filter(), false /* did_enqueue */);
   }
 }
 
@@ -539,7 +524,8 @@ void EventRouter::DispatchEventToProcess(
     }
     // Secondly, if the event is for incognito mode, the Extension must be
     // enabled in incognito mode.
-    if (!CanDispatchEventToBrowserContext(listener_context, extension, event)) {
+    if (!CanDispatchEventToBrowserContext(listener_context, extension,
+                                          *event)) {
       return;
     }
   }
@@ -583,54 +569,6 @@ void EventRouter::DispatchEventToProcess(
     IncrementInFlightEvents(listener_context, extension, event_id,
                             event->event_name);
   }
-}
-
-bool EventRouter::CanDispatchEventToBrowserContext(
-    BrowserContext* context,
-    const Extension* extension,
-    const linked_ptr<Event>& event) {
-  // Is this event from a different browser context than the renderer (ie, an
-  // incognito tab event sent to a normal process, or vice versa).
-  bool cross_incognito = event->restrict_to_browser_context &&
-                         context != event->restrict_to_browser_context;
-  if (!cross_incognito)
-    return true;
-  return ExtensionsBrowserClient::Get()->CanExtensionCrossIncognito(
-      extension, context);
-}
-
-bool EventRouter::MaybeLoadLazyBackgroundPageToDispatchEvent(
-    BrowserContext* context,
-    const Extension* extension,
-    const linked_ptr<Event>& event,
-    const base::DictionaryValue* listener_filter) {
-  if (!CanDispatchEventToBrowserContext(context, extension, event))
-    return false;
-
-  LazyBackgroundTaskQueue* queue = LazyBackgroundTaskQueue::Get(context);
-  if (!queue->ShouldEnqueueTask(context, extension))
-    return false;
-
-  linked_ptr<Event> dispatched_event(event);
-
-  // If there's a dispatch callback, call it now (rather than dispatch time)
-  // to avoid lifetime issues. Use a separate copy of the event args, so they
-  // last until the event is dispatched.
-  if (!event->will_dispatch_callback.is_null()) {
-    dispatched_event.reset(event->DeepCopy());
-    if (!dispatched_event->will_dispatch_callback.Run(
-            context, extension, dispatched_event.get(), listener_filter)) {
-      // The event has been canceled.
-      return true;
-    }
-    // Ensure we don't call it again at dispatch time.
-    dispatched_event->will_dispatch_callback.Reset();
-  }
-
-  queue->AddPendingTask(context, extension->id(),
-                        base::Bind(&EventRouter::DispatchPendingEvent,
-                                   base::Unretained(this), dispatched_event));
-  return true;
 }
 
 // static
