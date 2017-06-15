@@ -7718,6 +7718,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="13" label="sync"/>
   <int value="14" label="truncate"/>
   <int value="15" label="non fatal open(src_file)"/>
+  <int value="16" label="failed at remove-attribute"/>
 </enum>
 
 <enum name="DircryptoMigrationFailedPathType">
