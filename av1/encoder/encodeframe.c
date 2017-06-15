@@ -1557,6 +1557,7 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
 #endif
   if (!frame_is_intra_only(cm)) {
     FRAME_COUNTS *const counts = td->counts;
+    RD_COUNTS *rdc = &td->rd_counts;
     const int inter_block = is_inter_block(mbmi);
     const int seg_ref_active =
         segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_REF_FRAME);
@@ -1575,6 +1576,12 @@ static void update_stats(const AV1_COMMON *const cm, ThreadData *td, int mi_row,
 #endif  // CONFIG_EXT_REFS
 
         if (cm->reference_mode == REFERENCE_MODE_SELECT) {
+          if (has_second_ref(mbmi))
+            // This flag is also updated for 4x4 blocks
+            rdc->compound_ref_used_flag = 1;
+          else
+            // This flag is also updated for 4x4 blocks
+            rdc->single_ref_used_flag = 1;
 #if !SUB8X8_COMP_REF
           if (mbmi->sb_type != BLOCK_4X4)
             counts->comp_inter[av1_get_reference_mode_context(cm, xd)]
@@ -5089,25 +5096,23 @@ void av1_encode_frame(AV1_COMP *cpi) {
 #if CONFIG_EXT_INTER
     make_consistent_compound_tools(cm);
 #endif  // CONFIG_EXT_INTER
+
+    rdc->single_ref_used_flag = 0;
+    rdc->compound_ref_used_flag = 0;
+
     encode_frame_internal(cpi);
 
     for (i = 0; i < REFERENCE_MODES; ++i)
       mode_thrs[i] = (mode_thrs[i] + rdc->comp_pred_diff[i] / cm->MBs) / 2;
 
     if (cm->reference_mode == REFERENCE_MODE_SELECT) {
-      int single_count_zero = 0;
-      int comp_count_zero = 0;
-
-      for (i = 0; i < COMP_INTER_CONTEXTS; i++) {
-        single_count_zero += counts->comp_inter[i][0];
-        comp_count_zero += counts->comp_inter[i][1];
-      }
-
-      if (comp_count_zero == 0) {
+      // Use a flag that includes 4x4 blocks
+      if (rdc->compound_ref_used_flag == 0) {
         cm->reference_mode = SINGLE_REFERENCE;
         av1_zero(counts->comp_inter);
 #if !CONFIG_REF_ADAPT
-      } else if (single_count_zero == 0) {
+        // Use a flag that includes 4x4 blocks
+      } else if (rdc->single_ref_used_flag == 0) {
         cm->reference_mode = COMPOUND_REFERENCE;
         av1_zero(counts->comp_inter);
 #endif  // !CONFIG_REF_ADAPT
