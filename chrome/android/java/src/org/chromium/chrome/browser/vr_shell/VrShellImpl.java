@@ -110,7 +110,7 @@ public class VrShellImpl
     private float mLastContentWidth;
     private float mLastContentHeight;
     private float mLastContentDpr;
-    private boolean mPaused;
+    private Boolean mPaused;
 
     private MotionEventSynthesizer mMotionEventSynthesizer;
 
@@ -277,7 +277,7 @@ public class VrShellImpl
         mRenderToSurfaceLayoutParent = new FrameLayout(mActivity) {
             @Override
             public boolean dispatchTouchEvent(MotionEvent event) {
-                getUiLayout().dispatchTouchEvent(event);
+                getContainer().dispatchTouchEvent(event);
                 return true;
             }
         };
@@ -460,7 +460,7 @@ public class VrShellImpl
 
     @Override
     public void onResume() {
-        if (!mPaused) return;
+        if (mPaused != null && !mPaused) return;
         mPaused = false;
         super.onResume();
         if (mNativeVrShell != 0) {
@@ -477,7 +477,7 @@ public class VrShellImpl
 
     @Override
     public void onPause() {
-        if (mPaused) return;
+        if (mPaused != null && mPaused) return;
         mPaused = true;
         super.onPause();
         if (mNativeVrShell != 0) {
