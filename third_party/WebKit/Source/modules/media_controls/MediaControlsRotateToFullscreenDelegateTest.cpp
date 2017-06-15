@@ -602,8 +602,8 @@ TEST_F(MediaControlsRotateToFullscreenDelegateTest,
   EXPECT_TRUE(GetVideo().paused());
   EXPECT_FALSE(ObservedVisibility());
 
-  // Rotate screen to portrait. This relies on the screen orientation no longer
-  // being locked by MediaControlsOrientationLockDelegate.
+  // Rotate screen to portrait. This relies on the screen orientation not being
+  // locked by MediaControlsOrientationLockDelegate (which has its own tests).
   RotateTo(kWebScreenOrientationPortraitPrimary);
 
   // Should exit fullscreen.
@@ -632,8 +632,8 @@ TEST_F(MediaControlsRotateToFullscreenDelegateTest,
   EXPECT_TRUE(GetVideo().paused());
   EXPECT_FALSE(ObservedVisibility());
 
-  // Rotate screen to portrait. This relies on the screen orientation no longer
-  // being locked by MediaControlsOrientationLockDelegate.
+  // Rotate screen to landscape. This relies on the screen orientation not being
+  // locked by MediaControlsOrientationLockDelegate (which has its own tests).
   RotateTo(kWebScreenOrientationLandscapePrimary);
 
   // Should exit fullscreen.

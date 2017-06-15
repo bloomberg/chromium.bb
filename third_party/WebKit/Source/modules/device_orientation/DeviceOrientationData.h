@@ -27,6 +27,7 @@
 #define DeviceOrientationData_h
 
 #include "bindings/core/v8/Nullable.h"
+#include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 
 namespace device {
@@ -37,7 +38,7 @@ namespace blink {
 
 class DeviceOrientationEventInit;
 
-class DeviceOrientationData final
+class MODULES_EXPORT DeviceOrientationData final
     : public GarbageCollected<DeviceOrientationData> {
  public:
   static DeviceOrientationData* Create();

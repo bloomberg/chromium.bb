@@ -4,23 +4,32 @@
 
 #include "modules/media_controls/MediaControlsOrientationLockDelegate.h"
 
+#include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/Fullscreen.h"
 #include "core/dom/UserGestureIndicator.h"
+#include "core/frame/FrameView.h"
 #include "core/frame/ScreenOrientationController.h"
 #include "core/html/HTMLAudioElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/loader/EmptyClients.h"
 #include "core/testing/DummyPageHolder.h"
+#include "modules/device_orientation/DeviceOrientationController.h"
+#include "modules/device_orientation/DeviceOrientationData.h"
 #include "modules/media_controls/MediaControlsImpl.h"
+#include "modules/screen_orientation/ScreenOrientationControllerImpl.h"
+#include "platform/LayoutTestSupport.h"
+#include "platform/geometry/IntRect.h"
 #include "platform/testing/EmptyWebMediaPlayer.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "public/platform/WebSize.h"
 #include "public/platform/modules/screen_orientation/WebLockOrientationCallback.h"
+#include "public/platform/modules/screen_orientation/WebScreenOrientationClient.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
+using ::testing::AtLeast;
 using ::testing::Return;
 
 namespace blink {
@@ -29,25 +38,57 @@ namespace {
 
 // WebLockOrientationCallback implementation that will not react to a success
 // nor a failure.
-class DummyScreenOrientationCallback : public WebLockOrientationCallback {
+class DummyScreenOrientationCallback final : public WebLockOrientationCallback {
  public:
   void OnSuccess() override {}
   void OnError(WebLockOrientationError) override {}
 };
 
-class MockVideoWebMediaPlayer : public EmptyWebMediaPlayer {
+class MockVideoWebMediaPlayer final : public EmptyWebMediaPlayer {
  public:
   bool HasVideo() const override { return true; }
 
   MOCK_CONST_METHOD0(NaturalSize, WebSize());
 };
 
-class MockChromeClient : public EmptyChromeClient {
+class MockWebScreenOrientationClient final : public WebScreenOrientationClient {
  public:
-  MOCK_CONST_METHOD0(GetScreenInfo, WebScreenInfo());
+  // WebScreenOrientationClient overrides:
+  void LockOrientation(WebScreenOrientationLockType type,
+                       std::unique_ptr<WebLockOrientationCallback>) override {
+    LockOrientation(type);
+  }
+  MOCK_METHOD0(UnlockOrientation, void());
+
+  MOCK_METHOD1(LockOrientation, void(WebScreenOrientationLockType));
 };
 
-class StubLocalFrameClient : public EmptyLocalFrameClient {
+class MockChromeClient final : public EmptyChromeClient {
+ public:
+  // ChromeClient overrides:
+  void InstallSupplements(LocalFrame& frame) override {
+    EmptyChromeClient::InstallSupplements(frame);
+    ScreenOrientationControllerImpl::ProvideTo(frame,
+                                               &web_screen_orientation_client_);
+  }
+  void EnterFullscreen(LocalFrame& frame) override {
+    Fullscreen::From(*frame.GetDocument()).DidEnterFullscreen();
+  }
+  void ExitFullscreen(LocalFrame& frame) override {
+    Fullscreen::From(*frame.GetDocument()).DidExitFullscreen();
+  }
+
+  MOCK_CONST_METHOD0(GetScreenInfo, WebScreenInfo());
+
+  MockWebScreenOrientationClient& WebScreenOrientationClient() {
+    return web_screen_orientation_client_;
+  }
+
+ private:
+  MockWebScreenOrientationClient web_screen_orientation_client_;
+};
+
+class StubLocalFrameClient final : public EmptyLocalFrameClient {
  public:
   static StubLocalFrameClient* Create() { return new StubLocalFrameClient; }
 
@@ -59,54 +100,14 @@ class StubLocalFrameClient : public EmptyLocalFrameClient {
   }
 };
 
-class MockScreenOrientationController final
-    : public ScreenOrientationController {
-  WTF_MAKE_NONCOPYABLE(MockScreenOrientationController);
-
- public:
-  static MockScreenOrientationController* ProvideTo(LocalFrame& frame) {
-    MockScreenOrientationController* controller =
-        new MockScreenOrientationController(frame);
-    ScreenOrientationController::ProvideTo(frame, controller);
-    return controller;
-  }
-
-  MOCK_METHOD1(lock, void(WebScreenOrientationLockType));
-  MOCK_METHOD0(MockUnlock, void());
-
-  DEFINE_INLINE_VIRTUAL_TRACE() { ScreenOrientationController::Trace(visitor); }
-
- private:
-  explicit MockScreenOrientationController(LocalFrame& frame)
-      : ScreenOrientationController(frame) {}
-
-  void lock(WebScreenOrientationLockType type,
-            std::unique_ptr<WebLockOrientationCallback>) override {
-    locked_ = true;
-    lock(type);
-  }
-
-  void unlock() override {
-    locked_ = false;
-    MockUnlock();
-  }
-
-  void NotifyOrientationChanged() override {}
-
-  bool MaybeHasActiveLock() const override { return locked_; }
-
-  bool locked_ = false;
-};
-
 }  // anonymous namespace
 
 class MediaControlsOrientationLockDelegateTest : public ::testing::Test {
  protected:
-  void SetUp() override {
-    previous_video_fullscreen_orientation_lock_value_ =
-        RuntimeEnabledFeatures::VideoFullscreenOrientationLockEnabled();
-    RuntimeEnabledFeatures::SetVideoFullscreenOrientationLockEnabled(true);
+  using DeviceOrientationType =
+      MediaControlsOrientationLockDelegate::DeviceOrientationType;
 
+  void SetUp() override {
     chrome_client_ = new MockChromeClient();
 
     Page::PageClients clients;
@@ -116,18 +117,31 @@ class MediaControlsOrientationLockDelegateTest : public ::testing::Test {
     page_holder_ = DummyPageHolder::Create(IntSize(800, 600), &clients,
                                            StubLocalFrameClient::Create());
 
+    previous_orientation_event_value_ =
+        RuntimeEnabledFeatures::OrientationEventEnabled();
+    previous_video_fullscreen_orientation_lock_value_ =
+        RuntimeEnabledFeatures::VideoFullscreenOrientationLockEnabled();
+    previous_video_rotate_to_fullscreen_value_ =
+        RuntimeEnabledFeatures::VideoRotateToFullscreenEnabled();
+    RuntimeEnabledFeatures::SetVideoFullscreenOrientationLockEnabled(true);
+    // Turn off rotate-to-fullscreen. Tests covering the intersection of the two
+    // can use the MediaControlsOrientationLockAndRotateToFullscreenDelegateTest
+    // subclass.
+    RuntimeEnabledFeatures::SetVideoRotateToFullscreenEnabled(false);
+
     GetDocument().write("<body><video></body>");
     video_ = toHTMLVideoElement(*GetDocument().QuerySelector("video"));
-
-    screen_orientation_controller_ =
-        MockScreenOrientationController::ProvideTo(page_holder_->GetFrame());
   }
 
   void TearDown() override {
-    ::testing::Mock::VerifyAndClear(&GetScreenOrientationController());
+    ::testing::Mock::VerifyAndClear(&ScreenOrientationClient());
 
+    RuntimeEnabledFeatures::SetOrientationEventEnabled(
+        previous_orientation_event_value_);
     RuntimeEnabledFeatures::SetVideoFullscreenOrientationLockEnabled(
         previous_video_fullscreen_orientation_lock_value_);
+    RuntimeEnabledFeatures::SetVideoRotateToFullscreenEnabled(
+        previous_video_rotate_to_fullscreen_value_);
   }
 
   static bool HasDelegate(const MediaControls& media_controls) {
@@ -186,8 +200,12 @@ class MediaControlsOrientationLockDelegateTest : public ::testing::Test {
   }
 
   bool DelegateWillUnlockFullscreen() const {
-    return MediaControls()->orientation_lock_delegate_->locked_orientation_ !=
+    return DelegateOrientationLock() !=
            kWebScreenOrientationLockDefault /* unlocked */;
+  }
+
+  WebScreenOrientationLockType DelegateOrientationLock() const {
+    return MediaControls()->orientation_lock_delegate_->locked_orientation_;
   }
 
   WebScreenOrientationLockType ComputeOrientationLock() const {
@@ -199,19 +217,156 @@ class MediaControlsOrientationLockDelegateTest : public ::testing::Test {
 
   HTMLVideoElement& Video() const { return *video_; }
   Document& GetDocument() const { return page_holder_->GetDocument(); }
-  MockScreenOrientationController& GetScreenOrientationController() const {
-    return *screen_orientation_controller_;
+  MockWebScreenOrientationClient& ScreenOrientationClient() const {
+    return ChromeClient().WebScreenOrientationClient();
   }
   MockVideoWebMediaPlayer& MockWebMediaPlayer() const {
     return *static_cast<MockVideoWebMediaPlayer*>(Video().GetWebMediaPlayer());
   }
 
  private:
+  friend class MediaControlsOrientationLockAndRotateToFullscreenDelegateTest;
+
+  bool previous_orientation_event_value_;
   bool previous_video_fullscreen_orientation_lock_value_;
+  bool previous_video_rotate_to_fullscreen_value_;
   std::unique_ptr<DummyPageHolder> page_holder_;
   Persistent<HTMLVideoElement> video_;
-  Persistent<MockScreenOrientationController> screen_orientation_controller_;
   Persistent<MockChromeClient> chrome_client_;
+};
+
+class MediaControlsOrientationLockAndRotateToFullscreenDelegateTest
+    : public MediaControlsOrientationLockDelegateTest {
+ protected:
+  enum DeviceNaturalOrientation { kNaturalIsPortrait, kNaturalIsLandscape };
+
+  void SetUp() override {
+    // Unset this to fix ScreenOrientationControllerImpl::ComputeOrientation.
+    // TODO(mlamouri): Refactor to avoid this (crbug.com/726817).
+    was_running_layout_test_ = LayoutTestSupport::IsRunningLayoutTest();
+    LayoutTestSupport::SetIsRunningLayoutTest(false);
+
+    MediaControlsOrientationLockDelegateTest::SetUp();
+
+    RuntimeEnabledFeatures::SetOrientationEventEnabled(true);
+    RuntimeEnabledFeatures::SetVideoRotateToFullscreenEnabled(true);
+
+    // Reset the <video> element now we've enabled the runtime feature.
+    video_->parentElement()->RemoveChild(video_);
+    video_ = HTMLVideoElement::Create(GetDocument());
+    video_->setAttribute(HTMLNames::controlsAttr, g_empty_atom);
+    // Most tests should call GetDocument().body()->AppendChild(&Video());
+    // This is not done automatically, so that tests control timing of `Attach`,
+    // which is important for MediaControlsRotateToFullscreenDelegate since
+    // that's when it reads the initial screen orientation.
+  }
+
+  void TearDown() override {
+    MediaControlsOrientationLockDelegateTest::TearDown();
+    LayoutTestSupport::SetIsRunningLayoutTest(was_running_layout_test_);
+  }
+
+  void SetIsAutoRotateEnabledByUser(bool enabled) {
+    MediaControls()
+        ->orientation_lock_delegate_
+        ->is_auto_rotate_enabled_by_user_override_for_testing_ = enabled;
+  }
+
+  WebRect ScreenRectFromAngle(uint16_t screen_orientation_angle) {
+    uint16_t portrait_angle_mod_180 = natural_orientation_is_portrait_ ? 0 : 90;
+    bool screen_rect_is_portrait =
+        screen_orientation_angle % 180 == portrait_angle_mod_180;
+    return screen_rect_is_portrait ? IntRect(0, 0, 1080, 1920)
+                                   : IntRect(0, 0, 1920, 1080);
+  }
+
+  void RotateDeviceTo(uint16_t new_device_orientation_angle) {
+    // Pick one of the many (beta,gamma) pairs that should map to each angle.
+    switch (new_device_orientation_angle) {
+      case 0:
+        RotateDeviceTo(90, 0);
+        break;
+      case 90:
+        RotateDeviceTo(0, -90);
+        break;
+      case 180:
+        RotateDeviceTo(-90, 0);
+        break;
+      case 270:
+        RotateDeviceTo(0, 90);
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
+  void RotateDeviceTo(double beta, double gamma) {
+    DeviceOrientationController::From(GetDocument())
+        .SetOverride(DeviceOrientationData::Create(0.0 /* alpha */, beta, gamma,
+                                                   false /* absolute */));
+    testing::RunPendingTasks();
+  }
+
+  // Calls must be wrapped in ASSERT_NO_FATAL_FAILURE.
+  void RotateScreenTo(WebScreenOrientationType screen_orientation_type,
+                      uint16_t screen_orientation_angle) {
+    WebScreenInfo screen_info;
+    screen_info.orientation_type = screen_orientation_type;
+    screen_info.orientation_angle = screen_orientation_angle;
+    screen_info.rect = ScreenRectFromAngle(screen_orientation_angle);
+    ASSERT_TRUE(screen_info.orientation_type ==
+                ScreenOrientationControllerImpl::ComputeOrientation(
+                    screen_info.rect, screen_info.orientation_angle));
+
+    ::testing::Mock::VerifyAndClearExpectations(&ChromeClient());
+    EXPECT_CALL(ChromeClient(), GetScreenInfo())
+        .Times(AtLeast(1))
+        .WillRepeatedly(Return(screen_info));
+
+    // Screen Orientation API
+    ScreenOrientationController::From(*GetDocument().GetFrame())
+        ->NotifyOrientationChanged();
+
+    // Legacy window.orientation API
+    GetDocument().domWindow()->SendOrientationChangeEvent();
+
+    testing::RunPendingTasks();
+  }
+
+  void InitVideo(int video_width, int video_height) {
+    // Set up the WebMediaPlayer instance.
+    GetDocument().body()->AppendChild(&Video());
+    Video().SetSrc("https://example.com");
+    testing::RunPendingTasks();
+    SimulateVideoReadyState(HTMLMediaElement::kHaveMetadata);
+
+    // Set video size.
+    EXPECT_CALL(MockWebMediaPlayer(), NaturalSize())
+        .WillRepeatedly(Return(WebSize(video_width, video_height)));
+  }
+
+  void PlayVideo() {
+    {
+      UserGestureIndicator gesture(UserGestureToken::Create(&GetDocument()));
+      Video().Play();
+    }
+    testing::RunPendingTasks();
+  }
+
+  void UpdateVisibilityObserver() {
+    // Let IntersectionObserver update.
+    GetDocument().View()->UpdateAllLifecyclePhases();
+    testing::RunPendingTasks();
+  }
+
+  DeviceOrientationType ComputeDeviceOrientation(
+      DeviceOrientationData* data) const {
+    return MediaControls()
+        ->orientation_lock_delegate_->ComputeDeviceOrientation(data);
+  }
+
+  bool was_running_layout_test_ = false;
+  bool natural_orientation_is_portrait_ = true;
 };
 
 TEST_F(MediaControlsOrientationLockDelegateTest, DelegateRequiresFlag) {
@@ -236,7 +391,7 @@ TEST_F(MediaControlsOrientationLockDelegateTest, InitialState) {
 }
 
 TEST_F(MediaControlsOrientationLockDelegateTest, EnterFullscreenNoMetadata) {
-  EXPECT_CALL(GetScreenOrientationController(), lock(_)).Times(0);
+  EXPECT_CALL(ScreenOrientationClient(), LockOrientation(_)).Times(0);
 
   SimulateEnterFullscreen();
 
@@ -244,8 +399,8 @@ TEST_F(MediaControlsOrientationLockDelegateTest, EnterFullscreenNoMetadata) {
 }
 
 TEST_F(MediaControlsOrientationLockDelegateTest, LeaveFullscreenNoMetadata) {
-  EXPECT_CALL(GetScreenOrientationController(), lock(_)).Times(0);
-  EXPECT_CALL(GetScreenOrientationController(), MockUnlock()).Times(0);
+  EXPECT_CALL(ScreenOrientationClient(), LockOrientation(_)).Times(0);
+  EXPECT_CALL(ScreenOrientationClient(), UnlockOrientation()).Times(0);
 
   SimulateEnterFullscreen();
   // State set to PendingMetadata.
@@ -257,7 +412,7 @@ TEST_F(MediaControlsOrientationLockDelegateTest, LeaveFullscreenNoMetadata) {
 TEST_F(MediaControlsOrientationLockDelegateTest, EnterFullscreenWithMetadata) {
   SimulateVideoReadyState(HTMLMediaElement::kHaveMetadata);
 
-  EXPECT_CALL(GetScreenOrientationController(), lock(_)).Times(1);
+  EXPECT_CALL(ScreenOrientationClient(), LockOrientation(_)).Times(1);
   EXPECT_FALSE(DelegateWillUnlockFullscreen());
 
   SimulateEnterFullscreen();
@@ -269,8 +424,8 @@ TEST_F(MediaControlsOrientationLockDelegateTest, EnterFullscreenWithMetadata) {
 TEST_F(MediaControlsOrientationLockDelegateTest, LeaveFullscreenWithMetadata) {
   SimulateVideoReadyState(HTMLMediaElement::kHaveMetadata);
 
-  EXPECT_CALL(GetScreenOrientationController(), lock(_)).Times(1);
-  EXPECT_CALL(GetScreenOrientationController(), MockUnlock()).Times(1);
+  EXPECT_CALL(ScreenOrientationClient(), LockOrientation(_)).Times(1);
+  EXPECT_CALL(ScreenOrientationClient(), UnlockOrientation()).Times(1);
 
   SimulateEnterFullscreen();
   // State set to MaybeLockedFullscreen.
@@ -285,7 +440,7 @@ TEST_F(MediaControlsOrientationLockDelegateTest, EnterFullscreenAfterPageLock) {
   SimulateOrientationLock();
 
   EXPECT_FALSE(DelegateWillUnlockFullscreen());
-  EXPECT_CALL(GetScreenOrientationController(), lock(_)).Times(0);
+  EXPECT_CALL(ScreenOrientationClient(), LockOrientation(_)).Times(0);
 
   SimulateEnterFullscreen();
 
@@ -297,8 +452,8 @@ TEST_F(MediaControlsOrientationLockDelegateTest, LeaveFullscreenAfterPageLock) {
   SimulateVideoReadyState(HTMLMediaElement::kHaveMetadata);
   SimulateOrientationLock();
 
-  EXPECT_CALL(GetScreenOrientationController(), lock(_)).Times(0);
-  EXPECT_CALL(GetScreenOrientationController(), MockUnlock()).Times(0);
+  EXPECT_CALL(ScreenOrientationClient(), LockOrientation(_)).Times(0);
+  EXPECT_CALL(ScreenOrientationClient(), UnlockOrientation()).Times(0);
 
   SimulateEnterFullscreen();
   // State set to MaybeLockedFullscreen.
@@ -310,7 +465,7 @@ TEST_F(MediaControlsOrientationLockDelegateTest, LeaveFullscreenAfterPageLock) {
 
 TEST_F(MediaControlsOrientationLockDelegateTest,
        ReceivedMetadataAfterExitingFullscreen) {
-  EXPECT_CALL(GetScreenOrientationController(), lock(_)).Times(1);
+  EXPECT_CALL(ScreenOrientationClient(), LockOrientation(_)).Times(1);
 
   SimulateEnterFullscreen();
   // State set to PendingMetadata.
@@ -327,8 +482,8 @@ TEST_F(MediaControlsOrientationLockDelegateTest,
 }
 
 TEST_F(MediaControlsOrientationLockDelegateTest, ReceivedMetadataLater) {
-  EXPECT_CALL(GetScreenOrientationController(), lock(_)).Times(0);
-  EXPECT_CALL(GetScreenOrientationController(), MockUnlock()).Times(0);
+  EXPECT_CALL(ScreenOrientationClient(), LockOrientation(_)).Times(0);
+  EXPECT_CALL(ScreenOrientationClient(), UnlockOrientation()).Times(0);
 
   SimulateEnterFullscreen();
   // State set to PendingMetadata.
@@ -398,6 +553,737 @@ TEST_F(MediaControlsOrientationLockDelegateTest, ComputeOrientationLock) {
       .Times(1)
       .WillOnce(Return(screen_info));
   EXPECT_EQ(kWebScreenOrientationLockLandscape, ComputeOrientationLock());
+}
+
+TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
+       ComputeDeviceOrientation) {
+  InitVideo(400, 400);
+
+  // Repeat test with natural_orientation_is_portrait_ = false then true.
+  for (int n_o_i_p = 0; n_o_i_p <= 1; n_o_i_p++) {
+    natural_orientation_is_portrait_ = static_cast<bool>(n_o_i_p);
+    SCOPED_TRACE(::testing::Message() << "natural_orientation_is_portrait_="
+                                      << natural_orientation_is_portrait_);
+
+    DeviceOrientationType natural_orientation =
+        natural_orientation_is_portrait_ ? DeviceOrientationType::kPortrait
+                                         : DeviceOrientationType::kLandscape;
+    DeviceOrientationType perpendicular_to_natural_orientation =
+        natural_orientation_is_portrait_ ? DeviceOrientationType::kLandscape
+                                         : DeviceOrientationType::kPortrait;
+
+    // There are four valid combinations of orientation type and orientation
+    // angle for a naturally portrait device, and they should all calculate the
+    // same device orientation (since this doesn't depend on the screen
+    // orientation, it only depends on whether the device is naturally portrait
+    // or naturally landscape). Similarly for a naturally landscape device.
+    for (int screen_angle = 0; screen_angle < 360; screen_angle += 90) {
+      SCOPED_TRACE(::testing::Message() << "screen_angle=" << screen_angle);
+      WebScreenOrientationType screen_type = kWebScreenOrientationUndefined;
+      switch (screen_angle) {
+        case 0:
+          screen_type = natural_orientation_is_portrait_
+                            ? kWebScreenOrientationPortraitPrimary
+                            : kWebScreenOrientationLandscapePrimary;
+          break;
+        case 90:
+          screen_type = natural_orientation_is_portrait_
+                            ? kWebScreenOrientationLandscapePrimary
+                            : kWebScreenOrientationPortraitSecondary;
+          break;
+        case 180:
+          screen_type = natural_orientation_is_portrait_
+                            ? kWebScreenOrientationPortraitSecondary
+                            : kWebScreenOrientationLandscapeSecondary;
+          break;
+        case 270:
+          screen_type = natural_orientation_is_portrait_
+                            ? kWebScreenOrientationLandscapeSecondary
+                            : kWebScreenOrientationPortraitPrimary;
+          break;
+      }
+      ASSERT_NO_FATAL_FAILURE(RotateScreenTo(screen_type, screen_angle));
+
+      // Compass heading is irrelevant to this calculation.
+      double alpha = 0.0;
+      bool absolute = false;
+
+      // These beta and gamma values should all map to r < sin(24 degrees), so
+      // orientation == kFlat, irrespective of their device_orientation_angle.
+      EXPECT_EQ(DeviceOrientationType::kFlat,  // face up
+                ComputeDeviceOrientation(DeviceOrientationData::Create(
+                    alpha, 0. /* beta */, 0. /* gamma */, absolute)));
+      EXPECT_EQ(DeviceOrientationType::kFlat,  // face down
+                ComputeDeviceOrientation(DeviceOrientationData::Create(
+                    alpha, 180. /* beta */, 0. /* gamma */, absolute)));
+      EXPECT_EQ(DeviceOrientationType::kFlat,  // face down
+                ComputeDeviceOrientation(DeviceOrientationData::Create(
+                    alpha, -180. /* beta */, 0. /* gamma */, absolute)));
+      EXPECT_EQ(DeviceOrientationType::kFlat,  // face up, angle=0
+                ComputeDeviceOrientation(DeviceOrientationData::Create(
+                    alpha, 20. /* beta */, 0. /* gamma */, absolute)));
+      EXPECT_EQ(DeviceOrientationType::kFlat,  // face up, angle=90
+                ComputeDeviceOrientation(DeviceOrientationData::Create(
+                    alpha, 0. /* beta */, -20. /* gamma */, absolute)));
+      EXPECT_EQ(DeviceOrientationType::kFlat,  // face up, angle=180
+                ComputeDeviceOrientation(DeviceOrientationData::Create(
+                    alpha, -20. /* beta */, 0. /* gamma */, absolute)));
+      EXPECT_EQ(DeviceOrientationType::kFlat,  // face up, angle=270
+                ComputeDeviceOrientation(DeviceOrientationData::Create(
+                    alpha, 0. /* beta */, 20. /* gamma */, absolute)));
+
+      // These beta and gamma values should all map to r ~= 1 and
+      // device_orientation_angle % 90 ~= 45, hence orientation == kDiagonal.
+      EXPECT_EQ(DeviceOrientationType::kDiagonal,  // angle=45
+                ComputeDeviceOrientation(DeviceOrientationData::Create(
+                    alpha, 135. /* beta */, 90. /* gamma */, absolute)));
+      EXPECT_EQ(DeviceOrientationType::kDiagonal,  // angle=45
+                ComputeDeviceOrientation(DeviceOrientationData::Create(
+                    alpha, 45. /* beta */, -90. /* gamma */, absolute)));
+      EXPECT_EQ(DeviceOrientationType::kDiagonal,  // angle=135
+                ComputeDeviceOrientation(DeviceOrientationData::Create(
+                    alpha, -135. /* beta */, 90. /* gamma */, absolute)));
+      EXPECT_EQ(DeviceOrientationType::kDiagonal,  // angle=135
+                ComputeDeviceOrientation(DeviceOrientationData::Create(
+                    alpha, -45. /* beta */, -90. /* gamma */, absolute)));
+      EXPECT_EQ(DeviceOrientationType::kDiagonal,  // angle=225
+                ComputeDeviceOrientation(DeviceOrientationData::Create(
+                    alpha, -45. /* beta */, 90. /* gamma */, absolute)));
+      EXPECT_EQ(DeviceOrientationType::kDiagonal,  // angle=225
+                ComputeDeviceOrientation(DeviceOrientationData::Create(
+                    alpha, -135. /* beta */, -90. /* gamma */, absolute)));
+      EXPECT_EQ(DeviceOrientationType::kDiagonal,  // angle=315
+                ComputeDeviceOrientation(DeviceOrientationData::Create(
+                    alpha, 45. /* beta */, 90. /* gamma */, absolute)));
+      EXPECT_EQ(DeviceOrientationType::kDiagonal,  // angle=315
+                ComputeDeviceOrientation(DeviceOrientationData::Create(
+                    alpha, 135. /* beta */, -90. /* gamma */, absolute)));
+
+      // These beta and gamma values should all map to r ~= 1 and
+      // device_orientation_angle ~= 0, hence orientation == kPortrait.
+      EXPECT_EQ(natural_orientation,
+                ComputeDeviceOrientation(DeviceOrientationData::Create(
+                    alpha, 90. /* beta */, 0. /* gamma */, absolute)));
+      EXPECT_EQ(natural_orientation,
+                ComputeDeviceOrientation(DeviceOrientationData::Create(
+                    alpha, 90. /* beta */, 90. /* gamma */, absolute)));
+      EXPECT_EQ(natural_orientation,
+                ComputeDeviceOrientation(DeviceOrientationData::Create(
+                    alpha, 90. /* beta */, -90. /* gamma */, absolute)));
+      EXPECT_EQ(natural_orientation,
+                ComputeDeviceOrientation(DeviceOrientationData::Create(
+                    alpha, 85. /* beta */, 90. /* gamma */, absolute)));
+      EXPECT_EQ(natural_orientation,
+                ComputeDeviceOrientation(DeviceOrientationData::Create(
+                    alpha, 85. /* beta */, -90. /* gamma */, absolute)));
+      EXPECT_EQ(natural_orientation,
+                ComputeDeviceOrientation(DeviceOrientationData::Create(
+                    alpha, 95. /* beta */, 90. /* gamma */, absolute)));
+      EXPECT_EQ(natural_orientation,
+                ComputeDeviceOrientation(DeviceOrientationData::Create(
+                    alpha, 95. /* beta */, -90. /* gamma */, absolute)));
+
+      // These beta and gamma values should all map to r == 1 and
+      // device_orientation_angle == 90, hence orientation == kLandscape.
+      EXPECT_EQ(perpendicular_to_natural_orientation,
+                ComputeDeviceOrientation(DeviceOrientationData::Create(
+                    alpha, 0. /* beta */, -90. /* gamma */, absolute)));
+      EXPECT_EQ(perpendicular_to_natural_orientation,
+                ComputeDeviceOrientation(DeviceOrientationData::Create(
+                    alpha, 180. /* beta */, 90. /* gamma */, absolute)));
+      EXPECT_EQ(perpendicular_to_natural_orientation,
+                ComputeDeviceOrientation(DeviceOrientationData::Create(
+                    alpha, -180. /* beta */, 90. /* gamma */, absolute)));
+
+      // These beta and gamma values should all map to r ~= 1 and
+      // device_orientation_angle ~= 180, hence orientation == kPortrait.
+      EXPECT_EQ(natural_orientation,
+                ComputeDeviceOrientation(DeviceOrientationData::Create(
+                    alpha, -90. /* beta */, 0. /* gamma */, absolute)));
+      EXPECT_EQ(natural_orientation,
+                ComputeDeviceOrientation(DeviceOrientationData::Create(
+                    alpha, -90. /* beta */, 90. /* gamma */, absolute)));
+      EXPECT_EQ(natural_orientation,
+                ComputeDeviceOrientation(DeviceOrientationData::Create(
+                    alpha, -90. /* beta */, -90. /* gamma */, absolute)));
+      EXPECT_EQ(natural_orientation,
+                ComputeDeviceOrientation(DeviceOrientationData::Create(
+                    alpha, -85. /* beta */, 90. /* gamma */, absolute)));
+      EXPECT_EQ(natural_orientation,
+                ComputeDeviceOrientation(DeviceOrientationData::Create(
+                    alpha, -85. /* beta */, -90. /* gamma */, absolute)));
+      EXPECT_EQ(natural_orientation,
+                ComputeDeviceOrientation(DeviceOrientationData::Create(
+                    alpha, -95. /* beta */, 90. /* gamma */, absolute)));
+      EXPECT_EQ(natural_orientation,
+                ComputeDeviceOrientation(DeviceOrientationData::Create(
+                    alpha, -95. /* beta */, -90. /* gamma */, absolute)));
+
+      // These beta and gamma values should all map to r == 1 and
+      // device_orientation_angle == 270, hence orientation == kLandscape.
+      EXPECT_EQ(perpendicular_to_natural_orientation,
+                ComputeDeviceOrientation(DeviceOrientationData::Create(
+                    alpha, 0. /* beta */, 90. /* gamma */, absolute)));
+      EXPECT_EQ(perpendicular_to_natural_orientation,
+                ComputeDeviceOrientation(DeviceOrientationData::Create(
+                    alpha, 180. /* beta */, -90. /* gamma */, absolute)));
+      EXPECT_EQ(perpendicular_to_natural_orientation,
+                ComputeDeviceOrientation(DeviceOrientationData::Create(
+                    alpha, -180. /* beta */, -90. /* gamma */, absolute)));
+    }
+  }
+}
+
+TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
+       PortraitInlineRotateToLandscapeFullscreen) {
+  // Naturally portrait device, initially portrait, with landscape video.
+  natural_orientation_is_portrait_ = true;
+  ASSERT_NO_FATAL_FAILURE(
+      RotateScreenTo(kWebScreenOrientationPortraitPrimary, 0));
+  InitVideo(640, 480);
+  SetIsAutoRotateEnabledByUser(true);
+  PlayVideo();
+  UpdateVisibilityObserver();
+
+  // Initially inline, unlocked orientation.
+  ASSERT_FALSE(Video().IsFullscreen());
+  CheckStatePendingFullscreen();
+  ASSERT_FALSE(DelegateWillUnlockFullscreen());
+
+  // Simulate user rotating their device to landscape triggering a screen
+  // orientation change.
+  ASSERT_NO_FATAL_FAILURE(
+      RotateScreenTo(kWebScreenOrientationLandscapePrimary, 90));
+
+  // MediaControlsRotateToFullscreenDelegate should enter fullscreen, so
+  // MediaControlsOrientationLockDelegate should lock orientation to landscape
+  // (even though the screen is already landscape).
+  EXPECT_TRUE(Video().IsFullscreen());
+  CheckStateMaybeLockedFullscreen();
+  EXPECT_EQ(kWebScreenOrientationLockLandscape, DelegateOrientationLock());
+
+  // Device orientation events received by MediaControlsOrientationLockDelegate
+  // will confirm that the device is already landscape.
+  RotateDeviceTo(90 /* landscape primary */);
+
+  // MediaControlsOrientationLockDelegate should unlock orientation.
+  CheckStatePendingFullscreen();
+  EXPECT_FALSE(DelegateWillUnlockFullscreen());
+}
+
+TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
+       PortraitInlineButtonToPortraitLockedLandscapeFullscreen) {
+  // Naturally portrait device, initially portrait, with landscape video.
+  natural_orientation_is_portrait_ = true;
+  ASSERT_NO_FATAL_FAILURE(
+      RotateScreenTo(kWebScreenOrientationPortraitPrimary, 0));
+  InitVideo(640, 480);
+  SetIsAutoRotateEnabledByUser(true);
+
+  // Initially inline, unlocked orientation.
+  ASSERT_FALSE(Video().IsFullscreen());
+  CheckStatePendingFullscreen();
+  ASSERT_FALSE(DelegateWillUnlockFullscreen());
+
+  // Simulate user clicking on media controls fullscreen button.
+  SimulateEnterFullscreen();
+  EXPECT_TRUE(Video().IsFullscreen());
+
+  // MediaControlsOrientationLockDelegate should lock to landscape.
+  CheckStateMaybeLockedFullscreen();
+  EXPECT_EQ(kWebScreenOrientationLockLandscape, DelegateOrientationLock());
+
+  // This will trigger a screen orientation change to landscape.
+  ASSERT_NO_FATAL_FAILURE(
+      RotateScreenTo(kWebScreenOrientationLandscapePrimary, 90));
+
+  // Even though the device is still held in portrait.
+  RotateDeviceTo(0 /* portrait primary */);
+
+  // MediaControlsOrientationLockDelegate should remain locked to landscape.
+  CheckStateMaybeLockedFullscreen();
+  EXPECT_EQ(kWebScreenOrientationLockLandscape, DelegateOrientationLock());
+}
+
+TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
+       PortraitLockedLandscapeFullscreenRotateToLandscapeFullscreen) {
+  // Naturally portrait device, initially portrait device orientation but locked
+  // to landscape screen orientation, with landscape video.
+  natural_orientation_is_portrait_ = true;
+  ASSERT_NO_FATAL_FAILURE(
+      RotateScreenTo(kWebScreenOrientationLandscapePrimary, 90));
+  InitVideo(640, 480);
+  SetIsAutoRotateEnabledByUser(true);
+
+  // Initially fullscreen, locked orientation.
+  SimulateEnterFullscreen();
+  ASSERT_TRUE(Video().IsFullscreen());
+  CheckStateMaybeLockedFullscreen();
+  EXPECT_EQ(kWebScreenOrientationLockLandscape, DelegateOrientationLock());
+
+  // Simulate user rotating their device to landscape (matching the screen
+  // orientation lock).
+  RotateDeviceTo(90 /* landscape primary */);
+
+  // MediaControlsOrientationLockDelegate should unlock orientation.
+  CheckStatePendingFullscreen();
+  EXPECT_FALSE(DelegateWillUnlockFullscreen());
+  EXPECT_TRUE(Video().IsFullscreen());
+}
+
+TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
+       PortraitLockedLandscapeFullscreenBackToPortraitInline) {
+  // Naturally portrait device, initially portrait device orientation but locked
+  // to landscape screen orientation, with landscape video.
+  natural_orientation_is_portrait_ = true;
+  ASSERT_NO_FATAL_FAILURE(
+      RotateScreenTo(kWebScreenOrientationLandscapePrimary, 90));
+  InitVideo(640, 480);
+  SetIsAutoRotateEnabledByUser(true);
+
+  // Initially fullscreen, locked orientation.
+  SimulateEnterFullscreen();
+  ASSERT_TRUE(Video().IsFullscreen());
+  CheckStateMaybeLockedFullscreen();
+  EXPECT_EQ(kWebScreenOrientationLockLandscape, DelegateOrientationLock());
+
+  // Simulate user clicking on media controls exit fullscreen button.
+  SimulateExitFullscreen();
+  EXPECT_FALSE(Video().IsFullscreen());
+
+  // MediaControlsOrientationLockDelegate should unlock orientation.
+  CheckStatePendingFullscreen();
+  EXPECT_FALSE(DelegateWillUnlockFullscreen());
+
+  // Play the video and make it visible, just to make sure
+  // MediaControlsRotateToFullscreenDelegate doesn't react to the
+  // orientationchange event.
+  PlayVideo();
+  UpdateVisibilityObserver();
+
+  // Unlocking the orientation earlier will trigger a screen orientation change
+  // to portrait (since the device orientation was already portrait, even though
+  // the screen was locked to landscape).
+  ASSERT_NO_FATAL_FAILURE(
+      RotateScreenTo(kWebScreenOrientationPortraitPrimary, 0));
+
+  // Video should remain inline, unlocked.
+  CheckStatePendingFullscreen();
+  EXPECT_FALSE(DelegateWillUnlockFullscreen());
+  EXPECT_FALSE(Video().IsFullscreen());
+}
+
+TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
+       LandscapeInlineRotateToPortraitInline) {
+  // Naturally portrait device, initially landscape, with landscape video.
+  natural_orientation_is_portrait_ = true;
+  ASSERT_NO_FATAL_FAILURE(
+      RotateScreenTo(kWebScreenOrientationLandscapePrimary, 90));
+  InitVideo(640, 480);
+  SetIsAutoRotateEnabledByUser(true);
+  PlayVideo();
+  UpdateVisibilityObserver();
+
+  // Initially inline, unlocked orientation.
+  ASSERT_FALSE(Video().IsFullscreen());
+  CheckStatePendingFullscreen();
+  ASSERT_FALSE(DelegateWillUnlockFullscreen());
+
+  // Simulate user rotating their device to portrait triggering a screen
+  // orientation change.
+  ASSERT_NO_FATAL_FAILURE(
+      RotateScreenTo(kWebScreenOrientationPortraitPrimary, 0));
+
+  // Video should remain inline, unlocked.
+  CheckStatePendingFullscreen();
+  EXPECT_FALSE(DelegateWillUnlockFullscreen());
+  EXPECT_FALSE(Video().IsFullscreen());
+}
+
+TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
+       LandscapeInlineButtonToLandscapeFullscreen) {
+  // Naturally portrait device, initially landscape, with landscape video.
+  natural_orientation_is_portrait_ = true;
+  ASSERT_NO_FATAL_FAILURE(
+      RotateScreenTo(kWebScreenOrientationLandscapePrimary, 90));
+  InitVideo(640, 480);
+  SetIsAutoRotateEnabledByUser(true);
+
+  // Initially inline, unlocked orientation.
+  ASSERT_FALSE(Video().IsFullscreen());
+  CheckStatePendingFullscreen();
+  ASSERT_FALSE(DelegateWillUnlockFullscreen());
+
+  // Simulate user clicking on media controls fullscreen button.
+  SimulateEnterFullscreen();
+  EXPECT_TRUE(Video().IsFullscreen());
+
+  // MediaControlsOrientationLockDelegate should lock to landscape (even though
+  // the screen is already landscape).
+  CheckStateMaybeLockedFullscreen();
+  EXPECT_EQ(kWebScreenOrientationLockLandscape, DelegateOrientationLock());
+
+  // Device orientation events received by MediaControlsOrientationLockDelegate
+  // will confirm that the device is already landscape.
+  RotateDeviceTo(90 /* landscape primary */);
+
+  // MediaControlsOrientationLockDelegate should unlock orientation.
+  CheckStatePendingFullscreen();
+  EXPECT_FALSE(DelegateWillUnlockFullscreen());
+}
+
+TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
+       LandscapeFullscreenRotateToPortraitInline) {
+  // Naturally portrait device, initially landscape, with landscape video.
+  natural_orientation_is_portrait_ = true;
+  ASSERT_NO_FATAL_FAILURE(
+      RotateScreenTo(kWebScreenOrientationLandscapePrimary, 90));
+  InitVideo(640, 480);
+  SetIsAutoRotateEnabledByUser(true);
+
+  // Initially fullscreen, unlocked orientation.
+  SimulateEnterFullscreen();
+  RotateDeviceTo(90 /* landscape primary */);
+  ASSERT_TRUE(Video().IsFullscreen());
+  CheckStatePendingFullscreen();
+  EXPECT_FALSE(DelegateWillUnlockFullscreen());
+
+  // Simulate user rotating their device to portrait triggering a screen
+  // orientation change.
+  ASSERT_NO_FATAL_FAILURE(
+      RotateScreenTo(kWebScreenOrientationPortraitPrimary, 0));
+
+  // MediaControlsRotateToFullscreenDelegate should exit fullscreen.
+  EXPECT_FALSE(Video().IsFullscreen());
+
+  // MediaControlsOrientationLockDelegate should remain unlocked.
+  CheckStatePendingFullscreen();
+  EXPECT_FALSE(DelegateWillUnlockFullscreen());
+}
+
+TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
+       LandscapeFullscreenBackToLandscapeInline) {
+  // Naturally portrait device, initially landscape, with landscape video.
+  natural_orientation_is_portrait_ = true;
+  ASSERT_NO_FATAL_FAILURE(
+      RotateScreenTo(kWebScreenOrientationLandscapePrimary, 90));
+  InitVideo(640, 480);
+  SetIsAutoRotateEnabledByUser(true);
+
+  // Initially fullscreen, unlocked orientation.
+  SimulateEnterFullscreen();
+  RotateDeviceTo(90 /* landscape primary */);
+  ASSERT_TRUE(Video().IsFullscreen());
+  CheckStatePendingFullscreen();
+  EXPECT_FALSE(DelegateWillUnlockFullscreen());
+
+  // Simulate user clicking on media controls exit fullscreen button.
+  SimulateExitFullscreen();
+  EXPECT_FALSE(Video().IsFullscreen());
+
+  // MediaControlsOrientationLockDelegate should remain unlocked.
+  CheckStatePendingFullscreen();
+  EXPECT_FALSE(DelegateWillUnlockFullscreen());
+}
+
+TEST_F(
+    MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
+    AutoRotateDisabledPortraitInlineButtonToPortraitLockedLandscapeFullscreen) {
+  // Naturally portrait device, initially portrait, with landscape video.
+  natural_orientation_is_portrait_ = true;
+  ASSERT_NO_FATAL_FAILURE(
+      RotateScreenTo(kWebScreenOrientationPortraitPrimary, 0));
+  InitVideo(640, 480);
+  // But this time the user has disabled auto rotate, e.g. locked to portrait.
+  SetIsAutoRotateEnabledByUser(false);
+
+  // Initially inline, unlocked orientation.
+  ASSERT_FALSE(Video().IsFullscreen());
+  CheckStatePendingFullscreen();
+  ASSERT_FALSE(DelegateWillUnlockFullscreen());
+
+  // Simulate user clicking on media controls fullscreen button.
+  SimulateEnterFullscreen();
+  EXPECT_TRUE(Video().IsFullscreen());
+
+  // MediaControlsOrientationLockDelegate should lock to landscape.
+  CheckStateMaybeLockedFullscreen();
+  EXPECT_EQ(kWebScreenOrientationLockLandscape, DelegateOrientationLock());
+
+  // This will trigger a screen orientation change to landscape, since the app's
+  // lock overrides the user's orientation lock (at least on Android).
+  ASSERT_NO_FATAL_FAILURE(
+      RotateScreenTo(kWebScreenOrientationLandscapePrimary, 90));
+
+  // Even though the device is still held in portrait.
+  RotateDeviceTo(0 /* portrait primary */);
+
+  // MediaControlsOrientationLockDelegate should remain locked to landscape.
+  CheckStateMaybeLockedFullscreen();
+  EXPECT_EQ(kWebScreenOrientationLockLandscape, DelegateOrientationLock());
+}
+
+TEST_F(
+    MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
+    AutoRotateDisabledPortraitLockedLandscapeFullscreenRotateToLandscapeLockedLandscapeFullscreen) {
+  // Naturally portrait device, initially portrait device orientation but locked
+  // to landscape screen orientation, with landscape video.
+  natural_orientation_is_portrait_ = true;
+  ASSERT_NO_FATAL_FAILURE(
+      RotateScreenTo(kWebScreenOrientationLandscapePrimary, 90));
+  InitVideo(640, 480);
+  // But this time the user has disabled auto rotate, e.g. locked to portrait
+  // (even though the app's landscape screen orientation lock overrides it).
+  SetIsAutoRotateEnabledByUser(false);
+
+  // Initially fullscreen, locked orientation.
+  SimulateEnterFullscreen();
+  ASSERT_TRUE(Video().IsFullscreen());
+  CheckStateMaybeLockedFullscreen();
+  EXPECT_EQ(kWebScreenOrientationLockLandscape, DelegateOrientationLock());
+
+  // Simulate user rotating their device to landscape (matching the screen
+  // orientation lock).
+  RotateDeviceTo(90 /* landscape primary */);
+
+  // MediaControlsOrientationLockDelegate should remain locked to landscape even
+  // though the screen orientation is now landscape, since the user has disabled
+  // auto rotate, so unlocking now would cause the device to return to the
+  // portrait orientation.
+  CheckStateMaybeLockedFullscreen();
+  EXPECT_EQ(kWebScreenOrientationLockLandscape, DelegateOrientationLock());
+  EXPECT_TRUE(Video().IsFullscreen());
+}
+
+TEST_F(
+    MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
+    AutoRotateDisabledPortraitLockedLandscapeFullscreenBackToPortraitInline) {
+  // Naturally portrait device, initially portrait device orientation but locked
+  // to landscape screen orientation, with landscape video.
+  natural_orientation_is_portrait_ = true;
+  ASSERT_NO_FATAL_FAILURE(
+      RotateScreenTo(kWebScreenOrientationLandscapePrimary, 90));
+  InitVideo(640, 480);
+  // But this time the user has disabled auto rotate, e.g. locked to portrait
+  // (even though the app's landscape screen orientation lock overrides it).
+  SetIsAutoRotateEnabledByUser(false);
+
+  // Initially fullscreen, locked orientation.
+  SimulateEnterFullscreen();
+  ASSERT_TRUE(Video().IsFullscreen());
+  CheckStateMaybeLockedFullscreen();
+  EXPECT_EQ(kWebScreenOrientationLockLandscape, DelegateOrientationLock());
+
+  // Simulate user clicking on media controls exit fullscreen button.
+  SimulateExitFullscreen();
+  EXPECT_FALSE(Video().IsFullscreen());
+
+  // MediaControlsOrientationLockDelegate should unlock orientation.
+  CheckStatePendingFullscreen();
+  EXPECT_FALSE(DelegateWillUnlockFullscreen());
+
+  // Play the video and make it visible, just to make sure
+  // MediaControlsRotateToFullscreenDelegate doesn't react to the
+  // orientationchange event.
+  PlayVideo();
+  UpdateVisibilityObserver();
+
+  // Unlocking the orientation earlier will trigger a screen orientation change
+  // to portrait, since the user had locked the screen orientation to portrait,
+  // (which happens to also match the device orientation) and
+  // MediaControlsOrientationLockDelegate is no longer overriding that lock.
+  ASSERT_NO_FATAL_FAILURE(
+      RotateScreenTo(kWebScreenOrientationPortraitPrimary, 0));
+
+  // Video should remain inline, unlocked.
+  CheckStatePendingFullscreen();
+  EXPECT_FALSE(DelegateWillUnlockFullscreen());
+  EXPECT_FALSE(Video().IsFullscreen());
+}
+
+TEST_F(
+    MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
+    AutoRotateDisabledLandscapeLockedLandscapeFullscreenRotateToPortraitLockedLandscapeFullscreen) {
+  // Naturally portrait device, initially landscape device orientation yet also
+  // locked to landscape screen orientation since the user had disabled auto
+  // rotate, with landscape video.
+  natural_orientation_is_portrait_ = true;
+  ASSERT_NO_FATAL_FAILURE(
+      RotateScreenTo(kWebScreenOrientationLandscapePrimary, 90));
+  InitVideo(640, 480);
+  // The user has disabled auto rotate, e.g. locked to portrait (even though the
+  // app's landscape screen orientation lock overrides it).
+  SetIsAutoRotateEnabledByUser(false);
+
+  // Initially fullscreen, locked orientation.
+  SimulateEnterFullscreen();
+  ASSERT_TRUE(Video().IsFullscreen());
+  CheckStateMaybeLockedFullscreen();
+  EXPECT_EQ(kWebScreenOrientationLockLandscape, DelegateOrientationLock());
+
+  // Simulate user rotating their device to portrait (matching the user's
+  // rotation lock, but perpendicular to MediaControlsOrientationLockDelegate's
+  // screen orientation lock which overrides it).
+  RotateDeviceTo(0 /* portrait primary */);
+
+  // Video should remain locked and fullscreen. This may disappoint users who
+  // expect MediaControlsRotateToFullscreenDelegate to let them always leave
+  // fullscreen by rotating perpendicular to the video's orientation (i.e.
+  // rotating to portrait for a landscape video), however in this specific case,
+  // since the user disabled auto rotate at the OS level, it's likely that they
+  // wish to be able to use their phone whilst their head is lying sideways on a
+  // pillow (or similar), in which case it's essential to keep the fullscreen
+  // orientation lock.
+  CheckStateMaybeLockedFullscreen();
+  EXPECT_EQ(kWebScreenOrientationLockLandscape, DelegateOrientationLock());
+  EXPECT_TRUE(Video().IsFullscreen());
+}
+
+TEST_F(
+    MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
+    AutoRotateDisabledLandscapeLockedLandscapeFullscreenBackToPortraitInline) {
+  // Naturally portrait device, initially landscape device orientation yet also
+  // locked to landscape screen orientation since the user had disabled auto
+  // rotate, with landscape video.
+  natural_orientation_is_portrait_ = true;
+  ASSERT_NO_FATAL_FAILURE(
+      RotateScreenTo(kWebScreenOrientationLandscapePrimary, 90));
+  InitVideo(640, 480);
+  // The user has disabled auto rotate, e.g. locked to portrait (even though the
+  // app's landscape screen orientation lock overrides it).
+  SetIsAutoRotateEnabledByUser(false);
+
+  // Initially fullscreen, locked orientation.
+  SimulateEnterFullscreen();
+  ASSERT_TRUE(Video().IsFullscreen());
+  CheckStateMaybeLockedFullscreen();
+  EXPECT_EQ(kWebScreenOrientationLockLandscape, DelegateOrientationLock());
+
+  // Simulate user clicking on media controls exit fullscreen button.
+  SimulateExitFullscreen();
+  EXPECT_FALSE(Video().IsFullscreen());
+
+  // MediaControlsOrientationLockDelegate should unlock orientation.
+  CheckStatePendingFullscreen();
+  EXPECT_FALSE(DelegateWillUnlockFullscreen());
+
+  // Play the video and make it visible, just to make sure
+  // MediaControlsRotateToFullscreenDelegate doesn't react to the
+  // orientationchange event.
+  PlayVideo();
+  UpdateVisibilityObserver();
+
+  // Unlocking the orientation earlier will trigger a screen orientation change
+  // to portrait even though the device orientation is landscape, since the user
+  // had locked the screen orientation to portrait, and
+  // MediaControlsOrientationLockDelegate is no longer overriding that.
+  ASSERT_NO_FATAL_FAILURE(
+      RotateScreenTo(kWebScreenOrientationPortraitPrimary, 0));
+
+  // Video should remain inline, unlocked.
+  CheckStatePendingFullscreen();
+  EXPECT_FALSE(DelegateWillUnlockFullscreen());
+  EXPECT_FALSE(Video().IsFullscreen());
+}
+
+TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
+       PortraitVideoRotateEnterExit) {
+  // Naturally portrait device, initially landscape, with *portrait* video.
+  natural_orientation_is_portrait_ = true;
+  ASSERT_NO_FATAL_FAILURE(
+      RotateScreenTo(kWebScreenOrientationLandscapePrimary, 90));
+  InitVideo(480, 640);
+  SetIsAutoRotateEnabledByUser(true);
+  PlayVideo();
+  UpdateVisibilityObserver();
+
+  // Initially inline, unlocked orientation.
+  ASSERT_FALSE(Video().IsFullscreen());
+  CheckStatePendingFullscreen();
+  ASSERT_FALSE(DelegateWillUnlockFullscreen());
+
+  // Simulate user rotating their device to portrait triggering a screen
+  // orientation change.
+  ASSERT_NO_FATAL_FAILURE(
+      RotateScreenTo(kWebScreenOrientationPortraitPrimary, 0));
+
+  // MediaControlsRotateToFullscreenDelegate should enter fullscreen, so
+  // MediaControlsOrientationLockDelegate should lock orientation to portrait
+  // (even though the screen is already portrait).
+  EXPECT_TRUE(Video().IsFullscreen());
+  CheckStateMaybeLockedFullscreen();
+  EXPECT_EQ(kWebScreenOrientationLockPortrait, DelegateOrientationLock());
+
+  // Device orientation events received by MediaControlsOrientationLockDelegate
+  // will confirm that the device is already portrait.
+  RotateDeviceTo(0 /* portrait primary */);
+
+  // MediaControlsOrientationLockDelegate should unlock orientation.
+  CheckStatePendingFullscreen();
+  EXPECT_FALSE(DelegateWillUnlockFullscreen());
+  EXPECT_TRUE(Video().IsFullscreen());
+
+  // Simulate user rotating their device to landscape triggering a screen
+  // orientation change.
+  ASSERT_NO_FATAL_FAILURE(
+      RotateScreenTo(kWebScreenOrientationLandscapePrimary, 90));
+
+  // MediaControlsRotateToFullscreenDelegate should exit fullscreen.
+  EXPECT_FALSE(Video().IsFullscreen());
+
+  // MediaControlsOrientationLockDelegate should remain unlocked.
+  CheckStatePendingFullscreen();
+  EXPECT_FALSE(DelegateWillUnlockFullscreen());
+}
+
+TEST_F(MediaControlsOrientationLockAndRotateToFullscreenDelegateTest,
+       LandscapeDeviceRotateEnterExit) {
+  // Naturally *landscape* device, initially portrait, with landscape video.
+  natural_orientation_is_portrait_ = false;
+  ASSERT_NO_FATAL_FAILURE(
+      RotateScreenTo(kWebScreenOrientationPortraitPrimary, 270));
+  InitVideo(640, 480);
+  SetIsAutoRotateEnabledByUser(true);
+  PlayVideo();
+  UpdateVisibilityObserver();
+
+  // Initially inline, unlocked orientation.
+  ASSERT_FALSE(Video().IsFullscreen());
+  CheckStatePendingFullscreen();
+  ASSERT_FALSE(DelegateWillUnlockFullscreen());
+
+  // Simulate user rotating their device to landscape triggering a screen
+  // orientation change.
+  ASSERT_NO_FATAL_FAILURE(
+      RotateScreenTo(kWebScreenOrientationLandscapePrimary, 0));
+
+  // MediaControlsRotateToFullscreenDelegate should enter fullscreen, so
+  // MediaControlsOrientationLockDelegate should lock orientation to landscape
+  // (even though the screen is already landscape).
+  EXPECT_TRUE(Video().IsFullscreen());
+  CheckStateMaybeLockedFullscreen();
+  EXPECT_EQ(kWebScreenOrientationLockLandscape, DelegateOrientationLock());
+
+  // Device orientation events received by MediaControlsOrientationLockDelegate
+  // will confirm that the device is already landscape.
+  RotateDeviceTo(0 /* landscape primary */);
+
+  // MediaControlsOrientationLockDelegate should unlock orientation.
+  CheckStatePendingFullscreen();
+  EXPECT_FALSE(DelegateWillUnlockFullscreen());
+  EXPECT_TRUE(Video().IsFullscreen());
+
+  // Simulate user rotating their device to portrait triggering a screen
+  // orientation change.
+  ASSERT_NO_FATAL_FAILURE(
+      RotateScreenTo(kWebScreenOrientationPortraitPrimary, 270));
+
+  // MediaControlsRotateToFullscreenDelegate should exit fullscreen.
+  EXPECT_FALSE(Video().IsFullscreen());
+
+  // MediaControlsOrientationLockDelegate should remain unlocked.
+  CheckStatePendingFullscreen();
+  EXPECT_FALSE(DelegateWillUnlockFullscreen());
 }
 
 }  // namespace blink

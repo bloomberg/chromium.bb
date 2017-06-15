@@ -184,6 +184,12 @@ void MediaControlsOrientationLockDelegate::MaybeListenToDeviceOrientation() {
   if (!RuntimeEnabledFeatures::VideoRotateToFullscreenEnabled())
     return;
 
+  if (is_auto_rotate_enabled_by_user_override_for_testing_ != WTF::nullopt) {
+    GotIsAutoRotateEnabledByUser(
+        is_auto_rotate_enabled_by_user_override_for_testing_.value());
+    return;
+  }
+
 // Check whether the user locked screen orientation at the OS level.
 #if OS(ANDROID)
   DCHECK(!monitor_.is_bound());
@@ -297,21 +303,17 @@ MediaControlsOrientationLockDelegate::ComputeOrientationLock() const {
   return kWebScreenOrientationLockLandscape;
 }
 
-void MediaControlsOrientationLockDelegate::
-    MaybeUnlockIfDeviceOrientationMatchesVideo(DeviceOrientationEvent* event) {
-  DCHECK_EQ(state_, State::kMaybeLockedFullscreen);
-  DCHECK_NE(locked_orientation_, kWebScreenOrientationLockDefault);
-
+MediaControlsOrientationLockDelegate::DeviceOrientationType
+MediaControlsOrientationLockDelegate::ComputeDeviceOrientation(
+    DeviceOrientationData* data) const {
   LocalDOMWindow* dom_window = GetDocument().domWindow();
   if (!dom_window)
-    return;
+    return DeviceOrientationType::kUnknown;
 
-  if (!event->Orientation()->CanProvideBeta() ||
-      !event->Orientation()->CanProvideGamma()) {
-    return;
-  }
-  double beta = event->Orientation()->Beta();
-  double gamma = event->Orientation()->Gamma();
+  if (!data->CanProvideBeta() || !data->CanProvideGamma())
+    return DeviceOrientationType::kUnknown;
+  double beta = data->Beta();
+  double gamma = data->Gamma();
 
   // Calculate the projection of the up vector (normal to the earth's surface)
   // onto the device's screen in its natural orientation. (x,y) will lie within
@@ -334,18 +336,25 @@ void MediaControlsOrientationLockDelegate::
   double device_orientation_angle =
       std::fmod(rad2deg(std::atan2(/* y= */ x, /* x= */ -y)) + 360, 360);
 
+  // If angle between device's screen and the horizontal plane is less than
+  // kMinElevationAngle (chosen to approximately match Android's behavior), then
+  // device is too flat to reliably determine orientation.
   constexpr double kMinElevationAngle = 24;  // degrees from horizontal plane
   if (r < std::sin(deg2rad(kMinElevationAngle)))
-    return;  // Device is too flat to reliably determine orientation.
+    return DeviceOrientationType::kFlat;
 
   // device_orientation_angle snapped to nearest multiple of 90.
   int device_orientation_angle90 =
       std::lround(device_orientation_angle / 90) * 90;
 
-  if (std::abs(device_orientation_angle - device_orientation_angle90) > 23) {
-    // Device is diagonal (within 44 degree hysteresis zone).
-    return;
-  }
+  // To be considered portrait or landscape, allow the device to be rotated 23
+  // degrees (chosen to approximately match Android's behavior) to either side
+  // of those orientations. In the remaining 90 - 2*23 = 44 degree hysteresis
+  // zones, consider the device to be diagonal. These hysteresis zones prevent
+  // the computed orientation from oscillating rapidly between portrait and
+  // landscape when the device is in between the two orientations.
+  if (std::abs(device_orientation_angle - device_orientation_angle90) > 23)
+    return DeviceOrientationType::kDiagonal;
 
   // screen.orientation.angle is the standardized replacement for
   // window.orientation. They are equal, except -90 was replaced by 270.
@@ -355,8 +364,8 @@ void MediaControlsOrientationLockDelegate::
           ->angle();
 
   // This is equivalent to screen.orientation.type.startsWith('landscape').
-  bool screen_orientation_is_landscape =
-      dom_window->screen()->width() > dom_window->screen()->height();
+  bool screen_orientation_is_portrait =
+      dom_window->screen()->width() <= dom_window->screen()->height();
 
   // The natural orientation of the device could either be portrait (almost
   // all phones, and some tablets like Nexus 7) or landscape (other tablets
@@ -364,21 +373,33 @@ void MediaControlsOrientationLockDelegate::
   // TODO(johnme): This might get confused on square screens.
   bool screen_orientation_is_natural_or_flipped_natural =
       screen_orientation_angle % 180 == 0;
-  bool natural_orientation_is_landscape =
-      screen_orientation_is_landscape ==
+  bool natural_orientation_is_portrait =
+      screen_orientation_is_portrait ==
       screen_orientation_is_natural_or_flipped_natural;
 
-  bool natural_orientation_matches_video =
-      natural_orientation_is_landscape ==
-      (locked_orientation_ == kWebScreenOrientationLockLandscape);
+  // If natural_orientation_is_portrait_, then angles 0 and 180 are portrait,
+  // otherwise angles 90 and 270 are portrait.
+  int portrait_angle_mod_180 = natural_orientation_is_portrait ? 0 : 90;
+  return device_orientation_angle90 % 180 == portrait_angle_mod_180
+             ? DeviceOrientationType::kPortrait
+             : DeviceOrientationType::kLandscape;
+}
 
-  // If natural_orientation_matches_video, then 0 and 180 match video, otherwise
-  // 90 and 270 match video.
-  bool device_orientation_matches_video =
-      (device_orientation_angle90 % 180) ==
-      (natural_orientation_matches_video ? 0 : 90);
+void MediaControlsOrientationLockDelegate::
+    MaybeUnlockIfDeviceOrientationMatchesVideo(DeviceOrientationEvent* event) {
+  DCHECK_EQ(state_, State::kMaybeLockedFullscreen);
+  DCHECK(locked_orientation_ == kWebScreenOrientationLockPortrait ||
+         locked_orientation_ == kWebScreenOrientationLockLandscape);
 
-  if (!device_orientation_matches_video)
+  DeviceOrientationType device_orientation =
+      ComputeDeviceOrientation(event->Orientation());
+
+  DeviceOrientationType video_orientation =
+      locked_orientation_ == kWebScreenOrientationLockPortrait
+          ? DeviceOrientationType::kPortrait
+          : DeviceOrientationType::kLandscape;
+
+  if (device_orientation != video_orientation)
     return;
 
   // Job done: the user rotated their device to match the orientation of the

@@ -8,10 +8,12 @@
 #include "core/events/EventListener.h"
 #include "device/screen_orientation/public/interfaces/screen_orientation.mojom-blink.h"
 #include "modules/ModulesExport.h"
+#include "platform/wtf/Optional.h"
 #include "public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
 
 namespace blink {
 
+class DeviceOrientationData;
 class DeviceOrientationEvent;
 class Document;
 class HTMLVideoElement;
@@ -69,11 +71,20 @@ class MediaControlsOrientationLockDelegate final : public EventListener {
 
  private:
   friend class MediaControlsOrientationLockDelegateTest;
+  friend class MediaControlsOrientationLockAndRotateToFullscreenDelegateTest;
 
   enum class State {
     kPendingFullscreen,
     kPendingMetadata,
     kMaybeLockedFullscreen,
+  };
+
+  enum class DeviceOrientationType {
+    kUnknown,
+    kFlat,
+    kDiagonal,
+    kPortrait,
+    kLandscape
   };
 
   // EventListener implementation.
@@ -98,6 +109,9 @@ class MediaControlsOrientationLockDelegate final : public EventListener {
   void MaybeListenToDeviceOrientation();
   void GotIsAutoRotateEnabledByUser(bool enabled);
 
+  MODULES_EXPORT DeviceOrientationType
+  ComputeDeviceOrientation(DeviceOrientationData*) const;
+
   void MaybeUnlockIfDeviceOrientationMatchesVideo(DeviceOrientationEvent*);
 
   // Current state of the object. See comment at the top of the file for a
@@ -109,6 +123,8 @@ class MediaControlsOrientationLockDelegate final : public EventListener {
       kWebScreenOrientationLockDefault /* unlocked */;
 
   device::mojom::blink::ScreenOrientationListenerPtr monitor_;
+
+  WTF::Optional<bool> is_auto_rotate_enabled_by_user_override_for_testing_;
 
   // `video_element_` owns MediaControlsImpl that owns |this|.
   Member<HTMLVideoElement> video_element_;

@@ -62,6 +62,12 @@ WebScreenOrientationType ScreenOrientationControllerImpl::ComputeOrientation(
 
   bool is_tall_display = rotation % 180 ? rect.Height() < rect.Width()
                                         : rect.Height() > rect.Width();
+
+  // https://w3c.github.io/screen-orientation/#dfn-current-orientation-angle
+  // allows the UA to associate *-primary and *-secondary values at will. Blink
+  // arbitrarily chooses rotation 0 to always be portrait-primary or
+  // landscape-primary, and portrait-primary + 90 to be landscape-primary, which
+  // together fully determine the relationship.
   switch (rotation) {
     case 0:
       return is_tall_display ? kWebScreenOrientationPortraitPrimary
