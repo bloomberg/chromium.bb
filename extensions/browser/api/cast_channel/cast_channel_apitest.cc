@@ -33,7 +33,6 @@
 using ::cast_channel::CastMessage;
 using ::cast_channel::CastSocket;
 using ::cast_channel::CastTransport;
-using ::cast_channel::ChannelAuthType;
 using ::cast_channel::ChannelError;
 using ::cast_channel::CreateIPEndPointForTest;
 using ::cast_channel::LastError;
@@ -104,8 +103,6 @@ class CastChannelAPITest : public ExtensionApiTest {
         .WillByDefault(ReturnPointee(&channel_id_));
     ON_CALL(*mock_cast_socket_, ip_endpoint())
         .WillByDefault(ReturnRef(ip_endpoint_));
-    ON_CALL(*mock_cast_socket_, channel_auth())
-        .WillByDefault(Return(ChannelAuthType::SSL_VERIFIED));
     ON_CALL(*mock_cast_socket_, keep_alive()).WillByDefault(Return(false));
   }
 

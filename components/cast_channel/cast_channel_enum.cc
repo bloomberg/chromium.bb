@@ -43,14 +43,4 @@ std::string ChannelErrorToString(ChannelError channel_error) {
   return "Unknown channel_error";
 }
 
-std::string ChannelAuthTypeToString(ChannelAuthType channel_auth) {
-  switch (channel_auth) {
-    CAST_CHANNEL_TYPE_TO_STRING(ChannelAuthType::NONE);
-    CAST_CHANNEL_TYPE_TO_STRING(ChannelAuthType::SSL_VERIFIED);
-  }
-  NOTREACHED() << "Unknown channel_auth "
-               << ChannelAuthTypeToString(channel_auth);
-  return "Unknown channel_auth";
-}
-
 }  // namespace cast_channel

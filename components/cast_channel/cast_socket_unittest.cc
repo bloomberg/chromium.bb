@@ -41,9 +41,6 @@
 
 const int64_t kDistantTimeoutMillis = 100000;  // 100 seconds (never hit).
 
-using ::cast_channel::ChannelError;
-using ::cast_channel::ChannelAuthType;
-using ::cast_channel::ReadyState;
 using ::testing::_;
 using ::testing::A;
 using ::testing::DoAll;
@@ -174,32 +171,27 @@ class TestCastSocket : public CastSocketImpl {
   static std::unique_ptr<TestCastSocket> CreateSecure(
       Logger* logger,
       uint64_t device_capabilities = cast_channel::CastDeviceCapability::NONE) {
-    return std::unique_ptr<TestCastSocket>(new TestCastSocket(
-        CreateIPEndPointForTest(), ChannelAuthType::SSL_VERIFIED,
-        kDistantTimeoutMillis, logger, device_capabilities));
+    return std::unique_ptr<TestCastSocket>(
+        new TestCastSocket(CreateIPEndPointForTest(), kDistantTimeoutMillis,
+                           logger, device_capabilities));
   }
 
   TestCastSocket(const net::IPEndPoint& ip_endpoint,
-                 ChannelAuthType channel_auth,
                  int64_t timeout_ms,
                  Logger* logger,
                  uint64_t device_capabilities)
       : TestCastSocket(ip_endpoint,
-                       channel_auth,
                        timeout_ms,
                        logger,
                        new net::TestNetLog(),
                        device_capabilities) {}
 
   TestCastSocket(const net::IPEndPoint& ip_endpoint,
-                 ChannelAuthType channel_auth,
                  int64_t timeout_ms,
                  Logger* logger,
                  net::TestNetLog* capturing_net_log,
                  uint64_t device_capabilities)
-      : CastSocketImpl("some_extension_id",
-                       ip_endpoint,
-                       channel_auth,
+      : CastSocketImpl(ip_endpoint,
                        capturing_net_log,
                        base::TimeDelta::FromMilliseconds(timeout_ms),
                        false,

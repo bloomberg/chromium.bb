@@ -71,7 +71,6 @@ class CastTransport {
 // Manager class for reading and writing messages to/from a socket.
 class CastTransportImpl : public CastTransport {
  public:
-  using ChannelAuthType = ::cast_channel::ChannelAuthType;
   using ChannelError = ::cast_channel::ChannelError;
 
   // Adds a CastMessage read/write layer to a socket.
@@ -83,7 +82,6 @@ class CastTransportImpl : public CastTransport {
   CastTransportImpl(net::Socket* socket,
                     int channel_id,
                     const net::IPEndPoint& ip_endpoint_,
-                    ChannelAuthType channel_auth_,
                     scoped_refptr<Logger> logger);
 
   ~CastTransportImpl() override;
@@ -183,9 +181,6 @@ class CastTransportImpl : public CastTransport {
 
   // IP address of the remote end.
   const net::IPEndPoint ip_endpoint_;
-
-  // Authentication level for the connection.
-  ChannelAuthType channel_auth_;
 
   // Accumulates details of events and errors, for debugging purposes.
   scoped_refptr<Logger> logger_;

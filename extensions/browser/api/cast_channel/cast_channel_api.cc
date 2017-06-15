@@ -80,7 +80,7 @@ void FillChannelInfo(const CastSocket& socket, ChannelInfo* channel_info) {
   channel_info->connect_info.ip_address = ip_endpoint.ToStringWithoutPort();
   channel_info->connect_info.port = ip_endpoint.port();
   channel_info->connect_info.auth =
-      api::cast_channel::ToChannelAuthType(socket.channel_auth());
+      api::cast_channel::CHANNEL_AUTH_TYPE_SSL_VERIFIED;
   channel_info->ready_state =
       api::cast_channel::ToReadyState(socket.ready_state());
   channel_info->error_state =
@@ -279,8 +279,6 @@ bool CastChannelOpenFunction::Prepare() {
     return false;
   }
 
-  channel_auth_ =
-      api::cast_channel::ToChannelAuthTypeInternal(connect_info.auth);
   ip_endpoint_.reset(ParseConnectInfo(connect_info));
   return true;
 }
@@ -295,8 +293,7 @@ void CastChannelOpenFunction::AsyncWorkStart() {
     socket = test_socket.release();
   } else {
     socket = new CastSocketImpl(
-        extension_->id(), *ip_endpoint_, channel_auth_,
-        ExtensionsBrowserClient::Get()->GetNetLog(),
+        *ip_endpoint_, ExtensionsBrowserClient::Get()->GetNetLog(),
         base::TimeDelta::FromMilliseconds(connect_info.timeout.get()
                                               ? *connect_info.timeout
                                               : kDefaultConnectTimeoutMillis),

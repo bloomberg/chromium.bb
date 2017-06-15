@@ -41,12 +41,6 @@ enum class ChannelError {
   UNKNOWN,
 };
 
-// Maps to enum ChannelAuth in cast_channel.idl
-enum class ChannelAuthType {
-  NONE,
-  SSL_VERIFIED,
-};
-
 // Used in ErrorInfo.eventType in cast_channel.idl
 enum class ChannelEvent {
   UNKNOWN = 0,
@@ -144,7 +138,6 @@ enum class WriteState {
 
 std::string ReadyStateToString(ReadyState ready_state);
 std::string ChannelErrorToString(ChannelError channel_error);
-std::string ChannelAuthTypeToString(ChannelAuthType channel_auth);
 
 }  // namespace cast_channel
 

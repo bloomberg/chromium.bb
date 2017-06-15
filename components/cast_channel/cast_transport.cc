@@ -24,17 +24,14 @@
 #include "net/base/net_errors.h"
 #include "net/socket/socket.h"
 
-#define VLOG_WITH_CONNECTION(level)                                     \
-  VLOG(level) << "[" << ip_endpoint_.ToString() << ", auth="            \
-              << ::cast_channel::ChannelAuthTypeToString(channel_auth_) \
-              << "] "
+#define VLOG_WITH_CONNECTION(level) \
+  VLOG(level) << "[" << ip_endpoint_.ToString() << ", auth=SSL_VERIFIED] "
 
 namespace cast_channel {
 
 CastTransportImpl::CastTransportImpl(net::Socket* socket,
                                      int channel_id,
                                      const net::IPEndPoint& ip_endpoint,
-                                     ChannelAuthType channel_auth,
                                      scoped_refptr<Logger> logger)
     : started_(false),
       socket_(socket),
@@ -43,7 +40,6 @@ CastTransportImpl::CastTransportImpl(net::Socket* socket,
       error_state_(ChannelError::NONE),
       channel_id_(channel_id),
       ip_endpoint_(ip_endpoint),
-      channel_auth_(channel_auth),
       logger_(logger) {
   DCHECK(socket);
 

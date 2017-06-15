@@ -144,14 +144,10 @@ class MockSocket : public net::Socket {
 
 class CastTransportTest : public testing::Test {
  public:
-  using ChannelError = ::cast_channel::ChannelError;
-  using ChannelAuthType = ::cast_channel::ChannelAuthType;
-
   CastTransportTest() : logger_(new Logger()) {
     delegate_ = new MockCastTransportDelegate;
     transport_.reset(new CastTransportImpl(&mock_socket_, kChannelId,
-                                           CreateIPEndPointForTest(),
-                                           auth_type_, logger_));
+                                           CreateIPEndPointForTest(), logger_));
     transport_->SetReadDelegate(base::WrapUnique(delegate_));
   }
   ~CastTransportTest() override {}
@@ -166,7 +162,6 @@ class CastTransportTest : public testing::Test {
   base::MessageLoop message_loop_;
   MockCastTransportDelegate* delegate_;
   MockSocket mock_socket_;
-  ChannelAuthType auth_type_;
   Logger* logger_;
   std::unique_ptr<CastTransport> transport_;
 };

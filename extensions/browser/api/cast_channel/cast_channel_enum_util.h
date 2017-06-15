@@ -16,10 +16,6 @@ api::cast_channel::ReadyState ToReadyState(
     ::cast_channel::ReadyState ready_state);
 api::cast_channel::ChannelError ToChannelError(
     ::cast_channel::ChannelError channel_error);
-api::cast_channel::ChannelAuthType ToChannelAuthType(
-    ::cast_channel::ChannelAuthType channel_auth);
-::cast_channel::ChannelAuthType ToChannelAuthTypeInternal(
-    api::cast_channel::ChannelAuthType channel_auth);
 
 }  // namespace cast_channel
 }  // namespace api
