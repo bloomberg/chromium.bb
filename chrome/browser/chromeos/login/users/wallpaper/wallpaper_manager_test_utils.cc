@@ -87,15 +87,8 @@ bool CreateJPEGImage(int width,
   bitmap.allocN32Pixels(width, height);
   bitmap.eraseColor(color);
 
-  const int kQuality = 80;
-  if (!gfx::JPEGCodec::Encode(
-          static_cast<const unsigned char*>(bitmap.getPixels()),
-          gfx::JPEGCodec::FORMAT_SkBitmap,
-          width,
-          height,
-          bitmap.rowBytes(),
-          kQuality,
-          output)) {
+  constexpr int kQuality = 80;
+  if (!gfx::JPEGCodec::Encode(bitmap, kQuality, output)) {
     LOG(ERROR) << "Unable to encode " << width << "x" << height << " bitmap";
     return false;
   }

@@ -401,9 +401,10 @@ bool JpegDecodeAcceleratorTestEnvironment::CreateTestJpegImage(
   const int kJpegQuality = 100;
   std::vector<unsigned char> input_buffer(width * height * kBytesPerPixel);
   std::vector<unsigned char> encoded;
-  if (!gfx::JPEGCodec::Encode(&input_buffer[0], gfx::JPEGCodec::FORMAT_RGBA,
-                              width, height, width * kBytesPerPixel,
-                              kJpegQuality, &encoded)) {
+  SkImageInfo info = SkImageInfo::Make(width, height, kRGBA_8888_SkColorType,
+                                       kOpaque_SkAlphaType);
+  SkPixmap src(info, &input_buffer[0], width * kBytesPerPixel);
+  if (!gfx::JPEGCodec::Encode(src, kJpegQuality, &encoded)) {
     return false;
   }
 

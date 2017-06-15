@@ -27,18 +27,13 @@ scoped_refptr<base::RefCountedBytes> UserImage::Encode(
   TRACE_EVENT2("oobe", "UserImage::Encode",
                "width", bitmap.width(), "height", bitmap.height());
   std::vector<unsigned char> output;
-  auto* bitmap_data = reinterpret_cast<unsigned char*>(bitmap.getAddr32(0, 0));
   if (image_format == FORMAT_JPEG) {
-    if (gfx::JPEGCodec::Encode(
-            bitmap_data,
-            gfx::JPEGCodec::FORMAT_SkBitmap,
-            bitmap.width(),
-            bitmap.height(),
-            bitmap.width() * bitmap.bytesPerPixel(),
-            kDefaultEncodingQuality, &output)) {
+    if (gfx::JPEGCodec::Encode(bitmap, kDefaultEncodingQuality, &output)) {
       return base::RefCountedBytes::TakeVector(&output);
     }
   } else if (image_format == FORMAT_PNG) {
+    auto* bitmap_data =
+        reinterpret_cast<unsigned char*>(bitmap.getAddr32(0, 0));
     if (gfx::PNGCodec::Encode(
             bitmap_data,
             gfx::PNGCodec::FORMAT_SkBitmap,

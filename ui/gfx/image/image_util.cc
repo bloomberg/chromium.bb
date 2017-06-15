@@ -65,12 +65,7 @@ bool JPEG1xEncodedDataFromSkiaRepresentation(const Image& image,
   if (!bitmap.readyToDraw())
     return false;
 
-  return gfx::JPEGCodec::Encode(
-          reinterpret_cast<unsigned char*>(bitmap.getAddr32(0, 0)),
-          gfx::JPEGCodec::FORMAT_SkBitmap, bitmap.width(),
-          bitmap.height(),
-          static_cast<int>(bitmap.rowBytes()), quality,
-          dst);
+  return gfx::JPEGCodec::Encode(bitmap, quality, dst);
 }
 #endif  // !defined(OS_IOS)
 

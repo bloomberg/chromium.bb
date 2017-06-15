@@ -587,17 +587,13 @@ void JpegEncodingFrameDeliverer::PaintAndDeliverNextFrame(
   frame_painter()->PaintFrame(timestamp_to_paint, &sk_n32_buffer_[0]);
 
   static const int kQuality = 75;
-  const gfx::JPEGCodec::ColorFormat encoding_source_format =
-      (kN32_SkColorType == kRGBA_8888_SkColorType)
-          ? gfx::JPEGCodec::FORMAT_RGBA
-          : gfx::JPEGCodec::FORMAT_BGRA;
-  bool success = gfx::JPEGCodec::Encode(
-      &sk_n32_buffer_[0], encoding_source_format,
+  SkImageInfo info = SkImageInfo::MakeN32(
       device_state()->format.frame_size.width(),
-      device_state()->format.frame_size.height(),
-      VideoFrame::RowBytes(0 /* plane */, PIXEL_FORMAT_ARGB,
-                           device_state()->format.frame_size.width()),
-      kQuality, &jpeg_buffer_);
+      device_state()->format.frame_size.height(), kOpaque_SkAlphaType);
+  SkPixmap src(info, &sk_n32_buffer_[0],
+               VideoFrame::RowBytes(0 /* plane */, PIXEL_FORMAT_ARGB,
+                                    device_state()->format.frame_size.width()));
+  bool success = gfx::JPEGCodec::Encode(src, kQuality, &jpeg_buffer_);
   if (!success) {
     DLOG(ERROR) << "Jpeg encoding failed";
     return;

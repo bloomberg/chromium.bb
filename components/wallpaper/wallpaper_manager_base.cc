@@ -431,11 +431,7 @@ bool WallpaperManagerBase::ResizeImage(
       gfx::Size(resized_width, resized_height));
 
   SkBitmap bitmap = *(resized_image.bitmap());
-  gfx::JPEGCodec::Encode(
-      reinterpret_cast<unsigned char*>(bitmap.getAddr32(0, 0)),
-      gfx::JPEGCodec::FORMAT_SkBitmap, bitmap.width(), bitmap.height(),
-      bitmap.width() * bitmap.bytesPerPixel(), kDefaultEncodingQuality,
-      &(*output)->data());
+  gfx::JPEGCodec::Encode(bitmap, kDefaultEncodingQuality, &(*output)->data());
 
   if (output_skia) {
     resized_image.MakeThreadSafe();
