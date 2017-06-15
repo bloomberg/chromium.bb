@@ -4,6 +4,7 @@
 
 #include "modules/media_controls/MediaControlsOrientationLockDelegate.h"
 
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/events/Event.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/Screen.h"
@@ -168,6 +169,8 @@ void MediaControlsOrientationLockDelegate::MaybeUnlockOrientation() {
 
   ScreenOrientationController::From(*GetDocument().GetFrame())->unlock();
   locked_orientation_ = kWebScreenOrientationLockDefault /* unlocked */;
+
+  unlock_task_.Cancel();
 }
 
 void MediaControlsOrientationLockDelegate::MaybeListenToDeviceOrientation() {
@@ -403,8 +406,28 @@ void MediaControlsOrientationLockDelegate::
     return;
 
   // Job done: the user rotated their device to match the orientation of the
-  // video that we locked to, so now we can unlock (and stop listening).
-  MaybeUnlockOrientation();
+  // video that we locked to, so now we can stop listening and unlock.
+  if (LocalDOMWindow* dom_window = GetDocument().domWindow()) {
+    dom_window->removeEventListener(EventTypeNames::deviceorientation, this,
+                                    false);
+  }
+  // Delay before unlocking, as a workaround for the case where the device is
+  // initially portrait-primary, then fullscreen orientation lock locks it to
+  // landscape and the screen orientation changes to landscape-primary, but the
+  // user actually rotates the device to landscape-secondary. In that case, if
+  // this delegate unlocks the orientation before Android has detected the
+  // rotation to landscape-secondary (which is slow due to low-pass filtering),
+  // Android would change the screen orientation back to portrait-primary. This
+  // is avoided by delaying unlocking long enough to ensure that Android has
+  // detected the orientation change.
+  unlock_task_ =
+      TaskRunnerHelper::Get(TaskType::kMediaElementEvent, &GetDocument())
+          ->PostDelayedCancellableTask(
+              BLINK_FROM_HERE,
+              WTF::Bind(
+                  &MediaControlsOrientationLockDelegate::MaybeUnlockOrientation,
+                  WrapPersistent(this)),
+              TimeDelta::FromMilliseconds(kUnlockDelayMs));
 }
 
 DEFINE_TRACE(MediaControlsOrientationLockDelegate) {
