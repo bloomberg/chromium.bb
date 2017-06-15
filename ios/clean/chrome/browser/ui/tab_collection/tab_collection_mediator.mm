@@ -50,6 +50,7 @@
 - (void)disconnect {
   _webStateList = nullptr;
   _webStateObserver.reset();
+  _scopedWebStateListObserver->RemoveAll();
 }
 
 #pragma mark - Properties
