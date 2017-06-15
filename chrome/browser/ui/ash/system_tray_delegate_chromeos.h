@@ -24,8 +24,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/browser/app_window/app_window_registry.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
-#include "ui/base/ime/chromeos/input_method_manager.h"
-#include "ui/chromeos/ime/input_method_menu_manager.h"
 
 namespace ash {
 class SystemTrayNotifier;
@@ -34,13 +32,10 @@ class SystemTrayNotifier;
 namespace chromeos {
 
 class SystemTrayDelegateChromeOS
-    : public ui::ime::InputMethodMenuManager::Observer,
-      public ash::SystemTrayDelegate,
+    : public ash::SystemTrayDelegate,
       public content::NotificationObserver,
-      public input_method::InputMethodManager::Observer,
       public chrome::BrowserListObserver,
       public extensions::AppWindowRegistry::Observer,
-      public input_method::InputMethodManager::ImeMenuObserver,
       public UpdateEngineClient::Observer {
  public:
   SystemTrayDelegateChromeOS();
@@ -86,15 +81,6 @@ class SystemTrayDelegateChromeOS
 
   void UpdatePerformanceTracing();
 
-  // Overridden from InputMethodManager::Observer.
-  void InputMethodChanged(input_method::InputMethodManager* manager,
-                          Profile* profile,
-                          bool show_message) override;
-
-  // Overridden from InputMethodMenuManager::Observer.
-  void InputMethodMenuItemChanged(
-      ui::ime::InputMethodMenuManager* manager) override;
-
   // Overridden from chrome::BrowserListObserver:
   void OnBrowserRemoved(Browser* browser) override;
 
@@ -103,14 +89,6 @@ class SystemTrayDelegateChromeOS
 
   void OnAccessibilityStatusChanged(
       const AccessibilityStatusEventDetails& details);
-
-  // input_method::InputMethodManager::ImeMenuObserver:
-  void ImeMenuActivationChanged(bool is_active) override;
-  void ImeMenuListChanged() override;
-  void ImeMenuItemsChanged(
-      const std::string& engine_id,
-      const std::vector<input_method::InputMethodManager::MenuItem>& items)
-      override;
 
   // Overridden from UpdateEngineClient::Observer.
   void OnUpdateOverCellularTargetSet(bool success) override;

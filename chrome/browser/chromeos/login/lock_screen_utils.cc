@@ -7,6 +7,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
+#include "chrome/browser/ui/ash/ime_controller_client.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/signin/core/account_id/account_id.h"
@@ -114,6 +115,16 @@ void EnforcePolicyInputMethods(std::string user_input_method) {
   chromeos::input_method::InputMethodManager* imm =
       chromeos::input_method::InputMethodManager::Get();
   imm->GetActiveIMEState()->SetAllowedInputMethods(allowed_input_methods);
+  ImeControllerClient::Get()->SetImesManagedByPolicy(true);
+}
+
+void StopEnforcingPolicyInputMethods() {
+  // Empty means all input methods are allowed
+  std::vector<std::string> allowed_input_methods;
+  chromeos::input_method::InputMethodManager* imm =
+      chromeos::input_method::InputMethodManager::Get();
+  imm->GetActiveIMEState()->SetAllowedInputMethods(allowed_input_methods);
+  ImeControllerClient::Get()->SetImesManagedByPolicy(false);
 }
 
 void SetKeyboardSettings(const AccountId& account_id) {

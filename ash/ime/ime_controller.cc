@@ -4,7 +4,8 @@
 
 #include "ash/ime/ime_controller.h"
 
-#include "ash/public/interfaces/ime_info.mojom.h"
+#include "ash/shell.h"
+#include "ash/system/tray/system_tray_notifier.h"
 
 namespace ash {
 
@@ -12,20 +13,23 @@ ImeController::ImeController() = default;
 
 ImeController::~ImeController() = default;
 
-mojom::ImeInfo ImeController::GetCurrentIme() const {
-  return mojom::ImeInfo();
+void ImeController::RefreshIme(
+    const mojom::ImeInfo& current_ime,
+    const std::vector<mojom::ImeInfo>& available_imes,
+    const std::vector<mojom::ImeMenuItem>& menu_items) {
+  current_ime_ = current_ime;
+  available_imes_ = available_imes;
+  current_ime_menu_items_ = menu_items;
+  Shell::Get()->system_tray_notifier()->NotifyRefreshIME();
 }
 
-std::vector<mojom::ImeInfo> ImeController::GetAvailableImes() const {
-  return std::vector<mojom::ImeInfo>();
+void ImeController::SetImesManagedByPolicy(bool managed) {
+  managed_by_policy_ = managed;
+  Shell::Get()->system_tray_notifier()->NotifyRefreshIME();
 }
 
-bool ImeController::IsImeManaged() const {
-  return false;
-}
-
-std::vector<mojom::ImeMenuItem> ImeController::GetCurrentImeMenuItems() const {
-  return std::vector<mojom::ImeMenuItem>();
+void ImeController::ShowImeMenuOnShelf(bool show) {
+  Shell::Get()->system_tray_notifier()->NotifyRefreshIMEMenu(show);
 }
 
 }  // namespace ash

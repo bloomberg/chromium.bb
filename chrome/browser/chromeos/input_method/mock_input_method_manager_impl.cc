@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/memory/ptr_util.h"
 #include "ui/base/ime/chromeos/input_method_util.h"
 
 namespace chromeos {
@@ -24,12 +25,8 @@ MockInputMethodManagerImpl::State::Clone() const {
 
 std::unique_ptr<InputMethodDescriptors>
 MockInputMethodManagerImpl::State::GetActiveInputMethods() const {
-  std::unique_ptr<InputMethodDescriptors> result;
-#if _LIBCPP_STD_VER > 11
-  result = std::make_unique<InputMethodDescriptors>();
-#else
-  result.reset(new InputMethodDescriptors);
-#endif
+  std::unique_ptr<InputMethodDescriptors> result =
+      base::MakeUnique<InputMethodDescriptors>();
   result->push_back(InputMethodUtil::GetFallbackInputMethodDescriptor());
   return result;
 }
@@ -64,22 +61,27 @@ InputMethodDescriptor MockInputMethodManagerImpl::State::GetCurrentInputMethod()
 MockInputMethodManagerImpl::State::~State() {}
 
 MockInputMethodManagerImpl::MockInputMethodManagerImpl()
-    : state_(new State(this)),
-      add_observer_count_(0),
-      remove_observer_count_(0),
-      util_(new InputMethodUtil(&delegate_)),
-      mod3_used_(false) {}
+    : state_(new State(this)), util_(new InputMethodUtil(&delegate_)) {}
 
-MockInputMethodManagerImpl::~MockInputMethodManagerImpl() {}
+MockInputMethodManagerImpl::~MockInputMethodManagerImpl() = default;
 
 void MockInputMethodManagerImpl::AddObserver(
     InputMethodManager::Observer* observer) {
   ++add_observer_count_;
 }
 
+void MockInputMethodManagerImpl::AddImeMenuObserver(ImeMenuObserver* observer) {
+  ++add_menu_observer_count_;
+}
+
 void MockInputMethodManagerImpl::RemoveObserver(
     InputMethodManager::Observer* observer) {
   ++remove_observer_count_;
+}
+
+void MockInputMethodManagerImpl::RemoveImeMenuObserver(
+    ImeMenuObserver* observer) {
+  ++remove_menu_observer_count_;
 }
 
 std::unique_ptr<InputMethodDescriptors>

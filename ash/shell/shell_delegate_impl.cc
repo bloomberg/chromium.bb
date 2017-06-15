@@ -110,10 +110,6 @@ SystemTrayDelegate* ShellDelegateImpl::CreateSystemTrayDelegate() {
   return new SystemTrayDelegate;
 }
 
-ImeController* ShellDelegateImpl::GetImeController() {
-  return &stub_ime_controller_;
-}
-
 std::unique_ptr<WallpaperDelegate>
 ShellDelegateImpl::CreateWallpaperDelegate() {
   return base::MakeUnique<DefaultWallpaperDelegate>();

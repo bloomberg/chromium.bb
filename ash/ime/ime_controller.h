@@ -8,14 +8,10 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/public/interfaces/ime_info.mojom.h"
 #include "base/macros.h"
 
 namespace ash {
-
-namespace mojom {
-class ImeInfo;
-class ImeMenuItem;
-}  // namespace mojom
 
 // Connects ash IME users (e.g. the system tray) to the IME implementation,
 // which might live in Chrome browser or in a separate mojo service.
@@ -23,22 +19,44 @@ class ImeMenuItem;
 class ASH_EXPORT ImeController {
  public:
   ImeController();
-  virtual ~ImeController();
+  ~ImeController();
 
-  // Returns the currently selected IME.
-  virtual mojom::ImeInfo GetCurrentIme() const;
+  const mojom::ImeInfo& current_ime() const { return current_ime_; }
 
-  // Returns a list of available IMEs. "Available" IMEs are both installed and
-  // enabled by the user in settings.
-  virtual std::vector<mojom::ImeInfo> GetAvailableImes() const;
+  const std::vector<mojom::ImeInfo>& available_imes() const {
+    return available_imes_;
+  }
 
-  // Returns true if the available IMEs are managed by enterprise policy.
-  virtual bool IsImeManaged() const;
+  bool managed_by_policy() const { return managed_by_policy_; }
 
-  // Returns additional menu items for properties of the currently selected IME.
-  virtual std::vector<mojom::ImeMenuItem> GetCurrentImeMenuItems() const;
+  const std::vector<mojom::ImeMenuItem>& current_ime_menu_items() const {
+    return current_ime_menu_items_;
+  }
+
+  // Updates the cached IME information and refreshes the UI.
+  // TODO(jamescook): This should take an ID for current_ime.
+  void RefreshIme(const mojom::ImeInfo& current_ime,
+                  const std::vector<mojom::ImeInfo>& available_imes,
+                  const std::vector<mojom::ImeMenuItem>& menu_items);
+
+  void SetImesManagedByPolicy(bool managed);
+
+  // Shows the IME menu on the shelf instead of inside the system tray menu.
+  void ShowImeMenuOnShelf(bool show);
 
  private:
+  mojom::ImeInfo current_ime_;
+
+  // "Available" IMEs are both installed and enabled by the user in settings.
+  std::vector<mojom::ImeInfo> available_imes_;
+
+  // True if the available IMEs are currently managed by enterprise policy.
+  // For example, can occur at the login screen with device-level policy.
+  bool managed_by_policy_ = false;
+
+  // Additional menu items for properties of the currently selected IME.
+  std::vector<mojom::ImeMenuItem> current_ime_menu_items_;
+
   DISALLOW_COPY_AND_ASSIGN(ImeController);
 };
 

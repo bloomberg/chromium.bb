@@ -4,6 +4,9 @@
 
 #include "ash/system/ime/tray_ime_chromeos.h"
 
+#include <memory>
+#include <vector>
+
 #include "ash/accessibility_delegate.h"
 #include "ash/accessibility_types.h"
 #include "ash/ime/ime_controller.h"
@@ -17,31 +20,6 @@
 #include "ui/keyboard/keyboard_util.h"
 
 namespace ash {
-namespace {
-
-class TestImeController : public ImeController {
- public:
-  TestImeController() = default;
-  ~TestImeController() override = default;
-
-  // ImeController:
-  std::vector<mojom::ImeInfo> GetAvailableImes() const override {
-    return available_imes_;
-  }
-  bool IsImeManaged() const override { return is_ime_managed_; }
-  std::vector<mojom::ImeMenuItem> GetCurrentImeMenuItems() const override {
-    return current_ime_menu_items_;
-  }
-
-  std::vector<mojom::ImeMenuItem> current_ime_menu_items_;
-  std::vector<mojom::ImeInfo> available_imes_;
-  bool is_ime_managed_ = false;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestImeController);
-};
-
-}  // namespace
 
 class TrayIMETest : public test::AshTestBase {
  public:
@@ -67,7 +45,7 @@ class TrayIMETest : public test::AshTestBase {
 
   views::View* GetImeManagedIcon();
 
-  void AddMenuItemForCurrentIme(mojom::ImeMenuItem item);
+  void SetCurrentImeMenuItems(const std::vector<mojom::ImeMenuItem>& items);
 
   void SuppressKeyboard();
   void RestoreKeyboard();
@@ -77,7 +55,6 @@ class TrayIMETest : public test::AshTestBase {
   void TearDown() override;
 
  private:
-  TestImeController test_ime_controller_;
   std::unique_ptr<TrayIME> tray_;
   std::unique_ptr<views::View> default_view_;
   std::unique_ptr<views::View> detailed_view_;
@@ -85,6 +62,10 @@ class TrayIMETest : public test::AshTestBase {
   bool keyboard_suppressed_ = false;
   std::vector<ui::TouchscreenDevice> touchscreen_devices_to_restore_;
   std::vector<ui::InputDevice> keyboard_devices_to_restore_;
+
+  mojom::ImeInfo current_ime_;
+  std::vector<mojom::ImeInfo> available_imes_;
+  std::vector<mojom::ImeMenuItem> menu_items_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayIMETest);
 };
@@ -99,12 +80,9 @@ void TrayIMETest::SetAccessibilityKeyboardEnabled(bool enabled) {
 }
 
 void TrayIMETest::SetActiveImeCount(int count) {
-  test_ime_controller_.available_imes_.clear();
-  mojom::ImeInfo ime;
-  for (int i = 0; i < count; i++) {
-    test_ime_controller_.available_imes_.push_back(ime);
-  }
-  tray_->OnIMERefresh();
+  available_imes_.resize(count);
+  Shell::Get()->ime_controller()->RefreshIme(current_ime_, available_imes_,
+                                             menu_items_);
 }
 
 views::View* TrayIMETest::GetToggleView() const {
@@ -113,17 +91,18 @@ views::View* TrayIMETest::GetToggleView() const {
 }
 
 void TrayIMETest::SetImeManaged(bool managed) {
-  test_ime_controller_.is_ime_managed_ = true;
-  tray_->OnIMERefresh();
+  Shell::Get()->ime_controller()->SetImesManagedByPolicy(managed);
 }
 
 views::View* TrayIMETest::GetImeManagedIcon() {
   return tray_->GetControlledSettingIconForTesting();
 }
 
-void TrayIMETest::AddMenuItemForCurrentIme(mojom::ImeMenuItem property) {
-  test_ime_controller_.current_ime_menu_items_.push_back(property);
-  tray_->OnIMERefresh();
+void TrayIMETest::SetCurrentImeMenuItems(
+    const std::vector<mojom::ImeMenuItem>& items) {
+  menu_items_ = items;
+  Shell::Get()->ime_controller()->RefreshIme(current_ime_, available_imes_,
+                                             menu_items_);
 }
 
 void TrayIMETest::SuppressKeyboard() {
@@ -159,7 +138,6 @@ void TrayIMETest::RestoreKeyboard() {
 void TrayIMETest::SetUp() {
   test::AshTestBase::SetUp();
   tray_.reset(new TrayIME(GetPrimarySystemTray()));
-  tray_->ime_controller_ = &test_ime_controller_;
   default_view_.reset(tray_->CreateDefaultView(LoginStatus::USER));
   detailed_view_.reset(tray_->CreateDetailedView(LoginStatus::USER));
 }
@@ -204,11 +182,12 @@ TEST_F(TrayIMETest, ShownWithSingleImeWithProperties) {
   EXPECT_FALSE(default_view()->visible());
 
   mojom::ImeMenuItem item1;
-  AddMenuItemForCurrentIme(item1);
+  mojom::ImeMenuItem item2;
+
+  SetCurrentImeMenuItems({item1});
   EXPECT_FALSE(default_view()->visible());
 
-  mojom::ImeMenuItem item2;
-  AddMenuItemForCurrentIme(item2);
+  SetCurrentImeMenuItems({item1, item2});
   EXPECT_TRUE(default_view()->visible());
 }
 

@@ -45,7 +45,6 @@ class ChromeShellDelegate : public ash::ShellDelegate,
   void ShelfInit() override;
   void ShelfShutdown() override;
   ash::SystemTrayDelegate* CreateSystemTrayDelegate() override;
-  ash::ImeController* GetImeController() override;
   std::unique_ptr<ash::WallpaperDelegate> CreateWallpaperDelegate() override;
   ash::AccessibilityDelegate* CreateAccessibilityDelegate() override;
   std::unique_ptr<ash::PaletteDelegate> CreatePaletteDelegate() override;

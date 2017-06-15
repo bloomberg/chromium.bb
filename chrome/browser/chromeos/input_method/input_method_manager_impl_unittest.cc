@@ -10,6 +10,8 @@
 #include <memory>
 #include <utility>
 
+#include "ash/ime/ime_controller.h"
+#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/compiler_specific.h"
@@ -20,6 +22,7 @@
 #include "chrome/browser/chromeos/input_method/mock_candidate_window_controller.h"
 #include "chrome/browser/chromeos/input_method/mock_input_method_engine.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/ime_controller_client.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -64,6 +67,14 @@ bool Contain(const InputMethodDescriptors& descriptors,
 
 std::string ImeIdFromEngineId(const std::string& id) {
   return extension_ime_util::GetInputMethodIDByEngineID(id);
+}
+
+std::string GetCurrentImeIdFromAsh() {
+  return ash::Shell::Get()->ime_controller()->current_ime().id;
+}
+
+size_t GetAvailableImeCountFromAsh() {
+  return ash::Shell::Get()->ime_controller()->available_imes().size();
 }
 
 class TestObserver : public InputMethodManager::Observer,
@@ -1558,6 +1569,46 @@ TEST_F(InputMethodManagerImplTest, SetLoginDefaultWithAllowedKeyboardLayouts) {
               testing::ElementsAre(ImeIdFromEngineId("xkb:us::eng"),
                                    ImeIdFromEngineId("xkb:de::ger"),
                                    ImeIdFromEngineId("xkb:fr::fra")));
+}
+
+// Verifies that the combination of InputMethodManagerImpl and
+// ImeControllerClient sends the correct data to ash.
+TEST_F(InputMethodManagerImplTest, IntegrationWithAsh) {
+  ImeControllerClient ime_controller_client(manager_.get());
+
+  InitComponentExtension();
+  manager_->SetUISessionState(InputMethodManager::STATE_BROWSER_SCREEN);
+  std::vector<std::string> ids;
+  ids.push_back(ImeIdFromEngineId("xkb:us:dvorak:eng"));
+  ids.push_back(ImeIdFromEngineId(kExt2Engine2Id));
+  ids.push_back(ImeIdFromEngineId(kExt2Engine1Id));
+  EXPECT_TRUE(manager_->GetActiveIMEState()->ReplaceEnabledInputMethods(ids));
+
+  EXPECT_EQ(3u, GetAvailableImeCountFromAsh());
+  EXPECT_EQ(ImeIdFromEngineId(ids[0]), GetCurrentImeIdFromAsh());
+
+  // Switch to Mozc.
+  manager_->GetActiveIMEState()->SwitchToNextInputMethod();
+  EXPECT_EQ(ImeIdFromEngineId(ids[1]), GetCurrentImeIdFromAsh());
+
+  // Lock screen
+  scoped_refptr<input_method::InputMethodManager::State> saved_ime_state =
+      manager_->GetActiveIMEState();
+  manager_->SetState(saved_ime_state->Clone());
+  manager_->GetActiveIMEState()->EnableLockScreenLayouts();
+  manager_->SetUISessionState(InputMethodManager::STATE_LOCK_SCREEN);
+  EXPECT_EQ(2u, GetAvailableImeCountFromAsh());  // Qwerty+Dvorak.
+  EXPECT_EQ(ImeIdFromEngineId("xkb:us:dvorak:eng"), GetCurrentImeIdFromAsh());
+
+  manager_->GetActiveIMEState()->SwitchToNextInputMethod();
+  EXPECT_EQ(ImeIdFromEngineId("xkb:us::eng"),  // The hardware keyboard layout.
+            GetCurrentImeIdFromAsh());
+
+  // Unlock screen. The original state, pinyin-dv, is restored.
+  manager_->SetState(saved_ime_state);
+  manager_->SetUISessionState(InputMethodManager::STATE_BROWSER_SCREEN);
+  EXPECT_EQ(3u, GetAvailableImeCountFromAsh());  // Dvorak and 2 IMEs.
+  EXPECT_EQ(ImeIdFromEngineId(ids[1]), GetCurrentImeIdFromAsh());
 }
 
 }  // namespace input_method

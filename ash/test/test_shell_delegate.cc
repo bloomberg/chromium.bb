@@ -105,10 +105,6 @@ SystemTrayDelegate* TestShellDelegate::CreateSystemTrayDelegate() {
   return new SystemTrayDelegate;
 }
 
-ImeController* TestShellDelegate::GetImeController() {
-  return &stub_ime_controller_;
-}
-
 std::unique_ptr<WallpaperDelegate>
 TestShellDelegate::CreateWallpaperDelegate() {
   return base::MakeUnique<TestWallpaperDelegate>();

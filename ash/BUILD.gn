@@ -1170,6 +1170,7 @@ source_set("common_unittests") {
     "frame/caption_buttons/frame_size_button_unittest.cc",
     "frame/custom_frame_view_ash_unittest.cc",
     "frame/default_header_painter_unittest.cc",
+    "ime/ime_controller_unittest.cc",
     "laser/laser_pointer_controller_unittest.cc",
     "laser/laser_pointer_points_unittest.cc",
     "laser/laser_segment_utils_unittest.cc",

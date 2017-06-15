@@ -11,7 +11,6 @@
 #include "ash/shell.h"
 #include "ash/system/ime_menu/ime_list_view.h"
 #include "ash/system/status_area_widget.h"
-#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/status_area_widget_test_helper.h"
 #include "base/run_loop.h"
@@ -29,26 +28,14 @@ using base::UTF8ToUTF16;
 namespace ash {
 namespace {
 
-class TestImeController : public ImeController {
- public:
-  TestImeController() = default;
-  ~TestImeController() override = default;
-
-  // ImeController:
-  mojom::ImeInfo GetCurrentIme() const override { return current_ime_; }
-  std::vector<mojom::ImeInfo> GetAvailableImes() const override {
-    return available_imes_;
-  }
-
-  mojom::ImeInfo current_ime_;
-  std::vector<mojom::ImeInfo> available_imes_;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestImeController);
-};
-
 ImeMenuTray* GetTray() {
   return StatusAreaWidgetTestHelper::GetStatusAreaWidget()->ime_menu_tray();
+}
+
+void SetCurrentIme(mojom::ImeInfo current_ime,
+                   const std::vector<mojom::ImeInfo>& available_imes) {
+  Shell::Get()->ime_controller()->RefreshIme(current_ime, available_imes,
+                                             std::vector<mojom::ImeMenuItem>());
 }
 
 }  // namespace
@@ -57,12 +44,6 @@ class ImeMenuTrayTest : public test::AshTestBase {
  public:
   ImeMenuTrayTest() {}
   ~ImeMenuTrayTest() override {}
-
-  // test::AshTestBase:
-  void SetUp() override {
-    test::AshTestBase::SetUp();
-    GetTray()->ime_controller_ = &test_ime_controller_;
-  }
 
  protected:
   // Returns true if the IME menu tray is visible.
@@ -109,17 +90,7 @@ class ImeMenuTrayTest : public test::AshTestBase {
     ui::IMEBridge::Get()->SetCurrentInputContext(input_context);
   }
 
-  void SetCurrentIme(mojom::ImeInfo ime) {
-    test_ime_controller_.current_ime_ = ime;
-  }
-
-  void SetAvailableImes(const std::vector<mojom::ImeInfo>& imes) {
-    test_ime_controller_.available_imes_ = imes;
-  }
-
  private:
-  TestImeController test_ime_controller_;
-
   DISALLOW_COPY_AND_ASSIGN(ImeMenuTrayTest);
 };
 
@@ -128,40 +99,41 @@ class ImeMenuTrayTest : public test::AshTestBase {
 TEST_F(ImeMenuTrayTest, ImeMenuTrayVisibility) {
   ASSERT_FALSE(IsVisible());
 
-  Shell::Get()->system_tray_notifier()->NotifyRefreshIMEMenu(true);
+  Shell::Get()->ime_controller()->ShowImeMenuOnShelf(true);
   EXPECT_TRUE(IsVisible());
 
-  Shell::Get()->system_tray_notifier()->NotifyRefreshIMEMenu(false);
+  Shell::Get()->ime_controller()->ShowImeMenuOnShelf(false);
   EXPECT_FALSE(IsVisible());
 }
 
 // Tests that IME menu tray shows the right info of the current IME.
 TEST_F(ImeMenuTrayTest, TrayLabelTest) {
-  Shell::Get()->system_tray_notifier()->NotifyRefreshIMEMenu(true);
+  Shell::Get()->ime_controller()->ShowImeMenuOnShelf(true);
   ASSERT_TRUE(IsVisible());
 
-  // Changes the input method to "ime1".
   mojom::ImeInfo info1;
   info1.id = "ime1";
   info1.name = UTF8ToUTF16("English");
   info1.medium_name = UTF8ToUTF16("English");
   info1.short_name = UTF8ToUTF16("US");
   info1.third_party = false;
-  info1.selected = true;
-  SetCurrentIme(info1);
-  Shell::Get()->system_tray_notifier()->NotifyRefreshIME();
-  EXPECT_EQ(UTF8ToUTF16("US"), GetTrayText());
 
-  // Changes the input method to a third-party IME extension.
   mojom::ImeInfo info2;
   info2.id = "ime2";
   info2.name = UTF8ToUTF16("English UK");
   info2.medium_name = UTF8ToUTF16("English UK");
   info2.short_name = UTF8ToUTF16("UK");
   info2.third_party = true;
+
+  // Changes the input method to "ime1".
+  info1.selected = true;
+  SetCurrentIme(info1, {info1, info2});
+  EXPECT_EQ(UTF8ToUTF16("US"), GetTrayText());
+
+  // Changes the input method to a third-party IME extension.
+  info1.selected = false;
   info2.selected = true;
-  SetCurrentIme(info2);
-  Shell::Get()->system_tray_notifier()->NotifyRefreshIME();
+  SetCurrentIme(info2, {info1, info2});
   EXPECT_EQ(UTF8ToUTF16("UK*"), GetTrayText());
 }
 
@@ -170,7 +142,7 @@ TEST_F(ImeMenuTrayTest, TrayLabelTest) {
 // menu feature. Also makes sure that the shelf won't autohide as long as the
 // IME menu is open.
 TEST_F(ImeMenuTrayTest, PerformAction) {
-  Shell::Get()->system_tray_notifier()->NotifyRefreshIMEMenu(true);
+  Shell::Get()->ime_controller()->ShowImeMenuOnShelf(true);
   ASSERT_TRUE(IsVisible());
   ASSERT_FALSE(IsTrayBackgroundActive());
   StatusAreaWidget* status = StatusAreaWidgetTestHelper::GetStatusAreaWidget();
@@ -194,7 +166,7 @@ TEST_F(ImeMenuTrayTest, PerformAction) {
   // element will be deactivated.
   GetTray()->PerformAction(tap);
   EXPECT_TRUE(IsTrayBackgroundActive());
-  Shell::Get()->system_tray_notifier()->NotifyRefreshIMEMenu(false);
+  Shell::Get()->ime_controller()->ShowImeMenuOnShelf(false);
   EXPECT_FALSE(IsVisible());
   EXPECT_FALSE(IsBubbleShown());
   EXPECT_FALSE(IsTrayBackgroundActive());
@@ -236,17 +208,15 @@ TEST_F(ImeMenuTrayTest, RefreshImeWithListViewCreated) {
 
   std::vector<mojom::ImeInfo> ime_info_list{info1, info2, info3};
 
-  SetAvailableImes(ime_info_list);
-  SetCurrentIme(info1);
-  Shell::Get()->system_tray_notifier()->NotifyRefreshIME();
+  // Switch to ime1.
+  SetCurrentIme(info1, ime_info_list);
   EXPECT_EQ(UTF8ToUTF16("US"), GetTrayText());
   ExpectValidImeList(ime_info_list, info1);
 
+  // Switch to ime3.
   ime_info_list[0].selected = false;
   ime_info_list[2].selected = true;
-  SetAvailableImes(ime_info_list);
-  SetCurrentIme(info3);
-  Shell::Get()->system_tray_notifier()->NotifyRefreshIME();
+  SetCurrentIme(info3, ime_info_list);
   EXPECT_EQ(UTF8ToUTF16("拼"), GetTrayText());
   ExpectValidImeList(ime_info_list, info3);
 
@@ -258,7 +228,7 @@ TEST_F(ImeMenuTrayTest, RefreshImeWithListViewCreated) {
 
 // Tests that quits Chrome with IME menu openned will not crash.
 TEST_F(ImeMenuTrayTest, QuitChromeWithMenuOpen) {
-  Shell::Get()->system_tray_notifier()->NotifyRefreshIMEMenu(true);
+  Shell::Get()->ime_controller()->ShowImeMenuOnShelf(true);
   ASSERT_TRUE(IsVisible());
   ASSERT_FALSE(IsTrayBackgroundActive());
 
@@ -271,7 +241,7 @@ TEST_F(ImeMenuTrayTest, QuitChromeWithMenuOpen) {
 
 // Tests using 'Alt+Shift+K' to open the menu.
 TEST_F(ImeMenuTrayTest, TestAccelerator) {
-  Shell::Get()->system_tray_notifier()->NotifyRefreshIMEMenu(true);
+  Shell::Get()->ime_controller()->ShowImeMenuOnShelf(true);
   ASSERT_TRUE(IsVisible());
   ASSERT_FALSE(IsTrayBackgroundActive());
 
@@ -288,7 +258,7 @@ TEST_F(ImeMenuTrayTest, TestAccelerator) {
 }
 
 TEST_F(ImeMenuTrayTest, ShowEmojiKeyset) {
-  Shell::Get()->system_tray_notifier()->NotifyRefreshIMEMenu(true);
+  Shell::Get()->ime_controller()->ShowImeMenuOnShelf(true);
   ASSERT_TRUE(IsVisible());
   ASSERT_FALSE(IsTrayBackgroundActive());
 

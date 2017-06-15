@@ -29,6 +29,9 @@ bool SetUserInputMethodImpl(const std::string& username,
 // by policy.
 void EnforcePolicyInputMethods(std::string user_input_method);
 
+// Remove any policy limitations on allowed IMEs.
+void StopEnforcingPolicyInputMethods();
+
 // Update the keyboard settings for |account_id|.
 void SetKeyboardSettings(const AccountId& account_id);
 

@@ -87,12 +87,9 @@ class ASH_EXPORT TrayIME : public SystemTrayItem,
   TrayItemView* tray_label_;
   tray::IMEDefaultView* default_;
   tray::IMEDetailedView* detailed_;
+
   // Whether the virtual keyboard is suppressed.
   bool keyboard_suppressed_;
-  // Cached IME info.
-  std::vector<mojom::ImeInfo> ime_list_;
-  mojom::ImeInfo current_ime_;
-  std::vector<mojom::ImeMenuItem> property_items_;
 
   // Whether the IME label and tray items should be visible.
   bool is_visible_;

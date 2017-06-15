@@ -12,7 +12,6 @@
 #include <string>
 #include <vector>
 
-#include "ash/ime/ime_controller.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
@@ -36,9 +35,7 @@ class InputMethodDelegate;
 class ImeKeyboard;
 
 // The implementation of InputMethodManager.
-// TODO(jamescook): Replace ash::ImeController with mojo interface.
 class InputMethodManagerImpl : public InputMethodManager,
-                               public ash::ImeController,
                                public CandidateWindowController::Observer,
                                public UserAddingScreen::Observer {
  public:
@@ -167,8 +164,6 @@ class InputMethodManagerImpl : public InputMethodManager,
                          bool enable_extension_loading);
   ~InputMethodManagerImpl() override;
 
-  static InputMethodManagerImpl* Get();
-
   // Receives notification of an InputMethodManager::UISessionState transition.
   void SetUISessionState(UISessionState new_ui_session);
 
@@ -195,12 +190,6 @@ class InputMethodManagerImpl : public InputMethodManager,
   void MaybeNotifyImeMenuActivationChanged() override;
   void OverrideKeyboardUrlRef(const std::string& keyset) override;
   bool IsEmojiHandwritingVoiceOnImeMenuEnabled() override;
-
-  // ash::ImeController:
-  ash::mojom::ImeInfo GetCurrentIme() const override;
-  std::vector<ash::mojom::ImeInfo> GetAvailableImes() const override;
-  bool IsImeManaged() const override;
-  std::vector<ash::mojom::ImeMenuItem> GetCurrentImeMenuItems() const override;
 
   // chromeos::UserAddingScreen:
   void OnUserAddingStarted() override;

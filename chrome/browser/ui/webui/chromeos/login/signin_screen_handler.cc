@@ -198,14 +198,6 @@ std::string GetNetworkName(const std::string& service_path) {
   return network->name();
 }
 
-void StopEnforcingPolicyInputMethods() {
-  // Empty means all input methods are allowed
-  std::vector<std::string> allowed_input_methods;
-  chromeos::input_method::InputMethodManager* imm =
-      chromeos::input_method::InputMethodManager::Get();
-  imm->GetActiveIMEState()->SetAllowedInputMethods(allowed_input_methods);
-}
-
 }  // namespace
 
 // LoginScreenContext implementation ------------------------------------------
@@ -301,7 +293,7 @@ SigninScreenHandler::~SigninScreenHandler() {
       chromeos::input_method::InputMethodManager::Get()->GetImeKeyboard();
   if (keyboard)
     keyboard->RemoveObserver(this);
-  StopEnforcingPolicyInputMethods();
+  lock_screen_utils::StopEnforcingPolicyInputMethods();
   weak_factory_.InvalidateWeakPtrs();
   if (delegate_)
     delegate_->SetWebUIHandler(nullptr);

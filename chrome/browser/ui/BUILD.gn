@@ -1159,6 +1159,8 @@ split_static_library("ui") {
       "app_list/search/launcher_search/launcher_search_provider.h",
       "app_list/search/launcher_search/launcher_search_result.cc",
       "app_list/search/launcher_search/launcher_search_result.h",
+      "ash/ime_controller_client.cc",
+      "ash/ime_controller_client.h",
       "ash/lock_screen_client.cc",
       "ash/lock_screen_client.h",
       "ash/session_controller_client.cc",

@@ -62,19 +62,6 @@ namespace input_method {
 
 namespace {
 
-InputMethodManagerImpl* g_instance = nullptr;
-
-ash::mojom::ImeInfo GetAshImeInfo(const InputMethodDescriptor& ime,
-                                  const InputMethodUtil& util) {
-  ash::mojom::ImeInfo info;
-  info.id = ime.id();
-  info.name = util.GetInputMethodLongName(ime);
-  info.medium_name = util.GetInputMethodMediumName(ime);
-  info.short_name = util.GetInputMethodShortName(ime);
-  info.third_party = extension_ime_util::IsExtensionIME(ime.id());
-  return info;
-}
-
 enum InputMethodCategory {
   INPUT_METHOD_CATEGORY_UNKNOWN = 0,
   INPUT_METHOD_CATEGORY_XKB,  // XKB input methods
@@ -962,23 +949,12 @@ InputMethodManagerImpl::InputMethodManagerImpl(
       component_extension_ime_manager_->GetAllIMEAsInputMethodDescriptor();
   util_.ResetInputMethods(descriptors);
   chromeos::UserAddingScreen::Get()->AddObserver(this);
-
-  DCHECK(!g_instance);
-  g_instance = this;
 }
 
 InputMethodManagerImpl::~InputMethodManagerImpl() {
-  DCHECK_EQ(g_instance, this);
-  g_instance = nullptr;
-
   if (candidate_window_controller_.get())
     candidate_window_controller_->RemoveObserver(this);
   chromeos::UserAddingScreen::Get()->RemoveObserver(this);
-}
-
-// static
-InputMethodManagerImpl* InputMethodManagerImpl::Get() {
-  return g_instance;
 }
 
 void InputMethodManagerImpl::RecordInputMethodUsage(
@@ -1367,57 +1343,6 @@ void InputMethodManagerImpl::OverrideKeyboardUrlRef(const std::string& keyset) {
 
 bool InputMethodManagerImpl::IsEmojiHandwritingVoiceOnImeMenuEnabled() {
   return base::FeatureList::IsEnabled(features::kEHVInputOnImeMenu);
-}
-
-ash::mojom::ImeInfo InputMethodManagerImpl::GetCurrentIme() const {
-  if (!state_)
-    return ash::mojom::ImeInfo();
-
-  InputMethodDescriptor ime = state_->GetCurrentInputMethod();
-  ash::mojom::ImeInfo info = GetAshImeInfo(ime, util_);
-  info.selected = true;
-  return info;
-}
-
-std::vector<ash::mojom::ImeInfo> InputMethodManagerImpl::GetAvailableImes()
-    const {
-  if (!state_)
-    return std::vector<ash::mojom::ImeInfo>();
-
-  std::vector<ash::mojom::ImeInfo> imes;
-  std::string current_ime_id = state_->GetCurrentInputMethod().id();
-  std::unique_ptr<InputMethodDescriptors> descriptors =
-      state_->GetActiveInputMethods();
-  for (const InputMethodDescriptor& descriptor : *descriptors) {
-    ash::mojom::ImeInfo info = GetAshImeInfo(descriptor, util_);
-    info.selected = descriptor.id() == current_ime_id;
-    imes.push_back(info);
-  }
-  return imes;
-}
-
-bool InputMethodManagerImpl::IsImeManaged() const {
-  if (!state_)
-    return false;
-
-  // Having a non-empty "allowed" list indicates that IMEs are managed.
-  return !state_->GetAllowedInputMethods().empty();
-}
-
-std::vector<ash::mojom::ImeMenuItem>
-InputMethodManagerImpl::GetCurrentImeMenuItems() const {
-  std::vector<ash::mojom::ImeMenuItem> items;
-  ui::ime::InputMethodMenuItemList menu_list =
-      ui::ime::InputMethodMenuManager::GetInstance()
-          ->GetCurrentInputMethodMenuItemList();
-  for (size_t i = 0; i < menu_list.size(); ++i) {
-    ash::mojom::ImeMenuItem property;
-    property.key = menu_list[i].key;
-    property.label = base::UTF8ToUTF16(menu_list[i].label);
-    property.checked = menu_list[i].is_selection_item_checked;
-    items.push_back(property);
-  }
-  return items;
 }
 
 }  // namespace input_method
