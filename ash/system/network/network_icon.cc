@@ -554,8 +554,7 @@ gfx::ImageSkia GetIcon(const NetworkState* network,
     DCHECK_NE(ICON_TYPE_TRAY, icon_type);
     return gfx::CreateVectorIcon(kNetworkEthernetIcon,
                                  GetDefaultColorForIconType(ICON_TYPE_LIST));
-  } else if (network->Matches(NetworkTypePattern::Wireless()) ||
-             network->Matches(NetworkTypePattern::Tether())) {
+  } else if (network->Matches(NetworkTypePattern::Wireless())) {
     DCHECK(strength_index > 0);
     return GetImageForIndex(ImageTypeForNetwork(network, icon_type), icon_type,
                             strength_index);
@@ -632,8 +631,7 @@ void NetworkIconImpl::Update(const NetworkState* network) {
 
   dirty |= UpdatePortalState(network);
 
-  if (network->Matches(NetworkTypePattern::Wireless()) ||
-      network->Matches(NetworkTypePattern::Tether())) {
+  if (network->Matches(NetworkTypePattern::Wireless())) {
     dirty |= UpdateWirelessStrengthIndex(network);
   }
 

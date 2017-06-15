@@ -62,7 +62,7 @@ NetworkTypePattern NetworkTypePattern::Default() {
 // static
 NetworkTypePattern NetworkTypePattern::Wireless() {
   return NetworkTypePattern(kNetworkTypeWifi | kNetworkTypeWimax |
-                            kNetworkTypeCellular);
+                            kNetworkTypeCellular | kNetworkTypeTether);
 }
 
 // static
@@ -73,7 +73,7 @@ NetworkTypePattern NetworkTypePattern::Mobile() {
 
 // static
 NetworkTypePattern NetworkTypePattern::NonVirtual() {
-  return NetworkTypePattern(~(kNetworkTypeVPN | kNetworkTypeTether));
+  return NetworkTypePattern(~(kNetworkTypeVPN));
 }
 
 // static
