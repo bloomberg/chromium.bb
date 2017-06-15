@@ -1137,34 +1137,6 @@ inline TextEmphasisPosition CSSIdentifierValue::ConvertTo() const {
 }
 
 template <>
-inline CSSIdentifierValue::CSSIdentifierValue(ETextOverflow overflow)
-    : CSSValue(kIdentifierClass) {
-  switch (overflow) {
-    case ETextOverflow::kClip:
-      value_id_ = CSSValueClip;
-      break;
-    case ETextOverflow::kEllipsis:
-      value_id_ = CSSValueEllipsis;
-      break;
-  }
-}
-
-template <>
-inline ETextOverflow CSSIdentifierValue::ConvertTo() const {
-  switch (value_id_) {
-    case CSSValueClip:
-      return ETextOverflow::kClip;
-    case CSSValueEllipsis:
-      return ETextOverflow::kEllipsis;
-    default:
-      break;
-  }
-
-  NOTREACHED();
-  return ETextOverflow::kClip;
-}
-
-template <>
 inline CSSIdentifierValue::CSSIdentifierValue(TextEmphasisFill fill)
     : CSSValue(kIdentifierClass) {
   switch (fill) {

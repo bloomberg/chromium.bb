@@ -2497,10 +2497,10 @@
     },
     {
       name: "text-overflow",
-      field_template: "storage_only",
+      field_template: "keyword",
       field_group: "rare-non-inherited",
-      default_value: "ETextOverflow::kClip",
-      field_size: 1,
+      default_value: "clip",
+      keywords: ["clip", "ellipsis"],
     },
     {
       name: "text-shadow",

@@ -1541,16 +1541,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     SetTextDecorationSkipInternal(v);
   }
 
-  // text-overflow
-  static ETextOverflow InitialTextOverflow() { return ETextOverflow::kClip; }
-  ETextOverflow TextOverflow() const {
-    return static_cast<ETextOverflow>(rare_non_inherited_data_->text_overflow_);
-  }
-  void SetTextOverflow(ETextOverflow overflow) {
-    SET_VAR(rare_non_inherited_data_, text_overflow_,
-            static_cast<unsigned>(overflow));
-  }
-
   // touch-action
   static TouchAction InitialTouchAction() {
     return TouchAction::kTouchActionAuto;
