@@ -5026,8 +5026,12 @@ class BrowserBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 
 #pragma mark - PreloadControllerDelegate methods
 
-- (BOOL)shouldUseDesktopUserAgent {
+- (BOOL)preloadShouldUseDesktopUserAgent {
   return [_model currentTab].usesDesktopUserAgent;
+}
+
+- (BOOL)preloadHasNativeControllerForURL:(const GURL&)url {
+  return [self hasControllerForURL:url];
 }
 
 #pragma mark - BookmarkBridgeMethods

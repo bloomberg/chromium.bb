@@ -332,12 +332,11 @@ class PrefetchDelegate : public net::URLFetcherDelegate {
 #pragma mark -
 #pragma mark CRWNativeContentProvider implementation
 
-// Delegate the call to the original native provider.
 - (BOOL)hasControllerForURL:(const GURL&)url {
   if (!webState_)
     return NO;
-  Tab* tab = LegacyTabHelper::GetTabForWebState(webState_.get());
-  return [[tab webController].nativeProvider hasControllerForURL:url];
+
+  return [delegate_ preloadHasNativeControllerForURL:url];
 }
 
 // Override the CRWNativeContentProvider methods to cancel any prerenders that
@@ -403,7 +402,7 @@ class PrefetchDelegate : public net::URLFetcherDelegate {
   web::NavigationManager::WebLoadParams loadParams(prerenderedURL_);
   loadParams.referrer = scheduledReferrer_;
   loadParams.transition_type = scheduledTransition_;
-  if ([delegate_ shouldUseDesktopUserAgent]) {
+  if ([delegate_ preloadShouldUseDesktopUserAgent]) {
     loadParams.user_agent_override_option =
         web::NavigationManager::UserAgentOverrideOption::DESKTOP;
   }
