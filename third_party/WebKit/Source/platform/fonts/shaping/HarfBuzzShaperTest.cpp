@@ -454,4 +454,20 @@ TEST_F(HarfBuzzShaperTest, ShapeResultCopyRangeIntoArabicThaiHanLatin) {
             composite_result->SnappedStartPositionForOffset(8));
 }
 
+TEST_F(HarfBuzzShaperTest, ShapeResultCopyRangeAcrossRuns) {
+  // Create 3 runs:
+  // [0]: 1 character.
+  // [1]: 5 characters.
+  // [2]: 2 character.
+  String mixed_string(u"\u65E5Hello\u65E5\u65E5");
+  TextDirection direction = TextDirection::kLtr;
+  HarfBuzzShaper shaper(mixed_string.Characters16(), mixed_string.length());
+  RefPtr<ShapeResult> result = shaper.Shape(&font, direction);
+
+  // CopyRange(5, 7) should copy 1 character from [1] and 1 from [2].
+  RefPtr<ShapeResult> target = ShapeResult::Create(&font, 0, direction);
+  result->CopyRange(5, 7, target.Get());
+  EXPECT_EQ(2u, target->NumCharacters());
+}
+
 }  // namespace blink
