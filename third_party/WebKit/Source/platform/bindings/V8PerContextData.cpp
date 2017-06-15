@@ -91,12 +91,10 @@ v8::Local<v8::Object> V8PerContextData::CreateWrapperFromCacheSlowCase(
 
   v8::Context::Scope scope(GetContext());
   v8::Local<v8::Function> interface_object = ConstructorForType(type);
-  if (interface_object.IsEmpty())
-    return v8::Local<v8::Object>();
-  v8::Local<v8::Object> instance_template;
-  if (!V8ObjectConstructor::NewInstance(isolate_, interface_object)
-           .ToLocal(&instance_template))
-    return v8::Local<v8::Object>();
+  CHECK(!interface_object.IsEmpty());
+  v8::Local<v8::Object> instance_template =
+      V8ObjectConstructor::NewInstance(isolate_, interface_object)
+          .ToLocalChecked();
   wrapper_boilerplates_.Set(type, instance_template);
   return instance_template->Clone();
 }
