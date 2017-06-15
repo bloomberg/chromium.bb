@@ -23979,6 +23979,31 @@ from previous Chrome versions.
   <int value="557" label="place-content"/>
   <int value="558" label="place-items"/>
   <int value="559" label="transform-box"/>
+  <int value="560" label="place-self"/>
+  <int value="561" label="scroll-snap-align"/>
+  <int value="562" label="scroll-padding"/>
+  <int value="563" label="scroll-padding-top"/>
+  <int value="564" label="scroll-padding-right"/>
+  <int value="565" label="scroll-padding-bottom"/>
+  <int value="566" label="scroll-padding-left"/>
+  <int value="567" label="scroll-padding-block"/>
+  <int value="568" label="scroll-padding-block-start"/>
+  <int value="569" label="scroll-padding-block-end"/>
+  <int value="570" label="scroll-padding-inline"/>
+  <int value="571" label="scroll-padding-inline-start"/>
+  <int value="572" label="scroll-padding-inline-end"/>
+  <int value="573" label="scroll-snap-margin"/>
+  <int value="574" label="scroll-snap-margin-top"/>
+  <int value="575" label="scroll-snap-margin-right"/>
+  <int value="576" label="scroll-snap-margin-bottom"/>
+  <int value="577" label="scroll-snap-margin-left"/>
+  <int value="578" label="scroll-snap-margin-block"/>
+  <int value="579" label="scroll-snap-margin-block-start"/>
+  <int value="580" label="scroll-snap-margin-block-end"/>
+  <int value="581" label="scroll-snap-margin-inline"/>
+  <int value="582" label="scroll-snap-margin-inline-start"/>
+  <int value="583" label="scroll-snap-margin-inline-end"/>
+  <int value="584" label="scroll-snap-stop"/>
 </enum>
 
 <enum name="MappedEditingCommands" type="int">

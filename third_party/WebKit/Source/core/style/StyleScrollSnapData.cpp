@@ -30,20 +30,20 @@
 namespace blink {
 
 StyleScrollSnapData::StyleScrollSnapData()
-    : x_points_(ComputedStyle::InitialScrollSnapPointsX()),
-      y_points_(ComputedStyle::InitialScrollSnapPointsY()),
-      destination_(ComputedStyle::InitialScrollSnapDestination()),
-      coordinates_(ComputedStyle::InitialScrollSnapCoordinate()) {}
+    : type_(ComputedStyle::InitialScrollSnapType()),
+      align_(ComputedStyle::InitialScrollSnapAlign()),
+      padding_(ComputedStyle::InitialScrollPadding()),
+      margin_(ComputedStyle::InitialScrollSnapMargin()) {}
 
 StyleScrollSnapData::StyleScrollSnapData(const StyleScrollSnapData& other)
-    : x_points_(other.x_points_),
-      y_points_(other.y_points_),
-      destination_(other.destination_),
-      coordinates_(other.coordinates_) {}
+    : type_(other.type_),
+      align_(other.align_),
+      padding_(other.padding_),
+      margin_(other.margin_) {}
 
 bool operator==(const StyleScrollSnapData& a, const StyleScrollSnapData& b) {
-  return a.x_points_ == b.x_points_ && a.y_points_ == b.y_points_ &&
-         a.destination_ == b.destination_ && a.coordinates_ == b.coordinates_;
+  return a.type_ == b.type_ && a.align_ == b.align_ &&
+         a.padding_ == b.padding_ && a.margin_ == b.margin_;
 }
 
 }  // namespace blink

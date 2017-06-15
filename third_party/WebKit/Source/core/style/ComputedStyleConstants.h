@@ -350,10 +350,21 @@ enum CSSBoxType {
   kContentBox
 };
 
-enum ScrollSnapType {
-  kScrollSnapTypeNone,
-  kScrollSnapTypeMandatory,
-  kScrollSnapTypeProximity
+enum SnapAxis {
+  kSnapAxisBoth,
+  kSnapAxisX,
+  kSnapAxisY,
+  kSnapAxisBlock,
+  kSnapAxisInline,
+};
+
+enum SnapStrictness { kSnapStrictnessProximity, kSnapStrictnessMandatory };
+
+enum SnapAlignment {
+  kSnapAlignmentNone,
+  kSnapAlignmentStart,
+  kSnapAlignmentEnd,
+  kSnapAlignmentCenter
 };
 
 enum AutoRepeatType { kNoAutoRepeat, kAutoFill, kAutoFit };

@@ -885,6 +885,9 @@
     "pixelated",
     "-webkit-optimize-contrast",
 
+    // image-orientation
+    "from-image",
+
     // shape-outside
     "nonzero",
     "evenodd",
@@ -1110,9 +1113,24 @@
 
     // scroll-snap-type
     // none
+    "x",
+    "y",
+    // block
+    // inline
+    // both
     "mandatory",
     "proximity",
-    "from-image",
+
+    // scroll-snap-align
+    // none
+    // start
+    // end
+    // center
+
+    // scroll-snap-stop
+    // normal
+    // always
+
 
     // containment
     // paint

@@ -1247,41 +1247,43 @@ TransformOrigin StyleBuilderConverter::ConvertTransformOrigin(
       StyleBuilderConverter::ConvertComputedLength<float>(state, list.Item(2)));
 }
 
-ScrollSnapPoints StyleBuilderConverter::ConvertSnapPoints(
-    StyleResolverState& state,
-    const CSSValue& value) {
-  // Handles: none | repeat(<length>)
-  ScrollSnapPoints points;
-  points.has_repeat = false;
-
-  if (!value.IsFunctionValue())
-    return points;
-
-  const CSSFunctionValue& repeat_function = ToCSSFunctionValue(value);
-  SECURITY_DCHECK(repeat_function.length() == 1);
-  points.repeat_offset =
-      ConvertLength(state, ToCSSPrimitiveValue(repeat_function.Item(0)));
-  points.has_repeat = true;
-
-  return points;
-}
-
-Vector<LengthPoint> StyleBuilderConverter::ConvertSnapCoordinates(
-    StyleResolverState& state,
-    const CSSValue& value) {
-  // Handles: none | <position>#
-  Vector<LengthPoint> coordinates;
-
-  if (!value.IsValueList())
-    return coordinates;
-
-  const CSSValueList& value_list = ToCSSValueList(value);
-  coordinates.ReserveInitialCapacity(value_list.length());
-  for (auto& snap_coordinate : value_list) {
-    coordinates.UncheckedAppend(ConvertPosition(state, *snap_coordinate));
+ScrollSnapType StyleBuilderConverter::ConvertSnapType(StyleResolverState&,
+                                                      const CSSValue& value) {
+  ScrollSnapType snapType = ComputedStyle::InitialScrollSnapType();
+  if (value.IsValuePair()) {
+    const CSSValuePair& pair = ToCSSValuePair(value);
+    snapType.is_none = false;
+    snapType.axis = ToCSSIdentifierValue(pair.First()).ConvertTo<SnapAxis>();
+    snapType.strictness =
+        ToCSSIdentifierValue(pair.Second()).ConvertTo<SnapStrictness>();
+    return snapType;
   }
 
-  return coordinates;
+  if (ToCSSIdentifierValue(value).GetValueID() == CSSValueNone) {
+    snapType.is_none = true;
+    return snapType;
+  }
+
+  snapType.is_none = false;
+  snapType.axis = ToCSSIdentifierValue(value).ConvertTo<SnapAxis>();
+  return snapType;
+}
+
+ScrollSnapAlign StyleBuilderConverter::ConvertSnapAlign(StyleResolverState&,
+                                                        const CSSValue& value) {
+  ScrollSnapAlign snapAlign = ComputedStyle::InitialScrollSnapAlign();
+  if (value.IsValuePair()) {
+    const CSSValuePair& pair = ToCSSValuePair(value);
+    snapAlign.alignmentX =
+        ToCSSIdentifierValue(pair.First()).ConvertTo<SnapAlignment>();
+    snapAlign.alignmentY =
+        ToCSSIdentifierValue(pair.Second()).ConvertTo<SnapAlignment>();
+  } else {
+    snapAlign.alignmentX =
+        ToCSSIdentifierValue(value).ConvertTo<SnapAlignment>();
+    snapAlign.alignmentY = snapAlign.alignmentX;
+  }
+  return snapAlign;
 }
 
 PassRefPtr<TranslateTransformOperation> StyleBuilderConverter::ConvertTranslate(

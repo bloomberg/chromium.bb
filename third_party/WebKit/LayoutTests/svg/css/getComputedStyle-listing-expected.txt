@@ -241,11 +241,6 @@ rx: auto
 ry: auto
 scale: none
 scroll-behavior: auto
-scroll-snap-coordinate: none
-scroll-snap-destination: 0px 0px
-scroll-snap-points-x: none
-scroll-snap-points-y: none
-scroll-snap-type: none
 shape-image-threshold: 0
 shape-margin: 0px
 shape-outside: none

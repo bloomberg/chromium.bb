@@ -1949,7 +1949,6 @@ void Document::InheritHtmlAndBodyElementStyles(StyleRecalcChange change) {
   }
 
   ScrollSnapType snap_type = overflow_style->GetScrollSnapType();
-  const LengthPoint& snap_destination = overflow_style->ScrollSnapDestination();
 
   RefPtr<ComputedStyle> document_style = GetLayoutViewItem().MutableStyle();
   if (document_style->GetWritingMode() != root_writing_mode ||
@@ -1962,8 +1961,7 @@ void Document::InheritHtmlAndBodyElementStyles(StyleRecalcChange change) {
       document_style->OverflowX() != overflow_x ||
       document_style->OverflowY() != overflow_y ||
       document_style->ColumnGap() != column_gap ||
-      document_style->GetScrollSnapType() != snap_type ||
-      document_style->ScrollSnapDestination() != snap_destination) {
+      document_style->GetScrollSnapType() != snap_type) {
     RefPtr<ComputedStyle> new_style = ComputedStyle::Clone(*document_style);
     new_style->SetWritingMode(root_writing_mode);
     new_style->SetDirection(root_direction);
@@ -1975,7 +1973,6 @@ void Document::InheritHtmlAndBodyElementStyles(StyleRecalcChange change) {
     new_style->SetOverflowY(overflow_y);
     new_style->SetColumnGap(column_gap);
     new_style->SetScrollSnapType(snap_type);
-    new_style->SetScrollSnapDestination(snap_destination);
     GetLayoutViewItem().SetStyle(new_style);
     SetupFontBuilder(*new_style);
   }
