@@ -31,13 +31,9 @@ bool BleAdvertisementDeviceQueue::SetDevices(
     }
   }
   if (!missing_from_queue.empty()) {
-    std::string log_message = "Adding device IDs: [";
     for (auto& device : missing_from_queue) {
       device_queue_.push_back(device);
-      log_message += device.GetTruncatedDeviceIdForLogs() + ",";
     }
-    log_message.replace(log_message.length() - 1, log_message.length(), "]");
-    PA_LOG(INFO) << log_message;
   }
 
   // Determine which devices do not exist in |devices| but do exist in
@@ -49,14 +45,10 @@ bool BleAdvertisementDeviceQueue::SetDevices(
     }
   }
   if (!to_remove_from_queue.empty()) {
-    std::string log_message = "Removing device IDs: [";
     for (auto& device : to_remove_from_queue) {
       device_queue_.erase(
           std::find(device_queue_.begin(), device_queue_.end(), device));
-      log_message += device.GetTruncatedDeviceIdForLogs() + ",";
     }
-    log_message.replace(log_message.length() - 1, log_message.length(), "]");
-    PA_LOG(INFO) << log_message;
   }
 
   return !missing_from_queue.empty() || !to_remove_from_queue.empty();
@@ -87,23 +79,17 @@ BleAdvertisementDeviceQueue::GetDevicesToWhichToAdvertise() const {
   std::vector<cryptauth::RemoteDevice> to_advertise;
 
   if (device_queue_.empty()) {
-    PA_LOG(INFO) << "No devices to which to advertise.";
     return to_advertise;
   }
 
-  std::string log_message = "Should advertise to the following device IDs: [";
   for (auto& device : device_queue_) {
     to_advertise.push_back(device);
-    log_message += device.GetTruncatedDeviceIdForLogs() + ",";
 
     if (to_advertise.size() ==
         static_cast<size_t>(kMaxConcurrentAdvertisements)) {
       break;
     }
   }
-
-  log_message.replace(log_message.length() - 1, log_message.length(), "]");
-  PA_LOG(INFO) << log_message;
 
   return to_advertise;
 }

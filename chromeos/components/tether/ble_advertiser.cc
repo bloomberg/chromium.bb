@@ -23,11 +23,13 @@ uint8_t kInvertedConnectionFlag = 0x01;
 }  // namespace
 
 BleAdvertiser::IndividualAdvertisement::IndividualAdvertisement(
+    const std::string& device_id,
     scoped_refptr<device::BluetoothAdapter> adapter,
     std::unique_ptr<cryptauth::DataWithTimestamp> advertisement_data)
-    : adapter_(adapter),
-      is_initializing_advertising_(false),
+    : device_id_(device_id),
+      adapter_(adapter),
       advertisement_data_(std::move(advertisement_data)),
+      is_initializing_advertising_(false),
       advertisement_(nullptr),
       weak_ptr_factory_(this) {
   adapter_->AddObserver(this);
@@ -37,8 +39,7 @@ BleAdvertiser::IndividualAdvertisement::IndividualAdvertisement(
 BleAdvertiser::IndividualAdvertisement::~IndividualAdvertisement() {
   if (advertisement_) {
     advertisement_->Unregister(
-        base::Bind(&IndividualAdvertisement::OnAdvertisementUnregisterSuccess,
-                   weak_ptr_factory_.GetWeakPtr()),
+        base::Bind(&base::DoNothing),
         base::Bind(&IndividualAdvertisement::OnAdvertisementUnregisterFailure,
                    weak_ptr_factory_.GetWeakPtr()));
   }
@@ -91,25 +92,28 @@ void BleAdvertiser::IndividualAdvertisement::OnAdvertisementRegisteredCallback(
   is_initializing_advertising_ = false;
   advertisement_ = advertisement;
   PA_LOG(INFO) << "Advertisement registered. "
-               << "Service data: " << advertisement_data_->DataInHex() << ".";
+               << "Device ID: \""
+               << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(device_id_)
+               << "\", Service data: " << advertisement_data_->DataInHex();
 }
 
 void BleAdvertiser::IndividualAdvertisement::OnAdvertisementErrorCallback(
     device::BluetoothAdvertisement::ErrorCode error_code) {
   is_initializing_advertising_ = false;
-  PA_LOG(WARNING) << "Error registering advertisement. "
-                  << "Service data: " << advertisement_data_->DataInHex()
-                  << ", "
-                  << "Error code: " << error_code;
+  PA_LOG(ERROR) << "Error registering advertisement. "
+                << "Device ID: \""
+                << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(device_id_)
+                << "\", Service data: " << advertisement_data_->DataInHex()
+                << ", Error code: " << error_code;
 }
-
-void BleAdvertiser::IndividualAdvertisement::
-    OnAdvertisementUnregisterSuccess() {}
 
 void BleAdvertiser::IndividualAdvertisement::OnAdvertisementUnregisterFailure(
     device::BluetoothAdvertisement::ErrorCode error_code) {
-  PA_LOG(ERROR) << "Error while unregistering advertisement. Error code: "
-                << error_code;
+  PA_LOG(ERROR) << "Error unregistering advertisement. "
+                << "Device ID: \""
+                << cryptauth::RemoteDevice::TruncateDeviceIdForLogs(device_id_)
+                << "\", Service data: " << advertisement_data_->DataInHex()
+                << " Error code: " << error_code;
 }
 
 std::unique_ptr<device::BluetoothAdvertisement::UUIDList>
@@ -205,8 +209,8 @@ bool BleAdvertiser::StartAdvertisingToDevice(
   }
 
   device_id_to_advertisement_map_[remote_device.GetDeviceId()] =
-      base::MakeUnique<IndividualAdvertisement>(adapter_,
-                                                std::move(advertisement));
+      base::MakeUnique<IndividualAdvertisement>(
+          remote_device.GetDeviceId(), adapter_, std::move(advertisement));
   return true;
 }
 

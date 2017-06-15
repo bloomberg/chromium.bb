@@ -256,9 +256,6 @@ class BluetoothLowEnergyWeaveClientConnection
 
   void OnPacketReceiverError();
 
-  // Prints the time elapsed since |Connect()| was called.
-  void PrintTimeElapsed();
-
   // Called when waiting for connection response from server times out.
   void OnConnectionResponseTimeout();
 
@@ -331,9 +328,6 @@ class BluetoothLowEnergyWeaveClientConnection
   bool write_remote_characteristic_pending_;
 
   std::queue<WriteRequest> write_requests_queue_;
-
-  // Stores when the instance was created.
-  base::TimeTicks start_time_;
 
   // Used for timing out when waiting for connection response from the server.
   std::unique_ptr<base::Timer> connection_response_timer_;

@@ -91,12 +91,6 @@ void SecureChannel::Initialize() {
 void SecureChannel::SendMessage(
     const std::string& feature, const std::string& payload) {
   DCHECK(status_ == Status::AUTHENTICATED);
-
-  PA_LOG(INFO) << "Queuing new message to send: {"
-               << "feature: \"" << feature << "\", "
-               << "payload: \"" << payload << "\""
-               << "}";
-
   queued_messages_.push_back(PendingMessage(feature, payload));
   ProcessMessageQueue();
 }
@@ -183,10 +177,6 @@ void SecureChannel::TransitionToStatus(const Status& new_status) {
     return;
   }
 
-  PA_LOG(INFO) << "Connection status changed: "
-               << StatusToString(status_)
-               << " => " << StatusToString(new_status);
-
   Status old_status = status_;
   status_ = new_status;
 
@@ -219,7 +209,8 @@ void SecureChannel::ProcessMessageQueue() {
   pending_message_.reset(new PendingMessage(queued_messages_.front()));
   queued_messages_.pop_front();
 
-  PA_LOG(INFO) << "Sending message: {"
+  PA_LOG(INFO) << "Sending message to " << connection_->GetDeviceAddress()
+               << ": {"
                << "feature: \"" << pending_message_->feature << "\", "
                << "payload: \"" << pending_message_->payload << "\""
                << "}";
@@ -238,7 +229,8 @@ void SecureChannel::OnMessageEncoded(
 
 void SecureChannel::OnMessageDecoded(
     const std::string& feature, const std::string& decoded_message) {
-  PA_LOG(INFO) << "Received message: {"
+  PA_LOG(INFO) << "Received message from " << connection_->GetDeviceAddress()
+               << ": {"
                << "feature: \"" << feature << "\", "
                << "payload: \"" << decoded_message << "\""
                << "}";
