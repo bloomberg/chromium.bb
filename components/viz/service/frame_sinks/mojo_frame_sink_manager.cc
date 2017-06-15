@@ -147,6 +147,8 @@ void MojoFrameSinkManager::OnClientConnectionLost(
   // client instance to create a new CompositorFrameSink.
 }
 
+void MojoFrameSinkManager::OnSurfaceWillDraw(const cc::SurfaceId& surface_id) {}
+
 void MojoFrameSinkManager::OnPrivateConnectionLost(
     const cc::FrameSinkId& frame_sink_id,
     bool destroy_compositor_frame_sink) {

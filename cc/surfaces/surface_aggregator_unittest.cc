@@ -25,6 +25,7 @@
 #include "cc/test/compositor_frame_helpers.h"
 #include "cc/test/fake_compositor_frame_sink_support_client.h"
 #include "cc/test/fake_resource_provider.h"
+#include "cc/test/fake_surface_observer.h"
 #include "cc/test/render_pass_test_utils.h"
 #include "cc/test/surface_aggregator_test_helpers.h"
 #include "cc/test/test_shared_bitmap_manager.h"
@@ -61,24 +62,29 @@ gfx::Size SurfaceSize() {
 class SurfaceAggregatorTest : public testing::Test {
  public:
   explicit SurfaceAggregatorTest(bool use_damage_rect)
-      : support_(
+      : observer_(false),
+        support_(
             CompositorFrameSinkSupport::Create(&fake_client_,
                                                &manager_,
                                                kArbitraryRootFrameSinkId,
                                                kRootIsRoot,
                                                kHandlesFrameSinkIdInvalidation,
                                                kNeedsSyncPoints)),
-        aggregator_(&manager_, NULL, use_damage_rect) {}
+        aggregator_(&manager_, NULL, use_damage_rect) {
+    manager_.AddObserver(&observer_);
+  }
 
   SurfaceAggregatorTest() : SurfaceAggregatorTest(false) {}
 
   void TearDown() override {
+    observer_.Reset();
     support_->EvictCurrentSurface();
     testing::Test::TearDown();
   }
 
  protected:
   SurfaceManager manager_;
+  FakeSurfaceObserver observer_;
   FakeCompositorFrameSinkSupportClient fake_client_;
   std::unique_ptr<CompositorFrameSinkSupport> support_;
   SurfaceAggregator aggregator_;
@@ -188,6 +194,9 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, SimpleFrame) {
   // Check that WillDrawSurface was called.
   EXPECT_EQ(gfx::Rect(SurfaceSize()), fake_client_.last_damage_rect());
   EXPECT_EQ(root_local_surface_id_, fake_client_.last_local_surface_id());
+
+  // Check that SurfaceObserver::OnSurfaceWillDraw was called.
+  EXPECT_TRUE(observer_.SurfaceWillDrawCalled(root_surface_id));
 }
 
 TEST_F(SurfaceAggregatorValidSurfaceTest, OpacityCopied) {
@@ -395,6 +404,13 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, FallbackSurfaceReference) {
   AggregateAndVerify(expected_passes1, arraysize(expected_passes1), ids,
                      arraysize(ids));
 
+  // Check that SurfaceObserver::OnSurfaceWillDraw was called only
+  // for the fallback surface.
+  EXPECT_FALSE(observer_.SurfaceWillDrawCalled(primary_child_surface_id));
+  EXPECT_TRUE(observer_.SurfaceWillDrawCalled(fallback_child_surface_id));
+
+  observer_.Reset();
+
   test::Quad primary_child_quads[] = {
       test::Quad::SolidColorQuad(SK_ColorGREEN)};
   test::Pass primary_child_passes[] = {
@@ -414,6 +430,11 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, FallbackSurfaceReference) {
       test::Pass(expected_quads2, arraysize(expected_quads2))};
   AggregateAndVerify(expected_passes2, arraysize(expected_passes2), ids,
                      arraysize(ids));
+
+  // Check that SurfaceObserver::OnSurfaceWillDraw was called only
+  // for the primary surface.
+  EXPECT_TRUE(observer_.SurfaceWillDrawCalled(primary_child_surface_id));
+  EXPECT_FALSE(observer_.SurfaceWillDrawCalled(fallback_child_surface_id));
 
   primary_child_support->EvictCurrentSurface();
   fallback_child_support->EvictCurrentSurface();

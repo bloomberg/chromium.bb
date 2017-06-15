@@ -37,6 +37,9 @@ class SurfaceObserver {
   // and, thus, is expected to produce damage soon.
   virtual void OnSurfaceDamageExpected(const SurfaceId& surface_id,
                                        const BeginFrameArgs& args) = 0;
+
+  // Runs when a surface has been added to the aggregated CompositorFrame.
+  virtual void OnSurfaceWillDraw(const SurfaceId& surface_id) = 0;
 };
 
 }  // namespace cc
