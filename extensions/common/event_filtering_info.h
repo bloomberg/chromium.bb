@@ -6,13 +6,10 @@
 #define EXTENSIONS_COMMON_EVENT_FILTERING_INFO_H_
 
 #include <memory>
+#include <string>
 
 #include "base/optional.h"
 #include "url/gurl.h"
-
-namespace base {
-class DictionaryValue;
-}
 
 namespace extensions {
 
@@ -27,7 +24,6 @@ namespace extensions {
 struct EventFilteringInfo {
  public:
   EventFilteringInfo();
-  explicit EventFilteringInfo(const base::DictionaryValue& dict);
   EventFilteringInfo(const EventFilteringInfo& other);
   ~EventFilteringInfo();
 
@@ -46,7 +42,10 @@ struct EventFilteringInfo {
   // didn't set any filter on window types.
   base::Optional<bool> window_exposed_by_default;
 
-  std::unique_ptr<base::DictionaryValue> AsValue() const;
+  bool is_empty() const {
+    return !url && !service_type && !instance_id && !window_type &&
+           !window_exposed_by_default;
+  }
 };
 
 }  // namespace extensions

@@ -91,7 +91,7 @@ void EventRouter::DispatchExtensionMessage(IPC::Sender* ipc_sender,
   params.event_name = event_name;
   params.event_id = event_id;
   params.is_user_gesture = user_gesture == USER_GESTURE_ENABLED;
-  params.filtering_info.Swap(info.AsValue().get());
+  params.filtering_info = info;
 
   ipc_sender->Send(new ExtensionMsg_DispatchEvent(params, *event_args));
 }

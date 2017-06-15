@@ -661,11 +661,10 @@ void Dispatcher::OnExtensionResponse(int request_id,
   bindings_system_->HandleResponse(request_id, success, response, error);
 }
 
-void Dispatcher::DispatchEvent(
-    const std::string& extension_id,
-    const std::string& event_name,
-    const base::ListValue& event_args,
-    const base::DictionaryValue& filtering_info) const {
+void Dispatcher::DispatchEvent(const std::string& extension_id,
+                               const std::string& event_name,
+                               const base::ListValue& event_args,
+                               const EventFilteringInfo& filtering_info) const {
   script_context_set_->ForEach(
       extension_id, nullptr,
       base::Bind(&ExtensionBindingsSystem::DispatchEventInContext,
@@ -1006,7 +1005,7 @@ void Dispatcher::OnActivateExtension(const std::string& extension_id) {
 
 void Dispatcher::OnCancelSuspend(const std::string& extension_id) {
   DispatchEvent(extension_id, kOnSuspendCanceledEvent, base::ListValue(),
-                base::DictionaryValue());
+                EventFilteringInfo());
 }
 
 void Dispatcher::OnDeliverMessage(const PortId& target_port_id,
@@ -1155,7 +1154,7 @@ void Dispatcher::OnSuspend(const std::string& extension_id) {
   // that it still considers the extension idle despite any activity the suspend
   // event creates.
   DispatchEvent(extension_id, kOnSuspendEvent, base::ListValue(),
-                base::DictionaryValue());
+                EventFilteringInfo());
   RenderThread::Get()->Send(new ExtensionHostMsg_SuspendAck(extension_id));
 }
 
