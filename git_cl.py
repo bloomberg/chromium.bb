@@ -4428,7 +4428,6 @@ def CMDissue(parser, args):
   if options.reverse:
     branches = RunGit(['for-each-ref', 'refs/heads',
                        '--format=%(refname:short)']).splitlines()
-
     # Reverse issue lookup.
     issue_branch_map = {}
     for branch in branches:
@@ -4445,21 +4444,24 @@ def CMDissue(parser, args):
           issue, ', '.join(issue_branch_map.get(int(issue)) or ('None',))))
     if options.json:
       write_json(options.json, result)
+    return 0
+
+  if len(args) > 0:
+    issue = ParseIssueNumberArgument(args[0], options.forced_codereview)
+    if not issue.valid:
+      DieWithError('Pass a url or number to set the issue, 0 to unset it, '
+                   'or no argument to list it.\n'
+                   'Maybe you want to run git cl status?')
+    cl = Changelist(codereview=issue.codereview)
+    cl.SetIssue(issue.issue)
   else:
     cl = Changelist(codereview=options.forced_codereview)
-    if len(args) > 0:
-      try:
-        issue = int(args[0])
-      except ValueError:
-        DieWithError('Pass a number to set the issue or none to list it.\n'
-                     'Maybe you want to run git cl status?')
-      cl.SetIssue(issue)
-    print('Issue number: %s (%s)' % (cl.GetIssue(), cl.GetIssueURL()))
-    if options.json:
-      write_json(options.json, {
-        'issue': cl.GetIssue(),
-        'issue_url': cl.GetIssueURL(),
-      })
+  print('Issue number: %s (%s)' % (cl.GetIssue(), cl.GetIssueURL()))
+  if options.json:
+    write_json(options.json, {
+      'issue': cl.GetIssue(),
+      'issue_url': cl.GetIssueURL(),
+    })
   return 0
 
 
