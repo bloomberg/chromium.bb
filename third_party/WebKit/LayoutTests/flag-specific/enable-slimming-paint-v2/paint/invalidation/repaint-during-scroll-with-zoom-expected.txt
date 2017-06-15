@@ -1,0 +1,72 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutView #document",
+          "rect": [3, 65, 235, 235],
+          "reason": "subtree"
+        },
+        {
+          "object": "HorizontalScrollbar",
+          "rect": [3, 300, 235, 15],
+          "reason": "scroll control"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [3, 65, 225, 225],
+          "reason": "subtree"
+        },
+        {
+          "object": "InlineTextBox 'scroll me'",
+          "rect": [3, 65, 55, 17],
+          "reason": "subtree"
+        },
+        {
+          "object": "VerticalScrollbar",
+          "rect": [238, 65, 15, 235],
+          "reason": "scroll control"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "HorizontalScrollbar",
+      "reason": "scroll control"
+    },
+    {
+      "object": "VerticalScrollbar",
+      "reason": "scroll control"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow HTML",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow BODY",
+      "reason": "subtree"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'scroll me'",
+      "reason": "subtree"
+    }
+  ]
+}
+

@@ -1,0 +1,45 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutTableSection TBODY id='target'",
+      "position": [8, 28],
+      "bounds": [186, 134],
+      "contentsOpaque": false,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutTableSection TBODY id='target'",
+          "rect": [0, 0, 186, 134],
+          "reason": "appeared"
+        }
+      ]
+    },
+    {
+      "name": "LayoutTableRow TR",
+      "position": [34, 118],
+      "bounds": [132, 19],
+      "contentsOpaque": false,
+      "drawsContent": true
+    },
+    {
+      "name": "LayoutTableCell TD",
+      "position": [96, 118],
+      "bounds": [10, 19],
+      "contentsOpaque": false,
+      "drawsContent": true
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutTableSection TBODY id='target'",
+      "reason": "style change"
+    }
+  ]
+}
+

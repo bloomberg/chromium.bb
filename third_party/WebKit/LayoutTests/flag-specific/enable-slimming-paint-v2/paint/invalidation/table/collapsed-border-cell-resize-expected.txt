@@ -1,0 +1,28 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "CollapsedBorderValues",
+          "rect": [8, 8, 104, 204],
+          "reason": "geometry"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutTableCell TD id='target'",
+      "reason": "geometry"
+    },
+    {
+      "object": "CollapsedBorderValues",
+      "reason": "geometry"
+    }
+  ]
+}
+

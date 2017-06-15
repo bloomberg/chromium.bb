@@ -1,0 +1,61 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV class='scroller'",
+          "rect": [18, 60, 310, 200],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutBlockFlow DIV class='scroller'",
+          "rect": [18, 60, 310, 200],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV class='back'",
+          "rect": [93, 75, 180, 100],
+          "reason": "subtree"
+        },
+        {
+          "object": "VerticalScrollbar",
+          "rect": [308, 65, 15, 175],
+          "reason": "scroll control"
+        }
+      ]
+    },
+    {
+      "name": "LayoutBlockFlow (positioned) DIV class='icon'",
+      "bounds": [40, 40],
+      "contentsOpaque": false,
+      "drawsContent": true
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV class='scroller'",
+      "reason": "subtree"
+    },
+    {
+      "object": "VerticalScrollbar",
+      "reason": "scroll control"
+    },
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV class='list'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV class='commit'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV class='back'",
+      "reason": "subtree"
+    }
+  ]
+}
+

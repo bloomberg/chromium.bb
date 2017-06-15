@@ -1,0 +1,71 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [8, 16, 351, 78],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'This test passes if the arrow rotates to the open position.'",
+          "rect": [8, 16, 351, 19],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'summary'",
+          "rect": [24, 52, 59, 19],
+          "reason": "disappeared"
+        },
+        {
+          "object": "LayoutDetailsMarker DIV id='details-marker'",
+          "rect": [8, 56, 11, 11],
+          "reason": "disappeared"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutDetailsMarker DIV id='details-marker'",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='details-content'",
+      "reason": "appeared"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "appeared"
+    },
+    {
+      "object": "LayoutTextControl INPUT",
+      "reason": "appeared"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='inner-editor'",
+      "reason": "appeared"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='inner-editor'",
+      "reason": "geometry"
+    },
+    {
+      "object": "HorizontalScrollbar",
+      "reason": "scroll control"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "appeared"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "appeared"
+    }
+  ]
+}
+

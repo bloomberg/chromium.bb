@@ -1,0 +1,29 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGPath path id='path'",
+          "rect": [199, 49, 102, 52],
+          "reason": "disappeared"
+        },
+        {
+          "object": "LayoutSVGPath path id='path'",
+          "rect": [49, 49, 102, 52],
+          "reason": "appeared"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGPath path id='path'",
+      "reason": "full"
+    }
+  ]
+}
+

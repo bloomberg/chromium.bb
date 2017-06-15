@@ -1,0 +1,44 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "CollapsedBorderValues",
+          "rect": [8, 8, 60, 54],
+          "reason": "geometry"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTable TABLE id='tbl'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableSection TBODY",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutTableRow TR",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "geometry"
+    },
+    {
+      "object": "CollapsedBorderValues",
+      "reason": "geometry"
+    }
+  ]
+}
+
