@@ -361,7 +361,7 @@ external/wpt/workers/semantics/xhr/002.html
 external/wpt/workers/Worker_dispatchEvent_ErrorEvent.htm
 external/wpt/XMLHttpRequest/event-load.htm
 external/wpt/XMLHttpRequest/open-after-abort.htm
-fast/alignment/new-alignment-values-invalid-if-grid-not-enabled.html
+fast/alignment/new-alignment-values.html
 fast/animation/request-animation-frame-callback-id.html
 fast/animation/request-animation-frame-cancel.html
 fast/animation/request-animation-frame-within-callback.html
