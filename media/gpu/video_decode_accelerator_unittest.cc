@@ -1527,33 +1527,32 @@ TEST_P(VideoDecodeAcceleratorParamTest, TestSimpleDecode) {
   }
 
   if (render_as_thumbnails) {
-    std::vector<unsigned char> rgba;
+    std::vector<unsigned char> rgb;
+    bool alpha_solid;
     base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                              base::WaitableEvent::InitialState::NOT_SIGNALED);
     g_env->GetRenderingTaskRunner()->PostTask(
-        FROM_HERE,
-        base::Bind(&RenderingHelper::GetThumbnailsAsRGBA,
-                   base::Unretained(&rendering_helper_), &rgba, &done));
+        FROM_HERE, base::Bind(&RenderingHelper::GetThumbnailsAsRGB,
+                              base::Unretained(&rendering_helper_), &rgb,
+                              &alpha_solid, &done));
     done.Wait();
-
-    size_t num_pixels = rgba.size() / 4;
-    for (size_t i = 0; i < num_pixels; i++) {
-      EXPECT_EQ(rgba[4 * i + 3], 0xff) << "RGBA frame had incorrect alpha";
-    }
 
     std::vector<std::string> golden_md5s;
     std::string md5_string = base::MD5String(
-        base::StringPiece(reinterpret_cast<char*>(&rgba[0]), rgba.size()));
+        base::StringPiece(reinterpret_cast<char*>(&rgb[0]), rgb.size()));
     ReadGoldenThumbnailMD5s(test_video_files_[0].get(), &golden_md5s);
     std::vector<std::string>::iterator match =
         find(golden_md5s.begin(), golden_md5s.end(), md5_string);
     if (match == golden_md5s.end()) {
-      // Convert raw RGBA into PNG for export.
+      // Convert raw RGB into PNG for export.
       std::vector<unsigned char> png;
-      gfx::PNGCodec::Encode(&rgba[0], gfx::PNGCodec::FORMAT_RGBA,
+      gfx::PNGCodec::Encode(&rgb[0],
+                            gfx::PNGCodec::FORMAT_RGB,
                             kThumbnailsPageSize,
-                            kThumbnailsPageSize.width() * 4, true,
-                            std::vector<gfx::PNGCodec::Comment>(), &png);
+                            kThumbnailsPageSize.width() * 3,
+                            true,
+                            std::vector<gfx::PNGCodec::Comment>(),
+                            &png);
 
       LOG(ERROR) << "Unknown thumbnails MD5: " << md5_string;
 
@@ -1578,6 +1577,7 @@ TEST_P(VideoDecodeAcceleratorParamTest, TestSimpleDecode) {
       EXPECT_EQ(num_bytes, static_cast<int>(png.size()));
     }
     EXPECT_NE(match, golden_md5s.end());
+    EXPECT_EQ(alpha_solid, true) << "RGBA frame had incorrect alpha";
   }
 
   // Output the frame delivery time to file

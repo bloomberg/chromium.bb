@@ -710,12 +710,14 @@ void RenderingHelper::Clear() {
   thumbnails_texture_id_ = 0;
 }
 
-void RenderingHelper::GetThumbnailsAsRGBA(std::vector<unsigned char>* rgba,
-                                          base::WaitableEvent* done) {
+void RenderingHelper::GetThumbnailsAsRGB(std::vector<unsigned char>* rgb,
+                                         bool* alpha_solid,
+                                         base::WaitableEvent* done) {
   CHECK(render_as_thumbnails_);
 
   const size_t num_pixels = thumbnails_fbo_size_.GetArea();
-  rgba->resize(num_pixels * 4);
+  std::vector<unsigned char> rgba;
+  rgba.resize(num_pixels * 4);
   glBindFramebufferEXT(GL_FRAMEBUFFER, thumbnails_fbo_id_);
   glPixelStorei(GL_PACK_ALIGNMENT, 1);
   // We can only count on GL_RGBA/GL_UNSIGNED_BYTE support.
@@ -726,6 +728,19 @@ void RenderingHelper::GetThumbnailsAsRGBA(std::vector<unsigned char>* rgba,
                &rgba[0]);
   glBindFramebufferEXT(GL_FRAMEBUFFER,
                        gl_surface_->GetBackingFramebufferObject());
+  rgb->resize(num_pixels * 3);
+  // Drop the alpha channel, but check as we go that it is all 0xff.
+  bool solid = true;
+  unsigned char* rgb_ptr = &((*rgb)[0]);
+  unsigned char* rgba_ptr = &rgba[0];
+  for (size_t i = 0; i < num_pixels; ++i) {
+    *rgb_ptr++ = *rgba_ptr++;
+    *rgb_ptr++ = *rgba_ptr++;
+    *rgb_ptr++ = *rgba_ptr++;
+    solid = solid && (*rgba_ptr == 0xff);
+    rgba_ptr++;
+  }
+  *alpha_solid = solid;
 
   done->Signal();
 }
