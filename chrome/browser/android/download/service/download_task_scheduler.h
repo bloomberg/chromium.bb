@@ -20,7 +20,7 @@ namespace android {
 class DownloadTaskScheduler : public TaskScheduler {
  public:
   DownloadTaskScheduler();
-  ~DownloadTaskScheduler();
+  ~DownloadTaskScheduler() override;
 
   // TaskScheduler implementation.
   void ScheduleTask(DownloadTaskType task_type,

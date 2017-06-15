@@ -8,20 +8,26 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "components/download/internal/config.h"
 #include "components/download/internal/entry.h"
 #include "components/download/internal/scheduler/device_status.h"
+#include "components/download/public/task_scheduler.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using testing::_;
 using testing::InSequence;
 
 namespace download {
 namespace {
 
-class MockPlatformTaskScheduler : public PlatformTaskScheduler {
+class MockTaskScheduler : public TaskScheduler {
  public:
-  MOCK_METHOD1(ScheduleDownloadTask, void(const Criteria&));
-  MOCK_METHOD0(CancelDownloadTask, void());
+  MockTaskScheduler() = default;
+  ~MockTaskScheduler() override = default;
+
+  MOCK_METHOD5(ScheduleTask, void(DownloadTaskType, bool, bool, long, long));
+  MOCK_METHOD1(CancelTask, void(DownloadTaskType));
 };
 
 class DownloadSchedulerImplTest : public testing::Test {
@@ -33,7 +39,7 @@ class DownloadSchedulerImplTest : public testing::Test {
 
   void BuildScheduler(const std::vector<DownloadClient> clients) {
     scheduler_ =
-        base::MakeUnique<SchedulerImpl>(&platform_task_scheduler_, clients);
+        base::MakeUnique<SchedulerImpl>(&task_scheduler_, &config_, clients);
   }
   void DestroyScheduler() { scheduler_.reset(); }
 
@@ -82,7 +88,8 @@ class DownloadSchedulerImplTest : public testing::Test {
 
  protected:
   std::unique_ptr<SchedulerImpl> scheduler_;
-  MockPlatformTaskScheduler platform_task_scheduler_;
+  MockTaskScheduler task_scheduler_;
+  Configuration config_;
 
   // Entries owned by the test fixture.
   std::vector<Entry> entries_;
@@ -384,27 +391,36 @@ TEST_F(DownloadSchedulerImplTest, Reschedule) {
       SchedulingParams::NetworkRequirements::UNMETERED;
 
   Criteria criteria;
-  EXPECT_CALL(platform_task_scheduler_, CancelDownloadTask())
+  EXPECT_CALL(task_scheduler_, CancelTask(DownloadTaskType::DOWNLOAD_TASK))
       .RetiresOnSaturation();
-  EXPECT_CALL(platform_task_scheduler_, ScheduleDownloadTask(criteria))
+  EXPECT_CALL(task_scheduler_,
+              ScheduleTask(DownloadTaskType::DOWNLOAD_TASK,
+                           criteria.requires_unmetered_network,
+                           criteria.requires_battery_charging, _, _))
       .RetiresOnSaturation();
   scheduler_->Reschedule(entries());
 
   entries_[0].scheduling_params.battery_requirements =
       SchedulingParams::BatteryRequirements::BATTERY_INSENSITIVE;
   criteria.requires_battery_charging = false;
-  EXPECT_CALL(platform_task_scheduler_, CancelDownloadTask())
+  EXPECT_CALL(task_scheduler_, CancelTask(DownloadTaskType::DOWNLOAD_TASK))
       .RetiresOnSaturation();
-  EXPECT_CALL(platform_task_scheduler_, ScheduleDownloadTask(criteria))
+  EXPECT_CALL(task_scheduler_,
+              ScheduleTask(DownloadTaskType::DOWNLOAD_TASK,
+                           criteria.requires_unmetered_network,
+                           criteria.requires_battery_charging, _, _))
       .RetiresOnSaturation();
   scheduler_->Reschedule(entries());
 
   entries_[0].scheduling_params.network_requirements =
       SchedulingParams::NetworkRequirements::NONE;
   criteria.requires_unmetered_network = false;
-  EXPECT_CALL(platform_task_scheduler_, CancelDownloadTask())
+  EXPECT_CALL(task_scheduler_, CancelTask(DownloadTaskType::DOWNLOAD_TASK))
       .RetiresOnSaturation();
-  EXPECT_CALL(platform_task_scheduler_, ScheduleDownloadTask(criteria))
+  EXPECT_CALL(task_scheduler_,
+              ScheduleTask(DownloadTaskType::DOWNLOAD_TASK,
+                           criteria.requires_unmetered_network,
+                           criteria.requires_battery_charging, _, _))
       .RetiresOnSaturation();
   scheduler_->Reschedule(entries());
 }

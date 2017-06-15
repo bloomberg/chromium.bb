@@ -22,7 +22,7 @@ class BrowserContext;
 class DownloadTaskSchedulerImpl : public download::TaskScheduler {
  public:
   explicit DownloadTaskSchedulerImpl(content::BrowserContext* context);
-  ~DownloadTaskSchedulerImpl();
+  ~DownloadTaskSchedulerImpl() override;
 
   // TaskScheduler implementation.
   void ScheduleTask(download::DownloadTaskType task_type,

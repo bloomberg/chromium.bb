@@ -5,9 +5,11 @@
 #include "components/download/internal/scheduler/scheduler_impl.h"
 
 #include "components/download/internal/client_set.h"
+#include "components/download/internal/config.h"
 #include "components/download/internal/entry_utils.h"
 #include "components/download/internal/scheduler/device_status.h"
 #include "components/download/public/download_params.h"
+#include "components/download/public/task_scheduler.h"
 
 namespace download {
 
@@ -25,35 +27,41 @@ std::vector<T> ToList(const std::set<T>& set) {
 
 }  // namespace
 
-SchedulerImpl::SchedulerImpl(PlatformTaskScheduler* platform_scheduler,
+SchedulerImpl::SchedulerImpl(TaskScheduler* task_scheduler,
+                             Configuration* config,
                              const ClientSet* clients)
-    : SchedulerImpl(platform_scheduler,
+    : SchedulerImpl(task_scheduler,
+                    config,
                     ToList<DownloadClient>(clients->GetRegisteredClients())) {}
 
-SchedulerImpl::SchedulerImpl(PlatformTaskScheduler* platform_scheduler,
+SchedulerImpl::SchedulerImpl(TaskScheduler* task_scheduler,
+                             Configuration* config,
                              const std::vector<DownloadClient>& clients)
-    : platform_scheduler_(platform_scheduler),
+    : task_scheduler_(task_scheduler),
+      config_(config),
       download_clients_(clients),
       current_client_index_(0) {
-  DCHECK(!clients.empty());
+  DCHECK(!download_clients_.empty());
+  DCHECK(task_scheduler_);
 }
 
 SchedulerImpl::~SchedulerImpl() = default;
 
 void SchedulerImpl::Reschedule(const Model::EntryList& entries) {
   if (entries.empty()) {
-    if (platform_scheduler_)
-      platform_scheduler_->CancelDownloadTask();
+    task_scheduler_->CancelTask(DownloadTaskType::DOWNLOAD_TASK);
     return;
   }
 
-  // TODO(xingliu): Figure out if we need to pass the time window to platform
-  // scheduler, and support NetworkRequirements::OPTIMISTIC.
-  if (platform_scheduler_) {
-    platform_scheduler_->CancelDownloadTask();
-    platform_scheduler_->ScheduleDownloadTask(
-        util::GetSchedulingCriteria(entries));
-  }
+  // TODO(xingliu): Support NetworkRequirements::OPTIMISTIC.
+  task_scheduler_->CancelTask(DownloadTaskType::DOWNLOAD_TASK);
+
+  Criteria criteria = util::GetSchedulingCriteria(entries);
+  task_scheduler_->ScheduleTask(
+      DownloadTaskType::DOWNLOAD_TASK, criteria.requires_unmetered_network,
+      criteria.requires_battery_charging,
+      base::saturated_cast<long>(config_->window_start_time_seconds),
+      base::saturated_cast<long>(config_->window_end_time_seconds));
 }
 
 Entry* SchedulerImpl::Next(const Model::EntryList& entries,

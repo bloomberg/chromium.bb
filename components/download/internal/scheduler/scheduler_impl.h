@@ -16,6 +16,8 @@
 namespace download {
 
 class ClientSet;
+class TaskScheduler;
+struct Configuration;
 
 // Scheduler implementation that
 // 1. Creates platform background task based on the states of download entries.
@@ -25,9 +27,11 @@ class ClientSet;
 // Provides load balancing between download clients using the service.
 class SchedulerImpl : public Scheduler {
  public:
-  SchedulerImpl(PlatformTaskScheduler* platform_scheduler,
+  SchedulerImpl(TaskScheduler* task_scheduler,
+                Configuration* config,
                 const ClientSet* clients);
-  SchedulerImpl(PlatformTaskScheduler* platform_scheduler,
+  SchedulerImpl(TaskScheduler* task_scheduler,
+                Configuration* config,
                 const std::vector<DownloadClient>& clients);
   ~SchedulerImpl() override;
 
@@ -46,7 +50,10 @@ class SchedulerImpl : public Scheduler {
       const DeviceStatus& device_status);
 
   // Used to create platform dependent background tasks.
-  PlatformTaskScheduler* platform_scheduler_;
+  TaskScheduler* task_scheduler_;
+
+  // Download service configuration.
+  Configuration* config_;
 
   // List of all download client id, used in round robin load balancing.
   // Downloads will be delivered to clients with incremental order based on

@@ -27,6 +27,12 @@ constexpr char kMaxRetryCountConfig[] = "max_retry_count";
 // Configuration name for file keep alive time.
 constexpr char kFileKeepAliveTimeMinutesConfig[] = "file_keep_alive_time";
 
+// Configuration name for window start time.
+constexpr char kWindowStartTimeConfig[] = "window_start_time_seconds";
+
+// Configuration name for window end time.
+constexpr char kWindowEndTimeConfig[] = "window_end_time_seconds";
+
 // Download service configuration.
 //
 // Loaded based on experiment parameters from the server. Use default values if
@@ -55,6 +61,14 @@ struct Configuration {
   // The time that the download service will keep the files around before
   // deleting them if the client hasn't handle the files.
   base::TimeDelta file_keep_alive_time;
+
+  // The start window time in seconds for OS to schedule background task.
+  // The OS will trigger the background task in this window.
+  uint32_t window_start_time_seconds;
+
+  // The end window time in seconds for OS to schedule background task.
+  // The OS will trigger the background task in this window.
+  uint32_t window_end_time_seconds;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(Configuration);

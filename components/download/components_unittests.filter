@@ -1,5 +1,6 @@
-BatteryListenerTest.*
+DeviceStatusListenerTest.*
 DownloadDriverImplTest.*
+DownloadSchedulerImplTest.*
 DownloadServiceClientSetTest.*
 DownloadServiceControllerImplTest.*
 DownloadServiceImplTest.*
