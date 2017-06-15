@@ -8,13 +8,13 @@
 #include <string>
 
 namespace base {
-class DictionaryValue;
 class ListValue;
 }
 
 namespace extensions {
 class RequestSender;
 class ScriptContext;
+struct EventFilteringInfo;
 
 // The class responsible for creating extension bindings in different contexts,
 // as well as dispatching requests and handling responses, and dispatching
@@ -38,11 +38,10 @@ class ExtensionBindingsSystem {
 
   // Dispatches an event with the given |name|, |event_args|, and
   // |filtering_info| in the given |context|.
-  virtual void DispatchEventInContext(
-      const std::string& event_name,
-      const base::ListValue* event_args,
-      const base::DictionaryValue* filtering_info,
-      ScriptContext* context) = 0;
+  virtual void DispatchEventInContext(const std::string& event_name,
+                                      const base::ListValue* event_args,
+                                      const EventFilteringInfo* filtering_info,
+                                      ScriptContext* context) = 0;
 
   // Returns true if there is a listener for the given |event_name| in the
   // associated |context|.

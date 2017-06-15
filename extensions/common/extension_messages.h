@@ -18,6 +18,7 @@
 #include "extensions/common/api/messaging/message.h"
 #include "extensions/common/api/messaging/port_id.h"
 #include "extensions/common/draggable_region.h"
+#include "extensions/common/event_filtering_info.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/features/feature_session_type.h"
@@ -137,7 +138,7 @@ IPC_STRUCT_BEGIN(ExtensionMsg_DispatchEvent_Params)
   IPC_STRUCT_MEMBER(bool, is_user_gesture)
 
   // Additional filtering info for the event.
-  IPC_STRUCT_MEMBER(base::DictionaryValue, filtering_info)
+  IPC_STRUCT_MEMBER(extensions::EventFilteringInfo, filtering_info)
 IPC_STRUCT_END()
 
 // Allows an extension to execute code in a tab.
@@ -269,6 +270,14 @@ IPC_STRUCT_TRAITS_BEGIN(extensions::PortId)
   IPC_STRUCT_TRAITS_MEMBER(context_id)
   IPC_STRUCT_TRAITS_MEMBER(port_number)
   IPC_STRUCT_TRAITS_MEMBER(is_opener)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(extensions::EventFilteringInfo)
+  IPC_STRUCT_TRAITS_MEMBER(url)
+  IPC_STRUCT_TRAITS_MEMBER(service_type)
+  IPC_STRUCT_TRAITS_MEMBER(instance_id)
+  IPC_STRUCT_TRAITS_MEMBER(window_type)
+  IPC_STRUCT_TRAITS_MEMBER(window_exposed_by_default)
 IPC_STRUCT_TRAITS_END()
 
 // Singly-included section for custom IPC traits.

@@ -28,7 +28,7 @@ class JsExtensionBindingsSystem : public ExtensionBindingsSystem {
   void UpdateBindingsForContext(ScriptContext* context) override;
   void DispatchEventInContext(const std::string& event_name,
                               const base::ListValue* event_args,
-                              const base::DictionaryValue* filtering_info,
+                              const EventFilteringInfo* filtering_info,
                               ScriptContext* context) override;
   bool HasEventListenerInContext(const std::string& event_name,
                                  ScriptContext* context) override;

@@ -140,9 +140,8 @@ TEST_F(APIEventListenersTest, UnfilteredListenersIgnoreFilteringInfo) {
   std::string error;
   v8::Local<v8::Object> filter;
   EXPECT_TRUE(listeners.AddListener(function, filter, context, &error));
-  std::unique_ptr<base::DictionaryValue> filtering_info_dict =
-      DictionaryValueFromString("{'url': 'http://example.com/foo'}");
-  EventFilteringInfo filtering_info(*filtering_info_dict);
+  EventFilteringInfo filtering_info;
+  filtering_info.url = GURL("http://example.com/foo");
   EXPECT_THAT(listeners.GetListeners(&filtering_info, context),
               testing::UnorderedElementsAre(function));
 }
@@ -212,10 +211,8 @@ TEST_F(APIEventListenersTest, FilteredListeners) {
 
   // Since function_a has no filter, associating a specific url should still
   // return function_a.
-  std::unique_ptr<base::DictionaryValue> filtering_info_match_dict =
-      DictionaryValueFromString("{'url': 'http://example.com/foo'}");
-  ASSERT_TRUE(filtering_info_match_dict);
-  EventFilteringInfo filtering_info_match(*filtering_info_match_dict);
+  EventFilteringInfo filtering_info_match;
+  filtering_info_match.url = GURL("http://example.com/foo");
   EXPECT_THAT(listeners.GetListeners(&filtering_info_match, context),
               testing::UnorderedElementsAre(function_a));
 
@@ -263,10 +260,8 @@ TEST_F(APIEventListenersTest, FilteredListeners) {
   EXPECT_THAT(listeners.GetListeners(&filtering_info_match, context),
               testing::UnorderedElementsAre(function_a, function_b));
   // ... but not urls that don't match.
-  std::unique_ptr<base::DictionaryValue> filtering_info_no_match_dict =
-      DictionaryValueFromString("{'url': 'http://example.com/bar'}");
-  ASSERT_TRUE(filtering_info_no_match_dict);
-  EventFilteringInfo filtering_info_no_match(*filtering_info_no_match_dict);
+  EventFilteringInfo filtering_info_no_match;
+  filtering_info_no_match.url = GURL("http://example.com/bar");
   EXPECT_THAT(listeners.GetListeners(&filtering_info_no_match, context),
               testing::UnorderedElementsAre(function_a));
 
@@ -333,10 +328,8 @@ TEST_F(APIEventListenersTest,
   EXPECT_EQ(3u, listeners.GetNumListeners());
   EXPECT_EQ(3, event_filter.GetMatcherCountForEventForTesting(kEvent));
 
-  std::unique_ptr<base::DictionaryValue> filtering_info_match_dict =
-      DictionaryValueFromString("{'url': 'http://example.com/foo'}");
-  ASSERT_TRUE(filtering_info_match_dict);
-  EventFilteringInfo filtering_info_match(*filtering_info_match_dict);
+  EventFilteringInfo filtering_info_match;
+  filtering_info_match.url = GURL("http://example.com/foo");
   EXPECT_THAT(
       listeners.GetListeners(&filtering_info_match, context),
       testing::UnorderedElementsAre(function_a, function_b, function_c));

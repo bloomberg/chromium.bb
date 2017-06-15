@@ -18,11 +18,11 @@ class Sender;
 }
 
 namespace base {
-class DictionaryValue;
 class ListValue;
 }
 
 namespace extensions {
+struct EventFilteringInfo;
 
 // This class deals with the javascript bindings related to Event objects.
 class EventBindings : public ObjectBackedNativeHandler {
@@ -37,11 +37,10 @@ class EventBindings : public ObjectBackedNativeHandler {
 
   // Dispatches the event in the given |context| with the provided
   // |event_args| and |filtering_info|.
-  static void DispatchEventInContext(
-      const std::string& event_name,
-      const base::ListValue* event_args,
-      const base::DictionaryValue* filtering_info,
-      ScriptContext* context);
+  static void DispatchEventInContext(const std::string& event_name,
+                                     const base::ListValue* event_args,
+                                     const EventFilteringInfo* filtering_info,
+                                     ScriptContext* context);
 
  private:
   // JavaScript handler which forwards to AttachEvent().

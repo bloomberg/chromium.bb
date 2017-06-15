@@ -248,7 +248,7 @@ RequestSender* JsExtensionBindingsSystem::GetRequestSender() {
 void JsExtensionBindingsSystem::DispatchEventInContext(
     const std::string& event_name,
     const base::ListValue* event_args,
-    const base::DictionaryValue* filtering_info,
+    const EventFilteringInfo* filtering_info,
     ScriptContext* context) {
   EventBindings::DispatchEventInContext(event_name, event_args, filtering_info,
                                         context);

@@ -481,15 +481,13 @@ void NativeExtensionBindingsSystem::UpdateBindingsForContext(
 void NativeExtensionBindingsSystem::DispatchEventInContext(
     const std::string& event_name,
     const base::ListValue* event_args,
-    const base::DictionaryValue* filtering_info_dict,
+    const EventFilteringInfo* filtering_info,
     ScriptContext* context) {
   v8::HandleScope handle_scope(context->isolate());
   v8::Context::Scope context_scope(context->v8_context());
-  EventFilteringInfo filter;
-  if (filtering_info_dict)
-    filter = EventFilteringInfo(*filtering_info_dict);
-  api_system_.FireEventInContext(event_name, context->v8_context(), *event_args,
-                                 filter);
+  api_system_.FireEventInContext(
+      event_name, context->v8_context(), *event_args,
+      filtering_info ? *filtering_info : EventFilteringInfo());
 }
 
 bool NativeExtensionBindingsSystem::HasEventListenerInContext(

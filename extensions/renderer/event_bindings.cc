@@ -128,12 +128,10 @@ bool RemoveFilter(const std::string& event_name,
 
 // Returns a v8::Array containing the ids of the listeners that match the given
 // |event_filter_dict| in the given |script_context|.
-v8::Local<v8::Array> GetMatchingListeners(
-    ScriptContext* script_context,
-    const std::string& event_name,
-    const base::DictionaryValue& event_filter_dict) {
+v8::Local<v8::Array> GetMatchingListeners(ScriptContext* script_context,
+                                          const std::string& event_name,
+                                          const EventFilteringInfo& info) {
   const EventFilter& event_filter = g_event_filter.Get();
-  EventFilteringInfo info(event_filter_dict);
   v8::Isolate* isolate = script_context->isolate();
   v8::Local<v8::Context> context = script_context->v8_context();
 
@@ -207,13 +205,13 @@ bool EventBindings::HasListener(ScriptContext* script_context,
 void EventBindings::DispatchEventInContext(
     const std::string& event_name,
     const base::ListValue* event_args,
-    const base::DictionaryValue* filtering_info,
+    const EventFilteringInfo* filtering_info,
     ScriptContext* context) {
   v8::HandleScope handle_scope(context->isolate());
   v8::Context::Scope context_scope(context->v8_context());
 
   v8::Local<v8::Array> listener_ids;
-  if (filtering_info && !filtering_info->empty())
+  if (filtering_info && !filtering_info->is_empty())
     listener_ids = GetMatchingListeners(context, event_name, *filtering_info);
   else
     listener_ids = v8::Array::New(context->isolate());
