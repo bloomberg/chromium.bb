@@ -20,13 +20,10 @@ test("ios_web_view_inttests") {
     "chrome_web_view_restorable_state_inttest.mm",
     "chrome_web_view_test.h",
     "chrome_web_view_test.mm",
-    "observer.h",
-    "observer.mm",
-    "web_view_interaction_test_util.h",
-    "web_view_interaction_test_util.mm",
   ]
 
   deps = [
+    ":test_support",
     "//base",
     "//base/test:run_all_unittests",
     "//ios/testing:ios_test_support",
@@ -41,4 +38,21 @@ test("ios_web_view_inttests") {
   configs += [ "//build/config/compiler:enable_arc" ]
 
   assert_no_deps = ios_assert_no_deps
+}
+
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "observer.h",
+    "observer.mm",
+    "web_view_interaction_test_util.h",
+    "web_view_interaction_test_util.mm",
+  ]
+
+  deps = [
+    "//ios/testing:ios_test_support",
+    "//ios/web_view:web_view+link",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
 }
