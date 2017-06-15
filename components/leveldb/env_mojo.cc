@@ -439,6 +439,8 @@ Status MojoEnv::GetFileSize(const std::string& fname, uint64_t* file_size) {
 
 Status MojoEnv::RenameFile(const std::string& src, const std::string& target) {
   TRACE_EVENT2("leveldb", "MojoEnv::RenameFile", "src", src, "target", target);
+  if (!thread_->FileExists(dir_, src))
+    return Status::OK();
   Retrier retrier(leveldb_env::kRenameFile, this);
   FileError error;
   do {
