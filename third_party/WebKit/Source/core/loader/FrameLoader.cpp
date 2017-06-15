@@ -1586,7 +1586,7 @@ void FrameLoader::ModifyRequestForCSP(ResourceRequest& resource_request,
 
   // Tack an 'Upgrade-Insecure-Requests' header to outgoing navigational
   // requests, as described in
-  // https://w3c.github.io/webappsec/specs/upgrade/#feature-detect
+  // https://w3c.github.io/webappsec-upgrade-insecure-requests/#feature-detect
   if (resource_request.GetFrameType() != WebURLRequest::kFrameTypeNone) {
     // Early return if the request has already been upgraded.
     if (!resource_request.HttpHeaderField(HTTPNames::Upgrade_Insecure_Requests)

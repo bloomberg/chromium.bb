@@ -351,7 +351,7 @@ void DocumentThreadableLoader::MakeCrossOriginAccessRequest(
   }
 
   // Non-secure origins may not make "external requests":
-  // https://mikewest.github.io/cors-rfc1918/#integration-fetch
+  // https://wicg.github.io/cors-rfc1918/#integration-fetch
   if (!loading_context_->IsSecureContext() && request.IsExternalRequest()) {
     DispatchDidFailAccessControlCheck(
         ResourceError(kErrorDomainBlinkInternal, 0, request.Url().GetString(),
