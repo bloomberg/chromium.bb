@@ -4,7 +4,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="startup_urls_page_browser_proxy.html">
 <link rel="import" href="../focus_row_behavior.html">
 <link rel="import" href="../settings_shared_css.html">
@@ -25,9 +25,10 @@
         <div class="text-elide secondary">[[model.url]]</div>
       </div>
       <template is="dom-if" if="[[editable]]">
-        <paper-icon-button id="dots" icon="cr:more-vert" on-tap="onDotsTap_"
-            title="$i18n{moreActions}" focus-row-control focus-type="menu">
-        </paper-icon-button>
+        <button is="paper-icon-button-light" id="dots" on-tap="onDotsTap_"
+            title="$i18n{moreActions}" focus-row-control focus-type="menu"
+            class="icon-more-vert">
+        </button>
         <template is="cr-lazy-render" id="menu">
           <dialog is="cr-action-menu">
             <button class="dropdown-item" role="option" on-tap="onEditTap_">

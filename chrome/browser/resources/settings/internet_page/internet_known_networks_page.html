@@ -32,10 +32,10 @@
               aria-label$="[[item.Name]]">
           </button>
           <div class="separator"></div>
-          <paper-icon-button preferred icon="cr:more-vert"
-              tabindex$="[[tabindex]]" on-tap="onMenuButtonTap_"
+          <button is="paper-icon-button-light" class="icon-more-vert"
+              preferred tabindex$="[[tabindex]]" on-tap="onMenuButtonTap_"
               title="$i18n{moreActions}">
-          </paper-icon-button>
+          </button>
         </div>
       </template>
     </div>
@@ -54,9 +54,10 @@
               aria-label$="[[item.Name]]">
           </button>
           <div class="separator"></div>
-          <paper-icon-button icon="cr:more-vert"  tabindex$="[[tabindex]]"
-              on-tap="onMenuButtonTap_" title="$i18n{moreActions}">
-          </paper-icon-button>
+          <button is="paper-icon-button-light" class="icon-more-vert"
+              tabindex$="[[tabindex]]" on-tap="onMenuButtonTap_"
+              title="$i18n{moreActions}">
+          </button>
         </div>
       </template>
     </div>

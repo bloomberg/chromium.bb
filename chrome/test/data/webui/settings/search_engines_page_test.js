@@ -176,7 +176,7 @@ cr.define('settings_search_engines_page', function() {
 
       test('Remove_Enabled', function() {
         // Open action menu.
-        MockInteractions.tap(entry.$$('paper-icon-button'));
+        MockInteractions.tap(entry.$$('button'));
         var menu = entry.$$('dialog[is=cr-action-menu]');
         assertTrue(menu.open);
 
@@ -193,7 +193,7 @@ cr.define('settings_search_engines_page', function() {
 
       test('MakeDefault_Enabled', function() {
         // Open action menu.
-        MockInteractions.tap(entry.$$('paper-icon-button'));
+        MockInteractions.tap(entry.$$('button'));
         var menu = entry.$$('dialog[is=cr-action-menu]');
         assertTrue(menu.open);
 
@@ -210,7 +210,7 @@ cr.define('settings_search_engines_page', function() {
       // Test that clicking the "edit" button brings up a dialog.
       test('Edit_Enabled', function() {
         // Open action menu.
-        MockInteractions.tap(entry.$$('paper-icon-button'));
+        MockInteractions.tap(entry.$$('button'));
         var menu = entry.$$('dialog[is=cr-action-menu]');
         assertTrue(menu.open);
 
@@ -396,7 +396,7 @@ cr.define('settings_search_engines_page', function() {
         document.body.appendChild(entry);
 
         // Open action menu.
-        MockInteractions.tap(entry.$$('paper-icon-button'));
+        MockInteractions.tap(entry.$$('button'));
       });
 
       teardown(function() { entry.remove(); });

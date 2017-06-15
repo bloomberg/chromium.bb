@@ -1,0 +1,29 @@
+<link rel="import" href="chrome://resources/html/polymer.html">
+
+<!-- Common icon classes for Material Design settings page. -->
+<dom-module id="settings-icons">
+  <template>
+    <style>
+      button[is='paper-icon-button-light'].icon-arrow-back {
+        background-image: url(./images/settings_icon_arrow_back.svg);
+      }
+      button[is='paper-icon-button-light'].icon-visibility {
+        background-image: url(./images/settings_icon_visibility.svg);
+      }
+<if expr="chromeos">
+      button[is='paper-icon-button-light'].icon-add-circle {
+        background-image: url(./images/settings_icon_add_circle.svg);
+      }
+      button[is='paper-icon-button-light'].icon-add-wifi {
+        background-image: url(./images/settings_icon_add_wifi.svg);
+      }
+      button[is='paper-icon-button-light'].icon-camera-alt {
+        background-image: url(./images/settings_icon_camera_alt.svg);
+      }
+      button[is='paper-icon-button-light'].icon-flip {
+        background-image: url(./images/settings_icon_flip.svg);
+      }
+</if>
+    </style>
+  </template>
+</dom-module>

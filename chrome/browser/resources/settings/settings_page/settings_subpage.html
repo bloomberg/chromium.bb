@@ -3,7 +3,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-resizable-behavior/iron-resizable-behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable-behavior.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-ripple/paper-ripple.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner.html">
 <link rel="import" href="../icons.html">
@@ -39,7 +39,7 @@
         width: var(--cr-icon-ripple-size);
       }
 
-      paper-icon-button {
+      button[is='paper-icon-button-light'] {
         /* Centers the ripple on the icon with appropriate margin on right. */
         -webkit-margin-end: 10px;
         -webkit-margin-start: -10px;
@@ -62,9 +62,9 @@
       }
     </style>
     <div class="settings-box first" id="headerLine">
-      <paper-icon-button icon="settings:arrow-back" on-tap="onTapBack_"
-          aria-label="$i18n{back}">
-      </paper-icon-button>
+      <button is="paper-icon-button-light" on-tap="onTapBack_"
+          aria-label="$i18n{back}" class="icon-arrow-back">
+      </button>
       <h1>[[pageTitle]]</h1>
       <content select=".subpage-title-extra"></content>
       <template is="dom-if" if="[[learnMoreUrl]]">

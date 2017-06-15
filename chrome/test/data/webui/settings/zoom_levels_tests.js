@@ -66,7 +66,7 @@ suite('ZoomLevels', function() {
    *     fetch.
    */
   function getRemoveButton(listContainer, index) {
-    return listContainer.children[index].querySelector('paper-icon-button');
+    return listContainer.children[index].querySelector('button');
   }
 
   test('empty zoom state', function() {

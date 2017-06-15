@@ -259,7 +259,7 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'CreditCardTests', function() {
       assertTrue(!!row);
       var menuButton = row.querySelector('#creditCardMenu');
       assertTrue(!!menuButton);
-      var outlinkButton = row.querySelector('[is="paper-icon-button-light"');
+      var outlinkButton = row.querySelector('button.icon-external');
       assertFalse(!!outlinkButton);
     });
 
@@ -272,7 +272,7 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'CreditCardTests', function() {
       assertTrue(!!row);
       var menuButton = row.querySelector('#creditCardMenu');
       assertFalse(!!menuButton);
-      var outlinkButton = row.querySelector('[is="paper-icon-button-light"');
+      var outlinkButton = row.querySelector('button.icon-external');
       assertTrue(!!outlinkButton);
     });
 
@@ -514,7 +514,7 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'AddressTests', function() {
       assertTrue(!!row);
       var menuButton = row.querySelector('#addressMenu')
       assertTrue(!!menuButton);
-      var outlinkButton = row.querySelector('[is="paper-icon-button-light"]');
+      var outlinkButton = row.querySelector('button.icon-external');
       assertFalse(!!outlinkButton);
     });
 
@@ -527,7 +527,7 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'AddressTests', function() {
       assertTrue(!!row);
       var menuButton = row.querySelector('#addressMenu')
       assertFalse(!!menuButton);
-      var outlinkButton = row.querySelector('[is="paper-icon-button-light"]');
+      var outlinkButton = row.querySelector('button.icon-external');
       assertTrue(!!outlinkButton);
     });
 

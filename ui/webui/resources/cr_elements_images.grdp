@@ -10,6 +10,20 @@
            file="images/icon_cancel.svg" type="BINDATA" />
   <include name="IDR_WEBUI_IMAGES_ICON_CANCEL_TOOLBAR"
            file="images/icon_cancel_toolbar.svg" type="BINDATA" />
+  <include name="IDR_WEBUI_IMAGES_ICON_CLEAR"
+           file="images/icon_clear.svg" type="BINDATA" />
+  <include name="IDR_WEBUI_IMAGES_ICON_DELETE"
+           file="images/icon_delete.svg" type="BINDATA" />
+  <include name="IDR_WEBUI_IMAGES_ICON_EXTERNAL"
+           file="images/open_in_new.svg" type="BINDATA" />
+  <include name="IDR_WEBUI_IMAGES_ICON_MORE_VERT"
+           file="images/icon_more_vert.svg" type="BINDATA" />
+  <include name="IDR_WEBUI_IMAGES_ICON_SETTINGS"
+           file="images/icon_settings.svg" type="BINDATA" />
+  <include name="IDR_WEBUI_IMAGES_ICON_SEARCH"
+           file="images/icon_search.svg" type="BINDATA" />
+  <include name="IDR_WEBUI_IMAGES_ICON_ARROW_DROPDOWN"
+           file="images/icon_arrow_dropdown.svg" type="BINDATA" />
   <if expr="chromeos">
     <include name="IDR_CR_ELEMENTS_CELLULAR_0_SVG"
              file="cr_elements/network/cellular_0.svg" type="BINDATA" />

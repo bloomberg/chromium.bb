@@ -8,7 +8,6 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_action_menu/cr_action_menu.html">
@@ -133,10 +132,10 @@
                   </paper-button>
                 </template>
 </if>
-                <paper-icon-button id="more-[[item.language.code]]"
-                    icon="cr:more-vert" on-tap="onDotsTap_"
-                    title="$i18n{moreActions}">
-                </paper-icon-button>
+                <button is="paper-icon-button-light" title="$i18n{moreActions}"
+                    id="more-[[item.language.code]]" on-tap="onDotsTap_"
+                    class="icon-more-vert">
+                </button>
               </div>
             </template>
             <div class="list-item">

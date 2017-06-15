@@ -4,7 +4,7 @@
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="../settings_shared_css.html">
 
 <dom-module id="bluetooth-device-list-item">
@@ -32,9 +32,10 @@
       </div>
       <span hidden$="[[!device.connecting]]">$i18n{bluetoothConnecting}</span>
       <div hidden$="[[!device.paired]]">
-        <paper-icon-button icon="cr:more-vert" on-tap="onMenuButtonTap_"
-            tabindex$="[[tabindex]]" title="$i18n{moreActions}">
-        </paper-icon-button>
+        <button is="paper-icon-button-light" class="icon-more-vert"
+            on-tap="onMenuButtonTap_" tabindex$="[[tabindex]]"
+            title="$i18n{moreActions}">
+        </button>
         <dialog id="dotsMenu" is="cr-action-menu">
           <button class="dropdown-item" role="option"
               on-tap="onConnectActionTap_">

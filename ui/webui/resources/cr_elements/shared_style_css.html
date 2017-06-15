@@ -1,12 +1,13 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="hidden_style_css.html">
+<link rel="import" href="cr_icons_css.html">
 
 <!-- Common styles for Material Design WebUI. Included directly in
   settings_shared_css.html. -->
 <dom-module id="cr-shared-style">
   <template>
-    <style include="cr-hidden-style">
+    <style include="cr-hidden-style cr-icons">
       :host-context([dir=rtl]) button[is='paper-icon-button-light'] {
         transform: scaleX(-1);  /* Flip on the X axis (aka mirror). */
       }
@@ -49,8 +50,7 @@
       }
 
       button[is='paper-icon-button-light'] {
-        -webkit-margin-end: var(--cr-icon-ripple-margin);
-        -webkit-margin-start: 16px;
+        @apply(--cr-paper-icon-button-margin);
         background-position: center;
         background-repeat: no-repeat;
         background-size: var(--cr-icon-size);
@@ -59,30 +59,9 @@
         width: var(--cr-icon-ripple-size);
       }
 
-      button[is='paper-icon-button-light'].subpage-arrow {
-        background-image: url(chrome://resources/images/arrow_right.svg);
-      }
-
-      button[is='paper-icon-button-light'].icon-cancel {
-        background-image: url(chrome://resources/images/icon_cancel.svg);
-      }
-
-      button[is='paper-icon-button-light'].icon-cancel-toolbar {
-        background-image:
-            url(chrome://resources/images/icon_cancel_toolbar.svg);
-      }
-
-      button[is='paper-icon-button-light'].icon-external {
-        background-image: url(chrome://resources/images/open_in_new.svg);
-      }
-
       .subpage-arrow,
       .icon-external {
         display: none;
-      }
-
-      paper-icon-button.subpage-arrow {
-        background-image: url(../images/arrow_right.svg);
       }
 
       [actionable] :-webkit-any(.subpage-arrow, .icon-external),
