@@ -43,6 +43,13 @@
 #include "media/capture/video/android/video_capture_device_factory_android.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "media/capture/video/chromeos/video_capture_device_arc_chromeos.h"
+#include "media/capture/video/chromeos/video_capture_device_factory_chromeos.h"
+#include "mojo/edk/embedder/embedder.h"
+#include "mojo/edk/embedder/scoped_ipc_support.h"
+#endif
+
 #if defined(OS_MACOSX)
 // Mac will always give you the size you ask for and this case will fail.
 #define MAYBE_AllocateBadSize DISABLED_AllocateBadSize
@@ -204,6 +211,39 @@ class MockImageCaptureClient
 
   mojom::PhotoStatePtr state_;
 };
+
+#if defined(OS_CHROMEOS)
+
+class MojoEnabledTestEnvironment final : public testing::Environment {
+ public:
+  MojoEnabledTestEnvironment() : mojo_ipc_thread_("MojoIpcThread") {}
+
+  ~MojoEnabledTestEnvironment() final {}
+
+  void SetUp() final {
+    mojo::edk::Init();
+    mojo_ipc_thread_.StartWithOptions(
+        base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
+    mojo_ipc_support_.reset(new mojo::edk::ScopedIPCSupport(
+        mojo_ipc_thread_.task_runner(),
+        mojo::edk::ScopedIPCSupport::ShutdownPolicy::FAST));
+    VLOG(1) << "Mojo initialized";
+  }
+
+  void TearDown() final {
+    mojo_ipc_support_.reset();
+    VLOG(1) << "Mojo IPC tear down";
+  }
+
+ private:
+  base::Thread mojo_ipc_thread_;
+  std::unique_ptr<mojo::edk::ScopedIPCSupport> mojo_ipc_support_;
+};
+
+testing::Environment* const mojo_test_env =
+    testing::AddGlobalTestEnvironment(new MojoEnabledTestEnvironment());
+
+#endif
 
 }  // namespace
 
@@ -527,6 +567,13 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_TakePhoto) {
   if (!FindUsableDevices())
     return;
 
+#if defined(OS_CHROMEOS)
+  // TODO(jcliang): Remove this after we implement TakePhoto.
+  if (VideoCaptureDeviceFactoryChromeOS::ShouldEnable()) {
+    return;
+  }
+#endif
+
 #if defined(OS_ANDROID)
   // TODO(mcasas): fails on Lollipop devices, reconnect https://crbug.com/646840
   if (base::android::BuildInfo::GetInstance()->sdk_int() <
@@ -571,6 +618,13 @@ TEST_F(VideoCaptureDeviceTest, MAYBE_TakePhoto) {
 TEST_F(VideoCaptureDeviceTest, MAYBE_GetPhotoState) {
   if (!FindUsableDevices())
     return;
+
+#if defined(OS_CHROMEOS)
+  // TODO(jcliang): Remove this after we implement GetPhotoCapabilities.
+  if (VideoCaptureDeviceFactoryChromeOS::ShouldEnable()) {
+    return;
+  }
+#endif
 
 #if defined(OS_ANDROID)
   // TODO(mcasas): fails on Lollipop devices, reconnect https://crbug.com/646840
