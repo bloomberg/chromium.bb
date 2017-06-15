@@ -774,7 +774,6 @@ static InlineBoxPosition ComputeInlineBoxPositionTemplate(
     const PositionTemplate<Strategy>& position,
     TextAffinity affinity,
     TextDirection primary_direction) {
-  InlineBox* inline_box = nullptr;
   int caret_offset = position.ComputeEditingOffset();
   Node* const anchor_node = position.AnchorNode();
   LayoutObject* layout_object =
@@ -785,7 +784,6 @@ static InlineBoxPosition ComputeInlineBoxPositionTemplate(
   DCHECK(layout_object) << position;
 
   if (!layout_object->IsText()) {
-    inline_box = 0;
     if (CanHaveChildrenForEditing(anchor_node) &&
         layout_object->IsLayoutBlockFlow() &&
         HasRenderedNonAnonymousDescendantsWithHeight(layout_object)) {
@@ -809,15 +807,24 @@ static InlineBoxPosition ComputeInlineBoxPositionTemplate(
       return ComputeInlineBoxPosition(
           upstream_equivalent, TextAffinity::kUpstream, primary_direction);
     }
-    if (layout_object->IsBox()) {
-      inline_box = ToLayoutBox(layout_object)->InlineBoxWrapper();
-      if (!inline_box)
-        return InlineBoxPosition();
-      if ((caret_offset > inline_box->CaretMinOffset() &&
-           caret_offset < inline_box->CaretMaxOffset()))
-        return InlineBoxPosition(inline_box, caret_offset);
-    }
-  } else {
+    if (!layout_object->IsBox())
+      return InlineBoxPosition();
+    InlineBox* const inline_box =
+        ToLayoutBox(layout_object)->InlineBoxWrapper();
+    if (!inline_box)
+      return InlineBoxPosition();
+    if ((caret_offset > inline_box->CaretMinOffset() &&
+         caret_offset < inline_box->CaretMaxOffset()))
+      return InlineBoxPosition(inline_box, caret_offset);
+    return AdjustInlineBoxPositionForTextDirection(
+        inline_box, caret_offset, layout_object->Style()->GetUnicodeBidi(),
+        primary_direction);
+  }
+
+  // TODO(yosin): We should move this code fragment to another function to
+  // remove the scope.
+  InlineBox* inline_box = nullptr;
+  {
     LayoutText* text_layout_object = ToLayoutText(layout_object);
 
     InlineTextBox* candidate = nullptr;
