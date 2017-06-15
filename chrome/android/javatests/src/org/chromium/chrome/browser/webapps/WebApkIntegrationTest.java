@@ -16,7 +16,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -100,7 +99,6 @@ public class WebApkIntegrationTest {
     @Test
     @LargeTest
     @Feature({"WebApk"})
-    @RetryOnFailure
     public void testLaunchAndNavigateOffOrigin() throws Exception {
         startWebApkActivity("org.chromium.webapk.test",
                 mTestServer.getURL("/chrome/test/data/android/test.html"));
