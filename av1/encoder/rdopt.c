@@ -126,6 +126,11 @@ static const int filter_sets[DUAL_FILTER_SET_SIZE][2] = {
 #define FILTER_FAST_SEARCH 1
 #endif  // CONFIG_EXT_INTRA
 
+// Setting this to 1 will disable trellis optimization within the
+// transform search. Trellis optimization will still be applied
+// in the final encode.
+#define DISABLE_TRELLISQ_SEARCH 0
+
 const double ADST_FLIP_SVM[8] = { -6.6623, -2.8062, -3.2531, 3.1671,    // vert
                                   -7.7051, -3.2234, -3.6193, 3.4533 };  // horz
 
@@ -1550,9 +1555,14 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
 #if !CONFIG_TXK_SEL
   // full forward transform and quantization
   const int coeff_ctx = combine_entropy_contexts(*a, *l);
+#if DISABLE_TRELLISQ_SEARCH
+  av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
+                  coeff_ctx, AV1_XFORM_QUANT_B);
+#else
   av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
                   coeff_ctx, AV1_XFORM_QUANT_FP);
   av1_optimize_b(cm, x, plane, block, plane_bsize, tx_size, a, l);
+#endif  // DISABLE_TRELLISQ_SEARCH
 
   if (!is_inter_block(mbmi)) {
     struct macroblock_plane *const p = &x->plane[plane];
@@ -2823,10 +2833,15 @@ static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
             const int coeff_ctx =
                 combine_entropy_contexts(tempa[idx], templ[idy]);
 #if !CONFIG_PVQ
+#if DISABLE_TRELLISQ_SEARCH
+            av1_xform_quant(cm, x, 0, block, row + idy, col + idx, BLOCK_8X8,
+                            tx_size, coeff_ctx, AV1_XFORM_QUANT_B);
+#else
             av1_xform_quant(cm, x, 0, block, row + idy, col + idx, BLOCK_8X8,
                             tx_size, coeff_ctx, AV1_XFORM_QUANT_FP);
             av1_optimize_b(cm, x, 0, block, BLOCK_8X8, tx_size, tempa + idx,
                            templ + idy);
+#endif  // DISABLE_TRELLISQ_SEARCH
             ratey += av1_cost_coeffs(cpi, x, 0, block, tx_size, scan_order,
                                      tempa + idx, templ + idy,
                                      cpi->sf.use_fast_coef_costing);
@@ -2975,6 +2990,15 @@ static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
         block = 4 * block;
 #endif  // CONFIG_CB4X4
 #if !CONFIG_PVQ
+#if DISABLE_TRELLISQ_SEARCH
+        av1_xform_quant(cm, x, 0, block,
+#if CONFIG_CB4X4
+                        2 * (row + idy), 2 * (col + idx),
+#else
+                        row + idy, col + idx,
+#endif  // CONFIG_CB4X4
+                        BLOCK_8X8, tx_size, coeff_ctx, AV1_XFORM_QUANT_B);
+#else
         const AV1_XFORM_QUANT xform_quant =
             is_lossless ? AV1_XFORM_QUANT_B : AV1_XFORM_QUANT_FP;
         av1_xform_quant(cm, x, 0, block,
@@ -2987,7 +3011,7 @@ static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
 
         av1_optimize_b(cm, x, 0, block, BLOCK_8X8, tx_size, tempa + idx,
                        templ + idy);
-
+#endif  // DISABLE_TRELLISQ_SEARCH
         ratey +=
             av1_cost_coeffs(cpi, x, 0, block, tx_size, scan_order, tempa + idx,
                             templ + idy, cpi->sf.use_fast_coef_costing);
