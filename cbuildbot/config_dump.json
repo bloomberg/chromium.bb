@@ -3899,6 +3899,7 @@
     },
     "bob-chrome-pfq": {
         "_template": "chrome_pfq",
+        "active_waterfall": "chromeos",
         "boards": [
             "bob"
         ],
@@ -10622,6 +10623,7 @@
     },
     "hana-chrome-pfq": {
         "_template": "chrome_pfq",
+        "active_waterfall": "chromeos",
         "boards": [
             "hana"
         ],
@@ -14642,11 +14644,13 @@
         "slave_configs": [
             "amd64-generic-chromium-pfq",
             "arm-generic-chromium-pfq",
+            "bob-chrome-pfq",
             "caroline-chrome-pfq",
             "chell-chrome-pfq",
             "cyan-chrome-pfq",
             "daisy-chromium-pfq",
             "daisy_skate-chrome-pfq",
+            "hana-chrome-pfq",
             "lumpy-chrome-pfq",
             "nyan-chrome-pfq",
             "peach_pit-chrome-pfq",
