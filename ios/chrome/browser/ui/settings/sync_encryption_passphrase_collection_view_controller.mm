@@ -430,8 +430,10 @@ const CGFloat kSpinnerButtonPadding = 18;
     return;
   isDecryptionProgressShown_ = NO;
 
-  self.navigationItem.leftBarButtonItem = savedLeftButton_ = nil;
-  self.title = savedTitle_ = nil;
+  self.navigationItem.leftBarButtonItem = savedLeftButton_;
+  savedLeftButton_ = nil;
+  self.title = savedTitle_;
+  savedTitle_ = nil;
   [self setRightNavBarItem];
 }
 
