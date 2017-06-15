@@ -37,6 +37,7 @@ OffscreenCanvasSurfaceImpl::~OffscreenCanvasSurfaceImpl() {
   if (has_created_compositor_frame_sink_) {
     frame_sink_manager_host_->UnregisterFrameSinkHierarchy(
         parent_frame_sink_id_, frame_sink_id_);
+    frame_sink_manager_host_->DestroyCompositorFrameSink(frame_sink_id_);
   }
   frame_sink_manager_host_->RemoveObserver(this);
 }
@@ -50,8 +51,7 @@ void OffscreenCanvasSurfaceImpl::CreateCompositorFrameSink(
   }
 
   frame_sink_manager_host_->CreateCompositorFrameSink(
-      frame_sink_id_, std::move(request),
-      mojo::MakeRequest(&compositor_frame_sink_private_), std::move(client));
+      frame_sink_id_, std::move(request), std::move(client));
 
   frame_sink_manager_host_->RegisterFrameSinkHierarchy(parent_frame_sink_id_,
                                                        frame_sink_id_);
