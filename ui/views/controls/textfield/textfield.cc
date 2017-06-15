@@ -336,7 +336,7 @@ void Textfield::SetText(const base::string16& new_text) {
   model_->SetText(new_text);
   OnCaretBoundsChanged();
   SchedulePaint();
-  NotifyAccessibilityEvent(ui::AX_EVENT_TEXT_CHANGED, true);
+  NotifyAccessibilityEvent(ui::AX_EVENT_VALUE_CHANGED, true);
 }
 
 void Textfield::AppendText(const base::string16& new_text) {
@@ -1936,7 +1936,7 @@ void Textfield::UpdateAfterChange(bool text_changed, bool cursor_changed) {
   if (text_changed) {
     if (controller_)
       controller_->ContentsChanged(this, text());
-    NotifyAccessibilityEvent(ui::AX_EVENT_TEXT_CHANGED, true);
+    NotifyAccessibilityEvent(ui::AX_EVENT_VALUE_CHANGED, true);
   }
   if (cursor_changed) {
     UpdateCursorViewPosition();
