@@ -23,7 +23,6 @@ namespace blink {
 class DOMException;
 class ExceptionState;
 class ExecutionContext;
-class SensorReading;
 
 class Sensor : public EventTargetWithInlineData,
                public ActiveScriptWrappable<Sensor>,
@@ -105,8 +104,8 @@ class Sensor : public EventTargetWithInlineData,
                    const String& sanitized_message = String(),
                    const String& unsanitized_message = String());
 
-  void UpdateReading();
-  void NotifyOnActivate();
+  void NotifyChange();
+  void NotifyActivate();
   void NotifyError(DOMException* error);
 
  private:
@@ -114,7 +113,7 @@ class Sensor : public EventTargetWithInlineData,
   device::mojom::blink::SensorType type_;
   SensorState state_;
   Member<SensorProxy> sensor_proxy_;
-  device::SensorReading reading_;
+  double last_reported_timestamp_;
   SensorConfigurationPtr configuration_;
   TaskHandle pending_reading_update_;
 };

@@ -32,7 +32,8 @@ Sensor::Sensor(ExecutionContext* execution_context,
     : ContextLifecycleObserver(execution_context),
       sensor_options_(sensor_options),
       type_(type),
-      state_(SensorState::kIdle) {
+      state_(SensorState::kIdle),
+      last_reported_timestamp_(0.0) {
   // Check secure context.
   String error_message;
   if (!execution_context->IsSecureContext(error_message)) {
@@ -177,7 +178,8 @@ void Sensor::OnSensorReadingChanged() {
   if (pending_reading_update_.IsActive())
     return;
 
-  double elapsedTime = sensor_proxy_->reading().timestamp - reading_.timestamp;
+  double elapsedTime =
+      sensor_proxy_->reading().timestamp - last_reported_timestamp_;
   DCHECK_GT(elapsedTime, 0.0);
 
   DCHECK_GT(configuration_->frequency, 0.0);
@@ -187,7 +189,7 @@ void Sensor::OnSensorReadingChanged() {
   // We also avoid scheduling if the elapsed time is slightly behind the
   // polling period.
   auto sensor_reading_changed =
-      WTF::Bind(&Sensor::UpdateReading, WrapWeakPersistent(this));
+      WTF::Bind(&Sensor::NotifyChange, WrapWeakPersistent(this));
   if (waitingTime < kMinWaitingInterval) {
     // Invoke JS callbacks in a different callchain to obviate
     // possible modifications of SensorProxy::observers_ container
@@ -224,7 +226,7 @@ void Sensor::OnAddConfigurationRequestCompleted(bool result) {
 
   if (GetExecutionContext()) {
     TaskRunnerHelper::Get(TaskType::kSensor, GetExecutionContext())
-        ->PostTask(BLINK_FROM_HERE, WTF::Bind(&Sensor::NotifyOnActivate,
+        ->PostTask(BLINK_FROM_HERE, WTF::Bind(&Sensor::NotifyActivate,
                                               WrapWeakPersistent(this)));
   }
 }
@@ -300,12 +302,12 @@ void Sensor::HandleError(ExceptionCode code,
   }
 }
 
-void Sensor::UpdateReading() {
-  reading_ = sensor_proxy_->reading();
+void Sensor::NotifyChange() {
+  last_reported_timestamp_ = sensor_proxy_->reading().timestamp;
   DispatchEvent(Event::Create(EventTypeNames::change));
 }
 
-void Sensor::NotifyOnActivate() {
+void Sensor::NotifyActivate() {
   DispatchEvent(Event::Create(EventTypeNames::activate));
 }
 
