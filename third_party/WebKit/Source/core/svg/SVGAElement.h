@@ -49,6 +49,7 @@ class CORE_EXPORT SVGAElement final : public SVGGraphicsElement,
   LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
 
   void DefaultEventHandler(Event*) override;
+  bool HasActivationBehavior() const override;
 
   bool IsLiveLink() const override { return IsLink(); }
 

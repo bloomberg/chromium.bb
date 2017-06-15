@@ -312,6 +312,7 @@ class CORE_EXPORT HTMLInputElement
   InsertionNotificationRequest InsertedInto(ContainerNode*) override;
   void RemovedFrom(ContainerNode*) final;
   void DidMoveToNewDocument(Document& old_document) final;
+  bool HasActivationBehavior() const override;
 
   bool HasCustomFocusLogic() const final;
   bool IsKeyboardFocusable() const final;

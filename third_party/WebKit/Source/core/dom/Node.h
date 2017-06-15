@@ -788,6 +788,9 @@ class CORE_EXPORT Node : public EventTarget {
   // Perform the default action for an event.
   virtual void DefaultEventHandler(Event*);
   virtual void WillCallDefaultEventHandler(const Event&);
+  // Should return true if this Node has activation behavior.
+  // https://dom.spec.whatwg.org/#eventtarget-activation-behavior
+  virtual bool HasActivationBehavior() const;
 
   EventTargetData* GetEventTargetData() override;
   EventTargetData& EnsureEventTargetData() override;

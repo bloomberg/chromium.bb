@@ -126,6 +126,7 @@ void EventDispatcher::DispatchSimulatedClick(
   nodes_dispatching_simulated_clicks.erase(&node);
 }
 
+// https://dom.spec.whatwg.org/#dispatching-events
 DispatchEventResult EventDispatcher::Dispatch() {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("blink.debug"),
                "EventDispatcher::dispatch");
@@ -141,6 +142,31 @@ DispatchEventResult EventDispatcher::Dispatch() {
   }
   event_->GetEventPath().EnsureWindowEventContext();
 
+  // 6. Let isActivationEvent be true, if event is a MouseEvent object and
+  // event's type attribute is "click", and false otherwise.
+  //
+  // We need to include non-standard textInput event for HTMLInputElement.
+  const bool is_activation_event =
+      (event_->IsMouseEvent() && event_->type() == EventTypeNames::click) ||
+      event_->type() == EventTypeNames::textInput;
+
+  // 7. Let activationTarget be target, if isActivationEvent is true and target
+  // has activation behavior, and null otherwise.
+  Node* activation_target =
+      is_activation_event && node_->HasActivationBehavior() ? node_ : nullptr;
+
+  // A part of step 9 loop.
+  if (is_activation_event && !activation_target && event_->bubbles()) {
+    size_t size = event_->GetEventPath().size();
+    for (size_t i = 1; i < size; ++i) {
+      Node* target = event_->GetEventPath()[i].GetNode();
+      if (target->HasActivationBehavior()) {
+        activation_target = target;
+        break;
+      }
+    }
+  }
+
   event_->SetTarget(EventPath::EventTargetRespectingTargetRules(*node_));
 #if DCHECK_IS_ON()
   DCHECK(!EventDispatchForbiddenScope::IsEventDispatchForbidden());
@@ -149,14 +175,16 @@ DispatchEventResult EventDispatcher::Dispatch() {
   TRACE_EVENT1("devtools.timeline", "EventDispatch", "data",
                InspectorEventDispatchEvent::Data(*event_));
   EventDispatchHandlingState* pre_dispatch_event_handler_result = nullptr;
-  if (DispatchEventPreProcess(pre_dispatch_event_handler_result) ==
+  if (DispatchEventPreProcess(activation_target,
+                              pre_dispatch_event_handler_result) ==
       kContinueDispatching) {
     if (DispatchEventAtCapturing() == kContinueDispatching) {
       if (DispatchEventAtTarget() == kContinueDispatching)
         DispatchEventAtBubbling();
     }
   }
-  DispatchEventPostProcess(pre_dispatch_event_handler_result);
+  DispatchEventPostProcess(activation_target,
+                           pre_dispatch_event_handler_result);
 
   // Ensure that after event dispatch, the event's target object is the
   // outermost shadow DOM boundary.
@@ -167,11 +195,15 @@ DispatchEventResult EventDispatcher::Dispatch() {
 }
 
 inline EventDispatchContinuation EventDispatcher::DispatchEventPreProcess(
+    Node* activation_target,
     EventDispatchHandlingState*& pre_dispatch_event_handler_result) {
-  // Give the target node a chance to do some work before DOM event handlers get
-  // a crack.
-  pre_dispatch_event_handler_result =
-      node_->PreDispatchEventHandler(event_.Get());
+  // 11. If activationTarget is non-null and activationTarget has
+  // legacy-pre-activation behavior, then run activationTarget's
+  // legacy-pre-activation behavior.
+  if (activation_target) {
+    pre_dispatch_event_handler_result =
+        activation_target->PreDispatchEventHandler(event_.Get());
+  }
   return (event_->GetEventPath().IsEmpty() || event_->PropagationStopped())
              ? kDoneDispatching
              : kContinueDispatching;
@@ -229,6 +261,7 @@ inline void EventDispatcher::DispatchEventAtBubbling() {
 }
 
 inline void EventDispatcher::DispatchEventPostProcess(
+    Node* activation_target,
     EventDispatchHandlingState* pre_dispatch_event_handler_result) {
   event_->SetTarget(EventPath::EventTargetRespectingTargetRules(*node_));
   // https://dom.spec.whatwg.org/#concept-event-dispatch
@@ -248,15 +281,17 @@ inline void EventDispatcher::DispatchEventPostProcess(
     // safe if m_event->target()->toNode() returns null.
     if (AXObjectCache* cache = node_->GetDocument().ExistingAXObjectCache())
       cache->HandleClicked(event_->target()->ToNode());
-  }
 
-  // Pass the data from the preDispatchEventHandler to the
-  // postDispatchEventHandler.
-  // This may dispatch an event, and m_node and m_event might be altered.
-  node_->PostDispatchEventHandler(event_.Get(),
-                                  pre_dispatch_event_handler_result);
-  // TODO(tkent): Is it safe to kick defaultEventHandler() with such altered
-  // m_event?
+    // Pass the data from the PreDispatchEventHandler to the
+    // PostDispatchEventHandler.
+    // This may dispatch an event, and node_ and event_ might be altered.
+    if (activation_target) {
+      activation_target->PostDispatchEventHandler(
+          event_.Get(), pre_dispatch_event_handler_result);
+    }
+    // TODO(tkent): Is it safe to kick DefaultEventHandler() with such altered
+    // event_?
+  }
 
   // The DOM Events spec says that events dispatched by JS (other than "click")
   // should not have their default handlers invoked.

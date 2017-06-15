@@ -213,6 +213,10 @@ void HTMLLabelElement::DefaultEventHandler(Event* evt) {
   HTMLElement::DefaultEventHandler(evt);
 }
 
+bool HTMLLabelElement::HasActivationBehavior() const {
+  return true;
+}
+
 bool HTMLLabelElement::WillRespondToMouseClickEvents() {
   if (control() && control()->WillRespondToMouseClickEvents())
     return true;
