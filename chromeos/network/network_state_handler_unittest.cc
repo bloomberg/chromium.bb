@@ -969,60 +969,268 @@ TEST_F(NetworkStateHandlerTest, TetherNetworkStateAssociation_NoTetherNetwork) {
           kTetherGuid1, kWifiGuid1));
 }
 
-TEST_F(NetworkStateHandlerTest, SetTetherNetworkStateConnectionState) {
+TEST_F(NetworkStateHandlerTest,
+       SetTetherNetworkStateConnectionState_NoDefaultNetworkToStart) {
   network_state_handler_->SetTetherTechnologyState(
       NetworkStateHandler::TECHNOLOGY_ENABLED);
 
+  // Disconnect Ethernet and Wi-Fi so that there is no default network. For the
+  // purpose of this test, the default Wi-Fi network will serve as the Tether
+  // network's underlying Wi-Fi hotspot.
+  const std::string eth1 = kShillManagerClientStubDefaultService;
+  const std::string wifi1 = kShillManagerClientStubDefaultWifi;
+  service_test_->SetServiceProperty(eth1, shill::kStateProperty,
+                                    base::Value(shill::kStateIdle));
+  service_test_->SetServiceProperty(wifi1, shill::kStateProperty,
+                                    base::Value(shill::kStateIdle));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(std::string(), test_observer_->default_network());
+
+  // Simulate a host scan, and reset the change counts for the connection flow.
   network_state_handler_->AddTetherNetworkState(
       kTetherGuid1, kTetherName1, kTetherCarrier1, kTetherBatteryPercentage1,
       kTetherSignalStrength1, kTetherHasConnectedToHost1);
+  test_observer_->reset_change_counts();
+  test_observer_->reset_updates();
 
-  // Add corresponding Wi-Fi network.
-  const std::string profile = "/profile/profile1";
-  const std::string wifi_path = "/service/wifi_with_guid";
-  AddService(wifi_path, kWifiGuid1, kWifiName1, shill::kTypeWifi,
-             shill::kStateOnline);
-  profile_test_->AddProfile(profile, "" /* userhash */);
-  EXPECT_TRUE(profile_test_->AddService(profile, wifi_path));
-  UpdateManagerProperties();
+  // Preconditions.
+  EXPECT_EQ(0, test_observer_->ConnectionStateChangesForService(kTetherGuid1));
+  EXPECT_EQ(0, test_observer_->PropertyUpdatesForService(kTetherGuid1));
+  EXPECT_EQ(0u, test_observer_->default_network_change_count());
+  EXPECT_EQ("", test_observer_->default_network());
+  EXPECT_EQ("", test_observer_->default_network_connection_state());
+  EXPECT_EQ(nullptr, network_state_handler_->DefaultNetwork());
+
+  // Set the Tether network state to "connecting." This is expected to be called
+  // before the connection to the underlying hotspot Wi-Fi network begins.
+  const NetworkState* tether_network =
+      network_state_handler_->GetNetworkStateFromGuid(kTetherGuid1);
+  network_state_handler_->SetTetherNetworkStateConnecting(kTetherGuid1);
+  EXPECT_TRUE(tether_network->IsConnectingState());
+  EXPECT_EQ(1, test_observer_->ConnectionStateChangesForService(kTetherGuid1));
+  EXPECT_EQ(1, test_observer_->PropertyUpdatesForService(kTetherGuid1));
+  EXPECT_EQ(0u, test_observer_->default_network_change_count());
+  EXPECT_EQ(tether_network, network_state_handler_->DefaultNetwork());
 
   // Associate Tether and Wi-Fi networks.
   network_state_handler_->AssociateTetherNetworkStateWithWifiNetwork(
-      kTetherGuid1, kWifiGuid1);
-
-  EXPECT_EQ(0, test_observer_->ConnectionStateChangesForService(kTetherGuid1));
-  EXPECT_EQ(1, test_observer_->PropertyUpdatesForService(kTetherGuid1));
-
-  const NetworkState* tether_network =
-      network_state_handler_->GetNetworkStateFromGuid(kTetherGuid1);
-
-  EXPECT_FALSE(tether_network->IsConnectingState());
-  EXPECT_FALSE(tether_network->IsConnectedState());
-
-  network_state_handler_->SetTetherNetworkStateConnecting(kTetherGuid1);
-  EXPECT_TRUE(tether_network->IsConnectingState());
-
+      kTetherGuid1, "wifi1_guid");
   EXPECT_EQ(1, test_observer_->ConnectionStateChangesForService(kTetherGuid1));
   EXPECT_EQ(2, test_observer_->PropertyUpdatesForService(kTetherGuid1));
 
+  // Connect to the underlying Wi-Fi network. The default network should not
+  // change yet.
+  service_test_->SetServiceProperty(wifi1, shill::kStateProperty,
+                                    base::Value(shill::kStateOnline));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0u, test_observer_->default_network_change_count());
+
+  // Now, set the Tether network state to "connected." This should result in a
+  // default network change event.
   network_state_handler_->SetTetherNetworkStateConnected(kTetherGuid1);
   EXPECT_TRUE(tether_network->IsConnectedState());
-
   EXPECT_EQ(2, test_observer_->ConnectionStateChangesForService(kTetherGuid1));
   EXPECT_EQ(3, test_observer_->PropertyUpdatesForService(kTetherGuid1));
+  EXPECT_EQ(1u, test_observer_->default_network_change_count());
+  EXPECT_EQ(kTetherGuid1, test_observer_->default_network());
+  EXPECT_EQ(shill::kStateOnline,
+            test_observer_->default_network_connection_state());
+  EXPECT_EQ(tether_network, network_state_handler_->DefaultNetwork());
 
-  network_state_handler_->SetTetherNetworkStateConnecting(kTetherGuid1);
-  EXPECT_TRUE(tether_network->IsReconnecting());
+  // Disconnect from the underlying Wi-Fi network. The default network should
+  // not change yet.
+  service_test_->SetServiceProperty(wifi1, shill::kStateProperty,
+                                    base::Value(shill::kStateIdle));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1u, test_observer_->default_network_change_count());
 
-  EXPECT_EQ(3, test_observer_->ConnectionStateChangesForService(kTetherGuid1));
-  EXPECT_EQ(4, test_observer_->PropertyUpdatesForService(kTetherGuid1));
-
+  // Now, set the Tether network state to "disconnected." This should result in
+  // a default network change event.
   network_state_handler_->SetTetherNetworkStateDisconnected(kTetherGuid1);
   EXPECT_FALSE(tether_network->IsConnectingState());
   EXPECT_FALSE(tether_network->IsConnectedState());
+  EXPECT_EQ(3, test_observer_->ConnectionStateChangesForService(kTetherGuid1));
+  EXPECT_EQ(4, test_observer_->PropertyUpdatesForService(kTetherGuid1));
+  EXPECT_EQ(2u, test_observer_->default_network_change_count());
+  EXPECT_EQ("", test_observer_->default_network());
+  EXPECT_EQ("", test_observer_->default_network_connection_state());
+  EXPECT_EQ(nullptr, network_state_handler_->DefaultNetwork());
+}
 
-  EXPECT_EQ(4, test_observer_->ConnectionStateChangesForService(kTetherGuid1));
-  EXPECT_EQ(5, test_observer_->PropertyUpdatesForService(kTetherGuid1));
+TEST_F(NetworkStateHandlerTest,
+       SetTetherNetworkStateConnectionState_EthernetIsDefaultNetwork) {
+  network_state_handler_->SetTetherTechnologyState(
+      NetworkStateHandler::TECHNOLOGY_ENABLED);
+
+  // The ethernet corresponding to |eth1| will be left connected this entire
+  // test. It should be expected to remain the default network during the Tether
+  // connection.
+  const std::string eth1 = kShillManagerClientStubDefaultService;
+
+  // Disconnect the Wi-Fi network, which will serve as the underlying connection
+  // for the Tether network under test.
+  const std::string wifi1 = kShillManagerClientStubDefaultWifi;
+  service_test_->SetServiceProperty(wifi1, shill::kStateProperty,
+                                    base::Value(shill::kStateIdle));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(eth1, test_observer_->default_network());
+
+  // Simulate a host scan, and reset the change counts for the connection flow.
+  network_state_handler_->AddTetherNetworkState(
+      kTetherGuid1, kTetherName1, kTetherCarrier1, kTetherBatteryPercentage1,
+      kTetherSignalStrength1, kTetherHasConnectedToHost1);
+  test_observer_->reset_change_counts();
+  test_observer_->reset_updates();
+
+  // Preconditions.
+  EXPECT_EQ(0, test_observer_->ConnectionStateChangesForService(kTetherGuid1));
+  EXPECT_EQ(0, test_observer_->PropertyUpdatesForService(kTetherGuid1));
+  EXPECT_EQ(0u, test_observer_->default_network_change_count());
+  EXPECT_EQ(eth1, test_observer_->default_network());
+  EXPECT_EQ(shill::kStateOnline,
+            test_observer_->default_network_connection_state());
+
+  // Set the Tether network state to "connecting." This is expected to be called
+  // before the connection to the underlying hotspot Wi-Fi network begins.
+  const NetworkState* tether_network =
+      network_state_handler_->GetNetworkStateFromGuid(kTetherGuid1);
+  network_state_handler_->SetTetherNetworkStateConnecting(kTetherGuid1);
+  EXPECT_TRUE(tether_network->IsConnectingState());
+  EXPECT_EQ(1, test_observer_->ConnectionStateChangesForService(kTetherGuid1));
+  EXPECT_EQ(1, test_observer_->PropertyUpdatesForService(kTetherGuid1));
+
+  // Associate Tether and Wi-Fi networks.
+  network_state_handler_->AssociateTetherNetworkStateWithWifiNetwork(
+      kTetherGuid1, "wifi1_guid");
+  EXPECT_EQ(1, test_observer_->ConnectionStateChangesForService(kTetherGuid1));
+  EXPECT_EQ(2, test_observer_->PropertyUpdatesForService(kTetherGuid1));
+
+  // Connect to the underlying Wi-Fi network.
+  service_test_->SetServiceProperty(wifi1, shill::kStateProperty,
+                                    base::Value(shill::kStateOnline));
+  base::RunLoop().RunUntilIdle();
+
+  // Now, set the Tether network state to "connected."
+  network_state_handler_->SetTetherNetworkStateConnected(kTetherGuid1);
+  EXPECT_TRUE(tether_network->IsConnectedState());
+  EXPECT_EQ(2, test_observer_->ConnectionStateChangesForService(kTetherGuid1));
+  EXPECT_EQ(3, test_observer_->PropertyUpdatesForService(kTetherGuid1));
+
+  // Disconnect from the underlying Wi-Fi network.
+  service_test_->SetServiceProperty(wifi1, shill::kStateProperty,
+                                    base::Value(shill::kStateIdle));
+  base::RunLoop().RunUntilIdle();
+
+  // Now, set the Tether network state to "disconnected."
+  network_state_handler_->SetTetherNetworkStateDisconnected(kTetherGuid1);
+  EXPECT_FALSE(tether_network->IsConnectingState());
+  EXPECT_FALSE(tether_network->IsConnectedState());
+  EXPECT_EQ(3, test_observer_->ConnectionStateChangesForService(kTetherGuid1));
+  EXPECT_EQ(4, test_observer_->PropertyUpdatesForService(kTetherGuid1));
+
+  // The Ethernet network should still be the default network, and no changes
+  // should have occurred during this test.
+  EXPECT_EQ(0u, test_observer_->default_network_change_count());
+  EXPECT_EQ(eth1, test_observer_->default_network());
+  EXPECT_EQ(shill::kStateOnline,
+            test_observer_->default_network_connection_state());
+}
+
+TEST_F(NetworkStateHandlerTest,
+       SetTetherNetworkStateConnectionState_NoDefaultThenTetherThenEthernet) {
+  network_state_handler_->SetTetherTechnologyState(
+      NetworkStateHandler::TECHNOLOGY_ENABLED);
+
+  // Disconnect Ethernet and Wi-Fi so that there is no default network. For the
+  // purpose of this test, the default Wi-Fi network will serve as the Tether
+  // network's underlying Wi-Fi hotspot.
+  const std::string eth1 = kShillManagerClientStubDefaultService;
+  const std::string wifi1 = kShillManagerClientStubDefaultWifi;
+  service_test_->SetServiceProperty(eth1, shill::kStateProperty,
+                                    base::Value(shill::kStateIdle));
+  service_test_->SetServiceProperty(wifi1, shill::kStateProperty,
+                                    base::Value(shill::kStateIdle));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(std::string(), test_observer_->default_network());
+
+  // Simulate a host scan, and reset the change counts for the connection flow.
+  network_state_handler_->AddTetherNetworkState(
+      kTetherGuid1, kTetherName1, kTetherCarrier1, kTetherBatteryPercentage1,
+      kTetherSignalStrength1, kTetherHasConnectedToHost1);
+  test_observer_->reset_change_counts();
+  test_observer_->reset_updates();
+
+  // Preconditions.
+  EXPECT_EQ(0, test_observer_->ConnectionStateChangesForService(kTetherGuid1));
+  EXPECT_EQ(0, test_observer_->PropertyUpdatesForService(kTetherGuid1));
+  EXPECT_EQ(0u, test_observer_->default_network_change_count());
+  EXPECT_EQ("", test_observer_->default_network());
+  EXPECT_EQ("", test_observer_->default_network_connection_state());
+  EXPECT_EQ(nullptr, network_state_handler_->DefaultNetwork());
+
+  // Set the Tether network state to "connecting." This is expected to be called
+  // before the connection to the underlying hotspot Wi-Fi network begins.
+  const NetworkState* tether_network =
+      network_state_handler_->GetNetworkStateFromGuid(kTetherGuid1);
+  network_state_handler_->SetTetherNetworkStateConnecting(kTetherGuid1);
+  EXPECT_TRUE(tether_network->IsConnectingState());
+  EXPECT_EQ(1, test_observer_->ConnectionStateChangesForService(kTetherGuid1));
+  EXPECT_EQ(1, test_observer_->PropertyUpdatesForService(kTetherGuid1));
+  EXPECT_EQ(0u, test_observer_->default_network_change_count());
+  EXPECT_EQ(tether_network, network_state_handler_->DefaultNetwork());
+
+  // Associate Tether and Wi-Fi networks.
+  network_state_handler_->AssociateTetherNetworkStateWithWifiNetwork(
+      kTetherGuid1, "wifi1_guid");
+  EXPECT_EQ(1, test_observer_->ConnectionStateChangesForService(kTetherGuid1));
+  EXPECT_EQ(2, test_observer_->PropertyUpdatesForService(kTetherGuid1));
+
+  // Connect to the underlying Wi-Fi network. The default network should not
+  // change yet.
+  service_test_->SetServiceProperty(wifi1, shill::kStateProperty,
+                                    base::Value(shill::kStateOnline));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(0u, test_observer_->default_network_change_count());
+
+  // Now, set the Tether network state to "connected." This should result in a
+  // default network change event.
+  network_state_handler_->SetTetherNetworkStateConnected(kTetherGuid1);
+  EXPECT_TRUE(tether_network->IsConnectedState());
+  EXPECT_EQ(2, test_observer_->ConnectionStateChangesForService(kTetherGuid1));
+  EXPECT_EQ(3, test_observer_->PropertyUpdatesForService(kTetherGuid1));
+  EXPECT_EQ(1u, test_observer_->default_network_change_count());
+  EXPECT_EQ(kTetherGuid1, test_observer_->default_network());
+  EXPECT_EQ(shill::kStateOnline,
+            test_observer_->default_network_connection_state());
+  EXPECT_EQ(tether_network, network_state_handler_->DefaultNetwork());
+
+  // Now, connect the Ethernet network. This should be the new default network.
+  service_test_->SetServiceProperty(eth1, shill::kStateProperty,
+                                    base::Value(shill::kStateOnline));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(2u, test_observer_->default_network_change_count());
+  EXPECT_EQ(eth1, test_observer_->default_network());
+  EXPECT_EQ(shill::kStateOnline,
+            test_observer_->default_network_connection_state());
+
+  // Disconnect from the underlying Wi-Fi network. The default network should
+  // still be the Ethernet network.
+  service_test_->SetServiceProperty(wifi1, shill::kStateProperty,
+                                    base::Value(shill::kStateIdle));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(2u, test_observer_->default_network_change_count());
+
+  // Now, set the Tether network state to "disconnected." The default network
+  // should still be the Ethernet network.
+  network_state_handler_->SetTetherNetworkStateDisconnected(kTetherGuid1);
+  EXPECT_FALSE(tether_network->IsConnectingState());
+  EXPECT_FALSE(tether_network->IsConnectedState());
+  EXPECT_EQ(3, test_observer_->ConnectionStateChangesForService(kTetherGuid1));
+  EXPECT_EQ(4, test_observer_->PropertyUpdatesForService(kTetherGuid1));
+  EXPECT_EQ(2u, test_observer_->default_network_change_count());
+  EXPECT_EQ(eth1, test_observer_->default_network());
+  EXPECT_EQ(shill::kStateOnline,
+            test_observer_->default_network_connection_state());
 }
 
 TEST_F(NetworkStateHandlerTest, NetworkConnectionStateChanged) {

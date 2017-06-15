@@ -690,13 +690,24 @@ bool NetworkStateHandler::AssociateTetherNetworkStateWithWifiNetwork(
 
 void NetworkStateHandler::SetTetherNetworkStateDisconnected(
     const std::string& guid) {
-  // TODO(khorimoto): Remove the Tether network as the default network.
   SetTetherNetworkStateConnectionState(guid, shill::kStateDisconnect);
 }
 
 void NetworkStateHandler::SetTetherNetworkStateConnecting(
     const std::string& guid) {
-  // TODO(khorimoto): Set the Tether network as the default network.
+  // The default network should only be set if there currently is no default
+  // network. Otherwise, the default network should not change unless the
+  // connection completes successfully and the newly-connected network is
+  // prioritized higher than the existing default network. Note that, in
+  // general, a connected Ethernet network is still considered the default
+  // network even if a Tether or Wi-Fi network becomes connected.
+  if (default_network_path_.empty()) {
+    NET_LOG(EVENT) << "Connecting to Tether network when there is currently no "
+                   << "default network; setting as new default network. GUID: "
+                   << guid;
+    default_network_path_ = guid;
+  }
+
   SetTetherNetworkStateConnectionState(guid, shill::kStateConfiguration);
 }
 
@@ -706,6 +717,9 @@ void NetworkStateHandler::SetTetherNetworkStateConnected(
   // was already called, so ensure that the association is still intact.
   DCHECK(GetNetworkStateFromGuid(GetNetworkStateFromGuid(guid)->tether_guid())
              ->tether_guid() == guid);
+
+  // At this point, there should be a default network set.
+  DCHECK(!default_network_path_.empty());
 
   SetTetherNetworkStateConnectionState(guid, shill::kStateOnline);
 }
@@ -1259,6 +1273,17 @@ void NetworkStateHandler::DefaultNetworkServiceChanged(
   if (new_service_path == default_network_path_)
     return;
 
+  if (new_service_path.empty()) {
+    // If Shill reports that there is no longer a default network but there is
+    // still an active Tether connection corresponding to the default network,
+    // return early without changing |default_network_path_|. Observers will be
+    // notified of the default network change due to a subsequent call to
+    // SetTetherNetworkStateDisconnected().
+    const NetworkState* old_default_network = DefaultNetwork();
+    if (old_default_network && old_default_network->type() == kTypeTether)
+      return;
+  }
+
   default_network_path_ = service_path;
   NET_LOG_EVENT("DefaultNetworkServiceChanged:", default_network_path_);
   const NetworkState* network = nullptr;
@@ -1269,6 +1294,15 @@ void NetworkStateHandler::DefaultNetworkServiceChanged(
       // they will be notified when the state is received.
       NET_LOG(EVENT) << "Default NetworkState not available: "
                      << default_network_path_;
+      return;
+    }
+    if (!network->tether_guid().empty()) {
+      DCHECK(network->type() == shill::kTypeWifi);
+
+      // If the new default network from Shill's point of view is a Wi-Fi
+      // network which corresponds to a hotspot for a Tether network, set the
+      // default network to be the associated Tether network instead.
+      default_network_path_ = network->tether_guid();
       return;
     }
   }
