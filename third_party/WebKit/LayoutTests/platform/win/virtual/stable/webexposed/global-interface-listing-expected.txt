@@ -3560,7 +3560,6 @@ interface Navigator
     getter productSub
     getter serviceWorker
     getter storage
-    getter usb
     getter userAgent
     getter vendor
     getter vendorSub
@@ -5870,111 +5869,6 @@ interface URLSearchParams
     method set
     method toString
     method values
-interface USB : EventTarget
-    attribute @@toStringTag
-    getter onconnect
-    getter ondisconnect
-    method constructor
-    method getDevices
-    method requestDevice
-    setter onconnect
-    setter ondisconnect
-interface USBAlternateInterface
-    attribute @@toStringTag
-    getter alternateSetting
-    getter endpoints
-    getter interfaceClass
-    getter interfaceName
-    getter interfaceProtocol
-    getter interfaceSubclass
-    method constructor
-interface USBConfiguration
-    attribute @@toStringTag
-    getter configurationName
-    getter configurationValue
-    getter interfaces
-    method constructor
-interface USBConnectionEvent : Event
-    attribute @@toStringTag
-    getter device
-    method constructor
-interface USBDevice
-    attribute @@toStringTag
-    getter configuration
-    getter configurations
-    getter deviceClass
-    getter deviceProtocol
-    getter deviceSubclass
-    getter deviceVersionMajor
-    getter deviceVersionMinor
-    getter deviceVersionSubminor
-    getter manufacturerName
-    getter opened
-    getter productId
-    getter productName
-    getter serialNumber
-    getter usbVersionMajor
-    getter usbVersionMinor
-    getter usbVersionSubminor
-    getter vendorId
-    method claimInterface
-    method clearHalt
-    method close
-    method constructor
-    method controlTransferIn
-    method controlTransferOut
-    method isochronousTransferIn
-    method isochronousTransferOut
-    method open
-    method releaseInterface
-    method reset
-    method selectAlternateInterface
-    method selectConfiguration
-    method transferIn
-    method transferOut
-interface USBEndpoint
-    attribute @@toStringTag
-    getter direction
-    getter endpointNumber
-    getter packetSize
-    getter type
-    method constructor
-interface USBInTransferResult
-    attribute @@toStringTag
-    getter data
-    getter status
-    method constructor
-interface USBInterface
-    attribute @@toStringTag
-    getter alternate
-    getter alternates
-    getter claimed
-    getter interfaceNumber
-    method constructor
-interface USBIsochronousInTransferPacket
-    attribute @@toStringTag
-    getter data
-    getter status
-    method constructor
-interface USBIsochronousInTransferResult
-    attribute @@toStringTag
-    getter data
-    getter packets
-    method constructor
-interface USBIsochronousOutTransferPacket
-    attribute @@toStringTag
-    getter bytesWritten
-    getter status
-    method constructor
-interface USBIsochronousOutTransferResult
-    attribute @@toStringTag
-    getter packets
-    method constructor
-interface USBOutTransferResult
-    attribute @@toStringTag
-    getter bytesWritten
-    getter status
-    method constructor
 interface VTTCue : TextTrackCue
     attribute @@toStringTag
     getter align

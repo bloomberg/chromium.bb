@@ -1113,7 +1113,7 @@
     },
     {
       name: "WebUSB",
-      status: "stable",
+      status: "experimental",
     },
     {
       name: "WebVR",
