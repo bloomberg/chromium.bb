@@ -7,10 +7,6 @@ module dom_distiller.mojom;
 // This service is implemented by the browser process and is used by the
 // renderer when a distiller JavaScript function is called.
 interface DistillerJavaScriptService {
-  // Handle closing the overlay panel that contains Reader Mode; the
-  // "distiller.close" function.
-  HandleDistillerClosePanelCall(bool animate);
-
   // Open the Android view containing settings for Reader Mode; the
   // "distiller.openSettings" function.
   HandleDistillerOpenSettingsCall();

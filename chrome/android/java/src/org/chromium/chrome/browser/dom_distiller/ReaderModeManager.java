@@ -8,28 +8,22 @@ import android.content.Context;
 import android.text.TextUtils;
 
 import org.chromium.base.CommandLine;
-import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.infobar.ReaderModeInfoBar;
-import org.chromium.chrome.browser.rappor.RapporServiceBridge;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
-import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.components.dom_distiller.content.DistillablePageUtils;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
-import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.ui.UiUtils;
-import org.chromium.ui.base.PageTransition;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -40,8 +34,7 @@ import java.util.concurrent.TimeUnit;
  * reader mode and reader mode preferences toolbar icon and hiding the
  * browser controls when a reader mode page has finished loading.
  */
-public class ReaderModeManager
-        extends TabModelSelectorTabObserver implements ReaderModeManagerDelegate {
+public class ReaderModeManager extends TabModelSelectorTabObserver {
     /** POSSIBLE means reader mode can be entered. */
     public static final int POSSIBLE = 0;
 
@@ -148,7 +141,6 @@ public class ReaderModeManager
 
     @Override
     public void onHidden(Tab tab) {
-        closeReaderPanel(StateChangeReason.UNKNOWN, false);
         ReaderModeTabInfo info = mTabStatusMap.get(tab.getId());
         if (info != null && info.isViewingReaderModePage()) {
             long timeMs = info.onExitReaderMode();
@@ -212,33 +204,9 @@ public class ReaderModeManager
             if (DomDistillerUrlUtils.isDistilledPage(tab.getUrl())) {
                 tabInfo.setStatus(STARTED);
                 mReaderModePageUrl = tab.getUrl();
-                closeReaderPanel(StateChangeReason.CONTENT_CHANGED, true);
             }
             // Make sure there is a distillability delegate set on the WebContents.
             setDistillabilityCallback(tab.getId());
-        }
-    }
-
-    // ReaderModeManagerDelegate:
-
-    @Override
-    public ChromeActivity getChromeActivity() {
-        return mChromeActivity;
-    }
-
-    @Override
-    public void onPanelShown() {
-        if (mTabModelSelector == null) return;
-        int tabId = mTabModelSelector.getCurrentTabId();
-
-        ReaderModeTabInfo info = mTabStatusMap.get(tabId);
-        if (info != null && !info.isInfoBarShowRecorded()) {
-            info.setIsInfoBarShowRecorded(true);
-            recordInfoBarVisibilityForNavigation(true);
-            if (LibraryLoader.isInitialized()) {
-                RapporServiceBridge.sampleDomainAndRegistryFromURL(
-                        "DomDistiller.PromptPanel", info.getUrl());
-            }
         }
     }
 
@@ -250,7 +218,9 @@ public class ReaderModeManager
         RecordHistogram.recordBooleanHistogram("DomDistiller.ReaderShownForPageLoad", visible);
     }
 
-    @Override
+    /**
+     * Notify the manager that the panel has completely closed.
+     */
     public void onClosed(StateChangeReason reason) {
         if (mTabModelSelector == null) return;
 
@@ -261,23 +231,15 @@ public class ReaderModeManager
         mTabStatusMap.get(currentTabId).setIsDismissed(true);
     }
 
-    @Override
+    /**
+     * Get the WebContents of the page that is being distilled.
+     * @return The WebContents for the currently visible tab.
+     */
     public WebContents getBasePageWebContents() {
         Tab tab = mTabModelSelector.getCurrentTab();
         if (tab == null) return null;
 
         return tab.getWebContents();
-    }
-
-    @Override
-    public void closeReaderPanel(StateChangeReason reason, boolean animate) {
-        // TODO(mdjones): Remove this method and dependencies.
-    }
-
-    @Override
-    public void recordTimeSpentInReader(long timeMs) {
-        RecordHistogram.recordLongTimesHistogram("DomDistiller.Time.ViewingReaderModePanel",
-                timeMs, TimeUnit.MILLISECONDS);
     }
 
     /**
@@ -314,12 +276,6 @@ public class ReaderModeManager
                 if (entry != null && DomDistillerUrlUtils.isDistilledPage(entry.getUrl())) {
                     mShouldRemovePreviousNavigation = true;
                     mLastDistillerPageIndex = index;
-                }
-
-                // If there is a navigation in the current tab, hide the bar. It will show again
-                // once the distillability test is successful.
-                if (readerTabId == mTabModelSelector.getCurrentTabId()) {
-                    closeReaderPanel(StateChangeReason.TAB_NAVIGATION, false);
                 }
 
                 // Make sure the tab was not destroyed.
@@ -361,11 +317,7 @@ public class ReaderModeManager
                 }
                 mReaderModePageUrl = null;
 
-                if (tabInfo.getStatus() != POSSIBLE) {
-                    closeReaderPanel(StateChangeReason.UNKNOWN, false);
-                } else {
-                    tryShowingInfoBar();
-                }
+                if (tabInfo.getStatus() == POSSIBLE) tryShowingInfoBar();
             }
 
             @Override
@@ -443,25 +395,6 @@ public class ReaderModeManager
         if (info != null) info.onStartedReaderMode();
 
         DomDistillerTabUtils.distillCurrentPageAndView(getBasePageWebContents());
-    }
-
-    /**
-     * Open a link from the infobar in a new tab.
-     * @param url The URL to load.
-     */
-    @Override
-    public void createNewTab(String url) {
-        if (mChromeActivity == null) return;
-
-        Tab currentTab = mTabModelSelector.getCurrentTab();
-        if (currentTab == null) return;
-
-        TabCreatorManager.TabCreator tabCreator =
-                mChromeActivity.getTabCreator(currentTab.isIncognito());
-        if (tabCreator == null) return;
-
-        tabCreator.createNewTab(new LoadUrlParams(url, PageTransition.LINK),
-                TabModel.TabLaunchType.FROM_LINK, mChromeActivity.getActivityTab());
     }
 
     /**

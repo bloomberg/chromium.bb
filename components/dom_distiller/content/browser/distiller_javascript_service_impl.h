@@ -23,9 +23,6 @@ class DistillerJavaScriptServiceImpl
 
   // Mojo mojom::DistillerJavaScriptService implementation.
 
-  // Make a call into Android to close the overlay panel containing reader mode.
-  void HandleDistillerClosePanelCall(bool animate) override;
-
   // Show the Android view containing Reader Mode settings.
   void HandleDistillerOpenSettingsCall() override;
 

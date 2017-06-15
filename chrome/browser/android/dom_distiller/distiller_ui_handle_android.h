@@ -20,8 +20,6 @@ class DistillerUIHandleAndroid : public DistillerUIHandle {
 
   void OpenSettings(content::WebContents* web_contents) override;
 
-  void ClosePanel(bool animate) override;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(DistillerUIHandleAndroid);
 };
