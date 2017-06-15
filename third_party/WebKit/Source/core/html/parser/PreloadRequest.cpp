@@ -82,8 +82,8 @@ Resource* PreloadRequest::Start(Document* document) {
   if (resource_type_ == Resource::kScript ||
       resource_type_ == Resource::kCSSStyleSheet ||
       resource_type_ == Resource::kImportResource) {
-    params.SetCharset(charset_.IsEmpty() ? document->characterSet().GetString()
-                                         : charset_);
+    params.SetCharset(charset_.IsEmpty() ? document->Encoding()
+                                         : WTF::TextEncoding(charset_));
   }
   FetchParameters::SpeculativePreloadType speculative_preload_type =
       FetchParameters::SpeculativePreloadType::kInDocument;

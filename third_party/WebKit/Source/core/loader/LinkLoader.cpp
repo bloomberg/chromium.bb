@@ -354,7 +354,7 @@ static Resource* PreloadIfNeeded(const LinkRelAttribute& rel_attribute,
                                 kClientRequestedCredentials);
   options.initiator_info.name = FetchInitiatorTypeNames::link;
   FetchParameters link_fetch_params(resource_request, options);
-  link_fetch_params.SetCharset(document.EncodingName());
+  link_fetch_params.SetCharset(document.Encoding());
 
   if (cross_origin != kCrossOriginAttributeNotSet) {
     link_fetch_params.SetCrossOriginAccessControl(document.GetSecurityOrigin(),

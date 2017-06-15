@@ -28,6 +28,7 @@
 #include "core/html/CrossOriginAttribute.h"
 #include "platform/loader/fetch/IntegrityMetadata.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
+#include "platform/wtf/text/TextEncoding.h"
 #include "platform/wtf/text/TextPosition.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebURLRequest.h"
@@ -153,7 +154,7 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
                           ParserDisposition,
                           CrossOriginAttributeValue,
                           SecurityOrigin*,
-                          const String& encoding);
+                          const WTF::TextEncoding&);
   // https://html.spec.whatwg.org/#fetch-a-module-script-tree
   void FetchModuleScriptTree(const KURL&,
                              Modulator*,

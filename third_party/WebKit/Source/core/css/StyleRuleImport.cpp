@@ -135,7 +135,7 @@ void StyleRuleImport::RequestStyleSheet() {
                                 kClientRequestedCredentials);
   options.initiator_info.name = FetchInitiatorTypeNames::css;
   FetchParameters params(ResourceRequest(abs_url), options);
-  params.SetCharset(String(parent_style_sheet_->Charset().GetName()));
+  params.SetCharset(parent_style_sheet_->Charset());
   resource_ = CSSStyleSheetResource::Fetch(params, fetcher);
   if (resource_) {
     // if the import rule is issued dynamically, the sheet may be

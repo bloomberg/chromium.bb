@@ -33,6 +33,7 @@
 
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
+#include "platform/wtf/text/TextEncoding.h"
 
 namespace blink {
 
@@ -65,7 +66,7 @@ class CORE_EXPORT LinkResource
   void Load();
 
   Document& GetDocument();
-  AtomicString GetCharset() const;
+  WTF::TextEncoding GetCharset() const;
 
   Member<HTMLLinkElement> owner_;
 };
