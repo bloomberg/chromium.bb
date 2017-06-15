@@ -9,7 +9,6 @@
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/browser/ui/views/harmony/harmony_layout_provider.h"
 #include "ui/base/material_design/material_design_controller.h"
-#include "ui/views/layout/layout_constants.h"
 
 // static
 ChromeLayoutProvider* ChromeLayoutProvider::Get() {
@@ -27,25 +26,25 @@ ChromeLayoutProvider::CreateLayoutProvider() {
 int ChromeLayoutProvider::GetDistanceMetric(int metric) const {
   switch (metric) {
     case DISTANCE_BUTTON_MINIMUM_WIDTH:
-      return views::kMinimumButtonWidth;
+      return 48;
     case DISTANCE_CONTROL_LIST_VERTICAL:
       return GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL);
     case DISTANCE_RELATED_CONTROL_HORIZONTAL_SMALL:
-      return views::kRelatedControlSmallHorizontalSpacing;
+      return 8;
     case DISTANCE_RELATED_CONTROL_VERTICAL_SMALL:
-      return views::kRelatedControlSmallVerticalSpacing;
+      return 4;
     case DISTANCE_RELATED_LABEL_HORIZONTAL:
-      return views::kItemLabelSpacing;
+      return 10;
     case DISTANCE_RELATED_LABEL_HORIZONTAL_LIST:
-      return views::kRelatedControlHorizontalSpacing;
+      return 8;
     case DISTANCE_SUBSECTION_HORIZONTAL_INDENT:
-      return views::kCheckboxIndent;
+      return 10;
     case DISTANCE_UNRELATED_CONTROL_HORIZONTAL:
-      return views::kUnrelatedControlHorizontalSpacing;
+      return 12;
     case DISTANCE_UNRELATED_CONTROL_HORIZONTAL_LARGE:
-      return views::kUnrelatedControlLargeHorizontalSpacing;
+      return 20;
     case DISTANCE_UNRELATED_CONTROL_VERTICAL_LARGE:
-      return views::kUnrelatedControlLargeVerticalSpacing;
+      return 30;
     default:
       return views::LayoutProvider::GetDistanceMetric(metric);
   }
