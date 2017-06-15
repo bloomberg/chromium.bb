@@ -220,7 +220,9 @@ void Scheduler::BeginImplFrameNotExpectedSoon() {
   // Tying this to SendBeginMainFrameNotExpectedSoon will have some
   // false negatives, but we want to avoid running long idle tasks when
   // we are actually active.
-  client_->SendBeginMainFrameNotExpectedSoon();
+  if (state_machine_.wants_begin_main_frame_not_expected_messages()) {
+    client_->SendBeginMainFrameNotExpectedSoon();
+  }
 }
 
 void Scheduler::SetupNextBeginFrameIfNeeded() {
@@ -642,10 +644,16 @@ void Scheduler::ProcessScheduledActions() {
         client_->ScheduledActionSendBeginMainFrame(begin_main_frame_args_);
         break;
       case SchedulerStateMachine::ACTION_NOTIFY_BEGIN_MAIN_FRAME_NOT_SENT:
-        // TODO(delphick): what if frame_time is in the past?
         state_machine_.WillNotifyBeginMainFrameNotSent();
-        BeginMainFrameNotExpectedUntil(begin_main_frame_args_.frame_time +
-                                       begin_main_frame_args_.interval);
+        // If SendBeginMainFrameNotExpectedSoon was not previously sent by
+        // BeginImplFrameNotExpectedSoon (because the messages were not required
+        // at that time), then send it now.
+        if (!observing_begin_frame_source_) {
+          client_->SendBeginMainFrameNotExpectedSoon();
+        } else {
+          BeginMainFrameNotExpectedUntil(begin_main_frame_args_.frame_time +
+                                         begin_main_frame_args_.interval);
+        }
         break;
       case SchedulerStateMachine::ACTION_COMMIT: {
         bool commit_has_no_updates = false;

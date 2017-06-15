@@ -230,6 +230,9 @@ class CC_EXPORT SchedulerStateMachine {
   bool needs_begin_main_frame() const { return needs_begin_main_frame_; }
 
   void SetMainThreadWantsBeginMainFrameNotExpectedMessages(bool new_state);
+  bool wants_begin_main_frame_not_expected_messages() const {
+    return wants_begin_main_frame_not_expected_;
+  }
 
   // Requests a single impl frame (after the current frame if there is one
   // active).
