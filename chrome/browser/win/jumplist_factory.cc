@@ -8,12 +8,13 @@
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
+#include "chrome/browser/win/jumplist.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 // static
-scoped_refptr<JumpList> JumpListFactory::GetForProfile(Profile* profile) {
+JumpList* JumpListFactory::GetForProfile(Profile* profile) {
   return static_cast<JumpList*>(
-      GetInstance()->GetServiceForBrowserContext(profile, true).get());
+      GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
 // static
@@ -22,7 +23,7 @@ JumpListFactory* JumpListFactory::GetInstance() {
 }
 
 JumpListFactory::JumpListFactory()
-    : RefcountedBrowserContextKeyedServiceFactory(
+    : BrowserContextKeyedServiceFactory(
           "JumpList",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(TabRestoreServiceFactory::GetInstance());
@@ -32,7 +33,7 @@ JumpListFactory::JumpListFactory()
 
 JumpListFactory::~JumpListFactory() = default;
 
-scoped_refptr<RefcountedKeyedService> JumpListFactory::BuildServiceInstanceFor(
+KeyedService* JumpListFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   return new JumpList(Profile::FromBrowserContext(context));
 }

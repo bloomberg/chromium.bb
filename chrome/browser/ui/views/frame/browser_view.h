@@ -63,10 +63,6 @@ class ToolbarView;
 class TopContainerView;
 class WebContentsCloseHandler;
 
-#if defined(OS_WIN)
-class JumpList;
-#endif
-
 namespace extensions {
 class ActiveTabPermissionGranter;
 class Command;
@@ -497,8 +493,8 @@ class BrowserView : public BrowserWindow,
   // Callback for the loading animation(s) associated with this view.
   void LoadingAnimationCallback();
 
-  // LoadCompleteListener::Delegate implementation. Creates and initializes the
-  // |jumplist_| after the first page load.
+  // LoadCompleteListener::Delegate implementation. Creates the JumpList after
+  // the first page load.
   void OnLoadCompleted() override;
 
   // Returns the BrowserViewLayout.
@@ -687,9 +683,6 @@ class BrowserView : public BrowserWindow,
 #if defined(OS_WIN)
   // Helper class to listen for completion of first page load.
   std::unique_ptr<LoadCompleteListener> load_complete_listener_;
-
-  // The custom JumpList for Windows 7.
-  scoped_refptr<JumpList> jumplist_;
 #endif
 
   // The timer used to update frames for the Loading Animation.
