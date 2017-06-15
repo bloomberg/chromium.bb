@@ -1,0 +1,4 @@
+rootWebArea
+++genericContainer
+++++slider horizontal value='5'
+++++++sliderThumb

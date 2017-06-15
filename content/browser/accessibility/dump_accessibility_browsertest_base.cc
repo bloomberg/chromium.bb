@@ -248,6 +248,7 @@ void DumpAccessibilityTestBase::RunTestForPlatform(
 
   // Parse filters and other directives in the test file.
   std::vector<std::string> wait_for;
+  filters_.clear();
   AddDefaultFilters(&filters_);
   ParseHtmlForExtraDirectives(html_contents, &filters_, &wait_for);
 
