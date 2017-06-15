@@ -8,7 +8,6 @@
 #include "cc/paint/skia_paint_canvas.h"
 #include "chrome/browser/android/vr_shell/textures/ui_texture.h"
 #include "chrome/browser/android/vr_shell/ui_element_renderer.h"
-#include "device/vr/vr_math.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "ui/gfx/geometry/rect_f.h"
 
@@ -48,8 +47,8 @@ void TexturedElement::Render(UiElementRenderer* renderer,
   gfx::SizeF drawn_size = GetTexture()->GetDrawnSize();
   gfx::RectF copy_rect(0, 0, drawn_size.width() / texture_size_.width(),
                        drawn_size.height() / texture_size_.height());
-  renderer->DrawTexturedQuad(texture_handle_, vr::ToMat4F(view_proj_matrix),
-                             copy_rect, opacity());
+  renderer->DrawTexturedQuad(texture_handle_, view_proj_matrix, copy_rect,
+                             opacity());
 }
 
 void TexturedElement::Flush(SkSurface* surface) {

@@ -6,7 +6,6 @@
 
 #include "chrome/browser/android/vr_shell/color_scheme.h"
 #include "chrome/browser/android/vr_shell/ui_element_renderer.h"
-#include "device/vr/vr_math.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/geometry/quaternion.h"
 #include "ui/gfx/transform.h"
@@ -33,7 +32,7 @@ void ScreenDimmer::Render(UiElementRenderer* renderer,
   // Always use normal scheme for dimmer.
   const ColorScheme& color_scheme =
       ColorScheme::GetColorScheme(ColorScheme::kModeNormal);
-  renderer->DrawGradientQuad(vr::ToMat4F(m), color_scheme.dimmer_outer,
+  renderer->DrawGradientQuad(m, color_scheme.dimmer_outer,
                              color_scheme.dimmer_inner, kDimmerOpacity);
 }
 
