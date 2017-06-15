@@ -101,7 +101,7 @@ def AddToManifest(manifest_file, target_name, source, mapper):
 
 
 def BuildBootfs(output_directory, runtime_deps_path, test_name, gtest_filter,
-                gtest_repeat, dry_run):
+                gtest_repeat, test_launcher_filter_file, dry_run):
   with open(runtime_deps_path) as f:
     lines = f.readlines()
 
@@ -133,6 +133,14 @@ def BuildBootfs(output_directory, runtime_deps_path, test_name, gtest_filter,
   autorun_file.write('#!/bin/sh\n')
   autorun_file.write('/system/' + os.path.basename(test_name))
   autorun_file.write(' --test-launcher-retry-limit=0')
+  if test_launcher_filter_file:
+    test_launcher_filter_file = os.path.abspath(test_launcher_filter_file)
+    filter_file_on_device = MakeTargetImageName(
+          common_prefix, output_directory, test_launcher_filter_file)
+    autorun_file.write(' --test-launcher-filter-file=/system/' +
+                       filter_file_on_device)
+    target_source_pairs.append(
+        [filter_file_on_device, test_launcher_filter_file])
   if gtest_filter:
     autorun_file.write(' --gtest_filter=' + gtest_filter)
   if gtest_repeat:
@@ -199,11 +207,13 @@ def main():
                       help='GTest filter to use in place of any default')
   parser.add_argument('--gtest_repeat',
                       help='GTest repeat value to use')
+  parser.add_argument('--test-launcher-filter-file',
+                      help='Pass filter file through to target process')
   args = parser.parse_args()
 
   bootfs = BuildBootfs(args.output_directory, args.runtime_deps_path,
                        args.test_name, args.gtest_filter, args.gtest_repeat,
-                       args.dry_run)
+                       args.test_launcher_filter_file, args.dry_run)
 
   qemu_path = os.path.join(SDK_ROOT, 'qemu', 'bin', 'qemu-system-x86_64')
 
