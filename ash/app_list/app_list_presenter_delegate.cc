@@ -58,6 +58,19 @@ gfx::Point GetCenterOfDisplayForWindow(aura::Window* window,
   return bounds.CenterPoint();
 }
 
+// Whether the shelf is oriented on the side, not on the bottom.
+bool IsSideShelf(aura::Window* root_window) {
+  Shelf* shelf = Shelf::ForWindow(root_window);
+  switch (shelf->alignment()) {
+    case SHELF_ALIGNMENT_BOTTOM:
+    case SHELF_ALIGNMENT_BOTTOM_LOCKED:
+      return false;
+    case SHELF_ALIGNMENT_LEFT:
+    case SHELF_ALIGNMENT_RIGHT:
+      return true;
+  }
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -98,7 +111,11 @@ void AppListPresenterDelegate::Init(app_list::AppListView* view,
   aura::Window* container = RootWindowController::ForWindow(root_window)
                                 ->GetContainer(kShellWindowId_AppListContainer);
 
-  view->Initialize(container, current_apps_page);
+  view->Initialize(container, current_apps_page,
+                   Shell::Get()
+                       ->maximize_mode_controller()
+                       ->IsMaximizeModeWindowManagerEnabled(),
+                   IsSideShelf(root_window));
 
   if (!app_list::features::IsFullscreenAppListEnabled()) {
     view->MaybeSetAnchorPoint(GetCenterOfDisplayForWindow(
@@ -227,6 +244,20 @@ void AppListPresenterDelegate::OnKeyboardClosed() {}
 void AppListPresenterDelegate::OnOverviewModeStarting() {
   if (is_visible_)
     presenter_->Dismiss();
+}
+
+void AppListPresenterDelegate::OnMaximizeModeStarted() {
+  if (!app_list::features::IsFullscreenAppListEnabled())
+    return;
+
+  view_->OnMaximizeModeChanged(true);
+}
+
+void AppListPresenterDelegate::OnMaximizeModeEnded() {
+  if (!app_list::features::IsFullscreenAppListEnabled())
+    return;
+
+  view_->OnMaximizeModeChanged(false);
 }
 
 }  // namespace ash

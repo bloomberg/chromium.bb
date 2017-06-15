@@ -55,11 +55,14 @@ namespace {
 // The margin from the edge to the speech UI.
 constexpr int kSpeechUIMargin = 12;
 
-// The height/width of the shelf.
+// The height/width of the shelf from the bottom/side of the screen.
 constexpr int kShelfSize = 48;
 
-// The height of the peeking app list.
+// The height of the peeking app list from the bottom of the screen.
 constexpr int kPeekingAppListHeight = 320;
+
+// The height of the half app list from the bottom of the screen.
+constexpr int kHalfAppListHeight = 561;
 
 // The fraction of app list height that the app list must be released at in
 // order to transition to the next state.
@@ -68,6 +71,10 @@ constexpr int kAppListThresholdDenominator = 3;
 // The velocity the app list must be dragged in order to transition to the next
 // state, measured in DIPs/event.
 constexpr int kAppListDragVelocityThreshold = 25;
+
+// The DIP distance from the bezel that a drag event must end within to transfer
+// the |app_list_state_|.
+constexpr int kAppListBezelMargin = 50;
 
 // The opacity of the app list background.
 constexpr float kAppListOpacity = 0.8;
@@ -210,8 +217,13 @@ AppListView::~AppListView() {
   RemoveAllChildViews(true);
 }
 
-void AppListView::Initialize(gfx::NativeView parent, int initial_apps_page) {
+void AppListView::Initialize(gfx::NativeView parent,
+                             int initial_apps_page,
+                             bool is_maximize_mode,
+                             bool is_side_shelf) {
   base::Time start_time = base::Time::Now();
+  is_maximize_mode_ = is_maximize_mode;
+  is_side_shelf_ = is_side_shelf;
   InitContents(parent, initial_apps_page);
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
   set_color(kContentsBackgroundColor);
@@ -512,47 +524,142 @@ void AppListView::EndDrag(const gfx::Point& location) {
   if (std::abs(last_fling_velocity_) > kAppListDragVelocityThreshold) {
     // If the user releases drag with velocity over the threshold, snap to
     // the next state, ignoring the drag release position.
-    if (app_list_state_ == FULLSCREEN) {
-      if (last_fling_velocity_ > 0)
-        SetState(PEEKING);
 
+    if (last_fling_velocity_ > 0) {
+      switch (app_list_state_) {
+        case PEEKING:
+        case HALF:
+        case FULLSCREEN_SEARCH:
+          SetState(CLOSED);
+          break;
+        case FULLSCREEN_ALL_APPS:
+          SetState(is_maximize_mode_ || is_side_shelf_ ? CLOSED : PEEKING);
+          break;
+        case CLOSED:
+          NOTREACHED();
+          break;
+      }
     } else {
-      SetState(last_fling_velocity_ > 0 ? CLOSED : FULLSCREEN);
+      switch (app_list_state_) {
+        case FULLSCREEN_ALL_APPS:
+        case FULLSCREEN_SEARCH:
+          SetState(app_list_state_);
+          break;
+        case HALF:
+          SetState(FULLSCREEN_SEARCH);
+          break;
+        case PEEKING:
+          SetState(FULLSCREEN_ALL_APPS);
+          break;
+        case CLOSED:
+          NOTREACHED();
+          break;
+      }
     }
-    last_fling_velocity_ = 0;
   } else {
     int display_height = display::Screen::GetScreen()
                              ->GetDisplayNearestView(parent_window())
-                             .work_area()
-                             .height();
-    int default_peeking_y = display_height + kShelfSize - kPeekingAppListHeight;
-    // The drag release velocity was too low, so use the release point.
-    int app_list_snap_y =
-        (app_list_state_ == FULLSCREEN) ? 0 : default_peeking_y;
-    // The DIP delta that must be exceeded for the app list to snap to the next
-    // state.
-    int app_list_threshold =
-        (fullscreen_widget_->GetWindowBoundsInScreen().height() + kShelfSize) /
-        kAppListThresholdDenominator;
-    app_list_threshold -=
-        (app_list_state_ == FULLSCREEN ? 0 : kPeekingAppListHeight) /
-        kAppListThresholdDenominator;
-
-    // If the user releases +/- 1/3 of |app_list_threshold|, snap to the
-    // next state.
-    if (std::abs(app_list_snap_y - new_y_position) < app_list_threshold) {
-      // The drag was not far enough so set the app list bounds to the target
-      // bounds for the current state.
-      SetState(app_list_state_);
-    } else if ((app_list_snap_y + app_list_threshold) < new_y_position) {
-      // The drag was far enough to change states and was a downward drag, so
-      // set the app list bounds to the next state.
-      SetState(app_list_state_ == FULLSCREEN ? PEEKING : CLOSED);
-    } else {
-      // The drag was far enough to change states and was an upward drag, so
-      // set the app list bounds to the next state.
-      SetState(FULLSCREEN);
+                             .size().height();
+    int app_list_y_for_state = 0;
+    int app_list_height = 0;
+    switch (app_list_state_) {
+      case FULLSCREEN_ALL_APPS:
+      case FULLSCREEN_SEARCH:
+        app_list_y_for_state = 0;
+        app_list_height = display_height;
+        break;
+      case HALF:
+        app_list_y_for_state = display_height - kHalfAppListHeight;
+        app_list_height = kHalfAppListHeight;
+        break;
+      case PEEKING:
+        app_list_y_for_state = display_height - kPeekingAppListHeight;
+        app_list_height = kPeekingAppListHeight;
+        break;
+      case CLOSED:
+        NOTREACHED();
+        break;
     }
+
+    int app_list_threshold = app_list_height / kAppListThresholdDenominator;
+    int drag_delta = app_list_y_for_state - new_y_position;
+    gfx::Point location_in_screen_coordinates = location;
+    ConvertPointToScreen(this, &location_in_screen_coordinates);
+    switch (app_list_state_) {
+      case FULLSCREEN_ALL_APPS:
+        if (std::abs(drag_delta) > app_list_threshold)
+          SetState(is_maximize_mode_ || is_side_shelf_ ? CLOSED : PEEKING);
+        else
+          SetState(app_list_state_);
+        break;
+      case FULLSCREEN_SEARCH:
+        if (std::abs(drag_delta) > app_list_threshold)
+          SetState(CLOSED);
+        else
+          SetState(app_list_state_);
+        break;
+      case HALF:
+        if (std::abs(drag_delta) > app_list_threshold) {
+          SetState(drag_delta > 0 ? FULLSCREEN_SEARCH : CLOSED);
+        } else if (location_in_screen_coordinates.y() >=
+                   display_height - kAppListBezelMargin) {
+          // If the user drags to the bezel, close the app list.
+          SetState(CLOSED);
+        } else {
+          SetState(app_list_state_);
+        }
+        break;
+      case PEEKING:
+        if (std::abs(drag_delta) > app_list_threshold) {
+          SetState(drag_delta > 0 ? FULLSCREEN_ALL_APPS : CLOSED);
+        } else if (location_in_screen_coordinates.y() >=
+                   display_height - kAppListBezelMargin) {
+          // If the user drags to the bezel, close the app list.
+          SetState(CLOSED);
+        } else {
+          SetState(app_list_state_);
+        }
+        break;
+      case CLOSED:
+        NOTREACHED();
+        break;
+    }
+  }
+}
+
+void AppListView::SetStateFromSearchBoxView(bool search_box_is_empty) {
+  switch (app_list_state_) {
+    case PEEKING:
+      if (!search_box_is_empty)
+        SetState(HALF);
+      break;
+    case HALF:
+      if (search_box_is_empty)
+        SetState(PEEKING);
+      break;
+    case FULLSCREEN_SEARCH:
+      if (search_box_is_empty) {
+        SetState(FULLSCREEN_ALL_APPS);
+        app_list_main_view()->contents_view()->SetActiveState(
+            AppListModel::State::STATE_APPS);
+      }
+      break;
+    case FULLSCREEN_ALL_APPS:
+      if (!search_box_is_empty)
+        SetState(FULLSCREEN_SEARCH);
+      break;
+    case CLOSED:
+      NOTREACHED();
+      break;
+  }
+}
+
+void AppListView::OnMaximizeModeChanged(bool started) {
+  is_maximize_mode_ = started;
+  if (is_maximize_mode_ && !is_fullscreen()) {
+    // Set |app_list_state_| to a maximize mode friendly state.
+    SetState(app_list_state_ == PEEKING ? FULLSCREEN_ALL_APPS
+                                        : FULLSCREEN_SEARCH);
   }
 }
 
@@ -688,19 +795,62 @@ void AppListView::SchedulePaintInRect(const gfx::Rect& rect) {
 }
 
 void AppListView::SetState(AppListState new_state) {
+  AppListState new_state_override = new_state;
+  if (is_side_shelf_ || is_maximize_mode_) {
+    // If side shelf or maximize mode are active, all transitions should be
+    // made to the maximize mode/side shelf friendly versions.
+    if (new_state == PEEKING)
+      new_state_override = FULLSCREEN_ALL_APPS;
+    else if (new_state == HALF)
+      new_state_override = FULLSCREEN_SEARCH;
+  }
+
   gfx::Rect new_widget_bounds = fullscreen_widget_->GetWindowBoundsInScreen();
-  switch (new_state) {
+  int display_height = display::Screen::GetScreen()
+                           ->GetDisplayNearestView(parent_window())
+                           .work_area()
+                           .bottom();
+
+  switch (new_state_override) {
     case PEEKING: {
-      int display_height = display::Screen::GetScreen()
-                               ->GetDisplayNearestView(parent_window())
-                               .work_area()
-                               .bottom();
-      int default_peeking_y =
-          display_height + kShelfSize - kPeekingAppListHeight;
-      new_widget_bounds.set_y(default_peeking_y);
+      switch (app_list_state_) {
+        case HALF:
+        case FULLSCREEN_ALL_APPS:
+        case PEEKING: {
+          int peeking_app_list_y = display_height - kPeekingAppListHeight;
+          new_widget_bounds.set_y(peeking_app_list_y);
+          app_list_main_view_->contents_view()->SetActiveState(
+              AppListModel::STATE_START);
+          break;
+        }
+        case FULLSCREEN_SEARCH:
+        case CLOSED:
+          NOTREACHED();
+          break;
+      }
       break;
     }
-    case FULLSCREEN:
+    case HALF:
+      switch (app_list_state_) {
+        case PEEKING:
+        case HALF: {
+          int half_app_list_y = display_height - kHalfAppListHeight;
+          new_widget_bounds.set_y(half_app_list_y);
+          break;
+        }
+        case FULLSCREEN_SEARCH:
+        case FULLSCREEN_ALL_APPS:
+        case CLOSED:
+          NOTREACHED();
+          break;
+      }
+      break;
+    case FULLSCREEN_ALL_APPS:
+      new_widget_bounds.set_y(0);
+      app_list_main_view_->contents_view()->SetActiveState(
+          AppListModel::STATE_APPS);
+      break;
+    case FULLSCREEN_SEARCH:
       new_widget_bounds.set_y(0);
       break;
     case CLOSED:
@@ -709,7 +859,7 @@ void AppListView::SetState(AppListState new_state) {
       break;
   }
   fullscreen_widget_->SetBounds(new_widget_bounds);
-  app_list_state_ = new_state;
+  app_list_state_ = new_state_override;
 }
 
 void AppListView::OnWidgetDestroying(views::Widget* widget) {
