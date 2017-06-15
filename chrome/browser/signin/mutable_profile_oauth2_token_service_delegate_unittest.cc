@@ -341,8 +341,65 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
   EXPECT_EQ(1, end_batch_changes_);
   ResetObserverCounts();
 
-  // TODO(fgorski): Enable below when implemented:
-  // EXPECT_TRUE(oauth2_servive_->RefreshTokenIsAvailable("account_id"));
+  EXPECT_TRUE(oauth2_service_delegate_->RefreshTokenIsAvailable("account_id"));
+  EXPECT_TRUE(oauth2_service_delegate_->RefreshTokenIsAvailable("account_id2"));
+
+  oauth2_service_delegate_->RevokeAllCredentials();
+  EXPECT_EQ(0, token_available_count_);
+  EXPECT_EQ(2, token_revoked_count_);
+  EXPECT_EQ(0, tokens_loaded_count_);
+  EXPECT_EQ(1, start_batch_changes_);
+  EXPECT_EQ(1, end_batch_changes_);
+  ResetObserverCounts();
+}
+
+TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
+       PersistenceLoadCredentialsEmptyPrimaryAccountId_DiceEnabled) {
+  switches::EnableAccountConsistencyDiceForTesting(
+      base::CommandLine::ForCurrentProcess());
+
+  // Ensure DB is clean.
+  oauth2_service_delegate_->RevokeAllCredentials();
+  ResetObserverCounts();
+  // Perform a load from an empty DB.
+  EXPECT_EQ(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_NOT_STARTED,
+            oauth2_service_delegate_->GetLoadCredentialsState());
+  oauth2_service_delegate_->LoadCredentials("");
+  EXPECT_EQ(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_IN_PROGRESS,
+            oauth2_service_delegate_->GetLoadCredentialsState());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
+            oauth2_service_delegate_->GetLoadCredentialsState());
+  EXPECT_EQ(1, start_batch_changes_);
+  EXPECT_EQ(1, end_batch_changes_);
+  ExpectOneTokensLoadedNotification();
+
+  // No account should be present in the refresh token as no primary account
+  // was passed to the token service.
+  EXPECT_TRUE(oauth2_service_delegate_->refresh_tokens_.empty());
+
+  // Setup a DB with tokens that don't require upgrade and clear memory.
+  oauth2_service_delegate_->UpdateCredentials("account_id", "refresh_token");
+  oauth2_service_delegate_->UpdateCredentials("account_id2", "refresh_token2");
+  oauth2_service_delegate_->refresh_tokens_.clear();
+  EXPECT_EQ(2, start_batch_changes_);
+  EXPECT_EQ(2, end_batch_changes_);
+  ResetObserverCounts();
+
+  oauth2_service_delegate_->LoadCredentials("");
+  EXPECT_EQ(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_IN_PROGRESS,
+            oauth2_service_delegate_->GetLoadCredentialsState());
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
+            oauth2_service_delegate_->GetLoadCredentialsState());
+  EXPECT_EQ(2, token_available_count_);
+  EXPECT_EQ(0, token_revoked_count_);
+  EXPECT_EQ(1, tokens_loaded_count_);
+  EXPECT_EQ(1, start_batch_changes_);
+  EXPECT_EQ(1, end_batch_changes_);
+  ResetObserverCounts();
+
+  EXPECT_TRUE(oauth2_service_delegate_->RefreshTokenIsAvailable("account_id"));
   EXPECT_TRUE(oauth2_service_delegate_->RefreshTokenIsAvailable("account_id2"));
 
   oauth2_service_delegate_->RevokeAllCredentials();

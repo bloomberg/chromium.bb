@@ -28,8 +28,11 @@ AccountConsistencyMethod GetAccountConsistencyMethod();
 
 // Checks whether Mirror account consistency is enabled. If enabled, the account
 // management UI is available in the avatar bubble.
-// DEPRECATED: Use GetAccountConsistencyMethod() instead.
 bool IsAccountConsistencyMirrorEnabled();
+
+// Checks whether Dice account consistency is enabled. If enabled, then account
+// management UI is available on the Gaia webpages.
+bool IsAccountConsistencyDiceEnabled();
 
 // Whether the chrome.identity API should be multi-account.
 bool IsExtensionsMultiAccount();
