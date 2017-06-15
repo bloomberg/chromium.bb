@@ -198,7 +198,9 @@ TEST_F(ManualTextFramerTest, OriginRTLTest) {
   attributes()[NSParagraphStyleAttributeName] = CreateParagraphStyle(
       20.0, NSTextAlignmentNatural, NSLineBreakByWordWrapping);
   ApplyAttributesForRange(text_range());
-  CGRect bounds = CGRectMake(0, 0, 100.0, 60.0);
+  // The bounds width is chosen so that the RTL string above can be completely
+  // laid out into three lines.
+  CGRect bounds = CGRectMake(0, 0, 115.0, 60.0);
   FrameTextInBounds(bounds);
   CheckForLineCountAndFramedRange(3, text_range());
   for (FramedLine* line in text_frame().lines) {
