@@ -10,6 +10,7 @@ import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/sysroot.gni")
 import("//build/util/version.gni")
 import("//chrome/process_version_rc_template.gni")  # For branding_file_path.
+import("//extensions/features/features.gni")
 
 assert(is_desktop_linux)
 assert(current_cpu == "x64")
