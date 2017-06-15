@@ -102,8 +102,8 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   void DidHandleInputEventOnMainThread(const WebInputEvent& web_input_event,
                                        WebInputEventResult result) override;
   void DidAnimateForInputOnCompositorThread() override;
-  void OnRendererBackgrounded() override;
-  void OnRendererForegrounded() override;
+  void SetRendererHidden(bool hidden) override;
+  void SetRendererBackgrounded(bool backgrounded) override;
   void SuspendRenderer() override;
   void ResumeRenderer() override;
   void AddPendingNavigation(NavigatingFrameType type) override;
@@ -521,6 +521,9 @@ class PLATFORM_EXPORT RendererSchedulerImpl
     TaskDurationMetricReporter background_first_minute_task_duration_reporter;
     TaskDurationMetricReporter
         background_after_first_minute_task_duration_reporter;
+    TaskDurationMetricReporter hidden_task_duration_reporter;
+    TaskDurationMetricReporter visible_task_duration_reporter;
+    TaskDurationMetricReporter hidden_music_task_duration_reporter;
   };
 
   struct AnyThread {

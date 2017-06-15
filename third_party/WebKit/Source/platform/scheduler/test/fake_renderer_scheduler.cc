@@ -72,9 +72,9 @@ bool FakeRendererScheduler::IsHighPriorityWorkAnticipated() {
   return false;
 }
 
-void FakeRendererScheduler::OnRendererBackgrounded() {}
+void FakeRendererScheduler::SetRendererHidden(bool hidden) {}
 
-void FakeRendererScheduler::OnRendererForegrounded() {}
+void FakeRendererScheduler::SetRendererBackgrounded(bool backgrounded) {}
 
 void FakeRendererScheduler::SuspendRenderer() {}
 

@@ -121,10 +121,6 @@ RendererSchedulerImpl::RendererSchedulerImpl(
   end_renderer_hidden_idle_period_closure_.Reset(base::Bind(
       &RendererSchedulerImpl::EndIdlePeriod, weak_factory_.GetWeakPtr()));
 
-  suspend_timers_when_backgrounded_closure_.Reset(
-      base::Bind(&RendererSchedulerImpl::SuspendTimerQueueWhenBackgrounded,
-                 weak_factory_.GetWeakPtr()));
-
   default_loading_task_queue_ =
       NewLoadingTaskQueue(TaskQueue::QueueType::DEFAULT_LOADING);
   default_timer_task_queue_ =
@@ -234,7 +230,13 @@ RendererSchedulerImpl::MainThreadOnly::MainThreadOnly(
           "RendererScheduler.TaskDurationPerQueueType2.Background.FirstMinute"),
       background_after_first_minute_task_duration_reporter(
           "RendererScheduler.TaskDurationPerQueueType2.Background."
-          "AfterFirstMinute") {
+          "AfterFirstMinute"),
+      hidden_task_duration_reporter(
+          "RendererScheduler.TaskDurationPerQueueType2.Hidden"),
+      visible_task_duration_reporter(
+          "RendererScheduler.TaskDurationPerQueueType.Visible"),
+      hidden_music_task_duration_reporter(
+          "RendererScheduler.TaskDurationPerQueueType.HiddenMusic") {
   foreground_main_thread_load_tracker.Resume(now);
 }
 
@@ -559,51 +561,47 @@ void RendererSchedulerImpl::SetHasVisibleRenderWidgetWithTouchHandler(
   UpdatePolicyLocked(UpdateType::FORCE_UPDATE);
 }
 
-void RendererSchedulerImpl::OnRendererBackgrounded() {
-  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
-               "RendererSchedulerImpl::OnRendererBackgrounded");
+void RendererSchedulerImpl::SetRendererHidden(bool hidden) {
+  if (hidden) {
+    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+                 "RendererSchedulerImpl::OnRendererHidden");
+  } else {
+    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+                 "RendererSchedulerImpl::OnRendererVisible");
+  }
   helper_.CheckOnValidThread();
-  if (helper_.IsShutdown() || GetMainThreadOnly().renderer_backgrounded)
-    return;
-
-  GetMainThreadOnly().renderer_backgrounded = true;
-
-  UpdatePolicy();
-
-  base::TimeTicks now = tick_clock()->NowTicks();
-  GetMainThreadOnly().foreground_main_thread_load_tracker.Pause(now);
-  GetMainThreadOnly().background_main_thread_load_tracker.Resume(now);
-
-  if (!GetMainThreadOnly().timer_queue_suspension_when_backgrounded_enabled)
-    return;
-
-  suspend_timers_when_backgrounded_closure_.Cancel();
-  base::TimeDelta suspend_timers_when_backgrounded_delay =
-      base::TimeDelta::FromMilliseconds(
-          kSuspendTimersWhenBackgroundedDelayMillis);
-  control_task_queue_->PostDelayedTask(
-      FROM_HERE, suspend_timers_when_backgrounded_closure_.GetCallback(),
-      suspend_timers_when_backgrounded_delay);
+  GetMainThreadOnly().renderer_hidden = hidden;
 }
 
-void RendererSchedulerImpl::OnRendererForegrounded() {
-  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
-               "RendererSchedulerImpl::OnRendererForegrounded");
+void RendererSchedulerImpl::SetRendererBackgrounded(bool backgrounded) {
+  if (backgrounded) {
+    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+                 "RendererSchedulerImpl::OnRendererBackgrounded");
+  } else {
+    TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+                 "RendererSchedulerImpl::OnRendererForegrounded");
+  }
   helper_.CheckOnValidThread();
-  if (helper_.IsShutdown() || !GetMainThreadOnly().renderer_backgrounded)
+  if (helper_.IsShutdown() ||
+      GetMainThreadOnly().renderer_backgrounded == backgrounded)
     return;
 
-  GetMainThreadOnly().renderer_backgrounded = false;
-  GetMainThreadOnly().renderer_suspended = false;
+  GetMainThreadOnly().renderer_backgrounded = backgrounded;
+  if (!backgrounded)
+    GetMainThreadOnly().renderer_suspended = false;
+
+  GetMainThreadOnly().background_status_changed_at = tick_clock()->NowTicks();
 
   UpdatePolicy();
 
   base::TimeTicks now = tick_clock()->NowTicks();
-  GetMainThreadOnly().foreground_main_thread_load_tracker.Resume(now);
-  GetMainThreadOnly().background_main_thread_load_tracker.Pause(now);
-
-  suspend_timers_when_backgrounded_closure_.Cancel();
-  ResumeTimerQueueWhenForegroundedOrResumed();
+  if (backgrounded) {
+    GetMainThreadOnly().foreground_main_thread_load_tracker.Pause(now);
+    GetMainThreadOnly().background_main_thread_load_tracker.Resume(now);
+  } else {
+    GetMainThreadOnly().foreground_main_thread_load_tracker.Resume(now);
+    GetMainThreadOnly().background_main_thread_load_tracker.Pause(now);
+  }
 }
 
 void RendererSchedulerImpl::OnAudioStateChanged() {
@@ -629,7 +627,6 @@ void RendererSchedulerImpl::SuspendRenderer() {
     return;
   if (!GetMainThreadOnly().renderer_backgrounded)
     return;
-  suspend_timers_when_backgrounded_closure_.Cancel();
 
   UMA_HISTOGRAM_COUNTS("PurgeAndSuspend.PendingTaskCount",
                        helper_.GetNumberOfPendingTasks());
@@ -637,7 +634,7 @@ void RendererSchedulerImpl::SuspendRenderer() {
   // TODO(hajimehoshi): We might need to suspend not only timer queue but also
   // e.g. loading tasks or postMessage.
   GetMainThreadOnly().renderer_suspended = true;
-  SuspendTimerQueueWhenBackgrounded();
+  UpdatePolicy();
 }
 
 void RendererSchedulerImpl::ResumeRenderer() {
@@ -646,9 +643,8 @@ void RendererSchedulerImpl::ResumeRenderer() {
     return;
   if (!GetMainThreadOnly().renderer_backgrounded)
     return;
-  suspend_timers_when_backgrounded_closure_.Cancel();
   GetMainThreadOnly().renderer_suspended = false;
-  ResumeTimerQueueWhenForegroundedOrResumed();
+  UpdatePolicy();
 }
 
 void RendererSchedulerImpl::EndIdlePeriod() {
@@ -947,6 +943,24 @@ void RendererSchedulerImpl::ForceUpdatePolicy() {
   UpdatePolicyLocked(UpdateType::FORCE_UPDATE);
 }
 
+namespace {
+
+void UpdatePolicyDuration(base::TimeTicks now,
+                          base::TimeTicks policy_expiration,
+                          base::TimeDelta* policy_duration) {
+  if (policy_expiration <= now)
+    return;
+
+  if (policy_duration->is_zero()) {
+    *policy_duration = policy_expiration - now;
+    return;
+  }
+
+  *policy_duration = std::min(*policy_duration, policy_expiration - now);
+}
+
+}  // namespace
+
 void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   helper_.CheckOnValidThread();
   any_thread_lock_.AssertAcquired();
@@ -1002,20 +1016,31 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   // work.
   if (GetMainThreadOnly().last_audio_state_change &&
       !GetMainThreadOnly().is_audio_playing) {
-    base::TimeTicks audio_will_expire =
-        GetMainThreadOnly().last_audio_state_change.value() +
-        kThrottlingDelayAfterAudioIsPlayed;
+    UpdatePolicyDuration(now,
+                         GetMainThreadOnly().last_audio_state_change.value() +
+                             kThrottlingDelayAfterAudioIsPlayed,
+                         &new_policy_duration);
+  }
 
-    base::TimeDelta audio_will_expire_after = audio_will_expire - now;
+  bool timer_queue_newly_suspended = false;
+  if (GetMainThreadOnly().renderer_backgrounded &&
+      GetMainThreadOnly().timer_queue_suspension_when_backgrounded_enabled) {
+    base::TimeTicks suspend_timers_at =
+        GetMainThreadOnly().background_status_changed_at +
+        base::TimeDelta::FromMilliseconds(
+            kSuspendTimersWhenBackgroundedDelayMillis);
 
-    if (audio_will_expire_after > base::TimeDelta()) {
-      if (new_policy_duration.is_zero()) {
-        new_policy_duration = audio_will_expire_after;
-      } else {
-        new_policy_duration =
-            std::min(new_policy_duration, audio_will_expire_after);
-      }
-    }
+    timer_queue_newly_suspended =
+        !GetMainThreadOnly().timer_queue_suspended_when_backgrounded;
+    GetMainThreadOnly().timer_queue_suspended_when_backgrounded =
+        now >= suspend_timers_at || GetMainThreadOnly().renderer_suspended;
+    timer_queue_newly_suspended &=
+        GetMainThreadOnly().timer_queue_suspended_when_backgrounded;
+
+    if (!GetMainThreadOnly().timer_queue_suspended_when_backgrounded)
+      UpdatePolicyDuration(now, suspend_timers_at, &new_policy_duration);
+  } else {
+    GetMainThreadOnly().timer_queue_suspended_when_backgrounded = false;
   }
 
   if (new_policy_duration > base::TimeDelta()) {
@@ -1162,7 +1187,7 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
 
   if (GetMainThreadOnly().renderer_suspended) {
     new_policy.loading_queue_policy.is_enabled = false;
-    DCHECK(!new_policy.timer_queue_policy.is_enabled);
+    new_policy.timer_queue_policy.is_enabled = false;
   }
 
   if (GetMainThreadOnly().use_virtual_time) {
@@ -1245,6 +1270,9 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
 
   DCHECK(compositor_task_queue_->IsQueueEnabled());
   GetMainThreadOnly().current_policy = new_policy;
+
+  if (timer_queue_newly_suspended)
+    Platform::Current()->RequestPurgeMemory();
 }
 
 void RendererSchedulerImpl::ApplyTaskQueuePolicy(
@@ -1719,27 +1747,6 @@ void RendererSchedulerImpl::OnFirstMeaningfulPaint() {
   UpdatePolicyLocked(UpdateType::MAY_EARLY_OUT_IF_POLICY_UNCHANGED);
 }
 
-void RendererSchedulerImpl::SuspendTimerQueueWhenBackgrounded() {
-  DCHECK(GetMainThreadOnly().renderer_backgrounded);
-  if (GetMainThreadOnly().timer_queue_suspended_when_backgrounded)
-    return;
-
-  GetMainThreadOnly().timer_queue_suspended_when_backgrounded = true;
-  ForceUpdatePolicy();
-  Platform::Current()->RequestPurgeMemory();
-}
-
-void RendererSchedulerImpl::ResumeTimerQueueWhenForegroundedOrResumed() {
-  DCHECK(!GetMainThreadOnly().renderer_backgrounded ||
-         (GetMainThreadOnly().renderer_backgrounded &&
-          !GetMainThreadOnly().renderer_suspended));
-  if (!GetMainThreadOnly().timer_queue_suspended_when_backgrounded)
-    return;
-
-  GetMainThreadOnly().timer_queue_suspended_when_backgrounded = false;
-  ForceUpdatePolicy();
-}
-
 void RendererSchedulerImpl::ResetForNavigationLocked() {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                "RendererSchedulerImpl::ResetForNavigationLocked");
@@ -1988,6 +1995,19 @@ void RendererSchedulerImpl::RecordTaskMetrics(TaskQueue::QueueType queue_type,
   } else {
     GetMainThreadOnly().foreground_task_duration_reporter.RecordTask(queue_type,
                                                                      duration);
+  }
+
+  if (GetMainThreadOnly().renderer_hidden) {
+    GetMainThreadOnly().hidden_task_duration_reporter.RecordTask(queue_type,
+                                                                 duration);
+
+    if (ShouldDisableThrottlingBecauseOfAudio(start_time)) {
+      GetMainThreadOnly().hidden_music_task_duration_reporter.RecordTask(
+          queue_type, duration);
+    }
+  } else {
+    GetMainThreadOnly().visible_task_duration_reporter.RecordTask(queue_type,
+                                                                  duration);
   }
 }
 

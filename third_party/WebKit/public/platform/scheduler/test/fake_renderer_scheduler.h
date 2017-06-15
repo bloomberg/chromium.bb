@@ -37,8 +37,8 @@ class FakeRendererScheduler : public RendererScheduler {
   void DidHandleInputEventOnMainThread(const WebInputEvent& web_input_event,
                                        WebInputEventResult result) override;
   void DidAnimateForInputOnCompositorThread() override;
-  void OnRendererBackgrounded() override;
-  void OnRendererForegrounded() override;
+  void SetRendererHidden(bool hidden) override;
+  void SetRendererBackgrounded(bool backgrounded) override;
   void SuspendRenderer() override;
   void ResumeRenderer() override;
   void AddPendingNavigation(NavigatingFrameType type) override;

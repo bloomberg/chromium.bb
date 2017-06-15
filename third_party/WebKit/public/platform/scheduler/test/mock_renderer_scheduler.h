@@ -42,8 +42,8 @@ class MockRendererScheduler : public RendererScheduler {
   MOCK_METHOD2(DidHandleInputEventOnMainThread,
                void(const WebInputEvent&, WebInputEventResult));
   MOCK_METHOD0(DidAnimateForInputOnCompositorThread, void());
-  MOCK_METHOD0(OnRendererBackgrounded, void());
-  MOCK_METHOD0(OnRendererForegrounded, void());
+  MOCK_METHOD1(SetRendererHidden, void(bool));
+  MOCK_METHOD1(SetRendererBackgrounded, void(bool));
   MOCK_METHOD0(SuspendRenderer, void());
   MOCK_METHOD0(ResumeRenderer, void());
   MOCK_METHOD1(AddPendingNavigation, void(NavigatingFrameType));

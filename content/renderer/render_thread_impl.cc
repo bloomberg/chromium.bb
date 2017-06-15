@@ -1693,8 +1693,8 @@ bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
 void RenderThreadImpl::OnProcessBackgrounded(bool backgrounded) {
   ChildThreadImpl::OnProcessBackgrounded(backgrounded);
 
+  renderer_scheduler_->SetRendererBackgrounded(backgrounded);
   if (backgrounded) {
-    renderer_scheduler_->OnRendererBackgrounded();
     needs_to_record_first_active_paint_ = false;
     GetRendererScheduler()->DefaultTaskRunner()->PostDelayedTask(
         FROM_HERE,
@@ -1714,7 +1714,6 @@ void RenderThreadImpl::OnProcessBackgrounded(bool backgrounded) {
                    process_foregrounded_count_),
         base::TimeDelta::FromMinutes(15));
   } else {
-    renderer_scheduler_->OnRendererForegrounded();
     process_foregrounded_count_++;
   }
 }
@@ -2501,6 +2500,7 @@ void RenderThreadImpl::OnRendererHidden() {
   // scheduled by the RendererScheduler - http://crbug.com/469210.
   if (!GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden())
     return;
+  renderer_scheduler_->SetRendererHidden(true);
   ScheduleIdleHandler(kInitialIdleHandlerDelayMs);
 }
 
@@ -2508,6 +2508,7 @@ void RenderThreadImpl::OnRendererVisible() {
   blink::MainThreadIsolate()->IsolateInForegroundNotification();
   if (!GetContentClient()->renderer()->RunIdleHandlerWhenWidgetsHidden())
     return;
+  renderer_scheduler_->SetRendererHidden(false);
   ScheduleIdleHandler(kLongIdleHandlerDelayMs);
 }
 
