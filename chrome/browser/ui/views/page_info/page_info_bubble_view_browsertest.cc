@@ -109,7 +109,9 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, ChromeExtensionURL) {
             PageInfoBubbleView::GetShownBubbleType());
 }
 
-IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, ChromeDevtoolsURL) {
+// Times out due to isolation, see crbug.com/733767
+IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
+                       DISABLED_ChromeDevtoolsURL) {
   ui_test_utils::NavigateToURL(
       browser(), GURL("chrome-devtools://devtools/bundled/inspector.html"));
   OpenPageInfoBubble(browser());

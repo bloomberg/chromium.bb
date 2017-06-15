@@ -1340,20 +1340,6 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
         dest_url.SchemeIs(kChromeUIScheme)) {
       return SiteInstanceDescriptor(parent_site_instance);
     }
-    // TODO(alexmos, nick): Remove this once https://crbug.com/706169 is fixed.
-    if (parent_site_instance->GetSiteURL().SchemeIs(kChromeDevToolsScheme)) {
-      url::Origin origin(dest_url);
-      auto* policy = ChildProcessSecurityPolicy::GetInstance();
-      // Some non-devtools origins (e.g., devtools extensions) have special
-      // permission to stay in the devtools process.
-      bool is_origin_allowed_in_devtools_process =
-          policy->HasSpecificPermissionForOrigin(
-              parent_site_instance->GetProcess()->GetID(), origin);
-      if (origin.scheme() == kChromeDevToolsScheme ||
-          is_origin_allowed_in_devtools_process) {
-        return SiteInstanceDescriptor(parent_site_instance);
-      }
-    }
   }
 
   // If we haven't used our SiteInstance (and thus RVH) yet, then we can use it
@@ -1525,18 +1511,8 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
     bool dest_url_requires_dedicated_process =
         SiteInstanceImpl::DoesSiteRequireDedicatedProcess(browser_context,
                                                           dest_url);
-    // Web iframes embedded in DevTools extensions should not reuse the parent
-    // SiteInstance, but DevTools extensions are currently kept in the DevTools
-    // SiteInstance, which is not considered to require a dedicated process.
-    // Work around this by also checking whether the parent's URL requires a
-    // dedicated process.
-    // TODO(alexmos, nick): Remove this once https://crbug.com/706169 is fixed.
-    bool parent_url_requires_dedicated_process =
-        SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
-            browser_context, parent->last_successful_url());
     if (!parent->GetSiteInstance()->RequiresDedicatedProcess() &&
-        !dest_url_requires_dedicated_process &&
-        !parent_url_requires_dedicated_process) {
+        !dest_url_requires_dedicated_process) {
       return SiteInstanceDescriptor(parent->GetSiteInstance());
     }
   }
@@ -1558,21 +1534,6 @@ bool RenderFrameHostManager::IsRendererTransferNeededForNavigation(
   // We do not currently swap processes for navigations in webview tag guests.
   if (rfh->GetSiteInstance()->GetSiteURL().SchemeIs(kGuestScheme))
     return false;
-
-  // TODO(alexmos, nick): Remove this once https://crbug.com/706169 is fixed.
-  // Devtools pages and devtools extensions must stay in the devtools process.
-  // See https://crbug.com/564216.
-  if (rfh->GetSiteInstance()->GetSiteURL().SchemeIs(kChromeDevToolsScheme)) {
-    url::Origin origin(dest_url);
-    auto* policy = ChildProcessSecurityPolicy::GetInstance();
-    // Some non-devtools origins (e.g., devtools extensions) have special
-    // permission to stay in the devtools process.
-    bool is_origin_allowed_in_devtools_process =
-        policy->HasSpecificPermissionForOrigin(rfh->GetProcess()->GetID(),
-                                               origin);
-    return !(origin.scheme() == kChromeDevToolsScheme ||
-             is_origin_allowed_in_devtools_process);
-  }
 
   BrowserContext* context = rfh->GetSiteInstance()->GetBrowserContext();
   // TODO(nasko, nick): These following --site-per-process checks are

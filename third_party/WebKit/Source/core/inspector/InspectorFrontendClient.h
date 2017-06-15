@@ -51,9 +51,6 @@ class InspectorFrontendClient {
                                float x,
                                float y,
                                ContextMenuProvider*) = 0;
-
-  virtual void SetInjectedScriptForOrigin(const String& origin,
-                                          const String& source) = 0;
 };
 
 }  // namespace blink
