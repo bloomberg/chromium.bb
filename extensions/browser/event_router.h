@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "base/values.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -101,6 +102,12 @@ class EventRouter : public KeyedService,
                                     std::unique_ptr<base::ListValue> event_args,
                                     UserGestureState user_gesture,
                                     const EventFilteringInfo& info);
+
+  // Returns false when the event is scoped to a context and the listening
+  // extension does not have access to events from that context.
+  static bool CanDispatchEventToBrowserContext(content::BrowserContext* context,
+                                               const Extension* extension,
+                                               const Event& event);
 
   // An EventRouter is shared between |browser_context| and its associated
   // incognito context. |extension_prefs| may be NULL in tests.
@@ -299,14 +306,6 @@ class EventRouter : public KeyedService,
                               const base::DictionaryValue* listener_filter,
                               bool did_enqueue);
 
-  // Returns false when the event is scoped to a context and the listening
-  // extension does not have access to events from that context. Also fills
-  // |event_args| with the proper arguments to send, which may differ if
-  // the event crosses the incognito boundary.
-  bool CanDispatchEventToBrowserContext(content::BrowserContext* context,
-                                        const Extension* extension,
-                                        const linked_ptr<Event>& event);
-
   // Possibly loads given extension's background page in preparation to
   // dispatch an event.  Returns true if the event was queued for subsequent
   // dispatch, false otherwise.
@@ -377,6 +376,8 @@ class EventRouter : public KeyedService,
   std::set<content::RenderProcessHost*> observed_process_set_;
 
   LazyEventDispatchUtil lazy_event_dispatch_util_;
+
+  base::WeakPtrFactory<EventRouter> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(EventRouter);
 };
