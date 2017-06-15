@@ -189,7 +189,10 @@ def AddCommonOptions(parser):
 def ProcessCommonOptions(args):
   """Processes and handles all common options."""
   run_tests_helper.SetLogLevel(args.verbose_count, add_handler=False)
-  handler = logging_utils.ColorStreamHandler()
+  if args.verbose_count > 0:
+    handler = logging_utils.ColorStreamHandler()
+  else:
+    handler = logging.StreamHandler(sys.stdout)
   handler.setFormatter(run_tests_helper.CustomFormatter())
   logging.getLogger().addHandler(handler)
 
