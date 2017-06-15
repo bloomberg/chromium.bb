@@ -57,14 +57,15 @@ void AppListPresenterDelegateMus::Init(app_list::AppListView* view,
                                        int64_t display_id,
                                        int current_apps_page) {
   view_ = view;
-
+  // TODO(newcomer): replace Initialize parameters with proper mus
+  // implementation as per crbug.com/726838
   // Note: This would place the app list into the USER_WINDOWS container, unlike
   // in classic ash, where it has it's own container.
   // TODO(mfomitchev): We are currently passing NULL for |parent|. It seems like
   // the only thing this is used for is choosing the right scale factor in
   // AppListMainView::PreloadIcons(), so we take care of that - perhaps by
   // passing the display_id or the scale factor directly
-  view->Initialize(nullptr /* parent */, current_apps_page);
+  view->Initialize(nullptr /* parent */, current_apps_page, false, false);
 
   view->MaybeSetAnchorPoint(
       GetCenterOfDisplay(display_id, GetMinimumBoundsHeightForAppList(view)));

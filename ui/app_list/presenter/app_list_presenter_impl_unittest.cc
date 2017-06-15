@@ -44,7 +44,7 @@ class AppListPresenterDelegateTest : public AppListPresenterDelegate {
             int current_apps_page) override {
     init_called_ = true;
     view_ = view;
-    view->Initialize(container_, current_apps_page);
+    view->Initialize(container_, current_apps_page, false, false);
   }
   void OnShown(int64_t display_id) override { on_shown_called_ = true; }
   void OnDismissed() override { on_dismissed_called_ = true; }
