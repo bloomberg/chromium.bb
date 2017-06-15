@@ -91,7 +91,7 @@ CompositingReasonFinder::PotentialCompositingReasonsFromStyle(
   if (style.HasInlineTransform())
     reasons |= kCompositingReasonInlineTransform;
 
-  if (style.UsedTransformStyle3D() == kTransformStyle3DPreserve3D)
+  if (style.UsedTransformStyle3D() == ETransformStyle3D::kPreserve3D)
     reasons |= kCompositingReasonPreserve3DWith3DDescendants;
 
   if (style.HasPerspective())

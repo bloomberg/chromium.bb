@@ -1219,14 +1219,15 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // transform-style (aka -webkit-transform-style)
   static ETransformStyle3D InitialTransformStyle3D() {
-    return kTransformStyle3DFlat;
+    return ETransformStyle3D::kFlat;
   }
   ETransformStyle3D TransformStyle3D() const {
     return static_cast<ETransformStyle3D>(
         rare_non_inherited_data_->transform_style_3d_);
   }
   void SetTransformStyle3D(ETransformStyle3D b) {
-    SET_VAR(rare_non_inherited_data_, transform_style_3d_, b);
+    SET_VAR(rare_non_inherited_data_, transform_style_3d_,
+            static_cast<unsigned>(b));
   }
 
   // -webkit-transform-origin-x
@@ -3095,7 +3096,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
                 .IsEmpty();
   }
   ETransformStyle3D UsedTransformStyle3D() const {
-    return HasGroupingProperty() ? kTransformStyle3DFlat : TransformStyle3D();
+    return HasGroupingProperty() ? ETransformStyle3D::kFlat
+                                 : TransformStyle3D();
   }
   // Returns whether the transform operations for |otherStyle| differ from the
   // operations for this style instance. Note that callers may want to also
@@ -3107,7 +3109,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
            other.rare_non_inherited_data_->transform_data_;
   }
   bool Preserves3D() const {
-    return UsedTransformStyle3D() != kTransformStyle3DFlat;
+    return UsedTransformStyle3D() != ETransformStyle3D::kFlat;
   }
   enum ApplyTransformOrigin {
     kIncludeTransformOrigin,
