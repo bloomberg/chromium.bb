@@ -59,6 +59,9 @@ class StreamTextureProxy : public StreamTextureHost::Listener {
   void ForwardStreamTextureForSurfaceRequest(
       const base::UnguessableToken& request_token);
 
+  // Clears |received_frame_cb_| in a thread safe way.
+  void ClearReceivedFrameCB();
+
   struct Deleter {
     inline void operator()(StreamTextureProxy* ptr) const { ptr->Release(); }
   };
