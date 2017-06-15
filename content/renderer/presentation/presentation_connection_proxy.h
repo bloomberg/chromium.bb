@@ -72,16 +72,16 @@ class CONTENT_EXPORT PresentationConnectionProxy
     : public NON_EXPORTED_BASE(blink::WebPresentationConnectionProxy),
       public NON_EXPORTED_BASE(blink::mojom::PresentationConnection) {
  public:
-  using OnMessageCallback = base::OnceCallback<void(bool)>;
+  using OnMessageCallback = base::Callback<void(bool)>;
 
   ~PresentationConnectionProxy() override;
 
   virtual void SendConnectionMessage(PresentationConnectionMessage message,
-                                     OnMessageCallback callback) const;
+                                     const OnMessageCallback& callback) const;
 
   // blink::mojom::PresentationConnection implementation
   void OnMessage(PresentationConnectionMessage message,
-                 OnMessageCallback callback) override;
+                 const OnMessageCallback& callback) override;
   void DidChangeState(content::PresentationConnectionState state) override;
   void OnClose() override;
 

@@ -39,14 +39,9 @@ using testing::AnyNumber;
 using testing::Invoke;
 using testing::Mock;
 using testing::Return;
+using testing::SaveArg;
 
 namespace media_router {
-
-ACTION_TEMPLATE(SaveArgWithMove,
-                HAS_1_TEMPLATE_PARAMS(int, k),
-                AND_1_VALUE_PARAMS(pointer)) {
-  *pointer = std::move(::testing::get<k>(args));
-}
 
 class MockMediaRouterWebUIMessageHandler
     : public MediaRouterWebUIMessageHandler {
@@ -187,10 +182,10 @@ class MediaRouterUITest : public ChromeRenderViewHostTestHarness {
 TEST_F(MediaRouterUITest, RouteCreationTimeoutForTab) {
   CreateMediaRouterUI(profile());
   std::vector<MediaRouteResponseCallback> callbacks;
-  EXPECT_CALL(mock_router_,
-              CreateRouteInternal(_, _, _, _, _,
-                                  base::TimeDelta::FromSeconds(60), false))
-      .WillOnce(SaveArgWithMove<4>(&callbacks));
+  EXPECT_CALL(
+      mock_router_,
+      CreateRoute(_, _, _, _, _, base::TimeDelta::FromSeconds(60), false))
+      .WillOnce(SaveArg<4>(&callbacks));
   media_router_ui_->CreateRoute(CreateSinkCompatibleWithAllSources().id(),
                                 MediaCastMode::TAB_MIRROR);
 
@@ -199,17 +194,17 @@ TEST_F(MediaRouterUITest, RouteCreationTimeoutForTab) {
   EXPECT_CALL(mock_router_, AddIssue(IssueTitleEquals(expected_title)));
   std::unique_ptr<RouteRequestResult> result =
       RouteRequestResult::FromError("Timed out", RouteRequestResult::TIMED_OUT);
-  for (auto& callback : callbacks)
-    std::move(callback).Run(*result);
+  for (const auto& callback : callbacks)
+    callback.Run(*result);
 }
 
 TEST_F(MediaRouterUITest, RouteCreationTimeoutForDesktop) {
   CreateMediaRouterUI(profile());
   std::vector<MediaRouteResponseCallback> callbacks;
-  EXPECT_CALL(mock_router_,
-              CreateRouteInternal(_, _, _, _, _,
-                                  base::TimeDelta::FromSeconds(120), false))
-      .WillOnce(SaveArgWithMove<4>(&callbacks));
+  EXPECT_CALL(
+      mock_router_,
+      CreateRoute(_, _, _, _, _, base::TimeDelta::FromSeconds(120), false))
+      .WillOnce(SaveArg<4>(&callbacks));
   media_router_ui_->CreateRoute(CreateSinkCompatibleWithAllSources().id(),
                                 MediaCastMode::DESKTOP_MIRROR);
 
@@ -218,8 +213,8 @@ TEST_F(MediaRouterUITest, RouteCreationTimeoutForDesktop) {
   EXPECT_CALL(mock_router_, AddIssue(IssueTitleEquals(expected_title)));
   std::unique_ptr<RouteRequestResult> result =
       RouteRequestResult::FromError("Timed out", RouteRequestResult::TIMED_OUT);
-  for (auto& callback : callbacks)
-    std::move(callback).Run(*result);
+  for (const auto& callback : callbacks)
+    callback.Run(*result);
 }
 
 TEST_F(MediaRouterUITest, RouteCreationTimeoutForPresentation) {
@@ -229,10 +224,10 @@ TEST_F(MediaRouterUITest, RouteCreationTimeoutForPresentation) {
       url::Origin(GURL("https://frameurl.fakeurl")));
   media_router_ui_->OnDefaultPresentationChanged(presentation_request);
   std::vector<MediaRouteResponseCallback> callbacks;
-  EXPECT_CALL(mock_router_,
-              CreateRouteInternal(_, _, _, _, _,
-                                  base::TimeDelta::FromSeconds(20), false))
-      .WillOnce(SaveArgWithMove<4>(&callbacks));
+  EXPECT_CALL(
+      mock_router_,
+      CreateRoute(_, _, _, _, _, base::TimeDelta::FromSeconds(20), false))
+      .WillOnce(SaveArg<4>(&callbacks));
   media_router_ui_->CreateRoute(CreateSinkCompatibleWithAllSources().id(),
                                 MediaCastMode::PRESENTATION);
 
@@ -242,8 +237,8 @@ TEST_F(MediaRouterUITest, RouteCreationTimeoutForPresentation) {
   EXPECT_CALL(mock_router_, AddIssue(IssueTitleEquals(expected_title)));
   std::unique_ptr<RouteRequestResult> result =
       RouteRequestResult::FromError("Timed out", RouteRequestResult::TIMED_OUT);
-  for (auto& callback : callbacks)
-    std::move(callback).Run(*result);
+  for (const auto& callback : callbacks)
+    callback.Run(*result);
 }
 
 // Tests that if a local file CreateRoute call is made from a new tab, the
@@ -262,8 +257,8 @@ TEST_F(MediaRouterUITest, RouteCreationLocalFileModeInTab) {
 
   // Expect that the media_router_ will make a call to the mock_router
   // then we will want to check that it made the call with.
-  EXPECT_CALL(mock_router_, CreateRouteInternal(_, _, _, _, _, _, _))
-      .WillOnce(SaveArgWithMove<3>(&location_file_opened));
+  EXPECT_CALL(mock_router_, CreateRoute(_, _, _, _, _, _, _))
+      .WillOnce(SaveArg<3>(&location_file_opened));
 
   media_router_ui_->CreateRoute(CreateSinkCompatibleWithAllSources().id(),
                                 MediaCastMode::LOCAL_FILE);
@@ -276,8 +271,8 @@ TEST_F(MediaRouterUITest, RouteCreationLocalFileModeInTab) {
 TEST_F(MediaRouterUITest, RouteCreationParametersCantBeCreated) {
   CreateMediaRouterUI(profile());
   MediaSinkSearchResponseCallback sink_callback;
-  EXPECT_CALL(mock_router_, SearchSinksInternal(_, _, _, _, _))
-      .WillOnce(SaveArgWithMove<4>(&sink_callback));
+  EXPECT_CALL(mock_router_, SearchSinks(_, _, _, _, _))
+      .WillOnce(SaveArg<4>(&sink_callback));
 
   // Use PRESENTATION mode without setting a PresentationRequest.
   media_router_ui_->SearchSinksAndCreateRoute(
@@ -285,7 +280,7 @@ TEST_F(MediaRouterUITest, RouteCreationParametersCantBeCreated) {
   std::string expected_title = l10n_util::GetStringUTF8(
       IDS_MEDIA_ROUTER_ISSUE_CREATE_ROUTE_TIMEOUT_FOR_TAB);
   EXPECT_CALL(mock_router_, AddIssue(IssueTitleEquals(expected_title)));
-  std::move(sink_callback).Run("foundSinkId");
+  sink_callback.Run("foundSinkId");
 }
 
 TEST_F(MediaRouterUITest, RouteRequestFromIncognito) {
@@ -296,9 +291,9 @@ TEST_F(MediaRouterUITest, RouteRequestFromIncognito) {
       url::Origin(GURL("https://frameUrl")));
   media_router_ui_->OnDefaultPresentationChanged(presentation_request);
 
-  EXPECT_CALL(mock_router_,
-              CreateRouteInternal(_, _, _, _, _,
-                                  base::TimeDelta::FromSeconds(20), true));
+  EXPECT_CALL(
+      mock_router_,
+      CreateRoute(_, _, _, _, _, base::TimeDelta::FromSeconds(20), true));
   media_router_ui_->CreateRoute(CreateSinkCompatibleWithAllSources().id(),
                                 MediaCastMode::PRESENTATION);
 }

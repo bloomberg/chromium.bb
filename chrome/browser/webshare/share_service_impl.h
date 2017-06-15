@@ -35,7 +35,7 @@ class ShareServiceImpl : public blink::mojom::ShareService {
   void Share(const std::string& title,
              const std::string& text,
              const GURL& share_url,
-             ShareCallback callback) override;
+             const ShareCallback& callback) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ShareServiceImplUnittest, ReplacePlaceholders);
@@ -89,7 +89,7 @@ class ShareServiceImpl : public blink::mojom::ShareService {
                       const std::string& title,
                       const std::string& text,
                       const GURL& share_url,
-                      ShareCallback callback,
+                      const ShareCallback& callback,
                       const base::Optional<std::string>& result);
 
   base::WeakPtrFactory<ShareServiceImpl> weak_factory_;

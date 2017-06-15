@@ -23,7 +23,7 @@ class MODULES_EXPORT CopylessPasteServer final
       LocalFrame*,
       mojom::document_metadata::blink::CopylessPasteRequest);
 
-  void GetEntities(GetEntitiesCallback) override;
+  void GetEntities(const GetEntitiesCallback&) override;
 
  private:
   WeakPersistent<LocalFrame> frame_;

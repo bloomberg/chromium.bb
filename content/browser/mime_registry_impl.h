@@ -24,7 +24,7 @@ class MimeRegistryImpl : public blink::mojom::MimeRegistry {
  private:
   void GetMimeTypeFromExtension(
       const std::string& extension,
-      GetMimeTypeFromExtensionCallback callback) override;
+      const GetMimeTypeFromExtensionCallback& callback) override;
 };
 
 }  // namespace content

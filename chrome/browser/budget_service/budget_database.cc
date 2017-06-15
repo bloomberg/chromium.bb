@@ -64,18 +64,18 @@ BudgetDatabase::BudgetDatabase(Profile* profile,
 BudgetDatabase::~BudgetDatabase() {}
 
 void BudgetDatabase::GetBudgetDetails(const url::Origin& origin,
-                                      GetBudgetCallback callback) {
-  SyncCache(origin, base::Bind(&BudgetDatabase::GetBudgetAfterSync,
-                               weak_ptr_factory_.GetWeakPtr(), origin,
-                               base::Passed(&callback)));
+                                      const GetBudgetCallback& callback) {
+  SyncCache(origin,
+            base::Bind(&BudgetDatabase::GetBudgetAfterSync,
+                       weak_ptr_factory_.GetWeakPtr(), origin, callback));
 }
 
 void BudgetDatabase::SpendBudget(const url::Origin& origin,
                                  double amount,
-                                 SpendBudgetCallback callback) {
+                                 const SpendBudgetCallback& callback) {
   SyncCache(origin, base::Bind(&BudgetDatabase::SpendBudgetAfterSync,
                                weak_ptr_factory_.GetWeakPtr(), origin, amount,
-                               base::Passed(&callback)));
+                               callback));
 }
 
 void BudgetDatabase::SetClockForTesting(std::unique_ptr<base::Clock> clock) {
@@ -104,19 +104,19 @@ double BudgetDatabase::GetBudget(const url::Origin& origin) const {
 
 void BudgetDatabase::AddToCache(
     const url::Origin& origin,
-    CacheCallback callback,
+    const CacheCallback& callback,
     bool success,
     std::unique_ptr<budget_service::Budget> budget_proto) {
   // If the database read failed or there's nothing to add, just return.
   if (!success || !budget_proto) {
-    std::move(callback).Run(success);
+    callback.Run(success);
     return;
   }
 
   // If there were two simultaneous loads, don't overwrite the cache value,
   // which might have been updated after the previous load.
   if (IsCached(origin)) {
-    std::move(callback).Run(success);
+    callback.Run(success);
     return;
   }
 
@@ -131,20 +131,19 @@ void BudgetDatabase::AddToCache(
   info.last_engagement_award =
       base::Time::FromInternalValue(budget_proto->engagement_last_updated());
 
-  std::move(callback).Run(success);
+  callback.Run(success);
 }
 
 void BudgetDatabase::GetBudgetAfterSync(const url::Origin& origin,
-                                        GetBudgetCallback callback,
+                                        const GetBudgetCallback& callback,
                                         bool success) {
   std::vector<blink::mojom::BudgetStatePtr> predictions;
 
   // If the database wasn't able to read the information, return the
   // failure and an empty predictions array.
   if (!success) {
-    std::move(callback).Run(
-        blink::mojom::BudgetServiceErrorType::DATABASE_ERROR,
-        std::move(predictions));
+    callback.Run(blink::mojom::BudgetServiceErrorType::DATABASE_ERROR,
+                 std::move(predictions));
     return;
   }
 
@@ -171,18 +170,17 @@ void BudgetDatabase::GetBudgetAfterSync(const url::Origin& origin,
     predictions.push_back(std::move(prediction));
   }
 
-  std::move(callback).Run(blink::mojom::BudgetServiceErrorType::NONE,
-                          std::move(predictions));
+  callback.Run(blink::mojom::BudgetServiceErrorType::NONE,
+               std::move(predictions));
 }
 
 void BudgetDatabase::SpendBudgetAfterSync(const url::Origin& origin,
                                           double amount,
-                                          SpendBudgetCallback callback,
+                                          const SpendBudgetCallback& callback,
                                           bool success) {
   if (!success) {
-    std::move(callback).Run(
-        blink::mojom::BudgetServiceErrorType::DATABASE_ERROR,
-        false /* success */);
+    callback.Run(blink::mojom::BudgetServiceErrorType::DATABASE_ERROR,
+                 false /* success */);
     return;
   }
 
@@ -197,8 +195,8 @@ void BudgetDatabase::SpendBudgetAfterSync(const url::Origin& origin,
 
   if (total < amount) {
     UMA_HISTOGRAM_COUNTS_100("PushMessaging.SESForNoBudgetOrigin", score);
-    std::move(callback).Run(blink::mojom::BudgetServiceErrorType::NONE,
-                            false /* success */);
+    callback.Run(blink::mojom::BudgetServiceErrorType::NONE,
+                 false /* success */);
     return;
   } else if (total < amount * 2) {
     UMA_HISTOGRAM_COUNTS_100("PushMessaging.SESForLowBudgetOrigin", score);
@@ -221,29 +219,27 @@ void BudgetDatabase::SpendBudgetAfterSync(const url::Origin& origin,
 
   // Now that the cache is updated, write the data to the database.
   WriteCachedValuesToDatabase(
-      origin,
-      base::BindOnce(&BudgetDatabase::SpendBudgetAfterWrite,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+      origin, base::Bind(&BudgetDatabase::SpendBudgetAfterWrite,
+                         weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 // This converts the bool value which is returned from the database to a Mojo
 // error type.
-void BudgetDatabase::SpendBudgetAfterWrite(SpendBudgetCallback callback,
+void BudgetDatabase::SpendBudgetAfterWrite(const SpendBudgetCallback& callback,
                                            bool write_successful) {
   // TODO(harkness): If the database write fails, the cache will be out of sync
   // with the database. Consider ways to mitigate this.
   if (!write_successful) {
-    std::move(callback).Run(
-        blink::mojom::BudgetServiceErrorType::DATABASE_ERROR,
-        false /* success */);
+    callback.Run(blink::mojom::BudgetServiceErrorType::DATABASE_ERROR,
+                 false /* success */);
     return;
   }
-  std::move(callback).Run(blink::mojom::BudgetServiceErrorType::NONE,
-                          true /* success */);
+  callback.Run(blink::mojom::BudgetServiceErrorType::NONE, true /* success */);
 }
 
-void BudgetDatabase::WriteCachedValuesToDatabase(const url::Origin& origin,
-                                                 StoreBudgetCallback callback) {
+void BudgetDatabase::WriteCachedValuesToDatabase(
+    const url::Origin& origin,
+    const StoreBudgetCallback& callback) {
   // Create the data structures that are passed to the ProtoDatabase.
   std::unique_ptr<
       leveldb_proto::ProtoDatabase<budget_service::Budget>::KeyEntryVector>
@@ -272,31 +268,29 @@ void BudgetDatabase::WriteCachedValuesToDatabase(const url::Origin& origin,
   }
 
   // Send the updates to the database.
-  db_->UpdateEntries(std::move(entries), std::move(keys_to_remove),
-                     std::move(callback));
+  db_->UpdateEntries(std::move(entries), std::move(keys_to_remove), callback);
 }
 
 void BudgetDatabase::SyncCache(const url::Origin& origin,
-                               CacheCallback callback) {
+                               const CacheCallback& callback) {
   // If the origin isn't already cached, add it to the cache.
   if (!IsCached(origin)) {
-    CacheCallback add_callback = base::BindOnce(
-        &BudgetDatabase::SyncLoadedCache, weak_ptr_factory_.GetWeakPtr(),
-        origin, std::move(callback));
-    db_->GetEntry(
-        origin.Serialize(),
-        base::Bind(&BudgetDatabase::AddToCache, weak_ptr_factory_.GetWeakPtr(),
-                   origin, base::Passed(&add_callback)));
+    CacheCallback add_callback =
+        base::Bind(&BudgetDatabase::SyncLoadedCache,
+                   weak_ptr_factory_.GetWeakPtr(), origin, callback);
+    db_->GetEntry(origin.Serialize(), base::Bind(&BudgetDatabase::AddToCache,
+                                                 weak_ptr_factory_.GetWeakPtr(),
+                                                 origin, add_callback));
     return;
   }
-  SyncLoadedCache(origin, std::move(callback), true /* success */);
+  SyncLoadedCache(origin, callback, true /* success */);
 }
 
 void BudgetDatabase::SyncLoadedCache(const url::Origin& origin,
-                                     CacheCallback callback,
+                                     const CacheCallback& callback,
                                      bool success) {
   if (!success) {
-    std::move(callback).Run(false /* success */);
+    callback.Run(false /* success */);
     return;
   }
 
@@ -307,9 +301,9 @@ void BudgetDatabase::SyncLoadedCache(const url::Origin& origin,
   AddEngagementBudget(origin);
 
   if (needs_write)
-    WriteCachedValuesToDatabase(origin, std::move(callback));
+    WriteCachedValuesToDatabase(origin, callback);
   else
-    std::move(callback).Run(success);
+    callback.Run(success);
 }
 
 void BudgetDatabase::AddEngagementBudget(const url::Origin& origin) {

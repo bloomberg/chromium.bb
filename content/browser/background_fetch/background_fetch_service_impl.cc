@@ -59,19 +59,17 @@ void BackgroundFetchServiceImpl::Fetch(
     const std::string& tag,
     const std::vector<ServiceWorkerFetchRequest>& requests,
     const BackgroundFetchOptions& options,
-    FetchCallback callback) {
+    const FetchCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!ValidateTag(tag)) {
-    std::move(callback).Run(
-        blink::mojom::BackgroundFetchError::INVALID_ARGUMENT,
-        base::nullopt /* registration */);
+    callback.Run(blink::mojom::BackgroundFetchError::INVALID_ARGUMENT,
+                 base::nullopt /* registration */);
     return;
   }
 
   if (!ValidateRequests(requests)) {
-    std::move(callback).Run(
-        blink::mojom::BackgroundFetchError::INVALID_ARGUMENT,
-        base::nullopt /* registration */);
+    callback.Run(blink::mojom::BackgroundFetchError::INVALID_ARGUMENT,
+                 base::nullopt /* registration */);
     return;
   }
 
@@ -79,7 +77,7 @@ void BackgroundFetchServiceImpl::Fetch(
                                                 origin, tag);
 
   background_fetch_context_->StartFetch(registration_id, requests, options,
-                                        std::move(callback));
+                                        callback);
 }
 
 void BackgroundFetchServiceImpl::UpdateUI(
@@ -87,11 +85,10 @@ void BackgroundFetchServiceImpl::UpdateUI(
     const url::Origin& origin,
     const std::string& tag,
     const std::string& title,
-    UpdateUICallback callback) {
+    const UpdateUICallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!ValidateTag(tag) || !ValidateTitle(title)) {
-    std::move(callback).Run(
-        blink::mojom::BackgroundFetchError::INVALID_ARGUMENT);
+    callback.Run(blink::mojom::BackgroundFetchError::INVALID_ARGUMENT);
     return;
   }
 
@@ -102,19 +99,17 @@ void BackgroundFetchServiceImpl::UpdateUI(
   if (controller)
     controller->UpdateUI(title);
 
-  std::move(callback).Run(
-      controller ? blink::mojom::BackgroundFetchError::NONE
-                 : blink::mojom::BackgroundFetchError::INVALID_TAG);
+  callback.Run(controller ? blink::mojom::BackgroundFetchError::NONE
+                          : blink::mojom::BackgroundFetchError::INVALID_TAG);
 }
 
 void BackgroundFetchServiceImpl::Abort(int64_t service_worker_registration_id,
                                        const url::Origin& origin,
                                        const std::string& tag,
-                                       AbortCallback callback) {
+                                       const AbortCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!ValidateTag(tag)) {
-    std::move(callback).Run(
-        blink::mojom::BackgroundFetchError::INVALID_ARGUMENT);
+    callback.Run(blink::mojom::BackgroundFetchError::INVALID_ARGUMENT);
     return;
   }
 
@@ -125,21 +120,19 @@ void BackgroundFetchServiceImpl::Abort(int64_t service_worker_registration_id,
   if (controller)
     controller->Abort();
 
-  std::move(callback).Run(
-      controller ? blink::mojom::BackgroundFetchError::NONE
-                 : blink::mojom::BackgroundFetchError::INVALID_TAG);
+  callback.Run(controller ? blink::mojom::BackgroundFetchError::NONE
+                          : blink::mojom::BackgroundFetchError::INVALID_TAG);
 }
 
 void BackgroundFetchServiceImpl::GetRegistration(
     int64_t service_worker_registration_id,
     const url::Origin& origin,
     const std::string& tag,
-    GetRegistrationCallback callback) {
+    const GetRegistrationCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!ValidateTag(tag)) {
-    std::move(callback).Run(
-        blink::mojom::BackgroundFetchError::INVALID_ARGUMENT,
-        base::nullopt /* registration */);
+    callback.Run(blink::mojom::BackgroundFetchError::INVALID_ARGUMENT,
+                 base::nullopt /* registration */);
     return;
   }
 
@@ -148,8 +141,8 @@ void BackgroundFetchServiceImpl::GetRegistration(
           service_worker_registration_id, origin, tag));
 
   if (!controller) {
-    std::move(callback).Run(blink::mojom::BackgroundFetchError::INVALID_TAG,
-                            base::nullopt /* registration */);
+    callback.Run(blink::mojom::BackgroundFetchError::INVALID_TAG,
+                 base::nullopt /* registration */);
     return;
   }
 
@@ -161,15 +154,14 @@ void BackgroundFetchServiceImpl::GetRegistration(
   registration.title = controller->options().title;
   registration.total_download_size = controller->options().total_download_size;
 
-  std::move(callback).Run(blink::mojom::BackgroundFetchError::NONE,
-                          registration);
+  callback.Run(blink::mojom::BackgroundFetchError::NONE, registration);
 }
 
 void BackgroundFetchServiceImpl::GetTags(int64_t service_worker_registration_id,
                                          const url::Origin& origin,
-                                         GetTagsCallback callback) {
+                                         const GetTagsCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  std::move(callback).Run(
+  callback.Run(
       blink::mojom::BackgroundFetchError::NONE,
       background_fetch_context_->GetActiveTagsForServiceWorkerRegistration(
           service_worker_registration_id, origin));

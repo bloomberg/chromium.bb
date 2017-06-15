@@ -36,15 +36,15 @@ class CONTENT_EXPORT BackgroundSyncServiceImpl
   // blink::mojom::BackgroundSyncService methods:
   void Register(blink::mojom::SyncRegistrationPtr options,
                 int64_t sw_registration_id,
-                RegisterCallback callback) override;
+                const RegisterCallback& callback) override;
   void GetRegistrations(int64_t sw_registration_id,
-                        GetRegistrationsCallback callback) override;
+                        const GetRegistrationsCallback& callback) override;
 
-  void OnRegisterResult(RegisterCallback callback,
+  void OnRegisterResult(const RegisterCallback& callback,
                         BackgroundSyncStatus status,
                         std::unique_ptr<BackgroundSyncRegistration> result);
   void OnGetRegistrationsResult(
-      GetRegistrationsCallback callback,
+      const GetRegistrationsCallback& callback,
       BackgroundSyncStatus status,
       std::vector<std::unique_ptr<BackgroundSyncRegistration>> result);
 

@@ -35,7 +35,7 @@ class CONTENT_EXPORT PermissionServiceImpl
   friend class PermissionServiceImplTest;
 
   using PermissionStatusCallback =
-      base::OnceCallback<void(blink::mojom::PermissionStatus)>;
+      base::Callback<void(blink::mojom::PermissionStatus)>;
 
   class PendingRequest;
   using RequestsMap = IDMap<std::unique_ptr<PendingRequest>>;
@@ -43,19 +43,19 @@ class CONTENT_EXPORT PermissionServiceImpl
   // blink::mojom::PermissionService.
   void HasPermission(blink::mojom::PermissionDescriptorPtr permission,
                      const url::Origin& origin,
-                     PermissionStatusCallback callback) override;
+                     const PermissionStatusCallback& callback) override;
   void RequestPermission(blink::mojom::PermissionDescriptorPtr permission,
                          const url::Origin& origin,
                          bool user_gesture,
-                         PermissionStatusCallback callback) override;
+                         const PermissionStatusCallback& callback) override;
   void RequestPermissions(
       std::vector<blink::mojom::PermissionDescriptorPtr> permissions,
       const url::Origin& origin,
       bool user_gesture,
-      RequestPermissionsCallback callback) override;
+      const RequestPermissionsCallback& callback) override;
   void RevokePermission(blink::mojom::PermissionDescriptorPtr permission,
                         const url::Origin& origin,
-                        PermissionStatusCallback callback) override;
+                        const PermissionStatusCallback& callback) override;
   void AddPermissionObserver(
       blink::mojom::PermissionDescriptorPtr permission,
       const url::Origin& origin,

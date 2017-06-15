@@ -54,8 +54,8 @@ class CONTENT_EXPORT PresentationServiceImpl
   ~PresentationServiceImpl() override;
 
   using NewPresentationCallback =
-      base::OnceCallback<void(const base::Optional<PresentationInfo>&,
-                              const base::Optional<PresentationError>&)>;
+      base::Callback<void(const base::Optional<PresentationInfo>&,
+                          const base::Optional<PresentationError>&)>;
 
   // Static factory method to create an instance of PresentationServiceImpl.
   // |render_frame_host|: The RFH the instance is associated with.
@@ -106,7 +106,7 @@ class CONTENT_EXPORT PresentationServiceImpl
   static const int kMaxQueuedRequests = 10;
 
   using ConnectionMessagesCallback =
-      base::OnceCallback<void(std::vector<PresentationConnectionMessage>)>;
+      base::Callback<void(std::vector<PresentationConnectionMessage>)>;
 
   // Listener implementation owned by PresentationServiceImpl. An instance of
   // this is created when PresentationRequest.getAvailability() is resolved.
@@ -133,7 +133,8 @@ class CONTENT_EXPORT PresentationServiceImpl
   // before it goes out of scope.
   class NewPresentationCallbackWrapper {
    public:
-    explicit NewPresentationCallbackWrapper(NewPresentationCallback callback);
+    explicit NewPresentationCallbackWrapper(
+        const NewPresentationCallback& callback);
     ~NewPresentationCallbackWrapper();
 
     void Run(const base::Optional<PresentationInfo>& presentation_info,
@@ -166,10 +167,10 @@ class CONTENT_EXPORT PresentationServiceImpl
   void ListenForScreenAvailability(const GURL& url) override;
   void StopListeningForScreenAvailability(const GURL& url) override;
   void StartPresentation(const std::vector<GURL>& presentation_urls,
-                         NewPresentationCallback callback) override;
+                         const NewPresentationCallback& callback) override;
   void ReconnectPresentation(const std::vector<GURL>& presentation_urls,
                              const base::Optional<std::string>& presentation_id,
-                             NewPresentationCallback callback) override;
+                             const NewPresentationCallback& callback) override;
   void CloseConnection(const GURL& presentation_url,
                        const std::string& presentation_id) override;
   void Terminate(const GURL& presentation_url,
@@ -242,10 +243,10 @@ class CONTENT_EXPORT PresentationServiceImpl
       PresentationConnectionRequest receiver_connection_request);
 
   // Associates a ReconnectPresentation |callback| with a unique request ID and
-  // stores it in a map. Moves out |callback| object if |callback| is registered
-  // successfully. If the queue is full, returns a negative value and leaves
-  // |callback| as is.
-  int RegisterReconnectPresentationCallback(NewPresentationCallback* callback);
+  // stores it in a map.
+  // Returns a positive value on success.
+  int RegisterReconnectPresentationCallback(
+      const NewPresentationCallback& callback);
 
   // Invoked by the embedder's PresentationServiceDelegate when a
   // PresentationConnection's state has changed.

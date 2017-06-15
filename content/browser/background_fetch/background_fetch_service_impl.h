@@ -49,23 +49,23 @@ class CONTENT_EXPORT BackgroundFetchServiceImpl
              const std::string& tag,
              const std::vector<ServiceWorkerFetchRequest>& requests,
              const BackgroundFetchOptions& options,
-             FetchCallback callback) override;
+             const FetchCallback& callback) override;
   void UpdateUI(int64_t service_worker_registration_id,
                 const url::Origin& origin,
                 const std::string& tag,
                 const std::string& title,
-                UpdateUICallback callback) override;
+                const UpdateUICallback& callback) override;
   void Abort(int64_t service_worker_registration_id,
              const url::Origin& origin,
              const std::string& tag,
-             AbortCallback callback) override;
+             const AbortCallback& callback) override;
   void GetRegistration(int64_t service_worker_registration_id,
                        const url::Origin& origin,
                        const std::string& tag,
-                       GetRegistrationCallback callback) override;
+                       const GetRegistrationCallback& callback) override;
   void GetTags(int64_t service_worker_registration_id,
                const url::Origin& origin,
-               GetTagsCallback callback) override;
+               const GetTagsCallback& callback) override;
 
  private:
   // Validates and returns whether the |tag| contains a valid value. The

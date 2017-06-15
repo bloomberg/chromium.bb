@@ -68,27 +68,13 @@ class MockPresentationService : public PresentationService {
   MOCK_METHOD1(ListenForScreenAvailability, void(const GURL& availability_url));
   MOCK_METHOD1(StopListeningForScreenAvailability,
                void(const GURL& availability_url));
-
-  // TODO(crbug.com/729950): Use MOCK_METHOD directly once GMock gets the
-  // move-only type support.
-  void StartPresentation(const std::vector<GURL>& presentation_urls,
-                         StartPresentationCallback callback) {
-    StartPresentationInternal(presentation_urls, callback);
-  }
-  MOCK_METHOD2(StartPresentationInternal,
+  MOCK_METHOD2(StartPresentation,
                void(const std::vector<GURL>& presentation_urls,
-                    StartPresentationCallback& callback));
-
-  void ReconnectPresentation(const std::vector<GURL>& presentation_urls,
-                             const base::Optional<std::string>& presentation_id,
-                             ReconnectPresentationCallback callback) {
-    ReconnectPresentationInternal(presentation_urls, presentation_id, callback);
-  }
-  MOCK_METHOD3(ReconnectPresentationInternal,
+                    const StartPresentationCallback& callback));
+  MOCK_METHOD3(ReconnectPresentation,
                void(const std::vector<GURL>& presentation_urls,
                     const base::Optional<std::string>& presentation_id,
-                    ReconnectPresentationCallback& callback));
-
+                    const ReconnectPresentationCallback& callback));
   void SetPresentationConnection(
       const PresentationInfo& presentation_info,
       blink::mojom::PresentationConnectionPtr controller_conn_ptr,
@@ -99,7 +85,6 @@ class MockPresentationService : public PresentationService {
   MOCK_METHOD2(SetPresentationConnection,
                void(const PresentationInfo& presentation_info,
                     PresentationConnection* connection));
-
   MOCK_METHOD2(CloseConnection,
                void(const GURL& presentation_url,
                     const std::string& presentation_id));
@@ -117,12 +102,12 @@ class TestPresentationConnectionProxy : public PresentationConnectionProxy {
 
   // PresentationConnectionMessage is move-only.
   void SendConnectionMessage(PresentationConnectionMessage message,
-                             OnMessageCallback cb) const {
+                             const OnMessageCallback& cb) const {
     SendConnectionMessageInternal(message, cb);
   }
   MOCK_CONST_METHOD2(SendConnectionMessageInternal,
                      void(const PresentationConnectionMessage&,
-                          OnMessageCallback&));
+                          const OnMessageCallback&));
   MOCK_CONST_METHOD0(Close, void());
 };
 
@@ -340,13 +325,14 @@ TEST_F(PresentationDispatcherTest, TestStartPresentation) {
     base::RunLoop run_loop;
     EXPECT_CALL(presentation_service_, ListenForConnectionMessages(_));
     EXPECT_CALL(presentation_service_, SetPresentationConnection(_, _));
-    EXPECT_CALL(presentation_service_, StartPresentationInternal(gurls_, _))
-        .WillOnce(Invoke(
-            [this](const std::vector<GURL>& presentation_urls,
-                   PresentationService::StartPresentationCallback& callback) {
+    EXPECT_CALL(presentation_service_, StartPresentation(gurls_, _))
+        .WillOnce(
+            Invoke([this](const std::vector<GURL>& presentation_urls,
+                          const PresentationService::StartPresentationCallback&
+                              callback) {
               PresentationInfo presentation_info(gurl1_,
                                                  presentation_id_.Utf8());
-              std::move(callback).Run(presentation_info, base::nullopt);
+              callback.Run(presentation_info, base::nullopt);
             }));
 
     dispatcher_.StartPresentation(
@@ -361,16 +347,15 @@ TEST_F(PresentationDispatcherTest, TestStartPresentationError) {
   WebString error_message = WebString::FromUTF8("Test error message");
   base::RunLoop run_loop;
 
-  EXPECT_CALL(presentation_service_, StartPresentationInternal(gurls_, _))
-      .WillOnce(
-          Invoke([&error_message](
-                     const std::vector<GURL>& presentation_urls,
-                     PresentationService::StartPresentationCallback& callback) {
-            std::move(callback).Run(
-                base::nullopt,
-                PresentationError(
-                    content::PRESENTATION_ERROR_NO_AVAILABLE_SCREENS,
-                    error_message.Utf8()));
+  EXPECT_CALL(presentation_service_, StartPresentation(gurls_, _))
+      .WillOnce(Invoke(
+          [&error_message](
+              const std::vector<GURL>& presentation_urls,
+              const PresentationService::StartPresentationCallback& callback) {
+            callback.Run(base::nullopt,
+                         PresentationError(
+                             content::PRESENTATION_ERROR_NO_AVAILABLE_SCREENS,
+                             error_message.Utf8()));
           }));
   dispatcher_.StartPresentation(
       urls_,
@@ -383,20 +368,19 @@ TEST_F(PresentationDispatcherTest, TestReconnectPresentationError) {
   WebString error_message = WebString::FromUTF8("Test error message");
   base::RunLoop run_loop;
 
-  EXPECT_CALL(presentation_service_,
-              ReconnectPresentationInternal(gurls_, _, _))
-      .WillOnce(Invoke(
-          [this, &error_message](
-              const std::vector<GURL>& presentation_urls,
-              const base::Optional<std::string>& presentation_id,
-              PresentationService::ReconnectPresentationCallback& callback) {
+  EXPECT_CALL(presentation_service_, ReconnectPresentation(gurls_, _, _))
+      .WillOnce(
+          Invoke([this, &error_message](
+                     const std::vector<GURL>& presentation_urls,
+                     const base::Optional<std::string>& presentation_id,
+                     const PresentationService::ReconnectPresentationCallback&
+                         callback) {
             EXPECT_TRUE(presentation_id.has_value());
             EXPECT_EQ(presentation_id_.Utf8(), presentation_id.value());
-            std::move(callback).Run(
-                base::nullopt,
-                PresentationError(
-                    content::PRESENTATION_ERROR_NO_AVAILABLE_SCREENS,
-                    error_message.Utf8()));
+            callback.Run(base::nullopt,
+                         PresentationError(
+                             content::PRESENTATION_ERROR_NO_AVAILABLE_SCREENS,
+                             error_message.Utf8()));
           }));
   dispatcher_.ReconnectPresentation(
       urls_, presentation_id_,
@@ -412,18 +396,16 @@ TEST_F(PresentationDispatcherTest, TestReconnectPresentation) {
     base::RunLoop run_loop;
     EXPECT_CALL(presentation_service_, ListenForConnectionMessages(_));
     EXPECT_CALL(presentation_service_, SetPresentationConnection(_, _));
-    EXPECT_CALL(presentation_service_,
-                ReconnectPresentationInternal(gurls_, _, _))
+    EXPECT_CALL(presentation_service_, ReconnectPresentation(gurls_, _, _))
         .WillOnce(Invoke(
-            [this](
-                const std::vector<GURL>& presentation_urls,
-                const base::Optional<std::string>& presentation_id,
-                PresentationService::ReconnectPresentationCallback& callback) {
+            [this](const std::vector<GURL>& presentation_urls,
+                   const base::Optional<std::string>& presentation_id,
+                   const PresentationService::ReconnectPresentationCallback&
+                       callback) {
               EXPECT_TRUE(presentation_id.has_value());
               EXPECT_EQ(presentation_id_.Utf8(), presentation_id.value());
-              std::move(callback).Run(
-                  PresentationInfo(gurl1_, presentation_id_.Utf8()),
-                  base::nullopt);
+              callback.Run(PresentationInfo(gurl1_, presentation_id_.Utf8()),
+                           base::nullopt);
             }));
 
     dispatcher_.ReconnectPresentation(
@@ -446,9 +428,9 @@ TEST_F(PresentationDispatcherTest, TestSendString) {
   EXPECT_CALL(connection_proxy, SendConnectionMessageInternal(_, _))
       .WillOnce(Invoke([&expected_message](
                            const PresentationConnectionMessage& message_request,
-                           OnMessageCallback& callback) {
+                           const OnMessageCallback& callback) {
         EXPECT_EQ(message_request, expected_message);
-        std::move(callback).Run(true);
+        callback.Run(true);
       }));
 
   dispatcher_.SendString(url1_, presentation_id_, message, &connection_proxy);
@@ -466,9 +448,9 @@ TEST_F(PresentationDispatcherTest, TestSendArrayBuffer) {
   EXPECT_CALL(connection_proxy, SendConnectionMessageInternal(_, _))
       .WillOnce(Invoke([&expected_message](
                            const PresentationConnectionMessage& message_request,
-                           OnMessageCallback& callback) {
+                           const OnMessageCallback& callback) {
         EXPECT_EQ(message_request, expected_message);
-        std::move(callback).Run(true);
+        callback.Run(true);
       }));
   dispatcher_.SendArrayBuffer(url1_, presentation_id_, array_buffer_data(),
                               array_buffer_.ByteLength(), &connection_proxy);
@@ -486,9 +468,9 @@ TEST_F(PresentationDispatcherTest, TestSendBlobData) {
   EXPECT_CALL(connection_proxy, SendConnectionMessageInternal(_, _))
       .WillOnce(Invoke([&expected_message](
                            const PresentationConnectionMessage& message_request,
-                           OnMessageCallback& callback) {
+                           const OnMessageCallback& callback) {
         EXPECT_EQ(message_request, expected_message);
-        std::move(callback).Run(true);
+        callback.Run(true);
       }));
   dispatcher_.SendBlobData(url1_, presentation_id_, array_buffer_data(),
                            array_buffer_.ByteLength(), &connection_proxy);

@@ -36,31 +36,31 @@ ManifestManager::~ManifestManager() {
   ResolveCallbacks(ResolveStateFailure);
 }
 
-void ManifestManager::RequestManifest(RequestManifestCallback callback) {
-  GetManifest(base::BindOnce(&ManifestManager::OnRequestManifestComplete,
-                             base::Unretained(this), std::move(callback)));
+void ManifestManager::RequestManifest(const RequestManifestCallback& callback) {
+  GetManifest(base::Bind(&ManifestManager::OnRequestManifestComplete,
+                         base::Unretained(this), callback));
 }
 
 void ManifestManager::OnRequestManifestComplete(
-    RequestManifestCallback callback,
+    const RequestManifestCallback& callback,
     const GURL& url,
     const Manifest& manifest,
     const ManifestDebugInfo& debug_info) {
-  std::move(callback).Run(url, manifest);
+  callback.Run(url, manifest);
 }
 
-void ManifestManager::GetManifest(GetManifestCallback callback) {
+void ManifestManager::GetManifest(const GetManifestCallback& callback) {
   if (!may_have_manifest_) {
-    std::move(callback).Run(GURL(), Manifest(), ManifestDebugInfo());
+    callback.Run(GURL(), Manifest(), ManifestDebugInfo());
     return;
   }
 
   if (!manifest_dirty_) {
-    std::move(callback).Run(manifest_url_, manifest_, manifest_debug_info_);
+    callback.Run(manifest_url_, manifest_, manifest_debug_info_);
     return;
   }
 
-  pending_callbacks_.push_back(std::move(callback));
+  pending_callbacks_.push_back(callback);
 
   // Just wait for the running call to be done if there are other callbacks.
   if (pending_callbacks_.size() > 1)
@@ -191,8 +191,8 @@ void ManifestManager::ResolveCallbacks(ResolveState state) {
   std::vector<GetManifestCallback> callbacks;
   swap(callbacks, pending_callbacks_);
 
-  for (auto& callback : callbacks)
-    std::move(callback).Run(manifest_url_, manifest_, manifest_debug_info_);
+  for (const auto& callback : callbacks)
+    callback.Run(manifest_url_, manifest_, manifest_debug_info_);
 }
 
 void ManifestManager::BindToRequest(

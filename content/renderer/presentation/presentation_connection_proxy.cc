@@ -27,14 +27,14 @@ PresentationConnectionProxy::~PresentationConnectionProxy() = default;
 
 void PresentationConnectionProxy::SendConnectionMessage(
     PresentationConnectionMessage message,
-    OnMessageCallback callback) const {
+    const OnMessageCallback& callback) const {
   DCHECK(target_connection_ptr_);
-  target_connection_ptr_->OnMessage(std::move(message), std::move(callback));
+  target_connection_ptr_->OnMessage(std::move(message), callback);
 }
 
 void PresentationConnectionProxy::OnMessage(
     PresentationConnectionMessage message,
-    OnMessageCallback callback) {
+    const OnMessageCallback& callback) {
   DCHECK(!callback.is_null());
 
   if (message.is_binary()) {
@@ -45,7 +45,7 @@ void PresentationConnectionProxy::OnMessage(
         blink::WebString::FromUTF8(*(message.message)));
   }
 
-  std::move(callback).Run(true);
+  callback.Run(true);
 }
 
 // TODO(crbug.com/588874): Ensure legal PresentationConnection state transitions

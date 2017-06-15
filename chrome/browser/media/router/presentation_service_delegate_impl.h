@@ -125,7 +125,7 @@ class PresentationServiceDelegateImpl
                    int render_frame_id,
                    const content::PresentationInfo& presentation_info,
                    content::PresentationConnectionMessage message,
-                   SendMessageCallback send_message_cb) override;
+                   const SendMessageCallback& send_message_cb) override;
   void ListenForConnectionStateChange(
       int render_process_id,
       int render_frame_id,
