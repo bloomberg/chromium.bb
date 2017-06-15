@@ -3193,7 +3193,7 @@
       field_template: "storage_only",
       type_name: "EUserDrag",
       field_group: "rare-non-inherited",
-      default_value: "DRAG_AUTO",
+      default_value: "EUserDrag::kAuto",
       field_size: 2,
     },
     {

@@ -1047,13 +1047,13 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EUserDrag e)
     : CSSValue(kIdentifierClass) {
   switch (e) {
-    case DRAG_AUTO:
+    case EUserDrag::kAuto:
       value_id_ = CSSValueAuto;
       break;
-    case DRAG_NONE:
+    case EUserDrag::kNone:
       value_id_ = CSSValueNone;
       break;
-    case DRAG_ELEMENT:
+    case EUserDrag::kElement:
       value_id_ = CSSValueElement;
       break;
     default:
@@ -1065,17 +1065,17 @@ template <>
 inline EUserDrag CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueAuto:
-      return DRAG_AUTO;
+      return EUserDrag::kAuto;
     case CSSValueNone:
-      return DRAG_NONE;
+      return EUserDrag::kNone;
     case CSSValueElement:
-      return DRAG_ELEMENT;
+      return EUserDrag::kElement;
     default:
       break;
   }
 
   NOTREACHED();
-  return DRAG_AUTO;
+  return EUserDrag::kAuto;
 }
 
 template <>

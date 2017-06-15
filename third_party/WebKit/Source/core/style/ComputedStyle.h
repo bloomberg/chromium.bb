@@ -1739,12 +1739,12 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // -webkit-user-drag
-  static EUserDrag InitialUserDrag() { return DRAG_AUTO; }
+  static EUserDrag InitialUserDrag() { return EUserDrag::kAuto; }
   EUserDrag UserDrag() const {
     return static_cast<EUserDrag>(rare_non_inherited_data_->user_drag_);
   }
   void SetUserDrag(EUserDrag d) {
-    SET_VAR(rare_non_inherited_data_, user_drag_, d);
+    SET_VAR(rare_non_inherited_data_, user_drag_, static_cast<unsigned>(d));
   }
 
   // caret-color
