@@ -546,6 +546,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // True if the drag_view_ item is a folder item being dragged for reparenting.
   bool dragging_for_reparent_item_;
 
+  // True if the fullscreen app list feature is enabled.
+  const bool is_fullscreen_app_list_enabled_;
+
   DISALLOW_COPY_AND_ASSIGN(AppsGridView);
 };
 
