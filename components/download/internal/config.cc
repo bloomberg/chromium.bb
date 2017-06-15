@@ -31,6 +31,12 @@ const uint32_t kDefaultMaxRetryCount = 5;
 // 12 hours by default.
 const uint32_t kDefaultFileKeepAliveTimeMinutes = 12 * 60;
 
+// Default value for the start window time for OS to schedule background task.
+const uint32_t kDefaultWindowStartTimeSeconds = 300; /* 5 minutes. */
+
+// Default value for the end window time for OS to schedule background task.
+const uint32_t kDefaultWindowEndTimeSeconds = 3600 * 8; /* 8 hours. */
+
 // Helper routine to get Finch experiment parameter. If no Finch seed was found,
 // use the |default_value|. The |name| should match an experiment
 // parameter in Finch server configuration.
@@ -57,6 +63,10 @@ std::unique_ptr<Configuration> Configuration::CreateFromFinch() {
   config->file_keep_alive_time =
       base::TimeDelta::FromMinutes(base::saturated_cast<int>(GetFinchConfigUInt(
           kFileKeepAliveTimeMinutesConfig, kDefaultFileKeepAliveTimeMinutes)));
+  config->window_start_time_seconds = GetFinchConfigUInt(
+      kWindowStartTimeConfig, kDefaultWindowStartTimeSeconds);
+  config->window_end_time_seconds =
+      GetFinchConfigUInt(kWindowEndTimeConfig, kDefaultWindowEndTimeSeconds);
   return config;
 }
 
@@ -66,6 +76,8 @@ Configuration::Configuration()
       max_scheduled_downloads(kDefaultMaxScheduledDownloads),
       max_retry_count(kDefaultMaxRetryCount),
       file_keep_alive_time(base::TimeDelta::FromMinutes(
-          base::saturated_cast<int>(kDefaultFileKeepAliveTimeMinutes))) {}
+          base::saturated_cast<int>(kDefaultFileKeepAliveTimeMinutes))),
+      window_start_time_seconds(kDefaultWindowStartTimeSeconds),
+      window_end_time_seconds(kDefaultWindowEndTimeSeconds) {}
 
 }  // namespace download

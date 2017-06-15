@@ -30,15 +30,6 @@ class Scheduler {
   virtual ~Scheduler() {}
 };
 
-// Interface to schedule platform dependent background tasks that can run after
-// browser being closed.
-class PlatformTaskScheduler {
- public:
-  virtual void ScheduleDownloadTask(const Criteria& criteria) = 0;
-  virtual void CancelDownloadTask() = 0;
-  virtual ~PlatformTaskScheduler() {}
-};
-
 }  // namespace download
 
 #endif  // COMPONENTS_DOWNLOAD_CORE_SCHEDULER_H_

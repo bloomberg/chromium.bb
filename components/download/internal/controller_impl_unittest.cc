@@ -35,7 +35,7 @@ namespace {
 class MockTaskScheduler : public TaskScheduler {
  public:
   MockTaskScheduler() = default;
-  ~MockTaskScheduler() = default;
+  ~MockTaskScheduler() override = default;
 
   // TaskScheduler implementation.
   MOCK_METHOD5(ScheduleTask, void(DownloadTaskType, bool, bool, long, long));
