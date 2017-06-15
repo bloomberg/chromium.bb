@@ -45,7 +45,7 @@ class WebHelperPluginFrameClient : public FrameTestHelpers::TestWebFrameClient {
 class WebHelperPluginTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    helper_.InitializeAndLoad("about:blank", false, &frame_client_);
+    helper_.InitializeAndLoad("about:blank", &frame_client_);
   }
 
   void DestroyHelperPlugin() {

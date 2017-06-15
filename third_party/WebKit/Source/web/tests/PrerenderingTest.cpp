@@ -168,8 +168,7 @@ class PrerenderingTest : public ::testing::Test {
     URLTestHelpers::RegisterMockedURLLoadFromBase(
         WebString::FromUTF8(base_url), blink::testing::WebTestDataPath(),
         WebString::FromUTF8(file_name));
-    const bool kRunJavascript = true;
-    web_view_helper_.Initialize(kRunJavascript);
+    web_view_helper_.Initialize();
     web_view_helper_.WebView()->SetPrerendererClient(&prerenderer_client_);
 
     FrameTestHelpers::LoadFrame(web_view_helper_.WebView()->MainFrame(),

@@ -36,7 +36,7 @@ WebView* SimWebViewClient::CreateView(WebLocalFrame* opener,
                                       const WebString& name,
                                       WebNavigationPolicy,
                                       bool) {
-  return web_view_helper_.InitializeWithOpener(opener, true);
+  return web_view_helper_.InitializeWithOpener(opener);
 }
 
 }  // namespace blink

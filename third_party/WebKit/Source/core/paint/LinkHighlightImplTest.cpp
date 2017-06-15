@@ -78,7 +78,7 @@ std::string RegisterMockedURLLoad() {
 TEST(LinkHighlightImplTest, verifyWebViewImplIntegration) {
   const std::string url = RegisterMockedURLLoad();
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view_impl = web_view_helper.InitializeAndLoad(url, true);
+  WebViewBase* web_view_impl = web_view_helper.InitializeAndLoad(url);
   int page_width = 640;
   int page_height = 480;
   web_view_impl->Resize(WebSize(page_width, page_height));
@@ -151,7 +151,7 @@ TEST(LinkHighlightImplTest, resetDuringNodeRemoval) {
   const std::string url = RegisterMockedURLLoad();
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebViewBase* web_view_impl = web_view_helper.InitializeAndLoad(
-      url, true, 0, CompositingWebViewClient());
+      url, nullptr, CompositingWebViewClient());
 
   int page_width = 640;
   int page_height = 480;
@@ -189,13 +189,12 @@ TEST(LinkHighlightImplTest, resetDuringNodeRemoval) {
 
 // A lifetime test: delete LayerTreeView while running LinkHighlights.
 TEST(LinkHighlightImplTest, resetLayerTreeView) {
-  std::unique_ptr<FakeCompositingWebViewClient> web_view_client =
-      WTF::MakeUnique<FakeCompositingWebViewClient>();
+  FakeCompositingWebViewClient web_view_client;
 
   const std::string url = RegisterMockedURLLoad();
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebViewBase* web_view_impl =
-      web_view_helper.InitializeAndLoad(url, true, 0, web_view_client.get());
+      web_view_helper.InitializeAndLoad(url, nullptr, &web_view_client);
 
   int page_width = 640;
   int page_height = 480;
@@ -235,7 +234,7 @@ TEST(LinkHighlightImplTest, multipleHighlights) {
   const std::string url = RegisterMockedURLLoad();
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebViewBase* web_view_impl = web_view_helper.InitializeAndLoad(
-      url, true, 0, CompositingWebViewClient());
+      url, nullptr, CompositingWebViewClient());
 
   int page_width = 640;
   int page_height = 480;

@@ -115,7 +115,7 @@ class VisualViewportTest
       void (*override_settings_func)(WebSettings*) = 0) {
     if (!override_settings_func)
       override_settings_func = &ConfigureSettings;
-    helper_.Initialize(true, nullptr, &mock_web_view_client_, nullptr,
+    helper_.Initialize(nullptr, &mock_web_view_client_, nullptr,
                        override_settings_func);
     WebViewImpl()->SetDefaultPageScaleLimits(1, 4);
   }
@@ -124,7 +124,7 @@ class VisualViewportTest
       void (*override_settings_func)(WebSettings*) = 0) {
     if (!override_settings_func)
       override_settings_func = &ConfigureAndroidSettings;
-    helper_.Initialize(true, nullptr, &mock_web_view_client_, nullptr,
+    helper_.Initialize(nullptr, &mock_web_view_client_, nullptr,
                        override_settings_func);
     WebViewImpl()->SetDefaultPageScaleLimits(0.25f, 5);
   }
@@ -2111,13 +2111,9 @@ static void configureAndroidCompositing(WebSettings* settings) {
 // Make sure a composited background-attachment:fixed background gets resized
 // when using inert (non-layout affecting) browser controls.
 TEST_P(VisualViewportTest, ResizeCompositedAndFixedBackground) {
-  std::unique_ptr<FrameTestHelpers::TestWebViewClient>
-      fake_compositing_web_view_client =
-          WTF::MakeUnique<FrameTestHelpers::TestWebViewClient>();
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebViewBase* web_view_impl = web_view_helper.Initialize(
-      true, nullptr, fake_compositing_web_view_client.get(), nullptr,
-      &configureAndroidCompositing);
+      nullptr, nullptr, nullptr, &configureAndroidCompositing);
 
   int page_width = 640;
   int page_height = 480;
@@ -2193,7 +2189,7 @@ static void configureAndroidNonCompositing(WebSettings* settings) {
 TEST_P(VisualViewportTest, ResizeNonCompositedAndFixedBackground) {
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebViewBase* web_view_impl = web_view_helper.Initialize(
-      true, nullptr, nullptr, nullptr, &configureAndroidNonCompositing);
+      nullptr, nullptr, nullptr, &configureAndroidNonCompositing);
 
   int page_width = 640;
   int page_height = 480;
@@ -2290,13 +2286,9 @@ TEST_P(VisualViewportTest, ResizeNonCompositedAndFixedBackground) {
 // Make sure a browser control resize with background-attachment:not-fixed
 // background doesn't cause invalidation or layout.
 TEST_P(VisualViewportTest, ResizeNonFixedBackgroundNoLayoutOrInvalidation) {
-  std::unique_ptr<FrameTestHelpers::TestWebViewClient>
-      fake_compositing_web_view_client =
-          WTF::MakeUnique<FrameTestHelpers::TestWebViewClient>();
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebViewBase* web_view_impl = web_view_helper.Initialize(
-      true, nullptr, fake_compositing_web_view_client.get(), nullptr,
-      &configureAndroidCompositing);
+      nullptr, nullptr, nullptr, &configureAndroidCompositing);
 
   int page_width = 640;
   int page_height = 480;
@@ -2369,13 +2361,9 @@ TEST_P(VisualViewportTest, ResizeNonFixedBackgroundNoLayoutOrInvalidation) {
 }
 
 TEST_P(VisualViewportTest, InvalidateLayoutViewWhenDocumentSmallerThanView) {
-  std::unique_ptr<FrameTestHelpers::TestWebViewClient>
-      fake_compositing_web_view_client =
-          WTF::MakeUnique<FrameTestHelpers::TestWebViewClient>();
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebViewBase* web_view_impl = web_view_helper.Initialize(
-      true, nullptr, fake_compositing_web_view_client.get(), nullptr,
-      &configureAndroidCompositing);
+      nullptr, nullptr, nullptr, &configureAndroidCompositing);
 
   int page_width = 320;
   int page_height = 590;

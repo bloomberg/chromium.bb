@@ -225,7 +225,6 @@ WebViewHelper::~WebViewHelper() {
 
 WebViewBase* WebViewHelper::InitializeWithOpener(
     WebFrame* opener,
-    bool enable_javascript,
     TestWebFrameClient* web_frame_client,
     TestWebViewClient* web_view_client,
     TestWebWidgetClient* web_widget_client,
@@ -245,7 +244,7 @@ WebViewBase* WebViewHelper::InitializeWithOpener(
     web_widget_client = web_view_client->WidgetClient();
   web_view_ = static_cast<WebViewBase*>(
       WebView::Create(web_view_client, kWebPageVisibilityStateVisible));
-  web_view_->GetSettings()->SetJavaScriptEnabled(enable_javascript);
+  web_view_->GetSettings()->SetJavaScriptEnabled(true);
   web_view_->GetSettings()->SetPluginsEnabled(true);
   // Enable (mocked) network loads of image URLs, as this simplifies
   // the completion of resource loads upon test shutdown & helps avoid
@@ -276,25 +275,22 @@ WebViewBase* WebViewHelper::InitializeWithOpener(
 }
 
 WebViewBase* WebViewHelper::Initialize(
-    bool enable_javascript,
     TestWebFrameClient* web_frame_client,
     TestWebViewClient* web_view_client,
     TestWebWidgetClient* web_widget_client,
     void (*update_settings_func)(WebSettings*)) {
-  return InitializeWithOpener(nullptr, enable_javascript, web_frame_client,
-                              web_view_client, web_widget_client,
-                              update_settings_func);
+  return InitializeWithOpener(nullptr, web_frame_client, web_view_client,
+                              web_widget_client, update_settings_func);
 }
 
 WebViewBase* WebViewHelper::InitializeAndLoad(
     const std::string& url,
-    bool enable_javascript,
     TestWebFrameClient* web_frame_client,
     TestWebViewClient* web_view_client,
     TestWebWidgetClient* web_widget_client,
     void (*update_settings_func)(WebSettings*)) {
-  Initialize(enable_javascript, web_frame_client, web_view_client,
-             web_widget_client, update_settings_func);
+  Initialize(web_frame_client, web_view_client, web_widget_client,
+             update_settings_func);
 
   LoadFrame(WebView()->MainFrame(), url);
 

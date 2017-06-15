@@ -62,7 +62,7 @@ class ScrollingCoordinatorTest : public ::testing::Test,
   ScrollingCoordinatorTest()
       : ScopedRootLayerScrollingForTest(GetParam()),
         base_url_("http://www.test.com/") {
-    helper_.Initialize(true, nullptr, &mock_web_view_client_, nullptr,
+    helper_.Initialize(nullptr, &mock_web_view_client_, nullptr,
                        &ConfigureSettings);
     GetWebView()->Resize(IntSize(320, 240));
 
@@ -126,7 +126,6 @@ class ScrollingCoordinatorTest : public ::testing::Test,
 
  private:
   static void ConfigureSettings(WebSettings* settings) {
-    settings->SetJavaScriptEnabled(true);
     settings->SetAcceleratedCompositingEnabled(true);
     settings->SetPreferCompositingToLCDTextEnabled(true);
   }

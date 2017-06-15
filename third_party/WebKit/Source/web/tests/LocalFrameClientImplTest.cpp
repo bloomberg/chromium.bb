@@ -62,7 +62,7 @@ class LocalFrameClientImplTest : public ::testing::Test {
     ON_CALL(web_frame_client_, UserAgentOverride())
         .WillByDefault(Return(WebString()));
 
-    helper_.Initialize(true, &web_frame_client_);
+    helper_.Initialize(&web_frame_client_);
     // FIXME: http://crbug.com/363843. This needs to find a better way to
     // not create graphics layers.
     helper_.WebView()->GetSettings()->SetAcceleratedCompositingEnabled(false);

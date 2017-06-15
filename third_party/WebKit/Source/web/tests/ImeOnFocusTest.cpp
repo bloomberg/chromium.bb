@@ -98,7 +98,7 @@ void ImeOnFocusTest::RunImeOnFocusTest(
                                 testing::WebTestDataPath(),
                                 WebString::FromUTF8(file_name));
   WebViewBase* web_view =
-      web_view_helper_.Initialize(true, 0, nullptr, &client);
+      web_view_helper_.Initialize(nullptr, nullptr, &client);
   web_view->Resize(WebSize(800, 1200));
   LoadFrame(web_view->MainFrame(), base_url_ + file_name);
   document_ = web_view_helper_.WebView()

@@ -40,7 +40,7 @@ SimTest::~SimTest() {
 void SimTest::SetUp() {
   Test::SetUp();
 
-  web_view_helper_.Initialize(true, &web_frame_client_, &web_view_client_);
+  web_view_helper_.Initialize(&web_frame_client_, &web_view_client_);
   compositor_.SetWebView(WebView());
   page_.SetPage(WebView().GetPage());
 }

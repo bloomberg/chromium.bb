@@ -90,7 +90,7 @@ class WebDocumentSubresourceFilterTest : public ::testing::Test {
   WebDocumentSubresourceFilterTest() : base_url_("http://internal.test/") {
     RegisterMockedHttpURLLoad("white-1x1.png");
     RegisterMockedHttpURLLoad("foo_with_image.html");
-    web_view_helper_.Initialize(false /* enableJavascript */, &client_);
+    web_view_helper_.Initialize(&client_);
   }
 
   void LoadDocument(bool allow_subresources) {

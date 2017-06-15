@@ -177,8 +177,8 @@ INSTANTIATE_TEST_CASE_P(All, LayoutGeometryMapTest, ::testing::Bool());
 TEST_P(LayoutGeometryMapTest, SimpleGeometryMapTest) {
   RegisterMockedHttpURLLoad("rgm_test.html");
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebView* web_view = web_view_helper.InitializeAndLoad(
-      base_url_ + "rgm_test.html", true, 0, 0);
+  WebView* web_view =
+      web_view_helper.InitializeAndLoad(base_url_ + "rgm_test.html");
   web_view->Resize(WebSize(1000, 1000));
   web_view->UpdateAllLifecyclePhases();
 
@@ -222,7 +222,7 @@ TEST_P(LayoutGeometryMapTest, TransformedGeometryTest)
   RegisterMockedHttpURLLoad("rgm_transformed_test.html");
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebView* web_view = web_view_helper.InitializeAndLoad(
-      base_url_ + "rgm_transformed_test.html", true, 0, 0);
+      base_url_ + "rgm_transformed_test.html");
   web_view->Resize(WebSize(1000, 1000));
   web_view->UpdateAllLifecyclePhases();
 
@@ -281,7 +281,7 @@ TEST_P(LayoutGeometryMapTest, FixedGeometryTest) {
   RegisterMockedHttpURLLoad("rgm_fixed_position_test.html");
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebView* web_view = web_view_helper.InitializeAndLoad(
-      base_url_ + "rgm_fixed_position_test.html", true, 0, 0);
+      base_url_ + "rgm_fixed_position_test.html");
   web_view->Resize(WebSize(1000, 1000));
   web_view->UpdateAllLifecyclePhases();
 
@@ -319,7 +319,7 @@ TEST_P(LayoutGeometryMapTest, ContainsFixedPositionTest) {
   RegisterMockedHttpURLLoad("rgm_contains_fixed_position_test.html");
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebView* web_view = web_view_helper.InitializeAndLoad(
-      base_url_ + "rgm_contains_fixed_position_test.html", true, 0, 0);
+      base_url_ + "rgm_contains_fixed_position_test.html");
   web_view->Resize(WebSize(1000, 1000));
   web_view->UpdateAllLifecyclePhases();
 
@@ -365,8 +365,8 @@ TEST_P(LayoutGeometryMapTest, IframeTest) {
   RegisterMockedHttpURLLoad("rgm_iframe_test.html");
   RegisterMockedHttpURLLoad("rgm_test.html");
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebView* web_view = web_view_helper.InitializeAndLoad(
-      base_url_ + "rgm_iframe_test.html", true, 0, 0);
+  WebView* web_view =
+      web_view_helper.InitializeAndLoad(base_url_ + "rgm_iframe_test.html");
   web_view->Resize(WebSize(1000, 1000));
   web_view->UpdateAllLifecyclePhases();
 
@@ -461,8 +461,8 @@ TEST_P(LayoutGeometryMapTest, IframeTest) {
 TEST_P(LayoutGeometryMapTest, ColumnTest) {
   RegisterMockedHttpURLLoad("rgm_column_test.html");
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebView* web_view = web_view_helper.InitializeAndLoad(
-      base_url_ + "rgm_column_test.html", true, 0, 0);
+  WebView* web_view =
+      web_view_helper.InitializeAndLoad(base_url_ + "rgm_column_test.html");
   web_view->Resize(WebSize(1000, 1000));
   web_view->UpdateAllLifecyclePhases();
 
@@ -511,7 +511,7 @@ TEST_P(LayoutGeometryMapTest, FloatUnderInlineLayer) {
   RegisterMockedHttpURLLoad("rgm_float_under_inline.html");
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebView* web_view = web_view_helper.InitializeAndLoad(
-      base_url_ + "rgm_float_under_inline.html", true, 0, 0);
+      base_url_ + "rgm_float_under_inline.html");
   web_view->Resize(WebSize(1000, 1000));
   web_view->UpdateAllLifecyclePhases();
 

@@ -70,12 +70,12 @@ class PageOverlayTest : public ::testing::Test {
   enum CompositingMode { kAcceleratedCompositing, kUnacceleratedCompositing };
 
   void Initialize(CompositingMode compositing_mode) {
-    helper_.Initialize(
-        false /* enableJavascript */, nullptr /* webFrameClient */,
-        nullptr /* webViewClient */, nullptr /* webWidgetClient */,
-        compositing_mode == kAcceleratedCompositing
-            ? EnableAcceleratedCompositing
-            : DisableAcceleratedCompositing);
+    helper_.Initialize(nullptr /* webFrameClient */,
+                       nullptr /* webViewClient */,
+                       nullptr /* webWidgetClient */,
+                       compositing_mode == kAcceleratedCompositing
+                           ? EnableAcceleratedCompositing
+                           : DisableAcceleratedCompositing);
     GetWebView()->Resize(WebSize(kViewportWidth, kViewportHeight));
     GetWebView()->UpdateAllLifecyclePhases();
     ASSERT_EQ(compositing_mode == kAcceleratedCompositing,

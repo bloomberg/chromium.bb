@@ -229,15 +229,13 @@ class WebViewHelper {
   // WebViewHelper.
   WebViewBase* InitializeWithOpener(
       WebFrame* opener,
-      bool enable_javascript = false,
       TestWebFrameClient* = nullptr,
       TestWebViewClient* = nullptr,
       TestWebWidgetClient* = nullptr,
       void (*update_settings_func)(WebSettings*) = nullptr);
 
   // Same as initializeWithOpener(), but always sets the opener to null.
-  WebViewBase* Initialize(bool enable_javascript = false,
-                          TestWebFrameClient* = nullptr,
+  WebViewBase* Initialize(TestWebFrameClient* = nullptr,
                           TestWebViewClient* = nullptr,
                           TestWebWidgetClient* = nullptr,
                           void (*update_settings_func)(WebSettings*) = 0);
@@ -246,7 +244,6 @@ class WebViewHelper {
   // returns once the load is complete.
   WebViewBase* InitializeAndLoad(
       const std::string& url,
-      bool enable_javascript = false,
       TestWebFrameClient* = nullptr,
       TestWebViewClient* = nullptr,
       TestWebWidgetClient* = nullptr,
