@@ -9,6 +9,7 @@
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
+#include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/favicon/core/favicon_service.h"
 #include "components/history/core/browser/history_service.h"
@@ -961,7 +962,11 @@ void FaviconCache::DeleteSyncedFavicon(
 
 void FaviconCache::DropSyncedFavicon(FaviconMap::iterator favicon_iter) {
   DVLOG(1) << "Dropping favicon " << favicon_iter->second.get()->favicon_url;
+  const GURL& url = favicon_iter->first;
   recent_favicons_.erase(favicon_iter->second);
+  base::EraseIf(page_favicon_map_, [url](const PageFaviconMap::value_type& kv) {
+    return kv.second == url;
+  });
   synced_favicons_.erase(favicon_iter);
 }
 
