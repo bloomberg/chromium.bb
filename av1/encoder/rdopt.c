@@ -6249,13 +6249,16 @@ static void compound_single_motion_search(
   const YV12_BUFFER_CONFIG *const scaled_ref_frame =
       av1_get_scaled_ref_frame(cpi, ref);
 
-  // Check that this is either an interinter or an interintra block
-  assert(has_second_ref(mbmi) ||
+// Check that this is either an interinter or an interintra block
 #if CONFIG_COMPOUND_SINGLEREF
+  assert(has_second_ref(mbmi) ||
          // or a single ref comp pred mode
          is_inter_singleref_comp_mode(mbmi->mode) ||
-#endif  // CONFIG_COMPOUND_SINGLEREF
          (ref_idx == 0 && mbmi->ref_frame[1] == INTRA_FRAME));
+#else
+  assert(has_second_ref(mbmi) ||
+         (ref_idx == 0 && mbmi->ref_frame[1] == INTRA_FRAME));
+#endif  // CONFIG_COMPOUND_SINGLEREF
 
   if (scaled_ref_frame) {
     int i;
