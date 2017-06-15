@@ -12,9 +12,12 @@
 #include "base/sequence_checker.h"
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
+#include "net/http/http_byte_range.h"
 #include "url/gurl.h"
 
 namespace net {
+class HttpRequestHeaders;
+class HttpResponseInfo;
 class NetworkDelegate;
 class URLRequestJob;
 }
@@ -24,6 +27,8 @@ namespace content {
 class AppCacheEntry;
 class AppCacheHost;
 class AppCacheRequest;
+class AppCacheResponseInfo;
+class AppCacheResponseReader;
 class AppCacheStorage;
 class AppCacheURLLoaderJob;
 class URLRequestJob;
@@ -116,6 +121,11 @@ class CONTENT_EXPORT AppCacheJob : public base::SupportsWeakPtr<AppCacheJob> {
  protected:
   AppCacheJob();
 
+  bool is_range_request() const { return range_requested_.IsValid(); }
+
+  void InitializeRangeRequestInfo(const net::HttpRequestHeaders& headers);
+  void SetupRangeResponse();
+
   SEQUENCE_CHECKER(sequence_checker_);
 
   // Set to true if the AppCache entry is not found.
@@ -123,6 +133,17 @@ class CONTENT_EXPORT AppCacheJob : public base::SupportsWeakPtr<AppCacheJob> {
 
   // The jobs delivery status.
   DeliveryType delivery_type_;
+
+  // Byte range request if any.
+  net::HttpByteRange range_requested_;
+
+  std::unique_ptr<net::HttpResponseInfo> range_response_info_;
+
+  // The response details.
+  scoped_refptr<AppCacheResponseInfo> info_;
+
+  // Used to read the cache.
+  std::unique_ptr<AppCacheResponseReader> reader_;
 
   base::WeakPtrFactory<AppCacheJob> weak_factory_;
 
