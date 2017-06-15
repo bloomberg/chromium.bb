@@ -89,7 +89,7 @@ class CORE_EXPORT Keyframe : public RefCounted<Keyframe> {
         const ComputedStyle* parent_style) const {
       return false;
     }
-    virtual PassRefPtr<AnimatableValue> GetAnimatableValue() const = 0;
+    virtual const AnimatableValue* GetAnimatableValue() const = 0;
 
     virtual bool IsAnimatableValuePropertySpecificKeyframe() const {
       return false;
