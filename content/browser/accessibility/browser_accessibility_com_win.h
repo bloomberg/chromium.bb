@@ -718,10 +718,17 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
   AXPlatformPosition::AXPositionInstance CreatePositionForSelectionAt(
       int offset) const;
 
-  // Accessors.
+  // Public accessors (these do not have COM accessible accessors)
+  const base::string16& role_name() const { return win_attributes_->role_name; }
+  const std::map<int, std::vector<base::string16>>& offset_to_text_attributes()
+      const {
+    return win_attributes_->offset_to_text_attributes;
+  }
+
+ private:
+  // Private accessors.
   int32_t ia_role() const { return win_attributes_->ia_role; }
   int32_t ia_state() const { return win_attributes_->ia_state; }
-  const base::string16& role_name() const { return win_attributes_->role_name; }
   int32_t ia2_role() const { return win_attributes_->ia2_role; }
   int32_t ia2_state() const { return win_attributes_->ia2_state; }
   const std::vector<base::string16>& ia2_attributes() const {
@@ -730,10 +737,7 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
   base::string16 name() const { return win_attributes_->name; }
   base::string16 description() const { return win_attributes_->description; }
   base::string16 value() const { return win_attributes_->value; }
-  const std::map<int, std::vector<base::string16>>& offset_to_text_attributes()
-      const {
-    return win_attributes_->offset_to_text_attributes;
-  }
+
   std::map<int32_t, int32_t>& hyperlink_offset_to_index() const {
     return win_attributes_->hyperlink_offset_to_index;
   }
@@ -741,7 +745,6 @@ class __declspec(uuid("562072fe-3390-43b1-9e2c-dd4118f5ac79"))
     return win_attributes_->hyperlinks;
   }
 
- private:
   // Setter and getter for the browser accessibility owner
   BrowserAccessibilityWin* owner() const { return owner_; }
   void SetOwner(BrowserAccessibilityWin* owner) { owner_ = owner; }
