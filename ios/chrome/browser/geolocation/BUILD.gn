@@ -67,6 +67,7 @@ source_set("unit_tests") {
 }
 
 source_set("geolocation_internal") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "omnibox_geolocation_controller+Testing.h",
     "omnibox_geolocation_controller.h",
