@@ -22,6 +22,83 @@ static CameraConfigChromeOS* GetCameraConfig() {
   return config;
 }
 
+// This is a delegate class used to transfer Display change events from the UI
+// thread to the media thread.
+class VideoCaptureDeviceChromeOS::ScreenObserverDelegate
+    : public display::DisplayObserver,
+      public base::RefCountedThreadSafe<ScreenObserverDelegate> {
+ public:
+  ScreenObserverDelegate(
+      VideoCaptureDeviceChromeOS* capture_device,
+      scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner)
+      : capture_device_(capture_device),
+        ui_task_runner_(ui_task_runner),
+        capture_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
+    ui_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&ScreenObserverDelegate::AddObserverOnUIThread, this));
+  }
+
+  void RemoveObserver() {
+    DCHECK(capture_task_runner_->BelongsToCurrentThread());
+    capture_device_ = NULL;
+    ui_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&ScreenObserverDelegate::RemoveObserverOnUIThread, this));
+  }
+
+ private:
+  friend class base::RefCountedThreadSafe<ScreenObserverDelegate>;
+
+  ~ScreenObserverDelegate() override { DCHECK(!capture_device_); }
+
+  void OnDisplayAdded(const display::Display& /*new_display*/) override {}
+  void OnDisplayRemoved(const display::Display& /*old_display*/) override {}
+  void OnDisplayMetricsChanged(const display::Display& display,
+                               uint32_t metrics) override {
+    DCHECK(ui_task_runner_->BelongsToCurrentThread());
+    if (!(metrics & DISPLAY_METRIC_ROTATION))
+      return;
+    SendDisplayRotation(display);
+  }
+
+  void AddObserverOnUIThread() {
+    DCHECK(ui_task_runner_->BelongsToCurrentThread());
+    display::Screen* screen = display::Screen::GetScreen();
+    if (screen) {
+      screen->AddObserver(this);
+      SendDisplayRotation(screen->GetPrimaryDisplay());
+    }
+  }
+
+  void RemoveObserverOnUIThread() {
+    DCHECK(ui_task_runner_->BelongsToCurrentThread());
+    display::Screen* screen = display::Screen::GetScreen();
+    if (screen)
+      screen->RemoveObserver(this);
+  }
+
+  // Post the screen rotation change from the UI thread to capture thread
+  void SendDisplayRotation(const display::Display& display) {
+    DCHECK(ui_task_runner_->BelongsToCurrentThread());
+    capture_task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(&ScreenObserverDelegate::SendDisplayRotationOnCaptureThread,
+                   this, display));
+  }
+
+  void SendDisplayRotationOnCaptureThread(const display::Display& display) {
+    DCHECK(capture_task_runner_->BelongsToCurrentThread());
+    if (capture_device_)
+      capture_device_->SetDisplayRotation(display);
+  }
+
+  VideoCaptureDeviceChromeOS* capture_device_;
+  scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> capture_task_runner_;
+  DISALLOW_IMPLICIT_CONSTRUCTORS(ScreenObserverDelegate);
+};
+
 VideoCaptureDeviceChromeOS::VideoCaptureDeviceChromeOS(
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
     const VideoCaptureDeviceDescriptor& device_descriptor)

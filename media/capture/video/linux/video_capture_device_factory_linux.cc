@@ -272,13 +272,11 @@ std::string VideoCaptureDeviceFactoryLinux::GetDeviceModelId(
   return usb_id;
 }
 
-#if !defined(OS_CHROMEOS)
 // static
 VideoCaptureDeviceFactory*
 VideoCaptureDeviceFactory::CreateVideoCaptureDeviceFactory(
     scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
   return new VideoCaptureDeviceFactoryLinux(ui_task_runner);
 }
-#endif
 
 }  // namespace media
