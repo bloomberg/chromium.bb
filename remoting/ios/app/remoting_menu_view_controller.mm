@@ -10,6 +10,7 @@
 
 #import "ios/third_party/material_components_ios/src/components/AppBar/src/MaterialAppBar.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
+#import "remoting/ios/app/remoting_theme.h"
 #import "remoting/ios/facade/remoting_authentication.h"
 #import "remoting/ios/facade/remoting_service.h"
 
@@ -98,7 +99,7 @@ std::string GetAuthorizationCodeUri() {
   [_appBar addSubviewsToParent];
 
   UIBarButtonItem* backButton =
-      [[UIBarButtonItem alloc] initWithImage:[UIImage imageNamed:@"Back"]
+      [[UIBarButtonItem alloc] initWithImage:RemotingTheme.backIcon
                                        style:UIBarButtonItemStyleDone
                                       target:self
                                       action:@selector(didTapBack:)];

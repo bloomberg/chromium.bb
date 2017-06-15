@@ -9,6 +9,7 @@
 #import "remoting/ios/app/pin_entry_view.h"
 
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
+#import "remoting/ios/app/remoting_theme.h"
 
 static const CGFloat kMargin = 5.f;
 static const CGFloat kPadding = 6.f;
@@ -46,11 +47,7 @@ static const CGFloat kLineSpace = 12.f;
 
     _pinButton =
         [MDCFloatingButton floatingButtonWithShape:MDCFloatingButtonShapeMini];
-    [_pinButton setBackgroundColor:UIColor.whiteColor
-                          forState:UIControlStateNormal];
-
-    // TODO(nicholss): Update "->" to the arrow icon.
-    [_pinButton setTitle:@"->" forState:UIControlStateNormal];
+    [_pinButton setImage:RemotingTheme.arrowIcon forState:UIControlStateNormal];
     [_pinButton addTarget:self
                    action:@selector(didTapPinEntry:)
          forControlEvents:UIControlEventTouchUpInside];

@@ -10,10 +10,27 @@
 // Styles to be used when rendering the iOS client's UI.
 @interface RemotingTheme : NSObject
 
-@property(class, nonatomic, readonly) UIColor* hostListBackgroundColor;
+// Colors
+
 @property(class, nonatomic, readonly) UIColor* connectionViewBackgroundColor;
-@property(class, nonatomic, readonly) UIColor* onlineHostColor;
+@property(class, nonatomic, readonly) UIColor* hostListBackgroundColor;
+@property(class, nonatomic, readonly) UIColor* menuBlueColor;
 @property(class, nonatomic, readonly) UIColor* offlineHostColor;
+@property(class, nonatomic, readonly) UIColor* onlineHostColor;
+
+// Icons
+
+@property(class, nonatomic, readonly) UIImage* arrowIcon;
+@property(class, nonatomic, readonly) UIImage* backIcon;
+@property(class, nonatomic, readonly) UIImage* checkboxCheckedIcon;
+@property(class, nonatomic, readonly) UIImage* checkboxOutlineIcon;
+@property(class, nonatomic, readonly) UIImage* closeIcon;
+@property(class, nonatomic, readonly) UIImage* desktopIcon;
+@property(class, nonatomic, readonly) UIImage* menuIcon;
+@property(class, nonatomic, readonly) UIImage* radioCheckedIcon;
+@property(class, nonatomic, readonly) UIImage* radioOutlineIcon;
+@property(class, nonatomic, readonly) UIImage* refreshIcon;
+@property(class, nonatomic, readonly) UIImage* settingsIcon;
 
 @end
 

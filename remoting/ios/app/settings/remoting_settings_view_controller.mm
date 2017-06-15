@@ -10,14 +10,12 @@
 
 #import "ios/third_party/material_components_ios/src/components/AppBar/src/MaterialAppBar.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
+#import "remoting/ios/app/remoting_theme.h"
 #import "remoting/ios/app/settings/setting_option.h"
 
 #include "base/logging.h"
 
-static NSString* const kReusableIdentifierItem =
-    @"remotingSettingsViewControllerItem";
-static UIColor* kBackgroundColor =
-    [UIColor colorWithRed:0.f green:0.67f blue:0.55f alpha:1.f];
+static NSString* const kReusableIdentifierItem = @"remotingSettingsVCItem";
 
 @interface RemotingSettingsViewController () {
   MDCAppBar* _appBar;
@@ -34,7 +32,9 @@ static UIColor* kBackgroundColor =
     _appBar = [[MDCAppBar alloc] init];
     [self addChildViewController:_appBar.headerViewController];
 
-    _appBar.headerViewController.headerView.backgroundColor = kBackgroundColor;
+    self.view.backgroundColor = RemotingTheme.menuBlueColor;
+    _appBar.headerViewController.headerView.backgroundColor =
+        RemotingTheme.menuBlueColor;
     _appBar.navigationBar.tintColor = [UIColor whiteColor];
     _appBar.navigationBar.titleTextAttributes =
         @{NSForegroundColorAttributeName : [UIColor whiteColor]};
@@ -51,9 +51,11 @@ static UIColor* kBackgroundColor =
       self.collectionView;
   [_appBar addSubviewsToParent];
 
+  self.collectionView.backgroundColor = RemotingTheme.menuBlueColor;
+
   // TODO(nicholss): X should be an image.
   UIBarButtonItem* closeButton =
-      [[UIBarButtonItem alloc] initWithTitle:@"X"
+      [[UIBarButtonItem alloc] initWithImage:RemotingTheme.closeIcon
                                        style:UIBarButtonItemStyleDone
                                       target:self
                                       action:@selector(didTapClose:)];
@@ -67,8 +69,7 @@ static UIColor* kBackgroundColor =
           forSupplementaryViewOfKind:UICollectionElementKindSectionHeader
                  withReuseIdentifier:UICollectionElementKindSectionHeader];
 
-  self.styler.cellStyle = MDCCollectionViewCellStyleCard;
-
+  // TODO(nicholss): All of these strings need to be setup for l18n.
   _sections = @[
     @"Display options", @"Mouse options", @"Keyboard controls", @"Support"
   ];
@@ -79,41 +80,61 @@ static UIColor* kBackgroundColor =
   shrinkOption.title = @"Shrink to fit";
   // TODO(nicholss): I think this text changes based on value. Confirm.
   shrinkOption.subtext = @"Don't change resolution to match window";
+  shrinkOption.style = OptionCheckbox;
+  shrinkOption.checked = NO;
 
   SettingOption* resizeOption = [[SettingOption alloc] init];
   resizeOption.title = @"Resize to fit";
   // TODO(nicholss): I think this text changes based on value. Confirm.
   resizeOption.subtext = @"Update remote resolution to match window";
+  resizeOption.style = OptionCheckbox;
+  resizeOption.checked = YES;
 
   [_content addObject:@[ shrinkOption, resizeOption ]];
+
+  SettingOption* directMode = [[SettingOption alloc] init];
+  directMode.title = @"Touch mode";
+  // TODO(nicholss): I think this text changes based on value. Confirm.
+  directMode.subtext = @"Screen acts like a touch screen";
+  directMode.style = OptionSelector;
+  directMode.checked = YES;
 
   SettingOption* trackpadMode = [[SettingOption alloc] init];
   trackpadMode.title = @"Trackpad mode";
   // TODO(nicholss): I think this text changes based on value. Confirm.
   trackpadMode.subtext = @"Screen acts like a trackpad";
+  trackpadMode.style = OptionSelector;
+  trackpadMode.checked = NO;
 
-  [_content addObject:@[ trackpadMode ]];
+  [_content addObject:@[ directMode, trackpadMode ]];
 
   SettingOption* ctrlAltDelOption = [[SettingOption alloc] init];
   ctrlAltDelOption.title = @"Press \"Ctrl+Alt+Del\"";
+  ctrlAltDelOption.style = FlatButton;
 
   SettingOption* printScreenOption = [[SettingOption alloc] init];
   printScreenOption.title = @"Press \"Print Screen\"";
+  printScreenOption.style = FlatButton;
 
   [_content addObject:@[ ctrlAltDelOption, printScreenOption ]];
 
   SettingOption* helpCenterOption = [[SettingOption alloc] init];
   helpCenterOption.title = @"Help center";
+  helpCenterOption.style = FlatButton;
 
   SettingOption* faqsOption = [[SettingOption alloc] init];
   faqsOption.title = @"FAQs";
+  faqsOption.style = FlatButton;
 
   SettingOption* sendFeedbackOption = [[SettingOption alloc] init];
   sendFeedbackOption.title = @"Send feedback";
+  sendFeedbackOption.style = FlatButton;
 
   [_content addObject:@[ helpCenterOption, faqsOption, sendFeedbackOption ]];
 
   DCHECK_EQ(_content.count, _sections.count);
+
+  self.styler.cellStyle = MDCCollectionViewCellStyleCard;
 }
 
 #pragma mark - UICollectionViewDataSource
@@ -130,15 +151,67 @@ static UIColor* kBackgroundColor =
 
 - (UICollectionViewCell*)collectionView:(UICollectionView*)collectionView
                  cellForItemAtIndexPath:(NSIndexPath*)indexPath {
+  SettingOption* setting = _content[indexPath.section][indexPath.item];
+  // TODO(nicholss): There is a bug in MDCCollectionViewTextCell, it has a
+  // wrapping UIView that leaves behind a one pixel edge. Filed a bug:
+  // https://github.com/material-components/material-components-ios/issues/1519
   MDCCollectionViewTextCell* cell = [collectionView
       dequeueReusableCellWithReuseIdentifier:kReusableIdentifierItem
                                 forIndexPath:indexPath];
-  cell.textLabel.text =
-      ((SettingOption*)
-           _content[(NSUInteger)indexPath.section][(NSUInteger)indexPath.item])
-          .title;
+  cell.contentView.backgroundColor = RemotingTheme.menuBlueColor;
+  cell.textLabel.text = setting.title;
+  cell.textLabel.textColor = [UIColor whiteColor];
+  cell.textLabel.numberOfLines = 1;
+  cell.detailTextLabel.text = setting.subtext;
+  cell.detailTextLabel.textColor = [UIColor whiteColor];
+  cell.detailTextLabel.numberOfLines = 1;
+  cell.tintColor = RemotingTheme.menuBlueColor;
 
+  switch (setting.style) {
+    case OptionCheckbox:
+      if (setting.checked) {
+        cell.imageView.image = RemotingTheme.checkboxCheckedIcon;
+      } else {
+        cell.imageView.image = RemotingTheme.checkboxOutlineIcon;
+      }
+      break;
+    case OptionSelector:
+      if (setting.checked) {
+        cell.imageView.image = RemotingTheme.radioCheckedIcon;
+      } else {
+        cell.imageView.image = RemotingTheme.radioOutlineIcon;
+      }
+      break;
+    case FlatButton:  // Fall-through.
+    default:
+      cell.imageView.image = [[UIImage alloc] init];
+  }
   return cell;
+}
+
+- (CGFloat)collectionView:(UICollectionView*)collectionView
+    cellHeightAtIndexPath:(NSIndexPath*)indexPath {
+  SettingOption* setting = _content[indexPath.section][indexPath.item];
+  switch (setting.style) {
+    case OptionCheckbox:  // Fall-through
+    case OptionSelector:
+      return MDCCellDefaultTwoLineHeight;
+    case FlatButton:  // Fall-through.
+    default:
+      return MDCCellDefaultOneLineHeight;
+  }
+}
+
+#pragma mark - UICollectionViewDelegate
+
+- (void)collectionView:(UICollectionView*)collectionView
+    didSelectItemAtIndexPath:(NSIndexPath*)indexPath {
+  [super collectionView:collectionView didSelectItemAtIndexPath:indexPath];
+
+  MDCCollectionViewTextCell* cell = (MDCCollectionViewTextCell*)[collectionView
+      cellForItemAtIndexPath:indexPath];
+
+  NSLog(@"Tapped: %@", cell);
 }
 
 - (UICollectionReusableView*)collectionView:(UICollectionView*)collectionView
@@ -149,8 +222,9 @@ static UIColor* kBackgroundColor =
                                          withReuseIdentifier:kind
                                                 forIndexPath:indexPath];
   if ([kind isEqualToString:UICollectionElementKindSectionHeader]) {
+    supplementaryView.contentView.backgroundColor = RemotingTheme.menuBlueColor;
     supplementaryView.textLabel.text = _sections[(NSUInteger)indexPath.section];
-    supplementaryView.textLabel.textColor = kBackgroundColor;
+    supplementaryView.textLabel.textColor = [UIColor whiteColor];
   }
   return supplementaryView;
 }

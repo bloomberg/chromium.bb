@@ -11,6 +11,7 @@
 #include <memory>
 
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
+#import "remoting/ios/app/remoting_theme.h"
 #import "remoting/ios/app/settings/remoting_settings_view_controller.h"
 #import "remoting/ios/client_gestures.h"
 #import "remoting/ios/client_keyboard.h"
@@ -29,11 +30,11 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
 @interface HostViewController ()<ClientKeyboardDelegate,
                                  ClientGesturesDelegate> {
   RemotingClient* _client;
+  MDCActionImageView* _actionImageView;
   MDCFloatingButton* _floatingButton;
   ClientGestures* _clientGestures;
   ClientKeyboard* _clientKeyboard;
   CGSize _keyboardSize;
-  MDCActionImageView* _actionImageView;
   BOOL _surfaceCreated;
 }
 @end
@@ -62,22 +63,21 @@ static const CGFloat kKeyboardAnimationTime = 0.3;
 - (void)viewDidLoad {
   [super viewDidLoad];
   _floatingButton =
-      [MDCFloatingButton floatingButtonWithShape:MDCFloatingButtonShapeDefault];
+      [MDCFloatingButton floatingButtonWithShape:MDCFloatingButtonShapeMini];
+  // Note(nicholss): Setting title to " " because the FAB requires the title
+  // or image to be set but we are using the rotating image instead. Until this
+  // is directly supported by the FAB, a space for the title is a work-around.
   [_floatingButton setTitle:@" " forState:UIControlStateNormal];
   [_floatingButton addTarget:self
                       action:@selector(didTap:)
             forControlEvents:UIControlEventTouchUpInside];
   [_floatingButton sizeToFit];
 
-  UIImage* settingsImage = [UIImage imageNamed:@"Settings"];
-  UIImage* backImage = [UIImage imageNamed:@"Back"];
-
   _actionImageView =
       [[MDCActionImageView alloc] initWithFrame:_floatingButton.bounds
-                                   primaryImage:settingsImage
-                                    activeImage:backImage];
+                                   primaryImage:RemotingTheme.settingsIcon
+                                    activeImage:RemotingTheme.closeIcon];
   [_floatingButton addSubview:_actionImageView];
-
   [self.view addSubview:_floatingButton];
 
   // TODO(yuweih): This should be loaded from and stored into user defaults.

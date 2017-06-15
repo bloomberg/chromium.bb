@@ -10,6 +10,17 @@
 
 @implementation RemotingTheme
 
+#pragma mark - Colors
+
++ (UIColor*)connectionViewBackgroundColor {
+  static UIColor* color;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    color = [UIColor colorWithRed:0.06f green:0.12f blue:0.33f alpha:1.f];
+  });
+  return color;
+}
+
 + (UIColor*)hostListBackgroundColor {
   static UIColor* color;
   static dispatch_once_t onceToken;
@@ -19,11 +30,23 @@
   return color;
 }
 
-+ (UIColor*)connectionViewBackgroundColor {
++ (UIColor*)menuBlueColor {
   static UIColor* color;
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
-    color = [UIColor colorWithRed:0.06f green:0.12f blue:0.33f alpha:1.f];
+    color = [UIColor colorWithRed:52.f / 255.f
+                            green:174.f / 255.f
+                             blue:249.f / 255.f
+                            alpha:1.f];
+  });
+  return color;
+}
+
++ (UIColor*)offlineHostColor {
+  static UIColor* color;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    color = [UIColor colorWithRed:0.75f green:0.75f blue:0.75f alpha:1.f];
   });
   return color;
 }
@@ -37,13 +60,105 @@
   return color;
 }
 
-+ (UIColor*)offlineHostColor {
-  static UIColor* color;
+#pragma mark - Icons
+
++ (UIImage*)arrowIcon {
+  static UIImage* icon;
   static dispatch_once_t onceToken;
   dispatch_once(&onceToken, ^{
-    color = [UIColor colorWithRed:0.75f green:0.75f blue:0.75f alpha:1.f];
+    icon = [UIImage imageNamed:@"ic_arrow_forward_white"];
   });
-  return color;
+  return icon;
+}
+
++ (UIImage*)backIcon {
+  static UIImage* icon;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    icon = [UIImage imageNamed:@"Back"];
+  });
+  return icon;
+}
+
++ (UIImage*)checkboxCheckedIcon {
+  static UIImage* icon;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    icon = [UIImage imageNamed:@"ic_check_box"];
+  });
+  return icon;
+}
+
++ (UIImage*)checkboxOutlineIcon {
+  static UIImage* icon;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    icon = [UIImage imageNamed:@"ic_check_box_outline_blank"];
+  });
+  return icon;
+}
+
++ (UIImage*)closeIcon {
+  static UIImage* icon;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    icon = [UIImage imageNamed:@"ic_close"];
+  });
+  return icon;
+}
+
++ (UIImage*)desktopIcon {
+  static UIImage* icon;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    icon = [UIImage imageNamed:@"ic_desktop"];
+  });
+  return icon;
+}
+
++ (UIImage*)menuIcon {
+  static UIImage* icon;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    icon = [UIImage imageNamed:@"ic_menu"];
+  });
+  return icon;
+}
+
++ (UIImage*)radioCheckedIcon {
+  static UIImage* icon;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    icon = [UIImage imageNamed:@"ic_radio_button_checked"];
+  });
+  return icon;
+}
+
++ (UIImage*)radioOutlineIcon {
+  static UIImage* icon;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    icon = [UIImage imageNamed:@"ic_radio_button_unchecked"];
+  });
+  return icon;
+}
+
++ (UIImage*)refreshIcon {
+  static UIImage* icon;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    icon = [UIImage imageNamed:@"ic_refresh"];
+  });
+  return icon;
+}
+
++ (UIImage*)settingsIcon {
+  static UIImage* icon;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    icon = [UIImage imageNamed:@"Settings"];
+  });
+  return icon;
 }
 
 @end
