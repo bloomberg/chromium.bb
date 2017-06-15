@@ -156,6 +156,7 @@ enum class ComponentState {
   kUpToDate,
   kUpdateError,
   kUninstalled,
+  kRun,
   kLastStatus
 };
 
