@@ -1913,7 +1913,7 @@ static inline bool ShouldTruncateOverflowingText(const LayoutBlockFlow* block) {
     object_to_check = parent;
   }
   return object_to_check->HasOverflowClip() &&
-         object_to_check->Style()->GetTextOverflow();
+         object_to_check->Style()->TextOverflow() != ETextOverflow::kClip;
 }
 
 DISABLE_CFI_PERF

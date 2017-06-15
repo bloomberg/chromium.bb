@@ -2499,10 +2499,9 @@
     },
     {
       name: "text-overflow",
-      type_name: "TextOverflow",
       field_template: "storage_only",
       field_group: "rare-non-inherited",
-      default_value: "kTextOverflowClip",
+      default_value: "ETextOverflow::kClip",
       field_size: 1,
     },
     {
