@@ -231,7 +231,7 @@ void SadTab::PerformAction(SadTab::Action action) {
             l10n_util::GetStringUTF8(kind_ == SAD_TAB_KIND_CRASHED
                                          ? IDS_CRASHED_TAB_FEEDBACK_MESSAGE
                                          : IDS_KILLED_TAB_FEEDBACK_MESSAGE),
-            std::string(kCategoryTagCrash));
+            std::string(kCategoryTagCrash), std::string());
       } else {
         web_contents_->GetController().Reload(content::ReloadType::NORMAL,
                                               true);

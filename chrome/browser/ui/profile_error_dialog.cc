@@ -30,17 +30,10 @@ void OnProfileErrorDialogDismissed(const std::string& diagnostics,
 
   std::string feedback_description =
       l10n_util::GetStringUTF8(IDS_PROFILE_ERROR_FEEDBACK_DESCRIPTION);
-  if (!diagnostics.empty()) {
-    // TODO(afakhry): Add support to inject diagnostics to the feedback
-    // reports without adding them to the description. crbug.com/708511.
-    feedback_description +=
-        "\n\n" +
-        l10n_util::GetStringUTF8(IDS_PROFILE_ERROR_FEEDBACK_DIAGNOSTICS_LINE) +
-        diagnostics;
-  }
 
   chrome::ShowFeedbackPage(nullptr, chrome::kFeedbackSourceProfileErrorDialog,
-                           feedback_description, kProfileErrorFeedbackCategory);
+                           feedback_description, kProfileErrorFeedbackCategory,
+                           diagnostics);
 }
 #endif  // !defined(OS_ANDROID)
 

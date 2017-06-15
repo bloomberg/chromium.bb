@@ -1116,9 +1116,9 @@ void OpenTaskManager(Browser* browser) {
 
 void OpenFeedbackDialog(Browser* browser, FeedbackSource source) {
   base::RecordAction(UserMetricsAction("Feedback"));
-  chrome::ShowFeedbackPage(browser, source,
-                           std::string() /* description_template */,
-                           std::string() /* category_tag */);
+  chrome::ShowFeedbackPage(
+      browser, source, std::string() /* description_template */,
+      std::string() /* category_tag */, std::string() /* extra_diagnostics */);
 }
 
 void ToggleBookmarkBar(Browser* browser) {
