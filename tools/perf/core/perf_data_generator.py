@@ -128,7 +128,7 @@ def get_fyi_waterfall_config():
       {
        'os': 'Android',
        'android_devices': '1',
-       'pool': 'Chrome-perf',
+       'pool': 'Chrome-perf-fyi',
        'device_ids': [
            'build243-m4--device1', 'build243-m4--device2',
            'build243-m4--device3', 'build243-m4--device4',
