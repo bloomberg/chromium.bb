@@ -744,6 +744,12 @@ void VrShellGl::SendHoverMove(const gfx::PointF& target_point,
   if (!hover_target_)
     return;
   if (hover_target_->fill() == Fill::CONTENT) {
+    // TODO(mthiesse, vollick): Content is currently way too sensitive to mouse
+    // moves for how noisy the controller is. It's almost impossible to click a
+    // link without unintentionally starting a drag event. For this reason we
+    // disable mouse moves, only delivering a down and up event.
+    if (in_click_)
+      return;
     SendGestureToContent(MakeMouseEvent(blink::WebInputEvent::kMouseMove,
                                         NowSeconds(), local_point_pixels,
                                         in_click_));
