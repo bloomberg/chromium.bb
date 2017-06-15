@@ -1404,11 +1404,6 @@ bool ResourceFetcher::StartLoad(Resource* resource) {
     Context().DispatchWillSendRequest(resource->Identifier(), request, response,
                                       resource->Options().initiator_info);
 
-    // TODO(shaochuan): Saving modified ResourceRequest back to |resource|,
-    // remove once dispatchWillSendRequest() takes const ResourceRequest.
-    // crbug.com/632580
-    resource->SetResourceRequest(request);
-
     // Resource requests from suborigins should not be intercepted by the
     // service worker of the physical origin. This has the effect that, for now,
     // suborigins do not work with service workers. See
@@ -1416,6 +1411,11 @@ bool ResourceFetcher::StartLoad(Resource* resource) {
     SecurityOrigin* source_origin = Context().GetSecurityOrigin();
     if (source_origin && source_origin->HasSuborigin())
       request.SetServiceWorkerMode(WebURLRequest::ServiceWorkerMode::kNone);
+
+    // TODO(shaochuan): Saving modified ResourceRequest back to |resource|,
+    // remove once dispatchWillSendRequest() takes const ResourceRequest.
+    // crbug.com/632580
+    resource->SetResourceRequest(request);
 
     loader = ResourceLoader::Create(this, resource);
     if (resource->ShouldBlockLoadEvent())
