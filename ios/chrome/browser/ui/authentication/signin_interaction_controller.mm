@@ -115,8 +115,8 @@ using signin_ui::CompletionCallback;
     [self showSigninViewControllerWithIdentity:nil identityAdded:NO];
   } else {
     identityInteractionManager_ =
-        identityService->NewChromeIdentityInteractionManager(browserState_,
-                                                             self);
+        identityService->CreateChromeIdentityInteractionManager(browserState_,
+                                                                self);
     if (!identityInteractionManager_) {
       // Abort sign-in if the ChromeIdentityInteractionManager returned is
       // nil (this can happen when the iOS internal provider is not used).
@@ -162,7 +162,7 @@ using signin_ui::CompletionCallback;
   identityInteractionManager_ =
       ios::GetChromeBrowserProvider()
           ->GetChromeIdentityService()
-          ->NewChromeIdentityInteractionManager(browserState_, self);
+          ->CreateChromeIdentityInteractionManager(browserState_, self);
   __weak SigninInteractionController* weakSelf = self;
   [identityInteractionManager_
       reauthenticateUserWithID:base::SysUTF8ToNSString(idToReauthenticate)
@@ -181,7 +181,7 @@ using signin_ui::CompletionCallback;
   identityInteractionManager_ =
       ios::GetChromeBrowserProvider()
           ->GetChromeIdentityService()
-          ->NewChromeIdentityInteractionManager(browserState_, self);
+          ->CreateChromeIdentityInteractionManager(browserState_, self);
   __weak SigninInteractionController* weakSelf = self;
   [identityInteractionManager_
       addAccountWithCompletion:^(ChromeIdentity* identity, NSError* error) {
