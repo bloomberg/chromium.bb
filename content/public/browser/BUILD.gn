@@ -228,6 +228,7 @@ source_set("browser_sources") {
     "security_style_explanations.cc",
     "security_style_explanations.h",
     "service_worker_context.h",
+    "service_worker_context_observer.h",
     "service_worker_usage_info.cc",
     "service_worker_usage_info.h",
     "session_storage_namespace.h",

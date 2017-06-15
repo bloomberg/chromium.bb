@@ -21,8 +21,6 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
-#include "content/browser/service_worker/service_worker_context_core.h"
-#include "content/browser/service_worker/service_worker_context_core_observer.h"
 #include "content/browser/service_worker/service_worker_process_manager.h"
 #include "content/browser/service_worker/service_worker_quota_client.h"
 #include "content/browser/service_worker/service_worker_version.h"
@@ -31,6 +29,7 @@
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/service_worker_context_observer.h"
 #include "net/base/url_util.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/quota/special_storage_policy.h"
@@ -103,6 +102,26 @@ bool ServiceWorkerContext::IsExcludedHeaderNameForFetchEvent(
          g_excluded_header_name_set.Get().end();
 }
 
+bool ServiceWorkerContext::ScopeMatches(const GURL& scope, const GURL& url) {
+  return ServiceWorkerUtils::ScopeMatches(scope, url);
+}
+
+void ServiceWorkerContextWrapper::OnRegistrationStored(int64_t registration_id,
+                                                       const GURL& pattern) {
+  for (auto& observer : observer_list_)
+    observer.OnRegistrationStored(pattern);
+}
+
+void ServiceWorkerContextWrapper::AddObserver(
+    ServiceWorkerContextObserver* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void ServiceWorkerContextWrapper::RemoveObserver(
+    ServiceWorkerContextObserver* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
 ServiceWorkerContextWrapper::ServiceWorkerContextWrapper(
     BrowserContext* browser_context)
     : core_observer_list_(
@@ -112,9 +131,17 @@ ServiceWorkerContextWrapper::ServiceWorkerContextWrapper(
       storage_partition_(nullptr),
       resource_context_(nullptr) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  // Add this object as an observer of the wrapped |context_core_|. This lets us
+  // forward observer methods to observers outside of content.
+  core_observer_list_->AddObserver(this);
 }
 
 ServiceWorkerContextWrapper::~ServiceWorkerContextWrapper() {
+  // Explicitly remove this object as an observer to avoid use-after-frees in
+  // tests where this object is not guaranteed to outlive the
+  // ServiceWorkerContextCore it wraps.
+  core_observer_list_->RemoveObserver(this);
   DCHECK(!resource_context_);
 }
 

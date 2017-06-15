@@ -14,6 +14,8 @@
 
 namespace content {
 
+class ServiceWorkerContextObserver;
+
 enum class ServiceWorkerCapability {
   NO_SERVICE_WORKER,
   SERVICE_WORKER_NO_FETCH_HANDLER,
@@ -64,6 +66,13 @@ class ServiceWorkerContext {
   // Returns true if the header name should not be passed to the ServiceWorker.
   // Must be called from the IO thread.
   static bool IsExcludedHeaderNameForFetchEvent(const std::string& header_name);
+
+  // Returns true if |url| is within the service worker |scope|.
+  CONTENT_EXPORT static bool ScopeMatches(const GURL& scope, const GURL& url);
+
+  // Observer methods are always dispatched on the UI thread.
+  virtual void AddObserver(ServiceWorkerContextObserver* observer) = 0;
+  virtual void RemoveObserver(ServiceWorkerContextObserver* observer) = 0;
 
   // Equivalent to calling navigator.serviceWorker.register(script_url, {scope:
   // pattern}) from a renderer, except that |pattern| is an absolute URL instead

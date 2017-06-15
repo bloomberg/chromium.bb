@@ -11,10 +11,12 @@
 #include <string>
 #include <vector>
 
-#include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/observer_list.h"
+#include "base/observer_list_threadsafe.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_context_core_observer.h"
 #include "content/common/content_export.h"
 #include "content/common/worker_url_loader_factory_provider.mojom.h"
 #include "content/public/browser/service_worker_context.h"
@@ -33,8 +35,7 @@ namespace content {
 
 class BrowserContext;
 class ResourceContext;
-class ServiceWorkerContextCore;
-class ServiceWorkerContextCoreObserver;
+class ServiceWorkerContextObserver;
 class StoragePartitionImpl;
 
 // A refcounted wrapper class for our core object. Higher level content lib
@@ -43,6 +44,7 @@ class StoragePartitionImpl;
 // is what is used internally in the service worker lib.
 class CONTENT_EXPORT ServiceWorkerContextWrapper
     : NON_EXPORTED_BASE(public ServiceWorkerContext),
+      public ServiceWorkerContextCoreObserver,
       public base::RefCountedThreadSafe<ServiceWorkerContextWrapper> {
  public:
   using StatusCallback = base::Callback<void(ServiceWorkerStatusCode)>;
@@ -88,7 +90,13 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
     return process_manager_.get();
   }
 
+  // ServiceWorkerContextCoreObserver implementation:
+  void OnRegistrationStored(int64_t registration_id,
+                            const GURL& pattern) override;
+
   // ServiceWorkerContext implementation:
+  void AddObserver(ServiceWorkerContextObserver* observer) override;
+  void RemoveObserver(ServiceWorkerContextObserver* observer) override;
   void RegisterServiceWorker(const GURL& pattern,
                              const GURL& script_url,
                              const ResultCallback& continuation) override;
@@ -301,9 +309,16 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
   // DeleteAndStartOver fails.
   ServiceWorkerContextCore* context();
 
+  // Observers of |context_core_| which live within content's implementation
+  // boundary. Shared with |context_core_|.
   const scoped_refptr<
       base::ObserverListThreadSafe<ServiceWorkerContextCoreObserver>>
       core_observer_list_;
+
+  // Observers which live outside content's implementation boundary. Observer
+  // methods will always be dispatched on the UI thread.
+  base::ObserverList<ServiceWorkerContextObserver> observer_list_;
+
   const std::unique_ptr<ServiceWorkerProcessManager> process_manager_;
   // Cleared in ShutdownOnIO():
   std::unique_ptr<ServiceWorkerContextCore> context_core_;
