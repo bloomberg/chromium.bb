@@ -66,12 +66,7 @@ class WebIDBKey {
   BLINK_EXPORT void AssignNumber(double);
   BLINK_EXPORT void AssignInvalid();
   BLINK_EXPORT void AssignNull();
-#if !BLINK_WEB_IMPLEMENTATION && BLINK_IMPLEMENTATION && \
-    defined(COMPONENT_BUILD)
-  void Reset() { private_.Reset(); }
-#else
   BLINK_EXPORT void Reset();
-#endif
 
   BLINK_EXPORT WebIDBKeyType KeyType() const;
   BLINK_EXPORT bool IsValid() const;

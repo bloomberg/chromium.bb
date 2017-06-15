@@ -39,14 +39,15 @@ void WebIDBKeyRange::Assign(const WebIDBKey& lower,
                             const WebIDBKey& upper,
                             bool lower_open,
                             bool upper_open) {
-  if (!lower.IsValid() && !upper.IsValid())
+  if (!lower.IsValid() && !upper.IsValid()) {
     private_.Reset();
-  else
+  } else {
     private_ = IDBKeyRange::Create(lower, upper,
                                    lower_open ? IDBKeyRange::kLowerBoundOpen
                                               : IDBKeyRange::kLowerBoundClosed,
                                    upper_open ? IDBKeyRange::kUpperBoundOpen
                                               : IDBKeyRange::kUpperBoundClosed);
+  }
 }
 
 void WebIDBKeyRange::Reset() {
