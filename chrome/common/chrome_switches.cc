@@ -1122,6 +1122,14 @@ extern const char kEnableInputImeAPI[] = "enable-input-ime-api";
 extern const char kEnableNewAppMenuIcon[] = "enable-new-app-menu-icon";
 #endif
 
+#if BUILDFLAG(ENABLE_OOP_HEAP_PROFILING)
+// Enables the out-of-process memory logging.
+const char kMemlog[] = "memlog";
+
+// Communicates the pipe name for out-of-process memory logging.
+const char kMemlogPipe[] = "memlog-pipe";
+#endif
+
 bool ExtensionsDisabled(const base::CommandLine& command_line) {
   return command_line.HasSwitch(switches::kDisableExtensions) ||
          command_line.HasSwitch(switches::kDisableExtensionsExcept);

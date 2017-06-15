@@ -7,6 +7,8 @@ import("//chrome/common/features.gni")
 if (enable_oop_heap_profiling) {
   static_library("profiling") {
     sources = [
+      "profiling_globals.cc",
+      "profiling_globals.h",
       "profiling_main.cc",
       "profiling_main.h",
     ]
@@ -14,6 +16,7 @@ if (enable_oop_heap_profiling) {
     deps = [
       "//base",
       "//chrome/common",
+      "//mojo/edk/system",
     ]
   }
 } else {
