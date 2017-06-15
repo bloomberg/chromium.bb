@@ -912,8 +912,14 @@ TEST_F(CanvasRenderingContext2DTest, ContextDisposedBeforeCanvas) {
   // Passes by not crashing later during teardown
 }
 
-TEST_F(CanvasRenderingContext2DTest,
-       DISABLED_GetImageDataDisablesAcceleration) {
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_GetImageDataDisablesAcceleration \
+  DISABLED_GetImageDataDisablesAcceleration
+#else
+#define MAYBE_GetImageDataDisablesAcceleration GetImageDataDisablesAcceleration
+#endif
+
+TEST_F(CanvasRenderingContext2DTest, MAYBE_GetImageDataDisablesAcceleration) {
   bool saved_fixed_rendering_mode =
       RuntimeEnabledFeatures::Canvas2dFixedRenderingModeEnabled();
   RuntimeEnabledFeatures::SetCanvas2dFixedRenderingModeEnabled(false);
