@@ -137,7 +137,7 @@ class APIPermission {
     kDeleted_InterceptAllKeys,
     kLauncherSearchProvider,
     kLocation,
-    kLogPrivate,
+    kDeleted_LogPrivate,
     kManagement,
     kMediaGalleries,
     kMediaPlayerPrivate,

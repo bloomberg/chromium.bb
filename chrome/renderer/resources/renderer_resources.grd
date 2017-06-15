@@ -52,7 +52,6 @@
         <include name="IDR_IDENTITY_CUSTOM_BINDINGS_JS" file="extensions\identity_custom_bindings.js" type="BINDATA" />
         <include name="IDR_IMAGE_WRITER_PRIVATE_CUSTOM_BINDINGS_JS" file="extensions\image_writer_private_custom_bindings.js" type="BINDATA" />
         <include name="IDR_INPUT_IME_CUSTOM_BINDINGS_JS" file="extensions\input.ime_custom_bindings.js" type="BINDATA" />
-        <include name="IDR_LOG_PRIVATE_CUSTOM_BINDINGS_JS" file="extensions\log_private_custom_bindings.js" type="BINDATA" />
         <include name="IDR_MEDIA_GALLERIES_CUSTOM_BINDINGS_JS" file="extensions\media_galleries_custom_bindings.js" type="BINDATA" />
         <include name="IDR_NOTIFICATIONS_CUSTOM_BINDINGS_JS" file="extensions\notifications_custom_bindings.js" type="BINDATA" />
         <include name="IDR_OMNIBOX_CUSTOM_BINDINGS_JS" file="extensions\omnibox_custom_bindings.js" type="BINDATA" />

@@ -185,7 +185,6 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
   source_map->RegisterSource("imageWriterPrivate",
                              IDR_IMAGE_WRITER_PRIVATE_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("input.ime", IDR_INPUT_IME_CUSTOM_BINDINGS_JS);
-  source_map->RegisterSource("logPrivate", IDR_LOG_PRIVATE_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("mediaGalleries",
                              IDR_MEDIA_GALLERIES_CUSTOM_BINDINGS_JS);
   source_map->RegisterSource("notifications",

@@ -11277,7 +11277,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="171" label="INSTANCE_ID_ON_TOKEN_REFRESH"/>
   <int value="172" label="DELETED_LOCATION_ON_LOCATION_ERROR"/>
   <int value="173" label="DELETED_LOCATION_ON_LOCATION_UPDATE"/>
-  <int value="174" label="LOG_PRIVATE_ON_CAPTURED_EVENTS"/>
+  <int value="174" label="DELETED_LOG_PRIVATE_ON_CAPTURED_EVENTS"/>
   <int value="175" label="MANAGEMENT_ON_DISABLED"/>
   <int value="176" label="MANAGEMENT_ON_ENABLED"/>
   <int value="177" label="MANAGEMENT_ON_INSTALLED"/>
@@ -12069,7 +12069,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="525" label="IMAGEWRITER_CANCELWRITE"/>
   <int value="526" label="IMAGEWRITER_DESTROYPARTITIONS"/>
   <int value="527" label="FEEDBACKPRIVATE_GETSTRINGS"/>
-  <int value="528" label="LOGPRIVATE_GETHISTORICAL"/>
+  <int value="528" label="DELETED_LOGPRIVATE_GETHISTORICAL"/>
   <int value="529" label="VIRTUALKEYBOARDPRIVATE_MOVECURSOR"/>
   <int value="530" label="METRICSPRIVATE_GETVARIATIONPARAMS"/>
   <int value="531" label="DELETED_WEBVIEW_SETPERMISSION"/>
@@ -12209,8 +12209,8 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="663" label="DELETED_MEDIAGALLERIES_STARTMEDIASCAN"/>
   <int value="664" label="DELETED_MEDIAGALLERIES_CANCELMEDIASCAN"/>
   <int value="665" label="DELETED_MEDIAGALLERIES_ADDSCANRESULTS"/>
-  <int value="666" label="LOGPRIVATE_STARTNETINTERNALSWATCH"/>
-  <int value="667" label="LOGPRIVATE_STOPNETINTERNALSWATCH"/>
+  <int value="666" label="DELETED_LOGPRIVATE_STARTNETINTERNALSWATCH"/>
+  <int value="667" label="DELETED_LOGPRIVATE_STOPNETINTERNALSWATCH"/>
   <int value="668" label="FILEMANAGERPRIVATE_GETPROFILES"/>
   <int value="669" label="DELETED_FILEMANAGERPRIVATE_VISITDESKTOP"/>
   <int value="670" label="VIRTUALKEYBOARDPRIVATE_GETKEYBOARDCONFIG"/>
@@ -12402,9 +12402,9 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="843" label="EASYUNLOCKPRIVATE_GENERATEECP256KEYPAIR"/>
   <int value="844" label="EASYUNLOCKPRIVATE_CREATESECUREMESSAGE"/>
   <int value="845" label="EASYUNLOCKPRIVATE_UNWRAPSECUREMESSAGE"/>
-  <int value="846" label="LOGPRIVATE_STARTEVENTRECODER"/>
-  <int value="847" label="LOGPRIVATE_STOPEVENTRECODER"/>
-  <int value="848" label="LOGPRIVATE_DUMPLOGS"/>
+  <int value="846" label="DELETED_LOGPRIVATE_STARTEVENTRECODER"/>
+  <int value="847" label="DELETED_LOGPRIVATE_STOPEVENTRECODER"/>
+  <int value="848" label="DELETED_LOGPRIVATE_DUMPLOGS"/>
   <int value="849" label="SOCKET_SECURE"/>
   <int value="850" label="SOCKETS_TCP_SECURE"/>
   <int value="851" label="EXPERIENCESAMPLINGPRIVATE_GETBROWSERINFO"/>
@@ -13066,7 +13066,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="94" label="kDeleted_InterceptAllKeys"/>
   <int value="95" label="kLauncherSearchProvider"/>
   <int value="96" label="kLocation"/>
-  <int value="97" label="kLogPrivate"/>
+  <int value="97" label="kDeleted_LogPrivate"/>
   <int value="98" label="kManagement"/>
   <int value="99" label="kMediaGalleries"/>
   <int value="100" label="kMediaPlayerPrivate"/>

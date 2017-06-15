@@ -130,8 +130,6 @@ ChromeAPIPermissions::GetAllPermissions() const {
        APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kIdentityPrivate, "identityPrivate",
        APIPermissionInfo::kFlagCannotBeOptional},
-      {APIPermission::kLogPrivate, "logPrivate",
-       APIPermissionInfo::kFlagCannotBeOptional},
       {APIPermission::kWebcamPrivate, "webcamPrivate"},
       {APIPermission::kMediaPlayerPrivate, "mediaPlayerPrivate",
        APIPermissionInfo::kFlagCannotBeOptional},
