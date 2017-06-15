@@ -1055,26 +1055,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     rare_non_inherited_data_.Access()->effective_blend_mode_ = v;
   }
 
-  // object-fit
-  static EObjectFit InitialObjectFit() { return EObjectFit::kFill; }
-  EObjectFit GetObjectFit() const {
-    return static_cast<EObjectFit>(rare_non_inherited_data_->object_fit_);
-  }
-  void SetObjectFit(EObjectFit f) {
-    SET_VAR(rare_non_inherited_data_, object_fit_, static_cast<unsigned>(f));
-  }
-
-  // object-position
-  static LengthPoint InitialObjectPosition() {
-    return LengthPoint(Length(50.0, kPercent), Length(50.0, kPercent));
-  }
-  LengthPoint ObjectPosition() const {
-    return rare_non_inherited_data_->object_position_;
-  }
-  void SetObjectPosition(LengthPoint position) {
-    SET_VAR(rare_non_inherited_data_, object_position_, position);
-  }
-
   // offset-anchor
   static LengthPoint InitialOffsetAnchor() {
     return LengthPoint(Length(kAuto), Length(kAuto));
