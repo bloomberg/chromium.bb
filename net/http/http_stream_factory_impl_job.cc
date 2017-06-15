@@ -204,6 +204,7 @@ HttpStreamFactoryImpl::Job::Job(Delegate* delegate,
                                           origin_url_,
                                           request_info_.privacy_mode)),
       stream_type_(HttpStreamRequest::BIDIRECTIONAL_STREAM),
+      init_connection_already_resumed_(false),
       ptr_factory_(this) {
   DCHECK(session);
   if (alternative_protocol != kProtoUnknown) {
@@ -554,6 +555,10 @@ void HttpStreamFactoryImpl::Job::RunLoop(int result) {
   if (result == ERR_IO_PENDING)
     return;
 
+  // Resume all throttled Jobs with the same SpdySessionKey if there are any,
+  // now that this job is done.
+  session_->spdy_session_pool()->ResumePendingRequests(spdy_session_key_);
+
   if (job_type_ == PRECONNECT) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
@@ -685,6 +690,10 @@ int HttpStreamFactoryImpl::Job::DoLoop(int result) {
       case STATE_WAIT_COMPLETE:
         rv = DoWaitComplete(rv);
         break;
+      case STATE_EVALUATE_THROTTLE:
+        DCHECK_EQ(OK, rv);
+        rv = DoEvaluateThrottle();
+        break;
       case STATE_INIT_CONNECTION:
         DCHECK_EQ(OK, rv);
         rv = DoInitConnection();
@@ -762,8 +771,49 @@ int HttpStreamFactoryImpl::Job::DoWait() {
 int HttpStreamFactoryImpl::Job::DoWaitComplete(int result) {
   net_log_.EndEvent(NetLogEventType::HTTP_STREAM_JOB_WAITING);
   DCHECK_EQ(OK, result);
-  next_state_ = STATE_INIT_CONNECTION;
+  next_state_ = STATE_EVALUATE_THROTTLE;
   return OK;
+}
+
+int HttpStreamFactoryImpl::Job::DoEvaluateThrottle() {
+  next_state_ = STATE_INIT_CONNECTION;
+  if (!using_ssl_)
+    return OK;
+  // Ask |delegate_delegate_| to update the spdy session key for the request
+  // that launched this job.
+  delegate_->SetSpdySessionKey(this, spdy_session_key_);
+
+  // Throttle connect to an HTTP/2 supported server, if there are pending
+  // requests with the same SpdySessionKey.
+  if (session_->http_server_properties()->RequiresHTTP11(
+          spdy_session_key_.host_port_pair())) {
+    return OK;
+  }
+  url::SchemeHostPort scheme_host_port(
+      using_ssl_ ? url::kHttpsScheme : url::kHttpScheme,
+      spdy_session_key_.host_port_pair().host(),
+      spdy_session_key_.host_port_pair().port());
+  if (!session_->http_server_properties()->GetSupportsSpdy(scheme_host_port))
+    return OK;
+  base::Closure callback =
+      base::Bind(&HttpStreamFactoryImpl::Job::ResumeInitConnection,
+                 ptr_factory_.GetWeakPtr());
+  if (session_->spdy_session_pool()->StartRequest(spdy_session_key_,
+                                                  callback)) {
+    return OK;
+  }
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, callback, base::TimeDelta::FromMilliseconds(kHTTP2ThrottleMs));
+  return ERR_IO_PENDING;
+}
+
+void HttpStreamFactoryImpl::Job::ResumeInitConnection() {
+  if (init_connection_already_resumed_)
+    return;
+  // TODO(xunjieli): Change this to a DCHECK once crbug.com/718576 is stable.
+  CHECK_EQ(next_state_, STATE_INIT_CONNECTION);
+  init_connection_already_resumed_ = true;
+  OnIOComplete(OK);
 }
 
 int HttpStreamFactoryImpl::Job::DoInitConnection() {
@@ -872,11 +922,6 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionImpl() {
       existing_spdy_session_ = spdy_session;
       return OK;
     }
-  }
-  if (using_ssl_) {
-    // Ask |delegate_delegate_| to update the spdy session key for the request
-    // that launched this job.
-    delegate_->SetSpdySessionKey(this, spdy_session_key_);
   }
 
   if (proxy_info_.is_http() || proxy_info_.is_https())

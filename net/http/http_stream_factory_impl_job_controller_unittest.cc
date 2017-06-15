@@ -160,21 +160,7 @@ class JobControllerPeer {
 
 class HttpStreamFactoryImplJobControllerTest : public ::testing::Test {
  public:
-  HttpStreamFactoryImplJobControllerTest()
-      : session_deps_(ProxyService::CreateDirect()),
-        random_generator_(0),
-        client_maker_(HttpNetworkSession::Params().quic_supported_versions[0],
-                      0,
-                      &clock_,
-                      kServerHostname,
-                      Perspective::IS_CLIENT),
-        use_alternative_proxy_(false),
-        is_preconnect_(false),
-        enable_ip_based_pooling_(true),
-        enable_alternative_services_(true),
-        test_proxy_delegate_(nullptr) {
-    session_deps_.enable_quic = true;
-  }
+  HttpStreamFactoryImplJobControllerTest() { session_deps_.enable_quic = true; }
 
   void UseAlternativeProxy() {
     ASSERT_FALSE(test_proxy_delegate_);
@@ -194,6 +180,11 @@ class HttpStreamFactoryImplJobControllerTest : public ::testing::Test {
   void DisableAlternativeServices() {
     ASSERT_FALSE(test_proxy_delegate_);
     enable_alternative_services_ = false;
+  }
+
+  void SkipCreatingJobController() {
+    ASSERT_FALSE(job_controller_);
+    create_job_controller_ = false;
   }
 
   void Initialize(const HttpRequestInfo& request_info) {
@@ -227,11 +218,13 @@ class HttpStreamFactoryImplJobControllerTest : public ::testing::Test {
     session_ = base::MakeUnique<HttpNetworkSession>(params, session_context);
     factory_ =
         static_cast<HttpStreamFactoryImpl*>(session_->http_stream_factory());
-    job_controller_ = new HttpStreamFactoryImpl::JobController(
-        factory_, &request_delegate_, session_.get(), &job_factory_,
-        request_info, is_preconnect_, enable_ip_based_pooling_,
-        enable_alternative_services_, SSLConfig(), SSLConfig());
-    HttpStreamFactoryImplPeer::AddJobController(factory_, job_controller_);
+    if (create_job_controller_) {
+      job_controller_ = new HttpStreamFactoryImpl::JobController(
+          factory_, &request_delegate_, session_.get(), &job_factory_,
+          request_info, is_preconnect_, enable_ip_based_pooling_,
+          enable_alternative_services_, SSLConfig(), SSLConfig());
+      HttpStreamFactoryImplPeer::AddJobController(factory_, job_controller_);
+    }
   }
 
   TestProxyDelegate* test_proxy_delegate() const {
@@ -271,27 +264,30 @@ class HttpStreamFactoryImplJobControllerTest : public ::testing::Test {
 
   TestJobFactory job_factory_;
   MockHttpStreamRequestDelegate request_delegate_;
-  SpdySessionDependencies session_deps_;
+  SpdySessionDependencies session_deps_{ProxyService::CreateDirect()};
   std::unique_ptr<HttpNetworkSession> session_;
-  HttpStreamFactoryImpl* factory_;
-  HttpStreamFactoryImpl::JobController* job_controller_;
+  HttpStreamFactoryImpl* factory_ = nullptr;
+  HttpStreamFactoryImpl::JobController* job_controller_ = nullptr;
   std::unique_ptr<HttpStreamFactoryImpl::Request> request_;
   std::unique_ptr<SequencedSocketData> tcp_data_;
   std::unique_ptr<test::MockQuicData> quic_data_;
   MockCryptoClientStreamFactory crypto_client_stream_factory_;
   MockClock clock_;
-  test::MockRandom random_generator_;
-  test::QuicTestPacketMaker client_maker_;
+  test::MockRandom random_generator_{0};
+  test::QuicTestPacketMaker client_maker_{
+      HttpNetworkSession::Params().quic_supported_versions[0], 0, &clock_,
+      kServerHostname, Perspective::IS_CLIENT};
 
  protected:
-  bool use_alternative_proxy_;
-  bool is_preconnect_;
-  bool enable_ip_based_pooling_;
-  bool enable_alternative_services_;
+  bool use_alternative_proxy_ = false;
+  bool is_preconnect_ = false;
+  bool enable_ip_based_pooling_ = true;
+  bool enable_alternative_services_ = true;
 
  private:
   // Not owned by |this|.
-  TestProxyDelegate* test_proxy_delegate_;
+  TestProxyDelegate* test_proxy_delegate_ = nullptr;
+  bool create_job_controller_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(HttpStreamFactoryImplJobControllerTest);
 };
@@ -1563,9 +1559,8 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
   request_info.url = GURL("http://www.example.com");
   Initialize(request_info);
 
+  // Sets server support HTTP/2.
   url::SchemeHostPort server(request_info.url);
-
-  // Sets server support Http/2.
   session_->http_server_properties()->SetSupportsSpdy(server, true);
 
   job_controller_->Preconnect(/*num_streams=*/5);
@@ -1580,6 +1575,311 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
 
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
+}
+
+class JobControllerLimitMultipleH2Requests
+    : public HttpStreamFactoryImplJobControllerTest {
+ protected:
+  const int kNumRequests = 5;
+  void SetUp() override { SkipCreatingJobController(); }
+};
+
+TEST_F(JobControllerLimitMultipleH2Requests, MultipleRequests) {
+  // Make sure there is only one socket connect.
+  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING)};
+  tcp_data_ = base::MakeUnique<SequencedSocketData>(reads, arraysize(reads),
+                                                    nullptr, 0);
+  tcp_data_->set_connect_data(MockConnect(ASYNC, OK));
+  auto ssl_data = base::MakeUnique<SSLSocketDataProvider>(ASYNC, OK);
+  ssl_data->next_proto = kProtoHTTP2;
+  session_deps_.socket_factory->AddSSLSocketDataProvider(ssl_data.get());
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("https://www.example.com");
+  Initialize(request_info);
+  SpdySessionPoolPeer pool_peer(session_->spdy_session_pool());
+  pool_peer.SetEnableSendingInitialData(false);
+
+  // Sets server support HTTP/2.
+  url::SchemeHostPort server(request_info.url);
+  session_->http_server_properties()->SetSupportsSpdy(server, true);
+
+  std::vector<std::unique_ptr<MockHttpStreamRequestDelegate>> request_delegates;
+  std::vector<std::unique_ptr<HttpStreamRequest>> requests;
+  for (int i = 0; i < kNumRequests; ++i) {
+    request_delegates.emplace_back(
+        base::MakeUnique<MockHttpStreamRequestDelegate>());
+    HttpStreamFactoryImpl::JobController* job_controller =
+        new HttpStreamFactoryImpl::JobController(
+            factory_, request_delegates[i].get(), session_.get(), &job_factory_,
+            request_info, is_preconnect_, enable_ip_based_pooling_,
+            enable_alternative_services_, SSLConfig(), SSLConfig());
+    HttpStreamFactoryImplPeer::AddJobController(factory_, job_controller);
+    auto request = job_controller->Start(
+        request_delegates[i].get(), nullptr, NetLogWithSource(),
+        HttpStreamRequest::HTTP_STREAM, DEFAULT_PRIORITY);
+    EXPECT_TRUE(job_controller->main_job());
+    EXPECT_FALSE(job_controller->alternative_job());
+    requests.push_back(std::move(request));
+  }
+
+  for (int i = 0; i < kNumRequests; ++i) {
+    // When a request is completed, delete it. This is needed because
+    // otherwise request will be completed twice. See crbug.com/706974.
+    EXPECT_CALL(*request_delegates[i].get(), OnStreamReadyImpl(_, _, _))
+        .WillOnce(testing::InvokeWithoutArgs(
+            [this, &requests, i]() { requests[i].reset(); }));
+  }
+
+  base::RunLoop().RunUntilIdle();
+  requests.clear();
+  EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
+}
+
+TEST_F(JobControllerLimitMultipleH2Requests, MultipleRequestsFirstRequestHang) {
+  base::ScopedMockTimeMessageLoopTaskRunner test_task_runner;
+  // First socket connect hang.
+  auto hangdata = base::MakeUnique<SequencedSocketData>(nullptr, 0, nullptr, 0);
+  hangdata->set_connect_data(MockConnect(SYNCHRONOUS, ERR_IO_PENDING));
+  session_deps_.socket_factory->AddSocketDataProvider(hangdata.get());
+  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING)};
+  std::vector<std::unique_ptr<SequencedSocketData>> socket_data;
+  std::vector<std::unique_ptr<SSLSocketDataProvider>> ssl_socket_data;
+  // kNumRequests - 1 will resume themselves after a delay. There will be
+  // kNumRequests - 1 sockets opened.
+  for (int i = 0; i < kNumRequests - 1; i++) {
+    // Only the first one needs a MockRead because subsequent sockets are
+    // not used to establish a SpdySession.
+    auto tcp_data =
+        i == 0 ? base::MakeUnique<SequencedSocketData>(reads, arraysize(reads),
+                                                       nullptr, 0)
+               : base::MakeUnique<SequencedSocketData>(nullptr, 0, nullptr, 0);
+    tcp_data->set_connect_data(MockConnect(ASYNC, OK));
+    auto ssl_data = base::MakeUnique<SSLSocketDataProvider>(ASYNC, OK);
+    ssl_data->next_proto = kProtoHTTP2;
+    session_deps_.socket_factory->AddSocketDataProvider(tcp_data.get());
+    session_deps_.socket_factory->AddSSLSocketDataProvider(ssl_data.get());
+    socket_data.push_back(std::move(tcp_data));
+    ssl_socket_data.push_back(std::move(ssl_data));
+  }
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("https://www.example.com");
+  Initialize(request_info);
+  SpdySessionPoolPeer pool_peer(session_->spdy_session_pool());
+  pool_peer.SetEnableSendingInitialData(false);
+
+  // Sets server support HTTP/2.
+  url::SchemeHostPort server(request_info.url);
+  session_->http_server_properties()->SetSupportsSpdy(server, true);
+
+  std::vector<std::unique_ptr<MockHttpStreamRequestDelegate>> request_delegates;
+  std::vector<std::unique_ptr<HttpStreamRequest>> requests;
+  for (int i = 0; i < kNumRequests; ++i) {
+    request_delegates.push_back(
+        base::MakeUnique<MockHttpStreamRequestDelegate>());
+    HttpStreamFactoryImpl::JobController* job_controller =
+        new HttpStreamFactoryImpl::JobController(
+            factory_, request_delegates[i].get(), session_.get(), &job_factory_,
+            request_info, is_preconnect_, enable_ip_based_pooling_,
+            enable_alternative_services_, SSLConfig(), SSLConfig());
+    HttpStreamFactoryImplPeer::AddJobController(factory_, job_controller);
+    auto request = job_controller->Start(
+        request_delegates[i].get(), nullptr, NetLogWithSource(),
+        HttpStreamRequest::HTTP_STREAM, DEFAULT_PRIORITY);
+    EXPECT_TRUE(job_controller->main_job());
+    EXPECT_FALSE(job_controller->alternative_job());
+    requests.push_back(std::move(request));
+  }
+
+  for (int i = 0; i < kNumRequests; ++i) {
+    // When a request is completed, delete it. This is needed because
+    // otherwise request will be completed twice. See crbug.com/706974.
+    EXPECT_CALL(*request_delegates[i].get(), OnStreamReadyImpl(_, _, _))
+        .WillOnce(testing::InvokeWithoutArgs(
+            [this, &requests, i]() { requests[i].reset(); }));
+  }
+
+  EXPECT_TRUE(test_task_runner->HasPendingTask());
+  test_task_runner->FastForwardBy(base::TimeDelta::FromMilliseconds(
+      HttpStreamFactoryImpl::Job::kHTTP2ThrottleMs));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
+  EXPECT_TRUE(hangdata->AllReadDataConsumed());
+  for (const auto& data : socket_data) {
+    EXPECT_TRUE(data->AllReadDataConsumed());
+    EXPECT_TRUE(data->AllWriteDataConsumed());
+  }
+}
+
+TEST_F(JobControllerLimitMultipleH2Requests,
+       MultipleRequestsFirstRequestCanceled) {
+  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING)};
+  auto first_socket = base::MakeUnique<SequencedSocketData>(
+      reads, arraysize(reads), nullptr, 0);
+  first_socket->set_connect_data(MockConnect(ASYNC, OK));
+  auto ssl_data = base::MakeUnique<SSLSocketDataProvider>(ASYNC, OK);
+  ssl_data->next_proto = kProtoHTTP2;
+  session_deps_.socket_factory->AddSocketDataProvider(first_socket.get());
+  session_deps_.socket_factory->AddSSLSocketDataProvider(ssl_data.get());
+  std::vector<std::unique_ptr<SequencedSocketData>> socket_data;
+  std::vector<std::unique_ptr<SSLSocketDataProvider>> ssl_socket_data;
+  // kNumRequests - 1 will be resumed when the first request is canceled.
+  for (int i = 0; i < kNumRequests - 1; i++) {
+    auto tcp_data =
+        base::MakeUnique<SequencedSocketData>(nullptr, 0, nullptr, 0);
+    tcp_data->set_connect_data(MockConnect(ASYNC, OK));
+    auto ssl_data = base::MakeUnique<SSLSocketDataProvider>(ASYNC, OK);
+    ssl_data->next_proto = kProtoHTTP2;
+    session_deps_.socket_factory->AddSocketDataProvider(tcp_data.get());
+    session_deps_.socket_factory->AddSSLSocketDataProvider(ssl_data.get());
+    socket_data.push_back(std::move(tcp_data));
+    ssl_socket_data.push_back(std::move(ssl_data));
+  }
+
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("https://www.example.com");
+  Initialize(request_info);
+  SpdySessionPoolPeer pool_peer(session_->spdy_session_pool());
+  pool_peer.SetEnableSendingInitialData(false);
+
+  // Sets server support HTTP/2.
+  url::SchemeHostPort server(request_info.url);
+  session_->http_server_properties()->SetSupportsSpdy(server, true);
+
+  std::vector<std::unique_ptr<MockHttpStreamRequestDelegate>> request_delegates;
+  std::vector<std::unique_ptr<HttpStreamRequest>> requests;
+  for (int i = 0; i < kNumRequests; ++i) {
+    request_delegates.emplace_back(
+        base::MakeUnique<MockHttpStreamRequestDelegate>());
+    HttpStreamFactoryImpl::JobController* job_controller =
+        new HttpStreamFactoryImpl::JobController(
+            factory_, request_delegates[i].get(), session_.get(), &job_factory_,
+            request_info, is_preconnect_, enable_ip_based_pooling_,
+            enable_alternative_services_, SSLConfig(), SSLConfig());
+    HttpStreamFactoryImplPeer::AddJobController(factory_, job_controller);
+    auto request = job_controller->Start(
+        request_delegates[i].get(), nullptr, NetLogWithSource(),
+        HttpStreamRequest::HTTP_STREAM, DEFAULT_PRIORITY);
+    EXPECT_TRUE(job_controller->main_job());
+    EXPECT_FALSE(job_controller->alternative_job());
+    requests.push_back(std::move(request));
+  }
+  // Cancel the first one.
+  requests[0].reset();
+
+  for (int i = 1; i < kNumRequests; ++i) {
+    // When a request is completed, delete it. This is needed because
+    // otherwise request will be completed twice. See crbug.com/706974.
+    EXPECT_CALL(*request_delegates[i].get(), OnStreamReadyImpl(_, _, _))
+        .WillOnce(testing::InvokeWithoutArgs(
+            [this, &requests, i]() { requests[i].reset(); }));
+  }
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
+  EXPECT_TRUE(first_socket->AllReadDataConsumed());
+  for (const auto& data : socket_data) {
+    EXPECT_TRUE(data->AllReadDataConsumed());
+    EXPECT_TRUE(data->AllWriteDataConsumed());
+  }
+}
+
+TEST_F(JobControllerLimitMultipleH2Requests, MultiplePreconnects) {
+  // Make sure there is only one socket connect.
+  tcp_data_ = base::MakeUnique<SequencedSocketData>(nullptr, 0, nullptr, 0);
+  tcp_data_->set_connect_data(MockConnect(ASYNC, OK));
+  auto ssl_data = base::MakeUnique<SSLSocketDataProvider>(ASYNC, OK);
+  ssl_data->next_proto = kProtoHTTP2;
+  session_deps_.socket_factory->AddSSLSocketDataProvider(ssl_data.get());
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("https://www.example.com");
+  SetPreconnect();
+  Initialize(request_info);
+
+  // Sets server support HTTP/2.
+  url::SchemeHostPort server(request_info.url);
+  session_->http_server_properties()->SetSupportsSpdy(server, true);
+
+  std::vector<std::unique_ptr<MockHttpStreamRequestDelegate>> request_delegates;
+  for (int i = 0; i < kNumRequests; ++i) {
+    request_delegates.emplace_back(
+        base::MakeUnique<MockHttpStreamRequestDelegate>());
+    HttpStreamFactoryImpl::JobController* job_controller =
+        new HttpStreamFactoryImpl::JobController(
+            factory_, request_delegates[i].get(), session_.get(), &job_factory_,
+            request_info, is_preconnect_, enable_ip_based_pooling_,
+            enable_alternative_services_, SSLConfig(), SSLConfig());
+    HttpStreamFactoryImplPeer::AddJobController(factory_, job_controller);
+    job_controller->Preconnect(1);
+    EXPECT_TRUE(job_controller->main_job());
+    EXPECT_FALSE(job_controller->alternative_job());
+  }
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
+}
+
+TEST_F(JobControllerLimitMultipleH2Requests, H1NegotiatedForFirstRequest) {
+  // First socket is an HTTP/1.1 socket.
+  auto first_socket =
+      base::MakeUnique<SequencedSocketData>(nullptr, 0, nullptr, 0);
+  first_socket->set_connect_data(MockConnect(ASYNC, OK));
+  auto ssl_data = base::MakeUnique<SSLSocketDataProvider>(ASYNC, OK);
+  session_deps_.socket_factory->AddSocketDataProvider(first_socket.get());
+  session_deps_.socket_factory->AddSSLSocketDataProvider(ssl_data.get());
+  // Second socket is an HTTP/2 socket.
+  MockRead reads[] = {MockRead(SYNCHRONOUS, ERR_IO_PENDING)};
+  auto second_socket = base::MakeUnique<SequencedSocketData>(
+      reads, arraysize(reads), nullptr, 0);
+  second_socket->set_connect_data(MockConnect(ASYNC, OK));
+  auto second_ssl_data = base::MakeUnique<SSLSocketDataProvider>(ASYNC, OK);
+  second_ssl_data->next_proto = kProtoHTTP2;
+  session_deps_.socket_factory->AddSocketDataProvider(second_socket.get());
+  session_deps_.socket_factory->AddSSLSocketDataProvider(second_ssl_data.get());
+
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("https://www.example.com");
+  Initialize(request_info);
+  SpdySessionPoolPeer pool_peer(session_->spdy_session_pool());
+  pool_peer.SetEnableSendingInitialData(false);
+
+  // Sets server support HTTP/2.
+  url::SchemeHostPort server(request_info.url);
+  session_->http_server_properties()->SetSupportsSpdy(server, true);
+
+  std::vector<std::unique_ptr<MockHttpStreamRequestDelegate>> request_delegates;
+  std::vector<std::unique_ptr<HttpStreamRequest>> requests;
+  for (int i = 0; i < 2; ++i) {
+    request_delegates.emplace_back(
+        base::MakeUnique<MockHttpStreamRequestDelegate>());
+    HttpStreamFactoryImpl::JobController* job_controller =
+        new HttpStreamFactoryImpl::JobController(
+            factory_, request_delegates[i].get(), session_.get(), &job_factory_,
+            request_info, is_preconnect_, enable_ip_based_pooling_,
+            enable_alternative_services_, SSLConfig(), SSLConfig());
+    HttpStreamFactoryImplPeer::AddJobController(factory_, job_controller);
+    auto request = job_controller->Start(
+        request_delegates[i].get(), nullptr, NetLogWithSource(),
+        HttpStreamRequest::HTTP_STREAM, DEFAULT_PRIORITY);
+    EXPECT_TRUE(job_controller->main_job());
+    EXPECT_FALSE(job_controller->alternative_job());
+    requests.push_back(std::move(request));
+  }
+
+  for (int i = 0; i < 2; ++i) {
+    // When a request is completed, delete it. This is needed because
+    // otherwise request will be completed twice. See crbug.com/706974.
+    EXPECT_CALL(*request_delegates[i].get(), OnStreamReadyImpl(_, _, _))
+        .WillOnce(testing::InvokeWithoutArgs(
+            [this, &requests, i]() { requests[i].reset(); }));
+  }
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
+  EXPECT_TRUE(first_socket->AllReadDataConsumed());
+  EXPECT_FALSE(second_socket->AllReadDataConsumed());
 }
 
 class HttpStreamFactoryImplJobControllerMisdirectedRequestRetry
