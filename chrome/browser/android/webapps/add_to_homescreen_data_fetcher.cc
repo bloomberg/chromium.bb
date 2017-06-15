@@ -92,8 +92,7 @@ AddToHomescreenDataFetcher::AddToHomescreenDataFetcher(
       check_webapk_compatibility_(check_webapk_compatibility),
       is_waiting_for_web_application_info_(true),
       is_installable_check_complete_(false),
-      is_icon_saved_(false),
-      is_ready_(false) {
+      is_icon_saved_(false) {
   DCHECK(minimum_icon_size_in_px <= ideal_icon_size_in_px);
   DCHECK(minimum_splash_image_size_in_px <= ideal_splash_image_size_in_px);
 
@@ -344,6 +343,5 @@ void AddToHomescreenDataFetcher::NotifyObserver(const SkBitmap& primary_icon) {
 
   is_icon_saved_ = true;
   primary_icon_ = primary_icon;
-  is_ready_ = true;
   weak_observer_->OnDataAvailable(shortcut_info_, primary_icon_, badge_icon_);
 }
