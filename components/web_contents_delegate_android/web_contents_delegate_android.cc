@@ -206,14 +206,6 @@ bool WebContentsDelegateAndroid::ShouldCreateWebContents(
                                                                  java_url);
 }
 
-bool WebContentsDelegateAndroid::OnGoToEntryOffset(int offset) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = GetJavaDelegate(env);
-  if (obj.is_null())
-    return true;
-  return Java_WebContentsDelegateAndroid_onGoToEntryOffset(env, obj, offset);
-}
-
 void WebContentsDelegateAndroid::WebContentsCreated(
     WebContents* source_contents,
     int opener_render_process_id,
