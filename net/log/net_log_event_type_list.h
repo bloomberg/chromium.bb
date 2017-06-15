@@ -1059,6 +1059,13 @@ EVENT_TYPE(HTTP_STREAM_REQUEST_STARTED_JOB)
 //   }
 EVENT_TYPE(HTTP_STREAM_JOB_PROXY_SERVER_RESOLVED)
 
+// Emitted when a job is throttled.
+EVENT_TYPE(HTTP_STREAM_JOB_THROTTLED)
+
+// Emitted when a job resumes initializing a connection after being previously
+// throttled.
+EVENT_TYPE(HTTP_STREAM_JOB_RESUME_INIT_CONNECTION)
+
 // Emitted when a job is asked to initialize a connection.
 EVENT_TYPE(HTTP_STREAM_JOB_INIT_CONNECTION)
 
