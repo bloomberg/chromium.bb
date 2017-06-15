@@ -150,6 +150,9 @@ class CC_PAINT_EXPORT PaintFlags {
   ALWAYS_INLINE SkColorFilter* getColorFilter() const {
     return paint_.getColorFilter();
   }
+  ALWAYS_INLINE sk_sp<SkColorFilter> refColorFilter() const {
+    return paint_.refColorFilter();
+  }
   ALWAYS_INLINE void setColorFilter(sk_sp<SkColorFilter> filter) {
     paint_.setColorFilter(std::move(filter));
   }

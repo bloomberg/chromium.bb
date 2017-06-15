@@ -795,6 +795,8 @@ void GraphicsContext::DrawImage(
   image_flags.setColor(SK_ColorBLACK);
   image_flags.setFilterQuality(ComputeFilterQuality(image, dest, src));
   image_flags.setAntiAlias(ShouldAntialias());
+  if (ShouldApplyHighContrastFilterToImage(*image))
+    image_flags.setColorFilter(high_contrast_filter_);
   image->Draw(canvas_, image_flags, dest, src, should_respect_image_orientation,
               Image::kClampImageToSourceRect);
   paint_controller_.SetImagePainted();
@@ -1318,6 +1320,15 @@ sk_sp<SkColorFilter> GraphicsContext::WebCoreColorFilterToSkiaColorFilter(
   }
 
   return nullptr;
+}
+
+bool GraphicsContext::ShouldApplyHighContrastFilterToImage(
+    const Image& image) const {
+  if (!high_contrast_filter_)
+    return false;
+
+  return high_contrast_settings_.image_policy ==
+         HighContrastImagePolicy::kFilterAll;
 }
 
 Color GraphicsContext::ApplyHighContrastFilter(const Color& input) const {

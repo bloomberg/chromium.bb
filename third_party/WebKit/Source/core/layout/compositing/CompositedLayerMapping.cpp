@@ -3075,6 +3075,7 @@ void CompositedLayerMapping::DoPaintTask(
   high_contrast_settings.mode = settings->GetHighContrastMode();
   high_contrast_settings.grayscale = settings->GetHighContrastGrayscale();
   high_contrast_settings.contrast = settings->GetHighContrastContrast();
+  high_contrast_settings.image_policy = settings->GetHighContrastImagePolicy();
   context.SetHighContrast(high_contrast_settings);
 
   if (paint_info.paint_layer->GetCompositingState() !=
