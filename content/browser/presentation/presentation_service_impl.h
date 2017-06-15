@@ -65,40 +65,44 @@ class CONTENT_EXPORT PresentationServiceImpl
       const service_manager::BindSourceInfo& source_info,
       mojo::InterfaceRequest<blink::mojom::PresentationService> request);
 
+  // PresentationService implementation.
+  void SetDefaultPresentationUrls(
+      const std::vector<GURL>& presentation_urls) override;
+  void SetClient(blink::mojom::PresentationServiceClientPtr client) override;
+  void ListenForScreenAvailability(const GURL& url) override;
+  void StopListeningForScreenAvailability(const GURL& url) override;
+  void StartPresentation(const std::vector<GURL>& presentation_urls,
+                         NewPresentationCallback callback) override;
+  void ReconnectPresentation(const std::vector<GURL>& presentation_urls,
+                             const base::Optional<std::string>& presentation_id,
+                             NewPresentationCallback callback) override;
+  void CloseConnection(const GURL& presentation_url,
+                       const std::string& presentation_id) override;
+  void Terminate(const GURL& presentation_url,
+                 const std::string& presentation_id) override;
+  void ListenForConnectionMessages(
+      const PresentationInfo& presentation_info) override;
+  void SetPresentationConnection(
+      const PresentationInfo& presentation_info,
+      blink::mojom::PresentationConnectionPtr controller_connection_ptr,
+      blink::mojom::PresentationConnectionRequest receiver_connection_request)
+      override;
+
  private:
   friend class PresentationServiceImplTest;
   FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest, Reset);
-  FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest, DidNavigateThisFrame);
-  FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest,
-      DidNavigateOtherFrame);
   FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest, ThisRenderFrameDeleted);
   FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest,
       OtherRenderFrameDeleted);
   FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest, DelegateFails);
   FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest,
-                           SetDefaultPresentationUrls);
-  FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest,
-                           SetSameDefaultPresentationUrls);
-  FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest,
-                           ClearDefaultPresentationUrls);
-  FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest,
-                           ListenForDefaultPresentationStart);
-  FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest,
-                           ListenForDefaultPresentationStartAfterSet);
-  FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest,
-                           DefaultPresentationStartReset);
-  FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest,
-                           ReceiveConnectionMessagesAfterReset);
-  FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest,
-                           MaxPendingStartPresentationRequests);
-  FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest,
-                           MaxPendingReconnectPresentationRequests);
-  FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest,
                            ListenForConnectionStateChange);
   FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest,
                            ListenForConnectionClose);
   FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest,
-                           SetPresentationConnection);
+                           MaxPendingStartPresentationRequests);
+  FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest,
+                           MaxPendingReconnectPresentationRequests);
   FRIEND_TEST_ALL_PREFIXES(PresentationServiceImplTest,
                            ReceiverPresentationServiceDelegate);
 
@@ -158,29 +162,6 @@ class CONTENT_EXPORT PresentationServiceImpl
       WebContents* web_contents,
       ControllerPresentationServiceDelegate* controller_delegate,
       ReceiverPresentationServiceDelegate* receiver_delegate);
-
-  // PresentationService implementation.
-  void SetDefaultPresentationUrls(
-      const std::vector<GURL>& presentation_urls) override;
-  void SetClient(blink::mojom::PresentationServiceClientPtr client) override;
-  void ListenForScreenAvailability(const GURL& url) override;
-  void StopListeningForScreenAvailability(const GURL& url) override;
-  void StartPresentation(const std::vector<GURL>& presentation_urls,
-                         NewPresentationCallback callback) override;
-  void ReconnectPresentation(const std::vector<GURL>& presentation_urls,
-                             const base::Optional<std::string>& presentation_id,
-                             NewPresentationCallback callback) override;
-  void CloseConnection(const GURL& presentation_url,
-                       const std::string& presentation_id) override;
-  void Terminate(const GURL& presentation_url,
-                 const std::string& presentation_id) override;
-  void ListenForConnectionMessages(
-      const PresentationInfo& presentation_info) override;
-  void SetPresentationConnection(
-      const PresentationInfo& presentation_info,
-      blink::mojom::PresentationConnectionPtr controller_connection_ptr,
-      blink::mojom::PresentationConnectionRequest receiver_connection_request)
-      override;
 
   // Creates a binding between this object and |request|.
   void Bind(blink::mojom::PresentationServiceRequest request);
