@@ -15,6 +15,7 @@ component("native_theme") {
     "native_theme_android.h",
     "native_theme_base.cc",
     "native_theme_base.h",
+    "native_theme_export.h",
     "native_theme_features.cc",
     "native_theme_features.h",
     "native_theme_mac.h",

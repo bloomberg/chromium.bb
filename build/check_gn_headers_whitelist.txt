@@ -387,7 +387,6 @@ ui/gl/gl_bindings_api_autogen_glx.h
 ui/gl/gl_bindings_api_autogen_osmesa.h
 ui/gl/gpu_preference.h
 ui/gl/gpu_switching_observer.h
-ui/native_theme/native_theme_export.h
 ui/ozone/ozone_base_export.h
 ui/ozone/public/ozone_switches.h
 ui/shell_dialogs/shell_dialogs_export.h
