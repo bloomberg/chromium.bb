@@ -54,7 +54,7 @@
 #include "core/workers/WorkerThreadStartupData.h"
 #include "modules/indexeddb/IndexedDBClientImpl.h"
 #include "modules/serviceworkers/ServiceWorkerContainerClient.h"
-#include "modules/serviceworkers/ServiceWorkerGlobalScopeClientImpl.h"
+#include "modules/serviceworkers/ServiceWorkerGlobalScopeClient.h"
 #include "modules/serviceworkers/ServiceWorkerGlobalScopeProxy.h"
 #include "modules/serviceworkers/ServiceWorkerThread.h"
 #include "platform/Histogram.h"
@@ -416,7 +416,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread() {
                                  IndexedDBClientImpl::Create(*worker_clients));
   ProvideServiceWorkerGlobalScopeClientToWorker(
       worker_clients,
-      ServiceWorkerGlobalScopeClientImpl::Create(*worker_context_client_));
+      new ServiceWorkerGlobalScopeClient(*worker_context_client_));
   ProvideServiceWorkerContainerClientToWorker(
       worker_clients, worker_context_client_->CreateServiceWorkerProvider());
 

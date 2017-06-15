@@ -49,6 +49,7 @@ namespace blink {
 struct WebPaymentAppResponse;
 struct WebServiceWorkerClientQueryOptions;
 class ExecutionContext;
+class WebServiceWorkerContextClient;
 class WebServiceWorkerResponse;
 class WebURL;
 class WorkerClients;
@@ -56,108 +57,101 @@ class WorkerClients;
 // See WebServiceWorkerContextClient for documentation for the methods in this
 // class.
 class MODULES_EXPORT ServiceWorkerGlobalScopeClient
-    : public Supplement<WorkerClients> {
+    : public GarbageCollected<ServiceWorkerGlobalScopeClient>,
+      public Supplement<WorkerClients> {
+  USING_GARBAGE_COLLECTED_MIXIN(ServiceWorkerGlobalScopeClient);
   WTF_MAKE_NONCOPYABLE(ServiceWorkerGlobalScopeClient);
-  DISALLOW_NEW();
 
  public:
-  virtual ~ServiceWorkerGlobalScopeClient() {}
+  explicit ServiceWorkerGlobalScopeClient(WebServiceWorkerContextClient&);
 
   // Called from ServiceWorkerClients.
-  virtual void GetClient(const WebString&,
-                         std::unique_ptr<WebServiceWorkerClientCallbacks>) = 0;
-  virtual void GetClients(
-      const WebServiceWorkerClientQueryOptions&,
-      std::unique_ptr<WebServiceWorkerClientsCallbacks>) = 0;
-  virtual void OpenWindowForClients(
+  void GetClient(const WebString&,
+                 std::unique_ptr<WebServiceWorkerClientCallbacks>);
+  void GetClients(const WebServiceWorkerClientQueryOptions&,
+                  std::unique_ptr<WebServiceWorkerClientsCallbacks>);
+  void OpenWindowForClients(const WebURL&,
+                            std::unique_ptr<WebServiceWorkerClientCallbacks>);
+  void OpenWindowForPaymentHandler(
       const WebURL&,
-      std::unique_ptr<WebServiceWorkerClientCallbacks>) = 0;
-  virtual void OpenWindowForPaymentHandler(
-      const WebURL&,
-      std::unique_ptr<WebServiceWorkerClientCallbacks>) = 0;
-  virtual void SetCachedMetadata(const WebURL&, const char*, size_t) = 0;
-  virtual void ClearCachedMetadata(const WebURL&) = 0;
+      std::unique_ptr<WebServiceWorkerClientCallbacks>);
+  void SetCachedMetadata(const WebURL&, const char*, size_t);
+  void ClearCachedMetadata(const WebURL&);
 
-  virtual WebURL Scope() const = 0;
+  WebURL Scope() const;
 
-  virtual void DidHandleActivateEvent(int event_id,
-                                      WebServiceWorkerEventResult,
-                                      double event_dispatch_time) = 0;
-  virtual void DidHandleBackgroundFetchAbortEvent(
-      int event_id,
-      WebServiceWorkerEventResult,
-      double event_dispatch_time) = 0;
-  virtual void DidHandleBackgroundFetchClickEvent(
-      int event_id,
-      WebServiceWorkerEventResult,
-      double event_dispatch_time) = 0;
-  virtual void DidHandleBackgroundFetchFailEvent(
-      int event_id,
-      WebServiceWorkerEventResult,
-      double event_dispatch_time) = 0;
-  virtual void DidHandleBackgroundFetchedEvent(int event_id,
-                                               WebServiceWorkerEventResult,
-                                               double event_dispatch_time) = 0;
-  virtual void DidHandleExtendableMessageEvent(int event_id,
-                                               WebServiceWorkerEventResult,
-                                               double event_dispatch_time) = 0;
-  virtual void RespondToFetchEventWithNoResponse(
-      int fetch_event_id,
-      double event_dispatch_time) = 0;
-  virtual void RespondToFetchEvent(int fetch_event_id,
-                                   const WebServiceWorkerResponse&,
-                                   double event_dispatch_time) = 0;
-  virtual void RespondToFetchEventWithResponseStream(
-      int fetch_event_id,
-      const WebServiceWorkerResponse&,
-      WebServiceWorkerStreamHandle*,
-      double event_dispatch_time) = 0;
-  virtual void RespondToPaymentRequestEvent(int event_id,
-                                            const WebPaymentAppResponse&,
-                                            double event_dispatch_time) = 0;
-  virtual void DidHandleFetchEvent(int fetch_event_id,
-                                   WebServiceWorkerEventResult,
-                                   double event_dispatch_time) = 0;
-  virtual void DidHandleInstallEvent(int install_event_id,
-                                     WebServiceWorkerEventResult,
-                                     double event_dispatch_time) = 0;
-  virtual void DidHandleNotificationClickEvent(int event_id,
-                                               WebServiceWorkerEventResult,
-                                               double event_dispatch_time) = 0;
-  virtual void DidHandleNotificationCloseEvent(int event_id,
-                                               WebServiceWorkerEventResult,
-                                               double event_dispatch_time) = 0;
-  virtual void DidHandlePushEvent(int push_event_id,
-                                  WebServiceWorkerEventResult,
-                                  double event_dispatch_time) = 0;
-  virtual void DidHandleSyncEvent(int sync_event_id,
-                                  WebServiceWorkerEventResult,
-                                  double event_dispatch_time) = 0;
-  virtual void DidHandlePaymentRequestEvent(int payment_request_event_id,
-                                            WebServiceWorkerEventResult,
-                                            double event_dispatch_time) = 0;
-  virtual void PostMessageToClient(const WebString& client_uuid,
-                                   const WebString& message,
-                                   WebMessagePortChannelArray) = 0;
-  virtual void SkipWaiting(
-      std::unique_ptr<WebServiceWorkerSkipWaitingCallbacks>) = 0;
-  virtual void Claim(
-      std::unique_ptr<WebServiceWorkerClientsClaimCallbacks>) = 0;
-  virtual void Focus(const WebString& client_uuid,
-                     std::unique_ptr<WebServiceWorkerClientCallbacks>) = 0;
-  virtual void Navigate(const WebString& client_uuid,
-                        const WebURL&,
-                        std::unique_ptr<WebServiceWorkerClientCallbacks>) = 0;
-  virtual void RegisterForeignFetchScopes(
-      int install_event_id,
-      const WebVector<WebURL>& sub_scopes,
-      const WebVector<WebSecurityOrigin>&) = 0;
+  void DidHandleActivateEvent(int event_id,
+                              WebServiceWorkerEventResult,
+                              double event_dispatch_time);
+  void DidHandleBackgroundFetchAbortEvent(int event_id,
+                                          WebServiceWorkerEventResult,
+                                          double event_dispatch_time);
+  void DidHandleBackgroundFetchClickEvent(int event_id,
+                                          WebServiceWorkerEventResult,
+                                          double event_dispatch_time);
+  void DidHandleBackgroundFetchFailEvent(int event_id,
+                                         WebServiceWorkerEventResult,
+                                         double event_dispatch_time);
+  void DidHandleBackgroundFetchedEvent(int event_id,
+                                       WebServiceWorkerEventResult,
+                                       double event_dispatch_time);
+  void DidHandleExtendableMessageEvent(int event_id,
+                                       WebServiceWorkerEventResult,
+                                       double event_dispatch_time);
+  void RespondToFetchEventWithNoResponse(int fetch_event_id,
+                                         double event_dispatch_time);
+  void RespondToFetchEvent(int fetch_event_id,
+                           const WebServiceWorkerResponse&,
+                           double event_dispatch_time);
+  void RespondToFetchEventWithResponseStream(int fetch_event_id,
+                                             const WebServiceWorkerResponse&,
+                                             WebServiceWorkerStreamHandle*,
+                                             double event_dispatch_time);
+  void RespondToPaymentRequestEvent(int event_id,
+                                    const WebPaymentAppResponse&,
+                                    double event_dispatch_time);
+  void DidHandleFetchEvent(int fetch_event_id,
+                           WebServiceWorkerEventResult,
+                           double event_dispatch_time);
+  void DidHandleInstallEvent(int install_event_id,
+                             WebServiceWorkerEventResult,
+                             double event_dispatch_time);
+  void DidHandleNotificationClickEvent(int event_id,
+                                       WebServiceWorkerEventResult,
+                                       double event_dispatch_time);
+  void DidHandleNotificationCloseEvent(int event_id,
+                                       WebServiceWorkerEventResult,
+                                       double event_dispatch_time);
+  void DidHandlePushEvent(int push_event_id,
+                          WebServiceWorkerEventResult,
+                          double event_dispatch_time);
+  void DidHandleSyncEvent(int sync_event_id,
+                          WebServiceWorkerEventResult,
+                          double event_dispatch_time);
+  void DidHandlePaymentRequestEvent(int payment_request_event_id,
+                                    WebServiceWorkerEventResult,
+                                    double event_dispatch_time);
+  void PostMessageToClient(const WebString& client_uuid,
+                           const WebString& message,
+                           WebMessagePortChannelArray);
+  void SkipWaiting(std::unique_ptr<WebServiceWorkerSkipWaitingCallbacks>);
+  void Claim(std::unique_ptr<WebServiceWorkerClientsClaimCallbacks>);
+  void Focus(const WebString& client_uuid,
+             std::unique_ptr<WebServiceWorkerClientCallbacks>);
+  void Navigate(const WebString& client_uuid,
+                const WebURL&,
+                std::unique_ptr<WebServiceWorkerClientCallbacks>);
+  void RegisterForeignFetchScopes(int install_event_id,
+                                  const WebVector<WebURL>& sub_scopes,
+                                  const WebVector<WebSecurityOrigin>&);
 
   static const char* SupplementName();
   static ServiceWorkerGlobalScopeClient* From(ExecutionContext*);
 
- protected:
-  ServiceWorkerGlobalScopeClient() {}
+  DECLARE_VIRTUAL_TRACE();
+
+ private:
+  WebServiceWorkerContextClient& client_;
 };
 
 MODULES_EXPORT void ProvideServiceWorkerGlobalScopeClientToWorker(
