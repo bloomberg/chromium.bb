@@ -12199,7 +12199,7 @@ read aloud to screenreader users to announce that a completion is available.">
       </message>
     </if>
 
-    <!-- Safe Browsing Subresource Filter UI strings. -->
+    <!-- Ad Blocking UI strings. -->
     <if expr="use_titlecase">
       <message name="IDS_FILTERED_DECEPTIVE_CONTENT_PROMPT_RELOAD" desc="In Title Case: Button which reloads the page in order to also show content that was previously blocked.">
         Load Full Site
@@ -12224,6 +12224,18 @@ read aloud to screenreader users to announce that a completion is available.">
       Chrome has blocked parts of this site to protect you from potentially deceptive content.
     </message>
 
+    <message name="IDS_ALWAYS_SHOW_ADS" desc="Explanation associated with a toggle to allow ads after ads have been blocked on the page. To be used on pages where the ad blocking UI is governed by a persistent permissions-based whitelist.">
+      Always show ads on this site
+    </message>
+    <message name="IDS_SHOW_ADS" desc="Explanation associated with a toggle to allow ads after ads have been blocked on the page. To be used on pages where the ad blocking UI is governed by a per-tab whitelist.">
+      Show ads on this site
+    </message>
+    <message name="IDS_BLOCKED_ADS_PROMPT_TITLE" desc="Title of the prompt shown to users when Chrome has blocked ads on the site because the site tends to show intrusive ads. To be shown in an infobar / omnibox">
+      Ads blocked.
+    </message>
+    <message name="IDS_BLOCKED_ADS_PROMPT_EXPLANATION" desc="Longer explanation that Chrome has blocked ads on the site. To be shown in an expanded infobar / bubble">
+      Chrome blocked ads on this site because this site tends to show intrusive ads.
+    </message>
     <if expr="is_win">
       <message name="IDS_UTILITY_PROCESS_SHELL_HANDLER_NAME" desc="The name of the utility process used to handle shell operations.">
         Shell Handler
