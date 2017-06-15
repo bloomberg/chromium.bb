@@ -158,7 +158,7 @@ def BuildBootfs(output_directory, runtime_deps_path, test_name, gtest_filter,
 ''')
   initial_config_file.flush()
   DumpFile(dry_run, initial_config_file.name, 'initial.config')
-  target_source_pairs.append(('data/application_manager/initial.config',
+  target_source_pairs.append(('data/appmgr/initial.config',
                               initial_config_file.name))
 
   manifest_file = tempfile.NamedTemporaryFile()
