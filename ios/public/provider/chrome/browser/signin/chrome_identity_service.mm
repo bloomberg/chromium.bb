@@ -43,27 +43,6 @@ ChromeIdentityService::CreateChromeIdentityInteractionManager(
   return nil;
 }
 
-base::scoped_nsobject<UINavigationController>
-ChromeIdentityService::NewAccountDetails(
-    ChromeIdentity* identity,
-    id<ChromeIdentityBrowserOpener> browser_opener) {
-  return base::scoped_nsobject<UINavigationController>();
-}
-
-base::scoped_nsobject<UINavigationController>
-ChromeIdentityService::NewWebAndAppSettingDetails(
-    ChromeIdentity* identity,
-    id<ChromeIdentityBrowserOpener> browser_opener) {
-  return base::scoped_nsobject<UINavigationController>();
-}
-
-base::scoped_nsobject<ChromeIdentityInteractionManager>
-ChromeIdentityService::NewChromeIdentityInteractionManager(
-    ios::ChromeBrowserState* browser_state,
-    id<ChromeIdentityInteractionManagerDelegate> delegate) const {
-  return base::scoped_nsobject<ChromeIdentityInteractionManager>();
-}
-
 bool ChromeIdentityService::IsValidIdentity(ChromeIdentity* identity) const {
   return false;
 }
