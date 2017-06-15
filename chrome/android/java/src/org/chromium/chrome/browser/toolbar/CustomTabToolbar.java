@@ -764,4 +764,11 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     public boolean mustQueryUrlBarLocationForSuggestions() {
         return false;
     }
+
+    // Temporary fix to override ToolbarLayout's highlight-related methods
+    @Override
+    public void setMenuButtonHighlight(boolean highlight) {}
+
+    @Override
+    protected void setMenuButtonHighlightDrawable(boolean highlighting) {}
 }

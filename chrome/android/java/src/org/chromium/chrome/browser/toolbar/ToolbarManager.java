@@ -921,7 +921,10 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
                 RecordUserAction.record("MobileToolbarShowMenu");
                 mToolbar.onMenuShown();
 
-                if (DataReductionProxySettings.getInstance().isDataReductionProxyEnabled()) {
+                // Assume data saver footer is shown only if data reduction proxy is enabled and
+                // Chrome home is not
+                if (DataReductionProxySettings.getInstance().isDataReductionProxyEnabled()
+                        && !FeatureUtilities.isChromeHomeEnabled()) {
                     FeatureEngagementTracker tracker =
                             FeatureEngagementTrackerFactory.getFeatureEngagementTrackerForProfile(
                                     Profile.getLastUsedProfile());

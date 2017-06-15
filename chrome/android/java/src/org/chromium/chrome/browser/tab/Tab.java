@@ -1556,6 +1556,9 @@ public class Tab
             tracker.notifyEvent(EventConstants.DATA_SAVED_ON_PAGE_LOAD);
         }
 
+        // Don't show data saver footer if Chrome Home is enabled (temporary fix for M61)
+        if (FeatureUtilities.isChromeHomeEnabled()) return;
+
         if (!tracker.shouldTriggerHelpUI(FeatureConstants.DATA_SAVER_DETAIL_FEATURE)) return;
 
         showDataSaverInProductHelp(tracker);

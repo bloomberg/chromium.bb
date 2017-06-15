@@ -186,6 +186,10 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
                 return false;
             }
         };
+
+        // Set menu button background in case it was previously called before inflation
+        // finished (i.e. mMenuButtonWrapper == null)
+        setMenuButtonHighlightDrawable(mHighlightingMenu);
     }
 
     /**
@@ -803,6 +807,9 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      * @param highlighting Whether or not the menu button should be highlighted.
      */
     protected void setMenuButtonHighlightDrawable(boolean highlighting) {
+        // Return if onFinishInflate didn't finish
+        if (mMenuButtonWrapper == null) return;
+
         if (highlighting) {
             if (mHighlightDrawable == null) {
                 mHighlightDrawable = PulseDrawable.createCircle(getContext());
