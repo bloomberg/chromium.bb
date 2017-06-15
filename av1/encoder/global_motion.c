@@ -156,7 +156,7 @@ int64_t refine_integerized_param(WarpedMotionParams *wm,
                               d_width - 2 * border, d_height - 2 * border,
                               d_stride, 0, 0, 16, 16, best_frame_error);
   best_error = AOMMIN(best_error, best_frame_error);
-  step = 1 << (n_refinements + 1);
+  step = 1 << (n_refinements - 1);
   for (i = 0; i < n_refinements; i++, step >>= 1) {
     for (p = 0; p < n_params; ++p) {
       int step_dir = 0;

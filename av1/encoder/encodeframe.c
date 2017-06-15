@@ -4834,7 +4834,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
                   ref_buf[frame]->y_buffer, ref_buf[frame]->y_width,
                   ref_buf[frame]->y_height, ref_buf[frame]->y_stride,
                   cpi->source->y_buffer, cpi->source->y_width,
-                  cpi->source->y_height, cpi->source->y_stride, 3,
+                  cpi->source->y_height, cpi->source->y_stride, 5,
                   best_warp_error);
               if (warp_error < best_warp_error) {
                 best_warp_error = warp_error;
