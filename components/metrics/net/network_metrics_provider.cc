@@ -419,7 +419,8 @@ void NetworkMetricsProvider::LogAggregatedMetrics() {
       samples->GetCount(-net::ERR_ABORTED) - total_aborts_;
   base::HistogramBase::Count new_codes = samples->TotalCount() - total_codes_;
   if (new_codes > 0) {
-    UMA_HISTOGRAM_COUNTS("Net.ErrAborted.CountPerUpload", new_aborts);
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Net.ErrAborted.CountPerUpload2", new_aborts, 1,
+                                100000000, 50);
     UMA_HISTOGRAM_PERCENTAGE("Net.ErrAborted.ProportionPerUpload",
                              (100 * new_aborts) / new_codes);
     total_codes_ += new_codes;
