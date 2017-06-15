@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "base/bind.h"
@@ -70,6 +71,7 @@
 #include "chrome/browser/chromeos/net/network_pref_state_observer.h"
 #include "chrome/browser/chromeos/net/network_throttling_observer.h"
 #include "chrome/browser/chromeos/net/wake_on_wifi_manager.h"
+#include "chrome/browser/chromeos/night_light/night_light_client.h"
 #include "chrome/browser/chromeos/note_taking_helper.h"
 #include "chrome/browser/chromeos/options/cert_library.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
@@ -987,6 +989,13 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
   // In classic ash must occur after ash::ShellPort is initialized. Triggers a
   // fetch of the initial CrosSettings DeviceRebootOnShutdown policy.
   shutdown_policy_forwarder_ = base::MakeUnique<ShutdownPolicyForwarder>();
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ash::switches::kAshEnableNightLight)) {
+    night_light_client_ = base::MakeUnique<NightLightClient>(
+        g_browser_process->system_request_context());
+    night_light_client_->Start();
+  }
 
   ChromeBrowserMainPartsLinux::PostBrowserStart();
 }

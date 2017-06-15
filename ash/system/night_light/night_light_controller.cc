@@ -38,15 +38,16 @@ constexpr int kAutomaticAnimationDurationSec = 20;
 
 class NightLightControllerDelegateImpl : public NightLightController::Delegate {
  public:
-  NightLightControllerDelegateImpl() {
-    // TODO(afakhry): Implement geolocation position retrieval.
-  }
+  NightLightControllerDelegateImpl() = default;
   ~NightLightControllerDelegateImpl() override = default;
 
   // ash::NightLightController::Delegate:
   base::Time GetNow() const override { return base::Time::Now(); }
   base::Time GetSunsetTime() const override { return GetSunRiseSet(false); }
   base::Time GetSunriseTime() const override { return GetSunRiseSet(true); }
+  void SetGeoposition(mojom::SimpleGeopositionPtr position) override {
+    position_ = std::move(position);
+  }
 
  private:
   base::Time GetSunRiseSet(bool sunrise) const {
@@ -55,7 +56,7 @@ class NightLightControllerDelegateImpl : public NightLightController::Delegate {
                      : TimeOfDay(kDefaultStartTimeOffsetMinutes).ToTimeToday();
     }
 
-    icu::CalendarAstronomer astro(longitude_, latitude_);
+    icu::CalendarAstronomer astro(position_->longitude, position_->latitude);
     // For sunset and sunrise times calculations to be correct, the time of the
     // icu::CalendarAstronomer object should be set to a time near local noon.
     // This avoids having the computation flopping over into an adjacent day.
@@ -68,14 +69,9 @@ class NightLightControllerDelegateImpl : public NightLightController::Delegate {
     return base::Time::FromDoubleT(sun_rise_set_ms / 1000.0);
   }
 
-  bool ValidatePosition() const {
-    // TODO(afakhry): Replace with geoposition APIs.
-    return false;
-  }
+  bool ValidatePosition() const { return !!position_; }
 
-  // Stub values to be replaced by actual geoposition APIs.
-  double latitude_ = 0.0;
-  double longitude_ = 0.0;
+  mojom::SimpleGeopositionPtr position_;
 
   DISALLOW_COPY_AND_ASSIGN(NightLightControllerDelegateImpl);
 };
@@ -102,7 +98,9 @@ void ApplyColorTemperatureToLayers(float layer_temperature,
 
 NightLightController::NightLightController(
     SessionController* session_controller)
-    : session_controller_(session_controller) {
+    : session_controller_(session_controller),
+      delegate_(base::MakeUnique<NightLightControllerDelegateImpl>()),
+      binding_(this) {
   session_controller_->AddObserver(this);
 }
 
@@ -127,6 +125,11 @@ void NightLightController::RegisterPrefs(PrefRegistrySimple* registry) {
                                 kDefaultStartTimeOffsetMinutes);
   registry->RegisterIntegerPref(prefs::kNightLightCustomEndTime,
                                 kDefaultEndTimeOffsetMinutes);
+}
+
+void NightLightController::BindRequest(
+    mojom::NightLightControllerRequest request) {
+  binding_.Bind(std::move(request));
 }
 
 void NightLightController::AddObserver(Observer* observer) {
@@ -226,8 +229,28 @@ void NightLightController::OnActiveUserSessionChanged(
   // Initial login and user switching in multi profiles.
   pref_change_registrar_.reset();
   active_user_pref_service_ = Shell::Get()->GetActiveUserPrefService();
-  delegate_ = base::MakeUnique<NightLightControllerDelegateImpl>();
   InitFromUserPrefs();
+}
+
+void NightLightController::SetCurrentGeoposition(
+    mojom::SimpleGeopositionPtr position) {
+  delegate_->SetGeoposition(std::move(position));
+
+  // If the schedule type is sunset to sunrise, then a potential change in the
+  // geoposition might mean a change in the start and end times. In this case,
+  // we must trigger a refresh.
+  if (GetScheduleType() == ScheduleType::kSunsetToSunrise)
+    Refresh(true /* did_schedule_change */);
+}
+
+void NightLightController::SetClient(mojom::NightLightClientPtr client) {
+  client_ = std::move(client);
+
+  if (client_) {
+    client_.set_connection_error_handler(base::Bind(
+        &NightLightController::SetClient, base::Unretained(this), nullptr));
+    NotifyClientWithScheduleChange();
+  }
 }
 
 void NightLightController::SetDelegateForTesting(
@@ -265,15 +288,15 @@ void NightLightController::StartWatchingPrefsChanges() {
                  base::Unretained(this)));
   pref_change_registrar_->Add(
       prefs::kNightLightScheduleType,
-      base::Bind(&NightLightController::OnScheduleParamsPrefsChanged,
+      base::Bind(&NightLightController::OnScheduleTypePrefChanged,
                  base::Unretained(this)));
   pref_change_registrar_->Add(
       prefs::kNightLightCustomStartTime,
-      base::Bind(&NightLightController::OnScheduleParamsPrefsChanged,
+      base::Bind(&NightLightController::OnCustomSchedulePrefsChanged,
                  base::Unretained(this)));
   pref_change_registrar_->Add(
       prefs::kNightLightCustomEndTime,
-      base::Bind(&NightLightController::OnScheduleParamsPrefsChanged,
+      base::Bind(&NightLightController::OnCustomSchedulePrefsChanged,
                  base::Unretained(this)));
 }
 
@@ -286,11 +309,17 @@ void NightLightController::InitFromUserPrefs() {
   StartWatchingPrefsChanges();
   Refresh(true /* did_schedule_change */);
   NotifyStatusChanged();
+  NotifyClientWithScheduleChange();
 }
 
 void NightLightController::NotifyStatusChanged() {
   for (auto& observer : observers_)
     observer.OnNightLightEnabledChanged(GetEnabled());
+}
+
+void NightLightController::NotifyClientWithScheduleChange() {
+  if (client_)
+    client_->OnScheduleTypeChanged(GetScheduleType());
 }
 
 void NightLightController::OnEnabledPrefChanged() {
@@ -304,7 +333,13 @@ void NightLightController::OnColorTemperaturePrefChanged() {
   RefreshLayersTemperature();
 }
 
-void NightLightController::OnScheduleParamsPrefsChanged() {
+void NightLightController::OnScheduleTypePrefChanged() {
+  DCHECK(active_user_pref_service_);
+  NotifyClientWithScheduleChange();
+  Refresh(true /* did_schedule_change */);
+}
+
+void NightLightController::OnCustomSchedulePrefsChanged() {
   DCHECK(active_user_pref_service_);
   Refresh(true /* did_schedule_change */);
 }

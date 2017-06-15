@@ -14,6 +14,8 @@
 #include "chrome/browser/memory/memory_kills_monitor.h"
 #include "chromeos/system/version_loader.h"
 
+class NightLightClient;
+
 namespace lock_screen_apps {
 class StateController;
 }
@@ -110,6 +112,8 @@ class ChromeBrowserMainPartsChromeos : public ChromeBrowserMainPartsLinux {
 
   std::unique_ptr<lock_screen_apps::StateController>
       lock_screen_apps_state_controller_;
+
+  std::unique_ptr<NightLightClient> night_light_client_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeBrowserMainPartsChromeos);
 };

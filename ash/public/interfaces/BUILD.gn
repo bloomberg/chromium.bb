@@ -22,6 +22,7 @@ mojom("interfaces_internal") {
     "lock_screen.mojom",
     "media.mojom",
     "new_window.mojom",
+    "night_light_controller.mojom",
     "session_controller.mojom",
     "shelf.mojom",
     "shutdown.mojom",

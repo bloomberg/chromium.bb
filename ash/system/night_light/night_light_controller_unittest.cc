@@ -66,6 +66,16 @@ class TestObserver : public NightLightController::Observer {
   DISALLOW_COPY_AND_ASSIGN(TestObserver);
 };
 
+constexpr double kFakePosition1_Latitude = 23.5;
+constexpr double kFakePosition1_Longitude = 35.88;
+constexpr int kFakePosition1_SunsetOffset = 20 * 60;
+constexpr int kFakePosition1_SunriseOffset = 4 * 60;
+
+constexpr double kFakePosition2_Latitude = 37.5;
+constexpr double kFakePosition2_Longitude = -100.5;
+constexpr int kFakePosition2_SunsetOffset = 17 * 60;
+constexpr int kFakePosition2_SunriseOffset = 3 * 60;
+
 class TestDelegate : public NightLightController::Delegate {
  public:
   TestDelegate() = default;
@@ -79,6 +89,19 @@ class TestDelegate : public NightLightController::Delegate {
   base::Time GetNow() const override { return fake_now_; }
   base::Time GetSunsetTime() const override { return fake_sunset_; }
   base::Time GetSunriseTime() const override { return fake_sunrise_; }
+  void SetGeoposition(mojom::SimpleGeopositionPtr position) override {
+    if (position.Equals(mojom::SimpleGeoposition::New(
+            kFakePosition1_Latitude, kFakePosition1_Longitude))) {
+      // Set sunset and sunrise times associated with fake position 1.
+      SetFakeSunset(TimeOfDay(kFakePosition1_SunsetOffset));
+      SetFakeSunrise(TimeOfDay(kFakePosition1_SunriseOffset));
+    } else if (position.Equals(mojom::SimpleGeoposition::New(
+                   kFakePosition2_Latitude, kFakePosition2_Longitude))) {
+      // Set sunset and sunrise times associated with fake position 2.
+      SetFakeSunset(TimeOfDay(kFakePosition2_SunsetOffset));
+      SetFakeSunrise(TimeOfDay(kFakePosition2_SunriseOffset));
+    }
+  }
 
  private:
   base::Time fake_now_;
@@ -480,7 +503,7 @@ TEST_F(NightLightTest, TestSunsetSunrise) {
     return;
   }
 
-  //       16:00        18:00     20:00      22:00              5:00
+  //      16:00         18:00     20:00      22:00              5:00
   // <----- + ----------- + ------- + -------- + --------------- + ------->
   //        |             |         |          |                 |
   //       now      custom start  sunset   custom end         sunrise
@@ -526,6 +549,79 @@ TEST_F(NightLightTest, TestSunsetSunrise) {
   // Timer is running scheduling the start at the next sunset.
   EXPECT_TRUE(controller->timer().IsRunning());
   EXPECT_EQ(base::TimeDelta::FromHours(15),
+            controller->timer().GetCurrentDelay());
+}
+
+// Tests the behavior of the sunset to sunrise automatic schedule type when the
+// client sets the geoposition.
+TEST_F(NightLightTest, TestSunsetSunriseGeoposition) {
+  if (Shell::GetAshConfig() == Config::MASH) {
+    // PrefChangeRegistrar doesn't work on mash. crbug.com/721961.
+    return;
+  }
+
+  // Position 1 sunset and sunrise times.
+  //
+  //      16:00       20:00               4:00
+  // <----- + --------- + ---------------- + ------->
+  //        |           |                  |
+  //       now        sunset            sunrise
+  //
+  NightLightController* controller = GetController();
+  delegate()->SetFakeNow(TimeOfDay(16 * 60));  // 4:00 PM.
+  controller->SetCurrentGeoposition(mojom::SimpleGeoposition::New(
+      kFakePosition1_Latitude, kFakePosition1_Longitude));
+
+  // Expect that timer is running and the start is scheduled after 4 hours.
+  controller->SetScheduleType(
+      NightLightController::ScheduleType::kSunsetToSunrise);
+  EXPECT_FALSE(controller->GetEnabled());
+  EXPECT_TRUE(TestLayersTemperature(0.0f));
+  EXPECT_TRUE(controller->timer().IsRunning());
+  EXPECT_EQ(base::TimeDelta::FromHours(4),
+            controller->timer().GetCurrentDelay());
+
+  // Simulate reaching sunset.
+  delegate()->SetFakeNow(TimeOfDay(20 * 60));  // Now is 8:00 PM.
+  controller->timer().user_task().Run();
+  EXPECT_TRUE(controller->GetEnabled());
+  EXPECT_TRUE(TestLayersTemperature(controller->GetColorTemperature()));
+  EXPECT_EQ(NightLightController::AnimationDuration::kLong,
+            controller->last_animation_duration());
+  // Timer is running scheduling the end at sunrise.
+  EXPECT_TRUE(controller->timer().IsRunning());
+  EXPECT_EQ(base::TimeDelta::FromHours(8),
+            controller->timer().GetCurrentDelay());
+
+  // Now simulate user changing position.
+  // Position 2 sunset and sunrise times.
+  //
+  //      17:00       20:00               3:00
+  // <----- + --------- + ---------------- + ------->
+  //        |           |                  |
+  //      sunset       now               sunrise
+  //
+  controller->SetCurrentGeoposition(mojom::SimpleGeoposition::New(
+      kFakePosition2_Latitude, kFakePosition2_Longitude));
+
+  // Expect that the scheduled end delay has been updated, and the status hasn't
+  // changed.
+  EXPECT_TRUE(controller->GetEnabled());
+  EXPECT_TRUE(TestLayersTemperature(controller->GetColorTemperature()));
+  EXPECT_TRUE(controller->timer().IsRunning());
+  EXPECT_EQ(base::TimeDelta::FromHours(7),
+            controller->timer().GetCurrentDelay());
+
+  // Simulate reaching sunrise.
+  delegate()->SetFakeNow(TimeOfDay(3 * 60));  // Now is 5:00 AM.
+  controller->timer().user_task().Run();
+  EXPECT_FALSE(controller->GetEnabled());
+  EXPECT_TRUE(TestLayersTemperature(0.0f));
+  EXPECT_EQ(NightLightController::AnimationDuration::kLong,
+            controller->last_animation_duration());
+  // Timer is running scheduling the start at the next sunset.
+  EXPECT_TRUE(controller->timer().IsRunning());
+  EXPECT_EQ(base::TimeDelta::FromHours(14),
             controller->timer().GetCurrentDelay());
 }
 
