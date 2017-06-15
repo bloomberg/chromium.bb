@@ -3554,6 +3554,8 @@ static_library("test_support") {
   sources = [
     "cocoa/test/cocoa_test_helper.h",
     "cocoa/test/cocoa_test_helper.mm",
+    "cocoa/test/menu_test_observer.h",
+    "cocoa/test/menu_test_observer.mm",
     "cocoa/test/run_loop_testing.h",
     "cocoa/test/run_loop_testing.mm",
     "cocoa/test/scoped_force_rtl_mac.h",

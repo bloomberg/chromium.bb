@@ -10,13 +10,20 @@
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
 #import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
+#import "chrome/browser/ui/cocoa/test/menu_test_observer.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
 
-@interface ReloadButton (Testing)
+@interface ReloadButton (TestForwardDeclares)
 + (void)setPendingReloadTimeout:(NSTimeInterval)seconds;
+@end
+
+@implementation ReloadButton (TestImplementation)
+- (NSMenu*)menuForTesting {
+  return menu_;
+}
 @end
 
 @interface ReloadButtonTarget : NSObject
@@ -36,7 +43,7 @@ class ReloadButtonTest : public CocoaTest {
     NSRect frame = NSMakeRect(0, 0, 20, 20);
     base::scoped_nsobject<ReloadButton> button(
         [[ReloadButton alloc] initWithFrame:frame]);
-    button_ = button.get();
+    button_ = button;
 
     // Set things up so unit tests have a reliable baseline.
     [button_ setTag:IDC_RELOAD];
@@ -57,7 +64,7 @@ class ReloadButtonTest : public CocoaTest {
     [[button_ cell] mouseExited:cocoa_test_event_utils::ExitEvent()];
   }
 
-  ReloadButton* button_;
+  ReloadButton* button_;  // Weak, owned by test_window().
 };
 
 TEST_VIEW(ReloadButtonTest, button_)
@@ -274,6 +281,31 @@ TEST_F(ReloadButtonTest, StopAfterReloadSet) {
   EXPECT_EQ(IDC_STOP, [button_ tag]);
 
   [button_ setTarget:nil];
+}
+
+TEST_F(ReloadButtonTest, RightClickMenu) {
+  base::scoped_nsobject<MenuTestObserver> observer(
+      [[MenuTestObserver alloc] initWithMenu:[button_ menuForTesting]]);
+  [observer setCloseAfterOpening:YES];
+
+  // When the menu is enabled, it should open on right click only.
+  [button_ setMenuEnabled:YES];
+
+  NSEvent* event = cocoa_test_event_utils::LeftMouseDownAtPoint(NSZeroPoint);
+  [button_ performClick:event];
+  EXPECT_FALSE([observer didOpen]);
+
+  event = cocoa_test_event_utils::RightMouseDownAtPoint(NSZeroPoint);
+  [button_ rightMouseDown:event];
+  EXPECT_TRUE([observer didOpen]);
+
+  [observer setDidOpen:NO];
+
+  // If the menu is disabled, nothing should happen.
+  event = cocoa_test_event_utils::RightMouseDownAtPoint(NSZeroPoint);
+  [button_ setMenuEnabled:NO];
+  [button_ rightMouseDown:event];
+  EXPECT_FALSE([observer didOpen]);
 }
 
 }  // namespace
