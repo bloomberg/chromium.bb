@@ -12519,6 +12519,79 @@
         ],
         "vm_tests_override": null
     },
+    "lakitu-st-chromium-pfq": {
+        "_template": "chromium_pfq",
+        "boards": [
+            "lakitu-st"
+        ],
+        "buildslave_type": "baremetal",
+        "important": false,
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "lakitu-st-compile-only-pre-cq": {
+        "_template": "compile_only_pre_cq",
+        "boards": [
+            "lakitu-st"
+        ]
+    },
+    "lakitu-st-full": {
+        "_template": "full",
+        "boards": [
+            "lakitu-st"
+        ],
+        "buildslave_type": "baremetal",
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "lakitu-st-no-vmtest-pre-cq": {
+        "_template": "no_vmtest_pre_cq",
+        "boards": [
+            "lakitu-st"
+        ]
+    },
+    "lakitu-st-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "lakitu-st"
+        ],
+        "important": false,
+        "vm_tests": []
+    },
+    "lakitu-st-pre-cq": {
+        "_template": "pre_cq",
+        "boards": [
+            "lakitu-st"
+        ],
+        "buildslave_type": "baremetal"
+    },
+    "lakitu-st-release": {
+        "_template": "release",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "lakitu-st"
+        ],
+        "buildslave_type": "baremetal"
+    },
+    "lakitu-st-tot-chromium-pfq-informational": {
+        "_template": "chromium_pfq_informational",
+        "boards": [
+            "lakitu-st"
+        ],
+        "buildslave_type": "baremetal",
+        "useflags": [
+            "-chrome_internal"
+        ]
+    },
+    "lakitu-st-unittest-stress": {
+        "_template": "unittest_stress",
+        "boards": [
+            "lakitu-st"
+        ]
+    },
     "lakitu-unittest-stress": {
         "_template": "unittest_stress",
         "boards": [
@@ -14268,6 +14341,7 @@
             "kip-release",
             "lakitu-gpu-release",
             "lakitu-release",
+            "lakitu-st-release",
             "lakitu_next-release",
             "lars-release",
             "leon-release",
