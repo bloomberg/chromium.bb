@@ -90,14 +90,9 @@ TEST_F(DocumentLoaderTest, MultiChunkWithReentrancy) {
   // 2.  The middle part of the response, which is dispatched to
   //    dataReceived() reentrantly.
   // 3. The final chunk, which is dispatched normally at the top-level.
-  class TestDelegate : public WebURLLoaderTestDelegate,
-                       public FrameTestHelpers::TestWebFrameClient {
+  class ChildDelegate : public WebURLLoaderTestDelegate,
+                        public FrameTestHelpers::TestWebFrameClient {
    public:
-    TestDelegate()
-        : loader_client_(nullptr),
-          dispatching_did_receive_data_(false),
-          served_reentrantly_(false) {}
-
     // WebURLLoaderTestDelegate overrides:
     void DidReceiveData(WebURLLoaderClient* original_client,
                         const char* data,
@@ -146,23 +141,45 @@ TEST_F(DocumentLoaderTest, MultiChunkWithReentrancy) {
     bool ServedReentrantly() const { return served_reentrantly_; }
 
    private:
-    WebURLLoaderClient* loader_client_;
+    WebURLLoaderClient* loader_client_ = nullptr;
     std::queue<char> data_;
-    bool dispatching_did_receive_data_;
-    bool served_reentrantly_;
-  } delegate;
-  web_view_helper_.Initialize(false, &delegate);
+    bool dispatching_did_receive_data_ = false;
+    bool served_reentrantly_ = false;
+  };
+
+  class MainFrameClient : public FrameTestHelpers::TestWebFrameClient {
+   public:
+    explicit MainFrameClient(TestWebFrameClient& child_client)
+        : child_client_(child_client) {}
+    WebLocalFrame* CreateChildFrame(WebLocalFrame* parent,
+                                    WebTreeScopeType scope,
+                                    const WebString& name,
+                                    const WebString& fallback_name,
+                                    WebSandboxFlags,
+                                    const WebParsedFeaturePolicy&,
+                                    const WebFrameOwnerProperties&) {
+      return CreateLocalChild(parent, scope, &child_client_);
+    }
+
+   private:
+    TestWebFrameClient& child_client_;
+  };
+
+  ChildDelegate child_delegate;
+  MainFrameClient main_frame_client(child_delegate);
+  web_view_helper_.Initialize(false, &main_frame_client);
 
   // This doesn't go through the mocked URL load path: it's just intended to
   // setup a situation where didReceiveData() can be invoked reentrantly.
   FrameTestHelpers::LoadHTMLString(MainFrame(), "<iframe></iframe>",
                                    URLTestHelpers::ToKURL("about:blank"));
 
-  Platform::Current()->GetURLLoaderMockFactory()->SetLoaderDelegate(&delegate);
+  Platform::Current()->GetURLLoaderMockFactory()->SetLoaderDelegate(
+      &child_delegate);
   FrameTestHelpers::LoadFrame(MainFrame(), "https://example.com/foo.html");
   Platform::Current()->GetURLLoaderMockFactory()->SetLoaderDelegate(nullptr);
 
-  EXPECT_TRUE(delegate.ServedReentrantly());
+  EXPECT_TRUE(child_delegate.ServedReentrantly());
 
   // delegate is a WebFrameClient and stack-allocated, so manually reset() the
   // WebViewHelper here.

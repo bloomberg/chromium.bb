@@ -54,6 +54,7 @@ namespace blink {
 
 class WebFrame;
 class WebLocalFrameBase;
+class WebRemoteFrameBase;
 class WebRemoteFrameImpl;
 class WebSettings;
 enum class WebCachePolicy;
@@ -61,6 +62,7 @@ enum class WebCachePolicy;
 namespace FrameTestHelpers {
 
 class TestWebFrameClient;
+class TestWebRemoteFrameClient;
 class TestWebWidgetClient;
 class TestWebViewClient;
 
@@ -90,18 +92,33 @@ WebMouseEvent CreateMouseEvent(WebInputEvent::Type,
                                const IntPoint&,
                                int modifiers);
 
-// Calls WebRemoteFrame::createLocalChild, but with some arguments prefilled
+// Helper for creating a local child frame of a local parent frame. The supplied
+// TestWebFrameClient will not self-delete when the frame is detached.
+WebLocalFrameBase* CreateLocalChild(WebLocalFrame* parent,
+                                    WebTreeScopeType,
+                                    TestWebFrameClient* = nullptr);
+
+// Similar; however, ownership of the TestWebFrameClient is transferred to
+// itself; the TestWebFrameClient will self-delete when the frame is detached.
+WebLocalFrameBase* CreateLocalChild(WebLocalFrame* parent,
+                                    WebTreeScopeType,
+                                    std::unique_ptr<TestWebFrameClient>);
+
+WebLocalFrameBase* CreateProvisional(TestWebFrameClient*,
+                                     WebRemoteFrame* old_frame);
+
+// Calls WebRemoteFrame::CreateLocalChild, but with some arguments prefilled
 // with default test values (i.e. with a default |client| or |properties| and/or
 // with a precalculated |uniqueName|).
 WebLocalFrameBase* CreateLocalChild(
     WebRemoteFrame* parent,
     const WebString& name = WebString(),
-    WebFrameClient* = nullptr,
+    TestWebFrameClient* = nullptr,
     WebWidgetClient* = nullptr,
     WebFrame* previous_sibling = nullptr,
     const WebFrameOwnerProperties& = WebFrameOwnerProperties());
 WebRemoteFrameImpl* CreateRemoteChild(WebRemoteFrame* parent,
-                                      WebRemoteFrameClient*,
+                                      TestWebRemoteFrameClient*,
                                       const WebString& name = WebString());
 
 // Helpers for unit tests with parameterized WebSettings overrides.
@@ -241,6 +258,9 @@ class WebViewHelper {
 
   WebViewBase* WebView() const { return web_view_; }
 
+  WebLocalFrameBase* LocalMainFrame();
+  WebRemoteFrameBase* RemoteMainFrame();
+
  private:
   WebViewBase* web_view_;
   SettingOverrider* setting_overrider_;
@@ -258,7 +278,10 @@ class TestWebFrameClient : public WebFrameClient {
   TestWebFrameClient();
 
   WebLocalFrame* Frame() const { return frame_; }
-  void SetFrame(WebLocalFrame* frame) { frame_ = frame; }
+  // Pass ownership of the TestWebFrameClient to |self_owned| here if the
+  // TestWebFrameClient should delete itself on frame detach.
+  void Bind(WebLocalFrame*,
+            std::unique_ptr<TestWebFrameClient> self_owned = nullptr);
 
   void FrameDetached(WebLocalFrame*, DetachType) override;
   WebLocalFrame* CreateChildFrame(WebLocalFrame* parent,
@@ -271,7 +294,7 @@ class TestWebFrameClient : public WebFrameClient {
   void DidStartLoading(bool) override;
   void DidStopLoading() override;
 
-  bool IsLoading() { return loads_in_progress_ > 0; }
+  static bool IsLoading() { return loads_in_progress_ > 0; }
 
   // Tests can override the virtual method below to mock the interface provider.
   virtual blink::InterfaceProvider* GetInterfaceProviderForTesting() {
@@ -284,10 +307,13 @@ class TestWebFrameClient : public WebFrameClient {
   }
 
  private:
-  int loads_in_progress_ = 0;
+  static int loads_in_progress_;
+
+  // If set to a non-null value, self-deletes on frame detach.
+  std::unique_ptr<TestWebFrameClient> self_owned_;
 
   // This is null from when the client is created until it is initialized.
-  WebLocalFrame* frame_;
+  WebLocalFrame* frame_ = nullptr;
 };
 
 // Minimal implementation of WebRemoteFrameClient needed for unit tests that

@@ -450,6 +450,8 @@ TEST_P(WebViewTest, SetBaseBackgroundColor) {
 }
 
 TEST_P(WebViewTest, SetBaseBackgroundColorBeforeMainFrame) {
+  // Note: this test doesn't use WebViewHelper since it intentionally runs
+  // initialization code between WebView and WebLocalFrame creation.
   const WebColor kBlue = 0xFF0000FF;
   FrameTestHelpers::TestWebViewClient web_view_client;
   WebViewBase* web_view = static_cast<WebViewBase*>(
@@ -462,6 +464,7 @@ TEST_P(WebViewTest, SetBaseBackgroundColorBeforeMainFrame) {
   FrameTestHelpers::TestWebFrameClient web_frame_client;
   WebLocalFrame* frame = WebLocalFrame::Create(
       WebTreeScopeType::kDocument, &web_frame_client, nullptr, nullptr);
+  web_frame_client.Bind(frame);
   web_view->SetMainFrame(frame);
   web_view->Close();
 }
@@ -2053,12 +2056,15 @@ TEST_P(WebViewTest, ClientTapHandling) {
 }
 
 TEST_P(WebViewTest, ClientTapHandlingNullWebViewClient) {
+  // Note: this test doesn't use WebViewHelper since WebViewHelper creates an
+  // internal WebViewClient on demand if the supplied WebViewClient is null.
   WebViewBase* web_view = static_cast<WebViewBase*>(
       WebView::Create(nullptr, kWebPageVisibilityStateVisible));
   FrameTestHelpers::TestWebFrameClient web_frame_client;
   FrameTestHelpers::TestWebWidgetClient web_widget_client;
   WebLocalFrame* local_frame = WebLocalFrame::Create(
       WebTreeScopeType::kDocument, &web_frame_client, nullptr, nullptr);
+  web_frame_client.Bind(local_frame);
   web_view->SetMainFrame(local_frame);
 
   // TODO(dcheng): The main frame widget currently has a special case.
