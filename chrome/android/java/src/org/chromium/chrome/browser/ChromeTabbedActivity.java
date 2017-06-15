@@ -1095,7 +1095,7 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
 
             // We send this intent so that we can enter WebVr presentation mode if needed. This
             // call doesn't consume the intent because it also has the url that we need to load.
-            VrShellDelegate.onNewIntent(intent);
+            VrShellDelegate.onNewIntent(ChromeTabbedActivity.this, intent);
 
             TabModel tabModel = getCurrentTabModel();
             boolean fromLauncherShortcut = IntentUtils.safeGetBooleanExtra(
