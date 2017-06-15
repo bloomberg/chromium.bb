@@ -32,17 +32,12 @@ class DEVICE_VR_EXPORT VRDevice {
       const base::Callback<void(mojom::VRDisplayInfoPtr)>& on_created) = 0;
 
   virtual void RequestPresent(mojom::VRSubmitFrameClientPtr submit_client,
+                              mojom::VRPresentationProviderRequest request,
                               const base::Callback<void(bool)>& callback) = 0;
   virtual void SetSecureOrigin(bool secure_origin) = 0;
   virtual void ExitPresent() = 0;
-  virtual void SubmitFrame(int16_t frame_index,
-                           const gpu::MailboxHolder& mailbox) = 0;
-  virtual void UpdateLayerBounds(int16_t frame_index,
-                                 mojom::VRLayerBoundsPtr left_bounds,
-                                 mojom::VRLayerBoundsPtr right_bounds,
-                                 int16_t source_width,
-                                 int16_t source_height) = 0;
-  virtual void GetVRVSyncProvider(mojom::VRVSyncProviderRequest request) = 0;
+  virtual void GetNextMagicWindowPose(
+      mojom::VRDisplay::GetNextMagicWindowPoseCallback callback) = 0;
 
   virtual void AddDisplay(VRDisplayImpl* display);
   virtual void RemoveDisplay(VRDisplayImpl* display);

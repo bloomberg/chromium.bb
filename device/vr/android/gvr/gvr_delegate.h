@@ -14,7 +14,6 @@
 #include "ui/gfx/geometry/size.h"
 
 namespace gfx {
-class RectF;
 class Transform;
 }  // namespace gfx
 
@@ -40,34 +39,25 @@ class DEVICE_VR_EXPORT GvrDelegate {
       gvr::GvrApi* gvr_api,
       gfx::Transform* head_mat_out);
   static gfx::Size GetRecommendedWebVrSize(gvr::GvrApi* gvr_api);
+  static mojom::VRDisplayInfoPtr CreateDefaultVRDisplayInfo(
+      gvr::GvrApi* gvr_api,
+      uint32_t device_id);
   static mojom::VRDisplayInfoPtr CreateVRDisplayInfo(gvr::GvrApi* gvr_api,
                                                      gfx::Size recommended_size,
                                                      uint32_t device_id);
 
   virtual void SetWebVRSecureOrigin(bool secure_origin) = 0;
-  virtual void SubmitWebVRFrame(int16_t frame_index,
-                                const gpu::MailboxHolder& mailbox) = 0;
-  virtual void UpdateWebVRTextureBounds(int16_t frame_index,
-                                        const gfx::RectF& left_bounds,
-                                        const gfx::RectF& right_bounds,
-                                        const gfx::Size& source_size) = 0;
-  virtual void OnVRVsyncProviderRequest(
-      mojom::VRVSyncProviderRequest request) = 0;
   virtual void UpdateVSyncInterval(int64_t timebase_nanos,
                                    double interval_seconds) = 0;
   virtual void CreateVRDisplayInfo(
       const base::Callback<void(mojom::VRDisplayInfoPtr)>& callback,
       uint32_t device_id) = 0;
+  virtual void ConnectPresentingService(
+      device::mojom::VRSubmitFrameClientPtr submit_client,
+      device::mojom::VRPresentationProviderRequest request) = 0;
 
  protected:
   virtual ~GvrDelegate() {}
-};
-
-// GvrDelegate, which allows WebVR presentation.
-class DEVICE_VR_EXPORT PresentingGvrDelegate : public GvrDelegate {
- public:
-  virtual void SetSubmitClient(
-      device::mojom::VRSubmitFrameClientPtr submit_client) = 0;
 };
 
 }  // namespace device

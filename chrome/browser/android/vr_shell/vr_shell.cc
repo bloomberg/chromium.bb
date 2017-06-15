@@ -105,7 +105,6 @@ VrShell::VrShell(JNIEnv* env,
       delegate_provider_(delegate),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       reprojected_rendering_(reprojected_rendering),
-      gvr_api_(gvr_api),
       weak_ptr_factory_(this) {
   DVLOG(1) << __FUNCTION__ << "=" << this;
   DCHECK(g_instance == nullptr);
@@ -404,25 +403,6 @@ void VrShell::SetWebVRSecureOrigin(bool secure_origin) {
   ui_->SetWebVrSecureOrigin(secure_origin);
 }
 
-void VrShell::SubmitWebVRFrame(int16_t frame_index,
-                               const gpu::MailboxHolder& mailbox) {
-  TRACE_EVENT1("gpu", "SubmitWebVRFrame", "frame", frame_index);
-  WaitForGlThread();
-  PostToGlThread(FROM_HERE,
-                 base::Bind(&VrShellGl::SubmitWebVRFrame,
-                            gl_thread_->GetVrShellGl(), frame_index, mailbox));
-}
-
-void VrShell::UpdateWebVRTextureBounds(int16_t frame_index,
-                                       const gfx::RectF& left_bounds,
-                                       const gfx::RectF& right_bounds,
-                                       const gfx::Size& source_size) {
-  WaitForGlThread();
-  PostToGlThread(FROM_HERE, base::Bind(&VrShellGl::UpdateWebVRTextureBounds,
-                                       gl_thread_->GetVrShellGl(), frame_index,
-                                       left_bounds, right_bounds, source_size));
-}
-
 void VrShell::CreateVRDisplayInfo(
     const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,
     uint32_t device_id) {
@@ -432,13 +412,15 @@ void VrShell::CreateVRDisplayInfo(
                             gl_thread_->GetVrShellGl(), callback, device_id));
 }
 
-void VrShell::SetSubmitClient(
-    device::mojom::VRSubmitFrameClientPtr submit_client) {
+void VrShell::ConnectPresentingService(
+    device::mojom::VRSubmitFrameClientPtr submit_client,
+    device::mojom::VRPresentationProviderRequest request) {
   WaitForGlThread();
-  PostToGlThread(
-      FROM_HERE,
-      base::Bind(&VrShellGl::SetSubmitClient, gl_thread_->GetVrShellGl(),
-                 base::Passed(submit_client.PassInterface())));
+  PostToGlThread(FROM_HERE,
+                 base::Bind(&VrShellGl::ConnectPresentingService,
+                            gl_thread_->GetVrShellGl(),
+                            base::Passed(submit_client.PassInterface()),
+                            base::Passed(&request)));
 }
 
 base::android::ScopedJavaGlobalRef<jobject> VrShell::TakeContentSurface(
@@ -479,8 +461,8 @@ void VrShell::ContentSurfaceChanged(jobject surface) {
   compositor_->SurfaceChanged(content_surface_);
 }
 
-void VrShell::GvrDelegateReady() {
-  delegate_provider_->SetPresentingDelegate(this, gvr_api_);
+void VrShell::GvrDelegateReady(gvr::ViewerType viewer_type) {
+  delegate_provider_->SetDelegate(this, viewer_type);
 }
 
 void VrShell::OnPhysicalBackingSizeChanged(
@@ -602,14 +584,6 @@ void VrShell::ExitVrDueToUnsupportedMode(UiUnsupportedMode mode) {
       kExitVrDueToUnsupportedModeDelay);
   UMA_HISTOGRAM_ENUMERATION("VR.Shell.EncounteredUnsupportedMode", mode,
                             UiUnsupportedMode::kCount);
-}
-
-void VrShell::OnVRVsyncProviderRequest(
-    device::mojom::VRVSyncProviderRequest request) {
-  WaitForGlThread();
-  PostToGlThread(FROM_HERE,
-                 base::Bind(&VrShellGl::OnRequest, gl_thread_->GetVrShellGl(),
-                            base::Passed(&request)));
 }
 
 void VrShell::UpdateVSyncInterval(int64_t timebase_nanos,

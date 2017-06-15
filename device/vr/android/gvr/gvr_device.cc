@@ -26,15 +26,16 @@ GvrDevice::~GvrDevice() {}
 
 void GvrDevice::CreateVRDisplayInfo(
     const base::Callback<void(mojom::VRDisplayInfoPtr)>& on_created) {
-  GvrDelegate* delegate = GetGvrDelegate();
-  if (delegate) {
-    delegate->CreateVRDisplayInfo(on_created, id());
+  GvrDelegateProvider* delegate_provider = gvr_provider_->GetDelegateProvider();
+  if (delegate_provider) {
+    delegate_provider->CreateVRDisplayInfo(on_created, id());
   } else {
     on_created.Run(nullptr);
   }
 }
 
 void GvrDevice::RequestPresent(mojom::VRSubmitFrameClientPtr submit_client,
+                               mojom::VRPresentationProviderRequest request,
                                const base::Callback<void(bool)>& callback) {
   GvrDelegateProvider* delegate_provider = gvr_provider_->GetDelegateProvider();
   if (!delegate_provider)
@@ -42,7 +43,8 @@ void GvrDevice::RequestPresent(mojom::VRSubmitFrameClientPtr submit_client,
 
   // RequestWebVRPresent is async as we may trigger a DON flow that pauses
   // Chrome.
-  delegate_provider->RequestWebVRPresent(std::move(submit_client), callback);
+  delegate_provider->RequestWebVRPresent(std::move(submit_client),
+                                         std::move(request), callback);
 }
 
 void GvrDevice::SetSecureOrigin(bool secure_origin) {
@@ -59,36 +61,14 @@ void GvrDevice::ExitPresent() {
   OnExitPresent();
 }
 
-void GvrDevice::SubmitFrame(int16_t frame_index,
-                            const gpu::MailboxHolder& mailbox) {
-  GvrDelegate* delegate = GetGvrDelegate();
-  if (delegate) {
-    delegate->SubmitWebVRFrame(frame_index, mailbox);
-  }
-}
-
-void GvrDevice::UpdateLayerBounds(int16_t frame_index,
-                                  mojom::VRLayerBoundsPtr left_bounds_ptr,
-                                  mojom::VRLayerBoundsPtr right_bounds_ptr,
-                                  int16_t source_width,
-                                  int16_t source_height) {
-  GvrDelegate* delegate = GetGvrDelegate();
-  if (!delegate)
+void GvrDevice::GetNextMagicWindowPose(
+    mojom::VRDisplay::GetNextMagicWindowPoseCallback callback) {
+  GvrDelegateProvider* delegate_provider = gvr_provider_->GetDelegateProvider();
+  if (!delegate_provider) {
+    std::move(callback).Run(nullptr);
     return;
-
-  gfx::RectF left_bounds(left_bounds_ptr->left, left_bounds_ptr->top,
-                         left_bounds_ptr->width, left_bounds_ptr->height);
-  gfx::RectF right_bounds(right_bounds_ptr->left, right_bounds_ptr->top,
-                          right_bounds_ptr->width, right_bounds_ptr->height);
-  gfx::Size source_size(source_width, source_height);
-  delegate->UpdateWebVRTextureBounds(frame_index, left_bounds, right_bounds,
-                                     source_size);
-}
-
-void GvrDevice::GetVRVSyncProvider(mojom::VRVSyncProviderRequest request) {
-  GvrDelegate* delegate = GetGvrDelegate();
-  if (delegate)
-    delegate->OnVRVsyncProviderRequest(std::move(request));
+  }
+  delegate_provider->GetNextMagicWindowPose(std::move(callback));
 }
 
 void GvrDevice::OnDelegateChanged() {

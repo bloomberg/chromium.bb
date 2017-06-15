@@ -211,6 +211,16 @@ gfx::Size GvrDelegate::GetRecommendedWebVrSize(gvr::GvrApi* gvr_api) {
 }
 
 /* static */
+mojom::VRDisplayInfoPtr GvrDelegate::CreateDefaultVRDisplayInfo(
+    gvr::GvrApi* gvr_api,
+    uint32_t device_id) {
+  if (!gvr_api)
+    return nullptr;
+  return CreateVRDisplayInfo(gvr_api, GetRecommendedWebVrSize(gvr_api),
+                             device_id);
+}
+
+/* static */
 mojom::VRDisplayInfoPtr GvrDelegate::CreateVRDisplayInfo(
     gvr::GvrApi* gvr_api,
     gfx::Size recommended_size,

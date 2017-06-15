@@ -22,7 +22,6 @@
 #include "device/vr/android/gvr/gvr_delegate.h"
 #include "device/vr/android/gvr/gvr_gamepad_data_provider.h"
 #include "device/vr/vr_service.mojom.h"
-#include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
 
 namespace blink {
@@ -31,10 +30,6 @@ class WebInputEvent;
 
 namespace content {
 class WebContents;
-}
-
-namespace gpu {
-struct MailboxHolder;
 }
 
 namespace ui {
@@ -65,7 +60,7 @@ class VrMetricsHelper;
 
 // The native instance of the Java VrShell. This class is not threadsafe and
 // must only be used on the UI thread.
-class VrShell : public device::PresentingGvrDelegate,
+class VrShell : public device::GvrDelegate,
                 device::GvrGamepadDataProvider,
                 device::CardboardGamepadDataProvider {
  public:
@@ -138,7 +133,7 @@ class VrShell : public device::PresentingGvrDelegate,
   void ContentWasShown();
 
   void ContentSurfaceChanged(jobject surface);
-  void GvrDelegateReady();
+  void GvrDelegateReady(gvr::ViewerType viewer_type);
 
   void OnPhysicalBackingSizeChanged(
       JNIEnv* env,
@@ -186,23 +181,14 @@ class VrShell : public device::PresentingGvrDelegate,
 
   // device::GvrDelegate implementation.
   void SetWebVRSecureOrigin(bool secure_origin) override;
-  void SubmitWebVRFrame(int16_t frame_index,
-                        const gpu::MailboxHolder& mailbox) override;
-  void UpdateWebVRTextureBounds(int16_t frame_index,
-                                const gfx::RectF& left_bounds,
-                                const gfx::RectF& right_bounds,
-                                const gfx::Size& source_size) override;
-  void OnVRVsyncProviderRequest(
-      device::mojom::VRVSyncProviderRequest request) override;
   void UpdateVSyncInterval(int64_t timebase_nanos,
                            double interval_seconds) override;
   void CreateVRDisplayInfo(
       const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,
       uint32_t device_id) override;
-
-  // device::PresentingGvrDelegate implementation.
-  void SetSubmitClient(
-      device::mojom::VRSubmitFrameClientPtr submit_client) override;
+  void ConnectPresentingService(
+      device::mojom::VRSubmitFrameClientPtr submit_client,
+      device::mojom::VRPresentationProviderRequest request) override;
 
   void ProcessTabArray(JNIEnv* env, jobjectArray tabs, bool incognito);
 
@@ -241,10 +227,6 @@ class VrShell : public device::PresentingGvrDelegate,
   bool is_capturing_audio_ = false;
   bool is_capturing_video_ = false;
   bool is_capturing_screen_ = false;
-
-  // TODO(mthiesse): Remove the need for this to be stored here.
-  // crbug.com/674594
-  gvr_context* gvr_api_;
 
   // Are we currently providing a gamepad factory to the gamepad manager?
   bool gvr_gamepad_source_active_ = false;

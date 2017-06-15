@@ -11,6 +11,7 @@
 #include "chrome/browser/android/vr_shell/ui_interface.h"
 #include "device/vr/android/gvr/gvr_gamepad_data_provider.h"
 #include "device/vr/vr_service.mojom.h"
+#include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
 
 namespace blink {
 class WebInputEvent;
@@ -25,7 +26,7 @@ class GlBrowserInterface {
   virtual ~GlBrowserInterface() = default;
 
   virtual void ContentSurfaceChanged(jobject surface) = 0;
-  virtual void GvrDelegateReady() = 0;
+  virtual void GvrDelegateReady(gvr::ViewerType viewer_type) = 0;
   virtual void UpdateGamepadData(device::GvrGamepadData) = 0;
   virtual void AppButtonGesturePerformed(UiInterface::Direction direction) = 0;
   virtual void AppButtonClicked() = 0;

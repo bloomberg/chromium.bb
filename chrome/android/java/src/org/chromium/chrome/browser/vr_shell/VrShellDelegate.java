@@ -364,7 +364,6 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         if (wrapper == null) return null;
         ThreadUtils.assertOnUiThread();
         sInstance = new VrShellDelegate(activity, wrapper);
-
         return sInstance;
     }
 
@@ -464,6 +463,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         mPaused = ApplicationStatus.getStateForActivity(activity) != ActivityState.RESUMED;
         updateVrSupportLevel();
         mNativeVrShellDelegate = nativeInit();
+        createNonPresentingNativeContext();
         mFeedbackFrequency = VrFeedbackStatus.getFeedbackFrequency();
         mEnterVrHandler = new Handler();
         Choreographer.getInstance().postFrameCallback(new FrameCallback() {
@@ -523,9 +523,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         mActivity = activity;
         mVrDaydreamApi = mVrClassesWrapper.createVrDaydreamApi(mActivity);
         if (mNativeVrShellDelegate == 0 || mNonPresentingGvrContext == null) return;
-        shutdownNonPresentingNativeContext();
-        nativeUpdateNonPresentingContext(
-                mNativeVrShellDelegate, createNonPresentingNativeContext());
+        resetNonPresentingNativeContext();
     }
 
     /**
@@ -536,6 +534,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
     private void updateVrSupportLevel() {
         if (mVrClassesWrapper == null) {
             mVrSupportLevel = VR_NOT_AVAILABLE;
+            shutdownNonPresentingNativeContext();
             return;
         }
         if (mVrCoreVersionChecker == null) {
@@ -544,8 +543,11 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         if (mVrDaydreamApi == null) {
             mVrDaydreamApi = mVrClassesWrapper.createVrDaydreamApi(mActivity);
         }
-        mVrSupportLevel = getVrSupportLevel(
+        int supportLevel = getVrSupportLevel(
                 mVrDaydreamApi, mVrCoreVersionChecker, mActivity.getActivityTab());
+        if (supportLevel == mVrSupportLevel) return;
+        mVrSupportLevel = supportLevel;
+        resetNonPresentingNativeContext();
     }
 
     /**
@@ -640,6 +642,8 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         mVrClassesWrapper.setVrModeEnabled(mActivity, true);
         mInVr = true;
         mShouldShowPageInfo = false;
+        shutdownNonPresentingNativeContext();
+
         // Lock orientation to landscape after enter VR.
         mActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
 
@@ -807,6 +811,8 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
     private void onResume() {
         mPaused = false;
 
+        updateVrSupportLevel();
+
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
         try {
             if (mNativeVrShellDelegate != 0) nativeOnResume(mNativeVrShellDelegate);
@@ -816,11 +822,14 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
 
         if (mVrSupportLevel != VR_DAYDREAM) return;
         if (isVrShellEnabled(mVrSupportLevel) && activitySupportsVrBrowsing(mActivity)) {
-            // registerDaydreamIntent is slow, so run it after resuming.
+            // Perform slow initialization asynchronously.
             new Handler().post(new Runnable() {
                 @Override
                 public void run() {
-                    if (!mPaused) registerDaydreamIntent(mVrDaydreamApi, mActivity);
+                    if (!mPaused) {
+                        registerDaydreamIntent(mVrDaydreamApi, mActivity);
+                        createNonPresentingNativeContext();
+                    }
                 }
             });
         }
@@ -935,20 +944,27 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         return mIsDaydreamCurrentViewer;
     }
 
-    @CalledByNative
-    private long createNonPresentingNativeContext() {
-        if (mVrClassesWrapper == null) return 0;
-        // Update VR support level as it can change at runtime
-        updateVrSupportLevel();
-        if (mVrSupportLevel == VR_NOT_AVAILABLE) return 0;
-        mNonPresentingGvrContext = mVrClassesWrapper.createNonPresentingGvrContext(mActivity);
-        if (mNonPresentingGvrContext == null) return 0;
-        return mNonPresentingGvrContext.getNativeGvrContext();
+    private void resetNonPresentingNativeContext() {
+        shutdownNonPresentingNativeContext();
+        createNonPresentingNativeContext();
     }
 
-    @CalledByNative
+    private void createNonPresentingNativeContext() {
+        if (mNonPresentingGvrContext != null) return;
+        if (mVrClassesWrapper == null) return;
+        if (mVrSupportLevel == VR_NOT_AVAILABLE) return;
+        if (mNativeVrShellDelegate == 0) return;
+        mNonPresentingGvrContext = mVrClassesWrapper.createNonPresentingGvrContext(mActivity);
+        if (mNonPresentingGvrContext == null) return;
+        nativeUpdateNonPresentingContext(
+                mNativeVrShellDelegate, mNonPresentingGvrContext.getNativeGvrContext());
+    }
+
     private void shutdownNonPresentingNativeContext() {
         if (mNonPresentingGvrContext == null) return;
+        if (mNativeVrShellDelegate != 0) {
+            nativeUpdateNonPresentingContext(mNativeVrShellDelegate, 0);
+        }
         mNonPresentingGvrContext.shutdown();
         mNonPresentingGvrContext = null;
     }
@@ -989,6 +1005,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
     public void shutdownVr(boolean disableVrMode, boolean canReenter, boolean stayingInChrome) {
         cancelPendingVrEntry();
         if (!mInVr) return;
+
         if (mShowingDaydreamDoff) {
             onExitVrResult(true);
             return;
@@ -1008,6 +1025,8 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         if (disableVrMode) mVrClassesWrapper.setVrModeEnabled(mActivity, false);
 
         promptForFeedbackIfNeeded(stayingInChrome);
+        if (stayingInChrome) createNonPresentingNativeContext();
+
         // We don't want to show the PageInfo prompt if we return to Chrome
         // after shutting down for reasons other than a successful DOFF (e.g.
         // clicking the controller home button and returning to Chrome).
@@ -1288,6 +1307,7 @@ public class VrShellDelegate implements ApplicationStatus.ActivityStateListener,
         shutdownVr(false /* disableVrMode */, false /* canReenter */, false /* stayingInChrome */);
         if (mNativeVrShellDelegate != 0) nativeDestroy(mNativeVrShellDelegate);
         mNativeVrShellDelegate = 0;
+        shutdownNonPresentingNativeContext();
         ApplicationStatus.unregisterActivityStateListener(this);
         sInstance = null;
     }
