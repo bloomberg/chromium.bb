@@ -407,13 +407,6 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // A unique ID, since node IDs are frame-local.
   int32_t unique_id_;
 
-  // The platform-specific object that implements the accessibility APIs for
-  // this node. Currently some of the platform-specific code is implemented by
-  // subclasses of BrowserAccessibility and some by |platform_node_|, but
-  // eventually we want all of that code to be in AXPlatformNode.  See
-  // http://crbug.com/703369
-  ui::AXPlatformNode* platform_node_;
-
  private:
   // |GetInnerText| recursively includes all the text from descendants such as
   // text found in any embedded object. In contrast, |GetText| might include a
