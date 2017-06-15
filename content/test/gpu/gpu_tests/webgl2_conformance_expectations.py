@@ -185,6 +185,18 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('conformance2/*', ['win', 'intel', 'd3d11'], bug=628395)
     self.Flaky('deqp/*', ['win', 'intel', 'd3d11'], bug=628395)
 
+    # Passthrough command decoder / D3D11
+    self.Fail('conformance/textures/image_bitmap_from_video/*',
+        ['win', 'passthrough', 'd3d11'], bug=602688)
+    self.Fail('conformance/textures/video/*',
+        ['win', 'passthrough', 'd3d11'], bug=602688)
+    self.Fail('conformance/textures/misc/texture-corner-case-videos.html',
+        ['win', 'passthrough', 'd3d11'], bug=602688)
+    self.Fail('conformance2/textures/image_bitmap_from_video/*',
+        ['win', 'passthrough', 'd3d11'], bug=602688)
+    self.Fail('conformance2/textures/video/*',
+        ['win', 'passthrough', 'd3d11'], bug=602688)
+
     # Mac only.
 
     # Regressions in 10.12.4.

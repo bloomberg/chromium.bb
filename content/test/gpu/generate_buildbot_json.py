@@ -1865,12 +1865,6 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     'extra_browser_args': [
       '--use-angle=d3d11',
       '--use-passthrough-cmd-decoder',
-      # TODO(geofflang): Remove --disable-es3-apis once crbug.com/671217 is
-      # complete.
-      '--disable-es3-apis',
-      # TODO(geofflang): --disable-es3-gl-context is required because of
-      # crbug.com/680522
-      '--disable-es3-gl-context',
     ],
     'asan_args': ['--is-asan'],
   },
@@ -2015,6 +2009,29 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     'target_name': 'webgl_conformance',
     'extra_browser_args': [
       '--use-angle=gl',
+    ],
+  },
+  'webgl2_conformance_d3d11_passthrough_tests': {
+    'tester_configs': [
+      {
+         # The WebGL 2.0 conformance tests take over an hour to run on
+         # the Debug bots, which is too long.
+        'build_configs': ['Release'],
+        'predicate': Predicates.FYI_ONLY,
+        # Only run on the NVIDIA Release Windows bots.
+        'swarming_dimension_sets': [
+          {
+            'gpu': '10de:104a',
+            'os': 'Windows-2008ServerR2-SP1'
+          },
+        ],
+        'disabled_instrumentation_types': ['tsan'],
+      },
+    ],
+    'target_name': 'webgl_conformance',
+    'extra_browser_args': [
+      '--use-angle=d3d11',
+      '--use-passthrough-cmd-decoder',
     ],
     'args': [
       '--webgl-conformance-version=2.0.1',
