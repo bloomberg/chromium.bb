@@ -22,15 +22,6 @@ DistillerJavaScriptServiceImpl::DistillerJavaScriptServiceImpl(
 
 DistillerJavaScriptServiceImpl::~DistillerJavaScriptServiceImpl() {}
 
-void DistillerJavaScriptServiceImpl::HandleDistillerClosePanelCall(
-    bool animate) {
-  base::RecordAction(base::UserMetricsAction("DomDistiller_ViewOriginal"));
-  if (!distiller_ui_handle_) {
-    return;
-  }
-  distiller_ui_handle_->ClosePanel(animate);
-}
-
 void DistillerJavaScriptServiceImpl::HandleDistillerOpenSettingsCall() {
   if (!distiller_ui_handle_) {
     return;

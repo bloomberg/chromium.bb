@@ -21,9 +21,6 @@ class DistillerUIHandle {
   // Open the UI settings for dom distiller.
   virtual void OpenSettings(content::WebContents* web_contents) = 0;
 
-  // Close the Reader Mode panel.
-  virtual void ClosePanel(bool animate) = 0;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(DistillerUIHandle);
 };

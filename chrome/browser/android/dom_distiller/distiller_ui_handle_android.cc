@@ -26,12 +26,6 @@ void DistillerUIHandleAndroid::OpenSettings(
                                         web_contents->GetJavaWebContents());
 }
 
-// static
-void DistillerUIHandleAndroid::ClosePanel(bool animate) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_DomDistillerUIUtils_closePanel(env, animate);
-}
-
 }  // namespace android
 
 }  // namespace dom_distiller
