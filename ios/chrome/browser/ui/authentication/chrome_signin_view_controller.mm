@@ -358,7 +358,7 @@ void HideButton(UIButton* button) {
   _interactionManager =
       ios::GetChromeBrowserProvider()
           ->GetChromeIdentityService()
-          ->CreateChromeIdentityInteractionManager(_browserState, self);
+          ->NewChromeIdentityInteractionManager(_browserState, self);
   __weak ChromeSigninViewController* weakSelf = self;
   SigninCompletionCallback completion =
       ^(ChromeIdentity* identity, NSError* error) {
