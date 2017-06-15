@@ -6,4 +6,4 @@
 infra/tools/luci/vpython/${platform}  git_revision:cea2b0eb174d6d8e6b628020e3986cb251ea2d97
 
 # LUCI editor
-infra/tools/luci/led/${platform}  git_revision:a05c9b0865abbfa27673528c5d95c80b55ff87bb
+infra/tools/luci/led/${platform}  git_revision:a3890a6e0b276b35d734b13a82b164dd7fd8f2b5
