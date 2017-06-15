@@ -83,11 +83,6 @@ size_t GbmBuffer::GetSize(size_t index) const {
   return planes_[index].size;
 }
 
-uint64_t GbmBuffer::GetFormatModifier(size_t index) const {
-  DCHECK_LT(index, planes_.size());
-  return planes_[index].modifier;
-}
-
 // TODO(reveman): This should not be needed once crbug.com/597932 is fixed,
 // as the size would be queried directly from the underlying bo.
 gfx::Size GbmBuffer::GetSize() const {
@@ -250,7 +245,7 @@ gfx::NativePixmapHandle GbmPixmap::ExportHandle() {
     }
     handle.planes.emplace_back(buffer_->GetStride(i), buffer_->GetOffset(i),
                                buffer_->GetSize(i),
-                               buffer_->GetFormatModifier(i));
+                               buffer_->GetFormatModifier());
   }
   return handle;
 }
@@ -283,7 +278,7 @@ int GbmPixmap::GetDmaBufOffset(size_t plane) const {
 }
 
 uint64_t GbmPixmap::GetDmaBufModifier(size_t plane) const {
-  return buffer_->GetFormatModifier(plane);
+  return buffer_->GetFormatModifier();
 }
 
 gfx::BufferFormat GbmPixmap::GetBufferFormat() const {

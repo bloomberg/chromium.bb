@@ -21,6 +21,12 @@ class MockScanoutBufferGenerator : public ScanoutBufferGenerator {
                                       uint32_t format,
                                       const gfx::Size& size) override;
 
+  scoped_refptr<ScanoutBuffer> CreateWithModifier(
+      const scoped_refptr<DrmDevice>& drm,
+      uint32_t format,
+      uint64_t modifier,
+      const gfx::Size& size);
+
   void set_allocation_failure(bool allocation_failure) {
     allocation_failure_ = allocation_failure;
   }
