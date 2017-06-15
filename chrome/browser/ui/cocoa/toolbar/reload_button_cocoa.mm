@@ -76,6 +76,7 @@ const int kReloadMenuCommands[]  = {
 
   menu_.reset([[NSMenu alloc] initWithTitle:@""]);
   [self populateMenu];
+  [self setAttachedMenu:menu_];
 }
 
 - (void)invalidatePendingReloadTimer {
@@ -152,7 +153,7 @@ const int kReloadMenuCommands[]  = {
 }
 
 - (void)setMenuEnabled:(BOOL)enabled {
-  [self setAttachedMenu:(enabled ? menu_ : nil)];
+  [self setOpenMenuOnRightClick:enabled];
 }
 
 - (void)setCommandUpdater:(CommandUpdater*)commandUpdater {
