@@ -678,6 +678,9 @@ IPC_MESSAGE_ROUTED4(FrameHostMsg_ShowCreatedWindow,
                     gfx::Rect /* initial_rect */,
                     bool /* opened_by_user_gesture */)
 
+// Let the browser know a StreamHandle has been consumed and can be released.
+IPC_MESSAGE_ROUTED1(FrameHostMsg_StreamHandleConsumed, GURL /* stream_url */)
+
 #if BUILDFLAG(ENABLE_PLUGINS)
 IPC_STRUCT_TRAITS_BEGIN(content::PepperRendererInstanceData)
   IPC_STRUCT_TRAITS_MEMBER(render_process_id)

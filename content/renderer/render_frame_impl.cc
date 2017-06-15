@@ -5132,6 +5132,18 @@ void RenderFrameImpl::OnCommitNavigation(
   stream_override->redirect_responses = request_params.redirect_response;
   stream_override->redirect_infos = request_params.redirect_infos;
 
+  // Used to notify the browser that it can release its |stream_handle_| when
+  // the |stream_override| object isn't used anymore.
+  // TODO(clamy): Remove this when we switch to Mojo streams.
+  stream_override->on_delete = base::BindOnce(
+      [](base::WeakPtr<RenderFrameImpl> weak_self, const GURL& url) {
+        if (RenderFrameImpl* self = weak_self.get()) {
+          self->Send(
+              new FrameHostMsg_StreamHandleConsumed(self->routing_id_, url));
+        }
+      },
+      weak_factory_.GetWeakPtr());
+
   if (commit_data.url_loader_factory.is_valid()) {
     // Chrome doesn't use interface versioning.
     url_loader_factory_.Bind(mojom::URLLoaderFactoryPtrInfo(

@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -351,7 +352,10 @@ void SetSecurityStyleAndDetails(const GURL& url,
 }  // namespace
 
 StreamOverrideParameters::StreamOverrideParameters() {}
-StreamOverrideParameters::~StreamOverrideParameters() {}
+StreamOverrideParameters::~StreamOverrideParameters() {
+  if (on_delete)
+    std::move(on_delete).Run(stream_url);
+}
 
 // This inner class exists since the WebURLLoader may be deleted while inside a
 // call to WebURLLoaderClient.  Refcounting is to keep the context from being
