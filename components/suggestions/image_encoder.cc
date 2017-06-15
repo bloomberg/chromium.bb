@@ -20,10 +20,8 @@ bool EncodeSkBitmapToJPEG(const SkBitmap& bitmap,
   if (!bitmap.readyToDraw() || bitmap.isNull()) {
     return false;
   }
-  return gfx::JPEGCodec::Encode(
-      reinterpret_cast<unsigned char*>(bitmap.getAddr32(0, 0)),
-      gfx::JPEGCodec::FORMAT_SkBitmap, bitmap.width(), bitmap.height(),
-      bitmap.rowBytes(), 100, dest);
+
+  return gfx::JPEGCodec::Encode(bitmap, 100, dest);
 }
 
 }  // namespace suggestions

@@ -213,15 +213,10 @@ void ChromeRenderFrameObserver::RequestThumbnailForContextNode(
   }
 
   std::vector<uint8_t> thumbnail_data;
-  if (bitmap.getPixels()) {
-    const int kDefaultQuality = 90;
-    std::vector<unsigned char> data;
-    if (gfx::JPEGCodec::Encode(
-            reinterpret_cast<unsigned char*>(bitmap.getAddr32(0, 0)),
-            gfx::JPEGCodec::FORMAT_SkBitmap, bitmap.width(), bitmap.height(),
-            static_cast<int>(bitmap.rowBytes()), kDefaultQuality, &data)) {
-      thumbnail_data.swap(data);
-    }
+  constexpr int kDefaultQuality = 90;
+  std::vector<unsigned char> data;
+  if (gfx::JPEGCodec::Encode(bitmap, kDefaultQuality, &data)) {
+    thumbnail_data.swap(data);
   }
 
   callback.Run(thumbnail_data, original_size);

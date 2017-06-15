@@ -40,11 +40,7 @@ class TraceableDevToolsScreenshot
     out->append("\"");
     if (!frame_.drawsNothing()) {
       std::vector<unsigned char> data;
-      bool encoded = gfx::JPEGCodec::Encode(
-          reinterpret_cast<unsigned char*>(frame_.getAddr32(0, 0)),
-          gfx::JPEGCodec::FORMAT_SkBitmap,
-          frame_.width(), frame_.height(),
-          frame_.width() * frame_.bytesPerPixel(), 80, &data);
+      bool encoded = gfx::JPEGCodec::Encode(frame_, 80, &data);
       if (encoded) {
         std::string encoded_data;
         base::Base64Encode(

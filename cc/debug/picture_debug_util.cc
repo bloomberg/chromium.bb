@@ -28,23 +28,19 @@ class BitmapSerializer : public SkPixelSerializer {
   bool onUseEncodedData(const void* data, size_t len) override { return true; }
 
   SkData* onEncode(const SkPixmap& pixmap) override {
-    const SkImageInfo& info = pixmap.info();
-    const void* pixels = pixmap.addr();
-    size_t row_bytes = pixmap.rowBytes();
-    const int kJpegQuality = 80;
     std::vector<unsigned char> data;
 
     // If bitmap is opaque, encode as JPEG.
     // Otherwise encode as PNG.
     bool encoding_succeeded = false;
-    if (info.isOpaque()) {
-      DCHECK_LE(row_bytes,
-                static_cast<size_t>(std::numeric_limits<int>::max()));
-      encoding_succeeded = gfx::JPEGCodec::Encode(
-          reinterpret_cast<const unsigned char*>(pixels),
-          gfx::JPEGCodec::FORMAT_SkBitmap, info.width(), info.height(),
-          static_cast<int>(row_bytes), kJpegQuality, &data);
+    if (pixmap.isOpaque()) {
+      constexpr int kJpegQuality = 80;
+      encoding_succeeded = gfx::JPEGCodec::Encode(pixmap, kJpegQuality, &data);
     } else {
+      const SkImageInfo& info = pixmap.info();
+      const void* pixels = pixmap.addr();
+      size_t row_bytes = pixmap.rowBytes();
+
       SkBitmap bm;
       // The cast is ok, since we only read the bm.
       if (!bm.installPixels(info, const_cast<void*>(pixels), row_bytes)) {

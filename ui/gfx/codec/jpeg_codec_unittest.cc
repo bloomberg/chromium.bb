@@ -111,8 +111,10 @@ TEST(JPEGCodec, EncodeDecodeRGBA) {
 
   // encode, making sure it was compressed some
   std::vector<unsigned char> encoded;
-  EXPECT_TRUE(JPEGCodec::Encode(&original[0], JPEGCodec::FORMAT_RGBA, w, h,
-                                w * 4, jpeg_quality, &encoded));
+  SkImageInfo info =
+      SkImageInfo::Make(w, h, kRGBA_8888_SkColorType, kOpaque_SkAlphaType);
+  SkPixmap src(info, &original[0], w * 4);
+  EXPECT_TRUE(JPEGCodec::Encode(src, jpeg_quality, &encoded));
   EXPECT_GT(original.size(), encoded.size());
 
   // decode, it should have the same size as the original
@@ -147,8 +149,10 @@ TEST(JPEGCodec, DecodeCorrupted) {
 
   // make some compressed data
   std::vector<unsigned char> compressed;
-  ASSERT_TRUE(JPEGCodec::Encode(&original[0], JPEGCodec::FORMAT_RGBA, w, h,
-                                w * 3, jpeg_quality, &compressed));
+  SkImageInfo info =
+      SkImageInfo::Make(w, h, kRGBA_8888_SkColorType, kOpaque_SkAlphaType);
+  SkPixmap src(info, &original[0], w * 4);
+  ASSERT_TRUE(JPEGCodec::Encode(src, jpeg_quality, &compressed));
 
   // try decompressing a truncated version
   ASSERT_FALSE(JPEGCodec::Decode(&compressed[0], compressed.size() / 2,

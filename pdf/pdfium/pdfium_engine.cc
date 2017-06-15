@@ -1421,11 +1421,12 @@ FPDF_DOCUMENT PDFiumEngine::CreateSinglePageRasterPdf(
   // document relative to a normal bitmap and provides better compression than
   // a higher quality setting.
   const int quality = 40;
+  SkImageInfo info = SkImageInfo::Make(
+      FPDFBitmap_GetWidth(bitmap), FPDFBitmap_GetHeight(bitmap),
+      kBGRA_8888_SkColorType, kOpaque_SkAlphaType);
+  SkPixmap src(info, bitmap_data, FPDFBitmap_GetStride(bitmap));
   if (!(print_settings.format & PP_PRINTOUTPUTFORMAT_PDF) &&
-      (gfx::JPEGCodec::Encode(
-          bitmap_data, gfx::JPEGCodec::FORMAT_BGRA, FPDFBitmap_GetWidth(bitmap),
-          FPDFBitmap_GetHeight(bitmap), FPDFBitmap_GetStride(bitmap), quality,
-          &compressed_bitmap_data))) {
+      (gfx::JPEGCodec::Encode(src, quality, &compressed_bitmap_data))) {
     FPDF_FILEACCESS file_access = {};
     file_access.m_FileLen =
         static_cast<unsigned long>(compressed_bitmap_data.size());
