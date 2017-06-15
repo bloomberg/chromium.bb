@@ -139,9 +139,11 @@ class RenderingHelper {
   // Get the GL context.
   gl::GLContext* GetGLContext();
 
-  // Get rendered thumbnails as RGBA.
-  void GetThumbnailsAsRGBA(std::vector<unsigned char>* rgba,
-                           base::WaitableEvent* done);
+  // Get rendered thumbnails as RGB.
+  // Sets alpha_solid to true if the alpha channel is entirely 0xff.
+  void GetThumbnailsAsRGB(std::vector<unsigned char>* rgb,
+                          bool* alpha_solid,
+                          base::WaitableEvent* done);
 
  private:
   struct RenderedVideo {
