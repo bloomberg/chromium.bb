@@ -320,11 +320,6 @@ void RecordPaintCanvas::drawTextBlob(sk_sp<SkTextBlob> blob,
   buffer_->push<DrawTextBlobOp>(blob, x, y, flags);
 }
 
-void RecordPaintCanvas::drawDisplayItemList(
-    scoped_refptr<DisplayItemList> list) {
-  buffer_->push<DrawDisplayItemListOp>(list);
-}
-
 void RecordPaintCanvas::drawPicture(sk_sp<const PaintRecord> record) {
   // TODO(enne): If this is small, maybe flatten it?
   buffer_->push<DrawRecordOp>(record);

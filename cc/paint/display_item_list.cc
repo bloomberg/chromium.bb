@@ -69,8 +69,6 @@ void DisplayItemList::Finalize() {
   // If this fails we had more calls to EndPaintOfPairedBegin() than
   // to EndPaintOfPairedEnd().
   DCHECK_EQ(0, in_paired_begin_count_);
-  DCHECK_EQ(visual_rects_range_starts_.size(), visual_rects_.size());
-  DCHECK_GE(paint_op_buffer_.size(), visual_rects_.size());
 
   paint_op_buffer_.ShrinkToFit();
   rtree_.Build(visual_rects_);
@@ -196,6 +194,30 @@ void DisplayItemList::GetDiscardableImagesInRect(
 
 gfx::Rect DisplayItemList::GetRectForImage(PaintImage::Id image_id) const {
   return image_map_.GetRectForImage(image_id);
+}
+
+void DisplayItemList::Reset() {
+  DCHECK(!in_painting_);
+  DCHECK_EQ(0, in_paired_begin_count_);
+
+  rtree_.Reset();
+  image_map_.Reset();
+  paint_op_buffer_.Reset();
+  visual_rects_.clear();
+  visual_rects_range_starts_.clear();
+  begin_paired_indices_.clear();
+  current_range_start_ = 0;
+  in_paired_begin_count_ = 0;
+  in_painting_ = false;
+  op_count_ = 0u;
+}
+
+sk_sp<PaintRecord> DisplayItemList::ReleaseAsRecord() {
+  sk_sp<PaintRecord> record =
+      sk_make_sp<PaintOpBuffer>(std::move(paint_op_buffer_));
+
+  Reset();
+  return record;
 }
 
 }  // namespace cc

@@ -125,11 +125,17 @@ class CC_PAINT_EXPORT DisplayItemList
     return paint_op_buffer_.HasDiscardableImages();
   }
 
+  // Generate a PaintRecord from this DisplayItemList, leaving |this| in
+  // an empty state.
+  sk_sp<PaintRecord> ReleaseAsRecord();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(DisplayItemListTest, AsValueWithNoOps);
   FRIEND_TEST_ALL_PREFIXES(DisplayItemListTest, AsValueWithOps);
 
   ~DisplayItemList();
+
+  void Reset();
 
   std::unique_ptr<base::trace_event::TracedValue> CreateTracedValue(
       bool include_items) const;

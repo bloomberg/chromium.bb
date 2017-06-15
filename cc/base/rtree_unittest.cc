@@ -109,7 +109,7 @@ TEST(RTreeTest, SortedResults) {
 
 TEST(RTreeTest, GetBoundsEmpty) {
   RTree rtree;
-  ASSERT_EQ(gfx::Rect(), rtree.GetBounds());
+  EXPECT_EQ(gfx::Rect(), rtree.GetBounds());
 }
 
 TEST(RTreeTest, GetBoundsNonOverlapping) {
@@ -120,7 +120,7 @@ TEST(RTreeTest, GetBoundsNonOverlapping) {
   RTree rtree;
   rtree.Build(rects);
 
-  ASSERT_EQ(gfx::Rect(5, 6, 19, 20), rtree.GetBounds());
+  EXPECT_EQ(gfx::Rect(5, 6, 19, 20), rtree.GetBounds());
 }
 
 TEST(RTreeTest, GetBoundsOverlapping) {
@@ -131,7 +131,26 @@ TEST(RTreeTest, GetBoundsOverlapping) {
   RTree rtree;
   rtree.Build(rects);
 
-  ASSERT_EQ(gfx::Rect(0, 0, 10, 10), rtree.GetBounds());
+  EXPECT_EQ(gfx::Rect(0, 0, 10, 10), rtree.GetBounds());
+}
+
+TEST(RTreeTest, BuildAfterReset) {
+  std::vector<gfx::Rect> rects;
+  rects.push_back(gfx::Rect(0, 0, 10, 10));
+  rects.push_back(gfx::Rect(0, 0, 10, 10));
+  rects.push_back(gfx::Rect(0, 0, 10, 10));
+  rects.push_back(gfx::Rect(0, 0, 10, 10));
+
+  RTree rtree;
+  rtree.Build(rects);
+
+  // Resetting should give the same as an empty rtree.
+  rtree.Reset();
+  EXPECT_EQ(gfx::Rect(), rtree.GetBounds());
+
+  // Should be able to rebuild from a reset rtree.
+  rtree.Build(rects);
+  EXPECT_EQ(gfx::Rect(0, 0, 10, 10), rtree.GetBounds());
 }
 
 }  // namespace cc

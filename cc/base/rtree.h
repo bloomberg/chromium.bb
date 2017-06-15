@@ -103,6 +103,8 @@ class CC_BASE_EXPORT RTree {
   // Returns the total bounds of all items in this rtree.
   gfx::Rect GetBounds() const;
 
+  void Reset();
+
  private:
   // These values were empirically determined to produce reasonable performance
   // in most cases.

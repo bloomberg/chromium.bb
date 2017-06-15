@@ -121,9 +121,6 @@ class CC_PAINT_EXPORT SkiaPaintCanvas final : public PaintCanvas {
                     SkScalar y,
                     const PaintFlags& flags) override;
 
-  void drawDisplayItemList(
-      scoped_refptr<DisplayItemList> display_item_list) override;
-
   void drawPicture(sk_sp<const PaintRecord> record) override;
 
   bool isClipEmpty() const override;

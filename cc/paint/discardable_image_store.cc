@@ -107,10 +107,6 @@ void DiscardableImageStore::GatherDiscardableImages(
                                2 * circle_op->radius, 2 * circle_op->radius);
           AddImageFromFlags(rect, circle_op->flags);
         } break;
-        case PaintOpType::DrawDisplayItemList: {
-          auto* list_op = static_cast<DrawDisplayItemListOp*>(op);
-          list_op->list->GatherDiscardableImages(this);
-        } break;
         case PaintOpType::DrawImage: {
           auto* image_op = static_cast<DrawImageOp*>(op);
           const SkImage* sk_image = image_op->image.sk_image().get();

@@ -21,7 +21,6 @@ namespace cc {
   M(DrawArcOp)             \
   M(DrawCircleOp)          \
   M(DrawColorOp)           \
-  M(DrawDisplayItemListOp) \
   M(DrawDRRectOp)          \
   M(DrawImageOp)           \
   M(DrawImageRectOp)       \
@@ -127,16 +126,6 @@ struct Rasterizer<DrawRecordOp, HasFlags> {
     NOTREACHED();
   }
 };
-template <bool HasFlags>
-struct Rasterizer<DrawDisplayItemListOp, HasFlags> {
-  static void RasterWithAlpha(const DrawDisplayItemListOp* op,
-                              SkCanvas* canvas,
-                              const SkRect& bounds,
-                              uint8_t alpha) {
-    NOTREACHED();
-  }
-};
-
 // TODO(enne): partially specialize RasterWithAlpha for draw color?
 
 static constexpr size_t kNumOpTypes =
@@ -268,13 +257,6 @@ void DrawColorOp::Raster(const PaintOp* base_op,
                          const SkMatrix& original_ctm) {
   auto* op = static_cast<const DrawColorOp*>(base_op);
   canvas->drawColor(op->color, op->mode);
-}
-
-void DrawDisplayItemListOp::Raster(const PaintOp* base_op,
-                                   SkCanvas* canvas,
-                                   const SkMatrix& original_ctm) {
-  auto* op = static_cast<const DrawDisplayItemListOp*>(base_op);
-  op->list->Raster(canvas);
 }
 
 void DrawDRRectOp::RasterWithFlags(const PaintOpWithFlags* base_op,
@@ -472,10 +454,6 @@ int ClipPathOp::CountSlowPaths() const {
   return antialias && !path.isConvex() ? 1 : 0;
 }
 
-int DrawDisplayItemListOp::CountSlowPaths() const {
-  return list->NumSlowPaths();
-}
-
 int DrawLineOp::CountSlowPaths() const {
   if (const SkPathEffect* effect = flags.getPathEffect()) {
     SkPathEffect::DashInfo info;
@@ -521,26 +499,6 @@ AnnotateOp::AnnotateOp(PaintCanvas::AnnotationType annotation_type,
     : annotation_type(annotation_type), rect(rect), data(std::move(data)) {}
 
 AnnotateOp::~AnnotateOp() = default;
-
-DrawDisplayItemListOp::DrawDisplayItemListOp(
-    scoped_refptr<DisplayItemList> list)
-    : list(list) {}
-
-size_t DrawDisplayItemListOp::AdditionalBytesUsed() const {
-  return list->BytesUsed();
-}
-
-bool DrawDisplayItemListOp::HasDiscardableImages() const {
-  return list->HasDiscardableImages();
-}
-
-DrawDisplayItemListOp::DrawDisplayItemListOp(const DrawDisplayItemListOp& op) =
-    default;
-
-DrawDisplayItemListOp& DrawDisplayItemListOp::operator=(
-    const DrawDisplayItemListOp& op) = default;
-
-DrawDisplayItemListOp::~DrawDisplayItemListOp() = default;
 
 DrawImageOp::DrawImageOp(const PaintImage& image,
                          SkScalar left,
@@ -606,8 +564,27 @@ DrawTextBlobOp::~DrawTextBlobOp() = default;
 
 PaintOpBuffer::PaintOpBuffer() = default;
 
+PaintOpBuffer::PaintOpBuffer(PaintOpBuffer&& other) {
+  *this = std::move(other);
+}
+
 PaintOpBuffer::~PaintOpBuffer() {
   Reset();
+}
+
+void PaintOpBuffer::operator=(PaintOpBuffer&& other) {
+  data_ = std::move(other.data_);
+  used_ = other.used_;
+  reserved_ = other.reserved_;
+  op_count_ = other.op_count_;
+  num_slow_paths_ = other.num_slow_paths_;
+  subrecord_bytes_used_ = other.subrecord_bytes_used_;
+  has_discardable_images_ = other.has_discardable_images_;
+
+  // Make sure the other pob can destruct safely.
+  other.used_ = 0;
+  other.op_count_ = 0;
+  other.reserved_ = 0;
 }
 
 void PaintOpBuffer::Reset() {
@@ -682,13 +659,7 @@ static const PaintOp* GetNestedSingleDrawingOp(const PaintOp* op) {
   if (!op->IsDrawOp())
     return nullptr;
 
-  while (op->GetType() == PaintOpType::DrawRecord ||
-         op->GetType() == PaintOpType::DrawDisplayItemList) {
-    if (op->GetType() == PaintOpType::DrawDisplayItemList) {
-      // TODO(danakj): If we could inspect the PaintOpBuffer here, then
-      // we could see if it is a single draw op.
-      return nullptr;
-    }
+  while (op->GetType() == PaintOpType::DrawRecord) {
     auto* draw_record_op = static_cast<const DrawRecordOp*>(op);
     if (draw_record_op->record->size() > 1) {
       // If there's more than one op, then we need to keep the

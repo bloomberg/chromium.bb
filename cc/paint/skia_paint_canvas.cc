@@ -255,11 +255,6 @@ void SkiaPaintCanvas::drawTextBlob(sk_sp<SkTextBlob> blob,
   canvas_->drawTextBlob(blob.get(), x, y, ToSkPaint(flags));
 }
 
-void SkiaPaintCanvas::drawDisplayItemList(
-    scoped_refptr<DisplayItemList> display_item_list) {
-  display_item_list->Raster(canvas_);
-}
-
 void SkiaPaintCanvas::drawPicture(sk_sp<const PaintRecord> record) {
   record->playback(canvas_);
 }

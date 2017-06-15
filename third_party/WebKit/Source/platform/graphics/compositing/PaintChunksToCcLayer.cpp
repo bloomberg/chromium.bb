@@ -280,7 +280,7 @@ scoped_refptr<cc::DisplayItemList> PaintChunksToCcLayer::Convert(
     // use cc_list because it is not finalized yet.
     auto list_clone =
         Convert(paint_chunks, layer_state, layer_offset, display_items);
-    recorder.getRecordingCanvas()->drawDisplayItemList(list_clone);
+    recorder.getRecordingCanvas()->drawPicture(list_clone->ReleaseAsRecord());
     params.tracking.CheckUnderInvalidations(params.debug_name,
                                             recorder.finishRecordingAsPicture(),
                                             params.interest_rect);
