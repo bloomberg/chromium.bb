@@ -934,6 +934,22 @@
       default_value: "StyleMotionData(LengthPoint(Length(kAuto), Length(kAuto)), LengthPoint(Length(kAuto), Length(kAuto)), nullptr, Length(0, kFixed), StyleOffsetRotation(0, kOffsetRotationAuto))",
       include_paths: ["core/style/StyleMotionData.h"],
     },
+    {
+      name: "ScrollPadding",
+      field_template: "storage_only",
+      type_name: "ScrollPadding",
+      field_group: "rare-non-inherited->scroll-snap",
+      default_value: "Length()",
+      include_paths: ["core/style/ScrollSnap.h"],
+    },
+    {
+      name: "ScrollSnapMargin",
+      field_template: "storage_only",
+      type_name: "ScrollSnapMargin",
+      field_group: "rare-non-inherited->scroll-snap",
+      default_value: "Length()",
+      include_paths: ["core/style/ScrollSnap.h"],
+    },
     // TODO(shend): These are subgroups and should be removed when we can
     // generate them propertly.
     {
@@ -944,15 +960,6 @@
       default_value: "",
       wrapper_pointer_name: "DataRef",
       include_paths: ["core/style/StyleGridData.h"],
-    },
-    {
-      name: "ScrollSnapData",
-      field_template: "storage_only",
-      type_name: "StyleScrollSnapData",
-      field_group: "rare-non-inherited",
-      default_value: "",
-      wrapper_pointer_name: "DataRef",
-      include_paths: ["core/style/StyleScrollSnapData.h"],
     },
   ],
 }

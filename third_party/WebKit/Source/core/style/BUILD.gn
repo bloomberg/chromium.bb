@@ -58,6 +58,7 @@ blink_core_sources("rendering") {
     "QuadLengthValue.h",
     "QuotesData.cpp",
     "QuotesData.h",
+    "ScrollSnap.h",
     "ShadowData.cpp",
     "ShadowData.h",
     "ShadowList.cpp",
@@ -91,8 +92,6 @@ blink_core_sources("rendering") {
     "StyleRay.cpp",
     "StyleRay.h",
     "StyleReflection.h",
-    "StyleScrollSnapData.cpp",
-    "StyleScrollSnapData.h",
     "StyleSelfAlignmentData.h",
     "TextSizeAdjust.h",
   ]

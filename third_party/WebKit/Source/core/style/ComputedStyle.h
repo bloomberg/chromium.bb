@@ -1313,10 +1313,11 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // scroll-snap-type
   static ScrollSnapType InitialScrollSnapType() { return ScrollSnapType(); }
   ScrollSnapType GetScrollSnapType() const {
-    return rare_non_inherited_data_->scroll_snap_data_->type_;
+    return rare_non_inherited_data_->scroll_snap_data_->scroll_snap_type_;
   }
   void SetScrollSnapType(const ScrollSnapType& b) {
-    SET_NESTED_VAR(rare_non_inherited_data_, scroll_snap_data_, type_, b);
+    SET_NESTED_VAR(rare_non_inherited_data_, scroll_snap_data_,
+                   scroll_snap_type_, b);
   }
 
   // Scroll Padding properties
@@ -1324,38 +1325,38 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // scroll-padding-top
   const Length& ScrollPaddingTop() const {
-    return rare_non_inherited_data_->scroll_snap_data_->padding_.top;
+    return rare_non_inherited_data_->scroll_snap_data_->scroll_padding_.top;
   }
   void SetScrollPaddingTop(const Length& v) {
-    SET_NESTED_VAR(rare_non_inherited_data_, scroll_snap_data_, padding_.top,
-                   v);
+    SET_NESTED_VAR(rare_non_inherited_data_, scroll_snap_data_,
+                   scroll_padding_.top, v);
   }
 
   // scroll-padding-bottom
   const Length& ScrollPaddingBottom() const {
-    return rare_non_inherited_data_->scroll_snap_data_->padding_.bottom;
+    return rare_non_inherited_data_->scroll_snap_data_->scroll_padding_.bottom;
   }
   void SetScrollPaddingBottom(const Length& v) {
-    SET_NESTED_VAR(rare_non_inherited_data_, scroll_snap_data_, padding_.bottom,
-                   v);
+    SET_NESTED_VAR(rare_non_inherited_data_, scroll_snap_data_,
+                   scroll_padding_.bottom, v);
   }
 
   // scroll-padding-left
   const Length& ScrollPaddingLeft() const {
-    return rare_non_inherited_data_->scroll_snap_data_->padding_.left;
+    return rare_non_inherited_data_->scroll_snap_data_->scroll_padding_.left;
   }
   void SetScrollPaddingLeft(const Length& v) {
-    SET_NESTED_VAR(rare_non_inherited_data_, scroll_snap_data_, padding_.left,
-                   v);
+    SET_NESTED_VAR(rare_non_inherited_data_, scroll_snap_data_,
+                   scroll_padding_.left, v);
   }
 
   // scroll-padding-right
   const Length& ScrollPaddingRight() const {
-    return rare_non_inherited_data_->scroll_snap_data_->padding_.right;
+    return rare_non_inherited_data_->scroll_snap_data_->scroll_padding_.right;
   }
   void SetScrollPaddingRight(const Length& v) {
-    SET_NESTED_VAR(rare_non_inherited_data_, scroll_snap_data_, padding_.right,
-                   v);
+    SET_NESTED_VAR(rare_non_inherited_data_, scroll_snap_data_,
+                   scroll_padding_.right, v);
   }
 
   // scroll-padding-block-start
@@ -1409,37 +1410,41 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // scroll-snap-margin-top
   const Length& ScrollSnapMarginTop() const {
-    return rare_non_inherited_data_->scroll_snap_data_->margin_.top;
+    return rare_non_inherited_data_->scroll_snap_data_->scroll_snap_margin_.top;
   }
   void SetScrollSnapMarginTop(const Length& v) {
-    SET_NESTED_VAR(rare_non_inherited_data_, scroll_snap_data_, margin_.top, v);
+    SET_NESTED_VAR(rare_non_inherited_data_, scroll_snap_data_,
+                   scroll_snap_margin_.top, v);
   }
 
   // scroll-snap-margin-bottom
   const Length& ScrollSnapMarginBottom() const {
-    return rare_non_inherited_data_->scroll_snap_data_->margin_.bottom;
+    return rare_non_inherited_data_->scroll_snap_data_->scroll_snap_margin_
+        .bottom;
   }
   void SetScrollSnapMarginBottom(const Length& v) {
-    SET_NESTED_VAR(rare_non_inherited_data_, scroll_snap_data_, margin_.bottom,
-                   v);
+    SET_NESTED_VAR(rare_non_inherited_data_, scroll_snap_data_,
+                   scroll_snap_margin_.bottom, v);
   }
 
   // scroll-snap-margin-left
   const Length& ScrollSnapMarginLeft() const {
-    return rare_non_inherited_data_->scroll_snap_data_->margin_.left;
+    return rare_non_inherited_data_->scroll_snap_data_->scroll_snap_margin_
+        .left;
   }
   void SetScrollSnapMarginLeft(const Length& v) {
-    SET_NESTED_VAR(rare_non_inherited_data_, scroll_snap_data_, margin_.left,
-                   v);
+    SET_NESTED_VAR(rare_non_inherited_data_, scroll_snap_data_,
+                   scroll_snap_margin_.left, v);
   }
 
   // scroll-snap-margin-right
   const Length& ScrollSnapMarginRight() const {
-    return rare_non_inherited_data_->scroll_snap_data_->margin_.right;
+    return rare_non_inherited_data_->scroll_snap_data_->scroll_snap_margin_
+        .right;
   }
   void SetScrollSnapMarginRight(const Length& v) {
-    SET_NESTED_VAR(rare_non_inherited_data_, scroll_snap_data_, margin_.right,
-                   v);
+    SET_NESTED_VAR(rare_non_inherited_data_, scroll_snap_data_,
+                   scroll_snap_margin_.right, v);
   }
 
   // scroll-snap-margin-block-start
@@ -1493,10 +1498,11 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // scroll-snap-align
   static ScrollSnapAlign InitialScrollSnapAlign() { return ScrollSnapAlign(); }
   ScrollSnapAlign GetScrollSnapAlign() const {
-    return rare_non_inherited_data_->scroll_snap_data_->align_;
+    return rare_non_inherited_data_->scroll_snap_data_->scroll_snap_align_;
   }
   void SetScrollSnapAlign(const ScrollSnapAlign& b) {
-    SET_NESTED_VAR(rare_non_inherited_data_, scroll_snap_data_, align_, b);
+    SET_NESTED_VAR(rare_non_inherited_data_, scroll_snap_data_,
+                   scroll_snap_align_, b);
   }
 
   // shape-image-threshold (aka -webkit-shape-image-threshold)
