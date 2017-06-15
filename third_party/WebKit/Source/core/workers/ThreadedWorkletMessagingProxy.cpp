@@ -67,21 +67,23 @@ class ThreadedWorkletMessagingProxy::LoaderClient final
                                    WrapPersistent(pending_tasks_.Get())));
   }
 
-  DEFINE_INLINE_TRACE() { visitor->Trace(pending_tasks_); }
+  DEFINE_INLINE_TRACE() {
+    visitor->Trace(pending_tasks_);
+    visitor->Trace(proxy_);
+  }
 
  private:
   RefPtr<WebTaskRunner> outside_settings_task_runner_;
   Member<WorkletPendingTasks> pending_tasks_;
-  ThreadedWorkletMessagingProxy* proxy_;
+  Member<ThreadedWorkletMessagingProxy> proxy_;
 };
 
 ThreadedWorkletMessagingProxy::ThreadedWorkletMessagingProxy(
     ExecutionContext* execution_context,
     WorkerClients* worker_clients)
-    : ThreadedMessagingProxyBase(execution_context, worker_clients),
-      weak_ptr_factory_(this) {
-  worklet_object_proxy_ = ThreadedWorkletObjectProxy::Create(
-      weak_ptr_factory_.CreateWeakPtr(), GetParentFrameTaskRunners());
+    : ThreadedMessagingProxyBase(execution_context, worker_clients) {
+  worklet_object_proxy_ =
+      ThreadedWorkletObjectProxy::Create(this, GetParentFrameTaskRunners());
 }
 
 void ThreadedWorkletMessagingProxy::Initialize() {
@@ -110,6 +112,11 @@ void ThreadedWorkletMessagingProxy::Initialize() {
           OriginTrialContext::GetTokens(document).get(),
           std::move(worker_settings), WorkerV8Settings::Default());
   InitializeWorkerThread(std::move(startup_data), script_url);
+}
+
+DEFINE_TRACE(ThreadedWorkletMessagingProxy) {
+  visitor->Trace(loaders_);
+  ThreadedMessagingProxyBase::Trace(visitor);
 }
 
 void ThreadedWorkletMessagingProxy::FetchAndInvokeScript(

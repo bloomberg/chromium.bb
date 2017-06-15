@@ -35,8 +35,8 @@ ThreadedMessagingProxyBase::ThreadedMessagingProxyBase(
       worker_inspector_proxy_(WorkerInspectorProxy::Create()),
       parent_frame_task_runners_(ParentFrameTaskRunners::Create(
           ToDocument(execution_context_.Get())->GetFrame())),
-      may_be_destroyed_(false),
-      asked_to_terminate_(false) {
+      asked_to_terminate_(false),
+      keep_alive_(this) {
   DCHECK(IsParentContextThread());
   g_live_messaging_proxy_count++;
 
@@ -57,13 +57,18 @@ ThreadedMessagingProxyBase::ThreadedMessagingProxyBase(
 }
 
 ThreadedMessagingProxyBase::~ThreadedMessagingProxyBase() {
-  DCHECK(IsParentContextThread());
   g_live_messaging_proxy_count--;
 }
 
 int ThreadedMessagingProxyBase::ProxyCount() {
   DCHECK(IsMainThread());
   return g_live_messaging_proxy_count;
+}
+
+DEFINE_TRACE(ThreadedMessagingProxyBase) {
+  visitor->Trace(execution_context_);
+  visitor->Trace(worker_clients_);
+  visitor->Trace(worker_inspector_proxy_);
 }
 
 void ThreadedMessagingProxyBase::InitializeWorkerThread(
@@ -115,35 +120,29 @@ void ThreadedMessagingProxyBase::WorkerThreadCreated() {
 
 void ThreadedMessagingProxyBase::ParentObjectDestroyed() {
   DCHECK(IsParentContextThread());
-
-  GetParentFrameTaskRunners()
-      ->Get(TaskType::kUnspecedTimer)
-      ->PostTask(
-          BLINK_FROM_HERE,
-          WTF::Bind(&ThreadedMessagingProxyBase::ParentObjectDestroyedInternal,
-                    WTF::Unretained(this)));
-}
-
-void ThreadedMessagingProxyBase::ParentObjectDestroyedInternal() {
-  DCHECK(IsParentContextThread());
-  may_be_destroyed_ = true;
-  if (worker_thread_)
+  if (worker_thread_) {
+    // Request to terminate the global scope. This will eventually call
+    // WorkerThreadTerminated().
     TerminateGlobalScope();
-  else
+  } else {
     WorkerThreadTerminated();
+  }
 }
 
 void ThreadedMessagingProxyBase::WorkerThreadTerminated() {
   DCHECK(IsParentContextThread());
 
   // This method is always the last to be performed, so the proxy is not
-  // needed for communication in either side any more. However, the Worker
-  // object may still exist, and it assumes that the proxy exists, too.
+  // needed for communication in either side any more. However, the parent
+  // Worker/Worklet object may still exist, and it assumes that the proxy
+  // exists, too.
   asked_to_terminate_ = true;
   worker_thread_ = nullptr;
   worker_inspector_proxy_->WorkerThreadTerminated();
-  if (may_be_destroyed_)
-    delete this;
+
+  // If the parent Worker/Worklet object was already destroyed, this will
+  // destroy |this|.
+  keep_alive_.Clear();
 }
 
 void ThreadedMessagingProxyBase::TerminateGlobalScope() {

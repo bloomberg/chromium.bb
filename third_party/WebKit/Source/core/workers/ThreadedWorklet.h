@@ -45,7 +45,7 @@ class CORE_EXPORT ThreadedWorklet : public Worklet {
                             const WorkletOptions&,
                             ScriptPromiseResolver*) final;
   bool NeedsToCreateGlobalScope() final;
-  std::unique_ptr<WorkletGlobalScopeProxy> CreateGlobalScope() final;
+  WorkletGlobalScopeProxy* CreateGlobalScope() final;
 
   // Called when addModule() is called for the first time.
   virtual void Initialize() = 0;

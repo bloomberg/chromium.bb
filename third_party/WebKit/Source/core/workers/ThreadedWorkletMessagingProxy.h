@@ -10,7 +10,6 @@
 #include "core/workers/ThreadedMessagingProxyBase.h"
 #include "core/workers/WorkletGlobalScopeProxy.h"
 #include "core/workers/WorkletPendingTasks.h"
-#include "platform/wtf/WeakPtr.h"
 
 namespace blink {
 
@@ -21,6 +20,8 @@ class WorkerClients;
 class CORE_EXPORT ThreadedWorkletMessagingProxy
     : public ThreadedMessagingProxyBase,
       public WorkletGlobalScopeProxy {
+  USING_GARBAGE_COLLECTED_MIXIN(ThreadedWorkletMessagingProxy);
+
  public:
   // WorkletGlobalScopeProxy implementation.
   void FetchAndInvokeScript(const KURL& module_url_record,
@@ -30,6 +31,8 @@ class CORE_EXPORT ThreadedWorkletMessagingProxy
   void TerminateWorkletGlobalScope() final;
 
   void Initialize();
+
+  DECLARE_VIRTUAL_TRACE();
 
  protected:
   ThreadedWorkletMessagingProxy(ExecutionContext*, WorkerClients*);
@@ -47,9 +50,7 @@ class CORE_EXPORT ThreadedWorkletMessagingProxy
 
   std::unique_ptr<ThreadedWorkletObjectProxy> worklet_object_proxy_;
 
-  HashSet<Persistent<WorkletScriptLoader>> loaders_;
-
-  WeakPtrFactory<ThreadedWorkletMessagingProxy> weak_ptr_factory_;
+  HeapHashSet<Member<WorkletScriptLoader>> loaders_;
 };
 
 }  // namespace blink

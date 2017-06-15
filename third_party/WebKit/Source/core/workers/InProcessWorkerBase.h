@@ -29,6 +29,10 @@ class WorkerScriptLoader;
 class CORE_EXPORT InProcessWorkerBase
     : public AbstractWorker,
       public ActiveScriptWrappable<InProcessWorkerBase> {
+  // Eager finalization is needed to notify the parent object destruction of the
+  // GC-managed messaging proxy and to initiate worker termination.
+  EAGERLY_FINALIZE();
+
  public:
   ~InProcessWorkerBase() override;
 
@@ -67,8 +71,7 @@ class CORE_EXPORT InProcessWorkerBase
 
   RefPtr<WorkerScriptLoader> script_loader_;
 
-  // The proxy outlives the worker to perform thread shutdown.
-  InProcessWorkerMessagingProxy* context_proxy_;
+  Member<InProcessWorkerMessagingProxy> context_proxy_;
 };
 
 }  // namespace blink

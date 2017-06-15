@@ -24,10 +24,9 @@ class ThreadedWorkletObjectProxyForTest final
     : public ThreadedWorkletObjectProxy {
  public:
   ThreadedWorkletObjectProxyForTest(
-      const WeakPtr<ThreadedWorkletMessagingProxy>& messaging_proxy_weak_ptr,
+      ThreadedWorkletMessagingProxy* messaging_proxy,
       ParentFrameTaskRunners* parent_frame_task_runners)
-      : ThreadedWorkletObjectProxy(messaging_proxy_weak_ptr,
-                                   parent_frame_task_runners),
+      : ThreadedWorkletObjectProxy(messaging_proxy, parent_frame_task_runners),
         reported_features_(static_cast<int>(WebFeature::kNumberOfFeatures)) {}
 
  protected:
@@ -120,12 +119,11 @@ class ThreadedWorkletMessagingProxyForTest
                                        WorkerClients* worker_clients)
       : ThreadedWorkletMessagingProxy(execution_context, worker_clients) {
     worklet_object_proxy_ = WTF::MakeUnique<ThreadedWorkletObjectProxyForTest>(
-        weak_ptr_factory_.CreateWeakPtr(), GetParentFrameTaskRunners());
+        this, GetParentFrameTaskRunners());
     ThreadedWorkletThreadForTest::EnsureSharedBackingThread();
   }
 
   ~ThreadedWorkletMessagingProxyForTest() override {
-    GetWorkerThread()->TerminateAndWait();
     ThreadedWorkletThreadForTest::ClearSharedBackingThread();
   };
 
@@ -163,12 +161,18 @@ class ThreadedWorkletTest : public ::testing::Test {
  public:
   void SetUp() override {
     page_ = DummyPageHolder::Create();
-    messaging_proxy_ = WTF::MakeUnique<ThreadedWorkletMessagingProxyForTest>(
+    messaging_proxy_ = new ThreadedWorkletMessagingProxyForTest(
         &page_->GetDocument(), WorkerClients::Create());
   }
 
+  void TearDown() override {
+    GetWorkerThread()->TerminateAndWait();
+    testing::RunPendingTasks();
+    messaging_proxy_ = nullptr;
+  }
+
   ThreadedWorkletMessagingProxyForTest* MessagingProxy() {
-    return messaging_proxy_.get();
+    return messaging_proxy_.Get();
   }
 
   ThreadedWorkletThreadForTest* GetWorkerThread() {
@@ -180,7 +184,7 @@ class ThreadedWorkletTest : public ::testing::Test {
 
  private:
   std::unique_ptr<DummyPageHolder> page_;
-  std::unique_ptr<ThreadedWorkletMessagingProxyForTest> messaging_proxy_;
+  Persistent<ThreadedWorkletMessagingProxyForTest> messaging_proxy_;
 };
 
 TEST_F(ThreadedWorkletTest, UseCounter) {

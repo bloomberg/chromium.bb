@@ -55,7 +55,7 @@ const double kDefaultIntervalInSec = 1;
 const double kMaxIntervalInSec = 30;
 
 std::unique_ptr<InProcessWorkerObjectProxy> InProcessWorkerObjectProxy::Create(
-    const WeakPtr<InProcessWorkerMessagingProxy>& messaging_proxy_weak_ptr,
+    InProcessWorkerMessagingProxy* messaging_proxy_weak_ptr,
     ParentFrameTaskRunners* parent_frame_task_runners) {
   DCHECK(messaging_proxy_weak_ptr);
   return WTF::WrapUnique(new InProcessWorkerObjectProxy(
@@ -141,7 +141,7 @@ void InProcessWorkerObjectProxy::WillDestroyWorkerGlobalScope() {
 }
 
 InProcessWorkerObjectProxy::InProcessWorkerObjectProxy(
-    const WeakPtr<InProcessWorkerMessagingProxy>& messaging_proxy_weak_ptr,
+    InProcessWorkerMessagingProxy* messaging_proxy_weak_ptr,
     ParentFrameTaskRunners* parent_frame_task_runners)
     : ThreadedObjectProxyBase(parent_frame_task_runners),
       messaging_proxy_weak_ptr_(messaging_proxy_weak_ptr),
@@ -184,7 +184,7 @@ void InProcessWorkerObjectProxy::CheckPendingActivity(TimerBase*) {
   StartPendingActivityTimer();
 }
 
-WeakPtr<ThreadedMessagingProxyBase>
+CrossThreadWeakPersistent<ThreadedMessagingProxyBase>
 InProcessWorkerObjectProxy::MessagingProxyWeakPtr() {
   return messaging_proxy_weak_ptr_;
 }

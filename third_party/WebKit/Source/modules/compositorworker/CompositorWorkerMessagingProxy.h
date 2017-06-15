@@ -7,14 +7,11 @@
 
 #include <memory>
 #include "core/workers/InProcessWorkerMessagingProxy.h"
-#include "platform/wtf/Allocator.h"
 
 namespace blink {
 
 class CompositorWorkerMessagingProxy final
     : public InProcessWorkerMessagingProxy {
-  USING_FAST_MALLOC(CompositorWorkerMessagingProxy);
-
  public:
   CompositorWorkerMessagingProxy(InProcessWorkerBase*, WorkerClients*);
 

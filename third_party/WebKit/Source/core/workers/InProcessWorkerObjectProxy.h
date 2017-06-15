@@ -61,7 +61,7 @@ class CORE_EXPORT InProcessWorkerObjectProxy : public ThreadedObjectProxyBase {
 
  public:
   static std::unique_ptr<InProcessWorkerObjectProxy> Create(
-      const WeakPtr<InProcessWorkerMessagingProxy>&,
+      InProcessWorkerMessagingProxy*,
       ParentFrameTaskRunners*);
   ~InProcessWorkerObjectProxy() override;
 
@@ -81,10 +81,11 @@ class CORE_EXPORT InProcessWorkerObjectProxy : public ThreadedObjectProxyBase {
   void WillDestroyWorkerGlobalScope() override;
 
  protected:
-  InProcessWorkerObjectProxy(const WeakPtr<InProcessWorkerMessagingProxy>&,
+  InProcessWorkerObjectProxy(InProcessWorkerMessagingProxy*,
                              ParentFrameTaskRunners*);
 
-  WeakPtr<ThreadedMessagingProxyBase> MessagingProxyWeakPtr() final;
+  CrossThreadWeakPersistent<ThreadedMessagingProxyBase> MessagingProxyWeakPtr()
+      final;
 
  private:
   friend class InProcessWorkerObjectProxyForTest;
@@ -95,7 +96,8 @@ class CORE_EXPORT InProcessWorkerObjectProxy : public ThreadedObjectProxyBase {
   // No guarantees about the lifetimes of tasks posted by this proxy wrt the
   // InProcessWorkerMessagingProxy so a weak pointer must be used when posting
   // the tasks.
-  WeakPtr<InProcessWorkerMessagingProxy> messaging_proxy_weak_ptr_;
+  CrossThreadWeakPersistent<InProcessWorkerMessagingProxy>
+      messaging_proxy_weak_ptr_;
 
   // Used for checking pending activities on the worker global scope. This is
   // cancelled when the worker global scope is destroyed.

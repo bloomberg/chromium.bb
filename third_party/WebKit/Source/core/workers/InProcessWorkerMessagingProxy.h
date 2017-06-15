@@ -35,7 +35,6 @@
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/PassRefPtr.h"
-#include "platform/wtf/WeakPtr.h"
 
 namespace blink {
 
@@ -58,8 +57,8 @@ class CORE_EXPORT InProcessWorkerMessagingProxy
   void PostMessageToWorkerGlobalScope(PassRefPtr<SerializedScriptValue>,
                                       MessagePortChannelArray);
 
+  // Implements ThreadedMessagingProxyBase.
   void WorkerThreadCreated() override;
-  void ParentObjectDestroyed() override;
 
   bool HasPendingActivity() const;
 
@@ -77,6 +76,8 @@ class CORE_EXPORT InProcessWorkerMessagingProxy
   // Called from InProcessWorkerObjectProxy when all pending activities on the
   // worker context are finished. See InProcessWorkerObjectProxy.h for details.
   virtual void PendingActivityFinished();
+
+  DECLARE_VIRTUAL_TRACE();
 
  protected:
   InProcessWorkerMessagingProxy(InProcessWorkerBase*, WorkerClients*);
@@ -96,7 +97,14 @@ class CORE_EXPORT InProcessWorkerMessagingProxy
                                 WorkerClients*);
 
   std::unique_ptr<InProcessWorkerObjectProxy> worker_object_proxy_;
-  WeakPersistent<InProcessWorkerBase> worker_object_;
+
+  // This must be weak. The base class (i.e., ThreadedMessagingProxyBase) has a
+  // strong persistent reference to itself via SelfKeepAlive (see class-level
+  // comments on ThreadedMessagingProxyBase.h for details). To cut the
+  // persistent reference, this worker object needs to call a cleanup function
+  // in its dtor. If this is a strong reference, the dtor is never called
+  // because the worker object is reachable from the persistent reference.
+  WeakMember<InProcessWorkerBase> worker_object_;
 
   // Tasks are queued here until there's a thread object created.
   struct QueuedTask;
@@ -110,8 +118,6 @@ class CORE_EXPORT InProcessWorkerMessagingProxy
   // Indicates whether there are pending activities (e.g, MessageEvent,
   // setTimeout) on the worker context.
   bool worker_global_scope_has_pending_activity_ = false;
-
-  WeakPtrFactory<InProcessWorkerMessagingProxy> weak_ptr_factory_;
 };
 
 }  // namespace blink

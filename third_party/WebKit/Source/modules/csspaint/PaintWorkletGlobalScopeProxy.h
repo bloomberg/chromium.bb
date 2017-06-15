@@ -17,7 +17,10 @@ class LocalFrame;
 
 // A proxy for PaintWorklet to talk to PaintWorkletGlobalScope.
 class MODULES_EXPORT PaintWorkletGlobalScopeProxy
-    : public WorkletGlobalScopeProxy {
+    : public GarbageCollectedFinalized<PaintWorkletGlobalScopeProxy>,
+      public WorkletGlobalScopeProxy {
+  USING_GARBAGE_COLLECTED_MIXIN(PaintWorkletGlobalScopeProxy);
+
  public:
   static PaintWorkletGlobalScopeProxy* From(WorkletGlobalScopeProxy*);
 
@@ -36,8 +39,10 @@ class MODULES_EXPORT PaintWorkletGlobalScopeProxy
 
   PaintWorkletGlobalScope* global_scope() const { return global_scope_.Get(); }
 
+  DECLARE_VIRTUAL_TRACE();
+
  private:
-  Persistent<PaintWorkletGlobalScope> global_scope_;
+  Member<PaintWorkletGlobalScope> global_scope_;
 };
 
 }  // namespace blink

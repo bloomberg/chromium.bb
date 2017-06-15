@@ -24,7 +24,7 @@ class CORE_EXPORT ThreadedWorkletObjectProxy : public ThreadedObjectProxyBase {
 
  public:
   static std::unique_ptr<ThreadedWorkletObjectProxy> Create(
-      const WeakPtr<ThreadedWorkletMessagingProxy>&,
+      ThreadedWorkletMessagingProxy*,
       ParentFrameTaskRunners*);
   ~ThreadedWorkletObjectProxy() override;
 
@@ -40,16 +40,18 @@ class CORE_EXPORT ThreadedWorkletObjectProxy : public ThreadedObjectProxyBase {
   void WillDestroyWorkerGlobalScope() final {}
 
  protected:
-  ThreadedWorkletObjectProxy(const WeakPtr<ThreadedWorkletMessagingProxy>&,
+  ThreadedWorkletObjectProxy(ThreadedWorkletMessagingProxy*,
                              ParentFrameTaskRunners*);
 
-  WeakPtr<ThreadedMessagingProxyBase> MessagingProxyWeakPtr() final;
+  CrossThreadWeakPersistent<ThreadedMessagingProxyBase> MessagingProxyWeakPtr()
+      final;
 
  private:
   // No guarantees about the lifetimes of tasks posted by this proxy wrt the
   // ThreadedWorkletMessagingProxy so a weak pointer must be used when posting
   // the tasks.
-  WeakPtr<ThreadedWorkletMessagingProxy> messaging_proxy_weak_ptr_;
+  CrossThreadWeakPersistent<ThreadedWorkletMessagingProxy>
+      messaging_proxy_weak_ptr_;
 };
 
 }  // namespace blink

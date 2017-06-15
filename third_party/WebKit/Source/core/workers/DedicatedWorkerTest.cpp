@@ -81,10 +81,9 @@ class InProcessWorkerObjectProxyForTest final
     : public InProcessWorkerObjectProxy {
  public:
   InProcessWorkerObjectProxyForTest(
-      const WeakPtr<InProcessWorkerMessagingProxy>& messaging_proxy_weak_ptr,
+      InProcessWorkerMessagingProxy* messaging_proxy,
       ParentFrameTaskRunners* parent_frame_task_runners)
-      : InProcessWorkerObjectProxy(messaging_proxy_weak_ptr,
-                                   parent_frame_task_runners),
+      : InProcessWorkerObjectProxy(messaging_proxy, parent_frame_task_runners),
         reported_features_(static_cast<int>(WebFeature::kNumberOfFeatures)) {
     default_interval_in_sec_ = kDefaultIntervalInSec;
     next_interval_in_sec_ = kNextIntervalInSec;
@@ -117,7 +116,7 @@ class InProcessWorkerMessagingProxyForTest
                                       nullptr /* workerObject */,
                                       nullptr /* workerClients */) {
     worker_object_proxy_ = WTF::MakeUnique<InProcessWorkerObjectProxyForTest>(
-        weak_ptr_factory_.CreateWeakPtr(), GetParentFrameTaskRunners());
+        this, GetParentFrameTaskRunners());
   }
 
   ~InProcessWorkerMessagingProxyForTest() override {
@@ -184,6 +183,7 @@ class InProcessWorkerMessagingProxyForTest
 
   void WorkerThreadTerminated() override {
     EXPECT_TRUE(IsMainThread());
+    ThreadedMessagingProxyBase::WorkerThreadTerminated();
     events_.push_back(Notification::kThreadTerminated);
     if (blocking_)
       testing::ExitRunLoop();
@@ -196,6 +196,11 @@ class InProcessWorkerMessagingProxyForTest
 
   unsigned UnconfirmedMessageCount() const {
     return unconfirmed_message_count_;
+  }
+
+  DEFINE_INLINE_VIRTUAL_TRACE() {
+    visitor->Trace(mock_worker_thread_lifecycle_observer_);
+    InProcessWorkerMessagingProxy::Trace(visitor);
   }
 
  private:
@@ -212,7 +217,7 @@ class InProcessWorkerMessagingProxyForTest
     return std::move(worker_thread);
   }
 
-  Persistent<MockWorkerThreadLifecycleObserver>
+  Member<MockWorkerThreadLifecycleObserver>
       mock_worker_thread_lifecycle_observer_;
   RefPtr<SecurityOrigin> security_origin_;
 
@@ -228,8 +233,8 @@ class DedicatedWorkerTest : public ::testing::Test {
 
   void SetUp() override {
     page_ = DummyPageHolder::Create();
-    worker_messaging_proxy_ = WTF::WrapUnique(
-        new InProcessWorkerMessagingProxyForTest(&page_->GetDocument()));
+    worker_messaging_proxy_ =
+        new InProcessWorkerMessagingProxyForTest(&page_->GetDocument());
   }
 
   void TearDown() override {
@@ -244,7 +249,7 @@ class DedicatedWorkerTest : public ::testing::Test {
   }
 
   InProcessWorkerMessagingProxyForTest* WorkerMessagingProxy() {
-    return worker_messaging_proxy_.get();
+    return worker_messaging_proxy_.Get();
   }
 
   DedicatedWorkerThreadForTest* GetWorkerThread() {
@@ -255,7 +260,7 @@ class DedicatedWorkerTest : public ::testing::Test {
 
  private:
   std::unique_ptr<DummyPageHolder> page_;
-  std::unique_ptr<InProcessWorkerMessagingProxyForTest> worker_messaging_proxy_;
+  Persistent<InProcessWorkerMessagingProxyForTest> worker_messaging_proxy_;
 };
 
 TEST_F(DedicatedWorkerTest, PendingActivity_NoActivity) {

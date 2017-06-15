@@ -15,6 +15,10 @@ AnimationWorkletMessagingProxy::AnimationWorkletMessagingProxy(
     WorkerClients* worker_clients)
     : ThreadedWorkletMessagingProxy(execution_context, worker_clients) {}
 
+DEFINE_TRACE(AnimationWorkletMessagingProxy) {
+  ThreadedWorkletMessagingProxy::Trace(visitor);
+}
+
 AnimationWorkletMessagingProxy::~AnimationWorkletMessagingProxy() {}
 
 std::unique_ptr<WorkerThread>

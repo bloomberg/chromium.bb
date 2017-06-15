@@ -88,7 +88,7 @@ bool ThreadedWorklet::NeedsToCreateGlobalScope() {
   return false;
 }
 
-std::unique_ptr<WorkletGlobalScopeProxy> ThreadedWorklet::CreateGlobalScope() {
+WorkletGlobalScopeProxy* ThreadedWorklet::CreateGlobalScope() {
   NOTREACHED();
   return nullptr;
 }

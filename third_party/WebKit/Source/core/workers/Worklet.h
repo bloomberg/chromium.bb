@@ -65,15 +65,13 @@ class CORE_EXPORT Worklet : public GarbageCollectedFinalized<Worklet>,
   // necessary. CreateGlobalScope() will be called in that case. Each worklet
   // can define how to pool global scopes here.
   virtual bool NeedsToCreateGlobalScope() = 0;
-  virtual std::unique_ptr<WorkletGlobalScopeProxy> CreateGlobalScope() = 0;
+  virtual WorkletGlobalScopeProxy* CreateGlobalScope() = 0;
 
   // "A Worklet has a list of the worklet's WorkletGlobalScopes. Initially this
   // list is empty; it is populated when the user agent chooses to create its
   // WorkletGlobalScope."
   // https://drafts.css-houdini.org/worklets/#worklet-section
-  // TODO(nhiroki): Make (Paint)WorkletGlobalScopeProxy GC-managed object to
-  // avoid that GC graphs are disjointed (https://crbug.com/719775).
-  HashSet<std::unique_ptr<WorkletGlobalScopeProxy>> proxies_;
+  HeapHashSet<Member<WorkletGlobalScopeProxy>> proxies_;
 };
 
 }  // namespace blink
