@@ -2203,11 +2203,13 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'stout',
       'stumpy',
       'tricky',
+      'veyron_jaq',
       'veyron_jerry',
       'veyron_mighty',
       'veyron_minnie',
       'veyron_rialto',
       'veyron_speedy',
+      'veyron_tiger',
       'whirlwind',
       'winky',
       'wolf',
@@ -2219,12 +2221,9 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   # A paladin is generally considered good enough for important if it can
   # pass the last ~20 build attempts, e.g. the builder page shows all green.
   _paladin_new_boards = frozenset([
-      'cyan',
       'eve',
       'lakitu-gpu', # crbug.com/732942
       'lakitu-st',
-      'veyron_jaq',
-      'veyron_tiger',
   ])
 
   # Paladin configs that exist and should stay as experimental until further

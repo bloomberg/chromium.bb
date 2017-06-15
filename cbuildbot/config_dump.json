@@ -24776,7 +24776,6 @@
             "veyron_jaq"
         ],
         "description": "Commit Queue (internal)",
-        "important": false,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -26313,7 +26312,6 @@
             "veyron_tiger"
         ],
         "description": "Commit Queue (internal)",
-        "important": false,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
