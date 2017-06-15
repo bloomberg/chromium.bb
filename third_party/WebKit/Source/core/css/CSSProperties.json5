@@ -1066,6 +1066,10 @@
     {
       name: "column-fill",
       type_name: "ColumnFill",
+      field_template: "storage_only",
+      default_value: "kColumnFillBalance",
+      field_size: 1,
+      field_group: "rare-non-inherited->multi-col",
     },
     {
       name: "contain",
@@ -2591,6 +2595,9 @@
       custom_all: true,
       interpolable: true,
       type_name: "unsigned short",
+      field_template: "storage_only",
+      default_value: "1",
+      field_group: "rare-non-inherited->multi-col",
     },
     {
       name: "column-gap",
@@ -2599,6 +2606,10 @@
       converter: "ConvertComputedLength<float>",
       custom_all: true,
       interpolable: true,
+      type_name: "float",
+      field_template: "storage_only",
+      default_value: "0.0f",
+      field_group: "rare-non-inherited->multi-col",
     },
     {
       name: "column-rule-color",
@@ -2624,6 +2635,10 @@
       api_class: true,
       api_methods: ["parseSingleValue"],
       type_name: "ColumnSpan",
+      field_template: "storage_only",
+      field_group: "rare-non-inherited->multi-col",
+      default_value: "kColumnSpanNone",
+      field_size: 1,
     },
     {
       name: "column-width",
@@ -2632,6 +2647,10 @@
       converter: "ConvertComputedLength<float>",
       custom_all: true,
       interpolable: true,
+      field_template: "storage_only",
+      type_name: "float",
+      default_value: "0.0f",
+      field_group: "rare-non-inherited->multi-col",
     },
     {
       name: "-webkit-highlight",

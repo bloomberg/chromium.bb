@@ -122,7 +122,6 @@ RefPtr<ComputedStyle> ComputedStyle::Clone(const ComputedStyle& other) {
 ALWAYS_INLINE ComputedStyle::ComputedStyle()
     : ComputedStyleBase(), RefCounted<ComputedStyle>() {
   // TODO(shend): Generate these.
-  rare_non_inherited_data_.Access()->multi_col_data_.Init();
   rare_non_inherited_data_.Access()->transform_data_.Init();
   rare_non_inherited_data_.Access()->grid_data_.Init();
   rare_non_inherited_data_.Access()->grid_item_data_.Init();

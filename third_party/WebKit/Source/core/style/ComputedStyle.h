@@ -55,7 +55,6 @@
 #include "core/style/StyleGridItemData.h"
 #include "core/style/StyleImage.h"
 #include "core/style/StyleInheritedVariables.h"
-#include "core/style/StyleMultiColData.h"
 #include "core/style/StyleOffsetRotation.h"
 #include "core/style/StyleReflection.h"
 #include "core/style/StyleSelfAlignmentData.h"
@@ -612,20 +611,20 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // column-count (aka -webkit-column-count)
   static unsigned short InitialColumnCount() { return 1; }
   unsigned short ColumnCount() const {
-    return rare_non_inherited_data_->multi_col_data_->count_;
+    return rare_non_inherited_data_->multi_col_data_->column_count_;
   }
   void SetColumnCount(unsigned short c) {
-    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_, auto_count_,
-                   false);
-    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_, count_, c);
+    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_,
+                   column_auto_count_, false);
+    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_, column_count_, c);
   }
   bool HasAutoColumnCount() const {
-    return rare_non_inherited_data_->multi_col_data_->auto_count_;
+    return rare_non_inherited_data_->multi_col_data_->column_auto_count_;
   }
   void SetHasAutoColumnCount() {
-    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_, auto_count_,
-                   true);
-    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_, count_,
+    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_,
+                   column_auto_count_, true);
+    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_, column_count_,
                    InitialColumnCount());
   }
 
@@ -633,58 +632,59 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   static ColumnFill InitialColumnFill() { return kColumnFillBalance; }
   ColumnFill GetColumnFill() const {
     return static_cast<ColumnFill>(
-        rare_non_inherited_data_->multi_col_data_->fill_);
+        rare_non_inherited_data_->multi_col_data_->column_fill_);
   }
   void SetColumnFill(ColumnFill column_fill) {
-    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_, fill_,
+    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_, column_fill_,
                    column_fill);
   }
 
   // column-gap (aka -webkit-column-gap)
   float ColumnGap() const {
-    return rare_non_inherited_data_->multi_col_data_->gap_;
+    return rare_non_inherited_data_->multi_col_data_->column_gap_;
   }
   void SetColumnGap(float f) {
-    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_, normal_gap_,
-                   false);
-    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_, gap_, f);
+    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_,
+                   column_normal_gap_, false);
+    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_, column_gap_, f);
   }
   bool HasNormalColumnGap() const {
-    return rare_non_inherited_data_->multi_col_data_->normal_gap_;
+    return rare_non_inherited_data_->multi_col_data_->column_normal_gap_;
   }
   void SetHasNormalColumnGap() {
-    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_, normal_gap_,
-                   true);
-    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_, gap_, 0);
+    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_,
+                   column_normal_gap_, true);
+    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_, column_gap_, 0);
   }
 
   // column-rule-color (aka -webkit-column-rule-color)
   void SetColumnRuleColor(const StyleColor& c) {
     SET_BORDERVALUE_COLOR(rare_non_inherited_data_.Access()->multi_col_data_,
-                          rule_, c);
+                          column_rule_, c);
   }
 
   // column-rule-style (aka -webkit-column-rule-style)
   EBorderStyle ColumnRuleStyle() const {
-    return rare_non_inherited_data_->multi_col_data_->rule_.Style();
+    return rare_non_inherited_data_->multi_col_data_->column_rule_.Style();
   }
   void SetColumnRuleStyle(EBorderStyle b) {
-    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_, rule_.style_,
-                   static_cast<unsigned>(b));
+    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_,
+                   column_rule_.style_, static_cast<unsigned>(b));
   }
 
   // column-rule-width (aka -webkit-column-rule-width)
   static unsigned short InitialColumnRuleWidth() { return 3; }
   unsigned short ColumnRuleWidth() const {
-    const BorderValue& rule = rare_non_inherited_data_->multi_col_data_->rule_;
+    const BorderValue& rule =
+        rare_non_inherited_data_->multi_col_data_->column_rule_;
     if (rule.Style() == EBorderStyle::kNone ||
         rule.Style() == EBorderStyle::kHidden)
       return 0;
     return rule.Width();
   }
   void SetColumnRuleWidth(unsigned short w) {
-    SET_NESTED_BORDER_WIDTH(rare_non_inherited_data_, multi_col_data_, rule_,
-                            w);
+    SET_NESTED_BORDER_WIDTH(rare_non_inherited_data_, multi_col_data_,
+                            column_rule_, w);
   }
 
   // column-span (aka -webkit-column-span)
@@ -700,20 +700,20 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // column-width (aka -webkit-column-width)
   float ColumnWidth() const {
-    return rare_non_inherited_data_->multi_col_data_->width_;
+    return rare_non_inherited_data_->multi_col_data_->column_width_;
   }
   void SetColumnWidth(float f) {
-    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_, auto_width_,
-                   false);
-    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_, width_, f);
+    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_,
+                   column_auto_width_, false);
+    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_, column_width_, f);
   }
   bool HasAutoColumnWidth() const {
-    return rare_non_inherited_data_->multi_col_data_->auto_width_;
+    return rare_non_inherited_data_->multi_col_data_->column_auto_width_;
   }
   void SetHasAutoColumnWidth() {
-    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_, auto_width_,
-                   true);
-    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_, width_, 0);
+    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_,
+                   column_auto_width_, true);
+    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_, column_width_, 0);
   }
 
   // contain
@@ -2035,7 +2035,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     return !HasAutoColumnCount() || !HasAutoColumnWidth();
   }
   bool ColumnRuleIsTransparent() const {
-    return rare_non_inherited_data_->multi_col_data_->rule_.IsTransparent();
+    return rare_non_inherited_data_->multi_col_data_->column_rule_
+        .IsTransparent();
   }
   bool ColumnRuleEquivalent(const ComputedStyle* other_style) const;
   void InheritColumnPropertiesFrom(const ComputedStyle& parent) {
@@ -3345,7 +3346,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
   Color GetColor() const;
   StyleColor ColumnRuleColor() const {
-    return rare_non_inherited_data_->multi_col_data_->rule_.GetColor();
+    return rare_non_inherited_data_->multi_col_data_->column_rule_.GetColor();
   }
   StyleColor OutlineColor() const {
     return rare_non_inherited_data_->outline_.GetColor();
