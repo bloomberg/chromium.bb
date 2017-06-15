@@ -12254,6 +12254,7 @@
             "{\n    \"test_type\": \"gce_sanity_test\",\n    \"timeout\": 3600\n}"
         ],
         "image_test": false,
+        "important": false,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",

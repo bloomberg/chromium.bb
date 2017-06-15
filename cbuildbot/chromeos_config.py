@@ -2182,7 +2182,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'kevin',
       'kip',
       'lakitu',
-      'lakitu-gpu',
       'leon',
       'link',
       'lumpy',
@@ -2221,6 +2220,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
   _paladin_new_boards = frozenset([
       'cyan',
       'eve',
+      'lakitu-gpu', # crbug.com/732942
       'veyron_jaq',
       'veyron_tiger',
   ])
