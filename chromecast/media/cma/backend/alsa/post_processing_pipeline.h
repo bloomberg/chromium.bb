@@ -24,6 +24,8 @@ class PostProcessingPipeline {
                             bool is_silence) = 0;
   virtual bool SetSampleRate(int sample_rate) = 0;
   virtual bool IsRinging() = 0;
+  virtual void SetPostProcessorConfig(const std::string& name,
+                                      const std::string& config) = 0;
 
   static std::unique_ptr<PostProcessingPipeline> Create(
       const std::string& name,

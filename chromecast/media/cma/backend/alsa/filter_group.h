@@ -93,6 +93,11 @@ class FilterGroup {
   // Returns number of audio output channels from the filter group.
   int GetOutputChannelCount() const;
 
+  // Sends configuration string |config| to all post processors with the given
+  // |name|.
+  void SetPostProcessorConfig(const std::string& name,
+                              const std::string& config);
+
  private:
   void ResizeBuffersIfNecessary(int chunk_size);
 

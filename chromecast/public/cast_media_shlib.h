@@ -119,6 +119,12 @@ class CHROMECAST_EXPORT CastMediaShlib {
   // This function is optional to implement.
   static void RemoveLoopbackAudioObserver(LoopbackAudioObserver* observer)
       __attribute__((__weak__));
+
+  // Updates all postprocessors with the given |name| to have new configuration
+  // |config|.
+  static void SetPostProcessorConfig(const std::string& name,
+                                     const std::string& config)
+      __attribute__((__weak__));
 };
 
 }  // namespace media

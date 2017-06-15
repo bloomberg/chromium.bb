@@ -133,7 +133,7 @@ MediaPipelineBackend* CastMediaShlib::CreateMediaPipelineBackend(
         new base::ThreadTaskRunnerHandle(task_runner));
   }
 
-  // TODO(cleichner): Implement MediaSyncType in MediaPipelineDeviceAlsa
+  // TODO(cleichner): Implement MediaSyncType in MediaPipelineDeviceAlsa.
   return new MediaPipelineBackendAlsa(params);
 }
 
@@ -197,6 +197,10 @@ void CastMediaShlib::AddLoopbackAudioObserver(LoopbackAudioObserver* observer) {
 void CastMediaShlib::RemoveLoopbackAudioObserver(
     LoopbackAudioObserver* observer) {
   StreamMixerAlsa::Get()->RemoveLoopbackAudioObserver(observer);
+}
+void SetPostProcessorConfig(const std::string& name,
+                            const std::string& config) {
+  StreamMixerAlsa::Get()->SetPostProcessorConfig(name, config);
 }
 
 }  // namespace media

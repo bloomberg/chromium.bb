@@ -153,5 +153,10 @@ void FilterGroup::ResizeBuffersIfNecessary(int chunk_size) {
   }
 }
 
+void FilterGroup::SetPostProcessorConfig(const std::string& name,
+                                         const std::string& config) {
+  post_processing_pipeline_->SetPostProcessorConfig(name, config);
+}
+
 }  // namespace media
 }  // namespace chromecast

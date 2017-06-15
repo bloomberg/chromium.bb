@@ -339,6 +339,9 @@ class MockPostProcessor : public PostProcessingPipeline {
   int delay() { return rendering_delay_; }
   std::string name() const { return name_; }
 
+  MOCK_METHOD2(SetPostProcessorConfig,
+               void(const std::string& name, const std::string& config));
+
   static std::unordered_map<std::string, MockPostProcessor*>* instances() {
     return &instances_;
   }
@@ -1165,15 +1168,18 @@ TEST_F(StreamMixerAlsaTest, MultiplePostProcessorsInOneStream) {
       "streams": [ "default" ],
       "processors": [{
         "processor": "%s",
+        "name": "%s",
         "config": { "delay": 10 }
       }, {
         "processor": "%s",
+        "name": "%s",
         "config": { "delay": 100 }
       }]
     }],
     "mix": {
       "processors": [{
         "processor": "%s",
+        "name": "%s",
         "config": { "delay": 1000 }
       }, {
         "processor": "%s",
@@ -1184,9 +1190,12 @@ TEST_F(StreamMixerAlsaTest, MultiplePostProcessorsInOneStream) {
 }
 )json";
 
-  std::string json =
-      base::StringPrintf(kJsonTemplate, kDelayModuleSolib, kDelayModuleSolib,
-                         kDelayModuleSolib, kDelayModuleSolib);
+  std::string json = base::StringPrintf(
+      kJsonTemplate, kDelayModuleSolib, "delayer_1",  // unique processor name
+      kDelayModuleSolib, "delayer_2",  // non-unique processor names
+      kDelayModuleSolib, "delayer_2",
+      kDelayModuleSolib  // intentionally omitted processor name
+      );
 
   StreamMixerAlsa* mixer = StreamMixerAlsa::Get();
   mixer->ResetPostProcessorsForTest(json);
@@ -1199,6 +1208,19 @@ TEST_F(StreamMixerAlsaTest, MultiplePostProcessorsInOneStream) {
   CHECK_EQ(post_processors->find("mix")->second->delay(), 11000);
   CHECK_EQ(post_processors->find("linearize")->second->delay(), 0);
   mixer->WriteFramesForTest();
+}
+
+TEST_F(StreamMixerAlsaTest, SetPostProcessorConfig) {
+  std::string name = "ThisIsMyName";
+  std::string config = "ThisIsMyConfig";
+  StreamMixerAlsa* mixer = StreamMixerAlsa::Get();
+  auto* post_processors = MockPostProcessor::instances();
+
+  for (auto const& x : *post_processors) {
+    EXPECT_CALL(*(x.second), SetPostProcessorConfig(name, config));
+  }
+
+  mixer->SetPostProcessorConfig(name, config);
 }
 
 }  // namespace media

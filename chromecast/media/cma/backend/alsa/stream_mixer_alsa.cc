@@ -1084,5 +1084,13 @@ void StreamMixerAlsa::SetOutputLimit(AudioContentType type, float limit) {
   }
 }
 
+void StreamMixerAlsa::SetPostProcessorConfig(const std::string& name,
+                                             const std::string& message) {
+  RUN_ON_MIXER_THREAD(&StreamMixerAlsa::SetPostProcessorConfig, name, message);
+  for (auto&& filter_group : filter_groups_) {
+    filter_group->SetPostProcessorConfig(name, message);
+  }
+}
+
 }  // namespace media
 }  // namespace chromecast

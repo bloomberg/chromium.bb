@@ -39,6 +39,10 @@ class PostProcessingPipelineImpl : public PostProcessingPipeline {
   bool SetSampleRate(int sample_rate) override;
   bool IsRinging() override;
 
+  // Send string |config| to post processor |name|.
+  void SetPostProcessorConfig(const std::string& name,
+                              const std::string& config) override;
+
  private:
   int GetRingingTimeInFrames();
   void UpdateCastVolume(float multiplier);
@@ -56,7 +60,14 @@ class PostProcessingPipelineImpl : public PostProcessingPipeline {
   std::vector<std::unique_ptr<base::ScopedNativeLibrary>> libraries_;
 
   // Must be after libraries_
-  std::vector<std::unique_ptr<AudioPostProcessor>> processors_;
+  // Note: typedef is used to silence chromium-style mandatory constructor in
+  // structs.
+  typedef struct {
+    std::unique_ptr<AudioPostProcessor> ptr;
+    std::string name;
+  } PostProcessorInfo;
+
+  std::vector<PostProcessorInfo> processors_;
 
   DISALLOW_COPY_AND_ASSIGN(PostProcessingPipelineImpl);
 };

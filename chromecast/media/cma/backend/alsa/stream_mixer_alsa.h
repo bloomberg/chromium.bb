@@ -196,6 +196,10 @@ class StreamMixerAlsa {
   // Sets the volume multiplier limit for the given content |type|.
   void SetOutputLimit(AudioContentType type, float limit);
 
+  // Sends configuration string |config| to processor |name|.
+  void SetPostProcessorConfig(const std::string& name,
+                              const std::string& config);
+
  protected:
   StreamMixerAlsa();
   virtual ~StreamMixerAlsa();
