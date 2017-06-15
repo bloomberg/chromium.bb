@@ -16,6 +16,10 @@
     public *;
 }
 
+-keep class * implements android.webkit.WebViewFactoryProvider$Statics {
+    *;
+}
+
 -keep class com.android.webview.chromium.ContentSettingsAdapter {
     public *;
 }
