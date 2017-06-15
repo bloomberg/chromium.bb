@@ -184,9 +184,9 @@ bool CompositorAnimations::GetAnimatedBoundingBox(FloatBox& box,
 
     for (size_t j = 0; j < frames.size() - 1; ++j) {
       const AnimatableTransform* start_transform =
-          ToAnimatableTransform(frames[j]->GetAnimatableValue().Get());
+          ToAnimatableTransform(frames[j]->GetAnimatableValue());
       const AnimatableTransform* end_transform =
-          ToAnimatableTransform(frames[j + 1]->GetAnimatableValue().Get());
+          ToAnimatableTransform(frames[j + 1]->GetAnimatableValue());
       if (!start_transform || !end_transform)
         return false;
 
@@ -274,7 +274,7 @@ bool CompositorAnimations::CanStartEffectOnCompositor(
         case CSSPropertyScale:
         case CSSPropertyTranslate:
         case CSSPropertyTransform:
-          if (ToAnimatableTransform(keyframe->GetAnimatableValue().Get())
+          if (ToAnimatableTransform(keyframe->GetAnimatableValue())
                   ->GetTransformOperations()
                   .DependsOnBoxSize()) {
             return false;
@@ -283,7 +283,7 @@ bool CompositorAnimations::CanStartEffectOnCompositor(
         case CSSPropertyFilter:
         case CSSPropertyBackdropFilter: {
           const FilterOperations& operations =
-              ToAnimatableFilterOperations(keyframe->GetAnimatableValue().Get())
+              ToAnimatableFilterOperations(keyframe->GetAnimatableValue())
                   ->Operations();
           if (operations.HasFilterThatMovesPixels()) {
             return false;
@@ -578,7 +578,7 @@ void AddKeyframesToCurve(PlatformAnimationCurveType& curve,
     else
       keyframe_timing_function = &keyframe->Easing();
 
-    const AnimatableValue* value = keyframe->GetAnimatableValue().Get();
+    const AnimatableValue* value = keyframe->GetAnimatableValue();
     AddKeyframeToCurve(curve, keyframe.Get(), value, *keyframe_timing_function);
   }
 }

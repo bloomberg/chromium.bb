@@ -36,8 +36,8 @@ class CORE_EXPORT TransitionKeyframe : public Keyframe {
           std::move(compositor_value)));
     }
 
-    PassRefPtr<AnimatableValue> GetAnimatableValue() const final {
-      return compositor_value_;
+    const AnimatableValue* GetAnimatableValue() const final {
+      return compositor_value_.Get();
     }
 
     bool IsNeutral() const final { return false; }

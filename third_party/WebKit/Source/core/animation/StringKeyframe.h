@@ -78,7 +78,7 @@ class CORE_EXPORT StringKeyframe : public Keyframe {
                                  Element&,
                                  const ComputedStyle& base_style,
                                  const ComputedStyle* parent_style) const final;
-    PassRefPtr<AnimatableValue> GetAnimatableValue() const final {
+    const AnimatableValue* GetAnimatableValue() const final {
       return animatable_value_cache_.Get();
     }
 
@@ -123,9 +123,7 @@ class CORE_EXPORT StringKeyframe : public Keyframe {
     PassRefPtr<PropertySpecificKeyframe> CloneWithOffset(
         double offset) const final;
 
-    PassRefPtr<AnimatableValue> GetAnimatableValue() const final {
-      return nullptr;
-    }
+    const AnimatableValue* GetAnimatableValue() const final { return nullptr; }
 
     bool IsNeutral() const final { return value_.IsNull(); }
     PassRefPtr<PropertySpecificKeyframe> NeutralKeyframe(

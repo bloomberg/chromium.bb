@@ -44,8 +44,8 @@ class CORE_EXPORT AnimatableValueKeyframe : public Keyframe {
     }
 
     AnimatableValue* Value() const { return value_.Get(); }
-    PassRefPtr<AnimatableValue> GetAnimatableValue() const final {
-      return value_;
+    const AnimatableValue* GetAnimatableValue() const final {
+      return value_.Get();
     }
 
     bool IsNeutral() const final { return false; }
