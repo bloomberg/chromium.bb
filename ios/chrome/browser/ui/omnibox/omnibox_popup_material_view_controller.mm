@@ -656,11 +656,18 @@ initWithPopupView:(OmniboxPopupViewIOS*)view
 #pragma mark UIScrollViewDelegate
 
 - (void)scrollViewDidScroll:(UIScrollView*)scrollView {
-  // Setting the top inset of the scrollView to |kTopAndBottomPadding| causes a
-  // one time scrollViewDidScroll to |-kTopAndBottomPadding|.  It's easier to
-  // just ignore this one scroll tick.
-  if (scrollView.contentOffset.y == 0 - kTopAndBottomPadding)
-    return;
+  // TODO(crbug.com/733650): Default to the dragging check once it's been tested
+  // on trunk.
+  if (base::ios::IsRunningOnIOS11OrLater()) {
+    if (!scrollView.dragging)
+      return;
+  } else {
+    // Setting the top inset of the scrollView to |kTopAndBottomPadding| causes
+    // a one time scrollViewDidScroll to |-kTopAndBottomPadding|.  It's easier
+    // to just ignore this one scroll tick.
+    if (scrollView.contentOffset.y == 0 - kTopAndBottomPadding)
+      return;
+  }
 
   _popupView->DidScroll();
   for (OmniboxPopupMaterialRow* row in _rows) {
