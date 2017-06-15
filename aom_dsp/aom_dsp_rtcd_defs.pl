@@ -911,15 +911,15 @@ if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
 #
 # ...
 #
-add_proto qw/void aom_upsampled_pred/, "uint8_t *comp_pred, int width, int height, const uint8_t *ref, int ref_stride";
+add_proto qw/void aom_upsampled_pred/, "uint8_t *comp_pred, int width, int height, int subsample_x_q3, int subsample_y_q3, const uint8_t *ref, int ref_stride";
 specialize qw/aom_upsampled_pred sse2/;
-add_proto qw/void aom_comp_avg_upsampled_pred/, "uint8_t *comp_pred, const uint8_t *pred, int width, int height, const uint8_t *ref, int ref_stride";
+add_proto qw/void aom_comp_avg_upsampled_pred/, "uint8_t *comp_pred, const uint8_t *pred, int width, int height, int subsample_x_q3, int subsample_y_q3, const uint8_t *ref, int ref_stride";
 specialize qw/aom_comp_avg_upsampled_pred sse2/;
 
 if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
-  add_proto qw/void aom_highbd_upsampled_pred/, "uint16_t *comp_pred, int width, int height, const uint8_t *ref8, int ref_stride";
+  add_proto qw/void aom_highbd_upsampled_pred/, "uint16_t *comp_pred, int width, int height, int subsample_x_q3, int subsample_y_q3, const uint8_t *ref8, int ref_stride, int bd";
   specialize qw/aom_highbd_upsampled_pred sse2/;
-  add_proto qw/void aom_highbd_comp_avg_upsampled_pred/, "uint16_t *comp_pred, const uint8_t *pred8, int width, int height, const uint8_t *ref8, int ref_stride";
+  add_proto qw/void aom_highbd_comp_avg_upsampled_pred/, "uint16_t *comp_pred, const uint8_t *pred8, int width, int height, int subsample_x_q3, int subsample_y_q3, const uint8_t *ref8, int ref_stride, int bd";
   specialize qw/aom_highbd_comp_avg_upsampled_pred sse2/;
 }
 
@@ -1480,10 +1480,10 @@ if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
 
 if (aom_config("CONFIG_EXT_INTER") eq "yes") {
   add_proto qw/void aom_comp_mask_pred/, "uint8_t *comp_pred, const uint8_t *pred, int width, int height, const uint8_t *ref, int ref_stride, const uint8_t *mask, int mask_stride, int invert_mask";
-  add_proto qw/void aom_comp_mask_upsampled_pred/, "uint8_t *comp_pred, const uint8_t *pred, int width, int height, const uint8_t *ref, int ref_stride, const uint8_t *mask, int mask_stride, int invert_mask";
+  add_proto qw/void aom_comp_mask_upsampled_pred/, "uint8_t *comp_pred, const uint8_t *pred, int width, int height, int subsample_x_q3, int subsample_y_q3, const uint8_t *ref, int ref_stride, const uint8_t *mask, int mask_stride, int invert_mask";
   if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
     add_proto qw/void aom_highbd_comp_mask_pred/, "uint16_t *comp_pred, const uint8_t *pred8, int width, int height, const uint8_t *ref8, int ref_stride, const uint8_t *mask, int mask_stride, int invert_mask";
-    add_proto qw/void aom_highbd_comp_mask_upsampled_pred/, "uint16_t *comp_pred, const uint8_t *pred8, int width, int height, const uint8_t *ref8, int ref_stride, const uint8_t *mask, int mask_stride, int invert_mask";
+    add_proto qw/void aom_highbd_comp_mask_upsampled_pred/, "uint16_t *comp_pred, const uint8_t *pred8, int width, int height, int subsample_x_q3, int subsample_y_q3, const uint8_t *ref8, int ref_stride, const uint8_t *mask, int mask_stride, int invert_mask, int bd";
   }
 }
 

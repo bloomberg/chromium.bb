@@ -17,6 +17,9 @@
 
 #include "aom_ports/mem.h"
 
+#include "./av1_rtcd.h"
+#include "av1/common/filter.h"
+
 typedef void (*getNxMvar_fn_t)(const unsigned char *src, int src_stride,
                                const unsigned char *ref, int ref_stride,
                                unsigned int *sse, int *sum);
@@ -477,214 +480,106 @@ FNS(ssse3, ssse3);
 #undef FN
 
 void aom_upsampled_pred_sse2(uint8_t *comp_pred, int width, int height,
+                             int subpel_x_q3, int subpel_y_q3,
                              const uint8_t *ref, int ref_stride) {
-  int i, j;
-  int stride = ref_stride << 3;
-
-  if (width >= 16) {
-    // read 16 points at one time
-    for (i = 0; i < height; i++) {
-      for (j = 0; j < width; j += 16) {
-        __m128i s0 = _mm_loadu_si128((const __m128i *)ref);
-        __m128i s1 = _mm_loadu_si128((const __m128i *)(ref + 16));
-        __m128i s2 = _mm_loadu_si128((const __m128i *)(ref + 32));
-        __m128i s3 = _mm_loadu_si128((const __m128i *)(ref + 48));
-        __m128i s4 = _mm_loadu_si128((const __m128i *)(ref + 64));
-        __m128i s5 = _mm_loadu_si128((const __m128i *)(ref + 80));
-        __m128i s6 = _mm_loadu_si128((const __m128i *)(ref + 96));
-        __m128i s7 = _mm_loadu_si128((const __m128i *)(ref + 112));
-        __m128i t0, t1, t2, t3;
-
-        t0 = _mm_unpacklo_epi8(s0, s1);
-        s1 = _mm_unpackhi_epi8(s0, s1);
-        t1 = _mm_unpacklo_epi8(s2, s3);
-        s3 = _mm_unpackhi_epi8(s2, s3);
-        t2 = _mm_unpacklo_epi8(s4, s5);
-        s5 = _mm_unpackhi_epi8(s4, s5);
-        t3 = _mm_unpacklo_epi8(s6, s7);
-        s7 = _mm_unpackhi_epi8(s6, s7);
-
-        s0 = _mm_unpacklo_epi8(t0, s1);
-        s2 = _mm_unpacklo_epi8(t1, s3);
-        s4 = _mm_unpacklo_epi8(t2, s5);
-        s6 = _mm_unpacklo_epi8(t3, s7);
-        s0 = _mm_unpacklo_epi32(s0, s2);
-        s4 = _mm_unpacklo_epi32(s4, s6);
-        s0 = _mm_unpacklo_epi64(s0, s4);
-
-        _mm_storeu_si128((__m128i *)(comp_pred), s0);
+  if (!subpel_x_q3 && !subpel_y_q3) {
+    if (width >= 16) {
+      int i;
+      assert(!(width & 15));
+      /*Read 16 pixels one row at a time.*/
+      for (i = 0; i < height; i++) {
+        int j;
+        for (j = 0; j < width; j += 16) {
+          __m128i s0 = _mm_loadu_si128((const __m128i *)ref);
+          _mm_storeu_si128((__m128i *)comp_pred, s0);
+          comp_pred += 16;
+          ref += 16;
+        }
+        ref += ref_stride - width;
+      }
+    } else if (width >= 8) {
+      int i;
+      assert(!(width & 7));
+      assert(!(height & 1));
+      /*Read 8 pixels two rows at a time.*/
+      for (i = 0; i < height; i += 2) {
+        __m128i s0 = _mm_loadl_epi64((const __m128i *)ref);
+        __m128i s1 = _mm_loadl_epi64((const __m128i *)(ref + ref_stride));
+        __m128i t0 = _mm_unpacklo_epi64(s0, s1);
+        _mm_storeu_si128((__m128i *)comp_pred, t0);
         comp_pred += 16;
-        ref += 16 * 8;
+        ref += 2 * ref_stride;
       }
-      ref += stride - (width << 3);
-    }
-  } else if (width >= 8) {
-    // read 8 points at one time
-    for (i = 0; i < height; i++) {
-      for (j = 0; j < width; j += 8) {
-        __m128i s0 = _mm_loadu_si128((const __m128i *)ref);
-        __m128i s1 = _mm_loadu_si128((const __m128i *)(ref + 16));
-        __m128i s2 = _mm_loadu_si128((const __m128i *)(ref + 32));
-        __m128i s3 = _mm_loadu_si128((const __m128i *)(ref + 48));
-        __m128i t0, t1;
-
-        t0 = _mm_unpacklo_epi8(s0, s1);
-        s1 = _mm_unpackhi_epi8(s0, s1);
-        t1 = _mm_unpacklo_epi8(s2, s3);
-        s3 = _mm_unpackhi_epi8(s2, s3);
-
-        s0 = _mm_unpacklo_epi8(t0, s1);
-        s2 = _mm_unpacklo_epi8(t1, s3);
-        s0 = _mm_unpacklo_epi32(s0, s2);
-
-        _mm_storel_epi64((__m128i *)(comp_pred), s0);
-        comp_pred += 8;
-        ref += 8 * 8;
+    } else {
+      int i;
+      assert(!(width & 3));
+      assert(!(height & 3));
+      /*Read 4 pixels four rows at a time.*/
+      for (i = 0; i < height; i++) {
+        __m128i s0 = _mm_cvtsi32_si128(*(const uint32_t *)ref);
+        __m128i s1 = _mm_cvtsi32_si128(*(const uint32_t *)(ref + ref_stride));
+        __m128i s2 =
+            _mm_cvtsi32_si128(*(const uint32_t *)(ref + 2 * ref_stride));
+        __m128i s3 =
+            _mm_cvtsi32_si128(*(const uint32_t *)(ref + 3 * ref_stride));
+        __m128i t0 = _mm_unpacklo_epi32(s0, s1);
+        __m128i t1 = _mm_unpacklo_epi32(s2, s3);
+        __m128i u0 = _mm_unpacklo_epi64(t0, t1);
+        _mm_storeu_si128((__m128i *)comp_pred, u0);
+        comp_pred += 16;
+        ref += 4 * ref_stride;
       }
-      ref += stride - (width << 3);
     }
   } else {
-    // read 4 points at one time
-    for (i = 0; i < height; i++) {
-      for (j = 0; j < width; j += 4) {
-        __m128i s0 = _mm_loadu_si128((const __m128i *)ref);
-        __m128i s1 = _mm_loadu_si128((const __m128i *)(ref + 16));
-        __m128i t0;
-
-        t0 = _mm_unpacklo_epi8(s0, s1);
-        s1 = _mm_unpackhi_epi8(s0, s1);
-        s0 = _mm_unpacklo_epi8(t0, s1);
-
-        *(int *)comp_pred = _mm_cvtsi128_si32(s0);
-        comp_pred += 4;
-        ref += 4 * 8;
-      }
-      ref += stride - (width << 3);
+    InterpFilterParams filter;
+    filter = av1_get_interp_filter_params(EIGHTTAP_REGULAR);
+    if (!subpel_y_q3) {
+      const int16_t *kernel;
+      kernel = av1_get_interp_filter_subpel_kernel(filter, subpel_x_q3 << 1);
+      aom_convolve8_horiz(ref, ref_stride, comp_pred, width, kernel, 16, NULL,
+                          -1, width, height);
+    } else if (!subpel_x_q3) {
+      const int16_t *kernel;
+      kernel = av1_get_interp_filter_subpel_kernel(filter, subpel_y_q3 << 1);
+      aom_convolve8_vert(ref, ref_stride, comp_pred, width, NULL, -1, kernel,
+                         16, width, height);
+    } else {
+      DECLARE_ALIGNED(16, uint8_t,
+                      temp[((MAX_SB_SIZE * 2 + 16) + 16) * MAX_SB_SIZE]);
+      const int16_t *kernel_x;
+      const int16_t *kernel_y;
+      int intermediate_height;
+      kernel_x = av1_get_interp_filter_subpel_kernel(filter, subpel_x_q3 << 1);
+      kernel_y = av1_get_interp_filter_subpel_kernel(filter, subpel_y_q3 << 1);
+      intermediate_height =
+          (((height - 1) * 8 + subpel_y_q3) >> 3) + filter.taps;
+      assert(intermediate_height <= (MAX_SB_SIZE * 2 + 16) + 16);
+      aom_convolve8_horiz(ref - ref_stride * ((filter.taps >> 1) - 1),
+                          ref_stride, temp, MAX_SB_SIZE, kernel_x, 16, NULL, -1,
+                          width, intermediate_height);
+      aom_convolve8_vert(temp + MAX_SB_SIZE * ((filter.taps >> 1) - 1),
+                         MAX_SB_SIZE, comp_pred, width, NULL, -1, kernel_y, 16,
+                         width, height);
     }
   }
 }
 
 void aom_comp_avg_upsampled_pred_sse2(uint8_t *comp_pred, const uint8_t *pred,
-                                      int width, int height, const uint8_t *ref,
+                                      int width, int height, int subpel_x_q3,
+                                      int subpel_y_q3, const uint8_t *ref,
                                       int ref_stride) {
-  const __m128i zero = _mm_set1_epi16(0);
-  const __m128i one = _mm_set1_epi16(1);
-  int i, j;
-  int stride = ref_stride << 3;
-
-  if (width >= 16) {
-    // read 16 points at one time
-    for (i = 0; i < height; i++) {
-      for (j = 0; j < width; j += 16) {
-        __m128i s0 = _mm_loadu_si128((const __m128i *)ref);
-        __m128i s1 = _mm_loadu_si128((const __m128i *)(ref + 16));
-        __m128i s2 = _mm_loadu_si128((const __m128i *)(ref + 32));
-        __m128i s3 = _mm_loadu_si128((const __m128i *)(ref + 48));
-        __m128i s4 = _mm_loadu_si128((const __m128i *)(ref + 64));
-        __m128i s5 = _mm_loadu_si128((const __m128i *)(ref + 80));
-        __m128i s6 = _mm_loadu_si128((const __m128i *)(ref + 96));
-        __m128i s7 = _mm_loadu_si128((const __m128i *)(ref + 112));
-        __m128i p0 = _mm_loadu_si128((const __m128i *)pred);
-        __m128i p1;
-        __m128i t0, t1, t2, t3;
-
-        t0 = _mm_unpacklo_epi8(s0, s1);
-        s1 = _mm_unpackhi_epi8(s0, s1);
-        t1 = _mm_unpacklo_epi8(s2, s3);
-        s3 = _mm_unpackhi_epi8(s2, s3);
-        t2 = _mm_unpacklo_epi8(s4, s5);
-        s5 = _mm_unpackhi_epi8(s4, s5);
-        t3 = _mm_unpacklo_epi8(s6, s7);
-        s7 = _mm_unpackhi_epi8(s6, s7);
-
-        s0 = _mm_unpacklo_epi8(t0, s1);
-        s2 = _mm_unpacklo_epi8(t1, s3);
-        s4 = _mm_unpacklo_epi8(t2, s5);
-        s6 = _mm_unpacklo_epi8(t3, s7);
-
-        s0 = _mm_unpacklo_epi32(s0, s2);
-        s4 = _mm_unpacklo_epi32(s4, s6);
-        s0 = _mm_unpacklo_epi8(s0, zero);
-        s4 = _mm_unpacklo_epi8(s4, zero);
-
-        p1 = _mm_unpackhi_epi8(p0, zero);
-        p0 = _mm_unpacklo_epi8(p0, zero);
-        p0 = _mm_adds_epu16(s0, p0);
-        p1 = _mm_adds_epu16(s4, p1);
-        p0 = _mm_adds_epu16(p0, one);
-        p1 = _mm_adds_epu16(p1, one);
-
-        p0 = _mm_srli_epi16(p0, 1);
-        p1 = _mm_srli_epi16(p1, 1);
-        p0 = _mm_packus_epi16(p0, p1);
-
-        _mm_storeu_si128((__m128i *)(comp_pred), p0);
-        comp_pred += 16;
-        pred += 16;
-        ref += 16 * 8;
-      }
-      ref += stride - (width << 3);
-    }
-  } else if (width >= 8) {
-    // read 8 points at one time
-    for (i = 0; i < height; i++) {
-      for (j = 0; j < width; j += 8) {
-        __m128i s0 = _mm_loadu_si128((const __m128i *)ref);
-        __m128i s1 = _mm_loadu_si128((const __m128i *)(ref + 16));
-        __m128i s2 = _mm_loadu_si128((const __m128i *)(ref + 32));
-        __m128i s3 = _mm_loadu_si128((const __m128i *)(ref + 48));
-        __m128i p0 = _mm_loadl_epi64((const __m128i *)pred);
-        __m128i t0, t1;
-
-        t0 = _mm_unpacklo_epi8(s0, s1);
-        s1 = _mm_unpackhi_epi8(s0, s1);
-        t1 = _mm_unpacklo_epi8(s2, s3);
-        s3 = _mm_unpackhi_epi8(s2, s3);
-
-        s0 = _mm_unpacklo_epi8(t0, s1);
-        s2 = _mm_unpacklo_epi8(t1, s3);
-        s0 = _mm_unpacklo_epi32(s0, s2);
-        s0 = _mm_unpacklo_epi8(s0, zero);
-
-        p0 = _mm_unpacklo_epi8(p0, zero);
-        p0 = _mm_adds_epu16(s0, p0);
-        p0 = _mm_adds_epu16(p0, one);
-        p0 = _mm_srli_epi16(p0, 1);
-        p0 = _mm_packus_epi16(p0, zero);
-
-        _mm_storel_epi64((__m128i *)(comp_pred), p0);
-        comp_pred += 8;
-        pred += 8;
-        ref += 8 * 8;
-      }
-      ref += stride - (width << 3);
-    }
-  } else {
-    // read 4 points at one time
-    for (i = 0; i < height; i++) {
-      for (j = 0; j < width; j += 4) {
-        __m128i s0 = _mm_loadu_si128((const __m128i *)ref);
-        __m128i s1 = _mm_loadu_si128((const __m128i *)(ref + 16));
-        __m128i p0 = _mm_cvtsi32_si128(*(const uint32_t *)pred);
-        __m128i t0;
-
-        t0 = _mm_unpacklo_epi8(s0, s1);
-        s1 = _mm_unpackhi_epi8(s0, s1);
-        s0 = _mm_unpacklo_epi8(t0, s1);
-        s0 = _mm_unpacklo_epi8(s0, zero);
-
-        p0 = _mm_unpacklo_epi8(p0, zero);
-        p0 = _mm_adds_epu16(s0, p0);
-        p0 = _mm_adds_epu16(p0, one);
-        p0 = _mm_srli_epi16(p0, 1);
-        p0 = _mm_packus_epi16(p0, zero);
-
-        *(int *)comp_pred = _mm_cvtsi128_si32(p0);
-        comp_pred += 4;
-        pred += 4;
-        ref += 4 * 8;
-      }
-      ref += stride - (width << 3);
-    }
+  int n;
+  int i;
+  aom_upsampled_pred(comp_pred, width, height, subpel_x_q3, subpel_y_q3, ref,
+                     ref_stride);
+  /*The total number of pixels must be a multiple of 16 (e.g., 4x4).*/
+  assert(!(width * height & 15));
+  n = width * height >> 4;
+  for (i = 0; i < n; i++) {
+    __m128i s0 = _mm_loadu_si128((const __m128i *)comp_pred);
+    __m128i p0 = _mm_loadu_si128((const __m128i *)pred);
+    _mm_storeu_si128((__m128i *)comp_pred, _mm_avg_epu8(s0, p0));
+    comp_pred += 16;
+    pred += 16;
   }
 }

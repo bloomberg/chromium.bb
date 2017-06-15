@@ -143,11 +143,10 @@ int av1_obmc_full_pixel_diamond(const struct AV1_COMP *cpi, MACROBLOCK *x,
                                 const aom_variance_fn_ptr_t *fn_ptr,
                                 const MV *ref_mv, MV *dst_mv, int is_second);
 int av1_find_best_obmc_sub_pixel_tree_up(
-    const struct AV1_COMP *cpi, MACROBLOCK *x, int mi_row, int mi_col,
-    MV *bestmv, const MV *ref_mv, int allow_hp, int error_per_bit,
-    const aom_variance_fn_ptr_t *vfp, int forced_stop, int iters_per_step,
-    int *mvjcost, int *mvcost[2], int *distortion, unsigned int *sse1,
-    int is_second, int use_upsampled_ref);
+    MACROBLOCK *x, MV *bestmv, const MV *ref_mv, int allow_hp,
+    int error_per_bit, const aom_variance_fn_ptr_t *vfp, int forced_stop,
+    int iters_per_step, int *mvjcost, int *mvcost[2], int *distortion,
+    unsigned int *sse1, int is_second, int use_upsampled_ref);
 #endif  // CONFIG_MOTION_VAR
 #ifdef __cplusplus
 }  // extern "C"

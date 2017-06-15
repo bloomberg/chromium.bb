@@ -5293,6 +5293,8 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
   if (!has_second_ref(mbmi)) is_global[1] = is_global[0];
 #endif  // CONFIG_EXT_INTER && CONFIG_COMPOUND_SINGLEREF
 #endif  // CONFIG_GLOBAL_MOTION
+#else   // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
+  (void)block;
 #endif  // CONFIG_GLOBAL_MOTION || CONFIG_WARPED_MOTION
 
   // Do joint motion search in compound mode to get more accurate mv.
@@ -5491,52 +5493,15 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
     if (bestsme < INT_MAX) {
       int dis; /* TODO: use dis in distortion calculation later. */
       unsigned int sse;
-      if (cpi->sf.use_upsampled_references) {
-        // Use up-sampled reference frames.
-        struct buf_2d backup_pred = pd->pre[0];
-        const YV12_BUFFER_CONFIG *upsampled_ref =
-            get_upsampled_ref(cpi, refs[id]);
-
-        // Set pred for Y plane
-        setup_pred_plane(&pd->pre[0], bsize, upsampled_ref->y_buffer,
-                         upsampled_ref->y_crop_width,
-                         upsampled_ref->y_crop_height, upsampled_ref->y_stride,
-                         (mi_row << 3), (mi_col << 3), NULL, pd->subsampling_x,
-                         pd->subsampling_y);
-
-// If bsize < BLOCK_8X8, adjust pred pointer for this block
-#if !CONFIG_CB4X4
-        if (bsize < BLOCK_8X8)
-          pd->pre[0].buf =
-              &pd->pre[0].buf[(av1_raster_block_offset(BLOCK_8X8, block,
-                                                       pd->pre[0].stride))
-                              << 3];
-#endif  // !CONFIG_CB4X4
-
-        bestsme = cpi->find_fractional_mv_step(
-            x, &ref_mv[id].as_mv, cpi->common.allow_high_precision_mv,
-            x->errorperbit, &cpi->fn_ptr[bsize], 0,
-            cpi->sf.mv.subpel_iters_per_step, NULL, x->nmvjointcost, x->mvcost,
-            &dis, &sse, second_pred,
+      bestsme = cpi->find_fractional_mv_step(
+          x, &ref_mv[id].as_mv, cpi->common.allow_high_precision_mv,
+          x->errorperbit, &cpi->fn_ptr[bsize], 0,
+          cpi->sf.mv.subpel_iters_per_step, NULL, x->nmvjointcost, x->mvcost,
+          &dis, &sse, second_pred,
 #if CONFIG_EXT_INTER
-            mask, mask_stride, id,
+          mask, mask_stride, id,
 #endif
-            pw, ph, 1);
-
-        // Restore the reference frames.
-        pd->pre[0] = backup_pred;
-      } else {
-        (void)block;
-        bestsme = cpi->find_fractional_mv_step(
-            x, &ref_mv[id].as_mv, cpi->common.allow_high_precision_mv,
-            x->errorperbit, &cpi->fn_ptr[bsize], 0,
-            cpi->sf.mv.subpel_iters_per_step, NULL, x->nmvjointcost, x->mvcost,
-            &dis, &sse, second_pred,
-#if CONFIG_EXT_INTER
-            mask, mask_stride, id,
-#endif
-            pw, ph, 0);
-      }
+          pw, ph, cpi->sf.use_upsampled_references);
     }
 
     // Restore the pointer to the first (possibly scaled) prediction buffer.
@@ -6113,17 +6078,6 @@ static void single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
                                  x->second_best_mv.as_int != x->best_mv.as_int;
           const int pw = block_size_wide[bsize];
           const int ph = block_size_high[bsize];
-          // Use up-sampled reference frames.
-          struct macroblockd_plane *const pd = &xd->plane[0];
-          struct buf_2d backup_pred = pd->pre[ref_idx];
-          const YV12_BUFFER_CONFIG *upsampled_ref = get_upsampled_ref(cpi, ref);
-
-          // Set pred for Y plane
-          setup_pred_plane(
-              &pd->pre[ref_idx], bsize, upsampled_ref->y_buffer,
-              upsampled_ref->y_crop_width, upsampled_ref->y_crop_height,
-              upsampled_ref->y_stride, (mi_row << 3), (mi_col << 3), NULL,
-              pd->subsampling_x, pd->subsampling_y);
 
           best_mv_var = cpi->find_fractional_mv_step(
               x, &ref_mv, cm->allow_high_precision_mv, x->errorperbit,
@@ -6166,9 +6120,6 @@ static void single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
               x->best_mv.as_mv = best_mv;
             }
           }
-
-          // Restore the reference frames.
-          pd->pre[ref_idx] = backup_pred;
         } else {
           cpi->find_fractional_mv_step(
               x, &ref_mv, cm->allow_high_precision_mv, x->errorperbit,
@@ -6184,11 +6135,10 @@ static void single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
         break;
       case OBMC_CAUSAL:
         av1_find_best_obmc_sub_pixel_tree_up(
-            cpi, x, mi_row, mi_col, &x->best_mv.as_mv, &ref_mv,
-            cm->allow_high_precision_mv, x->errorperbit, &cpi->fn_ptr[bsize],
-            cpi->sf.mv.subpel_force_stop, cpi->sf.mv.subpel_iters_per_step,
-            x->nmvjointcost, x->mvcost, &dis, &x->pred_sse[ref], 0,
-            cpi->sf.use_upsampled_references);
+            x, &x->best_mv.as_mv, &ref_mv, cm->allow_high_precision_mv,
+            x->errorperbit, &cpi->fn_ptr[bsize], cpi->sf.mv.subpel_force_stop,
+            cpi->sf.mv.subpel_iters_per_step, x->nmvjointcost, x->mvcost, &dis,
+            &x->pred_sse[ref], 0, cpi->sf.use_upsampled_references);
         break;
       default: assert("Invalid motion mode!\n");
     }
@@ -6332,10 +6282,12 @@ static void build_second_inter_pred(const AV1_COMP *cpi, MACROBLOCK *x,
 
 // Search for the best mv for one component of a compound,
 // given that the other component is fixed.
-static void compound_single_motion_search(
-    const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize, MV *this_mv,
-    int mi_row, int mi_col, const uint8_t *second_pred, const uint8_t *mask,
-    int mask_stride, int *rate_mv, const int block, int ref_idx) {
+static void compound_single_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
+                                          BLOCK_SIZE bsize, MV *this_mv,
+                                          int mi_row, int mi_col,
+                                          const uint8_t *second_pred,
+                                          const uint8_t *mask, int mask_stride,
+                                          int *rate_mv, int ref_idx) {
   const int pw = block_size_wide[bsize];
   const int ph = block_size_high[bsize];
   MACROBLOCKD *xd = &x->e_mbd;
@@ -6423,43 +6375,11 @@ static void compound_single_motion_search(
   if (bestsme < INT_MAX) {
     int dis; /* TODO: use dis in distortion calculation later. */
     unsigned int sse;
-    if (cpi->sf.use_upsampled_references) {
-      // Use up-sampled reference frames.
-      struct buf_2d backup_pred = pd->pre[0];
-      const YV12_BUFFER_CONFIG *upsampled_ref = get_upsampled_ref(cpi, ref);
-
-      // Set pred for Y plane
-      setup_pred_plane(&pd->pre[0], bsize, upsampled_ref->y_buffer,
-                       upsampled_ref->y_crop_width,
-                       upsampled_ref->y_crop_height, upsampled_ref->y_stride,
-                       (mi_row << 3), (mi_col << 3), NULL, pd->subsampling_x,
-                       pd->subsampling_y);
-
-// If bsize < BLOCK_8X8, adjust pred pointer for this block
-#if !CONFIG_CB4X4
-      if (bsize < BLOCK_8X8)
-        pd->pre[0].buf =
-            &pd->pre[0].buf[(av1_raster_block_offset(BLOCK_8X8, block,
-                                                     pd->pre[0].stride))
-                            << 3];
-#endif  // !CONFIG_CB4X4
-
-      bestsme = cpi->find_fractional_mv_step(
-          x, &ref_mv.as_mv, cpi->common.allow_high_precision_mv, x->errorperbit,
-          &cpi->fn_ptr[bsize], 0, cpi->sf.mv.subpel_iters_per_step, NULL,
-          x->nmvjointcost, x->mvcost, &dis, &sse, second_pred, mask,
-          mask_stride, ref_idx, pw, ph, 1);
-
-      // Restore the reference frames.
-      pd->pre[0] = backup_pred;
-    } else {
-      (void)block;
-      bestsme = cpi->find_fractional_mv_step(
-          x, &ref_mv.as_mv, cpi->common.allow_high_precision_mv, x->errorperbit,
-          &cpi->fn_ptr[bsize], 0, cpi->sf.mv.subpel_iters_per_step, NULL,
-          x->nmvjointcost, x->mvcost, &dis, &sse, second_pred, mask,
-          mask_stride, ref_idx, pw, ph, 0);
-    }
+    bestsme = cpi->find_fractional_mv_step(
+        x, &ref_mv.as_mv, cpi->common.allow_high_precision_mv, x->errorperbit,
+        &cpi->fn_ptr[bsize], 0, cpi->sf.mv.subpel_iters_per_step, NULL,
+        x->nmvjointcost, x->mvcost, &dis, &sse, second_pred, mask, mask_stride,
+        ref_idx, pw, ph, cpi->sf.use_upsampled_references);
   }
 
   // Restore the pointer to the first (possibly scaled) prediction buffer.
@@ -6539,7 +6459,7 @@ static void compound_single_motion_search_interinter(
                           ref_idx, second_pred);
 
   compound_single_motion_search(cpi, x, bsize, this_mv, mi_row, mi_col,
-                                second_pred, mask, mask_stride, rate_mv, block,
+                                second_pred, mask, mask_stride, rate_mv,
                                 ref_idx);
 }
 
@@ -8471,7 +8391,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
           tmp_mv.as_int = x->mbmi_ext->ref_mvs[refs[0]][0].as_int;
           compound_single_motion_search(cpi, x, bsize, &tmp_mv.as_mv, mi_row,
                                         mi_col, intrapred, mask, bw,
-                                        &tmp_rate_mv, 0, 0);
+                                        &tmp_rate_mv, 0);
           mbmi->mv[0].as_int = tmp_mv.as_int;
           av1_build_inter_predictors_sby(cm, xd, mi_row, mi_col, &orig_dst,
                                          bsize);

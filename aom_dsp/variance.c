@@ -9,6 +9,8 @@
  * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 #include <stdlib.h>
+#include <string.h>
+#include <assert.h>
 
 #include "./aom_config.h"
 #include "./aom_dsp_rtcd.h"
@@ -19,6 +21,9 @@
 #include "aom_dsp/variance.h"
 #include "aom_dsp/aom_filter.h"
 #include "aom_dsp/blend.h"
+
+#include "./av1_rtcd.h"
+#include "av1/common/filter.h"
 
 uint32_t aom_get4x4sse_cs_c(const uint8_t *a, int a_stride, const uint8_t *b,
                             int b_stride) {
@@ -271,33 +276,66 @@ void aom_comp_avg_pred_c(uint8_t *comp_pred, const uint8_t *pred, int width,
 
 // Get pred block from up-sampled reference.
 void aom_upsampled_pred_c(uint8_t *comp_pred, int width, int height,
-                          const uint8_t *ref, int ref_stride) {
-  int i, j, k;
-  int stride = ref_stride << 3;
-
-  for (i = 0; i < height; i++) {
-    for (j = 0, k = 0; j < width; j++, k += 8) {
-      comp_pred[j] = ref[k];
+                          int subpel_x_q3, int subpel_y_q3, const uint8_t *ref,
+                          int ref_stride) {
+  if (!subpel_x_q3 && !subpel_y_q3) {
+    int i;
+    for (i = 0; i < height; i++) {
+      memcpy(comp_pred, ref, width * sizeof(*comp_pred));
+      comp_pred += width;
+      ref += ref_stride;
     }
-    comp_pred += width;
-    ref += stride;
+  } else {
+    InterpFilterParams filter;
+    filter = av1_get_interp_filter_params(EIGHTTAP_REGULAR);
+    if (!subpel_y_q3) {
+      const int16_t *kernel;
+      kernel = av1_get_interp_filter_subpel_kernel(filter, subpel_x_q3 << 1);
+      /*Directly call C version to allow this to work for small (2x2) sizes.*/
+      aom_convolve8_horiz_c(ref, ref_stride, comp_pred, width, kernel, 16, NULL,
+                            -1, width, height);
+    } else if (!subpel_x_q3) {
+      const int16_t *kernel;
+      kernel = av1_get_interp_filter_subpel_kernel(filter, subpel_y_q3 << 1);
+      /*Directly call C version to allow this to work for small (2x2) sizes.*/
+      aom_convolve8_vert_c(ref, ref_stride, comp_pred, width, NULL, -1, kernel,
+                           16, width, height);
+    } else {
+      DECLARE_ALIGNED(16, uint8_t,
+                      temp[((MAX_SB_SIZE * 2 + 16) + 16) * MAX_SB_SIZE]);
+      const int16_t *kernel_x;
+      const int16_t *kernel_y;
+      int intermediate_height;
+      kernel_x = av1_get_interp_filter_subpel_kernel(filter, subpel_x_q3 << 1);
+      kernel_y = av1_get_interp_filter_subpel_kernel(filter, subpel_y_q3 << 1);
+      intermediate_height =
+          (((height - 1) * 8 + subpel_y_q3) >> 3) + filter.taps;
+      assert(intermediate_height <= (MAX_SB_SIZE * 2 + 16) + 16);
+      /*Directly call C versions to allow this to work for small (2x2) sizes.*/
+      aom_convolve8_horiz_c(ref - ref_stride * ((filter.taps >> 1) - 1),
+                            ref_stride, temp, MAX_SB_SIZE, kernel_x, 16, NULL,
+                            -1, width, intermediate_height);
+      aom_convolve8_vert_c(temp + MAX_SB_SIZE * ((filter.taps >> 1) - 1),
+                           MAX_SB_SIZE, comp_pred, width, NULL, -1, kernel_y,
+                           16, width, height);
+    }
   }
 }
 
 void aom_comp_avg_upsampled_pred_c(uint8_t *comp_pred, const uint8_t *pred,
-                                   int width, int height, const uint8_t *ref,
+                                   int width, int height, int subpel_x_q3,
+                                   int subpel_y_q3, const uint8_t *ref,
                                    int ref_stride) {
   int i, j;
-  int stride = ref_stride << 3;
 
+  aom_upsampled_pred(comp_pred, width, height, subpel_x_q3, subpel_y_q3, ref,
+                     ref_stride);
   for (i = 0; i < height; i++) {
     for (j = 0; j < width; j++) {
-      const int tmp = ref[(j << 3)] + pred[j];
-      comp_pred[j] = ROUND_POWER_OF_TWO(tmp, 1);
+      comp_pred[j] = ROUND_POWER_OF_TWO(comp_pred[j] + pred[j], 1);
     }
     comp_pred += width;
     pred += width;
-    ref += stride;
   }
 }
 
@@ -637,37 +675,76 @@ void aom_highbd_comp_avg_pred_c(uint16_t *comp_pred, const uint8_t *pred8,
 }
 
 void aom_highbd_upsampled_pred_c(uint16_t *comp_pred, int width, int height,
-                                 const uint8_t *ref8, int ref_stride) {
-  int i, j;
-  int stride = ref_stride << 3;
-
-  uint16_t *ref = CONVERT_TO_SHORTPTR(ref8);
-  for (i = 0; i < height; ++i) {
-    for (j = 0; j < width; ++j) {
-      comp_pred[j] = ref[(j << 3)];
+                                 int subpel_x_q3, int subpel_y_q3,
+                                 const uint8_t *ref8, int ref_stride, int bd) {
+  if (!subpel_x_q3 && !subpel_y_q3) {
+    const uint16_t *ref;
+    int i;
+    ref = CONVERT_TO_SHORTPTR(ref8);
+    for (i = 0; i < height; i++) {
+      memcpy(comp_pred, ref, width * sizeof(*comp_pred));
+      comp_pred += width;
+      ref += ref_stride;
     }
-    comp_pred += width;
-    ref += stride;
+  } else {
+    InterpFilterParams filter;
+    filter = av1_get_interp_filter_params(EIGHTTAP_REGULAR);
+    if (!subpel_y_q3) {
+      const int16_t *kernel;
+      kernel = av1_get_interp_filter_subpel_kernel(filter, subpel_x_q3 << 1);
+      /*Directly call C version to allow this to work for small (2x2) sizes.*/
+      aom_highbd_convolve8_horiz_c(ref8, ref_stride,
+                                   CONVERT_TO_BYTEPTR(comp_pred), width, kernel,
+                                   16, NULL, -1, width, height, bd);
+    } else if (!subpel_x_q3) {
+      const int16_t *kernel;
+      kernel = av1_get_interp_filter_subpel_kernel(filter, subpel_y_q3 << 1);
+      /*Directly call C version to allow this to work for small (2x2) sizes.*/
+      aom_highbd_convolve8_vert_c(ref8, ref_stride,
+                                  CONVERT_TO_BYTEPTR(comp_pred), width, NULL,
+                                  -1, kernel, 16, width, height, bd);
+    } else {
+      DECLARE_ALIGNED(16, uint8_t,
+                      temp[((MAX_SB_SIZE * 2 + 16) + 16) * MAX_SB_SIZE]);
+      const uint16_t *ref;
+      const int16_t *kernel_x;
+      const int16_t *kernel_y;
+      int intermediate_height;
+      ref = CONVERT_TO_SHORTPTR(ref8);
+      kernel_x = av1_get_interp_filter_subpel_kernel(filter, subpel_x_q3 << 1);
+      kernel_y = av1_get_interp_filter_subpel_kernel(filter, subpel_y_q3 << 1);
+      intermediate_height =
+          (((height - 1) * 8 + subpel_y_q3) >> 3) + filter.taps;
+      assert(intermediate_height <= (MAX_SB_SIZE * 2 + 16) + 16);
+      /*Directly call C versions to allow this to work for small (2x2) sizes.*/
+      aom_highbd_convolve8_horiz_c(
+          CONVERT_TO_BYTEPTR(ref - ref_stride * ((filter.taps >> 1) - 1)),
+          ref_stride, CONVERT_TO_BYTEPTR(temp), MAX_SB_SIZE, kernel_x, 16, NULL,
+          -1, width, intermediate_height, bd);
+      aom_highbd_convolve8_vert_c(
+          CONVERT_TO_BYTEPTR(temp + MAX_SB_SIZE * ((filter.taps >> 1) - 1)),
+          MAX_SB_SIZE, CONVERT_TO_BYTEPTR(comp_pred), width, NULL, -1, kernel_y,
+          16, width, height, bd);
+    }
   }
 }
 
 void aom_highbd_comp_avg_upsampled_pred_c(uint16_t *comp_pred,
                                           const uint8_t *pred8, int width,
-                                          int height, const uint8_t *ref8,
-                                          int ref_stride) {
+                                          int height, int subpel_x_q3,
+                                          int subpel_y_q3, const uint8_t *ref8,
+                                          int ref_stride, int bd) {
   int i, j;
-  int stride = ref_stride << 3;
 
-  uint16_t *pred = CONVERT_TO_SHORTPTR(pred8);
-  uint16_t *ref = CONVERT_TO_SHORTPTR(ref8);
+  const uint16_t *pred = CONVERT_TO_SHORTPTR(pred8);
+  aom_highbd_upsampled_pred(comp_pred, width, height, subpel_x_q3, subpel_y_q3,
+                            ref8, ref_stride, bd);
   for (i = 0; i < height; ++i) {
     for (j = 0; j < width; ++j) {
-      const int tmp = pred[j] + ref[(j << 3)];
-      comp_pred[j] = ROUND_POWER_OF_TWO(tmp, 1);
+      comp_pred[j] = ROUND_POWER_OF_TWO(pred[j] + comp_pred[j], 1);
     }
     comp_pred += width;
     pred += width;
-    ref += stride;
   }
 }
 #endif  // CONFIG_HIGHBITDEPTH
@@ -694,22 +771,23 @@ void aom_comp_mask_pred_c(uint8_t *comp_pred, const uint8_t *pred, int width,
 }
 
 void aom_comp_mask_upsampled_pred_c(uint8_t *comp_pred, const uint8_t *pred,
-                                    int width, int height, const uint8_t *ref,
+                                    int width, int height, int subpel_x_q3,
+                                    int subpel_y_q3, const uint8_t *ref,
                                     int ref_stride, const uint8_t *mask,
                                     int mask_stride, int invert_mask) {
   int i, j;
-  int stride = ref_stride << 3;
 
+  aom_upsampled_pred(comp_pred, width, height, subpel_x_q3, subpel_y_q3, ref,
+                     ref_stride);
   for (i = 0; i < height; i++) {
     for (j = 0; j < width; j++) {
       if (!invert_mask)
-        comp_pred[j] = AOM_BLEND_A64(mask[j], ref[(j << 3)], pred[j]);
+        comp_pred[j] = AOM_BLEND_A64(mask[j], comp_pred[j], pred[j]);
       else
-        comp_pred[j] = AOM_BLEND_A64(mask[j], pred[j], ref[(j << 3)]);
+        comp_pred[j] = AOM_BLEND_A64(mask[j], pred[j], comp_pred[j]);
     }
     comp_pred += width;
     pred += width;
-    ref += stride;
     mask += mask_stride;
   }
 }
@@ -775,26 +853,24 @@ void aom_highbd_comp_mask_pred_c(uint16_t *comp_pred, const uint8_t *pred8,
   }
 }
 
-void aom_highbd_comp_mask_upsampled_pred_c(uint16_t *comp_pred,
-                                           const uint8_t *pred8, int width,
-                                           int height, const uint8_t *ref8,
-                                           int ref_stride, const uint8_t *mask,
-                                           int mask_stride, int invert_mask) {
+void aom_highbd_comp_mask_upsampled_pred_c(
+    uint16_t *comp_pred, const uint8_t *pred8, int width, int height,
+    int subpel_x_q3, int subpel_y_q3, const uint8_t *ref8, int ref_stride,
+    const uint8_t *mask, int mask_stride, int invert_mask, int bd) {
   int i, j;
-  int stride = ref_stride << 3;
 
   uint16_t *pred = CONVERT_TO_SHORTPTR(pred8);
-  uint16_t *ref = CONVERT_TO_SHORTPTR(ref8);
+  aom_highbd_upsampled_pred(comp_pred, width, height, subpel_x_q3, subpel_y_q3,
+                            ref8, ref_stride, bd);
   for (i = 0; i < height; ++i) {
     for (j = 0; j < width; ++j) {
       if (!invert_mask)
-        comp_pred[j] = AOM_BLEND_A64(mask[j], ref[j << 3], pred[j]);
+        comp_pred[j] = AOM_BLEND_A64(mask[j], comp_pred[j], pred[j]);
       else
-        comp_pred[j] = AOM_BLEND_A64(mask[j], pred[j], ref[j << 3]);
+        comp_pred[j] = AOM_BLEND_A64(mask[j], pred[j], comp_pred[j]);
     }
     comp_pred += width;
     pred += width;
-    ref += stride;
     mask += mask_stride;
   }
 }

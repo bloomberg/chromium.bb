@@ -397,13 +397,6 @@ typedef struct AV1_COMP {
   YV12_BUFFER_CONFIG *unscaled_last_source;
   YV12_BUFFER_CONFIG scaled_last_source;
 
-  // Up-sampled reference buffers
-  // NOTE(zoeliu): It is needed to allocate sufficient space to the up-sampled
-  // reference buffers, which should include the up-sampled version of all the
-  // possibly stored references plus the currently coded frame itself.
-  EncRefCntBuffer upsampled_ref_bufs[REF_FRAMES + 1];
-  int upsampled_ref_idx[REF_FRAMES + 1];
-
   // For a still frame, this flag is set to 1 to skip partition search.
   int partition_search_skippable_frame;
 
@@ -747,14 +740,6 @@ static INLINE YV12_BUFFER_CONFIG *get_ref_frame_buffer(
   const int buf_idx = get_ref_frame_buf_idx(cpi, ref_frame);
   return buf_idx != INVALID_IDX ? &cm->buffer_pool->frame_bufs[buf_idx].buf
                                 : NULL;
-}
-
-static INLINE const YV12_BUFFER_CONFIG *get_upsampled_ref(
-    const AV1_COMP *cpi, const MV_REFERENCE_FRAME ref_frame) {
-  // Use up-sampled reference frames.
-  const int buf_idx =
-      cpi->upsampled_ref_idx[get_ref_frame_map_idx(cpi, ref_frame)];
-  return &cpi->upsampled_ref_bufs[buf_idx].buf;
 }
 
 #if CONFIG_EXT_REFS || CONFIG_TEMPMV_SIGNALING

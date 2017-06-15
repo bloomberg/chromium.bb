@@ -468,7 +468,6 @@ void av1_initialize_enc(void) {
 
 static void dealloc_compressor_data(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
-  int i;
 
   aom_free(cpi->mbmi_ext_base);
   cpi->mbmi_ext_base = NULL;
@@ -514,10 +513,6 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
   cpi->td.mb.mask_buf = NULL;
 #endif
 
-  // Free up-sampled reference buffers.
-  for (i = 0; i < (REF_FRAMES + 1); i++)
-    aom_free_frame_buffer(&cpi->upsampled_ref_bufs[i].buf);
-
   av1_free_ref_frame_buffers(cm->buffer_pool);
 #if CONFIG_LV_MAP
   av1_free_txb_buf(cpi);
@@ -530,8 +525,11 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
   aom_free_frame_buffer(&cpi->last_frame_db);
   aom_free_frame_buffer(&cpi->trial_frame_rst);
   aom_free(cpi->extra_rstbuf);
-  for (i = 0; i < MAX_MB_PLANE; ++i)
-    av1_free_restoration_struct(&cpi->rst_search[i]);
+  {
+    int i;
+    for (i = 0; i < MAX_MB_PLANE; ++i)
+      av1_free_restoration_struct(&cpi->rst_search[i]);
+  }
 #endif  // CONFIG_LOOP_RESTORATION
   aom_free_frame_buffer(&cpi->scaled_source);
   aom_free_frame_buffer(&cpi->scaled_last_source);
@@ -2118,15 +2116,6 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
 #endif  // CONFIG_ANS && ANS_MAX_SYMBOLS
 }
 
-static INLINE void init_upsampled_ref_frame_bufs(AV1_COMP *cpi) {
-  int i;
-
-  for (i = 0; i < (REF_FRAMES + 1); ++i) {
-    cpi->upsampled_ref_bufs[i].ref_count = 0;
-    cpi->upsampled_ref_idx[i] = INVALID_IDX;
-  }
-}
-
 AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
                                 BufferPool *const pool) {
   unsigned int i;
@@ -2333,8 +2322,6 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
                       16, MAX_SB_SQUARE * sizeof(*cpi->td.mb.mask_buf)));
 
 #endif
-
-  init_upsampled_ref_frame_bufs(cpi);
 
   av1_set_speed_features_framesize_independent(cpi);
   av1_set_speed_features_framesize_dependent(cpi);
@@ -3010,52 +2997,6 @@ static int recode_loop_test(AV1_COMP *cpi, int high_limit, int low_limit, int q,
   return force_recode;
 }
 
-static INLINE int get_free_upsampled_ref_buf(EncRefCntBuffer *ubufs) {
-  int i;
-
-  for (i = 0; i < (REF_FRAMES + 1); i++) {
-    if (!ubufs[i].ref_count) {
-      return i;
-    }
-  }
-  return INVALID_IDX;
-}
-
-// Up-sample 1 reference frame.
-static INLINE int upsample_ref_frame(AV1_COMP *cpi,
-                                     const YV12_BUFFER_CONFIG *const ref) {
-  AV1_COMMON *const cm = &cpi->common;
-  EncRefCntBuffer *ubufs = cpi->upsampled_ref_bufs;
-  int new_uidx = get_free_upsampled_ref_buf(ubufs);
-
-  if (new_uidx == INVALID_IDX) {
-    return INVALID_IDX;
-  } else {
-    YV12_BUFFER_CONFIG *upsampled_ref = &ubufs[new_uidx].buf;
-
-    // Can allocate buffer for Y plane only.
-    if (upsampled_ref->buffer_alloc_sz < (ref->buffer_alloc_sz << 6))
-      if (aom_realloc_frame_buffer(upsampled_ref, (cm->width << 3),
-                                   (cm->height << 3), cm->subsampling_x,
-                                   cm->subsampling_y,
-#if CONFIG_HIGHBITDEPTH
-                                   cm->use_highbitdepth,
-#endif
-                                   (AOM_BORDER_IN_PIXELS << 3),
-                                   cm->byte_alignment, NULL, NULL, NULL))
-        aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
-                           "Failed to allocate up-sampled frame buffer");
-
-// Currently, only Y plane is up-sampled, U, V are not used.
-#if CONFIG_HIGHBITDEPTH
-    scale_and_extend_frame(ref, upsampled_ref, 1, (int)cm->bit_depth);
-#else
-    scale_and_extend_frame(ref, upsampled_ref, 1);
-#endif
-    return new_uidx;
-  }
-}
-
 #define DUMP_REF_FRAME_IMAGES 0
 
 #if DUMP_REF_FRAME_IMAGES == 1
@@ -3168,31 +3109,11 @@ static void enc_check_valid_ref_frames(AV1_COMP *const cpi) {
 void av1_update_reference_frames(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   BufferPool *const pool = cm->buffer_pool;
-  const int use_upsampled_ref = cpi->sf.use_upsampled_references;
-  int new_uidx = 0;
 
   // NOTE: Save the new show frame buffer index for --test-code=warn, i.e.,
   //       for the purpose to verify no mismatch between encoder and decoder.
   if (cm->show_frame) cpi->last_show_frame_buf_idx = cm->new_fb_idx;
 
-  if (use_upsampled_ref) {
-#if CONFIG_EXT_REFS
-    if (cm->show_existing_frame) {
-      new_uidx = cpi->upsampled_ref_idx[cpi->existing_fb_idx_to_show];
-      // TODO(zoeliu): Once following is confirmed, remove it.
-      assert(cpi->upsampled_ref_bufs[new_uidx].ref_count > 0);
-    } else {
-#endif  // CONFIG_EXT_REFS
-      // Up-sample the current encoded frame.
-      RefCntBuffer *bufs = pool->frame_bufs;
-      const YV12_BUFFER_CONFIG *const ref = &bufs[cm->new_fb_idx].buf;
-
-      new_uidx = upsample_ref_frame(cpi, ref);
-#if CONFIG_EXT_REFS
-      assert(new_uidx != INVALID_IDX);
-    }
-#endif  // CONFIG_EXT_REFS
-  }
   // At this point the new frame has been encoded.
   // If any buffer copy / swapping is signaled it should be done here.
   if (cm->frame_type == KEY_FRAME) {
@@ -3204,17 +3125,6 @@ void av1_update_reference_frames(AV1_COMP *cpi) {
 #endif  // CONFIG_EXT_REFS
     ref_cnt_fb(pool->frame_bufs, &cm->ref_frame_map[cpi->alt_fb_idx],
                cm->new_fb_idx);
-
-    if (use_upsampled_ref) {
-      uref_cnt_fb(cpi->upsampled_ref_bufs,
-                  &cpi->upsampled_ref_idx[cpi->gld_fb_idx], new_uidx);
-#if CONFIG_EXT_REFS
-      uref_cnt_fb(cpi->upsampled_ref_bufs,
-                  &cpi->upsampled_ref_idx[cpi->bwd_fb_idx], new_uidx);
-#endif  // CONFIG_EXT_REFS
-      uref_cnt_fb(cpi->upsampled_ref_bufs,
-                  &cpi->upsampled_ref_idx[cpi->alt_fb_idx], new_uidx);
-    }
   } else if (av1_preserve_existing_gf(cpi)) {
     // We have decided to preserve the previously existing golden frame as our
     // new ARF frame. However, in the short term in function
@@ -3228,10 +3138,6 @@ void av1_update_reference_frames(AV1_COMP *cpi) {
 
     ref_cnt_fb(pool->frame_bufs, &cm->ref_frame_map[cpi->alt_fb_idx],
                cm->new_fb_idx);
-    if (use_upsampled_ref)
-      uref_cnt_fb(cpi->upsampled_ref_bufs,
-                  &cpi->upsampled_ref_idx[cpi->alt_fb_idx], new_uidx);
-
     tmp = cpi->alt_fb_idx;
     cpi->alt_fb_idx = cpi->gld_fb_idx;
     cpi->gld_fb_idx = tmp;
@@ -3292,9 +3198,6 @@ void av1_update_reference_frames(AV1_COMP *cpi) {
       }
 #endif  // CONFIG_EXT_REFS
       ref_cnt_fb(pool->frame_bufs, &cm->ref_frame_map[arf_idx], cm->new_fb_idx);
-      if (use_upsampled_ref)
-        uref_cnt_fb(cpi->upsampled_ref_bufs, &cpi->upsampled_ref_idx[arf_idx],
-                    new_uidx);
 
       memcpy(cpi->interp_filter_selected[ALTREF_FRAME + which_arf],
              cpi->interp_filter_selected[0],
@@ -3304,9 +3207,6 @@ void av1_update_reference_frames(AV1_COMP *cpi) {
     if (cpi->refresh_golden_frame) {
       ref_cnt_fb(pool->frame_bufs, &cm->ref_frame_map[cpi->gld_fb_idx],
                  cm->new_fb_idx);
-      if (use_upsampled_ref)
-        uref_cnt_fb(cpi->upsampled_ref_bufs,
-                    &cpi->upsampled_ref_idx[cpi->gld_fb_idx], new_uidx);
 
 #if !CONFIG_EXT_REFS
       if (!cpi->rc.is_src_frame_alt_ref)
@@ -3331,9 +3231,6 @@ void av1_update_reference_frames(AV1_COMP *cpi) {
 
       ref_cnt_fb(pool->frame_bufs, &cm->ref_frame_map[cpi->bwd_fb_idx],
                  cm->new_fb_idx);
-      if (use_upsampled_ref)
-        uref_cnt_fb(cpi->upsampled_ref_bufs,
-                    &cpi->upsampled_ref_idx[cpi->bwd_fb_idx], new_uidx);
 
       memcpy(cpi->interp_filter_selected[BWDREF_FRAME],
              cpi->interp_filter_selected[0],
@@ -3390,11 +3287,6 @@ void av1_update_reference_frames(AV1_COMP *cpi) {
         ref_cnt_fb(pool->frame_bufs,
                    &cm->ref_frame_map[cpi->lst_fb_idxes[ref_frame]],
                    cm->new_fb_idx);
-
-        if (use_upsampled_ref)
-          uref_cnt_fb(cpi->upsampled_ref_bufs,
-                      &cpi->upsampled_ref_idx[cpi->lst_fb_idxes[ref_frame]],
-                      new_uidx);
       }
     } else {
       int tmp;
@@ -3402,12 +3294,6 @@ void av1_update_reference_frames(AV1_COMP *cpi) {
       ref_cnt_fb(pool->frame_bufs,
                  &cm->ref_frame_map[cpi->lst_fb_idxes[LAST_REF_FRAMES - 1]],
                  cm->new_fb_idx);
-
-      if (use_upsampled_ref)
-        uref_cnt_fb(
-            cpi->upsampled_ref_bufs,
-            &cpi->upsampled_ref_idx[cpi->lst_fb_idxes[LAST_REF_FRAMES - 1]],
-            new_uidx);
 
       tmp = cpi->lst_fb_idxes[LAST_REF_FRAMES - 1];
 
@@ -3424,9 +3310,6 @@ void av1_update_reference_frames(AV1_COMP *cpi) {
 #else
     ref_cnt_fb(pool->frame_bufs, &cm->ref_frame_map[cpi->lst_fb_idx],
                cm->new_fb_idx);
-    if (use_upsampled_ref)
-      uref_cnt_fb(cpi->upsampled_ref_bufs,
-                  &cpi->upsampled_ref_idx[cpi->lst_fb_idx], new_uidx);
     if (!cpi->rc.is_src_frame_alt_ref) {
       memcpy(cpi->interp_filter_selected[LAST_FRAME],
              cpi->interp_filter_selected[0],
@@ -3531,31 +3414,6 @@ void av1_scale_references(AV1_COMP *cpi) {
           alloc_frame_mvs(cm, new_fb);
         }
 #endif  // CONFIG_HIGHBITDEPTH
-
-        if (cpi->sf.use_upsampled_references &&
-            (force_scaling || new_fb_ptr->buf.y_crop_width != cm->width ||
-             new_fb_ptr->buf.y_crop_height != cm->height)) {
-          const int map_idx = get_ref_frame_map_idx(cpi, ref_frame);
-          EncRefCntBuffer *ubuf =
-              &cpi->upsampled_ref_bufs[cpi->upsampled_ref_idx[map_idx]];
-
-          if (aom_realloc_frame_buffer(&ubuf->buf, (cm->width << 3),
-                                       (cm->height << 3), cm->subsampling_x,
-                                       cm->subsampling_y,
-#if CONFIG_HIGHBITDEPTH
-                                       cm->use_highbitdepth,
-#endif
-                                       (AOM_BORDER_IN_PIXELS << 3),
-                                       cm->byte_alignment, NULL, NULL, NULL))
-            aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
-                               "Failed to allocate up-sampled frame buffer");
-#if CONFIG_HIGHBITDEPTH
-          scale_and_extend_frame(&new_fb_ptr->buf, &ubuf->buf, 1,
-                                 (int)cm->bit_depth);
-#else
-          scale_and_extend_frame(&new_fb_ptr->buf, &ubuf->buf, 1);
-#endif
-        }
       } else {
         const int buf_idx = get_ref_frame_buf_idx(cpi, ref_frame);
         RefCntBuffer *const buf = &pool->frame_bufs[buf_idx];
@@ -4018,26 +3876,9 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
   aom_extend_frame_borders(cm->frame_to_show);
 }
 
-static void reset_use_upsampled_references(AV1_COMP *cpi) {
-  MV_REFERENCE_FRAME ref_frame;
-
-  // reset up-sampled reference buffer structure.
-  init_upsampled_ref_frame_bufs(cpi);
-
-  for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
-    const YV12_BUFFER_CONFIG *const ref = get_ref_frame_buffer(cpi, ref_frame);
-    int new_uidx = upsample_ref_frame(cpi, ref);
-
-    // Update the up-sampled reference index.
-    cpi->upsampled_ref_idx[get_ref_frame_map_idx(cpi, ref_frame)] = new_uidx;
-    cpi->upsampled_ref_bufs[new_uidx].ref_count++;
-  }
-}
-
 static void encode_without_recode_loop(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   int q = 0, bottom_index = 0, top_index = 0;  // Dummy variables.
-  const int use_upsampled_ref = cpi->sf.use_upsampled_references;
 
   aom_clear_system_state();
 
@@ -4047,13 +3888,6 @@ static void encode_without_recode_loop(AV1_COMP *cpi) {
   assert(cm->height == cpi->scaled_source.y_crop_height);
 
   set_size_dependent_vars(cpi, &q, &bottom_index, &top_index);
-
-  // cpi->sf.use_upsampled_references can be different from frame to frame.
-  // Every time when cpi->sf.use_upsampled_references is changed from 0 to 1.
-  // The reference frames for this frame have to be up-sampled before encoding.
-  if (!use_upsampled_ref && cpi->sf.use_upsampled_references &&
-      cm->frame_type != KEY_FRAME)
-    reset_use_upsampled_references(cpi);
 
   cpi->source =
       av1_scale_if_required(cm, cpi->unscaled_source, &cpi->scaled_source);
@@ -4110,7 +3944,6 @@ static void encode_with_recode_loop(AV1_COMP *cpi, size_t *size,
   int frame_over_shoot_limit;
   int frame_under_shoot_limit;
   int q = 0, q_low = 0, q_high = 0;
-  const int use_upsampled_ref = cpi->sf.use_upsampled_references;
 
   set_size_independent_vars(cpi);
 
@@ -4121,15 +3954,6 @@ static void encode_with_recode_loop(AV1_COMP *cpi, size_t *size,
 
     if (loop_count == 0) {
       set_size_dependent_vars(cpi, &q, &bottom_index, &top_index);
-
-      // cpi->sf.use_upsampled_references can be different from frame to frame.
-      // Every time when cpi->sf.use_upsampled_references is changed from 0 to
-      // 1.
-      // The reference frames for this frame have to be up-sampled before
-      // encoding.
-      if (!use_upsampled_ref && cpi->sf.use_upsampled_references &&
-          cm->frame_type != KEY_FRAME)
-        reset_use_upsampled_references(cpi);
 
       // TODO(agrange) Scale cpi->max_mv_magnitude if frame-size has changed.
       set_mv_search_params(cpi);
