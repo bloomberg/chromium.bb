@@ -33,9 +33,10 @@ config("compiler") {
   ]
 
   ldflags += [
-    # The stack defaults to 80k on Fuchsia, but on other platforms it's much
-    # higher, so a variety of code assumes more will be available. Raise to 8M
-    # which matches e.g. macOS.
+    # The stack defaults to 256k on Fuchsia (see
+    # https://fuchsia.googlesource.com/magenta/+/master/system/private/magenta/stack.h#9),
+    # but on other platforms it's much higher, so a variety of code assumes more
+    # will be available. Raise to 8M which matches e.g. macOS.
     "-Wl,-z,stack-size=0x800000",
   ]
 
