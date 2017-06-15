@@ -1677,7 +1677,12 @@ uint8_t av1_calculate_next_resize_scale(const AV1_COMP *cpi) {
 
   switch (oxcf->resize_mode) {
     case RESIZE_NONE: new_num = SCALE_DENOMINATOR; break;
-    case RESIZE_FIXED: new_num = oxcf->resize_scale_numerator; break;
+    case RESIZE_FIXED:
+      if (cpi->common.frame_type == KEY_FRAME)
+        new_num = oxcf->resize_kf_scale_numerator;
+      else
+        new_num = oxcf->resize_scale_numerator;
+      break;
     case RESIZE_DYNAMIC:
       // RESIZE_DYNAMIC: Just random for now.
       new_num = lcg_rand16(&seed) % 4 + 13;
@@ -1698,7 +1703,12 @@ uint8_t av1_calculate_next_superres_scale(const AV1_COMP *cpi, int width,
 
   switch (oxcf->superres_mode) {
     case SUPERRES_NONE: new_num = SCALE_DENOMINATOR; break;
-    case SUPERRES_FIXED: new_num = oxcf->superres_scale_numerator; break;
+    case SUPERRES_FIXED:
+      if (cpi->common.frame_type == KEY_FRAME)
+        new_num = oxcf->superres_kf_scale_numerator;
+      else
+        new_num = oxcf->superres_scale_numerator;
+      break;
     case SUPERRES_DYNAMIC:
       // SUPERRES_DYNAMIC: Just random for now.
       new_num = lcg_rand16(&seed) % 9 + 8;

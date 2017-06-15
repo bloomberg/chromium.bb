@@ -380,6 +380,14 @@ typedef struct aom_codec_enc_cfg {
    */
   unsigned int rc_resize_numerator;
 
+  /*!\brief Keyframe resize numerator.
+   *
+   * The numerator for resize to use, assuming 16 as the denominator.
+   *
+   * Valid numerators are  8 - 16 for now.
+   */
+  unsigned int rc_resize_kf_numerator;
+
   /*!\brief Frame super-resolution scaling mode.
    *
    * Similar to spatial resampling, frame super-resolution integrates
@@ -402,6 +410,16 @@ typedef struct aom_codec_enc_cfg {
    * Ignored by SUPERRES_DYNAMIC.
    */
   unsigned int rc_superres_numerator;
+
+  /*!\brief Keyframe super-resolution numerator.
+   *
+   * The numerator for superres to use. If fixed it will only change if the
+   * cumulative scale change over resizing and superres is greater than 1/2;
+   * this forces superres to reduce scaling.
+   *
+   * Valid numerators are 8 - 16 for now.
+   */
+  unsigned int rc_superres_kf_numerator;
 
   /*!\brief Rate control algorithm to use.
    *
