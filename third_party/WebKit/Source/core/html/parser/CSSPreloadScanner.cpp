@@ -275,7 +275,7 @@ void CSSPreloaderResourceClient::SetCSSStyleSheet(
     const String& href,
     const KURL& base_url,
     ReferrerPolicy referrer_policy,
-    const String& charset,
+    const WTF::TextEncoding&,
     const CSSStyleSheetResource*) {
   ClearResource();
 }

@@ -46,7 +46,7 @@ class CORE_EXPORT StyleSheetResourceClient : public ResourceClient {
   virtual void SetCSSStyleSheet(const String& /* href */,
                                 const KURL& /* baseURL */,
                                 ReferrerPolicy,
-                                const String& /* charset */,
+                                const WTF::TextEncoding&,
                                 const CSSStyleSheetResource*) {}
   virtual void SetXSLStyleSheet(const String& /* href */,
                                 const KURL& /* baseURL */,

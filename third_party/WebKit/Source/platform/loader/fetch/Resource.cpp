@@ -178,7 +178,7 @@ Resource::CachedMetadataHandlerImpl::GetCachedMetadata(
 }
 
 String Resource::CachedMetadataHandlerImpl::Encoding() const {
-  return resource_->Encoding();
+  return String(resource_->Encoding().GetName());
 }
 
 void Resource::CachedMetadataHandlerImpl::SetSerializedCachedMetadata(

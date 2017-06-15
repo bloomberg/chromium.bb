@@ -88,7 +88,7 @@ class ProcessingInstruction final : public CharacterData,
   void SetCSSStyleSheet(const String& href,
                         const KURL& base_url,
                         ReferrerPolicy,
-                        const String& charset,
+                        const WTF::TextEncoding&,
                         const CSSStyleSheetResource*) override;
   void SetXSLStyleSheet(const String& href,
                         const KURL& base_url,

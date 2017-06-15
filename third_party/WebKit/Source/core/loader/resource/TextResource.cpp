@@ -26,8 +26,8 @@ void TextResource::SetEncoding(const String& chs) {
                         TextResourceDecoder::kEncodingFromHTTPHeader);
 }
 
-String TextResource::Encoding() const {
-  return decoder_->Encoding().GetName();
+WTF::TextEncoding TextResource::Encoding() const {
+  return decoder_->Encoding();
 }
 
 String TextResource::DecodedText() const {

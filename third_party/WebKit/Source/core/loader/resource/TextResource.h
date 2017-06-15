@@ -19,8 +19,9 @@ class CORE_EXPORT TextResource : public Resource {
   // call time.
   String DecodedText() const;
 
-  void SetEncoding(const String&) override;
-  String Encoding() const override;
+  WTF::TextEncoding Encoding() const override;
+
+  void SetEncodingForTest(const String& encoding) { SetEncoding(encoding); }
 
  protected:
   TextResource(const ResourceRequest&,
@@ -29,6 +30,8 @@ class CORE_EXPORT TextResource : public Resource {
                const String& mime_type,
                const String& charset);
   ~TextResource() override;
+
+  void SetEncoding(const String&) override;
 
  private:
   std::unique_ptr<TextResourceDecoder> decoder_;

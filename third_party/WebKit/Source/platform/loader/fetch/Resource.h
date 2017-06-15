@@ -44,6 +44,7 @@
 #include "platform/wtf/HashCountedSet.h"
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/text/AtomicString.h"
+#include "platform/wtf/text/TextEncoding.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/WebDataConsumerHandle.h"
 
@@ -105,8 +106,7 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   DECLARE_VIRTUAL_TRACE();
 
-  virtual void SetEncoding(const String&) {}
-  virtual String Encoding() const { return String(); }
+  virtual WTF::TextEncoding Encoding() const { return WTF::TextEncoding(); }
   virtual void AppendData(const char*, size_t);
   virtual void FinishAsError(const ResourceError&);
   virtual void SetCORSFailed() {}
@@ -419,6 +419,8 @@ class PLATFORM_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
   void ClearData();
 
   void TriggerNotificationForFinishObservers();
+
+  virtual void SetEncoding(const String&) {}
 
  private:
   class CachedMetadataHandlerImpl;

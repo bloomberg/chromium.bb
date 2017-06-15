@@ -63,7 +63,7 @@ class LinkStyle final : public LinkResource, ResourceOwner<StyleSheetResource> {
   void SetCSSStyleSheet(const String& href,
                         const KURL& base_url,
                         ReferrerPolicy,
-                        const String& charset,
+                        const WTF::TextEncoding&,
                         const CSSStyleSheetResource*) override;
   String DebugName() const override { return "LinkStyle"; }
   enum LoadReturnValue { kLoaded, kNotNeeded, kBail };
