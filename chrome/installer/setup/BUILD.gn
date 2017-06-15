@@ -30,6 +30,8 @@ if (is_win) {
       "//components/crash/content/app:app",
       "//components/crash/content/app:run_as_crashpad_handler",
     ]
+
+    libs = [ "netapi32.lib" ]
   }
 
   static_library("lib") {
@@ -60,6 +62,8 @@ if (is_win) {
       "setup_util.h",
       "update_active_setup_version_work_item.cc",
       "update_active_setup_version_work_item.h",
+      "user_experiment.cc",
+      "user_experiment.h",
       "user_hive_visitor.cc",
       "user_hive_visitor.h",
     ]
@@ -80,6 +84,7 @@ if (is_win) {
       "//rlz:rlz_lib",
       "//third_party/bspatch",
       "//third_party/zlib",
+      "//ui/base:fullscreen_win",
     ]
   }
 
@@ -103,6 +108,7 @@ if (is_win) {
       "setup_util_unittest.cc",
       "setup_util_unittest.h",
       "update_active_setup_version_work_item_unittest.cc",
+      "user_experiment_unittest.cc",
       "user_hive_visitor_unittest.cc",
     ]
 
@@ -124,5 +130,7 @@ if (is_win) {
       "//chrome/installer/test/data/",
       "//chrome/test/data/installer/",
     ]
+
+    libs = [ "netapi32.lib" ]
   }
 }

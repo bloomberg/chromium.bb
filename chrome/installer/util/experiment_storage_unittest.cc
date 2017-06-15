@@ -62,7 +62,7 @@ TEST_P(ExperimentStorageTest, TestEncodeDecodeMetrics) {
   metrics.action_delay_bucket = 11;
   metrics.session_length_bucket = 36;
   base::string16 encoded_metrics(ExperimentStorage::EncodeMetrics(metrics));
-  EXPECT_EQ(L"5BIMD4IA", encoded_metrics);
+  EXPECT_EQ(L"5BIMD2IA", encoded_metrics);
   ExperimentMetrics decoded_metrics;
   ASSERT_TRUE(
       ExperimentStorage::DecodeMetrics(encoded_metrics, &decoded_metrics));
@@ -124,10 +124,9 @@ TEST_P(ExperimentStorageTest, TestEncodeDecodeForMin) {
 
 TEST_P(ExperimentStorageTest, TestReadWriteParticipation) {
   ExperimentStorage storage;
-  ExperimentStorage::Participation expected =
-      ExperimentStorage::Participation::kIsParticipating;
+  ExperimentStorage::Study expected = ExperimentStorage::kStudyOne;
   ASSERT_TRUE(storage.AcquireLock()->WriteParticipation(expected));
-  ExperimentStorage::Participation p;
+  ExperimentStorage::Study p;
   ASSERT_TRUE(storage.AcquireLock()->ReadParticipation(&p));
   EXPECT_EQ(expected, p);
 }
@@ -166,7 +165,7 @@ TEST_P(ExperimentStorageTest, TestLoadStoreMetrics) {
   ASSERT_TRUE(storage.AcquireLock()->StoreMetrics(metrics));
   ExperimentMetrics stored_metrics;
   ASSERT_TRUE(storage.AcquireLock()->LoadMetrics(&stored_metrics));
-  EXPECT_EQ(L"5BIMD4IA", ExperimentStorage::EncodeMetrics(stored_metrics));
+  EXPECT_EQ(L"5BIMD2IA", ExperimentStorage::EncodeMetrics(stored_metrics));
   // Verify that expeirment labels are stored in registry.
   EXPECT_EQ(metrics, stored_metrics);
 }

@@ -124,14 +124,9 @@ void HandleOsUpgradeForBrowser(const InstallerState& installer_state,
                                const base::Version& installed_version);
 
 // Performs per-user installation-related tasks on Active Setup (ran on first
-// login for each user post system-level Chrome install).
-// |installation_root|: The root of this install (i.e. the directory in which
-// chrome.exe is installed).
-// Shortcut creation is skipped if the First Run beacon is present (unless
-// |force| is set to true).
-// |chrome| The installed product (must be a browser).
-void HandleActiveSetupForBrowser(const base::FilePath& installation_root,
-                                 const Product& chrome,
+// login for each user post system-level Chrome install). Shortcut creation is
+// skipped if the First Run beacon is present (unless |force| is set to true).
+void HandleActiveSetupForBrowser(const InstallerState& installer_state,
                                  bool force);
 
 }  // namespace installer

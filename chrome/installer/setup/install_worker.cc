@@ -28,6 +28,7 @@
 #include "base/version.h"
 #include "base/win/registry.h"
 #include "chrome/install_static/install_details.h"
+#include "chrome/install_static/install_modes.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/installer/setup/installer_state.h"
 #include "chrome/installer/setup/persistent_histogram_storage.h"
@@ -657,6 +658,19 @@ bool AppendPostInstallTasks(const InstallerState& installer_state,
     // installations for the same type of install (system or per user).
     AddDeleteUninstallEntryForMSIWorkItems(installer_state, product,
                                            post_install_task_list);
+  }
+
+  // Add a best-effort item to create the ClientStateMedium key for system-level
+  // installs. This is ordinarily done by Google Update prior to running
+  // Chrome's installer. Do it here as well so that the key exists for manual
+  // installs.
+  if (install_static::kUseGoogleUpdateIntegration &&
+      installer_state.system_install()) {
+    const base::string16 path =
+        install_static::InstallDetails::Get().GetClientStateMediumKeyPath();
+    post_install_task_list
+        ->AddCreateRegKeyWorkItem(HKEY_LOCAL_MACHINE, path, KEY_WOW64_32KEY)
+        ->set_best_effort(true);
   }
 
   return true;

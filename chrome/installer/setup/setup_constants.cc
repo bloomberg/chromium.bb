@@ -32,6 +32,9 @@ const char kDelay[] = "delay";
 const char kSetDisplayVersionProduct[] = "set-display-version-product";
 const char kSetDisplayVersionValue[] = "set-display-version-value";
 
+// Run setup.exe to conduct a post-update experiment.
+const char kUserExperiment[] = "user-experiment";
+
 }  // namespace switches
 
 }  // namespace installer

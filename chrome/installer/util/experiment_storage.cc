@@ -157,7 +157,7 @@ ExperimentStorage::Lock::~Lock() {
   DCHECK(result);
 }
 
-bool ExperimentStorage::Lock::ReadParticipation(Participation* participation) {
+bool ExperimentStorage::Lock::ReadParticipation(Study* participation) {
   base::win::RegKey key;
   // A failure to open the key likely indicates that this isn't running from a
   // real install of Chrome.
@@ -166,28 +166,29 @@ bool ExperimentStorage::Lock::ReadParticipation(Participation* participation) {
 
   DWORD value = 0;
   LONG result = key.ReadValueDW(kRegValueRetentionStudy, &value);
-  if (result != ERROR_SUCCESS) {
-    // This likely means that the value is not present.
-    *participation = Participation::kNotEvaluated;
-  } else if (value == 0) {
-    *participation = Participation::kNotParticipating;
-  } else {
-    *participation = Participation::kIsParticipating;
-  }
+  // An error most likely means that the value is not present.
+  if (result != ERROR_SUCCESS || value == 0)
+    *participation = kNoStudySelected;
+  else if (value == 1)
+    *participation = kStudyOne;
+  else
+    *participation = kStudyTwo;
   return true;
 }
 
-bool ExperimentStorage::Lock::WriteParticipation(Participation participation) {
+bool ExperimentStorage::Lock::WriteParticipation(Study participation) {
+  DCHECK(participation == kNoStudySelected || participation == kStudyOne ||
+         participation == kStudyTwo);
   base::win::RegKey key;
   // A failure to open the key likely indicates that this isn't running from a
   // real install of Chrome.
   if (!OpenParticipationKey(true /* write_access */, &key))
     return false;
 
-  if (participation == Participation::kNotEvaluated)
+  if (participation == kNoStudySelected)
     return key.DeleteValue(kRegValueRetentionStudy) == ERROR_SUCCESS;
-  const DWORD value = participation == Participation::kIsParticipating ? 1 : 0;
-  return key.WriteValue(kRegValueRetentionStudy, value) == ERROR_SUCCESS;
+  return key.WriteValue(kRegValueRetentionStudy, participation) ==
+         ERROR_SUCCESS;
 }
 
 bool ExperimentStorage::Lock::LoadExperiment(Experiment* experiment) {

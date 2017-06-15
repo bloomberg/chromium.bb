@@ -26,24 +26,25 @@ struct ExperimentMetrics {
     // next logon via Active Setup.
     kWaitingForUserLogon = 1,
 
-    // Waiting in user context for the setup singleton.
-    kWaitingForSingleton = 2,
-
     // Timed out waiting for the setup singleton. Will retry on next update.
-    kSingletonWaitTimeout = 3,
+    kSingletonWaitTimeout = 2,
 
     // A group has been assigned. The experiment has moved out of the initial
     // state at this point. This state is reached under the setup singleton.
-    kGroupAssigned = 4,
+    kGroupAssigned = 3,
 
     // The user is not participating on account of using a tablet-like device.
-    kIsTabletDevice = 5,
+    kIsTabletDevice = 4,
 
     // Chrome has been run within the last 28 days.
-    kIsActive = 6,
+    kIsActive = 5,
 
     // The user has not been active on the machine much in the last 28 days.
-    kIsDormant = 7,
+    kIsDormant = 6,
+
+    // Chrome has received an in-use update for which the rename is pending.
+    // The UX cannot be shown.
+    kIsUpdateRenamePending = 7,
 
     // Deferring presentation until it's okay to show the toast.
     kDeferringPresentation = 8,
