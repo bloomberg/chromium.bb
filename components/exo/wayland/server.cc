@@ -85,6 +85,11 @@
 #include <drm_fourcc.h>
 #include <linux-dmabuf-unstable-v1-server-protocol.h>
 #include <wayland-drm-server-protocol.h>
+#if defined(OS_CHROMEOS)
+#include "ui/base/ime/chromeos/ime_keyboard.h"
+#include "ui/base/ime/chromeos/input_method_manager.h"
+#include "ui/events/ozone/layout/xkb/xkb_keyboard_layout_engine.h"
+#endif
 #endif
 
 #if BUILDFLAG(USE_XKBCOMMON)
@@ -2737,29 +2742,35 @@ const struct wl_pointer_interface pointer_implementation = {pointer_set_cursor,
 
 // Keyboard delegate class that accepts events for surfaces owned by the same
 // client as a keyboard resource.
-class WaylandKeyboardDelegate : public KeyboardDelegate {
+class WaylandKeyboardDelegate
+    : public KeyboardDelegate
+#if defined(USE_OZONE) && defined(OS_CHROMEOS)
+      , public chromeos::input_method::ImeKeyboard::Observer
+#endif
+    {
  public:
   explicit WaylandKeyboardDelegate(wl_resource* keyboard_resource)
       : keyboard_resource_(keyboard_resource),
-        xkb_context_(xkb_context_new(XKB_CONTEXT_NO_FLAGS)),
-        // TODO(reveman): Keep keymap synchronized with the keymap used by
-        // chromium and the host OS.
-        xkb_keymap_(xkb_keymap_new_from_names(xkb_context_.get(),
-                                              nullptr,
-                                              XKB_KEYMAP_COMPILE_NO_FLAGS)),
-        xkb_state_(xkb_state_new(xkb_keymap_.get())) {
-    std::unique_ptr<char, base::FreeDeleter> keymap_string(
-        xkb_keymap_get_as_string(xkb_keymap_.get(), XKB_KEYMAP_FORMAT_TEXT_V1));
-    DCHECK(keymap_string.get());
-    size_t keymap_size = strlen(keymap_string.get()) + 1;
-    base::SharedMemory shared_keymap;
-    bool rv = shared_keymap.CreateAndMapAnonymous(keymap_size);
-    DCHECK(rv);
-    memcpy(shared_keymap.memory(), keymap_string.get(), keymap_size);
-    wl_keyboard_send_keymap(keyboard_resource_,
-                            WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1,
-                            shared_keymap.handle().GetHandle(), keymap_size);
+        xkb_context_(xkb_context_new(XKB_CONTEXT_NO_FLAGS)) {
+#if defined(USE_OZONE) && defined(OS_CHROMEOS)
+    chromeos::input_method::ImeKeyboard* keyboard =
+        chromeos::input_method::InputMethodManager::Get()->GetImeKeyboard();
+    if (keyboard) {
+      keyboard->AddObserver(this);
+      SendNamedLayout(keyboard->GetCurrentKeyboardLayoutName());
+    }
+#else
+    SendLayout(nullptr);
+#endif
   }
+#if defined(USE_OZONE) && defined(OS_CHROMEOS)
+  ~WaylandKeyboardDelegate() override {
+    chromeos::input_method::ImeKeyboard* keyboard =
+        chromeos::input_method::InputMethodManager::Get()->GetImeKeyboard();
+    if (keyboard)
+      keyboard->RemoveObserver(this);
+  }
+#endif
 
   // Overridden from KeyboardDelegate:
   void OnKeyboardDestroying(Keyboard* keyboard) override { delete this; }
@@ -2816,6 +2827,14 @@ class WaylandKeyboardDelegate : public KeyboardDelegate {
     wl_client_flush(client());
   }
 
+#if defined(USE_OZONE) && defined(OS_CHROMEOS)
+  // Overridden from input_method::ImeKeyboard::Observer:
+  void OnCapsLockChanged(bool enabled) override {}
+  void OnLayoutChanging(const std::string& layout_name) override {
+    SendNamedLayout(layout_name);
+  }
+#endif
+
  private:
   // Returns the corresponding key given a dom code.
   uint32_t DomCodeToKey(ui::DomCode code) const {
@@ -2851,6 +2870,40 @@ class WaylandKeyboardDelegate : public KeyboardDelegate {
       }
     }
     return xkb_modifiers;
+  }
+
+
+#if defined(USE_OZONE) && defined(OS_CHROMEOS)
+  // Send the named keyboard layout to the client.
+  void SendNamedLayout(const std::string& layout_name) {
+    std::string layout_id, layout_variant;
+    ui::XkbKeyboardLayoutEngine::ParseLayoutName(layout_name, &layout_id,
+                                                 &layout_variant);
+    xkb_rule_names names = {.rules = nullptr,
+                            .model = "pc101",
+                            .layout = layout_id.c_str(),
+                            .variant = layout_variant.c_str(),
+                            .options = ""};
+    SendLayout(&names);
+  }
+#endif
+
+  // Send the keyboard layout named by XKB rules to the client.
+  void SendLayout(const xkb_rule_names* names) {
+    xkb_keymap_.reset(xkb_keymap_new_from_names(xkb_context_.get(), names,
+                                                XKB_KEYMAP_COMPILE_NO_FLAGS));
+    xkb_state_.reset(xkb_state_new(xkb_keymap_.get()));
+    std::unique_ptr<char, base::FreeDeleter> keymap_string(
+        xkb_keymap_get_as_string(xkb_keymap_.get(), XKB_KEYMAP_FORMAT_TEXT_V1));
+    DCHECK(keymap_string.get());
+    size_t keymap_size = strlen(keymap_string.get()) + 1;
+    base::SharedMemory shared_keymap;
+    bool rv = shared_keymap.CreateAndMapAnonymous(keymap_size);
+    DCHECK(rv);
+    memcpy(shared_keymap.memory(), keymap_string.get(), keymap_size);
+    wl_keyboard_send_keymap(keyboard_resource_,
+                            WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1,
+                            shared_keymap.handle().GetHandle(), keymap_size);
   }
 
   // The client who own this keyboard instance.

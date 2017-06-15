@@ -17,6 +17,7 @@ FakeImeKeyboard::~FakeImeKeyboard() {
 
 bool FakeImeKeyboard::SetCurrentKeyboardLayoutByName(
     const std::string& layout_name) {
+  ImeKeyboard::SetCurrentKeyboardLayoutByName(layout_name);
   ++set_current_keyboard_layout_by_name_count_;
   last_layout_ = layout_name;
   return true;

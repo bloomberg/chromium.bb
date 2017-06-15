@@ -24,8 +24,9 @@ class TrayCapsLock : public TrayImageItem,
   ~TrayCapsLock() override;
 
  private:
-  // Overriden from chromeos::input_method::ImeKeyboard::Observer:
+  // Overridden from chromeos::input_method::ImeKeyboard::Observer:
   void OnCapsLockChanged(bool enabled) override;
+  void OnLayoutChanging(const std::string& layout_name) override {}
 
   // Overridden from TrayImageItem.
   bool GetInitialVisibility() override;

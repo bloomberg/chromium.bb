@@ -458,6 +458,7 @@ class SigninScreenHandler
 
   // input_method::ImeKeyboard::Observer implementation:
   void OnCapsLockChanged(bool enabled) override;
+  void OnLayoutChanging(const std::string& layout_name) override {}
 
   // Callback invoked after the feedback is finished.
   void OnFeedbackFinished();

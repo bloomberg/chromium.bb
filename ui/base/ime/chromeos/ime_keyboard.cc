@@ -75,6 +75,13 @@ void ImeKeyboard::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
+bool ImeKeyboard::SetCurrentKeyboardLayoutByName(
+    const std::string& layout_name) {
+  for (ImeKeyboard::Observer& observer : observers_)
+    observer.OnLayoutChanging(layout_name);
+  return true;
+}
+
 void ImeKeyboard::SetCapsLockEnabled(bool enable_caps_lock) {
   bool old_state = caps_lock_is_enabled_;
   caps_lock_is_enabled_ = enable_caps_lock;
