@@ -9,9 +9,7 @@
 
 #include <string>
 
-#import "base/ios/weak_nsobject.h"
 #include "base/logging.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/version.h"
 #include "components/google/core/browser/google_util.h"
@@ -28,6 +26,10 @@
 #include "ios/web/public/navigation_item.h"
 #import "ios/web/public/navigation_manager.h"
 #include "url/gurl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -97,11 +99,10 @@ const char* const kGeolocationAuthorizationActionNewUser =
 @interface OmniboxGeolocationController ()<
     LocationManagerDelegate,
     OmniboxGeolocationAuthorizationAlertDelegate> {
-  base::scoped_nsobject<OmniboxGeolocationLocalState> localState_;
-  base::scoped_nsobject<LocationManager> locationManager_;
-  base::scoped_nsobject<OmniboxGeolocationAuthorizationAlert>
-      authorizationAlert_;
-  base::WeakNSObject<Tab> weakTabToReload_;
+  OmniboxGeolocationLocalState* localState_;
+  LocationManager* locationManager_;
+  OmniboxGeolocationAuthorizationAlert* authorizationAlert_;
+  __weak Tab* weakTabToReload_;
 
   // Records whether we have deliberately presented the system prompt, so that
   // we can record the user's action in
@@ -191,7 +192,7 @@ const char* const kGeolocationAuthorizationActionNewUser =
     // Turn on location updates, so that iOS will prompt the user.
     [self startUpdatingLocation];
 
-    weakTabToReload_.reset();
+    weakTabToReload_ = nil;
     newUser_ = newUser;
   }
 }
@@ -343,7 +344,7 @@ const char* const kGeolocationAuthorizationActionNewUser =
 
       // Save this tab in case we're able to transition to
       // kAuthorizationStateAuthorized.
-      weakTabToReload_.reset(tab);
+      weakTabToReload_ = tab;
       break;
 
     case kCLAuthorizationStatusRestricted:
@@ -385,15 +386,15 @@ const char* const kGeolocationAuthorizationActionNewUser =
 
 - (OmniboxGeolocationLocalState*)localState {
   if (!localState_) {
-    localState_.reset([[OmniboxGeolocationLocalState alloc]
-        initWithLocationManager:self.locationManager]);
+    localState_ = [[OmniboxGeolocationLocalState alloc]
+        initWithLocationManager:self.locationManager];
   }
   return localState_;
 }
 
 - (LocationManager*)locationManager {
   if (!locationManager_) {
-    locationManager_.reset([[LocationManager alloc] init]);
+    locationManager_ = [[LocationManager alloc] init];
     [locationManager_ setDelegate:self];
   }
   return locationManager_;
@@ -476,10 +477,10 @@ const char* const kGeolocationAuthorizationActionNewUser =
 - (void)showAuthorizationAlertForTab:(Tab*)tab {
   // Save this tab in case we're able to transition to
   // kAuthorizationStateAuthorized.
-  weakTabToReload_.reset(tab);
+  weakTabToReload_ = tab;
 
-  authorizationAlert_.reset(
-      [[OmniboxGeolocationAuthorizationAlert alloc] initWithDelegate:self]);
+  authorizationAlert_ =
+      [[OmniboxGeolocationAuthorizationAlert alloc] initWithDelegate:self];
   [authorizationAlert_ showAuthorizationAlert];
 
   self.localState.lastAuthorizationAlertVersion =
@@ -531,9 +532,9 @@ const char* const kGeolocationAuthorizationActionNewUser =
             geolocation::kAuthorizationStateAuthorized;
         systemPrompt_ = NO;
 
-        base::scoped_nsobject<Tab> tab([weakTabToReload_ retain]);
+        Tab* tab = weakTabToReload_;
         [self addLocationAndReloadTab:tab];
-        weakTabToReload_.reset();
+        weakTabToReload_ = nil;
 
         [self recordAuthorizationAction:kAuthorizationActionAuthorized];
         break;
@@ -548,14 +549,11 @@ const char* const kGeolocationAuthorizationActionNewUser =
   self.localState.authorizationState =
       geolocation::kAuthorizationStateAuthorized;
 
-  base::scoped_nsobject<Tab> tab([weakTabToReload_ retain]);
+  Tab* tab = weakTabToReload_;
   [self addLocationAndReloadTab:tab];
 
-  // Just resetting |authorizationAlert_| leads to a user-after-free crash
-  // presumably due to a UIKit bug. Making authorizationAlert_ autorelease
-  // will keep it alive long enough to avoid the crash. See crbug.com/381235
-  authorizationAlert_.autorelease();
-  weakTabToReload_.reset();
+  authorizationAlert_ = nil;
+  weakTabToReload_ = nil;
 
   [self recordAuthorizationAction:kAuthorizationActionAuthorized];
 }
@@ -566,11 +564,8 @@ const char* const kGeolocationAuthorizationActionNewUser =
   // We won't use location, but we'll still be able to prompt at the next
   // application update.
 
-  // Just resetting |authorizationAlert_| leads to a user-after-free crash
-  // presumably due to a UIKit bug. Making authorizationAlert_ autorelease
-  // will keep it alive long enough to avoid the crash. See crbug.com/381235
-  authorizationAlert_.autorelease();
-  weakTabToReload_.reset();
+  authorizationAlert_ = nil;
+  weakTabToReload_ = nil;
 
   [self recordAuthorizationAction:kAuthorizationActionDenied];
 }
@@ -578,11 +573,11 @@ const char* const kGeolocationAuthorizationActionNewUser =
 #pragma mark - OmniboxGeolocationController+Testing
 
 - (void)setLocalState:(OmniboxGeolocationLocalState*)localState {
-  localState_.reset([localState retain]);
+  localState_ = localState;
 }
 
 - (void)setLocationManager:(LocationManager*)locationManager {
-  locationManager_.reset([locationManager retain]);
+  locationManager_ = locationManager;
 }
 
 @end
