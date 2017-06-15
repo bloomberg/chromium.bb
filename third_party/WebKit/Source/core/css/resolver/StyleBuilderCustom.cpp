@@ -372,7 +372,7 @@ void StyleBuilderFunctions::applyValueCSSPropertySize(StyleResolverState& state,
                                                       const CSSValue& value) {
   state.Style()->ResetPageSizeType();
   FloatSize size;
-  PageSizeType page_size_type = PageSizeType::kAuto;
+  EPageSizeType page_size_type = EPageSizeType::kAuto;
   const CSSValueList& list = ToCSSValueList(value);
   if (list.length() == 2) {
     // <length>{2} | <page-size> <orientation>
@@ -394,14 +394,14 @@ void StyleBuilderFunctions::applyValueCSSPropertySize(StyleResolverState& state,
       if (ToCSSIdentifierValue(second).GetValueID() == CSSValueLandscape)
         size = size.TransposedSize();
     }
-    page_size_type = PageSizeType::kResolved;
+    page_size_type = EPageSizeType::kResolved;
   } else {
     DCHECK_EQ(list.length(), 1U);
     // <length> | auto | <page-size> | [ portrait | landscape]
     const CSSValue& first = list.Item(0);
     if (first.IsPrimitiveValue() && ToCSSPrimitiveValue(first).IsLength()) {
       // <length>
-      page_size_type = PageSizeType::kResolved;
+      page_size_type = EPageSizeType::kResolved;
       float width = ToCSSPrimitiveValue(first).ComputeLength<float>(
           state.CssToLengthConversionData().CopyWithAdjustedZoom(1.0));
       size = FloatSize(width, width);
@@ -409,17 +409,17 @@ void StyleBuilderFunctions::applyValueCSSPropertySize(StyleResolverState& state,
       const CSSIdentifierValue& ident = ToCSSIdentifierValue(first);
       switch (ident.GetValueID()) {
         case CSSValueAuto:
-          page_size_type = PageSizeType::kAuto;
+          page_size_type = EPageSizeType::kAuto;
           break;
         case CSSValuePortrait:
-          page_size_type = PageSizeType::kPortrait;
+          page_size_type = EPageSizeType::kPortrait;
           break;
         case CSSValueLandscape:
-          page_size_type = PageSizeType::kLandscape;
+          page_size_type = EPageSizeType::kLandscape;
           break;
         default:
           // <page-size>
-          page_size_type = PageSizeType::kResolved;
+          page_size_type = EPageSizeType::kResolved;
           size = GetPageSizeFromName(ident);
       }
     }
