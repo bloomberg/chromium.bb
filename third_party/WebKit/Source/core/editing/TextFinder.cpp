@@ -229,6 +229,93 @@ void TextFinder::ClearActiveFindMatch() {
   ResetActiveMatch();
 }
 
+LocalFrame* TextFinder::GetFrame() const {
+  return OwnerFrame().GetFrame();
+}
+
+void TextFinder::SetFindEndstateFocusAndSelection() {
+  if (!ActiveMatchFrame())
+    return;
+
+  Range* active_match = ActiveMatch();
+  if (!active_match)
+    return;
+
+  // If the user has set the selection since the match was found, we
+  // don't focus anything.
+  VisibleSelection selection(
+      GetFrame()->Selection().ComputeVisibleSelectionInDOMTreeDeprecated());
+  if (!selection.IsNone())
+    return;
+
+  // Need to clean out style and layout state before querying
+  // Element::isFocusable().
+  GetFrame()->GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
+
+  // Try to find the first focusable node up the chain, which will, for
+  // example, focus links if we have found text within the link.
+  Node* node = active_match->FirstNode();
+  if (node && node->IsInShadowTree()) {
+    if (Node* host = node->OwnerShadowHost()) {
+      if (isHTMLInputElement(*host) || isHTMLTextAreaElement(*host))
+        node = host;
+    }
+  }
+  const EphemeralRange active_match_range(active_match);
+  if (node) {
+    for (Node& runner : NodeTraversal::InclusiveAncestorsOf(*node)) {
+      if (!runner.IsElementNode())
+        continue;
+      Element& element = ToElement(runner);
+      if (element.IsFocusable()) {
+        // Found a focusable parent node. Set the active match as the
+        // selection and focus to the focusable node.
+        GetFrame()->Selection().SetSelection(
+            SelectionInDOMTree::Builder()
+                .SetBaseAndExtent(active_match_range)
+                .Build());
+        GetFrame()->GetDocument()->SetFocusedElement(
+            &element, FocusParams(SelectionBehaviorOnFocus::kNone,
+                                  kWebFocusTypeNone, nullptr));
+        return;
+      }
+    }
+  }
+
+  // Iterate over all the nodes in the range until we find a focusable node.
+  // This, for example, sets focus to the first link if you search for
+  // text and text that is within one or more links.
+  for (Node& runner : active_match_range.Nodes()) {
+    if (!runner.IsElementNode())
+      continue;
+    Element& element = ToElement(runner);
+    if (element.IsFocusable()) {
+      GetFrame()->GetDocument()->SetFocusedElement(
+          &element, FocusParams(SelectionBehaviorOnFocus::kNone,
+                                kWebFocusTypeNone, nullptr));
+      return;
+    }
+  }
+
+  // No node related to the active match was focusable, so set the
+  // active match as the selection (so that when you end the Find session,
+  // you'll have the last thing you found highlighted) and make sure that
+  // we have nothing focused (otherwise you might have text selected but
+  // a link focused, which is weird).
+  GetFrame()->Selection().SetSelection(SelectionInDOMTree::Builder()
+                                           .SetBaseAndExtent(active_match_range)
+                                           .Build());
+  GetFrame()->GetDocument()->ClearFocusedElement();
+
+  // Finally clear the active match, for two reasons:
+  // We just finished the find 'session' and we don't want future (potentially
+  // unrelated) find 'sessions' operations to start at the same place.
+  // The WebLocalFrameImpl could get reused and the activeMatch could end up
+  // pointing to a document that is no longer valid. Keeping an invalid
+  // reference around is just asking for trouble.
+  ResetActiveMatch();
+}
+
 void TextFinder::StopFindingAndClearSelection() {
   CancelPendingScopingEffort();
 
