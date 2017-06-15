@@ -496,6 +496,12 @@ config("compiler") {
       } else {
         ldflags += [ "-Wl,-plugin-opt,jobs=8" ]
       }
+
+      # Disable optimization for now because they increase binary size by too
+      # much.
+      if (is_linux && use_lld) {
+        ldflags += [ "-Wl,--lto-O0" ]
+      }
     } else {
       cflags += [ "-flto" ]
       ldflags += [ "-flto" ]
