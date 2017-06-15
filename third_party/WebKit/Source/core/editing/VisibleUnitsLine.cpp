@@ -323,6 +323,15 @@ VisiblePositionInFlatTree LogicalStartOfLine(
           current_position.ToPositionWithAffinity()));
 }
 
+InlineBox* FindLeftNonPseudoNodeInlineBox(const RootInlineBox& root_box) {
+  for (InlineBox* runner = root_box.LastLeafChild(); runner;
+       runner = runner->PrevLeafChild()) {
+    if (runner->GetLineLayoutItem().NonPseudoNode())
+      return runner;
+  }
+  return nullptr;
+}
+
 template <typename Strategy>
 static VisiblePositionTemplate<Strategy> EndPositionForLine(
     const VisiblePositionTemplate<Strategy>& c,
@@ -353,17 +362,12 @@ static VisiblePositionTemplate<Strategy> EndPositionForLine(
     // Generated content (e.g. list markers and CSS :before and :after
     // pseudo elements) have no corresponding DOM element, and so cannot be
     // represented by a VisiblePosition. Use whatever precedes instead.
-    end_box = root_box->LastLeafChild();
-    while (true) {
-      if (!end_box)
-        return VisiblePositionTemplate<Strategy>();
-
-      end_node = end_box->GetLineLayoutItem().NonPseudoNode();
-      if (end_node)
-        break;
-
-      end_box = end_box->PrevLeafChild();
-    }
+    // TODO(editing-dev): We should consider text-direction of line to
+    // find non-pseudo node.
+    end_box = FindLeftNonPseudoNodeInlineBox(*root_box);
+    if (!end_box)
+      return VisiblePositionTemplate<Strategy>();
+    end_node = end_box->GetLineLayoutItem().NonPseudoNode();
   }
 
   PositionTemplate<Strategy> pos;
