@@ -146,6 +146,7 @@ component("wtf") {
     "build_config.h",
     "debug/Alias.h",
     "debug/CrashLogging.h",
+    "debug/StackTrace.h",
     "dtoa.cpp",
     "dtoa.h",
     "dtoa/bignum-dtoa.cc",
