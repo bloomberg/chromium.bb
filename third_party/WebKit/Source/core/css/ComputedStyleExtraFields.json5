@@ -881,15 +881,6 @@
     // TODO(shend): These are subgroups and should be removed when we can
     // generate them propertly.
     {
-      name: "DeprecatedFlexibleBoxData",
-      field_template: "storage_only",
-      type_name: "StyleDeprecatedFlexibleBoxData",
-      field_group: "rare-non-inherited",
-      default_value: "",
-      wrapper_pointer_name: "DataRef",
-      include_paths: ["core/style/StyleDeprecatedFlexibleBoxData.h"],
-    },
-    {
       name: "FlexibleBoxData",
       field_template: "storage_only",
       type_name: "StyleFlexibleBoxData",

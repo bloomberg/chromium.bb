@@ -49,7 +49,6 @@
 #include "core/style/ShadowData.h"
 #include "core/style/ShadowList.h"
 #include "core/style/StyleContentAlignmentData.h"
-#include "core/style/StyleDeprecatedFlexibleBoxData.h"
 #include "core/style/StyleDifference.h"
 #include "core/style/StyleFilterData.h"
 #include "core/style/StyleFlexibleBoxData.h"
@@ -787,21 +786,22 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // -webkit-box-flex
   static float InitialBoxFlex() { return 0.0f; }
   float BoxFlex() const {
-    return rare_non_inherited_data_->deprecated_flexible_box_data_->flex;
+    return rare_non_inherited_data_->deprecated_flexible_box_data_->box_flex_;
   }
   void SetBoxFlex(float f) {
     SET_NESTED_VAR(rare_non_inherited_data_, deprecated_flexible_box_data_,
-                   flex, f);
+                   box_flex_, f);
   }
 
   // -webkit-box-flex-group
   static unsigned InitialBoxFlexGroup() { return 1; }
   unsigned BoxFlexGroup() const {
-    return rare_non_inherited_data_->deprecated_flexible_box_data_->flex_group;
+    return rare_non_inherited_data_->deprecated_flexible_box_data_
+        ->box_flex_group_;
   }
   void SetBoxFlexGroup(unsigned fg) {
     SET_NESTED_VAR(rare_non_inherited_data_, deprecated_flexible_box_data_,
-                   flex_group, fg);
+                   box_flex_group_, fg);
   }
 
   // -webkit-box-align
@@ -810,33 +810,33 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   static EBoxAlignment InitialBoxAlign() { return BSTRETCH; }
   EBoxAlignment BoxAlign() const {
     return static_cast<EBoxAlignment>(
-        rare_non_inherited_data_->deprecated_flexible_box_data_->align);
+        rare_non_inherited_data_->deprecated_flexible_box_data_->box_align_);
   }
   void SetBoxAlign(EBoxAlignment a) {
     SET_NESTED_VAR(rare_non_inherited_data_, deprecated_flexible_box_data_,
-                   align, a);
+                   box_align_, a);
   }
 
   // -webkit-box-lines
   static EBoxLines InitialBoxLines() { return SINGLE; }
   EBoxLines BoxLines() const {
     return static_cast<EBoxLines>(
-        rare_non_inherited_data_->deprecated_flexible_box_data_->lines);
+        rare_non_inherited_data_->deprecated_flexible_box_data_->box_lines_);
   }
   void SetBoxLines(EBoxLines lines) {
     SET_NESTED_VAR(rare_non_inherited_data_, deprecated_flexible_box_data_,
-                   lines, lines);
+                   box_lines_, lines);
   }
 
   // -webkit-box-ordinal-group
   static unsigned InitialBoxOrdinalGroup() { return 1; }
   unsigned BoxOrdinalGroup() const {
     return rare_non_inherited_data_->deprecated_flexible_box_data_
-        ->ordinal_group;
+        ->box_ordinal_group_;
   }
   void SetBoxOrdinalGroup(unsigned og) {
     SET_NESTED_VAR(rare_non_inherited_data_, deprecated_flexible_box_data_,
-                   ordinal_group,
+                   box_ordinal_group_,
                    std::min(std::numeric_limits<unsigned>::max() - 1, og));
   }
 
@@ -844,22 +844,22 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   static EBoxOrient InitialBoxOrient() { return HORIZONTAL; }
   EBoxOrient BoxOrient() const {
     return static_cast<EBoxOrient>(
-        rare_non_inherited_data_->deprecated_flexible_box_data_->orient);
+        rare_non_inherited_data_->deprecated_flexible_box_data_->box_orient_);
   }
   void SetBoxOrient(EBoxOrient o) {
     SET_NESTED_VAR(rare_non_inherited_data_, deprecated_flexible_box_data_,
-                   orient, o);
+                   box_orient_, o);
   }
 
   // -webkit-box-pack
   static EBoxPack InitialBoxPack() { return kBoxPackStart; }
   EBoxPack BoxPack() const {
     return static_cast<EBoxPack>(
-        rare_non_inherited_data_->deprecated_flexible_box_data_->pack);
+        rare_non_inherited_data_->deprecated_flexible_box_data_->box_pack_);
   }
   void SetBoxPack(EBoxPack p) {
     SET_NESTED_VAR(rare_non_inherited_data_, deprecated_flexible_box_data_,
-                   pack, p);
+                   box_pack_, p);
   }
 
   // -webkit-box-reflect
