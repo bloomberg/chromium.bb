@@ -67,8 +67,9 @@ public class AwContentsClientVisitedHistoryTest extends AwTestBase {
         AwTestContainerView testView = createAwTestContainerViewOnMainSync(mContentsClient);
         AwContents awContents = testView.getAwContents();
 
+        // Load a page with an iframe to make sure the callback only happens for the main frame URL.
         final String path = "/testUpdateVisitedHistoryCallback.html";
-        final String html = "testUpdateVisitedHistoryCallback";
+        final String html = "<iframe src=\"about:blank\"></iframe>";
 
         TestWebServer webServer = TestWebServer.start();
         try {
@@ -80,13 +81,14 @@ public class AwContentsClientVisitedHistoryTest extends AwTestBase {
             doUpdateVisitedHistoryHelper.waitForCallback(callCount);
             assertEquals(pageUrl, doUpdateVisitedHistoryHelper.getUrl());
             assertEquals(false, doUpdateVisitedHistoryHelper.getIsReload());
+            assertEquals(callCount + 1, doUpdateVisitedHistoryHelper.getCallCount());
 
             // Reload
-            callCount = doUpdateVisitedHistoryHelper.getCallCount();
             loadUrlAsync(awContents, pageUrl);
-            doUpdateVisitedHistoryHelper.waitForCallback(callCount);
+            doUpdateVisitedHistoryHelper.waitForCallback(callCount + 1);
             assertEquals(pageUrl, doUpdateVisitedHistoryHelper.getUrl());
             assertEquals(true, doUpdateVisitedHistoryHelper.getIsReload());
+            assertEquals(callCount + 2, doUpdateVisitedHistoryHelper.getCallCount());
         } finally {
             webServer.shutdown();
         }

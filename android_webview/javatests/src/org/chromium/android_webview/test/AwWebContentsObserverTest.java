@@ -160,6 +160,20 @@ public class AwWebContentsObserverTest extends AwTestBase  {
         assertEquals(false, doUpdateVisitedHistoryHelper.getIsReload());
 
         callCount = doUpdateVisitedHistoryHelper.getCallCount();
+        mWebContentsObserver.didFinishNavigation(nullUrl, isInMainFrame, isErrorPage, hasCommitted,
+                !isSameDocument, fragmentNavigation, PageTransition.TYPED, errorCode,
+                errorDescription, httpStatusCode);
+        mWebContentsObserver.didFinishNavigation(EXAMPLE_URL, !isInMainFrame, isErrorPage,
+                hasCommitted, !isSameDocument, fragmentNavigation, PageTransition.TYPED, errorCode,
+                errorDescription, httpStatusCode);
+        doUpdateVisitedHistoryHelper.waitForCallback(callCount);
+        assertEquals("doUpdateVisitedHistory should only be called for the main frame.",
+                callCount + 1, doUpdateVisitedHistoryHelper.getCallCount());
+        assertEquals("doUpdateVisitedHistory should only be called for the main frame.", nullUrl,
+                doUpdateVisitedHistoryHelper.getUrl());
+        assertEquals(false, doUpdateVisitedHistoryHelper.getIsReload());
+
+        callCount = doUpdateVisitedHistoryHelper.getCallCount();
         mWebContentsObserver.didFinishNavigation(EXAMPLE_URL, isInMainFrame, isErrorPage,
                 hasCommitted, isSameDocument, !fragmentNavigation, PageTransition.RELOAD, errorCode,
                 errorDescription, httpStatusCode);

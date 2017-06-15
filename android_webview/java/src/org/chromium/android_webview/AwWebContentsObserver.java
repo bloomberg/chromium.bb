@@ -100,14 +100,14 @@ public class AwWebContentsObserver extends WebContentsObserver {
 
         mCommittedNavigation = true;
 
+        if (!isInMainFrame) return;
+
         AwContentsClient client = mAwContentsClient.get();
         if (hasCommitted && client != null) {
             boolean isReload = pageTransition != null
                     && ((pageTransition & PageTransition.CORE_MASK) == PageTransition.RELOAD);
             client.getCallbackHelper().postDoUpdateVisitedHistory(url, isReload);
         }
-
-        if (!isInMainFrame) return;
 
         // Only invoke the onPageCommitVisible callback when navigating to a different document,
         // but not when navigating to a different fragment within the same document.
