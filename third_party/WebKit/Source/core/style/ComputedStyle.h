@@ -1379,15 +1379,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
             clamped_shape_image_threshold);
   }
 
-  // shape-margin (aka -webkit-shape-margin)
-  static Length InitialShapeMargin() { return Length(0, kFixed); }
-  const Length& ShapeMargin() const {
-    return rare_non_inherited_data_->shape_margin_;
-  }
-  void SetShapeMargin(const Length& shape_margin) {
-    SET_VAR(rare_non_inherited_data_, shape_margin_, shape_margin);
-  }
-
   // shape-outside (aka -webkit-shape-outside)
   static ShapeValue* InitialShapeOutside() { return 0; }
   ShapeValue* ShapeOutside() const {
