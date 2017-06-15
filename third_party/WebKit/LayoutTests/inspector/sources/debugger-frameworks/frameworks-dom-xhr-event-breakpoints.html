@@ -81,28 +81,32 @@ function test()
         function testDOMBreakpoint(next)
         {
             InspectorTest.nodeWithId("rootElement", step1);
-
+            var rootElement;
             function step1(node)
             {
-                var pane = Components.domBreakpointsSidebarPane;
-                pane._setBreakpoint(node, Components.DOMBreakpointsSidebarPane.BreakpointTypes.SubtreeModified, true);
+                rootElement = node;
+                InspectorTest.domDebuggerModel.setDOMBreakpoint(node, SDK.DOMDebuggerModel.DOMBreakpoint.Type.SubtreeModified);
                 InspectorTest.evaluateInPageWithTimeout("appendElement('rootElement', 'childElement')");
-                InspectorTest.waitUntilPausedAndDumpStackAndResume(next);
+                InspectorTest.waitUntilPausedAndDumpStackAndResume(step2);
+            }
+
+            function step2()
+            {
+                InspectorTest.domDebuggerModel.removeDOMBreakpoint(rootElement, SDK.DOMDebuggerModel.DOMBreakpoint.Type.SubtreeModified);
+                next();
             }
         },
 
         function testXHRBreakpoint(next)
         {
-            var pane = self.runtime.sharedInstance(Sources.XHRBreakpointsSidebarPane);
-            pane._setBreakpoint("foo", true);
+            SDK.domDebuggerManager.addXHRBreakpoint("foo", true);
             InspectorTest.evaluateInPageWithTimeout("sendXHR('file:///foo?a=b')");
             InspectorTest.waitUntilPausedAndDumpStackAndResume(next);
         },
 
         function testEventListenerBreakpoint(next)
         {
-            var pane = self.runtime.sharedInstance(Sources.EventListenerBreakpointsSidebarPane);
-            pane._setBreakpoint("listener:click");
+            InspectorTest.setEventListenerBreakpoint("listener:click", true);
             InspectorTest.evaluateInPageWithTimeout("addListenerAndClick(false)");
             InspectorTest.waitUntilPausedAndPerformSteppingActions([
                 "Print", "Resume",
@@ -112,8 +116,7 @@ function test()
 
         function testSteppingThroughEventListenerBreakpoint(next)
         {
-            var pane = self.runtime.sharedInstance(Sources.EventListenerBreakpointsSidebarPane);
-            pane._setBreakpoint("listener:click");
+            InspectorTest.setEventListenerBreakpoint("listener:click", true);
             InspectorTest.evaluateInPageWithTimeout("addListenerAndClick(true)");
             InspectorTest.waitUntilPausedAndPerformSteppingActions([
                 "StepOver", "Print",
@@ -127,8 +130,7 @@ function test()
 
         function testSteppingOutOnEventListenerBreakpoint(next)
         {
-            var pane = self.runtime.sharedInstance(Sources.EventListenerBreakpointsSidebarPane);
-            pane._setBreakpoint("listener:click");
+            InspectorTest.setEventListenerBreakpoint("listener:click", true);
             InspectorTest.evaluateInPageWithTimeout("addListenerAndClick(true)");
             InspectorTest.waitUntilPausedAndPerformSteppingActions([
                 "StepOut", "Print", // should be in testElementClicked()
@@ -140,8 +142,7 @@ function test()
 
         function testSteppingOutOnEventListenerBreakpointAllBlackboxedButOne(next)
         {
-            var pane = self.runtime.sharedInstance(Sources.EventListenerBreakpointsSidebarPane);
-            pane._setBreakpoint("listener:click");
+            InspectorTest.setEventListenerBreakpoint("listener:click", true);
             InspectorTest.evaluateInPageWithTimeout("addFewBlackboxedListenersAndClick(true)");
             InspectorTest.waitUntilPausedAndPerformSteppingActions([
                 "StepOut", "Print",
@@ -153,8 +154,8 @@ function test()
 
         function tearDown(next)
         {
-            self.runtime.sharedInstance(Sources.XHRBreakpointsSidebarPane)._removeBreakpoint("foo");
-            self.runtime.sharedInstance(Sources.EventListenerBreakpointsSidebarPane)._removeBreakpoint("listener:click");
+            InspectorTest.setEventListenerBreakpoint("listener:click", false);
+            SDK.domDebuggerManager.toggleXHRBreakpoint("foo", false);
             next();
         }
     ]);
