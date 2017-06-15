@@ -297,6 +297,9 @@ class TestSimpleChromeWorkflowStage(generic_stages.BoardSpecificBuilderStage,
       else:
         goma = None
 
+      if self._run.config.internal:
+        extra_args.extend(['--internal'])
+
       sdk_cmd = commands.ChromeSDK(
           self._build_root, self._current_board, chrome_src=self.chrome_src,
           goma=bool(goma), extra_args=extra_args, cache_dir=cache_dir)
