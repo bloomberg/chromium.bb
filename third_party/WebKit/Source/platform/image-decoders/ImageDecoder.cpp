@@ -381,12 +381,12 @@ void ImageDecoder::UpdateAggressivePurging(size_t index) {
   // As we decode we will learn the total number of frames, and thus total
   // possible image memory used.
 
-  const uint64_t frame_area = DecodedSize().Area();
-  const uint64_t frame_memory_usage = frame_area * 4;  // 4 bytes per pixel
-  if (frame_memory_usage / 4 != frame_area) {          // overflow occurred
-    purge_aggressively_ = true;
-    return;
-  }
+  const uint64_t frame_memory_usage =
+      DecodedSize().Area() * 4;  // 4 bytes per pixel
+
+  // This condition never fails in the current code. Our existing image decoders
+  // parse for the image size and SetFailed() if that size overflows
+  DCHECK_EQ(frame_memory_usage / 4, DecodedSize().Area());
 
   const uint64_t total_memory_usage = frame_memory_usage * index;
   if (total_memory_usage / frame_memory_usage != index) {  // overflow occurred
