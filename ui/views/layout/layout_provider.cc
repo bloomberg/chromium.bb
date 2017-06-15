@@ -7,14 +7,15 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "ui/base/material_design/material_design_controller.h"
-#include "ui/views/layout/layout_constants.h"
 #include "ui/views/views_delegate.h"
 
 namespace views {
 
 namespace {
+
 LayoutProvider* g_layout_delegate = nullptr;
-}
+
+}  // namespace
 
 LayoutProvider::LayoutProvider() {
   g_layout_delegate = this;
@@ -62,7 +63,7 @@ gfx::Insets LayoutProvider::GetInsetsMetric(int metric) const {
                          dialog_contents.right());
     }
     case InsetsMetric::INSETS_VECTOR_IMAGE_BUTTON:
-      return gfx::Insets(kVectorButtonExtraTouchSize);
+      return gfx::Insets(4);
   }
   NOTREACHED();
   return gfx::Insets();
@@ -72,31 +73,31 @@ int LayoutProvider::GetDistanceMetric(int metric) const {
   DCHECK_GE(metric, VIEWS_INSETS_MAX);
   switch (metric) {
     case DISTANCE_BUBBLE_CONTENTS_HORIZONTAL_MARGIN:
-      return kPanelHorizMargin;
+      return 13;
     case DISTANCE_BUBBLE_CONTENTS_VERTICAL_MARGIN:
     case DISTANCE_DIALOG_CONTENTS_VERTICAL_MARGIN:
-      return kPanelVertMargin;
+      return 13;
     case DistanceMetric::DISTANCE_BUTTON_HORIZONTAL_PADDING:
-      return kButtonHorizontalPadding;
+      return 16;
     case DistanceMetric::DISTANCE_BUTTON_MAX_LINKABLE_WIDTH:
       return 0;
     case DistanceMetric::DISTANCE_CLOSE_BUTTON_MARGIN:
-      return kCloseButtonMargin;
+      return 7;
     case DistanceMetric::DISTANCE_RELATED_BUTTON_HORIZONTAL:
-      return kRelatedButtonHSpacing;
+      return 6;
     case DistanceMetric::DISTANCE_RELATED_CONTROL_HORIZONTAL:
-      return kRelatedControlHorizontalSpacing;
+      return 8;
     case DistanceMetric::DISTANCE_BUBBLE_BUTTON_TOP_MARGIN:
     case DistanceMetric::DISTANCE_RELATED_CONTROL_VERTICAL:
-      return kRelatedControlVerticalSpacing;
+      return 8;
     case DISTANCE_DIALOG_BUTTON_BOTTOM_MARGIN:
-      return views::kButtonVEdgeMarginNew;
+      return 20;
     case DistanceMetric::DISTANCE_DIALOG_BUTTON_MINIMUM_WIDTH:
-      return kDialogMinimumButtonWidth;
+      return 75;
     case DISTANCE_DIALOG_CONTENTS_HORIZONTAL_MARGIN:
-      return kButtonHEdgeMarginNew;
+      return 20;
     case DISTANCE_UNRELATED_CONTROL_VERTICAL:
-      return kUnrelatedControlVerticalSpacing;
+      return 20;
   }
   NOTREACHED();
   return 0;
