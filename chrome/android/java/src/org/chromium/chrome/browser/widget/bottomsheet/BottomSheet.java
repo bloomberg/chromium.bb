@@ -1326,6 +1326,13 @@ public class BottomSheet
     }
 
     /**
+     * @return Whether the Google 'G' logo should be shown in the location bar.
+     */
+    public boolean shouldShowGoogleGInLocationBar() {
+        return mNtpController.shouldShowGoogleGInLocationBar();
+    }
+
+    /**
      * Checks whether the sheet can be moved. It cannot be moved when the activity is in overview
      * mode, when "find in page" is visible, or when the toolbar is hidden.
      */

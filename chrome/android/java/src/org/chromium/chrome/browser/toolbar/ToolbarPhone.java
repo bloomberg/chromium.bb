@@ -624,6 +624,8 @@ public class ToolbarPhone extends ToolbarLayout
         changed |= (leftMargin != locationBarLayoutParams.leftMargin);
         locationBarLayoutParams.leftMargin = leftMargin;
 
+        if (changed) updateLocationBarLayoutForExpansionAnimation();
+
         return changed;
     }
 
@@ -843,6 +845,23 @@ public class ToolbarPhone extends ToolbarLayout
             return;
         }
 
+        // Ensure the buttons are invisible after focusing the omnibox to prevent them from
+        // accepting click events.
+        int toolbarButtonVisibility =
+                mUrlExpansionPercent == 1f || shouldHideToolbarButtons() ? INVISIBLE : VISIBLE;
+        mToolbarButtonsContainer.setVisibility(toolbarButtonVisibility);
+        if (mHomeButton.getVisibility() != GONE) {
+            mHomeButton.setVisibility(toolbarButtonVisibility);
+        }
+
+        updateLocationBarLayoutForExpansionAnimation();
+    }
+
+    /**
+     * Updates the location bar layout, as the result of either a focus change or scrolling the
+     * New Tab Page.
+     */
+    private void updateLocationBarLayoutForExpansionAnimation() {
         FrameLayout.LayoutParams locationBarLayoutParams = getFrameLayoutParams(mLocationBar);
         int currentLeftMargin = locationBarLayoutParams.leftMargin;
         int currentWidth = locationBarLayoutParams.width;
@@ -920,15 +939,6 @@ public class ToolbarPhone extends ToolbarLayout
         mUrlActionContainer.setTranslationX(urlActionsTranslationX);
 
         mLocationBar.setUrlFocusChangePercent(mUrlExpansionPercent);
-
-        // Ensure the buttons are invisible after focusing the omnibox to prevent them from
-        // accepting click events.
-        int toolbarButtonVisibility =
-                mUrlExpansionPercent == 1f || shouldHideToolbarButtons() ? INVISIBLE : VISIBLE;
-        mToolbarButtonsContainer.setVisibility(toolbarButtonVisibility);
-        if (mHomeButton.getVisibility() != GONE) {
-            mHomeButton.setVisibility(toolbarButtonVisibility);
-        }
 
         // Force an invalidation of the location bar to properly handle the clipping of the URL
         // bar text as a result of the url action container translations.
