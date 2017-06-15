@@ -135,6 +135,7 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
 
   // For tests.
   friend class MediaControlsOrientationLockDelegateTest;
+  friend class MediaControlsOrientationLockAndRotateToFullscreenDelegateTest;
   friend class MediaControlsRotateToFullscreenDelegateTest;
   friend class MediaControlsImplTest;
 

@@ -44,6 +44,8 @@ class MODULES_EXPORT ScreenOrientationControllerImpl final
   DECLARE_VIRTUAL_TRACE();
 
  private:
+  friend class MediaControlsOrientationLockAndRotateToFullscreenDelegateTest;
+
   ScreenOrientationControllerImpl(LocalFrame&, WebScreenOrientationClient*);
 
   static WebScreenOrientationType ComputeOrientation(const IntRect&, uint16_t);
