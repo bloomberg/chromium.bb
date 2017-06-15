@@ -2826,9 +2826,6 @@ crbug.com/727505 [ Linux Mac Win ] virtual/threaded/fast/compositorworker/reques
 crbug.com/727991 [ Linux Mac Win ] virtual/threaded/fast/compositorworker/visual-update.html [ Pass Failure Timeout Crash ]
 crbug.com/728036 [ Linux Mac Win ] virtual/threaded/fast/compositorworker/compositor-proxy-supports.html [ Pass Failure Timeout Crash ]
 
-# Renable this after rebaselines land for crbug.com/732829
-#crbug.com/729075 [ Mac10.11 Retina ] css3/blending/background-blend-mode-gif-color-2.html [ Failure Pass ]
-
 crbug.com/729836 [ Win ] fast/workers/worker-document-leak.html [ Pass Failure ]
 
 # Sheriff failures 2017-06-07
@@ -2865,3 +2862,4 @@ crbug.com/732839 [ Win ] external/wpt/payment-request/payment-request-constructo
 crbug.com/733357 [ Win Mac ] inspector/elements/styles-4/styles-history.html [ Failure Pass ]
 crbug.com/733448 [ Win Mac ] http/tests/inspector/extensions/extensions-network.html [ Failure Pass ]
 crbug.com/733448 [ Win Mac ] virtual/mojo-loading/http/tests/inspector/extensions/extensions-network.html [ Failure Pass ]
+crbug.com/729075 [ Mac10.11 Retina ] css3/blending/background-blend-mode-gif-color-2.html [ Failure Pass ]
