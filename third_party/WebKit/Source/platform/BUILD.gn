@@ -965,6 +965,8 @@ component("platform") {
     "graphics/UnacceleratedStaticBitmapImage.cpp",
     "graphics/UnacceleratedStaticBitmapImage.h",
     "graphics/WebGraphicsContext3DProviderWrapper.h",
+    "graphics/compositing/ContentLayerClientImpl.cpp",
+    "graphics/compositing/ContentLayerClientImpl.h",
     "graphics/compositing/PaintArtifactCompositor.cpp",
     "graphics/compositing/PaintArtifactCompositor.h",
     "graphics/compositing/PaintChunksToCcLayer.cpp",

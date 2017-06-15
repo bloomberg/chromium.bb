@@ -4,13 +4,13 @@
 
 #include "platform/graphics/compositing/PaintArtifactCompositor.h"
 
-#include "cc/layers/content_layer_client.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/paint/display_item_list.h"
 #include "cc/trees/layer_tree_host.h"
 #include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/compositing/ContentLayerClientImpl.h"
 #include "platform/graphics/compositing/PaintChunksToCcLayer.h"
 #include "platform/graphics/compositing/PropertyTreeManager.h"
 #include "platform/graphics/paint/ClipPaintPropertyNode.h"
@@ -28,13 +28,6 @@
 #include "ui/gfx/geometry/rect.h"
 
 namespace blink {
-
-template class RasterInvalidationTrackingMap<const cc::Layer>;
-static RasterInvalidationTrackingMap<const cc::Layer>&
-CcLayersRasterInvalidationTrackingMap() {
-  DEFINE_STATIC_LOCAL(RasterInvalidationTrackingMap<const cc::Layer>, map, ());
-  return map;
-}
 
 template <typename T>
 static std::unique_ptr<JSONArray> PointAsJSONArray(const T& point) {
@@ -58,112 +51,6 @@ static std::unique_ptr<JSONArray> SizeAsJSONArray(const T& size) {
 // the sequence number through the use of a dirty bit or similar. See
 // http://crbug.com/692842#c4.
 static int g_s_property_tree_sequence_number = 1;
-
-class PaintArtifactCompositor::ContentLayerClientImpl
-    : public cc::ContentLayerClient {
-  WTF_MAKE_NONCOPYABLE(ContentLayerClientImpl);
-  USING_FAST_MALLOC(ContentLayerClientImpl);
-
- public:
-  ContentLayerClientImpl(PaintChunk::Id paint_chunk_id)
-      : id_(paint_chunk_id),
-        debug_name_(paint_chunk_id.client.DebugName()),
-        cc_picture_layer_(cc::PictureLayer::Create(this)) {}
-
-  ~ContentLayerClientImpl() {
-    CcLayersRasterInvalidationTrackingMap().Remove(cc_picture_layer_.get());
-  }
-
-  void SetDisplayList(scoped_refptr<cc::DisplayItemList> cc_display_item_list) {
-    cc_display_item_list_ = std::move(cc_display_item_list);
-  }
-  void SetPaintableRegion(gfx::Rect region) { paintable_region_ = region; }
-
-  void AddPaintChunkDebugData(std::unique_ptr<JSONArray> json) {
-    paint_chunk_debug_data_.push_back(std::move(json));
-  }
-  void ClearPaintChunkDebugData() { paint_chunk_debug_data_.clear(); }
-
-  // cc::ContentLayerClient
-  gfx::Rect PaintableRegion() override { return paintable_region_; }
-  scoped_refptr<cc::DisplayItemList> PaintContentsToDisplayList(
-      PaintingControlSetting) override {
-    return cc_display_item_list_;
-  }
-  bool FillsBoundsCompletely() const override { return false; }
-  size_t GetApproximateUnsharedMemoryUsage() const override {
-    // TODO(jbroman): Actually calculate memory usage.
-    return 0;
-  }
-
-  void ResetTrackedRasterInvalidations() {
-    RasterInvalidationTracking* tracking =
-        CcLayersRasterInvalidationTrackingMap().Find(cc_picture_layer_.get());
-    if (!tracking)
-      return;
-
-    if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled())
-      tracking->invalidations.clear();
-    else
-      CcLayersRasterInvalidationTrackingMap().Remove(cc_picture_layer_.get());
-  }
-
-  RasterInvalidationTracking& EnsureRasterInvalidationTracking() {
-    return CcLayersRasterInvalidationTrackingMap().Add(cc_picture_layer_.get());
-  }
-
-  void SetNeedsDisplayRect(const gfx::Rect& rect) {
-    cc_picture_layer_->SetNeedsDisplayRect(rect);
-  }
-
-  std::unique_ptr<JSONObject> LayerAsJSON(LayerTreeFlags flags) {
-    std::unique_ptr<JSONObject> json = JSONObject::Create();
-    json->SetString("name", debug_name_);
-
-    FloatPoint position(cc_picture_layer_->offset_to_transform_parent().x(),
-                        cc_picture_layer_->offset_to_transform_parent().y());
-    if (position != FloatPoint())
-      json->SetArray("position", PointAsJSONArray(position));
-
-    IntSize bounds(cc_picture_layer_->bounds().width(),
-                   cc_picture_layer_->bounds().height());
-    if (!bounds.IsEmpty())
-      json->SetArray("bounds", SizeAsJSONArray(bounds));
-
-    json->SetBoolean("contentsOpaque", cc_picture_layer_->contents_opaque());
-    json->SetBoolean("drawsContent", cc_picture_layer_->DrawsContent());
-
-    if (flags & kLayerTreeIncludesDebugInfo) {
-      std::unique_ptr<JSONArray> paint_chunk_contents_array =
-          JSONArray::Create();
-      for (const auto& debug_data : paint_chunk_debug_data_) {
-        paint_chunk_contents_array->PushValue(debug_data->Clone());
-      }
-      json->SetArray("paintChunkContents",
-                     std::move(paint_chunk_contents_array));
-    }
-
-    CcLayersRasterInvalidationTrackingMap().AsJSON(cc_picture_layer_.get(),
-                                                   json.get());
-    return json;
-  }
-
-  scoped_refptr<cc::PictureLayer> CcPictureLayer() { return cc_picture_layer_; }
-
-  bool Matches(const PaintChunk& paint_chunk) {
-    return paint_chunk.Matches(&id_);
-  }
-
-  const String& DebugName() const { return debug_name_; }
-
- private:
-  PaintChunk::Id id_;
-  String debug_name_;
-  scoped_refptr<cc::PictureLayer> cc_picture_layer_;
-  scoped_refptr<cc::DisplayItemList> cc_display_item_list_;
-  gfx::Rect paintable_region_;
-  Vector<std::unique_ptr<JSONArray>> paint_chunk_debug_data_;
-};
 
 PaintArtifactCompositor::PaintArtifactCompositor() {
   if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
@@ -213,7 +100,7 @@ static scoped_refptr<cc::Layer> ForeignLayerForPaintChunk(
   return layer;
 }
 
-std::unique_ptr<PaintArtifactCompositor::ContentLayerClientImpl>
+std::unique_ptr<ContentLayerClientImpl>
 PaintArtifactCompositor::ClientForPaintChunk(
     const PaintChunk& paint_chunk,
     const PaintArtifact& paint_artifact) {
