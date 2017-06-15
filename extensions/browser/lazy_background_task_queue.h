@@ -48,9 +48,6 @@ class LazyBackgroundTaskQueue : public KeyedService,
   // |context|.
   static LazyBackgroundTaskQueue* Get(content::BrowserContext* context);
 
-  // Returns the number of extensions having pending tasks.
-  size_t extensions_with_pending_tasks() { return pending_tasks_.size(); }
-
   // Returns true if the task should be added to the queue (that is, if the
   // extension has a lazy background page that isn't ready yet). If the
   // extension has a lazy background page that is being suspended this method
@@ -69,6 +66,7 @@ class LazyBackgroundTaskQueue : public KeyedService,
       const PendingTask& task);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(LazyBackgroundTaskQueueTest, AddPendingTask);
   FRIEND_TEST_ALL_PREFIXES(LazyBackgroundTaskQueueTest, ProcessPendingTasks);
 
   // A map between a BrowserContext/extension_id pair and the queue of tasks

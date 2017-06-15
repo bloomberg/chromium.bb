@@ -160,7 +160,7 @@ TEST_F(LazyBackgroundTaskQueueTest, AddPendingTask) {
                        no_background->id(),
                        base::Bind(&LazyBackgroundTaskQueueTest::RunPendingTask,
                                   base::Unretained(this)));
-  EXPECT_EQ(1u, queue.extensions_with_pending_tasks());
+  EXPECT_EQ(1u, queue.pending_tasks_.size());
   EXPECT_EQ(0, task_run_count());
 
   // Another task on the same extension doesn't increase the number of
@@ -169,7 +169,7 @@ TEST_F(LazyBackgroundTaskQueueTest, AddPendingTask) {
                        no_background->id(),
                        base::Bind(&LazyBackgroundTaskQueueTest::RunPendingTask,
                                   base::Unretained(this)));
-  EXPECT_EQ(1u, queue.extensions_with_pending_tasks());
+  EXPECT_EQ(1u, queue.pending_tasks_.size());
   EXPECT_EQ(0, task_run_count());
 
   // Adding a task on an extension with a lazy background page tries to create
@@ -179,7 +179,7 @@ TEST_F(LazyBackgroundTaskQueueTest, AddPendingTask) {
                        lazy_background->id(),
                        base::Bind(&LazyBackgroundTaskQueueTest::RunPendingTask,
                                   base::Unretained(this)));
-  EXPECT_EQ(2u, queue.extensions_with_pending_tasks());
+  EXPECT_EQ(2u, queue.pending_tasks_.size());
   // The process manager tried to create a background host.
   EXPECT_EQ(1, process_manager->create_count());
   // The task ran immediately because the creation failed.
@@ -201,19 +201,19 @@ TEST_F(LazyBackgroundTaskQueueTest, ProcessPendingTasks) {
                        base::Bind(&LazyBackgroundTaskQueueTest::RunPendingTask,
                                   base::Unretained(this)));
   EXPECT_EQ(0, task_run_count());
-  EXPECT_EQ(1u, queue.extensions_with_pending_tasks());
+  EXPECT_EQ(1u, queue.pending_tasks_.size());
 
   // Trying to run tasks for an unrelated BrowserContext should do nothing.
   content::TestBrowserContext unrelated_context;
   queue.ProcessPendingTasks(NULL, &unrelated_context, extension.get());
   EXPECT_EQ(0, task_run_count());
-  EXPECT_EQ(1u, queue.extensions_with_pending_tasks());
+  EXPECT_EQ(1u, queue.pending_tasks_.size());
 
   // Processing tasks when there is one pending runs the task and removes the
   // extension from the list of extensions with pending tasks.
   queue.ProcessPendingTasks(NULL, browser_context(), extension.get());
   EXPECT_EQ(1, task_run_count());
-  EXPECT_EQ(0u, queue.extensions_with_pending_tasks());
+  EXPECT_EQ(0u, queue.pending_tasks_.size());
 }
 
 }  // namespace extensions
