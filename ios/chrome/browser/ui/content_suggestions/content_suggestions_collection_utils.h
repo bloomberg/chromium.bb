@@ -9,36 +9,35 @@
 
 namespace content_suggestions {
 
+extern const CGFloat kSearchFieldHeight;
+
 // Returns the maximum number of tiles fitting in |availableWidth|, limited to
 // 4.
 NSUInteger numberOfTilesForWidth(CGFloat availableWidth);
 // Returns the spacing between tiles, based on the device.
 CGFloat spacingBetweenTiles();
 
-// iPhone landscape uses a slightly different layout for the doodle and search
-// field frame. Returns the proper frame from |frames| based on orientation,
-// centered in the view of |width|.
-CGRect getOrientationFrame(const CGRect frames[], CGFloat width);
 // Returns x-offset in order to have the tiles centered in a view with a
 // |width|.
 CGFloat centeredTilesMarginForWidth(CGFloat width);
-// Returns the proper frame for the doodle inside a view with a |width|.
+// Returns the proper height for the doodle. |logoIsShowing| refers to the
+// Google logo or the doodle.
+CGFloat doodleHeight(BOOL logoIsShowing);
+// Returns the proper margin to the top of the header for the doodle.
+CGFloat doodleTopMargin();
+// Returns the proper margin to the top of the header for the search field.
 // |logoIsShowing| refers to the Google logo or the doodle.
-CGRect doodleFrame(CGFloat width, BOOL logoIsShowing);
-// Returns the proper frame for the search field inside a view with a |width|.
-// |logoIsShowing| refers to the Google logo or the doodle.
-CGRect searchFieldFrame(CGFloat width, BOOL logoIsShowing);
+CGFloat searchFieldTopMargin();
+// Returns the proper width for the search field inside a view with a |width|.
+CGFloat searchFieldWidth(CGFloat superviewWidth);
 // Returns the expected height of the NewTabPageHeaderView inside a view with a
 // |width|. |logoIsShowing| refers to the Google logo or the doodle.
 // |promoCanShow| represents whether a what's new promo can be displayed.
-CGFloat heightForLogoHeader(CGFloat width,
-                            BOOL logoIsShowing,
-                            BOOL promoCanShow);
+CGFloat heightForLogoHeader(BOOL logoIsShowing, BOOL promoCanShow);
 // Configure the |searchHintLabel| for the fake omnibox, adding it to the
 // |searchTapTarget| and constrain it.
 void configureSearchHintLabel(UILabel* searchHintLabel,
-                              UIButton* searchTapTarget,
-                              CGFloat searchFieldWidth);
+                              UIButton* searchTapTarget);
 // Configure the |voiceSearchButton|, adding it to the |searchTapTarget| and
 // constraining it.
 void configureVoiceSearchButton(UIButton* voiceSearchButton,

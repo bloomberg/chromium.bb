@@ -141,6 +141,11 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
   CGSize _mostVisitedCellSize;
   base::scoped_nsobject<NSLayoutConstraint> _hintLabelLeadingConstraint;
   base::scoped_nsobject<NSLayoutConstraint> _voiceTapTrailingConstraint;
+  base::scoped_nsobject<NSLayoutConstraint> _doodleHeightConstraint;
+  base::scoped_nsobject<NSLayoutConstraint> _doodleTopMarginConstraint;
+  base::scoped_nsobject<NSLayoutConstraint> _searchFieldWidthConstraint;
+  base::scoped_nsobject<NSLayoutConstraint> _searchFieldHeightConstraint;
+  base::scoped_nsobject<NSLayoutConstraint> _searchFieldTopMarginConstraint;
   base::scoped_nsobject<NSMutableArray> _supplementaryViews;
   base::scoped_nsobject<NewTabPageHeaderView> _headerView;
   base::scoped_nsobject<WhatsNewHeaderView> _promoHeaderView;
@@ -216,6 +221,11 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
 - (void)setFlowLayoutInset:(UICollectionViewFlowLayout*)layout;
 // Instructs the UICollectionView and UIView to reload it's data and layout.
 - (void)reloadData;
+// Adds the constraints for the |logoView|, the |searchField| related to the
+// |headerView|. It also creates the ivar constraints related to those views.
+- (void)addConstraintsForLogoView:(UIView*)logoView
+                      searchField:(UIView*)searchField
+                    andHeaderView:(UIView*)headerView;
 // Returns the size of |self.mostVisitedData|.
 - (NSUInteger)numberOfItems;
 // Returns the number of non empty tiles (as opposed to the placeholder tiles).
@@ -310,6 +320,13 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
     // the scroll view's offset.
     [self scrollViewDidScroll:_mostVisitedView];
 
+    // Updates the constraints.
+    [_searchFieldWidthConstraint
+        setConstant:content_suggestions::searchFieldWidth(size.width)];
+    [_searchFieldTopMarginConstraint
+        setConstant:content_suggestions::searchFieldTopMargin()];
+    [_doodleTopMarginConstraint
+        setConstant:content_suggestions::doodleTopMargin()];
   };
   [coordinator animateAlongsideTransition:alongsideBlock completion:nil];
 }
@@ -388,12 +405,14 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
     self.logoVendor.showingLogo = self.logoIsShowing;
     if (_viewLoaded) {
       [self updateSubviewFrames];
+      [_doodleHeightConstraint
+          setConstant:content_suggestions::doodleHeight(self.logoIsShowing)];
 
       // Adjust the height of |_headerView| to fit its content which may have
       // been shifted due to the visibility of the doodle.
       CGRect headerFrame = [_headerView frame];
       headerFrame.size.height = content_suggestions::heightForLogoHeader(
-          [self viewWidth], self.logoIsShowing, self.promoCanShow);
+          self.logoIsShowing, self.promoCanShow);
       [_headerView setFrame:headerFrame];
 
       // Adjust vertical positioning of |_promoHeaderView|.
@@ -414,9 +433,7 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
 
 // Initialize and add a search field tap target and a voice search button.
 - (void)addSearchField {
-  CGRect searchFieldFrame = content_suggestions::searchFieldFrame(
-      [self viewWidth], self.logoIsShowing);
-  _searchTapTarget.reset([[UIButton alloc] initWithFrame:searchFieldFrame]);
+  _searchTapTarget.reset([[UIButton alloc] init]);
   if (IsIPadIdiom()) {
     UIImage* searchBoxImage = [[UIImage imageNamed:@"ntp_google_search_box"]
         resizableImageWithCapInsets:kSearchBoxStretchInsets];
@@ -434,8 +451,8 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
 
   // Set up fakebox hint label.
   UILabel* searchHintLabel = [[[UILabel alloc] init] autorelease];
-  content_suggestions::configureSearchHintLabel(
-      searchHintLabel, _searchTapTarget.get(), searchFieldFrame.size.width);
+  content_suggestions::configureSearchHintLabel(searchHintLabel,
+                                                _searchTapTarget.get());
 
   _hintLabelLeadingConstraint.reset([[searchHintLabel.leadingAnchor
       constraintEqualToAnchor:[_searchTapTarget leadingAnchor]
@@ -504,8 +521,6 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
       base::mac::ObjCCastStrict<UICollectionViewFlowLayout>(
           [_mostVisitedView collectionViewLayout]);
   [flowLayout setItemSize:_mostVisitedCellSize];
-  self.logoVendor.view.frame =
-      content_suggestions::doodleFrame([self viewWidth], self.logoIsShowing);
 
   [self setFlowLayoutInset:flowLayout];
   [flowLayout invalidateLayout];
@@ -537,9 +552,6 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
     } else {
       [self updateSearchField];
     }
-  } else {
-    [_searchTapTarget setFrame:content_suggestions::searchFieldFrame(
-                                   [self viewWidth], self.logoIsShowing)];
   }
 
   if (!_viewLoaded) {
@@ -590,11 +602,13 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
 - (void)updateSearchField {
   NSArray* constraints =
       @[ _hintLabelLeadingConstraint, _voiceTapTrailingConstraint ];
-  [_headerView updateSearchField:_searchTapTarget
-                withInitialFrame:content_suggestions::searchFieldFrame(
-                                     [self viewWidth], self.logoIsShowing)
-              subviewConstraints:constraints
-                       forOffset:[_mostVisitedView contentOffset].y];
+
+  [_headerView updateSearchFieldWidth:_searchFieldWidthConstraint
+                               height:_searchFieldHeightConstraint
+                            topMargin:_searchFieldTopMarginConstraint
+                   subviewConstraints:constraints
+                        logoIsShowing:self.logoIsShowing
+                            forOffset:[_mostVisitedView contentOffset].y];
 }
 
 - (void)addOverscrollActions {
@@ -750,6 +764,38 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
   [self.view setNeedsLayout];
 }
 
+- (void)addConstraintsForLogoView:(UIView*)logoView
+                      searchField:(UIView*)searchField
+                    andHeaderView:(UIView*)headerView {
+  _doodleTopMarginConstraint.reset([[logoView.topAnchor
+      constraintEqualToAnchor:headerView.topAnchor
+                     constant:content_suggestions::doodleTopMargin()] retain]);
+  _doodleHeightConstraint.reset([[logoView.heightAnchor
+      constraintEqualToConstant:content_suggestions::doodleHeight(
+                                    self.logoIsShowing)] retain]);
+  _searchFieldWidthConstraint.reset([[searchField.widthAnchor
+      constraintEqualToConstant:content_suggestions::searchFieldWidth(
+                                    [self viewWidth])] retain]);
+  _searchFieldHeightConstraint.reset([[searchField.heightAnchor
+      constraintEqualToConstant:content_suggestions::kSearchFieldHeight]
+      retain]);
+  _searchFieldTopMarginConstraint.reset([[searchField.topAnchor
+      constraintEqualToAnchor:logoView.bottomAnchor
+                     constant:content_suggestions::searchFieldTopMargin()]
+      retain]);
+  [NSLayoutConstraint activateConstraints:@[
+    _doodleTopMarginConstraint,
+    _doodleHeightConstraint.get(),
+    _searchFieldWidthConstraint.get(),
+    _searchFieldHeightConstraint.get(),
+    _searchFieldTopMarginConstraint.get(),
+    [logoView.widthAnchor constraintEqualToAnchor:headerView.widthAnchor],
+    [logoView.leadingAnchor constraintEqualToAnchor:headerView.leadingAnchor],
+    [searchField.centerXAnchor
+        constraintEqualToAnchor:headerView.centerXAnchor],
+  ]];
+}
+
 #pragma mark - ToolbarOwner
 
 - (ToolbarController*)relinquishedToolbarController {
@@ -768,8 +814,8 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
     referenceSizeForHeaderInSection:(NSInteger)section {
   CGFloat headerHeight = 0;
   if (section == SectionWithOmnibox) {
-    headerHeight = content_suggestions::heightForLogoHeader(
-        [self viewWidth], self.logoIsShowing, self.promoCanShow);
+    headerHeight = content_suggestions::heightForLogoHeader(self.logoIsShowing,
+                                                            self.promoCanShow);
     ((UICollectionViewFlowLayout*)collectionViewLayout).headerReferenceSize =
         CGSizeMake(0, headerHeight);
   } else if (section == SectionWithMostVisited) {
@@ -836,6 +882,13 @@ const CGFloat kShiftTilesDownAnimationDuration = 0.2;
                                     forIndexPath:indexPath] retain]);
       [_headerView addSubview:[self.logoVendor view]];
       [_headerView addSubview:_searchTapTarget];
+      self.logoVendor.view.translatesAutoresizingMaskIntoConstraints = NO;
+      [_searchTapTarget setTranslatesAutoresizingMaskIntoConstraints:NO];
+
+      [self addConstraintsForLogoView:self.logoVendor.view
+                          searchField:_searchTapTarget
+                        andHeaderView:_headerView];
+
       [_headerView addViewsToSearchField:_searchTapTarget];
 
       if (!IsIPadIdiom()) {
