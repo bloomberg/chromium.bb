@@ -43,7 +43,7 @@ class MODULES_EXPORT FetchHeaderList final
   bool Has(const String&) const;
   void ClearList();
 
-  bool ContainsNonSimpleHeader() const;
+  bool ContainsNonCORSSafelistedHeader() const;
   Vector<Header> SortAndCombine() const;
 
   const std::multimap<String, String, ByteCaseInsensitiveCompare>& List()
@@ -70,7 +70,7 @@ class MODULES_EXPORT FetchHeaderList final
   // iterate through all keys and vectors in the HashMap. Similarly,
   // list() would require callers to manually iterate through the
   // HashMap's keys and value vector, and so would
-  // containsNonSimpleHeader().
+  // ContainsNonCORSSafelistedHeader().
   std::multimap<String, String, ByteCaseInsensitiveCompare> header_list_;
 };
 

@@ -128,11 +128,11 @@ void FetchHeaderList::ClearList() {
   header_list_.clear();
 }
 
-bool FetchHeaderList::ContainsNonSimpleHeader() const {
+bool FetchHeaderList::ContainsNonCORSSafelistedHeader() const {
   return std::any_of(
       header_list_.cbegin(), header_list_.cend(), [](const Header& header) {
-        return !FetchUtils::IsSimpleHeader(AtomicString(header.first),
-                                           AtomicString(header.second));
+        return !FetchUtils::IsCORSSafelistedHeader(AtomicString(header.first),
+                                                   AtomicString(header.second));
       });
 }
 

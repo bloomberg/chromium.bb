@@ -247,8 +247,8 @@ PingLoaderImpl::PingLoaderImpl(LocalFrame* frame,
       origin_(frame->GetDocument()->GetSecurityOrigin()),
       cors_mode_(kIsCORSEnabled) {
   const AtomicString content_type = request.HttpContentType();
-  if (!content_type.IsNull() &&
-      FetchUtils::IsSimpleHeader(AtomicString("content-type"), content_type))
+  if (!content_type.IsNull() && FetchUtils::IsCORSSafelistedHeader(
+                                    AtomicString("content-type"), content_type))
     cors_mode_ = kNotCORSEnabled;
 
   frame->Loader().Client()->DidDispatchPingLoader(request.Url());

@@ -75,26 +75,28 @@ const ForbiddenHeaderNames& ForbiddenHeaderNames::Get() {
 
 }  // namespace
 
-bool FetchUtils::IsSimpleMethod(const String& method) {
-  // http://fetch.spec.whatwg.org/#simple-method
-  // "A simple method is a method that is `GET`, `HEAD`, or `POST`."
+bool FetchUtils::IsCORSSafelistedMethod(const String& method) {
+  // https://fetch.spec.whatwg.org/#cors-safelisted-method
+  // "A CORS-safelisted method is a method that is `GET`, `HEAD`, or `POST`."
   return method == "GET" || method == "HEAD" || method == "POST";
 }
 
-bool FetchUtils::IsSimpleHeader(const AtomicString& name,
-                                const AtomicString& value) {
-  // http://fetch.spec.whatwg.org/#simple-header
-  // "A simple header is a header whose name is either one of `Accept`,
+bool FetchUtils::IsCORSSafelistedHeader(const AtomicString& name,
+                                        const AtomicString& value) {
+  // https://fetch.spec.whatwg.org/#cors-safelisted-request-header
+  // "A CORS-safelisted header is a header whose name is either one of `Accept`,
   // `Accept-Language`, and `Content-Language`, or whose name is
   // `Content-Type` and value, once parsed, is one of
   // `application/x-www-form-urlencoded`, `multipart/form-data`, and
   // `text/plain`."
-  // Treat 'Save-Data' as a simple header, since it is added by Chrome when
-  // Data Saver feature is enabled.
-  // Treat inspector headers as a simple headers, since they are added by blink
-  // when the inspector is open.
-  // Treat 'Intervention' as a simple header, since it is added by Chrome when
-  // an intervention is (or may be) applied.
+  //
+  // Treat 'Save-Data' as a CORS-safelisted header, since it is added by Chrome
+  // when Data Saver feature is enabled. Treat inspector headers as a
+  // CORS-safelisted headers, since they are added by blink when the inspector
+  // is open.
+  //
+  // Treat 'Intervention' as a CORS-safelisted header, since it is added by
+  // Chrome when an intervention is (or may be) applied.
 
   if (EqualIgnoringASCIICase(name, "accept") ||
       EqualIgnoringASCIICase(name, "accept-language") ||
@@ -106,32 +108,17 @@ bool FetchUtils::IsSimpleHeader(const AtomicString& name,
     return true;
 
   if (EqualIgnoringASCIICase(name, "content-type"))
-    return IsSimpleContentType(value);
+    return IsCORSSafelistedContentType(value);
 
   return false;
 }
 
-bool FetchUtils::IsSimpleContentType(const AtomicString& media_type) {
+bool FetchUtils::IsCORSSafelistedContentType(const AtomicString& media_type) {
   AtomicString mime_type = ExtractMIMETypeFromMediaType(media_type);
   return EqualIgnoringASCIICase(mime_type,
                                 "application/x-www-form-urlencoded") ||
          EqualIgnoringASCIICase(mime_type, "multipart/form-data") ||
          EqualIgnoringASCIICase(mime_type, "text/plain");
-}
-
-bool FetchUtils::IsSimpleRequest(const String& method,
-                                 const HTTPHeaderMap& header_map) {
-  if (!IsSimpleMethod(method))
-    return false;
-
-  for (const auto& header : header_map) {
-    // Preflight is required for MIME types that can not be sent via form
-    // submission.
-    if (!IsSimpleHeader(header.key, header.value))
-      return false;
-  }
-
-  return true;
 }
 
 bool FetchUtils::IsForbiddenMethod(const String& method) {
@@ -166,20 +153,6 @@ bool FetchUtils::IsForbiddenResponseHeaderName(const String& name) {
          EqualIgnoringASCIICase(name, "set-cookie2");
 }
 
-bool FetchUtils::IsSimpleOrForbiddenRequest(const String& method,
-                                            const HTTPHeaderMap& header_map) {
-  if (!IsSimpleMethod(method))
-    return false;
-
-  for (const auto& header : header_map) {
-    if (!IsSimpleHeader(header.key, header.value) &&
-        !IsForbiddenHeaderName(header.key))
-      return false;
-  }
-
-  return true;
-}
-
 AtomicString FetchUtils::NormalizeMethod(const AtomicString& method) {
   // https://fetch.spec.whatwg.org/#concept-method-normalize
 
@@ -205,6 +178,25 @@ String FetchUtils::NormalizeHeaderValue(const String& value) {
   // HTTP whitespace bytes are 0x09, 0x0A, 0x0D, and 0x20.
 
   return value.StripWhiteSpace(IsHTTPWhitespace);
+}
+
+bool FetchUtils::ContainsOnlyCORSSafelistedHeaders(
+    const HTTPHeaderMap& header_map) {
+  for (const auto& header : header_map) {
+    if (!IsCORSSafelistedHeader(header.key, header.value))
+      return false;
+  }
+  return true;
+}
+
+bool FetchUtils::ContainsOnlyCORSSafelistedOrForbiddenHeaders(
+    const HTTPHeaderMap& header_map) {
+  for (const auto& header : header_map) {
+    if (!IsCORSSafelistedHeader(header.key, header.value) &&
+        !IsForbiddenHeaderName(header.key))
+      return false;
+  }
+  return true;
 }
 
 }  // namespace blink

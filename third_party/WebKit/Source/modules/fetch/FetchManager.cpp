@@ -639,15 +639,15 @@ void FetchManager::Loader::Start() {
     return;
   }
 
-  // "- |request|'s mode is |CORS-with-forced-preflight|.
+  // "- |request|'s mode is |CORS-with-forced-preflight|."
   // "- |request|'s unsafe request flag is set and either |request|'s method
-  // is not a simple method or a header in |request|'s header list is not a
-  // simple header"
+  // is not a CORS-safelisted method or a header in |request|'s header list is
+  // not a CORS-safelisted header"
   if (request_->Mode() ==
           WebURLRequest::kFetchRequestModeCORSWithForcedPreflight ||
       (request_->UnsafeRequestFlag() &&
-       (!FetchUtils::IsSimpleMethod(request_->Method()) ||
-        request_->HeaderList()->ContainsNonSimpleHeader()))) {
+       (!FetchUtils::IsCORSSafelistedMethod(request_->Method()) ||
+        request_->HeaderList()->ContainsNonCORSSafelistedHeader()))) {
     // "Set |request|'s response tainting to |CORS|."
     request_->SetResponseTainting(FetchRequestData::kCORSTainting);
     // "The result of performing an HTTP fetch using |request| with the

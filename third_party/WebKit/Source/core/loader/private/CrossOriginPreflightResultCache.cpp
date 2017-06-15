@@ -134,7 +134,7 @@ bool CrossOriginPreflightResultCacheItem::Parse(
 bool CrossOriginPreflightResultCacheItem::AllowsCrossOriginMethod(
     const String& method,
     String& error_description) const {
-  if (methods_.Contains(method) || FetchUtils::IsSimpleMethod(method))
+  if (methods_.Contains(method) || FetchUtils::IsCORSSafelistedMethod(method))
     return true;
 
   error_description =
@@ -148,7 +148,7 @@ bool CrossOriginPreflightResultCacheItem::AllowsCrossOriginHeaders(
     String& error_description) const {
   for (const auto& header : request_headers) {
     if (!headers_.Contains(header.key) &&
-        !FetchUtils::IsSimpleHeader(header.key, header.value) &&
+        !FetchUtils::IsCORSSafelistedHeader(header.key, header.value) &&
         !FetchUtils::IsForbiddenHeaderName(header.key)) {
       error_description = "Request header field " + header.key.GetString() +
                           " is not allowed by Access-Control-Allow-Headers in "

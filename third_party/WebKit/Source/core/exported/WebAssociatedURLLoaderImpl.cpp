@@ -371,7 +371,7 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
   if (options_.untrusted_http) {
     WebString method = new_request.HttpMethod();
     allow_load = observer_ && IsValidHTTPToken(method) &&
-                 FetchUtils::IsUsefulMethod(method);
+                 !FetchUtils::IsForbiddenMethod(method);
     if (allow_load) {
       new_request.SetHTTPMethod(FetchUtils::NormalizeMethod(method));
       HTTPRequestHeaderValidator validator;
