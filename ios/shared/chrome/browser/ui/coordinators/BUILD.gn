@@ -21,6 +21,24 @@ source_set("coordinators") {
   ]
 }
 
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "browser_coordinator_test.h",
+    "browser_coordinator_test.mm",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  deps = [
+    ":coordinators",
+    "//base",
+    "//ios/chrome/browser/browser_state:test_support",
+    "//ios/shared/chrome/browser/ui/browser_list",
+    "//testing/gtest",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [
@@ -31,11 +49,6 @@ source_set("unit_tests") {
 
   deps = [
     ":coordinators",
-    "//base",
-    "//base/test:test_support",
-    "//ios/chrome/browser/browser_state:test_support",
-    "//ios/chrome/test/base",
-    "//ios/shared/chrome/browser/ui/browser_list",
-    "//testing/gtest",
+    ":test_support",
   ]
 }

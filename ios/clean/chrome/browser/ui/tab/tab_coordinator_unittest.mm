@@ -7,14 +7,13 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/clean/chrome/browser/ui/tab/tab_container_view_controller.h"
 #import "ios/shared/chrome/browser/ui/browser_list/browser.h"
 #import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator+internal.h"
+#import "ios/shared/chrome/browser/ui/coordinators/browser_coordinator_test.h"
 #import "ios/shared/chrome/browser/ui/toolbar/toolbar_test_util.h"
 #include "ios/web/public/test/test_web_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -22,7 +21,7 @@
 
 namespace {
 
-class TabCoordinatorTest : public PlatformTest {
+class TabCoordinatorTest : public BrowserCoordinatorTest {
  protected:
   TabCoordinatorTest()
       : loop_(base::MessageLoop::TYPE_IO),
@@ -31,18 +30,13 @@ class TabCoordinatorTest : public PlatformTest {
     initial_setting_ = [[NSUserDefaults standardUserDefaults]
         objectForKey:@"EnableBottomToolbar"];
 
-    // Initialize the browser.
-    TestChromeBrowserState::Builder builder;
-    chrome_browser_state_ = builder.Build();
-    browser_ = base::MakeUnique<Browser>(chrome_browser_state_.get());
-
     // Initialize the web state.
     navigation_manager_ = base::MakeUnique<ToolbarTestNavigationManager>();
     web_state_.SetNavigationManager(std::move(navigation_manager_));
 
     // Initialize the coordinator.
     coordinator_ = [[TabCoordinator alloc] init];
-    coordinator_.browser = browser_.get();
+    coordinator_.browser = GetBrowser();
     coordinator_.webState = &web_state_;
   }
   ~TabCoordinatorTest() override {
@@ -65,8 +59,6 @@ class TabCoordinatorTest : public PlatformTest {
   id initial_setting_;
   base::MessageLoop loop_;
   web::TestWebThread ui_thread_;
-  std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
-  std::unique_ptr<Browser> browser_;
   ToolbarTestWebState web_state_;
   std::unique_ptr<ToolbarTestNavigationManager> navigation_manager_;
 };
