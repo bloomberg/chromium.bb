@@ -1348,47 +1348,6 @@ inline FontDescription::Kerning CSSIdentifierValue::ConvertTo() const {
 }
 
 template <>
-inline CSSIdentifierValue::CSSIdentifierValue(EObjectFit fit)
-    : CSSValue(kIdentifierClass) {
-  switch (fit) {
-    case EObjectFit::kFill:
-      value_id_ = CSSValueFill;
-      break;
-    case EObjectFit::kContain:
-      value_id_ = CSSValueContain;
-      break;
-    case EObjectFit::kCover:
-      value_id_ = CSSValueCover;
-      break;
-    case EObjectFit::kNone:
-      value_id_ = CSSValueNone;
-      break;
-    case EObjectFit::kScaleDown:
-      value_id_ = CSSValueScaleDown;
-      break;
-  }
-}
-
-template <>
-inline EObjectFit CSSIdentifierValue::ConvertTo() const {
-  switch (value_id_) {
-    case CSSValueFill:
-      return EObjectFit::kFill;
-    case CSSValueContain:
-      return EObjectFit::kContain;
-    case CSSValueCover:
-      return EObjectFit::kCover;
-    case CSSValueNone:
-      return EObjectFit::kNone;
-    case CSSValueScaleDown:
-      return EObjectFit::kScaleDown;
-    default:
-      NOTREACHED();
-      return EObjectFit::kFill;
-  }
-}
-
-template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EFillSizeType fill_size)
     : CSSValue(kIdentifierClass) {
   switch (fill_size) {
