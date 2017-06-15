@@ -29,6 +29,8 @@
  */
 
 #include "core/dom/Document.h"
+#include "core/dom/Element.h"
+#include "core/dom/shadow/ElementShadow.h"
 #include "core/frame/FrameTestHelpers.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/Location.h"
@@ -277,7 +279,7 @@ TEST_F(MHTMLTest, EnforceSandboxFlags) {
   const char kURL[] = "http://www.example.com";
 
   // Register the mocked frame and load it.
-  RegisterMockedURLLoad(kURL, "simple_test.mht");
+  RegisterMockedURLLoad(kURL, "page_with_javascript.mht");
   LoadURLInTopFrame(ToKURL(kURL));
   ASSERT_TRUE(GetPage());
   LocalFrame* frame = ToLocalFrame(GetPage()->MainFrame());
@@ -295,6 +297,43 @@ TEST_F(MHTMLTest, EnforceSandboxFlags) {
   EXPECT_TRUE(document->GetSecurityOrigin()->IsUnique());
   // Script execution should be disabled.
   EXPECT_FALSE(document->CanExecuteScripts(kNotAboutToExecuteScript));
+
+  // The element to be created by the script is not there.
+  EXPECT_FALSE(document->getElementById("mySpan"));
+}
+
+TEST_F(MHTMLTest, ShadowDom) {
+  const char kURL[] = "http://www.example.com";
+
+  // Register the mocked frame and load it.
+  RegisterMockedURLLoad(kURL, "shadow.mht");
+  LoadURLInTopFrame(ToKURL(kURL));
+  ASSERT_TRUE(GetPage());
+  LocalFrame* frame = ToLocalFrame(GetPage()->MainFrame());
+  ASSERT_TRUE(frame);
+  Document* document = frame->GetDocument();
+  ASSERT_TRUE(document);
+
+  EXPECT_TRUE(IsShadowHost(document->getElementById("h1")));
+  EXPECT_TRUE(IsShadowHost(document->getElementById("h2")));
+  // The nested shadow DOM tree is created.
+  EXPECT_TRUE(IsShadowHost(document->getElementById("h2")
+                               ->Shadow()
+                               ->OldestShadowRoot()
+                               .getElementById("h3")));
+
+  EXPECT_TRUE(IsShadowHost(document->getElementById("h4")));
+  // The static element in the shadow dom template is found.
+  EXPECT_TRUE(document->getElementById("h4")
+                  ->Shadow()
+                  ->OldestShadowRoot()
+                  .getElementById("s1"));
+  // The element to be created by the script in the shadow dom template is
+  // not found because the script is blocked.
+  EXPECT_FALSE(document->getElementById("h4")
+                   ->Shadow()
+                   ->OldestShadowRoot()
+                   .getElementById("s2"));
 }
 
 }  // namespace blink

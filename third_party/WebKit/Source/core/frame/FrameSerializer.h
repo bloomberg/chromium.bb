@@ -108,6 +108,13 @@ class CORE_EXPORT FrameSerializer final {
       return Vector<Attribute>();
     }
 
+    // Returns an auxiliary DOM tree, i.e. shadow tree, that needs to be
+    // serialized.
+    virtual std::pair<Node*, Element*> GetAuxiliaryDOMTree(
+        const Element&) const {
+      return std::pair<Node*, Element*>();
+    }
+
     virtual bool ShouldCollectProblemMetric() { return false; }
   };
 

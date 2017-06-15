@@ -34,6 +34,7 @@
 #include "core/InputTypeNames.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
+#include "core/dom/shadow/ElementShadow.h"
 #include "core/exported/WebRemoteFrameImpl.h"
 #include "core/frame/Frame.h"
 #include "core/frame/FrameSerializer.h"
@@ -81,13 +82,17 @@ namespace blink {
 namespace {
 
 const int kPopupOverlayZIndexThreshold = 50;
+const char kShadowModeAttributeName[] = "shadowmode";
+const char kShadowDelegatesFocusAttributeName[] = "shadowdelegatesfocus";
 
 class MHTMLFrameSerializerDelegate final : public FrameSerializer::Delegate {
+  STACK_ALLOCATED();
   WTF_MAKE_NONCOPYABLE(MHTMLFrameSerializerDelegate);
 
  public:
-  explicit MHTMLFrameSerializerDelegate(
-      WebFrameSerializer::MHTMLPartsGenerationDelegate&);
+  MHTMLFrameSerializerDelegate(
+      WebFrameSerializer::MHTMLPartsGenerationDelegate&,
+      HeapHashSet<WeakMember<const Element>>&);
   ~MHTMLFrameSerializerDelegate() override;
   bool ShouldIgnoreElement(const Element&) override;
   bool ShouldIgnoreAttribute(const Element&, const Attribute&) override;
@@ -96,6 +101,7 @@ class MHTMLFrameSerializerDelegate final : public FrameSerializer::Delegate {
   bool ShouldSkipResource(
       FrameSerializer::ResourceHasCacheControlNoStoreHeader) override;
   Vector<Attribute> GetCustomAttributes(const Element&) override;
+  std::pair<Node*, Element*> GetAuxiliaryDOMTree(const Element&) const override;
   bool ShouldCollectProblemMetric() override;
 
  private:
@@ -108,12 +114,16 @@ class MHTMLFrameSerializerDelegate final : public FrameSerializer::Delegate {
                                                 Vector<Attribute>*);
 
   WebFrameSerializer::MHTMLPartsGenerationDelegate& web_delegate_;
+  HeapHashSet<WeakMember<const Element>>& shadow_template_elements_;
   bool popup_overlays_skipped_;
 };
 
 MHTMLFrameSerializerDelegate::MHTMLFrameSerializerDelegate(
-    WebFrameSerializer::MHTMLPartsGenerationDelegate& web_delegate)
-    : web_delegate_(web_delegate), popup_overlays_skipped_(false) {}
+    WebFrameSerializer::MHTMLPartsGenerationDelegate& web_delegate,
+    HeapHashSet<WeakMember<const Element>>& shadow_template_elements)
+    : web_delegate_(web_delegate),
+      shadow_template_elements_(shadow_template_elements),
+      popup_overlays_skipped_(false) {}
 
 MHTMLFrameSerializerDelegate::~MHTMLFrameSerializerDelegate() {
   if (web_delegate_.RemovePopupOverlay()) {
@@ -201,6 +211,16 @@ bool MHTMLFrameSerializerDelegate::ShouldIgnoreAttribute(
   // MHTML.
   if (isHTMLAnchorElement(element) &&
       attribute.LocalName() == HTMLNames::pingAttr) {
+    return true;
+  }
+
+  // The special attribute in a template element to denote the shadow DOM
+  // should only be generated from MHTML serialization. If it is found in the
+  // original page, it should be ignored.
+  if (isHTMLTemplateElement(element) &&
+      (attribute.LocalName() == kShadowModeAttributeName ||
+       attribute.LocalName() == kShadowDelegatesFocusAttributeName) &&
+      !shadow_template_elements_.Contains(&element)) {
     return true;
   }
 
@@ -335,6 +355,48 @@ void MHTMLFrameSerializerDelegate::GetCustomAttributesForFormControlElement(
   attributes->push_back(disabled_attribute);
 }
 
+std::pair<Node*, Element*> MHTMLFrameSerializerDelegate::GetAuxiliaryDOMTree(
+    const Element& element) const {
+  const ElementShadow* shadow = element.Shadow();
+  if (!shadow)
+    return std::pair<Node*, Element*>();
+  ShadowRoot& shadow_root = shadow->OldestShadowRoot();
+
+  String shadow_mode;
+  switch (shadow_root.GetType()) {
+    case ShadowRootType::kUserAgent:
+      // No need to serialize.
+      return std::pair<Node*, Element*>();
+    case ShadowRootType::V0:
+      shadow_mode = "v0";
+      break;
+    case ShadowRootType::kOpen:
+      shadow_mode = "open";
+      break;
+    case ShadowRootType::kClosed:
+      shadow_mode = "closed";
+      break;
+  }
+
+  // Put the shadow DOM content inside a template element. A special attribute
+  // is set to tell the mode of the shadow DOM.
+  Element* template_element =
+      Element::Create(HTMLNames::templateTag, &(element.GetDocument()));
+  template_element->setAttribute(
+      QualifiedName(g_null_atom, kShadowModeAttributeName, g_null_atom),
+      AtomicString(shadow_mode));
+  if (shadow_root.GetType() != ShadowRootType::V0 &&
+      shadow_root.delegatesFocus()) {
+    template_element->setAttribute(
+        QualifiedName(g_null_atom, kShadowDelegatesFocusAttributeName,
+                      g_null_atom),
+        g_empty_atom);
+  }
+  shadow_template_elements_.insert(template_element);
+
+  return std::pair<Node*, Element*>(&shadow_root, template_element);
+}
+
 bool CacheControlNoStoreHeaderPresent(
     const WebLocalFrameBase& web_local_frame) {
   const ResourceResponse& response =
@@ -420,7 +482,9 @@ WebThreadSafeData WebFrameSerializer::GenerateMHTMLParts(
   {
     SCOPED_BLINK_UMA_HISTOGRAM_TIMER(
         "PageSerialization.MhtmlGeneration.SerializationTime.SingleFrame");
-    MHTMLFrameSerializerDelegate core_delegate(*web_delegate);
+    HeapHashSet<WeakMember<const Element>> shadow_template_elements;
+    MHTMLFrameSerializerDelegate core_delegate(*web_delegate,
+                                               shadow_template_elements);
     FrameSerializer serializer(resources, core_delegate);
     serializer.SerializeFrame(*frame);
   }

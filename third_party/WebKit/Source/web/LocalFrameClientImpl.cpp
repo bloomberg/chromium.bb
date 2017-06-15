@@ -212,6 +212,45 @@ void LocalFrameClientImpl::RunScriptsAtDocumentElementAvailable() {
 }
 
 void LocalFrameClientImpl::RunScriptsAtDocumentReady(bool document_is_empty) {
+  if (!document_is_empty && IsLoadedAsMHTMLArchive(web_frame_->GetFrame())) {
+    // For MHTML pages, recreate the shadow DOM contents from the templates that
+    // are captured from the shadow DOM trees at serialization.
+    // Note that the MHTML page is loaded in sandboxing mode with script
+    // execution disabled and thus only the following script will be executed.
+    // Any other scripts and event handlers outside the scope of the following
+    // script, including those that may be inserted in shadow DOM templates,
+    // will NOT be run.
+    String script = R"(
+function createShadowRootWithin(node) {
+  var nodes = node.querySelectorAll('template[shadowmode]');
+  for (var i = 0; i < nodes.length; ++i) {
+    var template = nodes[i];
+    var mode = template.getAttribute('shadowmode');
+    var parent = template.parentNode;
+    if (!parent)
+      continue;
+    parent.removeChild(template);
+    var shadowRoot;
+    if (mode == 'v0') {
+      shadowRoot = parent.createShadowRoot();
+    } else if (mode == 'open' || mode == 'closed') {
+      var delegatesFocus = template.hasAttribute('shadowdelegatesfocus');
+      shadowRoot = parent.attachShadow({'mode': mode,
+                                        'delegatesFocus': delegatesFocus});
+    }
+    if (!shadowRoot)
+      continue;
+    var clone = document.importNode(template.content, true);
+    shadowRoot.appendChild(clone);
+    createShadowRootWithin(shadowRoot);
+  }
+}
+createShadowRootWithin(document.body);
+)";
+    web_frame_->GetFrame()->GetScriptController().ExecuteScriptInMainWorld(
+        script, ScriptController::kExecuteScriptWhenScriptsDisabled);
+  }
+
   if (web_frame_->Client()) {
     web_frame_->Client()->RunScriptsAtDocumentReady(document_is_empty);
   }
