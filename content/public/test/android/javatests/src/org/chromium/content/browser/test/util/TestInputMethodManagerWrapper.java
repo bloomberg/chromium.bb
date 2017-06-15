@@ -39,7 +39,6 @@ public class TestInputMethodManagerWrapper extends InputMethodManagerWrapper {
     private final List<Pair<Range, Range>> mUpdateSelectionList;
     private int mUpdateCursorAnchorInfoCounter;
     private CursorAnchorInfo mLastCursorAnchorInfo;
-    private final ArrayList<EditorInfo> mEditorInfoList = new ArrayList<>();
 
     public TestInputMethodManagerWrapper(ContentViewCore contentViewCore) {
         super(null);
@@ -54,7 +53,6 @@ public class TestInputMethodManagerWrapper extends InputMethodManagerWrapper {
         Log.d(TAG, "restartInput: count [%d]", mRestartInputCounter);
         EditorInfo editorInfo = new EditorInfo();
         mInputConnection = mContentViewCore.onCreateInputConnection(editorInfo);
-        mEditorInfoList.add(editorInfo);
     }
 
     @Override
@@ -65,7 +63,6 @@ public class TestInputMethodManagerWrapper extends InputMethodManagerWrapper {
         if (mInputConnection != null) return;
         EditorInfo editorInfo = new EditorInfo();
         mInputConnection = mContentViewCore.onCreateInputConnection(editorInfo);
-        mEditorInfoList.add(editorInfo);
     }
 
     @Override
@@ -141,7 +138,6 @@ public class TestInputMethodManagerWrapper extends InputMethodManagerWrapper {
         mShowSoftInputCounter = 0;
         mHideSoftInputCounter = 0;
         mUpdateSelectionList.clear();
-        mEditorInfoList.clear();
     }
 
     public InputConnection getInputConnection() {
@@ -170,10 +166,6 @@ public class TestInputMethodManagerWrapper extends InputMethodManagerWrapper {
 
     public CursorAnchorInfo getLastCursorAnchorInfo() {
         return mLastCursorAnchorInfo;
-    }
-
-    public ArrayList<EditorInfo> getEditorInfoList() {
-        return mEditorInfoList;
     }
 
     public void onUpdateSelection(Range oldSel, Range oldComp, Range newSel, Range newComp) {}

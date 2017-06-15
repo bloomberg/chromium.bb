@@ -82,7 +82,6 @@ class CORE_EXPORT FocusController final
       LocalFrame* to,
       InputDeviceCapabilities* source_capabilities = nullptr);
   Element* FindFocusableElementInShadowHost(const Element& shadow_host);
-  Element* NextFocusableElementInForm(Element*, WebFocusType);
 
   bool SetFocusedElement(Element*, Frame*, const FocusParams&);
   // |setFocusedElement| variant with SelectionBehaviorOnFocus::None,
