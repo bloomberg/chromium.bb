@@ -69,6 +69,7 @@ class ContentSubresourceFilterDriverFactory
 
   // ContentSubresourceFilterThrottleManager::Delegate:
   void OnFirstSubresourceLoadDisallowed() override;
+  bool AllowStrongPopupBlocking() override;
 
   ContentSubresourceFilterThrottleManager* throttle_manager() {
     return throttle_manager_.get();
