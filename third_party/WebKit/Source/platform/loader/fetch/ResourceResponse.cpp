@@ -75,32 +75,32 @@ ResourceResponse::SignedCertificateTimestamp::IsolatedCopy() const {
 
 ResourceResponse::ResourceResponse()
     : expected_content_length_(0),
-      http_status_code_(0),
-      was_cached_(false),
       connection_id_(0),
+      http_status_code_(0),
+      remote_port_(0),
+      was_cached_(false),
       connection_reused_(false),
       is_null_(true),
       have_parsed_age_header_(false),
       have_parsed_date_header_(false),
       have_parsed_expires_header_(false),
       have_parsed_last_modified_header_(false),
-      age_(0.0),
-      date_(0.0),
-      expires_(0.0),
-      last_modified_(0.0),
       has_major_certificate_errors_(false),
-      security_style_(kSecurityStyleUnknown),
-      http_version_(kHTTPVersionUnknown),
-      app_cache_id_(0),
       was_fetched_via_spdy_(false),
       was_fetched_via_proxy_(false),
       was_fetched_via_service_worker_(false),
       was_fetched_via_foreign_fetch_(false),
       was_fallback_required_by_service_worker_(false),
-      service_worker_response_type_(kWebServiceWorkerResponseTypeDefault),
       did_service_worker_navigation_preload_(false),
+      service_worker_response_type_(kWebServiceWorkerResponseTypeDefault),
+      http_version_(kHTTPVersionUnknown),
+      security_style_(kSecurityStyleUnknown),
+      age_(0.0),
+      date_(0.0),
+      expires_(0.0),
+      last_modified_(0.0),
+      app_cache_id_(0),
       response_time_(0),
-      remote_port_(0),
       encoded_data_length_(0),
       encoded_body_length_(0),
       decoded_body_length_(0) {}
@@ -113,32 +113,32 @@ ResourceResponse::ResourceResponse(const KURL& url,
       mime_type_(mime_type),
       expected_content_length_(expected_length),
       text_encoding_name_(text_encoding_name),
-      http_status_code_(0),
-      was_cached_(false),
       connection_id_(0),
+      http_status_code_(0),
+      remote_port_(0),
+      was_cached_(false),
       connection_reused_(false),
       is_null_(false),
       have_parsed_age_header_(false),
       have_parsed_date_header_(false),
       have_parsed_expires_header_(false),
       have_parsed_last_modified_header_(false),
-      age_(0.0),
-      date_(0.0),
-      expires_(0.0),
-      last_modified_(0.0),
       has_major_certificate_errors_(false),
-      security_style_(kSecurityStyleUnknown),
-      http_version_(kHTTPVersionUnknown),
-      app_cache_id_(0),
       was_fetched_via_spdy_(false),
       was_fetched_via_proxy_(false),
       was_fetched_via_service_worker_(false),
       was_fetched_via_foreign_fetch_(false),
       was_fallback_required_by_service_worker_(false),
-      service_worker_response_type_(kWebServiceWorkerResponseTypeDefault),
       did_service_worker_navigation_preload_(false),
+      service_worker_response_type_(kWebServiceWorkerResponseTypeDefault),
+      http_version_(kHTTPVersionUnknown),
+      security_style_(kSecurityStyleUnknown),
+      age_(0.0),
+      date_(0.0),
+      expires_(0.0),
+      last_modified_(0.0),
+      app_cache_id_(0),
       response_time_(0),
-      remote_port_(0),
       encoded_data_length_(0),
       encoded_body_length_(0),
       decoded_body_length_(0) {}
@@ -155,7 +155,18 @@ ResourceResponse::ResourceResponse(CrossThreadResourceResponseData* data)
 
   http_header_fields_.Adopt(std::move(data->http_headers_));
   SetResourceLoadTiming(std::move(data->resource_load_timing_));
+  remote_ip_address_ = AtomicString(data->remote_ip_address_);
+  remote_port_ = data->remote_port_;
   has_major_certificate_errors_ = data->has_major_certificate_errors_;
+  was_fetched_via_spdy_ = data->was_fetched_via_spdy_;
+  was_fetched_via_proxy_ = data->was_fetched_via_proxy_;
+  was_fetched_via_service_worker_ = data->was_fetched_via_service_worker_;
+  was_fetched_via_foreign_fetch_ = data->was_fetched_via_foreign_fetch_;
+  was_fallback_required_by_service_worker_ =
+      data->was_fallback_required_by_service_worker_;
+  did_service_worker_navigation_preload_ =
+      data->did_service_worker_navigation_preload_;
+  service_worker_response_type_ = data->service_worker_response_type_;
   security_style_ = data->security_style_;
   security_details_.protocol = data->security_details_.protocol;
   security_details_.cipher = data->security_details_.cipher;
@@ -175,20 +186,9 @@ ResourceResponse::ResourceResponse(CrossThreadResourceResponseData* data)
   app_cache_id_ = data->app_cache_id_;
   app_cache_manifest_url_ = data->app_cache_manifest_url_.Copy();
   multipart_boundary_ = data->multipart_boundary_;
-  was_fetched_via_spdy_ = data->was_fetched_via_spdy_;
-  was_fetched_via_proxy_ = data->was_fetched_via_proxy_;
-  was_fetched_via_service_worker_ = data->was_fetched_via_service_worker_;
-  was_fetched_via_foreign_fetch_ = data->was_fetched_via_foreign_fetch_;
-  was_fallback_required_by_service_worker_ =
-      data->was_fallback_required_by_service_worker_;
-  service_worker_response_type_ = data->service_worker_response_type_;
   url_list_via_service_worker_ = data->url_list_via_service_worker_;
   cache_storage_cache_name_ = data->cache_storage_cache_name_;
-  did_service_worker_navigation_preload_ =
-      data->did_service_worker_navigation_preload_;
   response_time_ = data->response_time_;
-  remote_ip_address_ = AtomicString(data->remote_ip_address_);
-  remote_port_ = data->remote_port_;
   encoded_data_length_ = data->encoded_data_length_;
   encoded_body_length_ = data->encoded_body_length_;
   decoded_body_length_ = data->decoded_body_length_;
@@ -216,7 +216,18 @@ std::unique_ptr<CrossThreadResourceResponseData> ResourceResponse::CopyData()
   data->http_headers_ = HttpHeaderFields().CopyData();
   if (resource_load_timing_)
     data->resource_load_timing_ = resource_load_timing_->DeepCopy();
+  data->remote_ip_address_ = remote_ip_address_.GetString().IsolatedCopy();
+  data->remote_port_ = remote_port_;
   data->has_major_certificate_errors_ = has_major_certificate_errors_;
+  data->was_fetched_via_spdy_ = was_fetched_via_spdy_;
+  data->was_fetched_via_proxy_ = was_fetched_via_proxy_;
+  data->was_fetched_via_service_worker_ = was_fetched_via_service_worker_;
+  data->was_fetched_via_foreign_fetch_ = was_fetched_via_foreign_fetch_;
+  data->was_fallback_required_by_service_worker_ =
+      was_fallback_required_by_service_worker_;
+  data->did_service_worker_navigation_preload_ =
+      did_service_worker_navigation_preload_;
+  data->service_worker_response_type_ = service_worker_response_type_;
   data->security_style_ = security_style_;
   data->security_details_.protocol = security_details_.protocol.IsolatedCopy();
   data->security_details_.cipher = security_details_.cipher.IsolatedCopy();
@@ -238,13 +249,6 @@ std::unique_ptr<CrossThreadResourceResponseData> ResourceResponse::CopyData()
   data->app_cache_id_ = app_cache_id_;
   data->app_cache_manifest_url_ = app_cache_manifest_url_.Copy();
   data->multipart_boundary_ = multipart_boundary_;
-  data->was_fetched_via_spdy_ = was_fetched_via_spdy_;
-  data->was_fetched_via_proxy_ = was_fetched_via_proxy_;
-  data->was_fetched_via_service_worker_ = was_fetched_via_service_worker_;
-  data->was_fetched_via_foreign_fetch_ = was_fetched_via_foreign_fetch_;
-  data->was_fallback_required_by_service_worker_ =
-      was_fallback_required_by_service_worker_;
-  data->service_worker_response_type_ = service_worker_response_type_;
   data->url_list_via_service_worker_.resize(
       url_list_via_service_worker_.size());
   std::transform(url_list_via_service_worker_.begin(),
@@ -252,11 +256,7 @@ std::unique_ptr<CrossThreadResourceResponseData> ResourceResponse::CopyData()
                  data->url_list_via_service_worker_.begin(),
                  [](const KURL& url) { return url.Copy(); });
   data->cache_storage_cache_name_ = CacheStorageCacheName().IsolatedCopy();
-  data->did_service_worker_navigation_preload_ =
-      did_service_worker_navigation_preload_;
   data->response_time_ = response_time_;
-  data->remote_ip_address_ = remote_ip_address_.GetString().IsolatedCopy();
-  data->remote_port_ = remote_port_;
   data->encoded_data_length_ = encoded_data_length_;
   data->encoded_body_length_ = encoded_body_length_;
   data->decoded_body_length_ = decoded_body_length_;

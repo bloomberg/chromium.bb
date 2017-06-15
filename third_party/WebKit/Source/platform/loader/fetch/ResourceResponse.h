@@ -49,14 +49,14 @@ class PLATFORM_EXPORT ResourceResponse final {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  enum HTTPVersion {
+  enum HTTPVersion : uint8_t {
     kHTTPVersionUnknown,
     kHTTPVersion_0_9,
     kHTTPVersion_1_0,
     kHTTPVersion_1_1,
     kHTTPVersion_2_0
   };
-  enum SecurityStyle {
+  enum SecurityStyle : uint8_t {
     kSecurityStyleUnknown,
     kSecurityStyleUnauthenticated,
     kSecurityStyleAuthenticationBroken,
@@ -382,32 +382,53 @@ class PLATFORM_EXPORT ResourceResponse final {
   AtomicString mime_type_;
   long long expected_content_length_;
   AtomicString text_encoding_name_;
+  unsigned connection_id_;
   int http_status_code_;
   AtomicString http_status_text_;
   HTTPHeaderMap http_header_fields_;
+
+  // Remote IP address of the socket which fetched this resource.
+  AtomicString remote_ip_address_;
+
+  // Remote port number of the socket which fetched this resource.
+  unsigned short remote_port_;
+
   bool was_cached_ : 1;
-  unsigned connection_id_;
   bool connection_reused_ : 1;
-  RefPtr<ResourceLoadTiming> resource_load_timing_;
-  RefPtr<ResourceLoadInfo> resource_load_info_;
-
   bool is_null_ : 1;
-
-  mutable CacheControlHeader cache_control_header_;
-
   mutable bool have_parsed_age_header_ : 1;
   mutable bool have_parsed_date_header_ : 1;
   mutable bool have_parsed_expires_header_ : 1;
   mutable bool have_parsed_last_modified_header_ : 1;
 
-  mutable double age_;
-  mutable double date_;
-  mutable double expires_;
-  mutable double last_modified_;
-
   // True if the resource was retrieved by the embedder in spite of
   // certificate errors.
-  bool has_major_certificate_errors_;
+  bool has_major_certificate_errors_ : 1;
+
+  // Was the resource fetched over SPDY.  See http://dev.chromium.org/spdy
+  bool was_fetched_via_spdy_ : 1;
+
+  // Was the resource fetched over an explicit proxy (HTTP, SOCKS, etc).
+  bool was_fetched_via_proxy_ : 1;
+
+  // Was the resource fetched over a ServiceWorker.
+  bool was_fetched_via_service_worker_ : 1;
+
+  // Was the resource fetched using a foreign fetch service worker.
+  bool was_fetched_via_foreign_fetch_ : 1;
+
+  // Was the fallback request with skip service worker flag required.
+  bool was_fallback_required_by_service_worker_ : 1;
+
+  // True if service worker navigation preload was performed due to
+  // the request for this resource.
+  bool did_service_worker_navigation_preload_ : 1;
+
+  // The type of the response which was fetched by the ServiceWorker.
+  WebServiceWorkerResponseType service_worker_response_type_;
+
+  // HTTP version used in the response, if known.
+  HTTPVersion http_version_;
 
   // The security style of the resource.
   // This only contains a valid value when the DevTools Network domain is
@@ -419,8 +440,15 @@ class PLATFORM_EXPORT ResourceResponse final {
   // valid data.
   SecurityDetails security_details_;
 
-  // HTTP version used in the response, if known.
-  HTTPVersion http_version_;
+  RefPtr<ResourceLoadTiming> resource_load_timing_;
+  RefPtr<ResourceLoadInfo> resource_load_info_;
+
+  mutable CacheControlHeader cache_control_header_;
+
+  mutable double age_;
+  mutable double date_;
+  mutable double expires_;
+  mutable double last_modified_;
 
   // The id of the appcache this response was retrieved from, or zero if
   // the response was not retrieved from an appcache.
@@ -432,24 +460,6 @@ class PLATFORM_EXPORT ResourceResponse final {
 
   // The multipart boundary of this response.
   Vector<char> multipart_boundary_;
-
-  // Was the resource fetched over SPDY.  See http://dev.chromium.org/spdy
-  bool was_fetched_via_spdy_;
-
-  // Was the resource fetched over an explicit proxy (HTTP, SOCKS, etc).
-  bool was_fetched_via_proxy_;
-
-  // Was the resource fetched over a ServiceWorker.
-  bool was_fetched_via_service_worker_;
-
-  // Was the resource fetched using a foreign fetch service worker.
-  bool was_fetched_via_foreign_fetch_;
-
-  // Was the fallback request with skip service worker flag required.
-  bool was_fallback_required_by_service_worker_;
-
-  // The type of the response which was fetched by the ServiceWorker.
-  WebServiceWorkerResponseType service_worker_response_type_;
 
   // The URL list of the response which was fetched by the ServiceWorker.
   // This is empty if the response was created inside the ServiceWorker.
@@ -463,19 +473,9 @@ class PLATFORM_EXPORT ResourceResponse final {
   // to be set if the response was fetched by a ServiceWorker.
   Vector<String> cors_exposed_header_names_;
 
-  // True if service worker navigation preload was performed due to
-  // the request for this resource.
-  bool did_service_worker_navigation_preload_;
-
   // The time at which the response headers were received.  For cached
   // responses, this time could be "far" in the past.
   int64_t response_time_;
-
-  // Remote IP address of the socket which fetched this resource.
-  AtomicString remote_ip_address_;
-
-  // Remote port number of the socket which fetched this resource.
-  unsigned short remote_port_;
 
   // Size of the response in bytes prior to decompression.
   long long encoded_data_length_;

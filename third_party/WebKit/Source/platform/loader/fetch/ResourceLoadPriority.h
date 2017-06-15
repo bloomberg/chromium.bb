@@ -30,7 +30,7 @@
 
 namespace blink {
 
-enum ResourceLoadPriority : int {
+enum ResourceLoadPriority : int8_t {
   // The unresolved priority is here for the convenience of the clients. It
   // should not be passed to the ResourceLoadScheduler.
   kResourceLoadPriorityUnresolved = -1,

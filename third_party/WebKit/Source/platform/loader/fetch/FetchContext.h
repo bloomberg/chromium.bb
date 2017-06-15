@@ -42,6 +42,7 @@
 #include "platform/weborigin/SecurityViolationReportingPolicy.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Noncopyable.h"
+#include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebURLLoader.h"
 
 namespace blink {
@@ -53,7 +54,6 @@ class PlatformProbeSink;
 class ResourceError;
 class ResourceResponse;
 class ResourceTimingInfo;
-enum class WebCachePolicy;
 
 enum FetchResourceType { kFetchMainResource, kFetchSubresource };
 

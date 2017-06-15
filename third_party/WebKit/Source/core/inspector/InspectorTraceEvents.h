@@ -13,6 +13,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/instrumentation/tracing/TracedValue.h"
+#include "platform/loader/fetch/ResourceLoadPriority.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Functional.h"
 
@@ -63,8 +64,6 @@ class CallFunction;
 class ExecuteScript;
 class ParseHTML;
 }
-
-enum ResourceLoadPriority : int;
 
 class CORE_EXPORT InspectorTraceEvents : public InspectorAgent {
   WTF_MAKE_NONCOPYABLE(InspectorTraceEvents);

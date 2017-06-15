@@ -34,7 +34,7 @@
 
 namespace blink {
 
-enum ReferrerPolicy {
+enum ReferrerPolicy : uint8_t {
   // https://w3c.github.io/webappsec/specs/referrer-policy/#referrer-policy-state-unsafe-url
   kReferrerPolicyAlways,
   // The default policy, if no policy is explicitly set by the page.

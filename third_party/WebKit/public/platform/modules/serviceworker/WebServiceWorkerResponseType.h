@@ -8,7 +8,7 @@
 namespace blink {
 
 // This enum is used for histograms so append only.
-enum WebServiceWorkerResponseType {
+enum WebServiceWorkerResponseType : uint8_t {
   kWebServiceWorkerResponseTypeBasic,
   kWebServiceWorkerResponseTypeCORS,
   kWebServiceWorkerResponseTypeDefault,
