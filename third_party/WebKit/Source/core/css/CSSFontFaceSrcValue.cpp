@@ -77,17 +77,6 @@ bool CSSFontFaceSrcValue::HasFailedOrCanceledSubresources() const {
   return fetched_ && fetched_->GetResource()->LoadFailedOrCanceled();
 }
 
-static void SetCrossOriginAccessControl(FetchParameters& params,
-                                        SecurityOrigin* security_origin) {
-  // Local fonts are accessible from file: URLs even when
-  // allowFileAccessFromFileURLs is false.
-  if (params.Url().IsLocalFile())
-    return;
-
-  params.SetCrossOriginAccessControl(security_origin,
-                                     kCrossOriginAttributeAnonymous);
-}
-
 FontResource* CSSFontFaceSrcValue::Fetch(Document* document) const {
   if (!fetched_) {
     ResourceRequest resource_request(absolute_resource_);
@@ -101,7 +90,14 @@ FontResource* CSSFontFaceSrcValue::Fetch(Document* document) const {
       params.SetCacheAwareLoadingEnabled(kIsCacheAwareLoadingEnabled);
     params.SetContentSecurityCheck(should_check_content_security_policy_);
     SecurityOrigin* security_origin = document->GetSecurityOrigin();
-    SetCrossOriginAccessControl(params, security_origin);
+
+    // Local fonts are accessible from file: URLs even when
+    // allowFileAccessFromFileURLs is false.
+    if (!params.Url().IsLocalFile()) {
+      params.SetCrossOriginAccessControl(security_origin,
+                                         kCrossOriginAttributeAnonymous);
+    }
+
     FontResource* resource = FontResource::Fetch(params, document->Fetcher());
     if (!resource)
       return nullptr;
