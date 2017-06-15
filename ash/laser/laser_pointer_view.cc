@@ -461,7 +461,7 @@ void LaserPointerView::OnPointsUpdated() {
 }
 
 void LaserPointerView::UpdateBuffer() {
-  TRACE_EVENT1("ui", "LaserPointerView::UpdatedBuffer", "damage",
+  TRACE_EVENT1("ui", "LaserPointerView::UpdateBuffer", "damage",
                buffer_damage_rect_.ToString());
 
   DCHECK(pending_update_buffer_);
@@ -477,6 +477,8 @@ void LaserPointerView::UpdateBuffer() {
   // minimal latency but potential tearing. Note that we have to draw into
   // a temporary surface and copy it into GPU memory buffer to avoid flicker.
   if (!gpu_memory_buffer_) {
+    TRACE_EVENT0("ui", "LaserPointerView::UpdateBuffer::Create");
+
     gpu_memory_buffer_ =
         aura::Env::GetInstance()
             ->context_factory()
@@ -522,6 +524,9 @@ void LaserPointerView::UpdateBuffer() {
   int num_points = laser_points_.GetNumberOfPoints() +
                    predicted_laser_points_.GetNumberOfPoints();
   if (num_points) {
+    TRACE_EVENT1("ui", "LaserPointerView::UpdateBuffer::Paint", "update_rect",
+                 update_rect.ToString());
+
     LaserPointerPoints::LaserPoint previous_point = laser_points_.GetOldest();
     previous_point.location -= widget_offset + update_rect.OffsetFromOrigin();
     LaserPointerPoints::LaserPoint current_point;
@@ -577,15 +582,16 @@ void LaserPointerView::UpdateBuffer() {
     canvas.DrawCircle(current_point.location, kPointInitialRadius, flags);
   }
 
+  // Convert update rectangle to pixel coordinates.
+  gfx::Rect pixel_rect = gfx::ScaleToEnclosingRect(update_rect, scale_factor_);
+
   // Copy result to GPU memory buffer. This is effectiely a memcpy and unlike
   // drawing to the buffer directly this ensures that the buffer is never in a
   // state that would result in flicker.
   {
-    TRACE_EVENT0("ui", "LaserPointerView::OnPointsUpdated::Copy");
+    TRACE_EVENT1("ui", "LaserPointerView::UpdateBuffer::Copy", "pixel_rect",
+                 pixel_rect.ToString());
 
-    // Convert update rectangle to pixel coordinates.
-    gfx::Rect pixel_rect =
-        gfx::ScaleToEnclosingRect(update_rect, scale_factor_);
     uint8_t* data = static_cast<uint8_t*>(gpu_memory_buffer_->memory(0));
     int stride = gpu_memory_buffer_->stride(0);
     canvas.GetBitmap().readPixels(
@@ -609,7 +615,7 @@ void LaserPointerView::UpdateBuffer() {
 }
 
 void LaserPointerView::UpdateSurface() {
-  TRACE_EVENT1("ui", "LaserPointerView::UpdatedSurface", "damage",
+  TRACE_EVENT1("ui", "LaserPointerView::UpdateSurface", "damage",
                surface_damage_rect_.ToString());
 
   DCHECK(needs_update_surface_);
