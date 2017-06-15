@@ -39,7 +39,7 @@ ScopedJavaLocalRef<jobject> ParseData(
         base::android::ConvertUTF8ToJavaString(env, error_message);
     return Java_ValidationTestUtil_buildData(env, nullptr, 0, j_error_message);
   }
-  void* data_ptr = &data[0];
+  void* data_ptr = data.data();
   if (!data_ptr) {
     DCHECK(!data.size());
     data_ptr = &data;

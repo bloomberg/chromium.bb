@@ -71,12 +71,11 @@ public class ConnectorTest extends MojoTestCase {
     public void testSendingMessage() {
         mConnector.accept(mTestMessage);
         assertNull(mErrorHandler.getLastMojoException());
-        ByteBuffer received = ByteBuffer.allocateDirect(DATA_LENGTH);
         ResultAnd<MessagePipeHandle.ReadMessageResult> result =
-                mHandle.readMessage(received, 0, MessagePipeHandle.ReadFlags.NONE);
+                mHandle.readMessage(MessagePipeHandle.ReadFlags.NONE);
         assertEquals(MojoResult.OK, result.getMojoResult());
-        assertEquals(DATA_LENGTH, result.getValue().getMessageSize());
-        assertEquals(mTestMessage.getData(), received);
+        assertEquals(DATA_LENGTH, result.getValue().mData.length);
+        assertEquals(mTestMessage.getData(), ByteBuffer.wrap(result.getValue().mData));
     }
 
     /**

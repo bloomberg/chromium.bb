@@ -82,25 +82,12 @@ public class CoreImplTest extends MojoTestCase {
         buffer.put(bytes);
         in.writeMessage(buffer, null, MessagePipeHandle.WriteFlags.NONE);
 
-        // Try to read into a small buffer.
-        ByteBuffer receiveBuffer = ByteBuffer.allocateDirect(bytes.length / 2);
+        // Read the message back.
         ResultAnd<MessagePipeHandle.ReadMessageResult> result =
-                out.readMessage(receiveBuffer, 0, MessagePipeHandle.ReadFlags.NONE);
-        assertEquals(MojoResult.RESOURCE_EXHAUSTED, result.getMojoResult());
-        assertEquals(bytes.length, result.getValue().getMessageSize());
-        assertEquals(0, result.getValue().getHandlesCount());
-
-        // Read into a correct buffer.
-        receiveBuffer = ByteBuffer.allocateDirect(bytes.length);
-        result = out.readMessage(receiveBuffer, 0, MessagePipeHandle.ReadFlags.NONE);
+                out.readMessage(MessagePipeHandle.ReadFlags.NONE);
         assertEquals(MojoResult.OK, result.getMojoResult());
-        assertEquals(bytes.length, result.getValue().getMessageSize());
-        assertEquals(0, result.getValue().getHandlesCount());
-        assertEquals(0, receiveBuffer.position());
-        assertEquals(result.getValue().getMessageSize(), receiveBuffer.limit());
-        byte[] receivedBytes = new byte[result.getValue().getMessageSize()];
-        receiveBuffer.get(receivedBytes);
-        assertTrue(Arrays.equals(bytes, receivedBytes));
+        assertTrue(Arrays.equals(bytes, result.getValue().mData));
+        assertEquals(0, result.getValue().mHandles.size());
     }
 
     private static void checkSendingData(DataPipe.ProducerHandle in, DataPipe.ConsumerHandle out) {
@@ -217,7 +204,7 @@ public class CoreImplTest extends MojoTestCase {
 
         // Testing read on an empty pipe.
         ResultAnd<MessagePipeHandle.ReadMessageResult> readResult =
-                handles.first.readMessage(null, 0, MessagePipeHandle.ReadFlags.NONE);
+                handles.first.readMessage(MessagePipeHandle.ReadFlags.NONE);
         assertEquals(MojoResult.SHOULD_WAIT, readResult.getMojoResult());
 
         handles.first.close();
@@ -241,31 +228,6 @@ public class CoreImplTest extends MojoTestCase {
      * Testing {@link MessagePipeHandle}.
      */
     @SmallTest
-    public void testMessagePipeReceiveOnSmallBuffer() {
-        Random random = new Random();
-        Core core = CoreImpl.getInstance();
-        Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe(null);
-        addHandlePairToClose(handles);
-
-        // Writing a random 8 bytes message.
-        byte[] bytes = new byte[8];
-        random.nextBytes(bytes);
-        ByteBuffer buffer = ByteBuffer.allocateDirect(bytes.length);
-        buffer.put(bytes);
-        handles.first.writeMessage(buffer, null, MessagePipeHandle.WriteFlags.NONE);
-
-        ByteBuffer receiveBuffer = ByteBuffer.allocateDirect(1);
-        ResultAnd<MessagePipeHandle.ReadMessageResult> result =
-                handles.second.readMessage(receiveBuffer, 0, MessagePipeHandle.ReadFlags.NONE);
-        assertEquals(MojoResult.RESOURCE_EXHAUSTED, result.getMojoResult());
-        assertEquals(bytes.length, result.getValue().getMessageSize());
-        assertEquals(0, result.getValue().getHandlesCount());
-    }
-
-    /**
-     * Testing {@link MessagePipeHandle}.
-     */
-    @SmallTest
     public void testMessagePipeSendHandles() {
         Core core = CoreImpl.getInstance();
         Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe(null);
@@ -277,10 +239,10 @@ public class CoreImplTest extends MojoTestCase {
                 MessagePipeHandle.WriteFlags.NONE);
         assertFalse(handlesToShare.second.isValid());
         ResultAnd<MessagePipeHandle.ReadMessageResult> readMessageResult =
-                handles.second.readMessage(null, 1, MessagePipeHandle.ReadFlags.NONE);
-        assertEquals(1, readMessageResult.getValue().getHandlesCount());
+                handles.second.readMessage(MessagePipeHandle.ReadFlags.NONE);
+        assertEquals(1, readMessageResult.getValue().mHandles.size());
         MessagePipeHandle newHandle =
-                readMessageResult.getValue().getHandles().get(0).toMessagePipeHandle();
+                readMessageResult.getValue().mHandles.get(0).toMessagePipeHandle();
         addHandleToClose(newHandle);
         assertTrue(newHandle.isValid());
         checkSendingMessage(handlesToShare.first, newHandle);
@@ -441,21 +403,16 @@ public class CoreImplTest extends MojoTestCase {
         Core core = CoreImpl.getInstance();
         Handle handle = InvalidHandle.INSTANCE;
 
-        // Checking sending an invalid handle.
-        // Until the behavior is changed on the C++ side, handle gracefully 2 different use case:
-        // - Receive a INVALID_ARGUMENT exception
-        // - Receive an invalid handle on the other side.
+        // Checking sending an invalid handle. Should result in an ABORTED
+        // exception.
         Pair<MessagePipeHandle, MessagePipeHandle> handles = core.createMessagePipe(null);
         addHandlePairToClose(handles);
         try {
             handles.first.writeMessage(null, Collections.<Handle>singletonList(handle),
                     MessagePipeHandle.WriteFlags.NONE);
-            ResultAnd<MessagePipeHandle.ReadMessageResult> readMessageResult =
-                    handles.second.readMessage(null, 1, MessagePipeHandle.ReadFlags.NONE);
-            assertEquals(1, readMessageResult.getValue().getHandlesCount());
-            assertFalse(readMessageResult.getValue().getHandles().get(0).isValid());
+            fail();
         } catch (MojoException e) {
-            assertEquals(MojoResult.INVALID_ARGUMENT, e.getMojoResult());
+            assertEquals(MojoResult.ABORTED, e.getMojoResult());
         }
     }
 
