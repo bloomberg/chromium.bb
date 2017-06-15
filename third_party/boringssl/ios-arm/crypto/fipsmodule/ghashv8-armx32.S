@@ -3,9 +3,12 @@
 .text
 
 .code	32
+#undef	__thumb2__
 .globl	_gcm_init_v8
 .private_extern	_gcm_init_v8
-
+#ifdef __thumb2__
+.thumb_func	_gcm_init_v8
+#endif
 .align	4
 _gcm_init_v8:
 	vld1.64	{q9},[r1]		@ load input H
@@ -56,7 +59,9 @@ _gcm_init_v8:
 
 .globl	_gcm_gmult_v8
 .private_extern	_gcm_gmult_v8
-
+#ifdef __thumb2__
+.thumb_func	_gcm_gmult_v8
+#endif
 .align	4
 _gcm_gmult_v8:
 	vld1.64	{q9},[r0]		@ load Xi
@@ -98,7 +103,9 @@ _gcm_gmult_v8:
 
 .globl	_gcm_ghash_v8
 .private_extern	_gcm_ghash_v8
-
+#ifdef __thumb2__
+.thumb_func	_gcm_ghash_v8
+#endif
 .align	4
 _gcm_ghash_v8:
 	vstmdb	sp!,{d8,d9,d10,d11,d12,d13,d14,d15}		@ 32-bit ABI says so

@@ -1,3 +1,10 @@
+@ Copyright 2007-2016 The OpenSSL Project Authors. All Rights Reserved.
+@
+@ Licensed under the OpenSSL license (the "License").  You may not use
+@ this file except in compliance with the License.  You can obtain a copy
+@ in the file LICENSE in the source distribution or at
+@ https://www.openssl.org/source/license.html
+
 
 @ ====================================================================
 @ Written by Andy Polyakov <appro@openssl.org> for the OpenSSL
@@ -38,15 +45,12 @@
 #endif
 
 .text
-#if __ARM_ARCH__<7
-.code	32
-#else
+#if defined(__thumb2__) && !defined(__APPLE__)
 .syntax	unified
-# if defined(__thumb2__) && !defined(__APPLE__)
 .thumb
-# else
+#else
 .code	32
-# endif
+#undef __thumb2__
 #endif
 
 
@@ -159,10 +163,12 @@ AES_Te:
 @ 		       const AES_KEY *key) {
 .globl	_asm_AES_encrypt
 .private_extern	_asm_AES_encrypt
-
+#ifdef __thumb2__
+.thumb_func	_asm_AES_encrypt
+#endif
 .align	5
 _asm_AES_encrypt:
-#if __ARM_ARCH__<7
+#ifndef	__thumb2__
 	sub	r3,pc,#8		@ _asm_AES_encrypt
 #else
 	adr	r3,_asm_AES_encrypt
@@ -270,7 +276,9 @@ _asm_AES_encrypt:
 #endif
 
 
-
+#ifdef __thumb2__
+.thumb_func	_armv4_AES_encrypt
+#endif
 .align	2
 _armv4_AES_encrypt:
 	str	lr,[sp,#-4]!		@ push lr
@@ -409,23 +417,25 @@ Lenc_loop:
 
 .globl	_asm_AES_set_encrypt_key
 .private_extern	_asm_AES_set_encrypt_key
-
+#ifdef __thumb2__
+.thumb_func	_asm_AES_set_encrypt_key
+#endif
 .align	5
 _asm_AES_set_encrypt_key:
 _armv4_AES_set_encrypt_key:
-#if __ARM_ARCH__<7
+#ifndef	__thumb2__
 	sub	r3,pc,#8		@ _asm_AES_set_encrypt_key
 #else
 	adr	r3,_asm_AES_set_encrypt_key
 #endif
 	teq	r0,#0
-#if __ARM_ARCH__>=7
+#ifdef	__thumb2__
 	itt	eq			@ Thumb2 thing, sanity check in ARM
 #endif
 	moveq	r0,#-1
 	beq	Labrt
 	teq	r2,#0
-#if __ARM_ARCH__>=7
+#ifdef	__thumb2__
 	itt	eq			@ Thumb2 thing, sanity check in ARM
 #endif
 	moveq	r0,#-1
@@ -436,7 +446,7 @@ _armv4_AES_set_encrypt_key:
 	teq	r1,#192
 	beq	Lok
 	teq	r1,#256
-#if __ARM_ARCH__>=7
+#ifdef	__thumb2__
 	itt	ne			@ Thumb2 thing, sanity check in ARM
 #endif
 	movne	r0,#-1
@@ -597,7 +607,7 @@ L192_loop:
 	str	r2,[r11,#-16]
 	subs	r12,r12,#1
 	str	r3,[r11,#-12]
-#if __ARM_ARCH__>=7
+#ifdef	__thumb2__
 	itt	eq				@ Thumb2 thing, sanity check in ARM
 #endif
 	subeq	r2,r11,#216
@@ -669,7 +679,7 @@ L256_loop:
 	str	r2,[r11,#-24]
 	subs	r12,r12,#1
 	str	r3,[r11,#-20]
-#if __ARM_ARCH__>=7
+#ifdef	__thumb2__
 	itt	eq				@ Thumb2 thing, sanity check in ARM
 #endif
 	subeq	r2,r11,#256
@@ -716,7 +726,9 @@ Labrt:
 
 .globl	_asm_AES_set_decrypt_key
 .private_extern	_asm_AES_set_decrypt_key
-
+#ifdef __thumb2__
+.thumb_func	_asm_AES_set_decrypt_key
+#endif
 .align	5
 _asm_AES_set_decrypt_key:
 	str	lr,[sp,#-4]!            @ push lr
@@ -733,7 +745,9 @@ _asm_AES_set_decrypt_key:
 @ void AES_set_enc2dec_key(const AES_KEY *inp,AES_KEY *out)
 .globl	_AES_set_enc2dec_key
 .private_extern	_AES_set_enc2dec_key
-
+#ifdef __thumb2__
+.thumb_func	_AES_set_enc2dec_key
+#endif
 .align	5
 _AES_set_enc2dec_key:
 _armv4_AES_set_enc2dec_key:
@@ -742,7 +756,7 @@ _armv4_AES_set_enc2dec_key:
 	ldr	r12,[r0,#240]
 	mov	r7,r0			@ input
 	add	r8,r0,r12,lsl#4
-	mov	r11,r1			@ ouput
+	mov	r11,r1			@ output
 	add	r10,r1,r12,lsl#4
 	str	r12,[r1,#240]
 
@@ -934,10 +948,12 @@ AES_Td:
 @ 		       const AES_KEY *key) {
 .globl	_asm_AES_decrypt
 .private_extern	_asm_AES_decrypt
-
+#ifdef __thumb2__
+.thumb_func	_asm_AES_decrypt
+#endif
 .align	5
 _asm_AES_decrypt:
-#if __ARM_ARCH__<7
+#ifndef	__thumb2__
 	sub	r3,pc,#8		@ _asm_AES_decrypt
 #else
 	adr	r3,_asm_AES_decrypt
@@ -1045,7 +1061,9 @@ _asm_AES_decrypt:
 #endif
 
 
-
+#ifdef __thumb2__
+.thumb_func	_armv4_AES_decrypt
+#endif
 .align	2
 _armv4_AES_decrypt:
 	str	lr,[sp,#-4]!		@ push lr

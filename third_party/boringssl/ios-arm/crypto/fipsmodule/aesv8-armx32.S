@@ -5,6 +5,7 @@
 
 
 .code	32
+#undef	__thumb2__
 .align	5
 Lrcon:
 .long	0x01,0x01,0x01,0x01
@@ -13,7 +14,9 @@ Lrcon:
 
 .globl	_aes_hw_set_encrypt_key
 .private_extern	_aes_hw_set_encrypt_key
-
+#ifdef __thumb2__
+.thumb_func	_aes_hw_set_encrypt_key
+#endif
 .align	5
 _aes_hw_set_encrypt_key:
 Lenc_key:
@@ -184,7 +187,9 @@ Lenc_key_abort:
 
 .globl	_aes_hw_set_decrypt_key
 .private_extern	_aes_hw_set_decrypt_key
-
+#ifdef __thumb2__
+.thumb_func	_aes_hw_set_decrypt_key
+#endif
 .align	5
 _aes_hw_set_decrypt_key:
 	stmdb	sp!,{r4,lr}
@@ -222,7 +227,9 @@ Ldec_key_abort:
 
 .globl	_aes_hw_encrypt
 .private_extern	_aes_hw_encrypt
-
+#ifdef __thumb2__
+.thumb_func	_aes_hw_encrypt
+#endif
 .align	5
 _aes_hw_encrypt:
 	ldr	r3,[r2,#240]
@@ -252,7 +259,9 @@ Loop_enc:
 
 .globl	_aes_hw_decrypt
 .private_extern	_aes_hw_decrypt
-
+#ifdef __thumb2__
+.thumb_func	_aes_hw_decrypt
+#endif
 .align	5
 _aes_hw_decrypt:
 	ldr	r3,[r2,#240]
@@ -282,7 +291,9 @@ Loop_dec:
 
 .globl	_aes_hw_cbc_encrypt
 .private_extern	_aes_hw_cbc_encrypt
-
+#ifdef __thumb2__
+.thumb_func	_aes_hw_cbc_encrypt
+#endif
 .align	5
 _aes_hw_cbc_encrypt:
 	mov	ip,sp
@@ -575,7 +586,9 @@ Lcbc_abort:
 
 .globl	_aes_hw_ctr32_encrypt_blocks
 .private_extern	_aes_hw_ctr32_encrypt_blocks
-
+#ifdef __thumb2__
+.thumb_func	_aes_hw_ctr32_encrypt_blocks
+#endif
 .align	5
 _aes_hw_ctr32_encrypt_blocks:
 	mov	ip,sp
