@@ -60,8 +60,6 @@ BluetoothLowEnergyCharacteristicsFinder::
 void BluetoothLowEnergyCharacteristicsFinder::GattCharacteristicAdded(
     BluetoothAdapter* adapter,
     BluetoothRemoteGattCharacteristic* characteristic) {
-  PA_LOG(INFO) << "New char found: "
-               << characteristic->GetUUID().canonical_value();
   HandleCharacteristicUpdate(characteristic);
 }
 
@@ -69,9 +67,6 @@ void BluetoothLowEnergyCharacteristicsFinder::GattDiscoveryCompleteForService(
     BluetoothAdapter* adapter,
     BluetoothRemoteGattService* service) {
   if (service && service->GetUUID() == remote_service_.uuid) {
-    PA_LOG(INFO) << "All characteristics discovered for "
-                 << remote_service_.uuid.canonical_value();
-
     if (to_peripheral_char_.id.empty() || from_peripheral_char_.id.empty()) {
       if (!error_callback_.is_null()) {
         error_callback_.Run(to_peripheral_char_, from_peripheral_char_);
@@ -84,19 +79,14 @@ void BluetoothLowEnergyCharacteristicsFinder::GattDiscoveryCompleteForService(
 void BluetoothLowEnergyCharacteristicsFinder::ScanRemoteCharacteristics(
     BluetoothDevice* device,
     const BluetoothUUID& service_uuid) {
-  PA_LOG(INFO) << "Scanning remote characteristics.";
   if (device) {
     std::vector<BluetoothRemoteGattService*> services =
         device->GetGattServices();
-    PA_LOG(INFO) << device->GetAddress() << " has " << services.size()
-                 << " services.";
     for (const auto* service : services) {
       if (service->GetUUID() == service_uuid) {
         // Right service found, now scaning its characteristics.
         std::vector<device::BluetoothRemoteGattCharacteristic*>
             characteristics = service->GetCharacteristics();
-        PA_LOG(INFO) << "Service " << service_uuid.canonical_value() << " has "
-                     << characteristics.size() << " characteristics.";
         for (auto* characteristic : characteristics) {
           HandleCharacteristicUpdate(characteristic);
         }
@@ -112,7 +102,6 @@ void BluetoothLowEnergyCharacteristicsFinder::HandleCharacteristicUpdate(
 
   if (!to_peripheral_char_.id.empty() && !from_peripheral_char_.id.empty() &&
       !success_callback_.is_null()) {
-    PA_LOG(INFO) << "Found write and read characteristics on remote device.";
     success_callback_.Run(remote_service_, to_peripheral_char_,
                           from_peripheral_char_);
     ResetCallbacks();

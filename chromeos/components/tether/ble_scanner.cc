@@ -140,7 +140,6 @@ void BleScanner::RemoveObserver(Observer* observer) {
 void BleScanner::AdapterPoweredChanged(device::BluetoothAdapter* adapter,
                                        bool powered) {
   DCHECK_EQ(adapter_.get(), adapter);
-  PA_LOG(INFO) << "Adapter power changed. Powered = " << powered;
   UpdateDiscoveryStatus();
 }
 
@@ -178,7 +177,6 @@ void BleScanner::UpdateDiscoveryStatus() {
 
 void BleScanner::StartDiscoverySession() {
   DCHECK(adapter_);
-  PA_LOG(INFO) << "Starting discovery session.";
   is_initializing_discovery_session_ = true;
 
   // Discover only low energy (LE) devices with strong enough signal.
@@ -196,7 +194,6 @@ void BleScanner::StartDiscoverySession() {
 
 void BleScanner::OnDiscoverySessionStarted(
     std::unique_ptr<device::BluetoothDiscoverySession> discovery_session) {
-  PA_LOG(INFO) << "Discovery session started. Scanning fully initialized.";
   is_initializing_discovery_session_ = false;
   discovery_session_ = std::move(discovery_session);
 }
@@ -212,7 +209,6 @@ void BleScanner::StopDiscoverySession() {
     return;
   }
 
-  PA_LOG(WARNING) << "Stopping discovery session.";
   discovery_session_.reset();
 }
 
@@ -256,8 +252,6 @@ void BleScanner::CheckForMatchingScanFilters(
   if (!identified_device)
     return;
 
-  PA_LOG(INFO) << "Received advertisement from remote device with ID "
-               << identified_device->GetTruncatedDeviceIdForLogs() << ".";
   for (auto& observer : observer_list_) {
     observer.OnReceivedAdvertisementFromDevice(bluetooth_device->GetAddress(),
                                                *identified_device);

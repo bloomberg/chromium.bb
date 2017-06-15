@@ -50,6 +50,7 @@ class BleAdvertiser {
         public device::BluetoothAdvertisement::Observer {
    public:
     IndividualAdvertisement(
+        const std::string& device_id,
         scoped_refptr<device::BluetoothAdapter> adapter,
         std::unique_ptr<cryptauth::DataWithTimestamp> advertisement_data);
     ~IndividualAdvertisement() override;
@@ -70,7 +71,6 @@ class BleAdvertiser {
         scoped_refptr<device::BluetoothAdvertisement> advertisement);
     void OnAdvertisementErrorCallback(
         device::BluetoothAdvertisement::ErrorCode error_code);
-    void OnAdvertisementUnregisterSuccess();
     void OnAdvertisementUnregisterFailure(
         device::BluetoothAdvertisement::ErrorCode error_code);
 
@@ -80,9 +80,10 @@ class BleAdvertiser {
     std::unique_ptr<device::BluetoothAdvertisement::ServiceData>
     CreateServiceData() const;
 
+    std::string device_id_;
     scoped_refptr<device::BluetoothAdapter> adapter_;
-    bool is_initializing_advertising_;
     std::unique_ptr<cryptauth::DataWithTimestamp> advertisement_data_;
+    bool is_initializing_advertising_;
     scoped_refptr<device::BluetoothAdvertisement> advertisement_;
 
     base::WeakPtrFactory<IndividualAdvertisement> weak_ptr_factory_;

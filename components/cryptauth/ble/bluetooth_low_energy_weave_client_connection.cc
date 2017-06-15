@@ -135,15 +135,11 @@ void BluetoothLowEnergyWeaveClientConnection::Connect() {
   DCHECK(sub_status() == SubStatus::DISCONNECTED);
   SetSubStatus(SubStatus::WAITING_CONNECTION_LATENCY);
 
-  base::TimeDelta throttler_delay = bluetooth_throttler_->GetDelay();
-  PA_LOG(INFO) << "Connecting in  " << throttler_delay;
-
-  start_time_ = base::TimeTicks::Now();
-
   // If necessary, wait to create a new GATT connection.
   //
   // Avoid creating a new GATT connection immediately after a given device was
   // disconnected. This is a workaround for crbug.com/508919.
+  base::TimeDelta throttler_delay = bluetooth_throttler_->GetDelay();
   if (!throttler_delay.is_zero()) {
     task_runner_->PostDelayedTask(
         FROM_HERE,
@@ -160,13 +156,10 @@ void BluetoothLowEnergyWeaveClientConnection::Connect() {
 void BluetoothLowEnergyWeaveClientConnection::SetConnectionLatency() {
   DCHECK(sub_status() == SubStatus::WAITING_CONNECTION_LATENCY);
 
-  PA_LOG(INFO) << "Setting connection latency for " << device_address_;
-
   device::BluetoothDevice* bluetooth_device = GetBluetoothDevice();
   if (!bluetooth_device) {
     PA_LOG(WARNING) << "Could not create GATT connection with "
-                    << device_address_ << " because the device could not be "
-                    << "found.";
+                    << device_address_ << " - device not found.";
     return;
   }
 
@@ -183,15 +176,14 @@ void BluetoothLowEnergyWeaveClientConnection::CreateGattConnection() {
   DCHECK(sub_status() == SubStatus::WAITING_CONNECTION_LATENCY);
   SetSubStatus(SubStatus::WAITING_GATT_CONNECTION);
 
-  PA_LOG(INFO) << "Creating GATT connection with " << device_address_;
-
   device::BluetoothDevice* bluetooth_device = GetBluetoothDevice();
   if (!bluetooth_device) {
     PA_LOG(WARNING) << "Could not create GATT connection with "
-                    << device_address_ << " because the device could not be "
-                    << "found.";
+                    << device_address_ << " - device not found.";
     return;
   }
+
+  PA_LOG(INFO) << "Creating GATT connection with " << device_address_;
 
   bluetooth_device->CreateGattConnection(
       base::Bind(
@@ -221,7 +213,7 @@ void BluetoothLowEnergyWeaveClientConnection::DestroyConnection() {
     StopNotifySession();
     characteristic_finder_.reset();
     if (gatt_connection_) {
-      PA_LOG(INFO) << "Disconnect from device "
+      PA_LOG(INFO) << "Disconnecting from "
                    << gatt_connection_->GetDeviceAddress();
 
       // Destroying BluetoothGattConnection also disconnects it.
@@ -256,7 +248,6 @@ void BluetoothLowEnergyWeaveClientConnection::SetTaskRunnerForTesting(
 
 void BluetoothLowEnergyWeaveClientConnection::SendMessageImpl(
     std::unique_ptr<WireMessage> message) {
-  PA_LOG(INFO) << "Sending message " << message->Serialize();
   std::string serialized_msg = message->Serialize();
 
   std::vector<Packet> packets =
@@ -317,19 +308,16 @@ void BluetoothLowEnergyWeaveClientConnection::GattCharacteristicValueChanged(
       sub_status() != SubStatus::CONNECTED)
     return;
 
-  PA_LOG(INFO) << "Characteristic value changed: "
-               << characteristic->GetUUID().canonical_value();
-
   if (characteristic->GetIdentifier() == rx_characteristic_.id) {
     ReceiverState state = packet_receiver_->ReceivePacket(value);
 
-    PA_LOG(INFO) << "\nReceiver State: " << state;
     switch (state) {
       case ReceiverState::DATA_READY:
         OnBytesReceived(packet_receiver_->GetDataMessage());
         break;
       case ReceiverState::CONNECTION_CLOSED:
-        PA_LOG(ERROR) << "Connection closed due to: " << GetReasonForClose();
+        PA_LOG(INFO) << "Connection to " << device_address_ << " closed. "
+                     << "Reason: " << GetReasonForClose();
         DestroyConnection();
         break;
       case ReceiverState::ERROR_DETECTED:
@@ -355,8 +343,6 @@ void BluetoothLowEnergyWeaveClientConnection::GattCharacteristicValueChanged(
 }
 
 void BluetoothLowEnergyWeaveClientConnection::CompleteConnection() {
-  PA_LOG(INFO) << "Connection completed. Time elapsed: "
-               << base::TimeTicks::Now() - start_time_;
   connection_response_timer_->Stop();
   SetSubStatus(SubStatus::CONNECTED);
 }
@@ -374,16 +360,13 @@ void BluetoothLowEnergyWeaveClientConnection::OnCreateGattConnectionError(
   DCHECK(sub_status_ == SubStatus::WAITING_GATT_CONNECTION);
   PA_LOG(WARNING) << "Error creating GATT connection to "
                   << remote_device().bluetooth_address
-                  << " error code: " << error_code;
+                  << ". Error code: " << error_code;
   DestroyConnection();
 }
 
 void BluetoothLowEnergyWeaveClientConnection::OnGattConnectionCreated(
     std::unique_ptr<device::BluetoothGattConnection> gatt_connection) {
   DCHECK(sub_status() == SubStatus::WAITING_GATT_CONNECTION);
-  PA_LOG(INFO) << "GATT connection with " << gatt_connection->GetDeviceAddress()
-               << " created.";
-  PrintTimeElapsed();
 
   // Informing |bluetooth_trottler_| a new connection was established.
   bluetooth_throttler_->OnConnection(this);
@@ -414,9 +397,6 @@ void BluetoothLowEnergyWeaveClientConnection::OnCharacteristicsFound(
     const RemoteAttribute& service,
     const RemoteAttribute& tx_characteristic,
     const RemoteAttribute& rx_characteristic) {
-  PA_LOG(INFO) << "Remote chacteristics found.";
-  PrintTimeElapsed();
-
   DCHECK(sub_status() == SubStatus::WAITING_CHARACTERISTICS);
   remote_service_ = service;
   tx_characteristic_ = tx_characteristic;
@@ -430,8 +410,7 @@ void BluetoothLowEnergyWeaveClientConnection::OnCharacteristicsFinderError(
     const RemoteAttribute& tx_characteristic,
     const RemoteAttribute& rx_characteristic) {
   DCHECK(sub_status() == SubStatus::WAITING_CHARACTERISTICS);
-  PA_LOG(WARNING) << "Connection error, missing characteristics for SmartLock "
-                     "service.\n"
+  PA_LOG(WARNING) << "Connection error - missing characteristics for service.\n"
                   << (tx_characteristic.id.empty()
                           ? tx_characteristic.uuid.canonical_value()
                           : "")
@@ -454,8 +433,6 @@ void BluetoothLowEnergyWeaveClientConnection::StartNotifySession() {
   // notifying |characteristic->StartNotifySession()| will fail with
   // GATT_ERROR_FAILED.
   if (characteristic->IsNotifying()) {
-    PA_LOG(INFO) << characteristic->GetUUID().canonical_value()
-                 << " already notifying.";
     SetSubStatus(SubStatus::NOTIFY_SESSION_READY);
     SendConnectionRequest();
     return;
@@ -473,9 +450,6 @@ void BluetoothLowEnergyWeaveClientConnection::StartNotifySession() {
 void BluetoothLowEnergyWeaveClientConnection::OnNotifySessionStarted(
     std::unique_ptr<device::BluetoothGattNotifySession> notify_session) {
   DCHECK(sub_status() == SubStatus::WAITING_NOTIFY_SESSION);
-  PA_LOG(INFO) << "Notification session started "
-               << notify_session->GetCharacteristicIdentifier();
-  PrintTimeElapsed();
 
   SetSubStatus(SubStatus::NOTIFY_SESSION_READY);
   notify_session_ = std::move(notify_session);
@@ -486,7 +460,7 @@ void BluetoothLowEnergyWeaveClientConnection::OnNotifySessionStarted(
 void BluetoothLowEnergyWeaveClientConnection::OnNotifySessionError(
     device::BluetoothRemoteGattService::GattErrorCode error) {
   DCHECK(sub_status() == SubStatus::WAITING_NOTIFY_SESSION);
-  PA_LOG(WARNING) << "Error starting notification session: " << error;
+  PA_LOG(ERROR) << "Error starting notification session: " << error;
   DestroyConnection();
 }
 
@@ -499,7 +473,7 @@ void BluetoothLowEnergyWeaveClientConnection::StopNotifySession() {
 
 void BluetoothLowEnergyWeaveClientConnection::SendConnectionRequest() {
   if (sub_status() == SubStatus::NOTIFY_SESSION_READY) {
-    PA_LOG(INFO) << "Sending connection request to the server";
+    PA_LOG(INFO) << "Sending connection request message.";
     SetSubStatus(SubStatus::WAITING_CONNECTION_RESPONSE);
     connection_response_timer_ = timer_factory_->CreateTimer();
     connection_response_timer_->Start(
@@ -530,8 +504,7 @@ void BluetoothLowEnergyWeaveClientConnection::ProcessNextWriteRequest() {
     write_remote_characteristic_pending_ = true;
     const WriteRequest& next_request = write_requests_queue_.front();
 
-    PA_LOG(INFO) << "Writing to characteristic " << next_request.value.size()
-                 << " bytes";
+    PA_LOG(INFO) << "Writing " << next_request.value.size() << " bytes.";
     characteristic->WriteRemoteCharacteristic(
         next_request.value,
         base::Bind(&BluetoothLowEnergyWeaveClientConnection::
@@ -544,8 +517,6 @@ void BluetoothLowEnergyWeaveClientConnection::ProcessNextWriteRequest() {
 }
 
 void BluetoothLowEnergyWeaveClientConnection::OnRemoteCharacteristicWritten() {
-  PA_LOG(INFO) << "Characteristic written.";
-
   DCHECK(!write_requests_queue_.empty());
 
   const WriteRequest& request = write_requests_queue_.front();
@@ -572,7 +543,8 @@ void BluetoothLowEnergyWeaveClientConnection::OnRemoteCharacteristicWritten() {
 
 void BluetoothLowEnergyWeaveClientConnection::OnWriteRemoteCharacteristicError(
     device::BluetoothRemoteGattService::GattErrorCode error) {
-  PA_LOG(WARNING) << "Error " << error << " writing characteristic: "
+  PA_LOG(WARNING) << "Write error. Error code: " << error << ", "
+                  << "Characteristic: "
                   << tx_characteristic_.uuid.canonical_value();
 
   write_remote_characteristic_pending_ = false;
@@ -630,14 +602,10 @@ void BluetoothLowEnergyWeaveClientConnection::OnPacketReceiverError() {
   WriteRemoteCharacteristic(request);
 }
 
-void BluetoothLowEnergyWeaveClientConnection::PrintTimeElapsed() {
-  PA_LOG(INFO) << "Time elapsed: " << base::TimeTicks::Now() - start_time_;
-}
-
 void BluetoothLowEnergyWeaveClientConnection::OnConnectionResponseTimeout() {
   DCHECK(sub_status() == SubStatus::WAITING_CONNECTION_RESPONSE);
   PA_LOG(ERROR) << "Timed out waiting for connection response. Closing "
-                << "connection.";
+                << "connection to " << device_address_ << ".";
   DestroyConnection();
 }
 
@@ -660,8 +628,7 @@ BluetoothLowEnergyWeaveClientConnection::GetRemoteService() {
   device::BluetoothDevice* bluetooth_device = GetBluetoothDevice();
   if (!bluetooth_device) {
     PA_LOG(WARNING) << "Could not create GATT connection with "
-                    << device_address_ << " because the device could not be "
-                    << "found.";
+                    << device_address_ << " - device not found.";
     return nullptr;
   }
 
@@ -682,7 +649,6 @@ BluetoothLowEnergyWeaveClientConnection::GetGattCharacteristic(
     const std::string& gatt_characteristic) {
   device::BluetoothRemoteGattService* remote_service = GetRemoteService();
   if (!remote_service) {
-    PA_LOG(WARNING) << "Remote service not found.";
     return nullptr;
   }
   return remote_service->GetCharacteristic(gatt_characteristic);
