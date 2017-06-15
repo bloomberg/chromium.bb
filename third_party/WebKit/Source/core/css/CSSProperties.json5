@@ -1428,6 +1428,10 @@
       inherited: true,
       name_for_methods: "RespectImageOrientation",
       runtime_flag: "ImageOrientation",
+      field_template: "primitive",
+      type_name: "bool",
+      default_value: "false",
+      field_group: "rare-inherited",
     },
     {
       name: "isolation",
