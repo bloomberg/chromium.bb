@@ -29,15 +29,14 @@ void PermissionPromptAndroid::SetDelegate(Delegate* delegate) {
 }
 
 void PermissionPromptAndroid::Show() {
-  // Grouped permission requests are not yet supported in dialogs.
-  // TODO(timloh): Handle grouped media permissions (camera + microphone).
-  if (delegate_->Requests().size() == 1) {
-    bool has_gesture = delegate_->Requests()[0]->GetGestureType() ==
-                       PermissionRequestGestureType::GESTURE;
-    if (PermissionDialogDelegate::ShouldShowDialog(has_gesture)) {
-      PermissionDialogDelegate::Create(web_contents_, this);
-      return;
-    }
+  bool has_gesture = true;
+  for (const PermissionRequest* request : delegate_->Requests()) {
+    has_gesture &=
+        request->GetGestureType() == PermissionRequestGestureType::GESTURE;
+  }
+  if (PermissionDialogDelegate::ShouldShowDialog(has_gesture)) {
+    PermissionDialogDelegate::Create(web_contents_, this);
+    return;
   }
 
   InfoBarService* infobar_service =

@@ -148,11 +148,11 @@ void PermissionDialogDelegate::CreateJavaDelegate(JNIEnv* env) {
     return;
   }
 
-  // TODO(timloh): Handle grouped media permissions (camera + microphone).
-  DCHECK_EQ(1u, permission_prompt_->PermissionCount());
-
-  std::vector<int> content_settings_types{
-      permission_prompt_->GetContentSettingType(0)};
+  std::vector<int> content_settings_types;
+  for (size_t i = 0; i < permission_prompt_->PermissionCount(); ++i) {
+    content_settings_types.push_back(
+        permission_prompt_->GetContentSettingType(i));
+  }
 
   j_delegate_.Reset(Java_PermissionDialogDelegate_create(
       env, reinterpret_cast<uintptr_t>(this), tab_->GetJavaObject(),
