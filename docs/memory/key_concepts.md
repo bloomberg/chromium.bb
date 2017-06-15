@@ -19,7 +19,7 @@ is complicated stuff...but don't despair. You work on a multi-process
 browser implementing the web platform with high security guarantees.
 Compared to the rest the system, memory is not THAT complicated.
 
-## An you give specific examples of how it's harder than malloc/free?
+## Can you give specific examples of how it's harder than malloc/free?
 
 Here are some example questions that require a more complex
 view of memory than malloc/free.
