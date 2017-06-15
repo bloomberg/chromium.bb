@@ -67,9 +67,9 @@ NativeMessageProcessHost::~NativeMessageProcessHost() {
 
   if (process_.IsValid()) {
     // Kill the host process if necessary to make sure we don't leave zombies.
-    // On OSX base::EnsureProcessTerminated() may block, so we have to post a
-    // task on the blocking pool.
-#if defined(OS_MACOSX)
+    // On OSX and Fuchsia base::EnsureProcessTerminated() may block, so we have
+    // to post a task on the blocking pool.
+#if defined(OS_MACOSX) || defined(OS_FUCHSIA)
     base::PostTaskWithTraits(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
         base::BindOnce(&base::EnsureProcessTerminated, Passed(&process_)));
