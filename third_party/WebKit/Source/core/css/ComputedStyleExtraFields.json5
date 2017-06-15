@@ -546,13 +546,6 @@
       field_group: "rare-inherited",
     },
     {
-      name: "DraggableRegionMode",
-      field_template: "storage_only",
-      field_group: "rare-non-inherited",
-      default_value: "EDraggableRegionMode::kNone",
-      field_size: 2,
-    },
-    {
       name: "Mask",
       field_template: "storage_only",
       type_name: "FillLayer",

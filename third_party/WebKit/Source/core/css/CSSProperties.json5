@@ -2711,6 +2711,11 @@
     {
       name: "-webkit-app-region",
       custom_all: true,
+      name_for_methods: "DraggableRegionMode",
+      field_template: "keyword",
+      field_group: "rare-non-inherited",
+      default_value: "none",
+      keywords: ["none", "drag", "no-drag"],
     },
     {
       name: "-webkit-background-clip",

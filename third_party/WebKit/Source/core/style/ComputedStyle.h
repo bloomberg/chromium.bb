@@ -1567,16 +1567,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   bool SetZoom(float);
   bool SetEffectiveZoom(float);
 
-  // -webkit-app-region
-  EDraggableRegionMode DraggableRegionMode() const {
-    return static_cast<EDraggableRegionMode>(
-        rare_non_inherited_data_->draggable_region_mode_);
-  }
-  void SetDraggableRegionMode(EDraggableRegionMode v) {
-    SET_VAR(rare_non_inherited_data_, draggable_region_mode_,
-            static_cast<unsigned>(v));
-  }
-
   // -webkit-appearance
   static ControlPart InitialAppearance() { return kNoControlPart; }
   ControlPart Appearance() const {
