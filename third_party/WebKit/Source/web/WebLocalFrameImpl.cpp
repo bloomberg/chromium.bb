@@ -2090,6 +2090,9 @@ void WebLocalFrameImpl::Load(const WebURLRequest& request,
     return;
   }
 
+  if (text_finder_)
+    text_finder_->ClearActiveFindMatch();
+
   FrameLoadRequest frame_request = FrameLoadRequest(nullptr, resource_request);
   if (is_client_redirect)
     frame_request.SetClientRedirect(ClientRedirectPolicy::kClientRedirect);
