@@ -479,10 +479,6 @@ void LocalFrame::Detach(FrameDetachType type) {
   if (GetPage() && GetPage()->GetFocusController().FocusedFrame() == this)
     GetPage()->GetFocusController().SetFocusedFrame(nullptr);
 
-  if (GetPage() && GetPage()->GetScrollingCoordinator() && view_)
-    GetPage()->GetScrollingCoordinator()->WillDestroyScrollableArea(
-        view_.Get());
-
   probe::frameDetachedFromParent(this);
   Frame::Detach(type);
 
