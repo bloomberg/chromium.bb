@@ -11,7 +11,6 @@
 #include <set>
 #include <string>
 
-#include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
@@ -178,11 +177,10 @@ class AccountConsistencyService : public KeyedService,
   std::map<std::string, base::Time> last_cookie_update_map_;
 
   // Web view used to apply the CHROME_CONNECTED cookie requests.
-  base::scoped_nsobject<WKWebView> web_view_;
+  __strong WKWebView* web_view_;
   // Navigation delegate of |web_view_| that informs the service when a cookie
   // request has been applied.
-  base::scoped_nsobject<AccountConsistencyNavigationDelegate>
-      navigation_delegate_;
+  AccountConsistencyNavigationDelegate* navigation_delegate_;
 
   // Handlers reacting on GAIA responses with the X-Chrome-Manage-Accounts
   // header set.

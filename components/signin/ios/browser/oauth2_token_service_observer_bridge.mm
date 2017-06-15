@@ -4,6 +4,10 @@
 
 #include "components/signin/ios/browser/oauth2_token_service_observer_bridge.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 OAuth2TokenServiceObserverBridge::OAuth2TokenServiceObserverBridge(
     OAuth2TokenService* token_service,
     id<OAuth2TokenServiceObserverBridgeDelegate> delegate)

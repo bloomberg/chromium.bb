@@ -6,7 +6,6 @@
 
 #import <WebKit/WebKit.h>
 
-#import "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
 #include "base/macros.h"
@@ -23,6 +22,10 @@
 #include "net/base/mac/url_conversions.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "url/gurl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -58,7 +61,7 @@ class AccountConsistencyHandler : public web::WebStatePolicyDecider {
 
   AccountConsistencyService* account_consistency_service_;  // Weak.
   AccountReconcilor* account_reconcilor_;                   // Weak.
-  base::WeakNSProtocol<id<ManageAccountsDelegate>> delegate_;
+  __weak id<ManageAccountsDelegate> delegate_;
 };
 }
 
@@ -390,14 +393,14 @@ WKWebView* AccountConsistencyService::GetWKWebView() {
     return nil;
   }
   if (!web_view_) {
-    web_view_.reset([BuildWKWebView() retain]);
-    navigation_delegate_.reset([[AccountConsistencyNavigationDelegate alloc]
+    web_view_ = BuildWKWebView();
+    navigation_delegate_ = [[AccountConsistencyNavigationDelegate alloc]
         initWithCallback:base::Bind(&AccountConsistencyService::
                                         FinishedApplyingCookieRequest,
-                                    base::Unretained(this), true)]);
+                                    base::Unretained(this), true)];
     [web_view_ setNavigationDelegate:navigation_delegate_];
   }
-  return web_view_.get();
+  return web_view_;
 }
 
 WKWebView* AccountConsistencyService::BuildWKWebView() {
@@ -407,8 +410,8 @@ WKWebView* AccountConsistencyService::BuildWKWebView() {
 void AccountConsistencyService::ResetWKWebView() {
   [web_view_ setNavigationDelegate:nil];
   [web_view_ stopLoading];
-  web_view_.reset();
-  navigation_delegate_.reset();
+  web_view_ = nil;
+  navigation_delegate_ = nil;
   applying_cookie_requests_ = false;
 }
 
