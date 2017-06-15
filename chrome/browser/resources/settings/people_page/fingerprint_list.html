@@ -22,7 +22,6 @@
       .add-link {
         background-color: transparent;
         color: var(--google-blue-500);
-        padding: 0;
       }
 
       .add-link[disabled] {
@@ -55,9 +54,8 @@
             <paper-input value="{{item}}"
                 on-change="onFingerprintLabelChanged_">
             </paper-input>
-            <button is="paper-icon-button-light"
+            <button is="paper-icon-button-light" class="icon-delete"
                 on-tap="onFingerprintDeleteTapped_">
-              <iron-icon icon="cr:delete"></iron-icon>
             </button>
           </div>
         </template>

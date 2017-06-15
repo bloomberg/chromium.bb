@@ -3,7 +3,7 @@
 <link rel="import" href="chrome://resources/cr_elements/network/cr_network_list.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="../settings_shared_css.html">
@@ -55,11 +55,11 @@
             '$i18nPolymer{deviceOn}', '$i18nPolymer{deviceOff}')]]
         </div>
         <!-- The add button in this row is only shown for WiFi networks. -->
-        <paper-icon-button id="addButton" icon="settings:add-wifi"
+        <button is="paper-icon-button-light" id="addButton"
             hidden$="[[!showAddButton_(deviceState, globalPolicy)]]"
-            aria-label="$i18n{internetAddWiFi}"
+            aria-label="$i18n{internetAddWiFi}" class="icon-add-wifi"
             on-tap="onAddButtonTap_" tabindex$="[[tabindex]]">
-        </paper-icon-button>
+        </button>
         <paper-toggle-button id="deviceEnabledButton"
             aria-label$="[[getToggleA11yString_(deviceState)]]"
             checked="[[deviceIsEnabled_(deviceState)]]"
@@ -84,10 +84,10 @@
         <div class="vpn-header layout horizontal center"
             hidden$="[[!isEqual_('VPN', deviceState.Type)]]">
           <div class="flex">$i18n{networkVpnBuiltin}</div>
-          <paper-icon-button icon="settings:add-circle"
+          <button is="paper-icon-button-light" class="icon-add-circle"
               aria-label="$i18n{internetAddVPN}"
               on-tap="onAddButtonTap_" tabindex$="[[tabindex]]">
-          </paper-icon-button>
+          </button>
         </div>
 
         <!-- List of networks or 'None'. -->
@@ -106,10 +106,10 @@
             <div id="[[item.ProviderName]]"
                 class="vpn-header layout horizontal center">
               <div class="flex">[[item.ProviderName]]</div>
-              <paper-icon-button icon="settings:add-circle"
+              <button is="paper-icon-button-light" class="icon-add-circle"
                   aria-label$="[[getAddThirdPartyVpnA11yString_(item)]]"
                   on-tap="onAddThirdPartyVpnTap_" tabindex$="[[tabindex]]">
-              </paper-icon-button>
+              </button>
             </div>
             <cr-network-list show-buttons
                 hidden$="[[!haveThirdPartyVpnNetwork_(thirdPartyVpns_, item)]]"

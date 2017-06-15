@@ -216,7 +216,7 @@ cr.define('languages_page_tests', function() {
 
       test('structure', function() {
         var languageOptionsDropdownTrigger = languagesCollapse.querySelector(
-            'paper-icon-button');
+            'button');
         assertTrue(!!languageOptionsDropdownTrigger);
         MockInteractions.tap(languageOptionsDropdownTrigger);
         assertTrue(actionMenu.open);
@@ -252,7 +252,7 @@ cr.define('languages_page_tests', function() {
       test('toggle translate for a specific language', function(done) {
         // Open options for 'sw'.
         var languageOptionsDropdownTrigger =
-            languagesCollapse.querySelectorAll('paper-icon-button')[1];
+            languagesCollapse.querySelectorAll('button')[1];
         assertTrue(!!languageOptionsDropdownTrigger);
         MockInteractions.tap(languageOptionsDropdownTrigger);
         assertTrue(actionMenu.open);
@@ -283,7 +283,7 @@ cr.define('languages_page_tests', function() {
 
         // Open options for 'sw'.
         var languageOptionsDropdownTrigger =
-            languagesCollapse.querySelectorAll('paper-icon-button')[1];
+            languagesCollapse.querySelectorAll('button')[1];
         assertTrue(!!languageOptionsDropdownTrigger);
         MockInteractions.tap(languageOptionsDropdownTrigger);
         assertTrue(actionMenu.open);
@@ -311,7 +311,7 @@ cr.define('languages_page_tests', function() {
         });
 
         // Open the menu and select Remove.
-        MockInteractions.tap(item.querySelector('paper-icon-button'));
+        MockInteractions.tap(item.querySelector('button'));
 
         assertTrue(actionMenu.open);
         var removeMenuItem = getMenuItem('removeLanguage');
@@ -332,7 +332,7 @@ cr.define('languages_page_tests', function() {
 
         var menuButtons =
             languagesCollapse.querySelectorAll(
-                '.list-item paper-icon-button[icon="cr:more-vert"]');
+                '.list-item button.icon-more-vert');
 
         // First language should not have "Move up" or "Move to top".
         MockInteractions.tap(menuButtons[0]);

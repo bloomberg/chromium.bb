@@ -16,7 +16,7 @@ cr.define('settings_subpage', function() {
       var subpage = document.createElement('settings-subpage');
       document.body.appendChild(subpage);
 
-      MockInteractions.tap(subpage.$$('paper-icon-button'));
+      MockInteractions.tap(subpage.$$('button'));
       assertEquals(settings.Route.PRIVACY, settings.getCurrentRoute());
     });
 
@@ -30,7 +30,7 @@ cr.define('settings_subpage', function() {
       var subpage = document.createElement('settings-subpage');
       document.body.appendChild(subpage);
 
-      MockInteractions.tap(subpage.$$('paper-icon-button'));
+      MockInteractions.tap(subpage.$$('button'));
 
       window.addEventListener('popstate', function(event) {
         assertEquals(settings.Route.BASIC, settings.getCurrentRoute());

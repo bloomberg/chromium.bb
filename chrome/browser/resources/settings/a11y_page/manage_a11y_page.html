@@ -2,7 +2,6 @@
 
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
 <link rel="import" href="../controls/settings_slider.html">
 <link rel="import" href="../controls/settings_toggle_button.html">
 <link rel="import" href="../i18n_setup.html">
@@ -131,12 +130,12 @@
         <settings-toggle-button
             pref="{{prefs.settings.a11y.switch_access}}"
             label="$i18n{switchAccessLabel}">
-          <paper-icon-button icon="cr:settings_icon"
-              class="more-actions"
+          <button is="paper-icon-button-light"
+              class="icon-settings more-actions"
               on-tap="onSwitchAccessSettingsTap_"
               hidden="[[!prefs.settings.a11y.switch_access.value]]"
               aria-label="$i18n{selectToSpeakOptionsLabel}">
-          </paper-icon-button>
+          </button>
         </settings-toggle-button>
       </div>
     </template>

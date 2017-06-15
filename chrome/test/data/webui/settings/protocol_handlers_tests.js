@@ -116,7 +116,8 @@ suite('ProtocolHandlers', function() {
     return initPage()
         .then(function() {
           // Initiating the elements
-          menuButtons = testElement.root.querySelectorAll('paper-icon-button');
+          menuButtons =
+              testElement.root.querySelectorAll('button.icon-more-vert');
           functionButton = testElement.$[button];
           dialog = testElement.$$('dialog[is=cr-action-menu]');
           assertEquals(3, menuButtons.length);

@@ -90,7 +90,7 @@ suite('UsbDevices', function() {
     browserProxy.setUsbDevices(deviceList);
 
     return initPage().then(function() {
-      var menuButton = testElement.$$('paper-icon-button');
+      var menuButton = testElement.$$('button.icon-more-vert');
       assertTrue(!!menuButton);
       MockInteractions.tap(menuButton);
       var dialog = testElement.$$('dialog[is=cr-action-menu]');
@@ -108,8 +108,8 @@ suite('UsbDevices', function() {
      * Test whether or not clicking remove-button sends the correct
      * parameters to the browserProxy.removeUsbDevice() function.
      */
-    var menuButton =
-        testElement.root.querySelectorAll('paper-icon-button')[indexToRemove];
+    var menuButton = testElement.root.querySelectorAll(
+        'button.icon-more-vert')[indexToRemove];
     var removeButton = testElement.$.removeButton;
     MockInteractions.tap(menuButton);
     MockInteractions.tap(removeButton);

@@ -250,6 +250,10 @@
       <structure name="IDR_SETTINGS_CR_SETTINGS_PAGE_CSS_HTML"
                  file="settings_page_css.html"
                  type="chrome_html" />
+      <structure name="IDR_SETTINGS_CR_SETTINGS_ICONS_CSS_HTML"
+                 file="settings_icons_css.html"
+                 flattenhtml="true"
+                 type="chrome_html" />
       <structure name="IDR_SETTINGS_MAIN_PAGE_BEHAVIOR_HTML"
                  file="settings_page/main_page_behavior.html"
                  type="chrome_html" />

@@ -5,7 +5,7 @@
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
 <link rel="import" href="chrome://resources/html/icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="../controls/extension_controlled_indicator.html">
 <link rel="import" href="../focus_row_behavior.html">
 <link rel="import" href="search_engine_dialog.html">
@@ -58,10 +58,10 @@
       </div>
       <div id="keyword-column"><div>[[engine.keyword]]</div></div>
       <div id="url-column" class="text-elide">[[engine.url]]</div>
-      <paper-icon-button icon="cr:more-vert" on-tap="onDotsTap_"
-          title="$i18n{moreActions}" focus-row-control
+      <button is="paper-icon-button-light" class="icon-more-vert" 
+          on-tap="onDotsTap_" title="$i18n{moreActions}" focus-row-control
           focus-type="cr-menu-button">
-      </paper-icon-button>
+      </button>
       <dialog is="cr-action-menu">
         <button class="dropdown-item" role="option" on-tap="onMakeDefaultTap_"
             hidden$="[[!engine.canBeDefault]]" id="makeDefault">

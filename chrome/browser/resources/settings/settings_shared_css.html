@@ -1,10 +1,11 @@
 <link rel="import" href="chrome://resources/cr_elements/shared_style_css.html">
+<link rel="import" href="settings_icons_css.html">
 <link rel="import" href="settings_vars_css.html">
 
 <!-- Common styles for Material Design settings. -->
 <dom-module id="settings-shared">
   <template>
-    <style include="cr-shared-style">
+    <style include="settings-icons cr-shared-style">
       /* Use <h2> as the "sub-header" mentioned in the UX design docs. */
       h2 {
         align-items: center;
@@ -27,23 +28,8 @@
        --iron-icon-fill-color: var(--google-green-500);
       }
 
-      paper-icon-button {
-        -webkit-margin-end: var(--cr-icon-ripple-margin);
-        -webkit-margin-start: 16px;
-        color: var(--paper-grey-600);
-        flex-shrink: 0;
-      }
-
-      .separator + button[is='paper-icon-button-light'],
-      .separator + paper-icon-button {
-        -webkit-margin-start: var(--cr-icon-ripple-margin));
-      }
-
-      .list-item paper-icon-button {
-        /* Workaround iron-list cutting off ripples on paper-icon-buttons.
-         * TODO(dschuyler): Can the end margin be done differently to allow for
-         * ripples to look like they are overlapping the margin. */
-        -webkit-margin-end: 0;
+      .separator + button[is='paper-icon-button-light'] {
+        -webkit-margin-start: var(--cr-icon-ripple-margin);
       }
 
       /* See notes in .primary-button.
@@ -333,6 +319,17 @@
       .no-outline {
         background: none;
         outline: none;
+      }
+
+      /* Prevent icon-button's ripples from fighting with potential scrollbars.
+       * Also apply to all iron-lists to align the buttons across them all.*/
+      [scrollable],
+      iron-list,
+      .list-item {
+        --cr-paper-icon-button-margin: {
+          -webkit-margin-end: 0;
+          -webkit-margin-start: var(--cr-icon-button-margin-start);
+        };
       }
 
       /* Helper for a list frame to automatically avoid the separator line. */

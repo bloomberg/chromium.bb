@@ -4,8 +4,7 @@
 <link rel="import" href="chrome://resources/html/action_link_css.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_dialog/cr_dialog.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
-<link rel="import" href="../icons.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="../route.html">
 <link rel="import" href="../settings_shared_css.html">
 <link rel="import" href="constants.html">
@@ -52,9 +51,9 @@
         <div class="list-frame">
           <div class="list-item" id="storage">
             <div class="start">[[storedData_]]</div>
-            <paper-icon-button icon="cr:delete"
+            <button is="paper-icon-button-light" class="icon-delete"
                 on-tap="onConfirmClearStorage_"
-                alt="$i18n{siteSettingsDelete}"></paper-icon-button>
+                alt="$i18n{siteSettingsDelete}"></button>
           </div>
         </div>
       </div>

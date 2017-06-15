@@ -5,7 +5,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-dropdown/iron-dropdown.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-input/iron-input.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input-container.html">
 <link rel="import" href="cups_printers_browser_proxy.html">
 <link rel="import" href="../settings_shared_css.html">
@@ -80,10 +80,12 @@
     <paper-input-container no-label-float on-tap="onTap_">
       <input is="iron-input" type="search" bind-value="{{selectedItem}}"
           on-search="onInputValueChanged_" on-change="onChange_" incremental>
-      <paper-icon-button suffix id="searchIcon" icon="cr:search" hidden>
-      </paper-icon-button>
-      <paper-icon-button suffix id="dropdownIcon" icon="cr:arrow-drop-down">
-      </paper-icon-button>
+      <button is="paper-icon-button-light" class="icon-search" suffix
+          id="searchIcon" hidden>
+      </button>
+      <button is="paper-icon-button-light" class="icon-arrow-dropdown" suffix
+          id="dropdownIcon">
+      </button>
     </paper-input-container>
     <iron-dropdown horizontal-align="left" vertical-align="top"
         vertical-offset="47">

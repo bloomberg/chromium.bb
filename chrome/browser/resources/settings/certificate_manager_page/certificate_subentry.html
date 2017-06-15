@@ -3,7 +3,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_action_menu/cr_action_menu.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_lazy_render/cr_lazy_render.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="certificate_manager_types.html">
 <link rel="import" href="certificates_browser_proxy.html">
 <link rel="import" href="../settings_shared_css.html">
@@ -31,8 +31,8 @@
         $i18n{certificateManagerUntrusted}
       </div>
       <div class="name">[[model.name]]</div>
-      <paper-icon-button id="dots" icon="cr:more-vert"
-          title="$i18n{moreActions}" on-tap="onDotsTap_"></paper-icon-button>
+      <button is="paper-icon-button-light" class="icon-more-vert" id="dots"
+          title="$i18n{moreActions}" on-tap="onDotsTap_"></button>
       <template is="cr-lazy-render" id="menu">
         <dialog is="cr-action-menu">
           <button class="dropdown-item" role="option" id="view"

@@ -4,7 +4,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-keys/iron-a11y-keys.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-list/iron-list.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="../global_scroll_target_behavior.html">
 <link rel="import" href="../prefs/prefs.html">
@@ -53,9 +53,9 @@
           <template>
             <div class="list-item">
               <div class="word text-elide">[[item]]</div>
-              <paper-icon-button icon="cr:clear" on-tap="onRemoveWordTap_"
-                  tabindex$="[[tabIndex]]">
-              </paper-icon-button>
+              <button is="paper-icon-button-light" class="icon-clear"
+                  on-tap="onRemoveWordTap_" tabindex$="[[tabIndex]]">
+              </button>
             </div>
           </template>
         </iron-list>

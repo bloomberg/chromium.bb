@@ -1,7 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-toggle-button/paper-toggle-button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_action_menu/cr_action_menu.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
@@ -49,9 +49,9 @@
               </div>
             </div>
 
-            <paper-icon-button icon="cr:more-vert" on-tap="showMenu_"
-                class="dropdown-trigger" title="$i18n{moreActions}">
-            </paper-icon-button>
+            <button is="paper-icon-button-light" on-tap="showMenu_"
+                class="icon-more-vert" title="$i18n{moreActions}">
+            </button>
           </div>
 
         </template>
