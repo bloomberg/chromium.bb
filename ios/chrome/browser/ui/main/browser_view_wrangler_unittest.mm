@@ -50,6 +50,8 @@ TEST_F(BrowserViewWranglerTest, TestInitNilObserver) {
   EXPECT_NE(bvc, [wrangler otrBVC]);
   EXPECT_NE(tabModel, [wrangler otrTabModel]);
   EXPECT_TRUE([wrangler otrTabModel].browserState->IsOffTheRecord());
+
+  [wrangler shutdown];
 }
 
 }  // namespace

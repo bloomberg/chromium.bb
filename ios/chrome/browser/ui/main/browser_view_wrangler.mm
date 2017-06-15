@@ -27,6 +27,7 @@
 @interface BrowserViewWrangler ()<TabModelObserver> {
   ios::ChromeBrowserState* _browserState;
   __unsafe_unretained id<TabModelObserver> _tabModelObserver;
+  BOOL _isShutdown;
 
   base::mac::ObjCPropertyReleaser _propertyReleaser_BrowserViewWrangler;
 }
@@ -82,25 +83,7 @@
 }
 
 - (void)dealloc {
-  if (_tabModelObserver) {
-    [_mainTabModel removeObserver:_tabModelObserver];
-    [_otrTabModel removeObserver:_tabModelObserver];
-  }
-  [_mainTabModel removeObserver:self];
-  [_otrTabModel removeObserver:self];
-
-  // Stop URL monitoring of the main tab model.
-  ios_internal::breakpad::StopMonitoringURLsForTabModel(_mainTabModel);
-
-  // Stop Breakpad state monitoring of both tab models (if necessary).
-  ios_internal::breakpad::StopMonitoringTabStateForTabModel(_mainTabModel);
-  ios_internal::breakpad::StopMonitoringTabStateForTabModel(_otrTabModel);
-
-  // Normally other objects will take care of unhooking the tab models from
-  // the browser state, but this code should ensure that it happens regardless.
-  [_mainTabModel browserStateDestroyed];
-  [_otrTabModel browserStateDestroyed];
-
+  DCHECK(_isShutdown) << "-shutdown must be called before -dealloc";
   [super dealloc];
 }
 
@@ -118,6 +101,19 @@
   return _mainBVC;
 }
 
+- (void)setMainBVC:(BrowserViewController*)mainBVC {
+  if (_mainBVC == mainBVC)
+    return;
+
+  if (_mainBVC) {
+    [_mainBVC browserStateDestroyed];
+    [_mainBVC shutdown];
+    [_mainBVC autorelease];
+  }
+
+  _mainBVC = [mainBVC retain];
+}
+
 - (TabModel*)mainTabModel {
   if (!_mainTabModel) {
     self.mainTabModel = [self tabModelForBrowserState:_browserState empty:NO];
@@ -127,6 +123,22 @@
     ios::GetChromeBrowserProvider()->InitializeCastService(_mainTabModel);
   }
   return _mainTabModel;
+}
+
+- (void)setMainTabModel:(TabModel*)mainTabModel {
+  if (_mainTabModel == mainTabModel)
+    return;
+
+  if (_mainTabModel) {
+    [_mainTabModel browserStateDestroyed];
+    if (_tabModelObserver) {
+      [_mainTabModel removeObserver:_tabModelObserver];
+    }
+    [_mainTabModel removeObserver:self];
+    [_mainTabModel autorelease];
+  }
+
+  _mainTabModel = [mainTabModel retain];
 }
 
 - (BrowserViewController*)otrBVC {
@@ -144,11 +156,40 @@
   return _otrBVC;
 }
 
+- (void)setOtrBVC:(BrowserViewController*)otrBVC {
+  if (_otrBVC == otrBVC)
+    return;
+
+  if (_otrBVC) {
+    [_otrBVC browserStateDestroyed];
+    [_otrBVC shutdown];
+    [_otrBVC autorelease];
+  }
+
+  _otrBVC = [otrBVC retain];
+}
+
 - (TabModel*)otrTabModel {
   if (!_otrTabModel) {
     self.otrTabModel = [self buildOtrTabModel:NO];
   }
   return _otrTabModel;
+}
+
+- (void)setOtrTabModel:(TabModel*)otrTabModel {
+  if (_otrTabModel == otrTabModel)
+    return;
+
+  if (_otrTabModel) {
+    [_otrTabModel browserStateDestroyed];
+    if (_tabModelObserver) {
+      [_otrTabModel removeObserver:_tabModelObserver];
+    }
+    [_otrTabModel removeObserver:self];
+    [_otrTabModel autorelease];
+  }
+
+  _otrTabModel = [otrTabModel retain];
 }
 
 - (void)setCurrentBVC:(BrowserViewController*)bvc
@@ -251,18 +292,10 @@
     ios::ChromeBrowserState* otrBrowserState =
         _browserState->GetOffTheRecordChromeBrowserState();
     [removalController browserStateDestroyed:otrBrowserState];
-    [_otrBVC browserStateDestroyed];
-    [_otrBVC release];
-    _otrBVC = nil;
+    self.otrBVC = nil;
     // There's no guarantee the tab model was ever added to the BVC (or even
     // that the BVC was created), so ensure the tab model gets notified.
-    [_otrTabModel browserStateDestroyed];
-    if (_tabModelObserver) {
-      [_otrTabModel removeObserver:_tabModelObserver];
-    }
-    [_otrTabModel removeObserver:self];
-    [_otrTabModel release];
-    _otrTabModel = nil;
+    self.otrTabModel = nil;
     if (otrBVCIsCurrent) {
       _currentBVC = nil;
     }
@@ -281,6 +314,37 @@
   if (otrBVCIsCurrent) {
     _currentBVC = self.otrBVC;
   }
+}
+
+- (void)shutdown {
+  DCHECK(!_isShutdown);
+  _isShutdown = YES;
+
+  if (_tabModelObserver) {
+    [_mainTabModel removeObserver:_tabModelObserver];
+    [_otrTabModel removeObserver:_tabModelObserver];
+    _tabModelObserver = nil;
+  }
+
+  [_mainTabModel removeObserver:self];
+  [_otrTabModel removeObserver:self];
+
+  // Stop URL monitoring of the main tab model.
+  ios_internal::breakpad::StopMonitoringURLsForTabModel(_mainTabModel);
+
+  // Stop Breakpad state monitoring of both tab models (if necessary).
+  ios_internal::breakpad::StopMonitoringTabStateForTabModel(_mainTabModel);
+  ios_internal::breakpad::StopMonitoringTabStateForTabModel(_otrTabModel);
+
+  // Normally other objects will take care of unhooking the tab models from
+  // the browser state, but this code should ensure that it happens regardless.
+  [_mainTabModel browserStateDestroyed];
+  [_otrTabModel browserStateDestroyed];
+
+  self.mainBVC = nil;
+  self.otrBVC = nil;
+
+  _browserState = nullptr;
 }
 
 #pragma mark - Internal methods

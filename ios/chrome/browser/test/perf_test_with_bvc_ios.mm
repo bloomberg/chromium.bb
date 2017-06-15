@@ -164,6 +164,7 @@ void PerfTestWithBVC::TearDown() {
   // and its associated data.
   window_.reset();
   [bvc_ browserStateDestroyed];
+  [bvc_ shutdown];
   bvc_.reset();
   bvc_factory_.reset();
   tab_model_.reset();

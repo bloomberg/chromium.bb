@@ -155,6 +155,9 @@ extern NSString* const kLocationBarResignsFirstResponderNotification;
 - (void)removeExternalFilesImmediately:(BOOL)immediately
                      completionHandler:(ProceduralBlock)completionHandler;
 
+// Called before the instance is deallocated.
+- (void)shutdown;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_BROWSER_VIEW_CONTROLLER_H_
