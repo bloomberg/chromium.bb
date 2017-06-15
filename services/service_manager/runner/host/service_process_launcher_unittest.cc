@@ -37,7 +37,7 @@ void ProcessReadyCallbackAdapater(const base::Closure& callback,
 }
 
 class ServiceProcessLauncherDelegateImpl
-    : public ServiceProcessLauncher::Delegate {
+    : public ServiceProcessLauncherDelegate {
  public:
   ServiceProcessLauncherDelegateImpl() {}
   ~ServiceProcessLauncherDelegateImpl() override {}
@@ -49,7 +49,7 @@ class ServiceProcessLauncherDelegateImpl
   }
 
  private:
-  // ServiceProcessLauncher::Delegate:
+  // ServiceProcessLauncherDelegate:
   void AdjustCommandLineArgumentsForTarget(
       const Identity& target,
       base::CommandLine* command_line) override {

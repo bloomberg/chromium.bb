@@ -157,10 +157,10 @@ void RemoveMashFromBrowserTests(base::CommandLine* command_line) {
 
 }  // namespace
 
-// ServiceProcessLauncher::Delegate that makes exe:mash_browser_tests to
+// ServiceProcessLauncherDelegate that makes exe:mash_browser_tests to
 // exe:browser_tests and removes '--run-in-mash'.
 class MojoTestConnector::ServiceProcessLauncherDelegateImpl
-    : public service_manager::ServiceProcessLauncher::Delegate {
+    : public service_manager::ServiceProcessLauncherDelegate {
  public:
   explicit ServiceProcessLauncherDelegateImpl(
       const std::string& test_runner_name)

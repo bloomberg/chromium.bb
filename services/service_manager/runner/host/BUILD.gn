@@ -9,15 +9,25 @@ import("//testing/test.gni")
 
 source_set("lib") {
   sources = [
-    "service_process_launcher.cc",
-    "service_process_launcher.h",
+    # These interfaces are shared between iOS and other platforms to minimize
+    # the amount of iddef'ing necessary to handle the fact that iOS does not
+    # support ServiceProcessLauncher.
+    "service_process_launcher_delegate.h",
+    "service_process_launcher_factory.h",
   ]
+
+  if (!is_ios) {
+    sources += [
+      # iOS does not support launching services in their own processes.
+      "service_process_launcher.cc",
+      "service_process_launcher.h",
+    ]
+  }
 
   deps = [
     "//base:base_static",
     "//base:i18n",
     "//services/service_manager/public/cpp",
-    "//services/service_manager/public/cpp/standalone_service",
     "//services/service_manager/runner:init",
     "//services/service_manager/runner/common",
   ]
@@ -31,42 +41,50 @@ source_set("lib") {
   if (is_linux && !is_android) {
     deps += [ "//sandbox/linux:sandbox_services" ]
   }
+
+  if (!is_ios) {
+    deps += [ "//services/service_manager/public/cpp/standalone_service" ]
+  }
 }
 
-source_set("unittests") {
-  testonly = true
-  sources = [
-    "service_process_launcher_unittest.cc",
-  ]
+if (!is_ios) {
+  # The below targets rely on the host_test_service service binary. Service
+  # binaries are not supported on iOS.
+  source_set("unittests") {
+    testonly = true
+    sources = [
+      "service_process_launcher_unittest.cc",
+    ]
 
-  deps = [
-    ":lib",
-    "//base",
-    "//base/test:test_support",
-    "//mojo/edk/system",
-    "//services/service_manager",
-    "//services/service_manager/runner:init",
-    "//services/service_manager/runner/common",
-    "//testing/gtest",
-  ]
+    deps = [
+      ":lib",
+      "//base",
+      "//base/test:test_support",
+      "//mojo/edk/system",
+      "//services/service_manager",
+      "//services/service_manager/runner:init",
+      "//services/service_manager/runner/common",
+      "//testing/gtest",
+    ]
 
-  data_deps = [
-    ":host_test_service",
-  ]
-}
+    data_deps = [
+      ":host_test_service",
+    ]
+  }
 
-service("host_test_service") {
-  sources = [
-    "host_test_service_main.cc",
-  ]
+  service("host_test_service") {
+    sources = [
+      "host_test_service_main.cc",
+    ]
 
-  deps = [
-    "//mojo/public/cpp/system",
-    "//services/service_manager/public/cpp/standalone_service:main",
-  ]
-}
+    deps = [
+      "//mojo/public/cpp/system",
+      "//services/service_manager/public/cpp/standalone_service:main",
+    ]
+  }
 
-service_manifest("host_test_service_manifest") {
-  name = "host_test_service"
-  source = "host_test_service_manifest.json"
+  service_manifest("host_test_service_manifest") {
+    name = "host_test_service"
+    source = "host_test_service_manifest.json"
+  }
 }

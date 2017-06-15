@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/process/process.h"
 #include "base/values.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
@@ -23,8 +24,12 @@
 #include "services/service_manager/public/interfaces/service.mojom.h"
 #include "services/service_manager/public/interfaces/service_factory.mojom.h"
 #include "services/service_manager/public/interfaces/service_manager.mojom.h"
-#include "services/service_manager/runner/host/service_process_launcher.h"
+#include "services/service_manager/runner/host/service_process_launcher_factory.h"
 #include "services/service_manager/service_overrides.h"
+
+#if !defined(OS_IOS)
+#include "services/service_manager/runner/host/service_process_launcher.h"
+#endif
 
 namespace catalog {
 class ManifestProvider;

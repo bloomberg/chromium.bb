@@ -41,7 +41,7 @@ namespace service_manager {
 
 ServiceProcessLauncher::ServiceProcessLauncher(
     base::TaskRunner* launch_process_runner,
-    Delegate* delegate,
+    ServiceProcessLauncherDelegate* delegate,
     const base::FilePath& service_path)
     : launch_process_runner_(launch_process_runner),
       delegate_(delegate),

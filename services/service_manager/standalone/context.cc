@@ -30,9 +30,13 @@
 #include "services/service_manager/connect_params.h"
 #include "services/service_manager/connect_util.h"
 #include "services/service_manager/runner/common/switches.h"
-#include "services/service_manager/runner/host/service_process_launcher.h"
+#include "services/service_manager/runner/host/service_process_launcher_factory.h"
 #include "services/service_manager/service_manager.h"
 #include "services/service_manager/switches.h"
+
+#if !defined(OS_IOS)
+#include "services/service_manager/runner/host/service_process_launcher.h"
+#endif
 
 #if defined(OS_MACOSX)
 #include "services/service_manager/public/cpp/standalone_service/mach_broker.h"
@@ -45,14 +49,13 @@ class TaskRunner;
 namespace service_manager {
 namespace {
 
+#if !defined(OS_IOS)
 // Used to ensure we only init once.
 class ServiceProcessLauncherFactoryImpl : public ServiceProcessLauncherFactory {
  public:
   ServiceProcessLauncherFactoryImpl(base::TaskRunner* launch_process_runner,
-                                    ServiceProcessLauncher::Delegate* delegate)
-      : launch_process_runner_(launch_process_runner),
-        delegate_(delegate) {
-  }
+                                    ServiceProcessLauncherDelegate* delegate)
+      : launch_process_runner_(launch_process_runner), delegate_(delegate) {}
 
  private:
    std::unique_ptr<ServiceProcessLauncher> Create(
@@ -62,8 +65,9 @@ class ServiceProcessLauncherFactoryImpl : public ServiceProcessLauncherFactory {
   }
 
   base::TaskRunner* launch_process_runner_;
-  ServiceProcessLauncher::Delegate* delegate_;
+  ServiceProcessLauncherDelegate* delegate_;
 };
+#endif  // !defined(OS_IOS)
 
 void OnInstanceQuit(const std::string& name, const Identity& identity) {
   if (name == identity.name())
@@ -75,7 +79,7 @@ const char kService[] = "service";
 }  // namespace
 
 Context::Context(
-    ServiceProcessLauncher::Delegate* service_process_launcher_delegate,
+    ServiceProcessLauncherDelegate* service_process_launcher_delegate,
     std::unique_ptr<base::Value> catalog_contents)
     : main_entry_time_(base::Time::Now()) {
   TRACE_EVENT0("service_manager", "Context::Context");
@@ -84,10 +88,15 @@ Context::Context(
       kThreadPoolMaxThreads, "blocking_pool", base::TaskPriority::USER_VISIBLE);
 
   std::unique_ptr<ServiceProcessLauncherFactory>
-      service_process_launcher_factory =
-          base::MakeUnique<ServiceProcessLauncherFactoryImpl>(
-              blocking_pool_.get(),
-              service_process_launcher_delegate);
+      service_process_launcher_factory;
+
+// iOS does not support launching services in their own processes (and does
+// not build ServiceProcessLauncher).
+#if !defined(OS_IOS)
+  service_process_launcher_factory =
+      base::MakeUnique<ServiceProcessLauncherFactoryImpl>(
+          blocking_pool_.get(), service_process_launcher_delegate);
+#endif
   service_manager_.reset(
       new ServiceManager(std::move(service_process_launcher_factory),
                          std::move(catalog_contents), nullptr));

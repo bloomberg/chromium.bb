@@ -36,60 +36,63 @@ static_library("lib") {
   ]
 }
 
-service("filesystem") {
-  sources = [
-    "file_system_app.cc",
-    "file_system_app.h",
-    "main.cc",
-  ]
+if (!is_ios) {
+  # service binaries are not supported on iOS.
+  service("filesystem") {
+    sources = [
+      "file_system_app.cc",
+      "file_system_app.h",
+      "main.cc",
+    ]
 
-  deps = [
-    ":lib",
-    "//base",
-    "//components/filesystem/public/interfaces",
-    "//mojo/common",
-    "//mojo/public/cpp/bindings",
-    "//mojo/public/cpp/system",
-    "//services/service_manager/public/cpp",
-  ]
-}
+    deps = [
+      ":lib",
+      "//base",
+      "//components/filesystem/public/interfaces",
+      "//mojo/common",
+      "//mojo/public/cpp/bindings",
+      "//mojo/public/cpp/system",
+      "//services/service_manager/public/cpp",
+    ]
+  }
 
-service_manifest("manifest") {
-  name = "filesystem"
-  source = "manifest.json"
-}
+  service_manifest("manifest") {
+    name = "filesystem"
+    source = "manifest.json"
+  }
 
-service_test("filesystem_service_unittests") {
-  sources = [
-    "directory_impl_unittest.cc",
-    "file_impl_unittest.cc",
-    "files_test_base.cc",
-    "files_test_base.h",
-  ]
+  service_test("filesystem_service_unittests") {
+    sources = [
+      "directory_impl_unittest.cc",
+      "file_impl_unittest.cc",
+      "files_test_base.cc",
+      "files_test_base.h",
+    ]
 
-  catalog = ":filesystem_service_unittests_catalog"
+    catalog = ":filesystem_service_unittests_catalog"
 
-  deps = [
-    "//base",
-    "//components/filesystem/public/interfaces",
-    "//mojo/common",
-    "//mojo/public/cpp/bindings",
-    "//mojo/public/cpp/system",
-    "//services/service_manager/public/cpp",
-    "//services/service_manager/public/cpp:service_test_support",
-  ]
+    deps = [
+      "//base",
+      "//components/filesystem/public/interfaces",
+      "//mojo/common",
+      "//mojo/public/cpp/bindings",
+      "//mojo/public/cpp/system",
+      "//services/service_manager/public/cpp",
+      "//services/service_manager/public/cpp:service_test_support",
+    ]
 
-  data_deps = [
-    ":filesystem",
-  ]
-}
+    data_deps = [
+      ":filesystem",
+    ]
+  }
 
-service_manifest("test_manifest") {
-  name = "filesystem_service_unittests"
-  source = "test_manifest.json"
-}
+  service_manifest("test_manifest") {
+    name = "filesystem_service_unittests"
+    source = "test_manifest.json"
+  }
 
-catalog("filesystem_service_unittests_catalog") {
-  embedded_services = [ ":test_manifest" ]
-  standalone_services = [ ":manifest" ]
+  catalog("filesystem_service_unittests_catalog") {
+    embedded_services = [ ":test_manifest" ]
+    standalone_services = [ ":manifest" ]
+  }
 }

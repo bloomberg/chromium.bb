@@ -71,6 +71,15 @@ CapabilitySet GetRequestedCapabilities(const InterfaceProviderSpec& source_spec,
   return capabilities;
 }
 
+base::ProcessId GetCurrentPid() {
+#if defined(OS_IOS)
+  // iOS does not support base::Process.
+  return 0;
+#else
+  return base::Process::Current().Pid();
+#endif
+}
+
 // Generates a single set of interfaces that is the union of all interfaces
 // exposed by the target for the capabilities requested by the source.
 InterfaceSet GetInterfacesToExpose(const InterfaceProviderSpec& source_spec,
@@ -173,7 +182,7 @@ class ServiceManager::Instance
         weak_factory_(this) {
     if (identity_.name() == service_manager::mojom::kServiceName ||
         identity_.name() == catalog::mojom::kServiceName) {
-      pid_ = base::Process::Current().Pid();
+      pid_ = GetCurrentPid();
     }
     DCHECK_NE(mojom::kInvalidInstanceID, id_);
   }
@@ -249,6 +258,11 @@ class ServiceManager::Instance
   }
 
   bool StartWithFilePath(const base::FilePath& path) {
+#if defined(OS_IOS)
+    // iOS does not support launching services in their own processes.
+    NOTREACHED();
+    return false;
+#else
     DCHECK(!service_);
     DCHECK(!path.empty());
     runner_ = service_manager_->service_process_launcher_factory_->Create(path);
@@ -260,6 +274,7 @@ class ServiceManager::Instance
         base::Bind(&Instance::PIDAvailable, weak_factory_.GetWeakPtr()));
     StartWithService(std::move(service));
     return true;
+#endif
   }
 
   void BindPIDReceiver(mojom::PIDReceiverRequest request) {
@@ -583,10 +598,14 @@ class ServiceManager::Instance
   }
 
   void PIDAvailable(base::ProcessId pid) {
+#if !defined(OS_IOS)
+    // iOS does not support base::Process and simply passes 0 here, so elide
+    // this check on that platform.
     if (pid == base::kNullProcessId) {
       service_manager_->OnInstanceError(this);
       return;
     }
+#endif
     pid_ = pid;
   }
 
@@ -638,7 +657,9 @@ class ServiceManager::Instance
   Identity identity_;
   const InterfaceProviderSpecMap interface_provider_specs_;
   const bool allow_any_application_;
+#if !defined(OS_IOS)
   std::unique_ptr<ServiceProcessLauncher> runner_;
+#endif
   mojom::ServicePtr service_;
   mojo::Binding<mojom::PIDReceiver> pid_receiver_binding_;
   mojo::BindingSet<mojom::Connector> connectors_;
@@ -899,7 +920,7 @@ void ServiceManager::RegisterService(
   if (!pid_receiver_request.is_pending()) {
     mojom::PIDReceiverPtr pid_receiver;
     pid_receiver_request = mojo::MakeRequest(&pid_receiver);
-    pid_receiver->SetPID(base::Process::Current().Pid());
+    pid_receiver->SetPID(GetCurrentPid());
   }
 
   params->set_source(identity);

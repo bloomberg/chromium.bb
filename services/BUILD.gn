@@ -15,14 +15,21 @@ import("//testing/test.gni")
 # use the ServiceTest framework, you must also include corresponding catalog
 # entries in the "services_unittests_catalog" target below.
 service_test("services_unittests") {
+  # If your service does not run on iOS, its tests should go in the !iOS
+  # section below. If you are unsure, contact blundell@chromium.org.
   deps = [
-    "//services/data_decoder:tests",
-    "//services/device:tests",
     "//services/identity:tests",
-    "//services/preferences:tests",
-    "//services/resource_coordinator:tests",
-    "//services/shape_detection:tests",
   ]
+
+  if (!is_ios) {
+    deps += [
+      "//services/data_decoder:tests",
+      "//services/device:tests",
+      "//services/preferences:tests",
+      "//services/resource_coordinator:tests",
+      "//services/shape_detection:tests",
+    ]
+  }
 
   if (use_aura) {
     deps += [
@@ -38,7 +45,7 @@ service_test("services_unittests") {
       deps += [ "//services/ui/demo:tests" ]
     }
 
-    if (use_ozone || (!is_chromeos && !is_mac)) {
+    if (use_ozone || (!is_chromeos && !is_mac && !is_ios)) {
       deps += [ "//services/ui/ws:tests" ]
     }
   }
@@ -50,10 +57,12 @@ service_test("services_unittests") {
       # Some tests need to initialize V8.
       "//v8:v8_external_startup_data_assets",
     ]
-  } else {
-    # NOTE: We do not currently support standalone service binaries on Android,
-    # so any tests which use the ServiceTest framework to connect to standalone
-    # services must be added here.
+  }
+
+  if (!is_android && !is_ios) {
+    # NOTE: We do not currently support standalone service binaries on Android
+    # or iOS, so any tests which use the ServiceTest framework to connect to
+    # standalone services must be added here.
     deps += [ "//services/video_capture:tests" ]
   }
 
@@ -68,13 +77,19 @@ service_test("services_unittests") {
 
 catalog("services_unittests_catalog") {
   testonly = true
-  catalog_deps = [
-    "//services/device:tests_catalog",
-    "//services/identity:tests_catalog",
-    "//services/preferences:tests_catalog",
-    "//services/resource_coordinator:tests_catalog",
-    "//services/video_capture:tests_catalog",
-  ]
+
+  # The division between "all platforms" and "!iOS" here needs to match that
+  # for the main deps list in the services_unittests target above.
+  catalog_deps = [ "//services/identity:tests_catalog" ]
+
+  if (!is_ios) {
+    catalog_deps += [
+      "//services/device:tests_catalog",
+      "//services/preferences:tests_catalog",
+      "//services/resource_coordinator:tests_catalog",
+      "//services/video_capture:tests_catalog",
+    ]
+  }
 
   if (use_aura) {
     catalog_deps += [
@@ -87,7 +102,7 @@ catalog("services_unittests_catalog") {
       catalog_deps += [ "//services/ui/demo:tests_catalog" ]
     }
 
-    if (use_ozone || !is_chromeos) {
+    if (use_ozone || (!is_chromeos && !is_ios)) {
       catalog_deps += [ "//services/ui/ws:tests_catalog" ]
     }
   }
