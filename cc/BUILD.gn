@@ -52,6 +52,7 @@ cc_component("cc") {
     "layers/append_quads_data.cc",
     "layers/append_quads_data.h",
     "layers/content_layer_client.h",
+    "layers/draw_mode.h",
     "layers/draw_properties.cc",
     "layers/draw_properties.h",
     "layers/effect_tree_layer_list_iterator.cc",

@@ -225,7 +225,11 @@ void LayerTestCommon::LayerImplTest::AppendSurfaceQuadsWithOcclusion(
   surface_impl->set_occlusion_in_content_space(
       Occlusion(gfx::Transform(), SimpleEnclosedRegion(occluded),
                 SimpleEnclosedRegion()));
-  surface_impl->AppendQuads(render_pass_.get(), &data);
+  surface_impl->AppendQuads(resource_provider()->default_resource_type() ==
+                                    ResourceProvider::RESOURCE_TYPE_BITMAP
+                                ? DRAW_MODE_SOFTWARE
+                                : DRAW_MODE_HARDWARE,
+                            render_pass_.get(), &data);
 }
 
 void EmptyCopyOutputCallback(std::unique_ptr<CopyOutputResult> result) {}

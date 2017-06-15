@@ -65,7 +65,8 @@ TEST(RenderSurfaceLayerImplTest, Occlusion) {
   }
 }
 
-TEST(RenderSurfaceLayerImplTest, AppendQuadsWithScaledMask) {
+static std::unique_ptr<RenderPass> DoAppendQuadsWithScaledMask(
+    DrawMode draw_mode) {
   gfx::Size layer_size(1000, 1000);
   gfx::Size viewport_size(1000, 1000);
   float scale_factor = 2;
@@ -116,13 +117,28 @@ TEST(RenderSurfaceLayerImplTest, AppendQuadsWithScaledMask) {
   RenderSurfaceImpl* render_surface_impl = GetRenderSurface(surface_raw);
   std::unique_ptr<RenderPass> render_pass = RenderPass::Create();
   AppendQuadsData append_quads_data;
-  render_surface_impl->AppendQuads(render_pass.get(), &append_quads_data);
+  render_surface_impl->AppendQuads(draw_mode, render_pass.get(),
+                                   &append_quads_data);
+  return render_pass;
+}
 
+TEST(RenderSurfaceLayerImplTest, AppendQuadsWithScaledMask) {
+  std::unique_ptr<RenderPass> render_pass =
+      DoAppendQuadsWithScaledMask(DRAW_MODE_HARDWARE);
   DCHECK(render_pass->quad_list.front());
   const RenderPassDrawQuad* quad =
       RenderPassDrawQuad::MaterialCast(render_pass->quad_list.front());
   EXPECT_EQ(gfx::RectF(0, 0, 1, 1), quad->mask_uv_rect);
   EXPECT_EQ(gfx::Vector2dF(2.f, 2.f), quad->filters_scale);
+}
+
+TEST(RenderSurfaceLayerImplTest, ResourcelessAppendQuadsSkipMask) {
+  std::unique_ptr<RenderPass> render_pass =
+      DoAppendQuadsWithScaledMask(DRAW_MODE_RESOURCELESS_SOFTWARE);
+  DCHECK(render_pass->quad_list.front());
+  const RenderPassDrawQuad* quad =
+      RenderPassDrawQuad::MaterialCast(render_pass->quad_list.front());
+  EXPECT_EQ(0u, quad->mask_resource_id());
 }
 
 }  // namespace
