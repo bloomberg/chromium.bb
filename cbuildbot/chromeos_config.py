@@ -3481,13 +3481,25 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
   )
 
   site_config.AddWithoutTemplate(
+      'som-dispatcher',
+      site_config.templates.no_hwtest_builder,
+      site_config.templates.no_vmtest_builder,
+      important=True,
+      description=('Updates alerts displayed on SoM website. go/som/chromeos'),
+      build_type=constants.GENERIC_TYPE,
+      boards=[],
+      builder_class_name='alert_builders.SomDispatcherBuilder',
+      buildslave_type=constants.GCE_WIMPY_BUILD_SLAVE_TYPE,
+  )
+
+  site_config.AddWithoutTemplate(
       'config-updater',
       site_config.templates.no_hwtest_builder,
+      site_config.templates.no_vmtest_builder,
       important=True,
-      vm_tests=[],
       description=('Build Config Updater reads updated GE config files from'
                    ' GS, and commits them to chromite after running tests.'),
-      build_type=constants.CONFIG_UPDATER_TYPE,
+      build_type=constants.GENERIC_TYPE,
       boards=[],
       builder_class_name='config_builders.UpdateConfigBuilder',
       active_waterfall=constants.WATERFALL_INFRA,

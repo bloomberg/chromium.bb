@@ -602,9 +602,6 @@ CHROME_PFQ_TYPE = 'chrome'
 # Android PFQ type.  Builds and validates new versions of Android.
 ANDROID_PFQ_TYPE = 'android'
 
-# Config updater type.
-CONFIG_UPDATER_TYPE = 'config'
-
 # Builds from source and non-incremental.  This builds fully wipe their
 # chroot before the start of every build and no not use a BINHOST.
 BUILD_FROM_SOURCE_TYPE = 'full'
@@ -628,6 +625,9 @@ TRYJOB_TYPE = 'tryjob'
 CHROOT_BUILDER_TYPE = 'chroot'
 CHROOT_BUILDER_BOARD = 'amd64-host'
 
+# Use for builds that don't requite a type.
+GENERIC_TYPE = 'generic'
+
 VALID_BUILD_TYPES = (
     PALADIN_TYPE,
     INCREMENTAL_TYPE,
@@ -641,8 +641,8 @@ VALID_BUILD_TYPES = (
     PRE_CQ_LAUNCHER_TYPE,
     PAYLOADS_TYPE,
     TOOLCHAIN_TYPE,
-    CONFIG_UPDATER_TYPE,
     TRYJOB_TYPE,
+    GENERIC_TYPE,
 )
 
 # The default list of pre-cq configs to use.

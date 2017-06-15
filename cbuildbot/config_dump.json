@@ -6070,7 +6070,7 @@
     "config-updater": {
         "active_waterfall": "chromeos.infra",
         "boards": [],
-        "build_type": "config",
+        "build_type": "generic",
         "builder_class_name": "config_builders.UpdateConfigBuilder",
         "buildslave_type": "gce_wimpy",
         "description": "Build Config Updater reads updated GE config files from GS, and commits them to chromite after running tests.",
@@ -22537,6 +22537,16 @@
         "useflags": [
             "chrome_internal"
         ]
+    },
+    "som-dispatcher": {
+        "boards": [],
+        "build_type": "generic",
+        "builder_class_name": "alert_builders.SomDispatcherBuilder",
+        "buildslave_type": "gce_wimpy",
+        "description": "Updates alerts displayed on SoM website. go/som/chromeos",
+        "hw_tests_override": [],
+        "important": true,
+        "vm_tests": []
     },
     "soraka-chrome-pfq": {
         "_template": "chrome_pfq",
