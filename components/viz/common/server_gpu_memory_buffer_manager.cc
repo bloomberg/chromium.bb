@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/common/server_gpu_memory_buffer_manager.h"
+#include "components/viz/common/server_gpu_memory_buffer_manager.h"
 
 #include "base/logging.h"
 #include "gpu/ipc/client/gpu_memory_buffer_impl.h"
@@ -10,10 +10,10 @@
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "services/ui/gpu/interfaces/gpu_service.mojom.h"
 
-namespace ui {
+namespace viz {
 
 ServerGpuMemoryBufferManager::ServerGpuMemoryBufferManager(
-    mojom::GpuService* gpu_service,
+    ui::mojom::GpuService* gpu_service,
     int client_id)
     : gpu_service_(gpu_service),
       client_id_(client_id),
@@ -92,4 +92,4 @@ void ServerGpuMemoryBufferManager::DestroyAllGpuMemoryBufferForClient(
   native_buffers_.erase(client_id);
 }
 
-}  // namespace ui
+}  // namespace viz

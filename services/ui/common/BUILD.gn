@@ -36,27 +36,6 @@ source_set("mus_common") {
   ]
 }
 
-# GPU related code used by the server-side components (e.g. window server
-# process, frame sink manager in the gpu process).
-source_set("server_gpu") {
-  sources = [
-    "server_gpu_memory_buffer_manager.cc",
-    "server_gpu_memory_buffer_manager.h",
-  ]
-
-  deps = [
-    "//gpu/ipc/client",
-  ]
-
-  public_deps = [
-    "//gpu/command_buffer/client",
-    "//gpu/ipc/common",
-    "//gpu/ipc/host",
-    "//services/ui/gpu/interfaces",
-    "//ui/gfx",
-  ]
-}
-
 source_set("task_runner_test_base") {
   testonly = true
 

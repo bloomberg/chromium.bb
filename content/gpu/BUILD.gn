@@ -73,7 +73,6 @@ target(link_target_type, "gpu_sources") {
     "//services/service_manager/public/interfaces",
     "//services/shape_detection:lib",
     "//services/shape_detection/public/interfaces",
-    "//services/ui/common:server_gpu",
     "//services/ui/gpu",
     "//services/ui/gpu/interfaces",
     "//skia",

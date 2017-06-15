@@ -121,6 +121,7 @@ static_library("lib") {
   ]
 
   deps = [
+    "//components/viz/common",
     "//gpu/command_buffer/client",
     "//gpu/command_buffer/client:gles2_interface",
     "//gpu/ipc/client",
@@ -140,7 +141,6 @@ static_library("lib") {
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/interfaces",
     "//services/ui/common:mus_common",
-    "//services/ui/common:server_gpu",
     "//services/ui/display",
     "//services/ui/public/interfaces",
     "//ui/base",
