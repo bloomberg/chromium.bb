@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 # vpython.
-infra/tools/luci/vpython/${platform}  git_revision:cea2b0eb174d6d8e6b628020e3986cb251ea2d97
+infra/tools/luci/vpython/${platform}  git_revision:d147cd8b9062f3699759612ef96c4fe4bd49f87d
 
 # LUCI editor
 infra/tools/luci/led/${platform}  git_revision:a3890a6e0b276b35d734b13a82b164dd7fd8f2b5
