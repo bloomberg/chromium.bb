@@ -13,10 +13,8 @@
 #include "content/browser/appcache/appcache_entry.h"
 #include "content/browser/appcache/appcache_executable_handler.h"
 #include "content/browser/appcache/appcache_job.h"
-#include "content/browser/appcache/appcache_response.h"
 #include "content/browser/appcache/appcache_storage.h"
 #include "content/common/content_export.h"
-#include "net/http/http_byte_range.h"
 #include "net/url_request/url_request_job.h"
 
 namespace net {
@@ -98,8 +96,6 @@ class CONTENT_EXPORT AppCacheURLRequestJob : public net::URLRequestJob,
   void OnCacheLoaded(AppCache* cache, int64_t cache_id) override;
 
   const net::HttpResponseInfo* http_info() const;
-  bool is_range_request() const { return range_requested_.IsValid(); }
-  void SetupRangeResponse();
 
   // AppCacheResponseReader completion callback
   void OnReadComplete(int result);
@@ -133,12 +129,8 @@ class CONTENT_EXPORT AppCacheURLRequestJob : public net::URLRequestJob,
   AppCacheEntry entry_;
   bool is_fallback_;
   bool is_main_resource_;  // Used for histogram logging.
-  scoped_refptr<AppCacheResponseInfo> info_;
   scoped_refptr<net::GrowableIOBuffer> handler_source_buffer_;
   std::unique_ptr<AppCacheResponseReader> handler_source_reader_;
-  net::HttpByteRange range_requested_;
-  std::unique_ptr<net::HttpResponseInfo> range_response_info_;
-  std::unique_ptr<AppCacheResponseReader> reader_;
   scoped_refptr<AppCache> cache_;
   scoped_refptr<AppCacheGroup> group_;
   const OnPrepareToRestartCallback on_prepare_to_restart_callback_;

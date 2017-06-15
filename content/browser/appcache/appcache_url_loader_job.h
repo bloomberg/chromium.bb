@@ -91,12 +91,6 @@ class CONTENT_EXPORT AppCacheURLLoaderJob : public AppCacheJob,
 
   base::WeakPtr<AppCacheStorage> storage_;
 
-  // The response details.
-  scoped_refptr<AppCacheResponseInfo> info_;
-
-  // Used to read the cache.
-  std::unique_ptr<AppCacheResponseReader> reader_;
-
   // Time when the request started.
   base::TimeTicks start_time_tick_;
 

@@ -42,6 +42,11 @@ void AppCacheURLLoaderJob::DeliverAppCachedResponse(const GURL& manifest_url,
   entry_ = entry;
   is_fallback_ = is_fallback;
 
+  // Handle range requests.
+  net::HttpRequestHeaders headers;
+  headers.AddHeadersFromString(request_.headers);
+  InitializeRangeRequestInfo(headers);
+
   // TODO(ananta)
   // Implement the AppCacheServiceImpl::Observer interface or add weak pointer
   // support to it.
@@ -143,12 +148,12 @@ void AppCacheURLLoaderJob::OnResponseInfoLoaded(
     reader_.reset(
         storage_->CreateResponseReader(manifest_url_, entry_.response_id()));
 
+    if (is_range_request())
+      SetupRangeResponse();
+
     DCHECK(!loader_callback_.is_null());
     std::move(loader_callback_)
         .Run(base::Bind(&AppCacheURLLoaderJob::Start, StaticAsWeakPtr(this)));
-
-    // TODO(ananta)
-    // Handle range requests.
 
     response_body_stream_ = std::move(data_pipe_.producer_handle);
 
@@ -216,7 +221,9 @@ void AppCacheURLLoaderJob::SendResponseInfo() {
   if (!data_pipe_.consumer_handle.is_valid())
     return;
 
-  const net::HttpResponseInfo* http_info = info_->http_response_info();
+  const net::HttpResponseInfo* http_info = is_range_request()
+                                               ? range_response_info_.get()
+                                               : info_->http_response_info();
 
   ResourceResponseHead response_head;
   response_head.headers = http_info->headers;
@@ -228,7 +235,9 @@ void AppCacheURLLoaderJob::SendResponseInfo() {
 
   response_head.request_time = http_info->request_time;
   response_head.response_time = http_info->response_time;
-  response_head.content_length = info_->response_data_size();
+  response_head.content_length =
+      is_range_request() ? range_response_info_->headers->GetContentLength()
+                         : info_->response_data_size();
 
   client_info_->OnReceiveResponse(response_head, http_info->ssl_info,
                                   mojom::DownloadedTempFilePtr());
