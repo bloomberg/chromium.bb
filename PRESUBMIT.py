@@ -368,6 +368,20 @@ _BANNED_CPP_FUNCTIONS = (
       False,
       (),
     ),
+    (
+      'CallJavascriptFunctionUnsafe',
+      (
+        "Don't use CallJavascriptFunctionUnsafe() in new code. Instead, use",
+        'AllowJavascript(), OnJavascriptAllowed()/OnJavascriptDisallowed(),',
+        'and CallJavascriptFunction(). See https://goo.gl/qivavq.',
+      ),
+      False,
+      (
+        r'^content[\\\/]browser[\\\/]webui[\\\/]web_ui_impl\.(cc|h)$',
+        r'^content[\\\/]public[\\\/]browser[\\\/]web_ui\.h$',
+        r'^content[\\\/]public[\\\/]test[\\\/]test_web_ui\.(cc|h)$',
+      ),
+    ),
 )
 
 
