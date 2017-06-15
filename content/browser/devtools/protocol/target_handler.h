@@ -94,6 +94,8 @@ class TargetHandler : public DevToolsDomainHandler,
   bool ShouldForceDevToolsAgentHostCreation() override;
   void DevToolsAgentHostCreated(DevToolsAgentHost* agent_host) override;
   void DevToolsAgentHostDestroyed(DevToolsAgentHost* agent_host) override;
+  void DevToolsAgentHostAttached(DevToolsAgentHost* agent_host) override;
+  void DevToolsAgentHostDetached(DevToolsAgentHost* agent_host) override;
 
   // DevToolsAgentHostClient implementation.
   void DispatchProtocolMessage(DevToolsAgentHost* agent_host,

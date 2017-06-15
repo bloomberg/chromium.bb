@@ -247,7 +247,8 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
     kFrontendNode
   };
 
-  DevToolsWindow(Profile* profile,
+  DevToolsWindow(FrontendType frontend_type,
+                 Profile* profile,
                  content::WebContents* main_web_contents,
                  DevToolsUIBindings* bindings,
                  content::WebContents* inspected_web_contents,
@@ -351,6 +352,7 @@ class DevToolsWindow : public DevToolsUIBindings::Delegate,
 
   std::unique_ptr<ObserverWithAccessor> inspected_contents_observer_;
 
+  FrontendType frontend_type_;
   Profile* profile_;
   content::WebContents* main_web_contents_;
   content::WebContents* toolbox_web_contents_;
