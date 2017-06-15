@@ -34,8 +34,8 @@
 #include <memory>
 #include "modules/websockets/WebSocketChannelClient.h"
 #include "platform/heap/Handle.h"
-#include "platform/wtf/RefPtr.h"
-#include "public/platform/WebCommon.h"
+#include "platform/wtf/Forward.h"
+#include "platform/wtf/Vector.h"
 #include "public/platform/WebString.h"
 #include "public/web/WebPepperSocket.h"
 #include "public/web/WebPepperSocketClient.h"
