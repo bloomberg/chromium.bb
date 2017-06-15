@@ -93,6 +93,7 @@ class CORE_EXPORT NGLineInfo {
 
   // NGInlineItemResults for this line.
   NGInlineItemResults& Results() { return results_; }
+  const NGInlineItemResults& Results() const { return results_; }
 
  private:
   const ComputedStyle* line_style_ = nullptr;

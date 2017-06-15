@@ -68,6 +68,8 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
                       LayoutUnit inline_size,
                       LayoutUnit available_width);
 
+  LayoutUnit ComputeContentSize(const NGLineInfo&, LayoutUnit line_bottom);
+
   NGLayoutOpportunity FindLayoutOpportunityForLine();
 
   NGInlineLayoutStateStack box_states_;
