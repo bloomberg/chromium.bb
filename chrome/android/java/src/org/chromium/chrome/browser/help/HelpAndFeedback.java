@@ -14,6 +14,7 @@ import android.text.TextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.UrlConstants;
@@ -85,6 +86,7 @@ public class HelpAndFeedback {
      */
     public void show(final Activity activity, final String helpContext, Profile profile,
             @Nullable String url) {
+        RecordUserAction.record("MobileHelpAndFeedback");
         FeedbackCollector.create(activity, profile, url, true /* takeScreenshot */,
                 new FeedbackCollector.FeedbackResult() {
                     @Override
