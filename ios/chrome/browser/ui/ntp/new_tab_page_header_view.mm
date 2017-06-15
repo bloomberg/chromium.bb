@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/tabs/tab_model_observer.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/image_util.h"
 #import "ios/chrome/browser/ui/ntp/google_landing_data_source.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
@@ -125,14 +126,16 @@ const CGFloat kMaxConstraintConstantDiff = 5;
   [_shadow setAlpha:0];
 }
 
-- (void)updateSearchField:(UIView*)searchField
-         withInitialFrame:(CGRect)initialFrame
-       subviewConstraints:(NSArray*)constraints
-                forOffset:(CGFloat)offset {
-  // The scroll offset at which point |searchField|'s frame should stop growing.
+- (void)updateSearchFieldWidth:(NSLayoutConstraint*)widthConstraint
+                        height:(NSLayoutConstraint*)heightConstraint
+                     topMargin:(NSLayoutConstraint*)topMarginConstraint
+            subviewConstraints:(NSArray*)constraints
+                 logoIsShowing:(BOOL)logoIsShowing
+                     forOffset:(CGFloat)offset {
+  // The scroll offset at which point searchField's frame should stop growing.
   CGFloat maxScaleOffset =
       self.frame.size.height - ntp_header::kMinHeaderHeight;
-  // The scroll offset at which point |searchField|'s frame should start
+  // The scroll offset at which point searchField's frame should start
   // growing.
   CGFloat startScaleOffset = maxScaleOffset - ntp_header::kAnimationDistance;
   CGFloat percent = 0;
@@ -141,17 +144,24 @@ const CGFloat kMaxConstraintConstantDiff = 5;
     percent = MIN(1, MAX(0, animatingOffset / ntp_header::kAnimationDistance));
   }
 
-  // Calculate the amount to grow the width and height of |searchField| so that
+  CGFloat searchFieldNormalWidth =
+      content_suggestions::searchFieldWidth(self.bounds.size.width);
+
+  // Calculate the amount to grow the width and height of searchField so that
   // its frame covers the entire toolbar area.
   CGFloat maxXInset = ui::AlignValueToUpperPixel(
-      (initialFrame.size.width - self.bounds.size.width) / 2 - 1);
+      (searchFieldNormalWidth - self.bounds.size.width) / 2 - 1);
   CGFloat maxYOffset = ui::AlignValueToUpperPixel(
-      (ntp_header::kToolbarHeight - initialFrame.size.height) / 2 +
+      (ntp_header::kToolbarHeight - content_suggestions::kSearchFieldHeight) /
+          2 +
       kOmniboxImageBottomInset - 0.5);
-  CGRect searchFieldFrame = CGRectInset(initialFrame, maxXInset * percent, 0);
-  searchFieldFrame.origin.y += maxYOffset * percent;
-  searchFieldFrame.size.height += 2 * maxYOffset * percent;
-  [searchField setFrame:CGRectIntegral(searchFieldFrame)];
+
+  widthConstraint.constant = searchFieldNormalWidth - 2 * maxXInset * percent;
+  topMarginConstraint.constant =
+      content_suggestions::searchFieldTopMargin() + maxYOffset * percent;
+  heightConstraint.constant =
+      content_suggestions::kSearchFieldHeight + 2 * maxYOffset * percent;
+
   [_searchBoxBorder setAlpha:(1 - percent)];
   [_shadow setAlpha:percent];
 
