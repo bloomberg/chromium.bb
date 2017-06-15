@@ -5,6 +5,7 @@
 #ifndef CONTENT_CHILD_WEB_URL_LOADER_IMPL_H_
 #define CONTENT_CHILD_WEB_URL_LOADER_IMPL_H_
 
+#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
@@ -25,8 +26,7 @@ struct CONTENT_EXPORT StreamOverrideParameters {
  public:
   StreamOverrideParameters();
   ~StreamOverrideParameters();
-  // TODO(clamy): The browser should be made aware on destruction of this struct
-  // that it can release its associated stream handle.
+
   GURL stream_url;
   mojo::ScopedDataPipeConsumerHandle consumer_handle;
   ResourceResponseHead response;
@@ -39,6 +39,10 @@ struct CONTENT_EXPORT StreamOverrideParameters {
   int total_transfer_size_delta;
 
   int total_transferred = 0;
+
+  // Called when this struct is deleted. Used to notify the browser that it can
+  // release its associated StreamHandle.
+  base::OnceCallback<void(const GURL&)> on_delete;
 };
 
 class CONTENT_EXPORT WebURLLoaderImpl

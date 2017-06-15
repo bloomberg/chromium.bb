@@ -637,6 +637,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // sending a mojo overlay factory.
   const base::UnguessableToken& GetOverlayRoutingToken();
 
+  const StreamHandle* stream_handle_for_testing() const {
+    return stream_handle_.get();
+  }
+
  protected:
   friend class RenderFrameHostFactory;
 
@@ -955,6 +959,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // |last_committed_site_url_| if it's not equal to the site url corresponding
   // to |url|.
   void SetLastCommittedSiteUrl(const GURL& url);
+
+  // PlzNavigate: Called when the frame has consumed the StreamHandle and it
+  // can be released.
+  void OnStreamHandleConsumed(const GURL& stream_url);
 
   // For now, RenderFrameHosts indirectly keep RenderViewHosts alive via a
   // refcount that calls Shutdown when it reaches zero.  This allows each

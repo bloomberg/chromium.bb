@@ -882,6 +882,8 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_RequestOverlayRoutingToken,
                         OnRequestOverlayRoutingToken)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ShowCreatedWindow, OnShowCreatedWindow)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_StreamHandleConsumed,
+                        OnStreamHandleConsumed)
   IPC_END_MESSAGE_MAP()
 
   // No further actions here, since we may have been deleted.
@@ -984,6 +986,11 @@ void RenderFrameHostImpl::RenderProcessGone(SiteInstanceImpl* site_instance) {
   if (navigation_handle_)
     navigation_handle_->set_net_error_code(net::ERR_ABORTED);
   ResetLoadingState();
+
+  // The renderer process is gone, so the |stream_handle_| will no longer be
+  // used. It can be released.
+  // TODO(clamy): Remove this when we switch to Mojo streams.
+  stream_handle_.reset();
 
   // Any future UpdateState or UpdateTitle messages from this or a recreated
   // process should be ignored until the next commit.
@@ -3182,8 +3189,7 @@ void RenderFrameHostImpl::CommitNavigation(
     last_navigation_previews_state_ = common_params.previews_state;
   }
 
-  // TODO(clamy): Release the stream handle once the renderer has finished
-  // reading it.
+  // Released in OnStreamHandleConsumed().
   stream_handle_ = std::move(body);
 
   // When navigating to a debug url, no commit is expected from the
@@ -4049,6 +4055,11 @@ void RenderFrameHostImpl::SetLastCommittedSiteUrl(const GURL& url) {
         frame_tree_node_->navigator()->GetController()->GetBrowserContext(),
         GetProcess(), last_committed_site_url_);
   }
+}
+
+void RenderFrameHostImpl::OnStreamHandleConsumed(const GURL& stream_url) {
+  if (stream_handle_ && stream_handle_->GetURL() == stream_url)
+    stream_handle_.reset();
 }
 
 #if defined(OS_ANDROID)

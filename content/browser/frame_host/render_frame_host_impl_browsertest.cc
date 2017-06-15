@@ -10,6 +10,7 @@
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/content_client.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -17,6 +18,8 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/test_content_browser_client.h"
+#include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 
 namespace content {
 
@@ -57,7 +60,14 @@ class PrerenderTestContentBrowserClient : public TestContentBrowserClient {
 // on an environment were focus is guaranteed. This is only for
 // interactive_ui_tests so these bits need to move there.
 // See https://crbug.com/491535
-using RenderFrameHostImplBrowserTest = ContentBrowserTest;
+class RenderFrameHostImplBrowserTest : public ContentBrowserTest {
+ protected:
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+    SetupCrossSiteRedirector(embedded_test_server());
+    ASSERT_TRUE(embedded_test_server()->Start());
+  }
+};
 
 // Test that when creating a new window, the main frame is correctly focused.
 IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
@@ -351,6 +361,70 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
       shell(), "domAutomationController.send(popup.closed)", &is_closed));
   EXPECT_TRUE(is_closed);
+}
+
+// After a navigation, the StreamHandle must be released.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest, StreamHandleReleased) {
+  EXPECT_TRUE(NavigateToURL(shell(), GetTestUrl("", "title1.html")));
+  WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHostImpl* main_frame =
+      static_cast<RenderFrameHostImpl*>(wc->GetMainFrame());
+  EXPECT_EQ(nullptr, main_frame->stream_handle_for_testing());
+}
+
+namespace {
+class DropStreamHandleConsumedFilter : public BrowserMessageFilter {
+ public:
+  DropStreamHandleConsumedFilter() : BrowserMessageFilter(FrameMsgStart) {}
+
+ protected:
+  ~DropStreamHandleConsumedFilter() override {}
+
+ private:
+  // BrowserMessageFilter:
+  bool OnMessageReceived(const IPC::Message& message) override {
+    return message.type() == FrameHostMsg_StreamHandleConsumed::ID;
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(DropStreamHandleConsumedFilter);
+};
+}  // namespace
+
+// After a renderer crash, the StreamHandle must be released.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       StreamHandleReleasedOnRendererCrash) {
+  // |stream_handle_| is only used with PlzNavigate.
+  if (!IsBrowserSideNavigationEnabled())
+    return;
+
+  GURL url_1(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_2(embedded_test_server()->GetURL("a.com", "/title2.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), url_1));
+
+  // Set up a filter to make sure that the browser is not notified that its
+  // |stream_handle_| has been consumed.
+  WebContentsImpl* wc = static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHostImpl* main_frame =
+      static_cast<RenderFrameHostImpl*>(wc->GetMainFrame());
+  scoped_refptr<DropStreamHandleConsumedFilter> filter =
+      new DropStreamHandleConsumedFilter();
+  main_frame->GetProcess()->AddFilter(filter.get());
+
+  EXPECT_TRUE(NavigateToURL(shell(), url_2));
+
+  // Check that the |stream_handle_| hasn't been released yet.
+  EXPECT_NE(nullptr, main_frame->stream_handle_for_testing());
+
+  // Make the renderer crash.
+  RenderProcessHost* renderer_process = main_frame->GetProcess();
+  RenderProcessHostWatcher crash_observer(
+      renderer_process, RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
+  renderer_process->Shutdown(0, false);
+  crash_observer.Wait();
+
+  // The |stream_handle_| must have been released now.
+  EXPECT_EQ(nullptr, main_frame->stream_handle_for_testing());
 }
 
 }  // namespace content
