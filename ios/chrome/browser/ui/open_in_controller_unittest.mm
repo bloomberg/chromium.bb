@@ -19,6 +19,10 @@
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 class OpenInControllerTest : public PlatformTest {
@@ -33,11 +37,11 @@ class OpenInControllerTest : public PlatformTest {
   void SetUp() override {
     PlatformTest::SetUp();
     GURL documentURL = GURL("http://www.test.com/doc.pdf");
-    parent_view_.reset([[UIView alloc] init]);
+    parent_view_ = [[UIView alloc] init];
     id webController = [OCMockObject niceMockForClass:[CRWWebController class]];
-    open_in_controller_.reset([[OpenInController alloc]
-        initWithRequestContext:nil
-                 webController:webController]);
+    open_in_controller_ =
+        [[OpenInController alloc] initWithRequestContext:nil
+                                           webController:webController];
     [open_in_controller_ enableWithDocumentURL:documentURL
                              suggestedFilename:@"doc.pdf"];
   }
@@ -49,8 +53,8 @@ class OpenInControllerTest : public PlatformTest {
   // Creates a |TestURLFetcherFactory|, which automatically sets itself as
   // |URLFetcher|'s factory.
   net::TestURLFetcherFactory factory_;
-  base::scoped_nsobject<OpenInController> open_in_controller_;
-  base::scoped_nsobject<UIView> parent_view_;
+  OpenInController* open_in_controller_;
+  UIView* parent_view_;
 };
 
 TEST_F(OpenInControllerTest, DISABLED_TestDisplayOpenInMenu) {

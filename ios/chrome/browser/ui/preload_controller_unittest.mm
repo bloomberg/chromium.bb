@@ -5,7 +5,6 @@
 #include <memory>
 
 #include "base/ios/device_util.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/prefs/pref_service.h"
@@ -16,6 +15,10 @@
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/platform_test.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 @interface PreloadController (ExposedForTesting)
 - (BOOL)shouldPreloadURL:(const GURL&)url;
@@ -67,8 +70,8 @@ class PreloadControllerTest : public PlatformTest {
 
     test_url_fetcher_factory_.reset(new net::TestURLFetcherFactory());
 
-    controller_.reset([[PreloadController alloc]
-        initWithBrowserState:chrome_browser_state_.get()]);
+    controller_ = [[PreloadController alloc]
+        initWithBrowserState:chrome_browser_state_.get()];
   };
 
   // Set the "Preload webpages" setting to "Always".
@@ -107,7 +110,7 @@ class PreloadControllerTest : public PlatformTest {
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   std::unique_ptr<TestNetworkChangeNotifier> network_change_notifier_;
   std::unique_ptr<net::TestURLFetcherFactory> test_url_fetcher_factory_;
-  base::scoped_nsobject<PreloadController> controller_;
+  PreloadController* controller_;
 };
 
 // Tests that the preload controller does not try to preload non-web urls.

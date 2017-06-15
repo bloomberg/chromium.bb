@@ -59,6 +59,7 @@ source_set("ui") {
 }
 
 source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "browser_container_view_unittest.mm",

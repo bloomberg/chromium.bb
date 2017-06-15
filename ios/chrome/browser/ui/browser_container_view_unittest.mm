@@ -4,8 +4,11 @@
 
 #import "ios/chrome/browser/ui/browser_container_view.h"
 
-#import "base/mac/scoped_nsobject.h"
 #include "testing/platform_test.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 // Fixture for BrowserContainerView testing.
 class BrowserContainerViewTest : public PlatformTest {
@@ -13,13 +16,13 @@ class BrowserContainerViewTest : public PlatformTest {
   void SetUp() override {
     PlatformTest::SetUp();
 
-    browser_container_view_.reset([[BrowserContainerView alloc] init]);
+    browser_container_view_ = [[BrowserContainerView alloc] init];
     ASSERT_TRUE(browser_container_view_);
-    content_view_.reset([[UIView alloc] init]);
+    content_view_ = [[UIView alloc] init];
     ASSERT_TRUE(content_view_);
   }
-  base::scoped_nsobject<BrowserContainerView> browser_container_view_;
-  base::scoped_nsobject<UIView> content_view_;
+  BrowserContainerView* browser_container_view_;
+  UIView* content_view_;
 };
 
 // Tests adding a new content view when BrowserContainerView does not currently
@@ -49,7 +52,7 @@ TEST_F(BrowserContainerViewTest, ReplacingContentView) {
   ASSERT_EQ(static_cast<UIView*>(browser_container_view_),
             [content_view_ superview]);
 
-  base::scoped_nsobject<UIView> content_view2([[UIView alloc] init]);
+  UIView* content_view2 = [[UIView alloc] init];
   [browser_container_view_ displayContentView:content_view2];
   EXPECT_FALSE([content_view_ superview]);
   EXPECT_EQ(static_cast<UIView*>(browser_container_view_),

@@ -4,20 +4,22 @@
 
 #import "ios/chrome/browser/ui/key_commands_provider.h"
 
-#import "base/mac/scoped_nsobject.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
 #import "third_party/ocmock/ocmock_extensions.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 typedef PlatformTest KeyCommandsProviderTest;
 
 TEST(KeyCommandsProviderTest, NoTabs_EditingText_ReturnsObjects) {
-  base::scoped_nsobject<KeyCommandsProvider> provider(
-      [[KeyCommandsProvider alloc] init]);
+  KeyCommandsProvider* provider = [[KeyCommandsProvider alloc] init];
   id mockConsumer =
       [OCMockObject mockForProtocol:@protocol(KeyCommandsPlumbing)];
   [[[mockConsumer expect] andReturnUnsignedInteger:0] tabsCount];
@@ -27,8 +29,7 @@ TEST(KeyCommandsProviderTest, NoTabs_EditingText_ReturnsObjects) {
 }
 
 TEST(KeyCommandsProviderTest, ReturnsKeyCommandsObjects) {
-  base::scoped_nsobject<KeyCommandsProvider> provider(
-      [[KeyCommandsProvider alloc] init]);
+  KeyCommandsProvider* provider = [[KeyCommandsProvider alloc] init];
   id mockConsumer =
       [OCMockObject mockForProtocol:@protocol(KeyCommandsPlumbing)];
   [[[mockConsumer expect] andReturnUnsignedInteger:0] tabsCount];
@@ -40,8 +41,7 @@ TEST(KeyCommandsProviderTest, ReturnsKeyCommandsObjects) {
 }
 
 TEST(KeyCommandsProviderTest, MoreKeyboardCommandsWhenTabs) {
-  base::scoped_nsobject<KeyCommandsProvider> provider(
-      [[KeyCommandsProvider alloc] init]);
+  KeyCommandsProvider* provider = [[KeyCommandsProvider alloc] init];
   id mockConsumer =
       [OCMockObject mockForProtocol:@protocol(KeyCommandsPlumbing)];
 
@@ -59,8 +59,7 @@ TEST(KeyCommandsProviderTest, MoreKeyboardCommandsWhenTabs) {
 }
 
 TEST(KeyCommandsProviderTest, LessKeyCommandsWhenTabsAndEditingText) {
-  base::scoped_nsobject<KeyCommandsProvider> provider(
-      [[KeyCommandsProvider alloc] init]);
+  KeyCommandsProvider* provider = [[KeyCommandsProvider alloc] init];
   id mockConsumer =
       [OCMockObject mockForProtocol:@protocol(KeyCommandsPlumbing)];
 

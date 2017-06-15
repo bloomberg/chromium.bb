@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/chrome_web_view_factory.h"
 
-#include "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -19,6 +18,10 @@
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/gtest_support.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 using web::RequestTrackerImpl;
 
@@ -44,8 +47,11 @@ class ChromeWebViewFactoryTest : public PlatformTest {
 
 TEST_F(ChromeWebViewFactoryTest, TestTrackerForExternal) {
   [ChromeWebViewFactory setBrowserStateToUseForExternal:&chrome_browser_state_];
-  base::scoped_nsobject<UIWebView> webView([ChromeWebViewFactory
-      newExternalWebView:chrome_browser_state_.SharingService()]);
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-variable"
+  UIWebView* webView = [ChromeWebViewFactory
+      newExternalWebView:chrome_browser_state_.SharingService()];
+#pragma clang diagnostic pop
   // Check that the tracker is registered
   RequestTrackerImpl* tracker = RequestTrackerImpl::GetTrackerForRequestGroupID(
       ChromeWebView::kExternalRequestGroupID);

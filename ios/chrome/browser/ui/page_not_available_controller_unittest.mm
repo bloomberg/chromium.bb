@@ -4,17 +4,20 @@
 
 #include <gtest/gtest.h>
 #include "base/logging.h"
-#include "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/page_not_available_controller.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
 TEST(PageNotAvailableControllerTest, TestInitWithURL) {
   GURL url = GURL("http://foo.bar.com");
-  base::scoped_nsobject<PageNotAvailableController> controller(
-      [[PageNotAvailableController alloc] initWithUrl:url]);
-  EXPECT_EQ(url, controller.get().url);
-  EXPECT_TRUE(controller.get().view);
+  PageNotAvailableController* controller =
+      [[PageNotAvailableController alloc] initWithUrl:url];
+  EXPECT_EQ(url, controller.url);
+  EXPECT_TRUE(controller.view);
 }
 
 }  // namespace

@@ -3,43 +3,46 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
-#include "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/native_content_controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
 TEST(NativeContentControllerTest, TestInitWithURL) {
   GURL url("http://foo.bar.com");
-  base::scoped_nsobject<NativeContentController> controller(
-      [[NativeContentController alloc] initWithURL:url]);
-  EXPECT_EQ(url, controller.get().url);
+  NativeContentController* controller =
+      [[NativeContentController alloc] initWithURL:url];
+  EXPECT_EQ(url, controller.url);
 
   // There is no default view without a nib.
-  EXPECT_EQ(nil, controller.get().view);
+  EXPECT_EQ(nil, controller.view);
 }
 
 TEST(NativeContentControllerTest, TestInitWithEmptyNibNameAndURL) {
   GURL url("http://foo.bar.com");
-  base::scoped_nsobject<NativeContentController> controller(
-      [[NativeContentController alloc] initWithNibName:nil url:url]);
-  EXPECT_EQ(url, controller.get().url);
+  NativeContentController* controller =
+      [[NativeContentController alloc] initWithNibName:nil url:url];
+  EXPECT_EQ(url, controller.url);
 
   // There is no default view without a nib.
-  EXPECT_EQ(nil, controller.get().view);
+  EXPECT_EQ(nil, controller.view);
 }
 
 TEST(NativeContentControllerTest, TestInitWithNibAndURL) {
   GURL url("http://foo.bar.com");
   NSString* nibName = @"native_content_controller_test";
-  base::scoped_nsobject<NativeContentController> controller(
-      [[NativeContentController alloc] initWithNibName:nibName url:url]);
-  EXPECT_EQ(url, controller.get().url);
+  NativeContentController* controller =
+      [[NativeContentController alloc] initWithNibName:nibName url:url];
+  EXPECT_EQ(url, controller.url);
 
   // Check that view is loaded from nib.
-  EXPECT_NE(nil, controller.get().view);
-  UIView* view = controller.get().view;
+  EXPECT_NE(nil, controller.view);
+  UIView* view = controller.view;
   EXPECT_EQ(1u, view.subviews.count);
   EXPECT_NE(nil, [view.subviews firstObject]);
   UILabel* label = [view.subviews firstObject];
