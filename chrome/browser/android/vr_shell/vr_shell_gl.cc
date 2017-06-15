@@ -268,7 +268,7 @@ VrShellGl::~VrShellGl() {
     // to this message will go through some other VSyncProvider.
     base::ResetAndReturn(&callback_)
         .Run(nullptr, base::TimeDelta(), -1,
-             device::mojom::VRVSyncProvider::Status::CLOSING);
+             device::mojom::VRPresentationProvider::VSyncStatus::CLOSING);
   }
 }
 
@@ -386,8 +386,8 @@ void VrShellGl::CreateOrResizeWebVRSurface(const gfx::Size& size) {
   }
 }
 
-void VrShellGl::SubmitWebVRFrame(int16_t frame_index,
-                                 const gpu::MailboxHolder& mailbox) {
+void VrShellGl::SubmitFrame(int16_t frame_index,
+                            const gpu::MailboxHolder& mailbox) {
   DCHECK(submit_client_.get());
   TRACE_EVENT0("gpu", "VrShellGl::SubmitWebVRFrame");
 
@@ -417,9 +417,12 @@ void VrShellGl::SubmitWebVRFrame(int16_t frame_index,
   }
 }
 
-void VrShellGl::SetSubmitClient(
-    device::mojom::VRSubmitFrameClientPtrInfo submit_client_info) {
+void VrShellGl::ConnectPresentingService(
+    device::mojom::VRSubmitFrameClientPtrInfo submit_client_info,
+    device::mojom::VRPresentationProviderRequest request) {
   submit_client_.Bind(std::move(submit_client_info));
+  binding_.Close();
+  binding_.Bind(std::move(request));
 }
 
 void VrShellGl::OnContentFrameAvailable() {
@@ -450,7 +453,7 @@ void VrShellGl::GvrInit(gvr_context* gvr_api) {
   gvr_api_ = gvr::GvrApi::WrapNonOwned(gvr_api);
   controller_.reset(new VrController(gvr_api));
 
-  VrMetricsUtil::LogVrViewerType(gvr_api);
+  VrMetricsUtil::LogVrViewerType(gvr_api_->GetViewerType());
 
   cardboard_ =
       (gvr_api_->GetViewerType() == gvr::ViewerType::GVR_VIEWER_TYPE_CARDBOARD);
@@ -536,7 +539,7 @@ void VrShellGl::InitializeRenderer() {
                                            webvr_right_viewport_.get());
   webvr_right_viewport_->SetSourceBufferIndex(kFramePrimaryBuffer);
 
-  browser_->GvrDelegateReady();
+  browser_->GvrDelegateReady(gvr_api_->GetViewerType());
 }
 
 void VrShellGl::UpdateController(const gfx::Vector3dF& head_direction) {
@@ -1473,20 +1476,6 @@ void VrShellGl::SetWebVrMode(bool enabled) {
   }
 }
 
-void VrShellGl::UpdateWebVRTextureBounds(int16_t frame_index,
-                                         const gfx::RectF& left_bounds,
-                                         const gfx::RectF& right_bounds,
-                                         const gfx::Size& source_size) {
-  if (frame_index < 0) {
-    webvr_left_viewport_->SetSourceUv(UVFromGfxRect(left_bounds));
-    webvr_right_viewport_->SetSourceUv(UVFromGfxRect(right_bounds));
-    CreateOrResizeWebVRSurface(source_size);
-  } else {
-    pending_bounds_.emplace(
-        frame_index, WebVrBounds(left_bounds, right_bounds, source_size));
-  }
-}
-
 void VrShellGl::ContentBoundsChanged(int width, int height) {
   TRACE_EVENT0("gpu", "VrShellGl::ContentBoundsChanged");
   content_tex_css_width_ = width;
@@ -1539,11 +1528,6 @@ void VrShellGl::OnVSync() {
   }
 }
 
-void VrShellGl::OnRequest(device::mojom::VRVSyncProviderRequest request) {
-  binding_.Close();
-  binding_.Bind(std::move(request));
-}
-
 void VrShellGl::GetVSync(GetVSyncCallback callback) {
   // In surfaceless (reprojecting) rendering, stay locked
   // to vsync intervals. Otherwise, for legacy Cardboard mode,
@@ -1573,6 +1557,20 @@ void VrShellGl::UpdateVSyncInterval(int64_t timebase_nanos,
 
 void VrShellGl::ForceExitVr() {
   browser_->ForceExitVr();
+}
+
+void VrShellGl::UpdateLayerBounds(int16_t frame_index,
+                                  const gfx::RectF& left_bounds,
+                                  const gfx::RectF& right_bounds,
+                                  const gfx::Size& source_size) {
+  if (frame_index < 0) {
+    webvr_left_viewport_->SetSourceUv(UVFromGfxRect(left_bounds));
+    webvr_right_viewport_->SetSourceUv(UVFromGfxRect(right_bounds));
+    CreateOrResizeWebVRSurface(source_size);
+  } else {
+    pending_bounds_.emplace(
+        frame_index, WebVrBounds(left_bounds, right_bounds, source_size));
+  }
 }
 
 int64_t VrShellGl::GetPredictedFrameTimeNanos() {
@@ -1607,8 +1605,9 @@ void VrShellGl::SendVSync(base::TimeDelta time, GetVSyncCallback callback) {
   webvr_head_pose_[frame_index % kPoseRingBufferSize] = head_mat;
   webvr_time_pose_[frame_index % kPoseRingBufferSize] = base::TimeTicks::Now();
 
-  std::move(callback).Run(std::move(pose), time, frame_index,
-                          device::mojom::VRVSyncProvider::Status::SUCCESS);
+  std::move(callback).Run(
+      std::move(pose), time, frame_index,
+      device::mojom::VRPresentationProvider::VSyncStatus::SUCCESS);
 }
 
 void VrShellGl::CreateVRDisplayInfo(

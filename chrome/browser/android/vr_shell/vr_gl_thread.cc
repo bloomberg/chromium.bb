@@ -57,9 +57,10 @@ void VrGLThread::ContentSurfaceChanged(jobject surface) {
       base::Bind(&VrShell::ContentSurfaceChanged, weak_vr_shell_, surface));
 }
 
-void VrGLThread::GvrDelegateReady() {
+void VrGLThread::GvrDelegateReady(gvr::ViewerType viewer_type) {
   main_thread_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&VrShell::GvrDelegateReady, weak_vr_shell_));
+      FROM_HERE,
+      base::Bind(&VrShell::GvrDelegateReady, weak_vr_shell_, viewer_type));
 }
 
 void VrGLThread::UpdateGamepadData(device::GvrGamepadData pad) {

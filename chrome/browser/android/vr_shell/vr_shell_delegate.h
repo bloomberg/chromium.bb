@@ -15,17 +15,15 @@
 #include "chrome/browser/android/vr_shell/vr_core_info.h"
 #include "chrome/browser/android/vr_shell/vr_usage_monitor.h"
 #include "device/vr/android/gvr/gvr_delegate_provider.h"
+#include "device/vr/vr_service.mojom.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
 
 namespace device {
 class GvrDelegate;
 class GvrDeviceProvider;
-class PresentingGvrDelegate;
 }
 
 namespace vr_shell {
-
-class NonPresentingGvrDelegate;
 
 class VrShellDelegate : public device::GvrDelegateProvider {
  public:
@@ -37,8 +35,7 @@ class VrShellDelegate : public device::GvrDelegateProvider {
   static VrShellDelegate* GetNativeVrShellDelegate(JNIEnv* env,
                                                    jobject jdelegate);
 
-  void SetPresentingDelegate(device::PresentingGvrDelegate* delegate,
-                             gvr_context* context);
+  void SetDelegate(device::GvrDelegate* delegate, gvr::ViewerType viewer_type);
   void RemoveDelegate();
 
   void SetPresentResult(JNIEnv* env,
@@ -62,29 +59,37 @@ class VrShellDelegate : public device::GvrDelegateProvider {
 
   // device::GvrDelegateProvider implementation.
   void ExitWebVRPresent() override;
+  void CreateVRDisplayInfo(
+      const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,
+      uint32_t device_id) override;
 
  private:
   // device::GvrDelegateProvider implementation.
   void SetDeviceProvider(device::GvrDeviceProvider* device_provider) override;
   void ClearDeviceProvider() override;
   void RequestWebVRPresent(device::mojom::VRSubmitFrameClientPtr submit_client,
+                           device::mojom::VRPresentationProviderRequest request,
                            const base::Callback<void(bool)>& callback) override;
   device::GvrDelegate* GetDelegate() override;
   void SetListeningForActivate(bool listening) override;
-  void CreateNonPresentingDelegate();
+  void GetNextMagicWindowPose(
+      device::mojom::VRDisplay::GetNextMagicWindowPoseCallback callback)
+      override;
+
   void OnActivateDisplayHandled(bool will_not_present);
 
   std::unique_ptr<VrCoreInfo> MakeVrCoreInfo(JNIEnv* env);
 
-  std::unique_ptr<NonPresentingGvrDelegate> non_presenting_delegate_;
   base::android::ScopedJavaGlobalRef<jobject> j_vr_shell_delegate_;
   device::GvrDeviceProvider* device_provider_ = nullptr;
-  device::PresentingGvrDelegate* presenting_delegate_ = nullptr;
+  device::GvrDelegate* gvr_delegate_ = nullptr;
   base::Callback<void(bool)> present_callback_;
   int64_t timebase_nanos_ = 0;
   double interval_seconds_ = 0;
   device::mojom::VRSubmitFrameClientPtr submit_client_;
+  device::mojom::VRPresentationProviderRequest presentation_provider_request_;
   bool pending_successful_present_request_ = false;
+  std::unique_ptr<gvr::GvrApi> gvr_api_;
 
   base::WeakPtrFactory<VrShellDelegate> weak_ptr_factory_;
 

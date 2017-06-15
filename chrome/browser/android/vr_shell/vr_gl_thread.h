@@ -48,7 +48,7 @@ class VrGLThread : public base::Thread,
 
   // GlBrowserInterface implementation (VrShellGl calling to VrShell).
   void ContentSurfaceChanged(jobject surface) override;
-  void GvrDelegateReady() override;
+  void GvrDelegateReady(gvr::ViewerType viewer_type) override;
   void UpdateGamepadData(device::GvrGamepadData) override;
   void AppButtonClicked() override;
   void AppButtonGesturePerformed(UiInterface::Direction direction) override;

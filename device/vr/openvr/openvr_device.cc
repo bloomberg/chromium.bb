@@ -3,18 +3,23 @@
 // found in the LICENSE file.
 
 #define _USE_MATH_DEFINES  // for M_PI
-#include "device/vr/openvr/openvr_device.h"
+
 #include <math.h>
+
+#include "base/memory/ptr_util.h"
+#include "device/vr/openvr/openvr_device.h"
 #include "third_party/openvr/src/headers/openvr.h"
+
+namespace device {
 
 namespace {
 
 constexpr float kRadToDeg = static_cast<float>(180 / M_PI);
 constexpr float kDefaultIPD = 0.06f;  // Default average IPD
 
-device::mojom::VRFieldOfViewPtr openVRFovToWebVRFov(vr::IVRSystem* vr_system,
-                                                    vr::Hmd_Eye eye) {
-  device::mojom::VRFieldOfViewPtr out = device::mojom::VRFieldOfView::New();
+mojom::VRFieldOfViewPtr OpenVRFovToWebVRFov(vr::IVRSystem* vr_system,
+                                            vr::Hmd_Eye eye) {
+  auto out = mojom::VRFieldOfView::New();
   float up_tan, down_tan, left_tan, right_tan;
   vr_system->GetProjectionRaw(eye, &left_tan, &right_tan, &up_tan, &down_tan);
   out->upDegrees = -(atanf(up_tan) * kRadToDeg);
@@ -72,9 +77,39 @@ std::vector<float> HmdMatrix34ToWebVRTransformMatrix(
   return transform;
 }
 
-}  // namespace
+class OpenVRRenderLoop : public base::SimpleThread,
+                         mojom::VRPresentationProvider {
+ public:
+  OpenVRRenderLoop(vr::IVRSystem* vr);
 
-namespace device {
+  void RegisterPollingEventCallback(
+      const base::Callback<void()>& on_polling_events);
+
+  void UnregisterPollingEventCallback();
+
+  void Bind(mojom::VRPresentationProvider request);
+
+  mojom::VRPosePtr GetPose();
+
+ private:
+  void Run() override;
+
+  void GetVSync(
+      mojom::VRPresentationProvider::GetVSyncCallback callback) override;
+  void SubmitFrame(int16_t frame_index,
+                   const gpu::MailboxHolder& mailbox) override;
+  void UpdateLayerBounds(int16_t frame_id,
+                         const gfx::RectF& left_bounds,
+                         const gfx::RectF& right_bounds,
+                         const gfx::Size& source_size) override;
+
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
+  base::Callback<void()> on_polling_events_;
+  vr::IVRSystem* vr_system_;
+  mojo::Binding<mojom::VRPresentationProvider> binding_;
+};
+
+}  // namespace
 
 OpenVRDevice::OpenVRDevice(vr::IVRSystem* vr)
     : vr_system_(vr), weak_ptr_factory_(this), is_polling_events_(false) {}
@@ -102,8 +137,8 @@ void OpenVRDevice::CreateVRDisplayInfo(
   mojom::VREyeParametersPtr& left_eye = device->leftEye;
   mojom::VREyeParametersPtr& right_eye = device->rightEye;
 
-  left_eye->fieldOfView = openVRFovToWebVRFov(vr_system_, vr::Eye_Left);
-  right_eye->fieldOfView = openVRFovToWebVRFov(vr_system_, vr::Eye_Left);
+  left_eye->fieldOfView = OpenVRFovToWebVRFov(vr_system_, vr::Eye_Left);
+  right_eye->fieldOfView = OpenVRFovToWebVRFov(vr_system_, vr::Eye_Left);
 
   vr::TrackedPropertyError error = vr::TrackedProp_Success;
   float ipd = vr_system_->GetFloatTrackedDeviceProperty(
@@ -146,7 +181,7 @@ void OpenVRDevice::CreateVRDisplayInfo(
   // If it is the first initialization, OpenVRRenderLoop instance needs to be
   // created and the polling event callback needs to be registered.
   if (!render_loop_) {
-    render_loop_ = std::make_unique<OpenVRRenderLoop>(vr_system_);
+    render_loop_ = base::MakeUnique<OpenVRRenderLoop>(vr_system_);
 
     render_loop_->RegisterPollingEventCallback(base::Bind(
         &OpenVRDevice::OnPollingEvents, weak_ptr_factory_.GetWeakPtr()));
@@ -156,6 +191,7 @@ void OpenVRDevice::CreateVRDisplayInfo(
 }
 
 void OpenVRDevice::RequestPresent(mojom::VRSubmitFrameClientPtr submit_client,
+                                  mojom::VRPresentationProviderRequest request,
                                   const base::Callback<void(bool)>& callback) {
   callback.Run(false);
   // We don't support presentation currently.
@@ -169,24 +205,12 @@ void OpenVRDevice::ExitPresent() {
   // We don't support presentation currently, so don't do anything.
 }
 
-void OpenVRDevice::SubmitFrame(int16_t frame_index,
-                               const gpu::MailboxHolder& mailbox) {
-  // We don't support presentation currently, so don't do anything.
+void OpenVRDevice::GetNextMagicWindowPose(
+    mojom::VRDisplay::GetNextMagicWindowPoseCallback callback) {
+  std::move(callback).Run(nullptr);
 }
 
-void OpenVRDevice::UpdateLayerBounds(int16_t frame_index,
-                                     mojom::VRLayerBoundsPtr left_bounds,
-                                     mojom::VRLayerBoundsPtr right_bounds,
-                                     int16_t source_width,
-                                     int16_t source_height) {
-  // We don't support presentation currently, so don't do anything.
-}
-
-void OpenVRDevice::GetVRVSyncProvider(mojom::VRVSyncProviderRequest request) {
-  render_loop_->Bind(std::move(request));
-}
-
-OpenVRDevice::OpenVRRenderLoop::OpenVRRenderLoop(vr::IVRSystem* vr_system)
+OpenVRRenderLoop::OpenVRRenderLoop(vr::IVRSystem* vr_system)
     : vr_system_(vr_system),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       binding_(this),
@@ -194,19 +218,18 @@ OpenVRDevice::OpenVRRenderLoop::OpenVRRenderLoop(vr::IVRSystem* vr_system)
   DCHECK(main_thread_task_runner_);
 }
 
-void OpenVRDevice::OpenVRRenderLoop::Bind(
-    mojom::VRVSyncProviderRequest request) {
+void OpenVRRenderLoop::Bind(mojom::VRPresentationProvider request) {
   binding_.Close();
   binding_.Bind(std::move(request));
 }
 
-void OpenVRDevice::OpenVRRenderLoop::Run() {
+void OpenVRRenderLoop::Run() {
   // TODO (BillOrr): We will wait for VSyncs on this thread using WaitGetPoses
   // when we support presentation.
 }
 
-device::mojom::VRPosePtr OpenVRDevice::OpenVRRenderLoop::getPose() {
-  device::mojom::VRPosePtr pose = device::mojom::VRPose::New();
+mojom::VRPosePtr OpenVRRenderLoop::GetPose() {
+  mojom::VRPosePtr pose = mojom::VRPose::New();
   pose->orientation.emplace(4);
 
   pose->orientation.value()[0] = 0;
@@ -283,20 +306,20 @@ void OpenVRDevice::OnPollingEvents() {
 }
 
 // Register a callback function to deal with system events.
-void OpenVRDevice::OpenVRRenderLoop::RegisterPollingEventCallback(
-    const base::Callback<void()>& onPollingEvents) {
-  if (onPollingEvents.is_null())
+void OpenVRRenderLoop::RegisterPollingEventCallback(
+    const base::Callback<void()>& on_polling_events) {
+  if (on_polling_events.is_null())
     return;
 
-  on_polling_events_ = onPollingEvents;
+  on_polling_events_ = on_polling_events;
 }
 
-void OpenVRDevice::OpenVRRenderLoop::UnregisterPollingEventCallback() {
+void OpenVRRenderLoop::UnregisterPollingEventCallback() {
   on_polling_events_.Reset();
 }
 
-void OpenVRDevice::OpenVRRenderLoop::GetVSync(
-    mojom::VRVSyncProvider::GetVSyncCallback callback) {
+void OpenVRRenderLoop::GetVSync(
+    mojom::VRPresentationProvider::GetVSyncCallback callback) {
   static int16_t next_frame = 0;
   int16_t frame = next_frame++;
 
@@ -310,11 +333,23 @@ void OpenVRDevice::OpenVRRenderLoop::GetVSync(
   // since we don't have VSync hooked up.
   base::TimeDelta time = base::TimeDelta::FromSecondsD(2.0);
 
-  device::mojom::VRPosePtr pose = getPose();
+  mojom::VRPosePtr pose = GetPose();
   Sleep(11);  // TODO (billorr): Use real vsync timing instead of a sleep (this
               // sleep just throttles vsyncs so we don't fill message queues).
   std::move(callback).Run(std::move(pose), time, frame,
-                          device::mojom::VRVSyncProvider::Status::SUCCESS);
+                          mojom::VRPresentationProvider::VSyncStatus::SUCCESS);
+}
+
+void OpenVRRenderLoop::SubmitFrame(int16_t frame_index,
+                                   const gpu::MailboxHolder& mailbox) {
+  // We don't support presentation currently, so don't do anything.
+}
+
+void OpenVRRenderLoop::UpdateLayerBounds(int16_t frame_id,
+                                         const gfx::RectF& left_bounds,
+                                         const gfx::RectF& right_bounds,
+                                         const gfx::Size& source_size) {
+  // We don't support presentation currently, so don't do anything.
 }
 
 }  // namespace device

@@ -13,7 +13,7 @@ let mockVRService = loadMojoModules(
       this.displayClient_ = new vr_service.VRDisplayClientPtr();
       this.displayInfo_ = displayInfo;
       this.service_ = service;
-      this.vsync_provider_ = new MockVRVSyncProvider();
+      this.presentation_provider_ = new MockVRPresentationProvider();
 
       interfaceProvider.addInterfaceOverrideForTesting(
           vr_service.VRDisplay.name,
@@ -24,37 +24,24 @@ let mockVRService = loadMojoModules(
       }
     }
 
-    requestPresent(secureOrigin, submitFrameClient) {
-      this.submitFrameClient_ = submitFrameClient;
+    requestPresent(secureOrigin, submitFrameClient, request) {
+      this.presentation_provider_.bind(submitFrameClient, request);
       return Promise.resolve({success: true});
-    }
-
-    submitFrame(frameId, mailboxHolder) {
-      // Trigger the submit completion callbacks here. WARNING: The
-      // Javascript-based mojo mocks are *not* re-entrant.  In the current
-      // default implementation, Javascript calls display.submitFrame, and the
-      // corresponding C++ code uses a reentrant mojo call that waits for
-      // onSubmitFrameTransferred to indicate completion. This never finishes
-      // when using the mocks since the incoming calls are queued until the
-      // current execution context finishes. As a workaround, use the alternate
-      // "WebVRExperimentalRendering" mode which works without reentrant calls,
-      // the code only checks for completion on the *next* frame, see the
-      // corresponding option setting in RuntimeEnabledFeatures.json5.
-      this.submitFrameClient_.onSubmitFrameTransferred();
-      this.submitFrameClient_.onSubmitFrameRendered();
     }
 
     setPose(pose) {
       if (pose == null) {
-        this.vsync_provider_.pose_ = null;
+        this.presentation_provider_.pose_ = null;
       } else {
-        this.vsync_provider_.initPose();
-        this.vsync_provider_.fillPose(pose);
+        this.presentation_provider_.initPose();
+        this.presentation_provider_.fillPose(pose);
       }
     }
 
-    getVRVSyncProvider(request) {
-      this.vsync_provider_.bind(request);
+    getNextMagicWindowPose() {
+      return Promise.resolve({
+        pose: this.presentation_provider_.pose_,
+      });
     }
 
     forceActivate(reason) {
@@ -73,15 +60,31 @@ let mockVRService = loadMojoModules(
     }
   }
 
-  class MockVRVSyncProvider {
+  class MockVRPresentationProvider {
     constructor() {
       this.timeDelta_ = 0;
-      this.binding_ = new bindings.Binding(vr_service.VRVSyncProvider, this);
+      this.binding_ = new bindings.Binding(vr_service.VRPresentationProvider,
+          this);
       this.pose_ = null;
     }
-    bind(request) {
+    bind(client, request) {
+      this.submitFrameClient_ = client;
       this.binding_.close();
       this.binding_.bind(request);
+    }
+    submitFrame(frameId, mailboxHolder) {
+      // Trigger the submit completion callbacks here. WARNING: The
+      // Javascript-based mojo mocks are *not* re-entrant.  In the current
+      // default implementation, Javascript calls display.submitFrame, and the
+      // corresponding C++ code uses a reentrant mojo call that waits for
+      // onSubmitFrameTransferred to indicate completion. This never finishes
+      // when using the mocks since the incoming calls are queued until the
+      // current execution context finishes. As a workaround, use the alternate
+      // "WebVRExperimentalRendering" mode which works without reentrant calls,
+      // the code only checks for completion on the *next* frame, see the
+      // corresponding option setting in RuntimeEnabledFeatures.json5.
+      this.submitFrameClient_.onSubmitFrameTransferred();
+      this.submitFrameClient_.onSubmitFrameRendered();
     }
     getVSync() {
       if (this.pose_) {
@@ -93,8 +96,8 @@ let mockVRService = loadMojoModules(
         time: {
           microseconds: this.timeDelta_,
         },
-        frameId: 0,
-        error: vr_service.VRVSyncProvider.Status.SUCCESS,
+        frame_id: 0,
+        status: vr_service.VRPresentationProvider.VSyncStatus.SUCCESS,
       });
 
       this.timeDelta_ += 1000.0 / 60.0;
@@ -157,7 +160,7 @@ let mockVRService = loadMojoModules(
       }
 
       let device_number = this.mockVRDisplays_.length;
-      return Promise.resolve({numberOfConnectedDevices: device_number});
+      return Promise.resolve({number_of_connected_devices: device_number});
     }
   }
 

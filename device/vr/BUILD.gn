@@ -126,6 +126,7 @@ mojom_component("mojo_bindings") {
   public_deps = [
     "//gpu/ipc/common:interfaces",
     "//mojo/common:common_custom_types",
+    "//ui/gfx/geometry/mojo",
   ]
 
   # TODO(crbug.com/699569): Convert to use the new JS bindings.

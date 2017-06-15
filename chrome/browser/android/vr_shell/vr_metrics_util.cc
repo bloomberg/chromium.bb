@@ -16,7 +16,7 @@ namespace vr_shell {
 bool VrMetricsUtil::has_logged_vr_runtime_version_ = false;
 
 void VrMetricsUtil::LogGvrVersionForVrViewerType(
-    gvr_context* context,
+    gvr::ViewerType viewer_type,
     const VrCoreInfo& vr_core_info) {
   if (has_logged_vr_runtime_version_) {
     return;
@@ -46,9 +46,7 @@ void VrMetricsUtil::LogGvrVersionForVrViewerType(
       break;
   }
 
-  ViewerType vr_viewer_type =
-      context ? GetVrViewerType(context) : ViewerType::UNKNOWN_TYPE;
-  switch (vr_viewer_type) {
+  switch (GetVrViewerType(viewer_type)) {
     case ViewerType::CARDBOARD:
       UMA_HISTOGRAM_SPARSE_SLOWLY("VRRuntimeVersion.GVR.Cardboard",
                                   encoded_version);
@@ -66,15 +64,14 @@ void VrMetricsUtil::LogGvrVersionForVrViewerType(
   has_logged_vr_runtime_version_ = true;
 }
 
-void VrMetricsUtil::LogVrViewerType(gvr_context* context) {
+void VrMetricsUtil::LogVrViewerType(gvr::ViewerType viewer_type) {
   UMA_HISTOGRAM_ENUMERATION("VRViewerType",
-                            static_cast<int>(GetVrViewerType(context)),
+                            static_cast<int>(GetVrViewerType(viewer_type)),
                             static_cast<int>(ViewerType::VIEWER_TYPE_MAX));
 }
 
-ViewerType VrMetricsUtil::GetVrViewerType(gvr_context* context) {
-  auto gvr_api = gvr::GvrApi::WrapNonOwned(context);
-  switch (gvr_api->GetViewerType()) {
+ViewerType VrMetricsUtil::GetVrViewerType(gvr::ViewerType viewer_type) {
+  switch (viewer_type) {
     case gvr::ViewerType::GVR_VIEWER_TYPE_DAYDREAM:
       return ViewerType::DAYDREAM;
     case gvr::ViewerType::GVR_VIEWER_TYPE_CARDBOARD:

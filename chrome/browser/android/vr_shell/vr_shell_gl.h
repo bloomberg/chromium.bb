@@ -65,7 +65,7 @@ struct WebVrBounds {
 
 // This class manages all GLThread owned objects and GL rendering for VrShell.
 // It is not threadsafe and must only be used on the GL thread.
-class VrShellGl : public device::mojom::VRVSyncProvider {
+class VrShellGl : public device::mojom::VRPresentationProvider {
  public:
   VrShellGl(GlBrowserInterface* browser,
             gvr_context* gvr_api,
@@ -97,20 +97,14 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
 
   void SetControllerModel(std::unique_ptr<VrControllerModel> model);
 
-  void UpdateWebVRTextureBounds(int16_t frame_index,
-                                const gfx::RectF& left_bounds,
-                                const gfx::RectF& right_bounds,
-                                const gfx::Size& source_size);
-
   void UpdateVSyncInterval(int64_t timebase_nanos, double interval_seconds);
 
-  void OnRequest(device::mojom::VRVSyncProviderRequest request);
   void CreateVRDisplayInfo(
       const base::Callback<void(device::mojom::VRDisplayInfoPtr)>& callback,
       uint32_t device_id);
-  void SubmitWebVRFrame(int16_t frame_index, const gpu::MailboxHolder& mailbox);
-  void SetSubmitClient(
-      device::mojom::VRSubmitFrameClientPtrInfo submit_client_info);
+  void ConnectPresentingService(
+      device::mojom::VRSubmitFrameClientPtrInfo submit_client_info,
+      device::mojom::VRPresentationProviderRequest request);
 
  private:
   void GvrInit(gvr_context* gvr_api);
@@ -187,8 +181,14 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
 
   void OnVSync();
 
-  // VRVSyncProvider
+  // VRPresentationProvider
   void GetVSync(GetVSyncCallback callback) override;
+  void SubmitFrame(int16_t frame_index,
+                   const gpu::MailboxHolder& mailbox) override;
+  void UpdateLayerBounds(int16_t frame_index,
+                         const gfx::RectF& left_bounds,
+                         const gfx::RectF& right_bounds,
+                         const gfx::Size& source_size) override;
 
   void ForceExitVr();
 
@@ -273,7 +273,7 @@ class VrShellGl : public device::mojom::VRVSyncProvider {
   bool pending_vsync_ = false;
   GetVSyncCallback callback_;
   bool received_frame_ = false;
-  mojo::Binding<device::mojom::VRVSyncProvider> binding_;
+  mojo::Binding<device::mojom::VRPresentationProvider> binding_;
   device::mojom::VRSubmitFrameClientPtr submit_client_;
 
   GlBrowserInterface* browser_;

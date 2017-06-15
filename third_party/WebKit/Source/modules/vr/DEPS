@@ -3,4 +3,5 @@ include_rules = [
     "+device/vr/vr_service.mojom-blink.h",
     "+gpu/command_buffer/client/gles2_interface.h",
     "+gpu/command_buffer/common/mailbox_holder.h",
+    "+ui/gfx/geometry",
 ]
