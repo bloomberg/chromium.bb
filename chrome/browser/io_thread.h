@@ -87,7 +87,6 @@ class RTTAndThroughputEstimatesObserver;
 class SSLConfigService;
 class URLRequestContext;
 class URLRequestContextGetter;
-class URLRequestContextStorage;
 
 namespace ct {
 class STHObserver;
@@ -141,8 +140,6 @@ class IOThread : public content::BrowserThreadDelegate {
 #endif  // defined(OS_ANDROID)
     std::vector<scoped_refptr<const net::CTLogVerifier>> ct_logs;
     std::unique_ptr<net::HttpAuthPreferences> http_auth_preferences;
-    std::unique_ptr<net::URLRequestContextStorage>
-        system_request_context_storage;
     std::unique_ptr<net::URLRequestContext> system_request_context;
     SystemRequestContextLeakChecker system_request_context_leak_checker;
 #if BUILDFLAG(ENABLE_EXTENSIONS)

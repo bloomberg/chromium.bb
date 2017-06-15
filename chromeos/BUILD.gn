@@ -321,6 +321,8 @@ component("chromeos") {
     "network/device_state.h",
     "network/dhcp_proxy_script_fetcher_chromeos.cc",
     "network/dhcp_proxy_script_fetcher_chromeos.h",
+    "network/dhcp_proxy_script_fetcher_factory_chromeos.cc",
+    "network/dhcp_proxy_script_fetcher_factory_chromeos.h",
     "network/firewall_hole.cc",
     "network/firewall_hole.h",
     "network/geolocation_handler.cc",
