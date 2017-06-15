@@ -30,33 +30,22 @@ function test()
     InspectorTest.recordNetwork();
     InspectorTest.evaluateInPage("loadImages()");
 
-    function step2(msg)
+    async function step2(msg)
     {
         // inspector-test.js appears in network panel occasionally in Safari on
         // Mac, so checking two last requests.
         var requests = InspectorTest.networkRequests();
         var request1 = requests[requests.length - 2];
         var request2 = requests[requests.length - 1];
-        request1.requestContent().then(contentLoaded);
-        request2.requestContent().then(contentLoaded);
-    }
 
-    var contentLoadedCount = 0;
-    function contentLoaded()
-    {
-        if (++contentLoadedCount !== 2)
-            return;
-
-        var requests = InspectorTest.networkRequests();
-        var request1 = requests[requests.length - 2];
-        var request2 = requests[requests.length - 1];
+        var request1Content = await request1.requestContent()
+        var request2Content = await request2.requestContent();
 
         InspectorTest.addResult(request1.url());
         InspectorTest.addResult(request2.url());
-        InspectorTest.assertTrue(request1.content !== request2.content);
+        InspectorTest.assertTrue(request1Content !== request2Content);
         InspectorTest.completeTest();
     }
-
 }
 </script>
 </head>

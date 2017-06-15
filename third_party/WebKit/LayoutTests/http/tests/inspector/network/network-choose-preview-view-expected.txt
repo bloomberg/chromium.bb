@@ -1,47 +1,38 @@
 Tests to make sure the proper view is used for the data that is received in network panel.
 
-
-Running: testSimpleJSON
+Simple JSON
 Creating a NetworkRequest with mimeType: application/json
 Content: [533,3223]
 Its previewer type: SearchableView > widget vbox json-view
-
-Running: testMimeJSON
+MIME JSON
 Creating a NetworkRequest with mimeType: application/vnd.document+json
 Content: {foo0foo: 123}
 Its previewer type: SearchableView > widget vbox json-view
-
-Running: testSimpleXML
+Simple XML
 Creating a NetworkRequest with mimeType: text/xml
 Content: <bar><foo/></bar>
 Its previewer type: SearchableView > widget shadow-xml-view source-code
-
-Running: testXMLMimeButJSON
+XML MIME But JSON
 Creating a NetworkRequest with mimeType: text/xml
 Content: {foo0: 'barr', 'barr': 'fooo'}
 Its previewer type: SearchableView > widget vbox json-view
-
-Running: testXMLWithUnknownMime
+XML With Unknown MIME
 Creating a NetworkRequest with mimeType: text/foobar
 Content: <bar><foo/></bar>
 Its previewer type: SearchableView > widget vbox
-
-Running: testXMLWithError500
+XML With Error 500
 Creating a NetworkRequest with mimeType: text/xml
 Content: <bar><foo/></bar>
 Its previewer type: SearchableView > widget shadow-xml-view source-code
-
-Running: testUnknownMimeTextWithError500
+Unknown MIME Text With Error 500
 Creating a NetworkRequest with mimeType: text/foobar
 Content: Foo Bar
 Its previewer type: SearchableView > widget vbox
-
-Running: testBinaryImageFile
+Binary Image File
 Creating a NetworkRequest with mimeType: image/png
 Content: Bin**NULL**ary File**NULL****NULL**
 Its previewer type: SearchableView > widget vbox
-
-Running: testBinaryBlankImageFile
+Binary Blank Image File
 Creating a NetworkRequest with mimeType: image/png
 Content: 
 Its previewer type: widget vbox empty-view-scroller

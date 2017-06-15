@@ -23,7 +23,7 @@ function test()
     InspectorTest.evaluateInPage("makeXHRForJSONArguments(\"" + jsonArgs1 + "\"); makeXHRForJSONArguments(\"" + jsonArgs2 + "\")");
 
     var totalXHRs = 2;
-    function step2(msg)
+    async function step2(msg)
     {
         if (msg.messageText.indexOf("XHR loaded") === -1 || (--totalXHRs)) {
             InspectorTest.addConsoleSniffer(step2);
@@ -33,21 +33,12 @@ function test()
         var requests = InspectorTest.networkRequests();
         var request1 = requests[requests.length - 2];
         var request2 = requests[requests.length - 1];
-        request1.requestContent().then(step3);
-        request2.requestContent().then(step3);
-    }
+        var request1Content = await request1.requestContent();
+        var request2Content = await request2.requestContent();
 
-    var toLoad = 2;
-    function step3()
-    {
-        if (--toLoad)
-            return;
-        var requests = InspectorTest.networkRequests();
-        var request1 = requests[requests.length - 2];
-        var request2 = requests[requests.length - 1];
-        InspectorTest.addResult("resource1.content: " + request1.content);
-        InspectorTest.addResult("resource2.content: " + request2.content);
-        InspectorTest.assertTrue(request1.content === 'request1' && request2.content === 'request2');
+        InspectorTest.addResult("resource1.content: " + request1Content);
+        InspectorTest.addResult("resource2.content: " + request2Content);
+        InspectorTest.assertTrue(request1Content === 'request1' && request2Content === 'request2');
         InspectorTest.completeTest();
     }
 }
