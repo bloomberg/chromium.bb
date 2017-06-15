@@ -11,6 +11,7 @@
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
 #import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
+#import "chrome/browser/ui/cocoa/test/menu_test_observer.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
 
 namespace {
@@ -21,72 +22,6 @@ const CGFloat kAnchorPointY = 300;
 
 NSWindow* g_key_window = nil;
 }  // namespace
-
-@interface ContextMenuController : NSObject<NSMenuDelegate> {
- @private
-  NSMenu* menu_;
-  NSWindow* window_;
-  BOOL isMenuOpen_;
-  BOOL didOpen_;
-}
-
-- (id)initWithMenu:(NSMenu*)menu andWindow:(NSWindow*)window;
-
-- (BOOL)isMenuOpen;
-- (BOOL)didOpen;
-- (BOOL)isWindowVisible;
-
-// NSMenuDelegate methods
-- (void)menuWillOpen:(NSMenu*)menu;
-- (void)menuDidClose:(NSMenu*)menu;
-
-@end
-
-@implementation ContextMenuController
-
-- (id)initWithMenu:(NSMenu*)menu andWindow:(NSWindow*)window {
-  if (self = [super init]) {
-    menu_ = menu;
-    window_ = window;
-    isMenuOpen_ = NO;
-    didOpen_ = NO;
-    [menu_ setDelegate:self];
-  }
-  return self;
-}
-
-- (BOOL)isMenuOpen {
-  return isMenuOpen_;
-}
-
-- (BOOL)didOpen {
-  return didOpen_;
-}
-
-- (BOOL)isWindowVisible {
-  if (window_) {
-    return [window_ isVisible];
-  }
-  return NO;
-}
-
-- (void)menuWillOpen:(NSMenu*)menu {
-  isMenuOpen_ = YES;
-  didOpen_ = NO;
-
-  NSArray* modes = @[NSEventTrackingRunLoopMode, NSDefaultRunLoopMode];
-  [menu_ performSelector:@selector(cancelTracking)
-              withObject:nil
-              afterDelay:0.1
-                 inModes:modes];
-}
-
-- (void)menuDidClose:(NSMenu*)menu {
-  isMenuOpen_ = NO;
-  didOpen_ = YES;
-}
-
-@end
 
 // A helper class to swizzle [NSApplication keyWindow].
 @interface FakeKeyWindow : NSObject
@@ -326,34 +261,34 @@ TEST_F(BaseBubbleControllerTest, LionRightClickOutsideClosesWithContextMenu) {
   [context_menu addItemWithTitle:@"ContextMenuTest"
                           action:nil
                    keyEquivalent:@""];
-  base::scoped_nsobject<ContextMenuController> menu_controller(
-      [[ContextMenuController alloc] initWithMenu:context_menu
-                                        andWindow:window]);
 
   // Set the menu as the contextual menu of contentView of test_window().
   [[test_window() contentView] setMenu:context_menu];
+
+  base::scoped_nsobject<MenuTestObserver> menu_observer(
+      [[MenuTestObserver alloc] initWithMenu:context_menu]);
+  [menu_observer setCloseAfterOpening:YES];
+  [menu_observer setOpenCallback:^(MenuTestObserver* observer) {
+    // Verify bubble's window is closed when contextual menu is open.
+    EXPECT_TRUE([observer isOpen]);
+    EXPECT_FALSE([window isVisible]);
+  }];
 
   // RightMouseDown in test_window() would close the bubble window and then
   // dispaly the contextual menu.
   NSEvent* event = cocoa_test_event_utils::RightMouseDownAtPointInWindow(
       NSMakePoint(10, 10), test_window());
-  // Verify bubble's window is closed when contextual menu is open.
-  CFRunLoopPerformBlock(CFRunLoopGetCurrent(), NSEventTrackingRunLoopMode, ^{
-      EXPECT_TRUE([menu_controller isMenuOpen]);
-      EXPECT_FALSE([menu_controller isWindowVisible]);
-  });
 
-  EXPECT_FALSE([menu_controller isMenuOpen]);
-  EXPECT_FALSE([menu_controller didOpen]);
+  EXPECT_FALSE([menu_observer isOpen]);
+  EXPECT_FALSE([menu_observer didOpen]);
 
   [NSApp sendEvent:event];
 
   // When we got here, menu has already run its RunLoop.
-  // See -[ContextualMenuController menuWillOpen:].
   EXPECT_FALSE([window isVisible]);
 
-  EXPECT_FALSE([menu_controller isMenuOpen]);
-  EXPECT_TRUE([menu_controller didOpen]);
+  EXPECT_FALSE([menu_observer isOpen]);
+  EXPECT_TRUE([menu_observer didOpen]);
 }
 
 // Test that the bubble is not dismissed when it has an attached sheet, or when
