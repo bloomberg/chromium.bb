@@ -26,7 +26,9 @@ LOPENSSL_armcap:
 
 .globl	_ChaCha20_ctr32
 .private_extern	_ChaCha20_ctr32
-
+#ifdef __thumb2__
+.thumb_func	_ChaCha20_ctr32
+#endif
 .align	5
 _ChaCha20_ctr32:
 LChaCha20_ctr32:
@@ -791,7 +793,9 @@ Lno_data:
 
 
 
-
+#ifdef __thumb2__
+.thumb_func	ChaCha20_neon
+#endif
 .align	5
 ChaCha20_neon:
 	ldr	r12,[sp,#0]		@ pull pointer to counter and nonce

@@ -86,7 +86,9 @@
 # undef __thumb2__
 #endif
 
-
+#ifdef __thumb2__
+.thumb_func	_bsaes_decrypt8
+#endif
 .align	4
 _bsaes_decrypt8:
 	adr	r6,_bsaes_decrypt8
@@ -577,7 +579,9 @@ LREVM0SR:
 .align	6
 
 
-
+#ifdef __thumb2__
+.thumb_func	_bsaes_encrypt8
+#endif
 .align	4
 _bsaes_encrypt8:
 	adr	r6,_bsaes_encrypt8
@@ -1012,7 +1016,9 @@ Lenc_done:
 	veor	q1, q1, q8
 	bx	lr
 
-
+#ifdef __thumb2__
+.thumb_func	_bsaes_key_convert
+#endif
 .align	4
 _bsaes_key_convert:
 	adr	r6,_bsaes_key_convert
@@ -1076,7 +1082,9 @@ Lkey_loop:
 
 .globl	_bsaes_cbc_encrypt
 .private_extern	_bsaes_cbc_encrypt
-
+#ifdef __thumb2__
+.thumb_func	_bsaes_cbc_encrypt
+#endif
 .align	5
 _bsaes_cbc_encrypt:
 #ifndef	__KERNEL__
@@ -1344,7 +1352,9 @@ Lcbc_dec_bzero:@ wipe key schedule [if any]
 
 .globl	_bsaes_ctr32_encrypt_blocks
 .private_extern	_bsaes_ctr32_encrypt_blocks
-
+#ifdef __thumb2__
+.thumb_func	_bsaes_ctr32_encrypt_blocks
+#endif
 .align	5
 _bsaes_ctr32_encrypt_blocks:
 	cmp	r2, #8			@ use plain AES for
@@ -1572,7 +1582,9 @@ Lctr_enc_short_loop:
 
 .globl	_bsaes_xts_encrypt
 .private_extern	_bsaes_xts_encrypt
-
+#ifdef __thumb2__
+.thumb_func	_bsaes_xts_encrypt
+#endif
 .align	4
 _bsaes_xts_encrypt:
 	mov	ip, sp
@@ -2053,7 +2065,9 @@ Lxts_enc_bzero:@ wipe key schedule [if any]
 
 .globl	_bsaes_xts_decrypt
 .private_extern	_bsaes_xts_decrypt
-
+#ifdef __thumb2__
+.thumb_func	_bsaes_xts_decrypt
+#endif
 .align	4
 _bsaes_xts_decrypt:
 	mov	ip, sp

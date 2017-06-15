@@ -87,7 +87,9 @@ LOPENSSL_armcap:
 
 .globl	_sha256_block_data_order
 .private_extern	_sha256_block_data_order
-
+#ifdef __thumb2__
+.thumb_func	_sha256_block_data_order
+#endif
 _sha256_block_data_order:
 Lsha256_block_data_order:
 #if __ARM_ARCH__<7 && !defined(__thumb2__)
@@ -1878,7 +1880,9 @@ Lrounds_16_xx:
 
 .globl	_sha256_block_data_order_neon
 .private_extern	_sha256_block_data_order_neon
-
+#ifdef __thumb2__
+.thumb_func	_sha256_block_data_order_neon
+#endif
 .align	5
 .skip	16
 _sha256_block_data_order_neon:
@@ -2668,7 +2672,9 @@ L_00_48:
 #  define INST(a,b,c,d)	.byte	a,b,c,d
 # endif
 
-
+#ifdef __thumb2__
+.thumb_func	sha256_block_data_order_armv8
+#endif
 .align	5
 sha256_block_data_order_armv8:
 LARMv8:
