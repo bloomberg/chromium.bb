@@ -140,7 +140,7 @@ public class WebContentsAccessibility {
     }
 
     public boolean isEnabled() {
-        return nativeIsEnabled(mNativeObj);
+        return mNativeObj != 0 ? nativeIsEnabled(mNativeObj) : false;
     }
 
     public void enable() {
