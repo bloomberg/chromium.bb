@@ -7,9 +7,11 @@
 
 #include "core/layout/BackgroundBleedAvoidance.h"
 #include "core/paint/BoxPainterBase.h"
+#include "core/paint/RoundedInnerRectClipper.h"
 #include "platform/geometry/LayoutSize.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/wtf/Allocator.h"
+#include "platform/wtf/Optional.h"
 #include "third_party/skia/include/core/SkBlendMode.h"
 
 namespace blink {

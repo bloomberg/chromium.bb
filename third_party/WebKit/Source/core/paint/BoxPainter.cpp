@@ -24,16 +24,13 @@
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayer.h"
-#include "core/paint/RoundedInnerRectClipper.h"
 #include "core/paint/ScrollRecorder.h"
 #include "core/paint/ThemePainter.h"
 #include "core/style/ShadowList.h"
 #include "platform/LengthFunctions.h"
 #include "platform/geometry/LayoutPoint.h"
-#include "platform/geometry/LayoutRectOutsets.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
 #include "platform/graphics/paint/CompositingDisplayItem.h"
-#include "platform/wtf/Optional.h"
 
 namespace blink {
 
@@ -433,30 +430,9 @@ void BoxPainter::PaintFillLayer(const LayoutBoxModelObject& obj,
 
   Optional<RoundedInnerRectClipper> clip_to_border;
   if (info.is_rounded_fill) {
-    FloatRoundedRect border =
-        info.is_border_fill
-            ? BackgroundRoundedRectAdjustedForBleedAvoidance(
-                  obj.StyleRef(), rect, bleed_avoidance, has_line_box_sibling,
-                  box_size, info.include_left_edge, info.include_right_edge)
-            : GetBackgroundRoundedRect(
-                  obj.StyleRef(), rect, has_line_box_sibling, box_size,
-                  info.include_left_edge, info.include_right_edge);
-
-    // Clip to the padding or content boxes as necessary.
-    if (bg_layer.Clip() == kContentFillBox) {
-      border = obj.Style()->GetRoundedInnerBorderFor(
-          LayoutRect(border.Rect()),
-          LayoutRectOutsets(-(obj.PaddingTop() + obj.BorderTop()),
-                            -(obj.PaddingRight() + obj.BorderRight()),
-                            -(obj.PaddingBottom() + obj.BorderBottom()),
-                            -(obj.PaddingLeft() + obj.BorderLeft())),
-          info.include_left_edge, info.include_right_edge);
-    } else if (bg_layer.Clip() == kPaddingFillBox) {
-      border = obj.Style()->GetRoundedInnerBorderFor(LayoutRect(border.Rect()),
-                                                     info.include_left_edge,
-                                                     info.include_right_edge);
-    }
-
+    FloatRoundedRect border = RoundedBorderRectForClip(
+        obj.StyleRef(), info, bg_layer, rect, bleed_avoidance,
+        has_line_box_sibling, box_size, obj.BorderPaddingInsets());
     clip_to_border.emplace(obj, paint_info, rect, border, kApplyToContext);
   }
 

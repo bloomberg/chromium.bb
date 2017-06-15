@@ -19,6 +19,7 @@ class FloatRoundedRect;
 class LayoutPoint;
 class LayoutRect;
 class FillLayer;
+class LayoutRectOutsets;
 struct PaintInfo;
 
 // Base class for box painting. Has no dependencies on the layout tree and thus
@@ -114,6 +115,15 @@ class BoxPainterBase {
       const LayoutSize& box_size,
       bool include_logical_left_edge,
       bool include_logical_right_edge);
+  static FloatRoundedRect RoundedBorderRectForClip(
+      const ComputedStyle&,
+      const FillLayerInfo,
+      const FillLayer&,
+      const LayoutRect&,
+      BackgroundBleedAvoidance,
+      bool has_line_box_sibling,
+      const LayoutSize&,
+      LayoutRectOutsets border_padding_insets);
 };
 
 }  // namespace blink

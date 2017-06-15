@@ -12,7 +12,7 @@ namespace blink {
 
 class FloatRoundedRect;
 class LayoutRect;
-class LayoutObject;
+class DisplayItemClient;
 struct PaintInfo;
 
 enum RoundedInnerRectClipperBehavior { kApplyToDisplayList, kApplyToContext };
@@ -21,7 +21,7 @@ class RoundedInnerRectClipper {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  RoundedInnerRectClipper(const LayoutObject&,
+  RoundedInnerRectClipper(const DisplayItemClient&,
                           const PaintInfo&,
                           const LayoutRect&,
                           const FloatRoundedRect& clip_rect,
@@ -29,7 +29,7 @@ class RoundedInnerRectClipper {
   ~RoundedInnerRectClipper();
 
  private:
-  const LayoutObject& layout_object_;
+  const DisplayItemClient& layout_object_;
   const PaintInfo& paint_info_;
   bool use_paint_controller_;
   DisplayItem::Type clip_type_;

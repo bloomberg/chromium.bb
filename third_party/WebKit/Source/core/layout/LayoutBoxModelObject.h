@@ -297,6 +297,12 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
                              -BorderLeft());
   }
 
+  LayoutRectOutsets BorderPaddingInsets() const {
+    return LayoutRectOutsets(
+        -(PaddingTop() + BorderTop()), -(PaddingRight() + BorderRight()),
+        -(PaddingBottom() + BorderBottom()), -(PaddingLeft() + BorderLeft()));
+  }
+
   bool HasBorderOrPadding() const {
     return Style()->HasBorder() || Style()->HasPadding();
   }
