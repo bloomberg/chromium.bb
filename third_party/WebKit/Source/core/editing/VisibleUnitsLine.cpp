@@ -112,6 +112,15 @@ Node* NextLeafWithSameEditability(
   return nullptr;
 }
 
+InlineBox* FindRightNonPseudoNodeInlineBox(const RootInlineBox& root_box) {
+  for (InlineBox* runner = root_box.FirstLeafChild(); runner;
+       runner = runner->NextLeafChild()) {
+    if (runner->GetLineLayoutItem().NonPseudoNode())
+      return runner;
+  }
+  return nullptr;
+}
+
 enum LineEndpointComputationMode { kUseLogicalOrdering, kUseInlineBoxOrdering };
 template <typename Strategy>
 PositionWithAffinityTemplate<Strategy> StartPositionForLine(
@@ -144,17 +153,12 @@ PositionWithAffinityTemplate<Strategy> StartPositionForLine(
     // Generated content (e.g. list markers and CSS :before and :after
     // pseudoelements) have no corresponding DOM element, and so cannot be
     // represented by a VisiblePosition. Use whatever follows instead.
-    start_box = root_box->FirstLeafChild();
-    while (true) {
-      if (!start_box)
-        return PositionWithAffinityTemplate<Strategy>();
-
-      start_node = start_box->GetLineLayoutItem().NonPseudoNode();
-      if (start_node)
-        break;
-
-      start_box = start_box->NextLeafChild();
-    }
+    // TODO(editing-dev): We should consider text-direction of line to
+    // find non-pseudo node.
+    start_box = FindRightNonPseudoNodeInlineBox(*root_box);
+    if (!start_box)
+      return PositionWithAffinityTemplate<Strategy>();
+    start_node = start_box->GetLineLayoutItem().NonPseudoNode();
   }
 
   return PositionWithAffinityTemplate<Strategy>(
