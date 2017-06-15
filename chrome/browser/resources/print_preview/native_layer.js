@@ -92,7 +92,6 @@ cr.define('print_preview', function() {
     global.onDidPreviewPage = this.onDidPreviewPage_.bind(this);
     global.updatePrintPreview = this.onUpdatePrintPreview_.bind(this);
     global.onDidGetAccessToken = this.onDidGetAccessToken_.bind(this);
-    global.onPrivetPrintFailed = this.onPrivetPrintFailed_.bind(this);
     global.onEnableManipulateSettingsForTest =
         this.onEnableManipulateSettingsForTest_.bind(this);
     global.printPresetOptionsFromDocument =
@@ -151,7 +150,6 @@ cr.define('print_preview', function() {
         'print_preview.NativeLayer.PREVIEW_GENERATION_FAIL',
     PRINT_TO_CLOUD: 'print_preview.NativeLayer.PRINT_TO_CLOUD',
     SETTINGS_INVALID: 'print_preview.NativeLayer.SETTINGS_INVALID',
-    PRIVET_PRINT_FAILED: 'print_preview.NativeLayer.PRIVET_PRINT_FAILED',
     PRINT_PRESET_OPTIONS: 'print_preview.NativeLayer.PRINT_PRESET_OPTIONS',
     PROVISIONAL_DESTINATION_RESOLVED:
         'print_preview.NativeLayer.PROVISIONAL_DESTINATION_RESOLVED'
@@ -730,18 +728,6 @@ cr.define('print_preview', function() {
           NativeLayer.EventType.PRINT_PRESET_OPTIONS);
       printPresetOptionsEvent.optionsFromDocument = options;
       this.eventTarget_.dispatchEvent(printPresetOptionsEvent);
-    },
-
-    /**
-     * @param {string} http_error The HTTP response code or -1 if not an HTTP
-     *    error.
-     * @private
-     */
-    onPrivetPrintFailed_: function(http_error) {
-      var privetPrintFailedEvent =
-            new Event(NativeLayer.EventType.PRIVET_PRINT_FAILED);
-      privetPrintFailedEvent.httpError = http_error;
-      this.eventTarget_.dispatchEvent(privetPrintFailedEvent);
     },
 
     /**

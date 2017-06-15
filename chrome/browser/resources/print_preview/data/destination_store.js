@@ -557,10 +557,6 @@ cr.define('print_preview', function() {
       this.pdfPrinterEnabled_ = !isInAppKioskMode;
       this.systemDefaultDestinationId_ = systemDefaultDestinationId;
       this.createLocalPdfPrintDestination_();
-      cr.addWebUIListener('privet-printer-added',
-                         this.onPrivetPrinterAdded_.bind(this));
-      cr.addWebUIListener('extension-printers-added',
-          this.onExtensionPrintersAdded_.bind(this));
 
       if (!this.appState_.isSelectedDestinationValid()) {
         var destinationMatch = this.convertToDestinationMatch_(

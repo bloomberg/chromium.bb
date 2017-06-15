@@ -15,8 +15,7 @@ cr.define('print_preview', function() {
 
     /**
      * Component's HTML element.
-     * @type {Element}
-     * @private
+     * @private {Element}
      */
     this.element_ = null;
 
@@ -24,15 +23,19 @@ cr.define('print_preview', function() {
 
     /**
      * Component's event tracker.
-     * @type {EventTracker}
-     * @private
+     * @private {!EventTracker}
      */
      this.tracker_ = new EventTracker();
 
     /**
+     * Component's WebUI listener tracker.
+     * @private {!WebUIListenerTracker}
+     */
+     this.listenerTracker_ = new WebUIListenerTracker();
+
+    /**
      * Child components of the component.
-     * @type {!Array<!print_preview.Component>}
-     * @private
+     * @private {!Array<!print_preview.Component>}
      */
     this.children_ = [];
   }
@@ -45,9 +48,14 @@ cr.define('print_preview', function() {
       return this.element_;
     },
 
-    /** @return {EventTracker} Component's event tracker. */
+    /** @return {!EventTracker} Component's event tracker. */
     get tracker() {
       return this.tracker_;
+    },
+
+    /** @return {!WebUIListenerTracker} Component's Web UI listener tracker. */
+    get listenerTracker() {
+      return this.listenerTracker_;
     },
 
     /**
@@ -88,6 +96,7 @@ cr.define('print_preview', function() {
         }
       });
       this.tracker_.removeAll();
+      this.listenerTracker_.removeAll();
       this.isInDocument_ = false;
     },
 
