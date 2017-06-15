@@ -807,9 +807,10 @@ void StyleBuilderFunctions::applyValueCSSPropertyWebkitAppRegion(
     StyleResolverState& state,
     const CSSValue& value) {
   const CSSIdentifierValue& identifier_value = ToCSSIdentifierValue(value);
-  state.Style()->SetDraggableRegionMode(
-      identifier_value.GetValueID() == CSSValueDrag ? kDraggableRegionDrag
-                                                    : kDraggableRegionNoDrag);
+  state.Style()->SetDraggableRegionMode(identifier_value.GetValueID() ==
+                                                CSSValueDrag
+                                            ? EDraggableRegionMode::kDrag
+                                            : EDraggableRegionMode::kNoDrag);
   state.GetDocument().SetHasAnnotatedRegions(true);
 }
 

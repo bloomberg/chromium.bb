@@ -3030,8 +3030,8 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
         return CSSIdentifierValue::Create(CSSValueContentBox);
       return CSSIdentifierValue::Create(CSSValueBorderBox);
     case CSSPropertyWebkitAppRegion:
-      return CSSIdentifierValue::Create(style.GetDraggableRegionMode() ==
-                                                kDraggableRegionDrag
+      return CSSIdentifierValue::Create(style.DraggableRegionMode() ==
+                                                EDraggableRegionMode::kDrag
                                             ? CSSValueDrag
                                             : CSSValueNoDrag);
     case CSSPropertyAnimationDelay:

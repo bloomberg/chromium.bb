@@ -548,9 +548,8 @@
     {
       name: "DraggableRegionMode",
       field_template: "storage_only",
-      type_name: "DraggableRegionMode",
       field_group: "rare-non-inherited",
-      default_value: "kDraggableRegionNone",
+      default_value: "EDraggableRegionMode::kNone",
       field_size: 2,
     },
     {
