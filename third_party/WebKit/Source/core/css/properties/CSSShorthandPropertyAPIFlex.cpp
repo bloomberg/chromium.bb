@@ -6,6 +6,7 @@
 
 #include "core/css/CSSIdentifierValue.h"
 #include "core/css/parser/CSSParserContext.h"
+#include "core/css/parser/CSSParserLocalContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 
 namespace blink {
@@ -14,6 +15,7 @@ bool CSSShorthandPropertyAPIFlex::parseShorthand(
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext* context,
+    const CSSParserLocalContext&,
     HeapVector<CSSProperty, 256>& properties) {
   static const double kUnsetValue = -1;
   double flex_grow = kUnsetValue;
