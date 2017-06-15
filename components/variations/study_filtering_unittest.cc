@@ -212,8 +212,10 @@ TEST(VariationsStudyFilteringTest, CheckStudyLocale) {
 
 TEST(VariationsStudyFilteringTest, CheckStudyPlatform) {
   const Study::Platform platforms[] = {
-      Study::PLATFORM_WINDOWS,  Study::PLATFORM_MAC,     Study::PLATFORM_LINUX,
-      Study::PLATFORM_CHROMEOS, Study::PLATFORM_ANDROID, Study::PLATFORM_IOS,
+      Study::PLATFORM_WINDOWS,         Study::PLATFORM_MAC,
+      Study::PLATFORM_LINUX,           Study::PLATFORM_CHROMEOS,
+      Study::PLATFORM_ANDROID,         Study::PLATFORM_IOS,
+      Study::PLATFORM_ANDROID_WEBVIEW,
   };
   ASSERT_EQ(Study::Platform_ARRAYSIZE, static_cast<int>(arraysize(platforms)));
   bool platform_added[arraysize(platforms)] = { 0 };

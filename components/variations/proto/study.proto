@@ -182,12 +182,13 @@ message Study {
 
   // Possible Chrome operating system platforms.
   enum Platform {
-    PLATFORM_WINDOWS  = 0;
-    PLATFORM_MAC      = 1;
-    PLATFORM_LINUX    = 2;
-    PLATFORM_CHROMEOS = 3;
-    PLATFORM_ANDROID  = 4;
-    PLATFORM_IOS      = 5;
+    PLATFORM_WINDOWS         = 0;
+    PLATFORM_MAC             = 1;
+    PLATFORM_LINUX           = 2;
+    PLATFORM_CHROMEOS        = 3;
+    PLATFORM_ANDROID         = 4;
+    PLATFORM_IOS             = 5;
+    PLATFORM_ANDROID_WEBVIEW = 6;
   }
 
   // Possible form factors Chrome is running on.
