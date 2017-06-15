@@ -1997,6 +1997,7 @@ split_static_library("browser") {
       "//chrome/browser/extensions",
     ]
     deps += [
+      "//apps",
       "//chrome/browser/sync_file_system/drive_backend:sync_file_system_drive_proto",
       "//chrome/common/extensions/api",
       "//chrome/common/extensions/api:api_registration",
@@ -3706,7 +3707,6 @@ split_static_library("browser") {
     ]
     deps += [
       ":theme_properties",
-      "//apps",
       "//chrome/browser/policy:path_parser",
       "//chrome/browser/profile_resetter:profile_reset_report_proto",
       "//chrome/common/importer:interfaces",

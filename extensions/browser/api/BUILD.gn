@@ -3,7 +3,11 @@
 # found in the LICENSE file.
 
 import("//extensions/common/api/schema.gni")
+import("//extensions/features/features.gni")
 import("//tools/json_schema_compiler/json_schema_api.gni")
+
+assert(enable_extensions,
+       "Cannot depend on extensions because enable_extensions=false.")
 
 source_set("api") {
   sources = [
