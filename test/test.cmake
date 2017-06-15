@@ -123,6 +123,10 @@ if (CONFIG_AV1)
   set(AOM_UNIT_TEST_COMMON_INTRIN_SSE4_1
       ${AOM_UNIT_TEST_COMMON_INTRIN_SSE4_1}
       "${AOM_ROOT}/test/simd_cmp_sse4.cc")
+  set(AOM_UNIT_TEST_COMMON_INTRIN_AVX2
+      ${AOM_UNIT_TEST_COMMON_INTRIN_AVX2}
+      "${AOM_ROOT}/test/simd_avx2_test.cc"
+      "${AOM_ROOT}/test/simd_cmp_avx2.cc")
 endif ()
 
 if (CONFIG_AV1_ENCODER)

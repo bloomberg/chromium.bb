@@ -330,6 +330,13 @@ if (CONFIG_AV1_ENCODER)
         "${AOM_ROOT}/aom_dsp/mips/variance_msa.c"
         "${AOM_ROOT}/aom_dsp/mips/sub_pixel_variance_msa.c")
 
+    if (CONFIG_EXT_INTER)
+      set(AOM_DSP_ENCODER_INTRIN_SSSE3
+          ${AOM_DSP_ENCODER_INTRIN_SSSE3}
+          "${AOM_ROOT}/aom_dsp/x86/masked_sad_intrin_ssse3.c"
+          "${AOM_ROOT}/aom_dsp/x86/masked_variance_intrin_ssse3.c")
+    endif ()
+
     if (CONFIG_HIGHBITDEPTH)
       set(AOM_DSP_ENCODER_INTRIN_SSE2
           ${AOM_DSP_ENCODER_INTRIN_SSE2}
@@ -448,6 +455,11 @@ function (setup_aom_dsp_targets)
              ${AOM_DSP_ENCODER_ASM_SSSE3_X86_64})
       endif ()
       add_asm_library("aom_dsp_encoder_ssse3" "AOM_DSP_ENCODER_ASM_SSSE3" "aom")
+
+      if (AOM_DSP_ENCODER_INTRIN_SSSE3)
+        add_intrinsics_object_library("-mssse3" "ssse3" "aom_dsp_encoder"
+                                      "AOM_DSP_ENCODER_INTRIN_SSSE3")
+      endif ()
     endif ()
   endif ()
 
