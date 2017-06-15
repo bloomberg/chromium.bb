@@ -144,6 +144,10 @@ class MockWebMediaPlayerDelegate : public WebMediaPlayerDelegate {
     return is_idle_;
   }
 
+  void DidPlayerMutedStatusChange(int delegate_id, bool muted) override {
+    DCHECK_EQ(player_id_, delegate_id);
+  }
+
   void ClearStaleFlag(int player_id) override {
     DCHECK_EQ(player_id_, player_id);
     is_stale_ = false;

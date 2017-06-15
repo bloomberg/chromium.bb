@@ -801,6 +801,9 @@ class CONTENT_EXPORT WebContentsImpl
   // No interstitial page should already be attached.
   void AttachInterstitialPage(InterstitialPageImpl* interstitial_page) override;
 
+  void MediaMutedStatusChanged(const WebContentsObserver::MediaPlayerId& id,
+                               bool muted);
+
   // Unsets the currently showing interstitial.
   void DetachInterstitialPage() override;
 

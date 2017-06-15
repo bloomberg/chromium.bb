@@ -94,6 +94,9 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   void OnMediaSizeChanged(RenderFrameHost* render_frame_host,
                           int delegate_id,
                           const gfx::Size& size);
+  void OnMediaMutedStatusChanged(RenderFrameHost* render_frame_host,
+                                 int delegate_id,
+                                 bool muted);
 
   // Clear |render_frame_host|'s tracking entry for its WakeLocks.
   void ClearWakeLocks(RenderFrameHost* render_frame_host);
