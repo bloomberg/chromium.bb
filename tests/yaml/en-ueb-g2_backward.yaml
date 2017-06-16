@@ -36,14 +36,16 @@ tests:
   # #309: Ensure correct back-translation to "this".
   - [⠹, this]
 
-  # Contractions followed by punctuation
+  # #360: Contractions followed by punctuation
   # 1-letter contractions
-  - [⠃⠂, "but,", {xfail: true}]
-  - [⠉⠂, "can,", {xfail: true}]
-  - [⠙⠂, "do,", {xfail: true}]
+  - [⠃⠂, "but,"]
+  - [⠃⠲, "but."]
+  - [⠉⠂, "can,"]
+  - [⠙⠂, "do,"]
   # multi-letter contractions
-  - [⠁⠃⠂, "about,", {xfail: true}]
-  - [⠁⠃⠧⠂, "above,", {xfail: true}]
+  - [⠁⠃⠂, "about,"]
+  - [⠁⠃⠲, "about."]
+  - [⠁⠃⠧⠂, "above,"]
 
   # Make sure back-translation for words with "ea" after letters that
   # have contractions associated, such as words like meat, head and

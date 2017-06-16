@@ -357,7 +357,13 @@ isEndWord (void)
 	{
 	  testRule =
 	    (TranslationTableRule *) & table->ruleArea[testRuleOffset];
-	  if (testRule->charslen > 1)
+	  /* #360: Don't treat begword/midword as definite translations here
+	   * because we don't know whether they apply yet. Subsequent
+	   * input will allow us to determine whether the word continues.
+	   */
+	  if (testRule->charslen > 1
+	      && testRule->opcode != CTO_BegWord
+	      && testRule->opcode != CTO_MidWord)
 	    TranslationFound = 1;
 	  if (testRule->opcode == CTO_PostPunc)
 	    postpuncFound = 1;
