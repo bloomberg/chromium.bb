@@ -355,7 +355,8 @@ void UiSceneManager::CreateTransientUrlBar() {
   url_bar->set_hit_testable(false);
   url_bar->set_translation(
       {0, kTransientUrlBarVerticalOffset, -kTransientUrlBarDistance});
-  url_bar->set_rotation({1.0, 0.0, 0.0, kUrlBarRotationRad});
+  url_bar->set_rotation(
+      gfx::Quaternion(gfx::Vector3dF(1, 0, 0), kUrlBarRotationRad));
   url_bar->set_size({kTransientUrlBarWidth, kTransientUrlBarHeight, 1});
   transient_url_bar_ = url_bar.get();
   scene_->AddUiElement(std::move(url_bar));
