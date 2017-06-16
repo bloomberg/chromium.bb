@@ -187,27 +187,17 @@ class MockDelegate : public media::AudioOutputIPCDelegate {
 
 }  // namespace
 
-TEST(MojoAudioOutputIPC, AuthorizeWithoutFactory_CallsOnIPCClosed) {
+TEST(MojoAudioOutputIPC, AuthorizeWithoutFactory_CallsAuthorizedWithError) {
   base::MessageLoopForIO message_loop;
   StrictMock<MockDelegate> delegate;
 
   const std::unique_ptr<media::AudioOutputIPC> ipc =
       base::MakeUnique<MojoAudioOutputIPC>(NullAccessor());
 
-  EXPECT_CALL(delegate, OnIPCClosed());
+  EXPECT_CALL(delegate,
+              OnDeviceAuthorized(media::OUTPUT_DEVICE_STATUS_ERROR_INTERNAL, _,
+                                 std::string()));
   ipc->RequestDeviceAuthorization(&delegate, kSessionId, kDeviceId, Origin());
-  base::RunLoop().RunUntilIdle();
-}
-
-TEST(MojoAudioOutputIPC, CreateWithoutFactoryOrAuthorization_CallsOnIPCClosed) {
-  base::MessageLoopForIO message_loop;
-  StrictMock<MockDelegate> delegate;
-
-  const std::unique_ptr<media::AudioOutputIPC> ipc =
-      base::MakeUnique<MojoAudioOutputIPC>(NullAccessor());
-
-  EXPECT_CALL(delegate, OnIPCClosed());
-  ipc->CreateStream(&delegate, Params());
   base::RunLoop().RunUntilIdle();
 }
 

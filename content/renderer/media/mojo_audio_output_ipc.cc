@@ -75,7 +75,7 @@ void MojoAudioOutputIPC::CreateStream(media::AudioOutputIPCDelegate* delegate,
     // send a callback to it.
     if (!DoRequestDeviceAuthorization(
             0, media::AudioDeviceDescription::kDefaultDeviceId,
-            base::Bind(&TrivialAuthorizedCallback))) {
+            base::BindOnce(&TrivialAuthorizedCallback))) {
       return;
     }
   }
@@ -88,8 +88,8 @@ void MojoAudioOutputIPC::CreateStream(media::AudioOutputIPCDelegate* delegate,
       base::Bind(&MojoAudioOutputIPC::StreamCreated, base::Unretained(this)));
 
   // Unretained is safe because |delegate_| must remain valid until
-  // CloseStream is called, and |stream_provider_| is reset in CloseStream.
-  stream_.set_connection_error_handler(base::Bind(
+  // CloseStream is called, and |stream_| is reset in CloseStream.
+  stream_.set_connection_error_handler(base::BindOnce(
       &media::AudioOutputIPCDelegate::OnError, base::Unretained(delegate_)));
 }
 
@@ -138,7 +138,7 @@ MojoAudioOutputIPC::MakeProviderRequest() {
 
   // Unretained is safe because |delegate_| must remain valid until
   // CloseStream is called, and |stream_provider_| is reset in CloseStream.
-  stream_provider_.set_connection_error_handler(base::Bind(
+  stream_provider_.set_connection_error_handler(base::BindOnce(
       &media::AudioOutputIPCDelegate::OnError, base::Unretained(delegate_)));
   return request;
 }
@@ -152,9 +152,11 @@ bool MojoAudioOutputIPC::DoRequestDeviceAuthorization(
   if (!factory) {
     LOG(ERROR) << "MojoAudioOutputIPC failed to acquire factory";
 
-    media::AudioOutputIPCDelegate* delegate = delegate_;
+    // Resetting the callback ensures consistent behaviour with when the factory
+    // is destroyed before reply, i.e. call with ERROR_INTERNAL in the normal
+    // case.
+    callback.Reset();
     CloseStream();
-    delegate->OnIPCClosed();  // deletes |this|.
     return false;
   }
 
