@@ -53,6 +53,7 @@
 #include "public/platform/WebPrerenderingSupport.h"
 #include "public/platform/WebRTCCertificateGenerator.h"
 #include "public/platform/WebRTCPeerConnectionHandler.h"
+#include "public/platform/WebSocketHandshakeThrottle.h"
 #include "public/platform/WebStorageNamespace.h"
 #include "public/platform/WebThread.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerCacheStorage.h"
@@ -224,6 +225,11 @@ std::unique_ptr<WebCanvasCaptureHandler> Platform::CreateCanvasCaptureHandler(
     const WebSize&,
     double,
     WebMediaStreamTrack*) {
+  return nullptr;
+}
+
+std::unique_ptr<WebSocketHandshakeThrottle>
+Platform::CreateWebSocketHandshakeThrottle() {
   return nullptr;
 }
 

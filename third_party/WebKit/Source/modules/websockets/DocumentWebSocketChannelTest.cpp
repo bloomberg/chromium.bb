@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/websockets/WebSocketChannel.h"
+#include "modules/websockets/DocumentWebSocketChannel.h"
 
 #include <stdint.h>
 #include <memory>
@@ -10,7 +10,7 @@
 #include "core/dom/Document.h"
 #include "core/fileapi/Blob.h"
 #include "core/testing/DummyPageHolder.h"
-#include "modules/websockets/DocumentWebSocketChannel.h"
+#include "modules/websockets/WebSocketChannel.h"
 #include "modules/websockets/WebSocketChannelClient.h"
 #include "modules/websockets/WebSocketHandle.h"
 #include "modules/websockets/WebSocketHandleClient.h"
@@ -19,6 +19,10 @@
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
+#include "public/platform/WebCallbacks.h"
+#include "public/platform/WebSocketHandshakeThrottle.h"
+#include "public/platform/WebURL.h"
+#include "public/web/WebLocalFrame.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -89,16 +93,31 @@ class MockWebSocketHandle : public WebSocketHandle {
   MOCK_METHOD2(Close, void(unsigned short, const String&));
 };
 
+class MockWebSocketHandshakeThrottle : public WebSocketHandshakeThrottle {
+ public:
+  static MockWebSocketHandshakeThrottle* Create() {
+    return new testing::StrictMock<MockWebSocketHandshakeThrottle>();
+  }
+  MockWebSocketHandshakeThrottle() {}
+  ~MockWebSocketHandshakeThrottle() override { Destructor(); }
+
+  MOCK_METHOD3(ThrottleHandshake,
+               void(const WebURL&,
+                    WebLocalFrame*,
+                    WebCallbacks<void, const WebString&>*));
+
+  // This method is used to allow us to require that the destructor is called at
+  // a particular time.
+  MOCK_METHOD0(Destructor, void());
+};
+
 class DocumentWebSocketChannelTest : public ::testing::Test {
  public:
   DocumentWebSocketChannelTest()
       : page_holder_(DummyPageHolder::Create()),
         channel_client_(MockWebSocketChannelClient::Create()),
         handle_(MockWebSocketHandle::Create()),
-        channel_(DocumentWebSocketChannel::Create(&page_holder_->GetDocument(),
-                                                  channel_client_.Get(),
-                                                  SourceLocation::Capture(),
-                                                  Handle())),
+        handshake_throttle_(nullptr),
         sum_of_consumed_buffered_amount_(0) {
     ON_CALL(*ChannelClient(), DidConsumeBufferedAmount(_))
         .WillByDefault(Invoke(
@@ -106,6 +125,13 @@ class DocumentWebSocketChannelTest : public ::testing::Test {
   }
 
   ~DocumentWebSocketChannelTest() { Channel()->Disconnect(); }
+
+  void SetUp() override {
+    channel_ = DocumentWebSocketChannel::CreateForTesting(
+        &page_holder_->GetDocument(), channel_client_.Get(),
+        SourceLocation::Capture(), Handle(),
+        WTF::WrapUnique(handshake_throttle_));
+  }
 
   MockWebSocketChannelClient* ChannelClient() { return channel_client_.Get(); }
 
@@ -115,6 +141,10 @@ class DocumentWebSocketChannelTest : public ::testing::Test {
 
   WebSocketHandleClient* HandleClient() {
     return static_cast<WebSocketHandleClient*>(channel_.Get());
+  }
+
+  WebCallbacks<void, const WebString&>* WebCallbacks() {
+    return channel_.Get();
   }
 
   MockWebSocketHandle* Handle() { return handle_; }
@@ -140,6 +170,8 @@ class DocumentWebSocketChannelTest : public ::testing::Test {
   std::unique_ptr<DummyPageHolder> page_holder_;
   Persistent<MockWebSocketChannelClient> channel_client_;
   MockWebSocketHandle* handle_;
+  // |handshake_throttle_| is owned by |channel_| once SetUp() has been called.
+  MockWebSocketHandshakeThrottle* handshake_throttle_;
   Persistent<DocumentWebSocketChannel> channel_;
   unsigned long sum_of_consumed_buffered_amount_;
 };
@@ -773,6 +805,221 @@ TEST_F(DocumentWebSocketChannelTest, failFromWebSocket) {
 
   Channel()->Fail("fail message from WebSocket", kErrorMessageLevel,
                   SourceLocation::Create(String(), 0, 0, nullptr));
+}
+
+class DocumentWebSocketChannelHandshakeThrottleTest
+    : public DocumentWebSocketChannelTest {
+ public:
+  DocumentWebSocketChannelHandshakeThrottleTest() {
+    handshake_throttle_ = MockWebSocketHandshakeThrottle::Create();
+  }
+
+  // Expectations for the normal result of calling Channel()->Connect() with a
+  // non-null throttle.
+  void NormalHandshakeExpectations() {
+    EXPECT_CALL(*Handle(), Initialize(_));
+    EXPECT_CALL(*Handle(), Connect(_, _, _, _, _, _));
+    EXPECT_CALL(*Handle(), FlowControl(_));
+    EXPECT_CALL(*handshake_throttle_, ThrottleHandshake(_, _, _));
+  }
+
+  static KURL url() { return KURL(KURL(), "ws://localhost/"); }
+};
+
+TEST_F(DocumentWebSocketChannelHandshakeThrottleTest, ThrottleArguments) {
+  EXPECT_CALL(*Handle(), Initialize(_));
+  EXPECT_CALL(*Handle(), Connect(_, _, _, _, _, _));
+  EXPECT_CALL(*Handle(), FlowControl(_));
+  EXPECT_CALL(*handshake_throttle_,
+              ThrottleHandshake(WebURL(url()), _, WebCallbacks()));
+  EXPECT_CALL(*handshake_throttle_, Destructor());
+  Channel()->Connect(url(), "");
+}
+
+TEST_F(DocumentWebSocketChannelHandshakeThrottleTest, ThrottleSucceedsFirst) {
+  Checkpoint checkpoint;
+  NormalHandshakeExpectations();
+  {
+    InSequence s;
+    EXPECT_CALL(checkpoint, Call(1));
+    EXPECT_CALL(*handshake_throttle_, Destructor());
+    EXPECT_CALL(checkpoint, Call(2));
+    EXPECT_CALL(*ChannelClient(), DidConnect(String("a"), String("b")));
+  }
+  Channel()->Connect(url(), "");
+  checkpoint.Call(1);
+  WebCallbacks()->OnSuccess();
+  checkpoint.Call(2);
+  HandleClient()->DidConnect(Handle(), String("a"), String("b"));
+}
+
+TEST_F(DocumentWebSocketChannelHandshakeThrottleTest, HandshakeSucceedsFirst) {
+  Checkpoint checkpoint;
+  NormalHandshakeExpectations();
+  {
+    InSequence s;
+    EXPECT_CALL(checkpoint, Call(1));
+    EXPECT_CALL(checkpoint, Call(2));
+    EXPECT_CALL(*handshake_throttle_, Destructor());
+    EXPECT_CALL(*ChannelClient(), DidConnect(String("a"), String("b")));
+  }
+  Channel()->Connect(url(), "");
+  checkpoint.Call(1);
+  HandleClient()->DidConnect(Handle(), String("a"), String("b"));
+  checkpoint.Call(2);
+  WebCallbacks()->OnSuccess();
+}
+
+// This happens if JS code calls close() during the handshake.
+TEST_F(DocumentWebSocketChannelHandshakeThrottleTest, FailDuringThrottle) {
+  Checkpoint checkpoint;
+  NormalHandshakeExpectations();
+  {
+    InSequence s;
+    EXPECT_CALL(*handshake_throttle_, Destructor());
+    EXPECT_CALL(*ChannelClient(), DidError());
+    EXPECT_CALL(*ChannelClient(), DidClose(_, _, _));
+    EXPECT_CALL(checkpoint, Call(1));
+  }
+  Channel()->Connect(url(), "");
+  Channel()->Fail("close during handshake", kWarningMessageLevel,
+                  SourceLocation::Create(String(), 0, 0, nullptr));
+  checkpoint.Call(1);
+}
+
+// It makes no difference to the behaviour if the WebSocketHandle has actually
+// connected.
+TEST_F(DocumentWebSocketChannelHandshakeThrottleTest,
+       FailDuringThrottleAfterConnect) {
+  Checkpoint checkpoint;
+  NormalHandshakeExpectations();
+  {
+    InSequence s;
+    EXPECT_CALL(*handshake_throttle_, Destructor());
+    EXPECT_CALL(*ChannelClient(), DidError());
+    EXPECT_CALL(*ChannelClient(), DidClose(_, _, _));
+    EXPECT_CALL(checkpoint, Call(1));
+  }
+  Channel()->Connect(url(), "");
+  HandleClient()->DidConnect(Handle(), String("a"), String("b"));
+  Channel()->Fail("close during handshake", kWarningMessageLevel,
+                  SourceLocation::Create(String(), 0, 0, nullptr));
+  checkpoint.Call(1);
+}
+
+// This happens if the JS context is destroyed during the handshake.
+TEST_F(DocumentWebSocketChannelHandshakeThrottleTest, CloseDuringThrottle) {
+  Checkpoint checkpoint;
+  NormalHandshakeExpectations();
+  {
+    InSequence s;
+    EXPECT_CALL(*handshake_throttle_, Destructor());
+    EXPECT_CALL(*Handle(), Close(_, _));
+    EXPECT_CALL(checkpoint, Call(1));
+  }
+  Channel()->Connect(url(), "");
+  Channel()->Close(DocumentWebSocketChannel::kCloseEventCodeGoingAway, "");
+  checkpoint.Call(1);
+}
+
+TEST_F(DocumentWebSocketChannelHandshakeThrottleTest,
+       CloseDuringThrottleAfterConnect) {
+  Checkpoint checkpoint;
+  NormalHandshakeExpectations();
+  {
+    InSequence s;
+    EXPECT_CALL(*handshake_throttle_, Destructor());
+    EXPECT_CALL(*Handle(), Close(_, _));
+    EXPECT_CALL(checkpoint, Call(1));
+  }
+  Channel()->Connect(url(), "");
+  HandleClient()->DidConnect(Handle(), String("a"), String("b"));
+  Channel()->Close(DocumentWebSocketChannel::kCloseEventCodeGoingAway, "");
+  checkpoint.Call(1);
+}
+
+TEST_F(DocumentWebSocketChannelHandshakeThrottleTest,
+       DisconnectDuringThrottle) {
+  Checkpoint checkpoint;
+  NormalHandshakeExpectations();
+  {
+    InSequence s;
+    EXPECT_CALL(*handshake_throttle_, Destructor());
+    EXPECT_CALL(checkpoint, Call(1));
+  }
+  Channel()->Connect(url(), "");
+  Channel()->Disconnect();
+  checkpoint.Call(1);
+}
+
+TEST_F(DocumentWebSocketChannelHandshakeThrottleTest,
+       DisconnectDuringThrottleAfterConnect) {
+  Checkpoint checkpoint;
+  NormalHandshakeExpectations();
+  {
+    InSequence s;
+    EXPECT_CALL(*handshake_throttle_, Destructor());
+    EXPECT_CALL(checkpoint, Call(1));
+  }
+  Channel()->Connect(url(), "");
+  HandleClient()->DidConnect(Handle(), String("a"), String("b"));
+  Channel()->Disconnect();
+  checkpoint.Call(1);
+}
+
+TEST_F(DocumentWebSocketChannelHandshakeThrottleTest,
+       ThrottleReportsErrorBeforeConnect) {
+  NormalHandshakeExpectations();
+  {
+    InSequence s;
+    EXPECT_CALL(*handshake_throttle_, Destructor());
+    EXPECT_CALL(*ChannelClient(), DidError());
+    EXPECT_CALL(*ChannelClient(), DidClose(_, _, _));
+  }
+  Channel()->Connect(url(), "");
+  WebCallbacks()->OnError("Connection blocked by throttle");
+}
+
+TEST_F(DocumentWebSocketChannelHandshakeThrottleTest,
+       ThrottleReportsErrorAfterConnect) {
+  NormalHandshakeExpectations();
+  {
+    InSequence s;
+    EXPECT_CALL(*handshake_throttle_, Destructor());
+    EXPECT_CALL(*ChannelClient(), DidError());
+    EXPECT_CALL(*ChannelClient(), DidClose(_, _, _));
+  }
+  Channel()->Connect(url(), "");
+  HandleClient()->DidConnect(Handle(), String("a"), String("b"));
+  WebCallbacks()->OnError("Connection blocked by throttle");
+}
+
+TEST_F(DocumentWebSocketChannelHandshakeThrottleTest,
+       ConnectFailBeforeThrottle) {
+  NormalHandshakeExpectations();
+  {
+    InSequence s;
+    EXPECT_CALL(*handshake_throttle_, Destructor());
+    EXPECT_CALL(*ChannelClient(), DidError());
+    EXPECT_CALL(*ChannelClient(), DidClose(_, _, _));
+  }
+  Channel()->Connect(url(), "");
+  HandleClient()->DidFail(Handle(), "connect failed");
+}
+
+// TODO(ricea): Can this actually happen?
+TEST_F(DocumentWebSocketChannelHandshakeThrottleTest,
+       ConnectCloseBeforeThrottle) {
+  NormalHandshakeExpectations();
+  {
+    InSequence s;
+    EXPECT_CALL(*handshake_throttle_, Destructor());
+    EXPECT_CALL(*ChannelClient(), DidClose(_, _, _));
+  }
+  Channel()->Connect(url(), "");
+  HandleClient()->DidClose(Handle(), false,
+                           WebSocketChannel::kCloseEventCodeProtocolError,
+                           "connect error");
 }
 
 }  // namespace
