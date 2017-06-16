@@ -378,7 +378,7 @@ public class ReaderModeManager extends TabModelSelectorTabObserver {
             return;
         }
 
-        ReaderModeInfoBar.showReaderModeInfoBar(mTabModelSelector.getCurrentTab(), this);
+        ReaderModeInfoBar.showReaderModeInfoBar(mTabModelSelector.getCurrentTab());
     }
 
     /**
