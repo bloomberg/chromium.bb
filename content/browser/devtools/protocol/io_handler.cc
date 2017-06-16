@@ -43,22 +43,21 @@ void IOHandler::Read(
     callback->sendFailure(Response::InvalidParams("Invalid stream handle"));
     return;
   }
-  stream->Read(offset.fromMaybe(-1),
-               max_size.fromMaybe(kDefaultChunkSize),
-               base::Bind(&IOHandler::ReadComplete,
-                          weak_factory_.GetWeakPtr(),
-                          base::Passed(std::move(callback))));
+  stream->Read(
+      offset.fromMaybe(-1), max_size.fromMaybe(kDefaultChunkSize),
+      base::BindOnce(&IOHandler::ReadComplete, weak_factory_.GetWeakPtr(),
+                     base::Passed(std::move(callback))));
 }
 
 void IOHandler::ReadComplete(std::unique_ptr<ReadCallback> callback,
-                             const scoped_refptr<base::RefCountedString>& data,
+                             std::unique_ptr<std::string> data,
                              int status) {
   if (status == DevToolsIOContext::Stream::StatusFailure) {
     callback->sendFailure(Response::Error("Read failed"));
     return;
   }
   bool eof = status == DevToolsIOContext::Stream::StatusEOF;
-  callback->sendSuccess(data->data(), eof);
+  callback->sendSuccess(std::move(*data), eof);
 }
 
 Response IOHandler::Close(const std::string& handle) {
