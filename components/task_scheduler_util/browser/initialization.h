@@ -16,10 +16,6 @@ namespace task_scheduler_util {
 std::unique_ptr<base::TaskScheduler::InitParams>
 GetBrowserTaskSchedulerInitParamsFromVariations();
 
-// Redirects zero-to-many PostTask APIs to the browser task scheduler based off
-// variations.
-void MaybePerformBrowserTaskSchedulerRedirection();
-
 }  // namespace task_scheduler_util
 
 #endif  // COMPONENTS_TASK_SCHEDULER_UTIL_BROWSER_INITIALIZATION_H_

@@ -316,7 +316,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
 
   std::unique_ptr<base::TaskScheduler::InitParams> GetTaskSchedulerInitParams()
       override;
-  void PerformExperimentalTaskSchedulerRedirections() override;
   base::FilePath GetLoggingFileName() override;
 
  private:

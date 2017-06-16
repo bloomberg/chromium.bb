@@ -3429,11 +3429,6 @@ ChromeContentBrowserClient::GetTaskSchedulerInitParams() {
   return task_scheduler_util::GetBrowserTaskSchedulerInitParamsFromVariations();
 }
 
-void ChromeContentBrowserClient::
-    PerformExperimentalTaskSchedulerRedirections() {
-  task_scheduler_util::MaybePerformBrowserTaskSchedulerRedirection();
-}
-
 base::FilePath ChromeContentBrowserClient::GetLoggingFileName() {
   return logging::GetLogFileName();
 }

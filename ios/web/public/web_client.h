@@ -129,9 +129,6 @@ class WebClient {
   // params are used if this returns nullptr.
   virtual std::unique_ptr<base::TaskScheduler::InitParams>
   GetTaskSchedulerInitParams();
-
-  // Performs any necessary PostTask API redirection to the task scheduler.
-  virtual void PerformExperimentalTaskSchedulerRedirections() {}
 };
 
 }  // namespace web
