@@ -213,4 +213,79 @@ bool AXPlatformNodeBase::SetTextSelection(int start_offset, int end_offset) {
   return delegate_->AccessibilityPerformAction(action_data);
 }
 
+bool AXPlatformNodeBase::IsTextOnlyObject() const {
+  return GetData().role == ui::AX_ROLE_STATIC_TEXT ||
+         GetData().role == ui::AX_ROLE_LINE_BREAK ||
+         GetData().role == ui::AX_ROLE_INLINE_TEXT_BOX;
+}
+
+bool AXPlatformNodeBase::IsNativeTextControl() const {
+  const std::string& html_tag = GetStringAttribute(ui::AX_ATTR_HTML_TAG);
+  if (html_tag == "input") {
+    std::string input_type;
+    if (!GetData().GetHtmlAttribute("type", &input_type))
+      return true;
+    return input_type.empty() || input_type == "email" ||
+           input_type == "password" || input_type == "search" ||
+           input_type == "tel" || input_type == "text" || input_type == "url" ||
+           input_type == "number";
+  }
+  return html_tag == "textarea";
+}
+
+bool AXPlatformNodeBase::IsSimpleTextControl() const {
+  // Time fields, color wells and spinner buttons might also use text fields as
+  // constituent parts, but they are not considered text fields as a whole.
+  switch (GetData().role) {
+    case ui::AX_ROLE_COMBO_BOX:
+    case ui::AX_ROLE_SEARCH_BOX:
+      return true;
+    case ui::AX_ROLE_TEXT_FIELD:
+      return !GetData().HasState(ui::AX_STATE_RICHLY_EDITABLE);
+    default:
+      return false;
+  }
+}
+
+// Indicates if this object is at the root of a rich edit text control.
+bool AXPlatformNodeBase::IsRichTextControl() {
+  gfx::NativeViewAccessible parent_accessible = GetParent();
+  AXPlatformNodeBase* parent = FromNativeViewAccessible(parent_accessible);
+  if (!parent)
+    return false;
+
+  return GetData().HasState(ui::AX_STATE_RICHLY_EDITABLE) &&
+         (!parent || !parent->GetData().HasState(ui::AX_STATE_RICHLY_EDITABLE));
+}
+
+base::string16 AXPlatformNodeBase::GetInnerText() {
+  if (IsTextOnlyObject())
+    return GetString16Attribute(ui::AX_ATTR_NAME);
+
+  base::string16 text;
+  for (int i = 0; i < GetChildCount(); ++i) {
+    gfx::NativeViewAccessible child_accessible = ChildAtIndex(i);
+    AXPlatformNodeBase* child = FromNativeViewAccessible(child_accessible);
+    if (!child)
+      continue;
+
+    text += child->GetInnerText();
+  }
+  return text;
+}
+
+bool AXPlatformNodeBase::IsRangeValueSupported() const {
+  switch (GetData().role) {
+    case ui::AX_ROLE_PROGRESS_INDICATOR:
+    case ui::AX_ROLE_SLIDER:
+    case ui::AX_ROLE_SPIN_BUTTON:
+    case ui::AX_ROLE_SCROLL_BAR:
+      return true;
+    case ui::AX_ROLE_SPLITTER:
+      return GetData().HasState(ui::AX_STATE_FOCUSABLE);
+    default:
+      return false;
+  }
+}
+
 }  // namespace ui

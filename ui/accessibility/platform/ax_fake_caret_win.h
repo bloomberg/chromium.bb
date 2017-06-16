@@ -11,6 +11,7 @@
 #include "base/win/scoped_comptr.h"
 #include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/ax_tree_data.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
@@ -34,6 +35,7 @@ class AX_EXPORT AXFakeCaretWin : private AXPlatformNodeDelegate {
  private:
   // |AXPlatformNodeDelegate| members.
   const AXNodeData& GetData() const override;
+  const ui::AXTreeData& GetTreeData() const override;
   gfx::NativeWindow GetTopLevelWidget() override;
   gfx::NativeViewAccessible GetParent() override;
   int GetChildCount() override;

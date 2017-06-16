@@ -670,46 +670,14 @@ STDMETHODIMP BrowserAccessibilityComWin::get_accValue(VARIANT var_id,
   if (!owner())
     return E_FAIL;
 
-  if (!value)
-    return E_INVALIDARG;
-
-  BrowserAccessibilityComWin* target = GetTargetFromChildID(var_id);
-  if (!target)
-    return E_INVALIDARG;
-
-  if (target->IsRangeValueSupported()) {
-    base::string16 value_text = target->GetRangeValueText();
-    *value = SysAllocString(value_text.c_str());
-    DCHECK(*value);
-    return S_OK;
-  }
-
-  // Expose color well value.
-  if (target->ia2_role() == IA2_ROLE_COLOR_CHOOSER) {
-    unsigned int color = static_cast<unsigned int>(
-        target->owner()->GetIntAttribute(ui::AX_ATTR_COLOR_VALUE));
-    unsigned int red = SkColorGetR(color);
-    unsigned int green = SkColorGetG(color);
-    unsigned int blue = SkColorGetB(color);
-    base::string16 value_text;
-    value_text = base::UintToString16(red * 100 / 255) + L"% red " +
-                 base::UintToString16(green * 100 / 255) + L"% green " +
-                 base::UintToString16(blue * 100 / 255) + L"% blue";
-    *value = SysAllocString(value_text.c_str());
-    DCHECK(*value);
-    return S_OK;
-  }
-
-  *value = SysAllocString(target->value().c_str());
-  DCHECK(*value);
-  return S_OK;
+  return AXPlatformNodeWin::get_accValue(var_id, value);
 }
 
 STDMETHODIMP BrowserAccessibilityComWin::get_accHelpTopic(BSTR* help_file,
                                                           VARIANT var_id,
                                                           LONG* topic_id) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_ACC_HELP_TOPIC);
-  return E_NOTIMPL;
+  return AXPlatformNodeWin::get_accHelpTopic(help_file, var_id, topic_id);
 }
 
 STDMETHODIMP BrowserAccessibilityComWin::get_accSelection(VARIANT* selected) {
@@ -774,11 +742,17 @@ STDMETHODIMP BrowserAccessibilityComWin::accSelect(LONG flags_sel,
 
 STDMETHODIMP
 BrowserAccessibilityComWin::put_accName(VARIANT var_id, BSTR put_name) {
-  return E_NOTIMPL;
+  if (!owner())
+    return E_FAIL;
+
+  return AXPlatformNodeWin::put_accName(var_id, put_name);
 }
 STDMETHODIMP
 BrowserAccessibilityComWin::put_accValue(VARIANT var_id, BSTR put_val) {
-  return E_NOTIMPL;
+  if (!owner())
+    return E_FAIL;
+
+  return AXPlatformNodeWin::put_accValue(var_id, put_val);
 }
 
 //

@@ -30,6 +30,7 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegate {
 
   // AXPlatformNodeDelegate.
   const AXNodeData& GetData() const override;
+  const ui::AXTreeData& GetTreeData() const override;
   gfx::NativeWindow GetTopLevelWidget() override;
   gfx::NativeViewAccessible GetParent() override;
   int GetChildCount() override;

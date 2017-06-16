@@ -97,6 +97,11 @@ const ui::AXNodeData& NativeViewAccessibilityBase::GetData() const {
   return data_;
 }
 
+const ui::AXTreeData& NativeViewAccessibilityBase::GetTreeData() const {
+  CR_DEFINE_STATIC_LOCAL(ui::AXTreeData, empty_data, ());
+  return empty_data;
+}
+
 int NativeViewAccessibilityBase::GetChildCount() {
   int child_count = view_->child_count();
 

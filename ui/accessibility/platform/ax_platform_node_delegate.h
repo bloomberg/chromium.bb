@@ -14,6 +14,7 @@ namespace ui {
 
 struct AXActionData;
 struct AXNodeData;
+struct AXTreeData;
 class AXPlatformNode;
 
 // An object that wants to be accessible should derive from this class.
@@ -35,6 +36,9 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // (role, state, name, cursor position, etc.) - the rest of this interface
   // is mostly to implement support for walking the accessibility tree.
   virtual const AXNodeData& GetData() const = 0;
+
+  // Get the accessibility tree data for this node.
+  virtual const ui::AXTreeData& GetTreeData() const = 0;
 
   // Get the window the node is contained in.
   virtual gfx::NativeWindow GetTopLevelWidget() = 0;

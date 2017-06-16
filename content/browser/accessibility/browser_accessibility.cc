@@ -1086,6 +1086,14 @@ const ui::AXNodeData& BrowserAccessibility::GetData() const {
     return empty_data;
 }
 
+const ui::AXTreeData& BrowserAccessibility::GetTreeData() const {
+  CR_DEFINE_STATIC_LOCAL(ui::AXTreeData, empty_data, ());
+  if (manager())
+    return manager()->GetTreeData();
+  else
+    return empty_data;
+}
+
 gfx::NativeWindow BrowserAccessibility::GetTopLevelWidget() {
   NOTREACHED();
   return nullptr;

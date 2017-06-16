@@ -68,6 +68,16 @@ class AX_EXPORT AXPlatformNodeBase : public AXPlatformNode {
   AXPlatformNodeBase();
   ~AXPlatformNodeBase() override;
 
+  bool IsTextOnlyObject() const;
+  bool IsNativeTextControl() const;
+  bool IsSimpleTextControl() const;
+  bool IsRichTextControl();
+  bool IsRangeValueSupported() const;
+
+  // |GetInnerText| recursively includes all the text from descendants such as
+  // text found in any embedded object.
+  base::string16 GetInnerText();
+
   // Cast a gfx::NativeViewAccessible to an AXPlatformNodeBase if it is one,
   // or return NULL if it's not an instance of this class.
   static AXPlatformNodeBase* FromNativeViewAccessible(
