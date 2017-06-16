@@ -55,6 +55,15 @@ class MultiProfileUserController {
     NOT_ALLOWED_POLICY_FORBIDS
   };
 
+  // Supported user behavior values. Keep in sync with the enum in
+  // md_user_pod_row.js and user_pod_row.js
+  enum class MultiProfileUserBehavior {
+    kUnrestriced,
+    kPrimaryOnly,
+    kNotAllowed,
+    kOwnerPrimaryOnly
+  };
+
   MultiProfileUserController(MultiProfileUserControllerDelegate* delegate,
                              PrefService* local_state);
   ~MultiProfileUserController();
@@ -69,6 +78,10 @@ class MultiProfileUserController {
   // NOT_ALLOWED_PRIMARY_POLICY_CERT_TAINTED,
   // NOT_ALLOWED_PRIMARY_USER_POLICY_FORBIDS)
   static UserAllowedInSessionReason GetPrimaryUserPolicy();
+
+  // Returns the user behavior in MultiProfileUserBehavior enum.
+  static MultiProfileUserBehavior UserBehaviorStringToEnum(
+      const std::string& behavior);
 
   // Returns true if user allowed to be in the current session. If |reason| not
   // null stores UserAllowedInSessionReason enum that describes actual reason.

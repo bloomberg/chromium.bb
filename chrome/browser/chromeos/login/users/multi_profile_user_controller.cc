@@ -127,6 +127,20 @@ MultiProfileUserController::GetPrimaryUserPolicy() {
   return ALLOWED;
 }
 
+// static
+MultiProfileUserController::MultiProfileUserBehavior
+MultiProfileUserController::UserBehaviorStringToEnum(
+    const std::string& behavior) {
+  if (behavior == kBehaviorPrimaryOnly)
+    return MultiProfileUserBehavior::kPrimaryOnly;
+  if (behavior == kBehaviorNotAllowed)
+    return MultiProfileUserBehavior::kNotAllowed;
+  if (behavior == kBehaviorOwnerPrimaryOnly)
+    return MultiProfileUserBehavior::kOwnerPrimaryOnly;
+
+  return MultiProfileUserBehavior::kUnrestriced;
+}
+
 bool MultiProfileUserController::IsUserAllowedInSession(
     const std::string& user_email,
     MultiProfileUserController::UserAllowedInSessionReason* reason) const {

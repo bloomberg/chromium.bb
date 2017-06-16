@@ -127,6 +127,15 @@ cr.define('login', function() {
     {state: FINGERPRINT_STATES.FAILED, class: 'failed'}
   ];
 
+  // Supported multi-profile user behavior values.
+  // Keep in sync with the enum in multi_profile_user_controller.h
+  var MULTI_PROFILE_USER_BEHAVIOR = {
+    UNRESTRICTED: 0,
+    PRIMARY_ONLY: 1,
+    NOT_ALLOWED: 2,
+    OWNER_PRIMARY_ONLY: 3
+  };
+
   // Focus and tab order are organized as follows:
   //
   // (1) all user pods have tab index 1 so they are traversed first;
@@ -1269,12 +1278,15 @@ cr.define('login', function() {
         this.classList.add('multiprofiles-policy-applied');
         this.setUserPodIconType('policy');
 
-        if (this.user.multiProfilesPolicy == 'primary-only')
+        if (this.user.multiProfilesPolicy ==
+            MULTI_PROFILE_USER_BEHAVIOR.PRIMARY_ONLY) {
           this.querySelector('.mp-policy-primary-only-msg').hidden = false;
-        else if (this.user.multiProfilesPolicy == 'owner-primary-only')
+        } else if (this.user.multiProfilesPolicy ==
+            MULTI_PROFILE_USER_BEHAVIOR.OWNER_PRIMARY_ONLY) {
           this.querySelector('.mp-owner-primary-only-msg').hidden = false;
-        else
+        } else {
           this.querySelector('.mp-policy-not-allowed-msg').hidden = false;
+        }
       } else if (this.user_.isApp) {
         this.setUserPodIconType('app');
       }

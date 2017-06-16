@@ -337,7 +337,10 @@ void UserSelectionScreen::FillMultiProfileUserPrefs(
       default:
         behavior = multi_profile_user_controller->GetCachedValue(user_id);
     }
-    user_dict->SetString(kKeyMultiProfilesPolicy, behavior);
+    MultiProfileUserController::MultiProfileUserBehavior user_behavior =
+        MultiProfileUserController::UserBehaviorStringToEnum(behavior);
+    user_dict->SetInteger(kKeyMultiProfilesPolicy,
+                          static_cast<int>(user_behavior));
   } else {
     user_dict->SetBoolean(kKeyMultiProfilesAllowed, true);
   }
