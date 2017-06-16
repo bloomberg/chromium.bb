@@ -142,7 +142,7 @@ bool UserSwitchAnimatorChromeOS::CoversScreen(aura::Window* window) {
   // area.
   if (ash::wm::GetWindowState(window)->IsFullscreen())
     return true;
-  gfx::Rect bounds = window->GetBoundsInRootWindow();
+  gfx::Rect bounds = window->GetBoundsInScreen();
   gfx::Rect work_area =
       display::Screen::GetScreen()->GetDisplayNearestWindow(window).work_area();
   bounds.Intersect(work_area);
