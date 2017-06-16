@@ -11,6 +11,7 @@
 #import "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #import "ios/testing/wait_util.h"
+#import "ios/web_view/test/web_view_test_util.h"
 #include "net/base/url_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
@@ -97,7 +98,8 @@ std::unique_ptr<net::test_server::HttpResponse> TestRequestHandler(
 namespace ios_web_view {
 
 ChromeWebViewTest::ChromeWebViewTest()
-    : test_server_(base::MakeUnique<net::EmbeddedTestServer>(
+    : web_view_(test::CreateWebView()),
+      test_server_(base::MakeUnique<net::EmbeddedTestServer>(
           net::test_server::EmbeddedTestServer::TYPE_HTTP)) {
   test_server_->RegisterRequestHandler(base::Bind(&TestRequestHandler));
 }

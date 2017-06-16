@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_WEB_VIEW_TEST_WEB_VIEW_INTERACTION_TEST_UTIL_H_
-#define IOS_WEB_VIEW_TEST_WEB_VIEW_INTERACTION_TEST_UTIL_H_
+#ifndef IOS_WEB_VIEW_TEST_WEB_VIEW_TEST_UTIL_H_
+#define IOS_WEB_VIEW_TEST_WEB_VIEW_TEST_UTIL_H_
 
 #import <Foundation/Foundation.h>
 
@@ -11,6 +11,9 @@
 
 namespace ios_web_view {
 namespace test {
+
+// Creates web view with default configuration and frame equal to screen bounds.
+CWVWebView* CreateWebView();
 
 // Returns whether the element with |element_id| in the passed |web_view| has
 // been tapped using a JavaScript click() event.
@@ -28,4 +31,4 @@ bool WaitForWebViewContainingTextOrTimeout(CWVWebView* web_view,
 }  // namespace test
 }  // namespace ios_web_view
 
-#endif  // IOS_WEB_VIEW_TEST_WEB_VIEW_INTERACTION_TEST_UTIL_H_
+#endif  // IOS_WEB_VIEW_TEST_WEB_VIEW_TEST_UTIL_H_

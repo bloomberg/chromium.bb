@@ -5,13 +5,12 @@
 #import <ChromeWebView/ChromeWebView.h>
 #import <Foundation/Foundation.h>
 
-#import "base/mac/scoped_nsobject.h"
 #include "base/strings/stringprintf.h"
 #import "base/strings/sys_string_conversions.h"
 #import "ios/testing/wait_util.h"
 #import "ios/web_view/test/chrome_web_view_test.h"
 #import "ios/web_view/test/observer.h"
-#import "ios/web_view/test/web_view_interaction_test_util.h"
+#import "ios/web_view/test/web_view_test_util.h"
 #import "net/base/mac/url_conversions.h"
 #include "testing/gtest_mac.h"
 #include "url/gurl.h"
@@ -20,23 +19,11 @@
 #error "This file requires ARC support."
 #endif
 
+namespace ios_web_view {
+
 // Tests that the KVO compliant properties of CWVWebView correctly report
 // changes.
-class ChromeWebViewKvoTest : public ios_web_view::ChromeWebViewTest {
- protected:
-  ChromeWebViewKvoTest() {
-    CWVWebViewConfiguration* configuration =
-        [CWVWebViewConfiguration defaultConfiguration];
-    web_view_.reset([[CWVWebView alloc]
-        initWithFrame:CGRectMake(0.0, 0.0, 100.0, 100.0)
-        configuration:configuration]);
-  }
-
-  // Web View used to listen for expected KVO property changes.
-  base::scoped_nsobject<CWVWebView> web_view_;
-};
-
-namespace ios_web_view {
+typedef ios_web_view::ChromeWebViewTest ChromeWebViewKvoTest;
 
 // Tests that CWVWebView correctly reports |canGoBack| and |canGoForward| state.
 TEST_F(ChromeWebViewKvoTest, CanGoBackForward) {

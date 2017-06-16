@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/web_view/test/web_view_interaction_test_util.h"
+#import "ios/web_view/test/web_view_test_util.h"
 
 #import <ChromeWebView/ChromeWebView.h>
 
@@ -16,6 +16,12 @@ using testing::WaitUntilConditionOrTimeout;
 
 namespace ios_web_view {
 namespace test {
+
+CWVWebView* CreateWebView() {
+  return [[CWVWebView alloc]
+      initWithFrame:UIScreen.mainScreen.bounds
+      configuration:[CWVWebViewConfiguration defaultConfiguration]];
+}
 
 bool TapChromeWebViewElementWithId(CWVWebView* web_view, NSString* element_id) {
   // TODO(crbug.com/725524): Share this script with Chrome.
