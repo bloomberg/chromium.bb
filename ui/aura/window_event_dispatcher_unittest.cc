@@ -941,7 +941,9 @@ TEST_P(WindowEventDispatcherTest, CallToProcessedTouchEvent) {
   std::unique_ptr<aura::Window> window(CreateTestWindowWithDelegate(
       &delegate, 1, gfx::Rect(50, 50, 100, 100), root_window()));
 
-  host()->dispatcher()->ProcessedTouchEvent(0, window.get(), ui::ER_UNHANDLED);
+  host()->dispatcher()->ProcessedTouchEvent(
+      0, window.get(), ui::ER_UNHANDLED,
+      false /* is_source_touch_event_set_non_blocking */);
 }
 
 // This event handler requests the dispatcher to start holding pointer-move
@@ -2604,8 +2606,9 @@ class AsyncWindowDelegate : public test::TestWindowDelegate {
     // Convert touch event back to root window coordinates.
     event->ConvertLocationToTarget(window_, window_->GetRootWindow());
     event->DisableSynchronousHandling();
-    dispatcher_->ProcessedTouchEvent(event->unique_event_id(), window_,
-                                     ui::ER_UNHANDLED);
+    dispatcher_->ProcessedTouchEvent(
+        event->unique_event_id(), window_, ui::ER_UNHANDLED,
+        false /* is_source_touch_event_set_non_blocking */);
     event->StopPropagation();
   }
 

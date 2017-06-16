@@ -50,9 +50,12 @@ FilteredGestureProvider::OnTouchEvent(const MotionEvent& event) {
   return result;
 }
 
-void FilteredGestureProvider::OnTouchEventAck(uint32_t unique_event_id,
-                                              bool event_consumed) {
-  gesture_filter_.OnTouchEventAck(unique_event_id, event_consumed);
+void FilteredGestureProvider::OnTouchEventAck(
+    uint32_t unique_event_id,
+    bool event_consumed,
+    bool is_source_touch_event_set_non_blocking) {
+  gesture_filter_.OnTouchEventAck(unique_event_id, event_consumed,
+                                  is_source_touch_event_set_non_blocking);
 }
 
 void FilteredGestureProvider::ResetDetection() {

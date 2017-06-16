@@ -92,7 +92,8 @@ class AURA_EXPORT WindowEventDispatcher : public ui::EventProcessor,
   // space, in DIPs.
   virtual void ProcessedTouchEvent(uint32_t unique_event_id,
                                    Window* window,
-                                   ui::EventResult result);
+                                   ui::EventResult result,
+                                   bool is_source_touch_event_set_non_blocking);
 
   // These methods are used to defer the processing of mouse/touch events
   // related to resize. A client (typically a RenderWidgetHostViewAura) can call

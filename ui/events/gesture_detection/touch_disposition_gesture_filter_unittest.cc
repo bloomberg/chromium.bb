@@ -140,24 +140,31 @@ class TouchDispositionGestureFilterTest
     return queue_->OnGesturePacket(packet);
   }
 
-  void SendTouchEventAck(uint32_t touch_event_id, bool event_consumed) {
-    queue_->OnTouchEventAck(touch_event_id, event_consumed);
+  void SendTouchEventAck(uint32_t touch_event_id,
+                         bool event_consumed,
+                         bool is_source_touch_event_set_non_blocking) {
+    queue_->OnTouchEventAck(touch_event_id, event_consumed,
+                            is_source_touch_event_set_non_blocking);
   }
 
   void SendTouchConsumedAck(uint32_t touch_event_id) {
-    SendTouchEventAck(touch_event_id, true);
+    SendTouchEventAck(touch_event_id, true /* event_consumed */,
+                      false /* is_source_touch_event_set_non_blocking */);
   }
 
   void SendTouchNotConsumedAck(uint32_t touch_event_id) {
-    SendTouchEventAck(touch_event_id, false);
+    SendTouchEventAck(touch_event_id, false /* event_consumed */,
+                      false /* is_source_touch_event_set_non_blocking */);
   }
 
   void SendTouchConsumedAckForLastTouch() {
-    SendTouchEventAck(last_sent_touch_event_id_, true);
+    SendTouchEventAck(last_sent_touch_event_id_, true /* event_consumed */,
+                      false /* is_source_touch_event_set_non_blocking */);
   }
 
   void SendTouchNotConsumedAckForLastTouch() {
-    SendTouchEventAck(last_sent_touch_event_id_, false);
+    SendTouchEventAck(last_sent_touch_event_id_, false /* event_consumed */,
+                      false /* is_source_touch_event_set_non_blocking */);
   }
 
   void PushGesture(EventType type) {
