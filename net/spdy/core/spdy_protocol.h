@@ -88,6 +88,8 @@ enum class SpdyFrameType : uint8_t {
   // The specific value of EXTENSION is meaningless; it is a placeholder used
   // within SpdyFramer's state machine when handling unknown frames via an
   // extension API.
+  // TODO(birenroy): Remove the fake EXTENSION value from the SpdyFrameType
+  // enum.
   EXTENSION = 0xff
 };
 
