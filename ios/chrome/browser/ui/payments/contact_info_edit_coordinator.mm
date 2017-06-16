@@ -63,14 +63,15 @@ using ::AutofillTypeFromAutofillUIType;
   [self.viewController setDataSource:self.mediator];
   [self.viewController loadModel];
 
-  DCHECK(self.baseViewController.navigationController);
-  [[self baseViewController].navigationController
-      pushViewController:self.viewController
-                animated:YES];
+  [[self baseViewController] presentViewController:self.viewController
+                                          animated:YES
+                                        completion:nil];
 }
 
 - (void)stop {
-  [self.viewController.navigationController popViewControllerAnimated:YES];
+  [[self.viewController presentingViewController]
+      dismissViewControllerAnimated:YES
+                         completion:nil];
   self.viewController = nil;
 }
 
