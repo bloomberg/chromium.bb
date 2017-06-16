@@ -96,10 +96,11 @@
   [self.userActivity invalidate];
 
   Class aClass = NSClassFromString(@"NSUserActivity");
-  NSUserActivity* userActivity = [[aClass performSelector:@selector(alloc)]
-      performSelector:@selector(initWithActivityType:)
-           withObject:handoff::kChromeHandoffActivityType];
-  self.userActivity = base::scoped_nsobject<NSUserActivity>(userActivity);
+  base::scoped_nsobject<NSUserActivity> userActivity(
+      [[aClass performSelector:@selector(alloc)]
+          performSelector:@selector(initWithActivityType:)
+               withObject:handoff::kChromeHandoffActivityType]);
+  self.userActivity = userActivity;
   self.userActivity.webpageURL = net::NSURLWithGURL(_activeURL);
   NSString* origin = handoff::StringFromOrigin(_origin);
   DCHECK(origin);
