@@ -94,7 +94,7 @@ public class BottomSheetNewTabController extends EmptyBottomSheetObserver {
         // may get called while the sheet is open. In that case, we should finish showing the new
         // tab UI.
         if (!mBottomSheet.isSheetOpen()) {
-            mBottomSheet.setSheetState(mTabModelSelector.getTotalTabCount() == 0
+            mBottomSheet.setSheetState(mTabModelSelector.getCurrentModel().getCount() == 0
                             ? BottomSheet.SHEET_STATE_FULL
                             : BottomSheet.SHEET_STATE_HALF,
                     true);
@@ -173,6 +173,11 @@ public class BottomSheetNewTabController extends EmptyBottomSheetObserver {
         if (mTabModelSelector.isIncognitoSelected()
                 && mTabModelSelector.getModel(true).getCount() == 0) {
             mTabModelSelector.selectModel(false);
+        }
+
+        if (mIsShowingNormalToolbar && mLayoutManager.overviewVisible()) {
+            mIsShowingNormalToolbar = false;
+            mToolbar.showTabSwitcherToolbar();
         }
 
         onNewTabUiHidden();

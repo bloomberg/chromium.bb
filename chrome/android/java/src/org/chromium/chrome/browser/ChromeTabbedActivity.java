@@ -1083,8 +1083,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                 // If the bottom sheet new tab UI is showing and the tab open type is not
                 // already OPEN_NEW_TAB or OPEN_NEW_INCOGNITO_TAB, set the open type so that a real
                 // new tab will be created and added to the appropriate model.
-                if (getBottomSheet().isShowingNewTab() && tabOpenType != TabOpenType.OPEN_NEW_TAB
-                        && tabOpenType != TabOpenType.OPEN_NEW_INCOGNITO_TAB) {
+                if (getBottomSheet().isShowingNewTab()
+                        && tabOpenType == TabOpenType.CLOBBER_CURRENT_TAB) {
                     tabOpenType = mTabModelSelectorImpl.isIncognitoSelected()
                             ? TabOpenType.OPEN_NEW_INCOGNITO_TAB
                             : TabOpenType.OPEN_NEW_TAB;
@@ -1093,10 +1093,17 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                 // Either a new tab is opening, a tab is being clobbered, or a tab is being
                 // brought to the front. In all scenarios, the bottom sheet should be closed.
                 // If a new tab is being created from a launcher shortcut, close the panel without
-                // animation because the panel will be re-opened immediately.
+                // animation because the panel will be re-opened immediately. If a tab is being
+                // brought to the front, this indicates the user is coming back to Chrome through
+                // external means (e.g. homescreen shortcut, media notification) and animating the
+                // sheet closing is extraneous.
+                boolean animateSheetClose = !fromLauncherShortcut
+                        && (tabOpenType == TabOpenType.CLOBBER_CURRENT_TAB
+                                   || tabOpenType == TabOpenType.OPEN_NEW_TAB
+                                   || tabOpenType == TabOpenType.OPEN_NEW_INCOGNITO_TAB);
                 getBottomSheet().getBottomSheetMetrics().setSheetCloseReason(
                         BottomSheetMetrics.CLOSED_BY_NAVIGATION);
-                getBottomSheet().setSheetState(BottomSheet.SHEET_STATE_PEEK, !fromLauncherShortcut);
+                getBottomSheet().setSheetState(BottomSheet.SHEET_STATE_PEEK, animateSheetClose);
             }
 
             // We send this intent so that we can enter WebVr presentation mode if needed. This
@@ -1144,6 +1151,12 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
                     } else {
                         TabModelUtils.setIndex(tabModel, tabIndex);
                     }
+
+                    if (tabModel.getCount() > 0 && mUIInitialized
+                            && mLayoutManager.overviewVisible()) {
+                        mLayoutManager.hideOverview(true);
+                    }
+
                     logMobileReceivedExternalIntent(externalAppId, intent);
                     break;
                 case CLOBBER_CURRENT_TAB:
