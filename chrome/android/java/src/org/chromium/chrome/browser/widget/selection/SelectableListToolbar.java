@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.widget.selection;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.support.annotation.CallSuper;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -18,6 +19,7 @@ import android.text.TextWatcher;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
@@ -121,6 +123,7 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
     private int mNavigationButton;
     private int mTitleResId;
     private int mSearchMenuItemId;
+    private int mInfoMenuItemId;
     private int mNormalGroupResId;
     private int mSelectedGroupResId;
 
@@ -554,7 +557,7 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
         mActionBarDrawerToggle.syncState();
     }
 
-    private void showNormalView() {
+    protected void showNormalView() {
         getMenu().setGroupVisible(mNormalGroupResId, true);
         getMenu().setGroupVisible(mSelectedGroupResId, false);
         if (mHasSearchView) mSearchView.setVisibility(View.GONE);
@@ -618,6 +621,32 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
 
     private void updateDisplayStyleIfNecessary() {
         if (mUiConfig != null) onDisplayStyleChanged(mUiConfig.getCurrentDisplayStyle());
+    }
+
+    /**
+     * Set info menu item used to toggle info header.
+     * @param infoMenuItemId The menu item to show or hide information.
+     */
+    public void setInfoMenuItem(int infoMenuItemId) {
+        mInfoMenuItemId = infoMenuItemId;
+    }
+
+    /**
+     * Update icon, title, and visibility of info menu item.
+     * @param showItem Whether or not info menu item should show.
+     * @param infoShowing Whether or not info header is currently showing.
+     */
+    public void updateInfoMenuItem(boolean showItem, boolean infoShowing) {
+        MenuItem infoMenuItem = getMenu().findItem(mInfoMenuItemId);
+        if (infoMenuItem != null) {
+            Drawable iconDrawable =
+                    TintedDrawable.constructTintedDrawable(getResources(), R.drawable.btn_info,
+                            infoShowing ? R.color.light_active_color : R.color.light_normal_color);
+
+            infoMenuItem.setIcon(iconDrawable);
+            infoMenuItem.setTitle(infoShowing ? R.string.hide_info : R.string.show_info);
+            infoMenuItem.setVisible(showItem);
+        }
     }
 
     @VisibleForTesting
