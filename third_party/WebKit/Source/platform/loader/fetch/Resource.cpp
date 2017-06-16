@@ -62,8 +62,8 @@ namespace blink {
 namespace {
 
 void NotifyFinishObservers(
-    HeapHashSet<WeakMember<ResourceFinishObserver>> observers) {
-  for (const auto& observer : observers)
+    HeapHashSet<WeakMember<ResourceFinishObserver>>* observers) {
+  for (const auto& observer : *observers)
     observer->NotifyFinished();
 }
 
@@ -371,14 +371,20 @@ void Resource::ClearData() {
 }
 
 void Resource::TriggerNotificationForFinishObservers() {
+  if (finish_observers_.IsEmpty())
+    return;
+
+  auto new_collections = new HeapHashSet<WeakMember<ResourceFinishObserver>>(
+      std::move(finish_observers_));
+  finish_observers_.clear();
+
   Platform::Current()
       ->CurrentThread()
       ->Scheduler()
       ->LoadingTaskRunner()
       ->PostTask(BLINK_FROM_HERE, WTF::Bind(&NotifyFinishObservers,
-                                            std::move(finish_observers_)));
+                                            WrapPersistent(new_collections)));
 
-  finish_observers_.clear();
   DidRemoveClientOrObserver();
 }
 
