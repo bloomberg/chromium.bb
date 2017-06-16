@@ -30,7 +30,6 @@
 #include "device/vr/android/gvr/gvr_device.h"
 #include "device/vr/android/gvr/gvr_gamepad_data_provider.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
-#include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/platform/WebMouseEvent.h"
 #include "ui/gl/android/scoped_java_surface.h"
 #include "ui/gl/android/surface_texture.h"
@@ -170,24 +169,6 @@ gfx::Transform PerspectiveMatrixFromView(const gvr::Rectf& fov,
   result.matrix().set(3, 3, 0);
 
   return result;
-}
-
-std::unique_ptr<blink::WebMouseEvent> MakeMouseEvent(
-    blink::WebInputEvent::Type type,
-    double timestamp,
-    const gfx::Point& location,
-    bool down) {
-  blink::WebInputEvent::Modifiers modifiers =
-      down ? blink::WebInputEvent::kLeftButtonDown
-           : blink::WebInputEvent::kNoModifiers;
-  std::unique_ptr<blink::WebMouseEvent> mouse_event(
-      new blink::WebMouseEvent(type, modifiers, timestamp));
-  mouse_event->pointer_type = blink::WebPointerProperties::PointerType::kMouse;
-  mouse_event->button = blink::WebPointerProperties::Button::kLeft;
-  mouse_event->SetPositionInWidget(location.x(), location.y());
-  mouse_event->click_count = 1;
-
-  return mouse_event;
 }
 
 void TransformToGvrMat(const gfx::Transform& in, gvr::Mat4f* out) {
@@ -643,9 +624,9 @@ void VrShellGl::HandleWebVrCompatibilityClick() {
   if (touch_pending_ ||
       controller_->ButtonUpHappened(gvr::kControllerButtonClick)) {
     touch_pending_ = false;
-    std::unique_ptr<blink::WebGestureEvent> gesture(new blink::WebGestureEvent(
+    auto gesture = base::MakeUnique<blink::WebGestureEvent>(
         blink::WebInputEvent::kGestureTapDown,
-        blink::WebInputEvent::kNoModifiers, NowSeconds()));
+        blink::WebInputEvent::kNoModifiers, NowSeconds());
     gesture->source_device = blink::kWebGestureDeviceTouchpad;
     gesture->x = 0;
     gesture->y = 0;
@@ -728,8 +709,8 @@ void VrShellGl::SendHoverLeave(UiElement* target) {
   if (!hover_target_ || (target == hover_target_))
     return;
   if (hover_target_->fill() == Fill::CONTENT) {
-    SendGestureToContent(MakeMouseEvent(blink::WebInputEvent::kMouseLeave,
-                                        NowSeconds(), gfx::Point(), in_click_));
+    SendGestureToContent(
+        MakeMouseEvent(blink::WebInputEvent::kMouseLeave, gfx::Point()));
   } else {
     hover_target_->OnHoverLeave();
   }
@@ -742,9 +723,8 @@ bool VrShellGl::SendHoverEnter(UiElement* target,
   if (!target || target == hover_target_)
     return false;
   if (target->fill() == Fill::CONTENT) {
-    SendGestureToContent(MakeMouseEvent(blink::WebInputEvent::kMouseEnter,
-                                        NowSeconds(), local_point_pixels,
-                                        in_click_));
+    SendGestureToContent(
+        MakeMouseEvent(blink::WebInputEvent::kMouseEnter, local_point_pixels));
   } else {
     target->OnHoverEnter(target_point);
   }
@@ -763,9 +743,8 @@ void VrShellGl::SendHoverMove(const gfx::PointF& target_point,
     // disable mouse moves, only delivering a down and up event.
     if (in_click_)
       return;
-    SendGestureToContent(MakeMouseEvent(blink::WebInputEvent::kMouseMove,
-                                        NowSeconds(), local_point_pixels,
-                                        in_click_));
+    SendGestureToContent(
+        MakeMouseEvent(blink::WebInputEvent::kMouseMove, local_point_pixels));
   } else {
     hover_target_->OnMove(target_point);
   }
@@ -783,9 +762,8 @@ void VrShellGl::SendButtonDown(UiElement* target,
   if (!target)
     return;
   if (target->fill() == Fill::CONTENT) {
-    SendGestureToContent(MakeMouseEvent(blink::WebInputEvent::kMouseDown,
-                                        NowSeconds(), local_point_pixels,
-                                        in_click_));
+    SendGestureToContent(
+        MakeMouseEvent(blink::WebInputEvent::kMouseDown, local_point_pixels));
   } else {
     target->OnButtonDown(target_point);
   }
@@ -805,9 +783,8 @@ bool VrShellGl::SendButtonUp(UiElement* target,
   DCHECK(input_locked_element_ == target);
   input_locked_element_ = nullptr;
   if (target->fill() == Fill::CONTENT) {
-    SendGestureToContent(MakeMouseEvent(blink::WebInputEvent::kMouseUp,
-                                        NowSeconds(), local_point_pixels,
-                                        in_click_));
+    SendGestureToContent(
+        MakeMouseEvent(blink::WebInputEvent::kMouseUp, local_point_pixels));
   } else {
     target->OnButtonUp(target_point);
   }
@@ -834,6 +811,39 @@ void VrShellGl::SendTap(UiElement* target,
     target->OnButtonDown(target_point);
     target->OnButtonUp(target_point);
   }
+}
+
+std::unique_ptr<blink::WebMouseEvent> VrShellGl::MakeMouseEvent(
+    blink::WebInputEvent::Type type,
+    const gfx::Point& location) {
+  blink::WebInputEvent::Modifiers modifiers =
+      in_click_ ? blink::WebInputEvent::kLeftButtonDown
+                : blink::WebInputEvent::kNoModifiers;
+  base::TimeTicks timestamp;
+  switch (type) {
+    case blink::WebInputEvent::kMouseUp:
+    case blink::WebInputEvent::kMouseDown:
+      timestamp = controller_->GetLastButtonTimestamp();
+      break;
+    case blink::WebInputEvent::kMouseMove:
+    case blink::WebInputEvent::kMouseEnter:
+    case blink::WebInputEvent::kMouseLeave:
+      timestamp = controller_->GetLastOrientationTimestamp();
+      break;
+    default:
+      NOTREACHED();
+  }
+
+  auto mouse_event = base::MakeUnique<blink::WebMouseEvent>(
+      type, modifiers, (timestamp - base::TimeTicks()).InSecondsF());
+  mouse_event->pointer_type = blink::WebPointerProperties::PointerType::kMouse;
+  mouse_event->button = blink::WebPointerProperties::Button::kLeft;
+  mouse_event->SetPositionInWidget(location.x(), location.y());
+  // TODO(mthiesse): Should we support double-clicks for input? What should the
+  // timeout be?
+  mouse_event->click_count = 1;
+
+  return mouse_event;
 }
 
 void VrShellGl::SendImmediateExitRequestIfNecessary() {

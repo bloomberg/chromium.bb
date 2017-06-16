@@ -10,7 +10,6 @@
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/time/time.h"
 #include "cc/base/math_util.h"
 #include "chrome/browser/android/vr_shell/elbow_model.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
@@ -48,6 +47,8 @@ constexpr int kMaxNumOfExtrapolations = 2;
 
 // Distance from the center of the controller to start rendering the laser.
 constexpr float kLaserStartDisplacement = 0.045;
+
+constexpr int microsPerNano = 1000;
 
 void ClampTouchpadPosition(gfx::Vector2dF* position) {
   position->set_x(cc::MathUtil::ClampToRange(position->x(), 0.0f, 1.0f));
@@ -139,6 +140,21 @@ float VrController::TouchPosX() {
 
 float VrController::TouchPosY() {
   return controller_state_->GetTouchPos().y;
+}
+
+base::TimeTicks VrController::GetLastOrientationTimestamp() const {
+  return base::TimeTicks::FromInternalValue(
+      controller_state_->GetLastOrientationTimestamp() / microsPerNano);
+}
+
+base::TimeTicks VrController::GetLastTouchTimestamp() const {
+  return base::TimeTicks::FromInternalValue(
+      controller_state_->GetLastTouchTimestamp() / microsPerNano);
+}
+
+base::TimeTicks VrController::GetLastButtonTimestamp() const {
+  return base::TimeTicks::FromInternalValue(
+      controller_state_->GetLastButtonTimestamp() / microsPerNano);
 }
 
 gfx::Quaternion VrController::Orientation() const {
@@ -290,7 +306,7 @@ std::unique_ptr<GestureList> VrController::DetectGestures() {
 
 void VrController::UpdateGestureFromTouchInfo(blink::WebGestureEvent* gesture) {
   gesture->SetTimeStampSeconds(
-      (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF());
+      (GetLastTouchTimestamp() - base::TimeTicks()).InSecondsF());
   switch (state_) {
     // User has not put finger on touch pad.
     case WAITING:

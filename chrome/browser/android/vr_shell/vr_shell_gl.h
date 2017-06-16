@@ -19,6 +19,7 @@
 #include "chrome/browser/android/vr_shell/vr_controller_model.h"
 #include "device/vr/vr_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
 #include "ui/gfx/geometry/quaternion.h"
@@ -26,7 +27,7 @@
 #include "ui/gfx/native_widget_types.h"
 
 namespace blink {
-class WebInputEvent;
+class WebMouseEvent;
 }
 
 namespace gl {
@@ -158,6 +159,9 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   void SendTap(UiElement* target,
                const gfx::PointF& target_point,
                const gfx::Point& local_point_pixels);
+  std::unique_ptr<blink::WebMouseEvent> MakeMouseEvent(
+      blink::WebInputEvent::Type type,
+      const gfx::Point& location);
   void SendImmediateExitRequestIfNecessary();
   void GetVisualTargetElement(const gfx::Vector3dF& controller_direction,
                               gfx::Vector3dF& eye_to_target,
