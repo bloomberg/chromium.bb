@@ -261,13 +261,15 @@ void ExecuteSession(std::string user, base::StringPiece script_path,
   // PAM may remap the user at any stage.
   user = pam_handle.GetUser().value_or(std::move(user));
 
-  // setcred explicitly does not handle group membership, and specifies that
-  // group membership should be established before calling setcred. PAM modules
-  // may also use getpwnam, so pwinfo can only be assumed valid until the next
-  // PAM call.
+  // setcred explicitly does not handle user id or group membership, and
+  // specifies that they should be established before calling setcred. Only the
+  // real user id is set here, as we still require root privileges. PAM modules
+  // may use getpwnam, so pwinfo can only be assumed valid until the next PAM
+  // call.
   errno = 0;
   struct passwd* pwinfo = getpwnam(user.c_str());
   PCHECK(pwinfo != nullptr) << "getpwnam failed";
+  PCHECK(setreuid(pwinfo->pw_uid, -1) == 0) << "setreuid failed";
   PCHECK(setgid(pwinfo->pw_gid) == 0) << "setgid failed";
   PCHECK(initgroups(pwinfo->pw_name, pwinfo->pw_gid) == 0)
       << "initgroups failed";
