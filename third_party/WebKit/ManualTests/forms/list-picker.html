@@ -199,17 +199,17 @@ function openListPicker(args) {
     doc.documentElement.innerHTML = '<!DOCTYPE html><head></head><body><div id=main>Loading...</div></body>';
     var commonCssLink = doc.createElement('link');
     commonCssLink.rel = 'stylesheet';
-    commonCssLink.href = '../../Source/web/resources/pickerCommon.css?' + (new Date()).getTime();
+    commonCssLink.href = '../../Source/core/html/forms/resources/pickerCommon.css?' + (new Date()).getTime();
     doc.head.appendChild(commonCssLink);
     var listPickerCssLink = doc.createElement('link');
     listPickerCssLink.rel = 'stylesheet';
-    listPickerCssLink.href = '../../Source/web/resources/listPicker.css?' + (new Date()).getTime();
+    listPickerCssLink.href = '../../Source/core/html/forms/resources/listPicker.css?' + (new Date()).getTime();
     doc.head.appendChild(listPickerCssLink);
     var commonJsScript = doc.createElement('script');
-    commonJsScript.src = '../../Source/web/resources/pickerCommon.js?' + (new Date()).getTime();
+    commonJsScript.src = '../../Source/core/html/forms/resources/pickerCommon.js?' + (new Date()).getTime();
     doc.body.appendChild(commonJsScript);
     var listPickerJsScript = doc.createElement('script');
-    listPickerJsScript.src = '../../Source/web/resources/listPicker.js?' + (new Date()).getTime();
+    listPickerJsScript.src = '../../Source/core/html/forms/resources/listPicker.js?' + (new Date()).getTime();
     doc.body.appendChild(listPickerJsScript);
 
     var pagePopupController = {

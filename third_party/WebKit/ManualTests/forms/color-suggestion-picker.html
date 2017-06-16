@@ -38,17 +38,17 @@ function openColorPicker(args) {
     doc.documentElement.innerHTML = '<head></head><body><div id=main>Loading...</div></body>';
     var commonCssLink = doc.createElement('link');
     commonCssLink.rel = 'stylesheet';
-    commonCssLink.href = '../../Source/web/resources/pickerCommon.css?' + (new Date()).getTime();
+    commonCssLink.href = '../../Source/core/html/forms/resources/pickerCommon.css?' + (new Date()).getTime();
     doc.head.appendChild(commonCssLink);
     var link = doc.createElement('link');
     link.rel = 'stylesheet';
-    link.href = '../../Source/web/resources/colorSuggestionPicker.css?' + (new Date()).getTime();
+    link.href = '../../Source/core/html/forms/resources/colorSuggestionPicker.css?' + (new Date()).getTime();
     doc.head.appendChild(link);
     var commonJsScript = doc.createElement('script');
-    commonJsScript.src = '../../Source/web/resources/pickerCommon.js?' + (new Date()).getTime();
+    commonJsScript.src = '../../Source/core/html/forms/resources/pickerCommon.js?' + (new Date()).getTime();
     doc.body.appendChild(commonJsScript);
     var script = doc.createElement('script');
-    script.src = '../../Source/web/resources/colorSuggestionPicker.js?' + (new Date()).getTime();
+    script.src = '../../Source/core/html/forms/resources/colorSuggestionPicker.js?' + (new Date()).getTime();
     doc.body.appendChild(script);
 
     var pagePopupController = {

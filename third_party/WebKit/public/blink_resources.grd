@@ -34,17 +34,17 @@
       <include name="IDR_DOCUMENTXMLTREEVIEWER_CSS" file="../Source/core/xml/DocumentXMLTreeViewer.css" type="BINDATA" compress="gzip"/>
       <include name="IDR_DOCUMENTXMLTREEVIEWER_JS" file="../Source/core/xml/DocumentXMLTreeViewer.js" type="BINDATA" compress="gzip"/>
       <if expr="not is_android">
-        <include name="IDR_PICKER_COMMON_JS" file="../Source/web/resources/pickerCommon.js" type="BINDATA" compress="gzip"/>
-        <include name="IDR_PICKER_COMMON_CSS" file="../Source/web/resources/pickerCommon.css" type="BINDATA" compress="gzip"/>
-        <include name="IDR_CALENDAR_PICKER_CSS" file="../Source/web/resources/calendarPicker.css" type="BINDATA" compress="gzip"/>
-        <include name="IDR_CALENDAR_PICKER_JS" file="../Source/web/resources/calendarPicker.js" type="BINDATA" compress="gzip"/>
-        <include name="IDR_PICKER_BUTTON_CSS" file="../Source/web/resources/pickerButton.css" type="BINDATA" compress="gzip"/>
-        <include name="IDR_SUGGESTION_PICKER_CSS" file="../Source/web/resources/suggestionPicker.css" type="BINDATA" compress="gzip"/>
-        <include name="IDR_SUGGESTION_PICKER_JS" file="../Source/web/resources/suggestionPicker.js" type="BINDATA" compress="gzip"/>
-        <include name="IDR_COLOR_SUGGESTION_PICKER_CSS" file="../Source/web/resources/colorSuggestionPicker.css" type="BINDATA" compress="gzip"/>
-        <include name="IDR_COLOR_SUGGESTION_PICKER_JS" file="../Source/web/resources/colorSuggestionPicker.js" type="BINDATA" compress="gzip"/>
-        <include name="IDR_LIST_PICKER_CSS" file="../Source/web/resources/listPicker.css" type="BINDATA" compress="gzip"/>
-        <include name="IDR_LIST_PICKER_JS" file="../Source/web/resources/listPicker.js" type="BINDATA" compress="gzip"/>
+        <include name="IDR_PICKER_COMMON_JS" file="../Source/core/html/forms/resources/pickerCommon.js" type="BINDATA" compress="gzip"/>
+        <include name="IDR_PICKER_COMMON_CSS" file="../Source/core/html/forms/resources/pickerCommon.css" type="BINDATA" compress="gzip"/>
+        <include name="IDR_CALENDAR_PICKER_CSS" file="../Source/core/html/forms/resources/calendarPicker.css" type="BINDATA" compress="gzip"/>
+        <include name="IDR_CALENDAR_PICKER_JS" file="../Source/core/html/forms/resources/calendarPicker.js" type="BINDATA" compress="gzip"/>
+        <include name="IDR_PICKER_BUTTON_CSS" file="../Source/core/html/forms/resources/pickerButton.css" type="BINDATA" compress="gzip"/>
+        <include name="IDR_SUGGESTION_PICKER_CSS" file="../Source/core/html/forms/resources/suggestionPicker.css" type="BINDATA" compress="gzip"/>
+        <include name="IDR_SUGGESTION_PICKER_JS" file="../Source/core/html/forms/resources/suggestionPicker.js" type="BINDATA" compress="gzip"/>
+        <include name="IDR_COLOR_SUGGESTION_PICKER_CSS" file="../Source/core/html/forms/resources/colorSuggestionPicker.css" type="BINDATA" compress="gzip"/>
+        <include name="IDR_COLOR_SUGGESTION_PICKER_JS" file="../Source/core/html/forms/resources/colorSuggestionPicker.js" type="BINDATA" compress="gzip"/>
+        <include name="IDR_LIST_PICKER_CSS" file="../Source/core/html/forms/resources/listPicker.css" type="BINDATA" compress="gzip"/>
+        <include name="IDR_LIST_PICKER_JS" file="../Source/core/html/forms/resources/listPicker.js" type="BINDATA" compress="gzip"/>
       </if>
       <include name="IDR_AUDIO_SPATIALIZATION_COMPOSITE" file="../Source/platform/audio/resources/Composite.flac" type="BINDATA"/>
     </includes>
