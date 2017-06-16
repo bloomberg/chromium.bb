@@ -30017,6 +30017,20 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.Video.FullscreenOrientationLock.AutoRotateEnabled"
+    enum="BooleanEnabled">
+  <owner>johnme@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    Whether auto rotation of screen orientation is enabled by the user (if so
+    the user has not locked the screen orientation at the OS level, though the
+    orientation may still be locked by apps). Recorded each time
+    MediaControlsOrientationLockDelegate locks the screen orientation in
+    response to a video going fullscreen (or loading metadata whilst
+    fullscreen).
+  </summary>
+</histogram>
+
 <histogram name="Media.Video.FullscreenOrientationLock.LockResult"
     enum="VideoFullscreenOrientationLockResult">
   <owner>mlamouri@chromium.org</owner>

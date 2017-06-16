@@ -12,6 +12,7 @@
 #include "core/html/HTMLVideoElement.h"
 #include "core/page/ChromeClient.h"
 #include "modules/media_controls/MediaControlsImpl.h"
+#include "public/platform/Platform.h"
 #include "public/platform/WebScreenInfo.h"
 
 namespace blink {
@@ -179,10 +180,15 @@ void MediaControlsRotateToFullscreenDelegate::OnScreenOrientationChange() {
 
     bool should_be_fullscreen =
         current_screen_orientation_ == video_orientation;
-    if (should_be_fullscreen && !video_element_->IsFullscreen())
+    if (should_be_fullscreen && !video_element_->IsFullscreen()) {
+      Platform::Current()->RecordAction(
+          UserMetricsAction("Media.Video.RotateToFullscreen.Enter"));
       media_controls.EnterFullscreen();
-    else if (!should_be_fullscreen && video_element_->IsFullscreen())
+    } else if (!should_be_fullscreen && video_element_->IsFullscreen()) {
+      Platform::Current()->RecordAction(
+          UserMetricsAction("Media.Video.RotateToFullscreen.Exit"));
       media_controls.ExitFullscreen();
+    }
   }
 }
 

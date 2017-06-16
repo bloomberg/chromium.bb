@@ -9451,6 +9451,24 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Media.Video.RotateToFullscreen.Enter">
+  <owner>johnme@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <description>
+    The user entered fullscreen by rotating their device to match the
+    orientation of the video. Is a subset of Media.Controls.EnterFullscreen.
+  </description>
+</action>
+
+<action name="Media.Video.RotateToFullscreen.Exit">
+  <owner>johnme@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <description>
+    The user exited fullscreen by rotating their device so it no longer matches
+    the orientation of the video. Is a subset of Media.Controls.ExitFullscreen.
+  </description>
+</action>
+
 <action name="MediaContextMenu_Controls">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
