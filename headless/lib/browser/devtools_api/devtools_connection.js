@@ -53,7 +53,7 @@ class Connection {
      */
     this.eventListenerIdToEventName_ = new Map();
 
-    this.transport_.onmessage = this.onMessage_.bind(this);
+    this.transport_.onmessage = this.onJsonMessage_.bind(this);
   }
 
   /**
@@ -118,14 +118,16 @@ class Connection {
     });
   }
 
-
   /**
-   * @param {string} jsonMessage An object containing a DevTools protocol
+   * If a subclass needs to customize message handling it should override this
+   * method.
+   *
+   * @param {*} message A parsed DevTools protocol message.
+   * @param {string} jsonMessage A string containing a JSON DevTools protocol
    *     message.
-   * @private
+   * @protected
    */
-  onMessage_(jsonMessage) {
-    const message = JSON.parse(jsonMessage);
+  onMessage_(message, jsonMessage) {
     if (message.hasOwnProperty('id')) {
       if (!this.pendingCommands_.has(message.id))
         throw new Error('Unrecognized id:' + jsonMessage);
@@ -146,6 +148,16 @@ class Connection {
         });
       }
     }
+  }
+
+
+  /**
+   * @param {string} jsonMessage A string containing a JSON DevTools protocol
+   *     message.
+   * @private
+   */
+  onJsonMessage_(jsonMessage) {
+    this.onMessage_(JSON.parse(jsonMessage), jsonMessage);
   }
 }
 
