@@ -189,7 +189,7 @@ void AddToHomescreenDataFetcher::OnDataTimedout() {
     is_installable_check_complete_ = true;
     if (check_webapk_compatibility_)
       weak_observer_->OnDidDetermineWebApkCompatibility(false);
-    weak_observer_->OnUserTitleAvailable(base::string16());
+    weak_observer_->OnUserTitleAvailable(shortcut_info_.user_title);
   }
 
   badge_icon_.reset();
