@@ -877,7 +877,7 @@ bool IsProcessDead(base::ProcessHandle child) {
   // make sense.
   mx_signals_t signals;
   // Timeout of 0 to check for termination, but non-blocking.
-  if (mx_object_wait_one(child, MX_TASK_TERMINATED, 0, &signals) == NO_ERROR) {
+  if (mx_object_wait_one(child, MX_TASK_TERMINATED, 0, &signals) == MX_OK) {
     DCHECK(signals & MX_TASK_TERMINATED);
     return true;
   }

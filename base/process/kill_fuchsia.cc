@@ -15,9 +15,9 @@ namespace base {
 bool KillProcessGroup(ProcessHandle process_group_id) {
   // |process_group_id| is really a job on Fuchsia.
   mx_status_t status = mx_task_kill(process_group_id);
-  DLOG_IF(ERROR, status != NO_ERROR)
+  DLOG_IF(ERROR, status != MX_OK)
       << "unable to terminate job " << process_group_id;
-  return status == NO_ERROR;
+  return status == MX_OK;
 }
 
 TerminationStatus GetTerminationStatus(ProcessHandle handle, int* exit_code) {
@@ -25,7 +25,7 @@ TerminationStatus GetTerminationStatus(ProcessHandle handle, int* exit_code) {
   mx_status_t status =
       mx_object_get_info(handle, MX_INFO_PROCESS, &process_info,
                          sizeof(process_info), nullptr, nullptr);
-  if (status != NO_ERROR) {
+  if (status != MX_OK) {
     DLOG(ERROR) << "unable to get termination status for " << handle;
     *exit_code = 0;
     return TERMINATION_STATUS_NORMAL_TERMINATION;
@@ -53,7 +53,7 @@ void EnsureProcessTerminated(Process process) {
   // forcefully if it hasn't already exited.
   mx_signals_t signals;
   if (mx_object_wait_one(process.Handle(), MX_TASK_TERMINATED,
-                         mx_deadline_after(MX_SEC(2)), &signals) == NO_ERROR) {
+                         mx_deadline_after(MX_SEC(2)), &signals) == MX_OK) {
     DCHECK(signals & MX_TASK_TERMINATED);
     // If already signaled, then the process is terminated.
     return;

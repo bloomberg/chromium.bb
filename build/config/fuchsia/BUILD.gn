@@ -9,7 +9,14 @@ assert(is_fuchsia)
 assert(is_posix)
 
 config("compiler") {
-  defines = [ "SYSROOT_VERSION=$sysroot_version" ]
+  defines = [
+    # To force full builds after sysroot updates.
+    "SYSROOT_VERSION=$sysroot_version",
+
+    # Don't have include error codes that aren't prefixed with MX_ in
+    # magenta/errors.h, for they collide with ERR_ defines in chrome code.
+    "USE_MX_ERRORS",
+  ]
   cflags = []
   ldflags = []
   if (current_cpu == "arm64") {
