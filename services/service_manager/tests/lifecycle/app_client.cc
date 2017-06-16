@@ -35,8 +35,8 @@ void AppClient::Create(const BindSourceInfo& source_info,
   bindings_.AddBinding(this, std::move(request));
 }
 
-void AppClient::Ping(const PingCallback& callback) {
-  callback.Run();
+void AppClient::Ping(PingCallback callback) {
+  std::move(callback).Run();
 }
 
 void AppClient::GracefulQuit() {

@@ -64,17 +64,15 @@ class ConnectTestClassApp : public Service,
   }
 
   // test::mojom::ConnectTestService:
-  void GetTitle(const GetTitleCallback& callback) override {
-    callback.Run("CLASS APP");
+  void GetTitle(GetTitleCallback callback) override {
+    std::move(callback).Run("CLASS APP");
   }
-  void GetInstance(const GetInstanceCallback& callback) override {
-    callback.Run(context()->identity().instance());
+  void GetInstance(GetInstanceCallback callback) override {
+    std::move(callback).Run(context()->identity().instance());
   }
 
   // test::mojom::ClassInterface:
-  void Ping(const PingCallback& callback) override {
-    callback.Run("PONG");
-  }
+  void Ping(PingCallback callback) override { std::move(callback).Run("PONG"); }
 
   void HandleQuit() { context()->QuitNow(); }
 

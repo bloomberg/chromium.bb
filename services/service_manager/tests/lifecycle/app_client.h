@@ -37,7 +37,7 @@ class AppClient : public Service,
               mojom::LifecycleControlRequest request);
 
   // LifecycleControl:
-  void Ping(const PingCallback& callback) override;
+  void Ping(PingCallback callback) override;
   void GracefulQuit() override;
   void Crash() override;
   void CloseServiceManagerConnection() override;
