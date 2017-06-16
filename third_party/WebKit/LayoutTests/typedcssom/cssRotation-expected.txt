@@ -1,7 +1,39 @@
 This is a testharness.js-based test.
-FAIL Test that the (x, y, z, angle) values for CSSRotation are correct. assert_equals: expected (number) 0 but got (undefined) undefined
-PASS Test that the is2D values for CSSRotation is correct. 
-FAIL Test that toString values for CSSRotation is correct. assert_equals: expected "rotate(0deg)" but got ""
-FAIL Test that asMatrix is constructed correctly for CSSRotation. Cannot read property 'is2D' of null
+PASS x, y, z and angle values are correct for rotate(0deg) 
+PASS x, y, z and angle values are correct for rotate(10deg) 
+PASS x, y, z and angle values are correct for rotate(-21deg) 
+PASS x, y, z and angle values are correct for rotate(3.2deg) 
+PASS x, y, z and angle values are correct for rotate3d(0, 0, 1, 90deg) 
+PASS x, y, z and angle values are correct for rotate3d(2.7, -3, 4.4, 0deg) 
+PASS x, y, z and angle values are correct for rotate3d(2, 3, 4, 10deg) 
+PASS x, y, z and angle values are correct for rotate3d(2, 3.7, -4, -1.2deg) 
+PASS x, y, z and angle values are correct for rotate3d(1, 0, 0, 0.5turn) 
+PASS is2D value is correct for rotate(0deg) 
+PASS is2D value is correct for rotate(10deg) 
+PASS is2D value is correct for rotate(-21deg) 
+PASS is2D value is correct for rotate(3.2deg) 
+PASS is2D value is correct for rotate3d(0, 0, 1, 90deg) 
+PASS is2D value is correct for rotate3d(2.7, -3, 4.4, 0deg) 
+PASS is2D value is correct for rotate3d(2, 3, 4, 10deg) 
+PASS is2D value is correct for rotate3d(2, 3.7, -4, -1.2deg) 
+PASS is2D value is correct for rotate3d(1, 0, 0, 0.5turn) 
+FAIL toString value is correct for rotate(0deg) assert_equals: expected "rotate(0deg)" but got ""
+FAIL toString value is correct for rotate(10deg) assert_equals: expected "rotate(10deg)" but got ""
+FAIL toString value is correct for rotate(-21deg) assert_equals: expected "rotate(-21deg)" but got ""
+FAIL toString value is correct for rotate(3.2deg) assert_equals: expected "rotate(3.2deg)" but got ""
+FAIL toString value is correct for rotate3d(0, 0, 1, 90deg) assert_equals: expected "rotate3d(0, 0, 1, 90deg)" but got ""
+FAIL toString value is correct for rotate3d(2.7, -3, 4.4, 0deg) assert_equals: expected "rotate3d(2.7, -3, 4.4, 0deg)" but got ""
+FAIL toString value is correct for rotate3d(2, 3, 4, 10deg) assert_equals: expected "rotate3d(2, 3, 4, 10deg)" but got ""
+FAIL toString value is correct for rotate3d(2, 3.7, -4, -1.2deg) assert_equals: expected "rotate3d(2, 3.7, -4, -1.2deg)" but got ""
+FAIL toString value is correct for rotate3d(1, 0, 0, 0.5turn) assert_equals: expected "rotate3d(1, 0, 0, 0.5turn)" but got ""
+PASS toMatrix works for rotate(0deg) 
+FAIL toMatrix works for rotate(10deg) assert_approx_equals: expected 0.9848077 +/- 0.000001 but got 1
+FAIL toMatrix works for rotate(-21deg) assert_approx_equals: expected 0.9335804 +/- 0.000001 but got 1
+FAIL toMatrix works for rotate(3.2deg) assert_approx_equals: expected 0.9984407 +/- 0.000001 but got 1
+FAIL toMatrix works for rotate3d(0, 0, 1, 90deg) assert_equals: is2D expected false but got true
+FAIL toMatrix works for rotate3d(2.7, -3, 4.4, 0deg) assert_equals: is2D expected false but got true
+FAIL toMatrix works for rotate3d(2, 3, 4, 10deg) assert_equals: is2D expected false but got true
+FAIL toMatrix works for rotate3d(2, 3.7, -4, -1.2deg) assert_equals: is2D expected false but got true
+FAIL toMatrix works for rotate3d(1, 0, 0, 0.5turn) assert_equals: is2D expected false but got true
 Harness: the test ran to completion.
 

@@ -1,94 +1,134 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="resources/comparisons.js"></script>
 
 <script>
 var EPSILON = 1e-6; // float epsilon
-function angle(deg) {
-  return new CSSUnitValue(deg, 'deg');
-}
 
-var values = [
-  {input: new CSSRotation(angle(0)), angle: 0, x: 0, y: 0, z: 1,
-    is2D: true, cssText: "rotate(0deg)",
-    asMatrix: new CSSMatrixComponent(new DOMMatrixReadOnly([1, 0, 0, 1, 0, 0]))},
-  {input: new CSSRotation(angle(10)), angle: 10, x: 0, y: 0, z: 1,
-    is2D: true, cssText: "rotate(10deg)",
-    asMatrix: new CSSMatrixComponent(new DOMMatrixReadOnly([0.9848077, 0.1736481, -0.1736481, 0.9848077, 0, 0]))},
-  {input: new CSSRotation(angle(-21)), angle: -21, x: 0, y: 0, z: 1,
+var testParams = [
+  {
+    input: new CSSRotation(new CSSUnitValue(0, 'deg')),
+    angle: 0,
+    x: 0,
+    y: 0,
+    z: 1,
+    is2D: true,
+    cssText: "rotate(0deg)",
+    asMatrix: new DOMMatrixReadOnly([1, 0, 0, 1, 0, 0])
+  },
+  {
+    input: new CSSRotation(new CSSUnitValue(10, 'deg')),
+    angle: 10,
+    x: 0,
+    y: 0,
+    z: 1,
+    is2D: true,
+    cssText: "rotate(10deg)",
+    asMatrix: new DOMMatrixReadOnly([0.9848077, 0.1736481, -0.1736481, 0.9848077, 0, 0])
+  },
+  {
+    input: new CSSRotation(new CSSUnitValue(-21, 'deg')),
+    angle: -21,
+    x: 0,
+    y: 0,
+    z: 1,
     is2D: true, cssText: "rotate(-21deg)",
-    asMatrix: new CSSMatrixComponent(new DOMMatrixReadOnly([0.9335804, -0.3583679, 0.3583679, 0.9335804, 0, 0]))},
-  {input: new CSSRotation(angle(3.2)), angle: 3.2, x: 0, y: 0, z: 1,
-    is2D: true, cssText: "rotate(3.2deg)",
-    asMatrix: new CSSMatrixComponent(new DOMMatrixReadOnly([0.9984407, 0.0558215, -0.0558215, 0.9984407, 0, 0]))},
-  {input: new CSSRotation(0, 0, 1, angle(90)), angle: 90, x: 0, y: 0, z: 1,
+    asMatrix: new DOMMatrixReadOnly([0.9335804, -0.3583679, 0.3583679, 0.9335804, 0, 0])
+  },
+  {
+    input: new CSSRotation(new CSSUnitValue(3.2, 'deg')),
+    angle: 3.2,
+    x: 0,
+    y: 0,
+    z: 1,
+    is2D: true,
+    cssText: "rotate(3.2deg)",
+    asMatrix: new DOMMatrixReadOnly([0.9984407, 0.0558215, -0.0558215, 0.9984407, 0, 0])
+  },
+  {
+    input: new CSSRotation(0, 0, 1, new CSSUnitValue(90, 'deg')),
+    angle: 90,
+    x: 0,
+    y: 0,
+    z: 1,
     is2D: false, cssText: "rotate3d(0, 0, 1, 90deg)",
-    asMatrix: new CSSMatrixComponent(new DOMMatrixReadOnly([0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]))},
-  {input: new CSSRotation(2.7, -3, 4.4, angle(0)), angle: 0, x: 2.7, y: -3, z: 4.4,
-    is2D: false, cssText: "rotate3d(2.7, -3, 4.4, 0deg)",
-    asMatrix: new CSSMatrixComponent(new DOMMatrixReadOnly([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]))},
-  {input: new CSSRotation(2, 3, 4, angle(10)), angle: 10, x: 2, y: 3, z: 4,
-    is2D: false, cssText: "rotate3d(2, 3, 4, 10deg)",
-    asMatrix: new CSSMatrixComponent(new DOMMatrixReadOnly([0.9869032, 0.1321258, -0.0925460, 0, -0.1258394,
-      0.9895225, 0.0707777, 0, 0.1009279, -0.0582048, 0.9931896, 0, 0, 0, 0, 1]))},
-  {input: new CSSRotation(2, 3.7, -4, angle(-1.2)), angle: -1.2, x: 2, y: 3.7, z: -4,
-    is2D: false, cssText: "rotate3d(2, 3.7, -4, -1.2deg)",
-    asMatrix: new CSSMatrixComponent(new DOMMatrixReadOnly([0.9998067, 0.01448049, 0.0132978, 0, -0.0143841,
-    0.9998698, -0.0073125, 0, -0.0134019, 0.0071198, 0.9998848, 0, 0, 0, 0, 1]))},
-  {input: new CSSRotation(1, 0, 0, new CSSUnitValue(0.5, 'turn')), angle: 180, x: 1, y: 0, z: 0,
-    is2D: false, cssText: "rotate3d(1, 0, 0, 0.5turn)",
-    asMatrix: new CSSMatrixComponent(new DOMMatrixReadOnly([1, 0, 0, 0, 0, -1, 1.2246467991473532e-16, 0, 0,
-    -1.2246467991473532e-16, -1, 0, 0, 0, 0, 1]))}
+    asMatrix: new DOMMatrixReadOnly([0, 1, 0, 0, -1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])
+  },
+  {
+    input: new CSSRotation(2.7, -3, 4.4, new CSSUnitValue(0, 'deg')),
+    angle: 0,
+    x: 2.7,
+    y: -3,
+    z: 4.4,
+    is2D: false,
+    cssText: "rotate3d(2.7, -3, 4.4, 0deg)",
+    asMatrix: new DOMMatrixReadOnly([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])
+  },
+  {
+    input: new CSSRotation(2, 3, 4, new CSSUnitValue(10, 'deg')),
+    angle: 10,
+    x: 2,
+    y: 3,
+    z: 4,
+    is2D: false,
+    cssText: "rotate3d(2, 3, 4, 10deg)",
+    asMatrix: new DOMMatrixReadOnly([0.9869032, 0.1321258, -0.0925460, 0, -0.1258394,
+      0.9895225, 0.0707777, 0, 0.1009279, -0.0582048, 0.9931896, 0, 0, 0, 0, 1])
+  },
+  {
+    input: new CSSRotation(2, 3.7, -4, new CSSUnitValue(-1.2, 'deg')),
+    angle: -1.2,
+    x: 2,
+    y: 3.7,
+    z: -4,
+    is2D: false,
+    cssText: "rotate3d(2, 3.7, -4, -1.2deg)",
+    asMatrix: new DOMMatrixReadOnly([0.9998067, 0.01448049, 0.0132978, 0, -0.0143841,
+    0.9998698, -0.0073125, 0, -0.0134019, 0.0071198, 0.9998848, 0, 0, 0, 0, 1])
+  },
+  {
+    input: new CSSRotation(1, 0, 0, new CSSUnitValue(0.5, 'turn')),
+    angle: 0.5,
+    x: 1,
+    y: 0,
+    z: 0,
+    is2D: false,
+    cssText: "rotate3d(1, 0, 0, 0.5turn)",
+    asMatrix: new DOMMatrixReadOnly([1, 0, 0, 0, 0, -1, 1.2246467991473532e-16, 0, 0,
+    -1.2246467991473532e-16, -1, 0, 0, 0, 0, 1])
+  }
 ];
 
-test(function() {
-  for (var i = 0; i < values.length; ++i) {
-    assert_equals(values[i].input.angle.degrees, values[i].angle);
-    assert_equals(values[i].input.x, values[i].x);
-    assert_equals(values[i].input.y, values[i].y);
-    assert_equals(values[i].input.z, values[i].z);
-  }
-}, "Test that the (x, y, z, angle) values for CSSRotation are correct.");
-
-test(function() {
-  for (var i = 0; i < values.length; ++i) {
-    assert_equals(values[i].input.is2D(), values[i].is2D);
-  }
-}, "Test that the is2D values for CSSRotation is correct.");
-
-test(function() {
-  for (var i = 0; i < values.length; ++i) {
-    assert_equals(values[i].input.toString(), values[i].cssText);
-  }
-}, "Test that toString values for CSSRotation is correct.");
-
-test(function() {
-  for (var i = 0; i < values.length; ++i) {
-    var input = values[i].input;
-    var inputAsMatrix = input.asMatrix();
-    assert_equals(inputAsMatrix.is2D(), input.is2D());
-    var expectedMatrix = values[i].asMatrix;
-    for (var attribute in expectedMatrix) {
-      if (attribute == "matrix") {
-        assert_matrix_approx_equals(inputAsMatrix[attribute], expectedMatrix[attribute]);
-      } else if (attribute != "toString") {
-        // Due to the complex trigonometric calculations required for a CSSRotation matrix,
-        // the 6 significant figures of each value in the toString might be different.
-        // Hence, do not check toString.
-        assert_equals(inputAsMatrix[attribute], expectedMatrix[attribute]);
-      }
-    }
-  }
-}, "Test that asMatrix is constructed correctly for CSSRotation.");
-
-function assert_array_approx_equals(actual, expected) {
-  for (var i = 0; i < actual.length; i++) {
-    assert_approx_equals(actual[i], expected[i], EPSILON);
-  }
+for (let params of testParams) {
+  test(() => {
+    assert_equals(params.input.angle.value, params.angle);
+    assert_equals(params.input.x, params.x);
+    assert_equals(params.input.y, params.y);
+    assert_equals(params.input.z, params.z);
+  }, "x, y, z and angle values are correct for " + params.cssText);
 }
 
-function assert_matrix_approx_equals(actual, expected) {
-  assert_array_approx_equals(actual.toFloat64Array(), expected.toFloat64Array());
+for (let params of testParams) {
+  test(() => {
+    assert_equals(params.input.is2D(), params.is2D);
+  }, "is2D value is correct for " + params.cssText);
+}
+
+for (let params of testParams) {
+  test(() => {
+    assert_equals(params.input.toString(), params.cssText);
+  }, "toString value is correct for " + params.cssText);
+}
+
+for (let params of testParams) {
+  var input = params.input;
+  test(() => {
+    var transformValue = new CSSTransformValue([input]);
+    var result = transformValue.toMatrix();
+    assert_equals(result.is2D, input.is2D(), 'is2D');
+    assert_matrix_approx_equals(result, params.asMatrix);
+  }, "toMatrix works for " + params.cssText);
 }
 
 </script>
