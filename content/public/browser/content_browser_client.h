@@ -129,6 +129,7 @@ class SiteInstance;
 class SpeechRecognitionManagerDelegate;
 class StoragePartition;
 class TracingDelegate;
+class URLLoaderThrottle;
 class VpnServiceProxy;
 class WebContents;
 class WebContentsViewDelegate;
@@ -796,6 +797,12 @@ class CONTENT_EXPORT ContentBrowserClient {
   // params are used if this returns nullptr.
   virtual std::unique_ptr<base::TaskScheduler::InitParams>
   GetTaskSchedulerInitParams();
+
+  // Allows the embedder to register one or more URLLoaderThrottles for a
+  // URL request. This is used only when --enable-network-service is in effect.
+  // This is called on the IO thread.
+  virtual std::vector<std::unique_ptr<URLLoaderThrottle>>
+  CreateURLLoaderThrottles(const base::Callback<WebContents*()>& wc_getter);
 };
 
 }  // namespace content

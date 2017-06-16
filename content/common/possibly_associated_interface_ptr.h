@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_RENDERER_POSSIBLY_ASSOCIATED_INTERFACE_PTR_H_
-#define CONTENT_RENDERER_POSSIBLY_ASSOCIATED_INTERFACE_PTR_H_
+#ifndef CONTENT_COMMON_POSSIBLY_ASSOCIATED_INTERFACE_PTR_H_
+#define CONTENT_COMMON_POSSIBLY_ASSOCIATED_INTERFACE_PTR_H_
 
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
@@ -54,4 +54,4 @@ class PossiblyAssociatedInterfacePtr final {
 
 }  // namespace content
 
-#endif  // CONTENT_RENDERER_POSSIBLY_ASSOCIATED_INTERFACE_PTR_H_
+#endif  // CONTENT_COMMON_POSSIBLY_ASSOCIATED_INTERFACE_PTR_H_

@@ -263,6 +263,7 @@ source_set("common") {
     "platform_notification_messages.h",
     "plugin_list.cc",
     "plugin_list.h",
+    "possibly_associated_interface_ptr.h",
     "presentation/presentation_struct_traits.cc",
     "presentation/presentation_struct_traits.h",
     "process_type.cc",

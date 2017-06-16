@@ -15,6 +15,7 @@
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/vpn_service_proxy.h"
 #include "content/public/common/sandbox_type.h"
+#include "content/public/common/url_loader_throttle.h"
 #include "media/audio/audio_manager.h"
 #include "media/base/cdm_factory.h"
 #include "media/media_features.h"
@@ -457,6 +458,12 @@ ContentBrowserClient::GetMemoryCoordinatorDelegate() {
 std::unique_ptr<base::TaskScheduler::InitParams>
 ContentBrowserClient::GetTaskSchedulerInitParams() {
   return nullptr;
+}
+
+std::vector<std::unique_ptr<URLLoaderThrottle>>
+ContentBrowserClient::CreateURLLoaderThrottles(
+    const base::Callback<WebContents*()>& wc_getter) {
+  return std::vector<std::unique_ptr<URLLoaderThrottle>>();
 }
 
 }  // namespace content
