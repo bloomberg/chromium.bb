@@ -205,6 +205,13 @@
     "dependencies": ["permission:idle"],
     "contexts": ["blessed_extension"]
   },
+  "lockScreen.data": {
+    "dependencies": ["permission:lockScreen"],
+    "contexts": ["blessed_extension", "lock_screen_extension"]
+  },
+  "lockScreen.data.create": {
+    "contexts": ["lock_screen_extension"]
+  },
   "management": [{
     "dependencies": ["permission:management"],
     "contexts": ["blessed_extension"],
