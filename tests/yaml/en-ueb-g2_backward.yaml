@@ -51,3 +51,20 @@ tests:
   # See https://github.com/liblouis/liblouis/pull/350
   - [⠍⠂⠞, "meat"]
   - [⠓⠂⠙, "head"]
+
+  # #364: Whole word contractions followed by other contractions.
+  # In this case, the whole word contraction should not apply.
+  - [⠁⠇⠐⠕, alone]
+  - [⠃⠜, bar]
+  - [⠃⠢, ben]
+  - [⠠⠃⠢, Ben]
+  - [⠙⠨⠑, dance]
+  - [⠋⠰⠑, fence]
+  - [⠓⠻, her]
+  - [⠎⠯, sand]
+  - [⠎⠔, sin]
+  - [⠎⠬, sing]
+  - [⠠⠎⠬, Sing]
+  - [⠎⠷, sof]
+  - [⠎⠰⠛, song]
+  - [⠹⠬, thing]

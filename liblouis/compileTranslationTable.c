@@ -3406,8 +3406,6 @@ compileUplow (FileInfo * nested,
       {
 	attr = CTC_Letter | CTC_UpperCase;
 	upperCell = addCharOrDots (nested, upperDots.chars[k], 1);
-	if (upperDots.length != 1)
-	  attr = CTC_Space;
 	upperCell->attributes |= attr;
 	upperCell->uppercase = upperCell->realchar;
       }
