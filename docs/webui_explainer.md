@@ -118,8 +118,8 @@ bindings](#bindings) via the child security policy.
 ```c++
 // RenderFrameHostImpl::AllowBindings():
 if (bindings_flags & BINDINGS_POLICY_WEB_UI) {
-	ChildProcessSecurityPolicyImpl::GetInstance()->GrantWebUIBindings(
-			GetProcess()->GetID());
+  ChildProcessSecurityPolicyImpl::GetInstance()->GrantWebUIBindings(
+      GetProcess()->GetID());
 }
 ```
 
@@ -449,7 +449,7 @@ global "cr.webUIResponse" method with a success value of false.
 ```c++
 // WebUIMessageHandler::RejectJavascriptCallback():
 CallJavascriptFunction("cr.webUIResponse", callback_id, base::Value(false),
-											 response);
+                       response);
 ```
 
 See also: [`ResolveJavascriptCallback`](#ResolveJavascriptCallback)
@@ -503,10 +503,10 @@ renderer:
 ```c++
 // WebUIExtension::Install():
 v8::Local<v8::Object> chrome =
-		GetOrCreateChromeObject(isolate, context->Global());
+    GetOrCreateChromeObject(isolate, context->Global());
 chrome->Set(gin::StringToSymbol(isolate, "send"),
-						gin::CreateFunctionTemplate(
-								isolate, base::Bind(&WebUIExtension::Send))->GetFunction());
+            gin::CreateFunctionTemplate(
+                isolate, base::Bind(&WebUIExtension::Send))->GetFunction());
 ```
 
 The `chrome.send()` method takes a message name and argument list.
@@ -521,8 +521,8 @@ The message name and argument list are serialized to JSON and sent via the
 ```c++
 // In the renderer (WebUIExtension::Send()):
 render_view->Send(new ViewHostMsg_WebUISend(render_view->GetRoutingID(),
-																						frame->GetDocument().Url(),
-																						message, *content));
+                                            frame->GetDocument().Url(),
+                                            message, *content));
 ```
 ```c++
 // In the browser (WebUIImpl::OnMessageReceived()):
