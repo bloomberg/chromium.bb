@@ -25,6 +25,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.omnibox.geo.GeolocationHeader;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.WebContents;
@@ -536,12 +537,22 @@ public class SingleWebsitePreferences extends PreferenceFragment
         ContentSetting permission = mSite.getAdsPermission();
 
         // If |permission| is null, there is no explicit (non-default) permission set for this site.
-        // However, if the blocking is activated, we still want to show the permission as BLOCK.
+        // If the site is not considered a candidate for blocking, do the standard thing and remove
+        // the preference.
         if (permission == null && !activated) {
             setUpListPreference(preference, null);
             return;
         }
-        setUpListPreference(preference, permission == null ? ContentSetting.BLOCK : permission);
+
+        // However, if the blocking is activated, we still want to show the permission, even if it
+        // is in the default state.
+        if (permission == null) {
+            ContentSetting defaultPermission = PrefServiceBridge.getInstance().adsEnabled()
+                    ? ContentSetting.ALLOW
+                    : ContentSetting.BLOCK;
+            permission = defaultPermission;
+        }
+        setUpListPreference(preference, permission);
 
         // The subresource filter permission has a custom BLOCK string.
         ListPreference listPreference = (ListPreference) preference;
