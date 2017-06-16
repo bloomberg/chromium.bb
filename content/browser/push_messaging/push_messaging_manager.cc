@@ -111,6 +111,9 @@ struct PushMessagingManager::RegisterData {
   SubscribeCallback callback;
   // The following member should only be read if FromDocument() is true.
   int render_frame_id;
+
+  // True if the call to register was made with a user gesture.
+  bool user_gesture;
 };
 
 // Inner core of the PushMessagingManager which lives on the UI thread.
@@ -281,6 +284,7 @@ void PushMessagingManager::BindRequest(
 void PushMessagingManager::Subscribe(int32_t render_frame_id,
                                      int64_t service_worker_registration_id,
                                      const PushSubscriptionOptions& options,
+                                     bool user_gesture,
                                      SubscribeCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // TODO(mvanouwerkerk): Validate arguments?
@@ -292,6 +296,7 @@ void PushMessagingManager::Subscribe(int32_t render_frame_id,
   data.service_worker_registration_id = service_worker_registration_id;
   data.callback = std::move(callback);
   data.options = options;
+  data.user_gesture = user_gesture;
 
   ServiceWorkerRegistration* service_worker_registration =
       service_worker_context_->GetLiveRegistration(
@@ -504,7 +509,7 @@ void PushMessagingManager::Core::RegisterOnUI(
           GURL requesting_origin = data.requesting_origin;
           browser_context->GetPermissionManager()->RequestPermission(
               PermissionType::PUSH_MESSAGING, render_frame_host,
-              requesting_origin, false /* user_gesture */,
+              requesting_origin, data.user_gesture,
               base::Bind(
                   &PushMessagingManager::Core::DidRequestPermissionInIncognito,
                   weak_factory_ui_to_ui_.GetWeakPtr(), base::Passed(&data)));
@@ -521,7 +526,7 @@ void PushMessagingManager::Core::RegisterOnUI(
   if (data.FromDocument()) {
     push_service->SubscribeFromDocument(
         requesting_origin, registration_id, render_process_id_, render_frame_id,
-        options,
+        options, data.user_gesture,
         base::Bind(&Core::DidRegister, weak_factory_ui_to_ui_.GetWeakPtr(),
                    base::Passed(&data)));
   } else {

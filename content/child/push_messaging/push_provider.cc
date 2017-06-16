@@ -121,6 +121,7 @@ void PushProvider::WillStopCurrentWorkerThread() {
 void PushProvider::Subscribe(
     blink::WebServiceWorkerRegistration* service_worker_registration,
     const blink::WebPushSubscriptionOptions& options,
+    bool user_gesture,
     std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks) {
   DCHECK(service_worker_registration);
   DCHECK(callbacks);
@@ -136,7 +137,7 @@ void PushProvider::Subscribe(
 
   push_messaging_manager_->Subscribe(
       ChildProcessHost::kInvalidUniqueID, service_worker_registration_id,
-      content_options,
+      content_options, user_gesture,
       // Safe to use base::Unretained because |push_messaging_manager_ |is owned
       // by |this|.
       base::Bind(&PushProvider::DidSubscribe, base::Unretained(this),

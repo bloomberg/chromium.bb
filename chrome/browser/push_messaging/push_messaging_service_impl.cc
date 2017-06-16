@@ -451,6 +451,7 @@ void PushMessagingServiceImpl::SubscribeFromDocument(
     int renderer_id,
     int render_frame_id,
     const content::PushSubscriptionOptions& options,
+    bool user_gesture,
     const RegisterCallback& callback) {
   PushMessagingAppIdentifier app_identifier =
       PushMessagingAppIdentifier::Generate(requesting_origin,
@@ -482,7 +483,7 @@ void PushMessagingServiceImpl::SubscribeFromDocument(
   // Push does not allow permission requests from iframes.
   PermissionManager::Get(profile_)->RequestPermission(
       CONTENT_SETTINGS_TYPE_PUSH_MESSAGING, web_contents->GetMainFrame(),
-      requesting_origin, true /* user_gesture */,
+      requesting_origin, user_gesture,
       base::Bind(&PushMessagingServiceImpl::DoSubscribe,
                  weak_factory_.GetWeakPtr(), app_identifier, options,
                  callback));

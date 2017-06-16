@@ -31,6 +31,7 @@ class WebPushProvider {
   // Does not take ownership of the WebServiceWorkerRegistration.
   virtual void Subscribe(WebServiceWorkerRegistration*,
                          const WebPushSubscriptionOptions&,
+                         bool user_gesture,
                          std::unique_ptr<WebPushSubscriptionCallbacks>) = 0;
 
   // Takes ownership of the WebPushSubscriptionCallbacks.

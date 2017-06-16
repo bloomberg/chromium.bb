@@ -75,6 +75,7 @@ void LayoutTestPushMessagingService::SubscribeFromDocument(
     int renderer_id,
     int render_frame_id,
     const PushSubscriptionOptions& options,
+    bool user_gesture,
     const RegisterCallback& callback) {
   SubscribeFromWorker(requesting_origin, service_worker_registration_id,
                       options, callback);
