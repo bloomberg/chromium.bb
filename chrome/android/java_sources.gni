@@ -713,6 +713,8 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/omnibox/AnswersImage.java",
   "java/src/org/chromium/chrome/browser/omnibox/AutocompleteController.java",
   "java/src/org/chromium/chrome/browser/omnibox/AutocompleteEditText.java",
+  "java/src/org/chromium/chrome/browser/omnibox/AutocompleteEditTextModel.java",
+  "java/src/org/chromium/chrome/browser/omnibox/AutocompleteEditTextModelBase.java",
   "java/src/org/chromium/chrome/browser/omnibox/KeyboardHideHelper.java",
   "java/src/org/chromium/chrome/browser/omnibox/LocationBar.java",
   "java/src/org/chromium/chrome/browser/omnibox/LocationBarLayout.java",

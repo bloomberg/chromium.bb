@@ -107,8 +107,10 @@ public class AutocompleteEditTextTest {
         mAutocomplete.setIgnoreTextChangesForAutocomplete(false);
         // User types "h".
         assertTrue(mInputConnection.commitText("h", 1));
+        mInOrder.verify(mEmbedder).onAutocompleteTextStateChanged(false, true);
         // User types "hello".
         assertTrue(mInputConnection.commitText("ello", 1));
+        mInOrder.verify(mEmbedder).onAutocompleteTextStateChanged(false, true);
         mInOrder.verifyNoMoreInteractions();
         // The controller kicks in.
         mAutocomplete.setAutocompleteText("hello", " world");
