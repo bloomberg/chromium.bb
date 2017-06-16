@@ -68,7 +68,7 @@ void AllAppsTileItemView::ButtonPressed(views::Button* sender,
 
   contents_view_->SetActiveState(AppListModel::STATE_APPS);
   if (features::IsFullscreenAppListEnabled())
-    app_list_view_->SetState(AppListView::FULLSCREEN_ALL_APPS);
+    app_list_view_->SetState(AppListView::FULLSCREEN);
 }
 
 }  // namespace app_list

@@ -189,6 +189,28 @@ TEST_F(AppListPresenterDelegateTest, TinyDisplay) {
   EXPECT_GE(app_list_view_top, kMinimalAppListMargin);
 }
 
+// Tests that the peeking app list is enlarged to fullscreen after the user
+// types in the search box.
+TEST_F(AppListPresenterDelegateTest, SnapToFullscreenAfterSearchboxInput) {
+  // TODO(newcomer): investigate failure in mash. http://crbug.com/726838.
+  if (Shell::GetAshConfig() == Config::MASH)
+    return;
+
+  EnableFullscreenAppList();
+  UpdateDisplay("1024x768");
+  EXPECT_TRUE(app_list::features::IsFullscreenAppListEnabled());
+  app_list_presenter_impl()->Show(GetPrimaryDisplayId());
+  app_list::AppListView* app_list = app_list_presenter_impl()->GetView();
+  // Check that it is in peeking mode.
+  EXPECT_FALSE(app_list->is_fullscreen());
+
+  // Dummy key event to search box.
+  ui::test::EventGenerator& generator = GetEventGenerator();
+  generator.PressKey(ui::KeyboardCode::VKEY_0, 0);
+  // Check that it is in fullscreen mode.
+  EXPECT_TRUE(app_list->is_fullscreen());
+}
+
 // Tests that the peeking app list closes if the user taps outside its
 // bounds.
 TEST_F(AppListPresenterDelegateTest, TapAndClickOutsideClosesPeekingAppList) {
