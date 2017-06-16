@@ -284,6 +284,11 @@ def _downloader_worker_thread(thread_num, q, force, base_url,
         continue
       with tarfile.open(output_filename, 'r:gz') as tar:
         dirname = os.path.dirname(os.path.abspath(output_filename))
+        # If there are long paths inside the tarball we can get extraction
+        # errors on windows due to the 260 path length limit (this includes
+        # pwd). Use the extended path syntax.
+        if sys.platform == 'win32':
+          dirname = '\\\\?\\%s' % dirname
         if not _validate_tar_file(tar, os.path.basename(extract_dir)):
           out_q.put('%d> Error: %s contains files outside %s.' % (
                     thread_num, output_filename, extract_dir))
