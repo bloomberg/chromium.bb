@@ -42,15 +42,20 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
                                     public display::DisplayObserver {
  public:
   enum AppListState {
-    // If set, closes |app_list_main_view_| and dismisses the delegate.
+    // Closes |app_list_main_view_| and dismisses the delegate.
     CLOSED = 0,
-
-    // The initial state for the app list. If set, the widget will peek over
-    // the shelf by kPeekingAppListHeight DIPs.
+    // The initial state for the app list when neither maximize or side shelf
+    // modes are active. If set, the widget will peek over the shelf by
+    // kPeekingAppListHeight DIPs.
     PEEKING,
-
-    // If set, the widget will be repositioned to take up the whole screen.
-    FULLSCREEN,
+    // Entered when text is entered into the search box from peeking mode.
+    HALF,
+    // Default app list state in maximize and side shelf modes. Entered from an
+    // upward swipe from |PEEKING| or from clicking the chevron.
+    FULLSCREEN_ALL_APPS,
+    // Entered from an upward swipe from |HALF| or by entering text in the
+    // search box from |FULLSCREEN_ALL_APPS|.
+    FULLSCREEN_SEARCH,
   };
 
   // Does not take ownership of |delegate|.
@@ -59,8 +64,14 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
 
   // Initializes the widget as a bubble or fullscreen view depending on if the
   // fullscreen app list feature is set. |parent| and |initial_apps_page| are
-  // used for both the bubble and fullscreen initialization.
-  void Initialize(gfx::NativeView parent, int initial_apps_page);
+  // used for both the bubble and fullscreen initialization. |is_maximize_mode|
+  // is whether the display is in maximize mode and |is_side_shelf| is whether
+  // the shelf is oriented on the side, and both are used for fullscreen
+  // app list initialization.
+  void Initialize(gfx::NativeView parent,
+                  int initial_apps_page,
+                  bool is_maximize_mode,
+                  bool is_side_shelf);
 
   void SetBubbleArrow(views::BubbleBorder::Arrow arrow);
 
@@ -109,8 +120,19 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   // Changes the app list state.
   void SetState(AppListState new_state);
 
-  bool is_fullscreen() const { return app_list_state_ == FULLSCREEN; }
+  // Changes the app list state depending on the current |app_list_state_| and
+  // whether the search box is empty.
+  void SetStateFromSearchBoxView(bool search_box_is_empty);
+
+  bool is_fullscreen() const {
+    return app_list_state_ == FULLSCREEN_ALL_APPS ||
+           app_list_state_ == FULLSCREEN_SEARCH;
+  }
+
   AppListState app_list_state() const { return app_list_state_; }
+
+  // Called when maximize mode starts and ends.
+  void OnMaximizeModeChanged(bool started);
 
  private:
   friend class test::AppListViewTestApi;
@@ -174,6 +196,11 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   // Owned by the app list's widget. Null if the fullscreen app list is not
   // enabled.
   views::View* app_list_background_shield_ = nullptr;
+  // Whether maximize mode is active.
+  bool is_maximize_mode_ = false;
+  // Whether the shelf is oriented on the side.
+  bool is_side_shelf_ = false;
+
   // The gap between the initial gesture event and the top of the window.
   gfx::Point initial_drag_point_;
   // The velocity of the gesture event.
