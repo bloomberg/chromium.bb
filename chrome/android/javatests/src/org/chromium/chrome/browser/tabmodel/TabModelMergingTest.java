@@ -91,11 +91,15 @@ public class TabModelMergingTest {
 
         // Initialize activities.
         mActivity1 = mActivityTestRule.getActivity();
+        // Start multi-instance mode so that ChromeTabbedActivity's check for whether the activity
+        // is started up correctly doesn't fail.
+        ChromeTabbedActivity.onMultiInstanceModeStarted();
         mActivity2 = MultiWindowUtilsTest.createSecondChromeTabbedActivity(mActivity1);
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return mActivity2.getTabModelSelector().isTabStateInitialized();
+                return mActivity2.areTabModelsInitialized()
+                        && mActivity2.getTabModelSelector().isTabStateInitialized();
             }
         });
 
@@ -229,7 +233,8 @@ public class TabModelMergingTest {
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return newActivity.getTabModelSelector().isTabStateInitialized();
+                return newActivity.areTabModelsInitialized()
+                        && newActivity.getTabModelSelector().isTabStateInitialized();
             }
         });
 
