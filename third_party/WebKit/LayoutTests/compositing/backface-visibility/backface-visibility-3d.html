@@ -18,7 +18,7 @@
   }
 
   .backfaceHidden {
-      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
   }
 
   .green {
@@ -66,8 +66,8 @@
 <!-- The blue div is a 3d rendering context, containing the lime div. No back faces are
      visible, so we should see all three divs. -->
 <div class="large green" id="testCase1">
-  <div class="medium blue" style="-webkit-backface-visibility: hidden; transform: rotateY(0deg); -webkit-transform-style: preserve-3d">
-    <div class="small lime" style="-webkit-backface-visibility: hidden; transform: rotateX(0deg)">
+  <div class="medium blue" style="backface-visibility: hidden; transform: rotateY(0deg); -webkit-transform-style: preserve-3d">
+    <div class="small lime" style="backface-visibility: hidden; transform: rotateX(0deg)">
     </div>
   </div>
 </div>
@@ -76,8 +76,8 @@
      inherit the blue div's transform, so both divs are showing their backface and both
      should disappear. -->
 <div class="large green" id="testCase2">
-  <div class="medium blue" style="-webkit-backface-visibility: hidden; transform: rotateY(180deg); -webkit-transform-style: preserve-3d">
-    <div class="small lime" style="-webkit-backface-visibility: hidden; transform: rotateX(0deg)">
+  <div class="medium blue" style="backface-visibility: hidden; transform: rotateY(180deg); -webkit-transform-style: preserve-3d">
+    <div class="small lime" style="backface-visibility: hidden; transform: rotateX(0deg)">
     </div>
   </div>
 </div>
@@ -85,8 +85,8 @@
 <!-- The blue div is a 3d rendering context, containing the lime div. The lime div should
      become invisible when it shows its backface. -->
 <div class="large green" id="testCase3">
-  <div class="medium blue" style="-webkit-backface-visibility: hidden; transform: rotateY(0deg); -webkit-transform-style: preserve-3d">
-    <div class="small lime" style="-webkit-backface-visibility: hidden; transform: rotateX(180deg)">
+  <div class="medium blue" style="backface-visibility: hidden; transform: rotateY(0deg); -webkit-transform-style: preserve-3d">
+    <div class="small lime" style="backface-visibility: hidden; transform: rotateX(180deg)">
     </div>
   </div>
 </div>
@@ -96,8 +96,8 @@
      around X), its shows its front face and should be visible. This happens BEFORE the
      lime div flattens to the rendering context, so the lime div should remain visible. -->
 <div id="testCase4" class="large green">
-  <div class="medium blue" style="-webkit-backface-visibility: hidden; transform: rotateY(180deg); -webkit-transform-style: preserve-3d">
-    <div class="small lime" style="-webkit-backface-visibility: hidden; transform: rotateX(180deg)">
+  <div class="medium blue" style="backface-visibility: hidden; transform: rotateY(180deg); -webkit-transform-style: preserve-3d">
+    <div class="small lime" style="backface-visibility: hidden; transform: rotateX(180deg)">
     </div>
   </div>
 </div>
