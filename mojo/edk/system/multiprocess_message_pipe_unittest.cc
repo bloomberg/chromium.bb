@@ -1371,7 +1371,7 @@ TEST_F(MultiprocessMessagePipeTest, NotifyBadMessage) {
       ASSERT_EQ(MOJO_RESULT_OK, WaitForSignals(a, MOJO_HANDLE_SIGNAL_READABLE));
       MojoMessageHandle message;
       ASSERT_EQ(MOJO_RESULT_OK,
-                MojoReadMessageNew(a, &message, MOJO_READ_MESSAGE_FLAG_NONE));
+                ::MojoReadMessage(a, &message, MOJO_READ_MESSAGE_FLAG_NONE));
       EXPECT_EQ(MOJO_RESULT_OK,
                 MojoNotifyBadMessage(message, kFirstErrorMessage.data(),
                                      kFirstErrorMessage.size()));
@@ -1380,7 +1380,7 @@ TEST_F(MultiprocessMessagePipeTest, NotifyBadMessage) {
       // Read a message from the pipe we sent to child2 and flag it as bad.
       ASSERT_EQ(MOJO_RESULT_OK, WaitForSignals(c, MOJO_HANDLE_SIGNAL_READABLE));
       ASSERT_EQ(MOJO_RESULT_OK,
-                MojoReadMessageNew(c, &message, MOJO_READ_MESSAGE_FLAG_NONE));
+                ::MojoReadMessage(c, &message, MOJO_READ_MESSAGE_FLAG_NONE));
       EXPECT_EQ(MOJO_RESULT_OK,
                 MojoNotifyBadMessage(message, kSecondErrorMessage.data(),
                                      kSecondErrorMessage.size()));

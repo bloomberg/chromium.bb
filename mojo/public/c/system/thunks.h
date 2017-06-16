@@ -30,16 +30,10 @@ struct MojoSystemThunks {
       MojoHandle* message_pipe_handle0,
       MojoHandle* message_pipe_handle1);
   MojoResult (*WriteMessage)(MojoHandle message_pipe_handle,
-                             const void* bytes,
-                             uint32_t num_bytes,
-                             const MojoHandle* handles,
-                             uint32_t num_handles,
+                             MojoMessageHandle message_handle,
                              MojoWriteMessageFlags flags);
   MojoResult (*ReadMessage)(MojoHandle message_pipe_handle,
-                            void* bytes,
-                            uint32_t* num_bytes,
-                            MojoHandle* handles,
-                            uint32_t* num_handles,
+                            MojoMessageHandle* message_handle,
                             MojoReadMessageFlags flags);
   MojoResult (*CreateDataPipe)(const struct MojoCreateDataPipeOptions* options,
                                MojoHandle* data_pipe_producer_handle,
@@ -91,17 +85,6 @@ struct MojoSystemThunks {
                            MojoResult* ready_results,
                            MojoHandleSignalsState* ready_signals_states);
   MojoResult (*FuseMessagePipes)(MojoHandle handle0, MojoHandle handle1);
-  MojoResult (*WriteMessageNew)(MojoHandle message_pipe_handle,
-                                MojoMessageHandle message,
-                                MojoWriteMessageFlags flags);
-  MojoResult (*ReadMessageNew)(MojoHandle message_pipe_handle,
-                               MojoMessageHandle* message,
-                               MojoReadMessageFlags flags);
-  MojoResult (*AllocMessage)(uint32_t num_bytes,
-                             const MojoHandle* handles,
-                             uint32_t num_handles,
-                             MojoAllocMessageFlags flags,
-                             MojoMessageHandle* message);
   MojoResult (*CreateMessage)(uintptr_t context,
                               const struct MojoMessageOperationThunks* thunks,
                               MojoMessageHandle* message);
