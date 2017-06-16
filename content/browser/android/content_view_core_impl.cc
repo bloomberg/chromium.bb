@@ -534,14 +534,19 @@ void ContentViewCoreImpl::OnGestureEventAck(const blink::WebGestureEvent& event,
 
 bool ContentViewCoreImpl::FilterInputEvent(const blink::WebInputEvent& event) {
   if (event.GetType() != WebInputEvent::kGestureTap &&
-      event.GetType() != WebInputEvent::kGestureDoubleTap &&
       event.GetType() != WebInputEvent::kGestureLongTap &&
-      event.GetType() != WebInputEvent::kGestureLongPress)
+      event.GetType() != WebInputEvent::kGestureLongPress &&
+      event.GetType() != WebInputEvent::kMouseDown)
     return false;
 
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);
   if (j_obj.is_null())
+    return false;
+
+  Java_ContentViewCore_requestFocus(env, j_obj);
+
+  if (event.GetType() == WebInputEvent::kMouseDown)
     return false;
 
   const blink::WebGestureEvent& gesture =
