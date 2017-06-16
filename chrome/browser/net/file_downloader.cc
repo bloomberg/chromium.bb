@@ -8,14 +8,14 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/task_runner_util.h"
 #include "base/task_scheduler/post_task.h"
-#include "content/public/browser/browser_thread.h"
+#include "base/task_scheduler/task_traits.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/url_fetcher.h"
 #include "url/gurl.h"
 
-using content::BrowserThread;
 using net::URLFetcher;
 
 const int kNumRetries = 1;
@@ -37,7 +37,9 @@ FileDownloader::FileDownloader(
                          net::LOAD_DO_NOT_SAVE_COOKIES);
   fetcher_->SetAutomaticallyRetryOnNetworkChanges(kNumRetries);
   fetcher_->SaveResponseToTemporaryFile(
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE));
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::BACKGROUND,
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}));
 
   if (overwrite) {
     fetcher_->Start();
