@@ -164,9 +164,6 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
   TargetData touchpad_gesture_target_;
   TargetData bubbling_gesture_scroll_target_;
   TargetData first_bubbling_scroll_target_;
-  // Used to target wheel events for the duration of a scroll when wheel scroll
-  // latching is enabled.
-  TargetData wheel_target_;
   // Maintains the same target between mouse down and mouse up.
   TargetData mouse_capture_target_;
 

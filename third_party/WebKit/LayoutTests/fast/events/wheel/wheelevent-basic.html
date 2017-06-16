@@ -25,7 +25,7 @@ function runTest() {
     testDiv.addEventListener('wheel', wheelHandler);
     if (window.eventSender) {
         eventSender.mouseMoveTo(testDiv.offsetLeft + 5, testDiv.offsetTop + 5);
-        eventSender.mouseScrollBy(-1, -2, false, false, 0, true, 'phaseBegan');
+        eventSender.mouseScrollBy(-1, -2);
         var positive = "deltaX > 0 && deltaY > 0";
         var correct = "deltaX == testDiv.scrollLeft && deltaY == testDiv.scrollTop";
         shouldBecomeEqual(positive + " && " + correct , "true", finishJSTest);

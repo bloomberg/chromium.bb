@@ -11,10 +11,7 @@
 
 namespace blink {
 
-class Document;
 class LocalFrame;
-class LocalFrameView;
-class Node;
 class ScrollManager;
 class WebMouseWheelEvent;
 
@@ -26,17 +23,10 @@ class MouseWheelEventManager final
   explicit MouseWheelEventManager(LocalFrame&, ScrollManager&);
   DECLARE_TRACE();
 
-  void Clear();
-
   WebInputEventResult HandleWheelEvent(const WebMouseWheelEvent&);
 
  private:
-  Node* FindTargetNode(const WebMouseWheelEvent&,
-                       const Document*,
-                       const LocalFrameView*);
-
   const Member<LocalFrame> frame_;
-  Member<Node> wheel_target_;
   Member<ScrollManager> scroll_manager_;
 };
 

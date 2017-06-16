@@ -23,7 +23,7 @@ function runTest() {
     debug('With ctrl modifier set and canScroll set to be false');
     wheelEventCount = 0;
     eventSender.mouseMoveTo(testDiv.offsetLeft + 5, testDiv.offsetTop + 5);
-    eventSender.mouseScrollBy(0, scrollAmount, false, true, "ctrlKey", false , "phaseBegan");
+    eventSender.mouseScrollBy(0, scrollAmount, false, true, "ctrlKey", false);
     shouldBe("wheelEventCount", "1");
     shouldEvaluateTo("deltaY", expectedDeltaY);
     shouldBeTrue("ctrlKey");
@@ -32,7 +32,7 @@ function runTest() {
     debug('Without ctrl and canScroll set to be default true');
     wheelEventCount = 0;
     eventSender.mouseMoveTo(testDiv.offsetLeft + 5, testDiv.offsetTop + 5);
-    eventSender.mouseScrollBy(0, scrollAmount, false, true, 0, true, "phaseChanged");
+    eventSender.mouseScrollBy(0, scrollAmount, false, true);
     shouldBe("wheelEventCount", "1");
     shouldEvaluateTo("deltaY", expectedDeltaY);
     shouldBeFalse("ctrlKey");
@@ -45,7 +45,7 @@ function runTest() {
     debug('With ctrl modifier set and canScroll set to be false');
     wheelEventCount = 0;
     eventSender.mouseMoveTo(testDiv.offsetLeft + 5, testDiv.offsetTop + 5);
-    eventSender.mouseScrollBy(0, scrollAmount, false, true, "ctrlKey", false, "phaseChanged");
+    eventSender.mouseScrollBy(0, scrollAmount, false, true, "ctrlKey", false);
     shouldBe("wheelEventCount", "1");
     shouldEvaluateTo("deltaY", expectedDeltaY);
     shouldBeTrue("ctrlKey");
@@ -54,7 +54,7 @@ function runTest() {
     debug('With ctrl modifier set and canScroll set to be true');
     wheelEventCount = 0;
     eventSender.mouseMoveTo(testDiv.offsetLeft + 5, testDiv.offsetTop + 5);
-    eventSender.mouseScrollBy(0, scrollAmount, false, true, "ctrlKey", true, "phaseChanged");
+    eventSender.mouseScrollBy(0, scrollAmount, false, true, "ctrlKey", true);
     shouldBe("wheelEventCount", "1");
     shouldEvaluateTo("deltaY", expectedDeltaY);
     shouldBeTrue("ctrlKey");
@@ -63,7 +63,7 @@ function runTest() {
     debug('Now without ctrl and canScroll set to be default true');
     wheelEventCount = 0;
     eventSender.mouseMoveTo(testDiv.offsetLeft + 5, testDiv.offsetTop + 5);
-    eventSender.mouseScrollBy(0, scrollAmount, false, true, 0, true, "phaseChanged");
+    eventSender.mouseScrollBy(0, scrollAmount, false, true);
     shouldBe("wheelEventCount", "1");
     shouldEvaluateTo("deltaY", expectedDeltaY);
     shouldBeFalse("ctrlKey");
