@@ -5412,6 +5412,7 @@ test("net_unittests") {
       "//base:base_java_unittest_support",
       "//net/android:net_java",
       "//net/android:net_java_test_support",
+      "//net/android:net_java_test_support_provider",
       "//net/android:net_javatests",
       "//net/android:net_unittests_apk_resources",
 
