@@ -124,9 +124,9 @@ public class BottomSheetNewTabControllerTest {
         // Select "New incognito tab" from the menu.
         MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(),
                 mActivity, R.id.new_incognito_tab_menu_id);
-        // The sheet should be opened at half height over the tab switcher and the tab count should
+        // The sheet should be opened at full height over the tab switcher and the tab count should
         // remain unchanged. The incognito model should now be selected.
-        validateState(false, BottomSheet.SHEET_STATE_HALF);
+        validateState(false, BottomSheet.SHEET_STATE_FULL);
         assertEquals(1, mActivity.getTabModelSelector().getTotalTabCount());
         assertTrue(
                 "Overview mode should be showing", mActivity.getLayoutManager().overviewVisible());
