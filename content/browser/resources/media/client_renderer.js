@@ -429,7 +429,8 @@ var ClientRenderer = (function() {
     },
 
     hideClipboard_: function() {
-      this.clipboardDialog.close();
+      if (this.clipboardDialog.open)
+        this.clipboardDialog.close();
     },
 
     copyToClipboard_: function() {
