@@ -7,6 +7,7 @@
 #import "base/logging.h"
 #import "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/payments/payment_request_picker_row.h"
+#import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -77,7 +78,7 @@ NSString* const kPaymentRequestPickerViewControllerAccessibilityID =
 - (void)viewDidLoad {
   [super viewDidLoad];
 
-  self.tableView.rowHeight = 48.0f;  // The same as MDCCellDefaultOneLineHeight.
+  self.tableView.rowHeight = MDCCellDefaultOneLineHeight;
   self.tableView.accessibilityIdentifier =
       kPaymentRequestPickerViewControllerAccessibilityID;
 

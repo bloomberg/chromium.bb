@@ -22,11 +22,16 @@ NSString* const kPageInfoLockIndicatorImageViewID =
 
 namespace {
 // Padding used on the top and bottom edges of the cell.
-const CGFloat kVerticalPadding = 12;
+const CGFloat kVerticalPadding = 10;
 
-// Padding used on the leading and trailing edges of the cell and between the
-// favicon and labels.
+// Vertical spacing between the labels.
+const CGFloat kLabelsVerticalSpacing = 2;
+
+// Padding used on the leading and trailing edges of the cell.
 const CGFloat kHorizontalPadding = 16;
+
+// Horizontal spacing between the favicon and the labels.
+const CGFloat kFaviconAndLabelsHorizontalSpacing = 12;
 
 // Dimension for lock indicator in points.
 const CGFloat kLockIndicatorDimension = 16;
@@ -150,6 +155,10 @@ const CGFloat kLockIndicatorVerticalPadding = 4;
         setTintColor:[[MDCPalette cr_greenPalette] tint700]];
     [self.contentView addSubview:_pageLockIndicatorView];
 
+    CGFloat faviconHeight = _pageTitleLabel.font.pointSize +
+                            _pageHostLabel.font.pointSize +
+                            kLabelsVerticalSpacing;
+
     // Layout
     [NSLayoutConstraint activateConstraints:@[
       [_pageFaviconView.leadingAnchor
@@ -157,9 +166,7 @@ const CGFloat kLockIndicatorVerticalPadding = 4;
                          constant:kHorizontalPadding],
       [_pageFaviconView.centerYAnchor
           constraintEqualToAnchor:self.contentView.centerYAnchor],
-      [_pageFaviconView.heightAnchor
-          constraintEqualToAnchor:self.contentView.heightAnchor
-                         constant:-(2 * kVerticalPadding)],
+      [_pageFaviconView.heightAnchor constraintEqualToConstant:faviconHeight],
       [_pageFaviconView.widthAnchor
           constraintEqualToAnchor:_pageFaviconView.heightAnchor],
 
@@ -173,22 +180,22 @@ const CGFloat kLockIndicatorVerticalPadding = 4;
           constraintEqualToAnchor:_pageHostLabel.firstBaselineAnchor
                          constant:kLockIndicatorVerticalPadding],
 
+      [_pageTitleLabel.topAnchor
+          constraintEqualToAnchor:self.contentView.topAnchor
+                         constant:kVerticalPadding],
+      [_pageTitleLabel.bottomAnchor
+          constraintEqualToAnchor:_pageHostLabel.topAnchor
+                         constant:-kLabelsVerticalSpacing],
+      [_pageHostLabel.bottomAnchor
+          constraintEqualToAnchor:self.contentView.bottomAnchor
+                         constant:-kVerticalPadding],
+
       [_pageTitleLabel.trailingAnchor
           constraintLessThanOrEqualToAnchor:self.contentView.trailingAnchor
                                    constant:-kHorizontalPadding],
       [_pageHostLabel.trailingAnchor
           constraintLessThanOrEqualToAnchor:self.contentView.trailingAnchor
                                    constant:-kHorizontalPadding],
-
-      // UILabel leaves some empty space above the height of capital letters. In
-      // order to align the tops of the letters with the top of the favicon,
-      // anchor the bottom of the label to the top of the favicon plus
-      // pointSize (which describes the actual height of the letters).
-      [_pageTitleLabel.bottomAnchor
-          constraintEqualToAnchor:_pageFaviconView.topAnchor
-                         constant:_pageTitleLabel.font.pointSize],
-      [_pageHostLabel.firstBaselineAnchor
-          constraintEqualToAnchor:_pageFaviconView.bottomAnchor],
     ]];
   }
   return self;
@@ -198,11 +205,14 @@ const CGFloat kLockIndicatorVerticalPadding = 4;
 
 - (void)updateConstraints {
   _pageTitleLabelLeadingConstraint.active = NO;
-  _pageTitleLabelLeadingConstraint = [_pageTitleLabel.leadingAnchor
-      constraintEqualToAnchor:_pageFaviconView.image
-                                  ? _pageFaviconView.trailingAnchor
-                                  : self.contentView.leadingAnchor
-                     constant:kHorizontalPadding];
+  _pageTitleLabelLeadingConstraint =
+      _pageFaviconView.image
+          ? [_pageTitleLabel.leadingAnchor
+                constraintEqualToAnchor:_pageFaviconView.trailingAnchor
+                               constant:kFaviconAndLabelsHorizontalSpacing]
+          : [_pageTitleLabel.leadingAnchor
+                constraintEqualToAnchor:self.contentView.leadingAnchor
+                               constant:kHorizontalPadding];
   _pageTitleLabelLeadingConstraint.active = YES;
 
   _pageHostLabelLeadingConstraint.active = NO;

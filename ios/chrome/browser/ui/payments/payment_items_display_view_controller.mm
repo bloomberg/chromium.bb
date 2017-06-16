@@ -6,6 +6,7 @@
 
 #include "base/mac/foundation_util.h"
 #include "components/strings/grit/components_strings.h"
+#import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item+collection_view_controller.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
@@ -180,6 +181,21 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 #pragma mark MDCCollectionViewStylingDelegate
+
+- (CGFloat)collectionView:(UICollectionView*)collectionView
+    cellHeightAtIndexPath:(NSIndexPath*)indexPath {
+  CollectionViewItem* item =
+      [self.collectionViewModel itemAtIndexPath:indexPath];
+
+  UIEdgeInsets inset = [self collectionView:collectionView
+                                     layout:collectionView.collectionViewLayout
+                     insetForSectionAtIndex:indexPath.section];
+
+  return [MDCCollectionViewCell
+      cr_preferredHeightForWidth:CGRectGetWidth(collectionView.bounds) -
+                                 inset.left - inset.right
+                         forItem:item];
+}
 
 // There are no effects from touching the payment items so there should not be
 // an ink ripple.

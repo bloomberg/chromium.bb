@@ -183,9 +183,15 @@ TEST_F(PaymentRequestViewControllerTest, TestModel) {
   // Contact Info and the Footer.
   ASSERT_EQ(5, NumberOfSections());
 
-  // The only item in the Summary section should be of type PriceItem.
-  ASSERT_EQ(1U, static_cast<unsigned int>(NumberOfItemsInSection(0)));
+  // There should be two items in the Summary section
+  ASSERT_EQ(2U, static_cast<unsigned int>(NumberOfItemsInSection(0)));
+
+  // The first one should be of type PageInfoItem.
   id item = GetCollectionViewItem(0, 0);
+  EXPECT_TRUE([item isMemberOfClass:[PageInfoItem class]]);
+
+  // The next item should be of type PriceItem.
+  item = GetCollectionViewItem(0, 1);
   EXPECT_TRUE([item isMemberOfClass:[PriceItem class]]);
 
   // There should be two items in the Shipping section.
@@ -328,11 +334,15 @@ TEST_F(PaymentRequestViewControllerTest, TestModelPendingState) {
   [GetPaymentRequestViewController() setPending:YES];
   [GetPaymentRequestViewController() loadModel];
 
+  // There should only be one section which has two items.
   ASSERT_EQ(1, NumberOfSections());
-  // There should be only one item.
-  ASSERT_EQ(1U, static_cast<unsigned int>(NumberOfItemsInSection(0)));
+  ASSERT_EQ(2U, static_cast<unsigned int>(NumberOfItemsInSection(0)));
 
-  // The item should be of type StatusItem.
+  // The first item should be of type PageInfoItem.
   id item = GetCollectionViewItem(0, 0);
+  EXPECT_TRUE([item isMemberOfClass:[PageInfoItem class]]);
+
+  // The second item should be of type StatusItem.
+  item = GetCollectionViewItem(0, 1);
   EXPECT_TRUE([item isMemberOfClass:[StatusItem class]]);
 }

@@ -19,6 +19,9 @@ namespace {
 // labels.
 const CGFloat kHorizontalPadding = 16;
 
+// Padding used on the top and bottom edges of the cell.
+const CGFloat kVerticalPadding = 16;
+
 // Minimum proportion of the available width to guarantee to the labels.
 const CGFloat kMinWidthRatio = 0.5f;
 }
@@ -123,10 +126,12 @@ const CGFloat kMinWidthRatio = 0.5f;
         constraintEqualToAnchor:contentView.trailingAnchor
                        constant:-kHorizontalPadding],
 
-    // Center the item label vertically and align the baselines of the other two
-    // labels with the item label.
-    [_itemLabel.centerYAnchor
-        constraintEqualToAnchor:contentView.centerYAnchor],
+    // Set up the top and bottom constraints for |_itemLabel| and align the
+    // baselines of the other two labels with that of the |_itemLabel|.
+    [_itemLabel.topAnchor constraintEqualToAnchor:contentView.topAnchor
+                                         constant:kVerticalPadding],
+    [_itemLabel.bottomAnchor constraintEqualToAnchor:contentView.bottomAnchor
+                                            constant:-kVerticalPadding],
     [_notificationLabel.firstBaselineAnchor
         constraintEqualToAnchor:_itemLabel.firstBaselineAnchor],
     [_priceLabel.firstBaselineAnchor
