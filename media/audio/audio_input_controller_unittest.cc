@@ -131,7 +131,7 @@ TEST_F(AudioInputControllerTest, CreateAndClose) {
       AudioDeviceDescription::kDefaultDeviceId, false);
   ASSERT_TRUE(controller.get());
   EXPECT_CALL(event_handler, OnCreated(controller.get())).Times(Exactly(1));
-  EXPECT_CALL(event_handler, OnLog(controller.get(), _));
+  EXPECT_CALL(event_handler, OnLog(controller.get(), _)).Times(Exactly(3));
   EXPECT_CALL(sync_writer, Close()).Times(Exactly(1));
   ResumeAudioThread();
 
