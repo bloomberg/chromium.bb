@@ -7,38 +7,39 @@
 
 #include "third_party/skia/include/core/SkColorSpace.h"
 #include "third_party/skia/include/core/SkICC.h"
-#include "ui/gfx/gfx_export.h"
+#include "ui/gfx/color_space_export.h"
 
 namespace gfx {
 
-float GFX_EXPORT SkTransferFnEval(const SkColorSpaceTransferFn& fn, float x);
+float COLOR_SPACE_EXPORT SkTransferFnEval(const SkColorSpaceTransferFn& fn,
+                                          float x);
 
-SkColorSpaceTransferFn GFX_EXPORT
+SkColorSpaceTransferFn COLOR_SPACE_EXPORT
 SkTransferFnInverse(const SkColorSpaceTransferFn& fn);
 
-bool GFX_EXPORT
+bool COLOR_SPACE_EXPORT
 SkTransferFnsApproximatelyCancel(const SkColorSpaceTransferFn& a,
                                  const SkColorSpaceTransferFn& b);
 
-bool GFX_EXPORT
+bool COLOR_SPACE_EXPORT
 SkTransferFnIsApproximatelyIdentity(const SkColorSpaceTransferFn& fn);
 
 // Approximates the |n| points in |x| and |t| by the transfer function |fn|.
 // Returns true if the approximation converged.
-bool GFX_EXPORT SkApproximateTransferFn(const float* x,
-                                        const float* t,
-                                        size_t n,
-                                        SkColorSpaceTransferFn* fn);
+bool COLOR_SPACE_EXPORT SkApproximateTransferFn(const float* x,
+                                                const float* t,
+                                                size_t n,
+                                                SkColorSpaceTransferFn* fn);
 
 // Approximates |sk_icc| by the transfer function |fn|. Returns in |max_error|
 // the maximum pointwise of all color channels' transfer functions with |fn|.
 // Returns false if no approximation was possible, or no approximation
 // converged.
-bool GFX_EXPORT SkApproximateTransferFn(sk_sp<SkICC> sk_icc,
-                                        float* max_error,
-                                        SkColorSpaceTransferFn* fn);
+bool COLOR_SPACE_EXPORT SkApproximateTransferFn(sk_sp<SkICC> sk_icc,
+                                                float* max_error,
+                                                SkColorSpaceTransferFn* fn);
 
-bool GFX_EXPORT SkMatrixIsApproximatelyIdentity(const SkMatrix44& m);
+bool COLOR_SPACE_EXPORT SkMatrixIsApproximatelyIdentity(const SkMatrix44& m);
 
 }  // namespace gfx
 

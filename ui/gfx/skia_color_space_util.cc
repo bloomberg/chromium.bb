@@ -424,9 +424,9 @@ bool SkApproximateTransferFn(const float* x,
   return false;
 }
 
-bool GFX_EXPORT SkApproximateTransferFn(sk_sp<SkICC> sk_icc,
-                                        float* max_error,
-                                        SkColorSpaceTransferFn* fn) {
+bool SkApproximateTransferFn(sk_sp<SkICC> sk_icc,
+                             float* max_error,
+                             SkColorSpaceTransferFn* fn) {
   SkICC::Tables tables;
   bool got_tables = sk_icc->rawTransferFnData(&tables);
   if (!got_tables)

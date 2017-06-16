@@ -54,8 +54,6 @@ component("gfx") {
     "color_analysis.cc",
     "color_analysis.h",
     "color_palette.h",
-    "color_space_win.cc",
-    "color_space_win.h",
     "color_transform.cc",
     "color_transform.h",
     "color_utils.cc",
@@ -88,9 +86,6 @@ component("gfx") {
     "gfx_paths.h",
     "half_float.cc",
     "half_float.h",
-    "icc_profile_mac.mm",
-    "icc_profile_win.cc",
-    "icc_profile_x11.cc",
     "icon_util.cc",
     "icon_util.h",
     "image/image.cc",
@@ -237,10 +232,10 @@ component("gfx") {
   public_deps = [
     ":color_space",
     ":geometry_skia",
+    ":gfx_switches",
     ":memory_buffer_sources",
     ":native_widget_types",
     ":selection_bound_sources",
-    ":switches_sources",
     "//base",
     "//skia",
     "//third_party/icu",
@@ -387,10 +382,7 @@ component("gfx") {
     deps += [ "//ui/gfx/x" ]
     configs += [ "//build/config/linux:x11" ]
   } else {
-    sources -= [
-      "icc_profile_x11.cc",
-      "path_x11.cc",
-    ]
+    sources -= [ "path_x11.cc" ]
   }
 
   if (use_cairo) {
@@ -402,22 +394,37 @@ component("color_space") {
   sources = [
     "color_space.cc",
     "color_space.h",
+    "color_space_export.h",
+    "color_space_win.cc",
+    "color_space_win.h",
     "icc_profile.cc",
     "icc_profile.h",
+    "icc_profile_mac.mm",
+    "icc_profile_win.cc",
+    "icc_profile_x11.cc",
     "skia_color_space_util.cc",
     "skia_color_space_util.h",
   ]
   public_deps = [
-    ":gfx_export",
+    ":gfx_switches",
     "//base",
     "//skia",
   ]
-  deps = [
-    ":switches_sources",
-    "//base",
-    "//skia",
-  ]
-  defines = [ "GFX_IMPLEMENTATION" ]
+  if (is_mac) {
+    libs = [
+      "CoreFoundation.framework",
+      "CoreGraphics.framework",
+    ]
+  }
+  if (use_x11) {
+    deps = [
+      "//ui/gfx/x",
+    ]
+    configs += [ "//build/config/linux:x11" ]
+  } else {
+    sources -= [ "icc_profile_x11.cc" ]
+  }
+  defines = [ "COLOR_SPACE_IMPLEMENTATION" ]
 }
 
 # Depend on this to use half_float.h without pulling in all of gfx.
@@ -529,8 +536,8 @@ source_set("memory_buffer_sources") {
   defines = [ "GFX_IMPLEMENTATION" ]
 
   deps = [
+    ":gfx_switches",
     ":native_widget_types",
-    ":switches_sources",
     "//base",
     "//ui/gfx/geometry",
   ]
@@ -547,18 +554,23 @@ source_set("memory_buffer_sources") {
   }
 }
 
-source_set("switches_sources") {
-  visibility = [ ":*" ]  # Depend on through ":switches_sources".
-
+# TODO(ccameron): This should not be a separate component. Once the flag for
+# color correct rendering is removed, color_space_switches.h may be moved
+# into color_space (since it will be included in fewer places), and once the
+# "best monitor color profile" function is removed, switches.h may be moved
+# back into its own source_set.
+component("gfx_switches") {
   sources = [
+    "color_space_switches.cc",
+    "color_space_switches.h",
     "switches.cc",
     "switches.h",
+    "switches_export.h",
   ]
 
-  defines = [ "GFX_IMPLEMENTATION" ]
+  defines = [ "GFX_SWITCHES_IMPLEMENTATION" ]
 
   deps = [
-    ":gfx_export",
     "//base",
   ]
 }

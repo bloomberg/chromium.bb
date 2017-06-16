@@ -53,9 +53,9 @@
 #include "third_party/WebKit/public/web/WebHistoryItem.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "ui/events/blink/blink_event_util.h"
+#include "ui/gfx/color_space_switches.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/icc_profile.h"
-#include "ui/gfx/switches.h"
 #include "ui/gfx/test/icc_profiles.h"
 
 #if defined(OS_MACOSX)

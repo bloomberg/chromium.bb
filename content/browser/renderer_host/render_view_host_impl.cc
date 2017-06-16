@@ -88,9 +88,9 @@
 #include "ui/display/display_switches.h"
 #include "ui/gfx/animation/animation.h"
 #include "ui/gfx/color_space.h"
+#include "ui/gfx/color_space_switches.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/gfx/switches.h"
 #include "ui/native_theme/native_theme_features.h"
 #include "url/url_constants.h"
 

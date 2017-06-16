@@ -24,7 +24,7 @@
 
 namespace gfx {
 
-class GFX_EXPORT ColorSpaceWin {
+class COLOR_SPACE_EXPORT ColorSpaceWin {
  public:
   static DXVA2_ExtendedFormat GetExtendedFormat(const ColorSpace& color_space);
   static DXGI_COLOR_SPACE_TYPE GetDXGIColorSpace(const ColorSpace& color_space);
