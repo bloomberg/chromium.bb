@@ -575,6 +575,7 @@ css_properties("make_core_generated_css_property_apis") {
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIBorderRadius.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIFlex.h",
     "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPITextDecoration.h",
+    "$blink_core_output_dir/css/properties/CSSShorthandPropertyAPIWebkitMarginCollapse.h",
   ]
 }
 

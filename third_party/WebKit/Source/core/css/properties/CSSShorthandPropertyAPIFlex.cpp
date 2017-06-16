@@ -14,7 +14,7 @@ namespace blink {
 bool CSSShorthandPropertyAPIFlex::parseShorthand(
     bool important,
     CSSParserTokenRange& range,
-    const CSSParserContext* context,
+    const CSSParserContext& context,
     const CSSParserLocalContext&,
     HeapVector<CSSProperty, 256>& properties) {
   static const double kUnsetValue = -1;
@@ -52,7 +52,7 @@ bool CSSShorthandPropertyAPIFlex::parseShorthand(
           flex_basis = CSSPropertyParserHelpers::ConsumeIdent(range);
         if (!flex_basis) {
           flex_basis = CSSPropertyParserHelpers::ConsumeLengthOrPercent(
-              range, context->Mode(), kValueRangeNonNegative);
+              range, context.Mode(), kValueRangeNonNegative);
         }
         if (index == 2 && !range.AtEnd())
           return false;

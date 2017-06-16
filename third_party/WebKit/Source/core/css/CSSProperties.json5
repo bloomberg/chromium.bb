@@ -3610,8 +3610,8 @@
     },
     {
       name: "font-variant",
-      is_descriptor: true,
       longhands: "font-variant-ligatures;font-variant-caps;font-variant-numeric",
+      is_descriptor: true,
     },
     {
       name: "grid",
@@ -3771,6 +3771,8 @@
     {
       name: "-webkit-margin-collapse",
       longhands: "-webkit-margin-before-collapse;-webkit-margin-after-collapse",
+      api_class: true,
+      api_methods: ["parseShorthand"],
     },
     {
       name: "-webkit-mask",

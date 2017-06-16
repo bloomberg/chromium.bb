@@ -3026,6 +3026,7 @@ bool CSSPropertyParser::ConsumePlaceSelfShorthand(bool important) {
 
 bool CSSPropertyParser::ParseShorthand(CSSPropertyID unresolved_property,
                                        bool important) {
+  DCHECK(context_);
   CSSPropertyID property = resolveCSSPropertyID(unresolved_property);
 
   // Gets the parsing method for our current property from the property API.
@@ -3037,36 +3038,12 @@ bool CSSPropertyParser::ParseShorthand(CSSPropertyID unresolved_property,
       CSSPropertyDescriptor::Get(property);
   if (css_property_desc.parseShorthand) {
     return css_property_desc.parseShorthand(
-        important, range_, context_,
+        important, range_, *context_,
         CSSParserLocalContext(isPropertyAlias(unresolved_property)),
         *parsed_properties_);
   }
 
   switch (property) {
-    case CSSPropertyWebkitMarginCollapse: {
-      CSSValueID id = range_.ConsumeIncludingWhitespace().Id();
-      if (!CSSParserFastPaths::IsValidKeywordPropertyAndValue(
-              CSSPropertyWebkitMarginBeforeCollapse, id, context_->Mode()))
-        return false;
-      CSSValue* before_collapse = CSSIdentifierValue::Create(id);
-      AddParsedProperty(CSSPropertyWebkitMarginBeforeCollapse,
-                        CSSPropertyWebkitMarginCollapse, *before_collapse,
-                        important);
-      if (range_.AtEnd()) {
-        AddParsedProperty(CSSPropertyWebkitMarginAfterCollapse,
-                          CSSPropertyWebkitMarginCollapse, *before_collapse,
-                          important);
-        return true;
-      }
-      id = range_.ConsumeIncludingWhitespace().Id();
-      if (!CSSParserFastPaths::IsValidKeywordPropertyAndValue(
-              CSSPropertyWebkitMarginAfterCollapse, id, context_->Mode()))
-        return false;
-      AddParsedProperty(CSSPropertyWebkitMarginAfterCollapse,
-                        CSSPropertyWebkitMarginCollapse,
-                        *CSSIdentifierValue::Create(id), important);
-      return true;
-    }
     case CSSPropertyOverflow: {
       CSSValueID id = range_.ConsumeIncludingWhitespace().Id();
       if (!CSSParserFastPaths::IsValidKeywordPropertyAndValue(
