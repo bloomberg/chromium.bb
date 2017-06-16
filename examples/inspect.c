@@ -603,6 +603,12 @@ EMSCRIPTEN_KEEPALIVE
 int get_bit_depth() { return img->bit_depth; }
 
 EMSCRIPTEN_KEEPALIVE
+int get_bits_per_sample() { return img->bps; }
+
+EMSCRIPTEN_KEEPALIVE
+int get_image_format() { return img->fmt; }
+
+EMSCRIPTEN_KEEPALIVE
 unsigned char *get_plane(int plane) { return img->planes[plane]; }
 
 EMSCRIPTEN_KEEPALIVE
