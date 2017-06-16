@@ -61,11 +61,11 @@ class JumpList : public sessions::TabRestoreServiceObserver,
                  public history::TopSitesObserver,
                  public KeyedService {
  public:
-  // KeyedService:
-  void Shutdown() override;
-
   // Returns true if the custom JumpList is enabled.
   static bool Enabled();
+
+  // KeyedService:
+  void Shutdown() override;
 
  private:
   using UrlAndLinkItem = std::pair<std::string, scoped_refptr<ShellLinkItem>>;
@@ -101,6 +101,41 @@ class JumpList : public sessions::TabRestoreServiceObserver,
 
   ~JumpList() override;
 
+  // history::TopSitesObserver:
+  void TopSitesLoaded(history::TopSites* top_sites) override;
+  void TopSitesChanged(history::TopSites* top_sites,
+                       ChangeReason change_reason) override;
+
+  // sessions::TabRestoreServiceObserver:
+  void TabRestoreServiceChanged(sessions::TabRestoreService* service) override;
+  void TabRestoreServiceDestroyed(
+      sessions::TabRestoreService* service) override;
+
+  // Callback for changes to the incognito mode availability pref.
+  void OnIncognitoAvailabilityChanged();
+
+  // Initializes the one-shot timer to update the JumpList in a while. If there
+  // is already a request queued then cancel it and post the new request. This
+  // ensures that JumpList update won't happen until there has been a brief
+  // quiet period, thus avoiding update storms.
+  void InitializeTimerForUpdate();
+
+  // Called on a timer after requests storms have subsided. Calls APIs
+  // ProcessTopSitesNotification and ProcessTabRestoreNotification on
+  // demand to do the actual work.
+  void OnDelayTimer();
+
+  // Processes notifications from TopSites service.
+  void ProcessTopSitesNotification();
+
+  // Processes notifications from TabRestore service.
+  void ProcessTabRestoreServiceNotification();
+
+  // Callback for TopSites that notifies when |data|, the "Most Visited" list,
+  // is available. This function updates the ShellLinkItemList objects and
+  // begins the process of fetching favicons for the URLs.
+  void OnMostVisitedURLsAvailable(const history::MostVisitedURLList& data);
+
   // Adds a new ShellLinkItem for |tab| to the JumpList data provided that doing
   // so will not exceed |max_items|.
   bool AddTab(const sessions::TabRestoreService::Tab& tab, size_t max_items);
@@ -122,67 +157,22 @@ class JumpList : public sessions::TabRestoreServiceObserver,
   void OnFaviconDataAvailable(
       const favicon_base::FaviconImageResult& image_result);
 
-  // Callback for TopSites that notifies when |data|, the "Most Visited" list,
-  // is available. This function updates the ShellLinkItemList objects and
-  // begins the process of fetching favicons for the URLs.
-  void OnMostVisitedURLsAvailable(
-      const history::MostVisitedURLList& data);
-
-  // Callback for changes to the incognito mode availability pref.
-  void OnIncognitoAvailabilityChanged();
-
-  // sessions::TabRestoreServiceObserver:
-  void TabRestoreServiceChanged(sessions::TabRestoreService* service) override;
-  void TabRestoreServiceDestroyed(
-      sessions::TabRestoreService* service) override;
-
-  // history::TopSitesObserver:
-  void TopSitesLoaded(history::TopSites* top_sites) override;
-  void TopSitesChanged(history::TopSites* top_sites,
-                       ChangeReason change_reason) override;
-
-  // Initializes the one-shot timer to update the JumpList in a while. If there
-  // is already a request queued then cancel it and post the new request. This
-  // ensures that JumpList update won't happen until there has been a brief
-  // quiet period, thus avoiding update storms.
-  void InitializeTimerForUpdate();
-
-  // Called on a timer after requests storms have subsided. Calls APIs
-  // ProcessTopSitesNotification and ProcessTabRestoreNotification on
-  // demand to do the actual work.
-  void OnDelayTimer();
-
-  // Processes notifications from TopSites service.
-  void ProcessTopSitesNotification();
-
-  // Processes notifications from TabRestore service.
-  void ProcessTabRestoreServiceNotification();
-
   // Posts tasks to update the JumpList and delete any obsolete JumpList related
   // folders.
   void PostRunUpdate();
 
-  // Deletes icon files in |icon_dir| which are not in |icon_cache| anymore.
-  static void DeleteIconFiles(const base::FilePath& icon_dir,
-                              URLIconCache* icon_cache);
+  // Callback for RunUpdateJumpList that notifies when it finishes running.
+  // Updates certain JumpList member variables and/or triggers a new JumpList
+  // update based on |update_results|.
+  void OnRunUpdateCompletion(std::unique_ptr<UpdateResults> update_results);
 
-  // In |icon_dir|, creates at most |max_items| icon files which are not in
-  // |icon_cache| for the asynchrounously loaded icons stored in |item_list|.
-  // |icon_cache| is also updated for newly created icons.
-  // Returns the number of new icon files created.
-  static int CreateIconFiles(const base::FilePath& icon_dir,
-                             const ShellLinkItemList& item_list,
-                             size_t max_items,
-                             URLIconCache* icon_cache);
+  // Cancels a pending JumpList update.
+  void CancelPendingUpdate();
 
-  // Updates icon files for |page_list| in |icon_dir|, which consists of
-  // 1) creating at most |slot_limit| new icons which are not in |icon_cache|;
-  // 2) deleting old icons which are not in |icon_cache|.
-  // Returns the number of new icon files created.
-  static int UpdateIconFiles(const base::FilePath& icon_dir,
-                             const ShellLinkItemList& page_list,
-                             size_t slot_limit,
-                             URLIconCache* icon_cache);
+  // Terminates the JumpList, which includes cancelling any pending updates and
+  // stopping observing the Profile and its services. This must be called before
+  // the |profile_| is destroyed.
+  void Terminate();
 
   // Updates the application JumpList, which consists of 1) create new icon
   // files; 2) delete obsolete icon files; 3) notify the OS.
@@ -199,18 +189,27 @@ class JumpList : public sessions::TabRestoreServiceObserver,
       IncognitoModePrefs::Availability incognito_availability,
       UpdateResults* update_results);
 
-  // Callback for RunUpdateJumpList that notifies when it finishes running.
-  // Updates certain JumpList member variables and/or triggers a new JumpList
-  // update based on |update_results|.
-  void OnRunUpdateCompletion(std::unique_ptr<UpdateResults> update_results);
+  // Updates icon files for |page_list| in |icon_dir|, which consists of
+  // 1) creating at most |slot_limit| new icons which are not in |icon_cache|;
+  // 2) deleting old icons which are not in |icon_cache|.
+  // Returns the number of new icon files created.
+  static int UpdateIconFiles(const base::FilePath& icon_dir,
+                             const ShellLinkItemList& page_list,
+                             size_t slot_limit,
+                             URLIconCache* icon_cache);
 
-  // Cancels a pending JumpList update.
-  void CancelPendingUpdate();
+  // In |icon_dir|, creates at most |max_items| icon files which are not in
+  // |icon_cache| for the asynchrounously loaded icons stored in |item_list|.
+  // |icon_cache| is also updated for newly created icons.
+  // Returns the number of new icon files created.
+  static int CreateIconFiles(const base::FilePath& icon_dir,
+                             const ShellLinkItemList& item_list,
+                             size_t max_items,
+                             URLIconCache* icon_cache);
 
-  // Terminates the JumpList, which includes cancelling any pending updates and
-  // stopping observing the Profile and its services. This must be called before
-  // the |profile_| is destroyed.
-  void Terminate();
+  // Deletes icon files in |icon_dir| which are not in |icon_cache| anymore.
+  static void DeleteIconFiles(const base::FilePath& icon_dir,
+                              URLIconCache* icon_cache);
 
   // Tracks FaviconService tasks.
   base::CancelableTaskTracker cancelable_task_tracker_;
