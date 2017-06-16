@@ -502,7 +502,7 @@ TEST_P(WebViewTest, SetBaseBackgroundColorAndBlendWithExistingContent) {
   PaintLayerPainter(*root_layer)
       .PaintLayerContents(builder.Context(), painting_info,
                           kPaintLayerPaintingCompositingAllPhases);
-  builder.EndRecording()->playback(&canvas);
+  builder.EndRecording()->Playback(&canvas);
 
   // The result should be a blend of red and green.
   SkColor color = bitmap.getColor(kWidth / 2, kHeight / 2);

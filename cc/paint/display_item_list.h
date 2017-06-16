@@ -45,26 +45,28 @@ class CC_PAINT_EXPORT DisplayItemList
   PaintOpBuffer* StartPaint() {
     DCHECK(!in_painting_);
     in_painting_ = true;
-    current_range_start_ = paint_op_buffer_.size();
     return &paint_op_buffer_;
   }
 
   void EndPaintOfUnpaired(const gfx::Rect& visual_rect) {
-    if (paint_op_buffer_.size() != current_range_start_) {
-      visual_rects_.push_back(visual_rect);
-      visual_rects_range_starts_.push_back(current_range_start_);
-      GrowCurrentBeginItemVisualRect(visual_rect);
-    }
-
     in_painting_ = false;
+
+    // Empty paint item.
+    if (visual_rects_.size() == paint_op_buffer_.size())
+      return;
+
+    while (visual_rects_.size() < paint_op_buffer_.size())
+      visual_rects_.push_back(visual_rect);
+    GrowCurrentBeginItemVisualRect(visual_rect);
   }
 
   void EndPaintOfPairedBegin(const gfx::Rect& visual_rect = gfx::Rect()) {
-    DCHECK_NE(current_range_start_, paint_op_buffer_.size());
-    size_t visual_rect_index = visual_rects_.size();
-    visual_rects_.push_back(visual_rect);
-    visual_rects_range_starts_.push_back(current_range_start_);
-    begin_paired_indices_.push_back(visual_rect_index);
+    DCHECK_NE(visual_rects_.size(), paint_op_buffer_.size());
+    size_t count = paint_op_buffer_.size() - visual_rects_.size();
+    for (size_t i = 0; i < count; ++i)
+      visual_rects_.push_back(visual_rect);
+    begin_paired_indices_.push_back(
+        std::make_pair(visual_rects_.size() - 1, count));
 
     in_painting_ = false;
     in_paired_begin_count_++;
@@ -74,15 +76,29 @@ class CC_PAINT_EXPORT DisplayItemList
     DCHECK_NE(current_range_start_, paint_op_buffer_.size());
     DCHECK(in_paired_begin_count_);
 
-    // Copy the visual rect of the matching kPairStart.
-    size_t last_begin_index = begin_paired_indices_.back();
+    size_t last_begin_index = begin_paired_indices_.back().first;
+    size_t last_begin_count = begin_paired_indices_.back().second;
+    DCHECK_GT(last_begin_count, 0u);
+    DCHECK_GE(last_begin_index, last_begin_count - 1);
+
+    // Copy the visual rect at |last_begin_index| to all indices that constitute
+    // the begin item. Note that because we possibly reallocate the
+    // |visual_rects_| buffer below, we need an actual copy instead of a const
+    // reference which can become dangling.
+    auto visual_rect = visual_rects_[last_begin_index];
+    for (size_t i = last_begin_index - last_begin_count + 1;
+         i < last_begin_index; ++i) {
+      visual_rects_[i] = visual_rect;
+    }
     begin_paired_indices_.pop_back();
-    visual_rects_.push_back(visual_rects_[last_begin_index]);
-    visual_rects_range_starts_.push_back(current_range_start_);
+
+    // Copy the visual rect of the matching begin item to the end item(s).
+    while (visual_rects_.size() < paint_op_buffer_.size())
+      visual_rects_.push_back(visual_rect);
 
     // The block that ended needs to be included in the bounds of the enclosing
     // block.
-    GrowCurrentBeginItemVisualRect(visual_rects_[last_begin_index]);
+    GrowCurrentBeginItemVisualRect(visual_rect);
 
     in_painting_ = false;
     in_paired_begin_count_--;
@@ -93,9 +109,6 @@ class CC_PAINT_EXPORT DisplayItemList
 
   int NumSlowPaths() const { return paint_op_buffer_.numSlowPaths(); }
 
-  // This gives the number of visual rect ranges, which is the number of
-  // discrete sets of PaintOps which could be rastered from.
-  size_t size() const { return visual_rects_range_starts_.size(); }
   // This gives the total number of PaintOps.
   size_t op_count() const { return paint_op_buffer_.size(); }
   size_t BytesUsed() const;
@@ -149,17 +162,14 @@ class CC_PAINT_EXPORT DisplayItemList
   PaintOpBuffer paint_op_buffer_;
 
   // The visual rects associated with each of the display items in the
-  // display item list. There is one rect per range in
-  // visual_rects_range_starts_. These rects are intentionally kept separate
-  // because they are used to decide which ops to walk for raster.
+  // display item list. These rects are intentionally kept separate because they
+  // are used to decide which ops to walk for raster.
   std::vector<gfx::Rect> visual_rects_;
-  // For each Rect in visual_rects_, this is the start of the range of
-  // PaintOps in the PaintOpBuffer that the Rect describes. The range ends
-  // at the start of the next index in the array.
-  std::vector<size_t> visual_rects_range_starts_;
-  // A stack of indices into the |visual_rects_| for each paired begin range
-  // that hasn't been closed.
-  std::vector<size_t> begin_paired_indices_;
+  // A stack of pairs of indices and counts. The indices are into the
+  // |visual_rects_| for each paired begin range that hasn't been closed. The
+  // counts refer to the number of visual rects in that begin sequence that end
+  // with the index.
+  std::vector<std::pair<size_t, size_t>> begin_paired_indices_;
   // While recording a range of ops, this is the position in the PaintOpBuffer
   // where the recording started.
   size_t current_range_start_ = 0;

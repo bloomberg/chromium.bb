@@ -39,7 +39,10 @@ bool GetCanvasClipBounds(SkCanvas* canvas, gfx::Rect* clip_bounds) {
 
 }  // namespace
 
-DisplayItemList::DisplayItemList() = default;
+DisplayItemList::DisplayItemList() {
+  visual_rects_.reserve(1024);
+  begin_paired_indices_.reserve(32);
+}
 
 DisplayItemList::~DisplayItemList() = default;
 
@@ -50,16 +53,13 @@ void DisplayItemList::Raster(SkCanvas* canvas,
     return;
 
   std::vector<size_t> indices = rtree_.Search(canvas_playback_rect);
-  if (!indices.empty()) {
-    paint_op_buffer_.PlaybackRanges(visual_rects_range_starts_, indices, canvas,
-                                    callback);
-  }
+  paint_op_buffer_.Playback(canvas, callback, &indices);
 }
 
 void DisplayItemList::GrowCurrentBeginItemVisualRect(
     const gfx::Rect& visual_rect) {
   if (!begin_paired_indices_.empty())
-    visual_rects_[begin_paired_indices_.back()].Union(visual_rect);
+    visual_rects_[begin_paired_indices_.back().first].Union(visual_rect);
 }
 
 void DisplayItemList::Finalize() {
@@ -74,9 +74,9 @@ void DisplayItemList::Finalize() {
   rtree_.Build(visual_rects_);
 
   if (!retain_visual_rects_)
-    // This clears both the vector and the vector's capacity, since
-    // visual_rects won't be used anymore.
-    std::vector<gfx::Rect>().swap(visual_rects_);
+    visual_rects_.clear();
+  visual_rects_.shrink_to_fit();
+  begin_paired_indices_.shrink_to_fit();
 }
 
 size_t DisplayItemList::BytesUsed() const {
@@ -109,15 +109,10 @@ DisplayItemList::CreateTracedValue(bool include_items) const {
   if (include_items) {
     state->BeginArray("items");
 
-    DCHECK_EQ(visual_rects_.size(), visual_rects_range_starts_.size());
-    for (size_t i = 0; i < visual_rects_range_starts_.size(); ++i) {
-      size_t range_start = visual_rects_range_starts_[i];
+    for (size_t i = 0; i < paint_op_buffer_.size(); ++i) {
       gfx::Rect visual_rect = visual_rects_[i];
 
       state->BeginDictionary();
-      state->SetString("name", "PaintOpBufferRange");
-      state->SetInteger("rangeStart", base::saturated_cast<int>(range_start));
-
       state->BeginArray("visualRect");
       state->AppendInteger(visual_rect.x());
       state->AppendInteger(visual_rect.y());
@@ -125,16 +120,11 @@ DisplayItemList::CreateTracedValue(bool include_items) const {
       state->AppendInteger(visual_rect.height());
       state->EndArray();
 
-      // The RTree bounds are expanded a bunch so that when we look at the items
-      // in traces we can see if they are having an impact outside the visual
-      // rect which would be wrong.
-      gfx::Rect expanded_rect = rtree_.GetBounds();
-      expanded_rect.Inset(-1000, -1000);
-
       SkPictureRecorder recorder;
       SkCanvas* canvas =
-          recorder.beginRecording(gfx::RectToSkRect(expanded_rect));
-      paint_op_buffer_.PlaybackRanges(visual_rects_range_starts_, {i}, canvas);
+          recorder.beginRecording(gfx::RectToSkRect(rtree_.GetBounds()));
+      std::vector<size_t> indices{i};
+      paint_op_buffer_.Playback(canvas, nullptr, &indices);
       sk_sp<SkPicture> picture = recorder.finishRecordingAsPicture();
 
       std::string b64_picture;
@@ -162,7 +152,6 @@ DisplayItemList::CreateTracedValue(bool include_items) const {
     PictureDebugUtil::SerializeAsBase64(picture.get(), &b64_picture);
     state->SetString("skp64", b64_picture);
   }
-
   return state;
 }
 
@@ -204,7 +193,6 @@ void DisplayItemList::Reset() {
   image_map_.Reset();
   paint_op_buffer_.Reset();
   visual_rects_.clear();
-  visual_rects_range_starts_.clear();
   begin_paired_indices_.clear();
   current_range_start_ = 0;
   in_paired_begin_count_ = 0;

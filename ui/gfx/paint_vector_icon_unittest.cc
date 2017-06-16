@@ -56,7 +56,7 @@ TEST(VectorIconTest, RelativeMoveToAfterClose) {
   sk_sp<cc::PaintRecord> record = recorder.finishRecordingAsPicture();
 
   MockCanvas mock(100, 100);
-  record->playback(&mock);
+  record->Playback(&mock);
 
   ASSERT_EQ(1U, mock.paths().size());
   SkPoint last_point;

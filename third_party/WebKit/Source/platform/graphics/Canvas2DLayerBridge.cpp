@@ -791,7 +791,7 @@ void Canvas2DLayerBridge::FlushRecordingOnly() {
       canvas = color_transform_canvas.get();
     }
 
-    recorder_->finishRecordingAsPicture()->playback(canvas);
+    recorder_->finishRecordingAsPicture()->Playback(canvas);
     if (is_deferral_enabled_)
       StartRecording();
     have_recorded_draw_commands_ = false;

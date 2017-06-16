@@ -115,9 +115,8 @@ TEST(DisplayItemListTest, EmptyUnpairedRangeDoesNotAddVisualRect) {
     list->StartPaint();
     list->EndPaintOfUnpaired(layer_rect);
   }
-  // No ops, no visual rect.
+  // No ops.
   EXPECT_EQ(0u, list->op_count());
-  EXPECT_EQ(0u, list->size());
 
   {
     PaintOpBuffer* buffer = list->StartPaint();
@@ -127,8 +126,6 @@ TEST(DisplayItemListTest, EmptyUnpairedRangeDoesNotAddVisualRect) {
   }
   // Two ops.
   EXPECT_EQ(2u, list->op_count());
-  // One visual rect.
-  EXPECT_EQ(1u, list->size());
 }
 
 TEST(DisplayItemListTest, ClipPairedRange) {
@@ -504,22 +501,14 @@ TEST(DisplayItemListTest, AsValueWithOps) {
 
       // The items list has 3 things in it since we built 3 visual rects.
       ASSERT_TRUE(params_dict->GetList("items", &list));
-      EXPECT_EQ(3u, list->GetSize());
+      EXPECT_EQ(6u, list->GetSize());
 
-      // This is determined by the number of ops we pushed in each range above.
-      // Ex. we pushed 2 ops in the first range, so the 2nd range starts at 2.
-      size_t range_starts[] = {0, 2, 5};
-
-      for (int i = 0; i < 3; ++i) {
+      for (int i = 0; i < 6; ++i) {
         const base::DictionaryValue* item_dict;
         const base::ListValue* visual_rect_list;
 
         ASSERT_TRUE(list->GetDictionary(i, &item_dict));
 
-        // The first visual rect range starts at the beginning of the buffer.
-        EXPECT_TRUE(item_dict->GetDouble("rangeStart", &d) &&
-                    d == range_starts[i])
-            << d;
         // The SkPicture for each item exists.
         EXPECT_TRUE(
             item_dict->GetString("skp64", static_cast<std::string*>(nullptr)));
@@ -563,7 +552,6 @@ TEST(DisplayItemListTest, AsValueWithOps) {
 
 TEST(DisplayItemListTest, SizeEmpty) {
   auto list = make_scoped_refptr(new DisplayItemList);
-  EXPECT_EQ(0u, list->size());
   EXPECT_EQ(0u, list->op_count());
 }
 
@@ -575,7 +563,6 @@ TEST(DisplayItemListTest, SizeOne) {
     buffer->push<DrawRectOp>(gfx::RectToSkRect(drawing_bounds), PaintFlags());
     list->EndPaintOfUnpaired(drawing_bounds);
   }
-  EXPECT_EQ(1u, list->size());
   EXPECT_EQ(1u, list->op_count());
 }
 
@@ -594,7 +581,6 @@ TEST(DisplayItemListTest, SizeMultiple) {
     buffer->push<RestoreOp>();
     list->EndPaintOfPairedEnd();
   }
-  EXPECT_EQ(2u, list->size());
   EXPECT_EQ(3u, list->op_count());
 }
 
@@ -610,7 +596,6 @@ TEST(DisplayItemListTest, AppendVisualRectSimple) {
     list->EndPaintOfUnpaired(drawing_bounds);
   }
 
-  EXPECT_EQ(1u, list->size());
   EXPECT_EQ(1u, list->op_count());
   EXPECT_RECT_EQ(drawing_bounds, list->VisualRectForTesting(0));
 }
@@ -634,10 +619,10 @@ TEST(DisplayItemListTest, AppendVisualRectEmptyBlock) {
     list->EndPaintOfPairedEnd();
   }
 
-  EXPECT_EQ(2u, list->size());
   EXPECT_EQ(3u, list->op_count());
   EXPECT_RECT_EQ(gfx::Rect(), list->VisualRectForTesting(0));
   EXPECT_RECT_EQ(gfx::Rect(), list->VisualRectForTesting(1));
+  EXPECT_RECT_EQ(gfx::Rect(), list->VisualRectForTesting(2));
 }
 
 TEST(DisplayItemListTest, AppendVisualRectEmptyBlockContainingEmptyBlock) {
@@ -671,12 +656,12 @@ TEST(DisplayItemListTest, AppendVisualRectEmptyBlockContainingEmptyBlock) {
     list->EndPaintOfPairedEnd();
   }
 
-  EXPECT_EQ(4u, list->size());
   EXPECT_EQ(5u, list->op_count());
   EXPECT_RECT_EQ(gfx::Rect(), list->VisualRectForTesting(0));
   EXPECT_RECT_EQ(gfx::Rect(), list->VisualRectForTesting(1));
   EXPECT_RECT_EQ(gfx::Rect(), list->VisualRectForTesting(2));
   EXPECT_RECT_EQ(gfx::Rect(), list->VisualRectForTesting(3));
+  EXPECT_RECT_EQ(gfx::Rect(), list->VisualRectForTesting(4));
 }
 
 TEST(DisplayItemListTest, AppendVisualRectBlockContainingDrawing) {
@@ -706,11 +691,11 @@ TEST(DisplayItemListTest, AppendVisualRectBlockContainingDrawing) {
     list->EndPaintOfPairedEnd();
   }
 
-  EXPECT_EQ(3u, list->size());
   EXPECT_EQ(4u, list->op_count());
   EXPECT_RECT_EQ(drawing_bounds, list->VisualRectForTesting(0));
   EXPECT_RECT_EQ(drawing_bounds, list->VisualRectForTesting(1));
   EXPECT_RECT_EQ(drawing_bounds, list->VisualRectForTesting(2));
+  EXPECT_RECT_EQ(drawing_bounds, list->VisualRectForTesting(3));
 }
 
 TEST(DisplayItemListTest, AppendVisualRectBlockContainingEscapedDrawing) {
@@ -740,11 +725,11 @@ TEST(DisplayItemListTest, AppendVisualRectBlockContainingEscapedDrawing) {
     list->EndPaintOfPairedEnd();
   }
 
-  EXPECT_EQ(3u, list->size());
   EXPECT_EQ(4u, list->op_count());
   EXPECT_RECT_EQ(drawing_bounds, list->VisualRectForTesting(0));
   EXPECT_RECT_EQ(drawing_bounds, list->VisualRectForTesting(1));
   EXPECT_RECT_EQ(drawing_bounds, list->VisualRectForTesting(2));
+  EXPECT_RECT_EQ(drawing_bounds, list->VisualRectForTesting(3));
 }
 
 TEST(DisplayItemListTest,
@@ -783,12 +768,12 @@ TEST(DisplayItemListTest,
     list->EndPaintOfPairedEnd();
   }
 
-  EXPECT_EQ(4u, list->size());
   EXPECT_EQ(5u, list->op_count());
   EXPECT_RECT_EQ(drawing_a_bounds, list->VisualRectForTesting(0));
   EXPECT_RECT_EQ(drawing_b_bounds, list->VisualRectForTesting(1));
   EXPECT_RECT_EQ(drawing_b_bounds, list->VisualRectForTesting(2));
   EXPECT_RECT_EQ(drawing_b_bounds, list->VisualRectForTesting(3));
+  EXPECT_RECT_EQ(drawing_b_bounds, list->VisualRectForTesting(4));
 }
 
 TEST(DisplayItemListTest, AppendVisualRectTwoBlocksTwoDrawings) {
@@ -839,16 +824,17 @@ TEST(DisplayItemListTest, AppendVisualRectTwoBlocksTwoDrawings) {
     list->EndPaintOfPairedEnd();
   }
 
-  EXPECT_EQ(6u, list->size());
   EXPECT_EQ(8u, list->op_count());
   gfx::Rect merged_drawing_bounds = gfx::Rect(drawing_a_bounds);
   merged_drawing_bounds.Union(drawing_b_bounds);
   EXPECT_RECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(0));
-  EXPECT_RECT_EQ(drawing_a_bounds, list->VisualRectForTesting(1));
-  EXPECT_RECT_EQ(drawing_b_bounds, list->VisualRectForTesting(2));
+  EXPECT_RECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(1));
+  EXPECT_RECT_EQ(drawing_a_bounds, list->VisualRectForTesting(2));
   EXPECT_RECT_EQ(drawing_b_bounds, list->VisualRectForTesting(3));
   EXPECT_RECT_EQ(drawing_b_bounds, list->VisualRectForTesting(4));
-  EXPECT_RECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(5));
+  EXPECT_RECT_EQ(drawing_b_bounds, list->VisualRectForTesting(5));
+  EXPECT_RECT_EQ(drawing_b_bounds, list->VisualRectForTesting(6));
+  EXPECT_RECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(7));
 }
 
 TEST(DisplayItemListTest,
@@ -901,16 +887,17 @@ TEST(DisplayItemListTest,
     list->EndPaintOfPairedEnd();
   }
 
-  EXPECT_EQ(6u, list->size());
   EXPECT_EQ(8u, list->op_count());
   gfx::Rect merged_drawing_bounds = gfx::Rect(drawing_a_bounds);
   merged_drawing_bounds.Union(drawing_b_bounds);
   EXPECT_RECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(0));
-  EXPECT_RECT_EQ(drawing_a_bounds, list->VisualRectForTesting(1));
-  EXPECT_RECT_EQ(drawing_b_bounds, list->VisualRectForTesting(2));
+  EXPECT_RECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(1));
+  EXPECT_RECT_EQ(drawing_a_bounds, list->VisualRectForTesting(2));
   EXPECT_RECT_EQ(drawing_b_bounds, list->VisualRectForTesting(3));
   EXPECT_RECT_EQ(drawing_b_bounds, list->VisualRectForTesting(4));
-  EXPECT_RECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(5));
+  EXPECT_RECT_EQ(drawing_b_bounds, list->VisualRectForTesting(5));
+  EXPECT_RECT_EQ(drawing_b_bounds, list->VisualRectForTesting(6));
+  EXPECT_RECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(7));
 }
 
 TEST(DisplayItemListTest,
@@ -963,16 +950,17 @@ TEST(DisplayItemListTest,
     list->EndPaintOfPairedEnd();
   }
 
-  EXPECT_EQ(6u, list->size());
   EXPECT_EQ(8u, list->op_count());
   gfx::Rect merged_drawing_bounds = gfx::Rect(drawing_a_bounds);
   merged_drawing_bounds.Union(drawing_b_bounds);
   EXPECT_RECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(0));
-  EXPECT_RECT_EQ(drawing_a_bounds, list->VisualRectForTesting(1));
-  EXPECT_RECT_EQ(drawing_b_bounds, list->VisualRectForTesting(2));
+  EXPECT_RECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(1));
+  EXPECT_RECT_EQ(drawing_a_bounds, list->VisualRectForTesting(2));
   EXPECT_RECT_EQ(drawing_b_bounds, list->VisualRectForTesting(3));
   EXPECT_RECT_EQ(drawing_b_bounds, list->VisualRectForTesting(4));
-  EXPECT_RECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(5));
+  EXPECT_RECT_EQ(drawing_b_bounds, list->VisualRectForTesting(5));
+  EXPECT_RECT_EQ(drawing_b_bounds, list->VisualRectForTesting(6));
+  EXPECT_RECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(7));
 }
 
 TEST(DisplayItemListTest,
@@ -1025,16 +1013,17 @@ TEST(DisplayItemListTest,
     list->EndPaintOfPairedEnd();
   }
 
-  EXPECT_EQ(6u, list->size());
   EXPECT_EQ(8u, list->op_count());
   gfx::Rect merged_drawing_bounds = gfx::Rect(drawing_a_bounds);
   merged_drawing_bounds.Union(drawing_b_bounds);
   EXPECT_RECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(0));
-  EXPECT_RECT_EQ(drawing_a_bounds, list->VisualRectForTesting(1));
-  EXPECT_RECT_EQ(drawing_b_bounds, list->VisualRectForTesting(2));
+  EXPECT_RECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(1));
+  EXPECT_RECT_EQ(drawing_a_bounds, list->VisualRectForTesting(2));
   EXPECT_RECT_EQ(drawing_b_bounds, list->VisualRectForTesting(3));
   EXPECT_RECT_EQ(drawing_b_bounds, list->VisualRectForTesting(4));
-  EXPECT_RECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(5));
+  EXPECT_RECT_EQ(drawing_b_bounds, list->VisualRectForTesting(5));
+  EXPECT_RECT_EQ(drawing_b_bounds, list->VisualRectForTesting(6));
+  EXPECT_RECT_EQ(merged_drawing_bounds, list->VisualRectForTesting(7));
 }
 
 }  // namespace cc

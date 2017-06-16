@@ -17,7 +17,7 @@ void SimDisplayItemList::AppendDrawingItem(const WebRect& visual_rect,
                                            sk_sp<const PaintRecord> record,
                                            const WebRect& record_bounds) {
   SimCanvas canvas(record_bounds.width, record_bounds.height);
-  record->playback(&canvas);
+  record->Playback(&canvas);
   commands_.Append(canvas.Commands().data(), canvas.Commands().size());
 }
 
