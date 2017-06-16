@@ -1172,7 +1172,7 @@ TEST_F(ContentSecurityPolicyTest, BlobAllowedWhenBypassingCSP) {
       "https");
 }
 
-TEST_F(ContentSecurityPolicyTest, IsValidTest) {
+TEST_F(ContentSecurityPolicyTest, IsValidCSPAttrTest) {
   // Empty string is invalid
   EXPECT_FALSE(ContentSecurityPolicy::IsValidCSPAttr(""));
 
@@ -1262,6 +1262,14 @@ TEST_F(ContentSecurityPolicyTest, IsValidTest) {
   // comma separated
   EXPECT_FALSE(ContentSecurityPolicy::IsValidCSPAttr(
       "script-src 'none', object-src 'none'"));
+
+  // reporting not allowed
+  EXPECT_FALSE(ContentSecurityPolicy::IsValidCSPAttr(
+      "script-src 'none'; report-uri http://example.com/reporting"));
+  EXPECT_FALSE(ContentSecurityPolicy::IsValidCSPAttr(
+      "report-uri relative-path/reporting;"
+      "base-uri http://example.com 'self'"));
+  // TODO(andypaicu): when `report-to` is implemented, add tests here.
 }
 
 }  // namespace blink
