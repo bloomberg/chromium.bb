@@ -70,6 +70,13 @@
 import("//chromecast/chromecast.gni")
 import("//testing/test.gni")
 
+declare_args() {
+  # Set this true to build all tests in a cast_test_group_list by default. This
+  # can be overriden in each cast_test_group_list instance by setting
+  # |build_tests|.
+  build_cast_tests_by_default = true
+}
+
 # Do not allow mixing of gtests and junit tests. All gtests must go into one
 # directory, while all junit tests must go into another directory.
 _gtest_gen_dir = "$root_gen_dir/chromecast/tests"
@@ -308,9 +315,12 @@ template("cast_test_group") {
 #       Options which are passed to the python script, and applied to every test
 #
 #   build_tests (optional)
-#       Set this to true to build all of the tests included in |test_groups|.
-#       Defaults to false. Note that if this is set to true, the test targets
-#       will be built after all the lists are generated.
+#       If true, all of the tests included in |test_groups| will be built as
+#       dependencies of this target. If false, only the lists will be generated.
+#       If not explicitly set, this defaults to the value of
+#       |build_cast_tests_by_default|. Note that if this is set to true,
+#       the test targets will be built after all the lists are generated.
+#
 #   test_type (optional)
 #       A string, which must be either "junit" or "gtest". If not defined,
 #       defaults to "gtest".
@@ -357,12 +367,18 @@ template("cast_test_group_list") {
     _filter_actions += [ _test_group + "_filters" ]
   }
 
+  # Decide whether tests are built as dependencies.
+  _build_cast_tests = build_cast_tests_by_default
+  if (defined(invoker.build_tests)) {
+    _build_cast_tests = invoker.build_tests
+  }
+
   # Generate a list of the groups of targets, so that they can be depended upon
   # by the "pack_run" step and built when this target is invoked.
-  if (defined(invoker.build_tests) && invoker.build_tests) {
-    _build_tests = []
+  if (_build_cast_tests) {
+    _build_test_targets = []
     foreach(_test_group, invoker.test_groups) {
-      _build_tests += [ _test_group + "_build_tests" ]
+      _build_test_targets += [ _test_group + "_build_tests" ]
     }
   }
 
@@ -429,10 +445,10 @@ template("cast_test_group_list") {
     # script executes.
     deps += _filter_actions
 
-    # If |build_tests| has been set to true, depend on the testing targets so
-    # that the tests are built.
-    if (defined(_build_tests)) {
-      deps += _build_tests
+    # If |_build_cast_tests| has been set to true, depend on the testing targets
+    # so that the tests are built.
+    if (_build_cast_tests) {
+      deps += _build_test_targets
     }
 
     if (chromecast_branding != "public") {
