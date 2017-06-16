@@ -19,7 +19,7 @@
 
 ## Core Teams and Work
 
-  * **[Performance tracks](performance_tracks.md)**: Most of the performance
+  * **[Speed tracks](speed_tracks.md)**: Most of the speed 
     work on Chrome is organized into these tracks.
   * **[Chrome Speed Operations](chrome_speed_operations.md)**: provides the
     benchmarks, infrastructure, and releasing oversight to track regressions.
