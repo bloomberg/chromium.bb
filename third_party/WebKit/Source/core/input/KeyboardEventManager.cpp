@@ -177,7 +177,7 @@ WebInputEventResult KeyboardEventManager::KeyEvent(
     // we want to stop.
     if (initial_key_event.GetType() == WebInputEvent::kKeyDown ||
         initial_key_event.GetType() == WebInputEvent::kRawKeyDown)
-      scroll_manager_->StopAutoscroll();
+      scroll_manager_->StopMiddleClickAutoscroll();
 
     // If we were in panscroll mode, we swallow the key event
     return WebInputEventResult::kHandledSuppressed;

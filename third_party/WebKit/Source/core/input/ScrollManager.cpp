@@ -68,6 +68,11 @@ void ScrollManager::StopAutoscroll() {
     controller->StopAutoscroll();
 }
 
+void ScrollManager::StopMiddleClickAutoscroll() {
+  if (AutoscrollController* controller = GetAutoscrollController())
+    controller->StopMiddleClickAutoscroll(frame_);
+}
+
 bool ScrollManager::MiddleClickAutoscrollInProgress() const {
   return GetAutoscrollController() &&
          GetAutoscrollController()->MiddleClickAutoscrollInProgress();

@@ -254,8 +254,8 @@ void EventHandler::StartMiddleClickAutoscroll(LayoutObject* layout_object) {
   if (!controller)
     return;
   controller->StartMiddleClickAutoscroll(
-      ToLayoutBox(layout_object),
-      mouse_event_manager_->LastKnownMousePosition());
+      layout_object->GetFrame(), mouse_event_manager_->LastKnownMousePosition(),
+      mouse_event_manager_->LastKnownMousePositionGlobal());
   mouse_event_manager_->InvalidateClick();
 }
 
@@ -310,6 +310,7 @@ HitTestResult EventHandler::HitTestResultAtPoint(
 }
 
 void EventHandler::StopAutoscroll() {
+  scroll_manager_->StopMiddleClickAutoscroll();
   scroll_manager_->StopAutoscroll();
 }
 
@@ -628,7 +629,7 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
     // return.
     bool is_middle_click_autoscroll_in_progress =
         scroll_manager_->MiddleClickAutoscrollInProgress();
-    scroll_manager_->StopAutoscroll();
+    scroll_manager_->StopMiddleClickAutoscroll();
     if (is_middle_click_autoscroll_in_progress) {
       // We invalidate the click when exiting middle click auto scroll so that
       // we don't inadvertently navigate away from the current page (e.g. the
@@ -783,6 +784,19 @@ WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
   mouse_event_manager_->CancelFakeMouseMoveEvent();
   mouse_event_manager_->HandleSvgPanIfNeeded(false);
 
+  if (RuntimeEnabledFeatures::MiddleClickAutoscrollEnabled()) {
+    if (Page* page = frame_->GetPage()) {
+      if (mouse_event.GetType() == WebInputEvent::kMouseLeave &&
+          mouse_event.button != WebPointerProperties::Button::kMiddle) {
+        page->GetAutoscrollController().StopMiddleClickAutoscroll(frame_);
+      } else {
+        page->GetAutoscrollController().HandleMouseMoveForMiddleClickAutoscroll(
+            frame_, mouse_event_manager_->LastKnownMousePositionGlobal(),
+            mouse_event.button == WebPointerProperties::Button::kMiddle);
+      }
+    }
+  }
+
   if (frame_set_being_resized_) {
     return UpdatePointerTargetAndDispatchEvents(
         EventTypeNames::mousemove, frame_set_being_resized_.Get(), String(),
@@ -914,9 +928,12 @@ WebInputEventResult EventHandler::HandleMouseReleaseEvent(
     frame_->Selection().SetCaretBlinkingSuspended(false);
 
   if (RuntimeEnabledFeatures::MiddleClickAutoscrollEnabled()) {
-    if (Page* page = frame_->GetPage())
+    if (Page* page = frame_->GetPage()) {
       page->GetAutoscrollController()
-          .HandleMouseReleaseForMiddleClickAutoscroll(frame_, mouse_event);
+          .HandleMouseReleaseForMiddleClickAutoscroll(
+              frame_,
+              mouse_event.button == WebPointerProperties::Button::kMiddle);
+    }
   }
 
   mouse_event_manager_->SetMousePressed(false);

@@ -91,8 +91,8 @@ void MouseEventManager::Clear() {
   mouse_down_may_start_drag_ = false;
   captures_dragging_ = false;
   is_mouse_position_unknown_ = true;
-  last_known_mouse_position_ = IntPoint();
-  last_known_mouse_global_position_ = IntPoint();
+  last_known_mouse_position_ = FloatPoint();
+  last_known_mouse_global_position_ = FloatPoint();
   mouse_pressed_ = false;
   click_count_ = 0;
   click_element_ = nullptr;
@@ -567,14 +567,17 @@ bool MouseEventManager::IsMousePositionUnknown() {
 }
 
 IntPoint MouseEventManager::LastKnownMousePosition() {
-  return last_known_mouse_position_;
+  return FlooredIntPoint(last_known_mouse_position_);
+}
+
+FloatPoint MouseEventManager::LastKnownMousePositionGlobal() {
+  return last_known_mouse_global_position_;
 }
 
 void MouseEventManager::SetLastKnownMousePosition(const WebMouseEvent& event) {
   is_mouse_position_unknown_ = false;
-  last_known_mouse_position_ = FlooredIntPoint(event.PositionInRootFrame());
-  last_known_mouse_global_position_ =
-      IntPoint(event.PositionInScreen().x, event.PositionInScreen().y);
+  last_known_mouse_position_ = event.PositionInRootFrame();
+  last_known_mouse_global_position_ = event.PositionInScreen();
 }
 
 void MouseEventManager::DispatchFakeMouseMoveEventSoon() {
@@ -668,7 +671,7 @@ WebInputEventResult MouseEventManager::HandleMousePressEvent(
 WebInputEventResult MouseEventManager::HandleMouseReleaseEvent(
     const MouseEventWithHitTestResults& event) {
   AutoscrollController* controller = scroll_manager_->GetAutoscrollController();
-  if (controller && controller->AutoscrollInProgress())
+  if (controller && controller->SelectionAutoscrollInProgress())
     scroll_manager_->StopAutoscroll();
 
   return frame_->GetEventHandler()
@@ -682,7 +685,7 @@ void MouseEventManager::UpdateSelectionForMouseDrag() {
   frame_->GetEventHandler()
       .GetSelectionController()
       .UpdateSelectionForMouseDrag(mouse_press_node_, drag_start_pos_,
-                                   last_known_mouse_position_);
+                                   FlooredIntPoint(last_known_mouse_position_));
 }
 
 bool MouseEventManager::HandleDragDropIfPossible(
@@ -781,7 +784,7 @@ WebInputEventResult MouseEventManager::HandleMouseDraggedEvent(
 
   frame_->GetEventHandler().GetSelectionController().HandleMouseDraggedEvent(
       event, mouse_down_pos_, drag_start_pos_, mouse_press_node_.Get(),
-      last_known_mouse_position_);
+      FlooredIntPoint(last_known_mouse_position_));
 
   // The call into HandleMouseDraggedEvent may have caused a re-layout,
   // so get the LayoutObject again.

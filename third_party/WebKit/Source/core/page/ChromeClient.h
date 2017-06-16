@@ -177,6 +177,11 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
   // End methods used by PlatformChromeClient.
 
   virtual void SetCursorOverridden(bool) = 0;
+
+  virtual void AutoscrollStart(WebFloatPoint position, LocalFrame*) {}
+  virtual void AutoscrollFling(WebFloatSize velocity, LocalFrame*) {}
+  virtual void AutoscrollEnd(LocalFrame*) {}
+
   virtual Cursor LastSetCursorForTesting() const = 0;
   Node* LastSetTooltipNodeForTesting() const {
     return last_mouse_over_node_.Get();

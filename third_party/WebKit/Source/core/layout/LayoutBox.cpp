@@ -637,7 +637,7 @@ static bool IsDisallowedAutoscroll(HTMLFrameOwnerElement* owner_element,
     HTMLFrameElementBase* frame_element_base =
         ToHTMLFrameElementBase(owner_element);
     if (Page* page = frame_view->GetFrame().GetPage()) {
-      return page->GetAutoscrollController().AutoscrollInProgress() &&
+      return page->GetAutoscrollController().SelectionAutoscrollInProgress() &&
              frame_element_base->ScrollingMode() == kScrollbarAlwaysOff;
     }
   }
@@ -720,7 +720,10 @@ void LayoutBox::ScrollRectToVisible(const LayoutRect& rect,
     return;
   }
 
-  if (GetFrame()->GetPage()->GetAutoscrollController().AutoscrollInProgress())
+  if (GetFrame()
+          ->GetPage()
+          ->GetAutoscrollController()
+          .SelectionAutoscrollInProgress())
     parent_box = EnclosingScrollableBox();
 
   if (parent_box) {

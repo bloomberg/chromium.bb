@@ -84,6 +84,10 @@ class WebWidgetClient {
   // Called when the cursor for the widget changes.
   virtual void DidChangeCursor(const WebCursorInfo&) {}
 
+  virtual void AutoscrollStart(const WebFloatPoint&) {}
+  virtual void AutoscrollFling(const WebFloatSize& velocity) {}
+  virtual void AutoscrollEnd() {}
+
   // Called when the widget should be closed.  WebWidget::close() should
   // be called asynchronously as a result of this notification.
   virtual void CloseWidgetSoon() {}
