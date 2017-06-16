@@ -37,8 +37,8 @@ base::string16 AdsBlockedInfobarDelegate::GetExplanationText() const {
 base::string16 AdsBlockedInfobarDelegate::GetToggleText() const {
   return base::FeatureList::IsEnabled(
              subresource_filter::kSafeBrowsingSubresourceFilterExperimentalUI)
-             ? l10n_util::GetStringUTF16(IDS_ALWAYS_SHOW_ADS)
-             : l10n_util::GetStringUTF16(IDS_SHOW_ADS);
+             ? l10n_util::GetStringUTF16(IDS_ALWAYS_ALLOW_ADS)
+             : l10n_util::GetStringUTF16(IDS_ALLOW_ADS);
 }
 
 infobars::InfoBarDelegate::InfoBarIdentifier
