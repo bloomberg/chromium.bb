@@ -34,7 +34,6 @@
 #include "ash/wm/container_finder.h"
 #include "ash/wm/window_state.h"
 #include "base/memory/ptr_util.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/common/accelerator_util.h"
 #include "services/ui/common/types.h"
@@ -111,14 +110,12 @@ WindowManager::~WindowManager() {
 
 void WindowManager::Init(
     std::unique_ptr<aura::WindowTreeClient> window_tree_client,
-    const scoped_refptr<base::SequencedWorkerPool>& blocking_pool,
     std::unique_ptr<ShellDelegate> shell_delegate) {
   // Only create InputDeviceClient in MASH mode. For MUS mode WindowManager is
   // created by chrome, which creates InputDeviceClient.
   if (config_ == Config::MASH)
     input_device_client_ = base::MakeUnique<ui::InputDeviceClient>();
 
-  blocking_pool_ = blocking_pool;
   DCHECK(window_manager_client_);
   DCHECK(!window_tree_client_);
   window_tree_client_ = std::move(window_tree_client);
@@ -233,7 +230,6 @@ void WindowManager::CreateShell(
                                          : new ShellDelegateMus(connector_);
   init_params.primary_window_tree_host = window_tree_host.release();
   init_params.shell_port = shell_port;
-  init_params.blocking_pool = blocking_pool_.get();
   Shell::CreateInstance(init_params);
 }
 

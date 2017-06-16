@@ -342,8 +342,7 @@ void AshTestHelper::CreateMashWindowManager() {
   // additional tray items) that can make for flaky tests.
   const bool init_network_handler = false;
   window_manager_app_->InitWindowManager(
-      window_tree_client_setup_.OwnWindowTreeClient(),
-      ash_test_environment_->GetBlockingPool(), init_network_handler);
+      window_tree_client_setup_.OwnWindowTreeClient(), init_network_handler);
 
   aura::WindowTreeClient* window_tree_client =
       window_manager_app_->window_manager()->window_tree_client();
@@ -368,7 +367,6 @@ void AshTestHelper::CreateShell() {
   init_params.delegate = test_shell_delegate_;
   init_params.context_factory = context_factory;
   init_params.context_factory_private = context_factory_private;
-  init_params.blocking_pool = ash_test_environment_->GetBlockingPool();
   Shell::CreateInstance(init_params);
 }
 

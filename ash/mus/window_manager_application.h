@@ -14,7 +14,6 @@
 #include "ash/public/interfaces/wallpaper.mojom.h"
 #include "ash/shell_delegate.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -22,10 +21,6 @@
 
 namespace aura {
 class WindowTreeClient;
-}
-
-namespace base {
-class SequencedWorkerPool;
 }
 
 namespace chromeos {
@@ -74,7 +69,6 @@ class WindowManagerApplication : public service_manager::Service {
   // If |init_network_handler| is true, chromeos::NetworkHandler is initialized.
   void InitWindowManager(
       std::unique_ptr<aura::WindowTreeClient> window_tree_client,
-      const scoped_refptr<base::SequencedWorkerPool>& blocking_pool,
       bool init_network_handler);
 
   // Initializes lower-level OS-specific components (e.g. D-Bus services).
@@ -92,9 +86,6 @@ class WindowManagerApplication : public service_manager::Service {
   std::unique_ptr<views::AuraInit> aura_init_;
 
   std::unique_ptr<WindowManager> window_manager_;
-
-  // A blocking pool used by the WindowManager's shell; not used in tests.
-  scoped_refptr<base::SequencedWorkerPool> blocking_pool_;
 
   std::unique_ptr<NetworkConnectDelegateMus> network_connect_delegate_;
   std::unique_ptr<chromeos::system::ScopedFakeStatisticsProvider>

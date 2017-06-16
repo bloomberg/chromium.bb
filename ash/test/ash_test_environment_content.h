@@ -36,7 +36,6 @@ class AshTestEnvironmentContent : public AshTestEnvironment {
   // AshTestEnvironment:
   void SetUp() override;
   void TearDown() override;
-  base::SequencedWorkerPool* GetBlockingPool() override;
   std::unique_ptr<AshTestViewsDelegate> CreateViewsDelegate() override;
 
  private:

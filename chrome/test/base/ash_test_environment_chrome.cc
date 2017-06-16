@@ -6,17 +6,11 @@
 
 #include "ash/test/ash_test_views_delegate.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
-#include "content/public/browser/browser_thread.h"
 #include "ui/views/views_delegate.h"
 
 AshTestEnvironmentChrome::AshTestEnvironmentChrome() {}
 
 AshTestEnvironmentChrome::~AshTestEnvironmentChrome() {}
-
-base::SequencedWorkerPool* AshTestEnvironmentChrome::GetBlockingPool() {
-  return content::BrowserThread::GetBlockingPool();
-}
 
 std::unique_ptr<ash::test::AshTestViewsDelegate>
 AshTestEnvironmentChrome::CreateViewsDelegate() {

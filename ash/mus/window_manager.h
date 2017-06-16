@@ -17,16 +17,11 @@
 #include "ash/shell_delegate.h"
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "services/ui/common/types.h"
 #include "services/ui/public/interfaces/display/display_controller.mojom.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/aura/mus/window_manager_delegate.h"
 #include "ui/aura/mus/window_tree_client_delegate.h"
-
-namespace base {
-class SequencedWorkerPool;
-}
 
 namespace display {
 class Display;
@@ -78,7 +73,6 @@ class WindowManager : public aura::WindowManagerDelegate,
   ~WindowManager() override;
 
   void Init(std::unique_ptr<aura::WindowTreeClient> window_tree_client,
-            const scoped_refptr<base::SequencedWorkerPool>& blocking_pool,
             std::unique_ptr<ash::ShellDelegate> shell_delegate = nullptr);
 
   // Sets the callback that is run once the connection to mus is lost. If not
@@ -230,8 +224,6 @@ class WindowManager : public aura::WindowManagerDelegate,
 
   std::map<uint16_t, AcceleratorHandler*> accelerator_handlers_;
   uint16_t next_accelerator_namespace_id_ = 0u;
-
-  scoped_refptr<base::SequencedWorkerPool> blocking_pool_;
 
   // The ShellDelegate to install. This may be null, in which case
   // ShellDelegateMus is used.

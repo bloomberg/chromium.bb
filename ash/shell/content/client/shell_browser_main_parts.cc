@@ -24,7 +24,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/context_factory.h"
 #include "content/public/common/content_switches.h"
 #include "content/shell/browser/shell_browser_context.h"
@@ -130,7 +129,6 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   init_params.delegate = delegate_;
   init_params.context_factory = content::GetContextFactory();
   init_params.context_factory_private = content::GetContextFactoryPrivate();
-  init_params.blocking_pool = content::BrowserThread::GetBlockingPool();
   ash::Shell::CreateInstance(init_params);
 
   // Initialize session controller client and create fake user sessions. The
