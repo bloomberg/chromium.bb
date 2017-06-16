@@ -24,12 +24,15 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/test/history_service_test_util.h"
+#include "components/subresource_filter/core/browser/subresource_filter_features.h"
+#include "components/subresource_filter/core/browser/subresource_filter_features_test_support.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 namespace {
 
+using subresource_filter::testing::ScopedSubresourceFilterFeatureToggle;
 const char kActionsHistogram[] = "SubresourceFilter.Actions";
 
 class SubresourceFilterContentSettingsManagerTest : public testing::Test {
@@ -37,6 +40,9 @@ class SubresourceFilterContentSettingsManagerTest : public testing::Test {
   SubresourceFilterContentSettingsManagerTest() {}
 
   void SetUp() override {
+    scoped_feature_toggle().ResetSubresourceFilterState(
+        base::FeatureList::OVERRIDE_ENABLE_FEATURE,
+        "SubresourceFilterExperimentalUI" /* additional_features */);
     settings_manager_ =
         SubresourceFilterProfileContextFactory::GetForProfile(&testing_profile_)
             ->settings_manager();
@@ -54,6 +60,10 @@ class SubresourceFilterContentSettingsManagerTest : public testing::Test {
 
   SubresourceFilterContentSettingsManager* settings_manager() {
     return settings_manager_;
+  }
+
+  ScopedSubresourceFilterFeatureToggle& scoped_feature_toggle() {
+    return scoped_feature_toggle_;
   }
 
   TestingProfile* profile() { return &testing_profile_; }
@@ -78,6 +88,7 @@ class SubresourceFilterContentSettingsManagerTest : public testing::Test {
   base::ScopedTempDir scoped_dir_;
 
   content::TestBrowserThreadBundle thread_bundle_;
+  ScopedSubresourceFilterFeatureToggle scoped_feature_toggle_;
   base::HistogramTester histogram_tester_;
   TestingProfile testing_profile_;
 
@@ -188,8 +199,7 @@ TEST_F(SubresourceFilterContentSettingsManagerTest, SmartUI) {
 
   // Showing the UI should trigger a forced content setting update, but no
   // metrics should be recorded.
-  histogram_tester().ExpectBucketCount(kActionsHistogram,
-                                       kActionContentSettingsBlocked, 0);
+  histogram_tester().ExpectTotalCount(kActionsHistogram, 0);
 
   // Fast forward the clock.
   test_clock()->Advance(
@@ -226,9 +236,6 @@ TEST_F(SubresourceFilterContentSettingsManagerTest,
                                        kActionContentSettingsAllowedFromUI, 0);
   histogram_tester().ExpectBucketCount(
       kActionsHistogram, kActionContentSettingsAllowedWhileUISuppressed, 1);
-
-  // Smart UI should be reset.
-  EXPECT_TRUE(settings_manager()->ShouldShowUIForSite(url));
 }
 
 TEST_F(SubresourceFilterContentSettingsManagerTest,
@@ -274,6 +281,23 @@ TEST_F(SubresourceFilterContentSettingsManagerTest,
                                              CONTENT_SETTING_BLOCK);
   histogram_tester().ExpectBucketCount(kActionsHistogram,
                                        kActionContentSettingsBlockedGlobal, 1);
+}
+
+TEST_F(SubresourceFilterContentSettingsManagerTest,
+       NoExperimentalUI_NoWebsiteSetting) {
+  GURL url("https://example.test/");
+
+  // Do no explicitly allow the experimental UI.
+  scoped_feature_toggle().ResetSubresourceFilterState(
+      base::FeatureList::OVERRIDE_ENABLE_FEATURE);
+  settings_manager()->OnDidShowUI(url);
+  EXPECT_FALSE(settings_manager()->GetSiteMetadata(url));
+
+  scoped_feature_toggle().ResetSubresourceFilterState(
+      base::FeatureList::OVERRIDE_ENABLE_FEATURE,
+      "SubresourceFilterExperimentalUI" /* additional_features */);
+  settings_manager()->OnDidShowUI(url);
+  EXPECT_TRUE(settings_manager()->GetSiteMetadata(url));
 }
 
 TEST_F(SubresourceFilterContentSettingsManagerHistoryTest,
