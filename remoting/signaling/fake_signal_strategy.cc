@@ -38,10 +38,6 @@ FakeSignalStrategy::FakeSignalStrategy(const SignalingAddress& address)
 
 FakeSignalStrategy::~FakeSignalStrategy() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  while (!received_messages_.empty()) {
-    delete received_messages_.front();
-    received_messages_.pop_front();
-  }
 }
 
 void FakeSignalStrategy::ConnectTo(FakeSignalStrategy* peer) {
@@ -53,10 +49,8 @@ void FakeSignalStrategy::ConnectTo(FakeSignalStrategy* peer) {
     peer->SetPeerCallback(peer_callback);
   } else {
     peer->main_thread_->PostTask(
-        FROM_HERE,
-        base::Bind(&FakeSignalStrategy::SetPeerCallback,
-                   base::Unretained(peer),
-                   peer_callback));
+        FROM_HERE, base::Bind(&FakeSignalStrategy::SetPeerCallback,
+                              base::Unretained(peer), peer_callback));
   }
 }
 
@@ -72,18 +66,20 @@ void FakeSignalStrategy::SimulateMessageReordering() {
 
 void FakeSignalStrategy::Connect() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  state_ = CONNECTED;
   for (auto& observer : listeners_)
     observer.OnSignalStrategyStateChange(CONNECTED);
 }
 
 void FakeSignalStrategy::Disconnect() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  state_ = DISCONNECTED;
   for (auto& observer : listeners_)
     observer.OnSignalStrategyStateChange(DISCONNECTED);
 }
 
 SignalStrategy::State FakeSignalStrategy::GetState() const {
-  return CONNECTED;
+  return state_;
 }
 
 SignalStrategy::Error FakeSignalStrategy::GetError() const {
@@ -163,7 +159,7 @@ void FakeSignalStrategy::NotifyListeners(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   buzz::XmlElement* stanza_ptr = stanza.get();
-  received_messages_.push_back(stanza.release());
+  received_messages_.push_back(std::move(stanza));
 
   std::string to_error;
   SignalingAddress to =

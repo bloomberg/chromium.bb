@@ -18,6 +18,10 @@
 #include "remoting/base/rsa_key_pair.h"
 #include "remoting/signaling/signal_strategy.h"
 
+#ifdef ERROR
+#undef ERROR
+#endif
+
 namespace base {
 class TimeDelta;
 }  // namespace base
@@ -121,27 +125,24 @@ class HeartbeatSender : public SignalStrategy::Listener {
       const base::TimeDelta& timeout,
       const base::Callback<void(bool success)>& ack_callback);
 
+ private:
+  FRIEND_TEST_ALL_PREFIXES(HeartbeatSenderTest, SetInterval);
+
+  enum class HeartbeatResult {
+    SUCCESS,
+    SET_SEQUENCE_ID,
+    INVALID_HOST_ID,
+    TIMEOUT,
+    ERROR,
+  };
+
   // SignalStrategy::Listener interface.
   void OnSignalStrategyStateChange(SignalStrategy::State state) override;
   bool OnSignalStrategyIncomingStanza(const buzz::XmlElement* stanza) override;
 
- private:
-  FRIEND_TEST_ALL_PREFIXES(HeartbeatSenderTest,
-                           DoSendStanzaWithExpectedSequenceId);
-  FRIEND_TEST_ALL_PREFIXES(HeartbeatSenderTest, ProcessResponseSetInterval);
-  FRIEND_TEST_ALL_PREFIXES(HeartbeatSenderTest,
-                           ProcessResponseExpectedSequenceId);
-  FRIEND_TEST_ALL_PREFIXES(HeartbeatSenderTest, ResponseTimeout);
-  friend class HeartbeatSenderTest;
-
-  void SendStanza();
-  void ResendStanza();
-  void DoSendStanza();
-  void ProcessResponse(bool is_offline_heartbeat_response,
-                       IqRequest* request,
-                       const buzz::XmlElement* response);
-  void SetInterval(base::TimeDelta interval);
-  void SetSequenceId(int sequence_id);
+  void SendHeartbeat();
+  void OnResponse(IqRequest* request, const buzz::XmlElement* response);
+  HeartbeatResult ProcessResponse(const buzz::XmlElement* response);
 
   // Handlers for host-offline-reason completion and timeout.
   void OnHostOfflineReasonTimeout();
@@ -154,19 +155,19 @@ class HeartbeatSender : public SignalStrategy::Listener {
   base::Closure on_heartbeat_successful_callback_;
   base::Closure on_unknown_host_id_error_;
   std::string host_id_;
-  SignalStrategy* signal_strategy_;
+  SignalStrategy* const signal_strategy_;
   scoped_refptr<const RsaKeyPair> host_key_pair_;
   std::string directory_bot_jid_;
   std::unique_ptr<IqSender> iq_sender_;
   std::unique_ptr<IqRequest> request_;
+
   base::TimeDelta interval_;
-  base::RepeatingTimer timer_;
-  base::OneShotTimer timer_resend_;
+  base::OneShotTimer timer_;
+
+  int failed_heartbeat_count_ = 0;
+
   int sequence_id_ = 0;
-  bool sequence_id_was_set_ = false;
-  int sequence_id_recent_set_num_ = 0;
   bool heartbeat_succeeded_ = false;
-  int failed_startup_heartbeat_count_ = 0;
   int timed_out_heartbeats_count_ = 0;
 
   // Fields to send and indicate completion of sending host-offline-reason.

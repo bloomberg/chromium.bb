@@ -380,7 +380,7 @@ TEST_F(JingleSessionTest, Connect) {
   // Verify that the client specified correct initiator value.
   ASSERT_GT(host_signal_strategy_->received_messages().size(), 0U);
   const buzz::XmlElement* initiate_xml =
-      host_signal_strategy_->received_messages().front();
+      host_signal_strategy_->received_messages().front().get();
   const buzz::XmlElement* jingle_element =
       initiate_xml->FirstNamed(buzz::QName("urn:xmpp:jingle:1", "jingle"));
   ASSERT_TRUE(jingle_element);
