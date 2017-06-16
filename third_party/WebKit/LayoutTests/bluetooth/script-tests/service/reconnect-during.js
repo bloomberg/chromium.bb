@@ -1,27 +1,25 @@
-<!DOCTYPE html>
-<script src="../../../resources/testharness.js"></script>
-<script src="../../../resources/testharnessreport.js"></script>
-<script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
-<script>
 'use strict';
 promise_test(() => {
   return setBluetoothFakeAdapter('HeartRateAdapter')
     .then(() => requestDeviceWithKeyDown({
       filters: [{services: ['heart_rate']}]}))
     .then(device => device.gatt.connect())
-    .then(gattServer => {
-      return gattServer.getPrimaryService('heart_rate')
+    .then(gatt => {
+      return gatt.getPrimaryService('heart_rate')
         .then(service => {
           let promise = assert_promise_rejects_with_message(
-            service.getCharacteristic('heart_rate_measurement'),
+            service.CALLS([
+              getCharacteristic('heart_rate_measurement')|
+              getCharacteristics()|
+              getCharacteristics('heart_rate_measurement')[UUID]
+            ]),
             new DOMException(
               'GATT Server is disconnected. Cannot retrieve characteristics. ' +
               '(Re)connect first with `device.gatt.connect`.',
               'NetworkError'));
-          gattServer.disconnect();
-          return gattServer.connect().then(() => promise);
+          gatt.disconnect();
+          return gatt.connect().then(() => promise);
         });
     });
-}, 'disconnect() and connect() called during getCharacteristic. Reject with ' +
+}, 'disconnect() and connect() called during FUNCTION_NAME. Reject with ' +
    'NetworkError.');
-</script>
