@@ -16,7 +16,7 @@ promise_test(() => {
       filters: [{services: ['health_thermometer']}],
       optionalServices: ['human_interface_device']
     })
-    .then(([device, fake_peripheral]) => {
+    .then(({device, fake_peripheral}) => {
       return fake_peripheral
         .setNextGATTConnectionResponse({code: HCI_SUCCESS})
         .then(() => device.gatt.connect())
