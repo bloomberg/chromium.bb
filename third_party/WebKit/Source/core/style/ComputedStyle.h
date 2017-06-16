@@ -1478,21 +1478,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     return DataEquivalent(ShapeOutside(), other.ShapeOutside());
   }
 
-  // size
-  const FloatSize& PageSize() const {
-    return rare_non_inherited_data_->page_size_;
-  }
-  PageSizeType GetPageSizeType() const {
-    return static_cast<PageSizeType>(rare_non_inherited_data_->page_size_type_);
-  }
-  void SetPageSize(const FloatSize& s) {
-    SET_VAR(rare_non_inherited_data_, page_size_, s);
-  }
-  void SetPageSizeType(PageSizeType t) {
-    SET_VAR(rare_non_inherited_data_, page_size_type_,
-            static_cast<unsigned>(t));
-  }
-
   // Text decoration properties.
   // text-decoration-line
   static TextDecoration InitialTextDecoration() {
@@ -2784,12 +2769,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   // Perspective utility functions.
   bool HasPerspective() const {
     return rare_non_inherited_data_->perspective_ > 0;
-  }
-
-  // Page size utility functions.
-  void ResetPageSizeType() {
-    SET_VAR(rare_non_inherited_data_, page_size_type_,
-            static_cast<unsigned>(PageSizeType::kAuto));
   }
 
   // Outline utility functions.
