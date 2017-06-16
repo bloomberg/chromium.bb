@@ -18,6 +18,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/common/content_features.h"
 #include "jni/WebContentsAccessibility_jni.h"
+#include "ui/events/android/motion_event_android.h"
 
 using base::android::AttachCurrentThread;
 using base::android::JavaParamRef;
@@ -522,6 +523,25 @@ void WebContentsAccessibilityAndroid::HandleHover(int32_t unique_id) {
   if (obj.is_null())
     return;
   Java_WebContentsAccessibility_handleHover(env, obj, unique_id);
+}
+
+bool WebContentsAccessibilityAndroid::OnHoverEvent(
+    const ui::MotionEventAndroid& event) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return false;
+
+  if (!Java_WebContentsAccessibility_onHoverEvent(env, obj, event.GetAction()))
+    return false;
+
+  // |HitTest| sends an IPC to the render process to do the hit testing.
+  // The response is handled by HandleHover when it returns.
+  // Hover event was consumed by accessibility by now. Return true to
+  // stop the event from proceeding.
+  if (event.GetAction() != ui::MotionEvent::ACTION_HOVER_EXIT && root_manager_)
+    root_manager_->HitTest(gfx::ToFlooredPoint(event.GetPoint()));
+  return true;
 }
 
 void WebContentsAccessibilityAndroid::HandleNavigate() {

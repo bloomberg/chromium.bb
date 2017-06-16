@@ -3296,7 +3296,9 @@ public class AwContents implements SmartClipProvider {
 
         @Override
         public boolean onHoverEvent(MotionEvent event) {
-            return isDestroyedOrNoOperation(NO_WARN) ? false : mContentViewCore.onHoverEvent(event);
+            return isDestroyedOrNoOperation(NO_WARN)
+                    ? false
+                    : mWebContents.getEventForwarder().onHoverEvent(event);
         }
 
         @Override

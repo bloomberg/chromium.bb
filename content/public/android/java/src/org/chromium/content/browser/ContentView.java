@@ -196,7 +196,7 @@ public class ContentView extends FrameLayout
      */
     @Override
     public boolean onHoverEvent(MotionEvent event) {
-        boolean consumed = mContentViewCore.onHoverEvent(event);
+        boolean consumed = getEventForwarder().onHoverEvent(event);
         if (!mContentViewCore.isTouchExplorationEnabled()) super.onHoverEvent(event);
         return consumed;
     }

@@ -10,6 +10,10 @@
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
 
+namespace ui {
+class MotionEventAndroid;
+}
+
 namespace content {
 
 class BrowserAccessibilityAndroid;
@@ -209,6 +213,7 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
   void HandleEditableTextChanged(int32_t unique_id);
   void HandleSliderChanged(int32_t unique_id);
   void SendDelayedWindowContentChangedEvent();
+  bool OnHoverEvent(const ui::MotionEventAndroid& event);
   void HandleHover(int32_t unique_id);
   void HandleNavigate();
 

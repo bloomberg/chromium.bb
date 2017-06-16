@@ -273,6 +273,12 @@ bool BrowserAccessibilityManagerAndroid::PreviousAtGranularity(
   return true;
 }
 
+bool BrowserAccessibilityManagerAndroid::OnHoverEvent(
+    const ui::MotionEventAndroid& event) {
+  WebContentsAccessibilityAndroid* wcax = GetWebContentsAXFromRootManager();
+  return wcax ? wcax->OnHoverEvent(event) : false;
+}
+
 void BrowserAccessibilityManagerAndroid::HandleHoverEvent(
     BrowserAccessibility* node) {
   WebContentsAccessibilityAndroid* wcax = GetWebContentsAXFromRootManager();
