@@ -19,7 +19,7 @@ class TestImporterTest(LoggingTestCase):
             MockChromiumCommit(host, position='refs/heads/master@{#431915}')
         ]
         importer.checkout_is_okay = lambda _: True
-        return_code = importer.main(['wpt'])
+        return_code = importer.main([])
         self.assertEqual(return_code, 0)
         self.assertLog([
             'INFO: Cloning repo: https://chromium.googlesource.com/external/w3c/web-platform-tests.git\n',
