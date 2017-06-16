@@ -34,6 +34,7 @@
 #include "core/dom/Text.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/FrameSelection.h"
+#include "core/editing/InlineBoxTraversal.h"
 #include "core/editing/Position.h"
 #include "core/editing/PositionIterator.h"
 #include "core/editing/RenderedPosition.h"
@@ -902,11 +903,8 @@ static InlineBoxPosition AdjustInlineBoxPositionForTextDirection(
         return InlineBoxPosition(inline_box, caret_offset);
 
       // For example, abc 123 ^ CBA
-      while (InlineBox* next_box = inline_box->NextLeafChild()) {
-        if (next_box->BidiLevel() < level)
-          break;
-        inline_box = next_box;
-      }
+      inline_box = InlineBoxTraversal::FindRightBoundaryOfEntireBidiRun(
+          *inline_box, level);
       return InlineBoxPosition(inline_box, inline_box->CaretRightmostOffset());
     }
 
@@ -922,11 +920,8 @@ static InlineBoxPosition AdjustInlineBoxPositionForTextDirection(
     if (next_box && next_box->BidiLevel() == level)
       return InlineBoxPosition(inline_box, caret_offset);
 
-    while (InlineBox* prev_box = inline_box->PrevLeafChild()) {
-      if (prev_box->BidiLevel() < level)
-        break;
-      inline_box = prev_box;
-    }
+    inline_box =
+        InlineBoxTraversal::FindLeftBoundaryOfEntireBidiRun(*inline_box, level);
     return InlineBoxPosition(inline_box, inline_box->CaretLeftmostOffset());
   }
 
@@ -935,23 +930,17 @@ static InlineBoxPosition AdjustInlineBoxPositionForTextDirection(
     if (!prev_box || prev_box->BidiLevel() < level) {
       // Left edge of a secondary run. Set to the right edge of the entire
       // run.
-      while (InlineBox* next_box =
-                 inline_box->NextLeafChildIgnoringLineBreak()) {
-        if (next_box->BidiLevel() < level)
-          break;
-        inline_box = next_box;
-      }
+      inline_box =
+          InlineBoxTraversal::FindRightBoundaryOfEntireBidiRunIgnoringLineBreak(
+              *inline_box, level);
       return InlineBoxPosition(inline_box, inline_box->CaretRightmostOffset());
     }
 
     if (prev_box->BidiLevel() > level) {
       // Right edge of a "tertiary" run. Set to the left edge of that run.
-      while (InlineBox* tertiary_box =
-                 inline_box->PrevLeafChildIgnoringLineBreak()) {
-        if (tertiary_box->BidiLevel() <= level)
-          break;
-        inline_box = tertiary_box;
-      }
+      inline_box =
+          InlineBoxTraversal::FindLeftBoundaryOfBidiRunIgnoringLineBreak(
+              *inline_box, level);
       return InlineBoxPosition(inline_box, inline_box->CaretLeftmostOffset());
     }
     return InlineBoxPosition(inline_box, caret_offset);
@@ -967,11 +956,9 @@ static InlineBoxPosition AdjustInlineBoxPositionForTextDirection(
   if (!next_box || next_box->BidiLevel() < level) {
     // Right edge of a secondary run. Set to the left edge of the entire
     // run.
-    while (InlineBox* prev_box = inline_box->PrevLeafChildIgnoringLineBreak()) {
-      if (prev_box->BidiLevel() < level)
-        break;
-      inline_box = prev_box;
-    }
+    inline_box =
+        InlineBoxTraversal::FindLeftBoundaryOfEntireBidiRunIgnoringLineBreak(
+            *inline_box, level);
     return InlineBoxPosition(inline_box, inline_box->CaretLeftmostOffset());
   }
 
@@ -979,12 +966,8 @@ static InlineBoxPosition AdjustInlineBoxPositionForTextDirection(
     return InlineBoxPosition(inline_box, caret_offset);
 
   // Left edge of a "tertiary" run. Set to the right edge of that run.
-  while (InlineBox* tertiary_box =
-             inline_box->NextLeafChildIgnoringLineBreak()) {
-    if (tertiary_box->BidiLevel() <= level)
-      break;
-    inline_box = tertiary_box;
-  }
+  inline_box = InlineBoxTraversal::FindRightBoundaryOfBidiRunIgnoringLineBreak(
+      *inline_box, level);
   return InlineBoxPosition(inline_box, inline_box->CaretRightmostOffset());
 }
 

@@ -42,6 +42,8 @@ blink_core_sources("editing") {
     "FrameSelection.h",
     "GranularityStrategy.cpp",
     "GranularityStrategy.h",
+    "InlineBoxTraversal.cpp",
+    "InlineBoxTraversal.h",
     "InputMethodController.cpp",
     "InputMethodController.h",
     "LayoutSelection.cpp",
