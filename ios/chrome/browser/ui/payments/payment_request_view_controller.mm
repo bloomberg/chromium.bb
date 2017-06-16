@@ -165,7 +165,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   pageInfo.pageTitle = _pageTitle;
   pageInfo.pageHost = _pageHost;
   pageInfo.connectionSecure = _connectionSecure;
-  [model setHeader:pageInfo forSectionWithIdentifier:SectionIdentifierSummary];
+  [model addItem:pageInfo toSectionWithIdentifier:SectionIdentifierSummary];
 
   if (_pending) {
     [_payButton setEnabled:NO];
@@ -369,6 +369,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
       // Selecting the footer item should not trigger an action, unless the
       // link was clicked, which will call didTapLinkURL:.
       break;
+    case ItemTypeSummaryPageInfo:
+      // Selecting the page info item should not trigger an action.
+      break;
     default:
       NOTREACHED();
       break;
@@ -381,33 +384,25 @@ typedef NS_ENUM(NSInteger, ItemType) {
     cellHeightAtIndexPath:(NSIndexPath*)indexPath {
   CollectionViewItem* item =
       [self.collectionViewModel itemAtIndexPath:indexPath];
-  switch (item.type) {
-    case ItemTypeSpinner:
-    case ItemTypeShippingAddress:
-    case ItemTypeShippingOption:
-    case ItemTypePaymentMethod:
-    case ItemTypeContactInfo:
-    case ItemTypeFooterText:
-      return [MDCCollectionViewCell
-          cr_preferredHeightForWidth:CGRectGetWidth(collectionView.bounds)
-                             forItem:item];
-    case ItemTypeSummaryPageInfo:
-    case ItemTypeSummaryTotal:
-      return MDCCellDefaultOneLineHeight;
-    default:
-      NOTREACHED();
-      return MDCCellDefaultOneLineHeight;
-  }
+
+  UIEdgeInsets inset = [self collectionView:collectionView
+                                     layout:collectionView.collectionViewLayout
+                     insetForSectionAtIndex:indexPath.section];
+
+  return [MDCCollectionViewCell
+      cr_preferredHeightForWidth:CGRectGetWidth(collectionView.bounds) -
+                                 inset.left - inset.right
+                         forItem:item];
 }
 
 - (BOOL)collectionView:(UICollectionView*)collectionView
     hidesInkViewAtIndexPath:(NSIndexPath*)indexPath {
   NSInteger type = [self.collectionViewModel itemTypeForIndexPath:indexPath];
   // If there are no payment items to display, there is no effect from touching
-  // the total so there should not be an ink ripple. The footer should also not
-  // have a ripple.
+  // the total so there should not be an ink ripple. The footer and the page
+  // info items should also not have a ripple.
   if ((type == ItemTypeSummaryTotal && ![_dataSource hasPaymentItems]) ||
-      (type == ItemTypeFooterText)) {
+      type == ItemTypeFooterText || type == ItemTypeSummaryPageInfo) {
     return YES;
   } else {
     return NO;

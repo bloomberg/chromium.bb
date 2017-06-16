@@ -126,15 +126,15 @@ typedef NS_ENUM(NSInteger, ItemType) {
     cellHeightAtIndexPath:(NSIndexPath*)indexPath {
   CollectionViewItem* item =
       [self.collectionViewModel itemAtIndexPath:indexPath];
-  switch (item.type) {
-    case ItemTypeMessage:
-      return [MDCCollectionViewCell
-          cr_preferredHeightForWidth:CGRectGetWidth(collectionView.bounds)
-                             forItem:item];
-    default:
-      NOTREACHED();
-      return MDCCellDefaultOneLineHeight;
-  }
+
+  UIEdgeInsets inset = [self collectionView:collectionView
+                                     layout:collectionView.collectionViewLayout
+                     insetForSectionAtIndex:indexPath.section];
+
+  return [MDCCollectionViewCell
+      cr_preferredHeightForWidth:CGRectGetWidth(collectionView.bounds) -
+                                 inset.left - inset.right
+                         forItem:item];
 }
 
 @end
