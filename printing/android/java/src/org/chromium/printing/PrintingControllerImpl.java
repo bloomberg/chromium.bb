@@ -257,24 +257,6 @@ public class PrintingControllerImpl implements PrintingController, PdfGenerator 
     }
 
     @Override
-    public void pageCountEstimationDone(final int maxPages) {
-        // This method might be called even after onFinish, e.g. as a result of a long page
-        // estimation operation.  We make sure that such call has no effect, since the printing
-        // dialog has already been dismissed and relevant cleanup has already been done.
-        // Also, this ensures that we do not call askUserForSettingsReply twice.
-        if (mPrintingState == PRINTING_STATE_FINISHED) return;
-        assert mPrintingState == PRINTING_STATE_STARTED_FROM_ONWRITE;
-        // Chromium PDF generation is started inside onWrite, continue that.
-        if (mPrintingContext == null) {
-            mOnWriteCallback.onWriteFailed(mErrorMessage);
-            resetCallbacks();
-            return;
-        }
-        mPrintingContext.updatePrintingContextMap(mFileDescriptor, /* delete = */ false);
-        mPrintingContext.askUserForSettingsReply(true);
-    }
-
-    @Override
     public void onWrite(
             final PageRange[] ranges,
             final ParcelFileDescriptor destination,
@@ -286,14 +268,7 @@ public class PrintingControllerImpl implements PrintingController, PdfGenerator 
         assert mPrintingState == PRINTING_STATE_READY;
 
         mFileDescriptor = destination.getFd();
-        // We need to convert ranges list into an array of individual numbers for
-        // easier JNI passing and compatibility with the native side.
-        if (ranges.length == 1 && ranges[0].equals(PageRange.ALL_PAGES)) {
-            // null corresponds to all pages in Chromium printing logic.
-            mPages = null;
-        } else {
-            mPages = normalizeRanges(ranges);
-        }
+        mPages = convertPageRangesToIntegerArray(ranges);
 
         if (mPrintable.print()) {
             mPrintingState = PRINTING_STATE_STARTED_FROM_ONWRITE;
@@ -373,7 +348,12 @@ public class PrintingControllerImpl implements PrintingController, PdfGenerator 
     /**
      * Gets an array of page ranges and returns an array of integers with all ranges expanded.
      */
-    private static int[] normalizeRanges(final PageRange[] ranges) {
+    private static int[] convertPageRangesToIntegerArray(final PageRange[] ranges) {
+        if (ranges.length == 1 && ranges[0].equals(PageRange.ALL_PAGES)) {
+            // null corresponds to all pages in Chromium printing logic.
+            return null;
+        }
+
         // Expand ranges into a list of individual numbers.
         ArrayList<Integer> pages = new ArrayList<Integer>();
         for (PageRange range : ranges) {

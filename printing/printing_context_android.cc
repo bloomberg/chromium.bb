@@ -98,8 +98,8 @@ void PrintingContextAndroid::AskUserForSettings(
   if (is_scripted) {
     Java_PrintingContext_showPrintDialog(env, j_printing_context_);
   } else {
-    Java_PrintingContext_pageCountEstimationDone(env, j_printing_context_,
-                                                 max_pages);
+    Java_PrintingContext_askUserForSettings(env, j_printing_context_,
+                                            max_pages);
   }
 }
 

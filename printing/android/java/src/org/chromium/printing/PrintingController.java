@@ -61,15 +61,6 @@ public interface PrintingController {
     void pdfWritingDone(boolean success);
 
     /**
-     * Called when the native side estimates the number of pages in the PDF (before generation).
-     *
-     * @param maxPages Number of pages in the PDF, according to the last provided settings.
-     *                 If this is PrintDocumentInfo.PAGE_COUNT_UNKNOWN, then use the last known
-     *                 valid max pages count.
-     */
-    void pageCountEstimationDone(final int maxPages);
-
-    /**
      * Sets PrintingContext currently associated with the controller.
      *
      * This needs to be called after PrintingContext object is created. Firstly its native
