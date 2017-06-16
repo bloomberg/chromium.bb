@@ -43,6 +43,8 @@ static std::string OfflinerRequestStatusToString(
       return "BACKGROUND_SCHEDULER_CANCELED";
     case Offliner::SAVED_ON_LAST_RETRY:
       return "SAVED_ON_LAST_RETRY";
+    case Offliner::BROWSER_KILLED:
+      return "BROWSER_KILLED";
     default:
       NOTREACHED();
       return std::to_string(static_cast<int>(request_status));

@@ -50,6 +50,8 @@ namespace android {
 
 namespace {
 const char kNativeTag[] = "OPNative";
+const base::FilePath::CharType kTestRequestQueueDirname[] =
+    FILE_PATH_LITERAL("Offline Pages/test_request_queue");
 
 void ToJavaOfflinePageList(JNIEnv* env,
                            jobject j_result_obj,
@@ -134,7 +136,7 @@ std::unique_ptr<KeyedService> GetTestingRequestCoordinator(
       base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
   Profile* profile = Profile::FromBrowserContext(context);
   base::FilePath queue_store_path =
-      profile->GetPath().Append(chrome::kOfflinePageRequestQueueDirname);
+      profile->GetPath().Append(kTestRequestQueueDirname);
 
   std::unique_ptr<RequestQueueStoreSQL> queue_store(
       new RequestQueueStoreSQL(background_task_runner, queue_store_path));
