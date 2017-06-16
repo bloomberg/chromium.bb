@@ -10,7 +10,7 @@ At a high level, performance work in Chrome is categorized into **tracks**,
 like loading, memory, and power. Each track has high-level metrics associated
 with it.
 
-  * **[An overview of tracks](performance_tracks.md)**: lists the tracks and key contact points.
+  * **[An overview of tracks](speed_tracks.md)**: lists the tracks and key contact points.
   * **[Speed Launch Metrics](https://docs.google.com/document/d/1Ww487ZskJ-xBmJGwPO-XPz_QcJvw-kSNffm0nPhVpj8/edit)**:
     the important high-level metrics we measure for each track.
 
