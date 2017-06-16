@@ -736,7 +736,7 @@ int HttpStreamFactoryImpl::JobController::DoResolveProxyComplete(int rv) {
 
   pac_request_ = nullptr;
   net_log_.AddEvent(
-      NetLogEventType::HTTP_STREAM_JOB_PROXY_SERVER_RESOLVED,
+      NetLogEventType::HTTP_STREAM_JOB_CONTROLLER_PROXY_SERVER_RESOLVED,
       base::Bind(
           &NetLogHttpStreamJobProxyServerResolved,
           proxy_info_.is_empty() ? ProxyServer() : proxy_info_.proxy_server()));
