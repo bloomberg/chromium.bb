@@ -9,7 +9,7 @@
 #include "base/memory/singleton.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "third_party/WebKit/public/web/mac/WebScrollbarTheme.h"
+#include "third_party/WebKit/public/platform/mac/WebScrollbarTheme.h"
 
 namespace content {
 

@@ -91,6 +91,7 @@ blink_core_sources("editing") {
     "VisibleUnitsParagraph.cpp",
     "VisibleUnitsSentence.cpp",
     "VisibleUnitsWord.cpp",
+    "WebSubstringUtil.mm",
     "WritingDirection.h",
     "commands/AppendNodeCommand.cpp",
     "commands/AppendNodeCommand.h",
