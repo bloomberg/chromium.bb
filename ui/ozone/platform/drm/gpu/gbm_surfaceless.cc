@@ -103,6 +103,9 @@ void GbmSurfaceless::SwapBuffersAsync(const SwapCompletionCallback& callback) {
     return;
   }
 
+  // TODO(dcastagna): remove glFlush since eglImageFlushExternalEXT called on
+  // the image should be enough (crbug.com/720045).
+  glFlush();
   unsubmitted_frames_.back()->Flush();
 
   SwapCompletionCallback surface_swap_callback = base::Bind(
