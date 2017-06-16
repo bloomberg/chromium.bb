@@ -1046,24 +1046,21 @@ void AddScrollNodeIfNeeded(
     node.scrollable = scrollable;
     node.main_thread_scrolling_reasons = main_thread_scrolling_reasons;
     node.non_fast_scrollable_region = layer->non_fast_scrollable_region();
-    gfx::Size clip_bounds;
-    if (LayerType* scroll_clip_layer = layer->scroll_clip_layer()) {
-      SetIsScrollClipLayer(scroll_clip_layer);
-      clip_bounds = scroll_clip_layer->bounds();
-      DCHECK(scroll_clip_layer->transform_tree_index() !=
-             TransformTree::kInvalidNodeId);
-      node.max_scroll_offset_affected_by_page_scale =
-          !data_from_ancestor.property_trees->transform_tree
-               .Node(scroll_clip_layer->transform_tree_index())
-               ->in_subtree_of_page_scale_layer &&
-          data_from_ancestor.in_subtree_of_page_scale_layer;
-    }
 
-    node.scroll_clip_layer_bounds = clip_bounds;
     node.scrolls_inner_viewport =
         layer == data_from_ancestor.inner_viewport_scroll_layer;
     node.scrolls_outer_viewport =
         layer == data_from_ancestor.outer_viewport_scroll_layer;
+
+    if (node.scrolls_inner_viewport &&
+        data_from_ancestor.in_subtree_of_page_scale_layer) {
+      node.max_scroll_offset_affected_by_page_scale = true;
+    }
+
+    if (LayerType* scroll_clip_layer = layer->scroll_clip_layer()) {
+      SetIsScrollClipLayer(scroll_clip_layer);
+      node.scroll_clip_layer_bounds = scroll_clip_layer->bounds();
+    }
 
     node.bounds = layer->bounds();
     node.offset_to_transform_parent = layer->offset_to_transform_parent();

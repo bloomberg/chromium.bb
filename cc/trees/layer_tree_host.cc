@@ -910,6 +910,18 @@ LayerTreeHost::ViewportLayers::~ViewportLayers() {}
 void LayerTreeHost::RegisterViewportLayers(const ViewportLayers& layers) {
   DCHECK(!layers.inner_viewport_scroll ||
          layers.inner_viewport_scroll != layers.outer_viewport_scroll);
+  // The page scale layer only affects the innter viewport scroll layer. The
+  // page scale layer should be sandwiched between the inner viewport scroll and
+  // inner viewport container layers:
+  //   inner viewport container
+  //     overscroll elasticity (optional)
+  //       page scale
+  //         inner viewport scroll
+  DCHECK(!layers.page_scale ||
+         layers.inner_viewport_scroll->parent() == layers.page_scale);
+  DCHECK(!layers.page_scale ||
+         layers.page_scale->parent() == layers.overscroll_elasticity ||
+         layers.page_scale->parent() == layers.inner_viewport_container);
   viewport_layers_.overscroll_elasticity = layers.overscroll_elasticity;
   viewport_layers_.page_scale = layers.page_scale;
   viewport_layers_.inner_viewport_container = layers.inner_viewport_container;

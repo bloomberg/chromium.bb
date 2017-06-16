@@ -8218,13 +8218,15 @@ TEST_F(LayerTreeHostCommonTest, ViewportBoundsDeltaAffectVisibleContentRect) {
 
 TEST_F(LayerTreeHostCommonTest, NodesAffectedByViewportBoundsDeltaGetUpdated) {
   scoped_refptr<Layer> root = Layer::Create();
+  scoped_refptr<Layer> page_scale_layer = Layer::Create();
   scoped_refptr<Layer> inner_viewport_container_layer = Layer::Create();
   scoped_refptr<Layer> inner_viewport_scroll_layer = Layer::Create();
   scoped_refptr<Layer> outer_viewport_container_layer = Layer::Create();
   scoped_refptr<Layer> outer_viewport_scroll_layer = Layer::Create();
 
   root->AddChild(inner_viewport_container_layer);
-  inner_viewport_container_layer->AddChild(inner_viewport_scroll_layer);
+  inner_viewport_container_layer->AddChild(page_scale_layer);
+  page_scale_layer->AddChild(inner_viewport_scroll_layer);
   inner_viewport_scroll_layer->AddChild(outer_viewport_container_layer);
   outer_viewport_container_layer->AddChild(outer_viewport_scroll_layer);
 
@@ -8238,7 +8240,7 @@ TEST_F(LayerTreeHostCommonTest, NodesAffectedByViewportBoundsDeltaGetUpdated) {
 
   host()->SetRootLayer(root);
   LayerTreeHost::ViewportLayers viewport_layers;
-  viewport_layers.page_scale = root;
+  viewport_layers.page_scale = page_scale_layer;
   viewport_layers.inner_viewport_container = inner_viewport_container_layer;
   viewport_layers.outer_viewport_container = outer_viewport_container_layer;
   viewport_layers.inner_viewport_scroll = inner_viewport_scroll_layer;

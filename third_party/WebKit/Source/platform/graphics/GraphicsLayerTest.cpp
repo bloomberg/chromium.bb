@@ -58,9 +58,11 @@ class GraphicsLayerTest : public testing::Test {
   GraphicsLayerTest() {
     clip_layer_ = WTF::WrapUnique(new FakeGraphicsLayer(&client_));
     scroll_elasticity_layer_ = WTF::WrapUnique(new FakeGraphicsLayer(&client_));
+    page_scale_layer_ = WTF::WrapUnique(new FakeGraphicsLayer(&client_));
     graphics_layer_ = WTF::WrapUnique(new FakeGraphicsLayer(&client_));
     clip_layer_->AddChild(scroll_elasticity_layer_.get());
-    scroll_elasticity_layer_->AddChild(graphics_layer_.get());
+    scroll_elasticity_layer_->AddChild(page_scale_layer_.get());
+    page_scale_layer_->AddChild(graphics_layer_.get());
     graphics_layer_->PlatformLayer()->SetScrollClipLayer(
         clip_layer_->PlatformLayer());
     platform_layer_ = graphics_layer_->PlatformLayer();
@@ -68,9 +70,9 @@ class GraphicsLayerTest : public testing::Test {
     DCHECK(layer_tree_view_);
     layer_tree_view_->SetRootLayer(*clip_layer_->PlatformLayer());
     layer_tree_view_->RegisterViewportLayers(
-        scroll_elasticity_layer_->PlatformLayer(), clip_layer_->PlatformLayer(),
-        clip_layer_->PlatformLayer(), nullptr, graphics_layer_->PlatformLayer(),
-        nullptr);
+        scroll_elasticity_layer_->PlatformLayer(),
+        page_scale_layer_->PlatformLayer(), clip_layer_->PlatformLayer(),
+        nullptr, graphics_layer_->PlatformLayer(), nullptr);
     layer_tree_view_->SetViewportSize(WebSize(1, 1));
   }
 
@@ -84,6 +86,7 @@ class GraphicsLayerTest : public testing::Test {
  protected:
   WebLayer* platform_layer_;
   std::unique_ptr<FakeGraphicsLayer> graphics_layer_;
+  std::unique_ptr<FakeGraphicsLayer> page_scale_layer_;
   std::unique_ptr<FakeGraphicsLayer> scroll_elasticity_layer_;
   std::unique_ptr<FakeGraphicsLayer> clip_layer_;
 
