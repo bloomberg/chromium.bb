@@ -32,13 +32,15 @@ class FakeSignalStrategy : public SignalStrategy {
   FakeSignalStrategy(const SignalingAddress& address);
   ~FakeSignalStrategy() override;
 
-  const std::list<buzz::XmlElement*>& received_messages() {
+  const std::vector<std::unique_ptr<buzz::XmlElement>>& received_messages() {
     return received_messages_;
   }
 
   void set_send_delay(base::TimeDelta delay) {
     send_delay_ = delay;
   }
+
+  void SetState(State state) const;
 
   // Connects current FakeSignalStrategy to receive messages from |peer|.
   void ConnectTo(FakeSignalStrategy* peer);
@@ -76,6 +78,8 @@ class FakeSignalStrategy : public SignalStrategy {
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
 
+  State state_ = CONNECTED;
+
   SignalingAddress address_;
   PeerCallback peer_callback_;
   base::ObserverList<Listener, true> listeners_;
@@ -88,7 +92,7 @@ class FakeSignalStrategy : public SignalStrategy {
   std::unique_ptr<buzz::XmlElement> pending_stanza_;
 
   // All received messages, includes thouse still in |pending_messages_|.
-  std::list<buzz::XmlElement*> received_messages_;
+  std::vector<std::unique_ptr<buzz::XmlElement>> received_messages_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
