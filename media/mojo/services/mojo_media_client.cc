@@ -28,7 +28,8 @@ std::unique_ptr<AudioDecoder> MojoMediaClient::CreateAudioDecoder(
 
 std::unique_ptr<VideoDecoder> MojoMediaClient::CreateVideoDecoder(
     scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    mojom::CommandBufferIdPtr command_buffer_id) {
+    mojom::CommandBufferIdPtr command_buffer_id,
+    OutputWithReleaseMailboxCB output_cb) {
   return nullptr;
 }
 

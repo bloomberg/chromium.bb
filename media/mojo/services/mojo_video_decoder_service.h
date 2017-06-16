@@ -5,12 +5,15 @@
 #ifndef MEDIA_MOJO_SERVICES_MOJO_VIDEO_DECODER_SERVICE_H_
 #define MEDIA_MOJO_SERVICES_MOJO_VIDEO_DECODER_SERVICE_H_
 
+#include <map>
 #include <memory>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/unguessable_token.h"
 #include "media/base/decode_status.h"
 #include "media/mojo/interfaces/video_decoder.mojom.h"
+#include "media/mojo/services/mojo_media_client.h"
 
 namespace gpu {
 struct SyncToken;
@@ -55,13 +58,16 @@ class MojoVideoDecoderService : public mojom::VideoDecoder {
   void OnDecoderDecoded(const DecodeCallback& callback, DecodeStatus status);
   void OnDecoderReset(const ResetCallback& callback);
 
-  void OnDecoderOutput(const scoped_refptr<VideoFrame>& frame);
+  void OnDecoderOutput(MojoMediaClient::ReleaseMailboxCB,
+                       const scoped_refptr<VideoFrame>& frame);
 
   mojom::VideoDecoderClientAssociatedPtr client_;
   std::unique_ptr<MojoDecoderBufferReader> mojo_decoder_buffer_reader_;
 
   MojoMediaClient* mojo_media_client_;
   std::unique_ptr<media::VideoDecoder> decoder_;
+  std::map<base::UnguessableToken, MojoMediaClient::ReleaseMailboxCB>
+      release_mailbox_cbs_;
 
   base::WeakPtr<MojoVideoDecoderService> weak_this_;
   base::WeakPtrFactory<MojoVideoDecoderService> weak_factory_;

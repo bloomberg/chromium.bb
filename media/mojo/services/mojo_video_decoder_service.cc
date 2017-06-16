@@ -36,13 +36,13 @@ void MojoVideoDecoderService::Construct(
     mojom::CommandBufferIdPtr command_buffer_id) {
   DVLOG(1) << __func__;
 
-  // TODO(sandersd): Enter an error state.
+  // TODO(sandersd): Close the channel.
   if (decoder_)
     return;
 
-  // TODO(sandersd): Provide callback for requesting a GpuCommandBufferStub.
   decoder_ = mojo_media_client_->CreateVideoDecoder(
-      base::ThreadTaskRunnerHandle::Get(), std::move(command_buffer_id));
+      base::ThreadTaskRunnerHandle::Get(), std::move(command_buffer_id),
+      base::Bind(&MojoVideoDecoderService::OnDecoderOutput, weak_this_));
 
   client_.Bind(std::move(client));
 
@@ -64,7 +64,8 @@ void MojoVideoDecoderService::Initialize(mojom::VideoDecoderConfigPtr config,
       config.To<VideoDecoderConfig>(), low_delay, nullptr,
       base::Bind(&MojoVideoDecoderService::OnDecoderInitialized, weak_this_,
                  callback),
-      base::Bind(&MojoVideoDecoderService::OnDecoderOutput, weak_this_));
+      base::Bind(&MojoVideoDecoderService::OnDecoderOutput, weak_this_,
+                 MojoMediaClient::ReleaseMailboxCB()));
 }
 
 void MojoVideoDecoderService::Decode(mojom::DecoderBufferPtr buffer,
@@ -105,8 +106,7 @@ void MojoVideoDecoderService::OnDecoderInitialized(
 void MojoVideoDecoderService::OnDecoderRead(
     const DecodeCallback& callback,
     scoped_refptr<DecoderBuffer> buffer) {
-  // TODO(sandersd): After a decode error, we should enter an error state and
-  // reject all future method calls.
+  // TODO(sandersd): Close the channel.
   if (!buffer) {
     callback.Run(DecodeStatus::DECODE_ERROR);
     return;
@@ -131,16 +131,34 @@ void MojoVideoDecoderService::OnDecoderReset(const ResetCallback& callback) {
 }
 
 void MojoVideoDecoderService::OnDecoderOutput(
+    MojoMediaClient::ReleaseMailboxCB release_cb,
     const scoped_refptr<VideoFrame>& frame) {
   DVLOG(2) << __func__;
   DCHECK(client_);
-  client_->OnVideoFrameDecoded(frame, base::nullopt);
+
+  base::Optional<base::UnguessableToken> release_token;
+  if (release_cb) {
+    release_token = base::UnguessableToken::Create();
+    release_mailbox_cbs_[*release_token] = std::move(release_cb);
+  }
+
+  client_->OnVideoFrameDecoded(frame, std::move(release_token));
 }
 
 void MojoVideoDecoderService::OnReleaseMailbox(
     const base::UnguessableToken& release_token,
     const gpu::SyncToken& release_sync_token) {
   DVLOG(2) << __func__;
+
+  // TODO(sandersd): Is it a serious error for the client to call
+  // OnReleaseMailbox() with an invalid |release_token|?
+  auto it = release_mailbox_cbs_.find(release_token);
+  if (it == release_mailbox_cbs_.end())
+    return;
+
+  MojoMediaClient::ReleaseMailboxCB cb = std::move(it->second);
+  release_mailbox_cbs_.erase(it);
+  std::move(cb).Run(release_sync_token);
 }
 
 }  // namespace media
