@@ -115,19 +115,8 @@ void DevToolsURLRequestInterceptor::State::ContinueInterceptedRequestOnIoThread(
     return;
   }
 
-  if (job->ContinueInterceptedRequest(std::move(modifications))) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&ContinueInterceptedRequestCallback::sendSuccess,
-                       base::Passed(std::move(callback))));
-  } else {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::BindOnce(
-            &ContinueInterceptedRequestCallback::sendFailure,
-            base::Passed(std::move(callback)),
-            protocol::Response::InvalidParams("Response already processed.")));
-  }
+  job->ContinueInterceptedRequest(std::move(modifications),
+                                  std::move(callback));
 }
 
 DevToolsURLInterceptorRequestJob* DevToolsURLRequestInterceptor::State::
@@ -377,13 +366,16 @@ DevToolsURLRequestInterceptor::Modifications::Modifications(
     protocol::Maybe<std::string> modified_url,
     protocol::Maybe<std::string> modified_method,
     protocol::Maybe<std::string> modified_post_data,
-    protocol::Maybe<protocol::Network::Headers> modified_headers)
+    protocol::Maybe<protocol::Network::Headers> modified_headers,
+    protocol::Maybe<protocol::Network::AuthChallengeResponse>
+        auth_challenge_response)
     : error_reason(std::move(error_reason)),
       raw_response(std::move(raw_response)),
       modified_url(std::move(modified_url)),
       modified_method(std::move(modified_method)),
       modified_post_data(std::move(modified_post_data)),
-      modified_headers(std::move(modified_headers)) {}
+      modified_headers(std::move(modified_headers)),
+      auth_challenge_response(std::move(auth_challenge_response)) {}
 
 DevToolsURLRequestInterceptor::Modifications::~Modifications() {}
 

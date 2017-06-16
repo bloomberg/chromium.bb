@@ -6,6 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/browser/devtools/protocol/network_handler.h"
 #include "content/browser/devtools/protocol/page.h"
 #include "net/base/elements_upload_data_stream.h"
@@ -91,6 +92,21 @@ void SendRedirectInterceptedEventOnUiThread(
       std::move(headers_object), http_status_code, redirect_url);
 }
 
+void SendAuthRequiredEventOnUiThread(
+    base::WeakPtr<protocol::NetworkHandler> network_handler,
+    std::string interception_id,
+    std::unique_ptr<protocol::Network::Request> network_request,
+    std::string resource_type,
+    std::unique_ptr<protocol::Network::AuthChallenge> auth_challenge) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (!network_handler)
+    return;
+  network_handler->frontend()->RequestIntercepted(
+      interception_id, std::move(network_request), resource_type,
+      protocol::Maybe<protocol::Network::Headers>(), protocol::Maybe<int>(),
+      protocol::Maybe<protocol::String>(), std::move(auth_challenge));
+}
+
 class ProxyUploadElementReader : public net::UploadElementReader {
  public:
   explicit ProxyUploadElementReader(net::UploadElementReader* reader)
@@ -163,7 +179,7 @@ DevToolsURLInterceptorRequestJob::DevToolsURLInterceptorRequestJob(
                        original_request->extra_request_headers(),
                        original_request->priority(),
                        original_request->context()),
-      waiting_for_user_response_(false),
+      waiting_for_user_response_(WaitingForUserResponse::NOT_WAITING),
       intercepting_requests_(true),
       killed_(false),
       interception_id_(interception_id),
@@ -196,7 +212,8 @@ void DevToolsURLInterceptorRequestJob::Start() {
     sub_request_.reset(new SubRequest(request_details_, this,
                                       devtools_url_request_interceptor_state_));
   } else {
-    waiting_for_user_response_ = true;
+    waiting_for_user_response_ =
+        WaitingForUserResponse::WAITING_FOR_INTERCEPTION_RESPONSE;
     std::unique_ptr<protocol::Network::Request> network_request =
         protocol::NetworkHandler::CreateRequestFromURLRequest(request());
     BrowserThread::PostTask(
@@ -310,12 +327,32 @@ void DevToolsURLInterceptorRequestJob::OnAuthRequired(
   DCHECK_EQ(request, sub_request_->request());
   auth_info_ = auth_info;
 
-  // This notification came from the sub requests URLRequest::Delegate and we
-  // must proxy it the origional URLRequest::Delegate.  We can't do that
-  // directly but by implementing NeedsAuth and calling NotifyHeadersComplete
-  // triggers it. To close the loop we also need to implement
-  // GetAuthChallengeInfo, SetAuth and CancelAuth.
-  NotifyHeadersComplete();
+  // This notification came from the sub requests URLRequest::Delegate and
+  // depending on what the protocol user wants us to do we must either cancel
+  // the auth, provide the credentials or proxy it the original
+  // URLRequest::Delegate.
+
+  waiting_for_user_response_ =
+      WaitingForUserResponse::WAITING_FOR_AUTH_RESPONSE;
+
+  std::unique_ptr<protocol::Network::Request> network_request =
+      protocol::NetworkHandler::CreateRequestFromURLRequest(this->request());
+  std::unique_ptr<protocol::Network::AuthChallenge> auth_challenge =
+      protocol::Network::AuthChallenge::Create()
+          .SetSource(auth_info->is_proxy
+                         ? protocol::Network::AuthChallenge::SourceEnum::Proxy
+                         : protocol::Network::AuthChallenge::SourceEnum::Server)
+          .SetOrigin(auth_info->challenger.Serialize())
+          .SetScheme(auth_info->scheme)
+          .SetRealm(auth_info->realm)
+          .Build();
+
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(SendAuthRequiredEventOnUiThread, network_handler_,
+                 interception_id_, base::Passed(&network_request),
+                 ResourceTypeToString(resource_type_),
+                 base::Passed(&auth_challenge)));
 }
 
 void DevToolsURLInterceptorRequestJob::OnCertificateRequested(
@@ -396,7 +433,8 @@ void DevToolsURLInterceptorRequestJob::OnReceivedRedirect(
   sub_request_->Cancel();
   sub_request_.reset();
 
-  waiting_for_user_response_ = true;
+  waiting_for_user_response_ =
+      WaitingForUserResponse::WAITING_FOR_INTERCEPTION_RESPONSE;
 
   std::unique_ptr<protocol::Network::Request> network_request =
       protocol::NetworkHandler::CreateRequestFromURLRequest(this->request());
@@ -416,25 +454,85 @@ void DevToolsURLInterceptorRequestJob::StopIntercepting() {
   intercepting_requests_ = false;
 
   // Allow the request to continue if we're waiting for user input.
-  ContinueInterceptedRequest(
+  ProcessInterceptionRespose(
       base::MakeUnique<DevToolsURLRequestInterceptor::Modifications>(
           base::nullopt, base::nullopt, protocol::Maybe<std::string>(),
           protocol::Maybe<std::string>(), protocol::Maybe<std::string>(),
-          protocol::Maybe<protocol::Network::Headers>()));
+          protocol::Maybe<protocol::Network::Headers>(),
+          protocol::Maybe<protocol::Network::AuthChallengeResponse>()));
 }
 
-bool DevToolsURLInterceptorRequestJob::ContinueInterceptedRequest(
+void DevToolsURLInterceptorRequestJob::ContinueInterceptedRequest(
+    std::unique_ptr<DevToolsURLRequestInterceptor::Modifications> modifications,
+    std::unique_ptr<ContinueInterceptedRequestCallback> callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  switch (waiting_for_user_response_) {
+    case WaitingForUserResponse::NOT_WAITING:
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          base::BindOnce(&ContinueInterceptedRequestCallback::sendFailure,
+                         base::Passed(std::move(callback)),
+                         protocol::Response::InvalidParams(
+                             "Response already processed.")));
+      break;
+
+    case WaitingForUserResponse::WAITING_FOR_INTERCEPTION_RESPONSE:
+      if (modifications->auth_challenge_response.isJust()) {
+        BrowserThread::PostTask(
+            BrowserThread::UI, FROM_HERE,
+            base::BindOnce(&ContinueInterceptedRequestCallback::sendFailure,
+                           base::Passed(std::move(callback)),
+                           protocol::Response::InvalidParams(
+                               "authChallengeResponse not expected.")));
+        break;
+      }
+      ProcessInterceptionRespose(std::move(modifications));
+      BrowserThread::PostTask(
+          BrowserThread::UI, FROM_HERE,
+          base::BindOnce(&ContinueInterceptedRequestCallback::sendSuccess,
+                         base::Passed(std::move(callback))));
+      break;
+
+    case WaitingForUserResponse::WAITING_FOR_AUTH_RESPONSE:
+      if (!modifications->auth_challenge_response.isJust()) {
+        BrowserThread::PostTask(
+            BrowserThread::UI, FROM_HERE,
+            base::BindOnce(&ContinueInterceptedRequestCallback::sendFailure,
+                           base::Passed(std::move(callback)),
+                           protocol::Response::InvalidParams(
+                               "authChallengeResponse required.")));
+        break;
+      }
+      if (ProcessAuthRespose(std::move(modifications))) {
+        BrowserThread::PostTask(
+            BrowserThread::UI, FROM_HERE,
+            base::BindOnce(&ContinueInterceptedRequestCallback::sendSuccess,
+                           base::Passed(std::move(callback))));
+      } else {
+        BrowserThread::PostTask(
+            BrowserThread::UI, FROM_HERE,
+            base::BindOnce(&ContinueInterceptedRequestCallback::sendFailure,
+                           base::Passed(std::move(callback)),
+                           protocol::Response::InvalidParams(
+                               "Unrecognized authChallengeResponse.")));
+      }
+      break;
+
+    default:
+      NOTREACHED();
+      break;
+  }
+}
+
+void DevToolsURLInterceptorRequestJob::ProcessInterceptionRespose(
     std::unique_ptr<DevToolsURLRequestInterceptor::Modifications>
         modifications) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!waiting_for_user_response_)
-    return false;
-  waiting_for_user_response_ = false;
+  waiting_for_user_response_ = WaitingForUserResponse::NOT_WAITING;
 
   if (modifications->error_reason) {
     NotifyStartError(net::URLRequestStatus(net::URLRequestStatus::FAILED,
                                            *modifications->error_reason));
-    return true;
+    return;
   }
 
   if (modifications->raw_response) {
@@ -447,7 +545,7 @@ bool DevToolsURLInterceptorRequestJob::ContinueInterceptedRequest(
           request(), interception_id_);
     }
     NotifyHeadersComplete();
-    return true;
+    return;
   }
 
   if (redirect_) {
@@ -505,7 +603,43 @@ bool DevToolsURLInterceptorRequestJob::ContinueInterceptedRequest(
     sub_request_.reset(new SubRequest(request_details_, this,
                                       devtools_url_request_interceptor_state_));
   }
-  return true;
+}
+
+bool DevToolsURLInterceptorRequestJob::ProcessAuthRespose(
+    std::unique_ptr<DevToolsURLRequestInterceptor::Modifications>
+        modifications) {
+  waiting_for_user_response_ = WaitingForUserResponse::NOT_WAITING;
+
+  protocol::Network::AuthChallengeResponse* auth_challenge_response =
+      modifications->auth_challenge_response.fromJust();
+
+  if (auth_challenge_response->GetResponse() ==
+      protocol::Network::AuthChallengeResponse::ResponseEnum::Default) {
+    // The user wants the default behavior, we must proxy the auth request to
+    // the original URLRequest::Delegate.  We can't do that directly but by
+    // implementing NeedsAuth and calling NotifyHeadersComplete we trigger it.
+    // To close the loop we also need to implement GetAuthChallengeInfo, SetAuth
+    // and CancelAuth.
+    NotifyHeadersComplete();
+    return true;
+  }
+
+  if (auth_challenge_response->GetResponse() ==
+      protocol::Network::AuthChallengeResponse::ResponseEnum::CancelAuth) {
+    CancelAuth();
+    return true;
+  }
+
+  if (auth_challenge_response->GetResponse() ==
+      protocol::Network::AuthChallengeResponse::ResponseEnum::
+          ProvideCredentials) {
+    SetAuth(net::AuthCredentials(
+        base::UTF8ToUTF16(auth_challenge_response->GetUsername("").c_str()),
+        base::UTF8ToUTF16(auth_challenge_response->GetPassword("").c_str())));
+    return true;
+  }
+
+  return false;
 }
 
 DevToolsURLInterceptorRequestJob::RequestDetails::RequestDetails(
