@@ -1441,7 +1441,9 @@ TEST_F(SharedModelTypeProcessorTest, IgnoreRemoteEncryptionInterleaved) {
 }
 
 // Tests that UpdateStorageKey propagates storage key to ProcessorEntityTracker
-// and updates corresponding entity's metadata in MetadataChangeList.
+// and updates corresponding entity's metadata in MetadataChangeList, and
+// UntrackEntity will remove corresponding ProcessorEntityTracker and do not add
+// any entity's metadata into MetadataChangeList.
 TEST_F(SharedModelTypeProcessorTest, UpdateStorageKey) {
   // Setup bridge to not support calls to GetStorageKey. This will cause
   // FakeModelTypeSyncBridge to call UpdateStorageKey for new entities and will
@@ -1451,7 +1453,14 @@ TEST_F(SharedModelTypeProcessorTest, UpdateStorageKey) {
   OnSyncStarting();
 
   // Initial update from server should be handled by MergeSyncData.
-  worker()->UpdateFromServer(kHash1, GenerateSpecifics(kKey1, kValue1));
+  UpdateResponseDataList updates;
+  updates.push_back(
+      worker()->GenerateUpdateData(kHash1, GenerateSpecifics(kKey1, kValue1)));
+  // Create update which will be ignored by bridge.
+  updates.push_back(
+      worker()->GenerateUpdateData(kHash3, GenerateSpecifics(kKey3, kValue3)));
+  bridge()->SetKeyToIgnore(kKey3);
+  worker()->UpdateFromServer(updates);
   EXPECT_EQ(1, bridge()->merge_call_count());
   EXPECT_EQ(1U, ProcessorEntityCount());
   // Metadata should be written under kKey1. This means that UpdateStorageKey
@@ -1488,6 +1497,30 @@ TEST_F(SharedModelTypeProcessorTest, ReencryptionWithEmptyStorageKeys) {
       kHash1, GenerateSpecifics(kKey1, kValue1), 1, "ek1"));
   worker()->UpdateWithEncryptionKey("ek2", update);
   worker()->VerifyPendingCommits({kHash1});
+}
+
+// Tests that UntrackEntity won't propagate storage key to
+// ProcessorEntityTracker, and no entity's metadata are added into
+// MetadataChangeList.
+TEST_F(SharedModelTypeProcessorTest, UntrackEntity) {
+  // Setup bridge to not support calls to GetStorageKey. This will cause
+  // FakeModelTypeSyncBridge to call UpdateStorageKey for new entities and will
+  // DCHECK if GetStorageKey gets called.
+  bridge()->SetSupportsGetStorageKey(false);
+  bridge()->SetKeyToIgnore(kKey1);
+  ModelReadyToSync();
+  OnSyncStarting();
+
+  // Initial update from server should be handled by MergeSyncData.
+  worker()->UpdateFromServer(kHash1, GenerateSpecifics(kKey1, kValue1));
+  EXPECT_EQ(1, bridge()->merge_call_count());
+  EXPECT_EQ(0U, ProcessorEntityCount());
+  // Metadata should not be written under kUntrackKey1. This means that
+  // UntrackEntity was called and corresponding ProcessorEntityTracker is
+  // removed and no storage key got propagated to MetadataChangeList.
+  EXPECT_FALSE(db().HasMetadata(kHash1));
+  EXPECT_EQ(0U, db().metadata_count());
+  EXPECT_EQ(0, bridge()->get_storage_key_call_count());
 }
 
 }  // namespace syncer

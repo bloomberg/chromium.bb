@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/model/mutable_data_batch.h"
 #include "components/sync/model_impl/in_memory_metadata_change_list.h"
@@ -213,8 +214,12 @@ base::Optional<ModelError> FakeModelTypeSyncBridge::MergeSyncData(
     EXPECT_NE(SupportsGetStorageKey(), storage_key.empty());
     if (storage_key.empty()) {
       storage_key = GetStorageKeyImpl(change.data());
-      change_processor()->UpdateStorageKey(change.data(), storage_key,
-                                           metadata_change_list.get());
+      if (base::ContainsKey(keys_to_ignore_, storage_key)) {
+        change_processor()->UntrackEntity(change.data());
+      } else {
+        change_processor()->UpdateStorageKey(change.data(), storage_key,
+                                             metadata_change_list.get());
+      }
     }
     remote_storage_keys.insert(storage_key);
     db_->PutData(storage_key, change.data());
@@ -380,6 +385,10 @@ std::unique_ptr<EntityData> FakeModelTypeSyncBridge::CopyEntityData(
   new_data->creation_time = old_data.creation_time;
   new_data->modification_time = old_data.modification_time;
   return new_data;
+}
+
+void FakeModelTypeSyncBridge::SetKeyToIgnore(const std::string key) {
+  keys_to_ignore_.insert(key);
 }
 
 }  // namespace syncer

@@ -66,6 +66,7 @@ class MockModelTypeWorker : public CommitQueue {
                         const sync_pb::EntitySpecifics& specifics,
                         int64_t version_offset,
                         const std::string& ekn);
+  void UpdateFromServer(const UpdateResponseDataList& updates);
 
   // Returns an UpdateResponseData representing an update received from
   // the server. Updates server state accordingly.
@@ -80,6 +81,12 @@ class MockModelTypeWorker : public CommitQueue {
       const sync_pb::EntitySpecifics& specifics,
       int64_t version_offset,
       const std::string& ekn);
+
+  // Mostly same as GenerateUpdateData above, but set 1 as |version_offset|, and
+  // use model_type_state_.encryption_key_name() as |ekn|.
+  UpdateResponseData GenerateUpdateData(
+      const std::string& tag_hash,
+      const sync_pb::EntitySpecifics& specifics);
 
   // Triggers a server-side deletion of the entity with |tag_hash|; updates
   // server state accordingly.

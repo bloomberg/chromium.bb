@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <unordered_set>
 
 #include "base/optional.h"
 #include "components/sync/engine/non_blocking_sync_common.h"
@@ -132,6 +133,9 @@ class FakeModelTypeSyncBridge : public ModelTypeSyncBridge {
   // test code here, this function is needed to manually copy it.
   static std::unique_ptr<EntityData> CopyEntityData(const EntityData& old_data);
 
+  // Set storage key which will be ignored by bridge.
+  void SetKeyToIgnore(const std::string key);
+
   const Store& db() { return *db_; }
 
  protected:
@@ -146,6 +150,9 @@ class FakeModelTypeSyncBridge : public ModelTypeSyncBridge {
 
   // The conflict resolution to use for calls to ResolveConflict.
   std::unique_ptr<ConflictResolution> conflict_resolution_;
+
+  // The storage keys which bridge will ignore.
+  std::unordered_set<std::string> keys_to_ignore_;
 
   // Whether an error should be produced on the next bridge call.
   bool error_next_ = false;

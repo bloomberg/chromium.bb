@@ -58,6 +58,14 @@ class ModelTypeChangeProcessor {
                                 const std::string& storage_key,
                                 MetadataChangeList* metadata_change_list) = 0;
 
+  // Remove entity metadata and do not track the entity. This function only
+  // applies to datatypes that can't generate storage key based on EntityData.
+  // Bridge should call this function when handling
+  // MergeSyncData/ApplySyncChanges to inform the processor that this entity
+  // should not been tracked. Datatypes that support GetStorageKey should call
+  // change_processor()->Delete() instead.
+  virtual void UntrackEntity(const EntityData& entity_data) = 0;
+
   // The bridge is expected to call this exactly once unless it encounters an
   // error. Ideally ModelReadyToSync() is called as soon as possible during
   // initialization, and must be called before invoking either Put() or
