@@ -779,27 +779,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     SET_NESTED_VAR(rare_non_inherited_data_, flexible_box_data_, flex_wrap_, w);
   }
 
-  // -webkit-box-flex
-  static float InitialBoxFlex() { return 0.0f; }
-  float BoxFlex() const {
-    return rare_non_inherited_data_->deprecated_flexible_box_data_->box_flex_;
-  }
-  void SetBoxFlex(float f) {
-    SET_NESTED_VAR(rare_non_inherited_data_, deprecated_flexible_box_data_,
-                   box_flex_, f);
-  }
-
-  // -webkit-box-flex-group
-  static unsigned InitialBoxFlexGroup() { return 1; }
-  unsigned BoxFlexGroup() const {
-    return rare_non_inherited_data_->deprecated_flexible_box_data_
-        ->box_flex_group_;
-  }
-  void SetBoxFlexGroup(unsigned fg) {
-    SET_NESTED_VAR(rare_non_inherited_data_, deprecated_flexible_box_data_,
-                   box_flex_group_, fg);
-  }
-
   // -webkit-box-align
   // For valid values of box-align see
   // http://www.w3.org/TR/2009/WD-css3-flexbox-20090723/#alignment
