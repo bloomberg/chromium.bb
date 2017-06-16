@@ -286,8 +286,9 @@ function getUnownedAutofillableFormFieldElements_(elements, fieldsets) {
  * It is based on the logic in
  *     bool ExtractFieldsFromControlElements(
  *         const WebVector<WebFormControlElement>& control_elements,
+ *         const FieldValueAndPropertiesMaskMap* field_value_and_properties_map,
  *         ExtractMask extract_mask,
- *         ScopedVector<FormFieldData>* form_fields,
+ *         std::vector<std::unique_ptr<FormFieldData>>* form_fields,
  *         std::vector<bool>* fields_extracted,
  *         std::map<WebFormControlElement, FormFieldData*>* element_map)
  * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc
