@@ -119,10 +119,6 @@ enum class ExecutionMode {
   // user (UI handled by Chrome) and logs will only be uploaded if the user
   // opted into Extended Safe Browsing Reporting v2.
   kCleanup = 2,
-  // The cleaner will run in post-reboot validation mode. No UI will be shown
-  // to the user and logs will only be uploaded if the user opted into Extended
-  // Safe Browsing Reporting v2.
-  kPostRebootValidation = 3,
 
   // Auxiliary enumerator for range checking.
   kNumValues,
