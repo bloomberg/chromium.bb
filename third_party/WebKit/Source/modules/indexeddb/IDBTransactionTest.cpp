@@ -282,6 +282,48 @@ TEST_F(IDBTransactionTest, ContextDestroyedWithTwoQueuedResults) {
   EXPECT_EQ(0U, live_transactions.size());
 }
 
+TEST_F(IDBTransactionTest, DocumentShutdownWithQueuedAndBlockedResults) {
+  // This test covers the conditions of https://crbug.com/733642
+
+  V8TestingScope scope;
+  std::unique_ptr<MockWebIDBDatabase> backend = MockWebIDBDatabase::Create();
+  EXPECT_CALL(*backend, Close()).Times(1);
+  BuildTransaction(scope, std::move(backend));
+
+  PersistentHeapHashSet<WeakMember<IDBTransaction>> live_transactions;
+  live_transactions.insert(transaction_);
+
+  ThreadState::Current()->CollectAllGarbage();
+  EXPECT_EQ(1U, live_transactions.size());
+
+  Persistent<IDBRequest> request1 =
+      IDBRequest::Create(scope.GetScriptState(), IDBAny::CreateUndefined(),
+                         transaction_.Get(), IDBRequest::AsyncTraceState());
+  Persistent<IDBRequest> request2 =
+      IDBRequest::Create(scope.GetScriptState(), IDBAny::CreateUndefined(),
+                         transaction_.Get(), IDBRequest::AsyncTraceState());
+  DeactivateNewTransactions(scope.GetIsolate());
+
+  request1->HandleResponse(CreateIDBValue(scope.GetIsolate(), true));
+  request2->HandleResponse(CreateIDBValue(scope.GetIsolate(), false));
+
+  request1.Clear();  // The transaction is holding onto the requests.
+  request2.Clear();
+  ThreadState::Current()->CollectAllGarbage();
+  EXPECT_EQ(1U, live_transactions.size());
+
+  // This will generate an Abort() call to the back end which is dropped by the
+  // fake proxy, so an explicit OnAbort call is made.
+  scope.GetDocument().Shutdown();
+  transaction_->OnAbort(DOMException::Create(kAbortError, "Aborted"));
+  transaction_.Clear();
+
+  url_loader_mock_factory_->ServeAsynchronousRequests();
+
+  ThreadState::Current()->CollectAllGarbage();
+  EXPECT_EQ(0U, live_transactions.size());
+}
+
 TEST_F(IDBTransactionTest, TransactionFinish) {
   V8TestingScope scope;
   std::unique_ptr<MockWebIDBDatabase> backend = MockWebIDBDatabase::Create();
