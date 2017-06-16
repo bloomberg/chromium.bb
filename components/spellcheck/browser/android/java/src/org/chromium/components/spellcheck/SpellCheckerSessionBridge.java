@@ -125,7 +125,12 @@ public class SpellCheckerSessionBridge implements SpellCheckerSessionListener {
                     SuggestionsInfo info = result.getSuggestionsInfoAt(i);
                     ArrayList<String> suggestions_for_word = new ArrayList<String>();
                     for (int j = 0; j < info.getSuggestionsCount(); ++j) {
-                        suggestions_for_word.add(info.getSuggestionAt(j));
+                        String suggestion = info.getSuggestionAt(j);
+                        // Remove zero-length space from end of suggestion, if any
+                        if (suggestion.charAt(suggestion.length() - 1) == 0x200b) {
+                            suggestion = suggestion.substring(0, suggestion.length() - 1);
+                        }
+                        suggestions_for_word.add(suggestion);
                     }
                     suggestions.add(
                             suggestions_for_word.toArray(new String[suggestions_for_word.size()]));
