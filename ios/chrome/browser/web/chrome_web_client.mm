@@ -181,7 +181,3 @@ std::unique_ptr<base::TaskScheduler::InitParams>
 ChromeWebClient::GetTaskSchedulerInitParams() {
   return task_scheduler_util::GetBrowserTaskSchedulerInitParamsFromVariations();
 }
-
-void ChromeWebClient::PerformExperimentalTaskSchedulerRedirections() {
-  task_scheduler_util::MaybePerformBrowserTaskSchedulerRedirection();
-}
