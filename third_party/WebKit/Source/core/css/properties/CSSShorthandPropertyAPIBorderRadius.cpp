@@ -15,15 +15,14 @@ namespace blink {
 bool CSSShorthandPropertyAPIBorderRadius::parseShorthand(
     bool important,
     CSSParserTokenRange& range,
-    const CSSParserContext* context,
+    const CSSParserContext& context,
     const CSSParserLocalContext& local_context,
     HeapVector<CSSProperty, 256>& properties) {
-  DCHECK(context);
   CSSValue* horizontal_radii[4] = {0};
   CSSValue* vertical_radii[4] = {0};
 
   if (!CSSPropertyShapeUtils::ConsumeRadii(horizontal_radii, vertical_radii,
-                                           range, context->Mode(),
+                                           range, context.Mode(),
                                            local_context.GetUseAliasParsing()))
     return false;
 
