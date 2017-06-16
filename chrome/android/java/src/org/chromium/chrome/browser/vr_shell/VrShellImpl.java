@@ -33,7 +33,9 @@ import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
+import org.chromium.chrome.browser.tabmodel.ChromeTabCreator;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
+import org.chromium.chrome.browser.tabmodel.TabCreatorManager.TabCreator;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -100,7 +102,6 @@ public class VrShellImpl
     private Boolean mCanGoBack;
     private Boolean mCanGoForward;
 
-    private WindowAndroid mOriginalWindowAndroid;
     private VrWindowAndroid mContentVrWindowAndroid;
 
     private boolean mReprojectedRendering;
@@ -320,6 +321,7 @@ public class VrShellImpl
         // Set the UI and content sizes before we load the UI.
         updateWebVrDisplaySize(forWebVr);
 
+        reparentAllTabs(mContentVrWindowAndroid);
         swapToForegroundTab();
         createTabList();
         mActivity.getTabModelSelector().addObserver(mTabModelSelectorObserver);
@@ -367,19 +369,33 @@ public class VrShellImpl
     }
 
     private void initializeTabForVR() {
-        mOriginalWindowAndroid = mTab.getWindowAndroid();
-        mTab.updateWindowAndroid(mContentVrWindowAndroid);
-
         // Make sure we are not redirecting to another app, i.e. out of VR mode.
         mNonVrTabRedirectHandler = mTab.getTabRedirectHandler();
         mTab.setTabRedirectHandler(mTabRedirectHandler);
+        assert mTab.getWindowAndroid() == mContentVrWindowAndroid;
     }
 
     private void restoreTabFromVR() {
         mTab.setTabRedirectHandler(mNonVrTabRedirectHandler);
-        mTab.updateWindowAndroid(mOriginalWindowAndroid);
-        mOriginalWindowAndroid = null;
         mNonVrTabRedirectHandler = null;
+    }
+
+    private void reparentAllTabs(WindowAndroid window) {
+        // Ensure new tabs are created with the correct window.
+        boolean[] values = {true, false};
+        for (boolean incognito : values) {
+            TabCreator tabCreator = mActivity.getTabCreator(incognito);
+            if (tabCreator instanceof ChromeTabCreator) {
+                ((ChromeTabCreator) tabCreator).setWindowAndroid(window);
+            }
+        }
+
+        // Reparent all existing tabs.
+        for (TabModel model : mActivity.getTabModelSelector().getModels()) {
+            for (int i = 0; i < model.getCount(); ++i) {
+                model.getTabAt(i).updateWindowAndroid(window);
+            }
+        }
     }
 
     // Exits VR, telling the user to remove their headset, and returning to Chromium.
@@ -487,6 +503,7 @@ public class VrShellImpl
 
     @Override
     public void shutdown() {
+        reparentAllTabs(mActivity.getWindowAndroid());
         if (mNativeVrShell != 0) {
             nativeDestroy(mNativeVrShell);
             mNativeVrShell = 0;
@@ -663,7 +680,7 @@ public class VrShellImpl
 
     @CalledByNative
     public float getNativePageScrollRatio() {
-        return mOriginalWindowAndroid.getDisplay().getDipScale()
+        return mActivity.getWindowAndroid().getDisplay().getDipScale()
                 / mContentVrWindowAndroid.getDisplay().getDipScale();
     }
 
