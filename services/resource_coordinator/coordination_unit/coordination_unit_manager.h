@@ -6,9 +6,9 @@
 #define SERVICES_RESOURCE_COORDINATOR_COORDINATION_UNIT_COORDINATION_UNIT_MANAGER_H_
 
 #include "base/macros.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace service_manager {
-class BinderRegistry;
 class ServiceContextRefFactory;
 }  // service_manager
 

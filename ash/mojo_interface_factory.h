@@ -8,13 +8,10 @@
 #include "ash/ash_export.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace base {
 class SingleThreadTaskRunner;
-}
-
-namespace service_manager {
-class BinderRegistry;
 }
 
 namespace ash {

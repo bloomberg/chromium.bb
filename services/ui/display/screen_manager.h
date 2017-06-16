@@ -8,11 +8,8 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/ui/display/screen_manager_delegate.h"
-
-namespace service_manager {
-class BinderRegistry;
-}
 
 namespace display {
 

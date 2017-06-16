@@ -30,6 +30,7 @@
 #include "media/mojo/interfaces/remoting.mojom.h"
 #include "net/base/mime_util.h"
 #include "net/cookies/canonical_cookie.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
@@ -67,7 +68,6 @@ class CdmFactory;
 }
 
 namespace service_manager {
-class BinderRegistry;
 class Service;
 struct BindSourceInfo;
 }

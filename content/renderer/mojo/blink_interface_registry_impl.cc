@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "mojo/public/cpp/system/message_pipe.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace content {
 

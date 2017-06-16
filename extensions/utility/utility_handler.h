@@ -5,9 +5,7 @@
 #ifndef EXTENSIONS_UTILITY_UTILITY_HANDLER_H_
 #define EXTENSIONS_UTILITY_UTILITY_HANDLER_H_
 
-namespace service_manager {
-class BinderRegistry;
-}
+#include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace extensions {
 

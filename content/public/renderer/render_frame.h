@@ -17,6 +17,7 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "ppapi/features/features.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
 #include "third_party/WebKit/public/web/WebNavigationPolicy.h"
 
@@ -38,7 +39,6 @@ class Size;
 }
 
 namespace service_manager {
-class BinderRegistry;
 class InterfaceProvider;
 }
 

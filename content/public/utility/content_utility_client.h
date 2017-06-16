@@ -11,9 +11,9 @@
 #include "base/callback_forward.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/service_info.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace service_manager {
-class BinderRegistry;
 class InterfaceRegistry;
 }
 

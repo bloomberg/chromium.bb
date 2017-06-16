@@ -7,14 +7,11 @@
 
 #include "base/metrics/field_trial.h"
 #include "content/public/common/content_client.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace gpu {
 class SyncPointManager;
 struct GpuPreferences;
-}
-
-namespace service_manager {
-class BinderRegistry;
 }
 
 namespace content {
