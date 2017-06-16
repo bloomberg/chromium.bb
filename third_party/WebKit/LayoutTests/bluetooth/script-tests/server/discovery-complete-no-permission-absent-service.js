@@ -7,7 +7,7 @@ promise_test(() => {
                                   'SecurityError');
   return getHealthThermometerDeviceWithServicesDiscovered({
       filters: [{services: ['health_thermometer']}]})
-    .then(([device]) => Promise.all([
+    .then(({device}) => Promise.all([
       assert_promise_rejects_with_message(
         device.gatt.CALLS([
           getPrimaryService(glucose.alias)|

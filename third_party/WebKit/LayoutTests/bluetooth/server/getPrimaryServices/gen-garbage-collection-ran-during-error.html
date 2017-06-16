@@ -10,7 +10,7 @@
 promise_test(() => {
   let promise;
   return getEmptyHealthThermometerDevice()
-      .then(([device]) => {
+      .then(({device}) => {
         promise = assert_promise_rejects_with_message(
           device.gatt.getPrimaryServices(),
           new DOMException(

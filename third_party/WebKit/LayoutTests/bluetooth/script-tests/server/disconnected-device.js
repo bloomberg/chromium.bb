@@ -4,7 +4,7 @@ promise_test(() => {
       filters: [{services: ['health_thermometer']}],
       optionalServices: ['generic_access']
     })
-    .then(([device]) => assert_promise_rejects_with_message(
+    .then(({device}) => assert_promise_rejects_with_message(
       device.gatt.CALLS([
         getPrimaryService('health_thermometer')|
         getPrimaryServices()|

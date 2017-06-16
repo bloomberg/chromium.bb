@@ -13,7 +13,7 @@ promise_test(() => {
         'generic_access',
         'human_interface_device'
       ]})
-    .then(([device]) => device.gatt.getPrimaryServices())
+    .then(({device}) => device.gatt.getPrimaryServices())
     .then(services => {
       assert_equals(services.length, 2);
       let uuid_set = new Set(services.map(s => s.uuid));
