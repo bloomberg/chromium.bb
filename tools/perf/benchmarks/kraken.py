@@ -139,6 +139,10 @@ class Kraken(perf_benchmark.PerfBenchmark):
         name='http://krakenbenchmark.mozilla.org/kraken-1.1/driver.html'))
     return ps
 
-  @classmethod
-  def ShouldDisable(cls, possible_browser):
-    return cls.IsSvelte(possible_browser)  # http://crbug.com/624411
+  def GetExpectations(self):
+    class StoryExpectations(story.expectations.StoryExpectations):
+      def SetExpectations(self):
+        self.DisableStory(
+            'http://krakenbenchmark.mozilla.org/kraken-1.1/driver.html',
+            [story.expectations.ANDROID_SVELTE], 'crbug.com/624411')
+    return StoryExpectations()

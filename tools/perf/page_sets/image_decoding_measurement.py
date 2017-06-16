@@ -36,3 +36,8 @@ class ImageDecodingMeasurementPageSet(story.StorySet):
 
     for url in urls_list:
       self.AddStory(ImageDecodingMeasurementPage(url, self, url.split('/')[-1]))
+
+class ImageDecodingMeasurementStoryExpectations(
+    story.expectations.StoryExpectations):
+  def SetExpectations(self):
+    pass # Nothing disabled.
