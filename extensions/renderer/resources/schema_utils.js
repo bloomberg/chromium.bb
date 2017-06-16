@@ -44,7 +44,10 @@ function getSignatures(parameterSchemas) {
   if (parameterSchemas.length === 0)
     return [[]];
   var signatures = [];
+  $Object.setPrototypeOf(signatures, null);
+  $Object.setPrototypeOf(parameterSchemas, null);
   var remaining = getSignatures($Array.slice(parameterSchemas, 1));
+  $Object.setPrototypeOf(remaining, null);
   for (var i = 0; i < remaining.length; ++i)
     $Array.push(signatures, $Array.concat([parameterSchemas[0]], remaining[i]))
   if (parameterSchemas[0].optional)
@@ -115,6 +118,7 @@ function normalizeArgumentsAndValidate(args, funDef) {
         getParameterSignatureString(funDef.name, definedSignature));
   validate(args, resolvedSignature);
   var normalizedArgs = [];
+  $Object.setPrototypeOf(normalizedArgs, null);
   var ai = 0;
   for (var si = 0; si < definedSignature.length; ++si) {
     if (definedSignature[si] === resolvedSignature[ai])

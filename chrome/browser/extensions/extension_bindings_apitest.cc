@@ -293,5 +293,27 @@ IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest, TestEventFilterParsing) {
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
+// crbug.com/733337
+IN_PROC_BROWSER_TEST_F(ExtensionBindingsApiTest, ValidationInterception) {
+  // We need to create runtime bindings in the web page. An extension that's
+  // externally connectable will do that for us.
+  ASSERT_TRUE(
+      LoadExtension(test_data_dir_.AppendASCII("bindings")
+                        .AppendASCII("externally_connectable_everywhere")));
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL(
+          "/extensions/api_test/bindings/validation_interception.html"));
+  content::WaitForLoadStop(web_contents);
+  ASSERT_FALSE(web_contents->IsCrashed());
+  bool caught = false;
+  ASSERT_TRUE(content::ExecuteScriptAndExtractBool(
+      web_contents, "domAutomationController.send(caught)", &caught));
+  EXPECT_TRUE(caught);
+}
+
 }  // namespace
 }  // namespace extensions
