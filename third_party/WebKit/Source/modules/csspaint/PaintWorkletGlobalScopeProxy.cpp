@@ -40,6 +40,11 @@ void PaintWorkletGlobalScopeProxy::FetchAndInvokeScript(
                                       pending_tasks);
 }
 
+void PaintWorkletGlobalScopeProxy::WorkletObjectDestroyed() {
+  DCHECK(IsMainThread());
+  // Do nothing.
+}
+
 void PaintWorkletGlobalScopeProxy::TerminateWorkletGlobalScope() {
   DCHECK(IsMainThread());
   global_scope_->Terminate();

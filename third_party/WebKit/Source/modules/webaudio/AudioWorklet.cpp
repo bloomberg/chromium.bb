@@ -17,38 +17,29 @@ AudioWorklet* AudioWorklet::Create(LocalFrame* frame) {
   return new AudioWorklet(frame);
 }
 
-AudioWorklet::AudioWorklet(LocalFrame* frame)
-    : ThreadedWorklet(frame), worklet_messaging_proxy_(nullptr) {}
+AudioWorklet::AudioWorklet(LocalFrame* frame) : Worklet(frame) {}
 
-AudioWorklet::~AudioWorklet() {
-  if (worklet_messaging_proxy_)
-    worklet_messaging_proxy_->ParentObjectDestroyed();
+AudioWorklet::~AudioWorklet() {}
+
+bool AudioWorklet::NeedsToCreateGlobalScope() {
+  // For now, create only one global scope per document.
+  // TODO(nhiroki): Revisit this later.
+  return GetNumberOfGlobalScopes() == 0;
 }
 
-void AudioWorklet::Initialize() {
+WorkletGlobalScopeProxy* AudioWorklet::CreateGlobalScope() {
+  DCHECK(NeedsToCreateGlobalScope());
   AudioWorkletThread::EnsureSharedBackingThread();
 
-  DCHECK(!worklet_messaging_proxy_);
-  DCHECK(GetExecutionContext());
-
   WorkerClients* worker_clients = WorkerClients::Create();
-  worklet_messaging_proxy_ =
+  AudioWorkletMessagingProxy* proxy =
       new AudioWorkletMessagingProxy(GetExecutionContext(), worker_clients);
-  worklet_messaging_proxy_->Initialize();
-}
-
-bool AudioWorklet::IsInitialized() const {
-  return worklet_messaging_proxy_;
-}
-
-WorkletGlobalScopeProxy* AudioWorklet::GetWorkletGlobalScopeProxy() const {
-  DCHECK(worklet_messaging_proxy_);
-  return worklet_messaging_proxy_;
+  proxy->Initialize();
+  return proxy;
 }
 
 DEFINE_TRACE(AudioWorklet) {
-  visitor->Trace(worklet_messaging_proxy_);
-  ThreadedWorklet::Trace(visitor);
+  Worklet::Trace(visitor);
 }
 
 }  // namespace blink

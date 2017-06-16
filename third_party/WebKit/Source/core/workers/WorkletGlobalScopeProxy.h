@@ -30,6 +30,12 @@ class CORE_EXPORT WorkletGlobalScopeProxy : public GarbageCollectedMixin {
       RefPtr<WebTaskRunner> outside_settings_task_runner,
       WorkletPendingTasks*) = 0;
 
+  // Notifies that the Worklet object is destroyed. This should be called in the
+  // destructor of the Worklet object. This may call
+  // ThreadedMessagingProxy::ParentObjectDestroyed() and cause deletion of
+  // |this|. See comments on ParentObjectDestroyed() for details.
+  virtual void WorkletObjectDestroyed() = 0;
+
   // Terminates the worklet global scope from the main thread.
   virtual void TerminateWorkletGlobalScope() = 0;
 };
