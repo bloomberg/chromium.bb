@@ -118,6 +118,11 @@ void MockModelTypeWorker::UpdateFromServer(
   UpdateResponseDataList updates;
   updates.push_back(
       GenerateUpdateData(tag_hash, specifics, version_offset, ekn));
+  UpdateFromServer(updates);
+}
+
+void MockModelTypeWorker::UpdateFromServer(
+    const UpdateResponseDataList& updates) {
   processor_->OnUpdateReceived(model_type_state_, updates);
 }
 
@@ -150,6 +155,13 @@ UpdateResponseData MockModelTypeWorker::GenerateUpdateData(
   response_data.encryption_key_name = ekn;
 
   return response_data;
+}
+
+UpdateResponseData MockModelTypeWorker::GenerateUpdateData(
+    const std::string& tag_hash,
+    const sync_pb::EntitySpecifics& specifics) {
+  return GenerateUpdateData(tag_hash, specifics, 1,
+                            model_type_state_.encryption_key_name());
 }
 
 void MockModelTypeWorker::TombstoneFromServer(const std::string& tag_hash) {

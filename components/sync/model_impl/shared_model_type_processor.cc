@@ -279,6 +279,17 @@ void SharedModelTypeProcessor::UpdateStorageKey(
   metadata_change_list->UpdateMetadata(storage_key, entity->metadata());
 }
 
+void SharedModelTypeProcessor::UntrackEntity(const EntityData& entity_data) {
+  const std::string& client_tag_hash = entity_data.client_tag_hash;
+  DCHECK(!client_tag_hash.empty());
+
+  ProcessorEntityTracker* entity = GetEntityForTagHash(client_tag_hash);
+  DCHECK(entity);
+  DCHECK(entity->storage_key().empty());
+
+  entities_.erase(client_tag_hash);
+}
+
 void SharedModelTypeProcessor::FlushPendingCommitRequests() {
   CommitRequestDataList commit_requests;
 
