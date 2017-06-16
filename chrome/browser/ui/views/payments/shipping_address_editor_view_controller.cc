@@ -21,9 +21,9 @@
 #include "components/autofill/core/browser/country_combobox_model.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
-#include "components/autofill/core/browser/region_combobox_model.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_constants.h"
+#include "components/autofill/core/common/autofill_l10n_util.h"
 #include "components/payments/content/payment_request_state.h"
 #include "components/payments/core/payment_request_data_util.h"
 #include "components/payments/core/payments_profile_comparator.h"
@@ -84,6 +84,25 @@ base::string16 ShippingAddressEditorViewController::GetInitialValueForType(
         *profile_to_edit_, state()->GetApplicationLocale());
   }
 
+  if (type == autofill::ADDRESS_HOME_STATE) {
+    // For the state, check if the inital value matches either a region code or
+    // a region name.
+    base::string16 initial_region = profile_to_edit_->GetInfo(
+        autofill::AutofillType(type), state()->GetApplicationLocale());
+    autofill::l10n::CaseInsensitiveCompare compare;
+
+    for (const auto& region : region_model_->GetRegions()) {
+      base::string16 region_name = base::UTF8ToUTF16(region.second);
+      if (compare.StringsEqual(initial_region,
+                               base::UTF8ToUTF16(region.first)) ||
+          compare.StringsEqual(initial_region, region_name)) {
+        return region_name;
+      }
+    }
+
+    return initial_region;
+  }
+
   return profile_to_edit_->GetInfo(autofill::AutofillType(type),
                                    state()->GetApplicationLocale());
 }
@@ -142,6 +161,7 @@ ShippingAddressEditorViewController::GetComboboxModelForType(
     case autofill::ADDRESS_HOME_STATE: {
       std::unique_ptr<autofill::RegionComboboxModel> model =
           base::MakeUnique<autofill::RegionComboboxModel>();
+      region_model_ = model.get();
       if (chosen_country_index_ < countries_.size()) {
         model->LoadRegionData(countries_[chosen_country_index_].first,
                               state()->GetRegionDataLoader(),

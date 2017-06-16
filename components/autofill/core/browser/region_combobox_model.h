@@ -43,6 +43,10 @@ class RegionComboboxModel : public ui::ComboboxModel {
 
   bool failed_to_load_data() const { return failed_to_load_data_; }
 
+  const std::vector<std::pair<std::string, std::string>>& GetRegions() const {
+    return regions_;
+  }
+
   // ui::ComboboxModel implementation:
   int GetItemCount() const override;
   base::string16 GetItemAt(int index) override;
