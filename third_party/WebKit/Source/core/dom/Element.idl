@@ -95,7 +95,7 @@ interface Element : Node {
     ClientRectList getClientRects();
     ClientRect getBoundingClientRect();
 
-    void scrollIntoView(optional (ScrollIntoViewOptions or boolean)? arg);
+    void scrollIntoView(optional (ScrollIntoViewOptions or boolean) arg);
     [RuntimeEnabled=CSSOMSmoothScroll, ImplementedAs=scrollTo] void scroll(optional ScrollToOptions options);
     [RuntimeEnabled=CSSOMSmoothScroll, ImplementedAs=scrollTo] void scroll(unrestricted double x, unrestricted double y);
     [RuntimeEnabled=CSSOMSmoothScroll] void scrollTo(optional ScrollToOptions options);
