@@ -431,7 +431,8 @@ void JumpList::OnMostVisitedURLsAvailable(
     link->set_title(!url.title.empty() ? url.title : url_string_wide);
     link->set_url(url_string);
     most_visited_pages_.push_back(link);
-    icon_urls_.emplace_back(std::move(url_string), std::move(link));
+    if (most_visited_icons_.find(url_string) == most_visited_icons_.end())
+      icon_urls_.emplace_back(std::move(url_string), std::move(link));
   }
 
   most_visited_should_update_ = true;
@@ -459,7 +460,8 @@ bool JumpList::AddTab(const sessions::TabRestoreService::Tab& tab,
   link->set_title(current_navigation.title());
   link->set_url(url);
   recently_closed_pages_.push_back(link);
-  icon_urls_.emplace_back(std::move(url), std::move(link));
+  if (recently_closed_icons_.find(url) == recently_closed_icons_.end())
+    icon_urls_.emplace_back(std::move(url), std::move(link));
 
   return true;
 }
