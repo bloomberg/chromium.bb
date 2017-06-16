@@ -79279,6 +79279,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="UMA.NegativeSamples.Histogram" enum="HistogramNameHash">
+  <owner>asvitkine@chromium.org</owner>
+  <owner>bcwhite@chromium.org</owner>
+  <summary>
+    The lower 32 bits of the ID of the histogram that went negative.
+  </summary>
+</histogram>
+
+<histogram name="UMA.NegativeSamples.Increment" units="increment">
+  <owner>asvitkine@chromium.org</owner>
+  <owner>bcwhite@chromium.org</owner>
+  <summary>
+    The amount of increment that caused a sample count to become negative.
+  </summary>
+</histogram>
+
 <histogram name="UMA.NegativeSamples.Reason" enum="NegativeSampleReason">
   <owner>asvitkine@chromium.org</owner>
   <owner>bcwhite@chromium.org</owner>
