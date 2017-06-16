@@ -2047,6 +2047,8 @@ static TX_SIZE av1_get_transform_size(const MODE_INFO *const pCurr,
         AOMMAX(BLOCK_4X4, ss_size_lookup[sb_type][scaleHorz][scaleVert]);
     const TX_SIZE mb_tx_size = mbmi->inter_tx_size[tx_row_idx][tx_col_idx];
 
+    assert(mb_tx_size < TX_SIZES_ALL);
+
     tx_size = (plane == PLANE_TYPE_UV)
                   ? uv_txsize_lookup[bsize][mb_tx_size][0][0]
                   : mb_tx_size;
@@ -2090,8 +2092,8 @@ static void set_lpf_parameters(
   // not sure if changes are required.
   assert(0 && "Not yet updated");
 #endif  // CONFIG_EXT_PARTITION
-  const int mi_row = y >> MI_SIZE_LOG2;
-  const int mi_col = x >> MI_SIZE_LOG2;
+  const int mi_row = (y << scaleVert) >> MI_SIZE_LOG2;
+  const int mi_col = (x << scaleHorz) >> MI_SIZE_LOG2;
   const MB_MODE_INFO *mbmi = &ppCurr[0]->mbmi;
 
   {
@@ -2122,8 +2124,10 @@ static void set_lpf_parameters(
             (coord & av1_transform_masks[edgeDir][ts]) ? (0) : (1);
         if (tuEdge) {
           const MODE_INFO *const pPrev = *(ppCurr - modeStep);
-          const int pvRow = (VERT_EDGE == edgeDir) ? (mi_row) : (mi_row - 1);
-          const int pvCol = (VERT_EDGE == edgeDir) ? (mi_col - 1) : (mi_col);
+          const int pvRow =
+              (VERT_EDGE == edgeDir) ? (mi_row) : (mi_row - (1 << scaleVert));
+          const int pvCol =
+              (VERT_EDGE == edgeDir) ? (mi_col - (1 << scaleHorz)) : (mi_col);
           const TX_SIZE pvTs = av1_get_transform_size(
               pPrev, edgeDir, pvRow, pvCol, plane, scaleHorz, scaleVert);
 
