@@ -81,7 +81,8 @@ id<GREYMatcher> WaitForOmniboxText(std::string text) {
 
 // Tests that chrome://version renders and contains correct version number and
 // user agent string.
-- (void)testVersion {
+// TODO(crbug.com/734079): Re-enable this test.
+- (void)DISABLED_testVersion {
   LoadWebUIUrl(kChromeUIVersionHost);
 
   // Verify that app version is present on the page.
@@ -95,7 +96,8 @@ id<GREYMatcher> WaitForOmniboxText(std::string text) {
 }
 
 // Tests that chrome://physical-web renders and the page title is present.
-- (void)testPhysicalWeb {
+// TODO(crbug.com/734079): Re-enable this test.
+- (void)DISABLED_testPhysicalWeb {
   // Enable the Physical Web via Chrome variation.
   base::FieldTrialList::CreateFieldTrial("PhysicalWebEnabled", "Enabled");
 
