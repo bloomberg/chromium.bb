@@ -1425,6 +1425,8 @@ split_static_library("browser") {
     "web_data_service_factory.h",
     "webshare/share_target_pref_helper.cc",
     "webshare/share_target_pref_helper.h",
+    "webshare/webshare_target.cc",
+    "webshare/webshare_target.h",
     "win/app_icon.cc",
     "win/app_icon.h",
     "win/browser_util.cc",

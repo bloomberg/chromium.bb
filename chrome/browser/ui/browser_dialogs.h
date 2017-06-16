@@ -22,9 +22,9 @@
 #endif  // OS_CHROMEOS
 
 class Browser;
-class GURL;
 class LoginHandler;
 class Profile;
+class WebShareTarget;
 struct WebApplicationInfo;
 
 namespace content {
@@ -144,19 +144,18 @@ void ShowBookmarkEditorViews(gfx::NativeWindow parent_window,
 payments::PaymentRequestDialog* CreatePaymentRequestDialog(
     payments::PaymentRequest* request);
 
-// Used to return the target the user picked or nullopt if the user cancelled
+// Used to return the target the user picked or nullptr if the user cancelled
 // the share.
 using WebShareTargetPickerCallback =
-    base::OnceCallback<void(const base::Optional<std::string>&)>;
+    base::OnceCallback<void(const WebShareTarget*)>;
 
 // Shows the dialog to choose a share target app. |targets| is a list of app
 // title and manifest URL pairs that will be shown in a list. If the user picks
 // a target, this calls |callback| with the manifest URL of the chosen target,
 // or supplies null if the user cancelled the share.
-void ShowWebShareTargetPickerDialog(
-    gfx::NativeWindow parent_window,
-    const std::vector<std::pair<base::string16, GURL>>& targets,
-    WebShareTargetPickerCallback callback);
+void ShowWebShareTargetPickerDialog(gfx::NativeWindow parent_window,
+                                    std::vector<WebShareTarget> targets,
+                                    WebShareTargetPickerCallback callback);
 
 #endif  // TOOLKIT_VIEWS
 
