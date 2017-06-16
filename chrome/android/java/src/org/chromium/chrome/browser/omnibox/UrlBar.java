@@ -114,8 +114,6 @@ public class UrlBar extends AutocompleteEditText {
 
     private long mFirstFocusTimeMs;
 
-    private boolean mIsPastedText;
-
     // Used as a hint to indicate the text may contain an ellipsize span.  This will be true if an
     // ellispize span was applied the last time the text changed.  A true value here does not
     // guarantee that the text does contain the span currently as newly set text may have cleared
@@ -285,12 +283,6 @@ public class UrlBar extends AutocompleteEditText {
             mKeyboardHideHelper.monitorForKeyboardHidden();
         }
         return super.onKeyPreIme(keyCode, event);
-    }
-
-    @Override
-    public boolean shouldAutocomplete() {
-        if (isPastedText()) return false;
-        return super.shouldAutocomplete();
     }
 
     /**
@@ -538,7 +530,7 @@ public class UrlBar extends AutocompleteEditText {
 
                 Selection.setSelection(getText(), max);
                 getText().replace(min, max, pasteString);
-                mIsPastedText = true;
+                onPaste();
                 return true;
             }
         }
@@ -665,12 +657,6 @@ public class UrlBar extends AutocompleteEditText {
     }
 
     @Override
-    protected void onTextChanged(CharSequence text, int start, int lengthBefore, int lengthAfter) {
-        super.onTextChanged(text, start, lengthBefore, lengthAfter);
-        mIsPastedText = false;
-    }
-
-    @Override
     public void setText(CharSequence text, BufferType type) {
         if (DEBUG) Log.i(TAG, "setText -- text: %s", text);
         super.setText(text, type);
@@ -780,13 +766,6 @@ public class UrlBar extends AutocompleteEditText {
         OmniboxUrlEmphasizer.deEmphasizeUrl(getText());
     }
 
-    /**
-     * @return Whether the current UrlBar input has been pasted from the clipboard.
-     */
-    public boolean isPastedText() {
-        return mIsPastedText;
-    }
-
     @Override
     public CharSequence getAccessibilityClassName() {
         // When UrlBar is used as a read-only TextView, force Talkback to pronounce it like
@@ -799,12 +778,17 @@ public class UrlBar extends AutocompleteEditText {
     }
 
     @Override
-    protected void replaceAllTextFromAutocomplete(String text) {
+    public void replaceAllTextFromAutocomplete(String text) {
+        if (DEBUG) Log.i(TAG, "replaceAllTextFromAutocomplete: " + text);
         setUrl(text, null);
     }
 
     @Override
     public void onAutocompleteTextStateChanged(boolean textDeleted, boolean updateDisplay) {
+        if (DEBUG) {
+            Log.i(TAG, "onAutocompleteTextStateChanged: DEL[%b], DIS[%b]", textDeleted,
+                    updateDisplay);
+        }
         if (mUrlBarDelegate == null) return;
         if (updateDisplay) limitDisplayableLength();
 
