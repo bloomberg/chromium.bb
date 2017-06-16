@@ -28,7 +28,6 @@ cr.define('login', function() {
   var CUSTOM_ICON_CONTAINER_SIZE = 40;
   var CROS_PIN_POD_HEIGHT = 417;
   var SCROLL_MASK_HEIGHT = 112;
-  var BANNER_MESSAGE_WIDTH = 520;
   var CROS_POD_HEIGHT_WITH_PIN = 618;
   var PUBLIC_SESSION_ICON_WIDTH = 12;
 
@@ -663,9 +662,7 @@ cr.define('login', function() {
     isParentPodFocused_: function() {
       if ($('account-picker').hidden)
         return false;
-      var parentPod = this.parentNode;
-      while (parentPod && !parentPod.classList.contains('pod'))
-        parentPod = parentPod.parentNode;
+      var parentPod = this.getParentPod_();
       return parentPod && parentPod.parentNode.isFocused(parentPod);
     },
 
@@ -675,8 +672,11 @@ cr.define('login', function() {
      * @private
      */
     updateTooltip_: function() {
-      if (this.hidden || !this.isParentPodFocused_())
+      if (this.hidden || !this.getParentPod_() ||
+          this.getParentPod_().getPodStyle() != UserPod.Style.LARGE ||
+          !this.isParentPodFocused_()) {
         return;
+      }
 
       if (!this.tooltipState_.active() || !this.tooltipState_.text) {
         this.hideTooltip_();
@@ -704,6 +704,17 @@ cr.define('login', function() {
      */
     hideTooltip_: function() {
       $('bubble').hideForElement(this);
+    },
+
+    /**
+     * Gets the parent pod (may be null) of this custom icon.
+     * @return {?HTMLDivElement}
+     */
+    getParentPod_: function() {
+      var parentPod = this.parentNode;
+      while (parentPod && !parentPod.classList.contains('pod'))
+        parentPod = parentPod.parentNode;
+      return parentPod;
     }
   };
 
@@ -2241,7 +2252,7 @@ cr.define('login', function() {
     /** @override */
     get mainInput() {
       if (this.expanded)
-        return this.enterButtonElement;
+        return this.querySelector('.monitoring-learn-more');
       else
         return this.nameElement;
     },
@@ -2297,6 +2308,7 @@ cr.define('login', function() {
       monitoringLearnMore.addEventListener(
           'click', this.onMonitoringLearnMoreClicked_.bind(this));
 
+      this.enterButtonElement.tabIndex = UserPodTabOrder.POD_INPUT;
       this.enterButtonElement.addEventListener('click', (function(e) {
         this.enterButtonElement.disabled = true;
         var locale = this.querySelector('.language-select').value;
@@ -3891,6 +3903,11 @@ cr.define('login', function() {
           actionBoxMenu.style.top =
               cr.ui.toCssPx(actionBoxButton.offsetHeight + MENU_TOP_PADDING);
         }
+        // Update password container width based on the visibility of the
+        // custom icon container.
+        pod.querySelector('.password-container')
+            .classList.toggle(
+                'custom-icon-shown', !pod.customIconElement.hidden);
         // Add ripple animation.
         var actionBoxRippleEffect =
             pod.querySelector('.action-box-button.ripple-circle');
@@ -3907,12 +3924,12 @@ cr.define('login', function() {
         var bannerContainer = $('signin-banner-container1');
         bannerContainer.style.top = cr.ui.toCssPx(this.mainPod_.top / 2);
         if (this.pods.length <= POD_ROW_LIMIT) {
-          bannerContainer.style.left =
-              cr.ui.toCssPx((this.screenSize.width - BANNER_MESSAGE_WIDTH) / 2);
+          bannerContainer.style.left = cr.ui.toCssPx(
+              (this.screenSize.width - bannerContainer.offsetWidth) / 2);
         }
         else {
-          var leftPadding =
-              this.mainPod_.left - (BANNER_MESSAGE_WIDTH - CROS_POD_WIDTH) / 2;
+          var leftPadding = this.mainPod_.left -
+              (bannerContainer.offsetWidth - CROS_POD_WIDTH) / 2;
           bannerContainer.style.left = cr.ui.toCssPx(Math.max(leftPadding, 0));
         }
       }
