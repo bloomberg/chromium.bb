@@ -162,12 +162,3 @@ MathJax.InputJax.TeX;
  * @typedef {Object}
  */
 function mediaWiki() {}
-
-
-/**
- * @param {?function(this:S, T, number, !Array<T>): ?} callback
- * @param {S=} opt_thisobj
- * @this {{length: number}|Array<T>}
- * @template T,S
- */
-NodeList.prototype.forEach = function(callback, opt_thisobj) {};
