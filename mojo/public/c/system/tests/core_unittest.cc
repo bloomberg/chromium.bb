@@ -120,7 +120,7 @@ TEST(CoreTest, BasicMessagePipe) {
             MojoReadMessage(h0, &message, MOJO_READ_MESSAGE_FLAG_NONE));
   uintptr_t context;
   EXPECT_EQ(MOJO_RESULT_OK, MojoReleaseMessageContext(message, &context));
-  EXPECT_EQ(MOJO_RESULT_OK, MojoFreeMessage(message));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoDestroyMessage(message));
   EXPECT_EQ(kTestMessageContext, context);
 
   // |h0| should no longer be readable.

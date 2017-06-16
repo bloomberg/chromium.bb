@@ -193,7 +193,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
   MojoResult CreateMessage(uintptr_t context,
                            const MojoMessageOperationThunks* thunks,
                            MojoMessageHandle* message_handle);
-  MojoResult FreeMessage(MojoMessageHandle message_handle);
+  MojoResult DestroyMessage(MojoMessageHandle message_handle);
   MojoResult SerializeMessage(MojoMessageHandle message_handle);
   MojoResult GetSerializedMessageContents(
       MojoMessageHandle message_handle,

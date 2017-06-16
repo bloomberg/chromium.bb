@@ -1375,7 +1375,7 @@ TEST_F(MultiprocessMessagePipeTest, NotifyBadMessage) {
       EXPECT_EQ(MOJO_RESULT_OK,
                 MojoNotifyBadMessage(message, kFirstErrorMessage.data(),
                                      kFirstErrorMessage.size()));
-      EXPECT_EQ(MOJO_RESULT_OK, MojoFreeMessage(message));
+      EXPECT_EQ(MOJO_RESULT_OK, MojoDestroyMessage(message));
 
       // Read a message from the pipe we sent to child2 and flag it as bad.
       ASSERT_EQ(MOJO_RESULT_OK, WaitForSignals(c, MOJO_HANDLE_SIGNAL_READABLE));
@@ -1384,7 +1384,7 @@ TEST_F(MultiprocessMessagePipeTest, NotifyBadMessage) {
       EXPECT_EQ(MOJO_RESULT_OK,
                 MojoNotifyBadMessage(message, kSecondErrorMessage.data(),
                                      kSecondErrorMessage.size()));
-      EXPECT_EQ(MOJO_RESULT_OK, MojoFreeMessage(message));
+      EXPECT_EQ(MOJO_RESULT_OK, MojoDestroyMessage(message));
 
       WriteMessage(child2, "bye");
     END_CHILD();

@@ -47,7 +47,7 @@ class TestMessageBase {
     uintptr_t context;
     MojoResult rv = MojoReleaseMessageContext(handle, &context);
     DCHECK_EQ(MOJO_RESULT_OK, rv);
-    MojoFreeMessage(handle);
+    MojoDestroyMessage(handle);
     return base::WrapUnique(reinterpret_cast<T*>(context));
   }
 
@@ -144,7 +144,7 @@ class SimpleMessage : public TestMessageBase {
 
 TEST_F(MessageTest, InvalidMessageObjects) {
   ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            MojoFreeMessage(MOJO_MESSAGE_HANDLE_INVALID));
+            MojoDestroyMessage(MOJO_MESSAGE_HANDLE_INVALID));
 
   ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
             MojoGetSerializedMessageContents(
@@ -186,15 +186,15 @@ TEST_F(MessageTest, SendLocalMessageWithContext) {
   MojoClose(b);
 }
 
-TEST_F(MessageTest, FreeMessageWithContext) {
-  // Tests that |MojoFreeMessage()| destroys any attached context.
+TEST_F(MessageTest, DestroyMessageWithContext) {
+  // Tests that |MojoDestroyMessage()| destroys any attached context.
   bool was_deleted = false;
   auto message = base::MakeUnique<NeverSerializedMessage>(
       base::Bind([](bool* was_deleted) { *was_deleted = true; }, &was_deleted));
   MojoMessageHandle handle =
       TestMessageBase::MakeMessageHandle(std::move(message));
   EXPECT_FALSE(was_deleted);
-  EXPECT_EQ(MOJO_RESULT_OK, MojoFreeMessage(handle));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoDestroyMessage(handle));
   EXPECT_TRUE(was_deleted);
 }
 
@@ -367,7 +367,7 @@ TEST_F(MessageTest, ReadMessageWithContextAsSerializedMessage) {
                 MOJO_GET_SERIALIZED_MESSAGE_CONTENTS_FLAG_NONE));
   EXPECT_FALSE(message_was_destroyed);
 
-  EXPECT_EQ(MOJO_RESULT_OK, MojoFreeMessage(message_handle));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoDestroyMessage(message_handle));
   EXPECT_TRUE(message_was_destroyed);
 
   MojoClose(a);
@@ -400,7 +400,7 @@ TEST_F(MessageTest, ForceSerializeMessageWithContext) {
   auto message_handle = TestMessageBase::MakeMessageHandle(std::move(message));
   EXPECT_EQ(MOJO_RESULT_OK, MojoSerializeMessage(message_handle));
   EXPECT_TRUE(message_was_destroyed);
-  EXPECT_EQ(MOJO_RESULT_OK, MojoFreeMessage(message_handle));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoDestroyMessage(message_handle));
 
   // Serialize a message with a single handle. Freeing the message should close
   // the handle.
@@ -414,7 +414,7 @@ TEST_F(MessageTest, ForceSerializeMessageWithContext) {
   message_handle = TestMessageBase::MakeMessageHandle(std::move(message));
   EXPECT_EQ(MOJO_RESULT_OK, MojoSerializeMessage(message_handle));
   EXPECT_TRUE(message_was_destroyed);
-  EXPECT_EQ(MOJO_RESULT_OK, MojoFreeMessage(message_handle));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoDestroyMessage(message_handle));
   EXPECT_EQ(MOJO_RESULT_OK, WaitForSignals(pipe1.handle1.get().value(),
                                            MOJO_HANDLE_SIGNAL_PEER_CLOSED));
 
@@ -454,7 +454,7 @@ TEST_F(MessageTest, ForceSerializeMessageWithContext) {
             WaitForSignals(extracted_handle, MOJO_HANDLE_SIGNAL_READABLE));
   EXPECT_EQ(kTestMessage, MojoTestBase::ReadMessage(extracted_handle));
 
-  EXPECT_EQ(MOJO_RESULT_OK, MojoFreeMessage(message_handle));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoDestroyMessage(message_handle));
 }
 
 TEST_F(MessageTest, DoubleSerialize) {
@@ -486,7 +486,7 @@ TEST_F(MessageTest, DoubleSerialize) {
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
             MojoSerializeMessage(message_handle));
 
-  EXPECT_EQ(MOJO_RESULT_OK, MojoFreeMessage(message_handle));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoDestroyMessage(message_handle));
 }
 
 }  // namespace

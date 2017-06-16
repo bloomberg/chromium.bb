@@ -211,7 +211,7 @@ TEST_F(CoreTest, MessagePipe) {
   uintptr_t context;
   ASSERT_EQ(MOJO_RESULT_OK, core()->ReleaseMessageContext(message, &context));
   ASSERT_EQ(kTestMessageContext, context);
-  ASSERT_EQ(MOJO_RESULT_OK, core()->FreeMessage(message));
+  ASSERT_EQ(MOJO_RESULT_OK, core()->DestroyMessage(message));
 
   // |h[0]| should no longer be readable.
   hss[0] = kEmptyMojoHandleSignalsState;
@@ -248,7 +248,7 @@ TEST_F(CoreTest, MessagePipe) {
   // Discard a message from |h[1]|.
   ASSERT_EQ(MOJO_RESULT_OK,
             core()->ReadMessage(h[1], &message, MOJO_READ_MESSAGE_FLAG_NONE));
-  ASSERT_EQ(MOJO_RESULT_OK, core()->FreeMessage(message));
+  ASSERT_EQ(MOJO_RESULT_OK, core()->DestroyMessage(message));
 
   // |h[1]| is no longer readable (and will never be).
   hss[1] = kFullMojoHandleSignalsState;
@@ -292,7 +292,7 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing1) {
   ASSERT_EQ(MOJO_RESULT_OK,
             core()->ReleaseMessageContext(message_handle, &context));
   ASSERT_EQ(kTestMessageContext, context);
-  ASSERT_EQ(MOJO_RESULT_OK, MojoFreeMessage(message_handle));
+  ASSERT_EQ(MOJO_RESULT_OK, MojoDestroyMessage(message_handle));
 
   ASSERT_EQ(MOJO_RESULT_OK, core()->Close(h_passing[0]));
   ASSERT_EQ(MOJO_RESULT_OK, core()->Close(h_passing[1]));

@@ -88,7 +88,7 @@ struct MojoSystemThunks {
   MojoResult (*CreateMessage)(uintptr_t context,
                               const struct MojoMessageOperationThunks* thunks,
                               MojoMessageHandle* message);
-  MojoResult (*FreeMessage)(MojoMessageHandle message);
+  MojoResult (*DestroyMessage)(MojoMessageHandle message);
   MojoResult (*SerializeMessage)(MojoMessageHandle message);
   MojoResult (*GetSerializedMessageContents)(
       MojoMessageHandle message,
