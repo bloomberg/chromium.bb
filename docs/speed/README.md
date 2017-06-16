@@ -2,7 +2,7 @@
 
 ## Contact information
 
-  * **Contact**: TBD
+  * **Contact**: **speed@chromium.org**
   * **Escalation**: rschoen@chromium.org (PM), benhenry@chromium.org (TPM),
     parisa@chromium.org (eng director)
   * **[File a bug](https://bugs.chromium.org/p/chromium/issues/entry?template=Speed%20Bug)**
