@@ -17,7 +17,19 @@ Logs = {
       WebUI.clearLogs();
     };
 
+    var copyLogsButton = document.getElementById('copy-logs-button');
+    copyLogsButton.onclick = () => {
+      this.copyLogsToClipboard();
+    };
+
     WebUI.getLogMessages();
+  },
+
+  copyLogsToClipboard: function() {
+    window.getSelection().selectAllChildren(
+        document.getElementById('logs-list'));
+    document.execCommand('copy');
+    window.getSelection().removeAllRanges();
   },
 };
 
