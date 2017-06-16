@@ -39,8 +39,6 @@ component("web") {
     "AssertMatchingEnums.cpp",
     "ChromeClientImpl.cpp",
     "ChromeClientImpl.h",
-    "DedicatedWorkerMessagingProxyProviderImpl.cpp",
-    "DedicatedWorkerMessagingProxyProviderImpl.h",
     "InspectorOverlayAgent.cpp",
     "InspectorOverlayAgent.h",
     "LocalFrameClientImpl.cpp",

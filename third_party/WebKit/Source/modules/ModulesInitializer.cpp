@@ -15,6 +15,8 @@
 #include "core/html/HTMLMediaElement.h"
 #include "core/offscreencanvas/OffscreenCanvas.h"
 #include "core/page/ChromeClient.h"
+#include "core/workers/Worker.h"
+#include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerContentSettingsClient.h"
 #include "modules/EventModulesFactory.h"
 #include "modules/EventModulesNames.h"
@@ -28,6 +30,7 @@
 #include "modules/compositorworker/CompositorWorkerThread.h"
 #include "modules/csspaint/CSSPaintImageGeneratorImpl.h"
 #include "modules/document_metadata/CopylessPasteServer.h"
+#include "modules/exported/WebEmbeddedWorkerImpl.h"
 #include "modules/filesystem/DraggedIsolatedFileSystemImpl.h"
 #include "modules/filesystem/LocalFileSystemClient.h"
 #include "modules/imagebitmap/ImageBitmapRenderingContext.h"
@@ -140,13 +143,27 @@ void ModulesInitializer::Initialize() {
     InstalledAppController::ProvideTo(frame, client->GetRelatedAppsFetcher());
   });
 
-  // WebSharedWorkerImpl callbacks for modules initialization.
-  // TODO(nhiroki): Implement a common mechanism to set up WorkerClients
-  // (https://crbug.com/729500).
-  WebSharedWorkerImpl::RegisterWorkerClientsCreatedCallback(
+  // DedicatedWorker callbacks for modules initialization.
+  WorkerClientsInitializer<Worker>::Register(
       [](WorkerClients* worker_clients) {
         ProvideLocalFileSystemToWorker(worker_clients,
                                        LocalFileSystemClient::Create());
+        ProvideIndexedDBClientToWorker(
+            worker_clients, IndexedDBClientImpl::Create(*worker_clients));
+      });
+
+  // SharedWorker callbacks for modules initialization.
+  WorkerClientsInitializer<WebSharedWorkerImpl>::Register(
+      [](WorkerClients* worker_clients) {
+        ProvideLocalFileSystemToWorker(worker_clients,
+                                       LocalFileSystemClient::Create());
+        ProvideIndexedDBClientToWorker(
+            worker_clients, IndexedDBClientImpl::Create(*worker_clients));
+      });
+
+  // ServiceWorker callbacks for modules initialization.
+  WorkerClientsInitializer<WebEmbeddedWorkerImpl>::Register(
+      [](WorkerClients* worker_clients) {
         ProvideIndexedDBClientToWorker(
             worker_clients, IndexedDBClientImpl::Create(*worker_clients));
       });

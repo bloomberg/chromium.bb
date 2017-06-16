@@ -12,8 +12,6 @@ blink_core_sources("workers") {
     "DedicatedWorkerGlobalScope.h",
     "DedicatedWorkerMessagingProxy.cpp",
     "DedicatedWorkerMessagingProxy.h",
-    "DedicatedWorkerMessagingProxyProvider.cpp",
-    "DedicatedWorkerMessagingProxyProvider.h",
     "DedicatedWorkerThread.cpp",
     "DedicatedWorkerThread.h",
     "InProcessWorkerBase.cpp",

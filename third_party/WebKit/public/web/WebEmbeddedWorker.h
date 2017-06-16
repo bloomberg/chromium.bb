@@ -43,14 +43,14 @@ struct WebEmbeddedWorkerStartData;
 
 // An interface to start and terminate an embedded worker.
 // All methods of this class must be called on the main thread.
-class WebEmbeddedWorker {
+class BLINK_EXPORT WebEmbeddedWorker {
  public:
   // Invoked on the main thread to instantiate a WebEmbeddedWorker.
   // The given WebWorkerContextClient and WebContentSettingsClient are going to
   // be passed on to the worker thread and is held by a newly created
   // WorkerGlobalScope.
-  BLINK_EXPORT static WebEmbeddedWorker* Create(WebServiceWorkerContextClient*,
-                                                WebContentSettingsClient*);
+  static WebEmbeddedWorker* Create(WebServiceWorkerContextClient*,
+                                   WebContentSettingsClient*);
 
   virtual ~WebEmbeddedWorker() {}
 
