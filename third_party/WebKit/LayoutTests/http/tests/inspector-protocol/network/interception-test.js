@@ -133,7 +133,11 @@ InspectorTest.startInterceptionTest = function(requestInterceptedDict,
                              JSON.stringify(event.params));
             return;
         }
-        if (event.params.hasOwnProperty("redirectUrl")) {
+        if (event.params.hasOwnProperty("authChallenge")) {
+            log(id, "Auth required for " + id);
+            requestInterceptedDict[filename + '+Auth'](event);
+            return;
+        } else if (event.params.hasOwnProperty("redirectUrl")) {
             log(id, "Network.requestIntercepted " + id + " " +
                     event.params.redirectStatusCode + " redirect " +
                     interceptionRequestParams[id].url.split('/').pop() +
@@ -254,6 +258,37 @@ InspectorTest.disableRequestInterception = function(event) {
     log(id, "----- disableRequestInterception -----");
     InspectorTest.sendCommand("Network.enableRequestInterception", {
         "enabled": false,
+    });
+}
+
+InspectorTest.cancelAuth = function(event) {
+    var id = canonicalId(event.params.interceptionId);
+    log(id, "----- Cancel Auth -----");
+    InspectorTest.sendCommand("Network.continueInterceptedRequest", {
+        "interceptionId": event.params.interceptionId,
+        "authChallengeResponse": {"response": "CancelAuth"}
+    });
+}
+
+InspectorTest.defaultAuth = function(event) {
+    var id = canonicalId(event.params.interceptionId);
+    log(id, "----- Use Default Auth -----");
+    InspectorTest.sendCommand("Network.continueInterceptedRequest", {
+        "interceptionId": event.params.interceptionId,
+        "authChallengeResponse": {"response": "Default"}
+    });
+}
+
+InspectorTest.provideAuthCredentials = function(event, username, password) {
+    var id = canonicalId(event.params.interceptionId);
+    log(id, "----- Provide Auth Credentials -----");
+    InspectorTest.sendCommand("Network.continueInterceptedRequest", {
+        "interceptionId": event.params.interceptionId,
+        "authChallengeResponse": {
+            "response": "ProvideCredentials",
+            "username": username,
+            "password": password
+        }
     });
 }
 

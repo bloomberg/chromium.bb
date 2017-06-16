@@ -74,11 +74,14 @@ class DevToolsURLInterceptorRequestJob : public net::URLRequestJob,
   // Must be called on IO thread.
   void StopIntercepting();
 
-  // Must be called only once per interception. Returns true on success or false
-  // otherwise. Must be called on IO thread.
-  bool ContinueInterceptedRequest(
+  using ContinueInterceptedRequestCallback =
+      protocol::Network::Backend::ContinueInterceptedRequestCallback;
+
+  // Must be called only once per interception. Must be called on IO thread.
+  void ContinueInterceptedRequest(
       std::unique_ptr<DevToolsURLRequestInterceptor::Modifications>
-          modifications);
+          modifications,
+      std::unique_ptr<ContinueInterceptedRequestCallback> callback);
 
   WebContents* web_contents() const { return web_contents_; }
 
@@ -166,13 +169,27 @@ class DevToolsURLInterceptorRequestJob : public net::URLRequestJob,
   // |mock_response_|.  In some cases (e.g. file access) this may be null.
   const net::HttpResponseHeaders* GetHttpResponseHeaders() const;
 
+  void ProcessInterceptionRespose(
+      std::unique_ptr<DevToolsURLRequestInterceptor::Modifications>
+          modification);
+
+  bool ProcessAuthRespose(
+      std::unique_ptr<DevToolsURLRequestInterceptor::Modifications>
+          modification);
+
+  enum class WaitingForUserResponse {
+    NOT_WAITING,
+    WAITING_FOR_INTERCEPTION_RESPONSE,
+    WAITING_FOR_AUTH_RESPONSE,
+  };
+
   scoped_refptr<DevToolsURLRequestInterceptor::State>
       devtools_url_request_interceptor_state_;
   RequestDetails request_details_;
   std::unique_ptr<SubRequest> sub_request_;
   std::unique_ptr<MockResponseDetails> mock_response_details_;
   std::unique_ptr<net::RedirectInfo> redirect_;
-  bool waiting_for_user_response_;
+  WaitingForUserResponse waiting_for_user_response_;
   bool intercepting_requests_;
   bool killed_;
   scoped_refptr<net::AuthChallengeInfo> auth_info_;

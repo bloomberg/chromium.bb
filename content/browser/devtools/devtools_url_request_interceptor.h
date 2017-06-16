@@ -57,7 +57,9 @@ class DevToolsURLRequestInterceptor : public net::URLRequestInterceptor {
                   protocol::Maybe<std::string> modified_url,
                   protocol::Maybe<std::string> modified_method,
                   protocol::Maybe<std::string> modified_post_data,
-                  protocol::Maybe<protocol::Network::Headers> modified_headers);
+                  protocol::Maybe<protocol::Network::Headers> modified_headers,
+                  protocol::Maybe<protocol::Network::AuthChallengeResponse>
+                      auth_challenge_response);
     ~Modifications();
 
     bool RequestShouldContineUnchanged() const;
@@ -72,6 +74,10 @@ class DevToolsURLRequestInterceptor : public net::URLRequestInterceptor {
     protocol::Maybe<std::string> modified_method;
     protocol::Maybe<std::string> modified_post_data;
     protocol::Maybe<protocol::Network::Headers> modified_headers;
+
+    // AuthChallengeResponse is mutually exclusive with the above.
+    protocol::Maybe<protocol::Network::AuthChallengeResponse>
+        auth_challenge_response;
   };
 
   // The State needs to be accessed on both UI and IO threads.

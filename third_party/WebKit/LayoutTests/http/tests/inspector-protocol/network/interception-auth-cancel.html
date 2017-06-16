@@ -7,24 +7,24 @@
 function appendIframe()
 {
     var iframe = document.createElement("iframe");
-    iframe.src = "resources/xhr-iframe-auth-fail.html";
+    iframe.src = "resources/iframe-auth-js.html";
     document.body.appendChild(iframe);
 }
 
 function test()
 {
     var requestInterceptedDict = {
-        "xhr-iframe-auth-fail.html": InspectorTest.allowRequest,
+        "iframe-auth-js.html": InspectorTest.allowRequest,
         "unauthorised.pl": InspectorTest.allowRequest,
-        "unauthorised.pl+Auth": InspectorTest.defaultAuth,
+        "unauthorised.pl+Auth": InspectorTest.cancelAuth
     };
 
-    InspectorTest.startInterceptionTest(requestInterceptedDict, 1);
+    InspectorTest.startInterceptionTest(requestInterceptedDict, 0);
 }
 </script>
 </head>
 <body onload="runTest();">
-<p>Tests interception of an XHR request that fails due to lack of credentials.</a>
+<p>Tests canceling an HTTP auth challenge via DevTools protocol.</a>
 </p>
 </body>
 </html>
