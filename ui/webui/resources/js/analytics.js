@@ -11,4 +11,3 @@
 // of a licence header.
 // clang-format off
 <include src="../../../../third_party/analytics/google-analytics-bundle.js">
-// clang-format on

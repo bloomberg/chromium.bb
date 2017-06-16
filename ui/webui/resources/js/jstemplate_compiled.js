@@ -11,4 +11,3 @@
 // of a licence header.
 // clang-format off
 <include src="../../../../third_party/jstemplate/jstemplate_compiled.js">
-// clang-format on

@@ -75,8 +75,9 @@ var CrPolicyNetworkBehavior = {
    * @private
    */
   isPolicySource: function(source) {
-    return !!source && (source == CrOnc.Source.DEVICE_POLICY ||
-                        source == CrOnc.Source.USER_POLICY);
+    return !!source &&
+        (source == CrOnc.Source.DEVICE_POLICY ||
+         source == CrOnc.Source.USER_POLICY);
   },
 
   /**

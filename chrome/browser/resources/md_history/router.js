@@ -9,7 +9,7 @@ Polymer({
     selectedPage: {
       type: String,
       notify: true,
-      observer: 'selectedPageChanged_'
+      observer: 'selectedPageChanged_',
     },
 
     /** @type {QueryState} */

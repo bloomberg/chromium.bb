@@ -191,9 +191,9 @@ cr.define('cr.ui', function() {
           left = Math.max(Math.min(left, maxLeftPos), minLeftPos);
         var arrowTip = Math.min(
             Math.max(
-                arrow.width / 2, this.arrowAtRight_ ?
-                    left + bubble.width - anchorMid :
-                    anchorMid - left),
+                arrow.width / 2,
+                this.arrowAtRight_ ? left + bubble.width - anchorMid :
+                                     anchorMid - left),
             bubble.width - arrow.width / 2);
 
         // Work out the vertical placement, attempting to fit the bubble

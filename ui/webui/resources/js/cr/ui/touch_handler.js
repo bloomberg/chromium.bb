@@ -67,9 +67,9 @@ cr.define('cr.ui', function() {
      * recent relevant touch and the second item is the touch's time stamp. Old
      * touches are removed based on the max tracking time and when direction
      * changes.
-      * @type {!Array<number>}
-      * @private
-      */
+     * @type {!Array<number>}
+     * @private
+     */
     this.recentTouchesX_ = [];
 
     /**

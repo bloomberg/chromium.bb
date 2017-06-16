@@ -80,8 +80,10 @@ Polymer({
                 {
                   opacity: [0, .9],
                 },
-                /** @type {!KeyframeEffectOptions} */ (
-                    {duration: 500, fill: 'forwards'}));
+                /** @type {!KeyframeEffectOptions} */ ({
+                  duration: 500,
+                  fill: 'forwards'
+                }));
         this.fire('cr-toolbar-menu-promo-shown');
       }
     }.bind(this));
