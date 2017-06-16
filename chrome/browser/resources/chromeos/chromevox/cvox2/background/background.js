@@ -654,12 +654,24 @@ Background.prototype = {
     if (!actionNodeSpan)
       return;
     var actionNode = actionNodeSpan.node;
+    var offset = actionNodeSpan.offset;
     if (actionNode.role === RoleType.INLINE_TEXT_BOX)
       actionNode = actionNode.parent;
     actionNode.doDefault();
-    if (selectionSpan) {
-      var start = text.getSpanStart(selectionSpan);
-      var targetPosition = position - start;
+
+    if (!selectionSpan)
+      selectionSpan = actionNodeSpan;
+
+    var start = text.getSpanStart(selectionSpan);
+    var targetPosition = position - start + offset;
+
+    if (actionNode.state.richlyEditable) {
+      chrome.automation.setDocumentSelection(
+          { anchorObject: actionNode,
+            anchorOffset: targetPosition,
+            focusObject: actionNode,
+            focusOffset: targetPosition });
+    } else {
       actionNode.setSelection(targetPosition, targetPosition);
     }
   },

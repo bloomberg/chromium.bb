@@ -253,17 +253,10 @@ AutomationRichEditableText.prototype = {
           cur.startOffset || 0,
           cur.endOffset || 0,
           true));
-
-      var value = cur.value_;
-      value.setSpan(new cvox.ValueSpan(0), 0, cur.value_.length);
-      value.setSpan(
-          new cvox.ValueSelectionSpan(), cur.startOffset, cur.endOffset);
-      cvox.ChromeVox.braille.write(new cvox.NavBraille({text: value,
-          startIndex: cur.startOffset,
-          endIndex: cur.endOffset}));
+      this.brailleCurrentRichLine_();
 
       // Finally, queue up any text markers/styles at bounds.
-      var container = cur.lineContainer_;
+      var container = cur.startContainer_;
       if (!container)
         return;
 
@@ -303,18 +296,15 @@ AutomationRichEditableText.prototype = {
     }
 
     // Just output the current line.
-    if (!cur.lineStart_ || !cur.lineEnd_)
-      return;
-    var prevRange = null;
-    if (prev.lineStart_ && prev.lineEnd_) {
-      prevRange = new Range(
-          Cursor.fromNode(prev.lineStart_), Cursor.fromNode(prev.lineEnd_));
-    }
+    cvox.ChromeVox.tts.speak(cur.text, cvox.QueueMode.CATEGORY_FLUSH);
+    this.brailleCurrentRichLine_();
 
-    new Output().withRichSpeechAndBraille(new Range(
-            Cursor.fromNode(cur.lineStart_), Cursor.fromNode(cur.lineEnd_)),
-        prevRange,
-        Output.EventType.NAVIGATE).go();
+    // The state in EditableTextBase needs to get updated with the new line
+    // contents, so that subsequent intra-line changes get the right state
+    // transitions.
+    this.value = cur.text;
+    this.start = cur.startOffset;
+    this.end = cur.endOffset;
   },
 
   /**
@@ -364,6 +354,19 @@ AutomationRichEditableText.prototype = {
                                  cvox.AbstractTts.PERSONALITY_ANNOTATION);
       });
     }
+  },
+
+  /** @private */
+  brailleCurrentRichLine_: function() {
+    var cur = this.line_;
+    var value = cur.value_;
+    value.setSpan(new cvox.ValueSpan(0), 0, cur.value_.length);
+    value.setSpan(
+        new cvox.ValueSelectionSpan(), cur.startOffset, cur.endOffset);
+    cvox.ChromeVox.braille.write(new cvox.NavBraille(
+        {text: value,
+         startIndex: cur.startOffset,
+         endIndex: cur.endOffset}));
   },
 
   /** @override */
@@ -473,7 +476,11 @@ editing.EditableLine = function(startNode, startIndex, endNode, endIndex) {
   /** @private {AutomationNode} */
   this.lineEnd_;
   /** @private {AutomationNode|undefined} */
-  this.lineContainer_;
+  this.startContainer_;
+  /** @private {AutomationNode|undefined} */
+  this.lineStartContainer_;
+  /** @private {number} */
+  this.localLineStartContainerOffset_ = 0;
 
   this.computeLineData_();
 };
@@ -481,32 +488,115 @@ editing.EditableLine = function(startNode, startIndex, endNode, endIndex) {
 editing.EditableLine.prototype = {
   /** @private */
   computeLineData_: function() {
-    this.value_ = new Spannable(this.start_.node.name, this.start_);
-    if (this.start_.node == this.end_.node)
-      this.value_.setSpan(this.end_, 0, this.start_.node.name.length);
+    var nameLen = 0;
+    if (this.start_.node.name)
+      nameLen = this.start_.node.name.length;
 
+    this.value_ = new Spannable(this.start_.node.name || '', this.start_);
+    if (this.start_.node == this.end_.node)
+      this.value_.setSpan(this.end_, 0, nameLen);
+
+    // Initialize defaults.
     this.lineStart_ = this.start_.node;
     this.lineEnd_ = this.lineStart_;
-    this.lineContainer_ = this.lineStart_.parent;
+    this.startContainer_ = this.lineStart_.parent;
+    this.lineStartContainer_ = this.lineStart_.parent;
 
-    // Annotate each chunk with its associated node.
+    // Annotate each chunk with its associated inline text box node.
     this.value_.setSpan(this.lineStart_, 0, this.lineStart_.name.length);
 
-    while (this.lineStart_.previousOnLine) {
-      this.lineStart_ = this.lineStart_.previousOnLine;
-      var prepend = new Spannable(this.lineStart_.name, this.lineStart_);
+    // If the current selection is not on an inline text box (e.g. an image),
+    // return early here so that the line contents are just the node. This is
+    // pending the ability to show non-text leaf inline objects.
+    if (this.lineStart_.role != RoleType.INLINE_TEXT_BOX)
+      return;
+
+    // Also, track their static text parents.
+    var parents = [this.startContainer_];
+
+    // Compute the start of line.
+    var lineStart = this.lineStart_;
+    while (lineStart.previousOnLine && lineStart.previousOnLine.role) {
+      lineStart = lineStart.previousOnLine;
+      if (lineStart.role != RoleType.INLINE_TEXT_BOX)
+        continue;
+
+      this.lineStart_ = lineStart;
+      if (parents[0] != lineStart.parent)
+        parents.unshift(lineStart.parent);
+
+      var prepend = new Spannable(lineStart.name, lineStart);
       prepend.append(this.value_);
       this.value_ = prepend;
     }
+    this.lineStartContainer_ = this.lineStart_.parent;
 
-    while (this.lineEnd_.nextOnLine) {
-      this.lineEnd_ = this.lineEnd_.nextOnLine;
+    var lineEnd = this.lineEnd_;
+    while (lineEnd.nextOnLine && lineEnd.nextOnLine.role) {
+      lineEnd = lineEnd.nextOnLine;
+      if (lineEnd.role != RoleType.INLINE_TEXT_BOX)
+        continue;
 
-      var annotation = this.lineEnd_;
-      if (this.lineEnd_ == this.end_.node)
+      this.lineEnd_ = lineEnd;
+      if (parents[parents.length - 1] != lineEnd.parent)
+        parents.push(this.lineEnd_.parent);
+
+      var annotation = lineEnd;
+      if (lineEnd == this.end_.node)
         annotation = this.end_;
 
-      this.value_.append(new Spannable(this.lineEnd_.name, annotation));
+      this.value_.append(new Spannable(lineEnd.name, annotation));
+    }
+
+    // Finally, annotate with all parent static texts as NodeSpan's so that
+    // braille routing can key properly into the node with an offset.
+    // Note that both line start and end needs to account for
+    // potential offsets into the static texts as follows.
+    var textCountBeforeLineStart = 0, textCountAfterLineEnd = 0;
+    var finder = this.lineStart_;
+    while (finder.previousSibling) {
+      finder = finder.previousSibling;
+      textCountBeforeLineStart += finder.name.length;
+    }
+    this.localLineStartContainerOffset_ = textCountBeforeLineStart;
+
+    finder = this.lineEnd_;
+    while (finder.nextSibling) {
+      finder = finder.nextSibling;
+      textCountAfterLineEnd += finder.name.length;
+    }
+
+    var len = 0;
+    for (var i = 0; i < parents.length; i++) {
+      var parent = parents[i];
+
+      if (!parent.name)
+        continue;
+
+      var prevLen = len;
+
+      var currentLen = parent.name.length;
+      var offset = 0;
+
+      // Subtract off the text count before when at the start of line.
+      if (i == 0) {
+        currentLen -= textCountBeforeLineStart;
+        offset = textCountBeforeLineStart;
+      }
+
+      // Subtract text count after when at the end of the line.
+      if (i == parents.length - 1)
+        currentLen -= textCountAfterLineEnd;
+
+      len += currentLen;
+
+      try {
+        this.value_.setSpan(new Output.NodeSpan(parent, offset), prevLen, len);
+
+        // Also, annotate this span if it is associated with line containre.
+        if (parent == this.startContainer_)
+          this.value_.setSpan(parent, prevLen, len);
+      } catch (e) {}
     }
   },
 
@@ -528,6 +618,7 @@ editing.EditableLine.prototype = {
 
   /**
    * Gets the selection offset based on the parent's text.
+   * The parent is expected to be static text.
    * @return {number}
    */
   get localStartOffset() {
@@ -536,6 +627,7 @@ editing.EditableLine.prototype = {
 
   /**
    * Gets the selection offset based on the parent's text.
+   * The parent is expected to be static text.
    * @return {number}
    */
   get localEndOffset() {
@@ -543,36 +635,25 @@ editing.EditableLine.prototype = {
   },
 
   /**
-   * Gets the start offset of the line, relative to the container's text.
-   * @return {number}
-   */
-  get containerLineStartOffset() {
-    // When the container start offset is larger, the start offset is usually
-    // part of a line wrap, so the two offsets differ.
-    // When the container start offset is smaller, there is usually more line
-    // content before the container accounted for in start offset.
-    // Taking the difference either way will give us the offset at which the
-    // line begins.
-    return Math.abs(this.localContainerStartOffset_ - this.startOffset);
-  },
-
-  /**
    * Gets the start offset of the container, relative to the line text content.
+   * The container refers to the static text parenting the inline text box.
    * @return {number}
    */
   get containerStartOffset() {
-    return this.value_.getSpanStart(this.lineContainer_.firstChild);
+    return this.value_.getSpanStart(this.startContainer_);
   },
 
   /**
    * Gets the end offset of the container, relative to the line text content.
+   * The container refers to the static text parenting the inline text box.
    * @return {number}
    */
   get containerEndOffset() {
-    return this.value_.getSpanEnd(this.lineContainer_.lastChild) - 1;
+    return this.value_.getSpanEnd(this.startContainer_) - 1;
   },
 
   /**
+   * The text content of this line.
    * @return {string} The text of this line.
    */
   get text() {
@@ -586,11 +667,11 @@ editing.EditableLine.prototype = {
    */
   equals: function(otherLine) {
     // Equality is intentionally loose here as any of the state nodes can be
-    // invalidated at any time.
-    return (otherLine.lineStart_ == this.lineStart_ &&
-            otherLine.lineEnd_ == this.lineEnd_) ||
-        (otherLine.lineContainer_ == this.lineContainer_ &&
-        otherLine.containerLineStartOffset == this.containerLineStartOffset);
+    // invalidated at any time. We rely upon the start/anchor of the line
+    // staying the same.
+    return otherLine.lineStartContainer_ == this.lineStartContainer_ &&
+        otherLine.localLineStartContainerOffset_ ==
+            this.localLineStartContainerOffset_;
   }
 };
 
