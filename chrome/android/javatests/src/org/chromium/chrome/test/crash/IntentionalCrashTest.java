@@ -25,7 +25,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 public class IntentionalCrashTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule(ChromeActivity.class);
+            new ChromeActivityTestRule<>(ChromeActivity.class);
 
     @DisabledTest
     @Test
