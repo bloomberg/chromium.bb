@@ -15,7 +15,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gfx/buffer_format_util.h"
-#include "ui/gfx/switches.h"
+#include "ui/gfx/color_space_switches.h"
 
 namespace gfx {
 

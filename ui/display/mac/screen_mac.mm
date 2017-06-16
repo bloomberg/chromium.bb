@@ -19,8 +19,8 @@
 #include "base/timer/timer.h"
 #include "ui/display/display.h"
 #include "ui/display/display_change_notifier.h"
+#include "ui/gfx/color_space_switches.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
-#include "ui/gfx/switches.h"
 
 extern "C" {
 Boolean CGDisplayUsesForceToGray(void);

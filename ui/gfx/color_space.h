@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
-#include "ui/gfx/gfx_export.h"
+#include "ui/gfx/color_space_export.h"
 
 namespace IPC {
 template <class P>
@@ -26,7 +26,7 @@ class ICCProfile;
 // Used to represet a color space for the purpose of color conversion.
 // This is designed to be safe and compact enough to send over IPC
 // between any processes.
-class GFX_EXPORT ColorSpace {
+class COLOR_SPACE_EXPORT ColorSpace {
  public:
   enum class PrimaryID : uint8_t {
     INVALID,
@@ -212,8 +212,8 @@ class GFX_EXPORT ColorSpace {
 };
 
 // Stream operator so ColorSpace can be used in assertion statements.
-GFX_EXPORT std::ostream& operator<<(std::ostream& out,
-                                    const ColorSpace& color_space);
+COLOR_SPACE_EXPORT std::ostream& operator<<(std::ostream& out,
+                                            const ColorSpace& color_space);
 
 }  // namespace gfx
 

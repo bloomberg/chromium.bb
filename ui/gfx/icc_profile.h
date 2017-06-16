@@ -27,7 +27,7 @@ namespace gfx {
 // can be lossily compressed into a ColorSpace object. This structure should
 // only be sent from higher-privilege processes to lower-privilege processes,
 // as parsing this structure is not secure.
-class GFX_EXPORT ICCProfile {
+class COLOR_SPACE_EXPORT ICCProfile {
  public:
   ICCProfile();
   ICCProfile(ICCProfile&& other);

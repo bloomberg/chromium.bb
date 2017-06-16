@@ -9,7 +9,7 @@
 #include "cc/output/renderer_settings.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/display/display_switches.h"
-#include "ui/gfx/switches.h"
+#include "ui/gfx/color_space_switches.h"
 
 namespace ui {
 
