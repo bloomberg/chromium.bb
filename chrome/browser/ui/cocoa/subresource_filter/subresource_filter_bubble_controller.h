@@ -24,7 +24,6 @@
 // only exposed for testing purposes. DO NOT USE OTHERWISE.
 @interface SubresourceFilterBubbleController (ExposedForTesting)
 - (void)manageCheckboxChecked:(id)sender;
-- (id)titleLabel;
 - (id)messageLabel;
 - (id)manageCheckbox;
 - (id)doneButton;

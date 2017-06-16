@@ -54,15 +54,8 @@
 }
 
 - (void)loadView {
-  titleLabel_ =
-      [[NSTextField alloc] initWithFrame:NSMakeRect(18, 120, 282, 14)];
-  [titleLabel_ setEditable:NO];
-  [titleLabel_ setBordered:NO];
-  [self.window.contentView addSubview:titleLabel_];
-  [titleLabel_ release];
-
   messageLabel_ =
-      [[NSTextField alloc] initWithFrame:NSMakeRect(18, 85, 282, 28)];
+      [[NSTextField alloc] initWithFrame:NSMakeRect(18, 96, 282, 28)];
   [messageLabel_ setEditable:NO];
   [messageLabel_ setBordered:NO];
   [self.window.contentView addSubview:messageLabel_];
@@ -111,10 +104,6 @@
 }
 
 // For testing.
-
-- (id)titleLabel {
-  return titleLabel_;
-}
 
 - (id)messageLabel {
   return messageLabel_;

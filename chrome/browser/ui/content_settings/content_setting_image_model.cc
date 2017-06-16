@@ -432,9 +432,8 @@ void ContentSettingSubresourceFilterImageModel::UpdateFromWebContents(
   }
 
   set_icon(kSubresourceFilterActiveIcon, kBlockedBadgeIcon);
-  set_explanatory_string_id(IDS_FILTERED_DECEPTIVE_CONTENT_PROMPT_TITLE);
-  set_tooltip(
-      l10n_util::GetStringUTF16(IDS_FILTERED_DECEPTIVE_CONTENT_PROMPT_TITLE));
+  set_explanatory_string_id(IDS_BLOCKED_ADS_PROMPT_TITLE);
+  set_tooltip(l10n_util::GetStringUTF16(IDS_BLOCKED_ADS_PROMPT_TOOLTIP));
   set_visible(true);
 }
 
