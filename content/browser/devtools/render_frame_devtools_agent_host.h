@@ -7,9 +7,9 @@
 
 #include <map>
 #include <memory>
-#include <unordered_set>
 
 #include "base/compiler_specific.h"
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "content/browser/devtools/devtools_agent_host_impl.h"
@@ -171,22 +171,18 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 
   // The active host we are talking to.
   RenderFrameHostImpl* frame_host_ = nullptr;
+  base::flat_set<NavigationHandleImpl*> navigation_handles_;
+  bool render_frame_alive_ = false;
+
+  // These messages were queued after suspending, not sent to the agent,
+  // and will be sent after resuming.
   struct Message {
     int session_id;
+    int call_id;
     std::string method;
     std::string message;
   };
-  // Chunk processor's state cookie always corresponds to a state before
-  // any of the suspended or waiting for response messages have been handled.
-  DevToolsMessageChunkProcessor chunk_processor_;
-  std::unordered_set<NavigationHandleImpl*> navigation_handles_;
-  bool render_frame_alive_ = false;
-  // These messages were sent before suspending, but their result have not been
-  // received yet, and state cookie has not been updated.
-  std::map<int, Message> waiting_for_response_messages_;
-  // These messages were queued after suspending, not sent to the agent,
-  // and will be sent after resuming.
-  std::map<int, Message> suspended_messages_;
+  std::vector<Message> suspended_messages_;
 
   // The FrameTreeNode associated with this agent.
   FrameTreeNode* frame_tree_node_;

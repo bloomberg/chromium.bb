@@ -91,7 +91,7 @@ class DevToolsMessageChunkProcessor {
   explicit DevToolsMessageChunkProcessor(const SendMessageCallback& callback);
   ~DevToolsMessageChunkProcessor();
 
-  std::string state_cookie() const { return state_cookie_; }
+  const std::string& state_cookie() const { return state_cookie_; }
   void set_state_cookie(const std::string& cookie) { state_cookie_ = cookie; }
   int last_call_id() const { return last_call_id_; }
   bool ProcessChunkedMessageFromAgent(const DevToolsMessageChunk& chunk);

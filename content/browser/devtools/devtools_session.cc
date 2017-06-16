@@ -20,6 +20,8 @@ DevToolsSession::DevToolsSession(DevToolsAgentHostImpl* agent_host,
       session_id_(session_id),
       host_(nullptr),
       dispatcher_(new protocol::UberDispatcher(this)),
+      chunk_processor_(base::Bind(&DevToolsSession::SendMessageToClient,
+                                  base::Unretained(this))),
       weak_factory_(this) {}
 
 DevToolsSession::~DevToolsSession() {
@@ -46,11 +48,21 @@ void DevToolsSession::SetFallThroughForNotFound(bool value) {
   dispatcher_->setFallThroughForNotFound(value);
 }
 
-void DevToolsSession::sendResponse(
+void DevToolsSession::SendMessageToClient(int session_id,
+                                          const std::string& message) {
+  if (session_id != session_id_)
+    return;
+  int id = chunk_processor_.last_call_id();
+  waiting_for_response_messages_.erase(id);
+  client_->DispatchProtocolMessage(agent_host_, message);
+  // |this| may be deleted at this point.
+}
+
+void DevToolsSession::SendResponse(
     std::unique_ptr<base::DictionaryValue> response) {
   std::string json;
   base::JSONWriter::Write(*response.get(), &json);
-  agent_host_->SendMessageToClient(session_id_, json);
+  client_->DispatchProtocolMessage(agent_host_, json);
 }
 
 protocol::Response::Status DevToolsSession::Dispatch(
@@ -67,11 +79,11 @@ protocol::Response::Status DevToolsSession::Dispatch(
     std::unique_ptr<base::DictionaryValue> response(
         delegate->HandleCommand(agent_host_, dict_value));
     if (response) {
-      sendResponse(std::move(response));
+      SendResponse(std::move(response));
       return protocol::Response::kSuccess;
     }
     if (delegate->HandleAsyncCommand(agent_host_, dict_value,
-                                     base::Bind(&DevToolsSession::sendResponse,
+                                     base::Bind(&DevToolsSession::SendResponse,
                                                 weak_factory_.GetWeakPtr()))) {
       return protocol::Response::kAsync;
     }
@@ -81,15 +93,19 @@ protocol::Response::Status DevToolsSession::Dispatch(
                                call_id, method);
 }
 
+bool DevToolsSession::ReceiveMessageChunk(const DevToolsMessageChunk& chunk) {
+  return chunk_processor_.ProcessChunkedMessageFromAgent(chunk);
+}
+
 void DevToolsSession::sendProtocolResponse(
     int call_id,
     std::unique_ptr<protocol::Serializable> message) {
-  agent_host_->SendMessageToClient(session_id_, message->serialize());
+  client_->DispatchProtocolMessage(agent_host_, message->serialize());
 }
 
 void DevToolsSession::sendProtocolNotification(
     std::unique_ptr<protocol::Serializable> message) {
-  agent_host_->SendMessageToClient(session_id_, message->serialize());
+  client_->DispatchProtocolMessage(agent_host_, message->serialize());
 }
 
 void DevToolsSession::flushProtocolNotifications() {

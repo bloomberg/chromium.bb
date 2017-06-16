@@ -65,7 +65,6 @@ class CONTENT_EXPORT WorkerDevToolsAgentHost : public DevToolsAgentHostImpl,
   void WorkerCreated();
   void OnDispatchOnInspectorFrontend(const DevToolsMessageChunk& message);
 
-  DevToolsMessageChunkProcessor chunk_processor_;
   WorkerState state_;
   WorkerId worker_id_;
   DISALLOW_COPY_AND_ASSIGN(WorkerDevToolsAgentHost);

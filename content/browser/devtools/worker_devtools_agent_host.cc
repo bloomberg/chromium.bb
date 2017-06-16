@@ -65,6 +65,7 @@ bool WorkerDevToolsAgentHost::DispatchProtocolMessage(
   if (RenderProcessHost* host = RenderProcessHost::FromID(worker_id_.first)) {
     host->Send(new DevToolsAgentMsg_DispatchOnInspectorBackend(
         worker_id_.second, session->session_id(), call_id, method, message));
+    session->waiting_messages()[call_id] = {method, message};
   }
   return true;
 }
@@ -102,9 +103,16 @@ void WorkerDevToolsAgentHost::WorkerReadyForInspection() {
     state_ = WORKER_INSPECTED;
     AttachToWorker();
     if (RenderProcessHost* host = RenderProcessHost::FromID(worker_id_.first)) {
-      host->Send(new DevToolsAgentMsg_Reattach(
-          worker_id_.second, GetId(), session()->session_id(),
-          chunk_processor_.state_cookie()));
+      host->Send(new DevToolsAgentMsg_Reattach(worker_id_.second, GetId(),
+                                               session()->session_id(),
+                                               session()->state_cookie()));
+      for (const auto& pair : session()->waiting_messages()) {
+        int call_id = pair.first;
+        const DevToolsSession::Message& message = pair.second;
+        host->Send(new DevToolsAgentMsg_DispatchOnInspectorBackend(
+            worker_id_.second, session()->session_id(), call_id, message.method,
+            message.message));
+      }
     }
     OnAttachedStateChanged(true);
   } else if (state_ == WORKER_PAUSED_FOR_DEBUG_ON_START) {
@@ -137,8 +145,6 @@ bool WorkerDevToolsAgentHost::IsTerminated() {
 
 WorkerDevToolsAgentHost::WorkerDevToolsAgentHost(WorkerId worker_id)
     : DevToolsAgentHostImpl(base::GenerateGUID()),
-      chunk_processor_(base::Bind(&WorkerDevToolsAgentHost::SendMessageToClient,
-                                  base::Unretained(this))),
       state_(WORKER_UNINSPECTED),
       worker_id_(worker_id) {
   WorkerCreated();
@@ -169,8 +175,7 @@ void WorkerDevToolsAgentHost::OnDispatchOnInspectorFrontend(
     const DevToolsMessageChunk& message) {
   if (!IsAttached())
     return;
-
-  chunk_processor_.ProcessChunkedMessageFromAgent(message);
+  session()->ReceiveMessageChunk(message);
 }
 
 }  // namespace content
