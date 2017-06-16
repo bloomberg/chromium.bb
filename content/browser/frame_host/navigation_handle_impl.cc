@@ -128,19 +128,24 @@ NavigationHandleImpl::NavigationHandleImpl(
                            url_.possibly_invalid_spec());
   DCHECK(!navigation_start.is_null());
 
-  site_url_ = SiteInstance::GetSiteForURL(
-      frame_tree_node_->navigator()->GetController()->GetBrowserContext(),
-      url_);
+  site_url_ = SiteInstance::GetSiteForURL(frame_tree_node_->current_frame_host()
+                                              ->GetSiteInstance()
+                                              ->GetBrowserContext(),
+                                          url_);
   if (redirect_chain_.empty())
     redirect_chain_.push_back(url);
 
   starting_site_instance_ =
       frame_tree_node_->current_frame_host()->GetSiteInstance();
 
-  if (pending_nav_entry_id_) {
-    NavigationControllerImpl* nav_controller =
-        static_cast<NavigationControllerImpl*>(
-            frame_tree_node_->navigator()->GetController());
+  // Try to match this with a pending NavigationEntry if possible.  Note that
+  // the NavigationController itself may be gone if this is a navigation inside
+  // an interstitial and the interstitial is asynchronously deleting itself due
+  // to its tab closing.
+  NavigationControllerImpl* nav_controller =
+      static_cast<NavigationControllerImpl*>(
+          frame_tree_node_->navigator()->GetController());
+  if (pending_nav_entry_id_ && nav_controller) {
     NavigationEntryImpl* nav_entry =
         nav_controller->GetEntryWithUniqueID(pending_nav_entry_id_);
     if (!nav_entry &&
