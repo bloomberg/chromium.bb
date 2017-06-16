@@ -134,6 +134,8 @@ static_library("browser") {
 
   if (password_reuse_detection_support) {
     sources += [
+      "hash_password_manager.cc",
+      "hash_password_manager.h",
       "password_reuse_detection_manager.cc",
       "password_reuse_detection_manager.h",
       "password_reuse_detector.cc",
@@ -333,6 +335,7 @@ source_set("unit_tests") {
   }
   if (password_reuse_detection_support) {
     sources += [
+      "hash_password_manager_unittest.cc",
       "password_reuse_detection_manager_unittest.cc",
       "password_reuse_detector_unittest.cc",
     ]
