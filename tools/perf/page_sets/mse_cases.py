@@ -46,3 +46,9 @@ class MseCasesPageSet(story.StorySet):
 
     for url in urls_list:
       self.AddStory(MseCasesPage(url, self, url.split('/')[-1]))
+
+class MseCasesStoryExpectations(
+    story.expectations.StoryExpectations):
+
+  def SetExpectations(self):
+    pass
