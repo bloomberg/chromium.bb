@@ -488,6 +488,7 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       upload_size_(0),
       upload_position_(0),
       is_resume_pending_(false),
+      interstitial_page_(nullptr),
       has_accessed_initial_document_(false),
       theme_color_(SK_ColorTRANSPARENT),
       last_sent_theme_color_(SK_ColorTRANSPARENT),
@@ -1286,8 +1287,7 @@ SiteInstanceImpl* WebContentsImpl::GetPendingSiteInstance() const {
 
 bool WebContentsImpl::IsLoading() const {
   return frame_tree_.IsLoading() &&
-         !(ShowingInterstitialPage() &&
-           GetRenderManager()->interstitial_page()->pause_throbber());
+         !(ShowingInterstitialPage() && interstitial_page_->pause_throbber());
 }
 
 bool WebContentsImpl::IsLoadingToDifferentDocument() const {
@@ -1976,9 +1976,7 @@ RenderWidgetHostImpl* WebContentsImpl::GetFocusedRenderWidgetHost(
   // interstitial's widget.
   if (focused_contents->ShowingInterstitialPage()) {
     return static_cast<RenderFrameHostImpl*>(
-               focused_contents->GetRenderManager()
-                   ->interstitial_page()
-                   ->GetMainFrame())
+               focused_contents->interstitial_page_->GetMainFrame())
         ->GetRenderWidgetHost();
   }
 
@@ -2011,9 +2009,7 @@ RenderWidgetHostImpl* WebContentsImpl::GetRenderWidgetHostWithPageFocus() {
 
   if (focused_web_contents->ShowingInterstitialPage()) {
     return static_cast<RenderFrameHostImpl*>(
-               focused_web_contents->GetRenderManager()
-                   ->interstitial_page()
-                   ->GetMainFrame())
+               focused_web_contents->interstitial_page_->GetMainFrame())
         ->GetRenderWidgetHost();
   }
 
@@ -2857,8 +2853,8 @@ void WebContentsImpl::RenderFrameForInterstitialPageCreated(
 
 void WebContentsImpl::AttachInterstitialPage(
     InterstitialPageImpl* interstitial_page) {
-  DCHECK(interstitial_page);
-  GetRenderManager()->set_interstitial_page(interstitial_page);
+  DCHECK(!interstitial_page_ && interstitial_page);
+  interstitial_page_ = interstitial_page;
 
   // Cancel any visible dialogs so that they don't interfere with the
   // interstitial.
@@ -2887,8 +2883,7 @@ void WebContentsImpl::AttachInterstitialPage(
 
 void WebContentsImpl::DidProceedOnInterstitial() {
   // The interstitial page should no longer be pausing the throbber.
-  DCHECK(!(ShowingInterstitialPage() &&
-           GetRenderManager()->interstitial_page()->pause_throbber()));
+  DCHECK(!(ShowingInterstitialPage() && interstitial_page_->pause_throbber()));
 
   // Restart the throbber now that the interstitial page no longer pauses it.
   if (ShowingInterstitialPage() && frame_tree_.IsLoading())
@@ -2910,10 +2905,9 @@ void WebContentsImpl::DetachInterstitialPage() {
   }
 
   bool interstitial_pausing_throbber =
-      ShowingInterstitialPage() &&
-      GetRenderManager()->interstitial_page()->pause_throbber();
+      ShowingInterstitialPage() && interstitial_page_->pause_throbber();
   if (ShowingInterstitialPage())
-    GetRenderManager()->remove_interstitial_page();
+    interstitial_page_ = nullptr;
   for (auto& observer : observers_)
     observer.DidDetachInterstitialPage();
 
@@ -3121,7 +3115,7 @@ void WebContentsImpl::RestoreFocus() {
 
 void WebContentsImpl::FocusThroughTabTraversal(bool reverse) {
   if (ShowingInterstitialPage()) {
-    GetRenderManager()->interstitial_page()->FocusThroughTabTraversal(reverse);
+    interstitial_page_->FocusThroughTabTraversal(reverse);
     return;
   }
   RenderWidgetHostView* const fullscreen_view =
@@ -3134,11 +3128,11 @@ void WebContentsImpl::FocusThroughTabTraversal(bool reverse) {
 }
 
 bool WebContentsImpl::ShowingInterstitialPage() const {
-  return GetRenderManager()->interstitial_page() != NULL;
+  return interstitial_page_ != nullptr;
 }
 
 InterstitialPage* WebContentsImpl::GetInterstitialPage() const {
-  return GetRenderManager()->interstitial_page();
+  return interstitial_page_;
 }
 
 bool WebContentsImpl::IsSavable() {
@@ -4277,8 +4271,7 @@ void WebContentsImpl::LoadingStateChanged(bool to_different_document,
                                           LoadNotificationDetails* details) {
   // Do not send notifications about loading changes in the FrameTree while the
   // interstitial page is pausing the throbber.
-  if (ShowingInterstitialPage() &&
-      GetRenderManager()->interstitial_page()->pause_throbber() &&
+  if (ShowingInterstitialPage() && interstitial_page_->pause_throbber() &&
       !due_to_interstitial) {
     return;
   }
@@ -5018,8 +5011,7 @@ void WebContentsImpl::SetAsFocusedWebContentsIfNecessary() {
     GetRenderManager()->GetProxyToOuterDelegate()->SetFocusedFrame();
 
   if (ShowingInterstitialPage()) {
-    static_cast<RenderFrameHostImpl*>(
-        GetRenderManager()->interstitial_page()->GetMainFrame())
+    static_cast<RenderFrameHostImpl*>(interstitial_page_->GetMainFrame())
         ->GetRenderWidgetHost()
         ->SetPageFocus(true);
   } else {
@@ -5226,6 +5218,10 @@ std::unique_ptr<WebUIImpl> WebContentsImpl::CreateWebUIForRenderFrameHost(
 NavigationEntry*
     WebContentsImpl::GetLastCommittedNavigationEntryForRenderManager() {
   return controller_.GetLastCommittedEntry();
+}
+
+InterstitialPageImpl* WebContentsImpl::GetInterstitialForRenderManager() {
+  return interstitial_page_;
 }
 
 void WebContentsImpl::CreateRenderWidgetHostViewForRenderManager(

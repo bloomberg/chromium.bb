@@ -757,6 +757,7 @@ class CONTENT_EXPORT WebContentsImpl
       RenderViewHost* new_host) override;
   NavigationControllerImpl& GetControllerForRenderManager() override;
   NavigationEntry* GetLastCommittedNavigationEntryForRenderManager() override;
+  InterstitialPageImpl* GetInterstitialForRenderManager() override;
   bool FocusLocationBarByDefault() override;
   void SetFocusToLocationBar(bool select_all) override;
   bool IsHidden() override;
@@ -1362,6 +1363,12 @@ class CONTENT_EXPORT WebContentsImpl
   // Tracks that this WebContents needs to unblock requests to the renderer.
   // See ResumeLoadingCreatedWebContents.
   bool is_resume_pending_;
+
+  // The interstitial page currently shown, if any. Not owned by this class: the
+  // InterstitialPage is self-owned and deletes itself asynchronously when
+  // hidden. Because it may outlive this WebContents, it enters a disabled state
+  // when hidden or preparing for destruction.
+  InterstitialPageImpl* interstitial_page_;
 
   // Data for current page -----------------------------------------------------
 
