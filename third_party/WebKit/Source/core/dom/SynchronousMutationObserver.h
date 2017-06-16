@@ -20,6 +20,9 @@ class Text;
 // This class is a base class for classes which observe DOM tree mutation
 // synchronously. If you want to observe DOM tree mutation asynchronously see
 // MutationObserver Web API.
+// Note: if you only need to observe Document shutdown,
+// DocumentShutdownObserver provides this same functionality more efficiently
+// (since it doesn't observe the other events).
 //
 // TODO(yosin): Following classes should be derived from this class to
 // simplify Document class.
