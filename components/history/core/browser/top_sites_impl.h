@@ -119,6 +119,21 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
     CALL_LOCATION_FROM_OTHER_PLACES,
   };
 
+  // An enum representing various outcomes of adding a page thumbnail, for use
+  // in UMA histograms. Most of these are recorded from SetPageThumbnail,
+  // except for PROMOTED_TEMP_TO_REGULAR which can happen during SetTopSites.
+  // Do not change existing entries, and only add new ones at the end!
+  enum ThumbnailEvent {
+    THUMBNAIL_FAILURE = 0,
+    THUMBNAIL_TOPSITES_FULL = 1,
+    THUMBNAIL_KEPT_EXISTING = 2,
+    THUMBNAIL_ADDED_TEMP = 3,
+    THUMBNAIL_ADDED_REGULAR = 4,
+    THUMBNAIL_PROMOTED_TEMP_TO_REGULAR = 5,
+    // Add new entries here.
+    THUMBNAIL_EVENT_COUNT = 6
+  };
+
   friend class TopSitesImplTest;
   FRIEND_TEST_ALL_PREFIXES(TopSitesImplTest, DiffMostVisited);
   FRIEND_TEST_ALL_PREFIXES(TopSitesImplTest, DiffMostVisitedWithForced);
@@ -146,14 +161,22 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
                               const MostVisitedURLList& new_list,
                               TopSitesDelta* delta);
 
-  // Sets the thumbnail without writing to the database.
-  // Returns true if the thumbnail was set, false if the existing one is better.
-  bool SetPageThumbnailNoDB(const GURL& url,
-                            const base::RefCountedMemory* thumbnail_data,
-                            const ThumbnailScore& score);
+  // The actual implementation of SetPageThumbnail. It returns a more detailed
+  // status code (for UMA) rather than just a bool.
+  ThumbnailEvent SetPageThumbnailImpl(const GURL& url,
+                                      const gfx::Image& thumbnail,
+                                      const ThumbnailScore& score);
 
-  // A version of SetPageThumbnail that takes RefCountedBytes as
-  // returned by HistoryService.
+  // Sets the thumbnail without writing to the database, i.e. updates the cache
+  // only. Must only be called for known URLs. Returns true if the thumbnail was
+  // set, false if the existing one (if any) is better.
+  bool SetPageThumbnailInCache(const GURL& url,
+                               const base::RefCountedMemory* thumbnail_data,
+                               const ThumbnailScore& score);
+
+  // The major part of SetPageThumbnail, which sets the thumbnail both in the
+  // cache and in the database. Must only be called for known URLs. Returns true
+  // if the thumbnail was set, false if the existing one (if any) is better.
   bool SetPageThumbnailEncoded(const GURL& url,
                                const base::RefCountedMemory* thumbnail,
                                const ThumbnailScore& score);

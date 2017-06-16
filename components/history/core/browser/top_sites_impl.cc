@@ -136,38 +136,25 @@ void TopSitesImpl::Init(
 bool TopSitesImpl::SetPageThumbnail(const GURL& url,
                                     const gfx::Image& thumbnail,
                                     const ThumbnailScore& score) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  ThumbnailEvent result = SetPageThumbnailImpl(url, thumbnail, score);
 
-  if (!loaded_) {
-    // TODO(sky): I need to cache these and apply them after the load
-    // completes.
-    return false;
+  UMA_HISTOGRAM_ENUMERATION("Thumbnails.AddedToTopSites", result,
+                            THUMBNAIL_EVENT_COUNT);
+
+  switch (result) {
+    case THUMBNAIL_FAILURE:
+    case THUMBNAIL_TOPSITES_FULL:
+    case THUMBNAIL_KEPT_EXISTING:
+      return false;
+    case THUMBNAIL_ADDED_TEMP:
+    case THUMBNAIL_ADDED_REGULAR:
+      return true;
+    case THUMBNAIL_PROMOTED_TEMP_TO_REGULAR:
+    case THUMBNAIL_EVENT_COUNT:
+      NOTREACHED();
   }
 
-  bool add_temp_thumbnail = false;
-  if (!IsKnownURL(url)) {
-    if (IsNonForcedFull())
-      return false;  // We're full, and this URL is not known to us.
-
-    add_temp_thumbnail = true;
-  }
-
-  if (!can_add_url_to_history_.Run(url))
-    return false;  // It's not a real webpage.
-
-  scoped_refptr<base::RefCountedBytes> thumbnail_data;
-  if (!EncodeBitmap(thumbnail, &thumbnail_data))
-    return false;
-
-  if (add_temp_thumbnail) {
-    // Always remove the existing entry and then add it back. That way if we end
-    // up with too many temp thumbnails we'll prune the oldest first.
-    RemoveTemporaryThumbnailByURL(url);
-    AddTemporaryThumbnail(url, thumbnail_data.get(), score);
-    return true;
-  }
-
-  return SetPageThumbnailEncoded(url, thumbnail_data.get(), score);
+  return false;
 }
 
 // WARNING: this function may be invoked on any thread.
@@ -489,11 +476,51 @@ void TopSitesImpl::DiffMostVisited(const MostVisitedURLList& old_list,
   }
 }
 
-bool TopSitesImpl::SetPageThumbnailNoDB(
+TopSitesImpl::ThumbnailEvent TopSitesImpl::SetPageThumbnailImpl(
+    const GURL& url,
+    const gfx::Image& thumbnail,
+    const ThumbnailScore& score) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (!loaded_) {
+    // TODO(sky): I need to cache these and apply them after the load
+    // completes.
+    return THUMBNAIL_FAILURE;
+  }
+
+  bool add_temp_thumbnail = false;
+  if (!IsKnownURL(url)) {
+    if (IsNonForcedFull()) {
+      // We're full, and this URL is not known to us.
+      return THUMBNAIL_TOPSITES_FULL;
+    }
+
+    add_temp_thumbnail = true;
+  }
+
+  if (!can_add_url_to_history_.Run(url))
+    return THUMBNAIL_FAILURE;  // It's not a real webpage.
+
+  scoped_refptr<base::RefCountedBytes> thumbnail_data;
+  if (!EncodeBitmap(thumbnail, &thumbnail_data))
+    return THUMBNAIL_FAILURE;
+
+  if (add_temp_thumbnail) {
+    // Always remove the existing entry and then add it back. That way if we end
+    // up with too many temp thumbnails we'll prune the oldest first.
+    RemoveTemporaryThumbnailByURL(url);
+    AddTemporaryThumbnail(url, thumbnail_data.get(), score);
+    return THUMBNAIL_ADDED_TEMP;
+  }
+
+  bool success = SetPageThumbnailEncoded(url, thumbnail_data.get(), score);
+  return success ? THUMBNAIL_ADDED_REGULAR : THUMBNAIL_KEPT_EXISTING;
+}
+
+bool TopSitesImpl::SetPageThumbnailInCache(
     const GURL& url,
     const base::RefCountedMemory* thumbnail_data,
     const ThumbnailScore& score) {
-  // This should only be invoked when we know about the url.
   DCHECK(cache_->IsKnownURL(url));
 
   const MostVisitedURL& most_visited =
@@ -524,13 +551,12 @@ bool TopSitesImpl::SetPageThumbnailEncoded(
     const GURL& url,
     const base::RefCountedMemory* thumbnail,
     const ThumbnailScore& score) {
-  if (!SetPageThumbnailNoDB(url, thumbnail, score))
+  DCHECK(cache_->IsKnownURL(url));
+
+  if (!SetPageThumbnailInCache(url, thumbnail, score))
     return false;
 
   // Update the database.
-  if (!cache_->IsKnownURL(url))
-    return false;
-
   size_t index = cache_->GetURLIndex(url);
   int url_rank = index - cache_->GetNumForcedURLs();
   const MostVisitedURL& most_visited = cache_->top_sites()[index];
@@ -743,8 +769,14 @@ void TopSitesImpl::SetTopSites(const MostVisitedURLList& new_top_sites,
       for (TempImages::iterator it = temp_images_.begin();
            it != temp_images_.end(); ++it) {
         if (canonical_url == cache_->GetCanonicalURL(it->first)) {
-          SetPageThumbnailEncoded(
+          // We can't have a non-temp thumbnail yet, so this should always
+          // successfully set the thumbnail.
+          bool success = SetPageThumbnailEncoded(
               mv.url, it->second.thumbnail.get(), it->second.thumbnail_score);
+          DCHECK(success);
+          UMA_HISTOGRAM_ENUMERATION("Thumbnails.AddedToTopSites",
+                                    THUMBNAIL_PROMOTED_TEMP_TO_REGULAR,
+                                    THUMBNAIL_EVENT_COUNT);
           temp_images_.erase(it);
           break;
         }

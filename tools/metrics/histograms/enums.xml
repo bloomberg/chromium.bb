@@ -35924,6 +35924,15 @@ from previous Chrome versions.
   <int value="3" label="Infobar dismissed"/>
 </enum>
 
+<enum name="ThumbnailTopSitesEvent" type="int">
+  <int value="0" label="Not added: Failure"/>
+  <int value="1" label="Not added: TopSites is full"/>
+  <int value="2" label="Not added: Existing thumbnail is better"/>
+  <int value="3" label="Added temp thumbnail"/>
+  <int value="4" label="Added regular thumbnail"/>
+  <int value="5" label="Promoted temp thumbnail to regular"/>
+</enum>
+
 <enum name="TileMemoryBudget">
   <int value="0" label="Within memory budget"/>
   <int value="1" label="Exceeded memory budget"/>
