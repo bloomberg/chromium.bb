@@ -13,6 +13,7 @@ component("chromeos") {
     "accelerometer/accelerometer_util.h",
     "ime/candidate_view.cc",
     "ime/candidate_view.h",
+    "ime/candidate_window_constants.h",
     "ime/candidate_window_view.cc",
     "ime/candidate_window_view.h",
     "ime/infolist_window.cc",

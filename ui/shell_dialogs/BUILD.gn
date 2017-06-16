@@ -28,6 +28,7 @@ component("shell_dialogs") {
     "selected_file_info.h",
     "shell_dialog_linux.cc",
     "shell_dialog_linux.h",
+    "shell_dialogs_export.h",
   ]
 
   defines = [ "SHELL_DIALOGS_IMPLEMENTATION" ]

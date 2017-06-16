@@ -372,9 +372,6 @@ ui/app_list/app_list_export.h
 ui/app_list/app_list_item.h
 ui/app_list/app_list_switches.h
 ui/base/clipboard/clipboard_test_template.h
-ui/base/dragdrop/download_file_interface.h
-ui/compositor/compositor_constants.h
-ui/compositor/layer_owner_delegate.h
 ui/events/keycodes/keyboard_codes_posix.h
 ui/gfx/overlay_transform.h
 ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h
@@ -389,4 +386,3 @@ ui/gl/gpu_preference.h
 ui/gl/gpu_switching_observer.h
 ui/ozone/ozone_base_export.h
 ui/ozone/public/ozone_switches.h
-ui/shell_dialogs/shell_dialogs_export.h
