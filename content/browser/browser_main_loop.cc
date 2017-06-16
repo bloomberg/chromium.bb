@@ -1325,7 +1325,11 @@ void BrowserMainLoop::ShutdownThreadsAndCleanUp() {
   }
   {
     TRACE_EVENT0("shutdown", "BrowserMainLoop::Subsystem:AudioMan");
-    audio_manager_->Shutdown();
+    if (!audio_manager_->Shutdown()) {
+      // Intentionally leak AudioManager if shutdown failed.
+      // We might run into various CHECK(s) in AudioManager destructor.
+      ignore_result(audio_manager_.release());
+    }
   }
 
   if (parts_) {

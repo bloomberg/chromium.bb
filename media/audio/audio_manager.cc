@@ -81,6 +81,11 @@ class AudioManagerHelper : public base::PowerObserver {
                               base::Unretained(this)));
   }
 
+  bool IsAudioThreadHung() {
+    base::AutoLock lock(hang_lock_);
+    return audio_thread_status_ == THREAD_HUNG;
+  }
+
   base::SingleThreadTaskRunner* monitor_task_runner() const {
     return monitor_task_runner_.get();
   }
@@ -204,6 +209,7 @@ class AudioManagerHelper : public base::PowerObserver {
 
   void HistogramThreadStatus(ThreadStatus status) {
     DCHECK(monitor_task_runner_->BelongsToCurrentThread());
+    hang_lock_.AssertAcquired();
     audio_thread_status_ = status;
     UMA_HISTOGRAM_ENUMERATION("Media.AudioThreadStatus", audio_thread_status_,
                               THREAD_MAX + 1);
@@ -329,11 +335,16 @@ AudioManager* AudioManager::Get() {
   return g_last_created;
 }
 
-void AudioManager::Shutdown() {
+bool AudioManager::Shutdown() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  // TODO(alokp): Suspend hang monitor.
+  // Do not attempt to stop the audio thread if it is hung.
+  // Otherwise the current thread will hang too: crbug.com/729494
+  // TODO(olka, grunell): Will be fixed when audio is its own process.
+  if (GetHelper()->IsAudioThreadHung())
+    return false;
 
+  // TODO(alokp): Suspend hang monitor.
   if (audio_thread_->GetTaskRunner()->BelongsToCurrentThread()) {
     ShutdownOnAudioThread();
   } else {
@@ -343,6 +354,7 @@ void AudioManager::Shutdown() {
   }
   audio_thread_->Stop();
   shutdown_ = true;
+  return true;
 }
 
 }  // namespace media
