@@ -15,6 +15,7 @@
 #include "ios/chrome/browser/payments/payment_request_test_util.h"
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type.h"
 #import "ios/chrome/browser/ui/payments/payment_request_editor_field.h"
+#import "ios/chrome/test/scoped_key_window.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -117,25 +118,28 @@ class PaymentRequestCreditCardEditCoordinatorTest : public PlatformTest {
 // the credit card edit view controller, respectively.
 TEST_F(PaymentRequestCreditCardEditCoordinatorTest, StartAndStop) {
   UIViewController* base_view_controller = [[UIViewController alloc] init];
-  UINavigationController* navigation_controller =
-      [[UINavigationController alloc]
-          initWithRootViewController:base_view_controller];
+  ScopedKeyWindow scoped_key_window_;
+  [scoped_key_window_.Get() setRootViewController:base_view_controller];
 
   CreditCardEditCoordinator* coordinator = [[CreditCardEditCoordinator alloc]
       initWithBaseViewController:base_view_controller];
   [coordinator setPaymentRequest:payment_request_.get()];
 
-  EXPECT_EQ(1u, navigation_controller.viewControllers.count);
+  EXPECT_EQ(nil, base_view_controller.presentedViewController);
 
   [coordinator start];
   // Short delay to allow animation to complete.
   base::test::ios::SpinRunLoopWithMaxDelay(base::TimeDelta::FromSecondsD(1.0));
-  EXPECT_EQ(2u, navigation_controller.viewControllers.count);
+  EXPECT_TRUE([base_view_controller.presentedViewController
+      isMemberOfClass:[PaymentRequestEditViewController class]]);
 
   [coordinator stop];
-  // Short delay to allow animation to complete.
-  base::test::ios::SpinRunLoopWithMaxDelay(base::TimeDelta::FromSecondsD(1.0));
-  EXPECT_EQ(1u, navigation_controller.viewControllers.count);
+  // Wait until the animation completes and the presented view controller is
+  // dismissed.
+  base::test::ios::WaitUntilCondition(^bool() {
+    return !base_view_controller.presentedViewController;
+  });
+  EXPECT_EQ(nil, base_view_controller.presentedViewController);
 }
 
 // Tests that calling the view controller delegate method which signals that the
@@ -145,9 +149,8 @@ TEST_F(PaymentRequestCreditCardEditCoordinatorTest, StartAndStop) {
 // to the PersonalDataManager if user chooses to save it locally.
 TEST_F(PaymentRequestCreditCardEditCoordinatorTest, DidFinishCreatingWithSave) {
   UIViewController* base_view_controller = [[UIViewController alloc] init];
-  UINavigationController* navigation_controller =
-      [[UINavigationController alloc]
-          initWithRootViewController:base_view_controller];
+  ScopedKeyWindow scoped_key_window_;
+  [scoped_key_window_.Get() setRootViewController:base_view_controller];
 
   CreditCardEditCoordinator* coordinator = [[CreditCardEditCoordinator alloc]
       initWithBaseViewController:base_view_controller];
@@ -162,12 +165,12 @@ TEST_F(PaymentRequestCreditCardEditCoordinatorTest, DidFinishCreatingWithSave) {
                                      [OCMArg anyPointer])];
   [coordinator setDelegate:delegate];
 
-  EXPECT_EQ(1u, navigation_controller.viewControllers.count);
+  EXPECT_EQ(nil, base_view_controller.presentedViewController);
 
   [coordinator start];
   // Short delay to allow animation to complete.
   base::test::ios::SpinRunLoopWithMaxDelay(base::TimeDelta::FromSecondsD(1.0));
-  EXPECT_EQ(2u, navigation_controller.viewControllers.count);
+  EXPECT_NE(nil, base_view_controller.presentedViewController);
 
   // Expect a credit card to be added to the PaymentRequest.
   EXPECT_CALL(*payment_request_,
@@ -185,7 +188,7 @@ TEST_F(PaymentRequestCreditCardEditCoordinatorTest, DidFinishCreatingWithSave) {
   // Call the controller delegate method.
   PaymentRequestEditViewController* view_controller =
       base::mac::ObjCCastStrict<PaymentRequestEditViewController>(
-          navigation_controller.visibleViewController);
+          base_view_controller.presentedViewController);
   [coordinator paymentRequestEditViewController:view_controller
                          didFinishEditingFields:GetEditorFields(true)];
 
@@ -199,9 +202,8 @@ TEST_F(PaymentRequestCreditCardEditCoordinatorTest, DidFinishCreatingWithSave) {
 // the PersonalDataManager if user chooses to not to save it locally.
 TEST_F(PaymentRequestCreditCardEditCoordinatorTest, DidFinishCreatingNoSave) {
   UIViewController* base_view_controller = [[UIViewController alloc] init];
-  UINavigationController* navigation_controller =
-      [[UINavigationController alloc]
-          initWithRootViewController:base_view_controller];
+  ScopedKeyWindow scoped_key_window_;
+  [scoped_key_window_.Get() setRootViewController:base_view_controller];
 
   CreditCardEditCoordinator* coordinator = [[CreditCardEditCoordinator alloc]
       initWithBaseViewController:base_view_controller];
@@ -216,12 +218,12 @@ TEST_F(PaymentRequestCreditCardEditCoordinatorTest, DidFinishCreatingNoSave) {
                                      [OCMArg anyPointer])];
   [coordinator setDelegate:delegate];
 
-  EXPECT_EQ(1u, navigation_controller.viewControllers.count);
+  EXPECT_EQ(nil, base_view_controller.presentedViewController);
 
   [coordinator start];
   // Short delay to allow animation to complete.
   base::test::ios::SpinRunLoopWithMaxDelay(base::TimeDelta::FromSecondsD(1.0));
-  EXPECT_EQ(2u, navigation_controller.viewControllers.count);
+  EXPECT_NE(nil, base_view_controller.presentedViewController);
 
   // Expect a credit card to be added to the PaymentRequest.
   EXPECT_CALL(*payment_request_,
@@ -236,7 +238,7 @@ TEST_F(PaymentRequestCreditCardEditCoordinatorTest, DidFinishCreatingNoSave) {
   // Call the controller delegate method.
   PaymentRequestEditViewController* view_controller =
       base::mac::ObjCCastStrict<PaymentRequestEditViewController>(
-          navigation_controller.visibleViewController);
+          base_view_controller.presentedViewController);
   [coordinator paymentRequestEditViewController:view_controller
                          didFinishEditingFields:GetEditorFields(false)];
 
@@ -249,9 +251,8 @@ TEST_F(PaymentRequestCreditCardEditCoordinatorTest, DidFinishCreatingNoSave) {
 // PaymentRequest nor the PersonalDataManager.
 TEST_F(PaymentRequestCreditCardEditCoordinatorTest, DidFinishEditing) {
   UIViewController* base_view_controller = [[UIViewController alloc] init];
-  UINavigationController* navigation_controller =
-      [[UINavigationController alloc]
-          initWithRootViewController:base_view_controller];
+  ScopedKeyWindow scoped_key_window_;
+  [scoped_key_window_.Get() setRootViewController:base_view_controller];
 
   CreditCardEditCoordinator* coordinator = [[CreditCardEditCoordinator alloc]
       initWithBaseViewController:base_view_controller];
@@ -270,12 +271,12 @@ TEST_F(PaymentRequestCreditCardEditCoordinatorTest, DidFinishEditing) {
                                      [OCMArg anyPointer])];
   [coordinator setDelegate:delegate];
 
-  EXPECT_EQ(1u, navigation_controller.viewControllers.count);
+  EXPECT_EQ(nil, base_view_controller.presentedViewController);
 
   [coordinator start];
   // Short delay to allow animation to complete.
   base::test::ios::SpinRunLoopWithMaxDelay(base::TimeDelta::FromSecondsD(1.0));
-  EXPECT_EQ(2u, navigation_controller.viewControllers.count);
+  EXPECT_NE(nil, base_view_controller.presentedViewController);
 
   // No credit card should get added to the PaymentRequest.
   EXPECT_CALL(*payment_request_, AddCreditCard(_)).Times(0);
@@ -290,7 +291,7 @@ TEST_F(PaymentRequestCreditCardEditCoordinatorTest, DidFinishEditing) {
   // Call the controller delegate method.
   PaymentRequestEditViewController* view_controller =
       base::mac::ObjCCastStrict<PaymentRequestEditViewController>(
-          navigation_controller.visibleViewController);
+          base_view_controller.presentedViewController);
   [coordinator paymentRequestEditViewController:view_controller
                          didFinishEditingFields:GetEditorFields(true)];
 
@@ -302,9 +303,8 @@ TEST_F(PaymentRequestCreditCardEditCoordinatorTest, DidFinishEditing) {
 // corresponding coordinator delegate method to get called.
 TEST_F(PaymentRequestCreditCardEditCoordinatorTest, DidCancel) {
   UIViewController* base_view_controller = [[UIViewController alloc] init];
-  UINavigationController* navigation_controller =
-      [[UINavigationController alloc]
-          initWithRootViewController:base_view_controller];
+  ScopedKeyWindow scoped_key_window_;
+  [scoped_key_window_.Get() setRootViewController:base_view_controller];
 
   CreditCardEditCoordinator* coordinator = [[CreditCardEditCoordinator alloc]
       initWithBaseViewController:base_view_controller];
@@ -316,17 +316,17 @@ TEST_F(PaymentRequestCreditCardEditCoordinatorTest, DidCancel) {
   [[delegate expect] creditCardEditCoordinatorDidCancel:coordinator];
   [coordinator setDelegate:delegate];
 
-  EXPECT_EQ(1u, navigation_controller.viewControllers.count);
+  EXPECT_EQ(nil, base_view_controller.presentedViewController);
 
   [coordinator start];
   // Short delay to allow animation to complete.
   base::test::ios::SpinRunLoopWithMaxDelay(base::TimeDelta::FromSecondsD(1.0));
-  EXPECT_EQ(2u, navigation_controller.viewControllers.count);
+  EXPECT_NE(nil, base_view_controller.presentedViewController);
 
   // Call the controller delegate method.
   PaymentRequestEditViewController* view_controller =
       base::mac::ObjCCastStrict<PaymentRequestEditViewController>(
-          navigation_controller.visibleViewController);
+          base_view_controller.presentedViewController);
   [coordinator paymentRequestEditViewControllerDidCancel:view_controller];
 
   EXPECT_OCMOCK_VERIFY(delegate);

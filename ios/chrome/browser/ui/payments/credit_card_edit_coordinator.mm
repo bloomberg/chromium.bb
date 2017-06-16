@@ -101,14 +101,15 @@ bool IsValidCreditCardNumber(const base::string16& card_number,
   [_viewController setDataSource:_mediator];
   [_viewController loadModel];
 
-  DCHECK(self.baseViewController.navigationController);
-  [[self baseViewController].navigationController
-      pushViewController:_viewController
-                animated:YES];
+  [[self baseViewController] presentViewController:_viewController
+                                          animated:YES
+                                        completion:nil];
 }
 
 - (void)stop {
-  [_viewController.navigationController popViewControllerAnimated:YES];
+  [[self.viewController presentingViewController]
+      dismissViewControllerAnimated:YES
+                         completion:nil];
   [self.billingAddressSelectionCoordinator stop];
   self.billingAddressSelectionCoordinator = nil;
   _viewController = nil;
