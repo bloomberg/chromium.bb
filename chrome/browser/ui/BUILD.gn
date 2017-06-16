@@ -2375,6 +2375,8 @@ split_static_library("ui") {
       "cocoa/accelerator_utils_cocoa.mm",
       "cocoa/accelerators_cocoa.h",
       "cocoa/accelerators_cocoa.mm",
+      "cocoa/animated_icon.h",
+      "cocoa/animated_icon.mm",
       "cocoa/applescript/apple_event_util.h",
       "cocoa/applescript/apple_event_util.mm",
       "cocoa/applescript/bookmark_folder_applescript.h",
