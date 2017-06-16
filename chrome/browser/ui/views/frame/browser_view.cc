@@ -207,18 +207,10 @@ void PaintDetachedBookmarkBar(gfx::Canvas* canvas,
       fill_rect,
       tp->GetColor(ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND));
 
-  // Draw the separators above and below bookmark bar;
-  // if animating, these are fading in/out.
-  SkColor separator_color =
-      tp->GetColor(ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR);
-
-  // For the bottom separator, increase the luminance. Either double it or halve
-  // the distance to 1.0, whichever is less of a difference.
-  color_utils::HSL hsl;
-  color_utils::SkColorToHSL(separator_color, &hsl);
-  hsl.l = std::min((hsl.l + 1) / 2, hsl.l * 2);
+  // Draw the separator below the detached bookmark bar.
   BrowserView::Paint1pxHorizontalLine(
-      canvas, color_utils::HSLToSkColor(hsl, SK_AlphaOPAQUE),
+      canvas,
+      tp->GetColor(ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR),
       view->GetLocalBounds(), true);
 }
 

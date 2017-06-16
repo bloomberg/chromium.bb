@@ -90,9 +90,8 @@ constexpr color_utils::HSL kDefaultTintBackgroundTab = {-1, -1, 0.75};
 // Defaults for properties which are not stored in the browser theme pack.
 
 constexpr SkColor kDefaultColorControlBackground = SK_ColorWHITE;
-const SkColor kDefaultDetachedBookmarkBarSeparator =
-    SkColorSetRGB(0xB6, 0xB4, 0xB6);
-const SkColor kDefaultDetachedBookmarkBarSeparatorIncognito =
+const SkColor kDefaultToolbarBottomSeparator = SkColorSetRGB(0xB6, 0xB4, 0xB6);
+const SkColor kDefaultToolbarBottomSeparatorIncognito =
     SkColorSetRGB(0x28, 0x28, 0x28);
 const SkColor kDefaultToolbarTopSeparator = SkColorSetA(SK_ColorBLACK, 0x40);
 
@@ -262,13 +261,17 @@ SkColor ThemeProperties::GetDefaultColor(int id, bool incognito) {
     case COLOR_BOOKMARK_BAR_INSTRUCTIONS_TEXT:
       return incognito ? kDefaultColorBookmarkInstructionsTextIncognito
                        : kDefaultColorBookmarkInstructionsText;
-    case COLOR_TOOLBAR_BOTTOM_SEPARATOR:
     case COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR:
-      return incognito ? kDefaultDetachedBookmarkBarSeparatorIncognito
-                       : kDefaultDetachedBookmarkBarSeparator;
+      // We shouldn't reach this case because the color is calculated from
+      // others.
+      NOTREACHED();
+      return gfx::kPlaceholderColor;
     case COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND:
       return incognito ? kDefaultDetachedBookmarkBarBackgroundIncognito
                        : kDefaultDetachedBookmarkBarBackground;
+    case COLOR_TOOLBAR_BOTTOM_SEPARATOR:
+      return incognito ? kDefaultToolbarBottomSeparatorIncognito
+                       : kDefaultToolbarBottomSeparator;
     case COLOR_TOOLBAR_TOP_SEPARATOR:
     case COLOR_TOOLBAR_TOP_SEPARATOR_INACTIVE:
       return kDefaultToolbarTopSeparator;
