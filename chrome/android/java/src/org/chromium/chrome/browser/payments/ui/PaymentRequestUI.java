@@ -561,10 +561,6 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
                     new LinearLayout.LayoutParams(
                             LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
             mSectionSeparators.add(new SectionSeparator(mPaymentContainerLayout));
-            mPaymentContainerLayout.addView(mShippingOptionSection,
-                    new LinearLayout.LayoutParams(
-                            LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
-            mSectionSeparators.add(new SectionSeparator(mPaymentContainerLayout));
         }
         mPaymentContainerLayout.addView(mPaymentMethodSection, new LinearLayout.LayoutParams(
                 LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
@@ -663,6 +659,7 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
         } else if (whichSection == TYPE_SHIPPING_OPTIONS) {
             mShippingOptionsSectionInformation = section;
             mShippingOptionSection.update(section);
+            showShippingOptionSectionIfNecessary();
         } else if (whichSection == TYPE_CONTACT_DETAILS) {
             mContactDetailsSectionInformation = section;
             mContactDetailsSection.update(section);
@@ -678,6 +675,25 @@ public class PaymentRequestUI implements DialogInterface.OnDismissListener, View
 
         // Notify ready for input for test if this is finishing editing item.
         if (isFinishingEditItem) notifyReadyForInput();
+    }
+
+    // Only show shipping option section once there are shipping options.
+    private void showShippingOptionSectionIfNecessary() {
+        if (!mRequestShipping || mShippingOptionsSectionInformation.isEmpty()
+                || mPaymentContainerLayout.indexOfChild(mShippingOptionSection) != -1) {
+            return;
+        }
+
+        // Shipping option section is added below shipping address section.
+        int addressSectionIndex = mPaymentContainerLayout.indexOfChild(mShippingAddressSection);
+        SectionSeparator sectionSeparator =
+                new SectionSeparator(mPaymentContainerLayout, addressSectionIndex + 1);
+        mSectionSeparators.add(sectionSeparator);
+        if (mIsExpandedToFullHeight) sectionSeparator.expand();
+        mPaymentContainerLayout.addView(mShippingOptionSection, addressSectionIndex + 2,
+                new LinearLayout.LayoutParams(
+                        LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
+        mPaymentContainerLayout.requestLayout();
     }
 
     @Override
