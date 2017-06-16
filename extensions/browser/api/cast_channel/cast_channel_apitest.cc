@@ -90,8 +90,6 @@ class CastChannelAPITest : public ExtensionApiTest {
 
   void SetUpMockCastSocket() {
     extensions::CastChannelAPI* api = GetApi();
-    timeout_timer_ = new base::MockTimer(true, false);
-    api->SetPingTimeoutTimerForTest(base::WrapUnique(timeout_timer_));
 
     net::IPEndPoint ip_endpoint(net::IPAddress(192, 168, 1, 1), 8009);
     mock_cast_socket_ = new MockCastSocket;
@@ -187,7 +185,9 @@ class CastChannelAPITest : public ExtensionApiTest {
   void FireTimeout() {
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(&base::MockTimer::Fire, base::Unretained(timeout_timer_)));
+        base::Bind(&CastTransport::Delegate::OnError,
+                   base::Unretained(message_delegate_),
+                   cast_channel::ChannelError::PING_TIMEOUT));
   }
 
   extensions::CastChannelOpenFunction* CreateOpenFunction(
@@ -207,7 +207,6 @@ class CastChannelAPITest : public ExtensionApiTest {
   }
 
   MockCastSocket* mock_cast_socket_;
-  base::MockTimer* timeout_timer_;
   net::IPEndPoint ip_endpoint_;
   LastError last_error_;
   CastTransport::Delegate* message_delegate_;

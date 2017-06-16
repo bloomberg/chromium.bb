@@ -65,13 +65,6 @@ class CastChannelAPI : public BrowserContextKeyedAPI,
   // Returns the API browser context.
   content::BrowserContext* GetBrowserContext() const;
 
-  // Sets injected ping timeout timer for testing.
-  void SetPingTimeoutTimerForTest(std::unique_ptr<base::Timer> timer);
-
-  // Gets the injected ping timeout timer, if set.
-  // Returns a null scoped ptr if there is no injected timer.
-  std::unique_ptr<base::Timer> GetInjectedTimeoutTimerForTest();
-
   // Sends an event to the extension's EventRouter, if it exists.
   void SendEvent(const std::string& extension_id, std::unique_ptr<Event> event);
 
@@ -88,7 +81,6 @@ class CastChannelAPI : public BrowserContextKeyedAPI,
   content::BrowserContext* const browser_context_;
   scoped_refptr<cast_channel::Logger> logger_;
   std::unique_ptr<cast_channel::CastSocket> socket_for_test_;
-  std::unique_ptr<base::Timer> injected_timeout_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(CastChannelAPI);
 };

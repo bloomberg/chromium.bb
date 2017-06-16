@@ -127,11 +127,14 @@ class CastSocketImpl : public CastSocket {
   // |ip_endpoint|: IP address of the remote host.
   // |net_log|: Log of socket events.
   // |connect_timeout|: Connection timeout interval.
+  // |liveness_timeout|: Amount of idle time to wait before disconnecting.
+  // |ping_interval|: Amount of idle time to wait before pinging the receiver.
   // |logger|: Log of cast channel events.
   CastSocketImpl(const net::IPEndPoint& ip_endpoint,
                  net::NetLog* net_log,
-                 const base::TimeDelta& connect_timeout,
-                 bool keep_alive,
+                 base::TimeDelta connect_timeout,
+                 base::TimeDelta liveness_timeout,
+                 base::TimeDelta ping_interval,
                  const scoped_refptr<Logger>& logger,
                  uint64_t device_capabilities);
 
@@ -139,8 +142,9 @@ class CastSocketImpl : public CastSocket {
   // This constructor allows for setting a custom AuthContext.
   CastSocketImpl(const net::IPEndPoint& ip_endpoint,
                  net::NetLog* net_log,
-                 const base::TimeDelta& connect_timeout,
-                 bool keep_alive,
+                 base::TimeDelta connect_timeout,
+                 base::TimeDelta liveness_timeout,
+                 base::TimeDelta ping_interval,
                  const scoped_refptr<Logger>& logger,
                  uint64_t device_capabilities,
                  const AuthContext& auth_context);
@@ -282,8 +286,14 @@ class CastSocketImpl : public CastSocket {
   net::NetLog* net_log_;
   // The NetLog source for this service.
   net::NetLogSource net_log_source_;
-  // True when keep-alive signaling should be handled for this socket.
-  bool keep_alive_;
+
+  // Amount of idle time to wait before disconnecting. If |liveness_timeout_| is
+  // set, wraps |delegate_| with a KeepAliveDelegate.
+  base::TimeDelta liveness_timeout_;
+
+  // Amount of idle time to wait before pinging the receiver, used to create
+  // KeepAliveDelegate.
+  base::TimeDelta ping_interval_;
 
   // Shared logging object, used to log CastSocket events for diagnostics.
   scoped_refptr<Logger> logger_;
