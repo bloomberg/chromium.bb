@@ -640,8 +640,8 @@ void RecordDownloadImageType(const std::string& mime_type_string) {
                             DOWNLOAD_IMAGE_MAX);
 }
 
-DownloadContent DownloadContentFromMimeType(
-    const std::string& mime_type_string) {
+DownloadContent DownloadContentFromMimeType(const std::string& mime_type_string,
+                                            bool record_image_type) {
   DownloadContent download_content = DOWNLOAD_CONTENT_UNRECOGNIZED;
 
   // Look up exact matches.
@@ -661,7 +661,8 @@ DownloadContent DownloadContentFromMimeType(
     } else if (base::StartsWith(mime_type_string, "image/",
                                 base::CompareCase::SENSITIVE)) {
       download_content = DOWNLOAD_CONTENT_IMAGE;
-      RecordDownloadImageType(mime_type_string);
+      if (record_image_type)
+        RecordDownloadImageType(mime_type_string);
     } else if (base::StartsWith(mime_type_string, "audio/",
                                 base::CompareCase::SENSITIVE)) {
       download_content = DOWNLOAD_CONTENT_AUDIO;
@@ -678,15 +679,16 @@ DownloadContent DownloadContentFromMimeType(
 
 void RecordDownloadMimeType(const std::string& mime_type_string) {
   UMA_HISTOGRAM_ENUMERATION("Download.Start.ContentType",
-                            DownloadContentFromMimeType(mime_type_string),
+                            DownloadContentFromMimeType(mime_type_string, true),
                             DOWNLOAD_CONTENT_MAX);
 }
 
 void RecordDownloadMimeTypeForNormalProfile(
     const std::string& mime_type_string) {
-  UMA_HISTOGRAM_ENUMERATION("Download.Start.ContentType.NormalProfile",
-                            DownloadContentFromMimeType(mime_type_string),
-                            DOWNLOAD_CONTENT_MAX);
+  UMA_HISTOGRAM_ENUMERATION(
+      "Download.Start.ContentType.NormalProfile",
+      DownloadContentFromMimeType(mime_type_string, false),
+      DOWNLOAD_CONTENT_MAX);
 }
 
 void RecordDownloadContentDisposition(
