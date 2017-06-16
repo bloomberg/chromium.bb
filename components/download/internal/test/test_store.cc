@@ -4,6 +4,7 @@
 
 #include "components/download/internal/test/test_store.h"
 
+#include "base/memory/ptr_util.h"
 #include "components/download/internal/entry.h"
 
 namespace download {
@@ -20,19 +21,32 @@ bool TestStore::IsInitialized() {
 void TestStore::Initialize(InitCallback callback) {
   init_called_ = true;
   init_callback_ = std::move(callback);
+
+  if (automatic_callback_response_.has_value())
+    TriggerInit(automatic_callback_response_.value(),
+                base::MakeUnique<std::vector<Entry>>());
 }
 
 void TestStore::Update(const Entry& entry, StoreCallback callback) {
   updated_entries_.push_back(entry);
   update_callback_ = std::move(callback);
+
+  if (automatic_callback_response_.has_value())
+    TriggerUpdate(automatic_callback_response_.value());
 }
 
 void TestStore::Remove(const std::string& guid, StoreCallback callback) {
   removed_entries_.push_back(guid);
   remove_callback_ = std::move(callback);
+
+  if (automatic_callback_response_.has_value())
+    TriggerRemove(automatic_callback_response_.value());
 }
 
-// Callback trigger methods.
+void TestStore::AutomaticallyTriggerAllFutureCallbacks(bool success) {
+  automatic_callback_response_ = success;
+}
+
 void TestStore::TriggerInit(bool success,
                             std::unique_ptr<std::vector<Entry>> entries) {
   ready_ = success;

@@ -38,5 +38,9 @@ void LogDownloadCompletion(CompletionType type) {
   // TODO(xingliu): Log completion.
 }
 
+void LogRecoveryOperation(Entry::State to_state) {
+  // TODO(dtrainor): Log |to_state|.
+}
+
 }  // namespace stats
 }  // namespace download

@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "components/download/internal/store.h"
 
 namespace download {
@@ -30,6 +31,7 @@ class TestStore : public Store {
   void Remove(const std::string& guid, StoreCallback callback) override;
 
   // Callback trigger methods.
+  void AutomaticallyTriggerAllFutureCallbacks(bool success);
   void TriggerInit(bool success, std::unique_ptr<std::vector<Entry>> entries);
   void TriggerUpdate(bool success);
   void TriggerRemove(bool success);
@@ -51,6 +53,7 @@ class TestStore : public Store {
   std::vector<Entry> updated_entries_;
   std::vector<std::string> removed_entries_;
 
+  base::Optional<bool> automatic_callback_response_;
   InitCallback init_callback_;
   StoreCallback update_callback_;
   StoreCallback remove_callback_;

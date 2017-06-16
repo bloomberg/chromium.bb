@@ -33,6 +33,15 @@ namespace download {
 
 namespace {
 
+bool GuidInEntryList(const std::vector<Entry>& entries,
+                     const std::string& guid) {
+  for (const auto& entry : entries) {
+    if (entry.guid == guid)
+      return true;
+  }
+  return false;
+}
+
 DriverEntry BuildDriverEntry(const Entry& entry, DriverEntry::State state) {
   DriverEntry dentry;
   dentry.guid = entry.guid;
@@ -288,7 +297,7 @@ TEST_F(DownloadServiceControllerImplTest, AddDownloadFailsWithBackoff) {
       .Times(1);
   controller_->StartDownload(params);
 
-  EXPECT_TRUE(store_->updated_entries().empty());
+  EXPECT_FALSE(GuidInEntryList(store_->updated_entries(), params.guid));
 
   task_runner_->RunUntilIdle();
 }
@@ -316,8 +325,6 @@ TEST_F(DownloadServiceControllerImplTest,
       StartCallback(params.guid, DownloadParams::StartResult::UNEXPECTED_GUID))
       .Times(1);
   controller_->StartDownload(params);
-
-  EXPECT_TRUE(store_->updated_entries().empty());
 
   task_runner_->RunUntilIdle();
 }
@@ -349,6 +356,8 @@ TEST_F(DownloadServiceControllerImplTest, AddDownloadFailsWithDuplicateCall) {
   controller_->StartDownload(params);
   controller_->StartDownload(params);
   store_->TriggerUpdate(true);
+
+  EXPECT_TRUE(GuidInEntryList(store_->updated_entries(), params.guid));
 
   task_runner_->RunUntilIdle();
 }
@@ -662,6 +671,162 @@ TEST_F(DownloadServiceControllerImplTest, DownloadCompletionTest) {
   driver_->NotifyDownloadFailed(dentry3, 1);
 
   task_runner_->RunUntilIdle();
+}
+
+TEST_F(DownloadServiceControllerImplTest, StartupRecovery) {
+  EXPECT_CALL(*client_, OnServiceInitialized(_)).Times(1);
+
+  std::vector<Entry> entries;
+  std::vector<DriverEntry> driver_entries;
+  entries.push_back(test::BuildBasicEntry(Entry::State::NEW));
+  driver_entries.push_back(
+      BuildDriverEntry(entries.back(), DriverEntry::State::IN_PROGRESS));
+  entries.push_back(test::BuildBasicEntry(Entry::State::NEW));
+  driver_entries.push_back(
+      BuildDriverEntry(entries.back(), DriverEntry::State::COMPLETE));
+  entries.push_back(test::BuildBasicEntry(Entry::State::NEW));
+  driver_entries.push_back(
+      BuildDriverEntry(entries.back(), DriverEntry::State::CANCELLED));
+  entries.push_back(test::BuildBasicEntry(Entry::State::NEW));
+  driver_entries.push_back(
+      BuildDriverEntry(entries.back(), DriverEntry::State::INTERRUPTED));
+  entries.push_back(test::BuildBasicEntry(Entry::State::NEW));
+
+  entries.push_back(test::BuildBasicEntry(Entry::State::AVAILABLE));
+  driver_entries.push_back(
+      BuildDriverEntry(entries.back(), DriverEntry::State::IN_PROGRESS));
+  entries.push_back(test::BuildBasicEntry(Entry::State::AVAILABLE));
+  driver_entries.push_back(
+      BuildDriverEntry(entries.back(), DriverEntry::State::COMPLETE));
+  entries.push_back(test::BuildBasicEntry(Entry::State::AVAILABLE));
+  driver_entries.push_back(
+      BuildDriverEntry(entries.back(), DriverEntry::State::CANCELLED));
+  entries.push_back(test::BuildBasicEntry(Entry::State::AVAILABLE));
+  driver_entries.push_back(
+      BuildDriverEntry(entries.back(), DriverEntry::State::INTERRUPTED));
+  entries.push_back(test::BuildBasicEntry(Entry::State::AVAILABLE));
+
+  entries.push_back(test::BuildBasicEntry(Entry::State::ACTIVE));
+  driver_entries.push_back(
+      BuildDriverEntry(entries.back(), DriverEntry::State::IN_PROGRESS));
+  entries.push_back(test::BuildBasicEntry(Entry::State::ACTIVE));
+  driver_entries.push_back(
+      BuildDriverEntry(entries.back(), DriverEntry::State::COMPLETE));
+  entries.push_back(test::BuildBasicEntry(Entry::State::ACTIVE));
+  driver_entries.push_back(
+      BuildDriverEntry(entries.back(), DriverEntry::State::CANCELLED));
+  entries.push_back(test::BuildBasicEntry(Entry::State::ACTIVE));
+  driver_entries.push_back(
+      BuildDriverEntry(entries.back(), DriverEntry::State::INTERRUPTED));
+  entries.push_back(test::BuildBasicEntry(Entry::State::ACTIVE));
+
+  entries.push_back(test::BuildBasicEntry(Entry::State::PAUSED));
+  driver_entries.push_back(
+      BuildDriverEntry(entries.back(), DriverEntry::State::IN_PROGRESS));
+  entries.push_back(test::BuildBasicEntry(Entry::State::PAUSED));
+  driver_entries.push_back(
+      BuildDriverEntry(entries.back(), DriverEntry::State::COMPLETE));
+  entries.push_back(test::BuildBasicEntry(Entry::State::PAUSED));
+  driver_entries.push_back(
+      BuildDriverEntry(entries.back(), DriverEntry::State::CANCELLED));
+  entries.push_back(test::BuildBasicEntry(Entry::State::PAUSED));
+  driver_entries.push_back(
+      BuildDriverEntry(entries.back(), DriverEntry::State::INTERRUPTED));
+  entries.push_back(test::BuildBasicEntry(Entry::State::PAUSED));
+
+  entries.push_back(test::BuildBasicEntry(Entry::State::COMPLETE));
+  driver_entries.push_back(
+      BuildDriverEntry(entries.back(), DriverEntry::State::IN_PROGRESS));
+  entries.push_back(test::BuildBasicEntry(Entry::State::COMPLETE));
+  driver_entries.push_back(
+      BuildDriverEntry(entries.back(), DriverEntry::State::COMPLETE));
+  entries.push_back(test::BuildBasicEntry(Entry::State::COMPLETE));
+  driver_entries.push_back(
+      BuildDriverEntry(entries.back(), DriverEntry::State::CANCELLED));
+  entries.push_back(test::BuildBasicEntry(Entry::State::COMPLETE));
+  driver_entries.push_back(
+      BuildDriverEntry(entries.back(), DriverEntry::State::INTERRUPTED));
+  entries.push_back(test::BuildBasicEntry(Entry::State::COMPLETE));
+
+  // Set up the Controller.
+  device_status_listener_->SetDeviceStatus(
+      DeviceStatus(BatteryStatus::CHARGING, NetworkStatus::UNMETERED));
+
+  controller_->Initialize();
+  driver_->AddTestData(driver_entries);
+  driver_->MakeReady();
+  store_->AutomaticallyTriggerAllFutureCallbacks(true);
+  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+
+  // Allow the initialization routines and persistent layers to do their thing.
+  task_runner_->RunUntilIdle();
+
+  // Validate Model and DownloadDriver states.
+  // Note that we are accessing the Model instead of the Store here to make it
+  // easier to query the states.
+  // TODO(dtrainor): Check more of the DriverEntry state to validate that the
+  // entries are either paused or resumed accordingly.
+
+  // Entry::State::NEW.
+  EXPECT_EQ(Entry::State::AVAILABLE, model_->Get(entries[0].guid)->state);
+  EXPECT_EQ(Entry::State::AVAILABLE, model_->Get(entries[1].guid)->state);
+  EXPECT_EQ(Entry::State::AVAILABLE, model_->Get(entries[2].guid)->state);
+  EXPECT_EQ(Entry::State::AVAILABLE, model_->Get(entries[3].guid)->state);
+  EXPECT_EQ(Entry::State::AVAILABLE, model_->Get(entries[4].guid)->state);
+  EXPECT_EQ(base::nullopt, driver_->Find(entries[0].guid));
+  EXPECT_EQ(base::nullopt, driver_->Find(entries[1].guid));
+  EXPECT_EQ(base::nullopt, driver_->Find(entries[2].guid));
+  EXPECT_EQ(base::nullopt, driver_->Find(entries[3].guid));
+  EXPECT_EQ(base::nullopt, driver_->Find(entries[4].guid));
+
+  // Entry::State::AVAILABLE.
+  EXPECT_EQ(Entry::State::ACTIVE, model_->Get(entries[5].guid)->state);
+  EXPECT_EQ(Entry::State::COMPLETE, model_->Get(entries[6].guid)->state);
+  EXPECT_EQ(Entry::State::COMPLETE, model_->Get(entries[7].guid)->state);
+  EXPECT_EQ(Entry::State::ACTIVE, model_->Get(entries[8].guid)->state);
+  EXPECT_EQ(Entry::State::AVAILABLE, model_->Get(entries[9].guid)->state);
+  EXPECT_NE(base::nullopt, driver_->Find(entries[5].guid));
+  EXPECT_EQ(base::nullopt, driver_->Find(entries[6].guid));
+  EXPECT_EQ(base::nullopt, driver_->Find(entries[7].guid));
+  EXPECT_NE(base::nullopt, driver_->Find(entries[8].guid));
+  EXPECT_EQ(base::nullopt, driver_->Find(entries[9].guid));
+
+  // Entry::State::ACTIVE.
+  EXPECT_EQ(Entry::State::ACTIVE, model_->Get(entries[10].guid)->state);
+  EXPECT_EQ(Entry::State::COMPLETE, model_->Get(entries[11].guid)->state);
+  EXPECT_EQ(Entry::State::COMPLETE, model_->Get(entries[12].guid)->state);
+  EXPECT_EQ(Entry::State::ACTIVE, model_->Get(entries[13].guid)->state);
+  EXPECT_EQ(Entry::State::ACTIVE, model_->Get(entries[14].guid)->state);
+  EXPECT_NE(base::nullopt, driver_->Find(entries[10].guid));
+  EXPECT_EQ(base::nullopt, driver_->Find(entries[11].guid));
+  EXPECT_EQ(base::nullopt, driver_->Find(entries[12].guid));
+  EXPECT_NE(base::nullopt, driver_->Find(entries[13].guid));
+  EXPECT_NE(base::nullopt, driver_->Find(entries[14].guid));
+
+  // Entry::State::PAUSED.
+  EXPECT_EQ(Entry::State::PAUSED, model_->Get(entries[15].guid)->state);
+  EXPECT_EQ(Entry::State::COMPLETE, model_->Get(entries[16].guid)->state);
+  EXPECT_EQ(Entry::State::COMPLETE, model_->Get(entries[17].guid)->state);
+  EXPECT_EQ(Entry::State::PAUSED, model_->Get(entries[18].guid)->state);
+  EXPECT_EQ(Entry::State::PAUSED, model_->Get(entries[19].guid)->state);
+  EXPECT_NE(base::nullopt, driver_->Find(entries[15].guid));
+  EXPECT_EQ(base::nullopt, driver_->Find(entries[16].guid));
+  EXPECT_EQ(base::nullopt, driver_->Find(entries[17].guid));
+  EXPECT_NE(base::nullopt, driver_->Find(entries[18].guid));
+  EXPECT_EQ(base::nullopt, driver_->Find(entries[19].guid));
+
+  // prog, comp, canc, int, __
+  // Entry::State::COMPLETE.
+  EXPECT_EQ(Entry::State::COMPLETE, model_->Get(entries[20].guid)->state);
+  EXPECT_EQ(Entry::State::COMPLETE, model_->Get(entries[21].guid)->state);
+  EXPECT_EQ(Entry::State::COMPLETE, model_->Get(entries[22].guid)->state);
+  EXPECT_EQ(Entry::State::COMPLETE, model_->Get(entries[23].guid)->state);
+  EXPECT_EQ(Entry::State::COMPLETE, model_->Get(entries[24].guid)->state);
+  EXPECT_EQ(base::nullopt, driver_->Find(entries[20].guid));
+  EXPECT_EQ(base::nullopt, driver_->Find(entries[21].guid));
+  EXPECT_EQ(base::nullopt, driver_->Find(entries[22].guid));
+  EXPECT_EQ(base::nullopt, driver_->Find(entries[23].guid));
+  EXPECT_EQ(base::nullopt, driver_->Find(entries[24].guid));
 }
 
 }  // namespace download

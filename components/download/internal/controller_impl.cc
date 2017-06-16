@@ -72,7 +72,8 @@ ControllerImpl::ControllerImpl(
       model_(std::move(model)),
       device_status_listener_(std::move(device_status_listener)),
       scheduler_(std::move(scheduler)),
-      task_scheduler_(std::move(task_scheduler)) {}
+      task_scheduler_(std::move(task_scheduler)),
+      weak_ptr_factory_(this) {}
 
 ControllerImpl::~ControllerImpl() = default;
 
@@ -89,6 +90,10 @@ const StartupStatus* ControllerImpl::GetStartupStatus() {
 
 void ControllerImpl::StartDownload(const DownloadParams& params) {
   DCHECK(startup_status_.Ok());
+
+  // TODO(dtrainor): Check if there are any downloads we can cancel.  We don't
+  // want to return a BACKOFF if we technically could time out a download to
+  // start this one.
 
   if (start_callbacks_.find(params.guid) != start_callbacks_.end() ||
       model_->Get(params.guid) != nullptr) {
@@ -377,7 +382,6 @@ void ControllerImpl::AttemptToFinalizeSetup() {
   CancelOrphanedRequests();
   ResolveInitialRequestStates();
   UpdateDriverStates();
-  PullCurrentRequestStatus();
   NotifyClientsOfStartup();
   ProcessScheduledTasks();
 
@@ -402,7 +406,117 @@ void ControllerImpl::CancelOrphanedRequests() {
 }
 
 void ControllerImpl::ResolveInitialRequestStates() {
-  // TODO(dtrainor): Implement.
+  auto entries = model_->PeekEntries();
+  for (auto* entry : entries) {
+    // Pull the initial Entry::State and DriverEntry::State.
+    Entry::State state = entry->state;
+    auto driver_entry = driver_->Find(entry->guid);
+    base::Optional<DriverEntry::State> driver_state;
+    if (driver_entry.has_value()) {
+      DCHECK_NE(DriverEntry::State::UNKNOWN, driver_entry->state);
+      driver_state = driver_entry->state;
+    }
+
+    // Determine what the new Entry::State should be based on the two original
+    // states of the two different systems.
+    Entry::State new_state = state;
+    switch (state) {
+      case Entry::State::NEW:
+        // This means we shut down but may have not ACK'ed the download.  That
+        // is OK, we will still notify the Client about the GUID when we send
+        // them our initialize method.
+        new_state = Entry::State::AVAILABLE;
+        break;
+      case Entry::State::COMPLETE:
+        // We're already in our end state.  Just stay here.
+        new_state = Entry::State::COMPLETE;
+        break;
+      case Entry::State::AVAILABLE:  // Intentional fallthrough.
+      case Entry::State::ACTIVE:     // Intentional fallthrough.
+      case Entry::State::PAUSED: {
+        // All three of these states are effectively driven by the DriverEntry
+        // state.
+        if (!driver_state.has_value()) {
+          // If we don't have a DriverEntry::State, just leave the state alone.
+          new_state = state;
+          break;
+        }
+
+        // If we have a real DriverEntry::State, we need to determine which of
+        // those states makes sense for our Entry.  Our entry can either be in
+        // two states now: It's effective 'active' state (ACTIVE or PAUSED) or
+        // COMPLETE.
+        bool is_paused = state == Entry::State::PAUSED;
+        Entry::State active =
+            is_paused ? Entry::State::PAUSED : Entry::State::ACTIVE;
+
+        switch (driver_state.value()) {
+          case DriverEntry::State::IN_PROGRESS:  // Intentional fallthrough.
+          case DriverEntry::State::INTERRUPTED:
+            // The DriverEntry isn't done, so we need to set the Entry to the
+            // 'active' state.
+            new_state = active;
+            break;
+          case DriverEntry::State::COMPLETE:  // Intentional fallthrough.
+          // TODO(dtrainor, xingliu) Revisit this CANCELLED state to make sure
+          // all embedders behave properly.
+          case DriverEntry::State::CANCELLED:
+            // The DriverEntry is done.  We need to set the Entry to the
+            // COMPLETE state.
+            new_state = Entry::State::COMPLETE;
+            break;
+          default:
+            NOTREACHED();
+            break;
+        }
+        break;
+      }
+      default:
+        NOTREACHED();
+        break;
+    }
+
+    // Update the Entry::State to the new correct state.
+    if (new_state != entry->state) {
+      stats::LogRecoveryOperation(new_state);
+      TransitTo(entry, new_state, model_.get());
+    }
+
+    // Given the new correct state, update the DriverEntry to reflect the Entry.
+    switch (new_state) {
+      case Entry::State::NEW:        // Intentional fallthrough.
+      case Entry::State::AVAILABLE:  // Intentional fallthrough.
+        // We should not have a DriverEntry here.
+        if (driver_entry.has_value())
+          driver_->Remove(entry->guid);
+        break;
+      case Entry::State::ACTIVE:  // Intentional fallthrough.
+      case Entry::State::PAUSED:
+        // We're in the correct state.  Let UpdateDriverStates() restart us if
+        // it wants to.
+        break;
+      case Entry::State::COMPLETE:
+        if (state != Entry::State::COMPLETE) {
+          // We are changing states to COMPLETE.  Handle this like a normal
+          // completed download.
+
+          // Treat CANCELLED and INTERRUPTED as failures.  We have to assume the
+          // DriverEntry might not have persisted in time.
+          CompletionType completion_type =
+              (!driver_entry.has_value() ||
+               driver_entry->state == DriverEntry::State::CANCELLED ||
+               driver_entry->state == DriverEntry::State::INTERRUPTED)
+                  ? CompletionType::UNKNOWN
+                  : CompletionType::SUCCEED;
+          HandleCompleteDownload(completion_type, entry->guid);
+        } else {
+          // We're staying in COMPLETE.  Make sure there is no DriverEntry here.
+          if (driver_entry.has_value())
+            driver_->Remove(entry->guid);
+        }
+        break;
+    }
+  }
 }
 
 void ControllerImpl::UpdateDriverStates() {
@@ -413,6 +527,9 @@ void ControllerImpl::UpdateDriverStates() {
 }
 
 void ControllerImpl::UpdateDriverState(const Entry& entry) {
+  // This method will need to figure out what to do with a failed download and
+  // either a) restart it or b) fail the download.
+
   base::Optional<DriverEntry> driver_entry = driver_->Find(entry.guid);
 
   bool meets_device_criteria = device_status_listener_->CurrentDeviceStatus()
@@ -441,18 +558,13 @@ void ControllerImpl::UpdateDriverState(const Entry& entry) {
         driver_->Pause(entry.guid);
       }
       break;
-    // Fall through.
-    case Entry::State::AVAILABLE:
-    case Entry::State::NEW:
-    case Entry::State::COMPLETE:
+    case Entry::State::AVAILABLE:  // Intentional fallthrough.
+    case Entry::State::NEW:        // Intentional fallthrough.
+    case Entry::State::COMPLETE:   // Intentional fallthrough.
       break;
     default:
       NOTREACHED();
   }
-}
-
-void ControllerImpl::PullCurrentRequestStatus() {
-  // TODO(dtrainor): Implement.
 }
 
 void ControllerImpl::NotifyClientsOfStartup() {
@@ -505,20 +617,22 @@ void ControllerImpl::HandleCompleteDownload(CompletionType type,
     return;
   }
 
-  auto* client = clients_->GetClient(entry->client);
-  DCHECK(client);
-
   if (type == CompletionType::SUCCEED) {
     auto driver_entry = driver_->Find(guid);
     DCHECK(driver_entry.has_value());
     // TODO(dtrainor): Move the FilePath generation to the controller and store
     // it in Entry.  Then pass it into the DownloadDriver.
-    // TODO(dtrainor): PostTask this instead of putting it inline.
-    client->OnDownloadSucceeded(guid, base::FilePath(),
-                                driver_entry->bytes_downloaded);
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::Bind(&ControllerImpl::SendOnDownloadSucceeded,
+                   weak_ptr_factory_.GetWeakPtr(), entry->client, guid,
+                   base::FilePath(), driver_entry->bytes_downloaded));
     TransitTo(entry, Entry::State::COMPLETE, model_.get());
   } else {
-    client->OnDownloadFailed(guid, FailureReasonFromCompletionType(type));
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(&ControllerImpl::SendOnDownloadFailed,
+                              weak_ptr_factory_.GetWeakPtr(), entry->client,
+                              guid, FailureReasonFromCompletionType(type)));
     model_->Remove(guid);
   }
 
@@ -538,6 +652,24 @@ void ControllerImpl::ActivateMoreDownloads() {
                             device_status_listener_->CurrentDeviceStatus());
   }
   scheduler_->Reschedule(model_->PeekEntries());
+}
+
+void ControllerImpl::SendOnDownloadSucceeded(DownloadClient client_id,
+                                             const std::string& guid,
+                                             const base::FilePath& path,
+                                             uint64_t size) {
+  auto* client = clients_->GetClient(client_id);
+  DCHECK(client);
+  client->OnDownloadSucceeded(guid, path, size);
+}
+
+void ControllerImpl::SendOnDownloadFailed(
+    DownloadClient client_id,
+    const std::string& guid,
+    download::Client::FailureReason reason) {
+  auto* client = clients_->GetClient(client_id);
+  DCHECK(client);
+  client->OnDownloadFailed(guid, reason);
 }
 
 }  // namespace download
