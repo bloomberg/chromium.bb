@@ -251,6 +251,9 @@ void DirectoryImpl::IsWritable(const std::string& raw_path,
 }
 
 void DirectoryImpl::Flush(FlushCallback callback) {
+// On Windows no need to sync directories. Their metadata will be updated when
+// files are created, without an explicit sync.
+#if !defined(OS_WIN)
   base::File file(directory_path_,
                   base::File::FLAG_OPEN | base::File::FLAG_READ);
   if (!file.IsValid()) {
@@ -262,7 +265,7 @@ void DirectoryImpl::Flush(FlushCallback callback) {
     std::move(callback).Run(mojom::FileError::FAILED);
     return;
   }
-
+#endif
   std::move(callback).Run(mojom::FileError::OK);
 }
 
