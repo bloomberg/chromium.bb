@@ -433,6 +433,9 @@ const WebVector<WebURL>& RemotePlayback::Urls() const {
 }
 
 void RemotePlayback::StopListeningForAvailability() {
+  if (!RuntimeEnabledFeatures::RemotePlaybackBackendEnabled())
+    return;
+
   if (!is_listening_)
     return;
 
@@ -447,6 +450,9 @@ void RemotePlayback::StopListeningForAvailability() {
 }
 
 void RemotePlayback::MaybeStartListeningForAvailability() {
+  if (!RuntimeEnabledFeatures::RemotePlaybackBackendEnabled())
+    return;
+
   if (is_listening_)
     return;
 

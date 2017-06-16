@@ -5,6 +5,7 @@
         <script src="../../resources/testharness.js"></script>
         <script src="../../resources/testharnessreport.js"></script>
         <script src="../media-file.js"></script>
+        <script src="util.js"></script>
     </head>
     <body>
         <button id="button">Click me</button>
@@ -12,6 +13,7 @@
             // WPT: this test can't be moved to WPT because of its usage of:
             // - user gesture;
             // - internals.mediaPlayerRemoteRouteAvailabilityChanged
+            // - internals.runtimeFlags
 
             function clickOnElem(e) {
                 eventSender.mouseMoveTo(
@@ -23,14 +25,17 @@
 
             async_test(function(test)
             {
-                var v = document.createElement('video');
-                v.src = findMediaFile('video', 'content/test');
-                document.body.appendChild(v);
+                // So that prompt() doesn't throw NotSupportedError.
+                enableRemotePlaybackBackendForTest(test);
 
-                internals.mediaPlayerRemoteRouteAvailabilityChanged(v, true);
+                var v = document.createElement('video');
+                v.src = findMediaFile('video', '../content/test');
+                document.body.appendChild(v);
 
                 var btn = document.getElementById('button');
                 btn.onclick = function() {
+                    internals.mediaPlayerRemoteRouteAvailabilityChanged(v, true);
+
                     v.remote.prompt();
 
                     btn.onclick = function() {

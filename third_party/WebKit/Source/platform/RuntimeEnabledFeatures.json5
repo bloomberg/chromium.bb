@@ -857,11 +857,11 @@
       status: "stable",
     },
     // Whether or not the Remote Playback API backend is implemented.
-    // Not web-exposed, set per platform. For LayoutTests, always enabled.
+    // Not web-exposed, set per platform. For LayoutTests, disabled by
+    // default.
     {
       name: "RemotePlaybackBackend",
       settable_from_internals: true,
-      status: "test"
     },
     {
       name: "RenderingPipelineThrottling",
