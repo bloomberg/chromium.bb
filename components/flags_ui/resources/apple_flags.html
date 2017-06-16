@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-<html i18n-values="dir:textdirection;">
+<html dir="$i18n{textdirection}">
 <head>
 <meta charset="utf-8">
 <if expr="is_android or is_ios">
@@ -14,7 +14,7 @@
 <script src="chrome://ui-alternatives/flags.js"></script>
 <script src="chrome://ui-alternatives/strings.js"></script>
 </head>
-<body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
+<body style="fontFamily:$i18n{fontfamily};fontSize:$i18n{fontsize}">
 <div id="body-container" style="visibility:hidden">
   <div id="flagsTemplate">
     <div id="container" class="vbox-container">
@@ -22,11 +22,11 @@
       <div class="section-header">
         <table cellpadding="0" cellspacing="0"><tr valign="center">
           <td>
-            <span class="section-header-title" i18n-content="flagsTableTitle"
-              >TITLE</span>
+            <span class="section-header-title">$i18n{flagsTableTitle}</span>
             <button id="experiment-reset-all"
-                jsdisplay="supportedFeatures.length > 0" type="button"
-                i18n-content="resetAllButton"></button>
+                jsdisplay="supportedFeatures.length > 0" type="button">
+              $i18n{resetAllButton}
+            </button>
           </td>
         </tr></table>
       </div>
@@ -36,11 +36,10 @@
     <div class="content">
       <div class="experiment-name no-experiments"
            jsdisplay="supportedFeatures.length == 0">
-        <div i18n-content="flagsNoExperimentsAvailable"
-          >NO_EXPERIMENTS_ARE_AVAILABLE</div>
+        <div>$i18n{flagsNoExperimentsAvailable}</div>
       </div>
 
-      <div jsdisplay="supportedFeatures.length > 0"> 
+      <div jsdisplay="supportedFeatures.length > 0">
       <div class="experiment"
            jsselect="supportedFeatures"
            jsvalues="id:internal_name">
@@ -78,29 +77,22 @@
               <a
                 class="experiment-disable-link"
                 jsvalues=".internal_name:internal_name"
-                jsdisplay="enabled"
-                href="#"
-                i18n-content="disable"
-                >DISABLE</a>
+                jsdisplay="enabled" href="#">$i18n{disable}</a>
               <a
                 class="experiment-enable-link"
                 jsvalues=".internal_name:internal_name"
-                jsdisplay="!enabled"
-                href="#"
-                i18n-content="enable"
-                >ENABLE</a>
+                jsdisplay="!enabled" href="#">$i18n{enable}</a>
             </span>
           </div>
         </td>
         </tr>
         </table>
       </div>
-       </div> 
+       </div>
     </div>
 
-  <div class="needs-restart"
-       jsdisplay="supportedFeatures.length > 0">
-    <div i18n-content="flagsRestartNotice">NEEDS_RESTART</div>
+    <div class="needs-restart" jsdisplay="supportedFeatures.length > 0">
+      <div>$i18n{flagsRestartNotice}</div>
     </div>
   </div>
 </div>

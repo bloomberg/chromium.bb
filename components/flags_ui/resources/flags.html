@@ -1,5 +1,5 @@
 <!doctype html>
-<html i18n-values="dir:textdirection;lang:language">
+<html dir="$i18n{textdirection}" lang="$i18n{language}">
 <head>
 <meta charset="utf-8">
 <if expr="is_android or is_ios">
@@ -22,19 +22,19 @@
 <div id="body-container" style="visibility:hidden">
 
   <div id="header">
-    <div id="title-spacer"><h1 i18n-content="flagsLongTitle"></h1></div>
+    <div id="title-spacer"><h1>$i18n{flagsLongTitle}</h1></div>
   </div>
 
   <div class="blurb-container">
-    <span id="blurb-warning" i18n-content="flagsWarningHeader">WARNING</span>
-    <span i18n-content="flagsBlurb">WARNING TEXT</span>
-    <span id="channel-promo-beta" i18n-content="channelPromoBeta" hidden></span>
-    <span id="channel-promo-dev" i18n-content="channelPromoDev" hidden></span>
+    <span id="blurb-warning">$i18n{flagsWarningHeader}</span>
+    <span>$i18n{flagsBlurb}</span>
+    <span id="channel-promo-beta" hidden>$i18n{channelPromoBeta}</span>
+    <span id="channel-promo-dev" hidden>$i18n{channelPromoDev}</span>
   </div>
 
 <if expr="chromeos">
   <div class="blurb-container" id="owner-warning">
-    <span i18n-content="ownerWarning"></span>
+    <span>$i18n{ownerWarning}</span>
   </div>
 </if>
 
@@ -44,10 +44,10 @@
       <div class="section-header">
         <table cellpadding="0" cellspacing="0"><tr valign="center">
           <td>
-            <span class="section-header-title" i18n-content="flagsTableTitle"
-              >TITLE</span>
-            <button id="experiment-reset-all" type="button"
-                i18n-content="resetAllButton"></button>
+            <span class="section-header-title">$i18n{flagsTableTitle}</span>
+            <button id="experiment-reset-all" type="button">
+              $i18n{resetAllButton}
+            </button>
           </td>
         </tr></table>
       </div>
@@ -92,17 +92,11 @@
               <a
                 class="experiment-disable-link"
                 jsvalues=".internal_name:internal_name"
-                jsdisplay="enabled"
-                href="#"
-                i18n-content="disable"
-                >DISABLE</a>
+                jsdisplay="enabled" href="#">$i18n{disable}</a>
               <a
                 class="experiment-enable-link"
                 jsvalues=".internal_name:internal_name"
-                jsdisplay="!enabled"
-                href="#"
-                i18n-content="enable"
-                >ENABLE</a>
+                jsdisplay="!enabled" href="#">$i18n{enable}</a>
             </span>
           </div>
         </td>
@@ -118,9 +112,8 @@
       <div class="section-header">
         <table cellpadding="0" cellspacing="0"><tr valign="center">
           <td>
-            <span class="section-header-title"
-                  i18n-content="flagsUnsupportedTableTitle"
-              >TITLE
+            <span class="section-header-title">
+              $i18n{flagsUnsupportedTableTitle}
             </span>
           </td>
         </tr></table>
@@ -149,7 +142,7 @@
             </div>
           </div>
           <div class="experiment-actions">
-            <div i18n-content="flagsNotSupported"></div>
+            <div>$i18n{flagsNotSupported}</div>
           </div>
         </td>
         </tr>
@@ -159,9 +152,10 @@
 </if>
 
     <div class="needs-restart" jsdisplay="needsRestart">
-      <div i18n-content="flagsRestartNotice">NEEDS_RESTART</div>
-      <button class="experiment-restart-button" type="button"
-              i18n-content="flagsRestartButton">RESTART</button>
+      <div>$i18n{flagsRestartNotice}</div>
+      <button class="experiment-restart-button" type="button">
+        $i18n{flagsRestartButton}
+      </button>
     </div>
   </div>
 </div>

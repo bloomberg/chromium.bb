@@ -1,8 +1,8 @@
 <!doctype html>
-<html i18n-values="dir:textdirection;lang:language">
+<html dir="$i18n{textdirection}" lang="$i18n{language}">
 <head>
 <meta charset="utf-8">
-<title i18n-content="title"></title>
+<title>$i18n{title}</title>
 <if expr="is_android or is_ios">
 <meta name="viewport" content="width=device-width, user-scalable=no">
 </if>
@@ -22,9 +22,9 @@
 <body>
 
 <div id="body-container" hidden>
-  <h1 i18n-content="title"></h1>
+  <h1>$i18n{title}</h1>
   <div id="render-container"></div>
-  <div id="empty-list-container" i18n-content="emptyMessage"></div>
+  <div id="empty-list-container">$i18n{emptyMessage}</div>
 </div>
 
 <a hidden id="render-template" class="physicalWebTemplate" jsselect="metadata"

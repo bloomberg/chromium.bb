@@ -1,10 +1,10 @@
 <!doctype html>
-<html i18n-values="dir:textdirection;lang:language">
+<html dir="$i18n{textdirection}" lang="$i18n{language}">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0,
                                  maximum-scale=1.0, user-scalable=no">
-  <title i18n-content="title"></title>
+  <title>$i18n{title}</title>
   <link rel="stylesheet" href="../../../components/security_interstitials/core/browser/resources/interstitial_common.css">
   <link rel="stylesheet" href="../../../components/security_interstitials/core/browser/resources/interstitial_large.css">
   <link rel="stylesheet" href="neterror.css">
@@ -12,7 +12,7 @@
   <script src="neterror.js"></script>
   <script src="offline.js"></script>
 </head>
-<body id="t" i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
+<body id="t" style="fontFamily:$i18n{fontfamily};fontSize:$i18n{fontsize}">
   <div id="main-frame-error" class="interstitial-wrapper">
     <div id="main-content">
       <div class="icon"
