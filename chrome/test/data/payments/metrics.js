@@ -6,47 +6,68 @@
 
 /* global PaymentRequest:false */
 
-var request;
+let request;
 
 /**
  * Launches the PaymentRequest UI that accepts credit cards.
  */
-function ccBuy() {  // eslint-disable-line no-unused-vars
+function ccBuy() { // eslint-disable-line no-unused-vars
   try {
-    var details = {
-      total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}},
+    let details = {
+      total: {
+        label: 'Total',
+        amount: {
+          currency: 'USD',
+          value: '5.00',
+        },
+      },
       shippingOptions: [{
         id: 'freeShippingOption',
         label: 'Free global shipping',
-        amount: {currency: 'USD', value: '0'},
-        selected: true
-      }]
+        amount: {
+          currency: 'USD',
+          value: '0',
+        },
+        selected: true,
+      }],
     };
     request = new PaymentRequest(
-        [{supportedMethods: ['visa']}], {
-          total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}},
-          shippingOptions: [{
-            id: 'freeShippingOption',
-            label: 'Free global shipping',
-            amount: {currency: 'USD', value: '0'},
-            selected: true
-          }]
+      [{
+        supportedMethods: ['visa'],
+      }], {
+        total: {
+          label: 'Total',
+          amount: {
+            currency: 'USD',
+            value: '5.00',
+          },
         },
-        {requestShipping: true});
+        shippingOptions: [{
+          id: 'freeShippingOption',
+          label: 'Free global shipping',
+          amount: {
+            currency: 'USD',
+            value: '0',
+          },
+          selected: true,
+        }],
+      }, {
+        requestShipping: true,
+      });
     request.show()
-        .then(function(resp) {
-          return resp.complete('success')
-        }).then(function() {
-          print(JSON.stringify(resp, undefined, 2));
-        }).catch(function(error) {
-          print(error);
-        });
+      .then(function(resp) {
+        return resp.complete('success');
+      }).then(function() {
+        print(JSON.stringify(resp, undefined, 2));
+      }).catch(function(error) {
+        print(error);
+      });
     request.addEventListener('shippingaddresschange', function(e) {
       e.updateWith(new Promise(function(resolve) {
         // No changes in price based on shipping address change.
         resolve(details);
       }));
-    })
+    });
   } catch (error) {
     print(error.message);
   }
@@ -55,27 +76,39 @@ function ccBuy() {  // eslint-disable-line no-unused-vars
 /**
  * Launches the PaymentRequest UI which accepts only Android Pay.
  */
-function androidPayBuy() {  // eslint-disable-line no-unused-vars
+function androidPayBuy() { // eslint-disable-line no-unused-vars
   try {
     request = new PaymentRequest(
-        [{supportedMethods: ['https://android.com/pay']}], {
-          total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}},
-          shippingOptions: [{
-            id: 'freeShippingOption',
-            label: 'Free global shipping',
-            amount: {currency: 'USD', value: '0'},
-            selected: true
-          }]
+      [{
+        supportedMethods: ['https://android.com/pay'],
+      }], {
+        total: {
+          label: 'Total',
+          amount: {
+            currency: 'USD',
+            value: '5.00',
+          },
         },
-        {requestShipping: true});
+        shippingOptions: [{
+          id: 'freeShippingOption',
+          label: 'Free global shipping',
+          amount: {
+            currency: 'USD',
+            value: '0',
+          },
+          selected: true,
+        }],
+      }, {
+        requestShipping: true,
+      });
     request.show()
-        .then(function(resp) {
-          return resp.complete('success');
-        }).then(function() {
-          print(JSON.stringify(resp, undefined, 2));
-        }).catch(function(error) {
-          print(error);
-        });
+      .then(function(resp) {
+        return resp.complete('success');
+      }).then(function() {
+        print(JSON.stringify(resp, undefined, 2));
+      }).catch(function(error) {
+        print(error);
+      });
   } catch (error) {
     print(error.message);
   }
@@ -85,20 +118,28 @@ function androidPayBuy() {  // eslint-disable-line no-unused-vars
  * Launches the PaymentRequest UI which accepts only Android Pay and does not
  * require any other information.
  */
-function androidPaySkipUiBuy() {  // eslint-disable-line no-unused-vars
+function androidPaySkipUiBuy() { // eslint-disable-line no-unused-vars
   try {
     request = new PaymentRequest(
-        [{supportedMethods: ['https://android.com/pay']}], {
-          total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}},
-        });
+      [{
+        supportedMethods: ['https://android.com/pay'],
+      }], {
+        total: {
+          label: 'Total',
+          amount: {
+            currency: 'USD',
+            value: '5.00',
+          },
+        },
+      });
     request.show()
-        .then(function(resp) {
-          return resp.complete('success');
-        }).then(function() {
-          print(JSON.stringify(resp, undefined, 2));
-        }).catch(function(error) {
-          print(error);
-        });
+      .then(function(resp) {
+        return resp.complete('success');
+      }).then(function() {
+        print(JSON.stringify(resp, undefined, 2));
+      }).catch(function(error) {
+        print(error);
+      });
   } catch (error) {
     print(error.message);
   }
@@ -108,27 +149,39 @@ function androidPaySkipUiBuy() {  // eslint-disable-line no-unused-vars
  * Launches the PaymentRequest UI which accepts only an unsupported payment
  * method.
  */
-function noSupported() {  // eslint-disable-line no-unused-vars
+function noSupported() { // eslint-disable-line no-unused-vars
   try {
     request = new PaymentRequest(
-        [{supportedMethods: ['https://randompay.com']}], {
-          total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}},
-          shippingOptions: [{
-            id: 'freeShippingOption',
-            label: 'Free global shipping',
-            amount: {currency: 'USD', value: '0'},
-            selected: true
-          }]
+      [{
+        supportedMethods: ['https://randompay.com'],
+      }], {
+        total: {
+          label: 'Total',
+          amount: {
+            currency: 'USD',
+            value: '5.00',
+          },
         },
-        {requestShipping: true});
+        shippingOptions: [{
+          id: 'freeShippingOption',
+          label: 'Free global shipping',
+          amount: {
+            currency: 'USD',
+            value: '0',
+          },
+          selected: true,
+        }],
+      }, {
+        requestShipping: true,
+      });
     request.show()
-        .then(function(resp) {
-          return resp.complete('success');
-        }).then(function() {
-          print(JSON.stringify(resp, undefined, 2));
-        }).catch(function(error) {
-          print(error);
-        });
+      .then(function(resp) {
+        return resp.complete('success');
+      }).then(function() {
+        print(JSON.stringify(resp, undefined, 2));
+      }).catch(function(error) {
+        print(error);
+      });
   } catch (error) {
     print(error.message);
   }
@@ -137,7 +190,7 @@ function noSupported() {  // eslint-disable-line no-unused-vars
 /**
  * Aborts the current PaymentRequest.
  */
-function abort() {  // eslint-disable-line no-unused-vars
+function abort() { // eslint-disable-line no-unused-vars
   try {
     request.abort().then(function() {
       print('Aborted');
