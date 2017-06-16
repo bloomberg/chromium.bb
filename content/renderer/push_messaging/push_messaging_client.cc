@@ -46,6 +46,7 @@ void PushMessagingClient::OnDestruct() {
 void PushMessagingClient::Subscribe(
     blink::WebServiceWorkerRegistration* service_worker_registration,
     const blink::WebPushSubscriptionOptions& options,
+    bool user_gesture,
     std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks) {
   DCHECK(service_worker_registration);
   DCHECK(callbacks);
@@ -55,16 +56,17 @@ void PushMessagingClient::Subscribe(
   if (options.application_server_key.IsEmpty()) {
     RenderFrameImpl::FromRoutingID(routing_id())
         ->manifest_manager()
-        ->GetManifest(base::Bind(
-            &PushMessagingClient::DidGetManifest, base::Unretained(this),
-            service_worker_registration, options, base::Passed(&callbacks)));
+        ->GetManifest(base::Bind(&PushMessagingClient::DidGetManifest,
+                                 base::Unretained(this),
+                                 service_worker_registration, options,
+                                 user_gesture, base::Passed(&callbacks)));
   } else {
     PushSubscriptionOptions content_options;
     content_options.user_visible_only = options.user_visible_only;
     // Just treat the server key as a string of bytes and pass it to the push
     // service.
     content_options.sender_info = options.application_server_key.Latin1();
-    DoSubscribe(service_worker_registration, content_options,
+    DoSubscribe(service_worker_registration, content_options, user_gesture,
                 std::move(callbacks));
   }
 }
@@ -72,6 +74,7 @@ void PushMessagingClient::Subscribe(
 void PushMessagingClient::DidGetManifest(
     blink::WebServiceWorkerRegistration* service_worker_registration,
     const blink::WebPushSubscriptionOptions& options,
+    bool user_gesture,
     std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks,
     const GURL& manifest_url,
     const Manifest& manifest,
@@ -92,13 +95,14 @@ void PushMessagingClient::DidGetManifest(
         base::UTF16ToUTF8(manifest.gcm_sender_id.string());
   }
 
-  DoSubscribe(service_worker_registration, content_options,
+  DoSubscribe(service_worker_registration, content_options, user_gesture,
               std::move(callbacks));
 }
 
 void PushMessagingClient::DoSubscribe(
     blink::WebServiceWorkerRegistration* service_worker_registration,
     const PushSubscriptionOptions& options,
+    bool user_gesture,
     std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks) {
   int64_t service_worker_registration_id =
       static_cast<WebServiceWorkerRegistrationImpl*>(
@@ -113,7 +117,7 @@ void PushMessagingClient::DoSubscribe(
 
   DCHECK(push_messaging_manager_);
   push_messaging_manager_->Subscribe(
-      routing_id(), service_worker_registration_id, options,
+      routing_id(), service_worker_registration_id, options, user_gesture,
       // Safe to use base::Unretained because |push_messaging_manager_ |is
       // owned by |this|.
       base::Bind(&PushMessagingClient::DidSubscribe, base::Unretained(this),

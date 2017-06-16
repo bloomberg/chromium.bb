@@ -53,6 +53,7 @@ class CONTENT_EXPORT PushMessagingService {
                                      int renderer_id,
                                      int render_frame_id,
                                      const PushSubscriptionOptions& options,
+                                     bool user_gesture,
                                      const RegisterCallback& callback) = 0;
 
   // Subscribe the given |options.sender_info| with the push messaging service.

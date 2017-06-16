@@ -81,6 +81,7 @@ class PushMessagingServiceImpl : public content::PushMessagingService,
                              int renderer_id,
                              int render_frame_id,
                              const content::PushSubscriptionOptions& options,
+                             bool user_gesture,
                              const RegisterCallback& callback) override;
   void SubscribeFromWorker(const GURL& requesting_origin,
                            int64_t service_worker_registration_id,

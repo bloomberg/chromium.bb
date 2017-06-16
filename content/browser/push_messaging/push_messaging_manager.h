@@ -46,6 +46,7 @@ class PushMessagingManager : public mojom::PushMessaging {
   void Subscribe(int32_t render_frame_id,
                  int64_t service_worker_registration_id,
                  const PushSubscriptionOptions& options,
+                 bool user_gesture,
                  SubscribeCallback callback) override;
   void Unsubscribe(int64_t service_worker_registration_id,
                    UnsubscribeCallback callback) override;

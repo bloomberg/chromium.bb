@@ -44,11 +44,13 @@ class PushMessagingClient : public RenderFrameObserver,
   void Subscribe(
       blink::WebServiceWorkerRegistration* service_worker_registration,
       const blink::WebPushSubscriptionOptions& options,
+      bool user_gesture,
       std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks) override;
 
   void DidGetManifest(
       blink::WebServiceWorkerRegistration* service_worker_registration,
       const blink::WebPushSubscriptionOptions& options,
+      bool user_gesture,
       std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks,
       const GURL& manifest_url,
       const Manifest& manifest,
@@ -57,6 +59,7 @@ class PushMessagingClient : public RenderFrameObserver,
   void DoSubscribe(
       blink::WebServiceWorkerRegistration* service_worker_registration,
       const PushSubscriptionOptions& options,
+      bool user_gesture,
       std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks);
 
   void DidSubscribe(

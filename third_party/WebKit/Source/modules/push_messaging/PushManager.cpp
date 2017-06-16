@@ -10,6 +10,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
+#include "core/dom/UserGestureIndicator.h"
 #include "modules/push_messaging/PushController.h"
 #include "modules/push_messaging/PushError.h"
 #include "modules/push_messaging/PushPermissionStatusCallbacks.h"
@@ -76,11 +77,13 @@ ScriptPromise PushManager::subscribe(ScriptState* script_state,
                                "Document is detached from window."));
     PushController::ClientFrom(document->GetFrame())
         .Subscribe(registration_->WebRegistration(), web_options,
+                   UserGestureIndicator::ProcessingUserGestureThreadSafe(),
                    WTF::MakeUnique<PushSubscriptionCallbacks>(resolver,
                                                               registration_));
   } else {
     PushProvider()->Subscribe(
         registration_->WebRegistration(), web_options,
+        UserGestureIndicator::ProcessingUserGestureThreadSafe(),
         WTF::MakeUnique<PushSubscriptionCallbacks>(resolver, registration_));
   }
 

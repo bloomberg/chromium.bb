@@ -23,6 +23,7 @@ class WebPushClient {
   // Ownership of the callbacks is transferred to the client.
   virtual void Subscribe(WebServiceWorkerRegistration*,
                          const WebPushSubscriptionOptions&,
+                         bool user_gesture,
                          std::unique_ptr<WebPushSubscriptionCallbacks>) = 0;
 };
 
