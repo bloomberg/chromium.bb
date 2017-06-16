@@ -37,25 +37,8 @@ source_set("unit_tests") {
   testonly = true
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "find_tab_helper_unittest.mm",
-  ]
-  deps = [
-    ":find_in_page",
-    ":unit_tests_nonarc",
-    "//base",
-    "//base/test:test_support",
-    "//ios/chrome/browser/web:test_support",
-    "//ios/web",
-    "//ios/web/public/test",
-    "//ios/web/public/test/fakes",
-    "//testing/gtest",
-  ]
-}
-
-source_set("unit_tests_nonarc") {
-  testonly = true
-  sources = [
     "find_in_page_js_unittest.mm",
+    "find_tab_helper_unittest.mm",
     "js_findinpage_manager_unittest.mm",
   ]
   deps = [
@@ -64,6 +47,8 @@ source_set("unit_tests_nonarc") {
     "//base/test:test_support",
     "//ios/chrome/browser/web:test_support",
     "//ios/web",
+    "//ios/web/public/test",
+    "//ios/web/public/test/fakes",
     "//testing/gtest",
   ]
 }
