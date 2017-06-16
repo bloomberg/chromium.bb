@@ -26,6 +26,7 @@
 #include "net/base/mime_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "printing/printing_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -55,6 +56,22 @@ enum PrinterJobHandlerEvent {
   JOB_HANDLER_INVALID_DATA,
   JOB_HANDLER_MAX,
 };
+
+net::PartialNetworkTrafficAnnotationTag kPartialTrafficAnnotation =
+    net::DefinePartialNetworkTrafficAnnotation("printer_job_handler",
+                                               "cloud_print",
+                                               R"(
+        semantics {
+          description:
+            "Handles Cloud Print jobs for a particular printer, including "
+            "connecting to printer, sending jobs, updating jobs, and getting "
+            "status."
+          trigger:
+            "Automatic checking if printer is available, registering printer, "
+            "and starting or continuing a printer task."
+          data:
+            "Cloud Print server URL, printer id, job details."
+        })");
 
 }  // namespace
 
@@ -317,7 +334,7 @@ PrinterJobHandler::HandleJobMetadataResponse(
         UMA_HISTOGRAM_ENUMERATION("CloudPrint.JobHandlerEvent",
                                   JOB_HANDLER_JOB_STARTED, JOB_HANDLER_MAX);
         SetNextDataHandler(&PrinterJobHandler::HandlePrintTicketResponse);
-        request_ = CloudPrintURLFetcher::Create();
+        request_ = CloudPrintURLFetcher::Create(kPartialTrafficAnnotation);
         if (print_system_->UseCddAndCjt()) {
           request_->StartGetRequest(
               CloudPrintURLFetcher::REQUEST_TICKET,
@@ -365,7 +382,7 @@ PrinterJobHandler::HandlePrintTicketResponse(const net::URLFetcher* source,
     job_details_.print_ticket_ = data;
     job_details_.print_ticket_mime_type_ = mime_type;
     SetNextDataHandler(&PrinterJobHandler::HandlePrintDataResponse);
-    request_ = CloudPrintURLFetcher::Create();
+    request_ = CloudPrintURLFetcher::Create(kPartialTrafficAnnotation);
     std::string accept_headers = "Accept: ";
     accept_headers += print_system_->GetSupportedMimeTypes();
     request_->StartGetRequest(CloudPrintURLFetcher::REQUEST_DATA,
@@ -473,7 +490,7 @@ void PrinterJobHandler::Start() {
         job_check_pending_ = false;
         // We need to fetch any pending jobs for this printer
         SetNextJSONHandler(&PrinterJobHandler::HandleJobMetadataResponse);
-        request_ = CloudPrintURLFetcher::Create();
+        request_ = CloudPrintURLFetcher::Create(kPartialTrafficAnnotation);
         request_->StartGetRequest(
             CloudPrintURLFetcher::REQUEST_JOB_FETCH,
             GetUrlForJobFetch(
@@ -565,7 +582,7 @@ void PrinterJobHandler::UpdateJobStatus(PrintJobStatus status,
     SetNextJSONHandler(
         &PrinterJobHandler::HandleFailureStatusUpdateResponse);
   }
-  request_ = CloudPrintURLFetcher::Create();
+  request_ = CloudPrintURLFetcher::Create(kPartialTrafficAnnotation);
   request_->StartGetRequest(
       CloudPrintURLFetcher::REQUEST_UPDATE_JOB,
       GetUrlForJobStatusUpdate(cloud_print_server_url_, job_details_.job_id_,
@@ -616,10 +633,10 @@ void PrinterJobHandler::JobSpooled(PlatformJobId local_job_id) {
 
   // The print job has been spooled locally. We now need to create an object
   // that monitors the status of the job and updates the server.
-  scoped_refptr<JobStatusUpdater> job_status_updater(
-      new JobStatusUpdater(printer_info_.printer_name, job_details_.job_id_,
-                            local_job_id_, cloud_print_server_url_,
-                            print_system_.get(), this));
+  scoped_refptr<JobStatusUpdater> job_status_updater(new JobStatusUpdater(
+      printer_info_.printer_name, job_details_.job_id_, local_job_id_,
+      cloud_print_server_url_, print_system_.get(), this,
+      kPartialTrafficAnnotation));
   job_status_updater_list_.push_back(job_status_updater);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
@@ -752,7 +769,7 @@ void PrinterJobHandler::OnReceivePrinterCaps(
     std::string mime_type("multipart/form-data; boundary=");
     mime_type += mime_boundary;
     SetNextJSONHandler(&PrinterJobHandler::HandlePrinterUpdateResponse);
-    request_ = CloudPrintURLFetcher::Create();
+    request_ = CloudPrintURLFetcher::Create(kPartialTrafficAnnotation);
     request_->StartPostRequest(
         CloudPrintURLFetcher::REQUEST_UPDATE_PRINTER,
         GetUrlForPrinterUpdate(

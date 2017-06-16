@@ -13,6 +13,7 @@
 #include "base/threading/thread.h"
 #include "chrome/service/cloud_print/cloud_print_url_fetcher.h"
 #include "chrome/service/cloud_print/print_system.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
 
@@ -39,7 +40,9 @@ class JobStatusUpdater : public base::RefCountedThreadSafe<JobStatusUpdater>,
                    PlatformJobId local_job_id,
                    const GURL& cloud_print_server_url,
                    PrintSystem* print_system,
-                   Delegate* delegate);
+                   Delegate* delegate,
+                   const net::PartialNetworkTrafficAnnotationTag&
+                       partial_traffic_annotation);
 
   // Checks the status of the local print job and sends an update.
   void UpdateStatus();
@@ -74,6 +77,9 @@ class JobStatusUpdater : public base::RefCountedThreadSafe<JobStatusUpdater>,
   // A flag that is set to true in Stop() and will ensure the next scheduled
   // task will do nothing.
   bool stopped_;
+  // Partial network traffic annotation for network requests.
+  const net::PartialNetworkTrafficAnnotationTag partial_traffic_annotation_;
+
   DISALLOW_COPY_AND_ASSIGN(JobStatusUpdater);
 };
 

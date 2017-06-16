@@ -28,12 +28,14 @@ bool IsTerminalJobState(PrintJobStatus status) {
 
 }  // namespace
 
-JobStatusUpdater::JobStatusUpdater(const std::string& printer_name,
-                                   const std::string& job_id,
-                                   PlatformJobId local_job_id,
-                                   const GURL& cloud_print_server_url,
-                                   PrintSystem* print_system,
-                                   Delegate* delegate)
+JobStatusUpdater::JobStatusUpdater(
+    const std::string& printer_name,
+    const std::string& job_id,
+    PlatformJobId local_job_id,
+    const GURL& cloud_print_server_url,
+    PrintSystem* print_system,
+    Delegate* delegate,
+    const net::PartialNetworkTrafficAnnotationTag& partial_traffic_annotation)
     : start_time_(base::Time::Now()),
       printer_name_(printer_name),
       job_id_(job_id),
@@ -41,7 +43,8 @@ JobStatusUpdater::JobStatusUpdater(const std::string& printer_name,
       cloud_print_server_url_(cloud_print_server_url),
       print_system_(print_system),
       delegate_(delegate),
-      stopped_(false) {
+      stopped_(false),
+      partial_traffic_annotation_(partial_traffic_annotation) {
   DCHECK(delegate_);
 }
 
@@ -77,7 +80,7 @@ void JobStatusUpdater::UpdateStatus() {
                                 last_job_details_.status, PRINT_JOB_STATUS_MAX);
     }
     if (need_update) {
-      request_ = CloudPrintURLFetcher::Create();
+      request_ = CloudPrintURLFetcher::Create(partial_traffic_annotation_);
       request_->StartGetRequest(
           CloudPrintURLFetcher::REQUEST_UPDATE_JOB,
           GetUrlForJobStatusUpdate(

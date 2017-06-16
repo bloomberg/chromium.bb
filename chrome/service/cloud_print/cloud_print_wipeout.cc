@@ -11,10 +11,13 @@ const int kMaxWipeoutAttempts = 3;
 
 namespace cloud_print {
 
-CloudPrintWipeout::CloudPrintWipeout(Client* client,
-                                     const GURL& cloud_print_server_url)
-  : client_(client), cloud_print_server_url_(cloud_print_server_url) {
-}
+CloudPrintWipeout::CloudPrintWipeout(
+    Client* client,
+    const GURL& cloud_print_server_url,
+    const net::PartialNetworkTrafficAnnotationTag& partial_traffic_annotation)
+    : client_(client),
+      cloud_print_server_url_(cloud_print_server_url),
+      partial_traffic_annotation_(partial_traffic_annotation) {}
 CloudPrintWipeout::~CloudPrintWipeout() {
 }
 
@@ -38,7 +41,7 @@ void CloudPrintWipeout::UnregisterNextPrinter() {
   GURL url = GetUrlForPrinterDelete(cloud_print_server_url_,
                                     printer_id,
                                     "connector_disabled");
-  request_ = CloudPrintURLFetcher::Create();
+  request_ = CloudPrintURLFetcher::Create(partial_traffic_annotation_);
   request_->StartGetRequest(CloudPrintURLFetcher::REQUEST_UNREGISTER,
                             url, this, kMaxWipeoutAttempts, std::string());
 }

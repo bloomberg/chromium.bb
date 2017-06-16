@@ -115,7 +115,9 @@ class CloudPrintURLFetcher
     virtual ~Delegate() {}
   };
 
-  static CloudPrintURLFetcher* Create();
+  static CloudPrintURLFetcher* Create(
+      const net::PartialNetworkTrafficAnnotationTag&
+          partial_traffic_annotation);
   static void set_test_factory(CloudPrintURLFetcherFactory* factory);
 
   bool IsSameRequest(const net::URLFetcher* source);
@@ -137,7 +139,8 @@ class CloudPrintURLFetcher
   void OnURLFetchComplete(const net::URLFetcher* source) override;
 
  protected:
-  CloudPrintURLFetcher();
+  CloudPrintURLFetcher(const net::PartialNetworkTrafficAnnotationTag&
+                           partial_traffic_annotation);
   friend class base::RefCountedThreadSafe<CloudPrintURLFetcher>;
   ~CloudPrintURLFetcher() override;
 
@@ -164,6 +167,7 @@ class CloudPrintURLFetcher
 
   RequestType type_;
   base::Time start_time_;
+  const net::PartialNetworkTrafficAnnotationTag partial_traffic_annotation_;
 };
 
 }  // namespace cloud_print

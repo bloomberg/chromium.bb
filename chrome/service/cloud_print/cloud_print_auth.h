@@ -12,6 +12,7 @@
 #include "base/values.h"
 #include "chrome/service/cloud_print/cloud_print_url_fetcher.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "url/gurl.h"
 
 namespace cloud_print {
@@ -41,7 +42,9 @@ class CloudPrintAuth : public base::RefCountedThreadSafe<CloudPrintAuth>,
   CloudPrintAuth(Client* client,
                  const GURL& cloud_print_server_url,
                  const gaia::OAuthClientInfo& oauth_client_info,
-                 const std::string& proxy_id);
+                 const std::string& proxy_id,
+                 const net::PartialNetworkTrafficAnnotationTag&
+                     partial_traffic_annotation);
 
   // Note:
   //
@@ -100,6 +103,8 @@ class CloudPrintAuth : public base::RefCountedThreadSafe<CloudPrintAuth>,
   // client login token used to authenticate request to cloud print server to
   // get the robot account.
   std::string client_login_token_;
+  // Partial network traffic annotation for network requests.
+  const net::PartialNetworkTrafficAnnotationTag partial_traffic_annotation_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudPrintAuth);
 };

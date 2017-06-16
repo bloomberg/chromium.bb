@@ -15,6 +15,7 @@
 #include "base/values.h"
 #include "chrome/service/service_process.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_util.h"
@@ -66,7 +67,8 @@ class TestCloudPrintURLFetcher : public CloudPrintURLFetcher {
  public:
   explicit TestCloudPrintURLFetcher(
       base::SingleThreadTaskRunner* io_task_runner)
-      : io_task_runner_(io_task_runner) {}
+      : CloudPrintURLFetcher(PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS),
+        io_task_runner_(io_task_runner) {}
 
   net::URLRequestContextGetter* GetRequestContextGetter() override {
     return new TrackingTestURLRequestContextGetter(io_task_runner_.get(),
