@@ -227,6 +227,7 @@
       'Chromium Mac Goma Staging': 'release_bot',
       'CrWinGomaStaging': 'release_bot_x86_minimal_symbols',
       'Chromium Linux Goma GCE Staging': 'release_bot',
+      'Chromium Mac Goma GCE Staging': 'release_bot',
     },
 
     'chromium.gpu': {
