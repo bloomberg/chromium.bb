@@ -15,12 +15,12 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/threading/thread_checker.h"
+#include "base/sequence_checker.h"
 #include "ui/display/manager/chromeos/display_configurator.h"
 #include "ui/display/types/display_constants.h"
 
 namespace base {
-class SequencedWorkerPool;
+class SequencedTaskRunner;
 }
 
 namespace display {
@@ -35,8 +35,7 @@ namespace ash {
 class ASH_EXPORT DisplayColorManager
     : public display::DisplayConfigurator::Observer {
  public:
-  DisplayColorManager(display::DisplayConfigurator* configurator,
-                      base::SequencedWorkerPool* blocking_pool);
+  explicit DisplayColorManager(display::DisplayConfigurator* configurator);
   ~DisplayColorManager() override;
 
   // display::DisplayConfigurator::Observer
@@ -69,13 +68,15 @@ class ASH_EXPORT DisplayColorManager
       std::unique_ptr<ColorCalibrationData> data);
 
  private:
+  friend class DisplayColorManagerTest;
+
   void ApplyDisplayColorCalibration(int64_t display_id, int64_t product_id);
   void LoadCalibrationForDisplay(const display::DisplaySnapshot* display);
 
   display::DisplayConfigurator* configurator_;
   std::map<int64_t, std::unique_ptr<ColorCalibrationData>> calibration_map_;
-  base::ThreadChecker thread_checker_;
-  base::SequencedWorkerPool* blocking_pool_;
+  SEQUENCE_CHECKER(sequence_checker_);
+  scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
 
   // Factory for callbacks.
   base::WeakPtrFactory<DisplayColorManager> weak_ptr_factory_;
