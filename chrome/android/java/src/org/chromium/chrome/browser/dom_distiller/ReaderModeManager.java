@@ -301,7 +301,9 @@ public class ReaderModeManager extends TabModelSelectorTabObserver {
                 if (mShouldRemovePreviousNavigation) {
                     mShouldRemovePreviousNavigation = false;
                     NavigationController controller = webContents.getNavigationController();
-                    controller.removeEntryAtIndex(mLastDistillerPageIndex);
+                    if (controller.getEntryAtIndex(mLastDistillerPageIndex) != null) {
+                        controller.removeEntryAtIndex(mLastDistillerPageIndex);
+                    }
                 }
 
                 // Make sure the tab was not destroyed.
