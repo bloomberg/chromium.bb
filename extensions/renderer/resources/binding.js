@@ -405,6 +405,7 @@ Binding.prototype = {
 
         mod[functionDef.name] = $Function.bind(function() {
           var args = $Array.slice(arguments);
+          $Object.setPrototypeOf(args, null);
           if (this.updateArgumentsPreValidate)
             args = $Function.apply(this.updateArgumentsPreValidate, this, args);
 
