@@ -1,52 +1,81 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="resources/comparisons.js"></script>
 
 <script>
 var EPSILON = 1e-6; // float epsilon
-var values = [
-  {input: new CSSScale(0, 0), x: 0, y: 0, z: 1, is2D: true,
-    cssText: "scale(0, 0)"},
-  {input: new CSSScale(1, 2), x: 1, y: 2, z: 1, is2D: true,
-    cssText: "scale(1, 2)"},
-  {input: new CSSScale(-2, -4), x: -2, y: -4, z: 1, is2D: true,
-    cssText: "scale(-2, -4)"},
-  {input: new CSSScale(3.4, 2.7), x: 3.4, y: 2.7, z: 1, is2D: true,
-    cssText: "scale(3.4, 2.7)"},
-  {input: new CSSScale(0, 0, 0), x: 0, y: 0, z: 0, is2D: false,
-    cssText: "scale3d(0, 0, 0)"},
-  {input: new CSSScale(1, 2, 3), x: 1, y: 2, z: 3, is2D: false,
-    cssText: "scale3d(1, 2, 3)"},
-  {input: new CSSScale(3.5, -2.7, -2), x: 3.5, y: -2.7, z: -2, is2D: false,
-    cssText: "scale3d(3.5, -2.7, -2)"}
+var testParams = [
+  {
+    input: new CSSScale(0, 0),
+    x: 0, y: 0, z: 1,
+    is2D: true,
+    cssText: "scale(0, 0)"
+  },
+  {
+    input: new CSSScale(1, 2),
+    x: 1, y: 2, z: 1,
+    is2D: true,
+    cssText: "scale(1, 2)"
+  },
+  {
+    input: new CSSScale(-2, -4),
+    x: -2, y: -4, z: 1,
+    is2D: true,
+    cssText: "scale(-2, -4)"
+  },
+  {
+    input: new CSSScale(3.4, 2.7),
+    x: 3.4, y: 2.7, z: 1,
+    is2D: true,
+    cssText: "scale(3.4, 2.7)"
+  },
+  {
+    input: new CSSScale(0, 0, 0),
+    x: 0, y: 0, z: 0,
+    is2D: false,
+    cssText: "scale3d(0, 0, 0)"
+  },
+  {
+    input: new CSSScale(1, 2, 3),
+    x: 1, y: 2, z: 3,
+    is2D: false,
+    cssText: "scale3d(1, 2, 3)"
+  },
+  {
+    input: new CSSScale(3.5, -2.7, -2),
+    x: 3.5, y: -2.7, z: -2,
+    is2D: false,
+    cssText: "scale3d(3.5, -2.7, -2)"
+  }
 ];
 
-test(function() {
-  for (var i = 0; i < values.length; ++i) {
-    assert_equals(values[i].input.x, values[i].x);
-    assert_equals(values[i].input.y, values[i].y);
-    assert_equals(values[i].input.z, values[i].z);
-  }
-}, "Test that the (x, y, z) values for CSSScale are correct.");
+for (let params of testParams) {
+  test(() => {
+    assert_equals(params.input.x, params.x);
+    assert_equals(params.input.y, params.y);
+    assert_equals(params.input.z, params.z);
+  }, "x, y, and z values are correct for " + params.cssText);
+}
 
-test(function() {
-  for (var i = 0; i < values.length; ++i) {
-    assert_equals(values[i].input.is2D(), values[i].is2D);
-  }
-}, "Test that the is2D values for CSSScale is correct.");
+for (let params of testParams) {
+  test(() => {
+    assert_equals(params.input.is2D(), params.is2D);
+  }, "is2D value is correct for " + params.cssText);
+}
 
-test(function() {
-  for (var i = 0; i < values.length; ++i) {
-    assert_equals(values[i].input.toString(), values[i].cssText);
-  }
-}, "Test that the toString for CSSScale is correct.");
+for (let params of testParams) {
+  test(() => {
+    assert_equals(params.input.toString(), params.cssText);
+  }, "toString is correct for " + params.cssText);
+}
 
-test(function() {
+test(() => {
   assert_throws(new TypeError(), () => { new CSSScale(); });
   assert_throws(new TypeError(), () => { new CSSScale(1); });
-}, "Test that invalid number of arguments for CSSScale throws an exception.");
+}, "Invalid number of arguments to constructor throws an exception.");
 
-test(function() {
+test(() => {
   assert_throws(new TypeError(), () => { new CSSScale(NaN, 0); });
   assert_throws(new TypeError(), () => { new CSSScale(0, NaN); });
   assert_throws(new TypeError(), () => { new CSSScale(NaN, NaN); });
@@ -64,34 +93,32 @@ test(function() {
   assert_throws(new TypeError(), () => { new CSSScale(0, 0, Infinity); });
   assert_throws(new TypeError(), () => { new CSSScale(0, 0, -Infinity); });
   assert_throws(new TypeError(), () => { new CSSScale(0, 0, undefined); });
-  assert_throws(new TypeError(), () => { new CSSScale(undefined, undefined, 0); });
+  assert_throws(new TypeError(), () => {
+    new CSSScale(undefined, undefined, 0);
+  });
   assert_throws(new TypeError(), () => { new CSSScale(NaN, undefined, 0); });
   assert_throws(new TypeError(), () => { new CSSScale(NaN, 0, NaN); });
   assert_throws(new TypeError(), () => { new CSSScale(0, "hello", "world"); });
   assert_throws(new TypeError(), () => { new CSSScale(0, {}, {}); });
   assert_throws(new TypeError(), () => { new CSSScale({}, {}, {}); });
   assert_throws(new TypeError(), () => { new CSSScale(NaN, NaN, NaN); });
-}, "Test that invalid input throws an exception.");
+}, "Invalid input throws an exception.");
 
-test(function() {
-  for (var i = 0; i < values.length; ++i) {
-    var input = values[i].input;
+for (let params of testParams) {
+  test(() => {
+    var input = params.input;
     var inputAsMatrix = input.asMatrix();
     assert_equals(inputAsMatrix.is2D(), input.is2D());
 
-    var expectedMatrix = input.is2D() ? new CSSMatrixComponent(new DOMMatrixReadOnly([input.x, 0, 0, input.y, 0, 0])) :
-        new CSSMatrixComponent(new DOMMatrixReadOnly([input.x, 0, 0, 0, 0, input.y, 0, 0, 0, 0, input.z, 0, 0, 0, 0, 1]));
-    for (var attribute in expectedMatrix) {
-      if (attribute == "matrix") {
-        assert_matrix_approx_equals(inputAsMatrix[attribute], expectedMatrix[attribute]);
-      } else {
-        assert_equals(inputAsMatrix[attribute], expectedMatrix[attribute]);
-      }
-    }
-  }
-}, "Test that asMatrix is constructed correctly for CSSScale.");
+    var expectedMatrix = input.is2D() ?
+        new DOMMatrixReadOnly([input.x, 0, 0, input.y, 0, 0]) :
+        new DOMMatrixReadOnly(
+          [input.x, 0, 0, 0, 0, input.y, 0, 0, 0, 0, input.z, 0, 0, 0, 0, 1]);
+    assert_matrix_approx_equals(inputAsMatrix.matrix, expectedMatrix, EPSILON);
+  }, "asMatrix is constructed correctly for " + params.cssText);
+}
 
-test(function() {
+test(() => {
   var actual = new CSSScale(0, 0, 0);
   actual.x = 1;
   actual.y = 2;
@@ -99,15 +126,6 @@ test(function() {
   assert_equals(actual.x, 1);
   assert_equals(actual.y, 2);
   assert_equals(actual.z, 3);
-}, "Test that x, y, z are mutable attributes.");
+}, "x, y, z are mutable attributes.");
 
-function assert_array_approx_equals(actual, expected) {
-  for (var i = 0; i < actual.length; i++) {
-    assert_approx_equals(actual[i], expected[i], EPSILON);
-  }
-}
-
-function assert_matrix_approx_equals(actual, expected) {
-  assert_array_approx_equals(actual.toFloat64Array(), expected.toFloat64Array());
-}
 </script>

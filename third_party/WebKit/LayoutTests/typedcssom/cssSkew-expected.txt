@@ -1,10 +1,30 @@
 This is a testharness.js-based test.
-FAIL (ax, ay) values for CSSSkew are correct. assert_approx_equals: expected a number but got a "undefined"
-PASS is2D values for CSSSkew are correct. 
-FAIL toString for CSSSkew is correct. assert_equals: expected "skew(0deg, 0deg)" but got ""
-PASS Invalid arguments for CSSSkew throws an exception. 
-FAIL asMatrix is constructed correctly for CSSSkew. Cannot read property 'is2D' of null
-PASS Setting ax and ay for CSSSkew with valid CSSUnitValues 
+PASS (ax, ay) value is correct for skew(0deg, 0deg) 
+PASS (ax, ay) value is correct for skew(1deg, 2deg) 
+PASS (ax, ay) value is correct for skew(-2deg, -4deg) 
+PASS (ax, ay) value is correct for skew(3.4deg, 2.7deg) 
+PASS (ax, ay) value is correct for skew(1rad, 0deg) 
+PASS (ax, ay) value is correct for skew(0deg, 1rad) 
+PASS is2D value is correct for skew(0deg, 0deg) 
+PASS is2D value is correct for skew(1deg, 2deg) 
+PASS is2D value is correct for skew(-2deg, -4deg) 
+PASS is2D value is correct for skew(3.4deg, 2.7deg) 
+PASS is2D value is correct for skew(1rad, 0deg) 
+PASS is2D value is correct for skew(0deg, 1rad) 
+FAIL toString is correct for skew(0deg, 0deg) assert_equals: expected "skew(0deg, 0deg)" but got ""
+FAIL toString is correct for skew(1deg, 2deg) assert_equals: expected "skew(1deg, 2deg)" but got ""
+FAIL toString is correct for skew(-2deg, -4deg) assert_equals: expected "skew(-2deg, -4deg)" but got ""
+FAIL toString is correct for skew(3.4deg, 2.7deg) assert_equals: expected "skew(3.4deg, 2.7deg)" but got ""
+FAIL toString is correct for skew(1rad, 0deg) assert_equals: expected "skew(1rad, 0deg)" but got ""
+FAIL toString is correct for skew(0deg, 1rad) assert_equals: expected "skew(0deg, 1rad)" but got ""
+PASS Invalid arguments to constructor throws an exception. 
+FAIL asMatrix is constructed correctly for skew(0deg, 0deg) Cannot read property 'is2D' of null
+FAIL asMatrix is constructed correctly for skew(1deg, 2deg) Cannot read property 'is2D' of null
+FAIL asMatrix is constructed correctly for skew(-2deg, -4deg) Cannot read property 'is2D' of null
+FAIL asMatrix is constructed correctly for skew(3.4deg, 2.7deg) Cannot read property 'is2D' of null
+FAIL asMatrix is constructed correctly for skew(1rad, 0deg) Cannot read property 'is2D' of null
+FAIL asMatrix is constructed correctly for skew(0deg, 1rad) Cannot read property 'is2D' of null
+PASS Setting ax and ay with valid CSSUnitValues 
 PASS Setting ax with invalid values 
 PASS Setting ay with invalid values 
 Harness: the test ran to completion.

@@ -9,9 +9,16 @@
 
 <script>
 
-// list of available image properties
-var imageProperties = ["background-image", "border-image-source", "list-style-image", "content", "shape-outside"];
+var supportedCSSProperties = [
+  "background-image",
+  "border-image-source",
+  "list-style-image",
+  "content",
+  "shape-outside"
+];
 
+// Temporary helper function since CSSURLImageValue doesn't support relative
+// URLs yet. This can be removed once it does.
 function url() {
   var c = document.location.href.split('/');
   c[c.length - 1] = 'resources/1x1-green.png';
@@ -22,7 +29,8 @@ function base64Url() {
   return "data:image/gif;base64,R0lGODlhAQABAAAAACwAAAAAAQABAAA=";
 }
 
-function assertCorrectURLImageValue(image, expectedUrl, expectedWidth, expectedHeight, expectedRatio) {
+function assertLoadedDotImageValue(
+    image, expectedUrl, expectedWidth, expectedHeight, expectedRatio) {
   assert_equals(image.constructor.name, CSSURLImageValue.name);
   assert_equals(image.url, expectedUrl);
   assert_equals(image.state, "loaded");
@@ -34,20 +42,16 @@ function assertCorrectURLImageValue(image, expectedUrl, expectedWidth, expectedH
 test(function() {
   var image = new CSSURLImageValue(url());
   assert_equals(image.state, "unloaded");
-}, "Can construct a new CSSURLImageValue object with url");
+}, "State is unloaded after construction.");
 
 {
-  var test1 = async_test("Set available properties as CSSURLImageValue using URL");
+  var test1 = async_test("URL image changes state when loaded");
   var url1 = url();
 
   var imageValue1 = new CSSURLImageValue(url1);
 
-  for (var i = 0; i < imageProperties.length; ++i) {
-    if (imageProperties[i] == 'content') // content accepts a list of value
-      testImage1.styleMap.set(imageProperties[i], [imageValue1]);
-    else
-      testImage1.styleMap.set(imageProperties[i], imageValue1);
-  }
+  // Set it on an element so it can be loaded.
+  testImage1.styleMap.set(supportedCSSProperties[0], imageValue1);
 
   // add an Image object to know if the image has been loaded
   var image1 = new Image();
@@ -66,17 +70,12 @@ test(function() {
 }
 
 {
-  var test2 = async_test("Set available properties as CSSURLImageValue using base64 image");
+  var test2 = async_test("Base-64 image changes state when loaded");
   var url2 = base64Url();
 
   var imageValue2 = new CSSURLImageValue(url2);
-
-  for (var i = 0; i < imageProperties.length; ++i) {
-    if (imageProperties[i] == 'content') // content accepts a list of value
-      testImage2.styleMap.set(imageProperties[i], [imageValue2]);
-    else
-      testImage2.styleMap.set(imageProperties[i], imageValue2);
-  }
+  // Set it on an element so it can be loaded.
+  testImage2.styleMap.set(supportedCSSProperties[0], imageValue2);
 
   // add an Image object to know if the image has been loaded
   var image2 = new Image();
@@ -95,7 +94,7 @@ test(function() {
 }
 
 {
-  var test3 = async_test("Invalid Image will have get error state");
+  var test3 = async_test("Invalid Image will have error state after loading");
   var url3 = document.location.href;
   var imageValue3 = new CSSURLImageValue(url3);
 
@@ -117,17 +116,23 @@ test(function() {
   };
 }
 
-test(function() {
-  var url4 = base64Url();
+for (let property of supportedCSSProperties) {
+  test(function() {
+    testImage4.style[property] = 'url(' + base64Url() + ')';
 
-  for (var i = 0; i < imageProperties.length; ++i) {
-    testImage4.style[imageProperties[i]] = 'url(' + url4 + ')';
-  }
-
-  for (var i = 0; i < imageProperties.length; ++i) {
-    assertCorrectURLImageValue(getComputedStyleMap(testImage4).get(imageProperties[i]), url4, 1, 1, 1);
-    assertCorrectURLImageValue(testImage4.styleMap.get(imageProperties[i]), url4, 1, 1, 1);
-  }
-}, "Getting CSSURLImageValue from StyleMap");
+    assertLoadedDotImageValue(
+      getComputedStyleMap(testImage4).get(property),
+      base64Url(),
+      1,
+      1,
+      1);
+    assertLoadedDotImageValue(
+      testImage4.styleMap.get(property),
+      base64Url(),
+      1,
+      1,
+      1);
+}, "Getting CSSURLImageValue from StyleMap for " + property);
+    }
 
 </script>

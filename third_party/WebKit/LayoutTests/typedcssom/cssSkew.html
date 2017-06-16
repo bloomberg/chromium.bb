@@ -5,79 +5,111 @@
 <script>
 var EPSILON = 1e-6; // float epsilon
 
-function angle(deg) { return new CSSUnitValue(deg, 'deg'); }
-
-function tanDegrees(degrees) {
-  var radians = degrees * Math.PI / 180;
-  return Math.tan(radians);
-}
-
-function assert_array_approx_equals(actual, expected) {
-  for (var i = 0; i < actual.length; i++) {
-    assert_approx_equals(actual[i], expected[i], EPSILON);
+function tanUnitValue(unitValue) {
+  if (unitValue.unit == 'deg') {
+    var radians = unitValue.value * Math.PI / 180;
+    return Math.tan(radians);
   }
+  if (unitValue.unit = 'rad') {
+    return Math.tan(unitValue.value);
+  }
+  // We've only used degrees and radians in this test.
+  throw Error('Test bug: helper function tanUnitValue needs updating.');
 }
 
-function assert_matrix_approx_equals(actual, expected) {
-  assert_array_approx_equals(actual.toFloat64Array(), expected.toFloat64Array());
-}
-
-var values = [
-  {input: new CSSSkew(angle(0), angle(0)), ax: 0, ay: 0, cssText: "skew(0deg, 0deg)"},
-  {input: new CSSSkew(angle(1), angle(2)), ax: 1, ay: 2, cssText: "skew(1deg, 2deg)"},
-  {input: new CSSSkew(angle(-2), angle(-4)), ax: -2, ay: -4, cssText: "skew(-2deg, -4deg)"},
-  {input: new CSSSkew(angle(3.4), angle(2.7)), ax: 3.4, ay: 2.7, cssText: "skew(3.4deg, 2.7deg)"},
-  {input: new CSSSkew(new CSSUnitValue(1, 'rad'), angle(0)), ax: 57.2957795, ay: 0, cssText: "skew(1rad, 0deg)"},
-  {input: new CSSSkew(angle(0), new CSSUnitValue(1, 'rad')), ax: 0, ay: 57.2957795, cssText: "skew(0deg, 1rad)"}
+var testParams = [
+  {
+    input: new CSSSkew(new CSSUnitValue(0, 'deg'), new CSSUnitValue(0, 'deg')),
+    ax: new CSSUnitValue(0, 'deg'),
+    ay: new CSSUnitValue(0, 'deg'),
+    cssText: "skew(0deg, 0deg)"
+   },
+  {
+    input: new CSSSkew(new CSSUnitValue(1, 'deg'), new CSSUnitValue(2, 'deg')),
+    ax: new CSSUnitValue(1, 'deg'),
+    ay: new CSSUnitValue(2, 'deg'),
+    cssText: "skew(1deg, 2deg)"},
+  {
+    input: new CSSSkew(new CSSUnitValue(-2, 'deg'), new CSSUnitValue(-4, 'deg')),
+    ax: new CSSUnitValue(-2, 'deg'),
+    ay: new CSSUnitValue(-4, 'deg'),
+    cssText: "skew(-2deg, -4deg)"
+  },
+  {
+    input: new CSSSkew(
+        new CSSUnitValue(3.4, 'deg'), new CSSUnitValue(2.7, 'deg')),
+    ax: new CSSUnitValue(3.4, 'deg'),
+    ay: new CSSUnitValue(2.7, 'deg'),
+    cssText: "skew(3.4deg, 2.7deg)"
+  },
+  {
+    input: new CSSSkew(new CSSUnitValue(1, 'rad'), new CSSUnitValue(0, 'deg')),
+    ax: new CSSUnitValue(1, 'rad'),
+    ay: new CSSUnitValue(0, 'deg'),
+    cssText: "skew(1rad, 0deg)"
+  },
+  {
+    input: new CSSSkew(new CSSUnitValue(0, 'deg'), new CSSUnitValue(1, 'rad')),
+    ax: new CSSUnitValue(0, 'deg'),
+    ay: new CSSUnitValue(1, 'rad'),
+    cssText: "skew(0deg, 1rad)"
+  }
 ];
 
-test(function() {
-  for (var i = 0; i < values.length; ++i) {
-    assert_approx_equals(values[i].input.ax.degrees, values[i].ax, EPSILON);
-    assert_approx_equals(values[i].input.ay.degrees, values[i].ay, EPSILON);
-  }
-}, "(ax, ay) values for CSSSkew are correct.");
+for (let params of testParams) {
+  test(() => {
+    assert_approx_equals(params.input.ax.value, params.ax.value, EPSILON);
+    assert_equals(params.input.ax.unit, params.ax.unit);
+    assert_approx_equals(params.input.ay.value, params.ay.value, EPSILON);
+    assert_equals(params.input.ay.unit, params.ay.unit);
+  }, "(ax, ay) value is correct for " + params.cssText);
+}
 
-test(function() {
-  for (var i = 0; i < values.length; ++i) {
-    assert_true(values[i].input.is2D());
-  }
-}, "is2D values for CSSSkew are correct.");
+for (let params of testParams) {
+  test(() => {
+    assert_true(params.input.is2D());
+  }, "is2D value is correct for " + params.cssText);
+}
 
-test(function() {
-  for (var i = 0; i < values.length; ++i) {
-    assert_equals(values[i].input.toString(), values[i].cssText);
-  }
-}, "toString for CSSSkew is correct.");
+for (let params of testParams) {
+  test(() => {
+    assert_equals(params.input.toString(), params.cssText);
+  }, "toString is correct for " + params.cssText);
+}
 
-test(function() {
-  assert_throws(new TypeError(), function() { new CSSSkew(); });
-  assert_throws(new TypeError(), function() { new CSSSkew(null); });
-  assert_throws(new TypeError(), function() { new CSSSkew(1); });
-  assert_throws(new TypeError(), function() { new CSSSkew('1'); });
-  assert_throws(new TypeError(), function() { new CSSSkew(angle(1)); });
-}, "Invalid arguments for CSSSkew throws an exception.");
+test(() => {
+  assert_throws(new TypeError(), () => { new CSSSkew(); });
+  assert_throws(new TypeError(), () => { new CSSSkew(null); });
+  assert_throws(new TypeError(), () => { new CSSSkew(1); });
+  assert_throws(new TypeError(), () => { new CSSSkew('1'); });
+  assert_throws(new TypeError(), () => {
+    new CSSSkew(new CSSUnitValue(1, 'deg'));
+  });
+}, "Invalid arguments to constructor throws an exception.");
 
-test(function() {
-  for (var i = 0; i < values.length; ++i) {
-    var input = values[i].input;
+for (let params of testParams) {
+  test(() => {
+    var input = params.input;
     var inputAsMatrix = input.asMatrix();
     assert_true(inputAsMatrix.is2D());
-    var tanAx = tanDegrees(input.ax.degrees);
-    var tanAy = tanDegrees(input.ay.degrees);
-    var expectedMatrix = new CSSMatrixComponent(new DOMMatrixReadOnly([1, tanAy, tanAx, 1, 0, 0]));
+    var tanAx = tanUnitValue(input.ax.degrees);
+    var tanAy = tanUnitValue(input.ay.degrees);
+    var expectedMatrix = new CSSMatrixComponent(
+        new DOMMatrixReadOnly([1, tanAy, tanAx, 1, 0, 0]));
     for (var attribute in expectedMatrix) {
       if (attribute == "matrix") {
-        assert_matrix_approx_equals(inputAsMatrix[attribute], expectedMatrix[attribute]);
+        assert_matrix_approx_equals(
+            inputAsMatrix[attribute], expectedMatrix[attribute], epsilon);
       } else {
         assert_equals(inputAsMatrix[attribute], expectedMatrix[attribute]);
       }
     }
-  }
-}, "asMatrix is constructed correctly for CSSSkew.");
+  }, "asMatrix is constructed correctly for " + params.cssText);
+}
 
 test(function() {
-  var skew = new CSSSkew(new CSSUnitValue(1, 'deg'), new CSSUnitValue(2, 'deg'));
+  var skew = new CSSSkew(
+      new CSSUnitValue(1, 'deg'), new CSSUnitValue(2, 'deg'));
   skew.ax = new CSSUnitValue(3, 'deg');
   skew.ay = new CSSUnitValue(3, 'rad');
 
@@ -85,7 +117,7 @@ test(function() {
   assert_equals(skew.ay.value, 3);
   assert_equals(skew.ax.unit, 'deg');
   assert_equals(skew.ay.unit, 'rad');
-}, "Setting ax and ay for CSSSkew with valid CSSUnitValues");
+}, "Setting ax and ay with valid CSSUnitValues");
 
 for (let a of ['ax', 'ay']) {
   test(() => {

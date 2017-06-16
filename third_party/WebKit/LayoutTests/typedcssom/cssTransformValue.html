@@ -1,14 +1,10 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="resources/comparisons.js"></script>
 
 <script>
 var EPSILON = 1e-6; // float epsilon
-
-test(function() {
-  var transformValueObject = new CSSTransformValue();
-  assert_equals(transformValueObject.constructor.name, CSSTransformValue.name);
-}, "A CSSTransformValue object can be constructed");
 
 test(function() {
   var transformArray = [
@@ -18,17 +14,18 @@ test(function() {
   ];
   var transformValue = new CSSTransformValue(transformArray);
   assert_true(transformValue.is2D);
-}, "is2D returns true for transformValues containing only 2D transformComponents");
+}, "is2D is true for transformValues containing only 2D components");
 
 test(function() {
   var transformArray = [
     new CSSScale(2, 2),
-    new CSSMatrixComponent(new DOMMatrixReadOnly([1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])),
+    new CSSMatrixComponent(new DOMMatrixReadOnly(
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])),
     new CSSScale(5, 6)
   ];
   var transformValue = new CSSTransformValue(transformArray);
   assert_false(transformValue.is2D);
-}, "is2D returns false for transformValues containing both 2D and 3D transformComponents");
+}, "is2D is false for transformValues containing both 2D and 3D components");
 
 test(function() {
   var transformArray = [
@@ -43,7 +40,7 @@ test(function() {
   assert_equals(newTransformArray[0].constructor.name, CSSScale.name);
   assert_equals(newTransformArray[1].constructor.name, CSSMatrixComponent.name);
   assert_equals(newTransformArray[2].constructor.name, CSSScale.name);
-}, "CSSTransformValue can iterate through all its all its transformComponent members");
+}, "Can iterate through transformComponent members");
 
 test(function() {
   var transformArray = [new CSSScale(2,2)];
@@ -52,12 +49,17 @@ test(function() {
   var expectedMatrix = new DOMMatrix();
   expectedMatrix.scaleSelf(2, 2);
 
-  assert_matrix_approx_equals(transformValue.toMatrix(), expectedMatrix);
+  assert_matrix_approx_equals(
+      transformValue.toMatrix(), expectedMatrix, EPSILON);
 }, "toMatrix() returns DOMMatrix Object - single CSSTransformComponent");
 
 test(function() {
   var transformMatrix = new DOMMatrixReadOnly([1,1,1,1,1,1]);
-  var transformArray = [new CSSScale(2,2) , new CSSMatrixComponent(transformMatrix), new CSSScale(5,6)];
+  var transformArray = [
+    new CSSScale(2,2),
+    new CSSMatrixComponent(transformMatrix),
+    new CSSScale(5,6)
+  ];
   var transformValue = new CSSTransformValue(transformArray);
 
   var expectedMatrix = new DOMMatrix();
@@ -65,17 +67,8 @@ test(function() {
   expectedMatrix.multiplySelf(transformMatrix);
   expectedMatrix.scaleSelf(5, 6);
 
-  assert_matrix_approx_equals(transformValue.toMatrix(), expectedMatrix);
-},  "toMatrix() returns DOMMatrix Object - multiple CSSTransformComponent");
-
-function assert_array_approx_equals(actual, expected) {
-  for (var i = 0; i < actual.length; i++) {
-    assert_approx_equals(actual[i], expected[i], EPSILON);
-  }
-}
-
-function assert_matrix_approx_equals(actual, expected) {
-  assert_array_approx_equals(actual.toFloat64Array(), expected.toFloat64Array());
-}
+  assert_matrix_approx_equals(
+      transformValue.toMatrix(), expectedMatrix, EPSILON);
+},  "toMatrix() returns DOMMatrix Object - multiple CSSTransformComponents");
 
 </script>
