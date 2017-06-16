@@ -18,47 +18,136 @@ namespace blink {
 void SlotAssignment::DidAddSlot(HTMLSlotElement& slot) {
   // Relevant DOM Standard:
   // https://dom.spec.whatwg.org/#concept-node-insert
-  // 6.4:  Run assign slotables for a tree with node's tree and a set containing
-  // each inclusive descendant of node that is a slot.
+
+  // |slot| was already connected to the tree, however, |slot_map_| doesn't
+  // reflect the insertion yet.
 
   ++slot_count_;
   needs_collect_slots_ = true;
 
-  if (!slot_map_->Contains(slot.GetName())) {
-    slot_map_->Add(slot.GetName(), &slot);
-    return;
-  }
-
-  HTMLSlotElement& old_active = *FindSlotByName(slot.GetName());
-  DCHECK_NE(old_active, slot);
-  slot_map_->Add(slot.GetName(), &slot);
-  if (FindSlotByName(slot.GetName()) == old_active)
-    return;
-  // |oldActive| is no longer an active slot.
-  if (old_active.FindHostChildWithSameSlotName())
-    old_active.DidSlotChange(SlotChangeType::kInitial);
-  // TODO(hayato): We should not enqeueue a slotchange event for |oldActive|
-  // if |oldActive| was inserted together with |slot|.
-  // This could happen if |oldActive| and |slot| are descendants of the inserted
-  // node, and |oldActive| is preceding |slot|.
+  DCHECK(!slot_map_->Contains(slot.GetName()) ||
+         GetCachedFirstSlotWithoutAccessingNodeTree(slot.GetName()));
+  DidAddSlotInternal(slot);
+  // Ensures that DocumentOrderedMap has a cache if there is a slot for the
+  // name.
+  DCHECK(GetCachedFirstSlotWithoutAccessingNodeTree(slot.GetName()));
 }
 
-void SlotAssignment::SlotRemoved(HTMLSlotElement& slot) {
+void SlotAssignment::DidRemoveSlot(HTMLSlotElement& slot) {
+  // Relevant DOM Standard:
+  // https://dom.spec.whatwg.org/#concept-node-remove
+
+  // |slot| was already removed from the tree, however, |slot_map_| doesn't
+  // reflect the removal yet.
+
   DCHECK_GT(slot_count_, 0u);
   --slot_count_;
   needs_collect_slots_ = true;
 
-  DCHECK(slot_map_->Contains(slot.GetName()));
-  HTMLSlotElement* old_active = FindSlotByName(slot.GetName());
-  slot_map_->Remove(slot.GetName(), &slot);
-  HTMLSlotElement* new_active = FindSlotByName(slot.GetName());
-  if (new_active && new_active != old_active) {
-    // |newActive| slot becomes an active slot.
-    if (new_active->FindHostChildWithSameSlotName())
-      new_active->DidSlotChange(SlotChangeType::kInitial);
-    // TODO(hayato): Prevent a false-positive slotchange.
-    // This could happen if more than one slots which have the same name are
-    // descendants of the removed node.
+  DCHECK(GetCachedFirstSlotWithoutAccessingNodeTree(slot.GetName()));
+  DidRemoveSlotInternal(slot, slot.GetName(), SlotMutationType::kRemoved);
+  // Ensures that DocumentOrderedMap has a cache if there is a slot for the
+  // name.
+  DCHECK(!slot_map_->Contains(slot.GetName()) ||
+         GetCachedFirstSlotWithoutAccessingNodeTree(slot.GetName()));
+}
+
+void SlotAssignment::DidAddSlotInternal(HTMLSlotElement& slot) {
+  // There are the following 3 cases for addition:
+  //         Before:              After:
+  // case 1: []                -> [*slot*]
+  // case 2: [old_active, ...] -> [*slot*, old_active, ...]
+  // case 3: [old_active, ...] -> [old_active, ..., *slot*, ...]
+
+  // TODO(hayato): Explain the details in README.md file.
+
+  const AtomicString& slot_name = slot.GetName();
+
+  // At this timing, we can't use FindSlotByName because what we are interested
+  // in is the first slot *before* |slot| was inserted. Here, |slot| was already
+  // disconnected from the tree. Thus, we can't use on FindBySlotName because
+  // it might scan the current tree and return a wrong result.
+  HTMLSlotElement* old_active =
+      GetCachedFirstSlotWithoutAccessingNodeTree(slot_name);
+  DCHECK(!old_active || old_active != slot);
+
+  // This might invalidate the slot_map's cache.
+  slot_map_->Add(slot_name, &slot);
+
+  // This also ensures that DocumentOrderedMap has a cache for the first
+  // element.
+  HTMLSlotElement* new_active = FindSlotByName(slot_name);
+  DCHECK(new_active);
+  DCHECK(new_active == slot || new_active == old_active);
+
+  if (new_active == slot) {
+    // case 1 or 2
+    if (FindHostChildBySlotName(slot_name)) {
+      // |slot| got assigned nodes
+      slot.DidSlotChange(SlotChangeType::kSignalSlotChangeEvent);
+      if (old_active) {
+        // case 2
+        //  |old_active| lost assigned nodes.
+        old_active->DidSlotChange(SlotChangeType::kSignalSlotChangeEvent);
+      }
+    } else {
+      // |slot| is active, but it doesn't have assigned nodes.
+      // Fallback might matter.
+      slot.CheckFallbackAfterInsertedIntoShadowTree();
+    }
+  } else {
+    // case 3
+    slot.CheckFallbackAfterInsertedIntoShadowTree();
+  }
+}
+
+void SlotAssignment::DidRemoveSlotInternal(
+    HTMLSlotElement& slot,
+    const AtomicString& slot_name,
+    SlotMutationType slot_mutation_type) {
+  // There are the following 3 cases for removal:
+  //         Before:                            After:
+  // case 1: [*slot*]                        -> []
+  // case 2: [*slot*, new_active, ...]       -> [new_active, ...]
+  // case 3: [new_active, ..., *slot*, ...]  -> [new_active, ...]
+
+  // TODO(hayato): Explain the details in README.md file.
+
+  // At this timing, we can't use FindSlotByName because what we are interested
+  // in is the first slot *before* |slot| was removed. Here, |slot| was already
+  // connected to the tree. Thus, we can't use FindBySlotName because
+  // it might scan the current tree and return a wrong result.
+  HTMLSlotElement* old_active =
+      GetCachedFirstSlotWithoutAccessingNodeTree(slot_name);
+  DCHECK(old_active);
+  slot_map_->Remove(slot_name, &slot);
+  // This also ensures that DocumentOrderedMap has a cache for the first
+  // element.
+  HTMLSlotElement* new_active = FindSlotByName(slot_name);
+  DCHECK(!new_active || new_active != slot);
+
+  if (old_active == slot) {
+    // case 1 or 2
+    if (FindHostChildBySlotName(slot_name)) {
+      // |slot| lost assigned nodes
+      if (slot_mutation_type == SlotMutationType::kRemoved) {
+        slot.DidSlotChangeAfterRemovedFromShadowTree();
+      } else {
+        slot.DidSlotChangeAfterRenaming();
+      }
+      if (new_active) {
+        // case 2
+        // |new_active| got assigned nodes
+        new_active->DidSlotChange(SlotChangeType::kSignalSlotChangeEvent);
+      }
+    } else {
+      // |slot| was active, but it didn't have assigned nodes.
+      // Fallback might matter.
+      slot.CheckFallbackAfterRemovedFromShadowTree();
+    }
+  } else {
+    // case 3
+    slot.CheckFallbackAfterRemovedFromShadowTree();
   }
 }
 
@@ -74,33 +163,25 @@ bool SlotAssignment::FindHostChildBySlotName(
   return false;
 }
 
-void SlotAssignment::SlotRenamed(const AtomicString& old_slot_name,
-                                 HTMLSlotElement& slot) {
-  // |slot| has already new name. Thus, we can not use
-  // slot.hasAssignedNodesSynchronously.
-  bool has_assigned_nodes_before = (FindSlotByName(old_slot_name) == &slot) &&
-                                   FindHostChildBySlotName(old_slot_name);
-
-  slot_map_->Remove(old_slot_name, &slot);
-  slot_map_->Add(slot.GetName(), &slot);
-
-  bool has_assigned_nodes_after = slot.HasAssignedNodesSlow();
-
-  if (has_assigned_nodes_before || has_assigned_nodes_after)
-    slot.DidSlotChange(SlotChangeType::kInitial);
+void SlotAssignment::DidRenameSlot(const AtomicString& old_slot_name,
+                                   HTMLSlotElement& slot) {
+  // Rename can be thought as "Remove and then Add", except that
+  // we don't need to set needs_collect_slots_.
+  DCHECK(GetCachedFirstSlotWithoutAccessingNodeTree(old_slot_name));
+  DidRemoveSlotInternal(slot, old_slot_name, SlotMutationType::kRenamed);
+  DidAddSlotInternal(slot);
+  DCHECK(GetCachedFirstSlotWithoutAccessingNodeTree(slot.GetName()));
 }
 
 void SlotAssignment::DidChangeHostChildSlotName(const AtomicString& old_value,
                                                 const AtomicString& new_value) {
   if (HTMLSlotElement* slot =
           FindSlotByName(HTMLSlotElement::NormalizeSlotName(old_value))) {
-    slot->DidSlotChange(SlotChangeType::kInitial);
-    owner_->Owner()->SetNeedsDistributionRecalc();
+    slot->DidSlotChange(SlotChangeType::kSignalSlotChangeEvent);
   }
   if (HTMLSlotElement* slot =
           FindSlotByName(HTMLSlotElement::NormalizeSlotName(new_value))) {
-    slot->DidSlotChange(SlotChangeType::kInitial);
-    owner_->Owner()->SetNeedsDistributionRecalc();
+    slot->DidSlotChange(SlotChangeType::kSignalSlotChangeEvent);
   }
 }
 
@@ -169,6 +250,15 @@ void SlotAssignment::CollectSlots() {
   }
   needs_collect_slots_ = false;
   DCHECK_EQ(slots_.size(), slot_count_);
+}
+
+HTMLSlotElement* SlotAssignment::GetCachedFirstSlotWithoutAccessingNodeTree(
+    const AtomicString& slot_name) {
+  if (Element* slot =
+          slot_map_->GetCachedFirstElementWithoutAccessingNodeTree(slot_name)) {
+    return toHTMLSlotElement(slot);
+  }
+  return nullptr;
 }
 
 DEFINE_TRACE(SlotAssignment) {

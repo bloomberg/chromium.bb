@@ -2563,37 +2563,38 @@ void Node::SetV0CustomElementState(V0CustomElementState new_state) {
 void Node::CheckSlotChange(SlotChangeType slot_change_type) {
   // Common check logic is used in both cases, "after inserted" and "before
   // removed".
+
+  // Relevant DOM Standard:
+  // https://dom.spec.whatwg.org/#concept-node-insert
+  // https://dom.spec.whatwg.org/#concept-node-remove
+
+  // This function is usually called while DOM Mutation is still in-progress.
+  // For "after inserted" case, we assume that a parent and a child have been
+  // already connected. For "before removed" case, we assume that a parent and a
+  // child have not been disconnected yet.
+
   if (!IsSlotable())
     return;
+
   if (ShadowRoot* root = V1ShadowRootOfParent()) {
-    // Relevant DOM Standard:
-    // https://dom.spec.whatwg.org/#concept-node-insert
-    // - 6.1.2: If parent is a shadow host and node is a slotable, then assign a
-    //   slot for node.
-    // https://dom.spec.whatwg.org/#concept-node-remove
-    // - 10. If node is assigned, then run assign slotables for node’s assigned
-    //   slot.
+    // A shadow host's child can be assigned to a slot in the host's shadow
+    // tree.
 
     // Although DOM Standard requires "assign a slot for node / run assign
     // slotables" at this timing, we skip it as an optimization.
     if (HTMLSlotElement* slot = root->AssignedSlotFor(*this))
       slot->DidSlotChange(slot_change_type);
-  } else {
-    // Relevant DOM Standard:
-    // https://dom.spec.whatwg.org/#concept-node-insert
-    // - 6.1.3: If parent is a slot whose assigned nodes is the empty list, then
-    //   run signal a slot change for parent.
-    // https://dom.spec.whatwg.org/#concept-node-remove
-    // - 11. If parent is a slot whose assigned nodes is the empty list, then
-    //   run signal a slot change for parent.
+  } else if (IsInV1ShadowTree()) {
+    // Checking for fallback content if the node is in a v1 shadow tree.
     Element* parent = parentElement();
     if (parent && isHTMLSlotElement(parent)) {
       HTMLSlotElement& parent_slot = toHTMLSlotElement(*parent);
-      // TODO(hayato): Support slotchange for slots in non-shadow trees.
-      if (ShadowRoot* root = ContainingShadowRoot()) {
-        if (root && root->IsV1() && !parent_slot.HasAssignedNodesSlow())
-          parent_slot.DidSlotChange(slot_change_type);
-      }
+      DCHECK(parent_slot.SupportsDistribution());
+      // The parent_slot's assigned nodes might not be calculated because they
+      // are lazy evaluated later at UpdateDistribution() so we have to check it
+      // here.
+      if (!parent_slot.HasAssignedNodesSlow())
+        parent_slot.DidSlotChange(slot_change_type);
     }
   }
 }

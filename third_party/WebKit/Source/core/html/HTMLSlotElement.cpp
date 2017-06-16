@@ -70,34 +70,8 @@ const HeapVector<Member<Node>> HTMLSlotElement::assignedNodesForBinding(
     const AssignedNodesOptions& options) {
   UpdateDistribution();
   if (options.hasFlatten() && options.flatten())
-    return GetDistributedNodesForBinding();
+    return GetDistributedNodes();
   return assigned_nodes_;
-}
-
-const HeapVector<Member<Node>>
-HTMLSlotElement::GetDistributedNodesForBinding() {
-  DCHECK(!NeedsDistributionRecalc());
-  if (SupportsDistribution())
-    return distributed_nodes_;
-
-  // If a slot does not support distribution, its m_distributedNodes should not
-  // be used.  Instead, calculate distribution manually here. This happens only
-  // in a slot in non-shadow trees, so its assigned nodes are always empty.
-  HeapVector<Member<Node>> distributed_nodes;
-  Node* child = NodeTraversal::FirstChild(*this);
-  while (child) {
-    if (!child->IsSlotable()) {
-      child = NodeTraversal::NextSkippingChildren(*child, this);
-      continue;
-    }
-    if (isHTMLSlotElement(child)) {
-      child = NodeTraversal::Next(*child, this);
-    } else {
-      distributed_nodes.push_back(child);
-      child = NodeTraversal::NextSkippingChildren(*child, this);
-    }
-  }
-  return distributed_nodes;
 }
 
 const HeapVector<Member<Node>>& HTMLSlotElement::GetDistributedNodes() {
@@ -114,7 +88,8 @@ void HTMLSlotElement::AppendAssignedNode(Node& host_child) {
 void HTMLSlotElement::ResolveDistributedNodes() {
   for (auto& node : assigned_nodes_) {
     DCHECK(node->IsSlotable());
-    if (isHTMLSlotElement(*node))
+    if (isHTMLSlotElement(*node) &&
+        toHTMLSlotElement(*node).SupportsDistribution())
       AppendDistributedNodesFrom(toHTMLSlotElement(*node));
     else
       AppendDistributedNode(*node);
@@ -217,7 +192,7 @@ void HTMLSlotElement::AttributeChanged(
   if (params.name == nameAttr) {
     if (ShadowRoot* root = ContainingShadowRoot()) {
       if (root->IsV1() && params.old_value != params.new_value) {
-        root->GetSlotAssignment().SlotRenamed(
+        root->GetSlotAssignment().DidRenameSlot(
             NormalizeSlotName(params.old_value), *this);
       }
     }
@@ -225,44 +200,20 @@ void HTMLSlotElement::AttributeChanged(
   HTMLElement::AttributeChanged(params);
 }
 
-static bool WasInDifferentShadowTreeBeforeInserted(
-    HTMLSlotElement& slot,
-    ContainerNode& insertion_point) {
-  ShadowRoot* root1 = slot.ContainingShadowRoot();
-  ShadowRoot* root2 = insertion_point.ContainingShadowRoot();
-  if (root1 && root2 && root1 == root2)
-    return false;
-  return root1;
-}
-
 Node::InsertionNotificationRequest HTMLSlotElement::InsertedInto(
     ContainerNode* insertion_point) {
   HTMLElement::InsertedInto(insertion_point);
-  ShadowRoot* root = ContainingShadowRoot();
-  if (root) {
+  if (SupportsDistribution()) {
+    ShadowRoot* root = ContainingShadowRoot();
+    DCHECK(root);
+    DCHECK(root->IsV1());
     DCHECK(root->Owner());
-    root->Owner()->SetNeedsDistributionRecalc();
-    // Relevant DOM Standard: https://dom.spec.whatwg.org/#concept-node-insert
-    // - 6.4:  Run assign slotables for a tree with node's tree and a set
-    // containing each inclusive descendant of node that is a slot.
-    if (root->IsV1() &&
-        !WasInDifferentShadowTreeBeforeInserted(*this, *insertion_point))
+    if (root == insertion_point->ContainingShadowRoot()) {
+      // This slot is inserted into the same tree of |insertion_point|
       root->DidAddSlot(*this);
+    }
   }
-
-  // We could have been distributed into in a detached subtree, make sure to
-  // clear the distribution when inserted again to avoid cycles.
-  ClearDistribution();
-
   return kInsertionDone;
-}
-
-static ShadowRoot* ContainingShadowRootBeforeRemoved(
-    Node& removed_descendant,
-    ContainerNode& insertion_point) {
-  if (ShadowRoot* root = removed_descendant.ContainingShadowRoot())
-    return root;
-  return insertion_point.ContainingShadowRoot();
 }
 
 void HTMLSlotElement::RemovedFrom(ContainerNode* insertion_point) {
@@ -271,24 +222,30 @@ void HTMLSlotElement::RemovedFrom(ContainerNode* insertion_point) {
   // 1. If this slot is still in a tree scope, it means the slot has been in a
   // shadow tree. An inclusive shadow-including ancestor of the shadow host was
   // originally removed from its parent.
-  // 2. Or (this slot is now not in a tree scope), this slot's inclusive
+  // 2. Or (this slot is not in a tree scope), this slot's inclusive
   // ancestor was orginally removed from its parent (== insertion point). This
-  // slot and the originally removed node was in the same tree.
+  // slot and the originally removed node was in the same tree before removal.
 
-  ShadowRoot* root = ContainingShadowRootBeforeRemoved(*this, *insertion_point);
-  if (root) {
-    if (ElementShadow* root_owner = root->Owner())
-      root_owner->SetNeedsDistributionRecalc();
-  }
+  // For exmaple, given the following trees, (srN: = shadow root, sN: = slot)
+  // a
+  // |- b --sr1
+  // |- c   |--d
+  //           |- e-----sr2
+  //              |- s1 |--f
+  //                    |--s2
 
-  // Since this insertion point is no longer visible from the shadow subtree, it
-  // need to clean itself up.
-  ClearDistribution();
+  // If we call 'e.remove()', then:
+  // - For slot s1, s1.removedFrom(d) is called.
+  // - For slot s2, s2.removedFrom(d) is called.
 
-  if (root && root->IsV1() &&
-      root == insertion_point->GetTreeScope().RootNode()) {
-    // This slot was in a shadow tree and got disconnected from the shadow root.
-    root->GetSlotAssignment().SlotRemoved(*this);
+  // ContainingShadowRoot() is okay to use here because 1) It doesn't use
+  // kIsInShadowTreeFlag flag, and 2) TreeScope has been alreay updated for the
+  // slot.
+  if (insertion_point->IsInV1ShadowTree() && !ContainingShadowRoot()) {
+    // This slot was in a shadow tree and got disconnected from the shadow tree
+    insertion_point->ContainingShadowRoot()->GetSlotAssignment().DidRemoveSlot(
+        *this);
+    ClearDistribution();
   }
 
   HTMLElement::RemovedFrom(insertion_point);
@@ -331,18 +288,55 @@ void HTMLSlotElement::LazyReattachDistributedNodesIfNeeded() {
   old_distributed_nodes_.clear();
 }
 
+void HTMLSlotElement::DidSlotChangeAfterRemovedFromShadowTree() {
+  DCHECK(!ContainingShadowRoot());
+  EnqueueSlotChangeEvent();
+  CheckSlotChange(SlotChangeType::kSuppressSlotChangeEvent);
+}
+
+void HTMLSlotElement::DidSlotChangeAfterRenaming() {
+  DCHECK(SupportsDistribution());
+  EnqueueSlotChangeEvent();
+  ContainingShadowRoot()->Owner()->SetNeedsDistributionRecalc();
+  CheckSlotChange(SlotChangeType::kSuppressSlotChangeEvent);
+}
+
 void HTMLSlotElement::DidSlotChange(SlotChangeType slot_change_type) {
-  if (slot_change_type == SlotChangeType::kInitial)
+  DCHECK(SupportsDistribution());
+  if (slot_change_type == SlotChangeType::kSignalSlotChangeEvent)
     EnqueueSlotChangeEvent();
-  ShadowRoot* root = ContainingShadowRoot();
-  // TODO(hayato): Relax this check if slots in non-shadow trees are well
-  // supported.
-  DCHECK(root);
-  DCHECK(root->IsV1());
-  root->Owner()->SetNeedsDistributionRecalc();
+  ContainingShadowRoot()->Owner()->SetNeedsDistributionRecalc();
   // Check slotchange recursively since this slotchange may cause another
   // slotchange.
-  CheckSlotChange(SlotChangeType::kChained);
+  CheckSlotChange(SlotChangeType::kSuppressSlotChangeEvent);
+}
+
+void HTMLSlotElement::CheckFallbackAfterInsertedIntoShadowTree() {
+  DCHECK(SupportsDistribution());
+  if (HasSlotableChild()) {
+    // We use kSuppress here because a slotchange event shouldn't be
+    // dispatched if a slot being inserted don't get any assigned
+    // node, but has a slotable child, according to DOM Standard.
+    DidSlotChange(SlotChangeType::kSuppressSlotChangeEvent);
+  }
+}
+
+void HTMLSlotElement::CheckFallbackAfterRemovedFromShadowTree() {
+  if (HasSlotableChild()) {
+    // Since a slot was removed from a shadow tree,
+    // we don't need to set dirty flag for a disconnected tree.
+    // However, we need to call CheckSlotChange because we might need to set a
+    // dirty flag for a shadow tree which a parent of the slot may host.
+    CheckSlotChange(SlotChangeType::kSuppressSlotChangeEvent);
+  }
+}
+
+bool HTMLSlotElement::HasSlotableChild() const {
+  for (auto& child : NodeTraversal::ChildrenOf(*this)) {
+    if (child.IsSlotable())
+      return true;
+  }
+  return false;
 }
 
 void HTMLSlotElement::EnqueueSlotChangeEvent() {

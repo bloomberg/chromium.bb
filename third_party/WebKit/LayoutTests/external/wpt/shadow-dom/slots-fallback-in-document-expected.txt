@@ -1,5 +1,0 @@
-This is a testharness.js-based test.
-FAIL Children of a slot in a document tree should not be counted in flattened assigned nodes. assert_array_equals: lengths differ, expected 1 got 0
-PASS Slot fallback content in shadow tree should be counted in flattened assigned nodes. 
-Harness: the test ran to completion.
-

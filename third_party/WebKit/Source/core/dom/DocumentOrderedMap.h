@@ -61,6 +61,9 @@ class DocumentOrderedMap : public GarbageCollected<DocumentOrderedMap> {
                                                         const TreeScope&) const;
   Element* GetElementByMapName(const AtomicString&, const TreeScope&) const;
   HTMLSlotElement* GetSlotByName(const AtomicString&, const TreeScope&) const;
+  // Don't use this unless the caller can know the internal state of
+  // DocumentOrderedMap exactly.
+  Element* GetCachedFirstElementWithoutAccessingNodeTree(const AtomicString&);
 
   DECLARE_TRACE();
 
