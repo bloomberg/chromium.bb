@@ -123,12 +123,6 @@ Polymer({
     this.dispatch(bookmarks.actions.deselectItems());
   },
 
-  /** @private */
-  selectAllItems_: function() {
-    this.dispatch(
-        bookmarks.actions.selectAll(this.displayedIds_, this.getState()));
-  },
-
   /**
    * @param{HTMLElement} el
    * @private
@@ -168,10 +162,6 @@ Polymer({
             range: false,
             toggle: true,
           }));
-    } else if (e.key == 'a' && e.ctrlKey) {
-      this.selectAllItems_();
-    } else if (e.key == 'Escape') {
-      this.deselectItems_();
     } else {
       handled = false;
     }

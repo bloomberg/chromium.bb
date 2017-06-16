@@ -202,6 +202,7 @@ TEST_F('MaterialBookmarksFocusTest', 'All', function() {
     var list;
     var store;
     var items;
+    var commandManager;
     var multiKey = cr.isMac ? 'meta' : 'ctrl';
 
     function keydown(item, key, modifiers) {
@@ -232,6 +233,9 @@ TEST_F('MaterialBookmarksFocusTest', 'All', function() {
       replaceBody(list);
       Polymer.dom.flush();
       items = list.root.querySelectorAll('bookmarks-item');
+
+      commandManager = new TestCommandManager();
+      document.body.appendChild(commandManager);
     });
 
     test('simple keyboard selection', function() {
@@ -276,7 +280,7 @@ TEST_F('MaterialBookmarksFocusTest', 'All', function() {
       keydown(focusedItem, 'Escape');
       assertDeepEquals([], normalizeSet(store.data.selection.items));
 
-      keydown(focusedItem, 'a', 'ctrl');
+      keydown(focusedItem, 'a', multiKey);
       assertDeepEquals(
           ['2', '3', '4', '5', '6', '7'],
           normalizeSet(store.data.selection.items));
@@ -366,8 +370,6 @@ TEST_F('MaterialBookmarksFocusTest', 'All', function() {
     });
 
     test('keyboard commands are passed to command manager', function() {
-      var commandManager = new TestCommandManager();
-      document.body.appendChild(commandManager);
       chrome.bookmarkManagerPrivate.removeTrees = function() {}
 
       store.data.selection.items = new Set(['2', '3']);
@@ -386,9 +388,6 @@ TEST_F('MaterialBookmarksFocusTest', 'All', function() {
       // Iron-list attempts to focus the whole <bookmarks-item> when pressing
       // enter on the menu button. This checks that we block this behavior
       // during keydown on <bookmarks-list>.
-      var commandManager = new TestCommandManager();
-      document.body.appendChild(commandManager);
-
       var button = items[0].$$('.more-vert-button');
       button.focus();
       keydown(button, 'Enter');

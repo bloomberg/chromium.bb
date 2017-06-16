@@ -75,6 +75,9 @@ cr.define('bookmarks', function() {
 
       this.addShortcut_(Command.UNDO, 'Ctrl|z', 'Meta|z');
       this.addShortcut_(Command.REDO, 'Ctrl|y Ctrl|Shift|Z', 'Meta|Shift|Z');
+
+      this.addShortcut_(Command.SELECT_ALL, 'Ctrl|a', 'Meta|a');
+      this.addShortcut_(Command.DESELECT_ALL, 'Escape');
     },
 
     detached: function() {
@@ -131,6 +134,9 @@ cr.define('bookmarks', function() {
         case Command.UNDO:
         case Command.REDO:
           return this.globalCanEdit_;
+        case Command.SELECT_ALL:
+        case Command.DESELECT_ALL:
+          return true;
         default:
           return this.isCommandVisible_(command, itemIds) &&
               this.isCommandEnabled_(command, itemIds);
@@ -247,6 +253,13 @@ cr.define('bookmarks', function() {
           } else {
             this.openUrls_(this.expandUrls_(itemIds), command);
           }
+          break;
+        case Command.SELECT_ALL:
+          var displayedIds = bookmarks.util.getDisplayedList(state);
+          this.dispatch(bookmarks.actions.selectAll(displayedIds, state));
+          break;
+        case Command.DESELECT_ALL:
+          this.dispatch(bookmarks.actions.deselectItems());
           break;
         default:
           assert(false);
