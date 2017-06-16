@@ -27,4 +27,15 @@ const char kPhysicalWebDescription[] =
     "When enabled, the omnibox will include suggestions for web pages "
     "broadcast by devices near you.";
 
+const char kMarkHttpAsName[] = "Mark non-secure origins as non-secure";
+
+const char kMarkHttpAsDescription[] = "Change the UI treatment for HTTP pages";
+const char kMarkHttpAsDangerous[] = "Always mark HTTP as actively dangerous";
+const char kMarkHttpAsNonSecureAfterEditing[] =
+    "Warn on HTTP after editing forms";
+const char kMarkHttpAsNonSecureWhileIncognito[] =
+    "Warn on HTTP while in Incognito mode";
+const char kMarkHttpAsNonSecureWhileIncognitoOrEditing[] =
+    "Warn on HTTP while in Incognito mode or after editing forms";
+
 }  // namespace flag_descriptions
