@@ -130,6 +130,9 @@ class ChooserController {
   void set_view(View* view) { view_ = view; }
   View* view() const { return view_; }
 
+ protected:
+  void set_title_for_testing(const base::string16& title) { title_ = title; }
+
  private:
   base::string16 title_;
   View* view_ = nullptr;

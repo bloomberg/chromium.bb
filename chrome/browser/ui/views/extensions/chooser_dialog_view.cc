@@ -18,6 +18,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/background.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/fill_layout.h"
@@ -43,6 +44,9 @@ ChooserDialogView::ChooserDialogView(
   DCHECK(chooser_controller);
   device_chooser_content_view_ =
       new DeviceChooserContentView(this, std::move(chooser_controller));
+  device_chooser_content_view_->SetBorder(
+      views::CreateEmptyBorder(ChromeLayoutProvider::Get()->GetInsetsMetric(
+          views::INSETS_DIALOG_CONTENTS)));
   chrome::RecordDialogCreation(chrome::DialogIdentifier::CHOOSER);
 }
 
@@ -70,27 +74,13 @@ bool ChooserDialogView::IsDialogButtonEnabled(ui::DialogButton button) const {
 }
 
 views::View* ChooserDialogView::CreateFootnoteView() {
-  return device_chooser_content_view_->footnote_link();
-}
-
-views::ClientView* ChooserDialogView::CreateClientView(views::Widget* widget) {
-  views::DialogClientView* client =
-      new views::DialogClientView(widget, GetContentsView());
-  ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-  client->SetButtonRowInsets(gfx::Insets(
-      provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL),
-      0, 0, 0));
-  return client;
-}
-
-views::NonClientFrameView* ChooserDialogView::CreateNonClientFrameView(
-    views::Widget* widget) {
-  // ChooserDialogView always has a parent, so ShouldUseCustomFrame() should
-  // always be true.
-  DCHECK(ShouldUseCustomFrame());
-  return views::DialogDelegate::CreateDialogFrameView(
-      widget, ChromeLayoutProvider::Get()->GetInsetsMetric(
-                  views::INSETS_BUBBLE_CONTENTS));
+  views::View* footnote_link = device_chooser_content_view_->footnote_link();
+  if (footnote_link) {
+    footnote_link->SetBorder(
+        views::CreateEmptyBorder(ChromeLayoutProvider::Get()->GetInsetsMetric(
+            views::INSETS_DIALOG_CONTENTS)));
+  }
+  return footnote_link;
 }
 
 bool ChooserDialogView::Accept() {
