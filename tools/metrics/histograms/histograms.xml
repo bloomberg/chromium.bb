@@ -47276,7 +47276,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>dimich@chromium.org</owner>
   <summary>
     If the directory to store the SQLite database file does not exist, it is
-    created. This is recorded only if creation fails.
+    created. This is recorded every time the database is opened, even if the
+    directory already exists, in which case it's reported as FILE_OK.
   </summary>
 </histogram>
 
