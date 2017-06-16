@@ -207,17 +207,12 @@ void LayerTreeImpl::UpdateScrollbarGeometries() {
   for (auto& pair : element_id_to_scrollbar_layer_ids_) {
     ElementId scrolling_element_id = pair.first;
 
-    // TODO(pdr): Remove this LayerImpl access and just use scroll nodes. This
-    // is blocked on scroll offset's dependency on LayerImpl.
-    LayerImpl* scrolling_layer = LayerByElementId(scrolling_element_id);
-    if (!scrolling_layer)
-      continue;
-    gfx::ScrollOffset current_offset = scrolling_layer->CurrentScrollOffset();
-
     auto& scroll_tree = property_trees()->scroll_tree;
     auto* scroll_node = scroll_tree.FindNodeFromElementId(scrolling_element_id);
     if (!scroll_node)
       continue;
+    gfx::ScrollOffset current_offset =
+        scroll_tree.current_scroll_offset(scrolling_element_id);
     gfx::SizeF scrolling_size(scroll_node->bounds);
     gfx::SizeF bounds_size(
         scroll_tree.scroll_clip_layer_bounds(scroll_node->id));
@@ -246,14 +241,13 @@ void LayerTreeImpl::UpdateScrollbarGeometries() {
       bounds_size.Scale(1 / current_page_scale_factor());
     }
 
-    bool y_offset_did_change = false;
     for (auto* scrollbar : ScrollbarsFor(scrolling_element_id)) {
       if (scrollbar->orientation() == HORIZONTAL) {
         scrollbar->SetCurrentPos(current_offset.x());
         scrollbar->SetClipLayerLength(bounds_size.width());
         scrollbar->SetScrollLayerLength(scrolling_size.width());
       } else {
-        y_offset_did_change = scrollbar->SetCurrentPos(current_offset.y());
+        scrollbar->SetCurrentPos(current_offset.y());
         scrollbar->SetClipLayerLength(bounds_size.height());
         scrollbar->SetScrollLayerLength(scrolling_size.height());
       }
@@ -262,10 +256,6 @@ void LayerTreeImpl::UpdateScrollbarGeometries() {
             InnerViewportContainerLayer()->ViewportBoundsDelta().y());
       }
     }
-
-    if (y_offset_did_change && is_viewport_scrollbar)
-      TRACE_COUNTER_ID1("cc", "scroll_offset_y", scrolling_layer->id(),
-                        current_offset.y());
   }
 
   scrollbar_geometries_need_update_ = false;
