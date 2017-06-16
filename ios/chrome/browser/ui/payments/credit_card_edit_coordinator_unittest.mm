@@ -128,7 +128,7 @@ TEST_F(PaymentRequestCreditCardEditCoordinatorTest, StartAndStop) {
   EXPECT_EQ(nil, base_view_controller.presentedViewController);
 
   [coordinator start];
-  // Short delay to allow animation to complete.
+  // Spin the run loop to trigger the animation.
   base::test::ios::SpinRunLoopWithMaxDelay(base::TimeDelta::FromSecondsD(1.0));
   EXPECT_TRUE([base_view_controller.presentedViewController
       isMemberOfClass:[PaymentRequestEditViewController class]]);
@@ -168,7 +168,7 @@ TEST_F(PaymentRequestCreditCardEditCoordinatorTest, DidFinishCreatingWithSave) {
   EXPECT_EQ(nil, base_view_controller.presentedViewController);
 
   [coordinator start];
-  // Short delay to allow animation to complete.
+  // Spin the run loop to trigger the animation.
   base::test::ios::SpinRunLoopWithMaxDelay(base::TimeDelta::FromSecondsD(1.0));
   EXPECT_NE(nil, base_view_controller.presentedViewController);
 
@@ -221,7 +221,7 @@ TEST_F(PaymentRequestCreditCardEditCoordinatorTest, DidFinishCreatingNoSave) {
   EXPECT_EQ(nil, base_view_controller.presentedViewController);
 
   [coordinator start];
-  // Short delay to allow animation to complete.
+  // Spin the run loop to trigger the animation.
   base::test::ios::SpinRunLoopWithMaxDelay(base::TimeDelta::FromSecondsD(1.0));
   EXPECT_NE(nil, base_view_controller.presentedViewController);
 
@@ -274,7 +274,7 @@ TEST_F(PaymentRequestCreditCardEditCoordinatorTest, DidFinishEditing) {
   EXPECT_EQ(nil, base_view_controller.presentedViewController);
 
   [coordinator start];
-  // Short delay to allow animation to complete.
+  // Spin the run loop to trigger the animation.
   base::test::ios::SpinRunLoopWithMaxDelay(base::TimeDelta::FromSecondsD(1.0));
   EXPECT_NE(nil, base_view_controller.presentedViewController);
 
@@ -319,7 +319,7 @@ TEST_F(PaymentRequestCreditCardEditCoordinatorTest, DidCancel) {
   EXPECT_EQ(nil, base_view_controller.presentedViewController);
 
   [coordinator start];
-  // Short delay to allow animation to complete.
+  // Spin the run loop to trigger the animation.
   base::test::ios::SpinRunLoopWithMaxDelay(base::TimeDelta::FromSecondsD(1.0));
   EXPECT_NE(nil, base_view_controller.presentedViewController);
 

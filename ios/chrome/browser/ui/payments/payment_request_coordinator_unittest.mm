@@ -112,7 +112,7 @@ TEST_F(PaymentRequestCoordinatorTest, StartAndStop) {
   [coordinator setBrowserState:browser_state_.get()];
 
   [coordinator start];
-  // Short delay to allow animation to complete.
+  // Spin the run loop to trigger the animation.
   base::test::ios::SpinRunLoopWithMaxDelay(base::TimeDelta::FromSecondsD(1));
   EXPECT_TRUE([base_view_controller.presentedViewController
       isMemberOfClass:[UINavigationController class]]);
@@ -274,7 +274,7 @@ TEST_F(PaymentRequestCoordinatorTest, DidCancel) {
   [coordinator setBrowserState:browser_state_.get()];
 
   [coordinator start];
-  // Short delay to allow animation to complete.
+  // Spin the run loop to trigger the animation.
   base::test::ios::SpinRunLoopWithMaxDelay(base::TimeDelta::FromSecondsD(1));
 
   // Call the controller delegate method.
