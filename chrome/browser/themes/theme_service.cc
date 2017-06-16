@@ -472,16 +472,18 @@ SkColor ThemeService::GetDefaultColor(int id, bool incognito) const {
       if (UsingDefaultTheme())
         break;
       return GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT, incognito);
+    case ThemeProperties::COLOR_TOOLBAR_BOTTOM_SEPARATOR:
+      if (UsingDefaultTheme())
+        break;
+      return GetColor(ThemeProperties::COLOR_LOCATION_BAR_BORDER, incognito);
     case ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND:
       if (UsingDefaultTheme())
         break;
       return GetColor(ThemeProperties::COLOR_TOOLBAR, incognito);
     case ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR:
-      if (UsingDefaultTheme())
-        break;
-      // Use 50% of bookmark text color as separator color.
+      // Use a faint version of the text color as the separator color.
       return SkColorSetA(
-          GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT, incognito), 128);
+          GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT, incognito), 0x20);
     case ThemeProperties::COLOR_NTP_TEXT_LIGHT:
       return IncreaseLightness(GetColor(kNtpText, incognito), 0.40);
     case ThemeProperties::COLOR_TAB_THROBBER_SPINNING:
