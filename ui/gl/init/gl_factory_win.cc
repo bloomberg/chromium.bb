@@ -117,8 +117,13 @@ scoped_refptr<GLSurface> CreateOffscreenGLSurfaceWithFormat(
           new GLSurfaceOSMesa(format, size), format);
     case kGLImplementationSwiftShaderGL:
     case kGLImplementationEGLGLES2:
-      return InitializeGLSurfaceWithFormat(
-          new PbufferGLSurfaceEGL(size), format);
+      if (GLSurfaceEGL::IsEGLSurfacelessContextSupported() &&
+          size.width() == 0 && size.height() == 0) {
+        return InitializeGLSurfaceWithFormat(new SurfacelessEGL(size), format);
+      } else {
+        return InitializeGLSurfaceWithFormat(new PbufferGLSurfaceEGL(size),
+                                             format);
+      }
     case kGLImplementationDesktopGL:
       return InitializeGLSurfaceWithFormat(
           new PbufferGLSurfaceWGL(size), format);
