@@ -21,6 +21,7 @@ from chromite.lib import gs
 from chromite.lib import gs_unittest
 from chromite.lib import osutils
 from chromite.lib import partial_mock
+from gn_helpers import gn_helpers
 
 
 # pylint: disable=W0212
@@ -305,7 +306,7 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase,
       gn_args_file_dir = os.path.join(self.chrome_src_dir, out_dir, build_label)
       gn_args_file_path = os.path.join(gn_args_file_dir, 'args.gn')
       osutils.SafeMakedirs(gn_args_file_dir)
-      osutils.WriteFile(gn_args_file_path, 'no match')
+      osutils.WriteFile(gn_args_file_path, 'foo = "no match"')
 
       self.SetupCommandMock()
       self.cmd_mock.inst.Run()
@@ -325,6 +326,27 @@ class RunThroughTest(cros_test_lib.MockTempDirTestCase,
 
       osutils.SafeMakedirs(gn_args_file_dir)
       osutils.WriteFile(gn_args_file_path, self.cmd_mock.env['GN_ARGS'])
+
+      self.cmd_mock.inst.Run()
+
+      self.AssertLogsContain(logs, 'Stale args.gn file', inverted=True)
+
+  def testGnArgsStalenessIgnoreStripped(self):
+    """Verifies the GN args ignore stripped args."""
+    with cros_test_lib.LoggingCapturer() as logs:
+      self.SetupCommandMock()
+      self.cmd_mock.inst.Run()
+
+      out_dir = 'out_%s' % SDKFetcherMock.BOARD
+      build_label = 'Release'
+      gn_args_file_dir = os.path.join(self.chrome_src_dir, out_dir, build_label)
+      gn_args_file_path = os.path.join(gn_args_file_dir, 'args.gn')
+
+      osutils.SafeMakedirs(gn_args_file_dir)
+      gn_args_dict = gn_helpers.FromGNArgs(self.cmd_mock.env['GN_ARGS'])
+      # 'dcheck_always_on' should be ignored.
+      gn_args_dict['dcheck_always_on'] = True
+      osutils.WriteFile(gn_args_file_path, gn_helpers.ToGNString(gn_args_dict))
 
       self.cmd_mock.inst.Run()
 
