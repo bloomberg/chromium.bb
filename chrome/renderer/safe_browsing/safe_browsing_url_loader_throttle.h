@@ -6,7 +6,7 @@
 #define CHROME_RENDERER_SAFE_BROWSING_SAFE_BROWSING_URL_LOADER_THROTTLE_H_
 
 #include "base/memory/weak_ptr.h"
-#include "chrome/common/safe_browsing.mojom.h"
+#include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "content/public/common/url_loader_throttle.h"
 
 namespace chrome {
@@ -26,7 +26,7 @@ class SafeBrowsingURLLoaderThrottle : public content::URLLoaderThrottle {
   // |safe_browsing| must stay alive until WillStartRequest() (if it is called)
   // or the end of this object.
   // |render_frame_id| is used for displaying SafeBrowsing UI when necessary.
-  SafeBrowsingURLLoaderThrottle(chrome::mojom::SafeBrowsing* safe_browsing,
+  SafeBrowsingURLLoaderThrottle(mojom::SafeBrowsing* safe_browsing,
                                 int render_frame_id);
   ~SafeBrowsingURLLoaderThrottle() override;
 
@@ -44,10 +44,10 @@ class SafeBrowsingURLLoaderThrottle : public content::URLLoaderThrottle {
 
   void OnConnectionError();
 
-  chrome::mojom::SafeBrowsing* safe_browsing_;
+  mojom::SafeBrowsing* safe_browsing_;
   const int render_frame_id_;
 
-  chrome::mojom::SafeBrowsingUrlCheckerPtr url_checker_;
+  mojom::SafeBrowsingUrlCheckerPtr url_checker_;
 
   size_t pending_checks_ = 0;
   bool blocked_ = false;

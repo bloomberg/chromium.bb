@@ -11,7 +11,7 @@
 namespace safe_browsing {
 
 SafeBrowsingURLLoaderThrottle::SafeBrowsingURLLoaderThrottle(
-    chrome::mojom::SafeBrowsing* safe_browsing,
+    mojom::SafeBrowsing* safe_browsing,
     int render_frame_id)
     : safe_browsing_(safe_browsing),
       render_frame_id_(render_frame_id),

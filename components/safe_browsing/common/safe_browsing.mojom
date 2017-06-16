@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module chrome.mojom;
+module safe_browsing.mojom;
 
 import "content/public/common/resource_type.mojom";
 import "url/mojo/url.mojom";

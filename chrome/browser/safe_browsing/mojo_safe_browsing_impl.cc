@@ -44,7 +44,7 @@ content::WebContents* GetWebContentsFromID(int render_process_id,
 // !database_manager()->IsSupported().
 // TODO(yzshen): Make sure it also works on Andorid.
 // TODO(yzshen): Do all the logging like what BaseResourceThrottle does.
-class SafeBrowsingUrlCheckerImpl : public chrome::mojom::SafeBrowsingUrlChecker,
+class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
                                    public SafeBrowsingDatabaseManager::Client {
  public:
   SafeBrowsingUrlCheckerImpl(
@@ -75,7 +75,7 @@ class SafeBrowsingUrlCheckerImpl : public chrome::mojom::SafeBrowsingUrlChecker,
       std::move(callbacks_[i]).Run(false);
   }
 
-  // chrome::mojom::SafeBrowsingUrlChecker implementation.
+  // mojom::SafeBrowsingUrlChecker implementation.
   void CheckUrl(const GURL& url, CheckUrlCallback callback) override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
@@ -278,7 +278,7 @@ void MojoSafeBrowsingImpl::Create(
     scoped_refptr<SafeBrowsingUIManager> ui_manager,
     int render_process_id,
     const service_manager::BindSourceInfo& source_info,
-    chrome::mojom::SafeBrowsingRequest request) {
+    mojom::SafeBrowsingRequest request) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   mojo::MakeStrongBinding(base::MakeUnique<MojoSafeBrowsingImpl>(
                               std::move(database_manager),
@@ -288,7 +288,7 @@ void MojoSafeBrowsingImpl::Create(
 
 void MojoSafeBrowsingImpl::CreateCheckerAndCheck(
     int32_t render_frame_id,
-    chrome::mojom::SafeBrowsingUrlCheckerRequest request,
+    mojom::SafeBrowsingUrlCheckerRequest request,
     const GURL& url,
     int32_t load_flags,
     content::ResourceType resource_type,

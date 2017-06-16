@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
-#include "chrome/common/safe_browsing.mojom.h"
+#include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "components/safe_browsing_db/database_manager.h"
 #include "ipc/ipc_message.h"
 
@@ -20,7 +20,7 @@ namespace safe_browsing {
 
 // This class implements the Mojo interface for renderers to perform
 // SafeBrowsing URL checks.
-class MojoSafeBrowsingImpl : public chrome::mojom::SafeBrowsing {
+class MojoSafeBrowsingImpl : public mojom::SafeBrowsing {
  public:
   MojoSafeBrowsingImpl(
       scoped_refptr<SafeBrowsingDatabaseManager> database_manager,
@@ -33,17 +33,16 @@ class MojoSafeBrowsingImpl : public chrome::mojom::SafeBrowsing {
       scoped_refptr<SafeBrowsingUIManager> ui_manager,
       int render_process_id,
       const service_manager::BindSourceInfo& source_info,
-      chrome::mojom::SafeBrowsingRequest request);
+      mojom::SafeBrowsingRequest request);
 
  private:
-  // chrome::mojom::SafeBrowsing implementation.
-  void CreateCheckerAndCheck(
-      int32_t render_frame_id,
-      chrome::mojom::SafeBrowsingUrlCheckerRequest request,
-      const GURL& url,
-      int32_t load_flags,
-      content::ResourceType resource_type,
-      CreateCheckerAndCheckCallback callback) override;
+  // mojom::SafeBrowsing implementation.
+  void CreateCheckerAndCheck(int32_t render_frame_id,
+                             mojom::SafeBrowsingUrlCheckerRequest request,
+                             const GURL& url,
+                             int32_t load_flags,
+                             content::ResourceType resource_type,
+                             CreateCheckerAndCheckCallback callback) override;
 
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager_;
   scoped_refptr<SafeBrowsingUIManager> ui_manager_;

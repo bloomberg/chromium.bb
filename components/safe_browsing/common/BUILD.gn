@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//mojo/public/tools/bindings/mojom.gni")
+
 source_set("common") {
   sources = [
     "safebrowsing_constants.cc",
@@ -43,5 +45,16 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//components/prefs:test_support",
     "//testing/gtest",
+  ]
+}
+
+mojom("interfaces") {
+  sources = [
+    "safe_browsing.mojom",
+  ]
+
+  public_deps = [
+    "//content/public/common:resource_type_bindings",
+    "//url/mojo:url_mojom_gurl",
   ]
 }
