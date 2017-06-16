@@ -9,7 +9,7 @@
 'use strict';
 promise_test(() => {
   return getHealthThermometerDevice({acceptAllDevices: true})
-    .then(([device]) => assert_promise_rejects_with_message(
+    .then(({device}) => assert_promise_rejects_with_message(
         device.gatt.getPrimaryService('heart_rate'),
         new DOMException('Origin is not allowed to access any service. Tip: ' +
                          'Add the service UUID to \'optionalServices\' in ' +
