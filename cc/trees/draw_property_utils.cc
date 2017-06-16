@@ -355,11 +355,9 @@ static void SetHasContributingLayerThatEscapesClip(int lca_clip_id,
 template <typename LayerType>
 static int TransformTreeIndexForBackfaceVisibility(LayerType* layer,
                                                    const TransformTree& tree) {
-  if (!layer->use_parent_backface_visibility())
+  if (!layer->use_parent_backface_visibility() || !layer->has_transform_node())
     return layer->transform_tree_index();
-  const TransformNode* node = tree.Node(layer->transform_tree_index());
-  return layer->id() == node->owning_layer_id ? tree.parent(node)->id
-                                              : node->id;
+  return tree.Node(layer->transform_tree_index())->parent_id;
 }
 
 static bool IsTargetSpaceTransformBackFaceVisible(
@@ -386,12 +384,8 @@ template <typename LayerType>
 static bool IsLayerBackFaceVisible(LayerType* layer,
                                    int transform_tree_index,
                                    const PropertyTrees* property_trees) {
-  const TransformNode* node =
-      property_trees->transform_tree.Node(transform_tree_index);
-  return layer->use_local_transform_for_backface_visibility()
-             ? node->local.IsBackFaceVisible()
-             : IsTargetSpaceTransformBackFaceVisible(
-                   layer, transform_tree_index, property_trees);
+  return IsTargetSpaceTransformBackFaceVisible(layer, transform_tree_index,
+                                               property_trees);
 }
 
 static inline bool TransformToScreenIsKnown(Layer* layer,
