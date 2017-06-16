@@ -4703,6 +4703,7 @@ test("unit_tests") {
     }
 
     sources += [
+      "../browser/notifications/notification_template_builder_unittest.cc",
       "../browser/ui/desktop_ios_promotion/desktop_ios_promotion_bubble_controller_unittest.cc",
       "../browser/ui/desktop_ios_promotion/desktop_ios_promotion_util_unittest.cc",
       "../browser/ui/desktop_ios_promotion/sms_service_unittest.cc",
