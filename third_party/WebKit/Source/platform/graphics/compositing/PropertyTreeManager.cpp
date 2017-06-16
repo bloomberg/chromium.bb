@@ -74,10 +74,6 @@ void PropertyTreeManager::SetupRootTransformNode() {
       transform_tree.Insert(cc::TransformNode(), kRealRootNodeId));
   DCHECK_EQ(transform_node.id, kSecondaryRootNodeId);
   transform_node.source_node_id = transform_node.parent_id;
-  // Setting owning layer id on cc property tree transform nodes is temporary
-  // until we can remove animation subsystem dependency on layer
-  // references. http://crbug.com/709137
-  transform_node.owning_layer_id = root_layer_->id();
 
   // TODO(jaydasika): We shouldn't set ToScreen and FromScreen of root
   // transform node here. They should be set while updating transform tree in
@@ -165,10 +161,6 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
 
   cc::TransformNode& compositor_node = *GetTransformTree().Node(id);
   compositor_node.source_node_id = parent_id;
-  // Setting owning layer id on cc property tree transform nodes is temporary
-  // until we can remove animation subsystem dependency on layer
-  // references. http://crbug.com/709137
-  compositor_node.owning_layer_id = dummy_layer->id();
 
   FloatPoint3D origin = transform_node->Origin();
   compositor_node.pre_local.matrix().setTranslate(-origin.X(), -origin.Y(),

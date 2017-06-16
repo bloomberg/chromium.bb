@@ -327,7 +327,6 @@ class CC_EXPORT LayerImpl {
   bool HasPotentiallyRunningTransformAnimation() const;
 
   bool HasFilterAnimationThatInflatesBounds() const;
-  bool HasTransformAnimationThatInflatesBounds() const;
   bool HasAnimationThatInflatesBounds() const;
 
   bool FilterAnimationBoundsForBox(const gfx::BoxF& box,

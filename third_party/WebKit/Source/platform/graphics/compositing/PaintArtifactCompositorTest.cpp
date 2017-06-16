@@ -768,7 +768,6 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, OneScrollNode) {
   // Only one content layer, and the first child layer is the dummy layer for
   // the transform node.
   const cc::Layer* transform_node_layer = RootLayer()->children()[0].get();
-  EXPECT_EQ(transform_node_layer->id(), transform_node.owning_layer_id);
   auto transform_node_index = transform_node_layer->transform_tree_index();
   EXPECT_EQ(transform_node_index, transform_node.id);
 
@@ -1700,7 +1699,6 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
   const cc::TransformNode* cc_transform_node =
       GetPropertyTrees().transform_tree.Node(
           transform_node_layer->transform_tree_index());
-  EXPECT_EQ(transform_node_layer->id(), cc_transform_node->owning_layer_id);
   auto transform_node_index = transform_node_layer->transform_tree_index();
   EXPECT_EQ(transform_node_index, cc_transform_node->id);
 }
