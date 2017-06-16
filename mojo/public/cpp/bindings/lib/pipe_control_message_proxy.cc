@@ -9,8 +9,8 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/lib/message_builder.h"
 #include "mojo/public/cpp/bindings/lib/serialization.h"
+#include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/interfaces/bindings/pipe_control_messages.mojom.h"
 
 namespace mojo {
@@ -25,14 +25,12 @@ Message ConstructRunOrClosePipeMessage(
 
   size_t size = internal::PrepareToSerialize<
       pipe_control::RunOrClosePipeMessageParamsDataView>(params_ptr, &context);
-  internal::MessageBuilder builder(pipe_control::kRunOrClosePipeMessageId, 0,
-                                   size, 0);
-
+  Message message(pipe_control::kRunOrClosePipeMessageId, 0, size, 0);
   pipe_control::internal::RunOrClosePipeMessageParams_Data* params = nullptr;
   internal::Serialize<pipe_control::RunOrClosePipeMessageParamsDataView>(
-      params_ptr, builder.buffer(), &params, &context);
-  builder.message()->set_interface_id(kInvalidInterfaceId);
-  return std::move(*builder.message());
+      params_ptr, message.payload_buffer(), &params, &context);
+  message.set_interface_id(kInvalidInterfaceId);
+  return message;
 }
 
 }  // namespace

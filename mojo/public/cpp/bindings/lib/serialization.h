@@ -50,8 +50,7 @@ DataArrayType StructSerializeImpl(UserType* input) {
     DCHECK(IsAligned(result_buffer));
   }
 
-  Buffer buffer;
-  buffer.Initialize(result_buffer, size);
+  Buffer buffer(result_buffer, size);
   typename MojomTypeTraits<MojomType>::Data* data = nullptr;
   Serialize<MojomType>(*input, &buffer, &data, &context);
 
