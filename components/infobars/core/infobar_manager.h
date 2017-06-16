@@ -118,10 +118,10 @@ class InfoBarManager {
 
  private:
   // InfoBars associated with this InfoBarManager.  We own these pointers.
-  // However, this is not a ScopedVector, because we don't delete the infobars
-  // directly once they've been added to this; instead, when we're done with an
-  // infobar, we instruct it to delete itself and then orphan it.  See
-  // RemoveInfoBarInternal().
+  // However, this is not a vector of unique_ptr, because we don't delete the
+  // infobars directly once they've been added to this; instead, when we're
+  // done with an infobar, we instruct it to delete itself and then orphan it.
+  // See RemoveInfoBarInternal().
   typedef std::vector<InfoBar*> InfoBars;
 
   void RemoveInfoBarInternal(InfoBar* infobar, bool animate);

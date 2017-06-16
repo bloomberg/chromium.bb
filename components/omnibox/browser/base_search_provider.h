@@ -255,8 +255,8 @@ class BaseSearchProvider : public AutocompleteProvider {
   bool field_trial_triggered_in_session_;
 
   // Each deletion handler in this vector corresponds to an outstanding request
-  // that a server delete a personalized suggestion. Making this a ScopedVector
-  // causes us to auto-cancel all such requests on shutdown.
+  // that a server delete a personalized suggestion. Making this a vector of
+  // unique_ptr causes us to auto-cancel all such requests on shutdown.
   SuggestionDeletionHandlers deletion_handlers_;
 
   DISALLOW_COPY_AND_ASSIGN(BaseSearchProvider);
