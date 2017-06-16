@@ -32,8 +32,7 @@ bool RegisterJNI(JNIEnv* env) {
 JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved) {
   base::android::InitVM(vm);
   JNIEnv* env = base::android::AttachCurrentThread();
-  if (!base::android::OnJNIOnLoadRegisterJNI(env) || !RegisterJNI(env) ||
-      !base::android::OnJNIOnLoadInit()) {
+  if (!RegisterJNI(env) || !base::android::OnJNIOnLoadInit()) {
     return -1;
   }
   return JNI_VERSION_1_4;

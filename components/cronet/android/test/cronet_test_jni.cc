@@ -41,8 +41,7 @@ const base::android::RegistrationMethod kCronetTestsRegisteredMethods[] = {
 extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved) {
   base::android::InitVM(vm);
   JNIEnv* env = base::android::AttachCurrentThread();
-  if (!base::android::OnJNIOnLoadRegisterJNI(env) ||
-      !base::android::OnJNIOnLoadInit()) {
+  if (!base::android::OnJNIOnLoadInit()) {
     return -1;
   }
 
