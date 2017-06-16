@@ -872,9 +872,8 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_ADS_BLOCKED_LIST" desc="Summary text explaining that the Ads permission is set to block ads on some sites. To be shown in the list of permission categories.">
         Blocked from some sites
       </message>
-      <!-- TODO(csharrison): Mark as translateable when we've confirmed a Site Details UI.-->
-      <message name="IDS_WEBSITE_SETTINGS_PERMISSIONS_ADS_BLOCK" desc="The Blocked string for the ads permission on Site Details" translateable="false">
-         Block if site tends to show intrusive ads (placeholder)
+      <message name="IDS_WEBSITE_SETTINGS_PERMISSIONS_ADS_BLOCK" desc="The Blocked string for the ads permission on Site Details">
+         Block if site tends to show intrusive ads
       </message>
       <message name="IDS_WEBSITE_SETTINGS_CATEGORY_LOCATION_ASK" desc="Summary text explaining that sites need to ask for permission before knowing location and that it is the recommended setting.">
         Ask before allowing sites to know your location (recommended)
