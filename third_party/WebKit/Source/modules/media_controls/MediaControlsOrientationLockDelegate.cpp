@@ -72,6 +72,13 @@ void RecordLockResult(LockResultMetrics metrics) {
   lock_result_histogram.Count(static_cast<int>(metrics));
 }
 
+void RecordAutoRotateEnabled(bool enabled) {
+  DEFINE_STATIC_LOCAL(
+      BooleanHistogram, auto_rotate_histogram,
+      ("Media.Video.FullscreenOrientationLock.AutoRotateEnabled"));
+  auto_rotate_histogram.Count(enabled);
+}
+
 // WebLockOrientationCallback implementation that will not react to a success
 // nor a failure.
 class DummyScreenOrientationCallback : public WebLockOrientationCallback {
@@ -209,6 +216,8 @@ void MediaControlsOrientationLockDelegate::MaybeListenToDeviceOrientation() {
 void MediaControlsOrientationLockDelegate::GotIsAutoRotateEnabledByUser(
     bool enabled) {
   monitor_.reset();
+
+  RecordAutoRotateEnabled(enabled);
 
   if (!enabled) {
     // Since the user has locked their screen orientation, prevent
