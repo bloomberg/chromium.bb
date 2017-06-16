@@ -34,6 +34,30 @@ void TabManager::WebContentsData::DidStartLoading() {
   SetDiscardState(false);
 }
 
+void TabManager::WebContentsData::DidStopLoading() {
+  // We may already be in the stopped state if this is being invoked due to an
+  // iframe loading new content.
+  //
+  // TODO(shaseley): switch to the new done signal (network and cpu quiescence)
+  // when available.
+  if (tab_data_.tab_loading_state != TAB_IS_LOADED) {
+    SetTabLoadingState(TAB_IS_LOADED);
+  }
+}
+
+void TabManager::WebContentsData::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
+  // Only change to the loading state if there is a navigation in the main
+  // frame. DidStartLoading() happens before this, but at that point we don't
+  // know if the load is happening in the main frame or an iframe.
+  //
+  // TODO(shaseley): Consider NavigationThrottle signal when available.
+  if (!navigation_handle->IsInMainFrame())
+    return;
+
+  SetTabLoadingState(TAB_IS_LOADING);
+}
+
 void TabManager::WebContentsData::WebContentsDestroyed() {
   // If Chrome is shutting down, ignore this event.
   if (g_browser_process->IsShuttingDown())
@@ -173,7 +197,8 @@ TabManager::WebContentsData::Data::Data()
       last_reload_time(TimeTicks::UnixEpoch()),
       last_inactive_time(TimeTicks::UnixEpoch()),
       engagement_score(-1.0),
-      is_auto_discardable(true) {}
+      is_auto_discardable(true),
+      tab_loading_state(TAB_IS_NOT_LOADING) {}
 
 bool TabManager::WebContentsData::Data::operator==(const Data& right) const {
   return is_discarded == right.is_discarded &&
@@ -182,7 +207,8 @@ bool TabManager::WebContentsData::Data::operator==(const Data& right) const {
          last_discard_time == right.last_discard_time &&
          last_reload_time == right.last_reload_time &&
          last_inactive_time == right.last_inactive_time &&
-         engagement_score == right.engagement_score;
+         engagement_score == right.engagement_score &&
+         tab_loading_state == right.tab_loading_state;
 }
 
 bool TabManager::WebContentsData::Data::operator!=(const Data& right) const {
