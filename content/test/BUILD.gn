@@ -801,6 +801,7 @@ test("content_browsertests") {
     "//services/ui/gpu/interfaces",
     "//services/ui/public/cpp/gpu",
     "//services/video_capture/public/cpp",
+    "//services/video_capture/public/interfaces:constants",
     "//storage/browser",
     "//testing/gmock",
     "//testing/gtest",
@@ -967,6 +968,7 @@ test("content_browsertests") {
       "../browser/webrtc/webrtc_internals_browsertest.cc",
       "../browser/webrtc/webrtc_ip_permissions_browsertest.cc",
       "../browser/webrtc/webrtc_media_recorder_browsertest.cc",
+      "../browser/webrtc/webrtc_video_capture_browsertest.cc",
       "../browser/webrtc/webrtc_webcam_browsertest.cc",
       "../browser/webrtc/webrtc_webcam_browsertest.h",
     ]
