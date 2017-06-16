@@ -9,6 +9,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
+#include "chrome/browser/offline_pages/resource_loading_observer.h"
 #include "components/offline_pages/content/background_loader/background_loader_contents.h"
 #include "components/offline_pages/core/background/load_termination_listener.h"
 #include "components/offline_pages/core/background/offliner.h"
@@ -30,7 +31,8 @@ class OfflinePageModel;
 // OfflinePageModel to save it. Only one request may be active at a time.
 class BackgroundLoaderOffliner : public Offliner,
                                  public content::WebContentsObserver,
-                                 public SnapshotController::Client {
+                                 public SnapshotController::Client,
+                                 public ResourceLoadingObserver {
  public:
   BackgroundLoaderOffliner(
       content::BrowserContext* browser_context,
@@ -63,7 +65,11 @@ class BackgroundLoaderOffliner : public Offliner,
 
   void SetSnapshotControllerForTest(
       std::unique_ptr<SnapshotController> controller);
-  void OnNetworkBytesChanged(int64_t bytes);
+
+  // ResourceLoadingObserver implemenation
+  void ObserveResourceLoading(ResourceLoadingObserver::ResourceDataType type,
+                              bool started) override;
+  void OnNetworkBytesChanged(int64_t bytes) override;
 
  protected:
   // Called to reset the loader.

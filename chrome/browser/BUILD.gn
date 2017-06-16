@@ -2208,12 +2208,15 @@ split_static_library("browser") {
       "android/offline_pages/request_coordinator_factory.h",
       "offline_pages/background_loader_offliner.cc",
       "offline_pages/background_loader_offliner.h",
+      "offline_pages/offliner_user_data.cc",
+      "offline_pages/offliner_user_data.h",
       "offline_pages/prefetch/offline_metrics_collector_impl.cc",
       "offline_pages/prefetch/offline_metrics_collector_impl.h",
       "offline_pages/prefetch/prefetch_instance_id_proxy.cc",
       "offline_pages/prefetch/prefetch_instance_id_proxy.h",
       "offline_pages/prefetch/prefetch_service_factory.cc",
       "offline_pages/prefetch/prefetch_service_factory.h",
+      "offline_pages/resource_loading_observer.h",
     ]
     if (is_android) {
       sources += [
