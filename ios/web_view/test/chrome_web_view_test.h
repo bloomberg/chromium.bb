@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#import "base/mac/scoped_nsobject.h"
 #include "testing/platform_test.h"
 
 namespace net {
@@ -50,6 +51,10 @@ class ChromeWebViewTest : public PlatformTest {
 
   // PlatformTest methods.
   void SetUp() override;
+
+  // CWVWebView created with default configuration and frame equal to screen
+  // bounds.
+  base::scoped_nsobject<CWVWebView> web_view_;
 
   // Embedded server for handling requests sent to the URLs returned by the
   // GetURL* methods.

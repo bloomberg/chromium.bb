@@ -45,8 +45,8 @@ source_set("test_support") {
   sources = [
     "observer.h",
     "observer.mm",
-    "web_view_interaction_test_util.h",
-    "web_view_interaction_test_util.mm",
+    "web_view_test_util.h",
+    "web_view_test_util.mm",
   ]
 
   deps = [
