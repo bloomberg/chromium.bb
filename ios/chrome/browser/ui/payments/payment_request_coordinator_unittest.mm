@@ -114,23 +114,22 @@ TEST_F(PaymentRequestCoordinatorTest, StartAndStop) {
   [coordinator start];
   // Short delay to allow animation to complete.
   base::test::ios::SpinRunLoopWithMaxDelay(base::TimeDelta::FromSecondsD(1));
-  id presented_view_controller =
-      [coordinator baseViewController].presentedViewController;
-  EXPECT_TRUE([presented_view_controller
+  EXPECT_TRUE([base_view_controller.presentedViewController
       isMemberOfClass:[UINavigationController class]]);
   UINavigationController* navigation_controller =
       base::mac::ObjCCastStrict<UINavigationController>(
-          presented_view_controller);
+          base_view_controller.presentedViewController);
   EXPECT_EQ(1u, navigation_controller.viewControllers.count);
-  id view_controller = navigation_controller.visibleViewController;
-  EXPECT_TRUE(
-      [view_controller isMemberOfClass:[PaymentRequestViewController class]]);
+  EXPECT_TRUE([navigation_controller.visibleViewController
+      isMemberOfClass:[PaymentRequestViewController class]]);
 
   [coordinator stop];
-  // Delay to allow animation to complete.
-  base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(2));
-
-  EXPECT_EQ(nil, [coordinator baseViewController].presentedViewController);
+  // Wait until the animation completes and the presented view controller is
+  // dismissed.
+  base::test::ios::WaitUntilCondition(^bool() {
+    return !base_view_controller.presentedViewController;
+  });
+  EXPECT_EQ(nil, base_view_controller.presentedViewController);
 }
 
 // Tests that calling the card unmasking delegate method which notifies the
