@@ -9,6 +9,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ReceiverCallNotAllowedException;
 import android.os.Build;
 import android.text.SpannableString;
 import android.text.style.LocaleSpan;
@@ -40,13 +41,19 @@ public class LollipopWebContentsAccessibility extends KitKatWebContentsAccessibi
         super(context, containerView, webContents, renderCoordinates, shouldFocusOnPageLoad);
 
         // Cache the system language and set up a listener for when it changes.
-        IntentFilter filter = new IntentFilter(Intent.ACTION_LOCALE_CHANGED);
-        context.registerReceiver(new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                mSystemLanguageTag = Locale.getDefault().toLanguageTag();
-            }
-        }, filter);
+        // TODO(dmazzoni): the try/catch is because this fails in AndroidWebView
+        // sometimes. Is there a different context we can use or is this just not
+        // always possible depending on the app permissions?  http://crbug.com/732933
+        try {
+            IntentFilter filter = new IntentFilter(Intent.ACTION_LOCALE_CHANGED);
+            context.registerReceiver(new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    mSystemLanguageTag = Locale.getDefault().toLanguageTag();
+                }
+            }, filter);
+        } catch (ReceiverCallNotAllowedException e) {
+        }
         mSystemLanguageTag = Locale.getDefault().toLanguageTag();
     }
 
