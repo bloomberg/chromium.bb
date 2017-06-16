@@ -1055,11 +1055,6 @@ const char kEnableNavigationTracingDescription[] =
     "flag. The trace may include personally identifiable information (PII) "
     "such as the titles and URLs of websites you visit.";
 
-const char kEnableNightLightName[] = "Enable Night Light";
-const char kEnableNightLightDescription[] =
-    "Enable the Night Light feature to control the color temperature of the "
-    "screen.";
-
 const char kEnablePictureInPictureName[] = "Enable picture in picture.";
 
 const char kEnablePictureInPictureDescription[] =
@@ -1080,6 +1075,11 @@ const char kDisableAudioForDesktopShareName[] =
 const char kDisableAudioForDesktopShareDescription[] =
     "With this flag on, desktop share picker window will not let the user "
     "choose whether to share audio.";
+
+const char kDisableNightLightName[] = "Disable Night Light";
+const char kDisableNightLightDescription[] =
+    "Disable the Night Light feature which controls the color temperature of "
+    "the screen.";
 
 const char kDisableTabForDesktopShareName[] =
     "Disable Desktop Share with tab source";
