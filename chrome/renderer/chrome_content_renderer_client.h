@@ -16,9 +16,9 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/strings/string16.h"
-#include "chrome/common/safe_browsing.mojom.h"
 #include "chrome/renderer/media/chrome_key_systems_provider.h"
 #include "components/rappor/public/interfaces/rappor_recorder.mojom.h"
+#include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "components/spellcheck/spellcheck_build_features.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "extensions/features/features.h"
@@ -245,7 +245,7 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
 
   chrome::ChromeKeySystemsProvider key_systems_provider_;
 
-  chrome::mojom::SafeBrowsingPtr safe_browsing_;
+  safe_browsing::mojom::SafeBrowsingPtr safe_browsing_;
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
   std::unique_ptr<SpellCheck> spellcheck_;

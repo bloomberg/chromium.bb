@@ -705,17 +705,6 @@ source_set("app_mode_app_support") {
   ]
 }
 
-mojom("once_callback_mojo_bindings") {
-  sources = [
-    "safe_browsing.mojom",
-  ]
-
-  public_deps = [
-    "//content/public/common:resource_type_bindings",
-    "//url/mojo:url_mojom_gurl",
-  ]
-}
-
 mojom("mojo_bindings") {
   sources = [
     "cache_stats_recorder.mojom",
@@ -742,7 +731,6 @@ mojom("mojo_bindings") {
   }
 
   public_deps = [
-    ":once_callback_mojo_bindings",
     "//components/content_settings/core/common:mojo_bindings",
     "//mojo/common:common_custom_types",
     "//ui/gfx/geometry/mojo",
