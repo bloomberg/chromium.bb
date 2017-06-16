@@ -7,6 +7,23 @@
 #include <limits>
 
 #include "base/logging.h"
+#include "base/sys_info.h"
+
+namespace {
+
+base::ThreadPriority GetAudioThreadPriority() {
+#if defined(OS_CHROMEOS)
+  // On Chrome OS, there are priority inversion issues with having realtime
+  // threads on systems with only two cores, see crbug.com/710245.
+  return base::SysInfo::NumberOfProcessors() > 2
+             ? base::ThreadPriority::REALTIME_AUDIO
+             : base::ThreadPriority::NORMAL;
+#else
+  return base::ThreadPriority::REALTIME_AUDIO;
+#endif
+}
+
+}  // namespace
 
 namespace media {
 
@@ -47,8 +64,8 @@ AudioDeviceThread::AudioDeviceThread(Callback* callback,
                                      base::SyncSocket::Handle socket,
                                      const char* thread_name)
     : callback_(callback), thread_name_(thread_name), socket_(socket) {
-  CHECK(base::PlatformThread::CreateWithPriority(
-      0, this, &thread_handle_, base::ThreadPriority::REALTIME_AUDIO));
+  CHECK(base::PlatformThread::CreateWithPriority(0, this, &thread_handle_,
+                                                 GetAudioThreadPriority()));
   DCHECK(!thread_handle_.is_null());
 }
 
