@@ -1212,7 +1212,8 @@ TEST_F(LayerTreeImplTest, HitTestingForMultipleLayerLists) {
 }
 
 TEST_F(LayerTreeImplTest, HitCheckingTouchHandlerRegionsForSingleLayer) {
-  Region touch_handler_region(gfx::Rect(10, 10, 50, 50));
+  TouchActionRegion touch_action_region;
+  touch_action_region.Union(kTouchActionNone, gfx::Rect(10, 10, 50, 50));
 
   LayerImpl* root = root_layer();
   root->SetBounds(gfx::Size(100, 100));
@@ -1233,7 +1234,7 @@ TEST_F(LayerTreeImplTest, HitCheckingTouchHandlerRegionsForSingleLayer) {
           test_point);
   EXPECT_FALSE(result_layer);
 
-  root->SetTouchEventHandlerRegion(touch_handler_region);
+  root->SetTouchActionRegion(touch_action_region);
   // Hit checking for a point outside the layer should return a null pointer.
   test_point = gfx::PointF(101.f, 101.f);
   result_layer =
@@ -1287,13 +1288,14 @@ TEST_F(LayerTreeImplTest,
   uninvertible_transform.matrix().set(3, 3, 0.0);
   ASSERT_FALSE(uninvertible_transform.IsInvertible());
 
-  Region touch_handler_region(gfx::Rect(10, 10, 50, 50));
+  TouchActionRegion touch_action_region;
+  touch_action_region.Union(kTouchActionNone, gfx::Rect(10, 10, 50, 50));
 
   LayerImpl* root = root_layer();
   root->test_properties()->transform = uninvertible_transform;
   root->SetBounds(gfx::Size(100, 100));
   root->SetDrawsContent(true);
-  root->SetTouchEventHandlerRegion(touch_handler_region);
+  root->SetTouchActionRegion(touch_action_region);
 
   host_impl().SetViewportSize(root->bounds());
   host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
@@ -1352,7 +1354,8 @@ TEST_F(LayerTreeImplTest,
 
 TEST_F(LayerTreeImplTest,
        HitCheckingTouchHandlerRegionsForSinglePositionedLayer) {
-  Region touch_handler_region(gfx::Rect(10, 10, 50, 50));
+  TouchActionRegion touch_action_region;
+  touch_action_region.Union(kTouchActionNone, gfx::Rect(10, 10, 50, 50));
 
   // This layer is positioned, and hit testing should correctly know where the
   // layer is located.
@@ -1360,7 +1363,7 @@ TEST_F(LayerTreeImplTest,
   root->SetPosition(gfx::PointF(50.f, 50.f));
   root->SetBounds(gfx::Size(100, 100));
   root->SetDrawsContent(true);
-  root->SetTouchEventHandlerRegion(touch_handler_region);
+  root->SetTouchActionRegion(touch_action_region);
 
   host_impl().SetViewportSize(root->bounds());
   host_impl().UpdateNumChildrenAndDrawPropertiesForActiveTree();
@@ -1419,7 +1422,8 @@ TEST_F(LayerTreeImplTest,
   LayerImpl* root = root_layer();
   root->SetBounds(gfx::Size(100, 100));
   {
-    Region touch_handler_region(gfx::Rect(10, 10, 30, 30));
+    TouchActionRegion touch_action_region;
+    touch_action_region.Union(kTouchActionNone, gfx::Rect(10, 10, 30, 30));
     gfx::PointF position(25.f, 25.f);
     gfx::Size bounds(50, 50);
     std::unique_ptr<LayerImpl> test_layer =
@@ -1427,7 +1431,7 @@ TEST_F(LayerTreeImplTest,
     test_layer->SetPosition(gfx::PointF(25.f, 25.f));
     test_layer->SetBounds(gfx::Size(50, 50));
     test_layer->SetDrawsContent(true);
-    test_layer->SetTouchEventHandlerRegion(touch_handler_region);
+    test_layer->SetTouchActionRegion(touch_action_region);
     root->test_properties()->AddChild(std::move(test_layer));
   }
 
@@ -1564,14 +1568,15 @@ TEST_F(LayerTreeImplTest, HitCheckingTouchHandlerRegionsForSimpleClippedLayer) {
     clipping_layer->SetBounds(gfx::Size(50, 50));
     clipping_layer->SetMasksToBounds(true);
 
-    Region touch_handler_region(gfx::Rect(10, 10, 50, 50));
+    TouchActionRegion touch_action_region;
+    touch_action_region.Union(kTouchActionNone, gfx::Rect(10, 10, 50, 50));
 
     std::unique_ptr<LayerImpl> child =
         LayerImpl::Create(host_impl().active_tree(), 456);
     child->SetPosition(gfx::PointF(-50.f, -50.f));
     child->SetBounds(gfx::Size(300, 300));
     child->SetDrawsContent(true);
-    child->SetTouchEventHandlerRegion(touch_handler_region);
+    child->SetTouchActionRegion(touch_action_region);
     clipping_layer->test_properties()->AddChild(std::move(child));
     root->test_properties()->AddChild(std::move(clipping_layer));
   }
@@ -1647,14 +1652,15 @@ TEST_F(LayerTreeImplTest,
     clipping_layer->SetBounds(gfx::Size(50, 50));
     clipping_layer->SetMasksToBounds(true);
 
-    Region touch_handler_region(gfx::Rect(0, 0, 300, 300));
+    TouchActionRegion touch_action_region;
+    touch_action_region.Union(kTouchActionNone, gfx::Rect(0, 0, 300, 300));
 
     std::unique_ptr<LayerImpl> child =
         LayerImpl::Create(host_impl().active_tree(), 456);
     child->SetPosition(gfx::PointF(-50.f, -50.f));
     child->SetBounds(gfx::Size(300, 300));
     child->SetDrawsContent(true);
-    child->SetTouchEventHandlerRegion(touch_handler_region);
+    child->SetTouchActionRegion(touch_action_region);
     clipping_layer->test_properties()->AddChild(std::move(child));
     surface->test_properties()->AddChild(std::move(clipping_layer));
     root->test_properties()->AddChild(std::move(surface));
@@ -1717,7 +1723,9 @@ TEST_F(LayerTreeImplTest, HitCheckingTouchHandlerOverlappingRegions) {
     // layer is located.
     touch_layer->SetBounds(gfx::Size(50, 50));
     touch_layer->SetDrawsContent(true);
-    touch_layer->SetTouchEventHandlerRegion(gfx::Rect(0, 0, 50, 50));
+    TouchActionRegion touch_action_region;
+    touch_action_region.Union(kTouchActionNone, gfx::Rect(0, 0, 50, 50));
+    touch_layer->SetTouchActionRegion(touch_action_region);
     root->test_properties()->AddChild(std::move(touch_layer));
   }
 
@@ -1782,12 +1790,13 @@ TEST_F(LayerTreeImplTest, HitTestingTouchHandlerRegionsForLayerThatIsNotDrawn) {
   root->SetBounds(gfx::Size(100, 100));
   root->SetDrawsContent(true);
   {
-    Region touch_handler_region(gfx::Rect(10, 10, 30, 30));
+    TouchActionRegion touch_action_region;
+    touch_action_region.Union(kTouchActionNone, gfx::Rect(10, 10, 30, 30));
     std::unique_ptr<LayerImpl> test_layer =
         LayerImpl::Create(host_impl().active_tree(), 12345);
     test_layer->SetBounds(gfx::Size(50, 50));
     test_layer->SetDrawsContent(false);
-    test_layer->SetTouchEventHandlerRegion(touch_handler_region);
+    test_layer->SetTouchActionRegion(touch_action_region);
     root->test_properties()->AddChild(std::move(test_layer));
   }
   host_impl().SetViewportSize(root->bounds());

@@ -119,6 +119,8 @@ cc_component("cc") {
     "layers/texture_layer_client.h",
     "layers/texture_layer_impl.cc",
     "layers/texture_layer_impl.h",
+    "layers/touch_action_region.cc",
+    "layers/touch_action_region.h",
     "layers/ui_resource_layer.cc",
     "layers/ui_resource_layer.h",
     "layers/ui_resource_layer_impl.cc",

@@ -9525,7 +9525,10 @@ TEST_F(LayerTreeHostCommonTest, LayerWithInputHandlerAndZeroOpacity) {
   test_layer->test_properties()->transform = translation;
   test_layer->SetBounds(gfx::Size(20, 20));
   test_layer->SetDrawsContent(true);
-  test_layer->SetTouchEventHandlerRegion(gfx::Rect(0, 0, 20, 20));
+
+  TouchActionRegion touch_action_region;
+  touch_action_region.Union(kTouchActionNone, gfx::Rect(0, 0, 20, 20));
+  test_layer->SetTouchActionRegion(std::move(touch_action_region));
   test_layer->test_properties()->opacity = 0.f;
 
   ExecuteCalculateDrawProperties(root);
