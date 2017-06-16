@@ -284,7 +284,27 @@ void RenderWidgetHostInputEventRouter::RouteMouseWheelEvent(
                        event->PositionInWidget().y),
             target, &transformed_point))
       return;
-  } else {
+  } else if (root_view->wheel_scroll_latching_enabled()) {
+    if (event->phase == blink::WebMouseWheelEvent::kPhaseBegan) {
+      wheel_target_.target = FindEventTarget(
+          root_view,
+          gfx::Point(event->PositionInWidget().x, event->PositionInWidget().y),
+          &transformed_point);
+      wheel_target_.delta =
+          transformed_point -
+          gfx::Point(event->PositionInWidget().x, event->PositionInWidget().y);
+      target = wheel_target_.target;
+    } else {
+      if (wheel_target_.target) {
+        target = wheel_target_.target;
+        transformed_point = gfx::Point(event->PositionInWidget().x,
+                                       event->PositionInWidget().y) +
+                            wheel_target_.delta;
+      }
+    }
+
+  } else {  // !root_view->IsMouseLocked() &&
+            // !root_view->wheel_scroll_latching_enabled()
     target = FindEventTarget(
         root_view,
         gfx::Point(event->PositionInWidget().x, event->PositionInWidget().y),
@@ -296,6 +316,12 @@ void RenderWidgetHostInputEventRouter::RouteMouseWheelEvent(
 
   event->SetPositionInWidget(transformed_point.x(), transformed_point.y());
   target->ProcessMouseWheelEvent(*event, latency);
+
+  DCHECK(root_view->wheel_scroll_latching_enabled() || !wheel_target_.target);
+  if (event->phase == blink::WebMouseWheelEvent::kPhaseEnded ||
+      event->momentum_phase == blink::WebMouseWheelEvent::kPhaseEnded) {
+    wheel_target_.target = nullptr;
+  }
 }
 
 void RenderWidgetHostInputEventRouter::RouteGestureEvent(
