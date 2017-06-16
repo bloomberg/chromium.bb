@@ -243,7 +243,9 @@ void ContentSettingBubbleContents::Init() {
 
   if (!bubble_content.message.empty()) {
     views::Label* message_label = new views::Label(bubble_content.message);
-    layout->AddPaddingRow(0, unrelated_control_vertical_spacing);
+    // For bubble's without titles there is no need for padding.
+    if (!bubble_content.title.empty())
+      layout->AddPaddingRow(0, unrelated_control_vertical_spacing);
     message_label->SetMultiLine(true);
     message_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     layout->StartRow(0, kSingleColumnSetId);

@@ -47,6 +47,7 @@
 #include "components/rappor/public/rappor_utils.h"
 #include "components/rappor/rappor_service_impl.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/url_formatter/elide_url.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
@@ -1233,34 +1234,36 @@ ContentSettingSubresourceFilterBubbleModel::
   SetTitle();
   SetMessage();
   SetManageText();
+  set_done_button_text(l10n_util::GetStringUTF16(IDS_OK));
   ChromeSubresourceFilterClient::LogAction(kActionDetailsShown);
 }
 
 ContentSettingSubresourceFilterBubbleModel::
     ~ContentSettingSubresourceFilterBubbleModel() {}
 
-void ContentSettingSubresourceFilterBubbleModel::SetTitle() {
-  set_title(
-      l10n_util::GetStringUTF16(IDS_FILTERED_DECEPTIVE_CONTENT_PROMPT_TITLE));
-}
+void ContentSettingSubresourceFilterBubbleModel::SetTitle() {}
 
 void ContentSettingSubresourceFilterBubbleModel::SetManageText() {
-  set_manage_text(
-      l10n_util::GetStringUTF16(IDS_FILTERED_DECEPTIVE_CONTENT_PROMPT_RELOAD));
+  // The experimental UI includes the permission UI, which allows us to
+  // guarantee that we will "Always" show ads on the site. For users without the
+  // permission UI, avoid saying "Always" since the user action will be scoped
+  // to the tab only.
+  set_manage_text(l10n_util::GetStringUTF16(
+      base::FeatureList::IsEnabled(
+          subresource_filter::kSafeBrowsingSubresourceFilterExperimentalUI)
+          ? IDS_ALWAYS_ALLOW_ADS
+          : IDS_ALLOW_ADS));
   set_show_manage_text_as_checkbox(true);
 }
 
 void ContentSettingSubresourceFilterBubbleModel::SetMessage() {
-  set_message(l10n_util::GetStringUTF16(
-      IDS_FILTERED_DECEPTIVE_CONTENT_PROMPT_EXPLANATION));
+  set_message(l10n_util::GetStringUTF16(IDS_BLOCKED_ADS_PROMPT_EXPLANATION));
 }
 
 void ContentSettingSubresourceFilterBubbleModel::OnManageCheckboxChecked(
     bool is_checked) {
-  if (is_checked)
-    set_done_button_text(l10n_util::GetStringUTF16(IDS_APP_MENU_RELOAD));
-  else
-    set_done_button_text(base::string16());
+  set_done_button_text(
+      l10n_util::GetStringUTF16(is_checked ? IDS_APP_MENU_RELOAD : IDS_OK));
   is_checked_ = is_checked;
 }
 

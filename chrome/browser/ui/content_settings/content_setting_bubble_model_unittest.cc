@@ -937,19 +937,15 @@ TEST_F(ContentSettingBubbleModelTest, SubresourceFilter) {
                                                      profile()));
   const ContentSettingBubbleModel::BubbleContent& bubble_content =
       content_setting_bubble_model->bubble_content();
-  EXPECT_EQ(
-      bubble_content.title,
-      l10n_util::GetStringUTF16(IDS_FILTERED_DECEPTIVE_CONTENT_PROMPT_TITLE));
+  EXPECT_TRUE(bubble_content.title.empty());
   EXPECT_EQ(bubble_content.message,
-            l10n_util::GetStringUTF16(
-                IDS_FILTERED_DECEPTIVE_CONTENT_PROMPT_EXPLANATION));
+            l10n_util::GetStringUTF16(IDS_BLOCKED_ADS_PROMPT_EXPLANATION));
   EXPECT_EQ(0U, bubble_content.radio_group.radio_items.size());
   EXPECT_EQ(0, bubble_content.radio_group.default_item);
   EXPECT_TRUE(bubble_content.custom_link.empty());
   EXPECT_FALSE(bubble_content.custom_link_enabled);
-  EXPECT_EQ(
-      bubble_content.manage_text,
-      l10n_util::GetStringUTF16(IDS_FILTERED_DECEPTIVE_CONTENT_PROMPT_RELOAD));
+  EXPECT_EQ(bubble_content.manage_text,
+            l10n_util::GetStringUTF16(IDS_ALLOW_ADS));
   EXPECT_EQ(0U, bubble_content.media_menus.size());
 }
 
