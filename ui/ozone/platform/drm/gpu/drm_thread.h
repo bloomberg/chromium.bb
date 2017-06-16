@@ -101,7 +101,7 @@ class DrmThread : public base::Thread, public ozone::mojom::DeviceCursor {
   void RefreshNativeDisplays(
       base::OnceCallback<void(MovableDisplaySnapshots)> callback);
   void ConfigureNativeDisplay(int64_t id,
-                              std::unique_ptr<const display::DisplayMode> mode,
+                              std::unique_ptr<display::DisplayMode> mode,
                               const gfx::Point& origin,
                               base::OnceCallback<void(int64_t, bool)> callback);
   void DisableNativeDisplay(int64_t id,
