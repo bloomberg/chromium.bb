@@ -52,31 +52,35 @@ Otherwise, file a bug (TODO: [Make this template automatic](https://github.com/c
  * Change the bug's title from `X%` to `XXkb`
  * Assign to commit author
  * Set description to (replacing **bold** parts):
-   > Caused by "**First line of commit message**"
-   >
-   > Commit: **abc123abc123abc123abc123abc123abc123abcd**
-   >
-   > Link to size graph:
-   > [https://chromeperf.appspot.com/report?sid=a097e74b1aa288511afb4cb616efe0f95ba4d347ad61d5e835072f23450938ba&rev=**440074**](https://chromeperf.appspot.com/report?sid=cfc29eed1238fd38fb5e6cf83bdba6c619be621b606e03e5dfc2e99db14c418b&rev=440074)
-   >
-   > Debugging size regressions is documented at:
-   > https://chromium.googlesource.com/chromium/src/+/master/tools/perf/docs/apk_size_regressions.md#Debugging-Apk-Size-Increase
-   >
-   > **Optional:**
-   >
-   > It looks to me that the size increase is expected. Feel free to close as
-   > "Won't Fix", unless you can see some way to reduce size.
-   >
-   > **Optional:**
-   >
-   > It looks like there is something that could be done to reduce the size
-   > here. Adding ReleaseBlock-Stable.
 
-Optional, but encouraged:
- * In a follow-up comment, run:
-   ``` sh
-   tools/binary_size/diagnose_bloat.py GIT_REV --cloud
-   ```
+> Caused by "**First line of commit message**"
+>
+> Commit: **abc123abc123abc123abc123abc123abc123abcd**
+>
+> Link to size graph:
+> [https://chromeperf.appspot.com/report?sid=a097e74b1aa288511afb4cb616efe0f95ba4d347ad61d5e835072f23450938ba&rev=**440074**](https://chromeperf.appspot.com/report?sid=cfc29eed1238fd38fb5e6cf83bdba6c619be621b606e03e5dfc2e99db14c418b&rev=440074)
+>
+> Debugging size regressions is documented at:
+> https://chromium.googlesource.com/chromium/src/+/master/docs/speed/apk_size_regressions.md#Debugging-Apk-Size-Increase
+
+Optional, but encouraged: In a follow-up comment, provide some analysis:
+
+> Based on the graph: 20kb of native code, 8kb of pngs.
+>
+> **Optional:**
+>
+> It looks to me that the size increase is expected. Feel free to close as
+> "Won't Fix", unless you can see some way to reduce size.
+>
+> **Optional:**
+>
+> It looks like there is something that could be done to reduce the size
+> here. Adding ReleaseBlock-Stable.
+
+And if you really feel like it, run:
+``` sh
+tools/binary_size/diagnose_bloat.py GIT_REV --cloud
+```
  * Paste relevant output into the bug.
 
 # Debugging Apk Size Increase
