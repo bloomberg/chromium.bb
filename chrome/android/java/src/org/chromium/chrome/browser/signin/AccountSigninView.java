@@ -295,7 +295,12 @@ public class AccountSigninView extends FrameLayout {
                         && (mAccountNames.isEmpty()
                                    || mAccountNames.get(accountToSelect)
                                               .equals(oldAccountNames.get(oldSelectedAccount)));
-                if (selectedAccountChanged) {
+                // There is a race condition where the FragmentManager can be null. This
+                // presumably happens once the AccountSigninView has been detached (the bug is
+                // triggered when Chrome is hidden). Since we are detached, the dialogs will
+                // have already been deleted so we don't need to cancel them.
+                // https://crbug.com/733117
+                if (selectedAccountChanged && mDelegate.getFragmentManager() != null) {
                     // Any dialogs that may have been showing are now invalid (they were created
                     // for the previously selected account).
                     ConfirmSyncDataStateMachine.cancelAllDialogs(mDelegate.getFragmentManager());
