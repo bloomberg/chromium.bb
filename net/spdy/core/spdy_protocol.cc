@@ -386,9 +386,7 @@ void SpdyUnknownIR::Visit(SpdyFrameVisitor* visitor) const {
 }
 
 SpdyFrameType SpdyUnknownIR::frame_type() const {
-  // TODO(birenroy): Remove the fake EXTENSION value from the SpdyFrameType
-  // enum.
-  return SpdyFrameType::EXTENSION;
+  return static_cast<SpdyFrameType>(type());
 }
 
 }  // namespace net
