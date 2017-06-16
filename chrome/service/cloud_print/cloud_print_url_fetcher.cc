@@ -90,9 +90,10 @@ CloudPrintURLFetcherFactory* g_test_factory = nullptr;
 CloudPrintURLFetcherFactory::~CloudPrintURLFetcherFactory() {}
 
 // static
-CloudPrintURLFetcher* CloudPrintURLFetcher::Create() {
+CloudPrintURLFetcher* CloudPrintURLFetcher::Create(
+    const net::PartialNetworkTrafficAnnotationTag& partial_traffic_annotation) {
   return g_test_factory ? g_test_factory->CreateCloudPrintURLFetcher()
-                        : new CloudPrintURLFetcher;
+                        : new CloudPrintURLFetcher(partial_traffic_annotation);
 }
 
 // static
@@ -128,11 +129,12 @@ CloudPrintURLFetcher::Delegate::HandleJSONData(
   return CONTINUE_PROCESSING;
 }
 
-CloudPrintURLFetcher::CloudPrintURLFetcher()
+CloudPrintURLFetcher::CloudPrintURLFetcher(
+    const net::PartialNetworkTrafficAnnotationTag& partial_traffic_annotation)
     : delegate_(NULL),
       num_retries_(0),
-      type_(REQUEST_MAX) {
-}
+      type_(REQUEST_MAX),
+      partial_traffic_annotation_(partial_traffic_annotation) {}
 
 bool CloudPrintURLFetcher::IsSameRequest(const net::URLFetcher* source) {
   return (request_.get() == source);
@@ -259,7 +261,27 @@ void CloudPrintURLFetcher::StartRequestHelper(
                             REQUEST_MAX);
   // Persist the additional headers in case we need to retry the request.
   additional_headers_ = additional_headers;
-  request_ = net::URLFetcher::Create(0, url, request_type, this);
+  net::NetworkTrafficAnnotationTag traffic_annotation =
+      net::CompleteNetworkTrafficAnnotation("cloud_print",
+                                            partial_traffic_annotation_,
+                                            R"(
+          semantics {
+            sender: "Cloud Print"
+            destination: GOOGLE_OWNED_SERVICE
+          }
+          policy {
+            cookies_allowed: false
+            setting:
+              "This feature cannot be disabled by settings."
+            chrome_policy {
+              CloudPrintProxyEnabled {
+                policy_options {mode: MANDATORY}
+                CloudPrintProxyEnabled: false
+              }
+            }
+          })");
+  request_ =
+      net::URLFetcher::Create(0, url, request_type, this, traffic_annotation);
   data_use_measurement::DataUseUserData::AttachToFetcher(
       request_.get(), data_use_measurement::DataUseUserData::CLOUD_PRINT);
   request_->SetRequestContext(GetRequestContextGetter());

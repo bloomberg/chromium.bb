@@ -15,6 +15,7 @@
 #include "chrome/service/cloud_print/connector_settings.h"
 #include "chrome/service/cloud_print/print_system.h"
 #include "chrome/service/cloud_print/printer_job_handler.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace cloud_print {
 
@@ -39,7 +40,10 @@ class CloudPrintConnector
      virtual ~Client() {}
   };
 
-  CloudPrintConnector(Client* client, const ConnectorSettings& settings);
+  CloudPrintConnector(Client* client,
+                      const ConnectorSettings& settings,
+                      const net::PartialNetworkTrafficAnnotationTag&
+                          partial_traffic_annotation);
 
   bool Start();
   void Stop();
@@ -198,6 +202,9 @@ class CloudPrintConnector
   scoped_refptr<CloudPrintURLFetcher> request_;
   // The CloudPrintURLFetcher instance for the user message request.
   scoped_refptr<CloudPrintURLFetcher> user_message_request_;
+  // Partial network traffic annotation for network requests.
+  const net::PartialNetworkTrafficAnnotationTag partial_traffic_annotation_;
+
   base::WeakPtrFactory<CloudPrintConnector> stats_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudPrintConnector);

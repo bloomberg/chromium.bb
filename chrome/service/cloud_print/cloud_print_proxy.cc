@@ -228,7 +228,20 @@ void CloudPrintProxy::OnUnregisterPrinters(
   ShutdownBackend();
   ConnectorSettings settings;
   settings.InitFrom(service_prefs_);
-  wipeout_.reset(new CloudPrintWipeout(this, settings.server_url()));
+  net::PartialNetworkTrafficAnnotationTag partial_traffic_annotation =
+      net::DefinePartialNetworkTrafficAnnotation("cloud_print_proxy",
+                                                 "cloud_print", R"(
+          semantics {
+            description:
+              "Sends a request to Cloud Print to unregister one or more "
+              "printers."
+            trigger:
+              "User request of unregistering printers or a change of an admin "
+              "policy regarding Cloud Print."
+            data: "OAuth2 token and list of printer ids to unregister."
+          })");
+  wipeout_.reset(new CloudPrintWipeout(this, settings.server_url(),
+                                       partial_traffic_annotation));
   wipeout_->UnregisterPrinters(auth_token, printer_ids);
 }
 

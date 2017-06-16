@@ -43,11 +43,13 @@ CloudPrintAuth::CloudPrintAuth(
     Client* client,
     const GURL& cloud_print_server_url,
     const gaia::OAuthClientInfo& oauth_client_info,
-    const std::string& proxy_id)
-      : client_(client),
-        oauth_client_info_(oauth_client_info),
-        cloud_print_server_url_(cloud_print_server_url),
-        proxy_id_(proxy_id) {
+    const std::string& proxy_id,
+    const net::PartialNetworkTrafficAnnotationTag& partial_traffic_annotation)
+    : client_(client),
+      oauth_client_info_(oauth_client_info),
+      cloud_print_server_url_(cloud_print_server_url),
+      proxy_id_(proxy_id),
+      partial_traffic_annotation_(partial_traffic_annotation) {
   DCHECK(client);
 }
 
@@ -64,7 +66,7 @@ void CloudPrintAuth::AuthenticateWithToken(
   GURL get_authcode_url = GetUrlForGetAuthCode(cloud_print_server_url_,
                                                oauth_client_info_.client_id,
                                                proxy_id_);
-  request_ = CloudPrintURLFetcher::Create();
+  request_ = CloudPrintURLFetcher::Create(partial_traffic_annotation_);
   request_->StartGetRequest(CloudPrintURLFetcher::REQUEST_AUTH_CODE,
                             get_authcode_url, this,
                             kCloudPrintAuthMaxRetryCount, std::string());

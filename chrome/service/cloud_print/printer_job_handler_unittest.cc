@@ -21,6 +21,7 @@
 #include "chrome/service/cloud_print/print_system.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_util.h"
@@ -253,7 +254,8 @@ class CloudPrintURLFetcherNoServiceProcess
     : public CloudPrintURLFetcher {
  public:
   CloudPrintURLFetcherNoServiceProcess()
-      : context_getter_(new net::TestURLRequestContextGetter(
+      : CloudPrintURLFetcher(PARTIAL_TRAFFIC_ANNOTATION_FOR_TESTS),
+        context_getter_(new net::TestURLRequestContextGetter(
             base::ThreadTaskRunnerHandle::Get())) {}
 
  protected:

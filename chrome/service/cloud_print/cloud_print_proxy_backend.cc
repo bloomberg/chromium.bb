@@ -33,6 +33,7 @@
 #include "jingle/notifier/base/notifier_options.h"
 #include "jingle/notifier/listener/push_client.h"
 #include "jingle/notifier/listener/push_client_observer.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "url/gurl.h"
 
 namespace cloud_print {
@@ -263,13 +264,24 @@ bool CloudPrintProxyBackend::Core::CurrentlyOnCoreThread() const {
 }
 
 void CloudPrintProxyBackend::Core::CreateAuthAndConnector() {
+  net::PartialNetworkTrafficAnnotationTag partial_traffic_annotation =
+      net::DefinePartialNetworkTrafficAnnotation("cloud_print_backend",
+                                                 "cloud_print", R"(
+            semantics {
+              description:
+                "Creates and authenticates connection with Cloud Print."
+              trigger: "Cloud Print service intialization."
+              data: "OAuth2 token."
+            })");
   if (!auth_.get()) {
-    auth_ = new CloudPrintAuth(this, settings_.server_url(), oauth_client_info_,
-                               settings_.proxy_id());
+    auth_ =
+        new CloudPrintAuth(this, settings_.server_url(), oauth_client_info_,
+                           settings_.proxy_id(), partial_traffic_annotation);
   }
 
   if (!connector_.get()) {
-    connector_ = new CloudPrintConnector(this, settings_);
+    connector_ =
+        new CloudPrintConnector(this, settings_, partial_traffic_annotation);
   }
 }
 
