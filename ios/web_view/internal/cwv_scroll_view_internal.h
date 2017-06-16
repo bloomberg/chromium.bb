@@ -5,7 +5,6 @@
 #ifndef IOS_WEB_VIEW_INTERNAL_CWV_SCROLL_VIEW_INTERNAL_H_
 #define IOS_WEB_VIEW_INTERNAL_CWV_SCROLL_VIEW_INTERNAL_H_
 
-#import <ChromeWebView/cwv_export.h>
 #import <Foundation/Foundation.h>
 
 #import "ios/web_view/public/cwv_scroll_view.h"

@@ -7,6 +7,8 @@
 
 #import <CoreGraphics/CoreGraphics.h>
 
+#import "cwv_export.h"
+
 @class CWVScrollView;
 
 // Delegete for CWVScrollView.

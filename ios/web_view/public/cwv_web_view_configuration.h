@@ -5,8 +5,9 @@
 #ifndef IOS_WEB_VIEW_PUBLIC_CWV_WEB_VIEW_CONFIGURATION_H_
 #define IOS_WEB_VIEW_PUBLIC_CWV_WEB_VIEW_CONFIGURATION_H_
 
-#import <ChromeWebView/cwv_export.h>
 #import <Foundation/Foundation.h>
+
+#import "cwv_export.h"
 
 @class CWVUserContentController;
 @class CWVWebsiteDataStore;
