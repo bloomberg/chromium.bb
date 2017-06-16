@@ -108,8 +108,13 @@ scoped_refptr<GLSurface> CreateOffscreenGLSurfaceWithFormat(
           new UnmappedNativeViewGLSurfaceGLX(size), format);
     case kGLImplementationSwiftShaderGL:
     case kGLImplementationEGLGLES2:
-      return InitializeGLSurfaceWithFormat(
-          new PbufferGLSurfaceEGL(size), format);
+      if (GLSurfaceEGL::IsEGLSurfacelessContextSupported() &&
+          size.width() == 0 && size.height() == 0) {
+        return InitializeGLSurfaceWithFormat(new SurfacelessEGL(size), format);
+      } else {
+        return InitializeGLSurfaceWithFormat(new PbufferGLSurfaceEGL(size),
+                                             format);
+      }
     case kGLImplementationMockGL:
     case kGLImplementationStubGL:
       return new GLSurfaceStub;
