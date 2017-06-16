@@ -68,7 +68,11 @@ class MemoryCacheTest : public ::testing::Test {
 
   class FakeResource final : public Resource {
    public:
-    static FakeResource* Create(const ResourceRequest& request, Type type) {
+    static FakeResource* Create(const char* url, Type type) {
+      return Create(KURL(kParsedURLString, url), type);
+    }
+    static FakeResource* Create(const KURL& url, Type type) {
+      ResourceRequest request(url);
       ResourceLoaderOptions options(kDoNotAllowStoredCredentials,
                                     kClientDidNotRequestCredentials);
       return new FakeResource(request, type, options);
@@ -112,8 +116,8 @@ TEST_F(MemoryCacheTest, VeryLargeResourceAccounting) {
   const size_t kResourceSize1 = kSizeMax / 16;
   const size_t kResourceSize2 = kSizeMax / 20;
   GetMemoryCache()->SetCapacity(kTotalCapacity);
-  FakeResource* cached_resource = FakeResource::Create(
-      ResourceRequest("http://test/resource"), Resource::kRaw);
+  FakeResource* cached_resource =
+      FakeResource::Create("http://test/resource", Resource::kRaw);
   cached_resource->FakeEncodedSize(kResourceSize1);
 
   EXPECT_EQ(0u, GetMemoryCache()->size());
@@ -164,7 +168,7 @@ static void TestResourcePruningAtEndOfTask(Resource* resource1,
 
   // Enforce pruning by adding |dummyResource| and then call prune().
   Resource* dummy_resource =
-      RawResource::Create(ResourceRequest("http://dummy"), Resource::kRaw);
+      RawResource::CreateForTest("http://dummy", Resource::kRaw);
   GetMemoryCache()->Add(dummy_resource);
   EXPECT_GT(GetMemoryCache()->size(), 1u);
   const unsigned kTotalCapacity = 1;
@@ -317,19 +321,19 @@ TEST_F(MemoryCacheTest, ClientRemoval_MultipleResourceMaps) {
 }
 
 TEST_F(MemoryCacheTest, RemoveDuringRevalidation) {
-  FakeResource* resource1 = FakeResource::Create(
-      ResourceRequest("http://test/resource"), Resource::kRaw);
+  FakeResource* resource1 =
+      FakeResource::Create("http://test/resource", Resource::kRaw);
   GetMemoryCache()->Add(resource1);
 
-  FakeResource* resource2 = FakeResource::Create(
-      ResourceRequest("http://test/resource"), Resource::kRaw);
+  FakeResource* resource2 =
+      FakeResource::Create("http://test/resource", Resource::kRaw);
   GetMemoryCache()->Remove(resource1);
   GetMemoryCache()->Add(resource2);
   EXPECT_TRUE(GetMemoryCache()->Contains(resource2));
   EXPECT_FALSE(GetMemoryCache()->Contains(resource1));
 
-  FakeResource* resource3 = FakeResource::Create(
-      ResourceRequest("http://test/resource"), Resource::kRaw);
+  FakeResource* resource3 =
+      FakeResource::Create("http://test/resource", Resource::kRaw);
   GetMemoryCache()->Remove(resource2);
   GetMemoryCache()->Add(resource3);
   EXPECT_TRUE(GetMemoryCache()->Contains(resource3));
@@ -337,12 +341,12 @@ TEST_F(MemoryCacheTest, RemoveDuringRevalidation) {
 }
 
 TEST_F(MemoryCacheTest, ResourceMapIsolation) {
-  FakeResource* resource1 = FakeResource::Create(
-      ResourceRequest("http://test/resource"), Resource::kRaw);
+  FakeResource* resource1 =
+      FakeResource::Create("http://test/resource", Resource::kRaw);
   GetMemoryCache()->Add(resource1);
 
-  FakeResource* resource2 = FakeResource::Create(
-      ResourceRequest("http://test/resource"), Resource::kRaw);
+  FakeResource* resource2 =
+      FakeResource::Create("http://test/resource", Resource::kRaw);
   resource2->SetCacheIdentifier("foo");
   GetMemoryCache()->Add(resource2);
   EXPECT_TRUE(GetMemoryCache()->Contains(resource1));
@@ -355,8 +359,8 @@ TEST_F(MemoryCacheTest, ResourceMapIsolation) {
   EXPECT_EQ(resource2, GetMemoryCache()->ResourceForURL(url, "foo"));
   EXPECT_EQ(0, GetMemoryCache()->ResourceForURL(KURL()));
 
-  FakeResource* resource3 = FakeResource::Create(
-      ResourceRequest("http://test/resource"), Resource::kRaw);
+  FakeResource* resource3 =
+      FakeResource::Create("http://test/resource", Resource::kRaw);
   resource3->SetCacheIdentifier("foo");
   GetMemoryCache()->Remove(resource2);
   GetMemoryCache()->Add(resource3);
@@ -375,8 +379,7 @@ TEST_F(MemoryCacheTest, ResourceMapIsolation) {
 
 TEST_F(MemoryCacheTest, FragmentIdentifier) {
   const KURL url1 = KURL(kParsedURLString, "http://test/resource#foo");
-  FakeResource* resource =
-      FakeResource::Create(ResourceRequest(url1), Resource::kRaw);
+  FakeResource* resource = FakeResource::Create(url1, Resource::kRaw);
   GetMemoryCache()->Add(resource);
   EXPECT_TRUE(GetMemoryCache()->Contains(resource));
 
@@ -389,7 +392,7 @@ TEST_F(MemoryCacheTest, FragmentIdentifier) {
 TEST_F(MemoryCacheTest, RemoveURLFromCache) {
   const KURL url1 = KURL(kParsedURLString, "http://test/resource1");
   Persistent<FakeResource> resource1 =
-      FakeResource::Create(ResourceRequest(url1), Resource::kRaw);
+      FakeResource::Create(url1, Resource::kRaw);
   GetMemoryCache()->Add(resource1);
   EXPECT_TRUE(GetMemoryCache()->Contains(resource1));
 
@@ -397,8 +400,7 @@ TEST_F(MemoryCacheTest, RemoveURLFromCache) {
   EXPECT_FALSE(GetMemoryCache()->Contains(resource1));
 
   const KURL url2 = KURL(kParsedURLString, "http://test/resource2#foo");
-  FakeResource* resource2 =
-      FakeResource::Create(ResourceRequest(url2), Resource::kRaw);
+  FakeResource* resource2 = FakeResource::Create(url2, Resource::kRaw);
   GetMemoryCache()->Add(resource2);
   EXPECT_TRUE(GetMemoryCache()->Contains(resource2));
 

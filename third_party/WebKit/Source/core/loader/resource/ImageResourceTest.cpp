@@ -349,8 +349,7 @@ TEST(ImageResourceTest, MultipartImage) {
 
   // Emulate starting a real load, but don't expect any "real"
   // WebURLLoaderClient callbacks.
-  ImageResource* image_resource =
-      ImageResource::Create(ResourceRequest(test_url));
+  ImageResource* image_resource = ImageResource::CreateForTest(test_url);
   image_resource->SetIdentifier(CreateUniqueIdentifier());
   fetcher->StartLoad(image_resource);
 
@@ -431,8 +430,7 @@ TEST(ImageResourceTest, CancelOnRemoveObserver) {
   ResourceFetcher* fetcher = CreateFetcher();
 
   // Emulate starting a real load.
-  ImageResource* image_resource =
-      ImageResource::Create(ResourceRequest(test_url));
+  ImageResource* image_resource = ImageResource::CreateForTest(test_url);
   image_resource->SetIdentifier(CreateUniqueIdentifier());
 
   fetcher->StartLoad(image_resource);
@@ -456,7 +454,7 @@ TEST(ImageResourceTest, CancelOnRemoveObserver) {
 }
 
 TEST(ImageResourceTest, DecodedDataRemainsWhileHasClients) {
-  ImageResource* image_resource = ImageResource::Create(ResourceRequest());
+  ImageResource* image_resource = ImageResource::CreateForTest(KURL());
   image_resource->SetStatus(ResourceStatus::kPending);
   image_resource->NotifyStartLoad();
 
@@ -499,7 +497,7 @@ TEST(ImageResourceTest, DecodedDataRemainsWhileHasClients) {
 }
 
 TEST(ImageResourceTest, UpdateBitmapImages) {
-  ImageResource* image_resource = ImageResource::Create(ResourceRequest());
+  ImageResource* image_resource = ImageResource::CreateForTest(KURL());
   image_resource->SetStatus(ResourceStatus::kPending);
   image_resource->NotifyStartLoad();
 
@@ -524,8 +522,7 @@ TEST(ImageResourceTest, UpdateBitmapImages) {
 TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderAfterFinished) {
   KURL test_url(kParsedURLString, kTestURL);
   ScopedMockedURLLoad scoped_mocked_url_load(test_url, GetTestFilePath());
-  ResourceRequest request = ResourceRequest(test_url);
-  ImageResource* image_resource = ImageResource::Create(request);
+  ImageResource* image_resource = ImageResource::CreateForTest(test_url);
   image_resource->SetStatus(ResourceStatus::kPending);
   image_resource->NotifyStartLoad();
 
@@ -569,8 +566,7 @@ TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderAfterFinished) {
 TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderAfterFinishedWithOldHeaders) {
   KURL test_url(kParsedURLString, kTestURL);
   ScopedMockedURLLoad scoped_mocked_url_load(test_url, GetTestFilePath());
-  ResourceRequest request = ResourceRequest(test_url);
-  ImageResource* image_resource = ImageResource::Create(request);
+  ImageResource* image_resource = ImageResource::CreateForTest(test_url);
   image_resource->SetStatus(ResourceStatus::kPending);
   image_resource->NotifyStartLoad();
 
@@ -614,7 +610,7 @@ TEST(ImageResourceTest,
      ReloadIfLoFiOrPlaceholderAfterFinishedWithoutLoFiHeaders) {
   KURL test_url(kParsedURLString, kTestURL);
   ScopedMockedURLLoad scoped_mocked_url_load(test_url, GetTestFilePath());
-  ResourceRequest request = ResourceRequest(test_url);
+  ResourceRequest request(test_url);
   request.SetPreviewsState(WebURLRequest::kServerLoFiOn);
   ImageResource* image_resource = ImageResource::Create(request);
   image_resource->SetStatus(ResourceStatus::kPending);
@@ -768,7 +764,7 @@ TEST(ImageResourceTest, ReloadIfLoFiOrPlaceholderForPlaceholder) {
 
 TEST(ImageResourceTest, SVGImage) {
   KURL url(kParsedURLString, "http://127.0.0.1:8000/foo");
-  ImageResource* image_resource = ImageResource::Create(ResourceRequest(url));
+  ImageResource* image_resource = ImageResource::CreateForTest(url);
   std::unique_ptr<MockImageResourceObserver> observer =
       MockImageResourceObserver::Create(image_resource->GetContent());
 
@@ -785,7 +781,7 @@ TEST(ImageResourceTest, SVGImage) {
 
 TEST(ImageResourceTest, SVGImageWithSubresource) {
   KURL url(kParsedURLString, "http://127.0.0.1:8000/foo");
-  ImageResource* image_resource = ImageResource::Create(ResourceRequest(url));
+  ImageResource* image_resource = ImageResource::CreateForTest(url);
   std::unique_ptr<MockImageResourceObserver> observer =
       MockImageResourceObserver::Create(image_resource->GetContent());
 
@@ -830,7 +826,7 @@ TEST(ImageResourceTest, SVGImageWithSubresource) {
 
 TEST(ImageResourceTest, SuccessfulRevalidationJpeg) {
   KURL url(kParsedURLString, "http://127.0.0.1:8000/foo");
-  ImageResource* image_resource = ImageResource::Create(ResourceRequest(url));
+  ImageResource* image_resource = ImageResource::CreateForTest(url);
   std::unique_ptr<MockImageResourceObserver> observer =
       MockImageResourceObserver::Create(image_resource->GetContent());
 
@@ -868,7 +864,7 @@ TEST(ImageResourceTest, SuccessfulRevalidationJpeg) {
 
 TEST(ImageResourceTest, SuccessfulRevalidationSvg) {
   KURL url(kParsedURLString, "http://127.0.0.1:8000/foo");
-  ImageResource* image_resource = ImageResource::Create(ResourceRequest(url));
+  ImageResource* image_resource = ImageResource::CreateForTest(url);
   std::unique_ptr<MockImageResourceObserver> observer =
       MockImageResourceObserver::Create(image_resource->GetContent());
 
@@ -902,7 +898,7 @@ TEST(ImageResourceTest, SuccessfulRevalidationSvg) {
 
 TEST(ImageResourceTest, FailedRevalidationJpegToJpeg) {
   KURL url(kParsedURLString, "http://127.0.0.1:8000/foo");
-  ImageResource* image_resource = ImageResource::Create(ResourceRequest(url));
+  ImageResource* image_resource = ImageResource::CreateForTest(url);
   std::unique_ptr<MockImageResourceObserver> observer =
       MockImageResourceObserver::Create(image_resource->GetContent());
 
@@ -937,7 +933,7 @@ TEST(ImageResourceTest, FailedRevalidationJpegToJpeg) {
 
 TEST(ImageResourceTest, FailedRevalidationJpegToSvg) {
   KURL url(kParsedURLString, "http://127.0.0.1:8000/foo");
-  ImageResource* image_resource = ImageResource::Create(ResourceRequest(url));
+  ImageResource* image_resource = ImageResource::CreateForTest(url);
   std::unique_ptr<MockImageResourceObserver> observer =
       MockImageResourceObserver::Create(image_resource->GetContent());
 
@@ -971,7 +967,7 @@ TEST(ImageResourceTest, FailedRevalidationJpegToSvg) {
 
 TEST(ImageResourceTest, FailedRevalidationSvgToJpeg) {
   KURL url(kParsedURLString, "http://127.0.0.1:8000/foo");
-  ImageResource* image_resource = ImageResource::Create(ResourceRequest(url));
+  ImageResource* image_resource = ImageResource::CreateForTest(url);
   std::unique_ptr<MockImageResourceObserver> observer =
       MockImageResourceObserver::Create(image_resource->GetContent());
 
@@ -1005,7 +1001,7 @@ TEST(ImageResourceTest, FailedRevalidationSvgToJpeg) {
 
 TEST(ImageResourceTest, FailedRevalidationSvgToSvg) {
   KURL url(kParsedURLString, "http://127.0.0.1:8000/foo");
-  ImageResource* image_resource = ImageResource::Create(ResourceRequest(url));
+  ImageResource* image_resource = ImageResource::CreateForTest(url);
   std::unique_ptr<MockImageResourceObserver> observer =
       MockImageResourceObserver::Create(image_resource->GetContent());
 
@@ -1039,7 +1035,7 @@ TEST(ImageResourceTest, FailedRevalidationSvgToSvg) {
 
 TEST(ImageResourceTest, AddClientAfterPrune) {
   KURL url(kParsedURLString, "http://127.0.0.1:8000/foo");
-  ImageResource* image_resource = ImageResource::Create(ResourceRequest(url));
+  ImageResource* image_resource = ImageResource::CreateForTest(url);
 
   // Adds a ResourceClient but not ImageResourceObserver.
   Persistent<MockResourceClient> client1 =
@@ -1597,8 +1593,7 @@ TEST(ImageResourceTest, PeriodicFlushTest) {
       platform;
   KURL test_url(kParsedURLString, kTestURL);
   ScopedMockedURLLoad scoped_mocked_url_load(test_url, GetTestFilePath());
-  ResourceRequest request = ResourceRequest(test_url);
-  ImageResource* image_resource = ImageResource::Create(request);
+  ImageResource* image_resource = ImageResource::CreateForTest(test_url);
   image_resource->SetStatus(ResourceStatus::kPending);
   image_resource->NotifyStartLoad();
 

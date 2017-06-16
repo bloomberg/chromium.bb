@@ -58,12 +58,13 @@ class CORE_EXPORT ImageResource final
  public:
   using ClientType = ResourceClient;
 
-  // Use ImageResourceContent::fetch() unless ImageResource is required.
-  // TODO(hiroshige): Make fetch() private.
+  // Use ImageResourceContent::Fetch() unless ImageResource is required.
+  // TODO(hiroshige): Make Fetch() private.
   static ImageResource* Fetch(FetchParameters&, ResourceFetcher*);
 
-  // TODO(hiroshige): Make create() test-only by refactoring ImageDocument.
+  // TODO(hiroshige): Make Create() test-only by refactoring ImageDocument.
   static ImageResource* Create(const ResourceRequest&);
+  static ImageResource* CreateForTest(const KURL&);
 
   ~ImageResource() override;
 

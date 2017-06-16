@@ -207,7 +207,7 @@ class SubresourceIntegrityTest : public ::testing::Test {
       response.SetHTTPHeaderField("access-control-allow-credentials", "true");
     }
     Resource* resource =
-        RawResource::Create(ResourceRequest(response.Url()), Resource::kRaw);
+        RawResource::CreateForTest(response.Url(), Resource::kRaw);
     resource->SetResponse(response);
     return resource;
   }

@@ -60,8 +60,8 @@ class MemoryCacheCorrectnessTest : public ::testing::Test {
   MockResource* ResourceFromResourceResponse(ResourceResponse response) {
     if (response.Url().IsNull())
       response.SetURL(KURL(kParsedURLString, kResourceURL));
-    MockResource* resource =
-        MockResource::Create(ResourceRequest(response.Url()));
+    ResourceRequest request(response.Url());
+    MockResource* resource = MockResource::Create(request);
     resource->SetResponse(response);
     resource->Finish();
     GetMemoryCache()->Add(resource);
@@ -351,8 +351,8 @@ TEST_F(MemoryCacheCorrectnessTest, FreshWithFreshRedirect) {
   const char kRedirectTargetUrlString[] = "http://redirect-target.com";
   KURL redirect_target_url(kParsedURLString, kRedirectTargetUrlString);
 
-  MockResource* first_resource =
-      MockResource::Create(ResourceRequest(redirect_url));
+  ResourceRequest request(redirect_url);
+  MockResource* first_resource = MockResource::Create(request);
 
   ResourceResponse fresh301_response;
   fresh301_response.SetURL(redirect_url);
@@ -391,8 +391,8 @@ TEST_F(MemoryCacheCorrectnessTest, FreshWithStaleRedirect) {
   const char kRedirectTargetUrlString[] = "http://redirect-target.com";
   KURL redirect_target_url(kParsedURLString, kRedirectTargetUrlString);
 
-  MockResource* first_resource =
-      MockResource::Create(ResourceRequest(redirect_url));
+  ResourceRequest request(redirect_url);
+  MockResource* first_resource = MockResource::Create(request);
 
   ResourceResponse stale301_response;
   stale301_response.SetURL(redirect_url);
@@ -428,8 +428,7 @@ TEST_F(MemoryCacheCorrectnessTest, FreshWithStaleRedirect) {
 TEST_F(MemoryCacheCorrectnessTest, PostToSameURLTwice) {
   ResourceRequest request1(KURL(kParsedURLString, kResourceURL));
   request1.SetHTTPMethod(HTTPNames::POST);
-  RawResource* resource1 =
-      RawResource::Create(ResourceRequest(request1.Url()), Resource::kRaw);
+  RawResource* resource1 = RawResource::Create(request1, Resource::kRaw);
   resource1->SetStatus(ResourceStatus::kPending);
   GetMemoryCache()->Add(resource1);
 
@@ -448,7 +447,7 @@ TEST_F(MemoryCacheCorrectnessTest, 302RedirectNotImplicitlyFresh) {
   KURL redirect_target_url(kParsedURLString, kRedirectTargetUrlString);
 
   RawResource* first_resource =
-      RawResource::Create(ResourceRequest(redirect_url), Resource::kRaw);
+      RawResource::CreateForTest(redirect_url, Resource::kRaw);
 
   ResourceResponse fresh302_response;
   fresh302_response.SetURL(redirect_url);
@@ -488,8 +487,8 @@ TEST_F(MemoryCacheCorrectnessTest, 302RedirectExplicitlyFreshMaxAge) {
   const char kRedirectTargetUrlString[] = "http://redirect-target.com";
   KURL redirect_target_url(kParsedURLString, kRedirectTargetUrlString);
 
-  MockResource* first_resource =
-      MockResource::Create(ResourceRequest(redirect_url));
+  ResourceRequest request(redirect_url);
+  MockResource* first_resource = MockResource::Create(request);
 
   ResourceResponse fresh302_response;
   fresh302_response.SetURL(redirect_url);
@@ -528,8 +527,8 @@ TEST_F(MemoryCacheCorrectnessTest, 302RedirectExplicitlyFreshExpires) {
   const char kRedirectTargetUrlString[] = "http://redirect-target.com";
   KURL redirect_target_url(kParsedURLString, kRedirectTargetUrlString);
 
-  MockResource* first_resource =
-      MockResource::Create(ResourceRequest(redirect_url));
+  ResourceRequest request(redirect_url);
+  MockResource* first_resource = MockResource::Create(request);
 
   ResourceResponse fresh302_response;
   fresh302_response.SetURL(redirect_url);

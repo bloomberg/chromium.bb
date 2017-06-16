@@ -44,7 +44,7 @@ ResourceResponse CreateTestResourceResponse() {
 void CreateTestResourceAndSetCachedMetadata(const ResourceResponse& response) {
   const char kTestData[] = "test data";
   Resource* resource =
-      RawResource::Create(ResourceRequest(response.Url()), Resource::kRaw);
+      RawResource::CreateForTest(response.Url(), Resource::kRaw);
   resource->SetResponse(response);
   resource->CacheHandler()->SetCachedMetadata(
       100, kTestData, sizeof(kTestData),
@@ -77,8 +77,7 @@ TEST(ResourceTest, RevalidateWithFragment) {
   ResourceResponse response;
   response.SetURL(url);
   response.SetHTTPStatusCode(200);
-  Resource* resource =
-      RawResource::Create(ResourceRequest(url), Resource::kRaw);
+  Resource* resource = RawResource::CreateForTest(url, Resource::kRaw);
   resource->ResponseReceived(response, nullptr);
   resource->Finish();
 
@@ -99,8 +98,7 @@ TEST(ResourceTest, Vary) {
   response.SetURL(url);
   response.SetHTTPStatusCode(200);
 
-  Resource* resource =
-      RawResource::Create(ResourceRequest(url), Resource::kRaw);
+  Resource* resource = RawResource::CreateForTest(url, Resource::kRaw);
   resource->ResponseReceived(response, nullptr);
   resource->Finish();
 

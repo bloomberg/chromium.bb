@@ -40,6 +40,7 @@
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/loader/fetch/ResourceLoadingLog.h"
 #include "platform/network/HTTPParsers.h"
+#include "platform/weborigin/KURL.h"
 #include "platform/weborigin/SecurityViolationReportingPolicy.h"
 #include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/StdLibExtras.h"
@@ -198,6 +199,11 @@ ImageResource* ImageResource::Create(const ResourceRequest& request) {
                                 kClientDidNotRequestCredentials);
   return new ImageResource(request, options,
                            ImageResourceContent::CreateNotStarted(), false);
+}
+
+ImageResource* ImageResource::CreateForTest(const KURL& url) {
+  ResourceRequest request(url);
+  return Create(request);
 }
 
 ImageResource::ImageResource(const ResourceRequest& resource_request,
