@@ -9,9 +9,9 @@
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/ThreadSafeRefCounted.h"
-#include "third_party/skia/include/core/SkData.h"
-#include "third_party/skia/include/core/SkRWBuffer.h"
-#include "third_party/skia/include/core/SkRefCnt.h"
+
+class SkData;
+class SkROBuffer;
 
 namespace blink {
 

@@ -31,15 +31,19 @@
 #ifndef BMPImageDecoder_h
 #define BMPImageDecoder_h
 
-#include "platform/image-decoders/bmp/BMPImageReader.h"
 #include <memory>
+#include "platform/image-decoders/ImageDecoder.h"
 
 namespace blink {
+
+class BMPImageReader;
 
 // This class decodes the BMP image format.
 class PLATFORM_EXPORT BMPImageDecoder final : public ImageDecoder {
  public:
   BMPImageDecoder(AlphaOption, const ColorBehavior&, size_t max_decoded_bytes);
+
+  ~BMPImageDecoder() override;
 
   // ImageDecoder:
   String FilenameExtension() const override { return "bmp"; }

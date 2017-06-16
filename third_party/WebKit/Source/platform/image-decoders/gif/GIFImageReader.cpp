@@ -75,6 +75,7 @@ mailing address.
 #include "platform/image-decoders/gif/GIFImageReader.h"
 
 #include <string.h>
+#include "platform/image-decoders/FastSharedBufferReader.h"
 #include "platform/wtf/PtrUtil.h"
 
 namespace blink {

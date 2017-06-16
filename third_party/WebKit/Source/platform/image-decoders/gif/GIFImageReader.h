@@ -41,13 +41,14 @@
 // Define ourselves as the clientPtr.  Mozilla just hacked their C++ callback
 // class into this old C decoder, so we will too.
 #include <memory>
-#include "platform/image-decoders/FastSharedBufferReader.h"
 #include "platform/image-decoders/gif/GIFImageDecoder.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Noncopyable.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {
+
+class FastSharedBufferReader;
 
 const int kCLoopCountNotSeen = -2;
 
