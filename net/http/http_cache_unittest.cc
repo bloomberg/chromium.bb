@@ -858,12 +858,13 @@ TEST(HttpCache, SimpleGETWithDiskFailures3) {
 
   cache.disk_cache()->set_soft_failures(true);
 
+  MockHttpRequest request(kSimpleGET_Transaction);
+
   // Now fail to read from the cache.
   auto c = base::MakeUnique<Context>();
   int rv = cache.CreateTransaction(&c->trans);
   ASSERT_THAT(rv, IsOk());
 
-  MockHttpRequest request(kSimpleGET_Transaction);
   rv = c->trans->Start(&request, c->callback.callback(), NetLogWithSource());
   EXPECT_THAT(c->callback.GetResult(rv), IsOk());
 
@@ -7971,10 +7972,10 @@ TEST(HttpCache, FilterCompletion) {
   TestCompletionCallback callback;
 
   {
+    MockHttpRequest request(kSimpleGET_Transaction);
     std::unique_ptr<HttpTransaction> trans;
     ASSERT_THAT(cache.CreateTransaction(&trans), IsOk());
 
-    MockHttpRequest request(kSimpleGET_Transaction);
     int rv = trans->Start(&request, callback.callback(), NetLogWithSource());
     EXPECT_THAT(callback.GetResult(rv), IsOk());
 
@@ -8006,11 +8007,11 @@ TEST(HttpCache, DoneReading) {
 
   ScopedMockTransaction transaction(kSimpleGET_Transaction);
   transaction.data = "";
+  MockHttpRequest request(transaction);
 
   std::unique_ptr<HttpTransaction> trans;
   ASSERT_THAT(cache.CreateTransaction(&trans), IsOk());
 
-  MockHttpRequest request(transaction);
   int rv = trans->Start(&request, callback.callback(), NetLogWithSource());
   EXPECT_THAT(callback.GetResult(rv), IsOk());
 
@@ -8536,6 +8537,7 @@ TEST(HttpCache, TruncatedByContentLength2) {
 TEST(HttpCache, SetPriority) {
   MockHttpCache cache;
 
+  HttpRequestInfo info;
   std::unique_ptr<HttpTransaction> trans;
   ASSERT_THAT(cache.http_cache()->CreateTransaction(IDLE, &trans), IsOk());
 
@@ -8546,7 +8548,6 @@ TEST(HttpCache, SetPriority) {
   EXPECT_EQ(DEFAULT_PRIORITY,
             cache.network_layer()->last_create_transaction_priority());
 
-  HttpRequestInfo info;
   info.url = GURL(kSimpleGET_Transaction.url);
   TestCompletionCallback callback;
   EXPECT_EQ(ERR_IO_PENDING,
@@ -8572,6 +8573,7 @@ TEST(HttpCache, SetPriority) {
 // transaction passes on its argument to the underlying network transaction.
 TEST(HttpCache, SetWebSocketHandshakeStreamCreateHelper) {
   MockHttpCache cache;
+  HttpRequestInfo info;
 
   FakeWebSocketHandshakeStreamCreateHelper create_helper;
   std::unique_ptr<HttpTransaction> trans;
@@ -8579,7 +8581,6 @@ TEST(HttpCache, SetWebSocketHandshakeStreamCreateHelper) {
 
   EXPECT_FALSE(cache.network_layer()->last_transaction());
 
-  HttpRequestInfo info;
   info.url = GURL(kSimpleGET_Transaction.url);
   TestCompletionCallback callback;
   EXPECT_EQ(ERR_IO_PENDING,

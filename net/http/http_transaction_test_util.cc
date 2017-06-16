@@ -239,7 +239,12 @@ MockNetworkTransaction::MockNetworkTransaction(RequestPriority priority,
       done_reading_called_(false),
       weak_factory_(this) {}
 
-MockNetworkTransaction::~MockNetworkTransaction() {}
+MockNetworkTransaction::~MockNetworkTransaction() {
+  // Use request_ as in ~HttpNetworkTransaction to make sure its valid and not
+  // already freed by the consumer. See crbug.com/734037.
+  if (request_)
+    DCHECK(request_->load_flags >= 0);
+}
 
 int MockNetworkTransaction::Start(const HttpRequestInfo* request,
                                   const CompletionCallback& callback,

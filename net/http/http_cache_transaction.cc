@@ -1822,11 +1822,14 @@ int HttpCache::Transaction::DoHeadersPhaseCannotProceed() {
   // failure, restart this transaction.
   DCHECK(!reading_);
 
+  // Reset before invoking SetRequest() which can reset the request info sent to
+  // network transaction.
+  if (network_trans_)
+    network_trans_.reset();
+
   SetRequest(net_log_);
 
   entry_ = nullptr;
-  if (network_trans_)
-    network_trans_.reset();
 
   TransitionToState(STATE_GET_BACKEND);
   return OK;
@@ -2054,16 +2057,18 @@ int HttpCache::Transaction::DoCacheWriteTruncatedResponseComplete(int result) {
 //-----------------------------------------------------------------------------
 
 void HttpCache::Transaction::SetRequest(const NetLogWithSource& net_log) {
+  net_log_ = net_log;
+
   // Reset the variables that might get set in this function. This is done
   // because this function can be invoked multiple times for a transaction.
   cache_entry_status_ = CacheEntryStatus::ENTRY_UNDEFINED;
   external_validation_.Reset();
   range_requested_ = false;
   partial_.reset();
+
+  request_ = initial_request_;
   custom_request_.reset();
 
-  net_log_ = net_log;
-  request_ = initial_request_;
   effective_load_flags_ = request_->load_flags;
   method_ = request_->method;
 
@@ -2148,6 +2153,8 @@ void HttpCache::Transaction::SetRequest(const NetLogWithSource& net_log) {
     if (method_ == "GET" && partial_->Init(request_->extra_headers)) {
       // We will be modifying the actual range requested to the server, so
       // let's remove the header here.
+      // Note that custom_request_ is a shallow copy so will keep the same
+      // pointer to upload data stream as in the original request.
       custom_request_.reset(new HttpRequestInfo(*request_));
       custom_request_->extra_headers.RemoveHeader(HttpRequestHeaders::kRange);
       request_ = custom_request_.get();
