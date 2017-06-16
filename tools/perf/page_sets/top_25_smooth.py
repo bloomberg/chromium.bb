@@ -157,7 +157,8 @@ class Top25SmoothPageSet(story.StorySet):
         #'http://www.cnn.com',
         # Why: #1 world commerce website by visits; #3 commerce in the US by
         # time spent
-        'http://www.amazon.com',
+        # crbug.com/667432
+        #'http://www.amazon.com',
         # Why: #1 commerce website by time spent by users in US
         'http://www.ebay.com',
         # Why: #1 Alexa recreation
