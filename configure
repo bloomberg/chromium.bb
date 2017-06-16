@@ -501,6 +501,7 @@ post_process_cmdline() {
     soft_enable wedge
     soft_enable compound_segment
     soft_enable interintra
+    soft_enable one_sided_compound
 
     # Backwards/jenkins compatibility with --enable-aom-highbitdepth
     enabled aom_highbitdepth && enable_feature highbitdepth
