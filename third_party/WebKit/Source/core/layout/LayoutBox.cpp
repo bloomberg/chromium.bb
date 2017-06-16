@@ -2584,6 +2584,15 @@ void LayoutBox::InflateVisualRectForFilter(
 
 static bool ShouldRecalculateMinMaxWidthsAffectedByAncestor(
     const LayoutBox* box) {
+  if (box->PreferredLogicalWidthsDirty()) {
+    // If the preferred widths are already dirty at this point (during layout),
+    // it actually means that we never need to calculate them, since that should
+    // have been carried out by an ancestor that's sized based on preferred
+    // widths (a shrink-to-fit container, for instance). In such cases the
+    // object will be left as dirty indefinitely, and it would just be a waste
+    // of time to calculate the preferred withs when nobody needs them.
+    return false;
+  }
   if (const LayoutBox* containing_block = box->ContainingBlock()) {
     if (containing_block->NeedsPreferredWidthsRecalculation()) {
       // If our containing block also has min/max widths that are affected by
