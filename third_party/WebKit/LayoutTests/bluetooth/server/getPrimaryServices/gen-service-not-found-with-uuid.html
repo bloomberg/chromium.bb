@@ -11,7 +11,7 @@ promise_test(() => {
   return getHealthThermometerDevice({
       filters: [{services: ['health_thermometer']}],
       optionalServices: ['glucose']})
-    .then(([device]) => assert_promise_rejects_with_message(
+    .then(({device}) => assert_promise_rejects_with_message(
       device.gatt.getPrimaryServices('glucose'),
       new DOMException(
         'No Services matching UUID ' + glucose.uuid + ' found in Device.',

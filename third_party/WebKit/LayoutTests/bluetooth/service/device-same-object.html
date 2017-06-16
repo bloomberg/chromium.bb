@@ -9,7 +9,7 @@
 promise_test(() => {
   return getHealthThermometerDevice({
       filters: [{services: ['health_thermometer']}]})
-    .then(([device]) => device.gatt.getPrimaryService('health_thermometer'))
+    .then(({device}) => device.gatt.getPrimaryService('health_thermometer'))
     .then(service => {
       assert_equals(service.device, service.device);
     });

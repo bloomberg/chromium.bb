@@ -7,9 +7,9 @@
 <script>
 'use strict';
 promise_test(() => {
-  return getHealthThermometerDevice({
+  return getTwoHealthThermometerServicesDevice({
     filters: [{services: ['health_thermometer']}]})
-    .then(([device]) => Promise.all([
+    .then(({device}) => Promise.all([
       device.gatt.getPrimaryServices(health_thermometer.alias),
       device.gatt.getPrimaryServices(health_thermometer.name),
       device.gatt.getPrimaryServices(health_thermometer.uuid)]))

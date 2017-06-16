@@ -8,7 +8,7 @@
 'use strict';
 promise_test(() => {
   return getEmptyHealthThermometerDevice()
-    .then(([device]) => assert_promise_rejects_with_message(
+    .then(({device}) => assert_promise_rejects_with_message(
       device.gatt.getPrimaryServices(),
       new DOMException('No Services found in device.', 'NotFoundError')));
 }, 'Request for services in a device with no services. Reject with ' +
