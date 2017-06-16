@@ -101,7 +101,7 @@ const char* GetTestGaiaId() {
 
 const char* GetTestUser() {
 #if defined(OS_CHROMEOS)
-  return user_manager::kStubUser;
+  return user_manager::kStubUserEmail;
 #else
   return "user@example.com";
 #endif

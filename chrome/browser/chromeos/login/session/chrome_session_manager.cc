@@ -87,7 +87,7 @@ void StartLoginOobeSession() {
 // 2. Chrome is restarted for Guest session.
 // 3. Chrome is started in browser_tests skipping the login flow.
 // 4. Chrome is started on dev machine i.e. not on Chrome OS device w/o
-//    login flow. In that case --login-user=[user_manager::kStubUser] is
+//    login flow. In that case --login-user=[user_manager::kStubUserEmail] is
 //    added. See PreEarlyInitialization().
 void StartUserSession(Profile* user_profile, const std::string& login_user_id) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();

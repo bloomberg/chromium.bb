@@ -34,27 +34,25 @@ class FixedAccountManager {
  private:
   friend struct base::DefaultSingletonTraits<FixedAccountManager>;
 
-  FixedAccountManager();
+  FixedAccountManager() = default;
 
-  const AccountId stub_account_id_;
-  const AccountId signin_account_id_;
-  const AccountId guest_account_id_;
-  const AccountId demo_account_id_;
+  const AccountId stub_account_id_ =
+      AccountId::FromUserEmailGaiaId(user_manager::kStubUserEmail,
+                                     user_manager::kStubUserId);
+  const AccountId signin_account_id_ = AccountId::FromUserEmail(kSignInUser);
+  const AccountId guest_account_id_ =
+      AccountId::FromUserEmail(user_manager::kGuestUserName);
+  const AccountId demo_account_id_ = AccountId::FromUserEmail(kDemoUserName);
 
   DISALLOW_COPY_AND_ASSIGN(FixedAccountManager);
 };
-
-FixedAccountManager::FixedAccountManager()
-    : stub_account_id_(AccountId::FromUserEmail(user_manager::kStubUser)),
-      signin_account_id_(AccountId::FromUserEmail(kSignInUser)),
-      guest_account_id_(AccountId::FromUserEmail(user_manager::kGuestUserName)),
-      demo_account_id_(AccountId::FromUserEmail(kDemoUserName)) {}
 
 }  // namespace
 
 namespace user_manager {
 
-const char kStubUser[] = "stub-user@example.com";
+const char kStubUserEmail[] = "stub-user@example.com";
+const char kStubUserId[] = "1234567890123456789012";
 
 // Should match cros constant in platform/libchromeos/chromeos/cryptohome.h
 const char kGuestUserName[] = "$guest";

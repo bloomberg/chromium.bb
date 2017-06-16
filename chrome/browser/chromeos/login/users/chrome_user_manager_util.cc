@@ -14,7 +14,7 @@ namespace chrome_user_manager_util {
 bool GetPlatformKnownUserId(const std::string& user_email,
                             const std::string& gaia_id,
                             AccountId* out_account_id) {
-  if (user_email == user_manager::kStubUser) {
+  if (user_email == user_manager::kStubUserEmail) {
     *out_account_id = user_manager::StubAccountId();
     return true;
   }
