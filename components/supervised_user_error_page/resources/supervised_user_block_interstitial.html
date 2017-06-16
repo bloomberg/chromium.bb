@@ -1,10 +1,10 @@
 <!doctype html>
-<html i18n-values="dir:textdirection;lang:language">
+<html dir="$i18n{textdirection}" lang="$i18n{language}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport"
     content="initial-scale=1, minimum-scale=1, width=device-width">
-<title i18n-content="blockPageTitle"></title>
+<title>$i18n{blockPageTitle}</title>
 <link rel="stylesheet" href="supervised_user_block_interstitial.css">
 <script src="../../../ui/webui/resources/js/cr.js"></script>
 <script src="../../../ui/webui/resources/js/util.js"></script>
@@ -15,11 +15,10 @@
   <div id="information-container">
     <div class="icon" id="icon"></div>
     <div id="main-message">
-      <h1 id="block-page-header" i18n-content="blockPageHeader"></h1>
-      <p id="block-page-message" i18n-content="blockPageMessage"></p>
-      <h1 id="request-failed-message" i18n-content="requestFailedMessage"
-          hidden></h1>
-      <h1 id="request-sent-message" i18n-content="requestSentMessage" hidden></h1>
+      <h1 id="block-page-header">$i18n{blockPageHeader}</h1>
+      <p id="block-page-message">$i18n{blockPageMessage}</p>
+      <h1 id="request-failed-message" hidden>$i18n{requestFailedMessage}</h1>
+      <h1 id="request-sent-message" hidden>$i18n{requestSentMessage}</h1>
     </div>
     <div id="custodians-information" hidden>
       <div id="custodian-information" class="custodian-information">
@@ -39,18 +38,25 @@
     </div>
   </div>
   <div class="button-container">
-    <button id="request-access-button" class="primary-button" i18n-content="requestAccessButton">
+    <button id="request-access-button" class="primary-button">
+      $i18n{requestAccessButton}
     </button>
     <div id="details-button-container">
-      <button id="show-details-link" class="details-button small-link" i18n-content="showDetailsLink" hidden></button>
-      <button id="hide-details-link" class="details-button small-link" i18n-content="hideDetailsLink" hidden></button>
-      <button id="back-button" class="details-button small-link" i18n-content="backButton" hidden></button>
+      <button id="show-details-link" class="details-button small-link" hidden>
+        $i18n{showDetailsLink}
+      </button>
+      <button id="hide-details-link" class="details-button small-link" hidden>
+        $i18n{hideDetailsLink}
+      </button>
+      <button id="back-button" class="details-button small-link" hidden>
+        $i18n{backButton}
+      </button>
     </div>
   </div>
   <div id="details" hidden>
-    <p id="details-header" i18n-content="blockReasonHeader"></p>
-    <p id="details-message" i18n-content="blockReasonMessage"></p>
-    <p id="feedback" i18n-values=".innerHTML:feedbackLink"></p>
+    <p id="details-header">$i18n{blockReasonHeader}</p>
+    <p id="details-message">$i18n{blockReasonMessage}</p>
+    <p id="feedback">$i18nRaw{feedbackLink}</p>
   </div>
 </div>
 </body>

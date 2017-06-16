@@ -121,7 +121,15 @@ std::string GetI18nTemplateHtml(const base::StringPiece& html_template,
 std::string GetTemplatesHtml(const base::StringPiece& html_template,
                              const base::DictionaryValue* json,
                              const base::StringPiece& template_id) {
-  std::string output(html_template.data(), html_template.size());
+  ui::TemplateReplacements replacements;
+  ui::TemplateReplacementsFromDictionaryValue(*json, &replacements);
+  std::string output =
+      ui::ReplaceTemplateExpressions(html_template, replacements);
+
+  // TODO(dschuyler): After the i18n-content and i18n-values are replaced with
+  // $i18n{} replacements, we will be able to return output at this point.
+  // Remove Append*() lines that builds up the i18n replacement work to be done
+  // in JavaScript.
   AppendLoadTimeData(&output);
   AppendJsonHtml(json, &output);
   AppendI18nTemplateSourceHtml(&output);

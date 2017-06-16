@@ -76,14 +76,10 @@ TEST_P(SupervisedUserErrorPageTest_BuildHtml, BuildHtml) {
       param.profile_image_url2, param.custodian, param.custodian_email,
       param.second_custodian, param.second_custodian_email,
       param.is_child_account, param.reason, "");
-  // The result should contain the original HTML plus scripts that plug values
-  // into it. The test can't easily check that the scripts are correct, but
-  // can check that the output contains the expected values.
-  std::string html =
-      ResourceBundle::GetSharedInstance()
-          .GetRawDataResource(IDR_SUPERVISED_USER_BLOCK_INTERSTITIAL_HTML)
-          .as_string();
-  EXPECT_THAT(result, testing::HasSubstr(html));
+  // The result should contain the original HTML (with $i18n{} replacements)
+  // plus scripts that plug values into it. The test can't easily check that the
+  // scripts are correct, but can check that the output contains the expected
+  // values.
   EXPECT_THAT(result, testing::HasSubstr(param.profile_image_url));
   EXPECT_THAT(result, testing::HasSubstr(param.profile_image_url2));
   EXPECT_THAT(result, testing::HasSubstr(param.custodian));

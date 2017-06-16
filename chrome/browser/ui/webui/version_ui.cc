@@ -162,6 +162,8 @@ WebUIDataSource* CreateVersionUIDataSource() {
     html_source->AddString(version_ui::kUpdateCohortName,
                            l10n_util::GetStringFUTF16(
                                IDS_VERSION_UI_COHORT_NAME, update_cohort_name));
+  } else {
+    html_source->AddString(version_ui::kUpdateCohortName, std::string());
   }
 #endif  // defined(OS_WIN)
 
