@@ -37,6 +37,9 @@
       "app": "net_unittests"
     },
     {
+      "app": "services_unittests"
+    },
+    {
       "app": "skia_unittests"
     },
     {
