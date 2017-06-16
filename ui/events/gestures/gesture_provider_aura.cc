@@ -42,13 +42,16 @@ bool GestureProviderAura::OnTouchEvent(TouchEvent* event) {
   return true;
 }
 
-void GestureProviderAura::OnTouchEventAck(uint32_t unique_touch_event_id,
-    bool event_consumed) {
+void GestureProviderAura::OnTouchEventAck(
+    uint32_t unique_touch_event_id,
+    bool event_consumed,
+    bool is_source_touch_event_set_non_blocking) {
   DCHECK(pending_gestures_.empty());
   DCHECK(!handling_event_);
   base::AutoReset<bool> handling_event(&handling_event_, true);
-  filtered_gesture_provider_.OnTouchEventAck(unique_touch_event_id,
-      event_consumed);
+  filtered_gesture_provider_.OnTouchEventAck(
+      unique_touch_event_id, event_consumed,
+      is_source_touch_event_set_non_blocking);
 }
 
 void GestureProviderAura::OnGestureEvent(const GestureEventData& gesture) {
@@ -82,7 +85,8 @@ void GestureProviderAura::OnTouchEnter(int pointer_id, float x, float y) {
   touch_event->set_root_location_f(point);
 
   OnTouchEvent(touch_event.get());
-  OnTouchEventAck(touch_event->unique_event_id(), true);
+  OnTouchEventAck(touch_event->unique_event_id(), true /* event_consumed */,
+                  false /* is_source_touch_event_set_non_blocking */);
 }
 
 }  // namespace content
