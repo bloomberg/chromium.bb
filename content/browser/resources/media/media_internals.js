@@ -6,8 +6,6 @@ var media = {};
 
 // <include src="main.js">
 // <include src="util.js">
-// <include src="cache_entry.js">
-// <include src="disjoint_range_set.js">
 // <include src="player_info.js">
 // <include src="manager.js">
 // <include src="client_renderer.js">

@@ -962,28 +962,26 @@ void MediaInternals::SaveEvent(int process_id,
                                const media::MediaLogEvent& event) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  // Do not save instantaneous events that happen frequently and have little
-  // value in the future.
-  if (event.type == media::MediaLogEvent::NETWORK_ACTIVITY_SET ||
-      event.type == media::MediaLogEvent::BUFFERED_EXTENTS_CHANGED) {
-    return;
-  }
+// Save the event and limit the total number per renderer. At the time of
+// writing, 512 events of the kind: { "property": value } together consume
+// ~88kb of memory on linux.
+#if defined(OS_ANDROID)
+  const size_t kEventLimit = 128;
+#else
+  const size_t kEventLimit = 512;
+#endif
 
-  // Save the event and limit the total number per renderer. At the time of
-  // writing, 512 events of the kind: { "property": value } together consume
-  // ~88kb of memory on linux.
-  std::list<media::MediaLogEvent>& saved_events =
-      saved_events_by_process_[process_id];
+  auto& saved_events = saved_events_by_process_[process_id];
   saved_events.push_back(event);
-  if (saved_events.size() > 512) {
+  if (saved_events.size() > kEventLimit) {
     // Remove all events for a given player as soon as we have to remove a
     // single event for that player to avoid showing incomplete players.
-    int id_to_remove = saved_events.front().id;
-    auto new_end = std::remove_if(saved_events.begin(), saved_events.end(),
-                                  [&](const media::MediaLogEvent& event) {
-                                    return event.id == id_to_remove;
-                                  });
-    saved_events.erase(new_end, saved_events.end());
+    const int id_to_remove = saved_events.front().id;
+    saved_events.erase(std::remove_if(saved_events.begin(), saved_events.end(),
+                                      [&](const media::MediaLogEvent& event) {
+                                        return event.id == id_to_remove;
+                                      }),
+                       saved_events.end());
   }
 }
 

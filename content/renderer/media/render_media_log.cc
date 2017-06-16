@@ -29,10 +29,8 @@ void Log(media::MediaLogEvent* event) {
       event->type == media::MediaLogEvent::MEDIA_ERROR_LOG_ENTRY) {
     LOG(ERROR) << "MediaEvent: "
                << media::MediaLog::MediaEventToLogString(*event);
-  } else if (event->type != media::MediaLogEvent::BUFFERED_EXTENTS_CHANGED &&
-             event->type != media::MediaLogEvent::PROPERTY_CHANGE &&
-             event->type != media::MediaLogEvent::WATCH_TIME_UPDATE &&
-             event->type != media::MediaLogEvent::NETWORK_ACTIVITY_SET) {
+  } else if (event->type != media::MediaLogEvent::PROPERTY_CHANGE &&
+             event->type != media::MediaLogEvent::WATCH_TIME_UPDATE) {
     MEDIA_EVENT_LOG_UTILITY << "MediaEvent: "
                             << media::MediaLog::MediaEventToLogString(*event);
   }
@@ -77,15 +75,6 @@ void RenderMediaLog::AddEvent(std::unique_ptr<media::MediaLogEvent> event) {
     base::AutoLock auto_lock(lock_);
 
     switch (event->type) {
-      case media::MediaLogEvent::BUFFERED_EXTENTS_CHANGED:
-        // Keep track of the latest buffered extents properties to avoid sending
-        // thousands of events over IPC. See http://crbug.com/352585 for
-        // details.
-        last_buffered_extents_changed_event_.swap(event);
-        // SendQueuedMediaEvents() will enqueue the most recent event of this
-        // kind, if any, prior to sending the event batch.
-        break;
-
       case media::MediaLogEvent::DURATION_SET:
         // Similar to the extents changed message, this may fire many times for
         // badly muxed media. Suppress within our rate limits here.
@@ -177,11 +166,6 @@ void RenderMediaLog::SendQueuedMediaEvents() {
 
     DCHECK(ipc_send_pending_);
     ipc_send_pending_ = false;
-
-    if (last_buffered_extents_changed_event_) {
-      queued_media_events_.push_back(*last_buffered_extents_changed_event_);
-      last_buffered_extents_changed_event_.reset();
-    }
 
     if (last_duration_changed_event_) {
       queued_media_events_.push_back(*last_duration_changed_event_);

@@ -65,20 +65,12 @@ struct MediaLogEvent {
     // These take a single parameter based upon the name of the event and of
     // the appropriate type. e.g. DURATION_SET: "duration" of type TimeDelta.
     DURATION_SET,
-    TOTAL_BYTES_SET,
-    NETWORK_ACTIVITY_SET,
 
     // Audio/Video stream playback has ended.
     ENDED,
 
     // Text stream playback has ended.
     TEXT_ENDED,
-
-    // The extents of the sliding buffer have changed.
-    // params: "buffer_start": <first buffered byte>.
-    //         "buffer_current": <current offset>.
-    //         "buffer_end": <last buffered byte>.
-    BUFFERED_EXTENTS_CHANGED,
 
     // Error log reported by media code such as reasons of playback error.
     MEDIA_ERROR_LOG_ENTRY,

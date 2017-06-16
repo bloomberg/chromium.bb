@@ -65,16 +65,10 @@ std::string MediaLog::EventTypeToString(MediaLogEvent::Type type) {
       return "VIDEO_SIZE_SET";
     case MediaLogEvent::DURATION_SET:
       return "DURATION_SET";
-    case MediaLogEvent::TOTAL_BYTES_SET:
-      return "TOTAL_BYTES_SET";
-    case MediaLogEvent::NETWORK_ACTIVITY_SET:
-      return "NETWORK_ACTIVITY_SET";
     case MediaLogEvent::ENDED:
       return "ENDED";
     case MediaLogEvent::TEXT_ENDED:
       return "TEXT_ENDED";
-    case MediaLogEvent::BUFFERED_EXTENTS_CHANGED:
-      return "BUFFERED_EXTENTS_CHANGED";
     case MediaLogEvent::MEDIA_ERROR_LOG_ENTRY:
       return "MEDIA_ERROR_LOG_ENTRY";
     case MediaLogEvent::MEDIA_INFO_LOG_ENTRY:
@@ -266,20 +260,6 @@ std::unique_ptr<MediaLogEvent> MediaLog::CreateVideoSizeSetEvent(
       CreateEvent(MediaLogEvent::VIDEO_SIZE_SET));
   event->params.SetInteger("width", width);
   event->params.SetInteger("height", height);
-  return event;
-}
-
-std::unique_ptr<MediaLogEvent> MediaLog::CreateBufferedExtentsChangedEvent(
-    int64_t start,
-    int64_t current,
-    int64_t end) {
-  std::unique_ptr<MediaLogEvent> event(
-      CreateEvent(MediaLogEvent::BUFFERED_EXTENTS_CHANGED));
-  // These values are headed to JS where there is no int64_t so we use a double
-  // and accept loss of precision above 2^53 bytes (8 Exabytes).
-  event->params.SetDouble("buffer_start", start);
-  event->params.SetDouble("buffer_current", current);
-  event->params.SetDouble("buffer_end", end);
   return event;
 }
 
