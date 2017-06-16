@@ -51,6 +51,14 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCompletionStatusMetricsTest, Completed) {
   PayWithCreditCardAndWait(base::ASCIIToUTF16("123"));
 
   // Make sure the metrics are logged correctly.
+  histogram_tester.ExpectUniqueSample("PaymentRequest.CheckoutFunnel.Initiated",
+                                      1, 1);
+  histogram_tester.ExpectUniqueSample("PaymentRequest.CheckoutFunnel.Shown", 1,
+                                      1);
+  histogram_tester.ExpectUniqueSample(
+      "PaymentRequest.CheckoutFunnel.PayClicked", 1, 1);
+  histogram_tester.ExpectUniqueSample(
+      "PaymentRequest.CheckoutFunnel.ReceivedInstrumentDetails", 1, 1);
   histogram_tester.ExpectUniqueSample("PaymentRequest.CheckoutFunnel.Completed",
                                       1, 1);
 }
@@ -71,6 +79,10 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCompletionStatusMetricsTest,
   WaitForObservedEvent();
 
   // Make sure the metrics are logged correctly.
+  histogram_tester.ExpectUniqueSample("PaymentRequest.CheckoutFunnel.Initiated",
+                                      1, 1);
+  histogram_tester.ExpectUniqueSample("PaymentRequest.CheckoutFunnel.Shown", 1,
+                                      1);
   histogram_tester.ExpectUniqueSample(
       "PaymentRequest.CheckoutFunnel.Aborted",
       JourneyLogger::ABORT_REASON_MERCHANT_NAVIGATION, 1);
@@ -94,6 +106,10 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCompletionStatusMetricsTest,
   WaitForObservedEvent();
 
   // Make sure the metrics are logged correctly.
+  histogram_tester.ExpectUniqueSample("PaymentRequest.CheckoutFunnel.Initiated",
+                                      1, 1);
+  histogram_tester.ExpectUniqueSample("PaymentRequest.CheckoutFunnel.Shown", 1,
+                                      1);
   histogram_tester.ExpectUniqueSample(
       "PaymentRequest.CheckoutFunnel.Aborted",
       JourneyLogger::ABORT_REASON_MERCHANT_NAVIGATION, 1);
@@ -118,6 +134,10 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCompletionStatusMetricsTest,
   WaitForObservedEvent();
 
   // Make sure the metrics are logged correctly.
+  histogram_tester.ExpectUniqueSample("PaymentRequest.CheckoutFunnel.Initiated",
+                                      1, 1);
+  histogram_tester.ExpectUniqueSample("PaymentRequest.CheckoutFunnel.Shown", 1,
+                                      1);
   histogram_tester.ExpectUniqueSample(
       "PaymentRequest.CheckoutFunnel.Aborted",
       JourneyLogger::ABORT_REASON_ABORTED_BY_MERCHANT, 1);
@@ -136,6 +156,10 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCompletionStatusMetricsTest,
   NavigateTo("/payment_request_email_test.html");
 
   // Make sure the metrics are logged correctly.
+  histogram_tester.ExpectUniqueSample("PaymentRequest.CheckoutFunnel.Initiated",
+                                      1, 1);
+  histogram_tester.ExpectUniqueSample("PaymentRequest.CheckoutFunnel.Shown", 1,
+                                      1);
   histogram_tester.ExpectUniqueSample(
       "PaymentRequest.CheckoutFunnel.Aborted",
       JourneyLogger::ABORT_REASON_USER_NAVIGATION, 1);
@@ -154,6 +178,10 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCompletionStatusMetricsTest,
   ClickOnCancel();
 
   // Make sure the metrics are logged correctly.
+  histogram_tester.ExpectUniqueSample("PaymentRequest.CheckoutFunnel.Initiated",
+                                      1, 1);
+  histogram_tester.ExpectUniqueSample("PaymentRequest.CheckoutFunnel.Shown", 1,
+                                      1);
   histogram_tester.ExpectUniqueSample(
       "PaymentRequest.CheckoutFunnel.Aborted",
       JourneyLogger::ABORT_REASON_ABORTED_BY_USER, 1);
@@ -174,6 +202,10 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCompletionStatusMetricsTest,
   WaitForObservedEvent();
 
   // Make sure the metrics are logged correctly.
+  histogram_tester.ExpectUniqueSample("PaymentRequest.CheckoutFunnel.Initiated",
+                                      1, 1);
+  histogram_tester.ExpectUniqueSample("PaymentRequest.CheckoutFunnel.Shown", 1,
+                                      1);
   histogram_tester.ExpectUniqueSample(
       "PaymentRequest.CheckoutFunnel.Aborted",
       JourneyLogger::ABORT_REASON_ABORTED_BY_USER, 1);
@@ -194,6 +226,10 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestCompletionStatusMetricsTest,
   WaitForObservedEvent();
 
   // Make sure the metrics are logged correctly.
+  histogram_tester.ExpectUniqueSample("PaymentRequest.CheckoutFunnel.Initiated",
+                                      1, 1);
+  histogram_tester.ExpectUniqueSample("PaymentRequest.CheckoutFunnel.Shown", 1,
+                                      1);
   histogram_tester.ExpectUniqueSample(
       "PaymentRequest.CheckoutFunnel.Aborted",
       JourneyLogger::ABORT_REASON_USER_NAVIGATION, 1);
