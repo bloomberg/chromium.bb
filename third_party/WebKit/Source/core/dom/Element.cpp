@@ -3931,11 +3931,18 @@ void Element::DidMoveToNewDocument(Document& old_document) {
   // for class and id names so we need to go through the attribute change logic
   // to pick up the new casing in the ElementData.
   if (old_document.InQuirksMode() != GetDocument().InQuirksMode()) {
+    // TODO(tkent): If new owner Document has a ShareableElementData matching to
+    // this element's attributes, we shouldn't make UniqueElementData, and this
+    // element should point to the shareable one.
+    EnsureUniqueElementData();
+
     if (HasID())
       SetIdAttribute(GetIdAttribute());
     if (HasClass())
       setAttribute(HTMLNames::classAttr, GetClassAttribute());
   }
+  // TODO(tkent): Even if Documents' modes are same, keeping
+  // ShareableElementData owned by old_document isn't right.
 
   if (NeedsURLResolutionForInlineStyle(*this, old_document, GetDocument()))
     ReResolveURLsInInlineStyle(GetDocument(), EnsureMutableInlineStyle());
