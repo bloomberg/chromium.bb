@@ -513,7 +513,8 @@ void V4LocalDatabaseManager::DeleteUnusedStoreFiles() {
                              return li.filename() == store_filename_to_delete;
                            });
     if (list_infos_.end() == it) {
-      const auto& store_path = base_path_.AppendASCII(store_filename_to_delete);
+      const base::FilePath store_path =
+          base_path_.AppendASCII(store_filename_to_delete);
       bool path_exists = base::PathExists(store_path);
       base::UmaHistogramBoolean("SafeBrowsing.V4UnusedStoreFileExists" +
                                     GetUmaSuffixForStore(store_path),
