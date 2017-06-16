@@ -425,3 +425,18 @@ class ToughVideoCasesPageSet(story.StorySet):
     self.AddStory(Page31(self))
     self.AddStory(Page33(self))
     self.AddStory(Page36(self))
+
+
+class ToughVideoCasesDesktopStoryExpectations(
+    story.expectations.StoryExpectations):
+
+  def SetExpectations(self):
+    self.PermanentlyDisableBenchmark(
+        [story.expectations.ALL_MOBILE],'Desktop Benchmark')
+
+class ToughVideoCasesAndroidStoryExpectations(
+    story.expectations.StoryExpectations):
+
+  def SetExpectations(self):
+    self.PermanentlyDisableBenchmark(
+        [story.expectations.ALL_DESKTOP],'Android Benchmark')
