@@ -13,6 +13,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "ui/message_center/message_center.h"
@@ -118,6 +119,8 @@ class MessageCenterImpl : public MessageCenter,
   };
 
   void RemoveNotificationsForNotifierId(const NotifierId& notifier_id);
+
+  THREAD_CHECKER(thread_checker_);
 
   std::unique_ptr<NotificationList> notification_list_;
   NotificationCache notification_cache_;
