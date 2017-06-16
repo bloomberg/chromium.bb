@@ -45,6 +45,10 @@ static INLINE tran_high_t check_range(tran_high_t input, int bd) {
   assert(int_min <= input);
   assert(input <= int_max);
   (void)int_min;
+#else
+  const int32_t int_max = (1 << (7 + bd)) - 1;
+  const int32_t int_min = -int_max - 1;
+  input = (int32_t)clamp_64(input, int_min, int_max);
 #endif  // CONFIG_COEFFICIENT_RANGE_CHECKING
   (void)bd;
   return input;

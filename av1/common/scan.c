@@ -6600,10 +6600,6 @@ static uint32_t *get_non_zero_counts(FRAME_COUNTS *counts, TX_SIZE tx_size,
   }
 }
 
-static INLINE int clamp_64(int64_t value, int low, int high) {
-  return value < low ? low : (value > high ? high : (int)value);
-}
-
 static void update_scan_prob(AV1_COMMON *cm, TX_SIZE tx_size, TX_TYPE tx_type,
                              int rate_16) {
   FRAME_CONTEXT *pre_fc = cm->pre_fc;
@@ -6621,7 +6617,7 @@ static void update_scan_prob(AV1_COMMON *cm, TX_SIZE tx_size, TX_TYPE tx_type,
         (curr_prob * rate_16 + prev_prob * ((1 << 16) - rate_16)) >> 16;
     // TODO(angiebird): reduce the bit usage of probabilities and remove
     // clamp_64()
-    non_zero_prob[i] = clamp_64(pred_prob, 0, UINT16_MAX);
+    non_zero_prob[i] = (int32_t)clamp_64(pred_prob, 0, UINT16_MAX);
   }
 }
 
