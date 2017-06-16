@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "ui/ozone/ozone_export.h"
 
 namespace display {
@@ -24,7 +25,6 @@ class MessageFilter;
 }
 
 namespace service_manager {
-class BinderRegistry;
 class Connector;
 }
 

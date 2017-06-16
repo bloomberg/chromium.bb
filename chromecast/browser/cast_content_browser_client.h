@@ -18,6 +18,7 @@
 #include "chromecast/chromecast_features.h"
 #include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/browser/content_browser_client.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 
 class PrefService;
 
@@ -32,10 +33,6 @@ class MetricsService;
 namespace net {
 class URLRequestContextGetter;
 class X509Certificate;
-}
-
-namespace service_manager {
-class BinderRegistry;
 }
 
 namespace chromecast {

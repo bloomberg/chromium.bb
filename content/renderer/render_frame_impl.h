@@ -116,7 +116,6 @@ class MediaPermission;
 }
 
 namespace service_manager {
-class BinderRegistry;
 class InterfaceProvider;
 }
 

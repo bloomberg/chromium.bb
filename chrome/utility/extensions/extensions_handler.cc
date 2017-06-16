@@ -21,7 +21,6 @@
 #include "media/base/media.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
 #include "ui/base/ui_base_switches.h"
 
 #if !defined(MEDIA_DISABLE_FFMPEG)

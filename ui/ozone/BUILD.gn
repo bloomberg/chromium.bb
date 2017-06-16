@@ -138,6 +138,7 @@ source_set("platform") {
     ":ozone_base",
     "//base",
     "//ipc",
+    "//services/service_manager/public/cpp",
     "//skia",
     "//ui/display/types",
     "//ui/events",

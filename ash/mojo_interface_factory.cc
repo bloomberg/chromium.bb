@@ -27,7 +27,6 @@
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
 #include "ui/app_list/presenter/app_list.h"
 
 namespace ash {

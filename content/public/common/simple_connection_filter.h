@@ -10,10 +10,7 @@
 
 #include "content/common/content_export.h"
 #include "content/public/common/connection_filter.h"
-
-namespace service_manager {
-class BinderRegistry;
-}
+#include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace content {
 

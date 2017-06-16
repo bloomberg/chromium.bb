@@ -15,6 +15,7 @@
 #include "content/public/common/file_chooser_params.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/WebKit/public/platform/WebPageVisibilityState.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
@@ -34,7 +35,6 @@ class ResourceCoordinatorInterface;
 }
 
 namespace service_manager {
-class BinderRegistry;
 class InterfaceProvider;
 }
 

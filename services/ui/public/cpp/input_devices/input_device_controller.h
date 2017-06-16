@@ -8,10 +8,10 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/ui/public/interfaces/input_devices/input_device_controller.mojom.h"
 
 namespace service_manager {
-class BinderRegistry;
 struct BindSourceInfo;
 }
 

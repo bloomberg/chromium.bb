@@ -14,14 +14,11 @@
 #include "chrome/utility/utility_message_handler.h"
 #include "extensions/features/features.h"
 #include "extensions/utility/utility_handler.h"
+#include "services/service_manager/public/cpp/binder_registry.h"
 
 #if !BUILDFLAG(ENABLE_EXTENSIONS)
 #error "Extensions must be enabled"
 #endif
-
-namespace service_manager {
-class BinderRegistry;
-}
 
 namespace extensions {
 

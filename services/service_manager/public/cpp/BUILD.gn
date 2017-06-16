@@ -6,13 +6,11 @@ component("cpp") {
   output_name = "service_manager_cpp"
 
   sources = [
-    "binder_registry.cc",
     "binder_registry.h",
     "connect.h",
     "connector.cc",
     "connector.h",
     "export.h",
-    "interface_binder.cc",
     "interface_binder.h",
     "interface_provider.cc",
     "interface_provider.h",
