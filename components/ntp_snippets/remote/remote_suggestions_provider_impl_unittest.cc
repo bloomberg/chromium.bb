@@ -1046,12 +1046,33 @@ TEST_F(RemoteSuggestionsProviderImplTest, ReplaceSuggestions) {
               ElementsAre(IdEq(second)));
 }
 
-TEST_F(RemoteSuggestionsProviderImplTest, LoadsAdditionalSuggestions) {
-  auto service = MakeSuggestionsProvider();
+TEST_F(RemoteSuggestionsProviderImplTest,
+       ShouldResolveFetchedSuggestionThumbnail) {
+  auto provider = MakeSuggestionsProvider();
 
-  LoadFromJSONString(service.get(),
+  LoadFromJSONString(provider.get(),
                      GetTestJson({GetSuggestionWithUrl("http://first")}));
-  EXPECT_THAT(service->GetSuggestionsForTesting(articles_category()),
+  ASSERT_THAT(provider->GetSuggestionsForTesting(articles_category()),
+              ElementsAre(IdEq("http://first")));
+
+  image_decoder()->SetDecodedImage(gfx::test::CreateImage(1, 1));
+  ServeImageCallback serve_one_by_one_image_callback =
+      base::Bind(&ServeOneByOneImage, &provider->GetImageFetcherForTesting());
+  EXPECT_CALL(*image_fetcher(), StartOrQueueNetworkRequest(_, _, _, _))
+      .WillOnce(WithArgs<0, 2>(
+          Invoke(CreateFunctor(serve_one_by_one_image_callback))));
+
+  gfx::Image image = FetchImage(provider.get(), MakeArticleID("http://first"));
+  ASSERT_FALSE(image.IsEmpty());
+  EXPECT_EQ(1, image.Width());
+}
+
+TEST_F(RemoteSuggestionsProviderImplTest, ShouldFetchMore) {
+  auto provider = MakeSuggestionsProvider();
+
+  LoadFromJSONString(provider.get(),
+                     GetTestJson({GetSuggestionWithUrl("http://first")}));
+  ASSERT_THAT(provider->GetSuggestionsForTesting(articles_category()),
               ElementsAre(IdEq("http://first")));
 
   auto expect_only_second_suggestion_received =
@@ -1060,204 +1081,178 @@ TEST_F(RemoteSuggestionsProviderImplTest, LoadsAdditionalSuggestions) {
         EXPECT_THAT(suggestions[0].id().id_within_category(),
                     Eq("http://second"));
       });
-  LoadMoreFromJSONString(service.get(), articles_category(),
+  LoadMoreFromJSONString(provider.get(), articles_category(),
                          GetTestJson({GetSuggestionWithUrl("http://second")}),
                          /*known_ids=*/std::set<std::string>(),
                          expect_only_second_suggestion_received);
+}
 
-  // Verify we can resolve the image of the new suggestions.
-  ServeImageCallback cb =
-      base::Bind(&ServeOneByOneImage, &service->GetImageFetcherForTesting());
-  EXPECT_CALL(*image_fetcher(), StartOrQueueNetworkRequest(_, _, _, _))
-      .Times(2)
-      .WillRepeatedly(WithArgs<0, 2>(Invoke(CreateFunctor(cb))));
+TEST_F(RemoteSuggestionsProviderImplTest,
+       ShouldResolveFetchedMoreSuggestionThumbnail) {
+  auto provider = MakeSuggestionsProvider();
+
+  auto assert_only_first_suggestion_received =
+      base::Bind([](Status status, std::vector<ContentSuggestion> suggestions) {
+        ASSERT_THAT(suggestions, SizeIs(1));
+        ASSERT_THAT(suggestions[0].id().id_within_category(),
+                    Eq("http://first"));
+      });
+  LoadMoreFromJSONString(provider.get(), articles_category(),
+                         GetTestJson({GetSuggestionWithUrl("http://first")}),
+                         /*known_ids=*/std::set<std::string>(),
+                         assert_only_first_suggestion_received);
+
   image_decoder()->SetDecodedImage(gfx::test::CreateImage(1, 1));
-  gfx::Image image = FetchImage(service.get(), MakeArticleID("http://first"));
-  EXPECT_FALSE(image.IsEmpty());
-  EXPECT_EQ(1, image.Width());
+  ServeImageCallback serve_one_by_one_image_callback =
+      base::Bind(&ServeOneByOneImage, &provider->GetImageFetcherForTesting());
+  EXPECT_CALL(*image_fetcher(), StartOrQueueNetworkRequest(_, _, _, _))
+      .WillOnce(WithArgs<0, 2>(
+          Invoke(CreateFunctor(serve_one_by_one_image_callback))));
 
-  image = FetchImage(service.get(), MakeArticleID("http://second"));
-  EXPECT_FALSE(image.IsEmpty());
+  gfx::Image image = FetchImage(provider.get(), MakeArticleID("http://first"));
+  ASSERT_FALSE(image.IsEmpty());
   EXPECT_EQ(1, image.Width());
 }
 
-// The tests TestMergingFetchedMoreSuggestionsFillup and
-// TestMergingFetchedMoreSuggestionsReplaceAll simulate the following user
-// story:
-// 1) fetch suggestions in NTP A
-// 2) fetch more suggestions in NTP A.
-// 3) open new NTP B: See the first 10 results from step 1).
-// 4) fetch more suggestions in NTP B. Make sure the results are independent
-//    from step 2)
-// TODO(tschumann): Test step 4) on a higher level instead of peeking into the
-// internal 'dismissed' data. The proper check is to make sure we tell the
-// backend to exclude these suggestions.
+// Imagine that we have surfaces A and B. The user fetches more in A, this
+// should not add any suggestions to B.
 TEST_F(RemoteSuggestionsProviderImplTest,
-       FewMoreFetchedSuggestionsShouldNotInterfere) {
-  auto service = MakeSuggestionsProvider(/*set_empty_response=*/false);
-  LoadFromJSONString(service.get(),
-                     GetTestJson({GetSuggestionWithUrl("http://id-1"),
-                                  GetSuggestionWithUrl("http://id-2"),
-                                  GetSuggestionWithUrl("http://id-3"),
-                                  GetSuggestionWithUrl("http://id-4"),
-                                  GetSuggestionWithUrl("http://id-5"),
-                                  GetSuggestionWithUrl("http://id-6"),
-                                  GetSuggestionWithUrl("http://id-7"),
-                                  GetSuggestionWithUrl("http://id-8"),
-                                  GetSuggestionWithUrl("http://id-9"),
-                                  GetSuggestionWithUrl("http://id-10")}));
-  EXPECT_THAT(
-      observer().SuggestionsForCategory(articles_category()),
-      ElementsAre(
-          IdWithinCategoryEq("http://id-1"), IdWithinCategoryEq("http://id-2"),
-          IdWithinCategoryEq("http://id-3"), IdWithinCategoryEq("http://id-4"),
-          IdWithinCategoryEq("http://id-5"), IdWithinCategoryEq("http://id-6"),
-          IdWithinCategoryEq("http://id-7"), IdWithinCategoryEq("http://id-8"),
-          IdWithinCategoryEq("http://id-9"),
-          IdWithinCategoryEq("http://id-10")));
+       ShouldNotChangeSuggestionsInOtherSurfacesWhenFetchingMore) {
+  auto provider = MakeSuggestionsProviderWithoutInitialization(
+      /*use_mock_suggestions_fetcher=*/true);
+  WaitForSuggestionsProviderInitialization(provider.get(),
+                                           /*set_empty_response=*/true);
 
-  auto expect_receiving_two_new_suggestions =
+  // Fetch a suggestion.
+  auto* mock_fetcher = static_cast<StrictMock<MockRemoteSuggestionsFetcher>*>(
+      suggestions_fetcher());
+  std::vector<FetchedCategory> fetched_categories;
+  fetched_categories.push_back(FetchedCategory(
+      articles_category(),
+      BuildRemoteCategoryInfo(base::UTF8ToUTF16("title"),
+                              /*allow_fetching_more_results=*/true)));
+  fetched_categories[0].suggestions.push_back(
+      CreateTestRemoteSuggestion("http://old.com/"));
+
+  RemoteSuggestionsFetcher::SnippetsAvailableCallback snippets_callback;
+  EXPECT_CALL(*mock_fetcher, FetchSnippets(_, _))
+      .WillOnce(MoveSecondArgumentPointeeTo(&snippets_callback))
+      .RetiresOnSaturation();
+  FetchSuggestions(provider.get(), /*interactive_request=*/true,
+                   RemoteSuggestionsProvider::FetchStatusCallback());
+  std::move(snippets_callback)
+      .Run(Status(StatusCode::SUCCESS, "message"),
+           std::move(fetched_categories));
+
+  ASSERT_THAT(observer().SuggestionsForCategory(articles_category()),
+              ElementsAre(IdWithinCategoryEq("http://old.com/")));
+
+  // Now fetch more, but first prepare a response.
+  fetched_categories.push_back(FetchedCategory(
+      articles_category(),
+      BuildRemoteCategoryInfo(base::UTF8ToUTF16("title"),
+                              /*allow_fetching_more_results=*/true)));
+  fetched_categories[0].suggestions.push_back(
+      CreateTestRemoteSuggestion("http://fetched-more.com/"));
+
+  // The surface issuing the fetch more gets response via callback.
+  auto assert_receiving_one_new_suggestion =
       base::Bind([](Status status, std::vector<ContentSuggestion> suggestions) {
-        ASSERT_THAT(suggestions, SizeIs(2));
-        EXPECT_THAT(suggestions[0], IdWithinCategoryEq("http://more-id-1"));
-        EXPECT_THAT(suggestions[1], IdWithinCategoryEq("http://more-id-2"));
+        ASSERT_THAT(suggestions, SizeIs(1));
+        ASSERT_THAT(suggestions[0],
+                    IdWithinCategoryEq("http://fetched-more.com/"));
       });
-  LoadMoreFromJSONString(
-      service.get(), articles_category(),
-      GetTestJson({GetSuggestionWithUrl("http://more-id-1"),
-                   GetSuggestionWithUrl("http://more-id-2")}),
-      /*known_ids=*/
-      {"http://id-1", "http://id-2", "http://id-3", "http://id-4",
-       "http://id-5", "http://id-6", "http://id-7", "http://id-8",
-       "http://id-9", "http://id-10"},
-      expect_receiving_two_new_suggestions);
-
-  // Verify that the observer still has the old set.
-  EXPECT_THAT(
-      observer().SuggestionsForCategory(articles_category()),
-      ElementsAre(
-          IdWithinCategoryEq("http://id-1"), IdWithinCategoryEq("http://id-2"),
-          IdWithinCategoryEq("http://id-3"), IdWithinCategoryEq("http://id-4"),
-          IdWithinCategoryEq("http://id-5"), IdWithinCategoryEq("http://id-6"),
-          IdWithinCategoryEq("http://id-7"), IdWithinCategoryEq("http://id-8"),
-          IdWithinCategoryEq("http://id-9"),
-          IdWithinCategoryEq("http://id-10")));
-
-  // No interference from previous Fetch more: we can receive two other ones.
-  expect_receiving_two_new_suggestions =
-      base::Bind([](Status status, std::vector<ContentSuggestion> suggestions) {
-        ASSERT_THAT(suggestions, SizeIs(2));
-        EXPECT_THAT(suggestions[0], IdWithinCategoryEq("http://more-id-3"));
-        EXPECT_THAT(suggestions[1], IdWithinCategoryEq("http://more-id-4"));
-      });
-  LoadMoreFromJSONString(
-      service.get(), articles_category(),
-      GetTestJson({GetSuggestionWithUrl("http://more-id-3"),
-                   GetSuggestionWithUrl("http://more-id-4")}),
-      /*known_ids=*/
-      {"http://id-1", "http://id-2", "http://id-3", "http://id-4",
-       "http://id-5", "http://id-6", "http://id-7", "http://id-8",
-       "http://id-9", "http://id-10"},
-      expect_receiving_two_new_suggestions);
+  EXPECT_CALL(*mock_fetcher, FetchSnippets(_, _))
+      .WillOnce(MoveSecondArgumentPointeeTo(&snippets_callback))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*scheduler(), AcquireQuotaForInteractiveFetch())
+      .WillOnce(Return(true))
+      .RetiresOnSaturation();
+  provider->Fetch(articles_category(),
+                  /*known_suggestion_ids=*/{"http://old.com/"},
+                  assert_receiving_one_new_suggestion);
+  std::move(snippets_callback)
+      .Run(Status(StatusCode::SUCCESS, "message"),
+           std::move(fetched_categories));
+  // Other surfaces should remain the same.
+  EXPECT_THAT(observer().SuggestionsForCategory(articles_category()),
+              ElementsAre(IdWithinCategoryEq("http://old.com/")));
 }
 
+// Imagine that we have surfaces A and B. The user fetches more in A. This
+// should not affect the next fetch more in B, i.e. assuming the same server
+// response the same suggestions must be fetched in B if the user fetches more
+// there as well.
 TEST_F(RemoteSuggestionsProviderImplTest,
-       TenMoreFetchedSuggestionsShouldNotInterfere) {
-  auto service = MakeSuggestionsProvider(/*set_empty_response=*/false);
-  LoadFromJSONString(service.get(),
-                     GetTestJson({GetSuggestionWithUrl("http://id-1"),
-                                  GetSuggestionWithUrl("http://id-2"),
-                                  GetSuggestionWithUrl("http://id-3"),
-                                  GetSuggestionWithUrl("http://id-4"),
-                                  GetSuggestionWithUrl("http://id-5"),
-                                  GetSuggestionWithUrl("http://id-6"),
-                                  GetSuggestionWithUrl("http://id-7"),
-                                  GetSuggestionWithUrl("http://id-8"),
-                                  GetSuggestionWithUrl("http://id-9"),
-                                  GetSuggestionWithUrl("http://id-10")}));
-  EXPECT_THAT(
-      observer().SuggestionsForCategory(articles_category()),
-      ElementsAre(
-          IdWithinCategoryEq("http://id-1"), IdWithinCategoryEq("http://id-2"),
-          IdWithinCategoryEq("http://id-3"), IdWithinCategoryEq("http://id-4"),
-          IdWithinCategoryEq("http://id-5"), IdWithinCategoryEq("http://id-6"),
-          IdWithinCategoryEq("http://id-7"), IdWithinCategoryEq("http://id-8"),
-          IdWithinCategoryEq("http://id-9"),
-          IdWithinCategoryEq("http://id-10")));
+       ShouldNotAffectFetchMoreInOtherSurfacesWhenFetchingMore) {
+  auto provider = MakeSuggestionsProviderWithoutInitialization(
+      /*use_mock_suggestions_fetcher=*/true);
+  WaitForSuggestionsProviderInitialization(provider.get(),
+                                           /*set_empty_response=*/true);
+  auto* mock_fetcher = static_cast<StrictMock<MockRemoteSuggestionsFetcher>*>(
+      suggestions_fetcher());
 
-  auto expect_receiving_ten_new_suggestions =
-      base::Bind([](Status status, std::vector<ContentSuggestion> suggestions) {
-        EXPECT_THAT(suggestions,
-                    ElementsAre(IdWithinCategoryEq("http://more-id-1"),
-                                IdWithinCategoryEq("http://more-id-2"),
-                                IdWithinCategoryEq("http://more-id-3"),
-                                IdWithinCategoryEq("http://more-id-4"),
-                                IdWithinCategoryEq("http://more-id-5"),
-                                IdWithinCategoryEq("http://more-id-6"),
-                                IdWithinCategoryEq("http://more-id-7"),
-                                IdWithinCategoryEq("http://more-id-8"),
-                                IdWithinCategoryEq("http://more-id-9"),
-                                IdWithinCategoryEq("http://more-id-10")));
-      });
-  LoadMoreFromJSONString(
-      service.get(), articles_category(),
-      GetTestJson({GetSuggestionWithUrl("http://more-id-1"),
-                   GetSuggestionWithUrl("http://more-id-2"),
-                   GetSuggestionWithUrl("http://more-id-3"),
-                   GetSuggestionWithUrl("http://more-id-4"),
-                   GetSuggestionWithUrl("http://more-id-5"),
-                   GetSuggestionWithUrl("http://more-id-6"),
-                   GetSuggestionWithUrl("http://more-id-7"),
-                   GetSuggestionWithUrl("http://more-id-8"),
-                   GetSuggestionWithUrl("http://more-id-9"),
-                   GetSuggestionWithUrl("http://more-id-10")}),
-      /*known_ids=*/
-      {"http://id-1", "http://id-2", "http://id-3", "http://id-4",
-       "http://id-5", "http://id-6", "http://id-7", "http://id-8",
-       "http://id-9", "http://id-10"},
-      expect_receiving_ten_new_suggestions);
-  EXPECT_THAT(
-      observer().SuggestionsForCategory(articles_category()),
-      ElementsAre(
-          IdWithinCategoryEq("http://id-1"), IdWithinCategoryEq("http://id-2"),
-          IdWithinCategoryEq("http://id-3"), IdWithinCategoryEq("http://id-4"),
-          IdWithinCategoryEq("http://id-5"), IdWithinCategoryEq("http://id-6"),
-          IdWithinCategoryEq("http://id-7"), IdWithinCategoryEq("http://id-8"),
-          IdWithinCategoryEq("http://id-9"),
-          IdWithinCategoryEq("http://id-10")));
+  // Fetch more on the surface A.
+  std::vector<FetchedCategory> fetched_categories;
+  fetched_categories.push_back(FetchedCategory(
+      articles_category(),
+      BuildRemoteCategoryInfo(base::UTF8ToUTF16("title"),
+                              /*allow_fetching_more_results=*/true)));
+  fetched_categories[0].suggestions.push_back(
+      CreateTestRemoteSuggestion("http://fetched-more.com/"));
 
-  // This time, test receiving the same set.
-  expect_receiving_ten_new_suggestions =
+  auto assert_receiving_one_new_suggestion =
       base::Bind([](Status status, std::vector<ContentSuggestion> suggestions) {
-        EXPECT_THAT(suggestions,
-                    ElementsAre(IdWithinCategoryEq("http://more-id-1"),
-                                IdWithinCategoryEq("http://more-id-2"),
-                                IdWithinCategoryEq("http://more-id-3"),
-                                IdWithinCategoryEq("http://more-id-4"),
-                                IdWithinCategoryEq("http://more-id-5"),
-                                IdWithinCategoryEq("http://more-id-6"),
-                                IdWithinCategoryEq("http://more-id-7"),
-                                IdWithinCategoryEq("http://more-id-8"),
-                                IdWithinCategoryEq("http://more-id-9"),
-                                IdWithinCategoryEq("http://more-id-10")));
+        ASSERT_THAT(suggestions, SizeIs(1));
+        ASSERT_THAT(suggestions[0],
+                    IdWithinCategoryEq("http://fetched-more.com/"));
       });
-  LoadMoreFromJSONString(
-      service.get(), articles_category(),
-      GetTestJson({GetSuggestionWithUrl("http://more-id-1"),
-                   GetSuggestionWithUrl("http://more-id-2"),
-                   GetSuggestionWithUrl("http://more-id-3"),
-                   GetSuggestionWithUrl("http://more-id-4"),
-                   GetSuggestionWithUrl("http://more-id-5"),
-                   GetSuggestionWithUrl("http://more-id-6"),
-                   GetSuggestionWithUrl("http://more-id-7"),
-                   GetSuggestionWithUrl("http://more-id-8"),
-                   GetSuggestionWithUrl("http://more-id-9"),
-                   GetSuggestionWithUrl("http://more-id-10")}),
-      /*known_ids=*/
-      {"http://id-1", "http://id-2", "http://id-3", "http://id-4",
-       "http://id-5", "http://id-6", "http://id-7", "http://id-8",
-       "http://id-9", "http://id-10"},
-      expect_receiving_ten_new_suggestions);
+  RemoteSuggestionsFetcher::SnippetsAvailableCallback snippets_callback;
+  EXPECT_CALL(*mock_fetcher, FetchSnippets(_, _))
+      .WillOnce(MoveSecondArgumentPointeeTo(&snippets_callback))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*scheduler(), AcquireQuotaForInteractiveFetch())
+      .WillOnce(Return(true))
+      .RetiresOnSaturation();
+  provider->Fetch(articles_category(),
+                  /*known_suggestion_ids=*/std::set<std::string>(),
+                  assert_receiving_one_new_suggestion);
+  std::move(snippets_callback)
+      .Run(Status(StatusCode::SUCCESS, "message"),
+           std::move(fetched_categories));
+
+  // Now fetch more on the surface B. The response is the same as before.
+  fetched_categories.push_back(FetchedCategory(
+      articles_category(),
+      BuildRemoteCategoryInfo(base::UTF8ToUTF16("title"),
+                              /*allow_fetching_more_results=*/true)));
+  fetched_categories[0].suggestions.push_back(
+      CreateTestRemoteSuggestion("http://fetched-more.com/"));
+
+  // B should receive the same suggestion as was fetched more on A.
+  auto expect_receiving_same_suggestion =
+      base::Bind([](Status status, std::vector<ContentSuggestion> suggestions) {
+        ASSERT_THAT(suggestions, SizeIs(1));
+        EXPECT_THAT(suggestions[0],
+                    IdWithinCategoryEq("http://fetched-more.com/"));
+      });
+  // The provider should not ask the fetcher to exclude the suggestion fetched
+  // more on A.
+  EXPECT_CALL(*mock_fetcher,
+              FetchSnippets(Field(&RequestParams::excluded_ids,
+                                  Not(Contains("http://fetched-more.com/"))),
+                            _))
+      .WillOnce(MoveSecondArgumentPointeeTo(&snippets_callback))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*scheduler(), AcquireQuotaForInteractiveFetch())
+      .WillOnce(Return(true))
+      .RetiresOnSaturation();
+  provider->Fetch(articles_category(),
+                  /*known_suggestion_ids=*/std::set<std::string>(),
+                  expect_receiving_same_suggestion);
+  std::move(snippets_callback)
+      .Run(Status(StatusCode::SUCCESS, "message"),
+           std::move(fetched_categories));
 }
 
 TEST_F(RemoteSuggestionsProviderImplTest,
@@ -1299,11 +1294,6 @@ TEST_F(RemoteSuggestionsProviderImplTest,
   EXPECT_TRUE(
       FetchImage(service.get(), MakeArticleID("http://new-id-1")).IsEmpty());
 }
-
-// TODO(tschumann): We don't have test making sure the RemoteSuggestionsFetcher
-// actually gets the proper parameters. Add tests with an injected
-// RemoteSuggestionsFetcher to verify the parameters, including proper handling
-// of dismissed and known_ids.
 
 namespace {
 
