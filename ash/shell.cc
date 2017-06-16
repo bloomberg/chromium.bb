@@ -816,8 +816,6 @@ void Shell::Init(const ShellInitParams& init_params) {
         base::MakeUnique<NightLightController>(session_controller_.get());
   }
 
-  blocking_pool_ = init_params.blocking_pool;
-
   wallpaper_delegate_ = shell_delegate_->CreateWallpaperDelegate();
 
   // Can be null in tests.
@@ -918,8 +916,8 @@ void Shell::Init(const ShellInitParams& init_params) {
             : 0);
     display_initialized = true;
   }
-  display_color_manager_.reset(new DisplayColorManager(
-      display_configurator_.get(), init_params.blocking_pool));
+  display_color_manager_ =
+      base::MakeUnique<DisplayColorManager>(display_configurator_.get());
 
   if (!display_initialized)
     display_manager_->InitDefaultDisplay();

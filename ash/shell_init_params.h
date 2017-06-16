@@ -36,6 +36,7 @@ struct ASH_EXPORT ShellInitParams {
   ShellDelegate* delegate = nullptr;
   ui::ContextFactory* context_factory = nullptr;
   ui::ContextFactoryPrivate* context_factory_private = nullptr;
+  // TODO(jamescook): Remove this. It is unused. http://crbug.com/733641
   base::SequencedWorkerPool* blocking_pool = nullptr;
 };
 

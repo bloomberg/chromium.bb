@@ -11,8 +11,10 @@
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/sequenced_task_runner.h"
 #include "base/task_runner_util.h"
-#include "base/threading/sequenced_worker_pool.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/threading/thread_restrictions.h"
 #include "components/quirks/quirks_manager.h"
 #include "third_party/qcms/src/qcms.h"
 #include "ui/display/display.h"
@@ -24,12 +26,15 @@ namespace ash {
 
 namespace {
 
+// Runs on a background thread because it does file IO.
 std::unique_ptr<DisplayColorManager::ColorCalibrationData> ParseDisplayProfile(
     const base::FilePath& path,
     bool has_color_correction_matrix) {
   VLOG(1) << "Trying ICC file " << path.value()
           << " has_color_correction_matrix: "
           << (has_color_correction_matrix ? "true" : "false");
+  base::ThreadRestrictions::AssertIOAllowed();
+  // Reads from a file.
   qcms_profile* display_profile = qcms_profile_from_path(path.value().c_str());
   if (!display_profile) {
     LOG(WARNING) << "Unable to load ICC file: " << path.value();
@@ -150,10 +155,11 @@ std::unique_ptr<DisplayColorManager::ColorCalibrationData> ParseDisplayProfile(
 }  // namespace
 
 DisplayColorManager::DisplayColorManager(
-    display::DisplayConfigurator* configurator,
-    base::SequencedWorkerPool* blocking_pool)
+    display::DisplayConfigurator* configurator)
     : configurator_(configurator),
-      blocking_pool_(blocking_pool),
+      sequenced_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
       weak_ptr_factory_(this) {
   configurator_->AddObserver(this);
 }
@@ -192,7 +198,7 @@ void DisplayColorManager::ApplyDisplayColorCalibration(int64_t display_id,
 
 void DisplayColorManager::LoadCalibrationForDisplay(
     const display::DisplaySnapshot* display) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (display->display_id() == display::kInvalidDisplayId) {
     LOG(WARNING) << "Trying to load calibration data for invalid display id";
     return;
@@ -219,7 +225,7 @@ void DisplayColorManager::FinishLoadCalibrationForDisplay(
     display::DisplayConnectionType type,
     const base::FilePath& path,
     bool file_downloaded) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::string product_string = quirks::IdToHexString(product_id);
   if (path.empty()) {
     VLOG(1) << "No ICC file found with product id: " << product_string
@@ -239,7 +245,7 @@ void DisplayColorManager::FinishLoadCalibrationForDisplay(
           << " with product id: " << product_string;
 
   base::PostTaskAndReplyWithResult(
-      blocking_pool_, FROM_HERE,
+      sequenced_task_runner_.get(), FROM_HERE,
       base::Bind(&ParseDisplayProfile, path, has_color_correction_matrix),
       base::Bind(&DisplayColorManager::UpdateCalibrationData,
                  weak_ptr_factory_.GetWeakPtr(), display_id, product_id));
@@ -249,7 +255,7 @@ void DisplayColorManager::UpdateCalibrationData(
     int64_t display_id,
     int64_t product_id,
     std::unique_ptr<ColorCalibrationData> data) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (data) {
     calibration_map_[product_id] = std::move(data);
     ApplyDisplayColorCalibration(display_id, product_id);

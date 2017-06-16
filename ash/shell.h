@@ -39,10 +39,6 @@ class WindowManagerClient;
 class WindowTreeClient;
 }
 
-namespace base {
-class SequencedWorkerPool;
-}
-
 namespace chromeos {
 class AudioA11yController;
 }
@@ -832,8 +828,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<AppListDelegateImpl> app_list_delegate_impl_;
 
   base::ObserverList<ShellObserver> shell_observers_;
-
-  scoped_refptr<base::SequencedWorkerPool> blocking_pool_;
 
   DISALLOW_COPY_AND_ASSIGN(Shell);
 };
