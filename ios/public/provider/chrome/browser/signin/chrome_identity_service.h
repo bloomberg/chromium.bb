@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 
@@ -114,6 +115,25 @@ class ChromeIdentityService {
   // delegate.
   virtual ChromeIdentityInteractionManager*
   CreateChromeIdentityInteractionManager(
+      ios::ChromeBrowserState* browser_state,
+      id<ChromeIdentityInteractionManagerDelegate> delegate) const;
+
+  // Deprecated. Returns a new account details controller to present. A cancel
+  // button is present as leading navigation item.
+  virtual base::scoped_nsobject<UINavigationController> NewAccountDetails(
+      ChromeIdentity* identity,
+      id<ChromeIdentityBrowserOpener> browser_opener);
+
+  // Deprecated. Returns a new Web and App Setting Details controller to
+  // present.
+  virtual base::scoped_nsobject<UINavigationController>
+  NewWebAndAppSettingDetails(ChromeIdentity* identity,
+                             id<ChromeIdentityBrowserOpener> browser_opener);
+
+  // Deprecated. Returns a new ChromeIdentityInteractionManager with |delegate|
+  // as its delegate.
+  virtual base::scoped_nsobject<ChromeIdentityInteractionManager>
+  NewChromeIdentityInteractionManager(
       ios::ChromeBrowserState* browser_state,
       id<ChromeIdentityInteractionManagerDelegate> delegate) const;
 
