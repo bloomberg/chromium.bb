@@ -202,13 +202,20 @@ android_assets("monochrome_webview_assets") {
 
 android_assets("assets") {
   deps = [
+    ":license_assets",
     ":locale_pak_assets",
     ":monochrome_webview_assets",
     ":pak_file_assets",
   ]
 }
 
-android_assets("stub_assets") {
+java_group("stub_assets") {
+  deps = [
+    ":license_assets",
+  ]
+}
+
+android_assets("license_assets") {
   sources = [
     webview_license_path,
   ]
