@@ -42,13 +42,6 @@ class ChromeWebViewTest : public PlatformTest {
   GURL GetUrlForPageWithTitleAndBody(const std::string& title,
                                      const std::string& body);
 
-  // Loads |URL| in |web_view| and waits until the load completes. Asserts if
-  // loading does not complete.
-  void LoadUrl(CWVWebView* web_view, NSURL* url);
-
-  // Waits until |web_view| stops loading. Asserts if loading does not complete.
-  void WaitForPageLoadCompletion(CWVWebView* web_view);
-
   // PlatformTest methods.
   void SetUp() override;
 

@@ -23,7 +23,13 @@ CWVWebView* CreateWebView() {
       configuration:[CWVWebViewConfiguration defaultConfiguration]];
 }
 
-bool TapChromeWebViewElementWithId(CWVWebView* web_view, NSString* element_id) {
+bool LoadUrl(CWVWebView* web_view, NSURL* url) {
+  [web_view loadRequest:[NSURLRequest requestWithURL:url]];
+
+  return WaitForWebViewLoadCompletionOrTimeout(web_view);
+}
+
+bool TapWebViewElementWithId(CWVWebView* web_view, NSString* element_id) {
   // TODO(crbug.com/725524): Share this script with Chrome.
   NSString* script = [NSString
       stringWithFormat:@"(function() {"
@@ -65,6 +71,12 @@ bool WaitForWebViewContainingTextOrTimeout(CWVWebView* web_view,
     id body = ios_web_view::test::EvaluateJavaScript(
         web_view, @"document.body ? document.body.textContent : null", nil);
     return [body isKindOfClass:[NSString class]] && [body containsString:text];
+  });
+}
+
+bool WaitForWebViewLoadCompletionOrTimeout(CWVWebView* web_view) {
+  return WaitUntilConditionOrTimeout(testing::kWaitForPageLoadTimeout, ^{
+    return !web_view.loading;
   });
 }
 
