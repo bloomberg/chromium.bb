@@ -893,9 +893,9 @@ void HTMLMediaElement::InvokeLoadAlgorithm() {
 
       // 4.6.2 - Take pending play promises and reject pending play promises
       // with the result and an "AbortError" DOMException.
-      RejectPlayPromises(
-          kAbortError,
-          "The play() request was interrupted by a new load request.");
+      RejectPlayPromises(kAbortError,
+                         "The play() request was interrupted by a new load "
+                         "request. https://goo.gl/LdLk22");
     }
 
     // 4.7 - If seeking is true, set it to false.
@@ -3943,14 +3943,15 @@ void HTMLMediaElement::RejectScheduledPlayPromises() {
   // used by the object, the string isn't saved.
   DCHECK(play_promise_error_code_ == kAbortError ||
          play_promise_error_code_ == kNotSupportedError);
-  if (play_promise_error_code_ == kAbortError)
-    RejectPlayPromisesInternal(
-        kAbortError,
-        "The play() request was interrupted by a call to pause().");
-  else
+  if (play_promise_error_code_ == kAbortError) {
+    RejectPlayPromisesInternal(kAbortError,
+                               "The play() request was interrupted by a call "
+                               "to pause(). https://goo.gl/LdLk22");
+  } else {
     RejectPlayPromisesInternal(
         kNotSupportedError,
         "Failed to load because no supported source was found.");
+  }
 }
 
 void HTMLMediaElement::RejectPlayPromises(ExceptionCode code,

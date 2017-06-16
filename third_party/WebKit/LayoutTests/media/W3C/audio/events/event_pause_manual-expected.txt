@@ -1,4 +1,4 @@
-CONSOLE ERROR: Uncaught (in promise) AbortError: The play() request was interrupted by a call to pause().
+CONSOLE ERROR: Uncaught (in promise) AbortError: The play() request was interrupted by a call to pause(). https://goo.gl/LdLk22
 calling play() then pause() on non-autoplay video should trigger pause event
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".

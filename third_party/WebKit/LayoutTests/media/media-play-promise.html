@@ -296,14 +296,14 @@ var tests = [
         audio.play().then(t.unreached_func(), t.step_func(function(e) {
             assert_equals(e.name, 'AbortError');
             assert_equals(e.message,
-                'The play() request was interrupted by a call to pause().');
+                'The play() request was interrupted by a call to pause(). https://goo.gl/LdLk22');
             firstPromiseRejected = true;
         }));
 
         audio.play().then(t.unreached_func(), t.step_func_done(function(e) {
             assert_equals(e.name, 'AbortError');
             assert_equals(e.message,
-                'The play() request was interrupted by a call to pause().');
+                'The play() request was interrupted by a call to pause(). https://goo.gl/LdLk22');
             assert_true(firstPromiseRejected);
         }));
 
