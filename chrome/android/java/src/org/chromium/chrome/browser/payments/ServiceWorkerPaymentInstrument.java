@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 /**
  * This instrument class represents a single payment instrument for a service
  * worker based payment app.
@@ -44,7 +46,7 @@ public class ServiceWorkerPaymentInstrument extends PaymentInstrument {
      * @param icon              The drawable icon of the payment instrument.
      */
     public ServiceWorkerPaymentInstrument(WebContents webContents, long swRegistrationId,
-            String instrumentId, String label, Set<String> methodNames, Drawable icon) {
+            String instrumentId, String label, Set<String> methodNames, @Nullable Drawable icon) {
         super(Long.toString(swRegistrationId) + "#" + instrumentId, label, null /* sublabel */,
                 icon);
         mWebContents = webContents;

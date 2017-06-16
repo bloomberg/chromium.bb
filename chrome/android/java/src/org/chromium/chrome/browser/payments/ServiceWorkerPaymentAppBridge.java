@@ -21,6 +21,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 /**
  * Native bridge for interacting with service worker based payment apps.
  */
@@ -68,7 +70,7 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
     @CalledByNative
     private static void addInstrument(List<PaymentInstrument> instruments, WebContents webContents,
             long swRegistrationId, String instrumentId, String label, String[] methodNameArray,
-            Bitmap icon) {
+            @Nullable Bitmap icon) {
         Context context = ChromeActivity.fromWebContents(webContents);
         if (context == null) return;
 
@@ -77,9 +79,9 @@ public class ServiceWorkerPaymentAppBridge implements PaymentAppFactory.PaymentA
             methodNames.add(methodNameArray[i]);
         }
 
-        instruments.add(
-                new ServiceWorkerPaymentInstrument(webContents, swRegistrationId, instrumentId,
-                        label, methodNames, new BitmapDrawable(context.getResources(), icon)));
+        instruments.add(new ServiceWorkerPaymentInstrument(webContents, swRegistrationId,
+                instrumentId, label, methodNames,
+                icon == null ? null : new BitmapDrawable(context.getResources(), icon)));
     }
 
     @CalledByNative

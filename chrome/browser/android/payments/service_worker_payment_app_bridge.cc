@@ -51,7 +51,9 @@ void OnGotAllPaymentApps(const JavaRef<jobject>& jweb_contents,
           ConvertUTF8ToJavaString(env, instrument->instrument_key),
           ConvertUTF8ToJavaString(env, instrument->name),
           ToJavaArrayOfStrings(env, instrument->enabled_methods),
-          gfx::ConvertToJavaBitmap(instrument->icon.get()));
+          instrument->icon == nullptr
+              ? nullptr
+              : gfx::ConvertToJavaBitmap(instrument->icon.get()));
     }
     Java_ServiceWorkerPaymentAppBridge_onPaymentAppCreated(
         env, java_instruments, jweb_contents, jcallback);
