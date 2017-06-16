@@ -267,6 +267,19 @@ public class FeatureUtilities {
             } finally {
                 StrictMode.setThreadPolicy(oldPolicy);
             }
+
+            // If the browser has been initialized by this point, check the experiment as well to
+            // avoid the restart logic in cacheChromeHomeEnabled.
+            if (ChromeFeatureList.isInitialized()) {
+                boolean chromeHomeExperimentEnabled =
+                        ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME);
+
+                if (chromeHomeExperimentEnabled != sChromeHomeEnabled) {
+                    sChromeHomeEnabled = chromeHomeExperimentEnabled;
+                    ChromePreferenceManager.getInstance().setChromeHomeEnabled(
+                            chromeHomeExperimentEnabled);
+                }
+            }
         }
 
         return sChromeHomeEnabled;
