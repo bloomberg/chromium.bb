@@ -30,6 +30,7 @@
 
 #include "core/editing/RenderedPosition.h"
 
+#include "core/editing/InlineBoxTraversal.h"
 #include "core/editing/TextAffinity.h"
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/VisibleUnits.h"
@@ -147,18 +148,12 @@ RenderedPosition RenderedPosition::LeftBoundaryOfBidiRun(
   if (!inline_box_ || bidi_level_of_run > inline_box_->BidiLevel())
     return RenderedPosition();
 
-  InlineBox* box = inline_box_;
-  do {
-    InlineBox* prev = box->PrevLeafChildIgnoringLineBreak();
-    if (!prev || prev->BidiLevel() < bidi_level_of_run)
-      return RenderedPosition(
-          LineLayoutAPIShim::LayoutObjectFrom(box->GetLineLayoutItem()), box,
-          box->CaretLeftmostOffset());
-    box = prev;
-  } while (box);
-
-  NOTREACHED();
-  return RenderedPosition();
+  InlineBox* const box =
+      InlineBoxTraversal::FindLeftBoundaryOfEntireBidiRunIgnoringLineBreak(
+          *inline_box_, bidi_level_of_run);
+  return RenderedPosition(
+      LineLayoutAPIShim::LayoutObjectFrom(box->GetLineLayoutItem()), box,
+      box->CaretLeftmostOffset());
 }
 
 RenderedPosition RenderedPosition::RightBoundaryOfBidiRun(
@@ -166,18 +161,12 @@ RenderedPosition RenderedPosition::RightBoundaryOfBidiRun(
   if (!inline_box_ || bidi_level_of_run > inline_box_->BidiLevel())
     return RenderedPosition();
 
-  InlineBox* box = inline_box_;
-  do {
-    InlineBox* next = box->NextLeafChildIgnoringLineBreak();
-    if (!next || next->BidiLevel() < bidi_level_of_run)
-      return RenderedPosition(
-          LineLayoutAPIShim::LayoutObjectFrom(box->GetLineLayoutItem()), box,
-          box->CaretRightmostOffset());
-    box = next;
-  } while (box);
-
-  NOTREACHED();
-  return RenderedPosition();
+  InlineBox* const box =
+      InlineBoxTraversal::FindRightBoundaryOfEntireBidiRunIgnoringLineBreak(
+          *inline_box_, bidi_level_of_run);
+  return RenderedPosition(
+      LineLayoutAPIShim::LayoutObjectFrom(box->GetLineLayoutItem()), box,
+      box->CaretRightmostOffset());
 }
 
 bool RenderedPosition::AtLeftBoundaryOfBidiRun(
