@@ -5,8 +5,9 @@
 #ifndef IOS_WEB_VIEW_PUBLIC_CWV_NAVIGATION_ACTION_H_
 #define IOS_WEB_VIEW_PUBLIC_CWV_NAVIGATION_ACTION_H_
 
-#import <ChromeWebView/cwv_export.h>
 #import <Foundation/Foundation.h>
+
+#import "cwv_export.h"
 
 // Encapsulates information about an action which caused a navigation.
 CWV_EXPORT

@@ -5,10 +5,11 @@
 #ifndef IOS_WEB_VIEW_PUBLIC_CWV_SCROLL_VIEW_H_
 #define IOS_WEB_VIEW_PUBLIC_CWV_SCROLL_VIEW_H_
 
-#import <ChromeWebView/cwv_export.h>
 #import <CoreGraphics/CoreGraphics.h>
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
+
+#import "cwv_export.h"
 
 @protocol CWVScrollViewDelegate;
 

@@ -5,8 +5,9 @@
 #ifndef IOS_WEB_VIEW_PUBLIC_CWV_TRANSLATION_CONTROLLER_H
 #define IOS_WEB_VIEW_PUBLIC_CWV_TRANSLATION_CONTROLLER_H
 
-#import <ChromeWebView/cwv_export.h>
 #import <Foundation/Foundation.h>
+
+#import "cwv_export.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
