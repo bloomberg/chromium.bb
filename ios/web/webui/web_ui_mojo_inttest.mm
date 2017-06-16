@@ -137,13 +137,22 @@ class TestWebUIControllerFactory : public WebUIIOSControllerFactory {
 class WebUIMojoTest : public WebIntTest {
  protected:
   void SetUp() override {
-    WebIntTest::SetUp();
-    ui_handler_ = base::MakeUnique<TestUIHandler>();
-    web::WebState::CreateParams params(GetBrowserState());
-    web_state_ = base::MakeUnique<web::WebStateImpl>(params);
-    web_state_->GetNavigationManagerImpl().InitializeSession();
-    WebUIIOSControllerFactory::RegisterFactory(
-        new TestWebUIControllerFactory(ui_handler_.get()));
+    @autoreleasepool {
+      WebIntTest::SetUp();
+      ui_handler_ = base::MakeUnique<TestUIHandler>();
+      web::WebState::CreateParams params(GetBrowserState());
+      web_state_ = base::MakeUnique<web::WebStateImpl>(params);
+      web_state_->GetNavigationManagerImpl().InitializeSession();
+      WebUIIOSControllerFactory::RegisterFactory(
+          new TestWebUIControllerFactory(ui_handler_.get()));
+    }
+  }
+
+  void TearDown() override {
+    @autoreleasepool {
+      web_state_.reset();
+      WebIntTest::TearDown();
+    }
   }
 
   // Returns WebState which loads test WebUI page.
@@ -166,31 +175,33 @@ class WebUIMojoTest : public WebIntTest {
 #endif
 // TODO(crbug.com/720098): Enable this test on device.
 TEST_F(WebUIMojoTest, MAYBE_MessageExchange) {
-  web_state()->SetWebUsageEnabled(true);
-  web_state()->GetView();  // WebState won't load URL without view.
-  GURL url(
-      url::SchemeHostPort(kTestWebUIScheme, kTestWebUIURLHost, 0).Serialize());
-  NavigationManager::WebLoadParams load_params(url);
-  web_state()->GetNavigationManager()->LoadURLWithParams(load_params);
+  @autoreleasepool {
+    web_state()->SetWebUsageEnabled(true);
+    web_state()->GetView();  // WebState won't load URL without view.
+    GURL url(url::SchemeHostPort(kTestWebUIScheme, kTestWebUIURLHost, 0)
+                 .Serialize());
+    NavigationManager::WebLoadParams load_params(url);
+    web_state()->GetNavigationManager()->LoadURLWithParams(load_params);
 
-  // Wait until |TestUIHandler| receives "fin" message from WebUI page.
-  bool fin_received = testing::WaitUntilConditionOrTimeout(kMessageTimeout, ^{
-    // Flush any pending tasks. Don't RunUntilIdle() because
-    // RunUntilIdle() is incompatible with mojo::SimpleWatcher's
-    // automatic arming behavior, which Mojo JS still depends upon.
-    //
-    // TODO(crbug.com/701875): Introduce the full watcher API to JS and get rid
-    // of this hack.
-    base::RunLoop loop;
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  loop.QuitClosure());
-    loop.Run();
-    return test_ui_handler()->IsFinReceived();
-  });
+    // Wait until |TestUIHandler| receives "fin" message from WebUI page.
+    bool fin_received = testing::WaitUntilConditionOrTimeout(kMessageTimeout, ^{
+      // Flush any pending tasks. Don't RunUntilIdle() because
+      // RunUntilIdle() is incompatible with mojo::SimpleWatcher's
+      // automatic arming behavior, which Mojo JS still depends upon.
+      //
+      // TODO(crbug.com/701875): Introduce the full watcher API to JS and get
+      // rid of this hack.
+      base::RunLoop loop;
+      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                    loop.QuitClosure());
+      loop.Run();
+      return test_ui_handler()->IsFinReceived();
+    });
 
-  ASSERT_TRUE(fin_received);
-  EXPECT_FALSE(web_state()->IsLoading());
-  EXPECT_EQ(url, web_state()->GetLastCommittedURL());
+    ASSERT_TRUE(fin_received);
+    EXPECT_FALSE(web_state()->IsLoading());
+    EXPECT_EQ(url, web_state()->GetLastCommittedURL());
+  }
 }
 
 }  // namespace web

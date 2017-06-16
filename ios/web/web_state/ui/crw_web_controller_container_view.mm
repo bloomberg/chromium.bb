@@ -4,24 +4,26 @@
 
 #import "ios/web/web_state/ui/crw_web_controller_container_view.h"
 
-#import "base/ios/weak_nsobject.h"
 #include "base/logging.h"
-#import "base/mac/scoped_nsobject.h"
 #import "ios/web/public/web_state/ui/crw_content_view.h"
 #import "ios/web/public/web_state/ui/crw_native_content.h"
 #import "ios/web/public/web_state/ui/crw_web_view_content_view.h"
 #import "ios/web/web_state/ui/crw_web_view_proxy_impl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 #pragma mark - CRWToolbarContainerView
 
 // Class that manages the display of toolbars.
 @interface CRWToolbarContainerView : UIView {
   // Backing object for |self.toolbars|.
-  base::scoped_nsobject<NSMutableArray> _toolbars;
+  NSMutableArray* _toolbars;
 }
 
 // The toolbars currently managed by this view.
-@property(nonatomic, retain, readonly) NSMutableArray* toolbars;
+@property(nonatomic, strong, readonly) NSMutableArray* toolbars;
 
 // Adds |toolbar| as a subview and bottom aligns to any previously added
 // toolbars.
@@ -38,8 +40,8 @@
 
 - (NSMutableArray*)toolbars {
   if (!_toolbars)
-    _toolbars.reset([[NSMutableArray alloc] init]);
-  return _toolbars.get();
+    _toolbars = [[NSMutableArray alloc] init];
+  return _toolbars;
 }
 
 #pragma mark Layout
@@ -89,28 +91,21 @@
 #pragma mark - CRWWebControllerContainerView
 
 @interface CRWWebControllerContainerView () {
-  // The delegate passed on initialization.
-  base::WeakNSProtocol<id<CRWWebControllerContainerViewDelegate>> _delegate;
-  // Backing objects for corresponding properties.
-  base::scoped_nsobject<CRWWebViewContentView> _webViewContentView;
-  base::scoped_nsprotocol<id<CRWNativeContent>> _nativeController;
-  base::scoped_nsobject<CRWContentView> _transientContentView;
-  base::scoped_nsobject<CRWToolbarContainerView> _toolbarContainerView;
 }
 
 // Redefine properties as readwrite.
-@property(nonatomic, retain, readwrite)
+@property(nonatomic, strong, readwrite)
     CRWWebViewContentView* webViewContentView;
-@property(nonatomic, retain, readwrite) id<CRWNativeContent> nativeController;
-@property(nonatomic, retain, readwrite) CRWContentView* transientContentView;
+@property(nonatomic, strong, readwrite) id<CRWNativeContent> nativeController;
+@property(nonatomic, strong, readwrite) CRWContentView* transientContentView;
 
 // Container view that displays any added toolbars.  It is always the top-most
 // subview, and is bottom aligned with the CRWWebControllerContainerView.
-@property(nonatomic, retain, readonly)
+@property(nonatomic, strong, readonly)
     CRWToolbarContainerView* toolbarContainerView;
 
 // Convenience getter for the proxy object.
-@property(nonatomic, readonly) CRWWebViewProxyImpl* contentViewProxy;
+@property(nonatomic, weak, readonly) CRWWebViewProxyImpl* contentViewProxy;
 
 // Returns |self.bounds| after being inset at the top by the header height
 // returned by the delegate.  This is only used to lay out native controllers,
@@ -122,12 +117,18 @@
 
 @implementation CRWWebControllerContainerView
 
+@synthesize webViewContentView = _webViewContentView;
+@synthesize nativeController = _nativeController;
+@synthesize transientContentView = _transientContentView;
+@synthesize toolbarContainerView = _toolbarContainerView;
+@synthesize delegate = _delegate;
+
 - (instancetype)initWithDelegate:
         (id<CRWWebControllerContainerViewDelegate>)delegate {
   self = [super initWithFrame:CGRectZero];
   if (self) {
     DCHECK(delegate);
-    _delegate.reset(delegate);
+    _delegate = delegate;
     self.backgroundColor = [UIColor whiteColor];
     self.autoresizingMask =
         UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -147,62 +148,45 @@
 
 - (void)dealloc {
   self.contentViewProxy.contentView = nil;
-  [super dealloc];
 }
 
 #pragma mark Accessors
 
-- (CRWWebViewContentView*)webViewContentView {
-  return _webViewContentView.get();
-}
-
 - (void)setWebViewContentView:(CRWWebViewContentView*)webViewContentView {
   if (![_webViewContentView isEqual:webViewContentView]) {
     [_webViewContentView removeFromSuperview];
-    _webViewContentView.reset([webViewContentView retain]);
+    _webViewContentView = webViewContentView;
     [_webViewContentView setFrame:self.bounds];
     [self addSubview:_webViewContentView];
   }
 }
 
-- (id<CRWNativeContent>)nativeController {
-  return _nativeController.get();
-}
-
 - (void)setNativeController:(id<CRWNativeContent>)nativeController {
   if (![_nativeController isEqual:nativeController]) {
-    base::WeakNSProtocol<id> oldController(_nativeController);
+    __weak id oldController = _nativeController;
     if ([oldController respondsToSelector:@selector(willBeDismissed)]) {
       [oldController willBeDismissed];
     }
     [[oldController view] removeFromSuperview];
-    _nativeController.reset([nativeController retain]);
+    _nativeController = nativeController;
     // TODO(crbug.com/503297): Re-enable this DCHECK once native controller
     // leaks are fixed.
     //    DCHECK(!oldController);
   }
 }
 
-- (CRWContentView*)transientContentView {
-  return _transientContentView.get();
-}
-
 - (void)setTransientContentView:(CRWContentView*)transientContentView {
   if (![_transientContentView isEqual:transientContentView]) {
     [_transientContentView removeFromSuperview];
-    _transientContentView.reset([transientContentView retain]);
+    _transientContentView = transientContentView;
   }
 }
 
 - (void)setToolbarContainerView:(CRWToolbarContainerView*)toolbarContainerView {
   if (![_toolbarContainerView isEqual:toolbarContainerView]) {
     [_toolbarContainerView removeFromSuperview];
-    _toolbarContainerView.reset([toolbarContainerView retain]);
+    _toolbarContainerView = toolbarContainerView;
   }
-}
-
-- (UIView*)toolbarContainerView {
-  return _toolbarContainerView.get();
 }
 
 - (CRWWebViewProxyImpl*)contentViewProxy {
@@ -213,14 +197,6 @@
   CGFloat headerHeight = [_delegate headerHeightForContainerView:self];
   return UIEdgeInsetsInsetRect(self.bounds,
                                UIEdgeInsetsMake(headerHeight, 0, 0, 0));
-}
-
-- (id<CRWWebControllerContainerViewDelegate>)delegate {
-  return _delegate.get();
-}
-
-- (void)setDelegate:(id<CRWWebControllerContainerViewDelegate>)delegate {
-  _delegate.reset(delegate);
 }
 
 #pragma mark Layout
@@ -315,8 +291,8 @@
 - (void)addToolbar:(UIView*)toolbar {
   // Create toolbar container if necessary.
   if (!self.toolbarContainerView) {
-    self.toolbarContainerView = [
-        [[CRWToolbarContainerView alloc] initWithFrame:CGRectZero] autorelease];
+    self.toolbarContainerView =
+        [[CRWToolbarContainerView alloc] initWithFrame:CGRectZero];
   }
   // Add the toolbar to the container.
   [self.toolbarContainerView addToolbar:toolbar];
