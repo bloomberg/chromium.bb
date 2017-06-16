@@ -998,8 +998,8 @@ static inline bool UserScrollableVertical(LayerImpl* layer) {
   return layer->test_properties()->user_scrollable_vertical;
 }
 
-void SetHasTransformNode(LayerImpl* layer, bool val) {}
-void SetHasTransformNode(Layer* layer, bool val) {
+template <typename LayerType>
+void SetHasTransformNode(LayerType* layer, bool val) {
   layer->SetHasTransformNode(val);
 }
 
@@ -1098,37 +1098,19 @@ void AddScrollNodeIfNeeded(
 template <typename LayerType>
 void SetBackfaceVisibilityTransform(LayerType* layer,
                                     bool created_transform_node) {
-  const bool is_at_boundary_of_3d_rendering_context =
-      IsAtBoundaryOf3dRenderingContext(layer);
   if (layer->use_parent_backface_visibility()) {
-    DCHECK(!is_at_boundary_of_3d_rendering_context);
     DCHECK(Parent(layer));
     DCHECK(!Parent(layer)->use_parent_backface_visibility());
-    layer->SetUseLocalTransformForBackfaceVisibility(
-        Parent(layer)->use_local_transform_for_backface_visibility());
     layer->SetShouldCheckBackfaceVisibility(
         Parent(layer)->should_check_backface_visibility());
   } else {
-    // The current W3C spec on CSS transforms says that backface visibility
-    // should be determined differently depending on whether the layer is in a
-    // "3d rendering context" or not. For Chromium code, we can determine
-    // whether we are in a 3d rendering context by checking if the parent
-    // preserves 3d.
-    const bool use_local_transform =
-        !Is3dSorted(layer) ||
-        (Is3dSorted(layer) && is_at_boundary_of_3d_rendering_context);
-    layer->SetUseLocalTransformForBackfaceVisibility(use_local_transform);
-
     // A double-sided layer's backface can been shown when its visible.
-    if (DoubleSided(layer))
-      layer->SetShouldCheckBackfaceVisibility(false);
-    // The backface of a layer that uses local transform for backface visibility
-    // is not visible when it does not create a transform node as its local
-    // transform is identity or 2d translation and is not animating.
-    else if (use_local_transform && !created_transform_node)
-      layer->SetShouldCheckBackfaceVisibility(false);
-    else
-      layer->SetShouldCheckBackfaceVisibility(true);
+    // In addition, we need to check if (1) there might be a local 3D transform
+    // on the layer that might turn it to the backface, or (2) it is not drawn
+    // into a flattened space.
+    layer->SetShouldCheckBackfaceVisibility(
+        !DoubleSided(layer) &&
+        (created_transform_node || !ShouldFlattenTransform(Parent(layer))));
   }
 }
 

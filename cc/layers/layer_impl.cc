@@ -62,7 +62,6 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       masks_to_bounds_(false),
       contents_opaque_(false),
       use_parent_backface_visibility_(false),
-      use_local_transform_for_backface_visibility_(false),
       should_check_backface_visibility_(false),
       draws_content_(false),
       contributes_to_drawn_render_surface_(false),
@@ -80,7 +79,8 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       needs_push_properties_(false),
       scrollbars_hidden_(false),
       needs_show_scrollbars_(false),
-      raster_even_if_not_drawn_(false) {
+      raster_even_if_not_drawn_(false),
+      has_transform_node_(false) {
   DCHECK_GT(layer_id_, 0);
 
   DCHECK(layer_tree_impl_);
@@ -312,6 +312,7 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   // as LayerImpl::SetScrollClipLayer.
   layer->SetElementId(element_id_);
 
+  layer->has_transform_node_ = has_transform_node_;
   layer->offset_to_transform_parent_ = offset_to_transform_parent_;
   layer->main_thread_scrolling_reasons_ = main_thread_scrolling_reasons_;
   layer->should_flatten_transform_from_property_tree_ =
@@ -320,8 +321,6 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->contents_opaque_ = contents_opaque_;
   layer->may_contain_video_ = may_contain_video_;
   layer->use_parent_backface_visibility_ = use_parent_backface_visibility_;
-  layer->use_local_transform_for_backface_visibility_ =
-      use_local_transform_for_backface_visibility_;
   layer->should_check_backface_visibility_ = should_check_backface_visibility_;
   layer->draws_content_ = draws_content_;
   layer->non_fast_scrollable_region_ = non_fast_scrollable_region_;

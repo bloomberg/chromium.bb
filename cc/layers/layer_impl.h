@@ -87,6 +87,9 @@ class CC_EXPORT LayerImpl {
   gfx::ScrollOffset ScrollOffsetForAnimation() const;
   bool IsActive() const;
 
+  void SetHasTransformNode(bool val) { has_transform_node_ = val; }
+  bool has_transform_node() { return has_transform_node_; }
+
   void set_property_tree_sequence_number(int sequence_number) {}
 
   void SetTransformTreeIndex(int index);
@@ -200,13 +203,6 @@ class CC_EXPORT LayerImpl {
   }
   bool use_parent_backface_visibility() const {
     return use_parent_backface_visibility_;
-  }
-
-  void SetUseLocalTransformForBackfaceVisibility(bool use_local) {
-    use_local_transform_for_backface_visibility_ = use_local;
-  }
-  bool use_local_transform_for_backface_visibility() const {
-    return use_local_transform_for_backface_visibility_;
   }
 
   void SetShouldCheckBackfaceVisibility(bool should_check_backface_visibility) {
@@ -496,7 +492,6 @@ class CC_EXPORT LayerImpl {
   bool masks_to_bounds_ : 1;
   bool contents_opaque_ : 1;
   bool use_parent_backface_visibility_ : 1;
-  bool use_local_transform_for_backface_visibility_ : 1;
   bool should_check_backface_visibility_ : 1;
   bool draws_content_ : 1;
   bool contributes_to_drawn_render_surface_ : 1;
@@ -564,6 +559,8 @@ class CC_EXPORT LayerImpl {
   // is being animated). For this reason, while these layers are not drawn, they
   // are still rasterized.
   bool raster_even_if_not_drawn_ : 1;
+
+  bool has_transform_node_ : 1;
 
   DISALLOW_COPY_AND_ASSIGN(LayerImpl);
 };

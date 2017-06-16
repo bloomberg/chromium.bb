@@ -5606,16 +5606,10 @@ TEST_F(LayerTreeHostCommonTest, DoNotIncludeBackfaceInvisibleLayers) {
   EXPECT_EQ(1u, render_surface_list_impl()->size());
   EXPECT_TRUE(grand_child->contributes_to_drawn_render_surface());
 
-  // As all layers have identity transform, we shouldn't check for backface
-  // visibility.
+  // A ll layers with invisible backfgaces should be checked.
   EXPECT_FALSE(root->should_check_backface_visibility());
-  EXPECT_FALSE(child->should_check_backface_visibility());
-  EXPECT_FALSE(grand_child->should_check_backface_visibility());
-  // As there are no 3d rendering contexts, all layers should use their local
-  // transform for backface visibility.
-  EXPECT_TRUE(root->use_local_transform_for_backface_visibility());
-  EXPECT_TRUE(child->use_local_transform_for_backface_visibility());
-  EXPECT_TRUE(grand_child->use_local_transform_for_backface_visibility());
+  EXPECT_TRUE(child->should_check_backface_visibility());
+  EXPECT_TRUE(grand_child->should_check_backface_visibility());
 
   gfx::Transform rotation_transform;
   rotation_transform.RotateAboutXAxis(180.0);
@@ -5635,13 +5629,6 @@ TEST_F(LayerTreeHostCommonTest, DoNotIncludeBackfaceInvisibleLayers) {
   EXPECT_FALSE(root->should_check_backface_visibility());
   EXPECT_TRUE(child->should_check_backface_visibility());
   EXPECT_TRUE(grand_child->should_check_backface_visibility());
-  // child uses its local transform for backface visibility as it is the root of
-  // a 3d rendering context. grand_child is in a 3d rendering context and is not
-  // the root, but it derives its backface visibility from its parent which uses
-  // its local transform.
-  EXPECT_TRUE(root->use_local_transform_for_backface_visibility());
-  EXPECT_TRUE(child->use_local_transform_for_backface_visibility());
-  EXPECT_TRUE(grand_child->use_local_transform_for_backface_visibility());
 
   grand_child->SetUseParentBackfaceVisibility(false);
   grand_child->test_properties()->double_sided = false;
@@ -5657,11 +5644,6 @@ TEST_F(LayerTreeHostCommonTest, DoNotIncludeBackfaceInvisibleLayers) {
   EXPECT_FALSE(root->should_check_backface_visibility());
   EXPECT_TRUE(child->should_check_backface_visibility());
   EXPECT_TRUE(grand_child->should_check_backface_visibility());
-  // grand_child is in an existing 3d rendering context, so it should not use
-  // local transform for backface visibility.
-  EXPECT_TRUE(root->use_local_transform_for_backface_visibility());
-  EXPECT_TRUE(child->use_local_transform_for_backface_visibility());
-  EXPECT_FALSE(grand_child->use_local_transform_for_backface_visibility());
 }
 
 TEST_F(LayerTreeHostCommonTest, TransformAnimationUpdatesBackfaceVisibility) {

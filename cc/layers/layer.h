@@ -281,11 +281,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     return inputs_.use_parent_backface_visibility;
   }
 
-  void SetUseLocalTransformForBackfaceVisibility(bool use_local);
-  bool use_local_transform_for_backface_visibility() const {
-    return use_local_transform_for_backface_visibility_;
-  }
-
   void SetShouldCheckBackfaceVisibility(bool should_check_backface_visibility);
   bool should_check_backface_visibility() const {
     return should_check_backface_visibility_;
@@ -629,7 +624,6 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
   gfx::Vector2dF offset_to_transform_parent_;
   bool should_flatten_transform_from_property_tree_ : 1;
   bool draws_content_ : 1;
-  bool use_local_transform_for_backface_visibility_ : 1;
   bool should_check_backface_visibility_ : 1;
   bool force_render_surface_for_testing_ : 1;
   bool subtree_property_changed_ : 1;
