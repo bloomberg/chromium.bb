@@ -201,6 +201,15 @@ HTMLSlotElement* DocumentOrderedMap::GetSlotByName(
   return nullptr;
 }
 
+Element* DocumentOrderedMap::GetCachedFirstElementWithoutAccessingNodeTree(
+    const AtomicString& key) {
+  MapEntry* entry = map_.at(key);
+  if (!entry)
+    return nullptr;
+  DCHECK(entry->count);
+  return entry->element;
+}
+
 DEFINE_TRACE(DocumentOrderedMap) {
   visitor->Trace(map_);
 }

@@ -97,8 +97,8 @@ enum class CustomElementState {
 };
 
 enum class SlotChangeType {
-  kInitial,
-  kChained,
+  kSignalSlotChangeEvent,
+  kSuppressSlotChangeEvent,
 };
 
 class NodeRenderingData {
@@ -819,10 +819,10 @@ class CORE_EXPORT Node : public EventTarget {
 
   void CheckSlotChange(SlotChangeType);
   void CheckSlotChangeAfterInserted() {
-    CheckSlotChange(SlotChangeType::kInitial);
+    CheckSlotChange(SlotChangeType::kSignalSlotChangeEvent);
   }
   void CheckSlotChangeBeforeRemoved() {
-    CheckSlotChange(SlotChangeType::kInitial);
+    CheckSlotChange(SlotChangeType::kSignalSlotChangeEvent);
   }
 
   // If the node is a plugin, then this returns its WebPluginContainerBase.
@@ -904,8 +904,8 @@ class CORE_EXPORT Node : public EventTarget {
   enum ConstructionType {
     kCreateOther = kDefaultNodeFlags,
     kCreateText = kDefaultNodeFlags | kIsTextFlag,
-    kCreateContainer = kDefaultNodeFlags | kChildNeedsStyleRecalcFlag |
-                       kIsContainerFlag,
+    kCreateContainer =
+        kDefaultNodeFlags | kChildNeedsStyleRecalcFlag | kIsContainerFlag,
     kCreateElement = kCreateContainer | kIsElementFlag,
     kCreateShadowRoot =
         kCreateContainer | kIsDocumentFragmentFlag | kIsInShadowTreeFlag,

@@ -18,8 +18,6 @@ class HTMLSlotElement;
 class Node;
 class ShadowRoot;
 
-// TODO(hayato): Support SlotAssignment for non-shadow trees, e.g. a document
-// tree.
 class SlotAssignment final : public GarbageCollected<SlotAssignment> {
  public:
   static SlotAssignment* Create(ShadowRoot& owner) {
@@ -43,8 +41,8 @@ class SlotAssignment final : public GarbageCollected<SlotAssignment> {
   const HeapVector<Member<HTMLSlotElement>>& Slots();
 
   void DidAddSlot(HTMLSlotElement&);
-  void SlotRemoved(HTMLSlotElement&);
-  void SlotRenamed(const AtomicString& old_name, HTMLSlotElement&);
+  void DidRemoveSlot(HTMLSlotElement&);
+  void DidRenameSlot(const AtomicString& old_name, HTMLSlotElement&);
   void DidChangeHostChildSlotName(const AtomicString& old_value,
                                   const AtomicString& new_value);
 
@@ -55,10 +53,22 @@ class SlotAssignment final : public GarbageCollected<SlotAssignment> {
  private:
   explicit SlotAssignment(ShadowRoot& owner);
 
+  enum class SlotMutationType {
+    kRemoved,
+    kRenamed,
+  };
+
   void CollectSlots();
+  HTMLSlotElement* GetCachedFirstSlotWithoutAccessingNodeTree(
+      const AtomicString& slot_name);
 
   void ResolveAssignment();
   void DistributeTo(Node&, HTMLSlotElement&);
+
+  void DidAddSlotInternal(HTMLSlotElement&);
+  void DidRemoveSlotInternal(HTMLSlotElement&,
+                             const AtomicString& slot_name,
+                             SlotMutationType);
 
   HeapVector<Member<HTMLSlotElement>> slots_;
   Member<DocumentOrderedMap> slot_map_;
