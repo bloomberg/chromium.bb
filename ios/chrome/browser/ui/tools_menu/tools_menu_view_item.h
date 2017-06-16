@@ -14,7 +14,7 @@
 @property(nonatomic, copy) NSString* title;
 @property(nonatomic, assign) NSInteger tag;
 @property(nonatomic, assign) BOOL active;
-@property(nonatomic, assign) ToolsMenuViewCell* tableViewCell;
+@property(nonatomic, weak) ToolsMenuViewCell* tableViewCell;
 
 + (NSString*)cellID;
 + (Class)cellClass;
@@ -25,7 +25,7 @@
 @end
 
 @interface ToolsMenuViewCell : UICollectionViewCell
-@property(nonatomic, retain) UILabel* title;
+@property(nonatomic, strong) UILabel* title;
 @property(nonatomic, readonly) CGFloat horizontalMargin;
 
 - (void)configureForMenuItem:(ToolsMenuViewItem*)item;

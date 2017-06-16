@@ -7,14 +7,18 @@
 #import <QuartzCore/QuartzCore.h>
 
 #include "base/logging.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
+#import "ios/chrome/browser/ui/popup_menu/popup_menu_view.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_view_controller.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/shared/chrome/browser/ui/tools_menu/tools_menu_configuration.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 using base::UserMetricsAction;
 
@@ -33,9 +37,9 @@ NS_INLINE UIEdgeInsets TabHistoryPopupMenuInsets() {
 }  // namespace
 
 @interface ToolsPopupController ()<ToolsPopupTableDelegate> {
-  base::scoped_nsobject<ToolsMenuViewController> _toolsMenuViewController;
+  ToolsMenuViewController* _toolsMenuViewController;
   // Container view of the menu items table.
-  base::scoped_nsobject<UIView> _toolsTableViewContainer;
+  UIView* _toolsTableViewContainer;
 }
 @end
 
@@ -46,8 +50,8 @@ NS_INLINE UIEdgeInsets TabHistoryPopupMenuInsets() {
   DCHECK(configuration.displayView);
   self = [super initWithParentView:configuration.displayView];
   if (self) {
-    _toolsMenuViewController.reset([[ToolsMenuViewController alloc] init]);
-    _toolsTableViewContainer.reset([[_toolsMenuViewController view] retain]);
+    _toolsMenuViewController = [[ToolsMenuViewController alloc] init];
+    _toolsTableViewContainer = [_toolsMenuViewController view];
     [_toolsTableViewContainer layer].cornerRadius = 2;
     [_toolsTableViewContainer layer].masksToBounds = YES;
     [_toolsMenuViewController initializeMenuWithConfiguration:configuration];
@@ -114,7 +118,6 @@ NS_INLINE UIEdgeInsets TabHistoryPopupMenuInsets() {
 - (void)dealloc {
   [_toolsTableViewContainer removeFromSuperview];
   [_toolsMenuViewController setDelegate:nil];
-  [super dealloc];
 }
 
 - (void)fadeInPopupFromSource:(CGPoint)source

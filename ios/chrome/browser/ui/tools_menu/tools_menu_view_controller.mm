@@ -7,10 +7,7 @@
 #include <stdint.h>
 
 #include "base/ios/ios_util.h"
-#import "base/ios/weak_nsobject.h"
 #include "base/logging.h"
-#include "base/mac/objc_property_releaser.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/strings/grit/components_strings.h"
@@ -37,6 +34,11 @@
 #include "ios/web/public/user_agent.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 using ios::material::TimingFunction;
 
 namespace {
@@ -105,14 +107,13 @@ NS_INLINE void AnimateInViews(NSArray* views,
 @interface ToolsMenuViewController ()<UICollectionViewDelegateFlowLayout,
                                       UICollectionViewDataSource,
                                       ReadingListMenuNotificationDelegate> {
-  base::mac::ObjCPropertyReleaser _propertyReleaser_ToolsMenuViewController;
   BOOL _waitForInk;
   // Weak pointer to ReadingListMenuNotifier, used to set the starting values
   // for the reading list badge.
-  base::WeakNSObject<ReadingListMenuNotifier> _readingListMenuNotifier;
+  __weak ReadingListMenuNotifier* _readingListMenuNotifier;
 }
-@property(nonatomic, retain) ToolsMenuCollectionView* menuView;
-@property(nonatomic, retain) MDCInkView* touchFeedbackView;
+@property(nonatomic, strong) ToolsMenuCollectionView* menuView;
+@property(nonatomic, strong) MDCInkView* touchFeedbackView;
 @property(nonatomic, assign) ToolbarType toolbarType;
 // Populated by the configuration object in |initializeMenuWithConfiguration:|
 // stores the time this view controller was requested by the user for the
@@ -217,7 +218,7 @@ NS_INLINE void AnimateInViews(NSArray* views,
   self.requestStartTime = configuration.requestStartTime;
 
   if (configuration.readingListMenuNotifier) {
-    _readingListMenuNotifier.reset(configuration.readingListMenuNotifier);
+    _readingListMenuNotifier = configuration.readingListMenuNotifier;
     [configuration.readingListMenuNotifier setDelegate:self];
   }
 
@@ -331,29 +332,6 @@ NS_INLINE void AnimateInViews(NSArray* views,
 
 #pragma mark - UIViewController Overrides
 
-- (instancetype)initWithNibName:(NSString*)nibNameOrNil
-                         bundle:(NSBundle*)nibBundleOrNil {
-  self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
-  if (self)
-    [self commonInitialization];
-
-  return self;
-}
-
-- (instancetype)initWithCoder:(NSCoder*)aDecoder {
-  self = [super initWithCoder:aDecoder];
-  if (self)
-    [self commonInitialization];
-
-  return self;
-}
-
-- (void)commonInitialization {
-  _propertyReleaser_ToolsMenuViewController.Init(
-      self, [ToolsMenuViewController class]);
-  _readingListMenuNotifier.reset();
-}
-
 - (void)loadView {
   [super loadView];
 
@@ -364,8 +342,8 @@ NS_INLINE void AnimateInViews(NSArray* views,
 
   _touchFeedbackView = [[MDCInkView alloc] initWithFrame:CGRectZero];
 
-  base::scoped_nsobject<UICollectionViewFlowLayout> menuItemsLayout(
-      [[UICollectionViewFlowLayout alloc] init]);
+  UICollectionViewFlowLayout* menuItemsLayout =
+      [[UICollectionViewFlowLayout alloc] init];
 
   _menuView = [[ToolsMenuCollectionView alloc] initWithFrame:[rootView bounds]
                                         collectionViewLayout:menuItemsLayout];
@@ -464,10 +442,10 @@ NS_INLINE void AnimateInViews(NSArray* views,
   [CATransaction commit];
 
   [[self readingListCell]
-      updateBadgeCount:_readingListMenuNotifier.get().readingListUnreadCount
+      updateBadgeCount:_readingListMenuNotifier.readingListUnreadCount
               animated:YES];
   [[self readingListCell]
-      updateSeenState:_readingListMenuNotifier.get().readingListUnseenItemsExist
+      updateSeenState:_readingListMenuNotifier.readingListUnseenItemsExist
              animated:YES];
 }
 
@@ -543,7 +521,7 @@ NS_INLINE void AnimateInViews(NSArray* views,
     didUnhighlightItemAtIndexPath:(NSIndexPath*)path {
   CGPoint touchPoint = [view touchEndPoint];
   touchPoint = [view convertPoint:touchPoint toView:_touchFeedbackView];
-  base::WeakNSObject<MDCInkView> inkView(_touchFeedbackView);
+  __weak MDCInkView* inkView = _touchFeedbackView;
   _waitForInk = YES;
   [_touchFeedbackView startTouchEndedAnimationAtPoint:touchPoint
                                            completion:^{

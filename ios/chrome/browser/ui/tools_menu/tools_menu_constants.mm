@@ -4,6 +4,10 @@
 
 #include "ios/chrome/browser/ui/tools_menu/tools_menu_constants.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 NSString* const kToolsMenuNewTabId = @"kToolsMenuNewTabId";
 NSString* const kToolsMenuNewIncognitoTabId = @"kToolsMenuNewIncognitoTabId";
 NSString* const kToolsMenuCloseAllTabsId = @"kToolsMenuCloseAllTabsId";
