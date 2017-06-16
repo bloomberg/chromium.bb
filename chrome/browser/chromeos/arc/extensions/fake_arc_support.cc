@@ -13,6 +13,36 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/arc/extensions/arc_support_message_host.h"
 
+namespace {
+
+void SerializeAndSend(extensions::NativeMessageHost* native_message_host,
+                      const base::DictionaryValue& message) {
+  DCHECK(native_message_host);
+  std::string message_string;
+  if (!base::JSONWriter::Write(message, &message_string)) {
+    NOTREACHED();
+    return;
+  }
+  native_message_host->OnMessage(message_string);
+}
+
+// Posts onAgree with the three given bools as arguments.
+void PostOnAgree(extensions::NativeMessageHost* native_message_host,
+                 bool metrics_mode,
+                 bool backup_and_restore_mode,
+                 bool location_service_mode) {
+  DCHECK(native_message_host);
+
+  base::DictionaryValue message;
+  message.SetString("event", "onAgreed");
+  message.SetBoolean("isMetricsEnabled", metrics_mode);
+  message.SetBoolean("isBackupRestoreEnabled", backup_and_restore_mode);
+  message.SetBoolean("isLocationServiceEnabled", location_service_mode);
+  SerializeAndSend(native_message_host, message);
+}
+
+}  // namespace
+
 namespace arc {
 
 FakeArcSupport::FakeArcSupport(ArcSupportHost* support_host)
@@ -48,7 +78,7 @@ void FakeArcSupport::EmulateAuthCodeResponse(const std::string& auth_code) {
   base::DictionaryValue message;
   message.SetString("event", "onAuthSucceeded");
   message.SetString("code", auth_code);
-  OnMessage(message);
+  SerializeAndSend(native_message_host_.get(), message);
 }
 
 void FakeArcSupport::EmulateAuthFailure() {
@@ -59,13 +89,13 @@ void FakeArcSupport::EmulateAuthFailure() {
 
 void FakeArcSupport::ClickAgreeButton() {
   DCHECK_EQ(ui_page_, ArcSupportHost::UIPage::TERMS);
+  PostOnAgree(native_message_host_.get(), metrics_mode_,
+              backup_and_restore_mode_, location_service_mode_);
+}
 
-  base::DictionaryValue message;
-  message.SetString("event", "onAgreed");
-  message.SetBoolean("isMetricsEnabled", metrics_mode_);
-  message.SetBoolean("isBackupRestoreEnabled", backup_and_restore_mode_);
-  message.SetBoolean("isLocationServiceEnabled", location_service_mode_);
-  OnMessage(message);
+void FakeArcSupport::ClickAdAuthNextButton() {
+  DCHECK_EQ(ui_page_, ArcSupportHost::UIPage::AD_AUTH_NOTIFICATION);
+  PostOnAgree(native_message_host_.get(), false, false, false);
 }
 
 void FakeArcSupport::ClickRetryButton() {
@@ -112,6 +142,8 @@ void FakeArcSupport::PostMessageFromNativeHost(
       ui_page_ = ArcSupportHost::UIPage::LSO;
     } else if (page == "arc-loading") {
       ui_page_ = ArcSupportHost::UIPage::ARC_LOADING;
+    } else if (page == "ad-auth-notification") {
+      ui_page_ = ArcSupportHost::UIPage::AD_AUTH_NOTIFICATION;
     } else {
       NOTREACHED() << message_string;
     }
@@ -140,16 +172,6 @@ void FakeArcSupport::PostMessageFromNativeHost(
 
 void FakeArcSupport::CloseChannel(const std::string& error_message) {
   NOTREACHED();
-}
-
-void FakeArcSupport::OnMessage(const base::DictionaryValue& message) {
-  DCHECK(native_message_host_);
-  std::string message_string;
-  if (!base::JSONWriter::Write(message, &message_string)) {
-    NOTREACHED();
-    return;
-  }
-  native_message_host_->OnMessage(message_string);
 }
 
 }  // namespace arc

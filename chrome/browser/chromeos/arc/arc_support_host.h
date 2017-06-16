@@ -24,11 +24,12 @@ class ArcSupportHost : public arc::ArcSupportMessageHost::Observer,
                        public display::DisplayObserver {
  public:
   enum class UIPage {
-    NO_PAGE,      // Hide everything.
-    TERMS,        // Terms content page.
-    LSO,          // LSO page to enter user's credentials.
-    ARC_LOADING,  // ARC loading progress page.
-    ERROR,        // ARC start error page.
+    NO_PAGE,               // Hide everything.
+    TERMS,                 // Terms content page.
+    LSO,                   // LSO page to enter user's credentials.
+    ARC_LOADING,           // ARC loading progress page.
+    AD_AUTH_NOTIFICATION,  // Active Directory user auth notification.
+    ERROR,                 // ARC start error page.
   };
 
   // Error types whose corresponding message ARC support has.
@@ -143,6 +144,9 @@ class ArcSupportHost : public arc::ArcSupportMessageHost::Observer,
 
   // Requests to show the "ARC is loading" page.
   void ShowArcLoading();
+
+  // Requests to show the "Active Directory auth notification" page.
+  void ShowActiveDirectoryAuthNotification();
 
   // Requests to show the error page
   void ShowError(Error error, bool should_show_send_feedback);

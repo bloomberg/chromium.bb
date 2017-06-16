@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/auth/arc_auth_context.h"
 #include "chrome/browser/chromeos/arc/auth/arc_auth_service.h"
+#include "chrome/browser/chromeos/arc/optin/arc_active_directory_auth_negotiator.h"
 #include "chrome/browser/chromeos/arc/optin/arc_terms_of_service_default_negotiator.h"
 #include "chrome/browser/chromeos/arc/optin/arc_terms_of_service_oobe_negotiator.h"
 #include "chrome/browser/chromeos/arc/policy/arc_android_management_checker.h"
@@ -178,7 +179,8 @@ void ArcSessionManager::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kArcBackupRestoreEnabled, false);
   registry->RegisterBooleanPref(prefs::kArcLocationServiceEnabled, false);
   // This is used to delete the Play user ID if ARC is disabled for an
-  // AD-managed device.
+  // AD-managed device and as an indicator whether the ARC enrollment token has
+  // already been fetched.
   registry->RegisterStringPref(prefs::kArcActiveDirectoryPlayUserId,
                                std::string());
 }
@@ -190,8 +192,9 @@ bool ArcSessionManager::IsOobeOptInActive() {
   if (!user_manager::UserManager::Get()->IsCurrentUserNew())
     return false;
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableArcOOBEOptIn))
+          chromeos::switches::kEnableArcOOBEOptIn)) {
     return false;
+  }
   if (!chromeos::LoginDisplayHost::default_host())
     return false;
   return true;
@@ -303,14 +306,18 @@ void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
     // * When Opt-in verification is disabled (for tests);
     // * In ARC Kiosk mode, because the only one UI in kiosk mode must be the
     //   kiosk app and device is not needed for opt-in;
-    // * When ARC is managed and all OptIn preferences are managed too, because
-    //   the whole OptIn flow should happen as seamless as possible for the
-    //   user.
+    // * When ARC is managed, the user is not an Active Directory user and all
+    //   OptIn preferences are managed too, because the whole OptIn flow should
+    //   happen as seamless as possible for the user.
+    // For Active Directory users we always show a page notifying them that they
+    // have to authenticate with their identity provider (through SAML) to make
+    // it less weird that a browser window pops up.
     const bool suppress_play_store_app =
         !IsPlayStoreAvailable() || IsArcOptInVerificationDisabled() ||
         IsArcKioskMode() ||
         (IsArcPlayStoreEnabledPreferenceManagedForProfile(profile_) &&
-         AreArcAllOptInPreferencesManagedForProfile(profile_));
+         AreArcAllOptInPreferencesManagedForProfile(profile_) &&
+         !IsActiveDirectoryUserForProfile(profile_));
     if (!suppress_play_store_app) {
       playstore_launcher_.reset(
           new ArcAppLauncher(profile_, kPlayStoreAppId, true, false));
@@ -401,7 +408,7 @@ void ArcSessionManager::SetProfile(Profile* profile) {
 
   // TODO(hidehiko): Remove this condition, and following Shutdown().
   // Do not expect that SetProfile() is called for various Profile instances.
-  // At the moment, it is used for testing purpose.
+  // At the moment, it is used for testing purposes.
   DCHECK(profile != profile_);
   Shutdown();
 
@@ -692,15 +699,23 @@ void ArcSessionManager::MaybeStartTermsOfServiceNegotiation() {
   }
 
   if (IsOobeOptInActive()) {
+    // For AD users the OOBE opt in screen should not be shown.
+    DCHECK(!IsActiveDirectoryUserForProfile(profile_));
     VLOG(1) << "Use OOBE negotiator.";
     terms_of_service_negotiator_ =
         base::MakeUnique<ArcTermsOfServiceOobeNegotiator>();
+  } else if (support_host_ && IsActiveDirectoryUserForProfile(profile_)) {
+    VLOG(1) << "Use Active Directory default negotiator.";
+    terms_of_service_negotiator_ =
+        base::MakeUnique<ArcActiveDirectoryAuthNegotiator>(support_host_.get());
   } else if (support_host_) {
     VLOG(1) << "Use default negotiator.";
     terms_of_service_negotiator_ =
         base::MakeUnique<ArcTermsOfServiceDefaultNegotiator>(
             profile_->GetPrefs(), support_host_.get());
-  } else {
+  }
+
+  if (!terms_of_service_negotiator_) {
     // The only case reached here is when g_disable_ui_for_testing is set
     // so ARC support host is not created in SetProfile(), for testing purpose.
     DCHECK(g_disable_ui_for_testing)
@@ -733,6 +748,15 @@ void ArcSessionManager::OnTermsOfServiceNegotiated(bool accepted) {
 
 bool ArcSessionManager::IsArcTermsOfServiceNegotiationNeeded() const {
   DCHECK(profile_);
+
+  // For Active Directory, we'll always show a page notifying them that they
+  // have to authenticate with their identity provider.
+  if (IsActiveDirectoryUserForProfile(profile_) &&
+      profile_->GetPrefs()
+          ->GetString(prefs::kArcActiveDirectoryPlayUserId)
+          .empty()) {
+    return true;
+  }
 
   // Skip to show UI asking users to set up ARC OptIn preferences, if all of
   // them are managed by the admin policy. Note that the ToS agreement is anyway

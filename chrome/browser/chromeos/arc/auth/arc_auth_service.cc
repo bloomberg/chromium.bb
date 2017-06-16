@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/arc/auth/arc_background_auth_code_fetcher.h"
 #include "chrome/browser/chromeos/arc/auth/arc_manual_auth_code_fetcher.h"
 #include "chrome/browser/chromeos/arc/auth/arc_robot_auth_code_fetcher.h"
@@ -257,11 +258,7 @@ void ArcAuthService::RequestAccountInfoInternal(
   notifier_ = std::move(notifier);
 
   Profile* profile = ArcSessionManager::Get()->profile();
-  const user_manager::User* user = nullptr;
-  if (profile)
-    user = chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
-
-  if (user && user->IsActiveDirectoryUser()) {
+  if (profile && IsActiveDirectoryUserForProfile(profile)) {
     // For Active Directory enrolled devices, we get an enrollment token for a
     // managed Google Play account from DMServer.
     auto enrollment_token_fetcher =

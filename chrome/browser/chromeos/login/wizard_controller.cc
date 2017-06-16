@@ -1560,6 +1560,11 @@ bool WizardController::ShouldShowArcTerms() const {
     VLOG(1) << "Skip ARC Terms of Service screen because ARC is disabled.";
     return false;
   }
+  if (arc::IsActiveDirectoryUserForProfile(profile)) {
+    VLOG(1) << "Skip ARC Terms of Service screen because it does not apply to "
+               "Active Directory users.";
+    return false;
+  }
   return true;
 }
 
