@@ -27,3 +27,5 @@ Updated to 1.6.22, stripped all unneeded files.
   https://github.com/glennrp/libpng/commit/f7d5419816d85d0b996c403e788bb707b552524f
 - Avoid leaking params on bad pCAL chunk from upstream (crbug.com/636214):
   https://github.com/glennrp/libpng/commit/7dc03292502cf91a116766d2ab2c4f8fc23e4ab4
+- Fix for large allocation for invalid ICC (crbug.com/729673)
+  https://github.com/glennrp/libpng/commit/92a7c79db2c962d04006b35e2603ba9d5ce75541
