@@ -252,26 +252,22 @@ class IndexedDBBackingStoreTest : public testing::Test {
         origin, url_request_context_getter_);
 
     // useful keys and values during tests
-    m_value1 = IndexedDBValue("value1", std::vector<IndexedDBBlobInfo>());
-    m_value2 = IndexedDBValue("value2", std::vector<IndexedDBBlobInfo>());
+    value1_ = IndexedDBValue("value1", std::vector<IndexedDBBlobInfo>());
+    value2_ = IndexedDBValue("value2", std::vector<IndexedDBBlobInfo>());
 
-    m_blob_info.push_back(
+    blob_info_.push_back(
         IndexedDBBlobInfo("uuid 3", base::UTF8ToUTF16("blob type"), 1));
-    m_blob_info.push_back(
-        IndexedDBBlobInfo("uuid 4",
-                          base::FilePath(FILE_PATH_LITERAL("path/to/file")),
-                          base::UTF8ToUTF16("file name"),
-                          base::UTF8ToUTF16("file type")));
-    m_blob_info.push_back(
-        IndexedDBBlobInfo("uuid 5",
-                          base::FilePath(),
-                          base::UTF8ToUTF16("file name"),
-                          base::UTF8ToUTF16("file type")));
-    m_value3 = IndexedDBValue("value3", m_blob_info);
+    blob_info_.push_back(IndexedDBBlobInfo(
+        "uuid 4", base::FilePath(FILE_PATH_LITERAL("path/to/file")),
+        base::UTF8ToUTF16("file name"), base::UTF8ToUTF16("file type")));
+    blob_info_.push_back(IndexedDBBlobInfo("uuid 5", base::FilePath(),
+                                           base::UTF8ToUTF16("file name"),
+                                           base::UTF8ToUTF16("file type")));
+    value3_ = IndexedDBValue("value3", blob_info_);
 
-    m_key1 = IndexedDBKey(99, blink::kWebIDBKeyTypeNumber);
-    m_key2 = IndexedDBKey(ASCIIToUTF16("key2"));
-    m_key3 = IndexedDBKey(ASCIIToUTF16("key3"));
+    key1_ = IndexedDBKey(99, blink::kWebIDBKeyTypeNumber);
+    key2_ = IndexedDBKey(ASCIIToUTF16("key2"));
+    key3_ = IndexedDBKey(ASCIIToUTF16("key3"));
   }
 
   void TearDown() override {
@@ -281,10 +277,10 @@ class IndexedDBBackingStoreTest : public testing::Test {
   // This just checks the data that survive getting stored and recalled, e.g.
   // the file path and UUID will change and thus aren't verified.
   bool CheckBlobInfoMatches(const std::vector<IndexedDBBlobInfo>& reads) const {
-    if (m_blob_info.size() != reads.size())
+    if (blob_info_.size() != reads.size())
       return false;
-    for (size_t i = 0; i < m_blob_info.size(); ++i) {
-      const IndexedDBBlobInfo& a = m_blob_info[i];
+    for (size_t i = 0; i < blob_info_.size(); ++i) {
+      const IndexedDBBlobInfo& a = blob_info_[i];
       const IndexedDBBlobInfo& b = reads[i];
       if (a.is_file() != b.is_file())
         return false;
@@ -318,12 +314,12 @@ class IndexedDBBackingStoreTest : public testing::Test {
   }
 
   bool CheckBlobWrites() const {
-    if (backing_store_->writes().size() != m_blob_info.size())
+    if (backing_store_->writes().size() != blob_info_.size())
       return false;
     for (size_t i = 0; i < backing_store_->writes().size(); ++i) {
       const IndexedDBBackingStore::Transaction::WriteDescriptor& desc =
           backing_store_->writes()[i];
-      const IndexedDBBlobInfo& info = m_blob_info[i];
+      const IndexedDBBlobInfo& info = blob_info_[i];
       if (desc.is_file() != info.is_file()) {
         if (!info.is_file() || !info.file_path().empty())
           return false;
@@ -363,13 +359,13 @@ class IndexedDBBackingStoreTest : public testing::Test {
   scoped_refptr<TestableIndexedDBBackingStore> backing_store_;
 
   // Sample keys and values that are consistent.
-  IndexedDBKey m_key1;
-  IndexedDBKey m_key2;
-  IndexedDBKey m_key3;
-  IndexedDBValue m_value1;
-  IndexedDBValue m_value2;
-  IndexedDBValue m_value3;
-  std::vector<IndexedDBBlobInfo> m_blob_info;
+  IndexedDBKey key1_;
+  IndexedDBKey key2_;
+  IndexedDBKey key3_;
+  IndexedDBValue value1_;
+  IndexedDBValue value2_;
+  IndexedDBValue value3_;
+  std::vector<IndexedDBBlobInfo> blob_info_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(IndexedDBBackingStoreTest);
@@ -407,8 +403,8 @@ TEST_F(IndexedDBBackingStoreTest, PutGetConsistency) {
     transaction1.Begin();
     std::vector<std::unique_ptr<storage::BlobDataHandle>> handles;
     IndexedDBBackingStore::RecordIdentifier record;
-    leveldb::Status s = backing_store_->PutRecord(
-        &transaction1, 1, 1, m_key1, &m_value1, &handles, &record);
+    leveldb::Status s = backing_store_->PutRecord(&transaction1, 1, 1, key1_,
+                                                  &value1_, &handles, &record);
     EXPECT_TRUE(s.ok());
     scoped_refptr<TestCallback> callback(new TestCallback());
     EXPECT_TRUE(transaction1.CommitPhaseOne(callback).ok());
@@ -422,14 +418,14 @@ TEST_F(IndexedDBBackingStoreTest, PutGetConsistency) {
     transaction2.Begin();
     IndexedDBValue result_value;
     EXPECT_TRUE(
-        backing_store_->GetRecord(&transaction2, 1, 1, m_key1, &result_value)
+        backing_store_->GetRecord(&transaction2, 1, 1, key1_, &result_value)
             .ok());
     scoped_refptr<TestCallback> callback(new TestCallback());
     EXPECT_TRUE(transaction2.CommitPhaseOne(callback).ok());
     EXPECT_TRUE(callback->called);
     EXPECT_TRUE(callback->succeeded);
     EXPECT_TRUE(transaction2.CommitPhaseTwo().ok());
-    EXPECT_EQ(m_value1.bits, result_value.bits);
+    EXPECT_EQ(value1_.bits, result_value.bits);
   }
 }
 
@@ -439,13 +435,10 @@ TEST_F(IndexedDBBackingStoreTest, PutGetConsistencyWithBlobs) {
     transaction1.Begin();
     std::vector<std::unique_ptr<storage::BlobDataHandle>> handles;
     IndexedDBBackingStore::RecordIdentifier record;
-    EXPECT_TRUE(backing_store_->PutRecord(&transaction1,
-                                          1,
-                                          1,
-                                          m_key3,
-                                          &m_value3,
-                                          &handles,
-                                          &record).ok());
+    EXPECT_TRUE(
+        backing_store_
+            ->PutRecord(&transaction1, 1, 1, key3_, &value3_, &handles, &record)
+            .ok());
     scoped_refptr<TestCallback> callback(new TestCallback());
     EXPECT_TRUE(transaction1.CommitPhaseOne(callback).ok());
     task_runner_->RunUntilIdle();
@@ -460,14 +453,14 @@ TEST_F(IndexedDBBackingStoreTest, PutGetConsistencyWithBlobs) {
     transaction2.Begin();
     IndexedDBValue result_value;
     EXPECT_TRUE(
-        backing_store_->GetRecord(&transaction2, 1, 1, m_key3, &result_value)
+        backing_store_->GetRecord(&transaction2, 1, 1, key3_, &result_value)
             .ok());
     scoped_refptr<TestCallback> callback(new TestCallback());
     EXPECT_TRUE(transaction2.CommitPhaseOne(callback).ok());
     EXPECT_TRUE(callback->called);
     EXPECT_TRUE(callback->succeeded);
     EXPECT_TRUE(transaction2.CommitPhaseTwo().ok());
-    EXPECT_EQ(m_value3.bits, result_value.bits);
+    EXPECT_EQ(value3_.bits, result_value.bits);
     EXPECT_TRUE(CheckBlobInfoMatches(result_value.blob_info));
     EXPECT_TRUE(CheckBlobReadsMatchWrites(result_value.blob_info));
   }
@@ -476,10 +469,9 @@ TEST_F(IndexedDBBackingStoreTest, PutGetConsistencyWithBlobs) {
     IndexedDBBackingStore::Transaction transaction3(backing_store_.get());
     transaction3.Begin();
     IndexedDBValue result_value;
-    EXPECT_TRUE(
-        backing_store_
-            ->DeleteRange(&transaction3, 1, 1, IndexedDBKeyRange(m_key3))
-            .ok());
+    EXPECT_TRUE(backing_store_
+                    ->DeleteRange(&transaction3, 1, 1, IndexedDBKeyRange(key3_))
+                    .ok());
     scoped_refptr<TestCallback> callback(new TestCallback());
     EXPECT_TRUE(transaction3.CommitPhaseOne(callback).ok());
     task_runner_->RunUntilIdle();
@@ -672,8 +664,10 @@ TEST_F(IndexedDBBackingStoreTest, BlobJournalInterleavedTransactions) {
   transaction1.Begin();
   std::vector<std::unique_ptr<storage::BlobDataHandle>> handles1;
   IndexedDBBackingStore::RecordIdentifier record1;
-  EXPECT_TRUE(backing_store_->PutRecord(&transaction1, 1, 1, m_key3, &m_value3,
-                                        &handles1, &record1).ok());
+  EXPECT_TRUE(
+      backing_store_
+          ->PutRecord(&transaction1, 1, 1, key3_, &value3_, &handles1, &record1)
+          .ok());
   scoped_refptr<TestCallback> callback1(new TestCallback());
   EXPECT_TRUE(transaction1.CommitPhaseOne(callback1).ok());
   task_runner_->RunUntilIdle();
@@ -686,8 +680,10 @@ TEST_F(IndexedDBBackingStoreTest, BlobJournalInterleavedTransactions) {
   transaction2.Begin();
   std::vector<std::unique_ptr<storage::BlobDataHandle>> handles2;
   IndexedDBBackingStore::RecordIdentifier record2;
-  EXPECT_TRUE(backing_store_->PutRecord(&transaction2, 1, 1, m_key1, &m_value1,
-                                        &handles2, &record2).ok());
+  EXPECT_TRUE(
+      backing_store_
+          ->PutRecord(&transaction2, 1, 1, key1_, &value1_, &handles2, &record2)
+          .ok());
   scoped_refptr<TestCallback> callback2(new TestCallback());
   EXPECT_TRUE(transaction2.CommitPhaseOne(callback2).ok());
   task_runner_->RunUntilIdle();
@@ -709,13 +705,10 @@ TEST_F(IndexedDBBackingStoreTest, LiveBlobJournal) {
     transaction1.Begin();
     std::vector<std::unique_ptr<storage::BlobDataHandle>> handles;
     IndexedDBBackingStore::RecordIdentifier record;
-    EXPECT_TRUE(backing_store_->PutRecord(&transaction1,
-                                          1,
-                                          1,
-                                          m_key3,
-                                          &m_value3,
-                                          &handles,
-                                          &record).ok());
+    EXPECT_TRUE(
+        backing_store_
+            ->PutRecord(&transaction1, 1, 1, key3_, &value3_, &handles, &record)
+            .ok());
     scoped_refptr<TestCallback> callback(new TestCallback());
     EXPECT_TRUE(transaction1.CommitPhaseOne(callback).ok());
     task_runner_->RunUntilIdle();
@@ -729,16 +722,15 @@ TEST_F(IndexedDBBackingStoreTest, LiveBlobJournal) {
   {
     IndexedDBBackingStore::Transaction transaction2(backing_store_.get());
     transaction2.Begin();
-    EXPECT_TRUE(
-        backing_store_->GetRecord(
-                            &transaction2, 1, 1, m_key3, &read_result_value)
-            .ok());
+    EXPECT_TRUE(backing_store_
+                    ->GetRecord(&transaction2, 1, 1, key3_, &read_result_value)
+                    .ok());
     scoped_refptr<TestCallback> callback(new TestCallback());
     EXPECT_TRUE(transaction2.CommitPhaseOne(callback).ok());
     EXPECT_TRUE(callback->called);
     EXPECT_TRUE(callback->succeeded);
     EXPECT_TRUE(transaction2.CommitPhaseTwo().ok());
-    EXPECT_EQ(m_value3.bits, read_result_value.bits);
+    EXPECT_EQ(value3_.bits, read_result_value.bits);
     EXPECT_TRUE(CheckBlobInfoMatches(read_result_value.blob_info));
     EXPECT_TRUE(CheckBlobReadsMatchWrites(read_result_value.blob_info));
     for (size_t i = 0; i < read_result_value.blob_info.size(); ++i) {
@@ -749,10 +741,9 @@ TEST_F(IndexedDBBackingStoreTest, LiveBlobJournal) {
   {
     IndexedDBBackingStore::Transaction transaction3(backing_store_.get());
     transaction3.Begin();
-    EXPECT_TRUE(
-        backing_store_
-            ->DeleteRange(&transaction3, 1, 1, IndexedDBKeyRange(m_key3))
-            .ok());
+    EXPECT_TRUE(backing_store_
+                    ->DeleteRange(&transaction3, 1, 1, IndexedDBKeyRange(key3_))
+                    .ok());
     scoped_refptr<TestCallback> callback(new TestCallback());
     EXPECT_TRUE(transaction3.CommitPhaseOne(callback).ok());
     task_runner_->RunUntilIdle();
@@ -780,7 +771,7 @@ TEST_F(IndexedDBBackingStoreTest, HighIds) {
 
   const int64_t invalid_high_index_id = 1ULL << 37;
 
-  const IndexedDBKey& index_key = m_key2;
+  const IndexedDBKey& index_key = key2_;
   std::string index_key_raw;
   EncodeIDBKey(index_key, &index_key_raw);
   {
@@ -788,13 +779,9 @@ TEST_F(IndexedDBBackingStoreTest, HighIds) {
     transaction1.Begin();
     std::vector<std::unique_ptr<storage::BlobDataHandle>> handles;
     IndexedDBBackingStore::RecordIdentifier record;
-    leveldb::Status s = backing_store_->PutRecord(&transaction1,
-                                                  high_database_id,
-                                                  high_object_store_id,
-                                                  m_key1,
-                                                  &m_value1,
-                                                  &handles,
-                                                  &record);
+    leveldb::Status s = backing_store_->PutRecord(
+        &transaction1, high_database_id, high_object_store_id, key1_, &value1_,
+        &handles, &record);
     EXPECT_TRUE(s.ok());
 
     s = backing_store_->PutIndexDataForRecord(&transaction1,
@@ -826,13 +813,11 @@ TEST_F(IndexedDBBackingStoreTest, HighIds) {
     IndexedDBBackingStore::Transaction transaction2(backing_store_.get());
     transaction2.Begin();
     IndexedDBValue result_value;
-    leveldb::Status s = backing_store_->GetRecord(&transaction2,
-                                                  high_database_id,
-                                                  high_object_store_id,
-                                                  m_key1,
-                                                  &result_value);
+    leveldb::Status s =
+        backing_store_->GetRecord(&transaction2, high_database_id,
+                                  high_object_store_id, key1_, &result_value);
     EXPECT_TRUE(s.ok());
-    EXPECT_EQ(m_value1.bits, result_value.bits);
+    EXPECT_EQ(value1_.bits, result_value.bits);
 
     std::unique_ptr<IndexedDBKey> new_primary_key;
     s = backing_store_->GetPrimaryKeyViaIndex(&transaction2,
@@ -850,7 +835,7 @@ TEST_F(IndexedDBBackingStoreTest, HighIds) {
                                               index_key,
                                               &new_primary_key);
     EXPECT_TRUE(s.ok());
-    EXPECT_TRUE(new_primary_key->Equals(m_key1));
+    EXPECT_TRUE(new_primary_key->Equals(key1_));
 
     scoped_refptr<TestCallback> callback(new TestCallback());
     s = transaction2.CommitPhaseOne(callback);
@@ -878,77 +863,54 @@ TEST_F(IndexedDBBackingStoreTest, InvalidIds) {
 
   std::vector<std::unique_ptr<storage::BlobDataHandle>> handles;
   IndexedDBBackingStore::RecordIdentifier record;
-  leveldb::Status s = backing_store_->PutRecord(&transaction1,
-                                                database_id,
-                                                KeyPrefix::kInvalidId,
-                                                m_key1,
-                                                &m_value1,
-                                                &handles,
-                                                &record);
+  leveldb::Status s = backing_store_->PutRecord(&transaction1, database_id,
+                                                KeyPrefix::kInvalidId, key1_,
+                                                &value1_, &handles, &record);
   EXPECT_FALSE(s.ok());
-  s = backing_store_->PutRecord(
-      &transaction1, database_id, 0, m_key1, &m_value1, &handles, &record);
+  s = backing_store_->PutRecord(&transaction1, database_id, 0, key1_, &value1_,
+                                &handles, &record);
   EXPECT_FALSE(s.ok());
-  s = backing_store_->PutRecord(&transaction1,
-                                KeyPrefix::kInvalidId,
-                                object_store_id,
-                                m_key1,
-                                &m_value1,
-                                &handles,
+  s = backing_store_->PutRecord(&transaction1, KeyPrefix::kInvalidId,
+                                object_store_id, key1_, &value1_, &handles,
                                 &record);
   EXPECT_FALSE(s.ok());
-  s = backing_store_->PutRecord(
-      &transaction1, 0, object_store_id, m_key1, &m_value1, &handles, &record);
+  s = backing_store_->PutRecord(&transaction1, 0, object_store_id, key1_,
+                                &value1_, &handles, &record);
   EXPECT_FALSE(s.ok());
 
-  s = backing_store_->GetRecord(
-      &transaction1, database_id, KeyPrefix::kInvalidId, m_key1, &result_value);
+  s = backing_store_->GetRecord(&transaction1, database_id,
+                                KeyPrefix::kInvalidId, key1_, &result_value);
   EXPECT_FALSE(s.ok());
-  s = backing_store_->GetRecord(
-      &transaction1, database_id, 0, m_key1, &result_value);
-  EXPECT_FALSE(s.ok());
-  s = backing_store_->GetRecord(&transaction1,
-                                KeyPrefix::kInvalidId,
-                                object_store_id,
-                                m_key1,
+  s = backing_store_->GetRecord(&transaction1, database_id, 0, key1_,
                                 &result_value);
   EXPECT_FALSE(s.ok());
-  s = backing_store_->GetRecord(
-      &transaction1, 0, object_store_id, m_key1, &result_value);
+  s = backing_store_->GetRecord(&transaction1, KeyPrefix::kInvalidId,
+                                object_store_id, key1_, &result_value);
+  EXPECT_FALSE(s.ok());
+  s = backing_store_->GetRecord(&transaction1, 0, object_store_id, key1_,
+                                &result_value);
   EXPECT_FALSE(s.ok());
 
   std::unique_ptr<IndexedDBKey> new_primary_key;
-  s = backing_store_->GetPrimaryKeyViaIndex(&transaction1,
-                                            database_id,
-                                            object_store_id,
-                                            KeyPrefix::kInvalidId,
-                                            m_key1,
-                                            &new_primary_key);
-  EXPECT_FALSE(s.ok());
-  s = backing_store_->GetPrimaryKeyViaIndex(&transaction1,
-                                            database_id,
-                                            object_store_id,
-                                            invalid_low_index_id,
-                                            m_key1,
-                                            &new_primary_key);
+  s = backing_store_->GetPrimaryKeyViaIndex(
+      &transaction1, database_id, object_store_id, KeyPrefix::kInvalidId, key1_,
+      &new_primary_key);
   EXPECT_FALSE(s.ok());
   s = backing_store_->GetPrimaryKeyViaIndex(
-      &transaction1, database_id, object_store_id, 0, m_key1, &new_primary_key);
+      &transaction1, database_id, object_store_id, invalid_low_index_id, key1_,
+      &new_primary_key);
+  EXPECT_FALSE(s.ok());
+  s = backing_store_->GetPrimaryKeyViaIndex(
+      &transaction1, database_id, object_store_id, 0, key1_, &new_primary_key);
   EXPECT_FALSE(s.ok());
 
-  s = backing_store_->GetPrimaryKeyViaIndex(&transaction1,
-                                            KeyPrefix::kInvalidId,
-                                            object_store_id,
-                                            index_id,
-                                            m_key1,
-                                            &new_primary_key);
+  s = backing_store_->GetPrimaryKeyViaIndex(
+      &transaction1, KeyPrefix::kInvalidId, object_store_id, index_id, key1_,
+      &new_primary_key);
   EXPECT_FALSE(s.ok());
-  s = backing_store_->GetPrimaryKeyViaIndex(&transaction1,
-                                            database_id,
-                                            KeyPrefix::kInvalidId,
-                                            index_id,
-                                            m_key1,
-                                            &new_primary_key);
+  s = backing_store_->GetPrimaryKeyViaIndex(&transaction1, database_id,
+                                            KeyPrefix::kInvalidId, index_id,
+                                            key1_, &new_primary_key);
   EXPECT_FALSE(s.ok());
 }
 
