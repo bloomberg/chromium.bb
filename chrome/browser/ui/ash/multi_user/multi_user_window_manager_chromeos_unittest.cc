@@ -9,6 +9,7 @@
 
 #include "ash/content/shell_content_state.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -53,6 +54,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/wm/core/window_modality_controller.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
@@ -1313,6 +1315,10 @@ class TestWindowObserver : public aura::WindowObserver {
 // Test that switching between users with the shelf in the same place, the shelf
 // will get covered with a black bar instead being hidden and re-shown.
 TEST_F(MultiUserWindowManagerChromeOSTest, TestBlackBarCover) {
+  // We need to ensure this works for external connected monitors as well, so
+  // add a secondary display.
+  UpdateDisplay("500x500,500x500");
+
   SetUpForThisManyWindows(2);
 
   const AccountId account_id_A(AccountId::FromUserEmail("A"));
@@ -1320,27 +1326,46 @@ TEST_F(MultiUserWindowManagerChromeOSTest, TestBlackBarCover) {
 
   multi_user_window_manager()->SetWindowOwner(window(0), account_id_A);
   multi_user_window_manager()->SetWindowOwner(window(1), account_id_B);
-  Shelf* shelf = GetPrimaryShelf();
+
+  // Move the second window to the second display and make sure it is not
+  // maximized for the first part of the test.
+  ASSERT_EQ(2u, display_manager()->GetNumDisplays());
+  window(1)->SetBoundsInScreen(gfx::Rect(0, 0, 100, 100),
+                               display_manager()->GetDisplayAt(1));
+
+  ASSERT_EQ(2u, Shell::GetAllRootWindowControllers().size());
+  Shelf* primary_shelf = Shell::GetAllRootWindowControllers()[0]->shelf();
+  Shelf* secondary_shelf = Shell::GetAllRootWindowControllers()[1]->shelf();
+  ShelfWidget* primary_shelf_widget = primary_shelf->shelf_widget();
+  ShelfWidget* secondary_shelf_widget = secondary_shelf->shelf_widget();
 
   // Turn the use of delays and animation on.
   multi_user_window_manager()->SetAnimationSpeedForTest(
       chrome::MultiUserWindowManagerChromeOS::ANIMATION_SPEED_FAST);
-  EXPECT_NE(SHELF_AUTO_HIDE_ALWAYS_HIDDEN, shelf->auto_hide_behavior());
-  ShelfWidget* shelf_widget = shelf->shelf_widget();
-  EXPECT_FALSE(shelf_widget->IsShelfHiddenBehindBlackBar());
+  EXPECT_NE(SHELF_AUTO_HIDE_ALWAYS_HIDDEN, primary_shelf->auto_hide_behavior());
+  EXPECT_NE(SHELF_AUTO_HIDE_ALWAYS_HIDDEN,
+            secondary_shelf->auto_hide_behavior());
+  EXPECT_FALSE(primary_shelf_widget->IsShelfHiddenBehindBlackBar());
+  EXPECT_FALSE(secondary_shelf_widget->IsShelfHiddenBehindBlackBar());
 
   // First test that with no maximized window we show/hide the shelf.
   StartUserTransitionAnimation(account_id_B);
-  EXPECT_FALSE(shelf_widget->IsShelfHiddenBehindBlackBar());
-  EXPECT_EQ(SHELF_AUTO_HIDE_ALWAYS_HIDDEN, shelf->auto_hide_behavior());
+  EXPECT_FALSE(primary_shelf_widget->IsShelfHiddenBehindBlackBar());
+  EXPECT_FALSE(secondary_shelf_widget->IsShelfHiddenBehindBlackBar());
+  EXPECT_EQ(SHELF_AUTO_HIDE_ALWAYS_HIDDEN, primary_shelf->auto_hide_behavior());
+  EXPECT_EQ(SHELF_AUTO_HIDE_ALWAYS_HIDDEN,
+            secondary_shelf->auto_hide_behavior());
 
   // Staring the next step should show the shelf again.
   AdvanceUserTransitionAnimation();
-  EXPECT_FALSE(shelf_widget->IsShelfHiddenBehindBlackBar());
+  EXPECT_FALSE(primary_shelf_widget->IsShelfHiddenBehindBlackBar());
+  EXPECT_FALSE(secondary_shelf_widget->IsShelfHiddenBehindBlackBar());
 
   AdvanceUserTransitionAnimation();
-  EXPECT_FALSE(shelf_widget->IsShelfHiddenBehindBlackBar());
-  shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
+  EXPECT_FALSE(primary_shelf_widget->IsShelfHiddenBehindBlackBar());
+  EXPECT_FALSE(secondary_shelf_widget->IsShelfHiddenBehindBlackBar());
+  primary_shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
+  secondary_shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
 
   // Now we maximize the windows which will cause the black overlay to show up.
   wm::GetWindowState(window(0))->Maximize();
@@ -1354,16 +1379,23 @@ TEST_F(MultiUserWindowManagerChromeOSTest, TestBlackBarCover) {
   // Start the animation and see that the shelf gets hidden by the black bar,
   // and the AutoHide behavior remains as it was.
   StartUserTransitionAnimation(account_id_A);
-  EXPECT_TRUE(shelf_widget->IsShelfHiddenBehindBlackBar());
-  EXPECT_NE(SHELF_AUTO_HIDE_ALWAYS_HIDDEN, shelf->auto_hide_behavior());
+  EXPECT_TRUE(primary_shelf_widget->IsShelfHiddenBehindBlackBar());
+  EXPECT_TRUE(secondary_shelf_widget->IsShelfHiddenBehindBlackBar());
+  EXPECT_NE(SHELF_AUTO_HIDE_ALWAYS_HIDDEN, primary_shelf->auto_hide_behavior());
+  EXPECT_NE(SHELF_AUTO_HIDE_ALWAYS_HIDDEN,
+            secondary_shelf->auto_hide_behavior());
 
   // Starting the next step should show the shelf again.
   AdvanceUserTransitionAnimation();
-  EXPECT_FALSE(shelf_widget->IsShelfHiddenBehindBlackBar());
-  EXPECT_NE(SHELF_AUTO_HIDE_ALWAYS_HIDDEN, shelf->auto_hide_behavior());
+  EXPECT_FALSE(primary_shelf_widget->IsShelfHiddenBehindBlackBar());
+  EXPECT_FALSE(secondary_shelf_widget->IsShelfHiddenBehindBlackBar());
+  EXPECT_NE(SHELF_AUTO_HIDE_ALWAYS_HIDDEN, primary_shelf->auto_hide_behavior());
+  EXPECT_NE(SHELF_AUTO_HIDE_ALWAYS_HIDDEN,
+            secondary_shelf->auto_hide_behavior());
 
   AdvanceUserTransitionAnimation();
-  EXPECT_FALSE(shelf_widget->IsShelfHiddenBehindBlackBar());
+  EXPECT_FALSE(primary_shelf_widget->IsShelfHiddenBehindBlackBar());
+  EXPECT_FALSE(secondary_shelf_widget->IsShelfHiddenBehindBlackBar());
   window(0)->RemoveObserver(&window_observer);
   window(1)->RemoveObserver(&window_observer);
   // No resize should have been done to the window.
