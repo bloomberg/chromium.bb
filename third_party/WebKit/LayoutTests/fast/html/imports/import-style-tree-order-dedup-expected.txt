@@ -1,3 +1,4 @@
+CONSOLE WARNING: Styling master document from stylesheets defined in HTML Imports is deprecated, and is planned to be removed in M65, around March 2018. Please refer to https://goo.gl/EGXzpw for possible migration paths.
 PASS colorOf(target1) is 'rgb(0, 128, 0)'
 PASS colorOf(target2) is 'rgb(255, 0, 0)'
 PASS colorOf(target3) is 'rgb(255, 0, 0)'

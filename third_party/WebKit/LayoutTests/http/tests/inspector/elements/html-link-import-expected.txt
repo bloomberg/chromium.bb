@@ -1,3 +1,4 @@
+CONSOLE WARNING: Styling master document from stylesheets defined in HTML Imports is deprecated, and is planned to be removed in M65, around March 2018. Please refer to https://goo.gl/EGXzpw for possible migration paths.
 This test verifies that imported document is rendered within the import link.
 
 - <html>
