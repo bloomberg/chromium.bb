@@ -11517,6 +11517,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="407" label="ACCESSIBILITY_PRIVATE_ON_TWO_FINGER_TOUCH_STOP"/>
   <int value="408" label="MEDIA_PERCEPTION_PRIVATE_ON_MEDIA_PERCEPTION"/>
   <int value="409" label="NETWORKING_PRIVATE_ON_CERTIFICATE_LISTS_CHANGED"/>
+  <int value="410" label="LOCK_SCREEN_DATA_ON_DATA_ITEMS_AVAILABLE"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult" type="int">
@@ -12746,6 +12747,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1177" label="NETWORKINGPRIVATE_GETCERTIFICATELISTS"/>
   <int value="1178" label="ACCESSIBILITY_PRIVATE_SETSWITCHACCESSKEYS"/>
   <int value="1179" label="FEEDBACKPRIVATE_READLOGSOURCE"/>
+  <int value="1180" label="LOCKSCREENDATA_CREATE"/>
+  <int value="1181" label="LOCKSCREENDATA_GETALL"/>
+  <int value="1182" label="LOCKSCREENDATA_GETCONTENT"/>
+  <int value="1183" label="LOCKSCREENDATA_SETCONTENT"/>
+  <int value="1184" label="LOCKSCREENDATA_DELETE"/>
 </enum>
 
 <enum name="ExtensionIconState" type="int">
