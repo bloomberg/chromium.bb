@@ -1801,6 +1801,12 @@ void RenderFrameImpl::OnSwapOut(
   proxy = RenderFrameProxy::CreateProxyToReplaceFrame(
       this, proxy_routing_id, replicated_frame_state.scope);
 
+  // Synchronously run the unload handler before sending the ACK.
+  // TODO(creis): Call dispatchUnloadEvent unconditionally here to support
+  // unload on subframes as well.
+  if (is_main_frame_)
+    frame_->DispatchUnloadEvent();
+
   // Swap out and stop sending any IPC messages that are not ACKs.
   if (is_main_frame_)
     render_view_->SetSwappedOut(true);
