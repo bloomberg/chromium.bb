@@ -263,9 +263,7 @@ void NavigatorImpl::DidFailProvisionalLoadWithError(
     // in the previous tab type. If you navigate somewhere that activates the
     // tab with the interstitial again, you'll see a flash before the new load
     // commits of the interstitial page.
-    FrameTreeNode* root =
-        render_frame_host->frame_tree_node()->frame_tree()->root();
-    if (root->render_manager()->interstitial_page() != NULL) {
+    if (delegate_ && delegate_->ShowingInterstitialPage()) {
       LOG(WARNING) << "Discarding message during interstitial.";
       return;
     }

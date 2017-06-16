@@ -14,8 +14,10 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/interstitial_page_delegate.h"
+#include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
+#include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "ipc/message_filter.h"
@@ -309,6 +311,52 @@ IN_PROC_BROWSER_TEST_F(InterstitialPageImplTest, SelectAll) {
 
   ASSERT_TRUE(GetSelection(&input_text));
   EXPECT_EQ("original body text", input_text);
+
+  TearDownInterstitialPage();
+}
+
+// Ensure that we don't show the underlying RenderWidgetHostView if a subframe
+// commits in the original page while an interstitial is showing.
+// See https://crbug.com/729105.
+IN_PROC_BROWSER_TEST_F(InterstitialPageImplTest, UnderlyingSubframeCommit) {
+  // This test doesn't apply in PlzNavigate, since the subframe does not
+  // succesfully commit in that mode.
+  // TODO(creis, clamy): Determine if this is a bug that should be fixed.
+  if (IsBrowserSideNavigationEnabled())
+    return;
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // Load an initial page and inject an iframe that won't commit yet.
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  GURL main_url(embedded_test_server()->GetURL("/title1.html"));
+  GURL slow_url(embedded_test_server()->GetURL("/title2.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  TestNavigationManager subframe_delayer(web_contents, slow_url);
+  {
+    std::string script =
+        "var iframe = document.createElement('iframe');"
+        "iframe.src = '" +
+        slow_url.spec() +
+        "';"
+        "document.body.appendChild(iframe);";
+    EXPECT_TRUE(ExecuteScript(web_contents->GetMainFrame(), script));
+  }
+  EXPECT_TRUE(subframe_delayer.WaitForRequestStart());
+
+  // Show an interstitial. The underlying RenderWidgetHostView should not be
+  // showing.
+  SetUpInterstitialPage();
+  EXPECT_FALSE(web_contents->GetMainFrame()->GetView()->IsShowing());
+  EXPECT_TRUE(web_contents->GetMainFrame()->GetRenderWidgetHost()->is_hidden());
+
+  // Allow the subframe to commit.
+  subframe_delayer.WaitForNavigationFinished();
+
+  // The underlying RenderWidgetHostView should still not be showing.
+  EXPECT_FALSE(web_contents->GetMainFrame()->GetView()->IsShowing());
+  EXPECT_TRUE(web_contents->GetMainFrame()->GetRenderWidgetHost()->is_hidden());
 
   TearDownInterstitialPage();
 }

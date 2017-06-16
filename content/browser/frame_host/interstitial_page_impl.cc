@@ -540,6 +540,11 @@ const std::string& InterstitialPageImpl::GetUserAgentOverride() const {
   return base::EmptyString();
 }
 
+bool InterstitialPageImpl::ShowingInterstitialPage() const {
+  // An interstitial page never shows a second interstitial.
+  return false;
+}
+
 RendererPreferences InterstitialPageImpl::GetRendererPrefs(
     BrowserContext* browser_context) const {
   delegate_->OverrideRendererPrefs(&renderer_preferences_);

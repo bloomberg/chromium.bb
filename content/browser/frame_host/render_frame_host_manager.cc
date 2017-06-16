@@ -61,7 +61,6 @@ RenderFrameHostManager::RenderFrameHostManager(
       delegate_(delegate),
       render_frame_delegate_(render_frame_delegate),
       render_widget_delegate_(render_widget_delegate),
-      interstitial_page_(nullptr),
       weak_factory_(this) {
   DCHECK(frame_tree_node_);
 }
@@ -133,8 +132,8 @@ WebUIImpl* RenderFrameHostManager::GetNavigatingWebUI() const {
 }
 
 RenderWidgetHostView* RenderFrameHostManager::GetRenderWidgetHostView() const {
-  if (interstitial_page_)
-    return interstitial_page_->GetView();
+  if (delegate_->GetInterstitialForRenderManager())
+    return delegate_->GetInterstitialForRenderManager()->GetView();
   if (render_frame_host_)
     return render_frame_host_->GetView();
   return nullptr;
@@ -1424,7 +1423,7 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
   // SiteInstances if you type in a cross-site URL.  This means we have to
   // compare the entry's URL to the last committed entry's URL.
   NavigationEntry* current_entry = controller.GetLastCommittedEntry();
-  if (interstitial_page_) {
+  if (delegate_->GetInterstitialForRenderManager()) {
     // The interstitial is currently the last committed entry, but we want to
     // compare against the last non-interstitial entry.
     current_entry = controller.GetEntryAtOffset(-1);
@@ -2825,13 +2824,13 @@ bool RenderFrameHostManager::CanSubframeSwapProcess(
 }
 
 void RenderFrameHostManager::EnsureRenderFrameHostVisibilityConsistent() {
-  if (render_frame_host_->GetView() &&
-      render_frame_host_->render_view_host()->GetWidget()->is_hidden() !=
-          delegate_->IsHidden()) {
+  RenderWidgetHostView* view = GetRenderWidgetHostView();
+  if (view && static_cast<RenderWidgetHostImpl*>(view->GetRenderWidgetHost())
+                      ->is_hidden() != delegate_->IsHidden()) {
     if (delegate_->IsHidden()) {
-      render_frame_host_->GetView()->Hide();
+      view->Hide();
     } else {
-      render_frame_host_->GetView()->Show();
+      view->Show();
     }
   }
 }
