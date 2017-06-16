@@ -28,10 +28,6 @@ class Size;
 class CODEC_EXPORT PNGCodec {
  public:
   enum ColorFormat {
-    // 3 bytes per pixel (packed), in RGB order regardless of endianness.
-    // This is the native JPEG format.
-    FORMAT_RGB,
-
     // 4 bytes per pixel, in RGBA order in memory regardless of endianness.
     FORMAT_RGBA,
 
