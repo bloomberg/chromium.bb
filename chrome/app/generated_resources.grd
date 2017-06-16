@@ -12173,24 +12173,6 @@ read aloud to screenreader users to announce that a completion is available.">
       </message>
     </if>
     <if expr="enable_vr">
-      <message name="IDS_VR_SHELL_UI_BACK_BUTTON" desc="Text under the VR scene history back button">
-        Back
-      </message>
-      <message name="IDS_VR_SHELL_UI_FORWARD_BUTTON" desc="Text under the VR scene history forward button">
-        Forward
-      </message>
-      <message name="IDS_VR_SHELL_UI_RELOAD_BUTTON" desc="Text under the VR scene reload page button">
-        Reload
-      </message>
-      <message name="IDS_VR_SHELL_UI_EXIT_PRESENT_BUTTON" desc="Text under the VR scene exit present button">
-        Exit Presentation
-      </message>
-      <message name="IDS_VR_SHELL_NEW_TAB_BUTTON" desc="Text on the VR scene new tab button">
-        New Tab
-      </message>
-      <message name="IDS_VR_SHELL_NEW_INCOGNITO_TAB_BUTTON" desc="Text on the VR scene new incognito tab button">
-        New Incognito Tab
-      </message>
       <message name="IDS_VR_SHELL_EXIT_PROMPT_DESCRIPTION" desc="Text on the exit prompt that shows up when the user clicks on URL bar security icon in VR">
         Site information is not available in VR
       </message>
