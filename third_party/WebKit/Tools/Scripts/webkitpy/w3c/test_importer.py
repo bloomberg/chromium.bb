@@ -123,10 +123,7 @@ class TestImporter(object):
                                  'generally not necessary on developer machines')
         parser.add_argument('--ignore-exportable-commits', action='store_true',
                             help='Continue even if there are exportable commits that may be overwritten.')
-        # TODO(qyearsley): Change this back to parse_args once this script
-        # is no longer being called with the "wpt" argument. See crbug.com/706118.
-        args, _ = parser.parse_known_args(argv)
-        return args
+        return parser.parse_args(argv)
 
     def checkout_is_okay(self, allow_local_commits):
         git_diff_retcode, _ = self.run(['git', 'diff', '--quiet', 'HEAD'], exit_on_failure=False)
