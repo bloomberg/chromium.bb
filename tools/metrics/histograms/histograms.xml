@@ -89679,8 +89679,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="WritableFileClose" label="ChromiumWritableFile::Close"/>
   <suffix name="WritableFileFlush" label="ChromiumWritableFile::Flush"/>
   <suffix name="WritableFileSync" label="ChromiumWritableFile::Sync"/>
-  <suffix name="WritableFileSyncParent"
-      label="ChromiumWritableFile::SyncParent"/>
+  <suffix name="SyncParent" label="ChromiumWritableFile::SyncParent"/>
   <affected-histogram name="LevelDBEnv.IDB.IOError.BFE"/>
   <affected-histogram name="LevelDBEnv.IOError.BFE"/>
   <affected-histogram name="LevelDBEnv.ServiceWorker.IOError.BFE"/>

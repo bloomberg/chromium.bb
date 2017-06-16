@@ -218,6 +218,10 @@ class MojoWritableFile : public leveldb::WritableFile {
 
   leveldb::Status SyncParent() {
     FileError error = thread_->SyncDirectory(dir_, parent_dir_);
+    if (error != FileError::OK) {
+      uma_logger_->RecordOSError(leveldb_env::kSyncParent,
+                                 static_cast<base::File::Error>(error));
+    }
     return error == FileError::OK
                ? Status::OK()
                : Status::IOError(filename_,
