@@ -15,12 +15,12 @@
 namespace {
 
 enum Milestone {
-  M59,
   M60,
   M61,
   M62,
   M63,
   M64,
+  M65,
 };
 
 const char* milestoneString(Milestone milestone) {
@@ -28,8 +28,6 @@ const char* milestoneString(Milestone milestone) {
   // https://www.chromium.org/developers/calendar
 
   switch (milestone) {
-    case M59:
-      return "M59, around June 2017";
     case M60:
       return "M60, around August 2017";
     case M61:
@@ -40,6 +38,8 @@ const char* milestoneString(Milestone milestone) {
       return "M63, around December 2017";
     case M64:
       return "M64, around January 2018";
+    case M65:
+      return "M65, around March 2018";
   }
 
   NOTREACHED();
@@ -439,11 +439,16 @@ String Deprecation::DeprecationMessage(WebFeature feature) {
           "The CredentialsContainer.requireUserMediation method",
           "the CredentialsContainer.preventSilentAccess method", M62,
           "4781762488041472");
-
     case WebFeature::kDeprecatedTimingFunctionStepMiddle:
       return replacedWillBeRemoved(
           "The step timing function with step position 'middle'",
           "the frames timing function", M62, "5189363944128512");
+    case WebFeature::kHTMLImportsHasStyleSheets:
+      return String::Format(
+          "Styling master document from stylesheets defined in HTML Imports "
+          "is deprecated, and is planned to be removed in %s. Please refer to "
+          "https://goo.gl/EGXzpw for possible migration paths.",
+          milestoneString(M65));
 
     // Features that aren't deprecated don't have a deprecation message.
     default:

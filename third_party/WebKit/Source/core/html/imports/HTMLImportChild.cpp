@@ -36,6 +36,7 @@
 #include "core/dom/custom/V0CustomElement.h"
 #include "core/dom/custom/V0CustomElementMicrotaskImportStep.h"
 #include "core/dom/custom/V0CustomElementSyncMicrotaskQueue.h"
+#include "core/frame/Deprecation.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/imports/HTMLImportChildClient.h"
 #include "core/html/imports/HTMLImportLoader.h"
@@ -79,8 +80,8 @@ void HTMLImportChild::DidFinish() {
 void HTMLImportChild::DidFinishLoading() {
   StateWillChange();
   if (GetDocument() && GetDocument()->GetStyleEngine().HasStyleSheets()) {
-    UseCounter::Count(Root()->GetDocument(),
-                      WebFeature::kHTMLImportsHasStyleSheets);
+    Deprecation::CountDeprecation(Root()->GetDocument(),
+                                  WebFeature::kHTMLImportsHasStyleSheets);
   }
   V0CustomElement::DidFinishLoadingImport(*(Root()->GetDocument()));
 }

@@ -1,3 +1,4 @@
+CONSOLE WARNING: Styling master document from stylesheets defined in HTML Imports is deprecated, and is planned to be removed in M65, around March 2018. Please refer to https://goo.gl/EGXzpw for possible migration paths.
 PASS event.target.import.querySelector('link').sheet instanceof StyleSheet is true
 PASS successfullyParsed is true
 
