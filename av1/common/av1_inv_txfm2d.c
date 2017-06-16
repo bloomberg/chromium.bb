@@ -19,6 +19,14 @@
 
 #define NO_INV_TRANSPOSE 1
 
+static INLINE void clamp_buf(int32_t *buf, int32_t size, int8_t bit) {
+  const int64_t maxValue = (1LL << (bit - 1)) - 1;
+  const int64_t minValue = -(1LL << (bit - 1));
+
+  for (int i = 0; i < size; ++i)
+    buf[i] = (int32_t)clamp64(buf[i], minValue, maxValue);
+}
+
 static INLINE TxfmFunc inv_txfm_type_to_func(TXFM_TYPE txfm_type) {
   switch (txfm_type) {
     case TXFM_TYPE_DCT4: return av1_idct4_new;
@@ -358,6 +366,7 @@ static INLINE void inv_txfm2d_add_c(const int32_t *input, uint16_t *output,
     } else if (rect_type2_shift) {
       av1_round_shift_array(buf_ptr, txfm_size_col, -rect_type2_shift);
     }
+    clamp_buf(buf_ptr, txfm_size_col, bd + 8);
     input += txfm_size_col;
     buf_ptr += txfm_size_col;
   }
@@ -379,6 +388,7 @@ static INLINE void inv_txfm2d_add_c(const int32_t *input, uint16_t *output,
       }
     }
     av1_round_shift_array(temp_out, txfm_size_row, -shift1);
+    clamp_buf(temp_out, txfm_size_row, bd + 1);
     if (cfg->ud_flip == 0) {
       for (r = 0; r < txfm_size_row; ++r) {
         output[r * stride + c] =
