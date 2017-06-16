@@ -214,7 +214,7 @@ class ConstrainedWebDialogDelegateViewViews
   views::View* GetContentsView() override { return this; }
   views::NonClientFrameView* CreateNonClientFrameView(
       views::Widget* widget) override {
-    return views::DialogDelegate::CreateDialogFrameView(widget, gfx::Insets());
+    return views::DialogDelegate::CreateDialogFrameView(widget);
   }
   bool ShouldShowCloseButton() const override {
     // No close button if the dialog doesn't want a title bar.

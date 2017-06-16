@@ -14,7 +14,9 @@
 MockChooserController::MockChooserController()
     : ChooserController(nullptr,
                         IDS_USB_DEVICE_CHOOSER_PROMPT_ORIGIN,
-                        IDS_USB_DEVICE_CHOOSER_PROMPT_EXTENSION_NAME) {}
+                        IDS_USB_DEVICE_CHOOSER_PROMPT_EXTENSION_NAME) {
+  set_title_for_testing(base::ASCIIToUTF16("Mock Chooser Dialog"));
+}
 
 MockChooserController::~MockChooserController() {}
 

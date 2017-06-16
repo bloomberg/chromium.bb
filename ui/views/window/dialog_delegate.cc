@@ -194,17 +194,15 @@ ClientView* DialogDelegate::CreateClientView(Widget* widget) {
 
 NonClientFrameView* DialogDelegate::CreateNonClientFrameView(Widget* widget) {
   if (ShouldUseCustomFrame())
-    return CreateDialogFrameView(widget, gfx::Insets());
+    return CreateDialogFrameView(widget);
   return WidgetDelegate::CreateNonClientFrameView(widget);
 }
 
 // static
-NonClientFrameView* DialogDelegate::CreateDialogFrameView(
-    Widget* widget,
-    const gfx::Insets& content_margins) {
+NonClientFrameView* DialogDelegate::CreateDialogFrameView(Widget* widget) {
   BubbleFrameView* frame = new BubbleFrameView(
       LayoutProvider::Get()->GetInsetsMetric(INSETS_DIALOG_TITLE),
-      content_margins);
+      gfx::Insets());
   const BubbleBorder::Shadow kShadow = BubbleBorder::SMALL_SHADOW;
   std::unique_ptr<BubbleBorder> border(
       new BubbleBorder(BubbleBorder::FLOAT, kShadow, gfx::kPlaceholderColor));
