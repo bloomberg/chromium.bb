@@ -294,11 +294,13 @@ Status ChromiumWritableFile::SyncParent() {
   FilePath path = FilePath::FromUTF8Unsafe(parent_dir_);
   base::File f(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
   if (!f.IsValid()) {
+    uma_logger_->RecordOSError(kSyncParent, f.error_details());
     return MakeIOError(parent_dir_, "Unable to open directory", kSyncParent,
                        f.error_details());
   }
   if (!f.Flush()) {
     base::File::Error error = LastFileError();
+    uma_logger_->RecordOSError(kSyncParent, error);
     return MakeIOError(parent_dir_, base::File::ErrorToString(error),
                        kSyncParent, error);
   }
