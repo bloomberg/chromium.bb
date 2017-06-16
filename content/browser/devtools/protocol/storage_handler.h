@@ -5,6 +5,9 @@
 #ifndef CONTENT_BROWSER_DEVTOOLS_PROTOCOL_STORAGE_HANDLER_H_
 #define CONTENT_BROWSER_DEVTOOLS_PROTOCOL_STORAGE_HANDLER_H_
 
+#include <memory>
+#include <string>
+
 #include "base/macros.h"
 #include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/storage.h"
@@ -27,6 +30,9 @@ class StorageHandler : public DevToolsDomainHandler,
   Response ClearDataForOrigin(
       const std::string& origin,
       const std::string& storage_types) override;
+  void GetUsageAndQuota(
+      const String& origin,
+      std::unique_ptr<GetUsageAndQuotaCallback> callback) override;
 
  private:
   RenderFrameHostImpl* host_;
