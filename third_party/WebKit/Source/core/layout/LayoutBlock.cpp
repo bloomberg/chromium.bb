@@ -1453,6 +1453,14 @@ void LayoutBlock::ComputeBlockPreferredLogicalWidths(
       continue;
     }
 
+    if (child->IsBox() &&
+        ToLayoutBox(child)->NeedsPreferredWidthsRecalculation()) {
+      // We don't really know whether the containing block of this child did
+      // change or is going to change size. However, this is our only
+      // opportunity to make sure that it gets its min/max widths calculated.
+      child->SetPreferredLogicalWidthsDirty();
+    }
+
     RefPtr<ComputedStyle> child_style = child->MutableStyle();
     if (child->IsFloating() ||
         (child->IsBox() && ToLayoutBox(child)->AvoidsFloats())) {
