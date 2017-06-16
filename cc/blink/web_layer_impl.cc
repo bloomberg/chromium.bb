@@ -19,6 +19,7 @@
 #include "cc/blink/web_blend_mode.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_position_constraint.h"
+#include "cc/layers/touch_action_region.h"
 #include "cc/trees/element_id.h"
 #include "cc/trees/layer_tree_host.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
@@ -301,25 +302,24 @@ WebVector<WebRect> WebLayerImpl::NonFastScrollableRegion() const {
 
 void WebLayerImpl::SetTouchEventHandlerRegion(
     const WebVector<blink::WebTouchInfo>& touch_info) {
-  cc::Region region;
+  cc::TouchActionRegion touch_action_region;
   for (size_t i = 0; i < touch_info.size(); ++i)
-    region.Union(touch_info[i].rect);
-  // TODO(xidachen): set the touch action bit for the region.
-  layer_->SetTouchEventHandlerRegion(region);
+    touch_action_region.Union(touch_info[i].touch_action, touch_info[i].rect);
+  layer_->SetTouchActionRegion(std::move(touch_action_region));
 }
 
 WebVector<WebRect> WebLayerImpl::TouchEventHandlerRegion() const {
   size_t num_rects = 0;
-  for (cc::Region::Iterator region_rects(layer_->touch_event_handler_region());
-       region_rects.has_rect();
-       region_rects.next())
+  for (cc::Region::Iterator region_rects(
+           layer_->touch_action_region().region());
+       region_rects.has_rect(); region_rects.next())
     ++num_rects;
 
   WebVector<WebRect> result(num_rects);
   size_t i = 0;
-  for (cc::Region::Iterator region_rects(layer_->touch_event_handler_region());
-       region_rects.has_rect();
-       region_rects.next()) {
+  for (cc::Region::Iterator region_rects(
+           layer_->touch_action_region().region());
+       region_rects.has_rect(); region_rects.next()) {
     result[i] = region_rects.rect();
     ++i;
   }

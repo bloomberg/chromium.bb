@@ -129,16 +129,17 @@ scoped_refptr<Layer> ParseTreeFromValue(const base::Value& val,
 
   if (dict->HasKey("TouchRegion")) {
     success &= dict->GetList("TouchRegion", &list);
-    Region touch_region;
+    TouchActionRegion touch_action_region;
     for (size_t i = 0; i < list->GetSize(); ) {
       int rect_x, rect_y, rect_width, rect_height;
       success &= list->GetInteger(i++, &rect_x);
       success &= list->GetInteger(i++, &rect_y);
       success &= list->GetInteger(i++, &rect_width);
       success &= list->GetInteger(i++, &rect_height);
-      touch_region.Union(gfx::Rect(rect_x, rect_y, rect_width, rect_height));
+      touch_action_region.Union(
+          kTouchActionNone, gfx::Rect(rect_x, rect_y, rect_width, rect_height));
     }
-    new_layer->SetTouchEventHandlerRegion(touch_region);
+    new_layer->SetTouchActionRegion(std::move(touch_action_region));
   }
 
   success &= dict->GetList("Transform", &list);

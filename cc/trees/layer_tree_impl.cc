@@ -1946,7 +1946,7 @@ struct HitTestVisibleScrollableOrTouchableFunctor {
   bool operator()(LayerImpl* layer) const {
     return layer->scrollable() ||
            layer->contributes_to_drawn_render_surface() ||
-           !layer->touch_event_handler_region().IsEmpty();
+           !layer->touch_action_region().region().IsEmpty();
   }
 };
 
@@ -1966,11 +1966,11 @@ LayerImpl* LayerTreeImpl::FindLayerThatIsHitByPoint(
 
 static bool LayerHasTouchEventHandlersAt(const gfx::PointF& screen_space_point,
                                          LayerImpl* layer_impl) {
-  if (layer_impl->touch_event_handler_region().IsEmpty())
+  if (layer_impl->touch_action_region().region().IsEmpty())
     return false;
 
   if (!PointHitsRegion(screen_space_point, layer_impl->ScreenSpaceTransform(),
-                       layer_impl->touch_event_handler_region()))
+                       layer_impl->touch_action_region().region()))
     return false;
 
   // At this point, we think the point does hit the touch event handler region

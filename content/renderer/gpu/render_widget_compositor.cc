@@ -907,10 +907,13 @@ void RenderWidgetCompositor::UpdateEventRectsForSubframeIfNecessary() {
       wheel_event_properties == WebEventListenerProperties::kBlockingAndPassive;
 
   cc::Layer* root_layer = layer_tree_host_->root_layer();
-  cc::Region touch_handler_region;
-  if (has_touch_handlers)
-    touch_handler_region = gfx::Rect(gfx::Point(), root_layer->bounds());
-  root_layer->SetTouchEventHandlerRegion(touch_handler_region);
+
+  cc::TouchActionRegion touch_event_handler;
+  if (has_touch_handlers) {
+    touch_event_handler.Union(cc::kTouchActionNone,
+                              gfx::Rect(gfx::Point(), root_layer->bounds()));
+  }
+  root_layer->SetTouchActionRegion(std::move(touch_event_handler));
 
   cc::Region wheel_handler_region;
   if (has_wheel_handlers)

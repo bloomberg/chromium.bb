@@ -135,7 +135,9 @@ void DebugRectHistory::SaveTouchEventHandlerRects(LayerTreeImpl* tree_impl) {
 }
 
 void DebugRectHistory::SaveTouchEventHandlerRectsCallback(LayerImpl* layer) {
-  for (Region::Iterator iter(layer->touch_event_handler_region());
+  // TODO(hayleyferr): Iterate each of the TouchActions and show their
+  // individual regions separately instead of combining them all.
+  for (Region::Iterator iter(layer->touch_action_region().region());
        iter.has_rect(); iter.next()) {
     debug_rects_.push_back(
         DebugRect(TOUCH_EVENT_HANDLER_RECT_TYPE,

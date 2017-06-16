@@ -24,6 +24,7 @@
 #include "cc/input/input_handler.h"
 #include "cc/layers/layer_collections.h"
 #include "cc/layers/layer_position_constraint.h"
+#include "cc/layers/touch_action_region.h"
 #include "cc/paint/paint_record.h"
 #include "cc/trees/element_id.h"
 #include "cc/trees/mutator_host_client.h"
@@ -246,9 +247,9 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     return inputs_.non_fast_scrollable_region;
   }
 
-  void SetTouchEventHandlerRegion(const Region& touch_event_handler_region);
-  const Region& touch_event_handler_region() const {
-    return inputs_.touch_event_handler_region;
+  void SetTouchActionRegion(TouchActionRegion touch_action_region);
+  const TouchActionRegion& touch_action_region() const {
+    return inputs_.touch_action_region;
   }
 
   void set_did_scroll_callback(
@@ -586,7 +587,7 @@ class CC_EXPORT Layer : public base::RefCounted<Layer> {
     uint32_t main_thread_scrolling_reasons;
     Region non_fast_scrollable_region;
 
-    Region touch_event_handler_region;
+    TouchActionRegion touch_action_region;
 
     bool is_container_for_fixed_position_layers : 1;
     LayerPositionConstraint position_constraint;

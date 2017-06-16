@@ -970,7 +970,9 @@ TEST_F(LayerTreeHostImplTest, ScrollBlocksOnTouchEventHandlers) {
   }
 
   // Touch handler regions determine whether touch events block scroll.
-  root->SetTouchEventHandlerRegion(gfx::Rect(0, 0, 100, 100));
+  TouchActionRegion touch_action_region;
+  touch_action_region.Union(kTouchActionNone, gfx::Rect(0, 0, 100, 100));
+  root->SetTouchActionRegion(std::move(touch_action_region));
   EXPECT_EQ(
       InputHandler::TouchStartOrMoveEventListenerType::HANDLER,
       host_impl_->EventListenerTypeForTouchStartOrMoveAt(gfx::Point(10, 10)));
@@ -986,11 +988,13 @@ TEST_F(LayerTreeHostImplTest, ScrollBlocksOnTouchEventHandlers) {
   EXPECT_EQ(
       InputHandler::TouchStartOrMoveEventListenerType::HANDLER,
       host_impl_->EventListenerTypeForTouchStartOrMoveAt(gfx::Point(10, 30)));
-  root->SetTouchEventHandlerRegion(gfx::Rect());
+  root->SetTouchActionRegion(TouchActionRegion());
   EXPECT_EQ(
       InputHandler::TouchStartOrMoveEventListenerType::NO_HANDLER,
       host_impl_->EventListenerTypeForTouchStartOrMoveAt(gfx::Point(10, 30)));
-  child->SetTouchEventHandlerRegion(gfx::Rect(0, 0, 50, 50));
+  touch_action_region = TouchActionRegion();
+  touch_action_region.Union(kTouchActionNone, gfx::Rect(0, 0, 50, 50));
+  child->SetTouchActionRegion(std::move(touch_action_region));
   EXPECT_EQ(
       InputHandler::TouchStartOrMoveEventListenerType::HANDLER,
       host_impl_->EventListenerTypeForTouchStartOrMoveAt(gfx::Point(10, 30)));
@@ -3472,7 +3476,9 @@ void LayerTreeHostImplTest::SetupMouseMoveAtWithDeviceScale(
   scrollbar->SetScrollElementId(root_scroll->element_id());
   scrollbar->SetDrawsContent(true);
   scrollbar->SetBounds(scrollbar_size);
-  scrollbar->SetTouchEventHandlerRegion(gfx::Rect(scrollbar_size));
+  TouchActionRegion touch_action_region;
+  touch_action_region.Union(kTouchActionNone, gfx::Rect(scrollbar_size));
+  scrollbar->SetTouchActionRegion(touch_action_region);
   host_impl_->active_tree()
       ->InnerViewportContainerLayer()
       ->test_properties()
@@ -4453,7 +4459,9 @@ TEST_F(LayerTreeHostImplBrowserControlsTest,
       host_impl_->OuterViewportScrollLayer()->element_id());
   scrollbar->SetDrawsContent(true);
   scrollbar->SetBounds(scrollbar_size);
-  scrollbar->SetTouchEventHandlerRegion(gfx::Rect(scrollbar_size));
+  TouchActionRegion touch_action_region;
+  touch_action_region.Union(kTouchActionNone, gfx::Rect(scrollbar_size));
+  scrollbar->SetTouchActionRegion(touch_action_region);
   scrollbar->SetCurrentPos(0);
   scrollbar->SetPosition(gfx::PointF(0, 35));
   host_impl_->active_tree()
@@ -10512,7 +10520,9 @@ TEST_F(LayerTreeHostImplTest, TouchInsideFlingLayer) {
     EXPECT_EQ(
         InputHandler::TouchStartOrMoveEventListenerType::NO_HANDLER,
         host_impl_->EventListenerTypeForTouchStartOrMoveAt(gfx::Point(10, 10)));
-    child_layer->SetTouchEventHandlerRegion(gfx::Rect(0, 0, 100, 100));
+    TouchActionRegion touch_action_region;
+    touch_action_region.Union(kTouchActionNone, gfx::Rect(0, 0, 100, 100));
+    child_layer->SetTouchActionRegion(touch_action_region);
     EXPECT_EQ(
         InputHandler::TouchStartOrMoveEventListenerType::HANDLER,
         host_impl_->EventListenerTypeForTouchStartOrMoveAt(gfx::Point(10, 10)));
@@ -10573,8 +10583,12 @@ TEST_F(LayerTreeHostImplTest, TouchInsideOrOutsideFlingLayer) {
   DrawFrame();
 
   {
-    child_layer->SetTouchEventHandlerRegion(gfx::Rect(0, 0, 100, 100));
-    grand_child_layer->SetTouchEventHandlerRegion(gfx::Rect(0, 0, 50, 50));
+    TouchActionRegion touch_action_region;
+    touch_action_region.Union(kTouchActionNone, gfx::Rect(0, 0, 100, 100));
+    child_layer->SetTouchActionRegion(std::move(touch_action_region));
+    touch_action_region = TouchActionRegion();
+    touch_action_region.Union(kTouchActionNone, gfx::Rect(0, 0, 50, 50));
+    grand_child_layer->SetTouchActionRegion(std::move(touch_action_region));
     // Flinging the grand_child layer.
     EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD,
               host_impl_
@@ -12212,7 +12226,9 @@ void LayerTreeHostImplTest::SetupMouseMoveAtTestScrollbarStates(
   scrollbar_1->SetScrollElementId(root_scroll->element_id());
   scrollbar_1->SetDrawsContent(true);
   scrollbar_1->SetBounds(scrollbar_size_1);
-  scrollbar_1->SetTouchEventHandlerRegion(gfx::Rect(scrollbar_size_1));
+  TouchActionRegion touch_action_region;
+  touch_action_region.Union(kTouchActionNone, gfx::Rect(scrollbar_size_1));
+  scrollbar_1->SetTouchActionRegion(touch_action_region);
   scrollbar_1->SetCurrentPos(0);
   scrollbar_1->SetPosition(gfx::PointF(0, 0));
   host_impl_->active_tree()
