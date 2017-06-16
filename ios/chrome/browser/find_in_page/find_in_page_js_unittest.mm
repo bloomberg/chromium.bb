@@ -5,7 +5,6 @@
 #import <UIKit/UIKit.h>
 
 #include "base/mac/foundation_util.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/find_in_page/find_in_page_model.h"
 #import "ios/chrome/browser/find_in_page/js_findinpage_manager.h"
@@ -15,6 +14,10 @@
 #import "ios/web/public/web_state/web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 // Unit tests for the find_in_page.js JavaScript file.
 
@@ -101,15 +104,15 @@ class FindInPageJsTest : public ChromeWebTest {
 
   void SetUp() override {
     ChromeWebTest::SetUp();
-    findInPageModel_.reset([[FindInPageModel alloc] init]);
-    findInPageJsManager_.reset([base::mac::ObjCCastStrict<JsFindinpageManager>(
+    findInPageModel_ = [[FindInPageModel alloc] init];
+    findInPageJsManager_ = base::mac::ObjCCastStrict<JsFindinpageManager>(
         [web_state()->GetJSInjectionReceiver()
-            instanceOfClass:[JsFindinpageManager class]]) retain]);
-    findInPageJsManager_.get().findInPageModel = findInPageModel_;
+            instanceOfClass:[JsFindinpageManager class]]);
+    findInPageJsManager_.findInPageModel = findInPageModel_;
   }
 
-  base::scoped_nsobject<FindInPageModel> findInPageModel_;
-  base::scoped_nsobject<JsFindinpageManager> findInPageJsManager_;
+  FindInPageModel* findInPageModel_;
+  JsFindinpageManager* findInPageJsManager_;
 };
 
 // Performs a search, then calls |incrementIndex| to loop through the
