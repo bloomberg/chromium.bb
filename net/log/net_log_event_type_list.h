@@ -1053,12 +1053,6 @@ EVENT_TYPE(HTTP_STREAM_JOB_WAITING)
 //   }
 EVENT_TYPE(HTTP_STREAM_REQUEST_STARTED_JOB)
 
-// Logs the proxy server resolved for the job. The event parameters are:
-//   {
-//      "proxy_server": The proxy server resolved for the Job,
-//   }
-EVENT_TYPE(HTTP_STREAM_JOB_PROXY_SERVER_RESOLVED)
-
 // Emitted when a job is throttled.
 EVENT_TYPE(HTTP_STREAM_JOB_THROTTLED)
 
@@ -1133,6 +1127,12 @@ EVENT_TYPE(HTTP_STREAM_JOB_CONTROLLER)
 //          URL_REQUEST if the event is logged in HTTP_STREAM_JOB_CONTROLLER>,
 //   }
 EVENT_TYPE(HTTP_STREAM_JOB_CONTROLLER_BOUND)
+
+// Logs the proxy server resolved for the controller. The event parameters are:
+//   {
+//      "proxy_server": The proxy server resolved for the Job,
+//   }
+EVENT_TYPE(HTTP_STREAM_JOB_CONTROLLER_PROXY_SERVER_RESOLVED)
 
 // ------------------------------------------------------------------------
 // HttpNetworkTransaction
