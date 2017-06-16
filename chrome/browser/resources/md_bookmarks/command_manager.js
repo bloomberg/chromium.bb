@@ -86,12 +86,14 @@ cr.define('bookmarks', function() {
 
     /**
      * Display the command context menu at (|x|, |y|) in window co-ordinates.
-     * Commands will execute on the currently selected items.
+     * Commands will execute on |items| if given, or on the currently selected
+     * items.
      * @param {number} x
      * @param {number} y
+     * @param {Set<string>=} items
      */
-    openCommandMenuAtPosition: function(x, y) {
-      this.menuIds_ = this.getState().selection.items;
+    openCommandMenuAtPosition: function(x, y, items) {
+      this.menuIds_ = items || this.getState().selection.items;
       /** @type {!CrActionMenuElement} */ (this.$.dropdown)
           .showAtPosition({top: y, left: x});
     },
