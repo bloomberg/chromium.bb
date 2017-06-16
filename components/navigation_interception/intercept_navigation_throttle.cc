@@ -14,7 +14,7 @@ namespace navigation_interception {
 
 namespace {
 
-using ChecksPerformedCallback = base::Callback<void(bool, bool)>;
+using ChecksPerformedCallback = base::Callback<void(bool)>;
 
 // This is used to run |should_ignore_callback| if it can destroy the
 // WebContents (and the InterceptNavigationThrottle along). In that case,
@@ -31,10 +31,7 @@ void RunCallback(
   // If the InterceptNavigationThrottle that called RunCallback is still alive
   // after |should_ignore_callback| has run, this will run
   // InterceptNavigationThrottle::OnAsynchronousChecksPerformed.
-  // TODO(clamy): remove this boolean after crbug.com/570200 is fixed.
-  bool throttle_was_destroyed = !throttle.get();
-  on_checks_performed_callback.Run(should_ignore_navigation,
-                                   throttle_was_destroyed);
+  on_checks_performed_callback.Run(should_ignore_navigation);
 }
 
 }  // namespace
@@ -120,16 +117,12 @@ void InterceptNavigationThrottle::RunCallbackAsynchronously(
 }
 
 void InterceptNavigationThrottle::OnAsynchronousChecksPerformed(
-    bool should_ignore_navigation,
-    bool throttle_was_destroyed) {
-  CHECK(!throttle_was_destroyed);
-  content::NavigationHandle* handle = navigation_handle();
-  CHECK(handle);
+    bool should_ignore_navigation) {
   if (should_ignore_navigation) {
     navigation_handle()->CancelDeferredNavigation(
         content::NavigationThrottle::CANCEL_AND_IGNORE);
   } else {
-    handle->Resume();
+    navigation_handle()->Resume();
   }
 }
 
