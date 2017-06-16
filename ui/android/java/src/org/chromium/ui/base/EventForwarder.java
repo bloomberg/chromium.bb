@@ -155,9 +155,35 @@ public class EventForwarder {
                 || eventAction == MotionEvent.ACTION_POINTER_UP;
     }
 
+    /**
+     * @see View#onHoverEvent(MotionEvent)
+     */
+    public boolean onHoverEvent(MotionEvent event) {
+        TraceEvent.begin("onHoverEvent");
+        try {
+            return sendNativeMouseEvent(event);
+        } finally {
+            TraceEvent.end("onHoverEvent");
+        }
+    }
+
+    /**
+     * @see View#onMouseEvent(MotionEvent)
+     */
     public boolean onMouseEvent(MotionEvent event) {
         TraceEvent.begin("sendMouseEvent");
+        try {
+            return sendNativeMouseEvent(event);
+        } finally {
+            TraceEvent.end("sendMouseEvent");
+        }
+    }
 
+    /**
+     * Sends mouse event to native. Hover event is also converted to mouse event,
+     * only differentiated by an internal flag.
+     */
+    private boolean sendNativeMouseEvent(MotionEvent event) {
         assert mNativeEventForwarder != 0;
 
         MotionEvent offsetEvent = createOffsetMotionEvent(event);
@@ -211,7 +237,6 @@ public class EventForwarder {
             return true;
         } finally {
             offsetEvent.recycle();
-            TraceEvent.end("sendMouseEvent");
         }
     }
 

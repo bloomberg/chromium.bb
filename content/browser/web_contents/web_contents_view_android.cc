@@ -8,6 +8,7 @@
 #include "base/android/jni_string.h"
 #include "base/logging.h"
 #include "cc/layers/layer.h"
+#include "content/browser/accessibility/browser_accessibility_manager_android.h"
 #include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
@@ -449,6 +450,19 @@ bool WebContentsViewAndroid::OnTouchEvent(const ui::MotionEventAndroid& event,
   if (event.GetAction() == ui::MotionEventAndroid::ACTION_DOWN)
     content_view_core_->OnTouchDown(event.GetJavaObject());
   return false;  // let the children handle the actual event.
+}
+
+bool WebContentsViewAndroid::OnMouseEvent(const ui::MotionEventAndroid& event) {
+  // Hover events can be intercepted when in accessibility mode.
+  auto action = event.GetAction();
+  if (action != ui::MotionEventAndroid::ACTION_HOVER_ENTER &&
+      action != ui::MotionEventAndroid::ACTION_HOVER_EXIT &&
+      action != ui::MotionEventAndroid::ACTION_HOVER_MOVE)
+    return false;
+
+  auto* manager = static_cast<BrowserAccessibilityManagerAndroid*>(
+      web_contents_->GetRootBrowserAccessibilityManager());
+  return manager && manager->OnHoverEvent(event);
 }
 
 void WebContentsViewAndroid::OnPhysicalBackingSizeChanged() {

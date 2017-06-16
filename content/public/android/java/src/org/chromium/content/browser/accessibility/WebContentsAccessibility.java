@@ -375,15 +375,14 @@ public class WebContentsAccessibility {
         }
     }
 
-    /**
-     * @see View#onHoverEvent(MotionEvent)
-     */
-    public boolean onHoverEvent(MotionEvent event) {
+    // Returns true if the hover event is to be consumed by accessibility feature.
+    @CalledByNative
+    private boolean onHoverEvent(int action) {
         if (!mAccessibilityManager.isEnabled()) {
             return false;
         }
 
-        if (event.getAction() == MotionEvent.ACTION_HOVER_EXIT) {
+        if (action == MotionEvent.ACTION_HOVER_EXIT) {
             mIsHovering = false;
             if (mLastHoverId != View.NO_ID) {
                 sendAccessibilityEvent(mLastHoverId, AccessibilityEvent.TYPE_VIEW_HOVER_EXIT);
@@ -398,16 +397,6 @@ public class WebContentsAccessibility {
 
         mIsHovering = true;
         mUserHasTouchExplored = true;
-        float x = event.getX();
-        float y = event.getY();
-
-        // Convert to CSS coordinates.
-        int cssX = (int) (mRenderCoordinates.fromPixToLocalCss(x));
-        int cssY = (int) (mRenderCoordinates.fromPixToLocalCss(y));
-
-        // This sends an IPC to the render process to do the hit testing.
-        // The response is handled by handleHover.
-        nativeHitTest(mNativeObj, cssX, cssY);
         return true;
     }
 
@@ -1242,7 +1231,6 @@ public class WebContentsAccessibility {
             long nativeWebContentsAccessibilityAndroid, int id);
     private native int nativeGetEditableTextSelectionEnd(
             long nativeWebContentsAccessibilityAndroid, int id);
-    private native void nativeHitTest(long nativeWebContentsAccessibilityAndroid, int x, int y);
     private native boolean nativePopulateAccessibilityNodeInfo(
             long nativeWebContentsAccessibilityAndroid, AccessibilityNodeInfo info, int id);
     private native boolean nativePopulateAccessibilityEvent(
