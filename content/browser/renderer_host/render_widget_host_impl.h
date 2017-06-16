@@ -77,6 +77,7 @@ struct BeginFrameAck;
 namespace gfx {
 class Image;
 class Range;
+class Vector2dF;
 }
 
 namespace content {
@@ -658,6 +659,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnUpdateRect(const ViewHostMsg_UpdateRect_Params& params);
   void OnQueueSyntheticGesture(const SyntheticGesturePacket& gesture_packet);
   void OnSetCursor(const WebCursor& cursor);
+  void OnAutoscrollStart(const gfx::PointF& position);
+  void OnAutoscrollFling(const gfx::Vector2dF& velocity);
+  void OnAutoscrollEnd();
   void OnTextInputStateChanged(const TextInputState& params);
 
   void OnImeCompositionRangeChanged(

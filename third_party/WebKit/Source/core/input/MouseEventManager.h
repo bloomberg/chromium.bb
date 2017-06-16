@@ -126,7 +126,9 @@ class CORE_EXPORT MouseEventManager final
   // refactoring to be able to remove the dependency from EventHandler.
   Node* GetNodeUnderMouse();
   bool IsMousePositionUnknown();
+  // TODO(aelias): Make LastKnownMousePosition return FloatPoint.
   IntPoint LastKnownMousePosition();
+  FloatPoint LastKnownMousePositionGlobal();
 
   bool MousePressed();
   void SetMousePressed(bool);
@@ -211,8 +213,8 @@ class CORE_EXPORT MouseEventManager final
 
   // The last mouse movement position this frame has seen in root frame
   // coordinates.
-  IntPoint last_known_mouse_position_;
-  IntPoint last_known_mouse_global_position_;
+  FloatPoint last_known_mouse_position_;
+  FloatPoint last_known_mouse_global_position_;
 
   unsigned is_mouse_position_unknown_ : 1;
   // Current button-press state for mouse/mouse-like-stylus.

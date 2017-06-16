@@ -31,5 +31,6 @@ test(function() {
     eventSender.mouseDown(middleButton);
     eventSender.mouseMoveTo(endX, endY);
     assert_true(internals.isUseCounted(document, middleClickAutoscrollStart));
+    eventSender.mouseUp(middleButton);
 })
 </script>

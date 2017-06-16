@@ -677,7 +677,8 @@ WebInputEventResult WebViewImpl::HandleGestureEvent(
               ->GetEventHandler()
               .IsScrollbarHandlingGestures())
         break;
-      EndActiveFlingAnimation();
+      if (event.source_device != kWebGestureDeviceSyntheticAutoscroll)
+        EndActiveFlingAnimation();
       position_on_fling_start_ = WebPoint(event.x, event.y);
       global_position_on_fling_start_ =
           WebPoint(event.global_x, event.global_y);
@@ -1984,10 +1985,12 @@ void WebViewImpl::BeginFrame(double last_frame_time_monotonic) {
       WebGestureDevice last_fling_source_device = fling_source_device_;
       EndActiveFlingAnimation();
 
-      WebGestureEvent end_scroll_event = CreateGestureScrollEventFromFling(
-          WebInputEvent::kGestureScrollEnd, last_fling_source_device);
-      MainFrameImpl()->GetFrame()->GetEventHandler().HandleGestureScrollEnd(
-          end_scroll_event);
+      if (last_fling_source_device != kWebGestureDeviceSyntheticAutoscroll) {
+        WebGestureEvent end_scroll_event = CreateGestureScrollEventFromFling(
+            WebInputEvent::kGestureScrollEnd, last_fling_source_device);
+        MainFrameImpl()->GetFrame()->GetEventHandler().HandleGestureScrollEnd(
+            end_scroll_event);
+      }
     }
   }
 

@@ -679,6 +679,14 @@ IPC_MESSAGE_ROUTED0(ViewHostMsg_Focus)
 
 IPC_MESSAGE_ROUTED1(ViewHostMsg_SetCursor, content::WebCursor)
 
+// Request a non-decelerating synthetic fling animation to be latched on the
+// scroller at the start point, and whose velocity can be changed over time by
+// sending multiple AutoscrollFling gestures.  Used for features like
+// middle-click autoscroll.
+IPC_MESSAGE_ROUTED1(ViewHostMsg_AutoscrollStart, gfx::PointF /* start */)
+IPC_MESSAGE_ROUTED1(ViewHostMsg_AutoscrollFling, gfx::Vector2dF /* velocity */)
+IPC_MESSAGE_ROUTED0(ViewHostMsg_AutoscrollEnd)
+
 // Get the list of proxies to use for |url|, as a semicolon delimited list
 // of "<TYPE> <HOST>:<PORT>" | "DIRECT".
 IPC_SYNC_MESSAGE_CONTROL1_2(ViewHostMsg_ResolveProxy,

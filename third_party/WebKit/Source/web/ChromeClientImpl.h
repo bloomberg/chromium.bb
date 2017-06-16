@@ -171,6 +171,10 @@ class WEB_EXPORT ChromeClientImpl final : public ChromeClient {
   // ChromeClientImpl:
   void SetNewWindowNavigationPolicy(WebNavigationPolicy);
 
+  void AutoscrollStart(WebFloatPoint viewport_point, LocalFrame*) override;
+  void AutoscrollFling(WebFloatSize velocity, LocalFrame*) override;
+  void AutoscrollEnd(LocalFrame*) override;
+
   bool HasOpenedPopup() const override;
   PopupMenu* OpenPopupMenu(LocalFrame&, HTMLSelectElement&) override;
   PagePopup* OpenPagePopup(PagePopupClient*) override;

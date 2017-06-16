@@ -116,7 +116,8 @@ bool GestureEventQueue::ShouldForwardForTapSuppression(
       if (gesture_event.event.source_device ==
           blink::kWebGestureDeviceTouchscreen)
         touchscreen_tap_suppression_controller_.GestureFlingCancel();
-      else
+      else if (gesture_event.event.source_device ==
+               blink::kWebGestureDeviceTouchpad)
         touchpad_tap_suppression_controller_.GestureFlingCancel();
       return true;
     case WebInputEvent::kGestureTapDown:
@@ -243,7 +244,8 @@ void GestureEventQueue::ProcessGestureAck(InputEventAckState ack_result,
     if (event_with_latency.event.source_device ==
         blink::kWebGestureDeviceTouchscreen)
       touchscreen_tap_suppression_controller_.GestureFlingCancelAck(processed);
-    else
+    else if (event_with_latency.event.source_device ==
+             blink::kWebGestureDeviceTouchpad)
       touchpad_tap_suppression_controller_.GestureFlingCancelAck(processed);
   }
   DCHECK_LT(event_index, coalesced_gesture_events_.size());

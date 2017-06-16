@@ -42,6 +42,7 @@ class CORE_EXPORT ScrollManager
   void Clear();
 
   bool MiddleClickAutoscrollInProgress() const;
+  void StopMiddleClickAutoscroll();
   AutoscrollController* GetAutoscrollController() const;
   void StopAutoscroll();
 

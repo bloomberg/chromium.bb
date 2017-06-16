@@ -1352,7 +1352,9 @@ void InputHandlerProxy::Animate(base::TimeTicks time) {
     TRACE_EVENT_INSTANT0("input",
                          "InputHandlerProxy::animate::flingOver",
                          TRACE_EVENT_SCOPE_THREAD);
-    CancelCurrentFling();
+    if (fling_parameters_.source_device !=
+        blink::kWebGestureDeviceSyntheticAutoscroll)
+      CancelCurrentFling();
   }
 }
 
