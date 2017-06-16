@@ -9,7 +9,6 @@
 #include "core/css/CSSBasicShapeValues.h"
 #include "core/css/CSSContentDistributionValue.h"
 #include "core/css/CSSCursorImageValue.h"
-#include "core/css/CSSCustomIdentValue.h"
 #include "core/css/CSSFontFaceSrcValue.h"
 #include "core/css/CSSFontFamilyValue.h"
 #include "core/css/CSSFunctionValue.h"
@@ -50,6 +49,7 @@
 #include "core/css/properties/CSSPropertyMarginUtils.h"
 #include "core/css/properties/CSSPropertyOffsetPathUtils.h"
 #include "core/css/properties/CSSPropertyPositionUtils.h"
+#include "core/css/properties/CSSPropertyTransitionPropertyUtils.h"
 #include "core/css/properties/CSSPropertyWebkitBorderWidthUtils.h"
 #include "core/frame/UseCounter.h"
 #include "core/layout/LayoutTheme.h"
@@ -58,6 +58,8 @@
 namespace blink {
 
 using namespace CSSPropertyParserHelpers;
+
+class CSSCustomIdentValue;
 
 CSSPropertyParser::CSSPropertyParser(
     const CSSParserTokenRange& range,
@@ -317,23 +319,6 @@ static CSSValue* ConsumeAnimationIterationCount(CSSParserTokenRange& range) {
   return ConsumeNumber(range, kValueRangeNonNegative);
 }
 
-static CSSValue* ConsumeTransitionProperty(CSSParserTokenRange& range) {
-  const CSSParserToken& token = range.Peek();
-  if (token.GetType() != kIdentToken)
-    return nullptr;
-  if (token.Id() == CSSValueNone)
-    return ConsumeIdent(range);
-
-  CSSPropertyID unresolved_property = token.ParseAsUnresolvedCSSPropertyID();
-  if (unresolved_property != CSSPropertyInvalid &&
-      unresolved_property != CSSPropertyVariable) {
-    DCHECK(CSSPropertyMetadata::IsEnabledProperty(unresolved_property));
-    range.ConsumeIncludingWhitespace();
-    return CSSCustomIdentValue::Create(unresolved_property);
-  }
-  return ConsumeCustomIdent(range);
-}
-
 static CSSValue* ConsumeSteps(CSSParserTokenRange& range) {
   DCHECK_EQ(range.Peek().FunctionId(), CSSValueSteps);
   CSSParserTokenRange range_copy = range;
@@ -451,7 +436,8 @@ static CSSValue* ConsumeAnimationValue(CSSPropertyID property,
     case CSSPropertyAnimationPlayState:
       return ConsumeIdent<CSSValueRunning, CSSValuePaused>(range);
     case CSSPropertyTransitionProperty:
-      return ConsumeTransitionProperty(range);
+      return CSSPropertyTransitionPropertyUtils::ConsumeTransitionProperty(
+          range);
     case CSSPropertyAnimationTimingFunction:
     case CSSPropertyTransitionTimingFunction:
       return ConsumeAnimationTimingFunction(range);
@@ -459,17 +445,6 @@ static CSSValue* ConsumeAnimationValue(CSSPropertyID property,
       NOTREACHED();
       return nullptr;
   }
-}
-
-static bool IsValidAnimationPropertyList(const CSSValueList& value_list) {
-  if (value_list.length() < 2)
-    return true;
-  for (auto& value : value_list) {
-    if (value->IsIdentifierValue() &&
-        ToCSSIdentifierValue(*value).GetValueID() == CSSValueNone)
-      return false;
-  }
-  return true;
 }
 
 bool CSSPropertyParser::ConsumeAnimationShorthand(
@@ -516,7 +491,7 @@ bool CSSPropertyParser::ConsumeAnimationShorthand(
     // CSSPropertyTransitionProperty here when this is method implemented in the
     // property APIs
     if (shorthand.properties()[i] == CSSPropertyTransitionProperty &&
-        !IsValidAnimationPropertyList(*longhands[i]))
+        !CSSPropertyTransitionPropertyUtils::IsValidPropertyList(*longhands[i]))
       return false;
   }
 
@@ -1548,9 +1523,11 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
       return ConsumeCommaSeparatedList(
           ConsumeIdent<CSSValueRunning, CSSValuePaused>, range_);
     case CSSPropertyTransitionProperty: {
-      CSSValueList* list =
-          ConsumeCommaSeparatedList(ConsumeTransitionProperty, range_);
-      if (!list || !IsValidAnimationPropertyList(*list))
+      CSSValueList* list = ConsumeCommaSeparatedList(
+          CSSPropertyTransitionPropertyUtils::ConsumeTransitionProperty,
+          range_);
+      if (!list ||
+          !CSSPropertyTransitionPropertyUtils::IsValidPropertyList(*list))
         return nullptr;
       return list;
     }
