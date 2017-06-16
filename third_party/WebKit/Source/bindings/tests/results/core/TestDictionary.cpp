@@ -187,6 +187,17 @@ void TestDictionary::setInternalDictionarySequenceMember(const HeapVector<Intern
   m_internalDictionarySequenceMember = value;
   m_hasInternalDictionarySequenceMember = true;
 }
+bool TestDictionary::hasIsPublic() const {
+  return m_hasIsPublic;
+}
+bool TestDictionary::isPublic() const {
+  DCHECK(m_hasIsPublic);
+  return m_isPublic;
+}
+void TestDictionary::setIsPublic(bool value) {
+  m_isPublic = value;
+  m_hasIsPublic = true;
+}
 bool TestDictionary::hasLongMember() const {
   return m_hasLongMember;
 }

@@ -56,10 +56,10 @@ void V8TestDictionaryDerivedImplementedAs::toImpl(v8::Isolate* isolate, v8::Loca
   if (derivedStringMemberValue.IsEmpty() || derivedStringMemberValue->IsUndefined()) {
     // Do nothing.
   } else {
-    V8StringResource<> derivedStringMember = derivedStringMemberValue;
-    if (!derivedStringMember.Prepare(exceptionState))
+    V8StringResource<> derivedStringMemberCppValue = derivedStringMemberValue;
+    if (!derivedStringMemberCppValue.Prepare(exceptionState))
       return;
-    impl.setDerivedStringMember(derivedStringMember);
+    impl.setDerivedStringMember(derivedStringMemberCppValue);
   }
 
   v8::Local<v8::Value> derivedStringMemberWithDefaultValue;
@@ -70,10 +70,10 @@ void V8TestDictionaryDerivedImplementedAs::toImpl(v8::Isolate* isolate, v8::Loca
   if (derivedStringMemberWithDefaultValue.IsEmpty() || derivedStringMemberWithDefaultValue->IsUndefined()) {
     // Do nothing.
   } else {
-    V8StringResource<> derivedStringMemberWithDefault = derivedStringMemberWithDefaultValue;
-    if (!derivedStringMemberWithDefault.Prepare(exceptionState))
+    V8StringResource<> derivedStringMemberWithDefaultCppValue = derivedStringMemberWithDefaultValue;
+    if (!derivedStringMemberWithDefaultCppValue.Prepare(exceptionState))
       return;
-    impl.setDerivedStringMemberWithDefault(derivedStringMemberWithDefault);
+    impl.setDerivedStringMemberWithDefault(derivedStringMemberWithDefaultCppValue);
   }
 
   v8::Local<v8::Value> requiredLongMemberValue;
@@ -85,10 +85,10 @@ void V8TestDictionaryDerivedImplementedAs::toImpl(v8::Isolate* isolate, v8::Loca
     exceptionState.ThrowTypeError("required member requiredLongMember is undefined.");
     return;
   } else {
-    int32_t requiredLongMember = NativeValueTraits<IDLLong>::NativeValue(isolate, requiredLongMemberValue, exceptionState, kNormalConversion);
+    int32_t requiredLongMemberCppValue = NativeValueTraits<IDLLong>::NativeValue(isolate, requiredLongMemberValue, exceptionState, kNormalConversion);
     if (exceptionState.HadException())
       return;
-    impl.setRequiredLongMember(requiredLongMember);
+    impl.setRequiredLongMember(requiredLongMemberCppValue);
   }
 
   v8::Local<v8::Value> stringOrDoubleSequenceMemberValue;
@@ -99,10 +99,10 @@ void V8TestDictionaryDerivedImplementedAs::toImpl(v8::Isolate* isolate, v8::Loca
   if (stringOrDoubleSequenceMemberValue.IsEmpty() || stringOrDoubleSequenceMemberValue->IsUndefined()) {
     // Do nothing.
   } else {
-    HeapVector<StringOrDouble> stringOrDoubleSequenceMember = NativeValueTraits<IDLSequence<StringOrDouble>>::NativeValue(isolate, stringOrDoubleSequenceMemberValue, exceptionState);
+    HeapVector<StringOrDouble> stringOrDoubleSequenceMemberCppValue = NativeValueTraits<IDLSequence<StringOrDouble>>::NativeValue(isolate, stringOrDoubleSequenceMemberValue, exceptionState);
     if (exceptionState.HadException())
       return;
-    impl.setStringOrDoubleSequenceMember(stringOrDoubleSequenceMember);
+    impl.setStringOrDoubleSequenceMember(stringOrDoubleSequenceMemberCppValue);
   }
 }
 

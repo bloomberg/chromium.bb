@@ -102,6 +102,10 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   const HeapVector<InternalDictionary>& internalDictionarySequenceMember() const;
   void setInternalDictionarySequenceMember(const HeapVector<InternalDictionary>&);
 
+  bool hasIsPublic() const;
+  bool isPublic() const;
+  void setIsPublic(bool);
+
   bool hasLongMember() const;
   int32_t longMember() const;
   void setLongMember(int32_t);
@@ -214,6 +218,7 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   bool m_hasEnumSequenceMember = false;
   bool m_hasGarbageCollectedRecordMember = false;
   bool m_hasInternalDictionarySequenceMember = false;
+  bool m_hasIsPublic = false;
   bool m_hasLongMember = false;
   bool m_hasRecordMember = false;
   bool m_hasRestrictedDoubleMember = false;
@@ -240,6 +245,7 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   Member<EventTarget> m_eventTargetMember;
   HeapVector<std::pair<String, Member<TestObject>>> m_garbageCollectedRecordMember;
   HeapVector<InternalDictionary> m_internalDictionarySequenceMember;
+  bool m_isPublic;
   int32_t m_longMember;
   ScriptValue m_objectMember;
   ScriptValue m_objectOrNullMember;

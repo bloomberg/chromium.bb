@@ -78,22 +78,22 @@ void {{v8_class}}::toImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, {{
     {% endif %}
     {{v8_value_to_local_cpp_value(member) | indent}}
     {% if member.is_interface_type %}
-    if (!{{member.name}}) {
+    if (!{{member.name}}CppValue) {
       exceptionState.ThrowTypeError("member {{member.name}} is not of type {{member.idl_type}}.");
       return;
     }
     {% endif %}
     {% if member.enum_values %}
     {{declare_enum_validation_variable(member.enum_values) | indent}}
-    if (!IsValidEnum({{member.name}}, validValues, WTF_ARRAY_LENGTH(validValues), "{{member.enum_type}}", exceptionState))
+    if (!IsValidEnum({{member.name}}CppValue, validValues, WTF_ARRAY_LENGTH(validValues), "{{member.enum_type}}", exceptionState))
       return;
     {% elif member.is_object %}
-    if (!{{member.name}}.IsObject()) {
+    if (!{{member.name}}CppValue.IsObject()) {
       exceptionState.ThrowTypeError("member {{member.name}} is not an object.");
       return;
     }
     {% endif %}
-    impl.{{member.setter_name}}({{member.name}});
+    impl.{{member.setter_name}}({{member.name}}CppValue);
   }
   {% endfilter %}
 
