@@ -62,19 +62,19 @@ cr.define('bookmarks', function() {
       this.boundOnKeydown_ = this.onKeydown_.bind(this);
       document.addEventListener('keydown', this.boundOnKeydown_);
 
-      /** @private {Object<Command, string>} */
+      /** @private {Object<Command, cr.ui.KeyboardShortcutList>} */
       this.shortcuts_ = {};
-      this.shortcuts_[Command.EDIT] = cr.isMac ? 'enter' : 'f2';
-      this.shortcuts_[Command.COPY] = cr.isMac ? 'meta+c' : 'ctrl+c';
-      this.shortcuts_[Command.DELETE] =
-          cr.isMac ? 'delete backspace' : 'delete';
-      this.shortcuts_[Command.OPEN_NEW_TAB] =
-          cr.isMac ? 'meta+enter' : 'ctrl+enter';
-      this.shortcuts_[Command.OPEN_NEW_WINDOW] = 'shift+enter';
-      this.shortcuts_[Command.OPEN] = cr.isMac ? 'meta+down' : 'enter';
-      this.shortcuts_[Command.UNDO] = cr.isMac ? 'meta+z' : 'ctrl+z';
-      this.shortcuts_[Command.REDO] =
-          cr.isMac ? 'meta+shift+z' : 'ctrl+y ctrl+shift+z';
+
+      this.addShortcut_(Command.EDIT, 'F2', 'Enter');
+      this.addShortcut_(Command.COPY, 'Ctrl|c', 'Meta|c');
+      this.addShortcut_(Command.DELETE, 'Delete', 'Delete Backspace');
+
+      this.addShortcut_(Command.OPEN, 'Enter', 'Meta|ArrowDown Meta|o');
+      this.addShortcut_(Command.OPEN_NEW_TAB, 'Ctrl|Enter', 'Meta|Enter');
+      this.addShortcut_(Command.OPEN_NEW_WINDOW, 'Shift|Enter');
+
+      this.addShortcut_(Command.UNDO, 'Ctrl|z', 'Meta|z');
+      this.addShortcut_(Command.REDO, 'Ctrl|y Ctrl|Shift|Z', 'Meta|Shift|Z');
     },
 
     detached: function() {
@@ -189,11 +189,12 @@ cr.define('bookmarks', function() {
      * @param {!Set<string>} itemIds
      */
     handle: function(command, itemIds) {
+      var state = this.getState();
       switch (command) {
         case Command.EDIT:
           var id = Array.from(itemIds)[0];
           /** @type {!BookmarksEditDialogElement} */ (this.$.editDialog.get())
-              .showEditDialog(this.getState().nodes[id]);
+              .showEditDialog(state.nodes[id]);
           break;
         case Command.COPY:
           var idList = Array.from(itemIds);
@@ -204,7 +205,7 @@ cr.define('bookmarks', function() {
           break;
         case Command.DELETE:
           var idList = Array.from(this.minimizeDeletionSet_(itemIds));
-          var title = this.getState().nodes[idList[0]].title;
+          var title = state.nodes[idList[0]].title;
           var labelPromise = cr.sendWithPromise(
               'getPluralString', 'toastItemsDeleted', idList.length);
           chrome.bookmarkManagerPrivate.removeTrees(idList, function() {
@@ -239,8 +240,8 @@ cr.define('bookmarks', function() {
               });
           if (isFolder) {
             var folderId = Array.from(itemIds)[0];
-            this.dispatch(bookmarks.actions.selectFolder(
-                folderId, this.getState().nodes));
+            this.dispatch(
+                bookmarks.actions.selectFolder(folderId, state.nodes));
           } else {
             this.openUrls_(this.expandUrls_(itemIds), command);
           }
@@ -251,7 +252,7 @@ cr.define('bookmarks', function() {
     },
 
     /**
-     * @param {Event} e
+     * @param {!Event} e
      * @param {!Set<string>} itemIds
      * @return {boolean} True if the event was handled, triggering a keyboard
      *     shortcut.
@@ -259,9 +260,7 @@ cr.define('bookmarks', function() {
     handleKeyEvent: function(e, itemIds) {
       for (var commandName in this.shortcuts_) {
         var shortcut = this.shortcuts_[commandName];
-        if (Polymer.IronA11yKeysBehavior.keyboardEventMatchesKeys(
-                e, shortcut) &&
-            this.canExecute(commandName, itemIds)) {
+        if (shortcut.matchesEvent(e) && this.canExecute(commandName, itemIds)) {
           this.handle(commandName, itemIds);
 
           e.stopPropagation();
@@ -275,6 +274,19 @@ cr.define('bookmarks', function() {
 
     ////////////////////////////////////////////////////////////////////////////
     // Private functions:
+
+    /**
+     * Register a keyboard shortcut for a command.
+     * @param {Command} command Command that the shortcut will trigger.
+     * @param {string} shortcut Keyboard shortcut, using the syntax of
+     *     cr/ui/command.js.
+     * @param {string=} macShortcut If set, enables a replacement shortcut for
+     *     Mac.
+     */
+    addShortcut_: function(command, shortcut, macShortcut) {
+      var shortcut = (cr.isMac && macShortcut) ? macShortcut : shortcut;
+      this.shortcuts_[command] = new cr.ui.KeyboardShortcutList(shortcut);
+    },
 
     /**
      * Minimize the set of |itemIds| by removing any node which has an ancestor

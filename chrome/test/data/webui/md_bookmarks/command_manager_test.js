@@ -124,7 +124,7 @@ suite('<bookmarks-command-manager>', function() {
     var undoModifier = cr.isMac ? 'meta' : 'ctrl';
     var undoKey = 'z';
     var redoModifier = cr.isMac ? ['meta', 'shift'] : 'ctrl'
-    var redoKey = cr.isMac ? 'z' : 'y';
+    var redoKey = cr.isMac ? 'Z' : 'y';
 
     MockInteractions.pressAndReleaseKeyOn(
         document.body, '', undoModifier, undoKey);
@@ -169,6 +169,16 @@ suite('<bookmarks-command-manager>', function() {
     commandManager.assertLastCommand(Command.OPEN_NEW_WINDOW, ['12', '13']);
     assertDeepEquals(['http://121/', 'http://13/'], lastCreate.url);
     assertFalse(lastCreate.incognito);
+  });
+
+  test('shift-enter does not trigger enter commands', function() {
+    // Enter by itself performs an edit (Mac) or open (non-Mac). Ensure that
+    // shift-enter doesn't trigger those commands.
+    store.data.selection.items = new Set(['13']);
+    store.notifyObservers();
+
+    MockInteractions.pressAndReleaseKeyOn(document.body, 13, 'shift', 'Enter');
+    commandManager.assertLastCommand(Command.OPEN_NEW_WINDOW);
   });
 
   test('cannot execute "Open in New Tab" on folders with no items', function() {

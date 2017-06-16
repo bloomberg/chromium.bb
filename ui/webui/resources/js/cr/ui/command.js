@@ -65,6 +65,32 @@ cr.define('cr.ui', function() {
   };
 
   /**
+   * A list of keyboard shortcuts which all perform one command.
+   * @param {string} shortcuts Text-based representation of one or more keyboard
+   *     shortcuts, separated by spaces.
+   * @constructor
+   */
+  function KeyboardShortcutList(shortcuts) {
+    this.shortcuts_ = shortcuts.split(/\s+/).map(function(shortcut) {
+      return new KeyboardShortcut(shortcut);
+    });
+  }
+
+  KeyboardShortcutList.prototype = {
+    /**
+     * Returns true if any of the keyboard shortcuts in the list matches a
+     * keyboard event.
+     * @param {!Event} e
+     * @return {boolean}
+     */
+    matchesEvent: function(e) {
+      return this.shortcuts_.some(function(keyboardShortcut) {
+        return keyboardShortcut.matchesEvent(e);
+      });
+    },
+  };
+
+  /**
    * Creates a new command element.
    * @constructor
    * @extends {HTMLElement}
@@ -135,9 +161,7 @@ cr.define('cr.ui', function() {
     set shortcut(shortcut) {
       var oldShortcut = this.shortcut_;
       if (shortcut !== oldShortcut) {
-        this.keyboardShortcuts_ = shortcut.split(/\s+/).map(function(shortcut) {
-          return new KeyboardShortcut(shortcut);
-        });
+        this.keyboardShortcuts_ = new KeyboardShortcutList(shortcut);
 
         // Set this after the keyboardShortcuts_ since that might throw.
         this.shortcut_ = shortcut;
@@ -154,10 +178,7 @@ cr.define('cr.ui', function() {
     matchesEvent: function(e) {
       if (!this.keyboardShortcuts_)
         return false;
-
-      return this.keyboardShortcuts_.some(function(keyboardShortcut) {
-        return keyboardShortcut.matchesEvent(e);
-      });
+      return this.keyboardShortcuts_.matchesEvent(e);
     },
   };
 
@@ -323,5 +344,9 @@ cr.define('cr.ui', function() {
   };
 
   // Export
-  return {Command: Command, CanExecuteEvent: CanExecuteEvent};
+  return {
+    Command: Command,
+    CanExecuteEvent: CanExecuteEvent,
+    KeyboardShortcutList: KeyboardShortcutList,
+  };
 });

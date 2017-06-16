@@ -185,14 +185,14 @@ TEST_F('MaterialBookmarksFocusTest', 'All', function() {
     test('keyboard commands are passed to command manager', function() {
       var commandManager = new TestCommandManager();
       document.body.appendChild(commandManager);
-      chrome.bookmarkManagerPrivate.removeTrees = function() {}
+      chrome.bookmarkManagerPrivate.removeTrees = function() {};
 
       store.data.selection.items = new Set(['3', '4']);
       store.data.selectedFolder = '2';
       store.notifyObservers();
 
       getFolderNode('2').$.container.focus();
-      keydown('2', 'delete');
+      keydown('2', 'Delete');
 
       commandManager.assertLastCommand(Command.DELETE, ['2']);
     });
