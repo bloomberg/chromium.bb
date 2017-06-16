@@ -955,7 +955,7 @@ bool LayoutBox::CanResize() const {
   // hasOverflowClip(). However, they do "implicitly" clip their contents, so
   // we want to allow resizing them also.
   return (HasOverflowClip() || IsLayoutIFrame()) &&
-         Style()->Resize() != RESIZE_NONE;
+         Style()->Resize() != EResize::kNone;
 }
 
 void LayoutBox::AddLayerHitTestRects(LayerHitTestRects& layer_rects,

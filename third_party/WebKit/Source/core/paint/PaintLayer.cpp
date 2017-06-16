@@ -1580,7 +1580,7 @@ bool PaintLayer::HasOverflowControls() const {
   return scrollable_area_ &&
          (scrollable_area_->HasScrollbar() ||
           scrollable_area_->ScrollCorner() ||
-          GetLayoutObject().Style()->Resize() != RESIZE_NONE);
+          GetLayoutObject().Style()->Resize() != EResize::kNone);
 }
 
 void PaintLayer::AppendSingleFragmentIgnoringPagination(

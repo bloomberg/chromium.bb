@@ -326,10 +326,12 @@ void StyleBuilderFunctions::applyValueCSSPropertyResize(
     const CSSValue& value) {
   const CSSIdentifierValue& identifier_value = ToCSSIdentifierValue(value);
 
-  EResize r = RESIZE_NONE;
+  EResize r = EResize::kNone;
   if (identifier_value.GetValueID() == CSSValueAuto) {
-    if (Settings* settings = state.GetDocument().GetSettings())
-      r = settings->GetTextAreasAreResizable() ? RESIZE_BOTH : RESIZE_NONE;
+    if (Settings* settings = state.GetDocument().GetSettings()) {
+      r = settings->GetTextAreasAreResizable() ? EResize::kBoth
+                                               : EResize::kNone;
+    }
   } else {
     r = identifier_value.ConvertTo<EResize>();
   }
