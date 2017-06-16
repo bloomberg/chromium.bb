@@ -200,6 +200,7 @@ test("vr_common_unittests") {
   sources = [
     "fps_meter_unittest.cc",
     "gltf_parser_unittest.cc",
+    "run_all_unittests.cc",
     "test/paths.cc",
     "test/paths.h",
     "textures/close_button_texture_unittest.cc",
@@ -212,8 +213,8 @@ test("vr_common_unittests") {
 
   deps = [
     ":vr_common",
-    "//base/test:run_all_unittests",
     "//base/test:test_support",
+    "//components:components_tests_pak",
     "//components/security_state/core",
     "//skia",
     "//testing/gmock",
@@ -223,10 +224,12 @@ test("vr_common_unittests") {
     "//ui/gl",
   ]
 
+  if (is_android) {
+    deps += [ "//ui/android:ui_java" ]
+  }
+
   data = [
-    "test/data/sample_inline.gltf",
-    "test/data/sample_external.gltf",
-    "test/data/sample.bin",
-    "test/data/sample.glb",
+    "test/data/",
+    "$root_out_dir/components_tests_resources.pak",
   ]
 }
