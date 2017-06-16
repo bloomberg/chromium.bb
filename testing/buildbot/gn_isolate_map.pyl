@@ -298,6 +298,10 @@
     "label": "//chromeos:chromeos_unittests",
     "type": "console_test_launcher",
   },
+  "chromeos_components_unittests": {
+    "label": "//chromeos/components:chromeos_components_unittests",
+    "type": "console_test_launcher",
+  },
   "chromevox_tests": {
     "label": "//chrome/browser/resources/chromeos/chromevox:chromevox_tests",
     "type": "windowed_test_launcher",

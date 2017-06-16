@@ -116,6 +116,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "chromeos_components_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "chromeos_unittests"
       },
       {
@@ -558,6 +564,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "chromeos_components_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "chromeos_unittests"
       },
       {
@@ -915,6 +927,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "chrome_app_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "chromeos_components_unittests"
       },
       {
         "swarming": {
