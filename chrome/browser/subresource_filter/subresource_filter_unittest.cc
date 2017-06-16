@@ -63,7 +63,7 @@ class SubresourceFilterTest : public ChromeRenderViewHostTestHarness {
     // Ensure correct features.
     scoped_feature_toggle_.ResetSubresourceFilterState(
         base::FeatureList::OVERRIDE_ENABLE_FEATURE,
-        "SafeBrowsingV4OnlyEnabled" /* additional_features */);
+        "SafeBrowsingV4OnlyEnabled,SubresourceFilterExperimentalUI");
     scoped_configuration_.ResetConfiguration(subresource_filter::Configuration(
         subresource_filter::ActivationLevel::ENABLED,
         subresource_filter::ActivationScope::ACTIVATION_LIST,

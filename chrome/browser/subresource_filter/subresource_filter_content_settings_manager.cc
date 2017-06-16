@@ -76,6 +76,8 @@ ContentSetting SubresourceFilterContentSettingsManager::GetSitePermission(
 }
 
 void SubresourceFilterContentSettingsManager::WhitelistSite(const GURL& url) {
+  DCHECK(base::FeatureList::IsEnabled(
+      subresource_filter::kSafeBrowsingSubresourceFilterExperimentalUI));
   base::AutoReset<bool> resetter(&ignore_settings_changes_, true);
   settings_map_->SetContentSettingDefaultScope(
       url, GURL(), ContentSettingsType::CONTENT_SETTINGS_TYPE_ADS,
@@ -123,6 +125,9 @@ SubresourceFilterContentSettingsManager::GetSiteMetadata(
 void SubresourceFilterContentSettingsManager::SetSiteMetadata(
     const GURL& url,
     std::unique_ptr<base::DictionaryValue> dict) {
+  if (!base::FeatureList::IsEnabled(
+          subresource_filter::kSafeBrowsingSubresourceFilterExperimentalUI))
+    return;
   settings_map_->SetWebsiteSettingDefaultScope(
       url, GURL(), ContentSettingsType::CONTENT_SETTINGS_TYPE_ADS_DATA,
       std::string(), std::move(dict));
