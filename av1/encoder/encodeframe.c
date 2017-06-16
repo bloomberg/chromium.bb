@@ -1341,10 +1341,6 @@ static void rd_pick_sb_modes(const AV1_COMP *const cpi, TileDataEnc *tile_data,
   x->pvq_speed = 1;
   x->pvq_coded = 0;
 #endif
-#if CONFIG_CFL
-  // Don't store luma during RDO (we will store the best mode later).
-  x->cfl_store_y = 0;
-#endif
 
   set_offsets(cpi, tile_info, x, mi_row, mi_col, bsize);
   mbmi = &xd->mi[0]->mbmi;
@@ -1352,6 +1348,10 @@ static void rd_pick_sb_modes(const AV1_COMP *const cpi, TileDataEnc *tile_data,
 #if CONFIG_RD_DEBUG
   mbmi->mi_row = mi_row;
   mbmi->mi_col = mi_col;
+#endif
+#if CONFIG_CFL
+  // Don't store luma during RDO. Only store luma when best luma is known
+  x->cfl_store_y = 0;
 #endif
 #if CONFIG_SUPERTX
   // We set tx_size here as skip blocks would otherwise not set it.
@@ -5653,7 +5653,7 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
   x->pvq_coded = (dry_run == OUTPUT_ENABLED) ? 1 : 0;
 #endif
 #if CONFIG_CFL
-  x->cfl_store_y = (dry_run == OUTPUT_ENABLED) ? 1 : 0;
+  x->cfl_store_y = 1;
 #endif
 
   if (!is_inter) {

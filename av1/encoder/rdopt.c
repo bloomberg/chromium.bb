@@ -3871,16 +3871,6 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   od_encode_rollback(&x->daala_enc, &post_buf);
 #endif  // CONFIG_PVQ
 
-#if CONFIG_CFL
-  // Perform one extra txfm_rd_in_plane() call, this time with the best value so
-  // we can store reconstructed luma values
-  RD_STATS this_rd_stats;
-  x->cfl_store_y = 1;
-  txfm_rd_in_plane(x, cpi, &this_rd_stats, INT64_MAX, 0, bsize,
-                   mic->mbmi.tx_size, cpi->sf.use_fast_coef_costing);
-  x->cfl_store_y = 0;
-#endif
-
 #if CONFIG_PALETTE
   if (try_palette) {
     rd_pick_palette_intra_sby(cpi, x, bsize, palette_y_mode_ctx,
@@ -8718,6 +8708,7 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
                                PICK_MODE_CONTEXT *ctx, int64_t best_rd) {
   const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCKD *const xd = &x->e_mbd;
+  MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   struct macroblockd_plane *const pd = xd->plane;
   int rate_y = 0, rate_uv = 0, rate_y_tokenonly = 0, rate_uv_tokenonly = 0;
   int y_skip = 0, uv_skip = 0;
@@ -8726,11 +8717,11 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
   const int unify_bsize = CONFIG_CB4X4;
 
   ctx->skip = 0;
-  xd->mi[0]->mbmi.ref_frame[0] = INTRA_FRAME;
-  xd->mi[0]->mbmi.ref_frame[1] = NONE_FRAME;
+  mbmi->ref_frame[0] = INTRA_FRAME;
+  mbmi->ref_frame[1] = NONE_FRAME;
 #if CONFIG_INTRABC
-  xd->mi[0]->mbmi.use_intrabc = 0;
-  xd->mi[0]->mbmi.mv[0].as_int = 0;
+  mbmi->use_intrabc = 0;
+  mbmi->mv[0].as_int = 0;
 #endif  // CONFIG_INTRABC
 
   const int64_t intra_yrd =
@@ -8741,9 +8732,22 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
                                          &dist_y, &y_skip, best_rd);
 
   if (intra_yrd < best_rd) {
-    max_uv_tx_size = uv_txsize_lookup[bsize][xd->mi[0]->mbmi.tx_size]
-                                     [pd[1].subsampling_x][pd[1].subsampling_y];
-    init_sbuv_mode(&xd->mi[0]->mbmi);
+#if CONFIG_CFL
+    // Perform one extra txfm_rd_in_plane() call, this time with the best value
+    // so we can store reconstructed luma values
+    RD_STATS this_rd_stats;
+
+    x->cfl_store_y = 1;
+
+    txfm_rd_in_plane(x, cpi, &this_rd_stats, INT64_MAX, AOM_PLANE_Y,
+                     mbmi->sb_type, mbmi->tx_size,
+                     cpi->sf.use_fast_coef_costing);
+
+    x->cfl_store_y = 0;
+#endif
+    max_uv_tx_size = uv_txsize_lookup[bsize][mbmi->tx_size][pd[1].subsampling_x]
+                                     [pd[1].subsampling_y];
+    init_sbuv_mode(mbmi);
 #if CONFIG_CB4X4
     if (!x->skip_chroma_rd)
       rd_pick_intra_sbuv_mode(cpi, x, &rate_uv, &rate_uv_tokenonly, &dist_uv,
