@@ -27,15 +27,16 @@ ALIGNMENT_ORDER = [
     # Aligns like double
     'ScaleTransformOperation', 'RotateTransformOperation', 'TranslateTransformOperation', 'double',
     # Aligns like a pointer (can be 32 or 64 bits)
-    'StyleMotionData', 'TransformOperations', 'Vector<CSSPropertyID>', 'GridPosition', 'AtomicString',
-    'DataRef', 'RefPtr', 'DataPersistent', 'Persistent', 'std::unique_ptr',
+    'NamedGridLinesMap', 'OrderedNamedGridLines', 'NamedGridAreaMap', 'StyleMotionData', 'TransformOperations',
+    'Vector<CSSPropertyID>', 'Vector<GridTrackSize>', 'GridPosition', 'AtomicString',
+    'RefPtr', 'DataPersistent', 'Persistent', 'std::unique_ptr',
     'Vector<String>', 'Font', 'FillLayer', 'NinePieceImage',
     # Aligns like float
     'TransformOrigin', 'ScrollPadding', 'ScrollSnapMargin', 'LengthBox', 'LengthSize', 'FloatSize',
     'LengthPoint', 'Length', 'TextSizeAdjust', 'TabSize', 'float',
     # Aligns like int
     'ScrollSnapType', 'ScrollSnapAlign', 'BorderValue', 'StyleColor', 'Color', 'LayoutUnit',
-    'LineClampValue', 'OutlineValue', 'unsigned', 'int',
+    'LineClampValue', 'OutlineValue', 'unsigned', 'size_t', 'int',
     # Aligns like short
     'unsigned short', 'short',
     # Aligns like char

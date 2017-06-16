@@ -74,8 +74,6 @@ blink_core_sources("rendering") {
     "StyleFilterData.h",
     "StyleGeneratedImage.cpp",
     "StyleGeneratedImage.h",
-    "StyleGridData.cpp",
-    "StyleGridData.h",
     "StyleImage.cpp",
     "StyleImage.h",
     "StyleInheritedVariables.cpp",
