@@ -34,13 +34,11 @@ class VMTest(object):
                           ssh_port=ssh_port)
 
   def __del__(self):
-    if self._vm and self.start_vm:
-      self._vm.Stop()
+    self.StopVM()
 
-    elapsed = datetime.datetime.utcnow() - self.start_time
-    # Don't need trailing milliseconds.
     logging.info('Time elapsed %s.',
-                 datetime.timedelta(seconds=elapsed.seconds))
+                 datetime.datetime.utcnow() - self.start_time)
+
 
   def StartVM(self):
     """Start a VM if necessary.
@@ -54,6 +52,14 @@ class VMTest(object):
     if self.start_vm:
       self._vm.Start()
     self._vm.WaitForBoot()
+
+  def StopVM(self):
+    """Stop the VM if necessary.
+
+    If --start-vm was specified, we launched this VM, so we now stop it.
+    """
+    if self._vm and self.start_vm:
+      self._vm.Stop()
 
   def Build(self, build_dir):
     """Build chrome.
@@ -173,4 +179,5 @@ def main(argv):
   success = vm_test.RunTests()
   success_str = 'succeeded' if success else 'failed'
   logging.info('Tests %s.', success_str)
+  vm_test.StopVM()
   return not success
