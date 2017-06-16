@@ -10,10 +10,6 @@
 #include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/io.h"
 
-namespace base {
-class RefCountedString;
-}
-
 namespace content {
 class DevToolsIOContext;
 
@@ -37,7 +33,8 @@ class IOHandler : public DevToolsDomainHandler,
 
  private:
   void ReadComplete(std::unique_ptr<ReadCallback> callback,
-      const scoped_refptr<base::RefCountedString>& data, int status);
+                    std::unique_ptr<std::string> data,
+                    int status);
 
   std::unique_ptr<IO::Frontend> frontend_;
   DevToolsIOContext* io_context_;

@@ -6,9 +6,12 @@
 
 #include "base/files/file.h"
 #include "base/files/file_util.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/third_party/icu/icu_utf.h"
+#include "base/threading/thread_restrictions.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace content {
@@ -19,18 +22,20 @@ unsigned s_last_stream_handle = 0;
 
 using Stream = DevToolsIOContext::Stream;
 
-Stream::Stream()
-    : base::RefCountedDeleteOnSequence<Stream>(
-          BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE)),
+Stream::Stream(base::SequencedTaskRunner* task_runner)
+    : base::RefCountedDeleteOnSequence<Stream>(task_runner),
       handle_(base::UintToString(++s_last_stream_handle)),
+      task_runner_(task_runner),
       had_errors_(false),
       last_read_pos_(0) {}
 
 Stream::~Stream() {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
 }
 
-bool Stream::InitOnFileThreadIfNeeded() {
+bool Stream::InitOnFileSequenceIfNeeded() {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
+  base::ThreadRestrictions::AssertIOAllowed();
   if (had_errors_)
     return false;
   if (file_.IsValid())
@@ -56,22 +61,23 @@ bool Stream::InitOnFileThreadIfNeeded() {
 }
 
 void Stream::Read(off_t position, size_t max_size, ReadCallback callback) {
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-      base::Bind(&Stream::ReadOnFileThread, this, position, max_size,
-                 callback));
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&Stream::ReadOnFileSequence, this, position,
+                                max_size, std::move(callback)));
 }
 
 void Stream::Append(std::unique_ptr<std::string> data) {
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          base::Bind(&Stream::AppendOnFileThread, this,
-                                     base::Passed(std::move(data))));
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&Stream::AppendOnFileSequence, this, std::move(data)));
 }
 
-void Stream::ReadOnFileThread(off_t position, size_t max_size,
-                              ReadCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+void Stream::ReadOnFileSequence(off_t position,
+                                size_t max_size,
+                                ReadCallback callback) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   Status status = StatusFailure;
-  scoped_refptr<base::RefCountedString> data;
+  std::unique_ptr<std::string> data;
 
   if (file_.IsValid()) {
     std::string buffer;
@@ -92,33 +98,37 @@ void Stream::ReadOnFileThread(off_t position, size_t max_size,
       } else {
         buffer.resize(size_got);
       }
-      data = base::RefCountedString::TakeString(&buffer);
+      data.reset(new std::string(std::move(buffer)));
       status = size_got ? StatusSuccess : StatusEOF;
       last_read_pos_ = position + size_got;
     }
   }
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(callback, data, status));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(std::move(callback), std::move(data), status));
 }
 
-void Stream::AppendOnFileThread(std::unique_ptr<std::string> data) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
-  if (!InitOnFileThreadIfNeeded())
+void Stream::AppendOnFileSequence(std::unique_ptr<std::string> data) {
+  if (!InitOnFileSequenceIfNeeded())
     return;
-  int size_written = file_.WriteAtCurrentPos(data->data(), data->size());
-  if (size_written != static_cast<int>(data->size())) {
+  int size_written = file_.WriteAtCurrentPos(&*data->begin(), data->length());
+  if (size_written != static_cast<int>(data->length())) {
     LOG(ERROR) << "Failed to write temporary file";
     had_errors_ = true;
     file_.Close();
   }
 }
 
-DevToolsIOContext::DevToolsIOContext() {}
+DevToolsIOContext::DevToolsIOContext() = default;
 
-DevToolsIOContext::~DevToolsIOContext() {}
+DevToolsIOContext::~DevToolsIOContext() = default;
 
 scoped_refptr<Stream> DevToolsIOContext::CreateTempFileBackedStream() {
-  scoped_refptr<Stream> result = new Stream();
+  if (!task_runner_) {
+    task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
+        {base::MayBlock(), base::TaskPriority::BACKGROUND});
+  }
+  scoped_refptr<Stream> result = new Stream(task_runner_.get());
   bool inserted =
       streams_.insert(std::make_pair(result->handle(), result)).second;
   DCHECK(inserted);

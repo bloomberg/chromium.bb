@@ -14,6 +14,9 @@
 #include "base/memory/ref_counted_delete_on_sequence.h"
 #include "base/memory/ref_counted_memory.h"
 
+namespace base {
+class SequencedTaskRunner;
+}
 namespace content {
 
 class DevToolsIOContext {
@@ -26,26 +29,27 @@ class DevToolsIOContext {
       StatusFailure
     };
 
-    using ReadCallback = base::Callback<
-        void(const scoped_refptr<base::RefCountedString>& data, int status)>;
+    using ReadCallback =
+        base::OnceCallback<void(std::unique_ptr<std::string> data, int status)>;
 
     void Read(off_t position, size_t max_size, ReadCallback callback);
     void Append(std::unique_ptr<std::string> data);
     const std::string& handle() const { return handle_; }
 
    private:
-    Stream();
+    explicit Stream(base::SequencedTaskRunner* task_runner);
     ~Stream();
     friend class DevToolsIOContext;
     friend class base::RefCountedDeleteOnSequence<Stream>;
     friend class base::DeleteHelper<Stream>;
 
-    void ReadOnFileThread(off_t pos, size_t max_size, ReadCallback callback);
-    void AppendOnFileThread(std::unique_ptr<std::string> data);
-    bool InitOnFileThreadIfNeeded();
+    void ReadOnFileSequence(off_t pos, size_t max_size, ReadCallback callback);
+    void AppendOnFileSequence(std::unique_ptr<std::string> data);
+    bool InitOnFileSequenceIfNeeded();
 
     const std::string handle_;
     base::File file_;
+    scoped_refptr<base::SequencedTaskRunner> task_runner_;
     bool had_errors_;
     off_t last_read_pos_;
   };
@@ -61,6 +65,7 @@ class DevToolsIOContext {
  private:
   using StreamsMap = std::map<std::string, scoped_refptr<Stream>>;
   StreamsMap streams_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 };
 
 }  // namespace content
