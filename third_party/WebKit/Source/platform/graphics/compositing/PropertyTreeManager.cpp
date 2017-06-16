@@ -106,7 +106,6 @@ void PropertyTreeManager::SetupRootClipNode() {
       *clip_tree.Node(clip_tree.Insert(cc::ClipNode(), kRealRootNodeId));
   DCHECK_EQ(clip_node.id, kSecondaryRootNodeId);
 
-  clip_node.owning_layer_id = root_layer_->id();
   clip_node.clip_type = cc::ClipNode::ClipType::APPLIES_LOCAL_CLIP;
   clip_node.clip = gfx::RectF(
       gfx::SizeF(root_layer_->layer_tree_host()->device_viewport_size()));
@@ -222,7 +221,6 @@ int PropertyTreeManager::EnsureCompositorClipNode(
   int id = GetClipTree().Insert(cc::ClipNode(), parent_id);
 
   cc::ClipNode& compositor_node = *GetClipTree().Node(id);
-  compositor_node.owning_layer_id = dummy_layer->id();
 
   // TODO(jbroman): Don't discard rounded corners.
   compositor_node.clip = clip_node->ClipRect().Rect();

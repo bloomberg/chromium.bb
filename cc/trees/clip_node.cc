@@ -14,7 +14,6 @@ namespace cc {
 ClipNode::ClipNode()
     : id(ClipTree::kInvalidNodeId),
       parent_id(ClipTree::kInvalidNodeId),
-      owning_layer_id(Layer::INVALID_ID),
       clip_type(ClipType::APPLIES_LOCAL_CLIP),
       transform_id(TransformTree::kInvalidNodeId) {
 }
@@ -22,7 +21,6 @@ ClipNode::ClipNode()
 ClipNode::ClipNode(const ClipNode& other)
     : id(other.id),
       parent_id(other.parent_id),
-      owning_layer_id(other.owning_layer_id),
       clip_type(other.clip_type),
       clip(other.clip),
       transform_id(other.transform_id) {
@@ -38,7 +36,6 @@ ClipNode::ClipNode(const ClipNode& other)
 ClipNode& ClipNode::operator=(const ClipNode& other) {
   id = other.id;
   parent_id = other.parent_id;
-  owning_layer_id = other.owning_layer_id;
   clip_type = other.clip_type;
   clip = other.clip;
   transform_id = other.transform_id;
@@ -65,7 +62,6 @@ bool ClipNode::operator==(const ClipNode& other) const {
       (!clip_expander && other.clip_expander))
     return false;
   return id == other.id && parent_id == other.parent_id &&
-         owning_layer_id == other.owning_layer_id &&
          clip_type == other.clip_type && clip == other.clip &&
          transform_id == other.transform_id;
 }
@@ -73,7 +69,6 @@ bool ClipNode::operator==(const ClipNode& other) const {
 void ClipNode::AsValueInto(base::trace_event::TracedValue* value) const {
   value->SetInteger("id", id);
   value->SetInteger("parent_id", parent_id);
-  value->SetInteger("owning_layer_id", owning_layer_id);
   value->SetInteger("clip_type", static_cast<int>(clip_type));
   MathUtil::AddToTracedValue("clip", clip, value);
   value->SetInteger("transform_id", transform_id);
