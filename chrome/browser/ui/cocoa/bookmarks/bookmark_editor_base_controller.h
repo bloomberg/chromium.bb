@@ -69,6 +69,8 @@ class BookmarkModel;
                      title:(const base::string16&)title
              configuration:(BookmarkEditor::Configuration)configuration;
 
+- (void)windowWillClose:(NSNotification*)notification;
+
 // Override to customize the touch bar.
 - (NSTouchBar*)makeTouchBar;
 
