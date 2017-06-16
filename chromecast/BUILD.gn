@@ -309,8 +309,6 @@ cast_test_group_list("cast_test_lists") {
 
   additional_options = [ "--ozone-platform=headless --test-launcher-bot-mode" ]
 
-  build_tests = true
-
   test_groups = [ ":cast_tests" ]
 
   if (chromecast_branding != "public") {
@@ -336,7 +334,6 @@ if (is_android) {
     build_list_path = "$root_out_dir/junit/build_junit_test_list.txt"
     runtime_deps_path = "$root_out_dir/junit/runtime_deps.json"
     run_list_path = "$root_out_dir/junit/run_junit_test_list.txt"
-    build_tests = true
     test_groups = [ ":cast_junit_tests" ]
     if (chromecast_branding != "public") {
       test_groups += [ "//chromecast/internal:internal_cast_junit_tests" ]
