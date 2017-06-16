@@ -10172,7 +10172,7 @@
     "gtest_tests": [
       {
         "args": [
-          "--test-launcher-filter-file=testing/buildbot/filters/fuchsia.base_unittests.filter"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.base_unittests.filter"
         ],
         "swarming": {
           "can_use_on_swarming_builders": false
@@ -10189,7 +10189,7 @@
     "gtest_tests": [
       {
         "args": [
-          "--test-launcher-filter-file=testing/buildbot/filters/fuchsia.base_unittests.filter"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.base_unittests.filter"
         ],
         "swarming": {
           "can_use_on_swarming_builders": false
