@@ -2636,6 +2636,7 @@ void Document::Shutdown() {
   GetPage()->GetEventHandlerRegistry().DocumentDetached(*this);
 
   // Signal destruction to mutation observers.
+  DocumentShutdownNotifier::NotifyContextDestroyed();
   SynchronousMutationNotifier::NotifyContextDestroyed();
 
   // If this Document is associated with a live DocumentLoader, the
@@ -6855,6 +6856,7 @@ DEFINE_TRACE(Document) {
   ContainerNode::Trace(visitor);
   ExecutionContext::Trace(visitor);
   SecurityContext::Trace(visitor);
+  DocumentShutdownNotifier::Trace(visitor);
   SynchronousMutationNotifier::Trace(visitor);
 }
 

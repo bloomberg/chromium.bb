@@ -38,6 +38,8 @@
 #include "core/dom/DocumentEncodingData.h"
 #include "core/dom/DocumentInit.h"
 #include "core/dom/DocumentLifecycle.h"
+#include "core/dom/DocumentShutdownNotifier.h"
+#include "core/dom/DocumentShutdownObserver.h"
 #include "core/dom/DocumentTiming.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/MutationObserver.h"
@@ -252,6 +254,7 @@ class CORE_EXPORT Document : public ContainerNode,
                              public TreeScope,
                              public SecurityContext,
                              public ExecutionContext,
+                             public DocumentShutdownNotifier,
                              public SynchronousMutationNotifier,
                              public Supplementable<Document> {
   DEFINE_WRAPPERTYPEINFO();

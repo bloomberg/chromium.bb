@@ -249,6 +249,42 @@ DEFINE_TRACE(TestSynchronousMutationObserver) {
   SynchronousMutationObserver::Trace(visitor);
 }
 
+class TestDocumentShutdownObserver
+    : public GarbageCollectedFinalized<TestDocumentShutdownObserver>,
+      public DocumentShutdownObserver {
+  USING_GARBAGE_COLLECTED_MIXIN(TestDocumentShutdownObserver);
+
+ public:
+  TestDocumentShutdownObserver(Document&);
+  virtual ~TestDocumentShutdownObserver() = default;
+
+  int CountContextDestroyedCalled() const {
+    return context_destroyed_called_counter_;
+  }
+
+  DECLARE_TRACE();
+
+ private:
+  // Implement |DocumentShutdownObserver| member functions.
+  void ContextDestroyed(Document*) final;
+
+  int context_destroyed_called_counter_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(TestDocumentShutdownObserver);
+};
+
+TestDocumentShutdownObserver::TestDocumentShutdownObserver(Document& document) {
+  SetContext(&document);
+}
+
+void TestDocumentShutdownObserver::ContextDestroyed(Document*) {
+  ++context_destroyed_called_counter_;
+}
+
+DEFINE_TRACE(TestDocumentShutdownObserver) {
+  DocumentShutdownObserver::Trace(visitor);
+}
+
 class MockValidationMessageClient
     : public GarbageCollectedFinalized<MockValidationMessageClient>,
       public ValidationMessageClient {
@@ -730,6 +766,17 @@ TEST_F(DocumentTest, SynchronousMutationNotifierUpdateCharacterData) {
   EXPECT_EQ(6u, observer.UpdatedCharacterDataRecords()[3]->offset_);
   EXPECT_EQ(4u, observer.UpdatedCharacterDataRecords()[3]->old_length_);
   EXPECT_EQ(3u, observer.UpdatedCharacterDataRecords()[3]->new_length_);
+}
+
+TEST_F(DocumentTest, DocumentShutdownNotifier) {
+  auto& observer = *new TestDocumentShutdownObserver(GetDocument());
+
+  EXPECT_EQ(GetDocument(), observer.LifecycleContext());
+  EXPECT_EQ(0, observer.CountContextDestroyedCalled());
+
+  GetDocument().Shutdown();
+  EXPECT_EQ(nullptr, observer.LifecycleContext());
+  EXPECT_EQ(1, observer.CountContextDestroyedCalled());
 }
 
 // This tests that meta-theme-color can be found correctly
