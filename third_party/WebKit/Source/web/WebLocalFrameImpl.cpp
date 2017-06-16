@@ -614,16 +614,6 @@ WebRect WebLocalFrameImpl::VisibleContentRect() const {
   return WebRect();
 }
 
-bool WebLocalFrameImpl::HasHorizontalScrollbar() const {
-  return GetFrame() && GetFrame()->View() &&
-         GetFrame()->View()->HorizontalScrollbar();
-}
-
-bool WebLocalFrameImpl::HasVerticalScrollbar() const {
-  return GetFrame() && GetFrame()->View() &&
-         GetFrame()->View()->VerticalScrollbar();
-}
-
 WebView* WebLocalFrameImpl::View() const {
   return ViewImpl();
 }

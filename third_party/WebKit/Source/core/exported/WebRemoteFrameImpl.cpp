@@ -114,16 +114,6 @@ WebRect WebRemoteFrameImpl::VisibleContentRect() const {
   return WebRect();
 }
 
-bool WebRemoteFrameImpl::HasHorizontalScrollbar() const {
-  NOTREACHED();
-  return false;
-}
-
-bool WebRemoteFrameImpl::HasVerticalScrollbar() const {
-  NOTREACHED();
-  return false;
-}
-
 WebView* WebRemoteFrameImpl::View() const {
   if (!GetFrame()) {
     return nullptr;
