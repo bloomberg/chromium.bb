@@ -61,7 +61,7 @@ app_list::AppListView* DemoAppListViewDelegate::InitView(
   gfx::NativeView container = window_context;
 
   view_ = new app_list::AppListView(this);
-  view_->Initialize(container, 0);
+  view_->Initialize(container, 0, false, false);
   view_->MaybeSetAnchorPoint(gfx::Point(300, 300));
 
   // Populate some apps.
