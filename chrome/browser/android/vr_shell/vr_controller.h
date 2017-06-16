@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "chrome/browser/android/vr_shell/vr_controller_model.h"
 #include "device/vr/android/gvr/gvr_gamepad_data_provider.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
@@ -79,6 +80,10 @@ class VrController {
   bool ButtonState(gvr::ControllerButton button) const;
 
   bool IsConnected();
+
+  base::TimeTicks GetLastOrientationTimestamp() const;
+  base::TimeTicks GetLastTouchTimestamp() const;
+  base::TimeTicks GetLastButtonTimestamp() const;
 
  private:
   enum GestureDetectorState {
