@@ -561,6 +561,8 @@ void GLRenderer::BeginDrawingFrame() {
 
   // TODO(enne): Do we need to reinitialize all of this state per frame?
   ReinitializeGLState();
+
+  num_triangles_drawn_ = 0;
 }
 
 void GLRenderer::DoDrawQuad(const DrawQuad* quad,
@@ -1811,6 +1813,7 @@ void GLRenderer::DrawSolidColorQuad(const SolidColorDrawQuad* quad,
     SetShaderMatrix(current_frame()->projection_matrix *
                     quad->shared_quad_state->quad_to_target_transform);
     gl_->DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
+    num_triangles_drawn_ += 2;
   }
 }
 
@@ -2052,6 +2055,7 @@ void GLRenderer::DrawContentQuadNoAA(const ContentDrawQuadBase* quad,
                   quad->shared_quad_state->quad_to_target_transform);
 
   gl_->DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
+  num_triangles_drawn_ += 2;
 }
 
 void GLRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
@@ -2318,6 +2322,7 @@ void GLRenderer::FlushTextureQuadCache(BoundGeometry flush_binding) {
   gl_->DrawElements(GL_TRIANGLES,
                     6 * static_cast<int>(draw_cache_.matrix_data.size()),
                     GL_UNSIGNED_SHORT, 0);
+  num_triangles_drawn_ += 2 * static_cast<int>(draw_cache_.matrix_data.size());
 
   // Draw the border if requested.
   if (gl_composited_texture_quad_border_) {
@@ -2475,6 +2480,9 @@ void GLRenderer::FinishDrawingFrame() {
   ScheduleCALayers();
   ScheduleDCLayers();
   ScheduleOverlays();
+
+  TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("cc.debug.triangles"),
+                 "Triangles Drawn", num_triangles_drawn_);
 }
 
 void GLRenderer::FinishDrawingQuadList() {
@@ -2606,6 +2614,7 @@ void GLRenderer::DrawQuadGeometryClippedByQuadF(
 
   gl_->DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT,
                     reinterpret_cast<const void*>(0));
+  num_triangles_drawn_ += 2;
 }
 
 void GLRenderer::DrawQuadGeometry(const gfx::Transform& projection_matrix,
@@ -2617,6 +2626,7 @@ void GLRenderer::DrawQuadGeometry(const gfx::Transform& projection_matrix,
   SetShaderMatrix(projection_matrix * quad_rect_matrix);
 
   gl_->DrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0);
+  num_triangles_drawn_ += 2;
 }
 
 void GLRenderer::SwapBuffers(std::vector<ui::LatencyInfo> latency_info) {

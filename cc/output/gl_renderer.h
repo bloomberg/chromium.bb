@@ -364,6 +364,8 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   unsigned offscreen_stencil_renderbuffer_id_ = 0;
   gfx::Size offscreen_stencil_renderbuffer_size_;
 
+  unsigned num_triangles_drawn_ = 0;
+
   base::WeakPtrFactory<GLRenderer> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(GLRenderer);
