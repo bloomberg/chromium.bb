@@ -101,7 +101,7 @@ var CrScrollableBehavior = {
     requestAnimationFrame(function() {
       var scrollableElements = this.root.querySelectorAll('[scrollable]');
       for (var i = 0; i < scrollableElements.length; i++)
-        this.updateScroll_(/** @type {!HTMLElement} */(scrollableElements[i]));
+        this.updateScroll_(/** @type {!HTMLElement} */ (scrollableElements[i]));
     }.bind(this));
   },
 
@@ -145,7 +145,8 @@ var CrScrollableBehavior = {
         'can-scroll', scrollable.clientHeight < scrollable.scrollHeight);
     scrollable.classList.toggle('is-scrolled', scrollable.scrollTop > 0);
     scrollable.classList.toggle(
-        'scrolled-to-bottom', scrollable.scrollTop + scrollable.clientHeight >=
+        'scrolled-to-bottom',
+        scrollable.scrollTop + scrollable.clientHeight >=
             scrollable.scrollHeight);
   },
 };

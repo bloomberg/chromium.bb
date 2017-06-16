@@ -119,88 +119,88 @@ function assertDeepEquals(expected, observed, opt_message) {
  * Defines runTests.
  */
 (function(exports) {
-  /**
-   * List of test cases.
-   * @type {Array<string>} List of function names for tests to run.
-   */
-  var testCases = [];
+/**
+ * List of test cases.
+ * @type {Array<string>} List of function names for tests to run.
+ */
+var testCases = [];
 
-  /**
-   * Indicates if all tests have run successfully.
-   * @type {boolean}
-   */
-  var cleanTestRun = true;
+/**
+ * Indicates if all tests have run successfully.
+ * @type {boolean}
+ */
+var cleanTestRun = true;
 
-  /**
-   * Armed during setup of a test to call the matching tear down code.
-   * @type {Function}
-   */
-  var pendingTearDown = null;
+/**
+ * Armed during setup of a test to call the matching tear down code.
+ * @type {Function}
+ */
+var pendingTearDown = null;
 
-  /**
-   * Runs all functions starting with test and reports success or
-   * failure of the test suite.
-   */
-  function runTests() {
-    for (var name in window) {
-      // To avoid unnecessary getting properties, test name first.
-      if (/^test/.test(name) && typeof window[name] == 'function')
-        testCases.push(name);
-    }
-    if (!testCases.length) {
-      console.error('Failed to find test cases.');
-      cleanTestRun = false;
-    }
+/**
+ * Runs all functions starting with test and reports success or
+ * failure of the test suite.
+ */
+function runTests() {
+  for (var name in window) {
+    // To avoid unnecessary getting properties, test name first.
+    if (/^test/.test(name) && typeof window[name] == 'function')
+      testCases.push(name);
+  }
+  if (!testCases.length) {
+    console.error('Failed to find test cases.');
+    cleanTestRun = false;
+  }
+  try {
+    if (window.setUpPage)
+      window.setUpPage();
+  } catch (err) {
+    cleanTestRun = false;
+  }
+  continueTesting();
+}
+
+/**
+ * Runs the next test in the queue. Reports the test results if the queue is
+ * empty.
+ * @param {boolean=} opt_asyncTestFailure Optional parameter indicated if the
+ *     last asynchronous test failed.
+ */
+function continueTesting(opt_asyncTestFailure) {
+  if (opt_asyncTestFailure)
+    cleanTestRun = false;
+  var done = false;
+  if (pendingTearDown) {
+    pendingTearDown();
+    pendingTearDown = null;
+  }
+  if (testCases.length > 0) {
+    var fn = testCases.pop();
+    var isAsyncTest = window[fn].length;
     try {
-      if (window.setUpPage)
-        window.setUpPage();
+      if (window.setUp)
+        window.setUp();
+      pendingTearDown = window.tearDown;
+      window[fn](continueTesting);
     } catch (err) {
+      console.error('Failure in test ' + fn + '\n' + err);
+      console.log(err.stack);
       cleanTestRun = false;
     }
-    continueTesting();
+    // Asynchronous tests must manually call continueTesting when complete.
+    if (!isAsyncTest)
+      continueTesting();
+  } else {
+    done = true;
+    endTests(cleanTestRun);
   }
-
-  /**
-   * Runs the next test in the queue. Reports the test results if the queue is
-   * empty.
-   * @param {boolean=} opt_asyncTestFailure Optional parameter indicated if the
-   *     last asynchronous test failed.
-   */
-  function continueTesting(opt_asyncTestFailure) {
-    if (opt_asyncTestFailure)
-      cleanTestRun = false;
-    var done = false;
-    if (pendingTearDown) {
-      pendingTearDown();
-      pendingTearDown = null;
-    }
-    if (testCases.length > 0) {
-      var fn = testCases.pop();
-      var isAsyncTest = window[fn].length;
-      try {
-        if (window.setUp)
-          window.setUp();
-        pendingTearDown = window.tearDown;
-        window[fn](continueTesting);
-      } catch (err) {
-        console.error('Failure in test ' + fn + '\n' + err);
-        console.log(err.stack);
-        cleanTestRun = false;
-      }
-      // Asynchronous tests must manually call continueTesting when complete.
-      if (!isAsyncTest)
-        continueTesting();
-    } else {
-      done = true;
-      endTests(cleanTestRun);
-    }
-    if (!done) {
-      domAutomationController.setAutomationId(1);
-      domAutomationController.send('PENDING');
-    }
+  if (!done) {
+    domAutomationController.setAutomationId(1);
+    domAutomationController.send('PENDING');
   }
+}
 
-  exports.runTests = runTests;
+exports.runTests = runTests;
 })(this);
 
 /**
