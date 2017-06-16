@@ -31,6 +31,7 @@
 #include "core/editing/SelectionModifier.h"
 
 #include "core/editing/EditingUtilities.h"
+#include "core/editing/InlineBoxTraversal.h"
 #include "core/editing/VisibleUnits.h"
 #include "core/layout/api/LineLayoutAPIShim.h"
 #include "core/layout/api/LineLayoutItem.h"
@@ -62,6 +63,17 @@ struct TraversalLeft {
 
   static int CaretStartOffsetOf(const InlineBox& box) {
     return box.CaretLeftmostOffset();
+  }
+
+  static InlineBox* FindBackwardBoundaryOfEntireBidiRun(const InlineBox& box,
+                                                        unsigned bidi_level) {
+    return InlineBoxTraversal::FindRightBoundaryOfEntireBidiRun(box,
+                                                                bidi_level);
+  }
+
+  static InlineBox* FindForwardBoundaryOfEntireBidiRun(const InlineBox& box,
+                                                       unsigned bidi_level) {
+    return InlineBoxTraversal::FindLeftBoundaryOfEntireBidiRun(box, bidi_level);
   }
 
   static int ForwardGraphemeBoundaryOf(TextDirection direction,
@@ -133,6 +145,17 @@ struct TraversalRight {
 
   static int CaretStartOffsetOf(const InlineBox& box) {
     return box.CaretRightmostOffset();
+  }
+
+  static InlineBox* FindBackwardBoundaryOfEntireBidiRun(const InlineBox& box,
+                                                        unsigned bidi_level) {
+    return InlineBoxTraversal::FindLeftBoundaryOfEntireBidiRun(box, bidi_level);
+  }
+
+  static InlineBox* FindForwardBoundaryOfEntireBidiRun(const InlineBox& box,
+                                                       unsigned bidi_level) {
+    return InlineBoxTraversal::FindRightBoundaryOfEntireBidiRun(box,
+                                                                bidi_level);
   }
 
   static int ForwardGraphemeBoundaryOf(TextDirection direction,
@@ -323,19 +346,11 @@ static PositionTemplate<Strategy> TraverseInternalAlgorithm(
         // Trailing edge of a secondary run. Set to the leading edge of
         // the entire run.
         while (true) {
-          while (InlineBox* next_box = Traversal::BackwardLeafChildOf(*box)) {
-            if (next_box->BidiLevel() < level)
-              break;
-            box = next_box;
-          }
+          box = Traversal::FindBackwardBoundaryOfEntireBidiRun(*box, level);
           if (box->BidiLevel() == level)
             break;
           level = box->BidiLevel();
-          while (InlineBox* prev_box = Traversal::ForwardLeafChildOf(*box)) {
-            if (prev_box->BidiLevel() < level)
-              break;
-            box = prev_box;
-          }
+          box = Traversal::FindForwardBoundaryOfEntireBidiRun(*box, level);
           if (box->BidiLevel() == level)
             break;
           level = box->BidiLevel();
