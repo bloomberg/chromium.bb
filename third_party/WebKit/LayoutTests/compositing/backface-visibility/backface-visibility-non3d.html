@@ -40,8 +40,8 @@
 <!-- No back faces are visible, so we should see the lime div inside the blue narrow div
      inside the green div. -->
 <div id="testCase1" style="background-color: green">
-  <div style="background-color: blue; -webkit-backface-visibility: hidden; transform: rotateY(80deg)">
-    <div style="background-color: lime; -webkit-backface-visibility: hidden; transform: rotateX(80deg)">
+  <div style="background-color: blue; backface-visibility: hidden; transform: rotateY(80deg)">
+    <div style="background-color: lime; backface-visibility: hidden; transform: rotateX(80deg)">
     </div>
   </div>
 </div>
@@ -49,8 +49,8 @@
 <!-- The lime div has its back facing, so we should see only the blue strip inside the
      green div. -->
 <div id="testCase2" style="background-color: green">
-  <div style="background-color: blue; -webkit-backface-visibility: hidden; transform: rotateY(80deg)">
-    <div style="background-color: lime; -webkit-backface-visibility: hidden; transform: rotateX(100deg)">
+  <div style="background-color: blue; backface-visibility: hidden; transform: rotateY(80deg)">
+    <div style="background-color: lime; backface-visibility: hidden; transform: rotateX(100deg)">
     </div>
   </div>
 </div>
@@ -59,16 +59,16 @@
      W3C spec says that without a 3d context that they should use their own local
      transforms. -->
 <div id="testCase3" style="background-color: green">
-  <div style="background-color: blue; -webkit-backface-visibility: hidden; transform: rotateY(100deg)">
-    <div style="background-color: lime; -webkit-backface-visibility: hidden; transform: rotateX(80deg)">
+  <div style="background-color: blue; backface-visibility: hidden; transform: rotateY(100deg)">
+    <div style="background-color: lime; backface-visibility: hidden; transform: rotateX(80deg)">
     </div>
   </div>
 </div>
 
 <!-- Only the green div should be visible. -->
 <div id="testCase4" style="background-color: green">
-  <div style="background-color: blue; -webkit-backface-visibility: hidden; transform: rotateY(100deg)">
-    <div style="background-color: lime; -webkit-backface-visibility: hidden; transform: rotateX(100deg)">
+  <div style="background-color: blue; backface-visibility: hidden; transform: rotateY(100deg)">
+    <div style="background-color: lime; backface-visibility: hidden; transform: rotateX(100deg)">
     </div>
   </div>
 </div>
