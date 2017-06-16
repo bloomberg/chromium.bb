@@ -19,6 +19,7 @@
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
 #include "chrome/browser/media/webrtc/media_stream_device_permissions.h"
 #include "chrome/browser/permissions/permission_manager.h"
+#include "chrome/browser/permissions/permission_request_manager.h"
 #include "chrome/browser/permissions/permission_result.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/permissions/permission_util.h"
@@ -53,7 +54,6 @@
 #include "content/public/browser/android/content_view_core.h"
 #include "ui/android/window_android.h"
 #else  // !defined(OS_ANDROID)
-#include "chrome/browser/permissions/permission_request_manager.h"
 #include "ui/vector_icons/vector_icons.h"
 #endif
 
@@ -465,7 +465,8 @@ void MediaStreamDevicesController::RequestPermissionsWithDelegate(
     Profile* profile =
         Profile::FromBrowserContext(web_contents->GetBrowserContext());
     if (base::FeatureList::IsEnabled(
-            features::kUsePermissionManagerForMediaRequests)) {
+            features::kUsePermissionManagerForMediaRequests) &&
+        PermissionRequestManager::IsEnabled()) {
       std::vector<ContentSettingsType> content_settings_types;
 
       if (is_asking_for_audio)
