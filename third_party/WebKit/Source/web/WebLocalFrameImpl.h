@@ -100,8 +100,6 @@ class WEB_EXPORT WebLocalFrameImpl final
   WebSize ContentsSize() const override;
   bool HasVisibleContent() const override;
   WebRect VisibleContentRect() const override;
-  bool HasHorizontalScrollbar() const override;
-  bool HasVerticalScrollbar() const override;
   WebView* View() const override;
   WebDocument GetDocument() const override;
   WebPerformance Performance() const override;
