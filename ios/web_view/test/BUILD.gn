@@ -50,6 +50,7 @@ source_set("test_support") {
   ]
 
   deps = [
+    "//base:base",
     "//ios/testing:ios_test_support",
     "//ios/web_view:web_view+link",
   ]

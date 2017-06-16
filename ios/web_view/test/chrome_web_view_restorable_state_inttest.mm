@@ -41,10 +41,10 @@ TEST_F(ChromeWebViewRestorableStateTest, EncodeDecode) {
   ASSERT_FALSE([web_view_ visibleURL]);
   ASSERT_FALSE([web_view_ canGoBack]);
   ASSERT_FALSE([web_view_ canGoForward]);
-  LoadUrl(web_view_, [NSURL URLWithString:@"about:newtab"]);
+  ASSERT_TRUE(test::LoadUrl(web_view_, [NSURL URLWithString:@"about:newtab"]));
   ASSERT_NSEQ(@"about:newtab", [web_view_ lastCommittedURL].absoluteString);
   ASSERT_NSEQ(@"about:newtab", [web_view_ visibleURL].absoluteString);
-  LoadUrl(web_view_, [NSURL URLWithString:@"about:blank"]);
+  ASSERT_TRUE(test::LoadUrl(web_view_, [NSURL URLWithString:@"about:blank"]));
   ASSERT_NSEQ(@"about:blank", [web_view_ lastCommittedURL].absoluteString);
   ASSERT_NSEQ(@"about:blank", [web_view_ visibleURL].absoluteString);
   ASSERT_TRUE([web_view_ canGoBack]);

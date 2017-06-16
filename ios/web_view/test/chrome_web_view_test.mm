@@ -10,7 +10,6 @@
 #include "base/base64.h"
 #import "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
-#import "ios/testing/wait_util.h"
 #import "ios/web_view/test/web_view_test_util.h"
 #include "net/base/url_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -131,20 +130,6 @@ GURL ChromeWebViewTest::GetUrlForPageWithTitleAndBody(const std::string& title,
   url = net::AppendQueryParameter(url, kPageHtmlBodyParamName, encoded_body);
 
   return url;
-}
-
-void ChromeWebViewTest::LoadUrl(CWVWebView* web_view, NSURL* url) {
-  [web_view loadRequest:[NSURLRequest requestWithURL:url]];
-
-  WaitForPageLoadCompletion(web_view);
-}
-
-void ChromeWebViewTest::WaitForPageLoadCompletion(CWVWebView* web_view) {
-  BOOL success =
-      testing::WaitUntilConditionOrTimeout(testing::kWaitForPageLoadTimeout, ^{
-        return !web_view.isLoading;
-      });
-  ASSERT_TRUE(success);
 }
 
 }  // namespace ios_web_view

@@ -47,38 +47,38 @@ TEST_F(ChromeWebViewKvoTest, CanGoBackForward) {
       "<a id='link_1' href='" + page_2_url.spec() + "'>Link 1</a>";
   GURL page_1_url = GetUrlForPageWithHtmlBody(page_1_html);
 
-  LoadUrl(web_view_, net::NSURLWithGURL(page_1_url));
+  ASSERT_TRUE(test::LoadUrl(web_view_, net::NSURLWithGURL(page_1_url)));
   // Loading initial URL should not affect back/forward navigation state.
   EXPECT_FALSE([back_observer.lastValue boolValue]);
   EXPECT_FALSE([forward_observer.lastValue boolValue]);
 
   // Navigate to page 2.
-  EXPECT_TRUE(test::TapChromeWebViewElementWithId(web_view_, @"link_1"));
-  WaitForPageLoadCompletion(web_view_);
+  EXPECT_TRUE(test::TapWebViewElementWithId(web_view_, @"link_1"));
+  ASSERT_TRUE(test::WaitForWebViewLoadCompletionOrTimeout(web_view_));
   EXPECT_TRUE([back_observer.lastValue boolValue]);
   EXPECT_FALSE([forward_observer.lastValue boolValue]);
 
   // Navigate back to page 1.
   [web_view_ goBack];
-  WaitForPageLoadCompletion(web_view_);
+  ASSERT_TRUE(test::WaitForWebViewLoadCompletionOrTimeout(web_view_));
   EXPECT_FALSE([back_observer.lastValue boolValue]);
   EXPECT_TRUE([forward_observer.lastValue boolValue]);
 
   // Navigate forward to page 2.
   [web_view_ goForward];
-  WaitForPageLoadCompletion(web_view_);
+  ASSERT_TRUE(test::WaitForWebViewLoadCompletionOrTimeout(web_view_));
   EXPECT_TRUE([back_observer.lastValue boolValue]);
   EXPECT_FALSE([forward_observer.lastValue boolValue]);
 
   // Navigate to page 3.
-  EXPECT_TRUE(test::TapChromeWebViewElementWithId(web_view_, @"link_2"));
-  WaitForPageLoadCompletion(web_view_);
+  EXPECT_TRUE(test::TapWebViewElementWithId(web_view_, @"link_2"));
+  ASSERT_TRUE(test::WaitForWebViewLoadCompletionOrTimeout(web_view_));
   EXPECT_TRUE([back_observer.lastValue boolValue]);
   EXPECT_FALSE([forward_observer.lastValue boolValue]);
 
   // Navigate back to page 2.
   [web_view_ goBack];
-  WaitForPageLoadCompletion(web_view_);
+  ASSERT_TRUE(test::WaitForWebViewLoadCompletionOrTimeout(web_view_));
   EXPECT_TRUE([back_observer.lastValue boolValue]);
   EXPECT_TRUE([forward_observer.lastValue boolValue]);
 }
@@ -98,17 +98,17 @@ TEST_F(ChromeWebViewKvoTest, Title) {
   GURL page_1_url = GetUrlForPageWithTitleAndBody(
       base::SysNSStringToUTF8(page_1_title), page_1_html);
 
-  LoadUrl(web_view_, net::NSURLWithGURL(page_1_url));
+  ASSERT_TRUE(test::LoadUrl(web_view_, net::NSURLWithGURL(page_1_url)));
   EXPECT_NSEQ(page_1_title, observer.lastValue);
 
   // Navigate to page 2.
-  EXPECT_TRUE(test::TapChromeWebViewElementWithId(web_view_, @"link_1"));
-  WaitForPageLoadCompletion(web_view_);
+  EXPECT_TRUE(test::TapWebViewElementWithId(web_view_, @"link_1"));
+  ASSERT_TRUE(test::WaitForWebViewLoadCompletionOrTimeout(web_view_));
   EXPECT_NSEQ(page_2_title, observer.lastValue);
 
   // Navigate back to page 1.
   [web_view_ goBack];
-  WaitForPageLoadCompletion(web_view_);
+  ASSERT_TRUE(test::WaitForWebViewLoadCompletionOrTimeout(web_view_));
   EXPECT_NSEQ(page_1_title, observer.lastValue);
 }
 
@@ -123,19 +123,19 @@ TEST_F(ChromeWebViewKvoTest, Loading) {
       "<a id='link_1' href='%s'>Link 1</a>", page_2_url.spec().c_str());
   GURL page_1_url = GetUrlForPageWithTitleAndBody("Page 1", page_1_html);
 
-  LoadUrl(web_view_, net::NSURLWithGURL(page_1_url));
+  ASSERT_TRUE(test::LoadUrl(web_view_, net::NSURLWithGURL(page_1_url)));
   EXPECT_TRUE([observer.previousValue boolValue]);
   EXPECT_FALSE([observer.lastValue boolValue]);
 
   // Navigate to page 2.
-  EXPECT_TRUE(test::TapChromeWebViewElementWithId(web_view_, @"link_1"));
-  WaitForPageLoadCompletion(web_view_);
+  EXPECT_TRUE(test::TapWebViewElementWithId(web_view_, @"link_1"));
+  ASSERT_TRUE(test::WaitForWebViewLoadCompletionOrTimeout(web_view_));
   EXPECT_TRUE([observer.previousValue boolValue]);
   EXPECT_FALSE([observer.lastValue boolValue]);
 
   // Navigate back to page 1.
   [web_view_ goBack];
-  WaitForPageLoadCompletion(web_view_);
+  ASSERT_TRUE(test::WaitForWebViewLoadCompletionOrTimeout(web_view_));
   EXPECT_TRUE([observer.previousValue boolValue]);
   EXPECT_FALSE([observer.lastValue boolValue]);
 }
@@ -162,19 +162,19 @@ TEST_F(ChromeWebViewKvoTest, URLs) {
   // |visibleURL| will update immediately
   EXPECT_NSEQ(page_1_url, visible_url_observer.lastValue);
 
-  WaitForPageLoadCompletion(web_view_);
+  ASSERT_TRUE(test::WaitForWebViewLoadCompletionOrTimeout(web_view_));
   EXPECT_NSEQ(page_1_url, last_committed_url_observer.lastValue);
   EXPECT_NSEQ(page_1_url, visible_url_observer.lastValue);
 
   // Navigate to page 2.
-  EXPECT_TRUE(test::TapChromeWebViewElementWithId(web_view_, @"link_1"));
-  WaitForPageLoadCompletion(web_view_);
+  EXPECT_TRUE(test::TapWebViewElementWithId(web_view_, @"link_1"));
+  ASSERT_TRUE(test::WaitForWebViewLoadCompletionOrTimeout(web_view_));
   EXPECT_NSEQ(page_2_url, last_committed_url_observer.lastValue);
   EXPECT_NSEQ(page_2_url, visible_url_observer.lastValue);
 
   // Navigate back to page 1.
   [web_view_ goBack];
-  WaitForPageLoadCompletion(web_view_);
+  ASSERT_TRUE(test::WaitForWebViewLoadCompletionOrTimeout(web_view_));
   EXPECT_NSEQ(page_1_url, last_committed_url_observer.lastValue);
   EXPECT_NSEQ(page_1_url, visible_url_observer.lastValue);
 }
