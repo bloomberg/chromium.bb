@@ -84,6 +84,7 @@
         class="v-centered"
         draggable="true"
         on-tap="selectFolder_"
+        on-contextmenu="onContextMenu_"
         tabindex$="[[getTabIndex_(isSelectedFolder_)]]"
         hidden="[[isRootFolder_(depth)]]">
       <template is="dom-if" if="[[hasChildFolder_(item_.children)]]">

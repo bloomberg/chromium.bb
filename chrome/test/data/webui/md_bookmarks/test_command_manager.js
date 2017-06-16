@@ -19,12 +19,21 @@ function TestCommandManager() {
     realHandle(command, itemIds);
   };
 
-  commandManager.assertLastCommand = function (command, ids) {
+  /**
+   * @param {Command} command
+   * @param {!Array<string>} ids
+   */
+  commandManager.assertLastCommand = function(command, ids) {
     assertEquals(command, lastCommand);
     if (ids)
       assertDeepEquals(ids, normalizeSet(lastCommandIds));
     lastCommand = null;
     lastCommandIds = null;
+  };
+
+  /** @param {!Array<string>} ids */
+  commandManager.assertMenuOpenForIds = function(ids) {
+    assertDeepEquals(ids, normalizeSet(commandManager.menuIds_));
   };
 
   return commandManager;

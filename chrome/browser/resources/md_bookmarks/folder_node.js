@@ -259,8 +259,21 @@ Polymer({
 
   /** @private */
   selectFolder_: function() {
-    this.dispatch(
-        bookmarks.actions.selectFolder(this.item_.id, this.getState().nodes));
+    if (!this.isSelectedFolder_) {
+      this.dispatch(
+          bookmarks.actions.selectFolder(this.itemId, this.getState().nodes));
+    }
+  },
+
+  /**
+   * @param {!Event} e
+   * @private
+   */
+  onContextMenu_: function(e) {
+    e.preventDefault();
+    this.selectFolder_();
+    bookmarks.CommandManager.getInstance().openCommandMenuAtPosition(
+        e.clientX, e.clientY, new Set([this.itemId]));
   },
 
   /**
@@ -278,7 +291,7 @@ Polymer({
    */
   toggleFolder_: function(e) {
     this.dispatch(
-        bookmarks.actions.changeFolderOpen(this.item_.id, this.isClosed_));
+        bookmarks.actions.changeFolderOpen(this.itemId, this.isClosed_));
     e.stopPropagation();
   },
 

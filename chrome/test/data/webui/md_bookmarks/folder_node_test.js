@@ -44,16 +44,22 @@ suite('<bookmarks-folder-node>', function() {
         firstGen[0].$['descendants'].querySelectorAll('bookmarks-folder-node');
 
     // Select nested folder.
-    firedId = '';
     MockInteractions.tap(secondGen[0].$['folder-label']);
     assertEquals('select-folder', store.lastAction.name);
     assertEquals(secondGen[0].itemId, store.lastAction.id);
 
     // Select folder in a separate subtree.
-    firedId = '';
     MockInteractions.tap(rootFolders[1].$['folder-label']);
     assertEquals('select-folder', store.lastAction.name);
     assertEquals(rootFolders[1].itemId, store.lastAction.id);
+
+    // Doesn't re-select if the folder is already selected.
+    store.data.selectedFolder = '7';
+    store.notifyObservers();
+    store.resetLastAction();
+
+    MockInteractions.tap(rootFolders[1].$['folder-label']);
+    assertEquals(null, store.lastAction);
   });
 
   test('depth calculation', function() {
@@ -130,5 +136,16 @@ suite('<bookmarks-folder-node>', function() {
 
     assertEquals(null, getNextChild('1', '2', false));
     assertEquals('2', getNextChild('0', '7', true).itemId);
+  });
+
+  test('right click opens context menu', function() {
+    var commandManager = new TestCommandManager();
+    document.body.appendChild(commandManager);
+
+    var node = getFolderNode('2');
+    node.$.container.dispatchEvent(new MouseEvent('contextmenu'));
+
+    assertDeepEquals(bookmarks.actions.selectFolder('2'), store.lastAction);
+    commandManager.assertMenuOpenForIds(['2']);
   });
 });
