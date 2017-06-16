@@ -236,6 +236,7 @@ DefaultCommandLineSwitch g_default_switches[] = {
     {switches::kDisableGpu, ""},
 #if defined(OS_ANDROID)
     {switches::kDisableGLDrawingForTests, ""},
+    {switches::kDisableGpuVsync, ""},
     {switches::kSkipGpuDataLoading, ""},
     {switches::kDisableGpuCompositing, ""},
 #endif  // defined(OS_ANDROID)
