@@ -3338,6 +3338,21 @@
             ]
         }
     ],
+    "WebManifestIcons": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "FaviconsFromWebManifest"
+                    ]
+                }
+            ]
+        }
+    ],
     "WebRTC-EnableWebRtcEcdsa": [
         {
             "platforms": [
