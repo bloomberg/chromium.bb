@@ -24,15 +24,9 @@ class AwWebContentsViewDelegate : public content::WebContentsViewDelegate {
 
   // content::WebContentsViewDelegate implementation.
   content::WebDragDestDelegate* GetDragDestDelegate() override;
-  void ShowContextMenu(content::RenderFrameHost* render_frame_host,
-                       const content::ContextMenuParams& params) override;
 
  private:
   AwWebContentsViewDelegate(content::WebContents* web_contents);
-
-  // Weak pointer due to ownership graph:
-  // WebContents->WebContentsView->this.
-  content::WebContents* web_contents_;
 
   DISALLOW_COPY_AND_ASSIGN(AwWebContentsViewDelegate);
 };

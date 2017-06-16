@@ -646,23 +646,25 @@ bool RenderWidgetHostViewAndroid::IsShowing() {
 
 void RenderWidgetHostViewAndroid::OnShowUnhandledTapUIIfNeeded(int x_dip,
                                                                int y_dip) {
-  if (!content_view_core_)
+  if (!selection_popup_controller_ || !content_view_core_)
     return;
   // Validate the coordinates are within the viewport.
+  // TODO(jinsukkim): Get viewport size from ViewAndroid.
   gfx::Size viewport_size = content_view_core_->GetViewportSizeDip();
   if (x_dip < 0 || x_dip > viewport_size.width() ||
       y_dip < 0 || y_dip > viewport_size.height())
     return;
-  content_view_core_->OnShowUnhandledTapUIIfNeeded(x_dip, y_dip);
+  selection_popup_controller_->OnShowUnhandledTapUIIfNeeded(
+      x_dip, y_dip, view_.GetDipScale());
 }
 
 void RenderWidgetHostViewAndroid::OnSelectWordAroundCaretAck(bool did_select,
                                                              int start_adjust,
                                                              int end_adjust) {
-  if (!content_view_core_)
+  if (!selection_popup_controller_)
     return;
-  content_view_core_->OnSelectWordAroundCaretAck(did_select, start_adjust,
-                                                 end_adjust);
+  selection_popup_controller_->OnSelectWordAroundCaretAck(
+      did_select, start_adjust, end_adjust);
 }
 
 gfx::Rect RenderWidgetHostViewAndroid::GetViewBounds() const {
@@ -1887,6 +1889,15 @@ void RenderWidgetHostViewAndroid::SendGestureEvent(
   } else {
     host_->ForwardGestureEventWithLatencyInfo(event, latency_info);
   }
+}
+
+bool RenderWidgetHostViewAndroid::ShowSelectionMenu(
+    const ContextMenuParams& params) {
+  if (!selection_popup_controller_)
+    return false;
+
+  return selection_popup_controller_->ShowSelectionMenu(params,
+                                                        GetTouchHandleHeight());
 }
 
 void RenderWidgetHostViewAndroid::ResolveTapDisambiguation(

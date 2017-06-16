@@ -220,7 +220,8 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         mAllowedMenuItems = allowedMenuItems;
     }
 
-    public void showSelectionMenu(int left, int top, int right, int bottom, boolean isEditable,
+    @CalledByNative
+    private void showSelectionMenu(int left, int top, int right, int bottom, boolean isEditable,
             boolean isPasswordType, String selectionText, boolean canSelectAll,
             boolean canRichlyEdit, boolean shouldSuggest) {
         mSelectionRect.set(left, top, right, bottom);
@@ -1070,13 +1071,15 @@ public class SelectionPopupController extends ActionModeCallbackHelper {
         assert !mHidden;
     }
 
-    void onShowUnhandledTapUIIfNeeded(int x, int y) {
+    @CalledByNative
+    private void onShowUnhandledTapUIIfNeeded(int x, int y) {
         if (mSelectionClient != null) {
             mSelectionClient.showUnhandledTapUIIfNeeded(x, y);
         }
     }
 
-    void onSelectWordAroundCaretAck(boolean didSelect, int startAdjust, int endAdjust) {
+    @CalledByNative
+    private void onSelectWordAroundCaretAck(boolean didSelect, int startAdjust, int endAdjust) {
         if (mSelectionClient != null) {
             mSelectionClient.selectWordAroundCaretAck(didSelect, startAdjust, endAdjust);
         }

@@ -58,6 +58,7 @@ class SynchronousCompositorHost;
 class SynchronousCompositorClient;
 class WebContentsAccessibilityAndroid;
 struct NativeWebKeyboardEvent;
+struct ContextMenuParams;
 
 // -----------------------------------------------------------------------------
 // See comments in render_widget_host_view.h about this class and its members.
@@ -241,6 +242,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void SendMouseEvent(const ui::MotionEventAndroid&, int action_button);
   void SendMouseWheelEvent(const blink::WebMouseWheelEvent& event);
   void SendGestureEvent(const blink::WebGestureEvent& event);
+  bool ShowSelectionMenu(const ContextMenuParams& params);
   void ResolveTapDisambiguation(double timestamp_seconds,
                                 gfx::Point tap_viewport_offset,
                                 bool is_long_press);
