@@ -24,11 +24,6 @@ var ClientRenderer = (function() {
     this.filterFunction = function() { return true; };
     this.filterText = document.getElementById('filter-text');
     this.filterText.onkeyup = this.onTextChange_.bind(this);
-
-    this.bufferCanvas = document.createElement('canvas');
-    this.bufferCanvas.width = media.BAR_WIDTH;
-    this.bufferCanvas.height = media.BAR_HEIGHT;
-
     this.clipboardDialog = document.getElementById('clipboard-dialog');
 
     this.clipboardTextarea = document.getElementById('clipboard-textarea');
@@ -177,7 +172,6 @@ var ClientRenderer = (function() {
       if (player === this.selectedPlayer) {
         this.drawProperties_(player.properties, this.playerPropertiesTable);
         this.drawLog_();
-        this.drawGraphs_();
       }
       if (key === 'name' || key === 'url') {
         this.redrawPlayerList_(players);
@@ -378,7 +372,6 @@ var ClientRenderer = (function() {
       removeChildren(this.logTable);
       removeChildren(this.graphElement);
       this.drawLog_();
-      this.drawGraphs_();
     },
 
     drawProperties_: function(propertyMap, propertiesTable) {
@@ -426,76 +419,6 @@ var ClientRenderer = (function() {
         strippedPlayers.push({properties: p.properties, events: p.allEvents});
       }
       downloadLog(JSON.stringify(strippedPlayers, null, 2));
-    },
-
-    drawGraphs_: function() {
-      function addToGraphs(name, graph, graphElement) {
-        var li = document.createElement('li');
-        li.appendChild(graph);
-        li.appendChild(document.createTextNode(name));
-        graphElement.appendChild(li);
-      }
-
-      var url = this.selectedPlayer.properties.url;
-      if (!url) {
-        return;
-      }
-
-      var cache = media.cacheForUrl(url);
-
-      var player = this.selectedPlayer;
-      var props = player.properties;
-
-      var cacheExists = false;
-      var bufferExists = false;
-
-      if (props['buffer_start'] !== undefined &&
-          props['buffer_current'] !== undefined &&
-          props['buffer_end'] !== undefined &&
-          props['total_bytes'] !== undefined) {
-        this.drawBufferGraph_(props['buffer_start'],
-                              props['buffer_current'],
-                              props['buffer_end'],
-                              props['total_bytes']);
-        bufferExists = true;
-      }
-
-      if (cache) {
-        if (player.properties['total_bytes']) {
-          cache.size = Number(player.properties['total_bytes']);
-        }
-        cache.generateDetails();
-        cacheExists = true;
-
-      }
-
-      if (!this.graphElement.hasChildNodes()) {
-        if (bufferExists) {
-          addToGraphs('buffer', this.bufferCanvas, this.graphElement);
-        }
-        if (cacheExists) {
-          addToGraphs('cache read', cache.readCanvas, this.graphElement);
-          addToGraphs('cache write', cache.writeCanvas, this.graphElement);
-        }
-      }
-    },
-
-    drawBufferGraph_: function(start, current, end, size) {
-      var ctx = this.bufferCanvas.getContext('2d');
-      var width = this.bufferCanvas.width;
-      var height = this.bufferCanvas.height;
-      ctx.fillStyle = '#aaa';
-      ctx.fillRect(0, 0, width, height);
-
-      var scale_factor = width / size;
-      var left = start * scale_factor;
-      var middle = current * scale_factor;
-      var right = end * scale_factor;
-
-      ctx.fillStyle = '#a0a';
-      ctx.fillRect(left, 0, middle - left, height);
-      ctx.fillStyle = '#aa0';
-      ctx.fillRect(middle, 0, right - middle, height);
     },
 
     showClipboard: function(string) {
@@ -546,7 +469,6 @@ var ClientRenderer = (function() {
       if (this.selectedPlayer) {
         removeChildren(this.logTable);
         this.selectedPlayerLogIndex = 0;
-        this.drawLog_();
       }
     },
   };

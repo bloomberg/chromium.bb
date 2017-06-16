@@ -10,28 +10,6 @@ var media = (function() {
 
   var manager = null;
 
-  // A number->string mapping that is populated through the backend that
-  // describes the phase that the network entity is in.
-  var eventPhases = {};
-
-  // A number->string mapping that is populated through the backend that
-  // describes the type of event sent from the network.
-  var eventTypes = {};
-
-  // A mapping of number->CacheEntry where the number is a unique id for that
-  // network request.
-  var cacheEntries = {};
-
-  // A mapping of url->CacheEntity where the url is the url of the resource.
-  var cacheEntriesByKey = {};
-
-  var requrestURLs = {};
-
-  var media = {
-    BAR_WIDTH: 200,
-    BAR_HEIGHT: 25
-  };
-
   /**
    * Users of |media| must call initialize prior to calling other methods.
    */
@@ -48,76 +26,6 @@ var media = (function() {
   media.onReceiveVideoCaptureCapabilities = function(videoCaptureCapabilities) {
     manager.updateVideoCaptureCapabilities(videoCaptureCapabilities)
   }
-
-  media.onReceiveConstants = function(constants) {
-    for (var key in constants.eventTypes) {
-      var value = constants.eventTypes[key];
-      eventTypes[value] = key;
-    }
-
-    for (var key in constants.eventPhases) {
-      var value = constants.eventPhases[key];
-      eventPhases[value] = key;
-    }
-  };
-
-  media.cacheForUrl = function(url) {
-    return cacheEntriesByKey[url];
-  };
-
-  media.onNetUpdate = function(updates) {
-    updates.forEach(function(update) {
-      var id = update.source.id;
-      if (!cacheEntries[id])
-        cacheEntries[id] = new media.CacheEntry;
-
-      switch (eventPhases[update.phase] + '.' + eventTypes[update.type]) {
-        case 'PHASE_BEGIN.DISK_CACHE_ENTRY_IMPL':
-          var key = update.params.key;
-
-          // Merge this source with anything we already know about this key.
-          if (cacheEntriesByKey[key]) {
-            cacheEntriesByKey[key].merge(cacheEntries[id]);
-            cacheEntries[id] = cacheEntriesByKey[key];
-          } else {
-            cacheEntriesByKey[key] = cacheEntries[id];
-          }
-          cacheEntriesByKey[key].key = key;
-          break;
-
-        case 'PHASE_BEGIN.SPARSE_READ':
-          cacheEntries[id].readBytes(update.params.offset,
-                                      update.params.buff_len);
-          cacheEntries[id].sparse = true;
-          break;
-
-        case 'PHASE_BEGIN.SPARSE_WRITE':
-          cacheEntries[id].writeBytes(update.params.offset,
-                                       update.params.buff_len);
-          cacheEntries[id].sparse = true;
-          break;
-
-        case 'PHASE_BEGIN.URL_REQUEST_START_JOB':
-          requrestURLs[update.source.id] = update.params.url;
-          break;
-
-        case 'PHASE_NONE.HTTP_TRANSACTION_READ_RESPONSE_HEADERS':
-          // Record the total size of the file if this was a range request.
-          var range = /content-range:\s*bytes\s*\d+-\d+\/(\d+)/i.exec(
-              update.params.headers);
-          var key = requrestURLs[update.source.id];
-          delete requrestURLs[update.source.id];
-          if (range && key) {
-            if (!cacheEntriesByKey[key]) {
-              cacheEntriesByKey[key] = new media.CacheEntry;
-              cacheEntriesByKey[key].key = key;
-            }
-            cacheEntriesByKey[key].size = range[1];
-          }
-          break;
-      }
-    });
-  };
 
   media.onRendererTerminated = function(renderId) {
     util.object.forEach(manager.players_, function(playerInfo, id) {

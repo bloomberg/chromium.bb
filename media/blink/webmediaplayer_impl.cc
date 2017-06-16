@@ -1748,9 +1748,6 @@ void WebMediaPlayerImpl::NotifyDownloading(bool is_downloading) {
     SetNetworkState(WebMediaPlayer::kNetworkStateLoading);
   if (ready_state_ == ReadyState::kReadyStateHaveFutureData && !is_downloading)
     SetReadyState(WebMediaPlayer::kReadyStateHaveEnoughData);
-  media_log_->AddEvent(
-      media_log_->CreateBooleanEvent(MediaLogEvent::NETWORK_ACTIVITY_SET,
-                                     "is_downloading_data", is_downloading));
 }
 
 void WebMediaPlayerImpl::OnSurfaceCreated(int surface_id) {

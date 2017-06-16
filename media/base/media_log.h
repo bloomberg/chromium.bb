@@ -89,11 +89,6 @@ class MEDIA_EXPORT MediaLog {
   std::unique_ptr<MediaLogEvent> CreatePipelineErrorEvent(PipelineStatus error);
   std::unique_ptr<MediaLogEvent> CreateVideoSizeSetEvent(size_t width,
                                                          size_t height);
-  std::unique_ptr<MediaLogEvent> CreateBufferedExtentsChangedEvent(
-      int64_t start,
-      int64_t current,
-      int64_t end);
-
   std::unique_ptr<MediaLogEvent> CreateBufferingStateChangedEvent(
       const std::string& property,
       BufferingState state);

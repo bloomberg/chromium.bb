@@ -14,12 +14,10 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "net/log/net_log.h"
 
 namespace base {
-class ListValue;
 class Value;
-}
+}  // namespace base
 
 namespace content {
 class MediaInternalsMessageHandler;
@@ -29,10 +27,8 @@ class MediaInternalsMessageHandler;
 // It is ref_counted to ensure that it completes all pending Tasks on both
 // threads before destruction.
 class MediaInternalsProxy
-    : public base::RefCountedThreadSafe<
-          MediaInternalsProxy,
-          BrowserThread::DeleteOnUIThread>,
-      public net::NetLog::ThreadSafeObserver,
+    : public base::RefCountedThreadSafe<MediaInternalsProxy,
+                                        BrowserThread::DeleteOnUIThread>,
       public NotificationObserver {
  public:
   MediaInternalsProxy();
@@ -51,36 +47,21 @@ class MediaInternalsProxy
   // Have MediaInternals send all the data it has.
   void GetEverything();
 
-  // net::NetLog::ThreadSafeObserver implementation. Callable from any thread:
-  void OnAddEntry(const net::NetLogEntry& entry) override;
-
  private:
   friend struct BrowserThread::DeleteOnThread<BrowserThread::UI>;
   friend class base::DeleteHelper<MediaInternalsProxy>;
   ~MediaInternalsProxy() override;
 
-  // Build a dictionary mapping constant names to values.
-  std::unique_ptr<base::Value> GetConstants();
-
-  void ObserveMediaInternalsOnIOThread();
-  void StopObservingMediaInternalsOnIOThread();
   void GetEverythingOnIOThread();
 
   // Callback for MediaInternals to update. Must be called on UI thread.
   void UpdateUIOnUIThread(const base::string16& update);
-
-  // Put |entry| on a list of events to be sent to the page.
-  void AddNetEventOnUIThread(std::unique_ptr<base::Value> entry);
-
-  // Send all pending events to the page.
-  void SendNetEventsOnUIThread();
 
   // Call a JavaScript function on the page.
   void CallJavaScriptFunctionOnUIThread(const std::string& function,
                                         std::unique_ptr<base::Value> args);
 
   MediaInternalsMessageHandler* handler_;
-  std::unique_ptr<base::ListValue> pending_net_updates_;
   NotificationRegistrar registrar_;
   MediaInternals::UpdateCallback update_callback_;
 
