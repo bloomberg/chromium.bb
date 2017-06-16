@@ -171,6 +171,8 @@ struct ParamStorageTraits {
                 "WTF::Function. Wrap it with either wrapPersistent, "
                 "wrapWeakPersistent, wrapCrossThreadPersistent or "
                 "wrapCrossThreadWeakPersistent.");
+  static_assert(!WTF::IsGarbageCollectedType<T>::value,
+                "GCed type is forbidden as a bound parameters.");
 };
 
 template <typename T>
