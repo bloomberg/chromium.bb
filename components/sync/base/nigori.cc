@@ -237,9 +237,12 @@ bool Nigori::ExportKeys(std::string* user_key,
                         std::string* mac_key) const {
   DCHECK(encryption_key);
   DCHECK(mac_key);
+  DCHECK(user_key);
 
   if (user_key_)
     user_key_->GetRawKey(user_key);
+  else
+    user_key->clear();
 
   return encryption_key_->GetRawKey(encryption_key) &&
          mac_key_->GetRawKey(mac_key);
