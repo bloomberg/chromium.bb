@@ -61,8 +61,16 @@ class MAYBE_WebRtcAudioBrowserTest : public WebRtcContentBrowserTestBase {
   }
 };
 
+// Flaky on Linux. http://crbug.com/733551
+#if defined(OS_LINUX)
+#define MAYBE_CanMakeVideoCallAndThenRenegotiateToAudio \
+  DISABLED_CanMakeVideoCallAndThenRenegotiateToAudio
+#else
+#define MAYBE_CanMakeVideoCallAndThenRenegotiateToAudio \
+  CanMakeVideoCallAndThenRenegotiateToAudio
+#endif
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioBrowserTest,
-                       CanMakeVideoCallAndThenRenegotiateToAudio) {
+                       MAYBE_CanMakeVideoCallAndThenRenegotiateToAudio) {
   MakeAudioDetectingPeerConnectionCall(
       "callAndRenegotiateToAudio({audio: true, video:true}, {audio: true});");
 }
