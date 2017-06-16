@@ -46,6 +46,16 @@ configuration options can be found at the top of the CMakeLists.txt file found
 in the root of the AV1 repository, and AV1 codec configuration options can
 currently be found in the file `build/cmake/aom_config_defaults.cmake`.
 
+### Dylib builds
+
+A dylib (shared object) build of the AV1 codec library can be enabled via the
+CMake built in variable BUILD\_SHARED\_LIBS:
+
+    $ cmake path/to/aom -D BUILD_SHARED_LIBS=1
+    $ make
+
+This is currently only supported on non-Windows targets.
+
 ### Cross compiling
 
 For the purposes of building the AV1 codec and applications and relative to the

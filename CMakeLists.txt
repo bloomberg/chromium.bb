@@ -23,6 +23,9 @@ option(ENABLE_NASM "Use nasm instead of yasm for x86 assembly." OFF)
 option(ENABLE_IDE_TEST_HOSTING
        "Enables running tests within IDEs like Visual Studio and Xcode." OFF)
 
+# $BUILD_SHARED_LIBS is a CMake built-in-- it's listed here for visibility.
+option(BUILD_SHARED_LIBS "CMake should generate a shared library build." OFF)
+
 project(AOM C CXX)
 
 set(AOM_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
@@ -36,7 +39,6 @@ if ("${AOM_ROOT}" STREQUAL "${AOM_CONFIG_DIR}")
 endif ()
 
 include("${AOM_ROOT}/build/cmake/aom_configure.cmake")
-include("${AOM_ROOT}/build/cmake/aom_optimization.cmake")
 include("${AOM_ROOT}/aom_dsp/aom_dsp.cmake")
 include("${AOM_ROOT}/aom_mem/aom_mem.cmake")
 include("${AOM_ROOT}/aom_ports/aom_ports.cmake")
@@ -44,6 +46,7 @@ include("${AOM_ROOT}/aom_scale/aom_scale.cmake")
 include("${AOM_ROOT}/aom_util/aom_util.cmake")
 include("${AOM_ROOT}/av1/av1.cmake")
 include("${AOM_ROOT}/test/test.cmake")
+include("${AOM_ROOT}/build/cmake/util.cmake")
 
 set(AOM_RTCD_SOURCES
     "${AOM_CONFIG_DIR}/aom_dsp_rtcd.h"
@@ -214,9 +217,9 @@ add_library(aom_common_app_util OBJECT ${AOM_COMMON_APP_UTIL_SOURCES})
 if (CONFIG_AV1_DECODER)
   add_library(aom_decoder_app_util OBJECT ${AOM_DECODER_APP_UTIL_SOURCES})
   add_executable(aomdec
-               "${AOM_ROOT}/aomdec.c"
-               $<TARGET_OBJECTS:aom_common_app_util>
-               $<TARGET_OBJECTS:aom_decoder_app_util>)
+                 "${AOM_ROOT}/aomdec.c"
+                 $<TARGET_OBJECTS:aom_common_app_util>
+                 $<TARGET_OBJECTS:aom_decoder_app_util>)
 
   if (CONFIG_ANALYZER)
     add_executable(analyzer
@@ -326,7 +329,7 @@ if (CONFIG_LIBYUV)
 
   # Add to existing targets.
   foreach (aom_app ${AOM_APP_TARGETS})
-    target_sources(${aom_app} PUBLIC $<TARGET_OBJECTS:yuv>)
+    target_sources(${aom_app} PRIVATE $<TARGET_OBJECTS:yuv>)
     set_property(TARGET ${aom_app} PROPERTY LINKER_LANGUAGE CXX)
   endforeach ()
 endif ()
@@ -341,15 +344,15 @@ if (CONFIG_WEBM_IO)
 
   # Add to existing targets.
   if (CONFIG_AV1_DECODER)
-    target_sources(aom_decoder_app_util PUBLIC ${AOM_WEBM_DECODER_SOURCES})
+    target_sources(aom_decoder_app_util PRIVATE ${AOM_WEBM_DECODER_SOURCES})
   endif ()
 
   if (CONFIG_AV1_ENCODER)
-    target_sources(aom_encoder_app_util PUBLIC ${AOM_WEBM_ENCODER_SOURCES})
+    target_sources(aom_encoder_app_util PRIVATE ${AOM_WEBM_ENCODER_SOURCES})
   endif ()
 
   foreach (aom_app ${AOM_APP_TARGETS})
-    target_sources(${aom_app} PUBLIC $<TARGET_OBJECTS:webm>)
+    target_sources(${aom_app} PRIVATE $<TARGET_OBJECTS:webm>)
     set_property(TARGET ${aom_app} PROPERTY LINKER_LANGUAGE CXX)
    endforeach ()
 endif ()
@@ -376,11 +379,8 @@ if (XCODE)
     # Note: LINKER_LANGUAGE is explicitly set to C++ for all targets touched
     # here, it really is the Xcode generator's fault, or just a deficiency in
     # Xcode itself.
-    set(XCODE_DUMMY_CXX_FILE "${AOM_CONFIG_DIR}/dummy.cc")
-    file(WRITE "${XCODE_DUMMY_CXX_FILE}"
-         "// Xcode needs a C++ file to link, ignore this file.")
     foreach (aom_app ${AOM_APP_TARGETS})
-      target_sources(${aom_app} PUBLIC "${XCODE_DUMMY_CXX_FILE}")
+      add_dummy_source_file_to_target("${aom_app}" "cc")
     endforeach ()
   endif ()
 endif ()
@@ -391,6 +391,11 @@ if ("${CMAKE_GENERATOR}" MATCHES "Makefiles$" )
   file(MAKE_DIRECTORY "${AOM_CONFIG_DIR}/examples")
   set_target_properties(${AOM_EXAMPLE_TARGETS} PROPERTIES
                         RUNTIME_OUTPUT_DIRECTORY "${AOM_CONFIG_DIR}/examples")
+endif ()
+
+if (BUILD_SHARED_LIBS)
+  include("${AOM_ROOT}/build/cmake/exports.cmake")
+  setup_exports_target()
 endif ()
 
 # Aomedia documentation rule.

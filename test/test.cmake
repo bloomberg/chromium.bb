@@ -301,6 +301,11 @@ if (CONFIG_UNIT_TESTS)
   include_directories(
     "${AOM_ROOT}/third_party/googletest/src/googletest/src"
     "${AOM_ROOT}/third_party/googletest/src/googletest/include")
+
+  if (BUILD_SHARED_LIBS AND APPLE)
+    # Silence an RPATH warning.
+    set(CMAKE_MACOSX_RPATH 1)
+  endif ()
   add_subdirectory("${AOM_ROOT}/third_party/googletest/src/googletest"
                    EXCLUDE_FROM_ALL)
 
@@ -324,30 +329,27 @@ function (setup_aom_test_targets)
     add_library(test_aom_encoder OBJECT ${AOM_UNIT_TEST_ENCODER_SOURCES})
   endif ()
 
-  set(AOM_LIB_TARGETS ${AOM_LIB_TARGETS} test_aom_common test_aom_decoder
-      test_aom_encoder PARENT_SCOPE)
-
   add_executable(test_libaom ${AOM_UNIT_TEST_WRAPPER_SOURCES}
                  $<TARGET_OBJECTS:aom_common_app_util>
                  $<TARGET_OBJECTS:test_aom_common>)
 
   if (CONFIG_AV1_DECODER)
-    target_sources(test_libaom PUBLIC
+    target_sources(test_libaom PRIVATE
                    $<TARGET_OBJECTS:aom_decoder_app_util>
                    $<TARGET_OBJECTS:test_aom_decoder>)
 
     if (CONFIG_DECODE_PERF_TESTS AND CONFIG_WEBM_IO)
-      target_sources(test_libaom PUBLIC ${AOM_DECODE_PERF_TEST_SOURCES})
+      target_sources(test_libaom PRIVATE ${AOM_DECODE_PERF_TEST_SOURCES})
     endif ()
   endif ()
 
   if (CONFIG_AV1_ENCODER)
-    target_sources(test_libaom PUBLIC
+    target_sources(test_libaom PRIVATE
                    $<TARGET_OBJECTS:test_aom_encoder>
                    $<TARGET_OBJECTS:aom_encoder_app_util>)
 
     if (CONFIG_ENCODE_PERF_TESTS)
-      target_sources(test_libaom PUBLIC ${AOM_ENCODE_PERF_TEST_SOURCES})
+      target_sources(test_libaom PRIVATE ${AOM_ENCODE_PERF_TEST_SOURCES})
     endif ()
 
     if (NOT BUILD_SHARED_LIBS)
@@ -362,11 +364,10 @@ function (setup_aom_test_targets)
   target_link_libraries(test_libaom ${AOM_LIB_LINK_TYPE} aom gtest)
 
   if (CONFIG_LIBYUV)
-    target_sources(test_libaom PUBLIC $<TARGET_OBJECTS:yuv>)
+    target_sources(test_libaom PRIVATE $<TARGET_OBJECTS:yuv>)
   endif ()
   if (CONFIG_WEBM_IO)
-    target_sources(test_libaom PUBLIC ${AOM_UNIT_TEST_WEBM_SOURCES}
-                   $<TARGET_OBJECTS:webm>)
+    target_sources(test_libaom PRIVATE $<TARGET_OBJECTS:webm>)
   endif ()
   if (HAVE_SSE2)
     add_intrinsics_source_to_target("-msse2" "test_libaom"
@@ -385,6 +386,10 @@ function (setup_aom_test_targets)
                                         "AOM_UNIT_TEST_ENCODER_INTRIN_SSE4_1")
       endif ()
     endif ()
+  endif ()
+  if (HAVE_AVX2)
+    add_intrinsics_source_to_target("-mavx2" "test_libaom"
+                                    "AOM_UNIT_TEST_COMMON_INTRIN_AVX2")
   endif ()
   if (HAVE_NEON)
     add_intrinsics_source_to_target("${AOM_NEON_INTRIN_FLAG}" "test_libaom"
