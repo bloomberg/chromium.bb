@@ -34,8 +34,7 @@ TEST_F(ProtoConversionsTest, StateConversion) {
 
 TEST_F(ProtoConversionsTest, DownloadClientConversion) {
   DownloadClient clients[] = {DownloadClient::INVALID, DownloadClient::TEST,
-                              DownloadClient::OFFLINE_PAGE_PREFETCH,
-                              DownloadClient::BOUNDARY};
+                              DownloadClient::TEST_2, DownloadClient::BOUNDARY};
   for (auto client : clients) {
     ASSERT_EQ(client, DownloadClientFromProto(DownloadClientToProto(client)));
   }
@@ -135,8 +134,8 @@ TEST_F(ProtoConversionsTest, EntryVectorConversion) {
   std::vector<Entry> expected;
   expected.push_back(
       test::BuildEntry(DownloadClient::TEST, base::GenerateGUID()));
-  expected.push_back(test::BuildEntry(DownloadClient::OFFLINE_PAGE_PREFETCH,
-                                      base::GenerateGUID()));
+  expected.push_back(
+      test::BuildEntry(DownloadClient::TEST_2, base::GenerateGUID()));
   expected.push_back(test::BuildEntry(
       DownloadClient::TEST, base::GenerateGUID(), base::Time::Now(),
       SchedulingParams::NetworkRequirements::OPTIMISTIC,

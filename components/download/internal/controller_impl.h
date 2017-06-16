@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "components/download/internal/controller.h"
 #include "components/download/internal/download_driver.h"
@@ -17,6 +18,7 @@
 #include "components/download/internal/scheduler/device_status_listener.h"
 #include "components/download/internal/startup_status.h"
 #include "components/download/internal/stats.h"
+#include "components/download/public/client.h"
 #include "components/download/public/download_params.h"
 #include "components/download/public/task_scheduler.h"
 
@@ -110,10 +112,6 @@ class ControllerImpl : public Controller,
   // DownloadClient.
   void NotifyClientsOfStartup();
 
-  // Pulls the current state of requests from |model_| and |driver_| and sets
-  // the other internal states appropriately.
-  void PullCurrentRequestStatus();
-
   void HandleStartDownloadResponse(DownloadClient client,
                                    const std::string& guid,
                                    DownloadParams::StartResult result);
@@ -137,6 +135,16 @@ class ControllerImpl : public Controller,
   // reached maximum.
   void ActivateMoreDownloads();
 
+  // Postable methods meant to just be pass throughs to Client APIs.  This is
+  // meant to help prevent reentrancy.
+  void SendOnDownloadSucceeded(DownloadClient client_id,
+                               const std::string& guid,
+                               const base::FilePath& path,
+                               uint64_t size);
+  void SendOnDownloadFailed(DownloadClient client_id,
+                            const std::string& guid,
+                            download::Client::FailureReason reason);
+
   Configuration* config_;
 
   // Owned Dependencies.
@@ -151,6 +159,9 @@ class ControllerImpl : public Controller,
   StartupStatus startup_status_;
   std::map<std::string, DownloadParams::StartCallback> start_callbacks_;
   std::map<DownloadTaskType, TaskFinishedCallback> task_finished_callbacks_;
+
+  // Only used to post tasks on the same thread.
+  base::WeakPtrFactory<ControllerImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ControllerImpl);
 };
