@@ -22,7 +22,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task_scheduler/post_task.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -195,13 +194,7 @@ class PushTimesMockURLRequestJob : public net::URLRequestMockHTTPJob {
   PushTimesMockURLRequestJob(net::URLRequest* request,
                              net::NetworkDelegate* network_delegate,
                              base::FilePath file_path)
-      : net::URLRequestMockHTTPJob(
-            request,
-            network_delegate,
-            file_path,
-            base::CreateTaskRunnerWithTraits(
-                {base::MayBlock(), base::TaskPriority::BACKGROUND,
-                 base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {}
+      : net::URLRequestMockHTTPJob(request, network_delegate, file_path) {}
 
   void Start() override {
     load_timing_info_.socket_reused = true;

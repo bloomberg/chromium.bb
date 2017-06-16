@@ -5,7 +5,6 @@
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -26,15 +25,6 @@
 
 using content::BrowserThread;
 
-namespace {
-
-void SetUrlRequestMock(const base::FilePath& path) {
-  net::URLRequestMockHTTPJob::AddUrlHandlers(path,
-                                             BrowserThread::GetBlockingPool());
-}
-
-}  // namespace
-
 class NewTabPageInterceptorTest : public InProcessBrowserTest {
  public:
   NewTabPageInterceptorTest() {}
@@ -42,8 +32,9 @@ class NewTabPageInterceptorTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     base::FilePath path =
         ui_test_utils::GetTestFilePath(base::FilePath(), base::FilePath());
-    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                            base::BindOnce(&SetUrlRequestMock, path));
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&net::URLRequestMockHTTPJob::AddUrlHandlers, path));
   }
 
   void ChangeDefaultSearchProvider(const char* new_tab_path) {

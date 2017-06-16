@@ -7,7 +7,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "content/browser/download/download_file_factory.h"
 #include "content/browser/download/download_file_impl.h"
 #include "content/browser/download/download_item_impl.h"
@@ -77,9 +76,7 @@ class DragDownloadFileTest : public ContentBrowserTest {
     base::FilePath mock_base(GetTestFilePath("download", ""));
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(
-            &net::URLRequestMockHTTPJob::AddUrlHandlers, mock_base,
-            make_scoped_refptr(content::BrowserThread::GetBlockingPool())));
+        base::Bind(&net::URLRequestMockHTTPJob::AddUrlHandlers, mock_base));
   }
 
   const base::FilePath& downloads_directory() const {

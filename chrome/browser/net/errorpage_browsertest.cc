@@ -17,8 +17,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
-#include "base/task_scheduler/post_task.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -260,10 +258,7 @@ class LinkDoctorInterceptor : public net::URLRequestInterceptor {
     PathService::Get(chrome::DIR_TEST_DATA, &root_http);
     return new net::URLRequestMockHTTPJob(
         request, network_delegate,
-        root_http.AppendASCII("mock-link-doctor.json"),
-        base::CreateTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::BACKGROUND,
-             base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
+        root_http.AppendASCII("mock-link-doctor.json"));
   }
 
   void WaitForRequests(int requests_to_wait_for) {
@@ -325,8 +320,7 @@ void InstallMockInterceptors(
   net::URLRequestFilter::GetInstance()->AddHostnameInterceptor(
       search_url.scheme(), search_url.host(),
       net::URLRequestMockHTTPJob::CreateInterceptorForSingleFile(
-          root_http.AppendASCII("title3.html"),
-          BrowserThread::GetBlockingPool()));
+          root_http.AppendASCII("title3.html")));
 }
 
 class ErrorPageTest : public InProcessBrowserTest {

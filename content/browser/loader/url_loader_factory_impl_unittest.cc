@@ -20,7 +20,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/loader/mojo_async_resource_handler.h"
 #include "content/browser/loader/navigation_resource_throttle.h"
@@ -153,8 +152,7 @@ TEST_P(URLLoaderFactoryImplTest, GetResponse) {
   mojom::URLLoaderAssociatedPtr loader;
   base::FilePath root;
   PathService::Get(DIR_TEST_DATA, &root);
-  net::URLRequestMockHTTPJob::AddUrlHandlers(root,
-                                             BrowserThread::GetBlockingPool());
+  net::URLRequestMockHTTPJob::AddUrlHandlers(root);
   ResourceRequest request;
   TestURLLoaderClient client;
   // Assume the file contents is small enough to be stored in the data pipe.
@@ -349,8 +347,7 @@ TEST_P(URLLoaderFactoryImplTest, DownloadToFile) {
   mojom::URLLoaderAssociatedPtr loader;
   base::FilePath root;
   PathService::Get(DIR_TEST_DATA, &root);
-  net::URLRequestMockHTTPJob::AddUrlHandlers(root,
-                                             BrowserThread::GetBlockingPool());
+  net::URLRequestMockHTTPJob::AddUrlHandlers(root);
 
   ResourceRequest request;
   TestURLLoaderClient client;
@@ -477,8 +474,7 @@ TEST_P(URLLoaderFactoryImplTest, OnTransferSizeUpdated) {
   mojom::URLLoaderAssociatedPtr loader;
   base::FilePath root;
   PathService::Get(DIR_TEST_DATA, &root);
-  net::URLRequestMockHTTPJob::AddUrlHandlers(root,
-                                             BrowserThread::GetBlockingPool());
+  net::URLRequestMockHTTPJob::AddUrlHandlers(root);
   ResourceRequest request;
   TestURLLoaderClient client;
   // Assume the file contents is small enough to be stored in the data pipe.

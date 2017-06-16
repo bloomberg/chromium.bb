@@ -15,8 +15,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task_scheduler/post_task.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/loader/chrome_resource_dispatcher_host_delegate.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
@@ -57,13 +55,7 @@ class MockHTTPJob : public net::URLRequestMockHTTPJob {
   MockHTTPJob(net::URLRequest* request,
               net::NetworkDelegate* delegate,
               const base::FilePath& file)
-      : net::URLRequestMockHTTPJob(
-            request,
-            delegate,
-            file,
-            base::CreateTaskRunnerWithTraits(
-                {base::MayBlock(), base::TaskPriority::BACKGROUND,
-                 base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {}
+      : net::URLRequestMockHTTPJob(request, delegate, file) {}
 
   void set_start_callback(const base::Closure& start_callback) {
     start_callback_ = start_callback;
@@ -194,11 +186,7 @@ class HangingFirstRequestInterceptor : public net::URLRequestInterceptor {
         callback_.Run(request);
       return new HangingURLRequestJob(request, network_delegate);
     }
-    return new net::URLRequestMockHTTPJob(
-        request, network_delegate, file_,
-        base::CreateTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::BACKGROUND,
-             base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
+    return new net::URLRequestMockHTTPJob(request, network_delegate, file_);
   }
 
  private:
@@ -817,8 +805,7 @@ void InterceptRequestAndCount(
 void CreateMockInterceptorOnIO(const GURL& url, const base::FilePath& file) {
   CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
-      url, net::URLRequestMockHTTPJob::CreateInterceptorForSingleFile(
-               file, content::BrowserThread::GetBlockingPool()));
+      url, net::URLRequestMockHTTPJob::CreateInterceptorForSingleFile(file));
 }
 
 void CreateHangingFirstRequestInterceptor(
