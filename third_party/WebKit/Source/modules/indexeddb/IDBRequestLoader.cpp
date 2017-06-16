@@ -26,6 +26,11 @@ IDBRequestLoader::~IDBRequestLoader() {
 }
 
 void IDBRequestLoader::Start() {
+#if DCHECK_IS_ON()
+  DCHECK(!started_) << "Start() was already called";
+  started_ = true;
+#endif  // DCHECK_IS_ON()
+
   // TODO(pwnall): Start() / StartNextValue() unwrap large values sequentially.
   //               Consider parallelizing. The main issue is that the Blob reads
   //               will have to be throttled somewhere, and the extra complexity
@@ -35,6 +40,14 @@ void IDBRequestLoader::Start() {
 }
 
 void IDBRequestLoader::Cancel() {
+#if DCHECK_IS_ON()
+  DCHECK(started_) << "Cancel() called on a loader that hasn't been Start()ed";
+  DCHECK(!canceled_) << "Cancel() was already called";
+  canceled_ = true;
+
+  DCHECK(file_reader_loading_);
+  file_reader_loading_ = false;
+#endif  // DCHECK_IS_ON()
   loader_->Cancel();
 }
 
@@ -60,6 +73,10 @@ void IDBRequestLoader::StartNextValue() {
   }
 
   wrapped_data_.ReserveCapacity(unwrapper.WrapperBlobSize());
+#if DCHECK_IS_ON()
+  DCHECK(!file_reader_loading_);
+  file_reader_loading_ = true;
+#endif  // DCHECK_IS_ON()
   loader_->Start(context, unwrapper.WrapperBlobHandle());
 }
 
@@ -74,6 +91,16 @@ void IDBRequestLoader::DidReceiveDataForClient(const char* data,
 }
 
 void IDBRequestLoader::DidFinishLoading() {
+#if DCHECK_IS_ON()
+  DCHECK(started_)
+      << "FileReaderLoader called DidFinishLoading() before it was Start()ed";
+  DCHECK(!canceled_)
+      << "FileReaderLoader called DidFinishLoading() after it was Cancel()ed";
+
+  DCHECK(file_reader_loading_);
+  file_reader_loading_ = false;
+#endif  // DCHECK_IS_ON()
+
   *current_value_ = IDBValueUnwrapper::Unwrap(
       current_value_->Get(), SharedBuffer::AdoptVector(wrapped_data_));
   ++current_value_;
@@ -82,14 +109,32 @@ void IDBRequestLoader::DidFinishLoading() {
 }
 
 void IDBRequestLoader::DidFail(FileError::ErrorCode) {
+#if DCHECK_IS_ON()
+  DCHECK(started_)
+      << "FileReaderLoader called DidFail() before it was Start()ed";
+  DCHECK(!canceled_)
+      << "FileReaderLoader called DidFail() after it was Cancel()ed";
+
+  DCHECK(file_reader_loading_);
+  file_reader_loading_ = false;
+#endif  // DCHECK_IS_ON()
+
   ReportError();
 }
 
 void IDBRequestLoader::ReportSuccess() {
+#if DCHECK_IS_ON()
+  DCHECK(started_);
+  DCHECK(!canceled_);
+#endif  // DCHECK_IS_ON()
   queue_item_->OnResultLoadComplete();
 }
 
 void IDBRequestLoader::ReportError() {
+#if DCHECK_IS_ON()
+  DCHECK(started_);
+  DCHECK(!canceled_);
+#endif  // DCHECK_IS_ON()
   queue_item_->OnResultLoadComplete(
       DOMException::Create(kDataError, "Failed to read large IndexedDB value"));
 }
