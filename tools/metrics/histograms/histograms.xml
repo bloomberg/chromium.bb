@@ -28618,6 +28618,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.EME.CdmHostVerificationStatus"
+    enum="CdmHostVerificationStatus">
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    The status of CDM host verification. This is reported per CDM load.
+  </summary>
+</histogram>
+
 <histogram name="Media.EME.CdmInterfaceVersion">
   <owner>xhwang@chromium.org</owner>
   <summary>

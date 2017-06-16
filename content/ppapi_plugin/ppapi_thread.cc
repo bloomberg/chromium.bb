@@ -362,6 +362,7 @@ void PpapiThread::OnLoadPlugin(const base::FilePath& path,
   // Use a local instance of CdmHostFiles so that if we return early for any
   // error, all files will closed automatically.
   std::unique_ptr<CdmHostFiles> cdm_host_files;
+  CdmHostFiles::Status cdm_status = CdmHostFiles::Status::kNotCalled;
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
   // Open CDM host files before the process is sandboxed.
@@ -377,8 +378,11 @@ void PpapiThread::OnLoadPlugin(const base::FilePath& path,
   // On Windows, initialize CDM host verification unsandboxed. On other
   // platforms, this is called sandboxed below.
   if (cdm_host_files) {
-    DCHECK(IsCdm(path));
-    if (!cdm_host_files->InitVerification(library.get(), path)) {
+    DCHECK(!is_broker_ && IsCdm(path));
+    cdm_status = cdm_host_files->InitVerification(library.get(), path);
+    // Ignore other failures for backward compatibility, e.g. when using an old
+    // CDM which doesn't implement the verification API.
+    if (cdm_status == CdmHostFiles::Status::kInitVerificationFailed) {
       LOG(WARNING) << "CDM host verification failed.";
       // TODO(xhwang): Add a new load result if needed.
       ReportLoadResult(path, INIT_FAILED);
@@ -460,16 +464,25 @@ void PpapiThread::OnLoadPlugin(const base::FilePath& path,
     CHECK(InitializeSandbox());
 #endif
 
-#if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION) && !defined(OS_WIN)
+#if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
+#if !defined(OS_WIN)
     // Now we are sandboxed, initialize CDM host verification.
     if (cdm_host_files) {
-      DCHECK(IsCdm(path));
-      if (!cdm_host_files->InitVerification(library.get(), path)) {
+      DCHECK(!is_broker_ && IsCdm(path));
+      cdm_status = cdm_host_files->InitVerification(library.get(), path);
+      // Ignore other failures for backward compatibility, e.g. when using an
+      // old CDM which doesn't implement the verification API.
+      if (cdm_status == CdmHostFiles::Status::kInitVerificationFailed) {
         LOG(WARNING) << "CDM host verification failed.";
         // TODO(xhwang): Add a new load result if needed.
         ReportLoadResult(path, INIT_FAILED);
         return;
       }
+    }
+#endif  // !defined(OS_WIN)
+    if (!is_broker_ && IsCdm(path)) {
+      UMA_HISTOGRAM_ENUMERATION("Media.EME.CdmHostVerificationStatus",
+                                cdm_status, CdmHostFiles::Status::kStatusCount);
     }
 #endif  // BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION) && !defined(OS_WIN)
 
