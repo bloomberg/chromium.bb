@@ -48,7 +48,7 @@ class Parent : public service_manager::Service,
   }
 
   // service_manager::test::mojom::Parent:
-  void ConnectToChild(const ConnectToChildCallback& callback) override {
+  void ConnectToChild(ConnectToChildCallback callback) override {
     service_manager::test::mojom::LifecycleControlPtr lifecycle;
     context()->connector()->BindInterface("lifecycle_unittest_app", &lifecycle);
     {
@@ -58,7 +58,7 @@ class Parent : public service_manager::Service,
           base::MessageLoop::current());
       loop.Run();
     }
-    callback.Run();
+    std::move(callback).Run();
   }
   void Quit() override {
     base::MessageLoop::current()->QuitWhenIdle();

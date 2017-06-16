@@ -33,9 +33,7 @@ class TestClient : public Service,
   }
 
   // mojom::TestService
-  void Test(const TestCallback& callback) override {
-    callback.Run();
-  }
+  void Test(TestCallback callback) override { std::move(callback).Run(); }
 
   void BindTestServiceRequest(const BindSourceInfo& source_info,
                               mojom::TestServiceRequest request) {

@@ -62,8 +62,8 @@ class ConnectParams {
   }
 
   void set_start_service_callback(
-      const Connector::StartServiceCallback& callback) {
-    start_service_callback_ = callback;
+      mojom::Connector::StartServiceCallback callback) {
+    start_service_callback_ = std::move(callback);
   }
 
   void set_response_data(mojom::ConnectResult result,

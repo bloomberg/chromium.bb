@@ -41,7 +41,7 @@ class ShutdownClientApp : public Service,
   }
 
   // mojom::ShutdownTestClientController:
-  void ConnectAndWait(const ConnectAndWaitCallback& callback) override {
+  void ConnectAndWait(ConnectAndWaitCallback callback) override {
     mojom::ShutdownTestServicePtr service;
     context()->connector()->BindInterface("shutdown_service", &service);
 
@@ -58,7 +58,7 @@ class ShutdownClientApp : public Service,
     client_binding.set_connection_error_handler(run_loop.QuitClosure());
     run_loop.Run();
 
-    callback.Run();
+    std::move(callback).Run();
   }
 
   BinderRegistry registry_;

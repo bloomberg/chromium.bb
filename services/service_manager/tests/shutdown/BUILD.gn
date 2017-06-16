@@ -35,9 +35,6 @@ mojom("interfaces") {
   sources = [
     "shutdown_unittest.mojom",
   ]
-
-  # TODO(crbug.com/714018): Convert the implementation to use OnceCallback.
-  use_once_callback = false
 }
 
 service_manifest("shutdown_unittest_manifest") {

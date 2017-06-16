@@ -111,25 +111,25 @@ class ConnectTestApp : public Service,
   }
 
   // test::mojom::ConnectTestService:
-  void GetTitle(const GetTitleCallback& callback) override {
-    callback.Run("APP");
+  void GetTitle(GetTitleCallback callback) override {
+    std::move(callback).Run("APP");
   }
-  void GetInstance(const GetInstanceCallback& callback) override {
-    callback.Run(context()->identity().instance());
+  void GetInstance(GetInstanceCallback callback) override {
+    std::move(callback).Run(context()->identity().instance());
   }
 
   // test::mojom::StandaloneApp:
   void ConnectToAllowedAppInBlockedPackage(
-      const ConnectToAllowedAppInBlockedPackageCallback& callback) override {
+      ConnectToAllowedAppInBlockedPackageCallback callback) override {
     base::RunLoop run_loop;
     test::mojom::ConnectTestServicePtr test_service;
     context()->connector()->BindInterface("connect_test_a", &test_service);
     test_service.set_connection_error_handler(
         base::Bind(&ConnectTestApp::OnConnectionBlocked, base::Unretained(this),
-                   callback, &run_loop));
-    test_service->GetTitle(
-        base::Bind(&ConnectTestApp::OnGotTitle, base::Unretained(this),
-                   callback, &run_loop));
+                   base::Unretained(&callback), &run_loop));
+    test_service->GetTitle(base::Bind(&ConnectTestApp::OnGotTitle,
+                                      base::Unretained(this),
+                                      base::Unretained(&callback), &run_loop));
     {
       // This message is dispatched as a task on the same run loop, so we need
       // to allow nesting in order to pump additional signals.
@@ -139,7 +139,7 @@ class ConnectTestApp : public Service,
     }
   }
   void ConnectToClassInterface(
-      const ConnectToClassInterfaceCallback& callback) override {
+      ConnectToClassInterfaceCallback callback) override {
     test::mojom::ClassInterfacePtr class_interface;
     context()->connector()->BindInterface("connect_test_class_app",
                                           &class_interface);
@@ -161,18 +161,18 @@ class ConnectTestApp : public Service,
           base::MessageLoop::current());
       loop.Run();
     }
-    callback.Run(ping_response, title_response);
+    std::move(callback).Run(ping_response, title_response);
   }
 
   // test::mojom::BlockedInterface:
-  void GetTitleBlocked(const GetTitleBlockedCallback& callback) override {
-    callback.Run("Called Blocked Interface!");
+  void GetTitleBlocked(GetTitleBlockedCallback callback) override {
+    std::move(callback).Run("Called Blocked Interface!");
   }
 
   // test::mojom::UserIdTest:
   void ConnectToClassAppAsDifferentUser(
       const service_manager::Identity& target,
-      const ConnectToClassAppAsDifferentUserCallback& callback) override {
+      ConnectToClassAppAsDifferentUserCallback callback) override {
     context()->connector()->StartService(target);
     mojom::ConnectResult result;
     Identity resolved_identity;
@@ -185,21 +185,20 @@ class ConnectTestApp : public Service,
           base::MessageLoop::current());
       loop.Run();
     }
-    callback.Run(static_cast<int32_t>(result), resolved_identity);
+    std::move(callback).Run(static_cast<int32_t>(result), resolved_identity);
   }
 
   void OnConnectionBlocked(
-      const ConnectToAllowedAppInBlockedPackageCallback& callback,
+      ConnectToAllowedAppInBlockedPackageCallback* callback,
       base::RunLoop* run_loop) {
-    callback.Run("uninitialized");
+    std::move(*callback).Run("uninitialized");
     run_loop->Quit();
   }
 
-  void OnGotTitle(
-      const ConnectToAllowedAppInBlockedPackageCallback& callback,
-      base::RunLoop* run_loop,
-      const std::string& title) {
-    callback.Run(title);
+  void OnGotTitle(ConnectToAllowedAppInBlockedPackageCallback* callback,
+                  base::RunLoop* run_loop,
+                  const std::string& title) {
+    std::move(*callback).Run(title);
     run_loop->Quit();
   }
 
