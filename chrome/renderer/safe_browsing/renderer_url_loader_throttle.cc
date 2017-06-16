@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/renderer/safe_browsing/safe_browsing_url_loader_throttle.h"
+#include "chrome/renderer/safe_browsing/renderer_url_loader_throttle.h"
 
 #include "base/logging.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -10,16 +10,16 @@
 
 namespace safe_browsing {
 
-SafeBrowsingURLLoaderThrottle::SafeBrowsingURLLoaderThrottle(
+RendererURLLoaderThrottle::RendererURLLoaderThrottle(
     mojom::SafeBrowsing* safe_browsing,
     int render_frame_id)
     : safe_browsing_(safe_browsing),
       render_frame_id_(render_frame_id),
       weak_factory_(this) {}
 
-SafeBrowsingURLLoaderThrottle::~SafeBrowsingURLLoaderThrottle() = default;
+RendererURLLoaderThrottle::~RendererURLLoaderThrottle() = default;
 
-void SafeBrowsingURLLoaderThrottle::WillStartRequest(
+void RendererURLLoaderThrottle::WillStartRequest(
     const GURL& url,
     int load_flags,
     content::ResourceType resource_type,
@@ -34,16 +34,15 @@ void SafeBrowsingURLLoaderThrottle::WillStartRequest(
   safe_browsing_->CreateCheckerAndCheck(
       render_frame_id_, mojo::MakeRequest(&url_checker_), url, load_flags,
       resource_type,
-      base::BindOnce(&SafeBrowsingURLLoaderThrottle::OnCheckUrlResult,
+      base::BindOnce(&RendererURLLoaderThrottle::OnCheckUrlResult,
                      weak_factory_.GetWeakPtr()));
   safe_browsing_ = nullptr;
 
-  url_checker_.set_connection_error_handler(
-      base::Bind(&SafeBrowsingURLLoaderThrottle::OnConnectionError,
-                 base::Unretained(this)));
+  url_checker_.set_connection_error_handler(base::Bind(
+      &RendererURLLoaderThrottle::OnConnectionError, base::Unretained(this)));
 }
 
-void SafeBrowsingURLLoaderThrottle::WillRedirectRequest(
+void RendererURLLoaderThrottle::WillRedirectRequest(
     const net::RedirectInfo& redirect_info,
     bool* defer) {
   // If |blocked_| is true, the resource load has been canceled and there
@@ -58,11 +57,11 @@ void SafeBrowsingURLLoaderThrottle::WillRedirectRequest(
   pending_checks_++;
   url_checker_->CheckUrl(
       redirect_info.new_url,
-      base::BindOnce(&SafeBrowsingURLLoaderThrottle::OnCheckUrlResult,
+      base::BindOnce(&RendererURLLoaderThrottle::OnCheckUrlResult,
                      base::Unretained(this)));
 }
 
-void SafeBrowsingURLLoaderThrottle::WillProcessResponse(bool* defer) {
+void RendererURLLoaderThrottle::WillProcessResponse(bool* defer) {
   // If |blocked_| is true, the resource load has been canceled and there
   // shouldn't be such a notification.
   DCHECK(!blocked_);
@@ -71,7 +70,7 @@ void SafeBrowsingURLLoaderThrottle::WillProcessResponse(bool* defer) {
     *defer = true;
 }
 
-void SafeBrowsingURLLoaderThrottle::OnCheckUrlResult(bool safe) {
+void RendererURLLoaderThrottle::OnCheckUrlResult(bool safe) {
   if (blocked_ || !url_checker_)
     return;
 
@@ -92,7 +91,7 @@ void SafeBrowsingURLLoaderThrottle::OnCheckUrlResult(bool safe) {
   }
 }
 
-void SafeBrowsingURLLoaderThrottle::OnConnectionError() {
+void RendererURLLoaderThrottle::OnConnectionError() {
   DCHECK(!blocked_);
 
   // If a service-side disconnect happens, treat all URLs as if they are safe.

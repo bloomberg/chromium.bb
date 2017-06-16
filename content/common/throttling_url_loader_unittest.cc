@@ -208,11 +208,11 @@ class ThrottlingURLLoaderTest : public testing::Test {
   }
 
   void CreateLoaderAndStart() {
-    auto request = base::MakeUnique<ResourceRequest>();
-    request->url = GURL("http://example.org");
+    ResourceRequest request;
+    request.url = GURL("http://example.org");
     loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
-        factory_.factory_ptr().get(), std::move(throttles_), 0, 0, 0,
-        std::move(request), &client_,
+        factory_.factory_ptr().get(), std::move(throttles_), 0, 0, 0, request,
+        &client_,
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
     factory_.factory_ptr().FlushForTesting();
   }

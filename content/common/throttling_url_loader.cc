@@ -13,13 +13,15 @@ ThrottlingURLLoader::StartInfo::StartInfo(
     int32_t in_routing_id,
     int32_t in_request_id,
     uint32_t in_options,
-    std::unique_ptr<ResourceRequest> in_url_request,
+    StartLoaderCallback in_start_loader_callback,
+    const ResourceRequest& in_url_request,
     scoped_refptr<base::SingleThreadTaskRunner> in_task_runner)
     : url_loader_factory(in_url_loader_factory),
       routing_id(in_routing_id),
       request_id(in_request_id),
       options(in_options),
-      url_request(std::move(in_url_request)),
+      start_loader_callback(std::move(in_start_loader_callback)),
+      url_request(in_url_request),
       task_runner(std::move(in_task_runner)) {}
 
 ThrottlingURLLoader::StartInfo::~StartInfo() = default;
@@ -55,14 +57,29 @@ std::unique_ptr<ThrottlingURLLoader> ThrottlingURLLoader::CreateLoaderAndStart(
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
-    std::unique_ptr<ResourceRequest> url_request,
+    const ResourceRequest& url_request,
     mojom::URLLoaderClient* client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   std::unique_ptr<ThrottlingURLLoader> loader(new ThrottlingURLLoader(
       std::move(throttles), client, traffic_annotation));
-  loader->Start(factory, routing_id, request_id, options,
-                std::move(url_request), std::move(task_runner));
+  loader->Start(factory, routing_id, request_id, options, StartLoaderCallback(),
+                url_request, std::move(task_runner));
+  return loader;
+}
+
+// static
+std::unique_ptr<ThrottlingURLLoader> ThrottlingURLLoader::CreateLoaderAndStart(
+    StartLoaderCallback start_loader_callback,
+    std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
+    const ResourceRequest& url_request,
+    mojom::URLLoaderClient* client,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
+  std::unique_ptr<ThrottlingURLLoader> loader(new ThrottlingURLLoader(
+      std::move(throttles), client, net::MutableNetworkTrafficAnnotationTag()));
+  loader->Start(nullptr, 0, 0, mojom::kURLLoadOptionNone,
+                std::move(start_loader_callback), url_request,
+                std::move(task_runner));
   return loader;
 }
 
@@ -106,32 +123,61 @@ void ThrottlingURLLoader::Start(
     int32_t routing_id,
     int32_t request_id,
     uint32_t options,
-    std::unique_ptr<ResourceRequest> url_request,
+    StartLoaderCallback start_loader_callback,
+    const ResourceRequest& url_request,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   DCHECK_EQ(DEFERRED_NONE, deferred_stage_);
   DCHECK(!cancelled_by_throttle_);
 
   if (throttle_) {
     bool deferred = false;
-    throttle_->WillStartRequest(url_request->url, url_request->load_flags,
-                                url_request->resource_type, &deferred);
+    throttle_->WillStartRequest(url_request.url, url_request.load_flags,
+                                url_request.resource_type, &deferred);
     if (cancelled_by_throttle_)
       return;
 
     if (deferred) {
       deferred_stage_ = DEFERRED_START;
-      start_info_ = base::MakeUnique<StartInfo>(factory, routing_id, request_id,
-                                                options, std::move(url_request),
-                                                std::move(task_runner));
+      start_info_ =
+          base::MakeUnique<StartInfo>(factory, routing_id, request_id, options,
+                                      std::move(start_loader_callback),
+                                      url_request, std::move(task_runner));
       return;
     }
   }
 
+  StartNow(factory, routing_id, request_id, options,
+           std::move(start_loader_callback), url_request,
+           std::move(task_runner));
+}
+
+void ThrottlingURLLoader::StartNow(
+    mojom::URLLoaderFactory* factory,
+    int32_t routing_id,
+    int32_t request_id,
+    uint32_t options,
+    StartLoaderCallback start_loader_callback,
+    const ResourceRequest& url_request,
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
   mojom::URLLoaderClientPtr client;
   client_binding_.Bind(mojo::MakeRequest(&client), std::move(task_runner));
-  factory->CreateLoaderAndStart(mojo::MakeRequest(&url_loader_), routing_id,
-                                request_id, options, *url_request,
-                                std::move(client), traffic_annotation_);
+
+  if (factory) {
+    DCHECK(!start_loader_callback);
+
+    mojom::URLLoaderAssociatedPtr url_loader;
+    auto url_loader_request = mojo::MakeRequest(&url_loader);
+    url_loader_ = std::move(url_loader);
+    factory->CreateLoaderAndStart(std::move(url_loader_request), routing_id,
+                                  request_id, options, url_request,
+                                  std::move(client), traffic_annotation_);
+  } else {
+    mojom::URLLoaderPtr url_loader;
+    auto url_loader_request = mojo::MakeRequest(&url_loader);
+    url_loader_ = std::move(url_loader);
+    std::move(start_loader_callback)
+        .Run(std::move(url_loader_request), std::move(client));
+  }
 }
 
 void ThrottlingURLLoader::OnReceiveResponse(
@@ -248,7 +294,7 @@ void ThrottlingURLLoader::CancelWithError(int error_code) {
 
   deferred_stage_ = DEFERRED_NONE;
   client_binding_.Close();
-  url_loader_.reset();
+  url_loader_ = nullptr;
 
   forwarding_client_->OnComplete(request_complete_data);
 }
@@ -259,13 +305,10 @@ void ThrottlingURLLoader::Resume() {
 
   switch (deferred_stage_) {
     case DEFERRED_START: {
-      mojom::URLLoaderClientPtr client;
-      client_binding_.Bind(
-          mojo::MakeRequest(&client), std::move(start_info_->task_runner));
-      start_info_->url_loader_factory->CreateLoaderAndStart(
-          mojo::MakeRequest(&url_loader_), start_info_->routing_id,
-          start_info_->request_id, start_info_->options,
-          *start_info_->url_request, std::move(client), traffic_annotation_);
+      StartNow(start_info_->url_loader_factory, start_info_->routing_id,
+               start_info_->request_id, start_info_->options,
+               std::move(start_info_->start_loader_callback),
+               start_info_->url_request, std::move(start_info_->task_runner));
 
       if (priority_info_) {
         auto priority_info = std::move(priority_info_);

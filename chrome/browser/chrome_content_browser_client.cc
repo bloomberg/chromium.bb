@@ -72,6 +72,7 @@
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
 #include "chrome/browser/renderer_host/chrome_render_message_filter.h"
 #include "chrome/browser/renderer_host/pepper/chrome_browser_pepper_host_factory.h"
+#include "chrome/browser/safe_browsing/browser_url_loader_throttle.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_service.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_service_factory.h"
 #include "chrome/browser/safe_browsing/mojo_safe_browsing_impl.h"
@@ -186,6 +187,7 @@
 #include "content/public/common/sandbox_type.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
+#include "content/public/common/url_loader_throttle.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/common/web_preferences.h"
 #include "device/bluetooth/adapter_factory.h"
@@ -2452,6 +2454,9 @@ bool ChromeContentBrowserClient::CanCreateWindow(
 
 void ChromeContentBrowserClient::ResourceDispatcherHostCreated() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  safe_browsing_service_ = g_browser_process->safe_browsing_service();
+
   for (size_t i = 0; i < extra_parts_.size(); ++i)
     extra_parts_[i]->ResourceDispatcherHostCreated();
 
@@ -2938,11 +2943,10 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableNetworkService)) {
     registry->AddInterface(
-        base::Bind(
-            &safe_browsing::MojoSafeBrowsingImpl::Create,
-            g_browser_process->safe_browsing_service()->database_manager(),
-            g_browser_process->safe_browsing_service()->ui_manager(),
-            render_process_host->GetID()),
+        base::Bind(&safe_browsing::MojoSafeBrowsingImpl::Create,
+                   safe_browsing_service_->database_manager(),
+                   safe_browsing_service_->ui_manager(),
+                   render_process_host->GetID()),
         BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
   }
 
@@ -3431,6 +3435,20 @@ ChromeContentBrowserClient::GetTaskSchedulerInitParams() {
 
 base::FilePath ChromeContentBrowserClient::GetLoggingFileName() {
   return logging::GetLogFileName();
+}
+
+std::vector<std::unique_ptr<content::URLLoaderThrottle>>
+ChromeContentBrowserClient::CreateURLLoaderThrottles(
+    const base::Callback<content::WebContents*()>& wc_getter) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableNetworkService));
+
+  std::vector<std::unique_ptr<content::URLLoaderThrottle>> result;
+  result.push_back(base::MakeUnique<safe_browsing::BrowserURLLoaderThrottle>(
+      safe_browsing_service_->database_manager(),
+      safe_browsing_service_->ui_manager(), wc_getter));
+  return result;
 }
 
 // static

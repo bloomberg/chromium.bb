@@ -15,6 +15,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "content/public/browser/content_browser_client.h"
@@ -38,6 +39,10 @@ class WindowFeatures;
 namespace content {
 class BrowserContext;
 class QuotaPermissionContext;
+}
+
+namespace safe_browsing {
+class SafeBrowsingService;
 }
 
 namespace user_prefs {
@@ -317,6 +322,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   std::unique_ptr<base::TaskScheduler::InitParams> GetTaskSchedulerInitParams()
       override;
   base::FilePath GetLoggingFileName() override;
+  std::vector<std::unique_ptr<content::URLLoaderThrottle>>
+  CreateURLLoaderThrottles(
+      const base::Callback<content::WebContents*()>& wc_getter) override;
 
  private:
   friend class DisableWebRtcEncryptionFlagTest;
@@ -371,6 +379,8 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   std::vector<ChromeContentBrowserClientParts*> extra_parts_;
 
   service_manager::BinderRegistry gpu_binder_registry_;
+
+  scoped_refptr<safe_browsing::SafeBrowsingService> safe_browsing_service_;
 
   base::WeakPtrFactory<ChromeContentBrowserClient> weak_factory_;
 
