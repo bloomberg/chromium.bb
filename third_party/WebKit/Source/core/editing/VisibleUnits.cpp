@@ -1454,6 +1454,22 @@ static bool DoesContinueOnNextLine(const LayoutText& text_layout_object,
   return true;
 }
 
+// Returns true if |text_layout_object| has visible first-letter.
+bool HasVisibleFirstLetter(const LayoutText& text_layout_object) {
+  if (!text_layout_object.IsTextFragment())
+    return false;
+  const LayoutTextFragment& layout_text_fragment =
+      ToLayoutTextFragment(text_layout_object);
+  if (!layout_text_fragment.IsRemainingTextLayoutObject())
+    return false;
+  const LayoutObject* first_letter_layout_object =
+      layout_text_fragment.GetFirstLetterPseudoElement()->GetLayoutObject();
+  if (!first_letter_layout_object)
+    return false;
+  return first_letter_layout_object->Style()->Visibility() ==
+         EVisibility::kVisible;
+}
+
 // TODO(editing-dev): This function is just moved out from
 // |MostBackwardCaretPosition()|. We should study this function more and
 // name it appropriately. See https://trac.webkit.org/changeset/32438/
@@ -1466,20 +1482,11 @@ static bool CanBeBackwardCaretPosition(const LayoutText* text_layout_object,
   InlineTextBox* const last_text_box = text_layout_object->LastTextBox();
   for (InlineTextBox* box : InlineTextBoxesOf(*text_layout_object)) {
     if (text_offset == box->Start()) {
-      if (text_layout_object->IsTextFragment() &&
-          ToLayoutTextFragment(text_layout_object)
-              ->IsRemainingTextLayoutObject()) {
+      if (HasVisibleFirstLetter(*text_layout_object)) {
         // |offset_in_node| is at start of remaining text of
         // |Text| node with :first-letter.
         DCHECK_GE(offset_in_node, 1);
-        LayoutObject* first_letter_layout_object =
-            ToLayoutTextFragment(text_layout_object)
-                ->GetFirstLetterPseudoElement()
-                ->GetLayoutObject();
-        if (first_letter_layout_object &&
-            first_letter_layout_object->Style()->Visibility() ==
-                EVisibility::kVisible)
-          return true;
+        return true;
       }
       continue;
     }
