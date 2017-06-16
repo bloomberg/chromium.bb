@@ -1,8 +1,3 @@
-<!DOCTYPE html>
-<script src="../../../resources/testharness.js"></script>
-<script src="../../../resources/testharnessreport.js"></script>
-<script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
-<script>
 'use strict';
 promise_test(() => {
   return setBluetoothFakeAdapter('HeartRateAdapter')
@@ -10,11 +5,15 @@ promise_test(() => {
       filters: [{services: ['heart_rate']}],
       optionalServices: ['generic_access']}))
     .then(device => device.gatt.connect())
-    .then(gattServer => gattServer.getPrimaryService('generic_access'))
+    .then(gatt => gatt.getPrimaryService('generic_access'))
     .then(service => {
       return assert_promise_rejects_with_message(
-        service.getCharacteristic('wrong_name'), new DOMException(
-          'Failed to execute \'getCharacteristic\' on ' +
+        service.CALLS([
+          getCharacteristic('wrong_name')|
+          getCharacteristics('wrong_name')
+        ]),
+        new DOMException(
+          'Failed to execute \'FUNCTION_NAME\' on ' +
           '\'BluetoothRemoteGATTService\': Invalid Characteristic name: ' +
           '\'wrong_name\'. ' +
           'It must be a valid UUID alias (e.g. 0x1234), ' +
@@ -27,4 +26,3 @@ promise_test(() => {
         'Wrong Characteristic name passed.');
     });
 }, 'Wrong Characteristic name. Reject with TypeError.');
-</script>

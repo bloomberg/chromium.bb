@@ -1,22 +1,21 @@
-<!DOCTYPE html>
-<script src="../../../resources/testharness.js"></script>
-<script src="../../../resources/testharnessreport.js"></script>
-<script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
-<script>
 'use strict';
 promise_test(() => {
   return setBluetoothFakeAdapter('HeartRateAdapter')
     .then(() => requestDeviceWithKeyDown({
-      filters: [{services: ['heart_rate']}]}))
+      filters: [{services: ['heart_rate']}],
+      optionalServices: ['generic_access']}))
     .then(device => device.gatt.connect())
-    .then(gattService => gattService.getPrimaryService('heart_rate'))
+    .then(gatt => gatt.getPrimaryService('generic_access'))
     .then(service => {
       return setBluetoothFakeAdapter('MissingServiceHeartRateAdapter')
         .then(() => assert_promise_rejects_with_message(
-          service.getCharacteristics('heart_rate_measurement'),
+          service.CALLS([
+            getCharacteristic('gap.device_name')|
+            getCharacteristics()|
+            getCharacteristics('gap.device_name')[UUID]
+          ]),
           new DOMException('GATT Service no longer exists.',
                            'InvalidStateError'),
           'Service got removed.'));
     });
-}, 'Service is removed. Reject with InvalidStateError.');
-</script>
+}, 'Service is removed before FUNCTION_NAME call. Reject with InvalidStateError.');
