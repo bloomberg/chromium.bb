@@ -88,19 +88,18 @@ html[dir=rtl] .user-image-pane {
   width: 100%;
 }
 
-.user-image {
+.pod .user-image {
+  border-color: rgba(255, 255, 255, .54);
   border-radius: 50%;
-  box-shadow: 0 0 2px rgba(255, 255, 255, .34);
+  border-style: solid;
+  border-width: 0.25px;
+  flex: none;
   height: 100%;
   width: 100%;
 }
 
-.user-image.switch-image-animation {
+.pod .user-image.switch-image-animation {
   animation: switch-image 180ms;
-}
-
-.pod .user-image {
-  flex: none;
 }
 
 .pod .badge-container {
@@ -121,15 +120,8 @@ html[dir=rtl] .user-image-pane {
   padding: 0;
 }
 
-/* Signed-in badge should be hidden when there's another badge. */
-.pod.legacy-supervised.signed-in .signed-in-badge {
-  display: none;
-}
-
 .pod.legacy-supervised .badge-container,
-.pod.signed-in .badge-container,
-.pod.legacy-supervised .legacy-supervised-badge,
-.pod.signed-in .signed-in-badge {
+.pod.legacy-supervised .legacy-supervised-badge {
   display: block;
 }
 
@@ -208,10 +200,8 @@ html[dir=rtl] .main-pane {
 
 .name {
   color: #FFFFFF;
-  /* This should be 15.6px - the equivalent of 14px at 90% scale. */
   flex: auto;
-  font-family: "Roboto";
-  font-size: 24px;
+  font: 24px Roboto, sans-serif;
   outline: none;
   overflow: hidden;
   text-align: center;
@@ -259,19 +249,30 @@ html[dir=rtl] .main-pane {
   width: 160px;
 }
 
+.custom-icon-shown.password-container {
+  padding-left: 8px;
+  width: 145px;
+}
+
+.capslock-on .custom-icon-shown.password-container {
+  width: 125px;
+}
+
 .pod input[type='password'] {
   background-color: transparent;
   border: none;
   color: rgba(255, 255, 255, .67);
   font-family: "Roboto";
-  font-size: 13px;
+  font-size: 16px;
   height: 100%;
-  letter-spacing: 8px;
+  letter-spacing: 6px;
   padding: 0;
   width: 100%;
 }
 
 .pod input[type='password']::-webkit-input-placeholder {
+  color: rgba(255, 255, 255, .67);
+  font-size: 13px;
   letter-spacing: 0;
 }
 
@@ -611,22 +612,6 @@ html[dir=rtl] .user-type-icon-area {
   background-image: url(../../webui/resources/images/fingerprint_failed.svg);
 }
 
-.pod input[type='password'].hidden::-webkit-input-placeholder {
-  color: grey;
-}
-
-.pod input[type='password'].default::-webkit-input-placeholder {
-  color: grey;
-}
-
-.pod input[type='password'].signin::-webkit-input-placeholder {
-  color: var(--google-blue-500);
-}
-
-.pod input[type='password'].failed::-webkit-input-placeholder {
-  color: var(--google-red-500);
-}
-
 .action-box-menu {
   display: none;
   position: absolute;
@@ -751,14 +736,16 @@ html[dir=rtl] .action-box-area.active ~ .action-box-menu {
 }
 
 .user-type-bubble {
-  background-color: white;
-  border: 1px solid lightgray;
-  border-radius: 2px;
-  left: 5px;
+  background-color: rgba(0, 0, 0, 0.9);
+  border-radius: 4px;
+  color: #FFF;
+  font-family: "Roboto";
+  font-size: 13px;
+  left: 36px;
   opacity: 0;
   padding: 17px;
   position: absolute;
-  top: 20px;
+  top: 35px;
   transition: all 100ms;
   visibility: hidden;
   width: 200px;
@@ -779,21 +766,15 @@ html[dir=rtl] .user-type-bubble {
 .user-type-bubble-header {
   font-weight: bold;
   margin-bottom: 14px;
+  text-align: center;
 }
 
 /**** Public account user pod rules *******************************************/
 
-.public-account-expanded > * {
-  display: none;
-}
-
-.public-account-expanded .pod {
-  display: none;
-}
-
-.public-account-expanded podrow,
-.public-account-expanded .pod.public-account.expanded {
-  display: block;
+.public-account-expanded > div,
+.public-account-expanded .pod:not(.expanded) {
+  opacity: 0; /* Cannot be replaced with display: none, otherwise the tab
+                 indexes of other elements in the pod row will be ignored. */
 }
 
 .pod.public-account.expanded {
@@ -1109,8 +1090,7 @@ html[dir=rtl] .expanded-pane {
 .small-pod-name {
   color: #FFFFFF;
   flex: auto;
-  font-family: "Roboto";
-  font-size: 20px;
+  font: 20px Roboto, sans-serif;
   height: 28px;
   left: 90px;
   opacity: 1;

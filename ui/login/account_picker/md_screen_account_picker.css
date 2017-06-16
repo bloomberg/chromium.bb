@@ -14,8 +14,8 @@
 
 #signin-banner-container1 {
   height: 64px;
+  max-width: 450px;
   position: absolute;
-  width: 520px;
   z-index: 3;
 }
 
