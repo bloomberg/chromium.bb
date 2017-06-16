@@ -249,7 +249,10 @@ void AddToHomescreenDataFetcher::OnDidPerformInstallableCheck(
   if (data.primary_icon) {
     shortcut_info_.best_primary_icon_url = data.primary_icon_url;
 
-    CreateLauncherIcon(*(data.primary_icon));
+    if (webapk_compatible)
+      NotifyObserver(*data.primary_icon);
+    else
+      CreateLauncherIcon(*(data.primary_icon));
     return;
   }
 
