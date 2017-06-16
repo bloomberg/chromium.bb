@@ -7,7 +7,6 @@
 #include <memory>
 #include <sstream>
 
-#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
@@ -69,6 +68,8 @@ class WifiHotspotConnectorTest : public NetworkStateTest {
 
     std::string network_id_to_connect() { return network_id_to_connect_; }
 
+    uint32_t num_connection_attempts() { return num_connection_attempts_; }
+
     // NetworkConnect:
     void DisconnectFromNetworkId(const std::string& network_id) override {}
     bool MaybeShowConfigureUI(const std::string& network_id,
@@ -100,6 +101,7 @@ class WifiHotspotConnectorTest : public NetworkStateTest {
     }
 
     void ConnectToNetworkId(const std::string& network_id) override {
+      num_connection_attempts_++;
       network_id_to_connect_ = network_id;
     }
 
@@ -108,6 +110,7 @@ class WifiHotspotConnectorTest : public NetworkStateTest {
     std::unique_ptr<base::DictionaryValue> last_configuration_;
     std::string last_service_path_created_;
     std::string network_id_to_connect_;
+    uint32_t num_connection_attempts_ = 0;
   };
 
   WifiHotspotConnectorTest() {}
@@ -217,8 +220,10 @@ class WifiHotspotConnectorTest : public NetworkStateTest {
     return wifi_guid;
   }
 
-  void VerifyTetherAndWifiNetworkAssociation(const std::string& wifi_guid,
-                                             const std::string& tether_guid) {
+  void VerifyTetherAndWifiNetworkAssociation(
+      const std::string& wifi_guid,
+      const std::string& tether_guid,
+      uint32_t expected_num_connection_attempts) {
     const NetworkState* wifi_network_state =
         network_state_handler()->GetNetworkStateFromGuid(wifi_guid);
     ASSERT_TRUE(wifi_network_state);
@@ -228,6 +233,9 @@ class WifiHotspotConnectorTest : public NetworkStateTest {
         network_state_handler()->GetNetworkStateFromGuid(tether_guid);
     ASSERT_TRUE(tether_network_state);
     EXPECT_EQ(wifi_guid, tether_network_state->tether_guid());
+
+    EXPECT_EQ(expected_num_connection_attempts,
+              test_network_connect_->num_connection_attempts());
   }
 
   void VerifyNetworkNotAssociated(const std::string& guid) {
@@ -314,7 +322,8 @@ TEST_F(WifiHotspotConnectorTest, TestConnect_CannotConnectToNetwork) {
 
   // Network becomes connectable.
   NotifyConnectable(test_network_connect_->last_service_path_created());
-  VerifyTetherAndWifiNetworkAssociation(wifi_guid, kTetherNetworkGuid);
+  VerifyTetherAndWifiNetworkAssociation(
+      wifi_guid, kTetherNetworkGuid, 1u /* expected_num_connection_attempts */);
   EXPECT_EQ(wifi_guid, test_network_connect_->network_id_to_connect());
 
   // Network connection does not occur.
@@ -338,7 +347,8 @@ TEST_F(WifiHotspotConnectorTest, TestConnect_Success) {
 
   // Network becomes connectable.
   NotifyConnectable(test_network_connect_->last_service_path_created());
-  VerifyTetherAndWifiNetworkAssociation(wifi_guid, kTetherNetworkGuid);
+  VerifyTetherAndWifiNetworkAssociation(
+      wifi_guid, kTetherNetworkGuid, 1u /* expected_num_connection_attempts */);
   EXPECT_EQ(wifi_guid, test_network_connect_->network_id_to_connect());
   EXPECT_EQ(0u, connection_callback_responses_.size());
 
@@ -360,7 +370,8 @@ TEST_F(WifiHotspotConnectorTest, TestConnect_Success_EmptyPassword) {
 
   // Network becomes connectable.
   NotifyConnectable(test_network_connect_->last_service_path_created());
-  VerifyTetherAndWifiNetworkAssociation(wifi_guid, kTetherNetworkGuid);
+  VerifyTetherAndWifiNetworkAssociation(
+      wifi_guid, kTetherNetworkGuid, 1u /* expected_num_connection_attempts */);
   EXPECT_EQ(wifi_guid, test_network_connect_->network_id_to_connect());
   EXPECT_EQ(0u, connection_callback_responses_.size());
 
@@ -413,7 +424,9 @@ TEST_F(WifiHotspotConnectorTest,
 
   // Second network becomes connectable.
   NotifyConnectable(service_path2);
-  VerifyTetherAndWifiNetworkAssociation(wifi_guid2, kTetherNetworkGuid2);
+  VerifyTetherAndWifiNetworkAssociation(
+      wifi_guid2, kTetherNetworkGuid2,
+      1u /* expected_num_connection_attempts */);
   EXPECT_EQ(wifi_guid2, test_network_connect_->network_id_to_connect());
   EXPECT_EQ(1u, connection_callback_responses_.size());
 
@@ -439,7 +452,9 @@ TEST_F(WifiHotspotConnectorTest,
 
   // First network becomes connectable.
   NotifyConnectable(service_path1);
-  VerifyTetherAndWifiNetworkAssociation(wifi_guid1, kTetherNetworkGuid);
+  VerifyTetherAndWifiNetworkAssociation(
+      wifi_guid1, kTetherNetworkGuid,
+      1u /* expected_num_connection_attempts */);
 
   // After network becomes connectable, request a connection to second network.
   wifi_hotspot_connector_->ConnectToWifiHotspot(
@@ -465,7 +480,9 @@ TEST_F(WifiHotspotConnectorTest,
 
   // Second network becomes connectable.
   NotifyConnectable(service_path2);
-  VerifyTetherAndWifiNetworkAssociation(wifi_guid2, kTetherNetworkGuid2);
+  VerifyTetherAndWifiNetworkAssociation(
+      wifi_guid2, kTetherNetworkGuid2,
+      2u /* expected_num_connection_attempts */);
   EXPECT_EQ(wifi_guid2, test_network_connect_->network_id_to_connect());
   EXPECT_EQ(1u, connection_callback_responses_.size());
 

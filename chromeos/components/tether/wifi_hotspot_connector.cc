@@ -52,13 +52,13 @@ void WifiHotspotConnector::ConnectToWifiHotspot(
         network_state_handler_->DisassociateTetherNetworkStateFromWifiNetwork(
             tether_network_guid_);
     if (successful_disassociation) {
-      PA_LOG(INFO) << "Wifi network with ID " << wifi_network_guid_
-                   << " successfully disassociated from Tether network with ID "
-                   << tether_network_guid_ << ".";
+      PA_LOG(INFO) << "Wi-Fi network (ID \"" << wifi_network_guid_ << "\") "
+                   << "successfully disassociated from Tether network (ID "
+                   << "\"" << tether_network_guid_ << "\").";
     } else {
-      PA_LOG(INFO) << "Wifi network with ID " << wifi_network_guid_
-                   << " failed to disassociate from Tether network with ID "
-                   << tether_network_guid_ << ".";
+      PA_LOG(INFO) << "Wi-Fi network (ID \"" << wifi_network_guid_ << "\") "
+                   << "failed to disassociate from Tether network ID (\""
+                   << tether_network_guid_ << "\").";
     }
 
     InvokeWifiConnectionCallback(std::string());
@@ -93,7 +93,13 @@ void WifiHotspotConnector::NetworkPropertiesUpdated(
     return;
   }
 
-  if (network->connectable()) {
+  if (network->connectable() && !has_initiated_connection_to_current_network_) {
+    // Set |has_initiated_connection_to_current_network_| to true to ensure that
+    // this code path is only run once per connection attempt. Without this
+    // field, the association and connection code below would be re-run multiple
+    // times for one network.
+    has_initiated_connection_to_current_network_ = true;
+
     // If the network is now connectable, associate it with a Tether network
     // ASAP so that the correct icon will be displayed in the tray while the
     // network is connecting.
@@ -101,17 +107,15 @@ void WifiHotspotConnector::NetworkPropertiesUpdated(
         network_state_handler_->AssociateTetherNetworkStateWithWifiNetwork(
             tether_network_guid_, wifi_network_guid_);
     if (successful_association) {
-      PA_LOG(INFO) << "Wifi network with ID " << wifi_network_guid_
-                   << " is connectable, and successfully associated "
-                      "with Tether network. Tether network ID: \""
-                   << tether_network_guid_ << "\", Wi-Fi network ID: \""
-                   << wifi_network_guid_ << "\"";
+      PA_LOG(INFO) << "Wi-Fi network (ID \"" << wifi_network_guid_ << "\") "
+                   << "successfully associated with Tether network (ID \""
+                   << tether_network_guid_ << "\"). Starting connection "
+                   << "attempt.";
     } else {
-      PA_LOG(INFO) << "Wifi network with ID " << wifi_network_guid_
-                   << " is connectable, but failed to associate tether network "
-                      "with ID \""
-                   << tether_network_guid_ << "\" to Wi-Fi network with ID: \""
-                   << wifi_network_guid_ << "\"";
+      PA_LOG(INFO) << "Wi-Fi network (ID \"" << wifi_network_guid_ << "\") "
+                   << "failed to associate with Tether network (ID \""
+                   << tether_network_guid_ << "\"). Starting connection "
+                   << "attempt.";
     }
 
     // Initiate a connection to the network.
@@ -130,6 +134,7 @@ void WifiHotspotConnector::InvokeWifiConnectionCallback(
   ssid_.clear();
   password_.clear();
   wifi_network_guid_.clear();
+  has_initiated_connection_to_current_network_ = false;
 
   timer_->Stop();
 

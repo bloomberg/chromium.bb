@@ -70,6 +70,7 @@ class WifiHotspotConnector : public NetworkStateHandlerObserver {
   std::string tether_network_guid_;
   std::string wifi_network_guid_;
   WifiConnectionCallback callback_;
+  bool has_initiated_connection_to_current_network_ = false;
 
   base::WeakPtrFactory<WifiHotspotConnector> weak_ptr_factory_;
 
