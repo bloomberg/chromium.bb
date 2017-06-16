@@ -967,4 +967,66 @@ IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
   EXPECT_TRUE(save_button->enabled());
 }
 
+// Tests that the state dropdown is set to the right value if the value from the
+// profile is a region code.
+IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
+                       DefaultRegion_RegionCode) {
+  // Add address without a country but a valid state for the default country.
+  autofill::AutofillProfile profile = autofill::test::GetFullProfile();
+  profile.SetInfo(autofill::AutofillType(autofill::ADDRESS_HOME_COUNTRY),
+                  base::ASCIIToUTF16(""), kLocale);
+  profile.SetInfo(autofill::AutofillType(autofill::ADDRESS_HOME_STATE),
+                  base::ASCIIToUTF16("ca"), kLocale);
+  AddAutofillProfile(profile);
+
+  InvokePaymentRequestUI();
+  SetRegionDataLoader(&test_region_data_loader_);
+
+  test_region_data_loader_.set_synchronous_callback(true);
+  std::vector<std::pair<std::string, std::string>> regions;
+  regions.push_back(std::make_pair("AL", "Alabama"));
+  regions.push_back(std::make_pair("CA", "California"));
+  test_region_data_loader_.SetRegionData(regions);
+  OpenShippingAddressSectionScreen();
+
+  ResetEventObserver(DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
+  ClickOnChildInListViewAndWait(/*child_index=*/0, /*num_children=*/1,
+                                DialogViewID::SHIPPING_ADDRESS_SHEET_LIST_VIEW);
+
+  // Expect that the state was selected.
+  EXPECT_EQ(base::ASCIIToUTF16("California"),
+            GetComboboxValue(autofill::ADDRESS_HOME_STATE));
+}
+
+// Tests that the state dropdown is set to the right value if the value from the
+// profile is a region name.
+IN_PROC_BROWSER_TEST_F(PaymentRequestShippingAddressEditorTest,
+                       DefaultRegion_RegionName) {
+  // Add address without a country but a valid state for the default country.
+  autofill::AutofillProfile profile = autofill::test::GetFullProfile();
+  profile.SetInfo(autofill::AutofillType(autofill::ADDRESS_HOME_COUNTRY),
+                  base::ASCIIToUTF16(""), kLocale);
+  profile.SetInfo(autofill::AutofillType(autofill::ADDRESS_HOME_STATE),
+                  base::ASCIIToUTF16("california"), kLocale);
+  AddAutofillProfile(profile);
+
+  InvokePaymentRequestUI();
+  SetRegionDataLoader(&test_region_data_loader_);
+
+  test_region_data_loader_.set_synchronous_callback(true);
+  std::vector<std::pair<std::string, std::string>> regions;
+  regions.push_back(std::make_pair("AL", "Alabama"));
+  regions.push_back(std::make_pair("CA", "California"));
+  test_region_data_loader_.SetRegionData(regions);
+  OpenShippingAddressSectionScreen();
+
+  ResetEventObserver(DialogEvent::SHIPPING_ADDRESS_EDITOR_OPENED);
+  ClickOnChildInListViewAndWait(/*child_index=*/0, /*num_children=*/1,
+                                DialogViewID::SHIPPING_ADDRESS_SHEET_LIST_VIEW);
+
+  // Expect that the state was selected.
+  EXPECT_EQ(base::ASCIIToUTF16("California"),
+            GetComboboxValue(autofill::ADDRESS_HOME_STATE));
+}
+
 }  // namespace payments
