@@ -394,7 +394,7 @@ static VisiblePositionTemplate<Strategy> EndOfLineAlgorithm(
   DCHECK(current_position.IsValid()) << current_position;
   // TODO(yosin) this is the current behavior that might need to be fixed.
   // Please refer to https://bugs.webkit.org/show_bug.cgi?id=49107 for detail.
-  VisiblePositionTemplate<Strategy> vis_pos =
+  const VisiblePositionTemplate<Strategy>& candidate_position =
       EndPositionForLine(current_position, kUseInlineBoxOrdering);
 
   // Make sure the end of line is at the same line as the given input
@@ -405,15 +405,17 @@ static VisiblePositionTemplate<Strategy> EndOfLineAlgorithm(
   // line instead. This fix is to account for the discrepancy between lines
   // with "webkit-line-break:after-white-space" style versus lines without
   // that style, which would break before a space by default.
-  if (!InSameLine(current_position, vis_pos)) {
-    vis_pos = PreviousPositionOf(current_position);
-    if (vis_pos.IsNull())
-      return VisiblePositionTemplate<Strategy>();
-    vis_pos = EndPositionForLine(vis_pos, kUseInlineBoxOrdering);
+  if (InSameLine(current_position, candidate_position)) {
+    return HonorEditingBoundaryAtOrAfter(candidate_position,
+                                         current_position.DeepEquivalent());
   }
-
-  return HonorEditingBoundaryAtOrAfter(vis_pos,
-                                       current_position.DeepEquivalent());
+  const VisiblePositionTemplate<Strategy>& adjusted_position =
+      PreviousPositionOf(current_position);
+  if (adjusted_position.IsNull())
+    return VisiblePositionTemplate<Strategy>();
+  return HonorEditingBoundaryAtOrAfter(
+      EndPositionForLine(adjusted_position, kUseInlineBoxOrdering),
+      current_position.DeepEquivalent());
 }
 
 // TODO(yosin) Rename this function to reflect the fact it ignores bidi levels.
