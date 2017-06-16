@@ -30,15 +30,16 @@ TEST_F(PaymentRequestErrorCoordinatorTest, StartAndStop) {
   [coordinator start];
   // Short delay to allow animation to complete.
   base::test::ios::SpinRunLoopWithMaxDelay(base::TimeDelta::FromSecondsD(1.0));
-  id presented_view_controller =
-      [coordinator baseViewController].presentedViewController;
-  EXPECT_TRUE([presented_view_controller
+  EXPECT_TRUE([base_view_controller.presentedViewController
       isMemberOfClass:[PaymentRequestErrorViewController class]]);
 
   [coordinator stop];
-  // Delay to allow animation to complete.
-  base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(2));
-  EXPECT_EQ(nil, [coordinator baseViewController].presentedViewController);
+  // Wait until the animation completes and the presented view controller is
+  // dismissed.
+  base::test::ios::WaitUntilCondition(^bool() {
+    return !base_view_controller.presentedViewController;
+  });
+  EXPECT_EQ(nil, base_view_controller.presentedViewController);
 }
 
 // Tests that calling the view controller delegate method which notifies the
@@ -64,11 +65,9 @@ TEST_F(PaymentRequestErrorCoordinatorTest, DidDismiss) {
   base::test::ios::SpinRunLoopWithMaxDelay(base::TimeDelta::FromSecondsD(1.0));
 
   // Call the controller delegate method.
-  id presented_view_controller =
-      [coordinator baseViewController].presentedViewController;
   PaymentRequestErrorViewController* view_controller =
       base::mac::ObjCCastStrict<PaymentRequestErrorViewController>(
-          presented_view_controller);
+          base_view_controller.presentedViewController);
   [coordinator paymentRequestErrorViewControllerDidDismiss:view_controller];
 
   EXPECT_OCMOCK_VERIFY(delegate);
