@@ -150,6 +150,11 @@ NSString* const kDoneTouchBarId = @"DONE";
   // We caught a close so we don't need to watch for the parent closing.
   bookmarkObserver_.reset();
   [self notifyBubbleClosed];
+
+  // Force the field editor to resign the first responder so that it'll
+  // be removed from the view hierarchy and its delegate be set to nil.
+  [[self window] endEditingFor:nameTextField_];
+
   [super windowWillClose:notification];
 }
 
@@ -267,7 +272,7 @@ NSString* const kDoneTouchBarId = @"DONE";
   if (!textFieldEditor_)
     textFieldEditor_.reset([[DialogTextFieldEditor alloc] init]);
 
-  return textFieldEditor_.autorelease();
+  return textFieldEditor_.get();
 }
 
 // Shows the bookmark editor sheet for more advanced editing.
