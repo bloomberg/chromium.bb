@@ -148,7 +148,6 @@ std::unique_ptr<CastService> CastContentBrowserClient::CreateCastService(
     content::BrowserContext* browser_context,
     PrefService* pref_service,
     net::URLRequestContextGetter* request_context_getter,
-    DisableQuicClosure disable_quic_closure,
     media::VideoPlaneController* video_plane_controller,
     CastWindowManager* window_manager) {
   return base::MakeUnique<CastServiceSimple>(browser_context, pref_service,

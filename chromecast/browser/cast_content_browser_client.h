@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
@@ -55,8 +54,6 @@ class CastBrowserMainParts;
 class CastResourceDispatcherHostDelegate;
 class URLRequestContextFactory;
 
-using DisableQuicClosure = base::OnceClosure;
-
 class CastContentBrowserClient : public content::ContentBrowserClient {
  public:
   // Creates an implementation of CastContentBrowserClient. Platform should
@@ -78,7 +75,6 @@ class CastContentBrowserClient : public content::ContentBrowserClient {
       content::BrowserContext* browser_context,
       PrefService* pref_service,
       net::URLRequestContextGetter* request_context_getter,
-      DisableQuicClosure disable_quic_closure,
       media::VideoPlaneController* video_plane_controller,
       CastWindowManager* window_manager);
 

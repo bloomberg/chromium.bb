@@ -20,6 +20,13 @@ class ListValue;
 
 namespace chromecast {
 
+// Add Cast Features here.
+extern const base::Feature kEnableQuic;
+
+// Below are utilities needed by the Cast receiver to persist feature
+// information. Client code which is simply querying the status of a feature
+// will not need to use these utilities.
+
 // Initialize the global base::FeatureList instance, taking into account
 // overrides from DCS and the command line. |dcs_features| and
 // |dcs_experiment_ids| are read from the PrefService in the browser process.
