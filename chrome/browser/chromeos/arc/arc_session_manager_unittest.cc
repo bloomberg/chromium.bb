@@ -504,18 +504,34 @@ TEST_F(ArcSessionManagerArcAlwaysStartTest, BaseWorkflow) {
 }
 
 class ArcSessionManagerPolicyTest
-    : public ArcSessionManagerTest,
+    : public ArcSessionManagerTestBase,
       public testing::WithParamInterface<
-          std::tuple<bool, base::Value, base::Value>> {
+          std::tuple<bool, bool, base::Value, base::Value>> {
  public:
+  void SetUp() override {
+    ArcSessionManagerTestBase::SetUp();
+    AccountId account_id;
+    if (is_active_directory_user()) {
+      account_id = AccountId(AccountId::AdFromUserEmailObjGuid(
+          profile()->GetProfileUserName(), "1234567890"));
+    } else {
+      account_id = AccountId(AccountId::FromUserEmailGaiaId(
+          profile()->GetProfileUserName(), "1234567890"));
+    }
+    GetFakeUserManager()->AddUser(account_id);
+    GetFakeUserManager()->LoginUser(account_id);
+  }
+
   bool arc_enabled_pref_managed() const { return std::get<0>(GetParam()); }
 
+  bool is_active_directory_user() const { return std::get<1>(GetParam()); }
+
   const base::Value& backup_restore_pref_value() const {
-    return std::get<1>(GetParam());
+    return std::get<2>(GetParam());
   }
 
   const base::Value& location_service_pref_value() const {
-    return std::get<2>(GetParam());
+    return std::get<3>(GetParam());
   }
 };
 
@@ -526,6 +542,9 @@ TEST_P(ArcSessionManagerPolicyTest, SkippingTerms) {
   // Backup-restore and location-service prefs are off by default.
   EXPECT_FALSE(prefs->GetBoolean(prefs::kArcSignedIn));
   EXPECT_FALSE(prefs->GetBoolean(prefs::kArcTermsAccepted));
+
+  EXPECT_EQ(is_active_directory_user(),
+            IsActiveDirectoryUserForProfile(profile()));
 
   // Enable ARC through user pref or by policy, according to the test parameter.
   if (arc_enabled_pref_managed())
@@ -548,9 +567,11 @@ TEST_P(ArcSessionManagerPolicyTest, SkippingTerms) {
   arc_session_manager()->SetProfile(profile());
   arc_session_manager()->RequestEnable();
 
-  // Terms of Service are skipped iff ARC is enabled by policy and both
-  // ArcBackupRestoreEnabled and ArcLocationServiceEnabled are managed.
-  const bool expected_terms_skipping = arc_enabled_pref_managed() &&
+  // Terms of Service are skipped iff not an Active Directory user, ARC is
+  // enabled by policy and both ArcBackupRestoreEnabled and
+  // ArcLocationServiceEnabled are managed.
+  const bool expected_terms_skipping = !is_active_directory_user() &&
+                                       arc_enabled_pref_managed() &&
                                        backup_restore_pref_value().is_bool() &&
                                        location_service_pref_value().is_bool();
   EXPECT_EQ(expected_terms_skipping
@@ -565,8 +586,7 @@ TEST_P(ArcSessionManagerPolicyTest, SkippingTerms) {
   }
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
 
-  // Play Store app is launched unless the Terms screen was suppressed by the
-  // policy.
+  // Play Store app is launched unless the Terms screen was suppressed.
   EXPECT_NE(expected_terms_skipping,
             arc_session_manager()->IsPlaystoreLaunchRequestedForTesting());
 
@@ -612,10 +632,11 @@ TEST_P(ArcSessionManagerPolicyTest, ReenableManagedArc) {
 }
 
 INSTANTIATE_TEST_CASE_P(
-    ArcSessionManagerPolicyTest,
+    All,
     ArcSessionManagerPolicyTest,
     testing::Combine(
-        testing::Values(false, true) /* arc_enabled_pref_managed */,
+        testing::Bool() /* arc_enabled_pref_managed */,
+        testing::Bool() /* is_active_directory_user */,
         testing::Values(base::Value(),
                         base::Value(false),
                         base::Value(true)) /* backup_restore_pref_value */,
@@ -790,7 +811,7 @@ class ArcSessionOobeOptInNegotiatorTest
   DISALLOW_COPY_AND_ASSIGN(ArcSessionOobeOptInNegotiatorTest);
 };
 
-INSTANTIATE_TEST_CASE_P(ArcSessionOobeOptInNegotiatorTestImpl,
+INSTANTIATE_TEST_CASE_P(All,
                         ArcSessionOobeOptInNegotiatorTest,
                         ::testing::Values(true, false));
 

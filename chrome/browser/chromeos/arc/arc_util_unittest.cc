@@ -474,5 +474,21 @@ TEST_F(ChromeArcUtilTest, AreArcAllOptInPreferencesManagedForProfile) {
   EXPECT_TRUE(AreArcAllOptInPreferencesManagedForProfile(profile()));
 }
 
+// Test the IsActiveDirectoryUserForProfile() function for non-AD accounts.
+TEST_F(ChromeArcUtilTest, IsActiveDirectoryUserForProfile_Gaia) {
+  ScopedLogIn login(GetFakeUserManager(),
+                    AccountId::FromUserEmailGaiaId(
+                        profile()->GetProfileUserName(), kTestGaiaId));
+  EXPECT_FALSE(IsActiveDirectoryUserForProfile(profile()));
+}
+
+// Test the IsActiveDirectoryUserForProfile() function for AD accounts.
+TEST_F(ChromeArcUtilTest, IsActiveDirectoryUserForProfile_AD) {
+  ScopedLogIn login(GetFakeUserManager(),
+                    AccountId::AdFromUserEmailObjGuid(
+                        profile()->GetProfileUserName(), kTestGaiaId));
+  EXPECT_TRUE(IsActiveDirectoryUserForProfile(profile()));
+}
+
 }  // namespace util
 }  // namespace arc

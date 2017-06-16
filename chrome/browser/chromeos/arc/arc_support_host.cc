@@ -112,6 +112,8 @@ std::ostream& operator<<(std::ostream& os, ArcSupportHost::UIPage ui_page) {
       return os << "LSO";
     case ArcSupportHost::UIPage::ARC_LOADING:
       return os << "ARC_LOADING";
+    case ArcSupportHost::UIPage::AD_AUTH_NOTIFICATION:
+      return os << "AD_AUTH_NOTIFICATION";
     case ArcSupportHost::UIPage::ERROR:
       return os << "ERROR";
   }
@@ -236,6 +238,10 @@ void ArcSupportHost::ShowArcLoading() {
   ShowPage(UIPage::ARC_LOADING);
 }
 
+void ArcSupportHost::ShowActiveDirectoryAuthNotification() {
+  ShowPage(UIPage::AD_AUTH_NOTIFICATION);
+}
+
 void ArcSupportHost::ShowPage(UIPage ui_page) {
   ui_page_ = ui_page;
   if (!message_host_) {
@@ -261,6 +267,9 @@ void ArcSupportHost::ShowPage(UIPage ui_page) {
       break;
     case UIPage::ARC_LOADING:
       message.SetString(kPage, "arc-loading");
+      break;
+    case UIPage::AD_AUTH_NOTIFICATION:
+      message.SetString(kPage, "ad-auth-notification");
       break;
     default:
       NOTREACHED();
@@ -441,6 +450,9 @@ bool ArcSupportHost::Initialize() {
       "buttonCancel",
       l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_DIALOG_BUTTON_CANCEL));
   loadtime_data->SetString(
+      "buttonNext",
+      l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_DIALOG_BUTTON_NEXT));
+  loadtime_data->SetString(
       "buttonSendFeedback",
       l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_DIALOG_BUTTON_SEND_FEEDBACK));
   loadtime_data->SetString(
@@ -497,6 +509,9 @@ bool ArcSupportHost::Initialize() {
   loadtime_data->SetString(
       "privacyPolicyLink",
       l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_PRIVACY_POLICY_LINK));
+  loadtime_data->SetString(
+      "adAuthNotification",
+      l10n_util::GetStringUTF16(IDS_ARC_OPT_IN_AD_AUTH_NOTIFICATION));
 
   loadtime_data->SetBoolean(kArcManaged, is_arc_managed_);
   loadtime_data->SetBoolean("isOwnerProfile",

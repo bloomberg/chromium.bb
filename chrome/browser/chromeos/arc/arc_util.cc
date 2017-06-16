@@ -253,6 +253,12 @@ bool AreArcAllOptInPreferencesManagedForProfile(const Profile* profile) {
              prefs::kArcLocationServiceEnabled);
 }
 
+bool IsActiveDirectoryUserForProfile(const Profile* profile) {
+  const user_manager::User* user =
+      chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
+  return user ? user->IsActiveDirectoryUser() : false;
+}
+
 void UpdateArcFileSystemCompatibilityPrefIfNeeded(
     const AccountId& account_id,
     const base::FilePath& profile_path,

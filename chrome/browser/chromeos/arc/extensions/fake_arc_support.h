@@ -32,9 +32,11 @@ class FakeArcSupport : public extensions::NativeMessageHost::Client {
   void EmulateAuthCodeResponse(const std::string& auth_code);
   void EmulateAuthFailure();
 
-  // Terms of service page emulation.
-  // Emulates clicking Agree button.
+  // Emulates clicking Agree button on the fake terms of service page.
   void ClickAgreeButton();
+
+  // Emulates clicking Next button on the fake Active Directory auth page.
+  void ClickAdAuthNextButton();
 
   bool metrics_mode() const { return metrics_mode_; }
   bool backup_and_restore_mode() const { return backup_and_restore_mode_; }
@@ -60,7 +62,6 @@ class FakeArcSupport : public extensions::NativeMessageHost::Client {
   // extensions::NativeMessageHost::Client:
   void PostMessageFromNativeHost(const std::string& message) override;
   void CloseChannel(const std::string& error_message) override;
-  void OnMessage(const base::DictionaryValue& message);
 
   ArcSupportHost* const support_host_;
 
