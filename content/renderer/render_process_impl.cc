@@ -27,6 +27,7 @@
 #include "base/task_scheduler/initialization_util.h"
 #include "base/time/time.h"
 #include "content/child/site_isolation_stats_gatherer.h"
+#include "content/common/task_scheduler.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
@@ -92,8 +93,9 @@ GetDefaultTaskSchedulerInitParams() {
                                       kSuggestedReclaimTime),
       base::SchedulerWorkerPoolParams(
           StandbyThreadPolicy::LAZY,
-          std::max(kMaxNumThreadsInForegroundPoolLowerBound,
-                   base::SysInfo::NumberOfProcessors()),
+          std::max(
+              kMaxNumThreadsInForegroundPoolLowerBound,
+              content::GetMinThreadsInRendererTaskSchedulerForegroundPool()),
           kSuggestedReclaimTime),
       base::SchedulerWorkerPoolParams(StandbyThreadPolicy::LAZY,
                                       kMaxNumThreadsInForegroundBlockingPool,

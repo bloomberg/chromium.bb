@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/files/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/timer/timer.h"
@@ -190,6 +191,8 @@ class CONTENT_EXPORT BrowserMainLoop {
 #endif
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(BrowserMainLoopTest, CreateThreadsInSingleProcess);
+
   void InitializeMainThread();
 
   // Called just before creating the threads
