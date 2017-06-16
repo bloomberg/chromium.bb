@@ -314,7 +314,7 @@ IntRect PaintLayerScrollableArea::ScrollCornerRect() const {
   // (b) Both scrollbars are present.
   bool has_horizontal_bar = HorizontalScrollbar();
   bool has_vertical_bar = VerticalScrollbar();
-  bool has_resizer = Box().Style()->Resize() != RESIZE_NONE;
+  bool has_resizer = Box().Style()->Resize() != EResize::kNone;
   if ((has_horizontal_bar && has_vertical_bar) ||
       (has_resizer && (has_horizontal_bar || has_vertical_bar))) {
     return CornerRect(
@@ -1468,7 +1468,7 @@ bool PaintLayerScrollableArea::HitTestOverflowControls(
     return false;
 
   IntRect resize_control_rect;
-  if (Box().Style()->Resize() != RESIZE_NONE) {
+  if (Box().Style()->Resize() != EResize::kNone) {
     resize_control_rect = ResizerCornerRect(
         Box().PixelSnappedBorderBoxRect(Layer()->SubpixelAccumulation()),
         kResizerForPointer);
@@ -1522,7 +1522,7 @@ bool PaintLayerScrollableArea::HitTestOverflowControls(
 IntRect PaintLayerScrollableArea::ResizerCornerRect(
     const IntRect& bounds,
     ResizerHitTestType resizer_hit_test_type) const {
-  if (Box().Style()->Resize() == RESIZE_NONE)
+  if (Box().Style()->Resize() == EResize::kNone)
     return IntRect();
   IntRect corner =
       CornerRect(Box(), HorizontalScrollbar(), VerticalScrollbar(), bounds);
@@ -1699,7 +1699,7 @@ void PaintLayerScrollableArea::Resize(const IntPoint& pos,
       Box().Style()->BoxSizing() == EBoxSizing::kBorderBox;
 
   EResize resize = Box().Style()->Resize();
-  if (resize != RESIZE_VERTICAL && difference.Width()) {
+  if (resize != EResize::kVertical && difference.Width()) {
     if (element->IsFormControlElement()) {
       // Make implicit margins from the theme explicit (see
       // <http://bugs.webkit.org/show_bug.cgi?id=9547>).
@@ -1719,7 +1719,7 @@ void PaintLayerScrollableArea::Resize(const IntPoint& pos,
                                     CSSPrimitiveValue::UnitType::kPixels);
   }
 
-  if (resize != RESIZE_HORIZONTAL && difference.Height()) {
+  if (resize != EResize::kHorizontal && difference.Height()) {
     if (element->IsFormControlElement()) {
       // Make implicit margins from the theme explicit (see
       // <http://bugs.webkit.org/show_bug.cgi?id=9547>).

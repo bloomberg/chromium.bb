@@ -1165,11 +1165,13 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // resize
-  static EResize InitialResize() { return RESIZE_NONE; }
+  static EResize InitialResize() { return EResize::kNone; }
   EResize Resize() const {
     return static_cast<EResize>(rare_non_inherited_data_->resize_);
   }
-  void SetResize(EResize r) { SET_VAR(rare_non_inherited_data_, resize_, r); }
+  void SetResize(EResize r) {
+    SET_VAR(rare_non_inherited_data_, resize_, static_cast<unsigned>(r));
+  }
 
   // Transform properties.
   // transform (aka -webkit-transform)
@@ -3210,7 +3212,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   bool HasBoxDecorations() const {
     return HasBorderDecoration() || HasBorderRadius() || HasOutline() ||
            HasAppearance() || BoxShadow() || HasFilterInducingProperty() ||
-           HasBackdropFilter() || Resize() != RESIZE_NONE;
+           HasBackdropFilter() || Resize() != EResize::kNone;
   }
 
   // "Box decoration background" includes all box decorations and backgrounds

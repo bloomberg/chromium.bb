@@ -920,16 +920,16 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EResize e)
     : CSSValue(kIdentifierClass) {
   switch (e) {
-    case RESIZE_BOTH:
+    case EResize::kBoth:
       value_id_ = CSSValueBoth;
       break;
-    case RESIZE_HORIZONTAL:
+    case EResize::kHorizontal:
       value_id_ = CSSValueHorizontal;
       break;
-    case RESIZE_VERTICAL:
+    case EResize::kVertical:
       value_id_ = CSSValueVertical;
       break;
-    case RESIZE_NONE:
+    case EResize::kNone:
       value_id_ = CSSValueNone;
       break;
   }
@@ -939,23 +939,23 @@ template <>
 inline EResize CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueBoth:
-      return RESIZE_BOTH;
+      return EResize::kBoth;
     case CSSValueHorizontal:
-      return RESIZE_HORIZONTAL;
+      return EResize::kHorizontal;
     case CSSValueVertical:
-      return RESIZE_VERTICAL;
+      return EResize::kVertical;
     case CSSValueAuto:
       // Depends on settings, thus should be handled by the caller.
       NOTREACHED();
-      return RESIZE_NONE;
+      return EResize::kNone;
     case CSSValueNone:
-      return RESIZE_NONE;
+      return EResize::kNone;
     default:
       break;
   }
 
   NOTREACHED();
-  return RESIZE_NONE;
+  return EResize::kNone;
 }
 
 template <>

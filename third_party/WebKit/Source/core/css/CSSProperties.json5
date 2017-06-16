@@ -1965,11 +1965,10 @@
     {
       name: "resize",
       custom_value: true,
-      type_name: "EResize",
       field_template: "storage_only",
       field_group: "rare-non-inherited",
       field_size: 2,
-      default_value: "RESIZE_NONE",
+      default_value: "EResize::kNone",
     },
     {
       name: "right",
