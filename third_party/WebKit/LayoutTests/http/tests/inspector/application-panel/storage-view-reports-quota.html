@@ -1,0 +1,62 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../resources-test.js"></script>
+<script src="../console-test.js"></script>
+<script src="../indexeddb/indexeddb-test.js"></script>
+<script>
+async function test() {
+  var updateListener = null;
+
+  async function writeArray() {
+    var array = [];
+    for (var i = 0; i < 5000000; i++)
+      array.push(i % 10);
+    var mainFrameId = InspectorTest.resourceTreeModel.mainFrame.id;
+    await new Promise(resolve => InspectorTest.createDatabase(mainFrameId, 'Database1', resolve));
+    await new Promise(resolve => InspectorTest.createObjectStore(mainFrameId, 'Database1', 'Store1', 'id', true, resolve));
+    await new Promise(resolve => InspectorTest.addIDBValue(mainFrameId, 'Database1', 'Store1', {key: 1, value: array}, '', resolve));
+  }
+
+  async function dumpWhenMatches(view, predicate) {
+    await new Promise(resolve => {
+      function sniffer(usage, quota) {
+        if (usage !== null && (!predicate || predicate(usage, quota)))
+          resolve();
+        else
+          InspectorTest.addSniffer(clearStorageView, '_usageUpdatedForTest', sniffer);
+      }
+      sniffer(null);
+    });
+    // Quota will vary between setups, rather strip it altogether
+    var clean = view._quotaRow.innerHTML.replace(/\&nbsp;/g, ' ');
+    var quotaStripped = clean.replace(/(.*) \d+ .?B([^\d]*)/, '$1 -$2');
+    InspectorTest.addResult(quotaStripped);
+  }
+  UI.viewManager.showView('resources');
+
+  var parent = UI.panels.resources._sidebar._applicationTreeElement;
+  var clearStorageElement = parent.children().find(child => child.title === 'Clear storage');
+
+  InspectorTest.addResult('Tree element found: ' + !!clearStorageElement);
+  clearStorageElement.select();
+
+  var clearStorageView = UI.panels.resources.visibleView;
+  InspectorTest.addResult("Clear storage view is visible: " + (clearStorageView instanceof Resources.ClearStorageView));
+
+  clearStorageView._clearButton.click();
+  await dumpWhenMatches(clearStorageView, usage => usage === 0);
+
+  InspectorTest.markStep('Now with data');
+
+  await writeArray();
+  await dumpWhenMatches(clearStorageView, usage => usage > 5000000);
+
+  InspectorTest.completeTest();
+}
+</script>
+</head>
+<body onload="runTest()">
+  <p>Tests quota reporting.</p>
+</body>
+</html>
