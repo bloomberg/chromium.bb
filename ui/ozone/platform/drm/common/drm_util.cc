@@ -209,10 +209,10 @@ DisplayMode_Params GetDisplayModeParams(const display::DisplayMode& mode) {
   return params;
 }
 
-std::unique_ptr<const display::DisplayMode> CreateDisplayModeFromParams(
+std::unique_ptr<display::DisplayMode> CreateDisplayModeFromParams(
     const DisplayMode_Params& pmode) {
-  return base::MakeUnique<const display::DisplayMode>(
-      pmode.size, pmode.is_interlaced, pmode.refresh_rate);
+  return base::MakeUnique<display::DisplayMode>(pmode.size, pmode.is_interlaced,
+                                                pmode.refresh_rate);
 }
 
 const gfx::Size ModeSize(const drmModeModeInfo& mode) {

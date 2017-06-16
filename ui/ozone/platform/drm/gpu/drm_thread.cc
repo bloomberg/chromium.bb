@@ -239,7 +239,7 @@ void DrmThread::RefreshNativeDisplays(
 
 void DrmThread::ConfigureNativeDisplay(
     int64_t id,
-    std::unique_ptr<const display::DisplayMode> mode,
+    std::unique_ptr<display::DisplayMode> mode,
     const gfx::Point& origin,
     base::OnceCallback<void(int64_t, bool)> callback) {
   std::move(callback).Run(

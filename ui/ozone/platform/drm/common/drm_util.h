@@ -81,7 +81,7 @@ gfx::Size GetMaximumCursorSize(int fd);
 
 DisplayMode_Params GetDisplayModeParams(const display::DisplayMode& mode);
 
-std::unique_ptr<const display::DisplayMode> CreateDisplayModeFromParams(
+std::unique_ptr<display::DisplayMode> CreateDisplayModeFromParams(
     const DisplayMode_Params& pmode);
 
 bool MatchMode(const display::DisplayMode& display_mode,
