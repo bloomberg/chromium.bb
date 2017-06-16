@@ -92,6 +92,14 @@ TEST_F(TabManagerWebContentsDataTest, LastInactiveTime) {
   EXPECT_EQ(now, tab_data()->LastInactiveTime());
 }
 
+TEST_F(TabManagerWebContentsDataTest, TabLoadingState) {
+  EXPECT_EQ(TAB_IS_NOT_LOADING, tab_data()->tab_loading_state());
+  tab_data()->SetTabLoadingState(TAB_IS_LOADING);
+  EXPECT_EQ(TAB_IS_LOADING, tab_data()->tab_loading_state());
+  tab_data()->SetTabLoadingState(TAB_IS_LOADED);
+  EXPECT_EQ(TAB_IS_LOADED, tab_data()->tab_loading_state());
+}
+
 TEST_F(TabManagerWebContentsDataTest, CopyState) {
   std::unique_ptr<WebContents> web_contents2;
   auto* tab_data2 = CreateWebContentsAndTabData(&web_contents2);

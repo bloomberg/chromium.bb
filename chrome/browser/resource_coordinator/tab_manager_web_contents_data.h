@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/browser/resource_coordinator/tab_manager.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -21,6 +22,25 @@ class WebContents;
 
 namespace resource_coordinator {
 
+// Tabs (WebContentsData) start in the not loading state, and transition to the
+// loading state when a navigation begins in the main frame of the associated
+// WebContents. The state changes to loaded when we receive the DidStopLoading*
+// signal. The state can change from loaded to loading if another navigation
+// occurs in the main frame, which happens if the user navigates to a new page
+// and the WebContents is reused.
+//
+// TODO(shaseley): *switch to the new done signal (network and cpu quiescence)
+// when available.
+//
+// TODO(shaseley): This will become an UMA histogram once the TabManager is
+// aware of session restore begin/end and background tab loading begin/end.
+enum TabLoadingState {
+  TAB_IS_NOT_LOADING = 0,
+  TAB_IS_LOADING = 1,
+  TAB_IS_LOADED = 2,
+  TAB_LOADING_STATE_MAX,
+};
+
 // Internal class used by TabManager to record the needed data for
 // WebContentses.
 class TabManager::WebContentsData
@@ -32,6 +52,9 @@ class TabManager::WebContentsData
 
   // WebContentsObserver implementation:
   void DidStartLoading() override;
+  void DidStopLoading() override;
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override;
   void WebContentsDestroyed() override;
 
   // Returns true if the tab has been discarded to save memory.
@@ -97,9 +120,15 @@ class TabManager::WebContentsData
   // Returns the time to first purge after the tab is backgrounded.
   base::TimeDelta time_to_purge() const { return time_to_purge_; }
 
+  // Returns the TabLoadingState of the tab.
+  TabLoadingState tab_loading_state() const {
+    return tab_data_.tab_loading_state;
+  }
+
  private:
   // Needed to access tab_data_.
   FRIEND_TEST_ALL_PREFIXES(TabManagerWebContentsDataTest, CopyState);
+  FRIEND_TEST_ALL_PREFIXES(TabManagerWebContentsDataTest, TabLoadingState);
 
   struct Data {
     Data();
@@ -125,11 +154,18 @@ class TabManager::WebContentsData
     double engagement_score;
     // Is tab eligible for auto discarding? Defaults to true.
     bool is_auto_discardable;
+    // Current loading state of this tab.
+    TabLoadingState tab_loading_state;
   };
 
   // Returns either the system's clock or the test clock. See |test_tick_clock_|
   // for more details.
   base::TimeTicks NowTicks() const;
+
+  // Sets the tab loading state.
+  void SetTabLoadingState(TabLoadingState state) {
+    tab_data_.tab_loading_state = state;
+  }
 
   // Contains all the needed data for the tab.
   Data tab_data_;
