@@ -10,9 +10,9 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/lib/message_builder.h"
 #include "mojo/public/cpp/bindings/lib/serialization.h"
 #include "mojo/public/cpp/bindings/lib/validation_util.h"
+#include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/interfaces/bindings/interface_control_messages.mojom.h"
 
 namespace mojo {
@@ -118,16 +118,15 @@ bool ControlMessageHandler::Run(
   size_t size =
       PrepareToSerialize<interface_control::RunResponseMessageParamsDataView>(
           response_params_ptr, &context_);
-  MessageBuilder builder(interface_control::kRunMessageId,
-                         Message::kFlagIsResponse, size, 0);
-  builder.message()->set_request_id(message->request_id());
-
+  Message response_message(interface_control::kRunMessageId,
+                           Message::kFlagIsResponse, size, 0);
+  response_message.set_request_id(message->request_id());
   interface_control::internal::RunResponseMessageParams_Data* response_params =
       nullptr;
   Serialize<interface_control::RunResponseMessageParamsDataView>(
-      response_params_ptr, builder.buffer(), &response_params, &context_);
-  ignore_result(responder->Accept(builder.message()));
-
+      response_params_ptr, response_message.payload_buffer(), &response_params,
+      &context_);
+  ignore_result(responder->Accept(&response_message));
   return true;
 }
 

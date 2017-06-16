@@ -143,24 +143,22 @@ class SimpleMessage : public TestMessageBase {
 };
 
 TEST_F(MessageTest, InvalidMessageObjects) {
-  // null message
   ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
             MojoFreeMessage(MOJO_MESSAGE_HANDLE_INVALID));
 
-  // null message
   ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
             MojoGetSerializedMessageContents(
                 MOJO_MESSAGE_HANDLE_INVALID, nullptr, nullptr, nullptr, nullptr,
                 MOJO_GET_SERIALIZED_MESSAGE_CONTENTS_FLAG_NONE));
 
-  // null message
   ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
             MojoSerializeMessage(MOJO_MESSAGE_HANDLE_INVALID));
 
-  // Non-zero num_handles with null handles array.
-  ASSERT_EQ(
-      MOJO_RESULT_INVALID_ARGUMENT,
-      MojoAllocMessage(0, nullptr, 1, MOJO_ALLOC_MESSAGE_FLAG_NONE, nullptr));
+  MojoMessageHandle message_handle;
+  ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+            MojoCreateMessage(0, nullptr, &message_handle));
+  ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+            MojoCreateMessage(1234, nullptr, nullptr));
 }
 
 TEST_F(MessageTest, SendLocalMessageWithContext) {
