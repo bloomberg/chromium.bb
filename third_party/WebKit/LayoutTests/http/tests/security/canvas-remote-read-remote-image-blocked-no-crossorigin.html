@@ -10,32 +10,62 @@ log = function(msg)
     document.getElementById('console').appendChild(document.createTextNode(msg + "\n"));
 }
 
-testGetImageData = function(context, description)
+testGetImageData = function(context, description, expectTainted)
 {
-    description = "Calling getImageData() from a canvas tainted by a " + description;
+    if (expectTainted) {
+        description = "Calling getImageData() from a canvas tainted by a " + description;
+    } else {
+        description = "Calling getImageData() from an untainted canvas";
+    }
     try {
         var imageData = context.getImageData(0,0,100,100);
-        log("FAIL: " + description + " was allowed.");
+        if (expectTainted) {
+            log("FAIL: " + description + " was allowed.");
+        } else {
+            log("PASS: " + description + " was allowed.");
+        }
     } catch (e) {
-        log("PASS: " + description + " was not allowed - Threw error: " + e + ".");
+        if (expectTainted) {
+            log("PASS: " + description + " was not allowed - Threw error: " + e + ".");
+        } else {
+            log("FAIL: " + description + " was not allowed - Threw error: " + e + ".");
+        }
     }
 }
 
-testToDataURL = function(canvas, description)
+testToDataURL = function(canvas, description, expectTainted)
 {
-    description = "Calling toDataURL() on a canvas tainted by a " + description;
+    if (expectTainted) {
+        description = "Calling toDataURL() from a canvas tainted by a " + description;
+    } else {
+        description = "Calling toDataURL() from an untainted canvas";
+    }
     try {
-        var dataURL = canvas.toDataURL();
-        log("FAIL: " + description + " was allowed.");
+        var imageData = canvas.toDataURL();
+        if (expectTainted) {
+            log("FAIL: " + description + " was allowed.");
+        } else {
+            log("PASS: " + description + " was allowed.");
+        }
     } catch (e) {
-        log("PASS: " + description + " was not allowed - Threw error: " + e + ".");
+        if (expectTainted) {
+            log("PASS: " + description + " was not allowed - Threw error: " + e + ".");
+        } else {
+            log("FAIL: " + description + " was not allowed - Threw error: " + e + ".");
+        }
     }
 }
 
-test = function(canvas, description)
+testTainted = function(canvas, description)
 {
-    testGetImageData(canvas.getContext("2d"), description);
-    testToDataURL(canvas, description);
+    testGetImageData(canvas.getContext("2d"), description, true);
+    testToDataURL(canvas, description, true);
+}
+
+testUntainted = function(canvas)
+{
+    testGetImageData(canvas.getContext("2d"), "", false);
+    testToDataURL(canvas, "", false);
 }
 
 var image = new Image();
@@ -47,25 +77,14 @@ image.onload = function() {
 
     // Control tests
     log("Untainted canvas:");
-    try {
-        var imageData = context.getImageData(0, 0, 100, 100);
-        log("PASS: Calling getImageData() from an untainted canvas was allowed.");
-    } catch (e) {
-        log("FAIL: Calling getImageData() from an untainted canvas was not allowed: Threw error: " + e + ".");
-    }
-    try {
-        var dataURL = canvas.toDataURL();
-        log("PASS: Calling toDataURL() on an untainted canvas was allowed.");
-    } catch (e) {
-        log("FAIL: Calling toDataURL() on an untainted canvas was not allowed: Threw error: " + e + ".");
-    }
+    testUntainted(canvas);
 
     log("\n");
     log("Tainted canvas:");
     // Test reading from a canvas after drawing a remote image onto it
     context.drawImage(image, 0, 0, 100, 100);
 
-    test(canvas, "remote image");
+    testTainted(canvas, "remote image");
 
     var dirtyCanvas = canvas;
 
@@ -73,32 +92,35 @@ image.onload = function() {
     canvas = document.createElement("canvas");
     canvas.width = 100;
     canvas.height = 100;
+    testUntainted(canvas);
     var context = canvas.getContext("2d");
     context.drawImage(dirtyCanvas, 0, 0, 100, 100);
 
-    test(canvas, "tained canvas");
+    testTainted(canvas, "tained canvas");
 
     // Test reading after using a tainted pattern
     canvas = document.createElement("canvas");
     canvas.width = 100;
     canvas.height = 100;
+    testUntainted(canvas);
     var context = canvas.getContext("2d");
     var remoteImagePattern = context.createPattern(image, "repeat");
     context.fillStyle = remoteImagePattern;
     context.fillRect(0, 0, 100, 100);
 
-    test(canvas, "remote image tainted pattern");
+    testTainted(canvas, "remote image tainted pattern");
 
     // Test reading after using a tainted pattern
     canvas = document.createElement("canvas");
     canvas.width = 100;
     canvas.height = 100;
+    testUntainted(canvas);
     var context = canvas.getContext("2d");
     var taintedCanvasPattern = context.createPattern(dirtyCanvas, "repeat");
     context.fillStyle = taintedCanvasPattern;
     context.fillRect(0, 0, 100, 100);
 
-    test(canvas, "tainted canvas pattern");
+    testTainted(canvas, "tainted canvas pattern");
 
     if (window.testRunner)
         testRunner.notifyDone();
