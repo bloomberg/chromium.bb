@@ -252,7 +252,7 @@ void Predictor::PreconnectUrlAndSubresources(const GURL& url,
   UrlInfo::ResolutionMotivation motivation(UrlInfo::EARLY_LOAD_MOTIVATED);
   const int kConnectionsNeeded = 1;
   PreconnectUrl(canonicalized_url, first_party_for_cookies, motivation,
-                kConnectionsNeeded, kAllowCredentialsOnPreconnectByDefault);
+                kAllowCredentialsOnPreconnectByDefault, kConnectionsNeeded);
   PredictFrameSubresources(canonicalized_url.GetWithEmptyPath(),
                            first_party_for_cookies);
 }
