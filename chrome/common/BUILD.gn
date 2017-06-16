@@ -196,6 +196,7 @@ static_library("common") {
     "//chrome/common:constants",
     "//chrome/common/media_router/mojo:dial_utility_interfaces",
     "//chrome/common/net",
+    "//chrome/common/profiling",
     "//chrome/common/safe_browsing:proto",
     "//chrome/installer/util:with_no_strings",
     "//components/autofill/content/common:ipc_traits",

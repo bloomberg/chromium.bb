@@ -1,0 +1,27 @@
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//chrome/common/features.gni")
+
+if (enable_oop_heap_profiling) {
+  static_library("profiling") {
+    sources = [
+      "memlog_sender_pipe.h",
+      "memlog_sender_pipe_win.cc",
+      "memlog_sender_pipe_win.h",
+      "memlog_stream.cc",
+      "memlog_stream.h",
+    ]
+
+    deps = [
+      "//base",
+      "//base:debugging_flags",
+      "//chrome/common:constants",
+    ]
+  }
+} else {
+  # Dummy group so this target can be unconditionally depended on.
+  group("profiling") {
+  }
+}
