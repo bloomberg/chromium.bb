@@ -164,15 +164,6 @@ content::BrowserContext* CastChannelAPI::GetBrowserContext() const {
   return browser_context_;
 }
 
-void CastChannelAPI::SetPingTimeoutTimerForTest(
-    std::unique_ptr<base::Timer> timer) {
-  injected_timeout_timer_ = std::move(timer);
-}
-
-std::unique_ptr<base::Timer> CastChannelAPI::GetInjectedTimeoutTimerForTest() {
-  return std::move(injected_timeout_timer_);
-}
-
 CastChannelAPI::~CastChannelAPI() {}
 
 CastChannelAsyncApiFunction::CastChannelAsyncApiFunction()
@@ -297,7 +288,7 @@ void CastChannelOpenFunction::AsyncWorkStart() {
         base::TimeDelta::FromMilliseconds(connect_info.timeout.get()
                                               ? *connect_info.timeout
                                               : kDefaultConnectTimeoutMillis),
-        liveness_timeout_ > base::TimeDelta(), api_->GetLogger(),
+        liveness_timeout_, ping_interval_, api_->GetLogger(),
         connect_info.capabilities.get() ? *connect_info.capabilities
                                         : CastDeviceCapability::NONE);
   }
@@ -309,20 +300,6 @@ void CastChannelOpenFunction::AsyncWorkStart() {
           base::Bind(&CastChannelAPI::SendEvent, api_->AsWeakPtr(),
                      extension_->id()),
           socket, api_->GetLogger()));
-  if (socket->keep_alive()) {
-    // Wrap read delegate in a KeepAliveDelegate for timeout handling.
-    KeepAliveDelegate* keep_alive =
-        new KeepAliveDelegate(socket, api_->GetLogger(), std::move(delegate),
-                              ping_interval_, liveness_timeout_);
-    std::unique_ptr<base::Timer> injected_timer =
-        api_->GetInjectedTimeoutTimerForTest();
-    if (injected_timer) {
-      keep_alive->SetTimersForTest(base::MakeUnique<base::Timer>(false, false),
-                                   std::move(injected_timer));
-    }
-    delegate.reset(keep_alive);
-  }
-
   socket->Connect(std::move(delegate),
                   base::Bind(&CastChannelOpenFunction::OnOpen, this));
 }

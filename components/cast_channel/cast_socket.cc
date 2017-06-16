@@ -26,6 +26,7 @@
 #include "components/cast_channel/cast_framer.h"
 #include "components/cast_channel/cast_message_util.h"
 #include "components/cast_channel/cast_transport.h"
+#include "components/cast_channel/keep_alive_delegate.h"
 #include "components/cast_channel/logger.h"
 #include "components/cast_channel/proto/cast_channel.pb.h"
 #include "net/base/address_list.h"
@@ -87,29 +88,33 @@ class FakeCertVerifier : public net::CertVerifier {
 
 CastSocketImpl::CastSocketImpl(const net::IPEndPoint& ip_endpoint,
                                net::NetLog* net_log,
-                               const base::TimeDelta& timeout,
-                               bool keep_alive,
+                               base::TimeDelta timeout,
+                               base::TimeDelta liveness_timeout,
+                               base::TimeDelta ping_interval,
                                const scoped_refptr<Logger>& logger,
                                uint64_t device_capabilities)
     : CastSocketImpl(ip_endpoint,
                      net_log,
                      timeout,
-                     keep_alive,
+                     liveness_timeout,
+                     ping_interval,
                      logger,
                      device_capabilities,
                      AuthContext::Create()) {}
 
 CastSocketImpl::CastSocketImpl(const net::IPEndPoint& ip_endpoint,
                                net::NetLog* net_log,
-                               const base::TimeDelta& timeout,
-                               bool keep_alive,
+                               base::TimeDelta timeout,
+                               base::TimeDelta liveness_timeout,
+                               base::TimeDelta ping_interval,
                                const scoped_refptr<Logger>& logger,
                                uint64_t device_capabilities,
                                const AuthContext& auth_context)
     : channel_id_(0),
       ip_endpoint_(ip_endpoint),
       net_log_(net_log),
-      keep_alive_(keep_alive),
+      liveness_timeout_(liveness_timeout),
+      ping_interval_(ping_interval),
       logger_(logger),
       auth_context_(auth_context),
       connect_timeout_(timeout),
@@ -156,7 +161,7 @@ void CastSocketImpl::set_id(int id) {
 }
 
 bool CastSocketImpl::keep_alive() const {
-  return keep_alive_;
+  return liveness_timeout_ > base::TimeDelta();
 }
 
 bool CastSocketImpl::audio_only() const {
@@ -529,6 +534,12 @@ void CastSocketImpl::DoConnectCallback() {
 
   if (error_state_ == ChannelError::NONE) {
     SetReadyState(ReadyState::OPEN);
+    if (keep_alive()) {
+      auto* keep_alive_delegate =
+          new KeepAliveDelegate(this, logger_, std::move(delegate_),
+                                ping_interval_, liveness_timeout_);
+      delegate_.reset(keep_alive_delegate);
+    }
     transport_->SetReadDelegate(std::move(delegate_));
   } else {
     CloseInternal();
