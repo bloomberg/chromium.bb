@@ -83,10 +83,12 @@ class MEDIA_EXPORT AudioManager {
   // like src/chrome.
   static AudioManager* Get();
 
-  // Releases all audio resources.
+  // Synchronously releases all audio resources.
   // Must be called before deletion and on the same thread as AudioManager
   // was created.
-  void Shutdown();
+  // Returns true on success but false if AudioManager could not be shutdown.
+  // AudioManager instance must not be deleted if shutdown failed.
+  bool Shutdown();
 
   // Log callback used for sending log messages from a stream to the object
   // that manages the stream.
