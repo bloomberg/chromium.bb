@@ -114,9 +114,7 @@
     // Can only be set if the field template is storage_only.
     wrapper_pointer_name: {
       valid_type: "str",
-      // TODO(shend): Remove DataRef once we generate all of
-      // StyleRareNonInheritedData.
-      valid_values: ["RefPtr", "Persistent", "std::unique_ptr", "DataPersistent", "DataRef"],
+      valid_values: ["RefPtr", "Persistent", "std::unique_ptr", "DataPersistent"],
     },
 
     // - keywords: ["keyword1", "keyword2"]
@@ -1279,6 +1277,10 @@
       api_class: "CSSPropertyAPIGridAutoLine",
       converter: "ConvertGridTrackSizeList",
       runtime_flag: "CSSGridLayout",
+      type_name: "Vector<GridTrackSize>",
+      field_template: "storage_only",
+      default_value: "Vector<GridTrackSize>(1, GridTrackSize(Length(kAuto)))",
+      field_group: "rare-non-inherited->grid",
     },
     {
       name: "grid-auto-flow",
@@ -1287,12 +1289,20 @@
       converter: "ConvertGridAutoFlow",
       runtime_flag: "CSSGridLayout",
       type_name: "GridAutoFlow",
+      field_template: "storage_only",
+      default_value: "kAutoFlowRow",
+      field_size: 4, // TODO(shend): Make this use "kGridAutoFlowBits".
+      field_group: "rare-non-inherited->grid",
     },
     {
       name: "grid-auto-rows",
       api_class: "CSSPropertyAPIGridAutoLine",
       converter: "ConvertGridTrackSizeList",
       runtime_flag: "CSSGridLayout",
+      type_name: "Vector<GridTrackSize>",
+      field_template: "storage_only",
+      default_value: "Vector<GridTrackSize>(1, GridTrackSize(Length(kAuto)))",
+      field_group: "rare-non-inherited->grid",
     },
     {
       name: "grid-column-end",
@@ -1308,6 +1318,10 @@
       name: "grid-column-gap",
       converter: "ConvertLength",
       runtime_flag: "CSSGridLayout",
+      type_name: "Length",
+      field_template: "storage_only",
+      default_value: "Length(kFixed)",
+      field_group: "rare-non-inherited->grid",
     },
     {
       name: "grid-column-start",
@@ -1333,6 +1347,10 @@
       name: "grid-row-gap",
       converter: "ConvertLength",
       runtime_flag: "CSSGridLayout",
+      type_name: "Length",
+      field_template: "storage_only",
+      default_value: "Length(kFixed)",
+      field_group: "rare-non-inherited->grid",
     },
     {
       name: "grid-row-start",
@@ -1355,12 +1373,20 @@
       api_class: "CSSPropertyAPIGridTemplateLine",
       custom_all: true,
       runtime_flag: "CSSGridLayout",
+      field_template: "storage_only",
+      type_name: "Vector<GridTrackSize>",
+      field_group: "rare-non-inherited->grid",
+      default_value: "Vector<GridTrackSize>()",
     },
     {
       name: "grid-template-rows",
       api_class: "CSSPropertyAPIGridTemplateLine",
       custom_all: true,
       runtime_flag: "CSSGridLayout",
+      field_template: "storage_only",
+      type_name: "Vector<GridTrackSize>",
+      field_group: "rare-non-inherited->grid",
+      default_value: "Vector<GridTrackSize>()",
     },
     {
       name: "height",
