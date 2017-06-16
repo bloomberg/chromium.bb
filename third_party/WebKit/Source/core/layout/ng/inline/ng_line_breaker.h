@@ -9,6 +9,7 @@
 #include "core/layout/ng/inline/ng_inline_item_result.h"
 #include "core/layout/ng/inline/ng_inline_node.h"
 #include "platform/fonts/shaping/HarfBuzzShaper.h"
+#include "platform/fonts/shaping/ShapeResultSpacing.h"
 #include "platform/heap/Handle.h"
 #include "platform/text/TextBreakIterator.h"
 #include "platform/wtf/Allocator.h"
@@ -78,7 +79,7 @@ class CORE_EXPORT NGLineBreaker {
   void HandleOverflow(LayoutUnit available_width, NGLineInfo*);
   void Rewind(NGLineInfo*, unsigned new_end);
 
-  void UpdateBreakIterator(const ComputedStyle&);
+  void SetCurrentStyle(const ComputedStyle&);
 
   void MoveToNextOf(const NGInlineItem&);
   void MoveToNextOf(const NGInlineItemResult&);
@@ -93,6 +94,7 @@ class CORE_EXPORT NGLineBreaker {
   LayoutUnit position_;
   LazyLineBreakIterator break_iterator_;
   HarfBuzzShaper shaper_;
+  ShapeResultSpacing<String> spacing_;
 
   unsigned auto_wrap_ : 1;
 };

@@ -66,7 +66,8 @@ NGLineBreaker::NGLineBreaker(NGInlineNode node,
       item_index_(0),
       offset_(0),
       break_iterator_(node.Text()),
-      shaper_(node.Text().Characters16(), node.Text().length()) {
+      shaper_(node.Text().Characters16(), node.Text().length()),
+      spacing_(node.Text()) {
   if (break_token) {
     item_index_ = break_token->ItemIndex();
     offset_ = break_token->TextOffset();
@@ -93,7 +94,7 @@ void NGLineBreaker::BreakLine(NGLineInfo* line_info,
   item_results->clear();
   const Vector<NGInlineItem>& items = node_.Items();
   line_info->SetLineStyle(node_, !item_index_ && !offset_);
-  UpdateBreakIterator(line_info->LineStyle());
+  SetCurrentStyle(line_info->LineStyle());
   position_ = LayoutUnit(0);
   LineBreakState state = LineBreakState::kNotBreakable;
 
@@ -257,7 +258,8 @@ void NGLineBreaker::BreakText(NGInlineItemResult* item_result,
   DCHECK_EQ(item.TextShapeResult()->StartIndexForResult(), item.StartOffset());
   DCHECK_EQ(item.TextShapeResult()->EndIndexForResult(), item.EndOffset());
   ShapingLineBreaker breaker(&shaper_, &item.Style()->GetFont(),
-                             item.TextShapeResult(), &break_iterator_);
+                             item.TextShapeResult(), &break_iterator_,
+                             &spacing_);
   available_width = std::max(LayoutUnit(0), available_width);
   item_result->shape_result = breaker.ShapeLine(
       item_result->start_offset, available_width, &item_result->end_offset);
@@ -429,7 +431,7 @@ void NGLineBreaker::HandleOpenTag(const NGInlineItem& item,
       position_ += item_result->inline_size;
     }
   }
-  UpdateBreakIterator(style);
+  SetCurrentStyle(style);
   MoveToNextOf(item);
 }
 
@@ -447,7 +449,7 @@ void NGLineBreaker::HandleCloseTag(const NGInlineItem& item,
     position_ += item_result->inline_size;
   }
   DCHECK(item.GetLayoutObject() && item.GetLayoutObject()->Parent());
-  UpdateBreakIterator(item.GetLayoutObject()->Parent()->StyleRef());
+  SetCurrentStyle(item.GetLayoutObject()->Parent()->StyleRef());
   MoveToNextOf(item);
 }
 
@@ -535,7 +537,7 @@ void NGLineBreaker::Rewind(NGLineInfo* line_info, unsigned new_end) {
   line_info->SetIsLastLine(false);
 }
 
-void NGLineBreaker::UpdateBreakIterator(const ComputedStyle& style) {
+void NGLineBreaker::SetCurrentStyle(const ComputedStyle& style) {
   auto_wrap_ = style.AutoWrap();
 
   if (auto_wrap_) {
@@ -552,6 +554,8 @@ void NGLineBreaker::UpdateBreakIterator(const ComputedStyle& style) {
 
     // TODO(kojii): Implement word-wrap/overflow-wrap property
   }
+
+  spacing_.SetSpacing(style.GetFontDescription());
 }
 
 void NGLineBreaker::MoveToNextOf(const NGInlineItem& item) {

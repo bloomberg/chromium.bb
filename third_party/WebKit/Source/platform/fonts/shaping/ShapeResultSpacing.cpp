@@ -65,7 +65,8 @@ void ShapeResultSpacing<TextRun>::SetSpacingAndExpansion(
 
   if (expansion_) {
     ComputeExpansion(text_.AllowsLeadingExpansion(),
-                     text_.AllowsTrailingExpansion(), text_.GetTextJustify());
+                     text_.AllowsTrailingExpansion(), text_.Direction(),
+                     text_.GetTextJustify());
   }
 }
 
@@ -73,6 +74,7 @@ template <typename TextContainerType>
 void ShapeResultSpacing<TextContainerType>::ComputeExpansion(
     bool allows_leading_expansion,
     bool allows_trailing_expansion,
+    TextDirection direction,
     TextJustify text_justify) {
   DCHECK_GT(expansion_, 0);
 
@@ -80,8 +82,15 @@ void ShapeResultSpacing<TextContainerType>::ComputeExpansion(
   is_after_expansion_ = !allows_leading_expansion;
 
   bool is_after_expansion = is_after_expansion_;
-  expansion_opportunity_count_ =
-      Character::ExpansionOpportunityCount(text_, is_after_expansion);
+  if (text_.Is8Bit()) {
+    expansion_opportunity_count_ = Character::ExpansionOpportunityCount(
+        text_.Characters8(), text_.length(), direction, is_after_expansion,
+        text_justify_);
+  } else {
+    expansion_opportunity_count_ = Character::ExpansionOpportunityCount(
+        text_.Characters16(), text_.length(), direction, is_after_expansion,
+        text_justify_);
+  }
   if (is_after_expansion && !allows_trailing_expansion) {
     DCHECK_GT(expansion_opportunity_count_, 0u);
     --expansion_opportunity_count_;
@@ -110,10 +119,18 @@ float ShapeResultSpacing<TextContainerType>::NextExpansion() {
   return expansion_per_opportunity_;
 }
 
+// Test if the |run| is the first sub-run of the original text container, for
+// containers that can create sub-runs such as TextRun or StringView.
 template <typename TextContainerType>
-bool ShapeResultSpacing<TextContainerType>::IsFirstRun(
+inline bool ShapeResultSpacing<TextContainerType>::IsFirstRun(
     const TextContainerType& run) const {
   return &run == &text_ || run.Bytes() == text_.Bytes();
+}
+
+template <>
+inline bool ShapeResultSpacing<String>::IsFirstRun(const String& run) const {
+  // String::Substring() should not be used because it copies to a new buffer.
+  return &run == &text_ || run.Impl() == text_.Impl();
 }
 
 template <typename TextContainerType>
@@ -175,6 +192,6 @@ float ShapeResultSpacing<TextContainerType>::ComputeSpacing(
 
 // Instantiate the template class.
 template class ShapeResultSpacing<TextRun>;
-template class ShapeResultSpacing<StringView>;
+template class ShapeResultSpacing<String>;
 
 }  // namespace blink

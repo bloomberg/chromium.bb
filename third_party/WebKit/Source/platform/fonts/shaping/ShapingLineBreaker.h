@@ -7,6 +7,7 @@
 
 #include "platform/LayoutUnit.h"
 #include "platform/PlatformExport.h"
+#include "platform/text/TextDirection.h"
 #include "platform/wtf/text/AtomicString.h"
 
 namespace blink {
@@ -16,6 +17,8 @@ class ShapeResult;
 class HarfBuzzShaper;
 class LazyLineBreakIterator;
 enum class LineBreakType;
+template <typename TextContainerType>
+class ShapeResultSpacing;
 
 // Shapes a line of text by finding the ideal break position as indicated by the
 // available space and the shape results for the entire paragraph. Once an ideal
@@ -34,7 +37,8 @@ class PLATFORM_EXPORT ShapingLineBreaker final {
   ShapingLineBreaker(const HarfBuzzShaper*,
                      const Font*,
                      const ShapeResult*,
-                     const LazyLineBreakIterator*);
+                     const LazyLineBreakIterator*,
+                     ShapeResultSpacing<String>* = nullptr);
   ~ShapingLineBreaker() {}
 
   // Shapes a line of text by finding a valid and appropriate break opportunity
@@ -45,6 +49,7 @@ class PLATFORM_EXPORT ShapingLineBreaker final {
                                     unsigned* break_offset);
 
  private:
+  PassRefPtr<ShapeResult> Shape(TextDirection, unsigned start, unsigned end);
   PassRefPtr<ShapeResult> ShapeToEnd(unsigned start,
                                      LayoutUnit start_position,
                                      unsigned range_end);
@@ -54,6 +59,9 @@ class PLATFORM_EXPORT ShapingLineBreaker final {
   const ShapeResult* result_;
   const LazyLineBreakIterator* break_iterator_;
   String text_;
+  // TODO(kojii): ShapeResultSpacing is not const because it's stateful when it
+  // has expansions. Split spacing and expansions to make this const.
+  ShapeResultSpacing<String>* spacing_;
 };
 
 }  // namespace blink

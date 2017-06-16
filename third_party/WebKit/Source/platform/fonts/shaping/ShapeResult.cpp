@@ -356,10 +356,9 @@ void ShapeResult::ApplySpacing(ShapeResultSpacing<TextContainerType>& spacing,
     glyph_bounding_box_.SetWidth(glyph_bounding_box_.Width() + total_space);
 }
 
-void ShapeResult::ApplySpacing(ShapeResultSpacing<StringView>& spacing,
-                               const StringView& text,
+void ShapeResult::ApplySpacing(ShapeResultSpacing<String>& spacing,
                                TextDirection direction) {
-  ApplySpacing(spacing, text, direction == TextDirection::kRtl);
+  ApplySpacing(spacing, spacing.Text(), IsRtl(direction));
 }
 
 PassRefPtr<ShapeResult> ShapeResult::ApplySpacingToCopy(

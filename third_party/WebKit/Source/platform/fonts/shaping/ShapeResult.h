@@ -91,9 +91,7 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
     return LayoutUnit::FromFloatCeil(PositionForOffset(offset));
   }
 
-  void ApplySpacing(ShapeResultSpacing<StringView>&,
-                    const StringView&,
-                    TextDirection);
+  void ApplySpacing(ShapeResultSpacing<String>&, TextDirection);
   PassRefPtr<ShapeResult> ApplySpacingToCopy(ShapeResultSpacing<TextRun>&,
                                              const TextRun&) const;
 

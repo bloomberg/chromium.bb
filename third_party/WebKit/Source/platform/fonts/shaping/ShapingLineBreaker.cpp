@@ -8,6 +8,7 @@
 #include "platform/fonts/shaping/HarfBuzzShaper.h"
 #include "platform/fonts/shaping/ShapeResult.h"
 #include "platform/fonts/shaping/ShapeResultInlineHeaders.h"
+#include "platform/fonts/shaping/ShapeResultSpacing.h"
 #include "platform/text/TextBreakIterator.h"
 
 namespace blink {
@@ -16,12 +17,18 @@ ShapingLineBreaker::ShapingLineBreaker(
     const HarfBuzzShaper* shaper,
     const Font* font,
     const ShapeResult* result,
-    const LazyLineBreakIterator* break_iterator)
+    const LazyLineBreakIterator* break_iterator,
+    ShapeResultSpacing<String>* spacing)
     : shaper_(shaper),
       font_(font),
       result_(result),
-      break_iterator_(break_iterator) {
+      break_iterator_(break_iterator),
+      spacing_(spacing) {
   text_ = String(shaper->GetText(), shaper->TextLength());
+
+  // ShapeResultSpacing is stateful when it has expansions. We may use it in
+  // arbitrary order that it cannot have expansions.
+  DCHECK(!spacing_ || !spacing_->HasExpansion());
 }
 
 namespace {
@@ -53,22 +60,34 @@ unsigned NextSafeToBreakBefore(const UChar* text,
 // ShapingLineBreaker computes using visual positions. This function flips
 // logical advance to visual, or vice versa.
 LayoutUnit FlipRtl(LayoutUnit value, TextDirection direction) {
-  return direction != TextDirection::kRtl ? value : -value;
+  return IsLtr(direction) ? value : -value;
 }
 
 // Snaps a visual position to the line start direction.
 LayoutUnit SnapStart(float value, TextDirection direction) {
-  return direction != TextDirection::kRtl ? LayoutUnit::FromFloatFloor(value)
-                                          : LayoutUnit::FromFloatCeil(value);
+  return IsLtr(direction) ? LayoutUnit::FromFloatFloor(value)
+                          : LayoutUnit::FromFloatCeil(value);
 }
 
 // Snaps a visual position to the line end direction.
 LayoutUnit SnapEnd(float value, TextDirection direction) {
-  return direction != TextDirection::kRtl ? LayoutUnit::FromFloatCeil(value)
-                                          : LayoutUnit::FromFloatFloor(value);
+  return IsLtr(direction) ? LayoutUnit::FromFloatCeil(value)
+                          : LayoutUnit::FromFloatFloor(value);
 }
 
 }  // namespace
+
+inline PassRefPtr<ShapeResult> ShapingLineBreaker::Shape(
+    TextDirection direction,
+    unsigned start,
+    unsigned end) {
+  if (!spacing_ || !spacing_->HasSpacing())
+    return shaper_->Shape(font_, direction, start, end);
+
+  RefPtr<ShapeResult> result = shaper_->Shape(font_, direction, start, end);
+  result->ApplySpacing(*spacing_, direction);
+  return result.Release();
+}
 
 // Shapes a line of text by finding a valid and appropriate break opportunity
 // based on the shaping results for the entire paragraph. Re-shapes the start
@@ -160,7 +179,7 @@ PassRefPtr<ShapeResult> ShapingLineBreaker::ShapeLine(
                         direction) -
                     start_position,
                 direction);
-    line_start_result = shaper_->Shape(font_, direction, start, first_safe);
+    line_start_result = Shape(direction, start, first_safe);
     available_space += line_start_result->SnappedWidth() - original_width;
   }
 
@@ -180,8 +199,7 @@ PassRefPtr<ShapeResult> ShapingLineBreaker::ShapeLine(
           result_->PositionForOffset(previous_safe - range_start), direction);
       while (break_opportunity > previous_safe && previous_safe >= start) {
         DCHECK_LE(break_opportunity, range_end);
-        line_end_result =
-            shaper_->Shape(font_, direction, previous_safe, break_opportunity);
+        line_end_result = Shape(direction, previous_safe, break_opportunity);
         if (line_end_result->SnappedWidth() <=
             FlipRtl(end_position - safe_position, direction))
           break;
@@ -247,11 +265,11 @@ PassRefPtr<ShapeResult> ShapingLineBreaker::ShapeToEnd(
     result_->CopyRange(start, range_end, line_result.Get());
   } else if (first_safe < range_end) {
     // Otherwise reshape to the first safe, then copy the rest.
-    line_result = shaper_->Shape(font_, direction, start, first_safe);
+    line_result = Shape(direction, start, first_safe);
     result_->CopyRange(first_safe, range_end, line_result.Get());
   } else {
     // If no safe-to-break in the ragne, reshape the whole range.
-    line_result = shaper_->Shape(font_, direction, start, range_end);
+    line_result = Shape(direction, start, range_end);
   }
   return line_result.Release();
 }
