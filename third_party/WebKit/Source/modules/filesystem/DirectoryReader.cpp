@@ -38,6 +38,15 @@
 
 namespace blink {
 
+namespace {
+
+void RunEntriesCallback(EntriesCallback* callback,
+                        HeapVector<Member<Entry>>* entries) {
+  callback->handleEvent(*entries);
+}
+
+}  // namespace
+
 class DirectoryReader::EntriesCallbackHelper final : public EntriesCallback {
  public:
   explicit EntriesCallbackHelper(DirectoryReader* reader) : reader_(reader) {}
@@ -103,11 +112,11 @@ void DirectoryReader::readEntries(EntriesCallback* entries_callback,
 
   if (!has_more_entries_ || !entries_.IsEmpty()) {
     if (entries_callback) {
+      auto entries = new HeapVector<Member<Entry>>(std::move(entries_));
       DOMFileSystem::ScheduleCallback(
           Filesystem()->GetExecutionContext(),
-          WTF::Bind(&EntriesCallback::handleEvent,
-                    WrapPersistent(entries_callback),
-                    PersistentHeapVector<Member<Entry>>(entries_)));
+          WTF::Bind(&RunEntriesCallback, WrapPersistent(entries_callback),
+                    WrapPersistent(entries)));
     }
     entries_.clear();
     return;
