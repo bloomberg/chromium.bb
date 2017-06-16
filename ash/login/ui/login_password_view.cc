@@ -7,7 +7,10 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/system/tray/size_range_layout.h"
 #include "ash/system/user/button_from_view.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/events/event_constants.h"
+#include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
@@ -98,6 +101,24 @@ LoginPasswordView::LoginPasswordView(const OnPasswordSubmit& on_submit)
 }
 
 LoginPasswordView::~LoginPasswordView() = default;
+
+void LoginPasswordView::AppendNumber(int value) {
+  textfield_->SetText(textfield_->text() + base::IntToString16(value));
+}
+
+void LoginPasswordView::Backspace() {
+  // Instead of just adjusting textfield_ text directly, fire a backspace key
+  // event as this handles the various edge cases (ie, selected text).
+
+  // views::Textfield::OnKeyPressed is private, so we call it via views::View.
+  auto* view = static_cast<views::View*>(textfield_);
+  view->OnKeyPressed(ui::KeyEvent(ui::ET_KEY_PRESSED, ui::VKEY_BACK,
+                                  ui::DomCode::BACKSPACE, ui::EF_NONE));
+  view->OnKeyPressed(ui::KeyEvent(ui::ET_KEY_RELEASED, ui::VKEY_BACK,
+                                  ui::DomCode::BACKSPACE, ui::EF_NONE));
+}
+
+void LoginPasswordView::Submit() {}
 
 const char* LoginPasswordView::GetClassName() const {
   return kLoginPasswordViewName;

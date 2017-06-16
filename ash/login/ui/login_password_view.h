@@ -48,6 +48,15 @@ class ASH_EXPORT LoginPasswordView : public views::View,
   explicit LoginPasswordView(const OnPasswordSubmit& on_submit);
   ~LoginPasswordView() override;
 
+  // Add the given numeric value to the textfield.
+  void AppendNumber(int value);
+
+  // Erase the last entered value.
+  void Backspace();
+
+  // Dispatch a submit event.
+  void Submit();
+
   // views::View:
   const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
