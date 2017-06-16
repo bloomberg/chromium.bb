@@ -3,6 +3,8 @@
 The bisect bot just picked your CL as the culprit in a performance regression
 and assigned a bug to you! What should you do? Read on...
 
+[TOC]
+
 ## About our performance tests
 
 The [chromium.perf waterfall](perf_waterfall.md) is a continuous build which
@@ -12,7 +14,7 @@ certain type of hardware or a certain operating system, which may be different
 than what you tested locally before landing your CL.
 
 Each test has an owner, named in
-[this spreasheet](https://docs.google.com/spreadsheets/d/1xaAo0_SU3iDfGdqDJZX_jRV0QtkufwHUKH3kQKF3YQs/edit#gid=0),
+[this spreadsheet](https://docs.google.com/spreadsheets/d/1xaAo0_SU3iDfGdqDJZX_jRV0QtkufwHUKH3kQKF3YQs/edit#gid=0),
 who you can cc on a performance bug if you have questions.
 
 ## Understanding the bisect results
@@ -61,7 +63,7 @@ There's a lot of information packed in that bug comment! Here's a breakdown:
     * **How do I run that locally?** Follow the instructions under
       `To Run This Test`. But be aware that if it regressed on Android and
       you're developing on Windows, you may not be able to reproduce locally.
-      (See Debugging regressions below)
+      (See [Debugging regressions](#Debugging-regressions) below)
     * **What is this testing?** Generally the metric
       (`timeToFirstContentfulPaint_avg`) gives some information. If you're not
       familiar, you can cc the [benchmark owner](https://docs.google.com/spreadsheets/d/1xaAo0_SU3iDfGdqDJZX_jRV0QtkufwHUKH3kQKF3YQs/edit#gid=0)
@@ -178,7 +180,7 @@ Here are some common justification scenarios:
       be measured well in benchmarks. If you believe your case falls into this
       category, you can show that end users are not affected via a finch trial.
       See the "End-user metrics" section of
-      [How does Chrome measure performance](how_does_chrome_measure_performance.md)
+      [How Chrome measures performance](how_does_chrome_measure_performance.md#End_user-metrics)
   * **Your change is a critical correctness or security fix.**
     It's true that sometimes something was "fast" because it was implemented
     incorrectly. In this case, a justification should clarify the performance

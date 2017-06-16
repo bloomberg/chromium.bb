@@ -11,7 +11,7 @@ like loading, memory, and power. Each track has high-level metrics associated
 with it.
 
   * **[An overview of tracks](performance_tracks.md)**: lists the tracks and key contact points.
-  * **[Speed Launch Metrics](https://docs.google.com/document/d/1Ww487ZskJ-xBmJGwPO-XPz_QcJvw-kSNffm0nPhVpj8/edit):
+  * **[Speed Launch Metrics](https://docs.google.com/document/d/1Ww487ZskJ-xBmJGwPO-XPz_QcJvw-kSNffm0nPhVpj8/edit)**:
     the important high-level metrics we measure for each track.
 
 ## Laboratory Metrics
@@ -26,11 +26,11 @@ chromium commits and is monitored by the perf sheriff rotation.
 
   * **[What is the perf waterfall?](perf_waterfall.md)** An overview of the
     waterfall that runs the continuous build.
-  * **[How telemetry works](https://github.com/catapult-project/catapult/blob/master/telemetry/README.md):
+  * **[How telemetry works](https://github.com/catapult-project/catapult/blob/master/telemetry/README.md)**:
     An overview of telemetry, our performance testing harness.
-  * **[How perf bisects work](bisects.md): An overview of the bisect bots,
+  * **[How perf bisects work](bisects.md)**: An overview of the bisect bots,
     which narrow down regressions over a CL range to a specific commit.
-  * **Benchmarks*
+  * **Benchmarks**
     * **[Benchmark Policy](https://docs.google.com/document/d/1ni2MIeVnlH4bTj4yvEDMVNxgL73PqK_O9_NUm3NW3BA/edit)**:
       An overview of the benchmark harnesses available in Chrome, and how to
       find the right place to add a new test case.
