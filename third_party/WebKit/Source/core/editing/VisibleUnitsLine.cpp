@@ -206,6 +206,14 @@ LayoutPoint AbsoluteLineDirectionPointToLocalPointInBlock(
       LayoutUnit(line_direction_point - absolute_block_point.Y()));
 }
 
+bool InSameLine(const Node& node, const VisiblePosition& visible_position) {
+  if (!node.GetLayoutObject())
+    return false;
+  return InSameLine(CreateVisiblePosition(
+                        FirstPositionInOrBeforeNode(const_cast<Node*>(&node))),
+                    visible_position);
+}
+
 }  // namespace
 
 // FIXME: consolidate with code in previousLinePosition.
@@ -218,11 +226,7 @@ Position PreviousRootInlineBoxCandidatePosition(
       HighestEditableRoot(visible_position.DeepEquivalent(), editable_type);
   Node* previous_node = PreviousLeafWithSameEditability(node, editable_type);
 
-  while (previous_node &&
-         (!previous_node->GetLayoutObject() ||
-          InSameLine(
-              CreateVisiblePosition(FirstPositionInOrBeforeNode(previous_node)),
-              visible_position))) {
+  while (previous_node && InSameLine(*previous_node, visible_position)) {
     previous_node =
         PreviousLeafWithSameEditability(previous_node, editable_type);
   }
@@ -254,10 +258,7 @@ Position NextRootInlineBoxCandidatePosition(
   ContainerNode* highest_root =
       HighestEditableRoot(visible_position.DeepEquivalent(), editable_type);
   Node* next_node = NextLeafWithSameEditability(node, editable_type);
-  while (next_node && (!next_node->GetLayoutObject() ||
-                       InSameLine(CreateVisiblePosition(
-                                      FirstPositionInOrBeforeNode(next_node)),
-                                  visible_position)))
+  while (next_node && InSameLine(*next_node, visible_position))
     next_node = NextLeafWithSameEditability(next_node, kContentIsEditable);
 
   while (next_node && !next_node->IsShadowRoot()) {
