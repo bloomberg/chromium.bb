@@ -62,24 +62,6 @@ inline MojoResult CreateMessage(uintptr_t context,
   return MOJO_RESULT_OK;
 }
 
-inline MojoResult AllocMessage(size_t num_bytes,
-                               const MojoHandle* handles,
-                               size_t num_handles,
-                               MojoAllocMessageFlags flags,
-                               ScopedMessageHandle* handle) {
-  DCHECK_LE(num_bytes, std::numeric_limits<uint32_t>::max());
-  DCHECK_LE(num_handles, std::numeric_limits<uint32_t>::max());
-  MojoMessageHandle raw_handle;
-  MojoResult rv = MojoAllocMessage(static_cast<uint32_t>(num_bytes), handles,
-                                   static_cast<uint32_t>(num_handles), flags,
-                                   &raw_handle);
-  if (rv != MOJO_RESULT_OK)
-    return rv;
-
-  handle->reset(MessageHandle(raw_handle));
-  return MOJO_RESULT_OK;
-}
-
 inline MojoResult GetSerializedMessageContents(
     MessageHandle message,
     void** buffer,
@@ -102,13 +84,6 @@ inline MojoResult GetSerializedMessageContents(
   return MojoGetSerializedMessageContents(
       message.value(), buffer, num_bytes,
       reinterpret_cast<MojoHandle*>(handles->data()), &num_handles, flags);
-}
-
-inline MojoResult GetMessageBuffer(MessageHandle message, void** buffer) {
-  uint32_t num_bytes;
-  return GetSerializedMessageContents(
-      message, buffer, &num_bytes, nullptr,
-      MOJO_GET_SERIALIZED_MESSAGE_CONTENTS_FLAG_IGNORE_HANDLES);
 }
 
 inline MojoResult NotifyBadMessage(MessageHandle message,

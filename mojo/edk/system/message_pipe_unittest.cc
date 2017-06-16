@@ -53,8 +53,8 @@ class MessagePipeTest : public test::MojoTestBase {
                          uint32_t* num_bytes,
                          bool may_discard = false) {
     MojoMessageHandle message_handle;
-    MojoResult rv = MojoReadMessageNew(message_pipe_handle, &message_handle,
-                                       MOJO_READ_MESSAGE_FLAG_NONE);
+    MojoResult rv = MojoReadMessage(message_pipe_handle, &message_handle,
+                                    MOJO_READ_MESSAGE_FLAG_NONE);
     if (rv != MOJO_RESULT_OK)
       return rv;
 

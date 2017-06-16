@@ -91,17 +91,17 @@ ReadMessageRaw(MessagePipeHandle message_pipe,
 inline MojoResult WriteMessageNew(MessagePipeHandle message_pipe,
                                   ScopedMessageHandle message,
                                   MojoWriteMessageFlags flags) {
-  return MojoWriteMessageNew(
-      message_pipe.value(), message.release().value(), flags);
+  return MojoWriteMessage(message_pipe.value(), message.release().value(),
+                          flags);
 }
 
-// Reads from a message pipe. See |MojoReadMessageNew()| for complete
+// Reads from a message pipe. See |MojoReadMessage()| for complete
 // documentation.
 inline MojoResult ReadMessageNew(MessagePipeHandle message_pipe,
                                  ScopedMessageHandle* message,
                                  MojoReadMessageFlags flags) {
   MojoMessageHandle raw_message;
-  MojoResult rv = MojoReadMessageNew(message_pipe.value(), &raw_message, flags);
+  MojoResult rv = MojoReadMessage(message_pipe.value(), &raw_message, flags);
   if (rv != MOJO_RESULT_OK)
     return rv;
 

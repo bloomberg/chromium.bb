@@ -190,11 +190,6 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
                         uintptr_t* ready_contexts,
                         MojoResult* ready_results,
                         MojoHandleSignalsState* ready_signals_states);
-  MojoResult AllocMessage(uint32_t num_bytes,
-                          const MojoHandle* handles,
-                          uint32_t num_handles,
-                          MojoAllocMessageFlags flags,
-                          MojoMessageHandle* message_handle);
   MojoResult CreateMessage(uintptr_t context,
                            const MojoMessageOperationThunks* thunks,
                            MojoMessageHandle* message_handle);
@@ -218,23 +213,11 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
       MojoHandle* message_pipe_handle0,
       MojoHandle* message_pipe_handle1);
   MojoResult WriteMessage(MojoHandle message_pipe_handle,
-                          const void* bytes,
-                          uint32_t num_bytes,
-                          const MojoHandle* handles,
-                          uint32_t num_handles,
+                          MojoMessageHandle message_handle,
                           MojoWriteMessageFlags flags);
-  MojoResult WriteMessageNew(MojoHandle message_pipe_handle,
-                             MojoMessageHandle message_handle,
-                             MojoWriteMessageFlags flags);
   MojoResult ReadMessage(MojoHandle message_pipe_handle,
-                         void* bytes,
-                         uint32_t* num_bytes,
-                         MojoHandle* handles,
-                         uint32_t* num_handles,
+                         MojoMessageHandle* message_handle,
                          MojoReadMessageFlags flags);
-  MojoResult ReadMessageNew(MojoHandle message_pipe_handle,
-                            MojoMessageHandle* message_handle,
-                            MojoReadMessageFlags flags);
   MojoResult FuseMessagePipes(MojoHandle handle0, MojoHandle handle1);
   MojoResult NotifyBadMessage(MojoMessageHandle message_handle,
                               const char* error,
