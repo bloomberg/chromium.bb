@@ -426,4 +426,21 @@ LayoutUnit ConstrainByMinMax(LayoutUnit length,
   return length;
 }
 
+NGBoxStrut GetScrollbarSizes(const LayoutObject* layout_object) {
+  NGPhysicalBoxStrut sizes;
+  const ComputedStyle* style = layout_object->Style();
+  if (!style->IsOverflowVisible()) {
+    const LayoutBox* box = ToLayoutBox(layout_object);
+    LayoutUnit vertical = LayoutUnit(box->VerticalScrollbarWidth());
+    LayoutUnit horizontal = LayoutUnit(box->HorizontalScrollbarHeight());
+    sizes.bottom = horizontal;
+    if (style->ShouldPlaceBlockDirectionScrollbarOnLogicalLeft())
+      sizes.left = vertical;
+    else
+      sizes.right = vertical;
+  }
+  return sizes.ConvertToLogical(
+      FromPlatformWritingMode(style->GetWritingMode()), style->Direction());
+}
+
 }  // namespace blink
