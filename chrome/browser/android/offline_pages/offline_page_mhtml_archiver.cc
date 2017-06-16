@@ -12,6 +12,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "components/security_state/core/security_state.h"
@@ -27,10 +28,10 @@ const base::FilePath::CharType kMHTMLExtension[] = FILE_PATH_LITERAL("mhtml");
 
 void DeleteFileOnFileThread(const base::FilePath& file_path,
                             const base::Closure& callback) {
-  content::BrowserThread::PostTaskAndReply(
-      content::BrowserThread::FILE, FROM_HERE,
-      base::Bind(base::IgnoreResult(&base::DeleteFile), file_path,
-                 false /* recursive */),
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      base::BindOnce(base::IgnoreResult(&base::DeleteFile), file_path,
+                     false /* recursive */),
       callback);
 }
 }  // namespace
