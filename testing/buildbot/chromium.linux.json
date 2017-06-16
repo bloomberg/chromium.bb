@@ -3539,23 +3539,11 @@
   "Linux Builder": {
     "additional_compile_targets": [
       "all"
-    ],
-    "scripts": [
-      {
-        "name": "check_gn_headers",
-        "script": "check_gn_headers.py"
-      }
     ]
   },
   "Linux Builder (dbg)": {
     "additional_compile_targets": [
       "all"
-    ],
-    "scripts": [
-      {
-        "name": "check_gn_headers",
-        "script": "check_gn_headers.py"
-      }
     ]
   },
   "Linux Tests": {
