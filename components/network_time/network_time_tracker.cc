@@ -36,8 +36,15 @@
 
 namespace network_time {
 
+// Network time queries are enabled on all desktop platforms except ChromeOS,
+// which uses tlsdated to set the system time.
+#if defined(OS_ANDROID) || defined(OS_CHROMEOS) || defined(OS_IOS)
 const base::Feature kNetworkTimeServiceQuerying{
     "NetworkTimeServiceQuerying", base::FEATURE_DISABLED_BY_DEFAULT};
+#else
+const base::Feature kNetworkTimeServiceQuerying{
+    "NetworkTimeServiceQuerying", base::FEATURE_ENABLED_BY_DEFAULT};
+#endif
 
 namespace {
 
@@ -111,7 +118,7 @@ const char kVariationsServiceRandomQueryProbability[] =
 //   not be issued (i.e. StartTimeFetch() will not start time queries.)
 //
 // - "on-demand-only": Time queries will not be issued except when
-//   StartTimeFetch() is called.
+//   StartTimeFetch() is called. This is the default value.
 //
 // - "background-and-on-demand": Time queries will be issued both in the
 //   background as needed and also on-demand.
@@ -306,7 +313,7 @@ NetworkTimeTracker::FetchBehavior NetworkTimeTracker::GetFetchBehavior() const {
   } else if (param == "background-and-on-demand") {
     return FETCHES_IN_BACKGROUND_AND_ON_DEMAND;
   }
-  return FETCH_BEHAVIOR_UNKNOWN;
+  return FETCHES_ON_DEMAND_ONLY;
 }
 
 void NetworkTimeTracker::SetTimeServerURLForTesting(const GURL& url) {

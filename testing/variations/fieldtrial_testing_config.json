@@ -1735,29 +1735,6 @@
             ]
         }
     ],
-    "NetworkTimeQueries": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "NetworkTimeQueriesEnabledOnDemand",
-                    "params": {
-                        "FetchBehavior": "on-demand-only"
-                    },
-                    "enable_features": [
-                        "NetworkTimeServiceQuerying"
-                    ]
-                }
-            ]
-        }
-    ],
     "NewProfileManagement": [
         {
             "platforms": [
