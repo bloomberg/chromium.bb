@@ -27,13 +27,17 @@ using testing::SaveArg;
 namespace cryptauth {
 
 namespace {
-const int64_t kNumMsInEidPeriod =
-    base::TimeDelta::FromHours(8).InMilliseconds();
-const int64_t kNumMsInBeginningOfEidPeriod =
-    base::TimeDelta::FromHours(2).InMilliseconds();
+
+// These constants could be made as integer amounts of milliseconds by calling
+// .InMilliseconds(), but this would create a static initializer because there
+// is no constexpr implementation of TimeDelta::InMilliseconds() yet. Static
+// initializers are not a big problem in tests, but it is preferable to avoid
+// them here for consistensy with similar definitions going into release
+// binaries.
+constexpr base::TimeDelta kEidPeriod = base::TimeDelta::FromHours(8);
+constexpr base::TimeDelta kEidSeedPeriod = base::TimeDelta::FromDays(14);
+
 const int32_t kNumBytesInEidValue = 2;
-const int64_t kNumMsInEidSeedPeriod =
-    base::TimeDelta::FromDays(14).InMilliseconds();
 
 // Midnight on 1/1/2020.
 const int64_t kDefaultCurrentPeriodStart = 1577836800000L;
@@ -101,17 +105,20 @@ class CryptAuthForegroundEidGeneratorTest : public testing::Test {
  protected:
   CryptAuthForegroundEidGeneratorTest() {
     scanning_device_beacon_seeds_.push_back(CreateBeaconSeed(
-        kFirstSeed, kDefaultCurrentPeriodStart - kNumMsInEidSeedPeriod,
+        kFirstSeed,
+        kDefaultCurrentPeriodStart - kEidSeedPeriod.InMilliseconds(),
         kDefaultCurrentPeriodStart));
-    scanning_device_beacon_seeds_.push_back(
-        CreateBeaconSeed(kSecondSeed, kDefaultCurrentPeriodStart,
-                         kDefaultCurrentPeriodStart + kNumMsInEidSeedPeriod));
     scanning_device_beacon_seeds_.push_back(CreateBeaconSeed(
-        kThirdSeed, kDefaultCurrentPeriodStart + kNumMsInEidSeedPeriod,
-        kDefaultCurrentPeriodStart + 2 * kNumMsInEidSeedPeriod));
+        kSecondSeed, kDefaultCurrentPeriodStart,
+        kDefaultCurrentPeriodStart + kEidSeedPeriod.InMilliseconds()));
     scanning_device_beacon_seeds_.push_back(CreateBeaconSeed(
-        kFourthSeed, kDefaultCurrentPeriodStart + 2 * kNumMsInEidSeedPeriod,
-        kDefaultCurrentPeriodStart + 3 * kNumMsInEidSeedPeriod));
+        kThirdSeed,
+        kDefaultCurrentPeriodStart + kEidSeedPeriod.InMilliseconds(),
+        kDefaultCurrentPeriodStart + 2 * kEidSeedPeriod.InMilliseconds()));
+    scanning_device_beacon_seeds_.push_back(CreateBeaconSeed(
+        kFourthSeed,
+        kDefaultCurrentPeriodStart + 2 * kEidSeedPeriod.InMilliseconds(),
+        kDefaultCurrentPeriodStart + 3 * kEidSeedPeriod.InMilliseconds()));
   }
 
   class TestRawEidGenerator : public RawEidGenerator {
@@ -162,25 +169,26 @@ TEST_F(CryptAuthForegroundEidGeneratorTest,
             ForegroundEidGenerator::EidData::AdjacentDataType::PAST);
 
   EXPECT_EQ(kDefaultCurrentPeriodStart, data->current_data.start_timestamp_ms);
-  EXPECT_EQ(kDefaultCurrentPeriodStart + kNumMsInEidPeriod,
+  EXPECT_EQ(kDefaultCurrentPeriodStart + kEidPeriod.InMilliseconds(),
             data->current_data.end_timestamp_ms);
   EXPECT_EQ(
       GenerateFakeEidData(kSecondSeed, kDefaultCurrentPeriodStart, nullptr),
       data->current_data.data);
 
   ASSERT_TRUE(data->adjacent_data);
-  EXPECT_EQ(kDefaultCurrentPeriodStart - kNumMsInEidPeriod,
+  EXPECT_EQ(kDefaultCurrentPeriodStart - kEidPeriod.InMilliseconds(),
             data->adjacent_data->start_timestamp_ms);
   EXPECT_EQ(kDefaultCurrentPeriodStart, data->adjacent_data->end_timestamp_ms);
   EXPECT_EQ(
       GenerateFakeEidData(
-          kFirstSeed, kDefaultCurrentPeriodStart - kNumMsInEidPeriod, nullptr),
+          kFirstSeed, kDefaultCurrentPeriodStart - kEidPeriod.InMilliseconds(),
+          nullptr),
       data->adjacent_data->data);
 }
 
 TEST_F(CryptAuthForegroundEidGeneratorTest,
        GenerateBackgroundScanFilter_StartOfPeriod_NoSeedBefore) {
-  SetTestTime(kDefaultCurrentTime - kNumMsInEidSeedPeriod);
+  SetTestTime(kDefaultCurrentTime - kEidSeedPeriod.InMilliseconds());
 
   std::unique_ptr<ForegroundEidGenerator::EidData> data =
       eid_generator_->GenerateBackgroundScanFilter(
@@ -189,13 +197,14 @@ TEST_F(CryptAuthForegroundEidGeneratorTest,
   EXPECT_EQ(data->GetAdjacentDataType(),
             ForegroundEidGenerator::EidData::AdjacentDataType::NONE);
 
-  EXPECT_EQ(kDefaultCurrentPeriodStart - kNumMsInEidSeedPeriod,
+  EXPECT_EQ(kDefaultCurrentPeriodStart - kEidSeedPeriod.InMilliseconds(),
             data->current_data.start_timestamp_ms);
-  EXPECT_EQ(
-      kDefaultCurrentPeriodStart - kNumMsInEidSeedPeriod + kNumMsInEidPeriod,
-      data->current_data.end_timestamp_ms);
+  EXPECT_EQ(kDefaultCurrentPeriodStart - kEidSeedPeriod.InMilliseconds() +
+                kEidPeriod.InMilliseconds(),
+            data->current_data.end_timestamp_ms);
   EXPECT_EQ(GenerateFakeEidData(
-                kFirstSeed, kDefaultCurrentPeriodStart - kNumMsInEidSeedPeriod,
+                kFirstSeed,
+                kDefaultCurrentPeriodStart - kEidSeedPeriod.InMilliseconds(),
                 nullptr),
             data->current_data.data);
 
@@ -215,26 +224,27 @@ TEST_F(CryptAuthForegroundEidGeneratorTest,
             ForegroundEidGenerator::EidData::AdjacentDataType::FUTURE);
 
   EXPECT_EQ(kDefaultCurrentPeriodStart, data->current_data.start_timestamp_ms);
-  EXPECT_EQ(kDefaultCurrentPeriodStart + kNumMsInEidPeriod,
+  EXPECT_EQ(kDefaultCurrentPeriodStart + kEidPeriod.InMilliseconds(),
             data->current_data.end_timestamp_ms);
   EXPECT_EQ(
       GenerateFakeEidData(kSecondSeed, kDefaultCurrentPeriodStart, nullptr),
       data->current_data.data);
 
   ASSERT_TRUE(data->adjacent_data);
-  EXPECT_EQ(kDefaultCurrentPeriodStart + kNumMsInEidPeriod,
+  EXPECT_EQ(kDefaultCurrentPeriodStart + kEidPeriod.InMilliseconds(),
             data->adjacent_data->start_timestamp_ms);
-  EXPECT_EQ(kDefaultCurrentPeriodStart + 2 * kNumMsInEidPeriod,
+  EXPECT_EQ(kDefaultCurrentPeriodStart + 2 * kEidPeriod.InMilliseconds(),
             data->adjacent_data->end_timestamp_ms);
   EXPECT_EQ(
       GenerateFakeEidData(
-          kSecondSeed, kDefaultCurrentPeriodStart + kNumMsInEidPeriod, nullptr),
+          kSecondSeed, kDefaultCurrentPeriodStart + kEidPeriod.InMilliseconds(),
+          nullptr),
       data->adjacent_data->data);
 }
 
 TEST_F(CryptAuthForegroundEidGeneratorTest,
        GenerateBackgroundScanFilter_EndOfPeriod) {
-  SetTestTime(kDefaultCurrentPeriodStart + kNumMsInEidSeedPeriod - 1);
+  SetTestTime(kDefaultCurrentPeriodStart + kEidSeedPeriod.InMilliseconds() - 1);
 
   std::unique_ptr<ForegroundEidGenerator::EidData> data =
       eid_generator_->GenerateBackgroundScanFilter(
@@ -243,32 +253,35 @@ TEST_F(CryptAuthForegroundEidGeneratorTest,
   EXPECT_EQ(data->GetAdjacentDataType(),
             ForegroundEidGenerator::EidData::AdjacentDataType::FUTURE);
 
-  EXPECT_EQ(
-      kDefaultCurrentPeriodStart + kNumMsInEidSeedPeriod - kNumMsInEidPeriod,
-      data->current_data.start_timestamp_ms);
-  EXPECT_EQ(kDefaultCurrentPeriodStart + kNumMsInEidSeedPeriod,
+  EXPECT_EQ(kDefaultCurrentPeriodStart + kEidSeedPeriod.InMilliseconds() -
+                kEidPeriod.InMilliseconds(),
+            data->current_data.start_timestamp_ms);
+  EXPECT_EQ(kDefaultCurrentPeriodStart + kEidSeedPeriod.InMilliseconds(),
             data->current_data.end_timestamp_ms);
   EXPECT_EQ(GenerateFakeEidData(kSecondSeed,
                                 kDefaultCurrentPeriodStart +
-                                    kNumMsInEidSeedPeriod - kNumMsInEidPeriod,
+                                    kEidSeedPeriod.InMilliseconds() -
+                                    kEidPeriod.InMilliseconds(),
                                 nullptr),
             data->current_data.data);
 
   ASSERT_TRUE(data->adjacent_data);
-  EXPECT_EQ(kDefaultCurrentPeriodStart + kNumMsInEidSeedPeriod,
+  EXPECT_EQ(kDefaultCurrentPeriodStart + kEidSeedPeriod.InMilliseconds(),
             data->adjacent_data->start_timestamp_ms);
-  EXPECT_EQ(
-      kDefaultCurrentPeriodStart + kNumMsInEidSeedPeriod + kNumMsInEidPeriod,
-      data->adjacent_data->end_timestamp_ms);
+  EXPECT_EQ(kDefaultCurrentPeriodStart + kEidSeedPeriod.InMilliseconds() +
+                kEidPeriod.InMilliseconds(),
+            data->adjacent_data->end_timestamp_ms);
   EXPECT_EQ(GenerateFakeEidData(
-                kThirdSeed, kDefaultCurrentPeriodStart + kNumMsInEidSeedPeriod,
+                kThirdSeed,
+                kDefaultCurrentPeriodStart + kEidSeedPeriod.InMilliseconds(),
                 nullptr),
             data->adjacent_data->data);
 }
 
 TEST_F(CryptAuthForegroundEidGeneratorTest,
        GenerateBackgroundScanFilter_EndOfPeriod_NoSeedAfter) {
-  SetTestTime(kDefaultCurrentPeriodStart + 3 * kNumMsInEidSeedPeriod - 1);
+  SetTestTime(kDefaultCurrentPeriodStart + 3 * kEidSeedPeriod.InMilliseconds() -
+              1);
 
   std::unique_ptr<ForegroundEidGenerator::EidData> data =
       eid_generator_->GenerateBackgroundScanFilter(
@@ -277,24 +290,25 @@ TEST_F(CryptAuthForegroundEidGeneratorTest,
   EXPECT_EQ(data->GetAdjacentDataType(),
             ForegroundEidGenerator::EidData::AdjacentDataType::NONE);
 
-  EXPECT_EQ(kDefaultCurrentPeriodStart + 3 * kNumMsInEidSeedPeriod -
-                kNumMsInEidPeriod,
+  EXPECT_EQ(kDefaultCurrentPeriodStart + 3 * kEidSeedPeriod.InMilliseconds() -
+                kEidPeriod.InMilliseconds(),
             data->current_data.start_timestamp_ms);
-  EXPECT_EQ(kDefaultCurrentPeriodStart + 3 * kNumMsInEidSeedPeriod,
+  EXPECT_EQ(kDefaultCurrentPeriodStart + 3 * kEidSeedPeriod.InMilliseconds(),
             data->current_data.end_timestamp_ms);
-  EXPECT_EQ(
-      GenerateFakeEidData(kFourthSeed,
-                          kDefaultCurrentPeriodStart +
-                              3 * kNumMsInEidSeedPeriod - kNumMsInEidPeriod,
-                          nullptr),
-      data->current_data.data);
+  EXPECT_EQ(GenerateFakeEidData(kFourthSeed,
+                                kDefaultCurrentPeriodStart +
+                                    3 * kEidSeedPeriod.InMilliseconds() -
+                                    kEidPeriod.InMilliseconds(),
+                                nullptr),
+            data->current_data.data);
 
   EXPECT_FALSE(data->adjacent_data);
 }
 
 TEST_F(CryptAuthForegroundEidGeneratorTest,
        GenerateBackgroundScanFilter_NoCurrentPeriodSeed) {
-  SetTestTime(kDefaultCurrentPeriodStart + 4 * kNumMsInEidSeedPeriod - 1);
+  SetTestTime(kDefaultCurrentPeriodStart + 4 * kEidSeedPeriod.InMilliseconds() -
+              1);
 
   std::unique_ptr<ForegroundEidGenerator::EidData> data =
       eid_generator_->GenerateBackgroundScanFilter(
@@ -341,14 +355,14 @@ TEST_F(CryptAuthForegroundEidGeneratorTest,
             ForegroundEidGenerator::EidData::AdjacentDataType::PAST);
 
   EXPECT_EQ(kDefaultCurrentPeriodStart, data->current_data.start_timestamp_ms);
-  EXPECT_EQ(kDefaultCurrentPeriodStart + kNumMsInEidPeriod,
+  EXPECT_EQ(kDefaultCurrentPeriodStart + kEidPeriod.InMilliseconds(),
             data->current_data.end_timestamp_ms);
   // Since this uses the real RawEidGenerator, just make sure the data
   // exists and has the proper length.
   EXPECT_EQ((size_t)kNumBytesInEidValue, data->current_data.data.length());
 
   ASSERT_TRUE(data->adjacent_data);
-  EXPECT_EQ(kDefaultCurrentPeriodStart - kNumMsInEidPeriod,
+  EXPECT_EQ(kDefaultCurrentPeriodStart - kEidPeriod.InMilliseconds(),
             data->adjacent_data->start_timestamp_ms);
   EXPECT_EQ(kDefaultCurrentPeriodStart, data->adjacent_data->end_timestamp_ms);
   // Since this uses the real RawEidGenerator, just make sure the data
@@ -365,7 +379,7 @@ TEST_F(CryptAuthForegroundEidGeneratorTest, GenerateAdvertisementData) {
   ASSERT_TRUE(data);
 
   EXPECT_EQ(kDefaultCurrentPeriodStart, data->start_timestamp_ms);
-  EXPECT_EQ(kDefaultCurrentPeriodStart + kNumMsInEidPeriod,
+  EXPECT_EQ(kDefaultCurrentPeriodStart + kEidPeriod.InMilliseconds(),
             data->end_timestamp_ms);
   EXPECT_EQ(GenerateFakeAdvertisement(kSecondSeed, kDefaultCurrentPeriodStart,
                                       kDefaultAdvertisingDevicePublicKey),
@@ -374,7 +388,7 @@ TEST_F(CryptAuthForegroundEidGeneratorTest, GenerateAdvertisementData) {
 
 TEST_F(CryptAuthForegroundEidGeneratorTest,
        GenerateAdvertisementData_NoSeedForPeriod) {
-  SetTestTime(kDefaultCurrentTime + 4 * kNumMsInEidSeedPeriod);
+  SetTestTime(kDefaultCurrentTime + 4 * kEidSeedPeriod.InMilliseconds());
 
   std::unique_ptr<DataWithTimestamp> data =
       eid_generator_->GenerateAdvertisement(kDefaultAdvertisingDevicePublicKey,
@@ -384,7 +398,7 @@ TEST_F(CryptAuthForegroundEidGeneratorTest,
 
 TEST_F(CryptAuthForegroundEidGeneratorTest,
        GenerateAdvertisementData_EmptySeeds) {
-  SetTestTime(kDefaultCurrentTime + 4 * kNumMsInEidSeedPeriod);
+  SetTestTime(kDefaultCurrentTime + 4 * kEidSeedPeriod.InMilliseconds());
 
   std::vector<BeaconSeed> empty;
   std::unique_ptr<DataWithTimestamp> data =
@@ -405,10 +419,11 @@ TEST_F(CryptAuthForegroundEidGeneratorTest,
   EXPECT_EQ(GenerateFakeAdvertisement(kSecondSeed, kDefaultCurrentPeriodStart,
                                       kDefaultAdvertisingDevicePublicKey),
             possible_advertisements[0]);
-  EXPECT_EQ(GenerateFakeAdvertisement(
-                kFirstSeed, kDefaultCurrentPeriodStart - kNumMsInEidPeriod,
-                kDefaultAdvertisingDevicePublicKey),
-            possible_advertisements[1]);
+  EXPECT_EQ(
+      GenerateFakeAdvertisement(
+          kFirstSeed, kDefaultCurrentPeriodStart - kEidPeriod.InMilliseconds(),
+          kDefaultAdvertisingDevicePublicKey),
+      possible_advertisements[1]);
 }
 
 TEST_F(CryptAuthForegroundEidGeneratorTest,
@@ -424,15 +439,16 @@ TEST_F(CryptAuthForegroundEidGeneratorTest,
   EXPECT_EQ(GenerateFakeAdvertisement(kSecondSeed, kDefaultCurrentPeriodStart,
                                       kDefaultAdvertisingDevicePublicKey),
             possible_advertisements[0]);
-  EXPECT_EQ(GenerateFakeAdvertisement(
-                kSecondSeed, kDefaultCurrentPeriodStart + kNumMsInEidPeriod,
-                kDefaultAdvertisingDevicePublicKey),
-            possible_advertisements[1]);
+  EXPECT_EQ(
+      GenerateFakeAdvertisement(
+          kSecondSeed, kDefaultCurrentPeriodStart + kEidPeriod.InMilliseconds(),
+          kDefaultAdvertisingDevicePublicKey),
+      possible_advertisements[1]);
 }
 
 TEST_F(CryptAuthForegroundEidGeneratorTest,
        GeneratePossibleAdvertisements_OnlyCurrentPeriod) {
-  SetTestTime(kDefaultCurrentPeriodStart - kNumMsInEidSeedPeriod);
+  SetTestTime(kDefaultCurrentPeriodStart - kEidSeedPeriod.InMilliseconds());
 
   std::vector<std::string> possible_advertisements =
       eid_generator_->GeneratePossibleAdvertisements(
@@ -440,15 +456,16 @@ TEST_F(CryptAuthForegroundEidGeneratorTest,
 
   EXPECT_EQ((size_t)1, possible_advertisements.size());
   EXPECT_EQ(GenerateFakeAdvertisement(
-                kFirstSeed, kDefaultCurrentPeriodStart - kNumMsInEidSeedPeriod,
+                kFirstSeed,
+                kDefaultCurrentPeriodStart - kEidSeedPeriod.InMilliseconds(),
                 kDefaultAdvertisingDevicePublicKey),
             possible_advertisements[0]);
 }
 
 TEST_F(CryptAuthForegroundEidGeneratorTest,
        GeneratePossibleAdvertisements_OnlyFuturePeriod) {
-  SetTestTime(kDefaultCurrentPeriodStart - kNumMsInEidSeedPeriod -
-              kNumMsInEidPeriod);
+  SetTestTime(kDefaultCurrentPeriodStart - kEidSeedPeriod.InMilliseconds() -
+              kEidPeriod.InMilliseconds());
 
   std::vector<std::string> possible_advertisements =
       eid_generator_->GeneratePossibleAdvertisements(
@@ -456,15 +473,16 @@ TEST_F(CryptAuthForegroundEidGeneratorTest,
 
   EXPECT_EQ((size_t)1, possible_advertisements.size());
   EXPECT_EQ(GenerateFakeAdvertisement(
-                kFirstSeed, kDefaultCurrentPeriodStart - kNumMsInEidSeedPeriod,
+                kFirstSeed,
+                kDefaultCurrentPeriodStart - kEidSeedPeriod.InMilliseconds(),
                 kDefaultAdvertisingDevicePublicKey),
             possible_advertisements[0]);
 }
 
 TEST_F(CryptAuthForegroundEidGeneratorTest,
        GeneratePossibleAdvertisements_NoAdvertisements_SeedsTooFarInFuture) {
-  SetTestTime(kDefaultCurrentPeriodStart - kNumMsInEidSeedPeriod -
-              kNumMsInEidPeriod - 1);
+  SetTestTime(kDefaultCurrentPeriodStart - kEidSeedPeriod.InMilliseconds() -
+              kEidPeriod.InMilliseconds() - 1);
 
   std::vector<std::string> possible_advertisements =
       eid_generator_->GeneratePossibleAdvertisements(
@@ -474,8 +492,8 @@ TEST_F(CryptAuthForegroundEidGeneratorTest,
 
 TEST_F(CryptAuthForegroundEidGeneratorTest,
        GeneratePossibleAdvertisements_OnlyPastPeriod) {
-  SetTestTime(kDefaultCurrentPeriodStart + 3 * kNumMsInEidSeedPeriod +
-              kNumMsInEidPeriod);
+  SetTestTime(kDefaultCurrentPeriodStart + 3 * kEidSeedPeriod.InMilliseconds() +
+              kEidPeriod.InMilliseconds());
 
   std::vector<std::string> possible_advertisements =
       eid_generator_->GeneratePossibleAdvertisements(
@@ -484,16 +502,16 @@ TEST_F(CryptAuthForegroundEidGeneratorTest,
   EXPECT_EQ((size_t)1, possible_advertisements.size());
   EXPECT_EQ(GenerateFakeAdvertisement(kFourthSeed,
                                       kDefaultCurrentPeriodStart +
-                                          3 * kNumMsInEidSeedPeriod -
-                                          kNumMsInEidPeriod,
+                                          3 * kEidSeedPeriod.InMilliseconds() -
+                                          kEidPeriod.InMilliseconds(),
                                       kDefaultAdvertisingDevicePublicKey),
             possible_advertisements[0]);
 }
 
 TEST_F(CryptAuthForegroundEidGeneratorTest,
        GeneratePossibleAdvertisements_NoAdvertisements_SeedsTooFarInPast) {
-  SetTestTime(kDefaultCurrentPeriodStart + 3 * kNumMsInEidSeedPeriod +
-              kNumMsInEidPeriod + 1);
+  SetTestTime(kDefaultCurrentPeriodStart + 3 * kEidSeedPeriod.InMilliseconds() +
+              kEidPeriod.InMilliseconds() + 1);
 
   std::vector<std::string> possible_advertisements =
       eid_generator_->GeneratePossibleAdvertisements(

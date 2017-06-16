@@ -104,9 +104,6 @@ class ForegroundEidGenerator {
     int64_t adjacent_period_end_timestamp_ms;
   };
 
-  static const int64_t kNumMsInEidPeriod;
-  static const int64_t kNumMsInBeginningOfEidPeriod;
-
   ForegroundEidGenerator(std::unique_ptr<RawEidGenerator> raw_eid_generator,
                          std::unique_ptr<base::Clock> clock);
 

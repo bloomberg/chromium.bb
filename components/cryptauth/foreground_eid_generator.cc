@@ -19,14 +19,12 @@
 namespace cryptauth {
 
 namespace {
-const int64_t kNoTimestamp = 0;
-const int64_t kMaxPositiveInt64TValue = 0x7FFFFFFF;
+constexpr int64_t kNoTimestamp = 0;
+constexpr int64_t kMaxPositiveInt64TValue = 0x7FFFFFFF;
+constexpr base::TimeDelta kEidPeriod = base::TimeDelta::FromHours(8);
+constexpr base::TimeDelta kBeginningOfEidPeriod = base::TimeDelta::FromHours(2);
 }  // namespace
 
-const int64_t ForegroundEidGenerator::kNumMsInEidPeriod =
-    base::TimeDelta::FromHours(8).InMilliseconds();
-const int64_t ForegroundEidGenerator::kNumMsInBeginningOfEidPeriod =
-    base::TimeDelta::FromHours(2).InMilliseconds();
 const int8_t ForegroundEidGenerator::kBluetooth4Flag = 0x01;
 
 ForegroundEidGenerator::EidData::EidData(
@@ -271,8 +269,9 @@ ForegroundEidGenerator::GetEidPeriodTimestamps(
   // current EID period must be determined.
   for (int64_t start_of_eid_period_ms = current_seed->start_time_millis();
        start_of_eid_period_ms <= current_seed->end_time_millis();
-       start_of_eid_period_ms += kNumMsInEidPeriod) {
-    int64_t end_of_eid_period_ms = start_of_eid_period_ms + kNumMsInEidPeriod;
+       start_of_eid_period_ms += kEidPeriod.InMilliseconds()) {
+    int64_t end_of_eid_period_ms =
+        start_of_eid_period_ms + kEidPeriod.InMilliseconds();
     if (start_of_eid_period_ms <= current_time_ms &&
         current_time_ms < end_of_eid_period_ms) {
       int64_t start_of_adjacent_period_ms;
@@ -282,12 +281,13 @@ ForegroundEidGenerator::GetEidPeriodTimestamps(
         // If the current time is at the beginning of the period, the "adjacent
         // period" is the period before this one.
         start_of_adjacent_period_ms =
-            start_of_eid_period_ms - kNumMsInEidPeriod;
+            start_of_eid_period_ms - kEidPeriod.InMilliseconds();
         end_of_adjacent_period_ms = start_of_eid_period_ms;
       } else {
         // Otherwise, the "adjacent period" is the one after this one.
         start_of_adjacent_period_ms = end_of_eid_period_ms;
-        end_of_adjacent_period_ms = end_of_eid_period_ms + kNumMsInEidPeriod;
+        end_of_adjacent_period_ms =
+            end_of_eid_period_ms + kEidPeriod.InMilliseconds();
       }
 
       return base::WrapUnique(new EidPeriodTimestamps{
@@ -312,7 +312,7 @@ ForegroundEidGenerator::GetBeaconSeedForCurrentPeriod(
   for (auto seed : scanning_device_beacon_seeds) {
     int64_t seed_period_length_ms =
         seed.end_time_millis() - seed.start_time_millis();
-    if (seed_period_length_ms % kNumMsInEidPeriod != 0) {
+    if (seed_period_length_ms % kEidPeriod.InMilliseconds() != 0) {
       PA_LOG(WARNING) << "Seed has period length which is not an multiple of "
                       << "the rotation length.";
       continue;
@@ -338,7 +338,7 @@ ForegroundEidGenerator::GetClosestPeriod(
   for (auto seed : scanning_device_beacon_seeds) {
     int64_t seed_period_length_ms =
         seed.end_time_millis() - seed.start_time_millis();
-    if (seed_period_length_ms % kNumMsInEidPeriod != 0) {
+    if (seed_period_length_ms % kEidPeriod.InMilliseconds() != 0) {
       PA_LOG(WARNING) << "Seed has period length which is not an multiple of "
                       << "the rotation length.";
       continue;
@@ -353,7 +353,7 @@ ForegroundEidGenerator::GetClosestPeriod(
         smallest_diff_so_far_ms = diff;
         start_of_period_timestamp_ms = seed.start_time_millis();
         end_of_period_timestamp_ms =
-            seed.start_time_millis() + kNumMsInEidPeriod;
+            seed.start_time_millis() + kEidPeriod.InMilliseconds();
       }
     } else if (seed.end_time_millis() <= current_time_ms) {
       int64_t diff = current_time_ms - seed.end_time_millis();
@@ -361,13 +361,13 @@ ForegroundEidGenerator::GetClosestPeriod(
         smallest_diff_so_far_ms = diff;
         end_of_period_timestamp_ms = seed.end_time_millis();
         start_of_period_timestamp_ms =
-            end_of_period_timestamp_ms - kNumMsInEidPeriod;
+            end_of_period_timestamp_ms - kEidPeriod.InMilliseconds();
       }
     }
   }
 
   if (smallest_diff_so_far_ms < kMaxPositiveInt64TValue &&
-      smallest_diff_so_far_ms > kNumMsInEidPeriod) {
+      smallest_diff_so_far_ms > kEidPeriod.InMilliseconds()) {
     return nullptr;
   }
 
@@ -385,7 +385,7 @@ bool ForegroundEidGenerator::IsCurrentTimeAtStartOfEidPeriod(
   DCHECK(current_timestamp_ms < end_of_period_timestamp_ms);
 
   return current_timestamp_ms <
-         start_of_period_timestamp_ms + kNumMsInBeginningOfEidPeriod;
+         start_of_period_timestamp_ms + kBeginningOfEidPeriod.InMilliseconds();
 }
 
 }  // namespace cryptauth
