@@ -2,7 +2,7 @@
 
 1.  Sync your Chromium tree to the latest revision to pick up any plugin
     changes
-1.  Run `python tools/clang/scripts/upload_revision.py --clang_revision=NNNN`
+1.  Run `python tools/clang/scripts/upload_revision.py NNNN`
     with the target LLVM SVN revision number. This creates a roll CL on a new
     branch, uploads it and starts tryjobs that build the compiler binaries into
     a staging bucket on Google Cloud Storage (GCS).
