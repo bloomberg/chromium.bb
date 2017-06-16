@@ -33,6 +33,7 @@ class MODULES_EXPORT PaintWorkletGlobalScopeProxy
                             WebURLRequest::FetchCredentialsMode,
                             RefPtr<WebTaskRunner> outside_settings_task_runner,
                             WorkletPendingTasks*) override;
+  void WorkletObjectDestroyed() override;
   void TerminateWorkletGlobalScope() override;
 
   CSSPaintDefinition* FindDefinition(const String& name);

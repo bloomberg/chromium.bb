@@ -39,8 +39,6 @@ blink_core_sources("workers") {
     "ThreadedMessagingProxyBase.h",
     "ThreadedObjectProxyBase.cpp",
     "ThreadedObjectProxyBase.h",
-    "ThreadedWorklet.cpp",
-    "ThreadedWorklet.h",
     "ThreadedWorkletGlobalScope.cpp",
     "ThreadedWorkletGlobalScope.h",
     "ThreadedWorkletMessagingProxy.cpp",

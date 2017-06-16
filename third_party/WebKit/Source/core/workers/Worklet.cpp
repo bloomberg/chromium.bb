@@ -20,6 +20,11 @@ Worklet::Worklet(LocalFrame* frame)
   DCHECK(IsMainThread());
 }
 
+Worklet::~Worklet() {
+  for (const auto& proxy : proxies_)
+    proxy->WorkletObjectDestroyed();
+}
+
 // Implementation of the first half of the "addModule(moduleURL, options)"
 // algorithm:
 // https://drafts.css-houdini.org/worklets/#dom-worklet-addmodule

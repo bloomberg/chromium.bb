@@ -28,6 +28,7 @@ class CORE_EXPORT ThreadedWorkletMessagingProxy
                             WebURLRequest::FetchCredentialsMode,
                             RefPtr<WebTaskRunner> outside_settings_task_runner,
                             WorkletPendingTasks*) final;
+  void WorkletObjectDestroyed() final;
   void TerminateWorkletGlobalScope() final;
 
   void Initialize();
