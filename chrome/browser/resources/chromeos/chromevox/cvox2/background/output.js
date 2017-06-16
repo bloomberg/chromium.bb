@@ -716,10 +716,12 @@ Output.SelectionSpan = function(startIndex, endIndex) {
  * {@code AutomationNode} constructor isn't exposed in the API, this class is
  * used to allow instanceof checks on these annotations.
  * @param {!AutomationNode} node
+ * @param {number=} opt_offset Offsets into the node's text. Defaults to 0.
  * @constructor
  */
-Output.NodeSpan = function(node) {
+Output.NodeSpan = function(node, opt_offset) {
   this.node = node;
+  this.offset = opt_offset ? opt_offset : 0;
 };
 
 /**

@@ -271,6 +271,18 @@ DesktopAutomationHandler.prototype = {
    * @param {!AutomationEvent} evt
    */
   onChildrenChanged: function(evt) {
+    if (evt.target.state.richlyEditable) {
+      // Generic tree changes within richly editable text e.g. inline text box
+      // data might require editable text updates. Further note that children
+      // change events can and do come after text/text selection changes.
+      var rootEditable = evt.target;
+      while (rootEditable.parent && rootEditable.parent.state.richlyEditable)
+        rootEditable = rootEditable.parent;
+      this.onEditableChanged_(new CustomAutomationEvent(
+          EventType.TEXT_CHANGED, rootEditable, evt.eventFrom));
+      return;
+    }
+
     if (!this.shouldOutput_(evt))
       return;
 
