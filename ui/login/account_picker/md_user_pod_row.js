@@ -66,12 +66,12 @@ cr.define('login', function() {
    * @const
    */
   var UserPodTabOrder = {
-    POD_INPUT: 1,          // Password input field and the pod itself.
+    POD_INPUT: 1,          // Password input field, action box menu button and
+                           // the pod itself.
     PIN_KEYBOARD: 2,       // Pin keyboard below the password input field.
     POD_CUSTOM_ICON: 3,    // Pod custom icon next to password input field.
     HEADER_BAR: 4,         // Buttons on the header bar (Shutdown, Add User).
-    ACTION_BOX_BUTTON: 5,  // Action box menu button.
-    POD_MENU_ITEM: 6       // User pod menu items (User info, Remove user).
+    POD_MENU_ITEM: 5       // User pod menu items (User info, Remove user).
   };
 
   /**
@@ -139,15 +139,14 @@ cr.define('login', function() {
   // Focus and tab order are organized as follows:
   //
   // (1) all user pods have tab index 1 so they are traversed first;
-  // (2) when a user pod is activated, its tab index is set to -1 and its
-  // main input field gets focus and tab index 1;
-  // (3) if pin keyboard is present, it has tab index 2 so it follows the input;
+  // (2) when a user pod is activated, its tab index is set to -1, then its
+  // main input field and action box menu button get focus;
+  // (3) if pin keyboard is present, it has tab index 2 so it follows the
+  // action box menu button;
   // (4) if user pod custom icon is interactive, it has tab index 3;
   // (5) buttons on the header bar have tab index 4;
-  // (6) Action box buttons have tab index 5 and follow the buttons on the
-  // header bar;
-  // (7) User pod menu items (if present) have tab index 6;
-  // (8) lastly, focus jumps to the Status Area and back to user pods.
+  // (6) User pod menu items (if present) have tab index 5;
+  // (7) lastly, focus jumps to the Status Area and back to user pods.
   //
   // 'Focus' event is handled by a capture handler for the whole document
   // and in some cases 'mousedown' event handlers are used instead of 'click'
@@ -763,7 +762,7 @@ cr.define('login', function() {
     /** @override */
     decorate: function() {
       this.tabIndex = UserPodTabOrder.POD_INPUT;
-      this.actionBoxAreaElement.tabIndex = UserPodTabOrder.ACTION_BOX_BUTTON;
+      this.actionBoxAreaElement.tabIndex = UserPodTabOrder.POD_INPUT;
 
       this.addEventListener('keydown', this.handlePodKeyDown_.bind(this));
       this.addEventListener('click', this.handleClickOnPod_.bind(this));
