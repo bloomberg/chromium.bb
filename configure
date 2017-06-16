@@ -324,6 +324,7 @@ EXPERIMENT_LIST="
     lgt
     sbl_symbol
     ncobmc_adapt_weight
+    bgsprite
 "
 CONFIG_LIST="
     dependency_tracking
@@ -537,6 +538,7 @@ post_process_cmdline() {
     enabled new_multisymbol && enable_feature ec_adapt
     enabled warped_motion && disable_feature ncobmc_adapt_weight
     enabled ncobmc_adapt_weight && enable_feature motion_var
+    enabled bgsprite && enable_feature global_motion
 
     if ! enabled delta_q && enabled ext_delta_q; then
       log_echo "ext_delta_q requires delta_q, so disabling ext_delta_q"
