@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task_runner_util.h"
 #include "base/task_scheduler/post_task.h"
@@ -26,7 +27,6 @@
 #include "chrome/common/channel_info.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/version_info/version_info.h"
-#include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_status_code.h"
@@ -90,7 +90,7 @@ class ChromeCleanerFetcher : public net::URLFetcherDelegate {
 
   // We will take ownership of the scoped temp directory once we know that the
   // fetch has succeeded. Must be deleted on a sequence where IO is allowed.
-  std::unique_ptr<base::ScopedTempDir, content::BrowserThread::DeleteOnIOThread>
+  std::unique_ptr<base::ScopedTempDir, base::OnTaskRunnerDeleter>
       scoped_temp_dir_;
   base::FilePath temp_file_;
 
@@ -107,7 +107,8 @@ ChromeCleanerFetcher::ChromeCleanerFetcher(
       blocking_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BACKGROUND,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
-      scoped_temp_dir_(new base::ScopedTempDir()) {
+      scoped_temp_dir_(new base::ScopedTempDir(),
+                       base::OnTaskRunnerDeleter(blocking_task_runner_)) {
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(), FROM_HERE,
       base::Bind(&ChromeCleanerFetcher::CreateTemporaryDirectory,
