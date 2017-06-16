@@ -315,7 +315,7 @@ void NGInlineNode::ShapeText() {
 
   // Shape each item with the full context of the entire node.
   HarfBuzzShaper shaper(text_content.Characters16(), text_content.length());
-  ShapeResultSpacing<StringView> spacing(text_content);
+  ShapeResultSpacing<String> spacing(text_content);
   for (auto& item : MutableData().items_) {
     if (item.Type() != NGInlineItem::kText)
       continue;
@@ -325,7 +325,7 @@ void NGInlineNode::ShapeText() {
         &font, item.Direction(), item.StartOffset(), item.EndOffset());
 
     if (UNLIKELY(spacing.SetSpacing(font.GetFontDescription())))
-      shape_result->ApplySpacing(spacing, text_content, item.Direction());
+      shape_result->ApplySpacing(spacing, item.Direction());
 
     item.shape_result_ = std::move(shape_result);
   }

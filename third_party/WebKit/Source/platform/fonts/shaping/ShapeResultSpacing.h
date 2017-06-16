@@ -22,8 +22,10 @@ class PLATFORM_EXPORT ShapeResultSpacing final {
  public:
   ShapeResultSpacing(const TextContainerType&);
 
+  const TextContainerType& Text() const { return text_; }
   float LetterSpacing() const { return letter_spacing_; }
   bool HasSpacing() const { return has_spacing_; }
+  bool HasExpansion() const { return expansion_opportunity_count_; }
   bool IsVerticalOffset() const { return is_vertical_offset_; }
 
   // Set letter-spacing and word-spacing.
@@ -39,12 +41,12 @@ class PLATFORM_EXPORT ShapeResultSpacing final {
   float ComputeSpacing(const TextContainerType&, size_t, float& offset);
 
  private:
-  bool HasExpansion() const { return expansion_opportunity_count_; }
   bool IsAfterExpansion() const { return is_after_expansion_; }
   bool IsFirstRun(const TextContainerType&) const;
 
   void ComputeExpansion(bool allows_leading_expansion,
                         bool allows_trailing_expansion,
+                        TextDirection,
                         TextJustify);
 
   float NextExpansion();
