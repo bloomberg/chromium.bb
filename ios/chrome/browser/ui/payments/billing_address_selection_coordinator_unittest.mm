@@ -67,7 +67,7 @@ TEST_F(PaymentRequestBillingAddressSelectionCoordinatorTest, StartAndStop) {
   EXPECT_EQ(1u, GetNavigationController().viewControllers.count);
 
   [GetCoordinator() start];
-  // Short delay to allow animation to complete.
+  // Spin the run loop to trigger the animation.
   base::test::ios::SpinRunLoopWithMaxDelay(base::TimeDelta::FromSecondsD(1.0));
   EXPECT_EQ(2u, GetNavigationController().viewControllers.count);
 
@@ -77,7 +77,7 @@ TEST_F(PaymentRequestBillingAddressSelectionCoordinatorTest, StartAndStop) {
       isMemberOfClass:[PaymentRequestSelectorViewController class]]);
 
   [GetCoordinator() stop];
-  // Short delay to allow animation to complete.
+  // Spin the run loop to trigger the animation.
   base::test::ios::SpinRunLoopWithMaxDelay(base::TimeDelta::FromSecondsD(1.0));
   EXPECT_EQ(1u, GetNavigationController().viewControllers.count);
 }
@@ -98,7 +98,7 @@ TEST_F(PaymentRequestBillingAddressSelectionCoordinatorTest,
   EXPECT_EQ(1u, GetNavigationController().viewControllers.count);
 
   [GetCoordinator() start];
-  // Short delay to allow animation to complete.
+  // Spin the run loop to trigger the animation.
   base::test::ios::SpinRunLoopWithMaxDelay(base::TimeDelta::FromSecondsD(1.0));
   EXPECT_EQ(2u, GetNavigationController().viewControllers.count);
 
@@ -129,7 +129,7 @@ TEST_F(PaymentRequestBillingAddressSelectionCoordinatorTest, DidReturn) {
   EXPECT_EQ(1u, GetNavigationController().viewControllers.count);
 
   [GetCoordinator() start];
-  // Short delay to allow animation to complete.
+  // Spin the run loop to trigger the animation.
   base::test::ios::SpinRunLoopWithMaxDelay(base::TimeDelta::FromSecondsD(1.0));
   EXPECT_EQ(2u, GetNavigationController().viewControllers.count);
 

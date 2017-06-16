@@ -28,7 +28,7 @@ TEST_F(PaymentRequestErrorCoordinatorTest, StartAndStop) {
           initWithBaseViewController:base_view_controller];
 
   [coordinator start];
-  // Short delay to allow animation to complete.
+  // Spin the run loop to trigger the animation.
   base::test::ios::SpinRunLoopWithMaxDelay(base::TimeDelta::FromSecondsD(1.0));
   EXPECT_TRUE([base_view_controller.presentedViewController
       isMemberOfClass:[PaymentRequestErrorViewController class]]);
@@ -61,7 +61,7 @@ TEST_F(PaymentRequestErrorCoordinatorTest, DidDismiss) {
   [coordinator setDelegate:delegate];
 
   [coordinator start];
-  // Short delay to allow animation to complete.
+  // Spin the run loop to trigger the animation.
   base::test::ios::SpinRunLoopWithMaxDelay(base::TimeDelta::FromSecondsD(1.0));
 
   // Call the controller delegate method.
