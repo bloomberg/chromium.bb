@@ -38,6 +38,7 @@ target(link_target_type, "service") {
     "//media/gpu",
   ]
   deps = [
+    "//gpu/config:crash_keys",
     "//gpu/ipc/service",
     "//media:media_features",
     "//media/gpu/ipc/common",

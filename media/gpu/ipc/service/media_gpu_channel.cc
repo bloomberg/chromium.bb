@@ -4,8 +4,11 @@
 
 #include "media/gpu/ipc/service/media_gpu_channel.h"
 
+#include "base/debug/crash_logging.h"
+#include "base/debug/stack_trace.h"
 #include "base/single_thread_task_runner.h"
 #include "base/unguessable_token.h"
+#include "gpu/config/gpu_crash_keys.h"
 #include "gpu/ipc/service/gpu_channel.h"
 #include "ipc/message_filter.h"
 #include "media/gpu/ipc/common/media_messages.h"
@@ -72,7 +75,12 @@ class MediaGpuChannelFilter : public IPC::MessageFilter {
   }
 
  private:
-  ~MediaGpuChannelFilter() override {}
+  ~MediaGpuChannelFilter() override {
+    // TODO(sunnyps): Remove once crbug.com/729483 has been resolved.
+    base::debug::SetCrashKeyToStackTrace(
+        gpu::crash_keys::kMediaGpuChannelFilterTrace,
+        base::debug::StackTrace());
+  }
 
   IPC::Channel* channel_;
   base::UnguessableToken channel_token_;
