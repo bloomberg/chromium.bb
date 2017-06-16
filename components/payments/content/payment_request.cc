@@ -140,6 +140,7 @@ void PaymentRequest::Show() {
   }
 
   journey_logger_.SetShowCalled();
+  journey_logger_.SetEventOccurred(JourneyLogger::EVENT_SHOWN);
   journey_logger_.SetRequestedInformation(
       spec_->request_shipping(), spec_->request_payer_email(),
       spec_->request_payer_phone(), spec_->request_payer_name());
@@ -229,6 +230,8 @@ void PaymentRequest::CanMakePayment() {
 
 void PaymentRequest::OnPaymentResponseAvailable(
     mojom::PaymentResponsePtr response) {
+  journey_logger_.SetEventOccurred(
+      JourneyLogger::EVENT_RECEIVED_INSTRUMENT_DETAILS);
   client_->OnPaymentResponse(std::move(response));
 }
 
@@ -284,6 +287,7 @@ void PaymentRequest::OnConnectionTerminated() {
 }
 
 void PaymentRequest::Pay() {
+  journey_logger_.SetEventOccurred(JourneyLogger::EVENT_PAY_CLICKED);
   journey_logger_.SetSelectedPaymentMethod(
       JourneyLogger::SELECTED_PAYMENT_METHOD_CREDIT_CARD);
   state_->GeneratePaymentResponse();
