@@ -20,6 +20,7 @@ import android.support.test.filters.SmallTest;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.text.TextUtils;
+import android.view.MenuItem;
 import android.view.View;
 
 import org.chromium.base.ThreadUtils;
@@ -431,6 +432,47 @@ public class HistoryActivityTest extends BaseActivityInstrumentationTestCase<His
         });
         assertEquals(View.GONE, toolbarShadow.getVisibility());
         assertEquals(View.GONE, toolbarSearchView.getVisibility());
+    }
+
+    @SmallTest
+    public void testToggleInfoMenuItem() throws Exception {
+        final HistoryManagerToolbar toolbar = mHistoryManager.getToolbarForTests();
+        final MenuItem infoMenuItem = toolbar.getItemById(R.id.info_menu_id);
+
+        // Not signed in
+        ChromeSigninController signinController = ChromeSigninController.get();
+        signinController.setSignedInAccountName(null);
+        assertEquals(false, infoMenuItem.isVisible());
+        assertEquals(View.GONE, mAdapter.getSignedInNotSyncedViewForTests().getVisibility());
+        assertEquals(View.GONE, mAdapter.getSignedInSyncedViewForTests().getVisibility());
+        assertEquals(
+                View.GONE, mAdapter.getOtherFormsOfBrowsingHistoryViewForTests().getVisibility());
+
+        // Signed in but not synced and history has items
+        signinController.setSignedInAccountName("test@gmail.com");
+        setHasOtherFormsOfBrowsingData(false, false);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                toolbar.onSignInStateChange();
+            }
+        });
+        assertEquals(true, infoMenuItem.isVisible());
+
+        // Signed in, synced, has other forms and has items
+        // Privacy disclaimers should be shown by default
+        setHasOtherFormsOfBrowsingData(true, true);
+        assertEquals(true, infoMenuItem.isVisible());
+        assertEquals(View.VISIBLE, mAdapter.getPrivacyDisclaimersForTests().getVisibility());
+
+        // Toggle Info Menu Item
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mHistoryManager.onMenuItemClick(infoMenuItem);
+            }
+        });
+        assertEquals(View.GONE, mAdapter.getPrivacyDisclaimersForTests().getVisibility());
     }
 
     @SmallTest

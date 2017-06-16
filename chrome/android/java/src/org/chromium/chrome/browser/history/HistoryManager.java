@@ -56,6 +56,7 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
     private static final int FAVICON_MAX_CACHE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
     private static final int MEGABYTES_TO_BYTES =  1024 * 1024;
     private static final String METRICS_PREFIX = "Android.HistoryPage.";
+    private static final String PREF_SHOW_HISTORY_INFO = "history_home_show_info";
 
     private static HistoryProvider sProviderForTests;
 
@@ -71,6 +72,7 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
     private LargeIconBridge mLargeIconBridge;
 
     private boolean mIsSearching;
+    private boolean mShouldShowInfoHeader;
 
     /**
      * Creates a new HistoryManager.
@@ -82,6 +84,8 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
     @SuppressWarnings("unchecked") // mSelectableListLayout
     public HistoryManager(
             Activity activity, boolean isSeparateActivity, SnackbarManager snackbarManager) {
+        mShouldShowInfoHeader =
+                ContextUtils.getAppSharedPreferences().getBoolean(PREF_SHOW_HISTORY_INFO, true);
         mActivity = activity;
         mIsSeparateActivity = isSeparateActivity;
         mSnackbarManager = snackbarManager;
@@ -106,6 +110,8 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
                 R.color.default_primary_color, this);
         mToolbar.setManager(this);
         mToolbar.initializeSearchView(this, R.string.history_manager_search, R.id.search_menu_id);
+        mToolbar.setInfoMenuItem(R.id.info_menu_id);
+        mToolbar.updateInfoMenuItem(shouldShowInfoButton(), shouldShowInfoHeaderIfAvailable());
 
         // 4. Width constrain the SelectableListLayout.
         mSelectableListLayout.configureWideDisplayStyle();
@@ -197,6 +203,14 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
             recordUserAction("Search");
             mIsSearching = true;
             return true;
+        } else if (item.getItemId() == R.id.info_menu_id) {
+            mShouldShowInfoHeader = !mShouldShowInfoHeader;
+            ContextUtils.getAppSharedPreferences()
+                    .edit()
+                    .putBoolean(PREF_SHOW_HISTORY_INFO, mShouldShowInfoHeader)
+                    .apply();
+            mToolbar.updateInfoMenuItem(shouldShowInfoButton(), shouldShowInfoHeaderIfAvailable());
+            mHistoryAdapter.setPrivacyDisclaimerVisibility();
         }
         return false;
     }
@@ -384,6 +398,21 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
         List<HistoryItem> selectedItems = mSelectionDelegate.getSelectedItems();
         RecordHistogram.recordCount100Histogram(
                 METRICS_PREFIX + action + "Selected", selectedItems.size());
+    }
+
+    /**
+     * @return True if info menu item should be shown on history toolbar, false otherwise.
+     */
+    boolean shouldShowInfoButton() {
+        return mHistoryAdapter.hasPrivacyDisclaimers();
+    }
+
+    /**
+     * @return True if the available privacy disclaimers should be shown.
+     * Note that this may return true even if there are currently no privacy disclaimers.
+     */
+    boolean shouldShowInfoHeaderIfAvailable() {
+        return mShouldShowInfoHeader;
     }
 
     @Override

@@ -195,6 +195,7 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
             itemView.onSignInStateChange();
         }
         updateClearBrowsingDataButtonVisibility();
+        setPrivacyDisclaimerVisibility();
     }
 
     /**
@@ -382,19 +383,28 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
         view.setMovementMethod(LinkMovementMethod.getInstance());
     }
 
-    private void setPrivacyDisclaimerVisibility() {
+    /**
+     * @return True if any privacy disclaimer should be visible, false otherwise.
+     */
+    boolean hasPrivacyDisclaimers() {
+        boolean isSignedIn = ChromeSigninController.get().isSignedIn();
+        return isSignedIn || mHasSyncedData || mHasOtherFormsOfBrowsingData;
+    }
+
+    /**
+     * Set visibility for privacy disclaimer layout and views.
+     */
+    void setPrivacyDisclaimerVisibility() {
         if (!mIsHeaderInflated) return;
 
+        boolean show = hasPrivacyDisclaimers() && mHistoryManager.shouldShowInfoHeaderIfAvailable();
         boolean isSignedIn = ChromeSigninController.get().isSignedIn();
         mSignedInNotSyncedTextView.setVisibility(
                 !mHasSyncedData && isSignedIn ? View.VISIBLE : View.GONE);
         mSignedInSyncedTextView.setVisibility(mHasSyncedData ? View.VISIBLE : View.GONE);
         mOtherFormsOfBrowsingHistoryTextView.setVisibility(
                 mHasOtherFormsOfBrowsingData ? View.VISIBLE : View.GONE);
-
-        boolean arePrivacyDisclaimersVisible =
-                isSignedIn || mHasSyncedData || mHasOtherFormsOfBrowsingData;
-        mPrivacyDisclaimers.setVisibility(arePrivacyDisclaimersVisible ? View.VISIBLE : View.GONE);
+        mPrivacyDisclaimers.setVisibility(show ? View.VISIBLE : View.GONE);
     }
 
     private void updateClearBrowsingDataButtonVisibility() {
@@ -427,5 +437,10 @@ public class HistoryAdapter extends DateDividedAdapter implements BrowsingHistor
     @VisibleForTesting
     TextView getOtherFormsOfBrowsingHistoryViewForTests() {
         return mOtherFormsOfBrowsingHistoryTextView;
+    }
+
+    @VisibleForTesting
+    ViewGroup getPrivacyDisclaimersForTests() {
+        return mPrivacyDisclaimers;
     }
 }
