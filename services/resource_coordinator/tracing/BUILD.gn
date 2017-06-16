@@ -6,8 +6,6 @@ source_set("lib") {
   sources = [
     "agent_registry.cc",
     "agent_registry.h",
-    "coordinator.cc",
-    "coordinator.h",
     "recorder.cc",
     "recorder.h",
   ]

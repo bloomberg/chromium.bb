@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/values.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -75,6 +76,7 @@ class Recorder : public mojom::Recorder {
   // final stream is done on a background thread.
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
   mojo::Binding<mojom::Recorder> binding_;
+  base::WeakPtrFactory<Recorder> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Recorder);
 };
