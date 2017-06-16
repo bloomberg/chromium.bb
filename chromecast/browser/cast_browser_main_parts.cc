@@ -514,11 +514,6 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
           cast_browser_process_->browser_context(),
           cast_browser_process_->pref_service(),
           url_request_context_factory_->GetSystemGetter(),
-          base::BindOnce(&URLRequestContextFactory::DisableQuic,
-                         // Safe since |url_request_context_factory_| is owned
-                         // by CastContentBrowserClient, which lives for the
-                         // entire lifetime of cast_shell.
-                         base::Unretained(url_request_context_factory_)),
           video_plane_controller_.get(), window_manager_.get()));
   cast_browser_process_->cast_service()->Initialize();
 

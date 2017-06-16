@@ -12,6 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task_scheduler/post_task.h"
+#include "chromecast/base/cast_features.h"
 #include "chromecast/base/chromecast_switches.h"
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/cast_http_user_agent_settings.h"
@@ -164,8 +165,7 @@ URLRequestContextFactory::URLRequestContextFactory()
       system_network_delegate_(CastNetworkDelegate::Create()),
       system_dependencies_initialized_(false),
       main_dependencies_initialized_(false),
-      media_dependencies_initialized_(false),
-      enable_quic_(true) {}
+      media_dependencies_initialized_(false) {}
 
 URLRequestContextFactory::~URLRequestContextFactory() {
   pref_proxy_config_tracker_impl_->DetachFromPrefService();
@@ -328,8 +328,12 @@ void URLRequestContextFactory::PopulateNetworkSessionParams(
   session_context->proxy_service = proxy_service_.get();
 
   session_params->ignore_certificate_errors = ignore_certificate_errors;
-  LOG(INFO) << "Set HttpNetworkSessionParams.enable_quic = " << enable_quic_;
-  session_params->enable_quic = enable_quic_;
+
+  // Enable QUIC if instructed by DCS. This remains constant for the lifetime of
+  // the process.
+  session_params->enable_quic = base::FeatureList::IsEnabled(kEnableQuic);
+  LOG(INFO) << "Set HttpNetworkSessionParams.enable_quic = "
+            << session_params->enable_quic;
 }
 
 net::URLRequestContext* URLRequestContextFactory::CreateSystemRequestContext() {
@@ -435,44 +439,6 @@ void URLRequestContextFactory::InitializeNetworkDelegates() {
   LOG(INFO) << "Initialized app network delegate.";
   system_network_delegate_->Initialize(false);
   LOG(INFO) << "Initialized system network delegate.";
-}
-
-void URLRequestContextFactory::DisableQuic() {
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&URLRequestContextFactory::DisableQuicOnBrowserIOThread,
-                 base::Unretained(this)));
-}
-
-void URLRequestContextFactory::DisableQuicOnBrowserIOThread() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  if (!enable_quic_)
-    return;
-
-  LOG(INFO) << "Disabled QUIC.";
-
-  enable_quic_ = false;
-
-  if (main_getter_) {
-    main_getter_->GetURLRequestContext()
-        ->http_transaction_factory()
-        ->GetSession()
-        ->DisableQuic();
-  }
-
-  if (system_getter_) {
-    system_getter_->GetURLRequestContext()
-        ->http_transaction_factory()
-        ->GetSession()
-        ->DisableQuic();
-  }
-
-  if (media_getter_) {
-    media_getter_->GetURLRequestContext()
-        ->http_transaction_factory()
-        ->GetSession()
-        ->DisableQuic();
-  }
 }
 
 }  // namespace shell

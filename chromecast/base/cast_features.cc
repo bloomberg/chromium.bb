@@ -40,7 +40,78 @@ void SetExperimentIds(const base::ListValue& list) {
   g_experiment_ids.Get().swap(ids);
   g_experiment_ids_initialized = true;
 }
+
 }  // namespace
+
+// PLEASE READ!
+// Cast Platform Features are listed below. These features may be
+// toggled via configs fetched from DCS for devices in the field, or via
+// command-line flags set by the developer. For the end-to-end details of the
+// system design, please see go/dcs-experiments.
+//
+// Below are useful steps on how to use these features in your code.
+//
+// 1) Declaring and defining the feature.
+//    All Cast Platform Features should be declared in a common file with other
+//    Cast Platform Features (ex. chromecast/base/cast_features.h). When
+//    defining your feature, you will need to assign a default value. This is
+//    the value that the feature will hold until overriden by the server or the
+//    command line. Here's an exmaple:
+//
+//      const base::Feature kSuperSecretSauce{
+//          "enable-super-secret-sauce", base::FEATURE_DISABLED_BY_DEFAULT};
+//
+//    IMPORTANT NOTE:
+//    The first parameter that you pass in the definition is the feature's name.
+//    This MUST match the DCS experiement key for this feature. Use dashes (not
+//    underscores) in the names.
+//
+// 2) Using the feature in client code.
+//    Using these features in your code is easy. Here's an example:
+//
+//      #include “base/feature_list.h”
+//      #include “chromecast/base/chromecast_switches.h”
+//
+//      std::unique_ptr<Foo> CreateFoo() {
+//        if (base::FeatureList::IsEnabled(kSuperSecretSauce))
+//          return base::MakeUnique<SuperSecretFoo>();
+//        return base::MakeUnique<BoringOldFoo>();
+//      }
+//
+//    base::FeatureList can be called from any thread, in any process, at any
+//    time after PreCreateThreads(). It will return whether the feature is
+//    enabled.
+//
+// 3) Overriding the default value from the server.
+//    For devices in the field, DCS will issue different configs to different
+//    groups of devices, allowing us to run experiments on features. These
+//    feature settings will manifest on the next boot of cast_shell. In the
+//    example, if the latest config for a particular device set the value of
+//    kSuperSecretSauce to true, the appropriate code path would be taken.
+//    Otherwise, the default value, false, would be used. For more details on
+//    setting up experiments, see go/dcs-launch.
+//
+// 4) Overriding the default and server values from the command-line.
+//    While the server value trumps the default values, the command line trumps
+//    both. Enable features by passing this command line arg to cast_shell:
+//
+//      --enable-features=enable-foo,enable-super-secret-sauce
+//
+//    Features are separated by commas. Disable features by passing:
+//
+//      --disable-features=enable-foo,enable-bar
+//
+
+// Begin Chromecast Feature definitions.
+
+// Enables the use of QUIC in Cast-specific URLRequestContextGetters. See
+// chromecast/browser/url_request_context_factory.cc for usage.
+// NOTE: This feature has a legacy name - do not use it as your convention.
+// Dashes, not underscores, should be used in Feature names.
+const base::Feature kEnableQuic{"enable_quic",
+                                base::FEATURE_DISABLED_BY_DEFAULT};
+
+// End Chromecast Feature definitions.
 
 // An iterator for a base::DictionaryValue. Use an alias for brevity in loops.
 using Iterator = base::DictionaryValue::Iterator;
