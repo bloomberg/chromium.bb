@@ -31,7 +31,7 @@ header {
 
 /** CSS for controls panel */
 #controls {
-  width: 60%;
+  width: 50%;
   display: flex;
   flex-direction: column;
   overflow-y: hidden;
@@ -82,7 +82,7 @@ header {
 
 /** CSS for logs panel */
 #logs-panel {
-  width: 40%;
+  width: 50%;
   display: flex;
   flex-direction: column;
   border-left: 1px solid rgba(0,0,0,0.12);
@@ -92,20 +92,24 @@ header {
   flex-direction: row-reverse;
 }
 
+#copy-logs-button,
 #clear-logs-button {
-  cursor: pointer;
   background-color: rgba(0,0,0,0);
   border: none;
-  font-size: 30px;
-  height: 100%;
   color: #fff;
+  cursor: pointer;
+  font-size: 20px;
+  height: 100%;
+  padding: 0 25px;
 }
 
+#copy-logs-button:hover,
 #clear-logs-button:hover {
   cursor: pointer;
   color: #535553;
 }
 
+#copy-logs-button:focus,
 #clear-logs-button:focus {
   outline: 0;
 }
