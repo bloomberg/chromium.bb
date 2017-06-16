@@ -17,6 +17,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/values.h"
 #include "chrome/browser/ui/libgtkui/gtk_util.h"
 #include "chrome/browser/ui/libgtkui/printing_gtk_util.h"
@@ -530,9 +531,12 @@ void PrintDialogGtk2::OnJobCompleted(GtkPrintJob* print_job,
     LOG(ERROR) << "Printing failed: " << error->message;
   if (print_job)
     g_object_unref(print_job);
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          base::BindOnce(base::IgnoreResult(&base::DeleteFile),
-                                         path_to_pdf_, false));
+
+  base::PostTaskWithTraits(FROM_HERE,
+                           {base::MayBlock(), base::TaskPriority::BACKGROUND,
+                            base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
+                           base::BindOnce(base::IgnoreResult(&base::DeleteFile),
+                                          path_to_pdf_, false));
   // Printing finished. Matches AddRef() in PrintDocument();
   Release();
 }
