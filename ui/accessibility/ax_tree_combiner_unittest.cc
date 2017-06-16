@@ -192,4 +192,15 @@ TEST(CombineAXTreesTest, FocusedTree) {
   EXPECT_EQ(6, combined.tree_data.focus_id);
 }
 
+TEST(CombineAXTreesTest, EmptyTree) {
+  AXTreeUpdate tree;
+
+  AXTreeCombiner combiner;
+  combiner.AddTree(tree, true);
+  combiner.Combine();
+
+  const AXTreeUpdate& combined = combiner.combined();
+  ASSERT_EQ(0U, combined.nodes.size());
+}
+
 }  // namespace ui

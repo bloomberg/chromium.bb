@@ -40,7 +40,7 @@ bool AXTreeCombiner::Combine() {
   ProcessTree(root);
 
   // Set the root id.
-  combined_.root_id = combined_.nodes[0].id;
+  combined_.root_id = combined_.nodes.size() > 0 ? combined_.nodes[0].id : 0;
 
   // Finally, handle the tree ID, taking into account which subtree might
   // have focus and mapping IDs from the tree data appropriately.
