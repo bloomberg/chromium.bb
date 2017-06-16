@@ -64,6 +64,11 @@ class GFX_EXPORT ShadowValue {
   SkColor color_;
 };
 
+inline bool operator==(const ShadowValue& lhs, const ShadowValue& rhs) {
+  return lhs.offset() == rhs.offset() && lhs.blur() == rhs.blur() &&
+         lhs.color() == rhs.color();
+}
+
 }  // namespace gfx
 
 #endif  // UI_GFX_SHADOW_VALUE_H_

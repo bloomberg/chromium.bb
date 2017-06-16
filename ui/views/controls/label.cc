@@ -147,7 +147,8 @@ void Label::SetSelectionBackgroundColor(SkColor color) {
 }
 
 void Label::SetShadows(const gfx::ShadowValues& shadows) {
-  // TODO(mukai): early exit if the specified shadows are same.
+  if (render_text_->shadows() == shadows)
+    return;
   is_first_paint_text_ = true;
   render_text_->set_shadows(shadows);
   ResetLayout();
