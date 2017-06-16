@@ -2189,8 +2189,8 @@ TEST_F(WebContentsImplTest, CreateInterstitialForClosingTab) {
       new TestInterstitialPage(contents(), true, url2, &state, &deleted);
   TestInterstitialPageStateGuard state_guard(interstitial);
   interstitial->Show();
-  RenderFrameHostImpl* interstitial_rfh =
-      static_cast<RenderFrameHostImpl*>(interstitial->GetMainFrame());
+  TestRenderFrameHost* interstitial_rfh =
+      static_cast<TestRenderFrameHost*>(interstitial->GetMainFrame());
   // The interstitial should not show until its navigation has committed.
   EXPECT_FALSE(interstitial->is_showing());
   EXPECT_FALSE(contents()->ShowingInterstitialPage());
@@ -2207,6 +2207,9 @@ TEST_F(WebContentsImplTest, CreateInterstitialForClosingTab) {
   interstitial_navigator->DidStartProvisionalLoad(
       interstitial_rfh, url2, std::vector<GURL>(), base::TimeTicks::Now());
   EXPECT_FALSE(deleted);
+
+  // Simulate a commit in the interstitial page, which should also not crash.
+  interstitial_rfh->SimulateNavigationCommit(url2);
 
   RunAllPendingInMessageLoop();
   EXPECT_TRUE(deleted);
