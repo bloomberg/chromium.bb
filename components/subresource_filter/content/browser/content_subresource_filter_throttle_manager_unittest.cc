@@ -14,6 +14,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/test_simple_task_runner.h"
 #include "components/subresource_filter/content/browser/async_document_subresource_filter.h"
 #include "components/subresource_filter/content/browser/subresource_filter_observer_manager.h"
@@ -674,6 +675,37 @@ TEST_P(ContentSubresourceFilterThrottleManagerTest,
   ExpectActivationSignalForFrame(child, false /* expect_activation */);
 
   EXPECT_EQ(0, disallowed_notification_count());
+}
+
+TEST_F(ContentSubresourceFilterThrottleManagerTest, LogActivation) {
+  base::HistogramTester tester;
+  NavigateAndCommitMainFrame(GURL(kTestURLWithActivation));
+  const char kActivationStateHistogram[] =
+      "SubresourceFilter.PageLoad.ActivationState";
+  tester.ExpectBucketCount(kActivationStateHistogram,
+                           static_cast<int>(ActivationLevel::ENABLED), 1);
+
+  NavigateAndCommitMainFrame(GURL(kTestURLWithDryRun));
+  tester.ExpectBucketCount(kActivationStateHistogram,
+                           static_cast<int>(ActivationLevel::DRYRUN), 1);
+
+  NavigateAndCommitMainFrame(GURL(kTestURLWithNoActivation));
+  tester.ExpectBucketCount(kActivationStateHistogram,
+                           static_cast<int>(ActivationLevel::DISABLED), 1);
+
+  // Navigate a subframe that is not filtered, but should still activate.
+  CreateSubframeWithTestNavigation(GURL("https://whitelist.com"), main_rfh());
+  SimulateStartAndExpectResult(content::NavigationThrottle::PROCEED);
+  content::RenderFrameHost* subframe1 =
+      SimulateCommitAndExpectResult(content::NavigationThrottle::PROCEED);
+  ExpectActivationSignalForFrame(subframe1, true /* expect_activation */);
+
+  tester.ExpectTotalCount(kActivationStateHistogram, 3);
+  // Only those with page level activation do ruleset lookups.
+  tester.ExpectTotalCount("SubresourceFilter.PageLoad.Activation.WallDuration",
+                          2);
+  tester.ExpectTotalCount("SubresourceFilter.PageLoad.Activation.CPUDuration",
+                          2);
 }
 
 // TODO(csharrison): Make sure the following conditions are exercised in tests:

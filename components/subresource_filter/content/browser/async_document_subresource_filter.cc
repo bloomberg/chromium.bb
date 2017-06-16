@@ -27,6 +27,12 @@ ActivationState ComputeActivationState(
       "SubresourceFilter.DocumentLoad.Activation.WallDuration");
   SCOPED_UMA_HISTOGRAM_MICRO_THREAD_TIMER(
       "SubresourceFilter.DocumentLoad.Activation.CPUDuration");
+  if (parent_document_origin.unique()) {
+    SCOPED_UMA_HISTOGRAM_MICRO_TIMER(
+        "SubresourceFilter.PageLoad.Activation.WallDuration");
+    SCOPED_UMA_HISTOGRAM_MICRO_THREAD_TIMER(
+        "SubresourceFilter.PageLoad.Activation.CPUDuration");
+  }
 
   IndexedRulesetMatcher matcher(ruleset->data(), ruleset->length());
   ActivationState activation_state = parent_activation_state;

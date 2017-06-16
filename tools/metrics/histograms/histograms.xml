@@ -74139,6 +74139,33 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="SubresourceFilter.PageLoad.Activation.CPUDuration"
+    units="microseconds">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Records how much thread CPU time it takes to decide whether subresource
+    filtering should be activated for a main frame.
+  </summary>
+</histogram>
+
+<histogram name="SubresourceFilter.PageLoad.Activation.WallDuration"
+    units="microseconds">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Records how long it takes to decide whether subresource filtering should be
+    activated for a main frame.
+  </summary>
+</histogram>
+
+<histogram name="SubresourceFilter.PageLoad.ActivationState"
+    enum="SubresourceFilterActivationState">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Whenever a document load is committed in a main frame, records whether
+    subresource filtering should be activated for that load.
+  </summary>
+</histogram>
+
 <histogram name="SubresourceFilter.PageLoad.FinalURLMatch" units="matches">
   <owner>melandory@chromium.org</owner>
   <summary>

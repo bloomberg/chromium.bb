@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "components/subresource_filter/content/browser/activation_state_computing_navigation_throttle.h"
@@ -130,6 +131,10 @@ void ContentSubresourceFilterThrottleManager::DidFinishNavigation(
                                         kActivationConsoleMessage);
       }
     }
+    ActivationLevel level = filter ? filter->activation_state().activation_level
+                                   : ActivationLevel::DISABLED;
+    UMA_HISTOGRAM_ENUMERATION("SubresourceFilter.PageLoad.ActivationState",
+                              level, ActivationLevel::LAST);
   }
 
   // Make sure |activated_frame_hosts_| is updated or cleaned up depending on
