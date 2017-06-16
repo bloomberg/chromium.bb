@@ -5,10 +5,13 @@
 #import "ios/chrome/browser/ui/tools_menu/reading_list_menu_view_item.h"
 
 #include "base/mac/foundation_util.h"
-#import "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/reading_list/number_badge_view.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 // ID for cell reuse
@@ -17,7 +20,7 @@ const CGFloat kToolsMenuItemTrailingMargin = 25;
 }  // namespace
 
 @interface ReadingListMenuViewCell () {
-  base::scoped_nsobject<NumberBadgeView> _badge;
+  NumberBadgeView* _badge;
 }
 @end
 
@@ -42,7 +45,7 @@ const CGFloat kToolsMenuItemTrailingMargin = 25;
 
   [super initializeViews];
 
-  _badge.reset([[NumberBadgeView alloc] initWithFrame:CGRectZero]);
+  _badge = [[NumberBadgeView alloc] initWithFrame:CGRectZero];
   [_badge setTranslatesAutoresizingMaskIntoConstraints:NO];
   [self.contentView addSubview:_badge];
 
@@ -65,7 +68,7 @@ const CGFloat kToolsMenuItemTrailingMargin = 25;
       addObject:[self.title.centerYAnchor
                     constraintEqualToAnchor:self.contentView.centerYAnchor]];
   [constraintsToApply
-      addObject:[_badge.get().centerYAnchor
+      addObject:[_badge.centerYAnchor
                     constraintEqualToAnchor:self.contentView.centerYAnchor]];
 
   [NSLayoutConstraint activateConstraints:constraintsToApply];

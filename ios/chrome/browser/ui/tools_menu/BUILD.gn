@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("tools_menu") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "reading_list_menu_view_item.h",
     "reading_list_menu_view_item.mm",

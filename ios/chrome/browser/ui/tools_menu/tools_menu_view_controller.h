@@ -53,12 +53,12 @@ extern NSString* const kToolsMenuRequestMobileId;
 @property(nonatomic, assign) BOOL isCurrentPageBookmarked;
 @property(nonatomic, assign) BOOL isTabLoading;
 // The tool button to be shown hovering above the popup.
-@property(nonatomic, readonly) UIButton* toolsButton;
+@property(nonatomic, readonly, weak) UIButton* toolsButton;
 
 // Keeps track of the items in tools menu.
 @property(nonatomic, copy) NSArray* menuItems;
 
-@property(nonatomic, assign) id<ToolsPopupTableDelegate> delegate;
+@property(nonatomic, weak) id<ToolsPopupTableDelegate> delegate;
 
 // Initializes the Tools popup menu.
 - (void)initializeMenuWithConfiguration:(ToolsMenuConfiguration*)configuration;

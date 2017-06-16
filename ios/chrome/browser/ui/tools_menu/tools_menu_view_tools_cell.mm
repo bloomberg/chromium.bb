@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/tools_menu/tools_menu_view_tools_cell.h"
 
-#include "base/mac/objc_property_releaser.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/ui/commands/ios_command_ids.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
@@ -18,9 +17,11 @@
 // IDC_MinimumLabelValue) to avoid collisions.
 #define IDC_TEMP_EDIT_BOOKMARK 3900
 
-@implementation ToolsMenuViewToolsCell {
-  base::mac::ObjCPropertyReleaser _propertyReleaser_ToolsMenuViewToolsCell;
-}
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
+@implementation ToolsMenuViewToolsCell
 
 @synthesize reloadButton = _reloadButton;
 @synthesize shareButton = _shareButton;
@@ -46,9 +47,6 @@
 }
 
 - (void)commonInitialization {
-  _propertyReleaser_ToolsMenuViewToolsCell.Init(self,
-                                                [ToolsMenuViewToolsCell class]);
-
   [self setBackgroundColor:[UIColor whiteColor]];
   [self setOpaque:YES];
 
