@@ -774,6 +774,9 @@ crbug.com/728378 virtual/layout_ng/overflow/overflow-basic-003.html [ Failure ]
 crbug.com/724701 virtual/layout_ng/overflow/overflow-basic-004.html [ Failure ]
 crbug.com/728378 virtual/layout_ng/overflow/overflow-bug-chrome-ng-001.html [ Failure ]
 crbug.com/728378 virtual/layout_ng/overflow/overflow-transform-002.html [ Failure ]
+crbug.com/728378 virtual/layout_ng/overflow/overflow-position-001.html [ Failure ]
+crbug.com/728378 virtual/layout_ng/overflow/overflow-position-002.html [ Failure ]
+crbug.com/728378 virtual/layout_ng/overflow/overflow-position-003.html [ Failure ]
 
 # ====== LayoutNG-only failures until here ======
 
