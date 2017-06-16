@@ -350,6 +350,10 @@ void DCLayerTree::InitializeVideoProcessor(const gfx::Size& input_size,
   hr = video_device_->CreateVideoProcessor(video_processor_enumerator_.Get(), 0,
                                            video_processor_.GetAddressOf());
   CHECK(SUCCEEDED(hr));
+
+  // Auto stream processing (the default) can hurt power consumption.
+  video_context_->VideoProcessorSetStreamAutoProcessingMode(
+      video_processor_.Get(), 0, FALSE);
 }
 
 base::win::ScopedComPtr<IDXGISwapChain1>
@@ -639,9 +643,6 @@ void DCLayerTree::SwapChainPresenter::PresentToSwapChain(
     RECT source_rect = gfx::Rect(ceiled_input_size).ToRECT();
     video_context_->VideoProcessorSetStreamSourceRect(video_processor_.Get(), 0,
                                                       TRUE, &source_rect);
-
-    video_context_->VideoProcessorSetStreamAutoProcessingMode(
-        video_processor_.Get(), 0, FALSE);
 
     hr = video_context_->VideoProcessorBlt(video_processor_.Get(),
                                            out_view_.Get(), 0, 1, &stream);
