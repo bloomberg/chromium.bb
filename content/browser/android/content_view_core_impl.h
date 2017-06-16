@@ -38,7 +38,6 @@ namespace content {
 class GinJavaBridgeDispatcherHost;
 class RenderFrameHost;
 class RenderWidgetHostViewAndroid;
-struct ContextMenuParams;
 struct MenuItem;
 
 class ContentViewCoreImpl : public ContentViewCore,
@@ -56,7 +55,6 @@ class ContentViewCoreImpl : public ContentViewCore,
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject() override;
   WebContents* GetWebContents() const override;
   ui::WindowAndroid* GetWindowAndroid() const override;
-  bool ShowSelectionMenu(const ContextMenuParams& params) override;
 
   void AddObserver(ContentViewCoreImplObserver* observer);
   void RemoveObserver(ContentViewCoreImplObserver* observer);
@@ -291,10 +289,6 @@ class ContentViewCoreImpl : public ContentViewCore,
   void SelectBetweenCoordinates(const gfx::PointF& base,
                                 const gfx::PointF& extent);
 
-  void OnShowUnhandledTapUIIfNeeded(int x_dip, int y_dip);
-  void OnSelectWordAroundCaretAck(bool did_select,
-                                  int start_adjust,
-                                  int end_adjust);
   void OnTouchDown(const base::android::ScopedJavaLocalRef<jobject>& event);
 
   ui::ViewAndroid* GetViewAndroid() const;

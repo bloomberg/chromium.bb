@@ -845,18 +845,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         destroyPastePopup();
     }
 
-    @SuppressWarnings("unused")
-    @CalledByNative
-    private void onShowUnhandledTapUIIfNeeded(int x, int y) {
-        mSelectionPopupController.onShowUnhandledTapUIIfNeeded(x, y);
-    }
-
-    @SuppressWarnings("unused")
-    @CalledByNative
-    private void onSelectWordAroundCaretAck(boolean didSelect, int startAdjust, int endAdjust) {
-        mSelectionPopupController.onSelectWordAroundCaretAck(didSelect, startAdjust, endAdjust);
-    }
-
     /**
      * Called just prior to a tap or press gesture being forwarded to the renderer.
      */
@@ -1649,14 +1637,6 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
     @CalledByNative
     private void performLongPressHapticFeedback() {
         mContainerView.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
-    }
-
-    @CalledByNative
-    private void showSelectionMenu(int left, int top, int right, int bottom, boolean isEditable,
-            boolean isPasswordType, String selectionText, boolean canSelectAll,
-            boolean canEditRichly, boolean shouldSuggest) {
-        mSelectionPopupController.showSelectionMenu(left, top, right, bottom, isEditable,
-                isPasswordType, selectionText, canSelectAll, canEditRichly, shouldSuggest);
     }
 
     private void destroyPastePopup() {

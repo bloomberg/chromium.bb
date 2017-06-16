@@ -99,8 +99,7 @@ WebContentsViewAndroid::~WebContentsViewAndroid() {
 void WebContentsViewAndroid::SetContentViewCore(
     ContentViewCoreImpl* content_view_core) {
   content_view_core_ = content_view_core;
-  RenderWidgetHostViewAndroid* rwhv = static_cast<RenderWidgetHostViewAndroid*>(
-      web_contents_->GetRenderWidgetHostView());
+  RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
   if (rwhv)
     rwhv->SetContentViewCore(content_view_core_);
 
@@ -119,8 +118,7 @@ void WebContentsViewAndroid::SetContentViewCore(
 void WebContentsViewAndroid::SetOverscrollRefreshHandler(
     std::unique_ptr<ui::OverscrollRefreshHandler> overscroll_refresh_handler) {
   overscroll_refresh_handler_ = std::move(overscroll_refresh_handler);
-  RenderWidgetHostViewAndroid* rwhv = static_cast<RenderWidgetHostViewAndroid*>(
-      web_contents_->GetRenderWidgetHostView());
+  RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
   if (rwhv)
     rwhv->OnOverscrollRefreshHandlerAvailable();
 
@@ -152,6 +150,12 @@ gfx::NativeView WebContentsViewAndroid::GetContentNativeView() const {
 
   // TODO(sievers): This should return null.
   return GetNativeView();
+}
+
+RenderWidgetHostViewAndroid*
+WebContentsViewAndroid::GetRenderWidgetHostViewAndroid() {
+  return static_cast<RenderWidgetHostViewAndroid*>(
+      web_contents_->GetRenderWidgetHostView());
 }
 
 gfx::NativeWindow WebContentsViewAndroid::GetTopLevelNativeWindow() const {
@@ -186,8 +190,7 @@ void WebContentsViewAndroid::SizeContents(const gfx::Size& size) {
 }
 
 void WebContentsViewAndroid::Focus() {
-  RenderWidgetHostViewAndroid* rwhv = static_cast<RenderWidgetHostViewAndroid*>(
-      web_contents_->GetRenderWidgetHostView());
+  RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
   if (web_contents_->ShowingInterstitialPage()) {
     web_contents_->GetInterstitialPage()->Focus();
   } else {
@@ -267,6 +270,12 @@ void WebContentsViewAndroid::SetOverscrollControllerEnabled(bool enabled) {
 
 void WebContentsViewAndroid::ShowContextMenu(
     RenderFrameHost* render_frame_host, const ContextMenuParams& params) {
+  RenderWidgetHostViewAndroid* view = GetRenderWidgetHostViewAndroid();
+  // See if context menu is handled by SelectionController as a selection menu.
+  // If not, use the delegate to show it.
+  if (view && view->ShowSelectionMenu(params))
+    return;
+
   if (delegate_)
     delegate_->ShowContextMenu(render_frame_host, params);
 }

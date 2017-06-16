@@ -51,7 +51,6 @@
 #include "device/geolocation/geolocation_service_context.h"
 #include "jni/ContentViewCore_jni.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
-#include "third_party/WebKit/public/web/WebContextMenuData.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
 #include "ui/events/blink/blink_event_util.h"
@@ -71,9 +70,7 @@ using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
 using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
-using blink::WebContextMenuData;
 using blink::WebGestureEvent;
-using blink::WebContextMenuData;
 using blink::WebInputEvent;
 
 namespace content {
@@ -568,46 +565,6 @@ void ContentViewCoreImpl::RequestDisallowInterceptTouchEvent() {
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (!obj.is_null())
     Java_ContentViewCore_requestDisallowInterceptTouchEvent(env, obj);
-}
-
-bool ContentViewCoreImpl::ShowSelectionMenu(const ContextMenuParams& params) {
-  // Display paste pop-up only when selection is empty and editable.
-  const bool from_touch = params.source_type == ui::MENU_SOURCE_TOUCH ||
-                          params.source_type == ui::MENU_SOURCE_LONG_PRESS ||
-                          params.source_type == ui::MENU_SOURCE_TOUCH_HANDLE ||
-                          params.source_type == ui::MENU_SOURCE_STYLUS;
-  if (!from_touch || (!params.is_editable && params.selection_text.empty()))
-    return false;
-
-  RenderWidgetHostViewAndroid* view = GetRenderWidgetHostViewAndroid();
-  if (!view)
-    return false;
-
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
-    return false;
-
-  const bool can_select_all =
-      !!(params.edit_flags & WebContextMenuData::kCanSelectAll);
-  const bool can_edit_richly =
-      !!(params.edit_flags & blink::WebContextMenuData::kCanEditRichly);
-  int handle_height = GetRenderWidgetHostViewAndroid()->GetTouchHandleHeight();
-  const bool is_password_type =
-      params.input_field_type ==
-      blink::WebContextMenuData::kInputFieldTypePassword;
-  const ScopedJavaLocalRef<jstring> jselected_text =
-      ConvertUTF16ToJavaString(env, params.selection_text);
-  const bool should_suggest = params.source_type == ui::MENU_SOURCE_TOUCH ||
-                              params.source_type == ui::MENU_SOURCE_LONG_PRESS;
-
-  Java_ContentViewCore_showSelectionMenu(
-      env, obj, params.selection_rect.x(), params.selection_rect.y(),
-      params.selection_rect.right(),
-      params.selection_rect.bottom() + handle_height, params.is_editable,
-      is_password_type, jselected_text, can_select_all, can_edit_richly,
-      should_suggest);
-  return true;
 }
 
 void ContentViewCoreImpl::ShowDisambiguationPopup(
@@ -1107,27 +1064,6 @@ void ContentViewCoreImpl::SetBackgroundOpaque(JNIEnv* env,
     else
       GetRenderWidgetHostViewAndroid()->SetBackgroundColor(SK_ColorTRANSPARENT);
   }
-}
-
-void ContentViewCoreImpl::OnShowUnhandledTapUIIfNeeded(int x_dip, int y_dip) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
-    return;
-  Java_ContentViewCore_onShowUnhandledTapUIIfNeeded(
-      env, obj, static_cast<jint>(x_dip * dpi_scale()),
-      static_cast<jint>(y_dip * dpi_scale()));
-}
-
-void ContentViewCoreImpl::OnSelectWordAroundCaretAck(bool did_select,
-                                                     int start_adjust,
-                                                     int end_adjust) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
-    return;
-  Java_ContentViewCore_onSelectWordAroundCaretAck(env, obj, did_select,
-                                                  start_adjust, end_adjust);
 }
 
 void ContentViewCoreImpl::HidePopupsAndPreserveSelection() {

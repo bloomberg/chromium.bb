@@ -20,6 +20,7 @@
 
 namespace content {
 class ContentViewCoreImpl;
+class RenderWidgetHostViewAndroid;
 class SynchronousCompositorClient;
 class WebContentsImpl;
 
@@ -47,6 +48,8 @@ class WebContentsViewAndroid : public WebContentsView,
 
   void SetOverscrollRefreshHandler(
       std::unique_ptr<ui::OverscrollRefreshHandler> overscroll_refresh_handler);
+
+  RenderWidgetHostViewAndroid* GetRenderWidgetHostViewAndroid();
 
   // WebContentsView implementation --------------------------------------------
   gfx::NativeView GetNativeView() const override;
