@@ -8,7 +8,6 @@
 #include <set>
 #include <string>
 #include <unordered_map>
-#include <utility>
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
@@ -242,11 +241,6 @@ class EventRouter : public KeyedService,
     kServiceWorker,
   };
 
-  // An identifier for an event dispatch that is used to prevent double dispatch
-  // due to race conditions between the direct and lazy dispatch paths.
-  typedef std::tuple<const content::BrowserContext*, std::string, int>
-      EventDispatchIdentifier;
-
   // TODO(gdk): Document this.
   static void DispatchExtensionMessage(
       IPC::Sender* ipc_sender,
@@ -287,15 +281,6 @@ class EventRouter : public KeyedService,
   void DispatchEventImpl(const std::string& restrict_to_extension_id,
                          const linked_ptr<Event>& event);
 
-  // Ensures that all lazy background pages that are interested in the given
-  // event are loaded, and queues the event if the page is not ready yet.
-  // Inserts an EventDispatchIdentifier into |already_dispatched| for each lazy
-  // event dispatch that is queued.
-  void DispatchLazyEvent(const std::string& extension_id,
-                         const linked_ptr<Event>& event,
-                         std::set<EventDispatchIdentifier>* already_dispatched,
-                         const base::DictionaryValue* listener_filter);
-
   // Dispatches the event to the specified extension or URL running in
   // |process|.
   void DispatchEventToProcess(const std::string& extension_id,
@@ -305,15 +290,6 @@ class EventRouter : public KeyedService,
                               const linked_ptr<Event>& event,
                               const base::DictionaryValue* listener_filter,
                               bool did_enqueue);
-
-  // Possibly loads given extension's background page in preparation to
-  // dispatch an event.  Returns true if the event was queued for subsequent
-  // dispatch, false otherwise.
-  bool MaybeLoadLazyBackgroundPageToDispatchEvent(
-      content::BrowserContext* context,
-      const Extension* extension,
-      const linked_ptr<Event>& event,
-      const base::DictionaryValue* listener_filter);
 
   // Adds a filter to an event.
   void AddFilterToEvent(const std::string& event_name,
