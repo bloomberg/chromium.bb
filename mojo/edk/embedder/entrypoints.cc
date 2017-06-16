@@ -64,8 +64,8 @@ MojoResult MojoCreateMessageImpl(uintptr_t context,
   return g_core->CreateMessage(context, thunks, message);
 }
 
-MojoResult MojoFreeMessageImpl(MojoMessageHandle message) {
-  return g_core->FreeMessage(message);
+MojoResult MojoDestroyMessageImpl(MojoMessageHandle message) {
+  return g_core->DestroyMessage(message);
 }
 
 MojoResult MojoSerializeMessageImpl(MojoMessageHandle message) {
@@ -256,7 +256,7 @@ MojoSystemThunks MakeSystemThunks() {
                                     MojoArmWatcherImpl,
                                     MojoFuseMessagePipesImpl,
                                     MojoCreateMessageImpl,
-                                    MojoFreeMessageImpl,
+                                    MojoDestroyMessageImpl,
                                     MojoSerializeMessageImpl,
                                     MojoGetSerializedMessageContentsImpl,
                                     MojoReleaseMessageContextImpl,

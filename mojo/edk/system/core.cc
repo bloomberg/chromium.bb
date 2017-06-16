@@ -483,7 +483,7 @@ MojoResult Core::CreateMessage(uintptr_t context,
   return MOJO_RESULT_OK;
 }
 
-MojoResult Core::FreeMessage(MojoMessageHandle message_handle) {
+MojoResult Core::DestroyMessage(MojoMessageHandle message_handle) {
   if (!message_handle)
     return MOJO_RESULT_INVALID_ARGUMENT;
 

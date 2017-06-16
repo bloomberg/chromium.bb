@@ -135,7 +135,7 @@ struct MojoMessageOperationThunks {
 
   // Destroys the message object associated with |context|. This is called when
   // the message associated with |context| is either explicitly freed by
-  // |MojoFreeMessage()| or serialized for transmission across a process
+  // |MojoDestroyMessage()| or serialized for transmission across a process
   // boundary (after serialization is complete.)
   //
   // The implementation must use this to release any resources associated with
@@ -186,7 +186,7 @@ MOJO_SYSTEM_EXPORT MojoResult MojoWriteMessage(MojoHandle message_pipe_handle,
 
 // Reads the next message from a message pipe and returns a message as an opaque
 // message handle. The returned message must eventually be destroyed using
-// |MojoFreeMessage()|.
+// |MojoDestroyMessage()|.
 //
 // Message payload and handles can be accessed using
 // |MojoGetSerializedMessageContents()|.
@@ -273,7 +273,7 @@ MojoCreateMessage(uintptr_t context,
 // Returns:
 //   |MOJO_RESULT_OK| if |message| was valid and has been freed.
 //   |MOJO_RESULT_INVALID_ARGUMENT| if |message| was not a valid message.
-MOJO_SYSTEM_EXPORT MojoResult MojoFreeMessage(MojoMessageHandle message);
+MOJO_SYSTEM_EXPORT MojoResult MojoDestroyMessage(MojoMessageHandle message);
 
 // Forces a message to be serialized in-place if not already serialized.
 //

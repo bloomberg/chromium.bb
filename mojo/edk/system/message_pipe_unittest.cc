@@ -72,7 +72,7 @@ class MessagePipeTest : public test::MojoTestBase {
       CHECK(bytes);
       memcpy(bytes, buffer, *num_bytes);
     }
-    CHECK_EQ(MOJO_RESULT_OK, MojoFreeMessage(message_handle));
+    CHECK_EQ(MOJO_RESULT_OK, MojoDestroyMessage(message_handle));
     return rv;
   }
 

@@ -144,7 +144,7 @@ gin::Dictionary ReadMessage(const gin::Arguments& args,
 
   result = MojoSerializeMessage(message);
   if (result != MOJO_RESULT_OK && result != MOJO_RESULT_FAILED_PRECONDITION) {
-    MojoFreeMessage(message);
+    MojoDestroyMessage(message);
     gin::Dictionary dictionary = gin::Dictionary::CreateEmpty(args.isolate());
     dictionary.Set("result", MOJO_RESULT_ABORTED);
     return dictionary;
@@ -166,7 +166,7 @@ gin::Dictionary ReadMessage(const gin::Arguments& args,
   }
 
   if (result != MOJO_RESULT_OK) {
-    MojoFreeMessage(message);
+    MojoDestroyMessage(message);
     gin::Dictionary dictionary = gin::Dictionary::CreateEmpty(args.isolate());
     dictionary.Set("result", MOJO_RESULT_ABORTED);
     return dictionary;
@@ -181,7 +181,7 @@ gin::Dictionary ReadMessage(const gin::Arguments& args,
     memcpy(buffer.bytes(), bytes, num_bytes);
   }
 
-  MojoFreeMessage(message);
+  MojoDestroyMessage(message);
 
   gin::Dictionary dictionary = gin::Dictionary::CreateEmpty(args.isolate());
   dictionary.Set("result", result);

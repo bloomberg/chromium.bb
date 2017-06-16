@@ -179,9 +179,9 @@ MojoResult MojoCreateMessage(uintptr_t context,
   return g_thunks.CreateMessage(context, thunks, message);
 }
 
-MojoResult MojoFreeMessage(MojoMessageHandle message) {
-  assert(g_thunks.FreeMessage);
-  return g_thunks.FreeMessage(message);
+MojoResult MojoDestroyMessage(MojoMessageHandle message) {
+  assert(g_thunks.DestroyMessage);
+  return g_thunks.DestroyMessage(message);
 }
 
 MojoResult MojoSerializeMessage(MojoMessageHandle message) {

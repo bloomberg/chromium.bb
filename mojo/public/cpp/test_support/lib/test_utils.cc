@@ -50,7 +50,7 @@ bool DiscardMessage(const MessagePipeHandle& handle) {
       MojoReadMessage(handle.value(), &message, MOJO_READ_MESSAGE_FLAG_NONE);
   if (rv != MOJO_RESULT_OK)
     return false;
-  MojoFreeMessage(message);
+  MojoDestroyMessage(message);
   return true;
 }
 
