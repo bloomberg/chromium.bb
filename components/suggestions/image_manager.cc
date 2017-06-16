@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "components/image_fetcher/core/image_fetcher.h"
 #include "components/suggestions/image_encoder.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -82,11 +83,11 @@ ImageManager::ImageManager() : weak_ptr_factory_(this) {}
 ImageManager::ImageManager(
     std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher,
     std::unique_ptr<ProtoDatabase<ImageData>> database,
-    const base::FilePath& database_dir,
-    scoped_refptr<base::TaskRunner> background_task_runner)
+    const base::FilePath& database_dir)
     : image_fetcher_(std::move(image_fetcher)),
       database_(std::move(database)),
-      background_task_runner_(background_task_runner),
+      background_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+          {base::TaskPriority::USER_VISIBLE})),
       database_ready_(false),
       weak_ptr_factory_(this) {
   image_fetcher_->SetImageFetcherDelegate(this);
@@ -216,6 +217,8 @@ void ImageManager::ServeFromCacheOrNetwork(
 void ImageManager::SaveImage(const std::string& url, const SkBitmap& bitmap) {
   scoped_refptr<base::RefCountedBytes> encoded_data(
       new base::RefCountedBytes());
+  // TODO(treib): Should encoding happen on the |background_task_runner_|?
+  // *De*coding happens there.
   if (!EncodeSkBitmapToJPEG(bitmap, &encoded_data->data())) {
     return;
   }

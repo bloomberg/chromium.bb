@@ -96,9 +96,8 @@ SuggestionsServiceFactory::BuildServiceInstanceFor(
               web::WebThread::GetBlockingPool()),
           browser_state->GetRequestContext());
 
-  std::unique_ptr<ImageManager> thumbnail_manager(new ImageManager(
-      std::move(image_fetcher), std::move(db), database_dir,
-      web::WebThread::GetTaskRunnerForThread(web::WebThread::DB)));
+  std::unique_ptr<ImageManager> thumbnail_manager(
+      new ImageManager(std::move(image_fetcher), std::move(db), database_dir));
 
   return base::MakeUnique<SuggestionsServiceImpl>(
       signin_manager, token_service, sync_service,

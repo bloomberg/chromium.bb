@@ -11,7 +11,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "components/image_fetcher/core/image_fetcher.h"
 #include "components/image_fetcher/core/image_fetcher_delegate.h"
 #include "components/leveldb_proto/proto_database.h"
@@ -23,7 +22,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
 
 using ::testing::Return;
@@ -129,8 +127,7 @@ class ImageManagerTest : public testing::Test {
     EXPECT_CALL(*mock_image_fetcher_, SetImageFetcherDelegate(_));
     return new ImageManager(base::WrapUnique(mock_image_fetcher_),
                             base::WrapUnique(fake_db),
-                            FakeDB<ImageData>::DirectoryForTestDB(),
-                            base::ThreadTaskRunnerHandle::Get());
+                            FakeDB<ImageData>::DirectoryForTestDB());
   }
 
   EntryMap db_model_;
