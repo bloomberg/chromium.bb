@@ -12,6 +12,8 @@ template("system_webview_apk_tmpl") {
 
     deps += [
       "//android_webview:assets",
+      "//android_webview/apk:webview_license_activity_java",
+      "//android_webview/apk:webview_license_provider_java",
       "//base:base_java",
     ]
 
