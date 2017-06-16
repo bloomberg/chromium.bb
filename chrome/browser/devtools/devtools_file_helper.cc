@@ -15,6 +15,8 @@
 #include "base/md5.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/value_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/devtools/devtools_file_watcher.h"
@@ -120,14 +122,14 @@ class SelectFileDialog : public ui::SelectFileDialog::Listener,
 };
 
 void WriteToFile(const base::FilePath& path, const std::string& content) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(!path.empty());
 
   base::WriteFile(path, content.c_str(), content.length());
 }
 
 void AppendToFile(const base::FilePath& path, const std::string& content) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+  base::ThreadRestrictions::AssertIOAllowed();
   DCHECK(!path.empty());
 
   base::AppendToFile(path, content.c_str(), content.size());
@@ -210,14 +212,13 @@ DevToolsFileHelper::DevToolsFileHelper(WebContents* web_contents,
     : web_contents_(web_contents),
       profile_(profile),
       delegate_(delegate),
+      file_task_runner_(
+          base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()})),
       weak_factory_(this) {
   pref_change_registrar_.Init(profile_->GetPrefs());
 }
 
-DevToolsFileHelper::~DevToolsFileHelper() {
-  BrowserThread::DeleteSoon(BrowserThread::FILE, FROM_HERE,
-                            file_watcher_.release());
-}
+DevToolsFileHelper::~DevToolsFileHelper() = default;
 
 void DevToolsFileHelper::Save(const std::string& url,
                               const std::string& content,
@@ -275,8 +276,8 @@ void DevToolsFileHelper::Append(const std::string& url,
   if (it == saved_files_.end())
     return;
   callback.Run();
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          BindOnce(&AppendToFile, it->second, content));
+  file_task_runner_->PostTask(FROM_HERE,
+                              BindOnce(&AppendToFile, it->second, content));
 }
 
 void DevToolsFileHelper::SaveAsFileSelected(const std::string& url,
@@ -292,8 +293,7 @@ void DevToolsFileHelper::SaveAsFileSelected(const std::string& url,
   files_map->SetWithoutPathExpansion(base::MD5String(url),
                                      base::CreateFilePathValue(path));
   callback.Run();
-  BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
-                          BindOnce(&WriteToFile, path, content));
+  file_task_runner_->PostTask(FROM_HERE, BindOnce(&WriteToFile, path, content));
 }
 
 void DevToolsFileHelper::AddFileSystem(
@@ -308,23 +308,25 @@ void DevToolsFileHelper::AddFileSystem(
     select_file_dialog->Show(ui::SelectFileDialog::SELECT_FOLDER,
                              base::FilePath());
   } else {
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
+    file_task_runner_->PostTask(
+        FROM_HERE,
         BindOnce(&DevToolsFileHelper::CheckProjectFileExistsAndAddFileSystem,
                  weak_factory_.GetWeakPtr(), show_info_bar_callback,
                  base::FilePath::FromUTF8Unsafe(file_system_path)));
   }
 }
 
+// static
 void DevToolsFileHelper::CheckProjectFileExistsAndAddFileSystem(
-    const ShowInfoBarCallback& show_info_bar_callback,
-    const base::FilePath& path) {
-  DCHECK_CURRENTLY_ON(BrowserThread::FILE);
+    base::WeakPtr<DevToolsFileHelper> self,
+    ShowInfoBarCallback show_info_bar_callback,
+    base::FilePath path) {
+  base::ThreadRestrictions::AssertIOAllowed();
   if (base::PathExists(path.Append(FILE_PATH_LITERAL(".devtools")))) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        BindOnce(&DevToolsFileHelper::InnerAddFileSystem,
-                 weak_factory_.GetWeakPtr(), show_info_bar_callback, path));
+        BindOnce(&DevToolsFileHelper::InnerAddFileSystem, std::move(self),
+                 std::move(show_info_bar_callback), path));
   }
 }
 
@@ -387,8 +389,10 @@ DevToolsFileHelper::GetFileSystems() {
   file_system_paths_ = GetAddedFileSystemPaths(profile_);
   std::vector<FileSystem> file_systems;
   if (!file_watcher_) {
-    file_watcher_.reset(new DevToolsFileWatcher(base::Bind(
-        &DevToolsFileHelper::FilePathsChanged, weak_factory_.GetWeakPtr())));
+    file_watcher_.reset(new DevToolsFileWatcher(
+        base::Bind(&DevToolsFileHelper::FilePathsChanged,
+                   weak_factory_.GetWeakPtr()),
+        base::SequencedTaskRunnerHandle::Get()));
     pref_change_registrar_.Add(
         prefs::kDevToolsFileSystemPaths,
         base::Bind(&DevToolsFileHelper::FileSystemPathsSettingChanged,
@@ -401,10 +405,7 @@ DevToolsFileHelper::GetFileSystems() {
                                                    file_system_id,
                                                    file_system_path);
     file_systems.push_back(filesystem);
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        BindOnce(&DevToolsFileWatcher::AddWatch,
-                 base::Unretained(file_watcher_.get()), path));
+    file_watcher_->AddWatch(std::move(path));
   }
   return file_systems;
 }
@@ -440,10 +441,7 @@ void DevToolsFileHelper::FileSystemPathsSettingChanged() {
                                                      file_system_id,
                                                      file_system_path);
       delegate_->FileSystemAdded(filesystem);
-      BrowserThread::PostTask(
-          BrowserThread::FILE, FROM_HERE,
-          BindOnce(&DevToolsFileWatcher::AddWatch,
-                   base::Unretained(file_watcher_.get()), path));
+      file_watcher_->AddWatch(std::move(path));
     } else {
       remaining.erase(file_system_path);
     }
@@ -453,10 +451,7 @@ void DevToolsFileHelper::FileSystemPathsSettingChanged() {
   for (auto file_system_path : remaining) {
     delegate_->FileSystemRemoved(file_system_path);
     base::FilePath path = base::FilePath::FromUTF8Unsafe(file_system_path);
-    BrowserThread::PostTask(
-        BrowserThread::FILE, FROM_HERE,
-        BindOnce(&DevToolsFileWatcher::RemoveWatch,
-                 base::Unretained(file_watcher_.get()), path));
+    file_watcher_->RemoveWatch(std::move(path));
   }
 }
 
