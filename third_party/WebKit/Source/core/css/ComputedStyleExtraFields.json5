@@ -607,7 +607,7 @@
     },
     {
       name: "PageSize",
-      field_template: "storage_only",
+      field_template: "external",
       type_name: "FloatSize",
       field_group: "rare-non-inherited",
       default_value: "FloatSize()",
@@ -700,11 +700,10 @@
     },
     {
       name: "PageSizeType",
-      field_template: "storage_only",
-      type_name: "PageSizeType",
+      field_template: "keyword",
+      keywords: ["auto", "landscape", "portrait", "resolved"],
       field_group: "rare-non-inherited",
-      default_value: "PageSizeType::kAuto",
-      field_size: 2,
+      default_value: "auto",
     },
     {
       name: "HasCurrentOpacityAnimation",

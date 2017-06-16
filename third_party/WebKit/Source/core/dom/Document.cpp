@@ -2428,18 +2428,18 @@ void Document::PageSizeAndMarginsInPixels(int page_index,
 
   double width = page_size.Width();
   double height = page_size.Height();
-  switch (style->GetPageSizeType()) {
-    case PageSizeType::kAuto:
+  switch (style->PageSizeType()) {
+    case EPageSizeType::kAuto:
       break;
-    case PageSizeType::kLandscape:
+    case EPageSizeType::kLandscape:
       if (width < height)
         std::swap(width, height);
       break;
-    case PageSizeType::kPortrait:
+    case EPageSizeType::kPortrait:
       if (width > height)
         std::swap(width, height);
       break;
-    case PageSizeType::kResolved: {
+    case EPageSizeType::kResolved: {
       FloatSize size = style->PageSize();
       width = size.Width();
       height = size.Height();

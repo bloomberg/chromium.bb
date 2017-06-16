@@ -344,17 +344,6 @@ enum SnapAlignment {
 };
 
 enum AutoRepeatType { kNoAutoRepeat, kAutoFill, kAutoFit };
-
-// Page size type.
-// StyleRareNonInheritedData::page_size_ is meaningful only when
-// StyleRareNonInheritedData::page_size_type_ is kResolved.
-enum class PageSizeType {
-  kAuto,       // size: auto
-  kLandscape,  // size: landscape
-  kPortrait,   // size: portrait
-  kResolved    // Size is fully resolved.
-};
-
 }  // namespace blink
 
 #endif  // ComputedStyleConstants_h
