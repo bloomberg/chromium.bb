@@ -54,6 +54,7 @@ constexpr SkColor kHintTextColor = SkColorSetARGBMacro(0xFF, 0xA0, 0xA0, 0xA0);
 
 constexpr int kBackgroundBorderCornerRadius = 2;
 constexpr int kBackgroundBorderCornerRadiusFullscreen = 24;
+
 constexpr int kGoogleIconSize = 24;
 constexpr int kMicIconSize = 24;
 
@@ -367,8 +368,11 @@ void SearchBoxView::ContentsChanged(views::Textfield* sender,
   UpdateModel();
   view_delegate_->AutoLaunchCanceled();
   NotifyQueryChanged();
-  if (is_fullscreen_app_list_enabled_)
-    app_list_view_->SetStateFromSearchBoxView(search_box_->text().empty());
+
+  if (is_fullscreen_app_list_enabled_ && !app_list_view_->is_fullscreen()) {
+    // If the app list is in the peeking state, switch it to fullscreen.
+    app_list_view_->SetState(AppListView::FULLSCREEN);
+  }
 }
 
 bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
