@@ -36,7 +36,6 @@ RefPtr<WebTaskRunner> TaskRunnerHelper::Get(TaskType type, LocalFrame* frame) {
       return frame ? frame->FrameScheduler()->SuspendableTaskRunner()
                    : Platform::Current()->CurrentThread()->GetWebTaskRunner();
     case TaskType::kDOMManipulation:
-    case TaskType::kUserInteraction:
     case TaskType::kHistoryTraversal:
     case TaskType::kEmbed:
     case TaskType::kMediaElementEvent:
@@ -44,7 +43,6 @@ RefPtr<WebTaskRunner> TaskRunnerHelper::Get(TaskType type, LocalFrame* frame) {
     case TaskType::kRemoteEvent:
     case TaskType::kWebSocket:
     case TaskType::kMicrotask:
-    case TaskType::kPostedMessage:
     case TaskType::kUnshippedPortMessage:
     case TaskType::kFileReading:
     case TaskType::kPresentation:
@@ -58,6 +56,11 @@ RefPtr<WebTaskRunner> TaskRunnerHelper::Get(TaskType type, LocalFrame* frame) {
       return frame
                  ? frame->FrameScheduler()->UnthrottledButBlockableTaskRunner()
                  : Platform::Current()->CurrentThread()->GetWebTaskRunner();
+    // PostedMessage can be used for navigation, so we shouldn't block it
+    // when expecting a user gesture.
+    case TaskType::kPostedMessage:
+    // UserInteraction tasks should be run even when expecting a user gesture.
+    case TaskType::kUserInteraction:
     case TaskType::kUnthrottled:
       return frame ? frame->FrameScheduler()->UnthrottledTaskRunner()
                    : Platform::Current()->CurrentThread()->GetWebTaskRunner();
