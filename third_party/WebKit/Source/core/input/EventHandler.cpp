@@ -238,7 +238,6 @@ void EventHandler::Clear() {
   scroll_manager_->Clear();
   gesture_manager_->Clear();
   mouse_event_manager_->Clear();
-  mouse_wheel_event_manager_->Clear();
   last_deferred_tap_element_ = nullptr;
   event_handler_will_reset_capturing_mouse_events_node_ = false;
 }

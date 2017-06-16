@@ -10,7 +10,7 @@ function runTest() {
     div.addEventListener('mousewheel', mouseWheelHandler);
     if (window.eventSender) {
         eventSender.mouseMoveTo(div.offsetLeft + 5, div.offsetTop + 5);
-        eventSender.mouseScrollBy(10, 20, false, true, 0, true, "phaseBegan");
+        eventSender.mouseScrollBy(10, 20);
         finishJSTest();
     } else {
         debug("FAIL: This test requires window.eventSender.");
