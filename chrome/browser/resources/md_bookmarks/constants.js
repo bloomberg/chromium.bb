@@ -30,6 +30,8 @@ var Command = {
   REDO: 'redo',
   // OPEN triggers when you double-click an item.
   OPEN: 'open',
+  SELECT_ALL: 'select-all',
+  DESELECT_ALL: 'deselect-all',
 };
 
 /**
