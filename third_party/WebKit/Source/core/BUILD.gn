@@ -1475,6 +1475,7 @@ source_set("unit_tests") {
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/WebKit/Source/core/editing:unit_tests",
+    "//third_party/WebKit/Source/core/mojo:unit_tests",
   ]
 }
 

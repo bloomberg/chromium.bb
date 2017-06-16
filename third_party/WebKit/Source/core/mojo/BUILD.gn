@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//mojo/public/tools/bindings/mojom.gni")
 import("//third_party/WebKit/Source/core/core.gni")
 
 blink_core_sources("mojo") {
@@ -21,5 +22,41 @@ blink_core_sources("mojo") {
   deps = [
     "//mojo/public/cpp/system",
     "//services/service_manager/public/cpp",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "tests/JsToCppTest.cpp",
+  ]
+
+  data = [
+    "tests/JsToCppTest.js",
+  ]
+
+  configs += [
+    "//third_party/WebKit/Source/core:blink_core_pch",
+    "//third_party/WebKit/Source:config",
+    "//third_party/WebKit/Source:inside_blink",
+  ]
+
+  deps = [
+    ":test_bindings_blink",
+    "//mojo/public/cpp/bindings",
+    "//testing/gtest",
+    "//third_party/WebKit/Source/core:core",
+    "//third_party/WebKit/Source/core:testing",
+  ]
+
+  data_deps = [
+    ":test_bindings",  # For JS bindings: crbug.com/729649.
+    "//mojo/public/js:new_bindings",
+  ]
+}
+
+mojom("test_bindings") {
+  sources = [
+    "tests/JsToCpp.mojom",
   ]
 }
