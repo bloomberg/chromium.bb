@@ -72,6 +72,26 @@ source_set("channel_info") {
   }
 }
 
+source_set("ini_parser") {
+  sources = [
+    "ini_parser.cc",
+    "ini_parser.h",
+  ]
+  deps = [
+    "//base",
+  ]
+}
+
+source_set("common_param_traits_macros") {
+  sources = [
+    "common_param_traits_macros.h",
+  ]
+  deps = [
+    "//components/content_settings/core/common",
+    "//ipc",
+  ]
+}
+
 # Use a static library here because many test binaries depend on this but don't
 # require many files from it. This makes linking more efficient.
 static_library("common") {
@@ -92,7 +112,6 @@ static_library("common") {
     "common_message_generator.h",
     "common_param_traits.cc",
     "common_param_traits.h",
-    "common_param_traits_macros.h",
     "component_flash_hint_file_linux.cc",
     "component_flash_hint_file_linux.h",
     "conflicts/module_watcher_win.cc",
@@ -103,8 +122,6 @@ static_library("common") {
     "custom_handlers/protocol_handler.cc",
     "custom_handlers/protocol_handler.h",
     "descriptors_android.h",
-    "ini_parser.cc",
-    "ini_parser.h",
     "instant_struct_traits.h",
     "logging_chrome.cc",
     "logging_chrome.h",
@@ -184,7 +201,9 @@ static_library("common") {
 
   public_deps = [
     ":channel_info",
+    ":common_param_traits_macros",
     ":features",
+    ":ini_parser",
     ":mojo_bindings",
     ":page_load_metrics_mojom",
     "//base:base",
@@ -199,8 +218,6 @@ static_library("common") {
     "//chrome/common/profiling",
     "//chrome/common/safe_browsing:proto",
     "//chrome/installer/util:with_no_strings",
-    "//components/autofill/content/common:ipc_traits",
-    "//components/autofill/core/common",
     "//components/cast_certificate",
     "//components/cdm/common",
     "//components/cloud_devices/common",
@@ -425,36 +442,7 @@ static_library("common") {
     ]
   } else {
     # Non-Android.
-    sources += [
-      "importer/edge_importer_utils_win.cc",
-      "importer/edge_importer_utils_win.h",
-      "importer/firefox_importer_utils.cc",
-      "importer/firefox_importer_utils.h",
-      "importer/firefox_importer_utils_linux.cc",
-      "importer/firefox_importer_utils_mac.mm",
-      "importer/firefox_importer_utils_win.cc",
-      "importer/ie_importer_utils_win.cc",
-      "importer/ie_importer_utils_win.h",
-      "importer/imported_bookmark_entry.cc",
-      "importer/imported_bookmark_entry.h",
-      "importer/importer_autofill_form_data_entry.cc",
-      "importer/importer_autofill_form_data_entry.h",
-      "importer/importer_bridge.cc",
-      "importer/importer_bridge.h",
-      "importer/importer_data_types.cc",
-      "importer/importer_data_types.h",
-      "importer/importer_test_registry_overrider_win.cc",
-      "importer/importer_test_registry_overrider_win.h",
-      "importer/importer_type.h",
-      "importer/importer_url_row.cc",
-      "importer/importer_url_row.h",
-      "importer/profile_import_process_param_traits.cc",
-      "importer/profile_import_process_param_traits.h",
-      "importer/profile_import_process_param_traits_macros.h",
-      "importer/pstore_declarations.h",
-      "importer/safari_importer_utils.h",
-      "importer/safari_importer_utils.mm",
-    ]
+    public_deps += [ "//chrome/common/importer" ]
   }
 
   if (is_win) {
