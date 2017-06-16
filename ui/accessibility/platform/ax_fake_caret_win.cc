@@ -53,6 +53,11 @@ const AXNodeData& AXFakeCaretWin::GetData() const {
   return data_;
 }
 
+const ui::AXTreeData& AXFakeCaretWin::GetTreeData() const {
+  CR_DEFINE_STATIC_LOCAL(ui::AXTreeData, empty_data, ());
+  return empty_data;
+}
+
 gfx::NativeWindow AXFakeCaretWin::GetTopLevelWidget() {
   return nullptr;
 }

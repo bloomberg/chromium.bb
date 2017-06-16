@@ -382,6 +382,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
 
   // AXPlatformNodeDelegate.
   const ui::AXNodeData& GetData() const override;
+  const ui::AXTreeData& GetTreeData() const override;
   gfx::NativeWindow GetTopLevelWidget() override;
   gfx::NativeViewAccessible GetParent() override;
   int GetChildCount() override;

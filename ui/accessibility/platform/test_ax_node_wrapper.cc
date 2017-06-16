@@ -76,6 +76,10 @@ const AXNodeData& TestAXNodeWrapper::GetData() const {
   return node_->data();
 }
 
+const ui::AXTreeData& TestAXNodeWrapper::GetTreeData() const {
+  return tree_->data();
+}
+
 gfx::NativeWindow TestAXNodeWrapper::GetTopLevelWidget() {
   return nullptr;
 }

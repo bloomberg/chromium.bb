@@ -72,6 +72,11 @@ class AuraLinuxApplication
 
   const ui::AXNodeData& GetData() const override { return data_; }
 
+  const ui::AXTreeData& GetTreeData() const override {
+    CR_DEFINE_STATIC_LOCAL(ui::AXTreeData, empty_data, ());
+    return empty_data;
+  }
+
   gfx::NativeWindow GetTopLevelWidget() override { return nullptr; }
 
   gfx::NativeViewAccessible GetParent() override {

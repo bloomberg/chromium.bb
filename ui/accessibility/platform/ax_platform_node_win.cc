@@ -10,13 +10,17 @@
 
 #include "base/containers/hash_tables.h"
 #include "base/lazy_instance.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_comptr.h"
 #include "base/win/scoped_variant.h"
 #include "third_party/iaccessible2/ia2_api_all.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_text_utils.h"
+#include "ui/accessibility/ax_tree_data.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
 #include "ui/accessibility/platform/ax_platform_node_win.h"
 #include "ui/base/win/atl_module.h"
@@ -536,7 +540,86 @@ STDMETHODIMP AXPlatformNodeWin::get_accHelp(
 STDMETHODIMP AXPlatformNodeWin::get_accValue(VARIANT var_id, BSTR* value) {
   AXPlatformNodeWin* target;
   COM_OBJECT_VALIDATE_VAR_ID_1_ARG_AND_GET_TARGET(var_id, value, target);
-  return target->GetStringAttributeAsBstr(ui::AX_ATTR_VALUE, value);
+
+  // get_accValue() has two sets of special cases depending on the node's role.
+  // The first set apply without regard for the nodes |value| attribute. That is
+  // the nodes value attribute isn't consider for the first set of special
+  // cases. For example, if the node role is AX_ROLE_COLOR_WELL, we do not care
+  // at all about the node's AX_ATTR_VALUE attribute. The second set of special
+  // cases only apply if the value attribute for the node is empty.  That is, if
+  // AX_ATTR_VALUE is empty, we do something special.
+
+  base::string16 result;
+
+  //
+  // Color Well special case (Use AX_ATTR_COLOR_VALUE)
+  //
+  if (target->GetData().role == ui::AX_ROLE_COLOR_WELL) {
+    unsigned int color = static_cast<unsigned int>(target->GetIntAttribute(
+        ui::AX_ATTR_COLOR_VALUE));  // todo, why the static cast?
+
+    unsigned int red = SkColorGetR(color);
+    unsigned int green = SkColorGetG(color);
+    unsigned int blue = SkColorGetB(color);
+    base::string16 value_text;
+    value_text = base::UintToString16(red * 100 / 255) + L"% red " +
+                 base::UintToString16(green * 100 / 255) + L"% green " +
+                 base::UintToString16(blue * 100 / 255) + L"% blue";
+    *value = SysAllocString(value_text.c_str());
+    DCHECK(*value);
+    return S_OK;
+  }
+
+  //
+  // Document special case (Use the document's url)
+  //
+  if (target->GetData().role == ui::AX_ROLE_ROOT_WEB_AREA ||
+      target->GetData().role == ui::AX_ROLE_WEB_AREA) {
+    result = base::UTF8ToUTF16(target->delegate_->GetTreeData().url);
+    *value = SysAllocString(result.c_str());
+    DCHECK(*value);
+    return S_OK;
+  }
+
+  //
+  // Links (Use AX_ATTR_URL)
+  //
+  if (target->GetData().role == ui::AX_ROLE_LINK ||
+      target->GetData().role == ui::AX_ROLE_IMAGE_MAP_LINK) {
+    result = target->GetString16Attribute(ui::AX_ATTR_URL);
+    *value = SysAllocString(result.c_str());
+    DCHECK(*value);
+    return S_OK;
+  }
+
+  // After this point, the role based special cases should test for an empty
+  // result.
+
+  result = target->GetString16Attribute(ui::AX_ATTR_VALUE);
+
+  //
+  // RangeValue (Use AX_ATTR_VALUE_FOR_RANGE)
+  //
+  if (result.empty() && target->IsRangeValueSupported()) {
+    float fval;
+    if (target->GetFloatAttribute(ui::AX_ATTR_VALUE_FOR_RANGE, &fval)) {
+      result = base::UTF8ToUTF16(base::DoubleToString(fval));
+      *value = SysAllocString(result.c_str());
+      DCHECK(*value);
+      return S_OK;
+    }
+  }
+
+  // Last resort (Use innerText)
+  if (result.empty() &&
+      (target->IsSimpleTextControl() || target->IsRichTextControl()) &&
+      !target->IsNativeTextControl()) {
+    result = target->GetInnerText();
+  }
+
+  *value = SysAllocString(result.c_str());
+  DCHECK(*value);
+  return S_OK;
 }
 
 STDMETHODIMP AXPlatformNodeWin::put_accValue(VARIANT var_id,
