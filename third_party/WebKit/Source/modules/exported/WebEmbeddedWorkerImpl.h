@@ -32,6 +32,8 @@
 #define WebEmbeddedWorkerImpl_h
 
 #include <memory>
+#include "core/workers/WorkerClients.h"
+#include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebContentSecurityPolicy.h"
@@ -50,9 +52,10 @@ class WorkerInspectorProxy;
 class WorkerScriptLoader;
 class WorkerThread;
 
-class WebEmbeddedWorkerImpl final : public WebEmbeddedWorker,
-                                    public WebFrameClient,
-                                    public WebDevToolsAgentClient {
+class MODULES_EXPORT WebEmbeddedWorkerImpl final
+    : public WebEmbeddedWorker,
+      public WebFrameClient,
+      NON_EXPORTED_BASE(public WebDevToolsAgentClient) {
   WTF_MAKE_NONCOPYABLE(WebEmbeddedWorkerImpl);
 
  public:
@@ -138,6 +141,8 @@ class WebEmbeddedWorkerImpl final : public WebEmbeddedWorker,
 
   WaitingForDebuggerState waiting_for_debugger_state_;
 };
+
+extern template class WorkerClientsInitializer<WebEmbeddedWorkerImpl>;
 
 }  // namespace blink
 

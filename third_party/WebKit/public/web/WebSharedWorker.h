@@ -43,12 +43,12 @@ class WebSharedWorkerClient;
 class WebURL;
 
 // This is the interface to a SharedWorker thread.
-class WebSharedWorker {
+class BLINK_EXPORT WebSharedWorker {
  public:
   // Instantiate a WebSharedWorker that interacts with the shared worker.
   // WebSharedWorkerClient given here must outlive or have the identical
   // lifetime as this instance.
-  BLINK_EXPORT static WebSharedWorker* Create(WebSharedWorkerClient*);
+  static WebSharedWorker* Create(WebSharedWorkerClient*);
 
   virtual void StartWorkerContext(const WebURL& script_url,
                                   const WebString& name,

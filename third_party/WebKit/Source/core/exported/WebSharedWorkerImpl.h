@@ -37,6 +37,7 @@
 #include "core/CoreExport.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/workers/SharedWorkerReportingProxy.h"
+#include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerThread.h"
 #include "platform/wtf/RefPtr.h"
 #include "public/platform/Platform.h"
@@ -56,7 +57,6 @@ class WebSharedWorkerClient;
 class WebString;
 class WebURL;
 class WebView;
-class WorkerClients;
 class WorkerInspectorProxy;
 class WorkerScriptLoader;
 
@@ -64,9 +64,10 @@ class WorkerScriptLoader;
 // implementation. This is basically accessed on the main thread, but some
 // methods must be called from a worker thread. Such methods are suffixed with
 // *OnWorkerThread or have header comments.
-class WebSharedWorkerImpl final : public WebFrameClient,
-                                  public WebSharedWorker,
-                                  public WebDevToolsAgentClient {
+class CORE_EXPORT WebSharedWorkerImpl final
+    : public WebFrameClient,
+      public WebSharedWorker,
+      NON_EXPORTED_BASE(public WebDevToolsAgentClient) {
  public:
   explicit WebSharedWorkerImpl(WebSharedWorkerClient*);
 
@@ -117,14 +118,6 @@ class WebSharedWorkerImpl final : public WebFrameClient,
   void DidCloseWorkerGlobalScope();
   void DidTerminateWorkerThread();
 
-  using WorkerClientsCreatedCallback = void (*)(WorkerClients*);
-  // Allows for the registration of a callback that is invoked whenever a new
-  // OnScriptLoaderFinished is called. Callbacks are executed in the order that
-  // they were added using RegisterWorkerClientsCreatedCallback, and there are
-  // no checks for adding a callback multiple times.
-  CORE_EXPORT static void RegisterWorkerClientsCreatedCallback(
-      WorkerClientsCreatedCallback);
-
  private:
   ~WebSharedWorkerImpl() override;
 
@@ -169,6 +162,9 @@ class WebSharedWorkerImpl final : public WebFrameClient,
   WebString name_;
   WebAddressSpace creation_address_space_;
 };
+
+extern template class CORE_EXTERN_TEMPLATE_EXPORT
+    WorkerClientsInitializer<WebSharedWorkerImpl>;
 
 }  // namespace blink
 

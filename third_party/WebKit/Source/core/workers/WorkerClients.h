@@ -34,10 +34,9 @@
 #include "core/CoreExport.h"
 #include "platform/Supplementable.h"
 #include "platform/wtf/Forward.h"
+#include "platform/wtf/Noncopyable.h"
 
 namespace blink {
-
-class WorkerClients;
 
 // This is created on the main thread, passed to the worker thread and
 // attached to WorkerOrWorkletGlobalScope when it is created.
@@ -60,6 +59,62 @@ class CORE_EXPORT WorkerClients final : public GarbageCollected<WorkerClients>,
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<WorkerClients>;
+
+// Allows for the registration of a callback that is invoked whenever a new
+// worker starts. Callbacks are expected to provide module clients to a given
+// WorkerClients. All functions must be called on the main thread.
+//
+// Example:
+//   // In ModulesInitializer.cpp.
+//   WorkerClientsInitializer<CoolWorker>::Register(
+//       [](WorkerClients* worker_clients) {
+//         // Provides module clients to |worker_clients| here.
+//       });
+//
+//   // In CoolWorker.cpp.
+//   WorkerClients* worker_clients = WorkerClients::Create();
+//   WorkerClients<CoolWorker>::Run(worker_clients);
+//
+template <class WorkerType>
+class WorkerClientsInitializer {
+  WTF_MAKE_NONCOPYABLE(WorkerClientsInitializer);
+  static_assert(sizeof(WorkerType), "WorkerType must be a complete type.");
+
+ public:
+  using Callback = void (*)(WorkerClients*);
+
+  WorkerClientsInitializer() = default;
+
+  static void Register(Callback callback) {
+    DCHECK(IsMainThread());
+    if (!instance_)
+      instance_ = new WorkerClientsInitializer<WorkerType>;
+    instance_->RegisterInternal(callback);
+  }
+
+  static void Run(WorkerClients* worker_clients) {
+    DCHECK(IsMainThread());
+    DCHECK(instance_);
+    instance_->RunInternal(worker_clients);
+  }
+
+ private:
+  void RegisterInternal(Callback callback) { callbacks_.push_back(callback); }
+
+  void RunInternal(WorkerClients* worker_clients) {
+    DCHECK(!callbacks_.IsEmpty());
+    for (auto& callback : callbacks_)
+      callback(worker_clients);
+  }
+
+  Vector<Callback> callbacks_;
+
+  static WorkerClientsInitializer<WorkerType>* instance_;
+};
+
+template <class WorkerType>
+WorkerClientsInitializer<WorkerType>*
+    WorkerClientsInitializer<WorkerType>::instance_ = nullptr;
 
 }  // namespace blink
 
