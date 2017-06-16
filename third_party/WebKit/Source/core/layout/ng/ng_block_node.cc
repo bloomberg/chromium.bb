@@ -228,8 +228,9 @@ bool NGBlockNode::CanUseNewLayout() const {
   if (Style().SpecifiesColumns())
     return false;
 
-  if (!box_->IsLayoutBlockFlow())
+  if (!box_->IsLayoutNGBlockFlow())
     return false;
+
   return RuntimeEnabledFeatures::LayoutNGEnabled();
 }
 
