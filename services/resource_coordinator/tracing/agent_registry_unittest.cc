@@ -10,11 +10,37 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "services/resource_coordinator/public/interfaces/tracing/tracing.mojom.h"
-#include "services/resource_coordinator/tracing/test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace tracing {
+
+class MockAgent : public mojom::Agent {
+ public:
+  MockAgent() : binding_(this) {}
+
+  mojom::AgentPtr CreateAgentPtr() {
+    mojom::AgentPtr agent;
+    binding_.Bind(mojo::MakeRequest(&agent));
+    return agent;
+  }
+
+ private:
+  // mojom::Agent
+  void StartTracing(const std::string& config,
+                    mojom::RecorderPtr recorder,
+                    const StartTracingCallback& callback) override {}
+  void StopAndFlush() override {}
+  void RequestClockSyncMarker(
+      const std::string& sync_id,
+      const RequestClockSyncMarkerCallback& callback) override {}
+  void RequestBufferStatus(
+      const RequestBufferStatusCallback& callback) override {}
+  void GetCategories(const GetCategoriesCallback& callback) override {}
+
+  mojo::Binding<mojom::Agent> binding_;
+};
 
 class AgentRegistryTest : public testing::Test {
  public:
