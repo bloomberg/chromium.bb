@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-syntax = "proto3";
+syntax = "proto2";
 option optimize_for = LITE_RUNTIME;
 
 package offline_pages.proto;
 
 message Any {
-  string type_url = 1;
-  bytes value = 2;
+  optional string type_url = 1;
+  optional bytes value = 2;
 }

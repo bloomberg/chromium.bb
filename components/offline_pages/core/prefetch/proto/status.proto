@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-syntax = "proto3";
+syntax = "proto2";
 option optimize_for = LITE_RUNTIME;
 
 package offline_pages.proto;
@@ -18,10 +18,10 @@ enum Code {
 
 message Status {
   // The status code.
-  int32 code = 1;
+  optional int32 code = 1;
 
   // A developer-facing error message, which should be in English.
-  string message = 2;
+  optional string message = 2;
 
   // A list of messages that carry the error details.  There will be a
   // common set of message types for APIs to use.

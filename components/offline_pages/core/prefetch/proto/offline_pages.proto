@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-syntax = "proto3";
+syntax = "proto2";
 option optimize_for = LITE_RUNTIME;
 
 package offline_pages.proto;
 
 import "status.proto";
-import "timestamp.proto";
 
 // Type of transformation applied to a web page.
 enum Transformation {
@@ -26,6 +25,19 @@ enum OutputFormat {
   FORMAT_MHTML = 1;
 }
 
+message Timestamp {
+  // Represents seconds of UTC time since Unix epoch
+  // 1970-01-01T00:00:00Z. Must be from 0001-01-01T00:00:00Z to
+  // 9999-12-31T23:59:59Z inclusive.
+  optional int64 seconds = 1;
+
+  // Non-negative fractions of a second at nanosecond resolution. Negative
+  // second values with fractions must still have non-negative nanos values
+  // that count forward in time. Must be from 0 to 999,999,999
+  // inclusive.
+  optional int32 nanos = 2;
+}
+
 // Response to the GeneratePageBundle request.
 message PageBundle {
   // The list of archives in the bundle. The distribution of pages into archives
@@ -40,49 +52,49 @@ message Archive {
   // those that encountered an error or were elided due to size considerations.
   repeated PageInfo page_infos = 1;
   // Format of the body.
-  OutputFormat output_format = 2;
+  optional OutputFormat output_format = 2;
   // Resource name for the body which can be read via the ByteStream API.
   // This resource will remain available for a minimum of 24 hours after the
   // GeneratePageBundle request.
-  string body_name = 3;
+  optional string body_name = 3;
   // Length of the body in bytes.
-  int64 body_length = 4;
+  optional int64 body_length = 4;
 }
 
 // Information about a single returned offline page.
 message PageInfo {
   // The URL of the page that was rendered.
-  string url = 1;
+  optional string url = 1;
   // The final URL after redirects. Empty if the final URL is url.
-  string redirect_url = 2;
+  optional string redirect_url = 2;
   // Status of the render attempt. If status.code != OK, fields below this will
   // be unset. If the operation is still running, status is NotFound to
   // indicate the page is still being processed.
   // If the page was not returned due to bundle size limits, status is
   // FailedPrecondition. If the page failed to render for any other reason,
   // status is Unknown.
-  Status status = 3;
+  optional Status status = 3;
   // Transformation that was applied to the page.
-  Transformation transformation = 4;
+  optional Transformation transformation = 4;
   // Time the page was rendered.
-  Timestamp render_time = 5;
+  optional Timestamp render_time = 5;
 }
 
 // Request to return a list of pages in a format suitable for offline viewing.
 message GeneratePageBundleRequest {
   // The client's browser's user agent string.
-  string user_agent = 1;
+  optional string user_agent = 1;
   // Preferred browser language(s) as defined by
   // [IETF BCP 47](https://tools.ietf.org/html/bcp47).
   repeated string browser_languages = 2;
   // Desired format of the web page archive(s).
-  OutputFormat output_format = 3;
+  optional OutputFormat output_format = 3;
   // Maximum size of the generated body. If all pages' output would exceed this
   // size, only the first N pages are returned.
-  int64 max_bundle_size_bytes = 4;
+  optional int64 max_bundle_size_bytes = 4;
   // The GCM registration ID that can be used to inform the client
   // of LRO completion.
-  string gcm_registration_id = 5;
+  optional string gcm_registration_id = 5;
   // List of individual page requests, in order of priority. At most 100 pages
   // may be requested at a time.
   repeated PageParameters pages = 6;
@@ -92,7 +104,7 @@ message GeneratePageBundleRequest {
 // viewing.
 message PageParameters {
   // URL of the web page to return.
-  string url = 1;
+  optional string url = 1;
   // Transformation to apply. Must not be TRANSFORMATION_UNSPECIFIED.
-  Transformation transformation = 2;
+  optional Transformation transformation = 2;
 }

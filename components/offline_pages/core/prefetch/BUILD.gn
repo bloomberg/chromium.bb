@@ -85,7 +85,6 @@ proto_library("proto") {
     "proto/offline_pages.proto",
     "proto/operation.proto",
     "proto/status.proto",
-    "proto/timestamp.proto",
   ]
 }
 

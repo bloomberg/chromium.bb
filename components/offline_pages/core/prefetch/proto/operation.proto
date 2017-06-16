@@ -2,11 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-syntax = "proto3";
+syntax = "proto2";
 option optimize_for = LITE_RUNTIME;
 
 package offline_pages.proto;
-;
 
 import "any.proto";
 import "status.proto";
@@ -16,18 +15,18 @@ import "status.proto";
 message Operation {
   // The server-assigned name, which is only unique within the same service that
   // originally returns it.
-  string name = 1;
+  optional string name = 1;
 
   // Service-specific metadata associated with the operation.  It typically
   // contains progress information and common metadata such as create time.
   // Some services might not provide such metadata.  Any method that returns a
   // long-running operation should document the metadata type, if any.
-  Any metadata = 2;
+  optional Any metadata = 2;
 
   // If the value is 'false', it means the operation is still in progress.
   // If true, the operation is completed, and either 'error' or 'response' is
   // available.
-  bool done = 3;
+  optional bool done = 3;
 
   // The operation result, which can be either an 'error' or a valid 'response'.
   // If 'done' == 'false', neither 'error' nor 'response' is set.
