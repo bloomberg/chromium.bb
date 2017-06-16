@@ -22,9 +22,6 @@ import org.chromium.chrome.browser.tab.Tab;
  * {@link OverlayPanel} implementation when Chrome Home is enabled.
  */
 public class ReaderModeInfoBar extends InfoBar {
-    /** A handle to the {@link ReaderModeManager} to trigger page navigations. */
-    private static ReaderModeManager sManager;
-
     /**
      * Default constructor.
      */
@@ -51,7 +48,7 @@ public class ReaderModeInfoBar extends InfoBar {
         prompt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sManager.navigateToReaderMode();
+                if (getReaderModeManager() != null) getReaderModeManager().navigateToReaderMode();
             }
         });
 
@@ -61,17 +58,28 @@ public class ReaderModeInfoBar extends InfoBar {
     @Override
     public void onCloseButtonClicked() {
         super.onCloseButtonClicked();
-        sManager.onClosed(StateChangeReason.CLOSE_BUTTON);
+        if (getReaderModeManager() != null) {
+            getReaderModeManager().onClosed(StateChangeReason.CLOSE_BUTTON);
+        }
     }
 
     /**
      * Create and show the Reader Mode {@link InfoBar}.
      * @param tab The tab that the {@link InfoBar} should be shown in.
-     * @param manager The {@link ReaderModeManager} for this instance of Chrome.
      */
-    public static void showReaderModeInfoBar(Tab tab, ReaderModeManager manager) {
-        sManager = manager;
+    public static void showReaderModeInfoBar(Tab tab) {
         nativeCreate(tab);
+    }
+
+    /**
+     * @return The {@link ReaderModeManager} for this infobar.
+     */
+    private ReaderModeManager getReaderModeManager() {
+        if (getNativeInfoBarPtr() == 0) return null;
+        Tab tab = nativeGetTab(getNativeInfoBarPtr());
+
+        if (tab == null || tab.getActivity() == null) return null;
+        return tab.getActivity().getReaderModeManager();
     }
 
     /**
@@ -83,4 +91,5 @@ public class ReaderModeInfoBar extends InfoBar {
     }
 
     private static native void nativeCreate(Tab tab);
+    private native Tab nativeGetTab(long nativeReaderModeInfoBar);
 }

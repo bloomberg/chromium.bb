@@ -19,6 +19,10 @@ class ReaderModeInfoBar : public InfoBarAndroid {
       std::unique_ptr<ReaderModeInfoBarDelegate> delegate);
   ~ReaderModeInfoBar() override;
 
+  base::android::ScopedJavaLocalRef<jobject> GetTab(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+
  protected:
   infobars::InfoBarDelegate* GetDelegate();
 

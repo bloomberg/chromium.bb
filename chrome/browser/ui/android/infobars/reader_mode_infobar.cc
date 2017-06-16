@@ -46,6 +46,14 @@ ScopedJavaLocalRef<jobject> ReaderModeInfoBar::CreateRenderInfoBar(
   return Java_ReaderModeInfoBar_create(env);
 }
 
+base::android::ScopedJavaLocalRef<jobject> ReaderModeInfoBar::GetTab(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  content::WebContents* web_contents =
+      InfoBarService::WebContentsFromInfoBar(this);
+  return TabAndroid::FromWebContents(web_contents)->GetJavaObject();
+}
+
 void ReaderModeInfoBar::ProcessButton(int action) {}
 
 void Create(JNIEnv* env,
