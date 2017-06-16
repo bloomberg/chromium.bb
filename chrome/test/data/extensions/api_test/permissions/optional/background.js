@@ -196,9 +196,13 @@ chrome.test.getConfig(function(config) {
             }));
             assertTrue(typeof chrome.bookmarks == 'object' &&
                        chrome.bookmarks != null);
-            assertThrows(
-              chrome.bookmarks.getTree, [function(){}],
-              "'bookmarks' requires a different Feature that is not present.");
+            var nativeBindingsError =
+                "'bookmarks.getTree' is not available in this context.";
+            var jsBindingsError =
+                "'bookmarks' requires a different Feature that is not present.";
+            var regexp =
+                new RegExp(nativeBindingsError + '|' + jsBindingsError);
+            assertThrows(chrome.bookmarks.getTree, [function(){}], regexp);
           }
       ));
     },
@@ -295,9 +299,12 @@ chrome.test.getConfig(function(config) {
                  function(permissions) {
         assertTrue(typeof chrome.bookmarks == 'object' &&
                    chrome.bookmarks != null);
-        assertThrows(
-          chrome.bookmarks.getTree, [function(){}],
-          "'bookmarks' requires a different Feature that is not present.");
+        var nativeBindingsError =
+            "'bookmarks.getTree' is not available in this context.";
+        var jsBindingsError =
+            "'bookmarks' requires a different Feature that is not present.";
+        var regexp = new RegExp(nativeBindingsError + '|' + jsBindingsError);
+        assertThrows(chrome.bookmarks.getTree, [function(){}], regexp);
       });
 
       chrome.permissions.request(
