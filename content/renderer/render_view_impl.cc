@@ -1880,8 +1880,10 @@ void RenderViewImpl::CheckPreferredSize() {
   // message.
   if (!send_preferred_size_changes_ || !webview())
     return;
-
-  gfx::Size size = webview()->ContentsPreferredMinimumSize();
+  blink::WebSize tmp_size = webview()->ContentsPreferredMinimumSize();
+  blink::WebRect tmp_rect(0, 0, tmp_size.width, tmp_size.height);
+  ConvertViewportToWindow(&tmp_rect);
+  gfx::Size size(tmp_rect.width, tmp_rect.height);
   if (size == preferred_size_)
     return;
 
