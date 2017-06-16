@@ -1675,6 +1675,15 @@ void LayoutBlockFlow::ComputeInlinePreferredLogicalWidths(
       LayoutUnit child_max;
 
       if (!child->IsText()) {
+        if (child->IsBox() &&
+            ToLayoutBox(child)->NeedsPreferredWidthsRecalculation()) {
+          // We don't really know whether the containing block of this child
+          // did change or is going to change size. However, this is our only
+          // opportunity to make sure that it gets its min/max widths
+          // calculated.
+          child->SetPreferredLogicalWidthsDirty();
+        }
+
         // Case (1) and (2). Inline replaced and inline flow elements.
         if (child->IsLayoutInline()) {
           AdjustMinMaxForInlineFlow(child, child_iterator.end_of_inline,

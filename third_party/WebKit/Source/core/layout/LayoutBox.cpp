@@ -2582,25 +2582,12 @@ void LayoutBox::InflateVisualRectForFilter(
       FloatQuad(FloatRect(Layer()->MapLayoutRectForFilter(rect))));
 }
 
-static void MarkMinMaxWidthsAffectedByAncestorAsDirty(LayoutBox* box) {
-  box->SetPreferredLogicalWidthsDirty(kMarkOnlyThis);
-  for (LayoutObject* child = box->SlowFirstChild(); child;
-       child = child->NextSibling()) {
-    if (!child->IsBox())
-      continue;
-    LayoutBox* child_box = ToLayoutBox(child);
-    if (child_box->NeedsPreferredWidthsRecalculation())
-      MarkMinMaxWidthsAffectedByAncestorAsDirty(child_box);
-  }
-}
-
 static bool ShouldRecalculateMinMaxWidthsAffectedByAncestor(
     const LayoutBox* box) {
   if (const LayoutBox* containing_block = box->ContainingBlock()) {
     if (containing_block->NeedsPreferredWidthsRecalculation()) {
       // If our containing block also has min/max widths that are affected by
-      // the ancestry, we have already dealt with this object as well (because
-      // of what MarkMinMaxWidthsAffectedByAncestorAsDirty() does). Avoid
+      // the ancestry, we have already dealt with this object as well. Avoid
       // unnecessary work and O(n^2) time complexity.
       return false;
     }
@@ -2617,7 +2604,7 @@ void LayoutBox::UpdateLogicalWidth() {
       // bottom-up, but that's not always the case), so since the containing
       // block size may have changed, we need to recalculate the min/max widths
       // of this object, and every child that has the same issue, recursively.
-      MarkMinMaxWidthsAffectedByAncestorAsDirty(this);
+      SetPreferredLogicalWidthsDirty(kMarkOnlyThis);
 
       // Since all this takes place during actual layout, instead of being part
       // of min/max the width calculation machinery, we need to enter said
