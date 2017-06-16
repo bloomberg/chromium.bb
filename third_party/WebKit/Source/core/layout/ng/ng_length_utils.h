@@ -14,6 +14,7 @@
 
 namespace blink {
 class ComputedStyle;
+class LayoutObject;
 class LayoutUnit;
 class Length;
 struct MinMaxContentSize;
@@ -123,6 +124,9 @@ CORE_EXPORT void ApplyAutoMargins(const NGConstraintSpace&,
 CORE_EXPORT LayoutUnit ConstrainByMinMax(LayoutUnit length,
                                          Optional<LayoutUnit> min,
                                          Optional<LayoutUnit> max);
+
+// Returns scrollbar sizes or this layout object.
+NGBoxStrut GetScrollbarSizes(const LayoutObject*);
 
 }  // namespace blink
 
