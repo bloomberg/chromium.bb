@@ -35,6 +35,7 @@
 #include "net/log/net_log.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/net_log_event_type.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request.h"
 
 namespace content {
@@ -666,7 +667,8 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
       mojo::MakeRequest(&url_loader_associated_ptr),
       original_info->GetRouteID(), request_id, mojom::kURLLoadOptionNone,
       request, std::move(url_loader_client_ptr_to_pass),
-      net::MutableNetworkTrafficAnnotationTag(NO_TRAFFIC_ANNOTATION_YET));
+      net::MutableNetworkTrafficAnnotationTag(
+          original_request->traffic_annotation()));
 
   std::unique_ptr<DelegatingURLLoader> url_loader(
       base::MakeUnique<DelegatingURLLoader>(
