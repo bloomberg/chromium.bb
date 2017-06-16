@@ -2127,8 +2127,7 @@ class TestGitCl(TestCase):
     self.calls += [
       ((['git', 'fetch', 'https://chromium.googlesource.com/my/repo',
          'refs/changes/56/123456/7'],), ''),
-      ((['git', 'merge-base', '--is-ancestor', 'HEAD', 'origin/master'],), ''),
-      ((['git', 'reset', '--hard', 'FETCH_HEAD'],), ''),
+      ((['git', 'cherry-pick', 'FETCH_HEAD'],), ''),
       ((['git', 'config', 'branch.master.gerritissue', '123456'],),
        ''),
       ((['git', 'config', 'branch.master.gerritserver',
@@ -2146,7 +2145,6 @@ class TestGitCl(TestCase):
     self.calls += [
       ((['git', 'fetch', 'https://host.googlesource.com/my/repo',
          'refs/changes/56/123456/7'],), ''),
-      ((['git', 'merge-base', '--is-ancestor', 'HEAD', 'origin/master'],), ''),
       ((['git', 'reset', '--hard', 'FETCH_HEAD'],), ''),
       ((['git', 'config', 'branch.master.gerritissue', '123456'],),
        ''),
@@ -2157,7 +2155,7 @@ class TestGitCl(TestCase):
       ((['git', 'config', 'branch.master.last-upload-hash', 'deadbeef'],), ''),
       ((['git', 'config', 'branch.master.gerritsquashhash', 'deadbeef'],), ''),
     ]
-    self.assertEqual(git_cl.main(['patch', '--gerrit', '123456']), 0)
+    self.assertEqual(git_cl.main(['patch', '--gerrit', '123456', '--force']), 0)
 
   def test_patch_gerrit_guess_by_url(self):
     self._patch_common(
@@ -2167,8 +2165,7 @@ class TestGitCl(TestCase):
     self.calls += [
       ((['git', 'fetch', 'https://else.googlesource.com/my/repo',
          'refs/changes/56/123456/1'],), ''),
-      ((['git', 'merge-base', '--is-ancestor', 'HEAD', 'origin/master'],), ''),
-      ((['git', 'reset', '--hard', 'FETCH_HEAD'],), ''),
+      ((['git', 'cherry-pick', 'FETCH_HEAD'],), ''),
       ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
       ((['git', 'config', 'branch.master.gerritissue', '123456'],),
        ''),
@@ -2190,8 +2187,7 @@ class TestGitCl(TestCase):
     self.calls += [
       ((['git', 'fetch', 'https://else.googlesource.com/my/repo',
          'refs/changes/56/123456/1'],), ''),
-      ((['git', 'merge-base', '--is-ancestor', 'HEAD', 'origin/master'],), ''),
-      ((['git', 'reset', '--hard', 'FETCH_HEAD'],), ''),
+      ((['git', 'cherry-pick', 'FETCH_HEAD'],), ''),
       ((['git', 'symbolic-ref', 'HEAD'],), 'master'),
       ((['git', 'config', 'branch.master.gerritissue', '123456'],),
        ''),
@@ -2205,42 +2201,12 @@ class TestGitCl(TestCase):
     self.assertEqual(git_cl.main(
       ['patch', 'https://else-review.googlesource.com/123456/1']), 0)
 
-  def test_patch_gerrit_local_content(self):
-    self._patch_common(default_codereview='gerrit', detect_gerrit_server=True,
-                       git_short_host='chromium')
-    self.calls += [
-      ((['git', 'fetch', 'https://chromium.googlesource.com/my/repo',
-         'refs/changes/56/123456/7'],), ''),
-      ((['git', 'merge-base', '--is-ancestor', 'HEAD', 'origin/master'],),
-       CERR1),
-      ((['git', 'merge-base', '--is-ancestor', 'HEAD', 'FETCH_HEAD'],),
-       CERR1),
-      (('ask_for_data',
-        'It looks like you\'re on a branch with some local commits.\n'
-        'If you apply this patch on top of your local content, you will not be '
-        'able to easily upload further changes based on it.\n'
-        'Would you like to proceed with applying this patch anyway?\n'
-        'Press Enter to confirm, or Ctrl+C to abort'), 'y'),
-      ((['git', 'cherry-pick', 'FETCH_HEAD'],), ''),
-    ]
-    self.assertEqual(git_cl.main(['patch', '123456']), 0)
-
   def test_patch_gerrit_conflict(self):
     self._patch_common(default_codereview='gerrit', detect_gerrit_server=True,
                        git_short_host='chromium')
     self.calls += [
       ((['git', 'fetch', 'https://chromium.googlesource.com/my/repo',
          'refs/changes/56/123456/7'],), ''),
-      ((['git', 'merge-base', '--is-ancestor', 'HEAD', 'origin/master'],),
-       CERR1),
-      ((['git', 'merge-base', '--is-ancestor', 'HEAD', 'FETCH_HEAD'],),
-       CERR1),
-      (('ask_for_data',
-        'It looks like you\'re on a branch with some local commits.\n'
-        'If you apply this patch on top of your local content, you will not be '
-        'able to easily upload further changes based on it.\n'
-        'Would you like to proceed with applying this patch anyway?\n'
-        'Press Enter to confirm, or Ctrl+C to abort'), 'y'),
       ((['git', 'cherry-pick', 'FETCH_HEAD'],), CERR1),
       ((['DieWithError', 'Command "git cherry-pick FETCH_HEAD" failed.\n'],),
        SystemExitMock()),

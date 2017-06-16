@@ -1581,7 +1581,7 @@ class Changelist(object):
       DieWithError('Failed to parse issue argument "%s". '
                    'Must be an issue number or a valid URL.' % issue_arg)
     return self._codereview_impl.CMDPatchWithParsedIssue(
-        parsed_issue_arg, reject, nocommit, directory)
+        parsed_issue_arg, reject, nocommit, directory, False)
 
   def CMDUpload(self, options, git_diff_args, orig_args):
     """Uploads a change to codereview."""
@@ -1832,7 +1832,7 @@ class _ChangelistCodereviewBase(object):
     raise NotImplementedError()
 
   def CMDPatchWithParsedIssue(self, parsed_issue_arg, reject, nocommit,
-                              directory):
+                              directory, force):
     """Fetches and applies the issue.
 
     Arguments:
@@ -1842,6 +1842,7 @@ class _ChangelistCodereviewBase(object):
       nocommit: do not commit the patch, thus leave the tree dirty. Rietveld
         only.
       directory: switch to directory before applying the patch. Rietveld only.
+      force: if true, overwrites existing local state.
     """
     raise NotImplementedError()
 
@@ -2128,7 +2129,7 @@ class _RietveldChangelistImpl(_ChangelistCodereviewBase):
       self.SetFlags({'commit': '1', 'cq_dry_run': '1'})
 
   def CMDPatchWithParsedIssue(self, parsed_issue_arg, reject, nocommit,
-                              directory):
+                              directory, force):
     # PatchIssue should never be called with a dirty tree.  It is up to the
     # caller to check this, but just in case we assert here since the
     # consequences of the caller not checking this could be dire.
@@ -2765,7 +2766,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     return 0
 
   def CMDPatchWithParsedIssue(self, parsed_issue_arg, reject, nocommit,
-                              directory):
+                              directory, force):
     assert not reject
     assert not nocommit
     assert not directory
@@ -2798,29 +2799,24 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
     fetch_info = revision_info['fetch']['http']
     RunGit(['fetch', fetch_info['url'], fetch_info['ref']])
 
-    clean, _ = RunGitWithCode(
-        ['merge-base', '--is-ancestor', 'HEAD', 'origin/master'])
-    if clean != 0:
-      clean, _ = RunGitWithCode(
-          ['merge-base', '--is-ancestor', 'HEAD', 'FETCH_HEAD'])
-    if clean != 0:
-      confirm_or_exit(
-          'It looks like you\'re on a branch with some local commits.\n'
-          'If you apply this patch on top of your local content, you will not '
-          'be able to easily upload further changes based on it.\n'
-          'Would you like to proceed with applying this patch anyway?\n')
+    if force:
+      RunGit(['reset', '--hard', 'FETCH_HEAD'])
+      print('Checked out commit for change %i patchset %i locally' %
+            (parsed_issue_arg.issue, patchset))
+    else:
       RunGit(['cherry-pick', 'FETCH_HEAD'])
       print('Committed patch for change %i patchset %i locally.' %
-            (self._changelist.issue, patchset))
-    else:
-      RunGit(['reset', '--hard', 'FETCH_HEAD'])
-      self.SetIssue(self.GetIssue())
-      self.SetPatchset(patchset)
-      fetched_hash = RunGit(['rev-parse', 'FETCH_HEAD']).strip()
-      self._GitSetBranchConfigValue('last-upload-hash', fetched_hash)
-      self._GitSetBranchConfigValue('gerritsquashhash', fetched_hash)
-      print('Checked out commit for change %i patchset %i locally' %
-            (self.GetIssue(), self.GetPatchset()))
+            (parsed_issue_arg.issue, patchset))
+      print('Note: this created a local commit which does not have '
+            'the same hash as the one uploaded for review. This will make '
+            'uploading changes based on top of this branch difficult.\n'
+            'If you want to do that, use "git cl patch --force" instead.')
+
+    self.SetIssue(parsed_issue_arg.issue)
+    self.SetPatchset(patchset)
+    fetched_hash = RunGit(['rev-parse', 'FETCH_HEAD']).strip()
+    self._GitSetBranchConfigValue('last-upload-hash', fetched_hash)
+    self._GitSetBranchConfigValue('gerritsquashhash', fetched_hash)
     return 0
 
   @staticmethod
@@ -5256,9 +5252,9 @@ def CMDpatch(parser, args):
   parser.add_option('-b', dest='newbranch',
                     help='create a new branch off trunk for the patch')
   parser.add_option('-f', '--force', action='store_true',
-                    help='with -b, clobber any existing branch')
+                    help='overwrite state on the current or chosen branch')
   parser.add_option('-d', '--directory', action='store', metavar='DIR',
-                    help='Change to the directory DIR immediately, '
+                    help='change to the directory DIR immediately, '
                          'before doing anything else. Rietveld only.')
   parser.add_option('--reject', action='store_true',
                     help='failed patches spew .rej files rather than '
@@ -5356,7 +5352,8 @@ def CMDpatch(parser, args):
           (cl.GetIssueURL(), target_issue_arg.codereview))
 
   return cl.CMDPatchWithParsedIssue(target_issue_arg, options.reject,
-                                    options.nocommit, options.directory)
+                                    options.nocommit, options.directory,
+                                    options.force)
 
 
 def GetTreeStatus(url=None):
