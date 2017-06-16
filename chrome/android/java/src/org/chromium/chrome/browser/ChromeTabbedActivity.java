@@ -961,8 +961,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             }
 
             mCreatedTabOnStartup = getCurrentTabModel().getCount() > 0
-                    || mTabModelSelectorImpl.getRestoredTabCount() > 0
-                    || mIntentWithEffect;
+                    || mTabModelSelectorImpl.getRestoredTabCount() > 0 || mIntentWithEffect
+                    || mDelayedInitialTabBehaviorDuringUiInit != null;
 
             // We always need to try to restore tabs. The set of tabs might be empty, but at least
             // it will trigger the notification that tab restore is complete which is needed by
@@ -977,7 +977,8 @@ public class ChromeTabbedActivity extends ChromeActivity implements OverviewMode
             // tab count is now non zero.  If this is not the case, tab restore failed and we need
             // to create a new tab as well.
             if (!mCreatedTabOnStartup
-                    || (activeTabBeingRestored && getTabModelSelector().getTotalTabCount() == 0)) {
+                    || (activeTabBeingRestored && getTabModelSelector().getTotalTabCount() == 0
+                               && mDelayedInitialTabBehaviorDuringUiInit == null)) {
                 // If homepage URI is not determined, due to PartnerBrowserCustomizations provider
                 // async reading, then create a tab at the async reading finished. If it takes
                 // too long, just create NTP.
