@@ -918,7 +918,9 @@
     "script": "//third_party/catapult/devil/devil/android/tools/system_app.py",
     "args": [
       "remove",
-      "--package com.android.webview com.google.android.webview",
+      "--package",
+      "com.android.webview",
+      "com.google.android.webview",
       "-v",
       "--",
       "//testing/scripts/run_telemetry_benchmark_as_googletest.py",
