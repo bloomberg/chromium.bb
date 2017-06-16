@@ -36,7 +36,6 @@
 #include "chromeos/accelerometer/accelerometer_reader.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/login/login_state.h"
-#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/context_factory.h"
 #include "content/public/common/service_manager_connection.h"
 #include "ui/aura/env.h"
@@ -56,7 +55,6 @@ void CreateClassicShell() {
   shell_init_params.context_factory = content::GetContextFactory();
   shell_init_params.context_factory_private =
       content::GetContextFactoryPrivate();
-  shell_init_params.blocking_pool = content::BrowserThread::GetBlockingPool();
 
   ash::Shell::CreateInstance(shell_init_params);
 }
@@ -81,7 +79,6 @@ std::unique_ptr<ash::mus::WindowManager> CreateMusShell() {
       automatically_create_display_roots);
   aura::Env::GetInstance()->SetWindowTreeClient(window_tree_client.get());
   window_manager->Init(std::move(window_tree_client),
-                       content::BrowserThread::GetBlockingPool(),
                        base::MakeUnique<ChromeShellDelegate>());
   CHECK(window_manager->WaitForInitialDisplays());
   return window_manager;

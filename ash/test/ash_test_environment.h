@@ -8,10 +8,6 @@
 #include <memory>
 #include <string>
 
-namespace base {
-class SequencedWorkerPool;
-}
-
 namespace ash {
 namespace test {
 
@@ -39,8 +35,6 @@ class AshTestEnvironment {
   // Called from AshTestHelper::SetUp()/TearDown().
   virtual void SetUp() {}
   virtual void TearDown() {}
-
-  virtual base::SequencedWorkerPool* GetBlockingPool() = 0;
 
   virtual std::unique_ptr<AshTestViewsDelegate> CreateViewsDelegate() = 0;
 
