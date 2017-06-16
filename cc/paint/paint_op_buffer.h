@@ -766,32 +766,12 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
 
   void Reset();
 
-  void playback(SkCanvas* canvas,
-                SkPicture::AbortCallback* callback = nullptr) const;
-  // This can be used to play back a subset of the PaintOpBuffer.
-  // The |range_starts| array is an increasing set of positions in the
-  // PaintOpBuffer that break the buffer up into arbitrary consecutive chunks
-  // that together cover the entire buffer. The first value in |range_starts|
-  // must be 0. Each value after defines the end of the previous range
-  // (exclusive) and the beginning of the next range (inclusive). The last value
-  // in the array defines the last range which includes all ops to the end of
-  // the buffer. For example, given a PaintOpBuffer with the following ops:
-  // { A, B, C, D, E, F, G, H, I }
-  // And a |range_starts| with the following values:
-  // { 0, 4, 5 }
-  // This defines the following ranges in PaintOpBuffer:
-  // { A, B, C, D }, { E }, { F, G, H, I }.
-  // The |range_indices| is an increasing set of indices into the |range_starts|
-  // array. This defines the set of ranges that will be played back.
-  // Given the above example, if range_indices contains:
-  // { 1, 2 }
-  // Then the 1th and 2th (starting from base 0) ranges as defined in
-  // |range_starts| would be played back, which would be:
-  // { E, F, G, H, I }.
-  void PlaybackRanges(const std::vector<size_t>& range_starts,
-                      const std::vector<size_t>& range_indices,
-                      SkCanvas* canvas,
-                      SkPicture::AbortCallback* callback = nullptr) const;
+  // Replays the paint op buffer into the canvas. If |indices| is specified, it
+  // contains indices in an increasing order and only the indices specified in
+  // the vector will be replayed.
+  void Playback(SkCanvas* canvas,
+                SkPicture::AbortCallback* callback = nullptr,
+                const std::vector<size_t>* indices = nullptr) const;
 
   // Returns the size of the paint op buffer. That is, the number of ops
   // contained in it.
@@ -873,12 +853,22 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
 
   class Iterator {
    public:
-    explicit Iterator(const PaintOpBuffer* buffer)
-        : buffer_(buffer), ptr_(buffer_->data_.get()) {}
+    explicit Iterator(const PaintOpBuffer* buffer,
+                      const std::vector<size_t>* indices = nullptr)
+        : buffer_(buffer), ptr_(buffer_->data_.get()), indices_(indices) {
+      if (indices) {
+        if (indices->empty()) {
+          *this = end();
+          return;
+        }
+        target_idx_ = (*indices)[0];
+      }
+      ++(*this);
+    }
 
     PaintOp* operator->() const { return reinterpret_cast<PaintOp*>(ptr_); }
     PaintOp* operator*() const { return operator->(); }
-    Iterator begin() { return Iterator(buffer_, buffer_->data_.get(), 0); }
+    Iterator begin() { return Iterator(buffer_, indices_); }
     Iterator end() {
       return Iterator(buffer_, buffer_->data_.get() + buffer_->used_,
                       buffer_->size());
@@ -889,11 +879,27 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
       return other.op_idx_ != op_idx_;
     }
     Iterator& operator++() {
-      PaintOp* op = **this;
-      uint32_t type = op->type;
-      CHECK_LE(type, static_cast<uint32_t>(PaintOpType::LastPaintOpType));
-      ptr_ += op->skip;
-      op_idx_++;
+      if (target_idx_ == std::numeric_limits<size_t>::max()) {
+        *this = end();
+        return *this;
+      }
+
+      while (*this && target_idx_ != op_idx_) {
+        PaintOp* op = **this;
+        uint32_t type = op->type;
+        CHECK_LE(type, static_cast<uint32_t>(PaintOpType::LastPaintOpType));
+        ptr_ += op->skip;
+        op_idx_++;
+      }
+
+      if (indices_) {
+        if (++indices_index_ >= indices_->size())
+          target_idx_ = std::numeric_limits<size_t>::max();
+        else
+          target_idx_ = (*indices_)[indices_index_];
+      } else {
+        ++target_idx_;
+      }
       return *this;
     }
     operator bool() const { return op_idx_ < buffer_->size(); }
@@ -905,7 +911,10 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
 
     const PaintOpBuffer* buffer_ = nullptr;
     char* ptr_ = nullptr;
+    const std::vector<size_t>* indices_ = nullptr;
     size_t op_idx_ = 0;
+    size_t target_idx_ = 0;
+    size_t indices_index_ = 0;
   };
 
  private:

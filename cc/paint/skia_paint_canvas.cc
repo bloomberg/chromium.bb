@@ -256,7 +256,7 @@ void SkiaPaintCanvas::drawTextBlob(sk_sp<SkTextBlob> blob,
 }
 
 void SkiaPaintCanvas::drawPicture(sk_sp<const PaintRecord> record) {
-  record->playback(canvas_);
+  record->Playback(canvas_);
 }
 
 bool SkiaPaintCanvas::isClipEmpty() const {

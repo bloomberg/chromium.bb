@@ -146,7 +146,7 @@ TEST_F(PageOverlayTest, PageOverlay_AcceleratedCompositing) {
   GraphicsContext graphics_context(paint_controller);
   graphics_context.BeginRecording(int_rect);
   paint_controller.GetPaintArtifact().Replay(int_rect, graphics_context);
-  graphics_context.EndRecording()->playback(&canvas);
+  graphics_context.EndRecording()->Playback(&canvas);
 }
 
 TEST_F(PageOverlayTest, PageOverlay_VisualRect) {

@@ -95,7 +95,7 @@ class PrintContextTest : public RenderingTest {
                                page_rect);
       GetPrintContext().OutputLinkedDestinations(context, page_rect);
     }
-    builder.EndRecording()->playback(&canvas);
+    builder.EndRecording()->Playback(&canvas);
     GetPrintContext().EndPrintMode();
   }
 
