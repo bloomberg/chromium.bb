@@ -388,7 +388,11 @@ public class PageInfoPopup implements OnClickListener {
         setVisibilityOfPermissionsList(false);
 
         // Work out the URL and connection message and status visibility.
-        mFullUrl = mTab.getWebContents().getVisibleUrl();
+        mFullUrl = mTab.getOriginalUrl();
+
+        // This can happen if an invalid chrome-distiller:// url was entered.
+        if (mFullUrl == null) mFullUrl = "";
+
         if (isShowingOfflinePage()) {
             mFullUrl = OfflinePageUtils.stripSchemeFromOnlineUrl(mFullUrl);
         }
