@@ -3894,6 +3894,14 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="20" label="FutureCat (&gt;10.10), 8-bit (?)"/>
 </enum>
 
+<enum name="CdmHostVerificationStatus">
+  <int value="0" label="Not Called"/>
+  <int value="1" label="Success"/>
+  <int value="2" label="CDM Load Failed"/>
+  <int value="3" label="Get Function Failed"/>
+  <int value="4" label="Init Verification Failed"/>
+</enum>
+
 <enum name="CdmPromiseResult">
   <int value="0" label="Success"/>
   <int value="1" label="NotSupportedError"/>

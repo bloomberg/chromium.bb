@@ -134,8 +134,9 @@ std::unique_ptr<CdmHostFiles> CdmHostFiles::Create(
   return cdm_host_files;
 }
 
-bool CdmHostFiles::InitVerification(base::NativeLibrary cdm_adapter_library,
-                                    const base::FilePath& cdm_adapter_path) {
+CdmHostFiles::Status CdmHostFiles::InitVerification(
+    base::NativeLibrary cdm_adapter_library,
+    const base::FilePath& cdm_adapter_path) {
   DVLOG(1) << __func__;
   DCHECK(cdm_adapter_library);
 
@@ -161,7 +162,7 @@ bool CdmHostFiles::InitVerification(base::NativeLibrary cdm_adapter_library,
   if (!scoped_cdm_library.is_valid()) {
     LOG(ERROR) << "Failed to load CDM (error: " << error.ToString() << ")";
     CloseAllFiles();
-    return true;
+    return Status::kCdmLoadFailed;
   }
   cdm_library = scoped_cdm_library.get();
 #endif
@@ -173,7 +174,7 @@ bool CdmHostFiles::InitVerification(base::NativeLibrary cdm_adapter_library,
   if (!init_verification_func) {
     LOG(ERROR) << "Function " << kInitVerificationFuncName << " not found.";
     CloseAllFiles();
-    return true;
+    return Status::kGetFunctionFailed;
   }
 
   // Fills |cdm_host_files| with common and CDM specific files for
@@ -199,12 +200,12 @@ bool CdmHostFiles::InitVerification(base::NativeLibrary cdm_adapter_library,
   if (!init_verification_func(cdm_host_files_ptr, cdm_host_files.size())) {
     DVLOG(1) << "Failed to verify CDM host.";
     CloseAllFiles();
-    return false;
+    return Status::kInitVerificationFailed;
   }
 
   // Close all files not passed to the CDM.
   CloseAllFiles();
-  return true;
+  return Status::kSuccess;
 }
 
 #if defined(POSIX_WITH_ZYGOTE)

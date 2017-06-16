@@ -59,15 +59,23 @@ class CdmHostFiles {
   static std::unique_ptr<CdmHostFiles> Create(
       const base::FilePath& cdm_adapter_path);
 
+  // Status of CDM host verification.
+  // Note: Reported to UMA. Do not change the values.
+  enum class Status {
+    kNotCalled = 0,
+    kSuccess = 1,
+    kCdmLoadFailed = 2,
+    kGetFunctionFailed = 3,
+    kInitVerificationFailed = 4,
+    kStatusCount
+  };
+
   // Initializes the verification of CDM files by calling the function exported
   // by the CDM. If unexpected error happens, all files will be closed.
   // Otherwise, the PlatformFiles are passed to the CDM which will close the
   // files later.
-  // Only returns false if the CDM returns false (when there's an immediate
-  // failure). Otherwise always returns true for backward compatibility, e.g.
-  // when using an old CDM which doesn't implement the verification API.
-  bool InitVerification(base::NativeLibrary cdm_adapter_library,
-                        const base::FilePath& cdm_adapter_path);
+  Status InitVerification(base::NativeLibrary cdm_adapter_library,
+                          const base::FilePath& cdm_adapter_path);
 
  private:
 #if defined(POSIX_WITH_ZYGOTE)
