@@ -434,6 +434,7 @@ bool AddTransformNodeIfNeeded(
   if (layer->element_id()) {
     data_for_children->property_trees
         ->element_id_to_transform_node_index[layer->element_id()] = node->id;
+    node->element_id = layer->element_id();
   }
 
   node->scrolls = is_scrollable;
@@ -573,8 +574,6 @@ bool AddTransformNodeIfNeeded(
 
   // Flattening (if needed) will be handled by |node|.
   layer->set_should_flatten_transform_from_property_tree(false);
-
-  node->owning_layer_id = layer->id();
 
   return true;
 }

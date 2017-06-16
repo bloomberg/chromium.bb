@@ -673,11 +673,6 @@ bool LayerImpl::HasFilterAnimationThatInflatesBounds() const {
   return GetMutatorHost()->HasFilterAnimationThatInflatesBounds(element_id());
 }
 
-bool LayerImpl::HasTransformAnimationThatInflatesBounds() const {
-  return GetMutatorHost()->HasTransformAnimationThatInflatesBounds(
-      element_id());
-}
-
 bool LayerImpl::HasAnimationThatInflatesBounds() const {
   return GetMutatorHost()->HasAnimationThatInflatesBounds(element_id());
 }

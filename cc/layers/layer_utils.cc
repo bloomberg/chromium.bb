@@ -14,10 +14,6 @@ namespace cc {
 
 namespace {
 
-bool HasTransformAnimationThatInflatesBounds(const LayerImpl& layer) {
-  return layer.HasTransformAnimationThatInflatesBounds();
-}
-
 inline bool HasAncestorTransformAnimation(const TransformNode* transform_node) {
   return transform_node->to_screen_is_potentially_animated;
 }
@@ -86,19 +82,19 @@ bool LayerUtils::GetAnimationBounds(const LayerImpl& layer_in, gfx::BoxF* out) {
 
   for (; transform_tree.parent(transform_node);
        transform_node = transform_tree.parent(transform_node)) {
-    LayerImpl* layer =
-        layer_in.layer_tree_impl()->LayerById(transform_node->owning_layer_id);
-
     // Filter animation bounds are unimplemented, see function
     // HasAncestorFilterAnimation() for reference.
 
-    if (HasTransformAnimationThatInflatesBounds(*layer)) {
+    if (transform_node->element_id != ElementId() &&
+        layer_in.GetMutatorHost()->HasTransformAnimationThatInflatesBounds(
+            transform_node->element_id)) {
       coalesced_transform.ConcatTransform(transform_node->pre_local);
       coalesced_transform.TransformBox(&box);
       coalesced_transform.MakeIdentity();
 
       gfx::BoxF inflated;
-      if (!layer->TransformAnimationBoundsForBox(box, &inflated))
+      if (!layer_in.GetMutatorHost()->TransformAnimationBoundsForBox(
+              transform_node->element_id, box, &inflated))
         return false;
       box = inflated;
 

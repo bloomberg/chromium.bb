@@ -1949,15 +1949,16 @@ CombinedAnimationScale PropertyTrees::GetAnimationScales(
           .combined_starting_animation_scale =
           max_local_scale * ancestor_starting_animation_scale;
     } else {
-      // TODO(sunxd): make LayerTreeImpl::MaximumTargetScale take layer id as
-      // parameter.
-      LayerImpl* layer_impl = layer_tree_impl->LayerById(node->owning_layer_id);
-      layer_impl->GetMutatorHost()->MaximumTargetScale(
-          layer_impl->element_id(), layer_impl->GetElementTypeForAnimation(),
+      ElementListType list_type = layer_tree_impl->IsActiveTree()
+                                      ? ElementListType::ACTIVE
+                                      : ElementListType::PENDING;
+
+      layer_tree_impl->mutator_host()->MaximumTargetScale(
+          node->element_id, list_type,
           &cached_data_.animation_scales[transform_node_id]
                .local_maximum_animation_target_scale);
-      layer_impl->GetMutatorHost()->AnimationStartScale(
-          layer_impl->element_id(), layer_impl->GetElementTypeForAnimation(),
+      layer_tree_impl->mutator_host()->AnimationStartScale(
+          node->element_id, list_type,
           &cached_data_.animation_scales[transform_node_id]
                .local_starting_animation_scale);
       gfx::Vector2dF local_scales =

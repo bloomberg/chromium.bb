@@ -9189,12 +9189,6 @@ TEST_F(LayerTreeHostCommonTest, RenderSurfaceClipsSubtree) {
                                  page_scale_layer, inner_viewport_scroll_layer,
                                  outer_viewport_scroll_layer);
 
-  TransformTree& transform_tree =
-      root->layer_tree_impl()->property_trees()->transform_tree;
-  TransformNode* transform_node =
-      transform_tree.Node(significant_transform->transform_tree_index());
-  EXPECT_EQ(transform_node->owning_layer_id, significant_transform->id());
-
   EXPECT_TRUE(GetRenderSurface(root));
   EXPECT_EQ(GetRenderSurface(significant_transform), GetRenderSurface(root));
   EXPECT_TRUE(GetRenderSurface(layer_clips_subtree));
