@@ -582,10 +582,7 @@
             ],
             "experiments": [
                 {
-                    "name": "Enabled_Warmup",
-                    "params": {
-                        "enable_warmup": "true"
-                    }
+                    "name": "Enabled"
                 }
             ]
         }
@@ -1654,6 +1651,18 @@
                     "enable_features": [
                         "NTPTilesInInstantService"
                     ]
+                }
+            ]
+        }
+    ],
+    "NetAdaptiveProxyConnectionTimeout": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled"
                 }
             ]
         }
