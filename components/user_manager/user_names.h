@@ -13,9 +13,11 @@ class AccountId;
 
 namespace user_manager {
 
-// Username for stub login for tests only.
-// It is also used for Chrome for ChromeOS linux dev build.
-USER_MANAGER_EXPORT extern const char kStubUser[];
+// Stub user name. For tests and CrOS on Linux dev build only.
+USER_MANAGER_EXPORT extern const char kStubUserEmail[];
+
+// Stub user id. For tests and CrOS on Linux dev build only.
+USER_MANAGER_EXPORT extern const char kStubUserId[];
 
 // Magic e-mail addresses are bad. They exist here because some code already
 // depends on them and it is hard to figure out what. Any user types added in
