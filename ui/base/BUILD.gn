@@ -167,6 +167,7 @@ component("base") {
     "device_form_factor_android.cc",
     "device_form_factor_desktop.cc",
     "device_form_factor_ios.mm",
+    "dragdrop/download_file_interface.h",
     "dragdrop/drag_drop_types.h",
     "dragdrop/drag_drop_types_mac.mm",
     "dragdrop/drag_drop_types_win.cc",
