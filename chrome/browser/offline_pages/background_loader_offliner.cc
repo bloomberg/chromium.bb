@@ -14,6 +14,7 @@
 #include "chrome/browser/android/offline_pages/offline_page_mhtml_archiver.h"
 #include "chrome/browser/android/offline_pages/offliner_helper.h"
 #include "chrome/browser/loader/chrome_navigation_data.h"
+#include "chrome/browser/offline_pages/offliner_user_data.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/offline_pages/core/background/offliner_policy.h"
@@ -37,28 +38,6 @@ const char kContentType[] = "text/plain";
 const char kContentTransferEncodingBinary[] =
     "Content-Transfer-Encoding: binary";
 const char kXHeaderForSignals[] = "X-Chrome-Loading-Metrics-Data: 1";
-
-class OfflinerData : public content::WebContentsUserData<OfflinerData> {
- public:
-  static void AddToWebContents(content::WebContents* webcontents,
-                               BackgroundLoaderOffliner* offliner) {
-    DCHECK(offliner);
-    webcontents->SetUserData(UserDataKey(), std::unique_ptr<OfflinerData>(
-                                                new OfflinerData(offliner)));
-  }
-
-  explicit OfflinerData(BackgroundLoaderOffliner* offliner) {
-    offliner_ = offliner;
-  }
-  BackgroundLoaderOffliner* offliner() { return offliner_; }
-
- private:
-  // The offliner that the WebContents is attached to. The offliner owns the
-  // Delegate which owns the WebContents that this data is attached to.
-  // Therefore, its lifetime should exceed that of the WebContents, so this
-  // should always be non-null.
-  BackgroundLoaderOffliner* offliner_;
-};
 
 std::string AddHistogramSuffix(const ClientId& client_id,
                                const char* histogram_name) {
@@ -138,9 +117,11 @@ BackgroundLoaderOffliner::~BackgroundLoaderOffliner() {}
 // static
 BackgroundLoaderOffliner* BackgroundLoaderOffliner::FromWebContents(
     content::WebContents* contents) {
-  OfflinerData* data = OfflinerData::FromWebContents(contents);
-  if (data)
-    return data->offliner();
+  Offliner* offliner = OfflinerUserData::OfflinerFromWebContents(contents);
+  // Today we only have one kind of offliner that uses OfflinerUserData.  If we
+  // add other types, revisit this cast.
+  if (offliner)
+    return static_cast<BackgroundLoaderOffliner*>(offliner);
   return nullptr;
 }
 
@@ -364,6 +345,12 @@ void BackgroundLoaderOffliner::SetSnapshotControllerForTest(
     std::unique_ptr<SnapshotController> controller) {
   snapshot_controller_ = std::move(controller);
 }
+void BackgroundLoaderOffliner::ObserveResourceLoading(
+    ResourceLoadingObserver::ResourceDataType type,
+    bool started) {
+  // TODO(petewil) Not implemented yet.
+  return;
+}
 
 void BackgroundLoaderOffliner::OnNetworkBytesChanged(int64_t bytes) {
   if (pending_request_ && save_state_ != SAVING) {
@@ -521,7 +508,7 @@ void BackgroundLoaderOffliner::ResetLoader() {
 void BackgroundLoaderOffliner::AttachObservers() {
   content::WebContents* contents = loader_->web_contents();
   content::WebContentsObserver::Observe(contents);
-  OfflinerData::AddToWebContents(contents, this);
+  OfflinerUserData::AddToWebContents(contents, this);
 }
 
 void BackgroundLoaderOffliner::AddLoadingSignal(const char* signal_name) {
@@ -536,5 +523,3 @@ void BackgroundLoaderOffliner::AddLoadingSignal(const char* signal_name) {
 }
 
 }  // namespace offline_pages
-
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(offline_pages::OfflinerData);
