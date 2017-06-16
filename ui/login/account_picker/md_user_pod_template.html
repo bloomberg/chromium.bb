@@ -52,6 +52,52 @@
     </div>
 </if>
     <div class="main-pane">
+      <div class="auth-container">
+        <!-- Password Authentication -->
+        <div class="custom-icon-container" hidden></div>
+<if expr="chromeos">
+        <div class="fingerprint-icon-container" hidden
+            aria-label="$i18n{fingerprintIconMessage}">
+          <div class="custom-icon fingerprint-icon-image"></div>
+        </div>
+</if>
+        <div class="password-entry-container">
+          <div class="password-container">
+            <input type="password" class="password"
+                placeholder="$i18n{passwordHint}">
+          </div>
+<if expr="chromeos">
+          <div class="capslock-hint-container">
+            <iron-icon class="capslock-hint" icon="user-pod:caps-lock">
+            </iron-icon>
+          </div>
+          <paper-icon-button class="submit-button" disabled
+                             aria-label="$i18n{submitButtonAccessibleName}"
+                             icon="user-pod:arrow-forward" tabindex="-1">
+          </paper-icon-button>
+</if>
+        </div>
+        <!-- User Click Authentication -->
+        <div class="password-label"></div>
+        <div class="signin-transition-container">
+          <span class="signing-in-label">$i18n{signingIn}</span>
+          <span class="animated-ellipsis-component0">.</span>
+          <span class="animated-ellipsis-component1">.</span>
+          <span class="animated-ellipsis-component2">.</span>
+        </div>
+        <div class="reauth-hint-container">
+          <span class="reauth-warning"></span>
+          <span class="reauth-name-hint"></span>
+        </div>
+        <div class="launch-app-button-container" hidden>
+          <button class="launch-app-button">$i18n{launchAppButton}</button>
+        </div>
+        <div class="input-line">
+          <svg>
+            <line x1="0" y1="0" x2="204" y2="0">
+          </svg>
+        </div>
+      </div>
       <div class="name-container">
         <div class="name"></div>
         <div class="action-box-area">
@@ -115,52 +161,6 @@
               $i18n{removeUserWarningButtonTitle}
             </paper-button>
           </div>
-        </div>
-      </div>
-      <div class="auth-container">
-        <!-- Password Authentication -->
-        <div class="custom-icon-container" hidden></div>
-<if expr="chromeos">
-        <div class="fingerprint-icon-container" hidden
-            aria-label="$i18n{fingerprintIconMessage}">
-          <div class="custom-icon fingerprint-icon-image"></div>
-        </div>
-</if>
-        <div class="password-entry-container">
-          <div class="password-container">
-            <input type="password" class="password"
-                placeholder="$i18n{passwordHint}">
-          </div>
-<if expr="chromeos">
-          <div class="capslock-hint-container">
-            <iron-icon class="capslock-hint" icon="user-pod:caps-lock">
-            </iron-icon>
-          </div>
-          <paper-icon-button class="submit-button" disabled
-                             aria-label="$i18n{submitButtonAccessibleName}"
-                             icon="user-pod:arrow-forward" tabindex="-1">
-          </paper-icon-button>
-</if>
-        </div>
-        <!-- User Click Authentication -->
-        <div class="password-label"></div>
-        <div class="signin-transition-container">
-          <span class="signing-in-label">$i18n{signingIn}</span>
-          <span class="animated-ellipsis-component0">.</span>
-          <span class="animated-ellipsis-component1">.</span>
-          <span class="animated-ellipsis-component2">.</span>
-        </div>
-        <div class="reauth-hint-container">
-          <span class="reauth-warning"></span>
-          <span class="reauth-name-hint"></span>
-        </div>
-        <div class="launch-app-button-container" hidden>
-          <button class="launch-app-button">$i18n{launchAppButton}</button>
-        </div>
-        <div class="input-line">
-          <svg>
-            <line x1="0" y1="0" x2="204" y2="0">
-          </svg>
         </div>
       </div>
       <div class="public-account-info-container">
