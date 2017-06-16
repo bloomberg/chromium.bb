@@ -1,7 +1,7 @@
-function disableRemotePlaybackBackendForTest(t) {
+function enableRemotePlaybackBackendForTest(t) {
   var remotePlaybackBackendEnabledOldValue =
       internals.runtimeFlags.remotePlaybackBackendEnabled;
-  internals.runtimeFlags.remotePlaybackBackendEnabled = false;
+  internals.runtimeFlags.remotePlaybackBackendEnabled = true;
 
   t.add_cleanup(() => {
     internals.runtimeFlags.remotePlaybackBackendEnabled =
