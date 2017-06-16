@@ -50,9 +50,13 @@ using ui::NativeTheme;
 
 namespace {
 
-// The padding that should be placed between content and description in a
-// vertical layout.
-static const int kVerticalPadding = 3;
+// The vertical margin that should be used above and below each suggestion.
+static const int kVerticalMargin = 1;
+
+// The vertical padding to provide each RenderText in addition to the height of
+// the font. Where possible, RenderText uses this additional space to vertically
+// center the cap height of the font instead of centering the entire font.
+static const int kVerticalPadding = 4;
 
 // A mapping from OmniboxResultView's ResultViewState/ColorKind types to
 // NativeTheme colors.
@@ -303,9 +307,9 @@ void OmniboxResultView::OnSelected() {
 gfx::Size OmniboxResultView::CalculatePreferredSize() const {
   int height = GetTextHeight() + (2 * GetVerticalMargin());
   if (match_.answer)
-    height += GetAnswerHeight() + kVerticalPadding;
+    height += GetAnswerHeight();
   else if (base::FeatureList::IsEnabled(omnibox::kUIExperimentVerticalLayout))
-    height += GetTextHeight() + kVerticalPadding;
+    height += GetTextHeight();
   return gfx::Size(0, height);
 }
 
@@ -332,7 +336,7 @@ OmniboxResultView::ResultViewState OmniboxResultView::GetState() const {
 }
 
 int OmniboxResultView::GetTextHeight() const {
-  return font_height_;
+  return font_height_ + kVerticalPadding;
 }
 
 void OmniboxResultView::PaintMatch(const AutocompleteMatch& match,
@@ -367,12 +371,15 @@ void OmniboxResultView::PaintMatch(const AutocompleteMatch& match,
   // Answers in Suggest results.
   if (match.answer && description_max_width != 0) {
     DrawRenderText(match, contents, CONTENTS, canvas, x, y, contents_max_width);
-    y += GetTextHeight() + kVerticalPadding;
+    y += GetTextHeight();
     if (!answer_image_.isNull()) {
-      int answer_icon_size = GetAnswerHeight();
+      // GetAnswerHeight includes some padding. Using that results in an image
+      // that's too large so we use the font height here instead.
+      int answer_icon_size = GetAnswerFont().GetHeight();
       canvas->DrawImageInt(answer_image_, 0, 0, answer_image_.width(),
-                           answer_image_.height(), GetMirroredXInView(x), y,
-                           answer_icon_size, answer_icon_size, true);
+                           answer_image_.height(), GetMirroredXInView(x),
+                           y + (kVerticalPadding / 2), answer_icon_size,
+                           answer_icon_size, true);
       // TODO(dschuyler): Perhaps this should be based on the font size
       // instead of hardcoded to 2 dp (e.g. by adding a space in an
       // appropriate font to the beginning of the description, then reducing
@@ -389,12 +396,12 @@ void OmniboxResultView::PaintMatch(const AutocompleteMatch& match,
   if (base::FeatureList::IsEnabled(omnibox::kUIExperimentVerticalLayout)) {
     // For no description, shift down halfways to draw contents in middle.
     if (description_max_width == 0)
-      y += (GetTextHeight() + kVerticalPadding) / 2;
+      y += GetTextHeight() / 2;
 
     DrawRenderText(match, contents, CONTENTS, canvas, x, y, contents_max_width);
 
     if (description_max_width != 0) {
-      y += GetTextHeight() + kVerticalPadding;
+      y += GetTextHeight();
       DrawRenderText(match, description, DESCRIPTION, canvas, x, y,
                      description_max_width);
     }
@@ -647,7 +654,7 @@ void OmniboxResultView::Layout() {
 
   int row_height = GetTextHeight();
   if (base::FeatureList::IsEnabled(omnibox::kUIExperimentVerticalLayout))
-    row_height += kVerticalPadding + GetTextHeight();
+    row_height += match_.answer ? GetAnswerHeight() : GetTextHeight();
 
   const int icon_y = GetVerticalMargin() + (row_height - icon.height()) / 2;
   icon_bounds_.SetRect(start_x, icon_y, icon.width(), icon.height());
@@ -747,7 +754,7 @@ int OmniboxResultView::GetAnswerHeight() const {
   // If the answer specifies a maximum of 1 line we can simply return the answer
   // font height.
   if (match_.answer->second_line().num_text_lines() == 1)
-    return GetAnswerFont().GetHeight();
+    return GetAnswerFont().GetHeight() + kVerticalPadding;
 
   // Multi-line answers require layout in order to determine the number of lines
   // the RenderText will use.
@@ -757,7 +764,9 @@ int OmniboxResultView::GetAnswerHeight() const {
   }
   description_rendertext_->SetDisplayRect(gfx::Rect(text_bounds_.width(), 0));
   description_rendertext_->GetStringSize();
-  return GetAnswerFont().GetHeight() * description_rendertext_->GetNumLines();
+  return (GetAnswerFont().GetHeight() *
+          description_rendertext_->GetNumLines()) +
+         kVerticalPadding;
 }
 
 int OmniboxResultView::GetVerticalMargin() const {
@@ -771,7 +780,7 @@ int OmniboxResultView::GetVerticalMargin() const {
       Md::GetMode() == Md::MATERIAL_HYBRID ? 8 : 4);
   const int min_height = LocationBarView::kIconWidth + 2 * kIconVerticalPad;
 
-  return std::max(kVerticalPadding, (min_height - GetTextHeight()) / 2);
+  return std::max(kVerticalMargin, (min_height - GetTextHeight()) / 2);
 }
 
 std::unique_ptr<gfx::RenderText> OmniboxResultView::CreateAnswerText(
