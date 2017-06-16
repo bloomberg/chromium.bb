@@ -26,6 +26,7 @@
 #include "components/flags_ui/flags_storage.h"
 #include "components/flags_ui/flags_ui_switches.h"
 #include "components/ntp_tiles/switches.h"
+#include "components/security_state/core/switches.h"
 #include "components/signin/core/common/signin_switches.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/chrome_switches.h"
@@ -43,7 +44,24 @@
 #error "This file requires ARC support."
 #endif
 
+using flags_ui::FeatureEntry;
+
 namespace {
+const FeatureEntry::Choice kMarkHttpAsChoices[] = {
+    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
+    {flag_descriptions::kMarkHttpAsNonSecureAfterEditing,
+     security_state::switches::kMarkHttpAs,
+     security_state::switches::kMarkHttpAsNonSecureAfterEditing},
+    {flag_descriptions::kMarkHttpAsNonSecureWhileIncognito,
+     security_state::switches::kMarkHttpAs,
+     security_state::switches::kMarkHttpAsNonSecureWhileIncognito},
+    {flag_descriptions::kMarkHttpAsNonSecureWhileIncognitoOrEditing,
+     security_state::switches::kMarkHttpAs,
+     security_state::switches::kMarkHttpAsNonSecureWhileIncognitoOrEditing},
+    {flag_descriptions::kMarkHttpAsDangerous,
+     security_state::switches::kMarkHttpAs,
+     security_state::switches::kMarkHttpAsDangerous}};
+
 // To add a new entry, add to the end of kFeatureEntries. There are two
 // distinct types of entries:
 // . SINGLE_VALUE: entry is either on or off. Use the SINGLE_VALUE_TYPE
@@ -68,6 +86,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kBrowserTaskSchedulerDescription, flags_ui::kOsIos,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableBrowserTaskScheduler,
                                switches::kDisableBrowserTaskScheduler)},
+    {"mark-non-secure-as", flag_descriptions::kMarkHttpAsName,
+     flag_descriptions::kMarkHttpAsDescription, flags_ui::kOsIos,
+     MULTI_VALUE_TYPE(kMarkHttpAsChoices)},
 };
 
 // Add all switches from experimental flags to |command_line|.

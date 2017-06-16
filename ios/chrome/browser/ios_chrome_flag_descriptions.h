@@ -20,6 +20,15 @@ extern const char kContextualSearch[];
 // Description for the flag to enable Contextual Search.
 extern const char kContextualSearchDescription[];
 
+// Title, description, and options for the MarkHttpAs setting that controls
+// display of omnibox warnings about non-secure pages.
+extern const char kMarkHttpAsName[];
+extern const char kMarkHttpAsDescription[];
+extern const char kMarkHttpAsDangerous[];
+extern const char kMarkHttpAsNonSecureAfterEditing[];
+extern const char kMarkHttpAsNonSecureWhileIncognito[];
+extern const char kMarkHttpAsNonSecureWhileIncognitoOrEditing[];
+
 // Title for the flag to enable Physical Web in the omnibox.
 extern const char kPhysicalWeb[];
 
