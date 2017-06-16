@@ -18,8 +18,10 @@
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/field_trial.h"
 #include "base/numerics/safe_conversions.h"
+#include "base/optional.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/strings/safe_sprintf.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/test/histogram_tester.h"
@@ -672,7 +674,7 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
     }
   }
 
-  void FetchURLRequestAndVerifyPageIdDirective(const std::string& page_id_value,
+  void FetchURLRequestAndVerifyPageIdDirective(base::Optional<uint64_t> page_id,
                                                bool redirect_once) {
     std::string response_headers =
         "HTTP/1.1 200 OK\r\n"
@@ -705,6 +707,15 @@ class DataReductionProxyNetworkDelegateTest : public testing::Test {
 
     EXPECT_FALSE(
         io_data()->test_request_options()->GetHeaderValueForTesting().empty());
+
+    std::string page_id_value;
+    if (page_id) {
+      char page_id_buffer[16];
+      if (base::strings::SafeSPrintf(page_id_buffer, "%x", page_id.value()) >
+          0) {
+        page_id_value = std::string("pid=") + page_id_buffer;
+      }
+    }
 
     std::string mock_write =
         "GET http://www.google.com/ HTTP/1.1\r\nHost: "
@@ -1772,12 +1783,13 @@ TEST_F(DataReductionProxyNetworkDelegateTest, IncrementingMainFramePageId) {
   Init(USE_SECURE_PROXY, false /* enable_brotli_globally */);
 
   io_data()->request_options()->SetSecureSession("new-session");
+  uint64_t page_id = io_data()->request_options()->GeneratePageId();
 
-  FetchURLRequestAndVerifyPageIdDirective("pid=1", false);
+  FetchURLRequestAndVerifyPageIdDirective(++page_id, false);
 
-  FetchURLRequestAndVerifyPageIdDirective("pid=2", false);
+  FetchURLRequestAndVerifyPageIdDirective(++page_id, false);
 
-  FetchURLRequestAndVerifyPageIdDirective("pid=3", false);
+  FetchURLRequestAndVerifyPageIdDirective(++page_id, false);
 }
 
 TEST_F(DataReductionProxyNetworkDelegateTest, ResetSessionResetsId) {
@@ -1785,19 +1797,21 @@ TEST_F(DataReductionProxyNetworkDelegateTest, ResetSessionResetsId) {
   Init(USE_SECURE_PROXY, false /* enable_brotli_globally */);
 
   io_data()->request_options()->SetSecureSession("new-session");
+  uint64_t page_id = io_data()->request_options()->GeneratePageId();
 
-  FetchURLRequestAndVerifyPageIdDirective("pid=1", false);
+  FetchURLRequestAndVerifyPageIdDirective(++page_id, false);
 
   io_data()->request_options()->SetSecureSession("new-session-2");
 
-  FetchURLRequestAndVerifyPageIdDirective("pid=1", false);
+  page_id = io_data()->request_options()->GeneratePageId();
+  FetchURLRequestAndVerifyPageIdDirective(++page_id, false);
 }
 
 TEST_F(DataReductionProxyNetworkDelegateTest, SubResourceNoPageId) {
   // This is unaffacted by brotil and insecure proxy.
   Init(USE_SECURE_PROXY, false /* enable_brotli_globally */);
   io_data()->request_options()->SetSecureSession("new-session");
-  FetchURLRequestAndVerifyPageIdDirective(std::string(), false);
+  FetchURLRequestAndVerifyPageIdDirective(base::Optional<uint64_t>(), false);
 }
 
 TEST_F(DataReductionProxyNetworkDelegateTest, RedirectSharePid) {
@@ -1805,8 +1819,9 @@ TEST_F(DataReductionProxyNetworkDelegateTest, RedirectSharePid) {
   Init(USE_SECURE_PROXY, false /* enable_brotli_globally */);
 
   io_data()->request_options()->SetSecureSession("new-session");
+  uint64_t page_id = io_data()->request_options()->GeneratePageId();
 
-  FetchURLRequestAndVerifyPageIdDirective("pid=1", true);
+  FetchURLRequestAndVerifyPageIdDirective(++page_id, true);
 }
 
 TEST_F(DataReductionProxyNetworkDelegateTest,
@@ -1827,6 +1842,8 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
   request->SetLoadFlags(net::LOAD_MAIN_FRAME_DEPRECATED);
   io_data()->request_options()->SetSecureSession("fake-session");
 
+  uint64_t page_id = io_data()->request_options()->GeneratePageId();
+
   net::HttpRequestHeaders headers;
   net::ProxyRetryInfoMap proxy_retry_info;
 
@@ -1841,7 +1858,7 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
   DataReductionProxyData* data =
       DataReductionProxyData::GetData(*request.get());
   EXPECT_TRUE(data_reduction_proxy_info.is_http());
-  EXPECT_EQ(1u, data->page_id().value());
+  EXPECT_EQ(++page_id, data->page_id().value());
 
   // Send a second request and verify the page ID incremements.
   request = context()->CreateRequest(GURL(kTestURL), net::RequestPriority::IDLE,
@@ -1856,22 +1873,23 @@ TEST_F(DataReductionProxyNetworkDelegateTest,
   network_delegate()->NotifyBeforeSendHeaders(
       request.get(), data_reduction_proxy_info, proxy_retry_info, &headers);
   data = DataReductionProxyData::GetData(*request.get());
-  EXPECT_EQ(2u, data->page_id().value());
+  EXPECT_EQ(++page_id, data->page_id().value());
 
   // Verify that redirects are the same page ID.
   network_delegate()->NotifyBeforeRedirect(request.get(), GURL(kTestURL));
   network_delegate()->NotifyBeforeSendHeaders(
       request.get(), data_reduction_proxy_info, proxy_retry_info, &headers);
   data = DataReductionProxyData::GetData(*request.get());
-  EXPECT_EQ(2u, data->page_id().value());
+  EXPECT_EQ(page_id, data->page_id().value());
 
-  // Verify that redirects into a new session get a new page ID.
   network_delegate()->NotifyBeforeRedirect(request.get(), GURL(kTestURL));
   io_data()->request_options()->SetSecureSession("new-session");
+
+  page_id = io_data()->request_options()->GeneratePageId();
   network_delegate()->NotifyBeforeSendHeaders(
       request.get(), data_reduction_proxy_info, proxy_retry_info, &headers);
   data = DataReductionProxyData::GetData(*request.get());
-  EXPECT_EQ(1u, data->page_id().value());
+  EXPECT_EQ(++page_id, data->page_id().value());
 }
 
 // Test that effective connection type is correctly added to the request
