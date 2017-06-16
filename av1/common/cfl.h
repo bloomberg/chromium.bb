@@ -54,6 +54,8 @@ typedef struct {
 
   // The rate associated with each alpha codeword
   int costs[CFL_ALPHABET_SIZE];
+
+  int mi_row, mi_col;
 } CFL_CTX;
 
 static const double cfl_alpha_mags[CFL_MAGS_SIZE] = {
@@ -73,7 +75,7 @@ void cfl_predict_block(MACROBLOCKD *const xd, uint8_t *dst, int dst_stride,
                        int row, int col, TX_SIZE tx_size, int plane);
 
 void cfl_store(CFL_CTX *cfl, const uint8_t *input, int input_stride, int row,
-               int col, TX_SIZE tx_size);
+               int col, TX_SIZE tx_size, BLOCK_SIZE bsize);
 
 void cfl_compute_parameters(MACROBLOCKD *const xd, TX_SIZE tx_size);
 

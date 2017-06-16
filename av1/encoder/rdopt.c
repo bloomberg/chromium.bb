@@ -1822,7 +1822,9 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
     const int dst_stride = pd->dst.stride;
     uint8_t *dst =
         &pd->dst.buf[(blk_row * dst_stride + blk_col) << tx_size_wide_log2[0]];
-    cfl_store(xd->cfl, dst, dst_stride, blk_row, blk_col, tx_size);
+    // TODO (ltrudeau) Store sub-8x8 inter blocks when bottom right block is
+    // intra predicted.
+    cfl_store(xd->cfl, dst, dst_stride, blk_row, blk_col, tx_size, plane_bsize);
   }
 #endif
 #if CONFIG_DPCM_INTRA
@@ -9107,7 +9109,14 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
     // so we can store reconstructed luma values
     RD_STATS this_rd_stats;
 
+#if CONFIG_CB4X4
+    // Don't store the luma value if no chroma is associated.
+    // Don't worry, we will store this reconstructed luma in the following
+    // encode dry-run the chroma plane will never know.
+    x->cfl_store_y = !x->skip_chroma_rd;
+#else
     x->cfl_store_y = 1;
+#endif
 
     txfm_rd_in_plane(x, cpi, &this_rd_stats, INT64_MAX, AOM_PLANE_Y,
                      mbmi->sb_type, mbmi->tx_size,

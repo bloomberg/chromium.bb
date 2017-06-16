@@ -741,9 +741,17 @@ static void predict_and_reconstruct_intra_block(
 #if CONFIG_CFL
   if (plane == AOM_PLANE_Y) {
     struct macroblockd_plane *const pd = &xd->plane[plane];
+#if CONFIG_CB4X4 && !CONFIG_CHROMA_2X2
+    const BLOCK_SIZE plane_bsize =
+        AOMMAX(BLOCK_4X4, get_plane_block_size(mbmi->sb_type, pd));
+#else
+    const BLOCK_SIZE plane_bsize = get_plane_block_size(mbmi->sb_type, pd);
+#endif
     uint8_t *dst =
         &pd->dst.buf[(row * pd->dst.stride + col) << tx_size_wide_log2[0]];
-    cfl_store(xd->cfl, dst, pd->dst.stride, row, col, tx_size);
+    // TODO (ltrudeau) Store sub-8x8 inter blocks when bottom right block is
+    // intra predicted.
+    cfl_store(xd->cfl, dst, pd->dst.stride, row, col, tx_size, plane_bsize);
   }
 #endif
 }
@@ -875,6 +883,10 @@ static void set_offsets(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 #if CONFIG_RD_DEBUG
   xd->mi[0]->mbmi.mi_row = mi_row;
   xd->mi[0]->mbmi.mi_col = mi_col;
+#endif
+#if CONFIG_CFL
+  xd->cfl->mi_row = mi_row;
+  xd->cfl->mi_col = mi_col;
 #endif
   for (y = 0; y < y_mis; ++y)
     for (x = !y; x < x_mis; ++x) xd->mi[y * cm->mi_stride + x] = xd->mi[0];

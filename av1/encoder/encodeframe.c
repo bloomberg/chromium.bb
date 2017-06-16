@@ -325,6 +325,10 @@ static void set_offsets(const AV1_COMP *const cpi, const TileInfo *const tile,
   set_offsets_without_segment_id(cpi, tile, x, mi_row, mi_col, bsize);
 
   mbmi = &xd->mi[0]->mbmi;
+#if CONFIG_CFL
+  xd->cfl->mi_row = mi_row;
+  xd->cfl->mi_col = mi_col;
+#endif
 
   // Setup segment ID.
   if (seg->enabled) {

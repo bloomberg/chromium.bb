@@ -177,6 +177,8 @@ static void cfl_dc_pred(MACROBLOCKD *xd, BLOCK_SIZE plane_bsize) {
     sum_v += height * 129;
   }
 
+  // TODO(ltrudeau) Because of max_block_wide and max_block_high, num_pel will
+  // not be a power of two. So these divisions will have to use a lookup table.
   cfl->dc_pred[CFL_PRED_U] = sum_u / num_pel;
   cfl->dc_pred[CFL_PRED_V] = sum_v / num_pel;
 }
@@ -245,26 +247,48 @@ void cfl_predict_block(MACROBLOCKD *const xd, uint8_t *dst, int dst_stride,
 }
 
 void cfl_store(CFL_CTX *cfl, const uint8_t *input, int input_stride, int row,
-               int col, TX_SIZE tx_size) {
+               int col, TX_SIZE tx_size, BLOCK_SIZE bsize) {
   const int tx_width = tx_size_wide[tx_size];
   const int tx_height = tx_size_high[tx_size];
   const int tx_off_log2 = tx_size_wide_log2[0];
 
-  // Store the input into the CfL pixel buffer
-  uint8_t *y_pix = &cfl->y_pix[(row * MAX_SB_SIZE + col) << tx_off_log2];
+#if CONFIG_CHROMA_SUB8X8
+  if (bsize < BLOCK_8X8) {
+#if CONFIG_DEBUG
+    // Transform cannot be smaller than
+    assert(tx_width >= 4);
+    assert(tx_height >= 4);
+#endif
 
-  // Check that we remain inside the pixel buffer.
-  assert(MAX_SB_SIZE * (row + tx_height - 1) + col + tx_width - 1 <
-         MAX_SB_SQUARE);
+    const int bw = block_size_wide[bsize];
+    const int bh = block_size_high[bsize];
 
-  // TODO(ltrudeau) Speedup possible by moving the downsampling to cfl_store
-  for (int j = 0; j < tx_height; j++) {
-    for (int i = 0; i < tx_width; i++) {
-      y_pix[i] = input[i];
+    // For chroma_sub8x8, the CfL prediction for prediction blocks smaller than
+    // 8X8 uses non chroma reference reconstructed luma pixels. To do so, we
+    // combine the 4X4 non chroma reference into the CfL pixel buffers based on
+    // their row and column index.
+
+    // The following code is adapted from the is_chroma_reference() function.
+    if ((cfl->mi_row &
+         0x01)        // Increment the row index for odd indexed 4X4 blocks
+        && (bh == 4)  // But not for 4X8 blocks
+        && cfl->subsampling_y) {  // And only when chroma is subsampled
+      assert(row == 0);
+      row++;
     }
-    y_pix += MAX_SB_SIZE;
-    input += input_stride;
+
+    if ((cfl->mi_col &
+         0x01)        // Increment the col index for odd indexed 4X4 blocks
+        && (bw == 4)  // But not for 8X4 blocks
+        && cfl->subsampling_x) {  // And only when chroma is subsampled
+      assert(col == 0);
+      col++;
+    }
   }
+#endif
+
+  // Invalidate current parameters
+  cfl->are_parameters_computed = 0;
 
   // Store the surface of the pixel buffer that was written to, this way we
   // can manage chroma overrun (e.g. when the chroma surfaces goes beyond the
@@ -277,8 +301,21 @@ void cfl_store(CFL_CTX *cfl, const uint8_t *input, int input_stride, int row,
     cfl->y_height = OD_MAXI((row << tx_off_log2) + tx_height, cfl->y_height);
   }
 
-  // Invalidate current parameters
-  cfl->are_parameters_computed = 0;
+  // Check that we will remain inside the pixel buffer.
+  assert((row << tx_off_log2) + tx_height <= MAX_SB_SIZE);
+  assert((col << tx_off_log2) + tx_width <= MAX_SB_SIZE);
+
+  // Store the input into the CfL pixel buffer
+  uint8_t *y_pix = &cfl->y_pix[(row * MAX_SB_SIZE + col) << tx_off_log2];
+
+  // TODO(ltrudeau) Speedup possible by moving the downsampling to cfl_store
+  for (int j = 0; j < tx_height; j++) {
+    for (int i = 0; i < tx_width; i++) {
+      y_pix[i] = input[i];
+    }
+    y_pix += MAX_SB_SIZE;
+    input += input_stride;
+  }
 }
 
 void cfl_compute_parameters(MACROBLOCKD *const xd, TX_SIZE tx_size) {
