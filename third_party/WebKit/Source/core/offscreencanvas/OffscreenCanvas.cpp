@@ -69,6 +69,7 @@ void OffscreenCanvas::SetSize(const IntSize& size) {
         context_->Reshape(size.Width(), size.Height());
     } else if (context_->Is2d()) {
       context_->Reset();
+      origin_clean_ = true;
     }
   }
   size_ = size;

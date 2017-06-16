@@ -463,8 +463,10 @@ void HTMLCanvasElement::Reset() {
   if (!ok || h < 0)
     h = kDefaultHeight;
 
-  if (Is2d())
+  if (Is2d()) {
     context_->Reset();
+    origin_clean_ = true;
+  }
 
   IntSize old_size = Size();
   IntSize new_size(w, h);
