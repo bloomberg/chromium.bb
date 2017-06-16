@@ -590,6 +590,18 @@
             ]
         }
     ],
+    "DataReductionProxyLowMemoryDevicePromo": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled"
+                }
+            ]
+        }
+    ],
     "DataReductionProxyMainMenu": [
         {
             "platforms": [
