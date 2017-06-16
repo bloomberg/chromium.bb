@@ -15,7 +15,6 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
-#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/net_errors.h"
 #include "net/base/upload_bytes_element_reader.h"
@@ -62,11 +61,7 @@ net::URLRequestJob* BadRequestJobCallback(
 net::URLRequestJob* FileJobCallback(const base::FilePath& file_path,
                                     net::URLRequest* request,
                                     net::NetworkDelegate* network_delegate) {
-  return new net::URLRequestMockHTTPJob(
-      request, network_delegate, file_path,
-      base::CreateTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BACKGROUND,
-           base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
+  return new net::URLRequestMockHTTPJob(request, network_delegate, file_path);
 }
 
 // Parses the upload data in |request| into |request_msg|, and validates the

@@ -7,7 +7,6 @@
 #include <string>
 
 #include "base/path_service.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/common/chrome_paths.h"
 #include "content/public/browser/browser_thread.h"
@@ -38,8 +37,7 @@ void SetUrlRequestMocksEnabled(bool enabled) {
 
     base::FilePath root_http;
     PathService::Get(chrome::DIR_TEST_DATA, &root_http);
-    net::URLRequestMockHTTPJob::AddUrlHandlers(
-        root_http, BrowserThread::GetBlockingPool());
+    net::URLRequestMockHTTPJob::AddUrlHandlers(root_http);
   } else {
     // Revert to the default handlers.
     net::URLRequestFilter::GetInstance()->ClearHandlers();

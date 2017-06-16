@@ -21,7 +21,6 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
-#include "base/task_scheduler/post_task.h"
 #include "base/test/scoped_command_line.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_browsertest.h"
@@ -348,12 +347,8 @@ class MirrorMockURLRequestJob : public net::URLRequestMockHTTPJob {
   MirrorMockURLRequestJob(net::URLRequest* request,
                           net::NetworkDelegate* network_delegate,
                           const base::FilePath& file_path,
-                          const scoped_refptr<base::TaskRunner>& task_runner,
                           ReportResponseHeadersOnUI report_on_ui)
-      : net::URLRequestMockHTTPJob(request,
-                                   network_delegate,
-                                   file_path,
-                                   task_runner),
+      : net::URLRequestMockHTTPJob(request, network_delegate, file_path),
         report_on_ui_(report_on_ui) {}
 
   void Start() override {
@@ -390,9 +385,6 @@ class MirrorMockJobInterceptor : public net::URLRequestInterceptor {
       net::NetworkDelegate* network_delegate) const override {
     return new MirrorMockURLRequestJob(
         request, network_delegate, root_http_,
-        base::CreateTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::BACKGROUND,
-             base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}),
         report_on_ui_);
   }
 

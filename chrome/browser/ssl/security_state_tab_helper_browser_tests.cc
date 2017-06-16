@@ -10,7 +10,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_command_line.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile_window.h"
@@ -2007,12 +2006,8 @@ class URLRequestObsoleteTLSJob : public net::URLRequestMockHTTPJob {
   URLRequestObsoleteTLSJob(net::URLRequest* request,
                            net::NetworkDelegate* network_delegate,
                            const base::FilePath& file_path,
-                           scoped_refptr<net::X509Certificate> cert,
-                           scoped_refptr<base::TaskRunner> task_runner)
-      : net::URLRequestMockHTTPJob(request,
-                                   network_delegate,
-                                   file_path,
-                                   task_runner),
+                           scoped_refptr<net::X509Certificate> cert)
+      : net::URLRequestMockHTTPJob(request, network_delegate, file_path),
         cert_(std::move(cert)) {}
 
   void GetResponseInfo(net::HttpResponseInfo* info) override {
@@ -2039,10 +2034,8 @@ class URLRequestNonsecureInterceptor : public net::URLRequestInterceptor {
  public:
   URLRequestNonsecureInterceptor(
       const base::FilePath& base_path,
-      scoped_refptr<base::SequencedWorkerPool> worker_pool,
       scoped_refptr<net::X509Certificate> cert)
       : base_path_(base_path),
-        worker_pool_(std::move(worker_pool)),
         cert_(std::move(cert)) {}
 
   ~URLRequestNonsecureInterceptor() override {}
@@ -2051,15 +2044,12 @@ class URLRequestNonsecureInterceptor : public net::URLRequestInterceptor {
   net::URLRequestJob* MaybeInterceptRequest(
       net::URLRequest* request,
       net::NetworkDelegate* network_delegate) const override {
-    return new URLRequestObsoleteTLSJob(
-        request, network_delegate, base_path_, cert_,
-        worker_pool_->GetTaskRunnerWithShutdownBehavior(
-            base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
+    return new URLRequestObsoleteTLSJob(request, network_delegate, base_path_,
+                                        cert_);
   }
 
  private:
   const base::FilePath base_path_;
-  const scoped_refptr<base::SequencedWorkerPool> worker_pool_;
   const scoped_refptr<net::X509Certificate> cert_;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestNonsecureInterceptor);
@@ -2068,15 +2058,13 @@ class URLRequestNonsecureInterceptor : public net::URLRequestInterceptor {
 // Installs a handler to serve HTTPS requests to
 // |kMockNonsecureHostname| with connections that have obsolete TLS
 // settings.
-void AddNonsecureUrlHandler(
-    const base::FilePath& base_path,
-    scoped_refptr<net::X509Certificate> cert,
-    scoped_refptr<base::SequencedWorkerPool> worker_pool) {
+void AddNonsecureUrlHandler(const base::FilePath& base_path,
+                            scoped_refptr<net::X509Certificate> cert) {
   net::URLRequestFilter* filter = net::URLRequestFilter::GetInstance();
   filter->AddHostnameInterceptor(
       "https", kMockNonsecureHostname,
       std::unique_ptr<net::URLRequestInterceptor>(
-          new URLRequestNonsecureInterceptor(base_path, worker_pool, cert)));
+          new URLRequestNonsecureInterceptor(base_path, cert)));
 }
 
 class BrowserTestNonsecureURLRequest : public InProcessBrowserTest {
@@ -2095,9 +2083,7 @@ class BrowserTestNonsecureURLRequest : public InProcessBrowserTest {
     serve_file = serve_file.Append(FILE_PATH_LITERAL("title1.html"));
     content::BrowserThread::PostTask(
         content::BrowserThread::IO, FROM_HERE,
-        base::Bind(
-            &AddNonsecureUrlHandler, serve_file, cert_,
-            make_scoped_refptr(content::BrowserThread::GetBlockingPool())));
+        base::Bind(&AddNonsecureUrlHandler, serve_file, cert_));
   }
 
  private:

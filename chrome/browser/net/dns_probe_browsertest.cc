@@ -9,7 +9,6 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
-#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/io_thread.h"
@@ -181,13 +180,7 @@ class DelayableURLRequestMockHTTPJob : public URLRequestMockHTTPJob,
       const base::FilePath& file_path,
       bool should_delay,
       const DestructionCallback& destruction_callback)
-      : URLRequestMockHTTPJob(
-            request,
-            network_delegate,
-            file_path,
-            base::CreateTaskRunnerWithTraits(
-                {base::MayBlock(), base::TaskPriority::BACKGROUND,
-                 base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
+      : URLRequestMockHTTPJob(request, network_delegate, file_path),
         should_delay_(should_delay),
         start_delayed_(false),
         destruction_callback_(destruction_callback) {}

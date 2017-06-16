@@ -582,9 +582,7 @@ class DownloadContentTest : public ContentBrowserTest {
     base::FilePath mock_base(GetTestFilePath("download", ""));
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::Bind(
-            &net::URLRequestMockHTTPJob::AddUrlHandlers, mock_base,
-            make_scoped_refptr(content::BrowserThread::GetBlockingPool())));
+        base::Bind(&net::URLRequestMockHTTPJob::AddUrlHandlers, mock_base));
     ASSERT_TRUE(embedded_test_server()->Start());
     const std::string real_host =
         embedded_test_server()->host_port_pair().host();

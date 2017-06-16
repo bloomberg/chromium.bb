@@ -35,7 +35,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_file_util.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -307,9 +306,8 @@ void RedirectHostsToTestData(const char* const urls[], size_t size) {
   for (size_t i = 0; i < size; ++i) {
     const GURL url(urls[i]);
     EXPECT_TRUE(url.is_valid());
-    filter->AddUrlInterceptor(url,
-                              URLRequestMockHTTPJob::CreateInterceptor(
-                                  base_path, BrowserThread::GetBlockingPool()));
+    filter->AddUrlInterceptor(
+        url, URLRequestMockHTTPJob::CreateInterceptor(base_path));
   }
 }
 
@@ -495,7 +493,7 @@ void FlushBlacklistPolicy() {
   // Updates of the URLBlacklist are done on IO, after building the blacklist
   // on the blocking pool, which is initiated from IO.
   content::RunAllPendingInMessageLoop(BrowserThread::IO);
-  BrowserThread::GetBlockingPool()->FlushForTesting();
+  content::RunAllBlockingPoolTasksUntilIdle();
   content::RunAllPendingInMessageLoop(BrowserThread::IO);
 }
 
@@ -658,8 +656,7 @@ class PolicyTest : public InProcessBrowserTest {
     PathService::Get(content::DIR_TEST_DATA, &root_http);
     BrowserThread::PostTaskAndReply(
         BrowserThread::IO, FROM_HERE,
-        base::BindOnce(URLRequestMockHTTPJob::AddUrlHandlers, root_http,
-                       make_scoped_refptr(BrowserThread::GetBlockingPool())),
+        base::BindOnce(URLRequestMockHTTPJob::AddUrlHandlers, root_http),
         base::MessageLoop::current()->QuitWhenIdleClosure());
     content::RunMessageLoop();
   }

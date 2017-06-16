@@ -19,7 +19,6 @@
 #include "base/path_service.h"
 #include "base/sequence_checker.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task_scheduler/post_task.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/captive_portal/captive_portal_service.h"
@@ -485,8 +484,6 @@ URLRequestMockCaptivePortalJobFactory::Interceptor::MaybeInterceptRequest(
     net::NetworkDelegate* network_delegate) const {
   EXPECT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  const base::TaskTraits kTraits = {base::MayBlock()};
-
   // The PathService is threadsafe.
   base::FilePath root_http;
   PathService::Get(chrome::DIR_TEST_DATA, &root_http);
@@ -499,8 +496,7 @@ URLRequestMockCaptivePortalJobFactory::Interceptor::MaybeInterceptRequest(
     // actually requested.
     return new URLRequestMockHTTPJob(
         request, network_delegate,
-        root_http.Append(FILE_PATH_LITERAL("title2.html")),
-        base::CreateTaskRunnerWithTraits(kTraits));
+        root_http.Append(FILE_PATH_LITERAL("title2.html")));
   } else if (request->url() == kMockHttpsQuickTimeoutUrl) {
     if (behind_captive_portal_)
       return new URLRequestFailedJob(
@@ -509,8 +505,7 @@ URLRequestMockCaptivePortalJobFactory::Interceptor::MaybeInterceptRequest(
     // actually requested.
     return new URLRequestMockHTTPJob(
         request, network_delegate,
-        root_http.Append(FILE_PATH_LITERAL("title2.html")),
-        base::CreateTaskRunnerWithTraits(kTraits));
+        root_http.Append(FILE_PATH_LITERAL("title2.html")));
   } else {
     // The URL should be the captive portal test URL.
     EXPECT_TRUE(request->url() == kMockCaptivePortalTestUrl ||
@@ -522,20 +517,17 @@ URLRequestMockCaptivePortalJobFactory::Interceptor::MaybeInterceptRequest(
       if (request->url() == kMockCaptivePortal511Url) {
         return new URLRequestMockHTTPJob(
             request, network_delegate,
-            root_http.Append(FILE_PATH_LITERAL("captive_portal/page511.html")),
-            base::CreateTaskRunnerWithTraits(kTraits));
+            root_http.Append(FILE_PATH_LITERAL("captive_portal/page511.html")));
       }
       return new URLRequestMockHTTPJob(
           request, network_delegate,
-          root_http.Append(FILE_PATH_LITERAL("captive_portal/login.html")),
-          base::CreateTaskRunnerWithTraits(kTraits));
+          root_http.Append(FILE_PATH_LITERAL("captive_portal/login.html")));
     }
 
     // After logging in to the portal, the test URLs return a 204 response.
     return new URLRequestMockHTTPJob(
         request, network_delegate,
-        root_http.Append(FILE_PATH_LITERAL("captive_portal/page204.html")),
-        base::CreateTaskRunnerWithTraits(kTraits));
+        root_http.Append(FILE_PATH_LITERAL("captive_portal/page204.html")));
   }
 }
 
