@@ -31,6 +31,7 @@
 #include "platform/image-decoders/bmp/BMPImageDecoder.h"
 
 #include "platform/image-decoders/FastSharedBufferReader.h"
+#include "platform/image-decoders/bmp/BMPImageReader.h"
 #include "platform/wtf/PtrUtil.h"
 
 namespace blink {
@@ -45,6 +46,8 @@ BMPImageDecoder::BMPImageDecoder(AlphaOption alpha_option,
                                  size_t max_decoded_bytes)
     : ImageDecoder(alpha_option, color_behavior, max_decoded_bytes),
       decoded_offset_(0) {}
+
+BMPImageDecoder::~BMPImageDecoder() = default;
 
 void BMPImageDecoder::OnSetData(SegmentReader* data) {
   if (reader_)

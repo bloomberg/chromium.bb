@@ -11,6 +11,7 @@
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/ThreadingPrimitives.h"
 #include "third_party/skia/include/core/SkData.h"
+#include "third_party/skia/include/core/SkRWBuffer.h"
 
 namespace blink {
 

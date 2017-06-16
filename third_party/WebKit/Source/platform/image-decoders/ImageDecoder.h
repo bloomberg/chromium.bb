@@ -28,8 +28,6 @@
 #define ImageDecoder_h
 
 #include <memory>
-#include "SkColorPriv.h"
-#include "SkColorSpaceXform.h"
 #include "platform/PlatformExport.h"
 #include "platform/SharedBuffer.h"
 #include "platform/graphics/ColorBehavior.h"
@@ -39,10 +37,10 @@
 #include "platform/image-decoders/SegmentReader.h"
 #include "platform/wtf/Assertions.h"
 #include "platform/wtf/RefPtr.h"
-#include "platform/wtf/Threading.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/Platform.h"
+#include "third_party/skia/include/core/SkColorSpaceXform.h"
 
 namespace blink {
 
@@ -100,10 +98,10 @@ class PLATFORM_EXPORT ImageDecoder {
   static std::unique_ptr<ImageDecoder> Create(
       PassRefPtr<SharedBuffer> data,
       bool data_complete,
-      AlphaOption alphaoption,
+      AlphaOption alpha_option,
       const ColorBehavior& color_behavior) {
     return Create(SegmentReader::CreateFromSharedBuffer(std::move(data)),
-                  data_complete, alphaoption, color_behavior);
+                  data_complete, alpha_option, color_behavior);
   }
 
   virtual String FilenameExtension() const = 0;
