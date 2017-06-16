@@ -150,7 +150,7 @@ def member_context(dictionary, member):
         'v8_default_value': v8_default_value,
         'v8_value_to_local_cpp_value': unwrapped_idl_type.v8_value_to_local_cpp_value(
             extended_attributes, member.name + 'Value',
-            member.name, isolate='isolate', use_exception_state=True),
+            member.name + 'CppValue', isolate='isolate', use_exception_state=True),
     }
 
 
