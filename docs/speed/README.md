@@ -21,8 +21,8 @@
 
   * **[Performance tracks](performance_tracks.md)**: Most of the performance
     work on Chrome is organized into these tracks.
-  * **[Chrome Speed Operations](https://docs.google.com/document/d/1_qx6TV_N20V3bF3TQW74_9kluIJXAwkB8Lj2dLBRsRc/edit)**: provides the benchmarks, infrastructure, and
-    releasing oversight to track regressions.
+  * **[Chrome Speed Operations](chrome_speed_operations.md)**: provides the
+    benchmarks, infrastructure, and releasing oversight to track regressions.
     <!--- TODO: General discussion: chrome-speed-operations mailing list link -->
     <!--- TODO: Tracking releases and regressions: chrome-speed-releasing mailing list link -->
     * Benchmark-specific discussion: benchmarking-dev@chromium.org
