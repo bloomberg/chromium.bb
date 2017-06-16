@@ -186,6 +186,48 @@ public class ModalDialogTest {
         Assert.assertEquals("Invalid return value.", '"' + promptText + '"', resultString);
     }
 
+    /**
+     * Verifies that message content in a dialog is only focusable if the message itself is long
+     * enough to require scrolling.
+     */
+    @Test
+    @MediumTest
+    @Feature({"Browser", "Main"})
+    public void testAlertModalDialogMessageFocus()
+            throws InterruptedException, TimeoutException, ExecutionException {
+        assertScrollViewFocusabilityInAlertDialog("alert('Short message!');", false);
+
+        assertScrollViewFocusabilityInAlertDialog(
+                "alert(new Array(200).join('Long message!'));", true);
+    }
+
+    private void assertScrollViewFocusabilityInAlertDialog(
+            final String jsAlertScript, final boolean expectedFocusability)
+            throws InterruptedException, TimeoutException, ExecutionException {
+        final OnEvaluateJavaScriptResultHelper scriptEvent =
+                executeJavaScriptAndWaitForDialog(jsAlertScript);
+
+        final JavascriptAppModalDialog jsDialog = getCurrentDialog();
+        Assert.assertNotNull("No dialog showing.", jsDialog);
+
+        final String errorMessage =
+                "Scroll view focusability was incorrect. Expected: " + expectedFocusability;
+
+        CriteriaHelper.pollUiThread(new Criteria(errorMessage) {
+            @Override
+            public boolean isSatisfied() {
+                return jsDialog.getDialogForTest()
+                               .findViewById(R.id.js_modal_dialog_scroll_view)
+                               .isFocusable()
+                        == expectedFocusability;
+            }
+        });
+
+        clickOk(jsDialog);
+        Assert.assertTrue("JavaScript execution should continue after closing prompt.",
+                scriptEvent.waitUntilHasValue());
+    }
+
     private static class TapGestureStateListener extends GestureStateListener {
         private CallbackHelper mCallbackHelper = new CallbackHelper();
 
