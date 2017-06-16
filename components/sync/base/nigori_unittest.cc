@@ -172,11 +172,18 @@ TEST(SyncNigoriTest, ToleratesEmptyUserKey) {
   std::string encryption_key;
   std::string mac_key;
   EXPECT_TRUE(nigori1.ExportKeys(&user_key, &encryption_key, &mac_key));
+  EXPECT_FALSE(user_key.empty());
+  EXPECT_FALSE(encryption_key.empty());
+  EXPECT_FALSE(mac_key.empty());
 
   Nigori nigori2;
   EXPECT_TRUE(nigori2.InitByImport("", encryption_key, mac_key));
 
+  user_key = "non-empty-value";
   EXPECT_TRUE(nigori2.ExportKeys(&user_key, &encryption_key, &mac_key));
+  EXPECT_TRUE(user_key.empty());
+  EXPECT_FALSE(encryption_key.empty());
+  EXPECT_FALSE(mac_key.empty());
 }
 
 }  // anonymous namespace
