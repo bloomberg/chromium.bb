@@ -417,15 +417,17 @@ TEST_F(DataReductionProxyRequestOptionsTest, GetSessionKeyFromRequestHeaders) {
 
 TEST_F(DataReductionProxyRequestOptionsTest, PageIdIncrementing) {
   CreateRequestOptions(kVersion);
-  DCHECK_EQ(1u, request_options()->GeneratePageId());
-  DCHECK_EQ(2u, request_options()->GeneratePageId());
-  DCHECK_EQ(3u, request_options()->GeneratePageId());
+  uint64_t page_id = request_options()->GeneratePageId();
+  DCHECK_EQ(++page_id, request_options()->GeneratePageId());
+  DCHECK_EQ(++page_id, request_options()->GeneratePageId());
+  DCHECK_EQ(++page_id, request_options()->GeneratePageId());
 
   request_options()->SetSecureSession("blah");
 
-  DCHECK_EQ(1u, request_options()->GeneratePageId());
-  DCHECK_EQ(2u, request_options()->GeneratePageId());
-  DCHECK_EQ(3u, request_options()->GeneratePageId());
+  page_id = request_options()->GeneratePageId();
+  DCHECK_EQ(++page_id, request_options()->GeneratePageId());
+  DCHECK_EQ(++page_id, request_options()->GeneratePageId());
+  DCHECK_EQ(++page_id, request_options()->GeneratePageId());
 }
 
 }  // namespace data_reduction_proxy

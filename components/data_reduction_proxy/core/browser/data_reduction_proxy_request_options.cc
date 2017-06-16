@@ -4,8 +4,11 @@
 
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 
+#include <stdint.h>
+
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/rand_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/safe_sprintf.h"
 #include "base/strings/string_piece.h"
@@ -78,7 +81,7 @@ DataReductionProxyRequestOptions::DataReductionProxyRequestOptions(
     : client_(util::GetStringForClient(client)),
       use_assigned_credentials_(false),
       data_reduction_proxy_config_(config),
-      current_page_id_(0u) {
+      current_page_id_(base::RandUint64()) {
   DCHECK(data_reduction_proxy_config_);
   util::GetChromiumBuildAndPatch(version, &build_, &patch_);
 }
@@ -230,6 +233,7 @@ void DataReductionProxyRequestOptions::SetSecureSession(
   session_.clear();
   credentials_.clear();
   secure_session_ = secure_session;
+  // Reset Page ID, so users can't be tracked across sessions.
   ResetPageId();
   // Force skipping of credential regeneration. It should be handled by the
   // caller.
@@ -326,8 +330,7 @@ uint64_t DataReductionProxyRequestOptions::GeneratePageId() {
 }
 
 void DataReductionProxyRequestOptions::ResetPageId() {
-  // Caller should not depend on reset setting the page ID to 0.
-  current_page_id_ = 0;
+  current_page_id_ = base::RandUint64();
 }
 
 }  // namespace data_reduction_proxy
