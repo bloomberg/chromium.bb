@@ -33,9 +33,9 @@ class ScriptStreamingTest : public ::testing::Test {
                                  ->CurrentThread()
                                  ->Scheduler()
                                  ->LoadingTaskRunner()),
-        settings_(Settings::Create()),
-        resource_request_("http://www.streaming-test.com/"),
-        resource_(ScriptResource::Create(resource_request_, "UTF-8")) {
+        settings_(Settings::Create()) {
+    resource_ = ScriptResource::Create(
+        KURL(kParsedURLString, "http://www.streaming-test.com/"), "UTF-8");
     resource_->SetStatus(ResourceStatus::kPending);
 
     MockScriptElementBase* element = MockScriptElementBase::Create();
@@ -96,7 +96,6 @@ class ScriptStreamingTest : public ::testing::Test {
   // The Resource and PendingScript where we stream from. These don't really
   // fetch any data outside the test; the test controls the data by calling
   // ScriptResource::appendData.
-  ResourceRequest resource_request_;
   Persistent<ScriptResource> resource_;
   Persistent<ClassicPendingScript> pending_script_;
 };

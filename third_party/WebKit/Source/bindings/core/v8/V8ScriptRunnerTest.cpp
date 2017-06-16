@@ -10,6 +10,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/CachedMetadata.h"
 #include "platform/loader/fetch/CachedMetadataHandler.h"
+#include "platform/weborigin/KURL.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "v8/include/v8.h"
 
@@ -29,7 +30,6 @@ class V8ScriptRunnerTest : public ::testing::Test {
   }
 
   void TearDown() override {
-    resource_request_ = ResourceRequest();
     resource_.Clear();
   }
 
@@ -43,8 +43,9 @@ class V8ScriptRunnerTest : public ::testing::Test {
   WTF::String Filename() const {
     return WTF::String::Format("whatever%d.js", counter_);
   }
-  WTF::String Url() const {
-    return WTF::String::Format("http://bla.com/bla%d", counter_);
+  KURL Url() const {
+    return KURL(kParsedURLString,
+                WTF::String::Format("http://bla.com/bla%d", counter_));
   }
   unsigned TagForParserCache(CachedMetadataHandler* cache_handler) const {
     return V8ScriptRunner::TagForParserCache(cache_handler);
@@ -66,19 +67,14 @@ class V8ScriptRunnerTest : public ::testing::Test {
   }
 
   void SetEmptyResource() {
-    resource_request_ = ResourceRequest();
-    resource_ = ScriptResource::Create(resource_request_, "UTF-8");
+    resource_ = ScriptResource::Create(KURL(), "UTF-8");
   }
 
-  void SetResource() {
-    resource_request_ = ResourceRequest(Url());
-    resource_ = ScriptResource::Create(resource_request_, "UTF-8");
-  }
+  void SetResource() { resource_ = ScriptResource::Create(Url(), "UTF-8"); }
 
   CachedMetadataHandler* CacheHandler() { return resource_->CacheHandler(); }
 
  protected:
-  ResourceRequest resource_request_;
   Persistent<ScriptResource> resource_;
 
   static int counter_;
@@ -107,8 +103,7 @@ TEST_F(V8ScriptRunnerTest, parseOption) {
   EXPECT_FALSE(
       CacheHandler()->GetCachedMetadata(TagForCodeCache(CacheHandler())));
   // The cached data is associated with the encoding.
-  ResourceRequest request(Url());
-  ScriptResource* another_resource = ScriptResource::Create(request, "UTF-16");
+  ScriptResource* another_resource = ScriptResource::Create(Url(), "UTF-16");
   EXPECT_FALSE(CacheHandler()->GetCachedMetadata(
       TagForParserCache(another_resource->CacheHandler())));
 }
@@ -125,8 +120,7 @@ TEST_F(V8ScriptRunnerTest, codeOption) {
   EXPECT_TRUE(
       CacheHandler()->GetCachedMetadata(TagForCodeCache(CacheHandler())));
   // The cached data is associated with the encoding.
-  ResourceRequest request(Url());
-  ScriptResource* another_resource = ScriptResource::Create(request, "UTF-16");
+  ScriptResource* another_resource = ScriptResource::Create(Url(), "UTF-16");
   EXPECT_FALSE(CacheHandler()->GetCachedMetadata(
       TagForCodeCache(another_resource->CacheHandler())));
 }

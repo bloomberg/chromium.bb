@@ -34,6 +34,7 @@ namespace blink {
 
 class CSSParserContext;
 class FetchParameters;
+class KURL;
 class ResourceClient;
 class ResourceFetcher;
 class StyleSheetContents;
@@ -43,7 +44,7 @@ class CORE_EXPORT CSSStyleSheetResource final : public StyleSheetResource {
   enum class MIMETypeCheck { kStrict, kLax };
 
   static CSSStyleSheetResource* Fetch(FetchParameters&, ResourceFetcher*);
-  static CSSStyleSheetResource* CreateForTest(const ResourceRequest&,
+  static CSSStyleSheetResource* CreateForTest(const KURL&,
                                               const String& charset);
 
   ~CSSStyleSheetResource() override;

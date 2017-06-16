@@ -68,13 +68,13 @@ TEST_F(CSSStyleSheetResourceTest, DuplicateResourceNotCached) {
 
   // Emulate using <img> to do async stylesheet preloads.
 
-  Resource* image_resource = ImageResource::Create(ResourceRequest(image_url));
+  Resource* image_resource = ImageResource::CreateForTest(image_url);
   ASSERT_TRUE(image_resource);
   GetMemoryCache()->Add(image_resource);
   ASSERT_TRUE(GetMemoryCache()->Contains(image_resource));
 
   CSSStyleSheetResource* css_resource =
-      CSSStyleSheetResource::CreateForTest(ResourceRequest(css_url), "utf-8");
+      CSSStyleSheetResource::CreateForTest(css_url, "utf-8");
   css_resource->ResponseReceived(
       ResourceResponse(css_url, "style/css", 0, g_null_atom), nullptr);
   css_resource->Finish();
