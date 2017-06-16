@@ -462,6 +462,7 @@ blink_core_sources("layout") {
       "LayoutThemeFontProviderWin.cpp",
       "LayoutThemeWin.cpp",
       "LayoutThemeWin.h",
+      "WebFontRenderingWin.cpp",
     ]
   } else {  # Not Windows.
     sources += [ "LayoutThemeFontProviderDefault.cpp" ]
@@ -471,6 +472,7 @@ blink_core_sources("layout") {
     sources += [
       "LayoutThemeLinux.cpp",
       "LayoutThemeLinux.h",
+      "WebFontRenderingLinux.cpp",
     ]
   }
 
@@ -478,6 +480,7 @@ blink_core_sources("layout") {
     sources += [
       "LayoutThemeAndroid.cpp",
       "LayoutThemeAndroid.h",
+      "WebFontRenderingAndroid.cpp",
     ]
   }
 

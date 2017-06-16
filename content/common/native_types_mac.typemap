@@ -5,7 +5,7 @@
 mojom = "//content/common/native_types.mojom"
 public_headers = [
   "//third_party/WebKit/public/platform/WebScrollbarButtonsPlacement.h",
-  "//third_party/WebKit/public/web/mac/WebScrollbarTheme.h",
+  "//third_party/WebKit/public/platform/mac/WebScrollbarTheme.h",
 ]
 traits_headers = [ "//content/common/view_messages.h" ]
 deps = [

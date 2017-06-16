@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "public/web/mac/WebScrollbarTheme.h"
+#include "public/platform/mac/WebScrollbarTheme.h"
 
 #import <AppKit/AppKit.h>
 

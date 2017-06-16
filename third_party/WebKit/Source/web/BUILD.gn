@@ -80,17 +80,7 @@ component("web") {
     "WebSurroundingText.cpp",
     "WebViewImpl.cpp",
     "WebViewImpl.h",
-    "linux/WebFontRendering.cpp",
-    "mac/WebScrollbarTheme.mm",
-    "mac/WebSubstringUtil.mm",
-    "win/WebFontRendering.cpp",
   ]
-
-  if (is_android) {
-    set_sources_assignment_filter([])
-    sources += [ "linux/WebFontRendering.cpp" ]
-    set_sources_assignment_filter(sources_assignment_filter)
-  }
 
   if (is_mac) {
     libs = [

@@ -101,9 +101,8 @@ static NSAttributedString* attributedSubstringFromRange(
     // to use the font.
     // TODO(shuchen): Support scaling the font as necessary according to CSS
     // transforms, not just pinch-zoom.
-    if (!font ||
-        floor(fontPlatformData.size()) !=
-            floor([[font fontDescriptor] pointSize])) {
+    if (!font || floor(fontPlatformData.size()) !=
+                     floor([[font fontDescriptor] pointSize])) {
       font = [NSFont systemFontOfSize:style->GetFont()
                                           .GetFontDescription()
                                           .ComputedSize() *

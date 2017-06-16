@@ -36,6 +36,7 @@ include_rules = [
   "+third_party/WebKit/public/platform/WebStorageArea.h",
   "+third_party/WebKit/public/platform/WebTouchEvent.h",
   "+third_party/WebKit/public/platform/linux/WebFallbackFont.h",
+  "+third_party/WebKit/public/platform/mac/WebScrollbarTheme.h",
   "+third_party/WebKit/public/platform/modules/bluetooth/web_bluetooth.mojom.h",
   "+third_party/WebKit/public/platform/modules/device_orientation/WebDeviceMotionData.h",
   "+third_party/WebKit/public/platform/modules/device_orientation/WebDeviceOrientationData.h",
@@ -75,6 +76,5 @@ include_rules = [
   "+third_party/WebKit/public/web/WebSharedWorkerCreationErrors.h",
   "+third_party/WebKit/public/web/WebTextDirection.h",
   "+third_party/WebKit/public/web/WebTreeScopeType.h",
-  "+third_party/WebKit/public/web/mac/WebScrollbarTheme.h",
   "+third_party/WebKit/public/web/win/WebFontRendering.h"
 ]
