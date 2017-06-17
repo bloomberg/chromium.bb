@@ -228,7 +228,7 @@ void BleScanner::HandleDeviceUpdated(
   std::string service_data_str;
   char* string_contents_ptr =
       base::WriteInto(&service_data_str, service_data->size() + 1);
-  memcpy(string_contents_ptr, service_data->data(), service_data->size() + 1);
+  memcpy(string_contents_ptr, service_data->data(), service_data->size());
 
   CheckForMatchingScanFilters(bluetooth_device, service_data_str);
 }
