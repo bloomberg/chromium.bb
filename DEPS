@@ -366,7 +366,7 @@ deps_os = {
       Var('chromium_git') + '/external/github.com/swisspol/GCDWebServer.git' + '@' + '43555c66627f6ed44817855a0f6d465f559d30e0',
 
     'src/ios/third_party/material_components_ios/src':
-      Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + '6d5844642b004594ba1607916032616f85c7c045',
+      Var('chromium_git') + '/external/github.com/material-components/material-components-ios.git' + '@' + 'b452b1e7fb85cc9aeef2df2b6a44cbe0e8594560',
 
     'src/ios/third_party/material_font_disk_loader_ios/src':
       Var('chromium_git') + '/external/github.com/material-foundation/material-font-disk-loader-ios.git' + '@' + '8e30188777b016182658fbaa0a4a020a48183224',
