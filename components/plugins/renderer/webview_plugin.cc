@@ -262,9 +262,7 @@ WebViewPlugin::WebViewHelper::WebViewHelper(
   WebLocalFrame* web_frame = WebLocalFrame::Create(
       blink::WebTreeScopeType::kDocument, this, nullptr, nullptr);
   web_view_->SetMainFrame(web_frame);
-  // TODO(dcheng): The main frame widget currently has a special case.
-  // Eliminate this once WebView is no longer a WebWidget.
-  WebFrameWidget::Create(this, web_view_, web_frame);
+  WebFrameWidget::Create(this, web_frame);
 }
 
 WebViewPlugin::WebViewHelper::~WebViewHelper() {

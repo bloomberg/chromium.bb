@@ -489,11 +489,6 @@ RenderWidget* RenderWidget::CreateForFrame(
 blink::WebFrameWidget* RenderWidget::CreateWebFrameWidget(
     RenderWidget* render_widget,
     blink::WebLocalFrame* frame) {
-  if (!frame->Parent()) {
-    // TODO(dcheng): The main frame widget currently has a special case.
-    // Eliminate this once WebView is no longer a WebWidget.
-    return blink::WebFrameWidget::Create(render_widget, frame->View(), frame);
-  }
   return blink::WebFrameWidget::Create(render_widget, frame);
 }
 

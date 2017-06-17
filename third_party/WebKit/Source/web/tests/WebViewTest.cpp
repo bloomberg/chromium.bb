@@ -2064,10 +2064,7 @@ TEST_P(WebViewTest, ClientTapHandlingNullWebViewClient) {
       WebTreeScopeType::kDocument, &web_frame_client, nullptr, nullptr);
   web_frame_client.Bind(local_frame);
   web_view->SetMainFrame(local_frame);
-
-  // TODO(dcheng): The main frame widget currently has a special case.
-  // Eliminate this once WebView is no longer a WebWidget.
-  blink::WebFrameWidget::Create(&web_widget_client, web_view, local_frame);
+  blink::WebFrameWidget::Create(&web_widget_client, local_frame);
 
   WebGestureEvent event(WebInputEvent::kGestureTap, WebInputEvent::kNoModifiers,
                         WebInputEvent::kTimeStampForTesting);
