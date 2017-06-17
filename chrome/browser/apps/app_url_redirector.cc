@@ -113,8 +113,7 @@ AppUrlRedirector::MaybeCreateThrottleFor(content::NavigationHandle* handle) {
           new navigation_interception::InterceptNavigationThrottle(
               handle,
               base::Bind(&LaunchAppWithUrl,
-                         scoped_refptr<const Extension>(*iter), handler->id),
-              true));
+                         scoped_refptr<const Extension>(*iter), handler->id)));
     }
   }
 
