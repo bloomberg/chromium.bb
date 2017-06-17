@@ -29,7 +29,7 @@ cc::RendererSettings CreateRendererSettings(uint32_t (
   renderer_settings.show_overdraw_feedback =
       command_line->HasSwitch(cc::switches::kShowOverdrawFeedback);
   renderer_settings.enable_color_correct_rendering =
-      command_line->HasSwitch(switches::kEnableColorCorrectRendering) ||
+      base::FeatureList::IsEnabled(features::kColorCorrectRendering) ||
       command_line->HasSwitch(switches::kEnableHDR);
   // Populate buffer_to_texture_target_map for all buffer usage/formats.
   for (int usage_idx = 0; usage_idx <= static_cast<int>(gfx::BufferUsage::LAST);

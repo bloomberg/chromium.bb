@@ -84,8 +84,7 @@ Display BuildDisplayForScreen(NSScreen* screen) {
   // https://crbug.com/654488
   CGColorSpaceRef color_space = [[screen colorSpace] CGColorSpace];
   static bool color_correct_rendering_enabled =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableColorCorrectRendering);
+      base::FeatureList::IsEnabled(features::kColorCorrectRendering);
   if (base::mac::IsAtLeastOS10_12() && !color_correct_rendering_enabled)
     color_space = base::mac::GetSystemColorSpace();
 

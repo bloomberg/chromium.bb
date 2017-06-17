@@ -213,9 +213,7 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
       command_line.AppendSwitch(switches::kDisableGpuRasterization);
     }
 
-    // Enable color correct rendering. If the virtual test suite didn't specify
-    // a color space, then use sRGB.
-    command_line.AppendSwitch(switches::kEnableColorCorrectRendering);
+    // If the virtual test suite didn't specify a color space, then force sRGB.
     if (!command_line.HasSwitch(switches::kForceColorProfile))
       command_line.AppendSwitchASCII(switches::kForceColorProfile, "srgb");
 
@@ -234,6 +232,13 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
       *exit_code = 1;
       return true;
     }
+
+    // Enable additional base::Features. Note that there already may exist a
+    // list of enabled features from the virtual or physical test suite.
+    std::string enabled_features =
+        command_line.GetSwitchValueASCII(switches::kEnableFeatures);
+    enabled_features = "ColorCorrectRendering," + enabled_features;
+    command_line.AppendSwitchASCII(switches::kEnableFeatures, enabled_features);
   }
 
   content_client_.reset(base::CommandLine::ForCurrentProcess()->HasSwitch(
