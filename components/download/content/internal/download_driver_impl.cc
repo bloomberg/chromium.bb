@@ -4,6 +4,9 @@
 
 #include "components/download/content/internal/download_driver_impl.h"
 
+#include <set>
+#include <vector>
+
 #include "components/download/internal/driver_entry.h"
 #include "content/public/browser/download_interrupt_reasons.h"
 #include "content/public/browser/download_url_parameters.h"
@@ -152,6 +155,23 @@ base::Optional<DriverEntry> DownloadDriverImpl::Find(const std::string& guid) {
   return base::nullopt;
 }
 
+std::set<std::string> DownloadDriverImpl::GetActiveDownloads() {
+  std::set<std::string> guids;
+  if (!download_manager_)
+    return guids;
+
+  std::vector<content::DownloadItem*> items;
+  download_manager_->GetAllDownloads(&items);
+
+  for (auto* item : items) {
+    DriverEntry::State state = ToDriverEntryState(item->GetState());
+    if (state == DriverEntry::State::IN_PROGRESS)
+      guids.insert(item->GetGuid());
+  }
+
+  return guids;
+}
+
 void DownloadDriverImpl::OnDownloadUpdated(content::DownloadItem* item) {
   DCHECK(client_);
 
@@ -168,6 +188,8 @@ void DownloadDriverImpl::OnDownloadUpdated(content::DownloadItem* item) {
   } else if (reason !=
              content::DownloadInterruptReason::DOWNLOAD_INTERRUPT_REASON_NONE) {
     client_->OnDownloadFailed(entry, static_cast<int>(reason));
+    // TODO(dtrainor, xingliu): This actually might not be correct.  What if we
+    // restart the download?
     item->RemoveObserver(this);
   }
 }

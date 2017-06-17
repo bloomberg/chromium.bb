@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "base/guid.h"
 #include "base/memory/ptr_util.h"
 #include "content/public/test/fake_download_item.h"
 #include "content/public/test/mock_download_manager.h"
@@ -15,12 +16,17 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
+using testing::Invoke;
 using testing::NiceMock;
 using testing::Return;
 
 namespace download {
 
 namespace {
+
+ACTION_P(PopulateVector, items) {
+  arg0->insert(arg0->begin(), items.begin(), items.end());
+}
 
 const char kFakeGuid[] = "fake_guid";
 
@@ -124,6 +130,41 @@ TEST_F(DownloadDriverImplTest, DownloadItemUpdateEvents) {
       .RetiresOnSaturation();
   static_cast<content::DownloadItem::Observer*>(driver_.get())
       ->OnDownloadUpdated(&fake_item);
+}
+
+TEST_F(DownloadDriverImplTest, TestGetActiveDownloadsCall) {
+  using DownloadState = content::DownloadItem::DownloadState;
+  content::FakeDownloadItem item1;
+  item1.SetState(DownloadState::IN_PROGRESS);
+  item1.SetGuid(base::GenerateGUID());
+
+  content::FakeDownloadItem item2;
+  item2.SetState(DownloadState::CANCELLED);
+  item2.SetGuid(base::GenerateGUID());
+
+  content::FakeDownloadItem item3;
+  item3.SetState(DownloadState::COMPLETE);
+  item3.SetGuid(base::GenerateGUID());
+
+  content::FakeDownloadItem item4;
+  item4.SetState(DownloadState::INTERRUPTED);
+  item4.SetGuid(base::GenerateGUID());
+
+  std::vector<content::DownloadItem*> items{&item1, &item2, &item3, &item4};
+
+  ON_CALL(mock_manager_, GetAllDownloads(_))
+      .WillByDefault(PopulateVector(items));
+
+  EXPECT_CALL(mock_manager_, IsManagerInitialized())
+      .Times(1)
+      .WillOnce(Return(true));
+  EXPECT_CALL(mock_client_, OnDriverReady(true)).Times(1);
+  driver_->Initialize(&mock_client_);
+
+  auto guids = driver_->GetActiveDownloads();
+
+  EXPECT_EQ(1U, guids.size());
+  EXPECT_NE(guids.end(), guids.find(item1.GetGuid()));
 }
 
 }  // namespace download

@@ -104,5 +104,16 @@ base::Optional<DriverEntry> TestDownloadDriver::Find(const std::string& guid) {
   return it->second;
 }
 
+std::set<std::string> TestDownloadDriver::GetActiveDownloads() {
+  std::set<std::string> guids;
+
+  for (auto& entry : entries_) {
+    if (entry.second.state == DriverEntry::State::IN_PROGRESS)
+      guids.insert(entry.second.guid);
+  }
+
+  return guids;
+}
+
 }  // namespace test
 }  // namespace download

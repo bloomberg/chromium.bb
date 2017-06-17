@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <set>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -91,6 +92,10 @@ class ControllerImpl : public Controller,
   // internal state initialization.
   void AttemptToFinalizeSetup();
 
+  // Checks for all the currently active driver downloads.  This lets us know
+  // which ones are active that we haven't tracked.
+  void PollActiveDriverDownloads();
+
   // Cancels and cleans upany requests that are no longer associated with a
   // Client in |clients_|.
   void CancelOrphanedRequests();
@@ -135,8 +140,13 @@ class ControllerImpl : public Controller,
   // reached maximum.
   void ActivateMoreDownloads();
 
+  void HandleExternalDownload(const std::string& guid, bool active);
+
   // Postable methods meant to just be pass throughs to Client APIs.  This is
   // meant to help prevent reentrancy.
+  void SendOnDownloadUpdated(DownloadClient client_id,
+                             const std::string& guid,
+                             uint64_t bytes_downloaded);
   void SendOnDownloadSucceeded(DownloadClient client_id,
                                const std::string& guid,
                                const base::FilePath& path,
@@ -156,7 +166,13 @@ class ControllerImpl : public Controller,
   std::unique_ptr<TaskScheduler> task_scheduler_;
 
   // Internal state.
+  // Is set to true if this class is currently in the process of initializing
+  // it's internal state.  This will be false until |startup_status_| signals it
+  // is complete *and* all internal structures are set up.  This is to prevent
+  // outside signals from triggering state updates before we are ready.
+  bool initializing_internals_;
   StartupStatus startup_status_;
+  std::set<std::string> externally_active_downloads_;
   std::map<std::string, DownloadParams::StartCallback> start_callbacks_;
   std::map<DownloadTaskType, TaskFinishedCallback> task_finished_callbacks_;
 
