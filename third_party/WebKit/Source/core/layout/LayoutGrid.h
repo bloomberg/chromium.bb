@@ -128,20 +128,13 @@ class LayoutGrid final : public LayoutBlock {
                 LayoutObject* before_child = nullptr) override;
   void RemoveChild(LayoutObject*) override;
 
-  bool SelfAlignmentChangedToStretch(GridAxis,
-                                     const ComputedStyle& old_style,
-                                     const ComputedStyle& new_style,
-                                     const LayoutBox&) const;
-  bool SelfAlignmentChangedFromStretch(GridAxis,
-                                       const ComputedStyle& old_style,
-                                       const ComputedStyle& new_style,
-                                       const LayoutBox&) const;
-  bool DefaultAlignmentChangedToStretch(GridAxis,
-                                        const ComputedStyle& old_style,
-                                        const ComputedStyle& new_style) const;
-  bool DefaultAlignmentChangedFromStretch(GridAxis,
-                                          const ComputedStyle& old_style,
-                                          const ComputedStyle& new_style) const;
+  bool SelfAlignmentChangedSize(GridAxis,
+                                const ComputedStyle& old_style,
+                                const ComputedStyle& new_style,
+                                const LayoutBox&) const;
+  bool DefaultAlignmentChangedSize(GridAxis,
+                                   const ComputedStyle& old_style,
+                                   const ComputedStyle& new_style) const;
   void StyleDidChange(StyleDifference, const ComputedStyle*) override;
 
   Optional<LayoutUnit> AvailableSpaceForGutters(GridTrackSizingDirection) const;
