@@ -332,10 +332,8 @@ bool RenderViewHostImpl::CreateRenderView(
     force_srgb_image_decode_color_space = true;
   // When color correct rendering is enabled, the image_decode_color_space
   // parameter should not be used (and all users of it should be using sRGB).
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableColorCorrectRendering)) {
+  if (base::FeatureList::IsEnabled(features::kColorCorrectRendering))
     force_srgb_image_decode_color_space = true;
-  }
   if (force_srgb_image_decode_color_space) {
     gfx::ColorSpace::CreateSRGB().GetICCProfile(
         &params->image_decode_color_space);
@@ -514,7 +512,7 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
       command_line.HasSwitch(switches::kMainFrameResizesAreOrientationChanges);
 
   prefs.color_correct_rendering_enabled =
-      command_line.HasSwitch(switches::kEnableColorCorrectRendering);
+      base::FeatureList::IsEnabled(features::kColorCorrectRendering);
 
   prefs.spatial_navigation_enabled = command_line.HasSwitch(
       switches::kEnableSpatialNavigation);

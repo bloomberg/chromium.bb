@@ -210,8 +210,7 @@ IOSurfaceRef CreateIOSurface(const gfx::Size& size, gfx::BufferFormat format) {
   // Ensure that all IOSurfaces start as sRGB when color correct rendering
   // is enabled.
   static bool color_correct_rendering_enabled =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableColorCorrectRendering);
+      base::FeatureList::IsEnabled(features::kColorCorrectRendering);
   if (color_correct_rendering_enabled)
     force_color_space = true;
 

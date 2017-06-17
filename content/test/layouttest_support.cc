@@ -345,7 +345,7 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies,
     cc::RendererSettings renderer_settings;
     base::CommandLine* cmd = base::CommandLine::ForCurrentProcess();
     renderer_settings.enable_color_correct_rendering =
-        cmd->HasSwitch(switches::kEnableColorCorrectRendering);
+        base::FeatureList::IsEnabled(features::kColorCorrectRendering);
     renderer_settings.allow_antialiasing &=
         !cmd->HasSwitch(cc::switches::kDisableCompositedAntialiasing);
     renderer_settings.highp_threshold_min = 2048;

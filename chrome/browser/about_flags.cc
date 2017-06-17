@@ -389,13 +389,6 @@ const FeatureEntry::Choice kEnableGpuRasterizationChoices[] = {
      switches::kForceGpuRasterization, ""},
 };
 
-const FeatureEntry::Choice kColorCorrectRenderingChoices[] = {
-    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {flags_ui::kGenericExperimentChoiceEnabled,
-     switches::kEnableColorCorrectRendering, ""},
-    {flags_ui::kGenericExperimentChoiceDisabled, "", ""},
-};
-
 const FeatureEntry::Choice kEnableWebGL2Choices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
     {flags_ui::kGenericExperimentChoiceEnabled, switches::kEnableES3APIs, ""},
@@ -2944,7 +2937,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-color-correct-rendering",
      flag_descriptions::kColorCorrectRenderingName,
      flag_descriptions::kColorCorrectRenderingDescription, kOsAll,
-     MULTI_VALUE_TYPE(kColorCorrectRenderingChoices)},
+     FEATURE_VALUE_TYPE(features::kColorCorrectRendering)},
 
 #if defined(OS_CHROMEOS)
     {"quick-unlock-pin-signin", flag_descriptions::kQuickUnlockPinSignin,

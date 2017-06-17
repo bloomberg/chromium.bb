@@ -5,11 +5,14 @@
 #include "ui/gfx/color_space_switches.h"
 #include "build/build_config.h"
 
-namespace switches {
+namespace features {
 
-// Convert rasterization and compositing inputs to the output color space
-// before operating on them.
-const char kEnableColorCorrectRendering[] = "enable-color-correct-rendering";
+const base::Feature kColorCorrectRendering{"ColorCorrectRendering",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+
+}  // namespace features
+
+namespace switches {
 
 // Force all monitors to be treated as though they have the specified color
 // profile. Accepted values are "srgb" and "generic-rgb" (currently used by Mac
