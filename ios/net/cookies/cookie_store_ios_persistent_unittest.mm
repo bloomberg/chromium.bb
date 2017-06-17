@@ -30,6 +30,7 @@ struct InactiveCookieStoreIOSTestTraits {
   static const bool preserves_trailing_dots = true;
   static const bool filters_schemes = false;
   static const bool has_path_prefix_bug = false;
+  static const bool forbids_setting_empty_name = false;
   static const int creation_time_granularity_in_ms = 0;
   static const int enforces_prefixes = true;
   static const bool enforce_strict_secure = false;
