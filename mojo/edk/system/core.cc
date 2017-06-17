@@ -572,6 +572,8 @@ MojoResult Core::GetSerializedMessageContents(
       return MOJO_RESULT_RESOURCE_EXHAUSTED;
 
     *buffer = message->user_payload();
+  } else if (buffer) {
+    *buffer = nullptr;
   }
 
   if (flags & MOJO_GET_SERIALIZED_MESSAGE_CONTENTS_FLAG_IGNORE_HANDLES)

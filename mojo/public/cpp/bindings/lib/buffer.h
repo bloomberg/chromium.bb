@@ -6,60 +6,51 @@
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_BUFFER_H_
 
 #include <stddef.h>
+#include <stdint.h>
 
-#include "base/logging.h"
 #include "base/macros.h"
-#include "mojo/public/cpp/bindings/lib/bindings_internal.h"
+#include "mojo/public/cpp/bindings/bindings_export.h"
 
 namespace mojo {
 namespace internal {
 
 // Buffer provides an interface to allocate memory blocks which are 8-byte
-// aligned and zero-initialized. It doesn't own the underlying memory. Users
-// must ensure that the memory stays valid while using the allocated blocks from
-// Buffer.
-class Buffer {
+// aligned. It doesn't own the underlying memory. Users must ensure that the
+// memory stays valid while using the allocated blocks from Buffer.
+//
+// A Buffer may be moved around. A moved-from Buffer is reset and may no longer
+// be used to Allocate memory unless re-Initialized.
+class MOJO_CPP_BINDINGS_EXPORT Buffer {
  public:
-  Buffer() {}
+  // Constructs an invalid Buffer. May not call Allocate().
+  Buffer();
 
-  // The memory must have been zero-initialized. |data| must be 8-byte
-  // aligned.
-  void Initialize(void* data, size_t size) {
-    DCHECK(IsAligned(data));
+  // Constructs a Buffer which can Allocate() blocks starting at |data|, up to
+  // a total of |size| bytes. |data| is not owned.
+  Buffer(void* data, size_t size);
 
-    data_ = data;
-    size_ = size;
-    cursor_ = reinterpret_cast<uintptr_t>(data);
-    data_end_ = cursor_ + size;
-  }
+  Buffer(Buffer&& other);
+  ~Buffer();
 
-  size_t size() const { return size_; }
+  Buffer& operator=(Buffer&& other);
 
   void* data() const { return data_; }
+  size_t size() const { return size_; }
+  size_t cursor() const { return cursor_; }
+
+  bool is_valid() const { return data_ != nullptr; }
 
   // Allocates |num_bytes| from the buffer and returns a pointer to the start of
-  // the allocated block.
-  // The resulting address is 8-byte aligned, and the content of the memory is
-  // zero-filled.
-  void* Allocate(size_t num_bytes) {
-    num_bytes = Align(num_bytes);
-    uintptr_t result = cursor_;
-    cursor_ += num_bytes;
-    if (cursor_ > data_end_ || cursor_ < result) {
-      NOTREACHED();
-      cursor_ -= num_bytes;
-      return nullptr;
-    }
+  // the allocated block. The resulting address is 8-byte aligned.
+  void* Allocate(size_t num_bytes);
 
-    return reinterpret_cast<void*>(result);
-  }
+  // Resets the buffer to an invalid state. Can no longer be used to Allocate().
+  void Reset();
 
  private:
   void* data_ = nullptr;
   size_t size_ = 0;
-
-  uintptr_t cursor_ = 0;
-  uintptr_t data_end_ = 0;
+  size_t cursor_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(Buffer);
 };

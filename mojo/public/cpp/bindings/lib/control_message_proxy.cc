@@ -12,7 +12,6 @@
 #include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "mojo/public/cpp/bindings/lib/message_builder.h"
 #include "mojo/public/cpp/bindings/lib/serialization.h"
 #include "mojo/public/cpp/bindings/lib/validation_util.h"
 #include "mojo/public/cpp/bindings/message.h"
@@ -74,48 +73,41 @@ void SendRunMessage(MessageReceiverWithResponder* receiver,
                     interface_control::RunInputPtr input_ptr,
                     const RunCallback& callback) {
   SerializationContext context;
-
   auto params_ptr = interface_control::RunMessageParams::New();
   params_ptr->input = std::move(input_ptr);
-  size_t size = PrepareToSerialize<interface_control::RunMessageParamsDataView>(
-      params_ptr, &context);
-  MessageBuilder builder(interface_control::kRunMessageId,
-                         Message::kFlagExpectsResponse, size, 0);
-
+  const size_t size =
+      PrepareToSerialize<interface_control::RunMessageParamsDataView>(
+          params_ptr, &context);
+  Message message(interface_control::kRunMessageId,
+                  Message::kFlagExpectsResponse, size, 0);
   interface_control::internal::RunMessageParams_Data* params = nullptr;
   Serialize<interface_control::RunMessageParamsDataView>(
-      params_ptr, builder.buffer(), &params, &context);
+      params_ptr, message.payload_buffer(), &params, &context);
   std::unique_ptr<MessageReceiver> responder =
       base::MakeUnique<RunResponseForwardToCallback>(callback);
-  ignore_result(
-      receiver->AcceptWithResponder(builder.message(), std::move(responder)));
+  ignore_result(receiver->AcceptWithResponder(&message, std::move(responder)));
 }
 
 Message ConstructRunOrClosePipeMessage(
     interface_control::RunOrClosePipeInputPtr input_ptr) {
   SerializationContext context;
-
   auto params_ptr = interface_control::RunOrClosePipeMessageParams::New();
   params_ptr->input = std::move(input_ptr);
-
-  size_t size = PrepareToSerialize<
+  const size_t size = PrepareToSerialize<
       interface_control::RunOrClosePipeMessageParamsDataView>(params_ptr,
                                                               &context);
-  MessageBuilder builder(interface_control::kRunOrClosePipeMessageId, 0, size,
-                         0);
-
+  Message message(interface_control::kRunOrClosePipeMessageId, 0, size, 0);
   interface_control::internal::RunOrClosePipeMessageParams_Data* params =
       nullptr;
   Serialize<interface_control::RunOrClosePipeMessageParamsDataView>(
-      params_ptr, builder.buffer(), &params, &context);
-  return std::move(*builder.message());
+      params_ptr, message.payload_buffer(), &params, &context);
+  return message;
 }
 
 void SendRunOrClosePipeMessage(
     MessageReceiverWithResponder* receiver,
     interface_control::RunOrClosePipeInputPtr input_ptr) {
   Message message(ConstructRunOrClosePipeMessage(std::move(input_ptr)));
-
   ignore_result(receiver->Accept(&message));
 }
 
