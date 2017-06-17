@@ -26,6 +26,7 @@ from chromite.lib import retry_util
 
 # TODO(fdeng): Cleanup the try-catch once crbug.com/482063 is fixed.
 try:
+  import httplib
   import httplib2
   from apiclient.discovery import build as apiclient_build
   from apiclient import errors as apiclient_errors
@@ -174,7 +175,7 @@ class GmailServer(MailServer):
       payload = {'raw': base64.urlsafe_b64encode(message.as_string())}
       service.users().messages().send(userId='me', body=payload).execute()
       return True
-    except apiclient_errors.HttpError as error:
+    except (apiclient_errors.HttpError, httplib.HTTPException) as error:
       logging.warning('Could not send email: %s', error)
       return False
 
