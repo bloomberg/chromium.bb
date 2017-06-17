@@ -68,8 +68,7 @@ class InterceptNavigationThrottleTest
         base::MakeUnique<InterceptNavigationThrottle>(
             test_handle.get(),
             base::Bind(&MockInterceptCallbackReceiver::ShouldIgnoreNavigation,
-                       base::Unretained(mock_callback_receiver_.get())),
-            true));
+                       base::Unretained(mock_callback_receiver_.get()))));
     return test_handle->CallWillStartRequestForTesting(
         is_post, content::Referrer(), false, ui::PAGE_TRANSITION_LINK, false);
   }
@@ -82,8 +81,7 @@ class InterceptNavigationThrottleTest
         base::MakeUnique<InterceptNavigationThrottle>(
             test_handle.get(),
             base::Bind(&MockInterceptCallbackReceiver::ShouldIgnoreNavigation,
-                       base::Unretained(mock_callback_receiver_.get())),
-            true));
+                       base::Unretained(mock_callback_receiver_.get()))));
     test_handle->CallWillStartRequestForTesting(
         true, content::Referrer(), false, ui::PAGE_TRANSITION_LINK, false);
     return test_handle->CallWillRedirectRequestForTesting(GURL(kTestUrl), false,

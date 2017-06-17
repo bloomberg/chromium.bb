@@ -159,5 +159,5 @@ FlashDownloadInterception::MaybeCreateThrottleFor(NavigationHandle* handle) {
   }
 
   return base::MakeUnique<navigation_interception::InterceptNavigationThrottle>(
-      handle, base::Bind(&InterceptNavigation, source_url), true);
+      handle, base::Bind(&InterceptNavigation, source_url));
 }
