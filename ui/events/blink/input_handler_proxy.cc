@@ -324,17 +324,6 @@ void InputHandlerProxy::HandleInputEventWithLatencyInfo(
   }
 
   if (has_ongoing_compositor_scroll_fling_pinch_) {
-    const auto& gesture_event = ToWebGestureEvent(event_with_callback->event());
-    if (gesture_event.source_device == blink::kWebGestureDeviceTouchscreen &&
-        gesture_event.is_source_touch_event_set_non_blocking) {
-      // Dispatch immediately to avoid regression in
-      // |smoothness.tough_scrolling_cases:first_gesture_scroll_update_latency|.
-      compositor_event_queue_->Queue(std::move(event_with_callback),
-                                     tick_clock_->NowTicks());
-      DispatchQueuedInputEvents();
-      return;
-    }
-
     bool needs_animate_input = compositor_event_queue_->empty();
     compositor_event_queue_->Queue(std::move(event_with_callback),
                                    tick_clock_->NowTicks());

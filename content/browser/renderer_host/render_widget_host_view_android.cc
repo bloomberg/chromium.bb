@@ -61,7 +61,6 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
-#include "content/browser/renderer_host/ui_events_helper.h"
 #include "content/common/gpu_stream_constants.h"
 #include "content/common/input_messages.h"
 #include "content/common/site_isolation_policy.h"
@@ -1688,9 +1687,8 @@ gfx::Rect RenderWidgetHostViewAndroid::GetBoundsInRootWindow() {
 void RenderWidgetHostViewAndroid::ProcessAckedTouchEvent(
     const TouchEventWithLatencyInfo& touch, InputEventAckState ack_result) {
   const bool event_consumed = ack_result == INPUT_EVENT_ACK_STATE_CONSUMED;
-  gesture_provider_.OnTouchEventAck(
-      touch.event.unique_touch_event_id, event_consumed,
-      InputEventAckStateIsSetNonBlocking(ack_result));
+  gesture_provider_.OnTouchEventAck(touch.event.unique_touch_event_id,
+                                    event_consumed);
 }
 
 void RenderWidgetHostViewAndroid::GestureEventAck(
