@@ -695,7 +695,14 @@ class SiteProcessCountTracker : public base::SupportsUserData::Data,
     std::map<ProcessID, Count>& counts_per_process = result->second;
     for (auto iter : counts_per_process) {
       RenderProcessHost* host = RenderProcessHost::FromID(iter.first);
-      DCHECK(host);
+      if (!host) {
+        // TODO(clamy): This shouldn't happen but we are getting reports from
+        // the field that this is happening. We need to figure out why some
+        // RenderProcessHosts are not taken out of the map when they're
+        // destroyed.
+        NOTREACHED();
+        continue;
+      }
       if (host->VisibleWidgetCount())
         foreground_processes->insert(host);
       else
