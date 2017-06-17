@@ -1,7 +1,7 @@
 Test release note
 
 Last release note version seen:
-0
+1
 
 Dumping release note text:
 Highlights from Chrome 100 update

@@ -42,6 +42,12 @@ function test()
             testMaybeShowInDrawer(lastSeenVersion);
             next();
         },
+        function doNotShowReleaseNoteOnFreshProfile(next) {
+            var lastSeenVersion = 0;
+            testMaybeShowInDrawer(lastSeenVersion);
+            InspectorTest.addResult(`Release note version in setting: ${Help.releaseNoteVersionSetting().get()}`);
+            next();
+        },
     ]);
 }
 </script>

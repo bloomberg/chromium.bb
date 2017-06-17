@@ -13,3 +13,8 @@ Running: alreadySeenReleaseNote
 Last seen version: 5
 Did not show release note drawer
 
+Running: doNotShowReleaseNoteOnFreshProfile
+Last seen version: 0
+Did not show release note drawer
+Release note version in setting: 5
+
