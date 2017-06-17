@@ -56,7 +56,6 @@ URLResponseBodyConsumer::URLResponseBodyConsumer(
   handle_watcher_.Watch(
       handle_.get(), MOJO_HANDLE_SIGNAL_READABLE,
       base::Bind(&URLResponseBodyConsumer::OnReadable, base::Unretained(this)));
-  handle_watcher_.ArmOrNotify();
 }
 
 URLResponseBodyConsumer::~URLResponseBodyConsumer() {}
@@ -82,6 +81,12 @@ void URLResponseBodyConsumer::SetDefersLoading() {
 void URLResponseBodyConsumer::UnsetDefersLoading() {
   is_deferred_ = false;
   OnReadable(MOJO_RESULT_OK);
+}
+
+void URLResponseBodyConsumer::ArmOrNotify() {
+  if (has_been_cancelled_)
+    return;
+  handle_watcher_.ArmOrNotify();
 }
 
 void URLResponseBodyConsumer::Reclaim(uint32_t size) {

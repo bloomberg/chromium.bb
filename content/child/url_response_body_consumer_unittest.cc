@@ -165,6 +165,7 @@ TEST_F(URLResponseBodyConsumerTest, ReceiveData) {
   scoped_refptr<URLResponseBodyConsumer> consumer(new URLResponseBodyConsumer(
       request_id, dispatcher_.get(), std::move(data_pipe.consumer_handle),
       message_loop_.task_runner()));
+  consumer->ArmOrNotify();
 
   mojo::ScopedDataPipeProducerHandle writer =
       std::move(data_pipe.producer_handle);
@@ -190,6 +191,7 @@ TEST_F(URLResponseBodyConsumerTest, OnCompleteThenClose) {
   scoped_refptr<URLResponseBodyConsumer> consumer(new URLResponseBodyConsumer(
       request_id, dispatcher_.get(), std::move(data_pipe.consumer_handle),
       message_loop_.task_runner()));
+  consumer->ArmOrNotify();
 
   consumer->OnComplete(ResourceRequestCompletionStatus());
   mojo::ScopedDataPipeProducerHandle writer =
@@ -225,6 +227,7 @@ TEST_F(URLResponseBodyConsumerTest, OnCompleteThenCloseWithAsyncRelease) {
   scoped_refptr<URLResponseBodyConsumer> consumer(new URLResponseBodyConsumer(
       request_id, dispatcher_.get(), std::move(data_pipe.consumer_handle),
       message_loop_.task_runner()));
+  consumer->ArmOrNotify();
 
   consumer->OnComplete(ResourceRequestCompletionStatus());
   mojo::ScopedDataPipeProducerHandle writer =
@@ -257,6 +260,7 @@ TEST_F(URLResponseBodyConsumerTest, CloseThenOnComplete) {
   scoped_refptr<URLResponseBodyConsumer> consumer(new URLResponseBodyConsumer(
       request_id, dispatcher_.get(), std::move(data_pipe.consumer_handle),
       message_loop_.task_runner()));
+  consumer->ArmOrNotify();
 
   ResourceRequestCompletionStatus status;
   status.error_code = net::ERR_FAILED;
@@ -300,6 +304,7 @@ TEST_F(URLResponseBodyConsumerTest, TooBigChunkShouldBeSplit) {
   scoped_refptr<URLResponseBodyConsumer> consumer(new URLResponseBodyConsumer(
       request_id, dispatcher_.get(), std::move(data_pipe.consumer_handle),
       message_loop_.task_runner()));
+  consumer->ArmOrNotify();
 
   Run(&context);
   EXPECT_EQ(std::string(kMaxNumConsumedBytesInTask, 'a'), context.data);

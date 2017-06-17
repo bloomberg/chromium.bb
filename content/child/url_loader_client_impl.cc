@@ -164,8 +164,13 @@ void URLLoaderClientImpl::OnStartLoadingResponseBody(
   DCHECK(has_received_response_);
   body_consumer_ = new URLResponseBodyConsumer(
       request_id_, resource_dispatcher_, std::move(body), task_runner_);
-  if (is_deferred_)
+
+  if (is_deferred_) {
     body_consumer_->SetDefersLoading();
+    return;
+  }
+
+  body_consumer_->OnReadable(MOJO_RESULT_OK);
 }
 
 void URLLoaderClientImpl::OnComplete(
