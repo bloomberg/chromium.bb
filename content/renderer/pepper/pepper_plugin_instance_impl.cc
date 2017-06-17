@@ -2154,12 +2154,15 @@ void PepperPluginInstanceImpl::UpdateLayer(bool force_creation) {
       texture_layer_->SetFlipped(false);
     }
 
+    std::unique_ptr<cc_blink::WebLayerImpl> layer(
+        new cc_blink::WebLayerImpl(texture_layer_));
     // Ignore transparency in fullscreen, since that's what Flash always
     // wants to do, and that lets it not recreate a context if
     // wmode=transparent was specified.
     opaque = opaque || fullscreen_container_;
-    texture_layer_->SetContentsOpaque(opaque);
-    web_layer_.reset(new cc_blink::WebLayerImpl(texture_layer_));
+    layer->layer()->SetContentsOpaque(opaque);
+    layer->SetContentsOpaqueIsFixed(true);
+    web_layer_ = std::move(layer);
   } else if (want_compositor_layer) {
     compositor_layer_ = bound_compositor_->layer();
     web_layer_.reset(new cc_blink::WebLayerImpl(compositor_layer_));
