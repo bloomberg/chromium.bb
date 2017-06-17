@@ -76,9 +76,8 @@ TEST_F(OfflinePageSuggestedArticlesObserverTest,
   EXPECT_EQ(1U, test_prefetch_dispatcher()->latest_prefetch_urls.size());
   EXPECT_EQ(test_url_1,
             test_prefetch_dispatcher()->latest_prefetch_urls[0].url);
-  EXPECT_EQ(
-      kSuggestedArticlesNamespace,
-      test_prefetch_dispatcher()->latest_prefetch_urls[0].client_id.name_space);
+  EXPECT_EQ(kSuggestedArticlesNamespace,
+            test_prefetch_dispatcher()->latest_name_space);
 }
 
 TEST_F(OfflinePageSuggestedArticlesObserverTest, RemovesAllOnBadStatus) {
@@ -119,9 +118,8 @@ TEST_F(OfflinePageSuggestedArticlesObserverTest, RemovesClientIdOnInvalidated) {
   EXPECT_NE(nullptr, test_prefetch_dispatcher()->last_removed_client_id.get());
   EXPECT_EQ(test_url_1.spec(),
             test_prefetch_dispatcher()->last_removed_client_id->id);
-  EXPECT_EQ(
-      kSuggestedArticlesNamespace,
-      test_prefetch_dispatcher()->latest_prefetch_urls[0].client_id.name_space);
+  EXPECT_EQ(kSuggestedArticlesNamespace,
+            test_prefetch_dispatcher()->latest_name_space);
 }
 
 }  // namespace offline_pages

@@ -22,7 +22,8 @@ class TestPrefetchDispatcher : public PrefetchDispatcher {
 
   // PrefetchDispatcher implementation.
   void AddCandidatePrefetchURLs(
-      const std::vector<PrefetchURL>& suggested_urls) override;
+      const std::string& name_space,
+      const std::vector<PrefetchURL>& prefetch_urls) override;
   void RemoveAllUnprocessedPrefetchURLs(const std::string& name_space) override;
   void RemovePrefetchURLsByClientId(const ClientId& client_id) override;
   void BeginBackgroundTask(std::unique_ptr<ScopedBackgroundTask> task) override;
@@ -32,6 +33,7 @@ class TestPrefetchDispatcher : public PrefetchDispatcher {
       const std::string& operation_name) override;
   void RequestFinishBackgroundTaskForTest() override;
 
+  std::string latest_name_space;
   std::vector<PrefetchURL> latest_prefetch_urls;
   std::unique_ptr<ClientId> last_removed_client_id;
   std::vector<std::string> operation_list;

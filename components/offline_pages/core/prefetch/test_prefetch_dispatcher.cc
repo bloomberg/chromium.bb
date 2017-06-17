@@ -13,8 +13,10 @@ TestPrefetchDispatcher::TestPrefetchDispatcher() = default;
 TestPrefetchDispatcher::~TestPrefetchDispatcher() = default;
 
 void TestPrefetchDispatcher::AddCandidatePrefetchURLs(
-    const std::vector<PrefetchURL>& suggested_urls) {
-  latest_prefetch_urls = suggested_urls;
+    const std::string& name_space,
+    const std::vector<PrefetchURL>& prefetch_urls) {
+  latest_name_space = name_space;
+  latest_prefetch_urls = prefetch_urls;
   new_suggestions_count++;
 }
 

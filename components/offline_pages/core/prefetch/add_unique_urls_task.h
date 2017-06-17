@@ -5,13 +5,12 @@
 #ifndef COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_ADD_UNIQUE_URLS_TASK_H_
 #define COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_ADD_UNIQUE_URLS_TASK_H_
 
+#include <string>
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
-#include "components/offline_pages/core/prefetch/prefetch_store.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 #include "components/offline_pages/core/task.h"
-#include "url/gurl.h"
 
 namespace offline_pages {
 
@@ -26,14 +25,16 @@ namespace offline_pages {
 // from the store.
 class AddUniqueUrlsTask : public Task {
  public:
-  AddUniqueUrlsTask(PrefetchStore* store,
+  AddUniqueUrlsTask(const std::string& name_space,
                     const std::vector<PrefetchURL>& prefetch_urls);
   ~AddUniqueUrlsTask() override;
 
   void Run() override;
 
  private:
-  PrefetchStore* prefetch_store_;
+  void OnUrlsAdded(int added_entry_count);
+
+  const std::string& name_space_;
   std::vector<PrefetchURL> prefetch_urls_;
 
   base::WeakPtrFactory<AddUniqueUrlsTask> weak_ptr_factory_;

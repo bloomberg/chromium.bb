@@ -24,6 +24,7 @@ class PrefetchDispatcherImpl : public PrefetchDispatcher {
   // PrefetchDispatcher implementation:
   void SetService(PrefetchService* service) override;
   void AddCandidatePrefetchURLs(
+      const std::string& name_space,
       const std::vector<PrefetchURL>& prefetch_urls) override;
   void RemoveAllUnprocessedPrefetchURLs(const std::string& name_space) override;
   void RemovePrefetchURLsByClientId(const ClientId& client_id) override;
