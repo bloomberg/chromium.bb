@@ -30,9 +30,6 @@ const char kAshDebugShortcuts[] = "ash-debug-shortcuts";
 // Enable keyboard shortcuts used by developers only.
 const char kAshDeveloperShortcuts[] = "ash-dev-shortcuts";
 
-// Disable the Night Light feature.
-const char kAshDisableNightLight[] = "ash-disable-night-light";
-
 // Disable the Touch Exploration Mode. Touch Exploration Mode will no longer be
 // turned on automatically when spoken feedback is enabled when this flag is
 // set.
@@ -42,6 +39,9 @@ const char kAshDisableTouchExplorationMode[] =
 // Enables key bindings to scroll magnified screen.
 const char kAshEnableMagnifierKeyScroller[] =
     "ash-enable-magnifier-key-scroller";
+
+// Enables the NightLight feature.
+const char kAshEnableNightLight[] = "ash-enable-night-light";
 
 // Enables the palette on every display, instead of only the internal one.
 const char kAshEnablePaletteOnAllDisplays[] =

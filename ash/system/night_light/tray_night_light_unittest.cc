@@ -4,6 +4,7 @@
 
 #include "ash/system/night_light/tray_night_light.h"
 
+#include "ash/ash_switches.h"
 #include "ash/public/cpp/config.h"
 #include "ash/shell.h"
 #include "ash/system/night_light/night_light_controller.h"
@@ -11,6 +12,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/test_shell_delegate.h"
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "components/prefs/testing_pref_service.h"
 
@@ -27,6 +29,10 @@ class TrayNightLightTest : public test::AshTestBase {
 
   // ash::test::AshTestBase:
   void SetUp() override {
+    // Explicitly enable the NightLight feature for the tests.
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        ash::switches::kAshEnableNightLight);
+
     test::AshTestBase::SetUp();
     GetSessionControllerClient()->Reset();
     GetSessionControllerClient()->AddUserSession(kFakeUserEmail);

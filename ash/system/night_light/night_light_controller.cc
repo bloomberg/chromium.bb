@@ -110,8 +110,8 @@ NightLightController::~NightLightController() {
 
 // static
 bool NightLightController::IsFeatureEnabled() {
-  return !base::CommandLine::ForCurrentProcess()->HasSwitch(
-      ash::switches::kAshDisableNightLight);
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(
+      ash::switches::kAshEnableNightLight);
 }
 
 // static

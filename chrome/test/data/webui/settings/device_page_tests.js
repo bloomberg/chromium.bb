@@ -85,28 +85,8 @@ cr.define('device_page_tests', function() {
     return {
       ash: {
         night_light: {
-          enabled: {
-            key: 'ash.night_light.enabled',
-            type: chrome.settingsPrivate.PrefType.BOOLEAN,
-            value: false,
-          },
-          color_temperature: {
-            key: 'ash.night_light.color_temperature',
-            type: chrome.settingsPrivate.PrefType.NUMBER,
-            value: 0,
-          },
           schedule_type: {
             key: 'ash.night_light.schedule_type',
-            type: chrome.settingsPrivate.PrefType.NUMBER,
-            value: 0,
-          },
-          custom_start_time: {
-            key: 'ash.night_light.custom_start_time',
-            type: chrome.settingsPrivate.PrefType.NUMBER,
-            value: 0,
-          },
-          custom_end_time: {
-            key: 'ash.night_light.custom_end_time',
             type: chrome.settingsPrivate.PrefType.NUMBER,
             value: 0,
           },

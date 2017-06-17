@@ -1390,9 +1390,9 @@ const FeatureEntry kFeatureEntries[] = {
          proximity_auth::switches::kEnableBluetoothLowEnergyDiscovery)},
 #endif  // OS_CHROMEOS
 #if defined(USE_ASH)
-    {"ash-disable-night-light", flag_descriptions::kDisableNightLightName,
-     flag_descriptions::kDisableNightLightDescription, kOsAll,
-     SINGLE_DISABLE_VALUE_TYPE(ash::switches::kAshDisableNightLight)},
+    {"ash-enable-night-light", flag_descriptions::kEnableNightLightName,
+     flag_descriptions::kEnableNightLightDescription, kOsAll,
+     SINGLE_VALUE_TYPE(ash::switches::kAshEnableNightLight)},
     {"show-touch-hud", flag_descriptions::kShowTouchHudName,
      flag_descriptions::kShowTouchHudDescription, kOsAll,
      SINGLE_VALUE_TYPE(ash::switches::kAshTouchHud)},
