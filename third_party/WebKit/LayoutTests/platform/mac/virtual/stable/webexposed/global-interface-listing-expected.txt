@@ -7369,9 +7369,63 @@ interface WebKitAnimationEvent : Event
     getter animationName
     getter elapsedTime
     method constructor
-interface WebKitCSSMatrix : DOMMatrixReadOnly
+interface WebKitCSSMatrix
     attribute @@toStringTag
+    getter a
+    getter b
+    getter c
+    getter d
+    getter e
+    getter f
+    getter m11
+    getter m12
+    getter m13
+    getter m14
+    getter m21
+    getter m22
+    getter m23
+    getter m24
+    getter m31
+    getter m32
+    getter m33
+    getter m34
+    getter m41
+    getter m42
+    getter m43
+    getter m44
     method constructor
+    method inverse
+    method multiply
+    method rotate
+    method rotateAxisAngle
+    method scale
+    method setMatrixValue
+    method skewX
+    method skewY
+    method toString
+    method translate
+    setter a
+    setter b
+    setter c
+    setter d
+    setter e
+    setter f
+    setter m11
+    setter m12
+    setter m13
+    setter m14
+    setter m21
+    setter m22
+    setter m23
+    setter m24
+    setter m31
+    setter m32
+    setter m33
+    setter m34
+    setter m41
+    setter m42
+    setter m43
+    setter m44
 interface WebKitMutationObserver
     attribute @@toStringTag
     method constructor

@@ -23,7 +23,7 @@ PASS parseFloat(a3[0]) is 0
 PASS a3[1] is ""
 
 Test bad input to string constructor
-PASS new WebKitCSSMatrix("banana") threw exception SyntaxError: Failed to construct 'DOMMatrix': Failed to parse 'banana'..
+PASS new WebKitCSSMatrix("banana") threw exception SyntaxError: Failed to construct 'WebKitCSSMatrix': Failed to parse 'banana'..
 
 Test attributes on default matrix
 PASS m.a is 1
@@ -58,9 +58,9 @@ PASS m.e is 10
 PASS m.f is 20
 
 Test throwing exception from setMatrixValue
-PASS m.setMatrixValue("banana") threw exception SyntaxError: Failed to execute 'setMatrixValue' on 'DOMMatrix': Failed to parse 'banana'..
-PASS m.setMatrixValue("translate(10em, 20%)") threw exception SyntaxError: Failed to execute 'setMatrixValue' on 'DOMMatrix': Lengths must be absolute, not relative.
-PASS m.setMatrixValue("translate(10px, 20px) scale()") threw exception SyntaxError: Failed to execute 'setMatrixValue' on 'DOMMatrix': Failed to parse 'translate(10px, 20px) scale()'..
+PASS m.setMatrixValue("banana") threw exception SyntaxError: Failed to execute 'setMatrixValue' on 'WebKitCSSMatrix': Failed to parse 'banana'..
+PASS m.setMatrixValue("translate(10em, 20%)") threw exception SyntaxError: Failed to execute 'setMatrixValue' on 'WebKitCSSMatrix': The transformation depends on the box size, which is not supported..
+PASS m.setMatrixValue("translate(10px, 20px) scale()") threw exception SyntaxError: Failed to execute 'setMatrixValue' on 'WebKitCSSMatrix': Failed to parse 'translate(10px, 20px) scale()'..
 
 Test attributes on translate() and accumulation
 PASS m2.a is 1
@@ -189,12 +189,7 @@ PASS sx.e is 0
 PASS sx.f is 0
 
 Test multiply with missing argument
-PASS m2.a is 1
-PASS m2.b is 2
-PASS m2.c is 3
-PASS m2.d is 4
-PASS m2.e is 5
-PASS m2.f is 6
+PASS m2 is null
 
 Test inverse
 PASS parseFloat(m2.a) is 0.5
@@ -212,21 +207,8 @@ PASS parseFloat(m.d) is 2
 PASS parseFloat(m.e) is 10
 PASS parseFloat(m.f) is 20
 
-Test not invertible matrix
-PASS m2.a is NaN
-PASS m2.b is NaN
-PASS m2.c is NaN
-PASS m2.d is NaN
-PASS m2.e is NaN
-PASS m2.f is NaN
-
-Test immutability of inverse
-PASS m.a is 0
-PASS m.b is 0
-PASS m.c is 0
-PASS m.d is 0
-PASS m.e is 0
-PASS m.f is 0
+Test throwing exception from inverse
+PASS m.inverse() threw exception NotSupportedError: Failed to execute 'inverse' on 'WebKitCSSMatrix': The matrix is not invertable..
 
 PASS successfullyParsed is true
 

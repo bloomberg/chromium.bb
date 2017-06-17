@@ -974,6 +974,7 @@ transforms/2d/transform-accuracy.html
 transforms/3d/hit-testing/composited-hit-test.html
 transforms/3d/hit-testing/rotated-hit-test-with-child.html
 transforms/container-transform-crash.html
+transforms/cssmatrix-crash.html
 transforms/focus-on-transformed-node.html
 transforms/no_transform_hit_testing.html
 transforms/topmost-becomes-bottomost-for-scrolling.html
