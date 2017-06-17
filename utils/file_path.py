@@ -1092,21 +1092,18 @@ def rmtree(root):
     # errors is a list of tuple(function, path, excinfo).
     errors = []
     fs.rmtree(root, onerror=lambda *args: errors.append(args))
-    if not errors:
+    if not errors or not fs.exists(root):
+      if i:
+        sys.stderr.write('Succeeded.\n')
       return True
     if not i and sys.platform == 'win32':
-      for _, path, _ in errors:
+      for path in sorted(set(path for _, path, _ in errors)):
         try:
           change_acl_for_delete(path)
         except Exception as e:
           sys.stderr.write('- %s (failed to update ACL: %s)\n' % (path, e))
 
-    if i == max_tries - 1:
-      sys.stderr.write(
-          'Failed to delete %s. The following files remain:\n' % root)
-      for _, path, _ in errors:
-        sys.stderr.write('- %s\n' % path)
-    else:
+    if i != max_tries - 1:
       delay = (i+1)*2
       sys.stderr.write(
           'Failed to delete %s (%d files remaining).\n'
@@ -1115,50 +1112,24 @@ def rmtree(root):
           (root, len(errors), delay))
       time.sleep(delay)
 
+  sys.stderr.write(
+      'Failed to delete %s. The following files remain:\n' % root)
+  # The same path may be listed multiple times.
+  for path in sorted(set(path for _, path, _ in errors)):
+    sys.stderr.write('- %s\n' % path)
+
   # If soft retries fail on Linux, there's nothing better we can do.
   if sys.platform != 'win32':
     raise errors[0][2][0], errors[0][2][1], errors[0][2][2]
 
-  # The soft way was not good enough. Try the hard way. Enumerates both:
-  # - all child processes from this process.
-  # - processes where the main executable in inside 'root'. The reason is that
-  #   the ancestry may be broken so stray grand-children processes could be
-  #   undetected by the first technique.
-  # This technique is not fool-proof but gets mostly there.
-  def get_processes():
-    processes = enum_processes_win()
-    tree_processes = filter_processes_tree_win(processes)
-    dir_processes = filter_processes_dir_win(processes, root)
-    # Convert to dict to remove duplicates.
-    processes = dict((p.ProcessId, p) for p in tree_processes)
-    processes.update((p.ProcessId, p) for p in dir_processes)
-    processes.pop(os.getpid())
-    return processes
-
-  for i in xrange(3):
-    sys.stderr.write('Enumerating processes:\n')
-    processes = get_processes()
-    if not processes:
+  # The soft way was not good enough. Try the hard way.
+  for i in xrange(max_tries):
+    if not _kill_children_processes_win(root):
       break
-    for _, proc in sorted(processes.iteritems()):
-      sys.stderr.write(
-          '- pid %d; Handles: %d; Exe: %s; Cmd: %s\n' % (
-            proc.ProcessId,
-            proc.HandleCount,
-            proc.ExecutablePath,
-            proc.CommandLine))
-    sys.stderr.write('Terminating %d processes.\n' % len(processes))
-    for pid in sorted(processes):
-      try:
-        # Killing is asynchronous.
-        os.kill(pid, 9)
-        sys.stderr.write('- %d killed\n' % pid)
-      except OSError:
-        sys.stderr.write('- failed to kill %s\n' % pid)
-    if i < 2:
+    if i != max_tries - 1:
       time.sleep((i+1)*2)
   else:
-    processes = get_processes()
+    processes = _get_children_processes_win(root)
     if processes:
       sys.stderr.write('Failed to terminate processes.\n')
       raise errors[0][2][0], errors[0][2][1], errors[0][2][2]
@@ -1166,11 +1137,66 @@ def rmtree(root):
   # Now that annoying processes in root are evicted, try again.
   errors = []
   fs.rmtree(root, onerror=lambda *args: errors.append(args))
-  if errors:
-    # There's no hope.
+  if errors and fs.exists(root):
+    # There's no hope: the directory was tried to be removed 4 times. Give up
+    # and raise an exception.
     sys.stderr.write(
         'Failed to delete %s. The following files remain:\n' % root)
-    for _, path, _ in errors:
+    # The same path may be listed multiple times.
+    for path in sorted(set(path for _, path, _ in errors)):
       sys.stderr.write('- %s\n' % path)
     raise errors[0][2][0], errors[0][2][1], errors[0][2][2]
   return False
+
+
+## Private code.
+
+
+def _kill_children_processes_win(root):
+  """Try to kill all children processes indistriminately and prints updates to
+  stderr.
+
+  Returns:
+    True if at least one child process was found.
+  """
+  processes = _get_children_processes_win(root)
+  if not processes:
+    return False
+  sys.stderr.write('Enumerating processes:\n')
+  for _, proc in sorted(processes.iteritems()):
+    sys.stderr.write(
+        '- pid %d; Handles: %d; Exe: %s; Cmd: %s\n' % (
+          proc.ProcessId,
+          proc.HandleCount,
+          proc.ExecutablePath,
+          proc.CommandLine))
+  sys.stderr.write('Terminating %d processes:\n' % len(processes))
+  for pid in sorted(processes):
+    try:
+      # Killing is asynchronous.
+      os.kill(pid, 9)
+      sys.stderr.write('- %d killed\n' % pid)
+    except OSError:
+      sys.stderr.write('- failed to kill %s\n' % pid)
+  return True
+
+
+def _get_children_processes_win(root):
+  """Returns a list of processes.
+
+  Enumerates both:
+  - all child processes from this process.
+  - processes where the main executable in inside 'root'. The reason is that
+    the ancestry may be broken so stray grand-children processes could be
+    undetected by the first technique.
+
+  This technique is not fool-proof but gets mostly there.
+  """
+  processes = enum_processes_win()
+  tree_processes = filter_processes_tree_win(processes)
+  dir_processes = filter_processes_dir_win(processes, root)
+  # Convert to dict to remove duplicates.
+  processes = dict((p.ProcessId, p) for p in tree_processes)
+  processes.update((p.ProcessId, p) for p in dir_processes)
+  processes.pop(os.getpid())
+  return processes
