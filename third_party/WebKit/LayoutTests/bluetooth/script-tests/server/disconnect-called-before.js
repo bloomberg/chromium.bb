@@ -3,7 +3,7 @@ promise_test(() => {
   return getHealthThermometerDevice({
       filters: [{services: ['health_thermometer']}],
       optionalServices: ['generic_access']})
-    .then(({device}) => {
+    .then(([device]) => {
       device.gatt.disconnect();
       return assert_promise_rejects_with_message(
         device.gatt.CALLS([

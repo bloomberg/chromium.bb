@@ -8,7 +8,7 @@
 'use strict';
 promise_test(() => {
   return getDiscoveredHealthThermometerDevice()
-    .then(({device, fake_peripheral}) => {
+    .then(([device, fake_peripheral]) => {
       return fake_peripheral.setNextGATTConnectionResponse({code: HCI_SUCCESS})
         .then(() => device.gatt.connect());
     })

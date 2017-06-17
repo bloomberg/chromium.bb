@@ -3,7 +3,7 @@ promise_test(() => {
   let promise;
   return getHealthThermometerDevice({
       filters: [{services: ['health_thermometer']}]})
-    .then(({device}) => {
+    .then(([device]) => {
       return device.gatt.CALLS([
         getPrimaryService('health_thermometer')|
         getPrimaryServices()|

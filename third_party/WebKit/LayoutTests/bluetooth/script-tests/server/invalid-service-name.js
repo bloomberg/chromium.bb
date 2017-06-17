@@ -1,7 +1,7 @@
 'use strict';
 promise_test(() => {
   return getHealthThermometerDevice()
-    .then(({device}) => {
+    .then(([device]) => {
       return assert_promise_rejects_with_message(
         device.gatt.CALLS([
           getPrimaryService('wrong_name')|

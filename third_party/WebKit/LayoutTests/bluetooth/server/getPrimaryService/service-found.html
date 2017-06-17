@@ -10,7 +10,7 @@ promise_test(() => {
   return getHealthThermometerDevice({
       filters: [{services: ['health_thermometer']}],
       optionalServices: ['generic_access']})
-    .then(({device}) => {
+    .then(([device]) => {
       return Promise.all([
           device.gatt.getPrimaryService(generic_access.alias),
           device.gatt.getPrimaryService(generic_access.name),

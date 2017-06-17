@@ -456,94 +456,26 @@ function setUpHealthThermometerAndHeartRateDevices() {
      })]));
 }
 
-// Returns an object containing a BluetoothDevice discovered using |options|,
-// its corresponding FakePeripheral and FakeRemoteGATTServices.
+// Returns a BluetoothDevice discovered using |options| and its
+// corresponding FakePeripheral.
 // The simulated device is called 'Health Thermometer' it has two known service
-// UUIDs: 'generic_access' and 'health_thermometer' which correspond to two
-// services with the same UUIDs. The device has been connected to and its
-// services are ready to be discovered.
+// UUIDs: 'generic_access' and 'health_thermometer'. The device has been
+// connected to and its services are ready to be discovered.
 // TODO(crbug.com/719816): Add characteristics and descriptors.
 function getHealthThermometerDevice(options) {
-  let device;
-  let fake_peripheral;
-  let fake_generic_access;
-  let fake_health_thermometer;
-
-  return getConnectedHealthThermometerDevice(options)
-    .then(result => {
-      ({
-        device,
-        fake_peripheral,
-        fake_generic_access,
-        fake_health_thermometer,
-      } = result);
-    })
-    .then(() => fake_peripheral.setNextGATTDiscoveryResponse({
-      code: HCI_SUCCESS}))
-    .then(() => ({
-      device: device,
-      fake_peripheral: fake_peripheral,
-      fake_generic_access: fake_generic_access,
-      fake_health_thermometer1: fake_health_thermometer,
-    }));
-}
-
-// Similar to getHealthThermometerDevice except that the peripheral has
-// two 'health_thermometer' services.
-function getTwoHealthThermometerServicesDevice(options) {
-  let device;
-  let fake_peripheral;
-  let fake_generic_access;
-  let fake_health_thermometer1;
-  let fake_health_thermometer2;
-
-  return getConnectedHealthThermometerDevice(options)
-    .then(result => {
-      ({
-        device,
-        fake_peripheral,
-        fake_generic_access,
-        fake_health_thermometer: fake_health_thermometer1,
-      } = result);
-    })
-    .then(() => fake_peripheral.addFakeService({uuid: 'health_thermometer'}))
-    .then(s => fake_health_thermometer2 = s)
-    .then(() => fake_peripheral.setNextGATTDiscoveryResponse({
-      code: HCI_SUCCESS}))
-    .then(() => ({
-      device: device,
-      fake_peripheral: fake_peripheral,
-      fake_generic_access: fake_generic_access,
-      fake_health_thermometer1: fake_health_thermometer1,
-      fake_health_thermometer2: fake_health_thermometer2
-    }));
-}
-
-// Similar to getHealthThermometerDevice except the GATT discovery
-// response has not been set yet so more attributes can still be added.
-function getConnectedHealthThermometerDevice(options) {
-  let device;
-  let fake_peripheral;
-  let fake_generic_access;
-  let fake_health_thermometer;
   return getDiscoveredHealthThermometerDevice(options)
-    .then(result => {
-      ({device, fake_peripheral} = result);
-    })
-    .then(() => fake_peripheral.setNextGATTConnectionResponse({
-      code: HCI_SUCCESS}))
-    .then(() => device.gatt.connect())
-    .then(() => fake_peripheral.addFakeService({uuid: 'generic_access'}))
-    .then(s => fake_generic_access = s)
-    .then(() => fake_peripheral.addFakeService({
-      uuid: 'health_thermometer'}))
-    .then(s => fake_health_thermometer = s)
-    .then(() => ({
-      device: device,
-      fake_peripheral: fake_peripheral,
-      fake_generic_access: fake_generic_access,
-      fake_health_thermometer: fake_health_thermometer,
-    }));
+    .then(([device, fake_peripheral]) => {
+      return fake_peripheral.setNextGATTConnectionResponse({code: HCI_SUCCESS})
+        .then(() => device.gatt.connect())
+        .then(() => fake_peripheral.addFakeService({uuid: 'generic_access'}))
+        .then(() => fake_peripheral.addFakeService({
+          uuid: 'health_thermometer'}))
+        .then(() => fake_peripheral.addFakeService({
+          uuid: 'health_thermometer'}))
+        .then(() => fake_peripheral.setNextGATTDiscoveryResponse({
+          code: HCI_SUCCESS}))
+        .then(() => [device, fake_peripheral]);
+    });
 }
 
 // Returns the same device and fake peripheral as getHealthThermometerDevice()
@@ -581,10 +513,7 @@ function getHealthThermometerDeviceWithServicesDiscovered(options) {
         }))
         .then(() => requestDeviceWithKeyDown(options))
         .then(device => device.gatt.connect())
-        .then(gatt => ({
-          device: gatt.device,
-          fake_peripheral: fake_peripheral
-        }));
+        .then(gatt => [gatt.device, fake_peripheral]);
     });
 }
 
@@ -592,15 +521,12 @@ function getHealthThermometerDeviceWithServicesDiscovered(options) {
 // characteristics, or descriptors.
 function getEmptyHealthThermometerDevice(options) {
   return getDiscoveredHealthThermometerDevice(options)
-    .then(({device, fake_peripheral}) => {
+    .then(([device, fake_peripheral]) => {
       return fake_peripheral.setNextGATTConnectionResponse({code: HCI_SUCCESS})
         .then(() => device.gatt.connect())
         .then(() => fake_peripheral.setNextGATTDiscoveryResponse({
           code: HCI_SUCCESS}))
-        .then(() => ({
-          device: device,
-          fake_peripheral: fake_peripheral
-        }));
+        .then(() => [device, fake_peripheral]);
     });
 }
 
@@ -623,7 +549,8 @@ function getHIDDevice(options) {
     .then(fake_peripheral => {
       return requestDeviceWithKeyDown(options)
         .then(device => {
-          return fake_peripheral.setNextGATTConnectionResponse({
+          return fake_peripheral
+            .setNextGATTConnectionResponse({
               code: HCI_SUCCESS})
             .then(() => device.gatt.connect())
             .then(() => fake_peripheral.addFakeService({
@@ -634,10 +561,7 @@ function getHIDDevice(options) {
               uuid: 'human_interface_device'}))
             .then(() => fake_peripheral.setNextGATTDiscoveryResponse({
               code: HCI_SUCCESS}))
-            .then(() => ({
-              device: device,
-              fake_peripheral: fake_peripheral
-            }));
+            .then(() => [device, fake_peripheral]);
         });
     });
 };
@@ -654,9 +578,6 @@ function getDiscoveredHealthThermometerDevice(
   })
   .then(fake_peripheral => {
     return requestDeviceWithKeyDown(options)
-      .then(device => ({
-        device: device,
-        fake_peripheral: fake_peripheral
-      }));
+      .then(device => [device, fake_peripheral]);
   });
 }

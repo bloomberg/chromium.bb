@@ -10,7 +10,7 @@ promise_test(() => {
   return getHIDDevice({
       filters: [{services: ['battery_service']}],
       optionalServices: ['human_interface_device']})
-    .then(({device}) => assert_promise_rejects_with_message(
+    .then(([device]) => assert_promise_rejects_with_message(
       device.gatt.getPrimaryServices('human_interface_device'),
       new DOMException('Origin is not allowed to access the service. ' +
                        'Tip: Add the service UUID to \'optionalServices\' ' +
