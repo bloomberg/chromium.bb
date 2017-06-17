@@ -85,8 +85,8 @@ void DeviceManagerImpl::OnGetDevices(
     const GetDevicesCallback& callback,
     const std::vector<scoped_refptr<UsbDevice>>& devices) {
   std::vector<mojom::UsbDeviceFilterPtr> filters;
-  if (options && options->filters)
-    filters.swap(*options->filters);
+  if (options)
+    filters.swap(options->filters);
 
   std::vector<mojom::UsbDeviceInfoPtr> device_infos;
   for (const auto& device : devices) {
