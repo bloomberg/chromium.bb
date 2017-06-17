@@ -107,9 +107,7 @@ HttpStreamFactoryImpl::JobController::~JobController() {
   alternative_job_.reset();
   bound_job_ = nullptr;
   if (pac_request_) {
-    // TODO(mmenke):  Convert this to a DCHECK once https://crbug.com/723589 is
-    // resolved.
-    CHECK_EQ(STATE_RESOLVE_PROXY_COMPLETE, next_state_);
+    DCHECK_EQ(STATE_RESOLVE_PROXY_COMPLETE, next_state_);
     session_->proxy_service()->CancelPacRequest(pac_request_);
   }
   net_log_.EndEvent(NetLogEventType::HTTP_STREAM_JOB_CONTROLLER);
@@ -711,9 +709,7 @@ int HttpStreamFactoryImpl::JobController::DoLoop(int rv) {
 }
 
 int HttpStreamFactoryImpl::JobController::DoResolveProxy() {
-  // TODO(mmenke):  Convert this to a DCHECK once https://crbug.com/723589 is
-  // resolved.
-  CHECK(!pac_request_);
+  DCHECK(!pac_request_);
   DCHECK(session_);
 
   next_state_ = STATE_RESOLVE_PROXY_COMPLETE;
@@ -1245,9 +1241,7 @@ int HttpStreamFactoryImpl::JobController::ReconsiderProxyAfterError(Job* job,
                                                                     int error) {
   // ReconsiderProxyAfterError() should only be called when the last job fails.
   DCHECK(!(alternative_job_ && main_job_));
-  // TODO(mmenke):  Convert this to a DCHECK once https://crbug.com/723589 is
-  // resolved.
-  CHECK(!pac_request_);
+  DCHECK(!pac_request_);
   DCHECK(session_);
 
   if (!job->should_reconsider_proxy())
