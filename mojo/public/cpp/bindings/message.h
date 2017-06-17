@@ -17,7 +17,7 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "mojo/public/cpp/bindings/bindings_export.h"
-#include "mojo/public/cpp/bindings/lib/buffer.h"
+#include "mojo/public/cpp/bindings/lib/message_buffer.h"
 #include "mojo/public/cpp/bindings/lib/message_internal.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "mojo/public/cpp/system/message.h"
@@ -38,37 +38,11 @@ class MOJO_CPP_BINDINGS_EXPORT Message {
   static const uint32_t kFlagIsResponse = 1 << 1;
   static const uint32_t kFlagIsSync = 1 << 2;
 
-  // Constructs an uninitialized Message object.
   Message();
-
-  // Constructs a new serialized Message object with optional handles attached.
-  // This message is fully functional and may be exchanged for a
-  // ScopedMessageHandle for transit over a message pipe. See TakeMojoMessage().
-  //
-  // If |handles| are not known at Message construction time, they may be
-  // attached later by calling |AttachHandles()|. See the note on that method
-  // regarding performance considerations.
-  Message(uint32_t name,
-          uint32_t flags,
-          size_t payload_size,
-          size_t payload_interface_id_count,
-          std::vector<ScopedHandle> handles = std::vector<ScopedHandle>());
-
-  // Constructs a new serialized Message object from an existing
-  // ScopedMessageHandle; e.g., one read from a message pipe.
-  //
-  // If the message had any handles attached, they will be extracted and
-  // retrievable via |handles()|. Such messages may NOT be sent back over
-  // another message pipe, but are otherwise safe to inspect and pass around.
-  Message(ScopedMessageHandle handle);
-
-  // See the move-assignment operator below.
   Message(Message&& other);
 
   ~Message();
 
-  // Moves |other| into a new Message object. The moved-from Message becomes
-  // invalid and is effectively in a default-constructed state after this call.
   Message& operator=(Message&& other);
 
   // Resets the Message to an uninitialized state. Upon reset, the Message
@@ -77,38 +51,51 @@ class MOJO_CPP_BINDINGS_EXPORT Message {
   void Reset();
 
   // Indicates whether this Message is uninitialized.
-  bool IsNull() const { return !handle_.is_valid(); }
+  bool IsNull() const { return !buffer_; }
 
-  uint32_t data_num_bytes() const { return static_cast<uint32_t>(data_size_); }
+  // Initializes a Message with enough space for |capacity| bytes.
+  void Initialize(size_t capacity, bool zero_initialized);
+
+  // Initializes a Message from an existing Mojo MessageHandle.
+  void InitializeFromMojoMessage(ScopedMessageHandle message,
+                                 uint32_t num_bytes,
+                                 std::vector<ScopedHandle>* handles);
+
+  uint32_t data_num_bytes() const {
+    return static_cast<uint32_t>(buffer_->size());
+  }
 
   // Access the raw bytes of the message.
-  const uint8_t* data() const { return static_cast<const uint8_t*>(data_); }
-  uint8_t* mutable_data() { return static_cast<uint8_t*>(data_); }
+  const uint8_t* data() const {
+    return static_cast<const uint8_t*>(buffer_->data());
+  }
+
+  uint8_t* mutable_data() { return static_cast<uint8_t*>(buffer_->data()); }
 
   // Access the header.
   const internal::MessageHeader* header() const {
-    return static_cast<const internal::MessageHeader*>(data_);
+    return static_cast<const internal::MessageHeader*>(buffer_->data());
   }
   internal::MessageHeader* header() {
-    return static_cast<internal::MessageHeader*>(data_);
+    return static_cast<internal::MessageHeader*>(buffer_->data());
   }
 
   const internal::MessageHeaderV1* header_v1() const {
     DCHECK_GE(version(), 1u);
-    return static_cast<const internal::MessageHeaderV1*>(data_);
+    return static_cast<const internal::MessageHeaderV1*>(buffer_->data());
   }
   internal::MessageHeaderV1* header_v1() {
     DCHECK_GE(version(), 1u);
-    return static_cast<internal::MessageHeaderV1*>(data_);
+    return static_cast<internal::MessageHeaderV1*>(buffer_->data());
   }
 
   const internal::MessageHeaderV2* header_v2() const {
     DCHECK_GE(version(), 2u);
-    return static_cast<const internal::MessageHeaderV2*>(data_);
+    return static_cast<const internal::MessageHeaderV2*>(buffer_->data());
   }
   internal::MessageHeaderV2* header_v2() {
     DCHECK_GE(version(), 2u);
-    return static_cast<internal::MessageHeaderV2*>(data_);
+    return static_cast<internal::MessageHeaderV2*>(buffer_->data());
   }
 
   uint32_t version() const { return header()->version; }
@@ -133,10 +120,7 @@ class MOJO_CPP_BINDINGS_EXPORT Message {
   uint32_t payload_num_interface_ids() const;
   const uint32_t* payload_interface_ids() const;
 
-  internal::Buffer* payload_buffer() { return &payload_buffer_; }
-
-  // Access the handles of a received message. Note that these are unused on
-  // outgoing messages.
+  // Access the handles.
   const std::vector<ScopedHandle>* handles() const { return &handles_; }
   std::vector<ScopedHandle>* mutable_handles() { return &handles_; }
 
@@ -149,10 +133,8 @@ class MOJO_CPP_BINDINGS_EXPORT Message {
     return &associated_endpoint_handles_;
   }
 
-  // Attaches handles to this Message. Note that this requires the underlying
-  // message object to be reallocated and the payload to be copied into a new
-  // buffer.
-  void AttachHandles(std::vector<ScopedHandle> handles);
+  // Access the underlying Buffer interface.
+  internal::Buffer* buffer() { return buffer_.get(); }
 
   // Takes a scoped MessageHandle which may be passed to |WriteMessageNew()| for
   // transmission. Note that this invalidates this Message object, taking
@@ -174,25 +156,11 @@ class MOJO_CPP_BINDINGS_EXPORT Message {
       AssociatedGroupController* group_controller);
 
  private:
-  ScopedMessageHandle handle_;
+  void CloseHandles();
 
-  // Pointer to raw serialized message data, including header. This is only
-  // valid when |handle_| is a valid handle to a serialized message object.
-  void* data_ = nullptr;
-  size_t data_size_ = 0;
-
+  std::unique_ptr<internal::MessageBuffer> buffer_;
   std::vector<ScopedHandle> handles_;
   std::vector<ScopedInterfaceEndpointHandle> associated_endpoint_handles_;
-
-  // Indicates whether this Message object is transferable, i.e. can be sent
-  // elsewhere. In general this is true unless |handle_| is invalid or
-  // serialized handles have been extracted from the serialized message object
-  // identified by |handle_|.
-  bool transferable_ = false;
-
-  // A Buffer which may be used to allocated blocks of data within the message
-  // payload. May be invalid if there is no capacity remaining in the payload.
-  internal::Buffer payload_buffer_;
 
   DISALLOW_COPY_AND_ASSIGN(Message);
 };

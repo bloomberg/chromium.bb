@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_endpoint_client.h"
+#include "mojo/public/cpp/bindings/lib/message_builder.h"
 #include "mojo/public/cpp/bindings/lib/multiplex_router.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/test_support/test_support.h"
@@ -153,8 +154,8 @@ class PingPongPaddle : public MessageReceiverWithResponderStatus {
       }
     }
 
-    Message reply(count, 0, 8, 0);
-    bool result = sender_->Accept(&reply);
+    internal::MessageBuilder builder(count, 0, 8, 0);
+    bool result = sender_->Accept(builder.message());
     DCHECK(result);
     return true;
   }
@@ -173,8 +174,8 @@ class PingPongPaddle : public MessageReceiverWithResponderStatus {
     quit_closure_ = run_loop.QuitClosure();
 
     start_time_ = base::TimeTicks::Now();
-    Message message(0, 0, 8, 0);
-    bool result = sender_->Accept(&message);
+    internal::MessageBuilder builder(0, 0, 8, 0);
+    bool result = sender_->Accept(builder.message());
     DCHECK(result);
 
     run_loop.Run();
@@ -263,8 +264,9 @@ TEST_F(MojoBindingsPerftest, MultiplexRouterDispatchCost) {
     receiver.Reset();
     base::TimeTicks start_time = base::TimeTicks::Now();
     for (size_t j = 0; j < kIterations[i]; ++j) {
-      Message message(0, 0, 8, 0);
-      bool result = router->SimulateReceivingMessageForTesting(&message);
+      internal::MessageBuilder builder(0, 0, 8, 0);
+      bool result =
+          router->SimulateReceivingMessageForTesting(builder.message());
       DCHECK(result);
     }
 

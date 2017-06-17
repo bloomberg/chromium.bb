@@ -6,13 +6,15 @@
 
 #include <stdlib.h>
 
-#include "mojo/public/cpp/bindings/lib/bindings_internal.h"
-
 namespace mojo {
 namespace internal {
 
-FixedBufferForTesting::FixedBufferForTesting(size_t size)
-    : FixedBufferForTesting(nullptr, Align(size)) {}
+FixedBufferForTesting::FixedBufferForTesting(size_t size) {
+  size = internal::Align(size);
+  // Use calloc here to ensure all message memory is zero'd out.
+  void* ptr = calloc(size, 1);
+  Initialize(ptr, size);
+}
 
 FixedBufferForTesting::~FixedBufferForTesting() {
   free(data());
@@ -20,13 +22,9 @@ FixedBufferForTesting::~FixedBufferForTesting() {
 
 void* FixedBufferForTesting::Leak() {
   void* ptr = data();
-  Reset();
+  Initialize(nullptr, 0);
   return ptr;
 }
-
-FixedBufferForTesting::FixedBufferForTesting(std::nullptr_t,
-                                             size_t aligned_size)
-    : Buffer(calloc(aligned_size, 1), aligned_size) {}
 
 }  // namespace internal
 }  // namespace mojo

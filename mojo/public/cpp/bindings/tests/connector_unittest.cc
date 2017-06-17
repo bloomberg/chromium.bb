@@ -16,7 +16,7 @@
 #include "base/run_loop.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "mojo/public/cpp/bindings/message.h"
+#include "mojo/public/cpp/bindings/lib/message_builder.h"
 #include "mojo/public/cpp/bindings/tests/message_queue.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -97,14 +97,12 @@ class ConnectorTest : public testing::Test {
 
   void TearDown() override {}
 
-  Message CreateMessage(
-      const char* text,
-      std::vector<ScopedHandle> handles = std::vector<ScopedHandle>()) {
-    const size_t size = strlen(text) + 1;  // Plus null terminator.
-    Message message(1, 0, size, 0);
-    memcpy(message.payload_buffer()->Allocate(size), text, size);
-    message.AttachHandles(std::move(handles));
-    return message;
+  void AllocMessage(const char* text, Message* message) {
+    size_t payload_size = strlen(text) + 1;  // Plus null terminator.
+    internal::MessageBuilder builder(1, 0, payload_size, 0);
+    memcpy(builder.buffer()->Allocate(payload_size), text, payload_size);
+
+    *message = std::move(*builder.message());
   }
 
  protected:
@@ -122,7 +120,10 @@ TEST_F(ConnectorTest, Basic) {
                        base::ThreadTaskRunnerHandle::Get());
 
   const char kText[] = "hello world";
-  Message message = CreateMessage(kText);
+
+  Message message;
+  AllocMessage(kText, &message);
+
   connector0.Accept(&message);
 
   base::RunLoop run_loop;
@@ -148,7 +149,10 @@ TEST_F(ConnectorTest, Basic_Synchronous) {
                        base::ThreadTaskRunnerHandle::Get());
 
   const char kText[] = "hello world";
-  Message message = CreateMessage(kText);
+
+  Message message;
+  AllocMessage(kText, &message);
+
   connector0.Accept(&message);
 
   MessageAccumulator accumulator;
@@ -177,7 +181,10 @@ TEST_F(ConnectorTest, Basic_EarlyIncomingReceiver) {
   connector1.set_incoming_receiver(&accumulator);
 
   const char kText[] = "hello world";
-  Message message = CreateMessage(kText);
+
+  Message message;
+  AllocMessage(kText, &message);
+
   connector0.Accept(&message);
 
   run_loop.Run();
@@ -199,8 +206,11 @@ TEST_F(ConnectorTest, Basic_TwoMessages) {
                        base::ThreadTaskRunnerHandle::Get());
 
   const char* kText[] = {"hello", "world"};
+
   for (size_t i = 0; i < arraysize(kText); ++i) {
-    Message message = CreateMessage(kText[i]);
+    Message message;
+    AllocMessage(kText[i], &message);
+
     connector0.Accept(&message);
   }
 
@@ -231,8 +241,11 @@ TEST_F(ConnectorTest, Basic_TwoMessages_Synchronous) {
                        base::ThreadTaskRunnerHandle::Get());
 
   const char* kText[] = {"hello", "world"};
+
   for (size_t i = 0; i < arraysize(kText); ++i) {
-    Message message = CreateMessage(kText[i]);
+    Message message;
+    AllocMessage(kText[i], &message);
+
     connector0.Accept(&message);
   }
 
@@ -258,7 +271,9 @@ TEST_F(ConnectorTest, WriteToClosedPipe) {
                        base::ThreadTaskRunnerHandle::Get());
 
   const char kText[] = "hello world";
-  Message message = CreateMessage(kText);
+
+  Message message;
+  AllocMessage(kText, &message);
 
   // Close the other end of the pipe.
   handle1_.reset();
@@ -289,12 +304,17 @@ TEST_F(ConnectorTest, MessageWithHandles) {
 
   const char kText[] = "hello world";
 
+  Message message1;
+  AllocMessage(kText, &message1);
+
   MessagePipe pipe;
-  std::vector<ScopedHandle> handles;
-  handles.emplace_back(ScopedHandle::From(std::move(pipe.handle0)));
-  Message message1 = CreateMessage(kText, std::move(handles));
+  message1.mutable_handles()->emplace_back(
+      ScopedHandle::From(std::move(pipe.handle0)));
 
   connector0.Accept(&message1);
+
+  // The message should have been transferred, releasing the handles.
+  EXPECT_TRUE(message1.handles()->empty());
 
   base::RunLoop run_loop;
   MessageAccumulator accumulator(run_loop.QuitClosure());
@@ -323,7 +343,9 @@ TEST_F(ConnectorTest, MessageWithHandles) {
                                Connector::SINGLE_THREADED_SEND,
                                base::ThreadTaskRunnerHandle::Get());
 
-  Message message2 = CreateMessage(kText);
+  Message message2;
+  AllocMessage(kText, &message2);
+
   connector_received.Accept(&message2);
   base::RunLoop run_loop2;
   MessageAccumulator accumulator2(run_loop2.QuitClosure());
@@ -355,7 +377,10 @@ TEST_F(ConnectorTest, WaitForIncomingMessageWithDeletion) {
                     base::ThreadTaskRunnerHandle::Get());
 
   const char kText[] = "hello world";
-  Message message = CreateMessage(kText);
+
+  Message message;
+  AllocMessage(kText, &message);
+
   connector0.Accept(&message);
 
   ConnectorDeletingMessageAccumulator accumulator(&connector1);
@@ -381,8 +406,11 @@ TEST_F(ConnectorTest, WaitForIncomingMessageWithReentrancy) {
                        base::ThreadTaskRunnerHandle::Get());
 
   const char* kText[] = {"hello", "world"};
+
   for (size_t i = 0; i < arraysize(kText); ++i) {
-    Message message = CreateMessage(kText[i]);
+    Message message;
+    AllocMessage(kText[i], &message);
+
     connector0.Accept(&message);
   }
 
@@ -430,7 +458,10 @@ TEST_F(ConnectorTest, RaiseError) {
                  run_loop2.QuitClosure()));
 
   const char kText[] = "hello world";
-  Message message = CreateMessage(kText);
+
+  Message message;
+  AllocMessage(kText, &message);
+
   connector0.Accept(&message);
   connector0.RaiseError();
 
@@ -481,9 +512,10 @@ TEST_F(ConnectorTest, PauseWithQueuedMessages) {
   const char kText[] = "hello world";
 
   // Queue up two messages.
-  Message message = CreateMessage(kText);
+  Message message;
+  AllocMessage(kText, &message);
   connector0.Accept(&message);
-  message = CreateMessage(kText);
+  AllocMessage(kText, &message);
   connector0.Accept(&message);
 
   base::RunLoop run_loop;
@@ -520,9 +552,10 @@ TEST_F(ConnectorTest, ProcessWhenNested) {
   const char kText[] = "hello world";
 
   // Queue up two messages.
-  Message message = CreateMessage(kText);
+  Message message;
+  AllocMessage(kText, &message);
   connector0.Accept(&message);
-  message = CreateMessage(kText);
+  AllocMessage(kText, &message);
   connector0.Accept(&message);
 
   base::RunLoop run_loop;
