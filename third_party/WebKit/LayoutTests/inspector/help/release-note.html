@@ -26,6 +26,7 @@ function test() {
     InspectorTest.addSniffer(UI.viewManager, "showView", onShowView);
 
     InspectorTest.addResult("Last release note version seen:");
+    Help.releaseNoteVersionSetting().set(1);
     InspectorTest.addResult(Help.releaseNoteVersionSetting().get() + "\n");
     Help.showReleaseNoteIfNeeded();
 
