@@ -4,7 +4,6 @@
 
 #include "core/paint/InlineTextBoxPainter.h"
 
-#include "core/editing/CompositionUnderline.h"
 #include "core/editing/Editor.h"
 #include "core/editing/markers/CompositionMarker.h"
 #include "core/editing/markers/DocumentMarkerController.h"
@@ -539,15 +538,14 @@ bool InlineTextBoxPainter::ShouldPaintTextBox(const PaintInfo& paint_info) {
   return true;
 }
 
-unsigned InlineTextBoxPainter::UnderlinePaintStart(
-    const CompositionUnderline& underline) {
+unsigned InlineTextBoxPainter::MarkerPaintStart(const DocumentMarker& marker) {
   DCHECK(inline_text_box_.Truncation() != kCFullTruncation);
   DCHECK(inline_text_box_.Len());
 
   // Start painting at the beginning of the text or the specified underline
   // start offset, whichever is higher.
   unsigned paint_start =
-      std::max(inline_text_box_.Start(), underline.StartOffset());
+      std::max(inline_text_box_.Start(), marker.StartOffset());
   // Cap the maximum paint start to (if no truncation) the last character,
   // else the last character before the truncation ellipsis.
   return std::min(paint_start, (inline_text_box_.Truncation() == kCNoTruncation)
@@ -556,8 +554,7 @@ unsigned InlineTextBoxPainter::UnderlinePaintStart(
                                          inline_text_box_.Truncation() - 1);
 }
 
-unsigned InlineTextBoxPainter::UnderlinePaintEnd(
-    const CompositionUnderline& underline) {
+unsigned InlineTextBoxPainter::MarkerPaintEnd(const DocumentMarker& marker) {
   DCHECK(inline_text_box_.Truncation() != kCFullTruncation);
   DCHECK(inline_text_box_.Len());
 
@@ -565,7 +562,7 @@ unsigned InlineTextBoxPainter::UnderlinePaintEnd(
   // offset, whichever is lower.
   unsigned paint_end = std::min(
       inline_text_box_.end() + 1,
-      underline.EndOffset());  // end() points at the last char, not past it.
+      marker.EndOffset());  // end() points at the last char, not past it.
   // Cap the maximum paint end to (if no truncation) one past the last
   // character, else one past the last character before the truncation
   // ellipsis.
@@ -575,7 +572,7 @@ unsigned InlineTextBoxPainter::UnderlinePaintEnd(
                                        inline_text_box_.Truncation());
 }
 
-void InlineTextBoxPainter::PaintSingleCompositionBackgroundRun(
+void InlineTextBoxPainter::PaintSingleMarkerBackgroundRun(
     GraphicsContext& context,
     const LayoutPoint& box_origin,
     const ComputedStyle& style,
@@ -679,17 +676,16 @@ void InlineTextBoxPainter::PaintDocumentMarkers(
       case DocumentMarker::kComposition:
       case DocumentMarker::kActiveSuggestion: {
         const StyleableMarker& styleable_marker = ToStyleableMarker(marker);
-        CompositionUnderline underline(
-            styleable_marker.StartOffset(), styleable_marker.EndOffset(),
-            styleable_marker.UnderlineColor(), styleable_marker.IsThick(),
-            styleable_marker.BackgroundColor());
-        if (marker_paint_phase == DocumentMarkerPaintPhase::kBackground)
-          PaintSingleCompositionBackgroundRun(
-              paint_info.context, box_origin, style, font,
-              underline.BackgroundColor(), UnderlinePaintStart(underline),
-              UnderlinePaintEnd(underline));
-        else
-          PaintCompositionUnderline(paint_info.context, box_origin, underline);
+        if (marker_paint_phase == DocumentMarkerPaintPhase::kBackground) {
+          PaintSingleMarkerBackgroundRun(paint_info.context, box_origin, style,
+                                         font,
+                                         styleable_marker.BackgroundColor(),
+                                         MarkerPaintStart(styleable_marker),
+                                         MarkerPaintEnd(styleable_marker));
+        } else {
+          PaintStyleableMarkerUnderline(paint_info.context, box_origin,
+                                        styleable_marker);
+        }
       } break;
       default:
         NOTREACHED();
@@ -1034,18 +1030,18 @@ void InlineTextBoxPainter::ExpandToIncludeNewlineForSelection(
   rect.Expand(outsets);
 }
 
-void InlineTextBoxPainter::PaintCompositionUnderline(
+void InlineTextBoxPainter::PaintStyleableMarkerUnderline(
     GraphicsContext& context,
     const LayoutPoint& box_origin,
-    const CompositionUnderline& underline) {
-  if (underline.GetColor() == Color::kTransparent)
+    const StyleableMarker& marker) {
+  if (marker.UnderlineColor() == Color::kTransparent)
     return;
 
   if (inline_text_box_.Truncation() == kCFullTruncation)
     return;
 
-  unsigned paint_start = UnderlinePaintStart(underline);
-  unsigned paint_end = UnderlinePaintEnd(underline);
+  unsigned paint_start = MarkerPaintStart(marker);
+  unsigned paint_end = MarkerPaintEnd(marker);
   DCHECK_LT(paint_start, paint_end);
 
   // start of line to draw
@@ -1098,7 +1094,7 @@ void InlineTextBoxPainter::PaintCompositionUnderline(
           .PrimaryFont();
   DCHECK(font_data);
   int baseline = font_data ? font_data->GetFontMetrics().Ascent() : 0;
-  if (underline.Thick() && inline_text_box_.LogicalHeight() - baseline >= 2)
+  if (marker.IsThick() && inline_text_box_.LogicalHeight() - baseline >= 2)
     line_thickness = 2;
 
   // We need to have some space between underlines of subsequent clauses,
@@ -1108,7 +1104,7 @@ void InlineTextBoxPainter::PaintCompositionUnderline(
   start += 1;
   width -= 2;
 
-  context.SetStrokeColor(underline.GetColor());
+  context.SetStrokeColor(marker.UnderlineColor());
   context.SetStrokeThickness(line_thickness);
   context.DrawLineForText(
       FloatPoint(
