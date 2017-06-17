@@ -13,6 +13,7 @@
 #include "base/callback_forward.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -63,14 +64,8 @@ const char* kDownloadedWebApkPackageName = "party.unicode";
 // WebApkInstaller::InstallOrUpdateWebApkFromGooglePlay() are stubbed out.
 class TestWebApkInstaller : public WebApkInstaller {
  public:
-  TestWebApkInstaller(content::BrowserContext* browser_context,
-                      const ShortcutInfo& shortcut_info,
-                      const SkBitmap& primary_icon,
-                      const SkBitmap& badge_icon)
-      : WebApkInstaller(browser_context,
-                        shortcut_info,
-                        primary_icon,
-                        badge_icon) {}
+  explicit TestWebApkInstaller(content::BrowserContext* browser_context)
+      : WebApkInstaller(browser_context) {}
 
   void InstallOrUpdateWebApk(const std::string& package_name,
                              int version,
@@ -102,43 +97,46 @@ class WebApkInstallerRunner {
   ~WebApkInstallerRunner() {}
 
   void RunInstallWebApk() {
+    base::RunLoop run_loop;
+    on_completed_callback_ = run_loop.QuitClosure();
+
+    ShortcutInfo info((GURL()));
+    info.best_primary_icon_url = best_primary_icon_url_;
+    info.best_badge_icon_url = best_badge_icon_url_;
     WebApkInstaller::InstallAsyncForTesting(
-        CreateWebApkInstaller(), base::Bind(&WebApkInstallerRunner::OnCompleted,
-                                            base::Unretained(this)));
-    Run();
+        CreateWebApkInstaller(), info, SkBitmap(), SkBitmap(),
+        base::Bind(&WebApkInstallerRunner::OnCompleted,
+                   base::Unretained(this)));
+
+    run_loop.Run();
   }
 
-  void RunUpdateWebApk() {
-    const int kWebApkVersion = 1;
+  void RunUpdateWebApk(const std::string& serialized_proto) {
+    base::RunLoop run_loop;
+    on_completed_callback_ = run_loop.QuitClosure();
 
     std::map<std::string, std::string> icon_url_to_murmur2_hash{
         {best_primary_icon_url_.spec(), "0"},
         {best_badge_icon_url_.spec(), "0"}};
+    std::unique_ptr<std::vector<uint8_t>> serialized_proto_vector =
+        base::MakeUnique<std::vector<uint8_t>>(serialized_proto.begin(),
+                                               serialized_proto.end());
 
     WebApkInstaller::UpdateAsyncForTesting(
-        CreateWebApkInstaller(), kDownloadedWebApkPackageName, kWebApkVersion,
-        icon_url_to_murmur2_hash, false /* is_manifest_stale */,
+        CreateWebApkInstaller(), kDownloadedWebApkPackageName,
+        GURL() /* start_url */, base::string16() /* short_name */,
+        std::move(serialized_proto_vector),
         base::Bind(&WebApkInstallerRunner::OnCompleted,
                    base::Unretained(this)));
-    Run();
+
+    run_loop.Run();
   }
 
   WebApkInstaller* CreateWebApkInstaller() {
-    ShortcutInfo info(GURL::EmptyGURL());
-    info.best_primary_icon_url = best_primary_icon_url_;
-    info.best_badge_icon_url = best_badge_icon_url_;
-
     // WebApkInstaller owns itself.
-    WebApkInstaller* installer =
-        new TestWebApkInstaller(browser_context_, info, SkBitmap(), SkBitmap());
+    WebApkInstaller* installer = new TestWebApkInstaller(browser_context_);
     installer->SetTimeoutMs(100);
     return installer;
-  }
-
-  void Run() {
-    base::RunLoop run_loop;
-    on_completed_callback_ = run_loop.QuitClosure();
-    run_loop.Run();
   }
 
   WebApkInstallResult result() { return result_; }
@@ -216,8 +214,11 @@ class BuildProtoRunner {
 
  private:
   // Called when the |webapk_request_| is populated.
-  void OnBuiltWebApkProto(std::unique_ptr<webapk::WebApk> webapk) {
-    webapk_request_ = std::move(webapk);
+  void OnBuiltWebApkProto(
+      std::unique_ptr<std::vector<uint8_t>> serialized_proto) {
+    webapk_request_ = base::MakeUnique<webapk::WebApk>();
+    webapk_request_->ParseFromArray(serialized_proto->data(),
+                                    serialized_proto->size());
     on_completed_callback_.Run();
   }
 
@@ -386,7 +387,7 @@ TEST_F(WebApkInstallerTest, UnparsableCreateWebApkResponse) {
 // Test update succeeding.
 TEST_F(WebApkInstallerTest, UpdateSuccess) {
   std::unique_ptr<WebApkInstallerRunner> runner = CreateWebApkInstallerRunner();
-  runner->RunUpdateWebApk();
+  runner->RunUpdateWebApk("non-empty");
   EXPECT_EQ(WebApkInstallResult::SUCCESS, runner->result());
 }
 
@@ -401,8 +402,15 @@ TEST_F(WebApkInstallerTest, UpdateSuccessWithEmptyDownloadUrlInResponse) {
   SetWebApkResponseBuilder(base::Bind(&BuildValidWebApkResponse, ""));
 
   std::unique_ptr<WebApkInstallerRunner> runner = CreateWebApkInstallerRunner();
-  runner->RunUpdateWebApk();
+  runner->RunUpdateWebApk("non-empty");
   EXPECT_EQ(WebApkInstallResult::SUCCESS, runner->result());
+}
+
+// Test that an update fails if an empty proto is passed to UpdateAsync().
+TEST_F(WebApkInstallerTest, UpdateFailsEmptyProto) {
+  std::unique_ptr<WebApkInstallerRunner> runner = CreateWebApkInstallerRunner();
+  runner->RunUpdateWebApk("");
+  EXPECT_EQ(WebApkInstallResult::FAILURE, runner->result());
 }
 
 // When there is no Web Manifest available for a site, an empty

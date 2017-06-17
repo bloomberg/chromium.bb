@@ -144,15 +144,14 @@ public class WebApkUpdateManagerTest {
         }
 
         @Override
-        protected void scheduleUpdate(WebApkInfo info, String primaryIconUrl, String badgeIconUrl,
-                boolean isManifestStale) {
+        protected void buildProtoAndScheduleUpdate(WebApkInfo info, String primaryIconUrl,
+                String badgeIconUrl, boolean isManifestStale) {
             mUpdateName = info.name();
-            super.scheduleUpdate(info, primaryIconUrl, badgeIconUrl, isManifestStale);
+            scheduleUpdate(info, new byte[0]);
         }
 
         @Override
-        protected void updateAsyncImpl(WebApkInfo info, String primaryIconUrl, String badgeIconUrl,
-                boolean isManifestStale) {
+        protected void updateAsyncImpl(WebApkInfo info, byte[] serializedProto) {
             mUpdateRequested = true;
         }
 

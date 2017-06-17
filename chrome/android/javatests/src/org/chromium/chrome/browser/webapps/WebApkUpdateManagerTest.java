@@ -93,7 +93,7 @@ public class WebApkUpdateManagerTest {
         }
 
         @Override
-        protected void scheduleUpdate(WebApkInfo fetchedInfo, String primaryIconUrl,
+        protected void buildProtoAndScheduleUpdate(final WebApkInfo info, String primaryIconUrl,
                 String badgeIconUrl, boolean isManifestStale) {
             mNeedsUpdate = true;
         }
