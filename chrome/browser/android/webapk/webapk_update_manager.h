@@ -18,15 +18,6 @@ class WebApkUpdateManager {
   // Registers JNI hooks.
   static bool Register(JNIEnv* env);
 
-  // Called after either a request to update the WebAPK has been sent, or the
-  // update process fails. |success| indicates whether the request was issued
-  // to the server. A "true" value of |success| does not guarantee that the
-  // WebAPK will be successfully updated.
-  static void OnBuiltWebApk(const std::string& id,
-                            WebApkInstallResult result,
-                            bool relax_updates,
-                            const std::string& webapk_package);
-
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebApkUpdateManager);
 };

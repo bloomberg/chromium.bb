@@ -5,13 +5,20 @@
 #include "chrome/browser/android/webapk/webapk_update_manager.h"
 
 #include <jni.h>
+#include <memory>
+#include <vector>
 
+#include "base/android/callback_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
+#include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
+#include "base/strings/string16.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/android/shortcut_info.h"
 #include "chrome/browser/android/webapk/webapk_install_service.h"
+#include "chrome/browser/android/webapk/webapk_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -20,31 +27,39 @@
 #include "ui/gfx/android/java_bitmap.h"
 #include "url/gurl.h"
 
+using base::android::JavaRef;
 using base::android::JavaParamRef;
+using base::android::ScopedJavaGlobalRef;
+
+namespace {
+
+// Called with the serialized proto to send to the WebAPK server.
+void OnBuiltProto(const JavaRef<jobject>& java_callback,
+                  std::unique_ptr<std::vector<uint8_t>> proto) {
+  base::android::RunCallbackAndroid(java_callback, *proto);
+}
+
+// Called after the update either succeeds or fails.
+void OnUpdated(const JavaRef<jobject>& java_callback,
+               WebApkInstallResult result,
+               bool relax_updates,
+               const std::string& webapk_package) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_WebApkUpdateCallback_onResultFromNative(
+      env, java_callback, static_cast<int>(result), relax_updates);
+}
+
+}  // anonymous namespace
 
 // static
 bool WebApkUpdateManager::Register(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }
 
-// static
-void WebApkUpdateManager::OnBuiltWebApk(const std::string& id,
-                                        WebApkInstallResult result,
-                                        bool relax_updates,
-                                        const std::string& webapk_package) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-
-  base::android::ScopedJavaLocalRef<jstring> java_id =
-      base::android::ConvertUTF8ToJavaString(env, id);
-  Java_WebApkUpdateManager_onBuiltWebApk(
-      env, java_id.obj(), static_cast<int>(result), relax_updates);
-}
-
 // static JNI method.
-static void UpdateAsync(
+static void BuildUpdateWebApkProto(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
-    const JavaParamRef<jstring>& java_id,
     const JavaParamRef<jstring>& java_start_url,
     const JavaParamRef<jstring>& java_scope,
     const JavaParamRef<jstring>& java_name,
@@ -62,16 +77,10 @@ static void UpdateAsync(
     const JavaParamRef<jstring>& java_web_manifest_url,
     const JavaParamRef<jstring>& java_webapk_package,
     jint java_webapk_version,
-    jboolean java_is_manifest_stale) {
+    jboolean java_is_manifest_stale,
+    const JavaParamRef<jobject>& java_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  Profile* profile = ProfileManager::GetLastUsedProfile();
-  if (profile == nullptr) {
-    NOTREACHED() << "Profile not found.";
-    return;
-  }
-
-  std::string id(ConvertJavaStringToUTF8(env, java_id));
   ShortcutInfo info(GURL(ConvertJavaStringToUTF8(env, java_start_url)));
   info.scope = GURL(ConvertJavaStringToUTF8(env, java_scope));
   info.name = ConvertJavaStringToUTF16(env, java_name);
@@ -112,17 +121,43 @@ static void UpdateAsync(
   std::string webapk_package;
   ConvertJavaStringToUTF8(env, java_webapk_package, &webapk_package);
 
-  WebApkInstallService* install_service = WebApkInstallService::Get(profile);
-  if (install_service->IsInstallInProgress(info.manifest_url)) {
+  WebApkInstaller::BuildProto(
+      info, primary_icon, badge_icon, webapk_package,
+      std::to_string(java_webapk_version), icon_url_to_murmur2_hash,
+      java_is_manifest_stale,
+      base::Bind(&OnBuiltProto, ScopedJavaGlobalRef<jobject>(java_callback)));
+}
+
+// static JNI method.
+static void UpdateWebApk(JNIEnv* env,
+                         const JavaParamRef<jclass>& clazz,
+                         const JavaParamRef<jstring>& java_webapk_package,
+                         const JavaParamRef<jstring>& java_start_url,
+                         const JavaParamRef<jstring>& java_short_name,
+                         const JavaParamRef<jbyteArray>& java_serialized_proto,
+                         const JavaParamRef<jobject>& java_callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  ScopedJavaGlobalRef<jobject> callback_ref(java_callback);
+
+  Profile* profile = ProfileManager::GetLastUsedProfile();
+  if (profile == nullptr) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&WebApkUpdateManager::OnBuiltWebApk, id,
-                   WebApkInstallResult::FAILURE, false /* relax_updates */,
-                   "" /* webapk_package */));
+        base::Bind(&OnUpdated, callback_ref, WebApkInstallResult::FAILURE,
+                   false /* relax_updates */, "" /* webapk_package */));
     return;
   }
-  install_service->UpdateAsync(
-      info, primary_icon, badge_icon, webapk_package, java_webapk_version,
-      icon_url_to_murmur2_hash, java_is_manifest_stale,
-      base::Bind(&WebApkUpdateManager::OnBuiltWebApk, id));
+
+  std::string webapk_package =
+      ConvertJavaStringToUTF8(env, java_webapk_package);
+  GURL start_url = GURL(ConvertJavaStringToUTF8(env, java_start_url));
+  base::string16 short_name = ConvertJavaStringToUTF16(env, java_short_name);
+  std::unique_ptr<std::vector<uint8_t>> serialized_proto =
+      base::MakeUnique<std::vector<uint8_t>>();
+  JavaByteArrayToByteVector(env, java_serialized_proto, serialized_proto.get());
+
+  WebApkInstallService::Get(profile)->UpdateAsync(
+      webapk_package, start_url, short_name, std::move(serialized_proto),
+      base::Bind(&OnUpdated, callback_ref));
 }

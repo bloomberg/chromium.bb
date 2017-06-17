@@ -6,12 +6,15 @@
 #define CHROME_BROWSER_ANDROID_WEBAPK_WEBAPK_INSTALL_SERVICE_H_
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/strings/string16.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "url/gurl.h"
 
@@ -63,17 +66,13 @@ class WebApkInstallService : public KeyedService {
                     const FinishCallback& finish_callback);
 
   // Talks to the Chrome WebAPK server to update a WebAPK on the server and to
-  // the Google Play server to install the downloaded WebAPK. Calls |callback|
-  // after the request to install the WebAPK is sent to Google Play.
-  void UpdateAsync(
-      const ShortcutInfo& shortcut_info,
-      const SkBitmap& primary_icon,
-      const SkBitmap& badge_icon,
-      const std::string& webapk_package,
-      int webapk_version,
-      const std::map<std::string, std::string>& icon_url_to_murmur2_hash,
-      bool is_manifest_stale,
-      const FinishCallback& finish_callback);
+  // the Google Play server to install the downloaded WebAPK. Calls
+  // |finish_callback| once the update completed or failed.
+  void UpdateAsync(const std::string& webapk_package,
+                   const GURL& start_url,
+                   const base::string16& short_name,
+                   std::unique_ptr<std::vector<uint8_t>> serialized_proto,
+                   const FinishCallback& finish_callback);
 
  private:
   // Called once the install/update completed or failed.
