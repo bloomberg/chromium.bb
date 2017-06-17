@@ -67,18 +67,7 @@ var media = (function() {
     var propertyCount = 0;
     util.object.forEach(event.params, function(value, key) {
       key = key.trim();
-
-      // These keys get spammed *a lot*, so put them on the display
-      // but don't log list.
-      if (key === 'buffer_start' ||
-          key === 'buffer_end' ||
-          key === 'buffer_current' ||
-          key === 'is_downloading_data') {
-        manager.updatePlayerInfoNoRecord(
-            source, event.ticksMillis, key, value);
-      } else {
-        manager.updatePlayerInfo(source, event.ticksMillis, key, value);
-      }
+      manager.updatePlayerInfo(source, event.ticksMillis, key, value);
       propertyCount += 1;
     });
 
