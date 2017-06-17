@@ -10,7 +10,6 @@
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher_impl.h"
 #include "components/offline_pages/core/prefetch/prefetch_gcm_handler.h"
-#include "components/offline_pages/core/prefetch/prefetch_in_memory_store.h"
 #include "components/offline_pages/core/prefetch/prefetch_service_impl.h"
 #include "components/offline_pages/core/prefetch/suggested_articles_observer.h"
 #include "components/offline_pages/core/prefetch/test_offline_metrics_collector.h"
@@ -22,7 +21,6 @@ PrefetchServiceTestTaco::PrefetchServiceTestTaco() {
   metrics_collector_ = base::MakeUnique<TestOfflineMetricsCollector>();
   dispatcher_ = base::MakeUnique<PrefetchDispatcherImpl>();
   gcm_handler_ = base::MakeUnique<TestPrefetchGCMHandler>();
-  store_ = base::MakeUnique<PrefetchInMemoryStore>();
 }
 
 PrefetchServiceTestTaco::~PrefetchServiceTestTaco() = default;
@@ -45,12 +43,6 @@ void PrefetchServiceTestTaco::SetPrefetchGCMHandler(
   gcm_handler_ = std::move(gcm_handler);
 }
 
-void PrefetchServiceTestTaco::SetPrefetchStore(
-    std::unique_ptr<PrefetchStore> store) {
-  CHECK(!prefetch_service_);
-  store_ = std::move(store);
-}
-
 void PrefetchServiceTestTaco::SetSuggestedArticlesObserver(
     std::unique_ptr<SuggestedArticlesObserver> suggested_articles_observer) {
   CHECK(!prefetch_service_);
@@ -60,8 +52,7 @@ void PrefetchServiceTestTaco::SetSuggestedArticlesObserver(
 void PrefetchServiceTestTaco::CreatePrefetchService() {
   prefetch_service_ = base::MakeUnique<PrefetchServiceImpl>(
       std::move(metrics_collector_), std::move(dispatcher_),
-      std::move(gcm_handler_), std::move(store_),
-      std::move(suggested_articles_observer_));
+      std::move(gcm_handler_), std::move(suggested_articles_observer_));
 }
 
 }  // namespace offline_page

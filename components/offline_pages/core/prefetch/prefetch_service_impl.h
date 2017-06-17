@@ -23,7 +23,6 @@ class PrefetchServiceImpl : public PrefetchService {
       std::unique_ptr<OfflineMetricsCollector> offline_metrics_collector,
       std::unique_ptr<PrefetchDispatcher> dispatcher,
       std::unique_ptr<PrefetchGCMHandler> gcm_handler,
-      std::unique_ptr<PrefetchStore> store,
       std::unique_ptr<SuggestedArticlesObserver> suggested_articles_observer);
   ~PrefetchServiceImpl() override;
 
@@ -31,7 +30,6 @@ class PrefetchServiceImpl : public PrefetchService {
   OfflineMetricsCollector* GetOfflineMetricsCollector() override;
   PrefetchDispatcher* GetPrefetchDispatcher() override;
   PrefetchGCMHandler* GetPrefetchGCMHandler() override;
-  PrefetchStore* GetPrefetchStore() override;
   SuggestedArticlesObserver* GetSuggestedArticlesObserver() override;
   OfflineEventLogger* GetLogger() override;
 
@@ -44,7 +42,6 @@ class PrefetchServiceImpl : public PrefetchService {
   std::unique_ptr<OfflineMetricsCollector> offline_metrics_collector_;
   std::unique_ptr<PrefetchDispatcher> prefetch_dispatcher_;
   std::unique_ptr<PrefetchGCMHandler> prefetch_gcm_handler_;
-  std::unique_ptr<PrefetchStore> prefetch_store_;
   std::unique_ptr<SuggestedArticlesObserver> suggested_articles_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(PrefetchServiceImpl);

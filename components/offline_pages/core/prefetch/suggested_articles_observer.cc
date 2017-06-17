@@ -28,10 +28,6 @@ const ntp_snippets::Category& ArticlesCategory() {
   return articles;
 }
 
-ClientId CreateClientIDFromSuggestionId(const ContentSuggestion::ID& id) {
-  return ClientId(kSuggestedArticlesNamespace, id.id_within_category());
-}
-
 }  // namespace
 
 SuggestedArticlesObserver::SuggestedArticlesObserver(
@@ -71,10 +67,11 @@ void SuggestedArticlesObserver::OnNewSuggestions(Category category) {
   std::vector<PrefetchURL> prefetch_urls;
   for (const ContentSuggestion& suggestion : suggestions) {
     prefetch_urls.push_back(
-        {CreateClientIDFromSuggestionId(suggestion.id()), suggestion.url()});
+        {suggestion.id().id_within_category(), suggestion.url()});
   }
 
-  prefetch_dispatcher_->AddCandidatePrefetchURLs(prefetch_urls);
+  prefetch_dispatcher_->AddCandidatePrefetchURLs(kSuggestedArticlesNamespace,
+                                                 prefetch_urls);
 }
 
 void SuggestedArticlesObserver::OnCategoryStatusChanged(
@@ -96,8 +93,8 @@ void SuggestedArticlesObserver::OnCategoryStatusChanged(
 
 void SuggestedArticlesObserver::OnSuggestionInvalidated(
     const ContentSuggestion::ID& suggestion_id) {
-  prefetch_dispatcher_->RemovePrefetchURLsByClientId(
-      CreateClientIDFromSuggestionId(suggestion_id));
+  prefetch_dispatcher_->RemovePrefetchURLsByClientId(ClientId(
+      kSuggestedArticlesNamespace, suggestion_id.id_within_category()));
 }
 
 void SuggestedArticlesObserver::OnFullRefreshRequired() {

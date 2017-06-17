@@ -45,6 +45,7 @@ class PrefetchDispatcher {
   // with the client's unique namespace. URLs that are currently in the system
   // for this client are acceptable but ignored.
   virtual void AddCandidatePrefetchURLs(
+      const std::string& name_space,
       const std::vector<PrefetchURL>& prefetch_urls) = 0;
 
   // Called when all existing suggestions are no longer considered valid for a

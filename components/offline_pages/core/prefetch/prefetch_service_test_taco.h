@@ -14,7 +14,6 @@ class OfflineMetricsCollector;
 class PrefetchDispatcher;
 class PrefetchGCMHandler;
 class PrefetchService;
-class PrefetchStore;
 class SuggestedArticlesObserver;
 
 // The taco class acts as a wrapper around the prefetch service making
@@ -27,7 +26,6 @@ class SuggestedArticlesObserver;
 // * TestOfflineMetricsCollector
 // * PrefetchDispatcherImpl
 // * TestPrefetchGCMHandler
-// * PrefetchInMemoryStore
 // * |nullptr| SuggestedArticlesObserver, since this is default just a lifetime
 //   arrangement.
 class PrefetchServiceTestTaco {
@@ -41,7 +39,6 @@ class PrefetchServiceTestTaco {
       std::unique_ptr<OfflineMetricsCollector> metrics_collector);
   void SetPrefetchDispatcher(std::unique_ptr<PrefetchDispatcher> dispatcher);
   void SetPrefetchGCMHandler(std::unique_ptr<PrefetchGCMHandler> gcm_handler);
-  void SetPrefetchStore(std::unique_ptr<PrefetchStore> prefetch_store);
   void SetSuggestedArticlesObserver(
       std::unique_ptr<SuggestedArticlesObserver> suggested_articles_observer);
 
@@ -61,7 +58,6 @@ class PrefetchServiceTestTaco {
   std::unique_ptr<OfflineMetricsCollector> metrics_collector_;
   std::unique_ptr<PrefetchDispatcher> dispatcher_;
   std::unique_ptr<PrefetchGCMHandler> gcm_handler_;
-  std::unique_ptr<PrefetchStore> store_;
   std::unique_ptr<SuggestedArticlesObserver> suggested_articles_observer_;
 
   std::unique_ptr<PrefetchService> prefetch_service_;

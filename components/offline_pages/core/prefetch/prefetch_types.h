@@ -109,15 +109,15 @@ using PrefetchRequestFinishedCallback =
                         const std::string& operation_name,
                         const std::vector<RenderPageInfo>& pages)>;
 
-// Holds information about a new URL to be prefetched.
+// Holds information about a suggested URL to be prefetched.
 struct PrefetchURL {
-  PrefetchURL(const ClientId& client_id, const GURL& url)
-      : client_id(client_id), url(url) {}
+  PrefetchURL(const std::string& id, const GURL& url) : id(id), url(url) {}
 
-  // Client provided ID to allow the matching of URLs to the respective work
-  // item in the prefetching system. It can be anything useful to identify the
-  // page . It will not be used internally for de-duplication.
-  ClientId client_id;
+  // Client provided ID to allow the matching of provided URLs to the respective
+  // work item in the prefetching system within that client's assigned
+  // namespace. It can be any string value and it will not be used internally
+  // for de-duplication.
+  std::string id;
 
   // This URL will be prefetched by the service.
   GURL url;
