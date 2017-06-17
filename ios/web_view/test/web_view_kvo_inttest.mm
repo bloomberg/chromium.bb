@@ -8,8 +8,8 @@
 #include "base/strings/stringprintf.h"
 #import "base/strings/sys_string_conversions.h"
 #import "ios/testing/wait_util.h"
-#import "ios/web_view/test/chrome_web_view_test.h"
 #import "ios/web_view/test/observer.h"
+#import "ios/web_view/test/web_view_test.h"
 #import "ios/web_view/test/web_view_test_util.h"
 #import "net/base/mac/url_conversions.h"
 #include "testing/gtest_mac.h"
@@ -23,10 +23,10 @@ namespace ios_web_view {
 
 // Tests that the KVO compliant properties of CWVWebView correctly report
 // changes.
-typedef ios_web_view::ChromeWebViewTest ChromeWebViewKvoTest;
+typedef ios_web_view::WebViewTest WebViewKvoTest;
 
 // Tests that CWVWebView correctly reports |canGoBack| and |canGoForward| state.
-TEST_F(ChromeWebViewKvoTest, CanGoBackForward) {
+TEST_F(WebViewKvoTest, CanGoBackForward) {
   Observer* back_observer = [[Observer alloc] init];
   [back_observer setObservedObject:web_view_ keyPath:@"canGoBack"];
 
@@ -84,7 +84,7 @@ TEST_F(ChromeWebViewKvoTest, CanGoBackForward) {
 }
 
 // Tests that CWVWebView correctly reports current |title|.
-TEST_F(ChromeWebViewKvoTest, Title) {
+TEST_F(WebViewKvoTest, Title) {
   Observer* observer = [[Observer alloc] init];
   [observer setObservedObject:web_view_ keyPath:@"title"];
 
@@ -113,7 +113,7 @@ TEST_F(ChromeWebViewKvoTest, Title) {
 }
 
 // Tests that CWVWebView correctly reports |isLoading| value.
-TEST_F(ChromeWebViewKvoTest, Loading) {
+TEST_F(WebViewKvoTest, Loading) {
   Observer* observer = [[Observer alloc] init];
   [observer setObservedObject:web_view_ keyPath:@"loading"];
 
@@ -141,7 +141,7 @@ TEST_F(ChromeWebViewKvoTest, Loading) {
 }
 
 // Tests that CWVWebView correctly reports |visibleURL| and |lastCommittedURL|.
-TEST_F(ChromeWebViewKvoTest, URLs) {
+TEST_F(WebViewKvoTest, URLs) {
   Observer* last_committed_url_observer = [[Observer alloc] init];
   [last_committed_url_observer setObservedObject:web_view_
                                          keyPath:@"lastCommittedURL"];
