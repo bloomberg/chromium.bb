@@ -50,7 +50,8 @@ var ClientRenderer = (function() {
   ClientRenderer.Css_ = {
     NO_PLAYERS_SELECTED: 'no-players-selected',
     NO_COMPONENTS_SELECTED: 'no-components-selected',
-    SELECTABLE_BUTTON: 'selectable-button'
+    SELECTABLE_BUTTON: 'selectable-button',
+    DESTRUCTED_PLAYER: 'destructed-player'
   };
 
   function removeChildren(element) {
@@ -59,7 +60,8 @@ var ClientRenderer = (function() {
     }
   };
 
-  function createSelectableButton(id, groupName, text, select_cb) {
+  function createSelectableButton(id, groupName, text, select_cb,
+                                  isDestructed) {
     // For CSS styling.
     var radioButton = document.createElement('input');
     radioButton.classList.add(ClientRenderer.Css_.SELECTABLE_BUTTON);
@@ -69,6 +71,8 @@ var ClientRenderer = (function() {
 
     var buttonLabel = document.createElement('label');
     buttonLabel.classList.add(ClientRenderer.Css_.SELECTABLE_BUTTON);
+    if (isDestructed)
+      buttonLabel.classList.add(ClientRenderer.Css_.DESTRUCTED_PLAYER);
     buttonLabel.setAttribute('for', radioButton.id);
     buttonLabel.appendChild(document.createTextNode(text));
 
@@ -175,6 +179,12 @@ var ClientRenderer = (function() {
       }
       if (key === 'name' || key === 'url') {
         this.redrawPlayerList_(players);
+      }
+      if (key === 'event' && value === 'WEBMEDIAPLAYER_DESTROYED') {
+        player.destructed = true;
+        document.querySelector(
+            "label.selectable-button[for='" + player.id + "']").classList.add(
+                ClientRenderer.Css_.DESTRUCTED_PLAYER);
       }
     },
 
@@ -345,7 +355,7 @@ var ClientRenderer = (function() {
         var li = document.createElement('li');
         var button_cb = this.selectPlayer_.bind(this, player);
         li.appendChild(createSelectableButton(
-            id, buttonGroupName, usableName, button_cb));
+            id, buttonGroupName, usableName, button_cb, player.destructed));
         fragment.appendChild(li);
       }
       removeChildren(this.playerListElement);

@@ -193,6 +193,10 @@ input.selectable-button:checked + label.selectable-button {
   color: white;
 }
 
+label.destructed-player {
+  background-color: #E4854A;
+}
+
 .no-players-selected #players .property-wrapper,
 .no-players-selected #players #log-wrapper {
   display: none;
