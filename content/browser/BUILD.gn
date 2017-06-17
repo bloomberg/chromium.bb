@@ -2036,6 +2036,8 @@ source_set("browser") {
       "renderer_host/native_web_keyboard_event_aura.cc",
       "renderer_host/render_widget_host_view_aura.cc",
       "renderer_host/render_widget_host_view_aura.h",
+      "renderer_host/ui_events_helper.cc",
+      "renderer_host/ui_events_helper.h",
       "web_contents/aura/gesture_nav_simple.cc",
       "web_contents/aura/gesture_nav_simple.h",
       "web_contents/aura/overscroll_navigation_overlay.cc",
