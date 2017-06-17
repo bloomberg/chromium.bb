@@ -24,6 +24,7 @@ source_set("password_protection") {
       "//components/safe_browsing:csd_proto",
       "//components/safe_browsing_db:database_manager",
       "//components/safe_browsing_db:v4_protocol_manager_util",
+      "//components/safe_browsing_db:whitelist_checker_client",
       "//content/public/browser:browser",
       "//net:net",
       "//third_party/protobuf:protobuf_lite",
