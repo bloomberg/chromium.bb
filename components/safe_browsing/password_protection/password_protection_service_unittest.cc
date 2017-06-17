@@ -19,6 +19,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using testing::_;
+using testing::ElementsAre;
+using testing::Return;
+
 namespace {
 
 const char kFormActionUrl[] = "https://form_action.com/";
@@ -36,7 +40,8 @@ class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
  public:
   MockSafeBrowsingDatabaseManager() {}
 
-  MOCK_METHOD1(MatchCsdWhitelistUrl, bool(const GURL&));
+  MOCK_METHOD2(CheckCsdWhitelistUrl,
+               AsyncMatch(const GURL&, SafeBrowsingDatabaseManager::Client*));
 
  protected:
   ~MockSafeBrowsingDatabaseManager() override {}
@@ -167,8 +172,9 @@ class PasswordProtectionServiceTest : public testing::Test {
   void InitializeAndStartPasswordOnFocusRequest(bool match_whitelist,
                                                 int timeout_in_ms) {
     GURL target_url(kTargetUrl);
-    EXPECT_CALL(*database_manager_.get(), MatchCsdWhitelistUrl(target_url))
-        .WillRepeatedly(testing::Return(match_whitelist));
+    EXPECT_CALL(*database_manager_.get(), CheckCsdWhitelistUrl(target_url, _))
+        .WillRepeatedly(
+            Return(match_whitelist ? AsyncMatch::MATCH : AsyncMatch::NO_MATCH));
 
     request_ = new PasswordProtectionRequest(
         nullptr, target_url, GURL(kFormActionUrl), GURL(kPasswordFrameUrl),
@@ -181,8 +187,9 @@ class PasswordProtectionServiceTest : public testing::Test {
                                               bool match_whitelist,
                                               int timeout_in_ms) {
     GURL target_url(kTargetUrl);
-    EXPECT_CALL(*database_manager_.get(), MatchCsdWhitelistUrl(target_url))
-        .WillRepeatedly(testing::Return(match_whitelist));
+    EXPECT_CALL(*database_manager_.get(), CheckCsdWhitelistUrl(target_url, _))
+        .WillRepeatedly(
+            Return(match_whitelist ? AsyncMatch::MATCH : AsyncMatch::NO_MATCH));
 
     request_ = new PasswordProtectionRequest(
         nullptr, target_url, GURL(), GURL(), saved_domain,
@@ -449,7 +456,7 @@ TEST_F(PasswordProtectionServiceTest, TestNoRequestSentForWhitelistedURL) {
   EXPECT_EQ(nullptr, password_protection_service_->latest_response());
   EXPECT_THAT(
       histograms_.GetAllSamples(kPasswordOnFocusRequestOutcomeHistogramName),
-      testing::ElementsAre(base::Bucket(4 /* MATCHED_WHITELIST */, 1)));
+      ElementsAre(base::Bucket(4 /* MATCHED_WHITELIST */, 1)));
 }
 
 TEST_F(PasswordProtectionServiceTest, TestNoRequestSentIfVerdictAlreadyCached) {
@@ -461,7 +468,7 @@ TEST_F(PasswordProtectionServiceTest, TestNoRequestSentIfVerdictAlreadyCached) {
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(
       histograms_.GetAllSamples(kPasswordOnFocusRequestOutcomeHistogramName),
-      testing::ElementsAre(base::Bucket(5 /* RESPONSE_ALREADY_CACHED */, 1)));
+      ElementsAre(base::Bucket(5 /* RESPONSE_ALREADY_CACHED */, 1)));
   EXPECT_EQ(LoginReputationClientResponse::LOW_REPUTATION,
             password_protection_service_->latest_response()->verdict_type());
 }
@@ -480,7 +487,7 @@ TEST_F(PasswordProtectionServiceTest, TestResponseFetchFailed) {
   EXPECT_EQ(nullptr, password_protection_service_->latest_response());
   EXPECT_THAT(
       histograms_.GetAllSamples(kPasswordOnFocusRequestOutcomeHistogramName),
-      testing::ElementsAre(base::Bucket(9 /* FETCH_FAILED */, 1)));
+      ElementsAre(base::Bucket(9 /* FETCH_FAILED */, 1)));
 }
 
 TEST_F(PasswordProtectionServiceTest, TestMalformedResponse) {
@@ -499,7 +506,7 @@ TEST_F(PasswordProtectionServiceTest, TestMalformedResponse) {
   EXPECT_EQ(nullptr, password_protection_service_->latest_response());
   EXPECT_THAT(
       histograms_.GetAllSamples(kPasswordOnFocusRequestOutcomeHistogramName),
-      testing::ElementsAre(base::Bucket(10 /* RESPONSE_MALFORMED */, 1)));
+      ElementsAre(base::Bucket(10 /* RESPONSE_MALFORMED */, 1)));
 }
 
 TEST_F(PasswordProtectionServiceTest, TestRequestTimedout) {
@@ -510,7 +517,7 @@ TEST_F(PasswordProtectionServiceTest, TestRequestTimedout) {
   EXPECT_EQ(nullptr, password_protection_service_->latest_response());
   EXPECT_THAT(
       histograms_.GetAllSamples(kPasswordOnFocusRequestOutcomeHistogramName),
-      testing::ElementsAre(base::Bucket(3 /* TIMEDOUT */, 1)));
+      ElementsAre(base::Bucket(3 /* TIMEDOUT */, 1)));
 }
 
 TEST_F(PasswordProtectionServiceTest, TestRequestAndResponseSuccessfull) {
@@ -530,9 +537,9 @@ TEST_F(PasswordProtectionServiceTest, TestRequestAndResponseSuccessfull) {
   base::RunLoop().RunUntilIdle();
   EXPECT_THAT(
       histograms_.GetAllSamples(kPasswordOnFocusRequestOutcomeHistogramName),
-      testing::ElementsAre(base::Bucket(1 /* SUCCEEDED */, 1)));
+      ElementsAre(base::Bucket(1 /* SUCCEEDED */, 1)));
   EXPECT_THAT(histograms_.GetAllSamples(kVerdictHistogramName),
-              testing::ElementsAre(base::Bucket(3 /* PHISHING */, 1)));
+              ElementsAre(base::Bucket(3 /* PHISHING */, 1)));
   LoginReputationClientResponse* actual_response =
       password_protection_service_->latest_response();
   EXPECT_EQ(expected_response.verdict_type(), actual_response->verdict_type());
@@ -545,8 +552,8 @@ TEST_F(PasswordProtectionServiceTest, TestRequestAndResponseSuccessfull) {
 TEST_F(PasswordProtectionServiceTest, TestTearDownWithPendingRequests) {
   histograms_.ExpectTotalCount(kPasswordOnFocusRequestOutcomeHistogramName, 0);
   GURL target_url(kTargetUrl);
-  EXPECT_CALL(*database_manager_.get(), MatchCsdWhitelistUrl(target_url))
-      .WillRepeatedly(testing::Return(false));
+  EXPECT_CALL(*database_manager_.get(), CheckCsdWhitelistUrl(target_url, _))
+      .WillRepeatedly(Return(AsyncMatch::NO_MATCH));
   password_protection_service_->StartRequest(
       nullptr, target_url, GURL("http://foo.com/submit"),
       GURL("http://foo.com/frame"), std::string(),
@@ -558,7 +565,7 @@ TEST_F(PasswordProtectionServiceTest, TestTearDownWithPendingRequests) {
 
   EXPECT_THAT(
       histograms_.GetAllSamples(kPasswordOnFocusRequestOutcomeHistogramName),
-      testing::ElementsAre(base::Bucket(2 /* CANCELED */, 1)));
+      ElementsAre(base::Bucket(2 /* CANCELED */, 1)));
 }
 
 TEST_F(PasswordProtectionServiceTest, TestCleanUpExpiredVerdict) {

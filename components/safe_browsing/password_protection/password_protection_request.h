@@ -85,16 +85,16 @@ class PasswordProtectionRequest : public base::RefCountedThreadSafe<
   friend class base::DeleteHelper<PasswordProtectionRequest>;
   ~PasswordProtectionRequest() override;
 
-  void CheckWhitelistOnUIThread();
+  // Start checking the whitelist.
+  void CheckWhitelist();
+
+  static void OnWhitelistCheckDoneOnIO(
+      base::WeakPtr<PasswordProtectionRequest> weak_request,
+      bool match_whitelist);
 
   // If |main_frame_url_| matches whitelist, call Finish() immediately;
-  // otherwise call CheckCachedVerdicts(). It is the task posted back to UI
-  // thread by the PostTaskAndReply() in CheckWhitelistOnUIThread().
-  // |match_whitelist| boolean pointer is used to pass whitelist checking result
-  // between UI and IO thread. The object it points to will be deleted at the
-  // end of OnWhitelistCheckDone(), since base::Owned() transfers its ownership
-  // to this callback function.
-  void OnWhitelistCheckDone(const bool* match_whitelist);
+  // otherwise call CheckCachedVerdicts().
+  void OnWhitelistCheckDone(bool match_whitelist);
 
   // Looks up cached verdicts. If verdict is already cached, call SendRequest();
   // otherwise call Finish().

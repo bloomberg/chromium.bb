@@ -1,6 +1,7 @@
 // Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
 #include "components/safe_browsing/password_protection/password_protection_request.h"
 
 #include "base/memory/ptr_util.h"
@@ -8,6 +9,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/password_manager/core/browser/password_reuse_detector.h"
+#include "components/safe_browsing_db/whitelist_checker_client.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
@@ -50,26 +52,37 @@ PasswordProtectionRequest::~PasswordProtectionRequest() {
 
 void PasswordProtectionRequest::Start() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  CheckWhitelistOnUIThread();
+  CheckWhitelist();
 }
 
-void PasswordProtectionRequest::CheckWhitelistOnUIThread() {
+void PasswordProtectionRequest::CheckWhitelist() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  bool* match_whitelist = new bool(false);
 
-  tracker_.PostTaskAndReply(
+  // Start a task on the IO thread to check the whitelist. It may
+  // callback immediately on the IO thread or take some time if a full-hash-
+  // check is required.
+  auto result_callback = base::Bind(&OnWhitelistCheckDoneOnIO, GetWeakPtr());
+  tracker_.PostTask(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO).get(), FROM_HERE,
-      base::Bind(&PasswordProtectionService::CheckCsdWhitelistOnIOThread,
-                 base::Unretained(password_protection_service_),
-                 main_frame_url_, match_whitelist),
-      base::Bind(&PasswordProtectionRequest::OnWhitelistCheckDone, this,
-                 base::Owned(match_whitelist)));
+      base::Bind(&WhitelistCheckerClient::StartCheckCsdWhitelist,
+                 password_protection_service_->database_manager(),
+                 main_frame_url_, result_callback));
 }
 
-void PasswordProtectionRequest::OnWhitelistCheckDone(
-    const bool* match_whitelist) {
+// static
+void PasswordProtectionRequest::OnWhitelistCheckDoneOnIO(
+    base::WeakPtr<PasswordProtectionRequest> weak_request,
+    bool match_whitelist) {
+  // Don't access weak_request on IO thread. Move it back to UI thread first.
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::Bind(&PasswordProtectionRequest::OnWhitelistCheckDone, weak_request,
+                 match_whitelist));
+}
+
+void PasswordProtectionRequest::OnWhitelistCheckDone(bool match_whitelist) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (*match_whitelist)
+  if (match_whitelist)
     Finish(PasswordProtectionService::MATCHED_WHITELIST, nullptr);
   else
     CheckCachedVerdicts();

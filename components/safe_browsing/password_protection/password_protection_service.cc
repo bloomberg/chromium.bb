@@ -18,6 +18,7 @@
 #include "components/safe_browsing/password_protection/password_protection_request.h"
 #include "components/safe_browsing_db/database_manager.h"
 #include "components/safe_browsing_db/v4_protocol_manager_util.h"
+#include "components/safe_browsing_db/whitelist_checker_client.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/google_api_keys.h"
@@ -103,14 +104,6 @@ PasswordProtectionService::~PasswordProtectionService() {
   CancelPendingRequests();
   history_service_observer_.RemoveAll();
   weak_factory_.InvalidateWeakPtrs();
-}
-
-void PasswordProtectionService::CheckCsdWhitelistOnIOThread(
-    const GURL& url,
-    bool* check_result) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  *check_result =
-      url.is_valid() ? database_manager_->MatchCsdWhitelistUrl(url) : true;
 }
 
 bool PasswordProtectionService::CanGetReputationOfURL(const GURL& url) {
