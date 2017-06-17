@@ -853,6 +853,14 @@ extern int drmGetDevices2(uint32_t flags, drmDevicePtr devices[], int max_device
 
 extern int drmDevicesEqual(drmDevicePtr a, drmDevicePtr b);
 
+extern int drmSyncobjCreate(int fd, uint32_t flags, uint32_t *handle);
+extern int drmSyncobjDestroy(int fd, uint32_t handle);
+extern int drmSyncobjHandleToFD(int fd, uint32_t handle, int *obj_fd);
+extern int drmSyncobjFDToHandle(int fd, int obj_fd, uint32_t *handle);
+
+extern int drmSyncobjImportSyncFile(int fd, uint32_t handle, int sync_file_fd);
+extern int drmSyncobjExportSyncFile(int fd, uint32_t handle, int *sync_file_fd);
+
 #if defined(__cplusplus)
 }
 #endif
