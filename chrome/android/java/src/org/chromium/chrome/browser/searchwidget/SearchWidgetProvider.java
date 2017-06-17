@@ -32,6 +32,7 @@ import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.omnibox.LocationBarLayout;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.LoadListener;
+import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrl;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrlServiceObserver;
 import org.chromium.chrome.browser.util.IntentUtils;
 
@@ -303,12 +304,17 @@ public class SearchWidgetProvider extends AppWidgetProvider {
         if (!service.isLoaded()) return;
 
         // Update the URL that we show for zero-suggest.
-        String searchEngineUrl = service.getSearchEngineUrlFromTemplateUrl(
-                service.getDefaultSearchEngineTemplateUrl().getKeyword());
-        sDefaultSearchEngineUrl =
-                LocationBarLayout.splitPathFromUrlDisplayText(searchEngineUrl).first;
+        TemplateUrl dseTemplateUrl = service.getDefaultSearchEngineTemplateUrl();
+        String engineName = null;
+        if (dseTemplateUrl != null) {
+            String searchEngineUrl =
+                    service.getSearchEngineUrlFromTemplateUrl(dseTemplateUrl.getKeyword());
+            sDefaultSearchEngineUrl =
+                    LocationBarLayout.splitPathFromUrlDisplayText(searchEngineUrl).first;
+            engineName = dseTemplateUrl.getShortName();
+        }
 
-        updateCachedEngineName(service.getDefaultSearchEngineTemplateUrl().getShortName());
+        updateCachedEngineName(engineName);
     }
 
     /**

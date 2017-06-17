@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import javax.annotation.Nullable;
+
 /**
  * Android wrapper of the TemplateUrlService which provides access from the Java
  * layer.
@@ -250,9 +252,10 @@ public class TemplateUrlService {
     }
 
     /**
-     * @return {@link TemplateUrlService.TemplateUrl} for the default search engine.
+     * @return {@link TemplateUrlService.TemplateUrl} for the default search engine.  This can
+     *         be null if DSEs are disabled entirely by administrators.
      */
-    public TemplateUrl getDefaultSearchEngineTemplateUrl() {
+    public @Nullable TemplateUrl getDefaultSearchEngineTemplateUrl() {
         if (!isLoaded()) return null;
 
         int defaultSearchEngineIndex = getDefaultSearchEngineIndex();
@@ -271,8 +274,12 @@ public class TemplateUrlService {
                 mNativeTemplateUrlServiceAndroid, selectedKeyword);
     }
 
-    public boolean isSearchProviderManaged() {
-        return nativeIsSearchProviderManaged(mNativeTemplateUrlServiceAndroid);
+    /**
+     * @return Whether the default search engine is managed and controlled by policy.  If true, the
+     *         DSE can not be modified by the user.
+     */
+    public boolean isDefaultSearchManaged() {
+        return nativeIsDefaultSearchManaged(mNativeTemplateUrlServiceAndroid);
     }
 
     /**
@@ -431,7 +438,7 @@ public class TemplateUrlService {
     private native void nativeSetUserSelectedDefaultSearchProvider(
             long nativeTemplateUrlServiceAndroid, String selectedKeyword);
     private native int nativeGetDefaultSearchProviderIndex(long nativeTemplateUrlServiceAndroid);
-    private native boolean nativeIsSearchProviderManaged(long nativeTemplateUrlServiceAndroid);
+    private native boolean nativeIsDefaultSearchManaged(long nativeTemplateUrlServiceAndroid);
     private native boolean nativeIsSearchResultsPageFromDefaultSearchProvider(
             long nativeTemplateUrlServiceAndroid, String url);
     private native boolean nativeIsSearchByImageAvailable(long nativeTemplateUrlServiceAndroid);

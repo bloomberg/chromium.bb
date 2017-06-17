@@ -43,7 +43,7 @@ class TemplateUrlServiceAndroid : public TemplateURLServiceObserver {
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
       jint index) const;
-  jboolean IsSearchProviderManaged(
+  jboolean IsDefaultSearchManaged(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
   jboolean IsSearchByImageAvailable(

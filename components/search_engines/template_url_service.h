@@ -257,7 +257,9 @@ class TemplateURLService : public WebDataServiceConsumer,
   // Returns the default search provider. If the TemplateURLService hasn't been
   // loaded, the default search provider is pulled from preferences.
   //
-  // NOTE: At least in unittest mode, this may return NULL.
+  // NOTE: This may return null in certain circumstances such as:
+  //       1.) Unit test mode
+  //       2.) The default search engine is disabled by policy.
   const TemplateURL* GetDefaultSearchProvider() const;
 
   // Returns true if the |url| is a search results page from the default search

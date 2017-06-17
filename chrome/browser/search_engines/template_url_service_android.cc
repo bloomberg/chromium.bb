@@ -91,7 +91,7 @@ jint TemplateUrlServiceAndroid::GetTemplateUrlCount(
   return template_urls_.size();
 }
 
-jboolean TemplateUrlServiceAndroid::IsSearchProviderManaged(
+jboolean TemplateUrlServiceAndroid::IsDefaultSearchManaged(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   return template_url_service_->is_default_search_managed();
