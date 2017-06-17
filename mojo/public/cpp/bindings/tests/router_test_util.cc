@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "mojo/public/cpp/bindings/message.h"
+#include "mojo/public/cpp/bindings/lib/message_builder.h"
 #include "mojo/public/cpp/bindings/tests/message_queue.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -17,8 +17,10 @@ namespace test {
 
 void AllocRequestMessage(uint32_t name, const char* text, Message* message) {
   size_t payload_size = strlen(text) + 1;  // Plus null terminator.
-  *message = Message(name, Message::kFlagExpectsResponse, payload_size, 0);
-  memcpy(message->payload_buffer()->Allocate(payload_size), text, payload_size);
+  internal::MessageBuilder builder(name, Message::kFlagExpectsResponse,
+                                   payload_size, 0);
+  memcpy(builder.buffer()->Allocate(payload_size), text, payload_size);
+  *message = std::move(*builder.message());
 }
 
 void AllocResponseMessage(uint32_t name,
@@ -26,9 +28,11 @@ void AllocResponseMessage(uint32_t name,
                           uint64_t request_id,
                           Message* message) {
   size_t payload_size = strlen(text) + 1;  // Plus null terminator.
-  *message = Message(name, Message::kFlagIsResponse, payload_size, 0);
-  message->set_request_id(request_id);
-  memcpy(message->payload_buffer()->Allocate(payload_size), text, payload_size);
+  internal::MessageBuilder builder(name, Message::kFlagIsResponse, payload_size,
+                                   0);
+  builder.message()->set_request_id(request_id);
+  memcpy(builder.buffer()->Allocate(payload_size), text, payload_size);
+  *message = std::move(*builder.message());
 }
 
 MessageAccumulator::MessageAccumulator(MessageQueue* queue,

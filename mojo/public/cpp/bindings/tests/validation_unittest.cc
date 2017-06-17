@@ -10,7 +10,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -24,7 +23,6 @@
 #include "mojo/public/cpp/bindings/message_header_validator.h"
 #include "mojo/public/cpp/bindings/tests/validation_test_input_parser.h"
 #include "mojo/public/cpp/system/core.h"
-#include "mojo/public/cpp/system/message.h"
 #include "mojo/public/cpp/test_support/test_support.h"
 #include "mojo/public/interfaces/bindings/tests/validation_test_associated_interfaces.mojom.h"
 #include "mojo/public/interfaces/bindings/tests/validation_test_interfaces.mojom.h"
@@ -33,36 +31,6 @@
 namespace mojo {
 namespace test {
 namespace {
-
-void GetSerializedRawMessageSize(uintptr_t context,
-                                 size_t* num_bytes,
-                                 size_t* num_handles) {
-  *num_bytes = *reinterpret_cast<size_t*>(context);
-  *num_handles = 0;
-}
-static void IgnoreSerializeHandles(uintptr_t, MojoHandle*) {}
-static void IgnoreSerializePayload(uintptr_t, void*) {}
-static void IgnoreDestroy(uintptr_t) {}
-
-const MojoMessageOperationThunks kRawMessageThunks{
-    sizeof(MojoMessageOperationThunks),
-    &GetSerializedRawMessageSize,
-    &IgnoreSerializeHandles,
-    &IgnoreSerializePayload,
-    &IgnoreDestroy,
-};
-
-Message CreateRawMessage(size_t size) {
-  ScopedMessageHandle handle;
-  MojoResult rv = CreateMessage(reinterpret_cast<uintptr_t>(&size),
-                                &kRawMessageThunks, &handle);
-  DCHECK_EQ(MOJO_RESULT_OK, rv);
-  DCHECK(handle.is_valid());
-
-  rv = MojoSerializeMessage(handle->value());
-  DCHECK_EQ(MOJO_RESULT_OK, rv);
-  return Message(std::move(handle));
-}
 
 template <typename T>
 void Append(std::vector<uint8_t>* data_vector, T data) {
@@ -182,7 +150,8 @@ bool ReadTestCase(const std::string& test,
     return false;
   }
 
-  *message = CreateRawMessage(data.size());
+  message->Initialize(static_cast<uint32_t>(data.size()),
+                      false /* zero_initialized */);
   if (!data.empty())
     memcpy(message->mutable_data(), &data[0], data.size());
   message->mutable_handles()->resize(num_handles);

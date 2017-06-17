@@ -5,8 +5,9 @@
 #ifndef MOJO_PUBLIC_CPP_BINDINGS_LIB_FIXED_BUFFER_H_
 #define MOJO_PUBLIC_CPP_BINDINGS_LIB_FIXED_BUFFER_H_
 
-#include <cstddef>
+#include <stddef.h>
 
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/bindings/lib/buffer.h"
@@ -16,7 +17,8 @@ namespace internal {
 
 // FixedBufferForTesting owns its buffer. The Leak method may be used to steal
 // the underlying memory.
-class MOJO_CPP_BINDINGS_EXPORT FixedBufferForTesting : public Buffer {
+class MOJO_CPP_BINDINGS_EXPORT FixedBufferForTesting
+    : NON_EXPORTED_BASE(public Buffer) {
  public:
   explicit FixedBufferForTesting(size_t size);
   ~FixedBufferForTesting();
@@ -28,8 +30,6 @@ class MOJO_CPP_BINDINGS_EXPORT FixedBufferForTesting : public Buffer {
   void* Leak();
 
  private:
-  FixedBufferForTesting(std::nullptr_t, size_t aligned_size);
-
   DISALLOW_COPY_AND_ASSIGN(FixedBufferForTesting);
 };
 
