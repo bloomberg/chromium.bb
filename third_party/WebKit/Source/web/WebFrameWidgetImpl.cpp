@@ -83,16 +83,22 @@ namespace blink {
 WebFrameWidget* WebFrameWidget::Create(WebWidgetClient* client,
                                        WebLocalFrame* local_root) {
   DCHECK(client) << "A valid WebWidgetClient must be supplied.";
-  // Pass the WebFrameWidget's self-reference to the caller.
-  return WebFrameWidgetImpl::Create(client, local_root);
-}
+  if (!local_root->Parent()) {
+    // Note: this isn't a leak, as the object has a self-reference that the
+    // caller needs to release by calling Close().
+    WebLocalFrameBase& main_frame = ToWebLocalFrameBase(*local_root);
+    DCHECK(main_frame.ViewImpl());
+    // Note: this can't DCHECK that the view's main frame points to
+    // |main_frame|, as provisional frames violate this precondition.
+    // TODO(dcheng): Remove the special bridge class for main frame widgets.
+    return new WebViewFrameWidget(*client, *main_frame.ViewImpl(), main_frame);
+  }
 
-WebFrameWidget* WebFrameWidget::Create(WebWidgetClient* client,
-                                       WebView* web_view,
-                                       WebLocalFrame* main_frame) {
-  DCHECK(client) << "A valid WebWidgetClient must be supplied.";
-  return new WebViewFrameWidget(*client, static_cast<WebViewBase&>(*web_view),
-                                ToWebLocalFrameBase(*main_frame));
+  DCHECK(local_root->Parent()->IsWebRemoteFrame())
+      << "Only local roots can have web frame widgets.";
+  // Note: this isn't a leak, as the object has a self-reference that the
+  // caller needs to release by calling Close().
+  return WebFrameWidgetImpl::Create(client, local_root);
 }
 
 WebFrameWidgetImpl* WebFrameWidgetImpl::Create(WebWidgetClient* client,

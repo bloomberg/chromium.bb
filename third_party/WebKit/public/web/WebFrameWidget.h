@@ -41,18 +41,11 @@ namespace blink {
 class WebDragData;
 class WebLocalFrame;
 class WebInputMethodController;
-class WebView;
 class WebWidgetClient;
 
 class WebFrameWidget : public WebWidget {
  public:
   BLINK_EXPORT static WebFrameWidget* Create(WebWidgetClient*, WebLocalFrame*);
-  // Creates a frame widget for a WebView. Temporary helper to help transition
-  // away from WebView inheriting WebWidget.
-  // TODO(dcheng): Remove once transition is complete.
-  BLINK_EXPORT static WebFrameWidget* Create(WebWidgetClient*,
-                                             WebView*,
-                                             WebLocalFrame* main_frame);
 
   // Sets the visibility of the WebFrameWidget.
   // We still track page-level visibility, but additionally we need to notify a

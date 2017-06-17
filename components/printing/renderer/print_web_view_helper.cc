@@ -586,7 +586,7 @@ void PrintWebViewHelper::PrintHeaderAndFooter(
       blink::WebTreeScopeType::kDocument, &frame_client, nullptr, nullptr);
   web_view->SetMainFrame(frame);
   blink::WebWidgetClient web_widget_client;
-  blink::WebFrameWidget::Create(&web_widget_client, web_view, frame);
+  blink::WebFrameWidget::Create(&web_widget_client, frame);
 
   base::Value html(
       base::UTF8ToUTF16(ResourceBundle::GetSharedInstance().GetRawDataResource(
@@ -808,7 +808,7 @@ void PrepareFrameAndViewForPrint::CopySelection(
   blink::WebLocalFrame* main_frame = blink::WebLocalFrame::Create(
       blink::WebTreeScopeType::kDocument, this, nullptr, nullptr);
   web_view->SetMainFrame(main_frame);
-  blink::WebFrameWidget::Create(this, web_view, main_frame);
+  blink::WebFrameWidget::Create(this, main_frame);
   frame_.Reset(web_view->MainFrame()->ToWebLocalFrame());
   node_to_print_.Reset();
 

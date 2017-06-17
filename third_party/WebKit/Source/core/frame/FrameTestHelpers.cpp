@@ -264,10 +264,7 @@ WebViewBase* WebViewHelper::InitializeWithOpener(
       web_frame_client->GetInterfaceProviderForTesting(), nullptr, opener);
   web_frame_client->Bind(frame, std::move(owned_web_frame_client));
   web_view_->SetMainFrame(frame);
-
-  // TODO(dcheng): The main frame widget currently has a special case.
-  // Eliminate this once WebView is no longer a WebWidget.
-  blink::WebFrameWidget::Create(web_widget_client, web_view_, frame);
+  blink::WebFrameWidget::Create(web_widget_client, frame);
 
   test_web_view_client_ = web_view_client;
 
