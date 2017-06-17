@@ -35,6 +35,13 @@ template <typename T>
 class PassRefPtr;
 template <typename T>
 class RefPtrValuePeeker;
+template <typename T>
+class RefPtr;
+
+template <typename T>
+RefPtr<T> AdoptRef(T*);
+
+inline void Adopted(const void*) {}
 
 template <typename T>
 class RefPtr {
@@ -52,6 +59,9 @@ class RefPtr {
     RefIfNotNull(ptr_);
   }
   RefPtr(RefPtr&& o) : ptr_(o.ptr_) { o.ptr_ = nullptr; }
+  template <typename U>
+  RefPtr(RefPtr<U>&& o, EnsurePtrConvertibleArgDecl(U, T))
+      : ptr_(o.LeakRef()) {}
 
   // See comments in PassRefPtr.h for an explanation of why this takes a const
   // reference.
@@ -70,11 +80,7 @@ class RefPtr {
   ALWAYS_INLINE T* Get() const { return ptr_; }
   T* LeakRef() WARN_UNUSED_RESULT;
   void Clear();
-  PassRefPtr<T> Release() WARN_UNUSED_RESULT {
-    PassRefPtr<T> tmp = AdoptRef(ptr_);
-    ptr_ = nullptr;
-    return tmp;
-  }
+  PassRefPtr<T> Release() WARN_UNUSED_RESULT { return std::move(*this); }
 
   T& operator*() const { return *ptr_; }
   ALWAYS_INLINE T* operator->() const { return ptr_; }
@@ -99,6 +105,11 @@ class RefPtr {
   static T* HashTableDeletedValue() { return reinterpret_cast<T*>(-1); }
 
  private:
+  friend RefPtr AdoptRef<T>(T*);
+
+  enum AdoptRefTag { kAdoptRef };
+  RefPtr(T* ptr, AdoptRefTag) : ptr_(ptr) {}
+
   T* ptr_;
 };
 
@@ -212,8 +223,15 @@ class RefPtrValuePeeker {
   T* ptr_;
 };
 
+template <typename T>
+RefPtr<T> AdoptRef(T* p) {
+  Adopted(p);
+  return RefPtr<T>(p, RefPtr<T>::kAdoptRef);
+}
+
 }  // namespace WTF
 
 using WTF::RefPtr;
+using WTF::AdoptRef;
 
 #endif  // WTF_RefPtr_h
