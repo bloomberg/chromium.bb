@@ -3442,6 +3442,7 @@ void av1_update_reference_frames(AV1_COMP *cpi) {
 }
 
 static INLINE void alloc_frame_mvs(AV1_COMMON *const cm, int buffer_idx) {
+  assert(buffer_idx != INVALID_IDX);
   RefCntBuffer *const new_fb_ptr = &cm->buffer_pool->frame_bufs[buffer_idx];
   if (new_fb_ptr->mvs == NULL || new_fb_ptr->mi_rows < cm->mi_rows ||
       new_fb_ptr->mi_cols < cm->mi_cols) {
@@ -4040,34 +4041,11 @@ static void encode_without_recode_loop(AV1_COMP *cpi) {
 
   aom_clear_system_state();
 
+  set_size_independent_vars(cpi);
   setup_frame_size(cpi);
   assert(cm->width == cpi->scaled_source.y_crop_width);
   assert(cm->height == cpi->scaled_source.y_crop_height);
 
-  // For 1 pass CBR under dynamic resize mode: use faster scaling for source.
-  // Only for 2x2 scaling for now.
-  if (cpi->oxcf.pass == 0 && cpi->oxcf.rc_mode == AOM_CBR &&
-      cpi->oxcf.resize_mode == RESIZE_DYNAMIC &&
-      cpi->unscaled_source->y_width == (cm->width << 1) &&
-      cpi->unscaled_source->y_height == (cm->height << 1)) {
-    cpi->source = av1_scale_if_required_fast(cm, cpi->unscaled_source,
-                                             &cpi->scaled_source);
-    if (cpi->unscaled_last_source != NULL)
-      cpi->last_source = av1_scale_if_required_fast(
-          cm, cpi->unscaled_last_source, &cpi->scaled_last_source);
-  } else {
-    cpi->source =
-        av1_scale_if_required(cm, cpi->unscaled_source, &cpi->scaled_source);
-    if (cpi->unscaled_last_source != NULL)
-      cpi->last_source = av1_scale_if_required(cm, cpi->unscaled_last_source,
-                                               &cpi->scaled_last_source);
-  }
-
-  if (frame_is_intra_only(cm) == 0) {
-    av1_scale_references(cpi);
-  }
-
-  set_size_independent_vars(cpi);
   set_size_dependent_vars(cpi, &q, &bottom_index, &top_index);
 
   // cpi->sf.use_upsampled_references can be different from frame to frame.
@@ -4076,6 +4054,16 @@ static void encode_without_recode_loop(AV1_COMP *cpi) {
   if (!use_upsampled_ref && cpi->sf.use_upsampled_references &&
       cm->frame_type != KEY_FRAME)
     reset_use_upsampled_references(cpi);
+
+  cpi->source =
+      av1_scale_if_required(cm, cpi->unscaled_source, &cpi->scaled_source);
+  if (cpi->unscaled_last_source != NULL)
+    cpi->last_source = av1_scale_if_required(cm, cpi->unscaled_last_source,
+                                             &cpi->scaled_last_source);
+
+  if (frame_is_intra_only(cm) == 0) {
+    av1_scale_references(cpi);
+  }
 
   av1_set_quantizer(cm, q);
   setup_frame(cpi);
@@ -5830,9 +5818,10 @@ int av1_set_internal_size(AV1_COMP *cpi, AOM_SCALING horiz_mode,
 int av1_set_size_literal(AV1_COMP *cpi, int width, int height) {
   AV1_COMMON *cm = &cpi->common;
 #if CONFIG_HIGHBITDEPTH
-  check_initial_width(cpi, cm->use_highbitdepth, 1, 1);
+  check_initial_width(cpi, cm->use_highbitdepth, cm->subsampling_x,
+                      cm->subsampling_y);
 #else
-  check_initial_width(cpi, 1, 1);
+  check_initial_width(cpi, cm->subsampling_x, cm->subsampling_y);
 #endif  // CONFIG_HIGHBITDEPTH
 
   if (width <= 0 || height <= 0) return 1;
