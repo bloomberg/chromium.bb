@@ -45,6 +45,7 @@ class TestDownloadDriver : public DownloadDriver {
   void Pause(const std::string& guid) override;
   void Resume(const std::string& guid) override;
   base::Optional<DriverEntry> Find(const std::string& guid) override;
+  std::set<std::string> GetActiveDownloads() override;
 
  private:
   bool is_ready_;

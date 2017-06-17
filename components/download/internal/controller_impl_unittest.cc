@@ -620,6 +620,8 @@ TEST_F(DownloadServiceControllerImplTest, OnDownloadUpdated) {
               OnDownloadUpdated(entry.guid, driver_entry.bytes_downloaded));
   driver_->NotifyDownloadUpdate(driver_entry);
   EXPECT_EQ(Entry::State::ACTIVE, model_->Get(entry.guid)->state);
+
+  task_runner_->RunUntilIdle();
 }
 
 TEST_F(DownloadServiceControllerImplTest, DownloadCompletionTest) {
@@ -827,6 +829,132 @@ TEST_F(DownloadServiceControllerImplTest, StartupRecovery) {
   EXPECT_EQ(base::nullopt, driver_->Find(entries[22].guid));
   EXPECT_EQ(base::nullopt, driver_->Find(entries[23].guid));
   EXPECT_EQ(base::nullopt, driver_->Find(entries[24].guid));
+}
+
+TEST_F(DownloadServiceControllerImplTest, ExistingExternalDownload) {
+  Entry entry1 = test::BuildBasicEntry(Entry::State::ACTIVE);
+  Entry entry2 = test::BuildBasicEntry(Entry::State::ACTIVE);
+  Entry entry3 = test::BuildBasicEntry(Entry::State::ACTIVE);
+  entry3.scheduling_params.priority = SchedulingParams::Priority::UI;
+
+  // Simulate an existing download the service knows about and one it does not.
+  DriverEntry dentry1 =
+      BuildDriverEntry(entry2, DriverEntry::State::IN_PROGRESS);
+  DriverEntry dentry2;
+  dentry2.guid = base::GenerateGUID();
+  dentry2.state = DriverEntry::State::IN_PROGRESS;
+
+  std::vector<Entry> entries = {entry1, entry2, entry3};
+  std::vector<DriverEntry> dentries = {dentry1, dentry2};
+
+  EXPECT_CALL(*client_, OnServiceInitialized(_)).Times(1);
+
+  // Set up the Controller.
+  device_status_listener_->SetDeviceStatus(
+      DeviceStatus(BatteryStatus::CHARGING, NetworkStatus::UNMETERED));
+
+  driver_->AddTestData(dentries);
+  controller_->Initialize();
+  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+  driver_->MakeReady();
+  task_runner_->RunUntilIdle();
+
+  EXPECT_EQ(Entry::State::ACTIVE, model_->Get(entry1.guid)->state);
+  EXPECT_EQ(Entry::State::ACTIVE, model_->Get(entry2.guid)->state);
+  EXPECT_EQ(Entry::State::ACTIVE, model_->Get(entry3.guid)->state);
+
+  EXPECT_FALSE(driver_->Find(entry1.guid).has_value());
+
+  EXPECT_TRUE(driver_->Find(entry2.guid).has_value());
+  EXPECT_TRUE(driver_->Find(entry2.guid).value().paused);
+
+  EXPECT_TRUE(driver_->Find(entry3.guid).has_value());
+  EXPECT_FALSE(driver_->Find(entry3.guid).value().paused);
+
+  // Simulate a successful external download.
+  driver_->NotifyDownloadSucceeded(dentry2, base::FilePath());
+
+  EXPECT_TRUE(driver_->Find(entry1.guid).has_value());
+  EXPECT_FALSE(driver_->Find(entry1.guid).value().paused);
+  EXPECT_FALSE(driver_->Find(entry2.guid).value().paused);
+  EXPECT_FALSE(driver_->Find(entry3.guid).value().paused);
+}
+
+TEST_F(DownloadServiceControllerImplTest, NewExternalDownload) {
+  Entry entry1 = test::BuildBasicEntry(Entry::State::ACTIVE);
+  Entry entry2 = test::BuildBasicEntry(Entry::State::ACTIVE);
+  entry2.scheduling_params.priority = SchedulingParams::Priority::UI;
+
+  DriverEntry dentry1 =
+      BuildDriverEntry(entry2, DriverEntry::State::IN_PROGRESS);
+
+  std::vector<Entry> entries = {entry1, entry2};
+  std::vector<DriverEntry> dentries = {dentry1};
+
+  EXPECT_CALL(*client_, OnServiceInitialized(_)).Times(1);
+
+  // Set up the Controller.
+  device_status_listener_->SetDeviceStatus(
+      DeviceStatus(BatteryStatus::CHARGING, NetworkStatus::UNMETERED));
+
+  driver_->AddTestData(dentries);
+  controller_->Initialize();
+  store_->TriggerInit(true, base::MakeUnique<std::vector<Entry>>(entries));
+  driver_->MakeReady();
+  task_runner_->RunUntilIdle();
+
+  EXPECT_EQ(Entry::State::ACTIVE, model_->Get(entry1.guid)->state);
+  EXPECT_EQ(Entry::State::ACTIVE, model_->Get(entry2.guid)->state);
+
+  EXPECT_TRUE(driver_->Find(entry1.guid).has_value());
+  EXPECT_FALSE(driver_->Find(entry1.guid).value().paused);
+  EXPECT_TRUE(driver_->Find(entry2.guid).has_value());
+  EXPECT_FALSE(driver_->Find(entry2.guid).value().paused);
+
+  DriverEntry dentry2;
+  dentry2.guid = base::GenerateGUID();
+  dentry2.state = DriverEntry::State::IN_PROGRESS;
+
+  // Simulate a newly created external download.
+  driver_->Start(RequestParams(), dentry2.guid, NO_TRAFFIC_ANNOTATION_YET);
+
+  EXPECT_TRUE(driver_->Find(entry1.guid).value().paused);
+  EXPECT_FALSE(driver_->Find(entry2.guid).value().paused);
+
+  // Simulate a paused external download.
+  dentry2.paused = true;
+  driver_->NotifyDownloadUpdate(dentry2);
+
+  EXPECT_FALSE(driver_->Find(entry1.guid).value().paused);
+  EXPECT_FALSE(driver_->Find(entry2.guid).value().paused);
+
+  // Simulate a resumed external download.
+  dentry2.paused = false;
+  driver_->NotifyDownloadUpdate(dentry2);
+
+  EXPECT_TRUE(driver_->Find(entry1.guid).value().paused);
+  EXPECT_FALSE(driver_->Find(entry2.guid).value().paused);
+
+  // Simulate a failed external download.
+  dentry2.state = DriverEntry::State::INTERRUPTED;
+  driver_->NotifyDownloadFailed(dentry2, 1);
+
+  EXPECT_FALSE(driver_->Find(entry1.guid).value().paused);
+  EXPECT_FALSE(driver_->Find(entry2.guid).value().paused);
+
+  // Rebuild the download so we can simulate more.
+  dentry2.state = DriverEntry::State::IN_PROGRESS;
+  driver_->Start(RequestParams(), dentry2.guid, NO_TRAFFIC_ANNOTATION_YET);
+
+  EXPECT_TRUE(driver_->Find(entry1.guid).value().paused);
+  EXPECT_FALSE(driver_->Find(entry2.guid).value().paused);
+
+  // Simulate a successful external download.
+  dentry2.state = DriverEntry::State::COMPLETE;
+  driver_->NotifyDownloadSucceeded(dentry2, base::FilePath());
+
+  EXPECT_FALSE(driver_->Find(entry1.guid).value().paused);
+  EXPECT_FALSE(driver_->Find(entry2.guid).value().paused);
 }
 
 }  // namespace download

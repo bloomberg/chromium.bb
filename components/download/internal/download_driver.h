@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_DOWNLOAD_INTERNAL_DOWNLOAD_DRIVER_H_
 #define COMPONENTS_DOWNLOAD_INTERNAL_DOWNLOAD_DRIVER_H_
 
+#include <set>
 #include <string>
 
 #include "base/optional.h"
@@ -75,6 +76,10 @@ class DownloadDriver {
 
   // Finds a download record from low level download library.
   virtual base::Optional<DriverEntry> Find(const std::string& guid) = 0;
+
+  // Called to query the current set of active downloads.  This doesn't
+  // necessarily mean downloads started by the service.
+  virtual std::set<std::string> GetActiveDownloads() = 0;
 };
 
 }  // namespace download
