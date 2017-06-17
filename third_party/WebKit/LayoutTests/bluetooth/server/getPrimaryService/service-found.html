@@ -2,19 +2,19 @@
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
-<script src="../../../resources/bluetooth/web-bluetooth-test.js"></script>
-<script src="../../../resources/mojo-helpers.js"></script>
 <script>
 'use strict';
-promise_test(() => {
-  return getHealthThermometerDevice({
-      filters: [{services: ['health_thermometer']}],
-      optionalServices: ['generic_access']})
-    .then(([device]) => {
-      return Promise.all([
-          device.gatt.getPrimaryService(generic_access.alias),
-          device.gatt.getPrimaryService(generic_access.name),
-          device.gatt.getPrimaryService(generic_access.uuid)])
+promise_test(function() {
+  return setBluetoothFakeAdapter('HeartRateAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['heart_rate']}],
+      optionalServices: ['generic_access']}))
+    .then(device => {
+      return device.gatt.connect()
+        .then(gattServer => Promise.all([
+          gattServer.getPrimaryService(generic_access.alias),
+          gattServer.getPrimaryService(generic_access.name),
+          gattServer.getPrimaryService(generic_access.uuid)]))
         .then(services => {
           services.forEach(service => {
             assert_equals(service.uuid, generic_access.uuid,

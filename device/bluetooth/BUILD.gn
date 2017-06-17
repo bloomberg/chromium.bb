@@ -49,8 +49,6 @@ source_set("fake_bluetooth") {
     "test/fake_central.h",
     "test/fake_peripheral.cc",
     "test/fake_peripheral.h",
-    "test/fake_remote_gatt_service.cc",
-    "test/fake_remote_gatt_service.h",
   ]
 
   deps = [

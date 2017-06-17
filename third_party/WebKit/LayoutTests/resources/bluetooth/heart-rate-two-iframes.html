@@ -1,25 +1,25 @@
 <!DOCTYPE html>
 <script>
-'use strict';
-let device;
-window.onmessage = messageEvent => {
-  if (messageEvent.data === 'Iframe1RequestAndConnect') {
-    navigator.bluetooth.requestDevice({
-        filters: [{services: ['health_thermometer']}]
+'use restrict';
+  let device;
+  window.onmessage = messageEvent => {
+    if (messageEvent.data === 'Iframe1RequestAndConnect') {
+      navigator.bluetooth.requestDevice({
+        filters: [{services: ['heart_rate']}]
       })
       .then(device => device.gatt.connect())
       .then(gattServer => {
-        // iframe1 can access health_thermometer service.
-        return gattServer.getPrimaryService('health_thermometer');
+        // iframe1 can access heart_rate service.
+        return gattServer.getPrimaryService('heart_rate');
       }).then(() => {
         parent.postMessage('Iframe1Connected', '*');
       }).catch(err => {
         console.error(err);
         parent.postMessage('FAIL: ' + err, '*');
       });
-  } else if (messageEvent.data === 'Iframe1TryAccessGenericAccessService') {
-    navigator.bluetooth.requestDevice({
-        filters: [{services: ['health_thermometer']}]
+    } else if (messageEvent.data === 'Iframe1TryAccessGenericAccessService') {
+      navigator.bluetooth.requestDevice({
+        filters: [{services: ['heart_rate']}]
       })
       .then(device => device.gatt.connect())
       .then(gattServer => {
@@ -28,26 +28,26 @@ window.onmessage = messageEvent => {
       }).catch(err => {
         parent.postMessage('Iframe1AccessGenericAccessServiceFailed', '*');
       });
-  } else if (messageEvent.data === 'Iframe2RequestAndConnect') {
-    navigator.bluetooth.requestDevice({
+    } else if (messageEvent.data === 'Iframe2RequestAndConnect') {
+      navigator.bluetooth.requestDevice({
         filters: [{services: ['generic_access']}]
       })
       .then(device => device.gatt.connect())
       .then(gattServer => {
-        // Since iframe1 can access health_thermometer service, and iframe2 has the
+        // Since iframe1 can access heart_rate service, and iframe2 has the
         // same origin as iframe1, iframe2 should also be able to access
-        // health_thermometer service.
+        // heart_rate service.
         return Promise.all([gattServer.getPrimaryService('generic_access'),
-                            gattServer.getPrimaryService('health_thermometer')]);
+          gattServer.getPrimaryService('heart_rate')]);
       }).then(() => {
         parent.postMessage('Iframe2Connected', '*');
       }).catch(err => {
         console.error(err);
         parent.postMessage('FAIL: ' + err, '*');
       });
-  } else if (messageEvent.data === 'TestIframe1HasGenericAccessService') {
-    navigator.bluetooth.requestDevice({
-        filters: [{services: ['health_thermometer']}]
+    } else if (messageEvent.data === 'TestIframe1HasGenericAccessService') {
+      navigator.bluetooth.requestDevice({
+        filters: [{services: ['heart_rate']}]
       })
       .then(device => device.gatt.connect())
       .then(gattServer => {
@@ -61,7 +61,7 @@ window.onmessage = messageEvent => {
         console.error(err);
         parent.postMessage('FAIL: ' + err, '*');
       });
-  }
-};
-parent.postMessage("Ready", "*");
+    }
+  };
+  parent.postMessage("Ready", "*");
 </script>
