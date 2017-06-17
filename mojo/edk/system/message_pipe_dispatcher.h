@@ -49,8 +49,13 @@ class MessagePipeDispatcher : public Dispatcher {
   MojoResult Close() override;
   MojoResult WriteMessage(std::unique_ptr<ports::UserMessageEvent> message,
                           MojoWriteMessageFlags flags) override;
-  MojoResult ReadMessage(
-      std::unique_ptr<ports::UserMessageEvent>* message) override;
+  MojoResult ReadMessage(ReadMessageSizePolicy size_policy,
+                         ReadMessageDiscardPolicy discard_policy,
+                         uint32_t max_payload_size,
+                         uint32_t max_num_handles,
+                         std::unique_ptr<ports::UserMessageEvent>* message,
+                         uint32_t* actual_payload_size,
+                         uint32_t* actual_num_handles) override;
   HandleSignalsState GetHandleSignalsState() const override;
   MojoResult AddWatcherRef(const scoped_refptr<WatcherDispatcher>& watcher,
                            uintptr_t context) override;

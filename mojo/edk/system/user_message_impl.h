@@ -78,6 +78,17 @@ class MOJO_SYSTEM_IMPL_EXPORT UserMessageImpl
       void* payload,
       size_t payload_size);
 
+  // Attempts to read a message from the given |port|.
+  static MojoResult ReadMessageEventFromPort(
+      const ports::PortRef& port,
+      Dispatcher::ReadMessageSizePolicy size_policy,
+      Dispatcher::ReadMessageDiscardPolicy discard_policy,
+      uint32_t max_payload_size,
+      uint32_t max_num_handles,
+      std::unique_ptr<ports::UserMessageEvent>* out_event,
+      uint32_t* actual_payload_size,
+      uint32_t* actual_num_handles);
+
   // Extracts the serialized Channel::Message from the UserMessageEvent in
   // |event|. |event| must have a serialized UserMessageImpl instance attached.
   // |message_event| is serialized into the front of the message payload before
@@ -136,6 +147,8 @@ class MOJO_SYSTEM_IMPL_EXPORT UserMessageImpl
                                       MojoHandle* handles);
 
  private:
+  class ReadMessageFilter;
+
   // Creates an unserialized UserMessageImpl with an associated |context| and
   // |thunks|. If the message is ever going to be routed to another node (see
   // |WillBeRoutedExternally()| below), it will be serialized at that time using

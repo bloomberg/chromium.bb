@@ -30,28 +30,6 @@ const MojoHandleSignals kAllSignals = MOJO_HANDLE_SIGNAL_READABLE |
 
 using CoreTest = test::CoreTestBase;
 
-void UnusedGetSerializedSize(uintptr_t context,
-                             size_t* num_bytes,
-                             size_t* num_handles) {}
-void UnusedSerializeHandles(uintptr_t context, MojoHandle* handles) {}
-void UnusedSerializePayload(uintptr_t context, void* buffer) {}
-void IgnoreDestroyMessage(uintptr_t context) {}
-
-const MojoMessageOperationThunks kUnusedMessageThunks = {
-    sizeof(MojoMessageOperationThunks),
-    &UnusedGetSerializedSize,
-    &UnusedSerializeHandles,
-    &UnusedSerializePayload,
-    &IgnoreDestroyMessage,
-};
-
-MojoMessageHandle CreateTestMessageHandle(Core* core, uintptr_t context) {
-  MojoMessageHandle handle;
-  CHECK_EQ(MOJO_RESULT_OK,
-           core->CreateMessage(context, &kUnusedMessageThunks, &handle));
-  return handle;
-}
-
 TEST_F(CoreTest, GetTimeTicksNow) {
   const MojoTimeTicks start = core()->GetTimeTicksNow();
   ASSERT_NE(static_cast<MojoTimeTicks>(0), start)
@@ -75,16 +53,15 @@ TEST_F(CoreTest, Basic) {
   MojoMessageHandle message;
   ASSERT_EQ(MOJO_RESULT_OK, core()->CreateMessage(42, nullptr, &message));
   ASSERT_EQ(MOJO_RESULT_OK,
-            core()->WriteMessage(h, CreateTestMessageHandle(core(), 42),
-                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
+            core()->WriteMessageNew(h, message, MOJO_WRITE_MESSAGE_FLAG_NONE));
   ASSERT_EQ(1u, info.GetWriteMessageCallCount());
 
   ASSERT_EQ(0u, info.GetReadMessageCallCount());
   ASSERT_EQ(MOJO_RESULT_OK,
-            core()->ReadMessage(h, &message, MOJO_READ_MESSAGE_FLAG_NONE));
+            core()->ReadMessageNew(h, &message, MOJO_READ_MESSAGE_FLAG_NONE));
   ASSERT_EQ(1u, info.GetReadMessageCallCount());
   ASSERT_EQ(MOJO_RESULT_OK,
-            core()->ReadMessage(h, &message, MOJO_READ_MESSAGE_FLAG_NONE));
+            core()->ReadMessageNew(h, &message, MOJO_READ_MESSAGE_FLAG_NONE));
   ASSERT_EQ(2u, info.GetReadMessageCallCount());
 
   ASSERT_EQ(0u, info.GetWriteDataCallCount());
@@ -148,8 +125,8 @@ TEST_F(CoreTest, InvalidArguments) {
   // |num_handles|.
   {
     ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              core()->WriteMessage(MOJO_HANDLE_INVALID, 0,
-                                   MOJO_WRITE_MESSAGE_FLAG_NONE));
+              core()->WriteMessageNew(MOJO_HANDLE_INVALID, 0,
+                                      MOJO_WRITE_MESSAGE_FLAG_NONE));
   }
 
   // |ReadMessageNew()|:
@@ -157,12 +134,12 @@ TEST_F(CoreTest, InvalidArguments) {
   // |num_handles|.
   {
     ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              core()->ReadMessage(MOJO_HANDLE_INVALID, nullptr,
-                                  MOJO_READ_MESSAGE_FLAG_NONE));
+              core()->ReadMessageNew(MOJO_HANDLE_INVALID, nullptr,
+                                     MOJO_READ_MESSAGE_FLAG_NONE));
     MockHandleInfo info;
     MojoHandle h = CreateMockHandle(&info);
     ASSERT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-              core()->ReadMessage(h, nullptr, MOJO_READ_MESSAGE_FLAG_NONE));
+              core()->ReadMessageNew(h, nullptr, MOJO_READ_MESSAGE_FLAG_NONE));
     // Checked by |Core|, shouldn't go through to the dispatcher.
     ASSERT_EQ(0u, info.GetReadMessageCallCount());
     ASSERT_EQ(MOJO_RESULT_OK, core()->Close(h));
@@ -191,23 +168,24 @@ TEST_F(CoreTest, MessagePipe) {
 
   // Try to read anyway.
   MojoMessageHandle message;
-  ASSERT_EQ(MOJO_RESULT_SHOULD_WAIT,
-            core()->ReadMessage(h[0], &message, MOJO_READ_MESSAGE_FLAG_NONE));
+  ASSERT_EQ(
+      MOJO_RESULT_SHOULD_WAIT,
+      core()->ReadMessageNew(h[0], &message, MOJO_READ_MESSAGE_FLAG_NONE));
 
   // Write to |h[1]|.
   const uintptr_t kTestMessageContext = 123;
   ASSERT_EQ(MOJO_RESULT_OK,
             core()->CreateMessage(kTestMessageContext, nullptr, &message));
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->WriteMessage(h[1], message, MOJO_WRITE_MESSAGE_FLAG_NONE));
+  ASSERT_EQ(MOJO_RESULT_OK, core()->WriteMessageNew(
+                                h[1], message, MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   // Wait for |h[0]| to become readable.
   EXPECT_EQ(MOJO_RESULT_OK, mojo::Wait(mojo::Handle(h[0]),
                                        MOJO_HANDLE_SIGNAL_READABLE, &hss[0]));
 
   // Read from |h[0]|.
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->ReadMessage(h[0], &message, MOJO_READ_MESSAGE_FLAG_NONE));
+  ASSERT_EQ(MOJO_RESULT_OK, core()->ReadMessageNew(
+                                h[0], &message, MOJO_READ_MESSAGE_FLAG_NONE));
   uintptr_t context;
   ASSERT_EQ(MOJO_RESULT_OK, core()->ReleaseMessageContext(message, &context));
   ASSERT_EQ(kTestMessageContext, context);
@@ -222,8 +200,8 @@ TEST_F(CoreTest, MessagePipe) {
   // Write to |h[0]|.
   ASSERT_EQ(MOJO_RESULT_OK,
             core()->CreateMessage(kTestMessageContext, nullptr, &message));
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->WriteMessage(h[0], message, MOJO_WRITE_MESSAGE_FLAG_NONE));
+  ASSERT_EQ(MOJO_RESULT_OK, core()->WriteMessageNew(
+                                h[0], message, MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   // Close |h[0]|.
   ASSERT_EQ(MOJO_RESULT_OK, core()->Close(h[0]));
@@ -246,8 +224,8 @@ TEST_F(CoreTest, MessagePipe) {
             hss[1].satisfiable_signals);
 
   // Discard a message from |h[1]|.
-  ASSERT_EQ(MOJO_RESULT_OK,
-            core()->ReadMessage(h[1], &message, MOJO_READ_MESSAGE_FLAG_NONE));
+  ASSERT_EQ(MOJO_RESULT_OK, core()->ReadMessageNew(
+                                h[1], &message, MOJO_READ_MESSAGE_FLAG_NONE));
   ASSERT_EQ(MOJO_RESULT_OK, core()->FreeMessage(message));
 
   // |h[1]| is no longer readable (and will never be).
@@ -259,8 +237,9 @@ TEST_F(CoreTest, MessagePipe) {
   // Try writing to |h[1]|.
   ASSERT_EQ(MOJO_RESULT_OK,
             core()->CreateMessage(kTestMessageContext, nullptr, &message));
-  ASSERT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
-            core()->WriteMessage(h[1], message, MOJO_WRITE_MESSAGE_FLAG_NONE));
+  ASSERT_EQ(
+      MOJO_RESULT_FAILED_PRECONDITION,
+      core()->WriteMessageNew(h[1], message, MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   ASSERT_EQ(MOJO_RESULT_OK, core()->Close(h[1]));
 }
@@ -277,8 +256,9 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing1) {
   MojoMessageHandle message;
   ASSERT_EQ(MOJO_RESULT_OK,
             core()->CreateMessage(kTestMessageContext, nullptr, &message));
-  ASSERT_EQ(MOJO_RESULT_OK, core()->WriteMessage(h_passing[0], message,
-                                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
+  ASSERT_EQ(MOJO_RESULT_OK,
+            core()->WriteMessageNew(h_passing[0], message,
+                                    MOJO_WRITE_MESSAGE_FLAG_NONE));
   hss = kEmptyMojoHandleSignalsState;
   EXPECT_EQ(MOJO_RESULT_OK, mojo::Wait(mojo::Handle(h_passing[1]),
                                        MOJO_HANDLE_SIGNAL_READABLE, &hss));
@@ -286,8 +266,9 @@ TEST_F(CoreTest, MessagePipeBasicLocalHandlePassing1) {
             hss.satisfied_signals);
   ASSERT_EQ(kAllSignals, hss.satisfiable_signals);
   MojoMessageHandle message_handle;
-  ASSERT_EQ(MOJO_RESULT_OK, core()->ReadMessage(h_passing[1], &message_handle,
-                                                MOJO_READ_MESSAGE_FLAG_NONE));
+  ASSERT_EQ(MOJO_RESULT_OK,
+            core()->ReadMessageNew(h_passing[1], &message_handle,
+                                   MOJO_READ_MESSAGE_FLAG_NONE));
   uintptr_t context;
   ASSERT_EQ(MOJO_RESULT_OK,
             core()->ReleaseMessageContext(message_handle, &context));

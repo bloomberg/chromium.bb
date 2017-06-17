@@ -15,7 +15,9 @@
 #include "mojo/public/c/system/system_export.h"
 #include "mojo/public/c/system/types.h"
 
-// |MojoMessageHandle|: Used to refer to message objects.
+// |MojoMessageHandle|: Used to refer to message objects created by
+//     |MojoAllocMessage()| and transferred by |MojoWriteMessageNew()| or
+//     |MojoReadMessageNew()|.
 
 typedef uintptr_t MojoMessageHandle;
 
@@ -67,27 +69,50 @@ const MojoWriteMessageFlags MOJO_WRITE_MESSAGE_FLAG_NONE = 0;
 // |MojoReadMessageFlags|: Used to specify different modes to
 // |MojoReadMessage()|.
 //   |MOJO_READ_MESSAGE_FLAG_NONE| - No flags; default mode.
+//   |MOJO_READ_MESSAGE_FLAG_MAY_DISCARD| - If the message is unable to be read
+//       for whatever reason (e.g., the caller-supplied buffer is too small),
+//       discard the message (i.e., simply dequeue it).
 
 typedef uint32_t MojoReadMessageFlags;
 
 #ifdef __cplusplus
 const MojoReadMessageFlags MOJO_READ_MESSAGE_FLAG_NONE = 0;
+const MojoReadMessageFlags MOJO_READ_MESSAGE_FLAG_MAY_DISCARD = 1 << 0;
 #else
 #define MOJO_READ_MESSAGE_FLAG_NONE ((MojoReadMessageFlags)0)
+#define MOJO_READ_MESSAGE_FLAG_MAY_DISCARD ((MojoReadMessageFlags)1 << 0)
+#endif
+
+// |MojoAllocMessageFlags|: Used to specify different options for
+// |MojoAllocMessage()|.
+//   |MOJO_ALLOC_MESSAGE_FLAG_NONE| - No flags; default mode.
+
+typedef uint32_t MojoAllocMessageFlags;
+
+#ifdef __cplusplus
+const MojoAllocMessageFlags MOJO_ALLOC_MESSAGE_FLAG_NONE = 0;
+#else
+#define MOJO_ALLOC_MESSAGE_FLAG_NONE ((MojoAllocMessageFlags)0)
 #endif
 
 // |MojoGetSerializedMessageContentsFlags|: Used to specify different options
 // |MojoGetSerializedMessageContents()|.
 //   |MOJO_GET_SERIALIZED_MESSAGE_CONTENTS_FLAG_NONE| - No flags; default mode.
+//   |MOJO_GET_SERIALIZED_MESSAGE_CONTENTS_FLAG_IGNORE_HANDLES| - Don't attempt
+//       to extract any handles from the serialized message.
 
 typedef uint32_t MojoGetSerializedMessageContentsFlags;
 
 #ifdef __cplusplus
 const MojoGetSerializedMessageContentsFlags
     MOJO_GET_SERIALIZED_MESSAGE_CONTENTS_FLAG_NONE = 0;
+const MojoGetSerializedMessageContentsFlags
+    MOJO_GET_SERIALIZED_MESSAGE_CONTENTS_FLAG_IGNORE_HANDLES = 1 << 0;
 #else
 #define MOJO_GET_SERIALIZED_MESSAGE_CONTENTS_FLAG_NONE \
   ((MojoGetSerializedMessageContentsFlags)0)
+#define MOJO_GET_SERIALIZED_MESSAGE_CONTENTS_FLAG_IGNORE_HANDLES \
+  ((MojoGetSerializedMessageContentsFlags)1 << 0)
 #endif
 
 #ifdef __cplusplus
@@ -167,41 +192,112 @@ MOJO_SYSTEM_EXPORT MojoResult MojoCreateMessagePipe(
     MojoHandle* message_pipe_handle0,                    // Out.
     MojoHandle* message_pipe_handle1);                   // Out.
 
-// Writes a message to the message pipe endpoint given by |message_pipe_handle|.
+// Writes a message to the message pipe endpoint given by |message_pipe_handle|,
+// with message data specified by |bytes| of size |num_bytes| and attached
+// handles specified by |handles| of count |num_handles|, and options specified
+// by |flags|. If there is no message data, |bytes| may be null, in which case
+// |num_bytes| must be zero. If there are no attached handles, |handles| may be
+// null, in which case |num_handles| must be zero.
 //
-// Note that regardless of success or failure, |message| is freed by this call
-// and therefore invalidated.
+// If handles are attached, the handles will no longer be valid (on success the
+// receiver will receive equivalent, but logically different, handles). Handles
+// to be sent should not be in simultaneous use (e.g., on another thread).
 //
 // Returns:
 //   |MOJO_RESULT_OK| on success (i.e., the message was enqueued).
-//   |MOJO_RESULT_INVALID_ARGUMENT| if |message_pipe_handle| or |message| is
-//       invalid.
+//   |MOJO_RESULT_INVALID_ARGUMENT| if some argument was invalid (e.g., if
+//       |message_pipe_handle| is not a valid handle, or some of the
+//       requirements above are not satisfied).
+//   |MOJO_RESULT_RESOURCE_EXHAUSTED| if some system limit has been reached, or
+//       the number of handles to send is too large (TODO(vtl): reconsider the
+//       latter case).
 //   |MOJO_RESULT_FAILED_PRECONDITION| if the other endpoint has been closed.
 //       Note that closing an endpoint is not necessarily synchronous (e.g.,
 //       across processes), so this function may succeed even if the other
 //       endpoint has been closed (in which case the message would be dropped).
-MOJO_SYSTEM_EXPORT MojoResult MojoWriteMessage(MojoHandle message_pipe_handle,
-                                               MojoMessageHandle message,
-                                               MojoWriteMessageFlags flags);
+//   |MOJO_RESULT_UNIMPLEMENTED| if an unsupported flag was set in |*options|.
+//   |MOJO_RESULT_BUSY| if some handle to be sent is currently in use.
+//
+// DEPRECATED: Use |MojoWriteMessageNew()|.
+MOJO_SYSTEM_EXPORT MojoResult
+    MojoWriteMessage(MojoHandle message_pipe_handle,
+                     const void* bytes,  // Optional.
+                     uint32_t num_bytes,
+                     const MojoHandle* handles,  // Optional.
+                     uint32_t num_handles,
+                     MojoWriteMessageFlags flags);
 
-// Reads the next message from a message pipe and returns a message as an opaque
-// message handle. The returned message must eventually be destroyed using
+// Writes a message to the message pipe endpoint given by |message_pipe_handle|.
+//
+// |message|: A message object allocated by |MojoAllocMessage()| or
+//     |MojoCreateMessage()|. Ownership of the message is passed into Mojo.
+//
+// Returns results corresponding to |MojoWriteMessage()| above.
+MOJO_SYSTEM_EXPORT MojoResult
+    MojoWriteMessageNew(MojoHandle message_pipe_handle,
+                        MojoMessageHandle message,
+                        MojoWriteMessageFlags);
+
+// Reads the next message from a message pipe, or indicates the size of the
+// message if it cannot fit in the provided buffers. The message will be read
+// in its entirety or not at all; if it is not, it will remain enqueued unless
+// the |MOJO_READ_MESSAGE_FLAG_MAY_DISCARD| flag was passed. At most one
+// message will be consumed from the queue, and the return value will indicate
+// whether a message was successfully read.
+//
+// |num_bytes| and |num_handles| are optional in/out parameters that on input
+// must be set to the sizes of the |bytes| and |handles| arrays, and on output
+// will be set to the actual number of bytes or handles contained in the
+// message (even if the message was not retrieved due to being too large).
+// Either |num_bytes| or |num_handles| may be null if the message is not
+// expected to contain the corresponding type of data, but such a call would
+// fail with |MOJO_RESULT_RESOURCE_EXHAUSTED| if the message in fact did
+// contain that type of data.
+//
+// |bytes| and |handles| will receive the contents of the message, if it is
+// retrieved. Either or both may be null, in which case the corresponding size
+// parameter(s) must also be set to zero or passed as null.
+//
+// Returns:
+//   |MOJO_RESULT_OK| on success (i.e., a message was actually read).
+//   |MOJO_RESULT_INVALID_ARGUMENT| if some argument was invalid.
+//   |MOJO_RESULT_FAILED_PRECONDITION| if the other endpoint has been closed.
+//   |MOJO_RESULT_RESOURCE_EXHAUSTED| if the message was too large to fit in the
+//       provided buffer(s). The message will have been left in the queue or
+//       discarded, depending on flags.
+//   |MOJO_RESULT_SHOULD_WAIT| if no message was available to be read.
+//   |MOJO_RESULT_NOT_FOUND| if a message was read from the pipe but could not
+//       be extracted into the provided buffers because it was not already in a
+//       serialized form.
+//
+// DEPRECATED: Use |MojoReadMessageNew()|.
+MOJO_SYSTEM_EXPORT MojoResult
+    MojoReadMessage(MojoHandle message_pipe_handle,
+                    void* bytes,            // Optional out.
+                    uint32_t* num_bytes,    // Optional in/out.
+                    MojoHandle* handles,    // Optional out.
+                    uint32_t* num_handles,  // Optional in/out.
+                    MojoReadMessageFlags flags);
+
+// Reads the next message from a message pipe and returns a message containing
+// the message bytes. The returned message must eventually be freed using
 // |MojoFreeMessage()|.
 //
 // Message payload and handles can be accessed using
 // |MojoGetSerializedMessageContents()|.
 //
-// |message| must be non-null.
+// |message| must be non-null unless |MOJO_READ_MESSAGE_FLAG_MAY_DISCARD| is set
+//     in |flags|.
 //
-// Returns:
-//   |MOJO_RESULT_OK| on success (i.e., a message was actually read).
-//   |MOJO_RESULT_INVALID_ARGUMENT| if some argument was invalid.
-//   |MOJO_RESULT_FAILED_PRECONDITION| if the other endpoint has been closed
-//       and there are no more messages to read.
-//   |MOJO_RESULT_SHOULD_WAIT| if no message was available to be read.
-MOJO_SYSTEM_EXPORT MojoResult MojoReadMessage(MojoHandle message_pipe_handle,
-                                              MojoMessageHandle* message,
-                                              MojoReadMessageFlags flags);
+// Return values correspond to the return values for |MojoReadMessage()| above.
+// On success (MOJO_RESULT_OK), |*message| will contain a handle to a message
+// object which may be passed to |MojoGetSerializedMessageContents()| or
+// |MojoReleaseMessageContext()|. The caller owns the message object and is
+// responsible for freeing it via |MojoFreeMessage()| or
+// |MojoReleaseMessageContext()|.
+MOJO_SYSTEM_EXPORT MojoResult MojoReadMessageNew(MojoHandle message_pipe_handle,
+                                                 MojoMessageHandle* message,
+                                                 MojoReadMessageFlags flags);
 
 // Fuses two message pipe endpoints together. Given two pipes:
 //
@@ -227,26 +323,60 @@ MOJO_SYSTEM_EXPORT MojoResult MojoReadMessage(MojoHandle message_pipe_handle,
 MOJO_SYSTEM_EXPORT MojoResult
     MojoFuseMessagePipes(MojoHandle handle0, MojoHandle handle1);
 
+// Allocates a new message whose ownership may be passed to
+// |MojoWriteMessageNew()|. Use |MojoGetSerializedMessageContents()| to retrieve
+// the address of the mutable message payload.
+//
+// |num_bytes|: The size of the message payload in bytes.
+// |handles|: An array of handles to transfer in the message. This takes
+//     ownership of and invalidates all contained handles. Must be null if and
+//     only if |num_handles| is 0.
+// |num_handles|: The number of handles contained in |handles|.
+// |flags|: Must be |MOJO_CREATE_MESSAGE_FLAG_NONE|.
+// |message|: The address of a handle to be filled with the allocated message's
+//     handle. Must be non-null.
+//
+// Returns:
+//   |MOJO_RESULT_OK| if the message was successfully allocated. In this case
+//       |*message| will be populated with a handle to an allocated message
+//       with a buffer large enough to hold |num_bytes| contiguous bytes.
+//   |MOJO_RESULT_INVALID_ARGUMENT| if one or more handles in |handles| was
+//       invalid, or |handles| was null with a non-zero |num_handles|.
+//   |MOJO_RESULT_RESOURCE_EXHAUSTED| if allocation failed because either
+//       |num_bytes| or |num_handles| exceeds an implementation-defined maximum.
+//   |MOJO_RESULT_BUSY| if one or more handles in |handles| cannot be sent at
+//       the time of this call.
+//
+// Only upon successful message allocation will all handles in |handles| be
+// transferred into the message and invalidated.
+//
+// DEPRECATED: Use |MojoCreateMessage()|.
+MOJO_SYSTEM_EXPORT MojoResult
+MojoAllocMessage(uint32_t num_bytes,
+                 const MojoHandle* handles,
+                 uint32_t num_handles,
+                 MojoAllocMessageFlags flags,
+                 MojoMessageHandle* message);  // Out
+
 // Creates a new message object which may be sent over a message pipe via
-// |MojoWriteMessage()|. Returns a handle to the new message object in
+// |MojoWriteMessageNew()|. Returns a handle to the new message object in
 // |*message|.
 //
 // |context| is an arbitrary context value to associate with this message, and
 // |thunks| is a set of functions which may be called on |context| to perform
 // various operations. See |MojoMessageOperationThunks| for details.
 //
-// Typically a caller will use |context| as an opaque pointer to some heap
-// object which is effectively owned by the newly created message once this
-// returns. In this way, messages can be sent over a message pipe to a peer
-// endpoint in the same process as the sender without ever performing a
-// serialization step.
+// Unlike |MojoAllocMessage()| above, this does not assume that the message
+// object will require serialization. Typically a caller will use |context| as
+// an opaque pointer to some arbitrary heap object which is effectively owned by
+// the newly created message once this returns. In this way, messages can be
+// sent over a message pipe to a peer endpoint in the same process as the sender
+// without ever performing a serialization step.
 //
-// If the message does need to cross a process boundary or is otherwise
-// forced to serialize (see |MojoSerializeMessage()| below), it will be
-// serialized by invoking the serialization helper functions from |thunks| on
-// |context| to obtain a serialized representation of the message. Note that
-// because the need to serialize may occur at any time and on any thread,
-// functions in |thunks| must be safe to invoke accordingly.
+// If the message does need to cross a process boundary to reach its
+// destination, it will be serialized lazily when necessary. To accomplish this,
+// the system will invoke the serialization helper functions from |thunks| on
+// |context| to obtain a serialized representation of the message.
 //
 // If |thunks| is null, the created message cannot be serialized. Subsequent
 // calls to |MojoSerializeMessage()| on the created message, or any attempt to
@@ -263,12 +393,12 @@ MojoCreateMessage(uintptr_t context,
                   const struct MojoMessageOperationThunks* thunks,
                   MojoMessageHandle* message);
 
-// Destroys a message object created by |MojoCreateMessage()| or
-// |MojoReadMessage()|.
+// Frees a message allocated by |MojoAllocMessage()| or |MojoReadMessageNew()|.
 //
-// |message|: The message to destroy. Note that if a message has been written
-//     to a message pipe using |MojoWriteMessage()|, it is neither necessary nor
-//     valid to attempt to destroy it.
+// |message|: The message to free. This must correspond to a message previously
+//     allocated by |MojoAllocMessage()| or |MojoReadMessageNew()|. Note that if
+//     the message has already been passed to |MojoWriteMessageNew()| it should
+//     NOT also be freed with this API.
 //
 // Returns:
 //   |MOJO_RESULT_OK| if |message| was valid and has been freed.
@@ -314,6 +444,10 @@ MOJO_SYSTEM_EXPORT MojoResult MojoSerializeMessage(MojoMessageHandle message);
 // |handles|: A buffer to contain up to (input) |*num_handles| handles. May be
 //     null if |num_handles| is null or |*num_handles| is 0.
 // |flags|: Flags to affect the behavior of this API.
+//
+// If |MOJO_GET_SERIALIZED_MESSAGE_CONTENTS_FLAG_IGNORE_HANDLES| is set in
+// |flags|, |num_handles| and |handles| arguments are ignored and only payload-
+// related outputs are updated.
 //
 // Returns:
 //   |MOJO_RESULT_OK| if |message| is a serialized message and the provided
@@ -371,7 +505,8 @@ MojoReleaseMessageContext(MojoMessageHandle message, uintptr_t* context);
 // terminate, a process, etc.) The embedder may not be notified if the calling
 // process has lost its connection to the source process.
 //
-// |message|: The message to report as bad.
+// |message|: The message to report as bad. This must have come from a call to
+//     |MojoReadMessageNew()|.
 // |error|: An error string which may provide the embedder with context when
 //     notified of this error.
 // |error_num_bytes|: The length of |error| in bytes.

@@ -165,35 +165,26 @@ MojoResult MessagePipeDispatcher::WriteMessage(
 }
 
 MojoResult MessagePipeDispatcher::ReadMessage(
-    std::unique_ptr<ports::UserMessageEvent>* message) {
+    ReadMessageSizePolicy size_policy,
+    ReadMessageDiscardPolicy discard_policy,
+    uint32_t max_payload_size,
+    uint32_t max_num_handles,
+    std::unique_ptr<ports::UserMessageEvent>* message,
+    uint32_t* actual_payload_size,
+    uint32_t* actual_num_handles) {
   // We can't read from a port that's closed or in transit!
   if (port_closed_ || in_transit_)
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  int rv = node_controller_->node()->GetMessage(port_, message, nullptr);
-  if (rv != ports::OK && rv != ports::ERROR_PORT_PEER_CLOSED) {
-    if (rv == ports::ERROR_PORT_UNKNOWN ||
-        rv == ports::ERROR_PORT_STATE_UNEXPECTED)
-      return MOJO_RESULT_INVALID_ARGUMENT;
-
-    NOTREACHED();
-    return MOJO_RESULT_UNKNOWN;
-  }
-
-  if (!*message) {
-    // No message was available in queue.
-    if (rv == ports::OK)
-      return MOJO_RESULT_SHOULD_WAIT;
-    // Peer is closed and there are no more messages to read.
-    DCHECK_EQ(rv, ports::ERROR_PORT_PEER_CLOSED);
-    return MOJO_RESULT_FAILED_PRECONDITION;
-  }
+  MojoResult rv = UserMessageImpl::ReadMessageEventFromPort(
+      port_, size_policy, discard_policy, max_payload_size, max_num_handles,
+      message, actual_payload_size, actual_num_handles);
 
   // We may need to update anyone watching our signals in case we just read the
   // last available message.
   base::AutoLock lock(signal_lock_);
   watchers_.NotifyState(GetHandleSignalsStateNoLock());
-  return MOJO_RESULT_OK;
+  return rv;
 }
 
 HandleSignalsState

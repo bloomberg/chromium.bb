@@ -47,7 +47,7 @@ bool ReadTextMessage(const MessagePipeHandle& handle, std::string* text) {
 bool DiscardMessage(const MessagePipeHandle& handle) {
   MojoMessageHandle message;
   int rv =
-      MojoReadMessage(handle.value(), &message, MOJO_READ_MESSAGE_FLAG_NONE);
+      MojoReadMessageNew(handle.value(), &message, MOJO_READ_MESSAGE_FLAG_NONE);
   if (rv != MOJO_RESULT_OK)
     return false;
   MojoFreeMessage(message);

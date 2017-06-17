@@ -58,6 +58,14 @@ MojoResult MojoCancelWatchImpl(MojoHandle watcher_handle, uintptr_t context) {
   return g_core->CancelWatch(watcher_handle, context);
 }
 
+MojoResult MojoAllocMessageImpl(uint32_t num_bytes,
+                                const MojoHandle* handles,
+                                uint32_t num_handles,
+                                MojoAllocMessageFlags flags,
+                                MojoMessageHandle* message) {
+  return g_core->AllocMessage(num_bytes, handles, num_handles, flags, message);
+}
+
 MojoResult MojoCreateMessageImpl(uintptr_t context,
                                  const MojoMessageOperationThunks* thunks,
                                  MojoMessageHandle* message) {
@@ -97,15 +105,35 @@ MojoResult MojoCreateMessagePipeImpl(
 }
 
 MojoResult MojoWriteMessageImpl(MojoHandle message_pipe_handle,
-                                MojoMessageHandle message,
+                                const void* bytes,
+                                uint32_t num_bytes,
+                                const MojoHandle* handles,
+                                uint32_t num_handles,
                                 MojoWriteMessageFlags flags) {
-  return g_core->WriteMessage(message_pipe_handle, message, flags);
+  return g_core->WriteMessage(message_pipe_handle, bytes, num_bytes, handles,
+                              num_handles, flags);
+}
+
+MojoResult MojoWriteMessageNewImpl(MojoHandle message_pipe_handle,
+                                   MojoMessageHandle message,
+                                   MojoWriteMessageFlags flags) {
+  return g_core->WriteMessageNew(message_pipe_handle, message, flags);
 }
 
 MojoResult MojoReadMessageImpl(MojoHandle message_pipe_handle,
-                               MojoMessageHandle* message,
+                               void* bytes,
+                               uint32_t* num_bytes,
+                               MojoHandle* handles,
+                               uint32_t* num_handles,
                                MojoReadMessageFlags flags) {
-  return g_core->ReadMessage(message_pipe_handle, message, flags);
+  return g_core->ReadMessage(
+      message_pipe_handle, bytes, num_bytes, handles, num_handles, flags);
+}
+
+MojoResult MojoReadMessageNewImpl(MojoHandle message_pipe_handle,
+                                  MojoMessageHandle* message,
+                                  MojoReadMessageFlags flags) {
+  return g_core->ReadMessageNew(message_pipe_handle, message, flags);
 }
 
 MojoResult MojoFuseMessagePipesImpl(MojoHandle handle0, MojoHandle handle1) {
@@ -255,6 +283,9 @@ MojoSystemThunks MakeSystemThunks() {
                                     MojoCancelWatchImpl,
                                     MojoArmWatcherImpl,
                                     MojoFuseMessagePipesImpl,
+                                    MojoWriteMessageNewImpl,
+                                    MojoReadMessageNewImpl,
+                                    MojoAllocMessageImpl,
                                     MojoCreateMessageImpl,
                                     MojoFreeMessageImpl,
                                     MojoSerializeMessageImpl,
