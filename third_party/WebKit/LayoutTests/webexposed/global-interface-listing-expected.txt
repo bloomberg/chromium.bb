@@ -8503,7 +8503,7 @@ interface WebKitAnimationEvent : Event
     getter animationName
     getter elapsedTime
     method constructor
-interface WebKitCSSMatrix : DOMMatrixReadOnly
+interface WebKitCSSMatrix
     attribute @@toStringTag
     getter a
     getter b
@@ -8528,18 +8528,16 @@ interface WebKitCSSMatrix : DOMMatrixReadOnly
     getter m43
     getter m44
     method constructor
-    method invertSelf
-    method multiplySelf
-    method preMultiplySelf
-    method rotateAxisAngleSelf
-    method rotateFromVectorSelf
-    method rotateSelf
-    method scale3dSelf
-    method scaleSelf
+    method inverse
+    method multiply
+    method rotate
+    method rotateAxisAngle
+    method scale
     method setMatrixValue
-    method skewXSelf
-    method skewYSelf
-    method translateSelf
+    method skewX
+    method skewY
+    method toString
+    method translate
     setter a
     setter b
     setter c

@@ -204,8 +204,6 @@
 
     // https://w3c.github.io/webappsec/specs/powerfulfeatures/#monkey-patching-global-object
     readonly attribute boolean isSecureContext;
-
-    attribute DOMMatrixConstructor WebKitCSSMatrix;
 };
 
 // https://html.spec.whatwg.org/#transferable-objects
