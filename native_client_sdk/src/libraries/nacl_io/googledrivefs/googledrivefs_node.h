@@ -14,6 +14,10 @@
 
 namespace nacl_io {
 
+// This is not further implemented.
+// PNaCl is on a path to deprecation, and WebAssembly is
+// the focused technology.
+
 class GoogleDriveFsNode : public Node {
  public:
   GoogleDriveFsNode(GoogleDriveFs* googledrivefs);
