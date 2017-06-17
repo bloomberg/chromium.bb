@@ -170,14 +170,14 @@ TEST_F(MessageTest, SendLocalMessageWithContext) {
   MojoHandle a, b;
   CreateMessagePipe(&a, &b);
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWriteMessage(
+            MojoWriteMessageNew(
                 a, TestMessageBase::MakeMessageHandle(std::move(message)),
                 MOJO_WRITE_MESSAGE_FLAG_NONE));
   EXPECT_EQ(MOJO_RESULT_OK, WaitForSignals(b, MOJO_HANDLE_SIGNAL_READABLE));
 
   MojoMessageHandle read_message_handle;
-  EXPECT_EQ(MOJO_RESULT_OK, MojoReadMessage(b, &read_message_handle,
-                                            MOJO_READ_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoReadMessageNew(b, &read_message_handle,
+                                               MOJO_READ_MESSAGE_FLAG_NONE));
   message = TestMessageBase::UnwrapMessageHandle<NeverSerializedMessage>(
       &read_message_handle);
   EXPECT_EQ(original_message, message.get());
@@ -215,8 +215,8 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReceiveMessageNoHandles, MessageTest, h) {
 TEST_F(MessageTest, SerializeSimpleMessageNoHandlesWithContext) {
   RUN_CHILD_ON_PIPE(ReceiveMessageNoHandles, h)
   auto message = base::MakeUnique<SimpleMessage>(kTestMessageWithContext1);
-  MojoWriteMessage(h, TestMessageBase::MakeMessageHandle(std::move(message)),
-                   MOJO_WRITE_MESSAGE_FLAG_NONE);
+  MojoWriteMessageNew(h, TestMessageBase::MakeMessageHandle(std::move(message)),
+                      MOJO_WRITE_MESSAGE_FLAG_NONE);
   END_CHILD()
 }
 
@@ -233,8 +233,8 @@ TEST_F(MessageTest, SerializeSimpleMessageOneHandleWithContext) {
   auto message = base::MakeUnique<SimpleMessage>(kTestMessageWithContext1);
   mojo::MessagePipe pipe;
   message->AddMessagePipe(std::move(pipe.handle0));
-  MojoWriteMessage(h, TestMessageBase::MakeMessageHandle(std::move(message)),
-                   MOJO_WRITE_MESSAGE_FLAG_NONE);
+  MojoWriteMessageNew(h, TestMessageBase::MakeMessageHandle(std::move(message)),
+                      MOJO_WRITE_MESSAGE_FLAG_NONE);
   EXPECT_EQ(kTestMessageWithContext2,
             MojoTestBase::ReadMessage(pipe.handle1.get().value()));
   END_CHILD()
@@ -259,8 +259,8 @@ TEST_F(MessageTest, SerializeSimpleMessageWithHandlesWithContext) {
   message->AddMessagePipe(std::move(pipes[1].handle0));
   message->AddMessagePipe(std::move(pipes[2].handle0));
   message->AddMessagePipe(std::move(pipes[3].handle0));
-  MojoWriteMessage(h, TestMessageBase::MakeMessageHandle(std::move(message)),
-                   MOJO_WRITE_MESSAGE_FLAG_NONE);
+  MojoWriteMessageNew(h, TestMessageBase::MakeMessageHandle(std::move(message)),
+                      MOJO_WRITE_MESSAGE_FLAG_NONE);
   EXPECT_EQ(kTestMessageWithContext1,
             MojoTestBase::ReadMessage(pipes[0].handle1.get().value()));
   EXPECT_EQ(kTestMessageWithContext2,
@@ -290,14 +290,14 @@ TEST_F(MessageTest, SendLocalSimpleMessageWithHandlesWithContext) {
   MojoHandle a, b;
   CreateMessagePipe(&a, &b);
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWriteMessage(
+            MojoWriteMessageNew(
                 a, TestMessageBase::MakeMessageHandle(std::move(message)),
                 MOJO_WRITE_MESSAGE_FLAG_NONE));
   EXPECT_EQ(MOJO_RESULT_OK, WaitForSignals(b, MOJO_HANDLE_SIGNAL_READABLE));
 
   MojoMessageHandle read_message_handle;
-  EXPECT_EQ(MOJO_RESULT_OK, MojoReadMessage(b, &read_message_handle,
-                                            MOJO_READ_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoReadMessageNew(b, &read_message_handle,
+                                               MOJO_READ_MESSAGE_FLAG_NONE));
   message =
       TestMessageBase::UnwrapMessageHandle<SimpleMessage>(&read_message_handle);
   EXPECT_EQ(original_message, message.get());
@@ -326,7 +326,7 @@ TEST_F(MessageTest, DropUnreadLocalMessageWithContext) {
   MojoHandle a, b;
   CreateMessagePipe(&a, &b);
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWriteMessage(
+            MojoWriteMessageNew(
                 a, TestMessageBase::MakeMessageHandle(std::move(message)),
                 MOJO_WRITE_MESSAGE_FLAG_NONE));
   MojoClose(a);
@@ -347,14 +347,14 @@ TEST_F(MessageTest, ReadMessageWithContextAsSerializedMessage) {
   MojoHandle a, b;
   CreateMessagePipe(&a, &b);
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWriteMessage(
+            MojoWriteMessageNew(
                 a, TestMessageBase::MakeMessageHandle(std::move(message)),
                 MOJO_WRITE_MESSAGE_FLAG_NONE));
   EXPECT_EQ(MOJO_RESULT_OK, WaitForSignals(b, MOJO_HANDLE_SIGNAL_READABLE));
 
   MojoMessageHandle message_handle;
-  EXPECT_EQ(MOJO_RESULT_OK,
-            MojoReadMessage(b, &message_handle, MOJO_READ_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoReadMessageNew(b, &message_handle,
+                                               MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_FALSE(message_was_destroyed);
 
   // Not a serialized message, so we can't get serialized contents.
@@ -381,8 +381,8 @@ TEST_F(MessageTest, ReadSerializedMessageAsMessageWithContext) {
   EXPECT_EQ(MOJO_RESULT_OK, WaitForSignals(b, MOJO_HANDLE_SIGNAL_READABLE));
 
   MojoMessageHandle message_handle;
-  EXPECT_EQ(MOJO_RESULT_OK,
-            MojoReadMessage(b, &message_handle, MOJO_READ_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_OK, MojoReadMessageNew(b, &message_handle,
+                                               MOJO_READ_MESSAGE_FLAG_NONE));
   uintptr_t context;
   EXPECT_EQ(MOJO_RESULT_NOT_FOUND,
             MojoReleaseMessageContext(message_handle, &context));
@@ -439,6 +439,10 @@ TEST_F(MessageTest, ForceSerializeMessageWithContext) {
                 MOJO_GET_SERIALIZED_MESSAGE_CONTENTS_FLAG_NONE));
   EXPECT_EQ(MOJO_RESULT_OK,
             MojoGetSerializedMessageContents(
+                message_handle, &buffer, &num_bytes, nullptr, nullptr,
+                MOJO_GET_SERIALIZED_MESSAGE_CONTENTS_FLAG_IGNORE_HANDLES));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            MojoGetSerializedMessageContents(
                 message_handle, &buffer, &num_bytes, &extracted_handle,
                 &num_handles, MOJO_GET_SERIALIZED_MESSAGE_CONTENTS_FLAG_NONE));
   EXPECT_EQ(std::string(kTestMessageWithContext1).size(), num_bytes);
@@ -476,13 +480,13 @@ TEST_F(MessageTest, DoubleSerialize) {
   // message object from a pipe.
   MessagePipe pipe;
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWriteMessage(pipe.handle0->value(), message_handle,
-                             MOJO_WRITE_MESSAGE_FLAG_NONE));
+            MojoWriteMessageNew(pipe.handle0->value(), message_handle,
+                                MOJO_WRITE_MESSAGE_FLAG_NONE));
   EXPECT_EQ(MOJO_RESULT_OK,
             WaitForSignals(pipe.handle1->value(), MOJO_HANDLE_SIGNAL_READABLE));
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoReadMessage(pipe.handle1->value(), &message_handle,
-                            MOJO_READ_MESSAGE_FLAG_NONE));
+            MojoReadMessageNew(pipe.handle1->value(), &message_handle,
+                               MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
             MojoSerializeMessage(message_handle));
 

@@ -63,6 +63,35 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
     PLATFORM_HANDLE = -1,
   };
 
+  // Transitional enum so that ReadMessage can service both MojoReadMessage and
+  // MojoReadMessageNew. To be deleted once MojoReadMessageNew replaces
+  // MojoReadMessage. This is used to decide whether ReadMessage should restrict
+  // the size of the next message it reads, according to its other arguments.
+  enum class ReadMessageSizePolicy {
+    // ReadMessage ignores its sizing arguments and reads any available message.
+    kAnySize,
+
+    // ReadMessage only reads the next available message if it fits within the
+    // size constraints given.
+    kLimitedSize,
+  };
+
+  // Transitional enum so that ReadMessage can service both MojoReadMessage and
+  // MojoReadMessageNew. To be deleted once MojoReadMessageNew replaces
+  // MojoReadMessage. If the selected |ReadMessageSizePolicy| is |kLimitedSize|,
+  // this chooses how to proceed when the provided size constraints are exceeded
+  // by the next available message. If |ReadMessageSizePolicy| is |kAnySize|
+  // this argument is ignored.
+  enum class ReadMessageDiscardPolicy {
+    // Never discard a message. ReadMessage will return an appropriate error
+    // code if the next available message exceeds the given size constraints.
+    kNoDiscard,
+
+    // Discards the next available message if it exceeds the given size
+    // constraints.
+    kMayDiscard,
+  };
+
   // All Dispatchers must minimally implement these methods.
 
   virtual Type GetType() const = 0;
@@ -86,7 +115,13 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
       MojoWriteMessageFlags flags);
 
   virtual MojoResult ReadMessage(
-      std::unique_ptr<ports::UserMessageEvent>* message);
+      ReadMessageSizePolicy size_policy,
+      ReadMessageDiscardPolicy discard_policy,
+      uint32_t max_payload_size,
+      uint32_t max_num_handles,
+      std::unique_ptr<ports::UserMessageEvent>* message,
+      uint32_t* actual_payload_size,
+      uint32_t* actual_num_handles);
 
   ///////////// Shared buffer API /////////////
 

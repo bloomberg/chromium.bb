@@ -44,10 +44,10 @@ TEST(CoreTest, InvalidHandle) {
   // Message pipe:
   h0 = MOJO_HANDLE_INVALID;
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            MojoWriteMessage(h0, MOJO_MESSAGE_HANDLE_INVALID,
-                             MOJO_WRITE_MESSAGE_FLAG_NONE));
+            MojoWriteMessageNew(h0, MOJO_MESSAGE_HANDLE_INVALID,
+                                MOJO_WRITE_MESSAGE_FLAG_NONE));
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            MojoReadMessage(h0, nullptr, MOJO_READ_MESSAGE_FLAG_NONE));
+            MojoReadMessageNew(h0, nullptr, MOJO_READ_MESSAGE_FLAG_NONE));
 
   // Data pipe:
   buffer_size = static_cast<uint32_t>(sizeof(buffer));
@@ -94,14 +94,14 @@ TEST(CoreTest, BasicMessagePipe) {
   // Try to read.
   MojoMessageHandle message;
   EXPECT_EQ(MOJO_RESULT_SHOULD_WAIT,
-            MojoReadMessage(h0, &message, MOJO_READ_MESSAGE_FLAG_NONE));
+            MojoReadMessageNew(h0, &message, MOJO_READ_MESSAGE_FLAG_NONE));
 
   // Write to |h1|.
   const uintptr_t kTestMessageContext = 1234;
   EXPECT_EQ(MOJO_RESULT_OK,
             MojoCreateMessage(kTestMessageContext, nullptr, &message));
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoWriteMessage(h1, message, MOJO_WRITE_MESSAGE_FLAG_NONE));
+            MojoWriteMessageNew(h1, message, MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   // |h0| should be readable.
   size_t result_index = 1;
@@ -117,7 +117,7 @@ TEST(CoreTest, BasicMessagePipe) {
 
   // Read from |h0|.
   EXPECT_EQ(MOJO_RESULT_OK,
-            MojoReadMessage(h0, &message, MOJO_READ_MESSAGE_FLAG_NONE));
+            MojoReadMessageNew(h0, &message, MOJO_READ_MESSAGE_FLAG_NONE));
   uintptr_t context;
   EXPECT_EQ(MOJO_RESULT_OK, MojoReleaseMessageContext(message, &context));
   EXPECT_EQ(MOJO_RESULT_OK, MojoFreeMessage(message));

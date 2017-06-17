@@ -135,7 +135,7 @@ gin::Dictionary ReadMessage(const gin::Arguments& args,
                             MojoReadMessageFlags flags) {
   MojoMessageHandle message;
   MojoResult result =
-      MojoReadMessage(handle.value(), &message, MOJO_READ_MESSAGE_FLAG_NONE);
+      MojoReadMessageNew(handle.value(), &message, MOJO_READ_MESSAGE_FLAG_NONE);
   if (result != MOJO_RESULT_OK) {
     gin::Dictionary dictionary = gin::Dictionary::CreateEmpty(args.isolate());
     dictionary.Set("result", result);
@@ -435,6 +435,8 @@ v8::Local<v8::Value> Core::GetModule(v8::Isolate* isolate) {
             .SetValue("WRITE_MESSAGE_FLAG_NONE", MOJO_WRITE_MESSAGE_FLAG_NONE)
 
             .SetValue("READ_MESSAGE_FLAG_NONE", MOJO_READ_MESSAGE_FLAG_NONE)
+            .SetValue("READ_MESSAGE_FLAG_MAY_DISCARD",
+                      MOJO_READ_MESSAGE_FLAG_MAY_DISCARD)
 
             .SetValue("CREATE_DATA_PIPE_OPTIONS_FLAG_NONE",
                       MOJO_CREATE_DATA_PIPE_OPTIONS_FLAG_NONE)

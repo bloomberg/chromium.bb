@@ -74,6 +74,7 @@ var WRITE_MESSAGE_FLAG_NONE;
  * See core.h for more information.
  */
 var READ_MESSAGE_FLAG_NONE;
+var READ_MESSAGE_FLAG_MAY_DISCARD;
 
 /**
  * MojoCreateDataPipeOptions: Used to specify creation parameters for a data

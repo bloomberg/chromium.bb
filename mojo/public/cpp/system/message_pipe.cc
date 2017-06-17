@@ -81,8 +81,8 @@ MojoResult WriteMessageRaw(MessagePipeHandle message_pipe,
     return MOJO_RESULT_ABORTED;
   }
 
-  return MojoWriteMessage(message_pipe.value(),
-                          message_handle.release().value(), flags);
+  return MojoWriteMessageNew(message_pipe.value(),
+                             message_handle.release().value(), flags);
 }
 
 MojoResult ReadMessageRaw(MessagePipeHandle message_pipe,
@@ -90,7 +90,7 @@ MojoResult ReadMessageRaw(MessagePipeHandle message_pipe,
                           std::vector<ScopedHandle>* handles,
                           MojoReadMessageFlags flags) {
   ScopedMessageHandle message_handle;
-  MojoResult rv = ReadMessageNew(message_pipe, &message_handle, flags);
+  int rv = ReadMessageNew(message_pipe, &message_handle, flags);
   if (rv != MOJO_RESULT_OK)
     return rv;
 
