@@ -186,15 +186,15 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('deqp/*', ['win', 'intel', 'd3d11'], bug=628395)
 
     # Passthrough command decoder / D3D11
-    self.Fail('conformance/textures/image_bitmap_from_video/*',
+    self.Skip('conformance/textures/image_bitmap_from_video/*',
         ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('conformance/textures/video/*',
+    self.Skip('conformance/textures/video/*',
         ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('conformance/textures/misc/texture-corner-case-videos.html',
+    self.Skip('conformance/textures/misc/texture-corner-case-videos.html',
         ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('conformance2/textures/image_bitmap_from_video/*',
+    self.Skip('conformance2/textures/image_bitmap_from_video/*',
         ['win', 'passthrough', 'd3d11'], bug=602688)
-    self.Fail('conformance2/textures/video/*',
+    self.Skip('conformance2/textures/video/*',
         ['win', 'passthrough', 'd3d11'], bug=602688)
 
     self.Fail('conformance2/glsl3/no-attribute-vertex-shader.html',
