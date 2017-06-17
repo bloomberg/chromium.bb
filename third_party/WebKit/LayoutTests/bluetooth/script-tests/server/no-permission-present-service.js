@@ -5,16 +5,18 @@ promise_test(() => {
                                   '\'optionalServices\' in requestDevice() ' +
                                   'options. https://goo.gl/HxfxSQ',
                                   'SecurityError');
-  return getHealthThermometerDevice({
-      filters: [{services: ['health_thermometer']}]})
-    .then(([device]) => Promise.all([
+  return setBluetoothFakeAdapter('HeartRateAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['heart_rate']}]}))
+    .then(device => device.gatt.connect())
+    .then(gatt => Promise.all([
       assert_promise_rejects_with_message(
-        device.gatt.CALLS([
+        gatt.CALLS([
           getPrimaryService(generic_access.alias)|
           getPrimaryServices(generic_access.alias)[UUID]
         ]), expected),
       assert_promise_rejects_with_message(
-        device.gatt.FUNCTION_NAME(generic_access.name), expected),
+        gatt.FUNCTION_NAME(generic_access.name), expected),
       assert_promise_rejects_with_message(
-        device.gatt.FUNCTION_NAME(generic_access.uuid), expected)]));
+        gatt.FUNCTION_NAME(generic_access.uuid), expected)]));
 }, 'Request for present service without permission. Reject with SecurityError.');

@@ -2,27 +2,27 @@
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
-<script src="../../../resources/bluetooth/web-bluetooth-test.js"></script>
-<script src="../../../resources/mojo-helpers.js"></script>
 <script>
 'use strict';
 promise_test(() => {
-  return getHIDDevice({
-      filters: [{services: ['battery_service']}],
+  return setBluetoothFakeAdapter('BlocklistTestAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['device_information']}],
       optionalServices: [
-        'generic_access',
-        'human_interface_device'
-      ]})
-    .then(([device]) => device.gatt.getPrimaryServices())
+        blocklist_test_service_uuid, 'device_information', 'generic_access',
+       'heart_rate', 'human_interface_device']}))
+    .then(device => device.gatt.connect())
+    .then(gattServer => gattServer.getPrimaryServices())
     .then(services => {
-      assert_equals(services.length, 2);
-      let uuid_set = new Set(services.map(s => s.uuid));
-
-      assert_equals(uuid_set.size, 2);
-      assert_true(uuid_set.has(BluetoothUUID.getService('generic_access')));
-      assert_true(uuid_set.has(BluetoothUUID.getService('battery_service')));
-      assert_false(
-        uuid_set.has(BluetoothUUID.getService('human_interface_device')));
+      assert_equals(services.length, 4);
+      assert_equals(services[0].uuid,
+                    BluetoothUUID.getService(blocklist_test_service_uuid));
+      assert_equals(services[1].uuid,
+                    BluetoothUUID.getService('device_information'));
+      assert_equals(services[2].uuid,
+                    BluetoothUUID.getService('generic_access'));
+      assert_equals(services[3].uuid,
+                    BluetoothUUID.getService('heart_rate'));
     });
 }, 'Request for services. Does not return blocklisted service.');
 </script>
