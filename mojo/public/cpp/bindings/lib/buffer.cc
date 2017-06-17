@@ -5,7 +5,6 @@
 #include "mojo/public/cpp/bindings/lib/buffer.h"
 
 #include "base/logging.h"
-#include "base/numerics/safe_math.h"
 #include "mojo/public/cpp/bindings/lib/bindings_internal.h"
 
 namespace mojo {
@@ -33,12 +32,10 @@ Buffer& Buffer::operator=(Buffer&& other) {
 
 void* Buffer::Allocate(size_t num_bytes) {
   const size_t block_start = cursor_;
-  auto safe_result = base::CheckedNumeric<uintptr_t>(cursor_);
-  safe_result += Align(num_bytes);
-  cursor_ = base::checked_cast<size_t>(safe_result.ValueOrDie());
-  if (cursor_ > size_) {
+  cursor_ += Align(num_bytes);
+  if (cursor_ > size_ || cursor_ < block_start) {
     NOTREACHED();
-    cursor_ -= base::checked_cast<size_t>(safe_result.ValueOrDie());
+    cursor_ = block_start;
     return nullptr;
   }
   DCHECK_LE(cursor_, size_);
