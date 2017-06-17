@@ -119,7 +119,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/printer_detector/printer_detector_factory.h"
+#include "chrome/browser/chromeos/printer_detector/usb_printer_detector_factory.h"
 #include "chrome/browser/chromeos/printing/cups_print_job_manager_factory.h"
 #include "chrome/browser/chromeos/printing/printers_manager_factory.h"
 #include "chrome/browser/chromeos/tether/tether_service_factory.h"
@@ -230,7 +230,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   EnhancedBookmarkKeyServiceFactory::GetInstance();
 #endif
 #if defined(OS_CHROMEOS)
-  chromeos::PrinterDetectorFactory::GetInstance();
+  chromeos::UsbPrinterDetectorFactory::GetInstance();
   chromeos::CupsPrintJobManagerFactory::GetInstance();
   chromeos::PrintersManagerFactory::GetInstance();
   TetherServiceFactory::GetInstance();

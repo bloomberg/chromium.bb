@@ -10,8 +10,8 @@
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "chrome/browser/chromeos/printer_detector/printer_detector.h"
-#include "chrome/browser/chromeos/printer_detector/printer_detector_factory.h"
+#include "chrome/browser/chromeos/printer_detector/usb_printer_detector.h"
+#include "chrome/browser/chromeos/printer_detector/usb_printer_detector_factory.h"
 #include "chrome/browser/chromeos/printing/printers_manager.h"
 #include "chrome/browser/chromeos/printing/printers_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -22,15 +22,15 @@ namespace {
 
 // Implementation of PrinterDiscoverer interface.
 class PrinterDiscovererImpl : public PrinterDiscoverer,
-                              public PrinterDetector::Observer {
+                              public UsbPrinterDetector::Observer {
  public:
   explicit PrinterDiscovererImpl(Profile* profile)
       : detector_observer_(this), profile_(profile), weak_ptr_factory_(this) {
-    PrinterDetector* detector =
-        PrinterDetectorFactory::GetInstance()->Get(profile);
-    DCHECK(detector);
-    detector_observer_.Add(detector);
-    usb_printers_ = detector->GetPrinters();
+    UsbPrinterDetector* usb_detector =
+        UsbPrinterDetectorFactory::GetInstance()->Get(profile);
+    DCHECK(usb_detector);
+    detector_observer_.Add(usb_detector);
+    usb_printers_ = usb_detector->GetPrinters();
   }
   ~PrinterDiscovererImpl() override = default;
 
@@ -103,7 +103,8 @@ class PrinterDiscovererImpl : public PrinterDiscoverer,
 
   std::vector<Printer> usb_printers_;
   base::ObserverList<PrinterDiscoverer::Observer> observer_list_;
-  ScopedObserver<PrinterDetector, PrinterDetector::Observer> detector_observer_;
+  ScopedObserver<UsbPrinterDetector, UsbPrinterDetector::Observer>
+      detector_observer_;
   Profile* profile_;
   base::WeakPtrFactory<PrinterDiscovererImpl> weak_ptr_factory_;
 };
