@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/printer_detector/printer_detector_factory.h"
+#include "chrome/browser/chromeos/printer_detector/usb_printer_detector_factory.h"
 
 #include "base/command_line.h"
-#include "chrome/browser/chromeos/printer_detector/printer_detector.h"
+#include "chrome/browser/chromeos/printer_detector/usb_printer_detector.h"
 #include "chrome/browser/chromeos/printing/printers_manager_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
@@ -17,55 +17,49 @@ namespace chromeos {
 
 namespace {
 
-static base::LazyInstance<PrinterDetectorFactory>::DestructorAtExit g_factory =
+base::LazyInstance<UsbPrinterDetectorFactory>::DestructorAtExit g_factory =
     LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
 // static
-PrinterDetectorFactory* PrinterDetectorFactory::GetInstance() {
+UsbPrinterDetectorFactory* UsbPrinterDetectorFactory::GetInstance() {
   return g_factory.Pointer();
 }
 
-PrinterDetector* PrinterDetectorFactory::Get(content::BrowserContext* context) {
-  return static_cast<PrinterDetector*>(
+UsbPrinterDetector* UsbPrinterDetectorFactory::Get(
+    content::BrowserContext* context) {
+  return static_cast<UsbPrinterDetector*>(
       GetServiceForBrowserContext(context, false));
 }
 
-PrinterDetectorFactory::PrinterDetectorFactory()
+UsbPrinterDetectorFactory::UsbPrinterDetectorFactory()
     : BrowserContextKeyedServiceFactory(
-          "PrinterDetectorFactory",
+          "UsbPrinterDetectorFactory",
           BrowserContextDependencyManager::GetInstance()) {
   DependsOn(
       extensions::ExtensionsBrowserClient::Get()->GetExtensionSystemFactory());
   DependsOn(PrintersManagerFactory::GetInstance());
 }
 
-PrinterDetectorFactory::~PrinterDetectorFactory() {
-}
+UsbPrinterDetectorFactory::~UsbPrinterDetectorFactory() {}
 
-content::BrowserContext* PrinterDetectorFactory::GetBrowserContextToUse(
+content::BrowserContext* UsbPrinterDetectorFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
   return chrome::GetBrowserContextRedirectedInIncognito(context);
 }
 
-KeyedService* PrinterDetectorFactory::BuildServiceInstanceFor(
+KeyedService* UsbPrinterDetectorFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          ::switches::kDisableNativeCups)) {
-    return PrinterDetector::CreateLegacy(Profile::FromBrowserContext(context))
-        .release();
-  }
-
-  return PrinterDetector::CreateCups(Profile::FromBrowserContext(context))
+  return UsbPrinterDetector::Create(Profile::FromBrowserContext(context))
       .release();
 }
 
-bool PrinterDetectorFactory::ServiceIsCreatedWithBrowserContext() const {
+bool UsbPrinterDetectorFactory::ServiceIsCreatedWithBrowserContext() const {
   return true;
 }
 
-bool PrinterDetectorFactory::ServiceIsNULLWhileTesting() const {
+bool UsbPrinterDetectorFactory::ServiceIsNULLWhileTesting() const {
   return true;
 }
 

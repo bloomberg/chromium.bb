@@ -4,7 +4,9 @@
 
 #include <stdint.h>
 
+#include <map>
 #include <memory>
+#include <set>
 #include <utility>
 #include <vector>
 
@@ -18,7 +20,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chromeos/printer_detector/printer_detector.h"
+#include "chrome/browser/chromeos/printer_detector/usb_printer_detector.h"
 #include "chrome/browser/chromeos/printing/ppd_provider_factory.h"
 #include "chrome/browser/chromeos/printing/printer_configurer.h"
 #include "chrome/browser/chromeos/printing/printers_manager_factory.h"
@@ -70,32 +72,32 @@ std::string GuessEffectiveMakeAndModel(const device::UsbDevice& device) {
 
 // The PrinterDetector that drives the flow for setting up a USB printer to use
 // CUPS backend.
-class CupsPrinterDetectorImpl : public PrinterDetector,
-                                public device::UsbService::Observer {
+class UsbPrinterDetectorImpl : public UsbPrinterDetector,
+                               public device::UsbService::Observer {
  public:
-  explicit CupsPrinterDetectorImpl(Profile* profile)
+  explicit UsbPrinterDetectorImpl(Profile* profile)
       : profile_(profile),
         usb_observer_(this),
         observer_list_(
-            new base::ObserverListThreadSafe<PrinterDetector::Observer>),
+            new base::ObserverListThreadSafe<UsbPrinterDetector::Observer>),
         weak_ptr_factory_(this) {
     device::UsbService* usb_service =
         device::DeviceClient::Get()->GetUsbService();
     if (usb_service) {
       usb_observer_.Add(usb_service);
-      usb_service->GetDevices(base::Bind(&CupsPrinterDetectorImpl::OnGetDevices,
+      usb_service->GetDevices(base::Bind(&UsbPrinterDetectorImpl::OnGetDevices,
                                          weak_ptr_factory_.GetWeakPtr()));
     }
   }
-  ~CupsPrinterDetectorImpl() override = default;
+  ~UsbPrinterDetectorImpl() override = default;
 
   // PrinterDetector interface function.
-  void AddObserver(PrinterDetector::Observer* observer) override {
+  void AddObserver(UsbPrinterDetector::Observer* observer) override {
     observer_list_->AddObserver(observer);
   }
 
   // PrinterDetector interface function.
-  void RemoveObserver(PrinterDetector::Observer* observer) override {
+  void RemoveObserver(UsbPrinterDetector::Observer* observer) override {
     observer_list_->RemoveObserver(observer);
   }
 
@@ -145,7 +147,8 @@ class CupsPrinterDetectorImpl : public PrinterDetector,
       // We already have pp_lock_, so need to call the pre-locked version of
       // GetPrinters to prevent deadlock.
       observer_list_->Notify(
-          FROM_HERE, &PrinterDetector::Observer::OnAvailableUsbPrintersChanged,
+          FROM_HERE,
+          &UsbPrinterDetector::Observer::OnAvailableUsbPrintersChanged,
           GetPrintersLocked());
     } else {
       // If the device has been removed but it's not in present_printers_, it
@@ -202,7 +205,7 @@ class CupsPrinterDetectorImpl : public PrinterDetector,
         printing::CreateProvider(profile_);
     ppd_provider->ResolveUsbIds(
         device->vendor_id(), device->product_id(),
-        base::Bind(&CupsPrinterDetectorImpl::ResolveUsbIdsDone,
+        base::Bind(&UsbPrinterDetectorImpl::ResolveUsbIdsDone,
                    weak_ptr_factory_.GetWeakPtr(), ppd_provider,
                    base::Passed(std::move(data))));
   }
@@ -213,7 +216,7 @@ class CupsPrinterDetectorImpl : public PrinterDetector,
     SetUpPrinterData* data_ptr = data.get();
     data_ptr->configurer->SetUpPrinter(
         *(data_ptr->printer),
-        base::Bind(&CupsPrinterDetectorImpl::SetUpPrinterDone,
+        base::Bind(&UsbPrinterDetectorImpl::SetUpPrinterDone,
                    weak_ptr_factory_.GetWeakPtr(),
                    base::Passed(std::move(data))));
   }
@@ -272,14 +275,10 @@ class CupsPrinterDetectorImpl : public PrinterDetector,
       base::AutoLock auto_lock(pp_lock_);
       present_printers_.emplace(data->device->guid(), std::move(data->printer));
       observer_list_->Notify(
-          FROM_HERE, &PrinterDetector::Observer::OnAvailableUsbPrintersChanged,
+          FROM_HERE,
+          &UsbPrinterDetector::Observer::OnAvailableUsbPrintersChanged,
           GetPrintersLocked());
     }
-  }
-
-  void SetNotificationUIManagerForTesting(
-      NotificationUIManager* manager) override {
-    LOG(FATAL) << "Not implemented for CUPS";
   }
 
   // Map from USB GUID to Printer that we have detected as being currently
@@ -296,22 +295,17 @@ class CupsPrinterDetectorImpl : public PrinterDetector,
   Profile* profile_;
   ScopedObserver<device::UsbService, device::UsbService::Observer>
       usb_observer_;
-  scoped_refptr<base::ObserverListThreadSafe<PrinterDetector::Observer>>
+  scoped_refptr<base::ObserverListThreadSafe<UsbPrinterDetector::Observer>>
       observer_list_;
-  base::WeakPtrFactory<CupsPrinterDetectorImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<UsbPrinterDetectorImpl> weak_ptr_factory_;
 };
 
 }  // namespace
 
-// Nop base class implementation of GetPrinters().  Because this is non-empty we
-// have to define it out-of-line.
-std::vector<Printer> PrinterDetector::GetPrinters() {
-  return std::vector<Printer>();
-}
-
 // static
-std::unique_ptr<PrinterDetector> PrinterDetector::CreateCups(Profile* profile) {
-  return base::MakeUnique<CupsPrinterDetectorImpl>(profile);
+std::unique_ptr<UsbPrinterDetector> UsbPrinterDetector::Create(
+    Profile* profile) {
+  return base::MakeUnique<UsbPrinterDetectorImpl>(profile);
 }
 
 }  // namespace chromeos
