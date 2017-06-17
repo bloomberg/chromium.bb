@@ -1279,6 +1279,38 @@ TYPED_TEST_P(CookieStoreTest, OverwritePersistentCookie) {
       "a=val99", this->GetCookies(cs, GURL("http://chromium.org/path1")));
 }
 
+// Note that accepting an empty name is contrary to spec; see
+// https://tools.ietf.org/html/rfc6265#section-4.1.1.  However, we do it
+// for web compatibility; see http://inikulin.github.io/cookie-compat/
+// (specifically the "foo" and "=a" tests).  This test is present in Chromium
+// so that a flag is raised if this behavior is changed.
+// On IOS we use the system cookie store which has Safari's behavior, so
+// the test is skipped.
+TYPED_TEST_P(CookieStoreTest, EmptyName) {
+  if (TypeParam::forbids_setting_empty_name)
+    return;
+
+  GURL url_foo("http://www.foo.com/");
+  CookieStore* cs = this->GetCookieStore();
+
+  CookieOptions options;
+  if (!TypeParam::supports_http_only)
+    options.set_include_httponly();
+  EXPECT_TRUE(this->SetCookieWithOptions(cs, url_foo, "a", options));
+  CookieList list = this->GetAllCookiesForURL(cs, url_foo);
+  EXPECT_EQ(1u, list.size());
+  EXPECT_EQ("", list[0].Name());
+  EXPECT_EQ("a", list[0].Value());
+  EXPECT_EQ(1, this->DeleteAll(cs));
+
+  EXPECT_TRUE(this->SetCookieWithOptions(cs, url_foo, "=b", options));
+  list = this->GetAllCookiesForURL(cs, url_foo);
+  EXPECT_EQ(1u, list.size());
+  EXPECT_EQ("", list[0].Name());
+  EXPECT_EQ("b", list[0].Value());
+  EXPECT_EQ(1, this->DeleteAll(cs));
+}
+
 TYPED_TEST_P(CookieStoreTest, CookieOrdering) {
   // Put a random set of cookies into a store and make sure they're returned in
   // the right order.
@@ -1476,6 +1508,7 @@ REGISTER_TYPED_TEST_CASE_P(CookieStoreTest,
                            TestSecure,
                            NetUtilCookieTest,
                            OverwritePersistentCookie,
+                           EmptyName,
                            CookieOrdering,
                            GetAllCookiesAsync,
                            DeleteCookieAsync,
