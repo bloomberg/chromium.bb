@@ -21,7 +21,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -36,13 +35,9 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabIdManager;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.MultiActivityTestRule;
-import org.chromium.chrome.test.util.ActivityUtils;
 import org.chromium.chrome.test.util.ApplicationTestUtils;
-import org.chromium.chrome.test.util.browser.TabLoadObserver;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.content.browser.test.util.JavaScriptUtils;
-import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.content_public.common.ScreenOrientationValues;
 import org.chromium.net.test.EmbeddedTestServer;
 
@@ -273,77 +268,6 @@ public class WebappModeTest {
     }
 
     /**
-     * Tests that WebappActivities handle window.open() properly in tabbed mode.
-     */
-    @Test
-    @MediumTest
-    @Feature({"Webapps"})
-    public void testWebappHandlesWindowOpenInTabbedMode() throws Exception {
-        triggerWindowOpenAndWaitForLoad(ChromeTabbedActivity.class, getOnClickLinkUrl(), true);
-    }
-
-    /**
-     * Tests that WebappActivities handle suppressed window.open() properly in tabbed mode.
-     */
-    @Test
-    @MediumTest
-    @Feature({"Webapps"})
-    public void testWebappHandlesSuppressedWindowOpenInTabbedMode() throws Exception {
-        triggerWindowOpenAndWaitForLoad(
-                ChromeTabbedActivity.class, getHrefNoReferrerLinkUrl(), false);
-    }
-
-    private <T extends ChromeActivity> void triggerWindowOpenAndWaitForLoad(
-            Class<T> classToWaitFor, String linkHtml, boolean checkContents) throws Exception {
-        final WebappActivity firstActivity =
-                startWebappActivity(WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON);
-        final int firstWebappId = firstActivity.getActivityTab().getId();
-
-        // Load up the test page.
-        new TabLoadObserver(firstActivity.getActivityTab()).fullyLoadUrl(linkHtml);
-
-        // Do a plain click to make the link open in the main browser via a window.open().
-        // If the window is opened successfully, javascript on the first page triggers and changes
-        // its URL as a signal for this test.
-        Runnable fgTrigger = new Runnable() {
-            @Override
-            public void run() {
-                ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-                    @Override
-                    public void run() {
-                        View view = firstActivity.findViewById(android.R.id.content).getRootView();
-                        TouchCommon.singleClickView(view);
-                    }
-                });
-            }
-        };
-        ChromeActivity secondActivity = ActivityUtils.waitForActivity(
-                InstrumentationRegistry.getInstrumentation(), classToWaitFor, fgTrigger);
-        mTestRule.waitForFullLoad(secondActivity, "The Google");
-        if (checkContents) {
-            Assert.assertEquals("New WebContents was not created", "SUCCESS",
-                    firstActivity.getActivityTab().getTitle());
-        }
-        Assert.assertNotSame("Wrong Activity in foreground", firstActivity,
-                ApplicationStatus.getLastTrackedFocusedActivity());
-
-        // Close the child window to kick the user back to the WebappActivity.
-        JavaScriptUtils.executeJavaScript(
-                secondActivity.getActivityTab().getWebContents(), "window.close()");
-        CriteriaHelper.pollUiThread(new Criteria() {
-            @Override
-            public boolean isSatisfied() {
-                Activity lastActivity = ApplicationStatus.getLastTrackedFocusedActivity();
-                if (!isWebappActivityReady(lastActivity)) return false;
-
-                WebappActivity webappActivity = (WebappActivity) lastActivity;
-                return webappActivity.getActivityTab().getId() == firstWebappId;
-            }
-        });
-        ApplicationTestUtils.waitUntilChromeInForeground();
-    }
-
-    /**
      * Starts a WebappActivity for the given data and waits for it to be initialized.  We can't use
      * ActivityUtils.waitForActivity() because of the way WebappActivity is instanced on pre-L
      * devices.
@@ -371,50 +295,5 @@ public class WebappModeTest {
         if (!rootView.hasWindowFocus()) return false;
 
         return true;
-    }
-
-    /** Defines one gigantic link spanning the whole page that creates a new
-     *  window with chrome/test/data/android/google.html. Disallowing a referrer from being
-     *  sent triggers another codepath.
-     */
-    private String getHrefNoReferrerLinkUrl() {
-        return UrlUtils.encodeHtmlDataUri("<html>"
-                + "  <head>"
-                + "    <title>href no referrer link page</title>"
-                + "    <meta name='viewport'"
-                + "        content='width=device-width initial-scale=0.5, maximum-scale=0.5'>"
-                + "    <style>"
-                + "      body {margin: 0em;} div {width: 100%; height: 100%; background: #011684;}"
-                + "    </style>"
-                + "  </head>"
-                + "  <body>"
-                + "    <a href='" + mTestServer.getURL("/chrome/test/data/android/google.html")
-                + "' target='_blank' rel='noreferrer'><div></div></a>"
-                + "  </body>");
-    }
-
-    /** Returns a URL where clicking the body triggers a window.open() call to open
-     * chrome/test/data/android/google.html. */
-    private String getOnClickLinkUrl() {
-        return UrlUtils.encodeHtmlDataUri("<html>"
-                + "  <head>"
-                + "    <title>window.open page</title>"
-                + "    <meta name='viewport'"
-                + "        content='width=device-width initial-scale=0.5, maximum-scale=0.5'>"
-                + "    <style>"
-                + "      body {margin: 0em;} div {width: 100%; height: 100%; background: #011684;}"
-                + "    </style>"
-                + "    <script>"
-                + "      function openNewWindow() {"
-                + "        var site = window.open('"
-                + mTestServer.getURL("/chrome/test/data/android/google.html") + "');"
-                + "        document.title = site ? 'SUCCESS' : 'FAILURE';"
-                + "      }"
-                + "    </script>"
-                + "  </head>"
-                + "  <body id='body'>"
-                + "    <div onclick='openNewWindow()'></div>"
-                + "  </body>"
-                + "</html>");
     }
 }

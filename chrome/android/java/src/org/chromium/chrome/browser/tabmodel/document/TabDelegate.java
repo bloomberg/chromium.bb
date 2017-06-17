@@ -140,6 +140,13 @@ public class TabDelegate extends TabCreator {
             intent.setComponent(componentName);
         }
 
+        addAsyncTabExtras(asyncParams, parentId, isChromeUI, assignedTabId, intent);
+
+        return intent;
+    }
+
+    protected final void addAsyncTabExtras(AsyncTabCreationParams asyncParams, int parentId,
+            boolean isChromeUI, int assignedTabId, Intent intent) {
         Map<String, String> extraHeaders = asyncParams.getLoadUrlParams().getExtraHeaders();
         if (extraHeaders != null && !extraHeaders.isEmpty()) {
             Bundle bundle = new Bundle();
@@ -171,7 +178,6 @@ public class TabDelegate extends TabCreator {
         }
 
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        return intent;
     }
 
     /**
