@@ -3,7 +3,7 @@ promise_test(() => {
   return getHealthThermometerDeviceWithServicesDiscovered({
       filters: [{services: ['health_thermometer']}],
       optionalServices: ['glucose']})
-    .then(({device}) => assert_promise_rejects_with_message(
+    .then(([device]) => assert_promise_rejects_with_message(
       device.gatt.CALLS([
         getPrimaryService('glucose')|
         getPrimaryServices('glucose')[UUID]

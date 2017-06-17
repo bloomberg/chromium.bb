@@ -7,9 +7,9 @@
 <script>
 'use strict';
 promise_test(() => {
-  return getTwoHealthThermometerServicesDevice({
+  return getHealthThermometerDevice({
      filters: [{services: ['health_thermometer']}]})
-    .then(({device}) => device.gatt.getPrimaryServices('health_thermometer'))
+    .then(([device]) => device.gatt.getPrimaryServices('health_thermometer'))
     .then(([service1, service2]) => {
       assert_equals(service1.device, service2.device);
     });

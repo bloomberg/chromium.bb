@@ -8,7 +8,7 @@
 'use strict';
 promise_test(() => {
   return getHealthThermometerDevice({acceptAllDevices: true})
-    .then(({device}) => assert_promise_rejects_with_message(
+    .then(([device]) => assert_promise_rejects_with_message(
       device.gatt.getPrimaryServices(),
       new DOMException(
         'Origin is not allowed to access any service. ' +

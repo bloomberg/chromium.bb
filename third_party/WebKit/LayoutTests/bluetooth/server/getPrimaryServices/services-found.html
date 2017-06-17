@@ -7,10 +7,10 @@
 <script>
 'use strict';
 promise_test(function() {
-  return getTwoHealthThermometerServicesDevice({
+  return getHealthThermometerDevice({
       filters: [{services: ['health_thermometer']}],
       optionalServices: ['generic_access']})
-    .then(({device}) => device.gatt.getPrimaryServices())
+    .then(([device]) => device.gatt.getPrimaryServices())
     .then(services => {
       // Expect three service instances.
       assert_equals(services.length, 3);
