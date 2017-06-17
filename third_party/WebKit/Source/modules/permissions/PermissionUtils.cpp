@@ -7,8 +7,11 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameClient.h"
+#include "core/workers/WorkerGlobalScope.h"
+#include "core/workers/WorkerThread.h"
 #include "public/platform/InterfaceProvider.h"
-#include "public/platform/Platform.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace blink {
 
@@ -19,18 +22,21 @@ using mojom::blink::PermissionName;
 bool ConnectToPermissionService(
     ExecutionContext* execution_context,
     mojom::blink::PermissionServiceRequest request) {
-  InterfaceProvider* interface_provider = nullptr;
   if (execution_context->IsDocument()) {
-    Document* document = ToDocument(execution_context);
-    if (document->GetFrame())
-      interface_provider = document->GetFrame()->GetInterfaceProvider();
-  } else {
-    interface_provider = Platform::Current()->GetInterfaceProvider();
+    LocalFrame* frame = ToDocument(execution_context)->GetFrame();
+    if (frame) {
+      frame->Client()->GetInterfaceProvider()->GetInterface(std::move(request));
+      return true;
+    }
+  } else if (execution_context->IsWorkerGlobalScope()) {
+    WorkerThread* thread = ToWorkerGlobalScope(execution_context)->GetThread();
+    if (thread) {
+      thread->GetInterfaceProvider()->GetInterface(std::move(request));
+      return true;
+    }
   }
 
-  if (interface_provider)
-    interface_provider->GetInterface(std::move(request));
-  return interface_provider;
+  return false;
 }
 
 PermissionDescriptorPtr CreatePermissionDescriptor(PermissionName name) {

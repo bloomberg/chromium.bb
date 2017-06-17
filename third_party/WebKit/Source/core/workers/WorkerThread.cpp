@@ -58,6 +58,7 @@
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/Threading.h"
 #include "platform/wtf/text/WTFString.h"
+#include "public/platform/Platform.h"
 
 namespace blink {
 
@@ -291,6 +292,14 @@ bool WorkerThread::IsForciblyTerminated() {
   }
   NOTREACHED() << static_cast<int>(exit_code_);
   return false;
+}
+
+InterfaceProvider* WorkerThread::GetInterfaceProvider() {
+  // TODO(https://crbug.com/734210): Instead of returning this interface
+  // provider, which maps to a RenderProcessHost in the browser process, this
+  // method should return an interface provider which maps to a specific worker
+  // context such as a SharedWorkerHost or EmbeddedWorkerInstance.
+  return Platform::Current()->GetInterfaceProvider();
 }
 
 WorkerThread::WorkerThread(ThreadableLoadingContext* loading_context,
