@@ -2511,9 +2511,6 @@ crbug.com/660384 external/wpt/webmessaging/with-ports/001.html [ Failure ]
 crbug.com/660384 external/wpt/webmessaging/without-ports/001.html [ Failure ]
 crbug.com/673526 external/wpt/webmessaging/message-channels/close.html [ Failure ]
 
-crbug.com/127651 paint/printing/print-box-shadow.html [ NeedsRebaseline ]
-crbug.com/127651 virtual/disable-spinvalidation/paint/printing/print-box-shadow.html [ NeedsRebaseline ]
-
 # Added 2016-12-12
 crbug.com/610835 http/tests/security/XFrameOptions/x-frame-options-deny-multiple-clients.html [ Failure Pass ]
 crbug.com/610835 virtual/mojo-loading/http/tests/security/XFrameOptions/x-frame-options-deny-multiple-clients.html [ Failure Pass ]
