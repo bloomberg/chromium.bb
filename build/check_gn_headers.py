@@ -148,9 +148,12 @@ def GetDepsPrefixes(q):
 
 def IsBuildClean(out_dir):
   cmd = [os.path.join(DEPOT_TOOLS_DIR, 'ninja'), '-C', out_dir, '-n']
-  out = subprocess.check_output(cmd)
-  return 'no work to do.' in out
-
+  try:
+    out = subprocess.check_output(cmd)
+    return 'no work to do.' in out
+  except Exception as e:
+    print e
+    return False
 
 def ParseWhiteList(whitelist):
   out = set()
