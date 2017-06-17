@@ -5,6 +5,7 @@
 #include "platform/wtf/PassRefPtr.h"
 
 #include "platform/wtf/RefCounted.h"
+#include "platform/wtf/RefPtr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace WTF {

@@ -37,10 +37,6 @@ template <typename T>
 class RefPtr;
 template <typename T>
 class PassRefPtr;
-template <typename T>
-PassRefPtr<T> AdoptRef(T*);
-
-inline void Adopted(const void*) {}
 
 // requireAdoption() is not overloaded for WTF::RefCounted, which has a built-in
 // assumption that adoption is required. requireAdoption() is for bootstrapping
@@ -94,12 +90,7 @@ class PassRefPtr {
   bool operator!() const { return !ptr_; }
   explicit operator bool() const { return ptr_ != nullptr; }
 
-  friend PassRefPtr AdoptRef<T>(T*);
-
  private:
-  enum AdoptRefTag { kAdoptRef };
-  PassRefPtr(T* ptr, AdoptRefTag) : ptr_(ptr) {}
-
   PassRefPtr& operator=(const PassRefPtr&) {
     static_assert(!sizeof(T*), "PassRefPtr should never be assigned to");
     return *this;
@@ -206,12 +197,6 @@ inline bool operator!=(std::nullptr_t, const PassRefPtr<T>& b) {
 }
 
 template <typename T>
-PassRefPtr<T> AdoptRef(T* p) {
-  Adopted(p);
-  return PassRefPtr<T>(p, PassRefPtr<T>::kAdoptRef);
-}
-
-template <typename T>
 inline T* GetPtr(const PassRefPtr<T>& p) {
   return p.Get();
 }
@@ -219,6 +204,5 @@ inline T* GetPtr(const PassRefPtr<T>& p) {
 }  // namespace WTF
 
 using WTF::PassRefPtr;
-using WTF::AdoptRef;
 
 #endif  // WTF_PassRefPtr_h
