@@ -256,8 +256,12 @@ Bug(user) reftests/failures/expected/needsmanualrebaseline_with_txt.html [ Needs
 """, is_lint_mode=True)
             self.assertFalse(True, "ParseError wasn't raised")
         except ParseError as error:
-            warnings = ('expectations:1 A reftest without text expectation cannot be marked as '
+            warnings = ('expectations:1 NeedsRebaseline is deprecated; see https://crbug.com/692811 '
+                        'reftests/failures/expected/needsrebaseline.html\n'
+                        'expectations:1 A reftest without text expectation cannot be marked as '
                         'NeedsRebaseline/NeedsManualRebaseline reftests/failures/expected/needsrebaseline.html\n'
+                        'expectations:2 NeedsRebaseline is deprecated; see https://crbug.com/692811 '
+                        'reftests/failures/expected/needsrebaseline_with_txt.html\n'
                         'expectations:3 A reftest without text expectation cannot be marked as '
                         'NeedsRebaseline/NeedsManualRebaseline reftests/failures/expected/needsmanualrebaseline.html')
             self.assertEqual(str(error), warnings)
@@ -275,6 +279,7 @@ Bug(user) reftests/failures/expected/needsmanualrebaseline_with_txt.html [ Needs
         except ParseError as error:
             warnings = ('expectations:1 Unrecognized specifier "FOO" failures/expected/text.html\n'
                         'expectations:2 Path does not exist. non-existent-test.html\n'
+                        'expectations:4 NeedsRebaseline is deprecated; see https://crbug.com/692811 test-to-rebaseline.html\n'
                         'expectations:4 A test cannot be rebaselined for Debug/Release. test-to-rebaseline.html')
             self.assertEqual(str(error), warnings)
 
