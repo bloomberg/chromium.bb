@@ -92,7 +92,7 @@ class TestCopier(object):
             cur_dir = root.replace(self.dir_above_repo + '/', '') + '/'
             _log.debug('Scanning %s...', cur_dir)
 
-            dirs_to_skip = ('.git', 'test-plan')
+            dirs_to_skip = ('.git',)
 
             if dirs:
                 for name in dirs_to_skip:
