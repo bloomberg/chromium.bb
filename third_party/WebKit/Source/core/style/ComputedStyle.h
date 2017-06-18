@@ -1164,15 +1164,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     SetPerspectiveOrigin(LengthPoint(PerspectiveOriginX(), v));
   }
 
-  // resize
-  static EResize InitialResize() { return EResize::kNone; }
-  EResize Resize() const {
-    return static_cast<EResize>(rare_non_inherited_data_->resize_);
-  }
-  void SetResize(EResize r) {
-    SET_VAR(rare_non_inherited_data_, resize_, static_cast<unsigned>(r));
-  }
-
   // Transform properties.
   // transform (aka -webkit-transform)
   static EmptyTransformOperations InitialTransform() {

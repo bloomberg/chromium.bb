@@ -917,48 +917,6 @@ inline EPosition CSSIdentifierValue::ConvertTo() const {
 }
 
 template <>
-inline CSSIdentifierValue::CSSIdentifierValue(EResize e)
-    : CSSValue(kIdentifierClass) {
-  switch (e) {
-    case EResize::kBoth:
-      value_id_ = CSSValueBoth;
-      break;
-    case EResize::kHorizontal:
-      value_id_ = CSSValueHorizontal;
-      break;
-    case EResize::kVertical:
-      value_id_ = CSSValueVertical;
-      break;
-    case EResize::kNone:
-      value_id_ = CSSValueNone;
-      break;
-  }
-}
-
-template <>
-inline EResize CSSIdentifierValue::ConvertTo() const {
-  switch (value_id_) {
-    case CSSValueBoth:
-      return EResize::kBoth;
-    case CSSValueHorizontal:
-      return EResize::kHorizontal;
-    case CSSValueVertical:
-      return EResize::kVertical;
-    case CSSValueAuto:
-      // Depends on settings, thus should be handled by the caller.
-      NOTREACHED();
-      return EResize::kNone;
-    case CSSValueNone:
-      return EResize::kNone;
-    default:
-      break;
-  }
-
-  NOTREACHED();
-  return EResize::kNone;
-}
-
-template <>
 inline CSSIdentifierValue::CSSIdentifierValue(ETableLayout e)
     : CSSValue(kIdentifierClass) {
   switch (e) {
