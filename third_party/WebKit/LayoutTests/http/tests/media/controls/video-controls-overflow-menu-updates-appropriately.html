@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <title>Overflow menu updates properly.</title>
-<script src='../resources/testharness.js'></script>
-<script src='../resources/testharnessreport.js'></script>
-<script src='../../media-resources/media-controls.js'></script>
-<script src='../../media-resources/media-file.js'></script>
-<script src='../../media-resources/overflow-menu.js'></script>
+<script src='../../resources/testharness.js'></script>
+<script src='../../resources/testharnessreport.js'></script>
+<script src='../../../media-resources/media-controls.js'></script>
+<script src='../../../media-resources/media-file.js'></script>
+<script src='../../../media-resources/overflow-menu.js'></script>
 
 <!--Padding ensures the overflow menu is visible for the tests. -->
 <body style='padding-top: 200px; padding-left: 100px'>
@@ -15,7 +15,7 @@ async_test(t => {
 
   // Set up video
   var video = document.querySelector('video');
-  video.src = findMediaFile('video', 'resources/test');
+  video.src = findMediaFile('video', '../resources/test');
   video.setAttribute('width', '60');
   // Add captions
   var trackElement = document.createElement('track');
