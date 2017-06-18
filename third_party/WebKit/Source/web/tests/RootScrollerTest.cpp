@@ -645,16 +645,10 @@ TEST_F(RootScrollerTest,
 // Do a basic sanity check that setting as root scroller an iframe that's remote
 // doesn't crash or otherwise fail catastrophically.
 TEST_F(RootScrollerTest, RemoteIFrame) {
-  FrameTestHelpers::TestWebRemoteFrameClient remote_frame_client;
   Initialize("root-scroller-iframe.html");
 
   // Initialization: Replace the iframe with a remote frame.
-  {
-    WebRemoteFrame* remote_frame = WebRemoteFrame::Create(
-        WebTreeScopeType::kDocument, &remote_frame_client);
-    WebFrame* child_frame = MainWebFrame()->FirstChild();
-    child_frame->Swap(remote_frame);
-  }
+  MainWebFrame()->FirstChild()->Swap(FrameTestHelpers::CreateRemote());
 
   // Set the root scroller in the local main frame to the iframe (which is
   // remote).
@@ -664,9 +658,6 @@ TEST_F(RootScrollerTest, RemoteIFrame) {
     MainFrame()->GetDocument()->setRootScroller(iframe, non_throw);
     EXPECT_EQ(iframe, MainFrame()->GetDocument()->rootScroller());
   }
-
-  // Reset explicitly to prevent lifetime issues with the RemoteFrameClient.
-  helper_.Reset();
 }
 
 // Do a basic sanity check that the scrolling and root scroller machinery
@@ -680,22 +671,18 @@ TEST_F(RootScrollerTest, RemoteIFrame) {
 #define MAYBE_RemoteMainFrame RemoteMainFrame
 #endif
 TEST_F(RootScrollerTest, MAYBE_RemoteMainFrame) {
-  FrameTestHelpers::TestWebRemoteFrameClient remote_client;
-  FrameTestHelpers::TestWebWidgetClient web_widget_client;
-  WebFrameWidget* widget;
   WebLocalFrameBase* local_frame;
+  WebFrameWidget* widget;
 
   Initialize("root-scroller-iframe.html");
 
   // Initialization: Set the main frame to be a RemoteFrame and add a local
   // child.
   {
-    GetWebView()->SetMainFrame(remote_client.GetFrame());
-    WebRemoteFrame* root = GetWebView()->MainFrame()->ToWebRemoteFrame();
-    root->SetReplicatedOrigin(SecurityOrigin::CreateUnique());
-    WebFrameOwnerProperties properties;
-    local_frame = FrameTestHelpers::CreateLocalChild(
-        root, "frameName", nullptr, nullptr, nullptr, properties);
+    WebRemoteFrameImpl* remote_main_frame = FrameTestHelpers::CreateRemote();
+    helper_.LocalMainFrame()->Swap(remote_main_frame);
+    remote_main_frame->SetReplicatedOrigin(SecurityOrigin::CreateUnique());
+    local_frame = FrameTestHelpers::CreateLocalChild(*remote_main_frame);
 
     FrameTestHelpers::LoadFrame(local_frame,
                                 base_url_ + "root-scroller-child.html");
@@ -742,9 +729,6 @@ TEST_F(RootScrollerTest, MAYBE_RemoteMainFrame) {
     // and should be updated.
     // EXPECT_EQ(200, container->scrollTop());
   }
-
-  // Reset explicitly to prevent lifetime issues with the RemoteFrameClient.
-  helper_.Reset();
 }
 
 // Tests that removing the root scroller element from the DOM resets the

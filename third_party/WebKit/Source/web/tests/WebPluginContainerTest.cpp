@@ -142,7 +142,7 @@ class TestPluginWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
       WebSandboxFlags sandbox_flags,
       const WebParsedFeaturePolicy& container_policy,
       const WebFrameOwnerProperties&) {
-    return CreateLocalChild(parent, scope,
+    return CreateLocalChild(*parent, scope,
                             WTF::MakeUnique<TestPluginWebFrameClient>());
   }
 
