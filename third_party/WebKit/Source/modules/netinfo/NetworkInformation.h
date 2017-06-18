@@ -83,9 +83,9 @@ class NetworkInformation final
   // network in use.
   WebEffectiveConnectionType effective_type_;
 
-  // Transport RTT estimate. Rounded off to the nearest 25 msec. Touched only on
+  // HTTP RTT estimate. Rounded off to the nearest 25 msec. Touched only on
   // context thread.
-  unsigned long transport_rtt_msec_;
+  unsigned long http_rtt_msec_;
 
   // Downlink throughput estimate. Rounded off to the nearest 25 kbps. Touched
   // only on context thread.

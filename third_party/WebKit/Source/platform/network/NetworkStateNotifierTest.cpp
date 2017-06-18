@@ -585,19 +585,19 @@ TEST_F(NetworkStateNotifierTest, SetNetworkQualityInfoOverride) {
 
   notifier_.SetNetworkQualityInfoOverride(
       WebEffectiveConnectionType::kType3G,
-      kEthernetTransportRtt.value().InMilliseconds(),
+      kEthernetHttpRtt.value().InMilliseconds(),
       kEthernetThroughputMbps.value());
   RunPendingTasks();
   EXPECT_TRUE(VerifyObservations(
       observer, kWebConnectionTypeOther,
       NetworkStateNotifier::NetworkState::kInvalidMaxBandwidth,
-      WebEffectiveConnectionType::kType3G, kUnknownRtt, kEthernetTransportRtt,
+      WebEffectiveConnectionType::kType3G, kEthernetHttpRtt, kUnknownRtt,
       kEthernetThroughputMbps));
   EXPECT_TRUE(notifier_.OnLine());
   EXPECT_EQ(kWebConnectionTypeOther, notifier_.ConnectionType());
   EXPECT_EQ(-1, notifier_.MaxBandwidth());
   EXPECT_EQ(WebEffectiveConnectionType::kType3G, notifier_.EffectiveType());
-  EXPECT_EQ(kEthernetTransportRtt, notifier_.TransportRtt());
+  EXPECT_EQ(kEthernetHttpRtt, notifier_.HttpRtt());
   EXPECT_EQ(kEthernetThroughputMbps, notifier_.DownlinkThroughputMbps());
 
   // When override is active, calls to SetConnection are temporary ignored.
@@ -609,13 +609,13 @@ TEST_F(NetworkStateNotifierTest, SetNetworkQualityInfoOverride) {
   EXPECT_TRUE(VerifyObservations(
       observer, kWebConnectionTypeOther,
       NetworkStateNotifier::NetworkState::kInvalidMaxBandwidth,
-      WebEffectiveConnectionType::kType3G, kUnknownRtt, kEthernetTransportRtt,
+      WebEffectiveConnectionType::kType3G, kEthernetHttpRtt, kUnknownRtt,
       kEthernetThroughputMbps));
   EXPECT_TRUE(notifier_.OnLine());
   EXPECT_EQ(kWebConnectionTypeOther, notifier_.ConnectionType());
   EXPECT_EQ(-1, notifier_.MaxBandwidth());
   EXPECT_EQ(WebEffectiveConnectionType::kType3G, notifier_.EffectiveType());
-  EXPECT_EQ(kEthernetTransportRtt, notifier_.TransportRtt());
+  EXPECT_EQ(kEthernetHttpRtt, notifier_.HttpRtt());
   EXPECT_EQ(kEthernetThroughputMbps, notifier_.DownlinkThroughputMbps());
 
   // Override the network connection info as well.
@@ -624,13 +624,13 @@ TEST_F(NetworkStateNotifierTest, SetNetworkQualityInfoOverride) {
   RunPendingTasks();
   EXPECT_TRUE(VerifyObservations(
       observer, kWebConnectionTypeEthernet, kEthernetMaxBandwidthMbps,
-      WebEffectiveConnectionType::kType3G, kUnknownRtt, kEthernetTransportRtt,
+      WebEffectiveConnectionType::kType3G, kEthernetHttpRtt, kUnknownRtt,
       kEthernetThroughputMbps));
   EXPECT_TRUE(notifier_.OnLine());
   EXPECT_EQ(kWebConnectionTypeEthernet, notifier_.ConnectionType());
   EXPECT_EQ(kEthernetMaxBandwidthMbps, notifier_.MaxBandwidth());
   EXPECT_EQ(WebEffectiveConnectionType::kType3G, notifier_.EffectiveType());
-  EXPECT_EQ(kEthernetTransportRtt, notifier_.TransportRtt());
+  EXPECT_EQ(kEthernetHttpRtt, notifier_.HttpRtt());
   EXPECT_EQ(kEthernetThroughputMbps, notifier_.DownlinkThroughputMbps());
 
   // CLearing the override should cause the network state to be changed and
