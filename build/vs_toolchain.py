@@ -23,7 +23,7 @@ json_data_file = os.path.join(script_dir, 'win_toolchain.json')
 
 
 # Use MSVS2015 as the default toolchain.
-CURRENT_DEFAULT_TOOLCHAIN_VERSION = '2017'
+CURRENT_DEFAULT_TOOLCHAIN_VERSION = '2015'
 
 
 def SetEnvironmentAndGetRuntimeDllDirs():
