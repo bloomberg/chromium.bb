@@ -158,7 +158,7 @@ TEST_F(DocumentLoaderTest, MultiChunkWithReentrancy) {
                                     WebSandboxFlags,
                                     const WebParsedFeaturePolicy&,
                                     const WebFrameOwnerProperties&) {
-      return CreateLocalChild(parent, scope, &child_client_);
+      return CreateLocalChild(*parent, scope, &child_client_);
     }
 
    private:

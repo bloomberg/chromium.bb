@@ -54,8 +54,8 @@ class WebHelperPluginTest : public ::testing::Test {
     testing::RunPendingTasks();
   }
 
-  FrameTestHelpers::WebViewHelper helper_;
   WebHelperPluginFrameClient frame_client_;
+  FrameTestHelpers::WebViewHelper helper_;
   WebHelperPluginUniquePtr plugin_;
 };
 
@@ -65,7 +65,6 @@ TEST_F(WebHelperPluginTest, CreateAndDestroyAfterWebViewDestruction) {
   EXPECT_TRUE(plugin_);
   EXPECT_TRUE(plugin_->GetPlugin());
 
-  helper_.Reset();
   DestroyHelperPlugin();
 }
 
@@ -76,7 +75,6 @@ TEST_F(WebHelperPluginTest, CreateAndDestroyBeforeWebViewDestruction) {
   EXPECT_TRUE(plugin_->GetPlugin());
 
   DestroyHelperPlugin();
-  helper_.Reset();
 }
 
 TEST_F(WebHelperPluginTest, CreateFailsWithPlaceholder) {
