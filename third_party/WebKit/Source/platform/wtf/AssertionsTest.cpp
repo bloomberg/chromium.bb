@@ -15,6 +15,11 @@ TEST(AssertionsTest, Assertions) {
 #if DCHECK_IS_ON()
   EXPECT_DEATH_IF_SUPPORTED(DCHECK(false), "");
   EXPECT_DEATH_IF_SUPPORTED(NOTREACHED(), "");
+  EXPECT_DEATH_IF_SUPPORTED(DCHECK_AT(false, __FILE__, __LINE__), "");
+#else
+  DCHECK(false);
+  NOTREACHED();
+  DCHECK_AT(false, __FILE__, __LINE__);
 #endif
 
   CHECK(true);
@@ -23,6 +28,8 @@ TEST(AssertionsTest, Assertions) {
   SECURITY_DCHECK(true);
 #if ENABLE(SECURITY_ASSERT)
   EXPECT_DEATH_IF_SUPPORTED(SECURITY_DCHECK(false), "");
+#else
+  SECURITY_DCHECK(false);
 #endif
 
   SECURITY_CHECK(true);
