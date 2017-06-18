@@ -115,7 +115,12 @@ class LintTest(unittest.TestCase):
         logger, handler = lint_test_expectations.set_up_logging(logging_stream)
         try:
             res = lint_test_expectations.lint(host, options)
-            self.assertEqual(res, [])
+            self.assertEqual(
+                res,
+                ['/test.checkout/LayoutTests/TestExpectations: '
+                 '/test.checkout/LayoutTests/TestExpectations:5 '
+                 'NeedsRebaseline is deprecated; see https://crbug.com/692811 '
+                 'failures/expected/needsrebaseline.html'])
         finally:
             lint_test_expectations.tear_down_logging(logger, handler)
 
