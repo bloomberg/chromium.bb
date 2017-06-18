@@ -43,6 +43,7 @@ class AV1ExtTileTest
     aom_codec_dec_cfg_t cfg = aom_codec_dec_cfg_t();
     cfg.w = kImgWidth;
     cfg.h = kImgHeight;
+    cfg.allow_lowbitdepth = CONFIG_LOWBITDEPTH;
 
     decoder_ = codec_->CreateDecoder(cfg, 0);
     decoder_->Control(AV1_SET_DECODE_TILE_ROW, -1);
