@@ -51,6 +51,7 @@
   base::scoped_nsobject<FocusTracker> focusBeforeOverlay_;
   BOOL closeDeferred_;  // If YES, call performClose: in removeOverlay:.
 }
+@property(readonly, nonatomic) NSVisualEffectView* visualEffectView;
 @property(readonly, nonatomic) NSView* tabStripBackgroundView;
 @property(readonly, nonatomic) TabStripView* tabStripView;
 @property(readonly, nonatomic) FastResizeView* tabContentArea;
