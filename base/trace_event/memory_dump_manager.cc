@@ -190,37 +190,51 @@ MemoryDumpManager::~MemoryDumpManager() {
   g_instance_for_testing = nullptr;
 }
 
+// static
+HeapProfilingMode MemoryDumpManager::GetHeapProfilingModeFromCommandLine() {
+  if (!CommandLine::InitializedForCurrentProcess() ||
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableHeapProfiling)) {
+    return kHeapProfilingModeNone;
+  }
+#if BUILDFLAG(USE_ALLOCATOR_SHIM) && !defined(OS_NACL)
+  std::string profiling_mode =
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kEnableHeapProfiling);
+  if (profiling_mode == switches::kEnableHeapProfilingModePseudo)
+    return kHeapProfilingModePseudo;
+  if (profiling_mode == switches::kEnableHeapProfilingModeNative)
+    return kHeapProfilingModeNative;
+  if (profiling_mode == switches::kEnableHeapProfilingTaskProfiler &&
+      base::debug::ThreadHeapUsageTracker::IsHeapTrackingEnabled()) {
+    return kHeapProfilingModeTaskProfiler;
+  }
+#endif  // BUILDFLAG(USE_ALLOCATOR_SHIM) && !defined(OS_NACL)
+  return kHeapProfilingModeInvalid;
+}
+
 void MemoryDumpManager::EnableHeapProfilingIfNeeded() {
   if (heap_profiling_enabled_)
     return;
 
-  if (!CommandLine::InitializedForCurrentProcess() ||
-      !CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableHeapProfiling))
-    return;
-
-  std::string profiling_mode = CommandLine::ForCurrentProcess()
-      ->GetSwitchValueASCII(switches::kEnableHeapProfiling);
-  if (profiling_mode == switches::kEnableHeapProfilingModePseudo) {
-    AllocationContextTracker::SetCaptureMode(
-        AllocationContextTracker::CaptureMode::PSEUDO_STACK);
-#if !defined(OS_NACL)
-  } else if (profiling_mode == switches::kEnableHeapProfilingModeNative) {
-    // If we don't have frame pointers then native tracing falls-back to
-    // using base::debug::StackTrace, which may be slow.
-    AllocationContextTracker::SetCaptureMode(
-        AllocationContextTracker::CaptureMode::NATIVE_STACK);
-#endif  // !defined(OS_NACL)
-#if BUILDFLAG(USE_ALLOCATOR_SHIM)
-  } else if (profiling_mode == switches::kEnableHeapProfilingTaskProfiler) {
-    // Enable heap tracking, which in turn enables capture of heap usage
-    // tracking in tracked_objects.cc.
-    if (!base::debug::ThreadHeapUsageTracker::IsHeapTrackingEnabled())
+  HeapProfilingMode profiling_mode = GetHeapProfilingModeFromCommandLine();
+  switch (profiling_mode) {
+    case kHeapProfilingModeNone:
+    case kHeapProfilingModeInvalid:
+      return;
+    case kHeapProfilingModePseudo:
+      AllocationContextTracker::SetCaptureMode(
+          AllocationContextTracker::CaptureMode::PSEUDO_STACK);
+      break;
+    case kHeapProfilingModeNative:
+      // If we don't have frame pointers then native tracing falls-back to
+      // using base::debug::StackTrace, which may be slow.
+      AllocationContextTracker::SetCaptureMode(
+          AllocationContextTracker::CaptureMode::NATIVE_STACK);
+      break;
+    case kHeapProfilingModeTaskProfiler:
       base::debug::ThreadHeapUsageTracker::EnableHeapTracking();
-#endif  // BUILDFLAG(USE_ALLOCATOR_SHIM)
-  } else {
-    LOG(FATAL) << "Invalid mode '" << profiling_mode << "' for "
-               << switches::kEnableHeapProfiling << " flag.";
+      break;
   }
 
   for (auto mdp : dump_providers_)

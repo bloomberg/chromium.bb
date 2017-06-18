@@ -4,9 +4,11 @@
 
 #include "chrome/browser/ui/startup/bad_flags_prompt.h"
 
+#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/ui/browser.h"
@@ -35,11 +37,50 @@
 
 namespace chrome {
 
+namespace {
+
+void ShowBadFlagsInfoBar(content::WebContents* web_contents,
+                         int message_id,
+                         const char* flag) {
+  std::string switch_value =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(flag);
+  if (!switch_value.empty())
+    switch_value = "=" + switch_value;
+  SimpleAlertInfoBarDelegate::Create(
+      InfoBarService::FromWebContents(web_contents),
+      infobars::InfoBarDelegate::BAD_FLAGS_PROMPT, nullptr,
+      l10n_util::GetStringFUTF16(
+          message_id,
+          base::UTF8ToUTF16(std::string("--") + flag + switch_value)),
+      false);
+}
+
+}  // namespace
+
 void ShowBadFlagsPrompt(Browser* browser) {
   content::WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
   if (!web_contents)
     return;
+
+  // Flags only available in specific builds, for which to display a warning
+  // "the flag is not implemented in this build", if necessary.
+  struct {
+    const char* name;
+    bool is_invalid;
+  } conditional_flags[] = {
+      {switches::kEnableHeapProfiling,
+       base::trace_event::MemoryDumpManager::
+               GetHeapProfilingModeFromCommandLine() ==
+           base::trace_event::kHeapProfilingModeInvalid},
+  };
+  for (auto conditional_flag : conditional_flags) {
+    if (conditional_flag.is_invalid) {
+      ShowBadFlagsInfoBar(web_contents, IDS_UNIMPLEMENTED_FLAGS_WARNING_MESSAGE,
+                          conditional_flag.name);
+      return;
+    }
+  }
 
   // Unsupported flags for which to display a warning that "stability and
   // security will suffer".
@@ -95,20 +136,12 @@ void ShowBadFlagsPrompt(Browser* browser) {
 
     // This flag allows sites to access protected media identifiers without
     // getting the user's permission.
-    switches::kUnsafelyAllowProtectedMediaIdentifierForDomain,
-
-    NULL
+    switches::kUnsafelyAllowProtectedMediaIdentifierForDomain
   };
 
-  for (const char** flag = kBadFlags; *flag; ++flag) {
-    if (base::CommandLine::ForCurrentProcess()->HasSwitch(*flag)) {
-      SimpleAlertInfoBarDelegate::Create(
-          InfoBarService::FromWebContents(web_contents),
-          infobars::InfoBarDelegate::BAD_FLAGS_PROMPT, nullptr,
-          l10n_util::GetStringFUTF16(
-              IDS_BAD_FLAGS_WARNING_MESSAGE,
-              base::UTF8ToUTF16(std::string("--") + *flag)),
-          false);
+  for (const char* flag : kBadFlags) {
+    if (base::CommandLine::ForCurrentProcess()->HasSwitch(flag)) {
+      ShowBadFlagsInfoBar(web_contents, IDS_BAD_FLAGS_WARNING_MESSAGE, flag);
       return;
     }
   }

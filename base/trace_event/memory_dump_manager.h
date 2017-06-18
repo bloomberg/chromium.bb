@@ -36,6 +36,14 @@ class MemoryTracingObserver;
 class MemoryDumpProvider;
 class HeapProfilerSerializationState;
 
+enum HeapProfilingMode {
+  kHeapProfilingModeNone,
+  kHeapProfilingModePseudo,
+  kHeapProfilingModeNative,
+  kHeapProfilingModeTaskProfiler,
+  kHeapProfilingModeInvalid
+};
+
 // This is the interface exposed to the rest of the codebase to deal with
 // memory tracing. The main entry point for clients is represented by
 // RequestDumpPoint(). The extension by Un(RegisterDumpProvider).
@@ -137,7 +145,12 @@ class BASE_EXPORT MemoryDumpManager {
   void CreateProcessDump(const MemoryDumpRequestArgs& args,
                          const ProcessMemoryDumpCallback& callback);
 
-  // Enable heap profiling if kEnableHeapProfiling is specified.
+  // Returns the heap profiling mode configured on the command-line, if any.
+  // If heap profiling is configured but not supported by this binary, or if an
+  // invalid mode is specified, then kHeapProfilingInvalid is returned.
+  static HeapProfilingMode GetHeapProfilingModeFromCommandLine();
+
+  // Enable heap profiling if supported, and kEnableHeapProfiling is specified.
   void EnableHeapProfilingIfNeeded();
 
   // Lets tests see if a dump provider is registered.
