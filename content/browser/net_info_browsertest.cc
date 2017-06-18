@@ -269,7 +269,7 @@ IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest, NetworkQualityChangeNotified) {
   EXPECT_FALSE(
       histogram_tester.GetAllSamples("NQE.RenderThreadNotified").empty());
 
-  EXPECT_EQ(network_quality_1.transport_rtt().InMilliseconds(),
+  EXPECT_EQ(network_quality_1.http_rtt().InMilliseconds(),
             RunScriptExtractInt("getRtt()"));
   EXPECT_EQ(
       static_cast<double>(network_quality_1.downstream_throughput_kbps()) /
@@ -282,7 +282,7 @@ IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest, NetworkQualityChangeNotified) {
   estimator.NotifyObserversOfRTTOrThroughputEstimatesComputed(
       network_quality_2);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(network_quality_2.transport_rtt().InMilliseconds(),
+  EXPECT_EQ(network_quality_2.http_rtt().InMilliseconds(),
             RunScriptExtractInt("getRtt()"));
   EXPECT_EQ(
       static_cast<double>(network_quality_2.downstream_throughput_kbps()) /
@@ -310,16 +310,16 @@ IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest, NetworkQualityChangeRounded) {
   EXPECT_TRUE(embedded_test_server()->Start());
   EXPECT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL("/net_info.html")));
-  EXPECT_EQ(200, RunScriptExtractInt("getRtt()"));
+  EXPECT_EQ(125, RunScriptExtractInt("getRtt()"));
   EXPECT_EQ(0.300, RunScriptExtractDouble("getDownlink()"));
 
   net::nqe::internal::NetworkQuality network_quality_2(
-      base::TimeDelta::FromMilliseconds(123),
-      base::TimeDelta::FromMilliseconds(1217), 1317);
+      base::TimeDelta::FromMilliseconds(1123),
+      base::TimeDelta::FromMilliseconds(212), 1317);
   estimator.NotifyObserversOfRTTOrThroughputEstimatesComputed(
       network_quality_2);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1225, RunScriptExtractInt("getRtt()"));
+  EXPECT_EQ(1125, RunScriptExtractInt("getRtt()"));
   EXPECT_EQ(1.325, RunScriptExtractDouble("getDownlink()"));
 
   net::nqe::internal::NetworkQuality network_quality_3(
@@ -350,7 +350,7 @@ IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest, NetworkQualityChangeNotNotified) {
   EXPECT_TRUE(embedded_test_server()->Start());
   EXPECT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL("/net_info.html")));
-  EXPECT_EQ(1200, RunScriptExtractInt("getRtt()"));
+  EXPECT_EQ(1125, RunScriptExtractInt("getRtt()"));
   EXPECT_EQ(1.300, RunScriptExtractDouble("getDownlink()"));
 
   // All the 3 metrics change by less than 10%. So, the observers are not
@@ -361,18 +361,18 @@ IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest, NetworkQualityChangeNotNotified) {
   estimator.NotifyObserversOfRTTOrThroughputEstimatesComputed(
       network_quality_2);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1200, RunScriptExtractInt("getRtt()"));
+  EXPECT_EQ(1125, RunScriptExtractInt("getRtt()"));
   EXPECT_EQ(1.300, RunScriptExtractDouble("getDownlink()"));
 
-  // Transport RTT has changed by more than 10% from the last notified value of
+  // HTTP RTT has changed by more than 10% from the last notified value of
   // |network_quality_1|. The observers should be notified.
   net::nqe::internal::NetworkQuality network_quality_3(
-      base::TimeDelta::FromMilliseconds(1223),
-      base::TimeDelta::FromMilliseconds(2312), 1403);
+      base::TimeDelta::FromMilliseconds(2223),
+      base::TimeDelta::FromMilliseconds(1312), 1403);
   estimator.NotifyObserversOfRTTOrThroughputEstimatesComputed(
       network_quality_3);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(2300, RunScriptExtractInt("getRtt()"));
+  EXPECT_EQ(2225, RunScriptExtractInt("getRtt()"));
   EXPECT_EQ(1.400, RunScriptExtractDouble("getDownlink()"));
 }
 

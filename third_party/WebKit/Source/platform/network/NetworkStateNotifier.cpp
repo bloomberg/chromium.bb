@@ -175,8 +175,7 @@ void NetworkStateNotifier::SetNetworkQualityInfoOverride(
     override_.on_line_initialized = true;
     override_.connection_initialized = true;
     override_.effective_type = effective_type;
-    override_.transport_rtt =
-        base::TimeDelta::FromMilliseconds(transport_rtt_msec);
+    override_.http_rtt = base::TimeDelta::FromMilliseconds(transport_rtt_msec);
     override_.downlink_throughput_mbps = base::nullopt;
     if (downlink_throughput_mbps >= 0)
       override_.downlink_throughput_mbps = downlink_throughput_mbps;
