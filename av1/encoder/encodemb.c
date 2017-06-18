@@ -112,11 +112,7 @@ void av1_subtract_plane(MACROBLOCK *x, BLOCK_SIZE bsize, int plane) {
 
 // These numbers are empirically obtained.
 static const int plane_rd_mult[REF_TYPES][PLANE_TYPES] = {
-#if CONFIG_EC_ADAPT
   { 10, 7 }, { 8, 5 },
-#else
-  { 10, 6 }, { 8, 6 },
-#endif
 };
 
 static INLINE unsigned int get_token_bit_costs(
@@ -1352,11 +1348,7 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
       &pd->dst.buf[(blk_row * dst_stride + blk_col) << tx_size_wide_log2[0]];
 #if CONFIG_CFL
 
-#if CONFIG_EC_ADAPT
   FRAME_CONTEXT *const ec_ctx = xd->tile_ctx;
-#else
-  FRAME_CONTEXT *const ec_ctx = cm->fc;
-#endif  // CONFIG_EC_ADAPT
 
 #if CONFIG_DEBUG
   const MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;

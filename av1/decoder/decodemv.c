@@ -64,12 +64,8 @@ static int read_delta_qindex(AV1_COMMON *cm, MACROBLOCKD *xd, aom_reader *r,
   const int read_delta_q_flag = (b_col == 0 && b_row == 0);
   int rem_bits, thr;
   int i, smallval;
-#if CONFIG_EC_ADAPT
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   (void)cm;
-#else
-  FRAME_CONTEXT *ec_ctx = cm->fc;
-#endif
 
   if ((bsize != BLOCK_LARGEST || mbmi->skip == 0) && read_delta_q_flag) {
     abs = aom_read_symbol(r, ec_ctx->delta_q_cdf, DELTA_Q_PROBS + 1, ACCT_STR);
@@ -107,12 +103,8 @@ static int read_delta_lflevel(AV1_COMMON *cm, MACROBLOCKD *xd, aom_reader *r,
   const int read_delta_lf_flag = (b_col == 0 && b_row == 0);
   int rem_bits, thr;
   int i, smallval;
-#if CONFIG_EC_ADAPT
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   (void)cm;
-#else
-  FRAME_CONTEXT *ec_ctx = cm->fc;
-#endif
 
   if ((bsize != BLOCK_64X64 || mbmi->skip == 0) && read_delta_lf_flag) {
     abs =
@@ -145,13 +137,13 @@ static PREDICTION_MODE read_intra_mode_y(FRAME_CONTEXT *ec_ctx, MACROBLOCKD *xd,
                                          aom_reader *r, int size_group) {
   const PREDICTION_MODE y_mode =
       read_intra_mode(r, ec_ctx->y_mode_cdf[size_group]);
-#if !CONFIG_EC_ADAPT || CONFIG_ENTROPY_STATS
+#if CONFIG_ENTROPY_STATS
   FRAME_COUNTS *counts = xd->counts;
   if (counts) ++counts->y_mode[size_group][y_mode];
 #else
   /* TODO(negge): Can we remove this parameter? */
   (void)xd;
-#endif  // !CONFIG_EC_ADAPT || CONFIG_ENTROPY_STATS
+#endif  // CONFIG_ENTROPY_STATS
   return y_mode;
 }
 
@@ -160,13 +152,13 @@ static PREDICTION_MODE read_intra_mode_uv(FRAME_CONTEXT *ec_ctx,
                                           PREDICTION_MODE y_mode) {
   const PREDICTION_MODE uv_mode =
       read_intra_mode(r, ec_ctx->uv_mode_cdf[y_mode]);
-#if !CONFIG_EC_ADAPT || CONFIG_ENTROPY_STATS
+#if CONFIG_ENTROPY_STATS
   FRAME_COUNTS *counts = xd->counts;
   if (counts) ++counts->uv_mode[y_mode][uv_mode];
 #else
   /* TODO(negge): Can we remove this parameter? */
   (void)xd;
-#endif  // !CONFIG_EC_ADAPT || CONFIG_ENTROPY_STATS
+#endif  // CONFIG_ENTROPY_STATS
   return uv_mode;
 }
 
@@ -192,16 +184,10 @@ static int read_cfl_alphas(FRAME_CONTEXT *const ec_ctx, aom_reader *r,
 #if CONFIG_EXT_INTER && CONFIG_INTERINTRA
 static INTERINTRA_MODE read_interintra_mode(AV1_COMMON *cm, MACROBLOCKD *xd,
                                             aom_reader *r, int size_group) {
-#if CONFIG_EC_ADAPT
   (void)cm;
   const INTERINTRA_MODE ii_mode = (INTERINTRA_MODE)aom_read_symbol(
       r, xd->tile_ctx->interintra_mode_cdf[size_group], INTERINTRA_MODES,
       ACCT_STR);
-#else
-  const INTERINTRA_MODE ii_mode = (INTERINTRA_MODE)aom_read_tree(
-      r, av1_interintra_mode_tree, cm->fc->interintra_mode_prob[size_group],
-      ACCT_STR);
-#endif
   FRAME_COUNTS *counts = xd->counts;
   if (counts) ++counts->interintra_mode[size_group][ii_mode];
   return ii_mode;
@@ -356,15 +342,9 @@ static MOTION_MODE read_motion_mode(AV1_COMMON *cm, MACROBLOCKD *xd,
     return (MOTION_MODE)(SIMPLE_TRANSLATION + motion_mode);
   } else {
 #endif  // CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
-#if CONFIG_EC_ADAPT
     motion_mode =
         aom_read_symbol(r, xd->tile_ctx->motion_mode_cdf[mbmi->sb_type],
                         MOTION_MODES, ACCT_STR);
-#else
-  motion_mode =
-      aom_read_tree(r, av1_motion_mode_tree,
-                    cm->fc->motion_mode_prob[mbmi->sb_type], ACCT_STR);
-#endif
     if (counts) ++counts->motion_mode[mbmi->sb_type][motion_mode];
     return (MOTION_MODE)(SIMPLE_TRANSLATION + motion_mode);
 #if CONFIG_MOTION_VAR && CONFIG_WARPED_MOTION
@@ -402,16 +382,10 @@ static void read_ncobmc_mode(AV1_COMMON *cm, MACROBLOCKD *xd, MODE_INFO *mi,
 #if CONFIG_EXT_INTER
 static PREDICTION_MODE read_inter_compound_mode(AV1_COMMON *cm, MACROBLOCKD *xd,
                                                 aom_reader *r, int16_t ctx) {
-#if CONFIG_EC_ADAPT
   (void)cm;
   const int mode =
       aom_read_symbol(r, xd->tile_ctx->inter_compound_mode_cdf[ctx],
                       INTER_COMPOUND_MODES, ACCT_STR);
-#else
-  const int mode =
-      aom_read_tree(r, av1_inter_compound_mode_tree,
-                    cm->fc->inter_compound_mode_probs[ctx], ACCT_STR);
-#endif
   FRAME_COUNTS *counts = xd->counts;
 
   if (counts) ++counts->inter_compound_mode[ctx][mode];
@@ -530,12 +504,8 @@ static TX_SIZE read_selected_tx_size(AV1_COMMON *cm, MACROBLOCKD *xd,
                                      int tx_size_cat, aom_reader *r) {
   FRAME_COUNTS *counts = xd->counts;
   const int ctx = get_tx_size_context(xd);
-#if CONFIG_EC_ADAPT
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   (void)cm;
-#else
-  FRAME_CONTEXT *ec_ctx = cm->fc;
-#endif
 
   const int depth = aom_read_symbol(r, ec_ctx->tx_size_cdf[tx_size_cat][ctx],
                                     tx_size_cat + 2, ACCT_STR);
@@ -624,11 +594,7 @@ static int read_intra_segment_id(AV1_COMMON *const cm, MACROBLOCKD *const xd,
                                  aom_reader *r) {
   struct segmentation *const seg = &cm->seg;
   FRAME_COUNTS *counts = xd->counts;
-#if CONFIG_EC_ADAPT
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
-#else
-  FRAME_CONTEXT *ec_ctx = cm->fc;
-#endif
   struct segmentation_probs *const segp = &ec_ctx->seg;
   int segment_id;
 
@@ -659,11 +625,7 @@ static int read_inter_segment_id(AV1_COMMON *const cm, MACROBLOCKD *const xd,
                                  int mi_row, int mi_col, aom_reader *r) {
   struct segmentation *const seg = &cm->seg;
   FRAME_COUNTS *counts = xd->counts;
-#if CONFIG_EC_ADAPT
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
-#else
-  FRAME_CONTEXT *ec_ctx = cm->fc;
-#endif
   struct segmentation_probs *const segp = &ec_ctx->seg;
 
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
@@ -957,11 +919,7 @@ static void read_intra_angle_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   const BLOCK_SIZE bsize = mbmi->sb_type;
 #if CONFIG_INTRA_INTERP
-#if CONFIG_EC_ADAPT
   FRAME_CONTEXT *const ec_ctx = xd->tile_ctx;
-#else
-  FRAME_CONTEXT *const ec_ctx = cm->fc;
-#endif  // CONFIG_EC_ADAPT
   const int ctx = av1_get_pred_context_intra_interp(xd);
   int p_angle;
 #endif  // CONFIG_INTRA_INTERP
@@ -1013,11 +971,7 @@ void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   const TX_SIZE tx_size = mbmi->tx_size;
 #endif
 #endif  // !CONFIG_TXK_SEL
-#if CONFIG_EC_ADAPT
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
-#else
-  FRAME_CONTEXT *ec_ctx = cm->fc;
-#endif
 
 #if !CONFIG_TXK_SEL
   TX_TYPE *tx_type = &mbmi->tx_type;
@@ -1101,12 +1055,8 @@ static INLINE int is_mv_valid(const MV *mv);
 static INLINE int assign_dv(AV1_COMMON *cm, MACROBLOCKD *xd, int_mv *mv,
                             const int_mv *ref_mv, int mi_row, int mi_col,
                             BLOCK_SIZE bsize, aom_reader *r) {
-#if CONFIG_EC_ADAPT
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   (void)cm;
-#else
-  FRAME_CONTEXT *ec_ctx = cm->fc;
-#endif
   FRAME_COUNTS *counts = xd->counts;
   nmv_context_counts *const dv_counts = counts ? &counts->dv : NULL;
   read_mv(r, &mv->as_mv, &ref_mv->as_mv, &ec_ctx->ndvc, dv_counts,
@@ -1133,11 +1083,7 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
   // TODO(slavarnway): move x_mis, y_mis into xd ?????
   const int x_mis = AOMMIN(cm->mi_cols - mi_col, bw);
   const int y_mis = AOMMIN(cm->mi_rows - mi_row, bh);
-#if CONFIG_EC_ADAPT
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
-#else
-  FRAME_CONTEXT *ec_ctx = cm->fc;
-#endif
 
   mbmi->segment_id = read_intra_segment_id(cm, xd, mi_offset, x_mis, y_mis, r);
   mbmi->skip = read_skip(cm, xd, mbmi->segment_id, r);
@@ -1646,11 +1592,7 @@ static INLINE void read_mb_interp_filter(AV1_COMMON *const cm,
                                          MB_MODE_INFO *const mbmi,
                                          aom_reader *r) {
   FRAME_COUNTS *counts = xd->counts;
-#if CONFIG_EC_ADAPT
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
-#else
-  FRAME_CONTEXT *ec_ctx = cm->fc;
-#endif
 
   if (!av1_is_interp_needed(xd)) {
     set_default_interp_filters(mbmi, cm->interp_filter);
@@ -1709,11 +1651,7 @@ static void read_intra_block_mode_info(AV1_COMMON *const cm, const int mi_row,
   mbmi->ref_frame[0] = INTRA_FRAME;
   mbmi->ref_frame[1] = NONE_FRAME;
 
-#if CONFIG_EC_ADAPT
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
-#else
-  FRAME_CONTEXT *ec_ctx = cm->fc;
-#endif
 
 #if CONFIG_CB4X4
   (void)i;
@@ -1755,13 +1693,8 @@ static void read_intra_block_mode_info(AV1_COMMON *const cm, const int mi_row,
 #if CONFIG_CFL
     // TODO(ltrudeau) support PALETTE
     if (mbmi->uv_mode == DC_PRED) {
-      mbmi->cfl_alpha_idx = read_cfl_alphas(
-#if CONFIG_EC_ADAPT
-          xd->tile_ctx,
-#else
-          cm->fc,
-#endif  // CONFIG_EC_ADAPT
-          r, mbmi->cfl_alpha_signs);
+      mbmi->cfl_alpha_idx =
+          read_cfl_alphas(xd->tile_ctx, r, mbmi->cfl_alpha_signs);
     }
 #endif  // CONFIG_CFL
 
@@ -1800,11 +1733,7 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
                             aom_reader *r) {
   int i;
   int ret = 1;
-#if CONFIG_EC_ADAPT
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
-#else
-  FRAME_CONTEXT *ec_ctx = cm->fc;
-#endif
   BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
 #if CONFIG_CB4X4
@@ -2068,11 +1997,7 @@ static int read_is_inter_block(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   } else {
     const int ctx = av1_get_intra_inter_context(xd);
 #if CONFIG_NEW_MULTISYMBOL
-#if CONFIG_EC_ADAPT
     FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
-#else
-    FRAME_CONTEXT *ec_ctx = cm->fc;
-#endif
     const int is_inter =
         aom_read_symbol(r, ec_ctx->intra_inter_cdf[ctx], 2, ACCT_STR);
 #else
@@ -2198,11 +2123,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 #if CONFIG_WARPED_MOTION
   int pts[SAMPLES_ARRAY_SIZE], pts_inref[SAMPLES_ARRAY_SIZE];
 #endif  // CONFIG_WARPED_MOTION
-#if CONFIG_EC_ADAPT
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
-#else
-  FRAME_CONTEXT *ec_ctx = cm->fc;
-#endif
 
   assert(NELEMENTS(mode_2_counter) == MB_MODE_COUNT);
 
@@ -2708,14 +2629,8 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
     if (is_any_masked_compound_used(bsize)) {
 #if CONFIG_COMPOUND_SEGMENT || CONFIG_WEDGE
       if (cm->allow_masked_compound) {
-#if CONFIG_EC_ADAPT
         mbmi->interinter_compound_type = aom_read_symbol(
             r, ec_ctx->compound_type_cdf[bsize], COMPOUND_TYPES, ACCT_STR);
-#else
-        mbmi->interinter_compound_type =
-            aom_read_tree(r, av1_compound_type_tree,
-                          cm->fc->compound_type_prob[bsize], ACCT_STR);
-#endif
 #if CONFIG_WEDGE
         if (mbmi->interinter_compound_type == COMPOUND_WEDGE) {
           mbmi->wedge_index =

@@ -450,11 +450,7 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
   const int ref = is_inter_block(mbmi);
   unsigned int(*const counts)[COEFF_CONTEXTS][ENTROPY_TOKENS] =
       td->rd_counts.coef_counts[txsize_sqr_map[tx_size]][type][ref];
-#if CONFIG_EC_ADAPT
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
-#else
-  FRAME_CONTEXT *ec_ctx = cpi->common.fc;
-#endif
   aom_cdf_prob(
       *const coef_head_cdfs)[COEFF_CONTEXTS][CDF_SIZE(ENTROPY_TOKENS)] =
       ec_ctx->coef_head_cdfs[txsize_sqr_map[tx_size]][type][ref];

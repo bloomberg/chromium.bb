@@ -50,10 +50,6 @@ static void initialize_dec(void) {
     av1_init_wedge_masks();
 #endif  // CONFIG_EXT_INTER
     init_done = 1;
-#if !CONFIG_EC_ADAPT
-    av1_indices_from_tree(av1_intra_mode_ind, av1_intra_mode_inv,
-                          av1_intra_mode_tree);
-#endif
     av1_indices_from_tree(av1_switchable_interp_ind, av1_switchable_interp_inv,
                           av1_switchable_interp_tree);
 #if CONFIG_EXT_TX

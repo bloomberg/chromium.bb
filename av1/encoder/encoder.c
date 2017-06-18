@@ -4401,8 +4401,6 @@ static void dump_filtered_recon_frames(AV1_COMP *cpi) {
 }
 #endif  // DUMP_RECON_FRAMES
 
-#if CONFIG_EC_ADAPT
-
 static void make_update_tile_list_enc(AV1_COMP *cpi, const int tile_rows,
                                       const int tile_cols,
                                       FRAME_CONTEXT *ec_ctxs[]) {
@@ -4411,7 +4409,6 @@ static void make_update_tile_list_enc(AV1_COMP *cpi, const int tile_rows,
     ec_ctxs[i] = &cpi->tile_data[i].tctx;
 }
 
-#endif
 static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
                                       uint8_t *dest, int skip_adapt,
                                       unsigned int *frame_flags) {
@@ -4419,13 +4416,11 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   const AV1EncoderConfig *const oxcf = &cpi->oxcf;
   struct segmentation *const seg = &cm->seg;
   TX_SIZE t;
-#if CONFIG_EC_ADAPT
   FRAME_CONTEXT **tile_ctxs = aom_malloc(cm->tile_rows * cm->tile_cols *
                                          sizeof(&cpi->tile_data[0].tctx));
   aom_cdf_prob **cdf_ptrs =
       aom_malloc(cm->tile_rows * cm->tile_cols *
                  sizeof(&cpi->tile_data[0].tctx.partition_cdf[0][0]));
-#endif
 #if CONFIG_XIPHRC
   int frame_type;
   int drop_this_frame = 0;
@@ -4511,10 +4506,8 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
 
     ++cm->current_video_frame;
 
-#if CONFIG_EC_ADAPT
     aom_free(tile_ctxs);
     aom_free(cdf_ptrs);
-#endif
     return;
   }
 #endif  // CONFIG_EXT_REFS
@@ -4568,10 +4561,8 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   if (drop_this_frame) {
     av1_rc_postencode_update_drop_frame(cpi);
     ++cm->current_video_frame;
-#if CONFIG_EC_ADAPT
     aom_free(tile_ctxs);
     aom_free(cdf_ptrs);
-#endif
     return;
   }
 #else
@@ -4582,10 +4573,8 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
     if (av1_rc_drop_frame(cpi)) {
       av1_rc_postencode_update_drop_frame(cpi);
       ++cm->current_video_frame;
-#if CONFIG_EC_ADAPT
       aom_free(tile_ctxs);
       aom_free(cdf_ptrs);
-#endif
       return;
     }
   }
@@ -4686,10 +4675,8 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   av1_pack_bitstream(cpi, dest, size);
 
   if (skip_adapt) {
-#if CONFIG_EC_ADAPT
     aom_free(tile_ctxs);
     aom_free(cdf_ptrs);
-#endif
     return;
   }
 
@@ -4730,7 +4717,6 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   if (cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_BACKWARD) {
     av1_adapt_coef_probs(cm);
     av1_adapt_intra_frame_probs(cm);
-#if CONFIG_EC_ADAPT
     make_update_tile_list_enc(cpi, cm->tile_rows, cm->tile_cols, tile_ctxs);
     av1_average_tile_coef_cdfs(cpi->common.fc, tile_ctxs, cdf_ptrs,
                                cm->tile_rows * cm->tile_cols);
@@ -4740,7 +4726,6 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
     av1_average_tile_pvq_cdfs(cpi->common.fc, tile_ctxs,
                               cm->tile_rows * cm->tile_cols);
 #endif  // CONFIG_PVQ
-#endif  // CONFIG_EC_ADAPT
 #if CONFIG_ADAPT_SCAN
     av1_adapt_scan_order(cm);
 #endif  // CONFIG_ADAPT_SCAN
@@ -4750,12 +4735,10 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
     if (cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_BACKWARD) {
       av1_adapt_inter_frame_probs(cm);
       av1_adapt_mv_probs(cm, cm->allow_high_precision_mv);
-#if CONFIG_EC_ADAPT
       av1_average_tile_inter_cdfs(&cpi->common, cpi->common.fc, tile_ctxs,
                                   cdf_ptrs, cm->tile_rows * cm->tile_cols);
       av1_average_tile_mv_cdfs(cpi->common.fc, tile_ctxs, cdf_ptrs,
                                cm->tile_rows * cm->tile_cols);
-#endif
     }
   }
 
@@ -4791,10 +4774,8 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   if (drop_this_frame) {
     av1_rc_postencode_update_drop_frame(cpi);
     ++cm->current_video_frame;
-#if CONFIG_EC_ADAPT
     aom_free(tile_ctxs);
     aom_free(cdf_ptrs);
-#endif
     return;
   }
 #else   // !CONFIG_XIPHRC
@@ -4843,10 +4824,8 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
 #if CONFIG_EXT_REFS
   }
 #endif  // CONFIG_EXT_REFS
-#if CONFIG_EC_ADAPT
   aom_free(tile_ctxs);
   aom_free(cdf_ptrs);
-#endif
 }
 
 static void Pass0Encode(AV1_COMP *cpi, size_t *size, uint8_t *dest,

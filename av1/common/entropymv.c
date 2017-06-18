@@ -228,25 +228,6 @@ void av1_adapt_mv_probs(AV1_COMMON *cm, int allow_hp) {
   }
 }
 
-#if !CONFIG_EC_ADAPT
-void av1_set_mv_cdfs(nmv_context *ctx) {
-  int i;
-  int j;
-  av1_tree_to_cdf(av1_mv_joint_tree, ctx->joints, ctx->joint_cdf);
-
-  for (i = 0; i < 2; ++i) {
-    nmv_component *const comp_ctx = &ctx->comps[i];
-    av1_tree_to_cdf(av1_mv_class_tree, comp_ctx->classes, comp_ctx->class_cdf);
-
-    for (j = 0; j < CLASS0_SIZE; ++j) {
-      av1_tree_to_cdf(av1_mv_fp_tree, comp_ctx->class0_fp[j],
-                      comp_ctx->class0_fp_cdf[j]);
-    }
-    av1_tree_to_cdf(av1_mv_fp_tree, comp_ctx->fp, comp_ctx->fp_cdf);
-  }
-}
-#endif
-
 void av1_init_mv_probs(AV1_COMMON *cm) {
   int i;
   for (i = 0; i < NMV_CONTEXTS; ++i) {

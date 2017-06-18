@@ -317,9 +317,7 @@ typedef struct TileDataEnc {
 #if CONFIG_CFL
   CFL_CTX cfl;
 #endif
-#if CONFIG_EC_ADAPT
   DECLARE_ALIGNED(16, FRAME_CONTEXT, tctx);
-#endif
 } TileDataEnc;
 
 typedef struct RD_COUNTS {

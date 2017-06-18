@@ -150,23 +150,6 @@ static void update_mv(aom_writer *w, const unsigned int ct[2], aom_prob *cur_p,
 #endif
 }
 
-#if !CONFIG_EC_ADAPT
-static void write_mv_update(const aom_tree_index *tree,
-                            aom_prob probs[/*n - 1*/],
-                            const unsigned int counts[/*n - 1*/], int n,
-                            aom_writer *w) {
-  int i;
-  unsigned int branch_ct[32][2];
-
-  // Assuming max number of probabilities <= 32
-  assert(n <= 32);
-
-  av1_tree_probs_from_distribution(tree, branch_ct, counts);
-  for (i = 0; i < n - 1; ++i)
-    update_mv(w, branch_ct[i], &probs[i], MV_UPDATE_PROB);
-}
-#endif
-
 void av1_write_nmv_probs(AV1_COMMON *cm, int usehp, aom_writer *w,
                          nmv_context_counts *const nmv_counts) {
   int i;
@@ -174,34 +157,6 @@ void av1_write_nmv_probs(AV1_COMMON *cm, int usehp, aom_writer *w,
   for (nmv_ctx = 0; nmv_ctx < NMV_CONTEXTS; ++nmv_ctx) {
     nmv_context *const mvc = &cm->fc->nmvc[nmv_ctx];
     nmv_context_counts *const counts = &nmv_counts[nmv_ctx];
-#if !CONFIG_EC_ADAPT
-    write_mv_update(av1_mv_joint_tree, mvc->joints, counts->joints, MV_JOINTS,
-                    w);
-
-    for (i = 0; i < 2; ++i) {
-      int j;
-      nmv_component *comp = &mvc->comps[i];
-      nmv_component_counts *comp_counts = &counts->comps[i];
-
-      update_mv(w, comp_counts->sign, &comp->sign, MV_UPDATE_PROB);
-      write_mv_update(av1_mv_class_tree, comp->classes, comp_counts->classes,
-                      MV_CLASSES, w);
-      write_mv_update(av1_mv_class0_tree, comp->class0, comp_counts->class0,
-                      CLASS0_SIZE, w);
-      for (j = 0; j < MV_OFFSET_BITS; ++j)
-        update_mv(w, comp_counts->bits[j], &comp->bits[j], MV_UPDATE_PROB);
-    }
-
-    for (i = 0; i < 2; ++i) {
-      int j;
-      for (j = 0; j < CLASS0_SIZE; ++j)
-        write_mv_update(av1_mv_fp_tree, mvc->comps[i].class0_fp[j],
-                        counts->comps[i].class0_fp[j], MV_FP_SIZE, w);
-
-      write_mv_update(av1_mv_fp_tree, mvc->comps[i].fp, counts->comps[i].fp,
-                      MV_FP_SIZE, w);
-    }
-#endif
 
     if (usehp) {
       for (i = 0; i < 2; ++i) {

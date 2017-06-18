@@ -1456,11 +1456,7 @@ static int optimize_txb(TxbInfo *txb_info, const TxbProbs *txb_probs,
 
 // These numbers are empirically obtained.
 static const int plane_rd_mult[REF_TYPES][PLANE_TYPES] = {
-#if CONFIG_EC_ADAPT
   { 17, 13 }, { 16, 10 },
-#else
-  { 20, 12 }, { 16, 12 },
-#endif
 };
 
 int av1_optimize_txb(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,

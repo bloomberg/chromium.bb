@@ -137,9 +137,6 @@ typedef enum {
 
 void av1_inc_mv(const MV *mv, nmv_context_counts *mvctx,
                 MvSubpelPrecision precision);
-#if !CONFIG_EC_ADAPT
-void av1_set_mv_cdfs(nmv_context *ctx);
-#endif
 
 #ifdef __cplusplus
 }  // extern "C"

@@ -702,9 +702,7 @@ typedef struct macroblockd {
 #if CONFIG_PVQ
   daala_dec_ctx daala_dec;
 #endif
-#if CONFIG_EC_ADAPT
   FRAME_CONTEXT *tile_ctx;
-#endif
   /* Bit depth: 8, 10, 12 */
   int bd;
 

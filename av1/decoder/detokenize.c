@@ -110,12 +110,7 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
 #endif  // CONFIG_AOM_QM
                         int ctx, const int16_t *scan, const int16_t *nb,
                         int16_t *max_scan_line, aom_reader *r) {
-  FRAME_COUNTS *counts = xd->counts;
-#if CONFIG_EC_ADAPT
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
-#else
-  FRAME_CONTEXT *const ec_ctx = xd->fc;
-#endif
   const int max_eob = tx_size_2d[tx_size];
   const int ref = is_inter_block(&xd->mi[0]->mbmi);
 #if CONFIG_AOM_QM
@@ -131,11 +126,6 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
       ec_ctx->coef_tail_cdfs[tx_size_ctx][type][ref];
   int val = 0;
 
-#if !CONFIG_EC_ADAPT
-  unsigned int *blockz_count;
-  unsigned int(*coef_counts)[COEFF_CONTEXTS][UNCONSTRAINED_NODES + 1] = NULL;
-  unsigned int(*eob_branch_count)[COEFF_CONTEXTS] = NULL;
-#endif
   uint8_t token_cache[MAX_TX_SQUARE];
   const uint8_t *band_translate = get_band_translate(tx_size);
   int dq_shift;
@@ -144,14 +134,6 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
 #if CONFIG_NEW_QUANT
   const tran_low_t *dqv_val = &dq_val[0][0];
 #endif  // CONFIG_NEW_QUANT
-
-  if (counts) {
-#if !CONFIG_EC_ADAPT
-    coef_counts = counts->coef[tx_size_ctx][type][ref];
-    eob_branch_count = counts->eob_branch[tx_size_ctx][type][ref];
-    blockz_count = counts->blockz_count[tx_size_ctx][type][ref][ctx];
-#endif
-  }
 
   dq_shift = av1_get_tx_scale(tx_size);
 
@@ -172,9 +154,6 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
                                             HEAD_TOKENS + first_pos, ACCT_STR) +
                                 !first_pos;
     if (first_pos) {
-#if !CONFIG_EC_ADAPT
-      if (counts) ++blockz_count[comb_token != 0];
-#endif
       if (comb_token == 0) return 0;
     }
     token = comb_token >> 1;
@@ -182,11 +161,6 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
     while (!token) {
       *max_scan_line = AOMMAX(*max_scan_line, scan[c]);
       token_cache[scan[c]] = 0;
-#if !CONFIG_EC_ADAPT
-      if (counts && !last_pos) {
-        ++coef_counts[band][ctx][ZERO_TOKEN];
-      }
-#endif
       ++c;
       dqv = dq[1];
       ctx = get_coef_context(nb, token_cache, c);
@@ -202,13 +176,6 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
     }
 
     more_data = comb_token & 1;
-#if !CONFIG_EC_ADAPT
-    if (counts && !last_pos) {
-      ++coef_counts[band][ctx][token];
-      ++eob_branch_count[band][ctx];
-      if (!more_data) ++coef_counts[band][ctx][EOB_MODEL_TOKEN];
-    }
-#endif
 
     if (token > ONE_TOKEN)
       token +=

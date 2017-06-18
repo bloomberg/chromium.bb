@@ -188,9 +188,7 @@ struct AV1Common;
 struct frame_contexts;
 void av1_default_coef_probs(struct AV1Common *cm);
 void av1_adapt_coef_probs(struct AV1Common *cm);
-#if CONFIG_EC_ADAPT
 void av1_adapt_coef_cdfs(struct AV1Common *cm, struct frame_contexts *pre_fc);
-#endif
 
 // This is the index in the scan order beyond which all coefficients for
 // 8x8 transform and above are in the top band.
@@ -431,7 +429,6 @@ static INLINE aom_prob av1_mode_mv_merge_probs(aom_prob pre_prob,
   return mode_mv_merge_probs(pre_prob, ct);
 }
 
-#if CONFIG_EC_ADAPT
 void av1_average_tile_coef_cdfs(struct frame_contexts *fc,
                                 struct frame_contexts *ec_ctxs[],
                                 aom_cdf_prob *cdf_ptrs[], int num_tiles);
@@ -450,7 +447,6 @@ void av1_default_pvq_probs(struct AV1Common *cm);
 void av1_average_tile_pvq_cdfs(struct frame_contexts *fc,
                                struct frame_contexts *ec_ctxs[], int num_tiles);
 #endif  // CONFIG_PVQ
-#endif  // CONFIG_EC_ADAPT
 #ifdef __cplusplus
 }  // extern "C"
 #endif

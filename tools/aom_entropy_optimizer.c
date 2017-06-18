@@ -28,7 +28,6 @@
 #include "./aom_config.h"
 #include "av1/common/entropymode.h"
 
-#if CONFIG_EC_ADAPT
 #if CONFIG_ALT_INTRA
 #if CONFIG_SMOOTH_HV
 const aom_tree_index av1_intra_mode_tree[TREE_SIZE(INTRA_MODES)] = {
@@ -84,7 +83,6 @@ const aom_tree_index av1_intra_mode_tree[TREE_SIZE(INTRA_MODES)] = {
   -D153_PRED, -D207_PRED  /* 8 = D153_NODE */
 };
 #endif  // CONFIG_ALT_INTRA
-#endif
 
 #define SPACES_PER_TAB 2
 

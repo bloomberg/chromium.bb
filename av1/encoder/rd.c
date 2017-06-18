@@ -66,31 +66,16 @@ static void fill_mode_costs(AV1_COMP *cpi) {
 
   for (i = 0; i < INTRA_MODES; ++i)
     for (j = 0; j < INTRA_MODES; ++j)
-#if CONFIG_EC_ADAPT
       av1_cost_tokens_from_cdf(cpi->y_mode_costs[i][j], av1_kf_y_mode_cdf[i][j],
                                av1_intra_mode_inv);
-#else
-      av1_cost_tokens(cpi->y_mode_costs[i][j], av1_kf_y_mode_prob[i][j],
-                      av1_intra_mode_tree);
-#endif
 
   for (i = 0; i < BLOCK_SIZE_GROUPS; ++i)
-#if CONFIG_EC_ADAPT
     av1_cost_tokens_from_cdf(cpi->mbmode_cost[i], fc->y_mode_cdf[i],
                              av1_intra_mode_inv);
-#else
-    av1_cost_tokens(cpi->mbmode_cost[i], fc->y_mode_prob[i],
-                    av1_intra_mode_tree);
-#endif
 
   for (i = 0; i < INTRA_MODES; ++i)
-#if CONFIG_EC_ADAPT
     av1_cost_tokens_from_cdf(cpi->intra_uv_mode_cost[i], fc->uv_mode_cdf[i],
                              av1_intra_mode_inv);
-#else
-    av1_cost_tokens(cpi->intra_uv_mode_cost[i], fc->uv_mode_prob[i],
-                    av1_intra_mode_tree);
-#endif
 
   for (i = 0; i < SWITCHABLE_FILTER_CONTEXTS; ++i)
     av1_cost_tokens(cpi->switchable_interp_costs[i],
