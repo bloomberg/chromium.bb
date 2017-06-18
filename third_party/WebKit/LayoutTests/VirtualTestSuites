@@ -496,6 +496,11 @@
     "args": ["--enable-features=NewRemotePlaybackPipeline"]
   },
   {
+    "prefix": "new-remote-playback-pipeline",
+    "base": "http/tests/media/controls",
+    "args": ["--enable-features=NewRemotePlaybackPipeline"]
+  },
+  {
     "prefix": "high-contrast-mode",
     "base": "paint/high-contrast-mode/image-filter-all",
     "args": ["--blink-settings=highContrastMode=3,highContrastImagePolicy=0"]

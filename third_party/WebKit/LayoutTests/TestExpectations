@@ -2755,8 +2755,6 @@ crbug.com/731018 [ Mac ] sensor/gyroscope.html [ Failure Pass ]
 crbug.com/731018 [ Mac ] sensor/magnetometer.html [ Failure Pass ]
 crbug.com/731018 [ Mac ] sensor/orientation-sensor.html [ Failure Pass ]
 
-crbug.com/731035 [ Linux Win Mac ] virtual/new-remote-playback-pipeline/media/controls/video-controls-overflow-menu-hide-on-click-panel.html [ Failure Pass ]
-
 # More flaky tests on Mac
 crbug.com/731111 [ Mac ] http/tests/media/progress-events-generated-correctly.html [ Failure Pass Timeout ]
 crbug.com/731111 [ Mac ] http/tests/media/video-load-metadata-decode-error.html [ Failure Pass Timeout ]
