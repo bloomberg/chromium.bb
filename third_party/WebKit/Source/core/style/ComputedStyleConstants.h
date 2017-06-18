@@ -166,8 +166,6 @@ enum EFlexDirection {
 enum EFlexWrap { kFlexNoWrap, kFlexWrap, kFlexWrapReverse };
 
 // CSS3 Image Values
-enum class EResize { kNone, kBoth, kHorizontal, kVertical };
-
 enum QuoteType { OPEN_QUOTE, CLOSE_QUOTE, NO_OPEN_QUOTE, NO_CLOSE_QUOTE };
 
 enum EAnimPlayState { kAnimPlayStatePlaying, kAnimPlayStatePaused };

@@ -59,6 +59,16 @@ inline ETextOrientation CssValueIDToPlatformEnum(CSSValueID v) {
 }
 
 template <>
+inline EResize CssValueIDToPlatformEnum(CSSValueID v) {
+  if (v == CSSValueAuto) {
+    // Depends on settings, thus should be handled by the caller.
+    NOTREACHED();
+    return EResize::kNone;
+  }
+  return detail::cssValueIDToPlatformEnumGenerated<EResize>(v);
+}
+
+template <>
 inline WritingMode CssValueIDToPlatformEnum(CSSValueID v) {
   switch (v) {
     case CSSValueHorizontalTb:
