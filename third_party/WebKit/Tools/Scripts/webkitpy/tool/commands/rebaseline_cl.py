@@ -15,30 +15,34 @@ from webkitpy.w3c.wpt_manifest import WPTManifest
 
 _log = logging.getLogger(__name__)
 
+
 class RebaselineCL(AbstractParallelRebaselineCommand):
     name = 'rebaseline-cl'
     help_text = 'Fetches new baselines for a CL from test runs on try bots.'
-    long_help = ('By default, this command will check the latest try job results '
-                 'for all platforms, and start try jobs for platforms with no '
-                 'try jobs. Then, new baselines are downloaded for any tests '
-                 'that are being rebaselined. After downloading, the baselines '
-                 'for different platforms will be optimized (consolidated).')
+    long_help = ('This command downloads new baselines for failing layout '
+                 'tests from archived try job test results. Cross-platform '
+                 'baselines are deduplicated after downloading.')
     show_in_main_help = True
 
     def __init__(self):
         super(RebaselineCL, self).__init__(options=[
             optparse.make_option(
                 '--dry-run', action='store_true', default=False,
-                help='Dry run mode; list actions that would be performed but do not do anything.'),
+                help='Dry run mode; list actions that would be performed but '
+                     'do not actually download any new baselines.'),
             optparse.make_option(
                 '--only-changed-tests', action='store_true', default=False,
-                help='Only download new baselines for tests that are changed in the CL.'),
+                help='Only download new baselines for tests that are directly '
+                     'modified in the CL.'),
             optparse.make_option(
-                '--no-trigger-jobs', dest='trigger_jobs', action='store_false', default=True,
+                '--no-trigger-jobs', dest='trigger_jobs', action='store_false',
+                default=True,
                 help='Do not trigger any try jobs.'),
             optparse.make_option(
-                '--fill-missing', dest='fill_missing', action='store_true', default=False,
-                help='If some platforms have no try job results, use results from try job results of other platforms.'),
+                '--fill-missing', dest='fill_missing', action='store_true',
+                default=False,
+                help='If some platforms have no try job results, use results '
+                     'from try job results of other platforms.'),
             self.no_optimize_option,
             self.results_directory_option,
         ])
