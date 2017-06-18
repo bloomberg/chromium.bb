@@ -354,23 +354,8 @@
 }
 
 - (NSVisualEffectView*)visualEffectView {
-  // NSVisualEffectView is only available on OS X 10.10 and higher.
-  if (!base::mac::IsAtLeastOS10_10())
-    return nil;
-
-  NSView* rootView = [[self window] contentView];
-  if (!chrome::ShouldUseFullSizeContentView()) {
-    rootView = [rootView superview];
-  }
-
-  Class nsVisualEffectViewClass = NSClassFromString(@"NSVisualEffectView");
-  DCHECK(nsVisualEffectViewClass);
-  for (NSView* view in [rootView subviews]) {
-    if ([view isKindOfClass:nsVisualEffectViewClass]) {
-      return base::mac::ObjCCast<NSVisualEffectView>(view);
-    }
-  }
-  return nil;
+  return [[BrowserWindowController
+      browserWindowControllerForWindow:[self window]] visualEffectView];
 }
 
 - (void)setController:(TabStripController*)controller {
