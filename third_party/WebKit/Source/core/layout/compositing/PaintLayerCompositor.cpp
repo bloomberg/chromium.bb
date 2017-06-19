@@ -460,7 +460,7 @@ void PaintLayerCompositor::UpdateIfNeeded(
     // CompositedLayerMapping::updateElementIdAndCompositorMutableProperties.
     if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
       if (Element* scrolling_element =
-              layout_view_.GetDocument().scrollingElement()) {
+              layout_view_.GetDocument().ScrollingElementNoLayout()) {
         uint32_t mutable_properties = CompositorMutableProperty::kNone;
         if (scrolling_element->HasCompositorProxy()) {
           mutable_properties = (CompositorMutableProperty::kScrollLeft |
