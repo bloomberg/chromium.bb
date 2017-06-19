@@ -101,10 +101,6 @@ class TestMemoryCoordinatorDelegate : public MemoryCoordinatorDelegate {
   TestMemoryCoordinatorDelegate() {}
   ~TestMemoryCoordinatorDelegate() override {}
 
-  bool CanSuspendBackgroundedRenderer(int render_process_id) override {
-    return true;
-  }
-
   void DiscardTab() override { ++discard_tab_count_; }
 
   int discard_tab_count() const { return discard_tab_count_; }
@@ -245,13 +241,8 @@ TEST_F(MemoryCoordinatorImplTest, SetMemoryStateDelivered) {
       coordinator_->SetChildMemoryState(1, MemoryState::THROTTLED));
   EXPECT_EQ(1, cmc1->on_state_change_calls());
   EXPECT_EQ(mojom::MemoryState::THROTTLED, cmc1->state());
-
-  EXPECT_TRUE(
-      coordinator_->SetChildMemoryState(2, MemoryState::SUSPENDED));
-  EXPECT_EQ(1, cmc2->on_state_change_calls());
-  // Child processes are considered as visible (foreground) by default,
-  // and visible ones won't be suspended but throttled.
-  EXPECT_EQ(mojom::MemoryState::THROTTLED, cmc2->state());
+  EXPECT_EQ(0, cmc2->on_state_change_calls());
+  EXPECT_EQ(mojom::MemoryState::NORMAL, cmc2->state());
 }
 
 TEST_F(MemoryCoordinatorImplTest, PurgeMemoryChild) {
@@ -277,8 +268,7 @@ TEST_F(MemoryCoordinatorImplTest, SetChildMemoryState) {
   EXPECT_TRUE(
       coordinator_->SetChildMemoryState(1, MemoryState::THROTTLED));
   EXPECT_EQ(mojom::MemoryState::THROTTLED, cmc->state());
-  EXPECT_TRUE(
-      coordinator_->SetChildMemoryState(1, MemoryState::SUSPENDED));
+  EXPECT_TRUE(coordinator_->SetChildMemoryState(1, MemoryState::THROTTLED));
   EXPECT_EQ(mojom::MemoryState::THROTTLED, cmc->state());
 
   // Background
@@ -293,19 +283,6 @@ TEST_F(MemoryCoordinatorImplTest, SetChildMemoryState) {
   EXPECT_TRUE(
       coordinator_->SetChildMemoryState(1, MemoryState::THROTTLED));
   EXPECT_EQ(mojom::MemoryState::THROTTLED, cmc->state());
-  EXPECT_TRUE(
-      coordinator_->SetChildMemoryState(1, MemoryState::SUSPENDED));
-  EXPECT_EQ(mojom::MemoryState::SUSPENDED, cmc->state());
-
-  // Background but there are workers
-  render_process_host->IncrementServiceWorkerRefCount();
-  EXPECT_TRUE(
-      coordinator_->SetChildMemoryState(1, MemoryState::THROTTLED));
-  EXPECT_EQ(mojom::MemoryState::THROTTLED, cmc->state());
-  EXPECT_FALSE(
-      coordinator_->SetChildMemoryState(1, MemoryState::SUSPENDED));
-  EXPECT_EQ(mojom::MemoryState::THROTTLED, cmc->state());
-  render_process_host->DecrementSharedWorkerRefCount();
 }
 
 // TODO(bashi): Move policy specific tests into a separate file.

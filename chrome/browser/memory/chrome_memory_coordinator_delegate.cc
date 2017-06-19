@@ -20,17 +20,6 @@ ChromeMemoryCoordinatorDelegate::ChromeMemoryCoordinatorDelegate() {}
 
 ChromeMemoryCoordinatorDelegate::~ChromeMemoryCoordinatorDelegate() {}
 
-bool ChromeMemoryCoordinatorDelegate::CanSuspendBackgroundedRenderer(
-    int render_process_id) {
-#if defined(OS_ANDROID)
-  // TODO(bashi): Implement
-  return true;
-#else
-  return g_browser_process->GetTabManager()->CanSuspendBackgroundedRenderer(
-      render_process_id);
-#endif
-}
-
 void ChromeMemoryCoordinatorDelegate::DiscardTab() {
 #if !defined(OS_ANDROID)
   if (g_browser_process->GetTabManager())

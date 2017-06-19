@@ -13,19 +13,6 @@
 
 namespace content {
 
-class TestMemoryCoordinatorDelegate : public MemoryCoordinatorDelegate {
- public:
-  TestMemoryCoordinatorDelegate() {}
-  ~TestMemoryCoordinatorDelegate() override {}
-
-  bool CanSuspendBackgroundedRenderer(int render_process_id) override {
-    return true;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestMemoryCoordinatorDelegate);
-};
-
 class MemoryCoordinatorImplBrowserTest : public ContentBrowserTest {
  public:
   MemoryCoordinatorImplBrowserTest() {}
@@ -50,18 +37,6 @@ IN_PROC_BROWSER_TEST_F(MemoryCoordinatorImplBrowserTest, HandleAdded) {
   NavigateToURL(shell(), url);
   size_t num_children = MemoryCoordinatorImpl::GetInstance()->children().size();
   EXPECT_EQ(1u, num_children);
-}
-
-IN_PROC_BROWSER_TEST_F(MemoryCoordinatorImplBrowserTest, CanSuspendRenderer) {
-  GURL url = GetTestUrl("", "simple_page.html");
-  NavigateToURL(shell(), url);
-  auto* memory_coordinator = MemoryCoordinatorImpl::GetInstance();
-  memory_coordinator->SetDelegateForTesting(
-      base::MakeUnique<TestMemoryCoordinatorDelegate>());
-  EXPECT_EQ(1u, memory_coordinator->children().size());
-  int render_process_id = memory_coordinator->children().begin()->first;
-  // Foreground tab cannot be suspended.
-  EXPECT_FALSE(memory_coordinator->CanSuspendRenderer(render_process_id));
 }
 
 IN_PROC_BROWSER_TEST_F(MemoryCoordinatorImplBrowserTest, GetStateForProcess) {

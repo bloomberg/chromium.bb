@@ -19,7 +19,6 @@ class ChromeMemoryCoordinatorDelegate
   ~ChromeMemoryCoordinatorDelegate() override;
 
   // MemoryCoordinatorDelegate implementation.
-  bool CanSuspendBackgroundedRenderer(int render_process_id) override;
   void DiscardTab() override;
 
  private:
