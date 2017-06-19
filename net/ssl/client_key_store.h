@@ -19,6 +19,10 @@ namespace net {
 class SSLPrivateKey;
 class X509Certificate;
 
+// TODO(mattm): This is now used only by
+// chrome/browser/chromeos/net/client_cert_store_chromeos.cc.  Move it to
+// chrome/browser/chromeos/net, or just have client_cert_store_chromeos.cc
+// directly call whatever.
 // TODO(rsleevi, davidben): Remove this once https://crbug.com/394131 is fixed.
 // A certificate and key store that allows several external certificate
 // providers to expose certificates and keys through this store. All currently

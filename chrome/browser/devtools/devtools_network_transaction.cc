@@ -168,18 +168,18 @@ int DevToolsNetworkTransaction::RestartIgnoringLastError(
 }
 
 int DevToolsNetworkTransaction::RestartWithCertificate(
-    net::X509Certificate* client_cert,
-    net::SSLPrivateKey* client_private_key,
+    scoped_refptr<net::X509Certificate> client_cert,
+    scoped_refptr<net::SSLPrivateKey> client_private_key,
     const net::CompletionCallback& callback) {
   if (CheckFailed())
     return net::ERR_INTERNET_DISCONNECTED;
   if (!interceptor_) {
     return network_transaction_->RestartWithCertificate(
-        client_cert, client_private_key, callback);
+        std::move(client_cert), std::move(client_private_key), callback);
   }
 
   int result = network_transaction_->RestartWithCertificate(
-      client_cert, client_private_key,
+      std::move(client_cert), std::move(client_private_key),
       base::Bind(&DevToolsNetworkTransaction::IOCallback,
                  base::Unretained(this), callback, true));
   return Throttle(callback, true, result);

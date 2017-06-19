@@ -19,7 +19,7 @@
 #include "media/audio/audio_manager.h"
 #include "media/base/cdm_factory.h"
 #include "media/media_features.h"
-#include "net/cert/x509_certificate.h"
+#include "net/ssl/client_cert_identity.h"
 #include "storage/browser/quota/quota_manager.h"
 #include "ui/gfx/image/image_skia.h"
 #include "url/gurl.h"
@@ -249,7 +249,7 @@ void ContentBrowserClient::AllowCertificateError(
 void ContentBrowserClient::SelectClientCertificate(
     WebContents* web_contents,
     net::SSLCertRequestInfo* cert_request_info,
-    net::CertificateList client_certs,
+    net::ClientCertIdentityList client_certs,
     std::unique_ptr<ClientCertificateDelegate> delegate) {}
 
 net::URLRequestContext* ContentBrowserClient::OverrideRequestContextForURL(

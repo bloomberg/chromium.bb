@@ -14,6 +14,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/resource_request_info.h"
 #include "net/ssl/client_cert_store.h"
+#include "net/ssl/ssl_private_key.h"
 #include "net/url_request/url_request.h"
 
 namespace content {
@@ -36,13 +37,14 @@ class ClientCertificateDelegateImpl : public ClientCertificateDelegate {
   }
 
   // ClientCertificateDelegate implementation:
-  void ContinueWithCertificate(net::X509Certificate* cert) override {
+  void ContinueWithCertificate(scoped_refptr<net::X509Certificate> cert,
+                               scoped_refptr<net::SSLPrivateKey> key) override {
     DCHECK(!continue_called_);
     continue_called_ = true;
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&SSLClientAuthHandler::ContinueWithCertificate, handler_,
-                   base::RetainedRef(cert)));
+                   std::move(cert), std::move(key)));
   }
 
  private:
@@ -55,7 +57,7 @@ class ClientCertificateDelegateImpl : public ClientCertificateDelegate {
 void SelectCertificateOnUIThread(
     const ResourceRequestInfo::WebContentsGetter& wc_getter,
     net::SSLCertRequestInfo* cert_request_info,
-    net::CertificateList client_certs,
+    net::ClientCertIdentityList client_certs,
     const base::WeakPtr<SSLClientAuthHandler>& handler) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -96,7 +98,7 @@ class SSLClientAuthHandler::Core : public base::RefCountedThreadSafe<Core> {
           *cert_request_info_,
           base::Bind(&SSLClientAuthHandler::Core::DidGetClientCerts, this));
     } else {
-      DidGetClientCerts(net::CertificateList());
+      DidGetClientCerts(net::ClientCertIdentityList());
     }
   }
 
@@ -106,7 +108,7 @@ class SSLClientAuthHandler::Core : public base::RefCountedThreadSafe<Core> {
   ~Core() {}
 
   // Called when |client_cert_store_| is done retrieving the cert list.
-  void DidGetClientCerts(net::CertificateList client_certs) {
+  void DidGetClientCerts(net::ClientCertIdentityList client_certs) {
     if (handler_)
       handler_->DidGetClientCerts(std::move(client_certs));
   }
@@ -144,9 +146,11 @@ void SSLClientAuthHandler::SelectCertificate() {
 // static
 void SSLClientAuthHandler::ContinueWithCertificate(
     const base::WeakPtr<SSLClientAuthHandler>& handler,
-    net::X509Certificate* cert) {
+    scoped_refptr<net::X509Certificate> cert,
+    scoped_refptr<net::SSLPrivateKey> key) {
   if (handler)
-    handler->delegate_->ContinueWithCertificate(cert);
+    handler->delegate_->ContinueWithCertificate(std::move(cert),
+                                                std::move(key));
 }
 
 // static
@@ -157,7 +161,7 @@ void SSLClientAuthHandler::CancelCertificateSelection(
 }
 
 void SSLClientAuthHandler::DidGetClientCerts(
-    net::CertificateList client_certs) {
+    net::ClientCertIdentityList client_certs) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Note that if |client_cert_store_| is NULL, we intentionally fall through to
@@ -174,17 +178,17 @@ void SSLClientAuthHandler::DidGetClientCerts(
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::Bind(&SSLClientAuthHandler::ContinueWithCertificate,
-                   weak_factory_.GetWeakPtr(), nullptr));
+                   weak_factory_.GetWeakPtr(), nullptr, nullptr));
     return;
   }
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&SelectCertificateOnUIThread,
-                 ResourceRequestInfo::ForRequest(request_)
-                     ->GetWebContentsGetterForRequest(),
-                 base::RetainedRef(cert_request_info_), std::move(client_certs),
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&SelectCertificateOnUIThread,
+                     ResourceRequestInfo::ForRequest(request_)
+                         ->GetWebContentsGetterForRequest(),
+                     base::RetainedRef(cert_request_info_),
+                     std::move(client_certs), weak_factory_.GetWeakPtr()));
 }
 
 }  // namespace content

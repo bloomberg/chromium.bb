@@ -37,7 +37,8 @@ class PlatformKeysCertificateSelector : public chrome::CertificateSelector {
 
   // chrome::CertificateSelector:
   bool Cancel() override;
-  bool Accept() override;
+  void AcceptCertificate(
+      std::unique_ptr<net::ClientCertIdentity> identity) override;
 
  private:
   const std::string extension_name_;

@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "net/ssl/client_cert_identity.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "remoting/host/third_party_auth_config.h"
@@ -18,7 +19,6 @@
 
 namespace net {
 class ClientCertStore;
-typedef std::vector<scoped_refptr<X509Certificate> > CertificateList;
 }
 
 namespace remoting {
@@ -54,11 +54,12 @@ class TokenValidatorBase
 
  protected:
   void OnCertificatesSelected(net::ClientCertStore* unused,
-                              net::CertificateList selected_certs);
+                              net::ClientCertIdentityList selected_certs);
 
   virtual void StartValidateRequest(const std::string& token) = 0;
-  virtual void ContinueWithCertificate(net::X509Certificate* client_cert,
-                                       net::SSLPrivateKey* client_private_key);
+  virtual void ContinueWithCertificate(
+      scoped_refptr<net::X509Certificate> client_cert,
+      scoped_refptr<net::SSLPrivateKey> client_private_key);
   virtual bool IsValidScope(const std::string& token_scope);
   std::string ProcessResponse(int net_result);
 

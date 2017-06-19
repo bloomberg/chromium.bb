@@ -420,14 +420,14 @@ void CastContentBrowserClient::AllowCertificateError(
 void CastContentBrowserClient::SelectClientCertificate(
     content::WebContents* web_contents,
     net::SSLCertRequestInfo* cert_request_info,
-    net::CertificateList client_certs,
+    net::ClientCertIdentityList client_certs,
     std::unique_ptr<content::ClientCertificateDelegate> delegate) {
   GURL requesting_url("https://" + cert_request_info->host_and_port.ToString());
 
   if (!requesting_url.is_valid()) {
     LOG(ERROR) << "Invalid URL string: "
                << requesting_url.possibly_invalid_spec();
-    delegate->ContinueWithCertificate(nullptr);
+    delegate->ContinueWithCertificate(nullptr, nullptr);
     return;
   }
 
@@ -441,32 +441,44 @@ void CastContentBrowserClient::SelectClientCertificate(
   //
   // TODO(davidben): Stop using child ID to identify an app.
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  content::BrowserThread::PostTaskAndReplyWithResult(
+  content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&CastContentBrowserClient::SelectClientCertificateOnIOThread,
-                 base::Unretained(this), requesting_url,
-                 web_contents->GetRenderProcessHost()->GetID()),
-      base::Bind(&content::ClientCertificateDelegate::ContinueWithCertificate,
-                 base::Owned(delegate.release())));
+      base::BindOnce(
+          &CastContentBrowserClient::SelectClientCertificateOnIOThread,
+          base::Unretained(this), requesting_url,
+          web_contents->GetRenderProcessHost()->GetID(),
+          base::SequencedTaskRunnerHandle::Get(),
+          base::Bind(
+              &content::ClientCertificateDelegate::ContinueWithCertificate,
+              base::Owned(delegate.release()))));
 }
 
-net::X509Certificate*
-CastContentBrowserClient::SelectClientCertificateOnIOThread(
+void CastContentBrowserClient::SelectClientCertificateOnIOThread(
     GURL requesting_url,
-    int render_process_id) {
+    int render_process_id,
+    scoped_refptr<base::SequencedTaskRunner> original_runner,
+    const base::Callback<void(scoped_refptr<net::X509Certificate>,
+                              scoped_refptr<net::SSLPrivateKey>)>&
+        continue_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   CastNetworkDelegate* network_delegate =
       url_request_context_factory_->app_network_delegate();
   if (network_delegate->IsWhitelisted(requesting_url,
                                       render_process_id, false)) {
-    return CastNetworkDelegate::DeviceCert();
+    original_runner->PostTask(
+        FROM_HERE,
+        base::Bind(continue_callback,
+                   make_scoped_refptr(CastNetworkDelegate::DeviceCert()),
+                   make_scoped_refptr(CastNetworkDelegate::DeviceKey())));
+    return;
   } else {
     LOG(ERROR) << "Invalid host for client certificate request: "
                << requesting_url.host()
                << " with render_process_id: "
                << render_process_id;
-    return NULL;
   }
+  original_runner->PostTask(FROM_HERE,
+                            base::Bind(continue_callback, nullptr, nullptr));
 }
 
 bool CastContentBrowserClient::CanCreateWindow(

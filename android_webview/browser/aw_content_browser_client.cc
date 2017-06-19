@@ -390,7 +390,7 @@ void AwContentBrowserClient::AllowCertificateError(
 void AwContentBrowserClient::SelectClientCertificate(
     content::WebContents* web_contents,
     net::SSLCertRequestInfo* cert_request_info,
-    net::CertificateList client_certs,
+    net::ClientCertIdentityList client_certs,
     std::unique_ptr<content::ClientCertificateDelegate> delegate) {
   AwContentsClientBridge* client =
       AwContentsClientBridge::FromWebContents(web_contents);

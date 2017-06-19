@@ -30,7 +30,6 @@
 #include "net/ssl/client_cert_store_mac.h"
 #endif
 #include "net/ssl/ssl_cert_request_info.h"
-#include "net/ssl/ssl_platform_key.h"
 #include "net/ssl/ssl_private_key.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request.h"
@@ -50,7 +49,7 @@ const char kCertIssuerWildCard[] = "*";
 // * |now| is within [valid_start, valid_expiry].
 bool IsCertificateValid(const std::string& issuer,
                         const base::Time& now,
-                        const scoped_refptr<net::X509Certificate>& cert) {
+                        const net::X509Certificate* cert) {
   return (issuer == kCertIssuerWildCard ||
       issuer == cert->issuer().common_name) &&
       cert->valid_start() <= now && cert->valid_expiry() > now;
@@ -67,8 +66,11 @@ bool IsCertificateValid(const std::string& issuer,
 //    |valid_expiry| is worse.
 bool WorseThan(const std::string& issuer,
                const base::Time& now,
-               const scoped_refptr<net::X509Certificate>& c1,
-               const scoped_refptr<net::X509Certificate>& c2) {
+               const std::unique_ptr<net::ClientCertIdentity>& i1,
+               const std::unique_ptr<net::ClientCertIdentity>& i2) {
+  net::X509Certificate* c1 = i1->certificate();
+  net::X509Certificate* c2 = i2->certificate();
+
   if (!IsCertificateValid(issuer, now, c2))
     return false;
 
@@ -210,7 +212,7 @@ void TokenValidatorBase::OnCertificateRequested(
 
 void TokenValidatorBase::OnCertificatesSelected(
     net::ClientCertStore* unused,
-    net::CertificateList selected_certs) {
+    net::ClientCertIdentityList selected_certs) {
   const std::string& issuer =
       third_party_auth_config_.token_validation_cert_issuer;
 
@@ -222,18 +224,21 @@ void TokenValidatorBase::OnCertificatesSelected(
                                  std::placeholders::_2));
 
   if (best_match_position == selected_certs.end() ||
-      !IsCertificateValid(issuer, now, *best_match_position)) {
+      !IsCertificateValid(issuer, now, (*best_match_position)->certificate())) {
     ContinueWithCertificate(nullptr, nullptr);
   } else {
-    ContinueWithCertificate(
-        best_match_position->get(),
-        net::FetchClientCertPrivateKey(best_match_position->get()).get());
+    scoped_refptr<net::X509Certificate> cert =
+        (*best_match_position)->certificate();
+    net::ClientCertIdentity::SelfOwningAcquirePrivateKey(
+        std::move(*best_match_position),
+        base::Bind(&TokenValidatorBase::ContinueWithCertificate,
+                   weak_factory_.GetWeakPtr(), std::move(cert)));
   }
 }
 
 void TokenValidatorBase::ContinueWithCertificate(
-    net::X509Certificate* client_cert,
-    net::SSLPrivateKey* client_private_key) {
+    scoped_refptr<net::X509Certificate> client_cert,
+    scoped_refptr<net::SSLPrivateKey> client_private_key) {
   if (request_) {
     if (client_cert) {
       HOST_LOG << "Using certificate issued by: '"
@@ -242,7 +247,8 @@ void TokenValidatorBase::ContinueWithCertificate(
                << client_cert->valid_expiry() << "'";
     }
 
-    request_->ContinueWithCertificate(client_cert, client_private_key);
+    request_->ContinueWithCertificate(std::move(client_cert),
+                                      std::move(client_private_key));
   }
 }
 

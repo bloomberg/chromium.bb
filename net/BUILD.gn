@@ -321,12 +321,14 @@ component("net") {
     "ssl/channel_id_service.h",
     "ssl/channel_id_store.cc",
     "ssl/channel_id_store.h",
+    "ssl/client_cert_identity.cc",
+    "ssl/client_cert_identity.h",
+    "ssl/client_cert_identity_mac.cc",
+    "ssl/client_cert_identity_mac.h",
     "ssl/client_key_store.cc",
     "ssl/client_key_store.h",
     "ssl/default_channel_id_store.cc",
     "ssl/default_channel_id_store.h",
-    "ssl/openssl_client_key_store.cc",
-    "ssl/openssl_client_key_store.h",
     "ssl/openssl_ssl_util.cc",
     "ssl/openssl_ssl_util.h",
     "ssl/ssl_cert_request_info.cc",
@@ -1638,12 +1640,12 @@ component("net") {
       "ssl/ssl_config_service_defaults.h",
       "ssl/ssl_key_logger.cc",
       "ssl/ssl_key_logger.h",
-      "ssl/ssl_platform_key.h",
       "ssl/ssl_platform_key_android.cc",
       "ssl/ssl_platform_key_android.h",
       "ssl/ssl_platform_key_mac.cc",
       "ssl/ssl_platform_key_mac.h",
       "ssl/ssl_platform_key_nss.cc",
+      "ssl/ssl_platform_key_nss.h",
       "ssl/ssl_platform_key_util.cc",
       "ssl/ssl_platform_key_util.h",
       "ssl/ssl_platform_key_win.cc",
@@ -1787,8 +1789,6 @@ component("net") {
       sources -= [
         "cert/cert_database_openssl.cc",
         "cert/x509_certificate_openssl.cc",
-        "ssl/openssl_client_key_store.cc",
-        "ssl/openssl_client_key_store.h",
       ]
     } else {
       if (is_android) {
@@ -1860,8 +1860,11 @@ component("net") {
     }
 
     if (is_chromecast && use_nss_certs) {
-      sources += [ "ssl/ssl_platform_key_chromecast.cc" ]
-      sources -= [ "ssl/ssl_platform_key_nss.cc" ]
+      sources -= [
+        "ssl/client_cert_store_nss.cc",
+        "ssl/client_cert_store_nss.h",
+        "ssl/ssl_platform_key_nss.cc",
+      ]
     }
 
     if (!enable_mdns) {
@@ -2476,6 +2479,10 @@ static_library("test_support") {
     "socket/socket_test_util.h",
     "spdy/chromium/spdy_test_util_common.cc",
     "spdy/chromium/spdy_test_util_common.h",
+    "ssl/client_cert_identity_test_util.cc",
+    "ssl/client_cert_identity_test_util.h",
+    "ssl/ssl_private_key_test_util.cc",
+    "ssl/ssl_private_key_test_util.h",
     "test/cert_test_util.cc",
     "test/cert_test_util.h",
     "test/cert_test_util_nss.cc",
@@ -5029,12 +5036,12 @@ test("net_unittests") {
     "spdy/core/spdy_test_utils.h",
     "spdy/platform/api/spdy_string_utils_test.cc",
     "ssl/channel_id_service_unittest.cc",
+    "ssl/client_cert_identity_unittest.cc",
     "ssl/client_cert_store_mac_unittest.cc",
     "ssl/client_cert_store_nss_unittest.cc",
     "ssl/client_cert_store_unittest-inl.h",
     "ssl/client_cert_store_win_unittest.cc",
     "ssl/default_channel_id_store_unittest.cc",
-    "ssl/openssl_client_key_store_unittest.cc",
     "ssl/ssl_cipher_suite_names_unittest.cc",
     "ssl/ssl_client_auth_cache_unittest.cc",
     "ssl/ssl_client_session_cache_unittest.cc",
@@ -5046,8 +5053,6 @@ test("net_unittests") {
     "ssl/ssl_platform_key_nss_unittest.cc",
     "ssl/ssl_platform_key_util_unittest.cc",
     "ssl/ssl_platform_key_win_unittest.cc",
-    "ssl/ssl_private_key_test_util.cc",
-    "ssl/ssl_private_key_test_util.h",
     "test/embedded_test_server/embedded_test_server_unittest.cc",
     "test/embedded_test_server/http_request_unittest.cc",
     "test/embedded_test_server/http_response_unittest.cc",
@@ -5233,10 +5238,6 @@ test("net_unittests") {
   if (!use_nss_certs) {
     # Only include this test when using NSS for cert verification.
     sources -= [ "cert_net/nss_ocsp_unittest.cc" ]
-  }
-
-  if (!use_openssl_certs) {
-    sources -= [ "ssl/openssl_client_key_store_unittest.cc" ]
   }
 
   if (enable_websockets) {
@@ -5449,8 +5450,10 @@ test("net_unittests") {
   }
 
   if (is_chromecast && use_nss_certs) {
-    sources += [ "ssl/ssl_platform_key_chromecast_unittest.cc" ]
-    sources -= [ "ssl/ssl_platform_key_nss_unittest.cc" ]
+    sources -= [
+      "ssl/client_cert_store_nss_unittest.cc",
+      "ssl/ssl_platform_key_nss_unittest.cc",
+    ]
   }
 
   # Include transport_security_state_generator tests.

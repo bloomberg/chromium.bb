@@ -17,7 +17,9 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "jni/MockAwContentsClientBridge_jni.h"
 #include "net/android/net_jni_registrar.h"
+#include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_cert_request_info.h"
+#include "net/ssl/ssl_private_key.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -25,6 +27,7 @@ using base::android::AttachCurrentThread;
 using base::android::ScopedJavaLocalRef;
 using net::SSLCertRequestInfo;
 using net::SSLClientCertType;
+using net::SSLPrivateKey;
 using net::X509Certificate;
 using testing::NotNull;
 using testing::Test;
@@ -39,7 +42,8 @@ class AwContentsClientBridgeTest : public Test {
   AwContentsClientBridgeTest() {}
 
   // Callback method called when a cert is selected.
-  void CertSelected(X509Certificate* cert);
+  void CertSelected(scoped_refptr<X509Certificate> cert,
+                    scoped_refptr<SSLPrivateKey> key);
 
  protected:
   void SetUp() override;
@@ -49,7 +53,8 @@ class AwContentsClientBridgeTest : public Test {
   base::android::ScopedJavaGlobalRef<jobject> jbridge_;
   std::unique_ptr<AwContentsClientBridge> bridge_;
   scoped_refptr<SSLCertRequestInfo> cert_request_info_;
-  X509Certificate* selected_cert_;
+  scoped_refptr<X509Certificate> selected_cert_;
+  scoped_refptr<SSLPrivateKey> selected_key_;
   int cert_selected_callbacks_;
   JNIEnv* env_;
 };
@@ -61,8 +66,9 @@ class TestClientCertificateDelegate
       : test_(test) {}
 
   // content::ClientCertificateDelegate.
-  void ContinueWithCertificate(net::X509Certificate* cert) override {
-    test_->CertSelected(cert);
+  void ContinueWithCertificate(scoped_refptr<net::X509Certificate> cert,
+                               scoped_refptr<net::SSLPrivateKey> key) override {
+    test_->CertSelected(std::move(cert), std::move(key));
     test_ = nullptr;
   }
 
@@ -88,8 +94,11 @@ void AwContentsClientBridgeTest::SetUp() {
   cert_request_info_ = new net::SSLCertRequestInfo;
 }
 
-void AwContentsClientBridgeTest::CertSelected(X509Certificate* cert) {
-  selected_cert_ = cert;
+void AwContentsClientBridgeTest::CertSelected(
+    scoped_refptr<X509Certificate> cert,
+    scoped_refptr<SSLPrivateKey> key) {
+  selected_cert_ = std::move(cert);
+  selected_key_ = std::move(key);
   cert_selected_callbacks_++;
 }
 
@@ -137,7 +146,8 @@ TEST_F(AwContentsClientBridgeTest,
       Java_MockAwContentsClientBridge_createTestCertChain(env_, jbridge_),
       nullptr);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(nullptr, selected_cert_);
+  EXPECT_EQ(nullptr, selected_cert_.get());
+  EXPECT_EQ(nullptr, selected_key_.get());
   EXPECT_EQ(1, cert_selected_callbacks_);
 }
 
@@ -154,7 +164,8 @@ TEST_F(AwContentsClientBridgeTest,
   bridge_->ProvideClientCertificateResponse(env_, jbridge_, requestId, nullptr,
                                             nullptr);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(nullptr, selected_cert_);
+  EXPECT_EQ(nullptr, selected_cert_.get());
+  EXPECT_EQ(nullptr, selected_key_.get());
   EXPECT_EQ(1, cert_selected_callbacks_);
 }
 

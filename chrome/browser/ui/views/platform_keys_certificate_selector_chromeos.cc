@@ -8,23 +8,58 @@
 #include <utility>
 
 #include "base/callback_helpers.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/grit/generated_resources.h"
+#include "net/ssl/client_cert_identity.h"
+#include "net/ssl/ssl_private_key.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/font.h"
 #include "ui/views/controls/styled_label.h"
 
 namespace chromeos {
 
+namespace {
+
+// Fake ClientCertIdentity that does not support retrieving the private key.
+// The platformKeys API currently only deals in certificates, not identities.
+// Looking up the private key by the certificate is done as a separate step.
+class ClientCertIdentityPlatformKeys : public net::ClientCertIdentity {
+ public:
+  explicit ClientCertIdentityPlatformKeys(
+      scoped_refptr<net::X509Certificate> cert)
+      : net::ClientCertIdentity(std::move(cert)) {}
+  ~ClientCertIdentityPlatformKeys() override = default;
+
+  void AcquirePrivateKey(
+      const base::Callback<void(scoped_refptr<net::SSLPrivateKey>)>&
+          private_key_callback) override {
+    NOTREACHED();
+  }
+};
+
+net::ClientCertIdentityList CertificateListToIdentityList(
+    const net::CertificateList& certs) {
+  net::ClientCertIdentityList identities;
+  for (const auto& cert : certs) {
+    identities.push_back(
+        base::MakeUnique<ClientCertIdentityPlatformKeys>(cert));
+  }
+  return identities;
+}
+
+}  // namespace
+
 PlatformKeysCertificateSelector::PlatformKeysCertificateSelector(
     const net::CertificateList& certificates,
     const std::string& extension_name,
     const CertificateSelectedCallback& callback,
     content::WebContents* web_contents)
-    : CertificateSelector(certificates, web_contents),
+    : CertificateSelector(CertificateListToIdentityList(certificates),
+                          web_contents),
       extension_name_(extension_name),
       callback_(callback) {
   DCHECK(!callback_.is_null());
@@ -61,13 +96,11 @@ bool PlatformKeysCertificateSelector::Cancel() {
   return true;
 }
 
-bool PlatformKeysCertificateSelector::Accept() {
+void PlatformKeysCertificateSelector::AcceptCertificate(
+    std::unique_ptr<net::ClientCertIdentity> identity) {
   DCHECK(!callback_.is_null());
-  scoped_refptr<net::X509Certificate> cert = GetSelectedCert();
-  if (!cert)
-    return false;
-  base::ResetAndReturn(&callback_).Run(cert);
-  return true;
+  base::ResetAndReturn(&callback_)
+      .Run(make_scoped_refptr(identity->certificate()));
 }
 
 void ShowPlatformKeysCertificateSelector(

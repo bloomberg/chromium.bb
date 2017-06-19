@@ -180,8 +180,9 @@ class NET_EXPORT URLRequestJob : public base::PowerObserver {
   // Display the error page without asking for credentials again.
   virtual void CancelAuth();
 
-  virtual void ContinueWithCertificate(X509Certificate* client_cert,
-                                       SSLPrivateKey* client_private_key);
+  virtual void ContinueWithCertificate(
+      scoped_refptr<X509Certificate> client_cert,
+      scoped_refptr<SSLPrivateKey> client_private_key);
 
   // Continue processing the request ignoring the last error.
   virtual void ContinueDespiteLastError();

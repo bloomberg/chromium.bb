@@ -86,9 +86,10 @@ class NET_EXPORT_PRIVATE HttpTransaction {
   virtual int RestartIgnoringLastError(const CompletionCallback& callback) = 0;
 
   // Restarts the HTTP transaction with a client certificate.
-  virtual int RestartWithCertificate(X509Certificate* client_cert,
-                                     SSLPrivateKey* client_private_key,
-                                     const CompletionCallback& callback) = 0;
+  virtual int RestartWithCertificate(
+      scoped_refptr<X509Certificate> client_cert,
+      scoped_refptr<SSLPrivateKey> client_private_key,
+      const CompletionCallback& callback) = 0;
 
   // Restarts the HTTP transaction with authentication credentials.
   virtual int RestartWithAuth(const AuthCredentials& credentials,
