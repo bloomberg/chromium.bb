@@ -231,21 +231,18 @@ Position PreviousRootInlineBoxCandidatePosition(
         PreviousLeafWithSameEditability(previous_node, editable_type);
   }
 
-  while (previous_node && !previous_node->IsShadowRoot()) {
-    if (HighestEditableRoot(FirstPositionInOrBeforeNode(previous_node),
+  for (Node* runner = previous_node; runner && !runner->IsShadowRoot();
+       runner = PreviousLeafWithSameEditability(runner, editable_type)) {
+    if (HighestEditableRoot(FirstPositionInOrBeforeNode(runner),
                             editable_type) != highest_root)
       break;
 
-    Position pos = isHTMLBRElement(*previous_node)
-                       ? Position::BeforeNode(previous_node)
-                       : Position::EditingPositionOf(
-                             previous_node, CaretMaxOffset(previous_node));
-
-    if (IsVisuallyEquivalentCandidate(pos))
-      return pos;
-
-    previous_node =
-        PreviousLeafWithSameEditability(previous_node, editable_type);
+    const Position& candidate =
+        isHTMLBRElement(*runner)
+            ? Position::BeforeNode(runner)
+            : Position::EditingPositionOf(runner, CaretMaxOffset(runner));
+    if (IsVisuallyEquivalentCandidate(candidate))
+      return candidate;
   }
   return Position();
 }
