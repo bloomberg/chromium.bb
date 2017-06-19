@@ -369,6 +369,8 @@ bool OmniboxViewMac::IsSelectAll() const {
   if (![field_ currentEditor])
     return true;
   const NSRange all_range = NSMakeRange(0, GetTextLength());
+  if (all_range.length == 0)
+    return false;
   return NSEqualRanges(all_range, GetSelectedRange());
 }
 

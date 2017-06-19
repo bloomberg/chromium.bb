@@ -855,7 +855,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, BasicTextOperations) {
 
   // Delete the content
   ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_DELETE, 0));
-  EXPECT_TRUE(omnibox_view->IsSelectAll());
+  EXPECT_FALSE(omnibox_view->IsSelectAll());
   omnibox_view->GetSelectionBounds(&start, &end);
   EXPECT_EQ(0U, start);
   EXPECT_EQ(0U, end);

@@ -435,7 +435,7 @@ void OmniboxViewViews::SetCaretPos(size_t caret_pos) {
 
 bool OmniboxViewViews::IsSelectAll() const {
   // TODO(oshima): IME support.
-  return text() == GetSelectedText();
+  return !text().empty() && text() == GetSelectedText();
 }
 
 bool OmniboxViewViews::DeleteAtEndPressed() {
