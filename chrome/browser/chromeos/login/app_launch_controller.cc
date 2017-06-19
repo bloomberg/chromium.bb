@@ -56,7 +56,17 @@ enum KioskLaunchType {
 };
 
 // Application install splash screen minimum show time in milliseconds.
-const int kAppInstallSplashScreenMinTimeMS = 3000;
+constexpr int kAppInstallSplashScreenMinTimeMS = 3000;
+
+// Parameters for test:
+bool skip_splash_wait = false;
+int network_wait_time_in_seconds = 10;
+base::Closure* network_timeout_callback = nullptr;
+AppLaunchController::ReturnBoolCallback* can_configure_network_callback =
+    nullptr;
+AppLaunchController::ReturnBoolCallback*
+    need_owner_auth_to_configure_network_callback = nullptr;
+bool block_app_launch = false;
 
 bool IsEnterpriseManaged() {
   return g_browser_process->platform_part()
@@ -85,14 +95,6 @@ void RecordKioskLaunchUMA(bool is_auto_launch) {
 
 }  // namespace
 
-// static
-bool AppLaunchController::skip_splash_wait_ = false;
-int AppLaunchController::network_wait_time_ = 10;
-base::Closure* AppLaunchController::network_timeout_callback_ = NULL;
-AppLaunchController::ReturnBoolCallback*
-    AppLaunchController::can_configure_network_callback_ = NULL;
-AppLaunchController::ReturnBoolCallback*
-    AppLaunchController::need_owner_auth_to_configure_network_callback_ = NULL;
 
 ////////////////////////////////////////////////////////////////////////////////
 // AppLaunchController::AppWindowWatcher
@@ -154,7 +156,7 @@ AppLaunchController::AppLaunchController(const std::string& app_id,
 }
 
 AppLaunchController::~AppLaunchController() {
-  app_launch_splash_screen_view_->SetDelegate(NULL);
+  app_launch_splash_screen_view_->SetDelegate(nullptr);
 }
 
 void AppLaunchController::StartAppLaunch(bool is_auto_launch) {
@@ -207,30 +209,35 @@ void AppLaunchController::StartAppLaunch(bool is_auto_launch) {
 
 // static
 void AppLaunchController::SkipSplashWaitForTesting() {
-  skip_splash_wait_ = true;
+  skip_splash_wait = true;
 }
 
 // static
 void AppLaunchController::SetNetworkWaitForTesting(int wait_time_secs) {
-  network_wait_time_ = wait_time_secs;
+  network_wait_time_in_seconds = wait_time_secs;
 }
 
 // static
 void AppLaunchController::SetNetworkTimeoutCallbackForTesting(
     base::Closure* callback) {
-  network_timeout_callback_ = callback;
+  network_timeout_callback = callback;
 }
 
 // static
 void AppLaunchController::SetCanConfigureNetworkCallbackForTesting(
-    ReturnBoolCallback* can_configure_network_callback) {
-  can_configure_network_callback_ = can_configure_network_callback;
+    ReturnBoolCallback* callback) {
+  can_configure_network_callback = callback;
 }
 
 // static
 void AppLaunchController::SetNeedOwnerAuthToConfigureNetworkCallbackForTesting(
-    ReturnBoolCallback* need_owner_auth_callback) {
-  need_owner_auth_to_configure_network_callback_ = need_owner_auth_callback;
+    ReturnBoolCallback* callback) {
+  need_owner_auth_to_configure_network_callback = callback;
+}
+
+// static
+void AppLaunchController::SetBlockAppLaunchForTesting(bool block) {
+  block_app_launch = block;
 }
 
 void AppLaunchController::OnConfigureNetwork() {
@@ -340,8 +347,8 @@ void AppLaunchController::OnNetworkWaitTimedout() {
 
   MaybeShowNetworkConfigureUI();
 
-  if (network_timeout_callback_)
-    network_timeout_callback_->Run();
+  if (network_timeout_callback)
+    network_timeout_callback->Run();
 }
 
 void AppLaunchController::OnAppWindowCreated() {
@@ -350,8 +357,8 @@ void AppLaunchController::OnAppWindowCreated() {
 }
 
 bool AppLaunchController::CanConfigureNetwork() {
-  if (can_configure_network_callback_)
-    return can_configure_network_callback_->Run();
+  if (can_configure_network_callback)
+    return can_configure_network_callback->Run();
 
   if (IsEnterpriseManaged()) {
     bool should_prompt;
@@ -370,8 +377,8 @@ bool AppLaunchController::CanConfigureNetwork() {
 }
 
 bool AppLaunchController::NeedOwnerAuthToConfigureNetwork() {
-  if (need_owner_auth_to_configure_network_callback_)
-    return need_owner_auth_to_configure_network_callback_->Run();
+  if (need_owner_auth_to_configure_network_callback)
+    return need_owner_auth_to_configure_network_callback->Run();
 
   return !IsEnterpriseManaged();
 }
@@ -411,8 +418,7 @@ void AppLaunchController::InitializeNetwork() {
   // after a brief wait time.
   waiting_for_network_ = true;
   network_wait_timer_.Start(
-      FROM_HERE,
-      base::TimeDelta::FromSeconds(network_wait_time_),
+      FROM_HERE, base::TimeDelta::FromSeconds(network_wait_time_in_seconds),
       this, &AppLaunchController::OnNetworkWaitTimedout);
 
   app_launch_splash_screen_view_->UpdateAppLaunchState(
@@ -456,6 +462,9 @@ void AppLaunchController::OnInstallingApp() {
 void AppLaunchController::OnReadyToLaunch() {
   launcher_ready_ = true;
 
+  if (block_app_launch)
+    return;
+
   if (network_config_requested_)
     return;
 
@@ -474,7 +483,7 @@ void AppLaunchController::OnReadyToLaunch() {
 
   // Enforce that we show app install splash screen for some minimum amount
   // of time.
-  if (!skip_splash_wait_ && time_taken_ms < kAppInstallSplashScreenMinTimeMS) {
+  if (!skip_splash_wait && time_taken_ms < kAppInstallSplashScreenMinTimeMS) {
     splash_wait_timer_.Start(
         FROM_HERE,
         base::TimeDelta::FromMilliseconds(
