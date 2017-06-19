@@ -74,6 +74,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/previews/core/previews_io_data.h"
 #include "components/signin/core/common/signin_pref_names.h"
+#include "components/sync/base/pref_names.h"
 #include "components/url_formatter/url_fixer.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -477,6 +478,11 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
     google_services_user_account_id_.Init(
         prefs::kGoogleServicesUserAccountId, pref_service);
     google_services_user_account_id_.MoveToThread(io_task_runner);
+    sync_suppress_start_.Init(syncer::prefs::kSyncSuppressStart, pref_service);
+    sync_suppress_start_.MoveToThread(io_task_runner);
+    sync_first_setup_complete_.Init(syncer::prefs::kSyncFirstSetupComplete,
+                                    pref_service);
+    sync_first_setup_complete_.MoveToThread(io_task_runner);
   }
 
   network_prediction_options_.Init(prefs::kNetworkPredictionOptions,
@@ -881,6 +887,11 @@ HostContentSettingsMap* ProfileIOData::GetHostContentSettingsMap() const {
   return host_content_settings_map_.get();
 }
 
+bool ProfileIOData::IsSyncEnabled() const {
+  return sync_first_setup_complete_.GetValue() &&
+         !sync_suppress_start_.GetValue();
+}
+
 bool ProfileIOData::IsOffTheRecord() const {
   return profile_type() == Profile::INCOGNITO_PROFILE
       || profile_type() == Profile::GUEST_PROFILE;
@@ -1268,6 +1279,8 @@ void ProfileIOData::ShutdownOnUIThread(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   google_services_user_account_id_.Destroy();
+  sync_suppress_start_.Destroy();
+  sync_first_setup_complete_.Destroy();
   enable_referrers_.Destroy();
   enable_do_not_track_.Destroy();
   force_google_safesearch_.Destroy();

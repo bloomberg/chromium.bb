@@ -69,16 +69,9 @@ std::string BuildMirrorRequestCookieIfPossible(
 
 bool SigninHeaderHelper::AppendOrRemoveRequestHeader(
     net::URLRequest* request,
-    const char* header_name,
     const GURL& redirect_url,
-    const std::string& account_id,
-    const content_settings::CookieSettings* cookie_settings,
-    int profile_mode_mask) {
-  const GURL& url = redirect_url.is_empty() ? request->url() : redirect_url;
-  std::string header_value = BuildRequestHeaderIfPossible(
-      true /* is_header_request */, url, account_id, cookie_settings,
-      profile_mode_mask);
-
+    const char* header_name,
+    const std::string& header_value) {
   if (header_value.empty()) {
     // If the request is being redirected, and it has the account consistency
     // header, and current url is a Google URL, and the redirected one is not,
@@ -116,42 +109,49 @@ SigninHeaderHelper::ParseAccountConsistencyResponseHeader(
   return dictionary;
 }
 
-std::string SigninHeaderHelper::BuildRequestHeaderIfPossible(
-    bool is_header_request,
+bool SigninHeaderHelper::ShouldBuildRequestHeader(
     const GURL& url,
-    const std::string& account_id,
-    const content_settings::CookieSettings* cookie_settings,
-    int profile_mode_mask) {
+    const content_settings::CookieSettings* cookie_settings) {
   // If signin cookies are not allowed, don't add the header.
   if (!SettingsAllowSigninCookies(cookie_settings))
-    return std::string();
+    return false;
 
   // Check if url is eligible for the header.
   if (!IsUrlEligibleForRequestHeader(url))
-    return std::string();
+    return false;
 
-  return BuildRequestHeader(is_header_request, url, account_id,
-                            profile_mode_mask);
+  return true;
 }
 
 void AppendOrRemoveAccountConsistentyRequestHeader(
     net::URLRequest* request,
     const GURL& redirect_url,
     const std::string& account_id,
+    bool sync_enabled,
     const content_settings::CookieSettings* cookie_settings,
     int profile_mode_mask) {
+  const GURL& url = redirect_url.is_empty() ? request->url() : redirect_url;
 // Dice is not enabled on mobile.
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
   DiceHeaderHelper dice_helper;
-  dice_helper.AppendOrRemoveRequestHeader(request, kDiceRequestHeader,
-                                          redirect_url, account_id,
-                                          cookie_settings, profile_mode_mask);
+  std::string dice_header_value;
+  if (dice_helper.ShouldBuildRequestHeader(url, cookie_settings)) {
+    dice_header_value =
+        dice_helper.BuildRequestHeader(account_id, sync_enabled);
+  }
+  dice_helper.AppendOrRemoveRequestHeader(
+      request, redirect_url, kDiceRequestHeader, dice_header_value);
 #endif
 
   ChromeConnectedHeaderHelper chrome_connected_helper;
+  std::string chrome_connected_header_value;
+  if (chrome_connected_helper.ShouldBuildRequestHeader(url, cookie_settings)) {
+    chrome_connected_header_value = chrome_connected_helper.BuildRequestHeader(
+        true /* is_header_request */, url, account_id, profile_mode_mask);
+  }
   chrome_connected_helper.AppendOrRemoveRequestHeader(
-      request, kChromeConnectedHeader, redirect_url, account_id,
-      cookie_settings, profile_mode_mask);
+      request, redirect_url, kChromeConnectedHeader,
+      chrome_connected_header_value);
 }
 
 ManageAccountsParams BuildManageAccountsParams(

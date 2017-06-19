@@ -32,6 +32,13 @@ class ChromeConnectedHeaderHelper : public SigninHeaderHelper {
   static ManageAccountsParams BuildManageAccountsParams(
       const std::string& header_value);
 
+  // Returns the value for the Chrome-Connected request header. May return the
+  // empty string, in this case the header must not be added.
+  std::string BuildRequestHeader(bool is_header_request,
+                                 const GURL& url,
+                                 const std::string& account_id,
+                                 int profile_mode_mask);
+
  private:
   // Returns whether the URL is eligible for the Gaia ID parameter.
   bool IsUrlEligibleToIncludeGaiaId(const GURL& url, bool is_header_request);
@@ -41,10 +48,6 @@ class ChromeConnectedHeaderHelper : public SigninHeaderHelper {
 
   // SigninHeaderHelper implementation:
   bool IsUrlEligibleForRequestHeader(const GURL& url) override;
-  std::string BuildRequestHeader(bool is_header_request,
-                                 const GURL& url,
-                                 const std::string& account_id,
-                                 int profile_mode_mask) override;
 };
 
 }  // namespace signin

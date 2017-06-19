@@ -108,13 +108,16 @@ struct DiceResponseParams {
 class SigninHeaderHelper {
  public:
   // Appends or remove the header to a network request if necessary.
-  bool AppendOrRemoveRequestHeader(
-      net::URLRequest* request,
-      const char* header_name,
-      const GURL& redirect_url,
-      const std::string& account_id,
-      const content_settings::CookieSettings* cookie_settings,
-      int profile_mode_mask);
+  bool AppendOrRemoveRequestHeader(net::URLRequest* request,
+                                   const GURL& redirect_url,
+                                   const char* header_name,
+                                   const std::string& header_value);
+
+  // Returns wether an account consistency header should be built for this
+  // request.
+  bool ShouldBuildRequestHeader(
+      const GURL& url,
+      const content_settings::CookieSettings* cookie_settings);
 
  protected:
   SigninHeaderHelper() {}
@@ -128,27 +131,9 @@ class SigninHeaderHelper {
   static ResponseHeaderDictionary ParseAccountConsistencyResponseHeader(
       const std::string& header_value);
 
-  // Returns the value of the request header, or empty if the header should not
-  // be added. Calls into BuildRequestHeader() which is customized by
-  // subclasses.
-  std::string BuildRequestHeaderIfPossible(
-      bool is_header_request,
-      const GURL& url,
-      const std::string& account_id,
-      const content_settings::CookieSettings* cookie_settings,
-      int profile_mode_mask);
-
  private:
   // Returns whether the url is eligible for the request header.
   virtual bool IsUrlEligibleForRequestHeader(const GURL& url) = 0;
-
-  // Returns the value of the request header, or empty if the header should not
-  // be added.
-  // The request is assumed to be eligible.
-  virtual std::string BuildRequestHeader(bool is_header_request,
-                                         const GURL& url,
-                                         const std::string& account_id,
-                                         int profile_mode_mask) = 0;
 };
 
 // Returns true if signin cookies are allowed.
@@ -170,6 +155,7 @@ void AppendOrRemoveAccountConsistentyRequestHeader(
     net::URLRequest* request,
     const GURL& redirect_url,
     const std::string& account_id,
+    bool sync_enabled,
     const content_settings::CookieSettings* cookie_settings,
     int profile_mode_mask);
 

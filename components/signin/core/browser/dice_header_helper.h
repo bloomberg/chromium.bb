@@ -24,13 +24,14 @@ class DiceHeaderHelper : public SigninHeaderHelper {
   static DiceResponseParams BuildDiceResponseParams(
       const std::string& header_value);
 
+  // Returns the header value for Dice requests. Returns the empty string when
+  // the header must not be added.
+  std::string BuildRequestHeader(const std::string& account_id,
+                                 bool sync_enabled);
+
  private:
   // SigninHeaderHelper implementation:
   bool IsUrlEligibleForRequestHeader(const GURL& url) override;
-  std::string BuildRequestHeader(bool is_header_request,
-                                 const GURL& url,
-                                 const std::string& account_id,
-                                 int profile_mode_mask) override;
 };
 
 }  // namespace signin
