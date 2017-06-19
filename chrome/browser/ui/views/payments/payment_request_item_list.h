@@ -68,8 +68,11 @@ class PaymentRequestItemList {
     std::unique_ptr<views::ImageView> CreateCheckmark(bool selected);
 
     // Creates the view that represents this item's content. Typically this will
-    // be a label describing the payment method, shipping adress, etc.
-    virtual std::unique_ptr<views::View> CreateContentView() = 0;
+    // be a label describing the payment method, shipping adress, etc. Populates
+    // |accessible_content| with the screen reader string for the returned
+    // content. |accessible_content| shouldn't be null.
+    virtual std::unique_ptr<views::View> CreateContentView(
+        base::string16* accessible_content) = 0;
 
     // Creates the view that should be displayed after the checkmark in the
     // item's view, such as the credit card icon.

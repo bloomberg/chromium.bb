@@ -67,10 +67,12 @@ class ProfileItem : public PaymentRequestItemList::Item {
 
  private:
   // payments::PaymentRequestItemList::Item:
-  std::unique_ptr<views::View> CreateContentView() override {
+  std::unique_ptr<views::View> CreateContentView(
+      base::string16* accessible_content) override {
     DCHECK(profile_);
+    DCHECK(accessible_content);
 
-    return controller_->GetLabel(profile_);
+    return controller_->GetLabel(profile_, accessible_content);
   }
 
   void SelectedStateChanged() override {
@@ -119,10 +121,11 @@ class ShippingProfileViewController : public ProfileListViewController,
  protected:
   // ProfileListViewController:
   std::unique_ptr<views::View> GetLabel(
-      autofill::AutofillProfile* profile) override {
+      autofill::AutofillProfile* profile,
+      base::string16* accessible_content) override {
     return GetShippingAddressLabelWithMissingInfo(
         AddressStyleType::DETAILED, state()->GetApplicationLocale(), *profile,
-        *(state()->profile_comparator()),
+        *(state()->profile_comparator()), accessible_content,
         /*enabled=*/IsEnabled(profile));
   }
 
@@ -255,10 +258,11 @@ class ContactProfileViewController : public ProfileListViewController {
  protected:
   // ProfileListViewController:
   std::unique_ptr<views::View> GetLabel(
-      autofill::AutofillProfile* profile) override {
-    return GetContactInfoLabel(AddressStyleType::DETAILED,
-                               state()->GetApplicationLocale(), *profile,
-                               *spec(), *(state()->profile_comparator()));
+      autofill::AutofillProfile* profile,
+      base::string16* accessible_content) override {
+    return GetContactInfoLabel(
+        AddressStyleType::DETAILED, state()->GetApplicationLocale(), *profile,
+        *spec(), *(state()->profile_comparator()), accessible_content);
   }
 
   void SelectProfile(autofill::AutofillProfile* profile) override {

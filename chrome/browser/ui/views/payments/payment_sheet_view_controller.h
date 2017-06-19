@@ -57,11 +57,16 @@ class PaymentSheetViewController : public PaymentRequestSheetController,
 
   void UpdatePayButtonState(bool enabled);
 
-  std::unique_ptr<views::View> CreateShippingSectionContent();
+  // These functions create the various sections and rows of the payment sheet.
+  // Where applicable, they also populate |accessible_content|, which shouldn't
+  // be null, with the screen reader string that represents their contents.
+  std::unique_ptr<views::View> CreateShippingSectionContent(
+      base::string16* accessible_content);
   std::unique_ptr<views::Button> CreateShippingRow();
   std::unique_ptr<views::Button> CreatePaymentSheetSummaryRow();
   std::unique_ptr<views::Button> CreatePaymentMethodRow();
-  std::unique_ptr<views::View> CreateContactInfoSectionContent();
+  std::unique_ptr<views::View> CreateContactInfoSectionContent(
+      base::string16* accessible_content);
   std::unique_ptr<views::Button> CreateContactInfoRow();
   std::unique_ptr<views::Button> CreateShippingOptionRow();
   std::unique_ptr<views::View> CreateDataSourceRow();

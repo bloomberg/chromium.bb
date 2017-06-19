@@ -90,23 +90,28 @@ enum class AddressStyleType { SUMMARY, DETAILED };
 // the address in the context specified by |type|. The missing information will
 // be computed using |comp| and displayed as the last line in an informative
 // manner. |enabled| indicates whether the various label lines look enabled or
-// disabled.
+// disabled. Populates |accessible_content|, which shouldn't be null, with the
+// screen reader string representing this section.
 std::unique_ptr<views::View> GetShippingAddressLabelWithMissingInfo(
     AddressStyleType type,
     const std::string& locale,
     const autofill::AutofillProfile& profile,
     const PaymentsProfileComparator& comp,
+    base::string16* accessible_content,
     bool enabled = true);
 
 // Extracts and formats descriptive text from the given |profile| to represent
 // the contact info in the context specified by |type|. Includes/excludes name,
-// email, and phone fields according to the respective boolean fields.
+// email, and phone fields according to the respective boolean fields. Populates
+// |accessible_content|, which shouldn't be null, with the screen reader string
+// representing this section.
 std::unique_ptr<views::View> GetContactInfoLabel(
     AddressStyleType type,
     const std::string& locale,
     const autofill::AutofillProfile& profile,
     const PaymentOptionsProvider& options,
-    const PaymentsProfileComparator& comp);
+    const PaymentsProfileComparator& comp,
+    base::string16* accessible_content);
 
 // Creates a views::Border object with |insets| that can paint the gray
 // horizontal ruler used as a separator between items in the Payment Request
@@ -129,11 +134,14 @@ std::unique_ptr<views::Label> CreateHintLabel(
     gfx::HorizontalAlignment alignment = gfx::ALIGN_CENTER);
 
 // Creates a 2 line label containing |shipping_option|'s label and amount. If
-// |emphasize_label| is true, the label part will be in medium weight.
+// |emphasize_label| is true, the label part will be in medium weight. Populates
+// |accessible_content|, which shouldn't be null, with the screen reader string
+// representing this section.
 std::unique_ptr<views::View> CreateShippingOptionLabel(
     payments::mojom::PaymentShippingOption* shipping_option,
     const base::string16& formatted_amount,
-    bool emphasize_label);
+    bool emphasize_label,
+    base::string16* accessible_content);
 
 }  // namespace payments
 

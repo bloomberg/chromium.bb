@@ -337,4 +337,18 @@
        other {<ph name="CONTACT_PREVIEW">{1}<ex>Jerry, 438-123-1922</ex></ph> and <ph name="NUMBER_OF_ADDITIONAL_CONTACTS">{2}<ex>2</ex></ph> more}}
     </message>
   </if>
+
+  <!-- a11y strings -->
+  <message name="IDS_PAYMENTS_BACK" desc="The screen reader string for the back arrow button in the Desktop Payments dialog">
+    Back
+  </message>
+  <message name="IDS_PAYMENTS_EDIT" desc="The screen reader string for the pencil edit button in the Desktop Payments dialog">
+    Edit
+  </message>
+  <message name="IDS_PAYMENTS_ROW_ACCESSIBLE_NAME_FORMAT" desc="The format to build the screen reader string for Payment Sheet rows">
+    <ph name="ROW_NAME">$1<ex>Payment Method</ex></ph> <ph name="ROW_CONTENT">$2<ex>VISA ****1234</ex></ph>
+  </message>
+  <message name="IDS_PAYMENTS_PROFILE_LABELS_ACCESSIBLE_FORMAT" desc="The format to build the screen reader string for profile labels">
+    <ph name="FIRST_LABEL">$1<ex>VISA ****1234</ex></ph> <ph name="SECOND_LABEL">$2<ex>Homer Simpson</ex></ph> <ph name="THIRD_LABEL">$3<ex>123 Fake Street</ex></ph>
+  </message>
 </grit-part>
