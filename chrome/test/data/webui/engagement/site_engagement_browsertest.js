@@ -46,7 +46,8 @@ SiteEngagementBrowserTest.prototype = {
   },
 };
 
-TEST_F('SiteEngagementBrowserTest', 'All', function() {
+// TODO(crbug.com/734716): This test is flaky.
+TEST_F('SiteEngagementBrowserTest', 'DISABLED_All', function() {
   test('check engagement values are loaded', function() {
     var originCells =
         Array.from(document.getElementsByClassName('origin-cell'));
