@@ -407,10 +407,10 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EBackfaceVisibility e)
     : CSSValue(kIdentifierClass) {
   switch (e) {
-    case kBackfaceVisibilityVisible:
+    case EBackfaceVisibility::kVisible:
       value_id_ = CSSValueVisible;
       break;
-    case kBackfaceVisibilityHidden:
+    case EBackfaceVisibility::kHidden:
       value_id_ = CSSValueHidden;
       break;
   }
@@ -420,15 +420,15 @@ template <>
 inline EBackfaceVisibility CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueVisible:
-      return kBackfaceVisibilityVisible;
+      return EBackfaceVisibility::kVisible;
     case CSSValueHidden:
-      return kBackfaceVisibilityHidden;
+      return EBackfaceVisibility::kHidden;
     default:
       break;
   }
 
   NOTREACHED();
-  return kBackfaceVisibilityHidden;
+  return EBackfaceVisibility::kHidden;
 }
 
 template <>

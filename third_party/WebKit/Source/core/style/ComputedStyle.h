@@ -435,14 +435,15 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // backface-visibility (aka -webkit-backface-visibility)
   static EBackfaceVisibility InitialBackfaceVisibility() {
-    return kBackfaceVisibilityVisible;
+    return EBackfaceVisibility::kVisible;
   }
   EBackfaceVisibility BackfaceVisibility() const {
     return static_cast<EBackfaceVisibility>(
         rare_non_inherited_data_->backface_visibility_);
   }
   void SetBackfaceVisibility(EBackfaceVisibility b) {
-    SET_VAR(rare_non_inherited_data_, backface_visibility_, b);
+    SET_VAR(rare_non_inherited_data_, backface_visibility_,
+            static_cast<unsigned>(b));
   }
 
   // Background properties.

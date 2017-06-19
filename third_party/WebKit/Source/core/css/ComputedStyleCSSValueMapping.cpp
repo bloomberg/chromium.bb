@@ -3161,7 +3161,7 @@ const CSSValue* ComputedStyleCSSValueMapping::Get(
       return CSSIdentifierValue::Create(style.Appearance());
     case CSSPropertyBackfaceVisibility:
       return CSSIdentifierValue::Create(
-          (style.BackfaceVisibility() == kBackfaceVisibilityHidden)
+          (style.BackfaceVisibility() == EBackfaceVisibility::kHidden)
               ? CSSValueHidden
               : CSSValueVisible);
     case CSSPropertyWebkitBorderImage:

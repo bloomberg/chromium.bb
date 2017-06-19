@@ -2010,7 +2010,7 @@ PaintLayer* PaintLayer::HitTestLayer(
   // Check for hit test on backface if backface-visibility is 'hidden'
   if (local_transform_state &&
       GetLayoutObject().Style()->BackfaceVisibility() ==
-          kBackfaceVisibilityHidden) {
+          EBackfaceVisibility::kHidden) {
     TransformationMatrix inverted_matrix =
         local_transform_state->accumulated_transform_.Inverse();
     // If the z-vector of the matrix is negative, the back is facing towards the
