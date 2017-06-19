@@ -256,9 +256,12 @@ void NTPTilesInternalsMessageHandler::SendTiles(
           FaviconResultMap::key_type(tile.url, entry.type_enum));
 
       if (it != result_map.end()) {
+        const favicon_base::FaviconRawBitmapResult& result = it->second;
         auto icon = base::MakeUnique<base::DictionaryValue>();
-        icon->SetString("url", it->second.icon_url.spec());
+        icon->SetString("url", result.icon_url.spec());
         icon->SetString("type", entry.type_name);
+        icon->SetInteger("width", result.pixel_size.width());
+        icon->SetInteger("height", result.pixel_size.height());
         icon_list->Append(std::move(icon));
       }
     }
