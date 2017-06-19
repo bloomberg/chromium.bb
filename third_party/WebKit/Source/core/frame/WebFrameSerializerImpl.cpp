@@ -75,7 +75,7 @@
 // override the incorrect base URL and make sure we alway load correct local
 // saved resource files.
 
-#include "web/WebFrameSerializerImpl.h"
+#include "core/frame/WebFrameSerializerImpl.h"
 
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
