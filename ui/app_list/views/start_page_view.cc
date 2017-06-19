@@ -170,7 +170,9 @@ int StartPageView::StartPageTilesContainer::DoUpdate() {
 
   std::vector<SearchResult*> display_results =
       AppListModel::FilterSearchResultsByDisplayType(
-          results(), SearchResult::DISPLAY_RECOMMENDATION, kNumStartPageTiles);
+          results(), SearchResult::DISPLAY_RECOMMENDATION,
+          features::IsFullscreenAppListEnabled() ? kNumStartPageTilesFullscreen
+                                                 : kNumStartPageTiles);
   if (display_results.size() != search_result_tile_views_.size()) {
     // We should recreate the grid layout in this case.
     for (size_t i = 0; i < search_result_tile_views_.size(); ++i)
