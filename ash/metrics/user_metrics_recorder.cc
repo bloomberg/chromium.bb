@@ -521,6 +521,15 @@ void UserMetricsRecorder::RecordUserMetricsAction(UserMetricsAction action) {
     case UMA_STATUS_AREA_VPN_SETTINGS_OPENED:
       RecordAction(UserMetricsAction("StatusArea_VPN_Settings"));
       break;
+    case UMA_TABLET_WINDOW_CLOSE_THROUGH_CONTXT_MENU:
+      RecordAction(UserMetricsAction("Tablet_WindowCloseFromContextMenu"));
+      break;
+    case UMA_TABLET_WINDOW_CLOSE_THROUGH_CAPTION_BUTTON:
+      RecordAction(UserMetricsAction("Tablet_WindowCloseFromCaptionButton"));
+      break;
+    case UMA_TABLET_WINDOW_CLOSE_THROUGH_OVERVIEW_CLOSE_BUTTON:
+      RecordAction(UserMetricsAction("Tablet_WindowCloseFromOverviewButton"));
+      break;
     case UMA_TOGGLE_MAXIMIZE_CAPTION_CLICK:
       RecordAction(UserMetricsAction("Caption_ClickTogglesMaximize"));
       break;

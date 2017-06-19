@@ -338,6 +338,11 @@ void FrameCaptionButtonContainerView::ButtonPressed(views::Button* sender,
   } else if (sender == close_button_) {
     frame_->Close();
     action = UMA_WINDOW_CLOSE_BUTTON_CLICK;
+    if (ash::Shell::Get()
+            ->maximize_mode_controller()
+            ->IsMaximizeModeWindowManagerEnabled()) {
+      action = UMA_TABLET_WINDOW_CLOSE_THROUGH_CAPTION_BUTTON;
+    }
   } else {
     return;
   }
