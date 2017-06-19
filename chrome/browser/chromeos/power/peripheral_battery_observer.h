@@ -11,7 +11,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/test/simple_test_tick_clock.h"
+#include "base/time/tick_clock.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 
@@ -31,9 +31,7 @@ class PeripheralBatteryObserver : public PowerManagerClient::Observer,
   PeripheralBatteryObserver();
   ~PeripheralBatteryObserver() override;
 
-  void set_testing_clock(base::SimpleTestTickClock* clock) {
-    testing_clock_ = clock;
-  }
+  void set_testing_clock(base::TickClock* clock) { testing_clock_ = clock; }
 
   // PowerManagerClient::Observer implementation.
   void PeripheralBatteryStatusReceived(const std::string& path,
@@ -89,7 +87,7 @@ class PeripheralBatteryObserver : public PowerManagerClient::Observer,
   scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
 
   // Used only for helping test. Not owned and can be NULL.
-  base::SimpleTestTickClock* testing_clock_;
+  base::TickClock* testing_clock_;
 
   // Record the profile used when adding message center notifications.
   Profile* notification_profile_;
