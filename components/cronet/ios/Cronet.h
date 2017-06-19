@@ -17,6 +17,18 @@ typedef NS_ENUM(NSInteger, CRNHttpCacheType) {
   CRNHttpCacheTypeMemory,
 };
 
+/// Cronet error domain name.
+NSString* const CRNCronetErrorDomain = @"CRNCronetErrorDomain";
+
+/// Enum of Cronet NSError codes.
+NS_ENUM(NSInteger){
+    CRNErrorInvalidArgument = 1001,
+};
+
+/// The corresponding value is a String object that contains the name of
+/// an invalid argument inside the NSError userInfo dictionary.
+NSString* const CRNInvalidArgumentKey = @"CRNInvalidArgumentKey";
+
 // A block, that takes a request, and returns YES if the request should
 // be handled.
 typedef BOOL (^RequestFilterBlock)(NSURLRequest* request);
@@ -68,6 +80,45 @@ GRPC_SUPPORT_EXPORT
 // Sets SSLKEYLogFileName to export SSL key for Wireshark decryption of packet
 // captures. This method only has any effect before |start| is called.
 + (void)setSslKeyLogFileName:(NSString*)sslKeyLogFileName;
+
+/// Pins a set of public keys for a given host. This method only has any effect
+/// before |start| is called. By pinning a set of public keys, |pinHashes|,
+/// communication with |host| is required to authenticate with a certificate
+/// with a public key from the set of pinned ones.
+/// An app can pin the public key of the root certificate, any of the
+/// intermediate certificates or the end-entry certificate. Authentication will
+/// fail and secure communication will not be established if none of the public
+/// keys is present in the host's certificate chain, even if the host attempts
+/// to authenticate with a certificate allowed by the device's trusted store of
+/// certificates.
+///
+/// Calling this method multiple times with the same host name overrides the
+/// previously set pins for the host.
+///
+/// More information about the public key pinning can be found in
+/// [RFC 7469](https://tools.ietf.org/html/rfc7469).
+///
+/// @param host name of the host to which the public keys should be pinned.
+///             A host that consists only of digits and the dot character
+///             is treated as invalid.
+/// @param pinHashes a set of pins. Each pin is the SHA-256 cryptographic
+///                  hash of the DER-encoded ASN.1 representation of the
+///                  Subject Public Key Info (SPKI) of the host's X.509
+///                  certificate. Although, the method does not mandate the
+///                  presence of the backup pin that can be used if the control
+///                  of the primary private key has been lost, it is highly
+///                  recommended to supply one.
+/// @param includeSubdomains indicates whether the pinning policy should be
+///                          applied to subdomains of |host|.
+/// @param expirationDate specifies the expiration date for the pins.
+/// @param outError on return, if the pin cannot be added, a pointer to an
+///                 error object that encapsulates the reason for the error.
+/// @return returns |YES| if the pins were added successfully; |NO|, otherwise.
++ (BOOL)addPublicKeyPinsForHost:(NSString*)host
+                      pinHashes:(NSSet<NSData*>*)pinHashes
+              includeSubdomains:(BOOL)includeSubdomains
+                 expirationDate:(NSDate*)expirationDate
+                          error:(NSError**)outError;
 
 // Sets the block used to determine whether or not Cronet should handle the
 // request. If the block is not set, Cronet will handle all requests. Cronet

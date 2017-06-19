@@ -300,9 +300,17 @@ void CronetEnvironment::InitializeOnNetworkThread() {
   std::unique_ptr<URLRequestContextConfig> config =
       context_config_builder.Build();
 
+  config->pkp_list = std::move(pkp_list_);
+
   net::URLRequestContextBuilder context_builder;
 
   context_builder.set_accept_language(accept_language_);
+
+  // Explicitly disable the persister for Cronet to avoid persistence of dynamic
+  // HPKP.  This is a safety measure ensuring that nobody enables the
+  // persistence of HPKP by specifying transport_security_persister_path in the
+  // future.
+  context_builder.set_transport_security_persister_path(base::FilePath());
 
   config->ConfigureURLRequestContextBuilder(&context_builder, net_log_.get(),
                                             file_thread_.get()->task_runner());
@@ -337,6 +345,14 @@ void CronetEnvironment::InitializeOnNetworkThread() {
   context_builder.SetHttpServerProperties(std::move(http_server_properties));
 
   main_context_ = context_builder.Build();
+
+  // Iterate through PKP configuration for every host.
+  for (auto* const pkp : config->pkp_list) {
+    // Add the host pinning.
+    main_context_->transport_security_state()->AddHPKP(
+        pkp->host, pkp->expiration_date, pkp->include_subdomains,
+        pkp->pin_hashes, GURL::EmptyGURL());
+  }
 }
 
 std::string CronetEnvironment::user_agent() {

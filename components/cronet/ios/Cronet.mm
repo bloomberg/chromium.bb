@@ -41,11 +41,13 @@ NSString* gExperimentalOptions = @"{}";
 NSString* gUserAgent = nil;
 BOOL gUserAgentPartial = NO;
 NSString* gSslKeyLogFileName = nil;
+ScopedVector<cronet::URLRequestContextConfig::Pkp> gPkpList = {};
 RequestFilterBlock gRequestFilterBlock = nil;
 base::LazyInstance<std::unique_ptr<CronetHttpProtocolHandlerDelegate>>::Leaky
     gHttpProtocolHandlerDelegate = LAZY_INSTANCE_INITIALIZER;
 NSURLCache* gPreservedSharedURLCache = nil;
 BOOL gEnableTestCertVerifierForTesting = FALSE;
+std::unique_ptr<net::CertVerifier> gMockCertVerifier;
 NSString* gAcceptLanguages = nil;
 
 // CertVerifier, which allows any certificates for testing.
@@ -116,6 +118,9 @@ class CronetHttpProtocolHandlerDelegate
     std::unique_ptr<TestCertVerifier> test_cert_verifier =
         base::MakeUnique<TestCertVerifier>();
     cronetEnvironment->set_mock_cert_verifier(std::move(test_cert_verifier));
+  }
+  if (gMockCertVerifier) {
+    gChromeNet.Get()->set_mock_cert_verifier(std::move(gMockCertVerifier));
   }
 }
 
@@ -210,6 +215,38 @@ class CronetHttpProtocolHandlerDelegate
     gRequestFilterBlock = block;
 }
 
++ (BOOL)addPublicKeyPinsForHost:(NSString*)host
+                      pinHashes:(NSSet<NSData*>*)pinHashes
+              includeSubdomains:(BOOL)includeSubdomains
+                 expirationDate:(NSDate*)expirationDate
+                          error:(NSError**)outError {
+  [self checkNotStarted];
+
+  auto pkp = base::MakeUnique<cronet::URLRequestContextConfig::Pkp>(
+      base::SysNSStringToUTF8(host), includeSubdomains,
+      base::Time::FromCFAbsoluteTime(
+          [expirationDate timeIntervalSinceReferenceDate]));
+
+  for (NSData* hash in pinHashes) {
+    net::SHA256HashValue hashValue = net::SHA256HashValue();
+    if (sizeof(hashValue.data) != hash.length) {
+      *outError =
+          [self createIllegalArgumentErrorWithArgument:@"pinHashes"
+                                                reason:
+                                                    @"The length of PKP SHA256 "
+                                                    @"hash should be 256 bits"];
+      return NO;
+    }
+    memcpy((void*)(hashValue.data), [hash bytes], sizeof(hashValue.data));
+    pkp->pin_hashes.push_back(net::HashValue(hashValue));
+  }
+  gPkpList.push_back(std::move(pkp));
+  if (outError) {
+    *outError = nil;
+  }
+  return YES;
+}
+
 + (void)startInternal {
   std::string user_agent = base::SysNSStringToUTF8(gUserAgent);
 
@@ -226,6 +263,7 @@ class CronetHttpProtocolHandlerDelegate
   gChromeNet.Get()->set_http_cache(gHttpCache);
   gChromeNet.Get()->set_ssl_key_log_file_name(
       base::SysNSStringToUTF8(gSslKeyLogFileName));
+  gChromeNet.Get()->set_pkp_list(std::move(gPkpList));
   for (const auto* quicHint : gQuicHints) {
     gChromeNet.Get()->AddQuicHint(quicHint->host, quicHint->port,
                                   quicHint->alternate_port);
@@ -339,6 +377,11 @@ class CronetHttpProtocolHandlerDelegate
   gEnableTestCertVerifierForTesting = YES;
 }
 
++ (void)setMockCertVerifierForTesting:
+    (std::unique_ptr<net::CertVerifier>)certVerifier {
+  gMockCertVerifier = std::move(certVerifier);
+}
+
 + (void)setHostResolverRulesForTesting:(NSString*)hostResolverRulesForTesting {
   DCHECK(gChromeNet.Get().get());
   gChromeNet.Get()->SetHostResolverRules(
@@ -349,6 +392,28 @@ class CronetHttpProtocolHandlerDelegate
 // the otherwise non-referenced methods from 'bidirectional_stream.cc'.
 + (void)preventStrippingCronetBidirectionalStream {
   bidirectional_stream_create(NULL, 0, 0);
+}
+
++ (NSError*)createIllegalArgumentErrorWithArgument:(NSString*)argumentName
+                                            reason:(NSString*)reason {
+  NSMutableDictionary* errorDictionary =
+      [[NSMutableDictionary alloc] initWithDictionary:@{
+        NSLocalizedDescriptionKey :
+            [NSString stringWithFormat:@"Invalid argument: %@", argumentName],
+        CRNInvalidArgumentKey : argumentName
+      }];
+  if (reason) {
+    errorDictionary[NSLocalizedFailureReasonErrorKey] = reason;
+  }
+  return [self createCronetErrorWith:CRNErrorInvalidArgument
+                            userInfo:errorDictionary];
+}
+
++ (NSError*)createCronetErrorWith:(int)errorCode
+                         userInfo:(NSDictionary*)userInfo {
+  return [NSError errorWithDomain:CRNCronetErrorDomain
+                             code:errorCode
+                         userInfo:userInfo];
 }
 
 @end
