@@ -1,7 +1,0 @@
-This is a testharness.js-based test.
-PASS colspan of 1000 must work 
-FAIL colspan of 1001 must be treated as 1000 assert_equals: expected 22 but got 35
-PASS rowspan of 65534 must work 
-PASS rowspan of 65535 must be treated as 65534 
-Harness: the test ran to completion.
-
