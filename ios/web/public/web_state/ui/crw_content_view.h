@@ -14,7 +14,7 @@
 // The scroll view used to display the content.  If |scrollView| is non-nil,
 // it will be used to back the CRWContentViewScrollViewProxy and is expected to
 // be a subview of the CRWContentView.
-@property(nonatomic, strong, readonly) UIScrollView* scrollView;
+@property(nonatomic, retain, readonly) UIScrollView* scrollView;
 
 // Adds a top padding to content view. Implementations of this protocol can
 // implement this method using UIScrollView.contentInset (where applicable) or

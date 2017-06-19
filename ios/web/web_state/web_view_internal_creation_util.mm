@@ -7,14 +7,11 @@
 #import <objc/runtime.h>
 
 #include "base/logging.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/web/public/web_client.h"
 #import "ios/web/web_state/ui/crw_context_menu_controller.h"
 #import "ios/web/web_state/ui/wk_web_view_configuration_provider.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 namespace web {
 
@@ -63,17 +60,17 @@ WKWebView* BuildWKWebView(CGRect frame,
   web_view.allowsLinkPreview = NO;
 
   if (context_menu_delegate) {
-    CRWContextMenuController* context_menu_controller = [
-        [CRWContextMenuController alloc] initWithWebView:web_view
-                                      injectionEvaluator:nil
-                                                delegate:context_menu_delegate];
-    void* associated_object_key = (__bridge void*)context_menu_controller;
-    objc_setAssociatedObject(web_view, associated_object_key,
-                             context_menu_controller,
+    base::scoped_nsobject<CRWContextMenuController> context_menu_controller(
+        [[CRWContextMenuController alloc]
+               initWithWebView:web_view
+            injectionEvaluator:nil
+                      delegate:context_menu_delegate]);
+    objc_setAssociatedObject(web_view, context_menu_controller.get(),
+                             context_menu_controller.get(),
                              OBJC_ASSOCIATION_RETAIN_NONATOMIC);
   }
 
-  return web_view;
+  return [web_view autorelease];
 }
 
 WKWebView* BuildWKWebView(CGRect frame,

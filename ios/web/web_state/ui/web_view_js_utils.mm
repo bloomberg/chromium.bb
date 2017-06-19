@@ -9,13 +9,10 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 namespace {
 
@@ -33,8 +30,7 @@ std::unique_ptr<base::Value> ValueResultFromWKResult(id wk_result,
     return result;
   }
 
-  CFTypeRef typeRef = (__bridge CFTypeRef)wk_result;
-  CFTypeID result_type = CFGetTypeID(typeRef);
+  CFTypeID result_type = CFGetTypeID(wk_result);
   if (result_type == CFStringGetTypeID()) {
     result.reset(new base::Value(base::SysNSStringToUTF16(wk_result)));
     DCHECK(result->IsType(base::Value::Type::STRING));
@@ -95,10 +91,10 @@ void ExecuteJavaScript(WKWebView* web_view,
     dispatch_async(dispatch_get_main_queue(), ^{
       NSString* error_message =
           @"JS evaluation failed because there is no web view.";
-      NSError* error = [[NSError alloc]
+      base::scoped_nsobject<NSError> error([[NSError alloc]
           initWithDomain:kJSEvaluationErrorDomain
                     code:JS_EVALUATION_ERROR_CODE_NO_WEB_VIEW
-                userInfo:@{NSLocalizedDescriptionKey : error_message}];
+                userInfo:@{NSLocalizedDescriptionKey : error_message}]);
       completion_handler(nil, error);
     });
     return;

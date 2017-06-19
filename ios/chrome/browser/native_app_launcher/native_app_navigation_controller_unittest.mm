@@ -64,7 +64,6 @@ class NativeAppNavigationControllerTest : public ChromeWebTest {
 
   void TearDown() override {
     base::RemoveActionCallback(action_callback_);
-    controller_ = nil;
     ChromeWebTest::TearDown();
   }
 

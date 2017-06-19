@@ -10,10 +10,6 @@
 #include "net/cert/x509_util_ios.h"
 #include "net/ssl/ssl_info.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace web {
 
 // These keys were determined by inspecting userInfo dict of an SSL error.
@@ -54,12 +50,10 @@ scoped_refptr<net::X509Certificate> CreateCertFromChain(NSArray* certs) {
     return nullptr;
   std::vector<SecCertificateRef> intermediates;
   for (NSUInteger i = 1; i < certs.count; i++) {
-    SecCertificateRef cert = (__bridge SecCertificateRef)certs[i];
-    intermediates.push_back(cert);
+    intermediates.push_back(reinterpret_cast<SecCertificateRef>(certs[i]));
   }
-  SecCertificateRef root_cert = (__bridge SecCertificateRef)certs[0];
   return net::x509_util::CreateX509CertificateFromSecCertificate(
-      reinterpret_cast<SecCertificateRef>(root_cert), intermediates);
+      reinterpret_cast<SecCertificateRef>(certs[0]), intermediates);
 }
 
 scoped_refptr<net::X509Certificate> CreateCertFromTrust(SecTrustRef trust) {
@@ -89,8 +83,8 @@ base::ScopedCFTypeRef<SecTrustRef> CreateServerTrustFromChain(NSArray* certs,
   base::ScopedCFTypeRef<SecPolicyRef> policy(
       SecPolicyCreateSSL(TRUE, static_cast<CFStringRef>(host)));
   SecTrustRef ref_result = nullptr;
-  if (SecTrustCreateWithCertificates((__bridge CFArrayRef)certs, policy,
-                                     &ref_result) == errSecSuccess) {
+  if (SecTrustCreateWithCertificates(certs, policy, &ref_result) ==
+      errSecSuccess) {
     scoped_result.reset(ref_result);
   }
   return scoped_result;
