@@ -13,6 +13,7 @@
 #include "ash/shell_port.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wallpaper/wallpaper_delegate.h"
+#include "ash/wm/maximize_mode/maximize_mode_controller.h"
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/fullscreen.h"
@@ -126,6 +127,12 @@ void LauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
       }
       ash::ShellPort::Get()->RecordUserMetricsAction(
           ash::UMA_CLOSE_THROUGH_CONTEXT_MENU);
+      if (ash::Shell::Get()
+              ->maximize_mode_controller()
+              ->IsMaximizeModeWindowManagerEnabled()) {
+        ash::ShellPort::Get()->RecordUserMetricsAction(
+            ash::UMA_TABLET_WINDOW_CLOSE_THROUGH_CONTXT_MENU);
+      }
       break;
     case MENU_PIN:
       if (controller_->IsAppPinned(item_.id.app_id))

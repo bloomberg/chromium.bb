@@ -16607,6 +16607,30 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Tablet_WindowCloseFromCaptionButton">
+  <owner>xdai@chromium.org</owner>
+  <description>
+    User closed the window through the close button in the caption area in
+    tablet mode on Chrome OS.
+  </description>
+</action>
+
+<action name="Tablet_WindowCloseFromContextMenu">
+  <owner>xdai@chromium.org</owner>
+  <description>
+    User closed the window through the shelf context menu in tablet mode on
+    Chrome OS.
+  </description>
+</action>
+
+<action name="Tablet_WindowCloseFromOverviewButton">
+  <owner>xdai@chromium.org</owner>
+  <description>
+    User closed the window through the close button in overview mode in tablet
+    mode on Chrome OS.
+  </description>
+</action>
+
 <action name="TaskManagement.OpenInChromeActionButtonClicked">
   <obsolete>The button option was removed and code deleted.</obsolete>
   <owner>dfalcantara@chromium.org</owner>
