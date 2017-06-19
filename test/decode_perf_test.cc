@@ -63,6 +63,7 @@ TEST_P(DecodePerfTest, PerfTest) {
 
   aom_codec_dec_cfg_t cfg = aom_codec_dec_cfg_t();
   cfg.threads = threads;
+  cfg.allow_lowbitdepth = CONFIG_LOWBITDEPTH;
   libaom_test::AV1Decoder decoder(cfg, 0);
 
   aom_usec_timer t;
@@ -211,6 +212,7 @@ TEST_P(AV1NewEncodeDecodePerfTest, PerfTest) {
 
   aom_codec_dec_cfg_t cfg = aom_codec_dec_cfg_t();
   cfg.threads = threads;
+  cfg.allow_lowbitdepth = CONFIG_LOWBITDEPTH;
   libaom_test::AV1Decoder decoder(cfg, 0);
 
   aom_usec_timer t;

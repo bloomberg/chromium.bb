@@ -30,6 +30,7 @@ class AVxEncoderThreadTest
     aom_codec_dec_cfg_t cfg = aom_codec_dec_cfg_t();
     cfg.w = 1280;
     cfg.h = 720;
+    cfg.allow_lowbitdepth = CONFIG_LOWBITDEPTH;
     decoder_ = codec_->CreateDecoder(cfg, 0);
 #if CONFIG_AV1 && CONFIG_EXT_TILE
     if (decoder_->IsAV1()) {
