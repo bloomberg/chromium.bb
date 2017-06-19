@@ -9,10 +9,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/win/registry.h"
 #include "base/win/win_util.h"
-#include "chrome/installer/util/app_registration_data.h"
-#include "chrome/installer/util/browser_distribution.h"
-#include "chrome/installer/util/install_util.h"
-#include "chrome/installer/util/shell_util.h"
+#include "chrome/install_static/install_details.h"
+#include "chrome/install_static/install_util.h"
 
 void UpdateDefaultBrowserBeaconForPath(const base::FilePath& chrome_exe) {
   // Getting Chrome's default state causes the beacon to be updated via a call
@@ -21,70 +19,49 @@ void UpdateDefaultBrowserBeaconForPath(const base::FilePath& chrome_exe) {
 }
 
 void UpdateDefaultBrowserBeaconWithState(
-    BrowserDistribution* distribution,
     ShellUtil::DefaultState default_state) {
-  const bool system_install = !InstallUtil::IsPerUserInstall();
-  const AppRegistrationData& registration_data =
-      distribution->GetAppRegistrationData();
   switch (default_state) {
     case ShellUtil::NOT_DEFAULT:
-      installer_util::MakeFirstNotDefaultBeacon(system_install,
-                                                registration_data)->Update();
+      installer_util::MakeFirstNotDefaultBeacon()->Update();
       break;
     case ShellUtil::IS_DEFAULT:
-      installer_util::MakeLastWasDefaultBeacon(system_install,
-                                               registration_data)->Update();
-      installer_util::MakeFirstNotDefaultBeacon(system_install,
-                                                registration_data)->Remove();
+      installer_util::MakeLastWasDefaultBeacon()->Update();
+      installer_util::MakeFirstNotDefaultBeacon()->Remove();
       break;
     case ShellUtil::UNKNOWN_DEFAULT:
       break;
   }
 }
 
-void UpdateOsUpgradeBeacon(bool system_install,
-                           BrowserDistribution* distribution) {
-  installer_util::MakeLastOsUpgradeBeacon(
-      system_install, distribution->GetAppRegistrationData())->Update();
+void UpdateOsUpgradeBeacon() {
+  installer_util::MakeLastOsUpgradeBeacon()->Update();
 }
 
 namespace installer_util {
 
-std::unique_ptr<Beacon> MakeLastOsUpgradeBeacon(
-    bool system_install,
-    const AppRegistrationData& registration_data) {
+std::unique_ptr<Beacon> MakeLastOsUpgradeBeacon() {
   return base::MakeUnique<Beacon>(L"LastOsUpgrade", Beacon::BeaconType::LAST,
-                                  Beacon::BeaconScope::PER_INSTALL,
-                                  system_install, registration_data);
+                                  Beacon::BeaconScope::PER_INSTALL);
 }
 
-std::unique_ptr<Beacon> MakeLastWasDefaultBeacon(
-    bool system_install,
-    const AppRegistrationData& registration_data) {
+std::unique_ptr<Beacon> MakeLastWasDefaultBeacon() {
   return base::MakeUnique<Beacon>(L"LastWasDefault", Beacon::BeaconType::LAST,
-                                  Beacon::BeaconScope::PER_USER, system_install,
-                                  registration_data);
+                                  Beacon::BeaconScope::PER_USER);
 }
 
-std::unique_ptr<Beacon> MakeFirstNotDefaultBeacon(
-    bool system_install,
-    const AppRegistrationData& registration_data) {
+std::unique_ptr<Beacon> MakeFirstNotDefaultBeacon() {
   return base::MakeUnique<Beacon>(L"FirstNotDefault", Beacon::BeaconType::FIRST,
-                                  Beacon::BeaconScope::PER_USER, system_install,
-                                  registration_data);
+                                  Beacon::BeaconScope::PER_USER);
 }
 
 // Beacon ----------------------------------------------------------------------
 
-Beacon::Beacon(base::StringPiece16 name,
-               BeaconType type,
-               BeaconScope scope,
-               bool system_install,
-               const AppRegistrationData& registration_data)
+Beacon::Beacon(base::StringPiece16 name, BeaconType type, BeaconScope scope)
     : type_(type),
-      root_(system_install ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER),
+      root_(install_static::IsSystemInstall() ? HKEY_LOCAL_MACHINE
+                                              : HKEY_CURRENT_USER),
       scope_(scope) {
-  Initialize(name, system_install, registration_data);
+  Initialize(name);
 }
 
 Beacon::~Beacon() {
@@ -129,17 +106,19 @@ base::Time Beacon::Get() {
   return base::Time::FromInternalValue(now);
 }
 
-void Beacon::Initialize(base::StringPiece16 name,
-                        bool system_install,
-                        const AppRegistrationData& registration_data) {
+void Beacon::Initialize(base::StringPiece16 name) {
+  const install_static::InstallDetails& install_details =
+      install_static::InstallDetails::Get();
+
   // When possible, beacons are located in the app's ClientState key. Per-user
   // beacons for a per-machine install are located in a beacon-specific sub-key
   // of the app's ClientStateMedium key.
-  if (!system_install || scope_ == BeaconScope::PER_INSTALL) {
-    key_path_ = registration_data.GetStateKey();
+  if (scope_ == BeaconScope::PER_INSTALL ||
+      !install_static::IsSystemInstall()) {
+    key_path_ = install_details.GetClientStateKeyPath();
     value_name_ = name.as_string();
   } else {
-    key_path_ = registration_data.GetStateMediumKey();
+    key_path_ = install_details.GetClientStateMediumKeyPath();
     key_path_.push_back(L'\\');
     key_path_.append(name.data(), name.size());
     // This should never fail. If it does, the beacon will be written in the

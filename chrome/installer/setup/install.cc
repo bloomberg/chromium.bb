@@ -643,8 +643,7 @@ void HandleOsUpgradeForBrowser(const installer::InstallerState& installer_state,
     work_item_list->Rollback();
   }
 
-  UpdateOsUpgradeBeacon(installer_state.system_install(),
-                        BrowserDistribution::GetDistribution());
+  UpdateOsUpgradeBeacon();
 
   // Update the per-user default browser beacon. For user-level installs this
   // can be done directly; whereas it requires triggering Active Setup for each

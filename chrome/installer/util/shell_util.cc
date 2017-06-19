@@ -1811,8 +1811,7 @@ ShellUtil::DefaultState ShellUtil::GetChromeDefaultStateFromPath(
   static const wchar_t* const kChromeProtocols[] = { L"http", L"https" };
   DefaultState default_state = ProbeProtocolHandlers(
       chrome_exe, kChromeProtocols, arraysize(kChromeProtocols));
-  UpdateDefaultBrowserBeaconWithState(BrowserDistribution::GetDistribution(),
-                                      default_state);
+  UpdateDefaultBrowserBeaconWithState(default_state);
   return default_state;
 }
 
