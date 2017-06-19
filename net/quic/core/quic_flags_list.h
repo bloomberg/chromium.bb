@@ -211,9 +211,9 @@ QUIC_FLAG(bool, FLAGS_quic_enable_version_40, false)
 // If true, use the more CPU efficient bandwidth sampler datastructure.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_faster_bandwidth_sampler, false)
 
-// In QUIC, notify StreamNotifier instead of per-packet AckNotifier on
-// every ack or retransmitted.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_stream_notifier, false)
+// In QUIC, QuicSession gets notified when stream frames are acked, discarded or
+// retransmitted.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_stream_notifier2, false)
 
 // When true, defaults to BBR congestion control instead of Cubic.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_default_to_bbr, false)
