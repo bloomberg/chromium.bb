@@ -291,7 +291,8 @@ class NavigationController {
 
   // Pending entry -------------------------------------------------------------
 
-  // Discards the pending and transient entries if any.
+  // Discards the pending and transient entries if any, and send an appropriate
+  // notification (INVALIDATE_TYPE_URL or INVALIDATE_TYPE_ALL) if they were.
   virtual void DiscardNonCommittedEntries() = 0;
 
   // Returns the pending entry corresponding to the navigation that is

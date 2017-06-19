@@ -4813,13 +4813,6 @@ std::unique_ptr<NavigationUIData> WebContentsImpl::GetNavigationUIData(
   return GetContentClient()->browser()->GetNavigationUIData(navigation_handle);
 }
 
-void WebContentsImpl::DidCancelLoading() {
-  controller_.DiscardNonCommittedEntries();
-
-  // Update the URL display.
-  NotifyNavigationStateChanged(INVALIDATE_TYPE_URL);
-}
-
 void WebContentsImpl::DidAccessInitialDocument() {
   has_accessed_initial_document_ = true;
 
@@ -5370,6 +5363,9 @@ void WebContentsImpl::OnDialogClosed(int render_process_id,
     // meantime.  Do not reset the navigation state in that case.
     if (rfh && rfh == rfh->frame_tree_node()->current_frame_host()) {
       rfh->frame_tree_node()->BeforeUnloadCanceled();
+
+      // Remove the entry for the navigation that's being cancelled, and notify
+      // the WebContentsDelegate that the visible URL has changed.
       controller_.DiscardNonCommittedEntries();
     }
 

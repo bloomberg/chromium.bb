@@ -581,7 +581,6 @@ class CONTENT_EXPORT WebContentsImpl
                        const GURL& url) override;
   void Close(RenderViewHost* render_view_host) override;
   void RequestMove(const gfx::Rect& new_bounds) override;
-  void DidCancelLoading() override;
   void DocumentAvailableInMainFrame(RenderViewHost* render_view_host) override;
   void RouteCloseEvent(RenderViewHost* rvh) override;
   bool DidAddMessageToConsole(int32_t level,
@@ -919,6 +918,8 @@ class CONTENT_EXPORT WebContentsImpl
                            JavaScriptDialogsInMainAndSubframes);
   FRIEND_TEST_ALL_PREFIXES(WebContentsImplBrowserTest,
                            DialogsFromJavaScriptEndFullscreen);
+  FRIEND_TEST_ALL_PREFIXES(WebContentsImplBrowserTest,
+                           DismissingBeforeUnloadDialogInvalidatesUrl);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest,
                            IframeBeforeUnloadParentHang);
   FRIEND_TEST_ALL_PREFIXES(RenderFrameHostImplBrowserTest,
