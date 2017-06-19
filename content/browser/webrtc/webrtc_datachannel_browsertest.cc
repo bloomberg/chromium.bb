@@ -32,7 +32,8 @@ class WebRtcDataChannelTest : public WebRtcContentBrowserTestBase {
   DISALLOW_COPY_AND_ASSIGN(WebRtcDataChannelTest);
 };
 
-IN_PROC_BROWSER_TEST_F(WebRtcDataChannelTest, DataChannelGC) {
+// Flaky on all platforms: https://crbug.com/734567
+IN_PROC_BROWSER_TEST_F(WebRtcDataChannelTest, DISABLED_DataChannelGC) {
   MakeTypicalCall("testDataChannelGC();", kDataChannelHtmlFile);
 }
 
