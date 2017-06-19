@@ -305,6 +305,29 @@ base::string16 GetObscuredString(size_t length) {
   return base::string16(length, RenderText::kPasswordReplacementChar);
 }
 
+// Converts a vector of UTF8 literals into a vector of (UTF16) string16.
+std::vector<base::string16> ToString16Vec(
+    const std::vector<const char*>& utf8_literals) {
+  std::vector<base::string16> vec;
+  for (auto* const literal : utf8_literals)
+    vec.push_back(UTF8ToUTF16(literal));
+  return vec;
+}
+
+// Returns the combined character range from all text runs on |line|.
+Range LineCharRange(const internal::Line& line) {
+  if (line.segments.empty())
+    return Range();
+  Range ltr(line.segments.front().char_range.start(),
+            line.segments.back().char_range.end());
+  if (ltr.end() > ltr.start())
+    return ltr;
+
+  // For RTL, the order of segments is reversed, but the ranges are not.
+  return Range(line.segments.back().char_range.start(),
+               line.segments.front().char_range.end());
+}
+
 // The class which records the drawing operations so that the test case can
 // verify where exactly the glyphs are drawn.
 class TestSkiaTextRenderer : public internal::SkiaTextRenderer {
@@ -460,6 +483,26 @@ class RenderTextTest : public testing::Test,
   internal::TextRunList* GetHarfBuzzRunList() {
     DCHECK_EQ(RENDER_TEXT_HARFBUZZ, GetParam());
     return test_api_->GetHarfBuzzRunList();
+  }
+
+  // Returns a vector of text fragments corresponding to the current list of
+  // text runs.
+  std::vector<base::string16> GetRuns() {
+    std::vector<base::string16> runs_as_text;
+    const std::vector<RenderText::FontSpan> spans =
+        render_text_->GetFontSpansForTesting();
+    for (const auto& span : spans) {
+      runs_as_text.push_back(render_text_->text().substr(span.second.GetMin(),
+                                                         span.second.length()));
+    }
+    return runs_as_text;
+  }
+
+  // Sets the text to |text|, then returns GetRuns().
+  std::vector<base::string16> RunsFor(const base::string16& text) {
+    render_text_->SetText(text);
+    test_api()->EnsureLayout();
+    return GetRuns();
   }
 
   void ResetRenderTextInstance() {
@@ -2922,6 +2965,71 @@ TEST_P(RenderTextTest, SelectionKeepsLigatures) {
   }
 }
 
+// Test that characters commonly used in the context of several scripts do not
+// cause text runs to break. For example the Japanese "long sound symbol" --
+// normally only used in a Katakana script, is also used on occasion when in
+// Hiragana scripts. It shouldn't cause a Hiragana text run break since that
+// could upset kerning.
+TEST_P(RenderTextTest, ScriptExtensionsDoNotBreak) {
+  // Apparently ramen restaurants prefer "らーめん" over "らあめん". The "dash"
+  // is the long sound symbol and usually just appears in Katakana writing.
+  const base::string16 ramen_hiragana = UTF8ToUTF16("らーめん");
+  const base::string16 ramen_katakana = UTF8ToUTF16("ラーメン");
+  const base::string16 ramen_mixed = UTF8ToUTF16("らあメン");
+
+  EXPECT_EQ(std::vector<base::string16>({ramen_hiragana}),
+            RunsFor(ramen_hiragana));
+  EXPECT_EQ(std::vector<base::string16>({ramen_katakana}),
+            RunsFor(ramen_katakana));
+
+  // Currently Harfbuzz breaks this, but not Mac.
+  if (GetParam() == RENDER_TEXT_HARFBUZZ)
+    EXPECT_EQ(ToString16Vec({"らあ", "メン"}), RunsFor(ramen_mixed));
+  else
+    EXPECT_EQ(std::vector<base::string16>({ramen_mixed}), RunsFor(ramen_mixed));
+}
+
+// Test that whitespace breaks runs of text. E.g. this can permit better fonts
+// to be chosen by the fallback mechanism when a font does not provide
+// whitespace glyphs for all scripts. See http://crbug.com/731563.
+TEST_P(RenderTextTest, WhitespaceDoesBreak) {
+  // Title of the Wikipedia page for "bit". ASCII spaces. In Hebrew and English.
+  // Note that the hyphens that Wikipedia uses are different. English uses
+  // ASCII (U+002D) "hyphen minus", Hebrew uses the U+2013 "EN Dash".
+  const base::string16 ascii_space_he = UTF8ToUTF16("סיבית – ויקיפדיה");
+  const base::string16 ascii_space_en = ASCIIToUTF16("Bit - Wikipedia");
+
+  // This says "thank you very much" with a full-width non-ascii space (U+3000).
+  const base::string16 full_width_space = UTF8ToUTF16("ども　ありがと");
+
+  if (GetParam() == RENDER_TEXT_HARFBUZZ) {
+    // Old behavior:
+    // { "סיבית ", "–", " ", "ויקיפדיה"" }
+    // { "Bit ", "- ", "Wikipedia" }
+    // { "ども　ありがと"" }.
+    EXPECT_EQ(ToString16Vec({"סיבית", " ", "–", " ", "ויקיפדיה"}),
+              RunsFor(ascii_space_he));
+    EXPECT_EQ(ToString16Vec({"Bit", " - ", "Wikipedia"}),
+              RunsFor(ascii_space_en));
+    EXPECT_EQ(ToString16Vec({"ども", "　", "ありがと"}),
+              RunsFor(full_width_space));
+  } else {
+    // Mac is a black box. From this it seems to draw RTL runs right to left and
+    // is able to use typeface characteristics when breaking runs. On 10.9, the
+    // Hebrew string is given a single run, and on 10.12 it's given 3 runs. It
+    // doesn't really matter as far as the rest of the RenderText machinery is
+    // concerned.
+    auto actual = RunsFor(ascii_space_he);
+    if (actual.size() == 3) {
+      EXPECT_EQ(ToString16Vec({"ויקיפדיה", " – ", "סיבית"}), actual);
+    } else {
+      EXPECT_EQ(ToString16Vec({"סיבית – ויקיפדיה"}), actual);
+    }
+    EXPECT_EQ(ToString16Vec({"Bit - Wikipedia"}), RunsFor(ascii_space_en));
+    EXPECT_EQ(ToString16Vec({"ども　ありがと"}), RunsFor(full_width_space));
+  }
+}
+
 // Ensure strings wrap onto multiple lines for a small available width.
 TEST_P(RenderTextHarfBuzzTest, Multiline_MinWidth) {
   const wchar_t* kTestStrings[] = { kWeak, kLtr, kLtrRtl, kLtrRtlLtr, kRtl,
@@ -2942,20 +3050,39 @@ TEST_P(RenderTextHarfBuzzTest, Multiline_MinWidth) {
 
 // Ensure strings wrap onto multiple lines for a normal available width.
 TEST_P(RenderTextHarfBuzzTest, Multiline_NormalWidth) {
+  // Should RenderText suppress drawing whitespace at the end of a line?
+  // Currently it does not.
   const struct {
     const wchar_t* const text;
     const Range first_line_char_range;
     const Range second_line_char_range;
+
+    // Lengths of each text run. Runs break at whitespace.
+    std::vector<size_t> run_lengths;
+
+    // The index of the text run that should start the second line.
+    int second_line_run_index;
+
     bool is_ltr;
   } kTestStrings[] = {
-    { L"abc defg hijkl", Range(0, 9), Range(9, 14), true },
-    { L"qwertyzxcvbn", Range(0, 10), Range(10, 12), true },
-    { L"\x0627\x0644\x0644\x063A\x0629 "
-      L"\x0627\x0644\x0639\x0631\x0628\x064A\x0629",
-      Range(0, 6), Range(6, 13), false },
-    { L"\x062A\x0641\x0627\x062D \x05EA\x05E4\x05D5\x05D6\x05D9"
-      L"\x05DA\x05DB\x05DD", Range(0, 5), Range(5, 13), false }
-  };
+      {L"abc defg hijkl", Range(0, 9), Range(9, 14), {3, 1, 4, 1, 5}, 4, true},
+      {L"qwertyzxcvbn", Range(0, 10), Range(10, 12), {10, 2}, 1, true},
+      // RTL: should render left-to-right as "<space>43210 \n cba9876".
+      {L"\x0627\x0644\x0644\x063A\x0629 "
+       L"\x0627\x0644\x0639\x0631\x0628\x064A\x0629",
+       Range(0, 6),
+       Range(6, 13),
+       {1 /* space first */, 5, 7},
+       2,
+       false},
+      // RTL: should render left-to-right as "<space>3210 \n cba98765".
+      {L"\x062A\x0641\x0627\x062D \x05EA\x05E4\x05D5\x05D6\x05D9"
+       L"\x05DA\x05DB\x05DD",
+       Range(0, 5),
+       Range(5, 13),
+       {1 /* space first */, 5, 8},
+       2,
+       false}};
 
   RenderTextHarfBuzz* render_text = GetRenderTextHarfBuzz();
 
@@ -2973,31 +3100,31 @@ TEST_P(RenderTextHarfBuzzTest, Multiline_NormalWidth) {
     DrawVisualText();
 
     ASSERT_EQ(2U, test_api()->lines().size());
-    ASSERT_EQ(1U, test_api()->lines()[0].segments.size());
     EXPECT_EQ(kTestStrings[i].first_line_char_range,
-              test_api()->lines()[0].segments[0].char_range);
-    ASSERT_EQ(1U, test_api()->lines()[1].segments.size());
+              LineCharRange(test_api()->lines()[0]));
     EXPECT_EQ(kTestStrings[i].second_line_char_range,
-              test_api()->lines()[1].segments[0].char_range);
+              LineCharRange(test_api()->lines()[1]));
 
     std::vector<TestSkiaTextRenderer::TextLog> text_log;
     renderer()->GetTextLogAndReset(&text_log);
-    ASSERT_EQ(2U, text_log.size());
+
+    ASSERT_EQ(kTestStrings[i].run_lengths.size(), text_log.size());
+
     // NOTE: this expectation compares the character length and glyph counts,
     // which isn't always equal. This is okay only because all the test
     // strings are simple (like, no compound characters nor UTF16-surrogate
     // pairs). Be careful in case more complicated test strings are added.
-    EXPECT_EQ(kTestStrings[i].first_line_char_range.length(),
-              text_log[0].glyph_count);
-    EXPECT_EQ(kTestStrings[i].second_line_char_range.length(),
-              text_log[1].glyph_count);
-    EXPECT_LT(text_log[0].origin.y(), text_log[1].origin.y());
+    EXPECT_EQ(kTestStrings[i].run_lengths[0], text_log[0].glyph_count);
+    const int second_line_start = kTestStrings[i].second_line_run_index;
+    EXPECT_EQ(kTestStrings[i].run_lengths[second_line_start],
+              text_log[second_line_start].glyph_count);
+    EXPECT_LT(text_log[0].origin.y(), text_log[second_line_start].origin.y());
     if (kTestStrings[i].is_ltr) {
       EXPECT_EQ(0, text_log[0].origin.x());
-      EXPECT_EQ(0, text_log[1].origin.x());
+      EXPECT_EQ(0, text_log[second_line_start].origin.x());
     } else {
       EXPECT_LT(0, text_log[0].origin.x());
-      EXPECT_LT(0, text_log[1].origin.x());
+      EXPECT_LT(0, text_log[second_line_start].origin.x());
     }
   }
 }
@@ -3184,7 +3311,7 @@ TEST_P(RenderTextHarfBuzzTest, Multiline_WordWrapBehavior) {
     for (size_t j = 0; j < test_api()->lines().size(); ++j) {
       SCOPED_TRACE(base::StringPrintf("%" PRIuS "-th line", j));
       EXPECT_EQ(kTestScenarios[i].char_ranges[j],
-                test_api()->lines()[j].segments[0].char_range);
+                LineCharRange(test_api()->lines()[j]));
       EXPECT_EQ(kTestScenarios[i].char_ranges[j].length() * kGlyphSize,
                 test_api()->lines()[j].size.width());
     }
@@ -3593,6 +3720,7 @@ TEST_P(RenderTextHarfBuzzTest, HarfBuzz_BreakRunsByUnicodeBlocks) {
   render_text->SetText(WideToUTF16(L"x\x25B6y"));
   test_api()->EnsureLayout();
   internal::TextRunList* run_list = GetHarfBuzzRunList();
+  EXPECT_EQ(ToString16Vec({"x", "▶", "y"}), GetRuns());
   ASSERT_EQ(3U, run_list->size());
   EXPECT_EQ(Range(0, 1), run_list->runs()[0]->range);
   EXPECT_EQ(Range(1, 2), run_list->runs()[1]->range);
@@ -3601,11 +3729,13 @@ TEST_P(RenderTextHarfBuzzTest, HarfBuzz_BreakRunsByUnicodeBlocks) {
   render_text->SetText(WideToUTF16(L"x \x25B6 y"));
   test_api()->EnsureLayout();
   run_list = GetHarfBuzzRunList();
-  ASSERT_EQ(4U, run_list->size());
-  EXPECT_EQ(Range(0, 2), run_list->runs()[0]->range);
-  EXPECT_EQ(Range(2, 3), run_list->runs()[1]->range);
-  EXPECT_EQ(Range(3, 4), run_list->runs()[2]->range);
-  EXPECT_EQ(Range(4, 5), run_list->runs()[3]->range);
+  EXPECT_EQ(ToString16Vec({"x", " ", "▶", " ", "y"}), GetRuns());
+  ASSERT_EQ(5U, run_list->size());
+  EXPECT_EQ(Range(0, 1), run_list->runs()[0]->range);
+  EXPECT_EQ(Range(1, 2), run_list->runs()[1]->range);
+  EXPECT_EQ(Range(2, 3), run_list->runs()[2]->range);
+  EXPECT_EQ(Range(3, 4), run_list->runs()[3]->range);
+  EXPECT_EQ(Range(4, 5), run_list->runs()[4]->range);
 }
 
 TEST_P(RenderTextHarfBuzzTest, HarfBuzz_BreakRunsByEmoji) {
