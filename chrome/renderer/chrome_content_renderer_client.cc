@@ -782,7 +782,7 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
           if (is_nacl_mime_type || is_pnacl_mime_type) {
             // Normal NaCl/PNaCl embed. The app URL is the page URL.
             manifest_url = url;
-            app_url = frame->Top()->GetDocument().Url();
+            app_url = frame->GetDocument().Url();
           } else {
             // NaCl is being invoked as a content handler. Look up the NaCl
             // module using the MIME type. The app URL is the manifest URL.
