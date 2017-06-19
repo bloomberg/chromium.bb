@@ -15,12 +15,14 @@
 #include "base/files/file_util.h"
 #include "base/json/json_string_value_serializer.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/process/launch.h"
 #include "base/task_scheduler/post_task.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "components/feedback/feedback_util.h"
 #include "content/public/browser/browser_thread.h"
-#include "ui/ozone/public/input_controller.h"
-#include "ui/ozone/public/ozone_platform.h"
+#include "services/ui/public/cpp/input_devices/input_device_controller_client.h"
 
 using content::BrowserThread;
 
@@ -163,7 +165,9 @@ void OnStatusLogCollected(
 
   // Collect touch event logs.
   const base::FilePath kBaseLogPath(kTouchEventLogDir);
-  ui::OzonePlatform::GetInstance()->GetInputController()->GetTouchEventLog(
+  ui::InputDeviceControllerClient* input_device_controller_client =
+      g_browser_process->platform_part()->GetInputDeviceControllerClient();
+  input_device_controller_client->GetTouchEventLog(
       kBaseLogPath,
       base::BindOnce(&OnEventLogCollected, base::Passed(&response), callback));
 }
@@ -189,11 +193,14 @@ void TouchLogSource::Fetch(const SysLogsSourceCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!callback.is_null());
 
-  std::unique_ptr<SystemLogsResponse> response(new SystemLogsResponse);
+  std::unique_ptr<SystemLogsResponse> response =
+      base::MakeUnique<SystemLogsResponse>();
   CollectTouchHudDebugLog(response.get());
 
   // Collect touch device status logs.
-  ui::OzonePlatform::GetInstance()->GetInputController()->GetTouchDeviceStatus(
+  ui::InputDeviceControllerClient* input_device_controller_client =
+      g_browser_process->platform_part()->GetInputDeviceControllerClient();
+  input_device_controller_client->GetTouchDeviceStatus(
       base::BindOnce(&OnStatusLogCollected, base::Passed(&response), callback));
 }
 
