@@ -168,6 +168,9 @@ class ProfileIOData {
     return &google_services_user_account_id_;
   }
 
+  // Returns whether Sync is enabled, for Dice account consistency.
+  bool IsSyncEnabled() const;
+
   net::URLRequestContext* extensions_request_context() const {
     return extensions_request_context_.get();
   }
@@ -527,6 +530,8 @@ class ProfileIOData {
       client_cert_store_factory_;
 
   mutable StringPrefMember google_services_user_account_id_;
+  mutable BooleanPrefMember sync_suppress_start_;
+  mutable BooleanPrefMember sync_first_setup_complete_;
 
   // Member variables which are pointed to by the various context objects.
   mutable BooleanPrefMember enable_referrers_;

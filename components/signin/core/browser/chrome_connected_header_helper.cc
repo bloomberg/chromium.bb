@@ -56,9 +56,10 @@ std::string ChromeConnectedHeaderHelper::BuildRequestCookieIfPossible(
     const content_settings::CookieSettings* cookie_settings,
     int profile_mode_mask) {
   ChromeConnectedHeaderHelper chrome_connected_helper;
-  return chrome_connected_helper.BuildRequestHeaderIfPossible(
-      false /* is_header_request */, url, account_id, cookie_settings,
-      profile_mode_mask);
+  if (!chrome_connected_helper.ShouldBuildRequestHeader(url, cookie_settings))
+    return "";
+  return chrome_connected_helper.BuildRequestHeader(
+      false /* is_header_request */, url, account_id, profile_mode_mask);
 }
 
 // static

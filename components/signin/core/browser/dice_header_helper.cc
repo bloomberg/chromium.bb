@@ -4,7 +4,10 @@
 
 #include "components/signin/core/browser/dice_header_helper.h"
 
+#include <vector>
+
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -84,11 +87,14 @@ bool DiceHeaderHelper::IsUrlEligibleForRequestHeader(const GURL& url) {
   return gaia::IsGaiaSignonRealm(url.GetOrigin());
 }
 
-std::string DiceHeaderHelper::BuildRequestHeader(bool is_header_request,
-                                                 const GURL& url,
-                                                 const std::string& account_id,
-                                                 int profile_mode_mask) {
-  return "client_id=" + GaiaUrls::GetInstance()->oauth2_chrome_client_id();
+std::string DiceHeaderHelper::BuildRequestHeader(const std::string& account_id,
+                                                 bool sync_enabled) {
+  std::vector<std::string> parts;
+  parts.push_back("client_id=" +
+                  GaiaUrls::GetInstance()->oauth2_chrome_client_id());
+  if (sync_enabled)
+    parts.push_back("sync_account_id=" + account_id);
+  return base::JoinString(parts, ",");
 }
 
 }  // namespace signin

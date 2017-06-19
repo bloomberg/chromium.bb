@@ -51,15 +51,15 @@ class SigninHeaderHelperTest : public testing::Test {
         expected_request);
   }
 
-  std::unique_ptr<net::URLRequest> CreateRequest(
-      const GURL& url,
-      const std::string& account_id) {
+  std::unique_ptr<net::URLRequest> CreateRequest(const GURL& url,
+                                                 const std::string& account_id,
+                                                 bool sync_enabled) {
     std::unique_ptr<net::URLRequest> url_request =
         url_request_context_.CreateRequest(url, net::DEFAULT_PRIORITY, nullptr,
                                            TRAFFIC_ANNOTATION_FOR_TESTS);
     AppendOrRemoveAccountConsistentyRequestHeader(
-        url_request.get(), GURL(), account_id, cookie_settings_.get(),
-        PROFILE_MODE_DEFAULT);
+        url_request.get(), GURL(), account_id, sync_enabled,
+        cookie_settings_.get(), PROFILE_MODE_DEFAULT);
     return url_request;
   }
 
@@ -81,7 +81,7 @@ class SigninHeaderHelperTest : public testing::Test {
                                 const std::string& account_id,
                                 const std::string& expected_request) {
     std::unique_ptr<net::URLRequest> url_request =
-        CreateRequest(url, account_id);
+        CreateRequest(url, account_id, false /* sync_enabled */);
     CheckAccountConsistencyHeaderRequest(
         url_request.get(), kChromeConnectedHeader, expected_request);
   }
@@ -89,10 +89,11 @@ class SigninHeaderHelperTest : public testing::Test {
 #if !defined(OS_IOS) && !defined(OS_ANDROID)
   void CheckDiceHeaderRequest(const GURL& url,
                               const std::string& account_id,
+                              bool sync_enabled,
                               const std::string& expected_mirror_request,
                               const std::string& expected_dice_request) {
     std::unique_ptr<net::URLRequest> url_request =
-        CreateRequest(url, account_id);
+        CreateRequest(url, account_id, sync_enabled);
     CheckAccountConsistencyHeaderRequest(
         url_request.get(), kChromeConnectedHeader, expected_mirror_request);
     CheckAccountConsistencyHeaderRequest(url_request.get(), kDiceRequestHeader,
@@ -180,18 +181,27 @@ TEST_F(SigninHeaderHelperTest, TestDiceRequest) {
       base::CommandLine::ForCurrentProcess());
   // ChromeConnected but no Dice for Docs URLs.
   CheckDiceHeaderRequest(
-      GURL("https://docs.google.com"), "0123456789",
+      GURL("https://docs.google.com"), "0123456789", false /* sync_enabled */,
       "id=0123456789,mode=0,enable_account_consistency=false", "");
 
   // ChromeConnected and Dice for Gaia URLs.
+  // Sync disabled.
   std::string client_id = GaiaUrls::GetInstance()->oauth2_chrome_client_id();
   ASSERT_FALSE(client_id.empty());
   CheckDiceHeaderRequest(GURL("https://accounts.google.com"), "0123456789",
+                         false /* sync_enabled */,
                          "mode=0,enable_account_consistency=false",
                          "client_id=" + client_id);
+  // Sync enabled: check that the Dice header has the Sync account ID and that
+  // the mirror header is not modified.
+  CheckDiceHeaderRequest(
+      GURL("https://accounts.google.com"), "0123456789",
+      true /* sync_enabled */, "mode=0,enable_account_consistency=false",
+      "client_id=" + client_id + ",sync_account_id=0123456789");
 
   // No ChromeConnected and no Dice for other URLs.
-  CheckDiceHeaderRequest(GURL("https://www.google.com"), "0123456789", "", "");
+  CheckDiceHeaderRequest(GURL("https://www.google.com"), "0123456789",
+                         false /* sync_enabled */, "", "");
 }
 
 // Tests that no Dice request is returned when Dice is not enabled.
@@ -199,6 +209,7 @@ TEST_F(SigninHeaderHelperTest, TestNoDiceRequestWhenDisabled) {
   switches::EnableAccountConsistencyMirrorForTesting(
       base::CommandLine::ForCurrentProcess());
   CheckDiceHeaderRequest(GURL("https://accounts.google.com"), "0123456789",
+                         false /* sync_enabled */,
                          "mode=0,enable_account_consistency=true", "");
 }
 
@@ -290,8 +301,8 @@ TEST_F(SigninHeaderHelperTest, TestMirrorHeaderEligibleRedirectURL) {
       url_request_context_.CreateRequest(url, net::DEFAULT_PRIORITY, nullptr,
                                          TRAFFIC_ANNOTATION_FOR_TESTS);
   AppendOrRemoveAccountConsistentyRequestHeader(
-      url_request.get(), redirect_url, account_id, cookie_settings_.get(),
-      PROFILE_MODE_DEFAULT);
+      url_request.get(), redirect_url, account_id, false /* sync_enabled */,
+      cookie_settings_.get(), PROFILE_MODE_DEFAULT);
   EXPECT_TRUE(
       url_request->extra_request_headers().HasHeader(kChromeConnectedHeader));
 }
@@ -308,8 +319,8 @@ TEST_F(SigninHeaderHelperTest, TestMirrorHeaderNonEligibleRedirectURL) {
       url_request_context_.CreateRequest(url, net::DEFAULT_PRIORITY, nullptr,
                                          TRAFFIC_ANNOTATION_FOR_TESTS);
   AppendOrRemoveAccountConsistentyRequestHeader(
-      url_request.get(), redirect_url, account_id, cookie_settings_.get(),
-      PROFILE_MODE_DEFAULT);
+      url_request.get(), redirect_url, account_id, false /* sync_enabled */,
+      cookie_settings_.get(), PROFILE_MODE_DEFAULT);
   EXPECT_FALSE(
       url_request->extra_request_headers().HasHeader(kChromeConnectedHeader));
 }
@@ -329,8 +340,8 @@ TEST_F(SigninHeaderHelperTest, TestIgnoreMirrorHeaderNonEligibleURLs) {
   url_request->SetExtraRequestHeaderByName(kChromeConnectedHeader, fake_header,
                                            false);
   AppendOrRemoveAccountConsistentyRequestHeader(
-      url_request.get(), redirect_url, account_id, cookie_settings_.get(),
-      PROFILE_MODE_DEFAULT);
+      url_request.get(), redirect_url, account_id, false /* sync_enabled */,
+      cookie_settings_.get(), PROFILE_MODE_DEFAULT);
   std::string header;
   EXPECT_TRUE(url_request->extra_request_headers().GetHeader(
       kChromeConnectedHeader, &header));
