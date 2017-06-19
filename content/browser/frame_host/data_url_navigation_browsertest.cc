@@ -649,10 +649,18 @@ IN_PROC_BROWSER_TEST_F(DataUrlNavigationBrowserTest,
   NavigateAndCheckDownload(GURL("data:application/octet-stream,test"));
 }
 
+#if defined(OS_ANDROID)
+// Flaky on android: https://crbug.com/734563
+#define MAYBE_OctetStream_WindowOpen_Download \
+  DISABLED_OctetStream_WindowOpen_Download
+#else
+#define MAYBE_OctetStream_WindowOpen_Download OctetStream_WindowOpen_Download
+#endif
+
 // Test that window.open to a data URL results in a download if the URL has a
 // binary mime type.
 IN_PROC_BROWSER_TEST_F(DataUrlNavigationBrowserTest,
-                       OctetStream_WindowOpen_Download) {
+                       MAYBE_OctetStream_WindowOpen_Download) {
   NavigateToURL(shell(),
                 embedded_test_server()->GetURL("/data_url_navigations.html"));
   ExecuteScriptAndCheckWindowOpenDownload(
@@ -705,10 +713,19 @@ IN_PROC_BROWSER_TEST_F(DataUrlNavigationBrowserTest,
   NavigateAndCheckDownload(GURL("data:unknown/mimetype,test"));
 }
 
+#if defined(OS_ANDROID)
+// Flaky on android: https://crbug.com/734563
+#define MAYBE_UnknownMimeType_WindowOpen_Download \
+  DISABLED_UnknownMimeType_WindowOpen_Download
+#else
+#define MAYBE_UnknownMimeType_WindowOpen_Download \
+  UnknownMimeType_WindowOpen_Download
+#endif
+
 // Test that window.open to a data URL results in a download if the URL has an
 // unknown mime type.
 IN_PROC_BROWSER_TEST_F(DataUrlNavigationBrowserTest,
-                       UnknownMimeType_WindowOpen_Download) {
+                       MAYBE_UnknownMimeType_WindowOpen_Download) {
   NavigateToURL(shell(),
                 embedded_test_server()->GetURL("/data_url_navigations.html"));
   ExecuteScriptAndCheckWindowOpenDownload(
