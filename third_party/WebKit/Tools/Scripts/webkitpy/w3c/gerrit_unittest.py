@@ -22,3 +22,14 @@ class TestExporterTest(unittest.TestCase):
         cl = GerritCL({'change_id': 1}, MockGerritAPI(None, None, None))
         actual_patch = cl.filter_transform_patch(sample_patch)
         self.assertEqual(actual_patch, expected_patch)
+
+    def test_filter_transform_patch_removes_baselines(self):
+        host = Host()
+        finder = PathFinder(host.filesystem)
+        resources_path = finder.path_from_tools_scripts('webkitpy', 'w3c', 'resources')
+        sample_patch = host.filesystem.read_text_file(host.filesystem.join(resources_path, 'sample2.patch'))
+        expected_patch = host.filesystem.read_text_file(host.filesystem.join(resources_path, 'expected2.patch'))
+
+        cl = GerritCL({'change_id': 1}, MockGerritAPI(None, None, None))
+        actual_patch = cl.filter_transform_patch(sample_patch)
+        self.assertEqual(actual_patch, expected_patch)

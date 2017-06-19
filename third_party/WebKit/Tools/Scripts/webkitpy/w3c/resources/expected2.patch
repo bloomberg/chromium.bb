@@ -1,0 +1,28 @@
+From 84953cf3aade2a112b9b9930d6fa72ece370cae5 Mon Sep 17 00:00:00 2001
+From: Jeff Carpenter <jeffcarp@chromium.org>
+Date: Mon, 19 Jun 2017 15:19:03 -0700
+Subject: [PATCH] wip
+
+---
+ .../service_worker/service_worker_client_utils.cc  | 47 ++++++++++++----------
+ third_party/WebKit/LayoutTests/TestExpectations    |  2 +
+ ...lients-matchall-client-types.https-expected.txt |  5 +++
+ .../clients-matchall-client-types.https.html       |  2 +-
+ 5 files changed, 34 insertions(+), 23 deletions(-)
+ create mode 100644 service-workers/service-worker/clients-matchall-client-types.https-expected.txt
+
+diff --git a/service-workers/service-worker/clients-matchall-client-types.https.html b/service-workers/service-worker/clients-matchall-client-types.https.html
+index 5bb50ec3db7f..6cd9ae3f68f9 100644
+--- a/service-workers/service-worker/clients-matchall-client-types.https.html
++++ b/service-workers/service-worker/clients-matchall-client-types.https.html
+@@ -38,7 +38,7 @@ function test_matchall(frame, expected, query_options) {
+       throw new Error(data);
+     }
+ 
+-    assert_equals(data.length, expected.length, 'result count');
++    assert_equals(data.length, expected.length, 'expecting ' + expected + ': result count');
+ 
+     for (var i = 0; i < data.length; ++i) {
+       assert_array_equals(data[i], expected[i]);
+-- 
+2.13.1.518.g3df882009-goog
