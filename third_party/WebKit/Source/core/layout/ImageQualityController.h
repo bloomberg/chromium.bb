@@ -41,7 +41,9 @@
 
 namespace blink {
 
-class LayoutObject;
+class ImageResourceObserver;
+class ComputedStyle;
+class Settings;
 
 typedef HashMap<const void*, LayoutSize> LayerSizeMap;
 
@@ -50,7 +52,7 @@ struct ObjectResizeInfo {
   bool is_resizing;
 };
 
-typedef HashMap<const LayoutObject*, ObjectResizeInfo> ObjectLayerSizeMap;
+typedef HashMap<const ImageResourceObserver*, ObjectResizeInfo> ResourceSizeMap;
 
 class CORE_EXPORT ImageQualityController final {
   WTF_MAKE_NONCOPYABLE(ImageQualityController);
@@ -61,12 +63,16 @@ class CORE_EXPORT ImageQualityController final {
 
   static ImageQualityController* GetImageQualityController();
 
-  static void Remove(LayoutObject&);
+  static void Remove(ImageResourceObserver&);
 
-  InterpolationQuality ChooseInterpolationQuality(const LayoutObject&,
-                                                  Image*,
-                                                  const void* layer,
-                                                  const LayoutSize&);
+  InterpolationQuality ChooseInterpolationQuality(
+      const ImageResourceObserver&,
+      const ComputedStyle&,
+      const Settings*,
+      Image*,
+      const void* layer,
+      const LayoutSize&,
+      double last_frame_time_monotonic);
 
  private:
   static const double kCLowQualityTimeThreshold;
@@ -74,23 +80,25 @@ class CORE_EXPORT ImageQualityController final {
 
   ImageQualityController();
 
-  static bool Has(const LayoutObject&);
-  void Set(const LayoutObject&,
+  static bool Has(const ImageResourceObserver&);
+  void Set(const ImageResourceObserver&,
            LayerSizeMap* inner_map,
            const void* layer,
            const LayoutSize&,
            bool is_resizing);
 
-  bool ShouldPaintAtLowQuality(const LayoutObject&,
+  bool ShouldPaintAtLowQuality(const ImageResourceObserver&,
+                               const ComputedStyle&,
+                               const Settings*,
                                Image*,
                                const void* layer,
                                const LayoutSize&,
                                double last_frame_time_monotonic);
-  void RemoveLayer(const LayoutObject&,
+  void RemoveLayer(const ImageResourceObserver&,
                    LayerSizeMap* inner_map,
                    const void* layer);
-  void ObjectDestroyed(const LayoutObject&);
-  bool IsEmpty() { return object_layer_size_map_.IsEmpty(); }
+  void ObjectDestroyed(const ImageResourceObserver&);
+  bool IsEmpty() { return observer_layer_size_map_.IsEmpty(); }
 
   void HighQualityRepaintTimerFired(TimerBase*);
   void RestartTimer(double last_frame_time_monotonic);
@@ -98,7 +106,7 @@ class CORE_EXPORT ImageQualityController final {
   // Only for use in testing.
   void SetTimer(std::unique_ptr<TimerBase>);
 
-  ObjectLayerSizeMap object_layer_size_map_;
+  ResourceSizeMap observer_layer_size_map_;
   std::unique_ptr<TimerBase> timer_;
   double frame_time_when_timer_started_;
 

@@ -4,9 +4,13 @@
 
 #include "core/paint/SVGImagePainter.h"
 
+#include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/layout/ImageQualityController.h"
 #include "core/layout/LayoutImageResource.h"
 #include "core/layout/svg/LayoutSVGImage.h"
+#include "core/page/ChromeClient.h"
+#include "core/page/Page.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/PaintInfo.h"
@@ -71,11 +75,15 @@ void SVGImagePainter::PaintForeground(const PaintInfo& paint_info) {
   image_element->preserveAspectRatio()->CurrentValue()->TransformRect(dest_rect,
                                                                       src_rect);
 
+  const Document& document = layout_svg_image_.GetDocument();
   InterpolationQuality interpolation_quality = kInterpolationDefault;
-  interpolation_quality = ImageQualityController::GetImageQualityController()
-                              ->ChooseInterpolationQuality(
-                                  layout_svg_image_, image.Get(), image.Get(),
-                                  LayoutSize(dest_rect.Size()));
+  interpolation_quality =
+      ImageQualityController::GetImageQualityController()
+          ->ChooseInterpolationQuality(
+              layout_svg_image_, layout_svg_image_.StyleRef(),
+              document.GetSettings(), image.Get(), image.Get(),
+              LayoutSize(dest_rect.Size()),
+              document.GetPage()->GetChromeClient().LastFrameTimeMonotonic());
 
   InterpolationQuality previous_interpolation_quality =
       paint_info.context.ImageInterpolationQuality();

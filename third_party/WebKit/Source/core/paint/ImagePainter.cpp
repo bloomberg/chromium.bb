@@ -10,11 +10,12 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLAreaElement.h"
 #include "core/html/HTMLImageElement.h"
+#include "core/layout/ImageQualityController.h"
 #include "core/layout/LayoutImage.h"
 #include "core/layout/LayoutReplaced.h"
 #include "core/layout/TextRunConstructor.h"
+#include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
-#include "core/paint/BoxPainter.h"
 #include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
 #include "platform/geometry/LayoutPoint.h"
@@ -150,10 +151,19 @@ void ImagePainter::PaintIntoRect(GraphicsContext& context,
 
   // FIXME: why is interpolation quality selection not included in the
   // Instrumentation reported cost of drawing an image?
+  double frame_time = layout_image_.GetFrameView()
+                          ->GetPage()
+                          ->GetChromeClient()
+                          .LastFrameTimeMonotonic();
+  const Settings* settings = layout_image_.GetFrame()
+                                 ? layout_image_.GetFrame()->GetSettings()
+                                 : nullptr;
   InterpolationQuality interpolation_quality =
-      BoxPainter::ChooseInterpolationQuality(
-          layout_image_, image.Get(), image.Get(),
-          LayoutSize(pixel_snapped_dest_rect.Size()));
+      ImageQualityController::GetImageQualityController()
+          ->ChooseInterpolationQuality(
+              layout_image_, layout_image_.StyleRef(), settings, image.Get(),
+              image.Get(), LayoutSize(pixel_snapped_dest_rect.Size()),
+              frame_time);
 
   FloatRect src_rect = image->Rect();
   // If the content rect requires clipping, adjust |srcRect| and
