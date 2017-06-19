@@ -111,6 +111,10 @@ _DUMP_STATIC_INITIALIZERS_PATH = os.path.join(
 # Pragma exists when enable_resource_whitelist_generation=true.
 _RC_HEADER_RE = re.compile(
     r'^#define (?P<name>\w+) (?:_Pragma\(.*?\) )?(?P<id>\d+)$')
+_RE_NON_LANGUAGE_PAK = re.compile(r'^assets/.*(resources|percent)\.pak$')
+_RE_COMPRESSED_LANGUAGE_PAK = re.compile(
+    r'\.lpak$|^assets/(?!stored-locales/).*(?!resources|percent)\.pak$')
+_RE_STORED_LANGUAGE_PAK = re.compile(r'^assets/stored-locales/.*\.pak$')
 _READELF_SIZES_METRICS = {
   'text': ['.text'],
   'data': ['.data', '.rodata', '.data.rel.ro', '.data.rel.ro.local'],
@@ -165,6 +169,34 @@ def _ParseLibBuildId(so_path, tools_prefix):
   return match.group(1) if match else None
 
 
+def _ParseManifestAttributes(apk_path):
+  # Check if the manifest specifies whether or not to extract native libs.
+  skip_extract_lib = False
+  output = cmd_helper.GetCmdOutput([
+      _AAPT_PATH.read(), 'd', 'xmltree', apk_path, 'AndroidManifest.xml'])
+  m = re.search(r'extractNativeLibs\(.*\)=\(.*\)(\w)', output)
+  if m:
+    skip_extract_lib = not bool(int(m.group(1)))
+
+  # Dex decompression overhead varies by Android version.
+  m = re.search(r'android:minSdkVersion\(\w+\)=\(type \w+\)(\w+)\n', output)
+  sdk_version = int(m.group(1), 16)
+  # Pre-L: Dalvik - .odex file is simply decompressed/optimized dex file (~1x).
+  # L, M: ART - .odex file is compiled version of the dex file (~3x).
+  # N: ART - Uses Dalvik-like JIT for normal apps (~1x), full compilation for
+  #    shared apps (~3x).
+  if sdk_version < 21:
+    dex_multiplier = 1
+  elif sdk_version < 24:
+    dex_multiplier = 3
+  elif 'Monochrome' in apk_path or 'WebView' in apk_path:
+    dex_multiplier = 3
+  else:
+    dex_multiplier = 1
+
+  return dex_multiplier, skip_extract_lib
+
+
 def CountStaticInitializers(so_path, tools_prefix):
   # Static initializers expected in official builds. Note that this list is
   # built using 'nm' on libchrome.so which results from a GCC official build
@@ -205,6 +237,16 @@ def GetStaticInitializers(so_path, tools_prefix):
                                     so_path, '-t', tools_prefix])
   summary = re.search(r'Found \d+ static initializers in (\d+) files.', output)
   return output.splitlines()[:-1], int(summary.group(1))
+
+
+def _NormalizeLanguagePaks(translations, normalized_apk_size, factor):
+  english_pak = translations.FindByPattern(r'.*/en[-_][Uu][Ss]\.l?pak')
+  num_translations = translations.GetNumEntries()
+  if english_pak:
+    normalized_apk_size -= translations.ComputeZippedSize()
+    normalized_apk_size += int(
+        english_pak.compress_size * num_translations * factor)
+  return normalized_apk_size
 
 
 def _NormalizeResourcesArsc(apk_path):
@@ -282,11 +324,11 @@ class _FileGroup(object):
   def __init__(self, name):
     self.name = name
     self._zip_infos = []
-    self._extracted = []
+    self._extracted_multipliers = []
 
-  def AddZipInfo(self, zip_info, extracted=False):
+  def AddZipInfo(self, zip_info, extracted_multiplier=0):
     self._zip_infos.append(zip_info)
-    self._extracted.append(extracted)
+    self._extracted_multipliers.append(extracted_multiplier)
 
   def AllEntries(self):
     return iter(self._zip_infos)
@@ -311,9 +353,8 @@ class _FileGroup(object):
 
   def ComputeExtractedSize(self):
     ret = 0
-    for zi, extracted in zip(self._zip_infos, self._extracted):
-      if extracted:
-        ret += zi.file_size
+    for zi, multiplier in zip(self._zip_infos, self._extracted_multipliers):
+      ret += zi.file_size * multiplier
     return ret
 
   def ComputeInstallSize(self):
@@ -333,6 +374,7 @@ def PrintApkAnalysis(apk_filename, tools_prefix, chartjson=None):
   java_code = make_group('Java code')
   native_resources_no_translations = make_group('Native resources (no l10n)')
   translations = make_group('Native resources (l10n)')
+  stored_translations = make_group('Native resources stored (l10n)')
   icu_data = make_group('ICU (i18n library) data')
   v8_snapshots = make_group('V8 Snapshots')
   png_drawables = make_group('PNG drawables')
@@ -348,22 +390,27 @@ def PrintApkAnalysis(apk_filename, tools_prefix, chartjson=None):
   finally:
     apk.close()
 
+  dex_multiplier, skip_extract_lib = _ParseManifestAttributes(apk_filename)
   total_apk_size = os.path.getsize(apk_filename)
   apk_basename = os.path.basename(apk_filename)
-
   for member in apk_contents:
     filename = member.filename
     if filename.endswith('/'):
       continue
-
     if filename.endswith('.so'):
-      native_code.AddZipInfo(member, 'crazy' not in filename)
+      should_extract_lib = not (skip_extract_lib or 'crazy' in filename)
+      native_code.AddZipInfo(
+          member, extracted_multiplier=int(should_extract_lib))
     elif filename.endswith('.dex'):
-      java_code.AddZipInfo(member, True)
-    elif re.search(r'^assets/.*(resources|percent)\.pak$', filename):
+      java_code.AddZipInfo(member, extracted_multiplier=dex_multiplier)
+    elif re.search(_RE_NON_LANGUAGE_PAK, filename):
       native_resources_no_translations.AddZipInfo(member)
-    elif re.search(r'\.lpak$|^assets/.*(?!resources|percent)\.pak$', filename):
-      translations.AddZipInfo(member, 'en_' in filename or 'en-' in filename)
+    elif re.search(_RE_COMPRESSED_LANGUAGE_PAK, filename):
+      translations.AddZipInfo(
+          member,
+          extracted_multiplier=int('en_' in filename or 'en-' in filename))
+    elif re.search(_RE_STORED_LANGUAGE_PAK, filename):
+      stored_translations.AddZipInfo(member)
     elif filename == 'assets/icudtl.dat':
       icu_data.AddZipInfo(member)
     elif filename.endswith('.bin'):
@@ -438,14 +485,14 @@ def PrintApkAnalysis(apk_filename, tools_prefix, chartjson=None):
   normalized_apk_size += native_code.ComputeUncompressedSize()
   # Avoid noise caused when strings change and translations haven't yet been
   # updated.
-  english_pak = translations.FindByPattern(r'.*/en[-_][Uu][Ss]\.l?pak')
   num_translations = translations.GetNumEntries()
-  if english_pak and num_translations > 1:
-    normalized_apk_size -= translations.ComputeZippedSize()
-    # 1.17 found by looking at Chrome.apk and seeing how much smaller en-US.pak
-    # is relative to the average locale .pak.
-    normalized_apk_size += int(
-        english_pak.compress_size * num_translations * 1.17)
+  if num_translations > 1:
+    # Multipliers found by looking at MonochromePublic.apk and seeing how much
+    # smaller en-US.pak is relative to the average locale.pak.
+    normalized_apk_size = _NormalizeLanguagePaks(
+        translations, normalized_apk_size, 1.17)
+    normalized_apk_size = _NormalizeLanguagePaks(
+        stored_translations, normalized_apk_size, 1.43)
     normalized_apk_size += int(_NormalizeResourcesArsc(apk_filename))
 
   ReportPerfResult(chartjson, apk_basename + '_Specifics',
@@ -762,7 +809,6 @@ def main():
   args = argparser.parse_args()
 
   chartjson = _BASE_CHART.copy() if args.chartjson else None
-
   if args.chromium_output_directory:
     constants.SetOutputDirectory(args.chromium_output_directory)
   if not args.no_output_dir:
