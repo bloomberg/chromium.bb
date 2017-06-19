@@ -1,0 +1,2 @@
+rootWebArea
+++progressIndicator valueForRange=3.00 minValueForRange=0.00 maxValueForRange=0.00

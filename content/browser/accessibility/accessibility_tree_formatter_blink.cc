@@ -253,6 +253,18 @@ base::string16 AccessibilityTreeFormatterBlink::ToString(
                    &line);
   }
 
+  for (int attr_index = ui::AX_FLOAT_ATTRIBUTE_NONE;
+       attr_index <= ui::AX_FLOAT_ATTRIBUTE_LAST; ++attr_index) {
+    auto attr = static_cast<ui::AXFloatAttribute>(attr_index);
+    double float_value;
+    if (!dict.GetDouble(ui::ToString(attr), &float_value))
+      continue;
+    WriteAttribute(
+        false,
+        base::StringPrintf("%s=%.2f", ui::ToString(attr).c_str(), float_value),
+        &line);
+  }
+
   for (int attr_index = ui::AX_INT_LIST_ATTRIBUTE_NONE;
        attr_index <= ui::AX_INT_LIST_ATTRIBUTE_LAST;
        ++attr_index) {

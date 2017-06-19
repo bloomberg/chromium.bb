@@ -1,0 +1,7 @@
+rootWebArea
+++genericContainer editable richlyEditable name='label'
+++genericContainer editable richlyEditable description='description' descriptionFrom=5
+++genericContainer editable richlyEditable name='title'
+++paragraph
+++++staticText name='description'
+++++++inlineTextBox name='description'

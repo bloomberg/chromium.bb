@@ -1,25 +1,25 @@
 rootWebArea focusable
 ++genericContainer
 ++++popUpButton collapsed focusable haspopup
-++++++menuListPopup invisible
+++++++menuListPopup invisible activedescendantId=menuListOption
 ++++++++menuListOption focusable selectable selected name='Placeholder option'
 ++++++++menuListOption focusable invisible selectable name='Option 1'
 ++++++++menuListOption focusable invisible selectable name='Option 2'
 ++++popUpButton collapsed focusable haspopup
-++++++menuListPopup invisible
+++++++menuListPopup invisible activedescendantId=menuListOption
 ++++++++menuListOption focusable invisible selectable name='Option 1'
 ++++++++menuListOption focusable selectable selected name='Option 2'
 ++++++++menuListOption focusable invisible selectable name='Option 3'
 ++++popUpButton collapsed focusable haspopup required
-++++++menuListPopup invisible
+++++++menuListPopup invisible activedescendantId=menuListOption
 ++++++++menuListOption focusable selectable selected name='Option 1'
 ++++++++menuListOption focusable invisible selectable name='Option 2'
 ++++++++menuListOption focusable invisible selectable name='Option 3'
 ++++listBox focusable multiselectable
-++++++listBoxOption focusable selectable name='Option 1'
-++++++listBoxOption focusable selectable name='Option 2'
-++++++listBoxOption focusable selectable name='Option 3'
+++++++listBoxOption focusable selectable name='Option 1' setSize=3 posInSet=1
+++++++listBoxOption focusable selectable name='Option 2' setSize=3 posInSet=2
+++++++listBoxOption focusable selectable name='Option 3' setSize=3 posInSet=3
 ++++listBox focusable
-++++++listBoxOption focusable selectable name='Option 1'
-++++++listBoxOption focusable selectable name='Option 2'
-++++++listBoxOption focusable selectable name='Option 3'
+++++++listBoxOption focusable selectable name='Option 1' setSize=3 posInSet=1
+++++++listBoxOption focusable selectable name='Option 2' setSize=3 posInSet=2
+++++++listBoxOption focusable selectable name='Option 3' setSize=3 posInSet=3

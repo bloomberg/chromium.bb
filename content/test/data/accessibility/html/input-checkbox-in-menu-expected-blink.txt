@@ -1,0 +1,7 @@
+rootWebArea
+++genericContainer
+++++checkBox name='Checkbox1' checkedState=1
+++++checkBox name='Checkbox2' checkedState=2
+++menu
+++++checkBox name='Checkbox3' checkedState=2
+++++checkBox name='Checkbox4' checkedState=3

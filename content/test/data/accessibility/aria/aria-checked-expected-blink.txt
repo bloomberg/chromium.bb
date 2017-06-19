@@ -1,0 +1,4 @@
+rootWebArea
+++checkBox checkedState=2
+++checkBox checkedState=1
+++checkBox checkedState=3
