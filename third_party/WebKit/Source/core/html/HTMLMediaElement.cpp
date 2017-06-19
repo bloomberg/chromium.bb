@@ -151,6 +151,15 @@ enum ContentTypeParseableResult {
   kContentTypeParseableMax
 };
 
+// This enum is used to record histograms. Do not reorder.
+enum class PlayPromiseRejectReason {
+  kFailedAutoplayPolicy = 0,
+  kNoSupportedSources,
+  kInterruptedByPause,
+  kInterruptedByLoad,
+  kCount,
+};
+
 void ReportContentTypeResultToUMA(String content_type,
                                   MIMETypeRegistry::SupportsType result) {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
@@ -350,6 +359,13 @@ std::unique_ptr<MediaControls::Factory>& MediaControlsFactory() {
   DEFINE_STATIC_LOCAL(std::unique_ptr<MediaControls::Factory>,
                       media_controls_factory, ());
   return media_controls_factory;
+}
+
+void RecordPlayPromiseRejected(PlayPromiseRejectReason reason) {
+  DEFINE_STATIC_LOCAL(EnumerationHistogram, histogram,
+                      ("Media.MediaElement.PlayPromiseReject",
+                       static_cast<int>(PlayPromiseRejectReason::kCount)));
+  histogram.Count(static_cast<int>(reason));
 }
 
 }  // anonymous namespace
@@ -893,6 +909,7 @@ void HTMLMediaElement::InvokeLoadAlgorithm() {
 
       // 4.6.2 - Take pending play promises and reject pending play promises
       // with the result and an "AbortError" DOMException.
+      RecordPlayPromiseRejected(PlayPromiseRejectReason::kInterruptedByLoad);
       RejectPlayPromises(kAbortError,
                          "The play() request was interrupted by a new load "
                          "request. https://goo.gl/LdLk22");
@@ -2262,9 +2279,12 @@ ScriptPromise HTMLMediaElement::playForBindings(ScriptState* script_state) {
     switch (code.Get()) {
       case kNotAllowedError:
         message = "play() can only be initiated by a user gesture.";
+        RecordPlayPromiseRejected(
+            PlayPromiseRejectReason::kFailedAutoplayPolicy);
         break;
       case kNotSupportedError:
         message = "The element has no supported sources.";
+        RecordPlayPromiseRejected(PlayPromiseRejectReason::kNoSupportedSources);
         break;
       default:
         NOTREACHED();
@@ -3944,10 +3964,12 @@ void HTMLMediaElement::RejectScheduledPlayPromises() {
   DCHECK(play_promise_error_code_ == kAbortError ||
          play_promise_error_code_ == kNotSupportedError);
   if (play_promise_error_code_ == kAbortError) {
+    RecordPlayPromiseRejected(PlayPromiseRejectReason::kInterruptedByPause);
     RejectPlayPromisesInternal(kAbortError,
                                "The play() request was interrupted by a call "
                                "to pause(). https://goo.gl/LdLk22");
   } else {
+    RecordPlayPromiseRejected(PlayPromiseRejectReason::kNoSupportedSources);
     RejectPlayPromisesInternal(
         kNotSupportedError,
         "Failed to load because no supported source was found.");
