@@ -8,11 +8,14 @@
 #import <WebKit/WebKit.h>
 
 #include "base/logging.h"
-#import "base/mac/scoped_nsobject.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
 #import "ios/web/public/web_view_creation_util.h"
 #import "third_party/ocmock/OCMock/NSInvocation+OCMAdditions.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -37,7 +40,10 @@ namespace web {
 void SimulateWKWebViewCrash(WKWebView* webView) {
   SEL selector = @selector(webViewWebContentProcessDidTerminate:);
   if ([webView.navigationDelegate respondsToSelector:selector]) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
     [webView.navigationDelegate performSelector:selector withObject:webView];
+#pragma clang diagnostic pop
   }
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wundeclared-selector"
