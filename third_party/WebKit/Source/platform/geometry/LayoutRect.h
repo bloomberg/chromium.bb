@@ -133,6 +133,10 @@ class PLATFORM_EXPORT LayoutRect {
   void Contract(const LayoutSize& size) { size_ -= size; }
   void Contract(LayoutUnit dw, LayoutUnit dh) { size_.Expand(-dw, -dh); }
   void Contract(int dw, int dh) { size_.Expand(-dw, -dh); }
+  void Contract(const LayoutRectOutsets& box) {
+    location_.Move(box.Left(), box.Top());
+    size_.Shrink(box.Left() + box.Right(), box.Top() + box.Bottom());
+  }
   void ContractEdges(LayoutUnit top,
                      LayoutUnit right,
                      LayoutUnit bottom,
