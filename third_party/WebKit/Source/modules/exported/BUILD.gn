@@ -26,3 +26,24 @@ blink_modules_sources("exported") {
 
   defines = [ "BLINK_MODULES_IMPLEMENTATION=1" ]
 }
+
+static_library("test_support") {
+  deps = [
+    "//skia",
+    "//third_party/WebKit/Source/core:testing",
+    "//third_party/WebKit/Source/modules:modules_testing",
+    "//third_party/WebKit/Source/platform/wtf",
+    "//v8",
+  ]
+
+  sources = [
+    "WebTestingSupport.cpp",
+  ]
+
+  configs += [
+    "//third_party/WebKit/Source:config",
+    "//third_party/WebKit/Source/core:blink_core_pch",
+  ]
+
+  include_dirs = [ "$root_gen_dir/blink" ]
+}

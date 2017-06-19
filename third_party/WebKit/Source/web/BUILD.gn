@@ -82,27 +82,6 @@ component("web") {
   }
 }
 
-static_library("test_support") {
-  deps = [
-    "//skia",
-    "//third_party/WebKit/Source/core:testing",
-    "//third_party/WebKit/Source/modules:modules_testing",
-    "//third_party/WebKit/Source/platform/wtf",
-    "//v8",
-  ]
-
-  sources = [
-    "WebTestingSupport.cpp",
-  ]
-
-  configs += [
-    "//third_party/WebKit/Source:config",
-    "//third_party/WebKit/Source/core:blink_core_pch",
-  ]
-
-  include_dirs = [ "$root_gen_dir/blink" ]
-}
-
 group("webkit_unit_tests_data") {
   data = [
     "tests/data/",
@@ -191,7 +170,6 @@ test("webkit_unit_tests") {
   sources += bindings_unittest_files
 
   deps = [
-    ":test_support",
     ":web",
     "//base",
     "//base:i18n",
@@ -203,6 +181,7 @@ test("webkit_unit_tests") {
     "//testing/gtest",
     "//third_party/WebKit/Source/core:unit_tests",
     "//third_party/WebKit/Source/modules:unit_tests",
+    "//third_party/WebKit/Source/modules/exported:test_support",
     "//third_party/WebKit/Source/platform:test_support",
     "//third_party/WebKit/Source/platform:unit_tests",
     "//third_party/WebKit/Source/platform/wtf",

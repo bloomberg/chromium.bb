@@ -29,8 +29,8 @@ group("test_support") {
   testonly = true
   public_deps = [
     ":test_headers",
+    "//third_party/WebKit/Source/modules/exported:test_support",
     "//third_party/WebKit/Source/platform:test_support",
-    "//third_party/WebKit/Source/web:test_support",
   ]
 }
 
