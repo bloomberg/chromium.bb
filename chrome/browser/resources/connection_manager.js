@@ -3,11 +3,9 @@
 // found in the LICENSE file.
 
 
-function chromeos() {
-}
+function chromeos() {}
 
-chromeos.connectionManager = function() {
-};
+chromeos.connectionManager = function() {};
 
 chromeos.connectionManager.transaction_status_callback_ = null;
 chromeos.connectionManager.parent_page_url_ = 'chrome://mobilesetup';
@@ -25,4 +23,3 @@ chromeos.connectionManager.reportTransactionStatus_ = function(status) {
   };
   window.parent.postMessage(msg, chromeos.connectionManager.parent_page_url_);
 };
-

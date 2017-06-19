@@ -29,27 +29,27 @@ cr.define('device_broker', function() {
     if (deviceOrPromise !== null)
       return Promise.resolve(deviceOrPromise);
 
-    var promise = adapter_broker.getAdapterBroker().then(
-        function(adapterBroker) {
-          return adapterBroker.connectToDevice(address);
-        }).then(function(device) {
-          connectedDevices.set(address, device);
+    var promise = adapter_broker.getAdapterBroker()
+                      .then(function(adapterBroker) {
+                        return adapterBroker.connectToDevice(address);
+                      })
+                      .then(function(device) {
+                        connectedDevices.set(address, device);
 
-          device.ptr.setConnectionErrorHandler(function() {
-            connectedDevices.delete(address);
-          });
+                        device.ptr.setConnectionErrorHandler(function() {
+                          connectedDevices.delete(address);
+                        });
 
-          return device;
-        }).catch(function(error) {
-          connectedDevices.delete(address);
-          throw error;
-        });
+                        return device;
+                      })
+                      .catch(function(error) {
+                        connectedDevices.delete(address);
+                        throw error;
+                      });
 
     connectedDevices.set(address, promise);
     return promise;
   }
 
-  return {
-    connectToDevice: connectToDevice
-  };
+  return {connectToDevice: connectToDevice};
 });

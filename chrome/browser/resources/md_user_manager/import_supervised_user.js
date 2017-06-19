@@ -27,7 +27,9 @@ Polymer({
      */
     signedInUser_: {
       type: Object,
-      value: function() { return null; }
+      value: function() {
+        return null;
+      }
     },
 
     /**
@@ -36,17 +38,16 @@ Polymer({
      */
     supervisedUsers_: {
       type: Array,
-      value: function() { return []; }
+      value: function() {
+        return [];
+      }
     },
 
     /**
      * Index of the selected supervised user.
      * @private {number}
      */
-    supervisedUserIndex_: {
-      type: Number,
-      value: NO_USER_SELECTED
-    }
+    supervisedUserIndex_: {type: Number, value: NO_USER_SELECTED}
   },
 
   /** override */
@@ -97,8 +98,9 @@ Polymer({
     if (this.signedInUser_ && supervisedUser) {
       this.$.dialog.close();
       // Event is caught by create-profile.
-      this.fire('import', {supervisedUser: supervisedUser,
-                           signedInUser: this.signedInUser_});
+      this.fire(
+          'import',
+          {supervisedUser: supervisedUser, signedInUser: this.signedInUser_});
     }
   }
 });

@@ -50,30 +50,25 @@ cr.define('sectioned', function() {
 
 
     // Asynchronously check if Chrome is pinned to the taskbar.
-    cr.sendWithPromise('getPinnedToTaskbarState').then(
-      function(isPinnedToTaskbar) {
-        // Allow overriding of the result via a query parameter.
-        // TODO(pmonette): Remove these checks when they are no longer needed.
-        /** @const */ var VARIANT_KEY = 'variant';
-        var VariantType = {
-          DEFAULT_ONLY: 'defaultonly',
-          COMBINED: 'combined'
-        };
-        var params = new URLSearchParams(location.search.slice(1));
-        if (params.has(VARIANT_KEY)) {
-          if (params.get(VARIANT_KEY) === VariantType.DEFAULT_ONLY)
-            app.isCombined = false;
-          else if (params.get(VARIANT_KEY) === VariantType.COMBINED)
-            app.isCombined = true;
-        } else {
-          app.isCombined = !isPinnedToTaskbar;
-        }
-      });
+    cr.sendWithPromise('getPinnedToTaskbarState')
+        .then(function(isPinnedToTaskbar) {
+          // Allow overriding of the result via a query parameter.
+          // TODO(pmonette): Remove these checks when they are no longer needed.
+          /** @const */ var VARIANT_KEY = 'variant';
+          var VariantType = {DEFAULT_ONLY: 'defaultonly', COMBINED: 'combined'};
+          var params = new URLSearchParams(location.search.slice(1));
+          if (params.has(VARIANT_KEY)) {
+            if (params.get(VARIANT_KEY) === VariantType.DEFAULT_ONLY)
+              app.isCombined = false;
+            else if (params.get(VARIANT_KEY) === VariantType.COMBINED)
+              app.isCombined = true;
+          } else {
+            app.isCombined = !isPinnedToTaskbar;
+          }
+        });
   }
 
-  return {
-    initialize: initialize
-  };
+  return {initialize: initialize};
 });
 
 document.addEventListener('DOMContentLoaded', sectioned.initialize);

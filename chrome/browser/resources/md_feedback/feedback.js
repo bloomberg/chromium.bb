@@ -9,7 +9,6 @@ var Feedback = {};
  * with this UI.
  */
 Feedback.UI = class {
-
   /**
    * Populates the feedback form with data.
    *

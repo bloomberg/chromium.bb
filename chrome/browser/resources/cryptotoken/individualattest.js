@@ -20,5 +20,5 @@ function IndividualAttestation() {}
  * @return {boolean} Whether to request the individual attestation certificate
  *     for this app id.
  */
-IndividualAttestation.prototype.requestIndividualAttestation =
-    function(appIdHash) {};
+IndividualAttestation.prototype.requestIndividualAttestation = function(
+    appIdHash) {};

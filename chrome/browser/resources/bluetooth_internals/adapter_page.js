@@ -10,13 +10,13 @@ cr.define('adapter_page', function() {
   /** @const */ var Page = cr.ui.pageManager.Page;
 
   var PROPERTY_NAMES = {
-      address: 'Address',
-      name: 'Name',
-      initialized: 'Initialized',
-      present: 'Present',
-      powered: 'Powered',
-      discoverable: 'Discoverable',
-      discovering: 'Discovering',
+    address: 'Address',
+    name: 'Name',
+    initialized: 'Initialized',
+    present: 'Present',
+    powered: 'Powered',
+    discoverable: 'Discoverable',
+    discovering: 'Discovering',
   };
 
   /**

@@ -13,8 +13,7 @@ cr.define('ntp', function() {
    * @constructor
    * @extends {HTMLButtonElement}
    */
-  function PageSwitcher() {
-  }
+  function PageSwitcher() {}
 
   PageSwitcher.prototype = {
     __proto__: HTMLButtonElement.prototype,
@@ -72,7 +71,8 @@ cr.define('ntp', function() {
       var currentPageTitle = currentDot.displayTitle;
       var nextPageTitle = nextDot.displayTitle;
       var msgName = (currentPageTitle == nextPageTitle) ?
-          'page_switcher_same_title' : 'page_switcher_change_title';
+          'page_switcher_same_title' :
+          'page_switcher_change_title';
       var ariaLabel = loadTimeData.getStringF(msgName, nextPageTitle);
       this.setAttribute('aria-label', ariaLabel);
     },

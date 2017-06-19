@@ -90,8 +90,8 @@ Polymer({
    * @private
    */
   titleText_: function(profileInfo) {
-    return this.i18n('supervisedUserCreatedTitle',
-                     this.elideProfileName_(profileInfo));
+    return this.i18n(
+        'supervisedUserCreatedTitle', this.elideProfileName_(profileInfo));
   },
 
   /**
@@ -117,8 +117,8 @@ Polymer({
    * @private
    */
   switchUserText_: function(profileInfo) {
-    return this.i18n('supervisedUserCreatedSwitch',
-                     this.elideProfileName_(profileInfo));
+    return this.i18n(
+        'supervisedUserCreatedSwitch', this.elideProfileName_(profileInfo));
   },
 
   /**

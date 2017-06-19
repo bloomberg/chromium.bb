@@ -16,10 +16,7 @@ var PostMessageChannel = (function() {
    * Allowed origins of the hosting page.
    * @type {Array<string>}
    */
-  var ALLOWED_ORIGINS = [
-    'chrome://oobe',
-    'chrome://chrome-signin'
-  ];
+  var ALLOWED_ORIGINS = ['chrome://oobe', 'chrome://chrome-signin'];
 
   /** @const */
   var PORT_MESSAGE = 'post-message-port-message';
@@ -149,7 +146,9 @@ var PostMessageChannel = (function() {
      * @private
      */
     getProxyPortForwardHandler_: function(proxyPort) {
-      return function(msg) { proxyPort.postMessage(msg); };
+      return function(msg) {
+        proxyPort.postMessage(msg);
+      };
     },
 
     /**
@@ -161,8 +160,8 @@ var PostMessageChannel = (function() {
      */
     createProxyPort: function(
         channelId, channelName, targetWindow, targetOrigin) {
-      var port = this.createPort(
-          channelId, channelName, targetWindow, targetOrigin);
+      var port =
+          this.createPort(channelId, channelName, targetWindow, targetOrigin);
       port.onMessage.addListener(this.getProxyPortForwardHandler_(port));
       return port;
     },
@@ -213,8 +212,7 @@ var PostMessageChannel = (function() {
      * Window 'message' handler.
      */
     onMessage_: function(e) {
-      if (typeof e.data != 'object' ||
-          !e.data.hasOwnProperty('type')) {
+      if (typeof e.data != 'object' || !e.data.hasOwnProperty('type')) {
         return;
       }
 
@@ -233,8 +231,8 @@ var PostMessageChannel = (function() {
         var channelName = e.data.channelName;
 
         if (this.isDaemon) {
-          var port = this.createPort(
-              channelId, channelName, e.source, e.origin);
+          var port =
+              this.createPort(channelId, channelName, e.source, e.origin);
           this.onConnect.dispatch(port);
         } else {
           this.createProxyPort(channelId, channelName, e.source, e.origin);
@@ -248,14 +246,14 @@ var PostMessageChannel = (function() {
         this.upperOrigin = e.origin;
 
         for (var i = 0; i < this.deferredUpperWindowMessages_.length; ++i) {
-          this.upperWindow.postMessage(this.deferredUpperWindowMessages_[i],
-                                       this.upperOrigin);
+          this.upperWindow.postMessage(
+              this.deferredUpperWindowMessages_[i], this.upperOrigin);
         }
         this.deferredUpperWindowMessages_ = [];
 
         for (var i = 0; i < this.deferredUpperWindowPorts_.length; ++i) {
-          this.deferredUpperWindowPorts_[i].setTarget(this.upperWindow,
-                                                      this.upperOrigin);
+          this.deferredUpperWindowPorts_[i].setTarget(
+              this.upperWindow, this.upperOrigin);
         }
         this.deferredUpperWindowPorts_ = [];
       }
@@ -306,11 +304,9 @@ var PostMessageChannel = (function() {
         return;
       }
 
-      this.targetWindow.postMessage({
-        type: PORT_MESSAGE,
-        channelId: this.channelId,
-        payload: msg
-      }, this.targetOrigin);
+      this.targetWindow.postMessage(
+          {type: PORT_MESSAGE, channelId: this.channelId, payload: msg},
+          this.targetOrigin);
     },
 
     handleWindowMessage: function(e) {
@@ -342,9 +338,7 @@ var PostMessageChannel = (function() {
    * @param {DOMWindow} webViewContentWindow Content window of the webview.
    */
   PostMessageChannel.init = function(webViewContentWindow) {
-    webViewContentWindow.postMessage({
-      type: CHANNEL_INIT_MESSAGE
-    }, '*');
+    webViewContentWindow.postMessage({type: CHANNEL_INIT_MESSAGE}, '*');
   };
 
   /**

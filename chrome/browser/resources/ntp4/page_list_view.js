@@ -49,8 +49,7 @@ cr.define('ntp', function() {
    * @constructor
    * @extends {Object}
    */
-  function PageListView() {
-  }
+  function PageListView() {}
 
   PageListView.prototype = {
     /**
@@ -138,8 +137,9 @@ cr.define('ntp', function() {
      * @param {!ntp.PageSwitcher|undefined} opt_pageSwitcherEnd Optional end
      *     page switcher button.
      */
-    initialize: function(pageList, dotList, cardSliderFrame, opt_trash,
-                         opt_pageSwitcherStart, opt_pageSwitcherEnd) {
+    initialize: function(
+        pageList, dotList, cardSliderFrame, opt_trash, opt_pageSwitcherStart,
+        opt_pageSwitcherEnd) {
       this.pageList = pageList;
 
       this.dotList = dotList;
@@ -174,8 +174,8 @@ cr.define('ntp', function() {
 
       // Initialize the cardSlider without any cards at the moment.
       this.sliderFrame = cardSliderFrame;
-      this.cardSlider = new cr.ui.CardSlider(this.sliderFrame, this.pageList,
-          this.sliderFrame.offsetWidth);
+      this.cardSlider = new cr.ui.CardSlider(
+          this.sliderFrame, this.pageList, this.sliderFrame.offsetWidth);
 
       // Prevent touch events from triggering any sort of native scrolling if
       // there are multiple cards in the slider frame.
@@ -192,7 +192,7 @@ cr.define('ntp', function() {
       // because it needs to be called before the card slider's handler.
       cardSliderFrame.addEventListener('mousewheel', function(e) {
         if (cardSlider.currentCardValue.handleMouseWheel(e)) {
-          e.preventDefault();  // Prevent default scroll behavior.
+          e.preventDefault();            // Prevent default scroll behavior.
           e.stopImmediatePropagation();  // Prevent horizontal card flipping.
         }
       });
@@ -201,21 +201,21 @@ cr.define('ntp', function() {
           loadTimeData.getBoolean('isSwipeTrackingFromScrollEventsEnabled'));
 
       // Handle events from the card slider.
-      this.pageList.addEventListener('cardSlider:card_changed',
-                                     this.onCardChanged_.bind(this));
-      this.pageList.addEventListener('cardSlider:card_added',
-                                     this.onCardAdded_.bind(this));
-      this.pageList.addEventListener('cardSlider:card_removed',
-                                     this.onCardRemoved_.bind(this));
+      this.pageList.addEventListener(
+          'cardSlider:card_changed', this.onCardChanged_.bind(this));
+      this.pageList.addEventListener(
+          'cardSlider:card_added', this.onCardAdded_.bind(this));
+      this.pageList.addEventListener(
+          'cardSlider:card_removed', this.onCardRemoved_.bind(this));
 
       // Ensure the slider is resized appropriately with the window.
       window.addEventListener('resize', this.onWindowResize_.bind(this));
 
       // Update apps when online state changes.
-      window.addEventListener('online',
-          this.updateOfflineEnabledApps_.bind(this));
-      window.addEventListener('offline',
-          this.updateOfflineEnabledApps_.bind(this));
+      window.addEventListener(
+          'online', this.updateOfflineEnabledApps_.bind(this));
+      window.addEventListener(
+          'offline', this.updateOfflineEnabledApps_.bind(this));
     },
 
     /**
@@ -238,13 +238,13 @@ cr.define('ntp', function() {
       }
 
       // If we're appending an AppsPage and it's a temporary page, animate it.
-      var animate = page instanceof ntp.AppsPage &&
-                    page.classList.contains('temporary');
+      var animate =
+          page instanceof ntp.AppsPage && page.classList.contains('temporary');
       // Make a deep copy of the dot template to add a new one.
       var newDot = new ntp.NavDot(page, title, titleIsEditable, animate);
       page.navigationDot = newDot;
-      this.dotList.insertBefore(newDot,
-                                opt_refNode ? opt_refNode.navigationDot : null);
+      this.dotList.insertBefore(
+          newDot, opt_refNode ? opt_refNode.navigationDot : null);
       // Set a tab index on the first dot.
       if (this.dotList.dots.length == 1)
         newDot.tabIndex = 3;
@@ -260,7 +260,7 @@ cr.define('ntp', function() {
     appMoved: function(appData) {
       assert(loadTimeData.getBoolean('showApps'));
 
-      var app = /** @type {ntp.App} */($(appData.id));
+      var app = /** @type {ntp.App} */ ($(appData.id));
       assert(app, 'trying to move an app that doesn\'t exist');
       app.remove(false);
 
@@ -279,7 +279,7 @@ cr.define('ntp', function() {
     appRemoved: function(appData, isUninstall, fromPage) {
       assert(loadTimeData.getBoolean('showApps'));
 
-      var app = /** @type {ntp.App} */($(appData.id));
+      var app = /** @type {ntp.App} */ ($(appData.id));
       assert(app, 'trying to remove an app that doesn\'t exist');
 
       if (!isUninstall)
@@ -350,8 +350,9 @@ cr.define('ntp', function() {
 
       // Sort by launch ordinal
       apps.sort(function(a, b) {
-        return a.app_launch_ordinal > b.app_launch_ordinal ? 1 :
-          a.app_launch_ordinal < b.app_launch_ordinal ? -1 : 0;
+        return a.app_launch_ordinal > b.app_launch_ordinal ?
+            1 :
+            a.app_launch_ordinal < b.app_launch_ordinal ? -1 : 0;
       });
 
       // An app to animate (in case it was just installed).
@@ -359,11 +360,14 @@ cr.define('ntp', function() {
 
       // If there are any pages after the apps, add new pages before them.
       var lastAppsPage = (this.appsPages.length > 0) ?
-          this.appsPages[this.appsPages.length - 1] : null;
+          this.appsPages[this.appsPages.length - 1] :
+          null;
       var lastAppsPageIndex = (lastAppsPage != null) ?
-          Array.prototype.indexOf.call(this.tilePages, lastAppsPage) : -1;
+          Array.prototype.indexOf.call(this.tilePages, lastAppsPage) :
+          -1;
       var nextPageAfterApps = lastAppsPageIndex != -1 ?
-          this.tilePages[lastAppsPageIndex + 1] : null;
+          this.tilePages[lastAppsPageIndex + 1] :
+          null;
 
       // Add the apps, creating pages as necessary
       for (var i = 0; i < apps.length; i++) {
@@ -375,12 +379,12 @@ cr.define('ntp', function() {
             pageName = pageNames[this.appsPages.length];
 
           var origPageCount = this.appsPages.length;
-          this.appendTilePage(new ntp.AppsPage(), pageName, true,
-                              nextPageAfterApps);
+          this.appendTilePage(
+              new ntp.AppsPage(), pageName, true, nextPageAfterApps);
           // Confirm that appsPages is a live object, updated when a new page is
           // added (otherwise we'd have an infinite loop)
-          assert(this.appsPages.length == origPageCount + 1,
-                 'expected new page');
+          assert(
+              this.appsPages.length == origPageCount + 1, 'expected new page');
         }
 
         if (app.id == this.highlightAppId)
@@ -427,9 +431,9 @@ cr.define('ntp', function() {
 
       if (pageIndex >= this.appsPages.length) {
         while (pageIndex >= this.appsPages.length) {
-          this.appendTilePage(new ntp.AppsPage(),
-                              loadTimeData.getString('appDefaultPageName'),
-                              true);
+          this.appendTilePage(
+              new ntp.AppsPage(), loadTimeData.getString('appDefaultPageName'),
+              true);
         }
         this.updateSliderCards();
       }
@@ -489,14 +493,13 @@ cr.define('ntp', function() {
      * the Slider knows about the new elements.
      */
     updateSliderCards: function() {
-      var pageNo = Math.max(0, Math.min(this.cardSlider.currentCard,
-                                        this.tilePages.length - 1));
-      this.cardSlider.setCards(Array.prototype.slice.call(this.tilePages),
-                               pageNo);
+      var pageNo = Math.max(
+          0, Math.min(this.cardSlider.currentCard, this.tilePages.length - 1));
+      this.cardSlider.setCards(
+          Array.prototype.slice.call(this.tilePages), pageNo);
       if (loadTimeData.getBoolean('showApps')) {
-        this.cardSlider.selectCardByValue(
-            this.appsPages[Math.min(this.shownPageIndex,
-                                    this.appsPages.length - 1)]);
+        this.cardSlider.selectCardByValue(this.appsPages[Math.min(
+            this.shownPageIndex, this.appsPages.length - 1)]);
       }
     },
 
@@ -525,7 +528,7 @@ cr.define('ntp', function() {
      * Invoked whenever some app is released
      */
     leaveRearrangeMode: function() {
-      var tempPage = /** @type {ntp.AppsPage} */(
+      var tempPage = /** @type {ntp.AppsPage} */ (
           document.querySelector('.tile-page.temporary'));
       if (tempPage) {
         var dot = tempPage.navigationDot;
@@ -534,8 +537,8 @@ cr.define('ntp', function() {
           this.removeTilePageAndDot_(tempPage, true);
         } else {
           tempPage.classList.remove('temporary');
-          this.saveAppPageName(tempPage,
-                               loadTimeData.getString('appDefaultPageName'));
+          this.saveAppPageName(
+              tempPage, loadTimeData.getString('appDefaultPageName'));
         }
       }
 
@@ -568,21 +571,20 @@ cr.define('ntp', function() {
 
       var page = this.cardSlider.currentCardValue;
 
-      this.pageSwitcherStart.hidden = !page ||
-          (this.cardSlider.currentCard == 0);
+      this.pageSwitcherStart.hidden =
+          !page || (this.cardSlider.currentCard == 0);
       this.pageSwitcherEnd.hidden = !page ||
           (this.cardSlider.currentCard == this.cardSlider.cardCount - 1);
 
       if (!page)
         return;
 
-      var pageSwitcherLeft = isRTL() ? this.pageSwitcherEnd :
-                                       this.pageSwitcherStart;
-      var pageSwitcherRight = isRTL() ? this.pageSwitcherStart :
-                                        this.pageSwitcherEnd;
+      var pageSwitcherLeft =
+          isRTL() ? this.pageSwitcherEnd : this.pageSwitcherStart;
+      var pageSwitcherRight =
+          isRTL() ? this.pageSwitcherStart : this.pageSwitcherEnd;
       var scrollbarWidth = page.scrollbarWidth;
-      pageSwitcherLeft.style.width =
-          (page.sideMargin + 13) + 'px';
+      pageSwitcherLeft.style.width = (page.sideMargin + 13) + 'px';
       pageSwitcherLeft.style.left = '0';
       pageSwitcherRight.style.width =
           (page.sideMargin - scrollbarWidth + 13) + 'px';
@@ -736,9 +738,9 @@ cr.define('ntp', function() {
       else
         return;
 
-      var cardIndex =
-          (this.cardSlider.currentCard + direction +
-           this.cardSlider.cardCount) % this.cardSlider.cardCount;
+      var cardIndex = (this.cardSlider.currentCard + direction +
+                       this.cardSlider.cardCount) %
+          this.cardSlider.cardCount;
       this.cardSlider.selectCard(cardIndex, true);
 
       e.stopPropagation();
@@ -766,7 +768,5 @@ cr.define('ntp', function() {
     },
   };
 
-  return {
-    PageListView: PageListView
-  };
+  return {PageListView: PageListView};
 });

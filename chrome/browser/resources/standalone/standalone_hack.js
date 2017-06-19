@@ -34,38 +34,32 @@ if (!window.chrome) {
  */
 chrome.send = (function() {
   var users = [
-  {
-    name: 'Alan Beaker',
-    emailAddress: 'beaker@chromium.org',
-    imageUrl: '../../app/theme/avatar_beaker.png',
-    canRemove: false
-  },
-  {
-    name: 'Alex Briefcase',
-    emailAddress: 'briefcase@chromium.org',
-    imageUrl: '../../app/theme/avatar_briefcase.png',
-    canRemove: true
-  },
-  {
-    name: 'Alex Circles',
-    emailAddress: 'circles@chromium.org',
-    imageUrl: '../../app/theme/avatar_circles.png',
-    canRemove: true
-  },
-  {
-    name: 'Guest',
-    emailAddress: '',
-    imageUrl: '',
-    canRemove: false
-  }
+    {
+      name: 'Alan Beaker',
+      emailAddress: 'beaker@chromium.org',
+      imageUrl: '../../app/theme/avatar_beaker.png',
+      canRemove: false
+    },
+    {
+      name: 'Alex Briefcase',
+      emailAddress: 'briefcase@chromium.org',
+      imageUrl: '../../app/theme/avatar_briefcase.png',
+      canRemove: true
+    },
+    {
+      name: 'Alex Circles',
+      emailAddress: 'circles@chromium.org',
+      imageUrl: '../../app/theme/avatar_circles.png',
+      canRemove: true
+    },
+    {name: 'Guest', emailAddress: '', imageUrl: '', canRemove: false}
   ];
 
   /**
    * Invoke the getAppsCallback function with a snapshot of the current app
    * database.
    */
-  function sendGetUsersCallback()
-  {
+  function sendGetUsersCallback() {
     // We don't want to hand out our array directly because the NTP will
     // assume it owns the array and is free to modify it.  For now we make a
     // one-level deep copy of the array (since cloning the whole thing is
@@ -97,7 +91,9 @@ chrome.send = (function() {
    * @return {number} The index in apps for an object with the specified ID.
    */
   function getUserIndex(name) {
-    var i = indexOfPred(apps, function(e) { return e.name === name;});
+    var i = indexOfPred(apps, function(e) {
+      return e.name === name;
+    });
     if (i == -1)
       alert('Error: got unexpected App ID');
     return i;
@@ -226,14 +222,14 @@ if (/iPhone|iPod|iPad/.test(navigator.userAgent) &&
 if (typeof Element !== 'undefined' &&
     !Element.prototype.hasOwnProperty('classList')) {
   (function() {
-    var classListProp = 'classList',
-        protoProp = 'prototype',
-        elemCtrProto = Element[protoProp],
-        objCtr = Object,
-        strTrim = String[protoProp].trim || function() {
+    var classListProp = 'classList', protoProp = 'prototype',
+        elemCtrProto = Element[protoProp], objCtr = Object,
+        strTrim = String[protoProp].trim ||
+        function() {
           return this.replace(/^\s+|\s+$/g, '');
         },
-        arrIndexOf = Array[protoProp].indexOf || function(item) {
+        arrIndexOf = Array[protoProp].indexOf ||
+        function(item) {
           for (var i = 0, len = this.length; i < len; i++) {
             if (i in this && this[i] === item) {
               return i;
@@ -243,29 +239,29 @@ if (typeof Element !== 'undefined' &&
         },
         // Vendors: please allow content code to instantiate DOMExceptions
         /** @constructor  */
-        DOMEx = function(type, message) {
+        DOMEx =
+            function(type, message) {
           this.name = type;
           this.code = DOMException[type];
           this.message = message;
         },
-        checkTokenAndGetIndex = function(classList, token) {
+        checkTokenAndGetIndex =
+            function(classList, token) {
           if (token === '') {
             throw new DOMEx(
-                'SYNTAX_ERR',
-                'An invalid or illegal string was specified'
-            );
+                'SYNTAX_ERR', 'An invalid or illegal string was specified');
           }
           if (/\s/.test(token)) {
             throw new DOMEx(
                 'INVALID_CHARACTER_ERR',
-                'String contains an invalid character'
-            );
+                'String contains an invalid character');
           }
           return arrIndexOf.call(classList, token);
         },
         /** @constructor
          *  @extends {Array} */
-        ClassList = function(elem) {
+        ClassList =
+            function(elem) {
           var trimmedClasses = strTrim.call(elem.className),
               classes = trimmedClasses ? trimmedClasses.split(/\s+/) : [];
 
@@ -346,18 +342,15 @@ if (!Function.prototype.bind) {
    *  @suppress {duplicate}
    */
   Function.prototype.bind = function(selfObj, var_args) {
-    var slice = [].slice,
-        args = slice.call(arguments, 1),
-        self = this,
+    var slice = [].slice, args = slice.call(arguments, 1), self = this,
         /** @constructor  */
-        nop = function() {},
-        bound = function() {
-          return self.apply(this instanceof nop ? this : (selfObj || {}),
-                              args.concat(slice.call(arguments)));
+        nop = function() {}, bound = function() {
+          return self.apply(
+              this instanceof nop ? this : (selfObj || {}),
+              args.concat(slice.call(arguments)));
         };
     nop.prototype = self.prototype;
     bound.prototype = new nop();
     return bound;
   };
 }
-

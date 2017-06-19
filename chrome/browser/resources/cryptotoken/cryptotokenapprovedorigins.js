@@ -27,31 +27,31 @@ function CryptoTokenApprovedOrigin() {}
  *     the type allows undefined.
  * @return {Promise<boolean>} A promise for the result of the check.
  */
-CryptoTokenApprovedOrigin.prototype.isApprovedOrigin =
-    function(origin, opt_tabId) {
+CryptoTokenApprovedOrigin.prototype.isApprovedOrigin = function(
+    origin, opt_tabId) {
   return new Promise(function(resolve, reject) {
-      if (opt_tabId === undefined) {
+    if (opt_tabId === undefined) {
+      resolve(false);
+      return;
+    }
+    var tabId = /** @type {number} */ (opt_tabId);
+    tabInForeground(tabId).then(function(result) {
+      if (!result) {
         resolve(false);
         return;
       }
-      var tabId = /** @type {number} */ (opt_tabId);
-      tabInForeground(tabId).then(function(result) {
-        if (!result) {
+      if (!chrome.tabs || !chrome.tabs.get) {
+        reject();
+        return;
+      }
+      chrome.tabs.get(tabId, function(tab) {
+        if (chrome.runtime.lastError) {
           resolve(false);
           return;
         }
-        if (!chrome.tabs || !chrome.tabs.get) {
-          reject();
-          return;
-        }
-        chrome.tabs.get(tabId, function(tab) {
-          if (chrome.runtime.lastError) {
-            resolve(false);
-            return;
-          }
-          var tabOrigin = getOriginFromUrl(tab.url);
-          resolve(tabOrigin == origin);
-        });
+        var tabOrigin = getOriginFromUrl(tab.url);
+        resolve(tabOrigin == origin);
       });
+    });
   });
 };

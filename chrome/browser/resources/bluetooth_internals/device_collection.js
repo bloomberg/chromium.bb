@@ -65,7 +65,7 @@ cr.define('device_collection', function() {
         // on |deviceInfo|. The rssi property may be null, so it must be
         // re-assigned.
         Object.assign(oldDeviceInfo, deviceInfo);
-        oldDeviceInfo.rssi = { value: rssi };
+        oldDeviceInfo.rssi = {value: rssi};
         this.updateIndex(this.indexOf(oldDeviceInfo));
       } else {
         deviceInfo.connectionStatus = ConnectionStatus.DISCONNECTED;

@@ -58,16 +58,15 @@ cr.define('ntp', function() {
     var pageSwitcherStart;
     var pageSwitcherEnd;
     if (loadTimeData.getValue('showApps')) {
-      pageSwitcherStart = /** @type {!ntp.PageSwitcher} */(
+      pageSwitcherStart = /** @type {!ntp.PageSwitcher} */ (
           getRequiredElement('page-switcher-start'));
-      pageSwitcherEnd = /** @type {!ntp.PageSwitcher} */(
+      pageSwitcherEnd = /** @type {!ntp.PageSwitcher} */ (
           getRequiredElement('page-switcher-end'));
     }
-    this.initialize(getRequiredElement('page-list'),
-                    getRequiredElement('dot-list'),
-                    getRequiredElement('card-slider-frame'),
-                    getRequiredElement('trash'),
-                    pageSwitcherStart, pageSwitcherEnd);
+    this.initialize(
+        getRequiredElement('page-list'), getRequiredElement('dot-list'),
+        getRequiredElement('card-slider-frame'), getRequiredElement('trash'),
+        pageSwitcherStart, pageSwitcherEnd);
   }
 
   // TODO(dbeam): NewTabView is now the only extender of PageListView; these
@@ -82,10 +81,13 @@ cr.define('ntp', function() {
     if (loadTimeData.getBoolean('showApps')) {
       sectionsToWaitFor++;
       if (loadTimeData.getBoolean('showAppLauncherPromo')) {
-        $('app-launcher-promo-close-button').addEventListener('click',
-            function() { chrome.send('stopShowingAppLauncherPromo'); });
-        $('apps-promo-learn-more').addEventListener('click',
-            function() { chrome.send('onLearnMore'); });
+        $('app-launcher-promo-close-button')
+            .addEventListener('click', function() {
+              chrome.send('stopShowingAppLauncherPromo');
+            });
+        $('apps-promo-learn-more').addEventListener('click', function() {
+          chrome.send('onLearnMore');
+        });
       }
     }
     measureNavDots();
@@ -101,10 +103,10 @@ cr.define('ntp', function() {
       var webStoreLink = loadTimeData.getString('webStoreLink');
       var url = appendParam(webStoreLink, 'utm_source', 'chrome-ntp-launcher');
       $('chrome-web-store-link').href = url;
-      $('chrome-web-store-link').addEventListener('auxclick',
-          onChromeWebStoreButtonClick);
-      $('chrome-web-store-link').addEventListener('click',
-          onChromeWebStoreButtonClick);
+      $('chrome-web-store-link')
+          .addEventListener('auxclick', onChromeWebStoreButtonClick);
+      $('chrome-web-store-link')
+          .addEventListener('click', onChromeWebStoreButtonClick);
     }
 
     // We need to wait for all the footer menu setup to be completed before
@@ -158,10 +160,10 @@ cr.define('ntp', function() {
    */
   function onChromeWebStoreButtonClick(e) {
     if (e.button > 1)
-      return; // Ignore buttons other than left and middle.
-    chrome.send('recordAppLaunchByURL',
-                [encodeURIComponent(this.href),
-                 ntp.APP_LAUNCH.NTP_WEBSTORE_FOOTER]);
+      return;  // Ignore buttons other than left and middle.
+    chrome.send(
+        'recordAppLaunchByURL',
+        [encodeURIComponent(this.href), ntp.APP_LAUNCH.NTP_WEBSTORE_FOOTER]);
   }
 
   /**
@@ -302,8 +304,8 @@ cr.define('ntp', function() {
    */
   function showSyncLoginUI(e) {
     var rect = e.currentTarget.getBoundingClientRect();
-    chrome.send('showSyncLoginUI',
-                [rect.left, rect.top, rect.width, rect.height]);
+    chrome.send(
+        'showSyncLoginUI', [rect.left, rect.top, rect.width, rect.height]);
   }
 
   /**

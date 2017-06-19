@@ -20,14 +20,16 @@ function loadAuthUrlAndShowWindow(url, win) {
   });
 
   // Request a customized view from GAIA.
-  webview.request.onBeforeSendHeaders.addListener(function(details) {
-    headers = details.requestHeaders || [];
-    headers.push({'name': 'X-Browser-View',
-                  'value': 'embedded'});
-    return { requestHeaders: headers };
-  }, {
-    urls: ['https://accounts.google.com/*'],
-  }, ['blocking', 'requestHeaders']);
+  webview.request.onBeforeSendHeaders.addListener(
+      function(details) {
+        headers = details.requestHeaders || [];
+        headers.push({'name': 'X-Browser-View', 'value': 'embedded'});
+        return {requestHeaders: headers};
+      },
+      {
+        urls: ['https://accounts.google.com/*'],
+      },
+      ['blocking', 'requestHeaders']);
 
   if (!url.toLowerCase().startsWith('https://accounts.google.com/'))
     document.querySelector('.titlebar').classList.add('titlebar-border');
@@ -51,4 +53,3 @@ document.addEventListener('DOMContentLoaded', function() {
     document.title = strings['window-title'];
   });
 });
-

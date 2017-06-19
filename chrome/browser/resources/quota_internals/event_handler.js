@@ -106,8 +106,7 @@ function numBytesToText_(value) {
   if (segments.length > 1) {
     var UNIT = [' B', ' KB', ' MB', ' GB', ' TB', ' PB'];
     result = segments[0] + '.' + segments[1].slice(0, 2) +
-        UNIT[Math.min(segments.length, UNIT.length) - 1] +
-        ' (' + result + ')';
+        UNIT[Math.min(segments.length, UNIT.length) - 1] + ' (' + result + ')';
   }
 
   return result;
@@ -202,10 +201,8 @@ function getStorageObject(type) {
   var treeViewObject = getTreeViewObject();
   var storageObject = treeViewObject.detail.children[type];
   if (!storageObject) {
-    storageObject = new cr.ui.TreeItem({
-        label: type,
-        detail: {payload: {}, children: {}}
-    });
+    storageObject =
+        new cr.ui.TreeItem({label: type, detail: {payload: {}, children: {}}});
     storageObject.mayHaveChildren_ = true;
     treeViewObject.detail.children[type] = storageObject;
     treeViewObject.add(storageObject);
@@ -224,10 +221,8 @@ function getHostObject(type, host) {
   var storageObject = getStorageObject(type);
   var hostObject = storageObject.detail.children[host];
   if (!hostObject) {
-    hostObject = new cr.ui.TreeItem({
-        label: host,
-        detail: {payload: {}, children: {}}
-    });
+    hostObject =
+        new cr.ui.TreeItem({label: host, detail: {payload: {}, children: {}}});
     hostObject.mayHaveChildren_ = true;
     storageObject.detail.children[host] = hostObject;
     storageObject.add(hostObject);
@@ -247,10 +242,8 @@ function getOriginObject(type, host, origin) {
   var hostObject = getHostObject(type, host);
   var originObject = hostObject.detail.children[origin];
   if (!originObject) {
-    originObject = new cr.ui.TreeItem({
-        label: origin,
-        detail: {payload: {}, children: {}}
-    });
+    originObject = new cr.ui.TreeItem(
+        {label: origin, detail: {payload: {}, children: {}}});
     originObject.mayHaveChildren_ = false;
     hostObject.detail.children[origin] = originObject;
     hostObject.add(originObject);
@@ -303,7 +296,6 @@ function handleGlobalInfo(event) {
   storageObject.reveal();
   if (getTreeViewObject().selectedItem == storageObject)
     updateDescription();
-
 }
 
 /**
@@ -340,7 +332,6 @@ function handlePerHostInfo(event) {
     hostObject.reveal();
     if (getTreeViewObject().selectedItem == hostObject)
       updateDescription();
-
   }
 }
 
@@ -410,8 +401,7 @@ function handleStatistics(event) {
       statistics[key] = entry;
     }
     entry.detail = data[key];
-    entry.innerHTML =
-        '<td>' + stringToText_(key) + '</td>' +
+    entry.innerHTML = '<td>' + stringToText_(key) + '</td>' +
         '<td>' + stringToText_(entry.detail) + '</td>';
     localize_(entry);
   }
@@ -427,20 +417,15 @@ function updateDescription() {
   tbody.innerHTML = '';
 
   if (item) {
-    var keyAndLabel = [['type', 'Storage Type'],
-                       ['host', 'Host Name'],
-                       ['origin', 'Origin URL'],
-                       ['usage', 'Total Storage Usage', numBytesToText_],
-                       ['unlimitedUsage', 'Usage of Unlimited Origins',
-                        numBytesToText_],
-                       ['quota', 'Quota', numBytesToText_],
-                       ['inUse', 'Origin is in use?'],
-                       ['usedCount', 'Used count'],
-                       ['lastAccessTime', 'Last Access Time',
-                        dateToText],
-                       ['lastModifiedTime', 'Last Modified Time',
-                        dateToText]
-                      ];
+    var keyAndLabel = [
+      ['type', 'Storage Type'], ['host', 'Host Name'], ['origin', 'Origin URL'],
+      ['usage', 'Total Storage Usage', numBytesToText_],
+      ['unlimitedUsage', 'Usage of Unlimited Origins', numBytesToText_],
+      ['quota', 'Quota', numBytesToText_], ['inUse', 'Origin is in use?'],
+      ['usedCount', 'Used count'],
+      ['lastAccessTime', 'Last Access Time', dateToText],
+      ['lastModifiedTime', 'Last Modified Time', dateToText]
+    ];
     for (var i = 0; i < keyAndLabel.length; ++i) {
       var key = keyAndLabel[i][0];
       var label = keyAndLabel[i][1];
@@ -451,8 +436,7 @@ function updateDescription() {
       var normalize = keyAndLabel[i][2] || stringToText_;
 
       var row = cr.doc.createElement('tr');
-      row.innerHTML =
-          '<td>' + label + '</td>' +
+      row.innerHTML = '<td>' + label + '</td>' +
           '<td>' + normalize(entry) + '</td>';
       localize_(row);
       tbody.appendChild(row);
@@ -501,30 +485,23 @@ function dumpStatisticsToObj() {
 function dump() {
   var separator = '========\n';
 
-  $('dump-field').textContent =
-      separator +
-      'Summary\n' +
-      separator +
+  $('dump-field').textContent = separator + 'Summary\n' + separator +
       JSON.stringify({availableSpace: availableSpace}, null, 2) + '\n' +
-      separator +
-      'Usage And Quota\n' +
-      separator +
-      JSON.stringify(dumpTreeToObj(), null, 2) + '\n' +
-      separator +
-      'Misc Statistics\n' +
-      separator +
+      separator + 'Usage And Quota\n' + separator +
+      JSON.stringify(dumpTreeToObj(), null, 2) + '\n' + separator +
+      'Misc Statistics\n' + separator +
       JSON.stringify(dumpStatisticsToObj(), null, 2);
 }
 
 function onLoad() {
   cr.ui.decorate('tabbox', cr.ui.TabBox);
 
-  cr.quota.onAvailableSpaceUpdated.addEventListener('update',
-                                                    handleAvailableSpace);
+  cr.quota.onAvailableSpaceUpdated.addEventListener(
+      'update', handleAvailableSpace);
   cr.quota.onGlobalInfoUpdated.addEventListener('update', handleGlobalInfo);
   cr.quota.onPerHostInfoUpdated.addEventListener('update', handlePerHostInfo);
-  cr.quota.onPerOriginInfoUpdated.addEventListener('update',
-                                                   handlePerOriginInfo);
+  cr.quota.onPerOriginInfoUpdated.addEventListener(
+      'update', handlePerOriginInfo);
   cr.quota.onStatisticsUpdated.addEventListener('update', handleStatistics);
   cr.quota.requestInfo();
 

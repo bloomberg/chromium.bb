@@ -27,17 +27,13 @@ var FACTORY_REGISTRY = (function() {
   var xhrTextFetcher = new XhrTextFetcher();
   return new FactoryRegistry(
       new XhrAppIdCheckerFactory(xhrTextFetcher),
-      new CryptoTokenApprovedOrigin(),
-      new CountdownTimerFactory(windowTimer),
-      new CryptoTokenOriginChecker(),
-      new UsbHelper(),
-      windowTimer,
+      new CryptoTokenApprovedOrigin(), new CountdownTimerFactory(windowTimer),
+      new CryptoTokenOriginChecker(), new UsbHelper(), windowTimer,
       xhrTextFetcher);
 })();
 
 var DEVICE_FACTORY_REGISTRY = new DeviceFactoryRegistry(
-    new UsbGnubbyFactory(gnubbies),
-    FACTORY_REGISTRY.getCountdownFactory(),
+    new UsbGnubbyFactory(gnubbies), FACTORY_REGISTRY.getCountdownFactory(),
     new GoogleCorpIndividualAttestation());
 
 /**
@@ -107,8 +103,8 @@ function messageHandler(request, sender, sendResponse) {
     responseCallback =
         defaultResponseCallback.bind(null, request, sendResponse);
   }
-  var closeable = handleWebPageRequest(/** @type {Object} */(request),
-      sender, responseCallback);
+  var closeable = handleWebPageRequest(
+      /** @type {Object} */ (request), sender, responseCallback);
   return closeable;
 }
 

@@ -75,8 +75,9 @@ cr.define('signin', function() {
      * @param {string} custodianProfilePath Profile path of the custodian if
      *     the new profile is supervised.
      */
-    createProfile: function(profileName, profileIconUrl, createShortcut,
-        isSupervised, supervisedUserId, custodianProfilePath) {
+    createProfile: function(
+        profileName, profileIconUrl, createShortcut, isSupervised,
+        supervisedUserId, custodianProfilePath) {
       assertNotReached();
     },
 
@@ -177,11 +178,13 @@ cr.define('signin', function() {
     },
 
     /** @override */
-    createProfile: function(profileName, profileIconUrl, createShortcut,
-        isSupervised, supervisedUserId, custodianProfilePath) {
-      chrome.send('createProfile',
-                  [profileName, profileIconUrl, createShortcut, isSupervised,
-                   supervisedUserId, custodianProfilePath]);
+    createProfile: function(
+        profileName, profileIconUrl, createShortcut, isSupervised,
+        supervisedUserId, custodianProfilePath) {
+      chrome.send('createProfile', [
+        profileName, profileIconUrl, createShortcut, isSupervised,
+        supervisedUserId, custodianProfilePath
+      ]);
     },
 
     /** @override */

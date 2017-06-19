@@ -9,8 +9,9 @@ cr.define('policy', function() {
    * @return {boolean} True if this is the mobile version.
    */
   var isMobilePage = function() {
-    return document.defaultView.getComputedStyle(document.querySelector(
-        '.scope-column')).display == 'none';
+    return document.defaultView
+               .getComputedStyle(document.querySelector('.scope-column'))
+               .display == 'none';
   };
 
   /**
@@ -31,8 +32,7 @@ cr.define('policy', function() {
     /**
      * Initialization function for the cr.ui framework.
      */
-    decorate: function() {
-    },
+    decorate: function() {},
 
     /**
      * Populate the box with the given cloud policy status.
@@ -52,20 +52,20 @@ cr.define('policy', function() {
         // Populate the device naming information.
         // Populate the asset identifier.
         var assetId = this.querySelector('.asset-id');
-        assetId.textContent = status.assetId ||
-            loadTimeData.getString('notSpecified');
+        assetId.textContent =
+            status.assetId || loadTimeData.getString('notSpecified');
         assetId.parentElement.hidden = false;
 
         // Populate the device location.
         var location = this.querySelector('.location');
-        location.textContent = status.location ||
-            loadTimeData.getString('notSpecified');
+        location.textContent =
+            status.location || loadTimeData.getString('notSpecified');
         location.parentElement.hidden = false;
 
         // Populate the directory API ID.
         var directoryApiId = this.querySelector('.directory-api-id');
-        directoryApiId.textContent = status.directoryApiId ||
-            loadTimeData.getString('notSpecified');
+        directoryApiId.textContent =
+            status.directoryApiId || loadTimeData.getString('notSpecified');
         directoryApiId.parentElement.hidden = false;
       } else {
         // For user policy, set the appropriate title and populate the topmost
@@ -107,8 +107,8 @@ cr.define('policy', function() {
      */
     decorate: function() {
       this.updateToggleExpandedValueText_();
-      this.querySelector('.toggle-expanded-value').addEventListener(
-          'click', this.toggleExpandedValue_.bind(this));
+      this.querySelector('.toggle-expanded-value')
+          .addEventListener('click', this.toggleExpandedValue_.bind(this));
     },
 
     /**
@@ -128,12 +128,11 @@ cr.define('policy', function() {
       // Populate the remaining columns with policy scope, level and value if a
       // value has been set. Otherwise, leave them blank.
       if (value) {
-        this.querySelector('.scope').textContent =
-            loadTimeData.getString(value.scope == 'user' ?
-                'scopeUser' : 'scopeDevice');
-        this.querySelector('.level').textContent =
-            loadTimeData.getString(value.level == 'recommended' ?
-                'levelRecommended' : 'levelMandatory');
+        this.querySelector('.scope').textContent = loadTimeData.getString(
+            value.scope == 'user' ? 'scopeUser' : 'scopeDevice');
+        this.querySelector('.level').textContent = loadTimeData.getString(
+            value.level == 'recommended' ? 'levelRecommended' :
+                                           'levelMandatory');
         this.querySelector('.source').textContent =
             loadTimeData.getString(value.source);
         this.querySelector('.value').textContent = value.value;
@@ -164,7 +163,8 @@ cr.define('policy', function() {
         /** @const */ var HIDDEN_COLUMNS_IN_MOBILE_VERSION = 2;
 
         var expandedValue = this.querySelector('.expanded-value');
-        expandedValue.setAttribute('colspan',
+        expandedValue.setAttribute(
+            'colspan',
             expandedValue.colSpan - HIDDEN_COLUMNS_IN_MOBILE_VERSION);
       }
     },
@@ -211,7 +211,8 @@ cr.define('policy', function() {
       this.querySelector('.toggle-expanded-value').textContent =
           loadTimeData.getString(
               this.classList.contains('show-overflowed-value') ?
-                  'hideExpandedValue' : 'showExpandedValue');
+                  'hideExpandedValue' :
+                  'showExpandedValue');
     },
 
     /**
@@ -310,8 +311,7 @@ cr.define('policy', function() {
       var policies = this.getElementsByTagName('tbody');
       for (var i = 0; i < policies.length; i++) {
         var policy = policies[i];
-        policy.hidden =
-            policy.unset && !showUnset ||
+        policy.hidden = policy.unset && !showUnset ||
             policy.name.toLowerCase().indexOf(this.filterPattern_) == -1;
       }
       if (this.querySelector('tbody:not([hidden])'))
@@ -351,8 +351,7 @@ cr.define('policy', function() {
    * A singelton object that handles communication between browser and WebUI.
    * @constructor
    */
-  function Page() {
-  }
+  function Page() {}
 
   // Make Page a singleton.
   cr.addSingletonGetter(Page);
@@ -377,8 +376,9 @@ cr.define('policy', function() {
 
     if (names.hasOwnProperty('extensionPolicyNames')) {
       for (var ext in names.extensionPolicyNames) {
-        var table = page.appendNewTable('extension-' + ext,
-            names.extensionPolicyNames[ext].name, 'ID: ' + ext);
+        var table = page.appendNewTable(
+            'extension-' + ext, names.extensionPolicyNames[ext].name,
+            'ID: ' + ext);
         table.setPolicyNames(names.extensionPolicyNames[ext].policyNames);
       }
     }
@@ -459,7 +459,7 @@ cr.define('policy', function() {
       chrome.send('initialized');
     },
 
-   /**
+    /**
      * Creates a new policy table section, adds the section to the page,
      * and returns the new table from that section.
      * @param {string} id The key for storing the new table in policyTables.
@@ -468,8 +468,8 @@ cr.define('policy', function() {
      * @return {Element} The newly created table.
      */
     appendNewTable: function(id, label_title, label_content) {
-      var newSection = this.createPolicyTableSection(id, label_title,
-          label_content);
+      var newSection =
+          this.createPolicyTableSection(id, label_title, label_content);
       this.mainSection.appendChild(newSection);
       return this.policyTables[id];
     },
@@ -520,13 +520,13 @@ cr.define('policy', function() {
       var newTable = window.document.createElement('table');
       var tableHead = window.document.createElement('thead');
       var tableRow = window.document.createElement('tr');
-      var tableHeadings = ['Scope', 'Level', 'Source', 'Name', 'Value',
-          'Status'];
+      var tableHeadings =
+          ['Scope', 'Level', 'Source', 'Name', 'Value', 'Status'];
       for (var i = 0; i < tableHeadings.length; i++) {
         var tableHeader = window.document.createElement('th');
         tableHeader.classList.add(tableHeadings[i].toLowerCase() + '-column');
-        tableHeader.textContent = loadTimeData.getString('header' +
-                                                         tableHeadings[i]);
+        tableHeader.textContent =
+            loadTimeData.getString('header' + tableHeadings[i]);
         tableRow.appendChild(tableHeader);
       }
       tableHead.appendChild(tableRow);
@@ -568,9 +568,7 @@ cr.define('policy', function() {
     },
   };
 
-  return {
-    Page: Page
-  };
+  return {Page: Page};
 });
 
 // Have the main initialization function be called when the page finishes

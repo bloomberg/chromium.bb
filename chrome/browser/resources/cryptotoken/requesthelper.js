@@ -73,9 +73,6 @@ function makeHelperErrorResponse(request, code, opt_defaultType) {
   } else {
     type = opt_defaultType || 'unknown_type_reply';
   }
-  var reply = {
-    'type': type,
-    'code': /** @type {number} */ (code)
-  };
+  var reply = {'type': type, 'code': /** @type {number} */ (code)};
   return reply;
 }

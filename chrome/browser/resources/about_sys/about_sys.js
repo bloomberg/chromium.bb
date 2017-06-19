@@ -107,7 +107,7 @@ function importLog(file) {
       if (parseSystemLog(this.result)) {
         // Reset table title and status
         $('tableTitle').textContent =
-              loadTimeData.getStringF('logFileTableTitle', file.name);
+            loadTimeData.getStringF('logFileTableTitle', file.name);
         $('status').textContent = '';
       } else {
         showError(file.name);
@@ -135,7 +135,7 @@ function parseSystemLog(text) {
     var delimiter = lines[i].indexOf('=');
     if (delimiter <= 0) {
       if (i == lines.length - 1)
-         break;
+        break;
       // If '=' is missing here, format is wrong.
       return false;
     }
@@ -151,8 +151,7 @@ function parseSystemLog(text) {
     // If these change, we should check for both the old and new versions.
     if (value == '<multiline>') {
       // Skip start delimiter.
-      if (i == len - 1 ||
-          lines[++i].indexOf(DELIM_START) == -1)
+      if (i == len - 1 || lines[++i].indexOf(DELIM_START) == -1)
         return false;
 
       ++i;

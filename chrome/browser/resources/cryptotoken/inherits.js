@@ -12,8 +12,7 @@
 // Closure.
 function inherits(childCtor, parentCtor) {
   /** @constructor */
-  function tempCtor() {
-  }
+  function tempCtor() {}
   tempCtor.prototype = parentCtor.prototype;
   childCtor.prototype = new tempCtor;
   childCtor.prototype.constructor = childCtor;

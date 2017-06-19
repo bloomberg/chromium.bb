@@ -65,13 +65,12 @@ Polymer({
     var text = '';
     for (var i = 0; i < data.highlightedText.length; ++i) {
       if (data.plainText[i]) {
-        text +=
-            HTMLEscape(/** @type {!string} */ (data.plainText[i]));
+        text += HTMLEscape(/** @type {!string} */ (data.plainText[i]));
       }
       if (data.highlightedText[i]) {
         text += '<span class="highlight">' +
             HTMLEscape(/** @type {!string} */ (data.highlightedText[i])) +
-                '</span>';
+            '</span>';
       }
     }
     this.$.text.innerHTML = text;

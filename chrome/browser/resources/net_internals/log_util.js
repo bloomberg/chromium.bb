@@ -271,8 +271,5 @@ log_util = (function() {
   }
 
   // Exports.
-  return {
-    createLogDumpAsync: createLogDumpAsync,
-    loadLogFile: loadLogFile
-  };
+  return {createLogDumpAsync: createLogDumpAsync, loadLogFile: loadLogFile};
 })();

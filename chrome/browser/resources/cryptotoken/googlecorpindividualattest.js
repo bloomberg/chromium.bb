@@ -36,6 +36,5 @@ GoogleCorpIndividualAttestation.GOOGLE_CORP_APP_ID =
  * Hash of the app ID used by Google employee accounts.
  * @const
  */
-GoogleCorpIndividualAttestation.GOOGLE_CORP_APP_ID_HASH =
-    B64_encode(sha256HashOfString(
-        GoogleCorpIndividualAttestation.GOOGLE_CORP_APP_ID));
+GoogleCorpIndividualAttestation.GOOGLE_CORP_APP_ID_HASH = B64_encode(
+    sha256HashOfString(GoogleCorpIndividualAttestation.GOOGLE_CORP_APP_ID));

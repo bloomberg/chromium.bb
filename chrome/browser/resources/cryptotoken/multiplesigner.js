@@ -41,8 +41,8 @@ var MultipleSignerResult;
  * @param {string=} opt_logMsgUrl A URL to post log messages to.
  * @constructor
  */
-function MultipleGnubbySigner(forEnroll, allCompleteCb, gnubbyCompleteCb,
-    timeoutMillis, opt_logMsgUrl) {
+function MultipleGnubbySigner(
+    forEnroll, allCompleteCb, gnubbyCompleteCb, timeoutMillis, opt_logMsgUrl) {
   /** @private {boolean} */
   this.forEnroll_ = forEnroll;
   /** @private {function(boolean)} */
@@ -63,11 +63,11 @@ function MultipleGnubbySigner(forEnroll, allCompleteCb, gnubbyCompleteCb,
   /** @private {!Object<string, GnubbyTracker>} */
   this.gnubbies_ = {};
   /** @private {Countdown} */
-  this.timer_ = DEVICE_FACTORY_REGISTRY.getCountdownFactory()
-      .createTimer(timeoutMillis);
+  this.timer_ =
+      DEVICE_FACTORY_REGISTRY.getCountdownFactory().createTimer(timeoutMillis);
   /** @private {Countdown} */
-  this.reenumerateTimer_ = DEVICE_FACTORY_REGISTRY.getCountdownFactory()
-      .createTimer(timeoutMillis);
+  this.reenumerateTimer_ =
+      DEVICE_FACTORY_REGISTRY.getCountdownFactory().createTimer(timeoutMillis);
 }
 
 /**
@@ -183,8 +183,8 @@ MultipleGnubbySigner.PASSIVE_REENUMERATE_INTERVAL_MILLIS = 3000;
  *     there are no devices present.
  * @private
  */
-MultipleGnubbySigner.prototype.maybeReEnumerateGnubbies_ =
-    function(activeScan) {
+MultipleGnubbySigner.prototype.maybeReEnumerateGnubbies_ = function(
+    activeScan) {
   if (this.reenumerateTimer_.expired()) {
     // If the timer is expired, call timeout_ if there aren't any still-running
     // gnubbies. (If there are some still running, the last will call timeout_
@@ -231,21 +231,13 @@ MultipleGnubbySigner.prototype.addGnubby_ = function(gnubbyId) {
     // Can't add the same gnubby twice.
     return false;
   }
-  var tracker = {
-      index: index,
-      errorStatus: 0,
-      stillGoing: false,
-      signer: null
-  };
+  var tracker = {index: index, errorStatus: 0, stillGoing: false, signer: null};
   tracker.signer = new SingleGnubbySigner(
-      gnubbyId,
-      this.forEnroll_,
-      this.signCompletedCallback_.bind(this, tracker),
-      this.timer_.clone(),
+      gnubbyId, this.forEnroll_,
+      this.signCompletedCallback_.bind(this, tracker), this.timer_.clone(),
       this.logMsgUrl_);
   this.gnubbies_[index] = tracker;
-  this.gnubbies_[index].stillGoing =
-      tracker.signer.doSign(this.challenges_);
+  this.gnubbies_[index].stillGoing = tracker.signer.doSign(this.challenges_);
   if (!this.gnubbies_[index].errorStatus) {
     this.gnubbies_[index].errorStatus = 0;
   }
@@ -259,12 +251,11 @@ MultipleGnubbySigner.prototype.addGnubby_ = function(gnubbyId) {
  * @param {SingleSignerResult} result The result of the sign operation.
  * @private
  */
-MultipleGnubbySigner.prototype.signCompletedCallback_ =
-    function(tracker, result) {
-  console.log(
-      UTIL_fmt((result.code ? 'failure.' : 'success!') +
-          ' gnubby ' + tracker.index +
-          ' got code ' + result.code.toString(16)));
+MultipleGnubbySigner.prototype.signCompletedCallback_ = function(
+    tracker, result) {
+  console.log(UTIL_fmt(
+      (result.code ? 'failure.' : 'success!') + ' gnubby ' + tracker.index +
+      ' got code ' + result.code.toString(16)));
   if (!tracker.stillGoing) {
     console.log(UTIL_fmt('gnubby ' + tracker.index + ' no longer running!'));
     // Shouldn't ever happen? Disregard.
@@ -317,7 +308,8 @@ MultipleGnubbySigner.prototype.anyPending_ = function() {
  * @private
  */
 MultipleGnubbySigner.prototype.timeout_ = function(anyPending) {
-  if (this.complete_) return;
+  if (this.complete_)
+    return;
   this.complete_ = true;
   // Defer notifying the caller that all are complete, in case the caller is
   // doing work in response to a gnubbyFound callback and has an inconsistent
@@ -336,10 +328,11 @@ MultipleGnubbySigner.prototype.timeout_ = function(anyPending) {
  *     outcome.
  * @private
  */
-MultipleGnubbySigner.prototype.notifyGnubbyComplete_ =
-    function(tracker, result, moreExpected) {
-  console.log(UTIL_fmt('gnubby ' + tracker.index + ' complete (' +
-      result.code.toString(16) + ')'));
+MultipleGnubbySigner.prototype.notifyGnubbyComplete_ = function(
+    tracker, result, moreExpected) {
+  console.log(UTIL_fmt(
+      'gnubby ' + tracker.index + ' complete (' + result.code.toString(16) +
+      ')'));
   var signResult = {
     'code': result.code,
     'gnubby': result.gnubby,

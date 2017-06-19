@@ -341,29 +341,33 @@ cr.define('value_control', function() {
     readValue_: function() {
       this.readBtn_.disabled = true;
 
-      device_broker.connectToDevice(this.deviceAddress_).then(function(device) {
-        if (this.descriptorId_) {
-          return device.readValueForDescriptor(
-              this.serviceId_, this.characteristicId_, this.descriptorId_);
-        }
+      device_broker.connectToDevice(this.deviceAddress_)
+          .then(function(device) {
+            if (this.descriptorId_) {
+              return device.readValueForDescriptor(
+                  this.serviceId_, this.characteristicId_, this.descriptorId_);
+            }
 
-        return device.readValueForCharacteristic(
-            this.serviceId_, this.characteristicId_);
-      }.bind(this)).then(function(response) {
-        this.readBtn_.disabled = false;
+            return device.readValueForCharacteristic(
+                this.serviceId_, this.characteristicId_);
+          }.bind(this))
+          .then(function(response) {
+            this.readBtn_.disabled = false;
 
-        if (response.result === interfaces.BluetoothDevice.GattResult.SUCCESS) {
-          this.setValue(response.value);
-          Snackbar.show(
-              this.deviceAddress_ + ': Read succeeded', SnackbarType.SUCCESS);
-          return;
-        }
+            if (response.result ===
+                interfaces.BluetoothDevice.GattResult.SUCCESS) {
+              this.setValue(response.value);
+              Snackbar.show(
+                  this.deviceAddress_ + ': Read succeeded',
+                  SnackbarType.SUCCESS);
+              return;
+            }
 
-        var errorString = this.getErrorString_(response.result);
-        Snackbar.show(
-            this.deviceAddress_ + ': ' + errorString, SnackbarType.ERROR,
-            'Retry', this.readValue_.bind(this));
-      }.bind(this));
+            var errorString = this.getErrorString_(response.result);
+            Snackbar.show(
+                this.deviceAddress_ + ': ' + errorString, SnackbarType.ERROR,
+                'Retry', this.readValue_.bind(this));
+          }.bind(this));
     },
 
     /**
@@ -376,29 +380,34 @@ cr.define('value_control', function() {
     writeValue_: function() {
       this.writeBtn_.disabled = true;
 
-      device_broker.connectToDevice(this.deviceAddress_).then(function(device) {
-        if (this.descriptorId_) {
-          return device.writeValueForDescriptor(
-              this.serviceId_, this.characteristicId_, this.descriptorId_,
-              this.value_.getArray());
-        }
+      device_broker.connectToDevice(this.deviceAddress_)
+          .then(function(device) {
+            if (this.descriptorId_) {
+              return device.writeValueForDescriptor(
+                  this.serviceId_, this.characteristicId_, this.descriptorId_,
+                  this.value_.getArray());
+            }
 
-        return device.writeValueForCharacteristic(
-            this.serviceId_, this.characteristicId_, this.value_.getArray());
-      }.bind(this)).then(function(response) {
-        this.writeBtn_.disabled = false;
+            return device.writeValueForCharacteristic(
+                this.serviceId_, this.characteristicId_,
+                this.value_.getArray());
+          }.bind(this))
+          .then(function(response) {
+            this.writeBtn_.disabled = false;
 
-        if (response.result === interfaces.BluetoothDevice.GattResult.SUCCESS) {
-          Snackbar.show(
-              this.deviceAddress_ + ': Write succeeded', SnackbarType.SUCCESS);
-          return;
-        }
+            if (response.result ===
+                interfaces.BluetoothDevice.GattResult.SUCCESS) {
+              Snackbar.show(
+                  this.deviceAddress_ + ': Write succeeded',
+                  SnackbarType.SUCCESS);
+              return;
+            }
 
-        var errorString = this.getErrorString_(response.result);
-        Snackbar.show(
-            this.deviceAddress_ + ': ' + errorString, SnackbarType.ERROR,
-            'Retry', this.writeValue_.bind(this));
-      }.bind(this));
+            var errorString = this.getErrorString_(response.result);
+            Snackbar.show(
+                this.deviceAddress_ + ': ' + errorString, SnackbarType.ERROR,
+                'Retry', this.writeValue_.bind(this));
+          }.bind(this));
     },
   };
 

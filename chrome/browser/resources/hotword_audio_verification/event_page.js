@@ -22,9 +22,6 @@ chrome.app.runtime.onLaunched.addListener(function() {
     'resizable': false,
     'hidden': true,
     'id': appId,
-    'innerBounds': {
-      'width': 784,
-      'height': 448
-    }
+    'innerBounds': {'width': 784, 'height': 448}
   });
 });

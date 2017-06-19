@@ -160,8 +160,10 @@ function sendReport() {
   $('send-report-button').disabled = true;
   console.log('Feedback: Sending report');
   if (!feedbackInfo.attachedFile && attachedFileBlob) {
-    feedbackInfo.attachedFile = { name: $('attach-file').value,
-                                  data: attachedFileBlob };
+    feedbackInfo.attachedFile = {
+      name: $('attach-file').value,
+      data: attachedFileBlob
+    };
   }
 
   feedbackInfo.description = $('description-text').value;
@@ -170,17 +172,16 @@ function sendReport() {
 
   var useSystemInfo = false;
   var useHistograms = false;
-  if ($('sys-info-checkbox') != null &&
-      $('sys-info-checkbox').checked) {
+  if ($('sys-info-checkbox') != null && $('sys-info-checkbox').checked) {
     // Send histograms along with system info.
     useSystemInfo = useHistograms = true;
   }
-// <if expr="chromeos">
+  // <if expr="chromeos">
   if ($('performance-info-checkbox') == null ||
       !($('performance-info-checkbox').checked)) {
     feedbackInfo.traceId = null;
   }
-// </if>
+  // </if>
 
   feedbackInfo.sendHistograms = useHistograms;
 
@@ -256,8 +257,8 @@ function resizeAppWindow() {
   // We get the height by adding the titlebar height and the content height +
   // margins. We can't get the margins for the content-pane here by using
   // style.margin - the variable seems to not exist.
-  var height = $('title-bar').scrollHeight +
-      $('content-pane').scrollHeight + CONTENT_MARGIN_HEIGHT;
+  var height = $('title-bar').scrollHeight + $('content-pane').scrollHeight +
+      CONTENT_MARGIN_HEIGHT;
 
   var minHeight = FEEDBACK_MIN_HEIGHT;
   if (feedbackInfo.flow == chrome.feedbackPrivate.FeedbackFlow.LOGIN)
@@ -284,7 +285,9 @@ function onSystemInformation() {
  * Close the window after 100ms delay.
  */
 function scheduleWindowClose() {
-  setTimeout(function() { window.close();}, 100);
+  setTimeout(function() {
+    window.close();
+  }, 100);
 }
 
 /**
@@ -346,8 +349,10 @@ function initialize() {
 
         var screenshotDataUrl = screenshotCanvas.toDataURL('image/png');
         $('screenshot-image').src = screenshotDataUrl;
-        $('screenshot-image').classList.toggle('wide-screen',
-            $('screenshot-image').width > MAX_SCREENSHOT_WIDTH);
+        $('screenshot-image')
+            .classList.toggle(
+                'wide-screen',
+                $('screenshot-image').width > MAX_SCREENSHOT_WIDTH);
         feedbackInfo.screenshot = dataUrlToBlob(screenshotDataUrl);
       });
 
@@ -360,8 +365,8 @@ function initialize() {
         optionElement.text = email;
         optionElement.selected = true;
         // Make sure the "Report anonymously" option comes last.
-        $('user-email-drop-down').insertBefore(optionElement,
-            $('anonymous-user-option'));
+        $('user-email-drop-down')
+            .insertBefore(optionElement, $('anonymous-user-option'));
 
         // Now we can unhide the user email section:
         $('user-email').hidden = false;
@@ -387,14 +392,14 @@ function initialize() {
         $('attach-file-note').hidden = true;
       }
 
-// <if expr="chromeos">
+      // <if expr="chromeos">
       if (feedbackInfo.traceId && ($('performance-info-area'))) {
         $('performance-info-area').hidden = false;
         $('performance-info-checkbox').checked = true;
         performanceFeedbackChanged();
         $('performance-info-link').onclick = openSlowTraceWindow;
       }
-// </if>
+      // </if>
       chrome.feedbackPrivate.getStrings(feedbackInfo.flow, function(strings) {
         loadTimeData.data = strings;
         i18nTemplate.process(document, loadTimeData);
@@ -409,32 +414,33 @@ function initialize() {
               return;
             }
             chrome.app.window.create(
-              '/html/sys_info.html', {
-                frame: 'chrome',
-                id: SYSINFO_WINDOW_ID,
-                width: 640,
-                height: 400,
-                hidden: false,
-                resizable: true
-              }, function(appWindow) {
-                // Define functions for the newly created window.
+                '/html/sys_info.html', {
+                  frame: 'chrome',
+                  id: SYSINFO_WINDOW_ID,
+                  width: 640,
+                  height: 400,
+                  hidden: false,
+                  resizable: true
+                },
+                function(appWindow) {
+                  // Define functions for the newly created window.
 
-                // Gets the full system information for the new window.
-                appWindow.contentWindow.getFullSystemInfo =
-                    function(callback) {
-                      if (isSystemInfoReady) {
-                        callback(feedbackInfo.systemInformation);
-                        return;
-                      }
+                  // Gets the full system information for the new window.
+                  appWindow.contentWindow.getFullSystemInfo = function(
+                      callback) {
+                    if (isSystemInfoReady) {
+                      callback(feedbackInfo.systemInformation);
+                      return;
+                    }
 
-                      sysInfoPageOnSysInfoReadyCallback = callback;
-                    };
+                    sysInfoPageOnSysInfoReadyCallback = callback;
+                  };
 
-                // Returns the loadTimeData for the new window.
-                appWindow.contentWindow.getLoadTimeData = function() {
-                  return loadTimeData;
-                };
-            });
+                  // Returns the loadTimeData for the new window.
+                  appWindow.contentWindow.getLoadTimeData = function() {
+                    return loadTimeData;
+                  };
+                });
           };
         }
         if ($('histograms-url')) {
@@ -457,10 +463,10 @@ function initialize() {
     $('send-report-button').onclick = sendReport;
     $('cancel-button').onclick = cancel;
     $('remove-attached-file').onclick = clearAttachedFile;
-// <if expr="chromeos">
-    $('performance-info-checkbox').addEventListener(
-        'change', performanceFeedbackChanged);
-// </if>
+    // <if expr="chromeos">
+    $('performance-info-checkbox')
+        .addEventListener('change', performanceFeedbackChanged);
+    // </if>
   });
 }
 

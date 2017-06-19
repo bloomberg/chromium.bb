@@ -137,9 +137,9 @@ cr.define('media_router', function() {
    * Placeholder object for AUTO cast mode. See comment in CastModeType.
    * @const {!media_router.CastMode}
    */
-  var AUTO_CAST_MODE = new CastMode(media_router.CastModeType.AUTO,
-                                    loadTimeData.getString('autoCastMode'),
-                                    null, false);
+  var AUTO_CAST_MODE = new CastMode(
+      media_router.CastModeType.AUTO, loadTimeData.getString('autoCastMode'),
+      null, false);
 
   /**
    * @param {number} id The ID of this issue.
@@ -154,9 +154,9 @@ cr.define('media_router', function() {
    * @constructor
    * @struct
    */
-  var Issue = function(id, title, message, defaultActionType,
-                       secondaryActionType, routeId, isBlocking,
-                       helpPageId) {
+  var Issue = function(
+      id, title, message, defaultActionType, secondaryActionType, routeId,
+      isBlocking, helpPageId) {
     /** @type {number} */
     this.id = id;
 
@@ -196,8 +196,8 @@ cr.define('media_router', function() {
    * @constructor
    * @struct
    */
-  var Route = function(id, sinkId, description, tabId, isLocal, canJoin,
-      customControllerPath) {
+  var Route = function(
+      id, sinkId, description, tabId, isLocal, canJoin, customControllerPath) {
     /** @type {string} */
     this.id = id;
 
@@ -290,8 +290,8 @@ cr.define('media_router', function() {
    * @constructor
    * @struct
    */
-  var Sink = function(id, name, description, domain, iconType, status,
-      castModes) {
+  var Sink = function(
+      id, name, description, domain, iconType, status, castModes) {
     /** @type {string} */
     this.id = id;
 

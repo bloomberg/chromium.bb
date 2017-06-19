@@ -5,10 +5,9 @@
 window.addEventListener('load', function() {
   downloads.Manager.onLoad().then(function() {
     requestIdleCallback(function() {
-      chrome.send('metricsHandler:recordTime', [
-        'Download.ResultsRenderedTime',
-        window.performance.now()
-      ]);
+      chrome.send(
+          'metricsHandler:recordTime',
+          ['Download.ResultsRenderedTime', window.performance.now()]);
       document.fonts.load('bold 12px Roboto');
     });
   });

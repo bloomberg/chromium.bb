@@ -30,8 +30,7 @@ cr.define('expandable_list', function() {
       this.classList.add('expandable-list-item');
       this.briefContent_ = document.createElement('div');
       this.briefContent_.classList.add('brief-content');
-      this.briefContent_.addEventListener(
-          'click', this.onExpand_.bind(this));
+      this.briefContent_.addEventListener('click', this.onExpand_.bind(this));
       this.appendChild(this.briefContent_);
 
       this.expandedContent_ = document.createElement('div');

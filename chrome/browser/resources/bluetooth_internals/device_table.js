@@ -27,8 +27,8 @@ cr.define('device_table', function() {
     /** @private {?Array<device_collection.Device>} */
     this.devices_ = null;
 
-    return document.importNode($('table-template').content.children[0],
-                               true /* deep */);
+    return document.importNode(
+        $('table-template').content.children[0], true /* deep */);
   });
 
   DeviceTable.prototype = {
@@ -140,7 +140,8 @@ cr.define('device_table', function() {
 
       for (var i = 0; i < this.headers_.length; i++) {
         // Skip the LINKS column. It has no data-field attribute.
-        if (i === COLUMNS.LINKS) continue;
+        if (i === COLUMNS.LINKS)
+          continue;
         row.insertCell();
       }
 
@@ -201,7 +202,8 @@ cr.define('device_table', function() {
       // Update the properties based on the header field path.
       for (var i = 0; i < this.headers_.length; i++) {
         // Skip the LINKS column. It has no data-field attribute.
-        if (i === COLUMNS.LINKS) continue;
+        if (i === COLUMNS.LINKS)
+          continue;
 
         var header = this.headers_[i];
         var propName = header.dataset.field;

@@ -114,5 +114,7 @@ cr.define('appList.startPage', function() {
   };
 });
 
-document.addEventListener('contextmenu', function(e) { e.preventDefault(); });
+document.addEventListener('contextmenu', function(e) {
+  e.preventDefault();
+});
 document.addEventListener('DOMContentLoaded', appList.startPage.initialize);

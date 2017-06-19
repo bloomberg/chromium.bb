@@ -12,7 +12,4 @@ var FEEDBACK_LANDING_PAGE =
  * The status of sending the feedback report as defined in feedback_private.idl.
  * @enum {string}
  */
-var ReportStatus = {
-  SUCCESS: 'success',
-  DELAYED: 'delayed'
-};
+var ReportStatus = {SUCCESS: 'success', DELAYED: 'delayed'};

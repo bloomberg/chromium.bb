@@ -226,7 +226,7 @@ var MainView = (function() {
       if (!parsed)
         return;
 
-      if (parsed.tabHash == "#export") {
+      if (parsed.tabHash == '#export') {
         // The #export tab was removed in M60, after having been
         // deprecated since M58. In case anyone *still* has URLs
         // bookmarked to this, inform them and redirect.
@@ -237,10 +237,10 @@ var MainView = (function() {
         // page load (confirm() is synchronous).
         setTimeout(() => {
           var navigateToNetExport = confirm(
-              "#export was removed\nDo you want to navigate to " +
-              "chrome://net-export/ instead?");
+              '#export was removed\nDo you want to navigate to ' +
+              'chrome://net-export/ instead?');
           if (navigateToNetExport) {
-            window.location.href = "chrome://net-export";
+            window.location.href = 'chrome://net-export';
             return;
           }
         });

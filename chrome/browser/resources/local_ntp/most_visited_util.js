@@ -12,13 +12,13 @@
 
 
 /**
-  * The different types of events that are logged from the NTP. The multi-iframe
-  * version of the NTP does *not* actually log any statistics anymore; this is
-  * only required as a workaround for crbug.com/698675.
-  * Note: Keep in sync with common/ntp_logging_events.h
-  * @enum {number}
-  * @const
-  */
+ * The different types of events that are logged from the NTP. The multi-iframe
+ * version of the NTP does *not* actually log any statistics anymore; this is
+ * only required as a workaround for crbug.com/698675.
+ * Note: Keep in sync with common/ntp_logging_events.h
+ * @enum {number}
+ * @const
+ */
 var NTP_LOGGING_EVENT_TYPE = {
   NTP_ALL_TILES_RECEIVED: 12,
 };
@@ -121,8 +121,8 @@ function createMostVisitedLink(params, href, title, text, direction) {
         event.keyCode == 8 /* BACKSPACE */) {
       event.preventDefault();
       window.parent.postMessage('tileBlacklisted,' + params.pos, DOMAIN_ORIGIN);
-    } else if (event.keyCode == 13 /* ENTER */ ||
-               event.keyCode == 32 /* SPACE */) {
+    } else if (
+        event.keyCode == 13 /* ENTER */ || event.keyCode == 32 /* SPACE */) {
       // Event target is the <a> tag. Send a click event on it, which will
       // trigger the 'click' event registered above.
       event.preventDefault();
@@ -239,8 +239,7 @@ function fillMostVisited(location, fill) {
   if (isFinite(params.dummy) && parseInt(params.dummy, 10)) {
     data.dummy = true;
   }
-  if (/^javascript:/i.test(data.url) ||
-      /^javascript:/i.test(data.thumbnailUrl))
+  if (/^javascript:/i.test(data.url) || /^javascript:/i.test(data.thumbnailUrl))
     return;
   if (data.direction)
     document.body.dir = data.direction;

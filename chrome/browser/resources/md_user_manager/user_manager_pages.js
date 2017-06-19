@@ -14,24 +14,16 @@ Polymer({
      * ID of the currently selected page.
      * @private {string}
      */
-    selectedPage_: {
-      type: String,
-      value: 'user-pods-page'
-    },
+    selectedPage_: {type: String, value: 'user-pods-page'},
 
     /**
      * Data passed to the currently selected page.
      * @private {?Object}
      */
-    pageData_: {
-      type: Object,
-      value: null
-    }
+    pageData_: {type: Object, value: null}
   },
 
-  listeners: {
-    'change-page': 'onChangePage_'
-  },
+  listeners: {'change-page': 'onChangePage_'},
 
   /**
    * Handler for the change-page event.

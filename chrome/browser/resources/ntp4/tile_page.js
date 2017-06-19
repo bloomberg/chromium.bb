@@ -120,14 +120,14 @@ cr.define('ntp', function() {
       this.dragClone.style.right = '';
       this.dragClone.classList.add('drag-representation');
       $('card-slider-frame').appendChild(this.dragClone);
-      this.eventTracker.add(this.dragClone, 'transitionend',
-                            this.onDragCloneTransitionEnd_.bind(this));
+      this.eventTracker.add(
+          this.dragClone, 'transitionend',
+          this.onDragCloneTransitionEnd_.bind(this));
 
       this.classList.add('dragging');
       // offsetLeft is mirrored in RTL. Un-mirror it.
-      var offsetLeft = isRTL() ?
-          this.parentNode.clientWidth - this.offsetLeft :
-          this.offsetLeft;
+      var offsetLeft = isRTL() ? this.parentNode.clientWidth - this.offsetLeft :
+                                 this.offsetLeft;
       this.dragOffsetX = e.x - offsetLeft - this.parentNode.offsetLeft;
       this.dragOffsetY = e.y - this.offsetTop -
           // Unlike offsetTop, this value takes scroll position into account.
@@ -180,17 +180,15 @@ cr.define('ntp', function() {
           this.dragClone.hidden = false;
           // The tile's contents may have moved following the respositioning;
           // adjust for that.
-          var contentDiffX = this.dragClone.firstChild.offsetLeft -
-              this.firstChild.offsetLeft;
-          var contentDiffY = this.dragClone.firstChild.offsetTop -
-              this.firstChild.offsetTop;
+          var contentDiffX =
+              this.dragClone.firstChild.offsetLeft - this.firstChild.offsetLeft;
+          var contentDiffY =
+              this.dragClone.firstChild.offsetTop - this.firstChild.offsetTop;
           this.dragClone.style.left =
-              toCssPx(this.gridX + this.parentNode.offsetLeft -
-                         contentDiffX);
-          this.dragClone.style.top =
-              toCssPx(this.gridY +
-                         this.parentNode.getBoundingClientRect().top -
-                         contentDiffY);
+              toCssPx(this.gridX + this.parentNode.offsetLeft - contentDiffX);
+          this.dragClone.style.top = toCssPx(
+              this.gridY + this.parentNode.getBoundingClientRect().top -
+              contentDiffY);
         } else if (this.dragClone.hidden) {
           this.finalizeDrag_();
         } else {
@@ -238,8 +236,8 @@ cr.define('ntp', function() {
       if (isRTL())
         x *= -1;
 
-      this.doppleganger_.style.transform = 'translate(' + x + 'px, ' +
-                                                          y + 'px)';
+      this.doppleganger_.style.transform =
+          'translate(' + x + 'px, ' + y + 'px)';
     },
 
     /**
@@ -378,25 +376,20 @@ cr.define('ntp', function() {
   TilePage.initGridValues = function(grid) {
     // The amount of space we need to display a narrow grid (all narrow grids
     // are this size).
-    grid.narrowWidth =
-        grid.minTileWidth * tileWidthFraction(grid.minColCount,
-                                              grid.tileSpacingFraction);
+    grid.narrowWidth = grid.minTileWidth *
+        tileWidthFraction(grid.minColCount, grid.tileSpacingFraction);
     // The minimum amount of space we need to display a wide grid.
-    grid.minWideWidth =
-        grid.minTileWidth * tileWidthFraction(grid.maxColCount,
-                                              grid.tileSpacingFraction);
+    grid.minWideWidth = grid.minTileWidth *
+        tileWidthFraction(grid.maxColCount, grid.tileSpacingFraction);
     // The largest we will ever display a wide grid.
-    grid.maxWideWidth =
-        grid.maxTileWidth * tileWidthFraction(grid.maxColCount,
-                                              grid.tileSpacingFraction);
+    grid.maxWideWidth = grid.maxTileWidth *
+        tileWidthFraction(grid.maxColCount, grid.tileSpacingFraction);
     // Tile-related pixel values for the narrow display.
-    grid.narrowTileValues = tileValuesForGrid(grid.narrowWidth,
-                                              grid.minColCount,
-                                              grid.tileSpacingFraction);
+    grid.narrowTileValues = tileValuesForGrid(
+        grid.narrowWidth, grid.minColCount, grid.tileSpacingFraction);
     // Tile-related pixel values for the minimum narrow display.
-    grid.wideTileValues = tileValuesForGrid(grid.minWideWidth,
-                                            grid.maxColCount,
-                                            grid.tileSpacingFraction);
+    grid.wideTileValues = tileValuesForGrid(
+        grid.minWideWidth, grid.maxColCount, grid.tileSpacingFraction);
   };
 
   TilePage.prototype = {
@@ -431,7 +424,8 @@ cr.define('ntp', function() {
       this.tileGrid_.className = 'tile-grid';
       this.tileGrid_.style.minWidth = this.gridValues_.narrowWidth + 'px';
       this.tileGrid_.setAttribute('role', 'menu');
-      this.tileGrid_.setAttribute('aria-label',
+      this.tileGrid_.setAttribute(
+          'aria-label',
           loadTimeData.getString(
               'tile_grid_screenreader_accessible_description'));
 
@@ -453,8 +447,8 @@ cr.define('ntp', function() {
       this.eventTracker = new EventTracker();
       this.eventTracker.add(window, 'resize', this.onResize_.bind(this));
 
-      this.addEventListener('DOMNodeInsertedIntoDocument',
-                            this.onNodeInsertedIntoDocument_);
+      this.addEventListener(
+          'DOMNodeInsertedIntoDocument', this.onNodeInsertedIntoDocument_);
 
       this.content_.addEventListener('scroll', this.onScroll_.bind(this));
 
@@ -522,8 +516,9 @@ cr.define('ntp', function() {
       // |opt_animate| argument, but that's not necesarilly applicable to
       // removing a tilePage. Selecting a different card in an animated way and
       // deleting the card afterward is probably a better choice.
-      assert(typeof arguments[0] != 'boolean',
-             'This function takes no |opt_animate| argument.');
+      assert(
+          typeof arguments[0] != 'boolean',
+          'This function takes no |opt_animate| argument.');
       this.tearDown_();
       this.parentNode.removeChild(this);
     },
@@ -680,15 +675,14 @@ cr.define('ntp', function() {
      * @private
      */
     handleMouseDown_: function(e) {
-      var focusable = findAncestorByClass(/** @type {Element} */(e.target),
-                                          'focusable');
+      var focusable =
+          findAncestorByClass(/** @type {Element} */ (e.target), 'focusable');
       if (focusable) {
         this.focusElementIndex_ =
-            Array.prototype.indexOf.call(this.focusableElements_,
-                                         focusable);
+            Array.prototype.indexOf.call(this.focusableElements_, focusable);
         this.updateFocusElement_();
       }
-  },
+    },
 
     /**
      * Handle arrow key focus nav.
@@ -717,9 +711,8 @@ cr.define('ntp', function() {
           // Look through all focusable elements. Find the first one that is
           // in the same column.
           var direction = e.key == 'ArrowUp' ? -1 : 1;
-          var currentIndex =
-              Array.prototype.indexOf.call(this.focusableElements_,
-                                           this.currentFocusElement_);
+          var currentIndex = Array.prototype.indexOf.call(
+              this.focusableElements_, this.currentFocusElement_);
           var newFocusIdx = wrap(currentIndex + direction);
           var tile = this.currentFocusElement_.parentNode;
           for (;; newFocusIdx = wrap(newFocusIdx + direction)) {
@@ -754,8 +747,8 @@ cr.define('ntp', function() {
         return;
       }
 
-      this.focusElementIndex_ = Math.min(this.focusableElements_.length - 1,
-                                         this.focusElementIndex_);
+      this.focusElementIndex_ =
+          Math.min(this.focusableElements_.length - 1, this.focusElementIndex_);
       this.focusElementIndex_ = Math.max(0, this.focusElementIndex_);
 
       var newFocusElement = this.focusableElements_[this.focusElementIndex_];
@@ -800,17 +793,16 @@ cr.define('ntp', function() {
       var numRowTiles = wide ? grid.maxColCount : grid.minColCount;
 
       var effectiveGridWidth = wide ?
-          Math.min(Math.max(availableSpace, grid.minWideWidth),
-                   grid.maxWideWidth) :
+          Math.min(
+              Math.max(availableSpace, grid.minWideWidth), grid.maxWideWidth) :
           grid.narrowWidth;
-      var realTileValues = tileValuesForGrid(effectiveGridWidth, numRowTiles,
-                                             grid.tileSpacingFraction);
+      var realTileValues = tileValuesForGrid(
+          effectiveGridWidth, numRowTiles, grid.tileSpacingFraction);
 
       // leftMargin centers the grid within the avaiable space.
       var minMargin = wide ? MIN_WIDE_MARGIN : 0;
-      var leftMargin =
-          Math.max(minMargin,
-                   (this.tileGrid_.clientWidth - effectiveGridWidth) / 2);
+      var leftMargin = Math.max(
+          minMargin, (this.tileGrid_.clientWidth - effectiveGridWidth) / 2);
 
       var rowHeight = this.heightForWidth(realTileValues.tileWidth) +
           realTileValues.interTileSpacing;
@@ -873,19 +865,19 @@ cr.define('ntp', function() {
       var realY = row * layout.rowHeight;
 
       // Calculate the portion of the tile's position that should be animated.
-      var animatedTileValues = layout.wide ?
-          grid.wideTileValues : grid.narrowTileValues;
+      var animatedTileValues =
+          layout.wide ? grid.wideTileValues : grid.narrowTileValues;
       // Animate the difference between three-wide and six-wide.
       var animatedLeftMargin = this.getAnimatedLeftMargin_();
       var animatedX = col * animatedTileValues.offsetX + animatedLeftMargin;
-      var animatedY = row * (this.heightForWidth(animatedTileValues.tileWidth) +
-                             animatedTileValues.interTileSpacing);
+      var animatedY = row *
+          (this.heightForWidth(animatedTileValues.tileWidth) +
+           animatedTileValues.interTileSpacing);
 
       var tile = this.tileElements_[index];
       tile.setGridPosition(animatedX, animatedY);
-      tile.firstChild.setBounds(layout.tileWidth,
-                                realX - animatedX,
-                                realY - animatedY);
+      tile.firstChild.setBounds(
+          layout.tileWidth, realX - animatedX, realY - animatedY);
 
       // This code calculates whether the tile needs to show a clone of itself
       // wrapped around the other side of the tile grid.
@@ -894,8 +886,9 @@ cr.define('ntp', function() {
       var offTheLeft = col == -1 || (col == 0 && tile.hasDoppleganger());
       if (this.isCurrentDragTarget && (offTheRight || offTheLeft)) {
         var sign = offTheRight ? 1 : -1;
-        tile.showDoppleganger(-layout.numRowTiles * layout.colWidth * sign,
-                              layout.rowHeight * sign);
+        tile.showDoppleganger(
+            -layout.numRowTiles * layout.colWidth * sign,
+            layout.rowHeight * sign);
       } else {
         tile.clearDoppleganger();
       }
@@ -923,8 +916,8 @@ cr.define('ntp', function() {
       var layout = this.layoutValues_;
 
       var gridClientRect = this.tileGrid_.getBoundingClientRect();
-      var col = Math.floor((x - gridClientRect.left - layout.leftMargin) /
-                           layout.colWidth);
+      var col = Math.floor(
+          (x - gridClientRect.left - layout.leftMargin) / layout.colWidth);
       if (col < 0 || col >= layout.numRowTiles)
         return -1;
 
@@ -969,22 +962,21 @@ cr.define('ntp', function() {
 
       var leftMargin = this.layoutValues_.leftMargin;
       // The fade distance is the space between tiles.
-      var fadeDistance = (this.gridValues_.tileSpacingFraction *
-          this.layoutValues_.tileWidth);
+      var fadeDistance =
+          (this.gridValues_.tileSpacingFraction * this.layoutValues_.tileWidth);
       fadeDistance = Math.min(leftMargin, fadeDistance);
       // On Skia we don't use any fade because it works very poorly. See
       // http://crbug.com/99373
       if (!cr.isMac)
         fadeDistance = 1;
-      var gradient =
-          '-webkit-linear-gradient(left,' +
-              'transparent, ' +
-              'transparent ' + (leftMargin - fadeDistance) + 'px, ' +
-              'black ' + leftMargin + 'px, ' +
-              'black ' + (this.tileGrid_.clientWidth - leftMargin) + 'px, ' +
-              'transparent ' + (this.tileGrid_.clientWidth - leftMargin +
-                                fadeDistance) + 'px, ' +
-              'transparent)';
+      var gradient = '-webkit-linear-gradient(left,' +
+          'transparent, ' +
+          'transparent ' + (leftMargin - fadeDistance) + 'px, ' +
+          'black ' + leftMargin + 'px, ' +
+          'black ' + (this.tileGrid_.clientWidth - leftMargin) + 'px, ' +
+          'transparent ' +
+          (this.tileGrid_.clientWidth - leftMargin + fadeDistance) + 'px, ' +
+          'transparent)';
       this.tileGrid_.style.WebkitMaskBoxImage = gradient;
     },
 
@@ -1096,8 +1088,8 @@ cr.define('ntp', function() {
       if (this.scrollbarUpdate_)
         return;
 
-      this.scrollbarUpdate_ = window.setTimeout(
-          this.doUpdateScrollbars_.bind(this), 0);
+      this.scrollbarUpdate_ =
+          window.setTimeout(this.doUpdateScrollbars_.bind(this), 0);
     },
 
     /**
@@ -1122,8 +1114,8 @@ cr.define('ntp', function() {
 
       var thumbTop = content.offsetTop +
           content.scrollTop / adjustedScrollHeight * content.clientHeight;
-      var thumbHeight = content.clientHeight / adjustedScrollHeight *
-          this.clientHeight;
+      var thumbHeight =
+          content.clientHeight / adjustedScrollHeight * this.clientHeight;
 
       this.scrollbar_.style.top = thumbTop + 'px';
       this.scrollbar_.style.height = thumbHeight + 'px';
@@ -1158,8 +1150,8 @@ cr.define('ntp', function() {
 
       this.classList.add('animating-tile-page');
       this.withinPageDrag_ = this.contains(currentlyDraggingTile);
-      this.dragItemIndex_ = this.withinPageDrag_ ?
-          currentlyDraggingTile.index : this.tileElements_.length;
+      this.dragItemIndex_ = this.withinPageDrag_ ? currentlyDraggingTile.index :
+                                                   this.tileElements_.length;
       this.currentDropIndex_ = this.dragItemIndex_;
 
       // The new tile may change the number of rows, hence the top margin
@@ -1189,16 +1181,15 @@ cr.define('ntp', function() {
       var index = this.currentDropIndex_;
       // Only change data if this was not a 'null drag'.
       if (!((index == this.dragItemIndex_) && this.withinPageDrag_)) {
-        var adjustedIndex = this.currentDropIndex_ +
-            (index > this.dragItemIndex_ ? 1 : 0);
+        var adjustedIndex =
+            this.currentDropIndex_ + (index > this.dragItemIndex_ ? 1 : 0);
         if (this.withinPageDrag_) {
           this.tileGrid_.insertBefore(
-              currentlyDraggingTile,
-              this.tileElements_[adjustedIndex]);
+              currentlyDraggingTile, this.tileElements_[adjustedIndex]);
           this.tileMoved(currentlyDraggingTile, this.dragItemIndex_);
         } else {
-          var originalPage = currentlyDraggingTile ?
-              currentlyDraggingTile.tilePage : null;
+          var originalPage =
+              currentlyDraggingTile ? currentlyDraggingTile.tilePage : null;
           this.addDragData(e.dataTransfer, adjustedIndex);
           if (originalPage)
             originalPage.cleanupDrag();
@@ -1301,8 +1292,7 @@ cr.define('ntp', function() {
      * @param {Node} draggedTile The tile that was dropped.
      * @param {number} prevIndex The previous index of the tile.
      */
-    tileMoved: function(draggedTile, prevIndex) {
-    },
+    tileMoved: function(draggedTile, prevIndex) {},
 
     /**
      * Sets the drop effect on |dataTransfer| to the desired value (e.g.

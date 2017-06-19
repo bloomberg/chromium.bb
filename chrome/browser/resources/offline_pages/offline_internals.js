@@ -178,7 +178,7 @@ cr.define('offlineInternals', function() {
     browserProxy.getRequestQueue().then(fillRequestQueue);
   }
 
-   /**
+  /**
    * Callback for prefetch actions.
    * @param {string} info The result of performing the prefetch actions.
    */
@@ -191,14 +191,12 @@ cr.define('offlineInternals', function() {
    * TODO(chili): Create a CSV writer that can abstract out the line joining.
    */
   function download() {
-    var json = JSON.stringify({
-      offlinePages: offlinePages,
-      savePageRequests: savePageRequests
-    }, null, 2);
+    var json = JSON.stringify(
+        {offlinePages: offlinePages, savePageRequests: savePageRequests}, null,
+        2);
 
     window.open(
-        'data:application/json,' + encodeURIComponent(json),
-        'dump.json');
+        'data:application/json,' + encodeURIComponent(json), 'dump.json');
   }
 
   /**
@@ -307,21 +305,20 @@ cr.define('offlineInternals', function() {
       var counter = saveUrls.length;
       $('save-url-state').textContent = '';
       for (let i = 0; i < saveUrls.length; i++) {
-        browserProxy.addToRequestQueue(saveUrls[i])
-            .then(function(state) {
-              if (state) {
-                $('save-url-state').textContent +=
-                    saveUrls[i] + ' has been added to queue.\n';
-                $('url').value = '';
-                counter--;
-                if (counter == 0) {
-                  browserProxy.getRequestQueue().then(fillRequestQueue);
-                }
-              } else {
-                $('save-url-state').textContent +=
-                    saveUrls[i] + ' failed to be added to queue.\n';
-              }
-            });
+        browserProxy.addToRequestQueue(saveUrls[i]).then(function(state) {
+          if (state) {
+            $('save-url-state').textContent +=
+                saveUrls[i] + ' has been added to queue.\n';
+            $('url').value = '';
+            counter--;
+            if (counter == 0) {
+              browserProxy.getRequestQueue().then(fillRequestQueue);
+            }
+          } else {
+            $('save-url-state').textContent +=
+                saveUrls[i] + ' failed to be added to queue.\n';
+          }
+        });
       }
     };
     $('schedule-nwake').onclick = function() {
@@ -331,12 +328,12 @@ cr.define('offlineInternals', function() {
       browserProxy.cancelNwake().then(setPrefetchResult);
     };
     $('generate-page-bundle').onclick = function() {
-      browserProxy.generatePageBundle($('generate-urls').value).
-          then(setPrefetchResult);
+      browserProxy.generatePageBundle($('generate-urls').value)
+          .then(setPrefetchResult);
     };
     $('get-operation').onclick = function() {
-      browserProxy.getOperation($('operation-name').value).
-          then(setPrefetchResult);
+      browserProxy.getOperation($('operation-name').value)
+          .then(setPrefetchResult);
     };
     if (!incognito)
       refreshAll();

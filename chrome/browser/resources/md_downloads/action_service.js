@@ -8,7 +8,9 @@ cr.define('downloads', function() {
    * @return {function(string):void} A chrome.send() callback with curried name.
    */
   function chromeSendWithId(chromeSendName) {
-    return function(id) { chrome.send(chromeSendName, [id]); };
+    return function(id) {
+      chrome.send(chromeSendName, [id]);
+    };
   }
 
   /** @constructor */
@@ -21,13 +23,17 @@ cr.define('downloads', function() {
    * @param {string} s
    * @return {string} |s| without whitespace at the beginning or end.
    */
-  function trim(s) { return s.trim(); }
+  function trim(s) {
+    return s.trim();
+  }
 
   /**
    * @param {string|undefined} value
    * @return {boolean} Whether |value| is truthy.
    */
-  function truthy(value) { return !!value; }
+  function truthy(value) {
+    return !!value;
+  }
 
   /**
    * @param {string} searchText Input typed by the user into a search box.

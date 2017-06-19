@@ -15,9 +15,7 @@ Polymer({
     browserProxy_: Object
   },
 
-  listeners: {
-    'tap': 'onTap_'
-  },
+  listeners: {'tap': 'onTap_'},
 
   /** @override */
   created: function() {

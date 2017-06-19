@@ -29,9 +29,7 @@ function createSenderFromMessageSender(messageSender) {
   if (!origin) {
     return null;
   }
-  var sender = {
-    origin: origin
-  };
+  var sender = {origin: origin};
   if (messageSender.tlsChannelId) {
     sender.tlsChannelId = messageSender.tlsChannelId;
   }
@@ -75,45 +73,52 @@ function getTabIdWhenPossible(sender) {
     return Promise.resolve(true);
   } else {
     return new Promise(function(resolve, reject) {
-      chrome.tabs.query({active: true, lastFocusedWindow: true},
-          function(tabs) {
+      chrome.tabs.query(
+          {active: true, lastFocusedWindow: true}, function(tabs) {
             if (!tabs.length) {
               // Safety check.
               reject(false);
               return;
             }
             var tab = tabs[0];
-            tabMatchesOrigin(tab, sender.origin).then(function(tabId) {
-              sender.tabId = tabId;
-              resolve(true);
-            }, function() {
-              // Didn't match? Check if the debugger is open.
-              if (tab.url.indexOf('chrome-devtools://') != 0) {
-                reject(false);
-                return;
-              }
-              // Debugger active: find first tab with the sender's origin.
-              chrome.tabs.query({active: true}, function(tabs) {
-                if (!tabs.length) {
-                  // Safety check.
-                  reject(false);
-                  return;
-                }
-                var numRejected = 0;
-                for (var i = 0; i < tabs.length; i++) {
-                  tab = tabs[i];
-                  tabMatchesOrigin(tab, sender.origin).then(function(tabId) {
-                    sender.tabId = tabId;
-                    resolve(true);
-                  }, function() {
-                    if (++numRejected >= tabs.length) {
-                      // None matches: reject.
-                      reject(false);
-                    }
-                  });
-                }
-              });
-            });
+            tabMatchesOrigin(tab, sender.origin)
+                .then(
+                    function(tabId) {
+                      sender.tabId = tabId;
+                      resolve(true);
+                    },
+                    function() {
+                      // Didn't match? Check if the debugger is open.
+                      if (tab.url.indexOf('chrome-devtools://') != 0) {
+                        reject(false);
+                        return;
+                      }
+                      // Debugger active: find first tab with the sender's
+                      // origin.
+                      chrome.tabs.query({active: true}, function(tabs) {
+                        if (!tabs.length) {
+                          // Safety check.
+                          reject(false);
+                          return;
+                        }
+                        var numRejected = 0;
+                        for (var i = 0; i < tabs.length; i++) {
+                          tab = tabs[i];
+                          tabMatchesOrigin(tab, sender.origin)
+                              .then(
+                                  function(tabId) {
+                                    sender.tabId = tabId;
+                                    resolve(true);
+                                  },
+                                  function() {
+                                    if (++numRejected >= tabs.length) {
+                                      // None matches: reject.
+                                      reject(false);
+                                    }
+                                  });
+                        }
+                      });
+                    });
           });
     });
   }
@@ -127,26 +132,26 @@ function getTabIdWhenPossible(sender) {
  */
 function tabInForeground(tabId) {
   return new Promise(function(resolve, reject) {
-      if (!chrome.tabs || !chrome.tabs.get) {
-        reject();
+    if (!chrome.tabs || !chrome.tabs.get) {
+      reject();
+      return;
+    }
+    if (!chrome.windows || !chrome.windows.get) {
+      reject();
+      return;
+    }
+    chrome.tabs.get(tabId, function(tab) {
+      if (chrome.runtime.lastError) {
+        resolve(false);
         return;
       }
-      if (!chrome.windows || !chrome.windows.get) {
-        reject();
+      if (!tab.active) {
+        resolve(false);
         return;
       }
-      chrome.tabs.get(tabId, function(tab) {
-            if (chrome.runtime.lastError) {
-              resolve(false);
-              return;
-            }
-            if (!tab.active) {
-              resolve(false);
-              return;
-            }
-            chrome.windows.get(tab.windowId, function(aWindow) {
-                  resolve(aWindow && aWindow.focused);
-                });
-          });
+      chrome.windows.get(tab.windowId, function(aWindow) {
+        resolve(aWindow && aWindow.focused);
+      });
+    });
   });
 }

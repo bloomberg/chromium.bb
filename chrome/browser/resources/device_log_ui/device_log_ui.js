@@ -63,10 +63,7 @@ var DeviceLogUI = (function() {
     else
       timestamp = logEntry['timestampshort'];
     textWrapper.textContent = loadTimeData.getStringF(
-      'logEntryFormat',
-      timestamp,
-      fileinfo,
-      logEntry['event']);
+        'logEntryFormat', timestamp, fileinfo, logEntry['event']);
     res.appendChild(createTypeTag(type));
     res.appendChild(createLevelTag(level));
     res.appendChild(textWrapper);
@@ -97,7 +94,7 @@ var DeviceLogUI = (function() {
   var getLogCallback = function(data) {
     try {
       createEventLog(JSON.parse(data));
-    } catch(e) {
+    } catch (e) {
       var container = $('log-container');
       container.textContent = 'No log entries';
     }
@@ -148,7 +145,5 @@ var DeviceLogUI = (function() {
     requestLog();
   });
 
-  return {
-    getLogCallback: getLogCallback
-  };
+  return {getLogCallback: getLogCallback};
 })();

@@ -15,10 +15,7 @@ Polymer({
      * The message shown in the dialog.
      * @private {string}
      */
-    message_: {
-      type: String,
-      value: ''
-    }
+    message_: {type: String, value: ''}
   },
 
   /**

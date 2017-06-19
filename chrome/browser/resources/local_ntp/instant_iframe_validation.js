@@ -16,8 +16,8 @@
 function convertToHexColor(color) {
   // Color must be a number, finite, with no fractional part, in the correct
   // range for an RGB hex color.
-  if (isFinite(color) && Math.floor(color) == color &&
-      color >= 0 && color <= 0xffffff) {
+  if (isFinite(color) && Math.floor(color) == color && color >= 0 &&
+      color <= 0xffffff) {
     var hexColor = color.toString(16);
     // Pads with initial zeros and # (e.g. for 'ff' yields '#0000ff').
     return '#000000'.substr(0, 7 - hexColor.length) + hexColor;
@@ -48,11 +48,8 @@ function convertArrayToRGBAColor(rgbaColor) {
       isValidRBGAComponent(rgbaColor[1]) &&
       isValidRBGAComponent(rgbaColor[2]) &&
       isValidRBGAComponent(rgbaColor[3])) {
-    return 'rgba(' +
-            rgbaColor[0] + ',' +
-            rgbaColor[1] + ',' +
-            rgbaColor[2] + ',' +
-            rgbaColor[3] / 255 + ')';
+    return 'rgba(' + rgbaColor[0] + ',' + rgbaColor[1] + ',' + rgbaColor[2] +
+        ',' + rgbaColor[3] / 255 + ')';
   }
   return null;
 }

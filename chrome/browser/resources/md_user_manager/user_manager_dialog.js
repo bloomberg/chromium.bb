@@ -12,16 +12,10 @@ Polymer({
 
   properties: {
     /** @override */
-    noCancelOnOutsideClick: {
-      type: Boolean,
-      value: true
-    },
+    noCancelOnOutsideClick: {type: Boolean, value: true},
 
     /** @override */
-    withBackdrop: {
-      type: Boolean,
-      value: true
-    },
+    withBackdrop: {type: Boolean, value: true},
 
     /**
      * The first node that can receive focus.
@@ -29,7 +23,9 @@ Polymer({
      */
     firstFocusableNode: {
       type: Object,
-      value: function() { return this.$.close; },
+      value: function() {
+        return this.$.close;
+      },
       observer: 'firstFocusableNodeChanged_'
     },
 
@@ -39,7 +35,9 @@ Polymer({
      */
     lastFocusableNode: {
       type: Object,
-      value: function() { return this.$.close; },
+      value: function() {
+        return this.$.close;
+      },
       observer: 'lastFocusableNodeChanged_'
     }
   },
