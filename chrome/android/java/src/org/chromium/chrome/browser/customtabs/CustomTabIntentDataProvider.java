@@ -67,6 +67,10 @@ public class CustomTabIntentDataProvider {
     public static final String EXTRA_ENABLE_EMBEDDED_MEDIA_EXPERIENCE =
             "org.chromium.chrome.browser.customtabs.EXTRA_ENABLE_EMBEDDED_MEDIA_EXPERIENCE";
 
+    /** Indicates that the Custom Tab should style itself as payment request UI. */
+    public static final String EXTRA_IS_PAYMENT_REQUEST_UI =
+            "org.chromium.chrome.browser.customtabs.EXTRA_IS_PAYMENT_REQUEST_UI";
+
     /** Indicates that the Custom Tab should style itself as an info page. */
     public static final String EXTRA_IS_INFO_PAGE =
             "org.chromium.chrome.browser.customtabs.IS_INFO_PAGE";
@@ -104,6 +108,7 @@ public class CustomTabIntentDataProvider {
     private final boolean mIsMediaViewer;
     private final String mMediaViewerUrl;
     private final boolean mEnableEmbeddedMediaExperience;
+    private final boolean mIsPaymentRequestUI;
     private final boolean mIsInfoPage;
     private final int mInitialBackgroundColor;
     private final boolean mDisableStar;
@@ -127,6 +132,17 @@ public class CustomTabIntentDataProvider {
 
     /** Herb: Whether this CustomTabActivity was explicitly started by another Chrome Activity. */
     private boolean mIsOpenedByChrome;
+
+    /**
+     * Add extras to customize menu items for openning payment request UI custom tab from Chrome.
+     */
+    public static void addPaymentRequestUIExtras(Intent intent) {
+        intent.putExtra(EXTRA_IS_PAYMENT_REQUEST_UI, true);
+        intent.putExtra(EXTRA_IS_OPENED_BY_CHROME, true);
+        intent.putExtra(EXTRA_DISABLE_STAR_BUTTON, true);
+        intent.putExtra(EXTRA_DISABLE_DOWNLOAD_BUTTON, true);
+        IntentHandler.addTrustedIntentExtras(intent);
+    }
 
     /**
      * Constructs a {@link CustomTabIntentDataProvider}.
@@ -194,6 +210,8 @@ public class CustomTabIntentDataProvider {
         mEnableEmbeddedMediaExperience = mIsTrustedIntent
                 && IntentUtils.safeGetBooleanExtra(
                            intent, EXTRA_ENABLE_EMBEDDED_MEDIA_EXPERIENCE, false);
+        mIsPaymentRequestUI = mIsTrustedIntent && mIsOpenedByChrome
+                && IntentUtils.safeGetBooleanExtra(intent, EXTRA_IS_PAYMENT_REQUEST_UI, false);
         mIsInfoPage = mIsTrustedIntent
                 && IntentUtils.safeGetBooleanExtra(intent, EXTRA_IS_INFO_PAGE, false);
         mDisableStar = IntentUtils.safeGetBooleanExtra(intent, EXTRA_DISABLE_STAR_BUTTON, false);
@@ -518,6 +536,14 @@ public class CustomTabIntentDataProvider {
      */
     boolean shouldEnableEmbeddedMediaExperience() {
         return mEnableEmbeddedMediaExperience;
+    }
+
+    /**
+     * @return true If the Custom Tab is opened as payment request UI.
+     * @See {@link #EXTRA_IS_PAYMENT_REQUEST_UI}.
+     */
+    boolean isPaymentRequestUI() {
+        return mIsPaymentRequestUI;
     }
 
     /**
