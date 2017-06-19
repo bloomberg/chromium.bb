@@ -7,7 +7,7 @@
 // Implement BluetoothRemoteGATTDescriptor interface: https://crbug.com/660699
 
 [
-    RuntimeEnabled=WebBluetooth,
+    RuntimeEnabled=WebBluetooth
 ] interface BluetoothRemoteGATTDescriptor  {
     [SameObject] readonly attribute BluetoothRemoteGATTCharacteristic characteristic;
     readonly attribute UUID uuid;

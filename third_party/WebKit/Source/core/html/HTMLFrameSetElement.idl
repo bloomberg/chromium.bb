@@ -22,7 +22,7 @@
 
 // FIXME: HTMLFrameSetElement should not have [OverrideBuiltins].
 [
-    OverrideBuiltins,
+    OverrideBuiltins
 ] interface HTMLFrameSetElement : HTMLElement {
     [CEReactions, Reflect] attribute DOMString cols;
     [CEReactions, Reflect] attribute DOMString rows;

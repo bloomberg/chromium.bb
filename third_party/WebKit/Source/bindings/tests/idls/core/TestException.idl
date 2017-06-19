@@ -28,7 +28,7 @@
 
 [
     Constructor(unsigned short argument),
-    DoNotCheckConstants,
+    DoNotCheckConstants
 ] exception TestException {
     readonly attribute unsigned short readonlyUnsignedShortAttribute;
     readonly attribute DOMString readonlyStringAttribute;

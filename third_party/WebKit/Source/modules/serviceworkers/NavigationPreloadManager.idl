@@ -6,7 +6,7 @@
 // https://github.com/w3c/ServiceWorker/issues/920
 [
     RuntimeEnabled=ServiceWorkerNavigationPreload,
-    Exposed=(Window,Worker),
+    Exposed=(Window,Worker)
 ] interface NavigationPreloadManager {
     // TODO(mgiuca): Put SecureContext on the interface, not individual methods.
     // Currently prevented due to clash with OriginTrialEnabled. This can be

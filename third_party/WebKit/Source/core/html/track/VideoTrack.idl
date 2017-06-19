@@ -6,7 +6,7 @@
 
 [
     DependentLifetime,
-    RuntimeEnabled=AudioVideoTracks,
+    RuntimeEnabled=AudioVideoTracks
 ] interface VideoTrack {
   readonly attribute DOMString id;
   readonly attribute DOMString kind;

@@ -39,7 +39,7 @@
     DependentLifetime, // Covered by [DependentLifetime]
     // Note that Exposed(Arguments) has no effect on bindings-tests. It is
     // processed in generate_global_constructors.py.
-    Exposed(Window FeatureName), // Conflicts with Exposed=(Window,Worker)
+    Exposed(Window FeatureName) // Conflicts with Exposed=(Window,Worker)
 ] interface TestInterface2 {
     // This interface has only runtime enabled constants.
     [RuntimeEnabled=FeatureName] const unsigned short CONST_VALUE_1 = 1;

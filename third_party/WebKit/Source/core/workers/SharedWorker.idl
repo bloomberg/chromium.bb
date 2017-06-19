@@ -39,7 +39,7 @@
     DependentLifetime,
     // TODO(foolip): Exposed=(Window,Worker),
     RaisesException=Constructor,
-    RuntimeEnabled=SharedWorker,
+    RuntimeEnabled=SharedWorker
 ] interface SharedWorker : EventTarget {
     readonly attribute MessagePort port;
 };

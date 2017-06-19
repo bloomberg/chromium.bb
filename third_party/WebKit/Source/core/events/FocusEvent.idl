@@ -26,7 +26,7 @@
 // https://w3c.github.io/uievents/#interface-FocusEvent
 
 [
-    Constructor(DOMString type, optional FocusEventInit eventInitDict),
+    Constructor(DOMString type, optional FocusEventInit eventInitDict)
 ] interface FocusEvent : UIEvent {
     readonly attribute EventTarget? relatedTarget;
 };

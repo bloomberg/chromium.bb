@@ -44,7 +44,7 @@ enum XMLHttpRequestResponseType {
     Constructor,
     ConstructorCallWith=ScriptState,
     DependentLifetime,
-    Exposed=(Window,DedicatedWorker,SharedWorker),
+    Exposed=(Window,DedicatedWorker,SharedWorker)
 ] interface XMLHttpRequest : XMLHttpRequestEventTarget {
     // event handler
     attribute EventHandler onreadystatechange;

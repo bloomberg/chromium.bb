@@ -27,7 +27,7 @@
 
 // TODO(foolip): CSSRuleList should be an [ArrayClass].
 [
-    DependentLifetime,
+    DependentLifetime
 ] interface CSSRuleList {
     [Measure] getter CSSRule? item(unsigned long index);
     readonly attribute unsigned long length;

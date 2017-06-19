@@ -21,7 +21,7 @@
 // https://html.spec.whatwg.org/#the-form-element
 
 [
-    OverrideBuiltins,
+    OverrideBuiltins
 ] interface HTMLFormElement : HTMLElement {
     [CEReactions, Reflect=accept_charset] attribute DOMString acceptCharset;
     [CEReactions, Reflect, URL] attribute DOMString action;

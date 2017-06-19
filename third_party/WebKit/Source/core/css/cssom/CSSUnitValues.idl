@@ -5,7 +5,7 @@
 // https://drafts.css-houdini.org/css-typed-om/#numeric-factory
 
 [
-  RuntimeEnabled=CSSTypedOM,
+  RuntimeEnabled=CSSTypedOM
 ] partial interface CSS {
   [NewObject] static CSSUnitValue number(double value);
   [NewObject] static CSSUnitValue percent(double value);

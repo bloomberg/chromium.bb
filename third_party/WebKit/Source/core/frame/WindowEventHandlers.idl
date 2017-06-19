@@ -32,7 +32,7 @@
 [
     ImplementedAs=DOMWindowEventHandlers,
     LegacyTreatAsPartialInterface,
-    NoInterfaceObject, // Always used on target of 'implements'
+    NoInterfaceObject // Always used on target of 'implements'
 ] interface WindowEventHandlers {
     //attribute EventHandler onafterprint;
     //attribute EventHandler onbeforeprint;

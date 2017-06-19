@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 [
-    ImplementedAs=GlobalFetch,
+    ImplementedAs=GlobalFetch
 ] partial interface Window {
     [CallWith=ScriptState, RaisesException] Promise<Response> fetch(RequestInfo input, optional Dictionary init);
 };

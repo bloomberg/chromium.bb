@@ -32,7 +32,7 @@
 
 [
     NoInterfaceObject, // Always used on target of 'implements'
-    Exposed=(Window,Worker),
+    Exposed=(Window,Worker)
 ] interface NavigatorOnLine {
     readonly attribute boolean onLine;
 };

@@ -31,7 +31,7 @@
     ImplementedAs=DOMWindowTimers,
     LegacyTreatAsPartialInterface,
     NoInterfaceObject, // Always used on target of 'implements'
-    Exposed=(Window,Worker),
+    Exposed=(Window,Worker)
 ] interface WindowTimers {
     // FIXME: would be clearer as a union type, like:
     // typedef (Function or DOMString) Handler

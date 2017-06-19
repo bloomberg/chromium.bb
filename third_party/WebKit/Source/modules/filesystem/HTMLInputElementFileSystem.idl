@@ -31,7 +31,7 @@
 // https://wicg.github.io/entries-api/#html-forms
 
 [
-    RuntimeEnabled=FileSystem,
+    RuntimeEnabled=FileSystem
 ] partial interface HTMLInputElement {
     [CallWith=ScriptState, Measure] readonly attribute FrozenArray<Entry> webkitEntries;
 };

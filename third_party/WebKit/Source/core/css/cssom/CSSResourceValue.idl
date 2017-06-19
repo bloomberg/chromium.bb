@@ -10,7 +10,7 @@ enum CSSResourceState {
 };
 
 [
-    Exposed(Window CSSTypedOM, PaintWorklet CSSPaintAPI),
+    Exposed(Window CSSTypedOM, PaintWorklet CSSPaintAPI)
 ] interface CSSResourceValue : CSSStyleValue {
     readonly attribute CSSResourceState state;
 };

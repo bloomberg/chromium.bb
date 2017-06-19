@@ -11,7 +11,7 @@
     ConstructorCallWith=ExecutionContext,
     RaisesException=Constructor,
     ActiveScriptWrappable,
-    DependentLifetime,
+    DependentLifetime
 ] interface PaymentRequest : EventTarget {
     [CallWith=ScriptState] Promise<PaymentResponse> show();
     [CallWith=ScriptState] Promise<void> abort();

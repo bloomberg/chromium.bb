@@ -27,7 +27,7 @@
 // https://svgwg.org/svg2-draft/types.html#InterfaceSVGTests
 
 [
-    NoInterfaceObject, // Always used on target of 'implements'
+    NoInterfaceObject // Always used on target of 'implements'
 ] interface SVGTests {
     [MeasureAs=SVG1DOMSVGTests] readonly attribute SVGStringList requiredExtensions;
     [MeasureAs=SVG1DOMSVGTests] readonly attribute SVGStringList systemLanguage;

@@ -5,7 +5,7 @@
 // https://drafts.css-houdini.org/css-typed-om/#computed-stylepropertymap-objects
 
 [
-    RuntimeEnabled=CSSTypedOM,
+    RuntimeEnabled=CSSTypedOM
 ] partial interface Window {
     [NewObject] StylePropertyMapReadonly getComputedStyleMap(Element element, optional DOMString? pseudoElement = null);
 };

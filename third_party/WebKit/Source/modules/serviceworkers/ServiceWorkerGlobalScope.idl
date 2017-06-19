@@ -32,7 +32,7 @@
 
 [
     Exposed=ServiceWorker,
-    Global=(Worker,ServiceWorker),
+    Global=(Worker,ServiceWorker)
 ] interface ServiceWorkerGlobalScope : WorkerGlobalScope {
 
   readonly attribute Clients clients;

@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 [
-    RuntimeEnabled=FileSystem,
+    RuntimeEnabled=FileSystem
 ] partial interface DevToolsHost {
     DOMFileSystem isolatedFileSystem(DOMString fileSystemId, DOMString registeredName);
     void upgradeDraggedFileSystemPermissions(DOMFileSystem domFileSystem);

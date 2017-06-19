@@ -33,7 +33,7 @@
 // Legacy support for NT1(https://www.w3.org/TR/navigation-timing/).
 
 [
-    Exposed=Window,
+    Exposed=Window
 ] interface PerformanceNavigation {
     const unsigned short TYPE_NAVIGATE = 0;
     const unsigned short TYPE_RELOAD = 1;

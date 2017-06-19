@@ -24,7 +24,7 @@
 enum SelectionMode { "select", "start", "end", "preserve" };
 
 [
-    ActiveScriptWrappable,
+    ActiveScriptWrappable
 ] interface HTMLInputElement : HTMLElement {
     [CEReactions, Reflect] attribute DOMString accept;
     [CEReactions, Reflect] attribute DOMString alt;

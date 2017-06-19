@@ -30,7 +30,7 @@
 [
     CheckSecurity=Receiver,
     ImplementedAs=DOMWindow,
-    PrimaryGlobal,
+    PrimaryGlobal
 ] interface Window : EventTarget {
     // the current browsing context
     // FIXME: The spec uses the WindowProxy type for this and many other attributes.

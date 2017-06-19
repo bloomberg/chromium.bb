@@ -32,7 +32,7 @@
 
 [
     Global=(Worker,SharedWorker),
-    Exposed=SharedWorker,
+    Exposed=SharedWorker
 ] interface SharedWorkerGlobalScope : WorkerGlobalScope {
     readonly attribute DOMString name;
     // TODO(foolip): readonly attribute ApplicationCache applicationCache;

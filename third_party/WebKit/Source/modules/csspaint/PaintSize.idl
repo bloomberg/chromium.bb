@@ -6,7 +6,7 @@
 
 [
     Exposed=PaintWorklet,
-    RuntimeEnabled=CSSPaintAPI,
+    RuntimeEnabled=CSSPaintAPI
 ] interface PaintSize {
     readonly attribute double width;
     readonly attribute double height;

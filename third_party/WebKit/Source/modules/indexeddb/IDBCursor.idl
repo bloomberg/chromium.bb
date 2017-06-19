@@ -35,7 +35,7 @@ enum IDBCursorDirection {
 // https://w3c.github.io/IndexedDB/#idl-def-IDBCursor
 
 [
-    Exposed=(Window,Worker),
+    Exposed=(Window,Worker)
 ] interface IDBCursor {
     [CallWith=ScriptState] readonly attribute any source;
     readonly attribute IDBCursorDirection direction;

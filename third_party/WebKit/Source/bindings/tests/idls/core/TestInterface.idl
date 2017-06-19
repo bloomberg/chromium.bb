@@ -39,7 +39,7 @@
     ImplementedAs=TestInterfaceImplementation,
     RuntimeEnabled=FeatureName,
     ContextEnabled=FeatureName,
-    Exposed=(Worker,Window),
+    Exposed=(Worker,Window)
 ] interface TestInterface : TestInterfaceEmpty {
     // members needed to test [ImplementedAs], as this affect attribute
     // configuration and method configuration

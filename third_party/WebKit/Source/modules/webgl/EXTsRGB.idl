@@ -7,7 +7,7 @@
 [
     DependentLifetime,
     NoInterfaceObject,
-    DoNotCheckConstants,
+    DoNotCheckConstants
 ] interface EXTsRGB {
     const unsigned long SRGB_EXT                                     = 0x8C40;
     const unsigned long SRGB_ALPHA_EXT                               = 0x8C42;

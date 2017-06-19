@@ -8,7 +8,7 @@
     ActiveScriptWrappable,
     DependentLifetime,
     Exposed=ServiceWorker,
-    NoInterfaceObject,
+    NoInterfaceObject
 ] interface Body {
     readonly attribute boolean bodyUsed;
     [CallWith=ScriptState] Promise<ArrayBuffer> arrayBuffer();

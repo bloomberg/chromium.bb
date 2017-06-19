@@ -29,7 +29,7 @@
  */
 
 [
-    RuntimeEnabled=MediaSourceExperimental,
+    RuntimeEnabled=MediaSourceExperimental
 ] partial interface HTMLVideoElement {
     VideoPlaybackQuality getVideoPlaybackQuality();
 };

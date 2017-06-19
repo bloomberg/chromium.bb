@@ -66,7 +66,7 @@ enum RTCIceConnectionState {
     // TODO(guidou): There should only be one constructor argument.
     Constructor(optional RTCConfiguration configuration, optional Dictionary mediaConstraints),
     ConstructorCallWith=ExecutionContext,
-    RaisesException=Constructor,
+    RaisesException=Constructor
 ] interface RTCPeerConnection : EventTarget {
     [CallWith=ScriptState] Promise<RTCSessionDescription> createOffer(optional RTCOfferOptions options);
     [CallWith=ScriptState] Promise<RTCSessionDescription> createAnswer(optional RTCAnswerOptions options);

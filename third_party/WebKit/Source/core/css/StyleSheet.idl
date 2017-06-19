@@ -21,7 +21,7 @@
 // https://dev.w3.org/csswg/cssom/#the-stylesheet-interface
 
 [
-    DependentLifetime,
+    DependentLifetime
 ] interface StyleSheet {
     readonly attribute DOMString type;
     readonly attribute DOMString? href;

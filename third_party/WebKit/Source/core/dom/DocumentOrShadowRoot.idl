@@ -6,7 +6,7 @@
 // https://w3c.github.io/webcomponents/spec/shadow/#extensions-to-the-documentorshadowroot-mixin
 [
     LegacyTreatAsPartialInterface,
-    NoInterfaceObject,
+    NoInterfaceObject
 ] interface DocumentOrShadowRoot {
     // Selection API
     // https://w3c.github.io/selection-api/#extensions-to-document-interface

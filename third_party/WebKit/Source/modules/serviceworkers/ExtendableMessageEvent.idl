@@ -10,7 +10,7 @@
     // Constructor should be:
     // Constructor(DOMString type, optional ExtendableMessageEventInit eventInitDict),
     CustomConstructor,
-    Exposed=ServiceWorker,
+    Exposed=ServiceWorker
 ] interface ExtendableMessageEvent : ExtendableEvent {
     [Custom=Getter] readonly attribute any data;
     readonly attribute DOMString origin;

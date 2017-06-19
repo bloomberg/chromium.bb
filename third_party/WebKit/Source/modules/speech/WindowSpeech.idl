@@ -4,7 +4,7 @@
 
 [
     ImplementedAs=DOMWindowSpeech,
-    RuntimeEnabled=ScriptedSpeech,
+    RuntimeEnabled=ScriptedSpeech
 ] partial interface Window {
     [Measure] attribute SpeechGrammarConstructor webkitSpeechGrammar;
     [Measure] attribute SpeechGrammarListConstructor webkitSpeechGrammarList;

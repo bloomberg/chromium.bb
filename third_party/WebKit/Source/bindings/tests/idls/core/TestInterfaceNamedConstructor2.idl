@@ -30,6 +30,6 @@
 
 // "Number of arguments" check varies if [RaisesException=Constructor] or not
 [
-    NamedConstructor=Audio(DOMString stringArg),
+    NamedConstructor=Audio(DOMString stringArg)
 ] interface TestInterfaceNamedConstructor2 {
 };

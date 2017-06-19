@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 [
-    RuntimeEnabled=CustomElementsV1,
+    RuntimeEnabled=CustomElementsV1
 ] interface CustomElementRegistry {
     [CallWith=ScriptState, CEReactions, CustomElementCallbacks, RaisesException, MeasureAs=CustomElementRegistryDefine] void define(DOMString name, Function constructor, optional ElementDefinitionOptions options);
     any get(DOMString name);

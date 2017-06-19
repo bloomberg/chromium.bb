@@ -29,7 +29,7 @@
  */
 
 [
-    ImplementedAs=TestInterfacePartial3Implementation,
+    ImplementedAs=TestInterfacePartial3Implementation
 ] partial interface TestInterface {
     const unsigned short PARTIAL3_UNSIGNED_SHORT = 0;
 

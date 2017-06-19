@@ -4,7 +4,7 @@
 
 // See https://w3c.github.io/ServiceWorker/#cachestorage-interface
 [
-    Exposed=(Window,Worker),
+    Exposed=(Window,Worker)
 ] interface CacheStorage {
   [CallWith=ScriptState, RaisesException] Promise<any> match(RequestInfo request, optional CacheQueryOptions options);
   [CallWith=ScriptState, RaisesException] Promise<boolean> has(DOMString cacheName);

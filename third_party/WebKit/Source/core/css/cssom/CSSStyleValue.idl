@@ -7,7 +7,7 @@
 // base CSSStyleValues.
 // Spec: https://drafts.css-houdini.org/css-typed-om/#stylevalue-objects
 [
-  Exposed(Window CSSTypedOM, PaintWorklet CSSPaintAPI),
+  Exposed(Window CSSTypedOM, PaintWorklet CSSPaintAPI)
 ] interface CSSStyleValue {
   stringifier;
   // TODO(meade): Should be (CSSStyleValue or sequence<CSSStyleValue>)? instead of object?. Fix when the code generator supports this.

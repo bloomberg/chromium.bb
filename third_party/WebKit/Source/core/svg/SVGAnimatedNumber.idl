@@ -27,7 +27,7 @@
 // https://svgwg.org/svg2-draft/types.html#InterfaceSVGAnimatedNumber
 
 [
-    DependentLifetime,
+    DependentLifetime
 ] interface SVGAnimatedNumber {
     [RaisesException=Setter] attribute float baseVal;
     readonly attribute float animVal;

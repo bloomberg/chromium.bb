@@ -5,6 +5,6 @@
 // https://www.khronos.org/registry/typedarray/specs/latest/#TYPEDARRAYS
 
 [
-    ImplementedAs=TestUint8ClampedArray,
+    ImplementedAs=TestUint8ClampedArray
 ] interface Uint8ClampedArray : ArrayBufferView {
 };

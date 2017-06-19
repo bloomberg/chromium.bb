@@ -37,7 +37,7 @@ enum AppendMode {
 
 [
     ActiveScriptWrappable,
-    DependentLifetime,
+    DependentLifetime
 ] interface SourceBuffer : EventTarget {
 
     // Gets or sets the AppendMode.

@@ -21,7 +21,7 @@
 
 [
     Constructor,
-    ConstructorCallWith=Document,
+    ConstructorCallWith=Document
 ] interface DocumentFragment : Node {
 };
 

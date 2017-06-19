@@ -8,7 +8,7 @@
 
 [
     DependentLifetime,
-    RuntimeEnabled=WebBluetooth,
+    RuntimeEnabled=WebBluetooth
 ] interface BluetoothRemoteGATTCharacteristic : EventTarget {//: CharacteristicEventHandlers {
     [SameObject] readonly attribute BluetoothRemoteGATTService service;
     readonly attribute UUID uuid;

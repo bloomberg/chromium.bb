@@ -28,7 +28,7 @@
 
 [
     RuntimeEnabled=VisualViewportAPI,
-    ImplementedAs=DOMVisualViewport,
+    ImplementedAs=DOMVisualViewport
 ] interface VisualViewport : EventTarget {
     [Measure] readonly attribute double offsetLeft;
     [Measure] readonly attribute double offsetTop;

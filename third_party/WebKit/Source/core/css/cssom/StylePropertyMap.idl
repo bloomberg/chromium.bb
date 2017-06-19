@@ -5,7 +5,7 @@
 // https://drafts.css-houdini.org/css-typed-om/#the-stylepropertymap
 [
     Exposed=(Window,PaintWorklet),
-    RuntimeEnabled=CSSTypedOM,
+    RuntimeEnabled=CSSTypedOM
 ] interface StylePropertyMap : StylePropertyMapReadonly {
     [RaisesException] void append(DOMString property, (CSSStyleValue or sequence<CSSStyleValue> or DOMString) value);
     [RaisesException, ImplementedAs=remove] void delete(DOMString property);

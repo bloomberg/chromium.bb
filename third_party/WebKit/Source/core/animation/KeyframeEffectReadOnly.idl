@@ -8,6 +8,6 @@
     Constructor(Element? target, (sequence<Dictionary> or Dictionary)? effect, optional (unrestricted double or KeyframeEffectOptions) options),
     ConstructorCallWith=ExecutionContext,
     RaisesException=Constructor,
-    RuntimeEnabled=WebAnimationsAPI,
+    RuntimeEnabled=WebAnimationsAPI
 ] interface KeyframeEffectReadOnly : AnimationEffectReadOnly {
 };

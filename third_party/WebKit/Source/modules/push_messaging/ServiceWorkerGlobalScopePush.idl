@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 [
-    RuntimeEnabled=PushMessaging,
+    RuntimeEnabled=PushMessaging
 ] partial interface ServiceWorkerGlobalScope {
     attribute EventHandler onpush;
 };

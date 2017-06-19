@@ -6,6 +6,6 @@
 
 [
     DependentLifetime,
-    NoInterfaceObject,
+    NoInterfaceObject
 ] interface EXTColorBufferFloat {
 };

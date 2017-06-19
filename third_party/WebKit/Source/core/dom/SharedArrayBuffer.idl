@@ -6,7 +6,7 @@
 [
     ImplementedAs=DOMSharedArrayBuffer,
     NoInterfaceObject,
-    RuntimeEnabled=SharedArrayBuffer,
+    RuntimeEnabled=SharedArrayBuffer
 ] interface SharedArrayBuffer {
     readonly attribute unsigned long byteLength;
 };

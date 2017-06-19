@@ -7,7 +7,7 @@
 // [OriginTrialEnabled] attribute cannot be applied with [RuntimeEnabled].
 
 [
-    OriginTrialEnabled=OriginTrialPartialFeature, // Conflicts with RuntimeEnabled
+    OriginTrialEnabled=OriginTrialPartialFeature // Conflicts with RuntimeEnabled
 ] partial interface TestInterface {
     const unsigned short PARTIAL4_UNSIGNED_SHORT = 4;
 

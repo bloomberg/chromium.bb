@@ -26,6 +26,6 @@
 // https://www.khronos.org/registry/typedarray/specs/latest/#DATAVIEW
 
 [
-    ImplementedAs=DOMDataView,
+    ImplementedAs=DOMDataView
 ] interface DataView : ArrayBufferView {
 };

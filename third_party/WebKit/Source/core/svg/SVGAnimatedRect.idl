@@ -26,7 +26,7 @@
 // https://svgwg.org/svg2-draft/types.html#InterfaceSVGAnimatedRect
 
 [
-    DependentLifetime,
+    DependentLifetime
 ] interface SVGAnimatedRect {
     // TODO(foolip): SVGRect should be DOMRectReadOnly.
     readonly attribute SVGRect baseVal;

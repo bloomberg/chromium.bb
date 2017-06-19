@@ -32,7 +32,7 @@ enum EffectiveConnectionType {
 };
 
 [
-    DoNotCheckConstants,
+    DoNotCheckConstants
 ] interface Internals {
     GCObservation observeGC(any observed);
 

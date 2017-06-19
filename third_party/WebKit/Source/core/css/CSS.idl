@@ -30,7 +30,7 @@
 // https://dev.w3.org/csswg/css-conditional/#the-css-interface
 
 [
-    ImplementedAs=DOMWindowCSS,
+    ImplementedAs=DOMWindowCSS
 ] interface CSS {
     static boolean supports(DOMString property, DOMString value);
     static boolean supports(DOMString conditionText);

@@ -27,7 +27,7 @@
 // https://dev.w3.org/csswg/css-transitions/#transition-events
 
 [
-    Constructor(DOMString type, optional TransitionEventInit eventInitDict),
+    Constructor(DOMString type, optional TransitionEventInit eventInitDict)
 ] interface TransitionEvent : Event {
     readonly attribute DOMString propertyName;
     // TODO(foolip): elapsedTime should be float.

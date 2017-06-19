@@ -5,7 +5,7 @@
 // https://w3c.github.io/push-api/#pushmessagedata-interface
 
 [
-    Exposed=ServiceWorker,
+    Exposed=ServiceWorker
 ] interface PushMessageData {
     ArrayBuffer arrayBuffer();
     Blob blob();

@@ -26,7 +26,7 @@
 // https://html.spec.whatwg.org/#application-cache-api
 
 [
-    DoNotCheckConstants,
+    DoNotCheckConstants
     // TODO(foolip): Exposed=(Window,SharedWorker)
 ] interface ApplicationCache : EventTarget {
     // update status

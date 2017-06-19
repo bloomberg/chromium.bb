@@ -10,7 +10,7 @@
 [
     ActiveScriptWrappable,
     DependentLifetime,
-    NoInterfaceObject,
+    NoInterfaceObject
 ]
 interface UnderlyingSourceBase {
     [CallWith=ScriptState, ImplementedAs=startWrapper] Promise<void> start(any stream);

@@ -31,7 +31,7 @@
 // https://webaudio.github.io/web-midi-api/#MIDIOutput
 
 [
-    DependentLifetime,
+    DependentLifetime
 ] interface MIDIOutput : MIDIPort {
     // TODO(toyoshim): implement void clear()
     [RaisesException] void send(Uint8Array data, optional double timestamp);

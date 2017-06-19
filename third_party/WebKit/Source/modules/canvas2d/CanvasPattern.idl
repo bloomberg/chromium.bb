@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 [
-    Exposed(Worker ExperimentalCanvasFeatures, Window StableBlinkFeatures),
+    Exposed(Worker ExperimentalCanvasFeatures, Window StableBlinkFeatures)
 ] interface CanvasPattern {
 
     [RuntimeEnabled=ExperimentalCanvasFeatures,Exposed=Window] void setTransform(SVGMatrix transform);

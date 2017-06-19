@@ -29,7 +29,7 @@
     Constructor(sequence<BlobPart> fileBits, USVString fileName, optional FilePropertyBag options),
     ConstructorCallWith=ExecutionContext,
     RaisesException=Constructor,
-    Exposed=(Window,Worker),
+    Exposed=(Window,Worker)
 ] interface File : Blob {
     readonly attribute DOMString name;
     readonly attribute long long lastModified;

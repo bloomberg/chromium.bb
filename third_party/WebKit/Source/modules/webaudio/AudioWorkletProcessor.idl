@@ -7,7 +7,7 @@
 [
     Exposed=AudioWorklet,
     Global=(Worklet,AudioWorklet),
-    RuntimeEnabled=AudioWorklet,
+    RuntimeEnabled=AudioWorklet
 ] interface AudioWorkletProcessor {
     // TODO(hongchan): implement spec features.
     // readonly attribute AudioContextInfo contextInfo;

@@ -28,7 +28,7 @@
 
 [
     CheckSecurity=Receiver,
-    Global,
+    Global
 ] interface TestInterfaceCheckSecurity {
     readonly attribute long readonlyLongAttribute;
     attribute long longAttribute;

@@ -26,7 +26,7 @@
 // https://html.spec.whatwg.org/#texttracklist
 
 [
-    DependentLifetime,
+    DependentLifetime
 ] interface TextTrackList : EventTarget {
     readonly attribute unsigned long length;
     getter TextTrack (unsigned long index);

@@ -31,7 +31,7 @@
 // https://w3c.github.io/web-animations/#the-animationeffectreadonly-interface
 
 [
-    RuntimeEnabled=WebAnimationsAPI,
+    RuntimeEnabled=WebAnimationsAPI
 ] interface AnimationEffectReadOnly {
     readonly attribute AnimationEffectTimingReadOnly timing;
     ComputedTimingProperties getComputedTiming();

@@ -5,7 +5,7 @@
 // https://wicg.github.io/webusb/#usb
 
 [
-    RuntimeEnabled=WebUSB,
+    RuntimeEnabled=WebUSB
 ] interface USB : EventTarget {
     attribute EventHandler onconnect;
     attribute EventHandler ondisconnect;

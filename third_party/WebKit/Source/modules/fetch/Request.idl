@@ -29,7 +29,7 @@ enum ReferrerPolicy {
     ConstructorCallWith=ScriptState,
     Exposed=(Window,Worker),
     RaisesException=Constructor,
-    DependentLifetime,
+    DependentLifetime
 ] interface Request {
     readonly attribute ByteString method;
     readonly attribute USVString url;

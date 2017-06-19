@@ -27,7 +27,7 @@
 
 [
     DependentLifetime,
-    NoInterfaceObject,
+    NoInterfaceObject
 ] interface WebGLLoseContext {
     void loseContext();
     void restoreContext();

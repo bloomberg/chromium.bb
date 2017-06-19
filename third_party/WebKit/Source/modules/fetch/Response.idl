@@ -14,7 +14,7 @@ enum ResponseType { "basic", "cors", "default", "error", "opaque", "opaqueredire
     ConstructorCallWith=ScriptState,
     DependentLifetime,
     Exposed=(Window,Worker),
-    RaisesException=Constructor,
+    RaisesException=Constructor
 ] interface Response {
     [CallWith=ScriptState] static Response error();
     [CallWith=ScriptState, RaisesException] static Response redirect(USVString url, optional unsigned short status = 302);

@@ -27,7 +27,7 @@
 
 [
     NoInterfaceObject,
-    Constructor(DOMString type, RTCDTMFToneChangeEventInit eventInitDict),
+    Constructor(DOMString type, RTCDTMFToneChangeEventInit eventInitDict)
 ] interface RTCDTMFToneChangeEvent : Event {
     readonly attribute DOMString tone;
 };

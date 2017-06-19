@@ -46,6 +46,6 @@
     NamedConstructor=Audio(DOMString arg, optional DOMString optArg),
     ConstructorCallWith=(ScriptState,ExecutionContext,Document),
     MeasureAs=TestFeature,
-    RaisesException=Constructor,
+    RaisesException=Constructor
 ] interface TestInterfaceConstructor {
 };

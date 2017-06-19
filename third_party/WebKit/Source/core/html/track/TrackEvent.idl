@@ -26,7 +26,7 @@
 // https://html.spec.whatwg.org/multipage/embedded-content.html#the-trackevent-interface
 
 [
-    Constructor(DOMString type, optional TrackEventInit eventInitDict),
+    Constructor(DOMString type, optional TrackEventInit eventInitDict)
 ] interface TrackEvent : Event {
     readonly attribute (VideoTrack or AudioTrack or TextTrack)? track;
 };

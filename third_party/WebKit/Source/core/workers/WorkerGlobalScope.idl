@@ -30,7 +30,7 @@
     ActiveScriptWrappable,
     DependentLifetime,
     Exposed=Worker,
-    ImmutablePrototype,
+    ImmutablePrototype
 ] interface WorkerGlobalScope : EventTarget {
     readonly attribute WorkerGlobalScope self;
     readonly attribute WorkerLocation location;

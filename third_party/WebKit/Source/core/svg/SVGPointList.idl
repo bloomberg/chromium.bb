@@ -27,7 +27,7 @@
 
 [
     DependentLifetime,
-    ImplementedAs=SVGPointListTearOff,
+    ImplementedAs=SVGPointListTearOff
 ] interface SVGPointList {
     readonly attribute unsigned long length;
     [ImplementedAs=length] readonly attribute unsigned long numberOfItems;

@@ -22,7 +22,7 @@
 // https://html.spec.whatwg.org/#the-htmloptionscollection-interface
 
 [
-    DependentLifetime,
+    DependentLifetime
 ] interface HTMLOptionsCollection : HTMLCollection {
     // inherits item()
     [CEReactions, RaisesException=Setter] attribute unsigned long length; // shadows inherited length

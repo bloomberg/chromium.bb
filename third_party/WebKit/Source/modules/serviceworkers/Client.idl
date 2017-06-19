@@ -5,7 +5,7 @@
 // https://w3c.github.io/ServiceWorker/#client-interface
 [
     Exposed=ServiceWorker,
-    ImplementedAs=ServiceWorkerClient,
+    ImplementedAs=ServiceWorkerClient
 ] interface Client {
     readonly attribute USVString url;
     readonly attribute DOMString id;

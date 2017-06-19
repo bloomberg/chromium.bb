@@ -6,7 +6,7 @@
     ActiveScriptWrappable,
     DependentLifetime,
     Constructor(DOMString type, optional BeforeInstallPromptEventInit eventInitDict),
-    ConstructorCallWith=ExecutionContext,
+    ConstructorCallWith=ExecutionContext
 ] interface BeforeInstallPromptEvent : Event {
     readonly attribute FrozenArray<DOMString> platforms;
     [CallWith=ScriptState] readonly attribute Promise<AppBannerPromptResult> userChoice;

@@ -23,7 +23,7 @@
 
 [
     DependentLifetime,
-    ImplementedAs=SVGTransformTearOff,
+    ImplementedAs=SVGTransformTearOff
 ] interface SVGTransform {
     // Transform Types
     const unsigned short SVG_TRANSFORM_UNKNOWN = 0;

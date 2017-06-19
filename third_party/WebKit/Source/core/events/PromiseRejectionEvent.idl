@@ -8,7 +8,7 @@
     Constructor(DOMString type, PromiseRejectionEventInit eventInitDict),
     ConstructorCallWith=ScriptState,
     Exposed=(Window,Worker),
-    DependentLifetime,
+    DependentLifetime
 ] interface PromiseRejectionEvent : Event {
     [Custom=Getter] readonly attribute Promise<any> promise;
     [CallWith=ScriptState] readonly attribute any reason;

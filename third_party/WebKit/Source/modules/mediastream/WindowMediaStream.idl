@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 [
-    ImplementedAs=DOMWindowMediaStream,
+    ImplementedAs=DOMWindowMediaStream
 ] partial interface Window {
     attribute MediaStreamConstructor webkitMediaStream;
 

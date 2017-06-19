@@ -33,7 +33,7 @@
 [
     Constructor(optional DOMString message = "", optional DOMString name = "Error"),
     Exposed=(Window,Worker),
-    DoNotCheckConstants,
+    DoNotCheckConstants
 ] exception DOMException {
 
     readonly attribute unsigned short   code;

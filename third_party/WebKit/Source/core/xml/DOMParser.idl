@@ -29,7 +29,7 @@ enum SupportedType {
 
 [
     Constructor,
-    ConstructorCallWith=Document,
+    ConstructorCallWith=Document
 ] interface DOMParser {
     [NewObject] Document parseFromString(DOMString str, SupportedType type);
 };

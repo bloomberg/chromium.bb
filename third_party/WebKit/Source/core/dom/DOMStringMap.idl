@@ -27,7 +27,7 @@
 
 [
     DependentLifetime,
-    OverrideBuiltins,
+    OverrideBuiltins
 ] interface DOMStringMap {
     [ImplementedAs=item] getter DOMString (DOMString name);
     [CEReactions, RaisesException] setter void (DOMString name, DOMString value);

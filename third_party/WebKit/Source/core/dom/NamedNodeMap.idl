@@ -21,7 +21,7 @@
 // https://dom.spec.whatwg.org/#interface-namednodemap
 
 [
-    DependentLifetime,
+    DependentLifetime
 ] interface NamedNodeMap {
     readonly attribute unsigned long length;
     [MeasureAs=NamedNodeMapItem] getter Attr? item(unsigned long index);

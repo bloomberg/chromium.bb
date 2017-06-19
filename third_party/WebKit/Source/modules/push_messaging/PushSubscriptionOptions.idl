@@ -6,7 +6,7 @@
 
 [
     Exposed=(Window,Worker),
-    RuntimeEnabled=PushMessaging,
+    RuntimeEnabled=PushMessaging
 ] interface PushSubscriptionOptions {
     readonly attribute boolean userVisibleOnly;
     [SameObject] readonly attribute ArrayBuffer? applicationServerKey;

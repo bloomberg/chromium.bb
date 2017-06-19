@@ -29,7 +29,7 @@
 // https://html.spec.whatwg.org/#the-workernavigator-object
 
 [
-    Exposed=Worker,
+    Exposed=Worker
 ] interface WorkerNavigator {
 };
 

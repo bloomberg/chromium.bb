@@ -26,7 +26,7 @@
 // https://svgwg.org/svg2-draft/embedded.html#InterfaceSVGImageElement
 
 [
-    ActiveScriptWrappable,
+    ActiveScriptWrappable
 ] interface SVGImageElement : SVGGraphicsElement {
     [MeasureAs=SVG1DOMImageElement] readonly attribute SVGAnimatedLength x;
     [MeasureAs=SVG1DOMImageElement] readonly attribute SVGAnimatedLength y;

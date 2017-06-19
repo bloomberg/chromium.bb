@@ -5,7 +5,7 @@
 [
     Exposed=AnimationWorklet,
     Global=(Worklet,AnimationWorklet),
-    RuntimeEnabled=CompositorWorker,
+    RuntimeEnabled=CompositorWorker
 ] interface AnimationWorkletGlobalScope : WorkletGlobalScope {
     [RaisesException] void registerAnimator(DOMString name, Function animatorConstructor);
 };

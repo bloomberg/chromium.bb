@@ -35,7 +35,7 @@ typedef (Uint8ClampedArray or Uint16Array or Float32Array) ImageDataArray;
     Constructor(unsigned long sw, unsigned long sh),
     Constructor(Uint8ClampedArray data, unsigned long sw, optional unsigned long sh),
     Exposed=(Window,Worker),
-    RaisesException=Constructor,
+    RaisesException=Constructor
 ] interface ImageData {
     [RuntimeEnabled=ExperimentalCanvasFeatures] ImageDataColorSettings getColorSettings();
 

@@ -5,7 +5,7 @@
 // https://w3c.github.io/web-nfc/#extensions-to-the-navigator-interface
 
 [
-  RuntimeEnabled=WebNFC,
+  RuntimeEnabled=WebNFC
 ] partial interface Navigator {
     readonly attribute NFC nfc;
 };

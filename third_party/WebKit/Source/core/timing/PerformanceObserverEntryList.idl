@@ -6,7 +6,7 @@
 
 [
     RuntimeEnabled=PerformanceObserver,
-    Exposed=(Window,Worker),
+    Exposed=(Window,Worker)
 ] interface PerformanceObserverEntryList {
     // TODO(foolip): getEntries() should take an optional FilterOptions argument.
     sequence<PerformanceEntry> getEntries();

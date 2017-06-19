@@ -5,7 +5,7 @@
 // https://html.spec.whatwg.org/multipage/scripting.html#canvaspath
 
 [
-    NoInterfaceObject, // Always used on target of 'implements'
+    NoInterfaceObject // Always used on target of 'implements'
 ] interface CanvasPath {
     // shared path API methods
     void closePath();

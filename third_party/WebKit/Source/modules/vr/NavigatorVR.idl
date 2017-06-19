@@ -4,7 +4,7 @@
 
 // https://w3c.github.io/webvr/#interface-navigator
 [
-    OriginTrialEnabled=WebVR,
+    OriginTrialEnabled=WebVR
 ] partial interface Navigator {
     [CallWith=ScriptState] Promise getVRDisplays();
 };

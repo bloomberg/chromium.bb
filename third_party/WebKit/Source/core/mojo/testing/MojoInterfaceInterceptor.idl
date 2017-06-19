@@ -7,7 +7,7 @@
     Constructor(DOMString interfaceName),
     ConstructorCallWith=ScriptState,
     DependentLifetime,
-    RuntimeEnabled=MojoJSTest,
+    RuntimeEnabled=MojoJSTest
 ] interface MojoInterfaceInterceptor : EventTarget {
     [RaisesException] void start();
     void stop();

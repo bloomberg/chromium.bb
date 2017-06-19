@@ -22,7 +22,7 @@
 
 // TODO(foolip): StyleSheetList should be an [ArrayClass].
 [
-    DependentLifetime,
+    DependentLifetime
 ] interface StyleSheetList {
     [Measure] getter StyleSheet? item(unsigned long index);
     readonly attribute unsigned long length;

@@ -33,7 +33,7 @@
 // Legacy support for NT1(https://www.w3.org/TR/navigation-timing/).
 
 [
-    Exposed=Window,
+    Exposed=Window
 ] interface PerformanceTiming {
     readonly attribute unsigned long long navigationStart;
     readonly attribute unsigned long long unloadEventStart;

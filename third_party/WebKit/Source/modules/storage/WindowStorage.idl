@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 [
-    ImplementedAs=DOMWindowStorage,
+    ImplementedAs=DOMWindowStorage
 ] partial interface Window {
     // https://html.spec.whatwg.org/#the-sessionstorage-attribute
     [LogActivity=GetterOnly, RaisesException=Getter] readonly attribute Storage sessionStorage;

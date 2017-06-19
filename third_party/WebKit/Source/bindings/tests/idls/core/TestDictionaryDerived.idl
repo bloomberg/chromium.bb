@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 [
-    ImplementedAs=TestDictionaryDerivedImplementedAs,
+    ImplementedAs=TestDictionaryDerivedImplementedAs
 ] dictionary TestDictionaryDerived : TestDictionary {
     DOMString derivedStringMember;
     DOMString derivedStringMemberWithDefault = "default string value";

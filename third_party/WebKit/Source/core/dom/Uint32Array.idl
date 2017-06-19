@@ -6,6 +6,6 @@
 
 [
     ImplementedAs=DOMUint32Array,
-    NoInterfaceObject,
+    NoInterfaceObject
 ] interface Uint32Array : ArrayBufferView {
 };

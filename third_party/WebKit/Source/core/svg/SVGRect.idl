@@ -26,7 +26,7 @@
 // https://crbug.com/709001
 [
     DependentLifetime,
-    ImplementedAs=SVGRectTearOff,
+    ImplementedAs=SVGRectTearOff
 ] interface SVGRect {
     [RaisesException=Setter] attribute unrestricted float x;
     [RaisesException=Setter] attribute unrestricted float y;
