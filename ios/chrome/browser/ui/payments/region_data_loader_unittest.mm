@@ -21,8 +21,8 @@
 #endif
 
 namespace {
-const char kQuebec[] = "Quebec";
-const char kOntario[] = "Ontario";
+const char kQuebec[] = "QC";
+const char kOntario[] = "ON";
 }  // namespace
 
 class PaymentRequestRegionDataLoaderTest : public PlatformTest {
@@ -47,8 +47,8 @@ TEST_F(PaymentRequestRegionDataLoaderTest, SourceSuccess) {
                                     &autofill_region_data_loader_);
 
   std::vector<std::pair<std::string, std::string>> regions;
-  regions.push_back(std::make_pair("QC", kQuebec));
-  regions.push_back(std::make_pair("ON", kOntario));
+  regions.push_back(std::make_pair(kQuebec, "Quebec"));
+  regions.push_back(std::make_pair(kOntario, "Ontario"));
   autofill_region_data_loader_.SendAsynchronousData(regions);
 
   EXPECT_OCMOCK_VERIFY(consumer);

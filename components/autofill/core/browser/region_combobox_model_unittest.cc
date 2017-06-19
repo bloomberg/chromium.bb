@@ -19,8 +19,8 @@
 namespace autofill {
 
 // Strings used in more than one place and must be the same everywhere.
-const char kQuebec[] = "Quebec";
-const char kOntario[] = "Ontario";
+const char kQuebecCode[] = "QC";
+const char kOntarioCode[] = "ON";
 
 // Make sure the two regions returned by the source are properly set in the
 // model.
@@ -30,15 +30,15 @@ TEST(RegionComboboxModelTest, QuebecOntarioRegions) {
   model.LoadRegionData("", &test_region_data_loader, 0);
 
   std::vector<std::pair<std::string, std::string>> regions;
-  regions.push_back(std::make_pair("QC", kQuebec));
-  regions.push_back(std::make_pair("ON", kOntario));
+  regions.push_back(std::make_pair(kQuebecCode, "Quebec"));
+  regions.push_back(std::make_pair(kOntarioCode, "Ontario"));
 
   test_region_data_loader.SendAsynchronousData(regions);
 
   EXPECT_EQ(3, model.GetItemCount());
   EXPECT_EQ(base::ASCIIToUTF16("---"), model.GetItemAt(0));
-  EXPECT_EQ(base::ASCIIToUTF16(kQuebec), model.GetItemAt(1));
-  EXPECT_EQ(base::ASCIIToUTF16(kOntario), model.GetItemAt(2));
+  EXPECT_EQ(base::ASCIIToUTF16(kQuebecCode), model.GetItemAt(1));
+  EXPECT_EQ(base::ASCIIToUTF16(kOntarioCode), model.GetItemAt(2));
   EXPECT_FALSE(model.failed_to_load_data());
 }
 

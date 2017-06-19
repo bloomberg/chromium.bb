@@ -92,11 +92,11 @@ base::string16 ShippingAddressEditorViewController::GetInitialValueForType(
     autofill::l10n::CaseInsensitiveCompare compare;
 
     for (const auto& region : region_model_->GetRegions()) {
-      base::string16 region_name = base::UTF8ToUTF16(region.second);
-      if (compare.StringsEqual(initial_region,
-                               base::UTF8ToUTF16(region.first)) ||
-          compare.StringsEqual(initial_region, region_name)) {
-        return region_name;
+      base::string16 region_code = base::UTF8ToUTF16(region.first);
+      if (compare.StringsEqual(initial_region, region_code) ||
+          compare.StringsEqual(initial_region,
+                               base::UTF8ToUTF16(region.second))) {
+        return region_code;
       }
     }
 
