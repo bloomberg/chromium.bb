@@ -1416,17 +1416,20 @@ FPDF_DOCUMENT PDFiumEngine::CreateSinglePageRasterPdf(
   // page.
   FPDF_PAGEOBJECT temp_img = FPDFPageObj_NewImageObj(temp_doc);
 
+  bool encoded = false;
   std::vector<uint8_t> compressed_bitmap_data;
-  // Use quality = 40 as this does not significantly degrade the printed
-  // document relative to a normal bitmap and provides better compression than
-  // a higher quality setting.
-  const int quality = 40;
-  SkImageInfo info = SkImageInfo::Make(
-      FPDFBitmap_GetWidth(bitmap), FPDFBitmap_GetHeight(bitmap),
-      kBGRA_8888_SkColorType, kOpaque_SkAlphaType);
-  SkPixmap src(info, bitmap_data, FPDFBitmap_GetStride(bitmap));
-  if (!(print_settings.format & PP_PRINTOUTPUTFORMAT_PDF) &&
-      (gfx::JPEGCodec::Encode(src, quality, &compressed_bitmap_data))) {
+  if (!(print_settings.format & PP_PRINTOUTPUTFORMAT_PDF)) {
+    // Use quality = 40 as this does not significantly degrade the printed
+    // document relative to a normal bitmap and provides better compression than
+    // a higher quality setting.
+    const int kQuality = 40;
+    SkImageInfo info = SkImageInfo::Make(
+        FPDFBitmap_GetWidth(bitmap), FPDFBitmap_GetHeight(bitmap),
+        kBGRA_8888_SkColorType, kOpaque_SkAlphaType);
+    SkPixmap src(info, bitmap_data, FPDFBitmap_GetStride(bitmap));
+    encoded = gfx::JPEGCodec::Encode(src, kQuality, &compressed_bitmap_data);
+  }
+  if (encoded) {
     FPDF_FILEACCESS file_access = {};
     file_access.m_FileLen =
         static_cast<unsigned long>(compressed_bitmap_data.size());
