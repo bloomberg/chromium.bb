@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "build/build_config.h"
+#include "chrome/browser/component_updater/component_updater_utils.h"
 
 // This component is behind a Finch experiment. To enable the registration of
 // the component, run Chrome with --enable-features=ImprovedRecoveryComponent.
@@ -83,6 +84,12 @@ void RegisterRecoveryImprovedComponent(ComponentUpdateService* cus,
                                        PrefService* prefs) {
 #if defined(GOOGLE_CHROME_BUILD)
 #if defined(OS_WIN) || defined(OS_MACOSX)
+  // The improved recovery components requires elevation in the case where
+  // Chrome is installed per-machine. The elevation mechanism is not implemented
+  // yet; therefore, the component is not registered in this case.
+  if (!IsPerUserInstall())
+    return;
+
   DVLOG(1) << "Registering RecoveryImproved component.";
 
   std::unique_ptr<ComponentInstallerTraits> traits(
