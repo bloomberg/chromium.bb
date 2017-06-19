@@ -92,14 +92,15 @@ const CGFloat kLabelAndFieldGap = 5;
 
     _textLabel = [[UILabel alloc] init];
     _textLabel.translatesAutoresizingMaskIntoConstraints = NO;
+    _textLabel.font = [[MDCTypography fontLoader] mediumFontOfSize:14];
+    _textLabel.textColor = [[MDCPalette greyPalette] tint900];
+    [_textLabel setContentHuggingPriority:UILayoutPriorityDefaultHigh
+                                  forAxis:UILayoutConstraintAxisHorizontal];
     [contentView addSubview:_textLabel];
 
     _textField = [[UITextField alloc] init];
     _textField.translatesAutoresizingMaskIntoConstraints = NO;
     [contentView addSubview:_textField];
-
-    _textLabel.font = [[MDCTypography fontLoader] mediumFontOfSize:14];
-    _textLabel.textColor = [[MDCPalette greyPalette] tint900];
 
     _textField.font = [[MDCTypography fontLoader] lightFontOfSize:16];
     _textField.textColor = [[MDCPalette greyPalette] tint500];
@@ -150,8 +151,6 @@ const CGFloat kLabelAndFieldGap = 5;
       _iconHeightConstraint,
       _iconWidthConstraint,
     ]];
-    [_textField setContentHuggingPriority:UILayoutPriorityDefaultLow
-                                  forAxis:UILayoutConstraintAxisHorizontal];
   }
   return self;
 }
