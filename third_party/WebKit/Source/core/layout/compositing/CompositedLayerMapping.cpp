@@ -226,6 +226,7 @@ void CompositedLayerMapping::CreatePrimaryGraphicsLayer() {
       CreateGraphicsLayer(owning_layer_.GetCompositingReasons(),
                           owning_layer_.GetSquashingDisallowedReasons());
 
+  UpdateShouldHitTest(true);
   UpdateOpacity(GetLayoutObject().StyleRef());
   UpdateTransform(GetLayoutObject().StyleRef());
   UpdateFilters(GetLayoutObject().StyleRef());
@@ -250,6 +251,10 @@ void CompositedLayerMapping::DestroyGraphicsLayers() {
 
   scrolling_layer_ = nullptr;
   scrolling_contents_layer_ = nullptr;
+}
+
+void CompositedLayerMapping::UpdateShouldHitTest(const bool& should_hit_test) {
+  graphics_layer_->SetShouldHitTest(should_hit_test);
 }
 
 void CompositedLayerMapping::UpdateOpacity(const ComputedStyle& style) {
@@ -2380,6 +2385,7 @@ bool CompositedLayerMapping::UpdateScrollingLayers(
       // Inner layer which renders the content that scrolls.
       scrolling_contents_layer_ =
           CreateGraphicsLayer(kCompositingReasonLayerForScrollingContents);
+      scrolling_contents_layer_->SetShouldHitTest(true);
 
       AnimatingData data;
       GetAnimatingData(owning_layer_, data);

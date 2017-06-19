@@ -65,6 +65,7 @@ LayerImpl::LayerImpl(LayerTreeImpl* tree_impl, int id)
       should_check_backface_visibility_(false),
       draws_content_(false),
       contributes_to_drawn_render_surface_(false),
+      should_hit_test_(false),
       viewport_layer_type_(NOT_VIEWPORT_LAYER),
       background_color_(0),
       safe_opaque_background_color_(0),
@@ -323,6 +324,7 @@ void LayerImpl::PushPropertiesTo(LayerImpl* layer) {
   layer->use_parent_backface_visibility_ = use_parent_backface_visibility_;
   layer->should_check_backface_visibility_ = should_check_backface_visibility_;
   layer->draws_content_ = draws_content_;
+  layer->should_hit_test_ = should_hit_test_;
   layer->non_fast_scrollable_region_ = non_fast_scrollable_region_;
   layer->touch_action_region_ = touch_action_region_;
   layer->background_color_ = background_color_;
@@ -579,6 +581,16 @@ void LayerImpl::SetDrawsContent(bool draws_content) {
     return;
 
   draws_content_ = draws_content;
+  if (draws_content)
+    SetShouldHitTest(true);
+  NoteLayerPropertyChanged();
+}
+
+void LayerImpl::SetShouldHitTest(bool should_hit_test) {
+  if (should_hit_test_ == should_hit_test)
+    return;
+
+  should_hit_test_ = should_hit_test;
   NoteLayerPropertyChanged();
 }
 
