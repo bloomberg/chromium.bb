@@ -22,5 +22,10 @@ const base::Feature kDataReductionSiteBreakdown{
 const base::Feature kDataReductionProxyDecidesTransform{
     "DataReductionProxyDecidesTransform", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the data saver promo for low memory Android devices.
+const base::Feature kDataReductionProxyLowMemoryDevicePromo{
+    "DataReductionProxyLowMemoryDevicePromo",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace features
 }  // namespace data_reduction_proxy
