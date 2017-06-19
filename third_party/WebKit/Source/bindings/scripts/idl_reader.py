@@ -63,7 +63,10 @@ def validate_blink_idl_definitions(idl_filename, idl_file_basename,
             'Expected exactly 1 definition in file {0}, but found {1}'
             .format(idl_filename, number_of_targets))
     if number_of_targets == 0:
-        if not (definitions.enumerations or definitions.typedefs):
+        number_of_definitions = (
+            len(definitions.enumerations) + len(definitions.typedefs) +
+            len(definitions.callback_functions))
+        if number_of_definitions == 0:
             raise Exception(
                 'No definition found in %s' % idl_filename)
         return

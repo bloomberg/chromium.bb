@@ -30,6 +30,4 @@
 
 // https://html.spec.whatwg.org/#the-datatransferitem-interface
 
-callback interface FunctionStringCallback {
-    void handleEvent(DOMString data);
-};
+callback FunctionStringCallback = void (DOMString data);
