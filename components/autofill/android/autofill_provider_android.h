@@ -34,11 +34,16 @@ class AutofillProviderAndroid : public AutofillProvider {
   void OnTextFieldDidChange(AutofillHandlerProxy* handler,
                             const FormData& form,
                             const FormFieldData& field,
+                            const gfx::RectF& bounding_box,
                             const base::TimeTicks timestamp) override;
   bool OnWillSubmitForm(AutofillHandlerProxy* handler,
                         const FormData& form,
                         const base::TimeTicks timestamp) override;
   void OnFocusNoLongerOnForm(AutofillHandlerProxy* handler) override;
+  void OnFocusOnFormField(AutofillHandlerProxy* handler,
+                          const FormData& form,
+                          const FormFieldData& field,
+                          const gfx::RectF& bounding_box) override;
   void OnDidFillAutofillFormData(AutofillHandlerProxy* handler,
                                  const FormData& form,
                                  base::TimeTicks timestamp) override;
@@ -53,6 +58,10 @@ class AutofillProviderAndroid : public AutofillProvider {
                       const gfx::RectF& bounding_box);
 
   bool ValidateHandler(AutofillHandlerProxy* handler);
+
+  bool IsCurrentlyLinkedForm(const FormData& form);
+
+  gfx::RectF ToClientAreaBound(const gfx::RectF& bounding_box);
 
   int32_t id_;
   std::unique_ptr<FormDataAndroid> form_;

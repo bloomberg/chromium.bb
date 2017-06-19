@@ -63,6 +63,7 @@ class FakeContentAutofillDriver : public mojom::AutofillDriver {
 
   void TextFieldDidChange(const FormData& form,
                           const FormFieldData& field,
+                          const gfx::RectF& bounding_box,
                           base::TimeTicks timestamp) override {}
 
   void QueryFormFieldAutofill(int32_t id,
@@ -73,6 +74,10 @@ class FakeContentAutofillDriver : public mojom::AutofillDriver {
   void HidePopup() override {}
 
   void FocusNoLongerOnForm() override { did_unfocus_form_ = true; }
+
+  void FocusOnFormField(const FormData& form,
+                        const FormFieldData& field,
+                        const gfx::RectF& bounding_box) override {}
 
   void DidFillAutofillFormData(const FormData& form,
                                base::TimeTicks timestamp) override {}

@@ -21,10 +21,12 @@ bool AutofillHandlerProxy::OnWillSubmitFormImpl(const FormData& form,
   return provider_->OnWillSubmitForm(this, form, timestamp);
 }
 
-void AutofillHandlerProxy::OnTextFieldDidChangeImpl(const FormData& form,
-                                                    const FormFieldData& field,
-                                                    const TimeTicks timestamp) {
-  provider_->OnTextFieldDidChange(this, form, field, timestamp);
+void AutofillHandlerProxy::OnTextFieldDidChangeImpl(
+    const FormData& form,
+    const FormFieldData& field,
+    const gfx::RectF& bounding_box,
+    const TimeTicks timestamp) {
+  provider_->OnTextFieldDidChange(this, form, field, bounding_box, timestamp);
 }
 
 void AutofillHandlerProxy::OnQueryFormFieldAutofillImpl(
@@ -34,6 +36,13 @@ void AutofillHandlerProxy::OnQueryFormFieldAutofillImpl(
     const gfx::RectF& bounding_box) {
   provider_->OnQueryFormFieldAutofill(this, query_id, form, field,
                                       bounding_box);
+}
+
+void AutofillHandlerProxy::OnFocusOnFormFieldImpl(
+    const FormData& form,
+    const FormFieldData& field,
+    const gfx::RectF& bounding_box) {
+  provider_->OnFocusOnFormField(this, form, field, bounding_box);
 }
 
 void AutofillHandlerProxy::OnFocusNoLongerOnForm() {

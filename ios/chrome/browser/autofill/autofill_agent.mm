@@ -775,7 +775,8 @@ void GetFormAndField(autofill::FormData* form,
   // Tell the manager about the form activity (for metrics).
   if (type.compare("input") == 0 && (field.form_control_type == "text" ||
                                      field.form_control_type == "password")) {
-    autofillManager->OnTextFieldDidChange(form, field, base::TimeTicks::Now());
+    autofillManager->OnTextFieldDidChange(form, field, gfx::RectF(),
+                                          base::TimeTicks::Now());
   }
 }
 
