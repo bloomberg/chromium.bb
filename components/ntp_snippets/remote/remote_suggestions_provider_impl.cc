@@ -111,7 +111,7 @@ std::unique_ptr<std::vector<std::string>> GetSuggestionIDVector(
 bool HasIntersection(const std::vector<std::string>& a,
                      const std::set<std::string>& b) {
   for (const std::string& item : a) {
-    if (base::ContainsValue(b, item)) {
+    if (b.count(item)) {
       return true;
     }
   }
@@ -124,7 +124,7 @@ void EraseByPrimaryID(RemoteSuggestion::PtrVector* suggestions,
   base::EraseIf(
       *suggestions,
       [&ids_lookup](const std::unique_ptr<RemoteSuggestion>& suggestion) {
-        return base::ContainsValue(ids_lookup, suggestion->id());
+        return ids_lookup.count(suggestion->id());
       });
 }
 
