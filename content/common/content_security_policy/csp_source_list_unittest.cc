@@ -92,4 +92,20 @@ TEST(CSPSourceList, AllowNone) {
   EXPECT_FALSE(Allow(source_list, GURL("https://example.test/"), &context));
 }
 
+TEST(CSPSourceTest, SelfIsUnique) {
+  // Policy: 'self'
+  CSPSourceList source_list(true,                       // allow_self
+                            false,                      // allow_star:
+                            std::vector<CSPSource>());  // source_list
+  CSPContext context;
+
+  context.SetSelf(url::Origin(GURL("http://a.com")));
+  EXPECT_TRUE(Allow(source_list, GURL("http://a.com"), &context));
+  EXPECT_FALSE(Allow(source_list, GURL("data:text/html,hello"), &context));
+
+  context.SetSelf(url::Origin(GURL("data:text/html,<iframe src=[...]>")));
+  EXPECT_FALSE(Allow(source_list, GURL("http://a.com"), &context));
+  EXPECT_FALSE(Allow(source_list, GURL("data:text/html,hello"), &context));
+}
+
 }  // namespace content

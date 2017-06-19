@@ -37,28 +37,29 @@ enum class SchemeMatchingResult { NotMatching, MatchingUpgrade, MatchingExact };
 SchemeMatchingResult SourceAllowScheme(const CSPSource& source,
                                        const GURL& url,
                                        CSPContext* context) {
-  const std::string& source_scheme =
-      source.scheme.empty() ? context->GetSelfScheme() : source.scheme;
-
-  if (source_scheme.empty()) {
-    if (context->ProtocolIsSelf(url))
-      return SchemeMatchingResult::MatchingExact;
+  // The source doesn't specify a scheme and the current origin is unique. In
+  // this case, the url doesn't match regardless of its scheme.
+  if (source.scheme.empty() && !context->self_source())
     return SchemeMatchingResult::NotMatching;
-  }
 
-  if (url.SchemeIs(source_scheme))
+  // |allowed_scheme| is guaranteed to be non-empty.
+  const std::string& allowed_scheme =
+      source.scheme.empty() ? context->self_source()->scheme : source.scheme;
+
+  if (url.SchemeIs(allowed_scheme))
     return SchemeMatchingResult::MatchingExact;
 
-  if ((source_scheme == url::kHttpScheme && url.SchemeIs(url::kHttpsScheme)) ||
-      (source_scheme == url::kHttpScheme &&
+  // Implicitly allow using a more secure version of a protocol when the
+  // non-secure one is allowed.
+  if ((allowed_scheme == url::kHttpScheme && url.SchemeIs(url::kHttpsScheme)) ||
+      (allowed_scheme == url::kHttpScheme &&
        url.SchemeIs(url::kHttpsSuboriginScheme)) ||
-      (source_scheme == url::kWsScheme && url.SchemeIs(url::kWssScheme))) {
+      (allowed_scheme == url::kWsScheme && url.SchemeIs(url::kWssScheme))) {
     return SchemeMatchingResult::MatchingUpgrade;
   }
-
-  if ((source_scheme == url::kHttpScheme &&
+  if ((allowed_scheme == url::kHttpScheme &&
        url.SchemeIs(url::kHttpSuboriginScheme)) ||
-      (source_scheme == url::kHttpsScheme &&
+      (allowed_scheme == url::kHttpsScheme &&
        url.SchemeIs(url::kHttpsSuboriginScheme))) {
     return SchemeMatchingResult::MatchingExact;
   }
