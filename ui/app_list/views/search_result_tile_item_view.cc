@@ -75,6 +75,10 @@ void SearchResultTileItemView::OnIconChanged() {
   SetIcon(item_->icon());
 }
 
+void SearchResultTileItemView::OnBadgeIconChanged() {
+  SetBadgeIcon(item_->badge_icon());
+}
+
 void SearchResultTileItemView::OnResultDestroying() {
   // The menu comes from |item_|. If we're showing a menu we need to cancel it.
   context_menu_runner_.reset();

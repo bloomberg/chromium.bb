@@ -60,7 +60,7 @@ class APP_LIST_EXPORT TileItemView : public views::CustomButton,
 
  protected:
   void SetIcon(const gfx::ImageSkia& icon);
-
+  void SetBadgeIcon(const gfx::ImageSkia& badge_icon);
   void SetTitle(const base::string16& title);
 
  private:
@@ -74,10 +74,11 @@ class APP_LIST_EXPORT TileItemView : public views::CustomButton,
   SkColor parent_background_color_;
   std::unique_ptr<ImageShadowAnimator> image_shadow_animator_;
 
-  views::ImageView* icon_;  // Owned by views hierarchy.
-  views::Label* title_;     // Owned by views hierarchy.
+  views::ImageView* icon_;   // Owned by views hierarchy.
+  views::ImageView* badge_;  // Owned by views hierarchy.
+  views::Label* title_;      // Owned by views hierarchy.
 
-  bool selected_;
+  bool selected_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TileItemView);
 };

@@ -62,6 +62,8 @@ APP_LIST_EXPORT extern const int kPreferredCols;
 APP_LIST_EXPORT extern const int kPreferredRows;
 APP_LIST_EXPORT extern const int kGridIconDimension;
 
+APP_LIST_EXPORT extern const int kAppBadgeIconSize;
+
 APP_LIST_EXPORT extern const int kListIconSize;
 APP_LIST_EXPORT extern const int kListBadgeIconSize;
 APP_LIST_EXPORT extern const int kListBadgeIconOffsetX;

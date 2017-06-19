@@ -5,7 +5,11 @@
 #include "ui/app_list/views/tile_item_view.h"
 
 #include "ui/app_list/app_list_constants.h"
+#include "ui/app_list/app_list_features.h"
 #include "ui/app_list/views/app_list_main_view.h"
+#include "ui/gfx/canvas.h"
+#include "ui/gfx/image/canvas_image_source.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -13,9 +17,34 @@
 
 namespace {
 
-const int kTopPadding = 5;
-const int kTileSize = 90;
-const int kIconTitleSpacing = 6;
+constexpr int kTopPadding = 5;
+constexpr int kTileSize = 90;
+constexpr int kIconTitleSpacing = 6;
+
+constexpr int kBadgeBackgroundRadius = 10;
+
+// The background image source for badge.
+class BadgeBackgroundImageSource : public gfx::CanvasImageSource {
+ public:
+  explicit BadgeBackgroundImageSource(int size)
+      : CanvasImageSource(gfx::Size(size, size), false),
+        radius_(static_cast<float>(size / 2)) {}
+  ~BadgeBackgroundImageSource() override = default;
+
+ private:
+  // gfx::CanvasImageSource overrides:
+  void Draw(gfx::Canvas* canvas) override {
+    cc::PaintFlags flags;
+    flags.setColor(SK_ColorWHITE);
+    flags.setAntiAlias(true);
+    flags.setStyle(cc::PaintFlags::kFill_Style);
+    canvas->DrawCircle(gfx::PointF(radius_, radius_), radius_, flags);
+  }
+
+  const float radius_;
+
+  DISALLOW_COPY_AND_ASSIGN(BadgeBackgroundImageSource);
+};
 
 }  // namespace
 
@@ -25,8 +54,8 @@ TileItemView::TileItemView()
     : views::CustomButton(this),
       parent_background_color_(SK_ColorTRANSPARENT),
       icon_(new views::ImageView),
-      title_(new views::Label),
-      selected_(false) {
+      badge_(nullptr),
+      title_(new views::Label) {
   // Prevent the icon view from interfering with our mouse events.
   icon_->set_can_process_events_within_subtree(false);
   icon_->SetVerticalAlignment(views::ImageView::LEADING);
@@ -39,11 +68,16 @@ TileItemView::TileItemView()
   title_->SetHandlesTooltips(false);
 
   AddChildView(icon_);
+  if (features::IsFullscreenAppListEnabled()) {
+    badge_ = new views::ImageView();
+    badge_->set_can_process_events_within_subtree(false);
+    badge_->SetVerticalAlignment(views::ImageView::LEADING);
+    AddChildView(badge_);
+  }
   AddChildView(title_);
 }
 
-TileItemView::~TileItemView() {
-}
+TileItemView::~TileItemView() = default;
 
 void TileItemView::SetSelected(bool selected) {
   if (selected == selected_)
@@ -84,6 +118,31 @@ void TileItemView::SetIcon(const gfx::ImageSkia& icon) {
   icon_->SetImage(icon);
 }
 
+void TileItemView::SetBadgeIcon(const gfx::ImageSkia& badge_icon) {
+  if (!badge_)
+    return;
+
+  if (badge_icon.isNull()) {
+    badge_->SetVisible(false);
+    return;
+  }
+
+  const int size = kBadgeBackgroundRadius * 2;
+  gfx::ImageSkia background(new BadgeBackgroundImageSource(size),
+                            gfx::Size(size, size));
+  gfx::ImageSkia icon_with_background =
+      gfx::ImageSkiaOperations::CreateSuperimposedImage(background, badge_icon);
+
+  gfx::ShadowValues shadow_values;
+  shadow_values.push_back(
+      gfx::ShadowValue(gfx::Vector2d(0, 1), 0, SkColorSetARGB(0x33, 0, 0, 0)));
+  shadow_values.push_back(
+      gfx::ShadowValue(gfx::Vector2d(0, 1), 2, SkColorSetARGB(0x33, 0, 0, 0)));
+  badge_->SetImage(gfx::ImageSkiaOperations::CreateImageWithDropShadow(
+      icon_with_background, shadow_values));
+  badge_->SetVisible(true);
+}
+
 void TileItemView::SetTitle(const base::string16& title) {
   title_->SetText(title);
   SetAccessibleName(title);
@@ -95,9 +154,20 @@ void TileItemView::StateChanged(ButtonState old_state) {
 
 void TileItemView::Layout() {
   gfx::Rect rect(GetContentsBounds());
+  if (rect.IsEmpty())
+    return;
 
   rect.Inset(0, kTopPadding, 0, 0);
   icon_->SetBoundsRect(rect);
+
+  if (badge_) {
+    gfx::Rect badge_rect(rect);
+    gfx::Size icon_size = icon_->GetImage().size();
+    badge_rect.Offset(
+        (icon_size.width() - kAppBadgeIconSize) / 2,
+        icon_size.height() - kBadgeBackgroundRadius - kAppBadgeIconSize / 2);
+    badge_->SetBoundsRect(badge_rect);
+  }
 
   rect.Inset(0, kGridIconDimension + kIconTitleSpacing, 0, 0);
   rect.set_height(title_->GetPreferredSize().height());
