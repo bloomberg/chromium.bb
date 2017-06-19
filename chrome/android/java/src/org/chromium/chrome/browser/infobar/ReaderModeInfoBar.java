@@ -57,10 +57,10 @@ public class ReaderModeInfoBar extends InfoBar {
 
     @Override
     public void onCloseButtonClicked() {
-        super.onCloseButtonClicked();
         if (getReaderModeManager() != null) {
             getReaderModeManager().onClosed(StateChangeReason.CLOSE_BUTTON);
         }
+        super.onCloseButtonClicked();
     }
 
     /**
