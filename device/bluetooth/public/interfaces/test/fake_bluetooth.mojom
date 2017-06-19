@@ -88,4 +88,11 @@ interface FakeCentral {
   // This method aims to simulate the response once all of these procedures
   // have completed or if there was an error during any of them.
   SetNextGATTDiscoveryResponse(string address, uint16 code) => (bool success);
+
+  // Adds a fake GATT Service with |service_uuid| to be found when
+  // discovering the peripheral's GATT Attributes. Runs its callback with
+  // the fake service's Id. Runs its callback with nullopt if it failed to
+  // add the fake service.
+  AddFakeService(string peripheral_address, UUID service_uuid)
+      => (string? service_id);
 };

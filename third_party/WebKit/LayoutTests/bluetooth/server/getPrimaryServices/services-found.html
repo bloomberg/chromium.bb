@@ -2,26 +2,27 @@
 <script src="../../../resources/testharness.js"></script>
 <script src="../../../resources/testharnessreport.js"></script>
 <script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script src="../../../resources/bluetooth/web-bluetooth-test.js"></script>
+<script src="../../../resources/mojo-helpers.js"></script>
 <script>
 'use strict';
 promise_test(function() {
-  return setBluetoothFakeAdapter('TwoHeartRateServicesAdapter')
-    .then(() => requestDeviceWithKeyDown({
-      filters: [{services: ['heart_rate']}],
-      optionalServices: ['generic_access']}))
-    .then(device => device.gatt.connect())
-    .then(gattServer => gattServer.getPrimaryServices())
+  return getHealthThermometerDevice({
+      filters: [{services: ['health_thermometer']}],
+      optionalServices: ['generic_access']})
+    .then(([device]) => device.gatt.getPrimaryServices())
     .then(services => {
+      // Expect three service instances.
       assert_equals(services.length, 3);
-      assert_equals(services[0].uuid,
-                    BluetoothUUID.getService('generic_access'));
-      assert_equals(services[1].uuid,
-                    BluetoothUUID.getService('heart_rate'));
-      assert_equals(services[2].uuid,
-                    BluetoothUUID.getService('heart_rate'));
-      assert_true(services[0].isPrimary);
-      assert_true(services[1].isPrimary);
-      assert_true(services[2].isPrimary);
+      services.forEach(s => assert_true(s.isPrimary));
+
+      let uuid_set = new Set(services.map(s => s.uuid));
+      // Two of the expected services are 'health_thermometer', so
+      // only 2 unique UUIDs.
+      assert_equals(uuid_set.size, 2);
+
+      assert_true(uuid_set.has(BluetoothUUID.getService('generic_access')));
+      assert_true(uuid_set.has(BluetoothUUID.getService('health_thermometer')));
     });
 }, 'Find all services in a device.');
 </script>

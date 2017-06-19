@@ -40,6 +40,11 @@ var heart_rate = {
   name: 'heart_rate',
   uuid: '0000180d-0000-1000-8000-00805f9b34fb'
 };
+var health_thermometer = {
+  alias: 0x1809,
+  name: 'health_thermometer',
+  uuid: '00001809-0000-1000-8000-00805f9b34fb'
+};
 var body_sensor_location = {
   alias: 0x2a38,
   name: 'body_sensor_location',
@@ -455,14 +460,18 @@ function setUpHealthThermometerAndHeartRateDevices() {
 // corresponding FakePeripheral.
 // The simulated device is called 'Health Thermometer' it has two known service
 // UUIDs: 'generic_access' and 'health_thermometer'. The device has been
-// connected to and its services have been discovered.
-// TODO(crbug.com/719816): Add services, characteristics and descriptors,
-// and discover all the attributes.
+// connected to and its services are ready to be discovered.
+// TODO(crbug.com/719816): Add characteristics and descriptors.
 function getHealthThermometerDevice(options) {
   return getDiscoveredHealthThermometerDevice(options)
     .then(([device, fake_peripheral]) => {
       return fake_peripheral.setNextGATTConnectionResponse({code: HCI_SUCCESS})
         .then(() => device.gatt.connect())
+        .then(() => fake_peripheral.addFakeService({uuid: 'generic_access'}))
+        .then(() => fake_peripheral.addFakeService({
+          uuid: 'health_thermometer'}))
+        .then(() => fake_peripheral.addFakeService({
+          uuid: 'health_thermometer'}))
         .then(() => fake_peripheral.setNextGATTDiscoveryResponse({
           code: HCI_SUCCESS}))
         .then(() => [device, fake_peripheral]);
@@ -520,6 +529,42 @@ function getEmptyHealthThermometerDevice(options) {
         .then(() => [device, fake_peripheral]);
     });
 }
+
+// Returns a BluetoothDevice discovered using |options| and its
+// corresponding FakePeripheral.
+// The simulated device is called 'HID Device' it has three known service
+// UUIDs: 'generic_access', 'battery_service', 'human_interface_device'. The
+// device has been connected to and its services are ready to be discovered.
+// TODO(crbug.com/719816): Add characteristics and descriptors.
+function getHIDDevice(options) {
+  return setUpPreconnectedDevice({
+      address: '10:10:10:10:10:10',
+      name: 'HID Device',
+      knownServiceUUIDs: [
+        'generic_access',
+        'battery_service',
+        'human_interface_device'
+      ],
+    })
+    .then(fake_peripheral => {
+      return requestDeviceWithKeyDown(options)
+        .then(device => {
+          return fake_peripheral
+            .setNextGATTConnectionResponse({
+              code: HCI_SUCCESS})
+            .then(() => device.gatt.connect())
+            .then(() => fake_peripheral.addFakeService({
+              uuid: 'generic_access'}))
+            .then(() => fake_peripheral.addFakeService({
+              uuid: 'battery_service'}))
+            .then(() => fake_peripheral.addFakeService({
+              uuid: 'human_interface_device'}))
+            .then(() => fake_peripheral.setNextGATTDiscoveryResponse({
+              code: HCI_SUCCESS}))
+            .then(() => [device, fake_peripheral]);
+        });
+    });
+};
 
 // Similar to getHealthThermometerDevice() except the device
 // is not connected and thus its services have not been
