@@ -263,12 +263,14 @@ void SincResampler::Process(AudioSourceProvider* source_provider,
       // Generate a single output sample.
       int n = kernel_size_;
 
-#define CONVOLVE_ONE_SAMPLE \
-  input = *input_p++;       \
-  sum1 += input * *k1;      \
-  sum2 += input * *k2;      \
-  ++k1;                     \
-  ++k2;
+#define CONVOLVE_ONE_SAMPLE() \
+  do {                        \
+    input = *input_p++;       \
+    sum1 += input * *k1;      \
+    sum2 += input * *k2;      \
+    ++k1;                     \
+    ++k2;                     \
+  } while (0)
 
       {
         float input;
@@ -277,7 +279,7 @@ void SincResampler::Process(AudioSourceProvider* source_provider,
         // If the sourceP address is not 16-byte aligned, the first several
         // frames (at most three) should be processed seperately.
         while ((reinterpret_cast<uintptr_t>(input_p) & 0x0F) && n) {
-          CONVOLVE_ONE_SAMPLE
+          CONVOLVE_ONE_SAMPLE();
           n--;
         }
 
@@ -294,39 +296,43 @@ void SincResampler::Process(AudioSourceProvider* source_provider,
         bool k1_aligned = !(reinterpret_cast<uintptr_t>(k1) & 0x0F);
         bool k2_aligned = !(reinterpret_cast<uintptr_t>(k2) & 0x0F);
 
-#define LOAD_DATA(l1, l2)         \
-  m_input = _mm_load_ps(input_p); \
-  m_k1 = _mm_##l1##_ps(k1);       \
-  m_k2 = _mm_##l2##_ps(k2);
+#define LOAD_DATA(l1, l2)           \
+  do {                              \
+    m_input = _mm_load_ps(input_p); \
+    m_k1 = _mm_##l1##_ps(k1);       \
+    m_k2 = _mm_##l2##_ps(k2);       \
+  } while (0)
 
-#define CONVOLVE_4_SAMPLES          \
-  mul1 = _mm_mul_ps(m_input, m_k1); \
-  mul2 = _mm_mul_ps(m_input, m_k2); \
-  sums1 = _mm_add_ps(sums1, mul1);  \
-  sums2 = _mm_add_ps(sums2, mul2);  \
-  input_p += 4;                     \
-  k1 += 4;                          \
-  k2 += 4;
+#define CONVOLVE_4_SAMPLES()          \
+  do {                                \
+    mul1 = _mm_mul_ps(m_input, m_k1); \
+    mul2 = _mm_mul_ps(m_input, m_k2); \
+    sums1 = _mm_add_ps(sums1, mul1);  \
+    sums2 = _mm_add_ps(sums2, mul2);  \
+    input_p += 4;                     \
+    k1 += 4;                          \
+    k2 += 4;                          \
+  } while (0)
 
         if (k1_aligned && k2_aligned) {  // both aligned
           while (input_p < end_p) {
-            LOAD_DATA(load, load)
-            CONVOLVE_4_SAMPLES
+            LOAD_DATA(load, load);
+            CONVOLVE_4_SAMPLES();
           }
         } else if (!k1_aligned && k2_aligned) {  // only k2 aligned
           while (input_p < end_p) {
-            LOAD_DATA(loadu, load)
-            CONVOLVE_4_SAMPLES
+            LOAD_DATA(loadu, load);
+            CONVOLVE_4_SAMPLES();
           }
         } else if (k1_aligned && !k2_aligned) {  // only k1 aligned
           while (input_p < end_p) {
-            LOAD_DATA(load, loadu)
-            CONVOLVE_4_SAMPLES
+            LOAD_DATA(load, loadu);
+            CONVOLVE_4_SAMPLES();
           }
         } else {  // both non-aligned
           while (input_p < end_p) {
-            LOAD_DATA(loadu, loadu)
-            CONVOLVE_4_SAMPLES
+            LOAD_DATA(loadu, loadu);
+            CONVOLVE_4_SAMPLES();
           }
         }
 
@@ -340,7 +346,7 @@ void SincResampler::Process(AudioSourceProvider* source_provider,
 
         n %= 4;
         while (n) {
-          CONVOLVE_ONE_SAMPLE
+          CONVOLVE_ONE_SAMPLE();
           n--;
         }
 #else
@@ -352,107 +358,107 @@ void SincResampler::Process(AudioSourceProvider* source_provider,
         // approach.
 
         if (n == 32) {
-          CONVOLVE_ONE_SAMPLE      // 1
-              CONVOLVE_ONE_SAMPLE  // 2
-              CONVOLVE_ONE_SAMPLE  // 3
-              CONVOLVE_ONE_SAMPLE  // 4
-              CONVOLVE_ONE_SAMPLE  // 5
-              CONVOLVE_ONE_SAMPLE  // 6
-              CONVOLVE_ONE_SAMPLE  // 7
-              CONVOLVE_ONE_SAMPLE  // 8
-              CONVOLVE_ONE_SAMPLE  // 9
-              CONVOLVE_ONE_SAMPLE  // 10
-              CONVOLVE_ONE_SAMPLE  // 11
-              CONVOLVE_ONE_SAMPLE  // 12
-              CONVOLVE_ONE_SAMPLE  // 13
-              CONVOLVE_ONE_SAMPLE  // 14
-              CONVOLVE_ONE_SAMPLE  // 15
-              CONVOLVE_ONE_SAMPLE  // 16
-              CONVOLVE_ONE_SAMPLE  // 17
-              CONVOLVE_ONE_SAMPLE  // 18
-              CONVOLVE_ONE_SAMPLE  // 19
-              CONVOLVE_ONE_SAMPLE  // 20
-              CONVOLVE_ONE_SAMPLE  // 21
-              CONVOLVE_ONE_SAMPLE  // 22
-              CONVOLVE_ONE_SAMPLE  // 23
-              CONVOLVE_ONE_SAMPLE  // 24
-              CONVOLVE_ONE_SAMPLE  // 25
-              CONVOLVE_ONE_SAMPLE  // 26
-              CONVOLVE_ONE_SAMPLE  // 27
-              CONVOLVE_ONE_SAMPLE  // 28
-              CONVOLVE_ONE_SAMPLE  // 29
-              CONVOLVE_ONE_SAMPLE  // 30
-              CONVOLVE_ONE_SAMPLE  // 31
-              CONVOLVE_ONE_SAMPLE  // 32
+          CONVOLVE_ONE_SAMPLE();  // 1
+          CONVOLVE_ONE_SAMPLE();  // 2
+          CONVOLVE_ONE_SAMPLE();  // 3
+          CONVOLVE_ONE_SAMPLE();  // 4
+          CONVOLVE_ONE_SAMPLE();  // 5
+          CONVOLVE_ONE_SAMPLE();  // 6
+          CONVOLVE_ONE_SAMPLE();  // 7
+          CONVOLVE_ONE_SAMPLE();  // 8
+          CONVOLVE_ONE_SAMPLE();  // 9
+          CONVOLVE_ONE_SAMPLE();  // 10
+          CONVOLVE_ONE_SAMPLE();  // 11
+          CONVOLVE_ONE_SAMPLE();  // 12
+          CONVOLVE_ONE_SAMPLE();  // 13
+          CONVOLVE_ONE_SAMPLE();  // 14
+          CONVOLVE_ONE_SAMPLE();  // 15
+          CONVOLVE_ONE_SAMPLE();  // 16
+          CONVOLVE_ONE_SAMPLE();  // 17
+          CONVOLVE_ONE_SAMPLE();  // 18
+          CONVOLVE_ONE_SAMPLE();  // 19
+          CONVOLVE_ONE_SAMPLE();  // 20
+          CONVOLVE_ONE_SAMPLE();  // 21
+          CONVOLVE_ONE_SAMPLE();  // 22
+          CONVOLVE_ONE_SAMPLE();  // 23
+          CONVOLVE_ONE_SAMPLE();  // 24
+          CONVOLVE_ONE_SAMPLE();  // 25
+          CONVOLVE_ONE_SAMPLE();  // 26
+          CONVOLVE_ONE_SAMPLE();  // 27
+          CONVOLVE_ONE_SAMPLE();  // 28
+          CONVOLVE_ONE_SAMPLE();  // 29
+          CONVOLVE_ONE_SAMPLE();  // 30
+          CONVOLVE_ONE_SAMPLE();  // 31
+          CONVOLVE_ONE_SAMPLE();  // 32
         } else if (n == 64) {
-          CONVOLVE_ONE_SAMPLE      // 1
-              CONVOLVE_ONE_SAMPLE  // 2
-              CONVOLVE_ONE_SAMPLE  // 3
-              CONVOLVE_ONE_SAMPLE  // 4
-              CONVOLVE_ONE_SAMPLE  // 5
-              CONVOLVE_ONE_SAMPLE  // 6
-              CONVOLVE_ONE_SAMPLE  // 7
-              CONVOLVE_ONE_SAMPLE  // 8
-              CONVOLVE_ONE_SAMPLE  // 9
-              CONVOLVE_ONE_SAMPLE  // 10
-              CONVOLVE_ONE_SAMPLE  // 11
-              CONVOLVE_ONE_SAMPLE  // 12
-              CONVOLVE_ONE_SAMPLE  // 13
-              CONVOLVE_ONE_SAMPLE  // 14
-              CONVOLVE_ONE_SAMPLE  // 15
-              CONVOLVE_ONE_SAMPLE  // 16
-              CONVOLVE_ONE_SAMPLE  // 17
-              CONVOLVE_ONE_SAMPLE  // 18
-              CONVOLVE_ONE_SAMPLE  // 19
-              CONVOLVE_ONE_SAMPLE  // 20
-              CONVOLVE_ONE_SAMPLE  // 21
-              CONVOLVE_ONE_SAMPLE  // 22
-              CONVOLVE_ONE_SAMPLE  // 23
-              CONVOLVE_ONE_SAMPLE  // 24
-              CONVOLVE_ONE_SAMPLE  // 25
-              CONVOLVE_ONE_SAMPLE  // 26
-              CONVOLVE_ONE_SAMPLE  // 27
-              CONVOLVE_ONE_SAMPLE  // 28
-              CONVOLVE_ONE_SAMPLE  // 29
-              CONVOLVE_ONE_SAMPLE  // 30
-              CONVOLVE_ONE_SAMPLE  // 31
-              CONVOLVE_ONE_SAMPLE  // 32
-              CONVOLVE_ONE_SAMPLE  // 33
-              CONVOLVE_ONE_SAMPLE  // 34
-              CONVOLVE_ONE_SAMPLE  // 35
-              CONVOLVE_ONE_SAMPLE  // 36
-              CONVOLVE_ONE_SAMPLE  // 37
-              CONVOLVE_ONE_SAMPLE  // 38
-              CONVOLVE_ONE_SAMPLE  // 39
-              CONVOLVE_ONE_SAMPLE  // 40
-              CONVOLVE_ONE_SAMPLE  // 41
-              CONVOLVE_ONE_SAMPLE  // 42
-              CONVOLVE_ONE_SAMPLE  // 43
-              CONVOLVE_ONE_SAMPLE  // 44
-              CONVOLVE_ONE_SAMPLE  // 45
-              CONVOLVE_ONE_SAMPLE  // 46
-              CONVOLVE_ONE_SAMPLE  // 47
-              CONVOLVE_ONE_SAMPLE  // 48
-              CONVOLVE_ONE_SAMPLE  // 49
-              CONVOLVE_ONE_SAMPLE  // 50
-              CONVOLVE_ONE_SAMPLE  // 51
-              CONVOLVE_ONE_SAMPLE  // 52
-              CONVOLVE_ONE_SAMPLE  // 53
-              CONVOLVE_ONE_SAMPLE  // 54
-              CONVOLVE_ONE_SAMPLE  // 55
-              CONVOLVE_ONE_SAMPLE  // 56
-              CONVOLVE_ONE_SAMPLE  // 57
-              CONVOLVE_ONE_SAMPLE  // 58
-              CONVOLVE_ONE_SAMPLE  // 59
-              CONVOLVE_ONE_SAMPLE  // 60
-              CONVOLVE_ONE_SAMPLE  // 61
-              CONVOLVE_ONE_SAMPLE  // 62
-              CONVOLVE_ONE_SAMPLE  // 63
-              CONVOLVE_ONE_SAMPLE  // 64
+          CONVOLVE_ONE_SAMPLE();  // 1
+          CONVOLVE_ONE_SAMPLE();  // 2
+          CONVOLVE_ONE_SAMPLE();  // 3
+          CONVOLVE_ONE_SAMPLE();  // 4
+          CONVOLVE_ONE_SAMPLE();  // 5
+          CONVOLVE_ONE_SAMPLE();  // 6
+          CONVOLVE_ONE_SAMPLE();  // 7
+          CONVOLVE_ONE_SAMPLE();  // 8
+          CONVOLVE_ONE_SAMPLE();  // 9
+          CONVOLVE_ONE_SAMPLE();  // 10
+          CONVOLVE_ONE_SAMPLE();  // 11
+          CONVOLVE_ONE_SAMPLE();  // 12
+          CONVOLVE_ONE_SAMPLE();  // 13
+          CONVOLVE_ONE_SAMPLE();  // 14
+          CONVOLVE_ONE_SAMPLE();  // 15
+          CONVOLVE_ONE_SAMPLE();  // 16
+          CONVOLVE_ONE_SAMPLE();  // 17
+          CONVOLVE_ONE_SAMPLE();  // 18
+          CONVOLVE_ONE_SAMPLE();  // 19
+          CONVOLVE_ONE_SAMPLE();  // 20
+          CONVOLVE_ONE_SAMPLE();  // 21
+          CONVOLVE_ONE_SAMPLE();  // 22
+          CONVOLVE_ONE_SAMPLE();  // 23
+          CONVOLVE_ONE_SAMPLE();  // 24
+          CONVOLVE_ONE_SAMPLE();  // 25
+          CONVOLVE_ONE_SAMPLE();  // 26
+          CONVOLVE_ONE_SAMPLE();  // 27
+          CONVOLVE_ONE_SAMPLE();  // 28
+          CONVOLVE_ONE_SAMPLE();  // 29
+          CONVOLVE_ONE_SAMPLE();  // 30
+          CONVOLVE_ONE_SAMPLE();  // 31
+          CONVOLVE_ONE_SAMPLE();  // 32
+          CONVOLVE_ONE_SAMPLE();  // 33
+          CONVOLVE_ONE_SAMPLE();  // 34
+          CONVOLVE_ONE_SAMPLE();  // 35
+          CONVOLVE_ONE_SAMPLE();  // 36
+          CONVOLVE_ONE_SAMPLE();  // 37
+          CONVOLVE_ONE_SAMPLE();  // 38
+          CONVOLVE_ONE_SAMPLE();  // 39
+          CONVOLVE_ONE_SAMPLE();  // 40
+          CONVOLVE_ONE_SAMPLE();  // 41
+          CONVOLVE_ONE_SAMPLE();  // 42
+          CONVOLVE_ONE_SAMPLE();  // 43
+          CONVOLVE_ONE_SAMPLE();  // 44
+          CONVOLVE_ONE_SAMPLE();  // 45
+          CONVOLVE_ONE_SAMPLE();  // 46
+          CONVOLVE_ONE_SAMPLE();  // 47
+          CONVOLVE_ONE_SAMPLE();  // 48
+          CONVOLVE_ONE_SAMPLE();  // 49
+          CONVOLVE_ONE_SAMPLE();  // 50
+          CONVOLVE_ONE_SAMPLE();  // 51
+          CONVOLVE_ONE_SAMPLE();  // 52
+          CONVOLVE_ONE_SAMPLE();  // 53
+          CONVOLVE_ONE_SAMPLE();  // 54
+          CONVOLVE_ONE_SAMPLE();  // 55
+          CONVOLVE_ONE_SAMPLE();  // 56
+          CONVOLVE_ONE_SAMPLE();  // 57
+          CONVOLVE_ONE_SAMPLE();  // 58
+          CONVOLVE_ONE_SAMPLE();  // 59
+          CONVOLVE_ONE_SAMPLE();  // 60
+          CONVOLVE_ONE_SAMPLE();  // 61
+          CONVOLVE_ONE_SAMPLE();  // 62
+          CONVOLVE_ONE_SAMPLE();  // 63
+          CONVOLVE_ONE_SAMPLE();  // 64
         } else {
           while (n--) {
             // Non-optimized using actual while loop.
-            CONVOLVE_ONE_SAMPLE
+            CONVOLVE_ONE_SAMPLE();
           }
         }
 #endif
