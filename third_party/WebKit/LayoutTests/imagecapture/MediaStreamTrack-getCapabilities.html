@@ -8,15 +8,15 @@
 </body>
 <script>
 
-const meteringModeNames = ["none", "manual", "single-shot", "continuous"];
+const meteringModeNames = ['none', 'manual', 'single-shot', 'continuous'];
 
 // This test verifies that MediaTrackCapabilities are returned upon
 // MediaStreamTrack.getCapabilities(), with a mock Mojo service implementation.
 
 async_test(function(t) {
   var canvas = document.getElementById('canvas');
-  var context = canvas.getContext("2d");
-  context.fillStyle = "red";
+  var context = canvas.getContext('2d');
+  context.fillStyle = 'red';
   context.fillRect(0, 0, 10, 10);
 
   var mock_capabilities;
@@ -139,7 +139,7 @@ async_test(function(t) {
       }, 100);
     },
     error => {
-      assert_unreached("Error creating MockImageCapture: " + error);
+      assert_unreached('Error creating MockImageCapture: ' + error);
     })
 
 }, 'exercises MediaStreamTrack.getCapabilities()');

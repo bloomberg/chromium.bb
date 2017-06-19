@@ -8,15 +8,15 @@
 </body>
 <script>
 
-const fillLightModeNames = ["off", "auto", "flash"];
+const fillLightModeNames = ['off', 'auto', 'flash'];
 
 // This test verifies that ImageCapture can call takePhoto with a PhotoSettings
 // argument, with a mock Mojo interface implementation.
 
 async_test(function(t) {
   var canvas = document.getElementById('canvas');
-  var context = canvas.getContext("2d");
-  context.fillStyle = "red";
+  var context = canvas.getContext('2d');
+  context.fillStyle = 'red';
   context.fillRect(0, 0, 10, 10);
   var stream = canvas.captureStream();
 
@@ -24,7 +24,7 @@ async_test(function(t) {
   const optionsDict = { imageWidth : 1080,
                         imageHeight : 100,
                         redEyeReduction : true,
-                        fillLightMode : "flash"
+                        fillLightMode : 'flash'
                       };
   mockImageCaptureReady
     .then(mock => {
@@ -32,7 +32,7 @@ async_test(function(t) {
       return new ImageCapture(stream.getVideoTracks()[0]);
     },
     error => {
-      assert_unreached("Error creating MockImageCapture: " + error);
+      assert_unreached('Error creating MockImageCapture: ' + error);
     })
     .then(capturer => {
       return capturer.takePhoto(optionsDict);
@@ -64,7 +64,7 @@ async_test(function(t) {
       t.done();
     })
     .catch(error => {
-      assert_unreached("Error during takePhoto(): " + error.message);
+      assert_unreached('Error during takePhoto(): ' + error.message);
     });
 }, 'exercises ImageCapture.takePhoto(PhotoSettings dictionary)');
 
