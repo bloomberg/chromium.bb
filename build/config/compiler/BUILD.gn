@@ -1146,13 +1146,6 @@ config("default_warnings") {
       "-Wno-inconsistent-missing-override",
     ]
 
-    if (is_linux && target_cpu == "x86") {
-      cflags += [
-        # TODO(thakis): Remove from 32-bit Linux eventually, https://707084
-        "-Wno-deprecated-register",
-      ]
-    }
-
     # use_xcode_clang only refers to the iOS toolchain, host binaries use
     # chromium's clang always.
     if (!is_nacl && (!use_xcode_clang || current_toolchain == host_toolchain)) {
