@@ -882,10 +882,8 @@ static InlineBoxPosition AdjustInlineBoxPositionForTextDirection(
         return InlineBoxPosition(inline_box, caret_offset);
 
       level = next_box->BidiLevel();
-      InlineBox* prev_box = inline_box;
-      do {
-        prev_box = prev_box->PrevLeafChild();
-      } while (prev_box && prev_box->BidiLevel() > level);
+      InlineBox* const prev_box =
+          InlineBoxTraversal::FindLeftBidiRun(*inline_box, level);
 
       // For example, abc FED 123 ^ CBA
       if (prev_box && prev_box->BidiLevel() == level)
@@ -901,10 +899,8 @@ static InlineBoxPosition AdjustInlineBoxPositionForTextDirection(
       return InlineBoxPosition(inline_box, caret_offset);
 
     level = inline_box->PrevLeafChild()->BidiLevel();
-    InlineBox* next_box = inline_box;
-    do {
-      next_box = next_box->NextLeafChild();
-    } while (next_box && next_box->BidiLevel() > level);
+    InlineBox* const next_box =
+        InlineBoxTraversal::FindRightBidiRun(*inline_box, level);
 
     if (next_box && next_box->BidiLevel() == level)
       return InlineBoxPosition(inline_box, caret_offset);

@@ -18,6 +18,12 @@ class InlineBoxTraversal final {
  public:
   // TODO(yosin): We should take |bidi_level| from |InlineBox::BidiLevel()|,
   // once all call sites satisfy it.
+
+  // Returns |InlineBox| which is less than or equal to |bidi_level| of
+  // left/right of specified |InlineBox|.
+  static InlineBox* FindLeftBidiRun(const InlineBox&, unsigned bidi_level);
+  static InlineBox* FindRightBidiRun(const InlineBox&, unsigned bidi_level);
+
   // Find left boundary variations
   static InlineBox* FindLeftBoundaryOfBidiRunIgnoringLineBreak(
       const InlineBox&,
