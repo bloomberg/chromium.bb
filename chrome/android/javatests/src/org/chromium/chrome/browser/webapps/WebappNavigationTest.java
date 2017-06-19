@@ -17,7 +17,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
@@ -28,7 +27,7 @@ import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.contextmenu.ContextMenuUtils;
-import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.ui.base.PageTransition;
 
@@ -64,18 +63,11 @@ public class WebappNavigationTest {
     @Test
     @SmallTest
     @Feature({"Webapps"})
-    public void testOffOriginNavigationUsingLinkAndNoWebappThemeColor() throws Exception {
+    public void testRegularLinkOffOriginInCctNoWebappThemeColor() throws Exception {
         runWebappActivityAndWaitForIdle(mActivityTestRule.createIntent());
-
-        // Not using #loadUrl, as it expects the URL to load in the activity under test,
-        // which is not happening here.
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mActivityTestRule.getActivity().getActivityTab().loadUrl(
-                        new LoadUrlParams(OFF_ORIGIN_URL, PageTransition.LINK));
-            }
-        });
+        addAnchor("testId", OFF_ORIGIN_URL, "_self");
+        DOMUtils.clickNode(
+                mActivityTestRule.getActivity().getActivityTab().getContentViewCore(), "testId");
 
         CustomTabActivity customTab = assertCustomTabActivityLaunchedForOffOriginUrl();
 
@@ -89,7 +81,7 @@ public class WebappNavigationTest {
     @Test
     @SmallTest
     @Feature({"Webapps"})
-    public void testOffOriginNavigationUsingJavaScriptAndWebappThemeColor() throws Exception {
+    public void testWindowTopLocationOffOriginInCctAndWebappThemeColor() throws Exception {
         runWebappActivityAndWaitForIdle(mActivityTestRule.createIntent().putExtra(
                 ShortcutHelper.EXTRA_THEME_COLOR, (long) Color.CYAN));
 
@@ -102,14 +94,48 @@ public class WebappNavigationTest {
                 customTab.getToolbarManager().getPrimaryColor());
     }
 
-    private CustomTabActivity assertCustomTabActivityLaunchedForOffOriginUrl() {
-        CustomTabActivity customTab = activityListener.waitFor(CustomTabActivity.class);
+    @Test
+    @SmallTest
+    @Feature({"Webapps"})
+    public void testNewTabLinkOpensInCct() throws Exception {
+        runWebappActivityAndWaitForIdle(mActivityTestRule.createIntent().putExtra(
+                ShortcutHelper.EXTRA_THEME_COLOR, (long) Color.CYAN));
+        addAnchor("testId", OFF_ORIGIN_URL, "_blank");
+        DOMUtils.clickNode(
+                mActivityTestRule.getActivity().getActivityTab().getContentViewCore(), "testId");
+        CustomTabActivity customTab = assertCustomTabActivityLaunchedForOffOriginUrl();
+        Assert.assertEquals(
+                "CCT Toolbar should use default primary color even if webapp has theme color",
+                ApiCompatibilityUtils.getColor(
+                        customTab.getResources(), R.color.default_primary_color),
+                customTab.getToolbarManager().getPrimaryColor());
+    }
 
-        mActivityTestRule.waitUntilIdle(customTab);
-        // Dropping the TLD as Google can redirect to a local site, so this could fail outside US.
-        Assert.assertTrue(customTab.getActivityTab().getUrl().startsWith("https://www.google."));
+    @Test
+    @SmallTest
+    @Feature({"Webapps"})
+    public void testWindowOpenInCct() throws Exception {
+        runWebappActivityAndWaitForIdle(mActivityTestRule.createIntent());
+        // Executing window.open() through a click on a link,
+        // as it needs user gesture to avoid Chrome blocking it as a popup.
+        mActivityTestRule.runJavaScriptCodeInCurrentTab(
+                String.format("var aTag = document.createElement('testId');"
+                                + "aTag.id = 'testId';"
+                                + "aTag.innerHTML = 'Click Me!';"
+                                + "aTag.onclick = function() {"
+                                + "  window.open('%s');"
+                                + "  return false;"
+                                + "};"
+                                + "document.body.appendChild(aTag);",
+                        OFF_ORIGIN_URL));
+        DOMUtils.clickNode(
+                mActivityTestRule.getActivity().getActivityTab().getContentViewCore(), "testId");
 
-        return customTab;
+        CustomTabActivity customTab = assertCustomTabActivityLaunchedForOffOriginUrl();
+        Assert.assertEquals("CCT Toolbar should use default primary color",
+                ApiCompatibilityUtils.getColor(
+                        customTab.getResources(), R.color.default_primary_color),
+                customTab.getToolbarManager().getPrimaryColor());
     }
 
     @Test
@@ -138,11 +164,7 @@ public class WebappNavigationTest {
         FirstRunStatus.setFirstRunFlowComplete(true);
         runWebappActivityAndWaitForIdle(mActivityTestRule.createIntent());
 
-        mActivityTestRule.runJavaScriptCodeInCurrentTab("var aTag = document.createElement('a');"
-                + "aTag.id = 'myTestAnchorId';"
-                + "aTag.setAttribute('href','https://www.google.com/');"
-                + "aTag.innerHTML = 'Click Me!';"
-                + "document.body.appendChild(aTag);");
+        addAnchor("myTestAnchorId", OFF_ORIGIN_URL, "_self");
 
         ContextMenuUtils.selectContextMenuItem(InstrumentationRegistry.getInstrumentation(),
                 null /* activity to check for focus after click */,
@@ -162,5 +184,26 @@ public class WebappNavigationTest {
 
         mActivityTestRule.waitUntilSplashscreenHides();
         mActivityTestRule.waitUntilIdle();
+    }
+
+    private CustomTabActivity assertCustomTabActivityLaunchedForOffOriginUrl() {
+        CustomTabActivity customTab = activityListener.waitFor(CustomTabActivity.class);
+
+        mActivityTestRule.waitUntilIdle(customTab);
+        // Dropping the TLD as Google can redirect to a local site, so this could fail outside US.
+        Assert.assertTrue(customTab.getActivityTab().getUrl().contains("https://www.google."));
+
+        return customTab;
+    }
+
+    private void addAnchor(String id, String url, String target) throws Exception {
+        mActivityTestRule.runJavaScriptCodeInCurrentTab(
+                String.format("var aTag = document.createElement('a');"
+                                + "aTag.id = '%s';"
+                                + "aTag.setAttribute('href','%s');"
+                                + "aTag.setAttribute('target','%s');"
+                                + "aTag.innerHTML = 'Click Me!';"
+                                + "document.body.appendChild(aTag);",
+                        id, url, target));
     }
 }
