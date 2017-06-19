@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_PRINTER_DETECTOR_USB_PRINTER_DETECTOR_H_
-#define CHROME_BROWSER_CHROMEOS_PRINTER_DETECTOR_USB_PRINTER_DETECTOR_H_
+#ifndef CHROME_BROWSER_CHROMEOS_PRINTING_USB_PRINTER_DETECTOR_H_
+#define CHROME_BROWSER_CHROMEOS_PRINTING_USB_PRINTER_DETECTOR_H_
 
 #include <memory>
 #include <string>
@@ -50,4 +50,4 @@ class UsbPrinterDetector : public KeyedService {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_PRINTER_DETECTOR_USB_PRINTER_DETECTOR_H_
+#endif  // CHROME_BROWSER_CHROMEOS_PRINTING_USB_PRINTER_DETECTOR_H_

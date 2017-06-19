@@ -10,10 +10,10 @@
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
 #include "base/threading/sequenced_task_runner_handle.h"
-#include "chrome/browser/chromeos/printer_detector/usb_printer_detector.h"
-#include "chrome/browser/chromeos/printer_detector/usb_printer_detector_factory.h"
 #include "chrome/browser/chromeos/printing/printers_manager.h"
 #include "chrome/browser/chromeos/printing/printers_manager_factory.h"
+#include "chrome/browser/chromeos/printing/usb_printer_detector.h"
+#include "chrome/browser/chromeos/printing/usb_printer_detector_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/printing/printer_configuration.h"
 
