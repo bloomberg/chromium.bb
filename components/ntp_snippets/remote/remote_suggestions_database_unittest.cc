@@ -51,8 +51,10 @@ std::unique_ptr<RemoteSuggestion> CreateTestSuggestion() {
   return RemoteSuggestion::CreateFromProto(proto);
 }
 
-MATCHER_P(SnippetEq, snippet, "") {
-  return *arg == *snippet;
+// Eq matcher has to store the expected value, but RemoteSuggestion is movable-
+// only.
+MATCHER_P(PointeeEq, ptr_to_expected, "") {
+  return *arg == *ptr_to_expected;
 }
 
 }  // namespace
@@ -164,7 +166,7 @@ TEST_F(RemoteSuggestionsDatabaseTest, Save) {
 
   // Make sure they're there.
   EXPECT_CALL(*this,
-              OnSnippetsLoadedImpl(ElementsAre(SnippetEq(snippet.get()))));
+              OnSnippetsLoadedImpl(ElementsAre(PointeeEq(snippet.get()))));
   db()->LoadSnippets(
       base::Bind(&RemoteSuggestionsDatabaseTest::OnSnippetsLoaded,
                  base::Unretained(this)));
@@ -196,7 +198,7 @@ TEST_F(RemoteSuggestionsDatabaseTest, SavePersist) {
   CreateDatabase();
 
   EXPECT_CALL(*this,
-              OnSnippetsLoadedImpl(ElementsAre(SnippetEq(snippet.get()))));
+              OnSnippetsLoadedImpl(ElementsAre(PointeeEq(snippet.get()))));
   db()->LoadSnippets(
       base::Bind(&RemoteSuggestionsDatabaseTest::OnSnippetsLoaded,
                  base::Unretained(this)));
@@ -223,7 +225,7 @@ TEST_F(RemoteSuggestionsDatabaseTest, Update) {
 
   // Make sure we get the updated version.
   EXPECT_CALL(*this,
-              OnSnippetsLoadedImpl(ElementsAre(SnippetEq(snippet.get()))));
+              OnSnippetsLoadedImpl(ElementsAre(PointeeEq(snippet.get()))));
   db()->LoadSnippets(
       base::Bind(&RemoteSuggestionsDatabaseTest::OnSnippetsLoaded,
                  base::Unretained(this)));
@@ -242,7 +244,7 @@ TEST_F(RemoteSuggestionsDatabaseTest, Delete) {
 
   // Make sure it's there.
   EXPECT_CALL(*this,
-              OnSnippetsLoadedImpl(ElementsAre(SnippetEq(snippet.get()))));
+              OnSnippetsLoadedImpl(ElementsAre(PointeeEq(snippet.get()))));
   db()->LoadSnippets(
       base::Bind(&RemoteSuggestionsDatabaseTest::OnSnippetsLoaded,
                  base::Unretained(this)));
@@ -276,7 +278,7 @@ TEST_F(RemoteSuggestionsDatabaseTest, DeleteSnippetDoesNotDeleteImage) {
 
   // Make sure they're there.
   EXPECT_CALL(*this,
-              OnSnippetsLoadedImpl(ElementsAre(SnippetEq(snippet.get()))));
+              OnSnippetsLoadedImpl(ElementsAre(PointeeEq(snippet.get()))));
   db()->LoadSnippets(
       base::Bind(&RemoteSuggestionsDatabaseTest::OnSnippetsLoaded,
                  base::Unretained(this)));
