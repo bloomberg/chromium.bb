@@ -103,15 +103,17 @@ void WorkerDevToolsAgentHost::WorkerReadyForInspection() {
     state_ = WORKER_INSPECTED;
     AttachToWorker();
     if (RenderProcessHost* host = RenderProcessHost::FromID(worker_id_.first)) {
-      host->Send(new DevToolsAgentMsg_Reattach(worker_id_.second, GetId(),
-                                               session()->session_id(),
-                                               session()->state_cookie()));
-      for (const auto& pair : session()->waiting_messages()) {
-        int call_id = pair.first;
-        const DevToolsSession::Message& message = pair.second;
-        host->Send(new DevToolsAgentMsg_DispatchOnInspectorBackend(
-            worker_id_.second, session()->session_id(), call_id, message.method,
-            message.message));
+      for (DevToolsSession* session : sessions()) {
+        host->Send(new DevToolsAgentMsg_Reattach(worker_id_.second, GetId(),
+                                                 session->session_id(),
+                                                 session->state_cookie()));
+        for (const auto& pair : session->waiting_messages()) {
+          int call_id = pair.first;
+          const DevToolsSession::Message& message = pair.second;
+          host->Send(new DevToolsAgentMsg_DispatchOnInspectorBackend(
+              worker_id_.second, session->session_id(), call_id, message.method,
+              message.message));
+        }
       }
     }
     OnAttachedStateChanged(true);
@@ -175,7 +177,9 @@ void WorkerDevToolsAgentHost::OnDispatchOnInspectorFrontend(
     const DevToolsMessageChunk& message) {
   if (!IsAttached())
     return;
-  session()->ReceiveMessageChunk(message);
+  DevToolsSession* session = SessionById(message.session_id);
+  if (session)
+    session->ReceiveMessageChunk(message);
 }
 
 }  // namespace content

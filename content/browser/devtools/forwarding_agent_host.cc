@@ -22,11 +22,13 @@ ForwardingAgentHost::~ForwardingAgentHost() {
 }
 
 void ForwardingAgentHost::DispatchOnClientHost(const std::string& message) {
-  SendMessageToClient(session() ? session()->session_id() : 0, message);
+  if (sessions().empty())
+    return;
+  (*sessions().begin())->SendMessageToClient(message);
 }
 
 void ForwardingAgentHost::ConnectionClosed() {
-  ForceDetach(false);
+  ForceDetachAllClients(false);
 }
 
 void ForwardingAgentHost::AttachSession(DevToolsSession* session) {

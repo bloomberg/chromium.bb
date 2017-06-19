@@ -127,8 +127,8 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
 
   bool IsChildFrame();
 
-  void OnClientAttached();
-  void OnClientDetached();
+  void OnClientsAttached();
+  void OnClientsDetached();
 
   void RenderFrameCrashed();
   void OnSwapCompositorFrame(const IPC::Message& message);
@@ -144,6 +144,9 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   void SendMessageFromProcessor(int session_id, const std::string& message);
   void GrantPolicy(RenderFrameHostImpl* host);
   void RevokePolicy(RenderFrameHostImpl* host);
+
+  // TODO(dgozman): remove together with old navigation code.
+  DevToolsSession* SingleSession();
 
 #if defined(OS_ANDROID)
   device::mojom::WakeLock* GetWakeLock();
@@ -177,12 +180,11 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   // These messages were queued after suspending, not sent to the agent,
   // and will be sent after resuming.
   struct Message {
-    int session_id;
     int call_id;
     std::string method;
     std::string message;
   };
-  std::vector<Message> suspended_messages_;
+  std::map<int, std::vector<Message>> suspended_messages_by_session_id_;
 
   // The FrameTreeNode associated with this agent.
   FrameTreeNode* frame_tree_node_;
