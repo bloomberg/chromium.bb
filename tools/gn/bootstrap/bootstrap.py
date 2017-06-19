@@ -536,6 +536,7 @@ def write_gn_ninja(path, root_gen_dir, options):
       'base/trace_event/heap_profiler_heap_dump_writer.cc',
       'base/trace_event/heap_profiler_serialization_state.cc',
       'base/trace_event/heap_profiler_stack_frame_deduplicator.cc',
+      'base/trace_event/heap_profiler_string_deduplicator.cc',
       'base/trace_event/heap_profiler_type_name_deduplicator.cc',
       'base/trace_event/malloc_dump_provider.cc',
       'base/trace_event/memory_allocator_dump.cc',
