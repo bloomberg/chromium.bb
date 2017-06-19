@@ -4539,9 +4539,6 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
 #endif
     }
 
-    cm->last_width = cm->width;
-    cm->last_height = cm->height;
-
     ++cm->current_video_frame;
 
 #if CONFIG_EC_ADAPT
@@ -4848,13 +4845,6 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
   cm->seg.update_data = 0;
   cm->lf.mode_ref_delta_update = 0;
 
-  // keep track of the last coded dimensions
-  cm->last_width = cm->width;
-  cm->last_height = cm->height;
-
-  // reset to normal state now that we are done.
-  if (!cm->show_existing_frame) cm->last_show_frame = cm->show_frame;
-
   if (cm->show_frame) {
 #if CONFIG_EXT_REFS
 // TODO(zoeliu): We may only swamp mi and prev_mi for those frames that are
@@ -4868,9 +4858,18 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
 
 #if CONFIG_EXT_REFS
   // NOTE: Shall not refer to any frame not used as reference.
-  if (cm->is_reference_frame)
+  if (cm->is_reference_frame) {
 #endif  // CONFIG_EXT_REFS
     cm->prev_frame = cm->cur_frame;
+    // keep track of the last coded dimensions
+    cm->last_width = cm->width;
+    cm->last_height = cm->height;
+
+    // reset to normal state now that we are done.
+    cm->last_show_frame = cm->show_frame;
+#if CONFIG_EXT_REFS
+  }
+#endif  // CONFIG_EXT_REFS
 #if CONFIG_EC_ADAPT
   aom_free(tile_ctxs);
   aom_free(cdf_ptrs);
