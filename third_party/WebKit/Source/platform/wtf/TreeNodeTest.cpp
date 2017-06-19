@@ -25,7 +25,6 @@
 
 #include "platform/wtf/TreeNode.h"
 
-#include "platform/wtf/PassRefPtr.h"
 #include "platform/wtf/RefCounted.h"
 #include "platform/wtf/RefPtr.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,7 +33,7 @@ namespace WTF {
 
 class TestTree : public RefCounted<TestTree>, public TreeNode<TestTree> {
  public:
-  static PassRefPtr<TestTree> Create() { return AdoptRef(new TestTree()); }
+  static RefPtr<TestTree> Create() { return AdoptRef(new TestTree()); }
 };
 
 TEST(TreeNodeTest, AppendChild) {
