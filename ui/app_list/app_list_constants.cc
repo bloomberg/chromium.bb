@@ -80,6 +80,9 @@ const int kPreferredCols = 6;
 const int kPreferredRows = 4;
 const int kGridIconDimension = 48;
 
+// The preferred app badge icon size.
+const int kAppBadgeIconSize = 12;
+
 // Preferred search result icon sizes.
 const int kListIconSize = 24;
 const int kListBadgeIconSize = 16;

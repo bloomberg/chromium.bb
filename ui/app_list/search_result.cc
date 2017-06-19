@@ -24,21 +24,13 @@ SearchResult::Action::Action(const gfx::ImageSkia& base_image,
 
 SearchResult::Action::Action(const base::string16& label_text,
                              const base::string16& tooltip_text)
-    : tooltip_text(tooltip_text),
-      label_text(label_text) {}
+    : tooltip_text(tooltip_text), label_text(label_text) {}
 
 SearchResult::Action::Action(const Action& other) = default;
 
-SearchResult::Action::~Action() {}
+SearchResult::Action::~Action() = default;
 
-SearchResult::SearchResult()
-    : relevance_(0),
-      display_type_(DISPLAY_LIST),
-      distance_from_origin_(-1),
-      voice_result_(false),
-      is_installing_(false),
-      percent_downloaded_(0) {
-}
+SearchResult::SearchResult() = default;
 
 SearchResult::~SearchResult() {
   for (auto& observer : observers_)
@@ -131,11 +123,9 @@ void SearchResult::UpdateFromMatch(const TokenizedString& title,
   set_relevance(match.relevance());
 }
 
-void SearchResult::Open(int event_flags) {
-}
+void SearchResult::Open(int event_flags) {}
 
-void SearchResult::InvokeAction(int action_index, int event_flags) {
-}
+void SearchResult::InvokeAction(int action_index, int event_flags) {}
 
 ui::MenuModel* SearchResult::GetContextMenuModel() {
   return NULL;
