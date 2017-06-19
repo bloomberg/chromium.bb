@@ -63,11 +63,12 @@ Polymer({
 
   /** @override */
   ready: function() {
-    this.addWebUIListener('setHandlersEnabled',
-        this.setHandlersEnabled_.bind(this));
-    this.addWebUIListener('setProtocolHandlers',
-        this.setProtocolHandlers_.bind(this));
-    this.addWebUIListener('setIgnoredProtocolHandlers',
+    this.addWebUIListener(
+        'setHandlersEnabled', this.setHandlersEnabled_.bind(this));
+    this.addWebUIListener(
+        'setProtocolHandlers', this.setProtocolHandlers_.bind(this));
+    this.addWebUIListener(
+        'setIgnoredProtocolHandlers',
         this.setIgnoredProtocolHandlers_.bind(this));
     this.browserProxy.observeProtocolHandlers();
   },
@@ -159,8 +160,9 @@ Polymer({
    * @return {boolean} if actionMenuModel_ is default handler of its protocol.
    */
   isModelDefault_: function() {
-    return !!this.actionMenuModel_ && (this.actionMenuModel_.index ==
-        this.actionMenuModel_.protocol.default_handler);
+    return !!this.actionMenuModel_ &&
+        (this.actionMenuModel_.index ==
+         this.actionMenuModel_.protocol.default_handler);
   },
 
   /**
@@ -171,8 +173,8 @@ Polymer({
    */
   showMenu_: function(event) {
     this.actionMenuModel_ = event.model;
-    /** @type {!CrActionMenuElement} */ (
-        this.$$('dialog[is=cr-action-menu]')).showAt(
+    /** @type {!CrActionMenuElement} */ (this.$$('dialog[is=cr-action-menu]'))
+        .showAt(
             /** @type {!Element} */ (
                 Polymer.dom(/** @type {!Event} */ (event)).localTarget));
   }

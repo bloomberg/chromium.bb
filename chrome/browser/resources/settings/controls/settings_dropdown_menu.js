@@ -76,8 +76,8 @@ Polymer({
     if (selected == this.notFoundValue_)
       return;
 
-    var prefValue = Settings.PrefUtil.stringToPrefValue(
-        selected, assert(this.pref));
+    var prefValue =
+        Settings.PrefUtil.stringToPrefValue(selected, assert(this.pref));
     if (prefValue !== undefined)
       this.set('pref.value', prefValue);
   },

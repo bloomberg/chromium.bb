@@ -57,18 +57,12 @@ Polymer({
       type: Object,
       value: function() {
         var map = new Map();
-        map.set(
-            settings.Route.POINTERS.path, '#pointersRow .subpage-arrow');
-        map.set(
-            settings.Route.KEYBOARD.path, '#keyboardRow .subpage-arrow');
-        map.set(
-            settings.Route.STYLUS.path, '#stylusRow .subpage-arrow');
-        map.set(
-            settings.Route.DISPLAY.path, '#displayRow .subpage-arrow');
-        map.set(
-            settings.Route.STORAGE.path, '#storageRow .subpage-arrow');
-        map.set(
-            settings.Route.POWER.path, '#powerRow .subpage-arrow');
+        map.set(settings.Route.POINTERS.path, '#pointersRow .subpage-arrow');
+        map.set(settings.Route.KEYBOARD.path, '#keyboardRow .subpage-arrow');
+        map.set(settings.Route.STYLUS.path, '#stylusRow .subpage-arrow');
+        map.set(settings.Route.DISPLAY.path, '#displayRow .subpage-arrow');
+        map.set(settings.Route.STORAGE.path, '#storageRow .subpage-arrow');
+        map.set(settings.Route.POWER.path, '#powerRow .subpage-arrow');
         return map;
       },
     },

@@ -131,8 +131,8 @@ Polymer({
       case 'mouse':
         return 'settings:mouse';
       default:
-        return device.connected ?
-            'settings:bluetooth-connected' : 'settings:bluetooth';
+        return device.connected ? 'settings:bluetooth-connected' :
+                                  'settings:bluetooth';
     }
   },
 });

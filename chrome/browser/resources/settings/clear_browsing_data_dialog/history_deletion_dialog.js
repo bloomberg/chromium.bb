@@ -24,4 +24,3 @@ Polymer({
     this.$.dialog.close();
   },
 });
-

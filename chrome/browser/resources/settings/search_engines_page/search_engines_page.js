@@ -15,19 +15,25 @@ Polymer({
     /** @type {!Array<!SearchEngine>} */
     defaultEngines: {
       type: Array,
-      value: function() { return []; }
+      value: function() {
+        return [];
+      }
     },
 
     /** @type {!Array<!SearchEngine>} */
     otherEngines: {
       type: Array,
-      value: function() { return []; }
+      value: function() {
+        return [];
+      }
     },
 
     /** @type {!Array<!SearchEngine>} */
     extensions: {
       type: Array,
-      value: function() { return []; }
+      value: function() {
+        return [];
+      }
     },
 
     /**
@@ -58,8 +64,9 @@ Polymer({
 
   /** @override */
   ready: function() {
-    settings.SearchEnginesBrowserProxyImpl.getInstance().
-        getSearchEnginesList().then(this.enginesChanged_.bind(this));
+    settings.SearchEnginesBrowserProxyImpl.getInstance()
+        .getSearchEnginesList()
+        .then(this.enginesChanged_.bind(this));
     this.addWebUIListener(
         'search-engines-changed', this.enginesChanged_.bind(this));
 

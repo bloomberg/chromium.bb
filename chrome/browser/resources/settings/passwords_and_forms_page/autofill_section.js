@@ -146,325 +146,325 @@ AutofillManagerImpl.prototype = {
 };
 
 (function() {
-  'use strict';
+'use strict';
 
-  Polymer({
-    is: 'settings-autofill-section',
+Polymer({
+  is: 'settings-autofill-section',
 
-    behaviors: [I18nBehavior],
+  behaviors: [I18nBehavior],
 
-    properties: {
-      /**
-       * An array of saved addresses.
-       * @type {!Array<!AutofillManager.AddressEntry>}
-       */
-      addresses: Array,
-
-      /**
-       * The model for any address related action menus or dialogs.
-       * @private {?chrome.autofillPrivate.AddressEntry}
-       */
-      activeAddress: Object,
-
-      /** @private */
-      showAddressDialog_: Boolean,
-
-      /**
-       * An array of saved credit cards.
-       * @type {!Array<!AutofillManager.CreditCardEntry>}
-       */
-      creditCards: Array,
-
-      /**
-       * The model for any credit card related action menus or dialogs.
-       * @private {?chrome.autofillPrivate.CreditCardEntry}
-       */
-      activeCreditCard: Object,
-
-      /** @private */
-      showCreditCardDialog_: Boolean,
-    },
-
-    listeners: {
-      'save-address': 'saveAddress_',
-      'save-credit-card': 'saveCreditCard_',
-    },
+  properties: {
+    /**
+     * An array of saved addresses.
+     * @type {!Array<!AutofillManager.AddressEntry>}
+     */
+    addresses: Array,
 
     /**
-     * The element to return focus to, when the currently active dialog is
-     * closed.
-     * @private {?HTMLElement}
+     * The model for any address related action menus or dialogs.
+     * @private {?chrome.autofillPrivate.AddressEntry}
      */
-    activeDialogAnchor_: null,
-
-    /**
-     * @type {AutofillManager}
-     * @private
-     */
-    autofillManager_: null,
-
-    /**
-     * @type {?function(!Array<!AutofillManager.AddressEntry>)}
-     * @private
-     */
-    setAddressesListener_: null,
-
-    /**
-     * @type {?function(!Array<!AutofillManager.CreditCardEntry>)}
-     * @private
-     */
-    setCreditCardsListener_: null,
-
-    /** @override */
-    attached: function() {
-      // Create listener functions.
-      /** @type {function(!Array<!AutofillManager.AddressEntry>)} */
-      var setAddressesListener = function(list) {
-        this.addresses = list;
-      }.bind(this);
-
-      /** @type {function(!Array<!AutofillManager.CreditCardEntry>)} */
-      var setCreditCardsListener = function(list) {
-        this.creditCards = list;
-      }.bind(this);
-
-      // Remember the bound reference in order to detach.
-      this.setAddressesListener_ = setAddressesListener;
-      this.setCreditCardsListener_ = setCreditCardsListener;
-
-      // Set the managers. These can be overridden by tests.
-      this.autofillManager_ = AutofillManagerImpl.getInstance();
-
-      // Request initial data.
-      this.autofillManager_.getAddressList(setAddressesListener);
-      this.autofillManager_.getCreditCardList(setCreditCardsListener);
-
-      // Listen for changes.
-      this.autofillManager_.addAddressListChangedListener(setAddressesListener);
-      this.autofillManager_.addCreditCardListChangedListener(
-          setCreditCardsListener);
-    },
-
-    /** @override */
-    detached: function() {
-      this.autofillManager_.removeAddressListChangedListener(
-          /** @type {function(!Array<!AutofillManager.AddressEntry>)} */(
-          this.setAddressesListener_));
-      this.autofillManager_.removeCreditCardListChangedListener(
-          /** @type {function(!Array<!AutofillManager.CreditCardEntry>)} */(
-          this.setCreditCardsListener_));
-    },
-
-    /**
-     * Formats the expiration date so it's displayed as MM/YYYY.
-     * @param {!chrome.autofillPrivate.CreditCardEntry} item
-     * @return {string}
-     * @private
-     */
-    expiration_: function(item) {
-      return item.expirationMonth + '/' + item.expirationYear;
-    },
-
-    /**
-     * Open the address action menu.
-     * @param {!Event} e The polymer event.
-     * @private
-     */
-    onAddressMenuTap_: function(e) {
-      var menuEvent = /** @type {!{model: !{item: !Object}}} */(e);
-
-      /* TODO(scottchen): drop the [dataHost][dataHost] once this bug is fixed:
-       https://github.com/Polymer/polymer/issues/2574 */
-      var item = menuEvent.model['dataHost']['dataHost'].item;
-
-      // Copy item so dialog won't update model on cancel.
-      this.activeAddress = /** @type {!chrome.autofillPrivate.AddressEntry} */(
-          Object.assign({}, item));
-
-      var dotsButton = /** @type {!HTMLElement} */ (Polymer.dom(e).localTarget);
-      /** @type {!CrActionMenuElement} */ (
-          this.$.addressSharedMenu).showAt(dotsButton);
-      this.activeDialogAnchor_ = dotsButton;
-    },
-
-    /**
-     * Handles tapping on the "Add address" button.
-     * @param {!Event} e The polymer event.
-     * @private
-     */
-    onAddAddressTap_: function(e) {
-      e.preventDefault();
-      this.activeAddress = {};
-      this.showAddressDialog_ = true;
-      this.activeDialogAnchor_ = this.$.addAddress;
-    },
+    activeAddress: Object,
 
     /** @private */
-    onAddressDialogClosed_: function() {
-      this.showAddressDialog_ = false;
-      cr.ui.focusWithoutInk(assert(this.activeDialogAnchor_));
-      this.activeDialogAnchor_ = null;
-    },
+    showAddressDialog_: Boolean,
 
     /**
-     * Handles tapping on the "Edit" address button.
-     * @param {!Event} e The polymer event.
-     * @private
+     * An array of saved credit cards.
+     * @type {!Array<!AutofillManager.CreditCardEntry>}
      */
-    onMenuEditAddressTap_: function(e) {
-      e.preventDefault();
-      this.showAddressDialog_ = true;
-      this.$.addressSharedMenu.close();
-    },
+    creditCards: Array,
+
+    /**
+     * The model for any credit card related action menus or dialogs.
+     * @private {?chrome.autofillPrivate.CreditCardEntry}
+     */
+    activeCreditCard: Object,
 
     /** @private */
-    onRemoteEditAddressTap_: function() {
-      window.open(this.i18n('manageAddressesUrl'));
-    },
+    showCreditCardDialog_: Boolean,
+  },
 
-    /**
-     * Handles tapping on the "Remove" address button.
-     * @private
-     */
-    onMenuRemoveAddressTap_: function() {
-      this.autofillManager_.removeAddress(
-          /** @type {string} */(this.activeAddress.guid));
-      this.$.addressSharedMenu.close();
-    },
+  listeners: {
+    'save-address': 'saveAddress_',
+    'save-credit-card': 'saveCreditCard_',
+  },
 
-    /**
-     * Opens the credit card action menu.
-     * @param {!Event} e The polymer event.
-     * @private
-     */
-    onCreditCardMenuTap_: function(e) {
-      var menuEvent = /** @type {!{model: !{item: !Object}}} */(e);
+  /**
+   * The element to return focus to, when the currently active dialog is
+   * closed.
+   * @private {?HTMLElement}
+   */
+  activeDialogAnchor_: null,
 
-      /* TODO(scottchen): drop the [dataHost][dataHost] once this bug is fixed:
-       https://github.com/Polymer/polymer/issues/2574 */
-      var item = menuEvent.model['dataHost']['dataHost'].item;
+  /**
+   * @type {AutofillManager}
+   * @private
+   */
+  autofillManager_: null,
 
-      // Copy item so dialog won't update model on cancel.
-      this.activeCreditCard =
-          /** @type {!chrome.autofillPrivate.CreditCardEntry} */(
-              Object.assign({}, item));
+  /**
+   * @type {?function(!Array<!AutofillManager.AddressEntry>)}
+   * @private
+   */
+  setAddressesListener_: null,
 
-      var dotsButton = /** @type {!HTMLElement} */ (Polymer.dom(e).localTarget);
-      /** @type {!CrActionMenuElement} */ (
-          this.$.creditCardSharedMenu).showAt(dotsButton);
-      this.activeDialogAnchor_ = dotsButton;
-    },
+  /**
+   * @type {?function(!Array<!AutofillManager.CreditCardEntry>)}
+   * @private
+   */
+  setCreditCardsListener_: null,
 
-    /**
-     * Handles tapping on the "Add credit card" button.
-     * @param {!Event} e
-     * @private
-     */
-    onAddCreditCardTap_: function(e) {
-      e.preventDefault();
-      var date = new Date();  // Default to current month/year.
-      var expirationMonth = date.getMonth() + 1;  // Months are 0 based.
-      this.activeCreditCard = {
-        expirationMonth: expirationMonth.toString(),
-        expirationYear: date.getFullYear().toString(),
-      };
+  /** @override */
+  attached: function() {
+    // Create listener functions.
+    /** @type {function(!Array<!AutofillManager.AddressEntry>)} */
+    var setAddressesListener = function(list) {
+      this.addresses = list;
+    }.bind(this);
+
+    /** @type {function(!Array<!AutofillManager.CreditCardEntry>)} */
+    var setCreditCardsListener = function(list) {
+      this.creditCards = list;
+    }.bind(this);
+
+    // Remember the bound reference in order to detach.
+    this.setAddressesListener_ = setAddressesListener;
+    this.setCreditCardsListener_ = setCreditCardsListener;
+
+    // Set the managers. These can be overridden by tests.
+    this.autofillManager_ = AutofillManagerImpl.getInstance();
+
+    // Request initial data.
+    this.autofillManager_.getAddressList(setAddressesListener);
+    this.autofillManager_.getCreditCardList(setCreditCardsListener);
+
+    // Listen for changes.
+    this.autofillManager_.addAddressListChangedListener(setAddressesListener);
+    this.autofillManager_.addCreditCardListChangedListener(
+        setCreditCardsListener);
+  },
+
+  /** @override */
+  detached: function() {
+    this.autofillManager_.removeAddressListChangedListener(
+        /** @type {function(!Array<!AutofillManager.AddressEntry>)} */ (
+            this.setAddressesListener_));
+    this.autofillManager_.removeCreditCardListChangedListener(
+        /** @type {function(!Array<!AutofillManager.CreditCardEntry>)} */ (
+            this.setCreditCardsListener_));
+  },
+
+  /**
+   * Formats the expiration date so it's displayed as MM/YYYY.
+   * @param {!chrome.autofillPrivate.CreditCardEntry} item
+   * @return {string}
+   * @private
+   */
+  expiration_: function(item) {
+    return item.expirationMonth + '/' + item.expirationYear;
+  },
+
+  /**
+   * Open the address action menu.
+   * @param {!Event} e The polymer event.
+   * @private
+   */
+  onAddressMenuTap_: function(e) {
+    var menuEvent = /** @type {!{model: !{item: !Object}}} */ (e);
+
+    /* TODO(scottchen): drop the [dataHost][dataHost] once this bug is fixed:
+     https://github.com/Polymer/polymer/issues/2574 */
+    var item = menuEvent.model['dataHost']['dataHost'].item;
+
+    // Copy item so dialog won't update model on cancel.
+    this.activeAddress = /** @type {!chrome.autofillPrivate.AddressEntry} */ (
+        Object.assign({}, item));
+
+    var dotsButton = /** @type {!HTMLElement} */ (Polymer.dom(e).localTarget);
+    /** @type {!CrActionMenuElement} */ (this.$.addressSharedMenu)
+        .showAt(dotsButton);
+    this.activeDialogAnchor_ = dotsButton;
+  },
+
+  /**
+   * Handles tapping on the "Add address" button.
+   * @param {!Event} e The polymer event.
+   * @private
+   */
+  onAddAddressTap_: function(e) {
+    e.preventDefault();
+    this.activeAddress = {};
+    this.showAddressDialog_ = true;
+    this.activeDialogAnchor_ = this.$.addAddress;
+  },
+
+  /** @private */
+  onAddressDialogClosed_: function() {
+    this.showAddressDialog_ = false;
+    cr.ui.focusWithoutInk(assert(this.activeDialogAnchor_));
+    this.activeDialogAnchor_ = null;
+  },
+
+  /**
+   * Handles tapping on the "Edit" address button.
+   * @param {!Event} e The polymer event.
+   * @private
+   */
+  onMenuEditAddressTap_: function(e) {
+    e.preventDefault();
+    this.showAddressDialog_ = true;
+    this.$.addressSharedMenu.close();
+  },
+
+  /** @private */
+  onRemoteEditAddressTap_: function() {
+    window.open(this.i18n('manageAddressesUrl'));
+  },
+
+  /**
+   * Handles tapping on the "Remove" address button.
+   * @private
+   */
+  onMenuRemoveAddressTap_: function() {
+    this.autofillManager_.removeAddress(
+        /** @type {string} */ (this.activeAddress.guid));
+    this.$.addressSharedMenu.close();
+  },
+
+  /**
+   * Opens the credit card action menu.
+   * @param {!Event} e The polymer event.
+   * @private
+   */
+  onCreditCardMenuTap_: function(e) {
+    var menuEvent = /** @type {!{model: !{item: !Object}}} */ (e);
+
+    /* TODO(scottchen): drop the [dataHost][dataHost] once this bug is fixed:
+     https://github.com/Polymer/polymer/issues/2574 */
+    var item = menuEvent.model['dataHost']['dataHost'].item;
+
+    // Copy item so dialog won't update model on cancel.
+    this.activeCreditCard =
+        /** @type {!chrome.autofillPrivate.CreditCardEntry} */ (
+            Object.assign({}, item));
+
+    var dotsButton = /** @type {!HTMLElement} */ (Polymer.dom(e).localTarget);
+    /** @type {!CrActionMenuElement} */ (this.$.creditCardSharedMenu)
+        .showAt(dotsButton);
+    this.activeDialogAnchor_ = dotsButton;
+  },
+
+  /**
+   * Handles tapping on the "Add credit card" button.
+   * @param {!Event} e
+   * @private
+   */
+  onAddCreditCardTap_: function(e) {
+    e.preventDefault();
+    var date = new Date();  // Default to current month/year.
+    var expirationMonth = date.getMonth() + 1;  // Months are 0 based.
+    this.activeCreditCard = {
+      expirationMonth: expirationMonth.toString(),
+      expirationYear: date.getFullYear().toString(),
+    };
+    this.showCreditCardDialog_ = true;
+    this.activeDialogAnchor_ = this.$.addCreditCard;
+  },
+
+  /** @private */
+  onCreditCardDialogClosed_: function() {
+    this.showCreditCardDialog_ = false;
+    cr.ui.focusWithoutInk(assert(this.activeDialogAnchor_));
+    this.activeDialogAnchor_ = null;
+  },
+
+  /**
+   * Handles tapping on the "Edit" credit card button.
+   * @param {!Event} e The polymer event.
+   * @private
+   */
+  onMenuEditCreditCardTap_: function(e) {
+    e.preventDefault();
+
+    if (this.activeCreditCard.metadata.isLocal)
       this.showCreditCardDialog_ = true;
-      this.activeDialogAnchor_ = this.$.addCreditCard;
-    },
+    else
+      this.onRemoteEditCreditCardTap_();
 
-    /** @private */
-    onCreditCardDialogClosed_: function() {
-      this.showCreditCardDialog_ = false;
-      cr.ui.focusWithoutInk(assert(this.activeDialogAnchor_));
-      this.activeDialogAnchor_ = null;
-    },
+    this.$.creditCardSharedMenu.close();
+  },
 
-    /**
-     * Handles tapping on the "Edit" credit card button.
-     * @param {!Event} e The polymer event.
-     * @private
-     */
-    onMenuEditCreditCardTap_: function(e) {
-      e.preventDefault();
+  /** @private */
+  onRemoteEditCreditCardTap_: function() {
+    window.open(this.i18n('manageCreditCardsUrl'));
+  },
 
-      if (this.activeCreditCard.metadata.isLocal)
-        this.showCreditCardDialog_ = true;
-      else
-        this.onRemoteEditCreditCardTap_();
+  /**
+   * Handles tapping on the "Remove" credit card button.
+   * @private
+   */
+  onMenuRemoveCreditCardTap_: function() {
+    this.autofillManager_.removeCreditCard(
+        /** @type {string} */ (this.activeCreditCard.guid));
+    this.$.creditCardSharedMenu.close();
+  },
 
-      this.$.creditCardSharedMenu.close();
-    },
+  /**
+   * Handles tapping on the "Clear copy" button for cached credit cards.
+   * @private
+   */
+  onMenuClearCreditCardTap_: function() {
+    this.autofillManager_.clearCachedCreditCard(
+        /** @type {string} */ (this.activeCreditCard.guid));
+    this.$.creditCardSharedMenu.close();
+  },
 
-    /** @private */
-    onRemoteEditCreditCardTap_: function() {
-      window.open(this.i18n('manageCreditCardsUrl'));
-    },
+  /**
+   * The 3-dot menu should not be shown if the card is entirely remote.
+   * @param {!chrome.autofillPrivate.AutofillMetadata} metadata
+   * @return {boolean}
+   * @private
+   */
+  showDots_: function(metadata) {
+    return !!(metadata.isLocal || metadata.isCached);
+  },
 
-    /**
-     * Handles tapping on the "Remove" credit card button.
-     * @private
-     */
-    onMenuRemoveCreditCardTap_: function() {
-      this.autofillManager_.removeCreditCard(
-          /** @type {string} */(this.activeCreditCard.guid));
-      this.$.creditCardSharedMenu.close();
-    },
+  /**
+   * Returns true if the list exists and has items.
+   * @param {Array<Object>} list
+   * @return {boolean}
+   * @private
+   */
+  hasSome_: function(list) {
+    return !!(list && list.length);
+  },
 
-    /**
-     * Handles tapping on the "Clear copy" button for cached credit cards.
-     * @private
-     */
-    onMenuClearCreditCardTap_: function() {
-      this.autofillManager_.clearCachedCreditCard(
-          /** @type {string} */(this.activeCreditCard.guid));
-      this.$.creditCardSharedMenu.close();
-    },
+  /**
+   * Listens for the save-address event, and calls the private API.
+   * @param {!Event} event
+   * @private
+   */
+  saveAddress_: function(event) {
+    this.autofillManager_.saveAddress(event.detail);
+  },
 
-    /**
-     * The 3-dot menu should not be shown if the card is entirely remote.
-     * @param {!chrome.autofillPrivate.AutofillMetadata} metadata
-     * @return {boolean}
-     * @private
-     */
-    showDots_: function(metadata) {
-      return !!(metadata.isLocal || metadata.isCached);
-    },
+  /**
+   * Listens for the save-credit-card event, and calls the private API.
+   * @param {!Event} event
+   * @private
+   */
+  saveCreditCard_: function(event) {
+    this.autofillManager_.saveCreditCard(event.detail);
+  },
 
-    /**
-     * Returns true if the list exists and has items.
-     * @param {Array<Object>} list
-     * @return {boolean}
-     * @private
-     */
-    hasSome_: function(list) {
-      return !!(list && list.length);
-    },
-
-    /**
-     * Listens for the save-address event, and calls the private API.
-     * @param {!Event} event
-     * @private
-     */
-    saveAddress_: function(event) {
-      this.autofillManager_.saveAddress(event.detail);
-    },
-
-    /**
-     * Listens for the save-credit-card event, and calls the private API.
-     * @param {!Event} event
-     * @private
-     */
-    saveCreditCard_: function(event) {
-      this.autofillManager_.saveCreditCard(event.detail);
-    },
-
-    /**
-     * @private
-     * @param {boolean} toggleValue
-     * @return {string}
-     */
-    getOnOffLabel_: function(toggleValue) {
-      return toggleValue ? this.i18n('toggleOn') : this.i18n('toggleOff');
-    }
-  });
+  /**
+   * @private
+   * @param {boolean} toggleValue
+   * @return {string}
+   */
+  getOnOffLabel_: function(toggleValue) {
+    return toggleValue ? this.i18n('toggleOn') : this.i18n('toggleOff');
+  }
+});
 })();

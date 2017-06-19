@@ -70,10 +70,10 @@ Polymer({
         'settings-subpage[route-path=\"' +
         settings.Route.SITE_SETTINGS_COOKIES.path + '\"]';
 
-// <if expr="chromeos">
+    // <if expr="chromeos">
     whitelist += ', settings-subpage[route-path=\"' +
         settings.Route.INTERNET_NETWORKS.path + '\"]';
-// </if>
+    // </if>
 
     if (!e.detail.item.matches('neon-animatable, ' + whitelist))
       return;

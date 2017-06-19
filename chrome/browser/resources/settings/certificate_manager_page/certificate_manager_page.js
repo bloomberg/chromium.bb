@@ -21,25 +21,33 @@ Polymer({
     /** @type {!Array<!Certificate>} */
     personalCerts: {
       type: Array,
-      value: function() { return []; },
+      value: function() {
+        return [];
+      },
     },
 
     /** @type {!Array<!Certificate>} */
     serverCerts: {
       type: Array,
-      value: function() { return []; },
+      value: function() {
+        return [];
+      },
     },
 
     /** @type {!Array<!Certificate>} */
     caCerts: {
       type: Array,
-      value: function() { return []; },
+      value: function() {
+        return [];
+      },
     },
 
     /** @type {!Array<!Certificate>} */
     otherCerts: {
       type: Array,
-      value: function() { return []; },
+      value: function() {
+        return [];
+      },
     },
 
     /** @private */
@@ -117,10 +125,8 @@ Polymer({
         if (event.detail.certificateType == CertificateType.PERSONAL) {
           this.openDialog_(
               'settings-certificate-password-decryption-dialog',
-              'showPasswordDecryptionDialog_',
-              event.detail.anchor);
-        } else if (event.detail.certificateType ==
-            CertificateType.CA) {
+              'showPasswordDecryptionDialog_', event.detail.anchor);
+        } else if (event.detail.certificateType == CertificateType.CA) {
           this.openDialog_(
               'settings-ca-trust-edit-dialog', 'showCaTrustEditDialog_',
               event.detail.anchor);
@@ -134,8 +140,7 @@ Polymer({
           this.openDialog_(
               'settings-certificate-delete-confirmation-dialog',
               'showDeleteConfirmationDialog_', event.detail.anchor);
-        } else if (event.detail.action ==
-            CertificateAction.EXPORT_PERSONAL) {
+        } else if (event.detail.action == CertificateAction.EXPORT_PERSONAL) {
           this.openDialog_(
               'settings-certificate-password-encryption-dialog',
               'showPasswordEncryptionDialog_', event.detail.anchor);
@@ -149,8 +154,7 @@ Polymer({
       var detail = /** @type {!CertificatesErrorEventDetail} */ (event.detail);
       this.errorDialogModel_ = detail.error;
       this.openDialog_(
-          'settings-certificates-error-dialog',
-          'showErrorDialog_',
+          'settings-certificates-error-dialog', 'showErrorDialog_',
           detail.anchor);
       event.stopPropagation();
     }.bind(this));

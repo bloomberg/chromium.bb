@@ -50,8 +50,8 @@ Polymer({
    */
   getExplanationText_: function() {
     if (this.isTriggered_) {
-      return loadTimeData.getStringF('triggeredResetPageExplanation',
-                                     this.triggeredResetToolName_);
+      return loadTimeData.getStringF(
+          'triggeredResetPageExplanation', this.triggeredResetToolName_);
     }
     return loadTimeData.getStringF('resetPageExplanation');
   },
@@ -62,8 +62,8 @@ Polymer({
    */
   getPageTitle_: function() {
     if (this.isTriggered_) {
-      return loadTimeData.getStringF('triggeredResetPageTitle',
-                                     this.triggeredResetToolName_);
+      return loadTimeData.getStringF(
+          'triggeredResetPageTitle', this.triggeredResetToolName_);
     }
     return loadTimeData.getStringF('resetPageTitle');
   },
@@ -76,12 +76,13 @@ Polymer({
       this.browserProxy_.onHideResetProfileDialog();
     }.bind(this));
 
-    this.$$('paper-checkbox a').addEventListener(
-        'tap', this.onShowReportedSettingsTap_.bind(this));
+    this.$$('paper-checkbox a')
+        .addEventListener('tap', this.onShowReportedSettingsTap_.bind(this));
     // Prevent toggling of the checkbox when hitting the "Enter" key on the
     // link.
-    this.$$('paper-checkbox a').addEventListener(
-        'keydown', function(e) { e.stopPropagation(); });
+    this.$$('paper-checkbox a').addEventListener('keydown', function(e) {
+      e.stopPropagation();
+    });
   },
 
   /** @private */
@@ -105,7 +106,8 @@ Polymer({
       // reset request came from the Chrome Cleanup Tool by launching Chrome
       // with the startup URL chrome://settings/resetProfileSettings#cct.
       var origin = window.location.hash.slice(1).toLowerCase() == 'cct' ?
-          'cct' : settings.getQueryParameters().get('origin');
+          'cct' :
+          settings.getQueryParameters().get('origin');
       this.resetRequestOrigin_ = origin || '';
       this.showDialog_();
     }
@@ -119,13 +121,15 @@ Polymer({
   /** @private */
   onResetTap_: function() {
     this.clearingInProgress_ = true;
-    this.browserProxy_.performResetProfileSettings(
-        this.$.sendSettings.checked, this.resetRequestOrigin_).then(function() {
-      this.clearingInProgress_ = false;
-      if (this.$.dialog.open)
-        this.$.dialog.close();
-      this.fire('reset-done');
-    }.bind(this));
+    this.browserProxy_
+        .performResetProfileSettings(
+            this.$.sendSettings.checked, this.resetRequestOrigin_)
+        .then(function() {
+          this.clearingInProgress_ = false;
+          if (this.$.dialog.open)
+            this.$.dialog.close();
+          this.fire('reset-done');
+        }.bind(this));
   },
 
   /**

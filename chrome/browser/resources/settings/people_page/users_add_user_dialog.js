@@ -16,8 +16,8 @@
  *     e.g. 'john'
  * @const {!RegExp}
  */
-var NAME_ONLY_REGEX = new RegExp(
-    '^\\s*([\\w\\.!#\\$%&\'\\*\\+-\\/=\\?\\^`\\{\\|\\}~]+)\\s*$');
+var NAME_ONLY_REGEX =
+    new RegExp('^\\s*([\\w\\.!#\\$%&\'\\*\\+-\\/=\\?\\^`\\{\\|\\}~]+)\\s*$');
 
 /**
  * Regular expression for adding a user where the string provided is a full

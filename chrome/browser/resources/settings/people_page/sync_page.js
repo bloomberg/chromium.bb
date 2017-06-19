@@ -135,10 +135,10 @@ Polymer({
 
   /** @override */
   attached: function() {
-    this.addWebUIListener('page-status-changed',
-                          this.handlePageStatusChanged_.bind(this));
-    this.addWebUIListener('sync-prefs-changed',
-                          this.handleSyncPrefsChanged_.bind(this));
+    this.addWebUIListener(
+        'page-status-changed', this.handlePageStatusChanged_.bind(this));
+    this.addWebUIListener(
+        'sync-prefs-changed', this.handleSyncPrefsChanged_.bind(this));
 
     if (settings.getCurrentRoute() == settings.Route.SYNC)
       this.onNavigateToPage_();
@@ -260,8 +260,8 @@ Polymer({
    */
   onSingleSyncDataTypeChanged_: function() {
     assert(this.syncPrefs);
-    this.browserProxy_.setSyncDatatypes(this.syncPrefs).then(
-        this.handlePageStatusChanged_.bind(this));
+    this.browserProxy_.setSyncDatatypes(this.syncPrefs)
+        .then(this.handlePageStatusChanged_.bind(this));
   },
 
   /** @private */
@@ -274,8 +274,8 @@ Polymer({
    * @private
    */
   onAutofillDataTypeChanged_: function() {
-    this.set('syncPrefs.paymentsIntegrationEnabled',
-             this.syncPrefs.autofillSynced);
+    this.set(
+        'syncPrefs.paymentsIntegrationEnabled', this.syncPrefs.autofillSynced);
 
     this.onSingleSyncDataTypeChanged_();
   },
@@ -313,8 +313,8 @@ Polymer({
     this.syncPrefs.setNewPassphrase = true;
     this.syncPrefs.passphrase = this.passphrase_;
 
-    this.browserProxy_.setSyncEncryption(this.syncPrefs).then(
-        this.handlePageStatusChanged_.bind(this));
+    this.browserProxy_.setSyncEncryption(this.syncPrefs)
+        .then(this.handlePageStatusChanged_.bind(this));
   },
 
   /**
@@ -333,8 +333,8 @@ Polymer({
     this.syncPrefs.passphrase = this.existingPassphrase_;
     this.existingPassphrase_ = '';
 
-    this.browserProxy_.setSyncEncryption(this.syncPrefs).then(
-        this.handlePageStatusChanged_.bind(this));
+    this.browserProxy_.setSyncEncryption(this.syncPrefs)
+        .then(this.handlePageStatusChanged_.bind(this));
   },
 
   /**
@@ -354,8 +354,8 @@ Polymer({
           settings.navigateTo(settings.Route.PEOPLE);
         return;
       case settings.PageStatus.PASSPHRASE_FAILED:
-        if (this.pageStatus_ == this.pages_.CONFIGURE &&
-            this.syncPrefs && this.syncPrefs.passphraseRequired) {
+        if (this.pageStatus_ == this.pages_.CONFIGURE && this.syncPrefs &&
+            this.syncPrefs.passphraseRequired) {
           this.$$('#existingPassphraseInput').invalid = true;
         }
         return;

@@ -13,13 +13,15 @@ Polymer({
     /** @type {!Array<!Certificate>} */
     certificates: {
       type: Array,
-      value: function() { return []; },
+      value: function() {
+        return [];
+      },
     },
 
     /** @type {!CertificateType} */
     certificateType: String,
 
-// <if expr="chromeos">
+    // <if expr="chromeos">
     /** @private */
     isGuest_: {
       type: Boolean,
@@ -27,7 +29,7 @@ Polymer({
         return loadTimeData.getBoolean('isGuest');
       }
     },
-// </if>
+    // </if>
   },
 
   behaviors: [I18nBehavior],
@@ -62,7 +64,7 @@ Polymer({
     return this.certificateType != CertificateType.OTHER;
   },
 
-// <if expr="chromeos">
+  // <if expr="chromeos">
   /**
    * @return {boolean}
    * @private
@@ -70,7 +72,7 @@ Polymer({
   canImportAndBind_: function() {
     return !this.isGuest_ && this.certificateType == CertificateType.PERSONAL;
   },
-// </if>
+  // </if>
 
   /**
    * Handles a rejected Promise returned from |browserProxy_|.
@@ -112,20 +114,20 @@ Polymer({
    * @private
    */
   onImportTap_: function(e) {
-    this.handleImport_(false, /** @type {!HTMLElement} */ (
-        Polymer.dom(e).localTarget));
+    this.handleImport_(
+        false, /** @type {!HTMLElement} */ (Polymer.dom(e).localTarget));
   },
 
-// <if expr="chromeos">
+  // <if expr="chromeos">
   /**
    * @private
    * @param {!Event} e
    */
   onImportAndBindTap_: function(e) {
-    this.handleImport_(true, /** @type {!HTMLElement} */ (
-        Polymer.dom(e).localTarget));
+    this.handleImport_(
+        true, /** @type {!HTMLElement} */ (Polymer.dom(e).localTarget));
   },
-// </if>
+  // </if>
 
   /**
    * @param {boolean} useHardwareBacked
@@ -135,18 +137,15 @@ Polymer({
   handleImport_: function(useHardwareBacked, anchor) {
     var browserProxy = settings.CertificatesBrowserProxyImpl.getInstance();
     if (this.certificateType == CertificateType.PERSONAL) {
-      browserProxy.importPersonalCertificate(useHardwareBacked).then(
-          function(showPasswordPrompt) {
+      browserProxy.importPersonalCertificate(useHardwareBacked)
+          .then(function(showPasswordPrompt) {
             if (showPasswordPrompt)
               this.dispatchImportActionEvent_(null, anchor);
-          }.bind(this),
-          this.onRejected_.bind(this, anchor));
+          }.bind(this), this.onRejected_.bind(this, anchor));
     } else if (this.certificateType == CertificateType.CA) {
-      browserProxy.importCaCertificate().then(
-          function(certificateName) {
-            this.dispatchImportActionEvent_({name: certificateName}, anchor);
-          }.bind(this),
-          this.onRejected_.bind(this, anchor));
+      browserProxy.importCaCertificate().then(function(certificateName) {
+        this.dispatchImportActionEvent_({name: certificateName}, anchor);
+      }.bind(this), this.onRejected_.bind(this, anchor));
     } else if (this.certificateType == CertificateType.SERVER) {
       browserProxy.importServerCertificate().catch(
           this.onRejected_.bind(this, anchor));

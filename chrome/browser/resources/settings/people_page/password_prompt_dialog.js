@@ -27,7 +27,7 @@
 (function() {
 'use strict';
 
-/** @const */ var PASSWORD_ACTIVE_DURATION_MS = 10 * 60 * 1000; // Ten minutes.
+/** @const */ var PASSWORD_ACTIVE_DURATION_MS = 10 * 60 * 1000;  // Ten minutes.
 
 Polymer({
   is: 'settings-password-prompt-dialog',
@@ -156,7 +156,7 @@ Polymer({
         }
 
         this.clearAccountPasswordTimeout_ = setTimeout(
-          clearSetModes.bind(this), this.passwordActiveDurationMs_);
+            clearSetModes.bind(this), this.passwordActiveDurationMs_);
 
         // Clear stored password state and close the dialog.
         this.password_ = '';

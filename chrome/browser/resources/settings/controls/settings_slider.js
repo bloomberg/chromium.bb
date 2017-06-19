@@ -60,9 +60,9 @@ Polymer({
    * @private
    */
   onSliderChanged_: function() {
-    var sliderValue = isNaN(this.$.slider.immediateValue)
-                         ? this.$.slider.value
-                         : this.$.slider.immediateValue;
+    var sliderValue = isNaN(this.$.slider.immediateValue) ?
+        this.$.slider.value :
+        this.$.slider.immediateValue;
 
     var newValue;
     if (this.tickValues && this.tickValues.length > 0)

@@ -50,8 +50,7 @@ Polymer({
 
   /** @override */
   attached: function() {
-    this.countryInfo =
-        settings.address.CountryDetailManagerImpl.getInstance();
+    this.countryInfo = settings.address.CountryDetailManagerImpl.getInstance();
     this.countryInfo.getCountryList().then(function(countryList) {
       this.countries_ = countryList;
 
@@ -106,7 +105,7 @@ Polymer({
 
       this.fire('on-update-address-wrapper');  // For easier testing.
 
-      var dialog = /** @type {HTMLDialogElement} */(this.$.dialog);
+      var dialog = /** @type {HTMLDialogElement} */ (this.$.dialog);
       if (!dialog.open)
         dialog.showModal();
     }.bind(this));

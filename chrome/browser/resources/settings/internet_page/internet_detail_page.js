@@ -242,8 +242,8 @@ Polymer({
       button.focus();
     }
 
-    if (this.shoudlShowConfigureWhenNetworkLoaded_
-        && this.networkProperties.Tether) {
+    if (this.shoudlShowConfigureWhenNetworkLoaded_ &&
+        this.networkProperties.Tether) {
       this.showTetherDialog_();
     }
   },
@@ -567,9 +567,10 @@ Polymer({
   /** @private */
   onTetherConnect_: function() {
     this.getTetherDialog_().close();
-    this.fire('network-connect',
-        {networkProperties: this.networkProperties,
-         bypassConnectionDialog: true});
+    this.fire('network-connect', {
+      networkProperties: this.networkProperties,
+      bypassConnectionDialog: true
+    });
   },
 
   /** @private */
@@ -974,8 +975,7 @@ Polymer({
    * @private
    */
   showCellularSim_: function(networkProperties) {
-    if (networkProperties.Type != 'Cellular' ||
-        !networkProperties.Cellular) {
+    if (networkProperties.Type != 'Cellular' || !networkProperties.Cellular) {
       return false;
     }
     return networkProperties.Cellular.Family == 'GSM';

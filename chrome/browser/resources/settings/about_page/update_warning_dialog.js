@@ -40,16 +40,16 @@ Polymer({
 
   /** @private */
   onContinueTap_: function() {
-    this.browserProxy_.requestUpdateOverCellular(this.updateInfo.version,
-                                                 this.updateInfo.size);
+    this.browserProxy_.requestUpdateOverCellular(
+        this.updateInfo.version, this.updateInfo.size);
     this.$.dialog.close();
   },
 
   /** @private */
   updateInfoChanged_: function() {
-    this.$$("#update-warning-message").innerHTML =
-        this.i18n("aboutUpdateWarningMessage",
-                  // Convert bytes to megabytes
-                  Math.floor(Number(this.updateInfo.size) / (1024 * 1024)));
+    this.$$('#update-warning-message').innerHTML = this.i18n(
+        'aboutUpdateWarningMessage',
+        // Convert bytes to megabytes
+        Math.floor(Number(this.updateInfo.size) / (1024 * 1024)));
   },
 });

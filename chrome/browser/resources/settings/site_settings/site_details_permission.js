@@ -24,7 +24,8 @@ Polymer({
 
   /** @override */
   attached: function() {
-    this.addWebUIListener('contentSettingSitePermissionChanged',
+    this.addWebUIListener(
+        'contentSettingSitePermissionChanged',
         this.sitePermissionChanged_.bind(this));
   },
 
@@ -53,16 +54,16 @@ Polymer({
    */
   siteChanged_: function(site) {
 
-    this.browserProxy.getExceptionList(this.category).then(
-        function(exceptionList) {
-      for (var i = 0; i < exceptionList.length; ++i) {
-        if (exceptionList[i].embeddingOrigin == site.embeddingOrigin &&
-            this.sameOrigin_(exceptionList[i].origin, site.origin)) {
-          this.$.permission.value = exceptionList[i].setting;
-          break;
-        }
-      }
-    }.bind(this));
+    this.browserProxy.getExceptionList(this.category)
+        .then(function(exceptionList) {
+          for (var i = 0; i < exceptionList.length; ++i) {
+            if (exceptionList[i].embeddingOrigin == site.embeddingOrigin &&
+                this.sameOrigin_(exceptionList[i].origin, site.origin)) {
+              this.$.permission.value = exceptionList[i].setting;
+              break;
+            }
+          }
+        }.bind(this));
   },
 
   /**
@@ -79,8 +80,9 @@ Polymer({
     if (category != this.category)
       return;
 
-    if (origin == '' || (origin == this.site.origin &&
-                         embeddingOrigin == this.site.embeddingOrigin)) {
+    if (origin == '' ||
+        (origin == this.site.origin &&
+         embeddingOrigin == this.site.embeddingOrigin)) {
       this.siteChanged_(this.site);
     }
   },

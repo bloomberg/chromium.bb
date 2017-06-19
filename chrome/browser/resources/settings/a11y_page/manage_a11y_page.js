@@ -27,16 +27,20 @@ Polymer({
         // If these values get changed then those strings need to be changed as
         // well.
         return [
-          {value: 600,
-           name: loadTimeData.getString('delayBeforeClickExtremelyShort')},
-          {value: 800,
-           name: loadTimeData.getString('delayBeforeClickVeryShort')},
-          {value: 1000,
-           name: loadTimeData.getString('delayBeforeClickShort')},
-          {value: 2000,
-           name: loadTimeData.getString('delayBeforeClickLong')},
-          {value: 4000,
-           name: loadTimeData.getString('delayBeforeClickVeryLong')},
+          {
+            value: 600,
+            name: loadTimeData.getString('delayBeforeClickExtremelyShort')
+          },
+          {
+            value: 800,
+            name: loadTimeData.getString('delayBeforeClickVeryShort')
+          },
+          {value: 1000, name: loadTimeData.getString('delayBeforeClickShort')},
+          {value: 2000, name: loadTimeData.getString('delayBeforeClickLong')},
+          {
+            value: 4000,
+            name: loadTimeData.getString('delayBeforeClickVeryLong')
+          },
         ];
       },
     },
@@ -55,7 +59,9 @@ Polymer({
     /** @private */
     isGuest_: {
       type: Boolean,
-      value: function() { return loadTimeData.getBoolean('isGuest'); }
+      value: function() {
+        return loadTimeData.getBoolean('isGuest');
+      }
     },
   },
 

@@ -30,8 +30,8 @@ Polymer({
 
   /** @override */
   ready: function() {
-    this.addWebUIListener('updateDevicesMenu',
-        this.updateDevicesMenu_.bind(this));
+    this.addWebUIListener(
+        'updateDevicesMenu', this.updateDevicesMenu_.bind(this));
     this.browserProxy.getDefaultCaptureDevices(this.type);
   },
 

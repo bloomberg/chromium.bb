@@ -139,7 +139,7 @@ Polymer({
     }
 
     if (settings.isTargetChannelMoreStable(
-        this.currentChannel_, selectedChannel)) {
+            this.currentChannel_, selectedChannel)) {
       // More stable channel selected. For non managed devices, notify the user
       // about powerwash.
       if (loadTimeData.getBoolean('aboutEnterpriseManaged')) {

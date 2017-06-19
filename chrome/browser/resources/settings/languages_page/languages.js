@@ -34,7 +34,8 @@ var kTranslateLanguageSynonyms = {
 };
 
 var preferredLanguagesPrefName = cr.isChromeOS ?
-    'settings.language.preferred_languages' : 'intl.accept_languages';
+    'settings.language.preferred_languages' :
+    'intl.accept_languages';
 
 /**
  * Singleton element that generates the languages model on start-up and
@@ -64,7 +65,9 @@ Polymer({
       type: Object,
       notify: true,
       readOnly: true,
-      value: function() { return /** @type {!LanguageHelper} */(this); },
+      value: function() {
+        return /** @type {!LanguageHelper} */ (this);
+      },
     },
 
     /**
@@ -84,7 +87,9 @@ Polymer({
      */
     supportedLanguageMap_: {
       type: Object,
-      value: function() { return new Map(); },
+      value: function() {
+        return new Map();
+      },
     },
 
     /**
@@ -93,7 +98,9 @@ Polymer({
      */
     enabledLanguageSet_: {
       type: Object,
-      value: function() { return new Set(); },
+      value: function() {
+        return new Set();
+      },
     },
 
     /**
@@ -102,7 +109,9 @@ Polymer({
      */
     supportedInputMethodMap_: {
       type: Object,
-      value: function() { return new Map(); },
+      value: function() {
+        return new Map();
+      },
     },
 
     /**
@@ -113,7 +122,9 @@ Polymer({
      */
     languageInputMethods_: {
       type: Object,
-      value: function() { return new Map(); },
+      value: function() {
+        return new Map();
+      },
     },
 
     /** @private Prospective UI language when the page was loaded. */
@@ -148,19 +159,19 @@ Polymer({
   /** @private {?LanguageSettingsPrivate} */
   languageSettingsPrivate_: null,
 
-// <if expr="chromeos">
+  // <if expr="chromeos">
   /** @private {?InputMethodPrivate} */
   inputMethodPrivate_: null,
-// </if>
+  // </if>
 
   /** @override */
   attached: function() {
     this.browserProxy_ = settings.LanguagesBrowserProxyImpl.getInstance();
     this.languageSettingsPrivate_ =
         this.browserProxy_.getLanguageSettingsPrivate();
-// <if expr="chromeos">
+    // <if expr="chromeos">
     this.inputMethodPrivate_ = this.browserProxy_.getInputMethodPrivate();
-// </if>
+    // </if>
 
     var promises = [];
 
@@ -236,7 +247,8 @@ Polymer({
    * @private
    */
   prospectiveUILanguageChanged_: function(prospectiveUILanguage) {
-    this.set('languages.prospectiveUILanguage',
+    this.set(
+        'languages.prospectiveUILanguage',
         prospectiveUILanguage || this.originalProspectiveUILanguage_);
   },
 
@@ -261,12 +273,13 @@ Polymer({
    * @private
    */
   spellCheckDictionariesPrefChanged_: function() {
-    var spellCheckSet = this.makeSetFromArray_(/** @type {!Array<string>} */(
+    var spellCheckSet = this.makeSetFromArray_(/** @type {!Array<string>} */ (
         this.getPref('spellcheck.dictionaries').value));
     for (var i = 0; i < this.languages.enabled.length; i++) {
       var languageState = this.languages.enabled[i];
-      this.set('languages.enabled.' + i + '.spellCheckEnabled',
-               !!spellCheckSet.has(languageState.language.code));
+      this.set(
+          'languages.enabled.' + i + '.spellCheckEnabled',
+          !!spellCheckSet.has(languageState.language.code));
     }
   },
 
@@ -274,7 +287,7 @@ Polymer({
   translateLanguagesPrefChanged_: function() {
     var translateBlockedPref = this.getPref('translate_blocked_languages');
     var translateBlockedSet = this.makeSetFromArray_(
-        /** @type {!Array<string>} */(translateBlockedPref.value));
+        /** @type {!Array<string>} */ (translateBlockedPref.value));
 
     for (var i = 0; i < this.languages.enabled.length; i++) {
       if (this.languages.enabled[i].language.code ==
@@ -301,8 +314,9 @@ Polymer({
    *     input method (Chrome OS only).
    * @private
    */
-  createModel_: function(supportedLanguages, translateTarget,
-                         supportedInputMethods, currentInputMethodId) {
+  createModel_: function(
+      supportedLanguages, translateTarget, supportedInputMethods,
+      currentInputMethodId) {
     // Populate the hash map of supported languages.
     for (var i = 0; i < supportedLanguages.length; i++) {
       var language = supportedLanguages[i];
@@ -336,7 +350,7 @@ Polymer({
     var prospectiveUILanguage;
     if (cr.isChromeOS || cr.isWindows) {
       prospectiveUILanguage =
-          /** @type {string} */(this.getPref('intl.app_locale').value) ||
+          /** @type {string} */ (this.getPref('intl.app_locale').value) ||
           this.originalProspectiveUILanguage_;
     }
 
@@ -347,7 +361,7 @@ Polymer({
     for (var l = 0; l < enabledLanguageStates.length; l++)
       this.enabledLanguageSet_.add(enabledLanguageStates[l].language.code);
 
-    var model = /** @type {!LanguagesModel} */({
+    var model = /** @type {!LanguagesModel} */ ({
       supported: supportedLanguages,
       enabled: enabledLanguageStates,
       translateTarget: translateTarget,
@@ -357,7 +371,7 @@ Polymer({
       model.prospectiveUILanguage = prospectiveUILanguage;
 
     if (cr.isChromeOS) {
-      model.inputMethods = /** @type {!InputMethodsModel} */({
+      model.inputMethods = /** @type {!InputMethodsModel} */ ({
         supported: supportedInputMethods,
         enabled: this.getEnabledInputMethods_(),
         currentId: currentInputMethodId,
@@ -384,12 +398,12 @@ Polymer({
     var pref = this.getPref(preferredLanguagesPrefName);
     var enabledLanguageCodes = pref.value.split(',');
     var spellCheckPref = this.getPref('spellcheck.dictionaries');
-    var spellCheckSet = this.makeSetFromArray_(/** @type {!Array<string>} */(
-        spellCheckPref.value));
+    var spellCheckSet = this.makeSetFromArray_(
+        /** @type {!Array<string>} */ (spellCheckPref.value));
 
     var translateBlockedPref = this.getPref('translate_blocked_languages');
     var translateBlockedSet = this.makeSetFromArray_(
-        /** @type {!Array<string>} */(translateBlockedPref.value));
+        /** @type {!Array<string>} */ (translateBlockedPref.value));
 
     var enabledLanguageStates = [];
     for (var i = 0; i < enabledLanguageCodes.length; i++) {
@@ -398,14 +412,13 @@ Polymer({
       // Skip unsupported languages.
       if (!language)
         continue;
-      var languageState = /** @type {LanguageState} */({});
+      var languageState = /** @type {LanguageState} */ ({});
       languageState.language = language;
       languageState.spellCheckEnabled = !!spellCheckSet.has(code);
       // Translate is considered disabled if this language maps to any translate
       // language that is blocked.
       var translateCode = this.convertLanguageCodeForTranslate(code);
-      languageState.translateEnabled =
-          !!language.supportsTranslate &&
+      languageState.translateEnabled = !!language.supportsTranslate &&
           !translateBlockedSet.has(translateCode) &&
           translateCode != translateTarget &&
           (!prospectiveUILanguage || code != prospectiveUILanguage);
@@ -425,15 +438,18 @@ Polymer({
 
     var enabledInputMethodIds =
         this.getPref('settings.language.preload_engines').value.split(',');
-    enabledInputMethodIds = enabledInputMethodIds.concat(this.getPref(
-        'settings.language.enabled_extension_imes').value.split(','));
+    enabledInputMethodIds = enabledInputMethodIds.concat(
+        this.getPref('settings.language.enabled_extension_imes')
+            .value.split(','));
 
     // Return only supported input methods.
-    return enabledInputMethodIds.map(function(id) {
-      return this.supportedInputMethodMap_.get(id);
-    }.bind(this)).filter(function(inputMethod) {
-      return !!inputMethod;
-    });
+    return enabledInputMethodIds
+        .map(function(id) {
+          return this.supportedInputMethodMap_.get(id);
+        }.bind(this))
+        .filter(function(inputMethod) {
+          return !!inputMethod;
+        });
   },
 
   /** @private */
@@ -443,7 +459,8 @@ Polymer({
     var enabledInputMethodSet = this.makeSetFromArray_(enabledInputMethods);
 
     for (var i = 0; i < this.languages.inputMethods.supported.length; i++) {
-      this.set('languages.inputMethods.supported.' + i + '.enabled',
+      this.set(
+          'languages.inputMethods.supported.' + i + '.enabled',
           enabledInputMethodSet.has(this.languages.inputMethods.supported[i]));
     }
     this.set('languages.inputMethods.enabled', enabledInputMethods);
@@ -464,7 +481,8 @@ Polymer({
 
     for (var i = 0; i < this.languages.enabled.length; i++) {
       var languageState = this.languages.enabled[i];
-      this.set('languages.enabled.' + i + '.removable',
+      this.set(
+          'languages.enabled.' + i + '.removable',
           this.canDisableLanguage(languageState.language.code));
     }
   },
@@ -489,7 +507,7 @@ Polymer({
     return this.resolver_.promise;
   },
 
-// <if expr="chromeos or is_win">
+  // <if expr="chromeos or is_win">
   /**
    * Sets the prospective UI language to the chosen language. This won't affect
    * the actual UI language until a restart.
@@ -507,7 +525,7 @@ Polymer({
     return this.originalProspectiveUILanguage_ !=
         this.languages.prospectiveUILanguage;
   },
-// </if>
+  // </if>
 
   /**
    * @param {string} languageCode
@@ -547,8 +565,8 @@ Polymer({
       var inputMethods = this.languageInputMethods_.get(languageCode) || [];
       for (var i = 0; i < inputMethods.length; i++) {
         var inputMethod = inputMethods[i];
-        var supportsOtherEnabledLanguages = inputMethod.languageCodes.some(
-            function(otherLanguageCode) {
+        var supportsOtherEnabledLanguages =
+            inputMethod.languageCodes.some(function(otherLanguageCode) {
               return otherLanguageCode != languageCode &&
                   this.isLanguageEnabled(otherLanguageCode);
             }.bind(this));
@@ -580,8 +598,8 @@ Polymer({
 
     // If this is the only enabled language that is supported by all enabled
     // component IMEs, it cannot be disabled because we need those IMEs.
-    var otherInputMethodsEnabled = this.languages.enabled.some(
-        function(languageState) {
+    var otherInputMethodsEnabled =
+        this.languages.enabled.some(function(languageState) {
           var otherLanguageCode = languageState.language.code;
           if (otherLanguageCode == languageCode)
             return false;
@@ -664,7 +682,8 @@ Polymer({
    * @param {string} languageCode
    */
   disableTranslateLanguage: function(languageCode) {
-    this.appendPrefListItem('translate_blocked_languages',
+    this.appendPrefListItem(
+        'translate_blocked_languages',
         this.convertLanguageCodeForTranslate(languageCode));
   },
 
@@ -733,7 +752,7 @@ Polymer({
     return this.supportedLanguageMap_.get(languageCode);
   },
 
-// <if expr="chromeos">
+  // <if expr="chromeos">
   /** @param {string} id */
   addInputMethod: function(id) {
     if (!this.supportedInputMethodMap_.has(id))
@@ -788,6 +807,6 @@ Polymer({
   onInputMethodRemoved_: function(id) {
     this.updateEnabledInputMethods_();
   },
-// </if>
+  // </if>
 });
 })();

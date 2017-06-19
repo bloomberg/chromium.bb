@@ -25,7 +25,9 @@ Polymer({
      */
     exclusions: {
       type: Array,
-      value: function() { return []; },
+      value: function() {
+        return [];
+      },
       notify: true
     }
   },

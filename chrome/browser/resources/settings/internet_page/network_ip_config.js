@@ -87,7 +87,7 @@ Polymer({
       this.savedStaticIp_ = undefined;
 
     // Update the 'automatic' property.
-    if (this.networkProperties.IPAddressConfigType ) {
+    if (this.networkProperties.IPAddressConfigType) {
       var ipConfigType =
           CrOnc.getActiveValue(this.networkProperties.IPAddressConfigType);
       this.automatic_ = (ipConfigType != CrOnc.IPConfigType.STATIC);

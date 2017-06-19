@@ -87,10 +87,7 @@ Polymer({
     },
 
     /** @private */
-    showImportantSitesDialog_: {
-      type: Boolean,
-      value: false
-    },
+    showImportantSitesDialog_: {type: Boolean, value: false},
   },
 
   /** @private {settings.ClearBrowsingDataBrowserProxy} */
@@ -99,12 +96,9 @@ Polymer({
   /** @override */
   ready: function() {
     this.$.clearFrom.menuOptions = this.clearFromOptions_;
+    this.addWebUIListener('update-footer', this.updateFooter_.bind(this));
     this.addWebUIListener(
-        'update-footer',
-        this.updateFooter_.bind(this));
-    this.addWebUIListener(
-        'update-counter-text',
-        this.updateCounterText_.bind(this));
+        'update-counter-text', this.updateCounterText_.bind(this));
   },
 
   /** @override */

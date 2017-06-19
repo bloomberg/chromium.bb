@@ -46,8 +46,8 @@ Polymer({
 
   /** @private */
   onOkTap_: function() {
-    this.browserProxy_.exportPersonalCertificatePasswordSelected(
-        this.password_).then(
+    this.browserProxy_.exportPersonalCertificatePasswordSelected(this.password_)
+        .then(
             function() {
               this.$.dialog.close();
             }.bind(this),
@@ -60,8 +60,8 @@ Polymer({
 
   /** @private */
   validate_: function() {
-    var isValid = this.password_ != '' &&
-        this.password_ == this.confirmPassword_;
+    var isValid =
+        this.password_ != '' && this.password_ == this.confirmPassword_;
     this.$.ok.disabled = !isValid;
   },
 });

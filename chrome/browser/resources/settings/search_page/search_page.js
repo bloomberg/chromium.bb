@@ -71,7 +71,7 @@ Polymer({
         'google-now-availability-changed',
         this.googleNowAvailabilityUpdate_.bind(this));
     this.browserProxy_.getGoogleNowAvailability().then(function(available) {
-        this.googleNowAvailabilityUpdate_(available);
+      this.googleNowAvailabilityUpdate_(available);
     }.bind(this));
 
     this.focusConfig_ = new Map();

@@ -29,9 +29,9 @@ settings.ContentSettingsTypes = {
   MIDI_DEVICES: 'midi-sysex',
   USB_DEVICES: 'usb-chooser-data',
   ZOOM_LEVELS: 'zoom-levels',
-// <if expr="chromeos">
+  // <if expr="chromeos">
   PROTECTED_CONTENT: 'protectedContent',
-// </if>
+  // </if>
   ADS: 'ads',
 };
 

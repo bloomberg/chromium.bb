@@ -67,15 +67,15 @@ cr.define('settings', function() {
   function findAndRemoveHighlights_(node) {
     var wrappers = node.querySelectorAll('* /deep/ .' + WRAPPER_CSS_CLASS);
 
-    for (var i = 0; i < wrappers.length; i++ ) {
+    for (var i = 0; i < wrappers.length; i++) {
       var wrapper = wrappers[i];
-      var originalNode = wrapper.querySelector(
-          '.' + ORIGINAL_CONTENT_CSS_CLASS);
+      var originalNode =
+          wrapper.querySelector('.' + ORIGINAL_CONTENT_CSS_CLASS);
       wrapper.parentElement.replaceChild(originalNode.firstChild, wrapper);
     }
 
-    var searchBubbles = node.querySelectorAll(
-        '* /deep/ .' + SEARCH_BUBBLE_CSS_CLASS);
+    var searchBubbles =
+        node.querySelectorAll('* /deep/ .' + SEARCH_BUBBLE_CSS_CLASS);
     for (var j = 0; j < searchBubbles.length; j++)
       searchBubbles[j].remove();
   }
@@ -113,7 +113,7 @@ cr.define('settings', function() {
       } else {
         var span = document.createElement('span');
         span.classList.add(HIT_CSS_CLASS);
-        span.style.backgroundColor = '#ffeb3b'; // --var(--paper-yellow-500)
+        span.style.backgroundColor = '#ffeb3b';  // --var(--paper-yellow-500)
         span.textContent = tokens[i];
         wrapper.appendChild(span);
       }
@@ -143,10 +143,9 @@ cr.define('settings', function() {
         return;
 
       if (node instanceof HTMLElement) {
-        var element = /** @type {HTMLElement} */(node);
+        var element = /** @type {HTMLElement} */ (node);
         if (element.hasAttribute(SKIP_SEARCH_CSS_ATTRIBUTE) ||
-            element.hasAttribute('hidden') ||
-            element.style.display == 'none') {
+            element.hasAttribute('hidden') || element.style.display == 'none') {
           return;
         }
       }
@@ -242,7 +241,8 @@ cr.define('settings', function() {
     var parent = node;
     while (parent && parent.nodeName !== 'SETTINGS-SECTION') {
       parent = parent.nodeType == Node.DOCUMENT_FRAGMENT_NODE ?
-          parent.host : parent.parentNode;
+          parent.host :
+          parent.parentNode;
       if (parent.nodeName == 'SETTINGS-SUBPAGE') {
         // TODO(dpapad): Cast to SettingsSubpageElement here.
         associatedControl = assert(
@@ -444,8 +444,7 @@ cr.define('settings', function() {
      * @private
      */
     popNextTask_: function() {
-      return this.queues_.high.shift() ||
-          this.queues_.middle.shift() ||
+      return this.queues_.high.shift() || this.queues_.middle.shift() ||
           this.queues_.low.shift();
     },
 
@@ -535,8 +534,8 @@ cr.define('settings', function() {
 
       // Generate search text by escaping any characters that would be
       // problematic for regular expressions.
-      var searchText = this.rawQuery_.trim().replace(
-          SearchRequest.SANITIZE_REGEX_, '\\$&');
+      var searchText =
+          this.rawQuery_.trim().replace(SearchRequest.SANITIZE_REGEX_, '\\$&');
       if (searchText.length > 0)
         regExp = new RegExp('(' + searchText + ')', 'i');
 

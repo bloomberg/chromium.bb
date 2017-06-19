@@ -63,8 +63,8 @@ Polymer({
 
   /** @private */
   onDotsTap_: function() {
-    var actionMenu = /** @type {!CrActionMenuElement} */(
-        this.$$('#menu').get());
+    var actionMenu =
+        /** @type {!CrActionMenuElement} */ (this.$$('#menu').get());
     actionMenu.showAt(assert(this.$$('#dots')));
   },
 });

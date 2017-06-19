@@ -26,24 +26,22 @@ var LockScreenProgress = {
 };
 
 cr.define('settings', function() {
-/**
- * Helper function to send the progress of the pin setup to be recorded in the
- * histogram.
- * @param {LockScreenProgress} currentProgress
- */
-var recordLockScreenProgress = function(currentProgress) {
-  if (currentProgress >= LockScreenProgress.MAX_BUCKET) {
-    console.error('Expected a enumeration value of ' +
-        LockScreenProgress.MAX_BUCKET + ' or lower: Received ' +
-        currentProgress + '.');
-    return;
-  }
-  chrome.send('metricsHandler:recordInHistogram',
-      [PinUnlockUmaHistogramName, currentProgress,
-       LockScreenProgress.MAX_BUCKET]);
-};
-
-  return {
-    recordLockScreenProgress: recordLockScreenProgress
+  /**
+   * Helper function to send the progress of the pin setup to be recorded in the
+   * histogram.
+   * @param {LockScreenProgress} currentProgress
+   */
+  var recordLockScreenProgress = function(currentProgress) {
+    if (currentProgress >= LockScreenProgress.MAX_BUCKET) {
+      console.error(
+          'Expected a enumeration value of ' + LockScreenProgress.MAX_BUCKET +
+          ' or lower: Received ' + currentProgress + '.');
+      return;
+    }
+    chrome.send('metricsHandler:recordInHistogram', [
+      PinUnlockUmaHistogramName, currentProgress, LockScreenProgress.MAX_BUCKET
+    ]);
   };
+
+  return {recordLockScreenProgress: recordLockScreenProgress};
 });

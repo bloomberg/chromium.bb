@@ -58,9 +58,8 @@ var MainPageBehaviorImpl = {
    * @param {settings.Route} oldRoute
    */
   currentRouteChanged: function(newRoute, oldRoute) {
-    var oldRouteWasSection =
-        !!oldRoute && !!oldRoute.parent && !!oldRoute.section &&
-        oldRoute.parent.section != oldRoute.section;
+    var oldRouteWasSection = !!oldRoute && !!oldRoute.parent &&
+        !!oldRoute.section && oldRoute.parent.section != oldRoute.section;
 
     if (this.scroller) {
       // When navigating from a section to the root route, we just need to
@@ -141,7 +140,7 @@ var MainPageBehaviorImpl = {
     }
 
     var promise;
-    var expandedSection = /** @type {?SettingsSectionElement} */(
+    var expandedSection = /** @type {?SettingsSectionElement} */ (
         this.$$('settings-section.expanded'));
     if (expandedSection) {
       // If the section shouldn't be expanded, collapse it.
@@ -190,7 +189,7 @@ var MainPageBehaviorImpl = {
    */
   maybeStopCurrentAnimation_: function() {
     var currentRoute = settings.getCurrentRoute();
-    var animatingSection = /** @type {?SettingsSectionElement} */(
+    var animatingSection = /** @type {?SettingsSectionElement} */ (
         this.$$('settings-section.expanding, settings-section.collapsing'));
     assert(animatingSection);
 
@@ -340,19 +339,22 @@ var MainPageBehaviorImpl = {
         }
 
         this.currentAnimation_ = section.animateCollapse(
-            /** @type {!HTMLElement} */(this.scroller));
+            /** @type {!HTMLElement} */ (this.scroller));
 
-        this.currentAnimation_.finished.catch(function() {
-          // The collapse was canceled, so the page is showing a subpage still.
-          this.fire('subpage-expand');
-        }.bind(this)).then(function() {
-          // Clean up after the animation succeeds or cancels.
-          section.setFrozen(false);
-          section.classList.remove('collapsing');
-          this.fire('freeze-scroll', false);
-          this.currentAnimation_ = null;
-          resolve();
-        }.bind(this));
+        this.currentAnimation_.finished
+            .catch(function() {
+              // The collapse was canceled, so the page is showing a subpage
+              // still.
+              this.fire('subpage-expand');
+            }.bind(this))
+            .then(function() {
+              // Clean up after the animation succeeds or cancels.
+              section.setFrozen(false);
+              section.classList.remove('collapsing');
+              this.fire('freeze-scroll', false);
+              this.currentAnimation_ = null;
+              resolve();
+            }.bind(this));
       }.bind(this));
     }.bind(this));
   },
@@ -365,8 +367,7 @@ var MainPageBehaviorImpl = {
    * @private
    */
   toggleOtherSectionsHidden_: function(sectionName, hidden) {
-    var sections = Polymer.dom(this.root).querySelectorAll(
-        'settings-section');
+    var sections = Polymer.dom(this.root).querySelectorAll('settings-section');
     for (var i = 0; i < sections.length; i++)
       sections[i].hidden = hidden && (sections[i].section != sectionName);
   },
@@ -379,7 +380,7 @@ var MainPageBehaviorImpl = {
   getSection: function(section) {
     if (!section)
       return null;
-    return /** @type {?SettingsSectionElement} */(
+    return /** @type {?SettingsSectionElement} */ (
         this.$$('settings-section[section="' + section + '"]'));
   },
 };

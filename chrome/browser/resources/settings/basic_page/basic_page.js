@@ -140,8 +140,8 @@ Polymer({
     ];
 
     if (this.pageVisibility.advancedSettings !== false) {
-      whenSearchDone.push(this.$$('#advancedPageTemplate').get().then(
-          function(advancedPage) {
+      whenSearchDone.push(
+          this.$$('#advancedPageTemplate').get().then(function(advancedPage) {
             return settings.getSearchManager().search(query, advancedPage);
           }));
     }
@@ -149,7 +149,9 @@ Polymer({
     return Promise.all(whenSearchDone).then(function(requests) {
       // Combine the SearchRequests results to a single SearchResult object.
       return {
-        canceled: requests.some(function(r) { return r.canceled; }),
+        canceled: requests.some(function(r) {
+          return r.canceled;
+        }),
         didFindMatches: requests.some(function(r) {
           return r.didFindMatches();
         }),
@@ -239,9 +241,8 @@ Polymer({
    */
   showAdvancedPage_: function(
       currentRoute, inSearchMode, hasExpandedSection, advancedToggleExpanded) {
-    return hasExpandedSection ?
-        settings.Route.ADVANCED.contains(currentRoute) :
-        advancedToggleExpanded || inSearchMode;
+    return hasExpandedSection ? settings.Route.ADVANCED.contains(currentRoute) :
+                                advancedToggleExpanded || inSearchMode;
   },
 
   /**

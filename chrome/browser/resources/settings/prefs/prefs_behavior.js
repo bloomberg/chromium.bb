@@ -23,7 +23,7 @@ var PrefsBehavior = {
    * @protected
    */
   getPref: function(prefPath) {
-    var pref = /** @type {!chrome.settingsPrivate.PrefObject} */(
+    var pref = /** @type {!chrome.settingsPrivate.PrefObject} */ (
         this.get(prefPath, this.prefs));
     assert(typeof pref != 'undefined', 'Pref is missing: ' + prefPath);
     return pref;

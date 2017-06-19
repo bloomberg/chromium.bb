@@ -21,8 +21,7 @@ var AndroidAppsInfo;
 
 cr.define('settings', function() {
   /** @interface */
-  function AndroidAppsBrowserProxy() {
-  }
+  function AndroidAppsBrowserProxy() {}
 
   AndroidAppsBrowserProxy.prototype = {
     requestAndroidAppsInfo: function() {},
@@ -38,8 +37,7 @@ cr.define('settings', function() {
    * @constructor
    * @implements {settings.AndroidAppsBrowserProxy}
    */
-  function AndroidAppsBrowserProxyImpl() {
-  }
+  function AndroidAppsBrowserProxyImpl() {}
 
   // The singleton instance_ can be replaced with a test version of this wrapper
   // during testing.

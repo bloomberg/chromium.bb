@@ -71,8 +71,8 @@ Polymer({
    */
   showMenu_: function(event) {
     this.actionMenuModel_ = event.model.item;
-    /** @type {!CrActionMenuElement} */ (
-        this.$$('dialog[is=cr-action-menu]')).showAt(
+    /** @type {!CrActionMenuElement} */ (this.$$('dialog[is=cr-action-menu]'))
+        .showAt(
             /** @type {!Element} */ (
                 Polymer.dom(/** @type {!Event} */ (event)).localTarget));
   }

@@ -96,9 +96,11 @@ Polymer({
         ripple.simulatedRipple();
 
       // Flash the background.
-      listItem.animate({
-        backgroundColor: ['var(--google-grey-300)', 'white'],
-      }, FLASH_DURATION_MS);
+      listItem.animate(
+          {
+            backgroundColor: ['var(--google-grey-300)', 'white'],
+          },
+          FLASH_DURATION_MS);
     });
   },
 
@@ -124,11 +126,10 @@ Polymer({
    * @private
    */
   onFingerprintDeleteTapped_: function(e) {
-    this.browserProxy_.removeEnrollment(e.model.index).then(
-        function(success) {
-          if (success)
-            this.updateFingerprintsList_();
-        }.bind(this));
+    this.browserProxy_.removeEnrollment(e.model.index).then(function(success) {
+      if (success)
+        this.updateFingerprintsList_();
+    }.bind(this));
   },
 
   /**
@@ -136,8 +137,8 @@ Polymer({
    * @private
    */
   onFingerprintLabelChanged_: function(e) {
-    this.browserProxy_.changeEnrollmentLabel(e.model.index, e.model.item).then(
-        function(success) {
+    this.browserProxy_.changeEnrollmentLabel(e.model.index, e.model.item)
+        .then(function(success) {
           if (success)
             this.updateFingerprintsList_();
         }.bind(this));

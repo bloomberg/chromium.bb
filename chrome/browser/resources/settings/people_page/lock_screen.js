@@ -176,7 +176,8 @@ Polymer({
 
     if (this.shouldAskForPassword_(newRoute)) {
       this.openPasswordPromptDialog_();
-    } else if (newRoute != settings.Route.FINGERPRINT &&
+    } else if (
+        newRoute != settings.Route.FINGERPRINT &&
         oldRoute != settings.Route.FINGERPRINT) {
       // If the user navigated away from the lock screen settings page they will
       // have to re-enter their password. An exception is if they are navigating
@@ -262,8 +263,8 @@ Polymer({
   /** @private */
   getDescriptionText_: function() {
     if (this.numFingerprints_ > 0) {
-      return this.i18n('lockScreenNumberFingerprints',
-          this.numFingerprints_.toString());
+      return this.i18n(
+          'lockScreenNumberFingerprints', this.numFingerprints_.toString());
     }
 
     return this.i18n('lockScreenEditFingerprintsDescription');

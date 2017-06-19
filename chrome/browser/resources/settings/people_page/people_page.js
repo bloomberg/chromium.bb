@@ -10,12 +10,10 @@ Polymer({
   is: 'settings-people-page',
 
   behaviors: [
-    settings.RouteObserverBehavior,
-    I18nBehavior,
-    WebUIListenerBehavior,
-// <if expr="chromeos">
+    settings.RouteObserverBehavior, I18nBehavior, WebUIListenerBehavior,
+    // <if expr="chromeos">
     LockStateBehavior,
-// </if>
+    // </if>
   ],
 
   properties: {
@@ -65,18 +63,18 @@ Polymer({
      */
     deleteProfile_: Boolean,
 
-// <if expr="not chromeos">
+    // <if expr="not chromeos">
     /** @private */
     showImportDataDialog_: {
       type: Boolean,
       value: false,
     },
-// </if>
+    // </if>
 
     /** @private */
     showDisconnectDialog_: Boolean,
 
-// <if expr="chromeos">
+    // <if expr="chromeos">
     /**
      * True if fingerprint settings should be displayed on this machine.
      * @private
@@ -88,21 +86,20 @@ Polymer({
       },
       readOnly: true,
     },
-// </if>
+    // </if>
 
     /** @private {!Map<string, string>} */
     focusConfig_: {
       type: Object,
       value: function() {
         var map = new Map();
-        map.set(
-            settings.Route.SYNC.path, '#sync-status .subpage-arrow');
-// <if expr="not chromeos">
+        map.set(settings.Route.SYNC.path, '#sync-status .subpage-arrow');
+        // <if expr="not chromeos">
         map.set(
             settings.Route.MANAGE_PROFILE.path,
             '#picture-subpage-trigger .subpage-arrow');
-// </if>
-// <if expr="chromeos">
+        // </if>
+        // <if expr="chromeos">
         map.set(
             settings.Route.CHANGE_PICTURE.path,
             '#picture-subpage-trigger .subpage-arrow');
@@ -112,7 +109,7 @@ Polymer({
         map.set(
             settings.Route.ACCOUNTS.path,
             '#manage-other-people-subpage-trigger .subpage-arrow');
-// </if>
+        // </if>
         return map;
       },
     },
@@ -125,22 +122,23 @@ Polymer({
   attached: function() {
     var profileInfoProxy = settings.ProfileInfoBrowserProxyImpl.getInstance();
     profileInfoProxy.getProfileInfo().then(this.handleProfileInfo_.bind(this));
-    this.addWebUIListener('profile-info-changed',
-                          this.handleProfileInfo_.bind(this));
+    this.addWebUIListener(
+        'profile-info-changed', this.handleProfileInfo_.bind(this));
 
     profileInfoProxy.getProfileManagesSupervisedUsers().then(
         this.handleProfileManagesSupervisedUsers_.bind(this));
-    this.addWebUIListener('profile-manages-supervised-users-changed',
-                          this.handleProfileManagesSupervisedUsers_.bind(this));
+    this.addWebUIListener(
+        'profile-manages-supervised-users-changed',
+        this.handleProfileManagesSupervisedUsers_.bind(this));
 
-    this.addWebUIListener('profile-stats-count-ready',
-                          this.handleProfileStatsCount_.bind(this));
+    this.addWebUIListener(
+        'profile-stats-count-ready', this.handleProfileStatsCount_.bind(this));
 
     this.syncBrowserProxy_ = settings.SyncBrowserProxyImpl.getInstance();
     this.syncBrowserProxy_.getSyncStatus().then(
         this.handleSyncStatus_.bind(this));
-    this.addWebUIListener('sync-status-changed',
-                          this.handleSyncStatus_.bind(this));
+    this.addWebUIListener(
+        'sync-status-changed', this.handleSyncStatus_.bind(this));
   },
 
   /** @protected */
@@ -165,7 +163,7 @@ Polymer({
     }
   },
 
-// <if expr="chromeos">
+  // <if expr="chromeos">
   /** @private */
   getPasswordState_: function(hasPin, enableScreenLock) {
     if (!enableScreenLock)
@@ -174,7 +172,7 @@ Polymer({
       return this.i18n('lockScreenPinOrPassword');
     return this.i18n('lockScreenPasswordOnly');
   },
-// </if>
+  // </if>
 
   /**
    * Handler for when the profile's icon and name is updated.
@@ -202,13 +200,15 @@ Polymer({
    */
   handleProfileStatsCount_: function(count) {
     this.deleteProfileWarning_ = (count > 0) ?
-        (count == 1) ?
-            loadTimeData.getStringF('deleteProfileWarningWithCountsSingular',
-                                    this.syncStatus.signedInUsername) :
-            loadTimeData.getStringF('deleteProfileWarningWithCountsPlural',
-                                    count, this.syncStatus.signedInUsername) :
-        loadTimeData.getStringF('deleteProfileWarningWithoutCounts',
-                                this.syncStatus.signedInUsername);
+        (count == 1) ? loadTimeData.getStringF(
+                           'deleteProfileWarningWithCountsSingular',
+                           this.syncStatus.signedInUsername) :
+                       loadTimeData.getStringF(
+                           'deleteProfileWarningWithCountsPlural', count,
+                           this.syncStatus.signedInUsername) :
+        loadTimeData.getStringF(
+            'deleteProfileWarningWithoutCounts',
+            this.syncStatus.signedInUsername);
   },
 
   /**
@@ -220,10 +220,10 @@ Polymer({
     if (!this.syncStatus && syncStatus && !syncStatus.signedIn)
       chrome.metricsPrivate.recordUserAction('Signin_Impression_FromSettings');
 
-// <if expr="not chromeos">
+    // <if expr="not chromeos">
     if (syncStatus.signedIn)
       settings.ProfileInfoBrowserProxyImpl.getInstance().getProfileStatsCount();
-// </if>
+    // </if>
 
     if (!syncStatus.signedIn && this.showDisconnectDialog_)
       this.$$('#disconnectDialog').close();
@@ -233,20 +233,20 @@ Polymer({
 
   /** @private */
   onPictureTap_: function() {
-// <if expr="chromeos">
+    // <if expr="chromeos">
     settings.navigateTo(settings.Route.CHANGE_PICTURE);
-// </if>
-// <if expr="not chromeos">
+    // </if>
+    // <if expr="not chromeos">
     settings.navigateTo(settings.Route.MANAGE_PROFILE);
-// </if>
+    // </if>
   },
 
-// <if expr="not chromeos">
+  // <if expr="not chromeos">
   /** @private */
   onProfileNameTap_: function() {
     settings.navigateTo(settings.Route.MANAGE_PROFILE);
   },
-// </if>
+  // </if>
 
   /** @private */
   onSigninTap_: function() {
@@ -302,10 +302,10 @@ Polymer({
         this.syncBrowserProxy_.startSignIn();
         break;
       case settings.StatusAction.SIGNOUT_AND_SIGNIN:
-// <if expr="chromeos">
+        // <if expr="chromeos">
         this.syncBrowserProxy_.attemptUserExit();
-// </if>
-// <if expr="not chromeos">
+        // </if>
+        // <if expr="not chromeos">
         if (this.syncStatus.domain)
           settings.navigateTo(settings.Route.SIGN_OUT);
         else {
@@ -314,7 +314,7 @@ Polymer({
           this.syncBrowserProxy_.signOut(false);
           this.syncBrowserProxy_.startSignIn();
         }
-// </if>
+        // </if>
         break;
       case settings.StatusAction.UPGRADE_CLIENT:
         settings.navigateTo(settings.Route.ABOUT);
@@ -327,7 +327,7 @@ Polymer({
     }
   },
 
-// <if expr="chromeos">
+  // <if expr="chromeos">
   /**
    * @param {!Event} e
    * @private
@@ -339,27 +339,26 @@ Polymer({
     e.preventDefault();
     settings.navigateTo(settings.Route.LOCK_SCREEN);
   },
-// </if>
+  // </if>
 
   /** @private */
   onManageOtherPeople_: function() {
-// <if expr="not chromeos">
+    // <if expr="not chromeos">
     this.syncBrowserProxy_.manageOtherPeople();
-// </if>
-// <if expr="chromeos">
+    // </if>
+    // <if expr="chromeos">
     settings.navigateTo(settings.Route.ACCOUNTS);
-// </if>
+    // </if>
   },
 
-// <if expr="not chromeos">
+  // <if expr="not chromeos">
   /**
    * @private
    * @param {string} domain
    * @return {string}
    */
   getDomainHtml_: function(domain) {
-    var innerSpan =
-        '<span id="managed-by-domain-name">' + domain + '</span>';
+    var innerSpan = '<span id="managed-by-domain-name">' + domain + '</span>';
     return loadTimeData.getStringF('domainManagedProfile', innerSpan);
   },
 
@@ -373,7 +372,7 @@ Polymer({
     settings.navigateToPreviousRoute();
     cr.ui.focusWithoutInk(assert(this.$.importDataDialogTrigger));
   },
-// </if>
+  // </if>
 
   /**
    * @private
@@ -381,13 +380,13 @@ Polymer({
    * @return {string}
    */
   getDisconnectExplanationHtml_: function(domain) {
-// <if expr="not chromeos">
+    // <if expr="not chromeos">
     if (domain) {
       return loadTimeData.getStringF(
           'syncDisconnectManagedProfileExplanation',
           '<span id="managed-by-domain-name">' + domain + '</span>');
     }
-// </if>
+    // </if>
     return loadTimeData.getString('syncDisconnectExplanation');
   },
 
@@ -409,8 +408,9 @@ Polymer({
    *     error, there is an action associated with it.
    */
   isSyncStatusActionable_: function(syncStatus) {
-    return !!syncStatus && !syncStatus.managed && (!syncStatus.hasError ||
-        syncStatus.statusAction != settings.StatusAction.NO_ACTION);
+    return !!syncStatus && !syncStatus.managed &&
+        (!syncStatus.hasError ||
+         syncStatus.statusAction != settings.StatusAction.NO_ACTION);
   },
 
   /**

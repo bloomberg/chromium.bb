@@ -119,8 +119,8 @@ Polymer({
    */
   onRemoveShowingSitesTap_: function(e) {
     e.preventDefault();
-    this.confirmationDeleteMsg_ = loadTimeData.getString(
-        'siteSettingsCookieRemoveMultipleConfirmation');
+    this.confirmationDeleteMsg_ =
+        loadTimeData.getString('siteSettingsCookieRemoveMultipleConfirmation');
     this.$.confirmDeleteDialog.showModal();
   },
 
@@ -140,7 +140,7 @@ Polymer({
           this.browserProxy.removeCookie(items[i].id);
       }
       // We just deleted all items found by the filter, let's reset the filter.
-      /** @type {SettingsSubpageSearchElement} */(this.$.filter).setValue('');
+      /** @type {SettingsSubpageSearchElement} */ (this.$.filter).setValue('');
     }
   },
 
@@ -159,7 +159,8 @@ Polymer({
    * @private
    */
   onSiteTap_: function(event) {
-    settings.navigateTo(settings.Route.SITE_SETTINGS_DATA_DETAILS,
+    settings.navigateTo(
+        settings.Route.SITE_SETTINGS_DATA_DETAILS,
         new URLSearchParams('site=' + event.model.item.site));
   },
 });
