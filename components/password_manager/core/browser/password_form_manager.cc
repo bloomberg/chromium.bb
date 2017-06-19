@@ -215,21 +215,19 @@ PasswordFormManager::PasswordFormManager(
               ? SplitPathToSegments(observed_form_.origin.path())
               : std::vector<std::string>()),
       is_new_login_(true),
+      has_autofilled_(false),
       has_generated_password_(false),
       is_manual_generation_(false),
       generation_popup_was_shown_(false),
       form_classifier_outcome_(kNoOutcome),
       password_overridden_(false),
       retry_password_form_password_update_(false),
-      generation_available_(false),
       password_manager_(password_manager),
       preferred_match_(nullptr),
       is_possible_change_password_form_without_username_(
           observed_form.IsPossibleChangePasswordFormWithoutUsername()),
       client_(client),
-      manager_action_(kManagerActionNone),
-      user_action_(kUserActionNone),
-      submit_result_(kSubmitResultNotSubmitted),
+      user_action_(UserAction::kNone),
       form_type_(kFormTypeUnspecified),
       form_saver_(std::move(form_saver)),
       owned_form_fetcher_(
@@ -240,7 +238,8 @@ PasswordFormManager::PasswordFormManager(
                              true /* should_migrate_http_passwords */,
                              true /* should_query_suppressed_https_forms */)),
       form_fetcher_(form_fetcher ? form_fetcher : owned_form_fetcher_.get()),
-      is_main_frame_secure_(client->IsMainFrameSecure()) {
+      is_main_frame_secure_(client->IsMainFrameSecure()),
+      metrics_recorder_(client->IsMainFrameSecure()) {
   if (owned_form_fetcher_)
     owned_form_fetcher_->Fetch();
   DCHECK_EQ(observed_form.scheme == PasswordForm::SCHEME_HTML,
@@ -253,27 +252,7 @@ PasswordFormManager::PasswordFormManager(
 PasswordFormManager::~PasswordFormManager() {
   form_fetcher_->RemoveConsumer(this);
 
-  UMA_HISTOGRAM_ENUMERATION("PasswordManager.ActionsTakenV3", GetActionsTaken(),
-                            kMaxNumActionsTaken);
-
-  // Use the visible main frame URL at the time the PasswordFormManager
-  // is created, in case a navigation has already started and the
-  // visible URL has changed.
-  if (!is_main_frame_secure_) {
-    UMA_HISTOGRAM_ENUMERATION("PasswordManager.ActionsTakenOnNonSecureForm",
-                              GetActionsTaken(), kMaxNumActionsTaken);
-  }
-
   RecordHistogramsOnSuppressedAccounts();
-
-  if (submit_result_ == kSubmitResultNotSubmitted) {
-    if (has_generated_password_)
-      metrics_util::LogPasswordGenerationSubmissionEvent(
-          metrics_util::PASSWORD_NOT_SUBMITTED);
-    else if (generation_available_)
-      metrics_util::LogPasswordGenerationAvailableSubmissionEvent(
-          metrics_util::PASSWORD_NOT_SUBMITTED);
-  }
 
   if (form_type_ != kFormTypeUnspecified) {
     UMA_HISTOGRAM_ENUMERATION("PasswordManager.SubmittedFormType", form_type_,
@@ -283,12 +262,6 @@ PasswordFormManager::~PasswordFormManager() {
                                 form_type_, kFormTypeMax);
     }
   }
-}
-
-int PasswordFormManager::GetActionsTaken() const {
-  return user_action_ +
-         kUserActionMax *
-             (manager_action_ + kManagerActionMax * submit_result_);
 }
 
 int PasswordFormManager::GetHistogramSampleForSuppressedAccounts(
@@ -314,19 +287,11 @@ int PasswordFormManager::GetHistogramSampleForSuppressedAccounts(
     best_matching_account = std::max(best_matching_account, current_account);
   }
 
-  // Merge kManagerActionNone and kManagerActionBlacklisted_Obsolete. This
-  // lowers the number of histogram buckets used by 33%.
-  ManagerActionNew manager_action_new =
-      (manager_action_ == kManagerActionAutofilled)
-          ? kManagerActionNewAutofilled
-          : kManagerActionNewNone;
-
   // Encoding: most significant digit is the |best_matching_account|.
   int mixed_base_encoding = 0;
   mixed_base_encoding += best_matching_account;
-  (mixed_base_encoding *= kSubmitResultMax) += submit_result_;
-  (mixed_base_encoding *= kManagerActionNewMax) += manager_action_new;
-  (mixed_base_encoding *= kUserActionMax) += user_action_;
+  mixed_base_encoding *= PasswordFormMetricsRecorder::kMaxNumActionsTakenNew;
+  mixed_base_encoding += metrics_recorder_.GetActionsTakenNew();
   DCHECK_LT(mixed_base_encoding, kMaxSuppressedAccountStats);
   return mixed_base_encoding;
 }
@@ -510,9 +475,9 @@ void PasswordFormManager::Save() {
   metrics_util::LogPasswordAcceptedSaveUpdateSubmissionIndicatorEvent(
       submitted_form_->submission_event);
 
-  if ((user_action_ == kUserActionNone) &&
+  if ((user_action_ == UserAction::kNone) &&
       DidPreferenceChange(best_matches_, pending_credentials_.username_value)) {
-    SetUserAction(kUserActionChoose);
+    SetUserAction(UserAction::kChoose);
   }
   base::Optional<PasswordForm> old_primary_key;
   if (is_new_login_) {
@@ -723,9 +688,12 @@ void PasswordFormManager::ProcessFrameInternal(
                            preferred_match_->is_public_suffix_match ||
                            observed_form_.IsPossibleChangePasswordForm();
   if (wait_for_username) {
-    manager_action_ = kManagerActionNone;
+    metrics_recorder_.SetManagerAction(
+        PasswordFormMetricsRecorder::kManagerActionNone);
   } else {
-    manager_action_ = kManagerActionAutofilled;
+    has_autofilled_ = true;
+    metrics_recorder_.SetManagerAction(
+        PasswordFormMetricsRecorder::kManagerActionAutofilled);
     base::RecordAction(base::UserMetricsAction("PasswordManager_Autofilled"));
   }
   if (ShouldShowInitialPasswordAccountSuggestions()) {
@@ -750,7 +718,9 @@ void PasswordFormManager::ProcessLoginPrompt() {
   if (!preferred_match_)
     return;
 
-  manager_action_ = kManagerActionAutofilled;
+  has_autofilled_ = true;
+  metrics_recorder_.SetManagerAction(
+      PasswordFormMetricsRecorder::kManagerActionAutofilled);
   password_manager_->AutofillHttpAuth(best_matches_, *preferred_match_);
 }
 
@@ -1017,8 +987,8 @@ void PasswordFormManager::CreatePendingCredentials() {
       // from Android apps store a copy with the current origin and signon
       // realm. This ensures that on the next visit, a precise match is found.
       is_new_login_ = true;
-      SetUserAction(password_overridden_ ? kUserActionOverridePassword
-                                         : kUserActionChoosePslMatch);
+      SetUserAction(password_overridden_ ? UserAction::kOverridePassword
+                                         : UserAction::kChoosePslMatch);
 
       // Since this credential will not overwrite a previously saved credential,
       // username_value can be updated now.
@@ -1068,7 +1038,7 @@ void PasswordFormManager::CreatePendingCredentials() {
     } else {  // Not a PSL match.
       is_new_login_ = false;
       if (password_overridden_)
-        SetUserAction(kUserActionOverridePassword);
+        SetUserAction(UserAction::kOverridePassword);
     }
   } else if (other_possible_username_action_ ==
                  ALLOW_OTHER_POSSIBLE_USERNAMES &&
@@ -1135,7 +1105,7 @@ void PasswordFormManager::CreatePendingCredentials() {
     pending_credentials_.signon_realm = submitted_form_->signon_realm;
   }
 
-  if (user_action_ == kUserActionOverridePassword &&
+  if (user_action_ == UserAction::kOverridePassword &&
       pending_credentials_.type == PasswordForm::TYPE_GENERATED &&
       !has_generated_password_) {
     metrics_util::LogPasswordGenerationSubmissionEvent(
@@ -1278,7 +1248,7 @@ const PasswordForm* PasswordFormManager::FindBestSavedMatch(
 
 void PasswordFormManager::CreatePendingCredentialsForNewCredentials() {
   // User typed in a new, unknown username.
-  SetUserAction(kUserActionOverrideUsernameAndPassword);
+  SetUserAction(UserAction::kOverrideUsernameAndPassword);
   pending_credentials_ = observed_form_;
   if (submitted_form_->was_parsed_using_autofill_predictions)
     pending_credentials_.username_element = submitted_form_->username_element;
@@ -1319,30 +1289,21 @@ void PasswordFormManager::OnNoInteraction(bool is_update) {
   }
 }
 
+void PasswordFormManager::SetHasGeneratedPassword(bool generated_password) {
+  has_generated_password_ = generated_password;
+  metrics_recorder_.SetHasGeneratedPassword(generated_password);
+}
+
 void PasswordFormManager::LogSubmitPassed() {
-  if (submit_result_ != kSubmitResultFailed) {
-    if (has_generated_password_) {
-      metrics_util::LogPasswordGenerationSubmissionEvent(
-          metrics_util::PASSWORD_SUBMITTED);
-    } else if (generation_available_) {
-      metrics_util::LogPasswordGenerationAvailableSubmissionEvent(
-          metrics_util::PASSWORD_SUBMITTED);
-    }
-  }
-  base::RecordAction(base::UserMetricsAction("PasswordManager_LoginPassed"));
-  submit_result_ = kSubmitResultPassed;
+  metrics_recorder_.LogSubmitPassed();
 }
 
 void PasswordFormManager::LogSubmitFailed() {
-  if (has_generated_password_) {
-    metrics_util::LogPasswordGenerationSubmissionEvent(
-        metrics_util::GENERATED_PASSWORD_FORCE_SAVED);
-  } else if (generation_available_) {
-    metrics_util::LogPasswordGenerationAvailableSubmissionEvent(
-        metrics_util::PASSWORD_SUBMISSION_FAILED);
-  }
-  base::RecordAction(base::UserMetricsAction("PasswordManager_LoginFailed"));
-  submit_result_ = kSubmitResultFailed;
+  metrics_recorder_.LogSubmitFailed();
+}
+
+void PasswordFormManager::MarkGenerationAvailable() {
+  metrics_recorder_.MarkGenerationAvailable();
 }
 
 void PasswordFormManager::WipeStoreCopyIfOutdated() {
@@ -1430,22 +1391,8 @@ void PasswordFormManager::SendSignInVote(const FormData& form_data) {
 }
 
 void PasswordFormManager::SetUserAction(UserAction user_action) {
-  if (user_action == kUserActionChoose) {
-    base::RecordAction(
-        base::UserMetricsAction("PasswordManager_UsedNonDefaultUsername"));
-  } else if (user_action == kUserActionChoosePslMatch) {
-    base::RecordAction(
-        base::UserMetricsAction("PasswordManager_ChoseSubdomainPassword"));
-  } else if (user_action == kUserActionOverridePassword) {
-    base::RecordAction(
-        base::UserMetricsAction("PasswordManager_LoggedInWithNewPassword"));
-  } else if (user_action == kUserActionOverrideUsernameAndPassword) {
-    base::RecordAction(
-        base::UserMetricsAction("PasswordManager_LoggedInWithNewUsername"));
-  } else {
-    NOTREACHED();
-  }
   user_action_ = user_action;
+  metrics_recorder_.SetUserAction(user_action);
 }
 
 base::Optional<PasswordForm> PasswordFormManager::UpdatePendingAndGetOldKey(
