@@ -2834,6 +2834,8 @@ cr.define('login', function() {
     // If testing mode is enabled.
     testingModeEnabled_: false,
 
+    overlayColors_: {maskColor: undefined, scrollColor: undefined},
+
     /** @override */
     decorate: function() {
       // Event listeners that are installed for the time period during which
@@ -3133,6 +3135,8 @@ cr.define('login', function() {
       this.lastFocusedPod_ = undefined;
       this.mainPod_ = undefined;
       this.smallPodsContainer.innerHTML = '';
+      this.topMask.innerHTML = '';
+      this.bottomMask.innerHTML = '';
 
       // Switch off animation
       Oobe.getInstance().toggleClass('flying-pods', false);
@@ -3152,6 +3156,9 @@ cr.define('login', function() {
       // Make sure we eventually show the pod row, even if some image is stuck.
       setTimeout(function() {
         $('pod-row').classList.remove('images-loading');
+        this.smallPodsContainer.classList.remove('images-loading');
+        this.topMask.classList.remove('images-loading');
+        this.bottomMask.classList.remove('images-loading');
       }, POD_ROW_IMAGES_LOAD_TIMEOUT_MS);
 
       var isAccountPicker = $('login-header-bar').signinUIState ==
@@ -3187,6 +3194,22 @@ cr.define('login', function() {
      */
     get smallPodsContainer() {
       return document.querySelector('.small-pod-container');
+    },
+
+    /**
+     * Gets the gradient mask at the top.
+     * @type {!HTMLDivElement}
+     */
+    get topMask() {
+      return document.querySelector('.small-pod-container-mask');
+    },
+
+    /**
+     * Gets the gradient mask at the bottom.
+     * @type {!HTMLDivElement}
+     */
+    get bottomMask() {
+      return document.querySelector('.small-pod-container-mask.rotate');
     },
 
     /**
@@ -3700,6 +3723,10 @@ cr.define('login', function() {
       this.smallPodsContainer.hidden = false;
       // Add a dark overlay.
       this.smallPodsContainer.classList.add('scroll');
+      if (this.overlayColors_.scrollColor) {
+        this.smallPodsContainer.style.backgroundColor =
+            this.overlayColors_.scrollColor;
+      }
       var pods = this.pods;
       this.mainPod_.setPodStyle(UserPod.Style.LARGE);
       for (var pod of pods) {
@@ -3788,9 +3815,11 @@ cr.define('login', function() {
      */
     handleBeforePodPlacement_: function() {
       this.smallPodsContainer.hidden = true;
-      document.querySelector('.small-pod-container-mask').hidden = true;
-      document.querySelector('.small-pod-container-mask.rotate').hidden = true;
+      this.topMask.hidden = true;
+      this.bottomMask.hidden = true;
       this.smallPodsContainer.classList.remove('scroll');
+      if (this.overlayColors_.scrollColor)
+        this.smallPodsContainer.style.backgroundColor = 'unset';
       var pods = this.pods;
       for (var pod of pods) {
         // There is a chance that one of the pods has a bottom padding, so
@@ -3831,20 +3860,21 @@ cr.define('login', function() {
      * @private
      */
     showScrollMask_: function() {
-      var topMask = document.querySelector('.small-pod-container-mask');
-      topMask.hidden = false;
-      topMask.style.left = this.smallPodsContainer.style.left;
-      topMask.style.width = this.smallPodsContainer.style.width;
-      // The bottom mask is a rotation of the top mask.
-      var bottomMask =
-          document.querySelector('.small-pod-container-mask.rotate');
-      bottomMask.hidden = false;
-      bottomMask.style.left = this.smallPodsContainer.style.left;
-      bottomMask.style.width = this.smallPodsContainer.style.width;
+      this.topMask.hidden = false;
+      this.topMask.style.left = this.smallPodsContainer.style.left;
+      this.topMask.style.width = this.smallPodsContainer.style.width;
+      this.bottomMask.hidden = false;
+      this.bottomMask.style.left = this.smallPodsContainer.style.left;
+      this.bottomMask.style.width = this.smallPodsContainer.style.width;
       // The bottom mask should overlap with the header bar, and its z-index
       // is chosen to ensure it does not block users from using the header bar.
-      bottomMask.style.top =
+      this.bottomMask.style.top =
           cr.ui.toCssPx(this.screenSize.height - SCROLL_MASK_HEIGHT);
+      if (this.overlayColors_.maskColor) {
+        var maskGradient = this.getMaskGradient_(this.overlayColors_.maskColor);
+        this.topMask.style.background = maskGradient;
+        this.bottomMask.style.background = maskGradient;
+      }
     },
 
     /**
@@ -4081,6 +4111,37 @@ cr.define('login', function() {
       banner.textContent = message;
       banner.classList.toggle('message-set', !!message);
       $('signin-banner-container1').hidden = banner.textContent.length == 0;
+    },
+
+    /**
+     * Sets login screen overlay colors based on colors extracted from the
+     * wallpaper.
+     * @param {string} maskColor Color for the gradient mask.
+     * @param {string} scrollColor Color for the small pods container.
+     * @param {string} backgroundColor Color for the whole background.
+     */
+    setOverlayColors: function(maskColor, scrollColor, backgroundColor) {
+      $('login-shield').style.backgroundColor = backgroundColor;
+      if (this.smallPodsContainer.classList.contains('scroll'))
+        this.smallPodsContainer.style.backgroundColor = scrollColor;
+      if (!this.topMask.hidden) {
+        var maskGradient = this.getMaskGradient_(maskColor);
+        this.topMask.style.background = maskGradient;
+        this.bottomMask.style.background = maskGradient;
+      }
+      // Save the colors because the scrollable container and the masks may
+      // become visible later.
+      this.overlayColors_.maskColor = maskColor;
+      this.overlayColors_.scrollColor = scrollColor;
+    },
+
+    /**
+     * Helper function to create a style string for the scroll masks.
+     * @param {string} maskColor Color for the gradient mask.
+     * @return {string} A CSS style.
+     */
+    getMaskGradient_: function(maskColor) {
+      return 'linear-gradient(' + maskColor + ', transparent)';
     },
 
     /**
@@ -4586,6 +4647,9 @@ cr.define('login', function() {
       this.podsWithPendingImages_.splice(index, 1);
       if (this.podsWithPendingImages_.length == 0) {
         this.classList.remove('images-loading');
+        this.smallPodsContainer.classList.remove('images-loading');
+        this.topMask.classList.remove('images-loading');
+        this.bottomMask.classList.remove('images-loading');
       }
     },
 
