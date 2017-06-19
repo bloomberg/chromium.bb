@@ -12,6 +12,9 @@
 #include "base/run_loop.h"
 #include "base/task_scheduler/task_scheduler.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
+#include "components/tracing/common/trace_to_console.h"
+#include "components/tracing/common/tracing_switches.h"
 #include "ui/display/types/display_snapshot.h"
 #include "ui/display/types/native_display_delegate.h"
 #include "ui/display/types/native_display_observer.h"
@@ -337,6 +340,15 @@ int main(int argc, char** argv) {
   // Initialize logging so we can enable VLOG messages.
   logging::LoggingSettings settings;
   logging::InitLogging(settings);
+
+  // Initialize tracing.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kTraceToConsole)) {
+    base::trace_event::TraceConfig trace_config =
+        tracing::GetConfigForTraceToConsole();
+    base::trace_event::TraceLog::GetInstance()->SetEnabled(
+        trace_config, base::trace_event::TraceLog::RECORDING_MODE);
+  }
 
   // Build UI thread message loop. This is used by platform
   // implementations for event polling & running background tasks.

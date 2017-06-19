@@ -25,6 +25,7 @@ executable("ozone_demo") {
   deps = [
     "//base",
     "//build/config:exe_and_shlib_deps",
+    "//components/tracing:startup_tracing",
     "//skia",
     "//ui/display/types",
     "//ui/events",
