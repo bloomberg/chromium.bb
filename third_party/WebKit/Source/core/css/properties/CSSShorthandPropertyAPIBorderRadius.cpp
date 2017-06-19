@@ -23,7 +23,7 @@ bool CSSShorthandPropertyAPIBorderRadius::parseShorthand(
 
   if (!CSSPropertyShapeUtils::ConsumeRadii(horizontal_radii, vertical_radii,
                                            range, context.Mode(),
-                                           local_context.GetUseAliasParsing()))
+                                           local_context.UseAliasParsing()))
     return false;
 
   CSSPropertyParserHelpers::AddProperty(

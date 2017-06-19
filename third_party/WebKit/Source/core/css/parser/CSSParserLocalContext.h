@@ -18,7 +18,7 @@ class CSSParserLocalContext {
  public:
   CSSParserLocalContext();
   explicit CSSParserLocalContext(bool use_alias_parsing);
-  bool GetUseAliasParsing() const;
+  bool UseAliasParsing() const;
 
  private:
   bool use_alias_parsing_;
