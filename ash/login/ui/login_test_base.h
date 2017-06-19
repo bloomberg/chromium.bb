@@ -5,6 +5,7 @@
 #ifndef ASH_LOGIN_UI_LOGIN_TEST_BASE_H_
 #define ASH_LOGIN_UI_LOGIN_TEST_BASE_H_
 
+#include "ash/public/interfaces/user_info.mojom.h"
 #include "ash/test/ash_test_base.h"
 #include "base/macros.h"
 
@@ -26,6 +27,9 @@ class LoginTestBase : public test::AshTestBase {
   void ShowWidgetWithContent(views::View* content);
 
   views::Widget* widget() const { return widget_; }
+
+  // Utility method to create a new |mojom::UserInfoPtr| instance.
+  mojom::UserInfoPtr CreateUser(const std::string& name) const;
 
   // test::AshTestBase:
   void TearDown() override;

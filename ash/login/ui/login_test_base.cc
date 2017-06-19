@@ -48,6 +48,14 @@ void LoginTestBase::ShowWidgetWithContent(views::View* content) {
   widget_->Show();
 }
 
+mojom::UserInfoPtr LoginTestBase::CreateUser(const std::string& name) const {
+  auto user = mojom::UserInfo::New();
+  user->account_id = AccountId::FromUserEmail(name + "@foo.com");
+  user->display_name = "User " + name;
+  user->display_email = user->account_id.GetUserEmail();
+  return user;
+}
+
 void LoginTestBase::TearDown() {
   if (widget_) {
     widget_->Close();
