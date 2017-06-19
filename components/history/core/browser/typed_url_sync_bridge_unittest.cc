@@ -20,9 +20,12 @@
 
 using sync_pb::TypedUrlSpecifics;
 using syncer::DataBatch;
+using syncer::EntityChange;
+using syncer::EntityChangeList;
 using syncer::EntityData;
 using syncer::EntityDataPtr;
 using syncer::KeyAndData;
+using syncer::MetadataBatch;
 using syncer::RecordingModelTypeChangeProcessor;
 
 namespace history {
@@ -182,22 +185,32 @@ class TypedURLSyncBridgeTest : public testing::Test {
                                                                     false));
     typed_url_sync_bridge_ = bridge.get();
     typed_url_sync_bridge_->Init();
+    typed_url_sync_bridge_->history_backend_observer_.RemoveAll();
     fake_history_backend_->SetTypedURLSyncBridgeForTest(std::move(bridge));
   }
 
   void TearDown() override { fake_history_backend_->Closing(); }
 
+  // Starts sync for |typed_url_sync_bridge_| with |initial_data| as the
+  // initial sync data.
+  void StartSyncing(const std::vector<TypedUrlSpecifics>& specifics) {
+    // Set change processor.
+    const auto error =
+        bridge()->MergeSyncData(bridge()->CreateMetadataChangeList(),
+                                CreateEntityChangeList(specifics));
+
+    EXPECT_FALSE(error);
+  }
+
   // Fills |specifics| with the sync data for |url| and |visits|.
   static bool WriteToTypedUrlSpecifics(const URLRow& url,
                                        const VisitVector& visits,
-                                       sync_pb::TypedUrlSpecifics* specifics) {
+                                       TypedUrlSpecifics* specifics) {
     return TypedURLSyncBridge::WriteToTypedUrlSpecifics(url, visits, specifics);
   }
 
   std::string GetStorageKey(const TypedUrlSpecifics& specifics) {
-    std::string key =
-        bridge()->GetStorageKey(SpecificsToEntity(specifics).value());
-    EXPECT_FALSE(key.empty());
+    std::string key = bridge()->GetStorageKeyInternal(specifics.url());
     return key;
   }
 
@@ -206,6 +219,16 @@ class TypedURLSyncBridgeTest : public testing::Test {
     data.client_tag_hash = "ignored";
     *data.specifics.mutable_typed_url() = specifics;
     return data.PassToPtr();
+  }
+
+  EntityChangeList CreateEntityChangeList(
+      const std::vector<TypedUrlSpecifics>& specifics_vector) {
+    EntityChangeList entity_change_list;
+    for (const auto& specifics : specifics_vector) {
+      entity_change_list.push_back(EntityChange::CreateAdd(
+          GetStorageKey(specifics), SpecificsToEntity(specifics)));
+    }
+    return entity_change_list;
   }
 
   std::map<std::string, TypedUrlSpecifics> ExpectedMap(
@@ -249,12 +272,138 @@ TEST_F(TypedURLSyncBridgeTest, GetAllData) {
   fake_history_backend_->SetVisitsForUrl(row2, visits2);
 
   // Create the same data in sync.
-  sync_pb::TypedUrlSpecifics typed_url1, typed_url2;
+  TypedUrlSpecifics typed_url1, typed_url2;
   WriteToTypedUrlSpecifics(row1, visits1, &typed_url1);
   WriteToTypedUrlSpecifics(row2, visits2, &typed_url2);
 
   // Check that the local cache is still correct.
   VerifyLocalHistoryData({typed_url1, typed_url2});
+}
+
+// Add a typed url locally and one to sync with the same data. Starting sync
+// should result in no changes.
+TEST_F(TypedURLSyncBridgeTest, MergeUrlNoChange) {
+  // Add a url to backend.
+  VisitVector visits;
+  URLRow row = MakeTypedUrlRow(kURL, kTitle, 1, 3, false, &visits);
+  fake_history_backend_->SetVisitsForUrl(row, visits);
+
+  // Create the same data in sync.
+  sync_pb::EntitySpecifics entity_specifics;
+  sync_pb::TypedUrlSpecifics* typed_url = entity_specifics.mutable_typed_url();
+  WriteToTypedUrlSpecifics(row, visits, typed_url);
+
+  StartSyncing({*typed_url});
+  EXPECT_TRUE(processor().put_multimap().empty());
+
+  // Check that the local cache was is still correct.
+  VerifyLocalHistoryData({*typed_url});
+}
+
+// Add a corupted typed url locally, has typed url count 1, but no real typed
+// url visit. Starting sync should not pick up this url.
+TEST_F(TypedURLSyncBridgeTest, MergeUrlNoTypedUrl) {
+  // Add a url to backend.
+  VisitVector visits;
+  URLRow row = MakeTypedUrlRow(kURL, kTitle, 0, 3, false, &visits);
+
+  // Mark typed_count to 1 even when there is no typed url visit.
+  row.set_typed_count(1);
+  fake_history_backend_->SetVisitsForUrl(row, visits);
+
+  StartSyncing(std::vector<TypedUrlSpecifics>());
+  EXPECT_TRUE(processor().put_multimap().empty());
+
+  MetadataBatch metadata_batch;
+  metadata_store()->GetAllSyncMetadata(&metadata_batch);
+  EXPECT_EQ(0u, metadata_batch.TakeAllMetadata().size());
+}
+
+// Starting sync with no sync data should just push the local url to sync.
+TEST_F(TypedURLSyncBridgeTest, MergeUrlEmptySync) {
+  // Add a url to backend.
+  VisitVector visits;
+  URLRow row = MakeTypedUrlRow(kURL, kTitle, 1, 3, false, &visits);
+  fake_history_backend_->SetVisitsForUrl(row, visits);
+
+  StartSyncing(std::vector<TypedUrlSpecifics>());
+
+  // Check that the local cache was is still correct.
+  sync_pb::EntitySpecifics entity_specifics;
+  sync_pb::TypedUrlSpecifics* typed_url = entity_specifics.mutable_typed_url();
+  WriteToTypedUrlSpecifics(row, visits, typed_url);
+  VerifyLocalHistoryData({*typed_url});
+
+  // Check that the server was updated correctly.
+  ASSERT_EQ(1U, processor().put_multimap().size());
+  auto recorded_specifics_iterator =
+      processor().put_multimap().find(GetStorageKey(*typed_url));
+  EXPECT_NE(processor().put_multimap().end(), recorded_specifics_iterator);
+  TypedUrlSpecifics recorded_specifics =
+      recorded_specifics_iterator->second->specifics.typed_url();
+
+  ASSERT_EQ(1, recorded_specifics.visits_size());
+  EXPECT_EQ(3, recorded_specifics.visits(0));
+  ASSERT_EQ(1, recorded_specifics.visit_transitions_size());
+  EXPECT_EQ(static_cast<const int>(visits[0].transition),
+            recorded_specifics.visit_transitions(0));
+}
+
+// Starting sync with no local data should just push the synced url into the
+// backend.
+TEST_F(TypedURLSyncBridgeTest, MergeUrlEmptyLocal) {
+  // Create the sync data.
+  VisitVector visits;
+  URLRow row = MakeTypedUrlRow(kURL, kTitle, 1, 3, false, &visits);
+  sync_pb::EntitySpecifics entity_specifics;
+  sync_pb::TypedUrlSpecifics* typed_url = entity_specifics.mutable_typed_url();
+  WriteToTypedUrlSpecifics(row, visits, typed_url);
+
+  StartSyncing({*typed_url});
+  EXPECT_EQ(0u, processor().put_multimap().size());
+
+  // Check that the backend was updated correctly.
+  VisitVector all_visits;
+  base::Time server_time = base::Time::FromInternalValue(3);
+  URLID url_id = fake_history_backend_->GetIdByUrl(GURL(kURL));
+  ASSERT_NE(0, url_id);
+  fake_history_backend_->GetVisitsForURL(url_id, &all_visits);
+  ASSERT_EQ(1U, all_visits.size());
+  EXPECT_EQ(server_time, all_visits[0].visit_time);
+  EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+      all_visits[0].transition, visits[0].transition));
+}
+
+// Starting sync with both local and sync have same typed URL, but different
+// visit. After merge, both local and sync should have two same visits.
+TEST_F(TypedURLSyncBridgeTest, SimpleMerge) {
+  // Add a url to backend.
+  VisitVector visits1;
+  URLRow row1 = MakeTypedUrlRow(kURL, kTitle, 1, 3, false, &visits1);
+  fake_history_backend_->SetVisitsForUrl(row1, visits1);
+
+  // Create the sync data.
+  VisitVector visits2;
+  URLRow row2 = MakeTypedUrlRow(kURL, kTitle, 1, 4, false, &visits2);
+  sync_pb::EntitySpecifics entity_specifics;
+  sync_pb::TypedUrlSpecifics* typed_url = entity_specifics.mutable_typed_url();
+  WriteToTypedUrlSpecifics(row2, visits2, typed_url);
+
+  StartSyncing({*typed_url});
+  EXPECT_EQ(1u, processor().put_multimap().size());
+
+  // Check that the backend was updated correctly.
+  VisitVector all_visits;
+  URLID url_id = fake_history_backend_->GetIdByUrl(GURL(kURL));
+  ASSERT_NE(0, url_id);
+  fake_history_backend_->GetVisitsForURL(url_id, &all_visits);
+  ASSERT_EQ(2U, all_visits.size());
+  EXPECT_EQ(base::Time::FromInternalValue(3), all_visits[0].visit_time);
+  EXPECT_EQ(base::Time::FromInternalValue(4), all_visits[1].visit_time);
+  EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+      all_visits[0].transition, visits1[0].transition));
+  EXPECT_TRUE(ui::PageTransitionTypeIncludingQualifiersIs(
+      all_visits[1].transition, visits2[0].transition));
 }
 
 }  // namespace history
