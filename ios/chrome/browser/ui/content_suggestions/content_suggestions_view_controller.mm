@@ -290,10 +290,12 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
   UIEdgeInsets inset = [self collectionView:collectionView
                                      layout:collectionView.collectionViewLayout
                      insetForSectionAtIndex:indexPath.section];
+  UIEdgeInsets contentInset = self.collectionView.contentInset;
 
   return [MDCCollectionViewCell
       cr_preferredHeightForWidth:CGRectGetWidth(collectionView.bounds) -
-                                 inset.left - inset.right
+                                 inset.left - inset.right - contentInset.left -
+                                 contentInset.right
                          forItem:item];
 }
 
