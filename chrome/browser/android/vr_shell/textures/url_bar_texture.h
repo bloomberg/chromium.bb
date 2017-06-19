@@ -13,6 +13,7 @@
 #include "chrome/browser/android/vr_shell/textures/ui_texture.h"
 #include "chrome/browser/android/vr_shell/ui_unsupported_mode.h"
 #include "components/security_state/core/security_state.h"
+#include "ui/gfx/geometry/rect_f.h"
 #include "url/gurl.h"
 
 namespace gfx {
@@ -41,11 +42,11 @@ class UrlBarTexture : public UiTexture {
 
   void SetURL(const GURL& gurl);
   void SetHistoryButtonsEnabled(bool can_go_back);
-  void SetSecurityLevel(security_state::SecurityLevel level);
+  void SetSecurityInfo(security_state::SecurityLevel level, bool malware);
 
   bool HitsBackButton(const gfx::PointF& position) const;
   bool HitsUrlBar(const gfx::PointF& position) const;
-  bool HitsSecurityIcon(const gfx::PointF& position) const;
+  bool HitsSecurityRegion(const gfx::PointF& position) const;
 
   void SetBackButtonHovered(bool hovered);
   void SetBackButtonPressed(bool pressed);
@@ -60,11 +61,10 @@ class UrlBarTexture : public UiTexture {
  private:
   void Draw(SkCanvas* canvas, const gfx::Size& texture_size) override;
   float ToPixels(float meters) const;
+  float ToMeters(float pixels) const;
   bool HitsTransparentRegion(const gfx::PointF& meters, bool left) const;
   void RenderUrl(const gfx::Size& texture_size, const gfx::Rect& bounds);
   void OnSetMode() override;
-  gfx::PointF SecurityIconPositionMeters() const;
-  gfx::PointF UrlBarPositionMeters() const;
   SkColor GetLeftCornerColor() const;
 
   gfx::SizeF size_;
@@ -73,13 +73,18 @@ class UrlBarTexture : public UiTexture {
   bool can_go_back_ = false;
 
   GURL gurl_;
-  security_state::SecurityLevel security_level_;
+  security_state::SecurityLevel security_level_ =
+      security_state::SecurityLevel::NONE;
+  bool malware_ = false;
 
   std::unique_ptr<gfx::RenderText> url_render_text_;
   GURL last_drawn_gurl_;
   bool has_back_button_ = true;
+  bool has_security_chip_ = true;
   security_state::SecurityLevel last_drawn_security_level_;
   base::Callback<void(UiUnsupportedMode)> failure_callback_;
+  gfx::RectF security_hit_region_ = gfx::RectF(0, 0, 0, 0);
+  gfx::RectF back_button_hit_region_ = gfx::RectF(0, 0, 0, 0);
 
   DISALLOW_COPY_AND_ASSIGN(UrlBarTexture);
 };

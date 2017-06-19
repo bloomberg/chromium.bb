@@ -39,7 +39,7 @@ class UiSceneManager {
   void SetURL(const GURL& gurl);
   void SetWebVrSecureOrigin(bool secure);
   void SetWebVrMode(bool web_vr, bool auto_presented);
-  void SetSecurityLevel(security_state::SecurityLevel level);
+  void SetSecurityInfo(security_state::SecurityLevel level, bool malware);
   void SetLoading(bool loading);
   void SetLoadProgress(float progress);
   void SetIsExiting();

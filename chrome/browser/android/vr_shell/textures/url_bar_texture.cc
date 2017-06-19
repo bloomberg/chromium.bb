@@ -9,14 +9,15 @@
 #include "cc/paint/skia_paint_canvas.h"
 #include "chrome/browser/android/vr_shell/color_scheme.h"
 #include "chrome/browser/android/vr_shell/textures/render_text_wrapper.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/toolbar/vector_icons.h"
 #include "components/url_formatter/url_formatter.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/render_text.h"
 #include "ui/gfx/vector_icon_types.h"
@@ -32,15 +33,16 @@ static constexpr float kFontHeight = 0.027;
 static constexpr float kBackButtonWidth = kHeight;
 static constexpr float kBackIconHeight = 0.0375;
 static constexpr float kBackIconOffset = 0.005;
-static constexpr float kSecurityFieldWidth = 0.06;
+static constexpr float kFieldSpacing = 0.014;
 static constexpr float kSecurityIconHeight = 0.03;
 static constexpr float kUrlRightMargin = 0.02;
 static constexpr float kSeparatorWidth = 0.002;
+static constexpr float kChipTextLineMargin = kHeight * 0.3;
 
 using security_state::SecurityLevel;
 
 // See ToolbarModelImpl::GetVectorIcon().
-const struct gfx::VectorIcon& getSecurityIcon(SecurityLevel level) {
+const struct gfx::VectorIcon& GetSecurityIcon(SecurityLevel level) {
   switch (level) {
     case security_state::NONE:
     case security_state::HTTP_SHOW_WARNING:
@@ -62,7 +64,7 @@ const struct gfx::VectorIcon& getSecurityIcon(SecurityLevel level) {
 }
 
 // See LocationBarView::GetSecureTextColor().
-SkColor getSchemeColor(SecurityLevel level, const ColorScheme& color_scheme) {
+SkColor GetSchemeColor(SecurityLevel level, const ColorScheme& color_scheme) {
   switch (level) {
     case SecurityLevel::NONE:
     case SecurityLevel::HTTP_SHOW_WARNING:
@@ -79,6 +81,21 @@ SkColor getSchemeColor(SecurityLevel level, const ColorScheme& color_scheme) {
     default:
       NOTREACHED();
       return color_scheme.insecure;
+  }
+}
+
+// See ToolbarModelImpl::GetSecureVerboseText().
+int GetSecurityTextId(SecurityLevel level, bool malware) {
+  switch (level) {
+    case security_state::HTTP_SHOW_WARNING:
+      return IDS_NOT_SECURE_VERBOSE_STATE;
+    case security_state::SECURE:
+      return IDS_SECURE_VERBOSE_STATE;
+    case security_state::DANGEROUS:
+      return (malware ? IDS_DANGEROUS_VERBOSE_STATE
+                      : IDS_NOT_SECURE_VERBOSE_STATE);
+    default:
+      return 0;
   }
 }
 
@@ -106,6 +123,7 @@ UrlBarTexture::UrlBarTexture(
     const base::Callback<void(UiUnsupportedMode)>& failure_callback)
     : security_level_(SecurityLevel::DANGEROUS),
       has_back_button_(!web_vr),
+      has_security_chip_(false),
       failure_callback_(failure_callback) {}
 
 UrlBarTexture::~UrlBarTexture() = default;
@@ -122,20 +140,25 @@ void UrlBarTexture::SetHistoryButtonsEnabled(bool can_go_back) {
   can_go_back_ = can_go_back;
 }
 
-void UrlBarTexture::SetSecurityLevel(SecurityLevel level) {
-  if (security_level_ != level)
+void UrlBarTexture::SetSecurityInfo(SecurityLevel level, bool malware) {
+  if (security_level_ != level || malware_ != malware)
     set_dirty();
   security_level_ = level;
+  malware_ = malware;
 }
 
 float UrlBarTexture::ToPixels(float meters) const {
   return meters * size_.width() / kWidth;
 }
 
+float UrlBarTexture::ToMeters(float pixels) const {
+  return pixels * kWidth / size_.width();
+}
+
 bool UrlBarTexture::HitsBackButton(const gfx::PointF& position) const {
   const gfx::PointF& meters = percentToMeters(position);
-  gfx::RectF rect(gfx::PointF(0, 0), gfx::SizeF(kBackButtonWidth, kHeight));
-  return rect.Contains(meters) && !HitsTransparentRegion(meters, true);
+  return back_button_hit_region_.Contains(meters) &&
+         !HitsTransparentRegion(meters, true);
 }
 
 bool UrlBarTexture::HitsUrlBar(const gfx::PointF& position) const {
@@ -145,23 +168,8 @@ bool UrlBarTexture::HitsUrlBar(const gfx::PointF& position) const {
   return rect.Contains(meters) && !HitsTransparentRegion(meters, false);
 }
 
-gfx::PointF UrlBarTexture::SecurityIconPositionMeters() const {
-  float x = has_back_button_ ? kBackButtonWidth + kSeparatorWidth : 0.0f;
-  x += kSecurityFieldWidth / 2 - kSecurityIconHeight / 2;
-  float y = kHeight / 2 - kSecurityIconHeight / 2;
-  return gfx::PointF(x, y);
-}
-
-gfx::PointF UrlBarTexture::UrlBarPositionMeters() const {
-  float x = has_back_button_ ? kBackButtonWidth + kSeparatorWidth : 0.0f;
-  x += kSecurityFieldWidth;
-  return gfx::PointF(x, 0);
-}
-
-bool UrlBarTexture::HitsSecurityIcon(const gfx::PointF& position) const {
-  gfx::RectF rect(SecurityIconPositionMeters(),
-                  gfx::SizeF(kSecurityIconHeight, kSecurityIconHeight));
-  return rect.Contains(percentToMeters(position));
+bool UrlBarTexture::HitsSecurityRegion(const gfx::PointF& position) const {
+  return security_hit_region_.Contains(percentToMeters(position));
 }
 
 bool UrlBarTexture::HitsTransparentRegion(const gfx::PointF& meters,
@@ -228,15 +236,22 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
   round_rect.setRectRadii({kHeight, 0, kWidth, kHeight}, right_corners);
   canvas->drawRRect(round_rect, paint);
 
+  back_button_hit_region_.SetRect(0, 0, 0, 0);
+  security_hit_region_.SetRect(0, 0, 0, 0);
+
+  // Keep track of a left edge as we selectively render components of the URL
+  // bar left-to-right.
+  float left_edge = 0;
+
   if (has_back_button_) {
     // Back button / URL separator vertical line.
     paint.setColor(color_scheme().separator);
-    canvas->drawRect(SkRect::MakeXYWH(kHeight, 0, kSeparatorWidth, kHeight),
-                     paint);
+    canvas->drawRect(
+        SkRect::MakeXYWH(kBackButtonWidth, 0, kSeparatorWidth, kHeight), paint);
 
     // Back button icon.
     canvas->save();
-    canvas->translate(kHeight / 2 + kBackIconOffset, kHeight / 2);
+    canvas->translate(kBackButtonWidth / 2 + kBackIconOffset, kHeight / 2);
     canvas->translate(-kBackIconHeight / 2, -kBackIconHeight / 2);
     float icon_scale =
         kBackIconHeight / GetDefaultSizeOfVectorIcon(ui::kBackArrowIcon);
@@ -245,31 +260,84 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
                     can_go_back_ ? color_scheme().element_foreground
                                  : color_scheme().disabled);
     canvas->restore();
+
+    back_button_hit_region_.SetRect(left_edge, 0, left_edge + kBackButtonWidth,
+                                    kHeight);
+    left_edge += kBackButtonWidth + kSeparatorWidth;
   }
 
   // Site security state icon.
   if (!gurl_.is_empty()) {
+    left_edge += kFieldSpacing;
+
+    gfx::RectF icon_region(left_edge, kHeight / 2 - kSecurityIconHeight / 2,
+                           kSecurityIconHeight, kSecurityIconHeight);
     canvas->save();
-    gfx::PointF icon_position = SecurityIconPositionMeters();
-    canvas->translate(icon_position.x(), icon_position.y());
-    const gfx::VectorIcon& icon = getSecurityIcon(security_level_);
+    canvas->translate(icon_region.x(), icon_region.y());
+    const gfx::VectorIcon& icon = GetSecurityIcon(security_level_);
     float icon_scale = kSecurityIconHeight / GetDefaultSizeOfVectorIcon(icon);
     canvas->scale(icon_scale, icon_scale);
     PaintVectorIcon(&gfx_canvas, icon,
-                    getSchemeColor(security_level_, color_scheme()));
+                    GetSchemeColor(security_level_, color_scheme()));
     canvas->restore();
+
+    security_hit_region_ = icon_region;
+    left_edge += kSecurityIconHeight + kFieldSpacing;
   }
 
   canvas->restore();
 
+  // Draw security chip text (eg. "Not secure") next to the security icon.
+  int chip_string_id = GetSecurityTextId(security_level_, malware_);
+  if (has_security_chip_ && !gurl_.is_empty() && chip_string_id != 0) {
+    float chip_max_width = kWidth - left_edge - kUrlRightMargin;
+    gfx::Rect text_bounds(ToPixels(left_edge), 0, ToPixels(chip_max_width),
+                          ToPixels(kHeight));
+
+    int pixel_font_height = texture_size.height() * kFontHeight / kHeight;
+    SkColor chip_color = GetSchemeColor(security_level_, color_scheme());
+    auto chip_text = l10n_util::GetStringUTF16(chip_string_id);
+    DCHECK(!chip_text.empty());
+
+    gfx::FontList font_list;
+    if (!GetFontList(pixel_font_height, chip_text, &font_list))
+      failure_callback_.Run(UiUnsupportedMode::kUnhandledCodePoint);
+
+    std::unique_ptr<gfx::RenderText> render_text(
+        gfx::RenderText::CreateInstance());
+    render_text->SetFontList(font_list);
+    render_text->SetColor(chip_color);
+    render_text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    render_text->SetText(chip_text);
+    render_text->SetDisplayRect(text_bounds);
+    render_text->Draw(&gfx_canvas);
+
+    // Capture the rendered text region for future hit testing.
+    gfx::Size string_size = render_text->GetStringSize();
+    gfx::RectF hit_bounds(
+        left_edge, kHeight / 2 - ToMeters(string_size.height()) / 2,
+        ToMeters(string_size.width()), ToMeters(string_size.height()));
+    security_hit_region_.Union(hit_bounds);
+    left_edge += ToMeters(string_size.width());
+
+    // Separator line between security text and URL.
+    left_edge += kFieldSpacing;
+    paint.setColor(color_scheme().url_deemphasized);
+    canvas->drawRect(
+        SkRect::MakeXYWH(ToPixels(left_edge), ToPixels(kChipTextLineMargin),
+                         ToPixels(kSeparatorWidth),
+                         ToPixels(kHeight - 2 * kChipTextLineMargin)),
+        paint);
+    left_edge += kFieldSpacing + kSeparatorWidth;
+  }
+
   if (!gurl_.is_empty()) {
     if (last_drawn_gurl_ != gurl_ ||
         last_drawn_security_level_ != security_level_) {
-      gfx::PointF url_position = UrlBarPositionMeters();
-      gfx::Rect text_bounds(
-          ToPixels(url_position.x()), ToPixels(url_position.y()),
-          ToPixels(kWidth - url_position.x() - kUrlRightMargin),
-          ToPixels(kHeight));
+      float url_x = left_edge;
+      float url_width = kWidth - url_x - kUrlRightMargin;
+      gfx::Rect text_bounds(ToPixels(url_x), 0, ToPixels(url_width),
+                            ToPixels(kHeight));
       RenderUrl(texture_size, text_bounds);
       last_drawn_gurl_ = gurl_;
       last_drawn_security_level_ = security_level_;
@@ -381,7 +449,7 @@ void UrlBarTexture::ApplyUrlStyling(
   // applied to the scheme text range by setEmphasis().
   if (scheme_range.IsValid() && security_level != security_state::NONE &&
       security_level != security_state::HTTP_SHOW_WARNING) {
-    render_text->ApplyColor(getSchemeColor(security_level, color_scheme),
+    render_text->ApplyColor(GetSchemeColor(security_level, color_scheme),
                             scheme_range);
     if (security_level == SecurityLevel::DANGEROUS) {
       render_text->ApplyStyle(gfx::TextStyle::STRIKE, true, scheme_range);

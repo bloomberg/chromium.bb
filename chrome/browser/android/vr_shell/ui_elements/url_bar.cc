@@ -55,8 +55,8 @@ void UrlBar::OnMove(const gfx::PointF& position) {
 void UrlBar::OnButtonDown(const gfx::PointF& position) {
   if (texture_->HitsBackButton(position))
     down_ = true;
-  else if (texture_->HitsSecurityIcon(position))
-    security_icon_down_ = true;
+  else if (texture_->HitsSecurityRegion(position))
+    security_region_down_ = true;
   OnStateUpdated(position);
 }
 
@@ -65,9 +65,9 @@ void UrlBar::OnButtonUp(const gfx::PointF& position) {
   OnStateUpdated(position);
   if (can_go_back_ && texture_->HitsBackButton(position))
     back_button_callback_.Run();
-  else if (security_icon_down_ && texture_->HitsSecurityIcon(position))
+  else if (security_region_down_ && texture_->HitsSecurityRegion(position))
     security_icon_callback_.Run();
-  security_icon_down_ = false;
+  security_region_down_ = false;
 }
 
 bool UrlBar::HitTest(const gfx::PointF& position) const {
@@ -97,8 +97,9 @@ void UrlBar::SetHistoryButtonsEnabled(bool can_go_back) {
   texture_->SetHistoryButtonsEnabled(can_go_back_);
 }
 
-void UrlBar::SetSecurityLevel(security_state::SecurityLevel level) {
-  texture_->SetSecurityLevel(level);
+void UrlBar::SetSecurityInfo(security_state::SecurityLevel level,
+                             bool malware) {
+  texture_->SetSecurityInfo(level, malware);
 }
 
 void UrlBar::OnStateUpdated(const gfx::PointF& position) {
