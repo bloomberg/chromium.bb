@@ -149,7 +149,6 @@ class PROXY_CONFIG_EXPORT PrefProxyConfigTrackerImpl
   void OnProxyPrefChanged();
 
   const PrefService* prefs() const { return pref_service_; }
-  bool update_pending() const { return update_pending_; }
 
  private:
   // Tracks configuration state. |pref_config_| is valid only if |config_state_|
@@ -161,7 +160,6 @@ class PROXY_CONFIG_EXPORT PrefProxyConfigTrackerImpl
 
   PrefService* pref_service_;
   ProxyConfigServiceImpl* proxy_config_service_impl_;  // Weak ptr.
-  bool update_pending_;  // True if config has not been pushed to network stack.
   PrefChangeRegistrar proxy_prefs_;
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;

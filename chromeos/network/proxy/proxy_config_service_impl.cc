@@ -256,15 +256,10 @@ void ProxyConfigServiceImpl::DetermineEffectiveConfigFromDefaultNetwork() {
                           network_config, ignore_proxy, &effective_config_state,
                           &effective_config);
 
-  // Activate effective proxy and store into |active_config_|.
-  // If last update didn't complete, we definitely update now.
-  bool update_now = update_pending();
-  if (!update_now) {  // Otherwise, only update now if there're changes.
-    update_now = active_config_state_ != effective_config_state ||
-                 (active_config_state_ != ProxyPrefs::CONFIG_UNSET &&
-                  !active_config_.Equals(effective_config));
-  }
-  if (update_now) {  // Activate and store new effective config.
+  bool config_changed = active_config_state_ != effective_config_state ||
+                        (active_config_state_ != ProxyPrefs::CONFIG_UNSET &&
+                         !active_config_.Equals(effective_config));
+  if (config_changed) {  // Activate and store new effective config.
     active_config_state_ = effective_config_state;
     if (active_config_state_ != ProxyPrefs::CONFIG_UNSET)
       active_config_ = effective_config;
@@ -281,7 +276,7 @@ void ProxyConfigServiceImpl::DetermineEffectiveConfigFromDefaultNetwork() {
     }
     PrefProxyConfigTrackerImpl::OnProxyConfigChanged(effective_config_state,
                                                      effective_config);
-    if (VLOG_IS_ON(1) && !update_pending()) {  // Update was successful.
+    if (VLOG_IS_ON(1)) {
       std::unique_ptr<base::DictionaryValue> config_dict(
           effective_config.ToValue());
       VLOG(1) << this << ": Proxy changed: "
