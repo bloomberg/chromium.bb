@@ -331,8 +331,7 @@ void HttpStreamFactoryImpl::JobController::OnStreamFailed(
   if (next_state_ == STATE_RESOLVE_PROXY_COMPLETE) {
     if (status == ERR_IO_PENDING)
       return;
-    // TODO(xunjieli): Use DCHECK once https://crbug.com/723589 is fixed.
-    CHECK_EQ(OK, status);
+    DCHECK_EQ(OK, status);
     RunLoop(status);
     return;
   }
