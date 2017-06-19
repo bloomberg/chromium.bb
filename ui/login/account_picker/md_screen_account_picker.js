@@ -44,6 +44,7 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
       'setPublicSessionLocales',
       'setPublicSessionKeyboardLayouts',
       'setLockScreenAppsState',
+      'setOverlayColors',
     ],
 
     preferredWidth_: 0,
@@ -80,6 +81,17 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
       this.preferredWidth_ = width;
       this.preferredHeight_ = height;
     },
+
+    /**
+      * Sets login screen overlay colors based on colors extracted from the
+      * wallpaper.
+      * @param {string} maskColor Color for the gradient mask.
+      * @param {string} scrollColor Color for the small pods container.
+      * @param {string} backgroundColor Color for the whole background.
+      */
+     setOverlayColors: function(maskColor, scrollColor, backgroundColor) {
+      $('pod-row').setOverlayColors(maskColor, scrollColor, backgroundColor);
+     },
 
     /**
      * When the account picker is being used to lock the screen, pressing the

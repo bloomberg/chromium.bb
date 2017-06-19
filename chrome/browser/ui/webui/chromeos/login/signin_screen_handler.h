@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/login/screens/error_screen.h"
 #include "chrome/browser/chromeos/login/signin_specifics.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
+#include "chrome/browser/chromeos/login/users/wallpaper/wallpaper_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/ui/webui/chromeos/login/base_webui_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
@@ -239,7 +240,8 @@ class SigninScreenHandler
       public input_method::ImeKeyboard::Observer,
       public ash::mojom::TouchViewObserver,
       public lock_screen_apps::StateObserver,
-      public OobeUI::Observer {
+      public OobeUI::Observer,
+      public wallpaper::WallpaperManagerBase::Observer {
  public:
   SigninScreenHandler(
       const scoped_refptr<NetworkStateInformer>& network_state_informer,
@@ -277,6 +279,10 @@ class SigninScreenHandler
   void OnCurrentScreenChanged(OobeScreen current_screen,
                               OobeScreen new_screen) override;
 
+  // wallpaper::WallpaperManagerBase::Observer implementation.
+  void OnWallpaperColorsChanged() override;
+  void OnWallpaperAnimationFinished(const AccountId& account_id) override;
+
   void SetFocusPODCallbackForTesting(base::Closure callback);
 
   // To avoid spurious error messages on flaky networks, the offline message is
@@ -313,6 +319,10 @@ class SigninScreenHandler
   void HideOfflineMessage(NetworkStateInformer::State state,
                           NetworkError::ErrorReason reason);
   void ReloadGaia(bool force_reload);
+
+  // Sets signin screen overlay colors based on the wallpaper color extraction
+  // results.
+  void SetSigninScreenColors(SkColor dm_color);
 
   // BaseScreenHandler implementation:
   void DeclareLocalizedValues(

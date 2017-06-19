@@ -74,12 +74,16 @@ html[screen=lock] #signin-banner.message-set {
   position: absolute;
 }
 
-.small-pod-container::-webkit-scrollbar {
-   width: 0;
+.small-pod-container.scroll {
+  background-color: rgba(0, 0, 0, 0.3);
 }
 
-.small-pod-container.scroll {
-  background-color: rgba(20, 29, 40, .2);
+.small-pod-container.images-loading {
+  visibility: hidden;
+}
+
+.small-pod-container::-webkit-scrollbar {
+   width: 0;
 }
 
 .small-pod-container.scroll::-webkit-scrollbar {
@@ -92,11 +96,15 @@ html[screen=lock] #signin-banner.message-set {
 }
 
 .small-pod-container-mask {
-  background: linear-gradient(#4FC3F7, transparent);
+  background: linear-gradient(#000, transparent);
   height: 112px;
   position: absolute;
   width: 100%;
   z-index: 2;
+}
+
+.small-pod-container-mask.images-loading {
+  visibility: hidden;
 }
 
 .small-pod-container-mask.rotate {
