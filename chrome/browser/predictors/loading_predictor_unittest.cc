@@ -10,11 +10,11 @@
 #include <utility>
 #include <vector>
 
-#include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
 #include "chrome/browser/predictors/loading_test_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -40,17 +40,14 @@ class LoadingPredictorTest : public testing::Test {
 
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
-  std::unique_ptr<LoadingPredictor> predictor_;
   std::unique_ptr<TestingProfile> profile_;
+  std::unique_ptr<LoadingPredictor> predictor_;
 };
 
 LoadingPredictorTest::LoadingPredictorTest()
     : profile_(base::MakeUnique<TestingProfile>()) {}
 
-LoadingPredictorTest::~LoadingPredictorTest() {
-  profile_ = nullptr;
-  base::RunLoop().RunUntilIdle();
-}
+LoadingPredictorTest::~LoadingPredictorTest() = default;
 
 void LoadingPredictorTest::SetUp() {
   LoadingPredictorConfig config;
@@ -69,7 +66,7 @@ void LoadingPredictorTest::SetUp() {
 
   predictor_->set_mock_resource_prefetch_predictor(std::move(mock));
   predictor_->StartInitialization();
-  base::RunLoop().RunUntilIdle();
+  content::RunAllBlockingPoolTasksUntilIdle();
 }
 
 void LoadingPredictorTest::TearDown() {

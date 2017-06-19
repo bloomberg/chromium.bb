@@ -7,14 +7,14 @@
 #include <utility>
 #include <vector>
 
-#include "base/message_loop/message_loop.h"
-#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/browser/predictors/loading_test_util.h"
 #include "chrome/browser/predictors/predictor_database.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_tables.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "net/base/request_priority.h"
 #include "sql/statement.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,7 +34,7 @@ class ResourcePrefetchPredictorTablesTest : public testing::Test {
   void SetUp() override;
   void TearDown() override;
 
-  void DeleteAllData() const;
+  void DeleteAllData();
   void GetAllData(PrefetchDataMap* url_resource_data,
                   PrefetchDataMap* host_resource_data,
                   RedirectDataMap* url_redirect_data,
@@ -50,6 +50,7 @@ class ResourcePrefetchPredictorTablesTest : public testing::Test {
   void TestDeleteAllData();
 
   content::TestBrowserThreadBundle thread_bundle_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
   TestingProfile profile_;
   std::unique_ptr<PredictorDatabase> db_;
   scoped_refptr<ResourcePrefetchPredictorTables> tables_;
@@ -113,9 +114,10 @@ class ResourcePrefetchPredictorTablesReopenTest
 };
 
 ResourcePrefetchPredictorTablesTest::ResourcePrefetchPredictorTablesTest()
-    : db_(new PredictorDatabase(&profile_)),
+    : task_runner_(base::SequencedTaskRunnerHandle::Get()),
+      db_(base::MakeUnique<PredictorDatabase>(&profile_, task_runner_)),
       tables_(db_->resource_prefetch_tables()) {
-  base::RunLoop().RunUntilIdle();
+  content::RunAllBlockingPoolTasksUntilIdle();
 }
 
 ResourcePrefetchPredictorTablesTest::~ResourcePrefetchPredictorTablesTest() {
@@ -124,12 +126,13 @@ ResourcePrefetchPredictorTablesTest::~ResourcePrefetchPredictorTablesTest() {
 void ResourcePrefetchPredictorTablesTest::SetUp() {
   DeleteAllData();
   InitializeSampleData();
+  content::RunAllBlockingPoolTasksUntilIdle();
 }
 
 void ResourcePrefetchPredictorTablesTest::TearDown() {
   tables_ = nullptr;
-  db_.reset();
-  base::RunLoop().RunUntilIdle();
+  db_ = nullptr;
+  content::RunAllBlockingPoolTasksUntilIdle();
 }
 
 void ResourcePrefetchPredictorTablesTest::TestGetAllData() {
@@ -154,29 +157,29 @@ void ResourcePrefetchPredictorTablesTest::TestDeleteData() {
   std::vector<std::string> urls_to_delete = {"http://www.google.com",
                                              "http://www.yahoo.com"};
   std::vector<std::string> hosts_to_delete = {"www.yahoo.com"};
-  tables_->ExecuteDBTaskOnDBThread(base::BindOnce(
+  tables_->ExecuteDBTaskOnDBSequence(base::BindOnce(
       &GlowplugKeyValueTable<PrefetchData>::DeleteData,
       base::Unretained(tables_->url_resource_table()), urls_to_delete));
-  tables_->ExecuteDBTaskOnDBThread(base::BindOnce(
+  tables_->ExecuteDBTaskOnDBSequence(base::BindOnce(
       &GlowplugKeyValueTable<PrefetchData>::DeleteData,
       base::Unretained(tables_->host_resource_table()), hosts_to_delete));
 
   urls_to_delete = {"http://fb.com/google", "http://google.com"};
   hosts_to_delete = {"microsoft.com"};
-  tables_->ExecuteDBTaskOnDBThread(base::BindOnce(
+  tables_->ExecuteDBTaskOnDBSequence(base::BindOnce(
       &GlowplugKeyValueTable<RedirectData>::DeleteData,
       base::Unretained(tables_->url_redirect_table()), urls_to_delete));
-  tables_->ExecuteDBTaskOnDBThread(base::BindOnce(
+  tables_->ExecuteDBTaskOnDBSequence(base::BindOnce(
       &GlowplugKeyValueTable<RedirectData>::DeleteData,
       base::Unretained(tables_->host_redirect_table()), hosts_to_delete));
 
   hosts_to_delete = {"en.wikipedia.org"};
-  tables_->ExecuteDBTaskOnDBThread(base::BindOnce(
+  tables_->ExecuteDBTaskOnDBSequence(base::BindOnce(
       &GlowplugKeyValueTable<precache::PrecacheManifest>::DeleteData,
       base::Unretained(tables_->manifest_table()), hosts_to_delete));
 
   hosts_to_delete = {"twitter.com"};
-  tables_->ExecuteDBTaskOnDBThread(base::BindOnce(
+  tables_->ExecuteDBTaskOnDBSequence(base::BindOnce(
       &GlowplugKeyValueTable<OriginData>::DeleteData,
       base::Unretained(tables_->origin_table()), hosts_to_delete));
 
@@ -226,7 +229,7 @@ void ResourcePrefetchPredictorTablesTest::TestUpdateData() {
       google.add_resources(), "http://www.resources.google.com/script.js",
       content::RESOURCE_TYPE_SCRIPT, 12, 0, 0, 8.5, net::MEDIUM, true, true);
 
-  tables_->ExecuteDBTaskOnDBThread(
+  tables_->ExecuteDBTaskOnDBSequence(
       base::BindOnce(&GlowplugKeyValueTable<PrefetchData>::UpdateData,
                      base::Unretained(tables_->url_resource_table()),
                      google.primary_key(), google));
@@ -236,7 +239,7 @@ void ResourcePrefetchPredictorTablesTest::TestUpdateData() {
       yahoo.add_resources(), "http://www.yahoo.com/image.png",
       content::RESOURCE_TYPE_IMAGE, 120, 1, 1, 10.0, net::MEDIUM, true, false);
 
-  tables_->ExecuteDBTaskOnDBThread(
+  tables_->ExecuteDBTaskOnDBSequence(
       base::BindOnce(&GlowplugKeyValueTable<PrefetchData>::UpdateData,
                      base::Unretained(tables_->host_resource_table()),
                      yahoo.primary_key(), yahoo));
@@ -245,7 +248,7 @@ void ResourcePrefetchPredictorTablesTest::TestUpdateData() {
   InitializeRedirectStat(facebook.add_redirect_endpoints(),
                          "https://facebook.fr/google", 4, 2, 1);
 
-  tables_->ExecuteDBTaskOnDBThread(
+  tables_->ExecuteDBTaskOnDBSequence(
       base::BindOnce(&GlowplugKeyValueTable<RedirectData>::UpdateData,
                      base::Unretained(tables_->url_redirect_table()),
                      facebook.primary_key(), facebook));
@@ -256,7 +259,7 @@ void ResourcePrefetchPredictorTablesTest::TestUpdateData() {
   InitializeRedirectStat(microsoft.add_redirect_endpoints(), "microsoft.org", 7,
                          2, 0);
 
-  tables_->ExecuteDBTaskOnDBThread(
+  tables_->ExecuteDBTaskOnDBSequence(
       base::BindOnce(&GlowplugKeyValueTable<RedirectData>::UpdateData,
                      base::Unretained(tables_->host_redirect_table()),
                      microsoft.primary_key(), microsoft));
@@ -266,14 +269,14 @@ void ResourcePrefetchPredictorTablesTest::TestUpdateData() {
                              "https://www.theverge.com/main.js", 0.7,
                              precache::PrecacheResource::RESOURCE_TYPE_SCRIPT);
 
-  tables_->ExecuteDBTaskOnDBThread(base::BindOnce(
+  tables_->ExecuteDBTaskOnDBSequence(base::BindOnce(
       &GlowplugKeyValueTable<precache::PrecacheManifest>::UpdateData,
       base::Unretained(tables_->manifest_table()), "theverge.com", theverge));
 
   OriginData twitter = CreateOriginData("twitter.com");
   InitializeOriginStat(twitter.add_origins(), "https://dogs.twitter.com", 10, 1,
                        0, 12., false, true);
-  tables_->ExecuteDBTaskOnDBThread(base::BindOnce(
+  tables_->ExecuteDBTaskOnDBSequence(base::BindOnce(
       &GlowplugKeyValueTable<OriginData>::UpdateData,
       base::Unretained(tables_->origin_table()), twitter.host(), twitter));
 
@@ -546,23 +549,23 @@ void ResourcePrefetchPredictorTablesTest::AddKey(OriginDataMap* m,
   m->insert(*it);
 }
 
-void ResourcePrefetchPredictorTablesTest::DeleteAllData() const {
-  tables_->ExecuteDBTaskOnDBThread(
+void ResourcePrefetchPredictorTablesTest::DeleteAllData() {
+  tables_->ExecuteDBTaskOnDBSequence(
       base::BindOnce(&GlowplugKeyValueTable<PrefetchData>::DeleteAllData,
                      base::Unretained(tables_->url_resource_table())));
-  tables_->ExecuteDBTaskOnDBThread(
+  tables_->ExecuteDBTaskOnDBSequence(
       base::BindOnce(&GlowplugKeyValueTable<RedirectData>::DeleteAllData,
                      base::Unretained(tables_->url_redirect_table())));
-  tables_->ExecuteDBTaskOnDBThread(
+  tables_->ExecuteDBTaskOnDBSequence(
       base::BindOnce(&GlowplugKeyValueTable<PrefetchData>::DeleteAllData,
                      base::Unretained(tables_->host_resource_table())));
-  tables_->ExecuteDBTaskOnDBThread(
+  tables_->ExecuteDBTaskOnDBSequence(
       base::BindOnce(&GlowplugKeyValueTable<RedirectData>::DeleteAllData,
                      base::Unretained(tables_->host_redirect_table())));
-  tables_->ExecuteDBTaskOnDBThread(base::BindOnce(
+  tables_->ExecuteDBTaskOnDBSequence(base::BindOnce(
       &GlowplugKeyValueTable<precache::PrecacheManifest>::DeleteAllData,
       base::Unretained(tables_->manifest_table())));
-  tables_->ExecuteDBTaskOnDBThread(
+  tables_->ExecuteDBTaskOnDBSequence(
       base::BindOnce(&GlowplugKeyValueTable<OriginData>::DeleteAllData,
                      base::Unretained(tables_->origin_table())));
 }
@@ -574,22 +577,22 @@ void ResourcePrefetchPredictorTablesTest::GetAllData(
     RedirectDataMap* host_redirect_data,
     ManifestDataMap* manifest_data,
     OriginDataMap* origin_data) const {
-  tables_->ExecuteDBTaskOnDBThread(base::BindOnce(
+  tables_->ExecuteDBTaskOnDBSequence(base::BindOnce(
       &GlowplugKeyValueTable<PrefetchData>::GetAllData,
       base::Unretained(tables_->url_resource_table()), url_resource_data));
-  tables_->ExecuteDBTaskOnDBThread(base::BindOnce(
+  tables_->ExecuteDBTaskOnDBSequence(base::BindOnce(
       &GlowplugKeyValueTable<RedirectData>::GetAllData,
       base::Unretained(tables_->url_redirect_table()), url_redirect_data));
-  tables_->ExecuteDBTaskOnDBThread(base::BindOnce(
+  tables_->ExecuteDBTaskOnDBSequence(base::BindOnce(
       &GlowplugKeyValueTable<PrefetchData>::GetAllData,
       base::Unretained(tables_->host_resource_table()), host_resource_data));
-  tables_->ExecuteDBTaskOnDBThread(base::BindOnce(
+  tables_->ExecuteDBTaskOnDBSequence(base::BindOnce(
       &GlowplugKeyValueTable<RedirectData>::GetAllData,
       base::Unretained(tables_->host_redirect_table()), host_redirect_data));
-  tables_->ExecuteDBTaskOnDBThread(base::BindOnce(
+  tables_->ExecuteDBTaskOnDBSequence(base::BindOnce(
       &GlowplugKeyValueTable<precache::PrecacheManifest>::GetAllData,
       base::Unretained(tables_->manifest_table()), manifest_data));
-  tables_->ExecuteDBTaskOnDBThread(
+  tables_->ExecuteDBTaskOnDBSequence(
       base::BindOnce(&GlowplugKeyValueTable<OriginData>::GetAllData,
                      base::Unretained(tables_->origin_table()), origin_data));
 }
@@ -635,15 +638,15 @@ void ResourcePrefetchPredictorTablesTest::InitializeSampleData() {
     test_url_data_.insert(std::make_pair(reddit.primary_key(), reddit));
     test_url_data_.insert(std::make_pair(yahoo.primary_key(), yahoo));
 
-    tables_->ExecuteDBTaskOnDBThread(
+    tables_->ExecuteDBTaskOnDBSequence(
         base::BindOnce(&GlowplugKeyValueTable<PrefetchData>::UpdateData,
                        base::Unretained(tables_->url_resource_table()),
                        google.primary_key(), google));
-    tables_->ExecuteDBTaskOnDBThread(
+    tables_->ExecuteDBTaskOnDBSequence(
         base::BindOnce(&GlowplugKeyValueTable<PrefetchData>::UpdateData,
                        base::Unretained(tables_->url_resource_table()),
                        reddit.primary_key(), reddit));
-    tables_->ExecuteDBTaskOnDBThread(
+    tables_->ExecuteDBTaskOnDBSequence(
         base::BindOnce(&GlowplugKeyValueTable<PrefetchData>::UpdateData,
                        base::Unretained(tables_->url_resource_table()),
                        yahoo.primary_key(), yahoo));
@@ -680,11 +683,11 @@ void ResourcePrefetchPredictorTablesTest::InitializeSampleData() {
     test_host_data_.insert(std::make_pair(facebook.primary_key(), facebook));
     test_host_data_.insert(std::make_pair(yahoo.primary_key(), yahoo));
 
-    tables_->ExecuteDBTaskOnDBThread(
+    tables_->ExecuteDBTaskOnDBSequence(
         base::BindOnce(&GlowplugKeyValueTable<PrefetchData>::UpdateData,
                        base::Unretained(tables_->host_resource_table()),
                        facebook.primary_key(), facebook));
-    tables_->ExecuteDBTaskOnDBThread(
+    tables_->ExecuteDBTaskOnDBSequence(
         base::BindOnce(&GlowplugKeyValueTable<PrefetchData>::UpdateData,
                        base::Unretained(tables_->host_resource_table()),
                        yahoo.primary_key(), yahoo));
@@ -713,15 +716,15 @@ void ResourcePrefetchPredictorTablesTest::InitializeSampleData() {
     test_url_redirect_data_.insert(
         std::make_pair(google.primary_key(), google));
 
-    tables_->ExecuteDBTaskOnDBThread(
+    tables_->ExecuteDBTaskOnDBSequence(
         base::BindOnce(&GlowplugKeyValueTable<RedirectData>::UpdateData,
                        base::Unretained(tables_->url_redirect_table()),
                        facebook.primary_key(), facebook));
-    tables_->ExecuteDBTaskOnDBThread(
+    tables_->ExecuteDBTaskOnDBSequence(
         base::BindOnce(&GlowplugKeyValueTable<RedirectData>::UpdateData,
                        base::Unretained(tables_->url_redirect_table()),
                        nytimes.primary_key(), nytimes));
-    tables_->ExecuteDBTaskOnDBThread(
+    tables_->ExecuteDBTaskOnDBSequence(
         base::BindOnce(&GlowplugKeyValueTable<RedirectData>::UpdateData,
                        base::Unretained(tables_->url_redirect_table()),
                        google.primary_key(), google));
@@ -743,11 +746,11 @@ void ResourcePrefetchPredictorTablesTest::InitializeSampleData() {
     test_host_redirect_data_.insert(
         std::make_pair(microsoft.primary_key(), microsoft));
 
-    tables_->ExecuteDBTaskOnDBThread(
+    tables_->ExecuteDBTaskOnDBSequence(
         base::BindOnce(&GlowplugKeyValueTable<RedirectData>::UpdateData,
                        base::Unretained(tables_->host_redirect_table()),
                        bbc.primary_key(), bbc));
-    tables_->ExecuteDBTaskOnDBThread(
+    tables_->ExecuteDBTaskOnDBSequence(
         base::BindOnce(&GlowplugKeyValueTable<RedirectData>::UpdateData,
                        base::Unretained(tables_->host_redirect_table()),
                        microsoft.primary_key(), microsoft));
@@ -774,11 +777,11 @@ void ResourcePrefetchPredictorTablesTest::InitializeSampleData() {
     test_manifest_data_.insert(std::make_pair("en.wikipedia.org", wikipedia));
     test_manifest_data_.insert(std::make_pair("youtube.com", youtube));
 
-    tables_->ExecuteDBTaskOnDBThread(base::BindOnce(
+    tables_->ExecuteDBTaskOnDBSequence(base::BindOnce(
         &GlowplugKeyValueTable<precache::PrecacheManifest>::UpdateData,
         base::Unretained(tables_->manifest_table()), "en.wikipedia.org",
         wikipedia));
-    tables_->ExecuteDBTaskOnDBThread(base::BindOnce(
+    tables_->ExecuteDBTaskOnDBSequence(base::BindOnce(
         &GlowplugKeyValueTable<precache::PrecacheManifest>::UpdateData,
         base::Unretained(tables_->manifest_table()), "youtube.com", youtube));
   }
@@ -802,18 +805,18 @@ void ResourcePrefetchPredictorTablesTest::InitializeSampleData() {
     test_origin_data_.insert({"twitter.com", twitter});
     test_origin_data_.insert({"abc.xyz", alphabet});
 
-    tables_->ExecuteDBTaskOnDBThread(base::BindOnce(
+    tables_->ExecuteDBTaskOnDBSequence(base::BindOnce(
         &GlowplugKeyValueTable<OriginData>::UpdateData,
         base::Unretained(tables_->origin_table()), twitter.host(), twitter));
-    tables_->ExecuteDBTaskOnDBThread(base::BindOnce(
+    tables_->ExecuteDBTaskOnDBSequence(base::BindOnce(
         &GlowplugKeyValueTable<OriginData>::UpdateData,
         base::Unretained(tables_->origin_table()), alphabet.host(), alphabet));
   }
 }
 
 void ResourcePrefetchPredictorTablesTest::ReopenDatabase() {
-  db_.reset(new PredictorDatabase(&profile_));
-  base::RunLoop().RunUntilIdle();
+  db_ = base::MakeUnique<PredictorDatabase>(&profile_, task_runner_);
+  content::RunAllBlockingPoolTasksUntilIdle();
   tables_ = db_->resource_prefetch_tables();
 }
 
