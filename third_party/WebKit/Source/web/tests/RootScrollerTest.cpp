@@ -64,11 +64,11 @@ class RootScrollerTest : public ::testing::Test {
   }
 
   WebViewBase* Initialize(const std::string& page_name) {
-    return InitializeInternal(base_url_ + page_name, &client_);
+    return InitializeInternal(base_url_ + page_name, nullptr);
   }
 
   WebViewBase* Initialize() {
-    return InitializeInternal("about:blank", &client_);
+    return InitializeInternal("about:blank", nullptr);
   }
 
   static void ConfigureSettings(WebSettings* settings) {
@@ -172,7 +172,6 @@ class RootScrollerTest : public ::testing::Test {
   }
 
   std::string base_url_;
-  FrameTestHelpers::TestWebViewClient client_;
   FrameTestHelpers::WebViewHelper helper_;
   RuntimeEnabledFeatures::Backup features_backup_;
 };

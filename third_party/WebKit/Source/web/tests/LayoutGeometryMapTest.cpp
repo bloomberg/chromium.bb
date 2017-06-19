@@ -169,7 +169,6 @@ class LayoutGeometryMapTest
   }
 
   const std::string base_url_;
-  FrameTestHelpers::TestWebFrameClient mock_web_view_client_;
 };
 
 INSTANTIATE_TEST_CASE_P(All, LayoutGeometryMapTest, ::testing::Bool());

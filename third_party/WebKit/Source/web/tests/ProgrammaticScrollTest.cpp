@@ -37,7 +37,6 @@ class ProgrammaticScrollTest : public ::testing::Test {
   }
 
   std::string base_url_;
-  FrameTestHelpers::TestWebFrameClient mock_web_frame_client_;
 };
 
 TEST_F(ProgrammaticScrollTest, RestoreScrollPositionAndViewStateWithScale) {

@@ -132,26 +132,10 @@ TEST(LinkHighlightImplTest, verifyWebViewImplIntegration) {
       ->UnregisterAllURLsAndClearMemoryCache();
 }
 
-namespace {
-
-class FakeCompositingWebViewClient
-    : public FrameTestHelpers::TestWebViewClient {
- public:
-  FrameTestHelpers::TestWebFrameClient fake_web_frame_client_;
-};
-
-FakeCompositingWebViewClient* CompositingWebViewClient() {
-  DEFINE_STATIC_LOCAL(FakeCompositingWebViewClient, client, ());
-  return &client;
-}
-
-}  // anonymous namespace
-
 TEST(LinkHighlightImplTest, resetDuringNodeRemoval) {
   const std::string url = RegisterMockedURLLoad();
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view_impl = web_view_helper.InitializeAndLoad(
-      url, nullptr, CompositingWebViewClient());
+  WebViewBase* web_view_impl = web_view_helper.InitializeAndLoad(url);
 
   int page_width = 640;
   int page_height = 480;
@@ -189,12 +173,9 @@ TEST(LinkHighlightImplTest, resetDuringNodeRemoval) {
 
 // A lifetime test: delete LayerTreeView while running LinkHighlights.
 TEST(LinkHighlightImplTest, resetLayerTreeView) {
-  FakeCompositingWebViewClient web_view_client;
-
   const std::string url = RegisterMockedURLLoad();
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view_impl =
-      web_view_helper.InitializeAndLoad(url, nullptr, &web_view_client);
+  WebViewBase* web_view_impl = web_view_helper.InitializeAndLoad(url);
 
   int page_width = 640;
   int page_height = 480;
@@ -221,10 +202,6 @@ TEST(LinkHighlightImplTest, resetLayerTreeView) {
   ASSERT_TRUE(highlight_layer);
   EXPECT_TRUE(highlight_layer->GetLinkHighlight(0));
 
-  // Mimic the logic from RenderWidget::Close:
-  web_view_impl->WillCloseLayerTreeView();
-  web_view_helper.Reset();
-
   Platform::Current()
       ->GetURLLoaderMockFactory()
       ->UnregisterAllURLsAndClearMemoryCache();
@@ -233,8 +210,7 @@ TEST(LinkHighlightImplTest, resetLayerTreeView) {
 TEST(LinkHighlightImplTest, multipleHighlights) {
   const std::string url = RegisterMockedURLLoad();
   FrameTestHelpers::WebViewHelper web_view_helper;
-  WebViewBase* web_view_impl = web_view_helper.InitializeAndLoad(
-      url, nullptr, CompositingWebViewClient());
+  WebViewBase* web_view_impl = web_view_helper.InitializeAndLoad(url);
 
   int page_width = 640;
   int page_height = 480;

@@ -10386,9 +10386,8 @@ TEST(WebFrameGlobalReuseTest, ChildFrame) {
 // navigation, even if the setting is enabled. It's not safe to since the opener
 // could have injected script.
 TEST(WebFrameGlobalReuseTest, MainFrameWithOpener) {
-  FrameTestHelpers::TestWebViewClient opener_web_view_client;
   FrameTestHelpers::WebViewHelper opener_helper;
-  opener_helper.Initialize(nullptr, &opener_web_view_client, nullptr);
+  opener_helper.Initialize();
   FrameTestHelpers::WebViewHelper helper;
   helper.InitializeWithOpener(opener_helper.WebView()->MainFrame(), nullptr,
                               nullptr, nullptr,

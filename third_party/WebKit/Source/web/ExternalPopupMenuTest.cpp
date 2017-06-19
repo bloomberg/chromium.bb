@@ -102,7 +102,7 @@ class ExternalPopupMenuTest : public ::testing::Test {
 
  protected:
   void SetUp() override {
-    helper_.Initialize(&web_frame_client_, &web_view_client_);
+    helper_.Initialize(&web_frame_client_);
     WebView()->SetUseExternalPopupMenus(true);
   }
   void TearDown() override {
@@ -133,7 +133,6 @@ class ExternalPopupMenuTest : public ::testing::Test {
 
  private:
   std::string base_url_;
-  FrameTestHelpers::TestWebViewClient web_view_client_;
   ExternalPopupMenuWebFrameClient web_frame_client_;
   FrameTestHelpers::WebViewHelper helper_;
 };
