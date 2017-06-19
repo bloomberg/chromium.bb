@@ -396,6 +396,7 @@ void MediaStreamVideoTrack::GetSettings(
   if (width_ && height_) {
     settings.width = width_;
     settings.height = height_;
+    settings.aspect_ratio = static_cast<double>(width_) / height_;
   }
 
   // 0.0 means the track is using the source's frame rate.

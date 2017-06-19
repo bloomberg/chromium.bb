@@ -7,8 +7,7 @@
 dictionary MediaTrackSettings {
     long width;
     long height;
-    // aspectRatio is not implemented.
-    // double aspectRatio;
+    double aspectRatio;
     double frameRate;
     DOMString facingMode;
     // volume, sampleRate and sampleSize are not implemented.
