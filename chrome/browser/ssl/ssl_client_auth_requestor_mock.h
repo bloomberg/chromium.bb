@@ -16,6 +16,7 @@ class ClientCertificateDelegate;
 
 namespace net {
 class SSLCertRequestInfo;
+class SSLPrivateKey;
 class URLRequest;
 class X509Certificate;
 }
@@ -29,7 +30,8 @@ class SSLClientAuthRequestorMock
 
   std::unique_ptr<content::ClientCertificateDelegate> CreateDelegate();
 
-  MOCK_METHOD1(CertificateSelected, void(net::X509Certificate* cert));
+  MOCK_METHOD2(CertificateSelected,
+               void(net::X509Certificate* cert, net::SSLPrivateKey* key));
   MOCK_METHOD0(CancelCertificateSelection, void());
 
   scoped_refptr<net::SSLCertRequestInfo> cert_request_info_;

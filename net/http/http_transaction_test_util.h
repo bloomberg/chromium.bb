@@ -189,8 +189,8 @@ class MockNetworkTransaction
 
   int RestartIgnoringLastError(const CompletionCallback& callback) override;
 
-  int RestartWithCertificate(X509Certificate* client_cert,
-                             SSLPrivateKey* client_private_key,
+  int RestartWithCertificate(scoped_refptr<X509Certificate> client_cert,
+                             scoped_refptr<SSLPrivateKey> client_private_key,
                              const CompletionCallback& callback) override;
 
   int RestartWithAuth(const AuthCredentials& credentials,

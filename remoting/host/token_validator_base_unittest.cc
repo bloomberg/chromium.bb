@@ -7,8 +7,11 @@
 #include <vector>
 
 #include "base/atomic_sequence_num.h"
+#include "base/memory/ptr_util.h"
 #include "crypto/rsa_private_key.h"
 #include "net/cert/x509_util.h"
+#include "net/ssl/client_cert_identity_test_util.h"
+#include "net/ssl/test_ssl_private_key.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -19,15 +22,26 @@ const char kTokenValidationCertIssuer[] = "*";
 
 base::StaticAtomicSequenceNumber g_serial_number;
 
-scoped_refptr<net::X509Certificate> CreateFakeCert(base::Time valid_start,
-                                                   base::Time valid_expiry) {
-  std::unique_ptr<crypto::RSAPrivateKey> unused_key;
+std::unique_ptr<net::FakeClientCertIdentity> CreateFakeCert(
+    base::Time valid_start,
+    base::Time valid_expiry) {
+  std::unique_ptr<crypto::RSAPrivateKey> rsa_private_key;
   std::string cert_der;
   net::x509_util::CreateKeyAndSelfSignedCert(
       "CN=subject", g_serial_number.GetNext(), valid_start, valid_expiry,
-      &unused_key, &cert_der);
-  return net::X509Certificate::CreateFromBytes(cert_der.data(),
-                                               cert_der.size());
+      &rsa_private_key, &cert_der);
+
+  scoped_refptr<net::X509Certificate> cert =
+      net::X509Certificate::CreateFromBytes(cert_der.data(), cert_der.size());
+  if (!cert)
+    return nullptr;
+
+  scoped_refptr<net::SSLPrivateKey> ssl_private_key =
+      net::WrapRSAPrivateKey(rsa_private_key.get());
+  if (!ssl_private_key)
+    return nullptr;
+
+  return base::MakeUnique<net::FakeClientCertIdentity>(cert, ssl_private_key);
 }
 
 }  // namespace
@@ -39,18 +53,21 @@ class TestTokenValidator : TokenValidatorBase {
   explicit TestTokenValidator(const ThirdPartyAuthConfig& config);
   ~TestTokenValidator() override;
 
-  void SelectCertificates(net::CertificateList selected_certs);
+  void SelectCertificates(net::ClientCertIdentityList selected_certs);
 
-  void ExpectContinueWithCertificate(net::X509Certificate* client_cert);
+  void ExpectContinueWithCertificate(
+      const net::FakeClientCertIdentity* identity);
 
  protected:
-  void ContinueWithCertificate(net::X509Certificate* client_cert,
-                               net::SSLPrivateKey* client_private_key) override;
+  void ContinueWithCertificate(
+      scoped_refptr<net::X509Certificate> client_cert,
+      scoped_refptr<net::SSLPrivateKey> client_private_key) override;
 
  private:
   void StartValidateRequest(const std::string& token) override {}
 
   net::X509Certificate* expected_client_cert_ = nullptr;
+  net::SSLPrivateKey* expected_private_key_ = nullptr;
 };
 
 TestTokenValidator::TestTokenValidator(const ThirdPartyAuthConfig& config) :
@@ -60,19 +77,26 @@ TestTokenValidator::TestTokenValidator(const ThirdPartyAuthConfig& config) :
 TestTokenValidator::~TestTokenValidator() {}
 
 void TestTokenValidator::SelectCertificates(
-    net::CertificateList selected_certs) {
+    net::ClientCertIdentityList selected_certs) {
   OnCertificatesSelected(nullptr, std::move(selected_certs));
 }
 
 void TestTokenValidator::ExpectContinueWithCertificate(
-    net::X509Certificate* client_cert) {
-  expected_client_cert_ = client_cert;
+    const net::FakeClientCertIdentity* identity) {
+  if (identity) {
+    expected_client_cert_ = identity->certificate();
+    expected_private_key_ = identity->ssl_private_key();
+  } else {
+    expected_client_cert_ = nullptr;
+    expected_private_key_ = nullptr;
+  }
 }
 
 void TestTokenValidator::ContinueWithCertificate(
-    net::X509Certificate* client_cert,
-    net::SSLPrivateKey* client_private_key) {
-  EXPECT_EQ(expected_client_cert_, client_cert);
+    scoped_refptr<net::X509Certificate> client_cert,
+    scoped_refptr<net::SSLPrivateKey> client_private_key) {
+  EXPECT_EQ(expected_client_cert_, client_cert.get());
+  EXPECT_EQ(expected_private_key_, client_private_key.get());
 }
 
 class TokenValidatorBaseTest : public testing::Test {
@@ -93,66 +117,82 @@ void TokenValidatorBaseTest::SetUp() {
 TEST_F(TokenValidatorBaseTest, TestSelectCertificate) {
   base::Time now = base::Time::Now();
 
-  scoped_refptr<net::X509Certificate> cert_expired_5_minutes_ago =
+  std::unique_ptr<net::FakeClientCertIdentity> cert_expired_5_minutes_ago =
       CreateFakeCert(now - base::TimeDelta::FromMinutes(10),
-                                        now - base::TimeDelta::FromMinutes(5));
+                     now - base::TimeDelta::FromMinutes(5));
   ASSERT_TRUE(cert_expired_5_minutes_ago);
 
-  scoped_refptr<net::X509Certificate> cert_start_5min_expire_5min =
+  std::unique_ptr<net::FakeClientCertIdentity> cert_start_5min_expire_5min =
       CreateFakeCert(now - base::TimeDelta::FromMinutes(5),
-                                        now + base::TimeDelta::FromMinutes(5));
+                     now + base::TimeDelta::FromMinutes(5));
   ASSERT_TRUE(cert_start_5min_expire_5min);
 
-  scoped_refptr<net::X509Certificate> cert_start_10min_expire_5min =
+  std::unique_ptr<net::FakeClientCertIdentity> cert_start_10min_expire_5min =
       CreateFakeCert(now - base::TimeDelta::FromMinutes(10),
-                                        now + base::TimeDelta::FromMinutes(5));
+                     now + base::TimeDelta::FromMinutes(5));
   ASSERT_TRUE(cert_start_10min_expire_5min);
 
-  scoped_refptr<net::X509Certificate> cert_start_5min_expire_10min =
+  std::unique_ptr<net::FakeClientCertIdentity> cert_start_5min_expire_10min =
       CreateFakeCert(now - base::TimeDelta::FromMinutes(5),
-                                        now + base::TimeDelta::FromMinutes(10));
+                     now + base::TimeDelta::FromMinutes(10));
   ASSERT_TRUE(cert_start_5min_expire_10min);
 
   // No certificate.
-  net::CertificateList certificates {};
   token_validator_->ExpectContinueWithCertificate(nullptr);
-  token_validator_->SelectCertificates(std::move(certificates));
-
-  // One invalid certificate.
-  certificates = { cert_expired_5_minutes_ago };
-  token_validator_->ExpectContinueWithCertificate(nullptr);
-  token_validator_->SelectCertificates(std::move(certificates));
-
-  // One valid certificate.
-  certificates = { cert_start_5min_expire_5min };
-  token_validator_->ExpectContinueWithCertificate(
-      cert_start_5min_expire_5min.get());
-  token_validator_->SelectCertificates(std::move(certificates));
-
-  // One valid one invalid.
-  certificates = { cert_expired_5_minutes_ago, cert_start_5min_expire_5min };
-  token_validator_->ExpectContinueWithCertificate(
-      cert_start_5min_expire_5min.get());
-  token_validator_->SelectCertificates(std::move(certificates));
-
-  // Two valid certs. Choose latest created.
-  certificates = { cert_start_10min_expire_5min, cert_start_5min_expire_5min };
-  token_validator_->ExpectContinueWithCertificate(
-      cert_start_5min_expire_5min.get());
-  token_validator_->SelectCertificates(std::move(certificates));
-
-  // Two valid certs. Choose latest expires.
-  certificates = { cert_start_5min_expire_5min, cert_start_5min_expire_10min };
-  token_validator_->ExpectContinueWithCertificate(
-      cert_start_5min_expire_10min.get());
-  token_validator_->SelectCertificates(std::move(certificates));
-
-  // Pick the best given all certificates.
-  certificates = { cert_expired_5_minutes_ago, cert_start_5min_expire_5min,
-      cert_start_5min_expire_10min, cert_start_10min_expire_5min };
+  token_validator_->SelectCertificates(net::ClientCertIdentityList());
+  {
+    // One invalid certificate.
+    net::ClientCertIdentityList client_certs;
+    client_certs.push_back(cert_expired_5_minutes_ago->Copy());
+    token_validator_->ExpectContinueWithCertificate(nullptr);
+    token_validator_->SelectCertificates(std::move(client_certs));
+  }
+  {
+    // One valid certificate.
+    net::ClientCertIdentityList client_certs;
+    client_certs.push_back(cert_start_5min_expire_5min->Copy());
+    token_validator_->ExpectContinueWithCertificate(
+        cert_start_5min_expire_5min.get());
+    token_validator_->SelectCertificates(std::move(client_certs));
+  }
+  {
+    // One valid one invalid.
+    net::ClientCertIdentityList client_certs;
+    client_certs.push_back(cert_expired_5_minutes_ago->Copy());
+    client_certs.push_back(cert_start_5min_expire_5min->Copy());
+    token_validator_->ExpectContinueWithCertificate(
+        cert_start_5min_expire_5min.get());
+    token_validator_->SelectCertificates(std::move(client_certs));
+  }
+  {
+    // Two valid certs. Choose latest created.
+    net::ClientCertIdentityList client_certs;
+    client_certs.push_back(cert_start_10min_expire_5min->Copy());
+    client_certs.push_back(cert_start_5min_expire_5min->Copy());
+    token_validator_->ExpectContinueWithCertificate(
+        cert_start_5min_expire_5min.get());
+    token_validator_->SelectCertificates(std::move(client_certs));
+  }
+  {
+    // Two valid certs. Choose latest expires.
+    net::ClientCertIdentityList client_certs;
+    client_certs.push_back(cert_start_5min_expire_5min->Copy());
+    client_certs.push_back(cert_start_5min_expire_10min->Copy());
     token_validator_->ExpectContinueWithCertificate(
         cert_start_5min_expire_10min.get());
-    token_validator_->SelectCertificates(std::move(certificates));
+    token_validator_->SelectCertificates(std::move(client_certs));
+  }
+  {
+    // Pick the best given all certificates.
+    net::ClientCertIdentityList client_certs;
+    client_certs.push_back(cert_expired_5_minutes_ago->Copy());
+    client_certs.push_back(cert_start_5min_expire_5min->Copy());
+    client_certs.push_back(cert_start_5min_expire_10min->Copy());
+    client_certs.push_back(cert_start_10min_expire_5min->Copy());
+    token_validator_->ExpectContinueWithCertificate(
+        cert_start_5min_expire_10min.get());
+    token_validator_->SelectCertificates(std::move(client_certs));
+  }
 }
 
 }  // namespace remoting

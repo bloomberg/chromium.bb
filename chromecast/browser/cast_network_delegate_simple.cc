@@ -39,5 +39,10 @@ net::X509Certificate* CastNetworkDelegate::DeviceCert() {
   return NULL;
 }
 
+// static
+net::SSLPrivateKey* CastNetworkDelegate::DeviceKey() {
+  return NULL;
+}
+
 }  // namespace shell
 }  // namespace chromecast

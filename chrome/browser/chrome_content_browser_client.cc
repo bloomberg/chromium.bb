@@ -2277,7 +2277,7 @@ void ChromeContentBrowserClient::AllowCertificateError(
 void ChromeContentBrowserClient::SelectClientCertificate(
     content::WebContents* web_contents,
     net::SSLCertRequestInfo* cert_request_info,
-    net::CertificateList client_certs,
+    net::ClientCertIdentityList client_certs,
     std::unique_ptr<content::ClientCertificateDelegate> delegate) {
   prerender::PrerenderContents* prerender_contents =
       prerender::PrerenderContents::FromWebContents(web_contents);
@@ -2306,9 +2306,17 @@ void ChromeContentBrowserClient::SelectClientCertificate(
           static_cast<base::DictionaryValue*>(filter.get());
 
       for (size_t i = 0; i < client_certs.size(); ++i) {
-        if (CertMatchesFilter(*client_certs[i].get(), *filter_dict)) {
+        if (CertMatchesFilter(*client_certs[i]->certificate(), *filter_dict)) {
           // Use the first certificate that is matched by the filter.
-          delegate->ContinueWithCertificate(client_certs[i].get());
+          // The callback will own |client_certs[i]| and |delegate|, keeping
+          // them alive until after ContinueWithCertificate is called.
+          scoped_refptr<net::X509Certificate> cert =
+              client_certs[i]->certificate();
+          net::ClientCertIdentity::SelfOwningAcquirePrivateKey(
+              std::move(client_certs[i]),
+              base::Bind(
+                  &content::ClientCertificateDelegate::ContinueWithCertificate,
+                  base::Passed(&delegate), std::move(cert)));
           return;
         }
       }

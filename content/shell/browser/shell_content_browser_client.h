@@ -56,7 +56,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   void SelectClientCertificate(
       WebContents* web_contents,
       net::SSLCertRequestInfo* cert_request_info,
-      net::CertificateList client_certs,
+      net::ClientCertIdentityList client_certs,
       std::unique_ptr<ClientCertificateDelegate> delegate) override;
   SpeechRecognitionManagerDelegate* CreateSpeechRecognitionManagerDelegate()
       override;

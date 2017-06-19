@@ -42,6 +42,7 @@
 #include "content/test/data/mojo_layouttest_test.mojom.h"
 #include "media/mojo/features.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "net/ssl/client_cert_identity.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "storage/browser/quota/quota_settings.h"
@@ -323,7 +324,7 @@ void ShellContentBrowserClient::GetQuotaSettings(
 void ShellContentBrowserClient::SelectClientCertificate(
     WebContents* web_contents,
     net::SSLCertRequestInfo* cert_request_info,
-    net::CertificateList client_certs,
+    net::ClientCertIdentityList client_certs,
     std::unique_ptr<ClientCertificateDelegate> delegate) {
   if (!select_client_certificate_callback_.is_null())
     select_client_certificate_callback_.Run();

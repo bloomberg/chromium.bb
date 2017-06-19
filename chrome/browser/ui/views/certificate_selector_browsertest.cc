@@ -16,6 +16,7 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/cert/x509_certificate.h"
+#include "net/ssl/client_cert_identity_test_util.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -26,9 +27,9 @@ namespace {
 
 class TestCertificateSelector : public chrome::CertificateSelector {
  public:
-  TestCertificateSelector(const net::CertificateList& certificates,
+  TestCertificateSelector(net::ClientCertIdentityList certificates,
                           content::WebContents* web_contents)
-      : CertificateSelector(certificates, web_contents) {}
+      : CertificateSelector(std::move(certificates), web_contents) {}
 
   ~TestCertificateSelector() override {
     if (!on_destroy_.is_null())
@@ -40,10 +41,10 @@ class TestCertificateSelector : public chrome::CertificateSelector {
         base::ASCIIToUTF16("some arbitrary text")));
   }
 
-  bool Accept() override {
+  void AcceptCertificate(
+      std::unique_ptr<net::ClientCertIdentity> identity) override {
     if (accepted_)
       *accepted_ = true;
-    return CertificateSelector::Accept();
   }
 
   bool Cancel() override {
@@ -85,12 +86,10 @@ class CertificateSelectorTest : public InProcessBrowserTest {
     ASSERT_TRUE(content::WaitForLoadStop(
         browser()->tab_strip_model()->GetActiveWebContents()));
 
-    net::CertificateList certificates;
-    certificates.push_back(client_1_);
-    certificates.push_back(client_2_);
-
     selector_ = new TestCertificateSelector(
-        certificates, browser()->tab_strip_model()->GetActiveWebContents());
+        net::FakeClientCertIdentityListFromCertificateList(
+            {client_1_, client_2_}),
+        browser()->tab_strip_model()->GetActiveWebContents());
     selector_->Init();
     selector_->Show();
   }
@@ -128,13 +127,16 @@ IN_PROC_BROWSER_TEST_F(CertificateSelectorTest, GetRowText) {
 }
 
 IN_PROC_BROWSER_TEST_F(CertificateSelectorTest, GetSelectedCert) {
-  EXPECT_EQ(client_1_.get(), selector_->GetSelectedCert());
+  ASSERT_TRUE(selector_->GetSelectedCert());
+  EXPECT_EQ(client_1_.get(), selector_->GetSelectedCert()->certificate());
   EXPECT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_DOWN, false,
                                               false, false, false));
-  EXPECT_EQ(client_2_.get(), selector_->GetSelectedCert());
+  ASSERT_TRUE(selector_->GetSelectedCert());
+  EXPECT_EQ(client_2_.get(), selector_->GetSelectedCert()->certificate());
   EXPECT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_UP, false,
                                               false, false, false));
-  EXPECT_EQ(client_1_.get(), selector_->GetSelectedCert());
+  ASSERT_TRUE(selector_->GetSelectedCert());
+  EXPECT_EQ(client_1_.get(), selector_->GetSelectedCert()->certificate());
 }
 
 IN_PROC_BROWSER_TEST_F(CertificateSelectorTest, DoubleClick) {

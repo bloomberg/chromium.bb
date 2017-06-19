@@ -6,10 +6,8 @@
 #define CHROME_BROWSER_UI_VIEWS_SSL_CLIENT_CERTIFICATE_SELECTOR_H_
 
 #include "base/macros.h"
-#include "chrome/browser/ssl/ssl_client_auth_observer.h"
 #include "chrome/browser/ssl/ssl_client_certificate_selector.h"
 #include "chrome/browser/ui/views/certificate_selector.h"
-#include "content/public/browser/web_contents_observer.h"
 
 // This header file exists only for testing.  Chrome should access the
 // certificate selector only through the cross-platform interface
@@ -21,35 +19,29 @@ class WebContents;
 
 namespace net {
 class SSLCertRequestInfo;
-class X509Certificate;
 }
 
-class SSLClientCertificateSelector : public chrome::CertificateSelector,
-                                     public SSLClientAuthObserver,
-                                     public content::WebContentsObserver {
+class SSLClientCertificateSelector : public chrome::CertificateSelector {
  public:
   SSLClientCertificateSelector(
       content::WebContents* web_contents,
       const scoped_refptr<net::SSLCertRequestInfo>& cert_request_info,
-      net::CertificateList client_certs,
+      net::ClientCertIdentityList client_certs,
       std::unique_ptr<content::ClientCertificateDelegate> delegate);
   ~SSLClientCertificateSelector() override;
 
   void Init();
-
-  // SSLClientAuthObserver:
-  void OnCertSelectedByNotification() override;
+  void CloseDialog();
 
   // chrome::CertificateSelector:
   void DeleteDelegate() override;
-  bool Accept() override;
-
-  // content::WebContentsObserver:
-  void WebContentsDestroyed() override;
+  void AcceptCertificate(
+      std::unique_ptr<net::ClientCertIdentity> identity) override;
 
  private:
-  // Callback after unlocking certificate slot.
-  void Unlocked(net::X509Certificate* cert);
+  class SSLClientAuthObserverImpl;
+
+  std::unique_ptr<SSLClientAuthObserverImpl> auth_observer_impl_;
 
   DISALLOW_COPY_AND_ASSIGN(SSLClientCertificateSelector);
 };

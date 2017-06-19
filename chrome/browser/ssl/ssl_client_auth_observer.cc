@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ssl/ssl_client_auth_observer.h"
 
-#include <utility>
+#include <tuple>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -14,10 +14,12 @@
 #include "content/public/browser/notification_service.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_cert_request_info.h"
+#include "net/ssl/ssl_private_key.h"
 
 using content::BrowserThread;
 
-typedef std::pair<net::SSLCertRequestInfo*, net::X509Certificate*> CertDetails;
+using CertDetails = std::
+    tuple<net::SSLCertRequestInfo*, net::X509Certificate*, net::SSLPrivateKey*>;
 
 SSLClientAuthObserver::SSLClientAuthObserver(
     const content::BrowserContext* browser_context,
@@ -31,7 +33,8 @@ SSLClientAuthObserver::~SSLClientAuthObserver() {
 }
 
 void SSLClientAuthObserver::CertificateSelected(
-    net::X509Certificate* certificate) {
+    net::X509Certificate* certificate,
+    net::SSLPrivateKey* private_key) {
   if (!delegate_)
     return;
 
@@ -39,16 +42,14 @@ void SSLClientAuthObserver::CertificateSelected(
   // avoid getting a self-notification.
   StopObserving();
 
-  CertDetails details;
-  details.first = cert_request_info_.get();
-  details.second = certificate;
+  CertDetails details(cert_request_info_.get(), certificate, private_key);
   content::NotificationService* service =
       content::NotificationService::current();
   service->Notify(chrome::NOTIFICATION_SSL_CLIENT_AUTH_CERT_SELECTED,
                   content::Source<content::BrowserContext>(browser_context_),
                   content::Details<CertDetails>(&details));
 
-  delegate_->ContinueWithCertificate(certificate);
+  delegate_->ContinueWithCertificate(certificate, private_key);
   delegate_.reset();
 }
 
@@ -70,14 +71,15 @@ void SSLClientAuthObserver::Observe(
   DCHECK_EQ(chrome::NOTIFICATION_SSL_CLIENT_AUTH_CERT_SELECTED, type);
 
   CertDetails* cert_details = content::Details<CertDetails>(details).ptr();
-  if (!cert_details->first->host_and_port.Equals(
-           cert_request_info_->host_and_port))
+  if (!std::get<0>(*cert_details)
+           ->host_and_port.Equals(cert_request_info_->host_and_port))
     return;
 
   DVLOG(1) << this << " got matching notification and selecting cert "
-           << cert_details->second;
+           << std::get<1>(*cert_details);
   StopObserving();
-  delegate_->ContinueWithCertificate(cert_details->second);
+  delegate_->ContinueWithCertificate(std::get<1>(*cert_details),
+                                     std::get<2>(*cert_details));
   delegate_.reset();
   OnCertSelectedByNotification();
 }

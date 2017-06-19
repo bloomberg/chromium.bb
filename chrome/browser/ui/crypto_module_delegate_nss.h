@@ -25,14 +25,16 @@ class ChromeNSSCryptoModuleDelegate
   ChromeNSSCryptoModuleDelegate(chrome::CryptoModulePasswordReason reason,
                                 const net::HostPortPair& server);
 
-  ~ChromeNSSCryptoModuleDelegate() override;
-
   // crypto::CryptoModuleBlockingPasswordDelegate implementation.
   std::string RequestPassword(const std::string& slot_name,
                               bool retry,
                               bool* cancelled) override;
 
  private:
+  friend class base::RefCountedThreadSafe<ChromeNSSCryptoModuleDelegate>;
+
+  ~ChromeNSSCryptoModuleDelegate() override;
+
   void ShowDialog(const std::string& slot_name, bool retry);
 
   void GotPassword(const std::string& password);

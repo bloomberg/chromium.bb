@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/callback_forward.h"
-#include "net/cert/x509_certificate.h"
+#include "net/ssl/client_cert_identity.h"
 
 namespace content {
 class ClientCertificateDelegate;
@@ -29,7 +29,7 @@ namespace chrome {
 void ShowSSLClientCertificateSelector(
     content::WebContents* contents,
     net::SSLCertRequestInfo* cert_request_info,
-    net::CertificateList client_certs,
+    net::ClientCertIdentityList client_certs,
     std::unique_ptr<content::ClientCertificateDelegate> delegate);
 
 }  // namespace chrome

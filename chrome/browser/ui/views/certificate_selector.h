@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "net/cert/x509_certificate.h"
+#include "net/ssl/client_cert_identity.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/table/table_view_observer.h"
 #include "ui/views/window/dialog_delegate.h"
@@ -45,13 +45,18 @@ class CertificateSelector : public views::DialogDelegateView,
   static bool CanShow(content::WebContents* web_contents);
 
   // |web_contents| must not be null.
-  CertificateSelector(const net::CertificateList& certificates,
+  CertificateSelector(net::ClientCertIdentityList identities,
                       content::WebContents* web_contents);
   ~CertificateSelector() override;
 
+  // Handles when the user chooses a certificate in the list.
+  // The CertificateSelector will be destroyed after this method completes.
+  virtual void AcceptCertificate(
+      std::unique_ptr<net::ClientCertIdentity> identity) = 0;
+
   // Returns the currently selected certificate or null if none is selected.
   // Must be called after |InitWithText()|.
-  net::X509Certificate* GetSelectedCert() const;
+  net::ClientCertIdentity* GetSelectedCert() const;
 
   // Shows this dialog as a constrained web modal dialog and focuses the first
   // certificate.
@@ -59,6 +64,7 @@ class CertificateSelector : public views::DialogDelegateView,
   void Show();
 
   // DialogDelegateView:
+  bool Accept() override;
   bool CanResize() const override;
   base::string16 GetWindowTitle() const override;
   bool IsDialogButtonEnabled(ui::DialogButton button) const override;
@@ -88,7 +94,7 @@ class CertificateSelector : public views::DialogDelegateView,
  private:
   class CertificateTableModel;
 
-  net::CertificateList certificates_;
+  net::ClientCertIdentityList identities_;
 
   // Whether to show the provider column in the table or not. Certificates
   // provided by the platform show the empty string as provider. That column is
@@ -99,8 +105,8 @@ class CertificateSelector : public views::DialogDelegateView,
 
   content::WebContents* const web_contents_;
 
-  views::TableView* table_;
-  views::LabelButton* view_cert_button_;
+  views::TableView* table_ = nullptr;
+  views::LabelButton* view_cert_button_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(CertificateSelector);
 };

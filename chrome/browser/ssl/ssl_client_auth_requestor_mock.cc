@@ -24,8 +24,9 @@ class FakeClientCertificateDelegate
   }
 
   // content::ClientCertificateDelegate implementation:
-  void ContinueWithCertificate(net::X509Certificate* cert) override {
-    requestor_->CertificateSelected(cert);
+  void ContinueWithCertificate(scoped_refptr<net::X509Certificate> cert,
+                               scoped_refptr<net::SSLPrivateKey> key) override {
+    requestor_->CertificateSelected(cert.get(), key.get());
     requestor_ = nullptr;
   }
 

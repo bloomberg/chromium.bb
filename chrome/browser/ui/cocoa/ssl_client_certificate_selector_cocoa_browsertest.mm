@@ -20,39 +20,56 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/test_utils.h"
 #include "net/cert/x509_certificate.h"
+#include "net/ssl/client_cert_identity_mac.h"
+#include "net/ssl/ssl_private_key_test_util.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/keychain_test_util_mac.h"
 #include "net/test/test_data_directory.h"
 #import "testing/gtest_mac.h"
 #include "ui/base/cocoa/window_size_constants.h"
 
 using web_modal::WebContentsModalDialogManager;
 
+@interface SFChooseIdentityPanel (SystemPrivate)
+// A system-private interface that dismisses a panel whose sheet was started by
+// -beginSheetForWindow:modalDelegate:didEndSelector:contextInfo:identities:message:
+// as though the user clicked the button identified by returnCode. Verified
+// present in 10.5 through 10.12.
+- (void)_dismissWithCode:(NSInteger)code;
+@end
+
 namespace {
+
+struct TestClientCertificateDelegateResults {
+  bool destroyed = false;
+  bool continue_with_certificate_called = false;
+  scoped_refptr<net::X509Certificate> cert;
+  scoped_refptr<net::SSLPrivateKey> key;
+};
 
 class TestClientCertificateDelegate
     : public content::ClientCertificateDelegate {
  public:
   // Creates a ClientCertificateDelegate that sets |*destroyed| to true on
   // destruction.
-  explicit TestClientCertificateDelegate(bool* destroyed)
-      : destroyed_(destroyed) {}
+  explicit TestClientCertificateDelegate(
+      TestClientCertificateDelegateResults* results)
+      : results_(results) {}
 
-  ~TestClientCertificateDelegate() override {
-    if (destroyed_ != nullptr)
-      *destroyed_ = true;
-  }
+  ~TestClientCertificateDelegate() override { results_->destroyed = true; }
 
   // content::ClientCertificateDelegate.
-  void ContinueWithCertificate(net::X509Certificate* cert) override {
-    // TODO(davidben): Add a test which explicitly tests selecting a
-    // certificate, or selecting no certificate, since closing the dialog
-    // (normally by closing the tab) is not the same as explicitly selecting no
-    // certificate.
-    ADD_FAILURE() << "Certificate selected";
+  void ContinueWithCertificate(scoped_refptr<net::X509Certificate> cert,
+                               scoped_refptr<net::SSLPrivateKey> key) override {
+    EXPECT_FALSE(results_->continue_with_certificate_called);
+    results_->cert = cert;
+    results_->key = key;
+    results_->continue_with_certificate_called = true;
+    // TODO(mattm): Add a test of selecting the 2nd certificate (if possible).
   }
 
  private:
-  bool* destroyed_;
+  TestClientCertificateDelegateResults* results_;
 
   DISALLOW_COPY_AND_ASSIGN(TestClientCertificateDelegate);
 };
@@ -67,12 +84,16 @@ class SSLClientCertificateSelectorCocoaTest
   // InProcessBrowserTest:
   void SetUpInProcessBrowserTestFixture() override;
 
-  net::CertificateList GetTestCertificateList();
+  net::ClientCertIdentityList GetTestCertificateList();
 
- private:
-  scoped_refptr<net::X509Certificate> mit_davidben_cert_;
-  scoped_refptr<net::X509Certificate> foaf_me_chromium_test_cert_;
-  net::CertificateList client_cert_list_;
+ protected:
+  scoped_refptr<net::X509Certificate> client_cert1_;
+  scoped_refptr<net::X509Certificate> client_cert2_;
+  std::string pkcs8_key1_;
+  std::string pkcs8_key2_;
+  net::ScopedTestKeychain scoped_keychain_;
+  base::ScopedCFTypeRef<SecIdentityRef> sec_identity1_;
+  base::ScopedCFTypeRef<SecIdentityRef> sec_identity2_;
 };
 
 SSLClientCertificateSelectorCocoaTest::
@@ -83,40 +104,50 @@ void SSLClientCertificateSelectorCocoaTest::SetUpInProcessBrowserTestFixture() {
 
   base::FilePath certs_dir = net::GetTestCertsDirectory();
 
-  mit_davidben_cert_ = net::ImportCertFromFile(certs_dir, "mit.davidben.der");
-  ASSERT_TRUE(mit_davidben_cert_.get());
+  client_cert1_ = net::ImportCertFromFile(certs_dir, "client_1.pem");
+  ASSERT_TRUE(client_cert1_);
+  client_cert2_ = net::ImportCertFromFile(certs_dir, "client_2.pem");
+  ASSERT_TRUE(client_cert2_);
 
-  foaf_me_chromium_test_cert_ =
-      net::ImportCertFromFile(certs_dir, "foaf.me.chromium-test-cert.der");
-  ASSERT_TRUE(foaf_me_chromium_test_cert_.get());
+  ASSERT_TRUE(base::ReadFileToString(certs_dir.AppendASCII("client_1.pk8"),
+                                     &pkcs8_key1_));
+  ASSERT_TRUE(base::ReadFileToString(certs_dir.AppendASCII("client_2.pk8"),
+                                     &pkcs8_key2_));
 
-  client_cert_list_.push_back(mit_davidben_cert_);
-  client_cert_list_.push_back(foaf_me_chromium_test_cert_);
+  ASSERT_TRUE(scoped_keychain_.Initialize());
+
+  sec_identity1_ = net::ImportCertAndKeyToKeychain(
+      client_cert1_.get(), pkcs8_key1_, scoped_keychain_.keychain());
+  ASSERT_TRUE(sec_identity1_);
+  sec_identity2_ = net::ImportCertAndKeyToKeychain(
+      client_cert2_.get(), pkcs8_key2_, scoped_keychain_.keychain());
+  ASSERT_TRUE(sec_identity2_);
 }
 
-net::CertificateList
+net::ClientCertIdentityList
 SSLClientCertificateSelectorCocoaTest::GetTestCertificateList() {
-  return client_cert_list_;
+  net::ClientCertIdentityList client_cert_list;
+  client_cert_list.push_back(base::MakeUnique<net::ClientCertIdentityMac>(
+      client_cert1_, base::ScopedCFTypeRef<SecIdentityRef>(sec_identity1_)));
+  client_cert_list.push_back(base::MakeUnique<net::ClientCertIdentityMac>(
+      client_cert2_, base::ScopedCFTypeRef<SecIdentityRef>(sec_identity2_)));
+  return client_cert_list;
 }
 
-// Flaky on 10.7; crbug.com/313243
-IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorCocoaTest, DISABLED_Basic) {
-  // TODO(kbr): re-enable: http://crbug.com/222296
-  return;
-
+IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorCocoaTest, Basic) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   WebContentsModalDialogManager* web_contents_modal_dialog_manager =
       WebContentsModalDialogManager::FromWebContents(web_contents);
   EXPECT_FALSE(web_contents_modal_dialog_manager->IsDialogActive());
 
-  bool destroyed = false;
+  TestClientCertificateDelegateResults results;
   SSLClientCertificateSelectorCocoa* selector = [
       [SSLClientCertificateSelectorCocoa alloc]
       initWithBrowserContext:web_contents->GetBrowserContext()
              certRequestInfo:auth_requestor_->cert_request_info_.get()
-                    delegate:base::WrapUnique(new TestClientCertificateDelegate(
-                                 &destroyed))];
+                    delegate:base::WrapUnique(
+                                 new TestClientCertificateDelegate(&results))];
   [selector displayForWebContents:web_contents
                       clientCerts:GetTestCertificateList()];
   content::RunAllPendingInMessageLoop();
@@ -129,19 +160,94 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorCocoaTest, DISABLED_Basic) {
   content::RunAllPendingInMessageLoop();
   EXPECT_FALSE(web_contents_modal_dialog_manager->IsDialogActive());
 
-  EXPECT_TRUE(destroyed);
+  EXPECT_TRUE(results.destroyed);
+  EXPECT_FALSE(results.continue_with_certificate_called);
+}
+
+IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorCocoaTest, Cancel) {
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
+      WebContentsModalDialogManager::FromWebContents(web_contents);
+  EXPECT_FALSE(web_contents_modal_dialog_manager->IsDialogActive());
+
+  TestClientCertificateDelegateResults results;
+  SSLClientCertificateSelectorCocoa* selector = [
+      [SSLClientCertificateSelectorCocoa alloc]
+      initWithBrowserContext:web_contents->GetBrowserContext()
+             certRequestInfo:auth_requestor_->cert_request_info_.get()
+                    delegate:base::WrapUnique(
+                                 new TestClientCertificateDelegate(&results))];
+  [selector displayForWebContents:web_contents
+                      clientCerts:GetTestCertificateList()];
+  content::RunAllPendingInMessageLoop();
+  EXPECT_TRUE([selector panel]);
+  EXPECT_TRUE(web_contents_modal_dialog_manager->IsDialogActive());
+
+  // Cancel the selector. Dunno if there is a better way to do this.
+  [[selector panel] _dismissWithCode:NSFileHandlingPanelCancelButton];
+  content::RunAllPendingInMessageLoop();
+  EXPECT_FALSE(web_contents_modal_dialog_manager->IsDialogActive());
+
+  // ContinueWithCertificate(nullptr, nullptr) should have been called.
+  EXPECT_TRUE(results.destroyed);
+  EXPECT_TRUE(results.continue_with_certificate_called);
+  EXPECT_FALSE(results.cert);
+  EXPECT_FALSE(results.key);
+}
+
+IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorCocoaTest, Accept) {
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  WebContentsModalDialogManager* web_contents_modal_dialog_manager =
+      WebContentsModalDialogManager::FromWebContents(web_contents);
+  EXPECT_FALSE(web_contents_modal_dialog_manager->IsDialogActive());
+
+  TestClientCertificateDelegateResults results;
+  SSLClientCertificateSelectorCocoa* selector = [
+      [SSLClientCertificateSelectorCocoa alloc]
+      initWithBrowserContext:web_contents->GetBrowserContext()
+             certRequestInfo:auth_requestor_->cert_request_info_.get()
+                    delegate:base::WrapUnique(
+                                 new TestClientCertificateDelegate(&results))];
+  [selector displayForWebContents:web_contents
+                      clientCerts:GetTestCertificateList()];
+  content::RunAllPendingInMessageLoop();
+  EXPECT_TRUE([selector panel]);
+  EXPECT_TRUE(web_contents_modal_dialog_manager->IsDialogActive());
+
+  // Accept the selection. Dunno if there is a better way to do this.
+  [[selector panel] _dismissWithCode:NSFileHandlingPanelOKButton];
+  content::RunAllPendingInMessageLoop();
+  EXPECT_FALSE(web_contents_modal_dialog_manager->IsDialogActive());
+
+  // The first cert in the list should have been selected.
+  EXPECT_TRUE(results.destroyed);
+  EXPECT_TRUE(results.continue_with_certificate_called);
+  EXPECT_EQ(client_cert1_, results.cert);
+  ASSERT_TRUE(results.key);
+
+  // All Mac keys are expected to have the same hash preferences.
+  std::vector<net::SSLPrivateKey::Hash> expected_hashes = {
+      net::SSLPrivateKey::Hash::SHA512, net::SSLPrivateKey::Hash::SHA384,
+      net::SSLPrivateKey::Hash::SHA256, net::SSLPrivateKey::Hash::SHA1,
+  };
+  EXPECT_EQ(expected_hashes, results.key->GetDigestPreferences());
+
+  TestSSLPrivateKeyMatches(results.key.get(), pkcs8_key1_);
 }
 
 // Test that switching to another tab correctly hides the sheet.
 IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorCocoaTest, HideShow) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
+  TestClientCertificateDelegateResults results;
   SSLClientCertificateSelectorCocoa* selector = [
       [SSLClientCertificateSelectorCocoa alloc]
       initWithBrowserContext:web_contents->GetBrowserContext()
              certRequestInfo:auth_requestor_->cert_request_info_.get()
                     delegate:base::WrapUnique(
-                                 new TestClientCertificateDelegate(nullptr))];
+                                 new TestClientCertificateDelegate(&results))];
   [selector displayForWebContents:web_contents
                       clientCerts:GetTestCertificateList()];
   content::RunAllPendingInMessageLoop();
@@ -160,6 +266,9 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorCocoaTest, HideShow) {
   chrome::SelectNumberedTab(browser(), 0);
   EXPECT_EQ(1.0, [sheetWindow alphaValue]);
   EXPECT_FALSE([[selector overlayWindow] ignoresMouseEvents]);
+
+  EXPECT_FALSE(results.destroyed);
+  EXPECT_FALSE(results.continue_with_certificate_called);
 }
 
 @interface DeallocTrackingSSLClientCertificateSelectorCocoa

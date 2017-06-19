@@ -9,6 +9,7 @@
 #include "net/base/network_delegate_impl.h"
 
 namespace net {
+class SSLPrivateKey;
 class X509Certificate;
 }
 
@@ -19,6 +20,7 @@ class CastNetworkDelegate : public net::NetworkDelegateImpl {
  public:
   static CastNetworkDelegate* Create();
   static net::X509Certificate* DeviceCert();
+  static net::SSLPrivateKey* DeviceKey();
 
   CastNetworkDelegate();
   ~CastNetworkDelegate() override;

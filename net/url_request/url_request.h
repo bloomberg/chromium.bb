@@ -611,8 +611,8 @@ class NET_EXPORT URLRequest : public base::SupportsUserData {
   // This method can be called after the user selects a client certificate to
   // instruct this URLRequest to continue with the request with the
   // certificate.  Pass NULL if the user doesn't have a client certificate.
-  void ContinueWithCertificate(X509Certificate* client_cert,
-                               SSLPrivateKey* client_private_key);
+  void ContinueWithCertificate(scoped_refptr<X509Certificate> client_cert,
+                               scoped_refptr<SSLPrivateKey> client_private_key);
 
   // This method can be called after some error notifications to instruct this
   // URLRequest to ignore the current error and continue with the request.  To

@@ -138,8 +138,8 @@ class HttpCache::Transaction : public HttpTransaction {
             const CompletionCallback& callback,
             const NetLogWithSource& net_log) override;
   int RestartIgnoringLastError(const CompletionCallback& callback) override;
-  int RestartWithCertificate(X509Certificate* client_cert,
-                             SSLPrivateKey* client_private_key,
+  int RestartWithCertificate(scoped_refptr<X509Certificate> client_cert,
+                             scoped_refptr<SSLPrivateKey> client_private_key,
                              const CompletionCallback& callback) override;
   int RestartWithAuth(const AuthCredentials& credentials,
                       const CompletionCallback& callback) override;
@@ -357,8 +357,9 @@ class HttpCache::Transaction : public HttpTransaction {
 
   // Called to restart a network transaction with a client certificate.
   // Returns network error code.
-  int RestartNetworkRequestWithCertificate(X509Certificate* client_cert,
-                                           SSLPrivateKey* client_private_key);
+  int RestartNetworkRequestWithCertificate(
+      scoped_refptr<X509Certificate> client_cert,
+      scoped_refptr<SSLPrivateKey> client_private_key);
 
   // Called to restart a network transaction with authentication credentials.
   // Returns network error code.

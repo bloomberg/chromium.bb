@@ -16,7 +16,7 @@
 #include "chrome/browser/ssl/ssl_client_certificate_selector.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_sheet_controller.h"
-#include "net/cert/x509_certificate.h"
+#include "net/ssl/client_cert_identity.h"
 
 namespace content {
 class BrowserContext;
@@ -30,10 +30,10 @@ class SSLClientAuthObserverCocoaBridge;
 @interface SSLClientCertificateSelectorCocoa
     : NSObject<ConstrainedWindowSheet> {
  @private
-  // The list of identities offered to the user.
-  base::ScopedCFTypeRef<CFMutableArrayRef> identities_;
-  // The corresponding list of certificates.
-  std::vector<scoped_refptr<net::X509Certificate>> certificates_;
+  // The list of SecIdentityRefs offered to the user.
+  base::ScopedCFTypeRef<CFMutableArrayRef> sec_identities_;
+  // The corresponding list of ClientCertIdentities.
+  net::ClientCertIdentityList cert_identities_;
   // A C++ object to bridge SSLClientAuthObserver notifications to us.
   std::unique_ptr<SSLClientAuthObserverCocoaBridge> observer_;
   base::scoped_nsobject<SFChooseIdentityPanel> panel_;
@@ -56,7 +56,7 @@ class SSLClientAuthObserverCocoaBridge;
                         (std::unique_ptr<content::ClientCertificateDelegate>)
                             delegate;
 - (void)displayForWebContents:(content::WebContents*)webContents
-                  clientCerts:(net::CertificateList)inputClientCerts;
+                  clientCerts:(net::ClientCertIdentityList)inputClientCerts;
 - (void)closeWebContentsModalDialog;
 
 - (NSWindow*)overlayWindow;
