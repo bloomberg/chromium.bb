@@ -6442,7 +6442,7 @@ I don't think this site should be blocked!
           Removing harmful software...
         </message>
         <message name="IDS_CHROME_CLEANUP_WEBUI_TITLE_RESTART" desc="A status message, appearing on the Chrome Cleanup web page, that the cleanup of unwanted software initiated by the user was performed but isn't finished. User must take additional action to finish the cleanup. 'Restart' is imperative. Short for 'To finish removing harmful software...'">
-          To finish, restart your computer
+          To finish removing harmful software, restart your computer
         </message>
       </if>
 

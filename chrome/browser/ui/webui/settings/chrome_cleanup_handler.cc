@@ -120,7 +120,7 @@ void ChromeCleanupHandler::HandleDismiss(const base::ListValue* args) {
   controller_->RemoveObserver(this);
 
   CallJavascriptFunction("cr.webUIListenerCallback",
-                         base::Value("chrome-cleanup-dismiss"));
+                         base::Value("chrome-cleanup-on-dismiss"));
 }
 
 void ChromeCleanupHandler::HandleRegisterChromeCleanerObserver(
