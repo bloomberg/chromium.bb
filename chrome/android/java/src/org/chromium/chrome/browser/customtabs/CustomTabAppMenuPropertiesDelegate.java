@@ -33,6 +33,7 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
     private final boolean mShowStar;
     private final boolean mShowDownload;
     private final boolean mIsOpenedByChrome;
+    private final boolean mIsPaymentRequestUI;
 
     private final List<String> mMenuEntries;
     private final Map<MenuItem, Integer> mItemToIndexMap = new HashMap<MenuItem, Integer>();
@@ -44,7 +45,8 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
      */
     public CustomTabAppMenuPropertiesDelegate(final ChromeActivity activity,
             List<String> menuEntries, boolean showShare, final boolean isOpenedByChrome,
-            final boolean isMediaViewer, boolean showStar, boolean showDownload) {
+            final boolean isMediaViewer, boolean showStar, boolean showDownload,
+            final boolean isPaymentRequestUI) {
         super(activity);
         mMenuEntries = menuEntries;
         mShowShare = showShare;
@@ -52,6 +54,7 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
         mShowStar = showStar;
         mShowDownload = showDownload;
         mIsOpenedByChrome = isOpenedByChrome;
+        mIsPaymentRequestUI = isPaymentRequestUI;
     }
 
     @Override
@@ -90,6 +93,12 @@ public class CustomTabAppMenuPropertiesDelegate extends AppMenuPropertiesDelegat
                 iconRow.setVisible(false);
                 openInChromeItem.setVisible(false);
                 menu.findItem(R.id.find_in_page_id).setVisible(false);
+                menu.findItem(R.id.request_desktop_site_id).setVisible(false);
+                addToHomeScreenVisible = false;
+            } else if (mIsPaymentRequestUI) {
+                // Only the icon row and 'find in page' are shown for openning payment request UI
+                // from Chrome.
+                openInChromeItem.setVisible(false);
                 menu.findItem(R.id.request_desktop_site_id).setVisible(false);
                 addToHomeScreenVisible = false;
             } else {

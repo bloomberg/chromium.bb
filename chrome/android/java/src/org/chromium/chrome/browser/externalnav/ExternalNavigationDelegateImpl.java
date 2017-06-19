@@ -201,8 +201,10 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         Context context = ContextUtils.getApplicationContext();
         try {
             // Early-out if the intent targets Chrome.
-            if (intent.getComponent() != null
-                    && context.getPackageName().equals(intent.getComponent().getPackageName())) {
+            if (context.getPackageName().equals(intent.getPackage())
+                    || (intent.getComponent() != null
+                               && context.getPackageName().equals(
+                                          intent.getComponent().getPackageName()))) {
                 return true;
             }
 

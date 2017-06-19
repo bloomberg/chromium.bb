@@ -779,10 +779,10 @@ public class CustomTabActivity extends ChromeActivity {
     protected AppMenuPropertiesDelegate createAppMenuPropertiesDelegate() {
         return new CustomTabAppMenuPropertiesDelegate(this, mIntentDataProvider.getMenuTitles(),
                 mIntentDataProvider.shouldShowShareMenuItem(),
-                mIntentDataProvider.isOpenedByChrome(),
-                mIntentDataProvider.isMediaViewer(),
+                mIntentDataProvider.isOpenedByChrome(), mIntentDataProvider.isMediaViewer(),
                 mIntentDataProvider.shouldShowStarButton(),
-                mIntentDataProvider.shouldShowDownloadButton());
+                mIntentDataProvider.shouldShowDownloadButton(),
+                mIntentDataProvider.isPaymentRequestUI());
     }
 
     @Override

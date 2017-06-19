@@ -11,6 +11,7 @@ import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
 import android.util.Base64;
+import android.view.Menu;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -24,7 +25,9 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.appmenu.AppMenuHandler;
 import org.chromium.chrome.browser.customtabs.CustomTabDelegateFactory.CustomTabNavigationDelegate;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationHandler.OverrideUrlLoadingResult;
@@ -93,6 +96,14 @@ public class CustomTabFromChromeExternalNavigationTest {
                 getCustomTabFromChromeIntent(url));
     }
 
+    private void startPaymentRequestUIFromChrome(String url) throws InterruptedException {
+        Intent intent = getCustomTabFromChromeIntent(url);
+        CustomTabIntentDataProvider.addPaymentRequestUIExtras(intent);
+
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
+    }
+
     @Test
     @Feature("CustomTabFromChrome")
     @MediumTest
@@ -149,6 +160,49 @@ public class CustomTabFromChromeExternalNavigationTest {
                         mCustomTabActivityTestRule.getActivity());
                 return activityState == ActivityState.STOPPED
                         || activityState == ActivityState.DESTROYED;
+            }
+        });
+    }
+
+    @Test
+    @Feature("CustomTabFromChrome")
+    @MediumTest
+    public void testIntentToOpenPaymentRequestUI() throws Exception {
+        startPaymentRequestUIFromChrome("about:blank");
+
+        Tab tab = mCustomTabActivityTestRule.getActivity().getActivityTab();
+        TabDelegateFactory delegateFactory = tab.getDelegateFactory();
+        Assert.assertTrue(delegateFactory instanceof CustomTabDelegateFactory);
+        CustomTabDelegateFactory customTabDelegateFactory =
+                ((CustomTabDelegateFactory) delegateFactory);
+        Assert.assertFalse(customTabDelegateFactory.getExternalNavigationDelegate()
+                                   instanceof CustomTabNavigationDelegate);
+
+        showAppMenuAndAssertMenuShown(mCustomTabActivityTestRule.getActivity().getAppMenuHandler());
+        Menu menu =
+                mCustomTabActivityTestRule.getActivity().getAppMenuHandler().getAppMenu().getMenu();
+
+        Assert.assertTrue(menu.findItem(R.id.icon_row_menu_id).isVisible());
+        Assert.assertTrue(menu.findItem(R.id.find_in_page_id).isVisible());
+        Assert.assertFalse(menu.findItem(R.id.open_in_browser_id).isVisible());
+        Assert.assertFalse(menu.findItem(R.id.bookmark_this_page_id).isVisible());
+        Assert.assertFalse(menu.findItem(R.id.offline_page_id).isVisible());
+        Assert.assertFalse(menu.findItem(R.id.request_desktop_site_id).isVisible());
+        Assert.assertFalse(menu.findItem(R.id.add_to_homescreen_id).isVisible());
+        Assert.assertFalse(menu.findItem(R.id.open_webapk_id).isVisible());
+    }
+
+    private void showAppMenuAndAssertMenuShown(final AppMenuHandler appMenuHandler) {
+        ThreadUtils.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                appMenuHandler.showAppMenu(null, false);
+            }
+        });
+        CriteriaHelper.pollUiThread(new Criteria("AppMenu did not show") {
+            @Override
+            public boolean isSatisfied() {
+                return appMenuHandler.isAppMenuShowing();
             }
         });
     }
