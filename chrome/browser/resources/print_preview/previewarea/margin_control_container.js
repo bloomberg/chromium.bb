@@ -20,9 +20,9 @@ cr.define('print_preview', function() {
    * @constructor
    * @extends {print_preview.Component}
    */
-  function MarginControlContainer(documentInfo, marginsTypeTicketItem,
-                                  customMarginsTicketItem, measurementSystem,
-                                  dragChangedCallback) {
+  function MarginControlContainer(
+      documentInfo, marginsTypeTicketItem, customMarginsTicketItem,
+      measurementSystem, dragChangedCallback) {
     print_preview.Component.call(this);
 
     /**
@@ -69,8 +69,8 @@ cr.define('print_preview', function() {
      */
     this.controls_ = {};
     for (var key in print_preview.ticket_items.CustomMarginsOrientation) {
-      var orientation = print_preview.ticket_items.CustomMarginsOrientation[
-          key];
+      var orientation =
+          print_preview.ticket_items.CustomMarginsOrientation[key];
       var control = new print_preview.MarginControl(orientation);
       this.controls_[orientation] = control;
       this.addChild(control);
@@ -130,7 +130,7 @@ cr.define('print_preview', function() {
     return orientation ==
         print_preview.ticket_items.CustomMarginsOrientation.TOP ||
         orientation ==
-            print_preview.ticket_items.CustomMarginsOrientation.BOTTOM;
+        print_preview.ticket_items.CustomMarginsOrientation.BOTTOM;
   };
 
   MarginControlContainer.prototype = {
@@ -175,11 +175,10 @@ cr.define('print_preview', function() {
       this.clippingSize_ = clipSize;
       for (var orientation in this.controls_) {
         var el = this.controls_[orientation].getElement();
-        el.style.clip = 'rect(' +
-            (-el.offsetTop) + 'px, ' +
+        el.style.clip = 'rect(' + (-el.offsetTop) + 'px, ' +
             (clipSize.width - el.offsetLeft) + 'px, ' +
-            (clipSize.height - el.offsetTop) + 'px, ' +
-            (-el.offsetLeft) + 'px)';
+            (clipSize.height - el.offsetTop) + 'px, ' + (-el.offsetLeft) +
+            'px)';
       }
     },
 
@@ -205,8 +204,7 @@ cr.define('print_preview', function() {
           this.getElement(), 'mouseout', this.onMouseOut_.bind(this));
 
       this.tracker.add(
-          this.documentInfo_,
-          print_preview.DocumentInfo.EventType.CHANGE,
+          this.documentInfo_, print_preview.DocumentInfo.EventType.CHANGE,
           this.onTicketChange_.bind(this));
       this.tracker.add(
           this.marginsTypeTicketItem_,
@@ -261,9 +259,9 @@ cr.define('print_preview', function() {
       } else {
         newPosInPts = control.convertPixelsToPts(posInPixels.x);
       }
-      newPosInPts = Math.min(this.customMarginsTicketItem_.getMarginMax(
-                                 control.getOrientation()),
-                             newPosInPts);
+      newPosInPts = Math.min(
+          this.customMarginsTicketItem_.getMarginMax(control.getOrientation()),
+          newPosInPts);
       newPosInPts = Math.max(0, newPosInPts);
       newPosInPts = Math.round(newPosInPts);
       control.setPositionInPts(newPosInPts);
@@ -281,9 +279,9 @@ cr.define('print_preview', function() {
       if (value.length == 0) {
         return null;
       }
-      var validationRegex = new RegExp('^(^-?)(\\d)+(\\' +
-          this.measurementSystem_.thousandsDelimeter + '\\d{3})*(\\' +
-          this.measurementSystem_.decimalDelimeter + '\\d*)?' +
+      var validationRegex = new RegExp(
+          '^(^-?)(\\d)+(\\' + this.measurementSystem_.thousandsDelimeter +
+          '\\d{3})*(\\' + this.measurementSystem_.decimalDelimeter + '\\d*)?' +
           '(' + this.measurementSystem_.unitSymbol + ')?$');
       if (validationRegex.test(value)) {
         // Replacing decimal point with the dot symbol in order to use
@@ -476,7 +474,5 @@ cr.define('print_preview', function() {
   };
 
   // Export
-  return {
-    MarginControlContainer: MarginControlContainer
-  };
+  return {MarginControlContainer: MarginControlContainer};
 });

@@ -189,8 +189,7 @@ cr.define('print_preview', function() {
         'print_preview.DestinationStore.PROVISIONAL_DESTINATION_RESOLVED',
     CACHED_SELECTED_DESTINATION_INFO_READY:
         'print_preview.DestinationStore.CACHED_SELECTED_DESTINATION_INFO_READY',
-    SELECTED_DESTINATION_CAPABILITIES_READY:
-        'print_preview.DestinationStore' +
+    SELECTED_DESTINATION_CAPABILITIES_READY: 'print_preview.DestinationStore' +
         '.SELECTED_DESTINATION_CAPABILITIES_READY',
   };
 
@@ -402,10 +401,8 @@ cr.define('print_preview', function() {
     for (var i = 0, media; (media = mediaSize.option[i]); i++) {
       // No need to patch capabilities with localized names provided.
       if (!media.custom_display_name_localized) {
-        media.custom_display_name =
-            media.custom_display_name ||
-            DestinationStore.MEDIA_DISPLAY_NAMES_[media.name] ||
-            media.name;
+        media.custom_display_name = media.custom_display_name ||
+            DestinationStore.MEDIA_DISPLAY_NAMES_[media.name] || media.name;
       }
     }
     return capabilities;
@@ -457,9 +454,10 @@ cr.define('print_preview', function() {
       var category;
       if (name.startsWith('NA_')) {
         category = categoryStandardNA;
-      } else if (name.startsWith('PRC_') || name.startsWith('ROC_') ||
-                 name == 'OM_DAI_PA_KAI' || name == 'OM_JUURO_KU_KAI' ||
-                 name == 'OM_PA_KAI') {
+      } else if (
+          name.startsWith('PRC_') || name.startsWith('ROC_') ||
+          name == 'OM_DAI_PA_KAI' || name == 'OM_JUURO_KU_KAI' ||
+          name == 'OM_PA_KAI') {
         category = categoryStandardCN;
       } else if (name.startsWith('ISO_')) {
         category = categoryStandardISO;
@@ -484,8 +482,9 @@ cr.define('print_preview', function() {
 
     // Then put it all back together.
     mediaSize.option = categoryStandardNA;
-    mediaSize.option.push(...categoryStandardCN, ...categoryStandardISO,
-        ...categoryStandardJP, ...categoryStandardMisc, ...categoryCustom);
+    mediaSize.option.push(
+        ...categoryStandardCN, ...categoryStandardISO, ...categoryStandardJP,
+        ...categoryStandardMisc, ...categoryCustom);
     return capabilities;
   };
 
@@ -526,8 +525,8 @@ cr.define('print_preview', function() {
      */
     get isLocalDestinationSearchInProgress() {
       return this.isLocalDestinationSearchInProgress_ ||
-        this.isPrivetDestinationSearchInProgress_ ||
-        this.isExtensionDestinationSearchInProgress_;
+          this.isPrivetDestinationSearchInProgress_ ||
+          this.isExtensionDestinationSearchInProgress_;
     },
 
     /**
@@ -535,7 +534,7 @@ cr.define('print_preview', function() {
      */
     get isCloudDestinationSearchInProgress() {
       return !!this.cloudPrintInterface_ &&
-             this.cloudPrintInterface_.isCloudDestinationSearchInProgress;
+          this.cloudPrintInterface_.isCloudDestinationSearchInProgress;
     },
 
     /**
@@ -551,8 +550,7 @@ cr.define('print_preview', function() {
      *     default destination selection rules.
      */
     init: function(
-        isInAppKioskMode,
-        systemDefaultDestinationId,
+        isInAppKioskMode, systemDefaultDestinationId,
         serializedDefaultDestinationSelectionRulesStr) {
       this.pdfPrinterEnabled_ = !isInAppKioskMode;
       this.systemDefaultDestinationId_ = systemDefaultDestinationId;
@@ -593,13 +591,11 @@ cr.define('print_preview', function() {
           account = this.appState_.recentDestinations[i].account || '';
           name = this.appState_.recentDestinations[i].name || '';
           capabilities = this.appState_.recentDestinations[i].capabilities;
-          extensionId = this.appState_.recentDestinations[i].extensionId ||
-                        '';
+          extensionId = this.appState_.recentDestinations[i].extensionId || '';
           extensionName =
               this.appState_.recentDestinations[i].extensionName || '';
-          var candidate =
-              this.destinationMap_[this.getDestinationKey_(origin,
-                                                           id, account)];
+          var candidate = this.destinationMap_[this.getDestinationKey_(
+              origin, id, account)];
           if (candidate != null) {
             if (!foundDestination)
               this.selectDestination(candidate);
@@ -607,17 +603,13 @@ cr.define('print_preview', function() {
             foundDestination = true;
           } else if (!foundDestination) {
             foundDestination = this.fetchPreselectedDestination_(
-                                    origin,
-                                    id,
-                                    account,
-                                    name,
-                                    capabilities,
-                                    extensionId,
-                                    extensionName);
+                origin, id, account, name, capabilities, extensionId,
+                extensionName);
           }
         }
       }
-      if (foundDestination) return;
+      if (foundDestination)
+        return;
 
       // Try the system default
       id = this.systemDefaultDestinationId_ || '';
@@ -633,12 +625,7 @@ cr.define('print_preview', function() {
       }
 
       if (this.fetchPreselectedDestination_(
-              origin,
-              id,
-              account,
-              name,
-              capabilities,
-              extensionId,
+              origin, id, account, name, capabilities, extensionId,
               extensionName)) {
         return;
       }
@@ -671,9 +658,9 @@ cr.define('print_preview', function() {
           origin == print_preview.DestinationOrigin.CROS) {
         this.nativeLayer_.getPrinterCapabilities(id).then(
             this.onLocalDestinationCapabilitiesSet_.bind(this),
-            this.onGetCapabilitiesFail_.bind(this,
-                /** @type {print_preview.DestinationOrigin} */ (origin),
-                id));
+            this.onGetCapabilitiesFail_.bind(
+                this,
+                /** @type {print_preview.DestinationOrigin} */ (origin), id));
         return true;
       }
 
@@ -682,8 +669,7 @@ cr.define('print_preview', function() {
            origin == print_preview.DestinationOrigin.DEVICE)) {
         this.cloudPrintInterface_.printer(
             id,
-            /** @type {print_preview.DestinationOrigin} */(origin),
-            account);
+            /** @type {print_preview.DestinationOrigin} */ (origin), account);
         return true;
       }
 
@@ -697,11 +683,8 @@ cr.define('print_preview', function() {
         // destination store. When the real destination is created, this
         // destination will be overwritten.
         this.selectedDestination_ = new print_preview.Destination(
-            id,
-            print_preview.DestinationType.LOCAL,
-            print_preview.DestinationOrigin.PRIVET,
-            name,
-            false /*isRecent*/,
+            id, print_preview.DestinationType.LOCAL,
+            print_preview.DestinationOrigin.PRIVET, name, false /*isRecent*/,
             print_preview.DestinationConnectionStatus.ONLINE);
 
         if (capabilities) {
@@ -750,26 +733,24 @@ cr.define('print_preview', function() {
     fetchMatchingDestination_: function(destinationMatch) {
       this.autoSelectMatchingDestination_ = destinationMatch;
 
-      if (destinationMatch.matchOrigin(
-            print_preview.DestinationOrigin.LOCAL) ||
-          destinationMatch.matchOrigin(
-            print_preview.DestinationOrigin.CROS)) {
+      if (destinationMatch.matchOrigin(print_preview.DestinationOrigin.LOCAL) ||
+          destinationMatch.matchOrigin(print_preview.DestinationOrigin.CROS)) {
         this.startLoadLocalDestinations();
       }
       if (destinationMatch.matchOrigin(
-            print_preview.DestinationOrigin.PRIVET)) {
+              print_preview.DestinationOrigin.PRIVET)) {
         this.startLoadPrivetDestinations();
       }
       if (destinationMatch.matchOrigin(
-            print_preview.DestinationOrigin.EXTENSION)) {
+              print_preview.DestinationOrigin.EXTENSION)) {
         this.startLoadExtensionDestinations();
       }
       if (destinationMatch.matchOrigin(
-            print_preview.DestinationOrigin.COOKIES) ||
+              print_preview.DestinationOrigin.COOKIES) ||
           destinationMatch.matchOrigin(
-            print_preview.DestinationOrigin.DEVICE) ||
+              print_preview.DestinationOrigin.DEVICE) ||
           destinationMatch.matchOrigin(
-            print_preview.DestinationOrigin.PROFILE)) {
+              print_preview.DestinationOrigin.PROFILE)) {
         this.startLoadCloudDestinations();
       }
     },
@@ -789,9 +770,8 @@ cr.define('print_preview', function() {
           matchRules =
               JSON.parse(serializedDefaultDestinationSelectionRulesStr);
         }
-      } catch(e) {
-        console.error(
-            'Failed to parse defaultDestinationSelectionRules: ' + e);
+      } catch (e) {
+        console.error('Failed to parse defaultDestinationSelectionRules: ' + e);
       }
       if (!matchRules)
         return null;
@@ -835,9 +815,7 @@ cr.define('print_preview', function() {
       }
 
       return new print_preview.DestinationMatch(
-          origins,
-          idRegExp,
-          displayNameRegExp,
+          origins, idRegExp, displayNameRegExp,
           true /*skipVirtualDestinations*/);
     },
 
@@ -854,8 +832,7 @@ cr.define('print_preview', function() {
       }
       if (this.systemDefaultDestinationId_) {
         return this.createExactDestinationMatch_(
-            this.platformOrigin_,
-            this.systemDefaultDestinationId_);
+            this.platformOrigin_, this.systemDefaultDestinationId_);
       }
       return null;
     },
@@ -872,8 +849,7 @@ cr.define('print_preview', function() {
       return new print_preview.DestinationMatch(
           [origin],
           new RegExp('^' + id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '$'),
-          null /*displayNameRegExp*/,
-          false /*skipVirtualDestinations*/);
+          null /*displayNameRegExp*/, false /*skipVirtualDestinations*/);
     },
 
     /**
@@ -937,8 +913,9 @@ cr.define('print_preview', function() {
         return;
       }
 
-      assert(!destination.isProvisional,
-             'Unable to select provisonal destinations');
+      assert(
+          !destination.isProvisional,
+          'Unable to select provisonal destinations');
 
       // Update and persist selected destination.
       this.selectedDestination_ = destination;
@@ -950,11 +927,11 @@ cr.define('print_preview', function() {
             return otherDestination.cloudID == destination.cloudID &&
                 otherDestination != destination;
           })) {
-        this.metrics_.record(destination.isPrivet ?
-            print_preview.Metrics.DestinationSearchBucket.
-                PRIVET_DUPLICATE_SELECTED :
-            print_preview.Metrics.DestinationSearchBucket.
-                CLOUD_DUPLICATE_SELECTED);
+        this.metrics_.record(
+            destination.isPrivet ? print_preview.Metrics.DestinationSearchBucket
+                                       .PRIVET_DUPLICATE_SELECTED :
+                                   print_preview.Metrics.DestinationSearchBucket
+                                       .CLOUD_DUPLICATE_SELECTED);
       }
       // Notify about selected destination change.
       cr.dispatchSimpleEvent(
@@ -963,25 +940,27 @@ cr.define('print_preview', function() {
       // known yet.
       if (destination.capabilities == null) {
         if (destination.isPrivet) {
-          this.nativeLayer_.getPrivetPrinterCapabilities(destination.id).then(
-              this.onPrivetCapabilitiesSet_.bind(this),
-              this.onGetCapabilitiesFail_.bind(this, destination.origin,
-                                               destination.id));
+          this.nativeLayer_.getPrivetPrinterCapabilities(destination.id)
+              .then(
+                  this.onPrivetCapabilitiesSet_.bind(this),
+                  this.onGetCapabilitiesFail_.bind(
+                      this, destination.origin, destination.id));
         } else if (destination.isExtension) {
           this.nativeLayer_.getExtensionPrinterCapabilities(destination.id)
               .then(
                   this.onExtensionCapabilitiesSet_.bind(this, destination.id),
-                  this.onGetCapabilitiesFail_.bind(this, destination.origin,
-                                                   destination.id)
-              );
+                  this.onGetCapabilitiesFail_.bind(
+                      this, destination.origin, destination.id));
         } else if (destination.isLocal) {
-          this.nativeLayer_.getPrinterCapabilities(destination.id).then(
-              this.onLocalDestinationCapabilitiesSet_.bind(this),
-              this.onGetCapabilitiesFail_.bind(this, destination.origin,
-                                               destination.id));
+          this.nativeLayer_.getPrinterCapabilities(destination.id)
+              .then(
+                  this.onLocalDestinationCapabilitiesSet_.bind(this),
+                  this.onGetCapabilitiesFail_.bind(
+                      this, destination.origin, destination.id));
         } else {
-          assert(this.cloudPrintInterface_ != null,
-                 'Cloud destination selected, but GCP is not enabled');
+          assert(
+              this.cloudPrintInterface_ != null,
+              'Cloud destination selected, but GCP is not enabled');
           this.cloudPrintInterface_.printer(
               destination.id, destination.origin, destination.account);
         }
@@ -1023,8 +1002,7 @@ cr.define('print_preview', function() {
     selectPdfDestination_: function() {
       var saveToPdfKey = this.getDestinationKey_(
           print_preview.DestinationOrigin.LOCAL,
-          print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
-          '');
+          print_preview.Destination.GooglePromotedId.SAVE_AS_PDF, '');
       this.selectDestination(
           this.destinationMap_[saveToPdfKey] || this.destinations_[0] || null);
     },
@@ -1038,16 +1016,11 @@ cr.define('print_preview', function() {
       if (this.systemDefaultDestinationId_) {
         if (this.autoSelectMatchingDestination_ &&
             !this.autoSelectMatchingDestination_.matchIdAndOrigin(
-                this.systemDefaultDestinationId_,
-                this.platformOrigin_)) {
+                this.systemDefaultDestinationId_, this.platformOrigin_)) {
           if (this.fetchPreselectedDestination_(
-                this.platformOrigin_,
-                this.systemDefaultDestinationId_,
-                '' /*account*/,
-                '' /*name*/,
-                null /*capabilities*/,
-                '' /*extensionId*/,
-                '' /*extensionName*/)) {
+                  this.platformOrigin_, this.systemDefaultDestinationId_,
+                  '' /*account*/, '' /*name*/, null /*capabilities*/,
+                  '' /*extensionId*/, '' /*extensionName*/)) {
             return;
           }
         }
@@ -1073,14 +1046,13 @@ cr.define('print_preview', function() {
         return;
       this.isPrivetDestinationSearchInProgress_ = true;
       this.nativeLayer_.getPrivetPrinters().then(
-          this.endPrivetPrinterSearch_.bind(this),
-          function() {
+          this.endPrivetPrinterSearch_.bind(this), function() {
             // Rejected by C++, indicating privet printing is disabled.
             this.hasLoadedAllPrivetDestinations_ = true;
             this.isPrivetDestinationSearchInProgress_ = false;
           }.bind(this));
       cr.dispatchSimpleEvent(
-         this, DestinationStore.EventType.DESTINATION_SEARCH_STARTED);
+          this, DestinationStore.EventType.DESTINATION_SEARCH_STARTED);
     },
 
     /** Initializes loading of extension managed print destinations. */
@@ -1259,8 +1231,8 @@ cr.define('print_preview', function() {
       assert(destination.constructor !== Array, 'Single printer expected');
       destination.capabilities_ = DestinationStore.localizeCapabilities_(
           assert(destination.capabilities_));
-      destination.capabilities_ = DestinationStore.sortMediaSizes_(
-          destination.capabilities_);
+      destination.capabilities_ =
+          DestinationStore.sortMediaSizes_(destination.capabilities_);
       var existingDestination = this.destinationMap_[this.getKey_(destination)];
       if (existingDestination != null) {
         existingDestination.capabilities = destination.capabilities;
@@ -1303,8 +1275,7 @@ cr.define('print_preview', function() {
       if (this.autoSelectMatchingDestination_ &&
           this.autoSelectMatchingDestination_.matchOrigin(
               print_preview.DestinationOrigin.EXTENSION) &&
-          this.selectedDestination_ &&
-          this.selectedDestination_.isExtension) {
+          this.selectedDestination_ && this.selectedDestination_.isExtension) {
         this.selectDefaultDestination_();
       }
     },
@@ -1319,18 +1290,20 @@ cr.define('print_preview', function() {
       var key = this.getKey_(destination);
       var existingDestination = this.destinationMap_[key];
       if (existingDestination == null) {
-        destination.isRecent |= this.appState_.recentDestinations.some(
-            function(recent) {
-              return (destination.id == recent.id &&
-                      destination.origin == recent.origin);
+        destination.isRecent |=
+            this.appState_.recentDestinations.some(function(recent) {
+              return (
+                  destination.id == recent.id &&
+                  destination.origin == recent.origin);
             }, this);
         this.destinations_.push(destination);
         this.destinationMap_[key] = destination;
         return true;
-      } else if (existingDestination.connectionStatus ==
-                     print_preview.DestinationConnectionStatus.UNKNOWN &&
-                 destination.connectionStatus !=
-                     print_preview.DestinationConnectionStatus.UNKNOWN) {
+      } else if (
+          existingDestination.connectionStatus ==
+              print_preview.DestinationConnectionStatus.UNKNOWN &&
+          destination.connectionStatus !=
+              print_preview.DestinationConnectionStatus.UNKNOWN) {
         existingDestination.connectionStatus = destination.connectionStatus;
         return true;
       } else {
@@ -1366,8 +1339,7 @@ cr.define('print_preview', function() {
             print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
             print_preview.DestinationType.LOCAL,
             print_preview.DestinationOrigin.LOCAL,
-            loadTimeData.getString('printToPDF'),
-            false /*isRecent*/,
+            loadTimeData.getString('printToPDF'), false /*isRecent*/,
             print_preview.DestinationConnectionStatus.ONLINE));
       }
     },
@@ -1423,15 +1395,13 @@ cr.define('print_preview', function() {
       // PDF is special since we don't need to query the device for
       // capabilities.
       var origin = destinationId ==
-          print_preview.Destination.GooglePromotedId.SAVE_AS_PDF ?
-          print_preview.DestinationOrigin.LOCAL : this.platformOrigin_;
-      var key = this.getDestinationKey_(
-          origin,
-          destinationId,
-          '');
+              print_preview.Destination.GooglePromotedId.SAVE_AS_PDF ?
+          print_preview.DestinationOrigin.LOCAL :
+          this.platformOrigin_;
+      var key = this.getDestinationKey_(origin, destinationId, '');
       var destination = this.destinationMap_[key];
-      var capabilities = DestinationStore.localizeCapabilities_(
-          settingsInfo.capabilities);
+      var capabilities =
+          DestinationStore.localizeCapabilities_(settingsInfo.capabilities);
       // Special case for PDF printer (until local printers capabilities are
       // reported in CDD format too).
       if (destinationId ==
@@ -1449,11 +1419,12 @@ cr.define('print_preview', function() {
           destination.capabilities = capabilities;
         } else {
           var isEnterprisePrinter = settingsInfo['cupsEnterprisePrinter'];
-          destination = print_preview.LocalDestinationParser.parse(
-              {deviceName: destinationId,
-               printerName: printerName,
-               cupsEnterprisePrinter: isEnterprisePrinter,
-               printerDescription: printerDescription});
+          destination = print_preview.LocalDestinationParser.parse({
+            deviceName: destinationId,
+            printerName: printerName,
+            cupsEnterprisePrinter: isEnterprisePrinter,
+            printerDescription: printerDescription
+          });
           destination.capabilities = capabilities;
           this.insertDestination_(destination);
         }
@@ -1476,8 +1447,8 @@ cr.define('print_preview', function() {
      * @private
      */
     onGetCapabilitiesFail_: function(origin, destinationId) {
-      console.warn('Failed to get print capabilities for printer ' +
-                   destinationId);
+      console.warn(
+          'Failed to get print capabilities for printer ' + destinationId);
       if (this.autoSelectMatchingDestination_ &&
           this.autoSelectMatchingDestination_.matchIdAndOrigin(
               destinationId, origin)) {
@@ -1619,8 +1590,7 @@ cr.define('print_preview', function() {
      */
     onExtensionCapabilitiesSet_: function(printerId, capabilities) {
       var destinationKey = this.getDestinationKey_(
-          print_preview.DestinationOrigin.EXTENSION,
-          printerId,
+          print_preview.DestinationOrigin.EXTENSION, printerId,
           '' /* account */);
       var destination = this.destinationMap_[destinationKey];
       if (!destination)
@@ -1668,7 +1638,5 @@ cr.define('print_preview', function() {
   };
 
   // Export
-  return {
-    DestinationStore: DestinationStore
-  };
+  return {DestinationStore: DestinationStore};
 });

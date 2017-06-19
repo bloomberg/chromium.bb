@@ -29,9 +29,7 @@ cr.define('print_preview', function() {
    * @enum {string}
    * @private
    */
-  MarginSettings.Classes_ = {
-    SELECT: 'margin-settings-select'
-  };
+  MarginSettings.Classes_ = {SELECT: 'margin-settings-select'};
 
   MarginSettings.prototype = {
     __proto__: print_preview.SettingsSection.prototype,
@@ -108,7 +106,5 @@ cr.define('print_preview', function() {
   };
 
   // Export
-  return {
-    MarginSettings: MarginSettings
-  };
+  return {MarginSettings: MarginSettings};
 });

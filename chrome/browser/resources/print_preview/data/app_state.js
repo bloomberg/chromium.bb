@@ -132,8 +132,8 @@ cr.define('print_preview', function() {
      *     which is currently the selected destination.
      */
     get selectedDestination() {
-      return  (this.state_[print_preview.AppStateField.RECENT_DESTINATIONS].
-                 length > 0) ?
+      return (this.state_[print_preview.AppStateField.RECENT_DESTINATIONS]
+                  .length > 0) ?
           this.state_[print_preview.AppStateField.RECENT_DESTINATIONS][0] :
           null;
     },
@@ -142,9 +142,8 @@ cr.define('print_preview', function() {
      * @return {boolean} Whether the selected destination is valid.
      */
     isSelectedDestinationValid: function() {
-      return !!this.selectedDestination &&
-             !!this.selectedDestination.id &&
-             !!this.selectedDestination.origin;
+      return !!this.selectedDestination && !!this.selectedDestination.id &&
+          !!this.selectedDestination.origin;
     },
 
     /**
@@ -176,7 +175,8 @@ cr.define('print_preview', function() {
     getField: function(field) {
       if (field == print_preview.AppStateField.CUSTOM_MARGINS) {
         return this.state_[field] ?
-            print_preview.Margins.parse(this.state_[field]) : null;
+            print_preview.Margins.parse(this.state_[field]) :
+            null;
       } else {
         return this.state_[field];
       }
@@ -193,9 +193,9 @@ cr.define('print_preview', function() {
         try {
           var state = JSON.parse(serializedAppStateStr);
           if (state[print_preview.AppStateField.VERSION] == AppState.VERSION_) {
-            this.state_ = /** @type {Object} */(state);
+            this.state_ = /** @type {Object} */ (state);
           }
-        } catch(e) {
+        } catch (e) {
           console.error('Unable to parse state: ' + e);
           // Proceed with default state.
         }
@@ -206,17 +206,19 @@ cr.define('print_preview', function() {
       }
       if (!this.state_[print_preview.AppStateField.RECENT_DESTINATIONS]) {
         this.state_[print_preview.AppStateField.RECENT_DESTINATIONS] = [];
-      } else if (!(this.state_[print_preview.AppStateField.RECENT_DESTINATIONS]
-                   instanceof Array)) {
+      } else if (!(this.state_[print_preview.AppStateField
+                                   .RECENT_DESTINATIONS] instanceof
+                   Array)) {
         var tmp = this.state_[print_preview.AppStateField.RECENT_DESTINATIONS];
         this.state_[print_preview.AppStateField.RECENT_DESTINATIONS] = [tmp];
-      } else if (!this.state_[
-          print_preview.AppStateField.RECENT_DESTINATIONS][0] ||
+      } else if (
+          !this.state_[print_preview.AppStateField.RECENT_DESTINATIONS][0] ||
           !this.state_[print_preview.AppStateField.RECENT_DESTINATIONS][0].id) {
         // read in incorrectly
         this.state_[print_preview.AppStateField.RECENT_DESTINATIONS] = [];
-      } else if (this.state_[print_preview.AppStateField.RECENT_DESTINATIONS].
-                 length > AppState.NUM_DESTINATIONS_) {
+      } else if (
+          this.state_[print_preview.AppStateField.RECENT_DESTINATIONS].length >
+          AppState.NUM_DESTINATIONS_) {
         this.state_[print_preview.AppStateField.RECENT_DESTINATIONS].length =
             AppState.NUM_DESTINATIONS_;
       }
@@ -256,11 +258,12 @@ cr.define('print_preview', function() {
       // Determine if this destination is already in the recent destinations,
       // and where in the array it is located.
       var newDestination = new RecentDestination(dest);
-      var indexFound = this.state_[
-          print_preview.AppStateField.RECENT_DESTINATIONS].findIndex(
-              function(recent) {
-                return (newDestination.id == recent.id &&
-                        newDestination.origin == recent.origin);
+      var indexFound =
+          this.state_[print_preview.AppStateField.RECENT_DESTINATIONS]
+              .findIndex(function(recent) {
+                return (
+                    newDestination.id == recent.id &&
+                    newDestination.origin == recent.origin);
               });
 
       // No change
@@ -273,7 +276,7 @@ cr.define('print_preview', function() {
       // index n.
       if (indexFound == -1 &&
           this.state_[print_preview.AppStateField.RECENT_DESTINATIONS].length ==
-          AppState.NUM_DESTINATIONS_) {
+              AppState.NUM_DESTINATIONS_) {
         indexFound = AppState.NUM_DESTINATIONS_ - 1;
       }
       if (indexFound != -1)
@@ -305,12 +308,10 @@ cr.define('print_preview', function() {
      * @private
      */
     persist_: function() {
-      chrome.send(AppState.NATIVE_FUNCTION_NAME_,
-                  [JSON.stringify(this.state_)]);
+      chrome.send(
+          AppState.NATIVE_FUNCTION_NAME_, [JSON.stringify(this.state_)]);
     }
   };
 
-  return {
-    AppState: AppState
-  };
+  return {AppState: AppState};
 });

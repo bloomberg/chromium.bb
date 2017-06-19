@@ -87,7 +87,5 @@ cr.define('print_preview', function() {
   };
 
   // Export
-  return {
-    Invitation: Invitation
-  };
+  return {Invitation: Invitation};
 });

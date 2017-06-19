@@ -124,8 +124,8 @@ cr.define('print_preview', function() {
      * @type {!print_preview.DestinationSettings}
      * @private
      */
-    this.destinationSettings_ = new print_preview.DestinationSettings(
-        this.destinationStore_);
+    this.destinationSettings_ =
+        new print_preview.DestinationSettings(this.destinationStore_);
     this.addChild(this.destinationSettings_);
 
     /**
@@ -133,8 +133,8 @@ cr.define('print_preview', function() {
      * @type {!print_preview.PageSettings}
      * @private
      */
-    this.pageSettings_ = new print_preview.PageSettings(
-        this.printTicketStore_.pageRange);
+    this.pageSettings_ =
+        new print_preview.PageSettings(this.printTicketStore_.pageRange);
     this.addChild(this.pageSettings_);
 
     /**
@@ -164,7 +164,7 @@ cr.define('print_preview', function() {
         new print_preview.ColorSettings(this.printTicketStore_.color);
     this.addChild(this.colorSettings_);
 
-     /**
+    /**
      * Component that renders the media size settings.
      * @type {!print_preview.MediaSizeSettings}
      * @private
@@ -196,9 +196,8 @@ cr.define('print_preview', function() {
      * @type {!print_preview.ScalingSettings}
      * @private
      */
-    this.scalingSettings_ =
-        new print_preview.ScalingSettings(this.printTicketStore_.scaling,
-                                          this.printTicketStore_.fitToPage);
+    this.scalingSettings_ = new print_preview.ScalingSettings(
+        this.printTicketStore_.scaling, this.printTicketStore_.fitToPage);
     this.addChild(this.scalingSettings_);
 
     /**
@@ -207,12 +206,10 @@ cr.define('print_preview', function() {
      * @private
      */
     this.otherOptionsSettings_ = new print_preview.OtherOptionsSettings(
-        this.printTicketStore_.duplex,
-        this.printTicketStore_.fitToPage,
+        this.printTicketStore_.duplex, this.printTicketStore_.fitToPage,
         this.printTicketStore_.cssBackground,
         this.printTicketStore_.selectionOnly,
-        this.printTicketStore_.headerFooter,
-        this.printTicketStore_.rasterize);
+        this.printTicketStore_.headerFooter, this.printTicketStore_.rasterize);
     this.addChild(this.otherOptionsSettings_);
 
     /**
@@ -229,22 +226,16 @@ cr.define('print_preview', function() {
      * @type {!print_preview.AdvancedSettings}
      * @private
      */
-    this.advancedSettings_ = new print_preview.AdvancedSettings(
-        this.printTicketStore_);
+    this.advancedSettings_ =
+        new print_preview.AdvancedSettings(this.printTicketStore_);
     this.addChild(this.advancedSettings_);
 
     var settingsSections = [
-        this.destinationSettings_,
-        this.pageSettings_,
-        this.copiesSettings_,
-        this.mediaSizeSettings_,
-        this.layoutSettings_,
-        this.marginSettings_,
-        this.colorSettings_,
-        this.dpiSettings_,
-        this.scalingSettings_,
-        this.otherOptionsSettings_,
-        this.advancedOptionsSettings_];
+      this.destinationSettings_, this.pageSettings_, this.copiesSettings_,
+      this.mediaSizeSettings_, this.layoutSettings_, this.marginSettings_,
+      this.colorSettings_, this.dpiSettings_, this.scalingSettings_,
+      this.otherOptionsSettings_, this.advancedOptionsSettings_
+    ];
 
     /**
      * Component representing more/less settings button.
@@ -260,10 +251,9 @@ cr.define('print_preview', function() {
      * @type {!print_preview.PreviewArea}
      * @private
      */
-    this.previewArea_ = new print_preview.PreviewArea(this.destinationStore_,
-                                                      this.printTicketStore_,
-                                                      this.nativeLayer_,
-                                                      this.documentInfo_);
+    this.previewArea_ = new print_preview.PreviewArea(
+        this.destinationStore_, this.printTicketStore_, this.nativeLayer_,
+        this.documentInfo_);
     this.addChild(this.previewArea_);
 
     /**
@@ -341,12 +331,13 @@ cr.define('print_preview', function() {
           this.onInitialSettingsSet_.bind(this));
       print_preview.PrintPreviewFocusManager.getInstance().initialize();
       cr.ui.FocusOutlineManager.forDocument(document);
-      this.listenerTracker.add('print-failed',
-                               this.onPrintFailed_.bind(this));
-      this.listenerTracker.add('privet-printer-added',
+      this.listenerTracker.add('print-failed', this.onPrintFailed_.bind(this));
+      this.listenerTracker.add(
+          'privet-printer-added',
           this.destinationStore_.onPrivetPrinterAdded_.bind(
               this.destinationStore_));
-      this.listenerTracker.add('extension-printers-added',
+      this.listenerTracker.add(
+          'extension-printers-added',
           this.destinationStore_.onExtensionPrintersAdded_.bind(
               this.destinationStore_));
     },
@@ -390,14 +381,12 @@ cr.define('print_preview', function() {
 
       if ($('system-dialog-link')) {
         this.tracker.add(
-            getRequiredElement('system-dialog-link'),
-            'click',
+            getRequiredElement('system-dialog-link'), 'click',
             this.openSystemPrintDialog_.bind(this));
       }
       if ($('open-pdf-in-preview-link')) {
         this.tracker.add(
-            getRequiredElement('open-pdf-in-preview-link'),
-            'click',
+            getRequiredElement('open-pdf-in-preview-link'), 'click',
             this.onOpenPdfInPreviewLinkClick_.bind(this));
       }
 
@@ -420,8 +409,8 @@ cr.define('print_preview', function() {
 
       this.tracker.add(
           this.destinationStore_,
-          print_preview.DestinationStore.EventType.
-              SELECTED_DESTINATION_CAPABILITIES_READY,
+          print_preview.DestinationStore.EventType
+              .SELECTED_DESTINATION_CAPABILITIES_READY,
           this.printIfReady_.bind(this));
       this.tracker.add(
           this.destinationStore_,
@@ -478,17 +467,14 @@ cr.define('print_preview', function() {
       // TODO(rltoscano): Move no-destinations-promo into its own component
       // instead being part of PrintPreview.
       this.tracker.add(
-          this.getChildElement('#no-destinations-promo .close-button'),
-          'click',
+          this.getChildElement('#no-destinations-promo .close-button'), 'click',
           this.onNoDestinationsPromoClose_.bind(this));
       this.tracker.add(
           this.getChildElement('#no-destinations-promo .not-now-button'),
-          'click',
-          this.onNoDestinationsPromoClose_.bind(this));
+          'click', this.onNoDestinationsPromoClose_.bind(this));
       this.tracker.add(
           this.getChildElement('#no-destinations-promo .add-printer-button'),
-          'click',
-          this.onNoDestinationsPromoClick_.bind(this));
+          'click', this.onNoDestinationsPromoClick_.bind(this));
     },
 
     /** @override */
@@ -542,12 +528,14 @@ cr.define('print_preview', function() {
      * @private
      */
     printDocumentOrOpenPdfPreview_: function(isPdfPreview) {
-      assert(this.uiState_ == PrintPreviewUiState_.READY,
-             'Print document request received when not in ready state: ' +
-                 this.uiState_);
+      assert(
+          this.uiState_ == PrintPreviewUiState_.READY,
+          'Print document request received when not in ready state: ' +
+              this.uiState_);
       if (isPdfPreview) {
         this.uiState_ = PrintPreviewUiState_.OPENING_PDF_PREVIEW;
-      } else if (this.destinationStore_.selectedDestination.id ==
+      } else if (
+          this.destinationStore_.selectedDestination.id ==
           print_preview.Destination.GooglePromotedId.SAVE_AS_PDF) {
         this.uiState_ = PrintPreviewUiState_.FILE_SELECTION;
       } else {
@@ -564,7 +552,7 @@ cr.define('print_preview', function() {
              !this.destinationStore_.selectedDestination.isExtension &&
              this.destinationStore_.selectedDestination.id !=
                  print_preview.Destination.GooglePromotedId.SAVE_AS_PDF) ||
-             this.uiState_ == PrintPreviewUiState_.OPENING_PDF_PREVIEW) {
+            this.uiState_ == PrintPreviewUiState_.OPENING_PDF_PREVIEW) {
           // Hide the dialog for now. The actual print command will be issued
           // when the preview generation is done.
           this.nativeLayer_.startHideDialog();
@@ -591,21 +579,20 @@ cr.define('print_preview', function() {
       if (this.isPreviewGenerationInProgress_) {
         return print_preview.PrintAttemptResult_.READY_WAITING_FOR_PREVIEW;
       }
-      assert(this.printTicketStore_.isTicketValid(),
+      assert(
+          this.printTicketStore_.isTicketValid(),
           'Trying to print with invalid ticket');
       if (getIsVisible(this.moreSettings_.getElement())) {
         new print_preview.PrintSettingsUiMetricsContext().record(
             this.moreSettings_.isExpanded ?
-                print_preview.Metrics.PrintSettingsUiBucket.
-                    PRINT_WITH_SETTINGS_EXPANDED :
-                print_preview.Metrics.PrintSettingsUiBucket.
-                    PRINT_WITH_SETTINGS_COLLAPSED);
+                print_preview.Metrics.PrintSettingsUiBucket
+                    .PRINT_WITH_SETTINGS_EXPANDED :
+                print_preview.Metrics.PrintSettingsUiBucket
+                    .PRINT_WITH_SETTINGS_COLLAPSED);
       }
       this.nativeLayer_.startPrint(
           assert(this.destinationStore_.selectedDestination),
-          this.printTicketStore_,
-          this.cloudPrintInterface_,
-          this.documentInfo_,
+          this.printTicketStore_, this.cloudPrintInterface_, this.documentInfo_,
           this.uiState_ == PrintPreviewUiState_.OPENING_PDF_PREVIEW,
           this.showSystemDialogBeforeNextPrint_);
       this.showSystemDialogBeforeNextPrint_ = false;
@@ -651,9 +638,10 @@ cr.define('print_preview', function() {
      * @private
      */
     onInitialSettingsSet_: function(settings) {
-      assert(this.uiState_ == PrintPreviewUiState_.INITIALIZING,
-             'Updating initial settings when not in initializing state: ' +
-                 this.uiState_);
+      assert(
+          this.uiState_ == PrintPreviewUiState_.INITIALIZING,
+          'Updating initial settings when not in initializing state: ' +
+              this.uiState_);
       this.uiState_ = PrintPreviewUiState_.READY;
 
       this.isInKioskAutoPrintMode_ = settings.isInKioskAutoPrintMode;
@@ -662,25 +650,22 @@ cr.define('print_preview', function() {
       // The following components must be initialized in this order.
       this.appState_.init(settings.serializedAppStateStr);
       this.documentInfo_.init(
-          settings.isDocumentModifiable,
-          settings.documentTitle,
+          settings.isDocumentModifiable, settings.documentTitle,
           settings.documentHasSelection);
       this.printTicketStore_.init(
-          settings.thousandsDelimeter,
-          settings.decimalDelimeter,
-          settings.unitType,
-          settings.selectionOnly);
+          settings.thousandsDelimeter, settings.decimalDelimeter,
+          settings.unitType, settings.selectionOnly);
       this.destinationStore_.init(
-          settings.isInAppKioskMode,
-          settings.systemDefaultDestinationId,
+          settings.isInAppKioskMode, settings.systemDefaultDestinationId,
           settings.serializedDefaultDestinationSelectionRulesStr);
       this.appState_.setInitialized();
 
       $('document-title').innerText = settings.documentTitle;
       this.hideSystemDialogLink_ = settings.isInAppKioskMode;
       if ($('system-dialog-link')) {
-        setIsVisible(getRequiredElement('system-dialog-link'),
-                     this.shouldShowSystemDialogLink_());
+        setIsVisible(
+            getRequiredElement('system-dialog-link'),
+            this.shouldShowSystemDialogLink_());
       }
     },
 
@@ -693,9 +678,7 @@ cr.define('print_preview', function() {
      */
     onCloudPrintEnable_: function(event) {
       this.cloudPrintInterface_ = new cloudprint.CloudPrintInterface(
-          event.baseCloudPrintUrl,
-          this.nativeLayer_,
-          this.userInfo_,
+          event.baseCloudPrintUrl, this.nativeLayer_, this.userInfo_,
           event.appKioskMode);
       this.tracker.add(
           this.cloudPrintInterface_,
@@ -728,17 +711,17 @@ cr.define('print_preview', function() {
      * @private
      */
     onPrintToCloud_: function(event) {
-      assert(this.uiState_ == PrintPreviewUiState_.PRINTING,
-             'Document ready to be sent to the cloud when not in printing ' +
-                 'state: ' + this.uiState_);
-      assert(this.cloudPrintInterface_ != null,
-             'Google Cloud Print is not enabled');
+      assert(
+          this.uiState_ == PrintPreviewUiState_.PRINTING,
+          'Document ready to be sent to the cloud when not in printing ' +
+              'state: ' + this.uiState_);
+      assert(
+          this.cloudPrintInterface_ != null,
+          'Google Cloud Print is not enabled');
       assert(this.destinationStore_.selectedDestination != null);
       this.cloudPrintInterface_.submit(
-          this.destinationStore_.selectedDestination,
-          this.printTicketStore_,
-          this.documentInfo_,
-          event.data);
+          this.destinationStore_.selectedDestination, this.printTicketStore_,
+          this.documentInfo_, event.data);
     },
 
     /**
@@ -747,9 +730,10 @@ cr.define('print_preview', function() {
      * @private
      */
     onFileSelectionCancel_: function() {
-      assert(this.uiState_ == PrintPreviewUiState_.FILE_SELECTION,
-             'File selection cancelled when not in file-selection state: ' +
-                 this.uiState_);
+      assert(
+          this.uiState_ == PrintPreviewUiState_.FILE_SELECTION,
+          'File selection cancelled when not in file-selection state: ' +
+              this.uiState_);
       this.setIsEnabled_(true);
       this.uiState_ = PrintPreviewUiState_.READY;
     },
@@ -759,9 +743,10 @@ cr.define('print_preview', function() {
      * @private
      */
     onFileSelectionComplete_: function() {
-      assert(this.uiState_ == PrintPreviewUiState_.FILE_SELECTION,
-             'File selection completed when not in file-selection state: ' +
-                 this.uiState_);
+      assert(
+          this.uiState_ == PrintPreviewUiState_.FILE_SELECTION,
+          'File selection completed when not in file-selection state: ' +
+              this.uiState_);
       this.previewArea_.showCustomMessage(
           loadTimeData.getString('printingToPDFInProgress'));
       this.uiState_ = PrintPreviewUiState_.PRINTING;
@@ -773,9 +758,10 @@ cr.define('print_preview', function() {
      * @private
      */
     onCloudPrintSubmitDone_: function(event) {
-      assert(this.uiState_ == PrintPreviewUiState_.PRINTING,
-             'Submited job to Google Cloud Print but not in printing state ' +
-                 this.uiState_);
+      assert(
+          this.uiState_ == PrintPreviewUiState_.PRINTING,
+          'Submited job to Google Cloud Print but not in printing state ' +
+              this.uiState_);
       this.close_();
     },
 
@@ -787,7 +773,7 @@ cr.define('print_preview', function() {
      */
     onCloudPrintError_: function(event) {
       if (event.status == 0) {
-        return; // Ignore, the system does not have internet connectivity.
+        return;  // Ignore, the system does not have internet connectivity.
       }
       if (event.status == 403) {
         if (!this.isInAppKioskMode_) {
@@ -797,8 +783,9 @@ cr.define('print_preview', function() {
         this.printHeader_.setErrorMessage(event.message);
       }
       if (event.status == 200) {
-        console.error('Google Cloud Print Error: (' + event.errorCode + ') ' +
-                      event.message);
+        console.error(
+            'Google Cloud Print Error: (' + event.errorCode + ') ' +
+            event.message);
       } else {
         console.error('Google Cloud Print Error: HTTP status ' + event.status);
       }
@@ -842,9 +829,10 @@ cr.define('print_preview', function() {
     onOpenPdfInPreviewLinkClick_: function() {
       if ($('open-pdf-in-preview-link').classList.contains('disabled'))
         return;
-      assert(this.uiState_ == PrintPreviewUiState_.READY,
-             'Trying to open pdf in preview when not in ready state: ' +
-                 this.uiState_);
+      assert(
+          this.uiState_ == PrintPreviewUiState_.READY,
+          'Trying to open pdf in preview when not in ready state: ' +
+              this.uiState_);
       setIsVisible(getRequiredElement('open-preview-app-throbber'), true);
       this.previewArea_.showCustomMessage(
           loadTimeData.getString('openingPDFInPreview'));
@@ -857,8 +845,9 @@ cr.define('print_preview', function() {
      * @private
      */
     onPrintButtonClick_: function() {
-      assert(this.uiState_ == PrintPreviewUiState_.READY,
-             'Trying to print when not in ready state: ' + this.uiState_);
+      assert(
+          this.uiState_ == PrintPreviewUiState_.READY,
+          'Trying to print when not in ready state: ' + this.uiState_);
       this.printDocumentOrOpenPdfPreview_(false /*isPdfPreview*/);
     },
 
@@ -875,11 +864,11 @@ cr.define('print_preview', function() {
      * Called when the register promo for Cloud Print is clicked.
      * @private
      */
-     onCloudPrintRegisterPromoClick_: function(e) {
-       var devicesUrl = 'chrome://devices/register?id=' + e.destination.id;
-       this.nativeLayer_.startForceOpenNewTab(devicesUrl);
-       this.destinationStore_.waitForRegister(e.destination.id);
-     },
+    onCloudPrintRegisterPromoClick_: function(e) {
+      var devicesUrl = 'chrome://devices/register?id=' + e.destination.id;
+      this.nativeLayer_.startForceOpenNewTab(devicesUrl);
+      this.destinationStore_.waitForRegister(e.destination.id);
+    },
 
     /**
      * Consume escape key presses and ctrl + shift + p. Delegate everything else
@@ -924,7 +913,8 @@ cr.define('print_preview', function() {
           this.destinationStore_.selectedDestination &&
           this.printTicketStore_.isTicketValid() &&
           this.printHeader_.isPrintButtonEnabled) {
-        assert(this.uiState_ == PrintPreviewUiState_.READY,
+        assert(
+            this.uiState_ == PrintPreviewUiState_.READY,
             'Trying to print when not in ready state: ' + this.uiState_);
         var activeElementTag = document.activeElement.tagName.toUpperCase();
         if (activeElementTag != 'BUTTON' && activeElementTag != 'SELECT' &&
@@ -1031,8 +1021,7 @@ cr.define('print_preview', function() {
      */
     onPageCountReady_: function(event) {
       if (event.fitToPageScaling >= 0) {
-        this.scalingSettings_.updateFitToPageScaling(
-              event.fitToPageScaling);
+        this.scalingSettings_.updateFitToPageScaling(event.fitToPageScaling);
       }
     },
 
@@ -1056,7 +1045,7 @@ cr.define('print_preview', function() {
      */
     onManipulateSettingsForTest_: function(event) {
       var settings =
-          /** @type {print_preview.PreviewSettings} */(event.settings);
+          /** @type {print_preview.PreviewSettings} */ (event.settings);
       if ('selectSaveAsPdfDestination' in settings) {
         this.saveAsPdfForTest_();  // No parameters.
       } else if ('layoutSettings' in settings) {
@@ -1081,7 +1070,7 @@ cr.define('print_preview', function() {
     saveAsPdfForTest_: function() {
       if (this.destinationStore_.selectedDestination &&
           print_preview.Destination.GooglePromotedId.SAVE_AS_PDF ==
-          this.destinationStore_.selectedDestination.id) {
+              this.destinationStore_.selectedDestination.id) {
         this.nativeLayer_.previewReadyForTest();
         return;
       }
@@ -1197,9 +1186,9 @@ cr.define('print_preview', function() {
         return true;
       var selectedDest = this.destinationStore_.selectedDestination;
       return !!selectedDest &&
-             selectedDest.origin == print_preview.DestinationOrigin.LOCAL &&
-             selectedDest.id !=
-                 print_preview.Destination.GooglePromotedId.SAVE_AS_PDF;
+          selectedDest.origin == print_preview.DestinationOrigin.LOCAL &&
+          selectedDest.id !=
+          print_preview.Destination.GooglePromotedId.SAVE_AS_PDF;
     },
 
     /**
@@ -1209,8 +1198,9 @@ cr.define('print_preview', function() {
      */
     onDestinationSelect_: function() {
       if ($('system-dialog-link')) {
-        setIsVisible(getRequiredElement('system-dialog-link'),
-                     this.shouldShowSystemDialogLink_());
+        setIsVisible(
+            getRequiredElement('system-dialog-link'),
+            this.shouldShowSystemDialogLink_());
       }
       // Reset if we had a bad settings fetch since the user selected a new
       // printer.
@@ -1229,15 +1219,13 @@ cr.define('print_preview', function() {
      * @private
      */
     onDestinationSearchDone_: function() {
-      var isPromoVisible = cr.isChromeOS &&
-          this.cloudPrintInterface_ &&
-          this.userInfo_.activeUser &&
-          !this.appState_.isGcpPromoDismissed &&
+      var isPromoVisible = cr.isChromeOS && this.cloudPrintInterface_ &&
+          this.userInfo_.activeUser && !this.appState_.isGcpPromoDismissed &&
           !this.destinationStore_.isLocalDestinationSearchInProgress &&
           !this.destinationStore_.isCloudDestinationSearchInProgress &&
           this.destinationStore_.hasOnlyDefaultCloudDestinations();
-      setIsVisible(this.getChildElement('#no-destinations-promo'),
-                   isPromoVisible);
+      setIsVisible(
+          this.getChildElement('#no-destinations-promo'), isPromoVisible);
       if (isPromoVisible) {
         new print_preview.GcpPromoMetricsContext().record(
             print_preview.Metrics.GcpPromoBucket.PROMO_SHOWN);
@@ -1265,16 +1253,15 @@ cr.define('print_preview', function() {
       new print_preview.GcpPromoMetricsContext().record(
           print_preview.Metrics.GcpPromoBucket.PROMO_CLICKED);
       this.appState_.persistIsGcpPromoDismissed(true);
-      window.open(this.cloudPrintInterface_.baseUrl + '?user=' +
-                  this.userInfo_.activeUser + '#printers');
+      window.open(
+          this.cloudPrintInterface_.baseUrl +
+          '?user=' + this.userInfo_.activeUser + '#printers');
       this.close_();
     }
   };
 
   // Export
-  return {
-    PrintPreview: PrintPreview
-  };
+  return {PrintPreview: PrintPreview};
 });
 
 // Pull in all other scripts in a single shot.

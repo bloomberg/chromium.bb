@@ -34,7 +34,5 @@ cr.define('print_preview', function() {
   };
 
   // Export
-  return {
-    CapabilitiesHolder: CapabilitiesHolder
-  };
+  return {CapabilitiesHolder: CapabilitiesHolder};
 });

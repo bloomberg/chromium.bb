@@ -17,9 +17,7 @@ cr.define('print_preview.ticket_items', function() {
    */
   function Color(appState, destinationStore) {
     print_preview.ticket_items.TicketItem.call(
-        this,
-        appState,
-        print_preview.AppStateField.IS_COLOR_ENABLED,
+        this, appState, print_preview.AppStateField.IS_COLOR_ENABLED,
         destinationStore);
   }
 
@@ -62,11 +60,9 @@ cr.define('print_preview.ticket_items', function() {
     /** @return {Object} Color capability of the selected destination. */
     get capability() {
       var dest = this.getSelectedDestInternal();
-      return (dest &&
-              dest.capabilities &&
-              dest.capabilities.printer &&
+      return (dest && dest.capabilities && dest.capabilities.printer &&
               dest.capabilities.printer.color) ||
-             null;
+          null;
     },
 
     /** @return {Object} Color option corresponding to the current value. */
@@ -91,8 +87,8 @@ cr.define('print_preview.ticket_items', function() {
     /** @override */
     getDefaultValueInternal: function() {
       var capability = this.capability;
-      var defaultOption = capability ?
-          this.getDefaultColorOption_(capability.option) : null;
+      var defaultOption =
+          capability ? this.getDefaultColorOption_(capability.option) : null;
       return defaultOption &&
           (Color.COLOR_TYPES_.indexOf(defaultOption.type) >= 0);
     },
@@ -129,7 +125,5 @@ cr.define('print_preview.ticket_items', function() {
   };
 
   // Export
-  return {
-    Color: Color
-  };
+  return {Color: Color};
 });

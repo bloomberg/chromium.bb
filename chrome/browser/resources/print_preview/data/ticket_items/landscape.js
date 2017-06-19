@@ -22,14 +22,11 @@ cr.define('print_preview.ticket_items', function() {
    * @constructor
    * @extends {print_preview.ticket_items.TicketItem}
    */
-  function Landscape(appState, destinationStore, documentInfo, marginsType,
-                     customMargins) {
+  function Landscape(
+      appState, destinationStore, documentInfo, marginsType, customMargins) {
     print_preview.ticket_items.TicketItem.call(
-        this,
-        appState,
-        print_preview.AppStateField.IS_LANDSCAPE_ENABLED,
-        destinationStore,
-        documentInfo);
+        this, appState, print_preview.AppStateField.IS_LANDSCAPE_ENABLED,
+        destinationStore, documentInfo);
 
     /**
      * Margins ticket item. Reset when landscape ticket item changes.
@@ -63,8 +60,7 @@ cr.define('print_preview.ticket_items', function() {
       var hasLandscapeOption = false;
       cap.option.forEach(function(option) {
         hasAutoOrPortraitOption = hasAutoOrPortraitOption ||
-            option.type == 'AUTO' ||
-            option.type == 'PORTRAIT';
+            option.type == 'AUTO' || option.type == 'PORTRAIT';
         hasLandscapeOption = hasLandscapeOption || option.type == 'LANDSCAPE';
       });
       // TODO(rltoscano): Technically, the print destination can still change
@@ -73,8 +69,7 @@ cr.define('print_preview.ticket_items', function() {
       // case so it would be a bad user experience.
       return this.getDocumentInfoInternal().isModifiable &&
           !this.getDocumentInfoInternal().hasCssMediaStyles &&
-          hasAutoOrPortraitOption &&
-          hasLandscapeOption;
+          hasAutoOrPortraitOption && hasLandscapeOption;
     },
 
     /** @override */
@@ -103,7 +98,7 @@ cr.define('print_preview.ticket_items', function() {
       if (updateMargins) {
         // Reset the user set margins when page orientation changes.
         this.marginsType_.updateValue(
-          print_preview.ticket_items.MarginsTypeValue.DEFAULT);
+            print_preview.ticket_items.MarginsTypeValue.DEFAULT);
         this.customMargins_.updateValue(null);
       }
     },
@@ -127,16 +122,12 @@ cr.define('print_preview.ticket_items', function() {
      */
     getPageOrientationCapability_: function() {
       var dest = this.getSelectedDestInternal();
-      return (dest &&
-              dest.capabilities &&
-              dest.capabilities.printer &&
+      return (dest && dest.capabilities && dest.capabilities.printer &&
               dest.capabilities.printer.page_orientation) ||
-             null;
+          null;
     }
   };
 
   // Export
-  return {
-    Landscape: Landscape
-  };
+  return {Landscape: Landscape};
 });

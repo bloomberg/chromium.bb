@@ -43,14 +43,11 @@ cr.define('print_preview', function() {
      * @return {boolean} Whether this size object is equal to another.
      */
     equals: function(other) {
-      return other != null &&
-          this.width_ == other.width_ &&
+      return other != null && this.width_ == other.width_ &&
           this.height_ == other.height_;
     }
   };
 
   // Export
-  return {
-    Size: Size
-  };
+  return {Size: Size};
 });

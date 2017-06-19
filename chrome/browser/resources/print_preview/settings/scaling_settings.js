@@ -52,7 +52,6 @@ cr.define('print_preview', function() {
      * @private {HTMLElement}
      */
     this.inputField_ = null;
-
   }
 
   /**
@@ -88,17 +87,11 @@ cr.define('print_preview', function() {
       this.inputField_ = assert(this.getChildElement('input.user-value'));
       print_preview.SettingsSection.prototype.enterDocument.call(this);
       this.tracker.add(
-          this.inputField_,
-          'keydown',
-          this.onTextfieldKeyDown_.bind(this));
+          this.inputField_, 'keydown', this.onTextfieldKeyDown_.bind(this));
       this.tracker.add(
-          this.inputField_,
-          'input',
-          this.onTextfieldInput_.bind(this));
+          this.inputField_, 'input', this.onTextfieldInput_.bind(this));
       this.tracker.add(
-          this.inputField_,
-          'blur',
-          this.onTextfieldBlur_.bind(this));
+          this.inputField_, 'blur', this.onTextfieldBlur_.bind(this));
       this.tracker.add(
           this.scalingTicketItem_,
           print_preview.ticket_items.TicketItem.EventType.CHANGE,
@@ -115,7 +108,7 @@ cr.define('print_preview', function() {
      */
     isFitToPageSelected: function() {
       return this.fitToPageTicketItem_.isCapabilityAvailable() &&
-             !!this.fitToPageTicketItem_.getValue();
+          !!this.fitToPageTicketItem_.getValue();
     },
 
     /**
@@ -140,8 +133,9 @@ cr.define('print_preview', function() {
      * @private
      */
     displayMatchesFitToPage: function() {
-      return (this.getInputAsNumber() == this.fitToPageScaling_ ||
-              (this.inputField_.value == '' && !this.fitToPageScaling_));
+      return (
+          this.getInputAsNumber() == this.fitToPageScaling_ ||
+          (this.inputField_.value == '' && !this.fitToPageScaling_));
     },
 
     /**
@@ -195,8 +189,9 @@ cr.define('print_preview', function() {
       if (this.isFitToPageSelected()) {
         // Fit to page was checked. Set scaling to the fit to page scaling.
         this.displayFitToPageScaling();
-      } else if (this.fitToPageTicketItem_.isCapabilityAvailable() &&
-                 this.displayMatchesFitToPage()) {
+      } else if (
+          this.fitToPageTicketItem_.isCapabilityAvailable() &&
+          this.displayMatchesFitToPage()) {
         // Fit to page unchecked. Return to last scaling.
         this.inputField_.value = this.scalingTicketItem_.getValue();
       }
@@ -208,7 +203,7 @@ cr.define('print_preview', function() {
      */
     onTextfieldTimeout_: function() {
       this.textfieldTimeout_ = null;
-      if (!this.inputField_.validity.valid){
+      if (!this.inputField_.validity.valid) {
         this.updateState_();
         return;
       }
@@ -226,7 +221,7 @@ cr.define('print_preview', function() {
       if (this.inputField_.value == '')
         return;
       this.scalingTicketItem_.updateValue(
-        this.inputField_.valueAsNumber.toString());
+          this.inputField_.valueAsNumber.toString());
     },
 
     /**
@@ -280,7 +275,5 @@ cr.define('print_preview', function() {
   };
 
   // Export
-  return {
-    ScalingSettings: ScalingSettings
-  };
+  return {ScalingSettings: ScalingSettings};
 });

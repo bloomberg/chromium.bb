@@ -91,8 +91,8 @@ cr.define('print_preview', function() {
         return;
 
       // Position the bubble below the location of the owner.
-      var left = owner.offsetLeft + owner.offsetWidth / 2 -
-          this.offsetWidth / 2;
+      var left =
+          owner.offsetLeft + owner.offsetWidth / 2 - this.offsetWidth / 2;
       var top = owner.offsetTop + owner.offsetHeight;
 
       // Update the position in the CSS.  Cache the last values for
@@ -109,7 +109,5 @@ cr.define('print_preview', function() {
   };
 
   // Export
-  return {
-    SearchBubble: SearchBubble
-  };
+  return {SearchBubble: SearchBubble};
 });

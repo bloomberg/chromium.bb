@@ -10,8 +10,7 @@ var animationEventTracker = new EventTracker();
 function addAnimation(code) {
   var name = 'anim' + animationCounter;
   animationCounter++;
-  var rules = document.createTextNode(
-      '@keyframes ' + name + ' {' + code + '}');
+  var rules = document.createTextNode('@keyframes ' + name + ' {' + code + '}');
   var el = document.createElement('style');
   el.type = 'text/css';
   el.appendChild(rules);
@@ -130,11 +129,11 @@ function fadeInOption(el, opt_justShow) {
   // To make the option visible during the first fade in.
   el.hidden = false;
 
-  var leftColumn = assertInstanceof(el.querySelector('.left-column'),
-                                    HTMLElement);
+  var leftColumn =
+      assertInstanceof(el.querySelector('.left-column'), HTMLElement);
   wrapContentsInDiv(leftColumn, ['invisible']);
-  var rightColumn = assertInstanceof(el.querySelector('.right-column'),
-                                     HTMLElement);
+  var rightColumn =
+      assertInstanceof(el.querySelector('.right-column'), HTMLElement);
   wrapContentsInDiv(rightColumn, ['invisible']);
 
   var toAnimate = el.querySelectorAll('.collapsible');
@@ -153,11 +152,11 @@ function fadeOutOption(el, opt_justHide) {
   if (!el.classList.contains('visible'))
     return;
 
-  var leftColumn = assertInstanceof(el.querySelector('.left-column'),
-                                    HTMLElement);
+  var leftColumn =
+      assertInstanceof(el.querySelector('.left-column'), HTMLElement);
   wrapContentsInDiv(leftColumn, ['visible']);
-  var rightColumn = assertInstanceof(el.querySelector('.right-column'),
-                                     HTMLElement);
+  var rightColumn =
+      assertInstanceof(el.querySelector('.right-column'), HTMLElement);
   if (rightColumn)
     wrapContentsInDiv(rightColumn, ['visible']);
 

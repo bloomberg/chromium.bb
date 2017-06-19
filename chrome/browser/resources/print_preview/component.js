@@ -25,13 +25,13 @@ cr.define('print_preview', function() {
      * Component's event tracker.
      * @private {!EventTracker}
      */
-     this.tracker_ = new EventTracker();
+    this.tracker_ = new EventTracker();
 
     /**
      * Component's WebUI listener tracker.
      * @private {!WebUIListenerTracker}
      */
-     this.listenerTracker_ = new WebUIListenerTracker();
+    this.listenerTracker_ = new WebUIListenerTracker();
 
     /**
      * Child components of the component.
@@ -203,8 +203,8 @@ cr.define('print_preview', function() {
      */
     cloneTemplateInternal: function(templateId, opt_keepHidden) {
       var templateEl = $(templateId);
-      assert(templateEl != null,
-             'Could not find element with ID: ' + templateId);
+      assert(
+          templateEl != null, 'Could not find element with ID: ' + templateId);
       var el = assertInstanceof(templateEl.cloneNode(true), HTMLElement);
       el.id = '';
       if (!opt_keepHidden) {
@@ -214,7 +214,5 @@ cr.define('print_preview', function() {
     }
   };
 
-  return {
-    Component: Component
-  };
+  return {Component: Component};
 });

@@ -107,7 +107,5 @@ cr.define('print_preview', function() {
   };
 
   // Export
-  return {
-    Margins: Margins
-  };
+  return {Margins: Margins};
 });

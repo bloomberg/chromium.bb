@@ -55,16 +55,12 @@ cr.define('print_preview.ticket_items', function() {
      */
     getCopiesCapability_: function() {
       var dest = this.getSelectedDestInternal();
-      return (dest &&
-              dest.capabilities &&
-              dest.capabilities.printer &&
+      return (dest && dest.capabilities && dest.capabilities.printer &&
               dest.capabilities.printer.copies) ||
-             null;
+          null;
     }
   };
 
   // Export
-  return {
-    Copies: Copies
-  };
+  return {Copies: Copies};
 });

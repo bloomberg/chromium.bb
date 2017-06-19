@@ -105,25 +105,15 @@ cr.define('print_preview', function() {
       this.tracker.add(
           assert(this.allRadio_), 'click', this.onAllRadioClick_.bind(this));
       this.tracker.add(
-          assert(this.customRadio_),
-          'click',
+          assert(this.customRadio_), 'click',
           this.onCustomRadioClick_.bind(this));
+      this.tracker.add(customInput, 'blur', this.onCustomInputBlur_.bind(this));
       this.tracker.add(
-          customInput,
-          'blur',
-          this.onCustomInputBlur_.bind(this));
+          customInput, 'focus', this.onCustomInputFocus_.bind(this));
       this.tracker.add(
-          customInput,
-          'focus',
-          this.onCustomInputFocus_.bind(this));
+          customInput, 'keydown', this.onCustomInputKeyDown_.bind(this));
       this.tracker.add(
-          customInput,
-          'keydown',
-          this.onCustomInputKeyDown_.bind(this));
-      this.tracker.add(
-          customInput,
-          'input',
-          this.onCustomInputChange_.bind(this));
+          customInput, 'input', this.onCustomInputChange_.bind(this));
       this.tracker.add(
           this.pageRangeTicketItem_,
           print_preview.ticket_items.TicketItem.EventType.CHANGE,
@@ -164,8 +154,7 @@ cr.define('print_preview', function() {
                 'pageRangeLimitInstructionWithValue',
                 this.pageRangeTicketItem_.getDocumentNumPages());
           } else {
-            message = loadTimeData.getString(
-                'pageRangeLimitInstruction');
+            message = loadTimeData.getString('pageRangeLimitInstruction');
           }
         } else {
           message = loadTimeData.getStringF(
@@ -283,7 +272,5 @@ cr.define('print_preview', function() {
   };
 
   // Export
-  return {
-    PageSettings: PageSettings
-  };
+  return {PageSettings: PageSettings};
 });

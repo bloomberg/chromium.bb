@@ -33,11 +33,8 @@ cr.define('print_preview.ticket_items', function() {
    */
   function CustomMargins(appState, documentInfo) {
     print_preview.ticket_items.TicketItem.call(
-        this,
-        appState,
-        print_preview.AppStateField.CUSTOM_MARGINS,
-        null /*destinationStore*/,
-        documentInfo);
+        this, appState, print_preview.AppStateField.CUSTOM_MARGINS,
+        null /*destinationStore*/, documentInfo);
   }
 
   /**
@@ -62,7 +59,7 @@ cr.define('print_preview.ticket_items', function() {
    * @const
    * @private
    */
-  CustomMargins.MINIMUM_MARGINS_DISTANCE_ = 72; // 1 inch.
+  CustomMargins.MINIMUM_MARGINS_DISTANCE_ = 72;  // 1 inch.
 
   CustomMargins.prototype = {
     __proto__: print_preview.ticket_items.TicketItem.prototype,
@@ -135,13 +132,13 @@ cr.define('print_preview.ticket_items', function() {
     /** @override */
     getDefaultValueInternal: function() {
       return this.getDocumentInfoInternal().margins ||
-             new print_preview.Margins(72, 72, 72, 72);
+          new print_preview.Margins(72, 72, 72, 72);
     },
 
     /** @override */
     getCapabilityNotAvailableValueInternal: function() {
       return this.getDocumentInfoInternal().margins ||
-             new print_preview.Margins(72, 72, 72, 72);
+          new print_preview.Margins(72, 72, 72, 72);
     },
 
     /**
@@ -158,14 +155,12 @@ cr.define('print_preview.ticket_items', function() {
           this.getDocumentInfoInternal().pageSize.height :
           this.getDocumentInfoInternal().pageSize.width;
 
-      var totalMargin = dimensionLength -
-                        CustomMargins.MINIMUM_MARGINS_DISTANCE_;
+      var totalMargin =
+          dimensionLength - CustomMargins.MINIMUM_MARGINS_DISTANCE_;
       return Math.round(totalMargin > 0 ? totalMargin - oppositeMargin : 0);
     }
   };
 
   // Export
-  return {
-    CustomMargins: CustomMargins
-  };
+  return {CustomMargins: CustomMargins};
 });

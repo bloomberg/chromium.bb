@@ -14,9 +14,7 @@ cr.define('print_preview', function() {
    */
   function CloudDestinationList(eventTarget) {
     print_preview.DestinationList.call(
-        this,
-        eventTarget,
-        loadTimeData.getString('cloudDestinationsTitle'),
+        this, eventTarget, loadTimeData.getString('cloudDestinationsTitle'),
         loadTimeData.getString('manage'));
   }
 
@@ -30,13 +28,12 @@ cr.define('print_preview', function() {
       var docsId = print_preview.Destination.GooglePromotedId.DOCS;
       this.setActionLinkTextInternal(loadTimeData.getString(
           destinations.length == 1 && destinations[0].id == docsId ?
-              'setupCloudPrinters' : 'manage'));
+              'setupCloudPrinters' :
+              'manage'));
       print_preview.DestinationList.prototype.updateDestinations.call(
           this, destinations);
     }
   };
 
-  return {
-    CloudDestinationList: CloudDestinationList
-  };
+  return {CloudDestinationList: CloudDestinationList};
 });

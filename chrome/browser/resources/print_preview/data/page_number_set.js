@@ -58,7 +58,5 @@ cr.define('print_preview', function() {
   };
 
   // Export
-  return {
-    PageNumberSet: PageNumberSet
-  };
+  return {PageNumberSet: PageNumberSet};
 });

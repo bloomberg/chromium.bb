@@ -59,8 +59,8 @@ cr.define('print_preview', function() {
       assert(!this.destination_);
       this.destination_ = destination;
       this.getChildElement('.advanced-settings-title').textContent =
-          loadTimeData.getStringF('advancedSettingsDialogTitle',
-                                  this.destination_.displayName);
+          loadTimeData.getStringF(
+              'advancedSettingsDialogTitle', this.destination_.displayName);
       this.setIsVisible(true);
       this.renderSettings_();
     },
@@ -70,18 +70,15 @@ cr.define('print_preview', function() {
       print_preview.Overlay.prototype.enterDocument.call(this);
 
       this.tracker.add(
-          this.getChildElement('.button-strip .cancel-button'),
-          'click',
+          this.getChildElement('.button-strip .cancel-button'), 'click',
           this.cancel.bind(this));
 
       this.tracker.add(
-          this.getChildElement('.button-strip .done-button'),
-          'click',
+          this.getChildElement('.button-strip .done-button'), 'click',
           this.onApplySettings_.bind(this));
 
       this.tracker.add(
-          assert(this.searchBox_),
-          print_preview.SearchBox.EventType.SEARCH,
+          assert(this.searchBox_), print_preview.SearchBox.EventType.SEARCH,
           this.onSearch_.bind(this));
     },
 
@@ -94,8 +91,8 @@ cr.define('print_preview', function() {
     onSetVisibleInternal: function(isVisible) {
       if (isVisible) {
         this.searchBox_.focus();
-        this.metrics_.record(print_preview.Metrics.PrintSettingsUiBucket.
-            ADVANCED_SETTINGS_DIALOG_SHOWN);
+        this.metrics_.record(print_preview.Metrics.PrintSettingsUiBucket
+                                 .ADVANCED_SETTINGS_DIALOG_SHOWN);
       } else {
         this.resetSearch_();
         this.destination_ = null;
@@ -104,8 +101,8 @@ cr.define('print_preview', function() {
 
     /** @override */
     onCancelInternal: function() {
-      this.metrics_.record(print_preview.Metrics.PrintSettingsUiBucket.
-          ADVANCED_SETTINGS_DIALOG_CANCELED);
+      this.metrics_.record(print_preview.Metrics.PrintSettingsUiBucket
+                               .ADVANCED_SETTINGS_DIALOG_CANCELED);
     },
 
     /** @override */
@@ -145,8 +142,7 @@ cr.define('print_preview', function() {
           lastVisibleItemWithBubble = item;
       });
       setIsVisible(
-          this.getChildElement('.no-settings-match-hint'),
-          !atLeastOneMatch);
+          this.getChildElement('.no-settings-match-hint'), !atLeastOneMatch);
       setIsVisible(
           this.getChildElement('.' + AdvancedSettings.Classes_.EXTRA_PADDING),
           !!lastVisibleItemWithBubble);
@@ -236,7 +232,5 @@ cr.define('print_preview', function() {
   };
 
   // Export
-  return {
-    AdvancedSettings: AdvancedSettings
-  };
+  return {AdvancedSettings: AdvancedSettings};
 });

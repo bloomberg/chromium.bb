@@ -9,8 +9,8 @@ cr.exportPath('print_preview');
  * @enum {number}
  */
 print_preview.MeasurementSystemUnitType = {
-  METRIC: 0, // millimeters
-  IMPERIAL: 1 // inches
+  METRIC: 0,   // millimeters
+  IMPERIAL: 1  // inches
 };
 
 cr.define('print_preview', function() {
@@ -54,10 +54,10 @@ cr.define('print_preview', function() {
    * @private
    */
   MeasurementSystem.Precision_ = {};
-  MeasurementSystem.Precision_[
-      print_preview.MeasurementSystemUnitType.METRIC] = 0.5;
-  MeasurementSystem.Precision_[
-      print_preview.MeasurementSystemUnitType.IMPERIAL] = 0.01;
+  MeasurementSystem.Precision_[print_preview.MeasurementSystemUnitType.METRIC] =
+      0.5;
+  MeasurementSystem
+      .Precision_[print_preview.MeasurementSystemUnitType.IMPERIAL] = 0.01;
 
   /**
    * Maximum number of decimal places to keep for local unit.
@@ -65,10 +65,10 @@ cr.define('print_preview', function() {
    * @private
    */
   MeasurementSystem.DecimalPlaces_ = {};
-  MeasurementSystem.DecimalPlaces_[
-      print_preview.MeasurementSystemUnitType.METRIC] = 1;
-  MeasurementSystem.DecimalPlaces_[
-      print_preview.MeasurementSystemUnitType.IMPERIAL] = 2;
+  MeasurementSystem
+      .DecimalPlaces_[print_preview.MeasurementSystemUnitType.METRIC] = 1;
+  MeasurementSystem
+      .DecimalPlaces_[print_preview.MeasurementSystemUnitType.IMPERIAL] = 2;
 
   /**
    * Number of points per inch.
@@ -91,8 +91,8 @@ cr.define('print_preview', function() {
     get unitSymbol() {
       if (this.unitType_ == print_preview.MeasurementSystemUnitType.METRIC) {
         return 'mm';
-      } else if (this.unitType_ ==
-                 print_preview.MeasurementSystemUnitType.IMPERIAL) {
+      } else if (
+          this.unitType_ == print_preview.MeasurementSystemUnitType.IMPERIAL) {
         return '"';
       } else {
         throw Error('Unit type not supported: ' + this.unitType_);
@@ -160,7 +160,5 @@ cr.define('print_preview', function() {
   };
 
   // Export
-  return {
-    MeasurementSystem: MeasurementSystem
-  };
+  return {MeasurementSystem: MeasurementSystem};
 });

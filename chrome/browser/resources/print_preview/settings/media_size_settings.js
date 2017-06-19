@@ -26,7 +26,5 @@ cr.define('print_preview', function() {
   };
 
   // Export
-  return {
-    MediaSizeSettings: MediaSizeSettings
-  };
+  return {MediaSizeSettings: MediaSizeSettings};
 });

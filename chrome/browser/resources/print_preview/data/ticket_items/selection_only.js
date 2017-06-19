@@ -15,10 +15,7 @@ cr.define('print_preview.ticket_items', function() {
    */
   function SelectionOnly(documentInfo) {
     print_preview.ticket_items.TicketItem.call(
-        this,
-        null /*appState*/,
-        null /*field*/,
-        null /*destinationStore*/,
+        this, null /*appState*/, null /*field*/, null /*destinationStore*/,
         documentInfo);
   }
 
@@ -33,7 +30,7 @@ cr.define('print_preview.ticket_items', function() {
     /** @override */
     isCapabilityAvailable: function() {
       return this.getDocumentInfoInternal().isModifiable &&
-             this.getDocumentInfoInternal().hasSelection;
+          this.getDocumentInfoInternal().hasSelection;
     },
 
     /** @override */
@@ -48,7 +45,5 @@ cr.define('print_preview.ticket_items', function() {
   };
 
   // Export
-  return {
-    SelectionOnly: SelectionOnly
-  };
+  return {SelectionOnly: SelectionOnly};
 });
