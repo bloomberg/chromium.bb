@@ -7,6 +7,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -71,9 +72,12 @@ class NumericRangeSet {
 // is application defined (e.g., it could be all possible boolean values, all
 // possible strings of length N, or anything that suits a particular
 // application).
+// TODO(guidou): Rename this class. http://crbug.com/731166
 template <typename T>
 class DiscreteSet {
  public:
+  // Creates a universal set.
+  DiscreteSet() : is_universal_(true) {}
   // Creates a set containing the elements in |elements|.
   // It is the responsibility of the caller to ensure that |elements| is not
   // equivalent to the universal set and that |elements| has no repeated
@@ -127,15 +131,24 @@ class DiscreteSet {
     return elements_[0];
   }
 
+  // Returns a reference to the list of elements in the set.
+  // Behavior is undefined if the set is universal.
+  const std::vector<T>& elements() const {
+    DCHECK(!is_universal_);
+    return elements_;
+  }
+
   bool is_universal() const { return is_universal_; }
 
  private:
-  // Creates a universal set.
-  DiscreteSet() : is_universal_(true) {}
-
   bool is_universal_;
   std::vector<T> elements_;
 };
+
+DiscreteSet<std::string> StringSetFromConstraint(
+    const blink::StringConstraint& constraint);
+DiscreteSet<bool> BoolSetFromConstraint(
+    const blink::BooleanConstraint& constraint);
 
 // This class represents a set of (height, width) screen resolution candidates
 // determined by width, height and aspect-ratio constraints.
