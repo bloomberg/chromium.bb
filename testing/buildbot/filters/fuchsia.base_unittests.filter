@@ -221,3 +221,9 @@
 -VerifyPathControlledByUserTest.OwnershipChecks
 -VerifyPathControlledByUserTest.Symlinks
 -VerifyPathControlledByUserTest.WriteBitChecks
+
+# https://crbug.com/734216
+-MemoryDumpSchedulerTest.StartStopQuickly
+
+# https://crbug.com/734218
+-MemoryPeakDetectorTest.StartStopQuickly
