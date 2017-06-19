@@ -51,7 +51,8 @@ base::android::ScopedJavaLocalRef<jobject> ReaderModeInfoBar::GetTab(
     const JavaParamRef<jobject>& obj) {
   content::WebContents* web_contents =
       InfoBarService::WebContentsFromInfoBar(this);
-  return TabAndroid::FromWebContents(web_contents)->GetJavaObject();
+  TabAndroid* tab_android = TabAndroid::FromWebContents(web_contents);
+  return tab_android ? tab_android->GetJavaObject() : nullptr;
 }
 
 void ReaderModeInfoBar::ProcessButton(int action) {}
