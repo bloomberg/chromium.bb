@@ -10,36 +10,41 @@
 
 namespace blink {
 
+class DOMMatrix;
+
+// Represents a scale value in a CSSTransformValue used for properties like
+// "transform".
+// See CSSScale.idl for more information about this class.
 class CORE_EXPORT CSSScale final : public CSSTransformComponent {
   WTF_MAKE_NONCOPYABLE(CSSScale);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  // Constructors defined in the IDL.
   static CSSScale* Create(double x, double y) { return new CSSScale(x, y); }
-
   static CSSScale* Create(double x, double y, double z) {
     return new CSSScale(x, y, z);
   }
 
+  // Blink-internal ways of creating CSSScales.
   static CSSScale* FromCSSValue(const CSSFunctionValue&);
 
+  // Getters and setters for attributes defined in the IDL.
   double x() const { return x_; }
   double y() const { return y_; }
   double z() const { return z_; }
-
   void setX(double x) { x_ = x; }
   void setY(double y) { y_ = y; }
   void setZ(double z) { z_ = z; }
 
+  // Internal methods - from CSSTransformComponent.
   TransformComponentType GetType() const override {
     return is2d_ ? kScaleType : kScale3DType;
   }
-
   DOMMatrix* AsMatrix() const override {
     DOMMatrix* result = DOMMatrix::Create();
     return result->scaleSelf(x_, y_, z_);
   }
-
   CSSFunctionValue* ToCSSValue() const override;
 
  private:

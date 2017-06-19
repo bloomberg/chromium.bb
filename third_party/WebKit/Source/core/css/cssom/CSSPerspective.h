@@ -14,24 +14,30 @@ namespace blink {
 class DOMMatrix;
 class ExceptionState;
 
+// Represents a perspective value in a CSSTransformValue used for properties
+// like "transform".
+// See CSSPerspective.idl for more information about this class.
 class CORE_EXPORT CSSPerspective : public CSSTransformComponent {
   WTF_MAKE_NONCOPYABLE(CSSPerspective);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  // Constructor defined in the IDL.
   static CSSPerspective* Create(const CSSNumericValue*, ExceptionState&);
+
+  // Blink-internal ways of creating CSSPerspectives.
   static CSSPerspective* FromCSSValue(const CSSFunctionValue&);
 
+  // Getters and setters for attributes defined in the IDL.
   // Bindings require a non const return value.
   CSSNumericValue* length() const {
     return const_cast<CSSNumericValue*>(length_.Get());
   }
 
+  // Internal methods - from CSSTransformComponent.
   TransformComponentType GetType() const override { return kPerspectiveType; }
-
   // TODO: Implement AsMatrix for CSSPerspective.
   DOMMatrix* AsMatrix() const override { return nullptr; }
-
   CSSFunctionValue* ToCSSValue() const override;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {

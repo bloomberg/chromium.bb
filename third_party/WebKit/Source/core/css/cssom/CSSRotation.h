@@ -12,15 +12,18 @@ namespace blink {
 
 class DOMMatrix;
 
+// Represents a rotation value in a CSSTransformValue used for properties like
+// "transform".
+// See CSSRotation.idl for more information about this class.
 class CORE_EXPORT CSSRotation final : public CSSTransformComponent {
   WTF_MAKE_NONCOPYABLE(CSSRotation);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  // Constructors defined in the IDL.
   static CSSRotation* Create(const CSSNumericValue* angle_value) {
     return new CSSRotation(angle_value);
   }
-
   static CSSRotation* Create(double x,
                              double y,
                              double z,
@@ -28,8 +31,10 @@ class CORE_EXPORT CSSRotation final : public CSSTransformComponent {
     return new CSSRotation(x, y, z, angle_value);
   }
 
+  // Blink-internal ways of creating CSSRotations.
   static CSSRotation* FromCSSValue(const CSSFunctionValue&);
 
+  // Getters and setters for attributes defined in the IDL.
   // Bindings requires returning non-const pointers. This is safe because
   // CSSNumericValues are immutable.
   CSSNumericValue* angle() const {
@@ -39,10 +44,10 @@ class CORE_EXPORT CSSRotation final : public CSSTransformComponent {
   double y() const { return y_; }
   double z() const { return z_; }
 
+  // Internal methods - from CSSTransformComponent.
   TransformComponentType GetType() const override {
     return is2d_ ? kRotationType : kRotation3DType;
   }
-
   DOMMatrix* AsMatrix() const override {
     return nullptr;
     // TODO(meade): Implement.
@@ -53,7 +58,6 @@ class CORE_EXPORT CSSRotation final : public CSSTransformComponent {
     //              angle_->to(CSSPrimitiveValue::UnitType::kDegrees)->value(),
     //                 x_, y_, z_);
   }
-
   CSSFunctionValue* ToCSSValue() const override;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {

@@ -10,29 +10,33 @@
 
 namespace blink {
 
-class DOMMatrixReadOnly;
+class DOMMatrix;
 
+// Represents a matrix value in a CSSTransformValue used for properties like
+// "transform".
+// See CSSMatrixComponent.idl for more information about this class.
 class CORE_EXPORT CSSMatrixComponent final : public CSSTransformComponent {
   WTF_MAKE_NONCOPYABLE(CSSMatrixComponent);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  // Constructor defined in the IDL.
   static CSSMatrixComponent* Create(DOMMatrixReadOnly*);
 
+  // Blink-internal ways of creating CSSMatrixComponents.
   static CSSMatrixComponent* FromCSSValue(const CSSFunctionValue& value) {
     return nullptr;
   }
 
+  // Getters and setters for attributes defined in the IDL.
   DOMMatrix* matrix() const { return matrix_; }
-
   void setMatrix(DOMMatrix* matrix) { matrix_ = matrix; }
 
+  // Internal methods - from CSSTransformComponent.
   TransformComponentType GetType() const override {
     return is2d_ ? kMatrixType : kMatrix3DType;
   }
-
   DOMMatrix* AsMatrix() const override { return matrix(); }
-
   CSSFunctionValue* ToCSSValue() const override;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
