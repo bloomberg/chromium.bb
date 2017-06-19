@@ -41,8 +41,8 @@ enum {
 #define INTRA_EDGE_TAPS 5
 #if CONFIG_INTRA_EDGE_UPSAMPLE
 #define MAX_UPSAMPLE_SZ 12
-#endif
-#endif
+#endif  // CONFIG_INTRA_EDGE_UPSAMPLE
+#endif  // CONFIG_INTRA_EDGE
 
 static const uint8_t extend_modes[INTRA_MODES] = {
   NEED_ABOVE | NEED_LEFT,                   // DC
@@ -705,7 +705,7 @@ static void dr_prediction_z1(uint8_t *dst, ptrdiff_t stride, int bw, int bh,
 #endif  // CONFIG_INTRA_INTERP
 #if CONFIG_INTRA_EDGE_UPSAMPLE
                              int upsample_above,
-#endif
+#endif  // CONFIG_INTRA_EDGE_UPSAMPLE
                              int dx, int dy) {
   int r, c, x, base, shift, val;
 
@@ -777,7 +777,7 @@ static void dr_prediction_z1(uint8_t *dst, ptrdiff_t stride, int bw, int bh,
 
 #if !CONFIG_INTRA_EDGE_UPSAMPLE
   const int upsample_above = 0;
-#endif
+#endif  // !CONFIG_INTRA_EDGE_UPSAMPLE
   const int max_base_x = ((bw + bh) - 1) << upsample_above;
   const int frac_bits = 8 - upsample_above;
   const int base_inc = 1 << upsample_above;
@@ -814,7 +814,7 @@ static void dr_prediction_z2(uint8_t *dst, ptrdiff_t stride, int bw, int bh,
 #endif  // CONFIG_INTRA_INTERP
 #if CONFIG_INTRA_EDGE_UPSAMPLE
                              int upsample_above, int upsample_left,
-#endif
+#endif  // CONFIG_INTRA_EDGE_UPSAMPLE
                              int dx, int dy) {
   int r, c, x, y, shift1, shift2, val, base1, base2;
 
@@ -824,7 +824,7 @@ static void dr_prediction_z2(uint8_t *dst, ptrdiff_t stride, int bw, int bh,
 #if !CONFIG_INTRA_EDGE_UPSAMPLE
   const int upsample_above = 0;
   const int upsample_left = 0;
-#endif
+#endif  // !CONFIG_INTRA_EDGE_UPSAMPLE
   const int min_base_x = -(1 << upsample_above);
   const int frac_bits_x = 8 - upsample_above;
   const int frac_bits_y = 8 - upsample_left;
@@ -867,7 +867,7 @@ static void dr_prediction_z3(uint8_t *dst, ptrdiff_t stride, int bw, int bh,
 #endif  // CONFIG_INTRA_INTERP
 #if CONFIG_INTRA_EDGE_UPSAMPLE
                              int upsample_left,
-#endif
+#endif  // CONFIG_INTRA_EDGE_UPSAMPLE
                              int dx, int dy) {
   int r, c, y, base, shift, val;
 
@@ -950,7 +950,7 @@ static void dr_prediction_z3(uint8_t *dst, ptrdiff_t stride, int bw, int bh,
 
 #if !CONFIG_INTRA_EDGE_UPSAMPLE
   const int upsample_left = 0;
-#endif
+#endif  // !CONFIG_INTRA_EDGE_UPSAMPLE
   const int max_base_y = (bw + bh - 1) << upsample_left;
   const int frac_bits = 8 - upsample_left;
   const int base_inc = 1 << upsample_left;
@@ -1009,7 +1009,7 @@ static void dr_predictor(uint8_t *dst, ptrdiff_t stride, TX_SIZE tx_size,
 #endif  // CONFIG_INTRA_INTERP
 #if CONFIG_INTRA_EDGE_UPSAMPLE
                          int upsample_above, int upsample_left,
-#endif
+#endif  // CONFIG_INTRA_EDGE_UPSAMPLE
                          int angle) {
   const int dx = get_dx(angle);
   const int dy = get_dy(angle);
@@ -1024,7 +1024,7 @@ static void dr_predictor(uint8_t *dst, ptrdiff_t stride, TX_SIZE tx_size,
 #endif  // CONFIG_INTRA_INTERP
 #if CONFIG_INTRA_EDGE_UPSAMPLE
                      upsample_above,
-#endif
+#endif  // CONFIG_INTRA_EDGE_UPSAMPLE
                      dx, dy);
   } else if (angle > 90 && angle < 180) {
     dr_prediction_z2(dst, stride, bw, bh, above, left,
@@ -1033,7 +1033,7 @@ static void dr_predictor(uint8_t *dst, ptrdiff_t stride, TX_SIZE tx_size,
 #endif  // CONFIG_INTRA_INTERP
 #if CONFIG_INTRA_EDGE_UPSAMPLE
                      upsample_above, upsample_left,
-#endif
+#endif  // CONFIG_INTRA_EDGE_UPSAMPLE
                      dx, dy);
   } else if (angle > 180 && angle < 270) {
     dr_prediction_z3(dst, stride, bw, bh, above, left,
@@ -1042,7 +1042,7 @@ static void dr_predictor(uint8_t *dst, ptrdiff_t stride, TX_SIZE tx_size,
 #endif  // CONFIG_INTRA_INTERP
 #if CONFIG_INTRA_EDGE_UPSAMPLE
                      upsample_left,
-#endif
+#endif  // CONFIG_INTRA_EDGE_UPSAMPLE
                      dx, dy);
   } else if (angle == 90) {
     pred[V_PRED][tx_size](dst, stride, above, left);
@@ -1092,7 +1092,7 @@ static void highbd_dr_prediction_z1(uint16_t *dst, ptrdiff_t stride, int bw,
 #endif  // CONFIG_INTRA_INTERP
 #if CONFIG_INTRA_EDGE_UPSAMPLE
                                     int upsample_above,
-#endif
+#endif  // CONFIG_INTRA_EDGE_UPSAMPLE
                                     int dx, int dy, int bd) {
   int r, c, x, base, shift, val;
 
@@ -1103,7 +1103,7 @@ static void highbd_dr_prediction_z1(uint16_t *dst, ptrdiff_t stride, int bw,
 
 #if !CONFIG_INTRA_EDGE_UPSAMPLE
   const int upsample_above = 0;
-#endif
+#endif  // !CONFIG_INTRA_EDGE_UPSAMPLE
   const int max_base_x = ((bw + bh) - 1) << upsample_above;
   const int frac_bits = 8 - upsample_above;
   const int base_inc = 1 << upsample_above;
@@ -1146,7 +1146,7 @@ static void highbd_dr_prediction_z2(uint16_t *dst, ptrdiff_t stride, int bw,
 #endif  // CONFIG_INTRA_INTERP
 #if CONFIG_INTRA_EDGE_UPSAMPLE
                                     int upsample_above, int upsample_left,
-#endif
+#endif  // CONFIG_INTRA_EDGE_UPSAMPLE
                                     int dx, int dy, int bd) {
   int r, c, x, y, shift, val, base;
 
@@ -1156,7 +1156,7 @@ static void highbd_dr_prediction_z2(uint16_t *dst, ptrdiff_t stride, int bw,
 #if !CONFIG_INTRA_EDGE_UPSAMPLE
   const int upsample_above = 0;
   const int upsample_left = 0;
-#endif
+#endif  // !CONFIG_INTRA_EDGE_UPSAMPLE
   const int min_base_x = -(1 << upsample_above);
   const int frac_bits_x = 8 - upsample_above;
   const int frac_bits_y = 8 - upsample_left;
@@ -1202,7 +1202,7 @@ static void highbd_dr_prediction_z3(uint16_t *dst, ptrdiff_t stride, int bw,
 #endif  // CONFIG_INTRA_INTERP
 #if CONFIG_INTRA_EDGE_UPSAMPLE
                                     int upsample_left,
-#endif
+#endif  // CONFIG_INTRA_EDGE_UPSAMPLE
                                     int dx, int dy, int bd) {
   int r, c, y, base, shift, val;
 
@@ -1213,7 +1213,7 @@ static void highbd_dr_prediction_z3(uint16_t *dst, ptrdiff_t stride, int bw,
 
 #if !CONFIG_INTRA_EDGE_UPSAMPLE
   const int upsample_left = 0;
-#endif
+#endif  // !CONFIG_INTRA_EDGE_UPSAMPLE
   const int max_base_y = (bw + bh - 1) << upsample_left;
   const int frac_bits = 8 - upsample_left;
   const int base_inc = 1 << upsample_left;
@@ -1248,7 +1248,7 @@ static void highbd_dr_predictor(uint16_t *dst, ptrdiff_t stride,
 #endif  // CONFIG_INTRA_INTERP
 #if CONFIG_INTRA_EDGE_UPSAMPLE
                                 int upsample_above, int upsample_left,
-#endif
+#endif  // CONFIG_INTRA_EDGE_UPSAMPLE
                                 int angle, int bd) {
   const int dx = get_dx(angle);
   const int dy = get_dy(angle);
@@ -1263,7 +1263,7 @@ static void highbd_dr_predictor(uint16_t *dst, ptrdiff_t stride,
 #endif  // CONFIG_INTRA_INTERP
 #if CONFIG_INTRA_EDGE_UPSAMPLE
                             upsample_above,
-#endif
+#endif  // CONFIG_INTRA_EDGE_UPSAMPLE
                             dx, dy, bd);
   } else if (angle > 90 && angle < 180) {
     highbd_dr_prediction_z2(dst, stride, bw, bh, above, left,
@@ -1272,7 +1272,7 @@ static void highbd_dr_predictor(uint16_t *dst, ptrdiff_t stride,
 #endif  // CONFIG_INTRA_INTERP
 #if CONFIG_INTRA_EDGE_UPSAMPLE
                             upsample_above, upsample_left,
-#endif
+#endif  // CONFIG_INTRA_EDGE_UPSAMPLE
                             dx, dy, bd);
   } else if (angle > 180 && angle < 270) {
     highbd_dr_prediction_z3(dst, stride, bw, bh, above, left,
@@ -1281,7 +1281,7 @@ static void highbd_dr_predictor(uint16_t *dst, ptrdiff_t stride,
 #endif  // CONFIG_INTRA_INTERP
 #if CONFIG_INTRA_EDGE_UPSAMPLE
                             upsample_left,
-#endif
+#endif  // CONFIG_INTRA_EDGE_UPSAMPLE
                             dx, dy, bd);
   } else if (angle == 90) {
     pred_high[V_PRED][tx_size](dst, stride, above, left, bd);
@@ -1938,34 +1938,40 @@ static int intra_edge_filter_strength(int bsz, int delta) {
   const int d = abs(delta);
   int strength = 0;
 
-  if (bsz == 4) {
-    if (d < 56) {
-      strength = 0;
-    } else if (d < 90) {
-      strength = 1;
-    }
-  } else if (bsz == 8) {
-    if (d < 8) {
-      strength = 0;
-    } else if (d < 32) {
-      strength = 1;
-    } else if (d < 90) {
-      strength = 3;
-    }
-  } else if (bsz == 16) {
-    if (d < 4) {
-      strength = 0;
-    } else if (d < 16) {
-      strength = 1;
-    } else if (d < 90) {
-      strength = 3;
-    }
-  } else if (bsz == 32) {
-    if (d < 16) {
-      strength = 2;
-    } else if (d < 90) {
-      strength = 3;
-    }
+  switch (bsz) {
+    case 4:
+      if (d < 56) {
+        strength = 0;
+      } else if (d < 90) {
+        strength = 1;
+      }
+      break;
+    case 8:
+      if (d < 8) {
+        strength = 0;
+      } else if (d < 32) {
+        strength = 1;
+      } else if (d < 90) {
+        strength = 3;
+      }
+      break;
+    case 16:
+      if (d < 4) {
+        strength = 0;
+      } else if (d < 16) {
+        strength = 1;
+      } else if (d < 90) {
+        strength = 3;
+      }
+      break;
+    case 32:
+      if (d < 16) {
+        strength = 2;
+      } else if (d < 90) {
+        strength = 3;
+      }
+      break;
+    default: strength = 0; break;
   }
 
   return strength;
@@ -2022,7 +2028,7 @@ static void filter_intra_edge_high(uint16_t *p, int sz, int strength) {
 #if CONFIG_INTRA_EDGE_UPSAMPLE
 static int use_intra_edge_upsample(int bsz, int delta) {
   const int d = abs(delta);
-  return (bsz == 4 && d < 56);
+  return (bsz == 4 && d > 0 && d < 56);
 }
 
 static void upsample_intra_edge(uint8_t *p, int sz) {
@@ -2152,7 +2158,7 @@ static void build_intra_predictors_high(
     }
 #else
     const int val = need_left ? base + 1 : base - 1;
-#endif
+#endif  // CONFIG_INTRA_EDGE
     for (i = 0; i < txhpx; ++i) {
       aom_memset16(dst, val, txwpx);
       dst += dst_stride;
@@ -2190,11 +2196,11 @@ static void build_intra_predictors_high(
       if (n_top_px > 0) {
         aom_memset16(left_col, above_ref[0], num_left_pixels_needed);
       } else {
-#endif
+#endif  // CONFIG_INTRA_EDGE
         aom_memset16(left_col, base + 1, num_left_pixels_needed);
 #if CONFIG_INTRA_EDGE
       }
-#endif
+#endif  // CONFIG_INTRA_EDGE
     }
   }
 
@@ -2230,11 +2236,11 @@ static void build_intra_predictors_high(
       if (n_left_px > 0) {
         aom_memset16(above_row, ref[-1], num_top_pixels_needed);
       } else {
-#endif
+#endif  // CONFIG_INTRA_EDGE
         aom_memset16(above_row, base - 1, num_top_pixels_needed);
 #if CONFIG_INTRA_EDGE
       }
-#endif
+#endif  // CONFIG_INTRA_EDGE
     }
   }
 
@@ -2252,41 +2258,9 @@ static void build_intra_predictors_high(
 #else
     above_row[-1] =
         n_top_px > 0 ? (n_left_px > 0 ? above_ref[-1] : base + 1) : base - 1;
-#endif
+#endif  // CONFIG_INTRA_EDGE
     left_col[-1] = above_row[-1];
   }
-
-#if CONFIG_EXT_INTRA && CONFIG_INTRA_EDGE
-#if CONFIG_INTRA_EDGE_UPSAMPLE
-  const int upsample_above = use_intra_edge_upsample(txwpx, p_angle - 90);
-  const int upsample_left = use_intra_edge_upsample(txhpx, p_angle - 180);
-#endif
-  const int need_right = p_angle < 90;
-  const int need_bottom = p_angle > 180;
-  if (is_dr_mode && p_angle != 90 && p_angle != 180) {
-    const int ab_le = need_above_left ? 1 : 0;
-    if (need_above && n_top_px > 0) {
-      const int strength = intra_edge_filter_strength(txwpx, p_angle - 90);
-      const int n_px = n_top_px + ab_le + (need_right ? n_topright_px : 0);
-      filter_intra_edge_high(above_row - ab_le, n_px, strength);
-    }
-    if (need_left && n_left_px > 0) {
-      const int strength = intra_edge_filter_strength(txhpx, p_angle - 180);
-      const int n_px = n_left_px + ab_le + (need_bottom ? n_bottomleft_px : 0);
-      filter_intra_edge_high(left_col - ab_le, n_px, strength);
-    }
-#if CONFIG_INTRA_EDGE_UPSAMPLE
-    if (upsample_above) {
-      const int n_px = txwpx + (need_right ? txhpx : 0);
-      upsample_intra_edge_high(above_row, n_px, xd->bd);
-    }
-    if (upsample_left) {
-      const int n_px = txhpx + (need_bottom ? txwpx : 0);
-      upsample_intra_edge_high(left_col, n_px, xd->bd);
-    }
-#endif
-  }
-#endif
 
 #if CONFIG_FILTER_INTRA
   if (filter_intra_mode_info->use_filter_intra_mode[plane != 0]) {
@@ -2304,13 +2278,43 @@ static void build_intra_predictors_high(
     if (plane == 0 && av1_is_intra_filter_switchable(p_angle))
       filter = xd->mi[0]->mbmi.intra_filter;
 #endif  // CONFIG_INTRA_INTERP
+#if CONFIG_INTRA_EDGE
+    const int need_right = p_angle < 90;
+    const int need_bottom = p_angle > 180;
+    if (p_angle != 90 && p_angle != 180) {
+      const int ab_le = need_above_left ? 1 : 0;
+      if (need_above && n_top_px > 0) {
+        const int strength = intra_edge_filter_strength(txwpx, p_angle - 90);
+        const int n_px = n_top_px + ab_le + (need_right ? n_topright_px : 0);
+        filter_intra_edge_high(above_row - ab_le, n_px, strength);
+      }
+      if (need_left && n_left_px > 0) {
+        const int strength = intra_edge_filter_strength(txhpx, p_angle - 180);
+        const int n_px =
+            n_left_px + ab_le + (need_bottom ? n_bottomleft_px : 0);
+        filter_intra_edge_high(left_col - ab_le, n_px, strength);
+      }
+    }
+#if CONFIG_INTRA_EDGE_UPSAMPLE
+    const int upsample_above = use_intra_edge_upsample(txwpx, p_angle - 90);
+    if (upsample_above) {
+      const int n_px = txwpx + (need_right ? txhpx : 0);
+      upsample_intra_edge_high(above_row, n_px, xd->bd);
+    }
+    const int upsample_left = use_intra_edge_upsample(txhpx, p_angle - 180);
+    if (upsample_left) {
+      const int n_px = txhpx + (need_bottom ? txwpx : 0);
+      upsample_intra_edge_high(left_col, n_px, xd->bd);
+    }
+#endif  // CONFIG_INTRA_EDGE_UPSAMPLE
+#endif  // CONFIG_INTRA_EDGE
     highbd_dr_predictor(dst, dst_stride, tx_size, above_row, left_col,
 #if CONFIG_INTRA_INTERP
                         filter,
 #endif  // CONFIG_INTRA_INTERP
 #if CONFIG_INTRA_EDGE_UPSAMPLE
                         upsample_above, upsample_left,
-#endif
+#endif  // CONFIG_INTRA_EDGE_UPSAMPLE
                         p_angle, xd->bd);
     return;
   }
@@ -2402,7 +2406,7 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
     }
 #else
     const int val = need_left ? 129 : 127;
-#endif
+#endif  // CONFIG_INTRA_EDGE
     for (i = 0; i < txhpx; ++i) {
       memset(dst, val, txwpx);
       dst += dst_stride;
@@ -2440,11 +2444,11 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
       if (n_top_px > 0) {
         memset(left_col, above_ref[0], num_left_pixels_needed);
       } else {
-#endif
+#endif  // CONFIG_INTRA_EDGE
         memset(left_col, 129, num_left_pixels_needed);
 #if CONFIG_INTRA_EDGE
       }
-#endif
+#endif  // CONFIG_INTRA_EDGE
     }
   }
 
@@ -2478,11 +2482,11 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
       if (n_left_px > 0) {
         memset(above_row, ref[-1], num_top_pixels_needed);
       } else {
-#endif
+#endif  // CONFIG_INTRA_EDGE
         memset(above_row, 127, num_top_pixels_needed);
 #if CONFIG_INTRA_EDGE
       }
-#endif
+#endif  // CONFIG_INTRA_EDGE
     }
   }
 
@@ -2499,41 +2503,9 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
     }
 #else
     above_row[-1] = n_top_px > 0 ? (n_left_px > 0 ? above_ref[-1] : 129) : 127;
-#endif
+#endif  // CONFIG_INTRA_EDGE
     left_col[-1] = above_row[-1];
   }
-
-#if CONFIG_EXT_INTRA && CONFIG_INTRA_EDGE
-#if CONFIG_INTRA_EDGE_UPSAMPLE
-  const int upsample_above = use_intra_edge_upsample(txwpx, p_angle - 90);
-  const int upsample_left = use_intra_edge_upsample(txhpx, p_angle - 180);
-#endif
-  const int need_right = p_angle < 90;
-  const int need_bottom = p_angle > 180;
-  if (is_dr_mode && p_angle != 90 && p_angle != 180) {
-    const int ab_le = need_above_left ? 1 : 0;
-    if (need_above && n_top_px > 0) {
-      const int strength = intra_edge_filter_strength(txwpx, p_angle - 90);
-      const int n_px = n_top_px + ab_le + (need_right ? n_topright_px : 0);
-      filter_intra_edge(above_row - ab_le, n_px, strength);
-    }
-    if (need_left && n_left_px > 0) {
-      const int strength = intra_edge_filter_strength(txhpx, p_angle - 180);
-      const int n_px = n_left_px + ab_le + (need_bottom ? n_bottomleft_px : 0);
-      filter_intra_edge(left_col - ab_le, n_px, strength);
-    }
-#if CONFIG_INTRA_EDGE_UPSAMPLE
-    if (upsample_above) {
-      const int n_px = txwpx + (need_right ? txhpx : 0);
-      upsample_intra_edge(above_row, n_px);
-    }
-    if (upsample_left) {
-      const int n_px = txhpx + (need_bottom ? txwpx : 0);
-      upsample_intra_edge(left_col, n_px);
-    }
-#endif
-  }
-#endif
 
 #if CONFIG_FILTER_INTRA
   if (filter_intra_mode_info->use_filter_intra_mode[plane != 0]) {
@@ -2543,6 +2515,7 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
     return;
   }
 #endif  // CONFIG_FILTER_INTRA
+
 #if CONFIG_EXT_INTRA
   if (is_dr_mode) {
 #if CONFIG_INTRA_INTERP
@@ -2550,13 +2523,43 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
     if (plane == 0 && av1_is_intra_filter_switchable(p_angle))
       filter = xd->mi[0]->mbmi.intra_filter;
 #endif  // CONFIG_INTRA_INTERP
+#if CONFIG_INTRA_EDGE
+    const int need_right = p_angle < 90;
+    const int need_bottom = p_angle > 180;
+    if (p_angle != 90 && p_angle != 180) {
+      const int ab_le = need_above_left ? 1 : 0;
+      if (need_above && n_top_px > 0) {
+        const int strength = intra_edge_filter_strength(txwpx, p_angle - 90);
+        const int n_px = n_top_px + ab_le + (need_right ? n_topright_px : 0);
+        filter_intra_edge(above_row - ab_le, n_px, strength);
+      }
+      if (need_left && n_left_px > 0) {
+        const int strength = intra_edge_filter_strength(txhpx, p_angle - 180);
+        const int n_px =
+            n_left_px + ab_le + (need_bottom ? n_bottomleft_px : 0);
+        filter_intra_edge(left_col - ab_le, n_px, strength);
+      }
+    }
+#if CONFIG_INTRA_EDGE_UPSAMPLE
+    const int upsample_above = use_intra_edge_upsample(txwpx, p_angle - 90);
+    if (upsample_above) {
+      const int n_px = txwpx + (need_right ? txhpx : 0);
+      upsample_intra_edge(above_row, n_px);
+    }
+    const int upsample_left = use_intra_edge_upsample(txhpx, p_angle - 180);
+    if (upsample_left) {
+      const int n_px = txhpx + (need_bottom ? txwpx : 0);
+      upsample_intra_edge(left_col, n_px);
+    }
+#endif  // CONFIG_INTRA_EDGE_UPSAMPLE
+#endif  // CONFIG_INTRA_EDGE
     dr_predictor(dst, dst_stride, tx_size, above_row, left_col,
 #if CONFIG_INTRA_INTERP
                  filter,
 #endif  // CONFIG_INTRA_INTERP
 #if CONFIG_INTRA_EDGE_UPSAMPLE
                  upsample_above, upsample_left,
-#endif
+#endif  // CONFIG_INTRA_EDGE_UPSAMPLE
                  p_angle);
     return;
   }
