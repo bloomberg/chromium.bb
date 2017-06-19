@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace media {
 
@@ -19,6 +20,9 @@ class VP8Picture : public base::RefCounted<VP8Picture> {
 
   virtual V4L2VP8Picture* AsV4L2VP8Picture();
   virtual VaapiVP8Picture* AsVaapiVP8Picture();
+
+  // The visible size of picture.
+  gfx::Rect visible_rect;
 
  protected:
   friend class base::RefCounted<VP8Picture>;

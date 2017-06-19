@@ -138,6 +138,18 @@ VP9Decoder::DecodeResult VP9Decoder::Decode() {
     if (!pic)
       return kRanOutOfSurfaces;
 
+    gfx::Rect new_render_rect(curr_frame_hdr_->render_width,
+                              curr_frame_hdr_->render_height);
+    // For safety, check the validity of render size or leave it as (0, 0).
+    if (!gfx::Rect(pic_size_).Contains(new_render_rect)) {
+      DVLOG(1) << "Render size exceeds picture size. render size: "
+               << new_render_rect.ToString()
+               << ", picture size: " << pic_size_.ToString();
+      new_render_rect = gfx::Rect();
+    }
+    DVLOG(2) << "Render resolution: " << new_render_rect.ToString();
+
+    pic->visible_rect = new_render_rect;
     pic->frame_hdr.reset(curr_frame_hdr_.release());
 
     if (!DecodeAndOutputPicture(pic)) {

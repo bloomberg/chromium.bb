@@ -177,6 +177,8 @@ bool H264Decoder::InitCurrPicture(const H264SliceHeader* slice_hdr) {
            sizeof(curr_pic_->ref_pic_marking));
   }
 
+  curr_pic_->visible_rect = visible_rect_;
+
   return true;
 }
 
@@ -1122,6 +1124,12 @@ bool H264Decoder::ProcessSPS(int sps_id, bool* need_new_buffers) {
     *need_new_buffers = true;
     pic_size_ = new_pic_size;
     dpb_.set_max_num_pics(max_dpb_size);
+  }
+
+  gfx::Rect new_visible_rect = sps->GetVisibleRect().value_or(gfx::Rect());
+  if (visible_rect_ != new_visible_rect) {
+    DVLOG(2) << "New visible rect: " << new_visible_rect.ToString();
+    visible_rect_ = new_visible_rect;
   }
 
   if (!UpdateMaxNumReorderFrames(sps))
