@@ -233,25 +233,11 @@ NetworkQualityEstimator::NetworkQualityEstimator(
     bool use_smaller_responses_for_tests,
     bool add_default_platform_observations,
     const NetLogWithSource& net_log)
-    : algorithm_name_to_enum_({{"HttpRTTAndDownstreamThroughput",
-                                EffectiveConnectionTypeAlgorithm::
-                                    HTTP_RTT_AND_DOWNSTREAM_THROUGHOUT},
-                               {"TransportRTTOrDownstreamThroughput",
-                                EffectiveConnectionTypeAlgorithm::
-                                    TRANSPORT_RTT_OR_DOWNSTREAM_THROUGHOUT}}),
-      params_(std::move(params)),
+    : params_(std::move(params)),
       use_localhost_requests_(use_local_host_requests_for_tests),
       use_small_responses_(use_smaller_responses_for_tests),
       disable_offline_check_(false),
       add_default_platform_observations_(add_default_platform_observations),
-      effective_connection_type_algorithm_(
-          algorithm_name_to_enum_.find(
-              params_->GetEffectiveConnectionTypeAlgorithm()) ==
-                  algorithm_name_to_enum_.end()
-              ? kDefaultEffectiveConnectionTypeAlgorithm
-              : algorithm_name_to_enum_
-                    .find(params_->GetEffectiveConnectionTypeAlgorithm())
-                    ->second),
       tick_clock_(new base::DefaultTickClock()),
       last_connection_change_(tick_clock_->NowTicks()),
       current_network_id_(nqe::internal::NetworkID(
@@ -286,17 +272,6 @@ NetworkQualityEstimator::NetworkQualityEstimator(
            NETWORK_QUALITY_OBSERVATION_SOURCE_DEFAULT_HTTP_FROM_PLATFORM}),
       net_log_(net_log),
       weak_ptr_factory_(this) {
-  // None of the algorithms can have an empty name.
-  DCHECK(algorithm_name_to_enum_.end() ==
-         algorithm_name_to_enum_.find(std::string()));
-
-  DCHECK_EQ(algorithm_name_to_enum_.size(),
-            static_cast<size_t>(EffectiveConnectionTypeAlgorithm::
-                                    EFFECTIVE_CONNECTION_TYPE_ALGORITHM_LAST));
-  DCHECK_NE(EffectiveConnectionTypeAlgorithm::
-                EFFECTIVE_CONNECTION_TYPE_ALGORITHM_LAST,
-            effective_connection_type_algorithm_);
-
   network_quality_store_.reset(new nqe::internal::NetworkQualityStore());
   NetworkChangeNotifier::AddConnectionTypeObserver(this);
   if (external_estimate_provider_) {
@@ -1128,8 +1103,9 @@ NetworkQualityEstimator::GetRecentEffectiveConnectionTypeAndNetworkQuality(
     int32_t* downstream_throughput_kbps) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (effective_connection_type_algorithm_ ==
-      EffectiveConnectionTypeAlgorithm::HTTP_RTT_AND_DOWNSTREAM_THROUGHOUT) {
+  if (params_->GetEffectiveConnectionTypeAlgorithm() ==
+      NetworkQualityEstimatorParams::EffectiveConnectionTypeAlgorithm::
+          HTTP_RTT_AND_DOWNSTREAM_THROUGHOUT) {
     return GetRecentEffectiveConnectionTypeUsingMetrics(
         start_time, NetworkQualityEstimator::MetricUsage::
                         MUST_BE_USED /* http_rtt_metric */,
@@ -1139,8 +1115,8 @@ NetworkQualityEstimator::GetRecentEffectiveConnectionTypeAndNetworkQuality(
             USE_IF_AVAILABLE /* downstream_throughput_kbps_metric */,
         http_rtt, transport_rtt, downstream_throughput_kbps);
   }
-  if (effective_connection_type_algorithm_ ==
-      EffectiveConnectionTypeAlgorithm::
+  if (params_->GetEffectiveConnectionTypeAlgorithm() ==
+      NetworkQualityEstimatorParams::EffectiveConnectionTypeAlgorithm::
           TRANSPORT_RTT_OR_DOWNSTREAM_THROUGHOUT) {
     return GetRecentEffectiveConnectionTypeUsingMetrics(
         start_time,
@@ -1159,12 +1135,13 @@ NetworkQualityEstimator::GetRecentEffectiveConnectionTypeAndNetworkQuality(
 bool NetworkQualityEstimator::UseTransportRTT() const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (effective_connection_type_algorithm_ ==
-      EffectiveConnectionTypeAlgorithm::HTTP_RTT_AND_DOWNSTREAM_THROUGHOUT) {
+  if (params_->GetEffectiveConnectionTypeAlgorithm() ==
+      NetworkQualityEstimatorParams::EffectiveConnectionTypeAlgorithm::
+          HTTP_RTT_AND_DOWNSTREAM_THROUGHOUT) {
     return false;
   }
-  if (effective_connection_type_algorithm_ ==
-      EffectiveConnectionTypeAlgorithm::
+  if (params_->GetEffectiveConnectionTypeAlgorithm() ==
+      NetworkQualityEstimatorParams::EffectiveConnectionTypeAlgorithm::
           TRANSPORT_RTT_OR_DOWNSTREAM_THROUGHOUT) {
     return true;
   }
