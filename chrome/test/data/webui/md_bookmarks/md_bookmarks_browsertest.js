@@ -28,6 +28,7 @@ MaterialBookmarksBrowserTest.prototype = {
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
     'test_command_manager.js',
     'test_store.js',
+    'test_timer_proxy.js',
     'test_util.js',
   ]),
 };

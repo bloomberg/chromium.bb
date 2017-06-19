@@ -63,6 +63,7 @@
         '<(EXTERNS_GYP):bookmark_manager_private',
         '<(EXTERNS_GYP):metrics_private',
         'store',
+        'timer_proxy',
         'types',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi']
@@ -157,11 +158,19 @@
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi']
     },
     {
+      'target_name': 'timer_proxy',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+      ],
+      'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
       'target_name': 'toast_manager',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
         '<(DEPTH)/third_party/polymer/v1_0/components-chromium/paper-button/compiled_resources2.gyp:paper-button-extracted',
+        'timer_proxy',
       ],
       'includes': ['../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
