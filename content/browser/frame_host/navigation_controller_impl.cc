@@ -915,7 +915,6 @@ bool NavigationControllerImpl::RendererDidNavigate(
       // the caller that nothing has happened.
       if (pending_entry_) {
         DiscardNonCommittedEntries();
-        delegate_->NotifyNavigationStateChanged(INVALIDATE_TYPE_URL);
       }
       return false;
     default:
@@ -1777,13 +1776,26 @@ void NavigationControllerImpl::RemoveEntryAtIndexInternal(int index) {
 }
 
 void NavigationControllerImpl::DiscardNonCommittedEntries() {
-  bool transient = transient_entry_index_ != -1;
+  bool discarding_visible_entry = GetVisibleEntry() != GetLastCommittedEntry();
+  bool had_transient_entry = GetTransientEntry() != nullptr;
+
+  // Clearing the transient entry should always result in a change to the
+  // visible entry.
+  DCHECK(!had_transient_entry || discarding_visible_entry);
+
+  // Actually discard pending entries.
   DiscardNonCommittedEntriesInternal();
 
-  // If there was a transient entry, invalidate everything so the new active
-  // entry state is shown.
-  if (transient) {
-    delegate_->NotifyNavigationStateChanged(INVALIDATE_TYPE_ALL);
+  DCHECK_EQ(GetVisibleEntry(), GetLastCommittedEntry());
+  DCHECK(!GetTransientEntry());
+  DCHECK(!GetPendingEntry());
+
+  if (discarding_visible_entry) {
+    // If we discarded a visible transient entry, invalidate all.
+    // Otherwise we've discarded a pending entry, and we only
+    // need to invalidate the URL.
+    delegate_->NotifyNavigationStateChanged(
+        had_transient_entry ? INVALIDATE_TYPE_ALL : INVALIDATE_TYPE_URL);
   }
 }
 
