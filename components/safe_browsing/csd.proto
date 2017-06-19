@@ -161,7 +161,6 @@ message ClientMalwareRequest {
 // is safe for the purposes of entering user credentials for logging in.
 message LoginReputationClientRequest {
   // The top level frame URL of the webpage that hosts the login form.
-  // The client will strip CGI parameters.
   optional string page_url = 1;
 
   // Type for the request.
