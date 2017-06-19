@@ -442,7 +442,8 @@ Status WebViewImpl::GetCookies(std::unique_ptr<base::ListValue>* cookies,
   base::DictionaryValue params;
   std::unique_ptr<base::DictionaryValue> result;
 
-  if (browser_info_->build_no >= 3029) {
+  if (browser_info_->build_no >= 3029 &&
+      browser_info_->browser_name != "webview") {
     base::ListValue url_list;
     url_list.AppendString(current_page_url);
     params.Set("urls", base::MakeUnique<base::Value>(url_list));

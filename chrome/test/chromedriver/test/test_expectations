@@ -273,10 +273,6 @@ _OS_NEGATIVE_FILTER['android:chromedriver_webview_shell'] = (
         # TODO(gmanikpure): re-enable this test when we stop supporting
         # WebView on KitKat.
         'ClickTest.testCanClickAnImageMapArea',
-        # The WebView shell that we test against (on Kitkat) does not yet
-        # support Network.getCookies DevTools command.
-        # TODO(gmanikpure): reenable when it does.
-        'ObjectStateAssumptionsTest.testOptionsForUninitializedWebDriver',
     ]
 )
 
