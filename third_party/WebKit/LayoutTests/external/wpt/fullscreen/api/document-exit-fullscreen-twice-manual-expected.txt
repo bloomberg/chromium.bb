@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Document#exitFullscreen() called twice assert_equals: fullscreenElement after first exitFullscreen() expected Element node <div id="log"></div> but got null
-Harness: the test ran to completion.
-

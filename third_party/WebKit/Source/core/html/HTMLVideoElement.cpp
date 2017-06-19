@@ -256,7 +256,7 @@ void HTMLVideoElement::OnBecamePersistentVideo(bool value) {
       histogram.Count(kVideoPersistenceControlsTypeCustom);
 
     Element* fullscreen_element =
-        Fullscreen::CurrentFullScreenElementFrom(GetDocument());
+        Fullscreen::FullscreenElementFrom(GetDocument());
     // Only set the video in persistent mode if it is not using native controls
     // and is currently fullscreen.
     if (!fullscreen_element || IsFullscreen())
@@ -280,7 +280,7 @@ void HTMLVideoElement::OnBecamePersistentVideo(bool value) {
     PseudoStateChanged(CSSSelector::kPseudoVideoPersistent);
 
     Element* fullscreen_element =
-        Fullscreen::CurrentFullScreenElementFrom(GetDocument());
+        Fullscreen::FullscreenElementFrom(GetDocument());
     // If the page is no longer fullscreen, the full tree will have to be
     // traversed to make sure things are cleaned up.
     for (Element* element = this; element && element != fullscreen_element;

@@ -18,6 +18,9 @@ class ElementFullscreen {
  public:
   static void requestFullscreen(Element&);
 
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(fullscreenchange);
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(fullscreenerror);
+
   static void webkitRequestFullscreen(Element&);
 
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(webkitfullscreenchange);

@@ -7,6 +7,9 @@
 partial interface Element {
     [RuntimeEnabled=FullscreenUnprefixed] void requestFullscreen();
 
+    [RuntimeEnabled=FullscreenUnprefixed] attribute EventHandler onfullscreenchange;
+    [RuntimeEnabled=FullscreenUnprefixed] attribute EventHandler onfullscreenerror;
+
     // Mozilla version
     [LogActivity, LogAllWorlds, MeasureAs=PrefixedElementRequestFullScreen, ImplementedAs=webkitRequestFullscreen] void webkitRequestFullScreen();
 

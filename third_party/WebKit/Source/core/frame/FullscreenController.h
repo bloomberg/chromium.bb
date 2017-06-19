@@ -44,6 +44,9 @@ class Element;
 class LocalFrame;
 class WebViewBase;
 
+// FullscreenController is a per-WebView class that manages the transition into
+// and out of fullscreen, including restoring scroll offset and scale after
+// exiting fullscreen. It is (indirectly) used by the Fullscreen class.
 class CORE_EXPORT FullscreenController {
  public:
   static std::unique_ptr<FullscreenController> Create(WebViewBase*);
@@ -61,7 +64,7 @@ class CORE_EXPORT FullscreenController {
 
   // Called by Fullscreen (via ChromeClient) to notify that the fullscreen
   // element has changed.
-  void FullscreenElementChanged(Element*, Element*);
+  void FullscreenElementChanged(Element* old_element, Element* new_element);
 
   bool IsFullscreenOrTransitioning() const { return state_ != State::kInitial; }
 
@@ -79,12 +82,12 @@ class CORE_EXPORT FullscreenController {
   WebViewBase* web_view_base_;
 
   // State is used to avoid unnecessary enter/exit requests, and to restore the
-  // m_initial* after the first layout upon exiting fullscreen. Typically, the
+  // initial*_ after the first layout upon exiting fullscreen. Typically, the
   // state goes through every state from Initial to NeedsScrollAndScaleRestore
   // and then back to Initial, but the are two exceptions:
-  //  1. didExitFullscreen() can transition from any non-Initial state to
+  //  1. DidExitFullscreen() can transition from any non-Initial state to
   //     NeedsScrollAndScaleRestore, in case of a browser-intiated exit.
-  //  2. enterFullscreen() can transition from NeedsScrollAndScaleRestore to
+  //  2. EnterFullscreen() can transition from NeedsScrollAndScaleRestore to
   //     EnteringFullscreen, in case of a quick exit+enter.
   enum class State {
     kInitial,

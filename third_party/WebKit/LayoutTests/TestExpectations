@@ -1646,10 +1646,6 @@ crbug.com/525296 fast/css/font-load-while-styleresolver-missing.html [ Crash Fai
 
 crbug.com/240576 external/wpt/fullscreen/api/element-ready-check-containing-iframe-manual.html [ Timeout Failure Pass ]
 
-# TODO(foolip): Make the timing of fullscreen events reliable.
-crbug.com/402376 external/wpt/fullscreen/api/document-exit-fullscreen-timing-manual.html [ Failure Pass ]
-crbug.com/402376 external/wpt/fullscreen/api/element-request-fullscreen-timing-manual.html [ Failure Pass ]
-
 crbug.com/567230 [ Debug ] virtual/threaded/animations/restart-not-visible.html [ Timeout ]
 
 crbug.com/567419 inspector/elements/styles-2/metrics-box-sizing.html [ Skip ]

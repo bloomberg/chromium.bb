@@ -141,7 +141,7 @@ void MediaControlsRotateToFullscreenDelegate::OnScreenOrientationChange() {
 
   // Don't enter/exit fullscreen if some other element is fullscreen.
   Element* fullscreen_element =
-      Fullscreen::CurrentFullScreenElementFrom(video_element_->GetDocument());
+      Fullscreen::FullscreenElementFrom(video_element_->GetDocument());
   if (fullscreen_element && fullscreen_element != video_element_)
     return;
 

@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Move the fullscreen element to another document assert_equals: expected Element node <div></div> but got Document node with 2 children
-Harness: the test ran to completion.
-

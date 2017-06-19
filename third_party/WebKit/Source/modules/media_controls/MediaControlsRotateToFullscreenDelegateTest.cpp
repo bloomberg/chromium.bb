@@ -563,7 +563,7 @@ TEST_F(MediaControlsRotateToFullscreenDelegateTest,
     Fullscreen::RequestFullscreen(*GetDocument().body());
   }
   testing::RunPendingTasks();
-  EXPECT_TRUE(Fullscreen::IsCurrentFullScreenElement(*GetDocument().body()));
+  EXPECT_TRUE(Fullscreen::IsFullscreenElement(*GetDocument().body()));
   EXPECT_FALSE(GetVideo().IsFullscreen());
 
   // Play video.
@@ -576,7 +576,7 @@ TEST_F(MediaControlsRotateToFullscreenDelegateTest,
   RotateTo(kWebScreenOrientationLandscapePrimary);
 
   // Should not enter fullscreen on video, since document is already fullscreen.
-  EXPECT_TRUE(Fullscreen::IsCurrentFullScreenElement(*GetDocument().body()));
+  EXPECT_TRUE(Fullscreen::IsFullscreenElement(*GetDocument().body()));
   EXPECT_FALSE(GetVideo().IsFullscreen());
 }
 
@@ -654,7 +654,7 @@ TEST_F(MediaControlsRotateToFullscreenDelegateTest,
     Fullscreen::RequestFullscreen(*GetDocument().body());
   }
   testing::RunPendingTasks();
-  EXPECT_TRUE(Fullscreen::IsCurrentFullScreenElement(*GetDocument().body()));
+  EXPECT_TRUE(Fullscreen::IsFullscreenElement(*GetDocument().body()));
   EXPECT_FALSE(GetVideo().IsFullscreen());
 
   // Leave video paused (playing is not a requirement to exit fullscreen).
@@ -665,7 +665,7 @@ TEST_F(MediaControlsRotateToFullscreenDelegateTest,
   RotateTo(kWebScreenOrientationPortraitPrimary);
 
   // Should not exit fullscreen, since video was not the fullscreen element.
-  EXPECT_TRUE(Fullscreen::IsCurrentFullScreenElement(*GetDocument().body()));
+  EXPECT_TRUE(Fullscreen::IsFullscreenElement(*GetDocument().body()));
   EXPECT_FALSE(GetVideo().IsFullscreen());
 }
 

@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Element#requestFullscreen() when not allowed to request fullscreen assert_equals: event.target expected Element node <div id="log"></div> but got Document node with 2 children
-Harness: the test ran to completion.
-

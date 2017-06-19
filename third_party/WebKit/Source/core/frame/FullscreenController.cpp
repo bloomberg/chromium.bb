@@ -66,7 +66,7 @@ FullscreenController::FullscreenController(WebViewBase* web_view_base)
 
 void FullscreenController::DidEnterFullscreen() {
   // |Browser::EnterFullscreenModeForTab()| can enter fullscreen without going
-  // through |Fullscreen::requestFullscreen()|, in which case there will be no
+  // through |Fullscreen::RequestFullscreen()|, in which case there will be no
   // fullscreen element. Do nothing.
   if (state_ != State::kEnteringFullscreen)
     return;
@@ -89,6 +89,9 @@ void FullscreenController::DidEnterFullscreen() {
         fullscreen->DidEnterFullscreen();
     }
   }
+
+  // TODO(foolip): If the top level browsing context (main frame) ends up with
+  // no fullscreen element, exit fullscreen again to recover.
 }
 
 void FullscreenController::DidExitFullscreen() {
@@ -101,38 +104,37 @@ void FullscreenController::DidExitFullscreen() {
 
   UpdatePageScaleConstraints(true);
 
-  // Set |m_state| so that any |exitFullscreen()| calls from within
-  // |Fullscreen::didExitFullscreen()| do not call
-  // |WebFrameClient::exitFullscreen()| again.
-  // TODO(foolip): Remove this when state changes and events are synchronized
-  // with animation frames. https://crbug.com/402376
-  state_ = State::kExitingFullscreen;
-
-  // Notify all local frames that we have exited fullscreen.
-  // TODO(foolip): This should only need to notify the topmost local roots. That
-  // doesn't currently work because |Fullscreen::m_currentFullScreenElement|
-  // isn't set for the topmost document when an iframe goes fullscreen, but can
-  // be done once |m_currentFullScreenElement| is gone and all state is in the
-  // fullscreen element stack. https://crbug.com/402421
-  for (Frame* frame = web_view_base_->GetPage()->MainFrame(); frame;
-       frame = frame->Tree().TraverseNext()) {
-    if (!frame->IsLocalFrame())
-      continue;
-    if (Document* document = ToLocalFrame(frame)->GetDocument()) {
-      if (Fullscreen* fullscreen = Fullscreen::FromIfExists(*document))
-        fullscreen->DidExitFullscreen();
-    }
-  }
-
   // We need to wait until style and layout are updated in order to properly
   // restore scroll offsets since content may not be overflowing in the same way
   // until they are.
   state_ = State::kNeedsScrollAndScaleRestore;
+
+  // Notify the topmost local frames that we have exited fullscreen.
+  // |Fullscreen::DidExitFullscreen()| will take care of descendant frames.
+  for (Frame* frame = web_view_base_->GetPage()->MainFrame(); frame;) {
+    Frame* next_frame = frame->Tree().TraverseNext();
+
+    if (frame->IsRemoteFrame()) {
+      frame = next_frame;
+      continue;
+    }
+
+    DCHECK(frame->IsLocalRoot());
+    if (Document* document = ToLocalFrame(frame)->GetDocument()) {
+      if (Fullscreen* fullscreen = Fullscreen::FromIfExists(*document))
+        fullscreen->DidExitFullscreen();
+    }
+
+    // Skip over all descendant frames.
+    while (next_frame && next_frame->Tree().IsDescendantOf(frame))
+      next_frame = next_frame->Tree().TraverseNext();
+    frame = next_frame;
+  }
 }
 
 void FullscreenController::EnterFullscreen(LocalFrame& frame) {
   // If already fullscreen or exiting fullscreen, synchronously call
-  // |didEnterFullscreen()|. When exiting, the coming |didExitFullscren()| call
+  // |DidEnterFullscreen()|. When exiting, the coming |DidExitFullscreen()| call
   // will again notify all frames.
   if (state_ == State::kFullscreen || state_ == State::kExitingFullscreen) {
     State old_state = state_;
@@ -142,7 +144,7 @@ void FullscreenController::EnterFullscreen(LocalFrame& frame) {
     return;
   }
 
-  // We need to store these values here rather than in |didEnterFullscreen()|
+  // We need to store these values here rather than in |DidEnterFullscreen()|
   // since by the time the latter is called, a Resize has already occured,
   // clamping the scroll offset. Don't save values if we're still waiting to
   // restore a previous set. This can happen if we exit and quickly reenter
@@ -184,19 +186,19 @@ void FullscreenController::ExitFullscreen(LocalFrame& frame) {
   state_ = State::kExitingFullscreen;
 }
 
-void FullscreenController::FullscreenElementChanged(Element* from_element,
-                                                    Element* to_element) {
-  DCHECK_NE(from_element, to_element);
+void FullscreenController::FullscreenElementChanged(Element* old_element,
+                                                    Element* new_element) {
+  DCHECK_NE(old_element, new_element);
 
   // We only override the WebView's background color for overlay fullscreen
   // video elements, so have to restore the override when the element changes.
   RestoreBackgroundColorOverride();
 
-  if (to_element) {
-    DCHECK(Fullscreen::IsCurrentFullScreenElement(*to_element));
+  if (new_element) {
+    DCHECK(Fullscreen::IsFullscreenElement(*new_element));
 
-    if (isHTMLVideoElement(*to_element)) {
-      HTMLVideoElement& video_element = toHTMLVideoElement(*to_element);
+    if (isHTMLVideoElement(*new_element)) {
+      HTMLVideoElement& video_element = toHTMLVideoElement(*new_element);
       video_element.DidEnterFullscreen();
 
       // If the video uses overlay fullscreen mode, make the background
@@ -206,11 +208,11 @@ void FullscreenController::FullscreenElementChanged(Element* from_element,
     }
   }
 
-  if (from_element) {
-    DCHECK(!Fullscreen::IsCurrentFullScreenElement(*from_element));
+  if (old_element) {
+    DCHECK(!Fullscreen::IsFullscreenElement(*old_element));
 
-    if (isHTMLVideoElement(*from_element)) {
-      HTMLVideoElement& video_element = toHTMLVideoElement(*from_element);
+    if (isHTMLVideoElement(*old_element)) {
+      HTMLVideoElement& video_element = toHTMLVideoElement(*old_element);
       video_element.DidExitFullscreen();
     }
   }
@@ -264,7 +266,7 @@ void FullscreenController::DidUpdateLayout() {
   }
   web_view_base_->SetVisualViewportOffset(initial_visual_viewport_offset_);
   // Background color override was already restored when
-  // fullscreenElementChanged([..], nullptr) was called while exiting.
+  // FullscreenElementChanged([..], nullptr) was called while exiting.
 
   state_ = State::kInitial;
 }
@@ -279,7 +281,7 @@ void FullscreenController::UpdatePageScaleConstraints(bool remove_constraints) {
       fullscreen_constraints);
   web_view_base_->GetPageScaleConstraintsSet().ComputeFinalConstraints();
 
-  // Although we called |computedFinalConstraints()| above, the "final"
+  // Although we called |ComputeFinalConstraints()| above, the "final"
   // constraints are not actually final. They are still subject to scale factor
   // clamping by contents size. Normally they should be dirtied due to contents
   // size mutation after layout, however the contents size is not guaranteed to
