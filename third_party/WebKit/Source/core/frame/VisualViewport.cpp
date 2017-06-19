@@ -211,30 +211,13 @@ double VisualViewport::OffsetTop() const {
 }
 
 double VisualViewport::Width() const {
-  if (!MainFrame())
-    return 0;
-
   UpdateStyleAndLayoutIgnorePendingStylesheets();
-
-  float zoom = MainFrame()->PageZoomFactor();
-  float width_css_px = AdjustScrollForAbsoluteZoom(VisibleSize().Width(), zoom);
-  float scrollbar_thickness_css_px =
-      MainFrame()->View()->VerticalScrollbarWidth() / (zoom * scale_);
-  return width_css_px - scrollbar_thickness_css_px;
+  return VisibleWidthCSSPx();
 }
 
 double VisualViewport::Height() const {
-  if (!MainFrame())
-    return 0;
-
   UpdateStyleAndLayoutIgnorePendingStylesheets();
-
-  float zoom = MainFrame()->PageZoomFactor();
-  float height_css_px =
-      AdjustScrollForAbsoluteZoom(VisibleSize().Height(), zoom);
-  float scrollbar_thickness_css_px =
-      MainFrame()->View()->HorizontalScrollbarHeight() / (zoom * scale_);
-  return height_css_px - scrollbar_thickness_css_px;
+  return VisibleHeightCSSPx();
 }
 
 double VisualViewport::ScaleForVisualViewport() const {
@@ -245,6 +228,29 @@ void VisualViewport::SetScaleAndLocation(float scale,
                                          const FloatPoint& location) {
   if (DidSetScaleOrLocation(scale, location))
     NotifyRootFrameViewport();
+}
+
+double VisualViewport::VisibleWidthCSSPx() const {
+  if (!MainFrame())
+    return 0;
+
+  float zoom = MainFrame()->PageZoomFactor();
+  float width_css_px = AdjustScrollForAbsoluteZoom(VisibleSize().Width(), zoom);
+  float scrollbar_thickness_css_px =
+      MainFrame()->View()->VerticalScrollbarWidth() / (zoom * scale_);
+  return width_css_px - scrollbar_thickness_css_px;
+}
+
+double VisualViewport::VisibleHeightCSSPx() const {
+  if (!MainFrame())
+    return 0;
+
+  float zoom = MainFrame()->PageZoomFactor();
+  float height_css_px =
+      AdjustScrollForAbsoluteZoom(VisibleSize().Height(), zoom);
+  float scrollbar_thickness_css_px =
+      MainFrame()->View()->HorizontalScrollbarHeight() / (zoom * scale_);
+  return height_css_px - scrollbar_thickness_css_px;
 }
 
 bool VisualViewport::DidSetScaleOrLocation(float scale,
