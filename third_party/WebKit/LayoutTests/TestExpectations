@@ -1518,6 +1518,7 @@ crbug.com/582836 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftest
 crbug.com/582836 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/variables/variable-font-face-02.html [ Failure ]
 
 crbug.com/553838 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/writing-modes-3/text-combine-upright-break-inside-001a.html [ Failure ]
+crbug.com/553838 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/writing-modes-3/text-combine-upright-compression-005a.html [ Failure Pass ]
 crbug.com/553838 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/writing-modes-3/text-combine-upright-compression-006.html [ Failure ]
 crbug.com/553838 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/writing-modes-3/text-combine-upright-compression-006a.html [ Failure ]
 crbug.com/553838 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/writing-modes-3/text-combine-upright-compression-007.html [ Failure ]
@@ -1907,7 +1908,7 @@ crbug.com/655458 crbug.com/721814 external/wpt/WebCryptoAPI/idlharness.https.htm
 crbug.com/626703 external/wpt/web-nfc/idlharness.https.html [ Skip ]
 
 crbug.com/723741 virtual/threaded/animations/svg-attribute-composition/svg-startOffset-composition.html [ Failure Pass ]
-crbug.com/723741 virtual/threaded/inspector/tracing/idle-callback.html [ Failure Pass ]
+crbug.com/723741 virtual/threaded/inspector/tracing/idle-callback.html [ Failure Pass Timeout ]
 crbug.com/723826 http/tests/security/w3c/cross-origin-objects.html [ Failure Pass ]
 crbug.com/723826 virtual/mojo-loading/http/tests/security/w3c/cross-origin-objects.html [ Failure Pass ]
 
