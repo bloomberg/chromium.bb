@@ -740,14 +740,14 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // flex-direction (aka -webkit-flex-direction)
-  static EFlexDirection InitialFlexDirection() { return kFlowRow; }
+  static EFlexDirection InitialFlexDirection() { return EFlexDirection::kRow; }
   EFlexDirection FlexDirection() const {
     return static_cast<EFlexDirection>(
         rare_non_inherited_data_->flexible_box_data_->flex_direction_);
   }
   void SetFlexDirection(EFlexDirection direction) {
     SET_NESTED_VAR(rare_non_inherited_data_, flexible_box_data_,
-                   flex_direction_, direction);
+                   flex_direction_, static_cast<unsigned>(direction));
   }
 
   // flex-grow (aka -webkit-flex-grow)
@@ -2015,12 +2015,12 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // Flex utility functions.
   bool IsColumnFlexDirection() const {
-    return FlexDirection() == kFlowColumn ||
-           FlexDirection() == kFlowColumnReverse;
+    return FlexDirection() == EFlexDirection::kColumn ||
+           FlexDirection() == EFlexDirection::kColumnReverse;
   }
   bool IsReverseFlexDirection() const {
-    return FlexDirection() == kFlowRowReverse ||
-           FlexDirection() == kFlowColumnReverse;
+    return FlexDirection() == EFlexDirection::kRowReverse ||
+           FlexDirection() == EFlexDirection::kColumnReverse;
   }
   bool HasBoxReflect() const { return BoxReflect(); }
   bool ReflectionDataEquivalent(const ComputedStyle& other) const {

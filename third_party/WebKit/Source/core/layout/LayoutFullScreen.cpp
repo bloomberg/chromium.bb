@@ -108,7 +108,7 @@ void LayoutFullScreen::UpdateStyle(LayoutObject* parent) {
   // Alignment (align-items) value can't be used to resolve its children Self
   // Alignment 'auto' values.
   fullscreen_style->SetAlignItemsPosition(kItemPositionCenter);
-  fullscreen_style->SetFlexDirection(kFlowColumn);
+  fullscreen_style->SetFlexDirection(EFlexDirection::kColumn);
 
   fullscreen_style->SetPosition(EPosition::kFixed);
   fullscreen_style->SetLeft(Length(0, blink::kFixed));

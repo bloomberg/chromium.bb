@@ -157,12 +157,7 @@ enum EBoxLines { SINGLE, MULTIPLE };
 
 // CSS3 Flexbox Properties
 
-enum EFlexDirection {
-  kFlowRow,
-  kFlowRowReverse,
-  kFlowColumn,
-  kFlowColumnReverse
-};
+enum class EFlexDirection { kRow, kRowReverse, kColumn, kColumnReverse };
 enum EFlexWrap { kFlexNoWrap, kFlexWrap, kFlexWrapReverse };
 
 // CSS3 Image Values

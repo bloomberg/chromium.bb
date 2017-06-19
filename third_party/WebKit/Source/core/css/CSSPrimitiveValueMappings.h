@@ -773,16 +773,16 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EFlexDirection e)
     : CSSValue(kIdentifierClass) {
   switch (e) {
-    case kFlowRow:
+    case EFlexDirection::kRow:
       value_id_ = CSSValueRow;
       break;
-    case kFlowRowReverse:
+    case EFlexDirection::kRowReverse:
       value_id_ = CSSValueRowReverse;
       break;
-    case kFlowColumn:
+    case EFlexDirection::kColumn:
       value_id_ = CSSValueColumn;
       break;
-    case kFlowColumnReverse:
+    case EFlexDirection::kColumnReverse:
       value_id_ = CSSValueColumnReverse;
       break;
   }
@@ -792,19 +792,19 @@ template <>
 inline EFlexDirection CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueRow:
-      return kFlowRow;
+      return EFlexDirection::kRow;
     case CSSValueRowReverse:
-      return kFlowRowReverse;
+      return EFlexDirection::kRowReverse;
     case CSSValueColumn:
-      return kFlowColumn;
+      return EFlexDirection::kColumn;
     case CSSValueColumnReverse:
-      return kFlowColumnReverse;
+      return EFlexDirection::kColumnReverse;
     default:
       break;
   }
 
   NOTREACHED();
-  return kFlowRow;
+  return EFlexDirection::kRow;
 }
 
 template <>

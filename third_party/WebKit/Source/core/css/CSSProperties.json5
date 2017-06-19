@@ -1216,7 +1216,7 @@
       name: "flex-direction",
       type_name: "EFlexDirection",
       field_template: "storage_only",
-      default_value: "kFlowRow",
+      default_value: "EFlexDirection::kRow",
       field_size: 2,
       field_group: "rare-non-inherited->flexible-box",
     },

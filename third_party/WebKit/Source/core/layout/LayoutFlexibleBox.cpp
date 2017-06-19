@@ -275,7 +275,7 @@ IntSize LayoutFlexibleBox::OriginAdjustmentForScrollbars() const {
   TextDirection text_direction = Style()->Direction();
   WritingMode writing_mode = Style()->GetWritingMode();
 
-  if (flex_direction == kFlowRow) {
+  if (flex_direction == EFlexDirection::kRow) {
     if (text_direction == TextDirection::kRtl) {
       if (blink::IsHorizontalWritingMode(writing_mode))
         size.Expand(adjustment_width, 0);
@@ -284,7 +284,7 @@ IntSize LayoutFlexibleBox::OriginAdjustmentForScrollbars() const {
     }
     if (IsFlippedBlocksWritingMode(writing_mode))
       size.Expand(adjustment_width, 0);
-  } else if (flex_direction == kFlowRowReverse) {
+  } else if (flex_direction == EFlexDirection::kRowReverse) {
     if (text_direction == TextDirection::kLtr) {
       if (blink::IsHorizontalWritingMode(writing_mode))
         size.Expand(adjustment_width, 0);
@@ -293,7 +293,7 @@ IntSize LayoutFlexibleBox::OriginAdjustmentForScrollbars() const {
     }
     if (IsFlippedBlocksWritingMode(writing_mode))
       size.Expand(adjustment_width, 0);
-  } else if (flex_direction == kFlowColumn) {
+  } else if (flex_direction == EFlexDirection::kColumn) {
     if (IsFlippedBlocksWritingMode(writing_mode))
       size.Expand(adjustment_width, 0);
   } else {
@@ -308,17 +308,20 @@ IntSize LayoutFlexibleBox::OriginAdjustmentForScrollbars() const {
 bool LayoutFlexibleBox::HasTopOverflow() const {
   EFlexDirection flex_direction = Style()->FlexDirection();
   if (IsHorizontalWritingMode())
-    return flex_direction == kFlowColumnReverse;
-  return flex_direction ==
-         (Style()->IsLeftToRightDirection() ? kFlowRowReverse : kFlowRow);
+    return flex_direction == EFlexDirection::kColumnReverse;
+  return flex_direction == (Style()->IsLeftToRightDirection()
+                                ? EFlexDirection::kRowReverse
+                                : EFlexDirection::kRow);
 }
 
 bool LayoutFlexibleBox::HasLeftOverflow() const {
   EFlexDirection flex_direction = Style()->FlexDirection();
-  if (IsHorizontalWritingMode())
-    return flex_direction ==
-           (Style()->IsLeftToRightDirection() ? kFlowRowReverse : kFlowRow);
-  return flex_direction == kFlowColumnReverse;
+  if (IsHorizontalWritingMode()) {
+    return flex_direction == (Style()->IsLeftToRightDirection()
+                                  ? EFlexDirection::kRowReverse
+                                  : EFlexDirection::kRow);
+  }
+  return flex_direction == EFlexDirection::kColumnReverse;
 }
 
 void LayoutFlexibleBox::RemoveChild(LayoutObject* child) {
@@ -470,7 +473,7 @@ bool LayoutFlexibleBox::IsLeftToRightFlow() const {
            IsFlippedLinesWritingMode(Style()->GetWritingMode());
   }
   return Style()->IsLeftToRightDirection() ^
-         (Style()->FlexDirection() == kFlowRowReverse);
+         (Style()->FlexDirection() == EFlexDirection::kRowReverse);
 }
 
 bool LayoutFlexibleBox::IsMultiline() const {
@@ -1628,8 +1631,8 @@ LayoutUnit LayoutFlexibleBox::StaticMainAxisPositionForPositionedChild(
 
   LayoutUnit offset = InitialContentPositionOffset(available_space,
                                                    ResolvedJustifyContent(), 1);
-  if (StyleRef().FlexDirection() == kFlowRowReverse ||
-      StyleRef().FlexDirection() == kFlowColumnReverse)
+  if (StyleRef().FlexDirection() == EFlexDirection::kRowReverse ||
+      StyleRef().FlexDirection() == EFlexDirection::kColumnReverse)
     offset = available_space - offset;
   return offset;
 }
@@ -1806,7 +1809,7 @@ void LayoutFlexibleBox::LayoutAndPlaceChildren(
       FlowAwareBorderStart() + FlowAwarePaddingStart();
   main_axis_offset += InitialContentPositionOffset(
       available_free_space, justify_content, children.size());
-  if (Style()->FlexDirection() == kFlowRowReverse &&
+  if (Style()->FlexDirection() == EFlexDirection::kRowReverse &&
       ShouldPlaceBlockDirectionScrollbarOnLogicalLeft())
     main_axis_offset += IsHorizontalFlow() ? VerticalScrollbarWidth()
                                            : HorizontalScrollbarHeight();
@@ -1915,7 +1918,7 @@ void LayoutFlexibleBox::LayoutAndPlaceChildren(
         LogicalHeight(), main_axis_offset + FlowAwareBorderEnd() +
                              FlowAwarePaddingEnd() + ScrollbarLogicalHeight()));
 
-  if (Style()->FlexDirection() == kFlowColumnReverse) {
+  if (Style()->FlexDirection() == EFlexDirection::kColumnReverse) {
     // We have to do an extra pass for column-reverse to reposition the flex
     // items since the start depends on the height of the flexbox, which we
     // only know after we've positioned all the flex items.
