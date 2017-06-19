@@ -28,43 +28,40 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "web/StorageQuotaClientImpl.h"
+#ifndef StorageQuotaClientImpl_h
+#define StorageQuotaClientImpl_h
 
-#include "core/dom/Document.h"
-#include "core/dom/ExecutionContext.h"
-#include "core/dom/TaskRunnerHelper.h"
-#include "core/frame/WebLocalFrameBase.h"
-#include "modules/quota/DeprecatedStorageQuotaCallbacksImpl.h"
-#include "modules/quota/StorageErrorCallback.h"
-#include "modules/quota/StorageQuotaCallback.h"
-#include "public/platform/WebStorageQuotaType.h"
-#include "public/web/WebFrameClient.h"
+#include "modules/ModulesExport.h"
+#include "modules/quota/StorageQuotaClient.h"
+#include "platform/wtf/Forward.h"
 
 namespace blink {
 
-StorageQuotaClientImpl::StorageQuotaClientImpl() {}
+// TODO(sashab): Merge this into StorageQuotaClient.
+class MODULES_EXPORT StorageQuotaClientImpl
+    : public GarbageCollectedFinalized<StorageQuotaClientImpl>,
+      NON_EXPORTED_BASE(public StorageQuotaClient) {
+  USING_GARBAGE_COLLECTED_MIXIN(StorageQuotaClientImpl);
 
-StorageQuotaClientImpl::~StorageQuotaClientImpl() {}
+ public:
+  static StorageQuotaClientImpl* Create() {
+    return new StorageQuotaClientImpl();
+  }
 
-void StorageQuotaClientImpl::RequestQuota(
-    ScriptState* script_state,
-    WebStorageQuotaType storage_type,
-    unsigned long long new_quota_in_bytes,
-    StorageQuotaCallback* success_callback,
-    StorageErrorCallback* error_callback) {
-  ExecutionContext* execution_context = ExecutionContext::From(script_state);
-  DCHECK(execution_context);
-  DCHECK(execution_context->IsDocument())
-      << "Quota requests are not supported in workers";
+  ~StorageQuotaClientImpl() override;
 
-  Document* document = ToDocument(execution_context);
-  WebLocalFrameBase* web_frame =
-      WebLocalFrameBase::FromFrame(document->GetFrame());
-  StorageQuotaCallbacks* callbacks =
-      DeprecatedStorageQuotaCallbacksImpl::Create(success_callback,
-                                                  error_callback);
-  web_frame->Client()->RequestStorageQuota(storage_type, new_quota_in_bytes,
-                                           callbacks);
-}
+  void RequestQuota(ScriptState*,
+                    WebStorageQuotaType,
+                    unsigned long long new_quota_in_bytes,
+                    StorageQuotaCallback*,
+                    StorageErrorCallback*) override;
+
+  DEFINE_INLINE_VIRTUAL_TRACE() { StorageQuotaClient::Trace(visitor); }
+
+ private:
+  StorageQuotaClientImpl();
+};
 
 }  // namespace blink
+
+#endif  // StorageQuotaClientImpl_h

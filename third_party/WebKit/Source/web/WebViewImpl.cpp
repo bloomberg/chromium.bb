@@ -104,6 +104,7 @@
 #include "modules/compositorworker/CompositorWorkerProxyClientImpl.h"
 #include "modules/credentialmanager/CredentialManagerClient.h"
 #include "modules/encryptedmedia/MediaKeysController.h"
+#include "modules/quota/StorageQuotaClientImpl.h"
 #include "modules/speech/SpeechRecognitionClientProxy.h"
 #include "modules/storage/StorageNamespaceController.h"
 #include "modules/webdatabase/DatabaseClient.h"
@@ -170,7 +171,6 @@
 #include "public/web/WebWindowFeatures.h"
 #include "web/PageOverlay.h"
 #include "web/PrerendererClientImpl.h"
-#include "web/StorageQuotaClientImpl.h"
 #include "web/WebDevToolsAgentImpl.h"
 
 #if USE(DEFAULT_RENDER_THEME)

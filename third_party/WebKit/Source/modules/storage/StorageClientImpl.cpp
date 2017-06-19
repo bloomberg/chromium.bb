@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "web/StorageClientImpl.h"
+#include "modules/storage/StorageClientImpl.h"
 
 #include <memory>
 #include "core/exported/WebViewBase.h"

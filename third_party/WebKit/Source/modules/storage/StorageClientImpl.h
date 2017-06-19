@@ -5,14 +5,17 @@
 #ifndef StorageClientImpl_h
 #define StorageClientImpl_h
 
-#include "modules/storage/StorageClient.h"
 #include <memory>
+#include "modules/ModulesExport.h"
+#include "modules/storage/StorageClient.h"
 
 namespace blink {
 
 class WebViewBase;
 
-class StorageClientImpl : public StorageClient {
+// TODO(sashab): Merge this into StorageClient.
+class MODULES_EXPORT StorageClientImpl
+    : NON_EXPORTED_BASE(public StorageClient) {
  public:
   explicit StorageClientImpl(WebViewBase*);
 
