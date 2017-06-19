@@ -283,7 +283,7 @@
     },
     {
       name: "CSSOMSmoothScroll",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "CSSPaintAPI",
