@@ -2819,7 +2819,7 @@
           ],
           "dimension_sets": [
             {
-              "android_devices": "4",
+              "android_devices": "1",
               "device_os": "LMY48I",
               "device_type": "hammerhead"
             }
@@ -2860,7 +2860,7 @@
           ],
           "dimension_sets": [
             {
-              "android_devices": "4",
+              "android_devices": "1",
               "device_os": "LMY48I",
               "device_type": "hammerhead"
             }
@@ -2901,7 +2901,7 @@
           ],
           "dimension_sets": [
             {
-              "android_devices": "4",
+              "android_devices": "1",
               "device_os": "LMY48I",
               "device_type": "hammerhead"
             }
@@ -2942,7 +2942,7 @@
           ],
           "dimension_sets": [
             {
-              "android_devices": "4",
+              "android_devices": "1",
               "device_os": "LMY48I",
               "device_type": "hammerhead"
             }
@@ -2974,7 +2974,7 @@
           ],
           "dimension_sets": [
             {
-              "android_devices": "4",
+              "android_devices": "1",
               "device_os": "LMY48I",
               "device_type": "hammerhead"
             }
@@ -3015,7 +3015,7 @@
           ],
           "dimension_sets": [
             {
-              "android_devices": "4",
+              "android_devices": "1",
               "device_os": "LMY48I",
               "device_type": "hammerhead"
             }
@@ -3056,7 +3056,7 @@
           ],
           "dimension_sets": [
             {
-              "android_devices": "4",
+              "android_devices": "1",
               "device_os": "LMY48I",
               "device_type": "hammerhead"
             }
@@ -3097,7 +3097,7 @@
           ],
           "dimension_sets": [
             {
-              "android_devices": "4",
+              "android_devices": "1",
               "device_os": "LMY48I",
               "device_type": "hammerhead"
             }
@@ -3113,7 +3113,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "shards": 6
         },
         "test": "content_browsertests"
       },
@@ -3138,7 +3139,7 @@
           ],
           "dimension_sets": [
             {
-              "android_devices": "4",
+              "android_devices": "1",
               "device_os": "LMY48I",
               "device_type": "hammerhead"
             }
@@ -3179,7 +3180,7 @@
           ],
           "dimension_sets": [
             {
-              "android_devices": "4",
+              "android_devices": "1",
               "device_os": "LMY48I",
               "device_type": "hammerhead"
             }
@@ -3220,7 +3221,7 @@
           ],
           "dimension_sets": [
             {
-              "android_devices": "4",
+              "android_devices": "1",
               "device_os": "LMY48I",
               "device_type": "hammerhead"
             }
@@ -3261,7 +3262,7 @@
           ],
           "dimension_sets": [
             {
-              "android_devices": "4",
+              "android_devices": "1",
               "device_os": "LMY48I",
               "device_type": "hammerhead"
             }
@@ -3302,7 +3303,7 @@
           ],
           "dimension_sets": [
             {
-              "android_devices": "4",
+              "android_devices": "1",
               "device_os": "LMY48I",
               "device_type": "hammerhead"
             }
@@ -3343,7 +3344,7 @@
           ],
           "dimension_sets": [
             {
-              "android_devices": "4",
+              "android_devices": "1",
               "device_os": "LMY48I",
               "device_type": "hammerhead"
             }
@@ -3384,7 +3385,7 @@
           ],
           "dimension_sets": [
             {
-              "android_devices": "4",
+              "android_devices": "1",
               "device_os": "LMY48I",
               "device_type": "hammerhead"
             }
@@ -3425,7 +3426,7 @@
           ],
           "dimension_sets": [
             {
-              "android_devices": "4",
+              "android_devices": "1",
               "device_os": "LMY48I",
               "device_type": "hammerhead"
             }
@@ -3466,7 +3467,7 @@
           ],
           "dimension_sets": [
             {
-              "android_devices": "4",
+              "android_devices": "1",
               "device_os": "LMY48I",
               "device_type": "hammerhead"
             }
@@ -3507,7 +3508,7 @@
           ],
           "dimension_sets": [
             {
-              "android_devices": "4",
+              "android_devices": "1",
               "device_os": "LMY48I",
               "device_type": "hammerhead"
             }
@@ -3548,7 +3549,7 @@
           ],
           "dimension_sets": [
             {
-              "android_devices": "4",
+              "android_devices": "1",
               "device_os": "LMY48I",
               "device_type": "hammerhead"
             }
@@ -3589,7 +3590,7 @@
           ],
           "dimension_sets": [
             {
-              "android_devices": "4",
+              "android_devices": "1",
               "device_os": "LMY48I",
               "device_type": "hammerhead"
             }
@@ -3630,7 +3631,7 @@
           ],
           "dimension_sets": [
             {
-              "android_devices": "4",
+              "android_devices": "1",
               "device_os": "LMY48I",
               "device_type": "hammerhead"
             }
@@ -3646,7 +3647,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "shards": 2
         },
         "test": "net_unittests"
       },
@@ -3671,7 +3673,7 @@
           ],
           "dimension_sets": [
             {
-              "android_devices": "4",
+              "android_devices": "1",
               "device_os": "LMY48I",
               "device_type": "hammerhead"
             }
@@ -3712,7 +3714,7 @@
           ],
           "dimension_sets": [
             {
-              "android_devices": "4",
+              "android_devices": "1",
               "device_os": "LMY48I",
               "device_type": "hammerhead"
             }
@@ -3753,7 +3755,7 @@
           ],
           "dimension_sets": [
             {
-              "android_devices": "4",
+              "android_devices": "1",
               "device_os": "LMY48I",
               "device_type": "hammerhead"
             }
@@ -3794,7 +3796,7 @@
           ],
           "dimension_sets": [
             {
-              "android_devices": "4",
+              "android_devices": "1",
               "device_os": "LMY48I",
               "device_type": "hammerhead"
             }
@@ -3835,7 +3837,7 @@
           ],
           "dimension_sets": [
             {
-              "android_devices": "4",
+              "android_devices": "1",
               "device_os": "LMY48I",
               "device_type": "hammerhead"
             }
@@ -3876,7 +3878,7 @@
           ],
           "dimension_sets": [
             {
-              "android_devices": "4",
+              "android_devices": "1",
               "device_os": "LMY48I",
               "device_type": "hammerhead"
             }
@@ -3917,7 +3919,7 @@
           ],
           "dimension_sets": [
             {
-              "android_devices": "4",
+              "android_devices": "1",
               "device_os": "LMY48I",
               "device_type": "hammerhead"
             }
@@ -3933,7 +3935,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "shards": 2
         },
         "test": "unit_tests"
       },
@@ -3958,7 +3961,7 @@
           ],
           "dimension_sets": [
             {
-              "android_devices": "4",
+              "android_devices": "1",
               "device_os": "LMY48I",
               "device_type": "hammerhead"
             }
@@ -4018,7 +4021,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "shards": 10
         },
         "test": "chrome_public_test_apk"
       },
@@ -4048,7 +4052,7 @@
           ],
           "dimension_sets": [
             {
-              "android_devices": "4",
+              "android_devices": "1",
               "device_os": "LMY48I",
               "device_type": "hammerhead"
             }
@@ -4089,7 +4093,7 @@
           ],
           "dimension_sets": [
             {
-              "android_devices": "4",
+              "android_devices": "1",
               "device_os": "LMY48I",
               "device_type": "hammerhead"
             }
@@ -4133,7 +4137,7 @@
           ],
           "dimension_sets": [
             {
-              "android_devices": "4",
+              "android_devices": "1",
               "device_os": "LMY48I",
               "device_type": "hammerhead"
             }
@@ -4149,7 +4153,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "shards": 2
         },
         "test": "content_shell_test_apk"
       },
@@ -4177,7 +4182,7 @@
           ],
           "dimension_sets": [
             {
-              "android_devices": "4",
+              "android_devices": "1",
               "device_os": "LMY48I",
               "device_type": "hammerhead"
             }
@@ -4193,7 +4198,8 @@
               ],
               "name": "shard #${SHARD_INDEX} logcats"
             }
-          ]
+          ],
+          "shards": 6
         },
         "test": "webview_instrumentation_test_apk"
       }
