@@ -637,7 +637,7 @@
       field_template: "storage_only",
       type_name: "EBackfaceVisibility",
       field_group: "rare-non-inherited",
-      default_value: "kBackfaceVisibilityVisible",
+      default_value: "EBackfaceVisibility::kVisible",
       field_size: 1,
     },
     {

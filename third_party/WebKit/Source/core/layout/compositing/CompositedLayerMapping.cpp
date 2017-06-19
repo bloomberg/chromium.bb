@@ -1170,7 +1170,7 @@ void CompositedLayerMapping::UpdateMainGraphicsLayerGeometry(
 
   graphics_layer_->SetBackfaceVisibility(
       GetLayoutObject().Style()->BackfaceVisibility() ==
-      kBackfaceVisibilityVisible);
+      EBackfaceVisibility::kVisible);
 }
 
 void CompositedLayerMapping::ComputeGraphicsLayerParentLocation(
@@ -1335,7 +1335,7 @@ void CompositedLayerMapping::UpdateOverflowControlsHostLayerGeometry(
   overflow_controls_host_layer_->SetMasksToBounds(true);
   overflow_controls_host_layer_->SetBackfaceVisibility(
       owning_layer_.GetLayoutObject().Style()->BackfaceVisibility() ==
-      kBackfaceVisibilityVisible);
+      EBackfaceVisibility::kVisible);
 }
 
 void CompositedLayerMapping::UpdateChildContainmentLayerGeometry(

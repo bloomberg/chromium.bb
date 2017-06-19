@@ -867,7 +867,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool HasClipPath() const { return Style() && Style()->ClipPath(); }
   bool HasHiddenBackface() const {
     return Style() &&
-           Style()->BackfaceVisibility() == kBackfaceVisibilityHidden;
+           Style()->BackfaceVisibility() == EBackfaceVisibility::kHidden;
   }
   bool HasBackdropFilter() const {
     return Style() && Style()->HasBackdropFilter();
