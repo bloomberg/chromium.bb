@@ -2,30 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/app_list/search/answer_card_search_provider.h"
+#include "chrome/browser/ui/app_list/search/answer_card/answer_card_search_provider.h"
+
+#include <utility>
 
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/app_list/search/answer_card_result.h"
+#include "chrome/browser/ui/app_list/search/answer_card/answer_card_result.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/render_view_host.h"
-#include "content/public/browser/render_widget_host.h"
-#include "content/public/browser/web_contents.h"
-#include "content/public/browser/web_contents_delegate.h"
-#include "content/public/common/renderer_preferences.h"
+#include "content/public/browser/page_navigator.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
 #include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_model.h"
 #include "ui/app_list/search_box_model.h"
-#include "ui/views/controls/webview/web_contents_set_background_color.h"
-#include "ui/views/controls/webview/webview.h"
-#include "ui/views/widget/widget.h"
 
 namespace app_list {
 
@@ -45,75 +39,23 @@ void RecordRequestResult(SearchAnswerRequestResult request_result) {
                             SearchAnswerRequestResult::REQUEST_RESULT_MAX);
 }
 
-class SearchAnswerWebView : public views::WebView {
- public:
-  explicit SearchAnswerWebView(content::BrowserContext* browser_context)
-      : WebView(browser_context) {}
-
-  // views::WebView overrides:
-  void VisibilityChanged(View* starting_from, bool is_visible) override {
-    WebView::VisibilityChanged(starting_from, is_visible);
-
-    if (GetWidget() && GetWidget()->IsVisible() && IsDrawn()) {
-      if (shown_time_.is_null())
-        shown_time_ = base::TimeTicks::Now();
-    } else {
-      if (!shown_time_.is_null()) {
-        UMA_HISTOGRAM_MEDIUM_TIMES("SearchAnswer.AnswerVisibleTime",
-                                   base::TimeTicks::Now() - shown_time_);
-        shown_time_ = base::TimeTicks();
-      }
-    }
-  }
-
-  const char* GetClassName() const override { return "SearchAnswerWebView"; }
-
- private:
-  // Time when the answer became visible to the user.
-  base::TimeTicks shown_time_;
-
-  DISALLOW_COPY_AND_ASSIGN(SearchAnswerWebView);
-};
-
 }  // namespace
 
 AnswerCardSearchProvider::AnswerCardSearchProvider(
     Profile* profile,
     app_list::AppListModel* model,
-    AppListControllerDelegate* list_controller)
+    AppListControllerDelegate* list_controller,
+    std::unique_ptr<AnswerCardContents> contents)
     : profile_(profile),
       model_(model),
       list_controller_(list_controller),
-      web_view_(base::MakeUnique<SearchAnswerWebView>(profile)),
-      web_contents_(
-          content::WebContents::Create(content::WebContents::CreateParams(
-              profile,
-              content::SiteInstance::Create(profile)))),
+      contents_(std::move(contents)),
       answer_server_url_(features::AnswerServerUrl()) {
-  content::RendererPreferences* renderer_prefs =
-      web_contents_->GetMutableRendererPrefs();
-  renderer_prefs->can_accept_load_drops = false;
-  // We need the OpenURLFromTab() to get called.
-  renderer_prefs->browser_handles_all_top_level_requests = true;
-  web_contents_->GetRenderViewHost()->SyncRendererPrefs();
-
-  Observe(web_contents_.get());
-  web_contents_->SetDelegate(this);
-  web_view_->set_owned_by_client();
-  web_view_->SetWebContents(web_contents_.get());
-
-  // Make the webview transparent since it's going to be shown on top of a
-  // highlightable button.
-  views::WebContentsSetBackgroundColor::CreateForWebContentsWithColor(
-      web_contents_.get(), SK_ColorTRANSPARENT);
+  contents_->SetDelegate(this);
 }
 
 AnswerCardSearchProvider::~AnswerCardSearchProvider() {
   RecordReceivedAnswerFinalResult();
-}
-
-views::View* AnswerCardSearchProvider::web_view() {
-  return web_view_.get();
 }
 
 void AnswerCardSearchProvider::Start(bool is_voice_query,
@@ -147,24 +89,15 @@ void AnswerCardSearchProvider::Start(bool is_voice_query,
   GURL::ReplacementsW replacements;
   replacements.SetQueryStr(prefixed_query);
   current_request_url_ = answer_server_url_.ReplaceComponents(replacements);
+  contents_->LoadURL(current_request_url_);
 
-  content::NavigationController::LoadURLParams load_params(
-      current_request_url_);
-  load_params.transition_type = ui::PAGE_TRANSITION_AUTO_TOPLEVEL;
-  load_params.should_clear_history_list = true;
-  web_contents_->GetController().LoadURLWithParams(load_params);
   server_request_start_time_ = base::TimeTicks::Now();
-
-  // We are going to call WebContents::GetPreferredSize().
-  web_contents_->GetRenderViewHost()->EnablePreferredSizeMode();
 }
 
-void AnswerCardSearchProvider::UpdatePreferredSize(
-    content::WebContents* web_contents,
-    const gfx::Size& pref_size) {
+void AnswerCardSearchProvider::UpdatePreferredSize(const gfx::Size& pref_size) {
+  preferred_size_ = pref_size;
   OnResultAvailable(received_answer_ && IsCardSizeOk() &&
-                    !web_contents_->IsLoading());
-  web_view_->SetPreferredSize(pref_size);
+                    !contents_->IsLoading());
   if (!answer_loaded_time_.is_null()) {
     UMA_HISTOGRAM_TIMES("SearchAnswer.ResizeAfterLoadTime",
                         base::TimeTicks::Now() - answer_loaded_time_);
@@ -172,11 +105,7 @@ void AnswerCardSearchProvider::UpdatePreferredSize(
 }
 
 content::WebContents* AnswerCardSearchProvider::OpenURLFromTab(
-    content::WebContents* source,
     const content::OpenURLParams& params) {
-  if (!params.user_gesture)
-    return WebContentsDelegate::OpenURLFromTab(source, params);
-
   // Open the user-clicked link in the browser taking into account the requested
   // disposition.
   chrome::NavigateParams new_tab_params(profile_, params.url,
@@ -197,12 +126,6 @@ content::WebContents* AnswerCardSearchProvider::OpenURLFromTab(
   base::RecordAction(base::UserMetricsAction("SearchAnswer_OpenedUrl"));
 
   return new_tab_params.target_contents;
-}
-
-bool AnswerCardSearchProvider::HandleContextMenu(
-    const content::ContextMenuParams& params) {
-  // Disable showing the menu.
-  return true;
 }
 
 void AnswerCardSearchProvider::DidFinishNavigation(
@@ -251,18 +174,12 @@ void AnswerCardSearchProvider::DidStopLoading() {
   base::RecordAction(base::UserMetricsAction("SearchAnswer_StoppedLoading"));
 }
 
-void AnswerCardSearchProvider::DidGetUserInteraction(
-    const blink::WebInputEvent::Type type) {
-  base::RecordAction(base::UserMetricsAction("SearchAnswer_UserInteraction"));
-}
-
 bool AnswerCardSearchProvider::IsCardSizeOk() const {
   if (features::IsAnswerCardDarkRunEnabled())
     return true;
 
-  const gfx::Size size = web_contents_->GetPreferredSize();
-  return size.width() <= features::AnswerCardMaxWidth() &&
-         size.height() <= features::AnswerCardMaxHeight();
+  return preferred_size_.width() <= features::AnswerCardMaxWidth() &&
+         preferred_size_.height() <= features::AnswerCardMaxHeight();
 }
 
 void AnswerCardSearchProvider::RecordReceivedAnswerFinalResult() {
@@ -285,8 +202,7 @@ void AnswerCardSearchProvider::OnResultAvailable(bool is_available) {
     results.reserve(1);
     results.emplace_back(base::MakeUnique<AnswerCardResult>(
         profile_, list_controller_, result_url_,
-        base::UTF8ToUTF16(result_title_), web_view_.get(),
-        web_contents_.get()));
+        base::UTF8ToUTF16(result_title_), contents_.get()));
   }
   SwapResults(&results);
 }
