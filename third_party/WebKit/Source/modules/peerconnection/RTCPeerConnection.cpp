@@ -1103,6 +1103,11 @@ void RTCPeerConnection::addStream(ScriptState* script_state,
   }
 
   local_streams_.push_back(stream);
+  stream->RegisterObserver(this);
+  for (auto& track : stream->getTracks()) {
+    DCHECK(track->Component());
+    tracks_.insert(track->Component(), track);
+  }
 
   bool valid = peer_handler_->AddStream(stream->Descriptor(), constraints);
   if (!valid)
@@ -1127,6 +1132,7 @@ void RTCPeerConnection::removeStream(MediaStream* stream,
     return;
 
   local_streams_.erase(pos);
+  stream->UnregisterObserver(this);
 
   peer_handler_->RemoveStream(stream->Descriptor());
 
@@ -1201,7 +1207,7 @@ HeapVector<Member<RTCRtpSender>> RTCPeerConnection::getSenders() {
       // yet, create it.
       MediaStreamTrack* track = nullptr;
       if (web_rtp_senders[i]->Track()) {
-        track = GetLocalTrackById(web_rtp_senders[i]->Track()->Id());
+        track = GetTrack(*web_rtp_senders[i]->Track());
         DCHECK(track);
       }
       RTCRtpSender* rtp_sender =
@@ -1225,8 +1231,7 @@ HeapVector<Member<RTCRtpReceiver>> RTCPeerConnection::getReceivers() {
     } else {
       // There does not exist a |RTCRtpReceiver| for this |WebRTCRtpReceiver|
       // yet, create it.
-      MediaStreamTrack* track =
-          GetRemoteTrackById(web_rtp_receivers[i]->Track().Id());
+      MediaStreamTrack* track = GetTrack(web_rtp_receivers[i]->Track());
       DCHECK(track);
       RTCRtpReceiver* rtp_receiver =
           new RTCRtpReceiver(std::move(web_rtp_receivers[i]), track);
@@ -1278,24 +1283,9 @@ RTCDataChannel* RTCPeerConnection::createDataChannel(
   return channel;
 }
 
-MediaStreamTrack* RTCPeerConnection::GetLocalTrackById(
-    const String& track_id) const {
-  for (const auto& local_stream : local_streams_) {
-    MediaStreamTrack* track = local_stream->getTrackById(track_id);
-    if (track)
-      return track;
-  }
-  return nullptr;
-}
-
-MediaStreamTrack* RTCPeerConnection::GetRemoteTrackById(
-    const String& track_id) const {
-  for (const auto& remote_stream : remote_streams_) {
-    MediaStreamTrack* track = remote_stream->getTrackById(track_id);
-    if (track)
-      return track;
-  }
-  return nullptr;
+MediaStreamTrack* RTCPeerConnection::GetTrack(
+    const WebMediaStreamTrack& web_track) const {
+  return tracks_.at(static_cast<MediaStreamComponent*>(web_track));
 }
 
 void RTCPeerConnection::RemoveInactiveSenders() {
@@ -1332,7 +1322,14 @@ RTCDTMFSender* RTCPeerConnection::createDTMFSender(
 
   DCHECK(track);
 
-  if (!GetLocalTrackById(track->id())) {
+  bool is_local_stream_track = false;
+  for (const auto& local_stream : local_streams_) {
+    if (local_stream->getTracks().Contains(track)) {
+      is_local_stream_track = true;
+      break;
+    }
+  }
+  if (!is_local_stream_track) {
     exception_state.ThrowDOMException(
         kSyntaxError, "No local stream is available for the track provided.");
     return nullptr;
@@ -1350,6 +1347,21 @@ void RTCPeerConnection::close(ExceptionState& exception_state) {
     return;
 
   CloseInternal();
+}
+
+void RTCPeerConnection::OnStreamAddTrack(MediaStream* stream,
+                                         MediaStreamTrack* track) {
+  DCHECK(track);
+  DCHECK(track->Component());
+  // Insert if not already present.
+  tracks_.insert(track->Component(), track);
+}
+
+void RTCPeerConnection::OnStreamRemoveTrack(MediaStream* stream,
+                                            MediaStreamTrack* track) {
+  // Don't remove |track| from |tracks_|, it may be referenced by another
+  // component. |tracks_| uses weak members and will automatically have |track|
+  // removed if destroyed.
 }
 
 void RTCPeerConnection::NegotiationNeeded() {
@@ -1402,6 +1414,11 @@ void RTCPeerConnection::DidAddRemoteStream(
   MediaStream* stream =
       MediaStream::Create(GetExecutionContext(), remote_stream);
   remote_streams_.push_back(stream);
+  stream->RegisterObserver(this);
+  for (auto& track : stream->getTracks()) {
+    DCHECK(track->Component());
+    tracks_.insert(track->Component(), track);
+  }
 
   ScheduleDispatchEvent(
       MediaStreamEvent::Create(EventTypeNames::addstream, stream));
@@ -1424,6 +1441,7 @@ void RTCPeerConnection::DidRemoveRemoteStream(
   size_t pos = remote_streams_.Find(stream);
   DCHECK(pos != kNotFound);
   remote_streams_.erase(pos);
+  stream->UnregisterObserver(this);
 
   // The receivers of removed tracks will have become inactive.
   RemoveInactiveReceivers();
@@ -1574,22 +1592,19 @@ void RTCPeerConnection::DispatchScheduledEvent() {
 
 void RTCPeerConnection::RecordRapporMetrics() {
   Document* document = ToDocument(GetExecutionContext());
-  for (const auto& stream : local_streams_) {
-    if (stream->getAudioTracks().size() > 0)
-      HostsUsingFeatures::CountAnyWorld(
-          *document, HostsUsingFeatures::Feature::kRTCPeerConnectionAudio);
-    if (stream->getVideoTracks().size() > 0)
-      HostsUsingFeatures::CountAnyWorld(
-          *document, HostsUsingFeatures::Feature::kRTCPeerConnectionVideo);
-  }
-
-  for (const auto& stream : remote_streams_) {
-    if (stream->getAudioTracks().size() > 0)
-      HostsUsingFeatures::CountAnyWorld(
-          *document, HostsUsingFeatures::Feature::kRTCPeerConnectionAudio);
-    if (stream->getVideoTracks().size() > 0)
-      HostsUsingFeatures::CountAnyWorld(
-          *document, HostsUsingFeatures::Feature::kRTCPeerConnectionVideo);
+  for (const auto& component : tracks_.Keys()) {
+    switch (component->Source()->GetType()) {
+      case MediaStreamSource::kTypeAudio:
+        HostsUsingFeatures::CountAnyWorld(
+            *document, HostsUsingFeatures::Feature::kRTCPeerConnectionAudio);
+        break;
+      case MediaStreamSource::kTypeVideo:
+        HostsUsingFeatures::CountAnyWorld(
+            *document, HostsUsingFeatures::Feature::kRTCPeerConnectionVideo);
+        break;
+      default:
+        NOTREACHED();
+    }
   }
 
   if (has_data_channels_)
@@ -1600,12 +1615,14 @@ void RTCPeerConnection::RecordRapporMetrics() {
 DEFINE_TRACE(RTCPeerConnection) {
   visitor->Trace(local_streams_);
   visitor->Trace(remote_streams_);
+  visitor->Trace(tracks_);
   visitor->Trace(rtp_senders_);
   visitor->Trace(rtp_receivers_);
   visitor->Trace(dispatch_scheduled_event_runner_);
   visitor->Trace(scheduled_events_);
   EventTargetWithInlineData::Trace(visitor);
   SuspendableObject::Trace(visitor);
+  MediaStreamObserver::Trace(visitor);
 }
 
 }  // namespace blink
