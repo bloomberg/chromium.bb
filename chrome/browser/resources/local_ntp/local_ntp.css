@@ -51,33 +51,27 @@ body.alternate-logo #logo {
 
 #fakebox {
   background-color: #fff;
-  border: 1px solid rgb(185, 185, 185);
-  border-radius: 1px;
-  border-top-color: rgb(160, 160, 160);
+  border-radius: 2px;
+  box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.16), 0 0 0 1px rgba(0, 0, 0, 0.08);
   cursor: text;
   font-size: 18px;
-  height: 36px;
+  height: 44px;
   line-height: 36px;
   max-width: 672px;
+  outline: none;
   position: relative;
-  transform: translate3d(0, 0, 0);
-  transition: transform 100ms linear, border-color 100ms linear;
-  /* #fakebox width (here and below) should be 2px less than #mv-tiles
-     to account for its border. */
-  width: 298px;
+  transition: box-shadow 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  /* #fakebox width is set dynamically from JS. */
+  width: 300px;
 }
 
 .non-google-page #fakebox {
   display: none;
 }
 
-#fakebox:hover {
-  border: 1px solid rgb(169, 169, 169);
-  border-top-color: rgb(144, 144, 144);
-}
-
+#fakebox:hover,
 body.fakebox-focused #fakebox {
-  border: 1px solid rgb(77, 144, 254);
+  box-shadow: 0 3px 8px 0 rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.08);
 }
 
 #fakebox > input {
@@ -99,18 +93,18 @@ html[dir=rtl] #fakebox > input {
 }
 
 #fakebox-text {
-  bottom: 0;
+  bottom: 4px;
   color: #bbb;
   font-family: arial, sans-serif;
   font-size: 16px;
-  left: 9px;
+  left: 13px;
   margin-top: 1px;
   overflow: hidden;
   position: absolute;
-  right: 9px;
+  right: 13px;
   text-align: initial;
   text-overflow: ellipsis;
-  top: 0;
+  top: 4px;
   vertical-align: middle;
   visibility: inherit;
   white-space: nowrap;
@@ -118,22 +112,22 @@ html[dir=rtl] #fakebox > input {
 
 html[dir=rtl] #fakebox-text {
   left: auto;
-  right: 9px;
+  right: 13px;
 }
 
 #cursor {
   background: #333;
-  bottom: 5px;
-  left: 9px;
+  bottom: 12px;
+  left: 13px;
   position: absolute;
-  top: 5px;
+  top: 12px;
   visibility: hidden;
   width: 1px;
 }
 
 html[dir=rtl] #cursor {
   left: auto;
-  right: 9px;
+  right: 13px;
 }
 
 @keyframes blink {
