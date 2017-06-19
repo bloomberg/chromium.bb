@@ -8,6 +8,7 @@
 
 #include <algorithm>
 
+#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "storage/browser/quota/client_usage_tracker.h"
@@ -21,6 +22,13 @@ void DidGetGlobalUsageForLimitedGlobalUsage(const UsageCallback& callback,
                                             int64_t total_global_usage,
                                             int64_t global_unlimited_usage) {
   callback.Run(total_global_usage - global_unlimited_usage);
+}
+
+void StripUsageWithBreakdownCallback(
+    const UsageCallback& callback,
+    int64_t usage,
+    base::flat_map<QuotaClient::ID, int64_t> usage_breakdown) {
+  callback.Run(usage);
 }
 
 }  // namespace
@@ -105,27 +113,29 @@ void UsageTracker::GetGlobalUsage(const GlobalUsageCallback& callback) {
 
 void UsageTracker::GetHostUsage(const std::string& host,
                                 const UsageCallback& callback) {
+  UsageTracker::GetHostUsageWithBreakdown(
+      host, base::Bind(&StripUsageWithBreakdownCallback, callback));
+}
+
+void UsageTracker::GetHostUsageWithBreakdown(
+    const std::string& host,
+    const UsageWithBreakdownCallback& callback) {
   if (!host_usage_callbacks_.Add(host, callback))
     return;
 
   AccumulateInfo* info = new AccumulateInfo;
-  // Calling GetHostUsage(accumulator) may synchronously
-  // return if the usage is cached, which may in turn dispatch
-  // the completion callback before we finish looping over
-  // all clients (because info->pending_clients may reach 0
-  // during the loop).
-  // To avoid this, we add one more pending client as a sentinel
-  // and fire the sentinel callback at the end.
-  info->pending_clients = client_tracker_map_.size() + 1;
-  UsageCallback accumulator = base::Bind(
-      &UsageTracker::AccumulateClientHostUsage, weak_factory_.GetWeakPtr(),
-      base::Owned(info), host);
+  // We use BarrierClosure here instead of manually counting pending_clients.
+  base::Closure barrier = base::BarrierClosure(
+      client_tracker_map_.size(),
+      base::Bind(&UsageTracker::FinallySendHostUsageWithBreakdown,
+                 weak_factory_.GetWeakPtr(), base::Owned(info), host));
 
-  for (const auto& client_id_and_tracker : client_tracker_map_)
-    client_id_and_tracker.second->GetHostUsage(host, accumulator);
-
-  // Fire the sentinel as we've now called GetHostUsage for all clients.
-  accumulator.Run(0);
+  for (const auto& client_id_and_tracker : client_tracker_map_) {
+    client_id_and_tracker.second->GetHostUsage(
+        host, base::Bind(&UsageTracker::AccumulateClientHostUsage,
+                         weak_factory_.GetWeakPtr(), barrier, info, host,
+                         client_id_and_tracker.first));
+  }
 }
 
 void UsageTracker::UpdateUsageCache(QuotaClient::ID client_id,
@@ -175,6 +185,10 @@ void UsageTracker::SetUsageCacheEnabled(QuotaClient::ID client_id,
   client_tracker->SetUsageCacheEnabled(origin, enabled);
 }
 
+UsageTracker::AccumulateInfo::AccumulateInfo() {}
+
+UsageTracker::AccumulateInfo::~AccumulateInfo() {}
+
 void UsageTracker::AccumulateClientGlobalLimitedUsage(AccumulateInfo* info,
                                                       int64_t limited_usage) {
   info->usage += limited_usage;
@@ -210,20 +224,24 @@ void UsageTracker::AccumulateClientGlobalUsage(AccumulateInfo* info,
   global_usage_callbacks_.Run(info->usage, info->unlimited_usage);
 }
 
-void UsageTracker::AccumulateClientHostUsage(AccumulateInfo* info,
+void UsageTracker::AccumulateClientHostUsage(const base::Closure& barrier,
+                                             AccumulateInfo* info,
                                              const std::string& host,
+                                             QuotaClient::ID client,
                                              int64_t usage) {
   info->usage += usage;
-  if (--info->pending_clients)
-    return;
-
   // Defend against confusing inputs from clients.
   if (info->usage < 0)
     info->usage = 0;
 
-  // All the clients have returned their usage data.  Dispatch the
-  // pending callbacks.
-  host_usage_callbacks_.Run(host, info->usage);
+  info->usage_breakdown[client] += usage;
+  barrier.Run();
+}
+
+void UsageTracker::FinallySendHostUsageWithBreakdown(AccumulateInfo* info,
+                                                     const std::string& host) {
+  host_usage_callbacks_.Run(host, info->usage,
+                            std::move(info->usage_breakdown));
 }
 
 }  // namespace storage

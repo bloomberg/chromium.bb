@@ -45,6 +45,18 @@ void DidGetUsage(bool* done, int64_t* usage_out, int64_t usage) {
   *usage_out = usage;
 }
 
+void DidGetUsageBreakdown(
+    bool* done,
+    int64_t* usage_out,
+    base::flat_map<QuotaClient::ID, int64_t>* usage_breakdown_out,
+    int64_t usage,
+    base::flat_map<QuotaClient::ID, int64_t> usage_breakdown) {
+  EXPECT_FALSE(*done);
+  *done = true;
+  *usage_out = usage;
+  *usage_breakdown_out = usage_breakdown;
+}
+
 }  // namespace
 
 class MockQuotaClient : public QuotaClient {
@@ -178,6 +190,18 @@ class UsageTrackerTest : public testing::Test {
     EXPECT_TRUE(done);
   }
 
+  void GetHostUsageBreakdown(
+      const std::string& host,
+      int64_t* usage,
+      base::flat_map<QuotaClient::ID, int64_t>* usage_breakdown) {
+    bool done = false;
+    usage_tracker_.GetHostUsageWithBreakdown(
+        host, base::Bind(&DidGetUsageBreakdown, &done, usage, usage_breakdown));
+    base::RunLoop().RunUntilIdle();
+
+    EXPECT_TRUE(done);
+  }
+
   void GrantUnlimitedStoragePolicy(const GURL& origin) {
     if (!storage_policy_->IsStorageUnlimited(origin)) {
       storage_policy_->AddUnlimited(origin);
@@ -219,6 +243,8 @@ TEST_F(UsageTrackerTest, GrantAndRevokeUnlimitedStorage) {
   int64_t usage = 0;
   int64_t unlimited_usage = 0;
   int64_t host_usage = 0;
+  base::flat_map<QuotaClient::ID, int64_t> host_usage_breakdown;
+  base::flat_map<QuotaClient::ID, int64_t> host_usage_breakdown_expected;
   GetGlobalUsage(&usage, &unlimited_usage);
   EXPECT_EQ(0, usage);
   EXPECT_EQ(0, unlimited_usage);
@@ -232,6 +258,9 @@ TEST_F(UsageTrackerTest, GrantAndRevokeUnlimitedStorage) {
   EXPECT_EQ(100, usage);
   EXPECT_EQ(0, unlimited_usage);
   EXPECT_EQ(100, host_usage);
+  host_usage_breakdown_expected[QuotaClient::kFileSystem] = 100;
+  GetHostUsageBreakdown(host, &host_usage, &host_usage_breakdown);
+  EXPECT_EQ(host_usage_breakdown_expected, host_usage_breakdown);
 
   GrantUnlimitedStoragePolicy(origin);
   GetGlobalUsage(&usage, &unlimited_usage);
@@ -239,6 +268,8 @@ TEST_F(UsageTrackerTest, GrantAndRevokeUnlimitedStorage) {
   EXPECT_EQ(100, usage);
   EXPECT_EQ(100, unlimited_usage);
   EXPECT_EQ(100, host_usage);
+  GetHostUsageBreakdown(host, &host_usage, &host_usage_breakdown);
+  EXPECT_EQ(host_usage_breakdown_expected, host_usage_breakdown);
 
   RevokeUnlimitedStoragePolicy(origin);
   GetGlobalUsage(&usage, &unlimited_usage);
@@ -246,12 +277,16 @@ TEST_F(UsageTrackerTest, GrantAndRevokeUnlimitedStorage) {
   EXPECT_EQ(100, usage);
   EXPECT_EQ(0, unlimited_usage);
   EXPECT_EQ(100, host_usage);
+  GetHostUsageBreakdown(host, &host_usage, &host_usage_breakdown);
+  EXPECT_EQ(host_usage_breakdown_expected, host_usage_breakdown);
 }
 
 TEST_F(UsageTrackerTest, CacheDisabledClientTest) {
   int64_t usage = 0;
   int64_t unlimited_usage = 0;
   int64_t host_usage = 0;
+  base::flat_map<QuotaClient::ID, int64_t> host_usage_breakdown;
+  base::flat_map<QuotaClient::ID, int64_t> host_usage_breakdown_expected;
 
   const GURL origin("http://example.com");
   const std::string host(net::GetHostOrSpecFromURL(origin));
@@ -262,6 +297,9 @@ TEST_F(UsageTrackerTest, CacheDisabledClientTest) {
   EXPECT_EQ(100, usage);
   EXPECT_EQ(0, unlimited_usage);
   EXPECT_EQ(100, host_usage);
+  host_usage_breakdown_expected[QuotaClient::kFileSystem] = 100;
+  GetHostUsageBreakdown(host, &host_usage, &host_usage_breakdown);
+  EXPECT_EQ(host_usage_breakdown_expected, host_usage_breakdown);
 
   UpdateUsageWithoutNotification(origin, 100);
   GetGlobalUsage(&usage, &unlimited_usage);
@@ -269,6 +307,8 @@ TEST_F(UsageTrackerTest, CacheDisabledClientTest) {
   EXPECT_EQ(100, usage);
   EXPECT_EQ(0, unlimited_usage);
   EXPECT_EQ(100, host_usage);
+  GetHostUsageBreakdown(host, &host_usage, &host_usage_breakdown);
+  EXPECT_EQ(host_usage_breakdown_expected, host_usage_breakdown);
 
   GrantUnlimitedStoragePolicy(origin);
   UpdateUsageWithoutNotification(origin, 100);
@@ -280,6 +320,9 @@ TEST_F(UsageTrackerTest, CacheDisabledClientTest) {
   EXPECT_EQ(400, usage);
   EXPECT_EQ(400, unlimited_usage);
   EXPECT_EQ(400, host_usage);
+  GetHostUsageBreakdown(host, &host_usage, &host_usage_breakdown);
+  host_usage_breakdown_expected[QuotaClient::kFileSystem] = 400;
+  EXPECT_EQ(host_usage_breakdown_expected, host_usage_breakdown);
 
   RevokeUnlimitedStoragePolicy(origin);
   GetGlobalUsage(&usage, &unlimited_usage);
@@ -287,6 +330,8 @@ TEST_F(UsageTrackerTest, CacheDisabledClientTest) {
   EXPECT_EQ(400, usage);
   EXPECT_EQ(0, unlimited_usage);
   EXPECT_EQ(400, host_usage);
+  GetHostUsageBreakdown(host, &host_usage, &host_usage_breakdown);
+  EXPECT_EQ(host_usage_breakdown_expected, host_usage_breakdown);
 
   SetUsageCacheEnabled(origin, true);
   UpdateUsage(origin, 100);
@@ -296,6 +341,9 @@ TEST_F(UsageTrackerTest, CacheDisabledClientTest) {
   EXPECT_EQ(500, usage);
   EXPECT_EQ(0, unlimited_usage);
   EXPECT_EQ(500, host_usage);
+  GetHostUsageBreakdown(host, &host_usage, &host_usage_breakdown);
+  host_usage_breakdown_expected[QuotaClient::kFileSystem] = 500;
+  EXPECT_EQ(host_usage_breakdown_expected, host_usage_breakdown);
 }
 
 TEST_F(UsageTrackerTest, LimitedGlobalUsageTest) {
