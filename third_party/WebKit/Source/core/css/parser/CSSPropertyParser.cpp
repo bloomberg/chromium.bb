@@ -40,6 +40,7 @@
 #include "core/css/properties/CSSPropertyAPIOffsetAnchor.h"
 #include "core/css/properties/CSSPropertyAPIOffsetPosition.h"
 #include "core/css/properties/CSSPropertyAlignmentUtils.h"
+#include "core/css/properties/CSSPropertyAnimationIterationCountUtils.h"
 #include "core/css/properties/CSSPropertyAnimationNameUtils.h"
 #include "core/css/properties/CSSPropertyBorderImageUtils.h"
 #include "core/css/properties/CSSPropertyColumnUtils.h"
@@ -313,12 +314,6 @@ static CSSValue* ConsumeLocale(CSSParserTokenRange& range) {
   return ConsumeString(range);
 }
 
-static CSSValue* ConsumeAnimationIterationCount(CSSParserTokenRange& range) {
-  if (range.Peek().Id() == CSSValueInfinite)
-    return ConsumeIdent(range);
-  return ConsumeNumber(range, kValueRangeNonNegative);
-}
-
 static CSSValue* ConsumeSteps(CSSParserTokenRange& range) {
   DCHECK_EQ(range.Peek().FunctionId(), CSSValueSteps);
   CSSParserTokenRange range_copy = range;
@@ -429,7 +424,8 @@ static CSSValue* ConsumeAnimationValue(CSSPropertyID property,
       return ConsumeIdent<CSSValueNone, CSSValueForwards, CSSValueBackwards,
                           CSSValueBoth>(range);
     case CSSPropertyAnimationIterationCount:
-      return ConsumeAnimationIterationCount(range);
+      return CSSPropertyAnimationIterationCountUtils::
+          ConsumeAnimationIterationCount(range);
     case CSSPropertyAnimationName:
       return CSSPropertyAnimationNameUtils::ConsumeAnimationName(
           range, context, use_legacy_parsing);
@@ -1518,7 +1514,9 @@ const CSSValue* CSSPropertyParser::ParseSingleValue(
                        CSSValueBoth>,
           range_);
     case CSSPropertyAnimationIterationCount:
-      return ConsumeCommaSeparatedList(ConsumeAnimationIterationCount, range_);
+      return ConsumeCommaSeparatedList(CSSPropertyAnimationIterationCountUtils::
+                                           ConsumeAnimationIterationCount,
+                                       range_);
     case CSSPropertyAnimationPlayState:
       return ConsumeCommaSeparatedList(
           ConsumeIdent<CSSValueRunning, CSSValuePaused>, range_);
