@@ -11,6 +11,7 @@
     <includes>
       <include name="IDR_HEADLESS_LIB_DEVTOOLS_DISCOVERY_PAGE" file="devtools_discovery_page.html" type="BINDATA" />
       <include name="IDR_HEADLESS_BROWSER_MANIFEST_OVERLAY_TEMPLATE" file="../browser/headless_browser_manifest_overlay_template.json" type="BINDATA" />
+      <include name="IDR_HEADLESS_RENDERER_MANIFEST_OVERLAY" file="../renderer/headless_renderer_manifest_overlay.json" type="BINDATA" />
       <include name="IDR_HEADLESS_TAB_SOCKET_MOJOM_JS" file="${mojom_root}\headless\lib\tab_socket.mojom.js" use_base_dir="false" type="BINDATA" />
     </includes>
   </release>

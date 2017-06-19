@@ -109,6 +109,12 @@ mojom("tab_socket") {
   ]
 }
 
+mojom("headless_render_frame_controller") {
+  sources = [
+    "lib/headless_render_frame_controller.mojom",
+  ]
+}
+
 grit("resources") {
   source = "lib/resources/headless_lib_resources.grd"
   outputs = [
@@ -120,6 +126,7 @@ grit("resources") {
     "mojom_root=" + rebase_path(root_gen_dir, root_build_dir),
   ]
   deps = [
+    ":headless_render_frame_controller__generator",
     ":tab_socket__generator",
   ]
 }
@@ -344,6 +351,7 @@ component("headless") {
 
   deps = [
     ":gen_devtools_client_api",
+    ":headless_render_frame_controller",
     ":tab_socket",
     ":version_header",
     "//components/security_state/core",
