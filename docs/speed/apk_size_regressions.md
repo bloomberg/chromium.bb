@@ -58,7 +58,7 @@ Otherwise, file a bug (TODO: [Make this template automatic](https://github.com/c
 > Commit: **abc123abc123abc123abc123abc123abc123abcd**
 >
 > Link to size graph:
-> [https://chromeperf.appspot.com/report?sid=a097e74b1aa288511afb4cb616efe0f95ba4d347ad61d5e835072f23450938ba&rev=**440074**](https://chromeperf.appspot.com/report?sid=cfc29eed1238fd38fb5e6cf83bdba6c619be621b606e03e5dfc2e99db14c418b&rev=440074)
+> [https://chromeperf.appspot.com/report?sid=a097e74b1aa288511afb4cb616efe0f95ba4d347ad61d5e835072f23450938ba&num_points=10&rev=**480214**](https://chromeperf.appspot.com/report?sid=a097e74b1aa288511afb4cb616efe0f95ba4d347ad61d5e835072f23450938ba&num_points=10&rev=480214)
 >
 > Debugging size regressions is documented at:
 > https://chromium.googlesource.com/chromium/src/+/master/docs/speed/apk_size_regressions.md#Debugging-Apk-Size-Increase
