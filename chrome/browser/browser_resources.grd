@@ -296,6 +296,8 @@
             <include name="IDR_MD_BOOKMARKS_STORE_CLIENT_JS" file="resources\md_bookmarks\store_client.js" type="BINDATA" />
             <include name="IDR_MD_BOOKMARKS_STORE_HTML" file="resources\md_bookmarks\store.html" type="BINDATA" />
             <include name="IDR_MD_BOOKMARKS_STORE_JS" file="resources\md_bookmarks\store.js" type="BINDATA" />
+            <include name="IDR_MD_BOOKMARKS_TIMER_PROXY_HTML" file="resources\md_bookmarks\timer_proxy.html" type="BINDATA" />
+            <include name="IDR_MD_BOOKMARKS_TIMER_PROXY_JS" file="resources\md_bookmarks\timer_proxy.js" type="BINDATA" />
             <include name="IDR_MD_BOOKMARKS_TOAST_MANAGER_HTML" file="resources\md_bookmarks\toast_manager.html" type="BINDATA" />
             <include name="IDR_MD_BOOKMARKS_TOAST_MANAGER_JS" file="resources\md_bookmarks\toast_manager.js" type="BINDATA" />
             <include name="IDR_MD_BOOKMARKS_TOOLBAR_HTML" file="resources\md_bookmarks\toolbar.html" type="BINDATA" />

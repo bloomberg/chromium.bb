@@ -19,6 +19,7 @@ suiteSetup(function() {
     TestStore.prototype = {
       __proto__: bookmarks.Store.prototype,
 
+      /** @override */
       init: function(state) {
         if (this.acceptInit_)
           bookmarks.Store.prototype.init.call(this, state);
@@ -57,6 +58,7 @@ suiteSetup(function() {
         this.enableReducers_ = enabled;
       },
 
+      /** @override */
       reduce_: function(action) {
         this.lastAction_ = action;
         if (this.enableReducers_)

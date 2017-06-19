@@ -144,6 +144,9 @@ content::WebUIDataSource* CreateMdBookmarksUIHTMLSource(Profile* profile) {
   source->AddResourcePath("store_client.html",
                           IDR_MD_BOOKMARKS_STORE_CLIENT_HTML);
   source->AddResourcePath("store_client.js", IDR_MD_BOOKMARKS_STORE_CLIENT_JS);
+  source->AddResourcePath("timer_proxy.html",
+                          IDR_MD_BOOKMARKS_TIMER_PROXY_HTML);
+  source->AddResourcePath("timer_proxy.js", IDR_MD_BOOKMARKS_TIMER_PROXY_JS);
   source->AddResourcePath("toast_manager.html",
                           IDR_MD_BOOKMARKS_TOAST_MANAGER_HTML);
   source->AddResourcePath("toast_manager.js",

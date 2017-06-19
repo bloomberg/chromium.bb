@@ -26,14 +26,11 @@ cr.define('bookmarks', function() {
       showUndo_: Boolean,
     },
 
-    /** @private {function(number)} */
-    clearTimeout_: window.clearTimeout.bind(window),
-
-    /** @private {function((Function|null|string), number)} */
-    setTimeout_: window.setTimeout.bind(window),
+    /** @private {bookmarks.TimerProxy} */
+    timerProxy_: new bookmarks.TimerProxy(),
 
     /** @private {number|null} */
-    hideTimeout_: null,
+    hideTimeoutId_: null,
 
     /** @override */
     attached: function() {
@@ -89,14 +86,12 @@ cr.define('bookmarks', function() {
       if (!this.duration)
         return;
 
-      if (this.hideTimeout_ != null) {
-        this.clearTimeout_(this.hideTimeout_);
-        this.hideTimeout_ = null;
-      }
+      if (this.hideTimeoutId_ != null)
+        this.timerProxy_.clearTimeout(this.hideTimeoutId_);
 
-      this.hideTimeout_ = this.setTimeout_(function() {
+      this.hideTimeoutId_ = this.timerProxy_.setTimeout(function() {
         this.open_ = false;
-        this.hideTimeout_ = null;
+        this.hideTimeoutId_ = null;
       }.bind(this), this.duration);
     },
 

@@ -186,7 +186,7 @@ cr.define('bookmarks', function() {
     /**
      * @private {number|null} Timer id used to help minimize flicker.
      */
-    this.removeDropIndicatorTimer_ = null;
+    this.removeDropIndicatorTimeoutId_ = null;
 
     /**
      * The element that had a style applied it to indicate the drop location.
@@ -203,9 +203,9 @@ cr.define('bookmarks', function() {
 
     /**
      * Used to instantly remove the indicator style in tests.
-     * @private {function((Function|null|string), number)}
+     * @private {bookmarks.TimerProxy}
      */
-    this.setTimeout = window.setTimeout.bind(window);
+    this.timerProxy = new bookmarks.TimerProxy();
   }
 
   DropIndicator.prototype = {
@@ -244,7 +244,7 @@ cr.define('bookmarks', function() {
      * @param {DropDestination} dropDest
      */
     update: function(dropDest) {
-      window.clearTimeout(this.removeDropIndicatorTimer_);
+      this.timerProxy.clearTimeout(this.removeDropIndicatorTimeoutId_);
 
       var indicatorElement = dropDest.element.getDropTarget();
       var position = dropDest.position;
@@ -259,10 +259,11 @@ cr.define('bookmarks', function() {
     finish: function() {
       // The use of a timeout is in order to reduce flickering as we move
       // between valid drop targets.
-      window.clearTimeout(this.removeDropIndicatorTimer_);
-      this.removeDropIndicatorTimer_ = this.setTimeout(function() {
-        this.removeDropIndicatorStyle();
-      }.bind(this), 100);
+      this.timerProxy.clearTimeout(this.removeDropIndicatorTimeoutId_);
+      this.removeDropIndicatorTimeoutId_ =
+          this.timerProxy.setTimeout(function() {
+            this.removeDropIndicatorStyle();
+          }.bind(this), 100);
     },
   };
 
@@ -285,9 +286,9 @@ cr.define('bookmarks', function() {
 
     /**
      * Used to instantly clearDragData in tests.
-     * @private {function((Function|null|string), number)}
+     * @private {bookmarks.TimerProxy}
      */
-    this.setTimeout_ = window.setTimeout.bind(window);
+    this.timerProxy_ = new bookmarks.TimerProxy();
   }
 
   DNDManager.prototype = {
@@ -386,7 +387,7 @@ cr.define('bookmarks', function() {
       // Defer the clearing of the data so that the bookmark manager API's drop
       // event doesn't clear the drop data before the web drop event has a
       // chance to execute (on Mac).
-      this.setTimeout_(function() {
+      this.timerProxy_.setTimeout(function() {
         this.dragInfo_.clearDragData();
         this.dropDestination_ = null;
         this.dropIndicator_.finish();
@@ -638,11 +639,10 @@ cr.define('bookmarks', function() {
       return !this.dragInfo_.isDraggingChildBookmark(overElement.itemId);
     },
 
-    disableTimeoutsForTesting: function() {
-      this.setTimeout_ = function(fn) {
-        fn();
-      };
-      this.dropIndicator_.setTimeout = this.setTimeout_;
+    /** @param {bookmarks.TimerProxy} timerProxy */
+    setTimerProxyForTesting: function(timerProxy) {
+      this.timerProxy_ = timerProxy;
+      this.dropIndicator_.timerProxy = timerProxy;
     }
   };
 

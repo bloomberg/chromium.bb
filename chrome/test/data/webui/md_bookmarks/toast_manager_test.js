@@ -25,35 +25,28 @@ suite('<bookmarks-toast-manager>', function() {
   });
 
   test('auto hide', function() {
+    var timerProxy = new bookmarks.TestTimerProxy();
+    timerProxy.immediatelyResolveTimeouts = false;
+    toastManager.timerProxy_ = timerProxy;
+
     toastManager.duration = 100;
 
-    var timeoutFunc = null;
-    var timeoutCounter = 0;
-    var clearedTimeout = null;
-    toastManager.setTimeout_ = function(f) {
-      timeoutFunc = f;
-      return timeoutCounter++;
-    };
-    toastManager.clearTimeout_ = function(n) {
-      clearedTimeout = n;
-    };
-
     toastManager.show('test', false);
-    assertEquals(0, toastManager.hideTimeout_);
+    assertEquals(0, toastManager.hideTimeoutId_);
     assertTrue(toastManager.open_);
 
-    timeoutFunc();
-    assertEquals(null, toastManager.hideTimeout_);
+    timerProxy.runTimeoutFn(0);
+    assertEquals(null, toastManager.hideTimeoutId_);
     assertFalse(toastManager.open_);
 
     // Check that multiple shows reset the timeout.
     toastManager.show('test', false);
-    assertEquals(1, toastManager.hideTimeout_);
+    assertEquals(1, toastManager.hideTimeoutId_);
     assertTrue(toastManager.open_);
 
     toastManager.show('test2', false);
-    assertEquals(1, clearedTimeout);
-    assertEquals(2, toastManager.hideTimeout_);
+    assertFalse(timerProxy.hasTimeout(1));
+    assertEquals(2, toastManager.hideTimeoutId_);
     assertTrue(toastManager.open_);
   });
 });
