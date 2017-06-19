@@ -25,6 +25,7 @@ class MostVisitedSites;
 }
 
 @protocol ContentSuggestionsCommands;
+@protocol ContentSuggestionsHeaderProvider;
 @class ContentSuggestionIdentifier;
 class GURL;
 
@@ -47,6 +48,9 @@ initWithContentService:
 // Command handler for the mediator.
 @property(nonatomic, weak, nullable) id<ContentSuggestionsCommands>
     commandHandler;
+
+@property(nonatomic, weak, nullable) id<ContentSuggestionsHeaderProvider>
+    headerProvider;
 
 // Blacklists the URL from the Most Visited sites.
 - (void)blacklistMostVisitedURL:(GURL)URL;

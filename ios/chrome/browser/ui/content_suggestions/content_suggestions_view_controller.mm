@@ -272,6 +272,19 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
   return [UIColor whiteColor];
 }
 
+- (CGSize)collectionView:(UICollectionView*)collectionView
+                             layout:
+                                 (UICollectionViewLayout*)collectionViewLayout
+    referenceSizeForHeaderInSection:(NSInteger)section {
+  // TODO(crbug.com/635604): Once the headers support dynamic sizing, use it
+  // instead of this.
+  if (section == 0)
+    return CGSizeMake(0, 270);
+  return [super collectionView:collectionView
+                               layout:collectionViewLayout
+      referenceSizeForHeaderInSection:section];
+}
+
 - (BOOL)collectionView:(nonnull UICollectionView*)collectionView
     shouldHideItemBackgroundAtIndexPath:(nonnull NSIndexPath*)indexPath {
   return
@@ -371,7 +384,8 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
 
   NSIndexPath* emptyItem =
       [self.collectionUpdater addEmptyItemForSection:section];
-  [self.collectionView insertItemsAtIndexPaths:@[ emptyItem ]];
+  if (emptyItem)
+    [self.collectionView insertItemsAtIndexPaths:@[ emptyItem ]];
 }
 
 // Tells WebToolbarController to resign focus to the omnibox.

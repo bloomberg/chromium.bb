@@ -65,6 +65,7 @@ addSuggestionsToModel:
 
 // Adds an empty item to this |section| and returns its index path. The updater
 // does not do any check about the number of elements in the section.
+// Returns nil if there is no empty item for this section.
 - (NSIndexPath*)addEmptyItemForSection:(NSInteger)section;
 
 // Returns whether |section| contains the Most Visited tiles.
