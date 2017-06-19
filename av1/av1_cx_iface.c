@@ -1040,38 +1040,38 @@ static int write_superframe_index(aom_codec_alg_priv_t *ctx) {
 
   // Write the index
   const int index_sz = 2 + (mag + 1) * (ctx->pending_frame_count - 1);
-  if (ctx->pending_cx_data_sz + index_sz < ctx->cx_data_sz) {
-    uint8_t *x = ctx->pending_cx_data + ctx->pending_cx_data_sz;
+  assert(ctx->pending_cx_data_sz + index_sz < ctx->cx_data_sz);
+
+  uint8_t *x = ctx->pending_cx_data + ctx->pending_cx_data_sz;
 #ifdef TEST_SUPPLEMENTAL_SUPERFRAME_DATA
-    uint8_t marker_test = 0xc0;
-    int mag_test = 2;     // 1 - 4
-    int frames_test = 4;  // 1 - 8
-    int index_sz_test = 2 + mag_test * frames_test;
-    marker_test |= frames_test - 1;
-    marker_test |= (mag_test - 1) << 3;
-    *x++ = marker_test;
-    for (int i = 0; i < mag_test * frames_test; ++i)
-      *x++ = 0;  // fill up with arbitrary data
-    *x++ = marker_test;
-    ctx->pending_cx_data_sz += index_sz_test;
-    printf("Added supplemental superframe data\n");
+  uint8_t marker_test = 0xc0;
+  int mag_test = 2;     // 1 - 4
+  int frames_test = 4;  // 1 - 8
+  int index_sz_test = 2 + mag_test * frames_test;
+  marker_test |= frames_test - 1;
+  marker_test |= (mag_test - 1) << 3;
+  *x++ = marker_test;
+  for (int i = 0; i < mag_test * frames_test; ++i)
+    *x++ = 0;  // fill up with arbitrary data
+  *x++ = marker_test;
+  ctx->pending_cx_data_sz += index_sz_test;
+  printf("Added supplemental superframe data\n");
 #endif
 
-    *x++ = marker;
-    for (int i = 0; i < ctx->pending_frame_count - 1; i++) {
-      assert(ctx->pending_frame_sizes[i] > 0);
-      unsigned int this_sz = (unsigned int)ctx->pending_frame_sizes[i] - 1;
-      for (int j = 0; j <= mag; j++) {
-        *x++ = this_sz & 0xff;
-        this_sz >>= 8;
-      }
+  *x++ = marker;
+  for (int i = 0; i < ctx->pending_frame_count - 1; i++) {
+    assert(ctx->pending_frame_sizes[i] > 0);
+    unsigned int this_sz = (unsigned int)ctx->pending_frame_sizes[i] - 1;
+    for (int j = 0; j <= mag; j++) {
+      *x++ = this_sz & 0xff;
+      this_sz >>= 8;
     }
-    *x++ = marker;
-    ctx->pending_cx_data_sz += index_sz;
-#ifdef TEST_SUPPLEMENTAL_SUPERFRAME_DATA
-    index_sz += index_sz_test;
-#endif
   }
+  *x++ = marker;
+  ctx->pending_cx_data_sz += index_sz;
+#ifdef TEST_SUPPLEMENTAL_SUPERFRAME_DATA
+  index_sz += index_sz_test;
+#endif
   return index_sz;
 }
 
