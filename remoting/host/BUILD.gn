@@ -450,6 +450,7 @@ source_set("unit_tests") {
     "config_file_watcher_unittest.cc",
     "daemon_process_unittest.cc",
     "desktop_process_unittest.cc",
+    "desktop_session_agent_unittest.cc",
     "gcd_rest_client_unittest.cc",
     "gcd_state_updater_unittest.cc",
     "heartbeat_sender_unittest.cc",
