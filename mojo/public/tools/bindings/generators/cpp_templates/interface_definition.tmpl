@@ -35,13 +35,9 @@ std::move(p_{{param.name}})
 {%- macro build_message(struct, input_pattern, struct_display_name,
                         serialization_context, message) -%}
   {{struct_macros.serialize(struct, struct_display_name, input_pattern,
-                            "params", "%s.payload_buffer()"|format(message),
+                            "params", "(%s)->payload_buffer()"|format(message),
                             serialization_context)}}
-  ({{serialization_context}})->associated_endpoint_handles.swap(
-      *{{message}}.mutable_associated_endpoint_handles());
-  std::vector<mojo::ScopedHandle> handles_to_attach;
-  ({{serialization_context}})->handles.Swap(&handles_to_attach);
-  {{message}}.AttachHandles(std::move(handles_to_attach));
+  ({{serialization_context}})->AttachHandlesToMessage({{message}});
 {%- endmacro %}
 
 {#--- Begin #}
@@ -167,7 +163,7 @@ bool {{proxy_name}}::{{method.name}}(
       mojo::Message::kFlagIsSync | mojo::Message::kFlagExpectsResponse,
       size, serialization_context.associated_endpoint_count);
   {{build_message(params_struct, "param_%s", params_description,
-                  "&serialization_context", "message")}}
+                  "&serialization_context", "&message")}}
 
   bool result = false;
   std::unique_ptr<mojo::MessageReceiver> responder(
@@ -194,7 +190,7 @@ void {{proxy_name}}::{{method.name}}(
   mojo::Message message({{message_name}}, kFlags, size,
                         serialization_context.associated_endpoint_count);
   {{build_message(params_struct, "in_%s", params_description,
-                  "&serialization_context", "message")}}
+                  "&serialization_context", "&message")}}
 
 {%- if method.response_parameters != None %}
   std::unique_ptr<mojo::MessageReceiver> responder(
@@ -276,7 +272,7 @@ void {{class_name}}_{{method.name}}_ProxyToResponder::Run(
   mojo::Message message({{message_name}}, flags, size,
                         serialization_context.associated_endpoint_count);
   {{build_message(response_params_struct, "in_%s", params_description,
-                  "&serialization_context", "message")}}
+                  "&serialization_context", "&message")}}
   message.set_request_id(request_id_);
   ignore_result(responder_->Accept(&message));
   // TODO(darin): Accept() returning false indicates a malformed message, and
