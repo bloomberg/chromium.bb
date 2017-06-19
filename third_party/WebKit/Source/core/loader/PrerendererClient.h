@@ -40,17 +40,25 @@ namespace blink {
 
 class Page;
 class Prerender;
+class WebPrerendererClient;
 
-class CORE_EXPORT PrerendererClient : public Supplement<Page> {
+class CORE_EXPORT PrerendererClient
+    : public GarbageCollected<PrerendererClient>,
+      public Supplement<Page> {
+  USING_GARBAGE_COLLECTED_MIXIN(PrerendererClient);
+  WTF_MAKE_NONCOPYABLE(PrerendererClient);
+
  public:
-  virtual void WillAddPrerender(Prerender*) = 0;
-  virtual bool IsPrefetchOnly() = 0;
+  PrerendererClient(Page&, WebPrerendererClient*);
+
+  virtual void WillAddPrerender(Prerender*);
+  virtual bool IsPrefetchOnly();
 
   static const char* SupplementName();
   static PrerendererClient* From(Page*);
 
- protected:
-  explicit PrerendererClient(Page&);
+ private:
+  WebPrerendererClient* client_;
 };
 
 CORE_EXPORT void ProvidePrerendererClientTo(Page&, PrerendererClient*);
