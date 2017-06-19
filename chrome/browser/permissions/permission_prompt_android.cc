@@ -9,6 +9,7 @@
 #include "chrome/browser/permissions/grouped_permission_infobar_delegate_android.h"
 #include "chrome/browser/permissions/permission_dialog_delegate.h"
 #include "chrome/browser/permissions/permission_request.h"
+#include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
@@ -18,7 +19,7 @@
 
 PermissionPromptAndroid::PermissionPromptAndroid(
     content::WebContents* web_contents)
-    : web_contents_(web_contents), delegate_(nullptr) {
+    : web_contents_(web_contents), delegate_(nullptr), persist_(true) {
   DCHECK(web_contents);
 }
 
@@ -77,18 +78,33 @@ void PermissionPromptAndroid::Closing() {
 }
 
 void PermissionPromptAndroid::TogglePersist(bool value) {
+  persist_ = value;
   if (delegate_)
     delegate_->TogglePersist(value);
 }
 
 void PermissionPromptAndroid::Accept() {
-  if (delegate_)
+  if (delegate_) {
+    if (ShouldShowPersistenceToggle()) {
+      for (const PermissionRequest* request : delegate_->Requests()) {
+        PermissionUmaUtil::PermissionPromptAcceptedWithPersistenceToggle(
+            request->GetContentSettingsType(), persist_);
+      }
+    }
     delegate_->Accept();
+  }
 }
 
 void PermissionPromptAndroid::Deny() {
-  if (delegate_)
+  if (delegate_) {
+    if (ShouldShowPersistenceToggle()) {
+      for (const PermissionRequest* request : delegate_->Requests()) {
+        PermissionUmaUtil::PermissionPromptDeniedWithPersistenceToggle(
+            request->GetContentSettingsType(), persist_);
+      }
+    }
     delegate_->Deny();
+  }
 }
 
 size_t PermissionPromptAndroid::PermissionCount() const {

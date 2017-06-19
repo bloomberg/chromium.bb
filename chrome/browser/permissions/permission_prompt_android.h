@@ -54,6 +54,8 @@ class PermissionPromptAndroid : public PermissionPrompt {
   // |delegate_| is the PermissionRequestManager, which owns this object.
   Delegate* delegate_;
 
+  bool persist_;
+
   DISALLOW_COPY_AND_ASSIGN(PermissionPromptAndroid);
 };
 

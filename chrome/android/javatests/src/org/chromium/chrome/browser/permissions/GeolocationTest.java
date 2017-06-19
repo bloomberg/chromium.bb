@@ -7,6 +7,9 @@ package org.chromium.chrome.browser.permissions;
 import android.support.test.filters.LargeTest;
 import android.support.test.filters.MediumTest;
 
+import org.junit.Assert;
+
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -29,6 +32,8 @@ public class GeolocationTest extends PermissionTestCaseBase {
     private static final double LONGITUDE = 0.23;
     private static final float ACCURACY = 10;
     private static final String TEST_FILE = "/content/test/data/android/geolocation.html";
+    private static final String PERSIST_ACCEPT_HISTOGRAM =
+            "Permissions.Prompt.Accepted.Persisted.Geolocation";
 
     public GeolocationTest() {}
 
@@ -47,6 +52,12 @@ public class GeolocationTest extends PermissionTestCaseBase {
         runAllowTest(updateWaiter, TEST_FILE, javascript, nUpdates, withGesture, isDialog,
                 hasSwitch, toggleSwitch);
         tab.removeObserver(updateWaiter);
+        if (hasSwitch) {
+            int bucket = toggleSwitch ? 0 : 1;
+            Assert.assertEquals(1,
+                    RecordHistogram.getHistogramValueCountForTesting(
+                            PERSIST_ACCEPT_HISTOGRAM, bucket));
+        }
     }
 
     /**
