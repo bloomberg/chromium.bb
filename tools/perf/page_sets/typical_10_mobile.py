@@ -55,3 +55,8 @@ class Typical10MobilePageSet(story.StorySet):
 
     for url in urls_list:
       self.AddStory(Typical10MobilePage(url, self, name=url))
+
+
+class Typical10MobileStoryExpectations(story.expectations.StoryExpectations):
+  def SetExpectations(self):
+    pass  # No tests disabled.
