@@ -30,7 +30,6 @@ class DictionaryValue;
 namespace blink {
 class MotionData;
 class OrientationData;
-class WebFrame;
 class WebURLRequest;
 class WebView;
 }
@@ -161,7 +160,7 @@ class BlinkTestRunner : public RenderViewObserver,
     const blink::WebPluginParams& params) override;
   float GetDeviceScaleFactor() const override;
   void RunIdleTasks(const base::Closure& callback) override;
-  void ForceTextInputStateUpdate(blink::WebFrame* frame) override;
+  void ForceTextInputStateUpdate(blink::WebLocalFrame* frame) override;
   bool IsNavigationInitiatedByRenderer(
       const blink::WebURLRequest& request) override;
 

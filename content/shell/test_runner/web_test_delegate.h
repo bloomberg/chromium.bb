@@ -23,7 +23,6 @@ class DictionaryValue;
 }
 
 namespace blink {
-class WebFrame;
 class WebInputEvent;
 class WebLocalFrame;
 class WebMediaStream;
@@ -295,7 +294,7 @@ class WebTestDelegate {
 
   // Forces a text input state update for the client of WebFrameWidget
   // associated with |frame|.
-  virtual void ForceTextInputStateUpdate(blink::WebFrame* frame) = 0;
+  virtual void ForceTextInputStateUpdate(blink::WebLocalFrame* frame) = 0;
 
   // PlzNavigate
   // Indicates if the navigation was initiated by the browser or renderer.

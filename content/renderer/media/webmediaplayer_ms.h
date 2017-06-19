@@ -22,7 +22,7 @@
 #include "url/origin.h"
 
 namespace blink {
-class WebFrame;
+class WebLocalFrame;
 class WebMediaPlayerClient;
 class WebSecurityOrigin;
 class WebString;
@@ -70,7 +70,7 @@ class CONTENT_EXPORT WebMediaPlayerMS
   // a MediaStreamClient which provides MediaStreamVideoRenderer.
   // |delegate| must not be null.
   WebMediaPlayerMS(
-      blink::WebFrame* frame,
+      blink::WebLocalFrame* frame,
       blink::WebMediaPlayerClient* client,
       media::WebMediaPlayerDelegate* delegate,
       std::unique_ptr<media::MediaLog> media_log,
@@ -199,7 +199,7 @@ class CONTENT_EXPORT WebMediaPlayerMS
   // Getter method to |client_|.
   blink::WebMediaPlayerClient* get_client() { return client_; }
 
-  blink::WebFrame* const frame_;
+  blink::WebLocalFrame* const frame_;
 
   blink::WebMediaPlayer::NetworkState network_state_;
   blink::WebMediaPlayer::ReadyState ready_state_;

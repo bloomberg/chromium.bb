@@ -93,10 +93,7 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
     RECORD_DECISION = 1
   };
 
-  // Returns the RenderFrame given a WebFrame.
-  // TODO(https://crbug.com/416660): Remove this, as RenderFrames only
-  // correspond to WebLocalFrames.
-  static RenderFrame* FromWebFrame(blink::WebFrame* web_frame);
+  // Returns the RenderFrame given a WebLocalFrame.
   static RenderFrame* FromWebFrame(blink::WebLocalFrame* web_frame);
 
   // Returns the RenderFrame given a routing id.

@@ -815,7 +815,7 @@ TEST_F(RenderViewImplTest, OriginReplicationForSwapOut) {
       "<iframe src='data:text/html,frame 2'></iframe>");
   WebFrame* web_frame = frame()->GetWebFrame();
   TestRenderFrame* child_frame = static_cast<TestRenderFrame*>(
-      RenderFrame::FromWebFrame(web_frame->FirstChild()));
+      RenderFrame::FromWebFrame(web_frame->FirstChild()->ToWebLocalFrame()));
 
   // Swap the child frame out and pass a replicated origin to be set for
   // WebRemoteFrame.
@@ -836,8 +836,9 @@ TEST_F(RenderViewImplTest, OriginReplicationForSwapOut) {
   // Now, swap out the second frame using a unique origin and verify that it is
   // replicated correctly.
   replication_state.origin = url::Origin();
-  TestRenderFrame* child_frame2 = static_cast<TestRenderFrame*>(
-      RenderFrame::FromWebFrame(web_frame->FirstChild()->NextSibling()));
+  TestRenderFrame* child_frame2 =
+      static_cast<TestRenderFrame*>(RenderFrame::FromWebFrame(
+          web_frame->FirstChild()->NextSibling()->ToWebLocalFrame()));
   child_frame2->SwapOut(kProxyRoutingId + 1, true, replication_state);
   EXPECT_TRUE(web_frame->FirstChild()->NextSibling()->IsWebRemoteFrame());
   EXPECT_TRUE(
@@ -856,7 +857,7 @@ TEST_F(RenderViewImplTest, DetachingProxyAlsoDestroysProvisionalFrame) {
   LoadHTML("Hello <iframe src='data:text/html,frame 1'></iframe>");
   WebFrame* web_frame = frame()->GetWebFrame();
   TestRenderFrame* child_frame = static_cast<TestRenderFrame*>(
-      RenderFrame::FromWebFrame(web_frame->FirstChild()));
+      RenderFrame::FromWebFrame(web_frame->FirstChild()->ToWebLocalFrame()));
 
   // Swap the child frame out.
   FrameReplicationState replication_state =
