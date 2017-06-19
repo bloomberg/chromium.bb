@@ -1,4 +1,0 @@
-rootWebArea
-++math
-++++staticText name='ARIA role math.'
-++++++inlineTextBox name='ARIA role math.'

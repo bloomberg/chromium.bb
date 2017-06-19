@@ -1,5 +1,0 @@
-rootWebArea
-++button name='Regular button'
-++toggleButton name='Toggle button unpressed' checkedState=1
-++toggleButton name='Toggle button pressed' checkedState=2
-++toggleButton name='Toggle button mixed' checkedState=3

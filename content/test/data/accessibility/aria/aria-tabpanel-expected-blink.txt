@@ -1,4 +1,0 @@
-rootWebArea
-++tabPanel
-++++tab name='Item'
-++++tab name='Prices'

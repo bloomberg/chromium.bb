@@ -1,8 +1,0 @@
-rootWebArea
-++paragraph
-++++staticText name='This text contains '
-++++++inlineTextBox name='This text contains '
-++++staticText name='subscript'
-++++++inlineTextBox name='subscript'
-++++staticText name=' text.'
-++++++inlineTextBox name=' text.'

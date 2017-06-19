@@ -1,7 +1,0 @@
-rootWebArea
-++textField
-++++staticText name='TextBox1'
-++++++inlineTextBox name='TextBox1'
-++textField
-++++staticText name='TextBox2'
-++++++inlineTextBox name='TextBox2'

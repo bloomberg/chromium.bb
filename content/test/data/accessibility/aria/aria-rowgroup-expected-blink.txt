@@ -1,5 +1,0 @@
-rootWebArea
-++grid
-++++row
-++++row
-++++tableHeaderContainer

@@ -1,6 +1,0 @@
-rootWebArea
-++menu
-++++menuItem collapsed haspopup name='New'
-++++menuItem haspopup name='Open'
-++++menuItem collapsed name='Save'
-++++menuItem name='Quit'

@@ -1,7 +1,0 @@
-rootWebArea
-++checkBox name='Title0' checkedState=1
-++checkBox description='Title1' name='Label1' descriptionFrom=2 checkedState=1
-++checkBox description='Title2' name='AriaLabel2' descriptionFrom=2 checkedState=1
-++checkBox description='Title3' name='LabelledBy3' descriptionFrom=2 checkedState=1
-++checkBox description='DescribedBy4' name='LabelledBy4' descriptionFrom=5 checkedState=1
-++checkBox description='DescribedBy5' descriptionFrom=5 checkedState=1

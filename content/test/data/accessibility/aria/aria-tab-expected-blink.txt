@@ -1,4 +1,0 @@
-rootWebArea
-++tabList horizontal
-++++tab name='Tab 1' setSize=2 posInSet=1
-++++tab name='Tab 2' setSize=2 posInSet=2
