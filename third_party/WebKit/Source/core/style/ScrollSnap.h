@@ -10,7 +10,6 @@
 
 namespace blink {
 
-using ScrollPadding = QuadLengthValue;
 using ScrollSnapMargin = QuadLengthValue;
 
 struct ScrollSnapType {
