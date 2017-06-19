@@ -29,6 +29,7 @@
 #include "core/dom/AXObjectCache.h"
 
 #include <memory>
+#include "platform/wtf/Assertions.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/web/WebAXEnums.h"
 
@@ -74,10 +75,6 @@ AXObjectCache* ScopedAXObjectCache::Get() {
   DCHECK(cache);
   return cache;
 }
-
-#define STATIC_ASSERT_ENUM(a, b)                            \
-  static_assert(static_cast<int>(a) == static_cast<int>(b), \
-                "mismatching enum: " #a)
 
 STATIC_ASSERT_ENUM(kWebAXEventActiveDescendantChanged,
                    AXObjectCache::kAXActiveDescendantChanged);

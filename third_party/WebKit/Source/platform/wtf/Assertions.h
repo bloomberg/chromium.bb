@@ -211,4 +211,9 @@ class WTF_EXPORT ScopedLogger {
   void To##thisType##OrDie(const thisType*);                                  \
   void To##thisType##OrDie(const thisType&)
 
+// Check at compile time that related enums stay in sync.
+#define STATIC_ASSERT_ENUM(a, b)                            \
+  static_assert(static_cast<int>(a) == static_cast<int>(b), \
+                "mismatching enum: " #a)
+
 #endif  // WTF_Assertions_h

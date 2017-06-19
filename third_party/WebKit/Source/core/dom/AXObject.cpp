@@ -7,6 +7,7 @@
 #include "core/HTMLElementTypeHelpers.h"
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
+#include "platform/wtf/Assertions.h"
 #include "platform/wtf/HashSet.h"
 #include "platform/wtf/text/StringHash.h"
 #include "platform/wtf/text/WTFString.h"
@@ -96,10 +97,6 @@ bool AXObject::IsInsideFocusableElementOrARIAWidget(const Node& node) {
   } while (cur_node && !isHTMLBodyElement(node));
   return false;
 }
-
-#define STATIC_ASSERT_ENUM(a, b)                            \
-  static_assert(static_cast<int>(a) == static_cast<int>(b), \
-                "mismatching enum: " #a)
 
 STATIC_ASSERT_ENUM(kWebAXRoleAbbr, kAbbrRole);
 STATIC_ASSERT_ENUM(kWebAXRoleAlertDialog, kAlertDialogRole);

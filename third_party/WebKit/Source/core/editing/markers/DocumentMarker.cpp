@@ -31,6 +31,7 @@
 #include "core/editing/markers/DocumentMarker.h"
 
 #include "core/editing/markers/TextMatchMarker.h"
+#include "platform/wtf/Assertions.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "public/web/WebAXEnums.h"
 
@@ -93,10 +94,6 @@ void DocumentMarker::ShiftOffsets(int delta) {
   start_offset_ += delta;
   end_offset_ += delta;
 }
-
-#define STATIC_ASSERT_ENUM(a, b)                            \
-  static_assert(static_cast<int>(a) == static_cast<int>(b), \
-                "mismatching enum: " #a)
 
 STATIC_ASSERT_ENUM(kWebAXMarkerTypeSpelling, DocumentMarker::kSpelling);
 STATIC_ASSERT_ENUM(kWebAXMarkerTypeGrammar, DocumentMarker::kGrammar);

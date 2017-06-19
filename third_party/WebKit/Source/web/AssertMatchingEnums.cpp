@@ -133,10 +133,6 @@
 
 namespace blink {
 
-#define STATIC_ASSERT_ENUM(a, b)                            \
-  static_assert(static_cast<int>(a) == static_cast<int>(b), \
-                "mismatching enum: " #a)
-
 STATIC_ASSERT_ENUM(WebApplicationCacheHost::kUncached,
                    ApplicationCacheHost::kUncached);
 STATIC_ASSERT_ENUM(WebApplicationCacheHost::kIdle, ApplicationCacheHost::kIdle);

@@ -13,13 +13,11 @@
 #include "modules/EventTargetModules.h"
 #include "modules/screen_orientation/LockOrientationCallback.h"
 #include "modules/screen_orientation/ScreenOrientationControllerImpl.h"
+#include "platform/wtf/Assertions.h"
 #include "public/platform/modules/screen_orientation/WebScreenOrientationType.h"
 
 // This code assumes that WebScreenOrientationType values are included in
 // WebScreenOrientationLockType.
-#define STATIC_ASSERT_ENUM(a, b)                            \
-  static_assert(static_cast<int>(a) == static_cast<int>(b), \
-                "mismatching enum: " #a)
 STATIC_ASSERT_ENUM(blink::kWebScreenOrientationPortraitPrimary,
                    blink::kWebScreenOrientationLockPortraitPrimary);
 STATIC_ASSERT_ENUM(blink::kWebScreenOrientationPortraitSecondary,

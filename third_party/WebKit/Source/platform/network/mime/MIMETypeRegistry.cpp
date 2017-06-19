@@ -10,6 +10,7 @@
 #include "media/base/mime_util.h"
 #include "media/filters/stream_parser_factory.h"
 #include "net/base/mime_util.h"
+#include "platform/wtf/Assertions.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/FilePathConversion.h"
 #include "public/platform/InterfaceProvider.h"
@@ -53,9 +54,6 @@ std::string ToLowerASCIIOrEmpty(const String& str) {
   return ToLowerASCIIInternal(str.Characters16(), str.length());
 }
 
-#define STATIC_ASSERT_ENUM(a, b)                            \
-  static_assert(static_cast<int>(a) == static_cast<int>(b), \
-                "mismatching enums: " #a)
 STATIC_ASSERT_ENUM(MIMETypeRegistry::kIsNotSupported, media::IsNotSupported);
 STATIC_ASSERT_ENUM(MIMETypeRegistry::kIsSupported, media::IsSupported);
 STATIC_ASSERT_ENUM(MIMETypeRegistry::kMayBeSupported, media::MayBeSupported);
