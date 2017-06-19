@@ -534,10 +534,7 @@ void HttpProtocolHandlerCore::OnReadCompleted(URLRequest* request,
     while (bytes_read > 0 &&
            [data length] + bytes_read <= kClientMaxBufferSize) {
       total_bytes_read += bytes_read;
-      NSUInteger data_length = [data length];
-      [data increaseLengthBy:bytes_read];
-      memcpy(reinterpret_cast<char*>([data mutableBytes]) + data_length,
-             buffer_->data(), bytes_read);
+      [data appendBytes:buffer_->data() length:bytes_read];
       bytes_read = request->Read(buffer_.get(), kIOBufferSize);
     }
 
