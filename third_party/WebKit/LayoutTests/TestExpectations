@@ -911,6 +911,9 @@ crbug.com/543110 [ Mac ] fast/text/international/text-shaping-arabic.html [ Fail
 
 crbug.com/731731 inspector-protocol/layers/paint-profiler-load-empty.html [ Failure Pass ]
 
+crbug.com/734744 http/tests/inspector/indexeddb/resources-panel.html [ Pass Failure Timeout ]
+crbug.com/734744 virtual/mojo-loading/http/tests/inspector/indexeddb/resources-panel.html [ Pass Failure Timeout ]
+
 # Will be re-enabled and rebaselined once we remove the '--enable-file-cookies' flag.
 crbug.com/470482 fast/cookies/local-file-can-set-cookies.html [ Skip ]
 
