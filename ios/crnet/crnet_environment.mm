@@ -71,6 +71,10 @@
 #include "base/i18n/icu_util.h"  // nogncheck
 #endif
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 base::AtExitManager* g_at_exit_ = nullptr;
@@ -106,7 +110,7 @@ class CrNetHttpProtocolHandlerDelegate
  public:
   CrNetHttpProtocolHandlerDelegate(net::URLRequestContextGetter* getter,
                                    RequestFilterBlock filter)
-      : getter_(getter), filter_(filter, base::scoped_policy::RETAIN) {}
+      : getter_(getter), filter_([filter copy]) {}
 
  private:
   // net::HTTPProtocolHandlerDelegate implementation:
@@ -119,8 +123,7 @@ class CrNetHttpProtocolHandlerDelegate
       return false;
     }
     if (filter_) {
-      RequestFilterBlock block = filter_.get();
-      return block(request);
+      return filter_(request);
     }
     return true;
   }
@@ -139,7 +142,7 @@ class CrNetHttpProtocolHandlerDelegate
   }
 
   scoped_refptr<net::URLRequestContextGetter> getter_;
-  base::mac::ScopedBlock<RequestFilterBlock> filter_;
+  RequestFilterBlock filter_;
 };
 
 void CrNetEnvironment::PostToNetworkThread(
@@ -334,7 +337,7 @@ void CrNetEnvironment::SetHTTPProtocolHandlerRegistered(bool registered) {
     // Set up an empty default cache, with default size.
     // TODO(droger): If the NSURLCache is to be used, its size should most
     // likely be changed. On an iPod2 with iOS4, the default size is 512k.
-    [NSURLCache setSharedURLCache:[[[NSURLCache alloc] init] autorelease]];
+    [NSURLCache setSharedURLCache:[[NSURLCache alloc] init]];
     [NSURLProtocol unregisterClass:[CRNHTTPProtocolHandler class]];
   }
 }
@@ -514,5 +517,5 @@ void CrNetEnvironment::ClearCache(ClearCacheCallback callback) {
   PostToNetworkThread(
       FROM_HERE, base::Bind(&net::ClearHttpCache, main_context_getter_,
                             network_io_thread_->task_runner(), base::Time(),
-                            base::Time::Max(), base::BindBlock(callback)));
+                            base::Time::Max(), base::BindBlockArc(callback)));
 }

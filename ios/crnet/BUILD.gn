@@ -13,6 +13,7 @@ import("//url/features.gni")
 assert(!is_component_build, "CrNet requires static library build.")
 
 source_set("crnet_sources") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   deps = [
     "//base",
     "//components/metrics",
