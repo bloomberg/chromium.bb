@@ -89619,6 +89619,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="InProductHelp.ShouldTriggerHelpUI"/>
   <suffix name="IPH_DataSaverPreview"
       label="In product help data saver preview."/>
+  <suffix name="IPH_DataSaverDetail"
+      label="In product help data saver detail."/>
   <suffix name="IPH_DownloadPage" label="In product help download page."/>
   <suffix name="IPH_DownloadHome" label="In product help download home."/>
 </histogram_suffixes>
