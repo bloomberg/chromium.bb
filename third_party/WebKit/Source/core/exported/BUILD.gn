@@ -74,6 +74,7 @@ blink_core_sources("exported") {
     "WebSettingsImpl.h",
     "WebSharedWorkerImpl.cpp",
     "WebSharedWorkerImpl.h",
+    "WebSurroundingText.cpp",
     "WebTextCheckingCompletionImpl.cpp",
     "WebTextCheckingCompletionImpl.h",
     "WebTextCheckingResult.cpp",
