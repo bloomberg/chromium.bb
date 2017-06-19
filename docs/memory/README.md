@@ -86,5 +86,9 @@ Second, familiarize yourself with the following:
 
 
 ## Other docs
-* [Memory Charter](https://docs.google.com/document/d/1yATy7MBclHycCUR0Jji4eczHT_ejp5lmVZOhNwNQwmM/edit#)
+  * [Why we work on memory](https://docs.google.com/document/d/1jhERqimO-LtuplzQzbBv1vK7SVOh63AMf2irJI2LOqU/edit)
+  * [TOK/LON memory-dev@ meeting notes](https://docs.google.com/document/d/1tCTw9lnjs85t8GFiiyae2hbu6lrz8kysFCgMCKUvcXo/edit)
+  * [Memory convergence 3 (in Mountain View, 2017 May)](https://docs.google.com/document/d/1FBIqBGIa0DSaFsh-QjmVvoC82pGuOgiQDIhc8-vzXbQ/edit)
+  * [TRIM convergence 2 (in Mountain View, 2016 Nov)](https://docs.google.com/document/d/17Kef7UxjR6VW_ehVbsc-DI0IU7TQk-2C56JSbzbPuhA/edit)
+  * [TRIM convergence 1 (in Munich, 2016 Apr)](https://docs.google.com/document/d/1PGcM6iVBp0OYh3m8xGQhOgkQK0obQy8YWwoefP9NZCA/edit#)
 
