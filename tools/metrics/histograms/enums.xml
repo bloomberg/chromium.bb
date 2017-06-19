@@ -15483,6 +15483,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2024" label="DeprecatedTimingFunctionStepMiddle"/>
   <int value="2025" label="DocumentDomainSetWithNonDefaultPort"/>
   <int value="2026" label="DocumentDomainSetWithDefaultPort"/>
+  <int value="2027" label="HTMLMediaElementPlayRejected"/>
 </enum>
 
 <enum name="FeedbackSource">
@@ -29093,6 +29094,13 @@ from previous Chrome versions.
   <int value="4" label="OPEN_FAILED">Failed to open data store.</int>
   <int value="5" label="READ_FAILED">Failed to read from data store.</int>
   <int value="6" label="PARSE_ERROR">Data could not be parsed.</int>
+</enum>
+
+<enum name="PlayPromiseRejectReason">
+  <int value="0" label="Failed autoplay policy"/>
+  <int value="1" label="Sources not supported"/>
+  <int value="2" label="Interrupted by pause()"/>
+  <int value="3" label="Interrupted by load()"/>
 </enum>
 
 <enum name="PluginAvailabilityStatus">

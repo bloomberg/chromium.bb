@@ -29177,6 +29177,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.MediaElement.PlayPromiseReject"
+    enum="PlayPromiseRejectReason">
+  <owner>mlamouri@chromium.org</owner>
+  <owner>media-dev@chromium.org</owner>
+  <summary>
+    Recorded when an HTMLMediaElement play() promise is rejected (handled or
+    not) with the type of rejection.
+  </summary>
+</histogram>
+
 <histogram name="Media.MicrophoneMuted" enum="MicrophoneMuteResult">
   <owner>henrika@chromium.org</owner>
   <summary>
