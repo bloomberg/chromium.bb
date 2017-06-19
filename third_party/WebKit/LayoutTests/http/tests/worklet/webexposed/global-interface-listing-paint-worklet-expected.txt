@@ -55,7 +55,6 @@ CONSOLE MESSAGE: line 147: interface CSSStyleValue
 CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147:     method toString
 CONSOLE MESSAGE: line 147: interface CSSTransformComponent
-CONSOLE MESSAGE: line 147:     method asMatrix
 CONSOLE MESSAGE: line 147:     method constructor
 CONSOLE MESSAGE: line 147:     method is2D
 CONSOLE MESSAGE: line 147:     method toString

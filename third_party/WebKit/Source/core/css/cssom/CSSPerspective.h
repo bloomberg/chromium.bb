@@ -11,6 +11,7 @@
 
 namespace blink {
 
+class DOMMatrix;
 class ExceptionState;
 
 class CORE_EXPORT CSSPerspective : public CSSTransformComponent {
@@ -28,8 +29,8 @@ class CORE_EXPORT CSSPerspective : public CSSTransformComponent {
 
   TransformComponentType GetType() const override { return kPerspectiveType; }
 
-  // TODO: Implement asMatrix for CSSPerspective.
-  CSSMatrixComponent* asMatrix() const override { return nullptr; }
+  // TODO: Implement AsMatrix for CSSPerspective.
+  DOMMatrix* AsMatrix() const override { return nullptr; }
 
   CSSFunctionValue* ToCSSValue() const override;
 

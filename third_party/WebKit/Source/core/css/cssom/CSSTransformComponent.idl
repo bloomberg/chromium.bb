@@ -12,5 +12,4 @@
 ] interface CSSTransformComponent {
     stringifier;
     boolean is2D();
-    CSSMatrixComponent asMatrix();
 };

@@ -5,15 +5,16 @@
 #ifndef CSSSkew_h
 #define CSSSkew_h
 
-#include "core/css/cssom/CSSMatrixComponent.h"
 #include "core/css/cssom/CSSNumericValue.h"
 #include "core/css/cssom/CSSTransformComponent.h"
 
 namespace blink {
 
+class ExceptionState;
+
 // Represents a skew value in a CSSTransformValue used for properties like
 // "transform".
-// See CSSSkew.idl for more documentation about this class.
+// See CSSSkew.idl for more information about this class.
 class CORE_EXPORT CSSSkew final : public CSSTransformComponent {
   WTF_MAKE_NONCOPYABLE(CSSSkew);
   DEFINE_WRAPPERTYPEINFO();
@@ -33,15 +34,14 @@ class CORE_EXPORT CSSSkew final : public CSSTransformComponent {
   void setAx(CSSNumericValue*, ExceptionState&);
   void setAy(CSSNumericValue*, ExceptionState&);
 
-  CSSMatrixComponent* asMatrix() const override {
+  // Internal methods - from CSSTransformComponent.
+  TransformComponentType GetType() const override { return kSkewType; }
+  DOMMatrix* AsMatrix() const override {
     return nullptr;
     // TODO(meade): Reimplement this once the number/unit types
     // are re-implemented.
     // return CSSMatrixComponent::Skew(ax_->degrees(), ay_->degrees());
   }
-
-  // Internal methods - from CSSTransformComponent.
-  TransformComponentType GetType() const override { return kSkewType; }
   CSSFunctionValue* ToCSSValue() const override;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {

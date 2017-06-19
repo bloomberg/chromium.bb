@@ -4,8 +4,6 @@
 
 #include "core/css/cssom/CSSMatrixComponent.h"
 
-#include <cmath>
-#include <memory>
 #include "core/css/CSSPrimitiveValue.h"
 #include "platform/wtf/MathExtras.h"
 
@@ -41,89 +39,10 @@ CSSFunctionValue* CSSMatrixComponent::ToCSSValue() const {
   return result;
 }
 
-CSSMatrixComponent* CSSMatrixComponent::Perspective(double length) {
-  DOMMatrix* matrix = DOMMatrix::Create();
-
-  if (length != 0)
-    matrix->setM34(-1 / length);
-  return new CSSMatrixComponent(matrix, kPerspectiveType);
-}
-
-CSSMatrixComponent* CSSMatrixComponent::Rotate(double angle) {
-  DOMMatrix* matrix = DOMMatrix::Create();
-
-  matrix->rotateSelf(angle);
-  return new CSSMatrixComponent(matrix, kRotationType);
-}
-
-CSSMatrixComponent* CSSMatrixComponent::Rotate3d(double angle,
-                                                 double x,
-                                                 double y,
-                                                 double z) {
-  DOMMatrix* matrix = DOMMatrix::Create();
-
-  matrix->rotateAxisAngleSelf(x, y, z, angle);
-  return new CSSMatrixComponent(matrix, kRotation3DType);
-}
-
-CSSMatrixComponent* CSSMatrixComponent::Scale(double x, double y) {
-  DOMMatrix* matrix = DOMMatrix::Create();
-
-  matrix->setM11(x);
-  matrix->setM22(y);
-  return new CSSMatrixComponent(matrix, kScaleType);
-}
-
-CSSMatrixComponent* CSSMatrixComponent::Scale3d(double x, double y, double z) {
-  DOMMatrix* matrix = DOMMatrix::Create();
-
-  matrix->setM11(x);
-  matrix->setM22(y);
-  matrix->setM33(z);
-  return new CSSMatrixComponent(matrix, kScale3DType);
-}
-
-CSSMatrixComponent* CSSMatrixComponent::Skew(double ax, double ay) {
-  double tan_ax = std::tan(deg2rad(ax));
-  double tan_ay = std::tan(deg2rad(ay));
-
-  DOMMatrix* matrix = DOMMatrix::Create();
-
-  matrix->setM12(tan_ay);
-  matrix->setM21(tan_ax);
-  return new CSSMatrixComponent(matrix, kSkewType);
-}
-
-CSSMatrixComponent* CSSMatrixComponent::Translate(double x, double y) {
-  DOMMatrix* matrix = DOMMatrix::Create();
-
-  matrix->setM41(x);
-  matrix->setM42(y);
-  return new CSSMatrixComponent(matrix, kTranslationType);
-}
-
-CSSMatrixComponent* CSSMatrixComponent::Translate3d(double x,
-                                                    double y,
-                                                    double z) {
-  DOMMatrix* matrix = DOMMatrix::Create();
-
-  matrix->setM41(x);
-  matrix->setM42(y);
-  matrix->setM43(z);
-  return new CSSMatrixComponent(matrix, kTranslation3DType);
-}
-
 CSSMatrixComponent::CSSMatrixComponent(DOMMatrixReadOnly* matrix)
     : CSSTransformComponent() {
   matrix_ = DOMMatrix::Create(matrix);
   is2d_ = matrix->is2D();
-}
-
-CSSMatrixComponent::CSSMatrixComponent(DOMMatrixReadOnly* matrix,
-                                       TransformComponentType from_type)
-    : CSSTransformComponent() {
-  matrix_ = DOMMatrix::Create(matrix);
-  is2d_ = Is2DComponentType(from_type);
 }
 
 }  // namespace blink

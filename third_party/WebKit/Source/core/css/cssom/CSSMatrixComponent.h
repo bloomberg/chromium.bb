@@ -5,10 +5,8 @@
 #ifndef CSSMatrixComponent_h
 #define CSSMatrixComponent_h
 
-#include <memory>
 #include "core/css/cssom/CSSTransformComponent.h"
 #include "core/geometry/DOMMatrix.h"
-#include "platform/transforms/TransformationMatrix.h"
 
 namespace blink {
 
@@ -33,28 +31,9 @@ class CORE_EXPORT CSSMatrixComponent final : public CSSTransformComponent {
     return is2d_ ? kMatrixType : kMatrix3DType;
   }
 
-  // Bindings require a non const return value.
-  CSSMatrixComponent* asMatrix() const override {
-    return const_cast<CSSMatrixComponent*>(this);
-  }
+  DOMMatrix* AsMatrix() const override { return matrix(); }
 
   CSSFunctionValue* ToCSSValue() const override;
-
-  static CSSMatrixComponent* Perspective(double length);
-
-  static CSSMatrixComponent* Rotate(double angle);
-  static CSSMatrixComponent* Rotate3d(double angle,
-                                      double x,
-                                      double y,
-                                      double z);
-
-  static CSSMatrixComponent* Scale(double x, double y);
-  static CSSMatrixComponent* Scale3d(double x, double y, double z);
-
-  static CSSMatrixComponent* Skew(double x, double y);
-
-  static CSSMatrixComponent* Translate(double x, double y);
-  static CSSMatrixComponent* Translate3d(double x, double y, double z);
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
     visitor->Trace(matrix_);
@@ -63,7 +42,6 @@ class CORE_EXPORT CSSMatrixComponent final : public CSSTransformComponent {
 
  private:
   CSSMatrixComponent(DOMMatrixReadOnly*);
-  CSSMatrixComponent(DOMMatrixReadOnly*, TransformComponentType);
 
   Member<DOMMatrix> matrix_;
   bool is2d_;
