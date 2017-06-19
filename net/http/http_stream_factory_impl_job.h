@@ -243,6 +243,8 @@ class HttpStreamFactoryImpl::Job {
     return using_existing_quic_session_;
   }
 
+  bool using_quic() const { return using_quic_; }
+
   bool should_reconsider_proxy() const { return should_reconsider_proxy_; }
 
   // TODO(xunjieli): Added to investigate crbug.com/711721. Remove when no

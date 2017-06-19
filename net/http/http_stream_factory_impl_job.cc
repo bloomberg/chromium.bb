@@ -199,10 +199,12 @@ HttpStreamFactoryImpl::Job::Job(Delegate* delegate,
       num_streams_(0),
       spdy_session_direct_(
           !(proxy_info.is_https() && origin_url_.SchemeIs(url::kHttpScheme))),
-      spdy_session_key_(GetSpdySessionKey(spdy_session_direct_,
-                                          proxy_info_.proxy_server(),
-                                          origin_url_,
-                                          request_info_.privacy_mode)),
+      spdy_session_key_(using_quic_
+                            ? SpdySessionKey()
+                            : GetSpdySessionKey(spdy_session_direct_,
+                                                proxy_info_.proxy_server(),
+                                                origin_url_,
+                                                request_info_.privacy_mode)),
       stream_type_(HttpStreamRequest::BIDIRECTIONAL_STREAM),
       init_connection_already_resumed_(false),
       ptr_factory_(this) {
@@ -409,6 +411,8 @@ SpdySessionKey HttpStreamFactoryImpl::Job::GetSpdySessionKey(
 }
 
 bool HttpStreamFactoryImpl::Job::CanUseExistingSpdySession() const {
+  DCHECK(!using_quic_);
+
   // We need to make sure that if a spdy session was created for
   // https://somehost/ that we don't use that session for http://somehost:443/.
   // The only time we can use an existing session is if the request URL is
@@ -555,9 +559,11 @@ void HttpStreamFactoryImpl::Job::RunLoop(int result) {
   if (result == ERR_IO_PENDING)
     return;
 
-  // Resume all throttled Jobs with the same SpdySessionKey if there are any,
-  // now that this job is done.
-  session_->spdy_session_pool()->ResumePendingRequests(spdy_session_key_);
+  if (!using_quic_) {
+    // Resume all throttled Jobs with the same SpdySessionKey if there are any,
+    // now that this job is done.
+    session_->spdy_session_pool()->ResumePendingRequests(spdy_session_key_);
+  }
 
   if (job_type_ == PRECONNECT) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
@@ -778,6 +784,8 @@ int HttpStreamFactoryImpl::Job::DoWaitComplete(int result) {
 int HttpStreamFactoryImpl::Job::DoEvaluateThrottle() {
   next_state_ = STATE_INIT_CONNECTION;
   if (!using_ssl_)
+    return OK;
+  if (using_quic_)
     return OK;
   // Ask |delegate_delegate_| to update the spdy session key for the request
   // that launched this job.
@@ -1279,7 +1287,8 @@ void HttpStreamFactoryImpl::Job::ReturnToStateInitConnection(
     connection_->socket()->Disconnect();
   connection_->Reset();
 
-  delegate_->RemoveRequestFromSpdySessionRequestMapForJob(this);
+  if (!using_quic_)
+    delegate_->RemoveRequestFromSpdySessionRequestMapForJob(this);
 
   next_state_ = STATE_INIT_CONNECTION;
 }
