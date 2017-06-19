@@ -17,10 +17,13 @@ constexpr uint32_t kMaxBeginFrameCount = 4;
 SurfaceDependencyTracker::SurfaceDependencyTracker(
     SurfaceManager* surface_manager,
     BeginFrameSource* begin_frame_source)
-    : surface_manager_(surface_manager), deadline_(this, begin_frame_source) {}
+    : surface_manager_(surface_manager), deadline_(begin_frame_source) {
+  deadline_.AddObserver(this);
+}
 
 SurfaceDependencyTracker::~SurfaceDependencyTracker() {
   deadline_.Cancel();
+  deadline_.RemoveObserver(this);
 }
 
 void SurfaceDependencyTracker::RequestSurfaceResolution(Surface* surface) {
