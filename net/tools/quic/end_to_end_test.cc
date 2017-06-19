@@ -2253,14 +2253,21 @@ TEST_P(EndToEndTest, BadEncryptedData) {
 
 TEST_P(EndToEndTest, CanceledStreamDoesNotBecomeZombie) {
   ASSERT_TRUE(Initialize());
+  if (GetParam().force_hol_blocking) {
+    return;
+  }
   EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
   // Lose the request.
   SetPacketLossPercentage(100);
-  client_->SendRequest("/small_response");
-  // Cancel the stream, and let the RST_STREAM go through.
-  SetPacketLossPercentage(0);
+  SpdyHeaderBlock headers;
+  headers[":method"] = "POST";
+  headers[":path"] = "/foo";
+  headers[":scheme"] = "https";
+  headers[":authority"] = server_hostname_;
+  client_->SendMessage(headers, "test_body", /*fin=*/false);
   QuicSpdyClientStream* stream = client_->GetOrCreateStream();
-  // Reset stream.
+
+  // Cancel the stream.
   stream->Reset(QUIC_STREAM_CANCELLED);
   QuicSession* session = client_->client()->session();
   // Verify canceled stream does not become zombie.
