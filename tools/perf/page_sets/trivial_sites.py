@@ -158,3 +158,9 @@ class TrivialSitesStorySet(story.StorySet):
 class TrivialStoryExpectations(story.expectations.StoryExpectations):
   def SetExpectations(self):
     pass # No tests are disabled.
+
+
+class TrivialSitesMemoryStoryExpectations(story.expectations.StoryExpectations):
+  def SetExpectations(self):
+    pass # No tests are disabled.
+

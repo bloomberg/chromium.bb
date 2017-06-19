@@ -77,3 +77,8 @@ class MemoryTop10Mobile(story.StorySet):
       name = re.sub(r'\W+', '_', url)
       self.AddStory(ForegroundPage(self, name, url))
       self.AddStory(BackgroundPage(self, 'after_' + name))
+
+
+class MemoryTop10MobileStoryExpectations(story.expectations.StoryExpectations):
+  def SetExpectations(self):
+    pass  # No tests disabled.
