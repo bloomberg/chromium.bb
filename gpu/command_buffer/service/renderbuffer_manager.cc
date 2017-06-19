@@ -286,7 +286,7 @@ bool RenderbufferManager::OnMemoryDump(
 
   if (args.level_of_detail == MemoryDumpLevelOfDetail::BACKGROUND) {
     std::string dump_name =
-        base::StringPrintf("gpu/gl/renderbuffers/share_group_%" PRIu64 "/",
+        base::StringPrintf("gpu/gl/renderbuffers/share_group_0x%" PRIX64,
                            share_group_tracing_guid);
     MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name);
     dump->AddScalar(MemoryAllocatorDump::kNameSize,
@@ -300,9 +300,10 @@ bool RenderbufferManager::OnMemoryDump(
     const auto& client_renderbuffer_id = renderbuffer_entry.first;
     const auto& renderbuffer = renderbuffer_entry.second;
 
-    std::string dump_name = base::StringPrintf(
-        "gpu/gl/renderbuffers/share_group_%" PRIu64 "/renderbuffer_%d",
-        share_group_tracing_guid, client_renderbuffer_id);
+    std::string dump_name =
+        base::StringPrintf("gpu/gl/renderbuffers/share_group_0x%" PRIX64
+                           "/renderbuffer_0x%" PRIX32,
+                           share_group_tracing_guid, client_renderbuffer_id);
     MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name);
     dump->AddScalar(MemoryAllocatorDump::kNameSize,
                     MemoryAllocatorDump::kUnitsBytes,

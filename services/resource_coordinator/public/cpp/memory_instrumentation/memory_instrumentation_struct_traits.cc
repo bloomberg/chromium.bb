@@ -133,6 +133,7 @@ bool StructTraits<memory_instrumentation::mojom::ChromeMemDumpDataView,
     Read(memory_instrumentation::mojom::ChromeMemDumpDataView input,
          base::trace_event::MemoryDumpCallbackResult::ChromeMemDump* out) {
   out->malloc_total_kb = input.malloc_total_kb();
+  out->command_buffer_total_kb = input.command_buffer_total_kb();
   out->partition_alloc_total_kb = input.partition_alloc_total_kb();
   out->blink_gc_total_kb = input.blink_gc_total_kb();
   out->v8_total_kb = input.v8_total_kb();

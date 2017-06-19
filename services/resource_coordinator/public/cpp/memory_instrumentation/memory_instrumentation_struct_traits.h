@@ -101,6 +101,10 @@ struct SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT
       const base::trace_event::MemoryDumpCallbackResult::ChromeMemDump& args) {
     return args.malloc_total_kb;
   }
+  static uint32_t command_buffer_total_kb(
+      const base::trace_event::MemoryDumpCallbackResult::ChromeMemDump& args) {
+    return args.command_buffer_total_kb;
+  }
   static uint32_t partition_alloc_total_kb(
       const base::trace_event::MemoryDumpCallbackResult::ChromeMemDump& args) {
     return args.partition_alloc_total_kb;

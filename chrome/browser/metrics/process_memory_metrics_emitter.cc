@@ -48,6 +48,9 @@ void EmitGpuMemoryMetrics(const ProcessMemoryDumpPtr& pmd) {
   UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Experimental.Gpu2.Malloc",
                                 pmd->chrome_dump.malloc_total_kb / 1024);
   UMA_HISTOGRAM_MEMORY_LARGE_MB(
+      "Memory.Experimental.Gpu2.CommandBuffer",
+      pmd->chrome_dump.command_buffer_total_kb / 1024);
+  UMA_HISTOGRAM_MEMORY_LARGE_MB(
       "Memory.Experimental.Gpu2.PrivateMemoryFootprint",
       pmd->private_footprint / 1024);
 }

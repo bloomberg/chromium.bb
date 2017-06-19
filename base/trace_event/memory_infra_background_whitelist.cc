@@ -22,6 +22,9 @@ const char* const kDumpProviderWhitelist[] = {
     "ClientDiscardableSharedMemoryManager",
     "DOMStorage",
     "DiscardableSharedMemoryManager",
+    "gpu::BufferManager",
+    "gpu::RenderbufferManager",
+    "gpu::TextureManager",
     "IndexedDBBackingStore",
     "JavaHeap",
     "LevelDB",
@@ -45,7 +48,14 @@ const char* const kDumpProviderWhitelist[] = {
 
 // The names of dump providers whitelisted for summary tracing.
 const char* const kDumpProviderSummaryWhitelist[] = {
-    "BlinkGC", "Malloc", "PartitionAlloc", "ProcessMemoryMetrics", "V8Isolate",
+    "BlinkGC",
+    "gpu::BufferManager",
+    "gpu::RenderbufferManager",
+    "gpu::TextureManager",
+    "Malloc",
+    "PartitionAlloc",
+    "ProcessMemoryMetrics",
+    "V8Isolate",
     nullptr  // End of list marker.
 };
 
@@ -60,6 +70,9 @@ const char* const kAllocatorDumpNameWhitelist[] = {
     "dom_storage/localstorage_0x?/cache_size",
     "dom_storage/localstorage_0x?/leveldb",
     "dom_storage/session_storage_0x?",
+    "gpu/gl/buffers/share_group_0x?",
+    "gpu/gl/renderbuffers/share_group_0x?",
+    "gpu/gl/textures/share_group_0x?",
     "java_heap",
     "java_heap/allocated_objects",
     "leveldb/index_db/0x?",
