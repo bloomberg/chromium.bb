@@ -40,10 +40,10 @@ std::string CommitRequestEvent::GetDetails() const {
                             ModelTypeSetToString(contributing_types_).c_str());
 }
 
-std::unique_ptr<base::DictionaryValue> CommitRequestEvent::GetProtoMessage()
-    const {
+std::unique_ptr<base::DictionaryValue> CommitRequestEvent::GetProtoMessage(
+    bool include_specifics) const {
   return std::unique_ptr<base::DictionaryValue>(
-      ClientToServerMessageToValue(request_, false));
+      ClientToServerMessageToValue(request_, include_specifics));
 }
 
 std::unique_ptr<ProtocolEvent> CommitRequestEvent::Clone() const {

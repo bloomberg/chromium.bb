@@ -53,6 +53,7 @@ const char kRegisterForPerTypeCounters[] = "registerForPerTypeCounters";
 const char kRequestListOfTypes[] = "requestListOfTypes";
 const char kRequestUpdatedAboutInfo[] = "requestUpdatedAboutInfo";
 const char kRequestUserEventsVisibility[] = "requestUserEventsVisibility";
+const char kSetIncludeSpecifics[] = "setIncludeSpecifics";
 const char kUserEventsVisibilityCallback[] =
     "chrome.sync.userEventsVisibilityCallback";
 const char kWriteUserEvent[] = "writeUserEvent";

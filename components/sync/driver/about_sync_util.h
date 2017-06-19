@@ -48,6 +48,7 @@ extern const char kRegisterForPerTypeCounters[];
 extern const char kRequestListOfTypes[];
 extern const char kRequestUpdatedAboutInfo[];
 extern const char kRequestUserEventsVisibility[];
+extern const char kSetIncludeSpecifics[];
 extern const char kUserEventsVisibilityCallback[];
 extern const char kWriteUserEvent[];
 

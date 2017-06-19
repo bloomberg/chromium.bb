@@ -112,6 +112,11 @@ cr.define('chrome.sync.about_tab', function() {
    * Initializes state and callbacks for the protocol event log UI.
    */
   function initProtocolEventLog() {
+    var includeSpecificsCheckbox = $('capture-specifics');
+    includeSpecificsCheckbox.addEventListener('change', function(event) {
+      chrome.sync.setIncludeSpecifics(includeSpecificsCheckbox.checked);
+    });
+
     chrome.sync.events.addEventListener(
         'onProtocolEvent', onReceivedProtocolEvent);
 

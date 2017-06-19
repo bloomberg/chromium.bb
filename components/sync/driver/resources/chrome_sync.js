@@ -85,6 +85,16 @@ cr.define('chrome.sync', function() {
   };
 
   /**
+   * Updates the logic sending events to the protocol logic if they should
+   * include specifics or not when converting to a human readable format.
+   *
+   * @param {bool} includeSpecifics Whether protocol events include specifics.
+   */
+  var setIncludeSpecifics = function(includeSpecifics) {
+    chrome.send('setIncludeSpecifics', [includeSpecifics]);
+  };
+
+  /**
    * Sends data to construct a user event that should be committed.
    *
    * @param {string} eventTimeUsec Timestamp for the new event.
@@ -141,6 +151,7 @@ cr.define('chrome.sync', function() {
     requestUpdatedAboutInfo: requestUpdatedAboutInfo,
     requestListOfTypes: requestListOfTypes,
     requestUserEventsVisibility: requestUserEventsVisibility,
+    setIncludeSpecifics: setIncludeSpecifics,
     writeUserEvent: writeUserEvent,
   };
 });

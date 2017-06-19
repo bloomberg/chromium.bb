@@ -61,6 +61,10 @@ class SyncInternalsMessageHandler : public content::WebUIMessageHandler,
   // Handler for requests to get UserEvents tab visibility.
   void HandleRequestUserEventsVisibility(const base::ListValue* args);
 
+  // Handler for setting internal state of if specifics should be included in
+  // protocol events when sent to be displayed.
+  void HandleSetIncludeSpecifics(const base::ListValue* args);
+
   // Handler for writeUserEvent message.
   void HandleWriteUserEvent(const base::ListValue* args);
 
@@ -129,6 +133,10 @@ class SyncInternalsMessageHandler : public content::WebUIMessageHandler,
   // A flag used to prevent double-registration as TypeDebugInfoObserver with
   // ProfileSyncService.
   bool is_registered_for_counters_ = false;
+
+  // Whether specifics should be included when converting protocol events to a
+  // human readable format.
+  bool include_specifics_ = false;
 
   // An abstraction of who creates the about sync info value map.
   AboutSyncDataDelegate about_sync_data_delegate_;

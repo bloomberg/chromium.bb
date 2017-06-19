@@ -39,10 +39,10 @@ std::string GetUpdatesResponseEvent::GetDetails() const {
   }
 }
 
-std::unique_ptr<base::DictionaryValue>
-GetUpdatesResponseEvent::GetProtoMessage() const {
+std::unique_ptr<base::DictionaryValue> GetUpdatesResponseEvent::GetProtoMessage(
+    bool include_specifics) const {
   return std::unique_ptr<base::DictionaryValue>(
-      ClientToServerResponseToValue(response_, false));
+      ClientToServerResponseToValue(response_, include_specifics));
 }
 
 std::unique_ptr<ProtocolEvent> GetUpdatesResponseEvent::Clone() const {

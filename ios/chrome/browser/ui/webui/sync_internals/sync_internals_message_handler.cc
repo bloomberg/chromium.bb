@@ -162,7 +162,7 @@ void SyncInternalsMessageHandler::OnStateChanged(syncer::SyncService* sync) {
 void SyncInternalsMessageHandler::OnProtocolEvent(
     const syncer::ProtocolEvent& event) {
   std::unique_ptr<base::DictionaryValue> value(
-      syncer::ProtocolEvent::ToValue(event));
+      syncer::ProtocolEvent::ToValue(event, false));
   web_ui()->CallJavascriptFunction(
       syncer::sync_ui_util::kDispatchEvent,
       base::Value(syncer::sync_ui_util::kOnProtocolEvent), *value);
