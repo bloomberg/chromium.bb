@@ -22,10 +22,16 @@
 
 namespace {
 using ::payments::data_util::GetPaymentAddressFromAutofillProfile;
+
+// Time interval before updating the Payment Summary item in seconds.
+const NSTimeInterval kUpdatePaymentSummaryItemIntervalSeconds = 10.0;
 }  // namespace
 
 @implementation PaymentRequestCoordinator {
   UINavigationController* _navigationController;
+  AddressEditCoordinator* _addressEditCoordinator;
+  CreditCardEditCoordinator* _creditCardEditCoordinator;
+  ContactInfoEditCoordinator* _contactInfoEditCoordinator;
   ContactInfoSelectionCoordinator* _contactInfoSelectionCoordinator;
   PaymentRequestViewController* _viewController;
   PaymentRequestErrorCoordinator* _errorCoordinator;
@@ -42,6 +48,9 @@ using ::payments::data_util::GetPaymentAddressFromAutofillProfile;
 
   // The selected shipping address, pending approval from the page.
   autofill::AutofillProfile* _pendingShippingAddress;
+
+  // Timer used to update the Payment Summary item.
+  NSTimer* _updatePaymentSummaryItemTimer;
 }
 
 @synthesize paymentRequest = _paymentRequest;
@@ -84,6 +93,12 @@ using ::payments::data_util::GetPaymentAddressFromAutofillProfile;
   [[_navigationController presentingViewController]
       dismissViewControllerAnimated:YES
                          completion:nil];
+  [_addressEditCoordinator stop];
+  _addressEditCoordinator = nil;
+  [_creditCardEditCoordinator stop];
+  _creditCardEditCoordinator = nil;
+  [_contactInfoEditCoordinator stop];
+  _contactInfoEditCoordinator = nil;
   [_itemsDisplayCoordinator stop];
   _itemsDisplayCoordinator = nil;
   [_contactInfoSelectionCoordinator stop];
@@ -122,43 +137,57 @@ using ::payments::data_util::GetPaymentAddressFromAutofillProfile;
 }
 
 - (void)updatePaymentDetails:(web::PaymentDetails)paymentDetails {
+  [_updatePaymentSummaryItemTimer invalidate];
+
   BOOL totalValueChanged =
       (_paymentRequest->payment_details().total != paymentDetails.total);
   [_mediator setTotalValueChanged:totalValueChanged];
+  // Update the payment summary item.
+  [_viewController updatePaymentSummaryItem];
+
+  if (totalValueChanged) {
+    // If the total value changed, update the Payment Summary item after a
+    // certain time interval in order to clear the 'Updated' label on the item.
+    _updatePaymentSummaryItemTimer = [NSTimer
+        scheduledTimerWithTimeInterval:kUpdatePaymentSummaryItemIntervalSeconds
+                                target:_viewController
+                              selector:@selector(updatePaymentSummaryItem)
+                              userInfo:nil
+                               repeats:NO];
+  }
+
   _paymentRequest->UpdatePaymentDetails(paymentDetails);
 
-  if (_paymentRequest->shipping_options().empty()) {
-    // Display error in the shipping address/option selection view.
-    if (_shippingAddressSelectionCoordinator) {
-      _paymentRequest->set_selected_shipping_profile(nil);
-      [_shippingAddressSelectionCoordinator stopSpinnerAndDisplayError];
-    } else if (_shippingOptionSelectionCoordinator) {
-      [_shippingOptionSelectionCoordinator stopSpinnerAndDisplayError];
-    }
-    // Update the payment request summary view.
-    [_viewController loadModel];
-    [[_viewController collectionView] reloadData];
-  } else {
-    // Update the payment summary item.
-    [_viewController updatePaymentSummaryItem];
-
-    if (_shippingAddressSelectionCoordinator) {
-      // Set the selected shipping address.
-      _paymentRequest->set_selected_shipping_profile(_pendingShippingAddress);
-      _pendingShippingAddress = nil;
-
-      // Dismiss the shipping address selection view.
-      [_shippingAddressSelectionCoordinator stop];
-      _shippingAddressSelectionCoordinator = nil;
-    } else if (_shippingOptionSelectionCoordinator) {
-      // Dismiss the shipping option selection view.
-      [_shippingOptionSelectionCoordinator stop];
-      _shippingOptionSelectionCoordinator = nil;
-    }
-
-    // Update the Shipping section in the payment request summary view.
-    [_viewController updateShippingSection];
+  // If a shipping address has been selected and there are available shipping
+  // options, set it as the selected shipping address.
+  if (_pendingShippingAddress && !_paymentRequest->shipping_options().empty()) {
+    _paymentRequest->set_selected_shipping_profile(_pendingShippingAddress);
   }
+  _pendingShippingAddress = nil;
+
+  // Update the shipping section. The available shipping addresses/options and
+  // the selected shipping address/option are already up-to-date.
+  [_viewController updateShippingSection];
+
+  if (_paymentRequest->shipping_options().empty()) {
+    // Display error in the shipping address selection view, if present.
+    [_shippingAddressSelectionCoordinator stopSpinnerAndDisplayError];
+
+    // Display error in the shipping option selection view, if present.
+    [_shippingOptionSelectionCoordinator stopSpinnerAndDisplayError];
+  } else {
+    // Dismiss the shipping address selection view, if present.
+    [_shippingAddressSelectionCoordinator stop];
+    _shippingAddressSelectionCoordinator = nil;
+
+    // Dismiss the shipping option selection view, if present.
+    [_shippingOptionSelectionCoordinator stop];
+    _shippingOptionSelectionCoordinator = nil;
+  }
+
+  // Dismiss the address edit view, if present.
+  [_addressEditCoordinator stop];
+  _addressEditCoordinator = nil;
 }
 
 - (void)displayErrorWithCallback:(ProceduralBlock)callback {
@@ -189,6 +218,10 @@ using ::payments::data_util::GetPaymentAddressFromAutofillProfile;
 
 - (void)paymentRequestViewControllerDidSelectPaymentSummaryItem:
     (PaymentRequestViewController*)controller {
+  // Return if there are no display items.
+  if (_paymentRequest->payment_details().display_items.empty())
+    return;
+
   _itemsDisplayCoordinator = [[PaymentItemsDisplayCoordinator alloc]
       initWithBaseViewController:_viewController];
   [_itemsDisplayCoordinator setPaymentRequest:_paymentRequest];
@@ -199,6 +232,16 @@ using ::payments::data_util::GetPaymentAddressFromAutofillProfile;
 
 - (void)paymentRequestViewControllerDidSelectContactInfoItem:
     (PaymentRequestViewController*)controller {
+  if (_paymentRequest->contact_profiles().empty()) {
+    _contactInfoEditCoordinator = [[ContactInfoEditCoordinator alloc]
+        initWithBaseViewController:_viewController];
+    [_contactInfoEditCoordinator setPaymentRequest:_paymentRequest];
+    [_contactInfoEditCoordinator setDelegate:self];
+
+    [_contactInfoEditCoordinator start];
+    return;
+  }
+
   _contactInfoSelectionCoordinator = [[ContactInfoSelectionCoordinator alloc]
       initWithBaseViewController:_viewController];
   [_contactInfoSelectionCoordinator setPaymentRequest:_paymentRequest];
@@ -209,6 +252,16 @@ using ::payments::data_util::GetPaymentAddressFromAutofillProfile;
 
 - (void)paymentRequestViewControllerDidSelectShippingAddressItem:
     (PaymentRequestViewController*)controller {
+  if (_paymentRequest->shipping_profiles().empty()) {
+    _addressEditCoordinator = [[AddressEditCoordinator alloc]
+        initWithBaseViewController:_viewController];
+    [_addressEditCoordinator setPaymentRequest:_paymentRequest];
+    [_addressEditCoordinator setDelegate:self];
+
+    [_addressEditCoordinator start];
+    return;
+  }
+
   _shippingAddressSelectionCoordinator =
       [[ShippingAddressSelectionCoordinator alloc]
           initWithBaseViewController:_viewController];
@@ -231,6 +284,16 @@ using ::payments::data_util::GetPaymentAddressFromAutofillProfile;
 
 - (void)paymentRequestViewControllerDidSelectPaymentMethodItem:
     (PaymentRequestViewController*)controller {
+  if (_paymentRequest->credit_cards().empty()) {
+    _creditCardEditCoordinator = [[CreditCardEditCoordinator alloc]
+        initWithBaseViewController:_viewController];
+    [_creditCardEditCoordinator setPaymentRequest:_paymentRequest];
+    [_creditCardEditCoordinator setDelegate:self];
+
+    [_creditCardEditCoordinator start];
+    return;
+  }
+
   _methodSelectionCoordinator = [[PaymentMethodSelectionCoordinator alloc]
       initWithBaseViewController:_viewController];
   [_methodSelectionCoordinator setPaymentRequest:_paymentRequest];
@@ -256,9 +319,6 @@ using ::payments::data_util::GetPaymentAddressFromAutofillProfile;
 
 - (void)paymentItemsDisplayCoordinatorDidReturn:
     (PaymentItemsDisplayCoordinator*)coordinator {
-  // Clear the 'Updated' label on the payment summary item, if there is one.
-  [_viewController updatePaymentSummaryItem];
-
   [_itemsDisplayCoordinator stop];
   _itemsDisplayCoordinator = nil;
 }
@@ -273,8 +333,8 @@ using ::payments::data_util::GetPaymentAddressFromAutofillProfile;
 - (void)
 contactInfoSelectionCoordinator:(ContactInfoSelectionCoordinator*)coordinator
         didSelectContactProfile:(autofill::AutofillProfile*)contactProfile {
+  DCHECK(contactProfile);
   _paymentRequest->set_selected_contact_profile(contactProfile);
-
   [_viewController updateContactInfoSection];
 
   [_contactInfoSelectionCoordinator stop];
@@ -285,6 +345,24 @@ contactInfoSelectionCoordinator:(ContactInfoSelectionCoordinator*)coordinator
     (ContactInfoSelectionCoordinator*)coordinator {
   [_contactInfoSelectionCoordinator stop];
   _contactInfoSelectionCoordinator = nil;
+}
+
+#pragma mark - ContactInfoEditCoordinatorDelegate
+
+- (void)contactInfoEditCoordinator:(ContactInfoEditCoordinator*)coordinator
+           didFinishEditingProfile:(autofill::AutofillProfile*)profile {
+  DCHECK(profile);
+  _paymentRequest->set_selected_contact_profile(profile);
+  [_viewController updateContactInfoSection];
+
+  [_contactInfoEditCoordinator stop];
+  _contactInfoEditCoordinator = nil;
+}
+
+- (void)contactInfoEditCoordinatorDidCancel:
+    (ContactInfoEditCoordinator*)coordinator {
+  [_contactInfoEditCoordinator stop];
+  _contactInfoEditCoordinator = nil;
 }
 
 #pragma mark - ShippingAddressSelectionCoordinatorDelegate
@@ -302,11 +380,27 @@ contactInfoSelectionCoordinator:(ContactInfoSelectionCoordinator*)coordinator
 
 - (void)shippingAddressSelectionCoordinatorDidReturn:
     (ShippingAddressSelectionCoordinator*)coordinator {
-  // Clear the 'Updated' label on the payment summary item, if there is one.
-  [_viewController updatePaymentSummaryItem];
 
   [_shippingAddressSelectionCoordinator stop];
   _shippingAddressSelectionCoordinator = nil;
+}
+
+#pragma mark - AddressEditCoordinatorDelegate
+
+- (void)addressEditCoordinator:(AddressEditCoordinator*)coordinator
+       didFinishEditingAddress:(autofill::AutofillProfile*)address {
+  _pendingShippingAddress = address;
+  DCHECK(address);
+  payments::PaymentAddress shippingAddress =
+      GetPaymentAddressFromAutofillProfile(
+          *address, GetApplicationContext()->GetApplicationLocale());
+  [_delegate paymentRequestCoordinator:self
+              didSelectShippingAddress:shippingAddress];
+}
+
+- (void)addressEditCoordinatorDidCancel:(AddressEditCoordinator*)coordinator {
+  [_addressEditCoordinator stop];
+  _addressEditCoordinator = nil;
 }
 
 #pragma mark - ShippingOptionSelectionCoordinatorDelegate
@@ -315,15 +409,13 @@ contactInfoSelectionCoordinator:(ContactInfoSelectionCoordinator*)coordinator
             (ShippingOptionSelectionCoordinator*)coordinator
                    didSelectShippingOption:
                        (web::PaymentShippingOption*)shippingOption {
+  DCHECK(shippingOption);
   [_delegate paymentRequestCoordinator:self
                didSelectShippingOption:*shippingOption];
 }
 
 - (void)shippingOptionSelectionCoordinatorDidReturn:
     (ShippingAddressSelectionCoordinator*)coordinator {
-  // Clear the 'Updated' label on the payment summary item, if there is one.
-  [_viewController updatePaymentSummaryItem];
-
   [_shippingOptionSelectionCoordinator stop];
   _shippingOptionSelectionCoordinator = nil;
 }
@@ -333,12 +425,9 @@ contactInfoSelectionCoordinator:(ContactInfoSelectionCoordinator*)coordinator
 - (void)paymentMethodSelectionCoordinator:
             (PaymentMethodSelectionCoordinator*)coordinator
                    didSelectPaymentMethod:(autofill::CreditCard*)creditCard {
+  DCHECK(creditCard);
   _paymentRequest->set_selected_credit_card(creditCard);
-
   [_viewController updatePaymentMethodSection];
-
-  // Clear the 'Updated' label on the payment summary item, if there is one.
-  [_viewController updatePaymentSummaryItem];
 
   [_methodSelectionCoordinator stop];
   _methodSelectionCoordinator = nil;
@@ -346,11 +435,26 @@ contactInfoSelectionCoordinator:(ContactInfoSelectionCoordinator*)coordinator
 
 - (void)paymentMethodSelectionCoordinatorDidReturn:
     (PaymentMethodSelectionCoordinator*)coordinator {
-  // Clear the 'Updated' label on the payment summary item, if there is one.
-  [_viewController updatePaymentSummaryItem];
-
   [_methodSelectionCoordinator stop];
   _methodSelectionCoordinator = nil;
+}
+
+#pragma mark - CreditCardEditCoordinatorDelegate
+
+- (void)creditCardEditCoordinator:(CreditCardEditCoordinator*)coordinator
+       didFinishEditingCreditCard:(autofill::CreditCard*)creditCard {
+  DCHECK(creditCard);
+  _paymentRequest->set_selected_credit_card(creditCard);
+  [_viewController updatePaymentMethodSection];
+
+  [_creditCardEditCoordinator stop];
+  _creditCardEditCoordinator = nil;
+}
+
+- (void)creditCardEditCoordinatorDidCancel:
+    (CreditCardEditCoordinator*)coordinator {
+  [_creditCardEditCoordinator stop];
+  _creditCardEditCoordinator = nil;
 }
 
 @end
