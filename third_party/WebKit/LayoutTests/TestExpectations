@@ -1680,9 +1680,6 @@ crbug.com/579493 virtual/mojo-loading/http/tests/security/xss-DENIED-xsl-documen
 
 crbug.com/572723 inspector/sources/debugger/debugger-uncaught-promise-on-pause.html [ Timeout Pass ]
 
-crbug.com/634264 http/tests/security/xss-DENIED-cross-origin-stack-overflow.html [ Crash Timeout ]
-crbug.com/634264 virtual/mojo-loading/http/tests/security/xss-DENIED-cross-origin-stack-overflow.html [ Crash Timeout ]
-
 crbug.com/594672 fast/events/iframe-object-onload.html [ Failure Pass ]
 crbug.com/594672 fast/events/scale-and-scroll-iframe-body.html [ Failure Pass ]
 crbug.com/594672 fast/events/updateLayoutForHitTest.html [ Failure Pass ]

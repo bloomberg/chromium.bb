@@ -13,8 +13,8 @@ function test() {
     var win = iframe.contentWindow;
     function recurse() {
         try { recurse(); } catch(e) {}
-        try { win.location; } catch(e) { 
-            o = e; 
+        try { win.location.href; } catch(e) {
+            o = e;
         }
     }
     recurse();
