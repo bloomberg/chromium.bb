@@ -20,7 +20,7 @@ suite('<site-data>', function() {
     siteData.sites = [{site: 'Google', id: GOOGLE_ID, localData: 'Cookiez!'}];
     Polymer.dom.flush();
 
-    MockInteractions.tap(siteData.$$('.remove-site'));
+    MockInteractions.tap(siteData.$$('.icon-delete'));
 
     return testBrowserProxy.whenCalled('removeCookie').then(function(path) {
       assertEquals(GOOGLE_ID, path);
