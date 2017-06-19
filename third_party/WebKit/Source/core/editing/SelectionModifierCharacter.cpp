@@ -342,22 +342,22 @@ static PositionTemplate<Strategy> TraverseInternalAlgorithm(
           if (!prev_box || prev_box->BidiLevel() < level)
             continue;
         }
-      } else {
-        // Trailing edge of a secondary run. Set to the leading edge of
-        // the entire run.
-        while (true) {
-          box = Traversal::FindBackwardBoundaryOfEntireBidiRun(*box, level);
-          if (box->BidiLevel() == level)
-            break;
-          level = box->BidiLevel();
-          box = Traversal::FindForwardBoundaryOfEntireBidiRun(*box, level);
-          if (box->BidiLevel() == level)
-            break;
-          level = box->BidiLevel();
-        }
-        line_layout_item = box->GetLineLayoutItem();
-        offset = Traversal::CaretMinOffsetOf(primary_direction, *box);
+        break;
       }
+      // Trailing edge of a secondary run. Set to the leading edge of
+      // the entire run.
+      while (true) {
+        box = Traversal::FindBackwardBoundaryOfEntireBidiRun(*box, level);
+        if (box->BidiLevel() == level)
+          break;
+        level = box->BidiLevel();
+        box = Traversal::FindForwardBoundaryOfEntireBidiRun(*box, level);
+        if (box->BidiLevel() == level)
+          break;
+        level = box->BidiLevel();
+      }
+      line_layout_item = box->GetLineLayoutItem();
+      offset = Traversal::CaretMinOffsetOf(primary_direction, *box);
       break;
     }
 
