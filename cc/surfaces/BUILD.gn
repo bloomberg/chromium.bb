@@ -60,6 +60,7 @@ cc_component("surfaces") {
     "surface.h",
     "surface_aggregator.cc",
     "surface_aggregator.h",
+    "surface_deadline_observer.h",
     "surface_dependency_deadline.cc",
     "surface_dependency_deadline.h",
     "surface_dependency_tracker.cc",

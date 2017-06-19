@@ -9,10 +9,8 @@
 namespace cc {
 
 SurfaceDependencyDeadline::SurfaceDependencyDeadline(
-    SurfaceDependencyTracker* dependency_tracker,
     BeginFrameSource* begin_frame_source)
-    : dependency_tracker_(dependency_tracker),
-      begin_frame_source_(begin_frame_source) {
+    : begin_frame_source_(begin_frame_source) {
   DCHECK(begin_frame_source_);
 }
 
@@ -42,7 +40,8 @@ void SurfaceDependencyDeadline::OnBeginFrame(const BeginFrameArgs& args) {
     return;
 
   Cancel();
-  dependency_tracker_->OnDeadline();
+  for (auto& observer : observer_list_)
+    observer.OnDeadline();
 }
 
 const BeginFrameArgs& SurfaceDependencyDeadline::LastUsedBeginFrameArgs()
