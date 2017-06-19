@@ -1743,14 +1743,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   bool HasTextCombine() const { return TextCombine() != ETextCombine::kNone; }
 
   // Grid utility functions.
-  AutoRepeatType GridAutoRepeatColumnsType() const {
-    return static_cast<AutoRepeatType>(
-        rare_non_inherited_data_->grid_data_->grid_auto_repeat_columns_type_);
-  }
-  AutoRepeatType GridAutoRepeatRowsType() const {
-    return static_cast<AutoRepeatType>(
-        rare_non_inherited_data_->grid_data_->grid_auto_repeat_rows_type_);
-  }
   GridAutoFlow GetGridAutoFlow() const {
     return static_cast<GridAutoFlow>(
         rare_non_inherited_data_->grid_data_->grid_auto_flow_);
@@ -1772,16 +1764,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   bool IsGridAutoFlowAlgorithmDense() const {
     return (rare_non_inherited_data_->grid_data_->grid_auto_flow_ &
             kInternalAutoFlowAlgorithmDense) == kInternalAutoFlowAlgorithmDense;
-  }
-  void SetGridAutoRepeatColumnsType(const AutoRepeatType auto_repeat_type) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_data_,
-                   grid_auto_repeat_columns_type_,
-                   static_cast<unsigned>(auto_repeat_type));
-  }
-  void SetGridAutoRepeatRowsType(const AutoRepeatType auto_repeat_type) {
-    SET_NESTED_VAR(rare_non_inherited_data_, grid_data_,
-                   grid_auto_repeat_rows_type_,
-                   static_cast<unsigned>(auto_repeat_type));
   }
 
   // align-content utility functions.
