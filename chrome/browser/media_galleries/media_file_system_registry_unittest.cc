@@ -201,8 +201,7 @@ class MockProfileSharedRenderProcessHostFactory
       content::BrowserContext* browser_context);
 
   content::RenderProcessHost* CreateRenderProcessHost(
-      content::BrowserContext* browser_context,
-      content::SiteInstance* site_instance) const override;
+      content::BrowserContext* browser_context) const override;
 
  private:
   mutable std::map<content::BrowserContext*,
@@ -417,8 +416,7 @@ MockProfileSharedRenderProcessHostFactory::ReleaseRPH(
 
 content::RenderProcessHost*
 MockProfileSharedRenderProcessHostFactory::CreateRenderProcessHost(
-    content::BrowserContext* browser_context,
-    content::SiteInstance* site_instance) const {
+    content::BrowserContext* browser_context) const {
   auto existing = rph_map_.find(browser_context);
   if (existing != rph_map_.end())
     return existing->second.get();

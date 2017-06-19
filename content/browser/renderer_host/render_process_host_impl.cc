@@ -3128,7 +3128,7 @@ RenderProcessHost* RenderProcessHostImpl::GetProcessHostForSiteInstance(
     if (g_render_process_host_factory_) {
       render_process_host =
           g_render_process_host_factory_->CreateRenderProcessHost(
-              browser_context, site_instance);
+              browser_context);
     } else {
       StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
           BrowserContext::GetStoragePartition(browser_context, site_instance));

@@ -140,7 +140,7 @@ TEST_F(RenderWidgetHostViewMacEditCommandHelperWithTaskEnvTest,
   TestBrowserContext browser_context;
   MockRenderProcessHostFactory process_host_factory;
   RenderProcessHost* process_host =
-      process_host_factory.CreateRenderProcessHost(&browser_context, nullptr);
+      process_host_factory.CreateRenderProcessHost(&browser_context);
 
   // Populates |g_supported_scale_factors|.
   std::vector<ui::ScaleFactor> supported_factors;
