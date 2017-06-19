@@ -1,0 +1,184 @@
+From 84953cf3aade2a112b9b9930d6fa72ece370cae5 Mon Sep 17 00:00:00 2001
+From: Jeff Carpenter <jeffcarp@chromium.org>
+Date: Mon, 19 Jun 2017 15:19:03 -0700
+Subject: [PATCH] wip
+
+---
+ .../service_worker/service_worker_client_utils.cc  | 47 ++++++++++++----------
+ third_party/WebKit/LayoutTests/TestExpectations    |  2 +
+ ...lients-matchall-client-types.https-expected.txt |  5 +++
+ .../clients-matchall-client-types.https.html       |  2 +-
+ 5 files changed, 34 insertions(+), 23 deletions(-)
+ create mode 100644 third_party/WebKit/LayoutTests/external/wpt/service-workers/service-worker/clients-matchall-client-types.https-expected.txt
+
+diff --git a/content/browser/service_worker/service_worker_client_utils.cc b/content/browser/service_worker/service_worker_client_utils.cc
+index 3a9318b83fc8..a8f677d5374a 100644
+--- a/content/browser/service_worker/service_worker_client_utils.cc
++++ b/content/browser/service_worker/service_worker_client_utils.cc
+@@ -106,6 +106,7 @@ class OpenURLObserver : public WebContentsObserver {
+ };
+ 
+ ServiceWorkerClientInfo GetWindowClientInfoOnUI(
++    const GURL& document_url,
+     int render_process_id,
+     int render_frame_id,
+     base::TimeTicks create_time,
+@@ -121,14 +122,15 @@ ServiceWorkerClientInfo GetWindowClientInfoOnUI(
+   // expecting.
+   return ServiceWorkerClientInfo(
+       client_uuid, render_frame_host->GetVisibilityState(),
+-      render_frame_host->IsFocused(), render_frame_host->GetLastCommittedURL(),
++      render_frame_host->IsFocused(), document_url,
+       render_frame_host->GetParent() ? REQUEST_CONTEXT_FRAME_TYPE_NESTED
+                                      : REQUEST_CONTEXT_FRAME_TYPE_TOP_LEVEL,
+       render_frame_host->frame_tree_node()->last_focus_time(), create_time,
+       blink::kWebServiceWorkerClientTypeWindow);
+ }
+ 
+-ServiceWorkerClientInfo FocusOnUI(int render_process_id,
++ServiceWorkerClientInfo FocusOnUI(const GURL& document_url,
++                                  int render_process_id,
+                                   int render_frame_id,
+                                   base::TimeTicks create_time,
+                                   const std::string& client_uuid) {
+@@ -153,8 +155,8 @@ ServiceWorkerClientInfo FocusOnUI(int render_process_id,
+   // Move the web contents to the foreground.
+   web_contents->Activate();
+ 
+-  return GetWindowClientInfoOnUI(render_process_id, render_frame_id,
+-                                 create_time, client_uuid);
++  return GetWindowClientInfoOnUI(document_url, render_process_id,
++                                 render_frame_id, create_time, client_uuid);
+ }
+ 
+ // This is only called for main frame navigations in OpenWindowOnUI().
+@@ -282,9 +284,9 @@ void DidNavigate(const base::WeakPtr<ServiceWorkerContextCore>& context,
+     }
+     BrowserThread::PostTaskAndReplyWithResult(
+         BrowserThread::UI, FROM_HERE,
+-        base::Bind(&GetWindowClientInfoOnUI, provider_host->process_id(),
+-                   provider_host->route_id(), provider_host->create_time(),
+-                   provider_host->client_uuid()),
++        base::Bind(&GetWindowClientInfoOnUI, provider_host->document_url(),
++                   provider_host->process_id(), provider_host->route_id(),
++                   provider_host->create_time(), provider_host->client_uuid()),
+         base::Bind(callback, SERVICE_WORKER_OK));
+     return;
+   }
+@@ -296,14 +298,14 @@ void DidNavigate(const base::WeakPtr<ServiceWorkerContextCore>& context,
+ 
+ void AddWindowClient(
+     ServiceWorkerProviderHost* host,
+-    std::vector<std::tuple<int, int, base::TimeTicks, std::string>>*
++    std::vector<std::tuple<GURL, int, int, base::TimeTicks, std::string>>*
+         client_info) {
+   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+   if (host->client_type() != blink::kWebServiceWorkerClientTypeWindow)
+     return;
+-  client_info->push_back(std::make_tuple(host->process_id(), host->frame_id(),
+-                                         host->create_time(),
+-                                         host->client_uuid()));
++  client_info->push_back(std::make_tuple(
++      host->document_url(), host->process_id(), host->frame_id(),
++      host->create_time(), host->client_uuid()));
+ }
+ 
+ void AddNonWindowClient(ServiceWorkerProviderHost* host,
+@@ -326,8 +328,9 @@ void AddNonWindowClient(ServiceWorkerProviderHost* host,
+ }
+ 
+ void OnGetWindowClientsOnUI(
+-    // The tuple contains process_id, frame_id, create_time, client_uuid.
+-    const std::vector<std::tuple<int, int, base::TimeTicks, std::string>>&
++    // The tuple contains document_url, process_id, frame_id, create_time,
++    // client_uuid.
++    const std::vector<std::tuple<GURL, int, int, base::TimeTicks, std::string>>&
+         clients_info,
+     const GURL& script_url,
+     const GetWindowClientsCallback& callback,
+@@ -336,7 +339,8 @@ void OnGetWindowClientsOnUI(
+ 
+   for (const auto& it : clients_info) {
+     ServiceWorkerClientInfo info = GetWindowClientInfoOnUI(
+-        std::get<0>(it), std::get<1>(it), std::get<2>(it), std::get<3>(it));
++        std::get<0>(it), std::get<1>(it), std::get<2>(it), std::get<3>(it),
++        std::get<4>(it));
+ 
+     // If the request to the provider_host returned an empty
+     // ServiceWorkerClientInfo, that means that it wasn't possible to associate
+@@ -427,7 +431,8 @@ void GetWindowClients(const base::WeakPtr<ServiceWorkerVersion>& controller,
+   DCHECK(options.client_type == blink::kWebServiceWorkerClientTypeWindow ||
+          options.client_type == blink::kWebServiceWorkerClientTypeAll);
+ 
+-  std::vector<std::tuple<int, int, base::TimeTicks, std::string>> clients_info;
++  std::vector<std::tuple<GURL, int, int, base::TimeTicks, std::string>>
++      clients_info;
+   if (!options.include_uncontrolled) {
+     for (auto& controllee : controller->controllee_map())
+       AddWindowClient(controllee.second, &clients_info);
+@@ -461,9 +466,9 @@ void FocusWindowClient(ServiceWorkerProviderHost* provider_host,
+             provider_host->client_type());
+   BrowserThread::PostTaskAndReplyWithResult(
+       BrowserThread::UI, FROM_HERE,
+-      base::Bind(&FocusOnUI, provider_host->process_id(),
+-                 provider_host->frame_id(), provider_host->create_time(),
+-                 provider_host->client_uuid()),
++      base::Bind(&FocusOnUI, provider_host->document_url(),
++                 provider_host->process_id(), provider_host->frame_id(),
++                 provider_host->create_time(), provider_host->client_uuid()),
+       callback);
+ }
+ 
+@@ -509,9 +514,9 @@ void GetClient(ServiceWorkerProviderHost* provider_host,
+   if (client_type == blink::kWebServiceWorkerClientTypeWindow) {
+     BrowserThread::PostTaskAndReplyWithResult(
+         BrowserThread::UI, FROM_HERE,
+-        base::Bind(&GetWindowClientInfoOnUI, provider_host->process_id(),
+-                   provider_host->route_id(), provider_host->create_time(),
+-                   provider_host->client_uuid()),
++        base::Bind(&GetWindowClientInfoOnUI, provider_host->document_url(),
++                   provider_host->process_id(), provider_host->route_id(),
++                   provider_host->create_time(), provider_host->client_uuid()),
+         callback);
+     return;
+   }
+diff --git a/third_party/WebKit/LayoutTests/TestExpectations b/third_party/WebKit/LayoutTests/TestExpectations
+index 62d60ea92f56..9ecd97be8ced 100644
+--- a/third_party/WebKit/LayoutTests/TestExpectations
++++ b/third_party/WebKit/LayoutTests/TestExpectations
+@@ -2325,6 +2325,8 @@ crbug.com/675540 external/wpt/service-workers/service-worker/claim-with-redirect
+ crbug.com/675540 virtual/off-main-thread-fetch/external/wpt/service-workers/service-worker/claim-with-redirect.https.html [ Skip ]
+ crbug.com/658997 external/wpt/service-workers/service-worker/clients-matchall-client-types.https.html [ Skip ]
+ crbug.com/658997 virtual/off-main-thread-fetch/external/wpt/service-workers/service-worker/clients-matchall-client-types.https.html [ Skip ]
++crbug.com/658997 external/wpt/service-workers/service-worker/clients-get-cross-origin.https.html [ Skip ]
++crbug.com/658997 virtual/off-main-thread-fetch/external/wpt/service-workers/service-worker/clients-get-cross-origin.https.html [ Skip ]
+ crbug.com/658997 external/wpt/service-workers/service-worker/fetch-canvas-tainting-cache.https.html [ Skip ]
+ crbug.com/658997 virtual/off-main-thread-fetch/external/wpt/service-workers/service-worker/fetch-canvas-tainting-cache.https.html [ Skip ]
+ 
+diff --git a/third_party/WebKit/LayoutTests/external/wpt/service-workers/service-worker/clients-matchall-client-types.https-expected.txt b/third_party/WebKit/LayoutTests/external/wpt/service-workers/service-worker/clients-matchall-client-types.https-expected.txt
+new file mode 100644
+index 000000000000..54af94b91aca
+--- /dev/null
++++ b/third_party/WebKit/LayoutTests/external/wpt/service-workers/service-worker/clients-matchall-client-types.https-expected.txt
+@@ -0,0 +1,5 @@
++This is a testharness.js-based test.
++PASS Verify matchAll() with window client type 
++FAIL Verify matchAll() with {window, sharedworker, worker} client types assert_equals: expecting ,,https://web-platform.test:8444/service-workers/service-worker/resources/clients-matchall-client-types-dedicated-worker.js,worker,none: result count expected 1 but got 0
++Harness: the test ran to completion.
++
+diff --git a/third_party/WebKit/LayoutTests/external/wpt/service-workers/service-worker/clients-matchall-client-types.https.html b/third_party/WebKit/LayoutTests/external/wpt/service-workers/service-worker/clients-matchall-client-types.https.html
+index 5bb50ec3db7f..6cd9ae3f68f9 100644
+--- a/third_party/WebKit/LayoutTests/external/wpt/service-workers/service-worker/clients-matchall-client-types.https.html
++++ b/third_party/WebKit/LayoutTests/external/wpt/service-workers/service-worker/clients-matchall-client-types.https.html
+@@ -38,7 +38,7 @@ function test_matchall(frame, expected, query_options) {
+       throw new Error(data);
+     }
+ 
+-    assert_equals(data.length, expected.length, 'result count');
++    assert_equals(data.length, expected.length, 'expecting ' + expected + ': result count');
+ 
+     for (var i = 0; i < data.length; ++i) {
+       assert_array_equals(data[i], expected[i]);
+-- 
+2.13.1.518.g3df882009-goog
+

@@ -170,7 +170,7 @@ class GerritCL(object):
                 continue
 
             # File is being changed, detect if it's exportable.
-            if CHROMIUM_WPT_DIR in line:
+            if CHROMIUM_WPT_DIR in line and not line.endswith('-expected.txt'):
                 in_exportable_diff = True
                 filtered_patch.append(line)
             else:
