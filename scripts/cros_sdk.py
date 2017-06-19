@@ -18,6 +18,7 @@ import glob
 import os
 import pwd
 import re
+import resource
 import sys
 import urlparse
 
@@ -240,6 +241,8 @@ def EnterChroot(chroot_path, cache_dir, chrome_root, chrome_root_mount,
     cmd.append('--')
     cmd.extend(additional_args)
 
+  # ThinLTO opens lots of files at the same time.
+  resource.setrlimit(resource.RLIMIT_NOFILE, (32768, 32768))
   ret = cros_build_lib.RunCommand(cmd, print_cmd=False, error_code_ok=True,
                                   mute_output=False)
   # If we were in interactive mode, ignore the exit code; it'll be whatever
