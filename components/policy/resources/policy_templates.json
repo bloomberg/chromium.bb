@@ -1278,7 +1278,9 @@
 
       If you enable or disable this setting, users cannot change or override the "Enable phishing and malware protection" setting in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
-      If this policy is left not set, this will be enabled but the user will be able to change it.''',
+      If this policy is left not set, this will be enabled but the user will be able to change it.
+
+      See https://developers.google.com/safe-browsing for  more info on SafeBrowsing.''',
     },
     {
       'name': 'MetricsReportingEnabled',
@@ -5909,7 +5911,9 @@
       'tags': [],
       'desc': '''The Safe Browsing service shows a warning page when users navigate to sites that are flagged as potentially malicious. Enabling this setting prevents users from proceeding anyway from the warning page to the malicious site.
 
-      If this setting is disabled or not configured then users can choose to proceed to the flagged site after being shown the warning.''',
+      If this setting is disabled or not configured then users can choose to proceed to the flagged site after being shown the warning.
+
+      See https://developers.google.com/safe-browsing for  more info on SafeBrowsing.''',
     },
     {
       'name': 'SafeBrowsingExtendedReportingOptInAllowed',
@@ -5924,7 +5928,9 @@
       'id': 299,
       'caption': '''Allow users to opt in to Safe Browsing extended reporting''',
       'tags': [],
-      'desc': '''Setting this policy to false stops users from choosing to send some system information and page content to Google servers. If this setting is true or not configured, then users will be allowed to send some system information and page content to Safe Browsing to help detect dangerous apps and sites.''',
+      'desc': '''Setting this policy to false stops users from choosing to send some system information and page content to Google servers. If this setting is true or not configured, then users will be allowed to send some system information and page content to Safe Browsing to help detect dangerous apps and sites.
+
+      See https://developers.google.com/safe-browsing for  more info on SafeBrowsing.''',
     },
     {
       'name': 'SpellCheckServiceEnabled',
@@ -9314,7 +9320,8 @@
       'desc': '''Enables component updates for all components in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> when not set or set to True.
 
       If set to False, updates to components are disabled. However, some components are exempt from this policy: updates to any component that does not contain executable code, or does not significantly alter the behavior of the browser, or is critical for its security will not be disabled.
-      Examples of such components include the certificate revocation lists and safe browsing data. ''',
+      Examples of such components include the certificate revocation lists and safe browsing data.
+      See https://developers.google.com/safe-browsing for  more info on SafeBrowsing.''',
     },
     {
       'name': 'NativePrinters',
