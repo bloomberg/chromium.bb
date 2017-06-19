@@ -43,8 +43,6 @@ component("web") {
     "InspectorOverlayAgent.h",
     "LocalFrameClientImpl.cpp",
     "LocalFrameClientImpl.h",
-    "MediaKeysClientImpl.cpp",
-    "MediaKeysClientImpl.h",
     "PageOverlay.cpp",
     "PageOverlay.h",
     "WebDevToolsAgentImpl.cpp",
