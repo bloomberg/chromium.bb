@@ -62,6 +62,13 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
     }
 
     /**
+     * @return The activity that corresponds to the context menu helper.
+     */
+    protected Activity getActivity() {
+        return mActivity;
+    }
+
+    /**
      * @param populator A {@link ContextMenuPopulator} that is responsible for managing and showing
      *                  context menus.
      */
@@ -224,6 +231,7 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenuInfo menuInfo) {
         List<Pair<Integer, List<ContextMenuItem>>> items =
                 mPopulator.buildContextMenu(menu, v.getContext(), mCurrentContextMenuParams);
+
         if (items.isEmpty()) {
             ThreadUtils.postOnUiThread(mOnMenuClosed);
             return;

@@ -5725,6 +5725,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="34" label="Open in Chrome incognito tab (CCT)"/>
   <int value="35" label="Open in browser (CCT)"/>
   <int value="36" label="Open in Chrome (Fullscreen)"/>
+  <int value="37" label="Share link"/>
 </enum>
 
 <enum name="ContextMenuSaveLinkType">
