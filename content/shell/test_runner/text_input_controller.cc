@@ -322,8 +322,11 @@ void TextInputController::SetComposition(const std::string& text) {
 }
 
 void TextInputController::ForceTextInputStateUpdate() {
+  CHECK(view()->MainFrame()->IsWebLocalFrame())
+      << "WebView does not have a local main frame and"
+         " cannot handle input method controller tasks.";
   web_view_test_proxy_base_->delegate()->ForceTextInputStateUpdate(
-      view()->MainFrame());
+      view()->MainFrame()->ToWebLocalFrame());
 }
 
 blink::WebView* TextInputController::view() {
@@ -335,12 +338,15 @@ TextInputController::GetInputMethodController() {
   if (!view()->MainFrame())
     return nullptr;
 
-  blink::WebLocalFrame* mainFrame = view()->MainFrame()->ToWebLocalFrame();
-  if (!mainFrame) {
-    CHECK(false) << "WebView does not have a local main frame and"
-                    " cannot handle input method controller tasks.";
-  }
-  return mainFrame->FrameWidget()->GetActiveWebInputMethodController();
+  CHECK(view()->MainFrame()->IsWebLocalFrame())
+      << "WebView does not have a local main frame and"
+         " cannot handle input method controller tasks.";
+
+  return view()
+      ->MainFrame()
+      ->ToWebLocalFrame()
+      ->FrameWidget()
+      ->GetActiveWebInputMethodController();
 }
 
 }  // namespace test_runner

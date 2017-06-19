@@ -265,7 +265,7 @@ void GuestViewInternalCustomBindings::AttachIframeGuest(
   params->SetBoolean(guest_view::kElementSizeIsLogical, true);
 
   content::RenderFrame* embedder_parent_frame =
-      content::RenderFrame::FromWebFrame(parent_frame);
+      content::RenderFrame::FromWebFrame(parent_frame->ToWebLocalFrame());
 
   // Create a GuestViewContainer if it does not exist.
   // An element instance ID uniquely identifies an IframeGuestViewContainer

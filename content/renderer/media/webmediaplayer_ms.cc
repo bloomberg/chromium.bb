@@ -36,6 +36,7 @@
 #include "third_party/WebKit/public/platform/WebMediaPlayerSource.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 namespace content {
 
@@ -141,7 +142,7 @@ class WebMediaPlayerMS::FrameDeliverer {
 };
 
 WebMediaPlayerMS::WebMediaPlayerMS(
-    blink::WebFrame* frame,
+    blink::WebLocalFrame* frame,
     blink::WebMediaPlayerClient* client,
     media::WebMediaPlayerDelegate* delegate,
     std::unique_ptr<media::MediaLog> media_log,
