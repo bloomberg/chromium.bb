@@ -202,6 +202,9 @@ typedef std::vector<AlternativeService> AlternativeServiceVector;
 typedef std::vector<AlternativeServiceInfo> AlternativeServiceInfoVector;
 typedef base::MRUCache<url::SchemeHostPort, AlternativeServiceInfoVector>
     AlternativeServiceMap;
+// Pairs of broken alternative services and when their brokenness expires.
+typedef std::list<std::pair<AlternativeService, base::TimeTicks>>
+    BrokenAlternativeServiceList;
 // Map to the number of times each alternative service has been marked broken.
 typedef base::MRUCache<AlternativeService, int>
     RecentlyBrokenAlternativeServices;
