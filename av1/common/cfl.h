@@ -42,11 +42,6 @@ typedef struct {
 
   // The rate associated with each alpha codeword
   int costs[CFL_ALPHABET_SIZE];
-
-  // Count the number of TX blocks in a predicted block to know when you are at
-  // the last one, so you can check for skips.
-  // TODO(any) Is there a better way to do this?
-  int num_tx_blk[CFL_PRED_PLANES];
 } CFL_CTX;
 
 static const double cfl_alpha_mags[CFL_MAGS_SIZE] = {

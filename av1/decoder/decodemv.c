@@ -161,27 +161,21 @@ static PREDICTION_MODE read_intra_mode_uv(FRAME_CONTEXT *ec_ctx,
 }
 
 #if CONFIG_CFL
-static int read_cfl_alphas(FRAME_CONTEXT *const ec_ctx, aom_reader *r, int skip,
+static int read_cfl_alphas(FRAME_CONTEXT *const ec_ctx, aom_reader *r,
                            CFL_SIGN_TYPE signs_out[CFL_PRED_PLANES]) {
-  if (skip) {
-    signs_out[CFL_PRED_U] = CFL_SIGN_POS;
-    signs_out[CFL_PRED_V] = CFL_SIGN_POS;
-    return 0;
-  } else {
-    const int ind = aom_read_symbol(r, ec_ctx->cfl_alpha_cdf, CFL_ALPHABET_SIZE,
-                                    "cfl:alpha");
-    // Signs are only coded for nonzero values
-    // sign == 0 implies negative alpha
-    // sign == 1 implies positive alpha
-    signs_out[CFL_PRED_U] = cfl_alpha_codes[ind][CFL_PRED_U]
-                                ? aom_read_bit(r, "cfl:sign")
-                                : CFL_SIGN_POS;
-    signs_out[CFL_PRED_V] = cfl_alpha_codes[ind][CFL_PRED_V]
-                                ? aom_read_bit(r, "cfl:sign")
-                                : CFL_SIGN_POS;
+  const int ind =
+      aom_read_symbol(r, ec_ctx->cfl_alpha_cdf, CFL_ALPHABET_SIZE, "cfl:alpha");
+  // Signs are only coded for nonzero values
+  // sign == 0 implies negative alpha
+  // sign == 1 implies positive alpha
+  signs_out[CFL_PRED_U] = cfl_alpha_codes[ind][CFL_PRED_U]
+                              ? aom_read_bit(r, "cfl:sign")
+                              : CFL_SIGN_POS;
+  signs_out[CFL_PRED_V] = cfl_alpha_codes[ind][CFL_PRED_V]
+                              ? aom_read_bit(r, "cfl:sign")
+                              : CFL_SIGN_POS;
 
-    return ind;
-  }
+  return ind;
 }
 #endif
 
@@ -1158,8 +1152,7 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
 #if CONFIG_CFL
     // TODO(ltrudeau) support PALETTE
     if (mbmi->uv_mode == DC_PRED) {
-      mbmi->cfl_alpha_idx =
-          read_cfl_alphas(ec_ctx, r, mbmi->skip, mbmi->cfl_alpha_signs);
+      mbmi->cfl_alpha_idx = read_cfl_alphas(ec_ctx, r, mbmi->cfl_alpha_signs);
     }
 #endif  // CONFIG_CFL
 
@@ -1654,7 +1647,7 @@ static void read_intra_block_mode_info(AV1_COMMON *const cm, const int mi_row,
 #else
           cm->fc,
 #endif  // CONFIG_EC_ADAPT
-          r, mbmi->skip, mbmi->cfl_alpha_signs);
+          r, mbmi->cfl_alpha_signs);
     }
 #endif  // CONFIG_CFL
 
