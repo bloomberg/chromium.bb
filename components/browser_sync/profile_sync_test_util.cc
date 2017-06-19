@@ -16,8 +16,8 @@
 #include "components/signin/core/browser/signin_manager_base.h"
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/driver/signin_manager_wrapper.h"
-#include "components/sync/engine/browser_thread_model_worker.h"
 #include "components/sync/engine/passive_model_worker.h"
+#include "components/sync/engine/sequenced_model_worker.h"
 #include "components/sync/engine/ui_model_worker.h"
 #include "net/url_request/url_request_test_util.h"
 
@@ -130,10 +130,9 @@ BundleSyncClient::CreateModelWorkerForGroup(syncer::ModelSafeGroup group) {
   DCHECK(file_thread_) << "DB thread was specified but FILE thread was not.";
   switch (group) {
     case syncer::GROUP_DB:
-      return new syncer::BrowserThreadModelWorker(db_thread_, syncer::GROUP_DB);
+      return new syncer::SequencedModelWorker(db_thread_, syncer::GROUP_DB);
     case syncer::GROUP_FILE:
-      return new syncer::BrowserThreadModelWorker(file_thread_,
-                                                  syncer::GROUP_FILE);
+      return new syncer::SequencedModelWorker(file_thread_, syncer::GROUP_FILE);
     case syncer::GROUP_UI:
       return new syncer::UIModelWorker(base::ThreadTaskRunnerHandle::Get());
     case syncer::GROUP_PASSIVE:

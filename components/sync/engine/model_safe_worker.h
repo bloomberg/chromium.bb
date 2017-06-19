@@ -66,8 +66,8 @@ class ModelSafeWorker : public base::RefCountedThreadSafe<ModelSafeWorker> {
 
   virtual ModelSafeGroup GetModelSafeGroup() = 0;
 
-  // Returns true if called on the thread this worker works on.
-  virtual bool IsOnModelThread() = 0;
+  // Returns true if called on the sequence this worker works on.
+  virtual bool IsOnModelSequence() = 0;
 
  protected:
   ModelSafeWorker();
@@ -76,7 +76,7 @@ class ModelSafeWorker : public base::RefCountedThreadSafe<ModelSafeWorker> {
  private:
   friend class base::RefCountedThreadSafe<ModelSafeWorker>;
 
-  // Schedules |work| on the appropriate thread.
+  // Schedules |work| on the appropriate sequence.
   virtual void ScheduleWork(base::OnceClosure work) = 0;
 
   void DoWork(WorkCallback work,

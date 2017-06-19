@@ -20,7 +20,7 @@ class FakeModelWorker : public ModelSafeWorker {
 
   // ModelSafeWorker implementation.
   ModelSafeGroup GetModelSafeGroup() override;
-  bool IsOnModelThread() override;
+  bool IsOnModelSequence() override;
 
  private:
   ~FakeModelWorker() override;

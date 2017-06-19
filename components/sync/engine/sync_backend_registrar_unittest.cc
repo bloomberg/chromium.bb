@@ -10,8 +10,8 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
-#include "components/sync/engine/browser_thread_model_worker.h"
 #include "components/sync/engine/passive_model_worker.h"
+#include "components/sync/engine/sequenced_model_worker.h"
 #include "components/sync/model/change_processor_mock.h"
 #include "components/sync/syncable/test_user_share.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -96,11 +96,11 @@ class SyncBackendRegistrarTest : public testing::Test {
       ModelSafeGroup group) {
     switch (group) {
       case GROUP_UI:
-        return new BrowserThreadModelWorker(message_loop_.task_runner(), group);
+        return new SequencedModelWorker(message_loop_.task_runner(), group);
       case GROUP_DB:
-        return new BrowserThreadModelWorker(db_thread_.task_runner(), group);
+        return new SequencedModelWorker(db_thread_.task_runner(), group);
       case GROUP_FILE:
-        return new BrowserThreadModelWorker(file_thread_.task_runner(), group);
+        return new SequencedModelWorker(file_thread_.task_runner(), group);
       case GROUP_PASSIVE:
         return new PassiveModelWorker();
       default:
