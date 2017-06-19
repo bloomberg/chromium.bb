@@ -873,6 +873,7 @@ SpdySerializedFrame SpdyTestUtil::ConstructSpdyPush(
     int associated_stream_id,
     const char* url) {
   SpdyHeaderBlock push_promise_header_block;
+  push_promise_header_block[GetMethodKey()] = "GET";
   AddUrlToHeaderBlock(url, &push_promise_header_block);
   SpdyPushPromiseIR push_promise(associated_stream_id, stream_id,
                                  std::move(push_promise_header_block));
@@ -899,6 +900,7 @@ SpdySerializedFrame SpdyTestUtil::ConstructSpdyPush(
     const char* status,
     const char* location) {
   SpdyHeaderBlock push_promise_header_block;
+  push_promise_header_block[GetMethodKey()] = "GET";
   AddUrlToHeaderBlock(url, &push_promise_header_block);
   SpdyPushPromiseIR push_promise(associated_stream_id, stream_id,
                                  std::move(push_promise_header_block));
