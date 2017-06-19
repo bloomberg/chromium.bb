@@ -36,6 +36,8 @@ blink_core_sources("exported") {
     "WebFrameContentDumper.cpp",
     "WebFrameSerializer.cpp",
     "WebHeap.cpp",
+    "WebHelperPluginImpl.cpp",
+    "WebHelperPluginImpl.h",
     "WebHistoryItem.cpp",
     "WebImageCache.cpp",
     "WebImageDecoder.cpp",
