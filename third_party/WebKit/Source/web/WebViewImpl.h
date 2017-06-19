@@ -41,6 +41,7 @@
 #include "core/page/EditorClient.h"
 #include "core/page/EventWithHitTestResults.h"
 #include "core/page/PageWidgetDelegate.h"
+#include "modules/encryptedmedia/MediaKeysClient.h"
 #include "modules/storage/StorageClient.h"
 #include "platform/animation/CompositorAnimationTimeline.h"
 #include "platform/geometry/IntPoint.h"
@@ -66,7 +67,6 @@
 #include "public/platform/WebVector.h"
 #include "public/web/WebNavigationPolicy.h"
 #include "public/web/WebPageImportanceSignals.h"
-#include "web/MediaKeysClientImpl.h"
 #include "web/WebExport.h"
 #include "web/WebPagePopupImpl.h"
 
@@ -676,7 +676,7 @@ class WEB_EXPORT WebViewImpl final
   bool matches_heuristics_for_gpu_rasterization_;
   static const WebInputEvent* current_input_event_;
 
-  MediaKeysClientImpl media_keys_client_impl_;
+  MediaKeysClient media_keys_client_impl_;
   std::unique_ptr<WebActiveGestureAnimation> gesture_animation_;
   WebPoint position_on_fling_start_;
   WebPoint global_position_on_fling_start_;
