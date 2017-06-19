@@ -311,7 +311,7 @@ const AtomicString& HTMLElement::EventNameForAttributeName(
   if (!attr_name.NamespaceURI().IsNull())
     return g_null_atom;
 
-  if (!attr_name.LocalName().StartsWith("on", kTextCaseASCIIInsensitive))
+  if (!attr_name.LocalName().StartsWithIgnoringASCIICase("on"))
     return g_null_atom;
 
   typedef HashMap<AtomicString, AtomicString> StringToStringMap;

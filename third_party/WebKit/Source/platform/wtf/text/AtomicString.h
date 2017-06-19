@@ -152,6 +152,12 @@ class WTF_EXPORT AtomicString {
       TextCaseSensitivity case_sensitivity = kTextCaseSensitive) const {
     return string_.StartsWith(prefix, case_sensitivity);
   }
+  bool StartsWithIgnoringCase(const StringView& prefix) const {
+    return string_.StartsWithIgnoringCase(prefix);
+  }
+  bool StartsWithIgnoringASCIICase(const StringView& prefix) const {
+    return string_.StartsWithIgnoringASCIICase(prefix);
+  }
   bool StartsWith(UChar character) const {
     return string_.StartsWith(character);
   }

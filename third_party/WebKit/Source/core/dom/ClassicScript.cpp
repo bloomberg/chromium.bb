@@ -22,14 +22,13 @@ void LogScriptMIMEType(LocalFrame* frame,
                        const SecurityOrigin* security_origin) {
   if (MIMETypeRegistry::IsSupportedJavaScriptMIMEType(mime_type))
     return;
-  bool is_text = mime_type.StartsWith("text/", kTextCaseASCIIInsensitive);
+  bool is_text = mime_type.StartsWithIgnoringASCIICase("text/");
   if (is_text && MIMETypeRegistry::IsLegacySupportedJavaScriptLanguage(
                      mime_type.Substring(5)))
     return;
   bool is_same_origin = security_origin->CanRequest(resource->Url());
   bool is_application =
-      !is_text &&
-      mime_type.StartsWith("application/", kTextCaseASCIIInsensitive);
+      !is_text && mime_type.StartsWithIgnoringASCIICase("application/");
 
   WebFeature feature =
       is_same_origin

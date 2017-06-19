@@ -996,11 +996,9 @@ Response InspectorDOMAgent::performSearch(
               (start_tag_found && end_tag_found &&
                DeprecatedEqualIgnoringCase(node->nodeName(), tag_name_query)) ||
               (start_tag_found && !end_tag_found &&
-               node->nodeName().StartsWith(tag_name_query,
-                                           kTextCaseUnicodeInsensitive)) ||
+               node->nodeName().StartsWithIgnoringCase(tag_name_query)) ||
               (!start_tag_found && end_tag_found &&
-               node->nodeName().EndsWith(tag_name_query,
-                                         kTextCaseUnicodeInsensitive))) {
+               node->nodeName().EndsWithIgnoringCase(tag_name_query))) {
             result_collector.insert(node);
             break;
           }

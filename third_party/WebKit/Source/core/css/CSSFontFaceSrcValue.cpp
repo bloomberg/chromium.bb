@@ -49,8 +49,8 @@ bool CSSFontFaceSrcValue::IsSupportedFormat() const {
   // ends with .eot.  If so, we'll go ahead and assume that we shouldn't load
   // it.
   if (format_.IsEmpty()) {
-    return absolute_resource_.StartsWith("data:", kTextCaseASCIIInsensitive) ||
-           !absolute_resource_.EndsWith(".eot", kTextCaseASCIIInsensitive);
+    return absolute_resource_.StartsWithIgnoringASCIICase("data:") ||
+           !absolute_resource_.EndsWithIgnoringASCIICase(".eot");
   }
 
   return FontCustomPlatformData::SupportsFormat(format_);

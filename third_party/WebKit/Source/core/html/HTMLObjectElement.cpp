@@ -238,7 +238,7 @@ bool HTMLObjectElement::HasFallbackContent() const {
 
 bool HTMLObjectElement::HasValidClassId() const {
   if (MIMETypeRegistry::IsJavaAppletMIMEType(service_type_) &&
-      ClassId().StartsWith("java:", kTextCaseASCIIInsensitive))
+      ClassId().StartsWithIgnoringASCIICase("java:"))
     return true;
 
   // HTML5 says that fallback content should be rendered if a non-empty

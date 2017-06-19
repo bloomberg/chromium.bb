@@ -105,8 +105,8 @@ static inline bool ShouldUpdateHeaderAfterRevalidation(
   }
   for (size_t i = 0;
        i < WTF_ARRAY_LENGTH(kHeaderPrefixesToIgnoreAfterRevalidation); i++) {
-    if (header.StartsWith(kHeaderPrefixesToIgnoreAfterRevalidation[i],
-                          kTextCaseASCIIInsensitive))
+    if (header.StartsWithIgnoringASCIICase(
+            kHeaderPrefixesToIgnoreAfterRevalidation[i]))
       return false;
   }
   return true;

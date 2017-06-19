@@ -9,10 +9,10 @@ namespace blink {
 size_t MockHyphenation::LastHyphenLocation(const StringView& text,
                                            size_t before_index) const {
   String str = text.ToString();
-  if (str.EndsWith("phenation", kTextCaseASCIIInsensitive)) {
+  if (str.EndsWithIgnoringASCIICase("phenation")) {
     if (before_index - (str.length() - 9) > 4)
       return 4 + (str.length() - 9);
-    if (str.EndsWith("hyphenation", kTextCaseASCIIInsensitive) &&
+    if (str.EndsWithIgnoringASCIICase("hyphenation") &&
         before_index - (str.length() - 11) > 2) {
       return 2 + (str.length() - 11);
     }

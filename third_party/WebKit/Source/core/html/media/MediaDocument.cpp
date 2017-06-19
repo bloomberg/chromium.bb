@@ -193,7 +193,7 @@ void MediaDocumentParser::CreateDocumentStructure() {
 
   if (GetDocument()->GetSettings() &&
       GetDocument()->GetSettings()->GetEmbeddedMediaExperienceEnabled() &&
-      source->type().StartsWith("video/", kTextCaseASCIIInsensitive)) {
+      source->type().StartsWithIgnoringASCIICase("video/")) {
     EventListener* listener = MediaLoadedEventListener::Create();
     AddEventListenerOptions options;
     options.setOnce(true);

@@ -60,7 +60,7 @@ class MIMEHeader : public GarbageCollectedFinalized<MIMEHeader> {
   static MIMEHeader* ParseHeader(SharedBufferChunkReader* cr_lf_line_reader);
 
   bool IsMultipart() const {
-    return content_type_.StartsWith("multipart/", kTextCaseASCIIInsensitive);
+    return content_type_.StartsWithIgnoringASCIICase("multipart/");
   }
 
   String ContentType() const { return content_type_; }

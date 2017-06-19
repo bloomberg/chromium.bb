@@ -325,7 +325,7 @@ void WebFrameSerializerImpl::OpenTagToString(Element* element,
     // Rewrite the attribute value if requested.
     if (element->HasLegalLinkAttribute(attr_name)) {
       // For links start with "javascript:", we do not change it.
-      if (!attr_value.StartsWith("javascript:", kTextCaseASCIIInsensitive)) {
+      if (!attr_value.StartsWithIgnoringASCIICase("javascript:")) {
         // Get the absolute link.
         KURL complete_url = param->document->CompleteURL(attr_value);
 

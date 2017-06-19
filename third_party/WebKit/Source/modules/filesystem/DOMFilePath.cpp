@@ -71,7 +71,7 @@ bool DOMFilePath::IsParentOf(const String& parent, const String& may_be_child) {
   if (parent == DOMFilePath::kRoot && may_be_child != DOMFilePath::kRoot)
     return true;
   if (parent.length() >= may_be_child.length() ||
-      !may_be_child.StartsWith(parent, kTextCaseUnicodeInsensitive))
+      !may_be_child.StartsWithIgnoringCase(parent))
     return false;
   if (may_be_child[parent.length()] != DOMFilePath::kSeparator)
     return false;

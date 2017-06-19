@@ -126,7 +126,7 @@ bool DOMImplementation::IsXMLMIMEType(const String& mime_type) {
     return false;
 
   if (mime_type[0] == '/' || mime_type[length - 5] == '/' ||
-      !mime_type.EndsWith("+xml", kTextCaseASCIIInsensitive))
+      !mime_type.EndsWithIgnoringASCIICase("+xml"))
     return false;
 
   bool has_slash = false;
@@ -171,9 +171,9 @@ bool DOMImplementation::IsXMLMIMEType(const String& mime_type) {
 }
 
 bool DOMImplementation::IsJSONMIMEType(const String& mime_type) {
-  if (mime_type.StartsWith("application/json", kTextCaseASCIIInsensitive))
+  if (mime_type.StartsWithIgnoringASCIICase("application/json"))
     return true;
-  if (mime_type.StartsWith("application/", kTextCaseASCIIInsensitive)) {
+  if (mime_type.StartsWithIgnoringASCIICase("application/")) {
     size_t subtype = mime_type.FindIgnoringASCIICase("+json", 12);
     if (subtype != kNotFound) {
       // Just check that a parameter wasn't matched.
@@ -190,7 +190,7 @@ bool DOMImplementation::IsJSONMIMEType(const String& mime_type) {
 }
 
 static bool IsTextPlainType(const String& mime_type) {
-  return mime_type.StartsWith("text/", kTextCaseASCIIInsensitive) &&
+  return mime_type.StartsWithIgnoringASCIICase("text/") &&
          !(DeprecatedEqualIgnoringCase(mime_type, "text/html") ||
            DeprecatedEqualIgnoringCase(mime_type, "text/xml") ||
            DeprecatedEqualIgnoringCase(mime_type, "text/xsl"));
