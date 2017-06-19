@@ -23,6 +23,7 @@
 
 using testing::_;
 using testing::AtLeast;
+using testing::Invoke;
 using testing::Mock;
 using testing::StrictMock;
 
@@ -191,12 +192,17 @@ TEST(MojoAudioOutputIPC, AuthorizeWithoutFactory_CallsAuthorizedWithError) {
   base::MessageLoopForIO message_loop;
   StrictMock<MockDelegate> delegate;
 
-  const std::unique_ptr<media::AudioOutputIPC> ipc =
+  std::unique_ptr<media::AudioOutputIPC> ipc =
       base::MakeUnique<MojoAudioOutputIPC>(NullAccessor());
 
   EXPECT_CALL(delegate,
               OnDeviceAuthorized(media::OUTPUT_DEVICE_STATUS_ERROR_INTERNAL, _,
-                                 std::string()));
+                                 std::string()))
+      .WillOnce(Invoke([&](media::OutputDeviceStatus,
+                           const media::AudioParameters&, const std::string&) {
+        ipc->CloseStream();
+        ipc.reset();
+      }));
   ipc->RequestDeviceAuthorization(&delegate, kSessionId, kDeviceId, Origin());
   base::RunLoop().RunUntilIdle();
 }
@@ -353,7 +359,7 @@ TEST(MojoAudioOutputIPC, DeviceNotAuthorized_Propagates) {
   TestRemoteFactory stream_factory;
   StrictMock<MockDelegate> delegate;
 
-  const std::unique_ptr<media::AudioOutputIPC> ipc =
+  std::unique_ptr<media::AudioOutputIPC> ipc =
       base::MakeUnique<MojoAudioOutputIPC>(stream_factory.GetAccessor());
   stream_factory.RefuseNextRequest(kSessionId, kDeviceId);
 
@@ -363,11 +369,13 @@ TEST(MojoAudioOutputIPC, DeviceNotAuthorized_Propagates) {
       delegate,
       OnDeviceAuthorized(
           media::OutputDeviceStatus::OUTPUT_DEVICE_STATUS_ERROR_NOT_AUTHORIZED,
-          _, std::string()));
+          _, std::string()))
+      .WillOnce(Invoke([&](media::OutputDeviceStatus,
+                           const media::AudioParameters&, const std::string&) {
+        ipc->CloseStream();
+        ipc.reset();
+      }));
   EXPECT_CALL(delegate, OnError()).Times(AtLeast(0));
-  base::RunLoop().RunUntilIdle();
-
-  ipc->CloseStream();
   base::RunLoop().RunUntilIdle();
 }
 
@@ -380,7 +388,7 @@ TEST(MojoAudioOutputIPC,
   TestRemoteFactory stream_factory;
   StrictMock<MockDelegate> delegate;
 
-  const std::unique_ptr<media::AudioOutputIPC> ipc =
+  std::unique_ptr<media::AudioOutputIPC> ipc =
       base::MakeUnique<MojoAudioOutputIPC>(stream_factory.GetAccessor());
 
   ipc->RequestDeviceAuthorization(&delegate, kSessionId, kDeviceId, Origin());
@@ -389,12 +397,13 @@ TEST(MojoAudioOutputIPC,
       delegate,
       OnDeviceAuthorized(
           media::OutputDeviceStatus::OUTPUT_DEVICE_STATUS_ERROR_INTERNAL, _,
-          std::string()));
+          std::string()))
+      .WillOnce(Invoke([&](media::OutputDeviceStatus,
+                           const media::AudioParameters&, const std::string&) {
+        ipc->CloseStream();
+        ipc.reset();
+      }));
   stream_factory.Disconnect();
-  EXPECT_CALL(delegate, OnError());
-  base::RunLoop().RunUntilIdle();
-
-  ipc->CloseStream();
   base::RunLoop().RunUntilIdle();
 }
 
