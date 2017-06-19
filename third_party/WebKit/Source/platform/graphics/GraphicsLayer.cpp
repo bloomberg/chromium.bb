@@ -87,7 +87,7 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient* client)
     : client_(client),
       background_color_(Color::kTransparent),
       opacity_(1),
-      blend_mode_(kWebBlendModeNormal),
+      blend_mode_(WebBlendMode::kNormal),
       has_transform_origin_(false),
       contents_opaque_(false),
       should_flatten_transform_(true),
@@ -627,7 +627,7 @@ std::unique_ptr<JSONObject> GraphicsLayer::LayerAsJSONInternal(
   if (opacity_ != 1)
     json->SetDouble("opacity", opacity_);
 
-  if (blend_mode_ != kWebBlendModeNormal) {
+  if (blend_mode_ != WebBlendMode::kNormal) {
     json->SetString("blendMode",
                     CompositeOperatorName(kCompositeSourceOver, blend_mode_));
   }

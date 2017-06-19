@@ -815,13 +815,12 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // mix-blend-mode
-  static WebBlendMode InitialBlendMode() { return kWebBlendModeNormal; }
+  static WebBlendMode InitialBlendMode() { return WebBlendMode::kNormal; }
   WebBlendMode BlendMode() const {
-    return static_cast<WebBlendMode>(
-        rare_non_inherited_data_->effective_blend_mode_);
+    return static_cast<WebBlendMode>(rare_non_inherited_data_->blend_mode_);
   }
   void SetBlendMode(WebBlendMode v) {
-    rare_non_inherited_data_.Access()->effective_blend_mode_ = v;
+    rare_non_inherited_data_.Access()->blend_mode_ = static_cast<unsigned>(v);
   }
 
   // offset-anchor
@@ -2354,7 +2353,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   bool IsFloating() const { return Floating() != EFloat::kNone; }
 
   // Mix-blend-mode utility functions.
-  bool HasBlendMode() const { return BlendMode() != kWebBlendModeNormal; }
+  bool HasBlendMode() const { return BlendMode() != WebBlendMode::kNormal; }
 
   // Motion utility functions.
   bool HasOffset() const {

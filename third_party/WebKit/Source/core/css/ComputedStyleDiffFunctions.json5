@@ -211,7 +211,7 @@
     },
     {
         name: "DiffNeedsPaintInvalidationSubtree",
-        fields_to_diff: ["EffectiveBlendMode", "isolation", "Mask", "MaskBoxImage"],
+        fields_to_diff: ["mix-blend-mode", "isolation", "Mask", "MaskBoxImage"],
     },
 
     {

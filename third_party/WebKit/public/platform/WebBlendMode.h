@@ -35,23 +35,23 @@
 
 namespace blink {
 
-enum WebBlendMode {
-  kWebBlendModeNormal,
-  kWebBlendModeMultiply,
-  kWebBlendModeScreen,
-  kWebBlendModeOverlay,
-  kWebBlendModeDarken,
-  kWebBlendModeLighten,
-  kWebBlendModeColorDodge,
-  kWebBlendModeColorBurn,
-  kWebBlendModeHardLight,
-  kWebBlendModeSoftLight,
-  kWebBlendModeDifference,
-  kWebBlendModeExclusion,
-  kWebBlendModeHue,
-  kWebBlendModeSaturation,
-  kWebBlendModeColor,
-  kWebBlendModeLuminosity
+enum class WebBlendMode {
+  kNormal,
+  kMultiply,
+  kScreen,
+  kOverlay,
+  kDarken,
+  kLighten,
+  kColorDodge,
+  kColorBurn,
+  kHardLight,
+  kSoftLight,
+  kDifference,
+  kExclusion,
+  kHue,
+  kSaturation,
+  kColor,
+  kLuminosity
 };
 
 }  // namespace blink

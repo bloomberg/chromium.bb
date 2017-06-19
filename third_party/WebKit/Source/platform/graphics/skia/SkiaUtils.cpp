@@ -76,8 +76,8 @@ static const SkBlendMode kGMapBlendOpsToXfermodeModes[] = {
 
 SkBlendMode WebCoreCompositeToSkiaComposite(CompositeOperator op,
                                             WebBlendMode blend_mode) {
-  DCHECK(op == kCompositeSourceOver || blend_mode == kWebBlendModeNormal);
-  if (blend_mode != kWebBlendModeNormal) {
+  DCHECK(op == kCompositeSourceOver || blend_mode == WebBlendMode::kNormal);
+  if (blend_mode != WebBlendMode::kNormal) {
     if (static_cast<uint8_t>(blend_mode) >=
         SK_ARRAY_COUNT(kGMapBlendOpsToXfermodeModes)) {
       SkDEBUGF(
@@ -137,41 +137,41 @@ CompositeOperator CompositeOperatorFromSkia(SkBlendMode xfer_mode) {
 WebBlendMode BlendModeFromSkia(SkBlendMode xfer_mode) {
   switch (xfer_mode) {
     case SkBlendMode::kSrcOver:
-      return kWebBlendModeNormal;
+      return WebBlendMode::kNormal;
     case SkBlendMode::kMultiply:
-      return kWebBlendModeMultiply;
+      return WebBlendMode::kMultiply;
     case SkBlendMode::kScreen:
-      return kWebBlendModeScreen;
+      return WebBlendMode::kScreen;
     case SkBlendMode::kOverlay:
-      return kWebBlendModeOverlay;
+      return WebBlendMode::kOverlay;
     case SkBlendMode::kDarken:
-      return kWebBlendModeDarken;
+      return WebBlendMode::kDarken;
     case SkBlendMode::kLighten:
-      return kWebBlendModeLighten;
+      return WebBlendMode::kLighten;
     case SkBlendMode::kColorDodge:
-      return kWebBlendModeColorDodge;
+      return WebBlendMode::kColorDodge;
     case SkBlendMode::kColorBurn:
-      return kWebBlendModeColorBurn;
+      return WebBlendMode::kColorBurn;
     case SkBlendMode::kHardLight:
-      return kWebBlendModeHardLight;
+      return WebBlendMode::kHardLight;
     case SkBlendMode::kSoftLight:
-      return kWebBlendModeSoftLight;
+      return WebBlendMode::kSoftLight;
     case SkBlendMode::kDifference:
-      return kWebBlendModeDifference;
+      return WebBlendMode::kDifference;
     case SkBlendMode::kExclusion:
-      return kWebBlendModeExclusion;
+      return WebBlendMode::kExclusion;
     case SkBlendMode::kHue:
-      return kWebBlendModeHue;
+      return WebBlendMode::kHue;
     case SkBlendMode::kSaturation:
-      return kWebBlendModeSaturation;
+      return WebBlendMode::kSaturation;
     case SkBlendMode::kColor:
-      return kWebBlendModeColor;
+      return WebBlendMode::kColor;
     case SkBlendMode::kLuminosity:
-      return kWebBlendModeLuminosity;
+      return WebBlendMode::kLuminosity;
     default:
       break;
   }
-  return kWebBlendModeNormal;
+  return WebBlendMode::kNormal;
 }
 
 SkMatrix AffineTransformToSkMatrix(const AffineTransform& source) {
