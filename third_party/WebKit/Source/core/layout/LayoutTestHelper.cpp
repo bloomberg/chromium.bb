@@ -17,7 +17,6 @@
 namespace blink {
 
 LocalFrame* SingleChildLocalFrameClient::CreateFrame(
-    const FrameLoadRequest&,
     const AtomicString& name,
     HTMLFrameOwnerElement* owner_element) {
   DCHECK(!child_) << "This test helper only supports one child frame.";

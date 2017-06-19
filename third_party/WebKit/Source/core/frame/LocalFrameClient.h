@@ -65,7 +65,6 @@ namespace blink {
 
 class Document;
 class DocumentLoader;
-struct FrameLoadRequest;
 class HTMLFormElement;
 class HTMLFrameOwnerElement;
 class HTMLMediaElement;
@@ -198,9 +197,9 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
 
   virtual void TransitionToCommittedForNewPage() = 0;
 
-  virtual LocalFrame* CreateFrame(const FrameLoadRequest&,
-                                  const AtomicString& name,
+  virtual LocalFrame* CreateFrame(const AtomicString& name,
                                   HTMLFrameOwnerElement*) = 0;
+
   // Whether or not plugin creation should fail if the HTMLPlugInElement isn't
   // in the DOM after plugin initialization.
   enum DetachedPluginPolicy {

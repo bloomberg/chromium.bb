@@ -3307,12 +3307,6 @@ void RenderFrameImpl::LoadURLExternally(const blink::WebURLRequest& request,
   }
 }
 
-blink::WebHistoryItem RenderFrameImpl::HistoryItemForNewChildFrame() {
-  // We will punt this navigation to the browser in decidePolicyForNavigation.
-  // TODO(creis): Look into cleaning this up.
-  return WebHistoryItem();
-}
-
 void RenderFrameImpl::WillSendSubmitEvent(const blink::WebFormElement& form) {
   for (auto& observer : observers_)
     observer.WillSendSubmitEvent(form);

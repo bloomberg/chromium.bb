@@ -321,9 +321,7 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   void DidRunContentWithCertificateErrors(const KURL&) override {}
   void SelectorMatchChanged(const Vector<String>&,
                             const Vector<String>&) override {}
-  LocalFrame* CreateFrame(const FrameLoadRequest&,
-                          const AtomicString&,
-                          HTMLFrameOwnerElement*) override;
+  LocalFrame* CreateFrame(const AtomicString&, HTMLFrameOwnerElement*) override;
   PluginView* CreatePlugin(HTMLPlugInElement&,
                            const KURL&,
                            const Vector<String>&,

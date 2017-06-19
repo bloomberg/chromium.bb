@@ -152,8 +152,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   WTF::String UserAgent() override;
   WTF::String DoNotTrackValue() override;
   void TransitionToCommittedForNewPage() override;
-  LocalFrame* CreateFrame(const FrameLoadRequest&,
-                          const WTF::AtomicString& name,
+  LocalFrame* CreateFrame(const WTF::AtomicString& name,
                           HTMLFrameOwnerElement*) override;
   virtual bool CanCreatePluginWithoutRenderer(const String& mime_type) const;
   PluginView* CreatePlugin(HTMLPlugInElement&,

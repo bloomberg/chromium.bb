@@ -28,8 +28,6 @@ class WebFrameWidgetBase;
 class WebTextCheckClient;
 class WebViewBase;
 
-struct FrameLoadRequest;
-
 // WebLocalFrameBase is a temporary class the provides a layer of abstraction
 // for WebLocalFrameImpl. Mehtods that are declared public in WebLocalFrameImpl
 // that are not overrides from WebLocalFrame will be declared pure virtual in
@@ -69,8 +67,7 @@ class WebLocalFrameBase : public GarbageCollectedFinalized<WebLocalFrameBase>,
                        HistoryCommitType) = 0;
   virtual void DidFinish() = 0;
   virtual void CreateFrameView() = 0;
-  virtual LocalFrame* CreateChildFrame(const FrameLoadRequest&,
-                                       const AtomicString& name,
+  virtual LocalFrame* CreateChildFrame(const AtomicString& name,
                                        HTMLFrameOwnerElement*) = 0;
   virtual ContentSettingsClient& GetContentSettingsClient() = 0;
   virtual SharedWorkerRepositoryClientImpl* SharedWorkerRepositoryClient()

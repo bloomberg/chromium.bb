@@ -357,12 +357,6 @@ class BLINK_EXPORT WebFrameClient {
     return info.default_policy;
   }
 
-  // During a history navigation, we may choose to load new subframes from
-  // history as well.  This returns such a history item if appropriate.
-  virtual WebHistoryItem HistoryItemForNewChildFrame() {
-    return WebHistoryItem();
-  }
-
   // Asks the embedder whether the frame is allowed to navigate the main frame
   // to a data URL.
   // TODO(crbug.com/713259): Move renderer side checks to

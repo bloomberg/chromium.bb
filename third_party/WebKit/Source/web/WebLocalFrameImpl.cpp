@@ -1657,7 +1657,6 @@ void WebLocalFrameImpl::InitializeCoreFrame(Page& page,
 }
 
 LocalFrame* WebLocalFrameImpl::CreateChildFrame(
-    const FrameLoadRequest& request,
     const AtomicString& name,
     HTMLFrameOwnerElement* owner_element) {
   DCHECK(client_);
@@ -1689,55 +1688,6 @@ LocalFrame* WebLocalFrameImpl::CreateChildFrame(
   webframe_child->InitializeCoreFrame(*GetFrame()->GetPage(), owner_element,
                                       name);
   DCHECK(webframe_child->Parent());
-
-  FrameLoadRequest new_request = request;
-  FrameLoadType child_load_type = kFrameLoadTypeStandard;
-  HistoryItem* child_item = nullptr;
-
-  if (!GetFrame()->GetDocument()->LoadEventFinished()) {
-    FrameLoadType load_type =
-        GetFrame()->Loader().GetDocumentLoader()->LoadType();
-    switch (load_type) {
-      case kFrameLoadTypeStandard:
-      case kFrameLoadTypeReplaceCurrentItem:
-      case kFrameLoadTypeInitialInChildFrame:
-        break;
-
-      // If we're moving in the back/forward list, we might want to replace the
-      // content of this child frame with whatever was there at that point.
-      case kFrameLoadTypeBackForward:
-      case kFrameLoadTypeInitialHistoryLoad:
-        child_item = webframe_child->Client()->HistoryItemForNewChildFrame();
-        if (child_item) {
-          child_load_type = kFrameLoadTypeInitialHistoryLoad;
-          new_request =
-              FrameLoadRequest(request.OriginDocument(),
-                               child_item->GenerateResourceRequest(
-                                   WebCachePolicy::kUseProtocolCachePolicy));
-        }
-        break;
-
-      // We're in a middle of a reload. The FrameLoadType is propagated to its
-      // children only if it is a ReloadBypassingCache, else it becomes a
-      // standard load.
-      case kFrameLoadTypeReload:
-        break;
-      case kFrameLoadTypeReloadBypassingCache:
-        child_load_type = kFrameLoadTypeReloadBypassingCache;
-        new_request.GetResourceRequest().SetCachePolicy(
-            WebCachePolicy::kBypassingCache);
-        break;
-    }
-  }
-
-  webframe_child->GetFrame()->Loader().Load(new_request, child_load_type,
-                                            child_item);
-
-  // Note a synchronous navigation (about:blank) would have already processed
-  // onload, so it is possible for the child frame to have already been
-  // detached by script in the page.
-  if (!webframe_child->Parent())
-    return nullptr;
   return webframe_child->GetFrame();
 }
 
