@@ -19,7 +19,6 @@ namespace blink {
 class ComputedStyle;
 class FillLayer;
 class GraphicsContext;
-class Image;
 class InlineFlowBox;
 class LayoutPoint;
 class LayoutRect;
@@ -62,10 +61,6 @@ class BoxPainter : public BoxPainterBase {
                              const LayoutSize& = LayoutSize(),
                              SkBlendMode = SkBlendMode::kSrcOver,
                              const LayoutObject* background_object = nullptr);
-  static InterpolationQuality ChooseInterpolationQuality(const LayoutObject&,
-                                                         Image*,
-                                                         const void*,
-                                                         const LayoutSize&);
   static bool PaintNinePieceImage(const LayoutBoxModelObject&,
                                   GraphicsContext&,
                                   const LayoutRect&,

@@ -5,6 +5,8 @@
 #include "core/paint/BoxPainter.h"
 
 #include "core/HTMLNames.h"
+#include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/layout/BackgroundBleedAvoidance.h"
@@ -16,6 +18,8 @@
 #include "core/layout/LayoutTheme.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/line/RootInlineBox.h"
+#include "core/page/ChromeClient.h"
+#include "core/page/Page.h"
 #include "core/paint/BackgroundImageGeometry.h"
 #include "core/paint/BoxBorderPainter.h"
 #include "core/paint/BoxDecorationData.h"
@@ -248,13 +252,16 @@ class ImagePaintContext {
   STACK_ALLOCATED();
 
  public:
-  ImagePaintContext(const LayoutBoxModelObject& obj,
+  ImagePaintContext(const ImageResourceObserver& image_client,
+                    const Document& document,
+                    const ComputedStyle& style,
                     GraphicsContext& context,
                     const FillLayer& layer,
                     const StyleImage& style_image,
                     SkBlendMode op,
-                    const LayoutObject* background_object,
-                    const LayoutSize& container_size)
+                    const LayoutSize& container_size,
+                    double frame_time,
+                    const Settings* settings)
       : context_(context),
         previous_interpolation_quality_(context.ImageInterpolationQuality()) {
     SkBlendMode bg_op =
@@ -262,14 +269,14 @@ class ImagePaintContext {
     // if op != SkBlendMode::kSrcOver, a mask is being painted.
     composite_op_ = (op == SkBlendMode::kSrcOver) ? bg_op : op;
 
-    const LayoutObject& image_client =
-        background_object ? *background_object : obj;
-    image_ = style_image.GetImage(image_client, image_client.GetDocument(),
-                                  image_client.StyleRef(),
+    image_ = style_image.GetImage(image_client, document, style,
                                   FlooredIntSize(container_size));
+    interpolation_quality_ =
+        ImageQualityController::GetImageQualityController()
+            ->ChooseInterpolationQuality(image_client, style, settings,
+                                         image_.Get(), &layer, container_size,
+                                         frame_time);
 
-    interpolation_quality_ = BoxPainter::ChooseInterpolationQuality(
-        image_client, image_.Get(), &layer, container_size);
     if (interpolation_quality_ != previous_interpolation_quality_)
       context.SetImageInterpolationQuality(interpolation_quality_);
 
@@ -304,6 +311,8 @@ inline bool PaintFastBottomLayer(const LayoutBoxModelObject& obj,
                                  const LayoutSize& box_size,
                                  SkBlendMode op,
                                  const LayoutObject* background_object,
+                                 double frame_time,
+                                 const Settings* settings,
                                  Optional<BackgroundImageGeometry>& geometry) {
   // Painting a background image from an ancestor onto a cell is a complex case.
   if (obj.IsTableCell() && background_object &&
@@ -376,9 +385,12 @@ inline bool PaintFastBottomLayer(const LayoutBoxModelObject& obj,
   if (!info.should_paint_image || image_tile.IsEmpty())
     return true;
 
-  const ImagePaintContext image_context(obj, context, layer, *info.image, op,
-                                        background_object,
-                                        geometry->TileSize());
+  const LayoutObject& image_client =
+      background_object ? *background_object : obj;
+  const ImagePaintContext image_context(
+      image_client, image_client.GetDocument(), image_client.StyleRef(),
+      context, layer, *info.image, op, geometry->TileSize(), frame_time,
+      settings);
   if (!image_context.GetImage())
     return true;
 
@@ -420,11 +432,14 @@ void BoxPainter::PaintFillLayer(const LayoutBoxModelObject& obj,
 
   Optional<BackgroundImageGeometry> geometry;
   bool has_line_box_sibling = box && (box->NextLineBox() || box->PrevLineBox());
+  const Page* page = obj.GetDocument().GetPage();
+  double frame_time = page->GetChromeClient().LastFrameTimeMonotonic();
+  const Settings* settings = obj.GetDocument().GetSettings();
 
   // Fast path for drawing simple color backgrounds.
   if (PaintFastBottomLayer(obj, paint_info, info, bg_layer, rect,
                            bleed_avoidance, has_line_box_sibling, box_size, op,
-                           background_object, geometry)) {
+                           background_object, frame_time, settings, geometry)) {
     return;
   }
 
@@ -536,9 +551,12 @@ void BoxPainter::PaintFillLayer(const LayoutBoxModelObject& obj,
     }
 
     if (!geometry->DestRect().IsEmpty()) {
-      const ImagePaintContext image_context(obj, context, bg_layer, *info.image,
-                                            op, background_object,
-                                            geometry->TileSize());
+      const LayoutObject& image_client =
+          background_object ? *background_object : obj;
+      const ImagePaintContext image_context(
+          image_client, image_client.GetDocument(), image_client.StyleRef(),
+          context, bg_layer, *info.image, op, geometry->TileSize(), frame_time,
+          settings);
       TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage",
                    "data", InspectorPaintImageEvent::Data(obj, *info.image));
       context.DrawTiledImage(
@@ -654,15 +672,6 @@ void BoxPainter::PaintClippingMask(const PaintInfo& paint_info,
   LayoutObjectDrawingRecorder drawing_recorder(paint_info.context, layout_box_,
                                                paint_info.phase, paint_rect);
   paint_info.context.FillRect(paint_rect, Color::kBlack);
-}
-
-InterpolationQuality BoxPainter::ChooseInterpolationQuality(
-    const LayoutObject& obj,
-    Image* image,
-    const void* layer,
-    const LayoutSize& size) {
-  return ImageQualityController::GetImageQualityController()
-      ->ChooseInterpolationQuality(obj, image, layer, size);
 }
 
 bool BoxPainter::PaintNinePieceImage(const LayoutBoxModelObject& obj,

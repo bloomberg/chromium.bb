@@ -6,7 +6,8 @@
 
 #include "core/layout/ImageQualityController.h"
 #include "core/layout/LayoutBoxModelObject.h"
-#include "core/paint/BoxPainter.h"
+#include "core/page/ChromeClient.h"
+#include "core/page/Page.h"
 #include "core/paint/NinePieceImageGrid.h"
 #include "core/style/ComputedStyle.h"
 #include "core/style/NinePieceImage.h"
@@ -85,15 +86,18 @@ bool NinePieceImagePainter::Paint(GraphicsContext& graphics_context,
   // is one. For generated images, the actual image data (gradient stops, etc.)
   // are scaled to effective zoom instead so we must take care not to cause
   // scale of them again.
-  IntSize image_size = RoundedIntSize(style_image->ImageSize(
-      layout_object.GetDocument(), 1, border_image_rect.Size()));
-  RefPtr<Image> image =
-      style_image->GetImage(layout_object, layout_object.GetDocument(),
-                            layout_object.StyleRef(), image_size);
+  const Document& document = layout_object.GetDocument();
+  IntSize image_size = RoundedIntSize(
+      style_image->ImageSize(document, 1, border_image_rect.Size()));
+  RefPtr<Image> image = style_image->GetImage(
+      layout_object, document, layout_object.StyleRef(), image_size);
 
+  double time = document.GetPage()->GetChromeClient().LastFrameTimeMonotonic();
   InterpolationQuality interpolation_quality =
-      BoxPainter::ChooseInterpolationQuality(layout_object, image.Get(), 0,
-                                             rect_with_outsets.Size());
+      ImageQualityController::GetImageQualityController()
+          ->ChooseInterpolationQuality(layout_object, layout_object.StyleRef(),
+                                       document.GetSettings(), image.Get(),
+                                       nullptr, rect_with_outsets.Size(), time);
   InterpolationQuality previous_interpolation_quality =
       graphics_context.ImageInterpolationQuality();
   graphics_context.SetImageInterpolationQuality(interpolation_quality);

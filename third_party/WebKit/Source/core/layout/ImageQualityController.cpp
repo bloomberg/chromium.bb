@@ -30,12 +30,9 @@
 
 #include "core/layout/ImageQualityController.h"
 
-#include "core/frame/LocalFrame.h"
-#include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
-#include "core/layout/LayoutObject.h"
-#include "core/page/ChromeClient.h"
-#include "core/page/Page.h"
+#include "core/loader/resource/ImageResourceObserver.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 
@@ -52,9 +49,9 @@ ImageQualityController* ImageQualityController::GetImageQualityController() {
   return g_image_quality_controller;
 }
 
-void ImageQualityController::Remove(LayoutObject& layout_object) {
+void ImageQualityController::Remove(ImageResourceObserver& layout_observer) {
   if (g_image_quality_controller) {
-    g_image_quality_controller->ObjectDestroyed(layout_object);
+    g_image_quality_controller->ObjectDestroyed(layout_observer);
     if (g_image_quality_controller->IsEmpty()) {
       delete g_image_quality_controller;
       g_image_quality_controller = nullptr;
@@ -62,28 +59,28 @@ void ImageQualityController::Remove(LayoutObject& layout_object) {
   }
 }
 
-bool ImageQualityController::Has(const LayoutObject& layout_object) {
+bool ImageQualityController::Has(const ImageResourceObserver& layout_observer) {
   return g_image_quality_controller &&
-         g_image_quality_controller->object_layer_size_map_.Contains(
-             &layout_object);
+         g_image_quality_controller->observer_layer_size_map_.Contains(
+             &layout_observer);
 }
 
 InterpolationQuality ImageQualityController::ChooseInterpolationQuality(
-    const LayoutObject& object,
+    const ImageResourceObserver& observer,
+    const ComputedStyle& style,
+    const Settings* settings,
     Image* image,
     const void* layer,
-    const LayoutSize& layout_size) {
-  if (object.Style()->ImageRendering() == EImageRendering::kPixelated)
+    const LayoutSize& layout_size,
+    double last_frame_time_monotonic) {
+  if (style.ImageRendering() == EImageRendering::kPixelated)
     return kInterpolationNone;
 
   if (kInterpolationDefault == kInterpolationLow)
     return kInterpolationLow;
 
-  if (ShouldPaintAtLowQuality(object, image, layer, layout_size,
-                              object.GetFrameView()
-                                  ->GetPage()
-                                  ->GetChromeClient()
-                                  .LastFrameTimeMonotonic()))
+  if (ShouldPaintAtLowQuality(observer, style, settings, image, layer,
+                              layout_size, last_frame_time_monotonic))
     return kInterpolationLow;
 
   // For images that are potentially animated we paint them at medium quality.
@@ -109,47 +106,47 @@ void ImageQualityController::SetTimer(std::unique_ptr<TimerBase> new_timer) {
   timer_ = std::move(new_timer);
 }
 
-void ImageQualityController::RemoveLayer(const LayoutObject& object,
+void ImageQualityController::RemoveLayer(const ImageResourceObserver& observer,
                                          LayerSizeMap* inner_map,
                                          const void* layer) {
   if (inner_map) {
     inner_map->erase(layer);
     if (inner_map->IsEmpty())
-      ObjectDestroyed(object);
+      ObjectDestroyed(observer);
   }
 }
 
-void ImageQualityController::Set(const LayoutObject& object,
+void ImageQualityController::Set(const ImageResourceObserver& observer,
                                  LayerSizeMap* inner_map,
                                  const void* layer,
                                  const LayoutSize& size,
                                  bool is_resizing) {
   if (inner_map) {
     inner_map->Set(layer, size);
-    object_layer_size_map_.find(&object)->value.is_resizing = is_resizing;
+    observer_layer_size_map_.find(&observer)->value.is_resizing = is_resizing;
   } else {
     ObjectResizeInfo new_resize_info;
     new_resize_info.layer_size_map.Set(layer, size);
     new_resize_info.is_resizing = is_resizing;
-    object_layer_size_map_.Set(&object, new_resize_info);
+    observer_layer_size_map_.Set(&observer, new_resize_info);
   }
 }
 
-void ImageQualityController::ObjectDestroyed(const LayoutObject& object) {
-  object_layer_size_map_.erase(&object);
-  if (object_layer_size_map_.IsEmpty()) {
+void ImageQualityController::ObjectDestroyed(
+    const ImageResourceObserver& observer) {
+  observer_layer_size_map_.erase(&observer);
+  if (observer_layer_size_map_.IsEmpty()) {
     timer_->Stop();
   }
 }
 
 void ImageQualityController::HighQualityRepaintTimerFired(TimerBase*) {
-  for (auto& i : object_layer_size_map_) {
-    // Only invalidate the object if it is animating.
+  for (auto& i : observer_layer_size_map_) {
+    // Only invalidate the observer if it is animating.
     if (!i.value.is_resizing)
       continue;
 
-    i.key->GetMutableForPainting().SetShouldDoFullPaintInvalidation(
-        PaintInvalidationReason::kImage);
+    i.key->RequestFullPaintInvalidationForImage();
     i.value.is_resizing = false;
   }
   frame_time_when_timer_started_ = 0.0;
@@ -166,7 +163,9 @@ void ImageQualityController::RestartTimer(double last_frame_time_monotonic) {
 }
 
 bool ImageQualityController::ShouldPaintAtLowQuality(
-    const LayoutObject& object,
+    const ImageResourceObserver& observer,
+    const ComputedStyle& style,
+    const Settings* settings,
     Image* image,
     const void* layer,
     const LayoutSize& layout_size,
@@ -179,23 +178,19 @@ bool ImageQualityController::ShouldPaintAtLowQuality(
   if (!layer)
     return false;
 
-  if (object.Style()->ImageRendering() ==
-      EImageRendering::kWebkitOptimizeContrast)
+  if (style.ImageRendering() == EImageRendering::kWebkitOptimizeContrast)
     return true;
 
-  if (LocalFrame* frame = object.GetFrame()) {
-    if (frame->GetSettings() &&
-        frame->GetSettings()->GetUseDefaultImageInterpolationQuality())
-      return false;
-  }
+  if (settings && settings->GetUseDefaultImageInterpolationQuality())
+    return false;
 
   // Look ourselves up in the hashtables.
-  ObjectLayerSizeMap::iterator i = object_layer_size_map_.find(&object);
+  ResourceSizeMap::iterator i = observer_layer_size_map_.find(&observer);
   LayerSizeMap* inner_map = nullptr;
-  bool object_is_resizing = false;
-  if (i != object_layer_size_map_.end()) {
+  bool observer_is_resizing = false;
+  if (i != observer_layer_size_map_.end()) {
     inner_map = &i->value.layer_size_map;
-    object_is_resizing = i->value.is_resizing;
+    observer_is_resizing = i->value.is_resizing;
   }
   LayoutSize old_size;
   bool is_first_resize = true;
@@ -209,16 +204,16 @@ bool ImageQualityController::ShouldPaintAtLowQuality(
 
   if (layout_size == image->Size()) {
     // There is no scale in effect. If we had a scale in effect before, we can
-    // just remove this object from the list.
-    RemoveLayer(object, inner_map, layer);
+    // just remove this observer from the list.
+    RemoveLayer(observer, inner_map, layer);
     return false;
   }
 
-  // If an animated resize is active for this object, paint in low quality and
+  // If an animated resize is active for this observer, paint in low quality and
   // kick the timer ahead.
-  if (object_is_resizing) {
+  if (observer_is_resizing) {
     bool sizes_changed = old_size != layout_size;
-    Set(object, inner_map, layer, layout_size, sizes_changed);
+    Set(observer, inner_map, layer, layout_size, sizes_changed);
     if (sizes_changed)
       RestartTimer(last_frame_time_monotonic);
     return true;
@@ -228,19 +223,19 @@ bool ImageQualityController::ShouldPaintAtLowQuality(
   // size and set the timer.
   if (is_first_resize || old_size == layout_size) {
     RestartTimer(last_frame_time_monotonic);
-    Set(object, inner_map, layer, layout_size, false);
+    Set(observer, inner_map, layer, layout_size, false);
     return false;
   }
   // If the timer is no longer active, draw at high quality and don't
   // set the timer.
   if (!timer_->IsActive()) {
-    RemoveLayer(object, inner_map, layer);
+    RemoveLayer(observer, inner_map, layer);
     return false;
   }
-  // This object has been resized to two different sizes while the timer
+  // This observer has been resized to two different sizes while the timer
   // is active, so draw at low quality, set the flag for animated resizes and
-  // the object to the list for high quality redraw.
-  Set(object, inner_map, layer, layout_size, true);
+  // the observer to the list for high quality redraw.
+  Set(observer, inner_map, layer, layout_size, true);
   RestartTimer(last_frame_time_monotonic);
   return true;
 }

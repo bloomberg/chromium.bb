@@ -28,12 +28,25 @@ class ImageQualityControllerTest : public RenderingTest {
   ImageQualityController* controller_;
 };
 
+double FrameTime(const LayoutObject* obj) {
+  return obj->GetFrameView()
+      ->GetPage()
+      ->GetChromeClient()
+      .LastFrameTimeMonotonic();
+}
+
+const Settings* GetSettings(const LayoutObject* obj) {
+  return obj->GetFrame() ? obj->GetFrame()->GetSettings() : nullptr;
+}
+
 TEST_F(ImageQualityControllerTest, RegularImage) {
   SetBodyInnerHTML("<img src='myimage'></img>");
   LayoutObject* obj = GetDocument().body()->firstChild()->GetLayoutObject();
 
-  EXPECT_EQ(kInterpolationDefault, Controller()->ChooseInterpolationQuality(
-                                       *obj, nullptr, nullptr, LayoutSize()));
+  EXPECT_EQ(kInterpolationDefault,
+            Controller()->ChooseInterpolationQuality(
+                *obj, obj->StyleRef(), GetSettings(obj), nullptr, nullptr,
+                LayoutSize(), FrameTime(obj)));
 }
 
 TEST_F(ImageQualityControllerTest, ImageRenderingPixelated) {
@@ -41,8 +54,10 @@ TEST_F(ImageQualityControllerTest, ImageRenderingPixelated) {
       "<img src='myimage' style='image-rendering: pixelated'></img>");
   LayoutObject* obj = GetDocument().body()->firstChild()->GetLayoutObject();
 
-  EXPECT_EQ(kInterpolationNone, Controller()->ChooseInterpolationQuality(
-                                    *obj, nullptr, nullptr, LayoutSize()));
+  EXPECT_EQ(kInterpolationNone,
+            Controller()->ChooseInterpolationQuality(
+                *obj, obj->StyleRef(), GetSettings(obj), nullptr, nullptr,
+                LayoutSize(), FrameTime(obj)));
 }
 
 #if !USE(LOW_QUALITY_IMAGE_INTERPOLATION)
@@ -72,8 +87,9 @@ TEST_F(ImageQualityControllerTest, ImageMaybeAnimated) {
 
   RefPtr<TestImageAnimated> test_image = AdoptRef(new TestImageAnimated);
   EXPECT_EQ(kInterpolationMedium,
-            Controller()->ChooseInterpolationQuality(*img, test_image.Get(),
-                                                     nullptr, LayoutSize()));
+            Controller()->ChooseInterpolationQuality(
+                *img, img->StyleRef(), GetSettings(img), test_image.Get(),
+                nullptr, LayoutSize(), FrameTime(img)));
 }
 
 class TestImageWithContrast : public Image {
@@ -107,7 +123,8 @@ TEST_F(ImageQualityControllerTest, LowQualityFilterForContrast) {
       AdoptRef(new TestImageWithContrast);
   EXPECT_EQ(kInterpolationLow,
             Controller()->ChooseInterpolationQuality(
-                *img, test_image.Get(), test_image.Get(), LayoutSize()));
+                *img, img->StyleRef(), GetSettings(img), test_image.Get(),
+                test_image.Get(), LayoutSize(), FrameTime(img)));
 }
 
 class TestImageLowQuality : public Image {
@@ -138,7 +155,8 @@ TEST_F(ImageQualityControllerTest, MediumQualityFilterForUnscaledImage) {
   RefPtr<TestImageLowQuality> test_image = AdoptRef(new TestImageLowQuality);
   EXPECT_EQ(kInterpolationMedium,
             Controller()->ChooseInterpolationQuality(
-                *img, test_image.Get(), test_image.Get(), LayoutSize(1, 1)));
+                *img, img->StyleRef(), GetSettings(img), test_image.Get(),
+                test_image.Get(), LayoutSize(1, 1), FrameTime(img)));
 }
 
 // TODO(alexclarke): Remove this when possible.
@@ -190,24 +208,28 @@ TEST_F(ImageQualityControllerTest, LowQualityFilterForResizingImage) {
   // timer's execution.
   EXPECT_EQ(kInterpolationMedium,
             Controller()->ChooseInterpolationQuality(
-                *img, test_image.Get(), test_image.Get(), LayoutSize(2, 2)));
+                *img, img->StyleRef(), GetSettings(img), test_image.Get(),
+                test_image.Get(), LayoutSize(2, 2), FrameTime(img)));
 
   // Go into low-quality mode now that the size changed.
   EXPECT_EQ(kInterpolationLow,
             Controller()->ChooseInterpolationQuality(
-                *img, test_image.Get(), test_image.Get(), LayoutSize(3, 3)));
+                *img, img->StyleRef(), GetSettings(img), test_image.Get(),
+                test_image.Get(), LayoutSize(3, 3), FrameTime(img)));
 
   // Stay in low-quality mode since the size changed again.
   EXPECT_EQ(kInterpolationLow,
             Controller()->ChooseInterpolationQuality(
-                *img, test_image.Get(), test_image.Get(), LayoutSize(4, 4)));
+                *img, img->StyleRef(), GetSettings(img), test_image.Get(),
+                test_image.Get(), LayoutSize(4, 4), FrameTime(img)));
 
   mock_timer->Fire();
   // The timer fired before painting at another size, so this doesn't count as
   // animation. Therefore not painting at low quality.
   EXPECT_EQ(kInterpolationMedium,
             Controller()->ChooseInterpolationQuality(
-                *img, test_image.Get(), test_image.Get(), LayoutSize(4, 4)));
+                *img, img->StyleRef(), GetSettings(img), test_image.Get(),
+                test_image.Get(), LayoutSize(4, 4), FrameTime(img)));
 }
 
 TEST_F(ImageQualityControllerTest,
@@ -231,36 +253,54 @@ TEST_F(ImageQualityControllerTest,
 
   // Paint once. This will kick off a timer to see if we resize it during that
   // timer's execution.
-  EXPECT_EQ(kInterpolationMedium, Controller()->ChooseInterpolationQuality(
-                                      *animating_image, test_image.Get(),
-                                      test_image.Get(), LayoutSize(2, 2)));
+  EXPECT_EQ(
+      kInterpolationMedium,
+      Controller()->ChooseInterpolationQuality(
+          *animating_image, animating_image->StyleRef(),
+          GetSettings(animating_image), test_image.Get(), test_image.Get(),
+          LayoutSize(2, 2), FrameTime(animating_image)));
 
   // Go into low-quality mode now that the size changed.
-  EXPECT_EQ(kInterpolationLow, Controller()->ChooseInterpolationQuality(
-                                   *animating_image, test_image.Get(),
-                                   test_image.Get(), LayoutSize(3, 3)));
+  EXPECT_EQ(
+      kInterpolationLow,
+      Controller()->ChooseInterpolationQuality(
+          *animating_image, animating_image->StyleRef(),
+          GetSettings(animating_image), test_image.Get(), test_image.Get(),
+          LayoutSize(3, 3), FrameTime(animating_image)));
 
   // The non-animating image receives a medium-quality filter, even though the
   // other one is animating.
-  EXPECT_EQ(kInterpolationMedium, Controller()->ChooseInterpolationQuality(
-                                      *non_animating_image, test_image.Get(),
-                                      test_image.Get(), LayoutSize(4, 4)));
+  EXPECT_EQ(
+      kInterpolationMedium,
+      Controller()->ChooseInterpolationQuality(
+          *non_animating_image, non_animating_image->StyleRef(),
+          GetSettings(non_animating_image), test_image.Get(), test_image.Get(),
+          LayoutSize(4, 4), FrameTime(non_animating_image)));
 
   // Now the second image has animated, so it also gets painted with a
   // low-quality filter.
-  EXPECT_EQ(kInterpolationLow, Controller()->ChooseInterpolationQuality(
-                                   *non_animating_image, test_image.Get(),
-                                   test_image.Get(), LayoutSize(3, 3)));
+  EXPECT_EQ(
+      kInterpolationLow,
+      Controller()->ChooseInterpolationQuality(
+          *non_animating_image, non_animating_image->StyleRef(),
+          GetSettings(non_animating_image), test_image.Get(), test_image.Get(),
+          LayoutSize(3, 3), FrameTime(non_animating_image)));
 
   mock_timer->Fire();
   // The timer fired before painting at another size, so this doesn't count as
   // animation. Therefore not painting at low quality for any image.
-  EXPECT_EQ(kInterpolationMedium, Controller()->ChooseInterpolationQuality(
-                                      *animating_image, test_image.Get(),
-                                      test_image.Get(), LayoutSize(4, 4)));
-  EXPECT_EQ(kInterpolationMedium, Controller()->ChooseInterpolationQuality(
-                                      *non_animating_image, test_image.Get(),
-                                      test_image.Get(), LayoutSize(4, 4)));
+  EXPECT_EQ(
+      kInterpolationMedium,
+      Controller()->ChooseInterpolationQuality(
+          *animating_image, animating_image->StyleRef(),
+          GetSettings(animating_image), test_image.Get(), test_image.Get(),
+          LayoutSize(4, 4), FrameTime(animating_image)));
+  EXPECT_EQ(
+      kInterpolationMedium,
+      Controller()->ChooseInterpolationQuality(
+          *non_animating_image, non_animating_image->StyleRef(),
+          GetSettings(non_animating_image), test_image.Get(), test_image.Get(),
+          LayoutSize(4, 4), FrameTime(non_animating_image)));
 }
 
 TEST_F(ImageQualityControllerTest,
@@ -280,17 +320,20 @@ TEST_F(ImageQualityControllerTest,
   // timer's execution.
   EXPECT_EQ(kInterpolationMedium,
             Controller()->ChooseInterpolationQuality(
-                *img, test_image.Get(), test_image.Get(), LayoutSize(2, 2)));
+                *img, img->StyleRef(), GetSettings(img), test_image.Get(),
+                test_image.Get(), LayoutSize(2, 2), FrameTime(img)));
 
   // Go into low-quality mode now that the size changed.
   EXPECT_EQ(kInterpolationLow,
             Controller()->ChooseInterpolationQuality(
-                *img, test_image.Get(), test_image.Get(), LayoutSize(3, 3)));
+                *img, img->StyleRef(), GetSettings(img), test_image.Get(),
+                test_image.Get(), LayoutSize(3, 3), FrameTime(img)));
 
   // Stay in low-quality mode since the size changed again.
   EXPECT_EQ(kInterpolationLow,
             Controller()->ChooseInterpolationQuality(
-                *img, test_image.Get(), test_image.Get(), LayoutSize(4, 4)));
+                *img, img->StyleRef(), GetSettings(img), test_image.Get(),
+                test_image.Get(), LayoutSize(4, 4), FrameTime(img)));
 
   mock_timer->Stop();
   EXPECT_FALSE(mock_timer->IsActive());
@@ -298,7 +341,8 @@ TEST_F(ImageQualityControllerTest,
   // to low quality.
   EXPECT_EQ(kInterpolationLow,
             Controller()->ChooseInterpolationQuality(
-                *img, test_image.Get(), test_image.Get(), LayoutSize(4, 4)));
+                *img, img->StyleRef(), GetSettings(img), test_image.Get(),
+                test_image.Get(), LayoutSize(4, 4), FrameTime(img)));
   // Check that the timer was not kicked. It should not have been, since the
   // image was painted at the same size as last time.
   EXPECT_FALSE(mock_timer->IsActive());
@@ -320,7 +364,8 @@ TEST_F(ImageQualityControllerTest, DontRestartTimerUnlessAdvanced) {
   // timer's execution.
   mock_timer->SetTime(0.1);
   EXPECT_FALSE(Controller()->ShouldPaintAtLowQuality(
-      *img, test_image.Get(), test_image.Get(), LayoutSize(2, 2), 0.1));
+      *img, img->StyleRef(), GetSettings(img), test_image.Get(),
+      test_image.Get(), LayoutSize(2, 2), 0.1));
   EXPECT_EQ(ImageQualityController::kCLowQualityTimeThreshold,
             mock_timer->NextFireInterval());
 
@@ -329,8 +374,8 @@ TEST_F(ImageQualityControllerTest, DontRestartTimerUnlessAdvanced) {
       0.1 + ImageQualityController::kCTimerRestartThreshold / 2.0;
   mock_timer->SetTime(next_time);
   EXPECT_EQ(true, Controller()->ShouldPaintAtLowQuality(
-                      *img, test_image.Get(), test_image.Get(),
-                      LayoutSize(3, 3), next_time));
+                      *img, img->StyleRef(), GetSettings(img), test_image.Get(),
+                      test_image.Get(), LayoutSize(3, 3), next_time));
   // The fire interval has decreased, because we have not restarted the timer.
   EXPECT_EQ(ImageQualityController::kCLowQualityTimeThreshold -
                 ImageQualityController::kCTimerRestartThreshold / 2.0,
@@ -340,8 +385,8 @@ TEST_F(ImageQualityControllerTest, DontRestartTimerUnlessAdvanced) {
   // it is half over.
   next_time = 0.1 + ImageQualityController::kCTimerRestartThreshold + 0.01;
   EXPECT_EQ(true, Controller()->ShouldPaintAtLowQuality(
-                      *img, test_image.Get(), test_image.Get(),
-                      LayoutSize(4, 4), next_time));
+                      *img, img->StyleRef(), GetSettings(img), test_image.Get(),
+                      test_image.Get(), LayoutSize(4, 4), next_time));
   // Now the timer has restarted, leading to a larger fire interval.
   EXPECT_EQ(ImageQualityController::kCLowQualityTimeThreshold,
             mock_timer->NextFireInterval());
