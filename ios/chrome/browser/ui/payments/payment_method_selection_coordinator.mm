@@ -97,7 +97,8 @@ const int64_t kDelegateNotificationDelayInNanoSeconds = 0.2 * NSEC_PER_SEC;
   [self startCreditCardEditCoordinatorWithCreditCard:nil];
 }
 
-- (void)paymentRequestSelectorViewControllerDidToggleEditingMode {
+- (void)paymentRequestSelectorViewControllerDidToggleEditingMode:
+    (PaymentRequestSelectorViewController*)controller {
   [self.viewController loadModel];
   [self.viewController.collectionView reloadData];
 }
