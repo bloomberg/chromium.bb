@@ -387,8 +387,7 @@ ScriptPromise RejectIfInvalidTextRecord(ScriptState* script_state,
   }
 
   if (record.hasMediaType() &&
-      !record.mediaType().StartsWith(kPlainTextMimePrefix,
-                                     kTextCaseUnicodeInsensitive)) {
+      !record.mediaType().StartsWithIgnoringASCIICase(kPlainTextMimePrefix)) {
     return RejectWithDOMException(script_state, kSyntaxError,
                                   "Invalid media type for 'text' record.");
   }
@@ -424,10 +423,8 @@ ScriptPromise RejectIfInvalidJSONRecord(ScriptState* script_state,
   // start with "application/" and end with "+json".
   if (record.hasMediaType() &&
       (record.mediaType() != kJsonMimeType &&
-       !(record.mediaType().StartsWith(kJsonMimePrefix,
-                                       kTextCaseASCIIInsensitive) &&
-         record.mediaType().EndsWith(kJsonMimePostfix,
-                                     kTextCaseASCIIInsensitive)))) {
+       !(record.mediaType().StartsWithIgnoringASCIICase(kJsonMimePrefix) &&
+         record.mediaType().EndsWithIgnoringASCIICase(kJsonMimePostfix)))) {
     return RejectWithDOMException(script_state, kSyntaxError,
                                   "Invalid media type for 'json' record.");
   }

@@ -27,8 +27,8 @@ class ForbiddenHeaderNames {
  public:
   bool Has(const String& name) const {
     return fixed_names_.Contains(name) ||
-           name.StartsWith(proxy_header_prefix_, kTextCaseASCIIInsensitive) ||
-           name.StartsWith(sec_header_prefix_, kTextCaseASCIIInsensitive);
+           name.StartsWithIgnoringASCIICase(proxy_header_prefix_) ||
+           name.StartsWithIgnoringASCIICase(sec_header_prefix_);
   }
 
   static const ForbiddenHeaderNames& Get();

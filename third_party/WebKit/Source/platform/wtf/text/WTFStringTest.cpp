@@ -343,58 +343,45 @@ TEST(StringTest, ToLowerLocale) {
 
 TEST(StringTest, StartsWithIgnoringUnicodeCase) {
   // [U+017F U+212A i a] starts with "sk".
-  EXPECT_TRUE(String::FromUTF8("\xC5\xBF\xE2\x84\xAAia")
-                  .StartsWith("sk", kTextCaseUnicodeInsensitive));
+  EXPECT_TRUE(
+      String::FromUTF8("\xC5\xBF\xE2\x84\xAAia").StartsWithIgnoringCase("sk"));
 }
 
 TEST(StringTest, StartsWithIgnoringASCIICase) {
   String all_ascii("LINK");
   String all_ascii_lower_case("link");
-  EXPECT_TRUE(
-      all_ascii.StartsWith(all_ascii_lower_case, kTextCaseASCIIInsensitive));
+  EXPECT_TRUE(all_ascii.StartsWithIgnoringASCIICase(all_ascii_lower_case));
   String all_ascii_mixed_case("lInK");
-  EXPECT_TRUE(
-      all_ascii.StartsWith(all_ascii_mixed_case, kTextCaseASCIIInsensitive));
+  EXPECT_TRUE(all_ascii.StartsWithIgnoringASCIICase(all_ascii_mixed_case));
   String all_ascii_different("foo");
-  EXPECT_FALSE(
-      all_ascii.StartsWith(all_ascii_different, kTextCaseASCIIInsensitive));
+  EXPECT_FALSE(all_ascii.StartsWithIgnoringASCIICase(all_ascii_different));
   String non_ascii = String::FromUTF8("LIN\xE2\x84\xAA");
-  EXPECT_FALSE(all_ascii.StartsWith(non_ascii, kTextCaseASCIIInsensitive));
-  EXPECT_TRUE(all_ascii.StartsWith(non_ascii.DeprecatedLower(),
-                                   kTextCaseASCIIInsensitive));
+  EXPECT_FALSE(all_ascii.StartsWithIgnoringASCIICase(non_ascii));
+  EXPECT_TRUE(
+      all_ascii.StartsWithIgnoringASCIICase(non_ascii.DeprecatedLower()));
 
-  EXPECT_FALSE(non_ascii.StartsWith(all_ascii, kTextCaseASCIIInsensitive));
-  EXPECT_FALSE(
-      non_ascii.StartsWith(all_ascii_lower_case, kTextCaseASCIIInsensitive));
-  EXPECT_FALSE(
-      non_ascii.StartsWith(all_ascii_mixed_case, kTextCaseASCIIInsensitive));
-  EXPECT_FALSE(
-      non_ascii.StartsWith(all_ascii_different, kTextCaseASCIIInsensitive));
+  EXPECT_FALSE(non_ascii.StartsWithIgnoringASCIICase(all_ascii));
+  EXPECT_FALSE(non_ascii.StartsWithIgnoringASCIICase(all_ascii_lower_case));
+  EXPECT_FALSE(non_ascii.StartsWithIgnoringASCIICase(all_ascii_mixed_case));
+  EXPECT_FALSE(non_ascii.StartsWithIgnoringASCIICase(all_ascii_different));
 }
 
 TEST(StringTest, EndsWithIgnoringASCIICase) {
   String all_ascii("LINK");
   String all_ascii_lower_case("link");
-  EXPECT_TRUE(
-      all_ascii.EndsWith(all_ascii_lower_case, kTextCaseASCIIInsensitive));
+  EXPECT_TRUE(all_ascii.EndsWithIgnoringASCIICase(all_ascii_lower_case));
   String all_ascii_mixed_case("lInK");
-  EXPECT_TRUE(
-      all_ascii.EndsWith(all_ascii_mixed_case, kTextCaseASCIIInsensitive));
+  EXPECT_TRUE(all_ascii.EndsWithIgnoringASCIICase(all_ascii_mixed_case));
   String all_ascii_different("foo");
-  EXPECT_FALSE(
-      all_ascii.EndsWith(all_ascii_different, kTextCaseASCIIInsensitive));
+  EXPECT_FALSE(all_ascii.EndsWithIgnoringASCIICase(all_ascii_different));
   String non_ascii = String::FromUTF8("LIN\xE2\x84\xAA");
-  EXPECT_FALSE(all_ascii.EndsWith(non_ascii, kTextCaseASCIIInsensitive));
-  EXPECT_TRUE(all_ascii.EndsWith(non_ascii.DeprecatedLower(),
-                                 kTextCaseASCIIInsensitive));
+  EXPECT_FALSE(all_ascii.EndsWithIgnoringASCIICase(non_ascii));
+  EXPECT_TRUE(all_ascii.EndsWithIgnoringASCIICase(non_ascii.DeprecatedLower()));
 
-  EXPECT_FALSE(non_ascii.EndsWith(all_ascii, kTextCaseASCIIInsensitive));
-  EXPECT_FALSE(
-      non_ascii.EndsWith(all_ascii_lower_case, kTextCaseASCIIInsensitive));
-  EXPECT_FALSE(
-      non_ascii.EndsWith(all_ascii_mixed_case, kTextCaseASCIIInsensitive));
-  EXPECT_FALSE(
-      non_ascii.EndsWith(all_ascii_different, kTextCaseASCIIInsensitive));
+  EXPECT_FALSE(non_ascii.EndsWithIgnoringASCIICase(all_ascii));
+  EXPECT_FALSE(non_ascii.EndsWithIgnoringASCIICase(all_ascii_lower_case));
+  EXPECT_FALSE(non_ascii.EndsWithIgnoringASCIICase(all_ascii_mixed_case));
+  EXPECT_FALSE(non_ascii.EndsWithIgnoringASCIICase(all_ascii_different));
 }
 
 TEST(StringTest, EqualIgnoringASCIICase) {

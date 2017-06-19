@@ -86,7 +86,7 @@ bool CSPSource::HostMatches(const String& host) const {
       match = true;
     } else {
       // host-part = "*." 1*host-char *( "." 1*host-char )
-      match = host.EndsWith(String("." + host_), kTextCaseUnicodeInsensitive);
+      match = host.EndsWithIgnoringCase(String("." + host_));
     }
 
     // Chrome used to, incorrectly, match *.x.y to x.y. This was fixed, but
