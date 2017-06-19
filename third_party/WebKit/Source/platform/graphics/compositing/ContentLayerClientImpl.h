@@ -24,9 +24,10 @@ class PLATFORM_EXPORT ContentLayerClientImpl : public cc::ContentLayerClient {
   USING_FAST_MALLOC(ContentLayerClientImpl);
 
  public:
-  ContentLayerClientImpl(PaintChunk::Id paint_chunk_id)
-      : id_(paint_chunk_id),
-        debug_name_(paint_chunk_id.client.DebugName()),
+  ContentLayerClientImpl(const PaintChunk& paint_chunk)
+      : id_(paint_chunk.id),
+        is_cacheable_(paint_chunk.is_cacheable),
+        debug_name_(paint_chunk.id.client.DebugName()),
         cc_picture_layer_(cc::PictureLayer::Create(this)) {}
 
   ~ContentLayerClientImpl();
@@ -67,13 +68,14 @@ class PLATFORM_EXPORT ContentLayerClientImpl : public cc::ContentLayerClient {
   scoped_refptr<cc::PictureLayer> CcPictureLayer() { return cc_picture_layer_; }
 
   bool Matches(const PaintChunk& paint_chunk) {
-    return paint_chunk.Matches(&id_);
+    return is_cacheable_ && paint_chunk.Matches(id_);
   }
 
   const String& DebugName() const { return debug_name_; }
 
  private:
   PaintChunk::Id id_;
+  bool is_cacheable_;
   String debug_name_;
   scoped_refptr<cc::PictureLayer> cc_picture_layer_;
   scoped_refptr<cc::DisplayItemList> cc_display_item_list_;

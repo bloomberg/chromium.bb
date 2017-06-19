@@ -33,12 +33,12 @@ class TransformPaintPropertyNode;
 //
 // Usage:
 //   TestPaintArtifact artifact;
-//   artifact.chunk(paintProperties)
-//       .rectDrawing(bounds, color)
-//       .rectDrawing(bounds2, color2);
-//   artifact.chunk(otherPaintProperties)
-//       .rectDrawing(bounds3, color3);
-//   doSomethingWithArtifact(artifact);
+//   artifact.Chunk(paintProperties)
+//       .RectDrawing(bounds, color)
+//       .RectDrawing(bounds2, color2);
+//   artifact.Chunk(otherPaintProperties)
+//       .RectDrawing(bounds3, color3);
+//   DoSomethingWithArtifact(artifact);
 class TestPaintArtifact {
   STACK_ALLOCATED();
 

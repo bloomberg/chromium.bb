@@ -13,18 +13,13 @@ namespace blink {
 
 void PrintTo(const PaintChunk& chunk, std::ostream* os) {
   *os << "PaintChunk(begin=" << chunk.begin_index << ", end=" << chunk.end_index
-      << ", id=";
-  if (!chunk.id) {
-    *os << "null";
-  } else {
-    *os << "(" << &chunk.id->client << ", ";
+      << ", id=(" << &chunk.id.client << ", ";
 #ifndef NDEBUG
-    *os << DisplayItem::TypeAsDebugString(chunk.id->type);
+  *os << DisplayItem::TypeAsDebugString(chunk.id.type);
 #else
-    *os << static_cast<int>(chunk.id->type);
+  *os << static_cast<int>(chunk.id.type);
 #endif
-    *os << ")";
-  }
+  *os << "), cacheable=" << chunk.is_cacheable;
   *os << ", props=";
   PrintTo(chunk.properties, os);
   *os << ", bounds=";

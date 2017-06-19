@@ -110,11 +110,11 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence) {
     Vector<PaintChunk> paint_chunks =
         RootPaintController().GetPaintArtifact().PaintChunks();
     EXPECT_EQ(3u, paint_chunks.size());
-    EXPECT_EQ(GetLayoutView().Layer(), &paint_chunks[0].id->client);
+    EXPECT_EQ(GetLayoutView().Layer(), &paint_chunks[0].id.client);
     EXPECT_EQ(ToLayoutBoxModelObject(container1).Layer(),
-              &paint_chunks[1].id->client);
+              &paint_chunks[1].id.client);
     EXPECT_EQ(ToLayoutBoxModelObject(container2).Layer(),
-              &paint_chunks[2].id->client);
+              &paint_chunks[2].id.client);
   } else {
     EXPECT_DISPLAY_LIST(
         RootPaintController().GetDisplayItemList(), 5,

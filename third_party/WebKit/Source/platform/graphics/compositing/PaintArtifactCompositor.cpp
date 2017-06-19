@@ -112,11 +112,7 @@ PaintArtifactCompositor::ClientForPaintChunk(
       return std::move(client);
   }
 
-  return WTF::WrapUnique(new ContentLayerClientImpl(
-      paint_chunk.id
-          ? *paint_chunk.id
-          : paint_artifact.GetDisplayItemList()[paint_chunk.begin_index]
-                .GetId()));
+  return WTF::WrapUnique(new ContentLayerClientImpl(paint_chunk));
 }
 
 IntRect PaintArtifactCompositor::MapRasterInvalidationRectFromChunkToLayer(

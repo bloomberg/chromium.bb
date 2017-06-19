@@ -142,7 +142,7 @@ TEST_P(PaintControllerPaintTestForSlimmingPaintV2, ChunkIdClientCacheFlag) {
   EXPECT_EQ(0.5f, effect_node->Opacity());
 
   const PaintChunk& chunk = RootPaintController().PaintChunks()[1];
-  EXPECT_EQ(*div.Layer(), chunk.id->client);
+  EXPECT_EQ(*div.Layer(), chunk.id.client);
   EXPECT_EQ(effect_node, chunk.properties.property_tree_state.Effect());
 
   EXPECT_FALSE(div.Layer()->IsJustCreated());
