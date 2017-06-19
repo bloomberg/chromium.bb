@@ -33,6 +33,7 @@
 
 #include "core/CoreExport.h"
 #include "platform/bindings/ScriptWrappable.h"
+#include "platform/bindings/TraceWrapperMember.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
 
@@ -40,6 +41,7 @@ namespace blink {
 
 class DataObjectItem;
 class DataTransfer;
+class ExecutionContext;
 class File;
 class FunctionStringCallback;
 class ScriptState;
@@ -56,19 +58,25 @@ class CORE_EXPORT DataTransferItem final
   String kind() const;
   String type() const;
 
-  void getAsString(ScriptState*, FunctionStringCallback*) const;
+  void getAsString(ScriptState*, FunctionStringCallback*);
   File* getAsFile() const;
 
   DataTransfer* GetDataTransfer() { return data_transfer_.Get(); }
   DataObjectItem* GetDataObjectItem() { return item_.Get(); }
 
   DECLARE_TRACE();
+  DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
  private:
   DataTransferItem(DataTransfer*, DataObjectItem*);
 
+  void RunGetAsStringTask(ExecutionContext*,
+                          FunctionStringCallback*,
+                          const String& data);
+
   Member<DataTransfer> data_transfer_;
   Member<DataObjectItem> item_;
+  HeapVector<TraceWrapperMember<FunctionStringCallback>> callbacks_;
 };
 
 }  // namespace blink

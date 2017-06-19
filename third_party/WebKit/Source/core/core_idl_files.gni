@@ -113,7 +113,6 @@ core_idl_files = get_path_info([
                                  "dom/Float32Array.idl",
                                  "dom/Float64Array.idl",
                                  "dom/FrameRequestCallback.idl",
-                                 "dom/FunctionStringCallback.idl",
                                  "dom/IdleDeadline.idl",
                                  "dom/IdleRequestCallback.idl",
                                  "dom/Int16Array.idl",
@@ -504,6 +503,9 @@ core_typedefs_enums_only_idl_files =
                   ],
                   "abspath")
 
+core_callback_function_idl_files =
+    get_path_info([ "dom/FunctionStringCallback.idl" ], "abspath")
+
 core_dictionary_idl_files =
     get_path_info([
                     "animation/AnimationEffectTimingProperties.idl",
@@ -643,7 +645,7 @@ core_testing_definition_idl_files =
 # Static IDL files
 core_static_interface_idl_files =
     core_definition_idl_files + core_testing_definition_idl_files +
-    core_typedefs_enums_only_idl_files
+    core_callback_function_idl_files + core_typedefs_enums_only_idl_files
 
 core_static_dependency_idl_files =
     core_dependency_idl_files + webcore_testing_dependency_idl_files
