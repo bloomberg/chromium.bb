@@ -16,7 +16,7 @@ source_set("views") {
   deps = [
     "//cc/paint",
     "//chrome/app/theme:theme_resources",
-    "//extensions/browser/app_window",
+    "//extensions/browser",
     "//extensions/common",
     "//skia",
     "//ui/gfx",
