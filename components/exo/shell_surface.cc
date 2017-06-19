@@ -904,7 +904,7 @@ gfx::Size ShellSurface::CalculatePreferredSize() const {
   if (!geometry_.IsEmpty())
     return geometry_.size();
 
-  return surface_ ? surface_->window()->layer()->size() : gfx::Size();
+  return surface_ ? surface_->content_size() : gfx::Size();
 }
 
 gfx::Size ShellSurface::GetMinimumSize() const {
@@ -1413,8 +1413,7 @@ bool ShellSurface::IsResizing() const {
 
 gfx::Rect ShellSurface::GetVisibleBounds() const {
   // Use |geometry_| if set, otherwise use the visual bounds of the surface.
-  return geometry_.IsEmpty() ? gfx::Rect(surface_->window()->layer()->size())
-                             : geometry_;
+  return geometry_.IsEmpty() ? gfx::Rect(surface_->content_size()) : geometry_;
 }
 
 gfx::Point ShellSurface::GetSurfaceOrigin() const {
@@ -1539,7 +1538,7 @@ void ShellSurface::UpdateSurfaceBounds() {
 
   surface_->window()->SetBounds(
       gfx::Rect(GetSurfaceOrigin() + client_view_bounds.OffsetFromOrigin(),
-                surface_->window()->layer()->size()));
+                surface_->content_size()));
 }
 
 void ShellSurface::UpdateShadow() {
