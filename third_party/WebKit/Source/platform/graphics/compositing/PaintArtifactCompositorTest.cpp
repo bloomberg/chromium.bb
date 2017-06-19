@@ -20,6 +20,7 @@
 #include "platform/graphics/paint/EffectPaintPropertyNode.h"
 #include "platform/graphics/paint/PaintArtifact.h"
 #include "platform/graphics/paint/ScrollPaintPropertyNode.h"
+#include "platform/testing/FakeDisplayItemClient.h"
 #include "platform/testing/PaintPropertyTestHelpers.h"
 #include "platform/testing/PictureMatchers.h"
 #include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
@@ -42,11 +43,20 @@ namespace blink {
 using ::blink::testing::CreateOpacityOnlyEffect;
 using ::testing::Pointee;
 
+PaintChunk::Id DefaultId() {
+  DEFINE_STATIC_LOCAL(FakeDisplayItemClient, fake_client, ());
+  return PaintChunk::Id(fake_client, DisplayItem::kDrawingFirst);
+}
+
 PaintChunkProperties DefaultPaintChunkProperties() {
   PropertyTreeState property_tree_state(TransformPaintPropertyNode::Root(),
                                         ClipPaintPropertyNode::Root(),
                                         EffectPaintPropertyNode::Root());
   return PaintChunkProperties(property_tree_state);
+}
+
+PaintChunk DefaultChunk() {
+  return PaintChunk(0, 1, DefaultId(), DefaultPaintChunkProperties());
 }
 
 gfx::Transform Translation(SkMScalar x, SkMScalar y) {
@@ -1507,13 +1517,11 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, OverlapTransform) {
 }
 
 TEST_F(PaintArtifactCompositorTestWithPropertyTrees, MightOverlap) {
-  PaintChunk paint_chunk;
-  paint_chunk.properties = DefaultPaintChunkProperties();
+  PaintChunk paint_chunk = DefaultChunk();
   paint_chunk.bounds = FloatRect(0, 0, 100, 100);
   PaintArtifactCompositor::PendingLayer pending_layer(paint_chunk, false);
 
-  PaintChunk paint_chunk2;
-  paint_chunk2.properties = DefaultPaintChunkProperties();
+  PaintChunk paint_chunk2 = DefaultChunk();
   paint_chunk2.bounds = FloatRect(0, 0, 100, 100);
 
   {
@@ -1548,7 +1556,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, MightOverlap) {
 }
 
 TEST_F(PaintArtifactCompositorTestWithPropertyTrees, PendingLayer) {
-  PaintChunk chunk1;
+  PaintChunk chunk1 = DefaultChunk();
   chunk1.properties.property_tree_state = PropertyTreeState(
       TransformPaintPropertyNode::Root(), ClipPaintPropertyNode::Root(),
       EffectPaintPropertyNode::Root());
@@ -1562,7 +1570,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, PendingLayer) {
   EXPECT_TRUE(pending_layer.known_to_be_opaque);
   EXPECT_BLINK_FLOAT_RECT_EQ(FloatRect(0, 0, 30, 40), pending_layer.bounds);
 
-  PaintChunk chunk2;
+  PaintChunk chunk2 = DefaultChunk();
   chunk2.properties.property_tree_state = chunk1.properties.property_tree_state;
   chunk2.properties.backface_hidden = true;
   chunk2.known_to_be_opaque = true;
@@ -1574,7 +1582,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, PendingLayer) {
   EXPECT_FALSE(pending_layer.known_to_be_opaque);
   EXPECT_BLINK_FLOAT_RECT_EQ(FloatRect(0, 0, 40, 60), pending_layer.bounds);
 
-  PaintChunk chunk3;
+  PaintChunk chunk3 = DefaultChunk();
   chunk3.properties.property_tree_state = chunk1.properties.property_tree_state;
   chunk3.properties.backface_hidden = true;
   chunk3.known_to_be_opaque = true;
@@ -1593,7 +1601,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, PendingLayerWithGeometry) {
           TransformationMatrix().Translate(20, 25), FloatPoint3D(100, 100, 0),
           false, 0);
 
-  PaintChunk chunk1;
+  PaintChunk chunk1 = DefaultChunk();
   chunk1.properties.property_tree_state = PropertyTreeState(
       TransformPaintPropertyNode::Root(), ClipPaintPropertyNode::Root(),
       EffectPaintPropertyNode::Root());
@@ -1603,7 +1611,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, PendingLayerWithGeometry) {
 
   EXPECT_BLINK_FLOAT_RECT_EQ(FloatRect(0, 0, 30, 40), pending_layer.bounds);
 
-  PaintChunk chunk2;
+  PaintChunk chunk2 = DefaultChunk();
   chunk2.properties.property_tree_state = chunk1.properties.property_tree_state;
   chunk2.properties.property_tree_state.SetTransform(transform);
   chunk2.bounds = FloatRect(0, 0, 50, 60);
@@ -1616,7 +1624,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees, PendingLayerWithGeometry) {
 // The test is disabled because opaque rect mapping is not implemented yet.
 TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
        PendingLayerKnownOpaque_DISABLED) {
-  PaintChunk chunk1;
+  PaintChunk chunk1 = DefaultChunk();
   chunk1.properties.property_tree_state = PropertyTreeState(
       TransformPaintPropertyNode::Root(), ClipPaintPropertyNode::Root(),
       EffectPaintPropertyNode::Root());
@@ -1626,7 +1634,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
 
   EXPECT_FALSE(pending_layer.known_to_be_opaque);
 
-  PaintChunk chunk2;
+  PaintChunk chunk2 = DefaultChunk();
   chunk2.properties.property_tree_state = chunk1.properties.property_tree_state;
   chunk2.bounds = FloatRect(0, 0, 25, 35);
   chunk2.known_to_be_opaque = true;
@@ -1635,7 +1643,7 @@ TEST_F(PaintArtifactCompositorTestWithPropertyTrees,
   // Chunk 2 doesn't cover the entire layer, so not opaque.
   EXPECT_FALSE(pending_layer.known_to_be_opaque);
 
-  PaintChunk chunk3;
+  PaintChunk chunk3 = DefaultChunk();
   chunk3.properties.property_tree_state = chunk1.properties.property_tree_state;
   chunk3.bounds = FloatRect(0, 0, 50, 60);
   chunk3.known_to_be_opaque = true;

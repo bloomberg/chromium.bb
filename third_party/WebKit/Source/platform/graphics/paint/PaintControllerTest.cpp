@@ -1122,12 +1122,10 @@ TEST_P(PaintControllerTest, CachedSubsequenceForcePaintChunk) {
   // Even though the paint properties match, |container| should receive its
   // own PaintChunk because it is a cached subsequence.
   EXPECT_EQ(2u, GetPaintController().GetPaintArtifact().PaintChunks().size());
-  EXPECT_EQ(
-      root,
-      GetPaintController().GetPaintArtifact().PaintChunks()[0].id->client);
-  EXPECT_EQ(
-      container,
-      GetPaintController().GetPaintArtifact().PaintChunks()[1].id->client);
+  EXPECT_EQ(root,
+            GetPaintController().GetPaintArtifact().PaintChunks()[0].id.client);
+  EXPECT_EQ(container,
+            GetPaintController().GetPaintArtifact().PaintChunks()[1].id.client);
 }
 
 TEST_P(PaintControllerTest, CachedSubsequenceSwapOrder) {

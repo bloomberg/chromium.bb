@@ -29,9 +29,14 @@ class PaintChunkerTest : public ::testing::Test,
   TestDisplayItemClient client_;
 };
 
+DisplayItem::Type DisplayItemType(int offset) {
+  return static_cast<DisplayItem::Type>(DisplayItem::kDrawingFirst + offset);
+}
+
 class TestDisplayItem : public DisplayItem {
  public:
-  TestDisplayItem(const DisplayItemClient& client, DisplayItem::Type type)
+  TestDisplayItem(const DisplayItemClient& client,
+                  DisplayItem::Type type = DisplayItem::kDrawingFirst)
       : DisplayItem(client, type, sizeof(*this)) {}
 
   void Replay(GraphicsContext&) const final { NOTREACHED(); }
@@ -39,12 +44,6 @@ class TestDisplayItem : public DisplayItem {
                                   WebDisplayItemList*) const final {
     NOTREACHED();
   }
-};
-
-class NormalTestDisplayItem : public TestDisplayItem {
- public:
-  NormalTestDisplayItem(const DisplayItemClient& client)
-      : TestDisplayItem(client, DisplayItem::kDrawingFirst) {}
 };
 
 class TestDisplayItemRequiringSeparateChunk : public TestDisplayItem {
@@ -60,51 +59,51 @@ TEST_F(PaintChunkerTest, Empty) {
 
 TEST_F(PaintChunkerTest, SingleNonEmptyRange) {
   PaintChunker chunker;
-  chunker.UpdateCurrentPaintChunkProperties(nullptr,
-                                            DefaultPaintChunkProperties());
-  chunker.IncrementDisplayItemIndex(NormalTestDisplayItem(client_));
-  chunker.IncrementDisplayItemIndex(NormalTestDisplayItem(client_));
+  PaintChunk::Id id(client_, DisplayItemType(1));
+  chunker.UpdateCurrentPaintChunkProperties(&id, DefaultPaintChunkProperties());
+  chunker.IncrementDisplayItemIndex(TestDisplayItem(client_));
+  chunker.IncrementDisplayItemIndex(TestDisplayItem(client_));
   Vector<PaintChunk> chunks = chunker.ReleasePaintChunks();
 
-  EXPECT_THAT(chunks, ElementsAre(PaintChunk(0, 2, nullptr,
-                                             DefaultPaintChunkProperties())));
+  EXPECT_THAT(chunks,
+              ElementsAre(PaintChunk(0, 2, id, DefaultPaintChunkProperties())));
 }
 
 TEST_F(PaintChunkerTest, SamePropertiesTwiceCombineIntoOneChunk) {
   PaintChunker chunker;
-  chunker.UpdateCurrentPaintChunkProperties(nullptr,
-                                            DefaultPaintChunkProperties());
-  chunker.IncrementDisplayItemIndex(NormalTestDisplayItem(client_));
-  chunker.IncrementDisplayItemIndex(NormalTestDisplayItem(client_));
-  chunker.UpdateCurrentPaintChunkProperties(nullptr,
-                                            DefaultPaintChunkProperties());
-  chunker.IncrementDisplayItemIndex(NormalTestDisplayItem(client_));
+  PaintChunk::Id id(client_, DisplayItemType(1));
+  chunker.UpdateCurrentPaintChunkProperties(&id, DefaultPaintChunkProperties());
+  chunker.IncrementDisplayItemIndex(TestDisplayItem(client_));
+  chunker.IncrementDisplayItemIndex(TestDisplayItem(client_));
+  chunker.UpdateCurrentPaintChunkProperties(&id, DefaultPaintChunkProperties());
+  chunker.IncrementDisplayItemIndex(TestDisplayItem(client_));
   Vector<PaintChunk> chunks = chunker.ReleasePaintChunks();
 
-  EXPECT_THAT(chunks, ElementsAre(PaintChunk(0, 3, nullptr,
-                                             DefaultPaintChunkProperties())));
+  EXPECT_THAT(chunks,
+              ElementsAre(PaintChunk(0, 3, id, DefaultPaintChunkProperties())));
 }
 
 TEST_F(PaintChunkerTest, CanRewindDisplayItemIndex) {
   PaintChunker chunker;
-  chunker.UpdateCurrentPaintChunkProperties(nullptr,
-                                            DefaultPaintChunkProperties());
-  chunker.IncrementDisplayItemIndex(NormalTestDisplayItem(client_));
-  chunker.IncrementDisplayItemIndex(NormalTestDisplayItem(client_));
+  PaintChunk::Id id(client_, DisplayItemType(1));
+  chunker.UpdateCurrentPaintChunkProperties(&id, DefaultPaintChunkProperties());
+  chunker.IncrementDisplayItemIndex(TestDisplayItem(client_));
+  chunker.IncrementDisplayItemIndex(TestDisplayItem(client_));
   chunker.DecrementDisplayItemIndex();
-  chunker.IncrementDisplayItemIndex(NormalTestDisplayItem(client_));
+  chunker.IncrementDisplayItemIndex(TestDisplayItem(client_));
   Vector<PaintChunk> chunks = chunker.ReleasePaintChunks();
 
-  EXPECT_THAT(chunks, ElementsAre(PaintChunk(0, 2, nullptr,
-                                             DefaultPaintChunkProperties())));
+  EXPECT_THAT(chunks,
+              ElementsAre(PaintChunk(0, 2, id, DefaultPaintChunkProperties())));
 }
 
 TEST_F(PaintChunkerTest, BuildMultipleChunksWithSinglePropertyChanging) {
   PaintChunker chunker;
-  chunker.UpdateCurrentPaintChunkProperties(nullptr,
+  PaintChunk::Id id1(client_, DisplayItemType(1));
+  chunker.UpdateCurrentPaintChunkProperties(&id1,
                                             DefaultPaintChunkProperties());
-  chunker.IncrementDisplayItemIndex(NormalTestDisplayItem(client_));
-  chunker.IncrementDisplayItemIndex(NormalTestDisplayItem(client_));
+  chunker.IncrementDisplayItemIndex(TestDisplayItem(client_));
+  chunker.IncrementDisplayItemIndex(TestDisplayItem(client_));
 
   PaintChunkProperties simple_transform = DefaultPaintChunkProperties();
   simple_transform.property_tree_state.SetTransform(
@@ -113,8 +112,9 @@ TEST_F(PaintChunkerTest, BuildMultipleChunksWithSinglePropertyChanging) {
                                          FloatPoint3D(9, 8, 7))
           .Get());
 
-  chunker.UpdateCurrentPaintChunkProperties(nullptr, simple_transform);
-  chunker.IncrementDisplayItemIndex(NormalTestDisplayItem(client_));
+  PaintChunk::Id id2(client_, DisplayItemType(2));
+  chunker.UpdateCurrentPaintChunkProperties(&id2, simple_transform);
+  chunker.IncrementDisplayItemIndex(TestDisplayItem(client_));
 
   PaintChunkProperties another_transform = DefaultPaintChunkProperties();
   another_transform.property_tree_state.SetTransform(
@@ -122,23 +122,24 @@ TEST_F(PaintChunkerTest, BuildMultipleChunksWithSinglePropertyChanging) {
                                          TransformationMatrix(0, 1, 2, 3, 4, 5),
                                          FloatPoint3D(9, 8, 7))
           .Get());
-  chunker.UpdateCurrentPaintChunkProperties(nullptr, another_transform);
-  chunker.IncrementDisplayItemIndex(NormalTestDisplayItem(client_));
+  PaintChunk::Id id3(client_, DisplayItemType(3));
+  chunker.UpdateCurrentPaintChunkProperties(&id3, another_transform);
+  chunker.IncrementDisplayItemIndex(TestDisplayItem(client_));
 
   Vector<PaintChunk> chunks = chunker.ReleasePaintChunks();
 
-  EXPECT_THAT(
-      chunks,
-      ElementsAre(PaintChunk(0, 2, nullptr, DefaultPaintChunkProperties()),
-                  PaintChunk(2, 3, nullptr, simple_transform),
-                  PaintChunk(3, 4, nullptr, another_transform)));
+  EXPECT_THAT(chunks,
+              ElementsAre(PaintChunk(0, 2, id1, DefaultPaintChunkProperties()),
+                          PaintChunk(2, 3, id2, simple_transform),
+                          PaintChunk(3, 4, id3, another_transform)));
 }
 
 TEST_F(PaintChunkerTest, BuildMultipleChunksWithDifferentPropertyChanges) {
   PaintChunker chunker;
-  chunker.UpdateCurrentPaintChunkProperties(nullptr,
+  PaintChunk::Id id1(client_, DisplayItemType(1));
+  chunker.UpdateCurrentPaintChunkProperties(&id1,
                                             DefaultPaintChunkProperties());
-  chunker.IncrementDisplayItemIndex(NormalTestDisplayItem(client_));
+  chunker.IncrementDisplayItemIndex(TestDisplayItem(client_));
 
   PaintChunkProperties simple_transform = DefaultPaintChunkProperties();
   simple_transform.property_tree_state.SetTransform(
@@ -146,9 +147,10 @@ TEST_F(PaintChunkerTest, BuildMultipleChunksWithDifferentPropertyChanges) {
                                          TransformationMatrix(0, 0, 0, 0, 0, 0),
                                          FloatPoint3D(9, 8, 7))
           .Get());
-  chunker.UpdateCurrentPaintChunkProperties(nullptr, simple_transform);
-  chunker.IncrementDisplayItemIndex(NormalTestDisplayItem(client_));
-  chunker.IncrementDisplayItemIndex(NormalTestDisplayItem(client_));
+  PaintChunk::Id id2(client_, DisplayItemType(2));
+  chunker.UpdateCurrentPaintChunkProperties(&id2, simple_transform);
+  chunker.IncrementDisplayItemIndex(TestDisplayItem(client_));
+  chunker.IncrementDisplayItemIndex(TestDisplayItem(client_));
 
   PaintChunkProperties simple_transform_and_effect =
       DefaultPaintChunkProperties();
@@ -156,10 +158,10 @@ TEST_F(PaintChunkerTest, BuildMultipleChunksWithDifferentPropertyChanges) {
       simple_transform.property_tree_state.Transform());
   simple_transform_and_effect.property_tree_state.SetEffect(
       CreateOpacityOnlyEffect(EffectPaintPropertyNode::Root(), 0.5f).Get());
-  chunker.UpdateCurrentPaintChunkProperties(nullptr,
-                                            simple_transform_and_effect);
-  chunker.IncrementDisplayItemIndex(NormalTestDisplayItem(client_));
-  chunker.IncrementDisplayItemIndex(NormalTestDisplayItem(client_));
+  PaintChunk::Id id3(client_, DisplayItemType(3));
+  chunker.UpdateCurrentPaintChunkProperties(&id3, simple_transform_and_effect);
+  chunker.IncrementDisplayItemIndex(TestDisplayItem(client_));
+  chunker.IncrementDisplayItemIndex(TestDisplayItem(client_));
 
   PaintChunkProperties simple_transform_and_effect_with_updated_transform =
       DefaultPaintChunkProperties();
@@ -174,40 +176,49 @@ TEST_F(PaintChunkerTest, BuildMultipleChunksWithDifferentPropertyChanges) {
                      simple_transform_and_effect.property_tree_state.Effect()
                          ->Opacity())
                      .Get());
+  PaintChunk::Id id4(client_, DisplayItemType(4));
   chunker.UpdateCurrentPaintChunkProperties(
-      nullptr, simple_transform_and_effect_with_updated_transform);
-  chunker.IncrementDisplayItemIndex(NormalTestDisplayItem(client_));
-  chunker.IncrementDisplayItemIndex(NormalTestDisplayItem(client_));
+      &id4, simple_transform_and_effect_with_updated_transform);
+  chunker.IncrementDisplayItemIndex(TestDisplayItem(client_));
+  chunker.IncrementDisplayItemIndex(TestDisplayItem(client_));
 
   // Test that going back to a previous chunk property still creates a new
   // chunk.
   chunker.UpdateCurrentPaintChunkProperties(nullptr,
                                             simple_transform_and_effect);
-  chunker.IncrementDisplayItemIndex(NormalTestDisplayItem(client_));
-  chunker.IncrementDisplayItemIndex(NormalTestDisplayItem(client_));
+  TestDisplayItem item_after_restore(client_, DisplayItemType(10));
+  chunker.IncrementDisplayItemIndex(item_after_restore);
+  chunker.IncrementDisplayItemIndex(TestDisplayItem(client_));
 
   Vector<PaintChunk> chunks = chunker.ReleasePaintChunks();
 
   EXPECT_THAT(
       chunks,
       ElementsAre(
-          PaintChunk(0, 1, nullptr, DefaultPaintChunkProperties()),
-          PaintChunk(1, 3, nullptr, simple_transform),
-          PaintChunk(3, 5, nullptr, simple_transform_and_effect),
-          PaintChunk(5, 7, nullptr,
+          PaintChunk(0, 1, id1, DefaultPaintChunkProperties()),
+          PaintChunk(1, 3, id2, simple_transform),
+          PaintChunk(3, 5, id3, simple_transform_and_effect),
+          PaintChunk(5, 7, id4,
                      simple_transform_and_effect_with_updated_transform),
-          PaintChunk(7, 9, nullptr, simple_transform_and_effect)));
+          PaintChunk(7, 9, item_after_restore.GetId(),
+                     simple_transform_and_effect, PaintChunk::kUncacheable)));
 }
 
 TEST_F(PaintChunkerTest, BuildChunksFromNestedTransforms) {
   // Test that "nested" transforms linearize using the following
   // sequence of transforms and display items:
-  // <root xform>, <paint>, <a xform>, <paint>, <paint>, </a xform>, <paint>,
+  // <root xform>
+  //   <paint>
+  //   <a xform>
+  //     <paint><paint>
+  //   </a xform>
+  //   <paint>
   // </root xform>
   PaintChunker chunker;
-  chunker.UpdateCurrentPaintChunkProperties(nullptr,
+  PaintChunk::Id id1(client_, DisplayItemType(1));
+  chunker.UpdateCurrentPaintChunkProperties(&id1,
                                             DefaultPaintChunkProperties());
-  chunker.IncrementDisplayItemIndex(NormalTestDisplayItem(client_));
+  chunker.IncrementDisplayItemIndex(TestDisplayItem(client_));
 
   PaintChunkProperties simple_transform = DefaultPaintChunkProperties();
   simple_transform.property_tree_state.SetTransform(
@@ -215,29 +226,33 @@ TEST_F(PaintChunkerTest, BuildChunksFromNestedTransforms) {
                                          TransformationMatrix(0, 1, 2, 3, 4, 5),
                                          FloatPoint3D(9, 8, 7))
           .Get());
-  chunker.UpdateCurrentPaintChunkProperties(nullptr, simple_transform);
-  chunker.IncrementDisplayItemIndex(NormalTestDisplayItem(client_));
-  chunker.IncrementDisplayItemIndex(NormalTestDisplayItem(client_));
+  PaintChunk::Id id2(client_, DisplayItemType(2));
+  chunker.UpdateCurrentPaintChunkProperties(&id2, simple_transform);
+  chunker.IncrementDisplayItemIndex(TestDisplayItem(client_));
+  chunker.IncrementDisplayItemIndex(TestDisplayItem(client_));
 
   chunker.UpdateCurrentPaintChunkProperties(nullptr,
                                             DefaultPaintChunkProperties());
-  chunker.IncrementDisplayItemIndex(NormalTestDisplayItem(client_));
+  TestDisplayItem item_after_restore(client_, DisplayItemType(10));
+  chunker.IncrementDisplayItemIndex(item_after_restore);
 
   Vector<PaintChunk> chunks = chunker.ReleasePaintChunks();
 
-  EXPECT_THAT(
-      chunks,
-      ElementsAre(PaintChunk(0, 1, nullptr, DefaultPaintChunkProperties()),
-                  PaintChunk(1, 3, nullptr, simple_transform),
-                  PaintChunk(3, 4, nullptr, DefaultPaintChunkProperties())));
+  EXPECT_THAT(chunks,
+              ElementsAre(PaintChunk(0, 1, id1, DefaultPaintChunkProperties()),
+                          PaintChunk(1, 3, id2, simple_transform),
+                          PaintChunk(3, 4, item_after_restore.GetId(),
+                                     DefaultPaintChunkProperties(),
+                                     PaintChunk::kUncacheable)));
 }
 
 TEST_F(PaintChunkerTest, ChangingPropertiesWithoutItems) {
   // Test that properties can change without display items being generated.
   PaintChunker chunker;
-  chunker.UpdateCurrentPaintChunkProperties(nullptr,
+  PaintChunk::Id id1(client_, DisplayItemType(1));
+  chunker.UpdateCurrentPaintChunkProperties(&id1,
                                             DefaultPaintChunkProperties());
-  chunker.IncrementDisplayItemIndex(NormalTestDisplayItem(client_));
+  chunker.IncrementDisplayItemIndex(TestDisplayItem(client_));
 
   PaintChunkProperties first_transform = DefaultPaintChunkProperties();
   first_transform.property_tree_state.SetTransform(
@@ -245,6 +260,7 @@ TEST_F(PaintChunkerTest, ChangingPropertiesWithoutItems) {
                                          TransformationMatrix(0, 1, 2, 3, 4, 5),
                                          FloatPoint3D(9, 8, 7))
           .Get());
+  PaintChunk::Id id2(client_, DisplayItemType(2));
   chunker.UpdateCurrentPaintChunkProperties(nullptr, first_transform);
 
   PaintChunkProperties second_transform = DefaultPaintChunkProperties();
@@ -253,109 +269,73 @@ TEST_F(PaintChunkerTest, ChangingPropertiesWithoutItems) {
                                          TransformationMatrix(9, 8, 7, 6, 5, 4),
                                          FloatPoint3D(3, 2, 1))
           .Get());
-  chunker.UpdateCurrentPaintChunkProperties(nullptr, second_transform);
+  PaintChunk::Id id3(client_, DisplayItemType(3));
+  chunker.UpdateCurrentPaintChunkProperties(&id3, second_transform);
 
-  chunker.IncrementDisplayItemIndex(NormalTestDisplayItem(client_));
+  chunker.IncrementDisplayItemIndex(TestDisplayItem(client_));
   Vector<PaintChunk> chunks = chunker.ReleasePaintChunks();
 
-  EXPECT_THAT(chunks, ElementsAre(PaintChunk(0, 1, nullptr,
-                                             DefaultPaintChunkProperties()),
-                                  PaintChunk(1, 2, nullptr, second_transform)));
+  EXPECT_THAT(chunks,
+              ElementsAre(PaintChunk(0, 1, id1, DefaultPaintChunkProperties()),
+                          PaintChunk(1, 2, id3, second_transform)));
 }
 
 TEST_F(PaintChunkerTest, CreatesSeparateChunksWhenRequested) {
   // Tests that the chunker creates a separate chunks for display items which
   // require it.
   PaintChunker chunker;
-  TestDisplayItemRequiringSeparateChunk i1(client_);
-  TestDisplayItemRequiringSeparateChunk i2(client_);
-  TestDisplayItemRequiringSeparateChunk i3(client_);
-  TestDisplayItemRequiringSeparateChunk i4(client_);
-  TestDisplayItemRequiringSeparateChunk i5(client_);
-  TestDisplayItemRequiringSeparateChunk i6(client_);
+  TestDisplayItemClient client1;
+  TestDisplayItemRequiringSeparateChunk i1(client1);
+  TestDisplayItemClient client2;
+  TestDisplayItemRequiringSeparateChunk i2(client2);
+  TestDisplayItemClient client3;
+  TestDisplayItemRequiringSeparateChunk i3(client3);
+  TestDisplayItemClient client4;
+  TestDisplayItemRequiringSeparateChunk i4(client4);
+  TestDisplayItemClient client5;
+  TestDisplayItemRequiringSeparateChunk i5(client5);
+  TestDisplayItemClient client6;
+  TestDisplayItemRequiringSeparateChunk i6(client6);
 
-  chunker.UpdateCurrentPaintChunkProperties(nullptr,
+  PaintChunk::Id id0(client_, DisplayItemType(0));
+  chunker.UpdateCurrentPaintChunkProperties(&id0,
                                             DefaultPaintChunkProperties());
-  chunker.IncrementDisplayItemIndex(NormalTestDisplayItem(client_));
+  chunker.IncrementDisplayItemIndex(TestDisplayItem(client_));
   chunker.IncrementDisplayItemIndex(i1);
   chunker.IncrementDisplayItemIndex(i2);
   chunker.IncrementDisplayItemIndex(i3);
-  chunker.IncrementDisplayItemIndex(NormalTestDisplayItem(client_));
-  chunker.IncrementDisplayItemIndex(NormalTestDisplayItem(client_));
+  TestDisplayItem after_i3(client_, DisplayItemType(10));
+  chunker.IncrementDisplayItemIndex(after_i3);
+  chunker.IncrementDisplayItemIndex(TestDisplayItem(client_));
   chunker.IncrementDisplayItemIndex(i4);
   chunker.IncrementDisplayItemIndex(i5);
   chunker.DecrementDisplayItemIndex();
   chunker.DecrementDisplayItemIndex();
   chunker.DecrementDisplayItemIndex();
-  chunker.IncrementDisplayItemIndex(NormalTestDisplayItem(client_));
+  chunker.IncrementDisplayItemIndex(TestDisplayItem(client_));
   chunker.IncrementDisplayItemIndex(i6);
 
-  DisplayItem::Id id1 = i1.GetId();
-  DisplayItem::Id id2 = i2.GetId();
-  DisplayItem::Id id3 = i3.GetId();
-  DisplayItem::Id id6 = i6.GetId();
   Vector<PaintChunk> chunks = chunker.ReleasePaintChunks();
   EXPECT_THAT(
       chunks,
-      ElementsAre(PaintChunk(0, 1, nullptr, DefaultPaintChunkProperties()),
-                  PaintChunk(1, 2, &id1, DefaultPaintChunkProperties()),
-                  PaintChunk(2, 3, &id2, DefaultPaintChunkProperties()),
-                  PaintChunk(3, 4, &id3, DefaultPaintChunkProperties()),
-                  PaintChunk(4, 6, nullptr, DefaultPaintChunkProperties()),
-                  PaintChunk(6, 7, &id6, DefaultPaintChunkProperties())));
-}
-
-TEST_F(PaintChunkerTest, ChunkIds) {
-  PaintChunker chunker;
-  TestDisplayItem i1(client_, DisplayItem::kDrawingFirst);
-  DisplayItem::Id id1 = i1.GetId();
-  TestDisplayItemRequiringSeparateChunk i2(client_);
-  DisplayItem::Id id2 = i2.GetId();
-
-  chunker.UpdateCurrentPaintChunkProperties(nullptr,
-                                            DefaultPaintChunkProperties());
-  chunker.IncrementDisplayItemIndex(NormalTestDisplayItem(client_));
-  chunker.IncrementDisplayItemIndex(NormalTestDisplayItem(client_));
-
-  PaintChunkProperties simple_transform = DefaultPaintChunkProperties();
-  simple_transform.property_tree_state.SetTransform(
-      TransformPaintPropertyNode::Create(nullptr,
-                                         TransformationMatrix(0, 1, 2, 3, 4, 5),
-                                         FloatPoint3D(9, 8, 7))
-          .Get());
-  chunker.UpdateCurrentPaintChunkProperties(&id1, simple_transform);
-
-  chunker.IncrementDisplayItemIndex(i1);
-  chunker.IncrementDisplayItemIndex(NormalTestDisplayItem(client_));
-  chunker.IncrementDisplayItemIndex(i2);
-  chunker.IncrementDisplayItemIndex(NormalTestDisplayItem(client_));
-
-  chunker.UpdateCurrentPaintChunkProperties(nullptr,
-                                            DefaultPaintChunkProperties());
-  chunker.IncrementDisplayItemIndex(NormalTestDisplayItem(client_));
-
-  Vector<PaintChunk> chunks = chunker.ReleasePaintChunks();
-  EXPECT_THAT(
-      chunks,
-      ElementsAre(PaintChunk(0, 2, nullptr, DefaultPaintChunkProperties()),
-                  PaintChunk(2, 4, &id1, simple_transform),
-                  PaintChunk(4, 5, &id2, simple_transform),
-                  PaintChunk(5, 6, nullptr, simple_transform),
-                  PaintChunk(6, 7, nullptr, DefaultPaintChunkProperties())));
+      ElementsAre(
+          PaintChunk(0, 1, id0, DefaultPaintChunkProperties()),
+          PaintChunk(1, 2, i1.GetId(), DefaultPaintChunkProperties()),
+          PaintChunk(2, 3, i2.GetId(), DefaultPaintChunkProperties()),
+          PaintChunk(3, 4, i3.GetId(), DefaultPaintChunkProperties()),
+          PaintChunk(4, 6, after_i3.GetId(), DefaultPaintChunkProperties(),
+                     PaintChunk::kUncacheable),
+          PaintChunk(6, 7, i6.GetId(), DefaultPaintChunkProperties())));
 }
 
 TEST_F(PaintChunkerTest, ChunkIdsSkippingCache) {
   PaintChunker chunker;
-  TestDisplayItem i1(client_, DisplayItem::kDrawingFirst);
-  i1.SetSkippedCache();
-  DisplayItem::Id id1 = i1.GetId();
-  TestDisplayItemRequiringSeparateChunk i2(client_);
-  i2.SetSkippedCache();
 
-  chunker.UpdateCurrentPaintChunkProperties(nullptr,
+  PaintChunk::Id id1(client_, DisplayItemType(1));
+  chunker.UpdateCurrentPaintChunkProperties(&id1,
                                             DefaultPaintChunkProperties());
-  chunker.IncrementDisplayItemIndex(NormalTestDisplayItem(client_));
-  chunker.IncrementDisplayItemIndex(NormalTestDisplayItem(client_));
+  chunker.IncrementDisplayItemIndex(TestDisplayItem(client_));
+  chunker.IncrementDisplayItemIndex(TestDisplayItem(client_));
 
   PaintChunkProperties simple_transform = DefaultPaintChunkProperties();
   simple_transform.property_tree_state.SetTransform(
@@ -363,25 +343,39 @@ TEST_F(PaintChunkerTest, ChunkIdsSkippingCache) {
                                          TransformationMatrix(0, 1, 2, 3, 4, 5),
                                          FloatPoint3D(9, 8, 7))
           .Get());
-  chunker.UpdateCurrentPaintChunkProperties(&id1, simple_transform);
+  PaintChunk::Id id2(client_, DisplayItemType(2));
+  chunker.UpdateCurrentPaintChunkProperties(&id2, simple_transform);
 
-  chunker.IncrementDisplayItemIndex(i1);
-  chunker.IncrementDisplayItemIndex(NormalTestDisplayItem(client_));
-  chunker.IncrementDisplayItemIndex(i2);
-  chunker.IncrementDisplayItemIndex(NormalTestDisplayItem(client_));
+  TestDisplayItem uncacheable_item(client_);
+  uncacheable_item.SetSkippedCache();
+  chunker.IncrementDisplayItemIndex(uncacheable_item);
+  chunker.IncrementDisplayItemIndex(TestDisplayItem(client_));
+
+  TestDisplayItemRequiringSeparateChunk uncacheable_separate_chunk_item(
+      client_);
+  uncacheable_separate_chunk_item.SetSkippedCache();
+  chunker.IncrementDisplayItemIndex(uncacheable_separate_chunk_item);
+
+  TestDisplayItem after_separate_chunk(client_, DisplayItemType(3));
+  chunker.IncrementDisplayItemIndex(after_separate_chunk);
 
   chunker.UpdateCurrentPaintChunkProperties(nullptr,
                                             DefaultPaintChunkProperties());
-  chunker.IncrementDisplayItemIndex(NormalTestDisplayItem(client_));
+  TestDisplayItem after_restore(client_, DisplayItemType(4));
+  chunker.IncrementDisplayItemIndex(after_restore);
 
   Vector<PaintChunk> chunks = chunker.ReleasePaintChunks();
   EXPECT_THAT(
       chunks,
-      ElementsAre(PaintChunk(0, 2, nullptr, DefaultPaintChunkProperties()),
-                  PaintChunk(2, 4, nullptr, simple_transform),
-                  PaintChunk(4, 5, nullptr, simple_transform),
-                  PaintChunk(5, 6, nullptr, simple_transform),
-                  PaintChunk(6, 7, nullptr, DefaultPaintChunkProperties())));
+      ElementsAre(
+          PaintChunk(0, 2, id1, DefaultPaintChunkProperties()),
+          PaintChunk(2, 4, id2, simple_transform, PaintChunk::kUncacheable),
+          PaintChunk(4, 5, uncacheable_separate_chunk_item.GetId(),
+                     simple_transform, PaintChunk::kUncacheable),
+          PaintChunk(5, 6, after_separate_chunk.GetId(), simple_transform,
+                     PaintChunk::kUncacheable),
+          PaintChunk(6, 7, after_restore.GetId(), DefaultPaintChunkProperties(),
+                     PaintChunk::kUncacheable)));
 }
 
 }  // namespace
