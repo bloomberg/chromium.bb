@@ -30,9 +30,9 @@ std::string ClearServerDataResponseEvent::GetDetails() const {
 }
 
 std::unique_ptr<base::DictionaryValue>
-ClearServerDataResponseEvent::GetProtoMessage() const {
+ClearServerDataResponseEvent::GetProtoMessage(bool include_specifics) const {
   return std::unique_ptr<base::DictionaryValue>(
-      ClientToServerResponseToValue(response_, false));
+      ClientToServerResponseToValue(response_, include_specifics));
 }
 
 std::unique_ptr<ProtocolEvent> ClearServerDataResponseEvent::Clone() const {

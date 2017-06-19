@@ -29,10 +29,10 @@ std::string CommitResponseEvent::GetDetails() const {
   return base::StringPrintf("Result: %s", GetSyncerErrorString(result_));
 }
 
-std::unique_ptr<base::DictionaryValue> CommitResponseEvent::GetProtoMessage()
-    const {
+std::unique_ptr<base::DictionaryValue> CommitResponseEvent::GetProtoMessage(
+    bool include_specifics) const {
   return std::unique_ptr<base::DictionaryValue>(
-      ClientToServerResponseToValue(response_, false));
+      ClientToServerResponseToValue(response_, include_specifics));
 }
 
 std::unique_ptr<ProtocolEvent> CommitResponseEvent::Clone() const {

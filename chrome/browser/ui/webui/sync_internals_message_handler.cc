@@ -109,6 +109,11 @@ void SyncInternalsMessageHandler::RegisterMessages() {
           base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
+      syncer::sync_ui_util::kSetIncludeSpecifics,
+      base::Bind(&SyncInternalsMessageHandler::HandleSetIncludeSpecifics,
+                 base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
       syncer::sync_ui_util::kWriteUserEvent,
       base::Bind(&SyncInternalsMessageHandler::HandleWriteUserEvent,
                  base::Unretained(this)));
@@ -208,6 +213,13 @@ void SyncInternalsMessageHandler::HandleRequestUserEventsVisibility(
       Value(base::FeatureList::IsEnabled(switches::kSyncUserEvents)));
 }
 
+void SyncInternalsMessageHandler::HandleSetIncludeSpecifics(
+    const ListValue* args) {
+  DCHECK_EQ(1U, args->GetSize());
+  AllowJavascript();
+  include_specifics_ = args->GetList()[0].GetBool();
+}
+
 void SyncInternalsMessageHandler::HandleWriteUserEvent(
     const base::ListValue* args) {
   DCHECK_EQ(2U, args->GetSize());
@@ -236,7 +248,8 @@ void SyncInternalsMessageHandler::OnStateChanged(SyncService* sync) {
 
 void SyncInternalsMessageHandler::OnProtocolEvent(
     const syncer::ProtocolEvent& event) {
-  std::unique_ptr<DictionaryValue> value(syncer::ProtocolEvent::ToValue(event));
+  std::unique_ptr<DictionaryValue> value(
+      syncer::ProtocolEvent::ToValue(event, include_specifics_));
   DispatchEvent(syncer::sync_ui_util::kOnProtocolEvent, *value);
 }
 

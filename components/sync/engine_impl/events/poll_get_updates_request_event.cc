@@ -28,9 +28,9 @@ std::string PollGetUpdatesRequestEvent::GetDetails() const {
 }
 
 std::unique_ptr<base::DictionaryValue>
-PollGetUpdatesRequestEvent::GetProtoMessage() const {
+PollGetUpdatesRequestEvent::GetProtoMessage(bool include_specifics) const {
   return std::unique_ptr<base::DictionaryValue>(
-      ClientToServerMessageToValue(request_, false));
+      ClientToServerMessageToValue(request_, include_specifics));
 }
 
 std::unique_ptr<ProtocolEvent> PollGetUpdatesRequestEvent::Clone() const {

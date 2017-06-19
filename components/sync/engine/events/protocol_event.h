@@ -44,7 +44,8 @@ class ProtocolEvent {
 
   // Returns a DictionaryValue representing the protobuf message associated with
   // this event.
-  virtual std::unique_ptr<base::DictionaryValue> GetProtoMessage() const = 0;
+  virtual std::unique_ptr<base::DictionaryValue> GetProtoMessage(
+      bool include_specifics) const = 0;
 
   // Need a virtual copy contructor to copy this object across threads.
   virtual std::unique_ptr<ProtocolEvent> Clone() const = 0;
@@ -52,7 +53,8 @@ class ProtocolEvent {
   // A static function that assembles the data exposed through the
   // ProtocolEvent's interface into a single DictionaryValue.
   static std::unique_ptr<base::DictionaryValue> ToValue(
-      const ProtocolEvent& event);
+      const ProtocolEvent& event,
+      bool include_specifics);
 };
 
 }  // namespace syncer

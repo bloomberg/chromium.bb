@@ -29,9 +29,9 @@ std::string ClearServerDataRequestEvent::GetDetails() const {
 }
 
 std::unique_ptr<base::DictionaryValue>
-ClearServerDataRequestEvent::GetProtoMessage() const {
+ClearServerDataRequestEvent::GetProtoMessage(bool include_specifics) const {
   return std::unique_ptr<base::DictionaryValue>(
-      ClientToServerMessageToValue(request_, false));
+      ClientToServerMessageToValue(request_, include_specifics));
 }
 
 std::unique_ptr<ProtocolEvent> ClearServerDataRequestEvent::Clone() const {

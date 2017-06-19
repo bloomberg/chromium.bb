@@ -31,7 +31,8 @@ class NormalGetUpdatesRequestEvent : public ProtocolEvent {
   base::Time GetTimestamp() const override;
   std::string GetType() const override;
   std::string GetDetails() const override;
-  std::unique_ptr<base::DictionaryValue> GetProtoMessage() const override;
+  std::unique_ptr<base::DictionaryValue> GetProtoMessage(
+      bool include_specifics) const override;
   std::unique_ptr<ProtocolEvent> Clone() const override;
 
  private:
