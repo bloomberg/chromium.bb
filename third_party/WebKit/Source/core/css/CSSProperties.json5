@@ -1244,7 +1244,7 @@
       name: "flex-wrap",
       type_name: "EFlexWrap",
       field_template: "storage_only",
-      default_value: "kFlexNoWrap",
+      default_value: "EFlexWrap::kNowrap",
       field_size: 2,
       field_group: "rare-non-inherited->flexible-box",
     },

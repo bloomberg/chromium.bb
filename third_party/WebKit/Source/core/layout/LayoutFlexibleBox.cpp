@@ -428,7 +428,7 @@ void LayoutFlexibleBox::RepositionLogicalHeightDependentFlexItems(
 
   AlignChildren(line_contexts);
 
-  if (Style()->FlexWrap() == kFlexWrapReverse)
+  if (Style()->FlexWrap() == EFlexWrap::kWrapReverse)
     FlipForWrapReverse(line_contexts, cross_axis_start_edge);
 
   // direction:rtl + flex-direction:column means the cross-axis direction is
@@ -477,7 +477,7 @@ bool LayoutFlexibleBox::IsLeftToRightFlow() const {
 }
 
 bool LayoutFlexibleBox::IsMultiline() const {
-  return Style()->FlexWrap() != kFlexNoWrap;
+  return Style()->FlexWrap() != EFlexWrap::kNowrap;
 }
 
 Length LayoutFlexibleBox::FlexBasisForChild(const LayoutBox& child) const {
@@ -1643,7 +1643,7 @@ LayoutUnit LayoutFlexibleBox::StaticCrossAxisPositionForPositionedChild(
       CrossAxisContentExtent() - CrossAxisExtentForChild(child);
   return AlignmentOffset(available_space, AlignmentForChild(child),
                          LayoutUnit(), LayoutUnit(),
-                         StyleRef().FlexWrap() == kFlexWrapReverse);
+                         StyleRef().FlexWrap() == EFlexWrap::kWrapReverse);
 }
 
 LayoutUnit LayoutFlexibleBox::StaticInlinePositionForPositionedChild(
@@ -1717,7 +1717,7 @@ ItemPosition LayoutFlexibleBox::AlignmentForChild(
   if (align == kItemPositionBaseline && HasOrthogonalFlow(child))
     align = kItemPositionFlexStart;
 
-  if (Style()->FlexWrap() == kFlexWrapReverse) {
+  if (Style()->FlexWrap() == EFlexWrap::kWrapReverse) {
     if (align == kItemPositionFlexStart)
       align = kItemPositionFlexEnd;
     else if (align == kItemPositionFlexEnd)
@@ -2055,10 +2055,10 @@ void LayoutFlexibleBox::AlignChildren(
           line_cross_axis_extent, *flex_item.box);
       LayoutUnit offset = AlignmentOffset(
           available_space, position, MarginBoxAscentForChild(*flex_item.box),
-          max_ascent, StyleRef().FlexWrap() == kFlexWrapReverse);
+          max_ascent, StyleRef().FlexWrap() == EFlexWrap::kWrapReverse);
       AdjustAlignmentForChild(*flex_item.box, offset);
       if (position == kItemPositionBaseline &&
-          StyleRef().FlexWrap() == kFlexWrapReverse) {
+          StyleRef().FlexWrap() == EFlexWrap::kWrapReverse) {
         min_margin_after_baseline =
             std::min(min_margin_after_baseline,
                      AvailableAlignmentSpaceForChild(line_cross_axis_extent,
@@ -2069,7 +2069,7 @@ void LayoutFlexibleBox::AlignChildren(
     min_margin_after_baselines.push_back(min_margin_after_baseline);
   }
 
-  if (Style()->FlexWrap() != kFlexWrapReverse)
+  if (Style()->FlexWrap() != EFlexWrap::kWrapReverse)
     return;
 
   // wrap-reverse flips the cross axis start and end. For baseline alignment,

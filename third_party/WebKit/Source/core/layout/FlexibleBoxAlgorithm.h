@@ -93,7 +93,7 @@ class FlexLayoutAlgorithm {
                            LayoutUnit& sum_hypothetical_main_size);
 
  private:
-  bool IsMultiline() const { return style_->FlexWrap() != kFlexNoWrap; }
+  bool IsMultiline() const { return style_->FlexWrap() != EFlexWrap::kNowrap; }
 
   const ComputedStyle* style_;
   LayoutUnit line_break_length_;

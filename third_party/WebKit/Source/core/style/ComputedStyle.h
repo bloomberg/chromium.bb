@@ -770,13 +770,14 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // flex-wrap (aka -webkit-flex-wrap)
-  static EFlexWrap InitialFlexWrap() { return kFlexNoWrap; }
+  static EFlexWrap InitialFlexWrap() { return EFlexWrap::kNowrap; }
   EFlexWrap FlexWrap() const {
     return static_cast<EFlexWrap>(
         rare_non_inherited_data_->flexible_box_data_->flex_wrap_);
   }
   void SetFlexWrap(EFlexWrap w) {
-    SET_NESTED_VAR(rare_non_inherited_data_, flexible_box_data_, flex_wrap_, w);
+    SET_NESTED_VAR(rare_non_inherited_data_, flexible_box_data_, flex_wrap_,
+                   static_cast<unsigned>(w));
   }
 
   // -webkit-box-ordinal-group
