@@ -12,16 +12,23 @@
 #import "chrome/browser/ui/cocoa/menu_button.h"
 #include "chrome/browser/ui/toolbar/app_menu_icon_controller.h"
 
+class AnimatedIcon;
+
 // Button for the app toolbar button.
 @interface AppToolbarButton : MenuButton {
  @private
   AppMenuIconController::Severity severity_;
   AppMenuIconController::IconType type_;
+
+  // Used for animating and drawing the icon.
+  std::unique_ptr<AnimatedIcon> animatedIcon_;
 }
 
 - (void)setSeverity:(AppMenuIconController::Severity)severity
            iconType:(AppMenuIconController::IconType)iconType
       shouldAnimate:(BOOL)shouldAnimate;
+
+- (void)animateIfPossible;
 
 @end
 
