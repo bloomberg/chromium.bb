@@ -64,6 +64,8 @@ public class SingleWebsitePreferences extends PreferenceFragment
     public static final String PREF_OS_PERMISSIONS_WARNING_EXTRA = "os_permissions_warning_extra";
     public static final String PREF_OS_PERMISSIONS_WARNING_DIVIDER =
             "os_permissions_warning_divider";
+    public static final String PREF_INTRUSIVE_ADS_INFO = "intrusive_ads_info";
+    public static final String PREF_INTRUSIVE_ADS_INFO_DIVIDER = "intrusive_ads_info_divider";
     // Actions at the top (if adding new, see hasUsagePreferences below):
     public static final String PREF_CLEAR_DATA = "clear_data";
     // Buttons:
@@ -284,6 +286,8 @@ public class SingleWebsitePreferences extends PreferenceFragment
         setUpUsbPreferences(maxPermissionOrder);
         setUpOsWarningPreferences();
 
+        setUpAdsInformationalBanner();
+
         // Remove categories if no sub-items.
         if (!hasUsagePreferences()) {
             Preference heading = preferenceScreen.findPreference(PREF_USAGE);
@@ -387,6 +391,24 @@ public class SingleWebsitePreferences extends PreferenceFragment
                 preferenceScreen.removePreference(
                         preferenceScreen.findPreference(PREF_OS_PERMISSIONS_WARNING_EXTRA));
             }
+        }
+    }
+
+    private void setUpAdsInformationalBanner() {
+        // Add the informational banner which shows at the top of the UI if ad blocking is
+        // activated on this site.
+        PreferenceScreen preferenceScreen = getPreferenceScreen();
+        boolean adBlockingActivated = SiteSettingsCategory.adsCategoryEnabled()
+                && WebsitePreferenceBridge.getAdBlockingActivated(mSite.getAddress().getOrigin())
+                && preferenceScreen.findPreference(PREF_ADS_PERMISSION) != null;
+
+        if (!adBlockingActivated) {
+            Preference intrusiveAdsInfo = preferenceScreen.findPreference(PREF_INTRUSIVE_ADS_INFO);
+            Preference intrusiveAdsInfoDivider =
+                    preferenceScreen.findPreference(PREF_INTRUSIVE_ADS_INFO_DIVIDER);
+
+            preferenceScreen.removePreference(intrusiveAdsInfo);
+            preferenceScreen.removePreference(intrusiveAdsInfoDivider);
         }
     }
 
