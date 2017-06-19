@@ -39,7 +39,6 @@ import java.util.concurrent.TimeoutException;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
         ChromeActivityTestRule.DISABLE_NETWORK_PREDICTION_FLAG, "enable-features=VrShell"})
-@Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
 public class VrShellTransitionTest {
     @Rule
     public VrTestRule mVrTestRule = new VrTestRule();
@@ -127,6 +126,7 @@ public class VrShellTransitionTest {
      */
     @Test
     @CommandLineFlags.Add("enable-webvr")
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     @MediumTest
     public void testExitPresentationWebVrToVrShell()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
