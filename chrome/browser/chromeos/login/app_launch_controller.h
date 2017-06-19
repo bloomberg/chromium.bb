@@ -58,9 +58,10 @@ class AppLaunchController : public AppLaunchSplashScreenView::Delegate,
   static void SetNetworkTimeoutCallbackForTesting(base::Closure* callback);
   static void SetNetworkWaitForTesting(int wait_time_secs);
   static void SetCanConfigureNetworkCallbackForTesting(
-      ReturnBoolCallback* can_configure_network_callback);
+      ReturnBoolCallback* callback);
   static void SetNeedOwnerAuthToConfigureNetworkCallbackForTesting(
-      ReturnBoolCallback* need_owner_auth_callback);
+      ReturnBoolCallback* callback);
+  static void SetBlockAppLaunchForTesting(bool block);
 
  private:
   // A class to watch app window creation.
@@ -142,12 +143,6 @@ class AppLaunchController : public AppLaunchSplashScreenView::Delegate,
   bool network_config_requested_ = false;
   bool show_network_config_ui_after_profile_load_ = false;
   int64_t launch_splash_start_time_ = 0;
-
-  static bool skip_splash_wait_;
-  static int network_wait_time_;
-  static base::Closure* network_timeout_callback_;
-  static ReturnBoolCallback* can_configure_network_callback_;
-  static ReturnBoolCallback* need_owner_auth_to_configure_network_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(AppLaunchController);
 };
