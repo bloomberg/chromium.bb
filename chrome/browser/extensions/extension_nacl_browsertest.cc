@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/test_extension_dir.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -17,6 +18,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/plugin_service.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/webplugininfo.h"
 #include "content/public/test/browser_test_utils.h"
@@ -208,6 +210,65 @@ IN_PROC_BROWSER_TEST_F(NaClExtensionTest, HostedApp) {
   const Extension* extension = InstallHostedApp();
   ASSERT_TRUE(extension);
   CheckPluginsCreated(url, PLUGIN_TYPE_ALL);
+}
+
+// Verify that there is no renderer crash when PNaCl plugin is loaded in a
+// subframe with a remote parent / main frame.  This is a regression test
+// for https://crbug.com/728295.
+IN_PROC_BROWSER_TEST_F(NaClExtensionTest, MainFrameIsRemote) {
+  // The test tries to load a PNaCl plugin into an *extension* frame to avoid
+  // running into the following error: "Only unpacked extensions and apps
+  // installed from the Chrome Web Store can load NaCl modules without enabling
+  // Native Client in about:flags."
+  extensions::TestExtensionDir ext_dir;
+  ext_dir.WriteFile(FILE_PATH_LITERAL("subframe.html"),
+                    "<html><body>Extension frame</body></html>");
+  ext_dir.WriteManifest(
+      R"(
+      {
+        "name": "ChromeSitePerProcessTest.MainFrameIsRemote",
+        "version": "0.1",
+        "manifest_version": 2,
+        "web_accessible_resources": [ "subframe.html" ]
+      }
+      )");
+  const extensions::Extension* extension =
+      LoadExtension(ext_dir.UnpackedPath());
+
+  // Navigate to a page with an iframe.
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/iframe.html"));
+  ui_test_utils::NavigateToURL(browser(), main_url);
+
+  // Navigate the subframe to the extension's html file.
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(content::NavigateIframeToURL(
+      web_contents, "test", extension->GetResourceURL("subframe.html")));
+
+  // Sanity check - the test setup should cause main frame and subframe to be in
+  // a different process.
+  content::RenderFrameHost* subframe = web_contents->GetAllFrames()[1];
+  EXPECT_NE(web_contents->GetMainFrame()->GetProcess(), subframe->GetProcess());
+
+  // Insert a plugin element into the subframe.  Before the fix from
+  // https://crrev.com/2932703005 this would have trigerred a crash reported in
+  // https://crbug.com/728295.
+  std::string script = R"(
+      var embed = document.createElement("embed");
+      embed.id = "test_nexe";
+      embed.name = "nacl_module";
+      embed.type = "application/x-pnacl";
+      embed.src = "doesnt-exist.nmf";
+      embed.addEventListener('error', function() {
+          window.domAutomationController.send(true);
+      });
+      document.body.appendChild(embed); )";
+  bool done;
+  EXPECT_TRUE(ExecuteScriptAndExtractBool(subframe, script, &done));
+
+  // If we get here, then it means that the renderer didn't crash (the crash
+  // would have prevented the "error" event from firing and so
+  // ExecuteScriptAndExtractBool above wouldn't return).
 }
 
 }  // namespace
