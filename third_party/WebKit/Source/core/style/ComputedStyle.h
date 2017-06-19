@@ -625,17 +625,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
                    InitialColumnCount());
   }
 
-  // column-fill
-  static EColumnFill InitialColumnFill() { return EColumnFill::kBalance; }
-  EColumnFill GetColumnFill() const {
-    return static_cast<EColumnFill>(
-        rare_non_inherited_data_->multi_col_data_->column_fill_);
-  }
-  void SetColumnFill(EColumnFill column_fill) {
-    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_, column_fill_,
-                   static_cast<unsigned>(column_fill));
-  }
-
   // column-gap (aka -webkit-column-gap)
   float ColumnGap() const {
     return rare_non_inherited_data_->multi_col_data_->column_gap_;
@@ -682,17 +671,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   void SetColumnRuleWidth(unsigned short w) {
     SET_NESTED_BORDER_WIDTH(rare_non_inherited_data_, multi_col_data_,
                             column_rule_, w);
-  }
-
-  // column-span (aka -webkit-column-span)
-  static EColumnSpan InitialColumnSpan() { return EColumnSpan::kNone; }
-  EColumnSpan GetColumnSpan() const {
-    return static_cast<EColumnSpan>(
-        rare_non_inherited_data_->multi_col_data_->column_span_);
-  }
-  void SetColumnSpan(EColumnSpan column_span) {
-    SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_, column_span_,
-                   static_cast<unsigned>(column_span));
   }
 
   // column-width (aka -webkit-column-width)
