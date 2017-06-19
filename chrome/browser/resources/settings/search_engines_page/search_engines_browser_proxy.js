@@ -125,7 +125,9 @@ cr.define('settings', function() {
     /** @override */
     searchEngineEditCompleted: function(searchEngine, keyword, queryUrl) {
       chrome.send('searchEngineEditCompleted', [
-        searchEngine, keyword, queryUrl,
+        searchEngine,
+        keyword,
+        queryUrl,
       ]);
     },
 

@@ -26,44 +26,50 @@ var CookieDataForDisplay;
 // 2) What order to show it in.
 // 3) What user friendly label to prefix the data with.
 /** @const */ var cookieInfo = {
-  'cookie': [['name', 'cookieName'],
-             ['content', 'cookieContent'],
-             ['domain', 'cookieDomain'],
-             ['path', 'cookiePath'],
-             ['sendfor', 'cookieSendFor'],
-             ['accessibleToScript', 'cookieAccessibleToScript'],
-             ['created', 'cookieCreated'],
-             ['expires', 'cookieExpires']],
-  'app_cache': [['manifest', 'appCacheManifest'],
-                ['size', 'localStorageSize'],
-                ['created', 'cookieCreated'],
-                ['accessed', 'cookieLastAccessed']],
-  'database': [['name', 'cookieName'],
-               ['desc', 'webdbDesc'],
-               ['size', 'localStorageSize'],
-               ['modified', 'localStorageLastModified']],
-  'local_storage': [['origin', 'localStorageOrigin'],
-                    ['size', 'localStorageSize'],
-                    ['modified', 'localStorageLastModified']],
-  'indexed_db': [['origin', 'indexedDbOrigin'],
-                 ['size', 'indexedDbSize'],
-                 ['modified', 'indexedDbLastModified']],
-  'file_system': [['origin', 'fileSystemOrigin'],
-                  ['persistent', 'fileSystemPersistentUsage'],
-                  ['temporary', 'fileSystemTemporaryUsage']],
-  'channel_id': [['serverId', 'channelIdServerId'],
-                 ['certType', 'channelIdType'],
-                 ['created', 'channelIdCreated']],
-  'service_worker': [['origin', 'serviceWorkerOrigin'],
-                     ['size', 'serviceWorkerSize'],
-                     ['scopes', 'serviceWorkerScopes']],
-  'cache_storage': [['origin', 'cacheStorageOrigin'],
-                    ['size', 'cacheStorageSize'],
-                    ['modified', 'cacheStorageLastModified']],
+  'cookie': [
+    ['name', 'cookieName'], ['content', 'cookieContent'],
+    ['domain', 'cookieDomain'], ['path', 'cookiePath'],
+    ['sendfor', 'cookieSendFor'],
+    ['accessibleToScript', 'cookieAccessibleToScript'],
+    ['created', 'cookieCreated'], ['expires', 'cookieExpires']
+  ],
+  'app_cache': [
+    ['manifest', 'appCacheManifest'], ['size', 'localStorageSize'],
+    ['created', 'cookieCreated'], ['accessed', 'cookieLastAccessed']
+  ],
+  'database': [
+    ['name', 'cookieName'], ['desc', 'webdbDesc'], ['size', 'localStorageSize'],
+    ['modified', 'localStorageLastModified']
+  ],
+  'local_storage': [
+    ['origin', 'localStorageOrigin'], ['size', 'localStorageSize'],
+    ['modified', 'localStorageLastModified']
+  ],
+  'indexed_db': [
+    ['origin', 'indexedDbOrigin'], ['size', 'indexedDbSize'],
+    ['modified', 'indexedDbLastModified']
+  ],
+  'file_system': [
+    ['origin', 'fileSystemOrigin'], ['persistent', 'fileSystemPersistentUsage'],
+    ['temporary', 'fileSystemTemporaryUsage']
+  ],
+  'channel_id': [
+    ['serverId', 'channelIdServerId'], ['certType', 'channelIdType'],
+    ['created', 'channelIdCreated']
+  ],
+  'service_worker': [
+    ['origin', 'serviceWorkerOrigin'], ['size', 'serviceWorkerSize'],
+    ['scopes', 'serviceWorkerScopes']
+  ],
+  'cache_storage': [
+    ['origin', 'cacheStorageOrigin'], ['size', 'cacheStorageSize'],
+    ['modified', 'cacheStorageLastModified']
+  ],
   'flash_lso': [['domain', 'cookieDomain']],
-  'media_license': [['origin', 'mediaLicenseOrigin'],
-                    ['size', 'mediaLicenseSize'],
-                    ['modified', 'mediaLicenseLastModified']],
+  'media_license': [
+    ['origin', 'mediaLicenseOrigin'], ['size', 'mediaLicenseSize'],
+    ['modified', 'mediaLicenseLastModified']
+  ],
 };
 
 /**
@@ -82,7 +88,7 @@ var getCookieData = function(data) {
     // (in the order determined by |cookieInfo|).
     var key = field[0];
     if (data[key].length > 0) {
-      var entry = /** @type {CookieDataForDisplay} */({
+      var entry = /** @type {CookieDataForDisplay} */ ({
         label: loadTimeData.getString(field[1]),
         content: data[key],
       });

@@ -106,11 +106,12 @@ Polymer({
       return;
     }
 
-    this.browserProxy_.validateSearchEngineInput(
-        inputElement.id, inputElement.value).then(function(isValid) {
-      inputElement.invalid = !isValid;
-      this.updateActionButtonState_();
-    }.bind(this));
+    this.browserProxy_
+        .validateSearchEngineInput(inputElement.id, inputElement.value)
+        .then(function(isValid) {
+          inputElement.invalid = !isValid;
+          this.updateActionButtonState_();
+        }.bind(this));
   },
 
   /** @private */

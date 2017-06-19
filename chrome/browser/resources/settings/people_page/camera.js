@@ -13,10 +13,7 @@
  * Dimensions for camera capture.
  * @const
  */
-var CAPTURE_SIZE = {
-  height: 480,
-  width: 480
-};
+var CAPTURE_SIZE = {height: 480, width: 480};
 
 Polymer({
   is: 'settings-camera',
@@ -153,8 +150,8 @@ Polymer({
     this.isFlipped_ = !this.isFlipped_;
     this.$.userImageStreamCrop.classList.toggle('flip-x', this.isFlipped_);
 
-    var flipMessageId = this.isFlipped_ ?
-       'photoFlippedAccessibleText' : 'photoFlippedBackAccessibleText';
+    var flipMessageId = this.isFlipped_ ? 'photoFlippedAccessibleText' :
+                                          'photoFlippedBackAccessibleText';
     announceAccessibleMessage(loadTimeData.getString(flipMessageId));
   },
 
@@ -169,8 +166,8 @@ Polymer({
     var width = video.videoWidth;
     var height = video.videoHeight;
     if (width < CAPTURE_SIZE.width || height < CAPTURE_SIZE.height) {
-      console.error('Video capture size too small: ' +
-                    width + 'x' + height + '!');
+      console.error(
+          'Video capture size too small: ' + width + 'x' + height + '!');
     }
     var src = {};
     if (width / CAPTURE_SIZE.width > height / CAPTURE_SIZE.height) {
@@ -184,8 +181,9 @@ Polymer({
     }
     src.x = (width - src.width) / 2;
     src.y = (height - src.height) / 2;
-    ctx.drawImage(video, src.x, src.y, src.width, src.height,
-                  0, 0, CAPTURE_SIZE.width, CAPTURE_SIZE.height);
+    ctx.drawImage(
+        video, src.x, src.y, src.width, src.height, 0, 0, CAPTURE_SIZE.width,
+        CAPTURE_SIZE.height);
   },
 
   /**

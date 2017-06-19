@@ -77,7 +77,8 @@ Polymer({
     var ctx = c.getContext('2d');
 
     ctx.beginPath();
-    ctx.arc(c.width / 2, c.height / 2, this.canvasCircleRadius_, startAngle,
+    ctx.arc(
+        c.width / 2, c.height / 2, this.canvasCircleRadius_, startAngle,
         endAngle);
     ctx.lineWidth = this.canvasCircleStrokeWidth_;
     ctx.strokeStyle = color;
@@ -109,9 +110,10 @@ Polymer({
     ctx.shadowOffsetY = 0;
     ctx.shadowColor = this.canvasCircleShadowColor_;
     ctx.shadowBlur = blur;
-    ctx.arc(c.width / 2, c.height / 2,
+    ctx.arc(
+        c.width / 2, c.height / 2,
         this.canvasCircleRadius_ - this.canvasCircleStrokeWidth_ / 2 + blur / 2,
-        0, 2*Math.PI);
+        0, 2 * Math.PI);
     ctx.stroke();
     ctx.translate(c.width, 0);
   },
@@ -126,8 +128,8 @@ Polymer({
   animate: function(startAngle, endAngle) {
     var currentAngle = startAngle;
     // The value to update the angle by each tick.
-    var step = (endAngle - startAngle) /
-        (ANIMATE_DURATION_MS / ANIMATE_TICKS_MS);
+    var step =
+        (endAngle - startAngle) / (ANIMATE_DURATION_MS / ANIMATE_TICKS_MS);
     var id = setInterval(doAnimate.bind(this), ANIMATE_TICKS_MS);
     // Circles on html canvas have 0 radians on the positive x-axis and go in
     // clockwise direction. We want to start at the top of the circle which is
@@ -148,10 +150,10 @@ Polymer({
       // |currentAngle| to 7 * Math.PI / 2 (start is 3 * Math.PI / 2) otherwise
       // the regular draw from |start| to |currentAngle| will draw nothing which
       // will cause a flicker for one frame.
-      this.drawArc(start, start + currentAngle,
-          this.canvasCircleProgressColor_);
-      this.drawArc(start + currentAngle,
-          currentAngle <= 0 ? 7 * Math.PI / 2 : start,
+      this.drawArc(
+          start, start + currentAngle, this.canvasCircleProgressColor_);
+      this.drawArc(
+          start + currentAngle, currentAngle <= 0 ? 7 * Math.PI / 2 : start,
           this.canvasCircleBackgroundColor_);
       currentAngle += step;
     }

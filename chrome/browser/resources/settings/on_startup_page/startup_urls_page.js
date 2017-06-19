@@ -68,8 +68,8 @@ Polymer({
   onAddPageTap_: function(e) {
     e.preventDefault();
     this.showStartupUrlDialog_ = true;
-    this.startupUrlDialogAnchor_ = /** @type {!HTMLElement} */ (
-        this.$$('#addPage a[is=action-link]'));
+    this.startupUrlDialogAnchor_ =
+        /** @type {!HTMLElement} */ (this.$$('#addPage a[is=action-link]'));
   },
 
   /** @private */

@@ -11,8 +11,9 @@
  *    <settings-ui prefs="{{prefs}}"></settings-ui>
  */
 cr.exportPath('settings');
-assert(!settings.defaultResourceLoaded,
-       'settings_ui.js run twice. You probably have an invalid import.');
+assert(
+    !settings.defaultResourceLoaded,
+    'settings_ui.js run twice. You probably have an invalid import.');
 /** Global defined when the main Settings script runs. */
 settings.defaultResourceLoaded = true;
 
@@ -98,14 +99,14 @@ Polymer({
           loadTimeData.getString('controlledSettingRecommendedMatches'),
       controlledSettingRecommendedDiffers:
           loadTimeData.getString('controlledSettingRecommendedDiffers'),
-// <if expr="chromeos">
+      // <if expr="chromeos">
       controlledSettingShared:
           loadTimeData.getString('controlledSettingShared'),
       controlledSettingOwner: loadTimeData.getString('controlledSettingOwner'),
-// </if>
+      // </if>
     };
 
-// <if expr="chromeos">
+    // <if expr="chromeos">
     CrOncStrings = {
       OncTypeCellular: loadTimeData.getString('OncTypeCellular'),
       OncTypeEthernet: loadTimeData.getString('OncTypeEthernet'),
@@ -123,7 +124,7 @@ Polymer({
           loadTimeData.getString('networkListItemNotConnected'),
       vpnNameTemplate: loadTimeData.getString('vpnNameTemplate'),
     };
-// </if>
+    // </if>
 
     if (loadTimeData.getBoolean('isGuest')) {
       this.pageVisibility_ = {
@@ -131,12 +132,12 @@ Polymer({
         people: false,
         onStartup: false,
         reset: false,
-// <if expr="not chromeos">
+        // <if expr="not chromeos">
         appearance: false,
         defaultBrowser: false,
         advancedSettings: false,
-// </if>
-// <if expr="chromeos">
+        // </if>
+        // <if expr="chromeos">
         appearance: {
           setWallpaper: false,
           setTheme: false,
@@ -152,7 +153,7 @@ Polymer({
         downloads: {
           googleDrive: false,
         },
-// </if>
+        // </if>
       };
     }
 
@@ -217,8 +218,8 @@ Polymer({
     this.lastSearchQuery_ = urlSearchQuery;
 
     var toolbar = /** @type {!CrToolbarElement} */ (this.$$('cr-toolbar'));
-    var searchField = /** @type {CrToolbarSearchFieldElement} */ (
-        toolbar.getSearchField());
+    var searchField =
+        /** @type {CrToolbarSearchFieldElement} */ (toolbar.getSearchField());
 
     // If the search was initiated by directly entering a search URL, need to
     // sync the URL parameter to the textbox.
@@ -236,8 +237,8 @@ Polymer({
    * @private
    */
   onRefreshPref_: function(e) {
-    var prefName = /** @type {string} */(e.detail);
-    return /** @type {SettingsPrefsElement} */(this.$.prefs).refresh(prefName);
+    var prefName = /** @type {string} */ (e.detail);
+    return /** @type {SettingsPrefsElement} */ (this.$.prefs).refresh(prefName);
   },
 
   /**
@@ -289,7 +290,6 @@ Polymer({
 
   /** @private */
   directionDelegateChanged_: function() {
-    this.$.drawer.align = this.directionDelegate.isRtl() ?
-        'right' : 'left';
+    this.$.drawer.align = this.directionDelegate.isRtl() ? 'right' : 'left';
   },
 });

@@ -38,9 +38,9 @@ Polymer({
 
   /** @override */
   ready: function() {
-    this.languageSettingsPrivate =
-        settings.languageSettingsPrivateApiForTest ||
-        /** @type {!LanguageSettingsPrivate} */(chrome.languageSettingsPrivate);
+    this.languageSettingsPrivate = settings.languageSettingsPrivateApiForTest ||
+        /** @type {!LanguageSettingsPrivate} */
+        (chrome.languageSettingsPrivate);
 
     this.languageSettingsPrivate.getSpellcheckWords(function(words) {
       this.words_ = words;

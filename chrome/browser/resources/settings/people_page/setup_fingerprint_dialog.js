@@ -9,9 +9,9 @@ cr.exportPath('settings');
  * @enum {number}
  */
 settings.FingerprintSetupStep = {
-  LOCATE_SCANNER: 1,      // The user needs to locate the scanner.
-  MOVE_FINGER: 2,         // The user needs to move finger around the scanner.
-  READY: 3                // The scanner has read the fingerprint successfully.
+  LOCATE_SCANNER: 1,  // The user needs to locate the scanner.
+  MOVE_FINGER: 2,     // The user needs to move finger around the scanner.
+  READY: 3            // The scanner has read the fingerprint successfully.
 };
 
 (function() {
@@ -103,7 +103,7 @@ Polymer({
 
     // Note: Reset resets |step_| back to the default, so handle anything that
     // checks |step_| before resetting.
-    if(this.step_ == settings.FingerprintSetupStep.READY)
+    if (this.step_ == settings.FingerprintSetupStep.READY)
       this.fire('add-fingerprint');
     else
       this.browserProxy_.cancelCurrentEnroll();
@@ -176,7 +176,8 @@ Polymer({
                   opacity: [0.7, 1.0],
                 },
                 FLASH_DURATION_MS);
-            this.$.arc.animate(this.receivedScanCount_ * slice,
+            this.$.arc.animate(
+                this.receivedScanCount_ * slice,
                 (this.receivedScanCount_ + 1) * slice);
             this.receivedScanCount_++;
           }

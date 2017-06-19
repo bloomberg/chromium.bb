@@ -35,8 +35,8 @@ Polymer({
    * @private
    */
   onValueChange_: function() {
-    this.browserProxy_.updateCupsPrinter(this.printer.printerId,
-                                         this.printer.printerName);
+    this.browserProxy_.updateCupsPrinter(
+        this.printer.printerId, this.printer.printerName);
   },
 
   /**
@@ -82,12 +82,11 @@ Polymer({
   getPrinterURI_: function(printer) {
     if (!printer) {
       return '';
-    } else if (printer.printerProtocol &&
-               printer.printerAddress &&
-               printer.printerQueue) {
-      return printer.printerProtocol + '://' +
-             printer.printerAddress + '/' +
-             printer.printerQueue;
+    } else if (
+        printer.printerProtocol && printer.printerAddress &&
+        printer.printerQueue) {
+      return printer.printerProtocol + '://' + printer.printerAddress + '/' +
+          printer.printerQueue;
     } else if (printer.printerProtocol && printer.printerAddress) {
       return printer.printerProtocol + '://' + printer.printerAddress;
     } else {

@@ -19,15 +19,15 @@ cr.define('settings', function() {
     /** @return {boolean} Whether the current profile is supervised. */
     isSupervised: assertNotReached,
 
-// <if expr="chromeos">
+    // <if expr="chromeos">
     openWallpaperManager: assertNotReached,
-// </if>
+    // </if>
 
     useDefaultTheme: assertNotReached,
 
-// <if expr="is_linux and not chromeos">
+    // <if expr="is_linux and not chromeos">
     useSystemTheme: assertNotReached,
-// </if>
+    // </if>
 
     /**
      * @param {string} url The url of which to check validity.
@@ -64,24 +64,24 @@ cr.define('settings', function() {
       return loadTimeData.getBoolean('isSupervised');
     },
 
-// <if expr="chromeos">
+    // <if expr="chromeos">
     /** @override */
     openWallpaperManager: function() {
       chrome.send('openWallpaperManager');
     },
-// </if>
+    // </if>
 
     /** @override */
     useDefaultTheme: function() {
       chrome.send('useDefaultTheme');
     },
 
-// <if expr="is_linux and not chromeos">
+    // <if expr="is_linux and not chromeos">
     /** @override */
     useSystemTheme: function() {
       chrome.send('useSystemTheme');
     },
-// </if>
+    // </if>
 
     /** @override */
     validateStartupPage: function(url) {

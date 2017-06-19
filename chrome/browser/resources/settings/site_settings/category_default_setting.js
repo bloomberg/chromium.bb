@@ -31,7 +31,7 @@ Polymer({
     controlParams_: {
       type: Object,
       value: function() {
-        return /** @type {chrome.settingsPrivate.PrefObject} */({});
+        return /** @type {chrome.settingsPrivate.PrefObject} */ ({});
       },
     },
 
@@ -46,7 +46,7 @@ Polymer({
     priorDefaultContentSetting_: {
       type: Object,
       value: function() {
-        return /** @type {DefaultContentSetting} */({});
+        return /** @type {DefaultContentSetting} */ ({});
       },
     },
 
@@ -58,7 +58,7 @@ Polymer({
     subControlParams_: {
       type: Object,
       value: function() {
-        return /** @type {chrome.settingsPrivate.PrefObject} */({});
+        return /** @type {chrome.settingsPrivate.PrefObject} */ ({});
       },
     },
   },
@@ -71,8 +71,8 @@ Polymer({
 
   /** @override */
   ready: function() {
-    this.addWebUIListener('contentSettingCategoryChanged',
-        this.onCategoryChanged_.bind(this));
+    this.addWebUIListener(
+        'contentSettingCategoryChanged', this.onCategoryChanged_.bind(this));
   },
 
   /** @return {boolean} */
@@ -96,9 +96,8 @@ Polymer({
         // "Allowed" vs "Blocked".
         this.browserProxy.setDefaultValueForContentType(
             this.category,
-            this.categoryEnabled ?
-                settings.PermissionValues.ALLOW :
-                settings.PermissionValues.BLOCK);
+            this.categoryEnabled ? settings.PermissionValues.ALLOW :
+                                   settings.PermissionValues.BLOCK);
         break;
       case settings.ContentSettingsTypes.AUTOMATIC_DOWNLOADS:
       case settings.ContentSettingsTypes.CAMERA:
@@ -110,9 +109,8 @@ Polymer({
         // "Ask" vs "Blocked".
         this.browserProxy.setDefaultValueForContentType(
             this.category,
-            this.categoryEnabled ?
-                settings.PermissionValues.ASK :
-                settings.PermissionValues.BLOCK);
+            this.categoryEnabled ? settings.PermissionValues.ASK :
+                                   settings.PermissionValues.BLOCK);
         break;
       case settings.ContentSettingsTypes.COOKIES:
         // This category is tri-state: "Allow", "Block", "Keep data until
@@ -169,7 +167,7 @@ Polymer({
     var prefValue = this.computeIsSettingEnabled(update.setting);
     // The controlParams_ must be replaced (rather than just value changes) so
     // that observers will be notified of the change.
-    this.controlParams_ = /** @type {chrome.settingsPrivate.PrefObject} */(
+    this.controlParams_ = /** @type {chrome.settingsPrivate.PrefObject} */ (
         Object.assign({'value': prefValue}, basePref));
 
     var subPrefValue = false;
@@ -178,14 +176,15 @@ Polymer({
       if (this.category == settings.ContentSettingsTypes.PLUGINS &&
           update.setting == settings.PermissionValues.IMPORTANT_CONTENT) {
         subPrefValue = true;
-      } else if (this.category == settings.ContentSettingsTypes.COOKIES &&
+      } else if (
+          this.category == settings.ContentSettingsTypes.COOKIES &&
           update.setting == settings.PermissionValues.SESSION_ONLY) {
         subPrefValue = true;
       }
     }
     // The subControlParams_ must be replaced (rather than just value changes)
     // so that observers will be notified of the change.
-    this.subControlParams_ = /** @type {chrome.settingsPrivate.PrefObject} */(
+    this.subControlParams_ = /** @type {chrome.settingsPrivate.PrefObject} */ (
         Object.assign({'value': subPrefValue}, basePref));
   },
 
@@ -194,25 +193,24 @@ Polymer({
    * @private
    */
   onCategoryChanged_: function() {
-    this.browserProxy
-        .getDefaultValueForContentType(
-          this.category).then(function(defaultValue) {
-            this.updateControlParams_(defaultValue);
+    this.browserProxy.getDefaultValueForContentType(this.category)
+        .then(function(defaultValue) {
+          this.updateControlParams_(defaultValue);
 
-            // Flash only shows ALLOW or BLOCK descriptions on the toggle.
-            var setting = defaultValue.setting;
-            if (this.category == settings.ContentSettingsTypes.PLUGINS &&
-                setting == settings.PermissionValues.IMPORTANT_CONTENT) {
-              setting = settings.PermissionValues.ALLOW;
-            } else if (
-                this.category == settings.ContentSettingsTypes.COOKIES &&
-                setting == settings.PermissionValues.SESSION_ONLY) {
-              setting = settings.PermissionValues.ALLOW;
-            }
-            var categoryEnabled = setting != settings.PermissionValues.BLOCK;
-            this.optionLabel_ =
-                categoryEnabled ? this.toggleOnLabel : this.toggleOffLabel;
-          }.bind(this));
+          // Flash only shows ALLOW or BLOCK descriptions on the toggle.
+          var setting = defaultValue.setting;
+          if (this.category == settings.ContentSettingsTypes.PLUGINS &&
+              setting == settings.PermissionValues.IMPORTANT_CONTENT) {
+            setting = settings.PermissionValues.ALLOW;
+          } else if (
+              this.category == settings.ContentSettingsTypes.COOKIES &&
+              setting == settings.PermissionValues.SESSION_ONLY) {
+            setting = settings.PermissionValues.ALLOW;
+          }
+          var categoryEnabled = setting != settings.PermissionValues.BLOCK;
+          this.optionLabel_ =
+              categoryEnabled ? this.toggleOnLabel : this.toggleOffLabel;
+        }.bind(this));
   },
 
   /**

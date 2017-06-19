@@ -100,9 +100,12 @@ cr.define('settings', function() {
    */
   function browserChannelToI18nId(channel) {
     switch (channel) {
-      case BrowserChannel.BETA: return 'aboutChannelBeta';
-      case BrowserChannel.DEV: return 'aboutChannelDev';
-      case BrowserChannel.STABLE: return 'aboutChannelStable';
+      case BrowserChannel.BETA:
+        return 'aboutChannelBeta';
+      case BrowserChannel.DEV:
+        return 'aboutChannelDev';
+      case BrowserChannel.STABLE:
+        return 'aboutChannelStable';
     }
 
     assertNotReached();
@@ -144,14 +147,14 @@ cr.define('settings', function() {
     /** Opens the help page. */
     openHelpPage: function() {},
 
-// <if expr="_google_chrome">
+    // <if expr="_google_chrome">
     /**
      * Opens the feedback dialog.
      */
     openFeedbackDialog: function() {},
-// </if>
+    // </if>
 
-// <if expr="chromeos">
+    // <if expr="chromeos">
     /**
      * Checks for available update and applies if it exists.
      */
@@ -183,14 +186,14 @@ cr.define('settings', function() {
 
     /** @return {!Promise<?RegulatoryInfo>} */
     getRegulatoryInfo: function() {},
-// </if>
+    // </if>
 
-// <if expr="_google_chrome and is_macosx">
+    // <if expr="_google_chrome and is_macosx">
     /**
      * Triggers setting up auto-updates for all users.
      */
     promoteUpdater: function() {},
-// </if>
+    // </if>
   };
 
   /**
@@ -211,26 +214,26 @@ cr.define('settings', function() {
       chrome.send('refreshUpdateStatus');
     },
 
-// <if expr="_google_chrome and is_macosx">
+    // <if expr="_google_chrome and is_macosx">
     /** @override */
     promoteUpdater: function() {
       chrome.send('promoteUpdater');
     },
-// </if>
+    // </if>
 
     /** @override */
     openHelpPage: function() {
       chrome.send('openHelpPage');
     },
 
-// <if expr="_google_chrome">
+    // <if expr="_google_chrome">
     /** @override */
     openFeedbackDialog: function() {
       chrome.send('openFeedbackDialog');
     },
-// </if>
+    // </if>
 
-// <if expr="chromeos">
+    // <if expr="chromeos">
     /** @override */
     requestUpdate: function() {
       chrome.send('requestUpdate');
@@ -260,7 +263,7 @@ cr.define('settings', function() {
     getRegulatoryInfo: function() {
       return cr.sendWithPromise('getRegulatoryInfo');
     }
-// </if>
+    // </if>
   };
 
   return {

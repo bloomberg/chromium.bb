@@ -26,8 +26,8 @@ var CookieTreeBehaviorImpl = {
 
   /** @override */
   ready: function() {
-    cr.addWebUIListener('onTreeItemRemoved',
-                        this.onTreeItemRemoved_.bind(this));
+    cr.addWebUIListener(
+        'onTreeItemRemoved', this.onTreeItemRemoved_.bind(this));
     this.rootCookieNode = new settings.CookieTreeNode(null);
   },
 
@@ -43,16 +43,16 @@ var CookieTreeBehaviorImpl = {
       var children = childList.children;
       var prefix = '';
       if (parentId !== null) {
-        this.rootCookieNode.populateChildNodes(parentId,
-            this.rootCookieNode, children);
+        this.rootCookieNode.populateChildNodes(
+            parentId, this.rootCookieNode, children);
         prefix = parentId + ', ';
       }
       var promises = [];
       for (var i = 0; i < children.length; i++) {
         var child = children[i];
         if (child.hasChildren) {
-          promises.push(this.browserProxy.loadCookieChildren(
-              prefix + child.id).then(loadChildrenRecurse.bind(this)));
+          promises.push(this.browserProxy.loadCookieChildren(prefix + child.id)
+                            .then(loadChildrenRecurse.bind(this)));
         }
       }
       return Promise.all(promises);

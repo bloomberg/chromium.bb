@@ -42,7 +42,9 @@ Polymer({
   visualOffset_: {left: 0, top: 0},
 
   /** @override */
-  detached: function() { this.initializeDrag(false); },
+  detached: function() {
+    this.initializeDrag(false);
+  },
 
   /**
    * Called explicitly when |this.displays| and their associated |this.layouts|

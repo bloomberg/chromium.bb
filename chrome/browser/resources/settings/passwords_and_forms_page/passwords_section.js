@@ -275,11 +275,11 @@ Polymer({
   /** @override */
   detached: function() {
     this.passwordManager_.removeSavedPasswordListChangedListener(
-      /** @type {function(!Array<PasswordManager.PasswordUiEntry>):void} */(
-        this.setSavedPasswordsListener_));
+        /** @type {function(!Array<PasswordManager.PasswordUiEntry>):void} */ (
+            this.setSavedPasswordsListener_));
     this.passwordManager_.removeExceptionListChangedListener(
-      /** @type {function(!Array<PasswordManager.ExceptionEntry>):void} */(
-        this.setPasswordExceptionsListener_));
+        /** @type {function(!Array<PasswordManager.ExceptionEntry>):void} */ (
+            this.setPasswordExceptionsListener_));
   },
 
   /**
@@ -302,7 +302,7 @@ Polymer({
    */
   onMenuEditPasswordTap_: function(e) {
     e.preventDefault();
-    /** @type {CrActionMenuElement} */(this.$.menu).close();
+    /** @type {CrActionMenuElement} */ (this.$.menu).close();
     this.showPasswordEditDialog_ = true;
   },
 
@@ -325,7 +325,7 @@ Polymer({
 
     return savedPasswords.filter(function(password) {
       return password.loginPair.urls.shown.includes(filter) ||
-             password.loginPair.username.includes(filter);
+          password.loginPair.username.includes(filter);
     });
   },
 
@@ -346,7 +346,7 @@ Polymer({
    */
   onMenuRemovePasswordTap_: function() {
     this.passwordManager_.removeSavedPassword(this.activePassword.loginPair);
-    /** @type {CrActionMenuElement} */(this.$.menu).close();
+    /** @type {CrActionMenuElement} */ (this.$.menu).close();
   },
 
   /**
@@ -364,7 +364,7 @@ Polymer({
    * @private
    */
   onPasswordMenuTap_: function(event) {
-    var menu = /** @type {!CrActionMenuElement} */(this.$.menu);
+    var menu = /** @type {!CrActionMenuElement} */ (this.$.menu);
     var target = /** @type {!HTMLElement} */ (event.detail.target);
 
     this.activePassword =
@@ -391,7 +391,7 @@ Polymer({
    */
   showPassword_: function(event) {
     this.passwordManager_.getPlaintextPassword(
-        /** @type {!PasswordManager.LoginPair} */(event.detail),
+        /** @type {!PasswordManager.LoginPair} */ (event.detail),
         function(item) {
           this.setPassword(item.loginPair, item.plaintextPassword);
         }.bind(this));

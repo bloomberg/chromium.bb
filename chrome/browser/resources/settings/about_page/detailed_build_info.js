@@ -65,7 +65,8 @@ Polymer({
    * @private
    */
   getChangeChannelIndicatorSourceName_: function(canChangeChannel) {
-    return loadTimeData.getBoolean('aboutEnterpriseManaged') ? '' :
+    return loadTimeData.getBoolean('aboutEnterpriseManaged') ?
+        '' :
         loadTimeData.getString('ownerEmail');
   },
 

@@ -116,9 +116,11 @@ cr.define('settings.WebsiteUsagePrivateApi', function() {
     instance.notifyUsageDeleted(origin);
   };
 
-  return { websiteUsagePolymerInstance: websiteUsagePolymerInstance,
-           fetchUsageTotal: fetchUsageTotal,
-           returnUsageTotal: returnUsageTotal,
-           clearUsage: clearUsage,
-           onUsageCleared: onUsageCleared, };
+  return {
+    websiteUsagePolymerInstance: websiteUsagePolymerInstance,
+    fetchUsageTotal: fetchUsageTotal,
+    returnUsageTotal: returnUsageTotal,
+    clearUsage: clearUsage,
+    onUsageCleared: onUsageCleared,
+  };
 });

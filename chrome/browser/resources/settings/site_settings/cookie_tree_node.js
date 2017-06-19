@@ -109,7 +109,7 @@ cr.define('settings', function() {
         }
 
         if (this.populateChildNodes(
-            parentId, startingNode.children_[i], newNodes)) {
+                parentId, startingNode.children_[i], newNodes)) {
           return true;
         }
       }
@@ -138,9 +138,11 @@ cr.define('settings', function() {
         var child = this.children_[i];
         for (var j = 0; j < child.children_.length; j++) {
           var cookie = child.children_[j];
-          list.push({title: cookie.data.title,
-                     id: cookie.data.id,
-                     data: cookie.data});
+          list.push({
+            title: cookie.data.title,
+            id: cookie.data.id,
+            data: cookie.data
+          });
         }
       }
 
@@ -186,7 +188,7 @@ cr.define('settings', function() {
                 dataType, descriptionNode.data.totalUsage);
           }
         }
-        list.push({ site: title, id: id, localData: description });
+        list.push({site: title, id: id, localData: description});
       }
       list.sort(function(a, b) {
         return a.site.localeCompare(b.site);

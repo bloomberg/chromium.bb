@@ -72,8 +72,7 @@ var SiteSettingsBehaviorImpl = {
         urlWithScheme.endsWith(':443')) {
       return url.slice(0, -4);
     }
-    if (urlWithScheme.startsWith('http://') &&
-        urlWithScheme.endsWith(':80')) {
+    if (urlWithScheme.startsWith('http://') && urlWithScheme.endsWith(':80')) {
       return url.slice(0, -3);
     }
     return url;

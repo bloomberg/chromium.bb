@@ -12,7 +12,7 @@ cr.define('settings', function() {
   function LanguagesBrowserProxy() {}
 
   LanguagesBrowserProxy.prototype = {
-// <if expr="chromeos or is_win">
+    // <if expr="chromeos or is_win">
     /**
      * Sets the prospective UI language to the chosen language. This won't
      * affect the actual UI language until a restart.
@@ -22,15 +22,15 @@ cr.define('settings', function() {
 
     /** @return {!Promise<string>} */
     getProspectiveUILanguage: function() {},
-// </if>
+    // </if>
 
     /** @return {!LanguageSettingsPrivate} */
     getLanguageSettingsPrivate: function() {},
 
-// <if expr="chromeos">
+    // <if expr="chromeos">
     /** @return {!InputMethodPrivate} */
     getInputMethodPrivate: function() {},
-// </if>
+    // </if>
   };
 
   /**
@@ -43,7 +43,7 @@ cr.define('settings', function() {
   cr.addSingletonGetter(LanguagesBrowserProxyImpl);
 
   LanguagesBrowserProxyImpl.prototype = {
-// <if expr="chromeos or is_win">
+    // <if expr="chromeos or is_win">
     /** @override */
     setProspectiveUILanguage: function(languageCode) {
       chrome.send('setProspectiveUILanguage', [languageCode]);
@@ -53,7 +53,7 @@ cr.define('settings', function() {
     getProspectiveUILanguage: function() {
       return cr.sendWithPromise('getProspectiveUILanguage');
     },
-// </if>
+    // </if>
 
     /** @override */
     getLanguageSettingsPrivate: function() {
@@ -61,12 +61,12 @@ cr.define('settings', function() {
           chrome.languageSettingsPrivate);
     },
 
-// <if expr="chromeos">
+    // <if expr="chromeos">
     /** @override */
     getInputMethodPrivate: function() {
       return /** @type {!InputMethodPrivate} */ (chrome.inputMethodPrivate);
     },
-// </if>
+    // </if>
   };
 
   return {

@@ -85,7 +85,9 @@ Polymer({
      */
     defaultImages_: {
       type: Array,
-      value: function() { return []; },
+      value: function() {
+        return [];
+      },
     },
 
     /** @private */
@@ -120,16 +122,16 @@ Polymer({
 
   /** @override */
   attached: function() {
-    this.addWebUIListener('default-images-changed',
-                          this.receiveDefaultImages_.bind(this));
-    this.addWebUIListener('selected-image-changed',
-                          this.receiveSelectedImage_.bind(this));
-    this.addWebUIListener('old-image-changed',
-                          this.receiveOldImage_.bind(this));
-    this.addWebUIListener('profile-image-changed',
-                          this.receiveProfileImage_.bind(this));
-    this.addWebUIListener('camera-presence-changed',
-                          this.receiveCameraPresence_.bind(this));
+    this.addWebUIListener(
+        'default-images-changed', this.receiveDefaultImages_.bind(this));
+    this.addWebUIListener(
+        'selected-image-changed', this.receiveSelectedImage_.bind(this));
+    this.addWebUIListener(
+        'old-image-changed', this.receiveOldImage_.bind(this));
+    this.addWebUIListener(
+        'profile-image-changed', this.receiveProfileImage_.bind(this));
+    this.addWebUIListener(
+        'camera-presence-changed', this.receiveCameraPresence_.bind(this));
   },
 
 
@@ -310,11 +312,13 @@ Polymer({
             ChangePictureSelectionTypes.CAMERA) {
           var /** SettingsCameraElement */ camera = this.$.camera;
           camera.takePhoto();
-        } else if (this.selectedItem_.dataset.type ==
-                   ChangePictureSelectionTypes.FILE) {
+        } else if (
+            this.selectedItem_.dataset.type ==
+            ChangePictureSelectionTypes.FILE) {
           this.browserProxy_.chooseFile();
-        } else if (this.selectedItem_.dataset.type ==
-                   ChangePictureSelectionTypes.OLD) {
+        } else if (
+            this.selectedItem_.dataset.type ==
+            ChangePictureSelectionTypes.OLD) {
           this.onTapDiscardOldImage_();
         }
         break;
@@ -372,7 +376,9 @@ Polymer({
    *     should be hidden.
    * @private
    */
-  isOldImageHidden_: function(oldImageUrl) { return oldImageUrl.length == 0; },
+  isOldImageHidden_: function(oldImageUrl) {
+    return oldImageUrl.length == 0;
+  },
 
   /**
    * @param {ChangePictureImageElement} selectedItem
@@ -431,8 +437,9 @@ Polymer({
     if (!this.isAuthorCreditShown_(selectedItem))
       return '';
 
-    assert(selectedItem.dataset.defaultImageIndex !== null &&
-           selectedItem.dataset.defaultImageIndex < defaultImages.length);
+    assert(
+        selectedItem.dataset.defaultImageIndex !== null &&
+        selectedItem.dataset.defaultImageIndex < defaultImages.length);
     return defaultImages[selectedItem.dataset.defaultImageIndex].author;
   },
 
@@ -447,8 +454,9 @@ Polymer({
     if (!this.isAuthorCreditShown_(selectedItem))
       return '';
 
-    assert(selectedItem.dataset.defaultImageIndex !== null &&
-           selectedItem.dataset.defaultImageIndex < defaultImages.length);
+    assert(
+        selectedItem.dataset.defaultImageIndex !== null &&
+        selectedItem.dataset.defaultImageIndex < defaultImages.length);
     return defaultImages[selectedItem.dataset.defaultImageIndex].website;
   },
 });

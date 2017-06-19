@@ -23,8 +23,8 @@ Polymer({
 
   /** @override */
   ready: function() {
-    this.addWebUIListener('onZoomLevelsChanged',
-        this.onZoomLevelsChanged_.bind(this));
+    this.addWebUIListener(
+        'onZoomLevelsChanged', this.onZoomLevelsChanged_.bind(this));
     this.browserProxy.fetchZoomLevels();
   },
 

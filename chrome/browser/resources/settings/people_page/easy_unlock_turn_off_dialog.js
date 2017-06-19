@@ -47,9 +47,9 @@ Polymer({
         'easy-unlock-enabled-status',
         this.handleEasyUnlockEnabledStatusChanged_.bind(this));
 
-    this.addWebUIListener(
-        'easy-unlock-turn-off-flow-status',
-        function(status) { this.status_ = status; }.bind(this));
+    this.addWebUIListener('easy-unlock-turn-off-flow-status', function(status) {
+      this.status_ = status;
+    }.bind(this));
 
     // Since the dialog text depends on the status, defer opening until we have
     // retrieved the turn off status to prevent UI flicker.

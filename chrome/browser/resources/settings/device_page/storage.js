@@ -76,8 +76,7 @@ Polymer({
   /** @override */
   ready: function() {
     cr.addWebUIListener(
-        'storage-size-stat-changed',
-        this.handleSizeStatChanged_.bind(this));
+        'storage-size-stat-changed', this.handleSizeStatChanged_.bind(this));
     cr.addWebUIListener(
         'storage-downloads-size-changed',
         this.handleDownloadsSizeChanged_.bind(this));

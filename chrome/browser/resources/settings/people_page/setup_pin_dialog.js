@@ -26,10 +26,7 @@ var MessageType = {
 };
 
 /** @enum {string} */
-var ProblemType = {
-  WARNING: 'warning',
-  ERROR: 'error'
-};
+var ProblemType = {WARNING: 'warning', ERROR: 'error'};
 
 Polymer({
   is: 'settings-setup-pin-dialog',
@@ -75,26 +72,22 @@ Polymer({
      */
     writeUma_: {
       type: Object,
-      value: function() { return settings.recordLockScreenProgress; }
+      value: function() {
+        return settings.recordLockScreenProgress;
+      }
     },
 
     /**
      * The current step/subpage we are on.
      * @private
      */
-    isConfirmStep_: {
-      type: Boolean,
-      value: false
-    },
+    isConfirmStep_: {type: Boolean, value: false},
 
     /**
      * Interface for chrome.quickUnlockPrivate calls. May be overriden by tests.
      * @private
      */
-    quickUnlockPrivate_: {
-      type: Object,
-      value: chrome.quickUnlockPrivate
-    },
+    quickUnlockPrivate_: {type: Object, value: chrome.quickUnlockPrivate},
   },
 
   /** @override */
@@ -176,8 +169,8 @@ Polymer({
         this.processPinRequirements_.bind(this, messageId));
     this.problemClass_ = problemClass;
     this.updateStyles();
-    this.enableSubmit_ = problemClass != ProblemType.ERROR &&
-        messageId != MessageType.MISMATCH;
+    this.enableSubmit_ =
+        problemClass != ProblemType.ERROR && messageId != MessageType.MISMATCH;
   },
 
   /** @private */
@@ -201,7 +194,8 @@ Polymer({
     }
 
     if (message.warnings.length) {
-      assert(message.warnings[0] ==
+      assert(
+          message.warnings[0] ==
           chrome.quickUnlockPrivate.CredentialProblem.TOO_WEAK);
       this.showProblem_(MessageType.TOO_WEAK, ProblemType.WARNING);
     }
@@ -231,8 +225,7 @@ Polymer({
       if (this.pinKeyboardValue_) {
         this.quickUnlockPrivate_.checkCredential(
             chrome.quickUnlockPrivate.QuickUnlockMode.PIN,
-            this.pinKeyboardValue_,
-            this.processPinProblems_.bind(this));
+            this.pinKeyboardValue_, this.processPinProblems_.bind(this));
       }
       return;
     }
@@ -276,10 +269,8 @@ Polymer({
     }
 
     this.setModes.call(
-      null,
-      [chrome.quickUnlockPrivate.QuickUnlockMode.PIN],
-      [this.pinKeyboardValue_],
-      onSetModesCompleted.bind(this));
+        null, [chrome.quickUnlockPrivate.QuickUnlockMode.PIN],
+        [this.pinKeyboardValue_], onSetModesCompleted.bind(this));
     this.writeUma_(LockScreenProgress.CONFIRM_PIN);
   },
 
@@ -299,8 +290,9 @@ Polymer({
    * @return {string}
    */
   getTitleMessage_: function(isConfirmStep) {
-    return this.i18n(isConfirmStep ? 'configurePinConfirmPinTitle' :
-                                     'configurePinChoosePinTitle');
+    return this.i18n(
+        isConfirmStep ? 'configurePinConfirmPinTitle' :
+                        'configurePinChoosePinTitle');
   },
 
   /**

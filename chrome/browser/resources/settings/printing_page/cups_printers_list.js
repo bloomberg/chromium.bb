@@ -64,8 +64,8 @@ Polymer({
   onRemoveTap_: function(event) {
     var index = this.printers.indexOf(assert(this.activePrinter_));
     this.splice('printers', index, 1);
-    this.browserProxy_.removeCupsPrinter(this.activePrinter_.printerId,
-                                         this.activePrinter_.printerName);
+    this.browserProxy_.removeCupsPrinter(
+        this.activePrinter_.printerId, this.activePrinter_.printerName);
     this.closeDropdownMenu_();
   },
 

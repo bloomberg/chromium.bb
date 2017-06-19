@@ -80,28 +80,36 @@ Polymer({
    */
   setUpKeyMapTargets_: function() {
     // Ordering is according to UX, but values match settings.ModifierKey.
-    this.keyMapTargets_ = [{
-      value: settings.ModifierKey.SEARCH_KEY,
-      name: loadTimeData.getString('keyboardKeySearch'),
-    }, {
-      value: settings.ModifierKey.CONTROL_KEY,
-      name: loadTimeData.getString('keyboardKeyCtrl')
-    }, {
-      value: settings.ModifierKey.ALT_KEY,
-      name: loadTimeData.getString('keyboardKeyAlt')
-    }, {
-      value: settings.ModifierKey.CAPS_LOCK_KEY,
-      name: loadTimeData.getString('keyboardKeyCapsLock')
-    }, {
-      value: settings.ModifierKey.ESCAPE_KEY,
-      name: loadTimeData.getString('keyboardKeyEscape')
-    }, {
-      value: settings.ModifierKey.BACKSPACE_KEY,
-      name: loadTimeData.getString('keyboardKeyBackspace')
-    }, {
-      value: settings.ModifierKey.VOID_KEY,
-      name: loadTimeData.getString('keyboardKeyDisabled')
-    }];
+    this.keyMapTargets_ = [
+      {
+        value: settings.ModifierKey.SEARCH_KEY,
+        name: loadTimeData.getString('keyboardKeySearch'),
+      },
+      {
+        value: settings.ModifierKey.CONTROL_KEY,
+        name: loadTimeData.getString('keyboardKeyCtrl')
+      },
+      {
+        value: settings.ModifierKey.ALT_KEY,
+        name: loadTimeData.getString('keyboardKeyAlt')
+      },
+      {
+        value: settings.ModifierKey.CAPS_LOCK_KEY,
+        name: loadTimeData.getString('keyboardKeyCapsLock')
+      },
+      {
+        value: settings.ModifierKey.ESCAPE_KEY,
+        name: loadTimeData.getString('keyboardKeyEscape')
+      },
+      {
+        value: settings.ModifierKey.BACKSPACE_KEY,
+        name: loadTimeData.getString('keyboardKeyBackspace')
+      },
+      {
+        value: settings.ModifierKey.VOID_KEY,
+        name: loadTimeData.getString('keyboardKeyDisabled')
+      }
+    ];
   },
 
   /**

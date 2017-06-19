@@ -452,8 +452,8 @@ Polymer({
    */
   tetherToggleIsEnabled_: function(deviceState, tetherDeviceState) {
     return this.tetherToggleIsVisible_(deviceState, tetherDeviceState) &&
-      this.enableToggleIsEnabled_(tetherDeviceState) &&
-      tetherDeviceState.State != CrOnc.DeviceState.UNINITIALIZED;
+        this.enableToggleIsEnabled_(tetherDeviceState) &&
+        tetherDeviceState.State != CrOnc.DeviceState.UNINITIALIZED;
   },
 
   /**

@@ -237,9 +237,9 @@ Polymer({
    * Hides the Cleanup card.
    * @private
    */
-   onDismiss_: function() {
-     this.fire('chrome-cleanup-dismissed');
-   },
+  onDismiss_: function() {
+    this.fire('chrome-cleanup-dismissed');
+  },
 
   /**
    * Dismiss the card.

@@ -58,14 +58,14 @@ cr.define('settings', function() {
     /**
      * @return {!Promise<!settings.FingerprintInfo>}
      */
-    getFingerprintsList: function () {},
+    getFingerprintsList: function() {},
 
     /**
      * @return {!Promise<number>}
      */
-    getNumFingerprints: function () {},
+    getNumFingerprints: function() {},
 
-    startEnroll: function () {},
+    startEnroll: function() {},
 
     cancelCurrentEnroll: function() {},
 
@@ -109,17 +109,17 @@ cr.define('settings', function() {
 
   FingerprintBrowserProxyImpl.prototype = {
     /** @override */
-    getFingerprintsList: function () {
+    getFingerprintsList: function() {
       return cr.sendWithPromise('getFingerprintsList');
     },
 
     /** @override */
-    getNumFingerprints: function () {
+    getNumFingerprints: function() {
       return cr.sendWithPromise('getNumFingerprints');
     },
 
     /** @override */
-    startEnroll: function () {
+    startEnroll: function() {
       chrome.send('startEnroll');
     },
 
@@ -160,7 +160,7 @@ cr.define('settings', function() {
   };
 
   return {
-    FingerprintBrowserProxy : FingerprintBrowserProxy,
-    FingerprintBrowserProxyImpl : FingerprintBrowserProxyImpl,
+    FingerprintBrowserProxy: FingerprintBrowserProxy,
+    FingerprintBrowserProxyImpl: FingerprintBrowserProxyImpl,
   };
 });

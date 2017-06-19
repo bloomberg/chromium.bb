@@ -53,7 +53,7 @@ Polymer({
 
   observers: [
     'customTimesChanged_(prefs.ash.night_light.custom_start_time.*, ' +
-                        'prefs.ash.night_light.custom_end_time.*)',
+        'prefs.ash.night_light.custom_end_time.*)',
   ],
 
   keyBindings: {
@@ -158,7 +158,8 @@ Polymer({
       return;
 
     var knobPref = this.dragObject_ == this.$.startKnob ?
-        'ash.night_light.custom_start_time' : 'ash.night_light.custom_end_time';
+        'ash.night_light.custom_start_time' :
+        'ash.night_light.custom_end_time';
 
     if (event.detail.ddx > 0) {
       // Increment the knob's pref by the amount of deltaMinutes.
@@ -228,11 +229,11 @@ Polymer({
    * @private
    */
   customTimesChanged_: function() {
-    var startOffsetMinutes = /** @type {number} */(
+    var startOffsetMinutes = /** @type {number} */ (
         this.getPref('ash.night_light.custom_start_time').value);
     this.startTime_ = this.offsetMinutesToTimeString_(startOffsetMinutes);
     this.updateKnobLeft_(this.$.startKnob, startOffsetMinutes);
-    var endOffsetMinutes = /** @type {number} */(
+    var endOffsetMinutes = /** @type {number} */ (
         this.getPref('ash.night_light.custom_end_time').value);
     this.endTime_ = this.offsetMinutesToTimeString_(endOffsetMinutes);
     this.updateKnobLeft_(this.$.endKnob, endOffsetMinutes);
@@ -249,7 +250,7 @@ Polymer({
   updateKnobLeft_: function(knob, offsetMinutes) {
     var offsetAfter6pm =
         (offsetMinutes + TOTAL_MINUTES_PER_DAY - OFFSET_MINUTES_6PM) %
-            TOTAL_MINUTES_PER_DAY;
+        TOTAL_MINUTES_PER_DAY;
     var ratio = offsetAfter6pm / TOTAL_MINUTES_PER_DAY;
 
     if (ratio == 0) {
@@ -285,17 +286,18 @@ Polymer({
 
     // The end progress bar starts from either the start knob or the start of
     // the slider (whichever is to its left) and ends at the end knob.
-    var endProgressLeft = startKnob.offsetLeft >= endKnob.offsetLeft
-                              ? '0px' : startKnob.style.left;
+    var endProgressLeft = startKnob.offsetLeft >= endKnob.offsetLeft ?
+        '0px' :
+        startKnob.style.left;
     endProgress.style.left = endProgressLeft;
     endProgress.style.width =
         (parseFloat(endKnob.style.left) - parseFloat(endProgressLeft)) + 'px';
 
     // The start progress bar starts at the start knob, and ends at either the
     // end knob or the end of the slider (whichever is to its right).
-    var startProgressRight = endKnob.offsetLeft < startKnob.offsetLeft
-                                ? this.$.sliderBar.offsetWidth
-                                : endKnob.style.left;
+    var startProgressRight = endKnob.offsetLeft < startKnob.offsetLeft ?
+        this.$.sliderBar.offsetWidth :
+        endKnob.style.left;
     startProgress.style.left = startKnob.style.left;
     startProgress.style.width =
         (parseFloat(startProgressRight) - parseFloat(startKnob.style.left)) +
@@ -312,8 +314,8 @@ Polymer({
   fixLabelsOverlapIfAny_: function() {
     var startLabel = this.$.startLabel;
     var endLabel = this.$.endLabel;
-    var distance = Math.abs(parseFloat(startLabel.style.left) -
-        parseFloat(endLabel.style.left));
+    var distance = Math.abs(
+        parseFloat(startLabel.style.left) - parseFloat(endLabel.style.left));
     if (distance <= startLabel.offsetWidth) {
       // Shift the end label up so that it doesn't overlap with the start label.
       endLabel.classList.add('end-label-overlap');
@@ -378,7 +380,8 @@ Polymer({
    * @private
    */
   decrementPref_: function(prefPath, decrement) {
-    var value = /** @type {number} */(this.getPref(prefPath).value) - decrement;
+    var value =
+        /** @type {number} */ (this.getPref(prefPath).value) - decrement;
 
     var otherValue = this.getOtherKnobPrefValue_(prefPath);
     if (value > otherValue &&

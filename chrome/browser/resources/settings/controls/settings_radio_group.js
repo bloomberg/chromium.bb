@@ -21,11 +21,7 @@ Polymer({
     /**
      * IronSelectableBehavior selected attribute.
      */
-    selected: {
-      type: String,
-      notify: true,
-      observer: 'selectedChanged_'
-    },
+    selected: {type: String, notify: true, observer: 'selectedChanged_'},
   },
 
   hostAttributes: {
@@ -38,7 +34,7 @@ Polymer({
 
   /** @private */
   prefChanged_: function() {
-    var pref = /** @type {!chrome.settingsPrivate.PrefObject} */(this.pref);
+    var pref = /** @type {!chrome.settingsPrivate.PrefObject} */ (this.pref);
     this.selected = Settings.PrefUtil.prefToString(pref);
   },
 
@@ -46,7 +42,7 @@ Polymer({
   selectedChanged_: function(selected) {
     if (!this.pref)
       return;
-    this.set('pref.value',
-             Settings.PrefUtil.stringToPrefValue(selected, this.pref));
+    this.set(
+        'pref.value', Settings.PrefUtil.stringToPrefValue(selected, this.pref));
   },
 });

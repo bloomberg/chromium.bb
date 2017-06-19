@@ -68,7 +68,7 @@ var MediaPickerEntry;
  * @typedef {{protocol: string,
  *            spec: string}}
  */
- var ProtocolHandlerEntry;
+var ProtocolHandlerEntry;
 
 /**
  * @typedef {{name: string,

@@ -204,9 +204,9 @@ Polymer({
 
     if (key == 'Tether.Carrier') {
       assert(typeof value == 'string');
-      return (!value || value == 'unknown-carrier')
-          ? this.i18n('tetherUnknownCarrier')
-          : value;
+      return (!value || value == 'unknown-carrier') ?
+          this.i18n('tetherUnknownCarrier') :
+          value;
     }
 
     return '';

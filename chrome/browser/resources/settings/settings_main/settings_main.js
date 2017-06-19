@@ -126,8 +126,8 @@ Polymer({
     var visibleBottom = scroller.scrollTop + scroller.clientHeight;
     var overscrollBottom = overscroll.offsetTop + overscroll.scrollHeight;
     // How much of the overscroll is visible (may be negative).
-    var visibleOverscroll = overscroll.scrollHeight -
-                            (overscrollBottom - visibleBottom);
+    var visibleOverscroll =
+        overscroll.scrollHeight - (overscrollBottom - visibleBottom);
     this.overscroll_ =
         Math.max(opt_minHeight || 0, Math.ceil(visibleOverscroll));
   },
@@ -234,12 +234,12 @@ Polymer({
    */
   getPage_: function(route) {
     if (settings.Route.ABOUT.contains(route)) {
-      return /** @type {?SettingsAboutPageElement} */(
+      return /** @type {?SettingsAboutPageElement} */ (
           this.$$('settings-about-page'));
     }
     if (settings.Route.BASIC.contains(route) ||
         settings.Route.ADVANCED.contains(route)) {
-      return /** @type {?SettingsBasicPageElement} */(
+      return /** @type {?SettingsBasicPageElement} */ (
           this.$$('settings-basic-page'));
     }
     assertNotReached();

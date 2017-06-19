@@ -208,8 +208,8 @@ var LayoutBehavior = {
     assert(bounds);
     this.calculatedBoundsMap_.set(
         displayId,
-        /** @type {!chrome.system.display.Bounds} */ (
-            Object.assign({}, bounds)));
+        /** @type {!chrome.system.display.Bounds} */
+        (Object.assign({}, bounds)));
   },
 
   /**

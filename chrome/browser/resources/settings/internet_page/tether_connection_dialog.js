@@ -103,8 +103,9 @@ Polymer({
    * @private
    */
   getBatteryPercentageString_: function(networkProperties) {
-    return this.i18n('tetherConnectionBatteryPercentage',
-                     this.getBatteryPercentageAsString_(networkProperties));
+    return this.i18n(
+        'tetherConnectionBatteryPercentage',
+        this.getBatteryPercentageAsString_(networkProperties));
   },
 
   /**
@@ -113,8 +114,8 @@ Polymer({
    * @private
    */
   getExplanation_: function(networkProperties) {
-    return this.i18n('tetherConnectionExplanation',
-                     CrOnc.getNetworkName(networkProperties));
+    return this.i18n(
+        'tetherConnectionExplanation', CrOnc.getNetworkName(networkProperties));
   },
 
   /**
@@ -123,8 +124,9 @@ Polymer({
    * @private
    */
   getDescriptionTitle_: function(networkProperties) {
-    return this.i18n('tetherConnectionDescriptionTitle',
-                     CrOnc.getNetworkName(networkProperties));
+    return this.i18n(
+        'tetherConnectionDescriptionTitle',
+        CrOnc.getNetworkName(networkProperties));
   },
 
   /**
@@ -133,7 +135,8 @@ Polymer({
    * @private
    */
   getBatteryDescription_: function(networkProperties) {
-    return this.i18n('tetherConnectionDescriptionBattery',
-                     this.getBatteryPercentageAsString_(networkProperties));
+    return this.i18n(
+        'tetherConnectionDescriptionBattery',
+        this.getBatteryPercentageAsString_(networkProperties));
   },
 });

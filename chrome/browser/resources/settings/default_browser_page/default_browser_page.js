@@ -36,7 +36,8 @@ Polymer({
 
   /** @override */
   ready: function() {
-    this.addWebUIListener('settings.updateDefaultBrowserState',
+    this.addWebUIListener(
+        'settings.updateDefaultBrowserState',
         this.updateDefaultBrowserState_.bind(this));
 
     this.browserProxy_.requestDefaultBrowserState().then(
@@ -57,7 +58,8 @@ Polymer({
       this.isDefault_ = true;
     else if (!defaultBrowserState.canBeDefault)
       this.isSecondaryInstall_ = true;
-    else if (!defaultBrowserState.isDisabledByPolicy &&
+    else if (
+        !defaultBrowserState.isDisabledByPolicy &&
         !defaultBrowserState.isUnknownError)
       this.maySetDefaultBrowser_ = true;
     else

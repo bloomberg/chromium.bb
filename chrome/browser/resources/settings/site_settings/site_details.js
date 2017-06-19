@@ -122,7 +122,9 @@ Polymer({
   onClearAndReset_: function() {
     Array.prototype.forEach.call(
         this.root.querySelectorAll('site-details-permission'),
-        function(element) { element.resetPermission(); });
+        function(element) {
+          element.resetPermission();
+        });
 
     if (this.storedData_ != '')
       this.onClearStorage_();
@@ -146,6 +148,8 @@ Polymer({
   permissionShowing_: function() {
     return Array.prototype.some.call(
         this.root.querySelectorAll('site-details-permission'),
-        function(element) { return element.offsetHeight > 0; });
+        function(element) {
+          return element.offsetHeight > 0;
+        });
   },
 });

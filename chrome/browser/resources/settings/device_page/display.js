@@ -109,14 +109,21 @@ Polymer({
     scheduleTypesList_: {
       type: Array,
       value: function() {
-        return [{
-          name: loadTimeData.getString('displayNightLightScheduleNever'),
-          value: NightLightScheduleType.NEVER }, {
-          name: loadTimeData.getString(
-              'displayNightLightScheduleSunsetToSunRise'),
-          value: NightLightScheduleType.SUNSET_TO_SUNRISE }, {
-          name: loadTimeData.getString('displayNightLightScheduleCustom'),
-          value: NightLightScheduleType.CUSTOM }];
+        return [
+          {
+            name: loadTimeData.getString('displayNightLightScheduleNever'),
+            value: NightLightScheduleType.NEVER
+          },
+          {
+            name: loadTimeData.getString(
+                'displayNightLightScheduleSunsetToSunRise'),
+            value: NightLightScheduleType.SUNSET_TO_SUNRISE
+          },
+          {
+            name: loadTimeData.getString('displayNightLightScheduleCustom'),
+            value: NightLightScheduleType.CUSTOM
+          }
+        ];
       },
     },
 
@@ -239,8 +246,8 @@ Polymer({
       this.currentSelectedModeIndex_ = 0;
     } else {
       this.modeValues_ = Array.from(Array(numModes).keys());
-      this.currentSelectedModeIndex_ = this.getSelectedModeIndex_(
-        selectedDisplay);
+      this.currentSelectedModeIndex_ =
+          this.getSelectedModeIndex_(selectedDisplay);
     }
     // Set |selectedDisplay| first since only the resolution slider depends
     // on |selectedModePref_|.
@@ -382,7 +389,7 @@ Polymer({
           this.selectedDisplay.bounds.height.toString());
     }
     var mode = this.selectedDisplay.modes[
-        /** @type {number} */(this.selectedModePref_.value)];
+        /** @type {number} */ (this.selectedModePref_.value)];
     assert(mode);
     var best =
         this.selectedDisplay.isInternal ? mode.uiScale == 1.0 : mode.isNative;
@@ -467,7 +474,7 @@ Polymer({
     }
     /** @type {!chrome.system.display.DisplayProperties} */ var properties = {
       displayMode: this.selectedDisplay.modes[
-          /** @type {number} */(this.selectedModePref_.value)]
+          /** @type {number} */ (this.selectedModePref_.value)]
     };
     settings.display.systemDisplayApi.setDisplayProperties(
         this.selectedDisplay.id, properties,
@@ -573,6 +580,6 @@ Polymer({
   onScheduleTypeChanged_: function() {
     this.shouldOpenCustomScheduleCollapse_ =
         this.getPref('ash.night_light.schedule_type').value ==
-            NightLightScheduleType.CUSTOM;
+        NightLightScheduleType.CUSTOM;
   },
 });

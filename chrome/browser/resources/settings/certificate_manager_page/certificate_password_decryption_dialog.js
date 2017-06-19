@@ -37,8 +37,8 @@ Polymer({
 
   /** @private */
   onOkTap_: function() {
-    this.browserProxy_.importPersonalCertificatePasswordSelected(
-        this.password_).then(
+    this.browserProxy_.importPersonalCertificatePasswordSelected(this.password_)
+        .then(
             function() {
               /** @type {!CrDialogElement} */ (this.$.dialog).close();
             }.bind(this),

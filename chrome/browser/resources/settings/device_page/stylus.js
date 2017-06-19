@@ -78,7 +78,8 @@ Polymer({
   findApp_: function(id) {
     return this.appChoices_.find(function(app) {
       return app.value == id;
-    }) || null;
+    }) ||
+        null;
   },
 
   /** @private */

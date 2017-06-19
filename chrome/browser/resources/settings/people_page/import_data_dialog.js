@@ -110,8 +110,8 @@ Polymer({
    * @private
    */
   getActionButtonText_: function() {
-    return this.i18n(this.isImportFromFileSelected_() ?
-        'importChooseFile' : 'importCommit');
+    return this.i18n(
+        this.isImportFromFileSelected_() ? 'importChooseFile' : 'importCommit');
   },
 
   /** @private */

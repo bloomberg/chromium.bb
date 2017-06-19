@@ -110,10 +110,11 @@ Polymer({
 
   /** @override */
   ready: function() {
-    this.addWebUIListener('contentSettingSitePermissionChanged',
+    this.addWebUIListener(
+        'contentSettingSitePermissionChanged',
         this.siteWithinCategoryChanged_.bind(this));
-    this.addWebUIListener('onIncognitoStatusChanged',
-        this.onIncognitoStatusChanged_.bind(this));
+    this.addWebUIListener(
+        'onIncognitoStatusChanged', this.onIncognitoStatusChanged_.bind(this));
   },
 
   /**
@@ -262,7 +263,7 @@ Polymer({
    * @private
    */
   toSiteArray_: function(sites) {
-    var results = /** @type {!Array<SiteException>} */([]);
+    var results = /** @type {!Array<SiteException>} */ ([]);
     var lastOrigin = '';
     var lastEmbeddingOrigin = '';
     for (var i = 0; i < sites.length; ++i) {
@@ -313,7 +314,8 @@ Polymer({
   onOriginTap_: function(event) {
     if (!this.enableSiteSettings_)
       return;
-    settings.navigateTo(settings.Route.SITE_SETTINGS_SITE_DETAILS,
+    settings.navigateTo(
+        settings.Route.SITE_SETTINGS_SITE_DETAILS,
         new URLSearchParams('site=' + event.model.item.origin));
   },
 
@@ -361,8 +363,8 @@ Polymer({
   onEditTap_: function() {
     // Close action menu without resetting |this.actionMenuSite_| since it is
     // bound to the dialog.
-    /** @type {!CrActionMenuElement} */ (
-        this.$$('dialog[is=cr-action-menu]')).close();
+    /** @type {!CrActionMenuElement} */ (this.$$('dialog[is=cr-action-menu]'))
+        .close();
     this.showEditExceptionDialog_ = true;
   },
 
@@ -389,8 +391,8 @@ Polymer({
    */
   computeSiteDescription_: function(item) {
     if (item.incognito && item.embeddingDisplayName.length > 0) {
-      return loadTimeData.getStringF('embeddedIncognitoSite',
-          item.embeddingDisplayName);
+      return loadTimeData.getStringF(
+          'embeddedIncognitoSite', item.embeddingDisplayName);
     }
 
     if (item.incognito)
@@ -415,8 +417,8 @@ Polymer({
         Polymer.dom(/** @type {!Event} */ (e)).localTarget);
 
     this.actionMenuSite_ = e.model.item;
-    /** @type {!CrActionMenuElement} */ (
-        this.$$('dialog[is=cr-action-menu]')).showAt(this.activeDialogAnchor_);
+    /** @type {!CrActionMenuElement} */ (this.$$('dialog[is=cr-action-menu]'))
+        .showAt(this.activeDialogAnchor_);
   },
 
   /** @private */

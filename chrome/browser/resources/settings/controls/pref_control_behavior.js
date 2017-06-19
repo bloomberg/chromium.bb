@@ -40,4 +40,3 @@ var PrefControlBehavior = {
     }.bind(this));
   },
 };
-

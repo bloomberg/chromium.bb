@@ -34,7 +34,7 @@ Polymer({
     monthList_: {
       type: Array,
       value: [
-        '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12',
+        '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'
       ],
     },
 
@@ -61,9 +61,10 @@ Polymer({
    */
   checkIfCardExpired_: function(expirationMonth_, expirationYear_) {
     var now = new Date();
-    return (expirationYear_ < now.getFullYear() ||
-           (expirationYear_ == now.getFullYear() &&
-            expirationMonth_ <= now.getMonth()));
+    return (
+        expirationYear_ < now.getFullYear() ||
+        (expirationYear_ == now.getFullYear() &&
+         expirationMonth_ <= now.getMonth()));
   },
 
   /** @override */
@@ -127,8 +128,8 @@ Polymer({
 
     // If the card is expired, reflect the error to the user.
     // Otherwise, update the card, save and close the dialog.
-    if (!this.checkIfCardExpired_(this.expirationMonth_,
-                                  this.expirationYear_)) {
+    if (!this.checkIfCardExpired_(
+            this.expirationMonth_, this.expirationYear_)) {
       this.creditCard.expirationYear = this.expirationYear_;
       this.creditCard.expirationMonth = this.expirationMonth_;
       this.fire('save-credit-card', this.creditCard);

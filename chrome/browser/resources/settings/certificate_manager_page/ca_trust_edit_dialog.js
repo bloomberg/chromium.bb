@@ -33,18 +33,18 @@ Polymer({
   /** @override */
   attached: function() {
     this.explanationText_ = loadTimeData.getStringF(
-        'certificateManagerCaTrustEditDialogExplanation',
-        this.model.name);
+        'certificateManagerCaTrustEditDialogExplanation', this.model.name);
 
     // A non existing |model.id| indicates that a new certificate is being
     // imported, otherwise an existing certificate is being edited.
     if (this.model.id) {
-      this.browserProxy_.getCaCertificateTrust(this.model.id).then(
-          /** @param {!CaTrustInfo} trustInfo */
-          function(trustInfo) {
-            this.trustInfo_ = trustInfo;
-            this.$.dialog.showModal();
-          }.bind(this));
+      this.browserProxy_.getCaCertificateTrust(this.model.id)
+          .then(
+              /** @param {!CaTrustInfo} trustInfo */
+              function(trustInfo) {
+                this.trustInfo_ = trustInfo;
+                this.$.dialog.showModal();
+              }.bind(this));
     } else {
       /** @type {!CrDialogElement} */ (this.$.dialog).showModal();
     }
@@ -61,19 +61,20 @@ Polymer({
 
     var whenDone = this.model.id ?
         this.browserProxy_.editCaCertificateTrust(
-            this.model.id, this.$.ssl.checked,
-            this.$.email.checked, this.$.objSign.checked) :
+            this.model.id, this.$.ssl.checked, this.$.email.checked,
+            this.$.objSign.checked) :
         this.browserProxy_.importCaCertificateTrustSelected(
             this.$.ssl.checked, this.$.email.checked, this.$.objSign.checked);
 
-    whenDone.then(function() {
-      this.$.spinner.active = false;
-      /** @type {!CrDialogElement} */ (this.$.dialog).close();
-    }.bind(this),
-    /** @param {!CertificatesError} error */
-    function(error) {
-      /** @type {!CrDialogElement} */ (this.$.dialog).close();
-      this.fire('certificates-error', {error: error, anchor: null});
-    }.bind(this));
+    whenDone.then(
+        function() {
+          this.$.spinner.active = false;
+          /** @type {!CrDialogElement} */ (this.$.dialog).close();
+        }.bind(this),
+        /** @param {!CertificatesError} error */
+        function(error) {
+          /** @type {!CrDialogElement} */ (this.$.dialog).close();
+          this.fire('certificates-error', {error: error, anchor: null});
+        }.bind(this));
   },
 });

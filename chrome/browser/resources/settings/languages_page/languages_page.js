@@ -42,14 +42,14 @@ Polymer({
     /** @type {!LanguageHelper} */
     languageHelper: Object,
 
-// <if expr="not is_macosx">
+    // <if expr="not is_macosx">
     /** @private */
     spellCheckSecondaryText_: {
       type: String,
       value: '',
       computed: 'getSpellCheckSecondaryText_(languages.enabled.*)',
     },
-// </if>
+    // </if>
 
     /**
      * The language to display the details for.
@@ -66,16 +66,16 @@ Polymer({
       type: Object,
       value: function() {
         var map = new Map();
-// <if expr="not is_macosx">
+        // <if expr="not is_macosx">
         map.set(
             settings.Route.EDIT_DICTIONARY.path,
             '#spellCheckCollapse .subpage-arrow');
-// </if>
-// <if expr="chromeos">
+        // </if>
+        // <if expr="chromeos">
         map.set(
             settings.Route.INPUT_METHODS.path,
             '#inputMethodsCollapse .subpage-arrow');
-// </if>
+        // </if>
         return map;
       },
     },
@@ -123,7 +123,7 @@ Polymer({
     // "Move up" is a no-op for the top language, and redundant with
     // "Move to top" for the 2nd language.
     return !this.isNthLanguage_(0, language) &&
-           !this.isNthLanguage_(1, language);
+        !this.isNthLanguage_(1, language);
   },
 
   /**
@@ -144,7 +144,7 @@ Polymer({
     return this.languages.enabled.length <= 1;
   },
 
-// <if expr="chromeos">
+  // <if expr="chromeos">
   /**
    * Applies Chrome OS session tweaks to the menu.
    * @param {!CrActionMenuElement} menu
@@ -202,9 +202,9 @@ Polymer({
   onInputMethodOptionsTap_: function(e) {
     this.languageHelper.openInputMethodOptions(e.model.item.id);
   },
-// </if>
+  // </if>
 
-// <if expr="chromeos or is_win">
+  // <if expr="chromeos or is_win">
   /**
    * @return {boolean} True for a secondary user in a multi-profile session.
    * @private
@@ -264,7 +264,7 @@ Polymer({
 
     this.closeMenuSoon_();
   },
-// </if>
+  // </if>
 
   /**
    * @param {!chrome.languageSettingsPrivate.Language} language
@@ -313,7 +313,7 @@ Polymer({
    * @private
    */
   onMoveToTopTap_: function() {
-    /** @type {!CrActionMenuElement} */(this.$.menu.get()).close();
+    /** @type {!CrActionMenuElement} */ (this.$.menu.get()).close();
     this.languageHelper.moveLanguageToFront(this.detailLanguage_.language.code);
   },
 
@@ -322,7 +322,7 @@ Polymer({
    * @private
    */
   onMoveUpTap_: function() {
-    /** @type {!CrActionMenuElement} */(this.$.menu.get()).close();
+    /** @type {!CrActionMenuElement} */ (this.$.menu.get()).close();
     this.languageHelper.moveLanguage(this.detailLanguage_.language.code, -1);
   },
 
@@ -331,7 +331,7 @@ Polymer({
    * @private
    */
   onMoveDownTap_: function() {
-    /** @type {!CrActionMenuElement} */(this.$.menu.get()).close();
+    /** @type {!CrActionMenuElement} */ (this.$.menu.get()).close();
     this.languageHelper.moveLanguage(this.detailLanguage_.language.code, 1);
   },
 
@@ -340,11 +340,11 @@ Polymer({
    * @private
    */
   onRemoveLanguageTap_: function() {
-    /** @type {!CrActionMenuElement} */(this.$.menu.get()).close();
+    /** @type {!CrActionMenuElement} */ (this.$.menu.get()).close();
     this.languageHelper.disableLanguage(this.detailLanguage_.language.code);
   },
 
-// <if expr="chromeos or is_win">
+  // <if expr="chromeos or is_win">
   /**
    * Checks whether the prospective UI language (the pref that indicates what
    * language to use in Chrome) matches the current language. This pref is used
@@ -359,15 +359,15 @@ Polymer({
     return languageCode == prospectiveUILanguage;
   },
 
- /**
-  * @param {string} prospectiveUILanguage
-  * @return {string}
-  * @private
-  */
+  /**
+   * @param {string} prospectiveUILanguage
+   * @return {string}
+   * @private
+   */
   getProspectiveUILanguageName_: function(prospectiveUILanguage) {
     return this.languageHelper.getLanguage(prospectiveUILanguage).displayName;
   },
-// </if>
+  // </if>
 
   /**
    * @return {string}
@@ -377,7 +377,7 @@ Polymer({
     return cr.isChromeOS || cr.isWindows ? 'two-line' : '';
   },
 
-// <if expr="not is_macosx">
+  // <if expr="not is_macosx">
   /**
    * Returns the secondary text for the spell check subsection based on the
    * enabled spell check languages, listing at most 2 languages.
@@ -388,7 +388,7 @@ Polymer({
     var enabledSpellCheckLanguages =
         this.languages.enabled.filter(function(languageState) {
           return languageState.spellCheckEnabled &&
-                 languageState.language.supportsSpellcheck;
+              languageState.language.supportsSpellcheck;
         });
     switch (enabledSpellCheckLanguages.length) {
       case 0:
@@ -433,8 +433,8 @@ Polymer({
     if (!item.language.supportsSpellcheck)
       return;
 
-    this.languageHelper.toggleSpellCheck(item.language.code,
-                                         !item.spellCheckEnabled);
+    this.languageHelper.toggleSpellCheck(
+        item.language.code, !item.spellCheckEnabled);
   },
 
   /**
@@ -444,7 +444,7 @@ Polymer({
   getSpellCheckListTwoLine_: function() {
     return this.spellCheckSecondaryText_.length ? 'two-line' : '';
   },
-// </if>
+  // </if>
 
   /**
    * Returns either the "selected" class, if the language matches the
@@ -463,7 +463,7 @@ Polymer({
     return '';
   },
 
-// <if expr="chromeos">
+  // <if expr="chromeos">
   /**
    * @param {string} id The input method ID.
    * @param {string} currentId The ID of the currently enabled input method.
@@ -488,13 +488,13 @@ Polymer({
 
   getInputMethodName_: function(id) {
     assert(cr.isChromeOS);
-    var inputMethod = this.languages.inputMethods.enabled.find(
-        function(inputMethod) {
+    var inputMethod =
+        this.languages.inputMethods.enabled.find(function(inputMethod) {
           return inputMethod.id == id;
         });
     return inputMethod ? inputMethod.displayName : '';
   },
-// </if>
+  // </if>
 
   /**
    * @param {!Event} e
@@ -503,18 +503,17 @@ Polymer({
   onDotsTap_: function(e) {
     // Set a copy of the LanguageState object since it is not data-bound to the
     // languages model directly.
-    this.detailLanguage_ = /** @type {!LanguageState} */(Object.assign(
+    this.detailLanguage_ = /** @type {!LanguageState} */ (Object.assign(
         {},
-        /** @type {!{model: !{item: !LanguageState}}} */(e).model.item));
+        /** @type {!{model: !{item: !LanguageState}}} */ (e).model.item));
 
     // Ensure the template has been stamped.
-    var menu = /** @type {?CrActionMenuElement} */(
-        this.$.menu.getIfExists());
+    var menu = /** @type {?CrActionMenuElement} */ (this.$.menu.getIfExists());
     if (!menu) {
-      menu = /** @type {!CrActionMenuElement} */(this.$.menu.get());
-// <if expr="chromeos">
+      menu = /** @type {!CrActionMenuElement} */ (this.$.menu.get());
+      // <if expr="chromeos">
       this.tweakMenuForCrOS_(menu);
-// </if>
+      // </if>
     }
 
     menu.showAt(/** @type {!Element} */ (e.target));
@@ -526,27 +525,27 @@ Polymer({
    * @private
    */
   closeMenuSoon_: function() {
-    var menu = /** @type {!CrActionMenuElement} */(this.$.menu.get());
+    var menu = /** @type {!CrActionMenuElement} */ (this.$.menu.get());
     setTimeout(function() {
       if (menu.open)
         menu.close();
     }, settings.kMenuCloseDelay);
   },
 
-// <if expr="chromeos or is_win">
+  // <if expr="chromeos or is_win">
   /**
    * Handler for the restart button.
    * @private
    */
   onRestartTap_: function() {
-// <if expr="chromeos">
+    // <if expr="chromeos">
     settings.LifetimeBrowserProxyImpl.getInstance().signOutAndRestart();
-// </if>
-// <if expr="is_win">
+    // </if>
+    // <if expr="is_win">
     settings.LifetimeBrowserProxyImpl.getInstance().restart();
-// </if>
+    // </if>
   },
-// </if>
+  // </if>
 
   /**
    * Toggles the expand button within the element being listened to.
