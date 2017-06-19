@@ -572,6 +572,7 @@ component("platform") {
     "exported/WebHTTPLoadInfo.cpp",
     "exported/WebImage.cpp",
     "exported/WebImageGenerator.cpp",
+    "exported/WebInputEvent.cpp",
     "exported/WebMediaConstraints.cpp",
     "exported/WebMediaDeviceInfo.cpp",
     "exported/WebMediaPlayerClient.cpp",
