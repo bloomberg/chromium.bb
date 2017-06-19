@@ -911,14 +911,6 @@
       include_paths: ["core/style/StyleMotionData.h"],
     },
     {
-      name: "ScrollSnapMargin",
-      field_template: "storage_only",
-      type_name: "ScrollSnapMargin",
-      field_group: "rare-non-inherited->scroll-snap",
-      default_value: "Length()",
-      include_paths: ["core/style/ScrollSnap.h"],
-    },
-    {
       name: "NamedGridColumnLines",
       field_template: "external",
       type_name: "NamedGridLinesMap",

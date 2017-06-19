@@ -10,8 +10,6 @@
 
 namespace blink {
 
-using ScrollSnapMargin = QuadLengthValue;
-
 struct ScrollSnapType {
   DISALLOW_NEW();
 
