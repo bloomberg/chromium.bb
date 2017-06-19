@@ -1457,10 +1457,6 @@ void ResourceFetcher::StopFetching() {
   }
 }
 
-bool ResourceFetcher::IsFetching() const {
-  return !loaders_.IsEmpty();
-}
-
 void ResourceFetcher::SetDefersLoading(bool defers) {
   for (const auto& loader : non_blocking_loaders_)
     loader->SetDefersLoading(defers);
