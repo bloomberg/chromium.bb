@@ -69,7 +69,6 @@ component("web") {
     "WebLocalFrameImpl.h",
     "WebPagePopupImpl.cpp",
     "WebPagePopupImpl.h",
-    "WebSurroundingText.cpp",
     "WebViewImpl.cpp",
     "WebViewImpl.h",
   ]
