@@ -7,7 +7,6 @@
 #include "base/memory/discardable_memory.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/trace_event/heap_profiler_heap_dump_writer.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "base/trace_event/trace_event_memory_overhead.h"
@@ -172,16 +171,6 @@ WebProcessMemoryDump::CreateDiscardableMemoryAllocatorDump(
       discardable->CreateMemoryAllocatorDump(name.c_str(),
                                              process_memory_dump_);
   return CreateWebMemoryAllocatorDump(dump);
-}
-
-void WebProcessMemoryDump::DumpHeapUsage(
-    const std::unordered_map<base::trace_event::AllocationContext,
-                             base::trace_event::AllocationMetrics>&
-        metrics_by_context,
-    base::trace_event::TraceEventMemoryOverhead& overhead,
-    const char* allocator_name) {
-  process_memory_dump_->DumpHeapUsage(metrics_by_context, overhead,
-                                      allocator_name);
 }
 
 }  // namespace content

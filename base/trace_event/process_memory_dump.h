@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/base_export.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_vector.h"
@@ -35,6 +36,7 @@ class UnguessableToken;
 
 namespace trace_event {
 
+class ShardedAllocationRegister;
 class HeapProfilerSerializationState;
 class TracedValue;
 
@@ -128,12 +130,8 @@ class BASE_EXPORT ProcessMemoryDump {
   const AllocatorDumpsMap& allocator_dumps() const { return allocator_dumps_; }
 
   // Dumps heap usage with |allocator_name|.
-  void DumpHeapUsage(
-      const std::unordered_map<base::trace_event::AllocationContext,
-                               base::trace_event::AllocationMetrics>&
-          metrics_by_context,
-      base::trace_event::TraceEventMemoryOverhead& overhead,
-      const char* allocator_name);
+  void DumpHeapUsage(const ShardedAllocationRegister& allocation_register,
+                     const char* allocator_name);
 
   // Adds an ownership relationship between two MemoryAllocatorDump(s) with the
   // semantics: |source| owns |target|, and has the effect of attributing

@@ -12,6 +12,7 @@
 #include "base/process/process_metrics.h"
 #include "base/trace_event/memory_allocator_dump_guid.h"
 #include "base/trace_event/memory_infra_background_whitelist.h"
+#include "base/trace_event/sharded_allocation_register.h"
 #include "base/trace_event/trace_event_argument.h"
 #include "base/unguessable_token.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -92,31 +93,29 @@ TEST(ProcessMemoryDumpTest, Clear) {
 
 TEST(ProcessMemoryDumpTest, TakeAllDumpsFrom) {
   std::unique_ptr<TracedValue> traced_value(new TracedValue);
-  std::unordered_map<AllocationContext, AllocationMetrics> metrics_by_context;
-  metrics_by_context[AllocationContext()] = { 1, 1 };
-  TraceEventMemoryOverhead overhead;
+  ShardedAllocationRegister allocation_register;
+  allocation_register.SetEnabled();
+  allocation_register.Insert("", 100, AllocationContext());
 
   scoped_refptr<HeapProfilerSerializationState>
       heap_profiler_serialization_state = new HeapProfilerSerializationState;
-  heap_profiler_serialization_state->SetStackFrameDeduplicator(
-      WrapUnique(new StackFrameDeduplicator));
-  heap_profiler_serialization_state->SetTypeNameDeduplicator(
-      WrapUnique(new TypeNameDeduplicator));
+  heap_profiler_serialization_state->CreateDeduplicators();
   std::unique_ptr<ProcessMemoryDump> pmd1(new ProcessMemoryDump(
       heap_profiler_serialization_state.get(), kDetailedDumpArgs));
+
   auto* mad1_1 = pmd1->CreateAllocatorDump("pmd1/mad1");
   auto* mad1_2 = pmd1->CreateAllocatorDump("pmd1/mad2");
   pmd1->AddOwnershipEdge(mad1_1->guid(), mad1_2->guid());
-  pmd1->DumpHeapUsage(metrics_by_context, overhead, "pmd1/heap_dump1");
-  pmd1->DumpHeapUsage(metrics_by_context, overhead, "pmd1/heap_dump2");
+  pmd1->DumpHeapUsage(allocation_register, "pmd1/heap_dump1");
+  pmd1->DumpHeapUsage(allocation_register, "pmd1/heap_dump2");
 
   std::unique_ptr<ProcessMemoryDump> pmd2(new ProcessMemoryDump(
       heap_profiler_serialization_state.get(), kDetailedDumpArgs));
   auto* mad2_1 = pmd2->CreateAllocatorDump("pmd2/mad1");
   auto* mad2_2 = pmd2->CreateAllocatorDump("pmd2/mad2");
   pmd2->AddOwnershipEdge(mad2_1->guid(), mad2_2->guid());
-  pmd2->DumpHeapUsage(metrics_by_context, overhead, "pmd2/heap_dump1");
-  pmd2->DumpHeapUsage(metrics_by_context, overhead, "pmd2/heap_dump2");
+  pmd2->DumpHeapUsage(allocation_register, "pmd2/heap_dump1");
+  pmd2->DumpHeapUsage(allocation_register, "pmd2/heap_dump2");
 
   MemoryAllocatorDumpGuid shared_mad_guid1(1);
   MemoryAllocatorDumpGuid shared_mad_guid2(2);
@@ -144,7 +143,9 @@ TEST(ProcessMemoryDumpTest, TakeAllDumpsFrom) {
   pmd2.reset();
 
   // Now check that |pmd1| has been effectively merged.
-  ASSERT_EQ(6u, pmd1->allocator_dumps().size());
+  // Note that DumpHeapUsage() adds an implicit dump for AllocationRegister's
+  // memory overhead.
+  ASSERT_EQ(10u, pmd1->allocator_dumps().size());
   ASSERT_EQ(1u, pmd1->allocator_dumps().count("pmd1/mad1"));
   ASSERT_EQ(1u, pmd1->allocator_dumps().count("pmd1/mad2"));
   ASSERT_EQ(1u, pmd1->allocator_dumps().count("pmd2/mad1"));
