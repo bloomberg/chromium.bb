@@ -37,12 +37,6 @@ class ChromeOutOfProcessPatcher : public update_client::OutOfProcessPatcher {
  private:
   ~ChromeOutOfProcessPatcher() override;
 
-  // Perform a patch operation using chrome::mojom::FilePatcher.
-  void PatchOnIOThread(const std::string& operation,
-                       base::File input_file,
-                       base::File patch_file,
-                       base::File output_file);
-
   // Patch operation result handler.
   void PatchDone(int result);
 

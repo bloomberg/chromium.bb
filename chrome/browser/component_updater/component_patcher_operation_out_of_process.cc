@@ -50,18 +50,6 @@ void ChromeOutOfProcessPatcher::Patch(
     return;
   }
 
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::Bind(&ChromeOutOfProcessPatcher::PatchOnIOThread, this, operation,
-                 base::Passed(&input_file), base::Passed(&patch_file),
-                 base::Passed(&output_file)));
-}
-
-void ChromeOutOfProcessPatcher::PatchOnIOThread(const std::string& operation,
-                                                base::File input_file,
-                                                base::File patch_file,
-                                                base::File output_file) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(!utility_process_mojo_client_);
 
   utility_process_mojo_client_ = base::MakeUnique<
@@ -86,8 +74,6 @@ void ChromeOutOfProcessPatcher::PatchOnIOThread(const std::string& operation,
 }
 
 void ChromeOutOfProcessPatcher::PatchDone(int result) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-
   utility_process_mojo_client_.reset();  // Terminate the utility process.
   task_runner_->PostTask(FROM_HERE, base::Bind(callback_, result));
 }
