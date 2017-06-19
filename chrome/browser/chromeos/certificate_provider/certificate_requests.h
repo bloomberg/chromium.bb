@@ -13,7 +13,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_info.h"
-#include "net/cert/x509_certificate.h"
+#include "net/ssl/client_cert_identity.h"
 
 namespace chromeos {
 namespace certificate_provider {
@@ -29,7 +29,7 @@ class CertificateRequests {
   // SetCertificates() was called for all extensions in |extension_ids|.
   int AddRequest(
       const std::vector<std::string>& extension_ids,
-      const base::Callback<void(const net::CertificateList&)>& callback,
+      const base::Callback<void(net::ClientCertIdentityList)>& callback,
       const base::Callback<void(int)>& timeout_callback);
 
   // Returns whether this reply was expected, i.e. the request with |request_id|
@@ -47,7 +47,7 @@ class CertificateRequests {
   bool RemoveRequest(
       int request_id,
       std::map<std::string, CertificateInfoList>* certificates,
-      base::Callback<void(const net::CertificateList&)>* callback);
+      base::Callback<void(net::ClientCertIdentityList)>* callback);
 
   // Removes this extension from all pending requests and returns the ids of
   // all completed requests.

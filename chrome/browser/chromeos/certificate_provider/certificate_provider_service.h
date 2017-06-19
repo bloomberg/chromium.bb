@@ -24,6 +24,7 @@
 #include "chrome/browser/chromeos/certificate_provider/thread_safe_certificate_map.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "net/cert/x509_certificate.h"
+#include "net/ssl/client_cert_identity.h"
 #include "net/ssl/ssl_private_key.h"
 
 namespace chromeos {
@@ -154,7 +155,7 @@ class CertificateProviderService : public KeyedService {
   PinDialogManager* pin_dialog_manager() { return &pin_dialog_manager_; }
 
  private:
-  class CertKeyProviderImpl;
+  class ClientCertIdentity;
   class CertificateProviderImpl;
   class SSLPrivateKey;
 
@@ -163,7 +164,7 @@ class CertificateProviderService : public KeyedService {
   // |extension_to_certificates_| is updated and |callback| is run with the
   // retrieved list of certificates.
   void GetCertificatesFromExtensions(
-      const base::Callback<void(const net::CertificateList&)>& callback);
+      const base::Callback<void(net::ClientCertIdentityList)>& callback);
 
   // Copies the given certificates into the internal
   // |extension_to_certificates_|. Any previously stored certificates are
@@ -171,7 +172,7 @@ class CertificateProviderService : public KeyedService {
   void UpdateCertificatesAndRun(
       const std::map<std::string, CertificateInfoList>&
           extension_to_certificates,
-      const base::Callback<void(const net::CertificateList&)>& callback);
+      const base::Callback<void(net::ClientCertIdentityList)>& callback);
 
   // Terminates the certificate request with id |cert_request_id| by ignoring
   // pending replies from extensions. Certificates that were already reported
@@ -189,10 +190,6 @@ class CertificateProviderService : public KeyedService {
       const net::SSLPrivateKey::SignCallback& callback);
 
   std::unique_ptr<Delegate> delegate_;
-
-  // An instance of net::ClientKeyStore::CertKeyProvider that is registered at
-  // the net::ClientKeyStore singleton.
-  std::unique_ptr<CertKeyProviderImpl> cert_key_provider_;
 
   // The object to manage the dialog displayed when requestPin is called by the
   // extension.
