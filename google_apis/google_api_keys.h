@@ -71,8 +71,6 @@ std::string GetAPIKey();
 // Non-stable channels may have a different Google API key.
 std::string GetNonStableAPIKey();
 
-std::string GetRemotingAPIKey();
-
 #if defined(OS_IOS)
 // Sets the API key. This should be called as early as possible before this
 // API key is even accessed.
