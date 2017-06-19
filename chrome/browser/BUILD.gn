@@ -2321,6 +2321,8 @@ split_static_library("browser") {
         "safe_browsing/client_side_detection_service.h",
         "safe_browsing/client_side_model_loader.cc",
         "safe_browsing/client_side_model_loader.h",
+        "safe_browsing/disk_image_type_sniffer_mac.cc",
+        "safe_browsing/disk_image_type_sniffer_mac.h",
         "safe_browsing/download_feedback.cc",
         "safe_browsing/download_feedback.h",
         "safe_browsing/download_feedback_service.cc",

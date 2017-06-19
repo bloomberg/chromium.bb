@@ -74,6 +74,7 @@
 #include "net/url_request/url_request_status.h"
 
 #if defined(OS_MACOSX)
+#include "chrome/browser/safe_browsing/disk_image_type_sniffer_mac.h"
 #include "chrome/browser/safe_browsing/sandboxed_dmg_analyzer_mac.h"
 #endif
 
@@ -471,7 +472,19 @@ class DownloadProtectionService::CheckClientDownloadRequest
       StartExtractDmgFeatures();
 #endif
     } else {
+#if defined(OS_MACOSX)
+      // Checks for existence of "koly" signature even if file doesn't have
+      // archive-type extension, then calls ExtractFileOrDmgFeatures() with
+      // result.
+      BrowserThread::PostTaskAndReplyWithResult(
+          BrowserThread::FILE, FROM_HERE,
+          base::Bind(DiskImageTypeSnifferMac::IsAppleDiskImage,
+                     item_->GetTargetFilePath()),
+          base::Bind(&CheckClientDownloadRequest::ExtractFileOrDmgFeatures,
+                     this));
+#else
       StartExtractFileFeatures();
+#endif
     }
   }
 
@@ -777,6 +790,23 @@ class DownloadProtectionService::CheckClientDownloadRequest
                    weakptr_factory_.GetWeakPtr()));
     dmg_analyzer_->Start();
     dmg_analysis_start_time_ = base::TimeTicks::Now();
+  }
+
+  // Extracts DMG features if file has 'koly' signature, otherwise extracts
+  // regular file features.
+  void ExtractFileOrDmgFeatures(bool download_file_has_koly_signature) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    UMA_HISTOGRAM_BOOLEAN(
+        "SBClientDownload."
+        "DownloadFileWithoutDiskImageExtensionHasKolySignature",
+        download_file_has_koly_signature);
+    // Returns if DownloadItem was destroyed during parsing of file metadata.
+    if (item_ == nullptr)
+      return;
+    if (download_file_has_koly_signature)
+      StartExtractDmgFeatures();
+    else
+      StartExtractFileFeatures();
   }
 
   void OnDmgAnalysisFinished(const ArchiveAnalyzerResults& results) {

@@ -64222,6 +64222,18 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram
+    name="SBClientDownload.DownloadFileWithoutDiskImageExtensionHasKolySignature"
+    enum="Boolean">
+  <owner>jialiul@chromium.org</owner>
+  <summary>
+    Records whether download files without an Apple disk image file extension
+    have a 'koly' signature. This can be used to identify distribution of disk
+    image files to Mac users without simply relying on file extension. This
+    metric is logged before Chrome sends SafeBrowsing download pings.
+  </summary>
+</histogram>
+
 <histogram name="SBClientDownload.DownloadRequestDuration" units="ms">
   <owner>mattm@chromium.org</owner>
   <summary>
