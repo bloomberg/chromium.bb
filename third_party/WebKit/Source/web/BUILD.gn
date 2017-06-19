@@ -116,10 +116,8 @@ test("webkit_unit_tests") {
 
   sources = [
     "PageOverlayTest.cpp",
-    "WebAssociatedURLLoaderImplTest.cpp",
     "WebDragDataTest.cpp",
     "WebElementTest.cpp",
-    "WebNodeTest.cpp",
 
     # FIXME: Move the tests from web/tests/ to appropriate places.
     # crbug.com/353585
