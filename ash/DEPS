@@ -46,6 +46,9 @@ include_rules = [
   # TODO(jamescook): Eliminate this. http://crbug.com/644361
   "+chromeos/settings/timezone_settings.h",
   "+chromeos/system",
+
+  # Ozone does not run in process in mus/mash.
+  "-ui/ozone",
 ]
 
 specific_include_rules = {

@@ -6,11 +6,17 @@
 
 #include "ash/host/root_window_transformer.h"
 #include "ash/host/transformer_helper.h"
+#include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "base/memory/ptr_util.h"
 #include "ui/aura/mus/window_tree_host_mus_init_params.h"
 #include "ui/aura/window.h"
 #include "ui/events/event_sink.h"
 #include "ui/events/null_event_targeter.h"
+
+#if defined(USE_OZONE)
+#include "services/ui/public/cpp/input_devices/input_device_controller_client.h"
+#endif
 
 namespace ash {
 
@@ -83,6 +89,18 @@ gfx::Transform AshWindowTreeHostMus::GetInverseRootTransform() const {
 void AshWindowTreeHostMus::UpdateRootWindowSizeInPixels(
     const gfx::Size& host_size_in_pixels) {
   transformer_helper_->UpdateWindowSize(host_size_in_pixels);
+}
+
+void AshWindowTreeHostMus::OnCursorVisibilityChangedNative(bool show) {
+#if defined(USE_OZONE)
+  ui::InputDeviceControllerClient* input_device_controller_client =
+      Shell::Get()->shell_delegate()->GetInputDeviceControllerClient();
+  if (!input_device_controller_client)
+    return;  // Happens in tests.
+
+  // Temporarily pause tap-to-click when the cursor is hidden.
+  input_device_controller_client->SetTapToClickPaused(!show);
+#endif
 }
 
 }  // namespace ash

@@ -24,6 +24,8 @@
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
@@ -74,6 +76,10 @@
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+
+#if defined(USE_OZONE)
+#include "services/ui/public/cpp/input_devices/input_device_controller_client.h"
+#endif
 
 using chromeos::AccessibilityManager;
 
@@ -616,6 +622,13 @@ std::unique_ptr<ash::WallpaperDelegate>
 ChromeShellDelegate::CreateWallpaperDelegate() {
   return base::WrapUnique(chromeos::CreateWallpaperDelegate());
 }
+
+#if defined(USE_OZONE)
+ui::InputDeviceControllerClient*
+ChromeShellDelegate::GetInputDeviceControllerClient() {
+  return g_browser_process->platform_part()->GetInputDeviceControllerClient();
+}
+#endif
 
 void ChromeShellDelegate::Observe(int type,
                                   const content::NotificationSource& source,

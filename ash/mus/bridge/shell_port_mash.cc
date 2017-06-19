@@ -42,8 +42,6 @@
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/maximize_mode/maximize_mode_event_handler.h"
 #include "ash/wm/maximize_mode/maximize_mode_event_handler_aura.h"
-#include "ash/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard.h"
-#include "ash/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_ozone.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_cycle_event_filter.h"
 #include "ash/wm/window_cycle_event_filter_aura.h"
@@ -331,24 +329,6 @@ ShellPortMash::CreateMaximizeModeEventHandler() {
 
   // TODO: need support for window manager to get events before client:
   // http://crbug.com/624157.
-  NOTIMPLEMENTED();
-  return nullptr;
-}
-
-std::unique_ptr<ScopedDisableInternalMouseAndKeyboard>
-ShellPortMash::CreateScopedDisableInternalMouseAndKeyboard() {
-  if (Shell::ShouldEnableSimplifiedDisplayManagement()) {
-#if defined(USE_OZONE)
-    return base::MakeUnique<ScopedDisableInternalMouseAndKeyboardOzone>();
-#else
-    // TODO: remove this conditional. Bots build this config, but it is never
-    // actually used. http://crbug.com/671355.
-    NOTREACHED();
-    return nullptr;
-#endif
-  }
-
-  // TODO: needs implementation for mus, http://crbug.com/624967.
   NOTIMPLEMENTED();
   return nullptr;
 }

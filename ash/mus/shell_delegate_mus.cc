@@ -18,6 +18,10 @@
 #include "components/user_manager/user_info_impl.h"
 #include "ui/gfx/image/image.h"
 
+#if defined(USE_OZONE)
+#include "services/ui/public/cpp/input_devices/input_device_controller_client.h"
+#endif
+
 namespace ash {
 
 ShellDelegateMus::ShellDelegateMus(service_manager::Connector* connector)
@@ -143,5 +147,19 @@ void ShellDelegateMus::SetTouchscreenEnabledInPrefs(bool enabled,
 void ShellDelegateMus::UpdateTouchscreenStatusFromPrefs() {
   NOTIMPLEMENTED();
 }
+
+#if defined(USE_OZONE)
+ui::InputDeviceControllerClient*
+ShellDelegateMus::GetInputDeviceControllerClient() {
+  if (!connector_)
+    return nullptr;  // Happens in tests.
+
+  if (!input_device_controller_client_) {
+    input_device_controller_client_ =
+        base::MakeUnique<ui::InputDeviceControllerClient>(connector_);
+  }
+  return input_device_controller_client_.get();
+}
+#endif
 
 }  // namespace ash

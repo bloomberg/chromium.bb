@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef ASH_WM_MAXIMIZE_MODE_MAXIMIZE_MODE_BACKDROP_DELEGATE_IMPL_H_
+#define ASH_WM_MAXIMIZE_MODE_MAXIMIZE_MODE_BACKDROP_DELEGATE_IMPL_H_
+
 #include "ash/wm/workspace/backdrop_delegate.h"
 
 #include "ash/ash_export.h"
@@ -25,3 +28,5 @@ class ASH_EXPORT MaximizeModeBackdropDelegateImpl : public BackdropDelegate {
 };
 
 }  // namespace ash
+
+#endif  // ASH_WM_MAXIMIZE_MODE_MAXIMIZE_MODE_BACKDROP_DELEGATE_IMPL_H_

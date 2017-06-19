@@ -73,8 +73,9 @@ class ASH_EXPORT ShellObserver {
   // Called at the end of Shell::Init.
   virtual void OnShellInitialized() {}
 
-  // Called early on in ~Shell.
-  virtual void OnShellDestroying() {}
+  // Called near the end of ~Shell. Shell::Get() still returns the Shell, but
+  // most of Shell's state has been deleted.
+  virtual void OnShellDestroyed() {}
 
  protected:
   virtual ~ShellObserver() {}

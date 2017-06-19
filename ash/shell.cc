@@ -632,9 +632,6 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
 Shell::~Shell() {
   TRACE_EVENT0("shutdown", "ash::Shell::Destructor");
 
-  for (auto& observer : shell_observers_)
-    observer.OnShellDestroying();
-
   const Config config = shell_port_->GetAshConfig();
 
   if (config != Config::MASH)
@@ -818,6 +815,9 @@ Shell::~Shell() {
   night_light_controller_ = nullptr;
   pref_service_ = nullptr;
   shell_delegate_.reset();
+
+  for (auto& observer : shell_observers_)
+    observer.OnShellDestroyed();
 
   DCHECK(instance_ == this);
   instance_ = nullptr;

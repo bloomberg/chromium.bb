@@ -47,7 +47,6 @@ class ImmersiveFullscreenController;
 class KeyEventWatcher;
 class KeyboardUI;
 class RootWindowController;
-class ScopedDisableInternalMouseAndKeyboard;
 struct ShellInitParams;
 class WindowCycleEventFilter;
 class WindowResizer;
@@ -170,9 +169,6 @@ class ASH_EXPORT ShellPort {
 
   virtual std::unique_ptr<WorkspaceEventHandler> CreateWorkspaceEventHandler(
       aura::Window* workspace_window) = 0;
-
-  virtual std::unique_ptr<ScopedDisableInternalMouseAndKeyboard>
-  CreateScopedDisableInternalMouseAndKeyboard() = 0;
 
   virtual std::unique_ptr<ImmersiveFullscreenController>
   CreateImmersiveFullscreenController() = 0;

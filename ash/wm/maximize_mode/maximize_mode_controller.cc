@@ -8,6 +8,7 @@
 
 #include "ash/ash_switches.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/shell_port.h"
 #include "ash/wm/maximize_mode/maximize_mode_window_manager.h"
 #include "ash/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard.h"
@@ -23,6 +24,12 @@
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/geometry/vector3d_f.h"
+
+#if defined(USE_X11)
+#include "ash/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_x11.h"
+#elif defined(USE_OZONE)
+#include "ash/wm/maximize_mode/scoped_disable_internal_mouse_and_keyboard_ozone.h"
+#endif
 
 namespace ash {
 
@@ -99,6 +106,16 @@ MaximizeModeController::ForceTabletMode GetMaximizeMode() {
       return MaximizeModeController::ForceTabletMode::TOUCHVIEW;
   }
   return MaximizeModeController::ForceTabletMode::NONE;
+}
+
+std::unique_ptr<ScopedDisableInternalMouseAndKeyboard>
+CreateScopedDisableInternalMouseAndKeyboard() {
+#if defined(USE_X11)
+  return base::MakeUnique<ScopedDisableInternalMouseAndKeyboardX11>();
+#elif defined(USE_OZONE)
+  return base::MakeUnique<ScopedDisableInternalMouseAndKeyboardOzone>();
+#endif
+  return nullptr;
 }
 
 }  // namespace
@@ -352,8 +369,7 @@ void MaximizeModeController::HandleHingeRotation(
 void MaximizeModeController::EnterMaximizeMode() {
   // Always reset first to avoid creation before destruction of a previous
   // object.
-  event_blocker_ =
-      ShellPort::Get()->CreateScopedDisableInternalMouseAndKeyboard();
+  event_blocker_ = CreateScopedDisableInternalMouseAndKeyboard();
 
   if (IsMaximizeModeWindowManagerEnabled())
     return;
