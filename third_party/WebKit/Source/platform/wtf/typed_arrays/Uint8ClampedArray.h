@@ -35,12 +35,12 @@ namespace WTF {
 
 class Uint8ClampedArray final : public Uint8Array {
  public:
-  static inline PassRefPtr<Uint8ClampedArray> Create(unsigned length);
-  static inline PassRefPtr<Uint8ClampedArray> Create(const unsigned char* array,
-                                                     unsigned length);
-  static inline PassRefPtr<Uint8ClampedArray> Create(PassRefPtr<ArrayBuffer>,
-                                                     unsigned byte_offset,
-                                                     unsigned length);
+  static inline RefPtr<Uint8ClampedArray> Create(unsigned length);
+  static inline RefPtr<Uint8ClampedArray> Create(const unsigned char* array,
+                                                 unsigned length);
+  static inline RefPtr<Uint8ClampedArray> Create(RefPtr<ArrayBuffer>,
+                                                 unsigned byte_offset,
+                                                 unsigned length);
 
   using TypedArrayBase<unsigned char>::Set;
   inline void Set(unsigned index, double value);
@@ -48,28 +48,26 @@ class Uint8ClampedArray final : public Uint8Array {
   ViewType GetType() const override { return kTypeUint8Clamped; }
 
  private:
-  inline Uint8ClampedArray(PassRefPtr<ArrayBuffer>,
+  inline Uint8ClampedArray(RefPtr<ArrayBuffer>,
                            unsigned byte_offset,
                            unsigned length);
   // Make constructor visible to superclass.
   friend class TypedArrayBase<unsigned char>;
 };
 
-PassRefPtr<Uint8ClampedArray> Uint8ClampedArray::Create(unsigned length) {
+RefPtr<Uint8ClampedArray> Uint8ClampedArray::Create(unsigned length) {
   return TypedArrayBase<unsigned char>::Create<Uint8ClampedArray>(length);
 }
 
-PassRefPtr<Uint8ClampedArray> Uint8ClampedArray::Create(
-    const unsigned char* array,
-    unsigned length) {
+RefPtr<Uint8ClampedArray> Uint8ClampedArray::Create(const unsigned char* array,
+                                                    unsigned length) {
   return TypedArrayBase<unsigned char>::Create<Uint8ClampedArray>(array,
                                                                   length);
 }
 
-PassRefPtr<Uint8ClampedArray> Uint8ClampedArray::Create(
-    PassRefPtr<ArrayBuffer> buffer,
-    unsigned byte_offset,
-    unsigned length) {
+RefPtr<Uint8ClampedArray> Uint8ClampedArray::Create(RefPtr<ArrayBuffer> buffer,
+                                                    unsigned byte_offset,
+                                                    unsigned length) {
   return TypedArrayBase<unsigned char>::Create<Uint8ClampedArray>(
       std::move(buffer), byte_offset, length);
 }
@@ -84,7 +82,7 @@ void Uint8ClampedArray::Set(unsigned index, double value) {
   Data()[index] = static_cast<unsigned char>(lrint(value));
 }
 
-Uint8ClampedArray::Uint8ClampedArray(PassRefPtr<ArrayBuffer> buffer,
+Uint8ClampedArray::Uint8ClampedArray(RefPtr<ArrayBuffer> buffer,
                                      unsigned byte_offset,
                                      unsigned length)
     : Uint8Array(std::move(buffer), byte_offset, length) {}
