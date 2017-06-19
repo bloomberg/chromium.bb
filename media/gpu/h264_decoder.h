@@ -18,6 +18,7 @@
 #include "media/gpu/accelerated_video_decoder.h"
 #include "media/gpu/h264_dpb.h"
 #include "media/gpu/media_gpu_export.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace media {
@@ -266,6 +267,8 @@ class MEDIA_GPU_EXPORT H264Decoder : public AcceleratedVideoDecoder {
 
   // Output picture size.
   gfx::Size pic_size_;
+  // Output visible cropping rect.
+  gfx::Rect visible_rect_;
 
   // PicOrderCount of the previously outputted frame.
   int last_output_poc_;

@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "media/filters/h264_parser.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace media {
 
@@ -83,6 +84,10 @@ class H264Picture : public base::RefCounted<H264Picture> {
 
   // Position in DPB (i.e. index in DPB).
   int dpb_position;
+
+  // The visible size of picture. This could be either parsed from SPS, or set
+  // to gfx::Rect(0, 0) for indicating invalid values or not available.
+  gfx::Rect visible_rect;
 
  protected:
   friend class base::RefCounted<H264Picture>;

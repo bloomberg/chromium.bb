@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "media/filters/vp9_parser.h"
+#include "ui/gfx/geometry/rect.h"
 
 namespace media {
 
@@ -24,6 +25,11 @@ class VP9Picture : public base::RefCounted<VP9Picture> {
   virtual VaapiVP9Picture* AsVaapiVP9Picture();
 
   std::unique_ptr<Vp9FrameHeader> frame_hdr;
+
+  // The visible size of picture. This could be either parsed from frame
+  // header, or set to gfx::Rect(0, 0) for indicating invalid values or
+  // not available.
+  gfx::Rect visible_rect;
 
  protected:
   friend class base::RefCounted<VP9Picture>;

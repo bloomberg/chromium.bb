@@ -67,6 +67,11 @@ class VaapiVideoDecodeAccelerator::VaapiDecodeSurface
 
   int32_t bitstream_id() const { return bitstream_id_; }
   scoped_refptr<VASurface> va_surface() { return va_surface_; }
+  gfx::Rect visible_rect() const { return visible_rect_; }
+
+  void set_visible_rect(const gfx::Rect& visible_rect) {
+    visible_rect_ = visible_rect;
+  }
 
  private:
   friend class base::RefCountedThreadSafe<VaapiDecodeSurface>;
@@ -74,6 +79,7 @@ class VaapiVideoDecodeAccelerator::VaapiDecodeSurface
 
   int32_t bitstream_id_;
   scoped_refptr<VASurface> va_surface_;
+  gfx::Rect visible_rect_;
 };
 
 VaapiVideoDecodeAccelerator::VaapiDecodeSurface::VaapiDecodeSurface(
@@ -409,6 +415,7 @@ bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
 void VaapiVideoDecodeAccelerator::OutputPicture(
     const scoped_refptr<VASurface>& va_surface,
     int32_t input_id,
+    gfx::Rect visible_rect,
     VaapiPicture* picture) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
@@ -427,14 +434,12 @@ void VaapiVideoDecodeAccelerator::OutputPicture(
   // Notify the client a picture is ready to be displayed.
   ++num_frames_at_client_;
   TRACE_COUNTER1("Video Decoder", "Textures at client", num_frames_at_client_);
-  DVLOG(4) << "Notifying output picture id " << output_id
-           << " for input " << input_id << " is ready";
-  // TODO(posciak): Use visible size from decoder here instead
-  // (crbug.com/402760). Passing (0, 0) results in the client using the
-  // visible size extracted from the container instead.
+  DVLOG(4) << "Notifying output picture id " << output_id << " for input "
+           << input_id
+           << " is ready. visible rect: " << visible_rect.ToString();
   // TODO(hubbe): Use the correct color space.  http://crbug.com/647725
   if (client_)
-    client_->PictureReady(Picture(output_id, input_id, gfx::Rect(0, 0),
+    client_->PictureReady(Picture(output_id, input_id, visible_rect,
                                   gfx::ColorSpace(), picture->AllowOverlay()));
 }
 
@@ -1143,7 +1148,8 @@ void VaapiVideoDecodeAccelerator::SurfaceReady(
 
   pending_output_cbs_.push(
       base::Bind(&VaapiVideoDecodeAccelerator::OutputPicture, weak_this_,
-                 dec_surface->va_surface(), dec_surface->bitstream_id()));
+                 dec_surface->va_surface(), dec_surface->bitstream_id(),
+                 dec_surface->visible_rect()));
 
   TryOutputSurface();
 }
@@ -1426,7 +1432,7 @@ bool VaapiVideoDecodeAccelerator::VaapiH264Accelerator::OutputPicture(
     const scoped_refptr<H264Picture>& pic) {
   scoped_refptr<VaapiDecodeSurface> dec_surface =
       H264PictureToVaapiDecodeSurface(pic);
-
+  dec_surface->set_visible_rect(pic->visible_rect);
   vaapi_dec_->SurfaceReady(dec_surface);
 
   return true;
@@ -1713,7 +1719,7 @@ bool VaapiVideoDecodeAccelerator::VaapiVP8Accelerator::OutputPicture(
     const scoped_refptr<VP8Picture>& pic) {
   scoped_refptr<VaapiDecodeSurface> dec_surface =
       VP8PictureToVaapiDecodeSurface(pic);
-
+  dec_surface->set_visible_rect(pic->visible_rect);
   vaapi_dec_->SurfaceReady(dec_surface);
   return true;
 }
@@ -1877,7 +1883,7 @@ bool VaapiVideoDecodeAccelerator::VaapiVP9Accelerator::OutputPicture(
     const scoped_refptr<VP9Picture>& pic) {
   scoped_refptr<VaapiDecodeSurface> dec_surface =
       VP9PictureToVaapiDecodeSurface(pic);
-
+  dec_surface->set_visible_rect(pic->visible_rect);
   vaapi_dec_->SurfaceReady(dec_surface);
   return true;
 }

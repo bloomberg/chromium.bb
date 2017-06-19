@@ -145,10 +145,12 @@ class MEDIA_GPU_EXPORT VaapiVideoDecodeAccelerator
 
   // Callback to be executed once we have a |va_surface| to be output and
   // an available |picture| to use for output.
-  // Puts contents of |va_surface| into given |picture|, releases the
-  // surface and passes the resulting picture to client for output.
+  // Puts contents of |va_surface| into given |picture|, releases the surface
+  // and passes the resulting picture to client to output the given
+  // |visible_rect| part of it.
   void OutputPicture(const scoped_refptr<VASurface>& va_surface,
                      int32_t input_id,
+                     gfx::Rect visible_rect,
                      VaapiPicture* picture);
 
   // Try to OutputPicture() if we have both a ready surface and picture.
