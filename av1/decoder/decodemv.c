@@ -2498,8 +2498,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   mbmi->interinter_compound_type = COMPOUND_AVERAGE;
   if (
 #if CONFIG_COMPOUND_SINGLEREF
-      (is_inter_compound_mode(mbmi->mode) ||
-       is_inter_singleref_comp_mode(mbmi->mode))
+      is_inter_anyref_comp_mode(mbmi->mode)
 #else   // !CONFIG_COMPOUND_SINGLEREF
       cm->reference_mode != SINGLE_REFERENCE &&
       is_inter_compound_mode(mbmi->mode)

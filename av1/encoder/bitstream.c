@@ -2201,8 +2201,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
 #if CONFIG_EXT_INTER
     if (
 #if CONFIG_COMPOUND_SINGLEREF
-        (is_inter_compound_mode(mbmi->mode) ||
-         is_inter_singleref_comp_mode(mbmi->mode)) &&
+        is_inter_anyref_comp_mode(mbmi->mode) &&
 #else   // !CONFIG_COMPOUND_SINGLEREF
         cpi->common.reference_mode != SINGLE_REFERENCE &&
         is_inter_compound_mode(mbmi->mode) &&
