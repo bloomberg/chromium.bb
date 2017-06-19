@@ -37,6 +37,7 @@ class AutofillHandler {
   // Invoked when the value of textfield is changed.
   void OnTextFieldDidChange(const FormData& form,
                             const FormFieldData& field,
+                            const gfx::RectF& bounding_box,
                             const base::TimeTicks timestamp);
 
   // Invoked when the |form| needs to be autofilled, the |bounding_box| is
@@ -57,6 +58,11 @@ class AutofillHandler {
   // Processes the about-to-be-submitted |form|, uploading the possible field
   // types for the submitted fields to the crowdsourcing server.
   bool OnWillSubmitForm(const FormData& form, const base::TimeTicks timestamp);
+
+  // Invoked when |form|'s |field| has focus.
+  void OnFocusOnFormField(const FormData& form,
+                          const FormFieldData& field,
+                          const gfx::RectF& bounding_box);
 
   // Invoked when focus is no longer on form.
   virtual void OnFocusNoLongerOnForm() = 0;
@@ -104,12 +110,17 @@ class AutofillHandler {
 
   virtual void OnTextFieldDidChangeImpl(const FormData& form,
                                         const FormFieldData& field,
+                                        const gfx::RectF& bounding_box,
                                         const base::TimeTicks timestamp) = 0;
 
   virtual void OnQueryFormFieldAutofillImpl(int query_id,
                                             const FormData& form,
                                             const FormFieldData& field,
                                             const gfx::RectF& bounding_box) = 0;
+
+  virtual void OnFocusOnFormFieldImpl(const FormData& form,
+                                      const FormFieldData& field,
+                                      const gfx::RectF& bounding_box) = 0;
 
   AutofillDriver* driver() { return driver_; }
 

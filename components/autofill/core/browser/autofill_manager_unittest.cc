@@ -4341,7 +4341,7 @@ TEST_F(AutofillManagerTest, OnTextFieldDidChangeAndUnfocus_Upload) {
   form.fields[2].value = ASCIIToUTF16("theking@gmail.com");
   // Simulate editing a field.
   autofill_manager_->OnTextFieldDidChange(form, form.fields.front(),
-                                          base::TimeTicks::Now());
+                                          gfx::RectF(), base::TimeTicks::Now());
 
   autofill_manager_->ResetRunLoop();
   // Simulate lost of focus on the form.
@@ -4394,7 +4394,7 @@ TEST_F(AutofillManagerTest, OnTextFieldDidChangeAndNavigation_Upload) {
   form.fields[2].value = ASCIIToUTF16("theking@gmail.com");
   // Simulate editing a field.
   autofill_manager_->OnTextFieldDidChange(form, form.fields.front(),
-                                          base::TimeTicks::Now());
+                                          gfx::RectF(), base::TimeTicks::Now());
 
   autofill_manager_->ResetRunLoop();
   // Simulate a navigation so that the pending form is uploaded.

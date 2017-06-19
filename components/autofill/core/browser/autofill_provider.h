@@ -32,6 +32,7 @@ class AutofillProvider {
   virtual void OnTextFieldDidChange(AutofillHandlerProxy* handler,
                                     const FormData& form,
                                     const FormFieldData& field,
+                                    const gfx::RectF& bounding_box,
                                     const base::TimeTicks timestamp) = 0;
 
   virtual bool OnWillSubmitForm(AutofillHandlerProxy* handler,
@@ -39,6 +40,11 @@ class AutofillProvider {
                                 const base::TimeTicks timestamp) = 0;
 
   virtual void OnFocusNoLongerOnForm(AutofillHandlerProxy* handler) = 0;
+
+  virtual void OnFocusOnFormField(AutofillHandlerProxy* handler,
+                                  const FormData& form,
+                                  const FormFieldData& field,
+                                  const gfx::RectF& bounding_box) = 0;
 
   virtual void OnDidFillAutofillFormData(AutofillHandlerProxy* handler,
                                          const FormData& form,
@@ -50,6 +56,7 @@ class AutofillProvider {
                               int requestId,
                               const FormData& formData);
 };
-}
+
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_PROVIDER_H_

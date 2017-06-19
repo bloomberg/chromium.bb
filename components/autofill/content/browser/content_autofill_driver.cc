@@ -199,8 +199,9 @@ void ContentAutofillDriver::FormSubmitted(const FormData& form) {
 
 void ContentAutofillDriver::TextFieldDidChange(const FormData& form,
                                                const FormFieldData& field,
+                                               const gfx::RectF& bounding_box,
                                                base::TimeTicks timestamp) {
-  autofill_handler_->OnTextFieldDidChange(form, field, timestamp);
+  autofill_handler_->OnTextFieldDidChange(form, field, bounding_box, timestamp);
 }
 
 void ContentAutofillDriver::QueryFormFieldAutofill(
@@ -217,6 +218,12 @@ void ContentAutofillDriver::HidePopup() {
 
 void ContentAutofillDriver::FocusNoLongerOnForm() {
   autofill_handler_->OnFocusNoLongerOnForm();
+}
+
+void ContentAutofillDriver::FocusOnFormField(const FormData& form,
+                                             const FormFieldData& field,
+                                             const gfx::RectF& bounding_box) {
+  autofill_handler_->OnFocusOnFormField(form, field, bounding_box);
 }
 
 void ContentAutofillDriver::DidFillAutofillFormData(const FormData& form,

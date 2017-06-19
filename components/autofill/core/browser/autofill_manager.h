@@ -242,11 +242,15 @@ class AutofillManager : public AutofillHandler,
                             const base::TimeTicks timestamp) override;
   void OnTextFieldDidChangeImpl(const FormData& form,
                                 const FormFieldData& field,
+                                const gfx::RectF& bounding_box,
                                 const base::TimeTicks timestamp) override;
   void OnQueryFormFieldAutofillImpl(int query_id,
                                     const FormData& form,
                                     const FormFieldData& field,
                                     const gfx::RectF& transformed_box) override;
+  void OnFocusOnFormFieldImpl(const FormData& form,
+                              const FormFieldData& field,
+                              const gfx::RectF& bounding_box) override;
 
   std::vector<std::unique_ptr<FormStructure>>* form_structures() {
     return &form_structures_;

@@ -515,6 +515,7 @@ void AutofillManager::ProcessPendingFormForUpload() {
 
 void AutofillManager::OnTextFieldDidChangeImpl(const FormData& form,
                                                const FormFieldData& field,
+                                               const gfx::RectF& bounding_box,
                                                const TimeTicks timestamp) {
   if (test_delegate_)
     test_delegate_->OnTextFieldChanged();
@@ -810,6 +811,10 @@ void AutofillManager::FillCreditCardForm(int query_id,
 void AutofillManager::OnFocusNoLongerOnForm() {
   ProcessPendingFormForUpload();
 }
+
+void AutofillManager::OnFocusOnFormFieldImpl(const FormData& form,
+                                             const FormFieldData& field,
+                                             const gfx::RectF& bounding_box) {}
 
 void AutofillManager::OnDidPreviewAutofillFormData() {
   if (test_delegate_)

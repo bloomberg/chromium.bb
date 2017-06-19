@@ -78,6 +78,7 @@ class ContentAutofillDriver : public AutofillDriver,
   void FormSubmitted(const FormData& form) override;
   void TextFieldDidChange(const FormData& form,
                           const FormFieldData& field,
+                          const gfx::RectF& bounding_box,
                           base::TimeTicks timestamp) override;
   void QueryFormFieldAutofill(int32_t id,
                               const FormData& form,
@@ -85,6 +86,9 @@ class ContentAutofillDriver : public AutofillDriver,
                               const gfx::RectF& bounding_box) override;
   void HidePopup() override;
   void FocusNoLongerOnForm() override;
+  void FocusOnFormField(const FormData& form,
+                        const FormFieldData& field,
+                        const gfx::RectF& bounding_box) override;
   void DidFillAutofillFormData(const FormData& form,
                                base::TimeTicks timestamp) override;
   void DidPreviewAutofillFormData() override;

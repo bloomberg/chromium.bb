@@ -12,7 +12,7 @@ import "ui/gfx/geometry/mojo/geometry.mojom";
 import "url/mojo/url.mojom";
 
 // There is one instance of this interface per render frame host in the browser
-// process.
+// process. All methods are called by renderer on browser.
 interface AutofillDriver {
   // Notification that forms have been seen that are candidates for
   // filling/submitting by the AutofillManager.
@@ -27,6 +27,7 @@ interface AutofillDriver {
   // Notification that a form field's value has changed.
   TextFieldDidChange(FormData form,
                      FormFieldData field,
+                     gfx.mojom.RectF bounding_box,
                      mojo.common.mojom.TimeTicks timestamp);
 
   // Queries the browser for Autofill suggestions for a form input field.
@@ -41,6 +42,11 @@ interface AutofillDriver {
 
   // Sent when the current form is no longer focused.
   FocusNoLongerOnForm();
+
+  // Notification that a form field is focused.
+  FocusOnFormField(FormData form,
+                   FormFieldData field,
+                   gfx.mojom.RectF bounding_box);
 
   // Sent when a form is filled with Autofill suggestions.
   DidFillAutofillFormData(FormData form, mojo.common.mojom.TimeTicks timestamp);
