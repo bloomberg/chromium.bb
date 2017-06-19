@@ -266,9 +266,9 @@ struct TypeConverter<NFCMessagePtr, blink::NFCMessage> {
   static NFCMessagePtr Convert(const blink::NFCMessage& message) {
     NFCMessagePtr messagePtr = NFCMessage::New();
     messagePtr->url = message.url();
-    messagePtr->data.resize(message.data().size());
-    for (size_t i = 0; i < message.data().size(); ++i) {
-      NFCRecordPtr record = NFCRecord::From(message.data()[i]);
+    messagePtr->data.resize(message.records().size());
+    for (size_t i = 0; i < message.records().size(); ++i) {
+      NFCRecordPtr record = NFCRecord::From(message.records()[i]);
       if (record.is_null())
         return nullptr;
 
@@ -508,14 +508,14 @@ ScriptPromise RejectIfInvalidNFCPushMessage(
 
   if (push_message.isNFCMessage()) {
     // https://w3c.github.io/web-nfc/#the-push-method
-    // If NFCMessage.data is empty, reject promise with TypeError
+    // If NFCMessage.records is empty, reject promise with TypeError
     const NFCMessage& message = push_message.getAsNFCMessage();
-    if (!message.hasData() || message.data().IsEmpty()) {
+    if (!message.hasRecords() || message.records().IsEmpty()) {
       return RejectWithTypeError(script_state,
                                  "Empty NFCMessage was provided.");
     }
 
-    return RejectIfInvalidNFCRecordArray(script_state, message.data());
+    return RejectIfInvalidNFCRecordArray(script_state, message.records());
   }
 
   return ScriptPromise();
@@ -616,7 +616,7 @@ NFCMessage ToNFCMessage(ScriptState* script_state,
   blink::HeapVector<NFCRecord> records;
   for (size_t i = 0; i < message->data.size(); ++i)
     records.push_back(ToNFCRecord(script_state, message->data[i]));
-  nfc_message.setData(records);
+  nfc_message.setRecords(records);
   return nfc_message;
 }
 

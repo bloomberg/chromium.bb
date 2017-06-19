@@ -5,6 +5,6 @@
 // https://w3c.github.io/web-nfc/#the-nfcmessage-dictionary
 
 dictionary NFCMessage {
-    sequence<NFCRecord> data;
+    sequence<NFCRecord> records;
     USVString url;
 };

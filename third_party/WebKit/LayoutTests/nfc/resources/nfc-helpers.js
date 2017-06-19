@@ -27,7 +27,7 @@ function assertRejectsWithError(promise, name) {
 function createMessage(records) {
   if (records !== undefined) {
     let message = {}
-    message.data = records;
+    message.records = records;
     return message;
   }
 }
@@ -113,7 +113,7 @@ function nfc_mocks(mojo) {
       let nfcMessage = new nfc.NFCMessage();
       nfcMessage.url = message.url;
       nfcMessage.data = [];
-      for (let record of message.data)
+      for (let record of message.records)
         nfcMessage.data.push(toMojoNFCRecord(record));
       return nfcMessage;
     }
@@ -155,12 +155,12 @@ function nfc_mocks(mojo) {
       else if (typeof providedMessage === 'string')
         provided = createMessage([createTextRecord(providedMessage)]);
 
-      assert_equals(provided.data.length, receivedMessage.data.length,
+      assert_equals(provided.records.length, receivedMessage.data.length,
           'NFCMessages must have same number of NFCRecords');
 
       // Compare contents of each individual NFCRecord
-      for (let i = 0; i < provided.data.length; ++i)
-        compareNFCRecords(provided.data[i], receivedMessage.data[i]);
+      for (let i = 0; i < provided.records.length; ++i)
+        compareNFCRecords(provided.records[i], receivedMessage.data[i]);
     }
 
     // Used to compare two WebNFC messages, one that is provided to mock NFC
@@ -168,10 +168,10 @@ function nfc_mocks(mojo) {
     // callback that is provided to navigator.nfc.watch function.
     function assertWebNFCMessagesEqual(a, b) {
       assert_equals(a.url, b.url);
-      assert_equals(a.data.length, b.data.length);
-      for(let i in a.data) {
-        let recordA = a.data[i];
-        let recordB = b.data[i];
+      assert_equals(a.records.length, b.records.length);
+      for(let i in a.records) {
+        let recordA = a.records[i];
+        let recordB = b.records[i];
         assert_equals(recordA.recordType, recordB.recordType);
         assert_equals(recordA.mediaType, recordB.mediaType);
 
