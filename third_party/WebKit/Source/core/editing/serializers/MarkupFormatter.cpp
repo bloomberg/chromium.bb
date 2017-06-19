@@ -237,9 +237,6 @@ void MarkupFormatter::AppendNamespace(StringBuilder& result,
                                       const AtomicString& prefix,
                                       const AtomicString& namespace_uri,
                                       Namespaces& namespaces) {
-  if (namespace_uri.IsEmpty())
-    return;
-
   const AtomicString& lookup_key = (!prefix) ? g_empty_atom : prefix;
   AtomicString found_uri = namespaces.at(lookup_key);
   if (found_uri != namespace_uri) {
