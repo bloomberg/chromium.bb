@@ -2911,7 +2911,8 @@ bool LayoutBox::IsStretchingColumnFlexItem() const {
 
   // We don't stretch multiline flexboxes because they need to apply line
   // spacing (align-content) first.
-  if (parent->IsFlexibleBox() && parent->Style()->FlexWrap() == kFlexNoWrap &&
+  if (parent->IsFlexibleBox() &&
+      parent->Style()->FlexWrap() == EFlexWrap::kNowrap &&
       parent->Style()->IsColumnFlexDirection() &&
       ColumnFlexItemHasStretchAlignment())
     return true;
@@ -2960,7 +2961,7 @@ bool LayoutBox::SizesLogicalWidthToFitContent(
     // For multiline columns, we need to apply align-content first, so we can't
     // stretch now.
     if (!Parent()->Style()->IsColumnFlexDirection() ||
-        Parent()->Style()->FlexWrap() != kFlexNoWrap)
+        Parent()->Style()->FlexWrap() != EFlexWrap::kNowrap)
       return true;
     if (!ColumnFlexItemHasStretchAlignment())
       return true;
