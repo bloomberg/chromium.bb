@@ -1709,13 +1709,10 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Add to contacts
       </message>
       <message name="IDS_CONTEXTMENU_COPY_LINK_ADDRESS" desc="Context sensitive menu item for copying the selected link URL / address. [CHAR-LIMIT=30]">
-        Copy link address
-      </message>
-      <message name="IDS_CONTEXTMENU_COPY_LINK_TEXT" desc="Context sensitive menu item for copying the selected link's text. [CHAR-LIMIT=30]">
-        Copy link text
+        Copy link
       </message>
       <message name="IDS_CONTEXTMENU_SAVE_LINK" desc="Context sensitive menu item for saving the target of a link [CHAR-LIMIT=30]">
-        Download link
+        Download page
       </message>
       <message name="IDS_CONTEXTMENU_SAVE_IMAGE" desc="Context sensitive menu item for saving the selected image. [CHAR-LIMIT=30]">
         Download image
@@ -1734,6 +1731,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
       </message>
       <message name="IDS_CONTEXTMENU_SHARE_IMAGE" desc="Context sensitive menu item for sharing an image via the Android system share action. [CHAR-LIMIT=30]">
         Share image
+      </message>
+      <message name="IDS_CONTEXTMENU_SHARE_LINK" desc="Context sensitive menu item for sharing a link via the Android system share action. [CHAR-LIMIT=30]">
+        Share link
       </message>
       <message name="IDS_CONTEXTMENU_SAVE_VIDEO" desc="Context sensitive menu item for saving the selected video. [CHAR-LIMIT=30]">
         Download video

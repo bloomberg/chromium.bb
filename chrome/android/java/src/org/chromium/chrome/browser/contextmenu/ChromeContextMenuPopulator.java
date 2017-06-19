@@ -21,6 +21,8 @@ import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.datareduction.DataReductionProxyUma;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
+import org.chromium.chrome.browser.share.ShareHelper;
+import org.chromium.chrome.browser.share.ShareParams;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.content_public.common.ContentUrlConstants;
 
@@ -71,10 +73,10 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             Collections.unmodifiableSet(CollectionUtil.newHashSet(
                     ChromeContextMenuItem.COPY_LINK_ADDRESS, ChromeContextMenuItem.CALL,
                     ChromeContextMenuItem.SEND_MESSAGE, ChromeContextMenuItem.ADD_TO_CONTACTS,
-                    ChromeContextMenuItem.COPY, ChromeContextMenuItem.COPY_LINK_TEXT,
-                    ChromeContextMenuItem.LOAD_ORIGINAL_IMAGE, ChromeContextMenuItem.SAVE_LINK_AS,
-                    ChromeContextMenuItem.SAVE_IMAGE, ChromeContextMenuItem.SHARE_IMAGE,
-                    ChromeContextMenuItem.SAVE_VIDEO));
+                    ChromeContextMenuItem.COPY, ChromeContextMenuItem.LOAD_ORIGINAL_IMAGE,
+                    ChromeContextMenuItem.SAVE_LINK_AS, ChromeContextMenuItem.SAVE_IMAGE,
+                    ChromeContextMenuItem.SHARE_IMAGE, ChromeContextMenuItem.SAVE_VIDEO,
+                    ChromeContextMenuItem.SHARE_LINK));
 
     // Items that are included for normal Chrome browser mode.
     private static final Set<? extends ContextMenuItem> NORMAL_MODE_WHITELIST =
@@ -108,14 +110,13 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
     private static final List<? extends ContextMenuItem> LINK_GROUP = Collections.unmodifiableList(
             CollectionUtil.newArrayList(ChromeContextMenuItem.OPEN_IN_OTHER_WINDOW,
                     ChromeContextMenuItem.OPEN_IN_NEW_TAB,
-                    ChromeContextMenuItem.OPEN_IN_INCOGNITO_TAB,
-                    ChromeContextMenuItem.COPY_LINK_ADDRESS, ChromeContextMenuItem.COPY_LINK_TEXT,
-                    ChromeContextMenuItem.SAVE_LINK_AS));
+                    ChromeContextMenuItem.OPEN_IN_INCOGNITO_TAB, ChromeContextMenuItem.SAVE_LINK_AS,
+                    ChromeContextMenuItem.COPY_LINK_ADDRESS, ChromeContextMenuItem.SHARE_LINK));
 
     private static final List<? extends ContextMenuItem> IMAGE_GROUP =
             Collections.unmodifiableList(CollectionUtil.newArrayList(
-                    ChromeContextMenuItem.LOAD_ORIGINAL_IMAGE, ChromeContextMenuItem.SAVE_IMAGE,
-                    ChromeContextMenuItem.OPEN_IMAGE, ChromeContextMenuItem.OPEN_IMAGE_IN_NEW_TAB,
+                    ChromeContextMenuItem.LOAD_ORIGINAL_IMAGE, ChromeContextMenuItem.OPEN_IMAGE,
+                    ChromeContextMenuItem.OPEN_IMAGE_IN_NEW_TAB, ChromeContextMenuItem.SAVE_IMAGE,
                     ChromeContextMenuItem.SEARCH_BY_IMAGE, ChromeContextMenuItem.SHARE_IMAGE));
 
     private static final List<? extends ContextMenuItem> MESSAGE_GROUP =
@@ -138,7 +139,6 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         static final int ACTION_OPEN_IN_INCOGNITO_TAB = 1;
         static final int ACTION_COPY_LINK_ADDRESS = 2;
         static final int ACTION_COPY_EMAIL_ADDRESS = 3;
-        static final int ACTION_COPY_LINK_TEXT = 4;
         static final int ACTION_SAVE_LINK = 5;
         static final int ACTION_SAVE_IMAGE = 6;
         static final int ACTION_OPEN_IMAGE = 7;
@@ -157,7 +157,8 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         static final int ACTION_OPEN_IN_CHROME_INCOGNITO_TAB = 34;
         static final int ACTION_OPEN_IN_BROWSER = 35;
         static final int ACTION_OPEN_IN_CHROME = 36;
-        static final int NUM_ACTIONS = 37;
+        static final int ACTION_SHARE_LINK = 37;
+        static final int NUM_ACTIONS = 38;
 
         // Note: these values must match the ContextMenuSaveLinkType enum in histograms.xml.
         // Only add new values at the end, right before NUM_TYPES. We depend on these specific
@@ -267,7 +268,6 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             }
         } else {
             supportedOptions.add(ChromeContextMenuItem.COPY_LINK_ADDRESS);
-            supportedOptions.add(ChromeContextMenuItem.COPY_LINK_TEXT);
             supportedOptions.add(ChromeContextMenuItem.COPY);
         }
 
@@ -410,10 +410,6 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             disabledOptions.add(ChromeContextMenuItem.OPEN_IN_INCOGNITO_TAB);
         }
 
-        if (params.getLinkText().trim().isEmpty() || params.isImage()) {
-            disabledOptions.add(ChromeContextMenuItem.COPY_LINK_TEXT);
-        }
-
         if (params.isAnchor() && !isAcceptedScheme(params.getLinkUrl())) {
             disabledOptions.add(ChromeContextMenuItem.OPEN_IN_OTHER_WINDOW);
             disabledOptions.add(ChromeContextMenuItem.OPEN_IN_NEW_TAB);
@@ -427,7 +423,6 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         }
 
         if (MailTo.isMailTo(params.getLinkUrl())) {
-            disabledOptions.add(ChromeContextMenuItem.COPY_LINK_TEXT);
             disabledOptions.add(ChromeContextMenuItem.COPY_LINK_ADDRESS);
             if (!mDelegate.supportsSendEmailMessage()) {
                 disabledOptions.add(ChromeContextMenuItem.SEND_MESSAGE);
@@ -438,7 +433,6 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
             }
             disabledOptions.add(ChromeContextMenuItem.CALL);
         } else if (UrlUtilities.isTelScheme(params.getLinkUrl())) {
-            disabledOptions.add(ChromeContextMenuItem.COPY_LINK_TEXT);
             disabledOptions.add(ChromeContextMenuItem.COPY_LINK_ADDRESS);
             if (!mDelegate.supportsCall()) {
                 disabledOptions.add(ChromeContextMenuItem.CALL);
@@ -570,10 +564,6 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                 mDelegate.onSaveToClipboard(UrlUtilities.getTelNumber(params.getLinkUrl()),
                         ContextMenuItemDelegate.CLIPBOARD_TYPE_LINK_URL);
             }
-        } else if (itemId == R.id.contextmenu_copy_link_text) {
-            ContextMenuUma.record(params, ContextMenuUma.ACTION_COPY_LINK_TEXT);
-            mDelegate.onSaveToClipboard(
-                    params.getLinkText(), ContextMenuItemDelegate.CLIPBOARD_TYPE_LINK_TEXT);
         } else if (itemId == R.id.contextmenu_save_image) {
             ContextMenuUma.record(params, ContextMenuUma.ACTION_SAVE_IMAGE);
             if (mDelegate.startDownload(params.getSrcUrl(), false)) {
@@ -592,6 +582,14 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
                 ContextMenuUma.recordSaveLinkTypes(url);
                 helper.startContextMenuDownload(true, false);
             }
+        } else if (itemId == R.id.contextmenu_share_link) {
+            ContextMenuUma.record(params, ContextMenuUma.ACTION_SHARE_LINK);
+            ShareParams linkShareParams =
+                    new ShareParams
+                            .Builder(helper.getActivity(), params.getLinkUrl(),
+                                    params.getTitleText())
+                            .build();
+            ShareHelper.share(linkShareParams);
         } else if (itemId == R.id.contextmenu_search_by_image) {
             ContextMenuUma.record(params, ContextMenuUma.ACTION_SEARCH_BY_IMAGE);
             helper.searchForImage();
@@ -613,7 +611,6 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
         } else {
             assert false;
         }
-
         return true;
     }
 

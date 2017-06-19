@@ -82,6 +82,7 @@
     <item type="id" name="contextmenu_copy_link_address" />
     <item type="id" name="contextmenu_copy_link_text" />
     <item type="id" name="contextmenu_save_link_as" />
+    <item type="id" name="contextmenu_share_link" />
 
     <!--Image Group -->
     <item type="id" name="contextmenu_load_original_image" />
