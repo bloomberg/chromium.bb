@@ -725,8 +725,10 @@ LayoutGrid::ComputeEmptyTracksForAutoRepeat(
     Grid& grid,
     GridTrackSizingDirection direction) const {
   bool is_row_axis = direction == kForColumns;
-  if ((is_row_axis && StyleRef().GridAutoRepeatColumnsType() != kAutoFit) ||
-      (!is_row_axis && StyleRef().GridAutoRepeatRowsType() != kAutoFit))
+  if ((is_row_axis &&
+       StyleRef().GridAutoRepeatColumnsType() != AutoRepeatType::kAutoFit) ||
+      (!is_row_axis &&
+       StyleRef().GridAutoRepeatRowsType() != AutoRepeatType::kAutoFit))
     return nullptr;
 
   std::unique_ptr<OrderedTrackIndexSet> empty_track_indexes;
