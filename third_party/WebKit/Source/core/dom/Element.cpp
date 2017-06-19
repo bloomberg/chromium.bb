@@ -467,9 +467,6 @@ void Element::scrollIntoView(ScrollIntoViewOptionsOrBoolean arg) {
         options.behavior() == "smooth") {
       options.setBehavior("instant");
     }
-  } else if (arg.isNull()) {
-    options.setBlock("start");
-    options.setInlinePosition("nearest");
   }
   scrollIntoViewWithOptions(options);
 }
