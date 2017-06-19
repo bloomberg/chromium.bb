@@ -2614,7 +2614,7 @@
       converter: "ConvertTransformOrigin",
       getter: "GetTransformOrigin",
       interpolable: true,
-      field_template: "storage_only",
+      field_template: "external",
       type_name: "TransformOrigin",
       field_group: "rare-non-inherited->transform",
       default_value: "TransformOrigin(Length(50.0, kPercent), Length(50.0, kPercent), 0)",
