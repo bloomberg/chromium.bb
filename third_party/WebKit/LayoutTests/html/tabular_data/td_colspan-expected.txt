@@ -21,8 +21,8 @@ PASS colspanAttributeEffect("7") is 1
 PASS colspanAttributeEffect("  7") is 7
 PASS colspanAttributeEffect(arabicIndicDigitOne) is 1
 PASS colspanAttributeEffect("2" + arabicIndicDigitOne) is 2
-PASS colspanAttributeEffect("2147483647") is 1000
-PASS colspanAttributeEffect("4294967295") is 1000
+PASS colspanAttributeEffect("2147483647") is 8190
+PASS colspanAttributeEffect("4294967295") is 8190
 PASS colspanAttributeEffect("4294967296") is 1
 PASS successfullyParsed is true
 

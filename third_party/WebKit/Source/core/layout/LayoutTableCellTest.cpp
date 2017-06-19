@@ -90,12 +90,12 @@ class LayoutTableCellTest : public RenderingTest {
 
 TEST_F(LayoutTableCellTest, ResetColspanIfTooBig) {
   SetBodyInnerHTML("<table><td id='cell' colspan='14000'></td></table>");
-  ASSERT_EQ(GetCellByElementId("cell")->ColSpan(), 1000U);
+  ASSERT_EQ(GetCellByElementId("cell")->ColSpan(), 8190U);
 }
 
 TEST_F(LayoutTableCellTest, DoNotResetColspanJustBelowBoundary) {
-  SetBodyInnerHTML("<table><td id='cell' colspan='1000'></td></table>");
-  ASSERT_EQ(GetCellByElementId("cell")->ColSpan(), 1000U);
+  SetBodyInnerHTML("<table><td id='cell' colspan='8190'></td></table>");
+  ASSERT_EQ(GetCellByElementId("cell")->ColSpan(), 8190U);
 }
 
 TEST_F(LayoutTableCellTest, ResetRowspanIfTooBig) {
