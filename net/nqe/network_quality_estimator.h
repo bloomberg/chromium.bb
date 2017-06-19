@@ -10,6 +10,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
@@ -22,6 +23,7 @@
 #include "base/time/time.h"
 #include "net/base/net_export.h"
 #include "net/base/network_change_notifier.h"
+#include "net/log/net_log_with_source.h"
 #include "net/nqe/cached_network_quality.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/nqe/effective_connection_type_observer.h"
@@ -661,6 +663,8 @@ class NET_EXPORT NetworkQualityEstimator
   // computing the estimate at transport layer.
   const std::vector<NetworkQualityObservationSource>
       disallowed_observation_sources_for_transport_;
+
+  NetLogWithSource net_log_;
 
   base::WeakPtrFactory<NetworkQualityEstimator> weak_ptr_factory_;
 

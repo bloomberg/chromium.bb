@@ -8,7 +8,6 @@
 #include <cmath>
 #include <limits>
 #include <utility>
-#include <vector>
 
 #include "base/bind_helpers.h"
 #include "base/location.h"
@@ -27,17 +26,19 @@
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/load_flags.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/network_interfaces.h"
 #include "net/base/trace_constants.h"
-#include "net/base/url_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/http/http_status_code.h"
+#include "net/nqe/network_quality_estimator_util.h"
 #include "net/nqe/socket_watcher_factory.h"
 #include "net/nqe/throughput_analyzer.h"
 #include "net/url_request/url_request.h"
+#include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_status.h"
 #include "url/gurl.h"
 
@@ -47,6 +48,8 @@
 #endif  // OS_ANDROID
 
 namespace net {
+
+class HostResolver;
 
 namespace {
 
@@ -281,6 +284,7 @@ NetworkQualityEstimator::NetworkQualityEstimator(
            NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_EXTERNAL_ESTIMATE,
            NETWORK_QUALITY_OBSERVATION_SOURCE_HTTP_CACHED_ESTIMATE,
            NETWORK_QUALITY_OBSERVATION_SOURCE_DEFAULT_HTTP_FROM_PLATFORM}),
+      net_log_(net_log),
       weak_ptr_factory_(this) {
   // None of the algorithms can have an empty name.
   DCHECK(algorithm_name_to_enum_.end() ==
@@ -310,7 +314,7 @@ NetworkQualityEstimator::NetworkQualityEstimator(
       params_.get(), base::ThreadTaskRunnerHandle::Get(),
       base::Bind(&NetworkQualityEstimator::OnNewThroughputObservationAvailable,
                  base::Unretained(this)),
-      use_localhost_requests_, use_smaller_responses_for_tests));
+      use_localhost_requests_, use_smaller_responses_for_tests, net_log_));
 
   watcher_factory_.reset(new nqe::internal::SocketWatcherFactory(
       base::ThreadTaskRunnerHandle::Get(),
@@ -788,7 +792,12 @@ bool NetworkQualityEstimator::RequestProvidesRTTObservation(
     const URLRequest& request) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  return (use_localhost_requests_ || !IsLocalhost(request.url().host())) &&
+  bool private_network_request = nqe::internal::IsPrivateHost(
+      request.context()->host_resolver(),
+      HostPortPair(request.url().host(), request.url().EffectiveIntPort()),
+      net_log_);
+
+  return (use_localhost_requests_ || !private_network_request) &&
          // Verify that response headers are received, so it can be ensured that
          // response is not cached.
          !request.response_info().response_time.is_null() &&
