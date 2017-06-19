@@ -21,9 +21,13 @@ void range_check_func(int32_t stage, const int32_t *input, const int32_t *buf,
   range_check_func(stage, input, buf, size, bit)
 #else
 #define range_check(stage, input, buf, size, bit) \
-  clamp_buf((int32_t *)buf, size, bit)
-
-void clamp_buf(const int32_t *buf, int32_t size, int8_t bit);
+  {                                               \
+    (void)stage;                                  \
+    (void)input;                                  \
+    (void)buf;                                    \
+    (void)size;                                   \
+    (void)bit;                                    \
+  }
 #endif
 
 // TODO(angiebird): Make 1-d txfm functions static
