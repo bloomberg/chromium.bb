@@ -87,7 +87,9 @@ public abstract class ChromeHomeNewTabPageBase implements NativePage {
 
             @Override
             public void onHidden(Tab tab) {
-                mTab.getActivity().getFadingBackgroundView().setEnabled(true);
+                if (mTab.getActivity().getFadingBackgroundView() != null) {
+                    mTab.getActivity().getFadingBackgroundView().setEnabled(true);
+                }
                 if (!mTab.isClosing()) mShowOverviewOnClose = false;
             }
 
@@ -149,8 +151,10 @@ public abstract class ChromeHomeNewTabPageBase implements NativePage {
     public void destroy() {
         // The next tab will be selected before this one is destroyed. If the currently selected
         // tab is a Chrome Home new tab page, the FadingBackgroundView should not be enabled.
-        mTab.getActivity().getFadingBackgroundView().setEnabled(
-                !isTabChromeHomeNewTabPage(mTabModelSelector.getCurrentTab()));
+        if (mTab.getActivity().getFadingBackgroundView() != null) {
+            mTab.getActivity().getFadingBackgroundView().setEnabled(
+                    !isTabChromeHomeNewTabPage(mTabModelSelector.getCurrentTab()));
+        }
 
         if (mLayoutManager != null) {
             mLayoutManager.removeOverviewModeObserver(mOverviewModeObserver);
