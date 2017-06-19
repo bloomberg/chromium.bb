@@ -74,7 +74,7 @@ void BindingStateBase::EnableTestingMode() {
 
 void BindingStateBase::BindInternal(
     ScopedMessagePipeHandle handle,
-    scoped_refptr<base::SingleThreadTaskRunner> runner,
+    scoped_refptr<base::SequencedTaskRunner> runner,
     const char* interface_name,
     std::unique_ptr<MessageReceiver> request_validator,
     bool passes_associated_kinds,

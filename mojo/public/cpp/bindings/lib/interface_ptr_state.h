@@ -18,7 +18,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/connection_error_callback.h"
 #include "mojo/public/cpp/bindings/filter_chain.h"
@@ -93,7 +93,7 @@ class InterfacePtrState {
   }
 
   void Bind(InterfacePtrInfo<Interface> info,
-            scoped_refptr<base::SingleThreadTaskRunner> runner) {
+            scoped_refptr<base::SequencedTaskRunner> runner) {
     DCHECK(!router_);
     DCHECK(!endpoint_client_);
     DCHECK(!proxy_);
@@ -214,7 +214,7 @@ class InterfacePtrState {
   // read/write with the message pipe handle is needed. |handle_| is valid
   // between the Bind() call and the initialization of |router_|.
   ScopedMessagePipeHandle handle_;
-  scoped_refptr<base::SingleThreadTaskRunner> runner_;
+  scoped_refptr<base::SequencedTaskRunner> runner_;
 
   uint32_t version_;
 

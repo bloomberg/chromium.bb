@@ -11,22 +11,22 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/sequence_checker.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/threading/thread_checker.h"
 #include "mojo/public/cpp/bindings/bindings_export.h"
 #include "mojo/public/cpp/system/core.h"
 #include "mojo/public/cpp/system/wait_set.h"
 
 namespace mojo {
 
-// SyncHandleRegistry is a thread-local storage to register handles that want to
-// be watched together.
+// SyncHandleRegistry is a sequence-local storage to register handles that want
+// to be watched together.
 //
-// This class is not thread safe.
+// This class is thread unsafe.
 class MOJO_CPP_BINDINGS_EXPORT SyncHandleRegistry
     : public base::RefCounted<SyncHandleRegistry> {
  public:
-  // Returns a thread-local object.
+  // Returns a sequence-local object.
   static scoped_refptr<SyncHandleRegistry> current();
 
   using HandleCallback = base::Callback<void(MojoResult)>;
@@ -61,7 +61,7 @@ class MOJO_CPP_BINDINGS_EXPORT SyncHandleRegistry
   std::map<Handle, HandleCallback> handles_;
   std::map<base::WaitableEvent*, base::Closure> events_;
 
-  base::ThreadChecker thread_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(SyncHandleRegistry);
 };

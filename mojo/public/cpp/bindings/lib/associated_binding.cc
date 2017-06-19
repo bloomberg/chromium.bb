@@ -49,7 +49,7 @@ void AssociatedBindingBase::BindImpl(
     MessageReceiverWithResponderStatus* receiver,
     std::unique_ptr<MessageReceiver> payload_validator,
     bool expect_sync_requests,
-    scoped_refptr<base::SingleThreadTaskRunner> runner,
+    scoped_refptr<base::SequencedTaskRunner> runner,
     uint32_t interface_version) {
   if (!handle.is_valid()) {
     endpoint_client_.reset();

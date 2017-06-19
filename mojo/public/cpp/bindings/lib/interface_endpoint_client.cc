@@ -11,7 +11,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
 #include "mojo/public/cpp/bindings/associated_group_controller.h"
@@ -39,7 +39,7 @@ class ResponderThunk : public MessageReceiverWithStatus {
  public:
   explicit ResponderThunk(
       const base::WeakPtr<InterfaceEndpointClient>& endpoint_client,
-      scoped_refptr<base::SingleThreadTaskRunner> runner)
+      scoped_refptr<base::SequencedTaskRunner> runner)
       : endpoint_client_(endpoint_client),
         accept_was_invoked_(false),
         task_runner_(std::move(runner)) {}
@@ -98,7 +98,7 @@ class ResponderThunk : public MessageReceiverWithStatus {
  private:
   base::WeakPtr<InterfaceEndpointClient> endpoint_client_;
   bool accept_was_invoked_;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ResponderThunk);
 };
@@ -134,7 +134,7 @@ InterfaceEndpointClient::InterfaceEndpointClient(
     MessageReceiverWithResponderStatus* receiver,
     std::unique_ptr<MessageReceiver> payload_validator,
     bool expect_sync_requests,
-    scoped_refptr<base::SingleThreadTaskRunner> runner,
+    scoped_refptr<base::SequencedTaskRunner> runner,
     uint32_t interface_version)
     : expect_sync_requests_(expect_sync_requests),
       handle_(std::move(handle)),
@@ -161,7 +161,7 @@ InterfaceEndpointClient::InterfaceEndpointClient(
 }
 
 InterfaceEndpointClient::~InterfaceEndpointClient() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (controller_)
     handle_.group_controller()->DetachEndpointClient(handle_);
@@ -174,7 +174,7 @@ AssociatedGroup* InterfaceEndpointClient::associated_group() {
 }
 
 ScopedInterfaceEndpointHandle InterfaceEndpointClient::PassHandle() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!has_pending_responders());
 
   if (!handle_.is_valid())
@@ -197,7 +197,7 @@ void InterfaceEndpointClient::AddFilter(
 }
 
 void InterfaceEndpointClient::RaiseError() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!handle_.pending_association())
     handle_.group_controller()->RaiseError();
@@ -205,14 +205,14 @@ void InterfaceEndpointClient::RaiseError() {
 
 void InterfaceEndpointClient::CloseWithReason(uint32_t custom_reason,
                                               const std::string& description) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   auto handle = PassHandle();
   handle.ResetWithReason(custom_reason, description);
 }
 
 bool InterfaceEndpointClient::Accept(Message* message) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!message->has_flag(Message::kFlagExpectsResponse));
   DCHECK(!handle_.pending_association());
 
@@ -235,7 +235,7 @@ bool InterfaceEndpointClient::Accept(Message* message) {
 bool InterfaceEndpointClient::AcceptWithResponder(
     Message* message,
     std::unique_ptr<MessageReceiver> responder) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(message->has_flag(Message::kFlagExpectsResponse));
   DCHECK(!handle_.pending_association());
 
@@ -287,13 +287,13 @@ bool InterfaceEndpointClient::AcceptWithResponder(
 }
 
 bool InterfaceEndpointClient::HandleIncomingMessage(Message* message) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return filters_.Accept(message);
 }
 
 void InterfaceEndpointClient::NotifyError(
     const base::Optional<DisconnectReason>& reason) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (encountered_error_)
     return;

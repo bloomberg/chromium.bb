@@ -7,8 +7,10 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/sequence_token.h"
+#include "base/task_scheduler/post_task.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding.h"
@@ -238,8 +240,9 @@ class PtrWrapper {
   DISALLOW_COPY_AND_ASSIGN(PtrWrapper);
 };
 
-// The type parameter for SyncMethodCommonTests for varying the Interface and
-// whether to use InterfacePtr or ThreadSafeInterfacePtr.
+// The type parameter for SyncMethodCommonTests and
+// SyncMethodOnSequenceCommonTests for varying the Interface and whether to use
+// InterfacePtr or ThreadSafeInterfacePtr.
 template <typename InterfaceT, bool use_thread_safe_ptr>
 struct TestParams {
   using Interface = InterfaceT;
@@ -256,15 +259,14 @@ struct TestParams {
 };
 
 template <typename Interface>
-class TestSyncServiceThread {
+class TestSyncServiceSequence {
  public:
-  TestSyncServiceThread()
-      : thread_("TestSyncServiceThread"), ping_called_(false) {
-    thread_.Start();
-  }
+  TestSyncServiceSequence()
+      : task_runner_(base::CreateSequencedTaskRunnerWithTraits({})),
+        ping_called_(false) {}
 
   void SetUp(InterfaceRequest<Interface> request) {
-    CHECK(thread_.task_runner()->BelongsToCurrentThread());
+    CHECK(task_runner()->RunsTasksOnCurrentThread());
     impl_.reset(new ImplTypeFor<Interface>(std::move(request)));
     impl_->set_ping_handler(
         [this](const typename Interface::PingCallback& callback) {
@@ -277,25 +279,25 @@ class TestSyncServiceThread {
   }
 
   void TearDown() {
-    CHECK(thread_.task_runner()->BelongsToCurrentThread());
+    CHECK(task_runner()->RunsTasksOnCurrentThread());
     impl_.reset();
   }
 
-  base::Thread* thread() { return &thread_; }
+  base::SequencedTaskRunner* task_runner() { return task_runner_.get(); }
   bool ping_called() const {
     base::AutoLock locker(lock_);
     return ping_called_;
   }
 
  private:
-  base::Thread thread_;
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   std::unique_ptr<ImplTypeFor<Interface>> impl_;
 
   mutable base::Lock lock_;
   bool ping_called_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestSyncServiceThread);
+  DISALLOW_COPY_AND_ASSIGN(TestSyncServiceSequence);
 };
 
 class SyncMethodTest : public testing::Test {
@@ -304,7 +306,7 @@ class SyncMethodTest : public testing::Test {
   ~SyncMethodTest() override { base::RunLoop().RunUntilIdle(); }
 
  protected:
-  base::MessageLoop loop_;
+  base::test::ScopedTaskEnvironment task_environment;
 };
 
 template <typename T>
@@ -386,6 +388,82 @@ TestSync::AsyncEchoCallback BindAsyncEchoCallback(Func func) {
   return base::Bind(&CallAsyncEchoCallback<Func>, func);
 }
 
+class SequencedTaskRunnerTestBase;
+
+void RunTestOnSequencedTaskRunner(
+    std::unique_ptr<SequencedTaskRunnerTestBase> test);
+
+class SequencedTaskRunnerTestBase {
+ public:
+  virtual ~SequencedTaskRunnerTestBase() = default;
+
+  void RunTest() {
+    SetUp();
+    Run();
+  }
+
+  virtual void Run() = 0;
+
+  virtual void SetUp() {}
+  virtual void TearDown() {}
+
+ protected:
+  void Done() {
+    TearDown();
+    task_runner_->PostTask(FROM_HERE, quit_closure_);
+    delete this;
+  }
+
+  base::Closure DoneClosure() {
+    return base::Bind(&SequencedTaskRunnerTestBase::Done,
+                      base::Unretained(this));
+  }
+
+ private:
+  friend void RunTestOnSequencedTaskRunner(
+      std::unique_ptr<SequencedTaskRunnerTestBase> test);
+
+  void Init(const base::Closure& quit_closure) {
+    task_runner_ = base::SequencedTaskRunnerHandle::Get();
+    quit_closure_ = quit_closure;
+  }
+
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+  base::Closure quit_closure_;
+};
+
+// A helper class to launch tests on a SequencedTaskRunner. This is necessary
+// so gtest can instantiate copies for each |TypeParam|.
+template <typename TypeParam>
+class SequencedTaskRunnerTestLauncher : public testing::Test {
+  base::test::ScopedTaskEnvironment task_environment;
+};
+
+// Similar to SyncMethodCommonTest, but the test body runs on a
+// SequencedTaskRunner.
+template <typename TypeParam>
+class SyncMethodOnSequenceCommonTest : public SequencedTaskRunnerTestBase {
+ public:
+  void SetUp() override {
+    impl_ = base::MakeUnique<ImplTypeFor<typename TypeParam::Interface>>(
+        MakeRequest(&ptr_));
+  }
+
+ protected:
+  InterfacePtr<typename TypeParam::Interface> ptr_;
+  std::unique_ptr<ImplTypeFor<typename TypeParam::Interface>> impl_;
+};
+
+void RunTestOnSequencedTaskRunner(
+    std::unique_ptr<SequencedTaskRunnerTestBase> test) {
+  base::RunLoop run_loop;
+  test->Init(run_loop.QuitClosure());
+  base::CreateSequencedTaskRunnerWithTraits({base::WithBaseSyncPrimitives()})
+      ->PostTask(FROM_HERE, base::Bind(&SequencedTaskRunnerTestBase::RunTest,
+                                       base::Unretained(test.release())));
+  run_loop.Run();
+}
+
 // TestSync (without associated interfaces) and TestSyncMaster (with associated
 // interfaces) exercise MultiplexRouter with different configurations.
 // Each test is run once with an InterfacePtr and once with a
@@ -396,6 +474,7 @@ using InterfaceTypes = testing::Types<TestParams<TestSync, true>,
                                       TestParams<TestSyncMaster, true>,
                                       TestParams<TestSyncMaster, false>>;
 TYPED_TEST_CASE(SyncMethodCommonTest, InterfaceTypes);
+TYPED_TEST_CASE(SequencedTaskRunnerTestLauncher, InterfaceTypes);
 
 TYPED_TEST(SyncMethodCommonTest, CallSyncMethodAsynchronously) {
   using Interface = typename TypeParam::Interface;
@@ -409,29 +488,65 @@ TYPED_TEST(SyncMethodCommonTest, CallSyncMethodAsynchronously) {
   run_loop.Run();
 }
 
+#define SEQUENCED_TASK_RUNNER_TYPED_TEST_NAME(fixture_name, name) \
+  fixture_name##name##_SequencedTaskRunnerTestSuffix
+
+#define SEQUENCED_TASK_RUNNER_TYPED_TEST(fixture_name, name)        \
+  template <typename TypeParam>                                     \
+  class SEQUENCED_TASK_RUNNER_TYPED_TEST_NAME(fixture_name, name)   \
+      : public fixture_name<TypeParam> {                            \
+    void Run() override;                                            \
+  };                                                                \
+  TYPED_TEST(SequencedTaskRunnerTestLauncher, name) {               \
+    RunTestOnSequencedTaskRunner(                                   \
+        base::MakeUnique<SEQUENCED_TASK_RUNNER_TYPED_TEST_NAME(     \
+                             fixture_name, name) < TypeParam>> ()); \
+  }                                                                 \
+  template <typename TypeParam>                                     \
+  void SEQUENCED_TASK_RUNNER_TYPED_TEST_NAME(fixture_name,          \
+                                             name)<TypeParam>::Run()
+
+#define SEQUENCED_TASK_RUNNER_TYPED_TEST_F(fixture_name, name)      \
+  template <typename TypeParam>                                     \
+  class SEQUENCED_TASK_RUNNER_TYPED_TEST_NAME(fixture_name, name);  \
+  TYPED_TEST(SequencedTaskRunnerTestLauncher, name) {               \
+    RunTestOnSequencedTaskRunner(                                   \
+        base::MakeUnique<SEQUENCED_TASK_RUNNER_TYPED_TEST_NAME(     \
+                             fixture_name, name) < TypeParam>> ()); \
+  }                                                                 \
+  template <typename TypeParam>                                     \
+  class SEQUENCED_TASK_RUNNER_TYPED_TEST_NAME(fixture_name, name)   \
+      : public fixture_name<TypeParam>
+
+SEQUENCED_TASK_RUNNER_TYPED_TEST(SyncMethodOnSequenceCommonTest,
+                                 CallSyncMethodAsynchronously) {
+  this->ptr_->Echo(
+      123, base::Bind(&ExpectValueAndRunClosure, 123, this->DoneClosure()));
+}
+
 TYPED_TEST(SyncMethodCommonTest, BasicSyncCalls) {
   using Interface = typename TypeParam::Interface;
   InterfacePtr<Interface> interface_ptr;
   InterfaceRequest<Interface> request = MakeRequest(&interface_ptr);
   auto ptr = TypeParam::Wrap(std::move(interface_ptr));
 
-  TestSyncServiceThread<Interface> service_thread;
-  service_thread.thread()->task_runner()->PostTask(
+  TestSyncServiceSequence<Interface> service_sequence;
+  service_sequence.task_runner()->PostTask(
       FROM_HERE,
-      base::Bind(&TestSyncServiceThread<Interface>::SetUp,
-                 base::Unretained(&service_thread), base::Passed(&request)));
+      base::Bind(&TestSyncServiceSequence<Interface>::SetUp,
+                 base::Unretained(&service_sequence), base::Passed(&request)));
   ASSERT_TRUE(ptr->Ping());
-  ASSERT_TRUE(service_thread.ping_called());
+  ASSERT_TRUE(service_sequence.ping_called());
 
   int32_t output_value = -1;
   ASSERT_TRUE(ptr->Echo(42, &output_value));
   ASSERT_EQ(42, output_value);
 
   base::RunLoop run_loop;
-  service_thread.thread()->task_runner()->PostTaskAndReply(
+  service_sequence.task_runner()->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&TestSyncServiceThread<Interface>::TearDown,
-                 base::Unretained(&service_thread)),
+      base::Bind(&TestSyncServiceSequence<Interface>::TearDown,
+                 base::Unretained(&service_sequence)),
       run_loop.QuitClosure());
   run_loop.Run();
 }
@@ -450,6 +565,17 @@ TYPED_TEST(SyncMethodCommonTest, ReenteredBySyncMethodBinding) {
   EXPECT_EQ(42, output_value);
 }
 
+SEQUENCED_TASK_RUNNER_TYPED_TEST(SyncMethodOnSequenceCommonTest,
+                                 ReenteredBySyncMethodBinding) {
+  // Test that an interface pointer waiting for a sync call response can be
+  // reentered by a binding serving sync methods on the same thread.
+
+  int32_t output_value = -1;
+  ASSERT_TRUE(this->ptr_->Echo(42, &output_value));
+  EXPECT_EQ(42, output_value);
+  this->Done();
+}
+
 TYPED_TEST(SyncMethodCommonTest, InterfacePtrDestroyedDuringSyncCall) {
   // Test that it won't result in crash or hang if an interface pointer is
   // destroyed while it is waiting for a sync call response.
@@ -463,6 +589,20 @@ TYPED_TEST(SyncMethodCommonTest, InterfacePtrDestroyedDuringSyncCall) {
     callback.Run();
   });
   ASSERT_FALSE(ptr->Ping());
+}
+
+SEQUENCED_TASK_RUNNER_TYPED_TEST(SyncMethodOnSequenceCommonTest,
+                                 InterfacePtrDestroyedDuringSyncCall) {
+  // Test that it won't result in crash or hang if an interface pointer is
+  // destroyed while it is waiting for a sync call response.
+
+  auto* ptr = &this->ptr_;
+  this->impl_->set_ping_handler([ptr](const TestSync::PingCallback& callback) {
+    ptr->reset();
+    callback.Run();
+  });
+  ASSERT_FALSE(this->ptr_->Ping());
+  this->Done();
 }
 
 TYPED_TEST(SyncMethodCommonTest, BindingDestroyedDuringSyncCall) {
@@ -479,6 +619,22 @@ TYPED_TEST(SyncMethodCommonTest, BindingDestroyedDuringSyncCall) {
     callback.Run();
   });
   ASSERT_FALSE(ptr->Ping());
+}
+
+SEQUENCED_TASK_RUNNER_TYPED_TEST(SyncMethodOnSequenceCommonTest,
+                                 BindingDestroyedDuringSyncCall) {
+  // Test that it won't result in crash or hang if a binding is
+  // closed (and therefore the message pipe handle is closed) while the
+  // corresponding interface pointer is waiting for a sync call response.
+
+  auto& impl = *this->impl_;
+  this->impl_->set_ping_handler(
+      [&impl](const TestSync::PingCallback& callback) {
+        impl.binding()->Close();
+        callback.Run();
+      });
+  ASSERT_FALSE(this->ptr_->Ping());
+  this->Done();
 }
 
 TYPED_TEST(SyncMethodCommonTest, NestedSyncCallsWithInOrderResponses) {
@@ -509,6 +665,34 @@ TYPED_TEST(SyncMethodCommonTest, NestedSyncCallsWithInOrderResponses) {
   EXPECT_EQ(123, result_value);
 }
 
+SEQUENCED_TASK_RUNNER_TYPED_TEST(SyncMethodOnSequenceCommonTest,
+                                 NestedSyncCallsWithInOrderResponses) {
+  // Test that we can call a sync method on an interface ptr, while there is
+  // already a sync call ongoing. The responses arrive in order.
+
+  // The same variable is used to store the output of the two sync calls, in
+  // order to test that responses are handled in the correct order.
+  int32_t result_value = -1;
+
+  bool first_call = true;
+  auto& ptr = this->ptr_;
+  auto& impl = *this->impl_;
+  impl.set_echo_handler(
+      [&first_call, &ptr, &result_value](
+          int32_t value, const TestSync::EchoCallback& callback) {
+        if (first_call) {
+          first_call = false;
+          ASSERT_TRUE(ptr->Echo(456, &result_value));
+          EXPECT_EQ(456, result_value);
+        }
+        callback.Run(value);
+      });
+
+  ASSERT_TRUE(ptr->Echo(123, &result_value));
+  EXPECT_EQ(123, result_value);
+  this->Done();
+}
+
 TYPED_TEST(SyncMethodCommonTest, NestedSyncCallsWithOutOfOrderResponses) {
   // Test that we can call a sync method on an interface ptr, while there is
   // already a sync call ongoing. The responses arrive out of order.
@@ -535,6 +719,34 @@ TYPED_TEST(SyncMethodCommonTest, NestedSyncCallsWithOutOfOrderResponses) {
 
   ASSERT_TRUE(ptr->Echo(123, &result_value));
   EXPECT_EQ(123, result_value);
+}
+
+SEQUENCED_TASK_RUNNER_TYPED_TEST(SyncMethodOnSequenceCommonTest,
+                                 NestedSyncCallsWithOutOfOrderResponses) {
+  // Test that we can call a sync method on an interface ptr, while there is
+  // already a sync call ongoing. The responses arrive out of order.
+
+  // The same variable is used to store the output of the two sync calls, in
+  // order to test that responses are handled in the correct order.
+  int32_t result_value = -1;
+
+  bool first_call = true;
+  auto& ptr = this->ptr_;
+  auto& impl = *this->impl_;
+  impl.set_echo_handler(
+      [&first_call, &ptr, &result_value](
+          int32_t value, const TestSync::EchoCallback& callback) {
+        callback.Run(value);
+        if (first_call) {
+          first_call = false;
+          ASSERT_TRUE(ptr->Echo(456, &result_value));
+          EXPECT_EQ(456, result_value);
+        }
+      });
+
+  ASSERT_TRUE(ptr->Echo(123, &result_value));
+  EXPECT_EQ(123, result_value);
+  this->Done();
 }
 
 TYPED_TEST(SyncMethodCommonTest, AsyncResponseQueuedDuringSyncCall) {
@@ -594,6 +806,52 @@ TYPED_TEST(SyncMethodCommonTest, AsyncResponseQueuedDuringSyncCall) {
   EXPECT_TRUE(async_echo_response_dispatched);
 }
 
+SEQUENCED_TASK_RUNNER_TYPED_TEST_F(SyncMethodOnSequenceCommonTest,
+                                   AsyncResponseQueuedDuringSyncCall) {
+  // Test that while an interface pointer is waiting for the response to a sync
+  // call, async responses are queued until the sync call completes.
+
+  void Run() override {
+    this->impl_->set_async_echo_handler(
+        [this](int32_t value, const TestSync::AsyncEchoCallback& callback) {
+          async_echo_request_value_ = value;
+          async_echo_request_callback_ = callback;
+          OnAsyncEchoReceived();
+        });
+
+    this->ptr_->AsyncEcho(123, BindAsyncEchoCallback([this](int32_t result) {
+                            async_echo_response_dispatched_ = true;
+                            EXPECT_EQ(123, result);
+                            EXPECT_TRUE(async_echo_response_dispatched_);
+                            this->Done();
+                          }));
+  }
+
+  // Called when the AsyncEcho request reaches the service side.
+  void OnAsyncEchoReceived() {
+    this->impl_->set_echo_handler(
+        [this](int32_t value, const TestSync::EchoCallback& callback) {
+          // Send back the async response first.
+          EXPECT_FALSE(async_echo_request_callback_.is_null());
+          async_echo_request_callback_.Run(async_echo_request_value_);
+
+          callback.Run(value);
+        });
+
+    int32_t result_value = -1;
+    ASSERT_TRUE(this->ptr_->Echo(456, &result_value));
+    EXPECT_EQ(456, result_value);
+
+    // Although the AsyncEcho response arrives before the Echo response, it
+    // should be queued and not yet dispatched.
+    EXPECT_FALSE(async_echo_response_dispatched_);
+  }
+
+  int32_t async_echo_request_value_ = -1;
+  TestSync::AsyncEchoCallback async_echo_request_callback_;
+  bool async_echo_response_dispatched_ = false;
+};
+
 TYPED_TEST(SyncMethodCommonTest, AsyncRequestQueuedDuringSyncCall) {
   // Test that while an interface pointer is waiting for the response to a sync
   // call, async requests for a binding running on the same thread are queued
@@ -645,6 +903,44 @@ TYPED_TEST(SyncMethodCommonTest, AsyncRequestQueuedDuringSyncCall) {
   EXPECT_TRUE(async_echo_response_dispatched);
 }
 
+SEQUENCED_TASK_RUNNER_TYPED_TEST_F(SyncMethodOnSequenceCommonTest,
+                                   AsyncRequestQueuedDuringSyncCall) {
+  // Test that while an interface pointer is waiting for the response to a sync
+  // call, async requests for a binding running on the same thread are queued
+  // until the sync call completes.
+  void Run() override {
+    this->impl_->set_async_echo_handler(
+        [this](int32_t value, const TestSync::AsyncEchoCallback& callback) {
+          async_echo_request_dispatched_ = true;
+          callback.Run(value);
+        });
+
+    this->ptr_->AsyncEcho(123, BindAsyncEchoCallback([this](int32_t result) {
+                            EXPECT_EQ(123, result);
+                            this->Done();
+                          }));
+
+    this->impl_->set_echo_handler(
+        [this](int32_t value, const TestSync::EchoCallback& callback) {
+          // Although the AsyncEcho request is sent before the Echo request, it
+          // shouldn't be dispatched yet at this point, because there is an
+          // ongoing
+          // sync call on the same thread.
+          EXPECT_FALSE(async_echo_request_dispatched_);
+          callback.Run(value);
+        });
+
+    int32_t result_value = -1;
+    ASSERT_TRUE(this->ptr_->Echo(456, &result_value));
+    EXPECT_EQ(456, result_value);
+
+    // Although the AsyncEcho request is sent before the Echo request, it
+    // shouldn't be dispatched yet.
+    EXPECT_FALSE(async_echo_request_dispatched_);
+  }
+  bool async_echo_request_dispatched_ = false;
+};
+
 TYPED_TEST(SyncMethodCommonTest,
            QueuedMessagesProcessedBeforeErrorNotification) {
   // Test that while an interface pointer is waiting for the response to a sync
@@ -675,19 +971,17 @@ TYPED_TEST(SyncMethodCommonTest,
   bool async_echo_response_dispatched = false;
   bool connection_error_dispatched = false;
   base::RunLoop run_loop2;
-  ptr->AsyncEcho(
-      123,
-      BindAsyncEchoCallback(
-          [&async_echo_response_dispatched, &connection_error_dispatched, &ptr,
-              &run_loop2](int32_t result) {
-            async_echo_response_dispatched = true;
-            // At this point, error notification should not be dispatched
-            // yet.
-            EXPECT_FALSE(connection_error_dispatched);
-            EXPECT_FALSE(ptr.encountered_error());
-            EXPECT_EQ(123, result);
-            run_loop2.Quit();
-          }));
+  ptr->AsyncEcho(123, BindAsyncEchoCallback([&async_echo_response_dispatched,
+                                             &connection_error_dispatched, &ptr,
+                                             &run_loop2](int32_t result) {
+                   async_echo_response_dispatched = true;
+                   // At this point, error notification should not be dispatched
+                   // yet.
+                   EXPECT_FALSE(connection_error_dispatched);
+                   EXPECT_FALSE(ptr.encountered_error());
+                   EXPECT_EQ(123, result);
+                   run_loop2.Quit();
+                 }));
   // Run until the AsyncEcho request reaches the service side.
   run_loop1.Run();
 
@@ -702,9 +996,9 @@ TYPED_TEST(SyncMethodCommonTest,
       });
 
   base::RunLoop run_loop3;
-  ptr.set_connection_error_handler(
-      base::Bind(&SetFlagAndRunClosure, &connection_error_dispatched,
-                 run_loop3.QuitClosure()));
+  ptr.set_connection_error_handler(base::Bind(&SetFlagAndRunClosure,
+                                              &connection_error_dispatched,
+                                              run_loop3.QuitClosure()));
 
   int32_t result_value = -1;
   ASSERT_FALSE(ptr->Echo(456, &result_value));
@@ -727,6 +1021,74 @@ TYPED_TEST(SyncMethodCommonTest,
   ASSERT_TRUE(connection_error_dispatched);
   EXPECT_TRUE(ptr.encountered_error());
 }
+
+SEQUENCED_TASK_RUNNER_TYPED_TEST_F(
+    SyncMethodOnSequenceCommonTest,
+    QueuedMessagesProcessedBeforeErrorNotification) {
+  // Test that while an interface pointer is waiting for the response to a sync
+  // call, async responses are queued. If the message pipe is disconnected
+  // before the queued messages are processed, the connection error
+  // notification is delayed until all the queued messages are processed.
+
+  void Run() override {
+    this->impl_->set_async_echo_handler(
+        [this](int32_t value, const TestSync::AsyncEchoCallback& callback) {
+          OnAsyncEchoReachedService(value, callback);
+        });
+
+    this->ptr_->AsyncEcho(123, BindAsyncEchoCallback([this](int32_t result) {
+                            async_echo_response_dispatched_ = true;
+                            // At this point, error notification should not be
+                            // dispatched
+                            // yet.
+                            EXPECT_FALSE(connection_error_dispatched_);
+                            EXPECT_FALSE(this->ptr_.encountered_error());
+                            EXPECT_EQ(123, result);
+                            EXPECT_TRUE(async_echo_response_dispatched_);
+                          }));
+  }
+
+  void OnAsyncEchoReachedService(int32_t value,
+                                 const TestSync::AsyncEchoCallback& callback) {
+    async_echo_request_value_ = value;
+    async_echo_request_callback_ = callback;
+    this->impl_->set_echo_handler(
+        [this](int32_t value, const TestSync::EchoCallback& callback) {
+          // Send back the async response first.
+          EXPECT_FALSE(async_echo_request_callback_.is_null());
+          async_echo_request_callback_.Run(async_echo_request_value_);
+
+          this->impl_->binding()->Close();
+        });
+
+    this->ptr_.set_connection_error_handler(
+        base::Bind(&SetFlagAndRunClosure, &connection_error_dispatched_,
+                   LambdaBinder<>::BindLambda(
+                       [this]() { OnErrorNotificationDispatched(); })));
+
+    int32_t result_value = -1;
+    ASSERT_FALSE(this->ptr_->Echo(456, &result_value));
+    EXPECT_EQ(-1, result_value);
+    ASSERT_FALSE(connection_error_dispatched_);
+    EXPECT_FALSE(this->ptr_.encountered_error());
+
+    // Although the AsyncEcho response arrives before the Echo response, it
+    // should
+    // be queued and not yet dispatched.
+    EXPECT_FALSE(async_echo_response_dispatched_);
+  }
+
+  void OnErrorNotificationDispatched() {
+    ASSERT_TRUE(connection_error_dispatched_);
+    EXPECT_TRUE(this->ptr_.encountered_error());
+    this->Done();
+  }
+
+  int32_t async_echo_request_value_ = -1;
+  TestSync::AsyncEchoCallback async_echo_request_callback_;
+  bool async_echo_response_dispatched_ = false;
+  bool connection_error_dispatched_ = false;
+};
 
 TYPED_TEST(SyncMethodCommonTest, InvalidMessageDuringSyncCall) {
   // Test that while an interface pointer is waiting for the response to a sync
@@ -775,6 +1137,50 @@ TYPED_TEST(SyncMethodCommonTest, InvalidMessageDuringSyncCall) {
     ASSERT_TRUE(connection_error_dispatched);
   }
 }
+
+SEQUENCED_TASK_RUNNER_TYPED_TEST_F(SyncMethodOnSequenceCommonTest,
+                                   InvalidMessageDuringSyncCall) {
+  // Test that while an interface pointer is waiting for the response to a sync
+  // call, an invalid incoming message will disconnect the message pipe, cause
+  // the sync call to return false, and run the connection error handler
+  // asynchronously.
+
+  void Run() override {
+    MessagePipe pipe;
+
+    using InterfaceType = typename TypeParam::Interface;
+    this->ptr_.Bind(
+        InterfacePtrInfo<InterfaceType>(std::move(pipe.handle0), 0u));
+
+    MessagePipeHandle raw_binding_handle = pipe.handle1.get();
+    this->impl_ = base::MakeUnique<ImplTypeFor<InterfaceType>>(
+        InterfaceRequest<InterfaceType>(std::move(pipe.handle1)));
+
+    this->impl_->set_echo_handler(
+        [raw_binding_handle](int32_t value,
+                             const TestSync::EchoCallback& callback) {
+          // Write a 1-byte message, which is considered invalid.
+          char invalid_message = 0;
+          MojoResult result =
+              WriteMessageRaw(raw_binding_handle, &invalid_message, 1u, nullptr,
+                              0u, MOJO_WRITE_MESSAGE_FLAG_NONE);
+          ASSERT_EQ(MOJO_RESULT_OK, result);
+          callback.Run(value);
+        });
+
+    this->ptr_.set_connection_error_handler(
+        LambdaBinder<>::BindLambda([this]() {
+          connection_error_dispatched_ = true;
+          this->Done();
+        }));
+
+    int32_t result_value = -1;
+    ASSERT_FALSE(this->ptr_->Echo(456, &result_value));
+    EXPECT_EQ(-1, result_value);
+    ASSERT_FALSE(connection_error_dispatched_);
+  }
+  bool connection_error_dispatched_ = false;
+};
 
 TEST_F(SyncMethodAssociatedTest, ReenteredBySyncMethodAssoBindingOfSameRouter) {
   // Test that an interface pointer waiting for a sync call response can be

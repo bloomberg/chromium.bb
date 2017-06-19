@@ -21,7 +21,7 @@ SyncHandleWatcher::SyncHandleWatcher(
       destroyed_(new base::RefCountedData<bool>(false)) {}
 
 SyncHandleWatcher::~SyncHandleWatcher() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (registered_)
     registry_->UnregisterHandle(handle_);
 
@@ -29,12 +29,12 @@ SyncHandleWatcher::~SyncHandleWatcher() {
 }
 
 void SyncHandleWatcher::AllowWokenUpBySyncWatchOnSameThread() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   IncrementRegisterCount();
 }
 
 bool SyncHandleWatcher::SyncWatch(const bool* should_stop) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   IncrementRegisterCount();
   if (!registered_) {
     DecrementRegisterCount();
