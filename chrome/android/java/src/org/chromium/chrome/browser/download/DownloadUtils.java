@@ -451,7 +451,8 @@ public class DownloadUtils {
 
         // Create a PendingIntent that shares the file with external apps.
         PendingIntent pendingShareIntent = PendingIntent.getActivity(
-                context, 0, createShareIntent(contentUri, mimeType), 0);
+                context, 0, createShareIntent(contentUri, mimeType),
+                PendingIntent.FLAG_CANCEL_CURRENT);
         builder.setActionButton(
                 shareIcon, context.getString(R.string.share), pendingShareIntent, true);
 
