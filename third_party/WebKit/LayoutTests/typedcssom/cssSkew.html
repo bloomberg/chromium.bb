@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
+<script src="resources/comparisons.js"></script>
 
 <script>
 var EPSILON = 1e-6; // float epsilon
@@ -62,7 +63,7 @@ for (let params of testParams) {
     assert_equals(params.input.ax.unit, params.ax.unit);
     assert_approx_equals(params.input.ay.value, params.ay.value, EPSILON);
     assert_equals(params.input.ay.unit, params.ay.unit);
-  }, "(ax, ay) value is correct for " + params.cssText);
+  }, "(ax, ay) values are correct for " + params.cssText);
 }
 
 for (let params of testParams) {
@@ -90,24 +91,18 @@ test(() => {
 for (let params of testParams) {
   test(() => {
     var input = params.input;
-    var inputAsMatrix = input.asMatrix();
-    assert_true(inputAsMatrix.is2D());
-    var tanAx = tanUnitValue(input.ax.degrees);
-    var tanAy = tanUnitValue(input.ay.degrees);
-    var expectedMatrix = new CSSMatrixComponent(
-        new DOMMatrixReadOnly([1, tanAy, tanAx, 1, 0, 0]));
-    for (var attribute in expectedMatrix) {
-      if (attribute == "matrix") {
-        assert_matrix_approx_equals(
-            inputAsMatrix[attribute], expectedMatrix[attribute], epsilon);
-      } else {
-        assert_equals(inputAsMatrix[attribute], expectedMatrix[attribute]);
-      }
-    }
+    var transformValue = new CSSTransformValue([input]);
+    var inputAsMatrix = transformValue.toMatrix();
+    assert_true(inputAsMatrix.is2D);
+
+    var tanAx = tanUnitValue(input.ax);
+    var tanAy = tanUnitValue(input.ay);
+    var expectedMatrix = new DOMMatrixReadOnly([1, tanAy, tanAx, 1, 0, 0]);
+    assert_matrix_approx_equals(inputAsMatrix, expectedMatrix, EPSILON);
   }, "asMatrix is constructed correctly for " + params.cssText);
 }
 
-test(function() {
+test(() => {
   var skew = new CSSSkew(
       new CSSUnitValue(1, 'deg'), new CSSUnitValue(2, 'deg'));
   skew.ax = new CSSUnitValue(3, 'deg');

@@ -5,7 +5,6 @@
 #include "core/css/cssom/CSSTransformValue.h"
 
 #include "core/css/CSSValueList.h"
-#include "core/css/cssom/CSSMatrixComponent.h"
 #include "core/css/cssom/CSSTransformComponent.h"
 #include "core/geometry/DOMMatrix.h"
 
@@ -39,9 +38,9 @@ bool CSSTransformValue::is2D() const {
 DOMMatrix* CSSTransformValue::toMatrix() const {
   DOMMatrix* matrix = DOMMatrix::Create();
   for (size_t i = 0; i < transform_components_.size(); i++) {
-    CSSMatrixComponent* matrixComponent = transform_components_[i]->asMatrix();
+    DOMMatrix* matrixComponent = transform_components_[i]->AsMatrix();
     if (matrixComponent) {
-      matrix->multiplySelf(matrixComponent->matrix());
+      matrix->multiplySelf(matrixComponent);
     }
   }
   return matrix;

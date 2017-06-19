@@ -12,7 +12,7 @@
 
 namespace blink {
 
-class CSSMatrixComponent;
+class DOMMatrix;
 
 class CORE_EXPORT CSSTransformComponent
     : public GarbageCollectedFinalized<CSSTransformComponent>,
@@ -58,7 +58,7 @@ class CORE_EXPORT CSSTransformComponent
   }
 
   virtual CSSFunctionValue* ToCSSValue() const = 0;
-  virtual CSSMatrixComponent* asMatrix() const = 0;
+  virtual DOMMatrix* AsMatrix() const = 0;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
 

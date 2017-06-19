@@ -10,6 +10,7 @@
 namespace blink {
 
 class CSSNumericValue;
+class DOMMatrix;
 class ExceptionState;
 
 class CORE_EXPORT CSSTranslation final : public CSSTransformComponent {
@@ -39,8 +40,8 @@ class CORE_EXPORT CSSTranslation final : public CSSTransformComponent {
     return Is2D() ? kTranslationType : kTranslation3DType;
   }
 
-  // TODO: Implement asMatrix for CSSTranslation.
-  CSSMatrixComponent* asMatrix() const override { return nullptr; }
+  // TODO: Implement AsMatrix for CSSTranslation.
+  DOMMatrix* AsMatrix() const override { return nullptr; }
 
   CSSFunctionValue* ToCSSValue() const override;
 

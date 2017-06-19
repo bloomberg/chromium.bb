@@ -110,18 +110,4 @@ test(() => {
   assert_throws(new TypeError(), () => { new CSSMatrixComponent(undefined); });
 }, "invalid number of arguments to the constructor throws");
 
-for (let params of testParams) {
-  test(() => {
-    var attributeValues = attributeValues2D.concat(attributeValues3D);
-    var inputAsMatrix = params.input.asMatrix();
-    for (var j = 0; j < attributeValues.length; ++j) {
-      var attribute = attributeValues[j];
-      assert_equals(inputAsMatrix[attribute], params.input[attribute]);
-    }
-    assert_equals(inputAsMatrix.is2D(), params.input.is2D());
-    assert_equals(inputAsMatrix.toString(), params.input.toString());
-  }, "asMatrix has all the same properties as the original " +
-  "CSSMatrixComponent for " + params.cssText);
-}
-
 </script>

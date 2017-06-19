@@ -5,11 +5,12 @@
 #ifndef CSSRotation_h
 #define CSSRotation_h
 
-#include "core/css/cssom/CSSMatrixComponent.h"
 #include "core/css/cssom/CSSNumericValue.h"
 #include "core/css/cssom/CSSTransformComponent.h"
 
 namespace blink {
+
+class DOMMatrix;
 
 class CORE_EXPORT CSSRotation final : public CSSTransformComponent {
   WTF_MAKE_NONCOPYABLE(CSSRotation);
@@ -42,7 +43,7 @@ class CORE_EXPORT CSSRotation final : public CSSTransformComponent {
     return is2d_ ? kRotationType : kRotation3DType;
   }
 
-  CSSMatrixComponent* asMatrix() const override {
+  DOMMatrix* AsMatrix() const override {
     return nullptr;
     // TODO(meade): Implement.
     // return is2d_

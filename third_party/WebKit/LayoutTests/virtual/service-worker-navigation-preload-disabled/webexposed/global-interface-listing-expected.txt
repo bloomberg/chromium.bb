@@ -782,7 +782,6 @@ interface CSSSupportsRule : CSSConditionRule
     method constructor
 interface CSSTransformComponent
     attribute @@toStringTag
-    method asMatrix
     method constructor
     method is2D
     method toString
