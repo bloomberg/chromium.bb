@@ -779,30 +779,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     SET_NESTED_VAR(rare_non_inherited_data_, flexible_box_data_, flex_wrap_, w);
   }
 
-  // -webkit-box-align
-  // For valid values of box-align see
-  // http://www.w3.org/TR/2009/WD-css3-flexbox-20090723/#alignment
-  static EBoxAlignment InitialBoxAlign() { return EBoxAlignment::kStretch; }
-  EBoxAlignment BoxAlign() const {
-    return static_cast<EBoxAlignment>(
-        rare_non_inherited_data_->deprecated_flexible_box_data_->box_align_);
-  }
-  void SetBoxAlign(EBoxAlignment a) {
-    SET_NESTED_VAR(rare_non_inherited_data_, deprecated_flexible_box_data_,
-                   box_align_, static_cast<unsigned>(a));
-  }
-
-  // -webkit-box-lines
-  static EBoxLines InitialBoxLines() { return EBoxLines::kSingle; }
-  EBoxLines BoxLines() const {
-    return static_cast<EBoxLines>(
-        rare_non_inherited_data_->deprecated_flexible_box_data_->box_lines_);
-  }
-  void SetBoxLines(EBoxLines lines) {
-    SET_NESTED_VAR(rare_non_inherited_data_, deprecated_flexible_box_data_,
-                   box_lines_, static_cast<unsigned>(lines));
-  }
-
   // -webkit-box-ordinal-group
   static unsigned InitialBoxOrdinalGroup() { return 1; }
   unsigned BoxOrdinalGroup() const {
@@ -813,28 +789,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     SET_NESTED_VAR(rare_non_inherited_data_, deprecated_flexible_box_data_,
                    box_ordinal_group_,
                    std::min(std::numeric_limits<unsigned>::max() - 1, og));
-  }
-
-  // -webkit-box-orient
-  static EBoxOrient InitialBoxOrient() { return EBoxOrient::kHorizontal; }
-  EBoxOrient BoxOrient() const {
-    return static_cast<EBoxOrient>(
-        rare_non_inherited_data_->deprecated_flexible_box_data_->box_orient_);
-  }
-  void SetBoxOrient(EBoxOrient o) {
-    SET_NESTED_VAR(rare_non_inherited_data_, deprecated_flexible_box_data_,
-                   box_orient_, static_cast<unsigned>(o));
-  }
-
-  // -webkit-box-pack
-  static EBoxPack InitialBoxPack() { return EBoxPack::kStart; }
-  EBoxPack BoxPack() const {
-    return static_cast<EBoxPack>(
-        rare_non_inherited_data_->deprecated_flexible_box_data_->box_pack_);
-  }
-  void SetBoxPack(EBoxPack p) {
-    SET_NESTED_VAR(rare_non_inherited_data_, deprecated_flexible_box_data_,
-                   box_pack_, static_cast<unsigned>(p));
   }
 
   // -webkit-box-reflect

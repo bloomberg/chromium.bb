@@ -2772,12 +2772,14 @@
       field_group: "inherited",
       default_value: "0",
     },
+    // For valid values of box-align see
+    // http://www.w3.org/TR/2009/WD-css3-flexbox-20090723/#alignment
     {
       name: "-webkit-box-align",
       type_name: "EBoxAlignment",
-      field_template: "storage_only",
-      default_value: "EBoxAlignment::kStretch",
-      field_size: 3,
+      field_template: "keyword",
+      keywords: ["stretch", "start", "center", "end", "baseline"],
+      default_value: "stretch",
       field_group: "rare-non-inherited->deprecated-flexible-box",
     },
     {
@@ -2815,9 +2817,9 @@
     {
       name: "-webkit-box-lines",
       type_name: "EBoxLines",
-      field_template: "storage_only",
-      default_value: "EBoxLines::kSingle",
-      field_size: 1,
+      field_template: "keyword",
+      keywords: ["single", "multiple"],
+      default_value: "single",
       field_group: "rare-non-inherited->deprecated-flexible-box",
     },
     {
@@ -2832,17 +2834,17 @@
     {
       name: "-webkit-box-orient",
       type_name: "EBoxOrient",
-      field_template: "storage_only",
-      default_value: "EBoxOrient::kHorizontal",
-      field_size: 1,
+      field_template: "keyword",
+      keywords: ["horizontal", "vertical"],
+      default_value: "horizontal",
       field_group: "rare-non-inherited->deprecated-flexible-box",
     },
     {
       name: "-webkit-box-pack",
       type_name: "EBoxPack",
-      field_template: "storage_only",
-      default_value: "EBoxPack::kStart",
-      field_size: 2,
+      field_template: "keyword",
+      keywords: ["start", "center", "end", "justify"],
+      default_value: "start",
       field_group: "rare-non-inherited->deprecated-flexible-box",
     },
     {

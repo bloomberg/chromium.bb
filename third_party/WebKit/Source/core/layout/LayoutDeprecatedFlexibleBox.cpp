@@ -596,7 +596,7 @@ void LayoutDeprecatedFlexibleBox::LayoutHorizontalBox(bool relayout_children) {
           child_y += child->MarginTop() + (max_ascent - ascent);
           break;
         }
-        case EBoxAlignment::kBend:
+        case EBoxAlignment::kEnd:
           child_y +=
               ContentHeight() - child->MarginBottom() - child->Size().Height();
           break;
@@ -870,7 +870,7 @@ void LayoutDeprecatedFlexibleBox::LayoutVerticalBox(bool relayout_children) {
                       2)
                          .ClampNegativeToZero();
           break;
-        case EBoxAlignment::kBend:
+        case EBoxAlignment::kEnd:
           if (!Style()->IsLeftToRightDirection()) {
             child_x += child->MarginLeft();
           } else {

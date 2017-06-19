@@ -34,6 +34,16 @@ inline UnicodeBidi CssValueIDToPlatformEnum(CSSValueID v) {
 }
 
 template <>
+inline EBoxOrient CssValueIDToPlatformEnum(CSSValueID v) {
+  if (v == CSSValueInlineAxis)
+    return EBoxOrient::kHorizontal;
+  if (v == CSSValueBlockAxis)
+    return EBoxOrient::kVertical;
+
+  return detail::cssValueIDToPlatformEnumGenerated<EBoxOrient>(v);
+}
+
+template <>
 inline ETextCombine CssValueIDToPlatformEnum(CSSValueID v) {
   if (v == CSSValueHorizontal)  // -webkit-text-combine
     return ETextCombine::kAll;
