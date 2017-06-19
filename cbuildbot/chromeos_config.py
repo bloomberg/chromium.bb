@@ -442,12 +442,13 @@ _arm_internal_release_boards = frozenset([
     'gru',
     'hana',
     'kevin',
+    'lasilla-ground',
+    'lasilla-sky',
+    'macchiato-ground',
     'nyan',
     'nyan_big',
     'nyan_blaze',
     'nyan_kitty',
-    'lasilla-ground',
-    'lasilla-sky',
     'oak',
     'octavius',
     'peach_pi',
@@ -648,6 +649,7 @@ _loonix_boards = frozenset([
     'gonzo',
     'lasilla-ground',
     'lasilla-sky',
+    'macchiato-ground',
     'octavius',
     'wooten',
 ])
@@ -2254,6 +2256,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'guado_moblab', # Known lab flakes are too common - contact:haddowk@
       'lasilla-ground', # contact:jemele@
       'lasilla-sky', # contact:jemele@
+      'macchiato-ground', # contact:jemele@
       'octavius', # contact:dpjacques@
       'tatl', # Still volatile - contact:smbarber@ - crbug.com/705598
       'wooten', # contact:icoolidge@
