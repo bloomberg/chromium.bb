@@ -8,11 +8,13 @@
 #include <stdint.h>
 
 #include "base/memory/shared_memory_handle.h"
+#include "base/time/time.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_platform_file.h"
 #include "remoting/host/chromoting_param_traits.h"
 #include "remoting/host/desktop_environment_options.h"
 #include "remoting/host/screen_resolution.h"
+#include "remoting/proto/process_stats.pb.h"
 #include "remoting/protocol/errors.h"
 #include "remoting/protocol/transport.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
@@ -265,3 +267,14 @@ IPC_MESSAGE_CONTROL0(ChromotingNetworkToRemoteSecurityKeyMsg_ConnectionReady)
 // Error indicating the request originated from outside the remoted session.
 // The IPC channel will be disconnected after this message has been sent.
 IPC_MESSAGE_CONTROL0(ChromotingNetworkToRemoteSecurityKeyMsg_InvalidSession)
+
+// Starts to report process resource usage.
+IPC_MESSAGE_CONTROL1(ChromotingNetworkToAnyMsg_StartProcessStatsReport,
+                     base::TimeDelta /* interval */)
+
+// Stops to report process resource usage.
+IPC_MESSAGE_CONTROL0(ChromotingNetworkToAnyMsg_StopProcessStatsReport)
+
+// Reports process resource usage to network process.
+IPC_MESSAGE_CONTROL1(ChromotingAnyToNetworkMsg_ReportProcessStats,
+                     remoting::protocol::AggregatedProcessResourceUsage)

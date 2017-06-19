@@ -280,5 +280,45 @@ void ParamTraits<remoting::DesktopEnvironmentOptions>::Log(
   l->append("DesktopEnvironmentOptions()");
 }
 
+// static
+void ParamTraits<remoting::protocol::AggregatedProcessResourceUsage>::Write(
+    base::Pickle* m,
+    const remoting::protocol::AggregatedProcessResourceUsage& p) {
+  m->WriteString(p.name());
+  m->WriteDouble(p.processor_usage());
+  m->WriteUInt64(p.working_set_size());
+  m->WriteUInt64(p.pagefile_size());
+}
+
+// static
+bool ParamTraits<remoting::protocol::AggregatedProcessResourceUsage>::Read(
+    const base::Pickle* m,
+    base::PickleIterator* iter,
+    remoting::protocol::AggregatedProcessResourceUsage* p) {
+  std::string name;
+  double processor_usage;
+  uint64_t working_set_size;
+  uint64_t pagefile_size;
+  if (!iter->ReadString(&name) ||
+      !iter->ReadDouble(&processor_usage) ||
+      !iter->ReadUInt64(&working_set_size) ||
+      !iter->ReadUInt64(&pagefile_size)) {
+    return false;
+  }
+
+  p->set_name(name);
+  p->set_processor_usage(processor_usage);
+  p->set_working_set_size(working_set_size);
+  p->set_pagefile_size(pagefile_size);
+  return true;
+}
+
+// static
+void ParamTraits<remoting::protocol::AggregatedProcessResourceUsage>::Log(
+    const remoting::protocol::AggregatedProcessResourceUsage& p,
+    std::string* l) {
+  l->append("AggregatedProcessResourceUsage()");
+}
+
 }  // namespace IPC
 

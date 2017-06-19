@@ -12,6 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
 #include "base/process/process_handle.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_message.h"
@@ -22,6 +23,7 @@
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/input_injector.h"
+#include "remoting/host/process_stats_sender.h"
 #include "remoting/host/remote_input_filter.h"
 #include "remoting/host/screen_controls.h"
 #include "remoting/host/screen_resolution.h"
@@ -163,6 +165,7 @@ DesktopSessionAgent::DesktopSessionAgent(
       caller_task_runner_(caller_task_runner),
       input_task_runner_(input_task_runner),
       io_task_runner_(io_task_runner),
+      current_process_stats_("DesktopSessionAgent"),
       weak_factory_(this) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 }
@@ -187,6 +190,10 @@ bool DesktopSessionAgent::OnMessageReceived(const IPC::Message& message) {
                           OnInjectTouchEvent)
       IPC_MESSAGE_HANDLER(ChromotingNetworkDesktopMsg_SetScreenResolution,
                           SetScreenResolution)
+      IPC_MESSAGE_HANDLER(ChromotingNetworkToAnyMsg_StartProcessStatsReport,
+                          StartProcessStatsReport)
+      IPC_MESSAGE_HANDLER(ChromotingNetworkToAnyMsg_StopProcessStatsReport,
+                          StopProcessStatsReport)
       IPC_MESSAGE_UNHANDLED(handled = false)
     IPC_END_MESSAGE_MAP()
   } else {
@@ -224,6 +231,7 @@ DesktopSessionAgent::~DesktopSessionAgent() {
   DCHECK(!network_channel_);
   DCHECK(!screen_controls_);
   DCHECK(!video_capturer_);
+  DCHECK(!stats_sender_);
 }
 
 const std::string& DesktopSessionAgent::client_jid() const {
@@ -247,6 +255,12 @@ void DesktopSessionAgent::SetDisableInputs(bool disable_inputs) {
 
   // Do not expect this method to be called because it is only used by It2Me.
   NOTREACHED();
+}
+
+void DesktopSessionAgent::OnProcessStats(
+    const protocol::AggregatedProcessResourceUsage& usage) {
+  SendToNetwork(
+      base::MakeUnique<ChromotingAnyToNetworkMsg_ReportProcessStats>(usage));
 }
 
 void DesktopSessionAgent::OnStartSessionAgent(
@@ -381,7 +395,8 @@ void DesktopSessionAgent::ProcessAudioPacket(
 mojo::ScopedMessagePipeHandle DesktopSessionAgent::Start(
     const base::WeakPtr<Delegate>& delegate) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
-  DCHECK(delegate_.get() == nullptr);
+  DCHECK(delegate);
+  DCHECK(!delegate_);
 
   delegate_ = delegate;
 
@@ -395,6 +410,8 @@ void DesktopSessionAgent::Stop() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   delegate_.reset();
+
+  stats_sender_.reset();
 
   // Make sure the channel is closed.
   network_channel_.reset();
@@ -557,6 +574,26 @@ void DesktopSessionAgent::StopAudioCapturer() {
   DCHECK(audio_capture_task_runner_->BelongsToCurrentThread());
 
   audio_capturer_.reset();
+}
+
+void DesktopSessionAgent::StartProcessStatsReport(base::TimeDelta interval) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+  DCHECK(!stats_sender_);
+
+  if (interval <= base::TimeDelta::FromSeconds(0)) {
+    interval = kDefaultProcessStatsInterval;
+  }
+
+  stats_sender_.reset(new ProcessStatsSender(
+      this,
+      interval,
+      { &current_process_stats_ }));
+}
+
+void DesktopSessionAgent::StopProcessStatsReport() {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+  DCHECK(stats_sender_);
+  stats_sender_.reset();
 }
 
 }  // namespace remoting

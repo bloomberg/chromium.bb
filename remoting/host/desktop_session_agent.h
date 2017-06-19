@@ -16,11 +16,14 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "ipc/ipc_listener.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "remoting/host/client_session_control.h"
+#include "remoting/host/current_process_stats_agent.h"
 #include "remoting/host/desktop_environment_options.h"
 #include "remoting/protocol/clipboard_stub.h"
+#include "remoting/protocol/process_stats_stub.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_capturer.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 #include "third_party/webrtc/modules/desktop_capture/mouse_cursor_monitor.h"
@@ -38,6 +41,7 @@ class AutoThreadTaskRunner;
 class DesktopEnvironment;
 class DesktopEnvironmentFactory;
 class InputInjector;
+class ProcessStatsSender;
 class RemoteInputFilter;
 class ScreenControls;
 class ScreenResolution;
@@ -53,7 +57,8 @@ class DesktopSessionAgent
       public IPC::Listener,
       public webrtc::DesktopCapturer::Callback,
       public webrtc::MouseCursorMonitor::Callback,
-      public ClientSessionControl {
+      public ClientSessionControl,
+      public protocol::ProcessStatsStub {
  public:
   class Delegate {
    public:
@@ -112,6 +117,10 @@ class DesktopSessionAgent
   void OnLocalMouseMoved(const webrtc::DesktopVector& position) override;
   void SetDisableInputs(bool disable_inputs) override;
 
+  // ProcessStatsStub interface.
+  void OnProcessStats(
+      const protocol::AggregatedProcessResourceUsage& usage) override;
+
   // Handles StartSessionAgent request from the client.
   void OnStartSessionAgent(const std::string& authenticated_jid,
                            const ScreenResolution& resolution,
@@ -139,6 +148,14 @@ class DesktopSessionAgent
 
   // Posted to |audio_capture_task_runner_| to stop the audio capturer.
   void StopAudioCapturer();
+
+  // Starts to report process statistic data to network process. If
+  // |interval| is less than or equal to 0, a default non-zero value will be
+  // used.
+  void StartProcessStatsReport(base::TimeDelta interval);
+
+  // Stops sending process statistic data to network process.
+  void StopProcessStatsReport();
 
  private:
   // Task runner dedicated to running methods of |audio_capturer_|.
@@ -190,6 +207,11 @@ class DesktopSessionAgent
   // Keep reference to the last frame sent to make sure shared buffer is alive
   // before it's received.
   std::unique_ptr<webrtc::DesktopFrame> last_frame_;
+
+  // Reports process statistic data to network process.
+  std::unique_ptr<ProcessStatsSender> stats_sender_;
+
+  CurrentProcessStatsAgent current_process_stats_;
 
   // Used to disable callbacks to |this|.
   base::WeakPtrFactory<DesktopSessionAgent> weak_factory_;
