@@ -38,7 +38,7 @@ Here's what works well:
 Please keep this doc up-to-date. VS Code is still in active development and
 subject to changes. This doc is checked into the Chromium git repo, so if you
 make changes, read the [documentation
-guidelines](https://chromium.googlesource.com/chromium/src/+/lkgr/docs/documentation_guidelines.md)
+guidelines](https://chromium.googlesource.com/chromium/src/+/master/docs/documentation_guidelines.md)
 and [submit a change list](https://www.chromium.org/developers/contributing-code).
 
 All file paths and commands have been tested on Linux. Windows and Mac might
@@ -63,13 +63,9 @@ Next, we will install some useful extensions. Jump to the extensions window
 every day:
 
 *   ***C/C++*** -
-    Intellisense, code formatting, debugging.
+    Code formatting, debugging, Intellisense.
 *   ***Python*** -
     Linting, intellisense, code formatting, refactoring, debugging, snippets.
-*   ***Toggle Header/Source*** -
-    Toggles between .cc and .h with `F4`. The C/C++ extension supports this as
-    well through `Alt+O`. Last time I checked this was very laggy, but they
-    might have improved it since, so this extension might not be necessary.
 *   ***Protobuf support*** -
     Syntax highlighting for .proto files.
 *   ***you-complete-me*** -
@@ -176,6 +172,8 @@ Remember to replace `<full_path_to_your_home>`!
   "workbench.editor.enablePreview": false,
   // Optional: Same for files opened from quick open (Ctrl+P).
   "workbench.editor.enablePreviewFromQuickOpen": false,
+  // Optional: Don't continuously fetch remote changes.
+  "git.autofetch": false,
 
   "files.associations": {
     // Adds xml syntax highlighting for grd files.
@@ -206,7 +204,7 @@ Remember to replace `<full_path_to_your_home>`!
   "annotator.annotationColumnWidth": "24em",
 
   // C++ clang format settings.
-  "C_Cpp.clang_format_path": "<full_path_to_your_home>/depot_tools/clang-format",
+  "C_Cpp.clang_format_path": "${workspaceRoot}/third_party/depot_tools/clang-format",
   "C_Cpp.clang_format_sortIncludes": true,
   "C_Cpp.clang_format_formatOnSave": true,
 
