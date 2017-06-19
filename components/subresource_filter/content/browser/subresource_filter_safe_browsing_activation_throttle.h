@@ -94,6 +94,9 @@ class SubresourceFilterSafeBrowsingActivationThrottle
   // WillProcessResponse. If deferral was not necessary, will remain null.
   base::TimeTicks defer_time_;
 
+  // Added to investigate crbug.com/733099.
+  bool will_start_request_called_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(SubresourceFilterSafeBrowsingActivationThrottle);
 };
 
