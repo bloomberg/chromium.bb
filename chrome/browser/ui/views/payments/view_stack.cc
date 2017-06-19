@@ -16,6 +16,8 @@ ViewStack::ViewStack()
   SetLayoutManager(new views::FillLayout());
 
   slide_out_animator_->AddObserver(this);
+  slide_in_animator_->AddObserver(this);
+
   // Paint to a layer and Mask to Bounds, otherwise descendant views that paint
   // to a layer themselves will still paint while they're being animated out and
   // are out of bounds of their parent.
@@ -36,28 +38,39 @@ void ViewStack::Push(std::unique_ptr<views::View> view, bool animate) {
     // First add the new view out of bounds since it'll slide in from right to
     // left.
     view->SetBounds(width(), 0, width(), height());
-    view->Layout();
-
-    AddChildView(view.get());
-
-    // Animate the new view to be right on top of this one.
-    slide_in_animator_->AnimateViewTo(view.get(), destination);
   } else {
     view->SetBoundsRect(destination);
-    view->Layout();
-    AddChildView(view.get());
   }
+  view->Layout();
+  AddChildView(view.get());
 
   view->set_owned_by_client();
+
   // Add the new view to the stack so it can be popped later when navigating
   // back to the previous screen.
   stack_.push_back(std::move(view));
+
+  if (animate) {
+    // Animate the new view to be right on top of this one.
+    slide_in_animator_->AnimateViewTo(stack_.back().get(), destination);
+  } else {
+    // This is handled by the post-animation callback in the animated case, so
+    // trigger it synchronously here.
+    HideCoveredViews();
+  }
+
   RequestFocus();
 }
 
 void ViewStack::Pop() {
+  DCHECK_LT(1u, size());  // There must be at least one view left after popping.
+
   gfx::Rect destination = bounds();
   destination.set_origin(gfx::Point(width(), 0));
+
+  // Set the second-to-last view as visible, since it is about to be revealed
+  // when the last view animates out.
+  stack_[size() - 2]->SetVisible(true);
 
   slide_out_animator_->AnimateViewTo(
       stack_.back().get(), destination);
@@ -107,6 +120,13 @@ void ViewStack::RequestFocus() {
     top()->RequestFocus();
 }
 
+void ViewStack::HideCoveredViews() {
+  // Iterate through all but the last (topmost) view.
+  for (size_t i = 0; i + 1 < size(); i++) {
+    stack_[i]->SetVisible(false);
+  }
+}
+
 void ViewStack::UpdateAnimatorBounds(
     views::BoundsAnimator* animator, const gfx::Rect& target) {
   // If an animator is currently animating, figure out which views and update
@@ -121,11 +141,13 @@ void ViewStack::UpdateAnimatorBounds(
 }
 
 void ViewStack::OnBoundsAnimatorDone(views::BoundsAnimator* animator) {
-  // This should only be called from slide_out_animator_ when the views going
-  // out are done animating.
-  DCHECK_EQ(animator, slide_out_animator_.get());
-
-  stack_.pop_back();
-  DCHECK(!stack_.empty()) << "State stack should never be empty";
-  RequestFocus();
+  if (animator == slide_out_animator_.get()) {
+    stack_.pop_back();
+    DCHECK(!stack_.empty()) << "State stack should never be empty";
+    RequestFocus();
+  } else if (animator == slide_in_animator_.get()) {
+    HideCoveredViews();
+  } else {
+    NOTREACHED();
+  }
 }
