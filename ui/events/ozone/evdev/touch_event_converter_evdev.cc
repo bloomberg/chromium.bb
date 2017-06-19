@@ -608,6 +608,8 @@ float TouchEventConverterEvdev::ScalePressure(int32_t value) {
   float pressure = value - pressure_min_;
   if (pressure_max_ - pressure_min_)
     pressure /= pressure_max_ - pressure_min_;
+  if (pressure > 1.0)
+    pressure = 1.0;
   return pressure;
 }
 
