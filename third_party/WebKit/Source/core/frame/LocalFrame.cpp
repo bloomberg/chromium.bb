@@ -67,6 +67,7 @@
 #include "core/loader/FrameLoadRequest.h"
 #include "core/loader/NavigationScheduler.h"
 #include "core/page/ChromeClient.h"
+#include "core/page/DragController.h"
 #include "core/page/FocusController.h"
 #include "core/page/Page.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
@@ -113,15 +114,14 @@ namespace blink {
 
 using namespace HTMLNames;
 
-namespace {
-
+// static
 // Converts from bounds in CSS space to device space based on the given
 // frame.
 // TODO(tanvir.rizvi): DeviceSpaceBounds is used for drag related functionality
 // and is irrelevant to core functionality of LocalFrame. This should be moved
 // out of LocalFrame to appropriate place.
-static FloatRect DeviceSpaceBounds(const FloatRect css_bounds,
-                                   const LocalFrame& frame) {
+FloatRect DataTransfer::DeviceSpaceBounds(const FloatRect css_bounds,
+                                          const LocalFrame& frame) {
   float device_scale_factor = frame.GetPage()->DeviceScaleFactorDeprecated();
   float page_scale_factor = frame.GetPage()->GetVisualViewport().Scale();
   FloatRect device_bounds(css_bounds);
@@ -132,12 +132,13 @@ static FloatRect DeviceSpaceBounds(const FloatRect css_bounds,
   return device_bounds;
 }
 
+// static
 // Returns a DragImage whose bitmap contains |contents|, positioned and scaled
 // in device space.
 // TODO(tanvir.rizvi): CreateDragImageForFrame is used for drag related
 // functionality and is irrelevant to core functionality of LocalFrame. This
 // should be moved out of LocalFrame to appropriate place.
-static std::unique_ptr<DragImage> CreateDragImageForFrame(
+std::unique_ptr<DragImage> DataTransfer::CreateDragImageForFrame(
     const LocalFrame& frame,
     float opacity,
     RespectImageOrientationEnum image_orientation,
@@ -173,6 +174,8 @@ static std::unique_ptr<DragImage> CreateDragImageForFrame(
                            screen_device_scale_factor, kInterpolationHigh,
                            opacity);
 }
+
+namespace {
 
 // TODO(tanvir.rizvi): DraggedNodeImageBuilder is used for drag related
 // functionality and is irrelevant to core functionality of LocalFrame. This
@@ -230,14 +233,15 @@ class DraggedNodeImageBuilder {
     PaintLayerFlags flags = kPaintLayerHaveTransparency |
                             kPaintLayerAppliedTransform |
                             kPaintLayerUncachedClipRects;
-    PaintRecordBuilder builder(DeviceSpaceBounds(bounding_box, *local_frame_));
+    PaintRecordBuilder builder(
+        DataTransfer::DeviceSpaceBounds(bounding_box, *local_frame_));
     PaintLayerPainter(*layer).Paint(builder.Context(), painting_info, flags);
     PropertyTreeState border_box_properties = PropertyTreeState::Root();
     if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
       border_box_properties =
           *layer->GetLayoutObject().LocalBorderBoxProperties();
     }
-    return CreateDragImageForFrame(
+    return DataTransfer::CreateDragImageForFrame(
         *local_frame_, 1.0f,
         LayoutObject::ShouldRespectImageOrientation(dragged_layout_object),
         bounding_box, builder, border_box_properties);
@@ -764,34 +768,40 @@ double LocalFrame::DevicePixelRatio() const {
   return ratio;
 }
 
+// static
 // TODO(tanvir.rizvi): NodeImage is used only by DataTransfer,
 // and is irrelevant to LocalFrame core functionality, so it can be moved to
 // DataTransfer.
-std::unique_ptr<DragImage> LocalFrame::NodeImage(Node& node) {
-  DraggedNodeImageBuilder image_node(*this, node);
+std::unique_ptr<DragImage> DataTransfer::NodeImage(const LocalFrame& frame,
+                                                   Node& node) {
+  DraggedNodeImageBuilder image_node(frame, node);
   return image_node.CreateImage();
 }
 
+// static
 // TODO(tanvir.rizvi): DragImageForSelection is used only by DragController,
 // and is irrelevant to LocalFrame core functionality, so it can be moved to
 // DragController.
-std::unique_ptr<DragImage> LocalFrame::DragImageForSelection(float opacity) {
-  if (!Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsRange())
+std::unique_ptr<DragImage> DragController::DragImageForSelection(
+    const LocalFrame& frame,
+    float opacity) {
+  if (!frame.Selection().ComputeVisibleSelectionInDOMTreeDeprecated().IsRange())
     return nullptr;
 
-  view_->UpdateAllLifecyclePhasesExceptPaint();
-  DCHECK(GetDocument()->IsActive());
+  frame.View()->UpdateAllLifecyclePhasesExceptPaint();
+  DCHECK(frame.GetDocument()->IsActive());
 
-  FloatRect painting_rect = FloatRect(Selection().Bounds());
+  FloatRect painting_rect = FloatRect(frame.Selection().Bounds());
   GlobalPaintFlags paint_flags =
       kGlobalPaintSelectionOnly | kGlobalPaintFlattenCompositingLayers;
 
-  PaintRecordBuilder builder(DeviceSpaceBounds(painting_rect, *this));
-  view_->PaintContents(builder.Context(), paint_flags,
-                       EnclosingIntRect(painting_rect));
-  return CreateDragImageForFrame(*this, opacity, kDoNotRespectImageOrientation,
-                                 painting_rect, builder,
-                                 PropertyTreeState::Root());
+  PaintRecordBuilder builder(
+      DataTransfer::DeviceSpaceBounds(painting_rect, frame));
+  frame.View()->PaintContents(builder.Context(), paint_flags,
+                              EnclosingIntRect(painting_rect));
+  return DataTransfer::CreateDragImageForFrame(
+      frame, opacity, kDoNotRespectImageOrientation, painting_rect, builder,
+      PropertyTreeState::Root());
 }
 
 String LocalFrame::SelectedText() const {

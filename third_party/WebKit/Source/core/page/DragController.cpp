@@ -1124,7 +1124,7 @@ bool DragController::StartDrag(LocalFrame* src,
   Node* node = state.drag_src_.Get();
   if (state.drag_type_ == kDragSourceActionSelection) {
     if (!drag_image) {
-      drag_image = src->DragImageForSelection(kDragImageAlpha);
+      drag_image = DragImageForSelection(*src, kDragImageAlpha);
       drag_location = DragLocationForSelectionDrag(src);
     }
     DoSystemDrag(drag_image.get(), drag_location, drag_origin, data_transfer,

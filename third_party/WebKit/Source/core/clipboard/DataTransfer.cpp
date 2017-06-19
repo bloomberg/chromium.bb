@@ -261,7 +261,7 @@ std::unique_ptr<DragImage> DataTransfer::CreateDragImage(
   if (drag_image_element_) {
     loc = drag_loc_;
 
-    return frame->NodeImage(*drag_image_element_);
+    return NodeImage(*frame, *drag_image_element_);
   }
   if (drag_image_) {
     loc = drag_loc_;
