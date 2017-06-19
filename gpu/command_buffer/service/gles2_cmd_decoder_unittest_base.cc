@@ -1184,10 +1184,12 @@ void GLES2DecoderTestBase::DoRenderbufferStorageMultisampleCHROMIUM(
     GLenum internal_format,
     GLenum gl_format,
     GLsizei width,
-    GLsizei height) {
+    GLsizei height,
+    bool expect_bind) {
   EXPECT_CALL(*gl_, GetError())
       .WillOnce(Return(GL_NO_ERROR))
       .RetiresOnSaturation();
+  EnsureRenderbufferBound(expect_bind);
   EXPECT_CALL(*gl_,
               RenderbufferStorageMultisampleEXT(
                   target, samples, gl_format, width, height))

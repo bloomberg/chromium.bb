@@ -294,7 +294,8 @@ class GLES2DecoderTestBase : public ::testing::TestWithParam<bool>,
                                                 GLenum internal_format,
                                                 GLenum gl_format,
                                                 GLsizei width,
-                                                GLsizei height);
+                                                GLsizei height,
+                                                bool expect_bind);
   void RestoreRenderbufferBindings();
   void EnsureRenderbufferBound(bool expect_bind);
   void DoBindTexture(GLenum target, GLuint client_id, GLuint service_id);
