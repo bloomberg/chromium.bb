@@ -15,7 +15,6 @@ class MemoryCoordinatorDefaultPolicy : public MemoryCoordinatorImpl::Policy {
   explicit MemoryCoordinatorDefaultPolicy(MemoryCoordinatorImpl* coordinator);
   ~MemoryCoordinatorDefaultPolicy() override;
 
-  void OnWarningCondition() override;
   void OnCriticalCondition() override;
   void OnConditionChanged(MemoryCondition prev, MemoryCondition next) override;
   void OnChildVisibilityChanged(int render_process_id,

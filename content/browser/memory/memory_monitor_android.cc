@@ -71,12 +71,10 @@ static void OnTrimMemory(JNIEnv* env,
   auto* coordinator = MemoryCoordinatorImpl::GetInstance();
   DCHECK(coordinator);
 
-  MemoryCondition condition = MemoryCondition::WARNING;
-  if (level >= kTrimMemoryRunningCritical ||
-      coordinator->GetMemoryCondition() == MemoryCondition::CRITICAL)
-    condition = MemoryCondition::CRITICAL;
-  coordinator->ForceSetMemoryCondition(condition,
-                                       base::TimeDelta::FromMinutes(1));
+  if (level >= kTrimMemoryRunningCritical) {
+    coordinator->ForceSetMemoryCondition(MemoryCondition::CRITICAL,
+                                         base::TimeDelta::FromMinutes(1));
+  }
 }
 
 // static

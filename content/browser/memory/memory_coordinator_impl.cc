@@ -48,8 +48,6 @@ const char* MemoryConditionToString(MemoryCondition condition) {
   switch (condition) {
     case MemoryCondition::NORMAL:
       return "normal";
-    case MemoryCondition::WARNING:
-      return "warning";
     case MemoryCondition::CRITICAL:
       return "critical";
   }
@@ -322,9 +320,7 @@ void MemoryCoordinatorImpl::UpdateConditionIfNeeded(
     MemoryCondition next_condition) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (next_condition == MemoryCondition::WARNING)
-    policy_->OnWarningCondition();
-  else if (next_condition == MemoryCondition::CRITICAL)
+  if (next_condition == MemoryCondition::CRITICAL)
     policy_->OnCriticalCondition();
 
   if (suppress_condition_change_until_ > tick_clock_->NowTicks() ||
