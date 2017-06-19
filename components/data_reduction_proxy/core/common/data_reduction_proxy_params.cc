@@ -13,6 +13,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_switches.h"
 #include "components/variations/variations_associated_data.h"
@@ -87,10 +88,12 @@ bool IsIncludedInAndroidOnePromoFieldTrial(
   return build_fingerprint.find(kAndroidOneIdentifier) != std::string::npos;
 }
 
-bool IsIncludedInAndroidLowMemoryDevicePromoFieldTrial() {
+bool CanShowAndroidLowMemoryDevicePromo() {
 #if defined(OS_ANDROID)
   return base::SysInfo::IsLowEndDevice() &&
-         IsIncludedInFieldTrial("DataReductionProxyLowMemoryDevicePromo");
+         base::FeatureList::IsEnabled(
+             data_reduction_proxy::features::
+                 kDataReductionProxyLowMemoryDevicePromo);
 #endif
   return false;
 }
@@ -110,7 +113,7 @@ bool IsIncludedInPromoFieldTrial() {
   if (IsIncludedInAndroidOnePromoFieldTrial(android_build_fingerprint))
     return true;
 #endif
-  return IsIncludedInAndroidLowMemoryDevicePromoFieldTrial();
+  return CanShowAndroidLowMemoryDevicePromo();
 }
 
 bool IsIncludedInFREPromoFieldTrial() {
@@ -123,7 +126,7 @@ bool IsIncludedInFREPromoFieldTrial() {
   if (IsIncludedInAndroidOnePromoFieldTrial(android_build_fingerprint))
     return true;
 #endif
-  return IsIncludedInAndroidLowMemoryDevicePromoFieldTrial();
+  return CanShowAndroidLowMemoryDevicePromo();
 }
 
 bool IsIncludedInAndroidOnePromoFieldTrialForTesting(
