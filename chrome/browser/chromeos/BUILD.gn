@@ -8,6 +8,7 @@ import("//extensions/features/features.gni")
 import("//media/media_options.gni")
 import("//printing/features/features.gni")
 import("//third_party/protobuf/proto_library.gni")
+import("//ui/ozone/ozone.gni")
 
 assert(is_chromeos)
 
@@ -38,10 +39,15 @@ source_set("chromeos") {
   deps = [
     # TODO(tbarzic): Cleanup this list.
     ":attestation_proto",
+    "//apps",
     "//ash",
     "//ash:ash_with_content",
     "//ash/autoclick/mus/public/interfaces",
     "//ash/public/cpp:ash_public_cpp",
+    "//cc/paint",
+    "//chrome/app:command_ids",
+    "//chrome/app/vector_icons",
+    "//chrome/browser:rlz",
     "//chrome/browser/devtools",
     "//chrome/browser/extensions",
     "//chrome/browser/safe_browsing:chunk_proto",
@@ -53,27 +59,59 @@ source_set("chromeos") {
     "//chromeos",
     "//chromeos:attestation_proto",
     "//chromeos:authpolicy_proto",
+    "//chromeos:biod_proto",
     "//chromeos:cryptohome_proto",
     "//chromeos:cryptohome_signkey_proto",
     "//chromeos/components/tether",
     "//components/arc",
+    "//components/browser_sync",
+    "//components/captive_portal",
     "//components/certificate_reporting:cert_logger_proto",
     "//components/certificate_reporting:encrypted_cert_logger_proto",
+    "//components/constrained_window",
+    "//components/content_settings/core/browser",
+    "//components/crash/content/app",
+    "//components/crx_file",
+    "//components/cryptauth",
+    "//components/device_event_log",
     "//components/drive",
     "//components/drive:drive_chromeos",
+    "//components/exo",
     "//components/feedback",
     "//components/flags_ui",
+    "//components/gcm_driver",
+    "//components/guest_view/browser",
+    "//components/image_fetcher/core",
+    "//components/invalidation/impl",
+    "//components/keyed_service/content",
+    "//components/keyed_service/core",
     "//components/login",
+    "//components/metrics:serialization",
     "//components/metrics/leak_detector",
+    "//components/mime_util",
     "//components/onc",
     "//components/ownership",
     "//components/pairing",
+    "//components/password_manager/core/browser",
     "//components/policy:generated",
+    "//components/policy/core/browser",
+    "//components/pref_registry",
+    "//components/proximity_auth",
+    "//components/proximity_auth/logging",
     "//components/proxy_config",
+    "//components/quirks",
+    "//components/rappor",
     "//components/safe_browsing:csd_proto",
     "//components/safe_browsing_db:metadata_proto",
+    "//components/safe_json",
     "//components/session_manager/core",
+    "//components/signin/core/browser",
+    "//components/ssl_config",
+    "//components/storage_monitor",
+    "//components/sync_preferences",
     "//components/sync_wifi",
+    "//components/toolbar",
+    "//components/tracing:startup_tracing",
     "//components/user_manager",
     "//third_party/fontconfig",
 
@@ -83,19 +121,29 @@ source_set("chromeos") {
     "//components/resources",
     "//components/strings",
     "//components/variations",
+    "//components/web_modal",
+    "//components/web_resource",
+    "//components/zoom",
     "//content/public/browser",
     "//content/public/common",
     "//crypto",
     "//dbus",
+    "//device/base",
     "//device/bluetooth",
     "//device/hid",
+    "//device/media_transfer_protocol",
+    "//device/usb/public/cpp",
+    "//device/usb/public/interfaces",
+    "//extensions/browser",
     "//extensions/browser/kiosk",
+    "//gpu",
     "//mash/public/interfaces",
     "//media",
     "//media/mojo/interfaces",
     "//mojo/common",
     "//net",
     "//ppapi/proxy:ipc",  # For PpapiMsg_LoadPlugin
+    "//services/device/public/interfaces",
     "//services/service_manager/public/cpp",
     "//services/service_manager/runner/common",
     "//services/ui/public/interfaces/display",
@@ -103,6 +151,8 @@ source_set("chromeos") {
     # TODO: care about enable_basic_printing and enable_print_preview.
     "//components/sync",
     "//printing",
+    "//services/ui/public/cpp",
+    "//services/ui/public/cpp/input_devices",
     "//skia",
     "//storage/browser",
     "//storage/common",
@@ -124,6 +174,7 @@ source_set("chromeos") {
     "//ui/chromeos",
     "//ui/chromeos/events",
     "//ui/compositor",
+    "//ui/content_accelerators",
     "//ui/display",
     "//ui/display/manager",
     "//ui/events:dom_keycode_converter",
@@ -131,12 +182,17 @@ source_set("chromeos") {
     "//ui/events/devices",
     "//ui/events/platform",
     "//ui/file_manager",
+    "//ui/keyboard",
     "//ui/keyboard:mojom",
     "//ui/message_center",
+    "//ui/shell_dialogs",
+    "//ui/snapshot",
     "//ui/surface",
     "//ui/views",
     "//ui/views/controls/webview",
     "//ui/web_dialogs",
+    "//ui/wm",
+    "//ui/wm/public",
     "//url",
   ]
 
@@ -320,7 +376,6 @@ source_set("chromeos") {
     "arc/optin/arc_terms_of_service_oobe_negotiator.h",
     "arc/policy/arc_android_management_checker.cc",
     "arc/policy/arc_android_management_checker.h",
-    "arc/policy/arc_android_management_checker_delegate.h",
     "arc/policy/arc_policy_bridge.cc",
     "arc/policy/arc_policy_bridge.h",
     "arc/policy/arc_policy_util.cc",
@@ -807,7 +862,6 @@ source_set("chromeos") {
     "login/oobe_screen.h",
     "login/profile_auth_data.cc",
     "login/profile_auth_data.h",
-    "login/proxy_settings_dialog.h",
     "login/quick_unlock/fingerprint_storage.cc",
     "login/quick_unlock/fingerprint_storage.h",
     "login/quick_unlock/pin_storage.cc",
@@ -855,7 +909,6 @@ source_set("chromeos") {
     "login/screens/encryption_migration_screen_view.h",
     "login/screens/error_screen.cc",
     "login/screens/error_screen.h",
-    "login/screens/error_screen_view_delegate.h",
     "login/screens/eula_screen.cc",
     "login/screens/eula_screen.h",
     "login/screens/eula_view.h",
@@ -887,7 +940,6 @@ source_set("chromeos") {
     "login/screens/reset_view.h",
     "login/screens/screen_exit_code.cc",
     "login/screens/screen_exit_code.h",
-    "login/screens/screen_flow.h",
     "login/screens/terms_of_service_screen.cc",
     "login/screens/terms_of_service_screen.h",
     "login/screens/terms_of_service_screen_view.h",
@@ -979,12 +1031,14 @@ source_set("chromeos") {
     "login/ui/preloaded_web_view_factory.cc",
     "login/ui/preloaded_web_view_factory.h",
     "login/ui/proxy_settings_dialog.cc",
+    "login/ui/proxy_settings_dialog.h",
     "login/ui/simple_web_view_dialog.cc",
     "login/ui/simple_web_view_dialog.h",
     "login/ui/user_adding_screen.cc",
     "login/ui/user_adding_screen.h",
     "login/ui/user_adding_screen_input_methods_controller.cc",
     "login/ui/user_adding_screen_input_methods_controller.h",
+    "login/ui/views/user_board_view.h",
     "login/ui/web_contents_forced_title.cc",
     "login/ui/web_contents_forced_title.h",
     "login/ui/webui_login_display.cc",
@@ -1030,7 +1084,6 @@ source_set("chromeos") {
     "login/users/wallpaper/wallpaper_window_state_manager.h",
     "login/version_info_updater.cc",
     "login/version_info_updater.h",
-    "login/views/user_board_view.h",
     "login/wizard_controller.cc",
     "login/wizard_controller.h",
     "mobile/mobile_activator.cc",
@@ -1479,11 +1532,15 @@ source_set("chromeos") {
     "extensions/wallpaper_private_api.cc",
     "extensions/wallpaper_private_api.h",
   ]
+  if (use_x11 || ozone_platform_x11) {
+    deps += [ "//ui/base/x" ]
+  }
   if (use_x11) {
     configs += [ "//build/config/linux:x11" ]
     deps += [
       "//ui/events/devices",
       "//ui/events/devices/x11",
+      "//ui/gfx/x",
     ]
     sources -= [
       "system/input_device_settings_impl_ozone.cc",
@@ -1530,6 +1587,11 @@ static_library("arc_test_support") {
     "arc/test/arc_data_removed_waiter.cc",
     "arc/test/arc_data_removed_waiter.h",
   ]
+
+  deps = [
+    ":chromeos",
+    "//base",
+  ]
 }
 
 static_library("test_support") {
@@ -1561,13 +1623,16 @@ static_library("test_support") {
     "//chromeos",
     "//components/policy/proto",
     "//crypto:platform",
+    "//google_apis",
     "//skia",
     "//testing/gmock",
+    "//testing/gtest",
   ]
 }
 
 source_set("unit_tests") {
   testonly = true
+  check_includes = false
 
   sources = [
     # TODO(lukasza): Move Drive tests outside of CrOS (crbug.com/498951).
@@ -1852,18 +1917,26 @@ source_set("unit_tests") {
     ":attestation_proto",
     ":device_policy_proto",
     ":test_support",
+    "//ash",
     "//ash/resources",
     "//base",
+    "//chrome/common",
+    "//chromeos/ime:gencode",
     "//components/cryptauth:test_support",
     "//components/drive",
+    "//components/drive:drive_chromeos",
+    "//components/drive:test_support",
     "//components/drive:test_support_chromeos",
     "//components/invalidation/public",
     "//components/policy:generated",
+    "//components/prefs:test_support",
     "//components/resources",
     "//components/sync",
     "//components/variations:test_support",
+    "//content/test:test_support",
     "//crypto:platform",
     "//dbus",
+    "//google_apis:test_support",
     "//mojo/public/cpp/system:system",
     "//skia",
     "//testing/gmock",
@@ -1871,6 +1944,7 @@ source_set("unit_tests") {
     "//third_party/WebKit/public:blink_headers",
     "//third_party/icu",
     "//third_party/leveldatabase",
+    "//ui/base/ime",
     "//ui/chromeos/resources",
   ]
   data = [

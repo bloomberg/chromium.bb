@@ -1299,6 +1299,7 @@ split_static_library("ui") {
     if (enable_rlz) {
       deps += [ "//chrome/browser:rlz" ]
     }
+    allow_circular_includes_from = [ "//chrome/browser/chromeos" ]
   }
   if (use_cups) {
     configs += [ "//printing:cups" ]
