@@ -2239,6 +2239,7 @@ TEST_F(SpdyNetworkTransactionTest,
       spdy_util_.ConstructSpdyDataFrame(1, "should not include", 18, true));
 
   SpdyHeaderBlock push_headers;
+  push_headers[":method"] = "GET";
   spdy_util_.AddUrlToHeaderBlock(SpdyString(kDefaultUrl) + "b.dat",
                                  &push_headers);
 
@@ -3145,6 +3146,63 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushOnClosedPushedStream) {
 
   EXPECT_TRUE(data.AllReadDataConsumed());
   EXPECT_TRUE(data.AllWriteDataConsumed());
+}
+
+// Regression test for https://crbug.com/727653.
+TEST_F(SpdyNetworkTransactionTest, RejectServerPushWithNoMethod) {
+  SpdySerializedFrame req(
+      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
+  SpdySerializedFrame rst(
+      spdy_util_.ConstructSpdyRstStream(2, ERROR_CODE_REFUSED_STREAM));
+  MockWrite writes[] = {CreateMockWrite(req, 0), CreateMockWrite(rst, 3)};
+
+  SpdySerializedFrame reply(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
+
+  SpdyHeaderBlock push_promise_header_block;
+  spdy_util_.AddUrlToHeaderBlock(GetDefaultUrlWithPath("/foo.dat").c_str(),
+                                 &push_promise_header_block);
+  SpdyPushPromiseIR push_promise(1, 2, std::move(push_promise_header_block));
+  SpdySerializedFrame push_promise_frame(
+      spdy_util_.SerializeFrame(push_promise));
+
+  SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
+  MockRead reads[] = {
+      CreateMockRead(reply, 1), CreateMockRead(push_promise_frame, 2),
+      CreateMockRead(body, 4), MockRead(SYNCHRONOUS, ERR_IO_PENDING, 5)};
+
+  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  NormalSpdyTransactionHelper helper(CreateGetRequest(), DEFAULT_PRIORITY,
+                                     NetLogWithSource(), nullptr);
+  helper.RunToCompletion(&data);
+}
+
+// Regression test for https://crbug.com/727653.
+TEST_F(SpdyNetworkTransactionTest, RejectServerPushWithInvalidMethod) {
+  SpdySerializedFrame req(
+      spdy_util_.ConstructSpdyGet(nullptr, 0, 1, LOWEST, true));
+  SpdySerializedFrame rst(
+      spdy_util_.ConstructSpdyRstStream(2, ERROR_CODE_REFUSED_STREAM));
+  MockWrite writes[] = {CreateMockWrite(req, 0), CreateMockWrite(rst, 3)};
+
+  SpdySerializedFrame reply(spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
+
+  SpdyHeaderBlock push_promise_header_block;
+  push_promise_header_block[":method"] = "POST";
+  spdy_util_.AddUrlToHeaderBlock(GetDefaultUrlWithPath("/foo.dat").c_str(),
+                                 &push_promise_header_block);
+  SpdyPushPromiseIR push_promise(1, 2, std::move(push_promise_header_block));
+  SpdySerializedFrame push_promise_frame(
+      spdy_util_.SerializeFrame(push_promise));
+
+  SpdySerializedFrame body(spdy_util_.ConstructSpdyDataFrame(1, true));
+  MockRead reads[] = {
+      CreateMockRead(reply, 1), CreateMockRead(push_promise_frame, 2),
+      CreateMockRead(body, 4), MockRead(SYNCHRONOUS, ERR_IO_PENDING, 5)};
+
+  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
+  NormalSpdyTransactionHelper helper(CreateGetRequest(), DEFAULT_PRIORITY,
+                                     NetLogWithSource(), nullptr);
+  helper.RunToCompletion(&data);
 }
 
 // Verify that various response headers parse correctly through the HTTP layer.
@@ -4689,6 +4747,7 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushWithHeaders) {
       spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
 
   SpdyHeaderBlock initial_headers;
+  initial_headers[":method"] = "GET";
   spdy_util_.AddUrlToHeaderBlock(GetDefaultUrlWithPath("/foo.dat"),
                                  &initial_headers);
   SpdySerializedFrame stream2_syn(spdy_util_.ConstructInitialSpdyPushFrame(
@@ -4747,6 +4806,7 @@ TEST_F(SpdyNetworkTransactionTest, ServerPushClaimBeforeHeaders) {
   SpdySerializedFrame stream1_reply(
       spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   SpdyHeaderBlock initial_headers;
+  initial_headers[":method"] = "GET";
   spdy_util_.AddUrlToHeaderBlock(GetDefaultUrlWithPath("/foo.dat"),
                                  &initial_headers);
   SpdySerializedFrame stream2_syn(spdy_util_.ConstructInitialSpdyPushFrame(
