@@ -16,9 +16,7 @@
 #include "chrome/install_static/install_details.h"
 #include "chrome/install_static/install_modes.h"
 #include "chrome/install_static/test/scoped_install_details.h"
-#include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/install_util.h"
-#include "chrome/installer/util/test_app_registration_data.h"
 #include "chrome/installer/util/util_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -40,11 +38,8 @@ class BeaconTest : public ::testing::TestWithParam<
       : beacon_type_(::testing::get<0>(GetParam())),
         beacon_scope_(::testing::get<1>(GetParam())),
         system_install_(::testing::get<2>(GetParam())),
-        beacon_(kBeaconName,
-                beacon_type_,
-                beacon_scope_,
-                system_install_,
-                app_registration_data_) {}
+        scoped_install_details_(system_install_),
+        beacon_(kBeaconName, beacon_type_, beacon_scope_) {}
 
   void SetUp() override {
     // Override the registry so that tests can freely push state to it.
@@ -54,13 +49,17 @@ class BeaconTest : public ::testing::TestWithParam<
         registry_override_manager_.OverrideRegistry(HKEY_LOCAL_MACHINE));
   }
 
-  TestAppRegistrationData app_registration_data_;
+  BeaconType beacon_type() const { return beacon_type_; }
+  BeaconScope beacon_scope() const { return beacon_scope_; }
+  bool system_install() const { return system_install_; }
+  Beacon* beacon() { return &beacon_; }
+
+ private:
   BeaconType beacon_type_;
   BeaconScope beacon_scope_;
   bool system_install_;
+  install_static::ScopedInstallDetails scoped_install_details_;
   Beacon beacon_;
-
- private:
   registry_util::RegistryOverrideManager registry_override_manager_;
 };
 
@@ -69,16 +68,16 @@ const base::char16 BeaconTest::kBeaconName[] = L"TestBeacon";
 
 // Nothing in the regsitry, so the beacon should not exist.
 TEST_P(BeaconTest, GetNonExistant) {
-  ASSERT_TRUE(beacon_.Get().is_null());
+  ASSERT_TRUE(beacon()->Get().is_null());
 }
 
 // Updating and then getting the beacon should return a value, and that it is
 // within range.
 TEST_P(BeaconTest, UpdateAndGet) {
   base::Time before(base::Time::Now());
-  beacon_.Update();
+  beacon()->Update();
   base::Time after(base::Time::Now());
-  base::Time beacon_time(beacon_.Get());
+  base::Time beacon_time(beacon()->Get());
   ASSERT_FALSE(beacon_time.is_null());
   ASSERT_LE(before, beacon_time);
   ASSERT_GE(after, beacon_time);
@@ -87,39 +86,42 @@ TEST_P(BeaconTest, UpdateAndGet) {
 // Tests that updating a first beacon only updates it the first time, but doing
 // so for a last beacon always updates.
 TEST_P(BeaconTest, UpdateTwice) {
-  beacon_.Update();
-  base::Time beacon_time(beacon_.Get());
+  beacon()->Update();
+  base::Time beacon_time(beacon()->Get());
 
   base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
 
-  beacon_.Update();
-  if (beacon_type_ == BeaconType::FIRST) {
-    ASSERT_EQ(beacon_time, beacon_.Get());
+  beacon()->Update();
+  if (beacon_type() == BeaconType::FIRST) {
+    ASSERT_EQ(beacon_time, beacon()->Get());
   } else {
-    ASSERT_NE(beacon_time, beacon_.Get());
+    ASSERT_NE(beacon_time, beacon()->Get());
   }
 }
 
 // Tests that the beacon is written into the proper location in the registry.
 TEST_P(BeaconTest, Location) {
-  beacon_.Update();
-  HKEY right_root = system_install_ ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
-  HKEY wrong_root = system_install_ ? HKEY_CURRENT_USER : HKEY_LOCAL_MACHINE;
+  beacon()->Update();
+  const install_static::InstallDetails& install_details =
+      install_static::InstallDetails::Get();
+  HKEY right_root = system_install() ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER;
+  HKEY wrong_root = system_install() ? HKEY_CURRENT_USER : HKEY_LOCAL_MACHINE;
   base::string16 right_key;
   base::string16 wrong_key;
   base::string16 value_name;
 
-  if (beacon_scope_ == BeaconScope::PER_INSTALL || !system_install_) {
+  if (beacon_scope() == BeaconScope::PER_INSTALL || !system_install()) {
     value_name = kBeaconName;
-    right_key = app_registration_data_.GetStateKey();
-    wrong_key = app_registration_data_.GetStateMediumKey();
+    right_key = install_details.GetClientStateKeyPath();
+    wrong_key = install_details.GetClientStateMediumKeyPath();
   } else {
     ASSERT_TRUE(base::win::GetUserSidString(&value_name));
     right_key =
-        app_registration_data_.GetStateMediumKey() + L"\\" + kBeaconName;
-    wrong_key = app_registration_data_.GetStateKey();
+        install_details.GetClientStateMediumKeyPath() + L"\\" + kBeaconName;
+    wrong_key = install_details.GetClientStateKeyPath();
   }
 
+#if defined(GOOGLE_CHROME_BUILD)
   // Keys should not exist in the wrong root or in the right root but wrong key.
   ASSERT_FALSE(base::win::RegKey(wrong_root, right_key.c_str(),
                                  KEY_READ).Valid()) << right_key;
@@ -127,6 +129,17 @@ TEST_P(BeaconTest, Location) {
                                  KEY_READ).Valid()) << wrong_key;
   ASSERT_FALSE(base::win::RegKey(right_root, wrong_key.c_str(),
                                  KEY_READ).Valid()) << wrong_key;
+#else
+  // The tests above are skipped for Chromium builds because they fail for two
+  // reasons:
+  // - ClientState and ClientStateMedium are both Software\Chromium.
+  // - the registry override manager does its virtualization into
+  //   Software\Chromium, so it always exists.
+
+  // Silence unused variable warnings.
+  ignore_result(wrong_root);
+#endif
+
   // The right key should exist.
   base::win::RegKey key(right_root, right_key.c_str(), KEY_READ);
   ASSERT_TRUE(key.Valid()) << right_key;
@@ -167,15 +180,9 @@ class DefaultBrowserBeaconTest
         registry_override_manager_.OverrideRegistry(HKEY_CURRENT_USER));
     ASSERT_NO_FATAL_FAILURE(
         registry_override_manager_.OverrideRegistry(HKEY_LOCAL_MACHINE));
-
-    // Ensure that IsPerUserInstall returns the proper value.
-    ASSERT_EQ(!system_install_, InstallUtil::IsPerUserInstall());
-
-    distribution_ = BrowserDistribution::GetDistribution();
   }
 
   bool system_install_ = false;
-  BrowserDistribution* distribution_ = nullptr;
 
  private:
   std::unique_ptr<install_static::ScopedInstallDetails> scoped_install_details_;
@@ -184,36 +191,34 @@ class DefaultBrowserBeaconTest
 
 // Tests that the default browser beacons work as expected.
 TEST_P(DefaultBrowserBeaconTest, All) {
-  std::unique_ptr<Beacon> last_was_default(MakeLastWasDefaultBeacon(
-      system_install_, distribution_->GetAppRegistrationData()));
-  std::unique_ptr<Beacon> first_not_default(MakeFirstNotDefaultBeacon(
-      system_install_, distribution_->GetAppRegistrationData()));
+  std::unique_ptr<Beacon> last_was_default(MakeLastWasDefaultBeacon());
+  std::unique_ptr<Beacon> first_not_default(MakeFirstNotDefaultBeacon());
 
   ASSERT_TRUE(last_was_default->Get().is_null());
   ASSERT_TRUE(first_not_default->Get().is_null());
 
   // Chrome is not default.
-  UpdateDefaultBrowserBeaconWithState(distribution_, ShellUtil::NOT_DEFAULT);
+  UpdateDefaultBrowserBeaconWithState(ShellUtil::NOT_DEFAULT);
   ASSERT_TRUE(last_was_default->Get().is_null());
   ASSERT_FALSE(first_not_default->Get().is_null());
 
   // Then it is.
-  UpdateDefaultBrowserBeaconWithState(distribution_, ShellUtil::IS_DEFAULT);
+  UpdateDefaultBrowserBeaconWithState(ShellUtil::IS_DEFAULT);
   ASSERT_FALSE(last_was_default->Get().is_null());
   ASSERT_TRUE(first_not_default->Get().is_null());
 
   // It still is.
-  UpdateDefaultBrowserBeaconWithState(distribution_, ShellUtil::IS_DEFAULT);
+  UpdateDefaultBrowserBeaconWithState(ShellUtil::IS_DEFAULT);
   ASSERT_FALSE(last_was_default->Get().is_null());
   ASSERT_TRUE(first_not_default->Get().is_null());
 
   // Now it's not again.
-  UpdateDefaultBrowserBeaconWithState(distribution_, ShellUtil::NOT_DEFAULT);
+  UpdateDefaultBrowserBeaconWithState(ShellUtil::NOT_DEFAULT);
   ASSERT_FALSE(last_was_default->Get().is_null());
   ASSERT_FALSE(first_not_default->Get().is_null());
 
   // And it still isn't.
-  UpdateDefaultBrowserBeaconWithState(distribution_, ShellUtil::NOT_DEFAULT);
+  UpdateDefaultBrowserBeaconWithState(ShellUtil::NOT_DEFAULT);
   ASSERT_FALSE(last_was_default->Get().is_null());
   ASSERT_FALSE(first_not_default->Get().is_null());
 }

@@ -15,9 +15,6 @@
 #include "base/time/time.h"
 #include "chrome/installer/util/shell_util.h"
 
-class AppRegistrationData;
-class BrowserDistribution;
-
 namespace base {
 class FilePath;
 }
@@ -28,33 +25,25 @@ void UpdateDefaultBrowserBeaconForPath(const base::FilePath& chrome_exe);
 
 // Updates the last was default or first not default beacon for the current user
 // based on |default_state|.
-void UpdateDefaultBrowserBeaconWithState(BrowserDistribution* distribution,
-                                         ShellUtil::DefaultState default_state);
+void UpdateDefaultBrowserBeaconWithState(ShellUtil::DefaultState default_state);
 
 // Updates the last OS upgrade beacon for the install.
-void UpdateOsUpgradeBeacon(bool system_install,
-                           BrowserDistribution* distribution);
+void UpdateOsUpgradeBeacon();
 
 namespace installer_util {
 
 class Beacon;
 
 // Returns a Beacon representing the last time the machine's OS was ugpraded.
-std::unique_ptr<Beacon> MakeLastOsUpgradeBeacon(
-    bool system_install,
-    const AppRegistrationData& registration_data);
+std::unique_ptr<Beacon> MakeLastOsUpgradeBeacon();
 
 // Returns a Beacon representing the last time Chrome was the user's default
 // browser.
-std::unique_ptr<Beacon> MakeLastWasDefaultBeacon(
-    bool system_install,
-    const AppRegistrationData& registration_data);
+std::unique_ptr<Beacon> MakeLastWasDefaultBeacon();
 
 // Returns a Beacon representing the first time Chrome was not the user's
 // default browser.
-std::unique_ptr<Beacon> MakeFirstNotDefaultBeacon(
-    bool system_install,
-    const AppRegistrationData& registration_data);
+std::unique_ptr<Beacon> MakeFirstNotDefaultBeacon();
 
 // A named beacon stored in the registry representing the first or last time at
 // which some event took place. A beacon may apply to a per-user event or a
@@ -76,14 +65,7 @@ class Beacon {
     PER_INSTALL,
   };
 
-  // Creates a beacon named |name| for the product identified by
-  // |registration_data| installed as either a per-user or a per-machine app
-  // according to |system_install|.
-  Beacon(base::StringPiece16 name,
-         BeaconType type,
-         BeaconScope scope,
-         bool system_install,
-         const AppRegistrationData& registration_data);
+  Beacon(base::StringPiece16 name, BeaconType type, BeaconScope scope);
   ~Beacon();
 
   // Updates the beacon. For a type LAST beacon, the current time is written
@@ -99,9 +81,7 @@ class Beacon {
 
  private:
   // Initializes the key_path_ and value_name_ fields of the beacon.
-  void Initialize(base::StringPiece16 name,
-                  bool system_install,
-                  const AppRegistrationData& registration_data);
+  void Initialize(base::StringPiece16 name);
 
   // The type of beacon.
   const BeaconType type_;
