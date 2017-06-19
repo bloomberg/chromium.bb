@@ -86,9 +86,6 @@ class NavigationManagerImpl : public NavigationManager {
   // TODO(stuartmorgan): Re-evaluate this list once the refactorings have
   // settled down.
   CRWSessionController* GetSessionController();
-  void LoadURL(const GURL& url,
-               const Referrer& referrer,
-               ui::PageTransition type);
 
   // Adds a transient item with the given URL. A transient item will be
   // discarded on any navigation.

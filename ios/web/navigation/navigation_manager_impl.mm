@@ -137,14 +137,6 @@ CRWSessionController* NavigationManagerImpl::GetSessionController() {
   return session_controller_;
 }
 
-void NavigationManagerImpl::LoadURL(const GURL& url,
-                                    const web::Referrer& referrer,
-                                    ui::PageTransition type) {
-  WebState::OpenURLParams params(url, referrer,
-                                 WindowOpenDisposition::CURRENT_TAB, type, NO);
-  delegate_->GetWebState()->OpenURL(params);
-}
-
 void NavigationManagerImpl::AddTransientItem(const GURL& url) {
   [session_controller_ addTransientItemWithURL:url];
 
