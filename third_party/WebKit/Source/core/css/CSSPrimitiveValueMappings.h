@@ -596,16 +596,16 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EBoxPack e)
     : CSSValue(kIdentifierClass) {
   switch (e) {
-    case kBoxPackStart:
+    case EBoxPack::kStart:
       value_id_ = CSSValueStart;
       break;
-    case kBoxPackCenter:
+    case EBoxPack::kCenter:
       value_id_ = CSSValueCenter;
       break;
-    case kBoxPackEnd:
+    case EBoxPack::kEnd:
       value_id_ = CSSValueEnd;
       break;
-    case kBoxPackJustify:
+    case EBoxPack::kJustify:
       value_id_ = CSSValueJustify;
       break;
   }
@@ -615,38 +615,38 @@ template <>
 inline EBoxPack CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueStart:
-      return kBoxPackStart;
+      return EBoxPack::kStart;
     case CSSValueEnd:
-      return kBoxPackEnd;
+      return EBoxPack::kEnd;
     case CSSValueCenter:
-      return kBoxPackCenter;
+      return EBoxPack::kCenter;
     case CSSValueJustify:
-      return kBoxPackJustify;
+      return EBoxPack::kJustify;
     default:
       break;
   }
 
   NOTREACHED();
-  return kBoxPackJustify;
+  return EBoxPack::kJustify;
 }
 
 template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EBoxAlignment e)
     : CSSValue(kIdentifierClass) {
   switch (e) {
-    case BSTRETCH:
+    case EBoxAlignment::kStretch:
       value_id_ = CSSValueStretch;
       break;
-    case BSTART:
+    case EBoxAlignment::kStart:
       value_id_ = CSSValueStart;
       break;
-    case BCENTER:
+    case EBoxAlignment::kCenter:
       value_id_ = CSSValueCenter;
       break;
-    case BEND:
+    case EBoxAlignment::kBend:
       value_id_ = CSSValueEnd;
       break;
-    case BBASELINE:
+    case EBoxAlignment::kBaseline:
       value_id_ = CSSValueBaseline;
       break;
   }
@@ -656,21 +656,21 @@ template <>
 inline EBoxAlignment CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueStretch:
-      return BSTRETCH;
+      return EBoxAlignment::kStretch;
     case CSSValueStart:
-      return BSTART;
+      return EBoxAlignment::kStart;
     case CSSValueEnd:
-      return BEND;
+      return EBoxAlignment::kBend;
     case CSSValueCenter:
-      return BCENTER;
+      return EBoxAlignment::kCenter;
     case CSSValueBaseline:
-      return BBASELINE;
+      return EBoxAlignment::kBaseline;
     default:
       break;
   }
 
   NOTREACHED();
-  return BSTRETCH;
+  return EBoxAlignment::kStretch;
 }
 
 template <>
@@ -715,10 +715,10 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EBoxLines e)
     : CSSValue(kIdentifierClass) {
   switch (e) {
-    case SINGLE:
+    case EBoxLines::kSingle:
       value_id_ = CSSValueSingle;
       break;
-    case MULTIPLE:
+    case EBoxLines::kMultiple:
       value_id_ = CSSValueMultiple;
       break;
   }
@@ -728,25 +728,25 @@ template <>
 inline EBoxLines CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueSingle:
-      return SINGLE;
+      return EBoxLines::kSingle;
     case CSSValueMultiple:
-      return MULTIPLE;
+      return EBoxLines::kMultiple;
     default:
       break;
   }
 
   NOTREACHED();
-  return SINGLE;
+  return EBoxLines::kSingle;
 }
 
 template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EBoxOrient e)
     : CSSValue(kIdentifierClass) {
   switch (e) {
-    case HORIZONTAL:
+    case EBoxOrient::kHorizontal:
       value_id_ = CSSValueHorizontal;
       break;
-    case VERTICAL:
+    case EBoxOrient::kVertical:
       value_id_ = CSSValueVertical;
       break;
   }
@@ -757,16 +757,16 @@ inline EBoxOrient CSSIdentifierValue::ConvertTo() const {
   switch (value_id_) {
     case CSSValueHorizontal:
     case CSSValueInlineAxis:
-      return HORIZONTAL;
+      return EBoxOrient::kHorizontal;
     case CSSValueVertical:
     case CSSValueBlockAxis:
-      return VERTICAL;
+      return EBoxOrient::kVertical;
     default:
       break;
   }
 
   NOTREACHED();
-  return HORIZONTAL;
+  return EBoxOrient::kHorizontal;
 }
 
 template <>

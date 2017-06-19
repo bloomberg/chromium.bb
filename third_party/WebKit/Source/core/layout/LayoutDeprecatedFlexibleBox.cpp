@@ -41,7 +41,7 @@ class FlexBoxIterator {
  public:
   FlexBoxIterator(LayoutDeprecatedFlexibleBox* parent)
       : box_(parent), largest_ordinal_(1) {
-    if (box_->Style()->BoxOrient() == HORIZONTAL &&
+    if (box_->Style()->BoxOrient() == EBoxOrient::kHorizontal &&
         !box_->Style()->IsLeftToRightDirection())
       forward_ = box_->Style()->BoxDirection() != EBoxDirection::kNormal;
     else
@@ -380,8 +380,8 @@ void LayoutDeprecatedFlexibleBox::UpdateBlockLayout(bool relayout_children) {
 
     if (previous_size != Size() ||
         (Parent()->IsDeprecatedFlexibleBox() &&
-         Parent()->Style()->BoxOrient() == HORIZONTAL &&
-         Parent()->Style()->BoxAlign() == BSTRETCH))
+         Parent()->Style()->BoxOrient() == EBoxOrient::kHorizontal &&
+         Parent()->Style()->BoxAlign() == EBoxAlignment::kStretch))
       relayout_children = true;
 
     SetHeight(LayoutUnit());
@@ -493,7 +493,7 @@ void LayoutDeprecatedFlexibleBox::LayoutHorizontalBox(bool relayout_children) {
       child->LayoutIfNeeded();
 
       // Update our height and overflow height.
-      if (Style()->BoxAlign() == BBASELINE) {
+      if (Style()->BoxAlign() == EBoxAlignment::kBaseline) {
         LayoutUnit ascent(child->FirstLineBoxBaseline());
         if (ascent == -1)
           ascent = child->Size().Height() + child->MarginBottom();
@@ -535,7 +535,7 @@ void LayoutDeprecatedFlexibleBox::LayoutHorizontalBox(bool relayout_children) {
       height_specified = true;
 
     // Now that our height is actually known, we can place our boxes.
-    stretching_children_ = (Style()->BoxAlign() == BSTRETCH);
+    stretching_children_ = (Style()->BoxAlign() == EBoxAlignment::kStretch);
     for (LayoutBox* child = iterator.First(); child; child = iterator.Next()) {
       if (child->IsOutOfFlowPositioned()) {
         child->ContainingBlock()->InsertPositionedObject(child);
@@ -581,14 +581,14 @@ void LayoutDeprecatedFlexibleBox::LayoutHorizontalBox(bool relayout_children) {
       x_pos += child->MarginLeft();
       LayoutUnit child_y = y_pos;
       switch (Style()->BoxAlign()) {
-        case BCENTER:
+        case EBoxAlignment::kCenter:
           child_y += child->MarginTop() +
                      ((ContentHeight() -
                        (child->Size().Height() + child->MarginHeight())) /
                       2)
                          .ClampNegativeToZero();
           break;
-        case BBASELINE: {
+        case EBoxAlignment::kBaseline: {
           LayoutUnit ascent(child->FirstLineBoxBaseline());
           if (ascent == -1)
             ascent = child->Size().Height() + child->MarginBottom();
@@ -596,7 +596,7 @@ void LayoutDeprecatedFlexibleBox::LayoutHorizontalBox(bool relayout_children) {
           child_y += child->MarginTop() + (max_ascent - ascent);
           break;
         }
-        case BEND:
+        case EBoxAlignment::kBend:
           child_y +=
               ContentHeight() - child->MarginBottom() - child->Size().Height();
           break;
@@ -724,12 +724,12 @@ void LayoutDeprecatedFlexibleBox::LayoutHorizontalBox(bool relayout_children) {
   } while (have_flex);
 
   if (remaining_space > 0 && ((Style()->IsLeftToRightDirection() &&
-                               Style()->BoxPack() != kBoxPackStart) ||
+                               Style()->BoxPack() != EBoxPack::kStart) ||
                               (!Style()->IsLeftToRightDirection() &&
-                               Style()->BoxPack() != kBoxPackEnd))) {
+                               Style()->BoxPack() != EBoxPack::kEnd))) {
     // Children must be repositioned.
     LayoutUnit offset;
-    if (Style()->BoxPack() == kBoxPackJustify) {
+    if (Style()->BoxPack() == EBoxPack::kJustify) {
       // Determine the total number of children.
       int total_children = 0;
       for (LayoutBox* child = iterator.First(); child;
@@ -763,7 +763,7 @@ void LayoutDeprecatedFlexibleBox::LayoutHorizontalBox(bool relayout_children) {
         }
       }
     } else {
-      if (Style()->BoxPack() == kBoxPackCenter)
+      if (Style()->BoxPack() == EBoxPack::kCenter)
         offset += remaining_space / 2;
       else  // END for LTR, START for RTL
         offset += remaining_space;
@@ -861,15 +861,16 @@ void LayoutDeprecatedFlexibleBox::LayoutVerticalBox(bool relayout_children) {
       // We can place the child now, using our value of box-align.
       LayoutUnit child_x = BorderLeft() + PaddingLeft();
       switch (Style()->BoxAlign()) {
-        case BCENTER:
-        case BBASELINE:  // Baseline just maps to center for vertical boxes
+        case EBoxAlignment::kCenter:
+        case EBoxAlignment::kBaseline:  // Baseline just maps to center for
+                                        // vertical boxes
           child_x += child->MarginLeft() +
                      ((ContentWidth() -
                        (child->Size().Width() + child->MarginWidth())) /
                       2)
                          .ClampNegativeToZero();
           break;
-        case BEND:
+        case EBoxAlignment::kBend:
           if (!Style()->IsLeftToRightDirection()) {
             child_x += child->MarginLeft();
           } else {
@@ -1030,10 +1031,10 @@ void LayoutDeprecatedFlexibleBox::LayoutVerticalBox(bool relayout_children) {
     }
   } while (have_flex);
 
-  if (Style()->BoxPack() != kBoxPackStart && remaining_space > 0) {
+  if (Style()->BoxPack() != EBoxPack::kStart && remaining_space > 0) {
     // Children must be repositioned.
     LayoutUnit offset;
-    if (Style()->BoxPack() == kBoxPackJustify) {
+    if (Style()->BoxPack() == EBoxPack::kJustify) {
       // Determine the total number of children.
       int total_children = 0;
       for (LayoutBox* child = iterator.First(); child;
@@ -1067,7 +1068,7 @@ void LayoutDeprecatedFlexibleBox::LayoutVerticalBox(bool relayout_children) {
         }
       }
     } else {
-      if (Style()->BoxPack() == kBoxPackCenter)
+      if (Style()->BoxPack() == EBoxPack::kCenter)
         offset += remaining_space / 2;
       else  // END
         offset += remaining_space;
