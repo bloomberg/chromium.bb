@@ -78,6 +78,7 @@
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_controller.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_strip_view.h"
 #import "chrome/browser/ui/cocoa/tabs/tab_view.h"
+#import "chrome/browser/ui/cocoa/toolbar/app_toolbar_button.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "chrome/browser/ui/cocoa/translate/translate_bubble_bridge_views.h"
 #import "chrome/browser/ui/cocoa/translate/translate_bubble_controller.h"
@@ -1527,6 +1528,12 @@ bool IsTabDetachingInFullscreenEnabled() {
 - (void)onTabInsertedInForeground:(BOOL)inForeground {
   if ([self isInAnyFullscreenMode] && !inForeground)
     [[self fullscreenToolbarController] revealToolbarForTabStripChanges];
+
+  if (inForeground) {
+    AppToolbarButton* appMenuButton =
+        static_cast<AppToolbarButton*>([toolbarController_ appMenuButton]);
+    [appMenuButton animateIfPossible];
+  }
 }
 
 - (void)userChangedTheme {
