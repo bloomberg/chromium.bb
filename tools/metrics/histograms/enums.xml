@@ -37861,6 +37861,7 @@ from previous Chrome versions.
   <int value="0" label="No WebContents"/>
   <int value="1" label="Prerendered WebContents"/>
   <int value="2" label="Spare WebContents"/>
+  <int value="3" label="Transferred WebContents"/>
 </enum>
 
 <enum name="WebFontCacheHit">

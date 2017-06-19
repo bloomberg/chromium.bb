@@ -39,6 +39,7 @@ import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.content.browser.ScreenOrientationProvider;
@@ -712,6 +713,11 @@ public class WebappActivity extends FullScreenActivity {
     @Override
     protected TabDelegateFactory createTabDelegateFactory() {
         return new WebappDelegateFactory(this);
+    }
+
+    @Override
+    protected TabDelegate createTabDelegate(boolean incognito) {
+        return new WebappTabDelegate(this, incognito);
     }
 
     // We're temporarily disable CS on webapp since there are some issues. (http://crbug.com/471950)
