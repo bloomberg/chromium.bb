@@ -123,7 +123,7 @@ class TestFrameClient : public FrameTestHelpers::TestWebFrameClient {
 class LinkSelectionTest : public LinkSelectionTestBase {
  protected:
   void SetUp() override {
-    const char* const kHTMLString =
+    constexpr char kHTMLString[] =
         "<a id='link' href='foo.com' style='font-size:20pt'>Text to select "
         "foobar</a>"
         "<div id='page_text'>Lorem ipsum dolor sit amet</div>";
@@ -152,6 +152,11 @@ class LinkSelectionTest : public LinkSelectionTestBase {
     right_point_in_link_ = selection_rect.MaxXMinYCorner();
     right_point_in_link_.SetY(selection_rect_center_y);
     right_point_in_link_.Move(-2, 0);
+  }
+
+  void TearDown() {
+    // Manually reset since |test_frame_client_| won't outlive |helper_|.
+    helper_.Reset();
   }
 
   TestFrameClient test_frame_client_;
