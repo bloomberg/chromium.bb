@@ -13,6 +13,7 @@
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/offline_pages/core/offline_page_item.h"
 #include "components/offline_pages/core/prefetch/prefetch_dispatcher.h"
+#include "components/offline_pages/core/prefetch/prefetch_service.h"
 #include "components/offline_pages/core/prefetch/prefetch_types.h"
 
 using ntp_snippets::Category;
@@ -30,15 +31,16 @@ const ntp_snippets::Category& ArticlesCategory() {
 
 }  // namespace
 
-SuggestedArticlesObserver::SuggestedArticlesObserver(
-    PrefetchDispatcher* dispatcher)
-    : prefetch_dispatcher_(dispatcher) {
-  DCHECK(prefetch_dispatcher_);
-}
-
+SuggestedArticlesObserver::SuggestedArticlesObserver() = default;
 SuggestedArticlesObserver::~SuggestedArticlesObserver() {
   if (content_suggestions_service_)
     content_suggestions_service_->RemoveObserver(this);
+}
+
+void SuggestedArticlesObserver::SetPrefetchService(PrefetchService* service) {
+  DCHECK(service);
+
+  prefetch_service_ = service;
 }
 
 void SuggestedArticlesObserver::SetContentSuggestionsServiceAndObserve(
@@ -70,8 +72,8 @@ void SuggestedArticlesObserver::OnNewSuggestions(Category category) {
         {suggestion.id().id_within_category(), suggestion.url()});
   }
 
-  prefetch_dispatcher_->AddCandidatePrefetchURLs(kSuggestedArticlesNamespace,
-                                                 prefetch_urls);
+  prefetch_service_->GetPrefetchDispatcher()->AddCandidatePrefetchURLs(
+      kSuggestedArticlesNamespace, prefetch_urls);
 }
 
 void SuggestedArticlesObserver::OnCategoryStatusChanged(
@@ -86,19 +88,20 @@ void SuggestedArticlesObserver::OnCategoryStatusChanged(
           ntp_snippets::CategoryStatus::CATEGORY_EXPLICITLY_DISABLED ||
       category_status_ ==
           ntp_snippets::CategoryStatus::ALL_SUGGESTIONS_EXPLICITLY_DISABLED) {
-    prefetch_dispatcher_->RemoveAllUnprocessedPrefetchURLs(
-        kSuggestedArticlesNamespace);
+    prefetch_service_->GetPrefetchDispatcher()
+        ->RemoveAllUnprocessedPrefetchURLs(kSuggestedArticlesNamespace);
   }
 }
 
 void SuggestedArticlesObserver::OnSuggestionInvalidated(
     const ContentSuggestion::ID& suggestion_id) {
-  prefetch_dispatcher_->RemovePrefetchURLsByClientId(ClientId(
-      kSuggestedArticlesNamespace, suggestion_id.id_within_category()));
+  prefetch_service_->GetPrefetchDispatcher()->RemovePrefetchURLsByClientId(
+      ClientId(kSuggestedArticlesNamespace,
+               suggestion_id.id_within_category()));
 }
 
 void SuggestedArticlesObserver::OnFullRefreshRequired() {
-  prefetch_dispatcher_->RemoveAllUnprocessedPrefetchURLs(
+  prefetch_service_->GetPrefetchDispatcher()->RemoveAllUnprocessedPrefetchURLs(
       kSuggestedArticlesNamespace);
   OnNewSuggestions(ArticlesCategory());
 }

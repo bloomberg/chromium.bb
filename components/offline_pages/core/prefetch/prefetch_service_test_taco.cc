@@ -21,6 +21,10 @@ PrefetchServiceTestTaco::PrefetchServiceTestTaco() {
   metrics_collector_ = base::MakeUnique<TestOfflineMetricsCollector>();
   dispatcher_ = base::MakeUnique<PrefetchDispatcherImpl>();
   gcm_handler_ = base::MakeUnique<TestPrefetchGCMHandler>();
+  suggested_articles_observer_ = base::MakeUnique<SuggestedArticlesObserver>();
+  // This sets up the testing articles as an empty vector, we can ignore the
+  // result here.  This allows us to not create a ContentSuggestionsService.
+  suggested_articles_observer_->GetTestingArticles();
 }
 
 PrefetchServiceTestTaco::~PrefetchServiceTestTaco() = default;

@@ -45,7 +45,7 @@ KeyedService* PrefetchServiceFactory::BuildServiceInstanceFor(
   auto offline_metrics_collector =
       base::MakeUnique<OfflineMetricsCollectorImpl>();
   auto suggested_articles_observer =
-      base::MakeUnique<SuggestedArticlesObserver>(prefetch_dispatcher.get());
+      base::MakeUnique<SuggestedArticlesObserver>();
 
   return new PrefetchServiceImpl(std::move(offline_metrics_collector),
                                  std::move(prefetch_dispatcher),
