@@ -75,7 +75,8 @@ bool HardwareDisplayPlaneManagerAtomic::Commit(
   if (!drm_->CommitProperties(plane_list->atomic_property_set.get(), flags,
                               crtcs.size(),
                               base::Bind(&AtomicPageFlipCallback, crtcs))) {
-    PLOG(ERROR) << "Failed to commit properties";
+    PLOG(ERROR) << "Failed to commit properties. test_only:" << std::boolalpha
+                << test_only << " error";
     ResetCurrentPlaneList(plane_list);
     return false;
   }

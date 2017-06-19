@@ -23,29 +23,30 @@ const char* kRotationPropName = "rotation";
 
 // TODO(dcastagna): Remove the following defines once they're in libdrm headers.
 #if !defined(DRM_ROTATE_0)
-#define DRM_ROTATE_0 0
-#define DRM_ROTATE_90 1
-#define DRM_ROTATE_180 2
-#define DRM_ROTATE_270 3
-#define DRM_REFLECT_X 4
-#define DRM_REFLECT_Y 5
+#define BIT(n) (1 << (n))
+#define DRM_ROTATE_0 BIT(0)
+#define DRM_ROTATE_90 BIT(1)
+#define DRM_ROTATE_180 BIT(2)
+#define DRM_ROTATE_270 BIT(3)
+#define DRM_REFLECT_X BIT(4)
+#define DRM_REFLECT_Y BIT(5)
 #endif
 
 uint32_t OverlayTransformToDrmRotationPropertyValue(
     gfx::OverlayTransform transform) {
   switch (transform) {
     case gfx::OVERLAY_TRANSFORM_NONE:
-      return 0;
+      return DRM_ROTATE_0;
     case gfx::OVERLAY_TRANSFORM_FLIP_HORIZONTAL:
-      return 1 << DRM_REFLECT_X;
+      return DRM_REFLECT_X;
     case gfx::OVERLAY_TRANSFORM_FLIP_VERTICAL:
-      return 1 << DRM_REFLECT_Y;
+      return DRM_REFLECT_Y;
     case gfx::OVERLAY_TRANSFORM_ROTATE_90:
-      return 1 << DRM_ROTATE_90;
+      return DRM_ROTATE_90;
     case gfx::OVERLAY_TRANSFORM_ROTATE_180:
-      return 1 << DRM_ROTATE_180;
+      return DRM_ROTATE_180;
     case gfx::OVERLAY_TRANSFORM_ROTATE_270:
-      return 1 << DRM_ROTATE_270;
+      return DRM_ROTATE_270;
     default:
       NOTREACHED();
   }
