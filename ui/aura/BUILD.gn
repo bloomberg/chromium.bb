@@ -223,8 +223,6 @@ static_library("test_support") {
     "test/env_test_helper.h",
     "test/event_generator_delegate_aura.cc",
     "test/event_generator_delegate_aura.h",
-    "test/input_method_glue.cc",
-    "test/input_method_glue.h",
     "test/mus/change_completion_waiter.cc",
     "test/mus/change_completion_waiter.h",
     "test/mus/input_method_mus_test_api.h",
