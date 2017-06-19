@@ -42,6 +42,9 @@ promise_test(function() {
                 'Width missing: ' + JSON.stringify(settings));
     assert_true('height' in settings,
                 'Height missing: ' + JSON.stringify(settings));
+    assert_true('aspectRatio' in settings,
+                'Aspect ratio missing: ' + JSON.stringify(settings));
+    assert_equals(settings.width / settings.height, settings.aspectRatio);
   });
 }, 'A video track returns the expected variables');
 

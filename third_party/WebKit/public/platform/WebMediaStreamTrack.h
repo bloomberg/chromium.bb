@@ -47,6 +47,7 @@ class WebMediaStreamTrack {
     bool HasFrameRate() const { return frame_rate >= 0.0; }
     bool HasWidth() const { return width >= 0; }
     bool HasHeight() const { return height >= 0; }
+    bool HasAspectRatio() const { return aspect_ratio >= 0.0; }
     bool HasFacingMode() const { return facing_mode != FacingMode::kNone; }
     bool HasVideoKind() const { return !video_kind.IsNull(); }
     bool HasFocalLengthX() const { return focal_length_x >= 0.0; }
@@ -58,6 +59,7 @@ class WebMediaStreamTrack {
     double frame_rate = -1.0;
     long width = -1;
     long height = -1;
+    double aspect_ratio = -1.0;
     WebString device_id;
     FacingMode facing_mode = FacingMode::kNone;
     // Media Capture Depth Stream Extensions.

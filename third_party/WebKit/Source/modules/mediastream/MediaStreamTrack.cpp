@@ -263,6 +263,8 @@ void MediaStreamTrack::getSettings(MediaTrackSettings& settings) {
     settings.setWidth(platform_settings.width);
   if (platform_settings.HasHeight())
     settings.setHeight(platform_settings.height);
+  if (platform_settings.HasAspectRatio())
+    settings.setAspectRatio(platform_settings.aspect_ratio);
   if (RuntimeEnabledFeatures::MediaCaptureDepthEnabled() &&
       component_->Source()->GetType() == MediaStreamSource::kTypeVideo) {
     if (platform_settings.HasVideoKind())
