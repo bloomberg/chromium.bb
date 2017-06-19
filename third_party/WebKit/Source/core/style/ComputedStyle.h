@@ -1006,18 +1006,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
                    transform_operations_, ops);
   }
 
-  // transform-origin (aka -webkit-transform-origin)
-  static TransformOrigin InitialTransformOrigin() {
-    return TransformOrigin(Length(50.0, kPercent), Length(50.0, kPercent), 0);
-  }
-  const TransformOrigin& GetTransformOrigin() const {
-    return rare_non_inherited_data_->transform_data_->transform_origin_;
-  }
-  void SetTransformOrigin(const TransformOrigin& o) {
-    SET_NESTED_VAR(rare_non_inherited_data_, transform_data_, transform_origin_,
-                   o);
-  }
-
   // -webkit-transform-origin-x
   static Length InitialTransformOriginX() { return Length(50.0, kPercent); }
   const Length& TransformOriginX() const { return GetTransformOrigin().X(); }
