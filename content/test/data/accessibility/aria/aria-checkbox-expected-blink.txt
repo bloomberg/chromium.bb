@@ -1,0 +1,5 @@
+rootWebArea
+++checkBox name='CheckBox1' checkedState=2
+++checkBox name='CheckBox2' checkedState=1
+++checkBox name='CheckBox3' checkedState=3
+++checkBox name='CheckBox4' checkedState=1
