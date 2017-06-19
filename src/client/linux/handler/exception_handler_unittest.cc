@@ -1177,3 +1177,26 @@ TEST(ExceptionHandlerTest, WriteMinidumpForChild) {
   close(fds[1]);
   unlink(minidump_filename.c_str());
 }
+
+namespace {
+const int kSimpleFirstChanceReturnStatus = 42;
+bool SimpleFirstChanceHandler(int, void*, void*) {
+  exit(kSimpleFirstChanceReturnStatus);
+}
+}
+
+TEST(ExceptionHandlerTest, FirstChanceHandlerRuns) {
+  AutoTempDir temp_dir;
+
+  const pid_t child = fork();
+  if (child == 0) {
+    ExceptionHandler handler(
+        MinidumpDescriptor(temp_dir.path()), NULL, NULL, NULL, true, -1);
+    google_breakpad::SetFirstChanceExceptionHandler(SimpleFirstChanceHandler);
+    DoNullPointerDereference();
+  }
+  int status;
+  ASSERT_NE(HANDLE_EINTR(waitpid(child, &status, 0)), -1);
+  ASSERT_TRUE(WIFEXITED(status));
+  ASSERT_EQ(kSimpleFirstChanceReturnStatus, WEXITSTATUS(status));
+}

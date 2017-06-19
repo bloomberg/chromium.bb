@@ -218,6 +218,7 @@ pthread_mutex_t g_handler_stack_mutex_ = PTHREAD_MUTEX_INITIALIZER;
 // time can use |g_crash_context_|.
 ExceptionHandler::CrashContext g_crash_context_;
 
+FirstChanceHandler g_first_chance_handler_ = nullptr;
 }  // namespace
 
 // Runs before crashing: normal context.
@@ -331,6 +332,18 @@ void ExceptionHandler::RestoreHandlersLocked() {
 // Runs on the crashing thread.
 // static
 void ExceptionHandler::SignalHandler(int sig, siginfo_t* info, void* uc) {
+
+  // Give the first chance handler a chance to recover from this signal
+  //
+  // This is primarily used by V8. V8 uses guard regions to guarantee memory
+  // safety in WebAssembly. This means some signals might be expected if they
+  // originate from Wasm code while accessing the guard region. We give V8 the
+  // chance to handle and recover from these signals first.
+  if (g_first_chance_handler_ != nullptr &&
+      g_first_chance_handler_(sig, info, uc)) {
+    return;
+  }
+
   // All the exception signals are blocked at this point.
   pthread_mutex_lock(&g_handler_stack_mutex_);
 
@@ -780,6 +793,10 @@ bool ExceptionHandler::WriteMinidumpForChild(pid_t child,
       return false;
 
   return callback ? callback(descriptor, callback_context, true) : true;
+}
+
+void SetFirstChanceExceptionHandler(FirstChanceHandler callback) {
+  g_first_chance_handler_ = callback;
 }
 
 }  // namespace google_breakpad
