@@ -804,7 +804,9 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // Grid properties.
   static size_t InitialGridAutoRepeatInsertionPoint() { return 0; }
-  static AutoRepeatType InitialGridAutoRepeatType() { return kNoAutoRepeat; }
+  static AutoRepeatType InitialGridAutoRepeatType() {
+    return AutoRepeatType::kNoAutoRepeat;
+  }
 
   // grid-auto-flow
   static GridAutoFlow InitialGridAutoFlow() { return kAutoFlowRow; }
@@ -1815,11 +1817,13 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
   void SetGridAutoRepeatColumnsType(const AutoRepeatType auto_repeat_type) {
     SET_NESTED_VAR(rare_non_inherited_data_, grid_data_,
-                   grid_auto_repeat_columns_type_, auto_repeat_type);
+                   grid_auto_repeat_columns_type_,
+                   static_cast<unsigned>(auto_repeat_type));
   }
   void SetGridAutoRepeatRowsType(const AutoRepeatType auto_repeat_type) {
     SET_NESTED_VAR(rare_non_inherited_data_, grid_data_,
-                   grid_auto_repeat_rows_type_, auto_repeat_type);
+                   grid_auto_repeat_rows_type_,
+                   static_cast<unsigned>(auto_repeat_type));
   }
 
   // align-content utility functions.

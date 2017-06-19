@@ -742,8 +742,9 @@ void StyleBuilderConverter::ConvertGridTrackList(
           ToCSSGridAutoRepeatValue(curr_value.Get())->AutoRepeatID();
       DCHECK(auto_repeat_id == CSSValueAutoFill ||
              auto_repeat_id == CSSValueAutoFit);
-      auto_repeat_type =
-          auto_repeat_id == CSSValueAutoFill ? kAutoFill : kAutoFit;
+      auto_repeat_type = auto_repeat_id == CSSValueAutoFill
+                             ? AutoRepeatType::kAutoFill
+                             : AutoRepeatType::kAutoFit;
       for (auto auto_repeat_value : ToCSSValueList(*curr_value)) {
         if (auto_repeat_value->IsGridLineNamesValue()) {
           ConvertGridLineNamesList(*auto_repeat_value, auto_repeat_index,
