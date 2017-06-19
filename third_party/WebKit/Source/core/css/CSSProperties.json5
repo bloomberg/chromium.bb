@@ -1063,11 +1063,11 @@
     },
     {
       name: "column-fill",
-      type_name: "ColumnFill",
       field_template: "storage_only",
-      default_value: "kColumnFillBalance",
+      default_value: "EColumnFill::kBalance",
       field_size: 1,
       field_group: "rare-non-inherited->multi-col",
+      getter: "GetColumnFill",
     },
     {
       name: "contain",
@@ -2901,10 +2901,10 @@
       name: "column-span",
       api_class: true,
       api_methods: ["parseSingleValue"],
-      type_name: "ColumnSpan",
       field_template: "storage_only",
       field_group: "rare-non-inherited->multi-col",
-      default_value: "kColumnSpanNone",
+      default_value: "EColumnSpan::kNone",
+      getter: "GetColumnSpan",
       field_size: 1,
     },
     {

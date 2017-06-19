@@ -626,14 +626,14 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // column-fill
-  static ColumnFill InitialColumnFill() { return kColumnFillBalance; }
-  ColumnFill GetColumnFill() const {
-    return static_cast<ColumnFill>(
+  static EColumnFill InitialColumnFill() { return EColumnFill::kBalance; }
+  EColumnFill GetColumnFill() const {
+    return static_cast<EColumnFill>(
         rare_non_inherited_data_->multi_col_data_->column_fill_);
   }
-  void SetColumnFill(ColumnFill column_fill) {
+  void SetColumnFill(EColumnFill column_fill) {
     SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_, column_fill_,
-                   column_fill);
+                   static_cast<unsigned>(column_fill));
   }
 
   // column-gap (aka -webkit-column-gap)
@@ -685,14 +685,14 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // column-span (aka -webkit-column-span)
-  static ColumnSpan InitialColumnSpan() { return kColumnSpanNone; }
-  ColumnSpan GetColumnSpan() const {
-    return static_cast<ColumnSpan>(
+  static EColumnSpan InitialColumnSpan() { return EColumnSpan::kNone; }
+  EColumnSpan GetColumnSpan() const {
+    return static_cast<EColumnSpan>(
         rare_non_inherited_data_->multi_col_data_->column_span_);
   }
-  void SetColumnSpan(ColumnSpan column_span) {
+  void SetColumnSpan(EColumnSpan column_span) {
     SET_NESTED_VAR(rare_non_inherited_data_, multi_col_data_, column_span_,
-                   column_span);
+                   static_cast<unsigned>(column_span));
   }
 
   // column-width (aka -webkit-column-width)
