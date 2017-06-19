@@ -21,7 +21,7 @@ namespace content {
 namespace {
 
 // This class has the same data as ::mojom::AudioInputDeviceCapabilities, but
-// adds extra operations to simplify the device-selection code.
+// adds extra operations to simplify access to device parameters.
 class AudioDeviceInfo {
  public:
   // This constructor is intended for device capture.
@@ -83,31 +83,13 @@ AudioDeviceSet AudioDeviceSetForDeviceCapture(
         *failed_constraint_name = constraint_set.device_id.GetName();
       continue;
     }
-    *failed_constraint_name =
-        IsOutsideConstraintRange(constraint_set.sample_rate,
-                                 device_capabilities->parameters.sample_rate());
-    if (*failed_constraint_name)
-      continue;
-
-    *failed_constraint_name = IsOutsideConstraintRange(
-        constraint_set.sample_size,
-        device_capabilities->parameters.bits_per_sample());
-    if (*failed_constraint_name)
-      continue;
-
-    *failed_constraint_name =
-        IsOutsideConstraintRange(constraint_set.channel_count,
-                                 device_capabilities->parameters.channels());
-    if (*failed_constraint_name)
-      continue;
-
     result.push_back(AudioDeviceInfo(device_capabilities));
   }
 
   if (!result.empty())
     *failed_constraint_name = nullptr;
 
-  return AudioDeviceSet(result);
+  return AudioDeviceSet(std::move(result));
 }
 
 AudioDeviceSet AudioDeviceSetForContentCapture(
@@ -120,7 +102,7 @@ AudioDeviceSet AudioDeviceSetForContentCapture(
   for (auto& device_id : constraint_set.device_id.Exact())
     result.push_back(AudioDeviceInfo(device_id.Utf8()));
 
-  return AudioDeviceSet(result);
+  return AudioDeviceSet(std::move(result));
 }
 
 // This class represents a set of possible candidate settings.
@@ -320,35 +302,16 @@ void AudioCaptureCandidates::CheckContradictoryEchoCancellation() {
 }
 
 // Fitness function for constraints involved in device selection.
-//  Based on https://w3c.github.io/mediacapture-main/#dfn-fitness-distance
+// Based on https://w3c.github.io/mediacapture-main/#dfn-fitness-distance
+// TODO(guidou): Add support for sampleRate, sampleSize and channelCount
+// constraints. http://crbug.com/
 double DeviceInfoFitness(
     bool is_device_capture,
     const AudioDeviceInfo& device_info,
     const blink::WebMediaTrackConstraintSet& basic_constraint_set) {
-  double fitness = 0.0;
-  fitness += StringConstraintFitnessDistance(
+  return StringConstraintFitnessDistance(
       blink::WebString::FromASCII(device_info.device_id()),
       basic_constraint_set.device_id);
-
-  if (!is_device_capture)
-    return fitness;
-
-  if (basic_constraint_set.sample_rate.HasIdeal()) {
-    fitness += NumericConstraintFitnessDistance(
-        device_info.SampleRate(), basic_constraint_set.sample_rate.Ideal());
-  }
-
-  if (basic_constraint_set.sample_size.HasIdeal()) {
-    fitness += NumericConstraintFitnessDistance(
-        device_info.SampleSize(), basic_constraint_set.sample_size.Ideal());
-  }
-
-  if (basic_constraint_set.channel_count.HasIdeal()) {
-    fitness += NumericConstraintFitnessDistance(
-        device_info.ChannelCount(), basic_constraint_set.channel_count.Ideal());
-  }
-
-  return fitness;
 }
 
 AudioDeviceInfo SelectDevice(
