@@ -713,7 +713,7 @@ bool BufferManager::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
 
   if (args.level_of_detail == MemoryDumpLevelOfDetail::BACKGROUND) {
     std::string dump_name =
-        base::StringPrintf("gpu/gl/buffers/share_group_%" PRIu64 "",
+        base::StringPrintf("gpu/gl/buffers/share_group_0x%" PRIX64 "",
                            memory_tracker_->ShareGroupTracingGUID());
     MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name);
     dump->AddScalar(MemoryAllocatorDump::kNameSize,
@@ -729,9 +729,9 @@ bool BufferManager::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
     const auto& client_buffer_id = buffer_entry.first;
     const auto& buffer = buffer_entry.second;
 
-    std::string dump_name =
-        base::StringPrintf("gpu/gl/buffers/share_group_%" PRIu64 "/buffer_%d",
-                           share_group_tracing_guid, client_buffer_id);
+    std::string dump_name = base::StringPrintf(
+        "gpu/gl/buffers/share_group_0x%" PRIX64 "/buffer_0x%" PRIX32,
+        share_group_tracing_guid, client_buffer_id);
     MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name);
     dump->AddScalar(MemoryAllocatorDump::kNameSize,
                     MemoryAllocatorDump::kUnitsBytes,

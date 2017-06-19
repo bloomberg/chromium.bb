@@ -3406,7 +3406,7 @@ bool TextureManager::OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                                   base::trace_event::ProcessMemoryDump* pmd) {
   if (args.level_of_detail == MemoryDumpLevelOfDetail::BACKGROUND) {
     std::string dump_name =
-        base::StringPrintf("gpu/gl/textures/share_group_%" PRIu64 "",
+        base::StringPrintf("gpu/gl/textures/share_group_0x%" PRIX64,
                            memory_tracker_->ShareGroupTracingGUID());
     MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name);
     dump->AddScalar(MemoryAllocatorDump::kNameSize,
@@ -3441,7 +3441,7 @@ void TextureManager::DumpTextureRef(base::trace_event::ProcessMemoryDump* pmd,
     return;
 
   std::string dump_name = base::StringPrintf(
-      "gpu/gl/textures/share_group_%" PRIu64 "/texture_%d",
+      "gpu/gl/textures/share_group_0x%" PRIX64 "/texture_0x%" PRIX32,
       memory_tracker_->ShareGroupTracingGUID(), ref->client_id());
 
   MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name);

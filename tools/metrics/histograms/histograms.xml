@@ -89151,6 +89151,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="PrivateMemoryFootprint"
       label="Only counting private resident + swapped/compressed memory."/>
   <suffix name="Malloc" label="Constrained to malloc allocator."/>
+  <suffix name="CommandBuffer" label="Constrained to command buffer memory."/>
   <affected-histogram name="Memory.Experimental.Gpu2"/>
 </histogram_suffixes>
 

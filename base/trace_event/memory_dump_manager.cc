@@ -752,6 +752,13 @@ void MemoryDumpManager::FinalizeDumpAndAddToTrace(
       result->chrome_dump.v8_total_kb =
           GetDumpsSumKb("v8/*", process_memory_dump);
 
+      result->chrome_dump.command_buffer_total_kb =
+          GetDumpsSumKb("gpu/gl/textures/*", process_memory_dump);
+      result->chrome_dump.command_buffer_total_kb +=
+          GetDumpsSumKb("gpu/gl/buffers/*", process_memory_dump);
+      result->chrome_dump.command_buffer_total_kb +=
+          GetDumpsSumKb("gpu/gl/renderbuffers/*", process_memory_dump);
+
       // partition_alloc reports sizes for both allocated_objects and
       // partitions. The memory allocated_objects uses is a subset of
       // the partitions memory so to avoid double counting we only

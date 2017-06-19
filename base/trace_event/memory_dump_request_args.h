@@ -88,6 +88,7 @@ struct BASE_EXPORT MemoryDumpCallbackResult {
   };
   struct ChromeMemDump {
     uint32_t malloc_total_kb = 0;
+    uint32_t command_buffer_total_kb = 0;
     uint32_t partition_alloc_total_kb = 0;
     uint32_t blink_gc_total_kb = 0;
     uint32_t v8_total_kb = 0;
