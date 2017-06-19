@@ -46,6 +46,7 @@ class UiSceneManager {
   void SetVideoCapturingIndicator(bool enabled);
   void SetScreenCapturingIndicator(bool enabled);
   void SetAudioCapturingIndicator(bool enabled);
+  void SetLocationAccessIndicator(bool enabled);
 
   // These methods are currently stubbed.
   void SetHistoryButtonsEnabled(bool can_go_back, bool can_go_forward);
@@ -70,6 +71,7 @@ class UiSceneManager {
   void ConfigureScene();
   void ConfigureSecurityWarnings();
   void ConfigureTransientUrlBar();
+  void ConfigureIndicators();
   void UpdateBackgroundColor();
   void CloseExitPrompt();
   void OnSecurityWarningTimer();
@@ -98,6 +100,7 @@ class UiSceneManager {
   UiElement* audio_capture_indicator_ = nullptr;
   UiElement* video_capture_indicator_ = nullptr;
   UiElement* screen_capture_indicator_ = nullptr;
+  UiElement* location_access_indicator_ = nullptr;
   UiElement* screen_dimmer_ = nullptr;
   UiElement* ceiling_ = nullptr;
   UiElement* floor_ = nullptr;
@@ -115,6 +118,7 @@ class UiSceneManager {
   bool audio_capturing_ = false;
   bool video_capturing_ = false;
   bool screen_capturing_ = false;
+  bool location_access_ = false;
 
   int next_available_id_ = 1;
 

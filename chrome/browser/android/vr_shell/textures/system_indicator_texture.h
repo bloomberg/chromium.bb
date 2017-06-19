@@ -14,6 +14,7 @@ namespace vr_shell {
 class SystemIndicatorTexture : public UiTexture {
  public:
   SystemIndicatorTexture(const gfx::VectorIcon& icon, int message_id);
+  explicit SystemIndicatorTexture(const gfx::VectorIcon& icon);
   ~SystemIndicatorTexture() override;
   gfx::Size GetPreferredTextureSize(int width) const override;
   gfx::SizeF GetDrawnSize() const override;
@@ -24,6 +25,7 @@ class SystemIndicatorTexture : public UiTexture {
   gfx::SizeF size_;
   const gfx::VectorIcon& icon_;
   int message_id_;
+  bool has_text_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemIndicatorTexture);
 };
