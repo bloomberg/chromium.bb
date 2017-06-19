@@ -642,13 +642,12 @@ Profile* ProfileManager::GetLastUsedProfile(
 
     base::FilePath profile_path(user_data_dir);
     Profile* profile = GetProfileByPath(profile_path.Append(profile_dir));
-    // If we get here, it means the user has logged in but the profile has not
-    // finished initializing, so treat the user as not having logged in.
-    if (!profile) {
-      LOG(WARNING) << "Calling GetLastUsedProfile() before profile "
-                   << "initialization is completed. Returning login profile.";
-      return GetActiveUserOrOffTheRecordProfileFromPath(user_data_dir);
-    }
+
+    // Accessing a user profile before it is loaded may lead to policy exploit.
+    // See http://crbug.com/689206.
+    LOG_IF(FATAL, !profile) << "Calling GetLastUsedProfile() before profile "
+                            << "initialization is completed.";
+
     return profile->IsGuestSession() ? profile->GetOffTheRecordProfile() :
                                        profile;
   }

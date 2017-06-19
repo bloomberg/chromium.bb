@@ -1272,7 +1272,8 @@ void AccessibilityManager::SetProfile(Profile* profile) {
 
 void AccessibilityManager::ActiveUserChanged(
     const user_manager::User* active_user) {
-  SetProfile(ProfileManager::GetActiveUserProfile());
+  if (active_user && active_user->is_profile_created())
+    SetProfile(ProfileManager::GetActiveUserProfile());
 }
 
 void AccessibilityManager::OnFullscreenStateChanged(bool is_fullscreen,
