@@ -31,10 +31,6 @@ bundle_data("assets") {
     "Assets.xcassets/ic_check_box_outline_blank.imageset/ic_check_box_outline_blank_white_1x_ios_24dp.png",
     "Assets.xcassets/ic_check_box_outline_blank.imageset/ic_check_box_outline_blank_white_2x_ios_24dp.png",
     "Assets.xcassets/ic_check_box_outline_blank.imageset/ic_check_box_outline_blank_white_3x_ios_24dp.png",
-    "Assets.xcassets/ic_close.imageset/Contents.json",
-    "Assets.xcassets/ic_close.imageset/ic_close_white_1x_ios_24dp.png",
-    "Assets.xcassets/ic_close.imageset/ic_close_white_2x_ios_24dp.png",
-    "Assets.xcassets/ic_close.imageset/ic_close_white_3x_ios_24dp.png",
     "Assets.xcassets/ic_desktop.imageset/Contents.json",
     "Assets.xcassets/ic_desktop.imageset/ic_desktop.png",
     "Assets.xcassets/ic_desktop.imageset/ic_desktop@2x.png",
@@ -67,14 +63,30 @@ bundle_data("assets") {
     "Assets.xcassets/ic_radio_button_unchecked.imageset/ic_radio_button_unchecked_white_1x_ios_24dp.png",
     "Assets.xcassets/ic_radio_button_unchecked.imageset/ic_radio_button_unchecked_white_2x_ios_24dp.png",
     "Assets.xcassets/ic_radio_button_unchecked.imageset/ic_radio_button_unchecked_white_3x_ios_24dp.png",
-    "Assets.xcassets/ic_refresh.imageset/Contents.json",
-    "Assets.xcassets/ic_refresh.imageset/ic_refresh_white.png",
-    "Assets.xcassets/ic_refresh.imageset/ic_refresh_white_2x.png",
-    "Assets.xcassets/ic_refresh.imageset/ic_refresh_white_3x.png",
     "Assets.xcassets/ic_touch_app.imageset/Contents.json",
     "Assets.xcassets/ic_touch_app.imageset/ic_touch_app.png",
     "Assets.xcassets/ic_touch_app.imageset/ic_touch_app_2x.png",
     "Assets.xcassets/ic_touch_app.imageset/ic_touch_app_3x.png",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/{{source_file_part}}",
+  ]
+}
+
+# TODO(yuweih): This target is used to exclude material design imagesets from
+# the internal app's source set, that are already pulled-in by other deps of the
+# internal app. We will need to redesign these once crbug.com/734054 is
+# resolved.
+bundle_data("system_icons") {
+  sources = [
+    "system_icons.xcassets/ic_close.imageset/Contents.json",
+    "system_icons.xcassets/ic_close.imageset/ic_close_white_1x_ios_24dp.png",
+    "system_icons.xcassets/ic_close.imageset/ic_close_white_2x_ios_24dp.png",
+    "system_icons.xcassets/ic_close.imageset/ic_close_white_3x_ios_24dp.png",
+    "system_icons.xcassets/ic_refresh.imageset/Contents.json",
+    "system_icons.xcassets/ic_refresh.imageset/ic_refresh_white.png",
+    "system_icons.xcassets/ic_refresh.imageset/ic_refresh_white_2x.png",
+    "system_icons.xcassets/ic_refresh.imageset/ic_refresh_white_3x.png",
   ]
   outputs = [
     "{{bundle_resources_dir}}/{{source_file_part}}",
