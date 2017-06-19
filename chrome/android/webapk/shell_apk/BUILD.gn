@@ -14,7 +14,7 @@ declare_args() {
   webapk_runtime_host_application_name = "Chromium"
 
   # The Url of the Web Manifest file.
-  webapk_web_manifest_url = "https://www.template.com/manifest.json"
+  webapk_web_manifest_url = "https://pwa.rocks/pwa.webmanifest"
 
   # Murmur2 hash of the homescreen icon. The hash should be of the icon as it is
   # available from the web. The icon bytes should not be transformed (e.g.
@@ -22,21 +22,21 @@ declare_args() {
   webapk_icon_murmur2_hash = "0"
 
   # Attributes from Web Manifest.
-  webapk_start_url = "https://www.template.com/home_page"
-  webapk_name = "Longer Sample WebAPK Name"
-  webapk_short_name = "Sample WebAPK"
-  webapk_scope_url = "https://www.template.com/"
+  webapk_start_url = "https://pwa.rocks/"
+  webapk_name = "Progressive Web Apps"
+  webapk_short_name = "PWA List"
+  webapk_scope_url = "https://pwa.rocks/"
   webapk_display_mode = "standalone"
   webapk_orientation = "portrait"
   webapk_theme_color = "2147483648L"  # HostBrowserLauncher#MANIFEST_COLOR_INVALID_OR_MISSING
   webapk_background_color = "2147483648L"  #HostBrowserLauncher#MANIFEST_COLOR_INVALID_OR_MISSING
-  webapk_icon_urls_and_icon_murmur2_hashes = "http://www.template.com/icon1.png $webapk_icon_murmur2_hash http://www.template.com/icon2.png $webapk_icon_murmur2_hash"
+  webapk_icon_urls_and_icon_murmur2_hashes = "http://www.pwa.rocks/icon1.png $webapk_icon_murmur2_hash http://www.pwa.rocks/icon2.png $webapk_icon_murmur2_hash"
 
   # Scheme part of |webapk_scope_url|.
   webapk_scope_url_scheme = "https"
 
   # Host part of |webapk_scope_url|.
-  webapk_scope_url_host = "www.template.com"
+  webapk_scope_url_host = "pwa.rocks"
 
   # Path part of |webapk_scope_url|.
   webapk_scope_url_path = "/"
@@ -118,19 +118,19 @@ manifest_processor_template("shell_apk_manifest_javatests") {
     "shell_apk_version=$template_shell_apk_version",
     "manifest_package=org.chromium.webapk.test",
     "runtime_host=org.chromium.chrome",
-    "start_url=https://www.template.com/home_page",
+    "start_url=https://pwa.rocks",
     "name=Test",
     "short_name=Test",
-    "scope_url=https://www.template.com",
+    "scope_url=https://pwa.rocks",
     "display_mode=standalone",
     "orientation=portrait",
     "theme_color=2147483648L",  # HostBrowserLauncher#MANIFEST_COLOR_INVALID_OR_MISSING
     "background_color=2147483648L",  # HostBrowserLauncher#MANIFEST_COLOR_INVALID_OR_MISSING
     "icon_urls_and_icon_murmur2_hashes=",
     "scope_url_scheme=https",
-    "scope_url_host=template.com",
+    "scope_url_host=pwa.rocks",
     "scope_url_path=/",
-    "web_manifest_url=https://www.template.com/manifest.json",
+    "web_manifest_url=https://pwa.rocks/pwa.webmanifest",
     "version_code=1",
     "version_name=1.0",
   ]
