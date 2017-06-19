@@ -44,18 +44,16 @@ class DevToolsSession : public protocol::FrontendChannel {
       int* call_id,
       std::string* method);
   bool ReceiveMessageChunk(const DevToolsMessageChunk& chunk);
-
-  // Only used by DevToolsAgentHostImpl.
-  DevToolsAgentHostClient* client() const { return client_; }
+  void SendMessageToClient(const std::string& message);
 
   template <typename Handler>
   static std::vector<Handler*> HandlersForAgentHost(
       DevToolsAgentHostImpl* agent_host,
       const std::string& name) {
     std::vector<Handler*> result;
-    if (agent_host->sessions_.empty())
+    if (agent_host->sessions().empty())
       return result;
-    for (const auto& session : agent_host->sessions_) {
+    for (DevToolsSession* session : agent_host->sessions()) {
       auto it = session->handlers_.find(name);
       if (it != session->handlers_.end())
         result.push_back(static_cast<Handler*>(it->second.get()));
@@ -64,7 +62,7 @@ class DevToolsSession : public protocol::FrontendChannel {
   }
 
  private:
-  void SendMessageToClient(int session_id, const std::string& message);
+  void SendMessageFromProcessor(int session_id, const std::string& message);
   void SendResponse(std::unique_ptr<base::DictionaryValue> response);
 
   // protocol::FrontendChannel implementation.

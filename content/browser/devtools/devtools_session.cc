@@ -20,7 +20,7 @@ DevToolsSession::DevToolsSession(DevToolsAgentHostImpl* agent_host,
       session_id_(session_id),
       host_(nullptr),
       dispatcher_(new protocol::UberDispatcher(this)),
-      chunk_processor_(base::Bind(&DevToolsSession::SendMessageToClient,
+      chunk_processor_(base::Bind(&DevToolsSession::SendMessageFromProcessor,
                                   base::Unretained(this))),
       weak_factory_(this) {}
 
@@ -48,8 +48,12 @@ void DevToolsSession::SetFallThroughForNotFound(bool value) {
   dispatcher_->setFallThroughForNotFound(value);
 }
 
-void DevToolsSession::SendMessageToClient(int session_id,
-                                          const std::string& message) {
+void DevToolsSession::SendMessageToClient(const std::string& message) {
+  client_->DispatchProtocolMessage(agent_host_, message);
+}
+
+void DevToolsSession::SendMessageFromProcessor(int session_id,
+                                               const std::string& message) {
   if (session_id != session_id_)
     return;
   int id = chunk_processor_.last_call_id();

@@ -119,12 +119,17 @@ class RenderFrameDevToolsAgentHost::FrameHostHolder {
   bool attached_;
   bool suspended_;
   DevToolsMessageChunkProcessor chunk_processor_;
+  struct PendingMessage {
+    int session_id;
+    std::string method;
+    std::string message;
+  };
   // <session_id, message>
   std::vector<std::pair<int, std::string>> pending_messages_;
   // <call_id> -> PendingMessage
-  std::map<int, Message> sent_messages_;
+  std::map<int, PendingMessage> sent_messages_;
   // These are sent messages for which we got a reply while suspended.
-  std::map<int, Message> sent_messages_whose_reply_came_while_suspended_;
+  std::map<int, PendingMessage> sent_messages_whose_reply_came_while_suspended_;
 };
 
 RenderFrameDevToolsAgentHost::FrameHostHolder::FrameHostHolder(
@@ -175,9 +180,9 @@ void RenderFrameDevToolsAgentHost::FrameHostHolder::Reattach(
 void RenderFrameDevToolsAgentHost::FrameHostHolder::ReattachWithCookie(
     std::string cookie) {
   chunk_processor_.set_state_cookie(cookie);
-  host_->Send(
-      new DevToolsAgentMsg_Reattach(host_->GetRoutingID(), agent_->GetId(),
-                                    agent_->session()->session_id(), cookie));
+  host_->Send(new DevToolsAgentMsg_Reattach(
+      host_->GetRoutingID(), agent_->GetId(),
+      agent_->SingleSession()->session_id(), cookie));
   agent_->GrantPolicy(host_);
   attached_ = true;
 }
@@ -195,7 +200,7 @@ void RenderFrameDevToolsAgentHost::FrameHostHolder::DispatchProtocolMessage(
     const std::string& message) {
   host_->Send(new DevToolsAgentMsg_DispatchOnInspectorBackend(
       host_->GetRoutingID(), session_id, call_id, method, message));
-  sent_messages_[call_id] = {session_id, call_id, method, message};
+  sent_messages_[call_id] = {session_id, method, message};
 }
 
 void RenderFrameDevToolsAgentHost::FrameHostHolder::InspectElement(
@@ -215,13 +220,15 @@ void RenderFrameDevToolsAgentHost::FrameHostHolder::SendMessageToClient(
     int session_id,
     const std::string& message) {
   int id = chunk_processor_.last_call_id();
-  Message sent_message = sent_messages_[id];
+  PendingMessage sent_message = sent_messages_[id];
   sent_messages_.erase(id);
   if (suspended_) {
     sent_messages_whose_reply_came_while_suspended_[id] = sent_message;
     pending_messages_.push_back(std::make_pair(session_id, message));
   } else {
-    agent_->SendMessageToClient(session_id, message);
+    DevToolsSession* session = agent_->SingleSession();
+    if (session && session->session_id() == session_id)
+      session->SendMessageToClient(message);
     // |this| may be deleted at this point.
   }
 }
@@ -232,8 +239,11 @@ void RenderFrameDevToolsAgentHost::FrameHostHolder::Suspend() {
 
 void RenderFrameDevToolsAgentHost::FrameHostHolder::Resume() {
   suspended_ = false;
-  for (const auto& pair : pending_messages_)
-    agent_->SendMessageToClient(pair.first, pair.second);
+  for (const auto& pair : pending_messages_) {
+    DevToolsSession* session = agent_->SingleSession();
+    if (session && session->session_id() == pair.first)
+      session->SendMessageToClient(pair.second);
+  }
   std::vector<std::pair<int, std::string>> empty;
   pending_messages_.swap(empty);
   sent_messages_whose_reply_came_while_suspended_.clear();
@@ -511,7 +521,8 @@ void RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
     if (pending_)
       pending_->Attach(session);
   }
-  OnClientAttached();
+  if (sessions().size() == 1)
+    OnClientsAttached();
 }
 
 void RenderFrameDevToolsAgentHost::DetachSession(int session_id) {
@@ -520,13 +531,15 @@ void RenderFrameDevToolsAgentHost::DetachSession(int session_id) {
       frame_host_->Send(
           new DevToolsAgentMsg_Detach(frame_host_->GetRoutingID(), session_id));
     }
+    suspended_messages_by_session_id_.erase(session_id);
   } else {
     if (current_)
       current_->Detach(session_id);
     if (pending_)
       pending_->Detach(session_id);
   }
-  OnClientDetached();
+  if (sessions().empty())
+    OnClientsDetached();
 }
 
 bool RenderFrameDevToolsAgentHost::DispatchProtocolMessage(
@@ -542,7 +555,8 @@ bool RenderFrameDevToolsAgentHost::DispatchProtocolMessage(
 
   if (IsBrowserSideNavigationEnabled()) {
     if (!navigation_handles_.empty()) {
-      suspended_messages_.push_back({session_id, call_id, method, message});
+      suspended_messages_by_session_id_[session_id].push_back(
+          {call_id, method, message});
       return true;
     }
     if (frame_host_) {
@@ -576,10 +590,7 @@ void RenderFrameDevToolsAgentHost::InspectElement(
   }
 }
 
-void RenderFrameDevToolsAgentHost::OnClientAttached() {
-  if (!web_contents())
-    return;
-
+void RenderFrameDevToolsAgentHost::OnClientsAttached() {
   frame_trace_recorder_.reset(new DevToolsFrameTraceRecorder());
 #if defined(OS_ANDROID)
   GetWakeLock()->RequestWakeLock();
@@ -588,12 +599,11 @@ void RenderFrameDevToolsAgentHost::OnClientAttached() {
     GrantPolicy(frame_host_);
 }
 
-void RenderFrameDevToolsAgentHost::OnClientDetached() {
+void RenderFrameDevToolsAgentHost::OnClientsDetached() {
 #if defined(OS_ANDROID)
   GetWakeLock()->CancelWakeLock();
 #endif
   frame_trace_recorder_.reset();
-  suspended_messages_.clear();
   if (IsBrowserSideNavigationEnabled())
     RevokePolicy(frame_host_);
 }
@@ -654,18 +664,20 @@ void RenderFrameDevToolsAgentHost::DidFinishNavigation(
     UpdateFrameHost(handle->GetRenderFrameHost());
   DCHECK(CheckConsistency());
   if (navigation_handles_.empty()) {
-    if (session()) {
-      for (const Message& message : suspended_messages_) {
+    for (auto& pair : suspended_messages_by_session_id_) {
+      int session_id = pair.first;
+      DevToolsSession* session = SessionById(session_id);
+      for (const Message& message : pair.second) {
         if (frame_host_) {
           frame_host_->Send(new DevToolsAgentMsg_DispatchOnInspectorBackend(
-              frame_host_->GetRoutingID(), message.session_id, message.call_id,
+              frame_host_->GetRoutingID(), session_id, message.call_id,
               message.method, message.message));
         }
-        session()->waiting_messages()[message.call_id] = {message.method,
-                                                          message.message};
+        session->waiting_messages()[message.call_id] = {message.method,
+                                                        message.message};
       }
     }
-    suspended_messages_.clear();
+    suspended_messages_by_session_id_.clear();
   }
   if (handle->HasCommitted()) {
     for (auto* target : protocol::TargetHandler::ForAgentHost(this))
@@ -683,7 +695,7 @@ void RenderFrameDevToolsAgentHost::UpdateFrameHost(
     return;
   }
 
-  if (session())
+  if (IsAttached())
     RevokePolicy(frame_host_);
 
   if (frame_host && !ShouldCreateDevToolsForHost(frame_host)) {
@@ -694,27 +706,29 @@ void RenderFrameDevToolsAgentHost::UpdateFrameHost(
 
   frame_host_ = frame_host;
   render_frame_alive_ = true;
-  if (session()) {
+  if (IsAttached()) {
     GrantPolicy(frame_host_);
-    session()->SetRenderFrameHost(frame_host);
+    for (DevToolsSession* session : sessions())
+      session->SetRenderFrameHost(frame_host);
     MaybeReattachToRenderFrame();
   }
 }
 
 void RenderFrameDevToolsAgentHost::MaybeReattachToRenderFrame() {
   DCHECK(IsBrowserSideNavigationEnabled());
-  if (!session() || !frame_host_)
+  if (!frame_host_)
     return;
-  int session_id = session()->session_id();
-  frame_host_->Send(new DevToolsAgentMsg_Reattach(frame_host_->GetRoutingID(),
-                                                  GetId(), session_id,
-                                                  session()->state_cookie()));
-  for (const auto& pair : session()->waiting_messages()) {
-    int call_id = pair.first;
-    const DevToolsSession::Message& message = pair.second;
-    frame_host_->Send(new DevToolsAgentMsg_DispatchOnInspectorBackend(
-        frame_host_->GetRoutingID(), session_id, call_id, message.method,
-        message.message));
+  for (DevToolsSession* session : sessions()) {
+    frame_host_->Send(new DevToolsAgentMsg_Reattach(
+        frame_host_->GetRoutingID(), GetId(), session->session_id(),
+        session->state_cookie()));
+    for (const auto& pair : session->waiting_messages()) {
+      int call_id = pair.first;
+      const DevToolsSession::Message& message = pair.second;
+      frame_host_->Send(new DevToolsAgentMsg_DispatchOnInspectorBackend(
+          frame_host_->GetRoutingID(), session->session_id(), call_id,
+          message.method, message.message));
+    }
   }
 }
 
@@ -870,8 +884,8 @@ void RenderFrameDevToolsAgentHost::DestroyOnRenderFrameGone() {
   scoped_refptr<RenderFrameDevToolsAgentHost> protect(this);
   UpdateProtocolHandlers(nullptr);
   if (IsAttached())
-    OnClientDetached();
-  ForceDetach(false);
+    OnClientsDetached();
+  ForceDetachAllClients(false);
   frame_host_ = nullptr;
   pending_.reset();
   current_.reset();
@@ -1041,8 +1055,8 @@ void RenderFrameDevToolsAgentHost::UpdateProtocolHandlers(
     handlers_frame_host_->GetRenderWidgetHost()->GetRoutingID();
 #endif
   handlers_frame_host_ = host;
-  if (session())
-    session()->SetRenderFrameHost(host);
+  if (DevToolsSession* session = SingleSession())
+    session->SetRenderFrameHost(host);
 }
 
 void RenderFrameDevToolsAgentHost::DisconnectWebContents() {
@@ -1056,9 +1070,9 @@ void RenderFrameDevToolsAgentHost::DisconnectWebContents() {
   if (pending_)
     DiscardPending();
   UpdateProtocolHandlers(nullptr);
-  if (session()) {
+  if (DevToolsSession* session = SingleSession()) {
     disconnected_cookie_ = current_->StateCookie();
-    current_->Detach(session()->session_id());
+    current_->Detach(session->session_id());
   }
   current_.reset();
   frame_tree_node_ = nullptr;
@@ -1254,8 +1268,11 @@ void RenderFrameDevToolsAgentHost::OnDispatchOnInspectorFrontend(
     const DevToolsMessageChunk& message) {
   bool success = true;
   if (IsBrowserSideNavigationEnabled()) {
-    if (sender == frame_host_)
-      success = session()->ReceiveMessageChunk(message);
+    if (sender == frame_host_) {
+      DevToolsSession* session = SessionById(message.session_id);
+      if (session)
+        success = session->ReceiveMessageChunk(message);
+    }
   } else {
     if (current_ && current_->host() == sender)
       success = current_->ProcessChunkedMessageFromAgent(message);
@@ -1289,6 +1306,11 @@ void RenderFrameDevToolsAgentHost::OnRequestNewWindow(
 
 bool RenderFrameDevToolsAgentHost::IsChildFrame() {
   return frame_tree_node_ && frame_tree_node_->parent();
+}
+
+DevToolsSession* RenderFrameDevToolsAgentHost::SingleSession() {
+  DCHECK(!IsBrowserSideNavigationEnabled());
+  return sessions().empty() ? nullptr : *sessions().begin();
 }
 
 }  // namespace content
