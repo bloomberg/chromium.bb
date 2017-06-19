@@ -57,7 +57,7 @@ FillLayer::FillLayer(EFillLayerType type, bool use_initial_values)
       composite_(FillLayer::InitialFillComposite(type)),
       size_type_(use_initial_values ? FillLayer::InitialFillSizeType(type)
                                     : kSizeNone),
-      blend_mode_(FillLayer::InitialFillBlendMode(type)),
+      blend_mode_(static_cast<unsigned>(FillLayer::InitialFillBlendMode(type))),
       mask_source_type_(FillLayer::InitialFillMaskSourceType(type)),
       background_x_origin_(kLeftEdge),
       background_y_origin_(kTopEdge),
@@ -400,8 +400,8 @@ bool FillLayer::ImageOccludesNextLayers(const Document& document,
     case kCompositeCopy:
       return ImageTilesLayer();
     case kCompositeSourceOver:
-      return (blend_mode_ == kWebBlendModeNormal) && ImageTilesLayer() &&
-             ImageIsOpaque(document, style);
+      return (blend_mode_ == static_cast<unsigned>(WebBlendMode::kNormal)) &&
+             ImageTilesLayer() && ImageIsOpaque(document, style);
     default: {}
   }
 

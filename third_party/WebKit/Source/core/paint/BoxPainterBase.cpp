@@ -215,7 +215,7 @@ bool BoxPainterBase::CalculateFillLayerOcclusionCulling(
     // geometry here and pass it down.
 
     // TODO(trchen): Need to check compositing mode as well.
-    if (current_layer->BlendMode() != kWebBlendModeNormal)
+    if (current_layer->BlendMode() != WebBlendMode::kNormal)
       is_non_associative = true;
 
     // TODO(trchen): A fill layer cannot paint if the calculated tile size is

@@ -777,16 +777,6 @@
       field_size: 1,
       default_value: "false",
     },
-    // TODO(shend): Is this the same as mix-blend-mode?
-    {
-      name: "EffectiveBlendMode",
-      type_name: "WebBlendMode",
-      field_template: "storage_only",
-      field_group: "rare-non-inherited",
-      field_size: 5,
-      default_value: "false",
-      include_paths: ["public/platform/WebBlendMode.h"],
-    },
     // Plugins require accelerated compositing for reasons external to blink.
     // In which case, we need to update the ComputedStyle on the
     // LayoutEmbeddedObject, so store this bit so that the style actually changes

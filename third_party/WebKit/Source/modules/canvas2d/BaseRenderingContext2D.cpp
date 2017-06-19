@@ -392,7 +392,7 @@ String BaseRenderingContext2D::globalCompositeOperation() const {
 void BaseRenderingContext2D::setGlobalCompositeOperation(
     const String& operation) {
   CompositeOperator op = kCompositeSourceOver;
-  WebBlendMode blend_mode = kWebBlendModeNormal;
+  WebBlendMode blend_mode = WebBlendMode::kNormal;
   if (!ParseCompositeAndBlendOperator(operation, op, blend_mode))
     return;
   SkBlendMode xfermode = WebCoreCompositeToSkiaComposite(op, blend_mode);

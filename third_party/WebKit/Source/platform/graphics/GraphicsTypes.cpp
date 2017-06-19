@@ -59,7 +59,7 @@ bool ParseCompositeAndBlendOperator(const String& s,
   for (int i = 0; i < kNumCompositeOperatorNames; i++) {
     if (s == kCompositeOperatorNames[i]) {
       op = static_cast<CompositeOperator>(i);
-      blend_op = kWebBlendModeNormal;
+      blend_op = WebBlendMode::kNormal;
       return true;
     }
   }
@@ -78,9 +78,9 @@ bool ParseCompositeAndBlendOperator(const String& s,
 String CompositeOperatorName(CompositeOperator op, WebBlendMode blend_op) {
   DCHECK_GE(op, 0);
   DCHECK_LT(op, kNumCompositeOperatorNames);
-  DCHECK_GE(blend_op, 0);
-  if (blend_op != kWebBlendModeNormal)
-    return kBlendOperatorNames[blend_op];
+  DCHECK_GE(static_cast<unsigned>(blend_op), 0u);
+  if (blend_op != WebBlendMode::kNormal)
+    return kBlendOperatorNames[static_cast<unsigned>(blend_op)];
   return kCompositeOperatorNames[op];
 }
 

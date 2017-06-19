@@ -887,7 +887,7 @@ LayoutRect LayoutBox::BackgroundRect(BackgroundRectType rect_type) const {
       const FillLayer* cur = current;
       current = current->Next();
       if (rect_type == kBackgroundKnownOpaqueRect) {
-        if (cur->BlendMode() != kWebBlendModeNormal ||
+        if (cur->BlendMode() != WebBlendMode::kNormal ||
             cur->Composite() != kCompositeSourceOver)
           continue;
 

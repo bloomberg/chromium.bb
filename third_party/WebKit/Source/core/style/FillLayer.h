@@ -167,7 +167,7 @@ class CORE_EXPORT FillLayer {
     composite_set_ = true;
   }
   void SetBlendMode(WebBlendMode b) {
-    blend_mode_ = b;
+    blend_mode_ = static_cast<unsigned>(b);
     blend_mode_set_ = true;
   }
   void SetSizeType(EFillSizeType b) { size_type_ = b; }
@@ -263,7 +263,7 @@ class CORE_EXPORT FillLayer {
     return kCompositeSourceOver;
   }
   static WebBlendMode InitialFillBlendMode(EFillLayerType) {
-    return kWebBlendModeNormal;
+    return WebBlendMode::kNormal;
   }
   static EFillSizeType InitialFillSizeType(EFillLayerType) {
     return kSizeLength;

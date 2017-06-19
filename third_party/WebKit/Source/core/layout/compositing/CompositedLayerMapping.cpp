@@ -2880,7 +2880,7 @@ GraphicsLayer* CompositedLayerMapping::ChildForSuperlayers() const {
 void CompositedLayerMapping::SetBlendMode(WebBlendMode blend_mode) {
   if (ancestor_clipping_layer_) {
     ancestor_clipping_layer_->SetBlendMode(blend_mode);
-    graphics_layer_->SetBlendMode(kWebBlendModeNormal);
+    graphics_layer_->SetBlendMode(WebBlendMode::kNormal);
   } else {
     graphics_layer_->SetBlendMode(blend_mode);
   }
